@@ -2591,12 +2591,12 @@ def main():
 
         print(f"=== Total: {total_tokens:,} tokens ===")
 
-    elif args.update_readme:
+    if args.update_readme:
         success = update_readme(plugin_root, graph, deps, plugin_name, show_tokens)
         if not success:
             sys.exit(1)
 
-    elif args.check:
+    if args.check:
         results = check_files(graph, plugin_root)
 
         ok_count = sum(1 for r in results if r[0] == 'ok')
@@ -2617,7 +2617,7 @@ def main():
         else:
             print("All files exist.")
 
-    elif args.validate:
+    if args.validate:
         ok_count, violations = validate_types(deps, graph)
         print(f"=== Type Validation Results ===")
         print(f"OK: {ok_count}, Violations: {len(violations)}")
@@ -2631,7 +2631,7 @@ def main():
         else:
             print("All type constraints satisfied.")
 
-    elif args.orphans:
+    if args.orphans:
         orphans = find_orphans(graph, deps)
 
         print("=== Orphan Analysis ===")
@@ -2667,7 +2667,7 @@ def main():
         else:
             print(f"Total unused: {total_orphans}")
 
-    elif args.deep_validate:
+    if args.deep_validate:
         # --validate の全チェックも実行
         ok_count, violations = validate_types(deps, graph)
 
