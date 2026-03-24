@@ -44,7 +44,7 @@ except ImportError:
 TYPE_RULES = {
     # === 非AT型 ===
     'controller':  {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference'}, 'spawnable_by': {'user', 'launcher'}},
-    'workflow':    {'section': 'skills',   'can_spawn': {'atomic', 'composite', 'specialist'},  'spawnable_by': {'controller', 'entry_point'}},
+    'workflow':    {'section': 'skills',   'can_spawn': {'atomic', 'composite', 'specialist'},  'spawnable_by': {'controller', 'user'}},
     # orchestrator: 廃止（step-chain パターンで代替）
     'atomic':      {'section': 'commands', 'can_spawn': {'reference'},                          'spawnable_by': {'workflow', 'controller', 'entry_point', 'team-workflow', 'team-controller', 'team-worker'}},
     'composite':   {'section': 'commands', 'can_spawn': {'specialist'},                         'spawnable_by': {'workflow', 'controller', 'entry_point'}},
