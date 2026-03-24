@@ -20,6 +20,7 @@ Usage:
 import argparse
 import difflib
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -2198,6 +2199,258 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
     return criticals, warnings, infos
 
 
+# === Audit Report ===
+
+
+def _get_body_text(file_path: Path) -> str:
+    """frontmatter を除外した本文テキストを返す"""
+    if not file_path.exists():
+        return ''
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception:
+        return ''
+    lines = content.splitlines()
+    if lines and lines[0].strip() == '---':
+        for i, line in enumerate(lines[1:], 1):
+            if line.strip() == '---':
+                return '\n'.join(lines[i + 1:])
+    return '\n'.join(lines)
+
+
+def _count_inline_bash_lines(file_path: Path) -> Tuple[int, int]:
+    """bash/shell/sh コードブロックの行数と非空本文行数を返す
+
+    Returns: (inline_lines, total_non_empty_lines)
+    """
+    body = _get_body_text(file_path)
+    if not body:
+        return 0, 0
+
+    lines = body.splitlines()
+    total_non_empty = sum(1 for l in lines if l.strip())
+
+    inline_lines = 0
+    in_bash_block = False
+    for line in lines:
+        stripped = line.strip()
+        if re.match(r'^```(?:bash|shell|sh)\s*$', stripped):
+            in_bash_block = True
+            continue
+        if stripped == '```' and in_bash_block:
+            in_bash_block = False
+            continue
+        if in_bash_block and stripped:
+            inline_lines += 1
+
+    return inline_lines, total_non_empty
+
+
+def _check_step0_routing(file_path: Path) -> Tuple[bool, bool]:
+    """Step 0 の存在と IF/ELIF ルーティングパターンを検出
+
+    Returns: (has_step0, has_routing)
+    """
+    body = _get_body_text(file_path)
+    if not body:
+        return False, False
+
+    has_step0 = bool(re.search(r'(?:###?\s+)?Step\s*0', body))
+    has_routing = bool(re.search(r'\b(?:IF|ELIF|ELSE)\b', body))
+
+    return has_step0, has_routing
+
+
+def _check_self_contained_keywords(file_path: Path) -> Dict[str, bool]:
+    """Self-Contained キーワードの存在確認
+
+    Returns: dict with keyword presence
+    """
+    body = _get_body_text(file_path)
+    keywords = {
+        'purpose': bool(re.search(r'##\s*(?:目的|Purpose)', body)) if body else False,
+        'output': bool(re.search(r'##\s*(?:出力|Output|返却)', body)) if body else False,
+        'constraint': bool(re.search(r'##\s*(?:制約|禁止|MUST NOT|Constraint)', body)) if body else False,
+    }
+    return keywords
+
+
+def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
+    """5セクションの Loom 準拠度レポートを出力
+
+    Returns: (critical_count, warning_count, ok_count)
+    """
+    COMMON_TOOLS = {'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'Task',
+                    'SendMessage', 'AskUserQuestion', 'WebSearch', 'WebFetch',
+                    'Agent', 'Skill'}
+
+    criticals = 0
+    warnings = 0
+    oks = 0
+
+    # Collect all components
+    all_components = {}
+    for section in ('skills', 'commands', 'agents'):
+        for name, spec in deps.get(section, {}).items():
+            all_components[name] = {
+                'section': section,
+                'type': spec.get('type', ''),
+                'path': spec.get('path', ''),
+                'calls': spec.get('calls', []),
+            }
+
+    # === Section 1: Controller Size ===
+    print("## 1. Controller Size")
+    print()
+    print("| Component | Lines | Severity |")
+    print("|-----------|-------|----------|")
+
+    for name, comp in sorted(all_components.items()):
+        resolved = resolve_type(comp['type'])
+        if resolved not in ('controller', 'team-controller'):
+            continue
+        path = plugin_root / comp['path']
+        lines = _count_body_lines(path)
+        if lines > 200:
+            severity = 'CRITICAL'
+            criticals += 1
+        elif lines > 120:
+            severity = 'WARNING'
+            warnings += 1
+        elif lines > 80:
+            severity = 'OK (near limit)'
+            oks += 1
+        else:
+            severity = 'OK'
+            oks += 1
+        print(f"| {name} | {lines} | {severity} |")
+    print()
+
+    # === Section 2: Inline Implementation ===
+    print("## 2. Inline Implementation")
+    print()
+    print("| Component | Type | Inline | Total | Ratio | Severity |")
+    print("|-----------|------|--------|-------|-------|----------|")
+
+    for name, comp in sorted(all_components.items()):
+        path = plugin_root / comp['path']
+        inline, total = _count_inline_bash_lines(path)
+        if inline == 0:
+            continue  # Only show components with inline code
+        ratio = inline / total * 100 if total > 0 else 0.0
+
+        if ratio > 50:
+            severity = 'WARNING'
+            warnings += 1
+        elif ratio > 30:
+            severity = 'INFO'
+            oks += 1
+        else:
+            severity = 'OK'
+            oks += 1
+
+        print(f"| {name} | {comp['type']} | {inline} | {total} | {ratio:.1f}% | {severity} |")
+    print()
+
+    # === Section 3: 1C=1W (Step 0 Routing) ===
+    print("## 3. 1C=1W (Step 0 Routing)")
+    print()
+    print("| Component | Has Step 0 | Has Routing | Severity |")
+    print("|-----------|-----------|-------------|----------|")
+
+    for name, comp in sorted(all_components.items()):
+        resolved = resolve_type(comp['type'])
+        if resolved not in ('controller', 'team-controller'):
+            continue
+        path = plugin_root / comp['path']
+        has_step0, has_routing = _check_step0_routing(path)
+
+        if has_step0 and has_routing:
+            severity = 'OK'
+            oks += 1
+        elif has_step0:
+            severity = 'WARNING'
+            warnings += 1
+        else:
+            severity = 'WARNING'
+            warnings += 1
+
+        s0 = 'Yes' if has_step0 else 'No'
+        rt = 'Yes' if has_routing else 'No'
+        print(f"| {name} | {s0} | {rt} | {severity} |")
+    print()
+
+    # === Section 4: Tools Accuracy ===
+    print("## 4. Tools Accuracy")
+    print()
+    print("| Component | Declared | Used (MCP) | Missing | Extra | Severity |")
+    print("|-----------|----------|------------|---------|-------|----------|")
+
+    for name, comp in sorted(all_components.items()):
+        if comp['section'] not in ('commands', 'agents'):
+            continue
+        path = plugin_root / comp['path']
+        declared = _parse_frontmatter_tools(path)
+        used_mcp = _scan_body_for_mcp_tools(path)
+
+        missing = used_mcp - declared
+        extra = declared - used_mcp - COMMON_TOOLS
+
+        if missing:
+            severity = 'WARNING'
+            warnings += 1
+        elif extra:
+            severity = 'INFO'
+            oks += 1
+        else:
+            severity = 'OK'
+            oks += 1
+
+        missing_str = ', '.join(sorted(missing)) if missing else '-'
+        extra_str = ', '.join(sorted(extra)) if extra else '-'
+
+        print(f"| {name} | {len(declared)} | {len(used_mcp)} | {missing_str} | {extra_str} | {severity} |")
+    print()
+
+    # === Section 5: Self-Contained ===
+    print("## 5. Self-Contained")
+    print()
+    print("| Component | Type | Purpose | Output | Constraint | Severity |")
+    print("|-----------|------|---------|--------|------------|----------|")
+
+    for name, comp in sorted(all_components.items()):
+        resolved = resolve_type(comp['type'])
+        if resolved not in ('specialist', 'team-worker'):
+            continue
+        path = plugin_root / comp['path']
+        keywords = _check_self_contained_keywords(path)
+
+        has_required = keywords['purpose'] and keywords['output']
+        if has_required:
+            severity = 'OK'
+            oks += 1
+        else:
+            severity = 'WARNING'
+            warnings += 1
+
+        p = 'Yes' if keywords['purpose'] else 'No'
+        o = 'Yes' if keywords['output'] else 'No'
+        c = 'Yes' if keywords['constraint'] else 'No'
+        print(f"| {name} | {comp['type']} | {p} | {o} | {c} | {severity} |")
+    print()
+
+    # === Summary ===
+    print("## Summary")
+    print()
+    print("| Severity | Count |")
+    print("|----------|-------|")
+    print(f"| CRITICAL | {criticals} |")
+    print(f"| WARNING  | {warnings} |")
+    print(f"| OK       | {oks} |")
+
+    return criticals, warnings, oks
+
+
 # === Complexity Metrics ===
 
 
@@ -2542,6 +2795,7 @@ def main():
     parser.add_argument('--tokens', action='store_true', help='Show token counts for all nodes')
     parser.add_argument('--no-tokens', action='store_true', help='Hide token counts in graph output')
     parser.add_argument('--deep-validate', action='store_true', help='Deep validation (controller bloat, ref placement, tools consistency)')
+    parser.add_argument('--audit', action='store_true', help='Loom compliance audit (5-section markdown report)')
     parser.add_argument('--complexity', action='store_true', help='Complexity metrics report')
 
     args = parser.parse_args()
@@ -2552,7 +2806,7 @@ def main():
     plugin_name = get_plugin_name(deps, plugin_root)
 
     # デフォルトはGraphviz
-    if not any([args.tree, args.rich, args.mermaid, args.graphviz, args.target, args.reverse, args.check, args.validate, args.list, args.update_readme, args.orphans, args.tokens, args.deep_validate, args.complexity]):
+    if not any([args.tree, args.rich, args.mermaid, args.graphviz, args.target, args.reverse, args.check, args.validate, args.list, args.update_readme, args.orphans, args.tokens, args.deep_validate, args.audit, args.complexity]):
         args.graphviz = True
 
     show_tokens = not args.no_tokens
@@ -2707,6 +2961,13 @@ def main():
         if not has_issues and not violations:
             print("All deep validation checks passed.")
         elif violations or criticals:
+            sys.exit(1)
+
+    elif args.audit:
+        print("=== Loom Compliance Audit ===")
+        print()
+        audit_criticals, audit_warnings, audit_oks = audit_report(deps, plugin_root)
+        if audit_criticals > 0:
             sys.exit(1)
 
     elif args.list:

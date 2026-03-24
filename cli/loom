@@ -24,8 +24,8 @@ Commands:
   orphans         未使用/孤立ノード検出
   complexity      7メトリクス複雑さレポート
   update-readme   SVG グラフ生成 + README.md 更新
-  audit           Deep validation (controller bloat, ref placement, tools)
-  deep-validate   audit のエイリアス
+  audit           Loom 準拠度の機械的チェック（5セクションレポート）
+  deep-validate   深層検証（controller bloat, ref placement, tools）
   reverse <name>  逆依存関係を表示
   target <name>   依存関係を表示
   update-svgs     全 plugin の SVG を一括再生成
@@ -73,7 +73,10 @@ case "$CMD" in
     update-readme)
         python3 "$ENGINE" --update-readme "$@"
         ;;
-    audit|deep-validate)
+    audit)
+        python3 "$ENGINE" --audit "$@"
+        ;;
+    deep-validate)
         python3 "$ENGINE" --deep-validate "$@"
         ;;
     reverse)
