@@ -40,8 +40,8 @@ except ImportError:
 
 
 # === 型ルール定数 ===
-# SSOT: dev:ref-types と同期。ref-types 更新時はここも同期確認。
-TYPE_RULES = {
+# SSOT: types.yaml（存在すれば）。フォールバック: 以下のハードコード値。
+_FALLBACK_TYPE_RULES = {
     'controller':  {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference'}, 'spawnable_by': {'user', 'launcher'}},
     'workflow':    {'section': 'skills',   'can_spawn': {'atomic', 'composite', 'specialist'},  'spawnable_by': {'controller', 'user'}},
     'atomic':      {'section': 'commands', 'can_spawn': {'reference'},                          'spawnable_by': {'workflow', 'controller'}},
@@ -50,6 +50,43 @@ TYPE_RULES = {
     'reference':   {'section': 'skills',   'can_spawn': set(),                                  'spawnable_by': {'controller', 'atomic', 'agents.skills', 'all'}},
 }
 TYPE_ALIASES = {}
+
+
+def _get_loom_root() -> Path:
+    """loom-engine.py の配置ディレクトリ（= loom リポジトリルート）を返す"""
+    return Path(__file__).resolve().parent
+
+
+def load_type_rules(loom_root: Optional[Path] = None) -> dict:
+    """types.yaml から TYPE_RULES を構築する。存在しなければフォールバック値を返す。"""
+    if loom_root is None:
+        loom_root = _get_loom_root()
+    types_path = loom_root / "types.yaml"
+    def _deep_copy_rules(src: dict) -> dict:
+        return {k: {'section': v['section'], 'can_spawn': set(v['can_spawn']), 'spawnable_by': set(v['spawnable_by'])} for k, v in src.items()}
+
+    if not types_path.exists():
+        return _deep_copy_rules(_FALLBACK_TYPE_RULES)
+    try:
+        with open(types_path, encoding='utf-8') as f:
+            data = yaml.safe_load(f)
+        if not data or 'types' not in data:
+            print(f"Warning: types.yaml has no 'types' key, using fallback", file=sys.stderr)
+            return _deep_copy_rules(_FALLBACK_TYPE_RULES)
+        rules = {}
+        for type_name, type_def in data['types'].items():
+            rules[type_name] = {
+                'section': type_def.get('section', ''),
+                'can_spawn': set(type_def.get('can_spawn', [])),
+                'spawnable_by': set(type_def.get('spawnable_by', [])),
+            }
+        return rules
+    except Exception as e:
+        print(f"Warning: Failed to load types.yaml: {e}, using fallback", file=sys.stderr)
+        return _deep_copy_rules(_FALLBACK_TYPE_RULES)
+
+
+TYPE_RULES = load_type_rules()
 
 
 # トークンカウント用のエンコーダー（Claude用にcl100k_baseを使用）
@@ -3212,6 +3249,142 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
     return True
 
 
+def print_rules():
+    """types.yaml の型テーブルを人間向け Markdown テーブル形式で出力する"""
+    loom_root = _get_loom_root()
+    types_path = loom_root / "types.yaml"
+    source = str(types_path) if types_path.exists() else "fallback (hardcoded)"
+    rules = load_type_rules(loom_root)
+
+    print(f"=== Loom Type Rules ===")
+    print(f"Source: {source}")
+    print()
+
+    # ヘッダー
+    print(f"| {'Type':<12} | {'Section':<10} | {'Can Spawn':<45} | {'Spawnable By':<40} |")
+    print(f"|{'-'*14}|{'-'*12}|{'-'*47}|{'-'*42}|")
+
+    known_order = ['controller', 'workflow', 'atomic', 'composite', 'specialist', 'reference']
+    ordered_types = [t for t in known_order if t in rules] + sorted(set(rules.keys()) - set(known_order))
+    for type_name in ordered_types:
+        rule = rules[type_name]
+        can_spawn = ', '.join(sorted(rule['can_spawn'])) if rule['can_spawn'] else '(none)'
+        spawnable_by = ', '.join(sorted(rule['spawnable_by'])) if rule['spawnable_by'] else '(none)'
+        print(f"| {type_name:<12} | {rule['section']:<10} | {can_spawn:<45} | {spawnable_by:<40} |")
+
+    print()
+    print(f"Total: {len(rules)} types defined")
+
+
+def sync_check(ref_path: str):
+    """types.yaml と指定ドキュメントの型テーブル部分を比較し差分を報告する"""
+    loom_root = _get_loom_root()
+    rules = load_type_rules(loom_root)
+
+    ref_file = Path(ref_path).resolve()
+    if not ref_file.exists():
+        print(f"Error: Reference file not found: {ref_path}", file=sys.stderr)
+        sys.exit(1)
+    # パス境界検証: loom_root 配下のファイルのみ許可
+    if not _is_within_root(ref_file, loom_root):
+        print(f"Error: Reference file must be within {loom_root}: {ref_path}", file=sys.stderr)
+        sys.exit(1)
+
+    content = ref_file.read_text(encoding='utf-8')
+
+    # Markdown テーブルから型情報を抽出
+    # パターン: | type | section | can_spawn | spawnable_by | 形式のテーブル行
+    # 型名は **bold** マーカー付きの場合がある
+    ref_rules: Dict[str, dict] = {}
+    table_pattern = re.compile(
+        r'^\|\s*\*{0,2}(\w+)\*{0,2}\s*\|\s*(\w+)\s*\|\s*([^|]*)\s*\|\s*([^|]*)\s*\|',
+        re.MULTILINE
+    )
+    valid_types = set(rules.keys()) | {'controller', 'workflow', 'atomic', 'composite', 'specialist', 'reference'}
+
+    def _parse_list(raw: str) -> set:
+        if not raw or raw.strip('() ') in ('none', 'なし', '-', '—', ''):
+            return set()
+        return {x.strip().lower() for x in raw.split(',') if x.strip() and x.strip() not in ('-', '—')}
+
+    for m in table_pattern.finditer(content):
+        type_name = m.group(1).strip().lower()
+        # ヘッダー行やセパレータ行をスキップ
+        if type_name in ('type', 'name', '---', '', '型'):
+            continue
+        if type_name not in valid_types:
+            continue
+
+        section = m.group(2).strip().lower()
+        can_spawn_raw = m.group(3).strip()
+        spawnable_by_raw = m.group(4).strip()
+
+        ref_rules[type_name] = {
+            'section': section,
+            'can_spawn': _parse_list(can_spawn_raw),
+            'spawnable_by': _parse_list(spawnable_by_raw),
+        }
+
+    if not ref_rules:
+        print(f"Warning: No type table found in {ref_path}", file=sys.stderr)
+        print("Expected format: | type | section | can_spawn | spawnable_by |")
+        sys.exit(1)
+
+    print(f"=== Sync Check: types.yaml vs {ref_path} ===")
+    print()
+
+    diffs = []
+    # types.yaml にあって ref にない
+    for type_name in sorted(rules.keys()):
+        if type_name not in ref_rules:
+            diffs.append(f"[missing-in-ref] '{type_name}' is in types.yaml but not in {ref_file.name}")
+
+    # ref にあって types.yaml にない
+    for type_name in sorted(ref_rules.keys()):
+        if type_name not in rules:
+            diffs.append(f"[missing-in-yaml] '{type_name}' is in {ref_file.name} but not in types.yaml")
+
+    # 両方にある型のフィールド差分
+    for type_name in sorted(set(rules.keys()) & set(ref_rules.keys())):
+        yaml_rule = rules[type_name]
+        ref_rule = ref_rules[type_name]
+
+        if yaml_rule['section'] != ref_rule['section']:
+            diffs.append(f"[section-mismatch] {type_name}: yaml='{yaml_rule['section']}' vs ref='{ref_rule['section']}'")
+
+        yaml_cs = yaml_rule['can_spawn']
+        ref_cs = ref_rule['can_spawn']
+        if yaml_cs != ref_cs:
+            only_yaml = yaml_cs - ref_cs
+            only_ref = ref_cs - yaml_cs
+            parts = []
+            if only_yaml:
+                parts.append(f"only in yaml: {sorted(only_yaml)}")
+            if only_ref:
+                parts.append(f"only in ref: {sorted(only_ref)}")
+            diffs.append(f"[can_spawn-mismatch] {type_name}: {', '.join(parts)}")
+
+        yaml_sb = yaml_rule['spawnable_by']
+        ref_sb = ref_rule['spawnable_by']
+        if yaml_sb != ref_sb:
+            only_yaml = yaml_sb - ref_sb
+            only_ref = ref_sb - yaml_sb
+            parts = []
+            if only_yaml:
+                parts.append(f"only in yaml: {sorted(only_yaml)}")
+            if only_ref:
+                parts.append(f"only in ref: {sorted(only_ref)}")
+            diffs.append(f"[spawnable_by-mismatch] {type_name}: {', '.join(parts)}")
+
+    if diffs:
+        print(f"Found {len(diffs)} difference(s):")
+        for d in diffs:
+            print(f"  - {d}")
+        sys.exit(1)
+    else:
+        print("No differences found. types.yaml and reference document are in sync.")
+
+
 def main():
     parser = argparse.ArgumentParser(description='Analyze plugin dependencies')
     parser.add_argument('--tree', action='store_true', help='ASCII tree output')
@@ -3233,8 +3406,19 @@ def main():
     parser.add_argument('--rename', nargs=2, metavar=('OLD', 'NEW'), help='Rename a component (updates deps.yaml, frontmatter, body refs)')
     parser.add_argument('--promote', nargs=2, metavar=('NAME', 'NEW_TYPE'), help='Change component type (promote/demote with section move, file move, can_spawn/spawnable_by adjustment)')
     parser.add_argument('--dry-run', action='store_true', help='Preview changes without applying (use with --rename or --promote)')
+    parser.add_argument('--rules', action='store_true', help='Print type rules table from types.yaml')
+    parser.add_argument('--sync-check', metavar='REF_PATH', help='Compare types.yaml with a reference Markdown document')
 
     args = parser.parse_args()
+
+    # rules / sync-check は deps.yaml 不要の独立コマンド
+    if args.rules:
+        print_rules()
+        sys.exit(0)
+
+    if args.sync_check:
+        sync_check(args.sync_check)
+        sys.exit(0)
 
     plugin_root = get_plugin_root()
     deps = load_deps(plugin_root)

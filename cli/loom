@@ -22,6 +22,8 @@ Commands:
   promote <name> <type>    コンポーネントの型変更（昇格/降格 + セクション移動）
   check                    ファイル存在チェック
   validate        型ルール検証 (can_spawn/spawnable_by)
+  rules           型ルールテーブルを表示 (types.yaml)
+  sync-check      types.yaml と参照ドキュメントの差分を検出
   tree            ASCII ツリー出力
   orphans         未使用/孤立ノード検出
   complexity      7メトリクス複雑さレポート
@@ -49,6 +51,8 @@ Examples:
   loom promote my-action controller
   loom promote my-action controller --dry-run
   loom update-svgs
+  loom rules
+  loom sync-check --ref docs/ref-types.md
 EOF
 }
 
@@ -90,6 +94,22 @@ case "$CMD" in
         ;;
     validate)
         python3 "$ENGINE" --validate "$@"
+        ;;
+    rules)
+        python3 "$ENGINE" --rules "$@"
+        ;;
+    sync-check)
+        if [ $# -eq 0 ] || [ "$1" != "--ref" ]; then
+            echo "Error: sync-check requires --ref <path>" >&2
+            echo "Usage: loom sync-check --ref <path>" >&2
+            exit 1
+        fi
+        shift
+        if [ $# -eq 0 ]; then
+            echo "Error: --ref requires a file path" >&2
+            exit 1
+        fi
+        python3 "$ENGINE" --sync-check "$1"
         ;;
     tree)
         python3 "$ENGINE" --tree "$@"

@@ -1,0 +1,34 @@
+# Loom Type Rules - SSOT (Single Source of Truth)
+# 型ルール定義。loom-engine.py はこのファイルから TYPE_RULES を構築する。
+# dev:ref-types ドキュメントとの整合性は `loom sync-check --ref <path>` で検証可能。
+
+types:
+  controller:
+    section: skills
+    can_spawn: [workflow, atomic, composite, specialist, reference]
+    spawnable_by: [user, launcher]
+
+  workflow:
+    section: skills
+    can_spawn: [atomic, composite, specialist]
+    spawnable_by: [controller, user]
+
+  atomic:
+    section: commands
+    can_spawn: [reference]
+    spawnable_by: [workflow, controller]
+
+  composite:
+    section: commands
+    can_spawn: [specialist]
+    spawnable_by: [workflow, controller]
+
+  specialist:
+    section: agents
+    can_spawn: []
+    spawnable_by: [workflow, composite, controller]
+
+  reference:
+    section: skills
+    can_spawn: []
+    spawnable_by: [controller, atomic, agents.skills, all]
