@@ -18,8 +18,9 @@ loom - Loom framework CLI
 Usage: loom <command> [args]
 
 Commands:
-  rename <old> <new> コンポーネント名を一括変更（4箇所 + v3.0 chain）
-  check           ファイル存在チェック
+  rename <old> <new>       コンポーネント名を一括変更（4箇所 + v3.0 chain）
+  promote <name> <type>    コンポーネントの型変更（昇格/降格 + セクション移動）
+  check                    ファイル存在チェック
   validate        型ルール検証 (can_spawn/spawnable_by)
   tree            ASCII ツリー出力
   orphans         未使用/孤立ノード検出
@@ -37,7 +38,7 @@ Commands:
   help            このヘルプを表示
 
 Options:
-  --dry-run       変更内容のプレビュー（rename で使用）
+  --dry-run       変更内容のプレビュー（rename/promote で使用）
   --no-tokens     グラフ出力でトークン数を非表示
 
 Examples:
@@ -45,6 +46,8 @@ Examples:
   cd ~/.claude/plugins/dev && loom reverse worker-structure
   loom rename old-name new-name
   loom rename old-name new-name --dry-run
+  loom promote my-action controller
+  loom promote my-action controller --dry-run
   loom update-svgs
 EOF
 }
@@ -70,6 +73,17 @@ case "$CMD" in
         shift 2
         # remaining args (e.g. --dry-run) passed through
         python3 "$ENGINE" --rename "$OLD_NAME" "$NEW_NAME" "$@"
+        ;;
+    promote)
+        if [ $# -lt 2 ]; then
+            echo "Error: promote requires <name> <new-type>" >&2
+            echo "Usage: loom promote <name> <new-type> [--dry-run]" >&2
+            exit 1
+        fi
+        COMP_NAME="$1"
+        NEW_TYPE="$2"
+        shift 2
+        python3 "$ENGINE" --promote "$COMP_NAME" "$NEW_TYPE" "$@"
         ;;
     check)
         python3 "$ENGINE" --check "$@"
