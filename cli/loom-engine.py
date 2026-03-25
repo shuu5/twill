@@ -2016,6 +2016,55 @@ def validate_types(deps: dict, graph: Dict) -> Tuple[int, List[str]]:
     return ok_count, violations
 
 
+def validate_body_refs(deps: dict, plugin_root: Path) -> Tuple[int, List[str]]:
+    """body 内の /{plugin}:{name} 参照が deps.yaml に存在するか検証
+
+    Returns: (ok_count, violations_list)
+    """
+    ok_count = 0
+    violations = []
+
+    plugin_name = get_plugin_name(deps, plugin_root)
+
+    # deps.yaml の全コンポーネント名集合を構築
+    all_names: Set[str] = set()
+    for section in ('skills', 'commands', 'agents'):
+        for name in deps.get(section, {}).keys():
+            all_names.add(name)
+
+    # 参照パターン: /{plugin}:{name} or /{plugin}:[\w-]+
+    ref_pattern = re.compile(r'/(' + re.escape(plugin_name) + r'):([\w-]+)')
+
+    # 全 .md ファイルの body をスキャン
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            path = data.get('path')
+            if not path:
+                continue
+            file_path = plugin_root / path
+            # パストラバーサル防止
+            if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
+                continue
+            body = _get_body_text(file_path)
+            if not body:
+                continue
+
+            matches = ref_pattern.findall(body)
+            seen = set()
+            for _plugin, ref_name in matches:
+                if ref_name in seen:
+                    continue
+                seen.add(ref_name)
+                if ref_name in all_names:
+                    ok_count += 1
+                else:
+                    violations.append(
+                        f"[body-ref] {section}/{comp_name}: reference '/{plugin_name}:{ref_name}' not found in deps.yaml"
+                    )
+
+    return ok_count, violations
+
+
 def _count_body_lines(file_path: Path) -> int:
     """frontmatter を除外した本文行数を返す"""
     if not file_path.exists():
@@ -2873,6 +2922,11 @@ def main():
 
     if args.validate:
         ok_count, violations = validate_types(deps, graph)
+        # body 参照チェック
+        body_ok, body_violations = validate_body_refs(deps, plugin_root)
+        ok_count += body_ok
+        violations.extend(body_violations)
+
         print(f"=== Type Validation Results ===")
         print(f"OK: {ok_count}, Violations: {len(violations)}")
         print()
@@ -2924,6 +2978,10 @@ def main():
     if args.deep_validate:
         # --validate の全チェックも実行
         ok_count, violations = validate_types(deps, graph)
+        # body 参照チェック
+        body_ok, body_violations = validate_body_refs(deps, plugin_root)
+        ok_count += body_ok
+        violations.extend(body_violations)
 
         # deep-validate 固有チェック
         criticals, dv_warnings, dv_infos = deep_validate(deps, plugin_root)
