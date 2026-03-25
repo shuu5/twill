@@ -223,6 +223,102 @@ class TestRenameBasic:
         assert "Violations: 0" in result.stdout or "All type constraints satisfied" in result.stdout
 
 
+class TestRenameCoPrefixController:
+    """Tests for renaming controller-* to co-* prefix."""
+
+    def setup_method(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.plugin_dir = self._make_controller_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def _make_controller_fixture(self, tmpdir: Path) -> Path:
+        plugin_dir = tmpdir / "test-plugin"
+        plugin_dir.mkdir()
+
+        deps = {
+            "version": "2.0",
+            "plugin": "dev",
+            "skills": {
+                "controller-issue": {
+                    "type": "controller",
+                    "path": "skills/controller-issue/SKILL.md",
+                    "description": "Issue management controller",
+                    "calls": [
+                        {"workflow": "workflow-setup"},
+                    ],
+                },
+                "workflow-setup": {
+                    "type": "workflow",
+                    "path": "skills/workflow-setup/SKILL.md",
+                    "description": "Setup workflow",
+                    "calls": [],
+                },
+            },
+            "commands": {},
+            "agents": {},
+        }
+        (plugin_dir / "deps.yaml").write_text(
+            yaml.dump(deps, default_flow_style=False, allow_unicode=True, sort_keys=False),
+            encoding="utf-8",
+        )
+
+        skill_dir = plugin_dir / "skills" / "controller-issue"
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text(
+            "---\nname: controller-issue\ndescription: Issue management\n---\n\n"
+            "Use /dev:workflow-setup to start.\n",
+            encoding="utf-8",
+        )
+
+        wf_dir = plugin_dir / "skills" / "workflow-setup"
+        wf_dir.mkdir(parents=True)
+        (wf_dir / "SKILL.md").write_text(
+            "---\nname: workflow-setup\ndescription: Setup\n---\n\n"
+            "Called from /dev:controller-issue.\n",
+            encoding="utf-8",
+        )
+
+        return plugin_dir
+
+    def test_rename_controller_to_co_updates_deps_key(self):
+        run_engine(self.plugin_dir, "--rename", "controller-issue", "co-issue")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        assert "co-issue" in deps["skills"]
+        assert "controller-issue" not in deps["skills"]
+
+    def test_rename_controller_to_co_preserves_type(self):
+        run_engine(self.plugin_dir, "--rename", "controller-issue", "co-issue")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        assert deps["skills"]["co-issue"]["type"] == "controller"
+
+    def test_rename_controller_to_co_updates_frontmatter(self):
+        run_engine(self.plugin_dir, "--rename", "controller-issue", "co-issue")
+        content = (self.plugin_dir / "skills" / "controller-issue" / "SKILL.md").read_text()
+        assert "name: co-issue" in content
+
+    def test_rename_controller_to_co_updates_body_refs(self):
+        run_engine(self.plugin_dir, "--rename", "controller-issue", "co-issue")
+        content = (self.plugin_dir / "skills" / "workflow-setup" / "SKILL.md").read_text()
+        assert "/dev:co-issue" in content
+        assert "/dev:controller-issue" not in content
+
+    def test_rename_controller_to_co_path_unchanged(self):
+        """Rename updates logical name only; path field and directory are not renamed."""
+        run_engine(self.plugin_dir, "--rename", "controller-issue", "co-issue")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        # path フィールドは元のまま（rename は論理名のみ変更）
+        assert deps["skills"]["co-issue"]["path"] == "skills/controller-issue/SKILL.md"
+        # ディレクトリも元のまま
+        assert (self.plugin_dir / "skills" / "controller-issue" / "SKILL.md").exists()
+
+    def test_validate_after_controller_to_co_rename(self):
+        run_engine(self.plugin_dir, "--rename", "controller-issue", "co-issue")
+        result = run_engine(self.plugin_dir, "--validate")
+        assert "Violations: 0" in result.stdout or "All type constraints satisfied" in result.stdout
+
+
 class TestRenameV3:
     """v3.0 chain-related rename tests."""
 
@@ -270,7 +366,7 @@ if __name__ == "__main__":
     # Simple runner if pytest not available
     import traceback
 
-    classes = [TestRenameBasic, TestRenameV3]
+    classes = [TestRenameBasic, TestRenameCoPrefixController, TestRenameV3]
     passed = 0
     failed = 0
     errors = []

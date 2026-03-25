@@ -119,7 +119,7 @@ user → controller (= lead session)
 
 | 型 | name | 固有フィールド |
 |----|------|---------------|
-| controller | `{plugin}:controller-{purpose}` | - |
+| controller | `{plugin}:co-{purpose}` | - |
 | workflow | `{plugin}:workflow-{purpose}` | `user-invocable: false`（デフォルト推奨） |
 | composite | (なし) | `allowed-tools: Read, Task, ...` |
 | specialist | `{agent-name}` | `tools: [Read, Grep, Glob, ...]` |
@@ -129,9 +129,9 @@ user → controller (= lead session)
 ## 命名規則
 
 - プラグイン名: `{name}`（例: dev, paper, research）
-- controller-* prefix: `/{name}:controller-` で検索性確保
+- co-* prefix: `/{name}:co-` で検索性確保
 - controller は複数定義可能（各エントリーの description で役割を明確化）
-- **命名**: `controller-{purpose}`（purpose はワークフローの目的を示す具体名）
-  - 例: `controller-create`, `controller-improve`, `controller-search`
-  - **非推奨**: `controller-entry`（単一エントリーにルーティングテーブルを持つパターン）
-  - 単一ワークフローでも具体名を使用（例: `controller-search`、`controller-main` は避ける）
+- **命名**: `co-{purpose}`（purpose はワークフローの目的を示す具体名）
+  - 例: `co-create`, `co-improve`, `co-search`
+  - **非推奨**: `co-entry`（単一エントリーにルーティングテーブルを持つパターン）
+  - 単一ワークフローでも具体名を使用（例: `co-search`、`co-main` は避ける — purpose が汎用すぎるとスキルマッチング精度が低下するため）

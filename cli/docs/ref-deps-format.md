@@ -7,7 +7,7 @@ version: "2.0"
 plugin: {name}
 
 entry_points:
-  - skills/controller-{purpose}/SKILL.md   # 各ワークフローに独立エントリーポイント
+  - skills/co-{purpose}/SKILL.md            # 各ワークフローに独立エントリーポイント
 
 skills: { ... }
 commands: { ... }
@@ -49,9 +49,9 @@ hooks: { ... }              # 任意
 
 #### controller
 ```yaml
-controller-search:                          # controller-{purpose} 形式
+co-search:                                  # co-{purpose} 形式
   type: controller
-  path: skills/controller-search/SKILL.md
+  path: skills/co-search/SKILL.md
   spawnable_by: [user]
   can_spawn: [specialist]                   # 型名を指定
   calls:
@@ -145,23 +145,23 @@ hooks:
 
 ### 原則: 各ワークフローが独立エントリーポイント
 
-ルーティングテーブル（トリガーフレーズ→コマンド対応表）を持つ単一 `controller-entry` は**非推奨**。
+ルーティングテーブル（トリガーフレーズ→コマンド対応表）を持つ単一 `co-entry` は**非推奨**。
 理由: コントローラー全体がコンテキストに読み込まれるため、AIは文脈から適切なワークフローを判断できる。ルーティング層は冗長でトークンの無駄。
 
-代わりに、各ワークフローを `controller-{purpose}` として独立定義する:
+代わりに、各ワークフローを `co-{purpose}` として独立定義する:
 
 ```yaml
 entry_points:
-  - skills/controller-create/SKILL.md
-  - skills/controller-improve/SKILL.md
-  - skills/controller-migrate/SKILL.md
+  - skills/co-create/SKILL.md
+  - skills/co-improve/SKILL.md
+  - skills/co-migrate/SKILL.md
 ```
 
 ### 各コントローラーの設計
 
 - frontmatter の `description` にトリガーフレーズを含める（Claude Code のスキルマッチングで処理）
 - 本体はワークフロー実行ロジックのみ（ルーティングテーブル不要）
-- 単一ワークフローでも具体名を使用（例: `controller-search`）
+- 単一ワークフローでも具体名を使用（例: `co-search`）
 
 各エントリーの description でユーザーが選択できるよう役割を明記すること。
 
@@ -170,12 +170,12 @@ entry_points:
 ```yaml
 version: "1.0"
 plugin: example
-entry_points: [skills/controller-analyze/SKILL.md]
+entry_points: [skills/co-analyze/SKILL.md]
 
 skills:
-  controller-analyze:                       # controller-{purpose} 形式
+  co-analyze:                               # co-{purpose} 形式
     type: controller
-    path: skills/controller-analyze/SKILL.md
+    path: skills/co-analyze/SKILL.md
     spawnable_by: [user]
     can_spawn: [composite, specialist]
     calls: [{ command: phase-work }, { command: init }]

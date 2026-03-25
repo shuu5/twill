@@ -102,7 +102,7 @@ specialist のプロンプトは単体で目的・制約・報告方法が分か
 
 ### controller vs workflow の使い分け
 
-controller と workflow は異なる責務を持つ。ルーティングハブ controller（`controller-entry` + 対応表）は非推奨。各ワークフローを `controller-{purpose}` として独立定義する。
+controller と workflow は異なる責務を持つ。ルーティングハブ controller（`co-entry` + 対応表）は非推奨。各ワークフローを `co-{purpose}` として独立定義する。
 
 #### controller が必要なケース
 
@@ -133,7 +133,7 @@ controller と workflow は異なる責務を持つ。ルーティングハブ c
 ### スキルマッチングへの委任
 Claude Code は frontmatter の `description` でユーザー意図を controller または user-invocable workflow にマッチングする。ルーティングロジックは不要。
 
-- 各 `controller-{purpose}` / `workflow-{purpose}` の description に発火トリガーフレーズを列挙
+- 各 `co-{purpose}` / `workflow-{purpose}` の description に発火トリガーフレーズを列挙
 - 複数 controller・workflow を定義すれば、スキルマッチングが自動でルーティング処理
 - controller 本文にはワークフロー実行ロジックのみ記載
 - user-invocable workflow も同様にスキルマッチングの対象となる
@@ -445,4 +445,4 @@ per_phase ライフサイクルか？
 ### ハイブリッド設計の原則
 - 全 controller に Context Snapshot を導入する必要はない（4ステップ未満なら不要）
 - Subagent は「結果だけ必要で過程のコンテキストが不要」なステップに適用
-- **ルーティングコントローラー非推奨**: 「Controller 設計原則」セクション参照。`controller-{purpose}` として独立定義し、スキルマッチングに委任する
+- **ルーティングコントローラー非推奨**: 「Controller 設計原則」セクション参照。`co-{purpose}` として独立定義し、スキルマッチングに委任する
