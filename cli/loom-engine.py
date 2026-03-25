@@ -42,22 +42,14 @@ except ImportError:
 # === 型ルール定数 ===
 # SSOT: dev:ref-types と同期。ref-types 更新時はここも同期確認。
 TYPE_RULES = {
-    # === 非AT型 ===
     'controller':  {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference'}, 'spawnable_by': {'user', 'launcher'}},
     'workflow':    {'section': 'skills',   'can_spawn': {'atomic', 'composite', 'specialist'},  'spawnable_by': {'controller', 'user'}},
-    # orchestrator: 廃止（step-chain パターンで代替）
-    'atomic':      {'section': 'commands', 'can_spawn': {'reference'},                          'spawnable_by': {'workflow', 'controller', 'entry_point', 'team-workflow', 'team-controller', 'team-worker'}},
-    'composite':   {'section': 'commands', 'can_spawn': {'specialist'},                         'spawnable_by': {'workflow', 'controller', 'entry_point'}},
-    'specialist':  {'section': 'agents',   'can_spawn': set(),                                  'spawnable_by': {'workflow', 'composite', 'controller', 'entry_point', 'team-controller'}},
-    'reference':   {'section': 'skills',   'can_spawn': set(),                                  'spawnable_by': {'controller', 'entry_point', 'atomic', 'agents.skills', 'team-controller', 'team-workflow', 'team-phase', 'team-worker', 'all'}},
-    # === AT型 ===
-    'team-controller':  {'section': 'skills',   'can_spawn': {'team-workflow', 'team-phase', 'team-worker', 'atomic', 'specialist', 'reference'}, 'spawnable_by': {'user'}},
-    'team-workflow':    {'section': 'skills',   'can_spawn': {'team-phase', 'atomic'},           'spawnable_by': {'team-controller'}},
-    'team-phase':       {'section': 'commands', 'can_spawn': {'team-worker'},                    'spawnable_by': {'team-workflow', 'team-controller'}},
-    'team-worker':      {'section': 'agents',   'can_spawn': set(),                              'spawnable_by': {'team-phase', 'team-controller'}},
+    'atomic':      {'section': 'commands', 'can_spawn': {'reference'},                          'spawnable_by': {'workflow', 'controller'}},
+    'composite':   {'section': 'commands', 'can_spawn': {'specialist'},                         'spawnable_by': {'workflow', 'controller'}},
+    'specialist':  {'section': 'agents',   'can_spawn': set(),                                  'spawnable_by': {'workflow', 'composite', 'controller'}},
+    'reference':   {'section': 'skills',   'can_spawn': set(),                                  'spawnable_by': {'controller', 'atomic', 'agents.skills', 'all'}},
 }
-# entry_point は controller のエイリアス（deps.yaml 既存データ互換）
-TYPE_ALIASES = {'entry_point': 'controller'}
+TYPE_ALIASES = {}
 
 
 # トークンカウント用のエンコーダー（Claude用にcl100k_baseを使用）
@@ -413,7 +405,7 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
 
     Returns:
         {
-            'controllers': [skill_names],  # entry_point / controller
+            'controllers': [skill_names],  # controller
             'workflows': [skill_names],    # workflow
             'references': [skill_names],   # reference
             'launchers': [cmd_names],      # launcher type commands
@@ -440,9 +432,9 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
     # スキルの分類
     for skill_name, skill_data in deps.get('skills', {}).items():
         skill_type = skill_data.get('type', 'workflow')
-        if skill_type in ('entry_point', 'controller', 'team-controller'):
+        if skill_type == 'controller':
             result['controllers'].append(skill_name)
-        elif skill_type in ('workflow', 'team-workflow'):
+        elif skill_type == 'workflow':
             result['workflows'].append(skill_name)
         elif skill_type == 'reference':
             result['references'].append(skill_name)
@@ -568,17 +560,13 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
     layers = classify_layers(deps, graph)
 
     # === ノード定義 ===
-    lines.append("    // L0: Controller/Entry Point Skills")
+    lines.append("    // L0: Controller Skills")
     for skill_name in layers['controllers']:
         sid = safe_id(f"skill_{skill_name}")
         node_id = f"skill:{skill_name}"
         tokens = graph.get(node_id, {}).get('tokens', 0)
         label = format_label(skill_name, tokens, f"{plugin_name}:")
-        skill_type = deps.get('skills', {}).get(skill_name, {}).get('type', 'controller')
-        if skill_type == 'team-controller':
-            lines.append(f'    {sid} [label="{label}", shape=ellipse, style=filled, fillcolor="#66bb6a", peripheries=2];')
-        else:
-            lines.append(f'    {sid} [label="{label}", shape=ellipse, style=filled, fillcolor="#c8e6c9"];')
+        lines.append(f'    {sid} [label="{label}", shape=ellipse, style=filled, fillcolor="#c8e6c9"];')
     lines.append("")
 
     lines.append("    // L0: Launchers")
@@ -623,9 +611,7 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
             tokens = graph.get(node_id, {}).get('tokens', 0)
             label = format_label(cmd_name, tokens)
             cmd_type = cmd_data.get('type', 'atomic')
-            if cmd_type == 'team-phase':
-                lines.append(f'    {cid} [label="{label}", shape=box, style="filled,bold", fillcolor="#c5cae9"];')
-            elif cmd_type == 'composite':
+            if cmd_type == 'composite':
                 lines.append(f'    {cid} [label="{label}", shape=box, style=filled, fillcolor="#bbdefb"];')
             else:
                 lines.append(f'    {cid} [label="{label}", shape=box, style=filled, fillcolor="#e3f2fd"];')
@@ -658,8 +644,6 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
         conditional = agent_data.get('conditional')
         if agent_type == 'orchestrator':
             lines.append(f'    {aid} [label="{label}", shape=ellipse, style="filled,bold", fillcolor="#f3e5f5"];')
-        elif agent_type == 'team-worker':
-            lines.append(f'    {aid} [label="{label}", shape=ellipse, style=filled, fillcolor="#b39ddb"];')
         elif conditional:
             lines.append(f'    {aid} [label="{label}", shape=ellipse, style="filled,dashed", fillcolor="#f3e5f5"];')
         else:
@@ -858,21 +842,13 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
         existing_types.add(cmd_data.get('type', 'atomic'))
     for agent_data in deps.get('agents', {}).values():
         existing_types.add(agent_data.get('type', 'specialist'))
-    # entry_point → controller に正規化
-    if 'entry_point' in existing_types:
-        existing_types.add('controller')
-
     legend_defs = [
         ('controller',      'Controller (skill)',      'ellipse', '#c8e6c9', 'filled'),
-        ('team-controller', 'Team-Controller (skill)', 'ellipse', '#66bb6a', 'filled'),
         ('workflow',        'Workflow (skill)',         'ellipse', '#e8f5e9', 'filled'),
-        ('team-workflow',   'Team-Workflow (skill)',    'ellipse', '#a5d6a7', 'filled'),
         ('reference',       'Reference (skill)',       'note',    '#e1f5fe', 'filled'),
         ('atomic',          'Atomic (command)',         'box',     '#e3f2fd', 'filled'),
-        ('team-phase',      'Team-Phase (command)',     'box',     '#c5cae9', '"filled,bold"'),
         ('composite',       'Composite (command)',      'box',     '#bbdefb', 'filled'),
         ('specialist',      'Specialist (agent)',       'ellipse', '#ede7f6', 'filled'),
-        ('team-worker',     'Team-Worker (agent)',      'ellipse', '#b39ddb', 'filled'),
         ('orchestrator',    'Orchestrator (agent)',     'ellipse', '#f3e5f5', '"filled,bold"'),
     ]
 
@@ -884,8 +860,7 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
     for (type_name, label, shape, color, style) in legend_defs:
         if type_name in existing_types:
             lid = safe_id(f"legend_{type_name}")
-            extra = ', peripheries=2' if type_name == 'team-controller' else ''
-            lines.append(f'        {lid} [label="{label}", shape={shape}, style={style}, fillcolor="{color}"{extra}];')
+            lines.append(f'        {lid} [label="{label}", shape={shape}, style={style}, fillcolor="{color}"];')
     if layers.get('sub_commands'):
         lines.append('        legend_sub [label="Sub Command", shape=box, style=filled, fillcolor="#fff3e0"];')
     if layers.get('externals'):
@@ -926,7 +901,7 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
     layers = classify_layers(deps, graph)
 
     # === ノード定義（allowed_nodes に含まれるもののみ） ===
-    lines.append("    // L0: Controller/Entry Point Skills")
+    lines.append("    // L0: Controller Skills")
     for skill_name in layers['controllers']:
         node_id = f"skill:{skill_name}"
         if node_id not in allowed_nodes:
@@ -934,11 +909,7 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
         sid = safe_id(f"skill_{skill_name}")
         tokens = graph.get(node_id, {}).get('tokens', 0)
         label = format_label(skill_name, tokens, f"{plugin_name}:")
-        skill_type = deps.get('skills', {}).get(skill_name, {}).get('type', 'controller')
-        if skill_type == 'team-controller':
-            lines.append(f'    {sid} [label="{label}", shape=ellipse, style=filled, fillcolor="#66bb6a", peripheries=2];')
-        else:
-            lines.append(f'    {sid} [label="{label}", shape=ellipse, style=filled, fillcolor="#c8e6c9"];')
+        lines.append(f'    {sid} [label="{label}", shape=ellipse, style=filled, fillcolor="#c8e6c9"];')
     lines.append("")
 
     lines.append("    // L0: Launchers")
@@ -989,9 +960,7 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
             tokens = graph.get(node_id, {}).get('tokens', 0)
             label = format_label(cmd_name, tokens)
             cmd_type = cmd_data.get('type', 'atomic')
-            if cmd_type == 'team-phase':
-                lines.append(f'    {cid} [label="{label}", shape=box, style="filled,bold", fillcolor="#c5cae9"];')
-            elif cmd_type == 'composite':
+            if cmd_type == 'composite':
                 lines.append(f'    {cid} [label="{label}", shape=box, style=filled, fillcolor="#bbdefb"];')
             else:
                 lines.append(f'    {cid} [label="{label}", shape=box, style=filled, fillcolor="#e3f2fd"];')
@@ -1028,8 +997,6 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
         conditional = agent_data.get('conditional')
         if agent_type == 'orchestrator':
             lines.append(f'    {aid} [label="{label}", shape=ellipse, style="filled,bold", fillcolor="#f3e5f5"];')
-        elif agent_type == 'team-worker':
-            lines.append(f'    {aid} [label="{label}", shape=ellipse, style=filled, fillcolor="#b39ddb"];')
         elif conditional:
             lines.append(f'    {aid} [label="{label}", shape=ellipse, style="filled,dashed", fillcolor="#f3e5f5"];')
         else:
@@ -1786,12 +1753,12 @@ def check_files(graph: Dict, plugin_root: Path) -> List[Tuple[str, str, str]]:
 
 def find_orphans(graph: Dict, deps: dict) -> Dict[str, List[str]]:
     """孤立ノードを検出"""
-    # エントリーポイント / controller を特定
+    # controller を特定
     entry_points = set()
     references = set()
     for skill_name, skill_data in deps.get('skills', {}).items():
         skill_type = skill_data.get('type', '')
-        if skill_type in ('entry_point', 'controller', 'team-controller'):
+        if skill_type == 'controller':
             entry_points.add(f"skill:{skill_name}")
         elif skill_type == 'reference':
             references.add(f"skill:{skill_name}")
@@ -1953,65 +1920,6 @@ def validate_types(deps: dict, graph: Dict) -> Tuple[int, List[str]]:
                         )
                     else:
                         ok_count += 1
-
-    # Check 5: Agent Teams 固有の検証
-    # team_config の値チェック
-    team_config = deps.get('team_config')
-    if team_config:
-        valid_lifecycles = {'persistent', 'per_phase'}
-        lifecycle = team_config.get('lifecycle')
-        if lifecycle and lifecycle not in valid_lifecycles:
-            violations.append(
-                f"[team_config] lifecycle '{lifecycle}' is invalid (allowed: {sorted(valid_lifecycles)})"
-            )
-        else:
-            ok_count += 1
-
-        valid_models = {'sonnet', 'opus', 'haiku'}
-        default_model = team_config.get('default_model')
-        if default_model and default_model not in valid_models:
-            violations.append(
-                f"[team_config] default_model '{default_model}' is invalid (allowed: {sorted(valid_models)})"
-            )
-        else:
-            ok_count += 1
-
-        max_size = team_config.get('max_size')
-        if max_size is not None and (not isinstance(max_size, int) or max_size < 1):
-            violations.append(
-                f"[team_config] max_size must be a positive integer, got '{max_size}'"
-            )
-        else:
-            ok_count += 1
-
-    # team-phase の workers リストが agents セクションに存在するか
-    for name, data in deps.get('commands', {}).items():
-        if resolve_type(data.get('type', '')) == 'team-phase':
-            workers = data.get('workers', [])
-            for worker_name in workers:
-                if worker_name not in deps.get('agents', {}):
-                    violations.append(
-                        f"[workers] commands/{name}: worker '{worker_name}' not found in agents section"
-                    )
-                else:
-                    ok_count += 1
-
-    # team-worker の checkpoint_ref が reference スキルとして存在するか
-    for name, data in deps.get('agents', {}).items():
-        if resolve_type(data.get('type', '')) == 'team-worker':
-            cp_ref = data.get('checkpoint_ref')
-            if cp_ref:
-                ref_data = deps.get('skills', {}).get(cp_ref, {})
-                if not ref_data:
-                    violations.append(
-                        f"[checkpoint_ref] agents/{name}: checkpoint_ref '{cp_ref}' not found in skills section"
-                    )
-                elif resolve_type(ref_data.get('type', '')) != 'reference':
-                    violations.append(
-                        f"[checkpoint_ref] agents/{name}: checkpoint_ref '{cp_ref}' is type '{ref_data.get('type')}', expected 'reference'"
-                    )
-                else:
-                    ok_count += 1
 
     return ok_count, violations
 
@@ -2179,7 +2087,7 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
     # (A) Controller 行数チェック
     for name, spec in deps.get('skills', {}).items():
         comp_type = spec.get('type', '')
-        if comp_type in ('controller', 'team-controller'):
+        if comp_type == 'controller':
             path = plugin_root / spec.get('path', '')
             body_lines = _count_body_lines(path)
             if body_lines > 200:
@@ -2204,7 +2112,7 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
                 resolved_callee = resolve_type(callee_type)
                 if call_key == 'reference' or resolved_callee == 'reference':
                     refs_in_calls.append(callee_name)
-                elif resolved_callee in ('atomic', 'composite', 'specialist', 'team-worker'):
+                elif resolved_callee in ('atomic', 'composite', 'specialist'):
                     downstreams_in_calls.append(callee_name)
 
         # 各 downstream の body を読んで、ref 名が出現するか確認
@@ -2355,7 +2263,7 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
 
     for name, comp in sorted(all_components.items()):
         resolved = resolve_type(comp['type'])
-        if resolved not in ('controller', 'team-controller'):
+        if resolved != 'controller':
             continue
         path = plugin_root / comp['path']
         lines = _count_body_lines(path)
@@ -2408,7 +2316,7 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
 
     for name, comp in sorted(all_components.items()):
         resolved = resolve_type(comp['type'])
-        if resolved not in ('controller', 'team-controller'):
+        if resolved != 'controller':
             continue
         path = plugin_root / comp['path']
         has_step0, has_routing = _check_step0_routing(path)
@@ -2468,7 +2376,7 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
 
     for name, comp in sorted(all_components.items()):
         resolved = resolve_type(comp['type'])
-        if resolved not in ('specialist', 'team-worker'):
+        if resolved != 'specialist':
             continue
         path = plugin_root / comp['path']
         keywords = _check_self_contained_keywords(path)
@@ -2503,20 +2411,20 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
 
 
 def check_dead_components(graph: Dict, deps: dict) -> List[str]:
-    """entry_point から到達不能なノード（Dead Component）を検出"""
-    # entry_point / controller / team-controller を特定
+    """controller から到達不能なノード（Dead Component）を検出"""
+    # controller を特定
     entry_points = set()
     for skill_name, skill_data in deps.get('skills', {}).items():
         skill_type = skill_data.get('type', '')
-        if skill_type in ('entry_point', 'controller', 'team-controller'):
+        if skill_type == 'controller':
             entry_points.add(f"skill:{skill_name}")
 
-    # 全 entry_point から到達可能なノードを収集
+    # 全 controller から到達可能なノードを収集
     reachable = set()
     for ep in entry_points:
         reachable |= collect_reachable_nodes(graph, ep)
 
-    # reference は entry_point から直接呼ばれなくてもよい
+    # reference は controller から直接呼ばれなくてもよい
     references = set()
     for skill_name, skill_data in deps.get('skills', {}).items():
         if skill_data.get('type') == 'reference':
@@ -2603,7 +2511,7 @@ def calc_depth_scores(graph: Dict, deps: dict) -> List[Tuple[str, int]]:
     scores = []
     for skill_name, skill_data in deps.get('skills', {}).items():
         skill_type = skill_data.get('type', '')
-        if skill_type not in ('controller', 'team-controller'):
+        if skill_type != 'controller':
             continue
         node_id = f"skill:{skill_name}"
         all_deps = get_dependencies(graph, node_id)
@@ -2683,7 +2591,7 @@ def calc_cost_projection(graph: Dict, deps: dict) -> List[Tuple[str, int]]:
     costs = []
     for skill_name, skill_data in deps.get('skills', {}).items():
         skill_type = skill_data.get('type', '')
-        if skill_type not in ('controller', 'team-controller'):
+        if skill_type != 'controller':
             continue
         node_id = f"skill:{skill_name}"
         reachable = collect_reachable_nodes(graph, node_id)
@@ -3362,10 +3270,10 @@ def main():
         if entry_points:
             skill_name = Path(entry_points[0]).parent.name
         else:
-            # フォールバック: entry_point タイプのスキルを検索
+            # フォールバック: controller タイプのスキルを検索
             skill_name = 'entry-workflow'
             for sname, sdata in deps.get('skills', {}).items():
-                if sdata.get('type') in ('entry_point', 'controller'):
+                if sdata.get('type') == 'controller':
                     skill_name = sname
                     break
         node_id = f"skill:{skill_name}"
@@ -3381,7 +3289,7 @@ def main():
         else:
             skill_name = 'entry-workflow'
             for sname, sdata in deps.get('skills', {}).items():
-                if sdata.get('type') in ('entry_point', 'controller'):
+                if sdata.get('type') == 'controller':
                     skill_name = sname
                     break
         node_id = f"skill:{skill_name}"
