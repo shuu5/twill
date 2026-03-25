@@ -1,0 +1,304 @@
+#!/usr/bin/env python3
+"""Tests for loom rename command."""
+
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+import yaml
+
+LOOM_ENGINE = Path(__file__).parent.parent / "loom-engine.py"
+LOOM_CLI = Path(__file__).parent.parent / "loom"
+
+
+def make_fixture(tmpdir: Path) -> Path:
+    """Create a minimal plugin fixture for testing."""
+    plugin_dir = tmpdir / "test-plugin"
+    plugin_dir.mkdir()
+
+    # deps.yaml
+    deps = {
+        "version": "2.0",
+        "plugin": "test",
+        "skills": {
+            "my-controller": {
+                "type": "controller",
+                "path": "skills/my-controller/SKILL.md",
+                "description": "Main controller",
+                "calls": [
+                    {"command": "my-action"},
+                    {"reference": "my-ref"},
+                ],
+            },
+            "my-ref": {
+                "type": "reference",
+                "path": "skills/my-ref/SKILL.md",
+                "description": "A reference skill",
+                "calls": [],
+            },
+        },
+        "commands": {
+            "my-action": {
+                "type": "atomic",
+                "path": "commands/my-action.md",
+                "description": "An atomic command",
+                "calls": [],
+            },
+        },
+        "agents": {},
+    }
+    (plugin_dir / "deps.yaml").write_text(
+        yaml.dump(deps, default_flow_style=False, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    # skill files
+    skill_dir = plugin_dir / "skills" / "my-controller"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: my-controller\ndescription: Main controller\n---\n\n"
+        "Use /test:my-action to do things.\n"
+        "Reference: /test:my-ref\n",
+        encoding="utf-8",
+    )
+
+    ref_dir = plugin_dir / "skills" / "my-ref"
+    ref_dir.mkdir(parents=True)
+    (ref_dir / "SKILL.md").write_text(
+        "---\nname: my-ref\ndescription: A reference\n---\n\n"
+        "This is a reference.\n",
+        encoding="utf-8",
+    )
+
+    # command file
+    cmd_dir = plugin_dir / "commands"
+    cmd_dir.mkdir(parents=True)
+    (cmd_dir / "my-action.md").write_text(
+        "---\nname: my-action\ndescription: Action\n---\n\n"
+        "Calls /test:my-ref for details.\n",
+        encoding="utf-8",
+    )
+
+    return plugin_dir
+
+
+def make_v3_fixture(tmpdir: Path) -> Path:
+    """Create a v3.0 plugin fixture with chains/step_in/chain fields."""
+    plugin_dir = tmpdir / "test-plugin-v3"
+    plugin_dir.mkdir()
+
+    deps = {
+        "version": "3.0",
+        "plugin": "testv3",
+        "chains": {
+            "setup-chain": {
+                "steps": ["step-a", "step-b", "step-c"],
+            },
+        },
+        "skills": {
+            "step-a": {
+                "type": "workflow",
+                "path": "skills/step-a/SKILL.md",
+                "description": "Step A",
+                "chain": "setup-chain",
+                "calls": [{"command": "step-b"}],
+            },
+        },
+        "commands": {
+            "step-b": {
+                "type": "atomic",
+                "path": "commands/step-b.md",
+                "description": "Step B",
+                "chain": "setup-chain",
+                "step_in": {"parent": "step-a"},
+                "calls": [{"command": "step-c"}],
+            },
+            "step-c": {
+                "type": "atomic",
+                "path": "commands/step-c.md",
+                "description": "Step C",
+                "chain": "setup-chain",
+                "step_in": {"parent": "step-b"},
+                "calls": [],
+            },
+        },
+        "agents": {},
+    }
+    (plugin_dir / "deps.yaml").write_text(
+        yaml.dump(deps, default_flow_style=False, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    # Minimal .md files
+    (plugin_dir / "skills" / "step-a").mkdir(parents=True)
+    (plugin_dir / "skills" / "step-a" / "SKILL.md").write_text(
+        "---\nname: step-a\n---\n\nUse /testv3:step-b next.\n", encoding="utf-8"
+    )
+    (plugin_dir / "commands").mkdir(parents=True)
+    (plugin_dir / "commands" / "step-b.md").write_text(
+        "---\nname: step-b\n---\n\nUse /testv3:step-c next.\n", encoding="utf-8"
+    )
+    (plugin_dir / "commands" / "step-c.md").write_text(
+        "---\nname: step-c\n---\n\nFinal step.\n", encoding="utf-8"
+    )
+
+    return plugin_dir
+
+
+def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
+    """Run loom-engine.py in the given plugin directory."""
+    return subprocess.run(
+        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        cwd=str(plugin_dir),
+        capture_output=True,
+        text=True,
+    )
+
+
+class TestRenameBasic:
+    """Basic rename tests."""
+
+    def setup_method(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.plugin_dir = make_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_dry_run_shows_changes(self):
+        result = run_engine(self.plugin_dir, "--rename", "my-action", "new-action", "--dry-run")
+        assert result.returncode == 0
+        assert "[dry-run]" in result.stdout
+        assert "my-action" in result.stdout
+        assert "new-action" in result.stdout
+
+    def test_dry_run_no_file_changes(self):
+        deps_before = (self.plugin_dir / "deps.yaml").read_text()
+        run_engine(self.plugin_dir, "--rename", "my-action", "new-action", "--dry-run")
+        deps_after = (self.plugin_dir / "deps.yaml").read_text()
+        assert deps_before == deps_after
+
+    def test_rename_updates_deps_key(self):
+        run_engine(self.plugin_dir, "--rename", "my-action", "new-action")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        assert "new-action" in deps["commands"]
+        assert "my-action" not in deps["commands"]
+
+    def test_rename_updates_calls(self):
+        run_engine(self.plugin_dir, "--rename", "my-action", "new-action")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        calls = deps["skills"]["my-controller"]["calls"]
+        call_targets = [list(c.values())[0] for c in calls]
+        assert "new-action" in call_targets
+        assert "my-action" not in call_targets
+
+    def test_rename_updates_frontmatter(self):
+        run_engine(self.plugin_dir, "--rename", "my-action", "new-action")
+        content = (self.plugin_dir / "commands" / "my-action.md").read_text()
+        assert "name: new-action" in content
+
+    def test_rename_updates_body_refs(self):
+        run_engine(self.plugin_dir, "--rename", "my-action", "new-action")
+        # Check controller body
+        content = (self.plugin_dir / "skills" / "my-controller" / "SKILL.md").read_text()
+        assert "/test:new-action" in content
+        assert "/test:my-action" not in content
+
+    def test_rename_nonexistent_fails(self):
+        result = run_engine(self.plugin_dir, "--rename", "nonexistent", "new-name")
+        assert result.returncode != 0
+        assert "not found" in result.stderr
+
+    def test_rename_to_existing_fails(self):
+        result = run_engine(self.plugin_dir, "--rename", "my-action", "my-ref")
+        assert result.returncode != 0
+        assert "already exists" in result.stderr
+
+    def test_validate_after_rename(self):
+        run_engine(self.plugin_dir, "--rename", "my-action", "new-action")
+        result = run_engine(self.plugin_dir, "--validate")
+        assert "Violations: 0" in result.stdout or "All type constraints satisfied" in result.stdout
+
+
+class TestRenameV3:
+    """v3.0 chain-related rename tests."""
+
+    def setup_method(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.plugin_dir = make_v3_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_rename_updates_chains_steps(self):
+        run_engine(self.plugin_dir, "--rename", "step-b", "phase-b")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        steps = deps["chains"]["setup-chain"]["steps"]
+        assert "phase-b" in steps
+        assert "step-b" not in steps
+
+    def test_rename_updates_step_in_parent(self):
+        run_engine(self.plugin_dir, "--rename", "step-b", "phase-b")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        assert deps["commands"]["step-c"]["step_in"]["parent"] == "phase-b"
+
+    def test_rename_chain_updates_chain_field(self):
+        """Renaming a chain name updates all components' chain field."""
+        run_engine(self.plugin_dir, "--rename", "setup-chain", "init-chain")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        assert "init-chain" in deps["chains"]
+        assert "setup-chain" not in deps["chains"]
+        assert deps["skills"]["step-a"]["chain"] == "init-chain"
+        assert deps["commands"]["step-b"]["chain"] == "init-chain"
+        assert deps["commands"]["step-c"]["chain"] == "init-chain"
+
+    def test_rename_updates_body_and_step_in(self):
+        run_engine(self.plugin_dir, "--rename", "step-a", "init-step")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        # step_in.parent updated
+        assert deps["commands"]["step-b"]["step_in"]["parent"] == "init-step"
+        # body ref updated
+        # (step-a doesn't reference itself in body, so just check key renamed)
+        assert "init-step" in deps["skills"]
+        assert "step-a" not in deps["skills"]
+
+
+if __name__ == "__main__":
+    # Simple runner if pytest not available
+    import traceback
+
+    classes = [TestRenameBasic, TestRenameV3]
+    passed = 0
+    failed = 0
+    errors = []
+
+    for cls in classes:
+        for method_name in dir(cls):
+            if not method_name.startswith("test_"):
+                continue
+            instance = cls()
+            instance.setup_method()
+            try:
+                getattr(instance, method_name)()
+                passed += 1
+                print(f"  PASS: {cls.__name__}.{method_name}")
+            except Exception as e:
+                failed += 1
+                errors.append((f"{cls.__name__}.{method_name}", e))
+                print(f"  FAIL: {cls.__name__}.{method_name}: {e}")
+                traceback.print_exc()
+            finally:
+                instance.teardown_method()
+
+    print(f"\n{'=' * 40}")
+    print(f"Results: {passed} passed, {failed} failed")
+    if errors:
+        print("\nFailures:")
+        for name, err in errors:
+            print(f"  {name}: {err}")
+        sys.exit(1)
+    else:
+        print("All tests passed!")

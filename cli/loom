@@ -18,6 +18,7 @@ loom - Loom framework CLI
 Usage: loom <command> [args]
 
 Commands:
+  rename <old> <new> コンポーネント名を一括変更（4箇所 + v3.0 chain）
   check           ファイル存在チェック
   validate        型ルール検証 (can_spawn/spawnable_by)
   tree            ASCII ツリー出力
@@ -36,11 +37,14 @@ Commands:
   help            このヘルプを表示
 
 Options:
+  --dry-run       変更内容のプレビュー（rename で使用）
   --no-tokens     グラフ出力でトークン数を非表示
 
 Examples:
   cd ~/.claude/plugins/dev && loom check
   cd ~/.claude/plugins/dev && loom reverse worker-structure
+  loom rename old-name new-name
+  loom rename old-name new-name --dry-run
   loom update-svgs
 EOF
 }
@@ -55,6 +59,18 @@ CMD="$1"
 shift
 
 case "$CMD" in
+    rename)
+        if [ $# -lt 2 ]; then
+            echo "Error: rename requires <old-name> <new-name>" >&2
+            echo "Usage: loom rename <old-name> <new-name> [--dry-run]" >&2
+            exit 1
+        fi
+        OLD_NAME="$1"
+        NEW_NAME="$2"
+        shift 2
+        # remaining args (e.g. --dry-run) passed through
+        python3 "$ENGINE" --rename "$OLD_NAME" "$NEW_NAME" "$@"
+        ;;
     check)
         python3 "$ENGINE" --check "$@"
         ;;

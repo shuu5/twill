@@ -2042,8 +2042,7 @@ def validate_body_refs(deps: dict, plugin_root: Path) -> Tuple[int, List[str]]:
             if not path:
                 continue
             file_path = plugin_root / path
-            # パストラバーサル防止
-            if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
+            if not _is_within_root(file_path, plugin_root):
                 continue
             body = _get_body_text(file_path)
             if not body:
@@ -2828,6 +2827,280 @@ def complexity_report(graph: Dict, deps: dict, plugin_root: Path):
     print()
 
 
+def _is_within_root(file_path: Path, root: Path) -> bool:
+    """file_path が root 配下にあるか安全に検証（シンボリックリンク解決後）"""
+    try:
+        resolved = file_path.resolve()
+        root_resolved = root.resolve()
+        # commonpath で厳密に判定（prefix 一致の誤判定を防止）
+        return os.path.commonpath([resolved, root_resolved]) == str(root_resolved)
+    except (ValueError, OSError):
+        return False
+
+
+def _update_frontmatter_name(file_path: Path, new_name: str, dry_run: bool) -> Optional[str]:
+    """frontmatter の name フィールドを更新
+
+    Returns: 変更内容の説明文字列、変更なしなら None
+    """
+    if not file_path.exists():
+        return None
+    try:
+        content = file_path.read_text(encoding='utf-8')
+    except Exception:
+        return None
+    lines = content.splitlines(keepends=True)
+    if not lines or lines[0].strip() != '---':
+        return None
+
+    for i, line in enumerate(lines[1:], 1):
+        if line.strip() == '---':
+            break
+        m = re.match(r'^(name:\s*)(.+)$', line.rstrip('\n\r'))
+        if m:
+            old_val = m.group(2).strip().strip('"').strip("'")
+            if old_val == new_name:
+                return None
+            new_line = f"{m.group(1)}{new_name}\n"
+            desc = f"  frontmatter name: '{old_val}' → '{new_name}' in {file_path.name}"
+            if not dry_run:
+                lines[i] = new_line
+                file_path.write_text(''.join(lines), encoding='utf-8')
+            return desc
+    return None
+
+
+def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str, dry_run: bool) -> bool:
+    """コンポーネント名を4箇所（+ v3.0 chain 関連）で原子的に更新
+
+    更新対象:
+    1. deps.yaml キー名
+    2. deps.yaml 内の全 calls 参照
+    3. deps.yaml の v3.0 フィールド (chains.*.steps, step_in.parent, chain)
+    4. 対象コンポーネントの frontmatter name フィールド
+    5. プラグイン内全 .md ファイルの body 内 /{plugin}:{old} → /{plugin}:{new}
+
+    Returns: True if changes were made (or would be made in dry_run)
+    """
+    # 入力バリデーション: 英数字・ハイフン・アンダースコアのみ許可
+    _valid_name = re.compile(r'^[A-Za-z0-9][A-Za-z0-9_-]*$')
+    if not _valid_name.match(old_name) or not _valid_name.match(new_name):
+        print("Error: component name must match [A-Za-z0-9][A-Za-z0-9_-]*", file=sys.stderr)
+        return False
+
+    plugin_name = get_plugin_name(deps, plugin_root)
+    deps_path = plugin_root / "deps.yaml"
+    changes = []
+
+    # --- 1. deps.yaml キー名の変更 ---
+    found_section = None
+    found_data = None
+    for section in ('skills', 'commands', 'agents'):
+        section_dict = deps.get(section, {})
+        if old_name in section_dict:
+            if new_name in section_dict:
+                print(f"Error: '{new_name}' already exists in {section}", file=sys.stderr)
+                return False
+            found_section = section
+            found_data = section_dict[old_name]
+            changes.append(f"  deps.yaml key: {section}/{old_name} → {section}/{new_name}")
+            break
+
+    # チェーン名のみの rename かチェック
+    is_chain_only_rename = False
+    if not found_section:
+        chains = deps.get('chains', {})
+        if old_name in chains:
+            is_chain_only_rename = True
+            if new_name in chains:
+                print(f"Error: chain '{new_name}' already exists", file=sys.stderr)
+                return False
+        else:
+            print(f"Error: '{old_name}' not found in deps.yaml (skills/commands/agents/chains)", file=sys.stderr)
+            return False
+
+    if found_section:
+        # new_name が他セクションに存在しないか確認
+        for section in ('skills', 'commands', 'agents'):
+            if section != found_section and new_name in deps.get(section, {}):
+                print(f"Error: '{new_name}' already exists in {section}", file=sys.stderr)
+                return False
+        # new_name が chain 名と衝突しないか確認
+        if new_name in deps.get('chains', {}):
+            print(f"Error: '{new_name}' conflicts with existing chain name", file=sys.stderr)
+            return False
+
+    # --- 2. deps.yaml 内の全 calls 参照の更新 ---
+    call_keys = {'command', 'composite', 'skill', 'reference', 'agent', 'specialist',
+                 'workflow', 'phase', 'worker'}
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            for call in data.get('calls', []):
+                for key in call_keys:
+                    if call.get(key) == old_name:
+                        changes.append(f"  deps.yaml calls: {section}/{comp_name} → {key}: {old_name} → {new_name}")
+
+    # --- 3. v3.0 フィールド (chains, step_in, chain) ---
+    # chains.*.steps 内のコンポーネント名
+    chains = deps.get('chains', {})
+    for chain_name, chain_data in chains.items():
+        if isinstance(chain_data, dict):
+            steps = chain_data.get('steps', [])
+            for i, step in enumerate(steps):
+                if step == old_name:
+                    changes.append(f"  deps.yaml chains: chains/{chain_name}/steps[{i}]: {old_name} → {new_name}")
+
+    # step_in.parent の更新
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            step_in = data.get('step_in', {})
+            if isinstance(step_in, dict) and step_in.get('parent') == old_name:
+                changes.append(f"  deps.yaml step_in: {section}/{comp_name}/step_in.parent: {old_name} → {new_name}")
+
+    # chain フィールドの更新（チェーン名 rename 時）
+    if old_name in chains:
+        changes.append(f"  deps.yaml chains: chains/{old_name} → chains/{new_name}")
+        # 全コンポーネントの chain フィールドも更新
+        for section in ('skills', 'commands', 'agents'):
+            for comp_name, data in deps.get(section, {}).items():
+                if data.get('chain') == old_name:
+                    changes.append(f"  deps.yaml chain: {section}/{comp_name}/chain: {old_name} → {new_name}")
+
+    # --- 4. frontmatter name ---
+    component_path = found_data.get('path') if found_data else None
+    if component_path:
+        file_path = plugin_root / component_path
+        if _is_within_root(file_path, plugin_root):
+            fm_change = _update_frontmatter_name(file_path, new_name, dry_run=True)  # always preview first
+            if fm_change:
+                changes.append(fm_change)
+
+    # --- 5. body 参照 /{plugin}:{old} → /{plugin}:{new} ---
+    old_ref = f"/{plugin_name}:{old_name}"
+    new_ref = f"/{plugin_name}:{new_name}"
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            comp_path = data.get('path')
+            if not comp_path:
+                continue
+            file_path = plugin_root / comp_path
+            if not file_path.exists():
+                continue
+            if not _is_within_root(file_path, plugin_root):
+                continue
+            try:
+                content = file_path.read_text(encoding='utf-8')
+            except Exception:
+                continue
+            if old_ref in content:
+                count = content.count(old_ref)
+                changes.append(f"  body ref: {comp_path} ({count} occurrence{'s' if count > 1 else ''}): {old_ref} → {new_ref}")
+
+    # --- 結果表示 ---
+    if not changes:
+        print(f"No changes needed for renaming '{old_name}' to '{new_name}'.")
+        return False
+
+    if dry_run:
+        print(f"[dry-run] Would rename '{old_name}' → '{new_name}':")
+        for c in changes:
+            print(c)
+        return True
+
+    # --- 実際の変更を適用 ---
+    print(f"Renaming '{old_name}' → '{new_name}':")
+
+    # deps.yaml をテキストベースではなく YAML パース → 書き戻しで更新
+    raw_deps = yaml.safe_load(deps_path.read_text(encoding='utf-8'))
+
+    # 1. キー名変更 (順序保持) — コンポーネント rename の場合のみ
+    if found_section:
+        section_dict = raw_deps[found_section]
+        new_section = {}
+        for k, v in section_dict.items():
+            if k == old_name:
+                new_section[new_name] = v
+            else:
+                new_section[k] = v
+        raw_deps[found_section] = new_section
+
+    # 2. calls 参照更新
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in raw_deps.get(section, {}).items():
+            for call in data.get('calls', []):
+                for key in call_keys:
+                    if call.get(key) == old_name:
+                        call[key] = new_name
+
+    # 3. v3.0 フィールド更新
+    raw_chains = raw_deps.get('chains', {})
+    for chain_name, chain_data in raw_chains.items():
+        if isinstance(chain_data, dict):
+            steps = chain_data.get('steps', [])
+            for i, step in enumerate(steps):
+                if step == old_name:
+                    steps[i] = new_name
+
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in raw_deps.get(section, {}).items():
+            step_in = data.get('step_in', {})
+            if isinstance(step_in, dict) and step_in.get('parent') == old_name:
+                step_in['parent'] = new_name
+
+    if old_name in raw_chains:
+        raw_chains[new_name] = raw_chains.pop(old_name)
+        for section in ('skills', 'commands', 'agents'):
+            for comp_name, data in raw_deps.get(section, {}).items():
+                if data.get('chain') == old_name:
+                    data['chain'] = new_name
+
+    # deps.yaml 書き戻し（バックアップ付きロールバック）
+    deps_backup = deps_path.read_text(encoding='utf-8')
+    try:
+        deps_path.write_text(
+            yaml.dump(raw_deps, default_flow_style=False, allow_unicode=True, sort_keys=False),
+            encoding='utf-8'
+        )
+    except Exception as e:
+        print(f"Error: deps.yaml 書き戻しに失敗しました: {e}", file=sys.stderr)
+        try:
+            deps_path.write_text(deps_backup, encoding='utf-8')
+            print("deps.yaml をロールバックしました。", file=sys.stderr)
+        except Exception:
+            print("Warning: ロールバックにも失敗しました。", file=sys.stderr)
+        return False
+
+    # 4. frontmatter name 更新
+    if component_path:
+        file_path = plugin_root / component_path
+        if _is_within_root(file_path, plugin_root):
+            _update_frontmatter_name(file_path, new_name, dry_run=False)
+
+    # 5. body 参照更新
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in raw_deps.get(section, {}).items():
+            comp_path = data.get('path')
+            if not comp_path:
+                continue
+            file_path = plugin_root / comp_path
+            if not file_path.exists():
+                continue
+            if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
+                continue
+            try:
+                content = file_path.read_text(encoding='utf-8')
+            except Exception:
+                continue
+            if old_ref in content:
+                new_content = content.replace(old_ref, new_ref)
+                file_path.write_text(new_content, encoding='utf-8')
+
+    for c in changes:
+        print(c)
+    print(f"\nDone. Run 'loom validate' to verify.")
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description='Analyze plugin dependencies')
     parser.add_argument('--tree', action='store_true', help='ASCII tree output')
@@ -2846,6 +3119,8 @@ def main():
     parser.add_argument('--deep-validate', action='store_true', help='Deep validation (controller bloat, ref placement, tools consistency)')
     parser.add_argument('--audit', action='store_true', help='Loom compliance audit (5-section markdown report)')
     parser.add_argument('--complexity', action='store_true', help='Complexity metrics report')
+    parser.add_argument('--rename', nargs=2, metavar=('OLD', 'NEW'), help='Rename a component (updates deps.yaml, frontmatter, body refs)')
+    parser.add_argument('--dry-run', action='store_true', help='Preview changes without applying (use with --rename)')
 
     args = parser.parse_args()
 
@@ -2853,6 +3128,12 @@ def main():
     deps = load_deps(plugin_root)
     graph = build_graph(deps, plugin_root)
     plugin_name = get_plugin_name(deps, plugin_root)
+
+    # rename は独立コマンド
+    if args.rename:
+        old_name, new_name = args.rename
+        success = rename_component(plugin_root, deps, old_name, new_name, args.dry_run)
+        sys.exit(0 if success else 1)
 
     # デフォルトはGraphviz
     if not any([args.tree, args.rich, args.mermaid, args.graphviz, args.target, args.reverse, args.check, args.validate, args.list, args.update_readme, args.orphans, args.tokens, args.deep_validate, args.audit, args.complexity]):
