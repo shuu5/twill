@@ -19,6 +19,7 @@ Usage:
 
 import argparse
 import difflib
+import hashlib
 import os
 import re
 import subprocess
@@ -3385,6 +3386,170 @@ def sync_check(ref_path: str):
         print("No differences found. types.yaml and reference document are in sync.")
 
 
+def _extract_body(content: str) -> str:
+    """frontmatter と sync コメントを除いた本文部分を抽出する"""
+    text = content
+    # frontmatter 除去（行単位で閉じ --- を検出）
+    if text.startswith('---'):
+        # 最初の改行以降で、行頭の --- を探す
+        end = text.find('\n---', 3)
+        if end != -1:
+            text = text[end + 4:].lstrip('\n')
+    # sync コメント除去
+    sync_marker = '<!-- Synced from loom docs/'
+    if text.startswith(sync_marker):
+        newline = text.find('\n')
+        if newline != -1:
+            text = text[newline + 1:].lstrip('\n')
+    return text
+
+
+def _body_hash(content: str) -> str:
+    """本文部分の SHA256 ハッシュを返す"""
+    body = _extract_body(content)
+    return hashlib.sha256(body.encode('utf-8')).hexdigest()
+
+
+def _build_frontmatter(filename: str, deps: dict) -> str:
+    """deps.yaml の reference 定義から frontmatter を構築する。
+
+    deps.yaml の skills/commands/agents セクションからファイル名に一致する reference を検索し、
+    一致すれば name, type, spawnable_by, description, disable-model-invocation を付与。
+    一致しなければ最小限の frontmatter (type: reference) を返す。
+    """
+    matched = None
+    for section in ('skills', 'commands', 'agents'):
+        section_data = deps.get(section, {})
+        if not isinstance(section_data, dict):
+            continue
+        for comp_name, comp_def in section_data.items():
+            if not isinstance(comp_def, dict):
+                continue
+            if comp_def.get('type') != 'reference':
+                continue
+            comp_path = comp_def.get('path', '')
+            if Path(comp_path).name == filename:
+                matched = (comp_name, comp_def)
+                break
+        if matched:
+            break
+
+    if matched is None:
+        return '---\ntype: reference\n---'
+
+    comp_name, comp_def = matched
+    fm = {}
+    # name フィールド: deps.yaml の plugin prefix + component name
+    plugin_name = deps.get('plugin', '')
+    if plugin_name:
+        fm['name'] = f'{plugin_name}:{comp_name}'
+    else:
+        fm['name'] = comp_name
+    # description
+    if comp_def.get('description'):
+        fm['description'] = str(comp_def['description'])
+    # type
+    fm['type'] = 'reference'
+    # spawnable_by
+    sb = comp_def.get('spawnable_by', [])
+    if sb:
+        fm['spawnable_by'] = list(sb) if isinstance(sb, list) else [sb]
+    # disable-model-invocation
+    if comp_def.get('disable-model-invocation') is not None:
+        fm['disable-model-invocation'] = bool(comp_def['disable-model-invocation'])
+    # yaml.dump で安全にシリアライズ
+    body = yaml.dump(fm, default_flow_style=False, allow_unicode=True, sort_keys=False).rstrip('\n')
+    return f'---\n{body}\n---'
+
+
+SYNC_COMMENT = '<!-- Synced from loom docs/ — do not edit directly -->'
+
+
+def sync_docs(target_dir: str, check_only: bool = False):
+    """docs/ の ref-*.md を対象ディレクトリにコピー同期する。
+
+    --check 時は本文ハッシュ比較のみ行い、差分ありで非ゼロ exit。
+    """
+    loom_root = _get_loom_root()
+    docs_dir = loom_root / 'docs'
+
+    if not docs_dir.exists():
+        print(f"Error: docs/ directory not found at {docs_dir}", file=sys.stderr)
+        sys.exit(1)
+
+    target = Path(target_dir).resolve()
+    if not target.is_dir():
+        print(f"Error: Target directory does not exist: {target_dir}", file=sys.stderr)
+        sys.exit(1)
+
+    # 対象ディレクトリの deps.yaml を読み込み
+    # target 自体か、その親ディレクトリから deps.yaml を探索
+    deps = {}
+    deps_search = target
+    for _ in range(10):
+        deps_path = deps_search / 'deps.yaml'
+        if deps_path.exists():
+            try:
+                with open(deps_path, encoding='utf-8') as f:
+                    deps = yaml.safe_load(f) or {}
+            except yaml.YAMLError as e:
+                print(f"Warning: Failed to parse {deps_path}: {e}", file=sys.stderr)
+            break
+        parent = deps_search.parent
+        if parent == deps_search:
+            break
+        deps_search = parent
+
+    # docs/ から ref-*.md を glob
+    source_files = sorted(docs_dir.glob('ref-*.md'))
+    if not source_files:
+        print("Warning: No ref-*.md files found in docs/", file=sys.stderr)
+        sys.exit(0)
+
+    if check_only:
+        # --check モード: ハッシュ比較
+        has_diff = False
+        for src in source_files:
+            dest = target / src.name
+            if not dest.exists():
+                print(f"  [missing] {src.name}")
+                has_diff = True
+                continue
+
+            src_hash = _body_hash(src.read_text(encoding='utf-8'))
+            dest_hash = _body_hash(dest.read_text(encoding='utf-8'))
+
+            if src_hash != dest_hash:
+                print(f"  [changed] {src.name}")
+                has_diff = True
+            else:
+                print(f"  [ok]      {src.name}")
+
+        if has_diff:
+            print()
+            print("Differences found. Run 'loom sync-docs <dir>' to sync.")
+            sys.exit(1)
+        else:
+            print()
+            print("All files are in sync.")
+            sys.exit(0)
+    else:
+        # 同期モード
+        synced = 0
+        for src in source_files:
+            dest = target / src.name
+            source_body = _extract_body(src.read_text(encoding='utf-8'))
+            frontmatter = _build_frontmatter(src.name, deps)
+
+            output = f"{frontmatter}\n\n{SYNC_COMMENT}\n\n{source_body}"
+            dest.write_text(output, encoding='utf-8')
+            synced += 1
+            print(f"  [synced] {src.name}")
+
+        print()
+        print(f"Synced {synced} file(s) to {target_dir}")
+
+
 def main():
     parser = argparse.ArgumentParser(description='Analyze plugin dependencies')
     parser.add_argument('--tree', action='store_true', help='ASCII tree output')
@@ -3408,16 +3573,21 @@ def main():
     parser.add_argument('--dry-run', action='store_true', help='Preview changes without applying (use with --rename or --promote)')
     parser.add_argument('--rules', action='store_true', help='Print type rules table from types.yaml')
     parser.add_argument('--sync-check', metavar='REF_PATH', help='Compare types.yaml with a reference Markdown document')
+    parser.add_argument('--sync-docs', metavar='TARGET_DIR', help='Sync docs/ref-*.md to target directory with frontmatter from deps.yaml')
 
     args = parser.parse_args()
 
-    # rules / sync-check は deps.yaml 不要の独立コマンド
+    # rules / sync-check / sync-docs は deps.yaml 不要の独立コマンド
     if args.rules:
         print_rules()
         sys.exit(0)
 
     if args.sync_check:
         sync_check(args.sync_check)
+        sys.exit(0)
+
+    if args.sync_docs:
+        sync_docs(args.sync_docs, check_only=args.check)
         sys.exit(0)
 
     plugin_root = get_plugin_root()
