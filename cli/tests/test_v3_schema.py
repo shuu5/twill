@@ -47,6 +47,7 @@ def make_v3_fixture(tmpdir: Path) -> Path:
                 "path": "skills/my-workflow/SKILL.md",
                 "description": "A workflow",
                 "chain": "setup-chain",
+                "step_in": {"parent": "my-controller"},
                 "calls": [
                     {"atomic": "my-action", "step": "2"},
                     {"atomic": "my-sub", "step": "3"},
@@ -70,7 +71,7 @@ def make_v3_fixture(tmpdir: Path) -> Path:
                 "path": "commands/my-sub.md",
                 "description": "A sub command",
                 "chain": "setup-chain",
-                "step_in": {"parent": "my-action"},
+                "step_in": {"parent": "my-workflow"},
                 "calls": [],
             },
             "my-composite": {

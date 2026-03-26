@@ -1,0 +1,430 @@
+change_id: chain-validate
+generated_at: "2026-03-26T00:00:00+09:00"
+test_framework: pytest
+scenarios:
+  # ===== Requirement: chain bidirectional consistency =====
+  - id: chain-bidir-valid
+    name: "bidirectional consistent - no error"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 14
+    requirement: "chain bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainBidirectional::test_valid_bidirectional_no_error"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: chain-bidir-in-steps-no-chain
+    name: "chains.steps にあるが component.chain がない"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 6
+    requirement: "chain bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainBidirectional::test_in_steps_but_no_chain_field"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: chain-bidir-has-chain-not-in-steps
+    name: "component.chain があるが chains.steps にない"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 10
+    requirement: "chain bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainBidirectional::test_has_chain_but_not_in_steps"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: chain-bidir-multiple-violations
+    name: "multiple components with mismatched chain/steps"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 6
+    requirement: "chain bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainBidirectional::test_multiple_bidir_violations"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===== Requirement: step bidirectional consistency =====
+  - id: step-bidir-valid
+    name: "step bidirectional consistent - no error"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 29
+    requirement: "step bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepBidirectional::test_valid_step_bidirectional_no_error"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-bidir-calls-step-no-step-in
+    name: "calls に step があるが child に step_in がない"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 21
+    requirement: "step bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepBidirectional::test_calls_step_but_child_no_step_in"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-bidir-step-in-no-calls-step
+    name: "child に step_in があるが parent の calls に step がない"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 25
+    requirement: "step bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepBidirectional::test_child_step_in_but_parent_no_step"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-bidir-decimal-step
+    name: "decimal step value with matching step_in"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 29
+    requirement: "step bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepBidirectional::test_step_in_decimal_step_value"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-bidir-call-without-step
+    name: "call without step field does not trigger step-bidir"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 29
+    requirement: "step bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepBidirectional::test_call_without_step_no_step_bidir_error"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===== Requirement: chain type guard =====
+  - id: chain-type-specialist-in-a
+    name: "Chain A に specialist が参加"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 36
+    requirement: "chain type guard"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainTypeGuard::test_specialist_in_chain_a"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: chain-type-workflow-in-b
+    name: "Chain B に workflow が参加"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 40
+    requirement: "chain type guard"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainTypeGuard::test_workflow_in_chain_b"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: chain-type-a-valid
+    name: "Chain A with only workflow/atomic - valid"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 36
+    requirement: "chain type guard"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainTypeGuard::test_chain_a_valid_types"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: chain-type-no-type-field
+    name: "Chain に type フィールドがない場合"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 44
+    requirement: "chain type guard"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainTypeGuard::test_chain_without_type_skips_check"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: chain-type-composite-in-a
+    name: "Chain A に composite が参加"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 36
+    requirement: "chain type guard"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainTypeGuard::test_composite_in_chain_a"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: chain-type-b-valid
+    name: "Chain B with only atomic/composite - valid"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 40
+    requirement: "chain type guard"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainTypeGuard::test_chain_b_valid_types"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===== Requirement: step ordering =====
+  - id: step-order-ascending-valid
+    name: "step 番号が昇順"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 55
+    requirement: "step ordering"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepOrdering::test_ascending_step_order_no_error"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-order-descending
+    name: "step 番号が降順"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 51
+    requirement: "step ordering"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepOrdering::test_descending_step_order"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-order-equal
+    name: "equal step values"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 55
+    requirement: "step ordering"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepOrdering::test_equal_step_values"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-order-single
+    name: "single step entry"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 55
+    requirement: "step ordering"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepOrdering::test_single_step_no_error"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-order-mixed
+    name: "mixed calls with and without step"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 51
+    requirement: "step ordering"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepOrdering::test_mixed_step_and_no_step"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-order-decimal
+    name: "decimal step ordering valid"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 55
+    requirement: "step ordering"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepOrdering::test_decimal_step_ordering_valid"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: step-order-per-component
+    name: "step ordering checked per component"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 51
+    requirement: "step ordering"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestStepOrdering::test_step_order_per_component"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===== Requirement: prompt body consistency =====
+  - id: prompt-chain-body-no-step-in
+    name: "body に Step N 記載があるが step_in がない"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 62
+    requirement: "prompt body consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestPromptConsistency::test_body_mentions_step_but_no_step_in"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: prompt-chain-body-matches
+    name: "body の参照と deps.yaml が一致"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 66
+    requirement: "prompt body consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestPromptConsistency::test_body_matches_step_in"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: prompt-chain-no-mention
+    name: "body with no step mention"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 66
+    requirement: "prompt body consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestPromptConsistency::test_body_without_step_mention_no_error"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: prompt-chain-correct-parent-different-step
+    name: "body mentions correct parent but different step number"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 66
+    requirement: "prompt body consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestPromptConsistency::test_body_mentions_correct_parent_different_step"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: prompt-chain-multiple-mentions
+    name: "multiple step mentions in body"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 62
+    requirement: "prompt body consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestPromptConsistency::test_body_multiple_step_mentions"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===== Requirement: loom check integration =====
+  - id: loom-check-v3-valid
+    name: "v3.0 deps.yaml で loom check 実行 - valid"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 75
+    requirement: "loom check integration"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestLoomCheckIntegration::test_v3_check_includes_chain_validation"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: loom-check-v3-critical-fails
+    name: "v3.0 with chain-bidir CRITICAL fails check"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 75
+    requirement: "loom check integration"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestLoomCheckIntegration::test_v3_check_fails_on_chain_critical"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: loom-check-v2-skips
+    name: "v2.0 deps.yaml で loom check 実行 - skips chain"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 79
+    requirement: "loom check integration"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestLoomCheckIntegration::test_v2_check_skips_chain_validation"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: loom-validate-v3-chain-checks
+    name: "v3.0 validate includes chain checks"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 75
+    requirement: "loom check integration"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestLoomCheckIntegration::test_v3_validate_includes_chain_checks"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: loom-validate-v2-skips
+    name: "v2.0 validate skips chain checks"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 79
+    requirement: "loom check integration"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestLoomCheckIntegration::test_v2_validate_skips_chain_checks"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===== Edge cases =====
+  - id: edge-empty-chains
+    name: "empty chains section"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 3
+    requirement: "chain bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainValidateEdgeCases::test_empty_chains_section"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: edge-chain-no-steps
+    name: "chain with no steps list"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 3
+    requirement: "chain bidirectional consistency"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainValidateEdgeCases::test_chain_with_no_steps_list"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: edge-all-pass
+    name: "clean fixture passes all validations"
+    spec_file: "specs/chain-validate/spec.md"
+    spec_line: 3
+    requirement: "all"
+    test_file: "tests/test_chain_validate.py"
+    test_name: "TestChainValidateEdgeCases::test_all_validations_pass_on_clean_fixture"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
