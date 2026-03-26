@@ -148,6 +148,11 @@ def load_deps(plugin_root: Path) -> dict:
         return yaml.safe_load(f)
 
 
+def get_deps_version(deps: dict) -> str:
+    """deps.yaml の version を返す。未指定時は "2.0" として扱う。"""
+    return str(deps.get('version', '2.0'))
+
+
 def get_plugin_name(deps: dict, plugin_root: Path) -> str:
     """プラグイン名を取得
 
@@ -171,13 +176,15 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
                 'skill_type': str | None,  # controller, workflow, reference
                 'command_type': str | None,  # launcher, atomic, composite
                 'agent_type': str | None,  # orchestrator, specialist
-                'calls': [(type, name), ...],
+                'calls': [(type, name, step), ...],
                 'uses_agents': [name, ...],
                 'external': [name, ...],
                 'requires_mcp': [name, ...],
                 'required_by': [(type, name), ...],
                 'conditional': str | None,
                 'tokens': int,
+                'chain': str | None,       # v3.0: 所属チェーン名
+                'step_in': dict | None,    # v3.0: {parent: str, step: str|None}
             }
         }
     """
@@ -187,19 +194,28 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
     graph = {}
 
     def parse_calls(call_list: list) -> list:
-        """calls リストを (type, name) タプルのリストに変換"""
+        """calls リストを (type, name, step) タプルのリストに変換
+
+        step は calls エントリの 'step' フィールド値（v3.0）。なければ None。
+        """
         result = []
         # キー → グラフ上のノードタイプ
+        # v2.0 セクション名キー + v3.0 型名キー両方サポート
         key_map = {
-            'command': 'command', 'composite': 'command',
-            'skill': 'skill', 'reference': 'skill',
-            'agent': 'agent', 'specialist': 'agent',
-            'workflow': 'skill', 'phase': 'command', 'worker': 'agent',
+            # v2.0 section-name keys
+            'command': 'command', 'skill': 'skill', 'agent': 'agent',
+            # v3.0 type-name keys (loom type → graph node type)
+            'atomic': 'command', 'composite': 'command',
+            'controller': 'skill', 'workflow': 'skill', 'reference': 'skill',
+            'specialist': 'agent',
+            # Agent Teams 固有キー
+            'phase': 'command', 'worker': 'agent',
         }
         for c in call_list:
             for key, node_type in key_map.items():
                 if c.get(key):
-                    result.append((node_type, c[key]))
+                    step = c.get('step')
+                    result.append((node_type, c[key], step))
                     break
         return result
 
@@ -223,6 +239,8 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
             'required_by': [],
             'conditional': None,
             'tokens': tokens,
+            'chain': data.get('chain'),
+            'step_in': data.get('step_in'),
         }
 
     # コマンド
@@ -245,6 +263,8 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
             'required_by': [],
             'conditional': None,
             'tokens': tokens,
+            'chain': data.get('chain'),
+            'step_in': data.get('step_in'),
         }
 
     # エージェント
@@ -267,6 +287,8 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
             'required_by': [],
             'conditional': data.get('conditional'),
             'tokens': tokens,
+            'chain': data.get('chain'),
+            'step_in': data.get('step_in'),
         }
 
     # 外部依存
@@ -290,7 +312,7 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
     # 逆依存を構築
     for node_id, node_data in graph.items():
         # calls の逆方向
-        for (t, n) in node_data['calls']:
+        for (t, n, *_rest) in node_data['calls']:
             target_id = f"{t}:{n}"
             if target_id in graph:
                 graph[target_id]['required_by'].append(
@@ -351,7 +373,7 @@ def get_dependencies(graph: Dict, node_id: str, visited: Set[str] = None) -> Lis
     deps = []
 
     # calls
-    for (t, n) in node['calls']:
+    for (t, n, *_rest) in node['calls']:
         target_id = f"{t}:{n}"
         deps.append((target_id, 'calls', 1))
         for (child_id, rel, depth) in get_dependencies(graph, target_id, visited):
@@ -425,7 +447,7 @@ def print_tree(graph: Dict, node_id: str, indent: int = 0, visited: Set[str] = N
 
     # 子ノードを収集
     children = []
-    for (t, n) in node['calls']:
+    for (t, n, *_rest) in node['calls']:
         children.append((f"{t}:{n}", 'call'))
     for agent in node['uses_agents']:
         children.append((f"agent:{agent}", 'agent'))
@@ -771,8 +793,14 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
             elif call.get('workflow'):
                 target_id = safe_id(f"skill_{call['workflow']}")
                 lines.append(f"    {skill_id} -> {target_id};")
+            elif call.get('controller'):
+                target_id = safe_id(f"skill_{call['controller']}")
+                lines.append(f"    {skill_id} -> {target_id};")
             elif call.get('command'):
                 cmd_id = safe_id(f"cmd_{call['command']}")
+                lines.append(f"    {skill_id} -> {cmd_id};")
+            elif call.get('atomic'):
+                cmd_id = safe_id(f"cmd_{call['atomic']}")
                 lines.append(f"    {skill_id} -> {cmd_id};")
             elif call.get('composite'):
                 cmd_id = safe_id(f"cmd_{call['composite']}")
@@ -805,6 +833,9 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
             if call.get('command'):
                 target_id = safe_id(f"cmd_{call['command']}")
                 lines.append(f"    {cmd_id} -> {target_id};")
+            elif call.get('atomic'):
+                target_id = safe_id(f"cmd_{call['atomic']}")
+                lines.append(f"    {cmd_id} -> {target_id};")
             elif call.get('composite'):
                 target_id = safe_id(f"cmd_{call['composite']}")
                 lines.append(f"    {cmd_id} -> {target_id};")
@@ -826,6 +857,12 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
             elif call.get('skill'):
                 target_id = safe_id(f"skill_{call['skill']}")
                 lines.append(f"    {cmd_id} -> {target_id};")
+            elif call.get('controller'):
+                target_id = safe_id(f"skill_{call['controller']}")
+                lines.append(f"    {cmd_id} -> {target_id};")
+            elif call.get('workflow'):
+                target_id = safe_id(f"skill_{call['workflow']}")
+                lines.append(f"    {cmd_id} -> {target_id};")
         for ext in cmd_data.get('external', []):
             ext_id = safe_id(f"ext_{ext}")
             lines.append(f"    {cmd_id} -> {ext_id} [style=dashed];")
@@ -839,6 +876,9 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
         for call in agent_data.get('calls', []):
             if call.get('command'):
                 target_id = safe_id(f"cmd_{call['command']}")
+                lines.append(f"    {agent_id} -> {target_id} [style=dotted];")
+            elif call.get('atomic'):
+                target_id = safe_id(f"cmd_{call['atomic']}")
                 lines.append(f"    {agent_id} -> {target_id} [style=dotted];")
             elif call.get('skill'):
                 target_id = safe_id(f"skill_{call['skill']}")
@@ -854,6 +894,12 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
                 lines.append(f"    {agent_id} -> {target_id} [style=dotted];")
             elif call.get('reference'):
                 target_id = safe_id(f"skill_{call['reference']}")
+                lines.append(f"    {agent_id} -> {target_id} [style=dotted];")
+            elif call.get('controller'):
+                target_id = safe_id(f"skill_{call['controller']}")
+                lines.append(f"    {agent_id} -> {target_id} [style=dotted];")
+            elif call.get('workflow'):
+                target_id = safe_id(f"skill_{call['workflow']}")
                 lines.append(f"    {agent_id} -> {target_id} [style=dotted];")
         # agents.skills: で reference を参照
         for ref_skill in agent_data.get('skills', []):
@@ -1125,15 +1171,16 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
         """callエントリからエッジ文字列を生成。両端がallowedに含まれる場合のみ返す。"""
         attr = f" [{style}]" if style else ""
         for key, prefix in [('skill', 'skill'), ('reference', 'skill'), ('workflow', 'skill'),
-                            ('command', 'cmd'), ('composite', 'cmd'), ('phase', 'cmd'),
+                            ('controller', 'skill'),
+                            ('command', 'cmd'), ('atomic', 'cmd'), ('composite', 'cmd'), ('phase', 'cmd'),
                             ('specialist', 'agent'), ('agent', 'agent'), ('worker', 'agent')]:
             val = call.get(key)
             if val is None:
                 continue
             # ノードIDの構築
-            if key in ('skill', 'reference', 'workflow'):
+            if key in ('skill', 'reference', 'workflow', 'controller'):
                 target_node = f"skill:{val}"
-            elif key in ('command', 'composite', 'phase'):
+            elif key in ('command', 'atomic', 'composite', 'phase'):
                 target_node = f"command:{val}"
             else:
                 target_node = f"agent:{val}"
@@ -1361,8 +1408,14 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
                 targets.append(f"→{plugin_name}:{c['skill']}")
             elif c.get('reference'):
                 targets.append(f"→{plugin_name}:{c['reference']}")
+            elif c.get('controller'):
+                targets.append(f"→{plugin_name}:{c['controller']}")
+            elif c.get('workflow'):
+                targets.append(f"→{plugin_name}:{c['workflow']}")
             elif c.get('command'):
                 targets.append(c['command'])
+            elif c.get('atomic'):
+                targets.append(c['atomic'])
             elif c.get('composite'):
                 targets.append(f"◆{c['composite']}")
             elif c.get('specialist'):
@@ -1393,6 +1446,8 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
         for call in cmd_data.get('calls', []):
             if call.get('command'):
                 targets.append(call['command'])
+            elif call.get('atomic'):
+                targets.append(call['atomic'])
             elif call.get('composite'):
                 targets.append(f"◆{call['composite']}")
             elif call.get('specialist'):
@@ -1401,6 +1456,10 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
                 targets.append(f"⟶{call['agent']}")
             elif call.get('reference'):
                 targets.append(f"→{plugin_name}:{call['reference']}")
+            elif call.get('controller'):
+                targets.append(f"→{plugin_name}:{call['controller']}")
+            elif call.get('workflow'):
+                targets.append(f"→{plugin_name}:{call['workflow']}")
         for agent in cmd_data.get('uses_agents', []):
             targets.append(f"⟶{agent}")
         if targets:
@@ -1411,6 +1470,8 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
         for call in agent_data.get('calls', []):
             if call.get('command'):
                 targets.append(call['command'])
+            elif call.get('atomic'):
+                targets.append(call['atomic'])
             elif call.get('skill'):
                 targets.append(f"→{plugin_name}:{call['skill']}")
             elif call.get('composite'):
@@ -1421,6 +1482,10 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
                 targets.append(f"⟶{call['agent']}")
             elif call.get('reference'):
                 targets.append(f"→{plugin_name}:{call['reference']}")
+            elif call.get('controller'):
+                targets.append(f"→{plugin_name}:{call['controller']}")
+            elif call.get('workflow'):
+                targets.append(f"→{plugin_name}:{call['workflow']}")
         for ref_skill in agent_data.get('skills', []):
             targets.append(f"→{plugin_name}:{ref_skill}")
         if targets:
@@ -1661,8 +1726,14 @@ def generate_text_table(graph: Dict, deps: dict, plugin_name: str) -> str:
                 targets.append(f"→{plugin_name}:{c['skill']}")
             elif c.get('reference'):
                 targets.append(f"→{plugin_name}:{c['reference']}")
+            elif c.get('controller'):
+                targets.append(f"→{plugin_name}:{c['controller']}")
+            elif c.get('workflow'):
+                targets.append(f"→{plugin_name}:{c['workflow']}")
             elif c.get('command'):
                 targets.append(c['command'])
+            elif c.get('atomic'):
+                targets.append(c['atomic'])
             elif c.get('composite'):
                 targets.append(f"◆{c['composite']}")
             elif c.get('specialist'):
@@ -1681,6 +1752,8 @@ def generate_text_table(graph: Dict, deps: dict, plugin_name: str) -> str:
         for call in cmd_data.get('calls', []):
             if call.get('command'):
                 targets.append(call['command'])
+            elif call.get('atomic'):
+                targets.append(call['atomic'])
             elif call.get('composite'):
                 targets.append(f"◆{call['composite']}")
             elif call.get('specialist'):
@@ -1689,6 +1762,10 @@ def generate_text_table(graph: Dict, deps: dict, plugin_name: str) -> str:
                 targets.append(f"⟶{call['agent']}")
             elif call.get('reference'):
                 targets.append(f"→{plugin_name}:{call['reference']}")
+            elif call.get('controller'):
+                targets.append(f"→{plugin_name}:{call['controller']}")
+            elif call.get('workflow'):
+                targets.append(f"→{plugin_name}:{call['workflow']}")
         for agent in cmd_data.get('uses_agents', []):
             targets.append(f"⟶{agent}")
         if targets:
@@ -1699,6 +1776,8 @@ def generate_text_table(graph: Dict, deps: dict, plugin_name: str) -> str:
         for call in agent_data.get('calls', []):
             if call.get('command'):
                 targets.append(call['command'])
+            elif call.get('atomic'):
+                targets.append(call['atomic'])
             elif call.get('skill'):
                 targets.append(f"→{plugin_name}:{call['skill']}")
             elif call.get('composite'):
@@ -1709,6 +1788,10 @@ def generate_text_table(graph: Dict, deps: dict, plugin_name: str) -> str:
                 targets.append(f"⟶{call['agent']}")
             elif call.get('reference'):
                 targets.append(f"→{plugin_name}:{call['reference']}")
+            elif call.get('controller'):
+                targets.append(f"→{plugin_name}:{call['controller']}")
+            elif call.get('workflow'):
+                targets.append(f"→{plugin_name}:{call['workflow']}")
         for ref_skill in agent_data.get('skills', []):
             targets.append(f"→{plugin_name}:{ref_skill}")
         if targets:
@@ -1743,7 +1826,7 @@ def print_rich_tree(graph: Dict, node_id: str):
             return
         visited.add(nid)
 
-        for (t, name) in n['calls']:
+        for (t, name, *_rest) in n['calls']:
             child_id = f"{t}:{name}"
             style = "blue" if t == 'command' else "green"
             label = f"[{style}]{name}[/{style}] ({t})"
@@ -1914,11 +1997,14 @@ def validate_types(deps: dict, graph: Dict) -> Tuple[int, List[str]]:
     # 各 calls エントリについて、caller の can_spawn に callee の型が含まれるか、
     # callee の spawnable_by に caller の型が含まれるかを確認
     call_key_to_section = {
-        'command': 'commands', 'composite': 'commands',
-        'skill': 'skills', 'reference': 'skills',
-        'agent': 'agents', 'specialist': 'agents',
+        # v2.0 section-name keys
+        'command': 'commands', 'skill': 'skills', 'agent': 'agents',
+        # v3.0 type-name keys
+        'atomic': 'commands', 'composite': 'commands',
+        'controller': 'skills', 'workflow': 'skills', 'reference': 'skills',
+        'specialist': 'agents',
         # Agent Teams 固有の calls キー
-        'workflow': 'skills', 'phase': 'commands', 'worker': 'agents',
+        'phase': 'commands', 'worker': 'agents',
     }
 
     for section in ('skills', 'commands', 'agents'):
@@ -2006,6 +2092,145 @@ def validate_body_refs(deps: dict, plugin_root: Path) -> Tuple[int, List[str]]:
                     violations.append(
                         f"[body-ref] {section}/{comp_name}: reference '/{plugin_name}:{ref_name}' not found in deps.yaml"
                     )
+
+    return ok_count, violations
+
+
+def validate_v3_schema(deps: dict) -> Tuple[int, List[str]]:
+    """v3.0 スキーマ固有の構文検証
+
+    v2.0 では呼ばれない。v3.0 時のみ以下を検証:
+    1. calls キーが型名（atomic/composite/workflow/controller/specialist/reference）であること
+    2. step フィールドが文字列であること
+    3. step_in 構造が {parent: str} であること
+    4. chain フィールド値が chains セクションに存在すること
+    5. chains セクションの steps 内コンポーネントが存在すること
+
+    Returns: (ok_count, violations_list)
+    """
+    ok_count = 0
+    violations = []
+
+    version = get_deps_version(deps)
+    if not version.startswith('3'):
+        return ok_count, violations
+
+    # 許可される v3.0 型名キー
+    v3_type_keys = {'atomic', 'composite', 'workflow', 'controller', 'specialist', 'reference'}
+    # v2.0 セクション名キー（v3.0 では非推奨）
+    v2_section_keys = {'command', 'skill', 'agent'}
+
+    # 全コンポーネント名集合
+    all_components: Set[str] = set()
+    for section in ('skills', 'commands', 'agents'):
+        for name in deps.get(section, {}).keys():
+            all_components.add(name)
+
+    chains = deps.get('chains', {})
+
+    # Check 1: calls キーが型名であること
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            for i, call in enumerate(data.get('calls', [])):
+                call_keys = [k for k in call.keys() if k != 'step']
+                for key in call_keys:
+                    if key in v2_section_keys:
+                        violations.append(
+                            f"[v3-calls-key] {section}/{comp_name}/calls[{i}]: "
+                            f"section-name key '{key}' is not allowed in v3.0, use type-name key "
+                            f"(atomic/composite/workflow/controller/specialist/reference)"
+                        )
+                    elif key not in v3_type_keys:
+                        violations.append(
+                            f"[v3-calls-key] {section}/{comp_name}/calls[{i}]: "
+                            f"unknown key '{key}'"
+                        )
+                    else:
+                        ok_count += 1
+
+                # Check 2: step フィールドが文字列であること
+                step = call.get('step')
+                if step is not None:
+                    if not isinstance(step, str):
+                        violations.append(
+                            f"[v3-step-type] {section}/{comp_name}/calls[{i}]: "
+                            f"step must be a string, got {type(step).__name__}"
+                        )
+                    else:
+                        ok_count += 1
+
+            # Check 3: step_in 構造
+            step_in = data.get('step_in')
+            if step_in is not None:
+                if not isinstance(step_in, dict):
+                    violations.append(
+                        f"[v3-step_in-type] {section}/{comp_name}: "
+                        f"step_in must be a dict, got {type(step_in).__name__}"
+                    )
+                elif 'parent' not in step_in:
+                    violations.append(
+                        f"[v3-step_in-parent] {section}/{comp_name}: "
+                        f"step_in must have 'parent' key"
+                    )
+                elif not isinstance(step_in['parent'], str):
+                    violations.append(
+                        f"[v3-step_in-parent] {section}/{comp_name}: "
+                        f"step_in.parent must be a string"
+                    )
+                else:
+                    if step_in['parent'] not in all_components:
+                        violations.append(
+                            f"[v3-step_in-ref] {section}/{comp_name}: "
+                            f"step_in.parent '{step_in['parent']}' not found in deps.yaml"
+                        )
+                    else:
+                        ok_count += 1
+
+            # Check 4: chain フィールド値が chains セクションに存在すること
+            chain = data.get('chain')
+            if chain is not None:
+                if not isinstance(chain, str):
+                    violations.append(
+                        f"[v3-chain-type] {section}/{comp_name}: "
+                        f"chain must be a string, got {type(chain).__name__}"
+                    )
+                elif chain not in chains:
+                    violations.append(
+                        f"[v3-chain-ref] {section}/{comp_name}: "
+                        f"chain '{chain}' not found in chains section"
+                    )
+                else:
+                    ok_count += 1
+
+    # Check 5: chains セクションの構造と steps 内コンポーネント存在確認
+    for chain_name, chain_data in chains.items():
+        if not isinstance(chain_data, dict):
+            violations.append(
+                f"[v3-chains-type] chains/{chain_name}: must be a dict"
+            )
+            continue
+
+        steps = chain_data.get('steps', [])
+        if not isinstance(steps, list):
+            violations.append(
+                f"[v3-chains-steps] chains/{chain_name}: steps must be a list"
+            )
+            continue
+
+        for i, step_entry in enumerate(steps):
+            if isinstance(step_entry, str):
+                if step_entry not in all_components:
+                    violations.append(
+                        f"[v3-chains-ref] chains/{chain_name}/steps[{i}]: "
+                        f"component '{step_entry}' not found in deps.yaml"
+                    )
+                else:
+                    ok_count += 1
+            else:
+                violations.append(
+                    f"[v3-chains-step-type] chains/{chain_name}/steps[{i}]: "
+                    f"step entry must be a string, got {type(step_entry).__name__}"
+                )
 
     return ok_count, violations
 
@@ -3679,6 +3904,10 @@ def main():
         body_ok, body_violations = validate_body_refs(deps, plugin_root)
         ok_count += body_ok
         violations.extend(body_violations)
+        # v3.0 スキーマ検証
+        v3_ok, v3_violations = validate_v3_schema(deps)
+        ok_count += v3_ok
+        violations.extend(v3_violations)
 
         print(f"=== Type Validation Results ===")
         print(f"OK: {ok_count}, Violations: {len(violations)}")
@@ -3735,6 +3964,10 @@ def main():
         body_ok, body_violations = validate_body_refs(deps, plugin_root)
         ok_count += body_ok
         violations.extend(body_violations)
+        # v3.0 スキーマ検証
+        v3_ok, v3_violations = validate_v3_schema(deps)
+        ok_count += v3_ok
+        violations.extend(v3_violations)
 
         # deep-validate 固有チェック
         criticals, dv_warnings, dv_infos = deep_validate(deps, plugin_root)
