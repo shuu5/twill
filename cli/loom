@@ -24,6 +24,7 @@ Commands:
   validate        型ルール検証 (can_spawn/spawnable_by)
   rules           型ルールテーブルを表示 (types.yaml)
   sync-check      types.yaml と参照ドキュメントの差分を検出
+  sync-docs       docs/ref-*.md をターゲットディレクトリに同期
   tree            ASCII ツリー出力
   orphans         未使用/孤立ノード検出
   complexity      7メトリクス複雑さレポート
@@ -53,6 +54,8 @@ Examples:
   loom update-svgs
   loom rules
   loom sync-check --ref docs/ref-types.md
+  loom sync-docs ~/.claude/plugins/dev/refs/
+  loom sync-docs ~/.claude/plugins/dev/refs/ --check
 EOF
 }
 
@@ -110,6 +113,21 @@ case "$CMD" in
             exit 1
         fi
         python3 "$ENGINE" --sync-check "$1"
+        ;;
+    sync-docs)
+        if [ $# -eq 0 ]; then
+            echo "Error: sync-docs requires <target-dir>" >&2
+            echo "Usage: loom sync-docs <target-dir> [--check]" >&2
+            exit 1
+        fi
+        TARGET_DIR="$1"
+        shift
+        # --check flag maps to engine's --check + --sync-docs
+        if [ "${1:-}" = "--check" ]; then
+            python3 "$ENGINE" --sync-docs "$TARGET_DIR" --check
+        else
+            python3 "$ENGINE" --sync-docs "$TARGET_DIR" "$@"
+        fi
         ;;
     tree)
         python3 "$ENGINE" --tree "$@"
