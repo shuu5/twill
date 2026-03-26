@@ -1,0 +1,177 @@
+change_id: chain-generate
+generated_at: "2026-03-26T12:00:00+09:00"
+test_framework: pytest
+scenarios:
+  # === chain-generate-stdout.md ===
+
+  # Requirement: chain generate サブコマンド
+
+  - id: "normal-chain-generate"
+    name: "正常な chain generate 実行"
+    spec_file: "specs/chain-generate-stdout.md"
+    spec_line: 11
+    requirement: "chain generate サブコマンド"
+    test_file: "tests/scenarios/test_chain_generate_stdout.py"
+    test_name: "TestChainGenerateSubcommand::test_normal_chain_generate_outputs_templates"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "nonexistent-chain-name"
+    name: "存在しない chain 名"
+    spec_file: "specs/chain-generate-stdout.md"
+    spec_line: 15
+    requirement: "chain generate サブコマンド"
+    test_file: "tests/scenarios/test_chain_generate_stdout.py"
+    test_name: "TestChainGenerateSubcommand::test_nonexistent_chain_name_error"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "v2-deps-yaml-error"
+    name: "v2.0 deps.yaml"
+    spec_file: "specs/chain-generate-stdout.md"
+    spec_line: 19
+    requirement: "chain generate サブコマンド"
+    test_file: "tests/scenarios/test_chain_generate_stdout.py"
+    test_name: "TestChainGenerateSubcommand::test_v2_deps_yaml_error"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # Requirement: Template A チェックポイント生成
+
+  - id: "intermediate-step-checkpoint"
+    name: "中間 step のチェックポイント"
+    spec_file: "specs/chain-generate-stdout.md"
+    spec_line: 36
+    requirement: "Template A チェックポイント生成"
+    test_file: "tests/scenarios/test_chain_generate_stdout.py"
+    test_name: "TestTemplateACheckpoint::test_intermediate_step_checkpoint_references_next"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "final-step-checkpoint"
+    name: "最終 step のチェックポイント"
+    spec_file: "specs/chain-generate-stdout.md"
+    spec_line: 40
+    requirement: "Template A チェックポイント生成"
+    test_file: "tests/scenarios/test_chain_generate_stdout.py"
+    test_name: "TestTemplateACheckpoint::test_final_step_checkpoint_completion_message"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # Requirement: Template B called-by 宣言行生成
+
+  - id: "step-in-with-step"
+    name: "step_in を持つコンポーネント"
+    spec_file: "specs/chain-generate-stdout.md"
+    spec_line: 52
+    requirement: "Template B called-by 宣言行生成"
+    test_file: "tests/scenarios/test_chain_generate_stdout.py"
+    test_name: "TestTemplateBCalledBy::test_step_in_with_step_generates_called_by"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "step-in-without-step"
+    name: "step フィールドなしの step_in"
+    spec_file: "specs/chain-generate-stdout.md"
+    spec_line: 56
+    requirement: "Template B called-by 宣言行生成"
+    test_file: "tests/scenarios/test_chain_generate_stdout.py"
+    test_name: "TestTemplateBCalledBy::test_step_in_without_step_generates_called_by_no_step"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # Requirement: Template C ライフサイクル図テーブル生成
+
+  - id: "four-step-chain-table"
+    name: "4 step の chain"
+    spec_file: "specs/chain-generate-stdout.md"
+    spec_line: 73
+    requirement: "Template C ライフサイクル図テーブル生成"
+    test_file: "tests/scenarios/test_chain_generate_stdout.py"
+    test_name: "TestTemplateCLifecycleTable::test_four_step_chain_generates_four_rows"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # === chain-generate-write.md ===
+
+  # Requirement: --write フラグによるプロンプトファイル書き込み
+
+  - id: "write-checkpoint-section-replace"
+    name: "--write でチェックポイントセクション置換"
+    spec_file: "specs/chain-generate-write.md"
+    spec_line: 9
+    requirement: "--write フラグによるプロンプトファイル書き込み"
+    test_file: "tests/scenarios/test_chain_generate_write.py"
+    test_name: "TestWriteFlag::test_write_replaces_checkpoint_section"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "write-section-not-found-warning"
+    name: "セクション未検出時の警告"
+    spec_file: "specs/chain-generate-write.md"
+    spec_line: 13
+    requirement: "--write フラグによるプロンプトファイル書き込み"
+    test_file: "tests/scenarios/test_chain_generate_write.py"
+    test_name: "TestWriteFlag::test_write_section_not_found_warning"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # Requirement: セクション検出パターン
+
+  - id: "japanese-section-header"
+    name: "日本語セクションヘッダー"
+    spec_file: "specs/chain-generate-write.md"
+    spec_line: 25
+    requirement: "セクション検出パターン"
+    test_file: "tests/scenarios/test_chain_generate_write.py"
+    test_name: "TestSectionDetectionPatterns::test_japanese_checkpoint_header_detected"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "english-section-header"
+    name: "英語セクションヘッダー"
+    spec_file: "specs/chain-generate-write.md"
+    spec_line: 29
+    requirement: "セクション検出パターン"
+    test_file: "tests/scenarios/test_chain_generate_write.py"
+    test_name: "TestSectionDetectionPatterns::test_english_checkpoint_header_detected"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # Requirement: path フィールド未設定時のスキップ
+
+  - id: "no-path-component-skip"
+    name: "path なしコンポーネント"
+    spec_file: "specs/chain-generate-write.md"
+    spec_line: 37
+    requirement: "path フィールド未設定時のスキップ"
+    test_file: "tests/scenarios/test_chain_generate_write.py"
+    test_name: "TestPathFieldSkip::test_no_path_component_warning"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

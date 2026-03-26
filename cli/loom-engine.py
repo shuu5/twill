@@ -2671,6 +2671,254 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
     return criticals, warnings, infos
 
 
+# === Chain Generate ===
+
+
+def chain_generate(deps: dict, chain_name: str, plugin_root: Path) -> dict:
+    """指定チェーンの Template A/B/C を生成して辞書で返す。
+
+    Returns:
+        {
+            'template_a': {comp_name: str, ...},  # チェックポイント出力テンプレート
+            'template_b': {comp_name: str, ...},  # called-by 宣言行
+            'template_c': str,                     # ライフサイクル図テーブル
+        }
+    """
+    chains = deps.get('chains', {})
+    chain_data = chains.get(chain_name)
+    if chain_data is None or not isinstance(chain_data, dict):
+        return {'template_a': {}, 'template_b': {}, 'template_c': ''}
+
+    steps = chain_data.get('steps', [])
+    if not isinstance(steps, list):
+        return {'template_a': {}, 'template_b': {}, 'template_c': ''}
+
+    # 全コンポーネントの名前→(section, data) マップ
+    all_components: Dict[str, Tuple[str, dict]] = {}
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            all_components[comp_name] = (section, data)
+
+    def _sanitize_name(name: str) -> str:
+        """テンプレート埋め込み用に名前をサニタイズ（改行・Markdown特殊文字除去）"""
+        return name.replace('\n', '').replace('\r', '').replace('`', '').strip()
+
+    # --- Template A: チェックポイント ---
+    template_a: Dict[str, str] = {}
+    for i, step_name in enumerate(steps):
+        if not isinstance(step_name, str):
+            continue
+        if i < len(steps) - 1:
+            next_name = _sanitize_name(steps[i + 1])
+            template_a[step_name] = (
+                f"## チェックポイント（MUST）\n\n"
+                f"`/dev:{next_name}` を Skill tool で自動実行。"
+            )
+        else:
+            template_a[step_name] = (
+                f"## チェックポイント（MUST）\n\n"
+                f"チェーン完了。"
+            )
+
+    # --- Template B: called-by 宣言行 ---
+    template_b: Dict[str, str] = {}
+    for step_name in steps:
+        if not isinstance(step_name, str):
+            continue
+        comp = all_components.get(step_name)
+        if comp is None:
+            continue
+        step_in = comp[1].get('step_in')
+        if step_in is None or not isinstance(step_in, dict):
+            continue
+        parent = step_in.get('parent')
+        if parent is None:
+            continue
+        safe_parent = _sanitize_name(parent)
+        step_val = step_in.get('step')
+        if step_val and isinstance(step_val, str) and step_val.strip():
+            safe_step = _sanitize_name(step_val)
+            template_b[step_name] = f"{safe_parent} Step {safe_step} から呼び出される。"
+        else:
+            template_b[step_name] = f"{safe_parent} から呼び出される。"
+
+    # --- Template C: ライフサイクル図テーブル ---
+    table_lines = ["| # | 型 | コンポーネント | 説明 |", "|---|---|---|---|"]
+    for i, step_name in enumerate(steps):
+        if not isinstance(step_name, str):
+            continue
+        comp = all_components.get(step_name)
+        if comp is None:
+            comp_type = ''
+            desc = ''
+        else:
+            comp_type = comp[1].get('type', '')
+            desc = comp[1].get('description', '')
+        # テーブルセル用サニタイズ（パイプ・改行をエスケープ）
+        safe_desc = desc.replace('|', '\\|').replace('\n', ' ') if desc else ''
+        safe_type = comp_type.replace('|', '\\|').replace('\n', ' ') if comp_type else ''
+        table_lines.append(f"| {i + 1} | {safe_type} | {step_name} | {safe_desc} |")
+    template_c = '\n'.join(table_lines)
+
+    return {
+        'template_a': template_a,
+        'template_b': template_b,
+        'template_c': template_c,
+    }
+
+
+def chain_generate_print(result: dict, chain_name: str, chain_type: Optional[str] = None) -> None:
+    """chain_generate の結果を stdout に出力する。"""
+    template_a = result['template_a']
+    template_b = result['template_b']
+    template_c = result['template_c']
+
+    # chain type による出力分岐
+    show_a = chain_type in (None, 'A')
+    show_b = chain_type in (None, 'B') or any(template_b.values())
+    show_c = chain_type in (None, 'A')
+
+    if show_a and template_a:
+        print(f"=== Template A: チェックポイント ({chain_name}) ===")
+        print()
+        for comp_name, content in template_a.items():
+            print(f"--- {comp_name} ---")
+            print(content)
+            print()
+
+    if show_b and template_b:
+        print(f"=== Template B: called-by ({chain_name}) ===")
+        print()
+        for comp_name, content in template_b.items():
+            print(f"--- {comp_name} ---")
+            print(content)
+            print()
+
+    if show_c and template_c:
+        print(f"=== Template C: ライフサイクル ({chain_name}) ===")
+        print()
+        print(template_c)
+        print()
+
+
+def chain_generate_write(result: dict, deps: dict, plugin_root: Path) -> None:
+    """chain_generate の結果をプロンプトファイルに書き込む。"""
+    all_components: Dict[str, Tuple[str, dict]] = {}
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            all_components[comp_name] = (section, data)
+
+    template_a = result['template_a']
+    template_b = result['template_b']
+
+    # チェックポイントセクション検出パターン
+    checkpoint_pattern = re.compile(
+        r'^##\s+(?:チェックポイント|Checkpoint).*$',
+        re.MULTILINE | re.IGNORECASE
+    )
+
+    all_comps = set(template_a.keys()) | set(template_b.keys())
+
+    for comp_name in all_comps:
+        comp = all_components.get(comp_name)
+        if comp is None:
+            continue
+        path_str = comp[1].get('path')
+        if not path_str:
+            print(f"Warning: No path defined for {comp_name}, skipping --write", file=sys.stderr)
+            continue
+
+        file_path = plugin_root / path_str
+        # パストラバーサル防御
+        if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
+            print(f"Warning: Path traversal detected for {comp_name}, skipping", file=sys.stderr)
+            continue
+        if not file_path.exists():
+            print(f"Warning: File not found: {file_path}, skipping --write", file=sys.stderr)
+            continue
+
+        content = file_path.read_text(encoding='utf-8')
+        modified = False
+
+        # Template A: チェックポイントセクション置換
+        if comp_name in template_a:
+            match = checkpoint_pattern.search(content)
+            if match:
+                # セクションの開始位置から次のセクション（## で始まる行）または EOF まで置換
+                start = match.start()
+                # 次の ## セクションを検索（同レベル以上）
+                rest = content[match.end():]
+                next_section = re.search(r'^##\s', rest, re.MULTILINE)
+                if next_section:
+                    end = match.end() + next_section.start()
+                else:
+                    end = len(content)
+                content = content[:start] + template_a[comp_name] + '\n\n' + content[end:]
+                modified = True
+            else:
+                print(f"Warning: Section marker not found in {path_str}, skipping", file=sys.stderr)
+
+        # Template B: frontmatter description 内の called-by 更新
+        if comp_name in template_b:
+            called_by_pattern = re.compile(r'.*から呼び出される.*')
+            lines = content.splitlines()
+            in_frontmatter = False
+            found_called_by = False
+            for i, line in enumerate(lines):
+                if i == 0 and line.strip() == '---':
+                    in_frontmatter = True
+                    continue
+                if in_frontmatter and line.strip() == '---':
+                    in_frontmatter = False
+                    continue
+                if in_frontmatter and 'description:' in line:
+                    if called_by_pattern.search(line):
+                        found_called_by = True
+                        break
+            if not found_called_by:
+                print(f"Warning: Section marker not found in {path_str}, skipping", file=sys.stderr)
+
+        if modified:
+            file_path.write_text(content, encoding='utf-8')
+            print(f"Updated: {path_str}")
+
+
+def handle_chain_subcommand(argv: list) -> None:
+    """chain サブコマンドを処理する。sys.exit() で終了。"""
+    parser = argparse.ArgumentParser(
+        prog='loom chain generate',
+        description='Generate step chain templates from deps.yaml'
+    )
+    parser.add_argument('chain_name', help='Name of the chain to generate templates for')
+    parser.add_argument('--write', action='store_true', help='Write templates to prompt files')
+
+    args = parser.parse_args(argv)
+
+    plugin_root = get_plugin_root()
+    deps = load_deps(plugin_root)
+
+    # v3.0 バージョンチェック
+    version = get_deps_version(deps)
+    if not version.startswith('3'):
+        print("Error: chain generate requires deps.yaml v3.0+", file=sys.stderr)
+        sys.exit(1)
+
+    # chain 存在チェック
+    chains = deps.get('chains', {})
+    if args.chain_name not in chains:
+        print(f"Error: Chain '{args.chain_name}' not found in deps.yaml", file=sys.stderr)
+        sys.exit(1)
+
+    chain_data = chains[args.chain_name]
+    chain_type = chain_data.get('type') if isinstance(chain_data, dict) else None
+
+    result = chain_generate(deps, args.chain_name, plugin_root)
+    chain_generate_print(result, args.chain_name, chain_type)
+
+    if args.write:
+        chain_generate_write(result, deps, plugin_root)
+
+
 # === Audit Report ===
 
 
@@ -4029,6 +4277,16 @@ def sync_docs(target_dir: str, check_only: bool = False):
 
 
 def main():
+    # chain サブコマンドの前処理（sys.argv を先に検査）
+    if len(sys.argv) >= 2 and sys.argv[1] == 'chain':
+        if len(sys.argv) >= 3 and sys.argv[2] == 'generate':
+            handle_chain_subcommand(sys.argv[3:])
+            sys.exit(0)
+        else:
+            print(f"Error: unknown chain subcommand '{sys.argv[2] if len(sys.argv) >= 3 else ''}'", file=sys.stderr)
+            print("Usage: loom chain generate <chain-name> [--write]", file=sys.stderr)
+            sys.exit(1)
+
     parser = argparse.ArgumentParser(description='Analyze plugin dependencies')
     parser.add_argument('--tree', action='store_true', help='ASCII tree output')
     parser.add_argument('--rich', action='store_true', help='Rich tree output (requires rich)')
