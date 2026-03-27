@@ -1,0 +1,48 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+
+    // L0: Controller Skills
+    skill_co_autopilot [label="dev:co-autopilot\n(79 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="dev:co-issue\n(308 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_project [label="dev:co-project\n(67 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_architect [label="dev:co-architect\n(61 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+
+    // Reference Skills
+
+    // L1: Direct Commands
+
+    // L2: Sub Commands
+    cmd_self_improve_review [label="self-improve-review\n(1,086 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
+
+    // L3: Agents
+
+    // L3.5: Scripts
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_co_autopilot; skill_co_issue; skill_co_project; skill_co_architect; }
+    { rank=same; cmd_self_improve_review; }
+
+    // Edges
+
+    // Legend
+    subgraph cluster_legend {
+        label="Legend";
+        fontsize=9;
+        style=dashed;
+        legend_controller [label="Controller (skill)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+        legend_atomic [label="Atomic (command)", shape=box, style=filled, fillcolor="#e3f2fd"];
+        legend_orphan [label="Orphan", shape=box, style=filled, fillcolor="#ffcdd2"];
+    }
+}
