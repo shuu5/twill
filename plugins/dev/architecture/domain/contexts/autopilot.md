@@ -166,6 +166,30 @@ Pilot (CWD = main/)
   -> Pilot: merge-gate -> merge -> worktree 削除 -> window kill
 ```
 
+### Worktree ライフサイクル安全ルール
+
+**鉄則: Worker は自分の worktree を削除しない。削除は常に Pilot (main/) が行う。**（不変条件 B）
+
+| フェーズ | 実行者 | 操作 | CWD |
+|----------|--------|------|-----|
+| 作成 | Worker | `worktree-create.sh` で worktree + ブランチ作成 | main/ → worktrees/{branch}/ |
+| 使用 | Worker | chain ステップ逐次実行、テスト、PR 作成 | worktrees/{branch}/ |
+| merge-ready 宣言 | Worker | issue-{N}.json の status を `merge-ready` に更新 | worktrees/{branch}/ |
+| セッション終了 | Worker | cld セッション終了。worktree は残す | worktrees/{branch}/ |
+| merge-gate | Pilot | PR レビュー → squash merge | main/ |
+| 削除 | Pilot | worktree-delete.sh で worktree + ブランチ削除 | main/ |
+| window kill | Pilot | tmux window を kill | main/ |
+
+**禁止事項**:
+- Worker が `git worktree remove` を実行してはならない
+- Worker が main/ の worktree を操作してはならない
+- Pilot が Worker の worktree 内で作業してはならない
+
+**失敗時の挙動**:
+- merge-gate REJECT: worktree は残す。fix-phase で再利用
+- Worker crash: worktree は残す。Pilot がクリーンアップを判断
+- merge 失敗: worktree は残す。自動 rebase は行わない（不変条件 F）
+
 ### Emergency Bypass
 
 co-autopilot 障害時のみ手動パスを許可する。

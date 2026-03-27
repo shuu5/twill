@@ -1,0 +1,642 @@
+change_id: b-1-chain-driven-autopilot-first
+generated_at: "2026-03-27T00:00:00Z"
+test_framework: bash
+test_runner: "bash tests/run-all.sh"
+scenarios:
+  # ==========================================================================
+  # specs/architecture-documents.md
+  # ==========================================================================
+
+  # --- Requirement: コンポーネントマッピング表 ---
+
+  - id: "component-mapping-all-types"
+    name: "全コンポーネント種別をカバー"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 15
+    requirement: "コンポーネントマッピング表"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "全コンポーネント種別をカバー"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "component-mapping-all-types-headings"
+    name: "全コンポーネント種別をカバー [edge: 見出しまたはテーブルで分類]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 15
+    requirement: "コンポーネントマッピング表"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "全コンポーネント種別をカバー [edge: 見出しまたはテーブルで分類]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "component-mapping-absorption-clear"
+    name: "吸収先が明確"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 19
+    requirement: "コンポーネントマッピング表"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "吸収先が明確"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "component-mapping-absorption-rationale"
+    name: "吸収先が明確 [edge: 根拠列が空でない]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 19
+    requirement: "コンポーネントマッピング表"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "吸収先が明確 [edge: 根拠列が空でない]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "component-mapping-all-categories"
+    name: "4カテゴリ（吸収・削除・移植・新規）が全て存在 [edge]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 15
+    requirement: "コンポーネントマッピング表"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "4カテゴリ（吸収・削除・移植・新規）が全て存在 [edge]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: B-3/C-4 スコープ境界定義 ---
+
+  - id: "scope-boundary-criteria"
+    name: "スコープの分類基準が明確"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 29
+    requirement: "B-3/C-4 スコープ境界定義"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "スコープの分類基準が明確"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "scope-boundary-separated"
+    name: "スコープの分類基準が明確 [edge: B-3/C-4が分離定義]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 29
+    requirement: "B-3/C-4 スコープ境界定義"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "スコープの分類基準が明確 [edge: B-3/C-4が分離定義]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "scope-boundary-all-scripts"
+    name: "全 script が分類済み"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 33
+    requirement: "B-3/C-4 スコープ境界定義"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "全 script が分類済み"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "scope-boundary-no-unclassified"
+    name: "全 script が分類済み [edge: 未分類エントリなし]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 33
+    requirement: "B-3/C-4 スコープ境界定義"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "全 script が分類済み [edge: 未分類エントリなし]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: Specialist 共通出力スキーマ仕様 ---
+
+  - id: "specialist-schema-complete"
+    name: "JSON スキーマが完全定義"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 43
+    requirement: "Specialist 共通出力スキーマ仕様"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "JSON スキーマが完全定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-schema-status-values"
+    name: "JSON スキーマ [edge: status値 PASS/WARN/FAIL が定義]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 43
+    requirement: "Specialist 共通出力スキーマ仕様"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "JSON スキーマ [edge: status値 PASS/WARN/FAIL が定義]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-schema-severity-values"
+    name: "JSON スキーマ [edge: severity値 CRITICAL/WARNING/INFO が定義]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 43
+    requirement: "Specialist 共通出力スキーマ仕様"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "JSON スキーマ [edge: severity値 CRITICAL/WARNING/INFO が定義]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-schema-confidence-range"
+    name: "JSON スキーマ [edge: confidence範囲 0-100 が明記]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 43
+    requirement: "Specialist 共通出力スキーマ仕様"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "JSON スキーマ [edge: confidence範囲 0-100 が明記]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-schema-fewshot"
+    name: "few-shot 例が含まれる"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 47
+    requirement: "Specialist 共通出力スキーマ仕様"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "few-shot 例が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-schema-fewshot-codeblock"
+    name: "few-shot 例 [edge: コードブロック内に記載]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 47
+    requirement: "Specialist 共通出力スキーマ仕様"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "few-shot 例 [edge: コードブロック内に記載]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: Model 割り当て表 ---
+
+  - id: "model-assignment-all"
+    name: "全 specialist の model が指定"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 57
+    requirement: "Model 割り当て表"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "全 specialist の model が指定"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "model-assignment-haiku-purpose"
+    name: "Model 割り当て [edge: haiku用途が明記]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 57
+    requirement: "Model 割り当て表"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "Model 割り当て [edge: haiku用途が明記]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "model-assignment-sonnet-purpose"
+    name: "Model 割り当て [edge: sonnet用途が明記]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 57
+    requirement: "Model 割り当て表"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "Model 割り当て [edge: sonnet用途が明記]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "model-assignment-opus-purpose"
+    name: "Model 割り当て [edge: opus用途が明記]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 57
+    requirement: "Model 割り当て表"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "Model 割り当て [edge: opus用途が明記]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: Bare repo 構造検証ルール ---
+
+  - id: "bare-repo-three-conditions"
+    name: "検証条件が3件定義"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 67
+    requirement: "Bare repo 構造検証ルール"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "検証条件が3件定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bare-repo-failure-handling"
+    name: "検証条件 [edge: 失敗時対処が記載]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 67
+    requirement: "Bare repo 構造検証ルール"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "検証条件 [edge: 失敗時対処が記載]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bare-repo-numbered-conditions"
+    name: "検証条件 [edge: 番号付き3件]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 67
+    requirement: "Bare repo 構造検証ルール"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "検証条件 [edge: 番号付き3件]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bare-repo-directory-structure"
+    name: "正規ディレクトリ構造が記載"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 71
+    requirement: "Bare repo 構造検証ルール"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "正規ディレクトリ構造が記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bare-repo-structure-as-tree"
+    name: "正規ディレクトリ構造 [edge: ツリー形式で図示]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 71
+    requirement: "Bare repo 構造検証ルール"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "正規ディレクトリ構造 [edge: ツリー形式で図示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: Worktree ライフサイクル安全ルール ---
+
+  - id: "worktree-lifecycle-roles"
+    name: "Pilot/Worker の役割が明確"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 81
+    requirement: "Worktree ライフサイクル安全ルール"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "Pilot/Worker の役割が明確"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-worker-no-delete"
+    name: "Pilot/Worker 役割 [edge: Worker削除禁止が明示]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 81
+    requirement: "Worktree ライフサイクル安全ルール"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "Pilot/Worker 役割 [edge: Worker削除禁止が明示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-invariant-b-consistency"
+    name: "不変条件 B との整合性"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 85
+    requirement: "Worktree ライフサイクル安全ルール"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "不変条件 B との整合性"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-invariant-b-referenced"
+    name: "不変条件 B との整合性 [edge: 不変条件BがID参照]"
+    spec_file: "specs/architecture-documents.md"
+    spec_line: 85
+    requirement: "Worktree ライフサイクル安全ルール"
+    test_file: "tests/scenarios/architecture-documents.test.sh"
+    test_name: "不変条件 B との整合性 [edge: 不変条件BがID参照]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # specs/openspec-scenarios.md
+  # ==========================================================================
+
+  # --- Requirement: Autopilot Lifecycle シナリオ ---
+
+  - id: "autopilot-normal-lifecycle"
+    name: "正常系ライフサイクル"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 9
+    requirement: "Autopilot Lifecycle シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "正常系ライフサイクル"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-lifecycle-ordered"
+    name: "正常系ライフサイクル [edge: 実行順序が明示]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 9
+    requirement: "Autopilot Lifecycle シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "正常系ライフサイクル [edge: 実行順序が明示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-multi-phase"
+    name: "複数 Phase の逐次実行"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 13
+    requirement: "Autopilot Lifecycle シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "複数 Phase の逐次実行"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-three-phases"
+    name: "複数 Phase [edge: 3 Phase 以上の例]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 13
+    requirement: "Autopilot Lifecycle シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "複数 Phase [edge: 3 Phase 以上の例]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-skip-propagation"
+    name: "Phase 内 Issue 失敗時の skip 伝播"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 17
+    requirement: "Autopilot Lifecycle シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "Phase 内 Issue 失敗時の skip 伝播"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-skip-cascading"
+    name: "skip 伝播 [edge: 再帰的伝播が記載]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 17
+    requirement: "Autopilot Lifecycle シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "skip 伝播 [edge: 再帰的伝播が記載]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-emergency-bypass"
+    name: "Emergency Bypass"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 21
+    requirement: "Autopilot Lifecycle シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "Emergency Bypass"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-emergency-bypass-conditions"
+    name: "Emergency Bypass [edge: 許可条件が限定的]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 21
+    requirement: "Autopilot Lifecycle シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "Emergency Bypass [edge: 許可条件が限定的]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: merge-gate シナリオ ---
+
+  - id: "mergegate-dynamic-reviewer"
+    name: "動的レビュアー構築"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 31
+    requirement: "merge-gate シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "動的レビュアー構築"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "mergegate-all-specialists"
+    name: "動的レビュアー [edge: 4 specialist 全列挙]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 31
+    requirement: "merge-gate シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "動的レビュアー [edge: 4 specialist 全列挙]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "mergegate-pass"
+    name: "merge-gate PASS"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 35
+    requirement: "merge-gate シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "merge-gate PASS"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "mergegate-pass-negative-condition"
+    name: "merge-gate PASS [edge: 否定条件が正確]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 35
+    requirement: "merge-gate シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "merge-gate PASS [edge: 否定条件が正確]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "mergegate-reject-first"
+    name: "merge-gate REJECT（1回目）"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 39
+    requirement: "merge-gate シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "merge-gate REJECT（1回目）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "mergegate-reject-status-transition"
+    name: "merge-gate REJECT 1回目 [edge: status遷移が明示]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 39
+    requirement: "merge-gate シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "merge-gate REJECT 1回目 [edge: status遷移が明示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "mergegate-reject-second"
+    name: "merge-gate REJECT（2回目、確定失敗）"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 43
+    requirement: "merge-gate シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "merge-gate REJECT（2回目、確定失敗）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "mergegate-invariant-e-referenced"
+    name: "merge-gate REJECT 2回目 [edge: 不変条件E参照]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 43
+    requirement: "merge-gate シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "merge-gate REJECT 2回目 [edge: 不変条件E参照]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "mergegate-max-retry"
+    name: "merge-gate REJECT [edge: リトライ上限 最大1回]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 43
+    requirement: "merge-gate シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "merge-gate REJECT [edge: リトライ上限 最大1回]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: Project Create シナリオ ---
+
+  - id: "project-create-normal"
+    name: "正常系プロジェクト作成"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 53
+    requirement: "Project Create シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "正常系プロジェクト作成"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-create-directory-layout"
+    name: "正常系プロジェクト作成 [edge: ディレクトリ構成明示]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 53
+    requirement: "Project Create シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "正常系プロジェクト作成 [edge: ディレクトリ構成明示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-create-bare-repo-validation"
+    name: "bare repo 構造検証"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 57
+    requirement: "Project Create シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "bare repo 構造検証"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-create-git-is-file"
+    name: "bare repo 構造検証 [edge: .git がファイルと明示]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 57
+    requirement: "Project Create シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "bare repo 構造検証 [edge: .git がファイルと明示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-create-board"
+    name: "Project Board 自動作成"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 61
+    requirement: "Project Create シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "Project Board 自動作成"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-create-board-no-repo"
+    name: "Project Board [edge: GitHub未指定時の挙動定義]"
+    spec_file: "specs/openspec-scenarios.md"
+    spec_line: 61
+    requirement: "Project Create シナリオ"
+    test_file: "tests/scenarios/openspec-scenarios.test.sh"
+    test_name: "Project Board [edge: GitHub未指定時の挙動定義]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
