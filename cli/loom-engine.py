@@ -54,6 +54,9 @@ _FALLBACK_TYPE_RULES = {
 }
 TYPE_ALIASES = {}
 
+# specialist の model フィールド許可値
+ALLOWED_MODELS = {"haiku", "sonnet", "opus"}
+
 
 def _get_loom_root() -> Path:
     """loom-engine.py の配置ディレクトリ（= loom リポジトリルート）を返す"""
@@ -2631,6 +2634,20 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
             for tool in declared - used_mcp - COMMON_TOOLS:
                 add_info(f"[tools-unused] {cname}: frontmatter declares {tool} but not used in body")
 
+    # (D) Model Declaration: specialist の model フィールド検証
+    for section in ('skills', 'commands', 'agents'):
+        for cname, cdata in deps.get(section, {}).items():
+            comp_type = cdata.get('type', '')
+            if resolve_type(comp_type) != 'specialist':
+                continue
+            model = cdata.get('model')
+            if model is None:
+                add_warning(f"[model-required] {cname}: specialist で model 未宣言")
+            elif model == 'opus':
+                add_warning(f"[model-required] {cname}: specialist に opus は推奨されません")
+            elif model not in ALLOWED_MODELS:
+                add_info(f"[model-required] {cname}: model '{model}' は許可リストにありません")
+
     return criticals, warnings, infos
 
 
@@ -3421,6 +3438,7 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
                 'type': spec.get('type', ''),
                 'path': spec.get('path', ''),
                 'calls': spec.get('calls', []),
+                'model': spec.get('model'),
             }
 
     # Section 1: Controller Size
@@ -3685,6 +3703,36 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
         o = 'Yes' if keywords['output'] else 'No'
         c = 'Yes' if keywords['constraint'] else 'No'
         print(f"| {name} | {comp['type']} | {p} | {o} | {c} | {severity} |")
+    print()
+
+    # === Section 6: Model Declaration ===
+    print("## 6. Model Declaration")
+    print()
+    print("| Name | Type | Model | Severity |")
+    print("|------|------|-------|----------|")
+
+    for name, comp in sorted(all_components.items()):
+        resolved = resolve_type(comp['type'])
+        if resolved != 'specialist':
+            continue
+        model = comp.get('model')
+        if model is None:
+            model_str = '(none)'
+            severity = 'WARNING'
+            warnings += 1
+        elif model == 'opus':
+            model_str = model
+            severity = 'WARNING'
+            warnings += 1
+        elif model not in ALLOWED_MODELS:
+            model_str = model
+            severity = 'INFO'
+            oks += 1
+        else:
+            model_str = model
+            severity = 'OK'
+            oks += 1
+        print(f"| {name} | {comp['type']} | {model_str} | {severity} |")
     print()
 
     # === Summary ===
