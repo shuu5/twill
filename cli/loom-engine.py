@@ -45,10 +45,11 @@ except ImportError:
 _FALLBACK_TYPE_RULES = {
     'controller':  {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference'}, 'spawnable_by': {'user', 'launcher'}},
     'workflow':    {'section': 'skills',   'can_spawn': {'atomic', 'composite', 'specialist'},  'spawnable_by': {'controller', 'user'}},
-    'atomic':      {'section': 'commands', 'can_spawn': {'reference'},                          'spawnable_by': {'workflow', 'controller'}},
-    'composite':   {'section': 'commands', 'can_spawn': {'specialist'},                         'spawnable_by': {'workflow', 'controller'}},
+    'atomic':      {'section': 'commands', 'can_spawn': {'reference', 'script'},                  'spawnable_by': {'workflow', 'controller'}},
+    'composite':   {'section': 'commands', 'can_spawn': {'specialist', 'script'},               'spawnable_by': {'workflow', 'controller'}},
     'specialist':  {'section': 'agents',   'can_spawn': set(),                                  'spawnable_by': {'workflow', 'composite', 'controller'}},
     'reference':   {'section': 'skills',   'can_spawn': set(),                                  'spawnable_by': {'controller', 'atomic', 'agents.skills', 'all'}},
+    'script':      {'section': 'scripts',  'can_spawn': set(),                                  'spawnable_by': {'atomic', 'composite'}},
 }
 TYPE_ALIASES = {}
 
@@ -210,6 +211,8 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
             'specialist': 'agent',
             # Agent Teams 固有キー
             'phase': 'command', 'worker': 'agent',
+            # script 型
+            'script': 'script',
         }
         for c in call_list:
             for key, node_type in key_map.items():
@@ -291,6 +294,28 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
             'step_in': data.get('step_in'),
         }
 
+    # スクリプト
+    for name, data in deps.get('scripts', {}).items():
+        node_id = f"script:{name}"
+        path = data.get('path')
+        tokens = count_tokens(plugin_root / path) if path else 0
+        calls = parse_calls(data.get('calls', []))
+        graph[node_id] = {
+            'type': 'script',
+            'name': name,
+            'path': path,
+            'description': data.get('description', ''),
+            'calls': calls,
+            'uses_agents': [],
+            'external': [],
+            'requires_mcp': [],
+            'required_by': [],
+            'conditional': None,
+            'tokens': tokens,
+            'chain': data.get('chain'),
+            'step_in': data.get('step_in'),
+        }
+
     # 外部依存
     for name, data in deps.get('external', {}).items():
         for cmd in data.get('commands', []):
@@ -341,7 +366,7 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
 def find_node(graph: Dict, target: str) -> Optional[str]:
     """ターゲット名からノードIDを検索"""
     # 完全一致を試行
-    for prefix in ['skill', 'command', 'agent', 'external']:
+    for prefix in ['skill', 'command', 'agent', 'script', 'external']:
         node_id = f"{prefix}:{target}"
         if node_id in graph:
             return node_id
@@ -486,6 +511,7 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
         'sub_commands': set(),
         'orphan_commands': [],
         'agents': list(deps.get('agents', {}).keys()),
+        'scripts': list(deps.get('scripts', {}).keys()),
         'externals': [],
     }
 
@@ -710,6 +736,15 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
             lines.append(f'    {aid} [label="{label}", shape=ellipse, style=filled, fillcolor="#ede7f6"];')
     lines.append("")
 
+    lines.append("    // L3.5: Scripts")
+    for script_name in layers['scripts']:
+        scid = safe_id(f"script_{script_name}")
+        node_id = f"script:{script_name}"
+        tokens = graph.get(node_id, {}).get('tokens', 0)
+        label = format_label(script_name, tokens)
+        lines.append(f'    {scid} [label="{label}", shape=hexagon, style=filled, fillcolor="#FF9800"];')
+    lines.append("")
+
     lines.append("    // L4: External")
     for ext_name in layers['externals']:
         eid = safe_id(f"ext_{ext_name}")
@@ -760,6 +795,10 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
     l3_ids = [safe_id(f"agent_{a}") for a in deps.get('agents', {}) if a not in layers['orchestrators']]
     if l3_ids:
         lines.append(f"    {{ rank=same; {'; '.join(l3_ids)}; }}")
+
+    script_ids = [safe_id(f"script_{s}") for s in layers['scripts']]
+    if script_ids:
+        lines.append(f"    {{ rank=same; {'; '.join(script_ids)}; }}")
 
     l4_ids = [safe_id(f"ext_{e}") for e in layers['externals']]
     if l4_ids:
@@ -817,6 +856,9 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
             elif call.get('worker'):
                 agent_id = safe_id(f"agent_{call['worker']}")
                 lines.append(f"    {skill_id} -> {agent_id} [style=dashed];")
+            elif call.get('script'):
+                script_id = safe_id(f"script_{call['script']}")
+                lines.append(f"    {skill_id} -> {script_id};")
         for ext in skill_data.get('external', []):
             ext_id = safe_id(f"ext_{ext}")
             lines.append(f"    {skill_id} -> {ext_id} [style=dashed];")
@@ -863,6 +905,9 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
             elif call.get('workflow'):
                 target_id = safe_id(f"skill_{call['workflow']}")
                 lines.append(f"    {cmd_id} -> {target_id};")
+            elif call.get('script'):
+                target_id = safe_id(f"script_{call['script']}")
+                lines.append(f"    {cmd_id} -> {target_id};")
         for ext in cmd_data.get('external', []):
             ext_id = safe_id(f"ext_{ext}")
             lines.append(f"    {cmd_id} -> {ext_id} [style=dashed];")
@@ -901,6 +946,9 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
             elif call.get('workflow'):
                 target_id = safe_id(f"skill_{call['workflow']}")
                 lines.append(f"    {agent_id} -> {target_id} [style=dotted];")
+            elif call.get('script'):
+                target_id = safe_id(f"script_{call['script']}")
+                lines.append(f"    {agent_id} -> {target_id} [style=dotted];")
         # agents.skills: で reference を参照
         for ref_skill in agent_data.get('skills', []):
             target_id = safe_id(f"skill_{ref_skill}")
@@ -926,14 +974,17 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
         existing_types.add(cmd_data.get('type', 'atomic'))
     for agent_data in deps.get('agents', {}).values():
         existing_types.add(agent_data.get('type', 'specialist'))
+    if deps.get('scripts'):
+        existing_types.add('script')
     legend_defs = [
-        ('controller',      'Controller (skill)',      'ellipse', '#c8e6c9', 'filled'),
-        ('workflow',        'Workflow (skill)',         'ellipse', '#e8f5e9', 'filled'),
-        ('reference',       'Reference (skill)',       'note',    '#e1f5fe', 'filled'),
-        ('atomic',          'Atomic (command)',         'box',     '#e3f2fd', 'filled'),
-        ('composite',       'Composite (command)',      'box',     '#bbdefb', 'filled'),
-        ('specialist',      'Specialist (agent)',       'ellipse', '#ede7f6', 'filled'),
-        ('orchestrator',    'Orchestrator (agent)',     'ellipse', '#f3e5f5', '"filled,bold"'),
+        ('controller',      'Controller (skill)',      'ellipse',  '#c8e6c9', 'filled'),
+        ('workflow',        'Workflow (skill)',         'ellipse',  '#e8f5e9', 'filled'),
+        ('reference',       'Reference (skill)',       'note',     '#e1f5fe', 'filled'),
+        ('atomic',          'Atomic (command)',         'box',      '#e3f2fd', 'filled'),
+        ('composite',       'Composite (command)',      'box',      '#bbdefb', 'filled'),
+        ('specialist',      'Specialist (agent)',       'ellipse',  '#ede7f6', 'filled'),
+        ('orchestrator',    'Orchestrator (agent)',     'ellipse',  '#f3e5f5', '"filled,bold"'),
+        ('script',          'Script',                   'hexagon',  '#FF9800', 'filled'),
     ]
 
     lines.append("    // Legend")
@@ -1087,6 +1138,17 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
             lines.append(f'    {aid} [label="{label}", shape=ellipse, style=filled, fillcolor="#ede7f6"];')
     lines.append("")
 
+    lines.append("    // L3.5: Scripts")
+    for script_name in layers['scripts']:
+        node_id = f"script:{script_name}"
+        if node_id not in allowed_nodes:
+            continue
+        scid = safe_id(f"script_{script_name}")
+        tokens = graph.get(node_id, {}).get('tokens', 0)
+        label = format_label(script_name, tokens)
+        lines.append(f'    {scid} [label="{label}", shape=hexagon, style=filled, fillcolor="#FF9800"];')
+    lines.append("")
+
     lines.append("    // L4: External")
     for ext_name in layers['externals']:
         node_id = f"external:{ext_name}"
@@ -1144,6 +1206,10 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
     if l3_ids:
         lines.append(f"    {{ rank=same; {'; '.join(l3_ids)}; }}")
 
+    script_ids = [safe_id(f"script_{s}") for s in layers['scripts'] if f"script:{s}" in allowed_nodes]
+    if script_ids:
+        lines.append(f"    {{ rank=same; {'; '.join(script_ids)}; }}")
+
     l4_ids = [safe_id(f"ext_{e}") for e in layers['externals'] if f"external:{e}" in allowed_nodes]
     if l4_ids:
         lines.append(f"    {{ rank=same; {'; '.join(l4_ids)}; }}")
@@ -1173,7 +1239,8 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
         for key, prefix in [('skill', 'skill'), ('reference', 'skill'), ('workflow', 'skill'),
                             ('controller', 'skill'),
                             ('command', 'cmd'), ('atomic', 'cmd'), ('composite', 'cmd'), ('phase', 'cmd'),
-                            ('specialist', 'agent'), ('agent', 'agent'), ('worker', 'agent')]:
+                            ('specialist', 'agent'), ('agent', 'agent'), ('worker', 'agent'),
+                            ('script', 'script')]:
             val = call.get(key)
             if val is None:
                 continue
@@ -1182,6 +1249,8 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
                 target_node = f"skill:{val}"
             elif key in ('command', 'atomic', 'composite', 'phase'):
                 target_node = f"command:{val}"
+            elif key == 'script':
+                target_node = f"script:{val}"
             else:
                 target_node = f"agent:{val}"
             if target_node not in allowed:
@@ -1264,6 +1333,8 @@ def generate_subgraph_graphviz(graph: Dict, deps: dict, plugin_name: str, root_n
                 allowed_gv_ids.add(safe_id(f"cmd_{nname}"))
             elif ntype == 'agent':
                 allowed_gv_ids.add(safe_id(f"agent_{nname}"))
+            elif ntype == 'script':
+                allowed_gv_ids.add(safe_id(f"script_{nname}"))
             elif ntype == 'external':
                 allowed_gv_ids.add(safe_id(f"ext_{nname}"))
 
@@ -1359,6 +1430,16 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
     lines.append("    end")
     lines.append("")
 
+    # === L3.5: スクリプト ===
+    if layers['scripts']:
+        lines.append("    subgraph L3_5[\"Scripts\"]")
+        lines.append("        direction TB")
+        for script_name in layers['scripts']:
+            scid = safe_id(script_name, 'script_')
+            lines.append(f"        {scid}{{{{{script_name}}}}}")
+        lines.append("    end")
+        lines.append("")
+
     # === L4: 外部依存 ===
     lines.append("    subgraph L4[\"External\"]")
     lines.append("        direction TB")
@@ -1369,9 +1450,15 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
 
     # === 層間接続 ===
     lines.append("    %% Layer connections")
-    lines.append("    L0 --> L1 --> L2 -.-> L3")
-    lines.append("    L0 -.-> L4")
-    lines.append("    L1 -.-> L4")
+    if layers['scripts']:
+        lines.append("    L0 --> L1 --> L2 -.-> L3")
+        lines.append("    L2 --> L3_5")
+        lines.append("    L0 -.-> L4")
+        lines.append("    L1 -.-> L4")
+    else:
+        lines.append("    L0 --> L1 --> L2 -.-> L3")
+        lines.append("    L0 -.-> L4")
+        lines.append("    L1 -.-> L4")
     lines.append("")
 
     # === launcher → skill エッジ ===
@@ -1390,6 +1477,12 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
     lines.append("    classDef workflow fill:#e8f5e9,stroke:#43a047")
     lines.append("    classDef orphan fill:#ffcdd2,stroke:#c62828")
     lines.append("    classDef conditional fill:#e3f2fd,stroke:#1976d2")
+    lines.append("    classDef scriptStyle fill:#FF9800,stroke:#E65100")
+
+    # Apply script class
+    for script_name in layers['scripts']:
+        scid = safe_id(script_name, 'script_')
+        lines.append(f"    class {scid} scriptStyle")
 
     lines.append("```")
 
@@ -1422,6 +1515,8 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
                 targets.append(f"●{c['specialist']}")
             elif c.get('agent'):
                 targets.append(f"⟶{c['agent']}")
+            elif c.get('script'):
+                targets.append(f"⬡{c['script']}")
         for agent in skill_data.get('uses_agents', []):
             targets.append(f"⟶{agent}")
         if targets:
@@ -1460,6 +1555,8 @@ def generate_mermaid(graph: Dict, deps: dict, plugin_name: str) -> str:
                 targets.append(f"→{plugin_name}:{call['controller']}")
             elif call.get('workflow'):
                 targets.append(f"→{plugin_name}:{call['workflow']}")
+            elif call.get('script'):
+                targets.append(f"⬡{call['script']}")
         for agent in cmd_data.get('uses_agents', []):
             targets.append(f"⟶{agent}")
         if targets:
@@ -1916,7 +2013,7 @@ def find_orphans(graph: Dict, deps: dict) -> Dict[str, List[str]]:
         if not has_callers and not is_excluded:
             unused.append(node_id)
 
-        if not has_deps and node_data['type'] != 'agent':
+        if not has_deps and node_data['type'] not in ('agent', 'script'):
             no_deps.append(node_id)
 
         if not has_callers and not has_deps and not is_excluded:
@@ -1949,9 +2046,9 @@ def validate_types(deps: dict, graph: Dict) -> Tuple[int, List[str]]:
     violations = []
 
     # セクション → コンポーネント型のマッピング
-    section_map = {'skills': 'skill', 'commands': 'command', 'agents': 'agent'}
+    section_map = {'skills': 'skill', 'commands': 'command', 'agents': 'agent', 'scripts': 'script'}
 
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for name, data in deps.get(section, {}).items():
             comp_type = data.get('type')
             if not comp_type:
@@ -2005,9 +2102,11 @@ def validate_types(deps: dict, graph: Dict) -> Tuple[int, List[str]]:
         'specialist': 'agents',
         # Agent Teams 固有の calls キー
         'phase': 'commands', 'worker': 'agents',
+        # script 型
+        'script': 'scripts',
     }
 
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for name, data in deps.get(section, {}).items():
             caller_type = resolve_type(data.get('type', ''))
             caller_rule = TYPE_RULES.get(caller_type)
@@ -2060,7 +2159,7 @@ def validate_body_refs(deps: dict, plugin_root: Path) -> Tuple[int, List[str]]:
 
     # deps.yaml の全コンポーネント名集合を構築
     all_names: Set[str] = set()
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for name in deps.get(section, {}).keys():
             all_names.add(name)
 
@@ -2116,20 +2215,20 @@ def validate_v3_schema(deps: dict) -> Tuple[int, List[str]]:
         return ok_count, violations
 
     # 許可される v3.0 型名キー
-    v3_type_keys = {'atomic', 'composite', 'workflow', 'controller', 'specialist', 'reference'}
+    v3_type_keys = {'atomic', 'composite', 'workflow', 'controller', 'specialist', 'reference', 'script'}
     # v2.0 セクション名キー（v3.0 では非推奨）
     v2_section_keys = {'command', 'skill', 'agent'}
 
     # 全コンポーネント名集合
     all_components: Set[str] = set()
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for name in deps.get(section, {}).keys():
             all_components.add(name)
 
     chains = deps.get('chains', {})
 
     # Check 1: calls キーが型名であること
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for comp_name, data in deps.get(section, {}).items():
             for i, call in enumerate(data.get('calls', [])):
                 call_keys = [k for k in call.keys() if k != 'step']
@@ -2230,6 +2329,17 @@ def validate_v3_schema(deps: dict) -> Tuple[int, List[str]]:
                 violations.append(
                     f"[v3-chains-step-type] chains/{chain_name}/steps[{i}]: "
                     f"step entry must be a string, got {type(step_entry).__name__}"
+                )
+
+    # Check 6: 旧形式 scripts フィールド WARNING
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            legacy_scripts = data.get('scripts')
+            if legacy_scripts is not None and isinstance(legacy_scripts, list):
+                violations.append(
+                    f"[v3-legacy-scripts] {section}/{comp_name}: "
+                    f"component-level 'scripts' field is deprecated in v3.0, "
+                    f"use top-level 'scripts' section with 'calls' references instead"
                 )
 
     return ok_count, violations
@@ -3008,9 +3118,9 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
     warnings = 0
     oks = 0
 
-    # Collect all components
+    # Collect all components (scripts included for completeness but skipped in checks)
     all_components = {}
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for name, spec in deps.get(section, {}).items():
             all_components[name] = {
                 'section': section,
@@ -3053,6 +3163,8 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
     print("|-----------|------|--------|-------|-------|----------|")
 
     for name, comp in sorted(all_components.items()):
+        if resolve_type(comp['type']) == 'script':
+            continue  # scripts are not markdown, skip inline check
         path = plugin_root / comp['path']
         inline, total = _count_inline_bash_lines(path)
         if inline == 0:
@@ -3770,7 +3882,7 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
     # --- 1. deps.yaml キー名の変更 ---
     found_section = None
     found_data = None
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         section_dict = deps.get(section, {})
         if old_name in section_dict:
             if new_name in section_dict:
@@ -3796,7 +3908,7 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
 
     if found_section:
         # new_name が他セクションに存在しないか確認
-        for section in ('skills', 'commands', 'agents'):
+        for section in ('skills', 'commands', 'agents', 'scripts'):
             if section != found_section and new_name in deps.get(section, {}):
                 print(f"Error: '{new_name}' already exists in {section}", file=sys.stderr)
                 return False
@@ -3807,8 +3919,8 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
 
     # --- 2. deps.yaml 内の全 calls 参照の更新 ---
     call_keys = {'command', 'composite', 'skill', 'reference', 'agent', 'specialist',
-                 'workflow', 'phase', 'worker'}
-    for section in ('skills', 'commands', 'agents'):
+                 'workflow', 'phase', 'worker', 'script'}
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for comp_name, data in deps.get(section, {}).items():
             for call in data.get('calls', []):
                 for key in call_keys:
@@ -3826,7 +3938,7 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
                     changes.append(f"  deps.yaml chains: chains/{chain_name}/steps[{i}]: {old_name} → {new_name}")
 
     # step_in.parent の更新
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for comp_name, data in deps.get(section, {}).items():
             step_in = data.get('step_in', {})
             if isinstance(step_in, dict) and step_in.get('parent') == old_name:
@@ -3836,7 +3948,7 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
     if old_name in chains:
         changes.append(f"  deps.yaml chains: chains/{old_name} → chains/{new_name}")
         # 全コンポーネントの chain フィールドも更新
-        for section in ('skills', 'commands', 'agents'):
+        for section in ('skills', 'commands', 'agents', 'scripts'):
             for comp_name, data in deps.get(section, {}).items():
                 if data.get('chain') == old_name:
                     changes.append(f"  deps.yaml chain: {section}/{comp_name}/chain: {old_name} → {new_name}")
@@ -3900,7 +4012,7 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
         raw_deps[found_section] = new_section
 
     # 2. calls 参照更新
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for comp_name, data in raw_deps.get(section, {}).items():
             for call in data.get('calls', []):
                 for key in call_keys:
@@ -3916,7 +4028,7 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
                 if step == old_name:
                     steps[i] = new_name
 
-    for section in ('skills', 'commands', 'agents'):
+    for section in ('skills', 'commands', 'agents', 'scripts'):
         for comp_name, data in raw_deps.get(section, {}).items():
             step_in = data.get('step_in', {})
             if isinstance(step_in, dict) and step_in.get('parent') == old_name:
@@ -3924,7 +4036,7 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
 
     if old_name in raw_chains:
         raw_chains[new_name] = raw_chains.pop(old_name)
-        for section in ('skills', 'commands', 'agents'):
+        for section in ('skills', 'commands', 'agents', 'scripts'):
             for comp_name, data in raw_deps.get(section, {}).items():
                 if data.get('chain') == old_name:
                     data['chain'] = new_name
@@ -4361,6 +4473,7 @@ def main():
             ('Skills', 'skill'),
             ('Commands', 'command'),
             ('Agents', 'agent'),
+            ('Scripts', 'script'),
         ]
 
         for section_name, node_type in sections:
@@ -4561,6 +4674,13 @@ def main():
                     skill_type = f" [{node.get('skill_type')}]" if node.get('skill_type') else ""
                     desc = node['description'][:50] if node['description'] else ''
                     print(f"  {node['name']}{skill_type}: {desc}...")
+
+        print("\n## SCRIPTS")
+        for node_id in sorted(graph):
+            if graph[node_id]['type'] == 'script':
+                node = graph[node_id]
+                desc = node['description'][:50] if node['description'] else ''
+                print(f"  {node['name']}: {desc}...")
 
         print("\n## EXTERNAL")
         for node_id in sorted(graph):

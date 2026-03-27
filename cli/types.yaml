@@ -15,12 +15,12 @@ types:
 
   atomic:
     section: commands
-    can_spawn: [reference]
+    can_spawn: [reference, script]
     spawnable_by: [workflow, controller]
 
   composite:
     section: commands
-    can_spawn: [specialist]
+    can_spawn: [specialist, script]
     spawnable_by: [workflow, controller]
 
   specialist:
@@ -32,3 +32,8 @@ types:
     section: skills
     can_spawn: []
     spawnable_by: [controller, atomic, agents.skills, all]
+
+  script:
+    section: scripts
+    can_spawn: []
+    spawnable_by: [atomic, composite]
