@@ -2993,16 +2993,132 @@ def chain_generate_write(result: dict, deps: dict, plugin_root: Path) -> None:
             print(f"Updated: {path_str}")
 
 
+def _normalize_for_check(text: str) -> str:
+    """比較用にテキストを正規化する（trailing whitespace 除去 + LF 統一）。"""
+    lines = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+    return '\n'.join(line.rstrip() for line in lines)
+
+
+def _extract_checkpoint_section(content: str) -> Optional[str]:
+    """ファイル内容からチェックポイントセクションを抽出する。
+
+    Returns:
+        セクション文字列。セクションが存在しない場合は None。
+    """
+    pattern = re.compile(
+        r'^##\s+(?:チェックポイント|Checkpoint).*$',
+        re.MULTILINE | re.IGNORECASE
+    )
+    match = pattern.search(content)
+    if not match:
+        return None
+
+    rest = content[match.end():]
+    next_section = re.search(r'^##\s', rest, re.MULTILINE)
+    if next_section:
+        section = content[match.start():match.end() + next_section.start()]
+    else:
+        section = content[match.start():]
+
+    return section.rstrip('\n')
+
+
+def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[List[dict], List[str]]:
+    """単一 chain の Template A ドリフト検出。
+
+    Returns:
+        (file_results, diffs)
+        file_results: [{'comp': str, 'path': str, 'status': 'ok'|'DRIFT'}, ...]
+        diffs: unified diff テキストのリスト
+    """
+    all_components: Dict[str, Tuple[str, dict]] = {}
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            all_components[comp_name] = (section, data)
+
+    template_a = result['template_a']
+    file_results = []
+    diffs = []
+
+    for comp_name, expected_content in template_a.items():
+        comp = all_components.get(comp_name)
+        if comp is None:
+            continue
+        path_str = comp[1].get('path')
+        if not path_str:
+            continue
+
+        file_path = plugin_root / path_str
+        if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
+            continue
+        if not file_path.exists():
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT'})
+            diff_text = f"=== Diff: {path_str} ===\n--- expected\n+++ actual (file not found)\n"
+            diffs.append(diff_text)
+            continue
+
+        content = file_path.read_text(encoding='utf-8')
+        actual_section = _extract_checkpoint_section(content)
+
+        if actual_section is None:
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT'})
+            expected_lines = _normalize_for_check(expected_content).splitlines(keepends=True)
+            diff_lines = list(difflib.unified_diff(
+                expected_lines, ['(section not found)\n'],
+                fromfile='expected', tofile='actual'
+            ))
+            diff_text = f"=== Diff: {path_str} ===\n" + ''.join(diff_lines)
+            diffs.append(diff_text)
+            continue
+
+        norm_expected = _normalize_for_check(expected_content)
+        norm_actual = _normalize_for_check(actual_section)
+
+        if hashlib.sha256(norm_expected.encode('utf-8')).hexdigest() == \
+           hashlib.sha256(norm_actual.encode('utf-8')).hexdigest():
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'ok'})
+        else:
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT'})
+            expected_lines = norm_expected.splitlines(keepends=True)
+            actual_lines = norm_actual.splitlines(keepends=True)
+            diff_lines = list(difflib.unified_diff(
+                expected_lines, actual_lines,
+                fromfile='expected', tofile='actual'
+            ))
+            diff_text = f"=== Diff: {path_str} ===\n" + ''.join(diff_lines)
+            diffs.append(diff_text)
+
+    return file_results, diffs
+
+
 def handle_chain_subcommand(argv: list) -> None:
     """chain サブコマンドを処理する。sys.exit() で終了。"""
     parser = argparse.ArgumentParser(
         prog='loom chain generate',
         description='Generate step chain templates from deps.yaml'
     )
-    parser.add_argument('chain_name', help='Name of the chain to generate templates for')
+    parser.add_argument('chain_name', nargs='?', default=None,
+                        help='Name of the chain to generate templates for')
     parser.add_argument('--write', action='store_true', help='Write templates to prompt files')
+    parser.add_argument('--check', action='store_true', help='Check for drift in generated templates')
+    parser.add_argument('--all', action='store_true', dest='all_chains',
+                        help='Process all chains in deps.yaml')
 
     args = parser.parse_args(argv)
+
+    # 排他バリデーション
+    if args.all_chains and args.chain_name:
+        print("Error: --all and chain name are mutually exclusive", file=sys.stderr)
+        sys.exit(1)
+
+    if not args.all_chains and not args.chain_name:
+        parser.print_usage(sys.stderr)
+        print("Error: either chain name or --all is required", file=sys.stderr)
+        sys.exit(1)
+
+    if args.check and args.write:
+        print("Error: --check and --write are mutually exclusive", file=sys.stderr)
+        sys.exit(1)
 
     plugin_root = get_plugin_root()
     deps = load_deps(plugin_root)
@@ -3013,20 +3129,95 @@ def handle_chain_subcommand(argv: list) -> None:
         print("Error: chain generate requires deps.yaml v3.0+", file=sys.stderr)
         sys.exit(1)
 
-    # chain 存在チェック
     chains = deps.get('chains', {})
-    if args.chain_name not in chains:
-        print(f"Error: Chain '{args.chain_name}' not found in deps.yaml", file=sys.stderr)
-        sys.exit(1)
 
-    chain_data = chains[args.chain_name]
-    chain_type = chain_data.get('type') if isinstance(chain_data, dict) else None
+    if args.all_chains:
+        # --all モード
+        if not chains:
+            print("0 chains found")
+            sys.exit(0)
 
-    result = chain_generate(deps, args.chain_name, plugin_root)
-    chain_generate_print(result, args.chain_name, chain_type)
+        if args.check:
+            # --all --check: サマリー + 末尾 diff
+            all_diffs: List[str] = []
+            chains_ok = 0
+            chains_total = 0
+            total_drifted = 0
 
-    if args.write:
-        chain_generate_write(result, deps, plugin_root)
+            for cname, cdata in chains.items():
+                chains_total += 1
+                chain_type = cdata.get('type') if isinstance(cdata, dict) else None
+                result = chain_generate(deps, cname, plugin_root)
+                file_results, diffs = chain_generate_check(result, deps, plugin_root)
+
+                has_drift = any(r['status'] == 'DRIFT' for r in file_results)
+                if not has_drift:
+                    chains_ok += 1
+
+                print(f"chain: {cname}")
+                for r in file_results:
+                    status = "ok" if r['status'] == 'ok' else "DRIFT"
+                    print(f"  {r['path']:<40s} ... {status}")
+                print()
+
+                if diffs:
+                    total_drifted += len([r for r in file_results if r['status'] == 'DRIFT'])
+                    all_diffs.extend(diffs)
+
+            drifted_chains = chains_total - chains_ok
+            print(f"Summary: {chains_ok}/{chains_total} chains ok"
+                  + (f", {total_drifted} files drifted in {drifted_chains} chain{'s' if drifted_chains != 1 else ''}."
+                     if total_drifted > 0 else "."))
+
+            if all_diffs:
+                print("Run 'loom chain generate --all --write' to fix.")
+                print()
+                for d in all_diffs:
+                    print(d)
+                sys.exit(1)
+            else:
+                sys.exit(0)
+        else:
+            # --all stdout / --all --write
+            for cname, cdata in chains.items():
+                chain_type = cdata.get('type') if isinstance(cdata, dict) else None
+                result = chain_generate(deps, cname, plugin_root)
+                chain_generate_print(result, cname, chain_type)
+                if args.write:
+                    chain_generate_write(result, deps, plugin_root)
+            sys.exit(0)
+    else:
+        # 単一 chain モード
+        if args.chain_name not in chains:
+            print(f"Error: Chain '{args.chain_name}' not found in deps.yaml", file=sys.stderr)
+            sys.exit(1)
+
+        chain_data = chains[args.chain_name]
+        chain_type = chain_data.get('type') if isinstance(chain_data, dict) else None
+
+        result = chain_generate(deps, args.chain_name, plugin_root)
+
+        if args.check:
+            file_results, diffs = chain_generate_check(result, deps, plugin_root)
+            for r in file_results:
+                status = "ok" if r['status'] == 'ok' else "DRIFT"
+                print(f"  {r['path']:<40s} ... {status}")
+
+            if diffs:
+                print()
+                print(f"Run 'loom chain generate {args.chain_name} --write' to fix.")
+                print()
+                for d in diffs:
+                    print(d)
+                sys.exit(1)
+            else:
+                print()
+                print("All files are in sync.")
+                sys.exit(0)
+        else:
+            chain_generate_print(result, args.chain_name, chain_type)
+            if args.write:
+                chain_generate_write(result, deps, plugin_root)
 
 
 # === Audit Report ===
