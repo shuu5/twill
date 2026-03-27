@@ -190,6 +190,19 @@ co-autopilot 障害時のみ手動パスを許可する。
 
 - Non-implementation controller (co-issue, co-project, co-architect) は autopilot パイプラインを経由しない
 
+### Claude Code ツール活用ルール
+
+**TaskCreate/TaskList/TaskUpdate の活用**:
+- Phase 開始時: TaskCreate で Phase タスクを登録（status: in_progress）
+- Issue 完了時: TaskUpdate で対応タスクを completed に更新
+- メリット: ユーザーが CLI 上でリアルタイム進捗確認可能
+- 不使用箇所: specialist 内部処理、atomic コマンド内部（短命タスクはオーバーヘッド）
+
+**AskUserQuestion の構造化**:
+- ユーザー確認が必要な判断ポイントでは、必ず選択肢形式で提示
+- 例: `[A] 承認 [B] 修正 [C] キャンセル`
+- 自由形式プロンプトは探索フェーズ（Phase 1: 問題探索）のみに限定
+
 ## Dependencies
 
 - **Downstream -> PR Cycle**: merge-gate を呼び出してマージ判定。Contract: autopilot-pr-cycle.md

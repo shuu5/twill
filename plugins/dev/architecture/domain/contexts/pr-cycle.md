@@ -15,7 +15,7 @@ specialist が検出した問題。
 
 | フィールド | 型 | 説明 |
 |---|---|---|
-| severity | `critical` \| `high` \| `medium` \| `low` \| `info` | 深刻度 |
+| severity | `CRITICAL` \| `WARNING` \| `INFO` | 深刻度（3段階統一） |
 | confidence | number (0-100) | 確信度 |
 | file | string | 対象ファイルパス |
 | line | number | 対象行番号 |
@@ -27,17 +27,17 @@ merge-gate の判定結果。
 
 | 値 | 条件 |
 |---|---|
-| **PASS** | `severity in [critical, high] && confidence >= 80` の Finding が 0 件 |
-| **REJECT** | `severity in [critical, high] && confidence >= 80` の Finding が 1 件以上 |
+| **PASS** | `severity == CRITICAL && confidence >= 80` の Finding が 0 件 |
+| **REJECT** | `severity == CRITICAL && confidence >= 80` の Finding が 1 件以上 |
 
 ### SpecialistOutput
 各 specialist の共通出力スキーマ。
 
 ```json
 {
-  "result": "PASS|FAIL",
+  "status": "PASS|WARN|FAIL",
   "findings": [{
-    "severity": "critical|high|medium|low|info",
+    "severity": "CRITICAL|WARNING|INFO",
     "confidence": 80,
     "file": "src/module.ts",
     "line": 42,
@@ -108,9 +108,27 @@ flowchart TD
 ## Rules
 
 - **動的レビュアー構築**: 旧 standard/plugin 2パスを廃止。変更内容に応じてレビュアーリストを動的構築する
-- **共通出力スキーマ準拠**: 全 specialist は SpecialistOutput スキーマに準拠。merge-gate は `severity in [critical, high] && confidence >= 80` で機械的フィルタ
+- **共通出力スキーマ準拠**: 全 specialist は SpecialistOutput スキーマに準拠。merge-gate は `severity == CRITICAL && confidence >= 80` で機械的フィルタ
 - **deps.yaml 変更時の追加レビュー**: deps.yaml が変更されている場合、worker-structure と worker-principles が必ず追加される
 - **並列実行**: 全 specialist は並列 Task spawn。逐次実行は行わない
+
+### 出力標準化ルール
+
+**Specialist 共通出力スキーマ**（全 specialist 必須）:
+- status: `PASS` | `WARN` | `FAIL`
+- severity: `CRITICAL` | `WARNING` | `INFO`（3段階統一）
+- findings 必須フィールド: severity, confidence (0-100), file, line, message, category
+- few-shot 例（1例）をプロンプトに含めて準拠率を担保
+
+**消費側（phase-review / merge-gate）の標準化**:
+- サマリー行パース: 正規表現 `status: (PASS|WARN|FAIL)` で機械的取得
+- ブロック判定: `severity == CRITICAL && confidence >= 80` のみ。AI 推論に依存しない
+- パース失敗時: 出力全文を WARNING 扱いとし、手動レビューを要求
+
+**AI 裁量の排除**:
+- severity 分類: prompt 内のルールで決定（AI 判断ではない）
+- confidence 値: specialist が算出し出力に含める（消費側で推定しない）
+- 結果統合: specialist 出力のパースのみ。AI による自由形式の変換は禁止
 
 ## Dependencies
 
