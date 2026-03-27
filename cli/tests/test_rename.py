@@ -295,7 +295,8 @@ class TestRenameCoPrefixController:
 
     def test_rename_controller_to_co_updates_frontmatter(self):
         run_engine(self.plugin_dir, "--rename", "controller-issue", "co-issue")
-        content = (self.plugin_dir / "skills" / "controller-issue" / "SKILL.md").read_text()
+        # ファイルは新しいパスに移動済み
+        content = (self.plugin_dir / "skills" / "co-issue" / "SKILL.md").read_text()
         assert "name: co-issue" in content
 
     def test_rename_controller_to_co_updates_body_refs(self):
@@ -304,14 +305,15 @@ class TestRenameCoPrefixController:
         assert "/dev:co-issue" in content
         assert "/dev:controller-issue" not in content
 
-    def test_rename_controller_to_co_path_unchanged(self):
-        """Rename updates logical name only; path field and directory are not renamed."""
+    def test_rename_controller_to_co_updates_path_and_directory(self):
+        """Rename updates path field and moves directory."""
         run_engine(self.plugin_dir, "--rename", "controller-issue", "co-issue")
         deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
-        # path フィールドは元のまま（rename は論理名のみ変更）
-        assert deps["skills"]["co-issue"]["path"] == "skills/controller-issue/SKILL.md"
-        # ディレクトリも元のまま
-        assert (self.plugin_dir / "skills" / "controller-issue" / "SKILL.md").exists()
+        # path フィールドが更新される
+        assert deps["skills"]["co-issue"]["path"] == "skills/co-issue/SKILL.md"
+        # ディレクトリが移動される
+        assert (self.plugin_dir / "skills" / "co-issue" / "SKILL.md").exists()
+        assert not (self.plugin_dir / "skills" / "controller-issue").exists()
 
     def test_validate_after_controller_to_co_rename(self):
         run_engine(self.plugin_dir, "--rename", "controller-issue", "co-issue")
@@ -362,11 +364,236 @@ class TestRenameV3:
         assert "step-a" not in deps["skills"]
 
 
+def make_path_entry_points_fixture(tmpdir: Path) -> Path:
+    """Create a plugin fixture with entry_points for path/entry_points/directory rename testing."""
+    plugin_dir = tmpdir / "test-plugin-path"
+    plugin_dir.mkdir()
+
+    deps = {
+        "version": "2.0",
+        "plugin": "dev",
+        "entry_points": [
+            "skills/controller-project/SKILL.md",
+            "skills/workflow-setup/SKILL.md",
+        ],
+        "skills": {
+            "controller-project": {
+                "type": "controller",
+                "path": "skills/controller-project/SKILL.md",
+                "description": "Project controller",
+                "calls": [],
+            },
+            "workflow-setup": {
+                "type": "workflow",
+                "path": "skills/workflow-setup/SKILL.md",
+                "description": "Setup workflow",
+                "calls": [],
+            },
+        },
+        "commands": {
+            "flat-cmd": {
+                "type": "atomic",
+                "path": "commands/flat-cmd.md",
+                "description": "A flat command",
+                "calls": [],
+            },
+        },
+        "agents": {},
+    }
+    (plugin_dir / "deps.yaml").write_text(
+        yaml.dump(deps, default_flow_style=False, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    (plugin_dir / "skills" / "controller-project").mkdir(parents=True)
+    (plugin_dir / "skills" / "controller-project" / "SKILL.md").write_text(
+        "---\nname: controller-project\n---\n\nProject controller.\n",
+        encoding="utf-8",
+    )
+    (plugin_dir / "skills" / "workflow-setup").mkdir(parents=True)
+    (plugin_dir / "skills" / "workflow-setup" / "SKILL.md").write_text(
+        "---\nname: workflow-setup\n---\n\nSetup workflow.\n",
+        encoding="utf-8",
+    )
+    (plugin_dir / "commands").mkdir(parents=True)
+    (plugin_dir / "commands" / "flat-cmd.md").write_text(
+        "---\nname: flat-cmd\n---\n\nA flat command.\n",
+        encoding="utf-8",
+    )
+
+    return plugin_dir
+
+
+class TestRenamePathUpdate:
+    """Tests for path field update during rename."""
+
+    def setup_method(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.plugin_dir = make_path_entry_points_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_path_updated_on_rename(self):
+        """Path field is updated when component name is a path component."""
+        run_engine(self.plugin_dir, "--rename", "controller-project", "co-project")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        assert deps["skills"]["co-project"]["path"] == "skills/co-project/SKILL.md"
+
+    def test_path_not_updated_for_flat_file(self):
+        """Flat file path (commands/flat-cmd.md) is not updated since filename != component name."""
+        run_engine(self.plugin_dir, "--rename", "flat-cmd", "new-cmd")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        # flat-cmd.md のファイル名は path コンポーネントではないので更新されない
+        assert deps["commands"]["new-cmd"]["path"] == "commands/flat-cmd.md"
+
+    def test_partial_match_does_not_affect_bystander(self):
+        """Renaming co-auto does not affect co-autopilot's path."""
+        # Create a fixture with similar names
+        plugin_dir = self.tmpdir / "partial-plugin"
+        plugin_dir.mkdir()
+        deps = {
+            "version": "2.0",
+            "plugin": "dev",
+            "skills": {
+                "co-auto": {
+                    "type": "atomic",
+                    "path": "skills/co-auto/SKILL.md",
+                    "description": "Auto",
+                    "calls": [],
+                },
+                "co-autopilot": {
+                    "type": "controller",
+                    "path": "skills/co-autopilot/SKILL.md",
+                    "description": "Autopilot",
+                    "calls": [],
+                },
+            },
+            "commands": {},
+            "agents": {},
+        }
+        (plugin_dir / "deps.yaml").write_text(
+            yaml.dump(deps, default_flow_style=False, allow_unicode=True, sort_keys=False),
+            encoding="utf-8",
+        )
+        (plugin_dir / "skills" / "co-auto").mkdir(parents=True)
+        (plugin_dir / "skills" / "co-auto" / "SKILL.md").write_text(
+            "---\nname: co-auto\n---\n\nAuto.\n", encoding="utf-8"
+        )
+        (plugin_dir / "skills" / "co-autopilot").mkdir(parents=True)
+        (plugin_dir / "skills" / "co-autopilot" / "SKILL.md").write_text(
+            "---\nname: co-autopilot\n---\n\nAutopilot.\n", encoding="utf-8"
+        )
+
+        run_engine(plugin_dir, "--rename", "co-auto", "co-automatic")
+        deps = yaml.safe_load((plugin_dir / "deps.yaml").read_text())
+        # co-autopilot の path は変更されない
+        assert deps["skills"]["co-autopilot"]["path"] == "skills/co-autopilot/SKILL.md"
+        # co-automatic の path は更新される
+        assert deps["skills"]["co-automatic"]["path"] == "skills/co-automatic/SKILL.md"
+
+    def test_dry_run_shows_path_change(self):
+        result = run_engine(
+            self.plugin_dir, "--rename", "controller-project", "co-project", "--dry-run"
+        )
+        assert result.returncode == 0
+        assert "path:" in result.stdout
+        assert "skills/controller-project/SKILL.md" in result.stdout
+        assert "skills/co-project/SKILL.md" in result.stdout
+
+
+class TestRenameEntryPoints:
+    """Tests for entry_points list update during rename."""
+
+    def setup_method(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.plugin_dir = make_path_entry_points_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_entry_points_updated_on_rename(self):
+        run_engine(self.plugin_dir, "--rename", "controller-project", "co-project")
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+        assert "skills/co-project/SKILL.md" in deps["entry_points"]
+        assert "skills/controller-project/SKILL.md" not in deps["entry_points"]
+        # Other entry_points unchanged
+        assert "skills/workflow-setup/SKILL.md" in deps["entry_points"]
+
+    def test_no_error_when_entry_points_undefined(self):
+        """Renaming succeeds when deps.yaml has no entry_points key."""
+        result = run_engine(
+            make_fixture(self.tmpdir), "--rename", "my-action", "new-action"
+        )
+        assert result.returncode == 0
+
+    def test_dry_run_shows_entry_points_change(self):
+        result = run_engine(
+            self.plugin_dir, "--rename", "controller-project", "co-project", "--dry-run"
+        )
+        assert result.returncode == 0
+        assert "entry_points:" in result.stdout
+
+
+class TestRenameDirectory:
+    """Tests for directory rename during component rename."""
+
+    def setup_method(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.plugin_dir = make_path_entry_points_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def test_directory_renamed(self):
+        run_engine(self.plugin_dir, "--rename", "controller-project", "co-project")
+        assert (self.plugin_dir / "skills" / "co-project" / "SKILL.md").exists()
+        assert not (self.plugin_dir / "skills" / "controller-project").exists()
+
+    def test_directory_content_preserved(self):
+        """File content is preserved after directory rename."""
+        run_engine(self.plugin_dir, "--rename", "controller-project", "co-project")
+        content = (self.plugin_dir / "skills" / "co-project" / "SKILL.md").read_text()
+        assert "name: co-project" in content  # frontmatter updated
+        assert "Project controller." in content  # body preserved
+
+    def test_destination_exists_error(self):
+        """Error when destination directory already exists."""
+        # Create destination directory beforehand
+        (self.plugin_dir / "skills" / "co-project").mkdir(parents=True)
+        result = run_engine(self.plugin_dir, "--rename", "controller-project", "co-project")
+        assert result.returncode != 0
+        assert "already exists" in result.stderr
+
+    def test_flat_file_no_directory_rename(self):
+        """Flat file commands are not affected by directory rename."""
+        run_engine(self.plugin_dir, "--rename", "flat-cmd", "new-cmd")
+        # File stays at original location (no directory to rename)
+        assert (self.plugin_dir / "commands" / "flat-cmd.md").exists()
+
+    def test_dry_run_shows_directory_change(self):
+        result = run_engine(
+            self.plugin_dir, "--rename", "controller-project", "co-project", "--dry-run"
+        )
+        assert result.returncode == 0
+        assert "directory:" in result.stdout
+        # Directory not actually moved
+        assert (self.plugin_dir / "skills" / "controller-project" / "SKILL.md").exists()
+
+    def test_validate_after_directory_rename(self):
+        run_engine(self.plugin_dir, "--rename", "controller-project", "co-project")
+        result = run_engine(self.plugin_dir, "--validate")
+        assert "Violations: 0" in result.stdout or "All type constraints satisfied" in result.stdout
+
+
 if __name__ == "__main__":
     # Simple runner if pytest not available
     import traceback
 
-    classes = [TestRenameBasic, TestRenameCoPrefixController, TestRenameV3]
+    classes = [
+        TestRenameBasic, TestRenameCoPrefixController, TestRenameV3,
+        TestRenamePathUpdate, TestRenameEntryPoints, TestRenameDirectory,
+    ]
     passed = 0
     failed = 0
     errors = []

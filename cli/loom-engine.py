@@ -4049,7 +4049,7 @@ def _update_frontmatter_name(file_path: Path, new_name: str, dry_run: bool) -> O
 
 
 def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str, dry_run: bool) -> bool:
-    """コンポーネント名を4箇所（+ v3.0 chain 関連）で原子的に更新
+    """コンポーネント名を8箇所（+ v3.0 chain 関連）で原子的に更新
 
     更新対象:
     1. deps.yaml キー名
@@ -4057,6 +4057,9 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
     3. deps.yaml の v3.0 フィールド (chains.*.steps, step_in.parent, chain)
     4. 対象コンポーネントの frontmatter name フィールド
     5. プラグイン内全 .md ファイルの body 内 /{plugin}:{old} → /{plugin}:{new}
+    6. path フィールド（パスコンポーネント境界マッチ）
+    7. entry_points リスト内のパス
+    8. ディレクトリ/ファイルの実 rename
 
     Returns: True if changes were made (or would be made in dry_run)
     """
@@ -4174,6 +4177,50 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
                 count = content.count(old_ref)
                 changes.append(f"  body ref: {comp_path} ({count} occurrence{'s' if count > 1 else ''}): {old_ref} → {new_ref}")
 
+    # --- 6. path フィールド更新 ---
+    new_component_path = None
+    if found_data and component_path:
+        path_parts = component_path.split('/')
+        if old_name in path_parts:
+            new_path_parts = [new_name if p == old_name else p for p in path_parts]
+            new_component_path = '/'.join(new_path_parts)
+            changes.append(f"  path: {component_path} → {new_component_path}")
+
+    # --- 7. entry_points 更新 ---
+    entry_points_changes = []
+    for ep in deps.get('entry_points', []):
+        # パストラバーサル防止: entry_points パスが plugin_root 内か検証
+        if not _is_within_root(plugin_root / ep, plugin_root):
+            continue
+        ep_parts = ep.split('/')
+        if old_name in ep_parts:
+            new_ep_parts = [new_name if p == old_name else p for p in ep_parts]
+            new_ep = '/'.join(new_ep_parts)
+            if not _is_within_root(plugin_root / new_ep, plugin_root):
+                continue
+            entry_points_changes.append((ep, new_ep))
+            changes.append(f"  entry_points: {ep} → {new_ep}")
+
+    # --- 8. ディレクトリ rename ---
+    dir_rename_needed = False
+    old_dir = None
+    new_dir = None
+    if found_data and component_path:
+        comp_file = plugin_root / component_path
+        old_dir = comp_file.parent
+        if old_dir != plugin_root and old_dir.name == old_name:
+            new_dir = old_dir.parent / new_name
+            # パストラバーサル防止: 両ディレクトリが plugin_root 内か検証
+            if not _is_within_root(old_dir, plugin_root) or not _is_within_root(new_dir, plugin_root):
+                print(f"Error: directory path escapes plugin root", file=sys.stderr)
+                return False
+            if new_dir.exists():
+                print(f"Error: destination directory '{new_dir.relative_to(plugin_root)}/' already exists", file=sys.stderr)
+                return False
+            if old_dir.exists():
+                dir_rename_needed = True
+                changes.append(f"  directory: {old_dir.relative_to(plugin_root)}/ → {new_dir.relative_to(plugin_root)}/")
+
     # --- 結果表示 ---
     if not changes:
         print(f"No changes needed for renaming '{old_name}' to '{new_name}'.")
@@ -4232,6 +4279,32 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
                 if data.get('chain') == old_name:
                     data['chain'] = new_name
 
+    # 4. path フィールド更新
+    if found_section and new_component_path:
+        raw_deps[found_section][new_name]['path'] = new_component_path
+
+    # 5. entry_points 更新
+    if entry_points_changes:
+        raw_ep = raw_deps.get('entry_points', [])
+        for old_ep, new_ep in entry_points_changes:
+            for i, ep in enumerate(raw_ep):
+                if ep == old_ep:
+                    raw_ep[i] = new_ep
+
+    # 6. ディレクトリ rename（deps.yaml 書き戻し前に実行）
+    dir_moved = False
+    if dir_rename_needed and old_dir and new_dir:
+        try:
+            if not _is_within_root(new_dir, plugin_root):
+                print(f"Error: new directory path escapes plugin root", file=sys.stderr)
+                return False
+            new_dir.parent.mkdir(parents=True, exist_ok=True)
+            old_dir.rename(new_dir)
+            dir_moved = True
+        except Exception as e:
+            print(f"Error: ディレクトリ rename に失敗しました: {e}", file=sys.stderr)
+            return False
+
     # deps.yaml 書き戻し（バックアップ付きロールバック）
     deps_backup = deps_path.read_text(encoding='utf-8')
     try:
@@ -4241,6 +4314,13 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
         )
     except Exception as e:
         print(f"Error: deps.yaml 書き戻しに失敗しました: {e}", file=sys.stderr)
+        # ディレクトリ rename のロールバック
+        if dir_moved and new_dir and old_dir:
+            try:
+                new_dir.rename(old_dir)
+                print("ディレクトリ rename をロールバックしました。", file=sys.stderr)
+            except Exception:
+                print("Warning: ディレクトリ rename のロールバックにも失敗しました。", file=sys.stderr)
         try:
             deps_path.write_text(deps_backup, encoding='utf-8')
             print("deps.yaml をロールバックしました。", file=sys.stderr)
@@ -4248,13 +4328,20 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
             print("Warning: ロールバックにも失敗しました。", file=sys.stderr)
         return False
 
-    # 4. frontmatter name 更新
-    if component_path:
-        file_path = plugin_root / component_path
+    # 7. ディレクトリ rename 後の空ディレクトリ削除
+    if dir_moved and old_dir and old_dir.parent != plugin_root:
+        old_parent = old_dir.parent
+        if old_parent.exists() and not any(old_parent.iterdir()):
+            old_parent.rmdir()
+
+    # 8. frontmatter name 更新（rename 後のパスを使用）
+    actual_path = new_component_path if new_component_path else component_path
+    if actual_path:
+        file_path = plugin_root / actual_path
         if _is_within_root(file_path, plugin_root):
             _update_frontmatter_name(file_path, new_name, dry_run=False)
 
-    # 5. body 参照更新
+    # 9. body 参照更新
     for section in ('skills', 'commands', 'agents'):
         for comp_name, data in raw_deps.get(section, {}).items():
             comp_path = data.get('path')
