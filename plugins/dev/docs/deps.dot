@@ -27,12 +27,21 @@ digraph Dependencies {
     // L3: Agents
 
     // L3.5: Scripts
+    script_state_read [label="state-read\n(612 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_write [label="state-write\n(1,763 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_init [label="autopilot-init\n(823 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_session_create [label="session-create\n(551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_session_archive [label="session-archive\n(389 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_session_add_warning [label="session-add-warning\n(532 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_delete [label="worktree-delete\n(730 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_crash_detect [label="crash-detect\n(721 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
     { rank=same; skill_co_autopilot; skill_co_issue; skill_co_project; skill_co_architect; }
     { rank=same; cmd_self_improve_review; }
+    { rank=same; script_state_read; script_state_write; script_autopilot_init; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; }
 
     // Edges
 
@@ -43,6 +52,7 @@ digraph Dependencies {
         style=dashed;
         legend_controller [label="Controller (skill)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
         legend_atomic [label="Atomic (command)", shape=box, style=filled, fillcolor="#e3f2fd"];
+        legend_script [label="Script", shape=hexagon, style=filled, fillcolor="#FF9800"];
         legend_orphan [label="Orphan", shape=box, style=filled, fillcolor="#ffcdd2"];
     }
 }

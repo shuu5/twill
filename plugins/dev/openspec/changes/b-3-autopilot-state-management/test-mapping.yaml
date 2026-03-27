@@ -1,0 +1,583 @@
+change_id: b-3-autopilot-state-management
+generated_at: "2026-03-27T00:00:00Z"
+test_framework: bash
+scenarios:
+  # ==========================================================================
+  # state-file-management.md (12 scenarios)
+  # ==========================================================================
+
+  # --- Requirement: state-write.sh による状態ファイル書き込み ---
+
+  - id: "state-write-issue-init"
+    name: "issue-{N}.json の新規作成"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 7
+    requirement: "state-write.sh による状態ファイル書き込み"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "issue-{N}.json の新規作成"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-write-status-transition-running-to-merge-ready"
+    name: "status の正常遷移（running → merge-ready）"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 11
+    requirement: "state-write.sh による状態ファイル書き込み"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "status の正常遷移（running → merge-ready）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-write-invalid-transition-rejection"
+    name: "不正な状態遷移の拒否"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 15
+    requirement: "state-write.sh による状態ファイル書き込み"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "不正な状態遷移の拒否（running → done）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-write-retry-count-exceeded"
+    name: "retry_count 超過時の failed → running 拒否"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 19
+    requirement: "state-write.sh による状態ファイル書き込み"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "retry_count 超過時の failed → running 拒否"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: state-read.sh による状態ファイル読み取り ---
+
+  - id: "state-read-specific-field"
+    name: "特定フィールドの読み取り"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 27
+    requirement: "state-read.sh による状態ファイル読み取り"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "特定フィールドの読み取り"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-read-all-fields"
+    name: "全フィールドの読み取り"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 31
+    requirement: "state-read.sh による状態ファイル読み取り"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "全フィールドの読み取り"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-read-nonexistent-file"
+    name: "存在しないファイルへのアクセス"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 35
+    requirement: "state-read.sh による状態ファイル読み取り"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "存在しないファイルへのアクセス"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: Pilot/Worker ロールベースアクセス制御 ---
+
+  - id: "role-worker-session-write-denied"
+    name: "Worker が session.json に書き込みを試みる"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 43
+    requirement: "Pilot/Worker ロールベースアクセス制御"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "Worker が session.json に書き込みを試みる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "role-pilot-issue-status-done"
+    name: "Pilot が issue-{N}.json に書き込みを試みる"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 47
+    requirement: "Pilot/Worker ロールベースアクセス制御"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "Pilot が issue status=done に書き込み"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "role-pilot-issue-non-status-denied"
+    name: "Pilot が issue-{N}.json の status 以外のフィールドに書き込みを試みる"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 51
+    requirement: "Pilot/Worker ロールベースアクセス制御"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "Pilot が issue の status 以外フィールド書き込み拒否"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: 状態遷移テーブルの機械的検証 ---
+
+  - id: "transition-all-valid"
+    name: "全許可遷移の受理"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 67
+    requirement: "状態遷移テーブルの機械的検証"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "全許可遷移の受理"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "transition-done-terminal"
+    name: "done からの遷移拒否"
+    spec_file: "specs/state-file-management.md"
+    spec_line: 71
+    requirement: "状態遷移テーブルの機械的検証"
+    test_file: "tests/scenarios/state-file-management.test.sh"
+    test_name: "done からの遷移拒否"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # worktree-lifecycle-safety.md (7 scenarios)
+  # ==========================================================================
+
+  # --- Requirement: worktree 削除の Pilot 専任ルール ---
+
+  - id: "worktree-pilot-delete"
+    name: "Pilot からの worktree 削除"
+    spec_file: "specs/worktree-lifecycle-safety.md"
+    spec_line: 7
+    requirement: "worktree 削除の Pilot 専任ルール"
+    test_file: "tests/scenarios/worktree-lifecycle-safety.test.sh"
+    test_name: "Pilot からの worktree 削除"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-worker-delete-denied"
+    name: "Worker からの worktree 削除拒否"
+    spec_file: "specs/worktree-lifecycle-safety.md"
+    spec_line: 11
+    requirement: "worktree 削除の Pilot 専任ルール"
+    test_file: "tests/scenarios/worktree-lifecycle-safety.test.sh"
+    test_name: "Worker からの worktree 削除拒否"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-self-delete-denied"
+    name: "自身の worktree 削除拒否"
+    spec_file: "specs/worktree-lifecycle-safety.md"
+    spec_line: 15
+    requirement: "worktree 削除の Pilot 専任ルール"
+    test_file: "tests/scenarios/worktree-lifecycle-safety.test.sh"
+    test_name: "自身の worktree 削除拒否"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: crash 検知によるステータス遷移 ---
+
+  - id: "crash-tmux-pane-lost"
+    name: "tmux ペイン消失の検知"
+    spec_file: "specs/worktree-lifecycle-safety.md"
+    spec_line: 23
+    requirement: "crash 検知によるステータス遷移"
+    test_file: "tests/scenarios/worktree-lifecycle-safety.test.sh"
+    test_name: "tmux ペイン消失の検知"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-normal-exit-distinction"
+    name: "正常終了との区別"
+    spec_file: "specs/worktree-lifecycle-safety.md"
+    spec_line: 27
+    requirement: "crash 検知によるステータス遷移"
+    test_file: "tests/scenarios/worktree-lifecycle-safety.test.sh"
+    test_name: "正常終了との区別（merge-ready は crash ではない）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: merge 後の worktree クリーンアップ ---
+
+  - id: "cleanup-merge-success"
+    name: "merge 成功後のクリーンアップ"
+    spec_file: "specs/worktree-lifecycle-safety.md"
+    spec_line: 35
+    requirement: "merge 後の worktree クリーンアップ"
+    test_file: "tests/scenarios/worktree-lifecycle-safety.test.sh"
+    test_name: "merge 成功後のクリーンアップ"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cleanup-reject-worktree-preserved"
+    name: "merge-gate REJECT 後の worktree 保持"
+    spec_file: "specs/worktree-lifecycle-safety.md"
+    spec_line: 39
+    requirement: "merge 後の worktree クリーンアップ"
+    test_file: "tests/scenarios/worktree-lifecycle-safety.test.sh"
+    test_name: "merge-gate REJECT 後の worktree 保持"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # session-management.md (11 scenarios)
+  # ==========================================================================
+
+  # --- Requirement: session.json によるセッション排他制御 ---
+
+  - id: "session-new-creation"
+    name: "新規セッション開始"
+    spec_file: "specs/session-management.md"
+    spec_line: 7
+    requirement: "session.json によるセッション排他制御"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "新規セッション開始"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-existing-rejected"
+    name: "既存セッション検出による拒否"
+    spec_file: "specs/session-management.md"
+    spec_line: 11
+    requirement: "session.json によるセッション排他制御"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "既存セッション検出による拒否"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-stale-detection"
+    name: "stale セッションの検出"
+    spec_file: "specs/session-management.md"
+    spec_line: 15
+    requirement: "session.json によるセッション排他制御"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "stale セッションの検出"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: cross-issue 警告の session.json 格納 ---
+
+  - id: "cross-issue-warning-recorded"
+    name: "ファイル重複の検出と記録"
+    spec_file: "specs/session-management.md"
+    spec_line: 23
+    requirement: "cross-issue 警告の session.json 格納"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "ファイル重複の検出と記録"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cross-issue-no-warnings"
+    name: "重複なしの場合"
+    spec_file: "specs/session-management.md"
+    spec_line: 27
+    requirement: "cross-issue 警告の session.json 格納"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "重複なしの場合"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: ポーリング機構の簡素化 ---
+
+  - id: "polling-normal-cycle"
+    name: "通常のポーリングサイクル"
+    spec_file: "specs/session-management.md"
+    spec_line: 37
+    requirement: "ポーリング機構の簡素化"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "通常のポーリングサイクル"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "polling-status-change-detection"
+    name: "status 変化の検知"
+    spec_file: "specs/session-management.md"
+    spec_line: 41
+    requirement: "ポーリング機構の簡素化"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "status 変化の検知"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "polling-crash-integration"
+    name: "crash 検知との統合"
+    spec_file: "specs/session-management.md"
+    spec_line: 45
+    requirement: "ポーリング機構の簡素化"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "crash 検知との統合"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: .autopilot ディレクトリの初期化と後始末 ---
+
+  - id: "autopilot-dir-init"
+    name: "セッション開始時の初期化"
+    spec_file: "specs/session-management.md"
+    spec_line: 53
+    requirement: ".autopilot ディレクトリの初期化と後始末"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "セッション開始時の初期化"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-dir-archive"
+    name: "セッション完了後のアーカイブ"
+    spec_file: "specs/session-management.md"
+    spec_line: 57
+    requirement: ".autopilot ディレクトリの初期化と後始末"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: "セッション完了後のアーカイブ"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-dir-gitignore"
+    name: ".gitignore への追加"
+    spec_file: "specs/session-management.md"
+    spec_line: 61
+    requirement: ".autopilot ディレクトリの初期化と後始末"
+    test_file: "tests/scenarios/session-management.test.sh"
+    test_name: ".gitignore への追加"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # progress-tracking.md (8 scenarios)
+  # ==========================================================================
+
+  # --- Requirement: TaskCreate による Phase 進捗登録 ---
+
+  - id: "task-create-phase-start"
+    name: "Phase 開始時のタスク登録"
+    spec_file: "specs/progress-tracking.md"
+    spec_line: 7
+    requirement: "TaskCreate による Phase 進捗登録"
+    test_file: "tests/scenarios/progress-tracking.test.sh"
+    test_name: "Phase 開始時のタスク登録"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "task-create-single-issue"
+    name: "単一 Issue の Phase"
+    spec_file: "specs/progress-tracking.md"
+    spec_line: 11
+    requirement: "TaskCreate による Phase 進捗登録"
+    test_file: "tests/scenarios/progress-tracking.test.sh"
+    test_name: "単一 Issue の Phase"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: TaskUpdate による Issue 完了追跡 ---
+
+  - id: "task-update-issue-done"
+    name: "Issue 正常完了"
+    spec_file: "specs/progress-tracking.md"
+    spec_line: 19
+    requirement: "TaskUpdate による Issue 完了追跡"
+    test_file: "tests/scenarios/progress-tracking.test.sh"
+    test_name: "Issue 正常完了"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "task-update-issue-failed"
+    name: "Issue 失敗"
+    spec_file: "specs/progress-tracking.md"
+    spec_line: 23
+    requirement: "TaskUpdate による Issue 完了追跡"
+    test_file: "tests/scenarios/progress-tracking.test.sh"
+    test_name: "Issue 失敗"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "task-update-phase-completed"
+    name: "Phase 全 Issue 完了"
+    spec_file: "specs/progress-tracking.md"
+    spec_line: 27
+    requirement: "TaskUpdate による Issue 完了追跡"
+    test_file: "tests/scenarios/progress-tracking.test.sh"
+    test_name: "Phase 全 Issue 完了"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: specialist 内部での TaskCreate 不使用 ---
+
+  - id: "specialist-no-task-create"
+    name: "specialist 実行中"
+    spec_file: "specs/progress-tracking.md"
+    spec_line: 35
+    requirement: "specialist 内部での TaskCreate 不使用"
+    test_file: "tests/scenarios/progress-tracking.test.sh"
+    test_name: "specialist 実行中の TaskCreate 不使用"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: --auto/--auto-merge フラグの廃止 ---
+
+  - id: "removed-auto-flag"
+    name: "フラグ不在の確認"
+    spec_file: "specs/progress-tracking.md"
+    spec_line: 45
+    requirement: "--auto/--auto-merge フラグの廃止"
+    test_file: "tests/scenarios/progress-tracking.test.sh"
+    test_name: "--auto/--auto-merge フラグ不在の確認"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: DEV_AUTOPILOT_SESSION 環境変数の廃止 ---
+
+  - id: "removed-dev-autopilot-session-env"
+    name: "環境変数不在の確認"
+    spec_file: "specs/progress-tracking.md"
+    spec_line: 53
+    requirement: "DEV_AUTOPILOT_SESSION 環境変数の廃止"
+    test_file: "tests/scenarios/progress-tracking.test.sh"
+    test_name: "DEV_AUTOPILOT_SESSION 環境変数不在の確認"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # 不変条件テスト仕様 A~I（テスト実装は C-5）
+  # ==========================================================================
+
+  - id: "invariant-a-state-uniqueness"
+    name: "不変条件A: 状態の一意性"
+    requirement: "issue-{N}.json の status は常に running, merge-ready, done, failed のいずれか1つ"
+    test_strategy: "state-write.sh の遷移バリデーションで保証。全許可遷移と全不正遷移の網羅テスト"
+    verified_by: ["state-write-status-transition-running-to-merge-ready", "state-write-invalid-transition-rejection", "transition-all-valid", "transition-done-terminal"]
+    type: invariant
+    status: deferred-to-c5
+
+  - id: "invariant-b-worktree-pilot-only"
+    name: "不変条件B: Worktree 削除 Pilot 専任"
+    requirement: "Worker は worktree を作成するが削除しない。削除は常に Pilot が実行"
+    test_strategy: "worktree-delete.sh の CWD ガードで保証。worktrees/ 配下からの呼び出し拒否テスト"
+    verified_by: ["worktree-worker-delete-denied", "worktree-self-delete-denied"]
+    type: invariant
+    status: deferred-to-c5
+
+  - id: "invariant-c-worker-no-merge"
+    name: "不変条件C: Worker マージ禁止"
+    requirement: "Worker は merge-ready を宣言するのみ。マージ判断・実行は Pilot が merge-gate 経由で行う"
+    test_strategy: "state-write.sh のロールベースアクセス制御で保証。Worker が status=done への遷移を試みた場合の拒否テスト"
+    verified_by: ["role-pilot-issue-status-done"]
+    type: invariant
+    status: deferred-to-c5
+
+  - id: "invariant-d-fail-skip-propagation"
+    name: "不変条件D: 依存先 fail 時の skip 伝播"
+    requirement: "Phase N で fail した Issue に依存する Phase N+1 以降の全 Issue は自動 skip"
+    test_strategy: "co-autopilot の Phase ループロジックで保証。plan.yaml の依存グラフと fail 状態の組み合わせテスト"
+    verified_by: []
+    type: invariant
+    status: deferred-to-c5
+
+  - id: "invariant-e-retry-limit"
+    name: "不変条件E: merge-gate リトライ制限"
+    requirement: "merge-gate リジェクト後のリトライは最大1回。2回目リジェクト = 確定失敗"
+    test_strategy: "state-write.sh の retry_count 検証で保証。retry_count >= 1 での failed→running 拒否テスト"
+    verified_by: ["state-write-retry-count-exceeded"]
+    type: invariant
+    status: deferred-to-c5
+
+  - id: "invariant-f-no-auto-rebase"
+    name: "不変条件F: merge 失敗時 rebase 禁止"
+    requirement: "squash merge 失敗時は停止のみ。自動 rebase は行わない"
+    test_strategy: "merge-gate ロジック（B-5）で保証。merge 失敗時に rebase コマンドが呼ばれないことのテスト"
+    verified_by: []
+    type: invariant
+    status: deferred-to-c5
+
+  - id: "invariant-g-crash-detection"
+    name: "不変条件G: クラッシュ検知保証"
+    requirement: "Worker の crash/timeout は必ず検知され、issue-{N}.json の status が failed に遷移する"
+    test_strategy: "crash-detect.sh で保証。tmux ペイン消失時の failed 遷移テスト"
+    verified_by: ["crash-tmux-pane-lost", "crash-normal-exit-distinction"]
+    type: invariant
+    status: deferred-to-c5
+
+  - id: "invariant-h-depsyaml-exclusivity"
+    name: "不変条件H: deps.yaml 変更排他性"
+    requirement: "同一 Phase 内で deps.yaml を変更する複数 Issue は separate Phase に分離して sequential 化"
+    test_strategy: "plan.yaml 生成ロジック（C-1）で保証。deps.yaml 変更 Issue が同一 Phase に含まれないことのテスト"
+    verified_by: []
+    type: invariant
+    status: deferred-to-c5
+
+  - id: "invariant-i-no-circular-deps"
+    name: "不変条件I: 循環依存拒否"
+    requirement: "plan.yaml 生成時に循環依存を検出した場合、計画を拒否してエラー終了"
+    test_strategy: "plan.yaml 生成ロジック（C-1）で保証。循環依存グラフ入力時のエラー終了テスト"
+    verified_by: []
+    type: invariant
+    status: deferred-to-c5
