@@ -113,6 +113,24 @@ project-name/
 - **co-project 引数ルーティング**: create / migrate / snapshot の 3 モード。旧 controller-project, controller-project-migrate, controller-project-snapshot を統合
 - **plugin は co-project のテンプレートの一種**: 旧 controller-plugin を吸収。保守は通常ワークフロー + loom CLI
 
+## Component Mapping
+
+本 Context が担う controller/workflow/command の対応:
+
+| 種別 | コンポーネント | 役割 |
+|------|--------------|------|
+| **controller** | co-project | プロジェクト管理（create / migrate / snapshot） |
+| **atomic** | project-create | bare repo + worktree + テンプレート初期化 |
+| **atomic** | project-migrate | 最新テンプレート移行 + ガバナンス再適用 |
+| **atomic** | project-governance | Hooks + スキーマ scaffold + CLAUDE.md 拡張 |
+| **atomic** | container-dependency-check | コンテナ依存と実状態の照合 |
+| **atomic** | snapshot-analyze | ファイルスキャン + スタック自動検出 |
+| **atomic** | snapshot-classify | AI Tier 分類 + ユーザー確認 |
+| **atomic** | snapshot-generate | manifest.yaml + テンプレートファイル生成 |
+| **atomic** | setup-crg | code-review-graph MCP セットアップ |
+| **atomic** | crg-auto-build | CRG グラフ自動ビルド |
+| **script** | branch-create.sh | ブランチ作成（standard repo 用） |
+
 ## Dependencies
 
 - **Shared Kernel -> Autopilot**: bare repo + worktree 構造を共有

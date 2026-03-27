@@ -96,6 +96,43 @@ flowchart TD
 - **loom audit/check 結果の消費**: worker-structure, worker-principles, worker-architecture は PR Cycle の specialist として動作するが、loom audit/check 結果を入力に使う
 - **deps.yaml = SSOT**: プラグイン構成の唯一の情報源。編集フロー: コンポーネント編集 -> deps.yaml 更新 -> loom --check -> loom --update-readme
 
+## Component Mapping
+
+本 Context が担う controller/workflow/command の対応:
+
+| 種別 | コンポーネント | 役割 |
+|------|--------------|------|
+| **atomic** | loom-validate | PostToolUse hook: Edit/Write 後の自動 validate |
+| **atomic** | schema-update | Zod スキーマ更新 + OpenAPI 再生成 |
+| **atomic** | evaluate-architecture | アーキテクチャパターン評価 |
+| **atomic** | dead-component-detect | loom complexity による Dead component 検出 |
+| **atomic** | dead-component-execute | Dead component 削除実行 |
+| **specialist** | worker-structure | loom audit/check 結果を消費するレビュー specialist |
+| **specialist** | worker-architecture | アーキテクチャパターン検証 specialist |
+| **reference** | ref-types | deps.yaml 型ルールリファレンス |
+| **reference** | ref-deps-format | deps.yaml フォーマットリファレンス |
+| **reference** | ref-architecture-spec | architecture/ 仕様リファレンス |
+
+### loom CLI コマンドと使用コンポーネントの対応表
+
+| loom CLI コマンド | 使用する plugin コンポーネント | 使用場面 |
+|---|---|---|
+| `loom validate` | PostToolUse hook, merge-gate | Edit/Write 後の自動検証、PR レビュー時 |
+| `loom deep-validate` | worker-structure (specialist) | merge-gate 内の詳細検証 |
+| `loom check` | PostToolUse hook, dev:check | セッション開始時、PR 準備確認 |
+| `loom audit` | worker-structure (specialist) | PR レビュー時の構造監査 |
+| `loom chain generate --write` | workflow-setup | chain 定義ファイル初期生成 |
+| `loom chain generate --check` | PostToolUse hook | deps.yaml 変更時の乖離検出 |
+| `loom chain validate` | dev:loom-validate | chain 整合性検証 |
+| `loom rename` | co-project (migrate) | co-* naming 保守 |
+| `loom promote` | (手動) | 型昇格/降格 |
+| `loom graph` / `update-readme` | dev:plugin-verify | README SVG 埋め込み更新 |
+| `loom tree` | (開発時参照) | 構造確認 |
+| `loom orphans` | dead-component-detect | Dead component 検出 |
+| `loom complexity` | dead-component-detect | fan-out/fan-in 監視 |
+| `loom sync-docs` | (手動/CI) | refs/ ドキュメント同期 |
+| `loom rules` | (開発時参照) | types.yaml 型テーブル表示 |
+
 ## loom CLI コマンド依存マップ
 
 | カテゴリ | コマンド | lpd での使用箇所 | 依存度 |

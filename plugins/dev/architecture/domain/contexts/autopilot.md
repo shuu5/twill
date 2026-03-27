@@ -227,6 +227,32 @@ co-autopilot 障害時のみ手動パスを許可する。
 - 例: `[A] 承認 [B] 修正 [C] キャンセル`
 - 自由形式プロンプトは探索フェーズ（Phase 1: 問題探索）のみに限定
 
+## Component Mapping
+
+本 Context が担う controller/workflow/command の対応:
+
+| 種別 | コンポーネント | 役割 |
+|------|--------------|------|
+| **controller** | co-autopilot | Issue 群の自律実装オーケストレーター |
+| **workflow** | workflow-setup | worktree 作成 + OpenSpec 提案 |
+| **workflow** | workflow-test-ready | テスト生成 + 準備確認 |
+| **workflow** | workflow-pr-cycle | verify → review → test → fix → report |
+| **atomic** | autopilot-init | 完了プロトコル初期化（マーカーファイル） |
+| **atomic** | autopilot-launch | Worker tmux window 起動 |
+| **atomic** | autopilot-poll | 状態監視（10秒間隔ポーリング） |
+| **atomic** | autopilot-collect | 完了 Issue の変更ファイル収集 |
+| **atomic** | autopilot-retrospective | Phase 振り返り・知見生成 |
+| **atomic** | autopilot-patterns | パターン検出・self-improve Issue 起票 |
+| **atomic** | autopilot-cross-issue | Cross-issue 影響分析 |
+| **atomic** | autopilot-summary | 全 Phase 完了後のサマリー |
+| **composite** | autopilot-phase-execute | 1 Phase 分の Issue ループ処理 |
+| **composite** | autopilot-phase-postprocess | 1 Phase 分の後処理統合 |
+| **composite** | merge-gate | PR 差分取得 → レビュー → 判定 → merge |
+| **script** | worktree-create.sh | worktree + ブランチ作成 |
+| **script** | worktree-delete.sh | worktree + ブランチ削除 |
+| **script** | state-read.sh | issue-{N}.json / session.json 読み取り |
+| **script** | state-write.sh | issue-{N}.json / session.json 書き込み |
+
 ## Dependencies
 
 - **Downstream -> PR Cycle**: merge-gate を呼び出してマージ判定。Contract: autopilot-pr-cycle.md

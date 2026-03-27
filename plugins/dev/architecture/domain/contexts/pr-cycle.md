@@ -130,6 +130,30 @@ flowchart TD
 - confidence 値: specialist が算出し出力に含める（消費側で推定しない）
 - 結果統合: specialist 出力のパースのみ。AI による自由形式の変換は禁止
 
+## Component Mapping
+
+本 Context が担う controller/workflow/command の対応:
+
+| 種別 | コンポーネント | 役割 |
+|------|--------------|------|
+| **workflow** | workflow-pr-cycle | PR サイクル全体の chain-driven 実行 |
+| **composite** | merge-gate | PR レビュー → テスト → 判定 → merge |
+| **composite** | phase-review | 並列 specialist レビュー（2-9 specialists） |
+| **composite** | fix-phase | 自動修正ループ + E2E 修復 |
+| **atomic** | ts-preflight | TypeScript 機械的検証（型チェック・lint） |
+| **atomic** | pr-test | テスト実行 |
+| **atomic** | pr-cycle-report | PRサイクル結果のフォーマット・投稿 |
+| **atomic** | scope-judge | スコープ判定 + Deferred Issue 作成 |
+| **atomic** | post-fix-verify | fix 後の軽量コードレビュー |
+| **atomic** | warning-fix | Warning のベストエフォート修正 |
+| **atomic** | all-pass-check | 全パス判定 |
+| **atomic** | ac-verify | AC 検証（テスト結果と AC の照合） |
+| **specialist** | worker-code-reviewer | コード品質レビュー |
+| **specialist** | worker-security-reviewer | セキュリティ脆弱性検出 |
+| **specialist** | worker-structure | loom audit/check 統合 |
+| **specialist** | worker-principles | 5原則 + controller 品質検証 |
+| **script** | tech-stack-detect | 変更ファイルから tech-stack を判定 |
+
 ## Dependencies
 
 - **Upstream <- Autopilot**: autopilot から merge-gate として呼び出される。Contract: autopilot-pr-cycle.md

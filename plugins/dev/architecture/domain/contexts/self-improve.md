@@ -113,6 +113,24 @@ graph LR
 - テスト実行のエラーも記録される（問題かどうかの判断は人間が行う）
 - self-improve-review は co-issue の Phase 1 (explore) の代替として機能する
 
+## Component Mapping
+
+本 Context が担う controller/workflow/command の対応:
+
+| 種別 | コンポーネント | 役割 |
+|------|--------------|------|
+| **(co-autopilot 内)** | autopilot-patterns | パターン検出・high confidence 時に Issue 起票 |
+| **(co-autopilot 内)** | autopilot-retrospective | Phase 振り返り・知見生成 |
+| **atomic** | self-improve-collect | self-improve Issue の収集・分類 |
+| **atomic** | self-improve-propose | ECC 照合 + 改善提案生成 |
+| **atomic** | self-improve-close | Issue クローズ処理 |
+| **atomic** | self-improve-review | エラーログ分析（User-Triggered） |
+| **atomic** | ecc-monitor | ECC リポジトリ変更検知 |
+| **atomic** | pr-cycle-analysis | PR-cycle 結果からの改善機会検出 |
+| **atomic** | session-audit | セッション JSONL 事後分析 |
+
+**注意**: self-improve は独立 controller を持たない。co-autopilot の後処理として統合されている（ADR-002）。self-improve-review のみがユーザー直接トリガーで、co-issue フローに接続する。
+
 ## Dependencies
 
 - **Upstream <- Autopilot**: パターン検出データ（session.json patterns）

@@ -101,6 +101,26 @@ flowchart TD
 - **DeltaSpec 適用**: 常に propose -> apply パス。direct パス廃止（軽微変更 <10行 のみ例外）
 - **AC の機械検証可能性**: AcceptanceCriteria は可能な限り機械的にテスト可能な条件として記述する
 
+## Component Mapping
+
+本 Context が担う controller/workflow/command の対応:
+
+| 種別 | コンポーネント | 役割 |
+|------|--------------|------|
+| **controller** | co-issue | 要望→Issue 変換ワークフロー |
+| **atomic** | issue-create | GitHub Issue 作成 |
+| **atomic** | issue-structure | Issue 内容の構造化（テンプレート適用） |
+| **atomic** | issue-dig | Per-Issue の曖昧点検出（4観点） |
+| **atomic** | issue-assess | Issue 品質評価 |
+| **atomic** | issue-bulk-create | 親Issue + 子Issue 群の一括起票 |
+| **atomic** | issue-tech-debt-absorb | tech-debt Issue の吸収提案 |
+| **atomic** | ac-extract | AC（受け入れ基準）抽出 |
+| **atomic** | ac-deploy-trigger | AC から deploy E2E 実行フラグ設定 |
+| **atomic** | project-board-sync | Issue → Project V2 自動追加 |
+| **atomic** | project-board-status-update | Board Status 更新 |
+| **composite** | triage-execute | 分類済み tech-debt の一括処理 |
+| **reference** | ref-self-improve-format | self-improve Issue テンプレート |
+
 ## Dependencies
 
 - **Downstream -> Autopilot**: Issue 情報を提供（gh issue view）
