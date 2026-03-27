@@ -20,6 +20,7 @@ Usage:
 import argparse
 import difflib
 import hashlib
+import json
 import os
 import re
 import subprocess
@@ -162,6 +163,111 @@ def get_plugin_name(deps: dict, plugin_root: Path) -> str:
     2. plugin_root.name（ディレクトリ名）
     """
     return deps.get('plugin', plugin_root.name)
+
+
+def build_envelope(command: str, version: str, plugin: str, items: list, exit_code: int) -> dict:
+    """JSON 出力用の共通エンベロープを構築"""
+    summary = {"critical": 0, "warning": 0, "info": 0, "ok": 0}
+    for item in items:
+        sev = item.get("severity", "info")
+        if sev in summary:
+            summary[sev] += 1
+    summary["total"] = len(items)
+    return {
+        "command": command,
+        "version": version,
+        "plugin": plugin,
+        "items": items,
+        "summary": summary,
+        "exit_code": exit_code,
+    }
+
+
+def output_json(envelope: dict):
+    """エンベロープを stdout に JSON 出力"""
+    print(json.dumps(envelope, ensure_ascii=False, indent=2))
+
+
+def _parse_violation_to_item(violation: str, default_severity: str = "critical") -> dict:
+    """violation 文字列を items 形式に変換
+
+    パターン: [code] section/component: message
+    """
+    item = {"severity": default_severity, "component": "", "message": violation, "code": ""}
+    m = re.match(r'\[([^\]]+)\]\s+(\S+?)/([\w-]+):\s*(.*)', violation)
+    if m:
+        item["code"] = m.group(1)
+        item["component"] = m.group(3)
+        item["message"] = m.group(4)
+    else:
+        m2 = re.match(r'\[([^\]]+)\]\s+([\w-]+):\s*(.*)', violation)
+        if m2:
+            item["code"] = m2.group(1)
+            item["component"] = m2.group(2)
+            item["message"] = m2.group(3)
+    return item
+
+
+def _violations_to_items(violations: List[str], severity: str = "critical") -> List[dict]:
+    """violation 文字列リストを items リストに変換"""
+    return [_parse_violation_to_item(v, severity) for v in violations]
+
+
+def _check_results_to_items(results: List[Tuple[str, str, str]]) -> List[dict]:
+    """check_files() の結果を items 形式に変換"""
+    severity_map = {"missing": "critical", "no_path": "warning", "ok": "ok", "external": "info"}
+    message_map = {"missing": "File missing", "no_path": "No path defined", "ok": "File exists", "external": "External component"}
+    items = []
+    for status, node_id, path in results:
+        items.append({
+            "severity": severity_map.get(status, "info"),
+            "component": node_id,
+            "message": message_map.get(status, status),
+            "path": path or "",
+            "status": status,
+        })
+    return items
+
+
+def _deep_validate_to_items(criticals: List[str], warnings: List[str], infos: List[str]) -> List[dict]:
+    """deep_validate() の結果を items 形式に変換"""
+    items = []
+    for msg in criticals:
+        item = _parse_violation_to_item(msg, "critical")
+        item["check"] = _extract_check_label(msg)
+        items.append(item)
+    for msg in warnings:
+        item = _parse_violation_to_item(msg, "warning")
+        item["check"] = _extract_check_label(msg)
+        items.append(item)
+    for msg in infos:
+        item = _parse_violation_to_item(msg, "info")
+        item["check"] = _extract_check_label(msg)
+        items.append(item)
+    return items
+
+
+def _extract_check_label(msg: str) -> str:
+    """deep-validate メッセージからチェックラベルを抽出
+
+    [controller-bloat] → A, [ref-placement] → B, [tools-mismatch]/[tools-unused] → C,
+    [chain-*] → chain, その他 → code そのまま
+    """
+    m = re.match(r'\[([^\]]+)\]', msg)
+    if not m:
+        return ""
+    code = m.group(1)
+    label_map = {
+        "controller-bloat": "A",
+        "ref-placement": "B",
+        "tools-mismatch": "C",
+        "tools-unused": "C",
+    }
+    if code in label_map:
+        return label_map[code]
+    if code.startswith("chain-"):
+        return "chain"
+    return code
 
 
 def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
@@ -3296,20 +3402,17 @@ def _check_self_contained_keywords(file_path: Path) -> Dict[str, bool]:
     return keywords
 
 
-def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
-    """5セクションの Loom 準拠度レポートを出力
+def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
+    """5セクションの Loom 準拠度データを収集（print なし）
 
-    Returns: (critical_count, warning_count, ok_count)
+    Returns: items リスト（severity, component, message, section, value, threshold）
     """
     COMMON_TOOLS = {'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'Task',
                     'SendMessage', 'AskUserQuestion', 'WebSearch', 'WebFetch',
                     'Agent', 'Skill'}
 
-    criticals = 0
-    warnings = 0
-    oks = 0
+    items = []
 
-    # Collect all components (scripts included for completeness but skipped in checks)
     all_components = {}
     for section in ('skills', 'commands', 'agents', 'scripts'):
         for name, spec in deps.get(section, {}).items():
@@ -3319,6 +3422,143 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
                 'path': spec.get('path', ''),
                 'calls': spec.get('calls', []),
             }
+
+    # Section 1: Controller Size
+    for name, comp in sorted(all_components.items()):
+        resolved = resolve_type(comp['type'])
+        if resolved != 'controller':
+            continue
+        path = plugin_root / comp['path']
+        lines = _count_body_lines(path)
+        if lines > 200:
+            severity = 'critical'
+        elif lines > 120:
+            severity = 'warning'
+        else:
+            severity = 'ok'
+        items.append({
+            "severity": severity,
+            "component": name,
+            "message": f"Controller size {lines} lines" + (f" (threshold: {200 if lines > 200 else 120})" if severity != 'ok' else ""),
+            "section": "controller_size",
+            "value": lines,
+            "threshold": 200 if lines > 200 else 120,
+        })
+
+    # Section 2: Inline Implementation
+    for name, comp in sorted(all_components.items()):
+        if resolve_type(comp['type']) == 'script':
+            continue
+        path = plugin_root / comp['path']
+        inline, total = _count_inline_bash_lines(path)
+        if inline == 0:
+            continue
+        ratio = inline / total * 100 if total > 0 else 0.0
+        if ratio > 50:
+            severity = 'warning'
+        elif ratio > 30:
+            severity = 'info'
+        else:
+            severity = 'ok'
+        items.append({
+            "severity": severity,
+            "component": name,
+            "message": f"Inline ratio {ratio:.1f}% ({inline}/{total} lines)",
+            "section": "inline_implementation",
+            "value": round(ratio, 1),
+            "threshold": 50,
+        })
+
+    # Section 3: 1C=1W (Step 0 Routing)
+    for name, comp in sorted(all_components.items()):
+        resolved = resolve_type(comp['type'])
+        if resolved != 'controller':
+            continue
+        path = plugin_root / comp['path']
+        has_step0, has_routing = _check_step0_routing(path)
+        if has_step0 and has_routing:
+            severity = 'ok'
+        else:
+            severity = 'warning'
+        items.append({
+            "severity": severity,
+            "component": name,
+            "message": f"Step 0: {'Yes' if has_step0 else 'No'}, Routing: {'Yes' if has_routing else 'No'}",
+            "section": "step0_routing",
+            "value": 1 if (has_step0 and has_routing) else 0,
+            "threshold": 1,
+        })
+
+    # Section 4: Tools Accuracy
+    for name, comp in sorted(all_components.items()):
+        if comp['section'] not in ('commands', 'agents'):
+            continue
+        path = plugin_root / comp['path']
+        declared = _parse_frontmatter_tools(path)
+        used_mcp = _scan_body_for_mcp_tools(path)
+        missing = used_mcp - declared
+        extra = declared - used_mcp - COMMON_TOOLS
+        if missing:
+            severity = 'warning'
+        elif extra:
+            severity = 'info'
+        else:
+            severity = 'ok'
+        items.append({
+            "severity": severity,
+            "component": name,
+            "message": f"Declared: {len(declared)}, Used: {len(used_mcp)}, Missing: {', '.join(sorted(missing)) if missing else '-'}, Extra: {', '.join(sorted(extra)) if extra else '-'}",
+            "section": "tools_accuracy",
+            "value": len(missing),
+            "threshold": 0,
+        })
+
+    # Section 5: Self-Contained
+    for name, comp in sorted(all_components.items()):
+        resolved = resolve_type(comp['type'])
+        if resolved != 'specialist':
+            continue
+        path = plugin_root / comp['path']
+        keywords = _check_self_contained_keywords(path)
+        has_required = keywords['purpose'] and keywords['output']
+        severity = 'ok' if has_required else 'warning'
+        items.append({
+            "severity": severity,
+            "component": name,
+            "message": f"Purpose: {'Yes' if keywords['purpose'] else 'No'}, Output: {'Yes' if keywords['output'] else 'No'}, Constraint: {'Yes' if keywords['constraint'] else 'No'}",
+            "section": "self_contained",
+            "value": 1 if has_required else 0,
+            "threshold": 1,
+        })
+
+    return items
+
+
+def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
+    """5セクションの Loom 準拠度レポートを出力
+
+    Returns: (critical_count, warning_count, ok_count)
+    """
+    items = audit_collect(deps, plugin_root)
+
+    criticals = sum(1 for i in items if i['severity'] == 'critical')
+    warnings = sum(1 for i in items if i['severity'] == 'warning')
+    oks = sum(1 for i in items if i['severity'] in ('ok', 'info'))
+
+    # Collect all components for display
+    all_components = {}
+    for section in ('skills', 'commands', 'agents', 'scripts'):
+        for name, spec in deps.get(section, {}).items():
+            all_components[name] = {
+                'section': section,
+                'type': spec.get('type', ''),
+                'path': spec.get('path', ''),
+                'calls': spec.get('calls', []),
+            }
+
+    COMMON_TOOLS = {'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'Task',
+                    'SendMessage', 'AskUserQuestion', 'WebSearch', 'WebFetch',
+                    'Agent', 'Skill'}
 
     # === Section 1: Controller Size ===
     print("## 1. Controller Size")
@@ -3334,16 +3574,12 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
         lines = _count_body_lines(path)
         if lines > 200:
             severity = 'CRITICAL'
-            criticals += 1
         elif lines > 120:
             severity = 'WARNING'
-            warnings += 1
         elif lines > 80:
             severity = 'OK (near limit)'
-            oks += 1
         else:
             severity = 'OK'
-            oks += 1
         print(f"| {name} | {lines} | {severity} |")
     print()
 
@@ -3355,22 +3591,19 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
 
     for name, comp in sorted(all_components.items()):
         if resolve_type(comp['type']) == 'script':
-            continue  # scripts are not markdown, skip inline check
+            continue
         path = plugin_root / comp['path']
         inline, total = _count_inline_bash_lines(path)
         if inline == 0:
-            continue  # Only show components with inline code
+            continue
         ratio = inline / total * 100 if total > 0 else 0.0
 
         if ratio > 50:
             severity = 'WARNING'
-            warnings += 1
         elif ratio > 30:
             severity = 'INFO'
-            oks += 1
         else:
             severity = 'OK'
-            oks += 1
 
         print(f"| {name} | {comp['type']} | {inline} | {total} | {ratio:.1f}% | {severity} |")
     print()
@@ -3390,13 +3623,10 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
 
         if has_step0 and has_routing:
             severity = 'OK'
-            oks += 1
         elif has_step0:
             severity = 'WARNING'
-            warnings += 1
         else:
             severity = 'WARNING'
-            warnings += 1
 
         s0 = 'Yes' if has_step0 else 'No'
         rt = 'Yes' if has_routing else 'No'
@@ -3421,13 +3651,10 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
 
         if missing:
             severity = 'WARNING'
-            warnings += 1
         elif extra:
             severity = 'INFO'
-            oks += 1
         else:
             severity = 'OK'
-            oks += 1
 
         missing_str = ', '.join(sorted(missing)) if missing else '-'
         extra_str = ', '.join(sorted(extra)) if extra else '-'
@@ -3451,10 +3678,8 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
         has_required = keywords['purpose'] and keywords['output']
         if has_required:
             severity = 'OK'
-            oks += 1
         else:
             severity = 'WARNING'
-            warnings += 1
 
         p = 'Yes' if keywords['purpose'] else 'No'
         o = 'Yes' if keywords['output'] else 'No'
@@ -3669,6 +3894,107 @@ def calc_cost_projection(graph: Dict, deps: dict) -> List[Tuple[str, int]]:
     return costs
 
 
+def complexity_collect(graph: Dict, deps: dict, plugin_root: Path) -> List[dict]:
+    """7メトリクスの複雑さデータを収集（print なし）
+
+    Returns: items リスト（severity, component, message, metric, value, threshold）
+    """
+    items = []
+
+    # 1. Dead Component
+    dead = check_dead_components(graph, deps)
+    for node_id in dead:
+        node = graph.get(node_id, {})
+        node_type = node.get('skill_type') or node.get('command_type') or node.get('agent_type') or node.get('type', '')
+        items.append({
+            "severity": "warning",
+            "component": node_id,
+            "message": f"Dead component ({node_type})",
+            "metric": "dead_component",
+            "value": 1,
+            "threshold": 0,
+        })
+
+    # 2. Usage Frequency
+    stale = check_usage_frequency(graph, plugin_root)
+    if stale:
+        for node_id, last_date in stale:
+            items.append({
+                "severity": "info",
+                "component": node_id,
+                "message": f"Stale component (last changed: {last_date or 'unknown'})",
+                "metric": "usage_frequency",
+                "value": 0,
+                "threshold": 0,
+            })
+
+    # 3. Depth Score
+    depth_scores = calc_depth_scores(graph, deps)
+    for name, depth in depth_scores:
+        severity = "warning" if depth > 4 else "ok"
+        items.append({
+            "severity": severity,
+            "component": name,
+            "message": f"Depth score {depth}" + (f" (threshold: 4)" if depth > 4 else ""),
+            "metric": "depth_score",
+            "value": depth,
+            "threshold": 4,
+        })
+
+    # 4. Fan-out
+    fan_out = calc_fan_out(graph)
+    for node_id, fo in fan_out:
+        if fo > 8:
+            items.append({
+                "severity": "warning",
+                "component": node_id,
+                "message": f"Fan-out {fo} (threshold: 8)",
+                "metric": "fan_out",
+                "value": fo,
+                "threshold": 8,
+            })
+
+    # 5. Type Balance
+    balance = calc_type_balance(graph)
+    total = sum(balance.values())
+    for comp_type, count in sorted(balance.items(), key=lambda x: x[1], reverse=True):
+        ratio = count / total * 100 if total > 0 else 0
+        items.append({
+            "severity": "info",
+            "component": comp_type,
+            "message": f"Type balance: {count} ({ratio:.1f}%)",
+            "metric": "type_balance",
+            "value": count,
+            "threshold": 0,
+        })
+
+    # 6. Duplication
+    duplicates = check_duplication(graph, plugin_root)
+    for name_a, name_b, ratio in duplicates:
+        items.append({
+            "severity": "warning",
+            "component": f"{name_a}/{name_b}",
+            "message": f"Duplication {ratio:.1%}",
+            "metric": "duplication",
+            "value": round(ratio * 100, 1),
+            "threshold": 60,
+        })
+
+    # 7. Cost Projection
+    costs = calc_cost_projection(graph, deps)
+    for name, tokens in costs:
+        items.append({
+            "severity": "info",
+            "component": name,
+            "message": f"Estimated context tokens: {tokens:,}",
+            "metric": "cost_projection",
+            "value": tokens,
+            "threshold": 0,
+        })
+
+    return items
+
+
 def complexity_report(graph: Dict, deps: dict, plugin_root: Path):
     """7メトリクスの複雑さレポートを出力"""
     warnings_list = []
@@ -3700,7 +4026,7 @@ def complexity_report(graph: Dict, deps: dict, plugin_root: Path):
         print()
         print("| Component | Last Changed |")
         print("|-----------|-------------|")
-        for node_id, last_date in stale[:20]:  # 上位20件
+        for node_id, last_date in stale[:20]:
             print(f"| {node_id} | {last_date or 'unknown'} |")
         if len(stale) > 20:
             print(f"| ... and {len(stale) - 20} more | |")
@@ -3740,7 +4066,6 @@ def complexity_report(graph: Dict, deps: dict, plugin_root: Path):
         print()
     else:
         print("  All components within threshold (≤ 8).")
-    # 上位5件を情報として表示
     if fan_out:
         print()
         print("  Top 5 fan-out:")
@@ -4700,6 +5025,7 @@ def main():
     parser.add_argument('--rules', action='store_true', help='Print type rules table from types.yaml')
     parser.add_argument('--sync-check', metavar='REF_PATH', help='Compare types.yaml with a reference Markdown document')
     parser.add_argument('--sync-docs', metavar='TARGET_DIR', help='Sync docs/ref-*.md to target directory with frontmatter from deps.yaml')
+    parser.add_argument('--format', choices=['json'], help='Output format (default: text)')
 
     args = parser.parse_args()
 
@@ -4740,6 +5066,13 @@ def main():
     show_tokens = not args.no_tokens
 
     if args.complexity:
+        if args.format == 'json':
+            items = complexity_collect(graph, deps, plugin_root)
+            exit_code = 0  # complexity は warning でも exit 0
+            envelope = build_envelope("complexity", get_deps_version(deps), plugin_name, items, exit_code)
+            output_json(envelope)
+            sys.exit(exit_code)
+
         complexity_report(graph, deps, plugin_root)
 
     if args.tokens:
@@ -4787,6 +5120,23 @@ def main():
         no_path_count = sum(1 for r in results if r[0] == 'no_path')
         external_count = sum(1 for r in results if r[0] == 'external')
 
+        # v3.0 chain 検証（JSON/テキスト共通で実行）
+        chain_items = []
+        cv_criticals_check = []
+        cv_warnings_check = []
+        if get_deps_version(deps).startswith('3'):
+            cv_criticals_check, cv_warnings_check, cv_infos_check = chain_validate(deps, plugin_root)
+            chain_items = _deep_validate_to_items(cv_criticals_check, cv_warnings_check, cv_infos_check)
+
+        exit_code = 1 if (missing_count > 0 or cv_criticals_check) else 0
+
+        if args.format == 'json':
+            items = _check_results_to_items(results)
+            items.extend(chain_items)
+            envelope = build_envelope("check", get_deps_version(deps), plugin_name, items, exit_code)
+            output_json(envelope)
+            sys.exit(exit_code)
+
         print(f"=== File Check Results ===")
         print(f"OK: {ok_count}, Missing: {missing_count}, No path: {no_path_count}, External: {external_count}")
         print()
@@ -4800,22 +5150,20 @@ def main():
         else:
             print("All files exist.")
 
-        # v3.0 chain 検証
-        if get_deps_version(deps).startswith('3'):
-            cv_criticals, cv_warnings, cv_infos = chain_validate(deps, plugin_root)
-            if cv_criticals or cv_warnings:
-                print()
-                print("=== Chain Validation Results ===")
-                if cv_criticals:
-                    print("Critical:")
-                    for c in cv_criticals:
-                        print(f"  - {c}")
-                if cv_warnings:
-                    print("Warning:")
-                    for w in cv_warnings:
-                        print(f"  - {w}")
-                if cv_criticals:
-                    sys.exit(1)
+        # v3.0 chain 検証結果のテキスト出力
+        if chain_items and (cv_criticals_check or cv_warnings_check):
+            print()
+            print("=== Chain Validation Results ===")
+            if cv_criticals_check:
+                print("Critical:")
+                for c in cv_criticals_check:
+                    print(f"  - {c}")
+            if cv_warnings_check:
+                print("Warning:")
+                for w in cv_warnings_check:
+                    print(f"  - {w}")
+            if cv_criticals_check:
+                sys.exit(1)
 
     if args.validate:
         ok_count, violations = validate_types(deps, graph)
@@ -4831,6 +5179,14 @@ def main():
         cv_criticals, cv_warnings, _cv_infos = chain_validate(deps, plugin_root)
         violations.extend(cv_criticals)
         violations.extend(cv_warnings)
+
+        exit_code = 1 if violations else 0
+
+        if args.format == 'json':
+            items = _violations_to_items(violations)
+            envelope = build_envelope("validate", get_deps_version(deps), plugin_name, items, exit_code)
+            output_json(envelope)
+            sys.exit(exit_code)
 
         print(f"=== Type Validation Results ===")
         print(f"OK: {ok_count}, Violations: {len(violations)}")
@@ -4900,6 +5256,15 @@ def main():
         dv_warnings.extend(cv_warnings)
         dv_infos.extend(cv_infos)
 
+        exit_code = 1 if (violations or criticals) else 0
+
+        if args.format == 'json':
+            items = _violations_to_items(violations)
+            items.extend(_deep_validate_to_items(criticals, dv_warnings, dv_infos))
+            envelope = build_envelope("deep-validate", get_deps_version(deps), plugin_name, items, exit_code)
+            output_json(envelope)
+            sys.exit(exit_code)
+
         print("=== Deep Validation Results ===")
         print()
 
@@ -4936,6 +5301,13 @@ def main():
             sys.exit(1)
 
     elif args.audit:
+        if args.format == 'json':
+            items = audit_collect(deps, plugin_root)
+            exit_code = 1 if any(i['severity'] == 'critical' for i in items) else 0
+            envelope = build_envelope("audit", get_deps_version(deps), plugin_name, items, exit_code)
+            output_json(envelope)
+            sys.exit(exit_code)
+
         print("=== Loom Compliance Audit ===")
         print()
         audit_criticals, audit_warnings, audit_oks = audit_report(deps, plugin_root)

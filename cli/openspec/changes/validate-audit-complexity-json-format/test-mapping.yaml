@@ -1,0 +1,323 @@
+change_id: validate-audit-complexity-json-format
+generated_at: "2026-03-27T00:00:00+09:00"
+test_framework: pytest
+
+scenarios:
+  # ===========================================================================
+  # json-format-common.md - Requirement: --format json 引数
+  # ===========================================================================
+  - id: format-json-arg-specified
+    name: "--format json 指定時"
+    spec_file: "specs/json-format-common.md"
+    spec_line: 7
+    requirement: "--format json 引数"
+    test_file: "tests/scenarios/test_json_format_common.py"
+    test_name: "TestFormatJsonArg::test_format_json_outputs_pure_json"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: format-json-arg-unspecified
+    name: "--format 未指定時"
+    spec_file: "specs/json-format-common.md"
+    spec_line: 11
+    requirement: "--format json 引数"
+    test_file: "tests/scenarios/test_json_format_common.py"
+    test_name: "TestFormatJsonArg::test_format_unspecified_outputs_text"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: format-json-arg-invalid
+    name: "不正な format 値"
+    spec_file: "specs/json-format-common.md"
+    spec_line: 15
+    requirement: "--format json 引数"
+    test_file: "tests/scenarios/test_json_format_common.py"
+    test_name: "TestFormatJsonArg::test_invalid_format_value_errors"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # json-format-common.md - Requirement: 共通エンベロープ構造
+  # ===========================================================================
+  - id: common-envelope-fields
+    name: "エンベロープフィールド検証"
+    spec_file: "specs/json-format-common.md"
+    spec_line: 23
+    requirement: "共通エンベロープ構造"
+    test_file: "tests/scenarios/test_json_format_common.py"
+    test_name: "TestCommonEnvelope::test_envelope_fields_present"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: common-envelope-summary
+    name: "summary 集計"
+    spec_file: "specs/json-format-common.md"
+    spec_line: 27
+    requirement: "共通エンベロープ構造"
+    test_file: "tests/scenarios/test_json_format_common.py"
+    test_name: "TestCommonEnvelope::test_summary_aggregation"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # json-format-common.md - Requirement: items 共通フィールド
+  # ===========================================================================
+  - id: items-common-fields
+    name: "items 共通フィールド存在確認"
+    spec_file: "specs/json-format-common.md"
+    spec_line: 35
+    requirement: "items 共通フィールド"
+    test_file: "tests/scenarios/test_json_format_common.py"
+    test_name: "TestItemsCommonFields::test_items_have_required_fields"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # json-format-common.md - Requirement: exit code の一貫性
+  # ===========================================================================
+  - id: exit-code-violations
+    name: "JSON 出力時の exit code"
+    spec_file: "specs/json-format-common.md"
+    spec_line: 43
+    requirement: "exit code の一貫性"
+    test_file: "tests/scenarios/test_json_format_common.py"
+    test_name: "TestExitCodeConsistency::test_exit_code_1_on_violations"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: exit-code-clean
+    name: "正常時の exit code"
+    spec_file: "specs/json-format-common.md"
+    spec_line: 47
+    requirement: "exit code の一貫性"
+    test_file: "tests/scenarios/test_json_format_common.py"
+    test_name: "TestExitCodeConsistency::test_exit_code_0_on_clean"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # phase1-validate-deepvalidate-check.md - Requirement: validate の JSON 出力
+  # ===========================================================================
+  - id: validate-violations-json
+    name: "validate violations の JSON 出力"
+    spec_file: "specs/phase1-validate-deepvalidate-check.md"
+    spec_line: 7
+    requirement: "validate の JSON 出力"
+    test_file: "tests/scenarios/test_phase1_validate_deepvalidate_check.py"
+    test_name: "TestValidateJsonOutput::test_validate_violations_json_output"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: validate-clean-json
+    name: "validate 正常時の JSON 出力"
+    spec_file: "specs/phase1-validate-deepvalidate-check.md"
+    spec_line: 11
+    requirement: "validate の JSON 出力"
+    test_file: "tests/scenarios/test_phase1_validate_deepvalidate_check.py"
+    test_name: "TestValidateJsonOutput::test_validate_clean_json_output"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: validate-chain-integration
+    name: "chain_validate の結果統合"
+    spec_file: "specs/phase1-validate-deepvalidate-check.md"
+    spec_line: 15
+    requirement: "validate の JSON 出力"
+    test_file: "tests/scenarios/test_phase1_validate_deepvalidate_check.py"
+    test_name: "TestValidateJsonOutput::test_validate_chain_results_integrated"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # phase1-validate-deepvalidate-check.md - Requirement: deep-validate の JSON 出力
+  # ===========================================================================
+  - id: deep-validate-warning-json
+    name: "deep-validate の JSON 出力"
+    spec_file: "specs/phase1-validate-deepvalidate-check.md"
+    spec_line: 23
+    requirement: "deep-validate の JSON 出力"
+    test_file: "tests/scenarios/test_phase1_validate_deepvalidate_check.py"
+    test_name: "TestDeepValidateJsonOutput::test_deep_validate_warning_json_output"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: deep-validate-criticals-json
+    name: "deep-validate criticals の JSON 出力"
+    spec_file: "specs/phase1-validate-deepvalidate-check.md"
+    spec_line: 27
+    requirement: "deep-validate の JSON 出力"
+    test_file: "tests/scenarios/test_phase1_validate_deepvalidate_check.py"
+    test_name: "TestDeepValidateJsonOutput::test_deep_validate_criticals_json_output"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # phase1-validate-deepvalidate-check.md - Requirement: check の JSON 出力
+  # ===========================================================================
+  - id: check-ok-json
+    name: "check の正常系 JSON 出力"
+    spec_file: "specs/phase1-validate-deepvalidate-check.md"
+    spec_line: 35
+    requirement: "check の JSON 出力"
+    test_file: "tests/scenarios/test_phase1_validate_deepvalidate_check.py"
+    test_name: "TestCheckJsonOutput::test_check_ok_files_json_output"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: check-missing-json
+    name: "check の missing ファイル JSON 出力"
+    spec_file: "specs/phase1-validate-deepvalidate-check.md"
+    spec_line: 39
+    requirement: "check の JSON 出力"
+    test_file: "tests/scenarios/test_phase1_validate_deepvalidate_check.py"
+    test_name: "TestCheckJsonOutput::test_check_missing_files_json_output"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: check-chain-integration
+    name: "check で chain_validate の結果統合"
+    spec_file: "specs/phase1-validate-deepvalidate-check.md"
+    spec_line: 43
+    requirement: "check の JSON 出力"
+    test_file: "tests/scenarios/test_phase1_validate_deepvalidate_check.py"
+    test_name: "TestCheckJsonOutput::test_check_chain_validate_integration"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # phase2-audit-complexity.md - Requirement: audit のデータ収集関数分離
+  # ===========================================================================
+  - id: audit-collect-return-value
+    name: "audit_collect の戻り値"
+    spec_file: "specs/phase2-audit-complexity.md"
+    spec_line: 7
+    requirement: "audit のデータ収集関数分離"
+    test_file: "tests/scenarios/test_phase2_audit_complexity.py"
+    test_name: "TestAuditCollect::test_audit_collect_returns_items_list"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: audit-report-backward-compat
+    name: "audit_report の後方互換"
+    spec_file: "specs/phase2-audit-complexity.md"
+    spec_line: 11
+    requirement: "audit のデータ収集関数分離"
+    test_file: "tests/scenarios/test_phase2_audit_complexity.py"
+    test_name: "TestAuditCollect::test_audit_report_backward_compatible"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # phase2-audit-complexity.md - Requirement: audit の JSON 出力
+  # ===========================================================================
+  - id: audit-json-output
+    name: "audit の JSON 出力"
+    spec_file: "specs/phase2-audit-complexity.md"
+    spec_line: 19
+    requirement: "audit の JSON 出力"
+    test_file: "tests/scenarios/test_phase2_audit_complexity.py"
+    test_name: "TestAuditJsonOutput::test_audit_json_output_with_warning"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # phase2-audit-complexity.md - Requirement: complexity のデータ収集関数分離
+  # ===========================================================================
+  - id: complexity-collect-return-value
+    name: "complexity_collect の戻り値"
+    spec_file: "specs/phase2-audit-complexity.md"
+    spec_line: 27
+    requirement: "complexity のデータ収集関数分離"
+    test_file: "tests/scenarios/test_phase2_audit_complexity.py"
+    test_name: "TestComplexityCollect::test_complexity_collect_returns_items_list"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: complexity-report-backward-compat
+    name: "complexity_report の後方互換"
+    spec_file: "specs/phase2-audit-complexity.md"
+    spec_line: 31
+    requirement: "complexity のデータ収集関数分離"
+    test_file: "tests/scenarios/test_phase2_audit_complexity.py"
+    test_name: "TestComplexityCollect::test_complexity_report_backward_compatible"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # phase2-audit-complexity.md - Requirement: complexity の JSON 出力
+  # ===========================================================================
+  - id: complexity-json-output
+    name: "complexity の JSON 出力"
+    spec_file: "specs/phase2-audit-complexity.md"
+    spec_line: 39
+    requirement: "complexity の JSON 出力"
+    test_file: "tests/scenarios/test_phase2_audit_complexity.py"
+    test_name: "TestComplexityJsonOutput::test_complexity_json_output_with_fan_out_warning"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
