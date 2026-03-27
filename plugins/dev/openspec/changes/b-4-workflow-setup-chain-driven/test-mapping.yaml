@@ -1,0 +1,208 @@
+# test-mapping.yaml - OpenSpec Scenario to Test mapping
+# Change: b-4-workflow-setup-chain-driven
+# Generated: 2026-03-27
+
+change_id: b-4-workflow-setup-chain-driven
+generated_at: "2026-03-27T00:00:00+09:00"
+test_framework: bash
+scenarios:
+  # =========================================================================
+  # chain-definition.md - Requirement: setup chain 定義
+  # =========================================================================
+  - id: "chains-section-exists"
+    name: "chains セクションが存在する"
+    spec_file: "specs/chain-definition.md"
+    spec_line: 7
+    requirement: "setup chain 定義"
+    test_file: "tests/scenarios/chain-definition.test.sh"
+    test_name: "chains セクションに setup エントリが存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "steps-correct-order"
+    name: "steps が正しい順序で定義されている"
+    spec_file: "specs/chain-definition.md"
+    spec_line: 11
+    requirement: "setup chain 定義"
+    test_file: "tests/scenarios/chain-definition.test.sh"
+    test_name: "steps が正しい順序で定義されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-chain-validate-pass"
+    name: "loom chain validate が pass する"
+    spec_file: "specs/chain-definition.md"
+    spec_line: 15
+    requirement: "setup chain 定義"
+    test_file: "tests/scenarios/chain-definition.test.sh"
+    test_name: "loom chain validate が pass する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # chain-definition.md - Requirement: chain 参加コンポーネントの双方向参照
+  # =========================================================================
+  - id: "component-chain-field"
+    name: "コンポーネント側の chain フィールド"
+    spec_file: "specs/chain-definition.md"
+    spec_line: 23
+    requirement: "chain 参加コンポーネントの双方向参照"
+    test_file: "tests/scenarios/chain-definition.test.sh"
+    test_name: "全 chain 参加コンポーネントに chain: setup が設定されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "step-in-bidirectional"
+    name: "step_in の双方向整合性"
+    spec_file: "specs/chain-definition.md"
+    spec_line: 28
+    requirement: "chain 参加コンポーネントの双方向参照"
+    test_file: "tests/scenarios/chain-definition.test.sh"
+    test_name: "step_in の双方向整合性"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-check-bidir"
+    name: "loom check での双方向検証"
+    spec_file: "specs/chain-definition.md"
+    spec_line: 31
+    requirement: "chain 参加コンポーネントの双方向参照"
+    test_file: "tests/scenarios/chain-definition.test.sh"
+    test_name: "loom check で [chain-bidir] [step-bidir] エラーが 0 件"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # component-registration.md - Requirement: 新規 atomic コンポーネント登録
+  # =========================================================================
+  - id: "all-chain-components-registered"
+    name: "全 chain 参加コンポーネントが登録済み"
+    spec_file: "specs/component-registration.md"
+    spec_line: 7
+    requirement: "新規 atomic コンポーネント登録"
+    test_file: "tests/scenarios/component-registration.test.sh"
+    test_name: "全 chain 参加コンポーネントが commands に登録済み"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spawnable-by-correct"
+    name: "spawnable_by が正しい"
+    spec_file: "specs/component-registration.md"
+    spec_line: 11
+    requirement: "新規 atomic コンポーネント登録"
+    test_file: "tests/scenarios/component-registration.test.sh"
+    test_name: "全 chain 参加コンポーネントの spawnable_by に controller と workflow"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # component-registration.md - Requirement: workflow-setup の workflow 型登録
+  # =========================================================================
+  - id: "workflow-setup-type-workflow"
+    name: "workflow 型として登録"
+    spec_file: "specs/component-registration.md"
+    spec_line: 19
+    requirement: "workflow-setup の workflow 型登録"
+    test_file: "tests/scenarios/component-registration.test.sh"
+    test_name: "workflow-setup が type: workflow, chain: setup で登録"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "workflow-setup-calls-coverage"
+    name: "calls が全ステップを網羅"
+    spec_file: "specs/component-registration.md"
+    spec_line: 23
+    requirement: "workflow-setup の workflow 型登録"
+    test_file: "tests/scenarios/component-registration.test.sh"
+    test_name: "calls が全 chain ステップを網羅"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # component-registration.md - Requirement: workflow-test-ready の workflow 型登録
+  # =========================================================================
+  - id: "workflow-test-ready-type-workflow"
+    name: "workflow 型として登録"
+    spec_file: "specs/component-registration.md"
+    spec_line: 31
+    requirement: "workflow-test-ready の workflow 型登録"
+    test_file: "tests/scenarios/component-registration.test.sh"
+    test_name: "workflow-test-ready が type: workflow, chain: setup, step_in で登録"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # skill-reduction.md - Requirement: workflow-setup SKILL.md トークン削減
+  # =========================================================================
+  - id: "token-reduction"
+    name: "トークン削減率の達成"
+    spec_file: "specs/skill-reduction.md"
+    spec_line: 8
+    requirement: "workflow-setup SKILL.md トークン削減"
+    test_file: "tests/scenarios/skill-reduction.test.sh"
+    test_name: "SKILL.md トークン削減 (2500 文字以下)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "chain-step-description-removed"
+    name: "chain ステップの記述が排除されている"
+    spec_file: "specs/skill-reduction.md"
+    spec_line: 11
+    requirement: "workflow-setup SKILL.md トークン削減"
+    test_file: "tests/scenarios/skill-reduction.test.sh"
+    test_name: "chain ステップの記述が排除されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # skill-reduction.md - Requirement: SKILL.md に残すドメインルール
+  # =========================================================================
+  - id: "arch-ref-rules"
+    name: "arch-ref 抽出ルールが記載されている"
+    spec_file: "specs/skill-reduction.md"
+    spec_line: 25
+    requirement: "SKILL.md に残すドメインルール"
+    test_file: "tests/scenarios/skill-reduction.test.sh"
+    test_name: "arch-ref 抽出ルールが記載されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-procedural-commands"
+    name: "手続き的記述が排除されている"
+    spec_file: "specs/skill-reduction.md"
+    spec_line: 29
+    requirement: "SKILL.md に残すドメインルール"
+    test_file: "tests/scenarios/skill-reduction.test.sh"
+    test_name: "手続き的記述が排除されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

@@ -32,4 +32,16 @@ Claude Code dev plugin（chain-driven + autopilot-first）。
 
 ![co-architect](./docs/deps-co-architect.svg)
 </details>
+
+<details>
+<summary>workflow-setup</summary>
+
+![workflow-setup](./docs/deps-workflow-setup.svg)
+</details>
+
+<details>
+<summary>workflow-test-ready</summary>
+
+![workflow-test-ready](./docs/deps-workflow-test-ready.svg)
+</details>
 <!-- DEPS-SUBGRAPHS-END -->

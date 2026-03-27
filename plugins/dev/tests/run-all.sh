@@ -13,7 +13,7 @@ EXIT_CODE=0
 
 echo "============================================="
 echo "Document Verification Test Suite"
-echo "Change: b-7-self-improve-review-hook"
+echo "Change: b-4-workflow-setup-chain-driven"
 echo "============================================="
 
 for test_file in "${SCRIPT_DIR}"/scenarios/*.test.sh; do

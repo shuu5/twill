@@ -16,6 +16,8 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
+    skill_workflow_setup [label="dev:workflow-setup\n(592 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_test_ready [label="dev:workflow-test-ready\n(260 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
@@ -23,27 +25,37 @@ digraph Dependencies {
 
     // L2: Sub Commands
     cmd_self_improve_review [label="self-improve-review\n(1,086 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
+    cmd_worktree_list [label="worktree-list\n(200 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
+    cmd_opsx_apply [label="opsx-apply\n(239 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
+    cmd_opsx_archive [label="opsx-archive\n(238 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
 
     // L3: Agents
 
     // L3.5: Scripts
-    script_state_read [label="state-read\n(612 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_state_write [label="state-write\n(1,763 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_init [label="autopilot-init\n(823 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_session_create [label="session-create\n(551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_session_archive [label="session-archive\n(389 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_read [label="state-read\n(749 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_write [label="state-write\n(1,995 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_init [label="autopilot-init\n(1,074 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_session_create [label="session-create\n(613 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_session_archive [label="session-archive\n(451 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_add_warning [label="session-add-warning\n(532 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_worktree_delete [label="worktree-delete\n(730 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_crash_detect [label="crash-detect\n(721 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_delete [label="worktree-delete\n(877 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_crash_detect [label="crash-detect\n(700 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
     { rank=same; skill_co_autopilot; skill_co_issue; skill_co_project; skill_co_architect; }
-    { rank=same; cmd_self_improve_review; }
+    { rank=same; skill_workflow_setup; skill_workflow_test_ready; }
+    { rank=same; cmd_self_improve_review; cmd_worktree_list; cmd_opsx_apply; cmd_opsx_archive; }
     { rank=same; script_state_read; script_state_write; script_autopilot_init; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; }
 
     // Edges
+    skill_workflow_setup -> cmd_init;
+    skill_workflow_setup -> cmd_worktree_create;
+    skill_workflow_setup -> cmd_project_board_status_update;
+    skill_workflow_setup -> cmd_crg_auto_build;
+    skill_workflow_setup -> cmd_opsx_propose;
+    skill_workflow_setup -> cmd_ac_extract;
 
     // Legend
     subgraph cluster_legend {
@@ -51,6 +63,7 @@ digraph Dependencies {
         fontsize=9;
         style=dashed;
         legend_controller [label="Controller (skill)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+        legend_workflow [label="Workflow (skill)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
         legend_atomic [label="Atomic (command)", shape=box, style=filled, fillcolor="#e3f2fd"];
         legend_script [label="Script", shape=hexagon, style=filled, fillcolor="#FF9800"];
         legend_orphan [label="Orphan", shape=box, style=filled, fillcolor="#ffcdd2"];

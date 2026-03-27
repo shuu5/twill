@@ -11,7 +11,20 @@ entry_points:
   - skills/co-project/SKILL.md
   - skills/co-architect/SKILL.md
 
-# スキル（controller x4）
+# チェーン（B-4 で追加）
+chains:
+  setup:
+    type: "A"
+    description: "開発準備ワークフロー（worktree作成 → OpenSpec → テスト準備）"
+    steps:
+      - init
+      - worktree-create
+      - project-board-status-update
+      - crg-auto-build
+      - opsx-propose
+      - ac-extract
+
+# スキル（controller x4 + workflow x2）
 skills:
   co-autopilot:
     type: controller
@@ -41,6 +54,33 @@ skills:
     can_spawn: [atomic, reference]
     description: "対話的アーキテクチャ構築ワークフロー"
 
+  workflow-setup:
+    type: workflow
+    path: skills/workflow-setup/SKILL.md
+    spawnable_by: [controller]
+    can_spawn: [atomic]
+    calls:
+      - atomic: init
+        step: "1"
+      - atomic: worktree-create
+        step: "2"
+      - atomic: project-board-status-update
+        step: "2.3"
+      - atomic: crg-auto-build
+        step: "2.4"
+      - atomic: opsx-propose
+        step: "3"
+      - atomic: ac-extract
+        step: "3.5"
+    description: "開発準備ワークフロー（chain-driven）"
+
+  workflow-test-ready:
+    type: workflow
+    path: skills/workflow-test-ready/SKILL.md
+    spawnable_by: [controller]
+    can_spawn: [atomic]
+    description: "テスト生成と準備確認ワークフロー"
+
 # リファレンス（B-6 で追加）
 refs:
   ref-specialist-output-schema:
@@ -53,7 +93,7 @@ refs:
     path: refs/ref-specialist-few-shot.md
     description: "specialist プロンプト用 few-shot テンプレート"
 
-# コマンド
+# コマンド（B-4 で拡充）
 commands:
   self-improve-review:
     type: atomic
@@ -61,6 +101,93 @@ commands:
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "セッション中のBashエラーをレビューし問題をIssue化候補として構造化"
+
+  init:
+    type: atomic
+    path: commands/init/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "1"
+    description: "開発状態判定"
+
+  worktree-create:
+    type: atomic
+    path: commands/worktree-create/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "2"
+    description: "worktree 作成"
+
+  worktree-list:
+    type: atomic
+    path: commands/worktree-list/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "worktree 一覧表示"
+
+  project-board-status-update:
+    type: atomic
+    path: commands/project-board-status-update/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "2.3"
+    description: "Project Board Status を In Progress に更新"
+
+  crg-auto-build:
+    type: atomic
+    path: commands/crg-auto-build/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "2.4"
+    description: "CRG グラフ自動ビルド"
+
+  opsx-propose:
+    type: atomic
+    path: commands/opsx-propose/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "3"
+    description: "OpenSpec 提案ラッパー"
+
+  opsx-apply:
+    type: atomic
+    path: commands/opsx-apply/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "OpenSpec 実装ラッパー"
+
+  opsx-archive:
+    type: atomic
+    path: commands/opsx-archive/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "OpenSpec アーカイブ"
+
+  ac-extract:
+    type: atomic
+    path: commands/ac-extract/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "3.5"
+    description: "AC（受け入れ基準）抽出"
 
 # スクリプト（B-3 で追加）
 scripts:

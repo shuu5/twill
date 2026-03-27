@@ -1,0 +1,43 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="workflow-setup";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+    skill_workflow_setup [label="dev:workflow-setup\n(592 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+
+    // Reference Skills
+
+    // L1: Direct Commands
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_workflow_setup; }
+
+    // Edges
+    skill_workflow_setup -> cmd_init;
+    skill_workflow_setup -> cmd_worktree_create;
+    skill_workflow_setup -> cmd_project_board_status_update;
+    skill_workflow_setup -> cmd_crg_auto_build;
+    skill_workflow_setup -> cmd_opsx_propose;
+    skill_workflow_setup -> cmd_ac_extract;
+
+}
