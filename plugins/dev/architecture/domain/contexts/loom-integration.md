@@ -96,6 +96,53 @@ flowchart TD
 - **loom audit/check 結果の消費**: worker-structure, worker-principles, worker-architecture は PR Cycle の specialist として動作するが、loom audit/check 結果を入力に使う
 - **deps.yaml = SSOT**: プラグイン構成の唯一の情報源。編集フロー: コンポーネント編集 -> deps.yaml 更新 -> loom --check -> loom --update-readme
 
+## loom CLI コマンド依存マップ
+
+| カテゴリ | コマンド | lpd での使用箇所 | 依存度 |
+|---|---|---|---|
+| **検証** | `validate` | PostToolUse hook, merge-gate plugin gate | Critical |
+| **検証** | `deep-validate` | merge-gate specialist review | Critical |
+| **検証** | `check` | PostToolUse hook, セッション開始時 | Critical |
+| **検証** | `audit` | worker-structure specialist | High |
+| **Chain** | `chain generate --write` | chain-driven ステップ管理 (B-4/B-5) | Critical |
+| **Chain** | `chain generate --check` | CI/hook での乖離検出 (loom#30) | High |
+| **Chain** | `chain validate` | deps.yaml chain 整合性検証 | Critical |
+| **構造** | `rename` | co-* naming 保守 (loom#28) | High |
+| **構造** | `promote` | 型昇格/降格 | Medium |
+| **可視化** | `graph` / `update-readme` | README SVG 埋め込み | Medium |
+| **可視化** | `tree` | 開発時構造確認 | Low |
+| **保守** | `orphans` | dead component 検出 | Medium |
+| **保守** | `complexity` | fan-out/fan-in 監視 | Medium |
+| **同期** | `sync-docs` | refs/ ドキュメント同期 | Medium |
+| **同期** | `rules` | types.yaml 型テーブル表示 | Low |
+
+## 型システム (types.yaml) と lpd の対応
+
+| 型 | section | lpd での用途 | 想定コンポーネント数 |
+|---|---|---|---|
+| controller | skills | co-autopilot, co-issue, co-project, co-architect | 4 |
+| workflow | skills | workflow-setup, workflow-pr-cycle 等 | 5+ |
+| atomic | commands | ac-extract, autopilot-init 等 | 78+ |
+| composite | commands | merge-gate, phase-review 等 | 7+ |
+| specialist | agents | worker-code-reviewer 等 | 27 |
+| reference | skills | ref-types, ref-architecture-spec 等 | 11 |
+| script | scripts | autopilot-plan.sh 等 (loom#31 完了後) | 18 |
+
+## loom Issue 完了 → lpd ブロック解除マップ
+
+| loom Issue | 完了で解除される lpd Issue | ブロック理由 | 優先度 |
+|---|---|---|---|
+| **#31** (scripts) | #4 (B-2), #9 (C-2a), #11 (C-4) | deps.yaml v3.0 scripts セクション必須 | **Must-1st** |
+| **#28** (rename) | #4 (B-2) | co-* naming に path/dir rename 必要 | **Must-2nd** |
+| **#30** (--check/--all) | #6 (B-4), #7 (B-5) | chain-driven 乖離検出 | **Must-3rd** |
+| **#29** (model) | #10 (C-3) | specialist model 宣言の品質保証 | **Must-4th** |
+| **#34** (JSON, Phase 1) | #7 (B-5) | merge-gate plugin gate の JSON 消費 | **Must-5th** |
+| #32 (Template B) | — | 便利だが blocking ではない | Should |
+| #33 (output schema) | — | C-3 品質向上だが blocking ではない | Should |
+| #35 (Arch Spec) | — | ドキュメント整備のみ | Could |
+
+**クリティカルパス**: loom#31 → loom#28 → lpd#4 (B-2) → lpd#5 (B-3) → lpd#6 (B-4) → lpd#7 (B-5)
+
 ## Dependencies
 
 - **Open Host Service -> 全 Context**: validate / audit / chain 結果を提供
