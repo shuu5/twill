@@ -41,6 +41,18 @@ skills:
     can_spawn: [atomic, reference]
     description: "対話的アーキテクチャ構築ワークフロー"
 
+# リファレンス（B-6 で追加）
+refs:
+  ref-specialist-output-schema:
+    type: reference
+    path: refs/ref-specialist-output-schema.md
+    description: "specialist 共通出力スキーマ定義"
+
+  ref-specialist-few-shot:
+    type: reference
+    path: refs/ref-specialist-few-shot.md
+    description: "specialist プロンプト用 few-shot テンプレート"
+
 # コマンド（B-3 以降で追加）
 commands: {}
 
