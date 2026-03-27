@@ -23,6 +23,8 @@
 |------|------|---------|
 | merge-ready | Issue の中間状態。Worker が宣言し、Pilot が merge-gate で判定する | Autopilot, PR Cycle |
 | cross-issue warning | Phase 内 Issue 間のファイル競合リスク警告 | Autopilot |
-| plan.yaml | autopilot 計画。Phase 分割・Issue 間依存定義 | Autopilot |
+| autopilot-plan.yaml (plan.yaml) | autopilot 計画。Phase 分割・Issue 間依存定義 | Autopilot |
 | retry_count | merge-gate リジェクト後のリトライ回数（最大1） | PR Cycle |
+| script | loom types.yaml の型の一つ。bash/python スクリプトを deps.yaml で SSOT 追跡するためのコンポーネント型。can_spawn: [], spawnable_by: [atomic, composite] | Loom Integration |
+| PostToolUse hook | Claude Code のツール実行後に自動実行されるシェルスクリプト。loom validate 自動実行やエラー記録に使用 | Loom Integration |
 | Architecture Spec | propose → apply パスで管理される設計仕様。direct パス廃止（軽微変更 <10行 のみ例外） | Project Management |

@@ -4,7 +4,7 @@ Autopilot Context と PR Cycle Context 間のインターフェース定義。
 
 ## Input
 
-- `issue-{N}.json` (status = `running`, 全ステップ完了時点)
+- `issue-{N}.json` (status = `merge-ready`, 全ステップ完了時点)
 - PR 情報:
   - `number`: PR 番号
   - `branch`: ブランチ名
@@ -25,7 +25,7 @@ Autopilot Context と PR Cycle Context 間のインターフェース定義。
 
 3. 結果集約
    - 全 specialist の findings を集約
-   - severity in [critical, high] && confidence >= 80 で機械的フィルタ
+   - severity == CRITICAL && confidence >= 80 で機械的フィルタ
 
 4. 判定
    - フィルタ結果が空 → PASS
@@ -41,7 +41,7 @@ Autopilot Context と PR Cycle Context 間のインターフェース定義。
 - Pilot が worktree を削除
 
 ### REJECT の場合
-- `retry_count < 1`: status を `running` に戻し、`fix_instructions` に findings を記録。Worker が fix-phase を実行
+- `retry_count < 1`: status を `failed` に遷移後、`failed` → `running` に再遷移。`fix_instructions` に findings を記録。Worker が fix-phase を実行
 - `retry_count >= 1`: status を `failed` に確定。Pilot に報告し、手動介入を要求
 
 ## 参照する不変条件

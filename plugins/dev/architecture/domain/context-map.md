@@ -70,9 +70,9 @@ graph TD
 | Context | Primary Issues | Secondary Issues |
 |---------|---------------|-----------------|
 | Autopilot | #5, #6, #11, #15, #17 | #7, #8, #16 |
-| PR Cycle | #7, #10, #16 | #11 |
+| PR Cycle | #7, #10, #16, #18 | #11 |
 | Issue Management | — | #8, #9 |
 | Project Management | — | #4, #8, #9, #11 |
-| Self-Improve | — | #8, #9 |
+| Self-Improve | #19 | #8, #9 |
 | Loom Integration | #4 | #6, #7, #9, #10, #15 |
 | Cross-cutting | #1, #2, #3, #8, #9, #12, #13, #14 | — |
