@@ -3060,6 +3060,10 @@ def chain_generate_print(result: dict, chain_name: str, chain_type: Optional[str
         print()
 
 
+# called-by パターン: description 末尾の「。XXX (Step N )から呼び出される。」を検出
+CALLED_BY_PATTERN = re.compile(r'。\S+ (?:Step \d+ )?から呼び出される。$')
+
+
 def chain_generate_write(result: dict, deps: dict, plugin_root: Path) -> None:
     """chain_generate の結果をプロンプトファイルに書き込む。"""
     all_components: Dict[str, Tuple[str, dict]] = {}
@@ -3119,10 +3123,10 @@ def chain_generate_write(result: dict, deps: dict, plugin_root: Path) -> None:
 
         # Template B: frontmatter description 内の called-by 更新
         if comp_name in template_b:
-            called_by_pattern = re.compile(r'.*から呼び出される.*')
+            called_by_text = template_b[comp_name]
             lines = content.splitlines()
             in_frontmatter = False
-            found_called_by = False
+            desc_line_idx = None
             for i, line in enumerate(lines):
                 if i == 0 and line.strip() == '---':
                     in_frontmatter = True
@@ -3131,15 +3135,74 @@ def chain_generate_write(result: dict, deps: dict, plugin_root: Path) -> None:
                     in_frontmatter = False
                     continue
                 if in_frontmatter and 'description:' in line:
-                    if called_by_pattern.search(line):
-                        found_called_by = True
-                        break
-            if not found_called_by:
-                print(f"Warning: Section marker not found in {path_str}, skipping", file=sys.stderr)
+                    desc_line_idx = i
+                    break
+            if desc_line_idx is None:
+                print(f"Warning: No description field in {path_str}, skipping Template B", file=sys.stderr)
+            else:
+                desc_line = lines[desc_line_idx]
+                # description: の値部分を取得
+                prefix, _, value = desc_line.partition('description:')
+                value = value.strip()
+                # クォートを除去して処理
+                quote_char = ''
+                if value and value[0] in ('"', "'"):
+                    quote_char = value[0]
+                    value = value[1:]
+                    if value.endswith(quote_char):
+                        value = value[:-1]
+                # called-by パターンで置換または追記
+                if CALLED_BY_PATTERN.search(value):
+                    new_value = CALLED_BY_PATTERN.sub(f'。{called_by_text}', value)
+                else:
+                    if value and not value.endswith('。'):
+                        new_value = f'{value}。{called_by_text}'
+                    elif value:
+                        new_value = f'{value}{called_by_text}'
+                    else:
+                        new_value = called_by_text
+                # クォートを復元
+                if quote_char:
+                    new_value = f'{quote_char}{new_value}{quote_char}'
+                lines[desc_line_idx] = f'{prefix}description: {new_value}'
+                content = '\n'.join(lines)
+                modified = True
 
         if modified:
             file_path.write_text(content, encoding='utf-8')
             print(f"Updated: {path_str}")
+
+
+def _extract_called_by(content: str) -> Optional[str]:
+    """ファイル内容の frontmatter description から called-by 部分を抽出する。
+
+    Returns:
+        called-by 文字列（例: "workflow-pr-cycle Step 3 から呼び出される。"）。
+        description が存在しない、または called-by パターンが見つからない場合は None。
+    """
+    lines = content.splitlines()
+    in_frontmatter = False
+    for i, line in enumerate(lines):
+        if i == 0 and line.strip() == '---':
+            in_frontmatter = True
+            continue
+        if in_frontmatter and line.strip() == '---':
+            break
+        if in_frontmatter and 'description:' in line:
+            _, _, value = line.partition('description:')
+            value = value.strip()
+            # クォート除去
+            if value and value[0] in ('"', "'"):
+                quote_char = value[0]
+                value = value[1:]
+                if value.endswith(quote_char):
+                    value = value[:-1]
+            match = CALLED_BY_PATTERN.search(value)
+            if match:
+                # 先頭の「。」を除いた called-by 文を返す
+                return match.group(0).lstrip('。')
+            return None
+    return None
 
 
 def _normalize_for_check(text: str) -> str:
@@ -3173,11 +3236,11 @@ def _extract_checkpoint_section(content: str) -> Optional[str]:
 
 
 def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[List[dict], List[str]]:
-    """単一 chain の Template A ドリフト検出。
+    """単一 chain の Template A + Template B ドリフト検出。
 
     Returns:
         (file_results, diffs)
-        file_results: [{'comp': str, 'path': str, 'status': 'ok'|'DRIFT'}, ...]
+        file_results: [{'comp': str, 'path': str, 'status': 'ok'|'DRIFT', 'template': 'A'|'B'}, ...]
         diffs: unified diff テキストのリスト
     """
     all_components: Dict[str, Tuple[str, dict]] = {}
@@ -3186,9 +3249,11 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
             all_components[comp_name] = (section, data)
 
     template_a = result['template_a']
+    template_b = result['template_b']
     file_results = []
     diffs = []
 
+    # --- Template A チェック ---
     for comp_name, expected_content in template_a.items():
         comp = all_components.get(comp_name)
         if comp is None:
@@ -3201,8 +3266,8 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
         if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
             continue
         if not file_path.exists():
-            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT'})
-            diff_text = f"=== Diff: {path_str} ===\n--- expected\n+++ actual (file not found)\n"
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT', 'template': 'A'})
+            diff_text = f"=== Diff: {path_str} (Template A) ===\n--- expected\n+++ actual (file not found)\n"
             diffs.append(diff_text)
             continue
 
@@ -3210,13 +3275,13 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
         actual_section = _extract_checkpoint_section(content)
 
         if actual_section is None:
-            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT'})
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT', 'template': 'A'})
             expected_lines = _normalize_for_check(expected_content).splitlines(keepends=True)
             diff_lines = list(difflib.unified_diff(
                 expected_lines, ['(section not found)\n'],
                 fromfile='expected', tofile='actual'
             ))
-            diff_text = f"=== Diff: {path_str} ===\n" + ''.join(diff_lines)
+            diff_text = f"=== Diff: {path_str} (Template A) ===\n" + ''.join(diff_lines)
             diffs.append(diff_text)
             continue
 
@@ -3225,16 +3290,61 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
 
         if hashlib.sha256(norm_expected.encode('utf-8')).hexdigest() == \
            hashlib.sha256(norm_actual.encode('utf-8')).hexdigest():
-            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'ok'})
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'ok', 'template': 'A'})
         else:
-            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT'})
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT', 'template': 'A'})
             expected_lines = norm_expected.splitlines(keepends=True)
             actual_lines = norm_actual.splitlines(keepends=True)
             diff_lines = list(difflib.unified_diff(
                 expected_lines, actual_lines,
                 fromfile='expected', tofile='actual'
             ))
-            diff_text = f"=== Diff: {path_str} ===\n" + ''.join(diff_lines)
+            diff_text = f"=== Diff: {path_str} (Template A) ===\n" + ''.join(diff_lines)
+            diffs.append(diff_text)
+
+    # --- Template B チェック ---
+    for comp_name, expected_called_by in template_b.items():
+        comp = all_components.get(comp_name)
+        if comp is None:
+            continue
+        path_str = comp[1].get('path')
+        if not path_str:
+            continue
+
+        file_path = plugin_root / path_str
+        if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
+            continue
+        if not file_path.exists():
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT', 'template': 'B'})
+            diff_text = f"=== Diff: {path_str} (Template B) ===\n--- expected\n+++ actual (file not found)\n"
+            diffs.append(diff_text)
+            continue
+
+        content = file_path.read_text(encoding='utf-8')
+        actual_called_by = _extract_called_by(content)
+
+        if actual_called_by is None:
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT', 'template': 'B'})
+            diff_lines = list(difflib.unified_diff(
+                [expected_called_by + '\n'], ['(called-by not found)\n'],
+                fromfile='expected', tofile='actual'
+            ))
+            diff_text = f"=== Diff: {path_str} (Template B) ===\n" + ''.join(diff_lines)
+            diffs.append(diff_text)
+            continue
+
+        norm_expected = _normalize_for_check(expected_called_by)
+        norm_actual = _normalize_for_check(actual_called_by)
+
+        if norm_expected == norm_actual:
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'ok', 'template': 'B'})
+        else:
+            file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT', 'template': 'B'})
+            diff_lines = list(difflib.unified_diff(
+                [norm_expected + '\n'], [norm_actual + '\n'],
+                fromfile='expected', tofile='actual'
+            ))
+            diff_text = f"=== Diff: {path_str} (Template B) ===\n" + ''.join(diff_lines)
             diffs.append(diff_text)
 
     return file_results, diffs

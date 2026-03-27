@@ -1,0 +1,211 @@
+change_id: chain-generate-write-template-b
+generated_at: "2026-03-27T00:00:00+09:00"
+test_framework: pytest
+scenarios:
+  # ===== template-b-write.md =====
+
+  - id: "template-b-write-new-called-by-appended"
+    name: "新規 called-by 追記"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 7
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWriteNewCalledBy::test_new_called_by_appended_to_description"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-write-new-called-by-with-step"
+    name: "新規 called-by 追記 (step番号付き)"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 7
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWriteNewCalledBy::test_new_called_by_with_step_number"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-write-existing-called-by-replaced"
+    name: "既存 called-by 更新"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 11
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWriteExistingCalledBy::test_existing_called_by_replaced"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-write-existing-called-by-pattern"
+    name: "既存 called-by パターンマッチ置換"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 11
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWriteExistingCalledBy::test_existing_called_by_pattern_match"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-write-no-step-field"
+    name: "step フィールドなしの called-by"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 15
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWriteNoStepField::test_called_by_without_step"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-write-skip-no-step-in"
+    name: "step_in を持たないコンポーネントのスキップ"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 19
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWriteSkipNoStepIn::test_no_step_in_skips_template_b"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-write-preserve-description"
+    name: "既存 description の保持"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 23
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWritePreserveDescription::test_non_calledby_description_preserved"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-write-preserve-description-prefix"
+    name: "既存 description の保持 (prefix保持)"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 23
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWritePreserveDescription::test_description_with_existing_calledby_preserves_prefix"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-write-no-description-warning"
+    name: "description 行が存在しない場合 - Warning出力"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 27
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWriteNoDescriptionLine::test_no_description_line_warning"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-write-no-description-no-modification"
+    name: "description 行が存在しない場合 - 構造未変更"
+    spec_file: "specs/template-b-write.md"
+    spec_line: 27
+    requirement: "template-b-write 書き込み実装"
+    test_file: "tests/scenarios/test_template_b_write.py"
+    test_name: "TestTemplateBWriteNoDescriptionLine::test_no_description_line_no_modification"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===== template-b-check.md =====
+
+  - id: "template-b-check-match-ok"
+    name: "called-by 一致"
+    spec_file: "specs/template-b-check.md"
+    spec_line: 7
+    requirement: "template-b-check ドリフト検出"
+    test_file: "tests/scenarios/test_template_b_check.py"
+    test_name: "TestTemplateBCheckMatch::test_called_by_matches_reports_ok"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-check-match-no-drift"
+    name: "called-by 一致 - DRIFT非報告"
+    spec_file: "specs/template-b-check.md"
+    spec_line: 7
+    requirement: "template-b-check ドリフト検出"
+    test_file: "tests/scenarios/test_template_b_check.py"
+    test_name: "TestTemplateBCheckMatch::test_called_by_match_no_drift_reported"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-check-mismatch-drift"
+    name: "called-by 不一致"
+    spec_file: "specs/template-b-check.md"
+    spec_line: 11
+    requirement: "template-b-check ドリフト検出"
+    test_file: "tests/scenarios/test_template_b_check.py"
+    test_name: "TestTemplateBCheckMismatch::test_called_by_mismatch_reports_drift"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-check-mismatch-diff"
+    name: "called-by 不一致 - 差分出力"
+    spec_file: "specs/template-b-check.md"
+    spec_line: 11
+    requirement: "template-b-check ドリフト検出"
+    test_file: "tests/scenarios/test_template_b_check.py"
+    test_name: "TestTemplateBCheckMismatch::test_called_by_mismatch_shows_diff"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-check-missing-drift"
+    name: "called-by 欠落"
+    spec_file: "specs/template-b-check.md"
+    spec_line: 15
+    requirement: "template-b-check ドリフト検出"
+    test_file: "tests/scenarios/test_template_b_check.py"
+    test_name: "TestTemplateBCheckMissing::test_called_by_missing_reports_drift"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-check-both-templates"
+    name: "Template A と B の両方を検証"
+    spec_file: "specs/template-b-check.md"
+    spec_line: 19
+    requirement: "template-b-check ドリフト検出"
+    test_file: "tests/scenarios/test_template_b_check.py"
+    test_name: "TestTemplateBCheckIntegration::test_check_validates_both_template_a_and_b"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "template-b-check-both-templates-ok"
+    name: "Template A と B 両方一致時 ok"
+    spec_file: "specs/template-b-check.md"
+    spec_line: 19
+    requirement: "template-b-check ドリフト検出"
+    test_file: "tests/scenarios/test_template_b_check.py"
+    test_name: "TestTemplateBCheckIntegration::test_check_both_templates_ok_when_all_match"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
