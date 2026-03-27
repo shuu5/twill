@@ -62,6 +62,11 @@ flowchart TD
     G --> H[board-sync: Board 追加]
 ```
 
+**代替 Phase 1 入力**:
+- 通常: `/dev:explore` による対話的問題探索
+- Self-Improve: `/dev:self-improve-review` によるエラーログ分析
+- いずれも `.controller-issue/explore-summary.md` を出力し、Phase 2 以降は共通フロー
+
 ### Tech-debt triage フロー
 
 ```mermaid

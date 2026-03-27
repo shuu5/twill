@@ -35,6 +35,17 @@ co-autopilot に吸収されており、独立 controller は存在しない。
 | confidence | `HIGH` \| `MEDIUM` \| `LOW` | 改善の確信度 |
 | pattern_name | string | 対応する Pattern 名 |
 
+### ErrorRecord
+hook が自動記録する Bash エラー。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| timestamp | string (ISO 8601) | エラー発生時刻 |
+| command | string | 実行されたコマンド |
+| exit_code | number | 終了コード |
+| stderr_snippet | string | stderr の先頭部分 |
+| cwd | string | 実行時の作業ディレクトリ |
+
 ## Key Workflows
 
 ### パターン検出フロー
@@ -68,6 +79,22 @@ flowchart TD
     D -- No --> F[保留]
 ```
 
+### User-Triggered Review フロー（B-7）
+
+```mermaid
+graph LR
+    H[PostToolUse Hook] -->|exit_code != 0| L[errors.jsonl]
+    U[ユーザートリガー] --> R[self-improve-review]
+    R --> L
+    R -->|会話コンテキスト参照| A[エラー分析]
+    A -->|ユーザー選別| E[explore-summary.md]
+    E -->|co-issue Phase 2| I[Issue化]
+```
+
+- **機械層**: PostToolUse hook が Bash エラーを `.self-improve/errors.jsonl` に記録（サイレント）
+- **判断層**: ユーザーが `/dev:self-improve-review` でトリガー。エラーサマリーから問題を選別
+- **Issue化層**: 選別結果を `.controller-issue/explore-summary.md` に書き出し、co-issue のフローに接続
+
 ## Constraints
 
 - **cooldown 判定**: 同一パターンの重複 Issue 起票を防止。pattern name + 時間窓でチェック
@@ -80,7 +107,14 @@ flowchart TD
 - **confidence 閾値**: HIGH 以上でのみ Issue 起票推奨。MEDIUM 以下は session.json patterns に記録のみ
 - **self-improve-format テンプレート準拠**: 起票時は refs/self-improve-format.md の共通フォーマットに従う
 
+### Error Recording ルール
+- PostToolUse hook は記録のみ。ブロック・アラート・自動対処を行わない
+- errors.jsonl はセッションスコープ（.gitignore 対象）
+- テスト実行のエラーも記録される（問題かどうかの判断は人間が行う）
+- self-improve-review は co-issue の Phase 1 (explore) の代替として機能する
+
 ## Dependencies
 
 - **Upstream <- Autopilot**: パターン検出データ（session.json patterns）
 - **Downstream -> Issue Management**: self-improve Issue 起票
+- **Downstream -> Issue Management**: self-improve-review が co-issue フローに接続（explore-summary.md 経由）
