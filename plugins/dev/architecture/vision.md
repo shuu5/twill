@@ -10,6 +10,30 @@ chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開
 - Controller は4つのみ（co-autopilot, co-issue, co-project, co-architect）
 - Bare repo + worktree 一律（branch モード廃止）
 - 状態管理は統一 JSON 2種（issue-{N}.json + session.json）
+- Emergency Bypass: co-autopilot 障害時のみ手動パス許可（retrospective 記録義務あり）
+
+### Controller 操作カテゴリ
+
+| カテゴリ | 定義 | 該当 Controller |
+|----------|------|-----------------|
+| Implementation | コード変更・PR 作成を伴う操作 | co-autopilot のみ |
+| Non-implementation | Issue 作成・設計・プロジェクト管理 | co-issue, co-project, co-architect |
+
+Non-implementation controller は co-autopilot を spawn しない。
+co-architect が「設計 + 実装」を要求された場合: 設計完了 → Issue 起票（co-issue 経由）→ co-autopilot で実装。
+
+### 機械 / LLM の境界
+
+| 機械がやるべきこと | LLM に任せてよいこと |
+|--------------------|----------------------|
+| 状態管理（JSON read/write） | Issue の分解判断 |
+| ファイル操作（worktree 作成・削除） | コードレビュー品質 |
+| バリデーション（loom validate） | エラー診断 |
+| 出力スキーマ強制（specialist 共通スキーマ） | アーキテクチャ決定 |
+| ステップ順序制御（chain-driven） | merge 失敗時の対処判断 |
+| フラグ伝搬（統一状態ファイル） | cross-issue 影響の分析 |
+| 型ルール検証（PostToolUse hook） | パターン検出・知見の抽出 |
+| specialist 出力の機械的フィルタ | PR レビューの判断 |
 
 ## Non-Goals
 
