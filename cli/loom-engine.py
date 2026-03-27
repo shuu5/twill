@@ -2648,6 +2648,32 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
             elif model not in ALLOWED_MODELS:
                 add_info(f"[model-required] {cname}: model '{model}' は許可リストにありません")
 
+    # (E) Specialist 出力スキーマ検証
+    for section in ('skills', 'commands', 'agents'):
+        for cname, cdata in deps.get(section, {}).items():
+            resolved = resolve_type(cdata.get('type', ''))
+            if resolved != 'specialist':
+                continue
+
+            output_schema = cdata.get('output_schema', None)
+            if output_schema == 'custom':
+                continue
+            if output_schema is not None and output_schema != '':
+                add_warning(f"[specialist-output-schema] {cname}: invalid output_schema value '{output_schema}' (expected 'custom' or omit)")
+                continue
+
+            path_str = cdata.get('path', '')
+            if not path_str:
+                continue
+            path = plugin_root / path_str
+            if not path.exists():
+                continue
+
+            schema_kw = _check_output_schema_keywords(path)
+            missing = [cat for cat, present in schema_kw.items() if not present]
+            if missing:
+                add_warning(f"[specialist-output-schema] {cname}: missing output schema keywords: {', '.join(missing)}")
+
     return criticals, warnings, infos
 
 
@@ -3405,6 +3431,14 @@ def _check_step0_routing(file_path: Path) -> Tuple[bool, bool]:
     return has_step0, has_routing
 
 
+REQUIRED_OUTPUT_KEYWORDS = {
+    "result_values": {"PASS", "FAIL"},        # いずれか1つ以上
+    "structure": {"findings"},                 # 必須
+    "severity": {"severity"},                  # 必須
+    "confidence": {"confidence"},              # 必須
+}
+
+
 def _check_self_contained_keywords(file_path: Path) -> Dict[str, bool]:
     """Self-Contained キーワードの存在確認
 
@@ -3417,6 +3451,21 @@ def _check_self_contained_keywords(file_path: Path) -> Dict[str, bool]:
         'constraint': bool(re.search(r'##\s*(?:制約|禁止|MUST NOT|Constraint)', body)) if body else False,
     }
     return keywords
+
+
+def _check_output_schema_keywords(file_path: Path) -> Dict[str, bool]:
+    """出力スキーマキーワードのカテゴリ別存在確認
+
+    Returns: dict with category presence (result_values, structure, severity, confidence)
+    """
+    body = _get_body_text(file_path)
+    if not body:
+        return {cat: False for cat in REQUIRED_OUTPUT_KEYWORDS}
+
+    result = {}
+    for category, keywords in REQUIRED_OUTPUT_KEYWORDS.items():
+        result[category] = any(kw in body for kw in keywords)
+    return result
 
 
 def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
@@ -3538,12 +3587,27 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
             continue
         path = plugin_root / comp['path']
         keywords = _check_self_contained_keywords(path)
-        has_required = keywords['purpose'] and keywords['output']
+
+        # Schema check (same logic as audit_report)
+        output_schema_val = None
+        for section in ('skills', 'commands', 'agents'):
+            if name in deps.get(section, {}):
+                output_schema_val = deps[section][name].get('output_schema', None)
+                break
+        if output_schema_val == 'custom':
+            schema_str = 'Skip'
+            schema_ok = True
+        else:
+            schema_kw = _check_output_schema_keywords(path)
+            schema_ok = all(schema_kw.values())
+            schema_str = 'Yes' if schema_ok else 'No'
+
+        has_required = keywords['purpose'] and keywords['output'] and schema_ok
         severity = 'ok' if has_required else 'warning'
         items.append({
             "severity": severity,
             "component": name,
-            "message": f"Purpose: {'Yes' if keywords['purpose'] else 'No'}, Output: {'Yes' if keywords['output'] else 'No'}, Constraint: {'Yes' if keywords['constraint'] else 'No'}",
+            "message": f"Purpose: {'Yes' if keywords['purpose'] else 'No'}, Output: {'Yes' if keywords['output'] else 'No'}, Constraint: {'Yes' if keywords['constraint'] else 'No'}, Schema: {schema_str}",
             "section": "self_contained",
             "value": 1 if has_required else 0,
             "threshold": 1,
@@ -3572,6 +3636,7 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
                 'type': spec.get('type', ''),
                 'path': spec.get('path', ''),
                 'calls': spec.get('calls', []),
+                'model': spec.get('model'),
             }
 
     COMMON_TOOLS = {'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'Task',
@@ -3683,8 +3748,8 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
     # === Section 5: Self-Contained ===
     print("## 5. Self-Contained")
     print()
-    print("| Component | Type | Purpose | Output | Constraint | Severity |")
-    print("|-----------|------|---------|--------|------------|----------|")
+    print("| Component | Type | Purpose | Output | Constraint | Schema | Severity |")
+    print("|-----------|------|---------|--------|------------|--------|----------|")
 
     for name, comp in sorted(all_components.items()):
         resolved = resolve_type(comp['type'])
@@ -3693,7 +3758,22 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
         path = plugin_root / comp['path']
         keywords = _check_self_contained_keywords(path)
 
-        has_required = keywords['purpose'] and keywords['output']
+        # 出力スキーマ準拠チェック
+        output_schema_val = None
+        for section in ('skills', 'commands', 'agents'):
+            if name in deps.get(section, {}):
+                output_schema_val = deps[section][name].get('output_schema', None)
+                break
+
+        if output_schema_val == 'custom':
+            schema_str = 'Skip'
+            schema_ok = True
+        else:
+            schema_kw = _check_output_schema_keywords(path)
+            schema_ok = all(schema_kw.values())
+            schema_str = 'Yes' if schema_ok else 'No'
+
+        has_required = keywords['purpose'] and keywords['output'] and schema_ok
         if has_required:
             severity = 'OK'
         else:
@@ -3702,7 +3782,7 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
         p = 'Yes' if keywords['purpose'] else 'No'
         o = 'Yes' if keywords['output'] else 'No'
         c = 'Yes' if keywords['constraint'] else 'No'
-        print(f"| {name} | {comp['type']} | {p} | {o} | {c} | {severity} |")
+        print(f"| {name} | {comp['type']} | {p} | {o} | {c} | {schema_str} | {severity} |")
     print()
 
     # === Section 6: Model Declaration ===
