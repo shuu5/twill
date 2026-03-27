@@ -1,0 +1,48 @@
+# loom-plugin-dev 依存関係定義
+# version: 3.0
+# plugin: dev
+
+version: "3.0"
+plugin: dev
+
+entry_points:
+  - skills/co-autopilot/SKILL.md
+  - skills/co-issue/SKILL.md
+  - skills/co-project/SKILL.md
+  - skills/co-architect/SKILL.md
+
+# スキル（controller x4）
+skills:
+  co-autopilot:
+    type: controller
+    path: skills/co-autopilot/SKILL.md
+    spawnable_by: [user]
+    can_spawn: [composite, atomic, specialist]
+    description: "依存グラフに基づくIssue群一括自律実装オーケストレーター"
+
+  co-issue:
+    type: controller
+    path: skills/co-issue/SKILL.md
+    spawnable_by: [user]
+    can_spawn: [composite, atomic, reference]
+    description: "要望をGitHub Issueに変換するワークフロー"
+
+  co-project:
+    type: controller
+    path: skills/co-project/SKILL.md
+    spawnable_by: [user]
+    can_spawn: [atomic]
+    description: "プロジェクト管理（create / migrate / snapshot）"
+
+  co-architect:
+    type: controller
+    path: skills/co-architect/SKILL.md
+    spawnable_by: [user]
+    can_spawn: [atomic, reference]
+    description: "対話的アーキテクチャ構築ワークフロー"
+
+# コマンド（B-3 以降で追加）
+commands: {}
+
+# エージェント（C-3 で追加）
+agents: {}

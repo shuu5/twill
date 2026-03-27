@@ -27,10 +27,24 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 | co-project | プロジェクト管理（create / migrate / snapshot） |
 | co-architect | アーキテクチャ設計 |
 
+## Bare repo 構造検証（セッション開始時チェック）
+
+以下の3条件を全て満たすこと:
+
+1. `.bare/` が存在する（`.git/` ディレクトリではない）
+2. `main/.git` がファイル（ディレクトリではない）で `.bare` を指す
+3. CWD が `main/` 配下である（`worktrees/` 配下での起動は禁止）
+
+### セッション起動ルール
+
+- Claude Code は必ず `main/` で起動する
+- `worktrees/` 配下で起動してはならない（worktree 削除で bash CWD 消失のリスク）
+- worktree 内での作業は `workflow-setup` が自動的にハンドルする
+
 ## 編集フロー（必須）
 
 ```
-コンポーネント編集 → deps.yaml 更新 → loom --check → loom --update-readme
+コンポーネント編集 → deps.yaml 更新 → loom check → loom update-readme
 ```
 
 ## 視覚化

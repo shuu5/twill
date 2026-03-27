@@ -13,7 +13,7 @@ EXIT_CODE=0
 
 echo "============================================="
 echo "Document Verification Test Suite"
-echo "Change: b-1-chain-driven-autopilot-first"
+echo "Change: b-2-bare-repo-depsyaml-v30-co-naming"
 echo "============================================="
 
 for test_file in "${SCRIPT_DIR}"/scenarios/*.test.sh; do
