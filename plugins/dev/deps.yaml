@@ -134,7 +134,12 @@ skills:
     type: workflow
     path: skills/workflow-test-ready/SKILL.md
     spawnable_by: [controller]
-    can_spawn: [atomic]
+    can_spawn: [composite, atomic]
+    calls:
+      - composite: test-scaffold
+        step: "1"
+      - atomic: opsx-apply
+        step: "2"
     description: "テスト生成と準備確認ワークフロー"
 
   workflow-pr-cycle:
@@ -288,6 +293,9 @@ commands:
     path: commands/opsx-apply/COMMAND.md
     spawnable_by: [controller, workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-test-ready
+      step: "2"
     description: "OpenSpec 実装ラッパー"
 
   opsx-archive:
@@ -717,6 +725,48 @@ commands:
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "構造・型ルール検証（loom + plugin validate）"
+
+  # === C-2b: Setup/Workflow-setup 系（5個） ===
+
+  services:
+    type: atomic
+    path: commands/services/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "開発サービス起動管理（コンテナ、Supabase、開発サーバー等）"
+
+  ui-capture:
+    type: atomic
+    path: commands/ui-capture/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "UI スクショ撮影 + セマンティック解析でコンテキスト化"
+
+  e2e-plan:
+    type: atomic
+    path: commands/e2e-plan/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "E2E テスト計画作成"
+
+  test-scaffold:
+    type: composite
+    path: commands/test-scaffold/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: [specialist]
+    step_in:
+      parent: workflow-test-ready
+      step: "1"
+    description: "テスト生成の統合コマンド（specialist 統合管理）"
+
+  worktree-delete:
+    type: atomic
+    path: commands/worktree-delete/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    calls:
+      - script: worktree-delete
+    description: "worktree + ブランチ削除（script ラッパー）"
 
   phase-review:
     type: composite
