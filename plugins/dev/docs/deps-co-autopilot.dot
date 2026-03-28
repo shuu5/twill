@@ -33,5 +33,9 @@ digraph Dependencies {
     { rank=same; skill_co_autopilot; }
 
     // Edges
+    skill_co_autopilot -> cmd_self_improve_collect;
+    skill_co_autopilot -> cmd_self_improve_propose;
+    skill_co_autopilot -> cmd_self_improve_close;
+    skill_co_autopilot -> cmd_ecc_monitor;
 
 }

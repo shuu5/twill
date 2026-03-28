@@ -20,6 +20,8 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
+    cmd_plugin_phase_diagnose [label="plugin-phase-diagnose\n(631 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_plugin_phase_verify [label="plugin-phase-verify\n(635 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands
 
@@ -31,7 +33,29 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_project; }
+    { rank=same; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
 
     // Edges
+    skill_co_project -> cmd_project_create;
+    skill_co_project -> cmd_project_governance;
+    skill_co_project -> cmd_project_migrate;
+    skill_co_project -> cmd_container_dependency_check;
+    skill_co_project -> cmd_setup_crg;
+    skill_co_project -> cmd_snapshot_analyze;
+    skill_co_project -> cmd_snapshot_classify;
+    skill_co_project -> cmd_snapshot_generate;
+    skill_co_project -> cmd_plugin_interview;
+    skill_co_project -> cmd_plugin_research;
+    skill_co_project -> cmd_plugin_design;
+    skill_co_project -> cmd_plugin_generate;
+    skill_co_project -> cmd_plugin_migrate_analyze;
+    skill_co_project -> cmd_plugin_diagnose;
+    skill_co_project -> cmd_plugin_fix;
+    skill_co_project -> cmd_plugin_verify;
+    skill_co_project -> cmd_plugin_phase_diagnose;
+    skill_co_project -> cmd_plugin_phase_verify;
+
+    // Ordering constraints (invisible edges)
+    cmd_plugin_phase_diagnose -> cmd_plugin_phase_verify [style=invis, weight=10];
 
 }

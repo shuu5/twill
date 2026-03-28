@@ -47,6 +47,11 @@ skills:
     path: skills/co-autopilot/SKILL.md
     spawnable_by: [user]
     can_spawn: [composite, atomic, specialist]
+    calls:
+      - atomic: self-improve-collect
+      - atomic: self-improve-propose
+      - atomic: self-improve-close
+      - atomic: ecc-monitor
     description: "依存グラフに基づくIssue群一括自律実装オーケストレーター"
 
   co-issue:
@@ -54,13 +59,41 @@ skills:
     path: skills/co-issue/SKILL.md
     spawnable_by: [user]
     can_spawn: [composite, atomic, reference]
+    calls:
+      - atomic: explore
+      - atomic: issue-dig
+      - atomic: issue-structure
+      - composite: issue-assess
+      - atomic: issue-tech-debt-absorb
+      - atomic: issue-create
+      - atomic: issue-bulk-create
+      - atomic: project-board-sync
     description: "要望をGitHub Issueに変換するワークフロー"
 
   co-project:
     type: controller
     path: skills/co-project/SKILL.md
     spawnable_by: [user]
-    can_spawn: [atomic, reference]
+    can_spawn: [composite, atomic, reference]
+    calls:
+      - atomic: project-create
+      - atomic: project-governance
+      - atomic: project-migrate
+      - atomic: container-dependency-check
+      - atomic: setup-crg
+      - atomic: snapshot-analyze
+      - atomic: snapshot-classify
+      - atomic: snapshot-generate
+      - atomic: plugin-interview
+      - atomic: plugin-research
+      - atomic: plugin-design
+      - atomic: plugin-generate
+      - atomic: plugin-migrate-analyze
+      - atomic: plugin-diagnose
+      - atomic: plugin-fix
+      - atomic: plugin-verify
+      - composite: plugin-phase-diagnose
+      - composite: plugin-phase-verify
     description: "プロジェクト管理（create / migrate / snapshot）"
 
   co-architect:
@@ -68,6 +101,13 @@ skills:
     path: skills/co-architect/SKILL.md
     spawnable_by: [user]
     can_spawn: [atomic, reference]
+    calls:
+      - atomic: explore
+      - atomic: architect-completeness-check
+      - atomic: architect-decompose
+      - atomic: architect-group-refine
+      - atomic: architect-issue-create
+      - atomic: evaluate-architecture
     description: "対話的アーキテクチャ構築ワークフロー"
 
   workflow-setup:
@@ -126,6 +166,28 @@ skills:
       - composite: merge-gate
         step: "8"
     description: "PRサイクルワークフロー（chain-driven）"
+
+  workflow-dead-cleanup:
+    type: workflow
+    path: skills/workflow-dead-cleanup/SKILL.md
+    spawnable_by: [controller]
+    can_spawn: [atomic]
+    calls:
+      - atomic: dead-component-detect
+        step: "1"
+      - atomic: dead-component-execute
+        step: "3"
+    description: "Dead Component 検出結果に基づく確認付き削除ワークフロー"
+
+  workflow-tech-debt-triage:
+    type: workflow
+    path: skills/workflow-tech-debt-triage/SKILL.md
+    spawnable_by: [controller]
+    can_spawn: [atomic]
+    calls:
+      - atomic: triage-execute
+        step: "6"
+    description: "tech-debt Issue の棚卸しワークフロー"
 
 
 # リファレンス（B-6 で追加）
@@ -329,6 +391,332 @@ commands:
     spawnable_by: [workflow]
     can_spawn: []
     description: "AC 検証（テスト結果と AC の照合）"
+
+  # === C-2a: Issue管理系（7個） ===
+
+  issue-dig:
+    type: atomic
+    path: commands/issue-dig/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Per-Issue 曖昧点検出（4観点）"
+
+  issue-structure:
+    type: atomic
+    path: commands/issue-structure/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Issue内容の構造化（タイプ判定+テンプレート+フィールド埋め）"
+
+  issue-create:
+    type: atomic
+    path: commands/issue-create/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "GitHub Issue 作成"
+
+  issue-bulk-create:
+    type: atomic
+    path: commands/issue-bulk-create/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "親Issue+子Issue群の一括起票"
+
+  issue-tech-debt-absorb:
+    type: atomic
+    path: commands/issue-tech-debt-absorb/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "tech-debt Issue の吸収提案・選択"
+
+  project-board-sync:
+    type: atomic
+    path: commands/project-board-sync/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Issue作成後に Project V2 へ自動追加+フィールドミラー"
+
+  issue-assess:
+    type: composite
+    path: commands/issue-assess/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: [specialist]
+    description: "Issue品質評価（テンプレート準拠+コンテキストチェック並列）"
+
+  # === C-2a: Project管理系（8個） ===
+
+  project-create:
+    type: atomic
+    path: commands/project-create/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プロジェクト新規作成（bare repo + worktree + テンプレート + OpenSpec）"
+
+  project-governance:
+    type: atomic
+    path: commands/project-governance/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "ガバナンス適用（Hooks + スキーマscaffold + CLAUDE.md拡張）"
+
+  project-migrate:
+    type: atomic
+    path: commands/project-migrate/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "既存プロジェクトの最新テンプレート移行"
+
+  container-dependency-check:
+    type: atomic
+    path: commands/container-dependency-check/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "テンプレートのコンテナ依存と container-manager の実状態照合"
+
+  setup-crg:
+    type: atomic
+    path: commands/setup-crg/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "code-review-graph MCP セットアップ"
+
+  snapshot-analyze:
+    type: atomic
+    path: commands/snapshot-analyze/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プロジェクト分析（ファイルスキャン、スタック自動検出）"
+
+  snapshot-classify:
+    type: atomic
+    path: commands/snapshot-classify/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "AI Tier 分類 + ユーザー確認テーブル表示"
+
+  snapshot-generate:
+    type: atomic
+    path: commands/snapshot-generate/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "manifest.yaml + テンプレートファイル生成"
+
+  # === C-2a: Architect系（5個） ===
+
+  architect-completeness-check:
+    type: atomic
+    path: commands/architect-completeness-check/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "アーキテクチャ完全性チェック"
+
+  architect-decompose:
+    type: atomic
+    path: commands/architect-decompose/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "contexts/ + phases/ → Issue候補リスト分解 + 整合性チェック"
+
+  architect-group-refine:
+    type: atomic
+    path: commands/architect-group-refine/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "スケルトンIssueグループの一括精緻化"
+
+  architect-issue-create:
+    type: atomic
+    path: commands/architect-issue-create/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Issue候補リストから GitHub Issue 一括作成"
+
+  evaluate-architecture:
+    type: atomic
+    path: commands/evaluate-architecture/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "設計のアーキテクチャパターン評価"
+
+  # === C-2a: Plugin管理系（10個） ===
+
+  plugin-interview:
+    type: atomic
+    path: commands/plugin-interview/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プラグイン作成のためのユーザー要件インタビュー"
+
+  plugin-research:
+    type: atomic
+    path: commands/plugin-research/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プラグイン設計情報を Web 取得し構造化サマリー作成"
+
+  plugin-design:
+    type: atomic
+    path: commands/plugin-design/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "型マッピング + deps.yaml 設計"
+
+  plugin-generate:
+    type: atomic
+    path: commands/plugin-generate/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プラグインファイル一式生成"
+
+  plugin-migrate-analyze:
+    type: atomic
+    path: commands/plugin-migrate-analyze/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "既存プラグインの AT 移行分析"
+
+  plugin-diagnose:
+    type: atomic
+    path: commands/plugin-diagnose/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プラグインの問題診断（構造+5原則チェック）"
+
+  plugin-fix:
+    type: atomic
+    path: commands/plugin-fix/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "診断結果に基づくコンポーネント修正適用"
+
+  plugin-verify:
+    type: atomic
+    path: commands/plugin-verify/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "統合検証+5原則チェック"
+
+  plugin-phase-diagnose:
+    type: composite
+    path: commands/plugin-phase-diagnose/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: [specialist]
+    description: "並列診断フェーズ（specialist x3 並列 spawn + 統合処理）"
+
+  plugin-phase-verify:
+    type: composite
+    path: commands/plugin-phase-verify/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: [specialist]
+    description: "並列検証フェーズ（specialist x3 並列 spawn + 統合処理）"
+
+  # === C-2a: OpenSpec/汎用系（5個） ===
+
+  explore:
+    type: atomic
+    path: commands/explore/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "アイデア検討・問題調査・要件整理のための思考パートナー"
+
+  propose:
+    type: atomic
+    path: commands/propose/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "change ディレクトリを作成し全 artifact を一括生成"
+
+  apply:
+    type: atomic
+    path: commands/apply/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "OpenSpec change の tasks.md に沿ってタスクを実装"
+
+  archive:
+    type: atomic
+    path: commands/archive/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "完了済み change を archive/ に移動"
+
+  check:
+    type: atomic
+    path: commands/check/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "ワークフロー準備状況チェック"
+
+  # === C-2a: Dead Component/Triage系（3個 atomic） ===
+
+  dead-component-detect:
+    type: atomic
+    path: commands/dead-component-detect/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    step_in:
+      parent: workflow-dead-cleanup
+      step: "1"
+    description: "Dead Component 検出・情報収集・一覧テーブル表示"
+
+  dead-component-execute:
+    type: atomic
+    path: commands/dead-component-execute/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    step_in:
+      parent: workflow-dead-cleanup
+      step: "3"
+    description: "選択された Dead Component の削除実行・整合性検証"
+
+  triage-execute:
+    type: atomic
+    path: commands/triage-execute/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    step_in:
+      parent: workflow-tech-debt-triage
+      step: "6"
+    description: "分類済み tech-debt Issue の一括処理"
+
+  # === C-2a: Self-improve/ECC系（4個） ===
+
+  self-improve-collect:
+    type: atomic
+    path: commands/self-improve-collect/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "self-improve Issue の収集・分類・関連コンポーネント特定"
+
+  self-improve-propose:
+    type: atomic
+    path: commands/self-improve-propose/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "ECC 知識照合を含む改善提案生成"
+
+  self-improve-close:
+    type: atomic
+    path: commands/self-improve-close/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "self-improve Issue のクローズ処理"
+
+  ecc-monitor:
+    type: atomic
+    path: commands/ecc-monitor/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "ECC リポジトリの変更検知・関連性評価"
+
+  # === C-2a: その他（1個） ===
+
+  loom-validate:
+    type: atomic
+    path: commands/loom-validate/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "構造・型ルール検証（loom + plugin validate）"
 
   phase-review:
     type: composite

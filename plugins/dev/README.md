@@ -50,4 +50,16 @@ Claude Code dev plugin（chain-driven + autopilot-first）。
 
 ![workflow-pr-cycle](./docs/deps-workflow-pr-cycle.svg)
 </details>
+
+<details>
+<summary>workflow-dead-cleanup</summary>
+
+![workflow-dead-cleanup](./docs/deps-workflow-dead-cleanup.svg)
+</details>
+
+<details>
+<summary>workflow-tech-debt-triage</summary>
+
+![workflow-tech-debt-triage](./docs/deps-workflow-tech-debt-triage.svg)
+</details>
 <!-- DEPS-SUBGRAPHS-END -->

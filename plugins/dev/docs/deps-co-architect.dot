@@ -33,5 +33,11 @@ digraph Dependencies {
     { rank=same; skill_co_architect; }
 
     // Edges
+    skill_co_architect -> cmd_explore;
+    skill_co_architect -> cmd_architect_completeness_check;
+    skill_co_architect -> cmd_architect_decompose;
+    skill_co_architect -> cmd_architect_group_refine;
+    skill_co_architect -> cmd_architect_issue_create;
+    skill_co_architect -> cmd_evaluate_architecture;
 
 }

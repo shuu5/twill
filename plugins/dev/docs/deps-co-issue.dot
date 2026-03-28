@@ -20,6 +20,7 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
+    cmd_issue_assess [label="issue-assess\n(1,224 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands
 
@@ -31,7 +32,16 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_issue; }
+    { rank=same; cmd_issue_assess; }
 
     // Edges
+    skill_co_issue -> cmd_explore;
+    skill_co_issue -> cmd_issue_dig;
+    skill_co_issue -> cmd_issue_structure;
+    skill_co_issue -> cmd_issue_assess;
+    skill_co_issue -> cmd_issue_tech_debt_absorb;
+    skill_co_issue -> cmd_issue_create;
+    skill_co_issue -> cmd_issue_bulk_create;
+    skill_co_issue -> cmd_project_board_sync;
 
 }
