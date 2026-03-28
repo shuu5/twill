@@ -15,16 +15,11 @@
 - `--root <path>`: プロジェクトルートパス（未指定→タイプ別デフォルト）
 - `--no-github`: GitHubリポジトリを作成しない
 
-## パス設定
-
-```bash
-PLUGIN_ROOT="$HOME/.claude/plugins/dev"
-```
-
 ## 実行
 
 ```bash
-bash $PLUGIN_ROOT/scripts/project-create.sh $ARGUMENTS
+SCRIPT_DIR="$(git rev-parse --show-toplevel)/scripts"
+bash "$SCRIPT_DIR/project-create.sh" $ARGUMENTS
 ```
 
 ## 実行フロー

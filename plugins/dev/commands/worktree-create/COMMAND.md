@@ -19,7 +19,8 @@
 ## スクリプト実行（MUST）
 
 ```bash
-bash $HOME/.claude/plugins/dev/scripts/worktree-create.sh $ARGUMENTS
+SCRIPT_DIR="$(git rev-parse --show-toplevel)/scripts"
+bash "$SCRIPT_DIR/worktree-create.sh" $ARGUMENTS
 ```
 
 スクリプトが worktree 作成・依存同期・コンテナ検出を全て処理する。

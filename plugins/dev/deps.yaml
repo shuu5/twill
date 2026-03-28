@@ -1072,6 +1072,87 @@ scripts:
     path: scripts/specialist-output-parse.sh
     description: "specialist 出力の共通スキーマパース（status + findings）"
 
+  # C-4: 旧 plugin から移植
+  autopilot-plan:
+    type: script
+    path: scripts/autopilot-plan.sh
+    description: "autopilot 実行計画 (plan.yaml) 生成（explicit/issues モード）"
+
+  autopilot-should-skip:
+    type: script
+    path: scripts/autopilot-should-skip.sh
+    description: "依存グラフベースの skip 判定"
+
+  merge-gate-init:
+    type: script
+    path: scripts/merge-gate-init.sh
+    description: "merge-gate 初期化（状態読み取り + PR差分取得 + GATE_TYPE判定）"
+
+  merge-gate-execute:
+    type: script
+    path: scripts/merge-gate-execute.sh
+    description: "merge-gate マージ実行 / リジェクト（state-write.sh 統合）"
+
+  merge-gate-issues:
+    type: script
+    path: scripts/merge-gate-issues.sh
+    description: "tech-debt / self-improve Issue 自動起票"
+
+  worktree-create:
+    type: script
+    path: scripts/worktree-create.sh
+    description: "bare repo 向け worktree 作成（Issue番号→ブランチ名生成）"
+
+  branch-create:
+    type: script
+    path: scripts/branch-create.sh
+    description: "通常 repo 向けフィーチャーブランチ作成"
+
+  project-create:
+    type: script
+    path: scripts/project-create.sh
+    description: "プロジェクト新規作成（タイプ別テンプレート対応）"
+
+  project-migrate:
+    type: script
+    path: scripts/project-migrate.sh
+    description: "既存プロジェクトの最新テンプレート移行"
+
+  classify-failure:
+    type: script
+    path: scripts/classify-failure.sh
+    description: "PR cycle 障害原因を harness / code / unknown に分類"
+
+  parse-issue-ac:
+    type: script
+    path: scripts/parse-issue-ac.sh
+    description: "Issue body + コメントから受け入れ基準（AC）抽出"
+
+  session-audit:
+    type: script
+    path: scripts/session-audit.sh
+    description: "セッション JSONL から監査サマリー抽出"
+
+  check-db-migration:
+    type: script
+    path: scripts/check-db-migration.py
+    description: "Zod スキーマ ↔ DB マイグレーション整合性チェック"
+
+  ecc-monitor:
+    type: script
+    path: scripts/ecc-monitor.sh
+    description: "ECC リポジトリの変更検知・カテゴリ分類"
+
+  codex-review:
+    type: script
+    path: scripts/codex-review.sh
+    description: "Codex CLI による補完的コードレビュー"
+
+  create-harness-issue:
+    type: script
+    path: scripts/create-harness-issue.sh
+    description: "harness 分類時に cross-repo Issue 自動作成"
+
 # エージェント（C-3 で追加）
 agents:
   # 構造チェック系（haiku）

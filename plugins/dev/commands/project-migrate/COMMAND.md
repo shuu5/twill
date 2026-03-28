@@ -13,16 +13,11 @@
 - `--type <type>`: プロジェクトタイプ（rnaseq/webapp-llm）省略時は自動検出
 - `--dry-run`: 変更をシミュレーションのみ（実際には変更しない）
 
-## パス設定
-
-```bash
-PLUGIN_ROOT="$HOME/.claude/plugins/dev"
-```
-
 ## 実行
 
 ```bash
-bash $PLUGIN_ROOT/scripts/project-migrate.sh $ARGUMENTS
+SCRIPT_DIR="$(git rev-parse --show-toplevel)/scripts"
+bash "$SCRIPT_DIR/project-migrate.sh" $ARGUMENTS
 ```
 
 ## 動作フロー
