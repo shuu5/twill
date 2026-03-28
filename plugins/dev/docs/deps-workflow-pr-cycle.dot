@@ -1,0 +1,60 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="workflow-pr-cycle";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+    skill_workflow_pr_cycle [label="dev:workflow-pr-cycle\n(672 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+
+    // Reference Skills
+
+    // L1: Direct Commands
+    cmd_phase_review [label="phase-review\n(543 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_fix_phase [label="fix-phase\n(379 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_e2e_screening [label="e2e-screening\n(321 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,015 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+    script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_specialist_output_parse [label="specialist-output-parse\n(605 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_workflow_pr_cycle; }
+    { rank=same; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; }
+    { rank=same; script_tech_stack_detect; script_specialist_output_parse; }
+
+    // Edges
+    skill_workflow_pr_cycle -> cmd_ts_preflight;
+    skill_workflow_pr_cycle -> cmd_phase_review;
+    skill_workflow_pr_cycle -> cmd_scope_judge;
+    skill_workflow_pr_cycle -> cmd_pr_test;
+    skill_workflow_pr_cycle -> cmd_fix_phase;
+    skill_workflow_pr_cycle -> cmd_post_fix_verify;
+    skill_workflow_pr_cycle -> cmd_warning_fix;
+    skill_workflow_pr_cycle -> cmd_e2e_screening;
+    skill_workflow_pr_cycle -> cmd_pr_cycle_report;
+    skill_workflow_pr_cycle -> cmd_all_pass_check;
+    skill_workflow_pr_cycle -> cmd_merge_gate;
+    cmd_phase_review -> script_specialist_output_parse;
+    cmd_phase_review -> script_tech_stack_detect;
+    cmd_merge_gate -> script_specialist_output_parse;
+    cmd_merge_gate -> script_tech_stack_detect;
+
+}

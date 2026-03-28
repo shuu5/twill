@@ -16,18 +16,24 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="dev:workflow-setup\n(592 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="dev:workflow-setup\n(624 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_test_ready [label="dev:workflow-test-ready\n(260 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_cycle [label="dev:workflow-pr-cycle\n(672 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
+    cmd_phase_review [label="phase-review\n(543 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_fix_phase [label="fix-phase\n(379 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_e2e_screening [label="e2e-screening\n(321 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,015 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands
     cmd_self_improve_review [label="self-improve-review\n(1,086 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
     cmd_worktree_list [label="worktree-list\n(200 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
     cmd_opsx_apply [label="opsx-apply\n(239 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
     cmd_opsx_archive [label="opsx-archive\n(238 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
+    cmd_ac_verify [label="ac-verify\n(332 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
 
     // L3: Agents
 
@@ -40,14 +46,17 @@ digraph Dependencies {
     script_session_add_warning [label="session-add-warning\n(532 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_delete [label="worktree-delete\n(877 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_crash_detect [label="crash-detect\n(700 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_specialist_output_parse [label="specialist-output-parse\n(605 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
     { rank=same; skill_co_autopilot; skill_co_issue; skill_co_project; skill_co_architect; }
-    { rank=same; skill_workflow_setup; skill_workflow_test_ready; }
-    { rank=same; cmd_self_improve_review; cmd_worktree_list; cmd_opsx_apply; cmd_opsx_archive; }
-    { rank=same; script_state_read; script_state_write; script_autopilot_init; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; }
+    { rank=same; skill_workflow_setup; skill_workflow_test_ready; skill_workflow_pr_cycle; }
+    { rank=same; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; }
+    { rank=same; cmd_self_improve_review; cmd_worktree_list; cmd_opsx_apply; cmd_opsx_archive; cmd_ac_verify; }
+    { rank=same; script_state_read; script_state_write; script_autopilot_init; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_tech_stack_detect; script_specialist_output_parse; }
 
     // Edges
     skill_workflow_setup -> cmd_init;
@@ -56,6 +65,21 @@ digraph Dependencies {
     skill_workflow_setup -> cmd_crg_auto_build;
     skill_workflow_setup -> cmd_opsx_propose;
     skill_workflow_setup -> cmd_ac_extract;
+    skill_workflow_pr_cycle -> cmd_ts_preflight;
+    skill_workflow_pr_cycle -> cmd_phase_review;
+    skill_workflow_pr_cycle -> cmd_scope_judge;
+    skill_workflow_pr_cycle -> cmd_pr_test;
+    skill_workflow_pr_cycle -> cmd_fix_phase;
+    skill_workflow_pr_cycle -> cmd_post_fix_verify;
+    skill_workflow_pr_cycle -> cmd_warning_fix;
+    skill_workflow_pr_cycle -> cmd_e2e_screening;
+    skill_workflow_pr_cycle -> cmd_pr_cycle_report;
+    skill_workflow_pr_cycle -> cmd_all_pass_check;
+    skill_workflow_pr_cycle -> cmd_merge_gate;
+    cmd_phase_review -> script_specialist_output_parse;
+    cmd_phase_review -> script_tech_stack_detect;
+    cmd_merge_gate -> script_specialist_output_parse;
+    cmd_merge_gate -> script_tech_stack_detect;
 
     // Legend
     subgraph cluster_legend {
@@ -65,6 +89,7 @@ digraph Dependencies {
         legend_controller [label="Controller (skill)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
         legend_workflow [label="Workflow (skill)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
         legend_atomic [label="Atomic (command)", shape=box, style=filled, fillcolor="#e3f2fd"];
+        legend_composite [label="Composite (command)", shape=box, style=filled, fillcolor="#bbdefb"];
         legend_script [label="Script", shape=hexagon, style=filled, fillcolor="#FF9800"];
         legend_orphan [label="Orphan", shape=box, style=filled, fillcolor="#ffcdd2"];
     }

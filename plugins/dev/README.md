@@ -44,4 +44,10 @@ Claude Code dev plugin（chain-driven + autopilot-first）。
 
 ![workflow-test-ready](./docs/deps-workflow-test-ready.svg)
 </details>
+
+<details>
+<summary>workflow-pr-cycle</summary>
+
+![workflow-pr-cycle](./docs/deps-workflow-pr-cycle.svg)
+</details>
 <!-- DEPS-SUBGRAPHS-END -->

@@ -11,7 +11,7 @@ entry_points:
   - skills/co-project/SKILL.md
   - skills/co-architect/SKILL.md
 
-# チェーン（B-4 で追加）
+# チェーン（B-4 で追加、B-5 で pr-cycle 追加）
 chains:
   setup:
     type: "A"
@@ -23,6 +23,22 @@ chains:
       - crg-auto-build
       - opsx-propose
       - ac-extract
+
+  pr-cycle:
+    type: "B"
+    description: "PRサイクル（verify → review → test → fix → visual → report → merge）"
+    steps:
+      - ts-preflight
+      - phase-review
+      - scope-judge
+      - pr-test
+      - fix-phase
+      - post-fix-verify
+      - warning-fix
+      - e2e-screening
+      - pr-cycle-report
+      - all-pass-check
+      - merge-gate
 
 # スキル（controller x4 + workflow x2）
 skills:
@@ -80,6 +96,37 @@ skills:
     spawnable_by: [controller]
     can_spawn: [atomic]
     description: "テスト生成と準備確認ワークフロー"
+
+  workflow-pr-cycle:
+    type: workflow
+    path: skills/workflow-pr-cycle/SKILL.md
+    spawnable_by: [controller]
+    can_spawn: [composite, atomic]
+    calls:
+      - atomic: ts-preflight
+        step: "1"
+      - composite: phase-review
+        step: "2"
+      - atomic: scope-judge
+        step: "2.5"
+      - atomic: pr-test
+        step: "3"
+      - composite: fix-phase
+        step: "4"
+      - atomic: post-fix-verify
+        step: "4.5"
+      - atomic: warning-fix
+        step: "5"
+      - composite: e2e-screening
+        step: "6"
+      - atomic: pr-cycle-report
+        step: "7"
+      - atomic: all-pass-check
+        step: "7.5"
+      - composite: merge-gate
+        step: "8"
+    description: "PRサイクルワークフロー（chain-driven）"
+
 
 # リファレンス（B-6 で追加）
 refs:
@@ -189,6 +236,140 @@ commands:
       step: "3.5"
     description: "AC（受け入れ基準）抽出"
 
+  ts-preflight:
+    type: atomic
+    path: commands/ts-preflight/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "1"
+    description: "TypeScript 機械的検証（型チェック・lint）"
+
+  scope-judge:
+    type: atomic
+    path: commands/scope-judge/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "2.5"
+    description: "スコープ判定 + Deferred Issue 作成"
+
+  pr-test:
+    type: atomic
+    path: commands/pr-test/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "3"
+    description: "テスト実行"
+
+  post-fix-verify:
+    type: atomic
+    path: commands/post-fix-verify/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "4.5"
+    description: "fix 後の軽量コードレビュー"
+
+  warning-fix:
+    type: atomic
+    path: commands/warning-fix/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "5"
+    description: "Warning ベストエフォート修正"
+
+  pr-cycle-report:
+    type: atomic
+    path: commands/pr-cycle-report/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "7"
+    description: "PRサイクル結果フォーマット・投稿"
+
+  all-pass-check:
+    type: atomic
+    path: commands/all-pass-check/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "7.5"
+    description: "全パス判定（autopilot-first）"
+
+  ac-verify:
+    type: atomic
+    path: commands/ac-verify/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    description: "AC 検証（テスト結果と AC の照合）"
+
+  phase-review:
+    type: composite
+    path: commands/phase-review/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: [specialist, script]
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "2"
+    calls:
+      - script: specialist-output-parse
+      - script: tech-stack-detect
+    description: "並列 specialist レビュー（動的レビュアー構築）"
+
+  fix-phase:
+    type: composite
+    path: commands/fix-phase/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: [script]
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "4"
+    description: "自動修正ループ + E2E 修復"
+
+  e2e-screening:
+    type: composite
+    path: commands/e2e-screening/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: [script]
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "6"
+    description: "Visual 検証（Screening + Heal）"
+
+  merge-gate:
+    type: composite
+    path: commands/merge-gate/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: [specialist, script]
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "8"
+    calls:
+      - script: specialist-output-parse
+      - script: tech-stack-detect
+    description: "マージ判定（動的レビュー → severity フィルタ → PASS/REJECT）"
+
 # スクリプト（B-3 で追加）
 scripts:
   state-read:
@@ -230,6 +411,16 @@ scripts:
     type: script
     path: scripts/crash-detect.sh
     description: "Worker crash 検知（tmux ペイン消失→failed 遷移）"
+
+  tech-stack-detect:
+    type: script
+    path: scripts/tech-stack-detect.sh
+    description: "変更ファイルから tech-stack を判定し conditional specialist を返す"
+
+  specialist-output-parse:
+    type: script
+    path: scripts/specialist-output-parse.sh
+    description: "specialist 出力の共通スキーマパース（status + findings）"
 
 # エージェント（C-3 で追加）
 agents: {}
