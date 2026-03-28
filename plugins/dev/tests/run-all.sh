@@ -13,7 +13,7 @@ EXIT_CODE=0
 
 echo "============================================="
 echo "Document Verification Test Suite"
-echo "Change: c-1-controller-migration"
+echo "Change: c-2d-autopilot-controller-autopilot"
 echo "============================================="
 
 for test_file in "${SCRIPT_DIR}"/scenarios/*.test.sh; do

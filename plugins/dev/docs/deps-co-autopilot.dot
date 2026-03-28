@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_autopilot [label="dev:co-autopilot\n(1,256 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="dev:co-autopilot\n(1,254 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -33,6 +33,17 @@ digraph Dependencies {
     { rank=same; skill_co_autopilot; }
 
     // Edges
+    skill_co_autopilot -> cmd_autopilot_init;
+    skill_co_autopilot -> cmd_autopilot_launch;
+    skill_co_autopilot -> cmd_autopilot_poll;
+    skill_co_autopilot -> cmd_autopilot_phase_execute;
+    skill_co_autopilot -> cmd_autopilot_phase_postprocess;
+    skill_co_autopilot -> cmd_autopilot_collect;
+    skill_co_autopilot -> cmd_autopilot_retrospective;
+    skill_co_autopilot -> cmd_autopilot_patterns;
+    skill_co_autopilot -> cmd_autopilot_cross_issue;
+    skill_co_autopilot -> cmd_autopilot_summary;
+    skill_co_autopilot -> cmd_session_audit;
     skill_co_autopilot -> cmd_self_improve_collect;
     skill_co_autopilot -> cmd_self_improve_propose;
     skill_co_autopilot -> cmd_self_improve_close;

@@ -47,8 +47,19 @@ skills:
     type: controller
     path: skills/co-autopilot/SKILL.md
     spawnable_by: [user]
-    can_spawn: [composite, atomic, specialist]
+    can_spawn: [composite, atomic, specialist, script]
     calls:
+      - atomic: autopilot-init
+      - atomic: autopilot-launch
+      - atomic: autopilot-poll
+      - atomic: autopilot-phase-execute
+      - atomic: autopilot-phase-postprocess
+      - atomic: autopilot-collect
+      - atomic: autopilot-retrospective
+      - atomic: autopilot-patterns
+      - atomic: autopilot-cross-issue
+      - atomic: autopilot-summary
+      - atomic: session-audit
       - atomic: self-improve-collect
       - atomic: self-improve-propose
       - atomic: self-improve-close
@@ -871,6 +882,85 @@ commands:
     spawnable_by: [workflow]
     can_spawn: []
     description: "テスト失敗の原因診断（仕様誤り vs 実装誤り判定）"
+
+  # === C-2d: Autopilot / Controller-autopilot 系（11個） ===
+
+  autopilot-init:
+    type: atomic
+    path: commands/autopilot-init/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "セッション初期化（autopilot-init.sh + session-create.sh ラッパー）"
+
+  autopilot-launch:
+    type: atomic
+    path: commands/autopilot-launch/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Worker 起動（tmux window 作成 + state-write --init）"
+
+  autopilot-poll:
+    type: atomic
+    path: commands/autopilot-poll/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Issue 状態ポーリング（state-read + crash-detect.sh）"
+
+  autopilot-phase-execute:
+    type: atomic
+    path: commands/autopilot-phase-execute/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Phase Issue ループ実行（launch → poll → merge-gate）"
+
+  autopilot-phase-postprocess:
+    type: atomic
+    path: commands/autopilot-phase-postprocess/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Phase 後処理チェーン（collect → retrospective → patterns → cross-issue）"
+
+  autopilot-collect:
+    type: atomic
+    path: commands/autopilot-collect/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "完了 Issue の変更ファイル収集（PR 差分 → session.json）"
+
+  autopilot-retrospective:
+    type: atomic
+    path: commands/autopilot-retrospective/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Phase 振り返り分析（パターン検出 + PHASE_INSIGHTS 生成）"
+
+  autopilot-patterns:
+    type: atomic
+    path: commands/autopilot-patterns/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "繰り返しパターン検出 + self-improve Issue 起票"
+
+  autopilot-cross-issue:
+    type: atomic
+    path: commands/autopilot-cross-issue/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Cross-issue 影響分析（session-add-warning.sh 経由）"
+
+  autopilot-summary:
+    type: atomic
+    path: commands/autopilot-summary/COMMAND.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "完了サマリー + 通知 + session-archive.sh"
+
+  session-audit:
+    type: atomic
+    path: commands/session-audit/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "セッション JSONL 事後分析（5 カテゴリ検出 + self-improve 起票）"
 
 # スクリプト（B-3 で追加）
 scripts:

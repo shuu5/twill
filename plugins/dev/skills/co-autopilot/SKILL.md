@@ -50,11 +50,10 @@ TaskCreate で全体タスク「Autopilot: N Phases, M Issues」を登録。
 
 ## Step 3: セッション初期化
 
-```bash
-eval "$(bash $SCRIPTS_ROOT/autopilot-init.sh "$PLAN_FILE")"
-```
+`commands/autopilot-init/COMMAND.md` を Read → 実行。
 
-SESSION_ID, PHASE_COUNT, SESSION_STATE_FILE が設定される。
+入力: PLAN_FILE。
+出力: SESSION_ID, PHASE_COUNT, SESSION_STATE_FILE が設定される。
 
 ## Step 4: Phase ループ
 
@@ -62,8 +61,8 @@ SESSION_ID, PHASE_COUNT, SESSION_STATE_FILE が設定される。
 FOR P in 1..PHASE_COUNT:
   TaskCreate "Phase P: Issue #X, #Y" (status: in_progress)
 
-  → autopilot-phase-execute を実行（Worker 起動 → ポーリング → merge-gate）
-  → autopilot-phase-postprocess を実行（collect → retrospective → patterns → cross-issue）
+  → commands/autopilot-phase-execute/COMMAND.md を Read → 実行
+  → commands/autopilot-phase-postprocess/COMMAND.md を Read → 実行
 
   TaskUpdate Phase P → completed
 ```
@@ -89,7 +88,7 @@ skip された Issue の issue-{N}.json は `failed` + `{ message: "dependency f
 
 ## Step 5: 完了サマリー
 
-autopilot-summary を実行。全 Phase 完了後に結果集計・レポート出力。
+`commands/autopilot-summary/COMMAND.md` を Read → 実行。全 Phase 完了後に結果集計・レポート出力。
 
 TaskUpdate 全体タスク → completed。
 

@@ -22,7 +22,7 @@
 <title>cmd_issue_assess</title>
 <polygon fill="#bbdefb" stroke="black" points="282.77,-442 208.77,-442 208.77,-406 282.77,-406 282.77,-442"/>
 <text text-anchor="middle" x="245.77" y="-427" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;assess</text>
-<text text-anchor="middle" x="245.77" y="-416" font-family="Helvetica,sans-Serif" font-size="10.00">(1,224 tok)</text>
+<text text-anchor="middle" x="245.77" y="-416" font-family="Helvetica,sans-Serif" font-size="10.00">(1,221 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_issue_assess -->
 <g id="edge4" class="edge">

@@ -20,7 +20,7 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_issue_assess [label="issue-assess\n(1,224 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_issue_assess [label="issue-assess\n(1,221 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands
 
