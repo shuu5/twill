@@ -1,0 +1,189 @@
+change_id: c-6-switchover
+generated_at: "2026-03-29T04:46:32+09:00"
+test_framework: bats
+scenarios:
+  # ---------------------------------------------------------------------------
+  # switchover-script.md: check subcommand
+  # ---------------------------------------------------------------------------
+  - id: check-all-pass
+    name: "全チェック pass"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 7
+    requirement: "switchover.sh check サブコマンド"
+    test_file: "tests/bats/scripts/switchover-check.bats"
+    test_name: "check: returns exit 0 when all checks pass"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: check-autopilot-session-active
+    name: "autopilot セッション稼働中"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 11
+    requirement: "switchover.sh check サブコマンド"
+    test_file: "tests/bats/scripts/switchover-check.bats"
+    test_name: "check: fails when tmux autopilot session is running"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: check-loom-validate-fail
+    name: "loom validate 失敗"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 15
+    requirement: "switchover.sh check サブコマンド"
+    test_file: "tests/bats/scripts/switchover-check.bats"
+    test_name: "check: fails when loom validate fails"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # switchover-script.md: switch subcommand
+  # ---------------------------------------------------------------------------
+  - id: switch-normal
+    name: "正常切替"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 24
+    requirement: "switchover.sh switch サブコマンド"
+    test_file: "tests/bats/scripts/switchover-switch.bats"
+    test_name: "switch: renames old symlink to dev.bak when check passes"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: switch-existing-backup
+    name: "既存バックアップあり"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 28
+    requirement: "switchover.sh switch サブコマンド"
+    test_file: "tests/bats/scripts/switchover-switch.bats"
+    test_name: "switch: prompts for confirmation when dev.bak exists"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: switch-check-fail-abort
+    name: "check 失敗時の中止"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 32
+    requirement: "switchover.sh switch サブコマンド"
+    test_file: "tests/bats/scripts/switchover-switch.bats"
+    test_name: "switch: aborts when check returns exit 1"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # switchover-script.md: rollback subcommand
+  # ---------------------------------------------------------------------------
+  - id: rollback-normal
+    name: "正常ロールバック"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 39
+    requirement: "switchover.sh rollback サブコマンド"
+    test_file: "tests/bats/scripts/switchover-rollback.bats"
+    test_name: "rollback: deletes current symlink and restores from backup"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: rollback-no-backup
+    name: "バックアップ不在"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 43
+    requirement: "switchover.sh rollback サブコマンド"
+    test_file: "tests/bats/scripts/switchover-rollback.bats"
+    test_name: "rollback: fails when dev.bak does not exist"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # switchover-script.md: retire subcommand
+  # ---------------------------------------------------------------------------
+  - id: retire-normal
+    name: "正常退役"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 51
+    requirement: "switchover.sh retire サブコマンド"
+    test_file: "tests/bats/scripts/switchover-retire.bats"
+    test_name: "retire: deletes dev.bak when user confirms"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: retire-cancel
+    name: "退役キャンセル"
+    spec_file: "specs/switchover-script.md"
+    spec_line: 55
+    requirement: "switchover.sh retire サブコマンド"
+    test_file: "tests/bats/scripts/switchover-retire.bats"
+    test_name: "retire: exits 0 with no changes when user denies confirmation"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # parallel-verification.md
+  # ---------------------------------------------------------------------------
+  - id: verification-checklist
+    name: "検証手順の網羅性"
+    spec_file: "specs/parallel-verification.md"
+    spec_line: 8
+    requirement: "並行検証チェックリスト"
+    test_file: "tests/bats/scripts/switchover-verification.bats"
+    test_name: "verification-guide: switchover-guide.md exists"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: verification-plugin-dir
+    name: "plugin-dir による非破壊テスト"
+    spec_file: "specs/parallel-verification.md"
+    spec_line: 12
+    requirement: "並行検証チェックリスト"
+    test_file: "tests/bats/scripts/switchover-verification.bats"
+    test_name: "verification: claude --plugin-dir does not require symlink change"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # design-decisions-doc.md
+  # ---------------------------------------------------------------------------
+  - id: design-decisions-required-items
+    name: "必須転記項目の網羅"
+    spec_file: "specs/design-decisions-doc.md"
+    spec_line: 8
+    requirement: "設計経緯転記ドキュメント"
+    test_file: "tests/bats/scripts/switchover-docs.bats"
+    test_name: "design-decisions: document exists"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: design-decisions-traceability
+    name: "旧プラグインからの追跡可能性"
+    spec_file: "specs/design-decisions-doc.md"
+    spec_line: 12
+    requirement: "設計経緯転記ドキュメント"
+    test_file: "tests/bats/scripts/switchover-docs.bats"
+    test_name: "design-decisions: merge-gate entry has source reference"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

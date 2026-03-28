@@ -58,8 +58,8 @@ digraph Dependencies {
     agent_worker_rls_reviewer [label="worker-rls-reviewer\n(1,507 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_supabase_migration_checker [label="worker-supabase-migration-checker\n(1,329 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_data_validator [label="worker-data-validator\n(688 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_template_validator [label="template-validator\n(920 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_context_checker [label="context-checker\n(1,791 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_template_validator [label="template-validator\n(922 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_context_checker [label="context-checker\n(1,792 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_e2e_reviewer [label="worker-e2e-reviewer\n(1,217 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_spec_reviewer [label="worker-spec-reviewer\n(1,084 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_code_reviewer [label="worker-code-reviewer\n(761 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
@@ -71,13 +71,13 @@ digraph Dependencies {
     agent_worker_architecture [label="worker-architecture\n(1,242 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_output_reviewer [label="worker-llm-output-reviewer\n(1,152 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_eval_runner [label="worker-llm-eval-runner\n(1,164 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_docs_researcher [label="docs-researcher\n(524 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_e2e_quality [label="e2e-quality\n(2,249 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_autofix_loop [label="autofix-loop\n(1,261 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_spec_scaffold_tests [label="spec-scaffold-tests\n(1,750 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_e2e_generate [label="e2e-generate\n(2,017 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_e2e_heal [label="e2e-heal\n(1,067 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_e2e_visual_heal [label="e2e-visual-heal\n(928 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_docs_researcher [label="docs-researcher\n(525 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_e2e_quality [label="e2e-quality\n(2,250 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_autofix_loop [label="autofix-loop\n(1,262 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_spec_scaffold_tests [label="spec-scaffold-tests\n(1,751 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_e2e_generate [label="e2e-generate\n(2,019 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_e2e_heal [label="e2e-heal\n(1,069 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_e2e_visual_heal [label="e2e-visual-heal\n(930 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
     script_state_read [label="state-read\n(749 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -90,6 +90,23 @@ digraph Dependencies {
     script_crash_detect [label="crash-detect\n(700 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_specialist_output_parse [label="specialist-output-parse\n(605 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_plan [label="autopilot-plan\n(3,674 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_should_skip [label="autopilot-should-skip\n(401 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_init [label="merge-gate-init\n(997 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_execute [label="merge-gate-execute\n(1,462 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_issues [label="merge-gate-issues\n(1,408 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_create [label="worktree-create\n(1,695 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_branch_create [label="branch-create\n(1,401 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_project_create [label="project-create\n(4,494 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_project_migrate [label="project-migrate\n(2,333 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_classify_failure [label="classify-failure\n(1,306 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_parse_issue_ac [label="parse-issue-ac\n(1,090 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_session_audit [label="session-audit\n(1,841 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_check_db_migration [label="check-db-migration\n(2,852 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_ecc_monitor [label="ecc-monitor\n(1,137 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_codex_review [label="codex-review\n(703 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_create_harness_issue [label="create-harness-issue\n(1,572 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_switchover [label="switchover\n(2,199 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
@@ -99,7 +116,7 @@ digraph Dependencies {
     { rank=same; cmd_issue_assess; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; cmd_test_scaffold; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; }
     { rank=same; cmd_self_improve_review; cmd_worktree_list; cmd_opsx_archive; cmd_propose; cmd_apply; cmd_archive; cmd_check; cmd_loom_validate; cmd_services; cmd_ui_capture; cmd_e2e_plan; cmd_worktree_delete; cmd_test_phase; cmd_schema_update; cmd_spec_diagnose; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_template_validator; agent_context_checker; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_architecture; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; agent_docs_researcher; agent_e2e_quality; agent_autofix_loop; agent_spec_scaffold_tests; agent_e2e_generate; agent_e2e_heal; agent_e2e_visual_heal; }
-    { rank=same; script_state_read; script_state_write; script_autopilot_init; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_tech_stack_detect; script_specialist_output_parse; }
+    { rank=same; script_state_read; script_state_write; script_autopilot_init; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_tech_stack_detect; script_specialist_output_parse; script_autopilot_plan; script_autopilot_should_skip; script_merge_gate_init; script_merge_gate_execute; script_merge_gate_issues; script_worktree_create; script_branch_create; script_project_create; script_project_migrate; script_classify_failure; script_parse_issue_ac; script_session_audit; script_check_db_migration; script_ecc_monitor; script_codex_review; script_create_harness_issue; script_switchover; }
 
     // Edges
     skill_co_autopilot -> cmd_autopilot_init;

@@ -1153,6 +1153,11 @@ scripts:
     path: scripts/create-harness-issue.sh
     description: "harness 分類時に cross-repo Issue 自動作成"
 
+  switchover:
+    type: script
+    path: scripts/switchover.sh
+    description: "プラグイン切替管理（check/switch/rollback/retire）"
+
 # エージェント（C-3 で追加）
 agents:
   # 構造チェック系（haiku）
