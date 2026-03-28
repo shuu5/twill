@@ -37,6 +37,7 @@ chains:
       - warning-fix
       - e2e-screening
       - pr-cycle-report
+      - pr-cycle-analysis
       - all-pass-check
       - merge-gate
 
@@ -148,6 +149,8 @@ skills:
     spawnable_by: [controller]
     can_spawn: [composite, atomic]
     calls:
+      - atomic: ac-deploy-trigger
+      - atomic: ac-verify
       - atomic: ts-preflight
         step: "1"
       - composite: phase-review
@@ -166,6 +169,8 @@ skills:
         step: "6"
       - atomic: pr-cycle-report
         step: "7"
+      - atomic: pr-cycle-analysis
+        step: "7.3"
       - atomic: all-pass-check
         step: "7.5"
       - composite: merge-gate
@@ -808,7 +813,7 @@ commands:
     type: composite
     path: commands/merge-gate/COMMAND.md
     spawnable_by: [workflow]
-    can_spawn: [specialist, script]
+    can_spawn: [specialist, script, atomic]
     chain: "pr-cycle"
     step_in:
       parent: workflow-pr-cycle
@@ -816,7 +821,56 @@ commands:
     calls:
       - script: specialist-output-parse
       - script: tech-stack-detect
+      - atomic: auto-merge
     description: "マージ判定（動的レビュー → severity フィルタ → PASS/REJECT）"
+
+  # === C-2c: PR-cycle 関連（6個） ===
+
+  ac-deploy-trigger:
+    type: atomic
+    path: commands/ac-deploy-trigger/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    description: "AC テキストから外部アクセスキーワードを検出し deploy E2E フラグ設定"
+
+  test-phase:
+    type: composite
+    path: commands/test-phase/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: [specialist]
+    description: "テストフェーズ（サービスヘルスチェック + E2E品質ゲート + テスト実行）"
+
+  auto-merge:
+    type: atomic
+    path: commands/auto-merge/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    description: "squash マージ → archive → cleanup 実行（autopilot-first）"
+
+  pr-cycle-analysis:
+    type: atomic
+    path: commands/pr-cycle-analysis/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "7.3"
+    description: "PR-cycle 結果からパターン分析し self-improve Issue 自動起票"
+
+  schema-update:
+    type: atomic
+    path: commands/schema-update/COMMAND.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "Zod スキーマ更新 + OpenAPI 再生成 + 検証（webapp-hono 専用）"
+
+  spec-diagnose:
+    type: atomic
+    path: commands/spec-diagnose/COMMAND.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    description: "テスト失敗の原因診断（仕様誤り vs 実装誤り判定）"
 
 # スクリプト（B-3 で追加）
 scripts:
