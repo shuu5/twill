@@ -8,25 +8,25 @@ digraph Dependencies {
     edge [fontname="Helvetica", fontsize=9];
 
     // L0: Controller Skills
-    skill_co_autopilot [label="dev:co-autopilot\n(79 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_issue [label="dev:co-issue\n(308 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_project [label="dev:co-project\n(67 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_architect [label="dev:co-architect\n(61 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="dev:co-autopilot\n(1,256 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="dev:co-issue\n(1,330 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_project [label="dev:co-project\n(1,309 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_architect [label="dev:co-architect\n(1,276 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
     skill_workflow_setup [label="dev:workflow-setup\n(624 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_test_ready [label="dev:workflow-test-ready\n(260 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_pr_cycle [label="dev:workflow-pr-cycle\n(672 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_cycle [label="dev:workflow-pr-cycle\n(660 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_phase_review [label="phase-review\n(543 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_fix_phase [label="fix-phase\n(379 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_e2e_screening [label="e2e-screening\n(321 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,015 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_phase_review [label="phase-review\n(544 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_fix_phase [label="fix-phase\n(380 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_e2e_screening [label="e2e-screening\n(322 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,026 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands
     cmd_self_improve_review [label="self-improve-review\n(1,086 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];

@@ -15,14 +15,14 @@
 <title>skill_workflow_pr_cycle</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="79.2" cy="-308" rx="79.39" ry="21.43"/>
 <text text-anchor="middle" x="79.2" y="-311" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;pr&#45;cycle</text>
-<text text-anchor="middle" x="79.2" y="-300" font-family="Helvetica,sans-Serif" font-size="10.00">(672 tok)</text>
+<text text-anchor="middle" x="79.2" y="-300" font-family="Helvetica,sans-Serif" font-size="10.00">(660 tok)</text>
 </g>
 <!-- cmd_phase_review -->
 <g id="node2" class="node">
 <title>cmd_phase_review</title>
 <polygon fill="#bbdefb" stroke="black" points="316.97,-558 242.97,-558 242.97,-522 316.97,-522 316.97,-558"/>
 <text text-anchor="middle" x="279.97" y="-543" font-family="Helvetica,sans-Serif" font-size="10.00">phase&#45;review</text>
-<text text-anchor="middle" x="279.97" y="-532" font-family="Helvetica,sans-Serif" font-size="10.00">(543 tok)</text>
+<text text-anchor="middle" x="279.97" y="-532" font-family="Helvetica,sans-Serif" font-size="10.00">(544 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_phase_review -->
 <g id="edge2" class="edge">
@@ -35,7 +35,7 @@
 <title>cmd_fix_phase</title>
 <polygon fill="#bbdefb" stroke="black" points="307.97,-500 251.97,-500 251.97,-464 307.97,-464 307.97,-500"/>
 <text text-anchor="middle" x="279.97" y="-485" font-family="Helvetica,sans-Serif" font-size="10.00">fix&#45;phase</text>
-<text text-anchor="middle" x="279.97" y="-474" font-family="Helvetica,sans-Serif" font-size="10.00">(379 tok)</text>
+<text text-anchor="middle" x="279.97" y="-474" font-family="Helvetica,sans-Serif" font-size="10.00">(380 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_fix_phase -->
 <g id="edge5" class="edge">
@@ -48,7 +48,7 @@
 <title>cmd_e2e_screening</title>
 <polygon fill="#bbdefb" stroke="black" points="318.47,-442 241.47,-442 241.47,-406 318.47,-406 318.47,-442"/>
 <text text-anchor="middle" x="279.97" y="-427" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;screening</text>
-<text text-anchor="middle" x="279.97" y="-416" font-family="Helvetica,sans-Serif" font-size="10.00">(321 tok)</text>
+<text text-anchor="middle" x="279.97" y="-416" font-family="Helvetica,sans-Serif" font-size="10.00">(322 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_e2e_screening -->
 <g id="edge8" class="edge">
@@ -61,7 +61,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="312.47,-616 247.47,-616 247.47,-580 312.47,-580 312.47,-616"/>
 <text text-anchor="middle" x="279.97" y="-601" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="279.97" y="-590" font-family="Helvetica,sans-Serif" font-size="10.00">(1,015 tok)</text>
+<text text-anchor="middle" x="279.97" y="-590" font-family="Helvetica,sans-Serif" font-size="10.00">(1,026 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_merge_gate -->
 <g id="edge11" class="edge">

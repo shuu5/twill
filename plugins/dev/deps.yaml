@@ -60,7 +60,7 @@ skills:
     type: controller
     path: skills/co-project/SKILL.md
     spawnable_by: [user]
-    can_spawn: [atomic]
+    can_spawn: [atomic, reference]
     description: "プロジェクト管理（create / migrate / snapshot）"
 
   co-architect:
@@ -139,6 +139,16 @@ refs:
     type: reference
     path: refs/ref-specialist-few-shot.md
     description: "specialist プロンプト用 few-shot テンプレート"
+
+  ref-issue-template-bug:
+    type: reference
+    path: refs/ref-issue-template-bug.md
+    description: "Bug Report Issue テンプレート"
+
+  ref-issue-template-feature:
+    type: reference
+    path: refs/ref-issue-template-feature.md
+    description: "Feature Request Issue テンプレート"
 
 # コマンド（B-4 で拡充）
 commands:
