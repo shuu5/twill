@@ -233,6 +233,64 @@ refs:
     path: refs/ref-issue-template-feature.md
     description: "Feature Request Issue テンプレート"
 
+  # C-3: loom sync 対象 (4)
+  ref-types:
+    type: reference
+    path: refs/ref-types.md
+    description: "型システム仕様（loom sync）"
+
+  ref-practices:
+    type: reference
+    path: refs/ref-practices.md
+    description: "5原則+ライフサイクル+パターン選択ガイド（loom sync）"
+
+  ref-deps-format:
+    type: reference
+    path: refs/ref-deps-format.md
+    description: "deps.yaml 形式仕様（loom sync）"
+
+  ref-architecture:
+    type: reference
+    path: refs/ref-architecture.md
+    description: "アーキテクチャパターン評価チェックリスト（loom sync）"
+
+  # C-3: プラグイン固有 (4)
+  ref-architecture-spec:
+    type: reference
+    path: refs/ref-architecture-spec.md
+    description: "Architecture Spec ディレクトリ構造仕様"
+
+  ref-project-model:
+    type: reference
+    path: refs/ref-project-model.md
+    description: "Issue 管理データモデル（5軸ラベル体系）"
+
+  ref-dci:
+    type: reference
+    path: refs/ref-dci.md
+    description: "DCI（Dynamic Context Injection）共通パターン"
+
+  self-improve-format:
+    type: reference
+    path: refs/self-improve-format.md
+    description: "self-improve Issue 共通フォーマット定義"
+
+  # C-3: Baseline (3)
+  baseline-coding-style:
+    type: reference
+    path: refs/baseline-coding-style.md
+    description: "コーディング基準（BAD/GOODコード対比）"
+
+  baseline-security-checklist:
+    type: reference
+    path: refs/baseline-security-checklist.md
+    description: "セキュリティチェックリスト（OWASP Top 10）"
+
+  baseline-input-validation:
+    type: reference
+    path: refs/baseline-input-validation.md
+    description: "入力検証パターン（Zod/Pydantic）"
+
 # コマンド（B-4 で拡充）
 commands:
   self-improve-review:
@@ -1015,4 +1073,214 @@ scripts:
     description: "specialist 出力の共通スキーマパース（status + findings）"
 
 # エージェント（C-3 で追加）
-agents: {}
+agents:
+  # 構造チェック系（haiku）
+  worker-structure:
+    type: specialist
+    path: agents/worker-structure.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "構造検証（loom実行 + frontmatter整合性チェック）"
+
+  worker-principles:
+    type: specialist
+    path: agents/worker-principles.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "5原則+controller品質検証"
+
+  worker-env-validator:
+    type: specialist
+    path: agents/worker-env-validator.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "環境変数の整合性検証"
+
+  worker-rls-reviewer:
+    type: specialist
+    path: agents/worker-rls-reviewer.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Supabase RLSポリシーの論理的正確性検証"
+
+  worker-supabase-migration-checker:
+    type: specialist
+    path: agents/worker-supabase-migration-checker.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Supabase DBマイグレーションSQL品質レビュー"
+
+  worker-data-validator:
+    type: specialist
+    path: agents/worker-data-validator.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "オミクスデータファイルの検証"
+
+  template-validator:
+    type: specialist
+    path: agents/template-validator.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Issueテンプレート準拠バリデーター"
+
+  context-checker:
+    type: specialist
+    path: agents/context-checker.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Issueプロジェクトコンテキストチェック"
+
+  worker-e2e-reviewer:
+    type: specialist
+    path: agents/worker-e2e-reviewer.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Playwright E2Eテストのレビュー"
+
+  worker-spec-reviewer:
+    type: specialist
+    path: agents/worker-spec-reviewer.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "OpenSpec Scenarioの品質レビュー"
+
+  # 品質判断系（sonnet）
+  worker-code-reviewer:
+    type: specialist
+    path: agents/worker-code-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "コード品質レビュー"
+
+  worker-security-reviewer:
+    type: specialist
+    path: agents/worker-security-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "セキュリティ脆弱性検出"
+
+  worker-nextjs-reviewer:
+    type: specialist
+    path: agents/worker-nextjs-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Next.js 15 + React 19 コードレビュー"
+
+  worker-fastapi-reviewer:
+    type: specialist
+    path: agents/worker-fastapi-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "FastAPI + Pydantic v2 コードレビュー"
+
+  worker-hono-reviewer:
+    type: specialist
+    path: agents/worker-hono-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Hono + Zod + monorepo整合性レビュー"
+
+  worker-r-reviewer:
+    type: specialist
+    path: agents/worker-r-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Rコード（.R, .Rmd, .qmd）のレビュー"
+
+  worker-architecture:
+    type: specialist
+    path: agents/worker-architecture.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "アーキテクチャパターン検証"
+
+  worker-llm-output-reviewer:
+    type: specialist
+    path: agents/worker-llm-output-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "LLM出力品質レビュー"
+
+  worker-llm-eval-runner:
+    type: specialist
+    path: agents/worker-llm-eval-runner.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "LLM_CRITERIAベースの品質評価"
+
+  # ユーティリティ系（sonnet）
+  docs-researcher:
+    type: specialist
+    path: agents/docs-researcher.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "ドキュメント動的取得"
+
+  e2e-quality:
+    type: specialist
+    path: agents/e2e-quality.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "E2Eテストの偽陽性リスク検出"
+
+  autofix-loop:
+    type: specialist
+    path: agents/autofix-loop.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "自動修正ループ"
+
+  spec-scaffold-tests:
+    type: specialist
+    path: agents/spec-scaffold-tests.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "OpenSpec ScenarioからBDDテスト自動生成"
+
+  e2e-generate:
+    type: specialist
+    path: agents/e2e-generate.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "ScenarioからE2Eテスト生成"
+
+  e2e-heal:
+    type: specialist
+    path: agents/e2e-heal.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "失敗E2Eテストの分析・修復"
+
+  e2e-visual-heal:
+    type: specialist
+    path: agents/e2e-visual-heal.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Visual検証失敗の分析・修復"

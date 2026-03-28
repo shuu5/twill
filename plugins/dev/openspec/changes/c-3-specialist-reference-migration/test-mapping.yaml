@@ -1,0 +1,249 @@
+change_id: c-3-specialist-reference-migration
+generated_at: "2026-03-29T00:00:00Z"
+test_framework: bash
+scenarios:
+  # === specialist-migration/spec.md ===
+
+  - id: "specialist-quality-judgment-migration"
+    name: "品質判断系 specialist の移植"
+    spec_file: "specs/specialist-migration/spec.md"
+    spec_line: 15
+    requirement: "Specialist エージェントファイル作成"
+    test_file: "tests/scenarios/specialist-migration.test.sh"
+    test_name: "worker-code-reviewer に model: sonnet が宣言されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-structure-check-migration"
+    name: "構造チェック系 specialist の移植"
+    spec_file: "specs/specialist-migration/spec.md"
+    spec_line: 19
+    requirement: "Specialist エージェントファイル作成"
+    test_file: "tests/scenarios/specialist-migration.test.sh"
+    test_name: "worker-structure に model: haiku が宣言されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-all-27-migrated"
+    name: "全 27 specialist が移植完了"
+    spec_file: "specs/specialist-migration/spec.md"
+    spec_line: 23
+    requirement: "Specialist エージェントファイル作成"
+    test_file: "tests/scenarios/specialist-migration.test.sh"
+    test_name: "全 27 specialist ファイルが agents/ に存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-specialist-registration"
+    name: "deps.yaml に specialist を登録"
+    spec_file: "specs/specialist-migration/spec.md"
+    spec_line: 38
+    requirement: "deps.yaml agents セクション登録"
+    test_file: "tests/scenarios/specialist-migration.test.sh"
+    test_name: "deps.yaml に worker-security-reviewer が正しく登録されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-loom-validate-specialists"
+    name: "loom validate が通過"
+    spec_file: "specs/specialist-migration/spec.md"
+    spec_line: 42
+    requirement: "deps.yaml agents セクション登録"
+    test_file: "tests/scenarios/specialist-migration.test.sh"
+    test_name: "loom validate がエラーなしで通過する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-prompt-content-preserved"
+    name: "プロンプト本文の保持"
+    spec_file: "specs/specialist-migration/spec.md"
+    spec_line: 55
+    requirement: "Specialist プロンプト内容の移植"
+    test_file: "tests/scenarios/specialist-migration.test.sh"
+    test_name: "全 specialist が frontmatter 必須フィールドを持つ"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-baseline-ref-path-updated"
+    name: "Baseline 参照パスの更新"
+    spec_file: "specs/specialist-migration/spec.md"
+    spec_line: 59
+    requirement: "Specialist プロンプト内容の移植"
+    test_file: "tests/scenarios/specialist-migration.test.sh"
+    test_name: "specialist に旧 refs/baseline/ パス参照がない"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # === reference-migration/spec.md ===
+
+  - id: "loom-sync-ref-creation"
+    name: "loom sync 対象ファイルの作成"
+    spec_file: "specs/reference-migration/spec.md"
+    spec_line: 7
+    requirement: "loom sync 対象 reference の移植"
+    test_file: "tests/scenarios/reference-migration.test.sh"
+    test_name: "ref-types.md が作成され、同期マーカーと type: reference が存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-sync-docs-check"
+    name: "loom sync-docs --check の通過"
+    spec_file: "specs/reference-migration/spec.md"
+    spec_line: 11
+    requirement: "loom sync 対象 reference の移植"
+    test_file: "tests/scenarios/reference-migration.test.sh"
+    test_name: "loom sync-docs --check がエラーなしで通過"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plugin-specific-ref-creation"
+    name: "プラグイン固有 reference の作成"
+    spec_file: "specs/reference-migration/spec.md"
+    spec_line: 20
+    requirement: "プラグイン固有 reference の移植"
+    test_file: "tests/scenarios/reference-migration.test.sh"
+    test_name: "ref-dci.md に name: dev:ref-dci と type: reference"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "baseline-flat-placement"
+    name: "baseline のフラット配置"
+    spec_file: "specs/reference-migration/spec.md"
+    spec_line: 27
+    requirement: "Baseline reference の移植"
+    test_file: "tests/scenarios/reference-migration.test.sh"
+    test_name: "baseline-coding-style.md がフラット配置（サブディレクトリなし）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "baseline-ref-glob-accessible"
+    name: "specialist からの baseline 参照が有効"
+    spec_file: "specs/reference-migration/spec.md"
+    spec_line: 31
+    requirement: "Baseline reference の移植"
+    test_file: "tests/scenarios/reference-migration.test.sh"
+    test_name: "baseline-coding-style.md が glob パターンで参照可能"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-refs-count-15"
+    name: "reference の deps.yaml 登録"
+    spec_file: "specs/reference-migration/spec.md"
+    spec_line: 44
+    requirement: "deps.yaml refs セクション登録"
+    test_file: "tests/scenarios/reference-migration.test.sh"
+    test_name: "deps.yaml refs セクションに 15 エントリ (既存 4 + 新規 11)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-loom-validate-refs"
+    name: "loom validate が通過"
+    spec_file: "specs/reference-migration/spec.md"
+    spec_line: 48
+    requirement: "deps.yaml refs セクション登録"
+    test_file: "tests/scenarios/reference-migration.test.sh"
+    test_name: "loom validate がエラーなしで通過する (refs)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # === output-schema-compliance/spec.md ===
+
+  - id: "output-schema-pass"
+    name: "PASS 出力"
+    spec_file: "specs/output-schema-compliance/spec.md"
+    spec_line: 23
+    requirement: "共通出力スキーマ準拠"
+    test_file: "tests/scenarios/output-schema-compliance.test.sh"
+    test_name: "全 specialist に '## 出力形式（MUST）' セクションが存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "output-schema-fail"
+    name: "FAIL 出力"
+    spec_file: "specs/output-schema-compliance/spec.md"
+    spec_line: 28
+    requirement: "共通出力スキーマ準拠"
+    test_file: "tests/scenarios/output-schema-compliance.test.sh"
+    test_name: "全 specialist の出力形式セクションに ref-specialist-output-schema 参照"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "output-schema-findings-fields"
+    name: "findings の必須フィールド"
+    spec_file: "specs/output-schema-compliance/spec.md"
+    spec_line: 32
+    requirement: "共通出力スキーマ準拠"
+    test_file: "tests/scenarios/output-schema-compliance.test.sh"
+    test_name: "出力形式セクションに status フィールド参照"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "severity-old-terms-removed"
+    name: "旧 severity 表記の排除"
+    spec_file: "specs/output-schema-compliance/spec.md"
+    spec_line: 44
+    requirement: "severity 3 段階統一"
+    test_file: "tests/scenarios/output-schema-compliance.test.sh"
+    test_name: "旧 severity 'High' がどの specialist にも存在しない"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "output-section-exists"
+    name: "出力形式セクションの存在"
+    spec_file: "specs/output-schema-compliance/spec.md"
+    spec_line: 51
+    requirement: "出力形式セクションの追記"
+    test_file: "tests/scenarios/output-schema-compliance.test.sh"
+    test_name: "全 specialist に '## 出力形式（MUST）' セクションが存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "output-parse-compatibility"
+    name: "specialist-output-parse.sh との互換性"
+    spec_file: "specs/output-schema-compliance/spec.md"
+    spec_line: 55
+    requirement: "出力形式セクションの追記"
+    test_file: "tests/scenarios/output-schema-compliance.test.sh"
+    test_name: "出力形式セクションが各 specialist に 1 つだけ"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
