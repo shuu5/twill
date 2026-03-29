@@ -34,6 +34,7 @@ Commands:
   reverse <name>  逆依存関係を表示
   target <name>   依存関係を表示
   update-svgs     全 plugin の SVG を一括再生成
+  chain generate  chain 定義から成果物を生成（テンプレート出力/書き込み/乖離検出）
   graph           Graphviz DOT 出力 (デフォルト)
   mermaid         Mermaid フローチャート出力
   tokens          トークン数を表示
@@ -56,6 +57,8 @@ Examples:
   loom sync-check --ref docs/ref-types.md
   loom sync-docs ~/.claude/plugins/dev/refs/
   loom sync-docs ~/.claude/plugins/dev/refs/ --check
+  loom chain generate my-chain
+  loom chain generate --check --all
 EOF
 }
 
@@ -172,6 +175,14 @@ case "$CMD" in
         ;;
     list)
         python3 "$ENGINE" --list "$@"
+        ;;
+    chain)
+        if [ $# -eq 0 ]; then
+            echo "Error: chain requires a subcommand (e.g. generate)" >&2
+            echo "Usage: loom chain generate <chain-name> [--write|--check|--all]" >&2
+            exit 1
+        fi
+        python3 "$ENGINE" chain "$@"
         ;;
     update-svgs)
         # 全 plugin の SVG を一括再生成
