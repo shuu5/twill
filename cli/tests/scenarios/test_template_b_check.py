@@ -133,6 +133,19 @@ class TestTemplateBCheckMatch(_TemplateBCheckTestBase):
         )
         _write_deps(plugin_dir, deps)
 
+        # Template C 用のスターター指示（workflow-setup が chain の親なので）
+        template_c_section = (
+            "## chain 実行指示（MUST）\n\n"
+            "以下の順序でステップを実行する。各ステップの COMMAND.md を Read し、Skill tool で自動実行すること。\n\n"
+            "Step 1: `/dev:workflow-setup` を Skill tool で実行\n"
+            "→ 以降は各 COMMAND.md のチェックポイントに従い自動進行\n\n"
+            "### ライフサイクル\n\n"
+            "| # | 型 | コンポーネント | 説明 |\n"
+            "|---|---|---|---|\n"
+            "| 1 | workflow | workflow-setup | 開発準備ワークフロー |\n"
+            "| 2 | workflow | workflow-test-ready | テスト準備ワークフロー |"
+        )
+
         # called-by が期待値と一致する description
         # 期待値: "workflow-setup Step 2 から呼び出される。"
         _create_component_file(
@@ -148,7 +161,8 @@ class TestTemplateBCheckMatch(_TemplateBCheckTestBase):
             "workflow-setup",
             "開発準備ワークフロー",
             "# Setup\n\n## チェックポイント（MUST）\n\n"
-            "`/dev:workflow-test-ready` を Skill tool で自動実行。",
+            "`/dev:workflow-test-ready` を Skill tool で自動実行。\n\n"
+            + template_c_section,
         )
 
         result = run_engine(plugin_dir, "chain", "generate", "dev-pr-cycle", "--check")
@@ -164,7 +178,7 @@ class TestTemplateBCheckMatch(_TemplateBCheckTestBase):
 
     def test_called_by_match_no_drift_reported(self):
         """WHEN called-by が一致する場合
-        THEN DRIFT は報告されない"""
+        THEN Template B の DRIFT は報告されない"""
         plugin_dir = self.tmpdir / "plugin-check-match-nodrift"
         plugin_dir.mkdir()
 
@@ -172,6 +186,19 @@ class TestTemplateBCheckMatch(_TemplateBCheckTestBase):
             step_in={"parent": "workflow-setup", "step": "2"},
         )
         _write_deps(plugin_dir, deps)
+
+        # Template C 用のスターター指示
+        template_c_section = (
+            "## chain 実行指示（MUST）\n\n"
+            "以下の順序でステップを実行する。各ステップの COMMAND.md を Read し、Skill tool で自動実行すること。\n\n"
+            "Step 1: `/dev:workflow-setup` を Skill tool で実行\n"
+            "→ 以降は各 COMMAND.md のチェックポイントに従い自動進行\n\n"
+            "### ライフサイクル\n\n"
+            "| # | 型 | コンポーネント | 説明 |\n"
+            "|---|---|---|---|\n"
+            "| 1 | workflow | workflow-setup | 開発準備ワークフロー |\n"
+            "| 2 | workflow | workflow-test-ready | テスト準備ワークフロー |"
+        )
 
         _create_component_file(
             plugin_dir,
@@ -186,16 +213,15 @@ class TestTemplateBCheckMatch(_TemplateBCheckTestBase):
             "workflow-setup",
             "開発準備ワークフロー",
             "# Setup\n\n## チェックポイント（MUST）\n\n"
-            "`/dev:workflow-test-ready` を Skill tool で自動実行。",
+            "`/dev:workflow-test-ready` を Skill tool で自動実行。\n\n"
+            + template_c_section,
         )
 
         result = run_engine(plugin_dir, "chain", "generate", "dev-pr-cycle", "--check")
 
         combined_output = result.stdout + result.stderr
-        # Template B に関する DRIFT が出ないこと
-        # (Template A の DRIFT は別途あり得る)
-        assert "DRIFT" not in combined_output or result.returncode == 0, (
-            f"Expected no Template B DRIFT:\n{combined_output}"
+        assert "DRIFT" not in combined_output and result.returncode == 0, (
+            f"Expected no DRIFT:\n{combined_output}"
         )
 
 
@@ -374,7 +400,7 @@ class TestTemplateBCheckIntegration(_TemplateBCheckTestBase):
         )
 
     def test_check_both_templates_ok_when_all_match(self):
-        """WHEN Template A と Template B の両方が一致する場合
+        """WHEN Template A, B, C の全てが一致する場合
         THEN exit code 0 で ok が報告される"""
         plugin_dir = self.tmpdir / "plugin-check-both-ok"
         plugin_dir.mkdir()
@@ -384,7 +410,20 @@ class TestTemplateBCheckIntegration(_TemplateBCheckTestBase):
         )
         _write_deps(plugin_dir, deps)
 
-        # Template A + Template B 両方正しい状態
+        # Template C 用のスターター指示
+        template_c_section = (
+            "## chain 実行指示（MUST）\n\n"
+            "以下の順序でステップを実行する。各ステップの COMMAND.md を Read し、Skill tool で自動実行すること。\n\n"
+            "Step 1: `/dev:workflow-setup` を Skill tool で実行\n"
+            "→ 以降は各 COMMAND.md のチェックポイントに従い自動進行\n\n"
+            "### ライフサイクル\n\n"
+            "| # | 型 | コンポーネント | 説明 |\n"
+            "|---|---|---|---|\n"
+            "| 1 | workflow | workflow-setup | 開発準備ワークフロー |\n"
+            "| 2 | workflow | workflow-test-ready | テスト準備ワークフロー |"
+        )
+
+        # Template A + Template B + Template C 全て正しい状態
         _create_component_file(
             plugin_dir,
             "skills/workflow-test-ready/SKILL.md",
@@ -398,16 +437,17 @@ class TestTemplateBCheckIntegration(_TemplateBCheckTestBase):
             "workflow-setup",
             "開発準備ワークフロー",
             "# Setup\n\n## チェックポイント（MUST）\n\n"
-            "`/dev:workflow-test-ready` を Skill tool で自動実行。",
+            "`/dev:workflow-test-ready` を Skill tool で自動実行。\n\n"
+            + template_c_section,
         )
 
         result = run_engine(plugin_dir, "chain", "generate", "dev-pr-cycle", "--check")
 
         assert result.returncode == 0, (
-            f"Expected exit 0 when both templates match\n"
+            f"Expected exit 0 when all templates match\n"
             f"stdout: {result.stdout}\nstderr: {result.stderr}"
         )
         combined_output = result.stdout + result.stderr
         assert "ok" in combined_output.lower(), (
-            f"Expected 'ok' when both templates match:\n{combined_output}"
+            f"Expected 'ok' when all templates match:\n{combined_output}"
         )

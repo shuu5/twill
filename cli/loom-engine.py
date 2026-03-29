@@ -2940,17 +2940,18 @@ def chain_generate(deps: dict, chain_name: str, plugin_root: Path) -> dict:
         {
             'template_a': {comp_name: str, ...},  # チェックポイント出力テンプレート
             'template_b': {comp_name: str, ...},  # called-by 宣言行
-            'template_c': str,                     # ライフサイクル図テーブル
+            'template_c': str,                     # SKILL.md 向けスターター指示
+            'template_c_target': str | None,       # Template C 注入先の SKILL.md パス
         }
     """
     chains = deps.get('chains', {})
     chain_data = chains.get(chain_name)
     if chain_data is None or not isinstance(chain_data, dict):
-        return {'template_a': {}, 'template_b': {}, 'template_c': ''}
+        return {'template_a': {}, 'template_b': {}, 'template_c': '', 'template_c_target': None}
 
     steps = chain_data.get('steps', [])
     if not isinstance(steps, list):
-        return {'template_a': {}, 'template_b': {}, 'template_c': ''}
+        return {'template_a': {}, 'template_b': {}, 'template_c': '', 'template_c_target': None}
 
     # 全コンポーネントの名前→(section, data) マップ
     all_components: Dict[str, Tuple[str, dict]] = {}
@@ -3001,7 +3002,8 @@ def chain_generate(deps: dict, chain_name: str, plugin_root: Path) -> dict:
         else:
             template_b[step_name] = f"{safe_parent} から呼び出される。"
 
-    # --- Template C: ライフサイクル図テーブル ---
+    # --- Template C: SKILL.md 向けスターター指示 ---
+    # ライフサイクルテーブル
     table_lines = ["| # | 型 | コンポーネント | 説明 |", "|---|---|---|---|"]
     for i, step_name in enumerate(steps):
         if not isinstance(step_name, str):
@@ -3013,16 +3015,55 @@ def chain_generate(deps: dict, chain_name: str, plugin_root: Path) -> dict:
         else:
             comp_type = comp[1].get('type', '')
             desc = comp[1].get('description', '')
-        # テーブルセル用サニタイズ（パイプ・改行をエスケープ）
         safe_desc = desc.replace('|', '\\|').replace('\n', ' ') if desc else ''
         safe_type = comp_type.replace('|', '\\|').replace('\n', ' ') if comp_type else ''
         table_lines.append(f"| {i + 1} | {safe_type} | {step_name} | {safe_desc} |")
-    template_c = '\n'.join(table_lines)
+    lifecycle_table = '\n'.join(table_lines)
+
+    # 最初のステップを特定
+    first_step = None
+    for s in steps:
+        if isinstance(s, str):
+            first_step = _sanitize_name(s)
+            break
+
+    # 親 SKILL.md を特定（step_in.parent から）
+    template_c_target = None
+    for s in steps:
+        if not isinstance(s, str):
+            continue
+        comp = all_components.get(s)
+        if comp is None:
+            continue
+        step_in = comp[1].get('step_in')
+        if step_in and isinstance(step_in, dict):
+            parent_name = step_in.get('parent')
+            if parent_name and isinstance(parent_name, str):
+                parent_comp = all_components.get(parent_name)
+                if parent_comp:
+                    parent_path = parent_comp[1].get('path')
+                    if parent_path:
+                        template_c_target = parent_path
+                        break
+
+    # スターター指示を生成
+    if first_step:
+        template_c = (
+            f"## chain 実行指示（MUST）\n\n"
+            f"以下の順序でステップを実行する。各ステップの COMMAND.md を Read し、Skill tool で自動実行すること。\n\n"
+            f"Step 1: `/dev:{first_step}` を Skill tool で実行\n"
+            f"→ 以降は各 COMMAND.md のチェックポイントに従い自動進行\n\n"
+            f"### ライフサイクル\n\n"
+            f"{lifecycle_table}"
+        )
+    else:
+        template_c = ''
 
     return {
         'template_a': template_a,
         'template_b': template_b,
         'template_c': template_c,
+        'template_c_target': template_c_target,
     }
 
 
@@ -3031,11 +3072,12 @@ def chain_generate_print(result: dict, chain_name: str, chain_type: Optional[str
     template_a = result['template_a']
     template_b = result['template_b']
     template_c = result['template_c']
+    template_c_target = result.get('template_c_target')
 
     # chain type による出力分岐
     show_a = chain_type in (None, 'A')
     show_b = chain_type in (None, 'B') or any(template_b.values())
-    show_c = chain_type in (None, 'A')
+    show_c = True
 
     if show_a and template_a:
         print(f"=== Template A: チェックポイント ({chain_name}) ===")
@@ -3054,7 +3096,8 @@ def chain_generate_print(result: dict, chain_name: str, chain_type: Optional[str
             print()
 
     if show_c and template_c:
-        print(f"=== Template C: ライフサイクル ({chain_name}) ===")
+        target_info = f" → {template_c_target}" if template_c_target else ""
+        print(f"=== Template C: chain starter ({chain_name}){target_info} ===")
         print()
         print(template_c)
         print()
@@ -3172,6 +3215,37 @@ def chain_generate_write(result: dict, deps: dict, plugin_root: Path) -> None:
             file_path.write_text(content, encoding='utf-8')
             print(f"Updated: {path_str}")
 
+    # Template C: SKILL.md へのスターター指示注入
+    template_c = result['template_c']
+    template_c_target = result.get('template_c_target')
+    if template_c and template_c_target:
+        target_path = plugin_root / template_c_target
+        if not str(target_path.resolve()).startswith(str(plugin_root.resolve())):
+            print(f"Warning: Path traversal detected for Template C target, skipping", file=sys.stderr)
+        elif not target_path.exists():
+            print(f"Warning: Template C target not found: {target_path}, skipping", file=sys.stderr)
+        else:
+            target_content = target_path.read_text(encoding='utf-8')
+            starter_pattern = re.compile(
+                r'^##\s+chain\s+実行指示.*$',
+                re.MULTILINE | re.IGNORECASE
+            )
+            match = starter_pattern.search(target_content)
+            if match:
+                # 既存セクションを置換
+                rest = target_content[match.end():]
+                next_section = re.search(r'^##\s', rest, re.MULTILINE)
+                if next_section:
+                    end = match.end() + next_section.start()
+                else:
+                    end = len(target_content)
+                target_content = target_content[:match.start()] + template_c + '\n\n' + target_content[end:]
+            else:
+                # セクションが存在しない場合、ファイル末尾に追加
+                target_content = target_content.rstrip('\n') + '\n\n' + template_c + '\n'
+            target_path.write_text(target_content, encoding='utf-8')
+            print(f"Updated (Template C): {template_c_target}")
+
 
 def _extract_called_by(content: str) -> Optional[str]:
     """ファイル内容の frontmatter description から called-by 部分を抽出する。
@@ -3235,12 +3309,36 @@ def _extract_checkpoint_section(content: str) -> Optional[str]:
     return section.rstrip('\n')
 
 
+def _extract_starter_section(content: str) -> Optional[str]:
+    """ファイル内容から chain 実行指示セクションを抽出する。
+
+    Returns:
+        セクション文字列。セクションが存在しない場合は None。
+    """
+    pattern = re.compile(
+        r'^##\s+chain\s+実行指示.*$',
+        re.MULTILINE | re.IGNORECASE
+    )
+    match = pattern.search(content)
+    if not match:
+        return None
+
+    rest = content[match.end():]
+    next_section = re.search(r'^##\s', rest, re.MULTILINE)
+    if next_section:
+        section = content[match.start():match.end() + next_section.start()]
+    else:
+        section = content[match.start():]
+
+    return section.rstrip('\n')
+
+
 def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[List[dict], List[str]]:
-    """単一 chain の Template A + Template B ドリフト検出。
+    """単一 chain の Template A + Template B + Template C ドリフト検出。
 
     Returns:
         (file_results, diffs)
-        file_results: [{'comp': str, 'path': str, 'status': 'ok'|'DRIFT', 'template': 'A'|'B'}, ...]
+        file_results: [{'comp': str, 'path': str, 'status': 'ok'|'DRIFT', 'template': 'A'|'B'|'C'}, ...]
         diffs: unified diff テキストのリスト
     """
     all_components: Dict[str, Tuple[str, dict]] = {}
@@ -3346,6 +3444,44 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
             ))
             diff_text = f"=== Diff: {path_str} (Template B) ===\n" + ''.join(diff_lines)
             diffs.append(diff_text)
+
+    # --- Template C チェック ---
+    template_c = result['template_c']
+    template_c_target = result.get('template_c_target')
+    if template_c and template_c_target:
+        target_path = plugin_root / template_c_target
+        if str(target_path.resolve()).startswith(str(plugin_root.resolve())):
+            if not target_path.exists():
+                file_results.append({'comp': '(SKILL.md)', 'path': template_c_target, 'status': 'DRIFT', 'template': 'C'})
+                diffs.append(f"=== Diff: {template_c_target} (Template C) ===\n--- expected\n+++ actual (file not found)\n")
+            else:
+                content = target_path.read_text(encoding='utf-8')
+                actual_section = _extract_starter_section(content)
+
+                if actual_section is None:
+                    file_results.append({'comp': '(SKILL.md)', 'path': template_c_target, 'status': 'DRIFT', 'template': 'C'})
+                    expected_lines = _normalize_for_check(template_c).splitlines(keepends=True)
+                    diff_lines = list(difflib.unified_diff(
+                        expected_lines, ['(section not found)\n'],
+                        fromfile='expected', tofile='actual'
+                    ))
+                    diffs.append(f"=== Diff: {template_c_target} (Template C) ===\n" + ''.join(diff_lines))
+                else:
+                    norm_expected = _normalize_for_check(template_c)
+                    norm_actual = _normalize_for_check(actual_section)
+
+                    if hashlib.sha256(norm_expected.encode('utf-8')).hexdigest() == \
+                       hashlib.sha256(norm_actual.encode('utf-8')).hexdigest():
+                        file_results.append({'comp': '(SKILL.md)', 'path': template_c_target, 'status': 'ok', 'template': 'C'})
+                    else:
+                        file_results.append({'comp': '(SKILL.md)', 'path': template_c_target, 'status': 'DRIFT', 'template': 'C'})
+                        expected_lines = norm_expected.splitlines(keepends=True)
+                        actual_lines = norm_actual.splitlines(keepends=True)
+                        diff_lines = list(difflib.unified_diff(
+                            expected_lines, actual_lines,
+                            fromfile='expected', tofile='actual'
+                        ))
+                        diffs.append(f"=== Diff: {template_c_target} (Template C) ===\n" + ''.join(diff_lines))
 
     return file_results, diffs
 

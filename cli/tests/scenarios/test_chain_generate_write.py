@@ -253,9 +253,9 @@ class TestWriteFlag(_WriteTestBase):
             f"Expected section-not-found warning:\n{combined_output}"
         )
 
-    def test_write_section_not_found_file_unchanged(self):
-        """WHEN セクションマーカーが見つからない場合
-        THEN 該当ファイルは変更されない"""
+    def test_write_section_not_found_template_a_unchanged(self):
+        """WHEN チェックポイントセクションマーカーが見つからない場合
+        THEN Template A は書き込まれないが、Template C（スターター指示）は追加される"""
         original_body = (
             "# Workflow Setup\n\n"
             "マーカーなしの本体テキスト。\n"
@@ -265,16 +265,14 @@ class TestWriteFlag(_WriteTestBase):
         }
         plugin_dir = make_write_fixture(self.tmpdir, body_overrides=body_overrides)
 
-        file_path = plugin_dir / "skills/workflow-setup/SKILL.md"
-        content_before = file_path.read_text(encoding="utf-8")
-
         run_engine(plugin_dir, "chain", "generate", "dev-pr-cycle", "--write")
 
+        file_path = plugin_dir / "skills/workflow-setup/SKILL.md"
         content_after = file_path.read_text(encoding="utf-8")
-        assert content_before == content_after, (
-            f"File should not be modified when section marker is not found.\n"
-            f"Before:\n{content_before}\n\nAfter:\n{content_after}"
-        )
+        # Template A (チェックポイント) は書き込まれない
+        assert "## チェックポイント" not in content_after
+        # Template C (chain 実行指示) は追加される
+        assert "## chain 実行指示" in content_after
 
     def test_write_section_not_found_warning_includes_path(self):
         """WHEN セクションマーカーが見つからない場合
