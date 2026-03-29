@@ -34,3 +34,8 @@ ELSE スキップ（PASS を返す）
 | 修復後に全テスト PASS | PASS（修復ログ付き） |
 | 修復不可のテスト FAIL | FAIL |
 | E2E テストなし | PASS（スキップ） |
+
+## チェックポイント（MUST）
+
+`/dev:pr-cycle-report` を Skill tool で自動実行。
+

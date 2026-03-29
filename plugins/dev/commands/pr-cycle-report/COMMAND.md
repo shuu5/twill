@@ -45,3 +45,8 @@ gh pr comment ${PR_NUM} --body "${REPORT}"
 ### Step 3: 結果返却
 
 集約結果を all-pass-check に渡すために構造化データとして返す。
+
+## チェックポイント（MUST）
+
+`/dev:pr-cycle-analysis` を Skill tool で自動実行。
+

@@ -41,3 +41,8 @@ gh issue create --title "tech-debt: ${finding.message}" \
 
 - WARNING 修正に費やす時間は 1 finding あたり最大 2 分
 - 修正が他のテストを破壊する場合は即座に revert
+
+## チェックポイント（MUST）
+
+`/dev:e2e-screening` を Skill tool で自動実行。
+

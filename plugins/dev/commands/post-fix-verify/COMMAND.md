@@ -37,3 +37,8 @@ IF 新規 CRITICAL finding なし → PASS
 IF 新規 WARNING finding あり → WARN（続行可）
 IF 新規 CRITICAL finding あり → FAIL（再 fix 必要）
 ```
+
+## チェックポイント（MUST）
+
+`/dev:warning-fix` を Skill tool で自動実行。
+

@@ -37,3 +37,8 @@ IF tsconfig.json が存在しない → PASS を返してスキップ
 IF 全チェック PASS → PASS
 ELSE → FAIL（最初のエラーで停止せず全チェックを実行）
 ```
+
+## チェックポイント（MUST）
+
+`/dev:phase-review` を Skill tool で自動実行。
+

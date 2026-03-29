@@ -68,3 +68,28 @@ THEN
 
 chain-driven + autopilot-first 前提のため、ステップ番号ルーティング・フラグ分岐・環境変数チェック・マーカーファイル管理は不要。
 ステップ順序は deps.yaml で宣言的に管理し、状態管理は issue-{N}.json に一元化されている。
+
+## chain 実行指示（MUST）
+
+以下の順序でステップを実行する。各ステップの COMMAND.md を Read し、Skill tool で自動実行すること。
+
+Step 1: `/dev:ts-preflight` を Skill tool で実行
+→ 以降は各 COMMAND.md のチェックポイントに従い自動進行
+
+### ライフサイクル
+
+| # | 型 | コンポーネント | 説明 |
+|---|---|---|---|
+| 1 | atomic | ts-preflight | TypeScript 機械的検証（型チェック・lint） |
+| 2 | composite | phase-review | 並列 specialist レビュー（動的レビュアー構築） |
+| 3 | atomic | scope-judge | スコープ判定 + Deferred Issue 作成 |
+| 4 | atomic | pr-test | テスト実行 |
+| 5 | composite | fix-phase | 自動修正ループ + E2E 修復 |
+| 6 | atomic | post-fix-verify | fix 後の軽量コードレビュー |
+| 7 | atomic | warning-fix | Warning ベストエフォート修正 |
+| 8 | composite | e2e-screening | Visual 検証（Screening + Heal） |
+| 9 | atomic | pr-cycle-report | PRサイクル結果フォーマット・投稿 |
+| 10 | atomic | pr-cycle-analysis | PR-cycle 結果からパターン分析し self-improve Issue 自動起票 |
+| 11 | atomic | all-pass-check | 全パス判定（autopilot-first） |
+| 12 | composite | merge-gate | マージ判定（動的レビュー → severity フィルタ → PASS/REJECT） |
+

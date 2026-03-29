@@ -37,3 +37,8 @@ IF 全テスト PASS → PASS
 IF 1 件以上 FAIL → FAIL + 失敗テスト名と出力を記録
 IF テストなし → WARN（テストファイルなし）
 ```
+
+## チェックポイント（MUST）
+
+`/dev:fix-phase` を Skill tool で自動実行。
+

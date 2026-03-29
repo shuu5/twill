@@ -37,3 +37,8 @@ gh issue create --title "tech-debt: ${finding.message}" \
 ### Step 3: 結果報告
 
 スコープ内/外の件数と、作成した Deferred Issue のリンクを返す。
+
+## チェックポイント（MUST）
+
+`/dev:pr-test` を Skill tool で自動実行。
+

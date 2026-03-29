@@ -53,3 +53,8 @@ PARSED=$(echo "$SPECIALIST_OUTPUT" | bash scripts/specialist-output-parse.sh)
 ```
 
 AI による自由形式の変換は禁止。パーサーの構造化データのみを使用する。
+
+## チェックポイント（MUST）
+
+`/dev:scope-judge` を Skill tool で自動実行。
+

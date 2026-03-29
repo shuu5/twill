@@ -40,3 +40,8 @@ THEN fix-phase を中断し FAIL を返す
 - fix-phase 内での修正はスコープ内ファイルのみ
 - 修正が他のテストを破壊する場合は即座に revert
 - AI が判断に迷う場合は修正を試みず FAIL を返す
+
+## チェックポイント（MUST）
+
+`/dev:post-fix-verify` を Skill tool で自動実行。
+
