@@ -47,9 +47,10 @@ skills:
     type: controller
     path: skills/co-autopilot/SKILL.md
     spawnable_by: [user]
-    can_spawn: [composite, atomic, specialist, script]
+    can_spawn: [composite, atomic, specialist]
     calls:
       - atomic: autopilot-init
+        step: "3"
       - atomic: autopilot-launch
       - atomic: autopilot-poll
       - atomic: autopilot-phase-execute
@@ -59,7 +60,9 @@ skills:
       - atomic: autopilot-patterns
       - atomic: autopilot-cross-issue
       - atomic: autopilot-summary
+        step: "5"
       - atomic: session-audit
+        step: "5.5"
       - atomic: self-improve-collect
       - atomic: self-improve-propose
       - atomic: self-improve-close
@@ -186,6 +189,8 @@ skills:
         step: "7.5"
       - composite: merge-gate
         step: "8"
+      - atomic: auto-merge
+        step: "8.5"
     description: "PRサイクルワークフロー（chain-driven）"
 
   workflow-dead-cleanup:
@@ -882,7 +887,7 @@ commands:
     type: composite
     path: commands/merge-gate/COMMAND.md
     spawnable_by: [workflow]
-    can_spawn: [specialist, script, atomic]
+    can_spawn: [specialist, script]
     chain: "pr-cycle"
     step_in:
       parent: workflow-pr-cycle
@@ -890,7 +895,6 @@ commands:
     calls:
       - script: specialist-output-parse
       - script: tech-stack-detect
-      - atomic: auto-merge
     description: "マージ判定（動的レビュー → severity フィルタ → PASS/REJECT）"
 
   # === C-2c: PR-cycle 関連（6個） ===
@@ -914,6 +918,9 @@ commands:
     path: commands/auto-merge/COMMAND.md
     spawnable_by: [workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-pr-cycle
+      step: "8.5"
     description: "squash マージ → archive → cleanup 実行（autopilot-first）"
 
   pr-cycle-analysis:
@@ -948,6 +955,9 @@ commands:
     path: commands/autopilot-init/COMMAND.md
     spawnable_by: [controller]
     can_spawn: []
+    step_in:
+      parent: co-autopilot
+      step: "3"
     description: "セッション初期化（autopilot-init.sh + session-create.sh ラッパー）"
 
   autopilot-launch:
@@ -1011,6 +1021,9 @@ commands:
     path: commands/autopilot-summary/COMMAND.md
     spawnable_by: [controller]
     can_spawn: []
+    step_in:
+      parent: co-autopilot
+      step: "5"
     description: "完了サマリー + 通知 + session-archive.sh"
 
   session-audit:
@@ -1018,6 +1031,9 @@ commands:
     path: commands/session-audit/COMMAND.md
     spawnable_by: [controller, workflow]
     can_spawn: []
+    step_in:
+      parent: co-autopilot
+      step: "5.5"
     description: "セッション JSONL 事後分析（5 カテゴリ検出 + self-improve 起票）"
 
 # スクリプト（B-3 で追加）

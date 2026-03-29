@@ -1,7 +1,8 @@
 # セッション初期化
 
 .autopilot/ ディレクトリ初期化と session.json 作成を行う。
-autopilot-init.sh + session-create.sh のラッパー。co-autopilot Step 3 から呼び出される。
+autopilot-init.sh + session-create.sh のラッパー。
+co-autopilot Step 3 から呼び出される。
 
 ## 前提変数
 
