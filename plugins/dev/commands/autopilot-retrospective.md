@@ -1,3 +1,7 @@
+---
+tools: [mcp__doobidoo__memory_store, mcp__doobidoo__memory_search]
+---
+
 # Phase 振り返り
 
 Phase 完了後に振り返りを実行し、成功/失敗パターンを分析する。

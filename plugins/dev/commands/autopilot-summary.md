@@ -1,3 +1,7 @@
+---
+tools: [mcp__doobidoo__memory_store]
+---
+
 # 完了サマリーと通知
 
 全 Phase 完了後にセッション完了レポートを出力する。

@@ -1,3 +1,7 @@
+---
+tools: [mcp__doobidoo__memory_search]
+---
+
 # PR-cycle パターン分析
 
 PR-cycle 完了後のセッションスナップショットを分析し、dev plugin の改善機会を検出する。

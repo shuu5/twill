@@ -1,3 +1,7 @@
+---
+tools: [mcp__doobidoo__memory_store, mcp__doobidoo__memory_search]
+---
+
 # パターン検出
 
 セッション状態から繰り返しパターンを検出し、self-improve Issue 起票を判定する。

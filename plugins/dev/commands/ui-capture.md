@@ -1,3 +1,7 @@
+---
+tools: [mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_navigate]
+---
+
 # UI キャプチャ
 
 UI のスクリーンショット撮影 + セマンティック解析でコンテキスト化する。

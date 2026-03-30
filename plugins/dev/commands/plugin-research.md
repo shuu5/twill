@@ -1,3 +1,7 @@
+---
+tools: [mcp__doobidoo__memory_search]
+---
+
 # research: プラグイン設計情報の動的取得
 
 ## 目的
