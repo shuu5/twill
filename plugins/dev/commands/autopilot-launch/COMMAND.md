@@ -70,9 +70,16 @@ fi
 ### Step 5: tmux window 作成 + cld 起動
 
 ```bash
+# bare repo では main/ worktree で起動する（CLAUDE.md 制約: main/ 配下必須）
+if [ -d "$PROJECT_DIR/.bare" ]; then
+  LAUNCH_DIR="$PROJECT_DIR/main"
+else
+  LAUNCH_DIR="$PROJECT_DIR"
+fi
+
 QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
-tmux new-window -n "$WINDOW_NAME" -c "$PROJECT_DIR" \
+tmux new-window -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
   "$QUOTED_CLD $CONTEXT_ARGS $QUOTED_PROMPT"
 ```
 

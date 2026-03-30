@@ -69,27 +69,44 @@ THEN
 chain-driven + autopilot-first 前提のため、ステップ番号ルーティング・フラグ分岐・環境変数チェック・マーカーファイル管理は不要。
 ステップ順序は deps.yaml で宣言的に管理し、状態管理は issue-{N}.json に一元化されている。
 
-## chain 実行指示（MUST）
+## chain 実行指示（MUST — 全ステップを順に実行せよ。途中で停止するな）
 
-以下の順序でステップを実行する。各ステップの COMMAND.md を Read し、Skill tool で自動実行すること。
+**重要**: 以下の全ステップを上から順に実行すること。各ステップ完了後、**即座に**次のステップに進むこと。プロンプトで停止してはならない。
 
-Step 1: `/dev:ts-preflight` を Skill tool で実行
-→ 以降は各 COMMAND.md のチェックポイントに従い自動進行
+### Step 1: ts-preflight（TypeScript 機械的検証）
+`commands/ts-preflight/COMMAND.md` を Read → 実行。TypeScript プロジェクトでない場合はスキップ。
 
-### ライフサイクル
+### Step 2: phase-review（並列 specialist レビュー）
+`commands/phase-review/COMMAND.md` を Read → 実行。
 
-| # | 型 | コンポーネント | 説明 |
-|---|---|---|---|
-| 1 | atomic | ts-preflight | TypeScript 機械的検証（型チェック・lint） |
-| 2 | composite | phase-review | 並列 specialist レビュー（動的レビュアー構築） |
-| 3 | atomic | scope-judge | スコープ判定 + Deferred Issue 作成 |
-| 4 | atomic | pr-test | テスト実行 |
-| 5 | composite | fix-phase | 自動修正ループ + E2E 修復 |
-| 6 | atomic | post-fix-verify | fix 後の軽量コードレビュー |
-| 7 | atomic | warning-fix | Warning ベストエフォート修正 |
-| 8 | composite | e2e-screening | Visual 検証（Screening + Heal） |
-| 9 | atomic | pr-cycle-report | PRサイクル結果フォーマット・投稿 |
-| 10 | atomic | pr-cycle-analysis | PR-cycle 結果からパターン分析し self-improve Issue 自動起票 |
-| 11 | atomic | all-pass-check | 全パス判定（autopilot-first） |
-| 12 | composite | merge-gate | マージ判定（動的レビュー → severity フィルタ → PASS/REJECT） |
+### Step 2.5: scope-judge（スコープ判定）
+`commands/scope-judge/COMMAND.md` を Read → 実行。
+
+### Step 3: pr-test（テスト実行）
+`commands/pr-test/COMMAND.md` を Read → 実行。
+
+### Step 4: fix-phase（自動修正ループ）
+review に CRITICAL findings がある場合のみ。`commands/fix-phase/COMMAND.md` を Read → 実行。
+fix 後は post-fix-verify（Step 4.5）→ pr-test 再実行（Step 3）のループ。
+
+### Step 4.5: post-fix-verify（fix 後検証）
+fix-phase を実行した場合のみ。`commands/post-fix-verify/COMMAND.md` を Read → 実行。
+
+### Step 5: warning-fix（Warning 修正）
+`commands/warning-fix/COMMAND.md` を Read → 実行。
+
+### Step 6: e2e-screening（Visual 検証）
+`commands/e2e-screening/COMMAND.md` を Read → 実行。E2E なければスキップ。
+
+### Step 7: pr-cycle-report（結果レポート）
+`commands/pr-cycle-report/COMMAND.md` を Read → 実行。
+
+### Step 7.3: pr-cycle-analysis（パターン分析）
+`commands/pr-cycle-analysis/COMMAND.md` を Read → 実行。
+
+### Step 7.5: all-pass-check（全パス判定）
+`commands/all-pass-check/COMMAND.md` を Read → 実行。
+
+### Step 8: merge-gate（マージ判定）
+`commands/merge-gate/COMMAND.md` を Read → 実行。上記「ドメインルール」の fix ループ・エスカレーション条件に従う。
 
