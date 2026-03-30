@@ -1,29 +1,36 @@
 #!/usr/bin/env bash
-# PostToolUse hook: Bash exit_code != 0 → .self-improve/errors.jsonl に記録
+# PostToolUseFailure hook: Bash exit_code != 0 → .self-improve/errors.jsonl に記録
 # B-7: Self-Improve Review の機械層基盤
 #
-# Claude Code PostToolUse hook は stdin に JSON を渡す。
-# tool_response から exit code を抽出する。
+# Claude Code の PostToolUseFailure hook は stdin に JSON を渡す。
+# フィールド: tool_name, tool_input, tool_use_id, error, error_type, is_interrupt, is_timeout
+
+# デバッグ: hook 発火確認
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) FAILURE_HOOK_FIRED" >> /tmp/posttool-debug.log
 
 # stdin から JSON を読み取り
 INPUT=$(cat)
 
-# tool_response の stdout/stderr から exit code を抽出
-# Bash tool の tool_response format: "Exit code N\n..." or 正常出力
+# デバッグ: stdin 内容をダンプ
+echo "STDIN: $INPUT" >> /tmp/posttool-debug.log
+
+# error フィールドから exit code を抽出
+ERROR_TEXT=$(printf '%s' "$INPUT" | jq -r '.error // empty' 2>/dev/null)
+
+# exit code 抽出 ("Exit code N" パターン)
 EXIT_CODE=0
-TOOL_RESPONSE=$(printf '%s' "$INPUT" | jq -r '.tool_response // empty' 2>/dev/null)
-if printf '%s' "$TOOL_RESPONSE" | grep -qP '^Exit code (\d+)'; then
-  EXIT_CODE=$(printf '%s' "$TOOL_RESPONSE" | grep -oP '^Exit code \K\d+' | head -1)
+if printf '%s' "$ERROR_TEXT" | grep -qP 'Exit code (\d+)'; then
+  EXIT_CODE=$(printf '%s' "$ERROR_TEXT" | grep -oP 'Exit code \K\d+' | head -1)
 fi
 
 # 整数バリデーション
 if [[ ! "$EXIT_CODE" =~ ^[0-9]+$ ]]; then
-  exit 0
+  EXIT_CODE=1  # エラーなのに exit code 不明 → 1 として記録
 fi
 
-# 成功時は何もしない
+# exit code 0 なら記録不要（PostToolUseFailure でここに来る時点でエラーだが念のため）
 if [[ "$EXIT_CODE" == "0" ]]; then
-  exit 0
+  EXIT_CODE=1  # PostToolUseFailure なので最低 1
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -39,8 +46,8 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # stdin JSON から command を抽出
 COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null | head -c 200)
 
-# tool_response から stderr_snippet を抽出（先頭500文字）
-STDERR_SNIPPET=$(printf '%s' "$TOOL_RESPONSE" | head -c 500)
+# error から stderr_snippet を抽出（先頭500文字）
+STDERR_SNIPPET=$(printf '%s' "$ERROR_TEXT" | head -c 500)
 
 # cwd
 CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
