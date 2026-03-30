@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash scripts/hooks/post-tool-use-validate.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/post-tool-use-validate.sh",
             "timeout": 10000
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash scripts/hooks/post-tool-use-bash-error.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/post-tool-use-bash-error.sh",
             "timeout": 10000
           }
         ]
