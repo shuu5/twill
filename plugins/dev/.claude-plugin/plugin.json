@@ -1,6 +1,5 @@
 {
   "name": "dev",
   "version": "3.0.0",
-  "description": "Claude Code 開発ワークフロープラグイン（chain-driven + autopilot-first）",
-  "hooks": "./hooks/hooks.json"
+  "description": "Claude Code 開発ワークフロープラグイン（chain-driven + autopilot-first）"
 }
