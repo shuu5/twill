@@ -1,0 +1,81 @@
+change_id: test-suite-verify
+generated_at: "2026-03-31T00:00:00Z"
+test_framework: bash-scenario
+scenarios:
+  - id: "baseline-recording"
+    name: "ベースライン記録"
+    spec_file: "specs/test-suite-fix.md"
+    spec_line: 7
+    requirement: "テストスイート全件 PASS"
+    test_file: "tests/scenarios/test-suite-verify.test.sh"
+    test_name: "ベースライン記録: run-tests.sh が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bats-all-pass"
+    name: "bats テスト全件 PASS"
+    spec_file: "specs/test-suite-fix.md"
+    spec_line: 11
+    requirement: "テストスイート全件 PASS"
+    test_file: "tests/scenarios/test-suite-verify.test.sh"
+    test_name: "bats テスト全件 PASS: tests/bats/ ディレクトリが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "scenario-all-pass"
+    name: "scenario テスト全件 PASS"
+    spec_file: "specs/test-suite-fix.md"
+    spec_line: 15
+    requirement: "テストスイート全件 PASS"
+    test_file: "tests/scenarios/test-suite-verify.test.sh"
+    test_name: "scenario テスト全件 PASS: tests/scenarios/ ディレクトリが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "failure-count-split"
+    name: "失敗数超過時の分割"
+    spec_file: "specs/test-suite-fix.md"
+    spec_line: 19
+    requirement: "テストスイート全件 PASS"
+    test_file: "tests/scenarios/test-suite-verify.test.sh"
+    test_name: "失敗数超過時の分割: スコープ制限ルールが仕様書に記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "hooks-no-error"
+    name: "hooks エラーなし"
+    spec_file: "specs/test-suite-fix.md"
+    spec_line: 27
+    requirement: "hooks 動作確認"
+    test_file: "tests/scenarios/test-suite-verify.test.sh"
+    test_name: "hooks エラーなし: hooks/hooks.json が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "chain-check-pass"
+    name: "chain チェック PASS"
+    spec_file: "specs/test-suite-fix.md"
+    spec_line: 35
+    requirement: "chain generate --check PASS"
+    test_file: "tests/scenarios/test-suite-verify.test.sh"
+    test_name: "chain チェック PASS: deps.yaml が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
