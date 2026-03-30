@@ -83,6 +83,19 @@ TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
 `/dev:issue-structure` を呼び出し。テンプレート（refs/ref-issue-template-bug.md or refs/ref-issue-template-feature.md）に基づき構造化。
 
+### Step 3.2.5: 推奨ラベル抽出
+
+issue-structure の出力に `## 推奨ラベル` セクションが含まれる場合、`ctx/<name>` を抽出し Issue 候補に記録する。
+
+```
+IF issue-structure の出力に "## 推奨ラベル" セクションが存在する
+THEN
+  セクション内の `ctx/<name>` を正規表現で抽出（例: "- `ctx/workflow`" → "ctx/workflow"）
+  抽出したラベルを当該 Issue 候補の recommended_labels に記録
+ELSE
+  recommended_labels = 空（Phase 4 で --label 引数なし）
+```
+
 ### Step 3.3: 品質評価
 
 `/dev:issue-assess` を呼び出し。結果処理:
@@ -111,6 +124,8 @@ TaskCreate 「Phase 4: Issue 作成」(status: in_progress)
 - 単一 → `/dev:issue-create`
 - 複数 → `/dev:issue-bulk-create`
 - tech-debt 吸収がある場合は Related セクション（Includes #N / Related to #N）を付加
+- Issue 候補に recommended_labels が記録されている場合、`--label` 引数に追加して渡す（例: `--label ctx/workflow`）
+- 複数 Issue の場合、各 Issue に対応する個別の推奨ラベルをそれぞれの issue-create 呼び出しに渡す
 
 ### Step 4.3: Project Board 同期
 

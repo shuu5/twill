@@ -70,6 +70,7 @@ GRAPHQL_QUERY='
     user(login: $owner) {
       projectV2(number: $num) {
         id
+        title
         repositories(first: 20) { nodes { nameWithOwner } }
       }
     }
@@ -80,13 +81,17 @@ GRAPHQL_QUERY_ORG='
     organization(login: $owner) {
       projectV2(number: $num) {
         id
+        title
         repositories(first: 20) { nodes { nameWithOwner } }
       }
     }
   }
 '
 
-PROJECT_ID=""
+REPO_NAME="${REPO##*/}"  # パラメータ展開でリポジトリ名を抽出（例: loom-plugin-dev）
+MATCHED_PROJECTS=()      # マッチした Project を全て収集
+TITLE_MATCH_PROJECT=""   # タイトルマッチした Project
+
 for PROJECT_NUM in <project-numbers>; do
   # まず user() で試行
   RESULT=$(gh api graphql -f query="$GRAPHQL_QUERY" -f owner="$OWNER" -F num="$PROJECT_NUM" 2>/dev/null)
@@ -103,24 +108,38 @@ for PROJECT_NUM in <project-numbers>; do
   fi
 
   LINKED=$(echo "$PROJECT_DATA" | jq -r '.repositories.nodes[].nameWithOwner')
+  PROJECT_TITLE=$(echo "$PROJECT_DATA" | jq -r '.title // empty')
 
   if echo "$LINKED" | grep -qxF "$REPO"; then
-    # マッチ — PROJECT_NUM と PROJECT_ID を保持
+    # マッチ — 収集リストに追加
     PROJECT_ID=$(echo "$PROJECT_DATA" | jq -r '.id')
-    break
+    MATCHED_PROJECTS+=("$PROJECT_NUM:$PROJECT_ID")
+
+    # Project タイトルがリポジトリ名を含む場合、優先候補として記録（最初のマッチを優先）
+    if [[ "$PROJECT_TITLE" == *"$REPO_NAME"* ]] && [ -z "$TITLE_MATCH_PROJECT" ]; then
+      TITLE_MATCH_PROJECT="$PROJECT_NUM:$PROJECT_ID"
+    fi
   fi
 done
+
+# 優先選択: タイトルマッチ > 最初のマッチ
+if [ -n "$TITLE_MATCH_PROJECT" ]; then
+  PROJECT_NUM="${TITLE_MATCH_PROJECT%%:*}"
+  PROJECT_ID="${TITLE_MATCH_PROJECT#*:}"
+elif [ ${#MATCHED_PROJECTS[@]} -gt 0 ]; then
+  PROJECT_NUM="${MATCHED_PROJECTS[0]%%:*}"
+  PROJECT_ID="${MATCHED_PROJECTS[0]#*:}"
+fi
 ```
 
 ```
-IF リンクされた Project が 0 件
+IF MATCHED_PROJECTS が 0 件
 THEN
   echo "ℹ️ リポジトリにリンクされた Project がありません。スキップします。"
   → exit 0
-IF リンクされた Project が 2 件以上
+IF MATCHED_PROJECTS が 2 件以上 AND TITLE_MATCH_PROJECT が空
 THEN
-  echo "⚠️ 複数の Project が検出されました。最初の Project を使用します。"
-  最初の Project を使用
+  echo "⚠️ 複数の Project が検出されました。タイトルがリポジトリ名と一致する Project がないため、最初の Project を使用します。"
 ```
 
 ### Step 2.5: フィールド情報取得（ループ外）
@@ -148,16 +167,33 @@ ITEM_ID=$(gh project item-add "$PROJECT_NUM" --owner "$OWNER" \
 #### 3b. Issue メタデータ取得
 
 ```bash
-ISSUE_DATA=$(gh issue view "$ISSUE_NUM" --json labels,milestone)
+ISSUE_DATA=$(gh issue view "$ISSUE_NUM" --json labels,milestone,title,body)
 ```
 
 #### 3c. Context フィールドミラー
 
 ```
 LABELS = Issue の labels から ctx/* プレフィックスのものを抽出
-IF LABELS が 0 件 → スキップ
 IF LABELS が 2 件以上 → アルファベット順の最初を使用 + 警告
-CTX_NAME = ラベル名から "ctx/" プレフィックスを除去
+
+IF LABELS が 0 件
+THEN
+  # フォールバック: architecture/ から Context を推定
+  GIT_ROOT = $(git rev-parse --show-toplevel)
+  IF "$GIT_ROOT/architecture/domain/contexts/" が存在しない
+  THEN → スキップ（既存動作を維持）
+  ELSE
+    CONTEXT_FILES = Glob "$GIT_ROOT/architecture/domain/contexts/*.md"
+    IF CONTEXT_FILES が 0 件 → スキップ
+    ISSUE_TITLE_BODY = ISSUE_DATA のタイトルと本文を連結
+    各 CONTEXT_FILE について:
+      CONTEXT_NAME = ファイル名（拡張子除去）
+      CONTEXT_CONTENT = ファイルの責務・スコープ記述を読み込み
+      ISSUE_TITLE_BODY と CONTEXT_CONTENT のキーワードマッチングでスコアリング
+    最も関連性の高い CONTEXT_NAME を CTX_NAME として採用
+    IF スコアが閾値未満（いずれの context とも関連性が低い） → "⚠️ Context を推定できませんでした" + スキップ
+ELSE
+  CTX_NAME = ラベル名から "ctx/" プレフィックスを除去
 
 FIELD = FIELDS から name="Context" の Single Select フィールドを検索
 IF FIELD が見つからない → "⚠️ Context フィールドが見つかりません" + スキップ
