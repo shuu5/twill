@@ -5,14 +5,8 @@
 # Claude Code の PostToolUseFailure hook は stdin に JSON を渡す。
 # フィールド: tool_name, tool_input, tool_use_id, error, error_type, is_interrupt, is_timeout
 
-# デバッグ: hook 発火確認
-echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) FAILURE_HOOK_FIRED" >> /tmp/posttool-debug.log
-
 # stdin から JSON を読み取り
 INPUT=$(cat)
-
-# デバッグ: stdin 内容をダンプ
-echo "STDIN: $INPUT" >> /tmp/posttool-debug.log
 
 # error フィールドから exit code を抽出
 ERROR_TEXT=$(printf '%s' "$INPUT" | jq -r '.error // empty' 2>/dev/null)
