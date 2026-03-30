@@ -46,6 +46,8 @@ digraph Dependencies {
     skill_co_architect -> cmd_architect_group_refine;
     skill_co_architect -> cmd_architect_issue_create;
     skill_co_architect -> cmd_evaluate_architecture;
+    skill_co_architect -> skill_ref_architecture_spec;
+    skill_co_architect -> skill_ref_architecture;
 
     // Ordering constraints (invisible edges)
     cmd_explore -> cmd_architect_completeness_check [style=invis, weight=10];
@@ -53,5 +55,7 @@ digraph Dependencies {
     cmd_architect_decompose -> cmd_architect_group_refine [style=invis, weight=10];
     cmd_architect_group_refine -> cmd_architect_issue_create [style=invis, weight=10];
     cmd_architect_issue_create -> cmd_evaluate_architecture [style=invis, weight=10];
+    cmd_evaluate_architecture -> skill_ref_architecture_spec [style=invis, weight=10];
+    skill_ref_architecture_spec -> skill_ref_architecture [style=invis, weight=10];
 
 }

@@ -26,6 +26,8 @@ digraph Dependencies {
     // L2: Sub Commands
 
     // L3: Agents
+    agent_spec_scaffold_tests [label="spec-scaffold-tests\n(1,751 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_e2e_generate [label="e2e-generate\n(2,019 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
 
@@ -34,12 +36,18 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_workflow_test_ready; }
     { rank=same; cmd_opsx_apply; cmd_test_scaffold; }
+    { rank=same; agent_spec_scaffold_tests; agent_e2e_generate; }
 
     // Edges
     skill_workflow_test_ready -> cmd_test_scaffold;
     skill_workflow_test_ready -> cmd_opsx_apply;
+    cmd_test_scaffold -> agent_spec_scaffold_tests [style=dashed];
+    cmd_test_scaffold -> agent_e2e_generate [style=dashed];
+    cmd_test_scaffold -> skill_ref_specialist_output_schema;
 
     // Ordering constraints (invisible edges)
     cmd_test_scaffold -> cmd_opsx_apply [style=invis, weight=10];
+    agent_spec_scaffold_tests -> agent_e2e_generate [style=invis, weight=10];
+    agent_e2e_generate -> skill_ref_specialist_output_schema [style=invis, weight=10];
 
 }

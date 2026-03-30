@@ -42,14 +42,21 @@ digraph Dependencies {
     // L2: Sub Commands
 
     // L3: Agents
+    agent_worker_structure [label="worker-structure\n(1,237 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_principles [label="worker-principles\n(1,144 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_architecture [label="worker-architecture\n(1,242 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
+    script_project_create [label="project-create\n(4,494 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_project_migrate [label="project-migrate\n(2,333 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
     { rank=same; skill_co_project; }
     { rank=same; cmd_project_create; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
+    { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_architecture; }
+    { rank=same; script_project_create; script_project_migrate; }
 
     // Edges
     skill_co_project -> cmd_project_create;
@@ -70,6 +77,21 @@ digraph Dependencies {
     skill_co_project -> cmd_plugin_verify;
     skill_co_project -> cmd_plugin_phase_diagnose;
     skill_co_project -> cmd_plugin_phase_verify;
+    skill_co_project -> skill_ref_types;
+    skill_co_project -> skill_ref_practices;
+    skill_co_project -> skill_ref_deps_format;
+    cmd_project_create -> script_project_create;
+    cmd_project_migrate -> script_project_migrate;
+    cmd_plugin_phase_diagnose -> agent_worker_structure [style=dashed];
+    cmd_plugin_phase_diagnose -> agent_worker_principles [style=dashed];
+    cmd_plugin_phase_diagnose -> agent_worker_architecture [style=dashed];
+    cmd_plugin_phase_diagnose -> skill_ref_specialist_output_schema;
+    cmd_plugin_phase_diagnose -> skill_ref_architecture;
+    cmd_plugin_phase_verify -> agent_worker_structure [style=dashed];
+    cmd_plugin_phase_verify -> agent_worker_principles [style=dashed];
+    cmd_plugin_phase_verify -> agent_worker_architecture [style=dashed];
+    cmd_plugin_phase_verify -> skill_ref_specialist_output_schema;
+    cmd_plugin_phase_verify -> skill_ref_architecture;
 
     // Ordering constraints (invisible edges)
     cmd_project_create -> cmd_project_governance [style=invis, weight=10];
@@ -89,5 +111,18 @@ digraph Dependencies {
     cmd_plugin_fix -> cmd_plugin_verify [style=invis, weight=10];
     cmd_plugin_verify -> cmd_plugin_phase_diagnose [style=invis, weight=10];
     cmd_plugin_phase_diagnose -> cmd_plugin_phase_verify [style=invis, weight=10];
+    cmd_plugin_phase_verify -> skill_ref_types [style=invis, weight=10];
+    skill_ref_types -> skill_ref_practices [style=invis, weight=10];
+    skill_ref_practices -> skill_ref_deps_format [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
+    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_ref_architecture [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
+    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_ref_architecture [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
 
 }

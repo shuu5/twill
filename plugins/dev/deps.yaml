@@ -67,6 +67,12 @@ skills:
       - atomic: self-improve-propose
       - atomic: self-improve-close
       - atomic: ecc-monitor
+      - workflow: workflow-setup
+      - workflow: workflow-test-ready
+      - workflow: workflow-pr-cycle
+      - workflow: workflow-dead-cleanup
+      - workflow: workflow-tech-debt-triage
+      - reference: self-improve-format
     description: "依存グラフに基づくIssue群一括自律実装オーケストレーター"
 
   co-issue:
@@ -83,6 +89,9 @@ skills:
       - atomic: issue-create
       - atomic: issue-bulk-create
       - atomic: project-board-sync
+      - reference: ref-issue-template-bug
+      - reference: ref-issue-template-feature
+      - reference: ref-project-model
     description: "要望をGitHub Issueに変換するワークフロー"
 
   co-project:
@@ -109,6 +118,9 @@ skills:
       - atomic: plugin-verify
       - composite: plugin-phase-diagnose
       - composite: plugin-phase-verify
+      - reference: ref-types
+      - reference: ref-practices
+      - reference: ref-deps-format
     description: "プロジェクト管理（create / migrate / snapshot）"
 
   co-architect:
@@ -123,6 +135,8 @@ skills:
       - atomic: architect-group-refine
       - atomic: architect-issue-create
       - atomic: evaluate-architecture
+      - reference: ref-architecture-spec
+      - reference: ref-architecture
     description: "対話的アーキテクチャ構築ワークフロー"
 
   workflow-setup:
@@ -325,6 +339,8 @@ commands:
     step_in:
       parent: workflow-setup
       step: "2"
+    calls:
+      - script: worktree-create
     description: "worktree 作成"
 
   worktree-list:
@@ -393,6 +409,8 @@ commands:
     step_in:
       parent: workflow-setup
       step: "3.5"
+    calls:
+      - script: parse-issue-ac
     description: "AC（受け入れ基準）抽出"
 
   ts-preflight:
@@ -470,6 +488,8 @@ commands:
     step_in:
       parent: workflow-pr-cycle
       step: "7.5"
+    calls:
+      - script: state-write
     description: "全パス判定（autopilot-first）"
 
   ac-verify:
@@ -528,6 +548,10 @@ commands:
     path: commands/issue-assess.md
     spawnable_by: [controller]
     can_spawn: [specialist]
+    calls:
+      - specialist: template-validator
+      - specialist: context-checker
+      - reference: ref-specialist-output-schema
     description: "Issue品質評価（テンプレート準拠+コンテキストチェック並列）"
 
   # === C-2a: Project管理系（8個） ===
@@ -537,6 +561,8 @@ commands:
     path: commands/project-create.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: project-create
     description: "プロジェクト新規作成（bare repo + worktree + テンプレート + OpenSpec）"
 
   project-governance:
@@ -551,6 +577,8 @@ commands:
     path: commands/project-migrate.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: project-migrate
     description: "既存プロジェクトの最新テンプレート移行"
 
   container-dependency-check:
@@ -688,6 +716,12 @@ commands:
     path: commands/plugin-phase-diagnose.md
     spawnable_by: [controller]
     can_spawn: [specialist]
+    calls:
+      - specialist: worker-structure
+      - specialist: worker-principles
+      - specialist: worker-architecture
+      - reference: ref-specialist-output-schema
+      - reference: ref-architecture
     description: "並列診断フェーズ（specialist x3 並列 spawn + 統合処理）"
 
   plugin-phase-verify:
@@ -695,6 +729,12 @@ commands:
     path: commands/plugin-phase-verify.md
     spawnable_by: [controller]
     can_spawn: [specialist]
+    calls:
+      - specialist: worker-structure
+      - specialist: worker-principles
+      - specialist: worker-architecture
+      - reference: ref-specialist-output-schema
+      - reference: ref-architecture
     description: "並列検証フェーズ（specialist x3 並列 spawn + 統合処理）"
 
   # === C-2a: OpenSpec/汎用系（5個） ===
@@ -794,6 +834,8 @@ commands:
     path: commands/ecc-monitor.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: ecc-monitor
     description: "ECC リポジトリの変更検知・関連性評価"
 
   # === C-2a: その他（1個） ===
@@ -836,6 +878,10 @@ commands:
     step_in:
       parent: workflow-test-ready
       step: "1"
+    calls:
+      - specialist: spec-scaffold-tests
+      - specialist: e2e-generate
+      - reference: ref-specialist-output-schema
     description: "テスト生成の統合コマンド（specialist 統合管理）"
 
   worktree-delete:
@@ -859,6 +905,26 @@ commands:
     calls:
       - script: specialist-output-parse
       - script: tech-stack-detect
+      - specialist: worker-structure
+      - specialist: worker-principles
+      - specialist: worker-code-reviewer
+      - specialist: worker-security-reviewer
+      - specialist: worker-nextjs-reviewer
+      - specialist: worker-fastapi-reviewer
+      - specialist: worker-supabase-migration-checker
+      - specialist: worker-r-reviewer
+      - specialist: worker-e2e-reviewer
+      - specialist: worker-hono-reviewer
+      - specialist: worker-rls-reviewer
+      - specialist: worker-spec-reviewer
+      - specialist: worker-llm-output-reviewer
+      - specialist: worker-llm-eval-runner
+      - specialist: worker-data-validator
+      - specialist: worker-env-validator
+      - reference: ref-specialist-output-schema
+      - reference: baseline-coding-style
+      - reference: baseline-security-checklist
+      - reference: baseline-input-validation
     description: "並列 specialist レビュー（動的レビュアー構築）"
 
   fix-phase:
@@ -895,6 +961,28 @@ commands:
     calls:
       - script: specialist-output-parse
       - script: tech-stack-detect
+      - script: state-write
+      - script: worktree-delete
+      - specialist: worker-structure
+      - specialist: worker-principles
+      - specialist: worker-code-reviewer
+      - specialist: worker-security-reviewer
+      - specialist: worker-nextjs-reviewer
+      - specialist: worker-fastapi-reviewer
+      - specialist: worker-supabase-migration-checker
+      - specialist: worker-r-reviewer
+      - specialist: worker-e2e-reviewer
+      - specialist: worker-hono-reviewer
+      - specialist: worker-rls-reviewer
+      - specialist: worker-spec-reviewer
+      - specialist: worker-llm-output-reviewer
+      - specialist: worker-llm-eval-runner
+      - specialist: worker-data-validator
+      - specialist: worker-env-validator
+      - reference: ref-specialist-output-schema
+      - reference: baseline-coding-style
+      - reference: baseline-security-checklist
+      - reference: baseline-input-validation
     description: "マージ判定（動的レビュー → severity フィルタ → PASS/REJECT）"
 
   # === C-2c: PR-cycle 関連（6個） ===
@@ -911,6 +999,9 @@ commands:
     path: commands/test-phase.md
     spawnable_by: [controller, workflow]
     can_spawn: [specialist]
+    calls:
+      - specialist: e2e-quality
+      - reference: ref-specialist-output-schema
     description: "テストフェーズ（サービスヘルスチェック + E2E品質ゲート + テスト実行）"
 
   auto-merge:
@@ -958,6 +1049,9 @@ commands:
     step_in:
       parent: co-autopilot
       step: "3"
+    calls:
+      - script: autopilot-init
+      - script: session-create
     description: "セッション初期化（autopilot-init.sh + session-create.sh ラッパー）"
 
   autopilot-launch:
@@ -965,6 +1059,9 @@ commands:
     path: commands/autopilot-launch.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: state-write
+      - script: crash-detect
     description: "Worker 起動（tmux window 作成 + state-write --init）"
 
   autopilot-poll:
@@ -972,6 +1069,10 @@ commands:
     path: commands/autopilot-poll.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: state-read
+      - script: state-write
+      - script: crash-detect
     description: "Issue 状態ポーリング（state-read + crash-detect.sh）"
 
   autopilot-phase-execute:
@@ -979,6 +1080,10 @@ commands:
     path: commands/autopilot-phase-execute.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: state-read
+      - script: state-write
+      - script: autopilot-should-skip
     description: "Phase Issue ループ実行（launch → poll → merge-gate）"
 
   autopilot-phase-postprocess:
@@ -993,6 +1098,9 @@ commands:
     path: commands/autopilot-collect.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: state-read
+      - script: state-write
     description: "完了 Issue の変更ファイル収集（PR 差分 → session.json）"
 
   autopilot-retrospective:
@@ -1000,6 +1108,8 @@ commands:
     path: commands/autopilot-retrospective.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: state-read
     description: "Phase 振り返り分析（パターン検出 + PHASE_INSIGHTS 生成）"
 
   autopilot-patterns:
@@ -1007,6 +1117,8 @@ commands:
     path: commands/autopilot-patterns.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: state-read
     description: "繰り返しパターン検出 + self-improve Issue 起票"
 
   autopilot-cross-issue:
@@ -1014,6 +1126,9 @@ commands:
     path: commands/autopilot-cross-issue.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: state-read
+      - script: session-add-warning
     description: "Cross-issue 影響分析（session-add-warning.sh 経由）"
 
   autopilot-summary:
@@ -1024,6 +1139,9 @@ commands:
     step_in:
       parent: co-autopilot
       step: "5"
+    calls:
+      - script: state-read
+      - script: session-archive
     description: "完了サマリー + 通知 + session-archive.sh"
 
   session-audit:
@@ -1034,6 +1152,8 @@ commands:
     step_in:
       parent: co-autopilot
       step: "5.5"
+    calls:
+      - script: session-audit
     description: "セッション JSONL 事後分析（5 カテゴリ検出 + self-improve 起票）"
 
 # スクリプト（B-3 で追加）

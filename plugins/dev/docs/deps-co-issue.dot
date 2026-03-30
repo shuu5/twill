@@ -32,6 +32,8 @@ digraph Dependencies {
     // L2: Sub Commands
 
     // L3: Agents
+    agent_template_validator [label="template-validator\n(922 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_context_checker [label="context-checker\n(1,792 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
 
@@ -40,6 +42,7 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_co_issue; }
     { rank=same; cmd_issue_dig; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_project_board_sync; cmd_issue_assess; cmd_explore; }
+    { rank=same; agent_template_validator; agent_context_checker; }
 
     // Edges
     skill_co_issue -> cmd_explore;
@@ -50,6 +53,12 @@ digraph Dependencies {
     skill_co_issue -> cmd_issue_create;
     skill_co_issue -> cmd_issue_bulk_create;
     skill_co_issue -> cmd_project_board_sync;
+    skill_co_issue -> skill_ref_issue_template_bug;
+    skill_co_issue -> skill_ref_issue_template_feature;
+    skill_co_issue -> skill_ref_project_model;
+    cmd_issue_assess -> agent_template_validator [style=dashed];
+    cmd_issue_assess -> agent_context_checker [style=dashed];
+    cmd_issue_assess -> skill_ref_specialist_output_schema;
 
     // Ordering constraints (invisible edges)
     cmd_explore -> cmd_issue_dig [style=invis, weight=10];
@@ -59,5 +68,10 @@ digraph Dependencies {
     cmd_issue_tech_debt_absorb -> cmd_issue_create [style=invis, weight=10];
     cmd_issue_create -> cmd_issue_bulk_create [style=invis, weight=10];
     cmd_issue_bulk_create -> cmd_project_board_sync [style=invis, weight=10];
+    cmd_project_board_sync -> skill_ref_issue_template_bug [style=invis, weight=10];
+    skill_ref_issue_template_bug -> skill_ref_issue_template_feature [style=invis, weight=10];
+    skill_ref_issue_template_feature -> skill_ref_project_model [style=invis, weight=10];
+    agent_template_validator -> agent_context_checker [style=invis, weight=10];
+    agent_context_checker -> skill_ref_specialist_output_schema [style=invis, weight=10];
 
 }
