@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-AUTOPILOT_DIR="$PROJECT_ROOT/.autopilot"
+AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"
 STATE_READ="$SCRIPT_DIR/state-read.sh"
 STATE_WRITE="$SCRIPT_DIR/state-write.sh"
 
