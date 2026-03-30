@@ -86,7 +86,7 @@ run_test_skip() {
 echo ""
 echo "--- Requirement: self-improve-review コマンド ---"
 
-COMMAND_FILE="commands/self-improve-review/COMMAND.md"
+COMMAND_FILE="commands/self-improve-review.md"
 
 # Scenario: エラーログなしの終了 (line 16)
 # WHEN: .self-improve/errors.jsonl が存在しないまたは空である
@@ -322,10 +322,10 @@ else
   run_test_skip "deps.yaml [edge: type が atomic]" "python3 yaml module not available"
 fi
 
-# Edge case: path が commands/self-improve-review/COMMAND.md であること
+# Edge case: path が commands/self-improve-review.md であること
 test_depsyaml_path_correct() {
   assert_file_exists "$DEPS_FILE" || return 1
-  assert_file_contains "$DEPS_FILE" "commands/self-improve-review/COMMAND\.md"
+  assert_file_contains "$DEPS_FILE" "commands/self-improve-review\.md"
 }
 
 run_test "deps.yaml [edge: path が正確]" test_depsyaml_path_correct

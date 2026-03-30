@@ -50,7 +50,7 @@ TaskCreate で全体タスク「Autopilot: N Phases, M Issues」を登録。
 
 ## Step 3: セッション初期化
 
-`commands/autopilot-init/COMMAND.md` を Read → 実行。
+`commands/autopilot-init.md` を Read → 実行。
 
 入力: PLAN_FILE。
 出力: SESSION_ID, PHASE_COUNT, SESSION_STATE_FILE が設定される。
@@ -61,8 +61,8 @@ TaskCreate で全体タスク「Autopilot: N Phases, M Issues」を登録。
 FOR P in 1..PHASE_COUNT:
   TaskCreate "Phase P: Issue #X, #Y" (status: in_progress)
 
-  → commands/autopilot-phase-execute/COMMAND.md を Read → 実行
-  → commands/autopilot-phase-postprocess/COMMAND.md を Read → 実行
+  → commands/autopilot-phase-execute.md を Read → 実行
+  → commands/autopilot-phase-postprocess.md を Read → 実行
 
   TaskUpdate Phase P → completed
 ```
@@ -88,7 +88,7 @@ skip された Issue の issue-{N}.json は `failed` + `{ message: "dependency f
 
 ## Step 5: 完了サマリー
 
-`commands/autopilot-summary/COMMAND.md` を Read → 実行。全 Phase 完了後に結果集計・レポート出力。
+`commands/autopilot-summary.md` を Read → 実行。全 Phase 完了後に結果集計・レポート出力。
 
 TaskUpdate 全体タスク → completed。
 

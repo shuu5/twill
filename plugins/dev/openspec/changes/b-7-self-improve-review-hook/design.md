@@ -26,7 +26,7 @@ loom-plugin-dev は「LLM は判断のために使う。機械的にできるこ
 
 ### D-1: コマンド配置と deps.yaml 登録
 
-`self-improve-review` を `commands/self-improve-review/COMMAND.md` として配置。deps.yaml の `commands` に atomic として登録。co-issue の `spawnable_by` は変更しない（explore-summary.md はファイルベースの接続）。
+`self-improve-review` を `commands/self-improve-review.md` として配置。deps.yaml の `commands` に atomic として登録。co-issue の `spawnable_by` は変更しない（explore-summary.md はファイルベースの接続）。
 
 ### D-2: エラー記録フォーマットの拡張
 

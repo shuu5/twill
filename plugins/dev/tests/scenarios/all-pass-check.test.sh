@@ -93,7 +93,7 @@ run_test_skip() {
 }
 
 DEPS_YAML="deps.yaml"
-ALL_PASS_CHECK_CMD="commands/all-pass-check/COMMAND.md"
+ALL_PASS_CHECK_CMD="commands/all-pass-check.md"
 STATE_WRITE_SCRIPT="scripts/state-write.sh"
 
 # =============================================================================

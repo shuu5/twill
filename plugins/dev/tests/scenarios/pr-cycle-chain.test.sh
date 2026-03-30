@@ -362,8 +362,8 @@ test_atomic_command_files_exist() {
   local components=("ts-preflight" "scope-judge" "pr-test" "post-fix-verify" "warning-fix" "pr-cycle-report" "all-pass-check" "ac-verify")
   local missing=()
   for comp in "${components[@]}"; do
-    if [[ ! -f "${PROJECT_ROOT}/commands/${comp}/COMMAND.md" ]]; then
-      missing+=("commands/${comp}/COMMAND.md")
+    if [[ ! -f "${PROJECT_ROOT}/commands/${comp}.md" ]]; then
+      missing+=("commands/${comp}.md")
     fi
   done
   if [[ ${#missing[@]} -gt 0 ]]; then

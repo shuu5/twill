@@ -2,7 +2,7 @@
 
 ### Requirement: services コマンド移植
 
-旧プラグインの services コマンドを loom-plugin-dev に移植しなければならない（SHALL）。COMMAND.md を `commands/services/COMMAND.md` に作成し、deps.yaml の commands セクションに atomic 型として登録する。
+旧プラグインの services コマンドを loom-plugin-dev に移植しなければならない（SHALL）。COMMAND.md を `commands/services.md` に作成し、deps.yaml の commands セクションに atomic 型として登録する。
 
 #### Scenario: services コマンド登録
 - **WHEN** services の COMMAND.md が作成され deps.yaml に登録される
@@ -14,7 +14,7 @@
 
 ### Requirement: ui-capture コマンド移植
 
-旧プラグインの ui-capture コマンドを loom-plugin-dev に移植しなければならない（SHALL）。COMMAND.md を `commands/ui-capture/COMMAND.md` に作成し、deps.yaml の commands セクションに atomic 型として登録する。
+旧プラグインの ui-capture コマンドを loom-plugin-dev に移植しなければならない（SHALL）。COMMAND.md を `commands/ui-capture.md` に作成し、deps.yaml の commands セクションに atomic 型として登録する。
 
 #### Scenario: ui-capture コマンド登録
 - **WHEN** ui-capture の COMMAND.md が作成され deps.yaml に登録される
@@ -26,7 +26,7 @@
 
 ### Requirement: e2e-plan コマンド移植
 
-旧プラグインの e2e-plan コマンドを loom-plugin-dev に移植しなければならない（SHALL）。COMMAND.md を `commands/e2e-plan/COMMAND.md` に作成し、deps.yaml の commands セクションに atomic 型として登録する。
+旧プラグインの e2e-plan コマンドを loom-plugin-dev に移植しなければならない（SHALL）。COMMAND.md を `commands/e2e-plan.md` に作成し、deps.yaml の commands セクションに atomic 型として登録する。
 
 #### Scenario: e2e-plan コマンド登録
 - **WHEN** e2e-plan の COMMAND.md が作成され deps.yaml に登録される
@@ -38,7 +38,7 @@
 
 ### Requirement: test-scaffold コマンド移植
 
-旧プラグインの test-scaffold コマンドを loom-plugin-dev に移植しなければならない（MUST）。COMMAND.md を `commands/test-scaffold/COMMAND.md` に作成し、deps.yaml の commands セクションに composite 型として登録する。
+旧プラグインの test-scaffold コマンドを loom-plugin-dev に移植しなければならない（MUST）。COMMAND.md を `commands/test-scaffold.md` に作成し、deps.yaml の commands セクションに composite 型として登録する。
 
 #### Scenario: test-scaffold コマンド登録
 - **WHEN** test-scaffold の COMMAND.md が作成され deps.yaml に composite 型として登録される
@@ -50,7 +50,7 @@
 
 ### Requirement: worktree-delete コマンド化
 
-既存の `scripts/worktree-delete.sh` をラップする COMMAND.md を作成しなければならない（SHALL）。`commands/worktree-delete/COMMAND.md` に作成し、deps.yaml の commands セクションに atomic 型として登録する。既存の script エントリはそのまま残す。
+既存の `scripts/worktree-delete.sh` をラップする COMMAND.md を作成しなければならない（SHALL）。`commands/worktree-delete.md` に作成し、deps.yaml の commands セクションに atomic 型として登録する。既存の script エントリはそのまま残す。
 
 #### Scenario: worktree-delete コマンド登録
 - **WHEN** worktree-delete の COMMAND.md が作成され deps.yaml に登録される

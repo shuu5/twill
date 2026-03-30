@@ -82,9 +82,9 @@ run_test_skip() {
 }
 
 DEPS_YAML="deps.yaml"
-WORKTREE_CREATE_CMD="commands/worktree-create/COMMAND.md"
-PROJECT_CREATE_CMD="commands/project-create/COMMAND.md"
-PROJECT_MIGRATE_CMD="commands/project-migrate/COMMAND.md"
+WORKTREE_CREATE_CMD="commands/worktree-create.md"
+PROJECT_CREATE_CMD="commands/project-create.md"
+PROJECT_MIGRATE_CMD="commands/project-migrate.md"
 
 # 移植対象の全16スクリプト
 MIGRATED_SCRIPTS=(
@@ -365,13 +365,13 @@ echo ""
 echo "--- Requirement: COMMAND.md のスクリプトパス更新 ---"
 
 # Scenario: worktree-create COMMAND.md のパス更新 (line 22)
-# WHEN: commands/worktree-create/COMMAND.md を確認する
+# WHEN: commands/worktree-create.md を確認する
 # THEN: スクリプト呼び出しが相対パスを使用している
 
 test_worktree_create_cmd_exists() {
   assert_file_exists "$WORKTREE_CREATE_CMD"
 }
-run_test "commands/worktree-create/COMMAND.md が存在する" test_worktree_create_cmd_exists
+run_test "commands/worktree-create.md が存在する" test_worktree_create_cmd_exists
 
 test_worktree_create_cmd_no_hardcoded_path() {
   assert_file_exists "$WORKTREE_CREATE_CMD" || return 1

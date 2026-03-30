@@ -208,7 +208,7 @@ echo "--- Cross-cutting: self-improve-review ↔ co-issue 連携 ---"
 
 # Edge case: COMMAND.md と SKILL.md で .controller-issue/explore-summary.md パスが一致
 test_cross_path_consistency() {
-  local command_file="commands/self-improve-review/COMMAND.md"
+  local command_file="commands/self-improve-review.md"
   if ! assert_file_exists "$command_file" 2>/dev/null; then
     return 1
   fi
@@ -220,7 +220,7 @@ test_cross_path_consistency() {
   assert_file_contains "$CO_ISSUE_SKILL" "\.controller-issue/explore-summary\.md"
 }
 
-if assert_file_exists "commands/self-improve-review/COMMAND.md" 2>/dev/null && assert_file_exists "$CO_ISSUE_SKILL" 2>/dev/null; then
+if assert_file_exists "commands/self-improve-review.md" 2>/dev/null && assert_file_exists "$CO_ISSUE_SKILL" 2>/dev/null; then
   run_test "COMMAND.md と SKILL.md のパス一致 [cross-cutting]" test_cross_path_consistency
 else
   run_test_skip "COMMAND.md と SKILL.md のパス一致" "one or both files not yet created"

@@ -4,7 +4,7 @@
 
 .autopilot/ ディレクトリ初期化と session.json 作成を行う co-autopilot の最初のステップ。autopilot-init.sh と session-create.sh のラッパーとして機能しなければならない（SHALL）。
 
-COMMAND.md を `commands/autopilot-init/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-init.md` に配置する（MUST）。
 
 入力: plan.yaml のパス（PLAN_FILE）。
 処理:
@@ -31,7 +31,7 @@ COMMAND.md を `commands/autopilot-init/COMMAND.md` に配置する（MUST）。
 
 tmux window を作成し Worker を起動する。DEV_AUTOPILOT_SESSION 環境変数を使用せず、state-write.sh で issue-{N}.json を初期化しなければならない（MUST）。
 
-COMMAND.md を `commands/autopilot-launch/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-launch.md` に配置する（MUST）。
 
 入力: ISSUE（番号）, PROJECT_DIR, SESSION_STATE_FILE, CROSS_ISSUE_WARNINGS, PHASE_INSIGHTS。
 処理:
@@ -59,7 +59,7 @@ Worker 起動プロンプトは `/dev:workflow-setup --auto --auto-merge #${ISSU
 
 state-read.sh を使用して Issue 状態をポーリングし、crash-detect.sh でクラッシュ検知を行わなければならない（MUST）。マーカーファイルを参照してはならない（MUST）。
 
-COMMAND.md を `commands/autopilot-poll/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-poll.md` に配置する（MUST）。
 
 入力: ISSUE（single モード）/ ISSUES（phase モード）, POLL_MODE, SESSION_STATE_FILE。
 処理:

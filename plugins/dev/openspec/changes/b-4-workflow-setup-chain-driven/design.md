@@ -66,16 +66,16 @@ chain で表現できない以下のロジックのみ SKILL.md に残す:
 
 | コンポーネント | パス | 説明 |
 |--------------|------|------|
-| init | commands/init/COMMAND.md | 開発状態判定 |
-| worktree-create | commands/worktree-create/COMMAND.md | worktree 作成 |
-| worktree-delete | commands/worktree-delete/COMMAND.md | worktree 削除 |
-| worktree-list | commands/worktree-list/COMMAND.md | worktree 一覧 |
-| project-board-status-update | commands/project-board-status-update/COMMAND.md | Board Status 更新 |
-| crg-auto-build | commands/crg-auto-build/COMMAND.md | CRG グラフビルド |
-| opsx-propose | commands/opsx-propose/COMMAND.md | OpenSpec 提案ラッパー |
-| opsx-apply | commands/opsx-apply/COMMAND.md | OpenSpec 実装ラッパー |
-| opsx-archive | commands/opsx-archive/COMMAND.md | OpenSpec アーカイブ |
-| ac-extract | commands/ac-extract/COMMAND.md | AC 抽出 |
+| init | commands/init.md | 開発状態判定 |
+| worktree-create | commands/worktree-create.md | worktree 作成 |
+| worktree-delete | commands/worktree-delete.md | worktree 削除 |
+| worktree-list | commands/worktree-list.md | worktree 一覧 |
+| project-board-status-update | commands/project-board-status-update.md | Board Status 更新 |
+| crg-auto-build | commands/crg-auto-build.md | CRG グラフビルド |
+| opsx-propose | commands/opsx-propose.md | OpenSpec 提案ラッパー |
+| opsx-apply | commands/opsx-apply.md | OpenSpec 実装ラッパー |
+| opsx-archive | commands/opsx-archive.md | OpenSpec アーカイブ |
+| ac-extract | commands/ac-extract.md | AC 抽出 |
 | workflow-test-ready | skills/workflow-test-ready/SKILL.md | テスト準備ワークフロー |
 
 既存の workflow-setup は skills セクションに workflow 型として登録する。

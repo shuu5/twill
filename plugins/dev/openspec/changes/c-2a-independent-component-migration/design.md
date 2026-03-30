@@ -8,7 +8,7 @@ loom-plugin-dev は deps.yaml v3.0 + chain-driven 構造で構築済み。既存
 
 移植先の構造（loom-plugin-dev）:
 - `skills/<name>/SKILL.md`（controller / workflow）
-- `commands/<name>/COMMAND.md`（atomic / composite、ディレクトリ構造）
+- `commands/<name>.md`（atomic / composite、ディレクトリ構造）
 
 既存で移植済みのコンポーネント（B-1〜B-7, C-1）:
 - commands: init, worktree-create, worktree-list, project-board-status-update, crg-auto-build, opsx-propose, opsx-apply, opsx-archive, ac-extract, ts-preflight, scope-judge, pr-test, post-fix-verify, warning-fix, pr-cycle-report, all-pass-check, ac-verify, self-improve-review
@@ -36,7 +36,7 @@ loom-plugin-dev は deps.yaml v3.0 + chain-driven 構造で構築済み。既存
 
 ### D1: ディレクトリ構造
 
-移植元はフラットファイル（`commands/name.md`）だが、loom-plugin-dev はディレクトリ構造（`commands/name/COMMAND.md`）を採用。全コンポーネントをディレクトリ構造に変換する。
+移植元はフラットファイル（`commands/name.md`）だが、loom-plugin-dev はディレクトリ構造（`commands/name.md`）を採用。全コンポーネントをディレクトリ構造に変換する。
 
 ### D2: section 分類ルール
 

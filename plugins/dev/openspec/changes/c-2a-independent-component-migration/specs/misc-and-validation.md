@@ -13,7 +13,7 @@
 
 #### Scenario: loom-validate のファイル配置
 - **WHEN** loom-validate のプロンプトファイルが作成された
-- **THEN** commands/loom-validate/COMMAND.md の形式で配置されている
+- **THEN** commands/loom-validate.md の形式で配置されている
 
 ### Requirement: 全体整合性検証
 

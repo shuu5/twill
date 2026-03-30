@@ -82,9 +82,9 @@ run_test_skip() {
   ((SKIP++))
 }
 
-INIT_CMD="commands/autopilot-init/COMMAND.md"
-LAUNCH_CMD="commands/autopilot-launch/COMMAND.md"
-POLL_CMD="commands/autopilot-poll/COMMAND.md"
+INIT_CMD="commands/autopilot-init.md"
+LAUNCH_CMD="commands/autopilot-launch.md"
+POLL_CMD="commands/autopilot-poll.md"
 DEPS_YAML="deps.yaml"
 
 # =============================================================================
@@ -104,7 +104,7 @@ test_init_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${INIT_CMD}" ]]; then
   run_test "autopilot-init COMMAND.md が存在する" test_init_file_exists
 else
-  run_test_skip "autopilot-init COMMAND.md が存在する" "commands/autopilot-init/COMMAND.md not yet created"
+  run_test_skip "autopilot-init COMMAND.md が存在する" "commands/autopilot-init.md not yet created"
 fi
 
 test_init_frontmatter_type() {
@@ -249,7 +249,7 @@ test_launch_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
   run_test "autopilot-launch COMMAND.md が存在する" test_launch_file_exists
 else
-  run_test_skip "autopilot-launch COMMAND.md が存在する" "commands/autopilot-launch/COMMAND.md not yet created"
+  run_test_skip "autopilot-launch COMMAND.md が存在する" "commands/autopilot-launch.md not yet created"
 fi
 
 test_launch_frontmatter_type() {
@@ -395,7 +395,7 @@ test_poll_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${POLL_CMD}" ]]; then
   run_test "autopilot-poll COMMAND.md が存在する" test_poll_file_exists
 else
-  run_test_skip "autopilot-poll COMMAND.md が存在する" "commands/autopilot-poll/COMMAND.md not yet created"
+  run_test_skip "autopilot-poll COMMAND.md が存在する" "commands/autopilot-poll.md not yet created"
 fi
 
 test_poll_frontmatter_type() {

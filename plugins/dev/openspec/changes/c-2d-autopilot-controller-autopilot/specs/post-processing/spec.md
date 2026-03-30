@@ -4,7 +4,7 @@
 
 Phase 完了後に done 状態の Issue の PR 差分から変更ファイルリストを収集し session.json に保存しなければならない（MUST）。マーカーファイル (.done) を参照せず state-read.sh で状態判定しなければならない（MUST）。
 
-COMMAND.md を `commands/autopilot-collect/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-collect.md` に配置する（MUST）。
 
 入力: ISSUES（Phase 内 Issue リスト）, SESSION_STATE_FILE。
 処理:
@@ -29,7 +29,7 @@ COMMAND.md を `commands/autopilot-collect/COMMAND.md` に配置する（MUST）
 
 Phase 振り返りを実行し成功/失敗パターンを分析して次 Phase 向け知見を生成しなければならない（SHALL）。状態ファイルから情報を取得し、doobidoo に保存しなければならない（MUST）。
 
-COMMAND.md を `commands/autopilot-retrospective/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-retrospective.md` に配置する（MUST）。
 
 入力: P, ISSUES, SESSION_ID, SESSION_STATE_FILE, PHASE_COUNT。
 出力: PHASE_INSIGHTS。
@@ -56,7 +56,7 @@ COMMAND.md を `commands/autopilot-retrospective/COMMAND.md` に配置する（M
 
 セッション状態からの繰り返しパターン検出と self-improve Issue 起票判定を行わなければならない（MUST）。マーカーファイル (.fail) を参照せず state-read.sh で failure 情報を取得しなければならない（MUST）。
 
-COMMAND.md を `commands/autopilot-patterns/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-patterns.md` に配置する（MUST）。
 
 入力: SESSION_ID, SESSION_STATE_FILE。
 処理:
@@ -84,7 +84,7 @@ PATTERN_TITLE はシェル特殊文字を除去してサニタイズしなけれ
 
 完了 Issue の変更ファイルと後続 Phase の Issue スコープを比較し競合リスクを検出しなければならない（SHALL）。session-add-warning.sh 経由で session.json に追記しなければならない（MUST）。
 
-COMMAND.md を `commands/autopilot-cross-issue/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-cross-issue.md` に配置する（MUST）。
 
 入力: SESSION_STATE_FILE, NEXT_PHASE_ISSUES。
 出力: CROSS_ISSUE_WARNINGS。

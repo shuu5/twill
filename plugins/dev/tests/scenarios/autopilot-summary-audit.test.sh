@@ -82,8 +82,8 @@ run_test_skip() {
   ((SKIP++))
 }
 
-SUMMARY_CMD="commands/autopilot-summary/COMMAND.md"
-AUDIT_CMD="commands/session-audit/COMMAND.md"
+SUMMARY_CMD="commands/autopilot-summary.md"
+AUDIT_CMD="commands/session-audit.md"
 SKILL_MD="skills/co-autopilot/SKILL.md"
 DEPS_YAML="deps.yaml"
 
@@ -119,7 +119,7 @@ test_summary_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${SUMMARY_CMD}" ]]; then
   run_test "autopilot-summary COMMAND.md が存在する" test_summary_file_exists
 else
-  run_test_skip "autopilot-summary COMMAND.md が存在する" "commands/autopilot-summary/COMMAND.md not yet created"
+  run_test_skip "autopilot-summary COMMAND.md が存在する" "commands/autopilot-summary.md not yet created"
 fi
 
 test_summary_frontmatter_type() {
@@ -280,7 +280,7 @@ test_audit_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${AUDIT_CMD}" ]]; then
   run_test "session-audit COMMAND.md が存在する" test_audit_file_exists
 else
-  run_test_skip "session-audit COMMAND.md が存在する" "commands/session-audit/COMMAND.md not yet created"
+  run_test_skip "session-audit COMMAND.md が存在する" "commands/session-audit.md not yet created"
 fi
 
 test_audit_frontmatter_type() {
@@ -616,7 +616,7 @@ fi
 test_all_11_command_files_exist() {
   local missing=()
   for cmd in "${ALL_11_COMMANDS[@]}"; do
-    if [[ ! -f "${PROJECT_ROOT}/commands/${cmd}/COMMAND.md" ]]; then
+    if [[ ! -f "${PROJECT_ROOT}/commands/${cmd}.md" ]]; then
       missing+=("$cmd")
     fi
   done
@@ -655,7 +655,7 @@ run_test "全 COMMAND.md [edge: COMMAND.md exists (deps.yaml defines type) 一�
 test_all_11_no_marker_refs() {
   local violations=()
   for cmd in "${ALL_11_COMMANDS[@]}"; do
-    local f="${PROJECT_ROOT}/commands/${cmd}/COMMAND.md"
+    local f="${PROJECT_ROOT}/commands/${cmd}.md"
     if [[ -f "$f" ]]; then
       if grep -qiP 'MARKER_DIR' "$f"; then
         violations+=("${cmd}: MARKER_DIR")
@@ -669,7 +669,7 @@ test_all_11_no_marker_refs() {
   # At least 1 file must exist
   local count=0
   for cmd in "${ALL_11_COMMANDS[@]}"; do
-    [[ -f "${PROJECT_ROOT}/commands/${cmd}/COMMAND.md" ]] && ((count++)) || true
+    [[ -f "${PROJECT_ROOT}/commands/${cmd}.md" ]] && ((count++)) || true
   done
   [[ $count -gt 0 ]] || return 1
   return 0
@@ -681,7 +681,7 @@ run_test "全 COMMAND.md [edge: MARKER_DIR 参照なし一括チェック]" test
 test_all_11_no_dev_autopilot_session() {
   local violations=()
   for cmd in "${ALL_11_COMMANDS[@]}"; do
-    local f="${PROJECT_ROOT}/commands/${cmd}/COMMAND.md"
+    local f="${PROJECT_ROOT}/commands/${cmd}.md"
     if [[ -f "$f" ]]; then
       if grep -iP 'DEV_AUTOPILOT_SESSION' "$f" | grep -qvE 'しない|してはならない|使用しない|廃止|not use|not set'; then
         violations+=("${cmd}")
@@ -695,7 +695,7 @@ test_all_11_no_dev_autopilot_session() {
   # At least 1 file must exist
   local count=0
   for cmd in "${ALL_11_COMMANDS[@]}"; do
-    [[ -f "${PROJECT_ROOT}/commands/${cmd}/COMMAND.md" ]] && ((count++)) || true
+    [[ -f "${PROJECT_ROOT}/commands/${cmd}.md" ]] && ((count++)) || true
   done
   [[ $count -gt 0 ]] || return 1
   return 0

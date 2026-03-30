@@ -24,4 +24,4 @@
 
 #### Scenario: Project管理系のファイル配置
 - **WHEN** 各コンポーネントのプロンプトファイルが作成された
-- **THEN** commands/<name>/COMMAND.md の形式で配置されている
+- **THEN** commands/<name>.md の形式で配置されている

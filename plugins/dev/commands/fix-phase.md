@@ -2,7 +2,7 @@
 
 CRITICAL finding の自動修正と再検証を管理する。
 chain ステップの実行順序は deps.yaml で宣言されている。
-本 COMMAND.md には chain で表現できないドメインルールのみを記載する。
+本コマンドには chain で表現できないドメインルールのみを記載する。
 
 ## chain ライフサイクル
 

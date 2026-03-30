@@ -35,7 +35,7 @@ scenarios:
     spec_line: 22
     requirement: "Architect系コンポーネント移植"
     test_file: "tests/scenarios/architect.test.sh"
-    test_name: "commands/<name>/COMMAND.md が全5個存在 / skills/ には配置されていない"
+    test_name: "commands/<name>.md が全5個存在 / skills/ には配置されていない"
     type: unit
     status: pending
     last_run: null
@@ -62,7 +62,7 @@ scenarios:
     spec_line: 20
     requirement: "Dead Component/Triage系コンポーネント移植"
     test_file: "tests/scenarios/dead-component-triage.test.sh"
-    test_name: "commands/dead-component-detect/COMMAND.md 存在 / commands/dead-component-execute/COMMAND.md 存在 / commands/triage-execute/COMMAND.md 存在"
+    test_name: "commands/dead-component-detect.md 存在 / commands/dead-component-execute.md 存在 / commands/triage-execute.md 存在"
     type: unit
     status: pending
     last_run: null
@@ -125,7 +125,7 @@ scenarios:
     spec_line: 24
     requirement: "Issue管理系コンポーネント移植"
     test_file: "tests/scenarios/issue-management.test.sh"
-    test_name: "commands/<name>/COMMAND.md が全7個存在"
+    test_name: "commands/<name>.md が全7個存在"
     type: unit
     status: pending
     last_run: null
@@ -164,7 +164,7 @@ scenarios:
     spec_line: 14
     requirement: "loom-validate コンポーネント移植"
     test_file: "tests/scenarios/misc-and-validation.test.sh"
-    test_name: "commands/loom-validate/COMMAND.md が存在"
+    test_name: "commands/loom-validate.md が存在"
     type: unit
     status: pending
     last_run: null
@@ -227,7 +227,7 @@ scenarios:
     spec_line: 14
     requirement: "OpenSpec/汎用系コンポーネント移植"
     test_file: "tests/scenarios/openspec-general.test.sh"
-    test_name: "commands/explore/COMMAND.md / commands/propose/COMMAND.md / commands/apply/COMMAND.md / commands/archive/COMMAND.md 存在 / skills/ には不在"
+    test_name: "commands/explore.md / commands/propose.md / commands/apply.md / commands/archive.md 存在 / skills/ には不在"
     type: unit
     status: pending
     last_run: null
@@ -314,7 +314,7 @@ scenarios:
     spec_line: 33
     requirement: "Plugin管理系コンポーネント移植"
     test_file: "tests/scenarios/plugin-management.test.sh"
-    test_name: "commands/<name>/COMMAND.md が全10個存在"
+    test_name: "commands/<name>.md が全10個存在"
     type: unit
     status: pending
     last_run: null
@@ -353,7 +353,7 @@ scenarios:
     spec_line: 25
     requirement: "Project管理系コンポーネント移植"
     test_file: "tests/scenarios/project-management.test.sh"
-    test_name: "commands/<name>/COMMAND.md が全8個存在"
+    test_name: "commands/<name>.md が全8個存在"
     type: unit
     status: pending
     last_run: null
@@ -392,7 +392,7 @@ scenarios:
     spec_line: 22
     requirement: "Self-improve/ECC系コンポーネント移植"
     test_file: "tests/scenarios/self-improve-ecc.test.sh"
-    test_name: "commands/<name>/COMMAND.md が全4個存在"
+    test_name: "commands/<name>.md が全4個存在"
     type: unit
     status: pending
     last_run: null

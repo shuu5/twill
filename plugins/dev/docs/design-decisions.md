@@ -5,7 +5,7 @@ loom-plugin-dev の設計根拠として参照される。
 
 ## 1. merge-gate 2パス統合
 
-**転記元**: claude-plugin-dev `skills/co-autopilot/SKILL.md`, `commands/merge-gate/COMMAND.md`
+**転記元**: claude-plugin-dev `skills/co-autopilot/SKILL.md`, `commands/merge-gate.md`
 
 ### 旧設計（2パス）
 

@@ -30,17 +30,17 @@ ISSUES=$(sed -n "/  - phase: ${P}/,/  - phase:/p" "$PLAN_FILE" | grep -oP '    -
 
 ### Step 2: autopilot-collect を Read → 実行
 
-`commands/autopilot-collect/COMMAND.md` を Read し、実行する。
+`commands/autopilot-collect.md` を Read し、実行する。
 Phase 内の done Issue から PR 差分を収集し session.json に保存。
 
 ### Step 3: autopilot-retrospective を Read → 実行
 
-`commands/autopilot-retrospective/COMMAND.md` を Read し、実行する。
+`commands/autopilot-retrospective.md` を Read し、実行する。
 Phase の成功/失敗パターンを分析し、次 Phase 向け知見を生成。PHASE_INSIGHTS を設定。
 
 ### Step 4: autopilot-patterns を Read → 実行
 
-`commands/autopilot-patterns/COMMAND.md` を Read し、実行する。
+`commands/autopilot-patterns.md` を Read し、実行する。
 state-read で取得した failure 情報から繰り返しパターンを検出。
 
 ### Step 5: cross-issue（条件付き）
@@ -49,7 +49,7 @@ state-read で取得した failure 情報から繰り返しパターンを検出
 IF P < PHASE_COUNT（最終 Phase でない）:
   NEXT_P=$((P + 1))
   NEXT_PHASE_ISSUES=$(sed -n "/  - phase: ${NEXT_P}/,/  - phase:/p" "$PLAN_FILE" | grep -oP '    - \K\d+' || true)
-  → commands/autopilot-cross-issue/COMMAND.md を Read → 実行
+  → commands/autopilot-cross-issue.md を Read → 実行
   → CROSS_ISSUE_WARNINGS を設定
 ELSE:
   PHASE_INSIGHTS=""

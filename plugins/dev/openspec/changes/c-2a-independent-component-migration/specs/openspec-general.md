@@ -13,7 +13,7 @@
 
 #### Scenario: section 誤配置の修正
 - **WHEN** explore, propose, apply, archive が移植された
-- **THEN** commands/<name>/COMMAND.md として配置されている（skills/ ではない）
+- **THEN** commands/<name>.md として配置されている（skills/ ではない）
 
 #### Scenario: OpenSpec/汎用系の deps.yaml 登録
 - **WHEN** 5個全てのコンポーネントが移植された

@@ -2,7 +2,7 @@
 
 PR の最終判定を行う。動的レビュアー構築 → 並列 specialist 実行 → 結果集約 → PASS/REJECT。
 chain ステップの実行順序は deps.yaml で宣言されている。
-本 COMMAND.md には chain で表現できないドメインルールのみを記載する。
+本コマンドには chain で表現できないドメインルールのみを記載する。
 
 ## chain ライフサイクル
 

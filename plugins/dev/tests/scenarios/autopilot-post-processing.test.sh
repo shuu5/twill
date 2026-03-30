@@ -73,10 +73,10 @@ run_test_skip() {
   ((SKIP++))
 }
 
-COLLECT_CMD="commands/autopilot-collect/COMMAND.md"
-RETRO_CMD="commands/autopilot-retrospective/COMMAND.md"
-PATTERNS_CMD="commands/autopilot-patterns/COMMAND.md"
-CROSS_CMD="commands/autopilot-cross-issue/COMMAND.md"
+COLLECT_CMD="commands/autopilot-collect.md"
+RETRO_CMD="commands/autopilot-retrospective.md"
+PATTERNS_CMD="commands/autopilot-patterns.md"
+CROSS_CMD="commands/autopilot-cross-issue.md"
 
 # =============================================================================
 # Requirement: autopilot-collect コマンド
@@ -95,7 +95,7 @@ test_collect_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${COLLECT_CMD}" ]]; then
   run_test "autopilot-collect COMMAND.md が存在する" test_collect_file_exists
 else
-  run_test_skip "autopilot-collect COMMAND.md が存在する" "commands/autopilot-collect/COMMAND.md not yet created"
+  run_test_skip "autopilot-collect COMMAND.md が存在する" "commands/autopilot-collect.md not yet created"
 fi
 
 test_collect_frontmatter_type() {
@@ -229,7 +229,7 @@ test_retro_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${RETRO_CMD}" ]]; then
   run_test "autopilot-retrospective COMMAND.md が存在する" test_retro_file_exists
 else
-  run_test_skip "autopilot-retrospective COMMAND.md が存在する" "commands/autopilot-retrospective/COMMAND.md not yet created"
+  run_test_skip "autopilot-retrospective COMMAND.md が存在する" "commands/autopilot-retrospective.md not yet created"
 fi
 
 test_retro_frontmatter_type() {
@@ -349,7 +349,7 @@ test_patterns_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${PATTERNS_CMD}" ]]; then
   run_test "autopilot-patterns COMMAND.md が存在する" test_patterns_file_exists
 else
-  run_test_skip "autopilot-patterns COMMAND.md が存在する" "commands/autopilot-patterns/COMMAND.md not yet created"
+  run_test_skip "autopilot-patterns COMMAND.md が存在する" "commands/autopilot-patterns.md not yet created"
 fi
 
 test_patterns_frontmatter_type() {
@@ -496,7 +496,7 @@ test_cross_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${CROSS_CMD}" ]]; then
   run_test "autopilot-cross-issue COMMAND.md が存在する" test_cross_file_exists
 else
-  run_test_skip "autopilot-cross-issue COMMAND.md が存在する" "commands/autopilot-cross-issue/COMMAND.md not yet created"
+  run_test_skip "autopilot-cross-issue COMMAND.md が存在する" "commands/autopilot-cross-issue.md not yet created"
 fi
 
 test_cross_frontmatter_type() {

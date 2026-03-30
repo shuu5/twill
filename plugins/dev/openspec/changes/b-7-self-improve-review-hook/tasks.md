@@ -6,7 +6,7 @@
 
 ## 2. self-improve-review コマンド作成
 
-- [x] 2.1 `commands/self-improve-review/COMMAND.md` を作成: atomic コマンド定義
+- [x] 2.1 `commands/self-improve-review.md` を作成: atomic コマンド定義
 - [x] 2.2 エラーログ読み込み・集計ロジック: コマンド別・exit_code 別にグループ化
 - [x] 2.3 サマリーテーブル表示: 頻度順でマークダウンテーブル形式
 - [x] 2.4 AskUserQuestion による選択 UI: 個別選択・全選択・スキップ・クリア

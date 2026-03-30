@@ -15,14 +15,14 @@
 
 ## 3. COMMAND.md / SKILL.md 作成
 
-- [x] 3.1 commands/init/COMMAND.md を作成する（旧 plugin の init.md からドメインロジックを移植）
-- [x] 3.2 commands/worktree-create/COMMAND.md を作成する
-- [x] 3.3 commands/worktree-delete/COMMAND.md, commands/worktree-list/COMMAND.md を作成する
-- [x] 3.4 commands/project-board-status-update/COMMAND.md を作成する
-- [x] 3.5 commands/crg-auto-build/COMMAND.md を作成する
-- [x] 3.6 commands/opsx-propose/COMMAND.md を作成する
-- [x] 3.7 commands/opsx-apply/COMMAND.md, commands/opsx-archive/COMMAND.md を作成する
-- [x] 3.8 commands/ac-extract/COMMAND.md を作成する
+- [x] 3.1 commands/init.md を作成する（旧 plugin の init.md からドメインロジックを移植）
+- [x] 3.2 commands/worktree-create.md を作成する
+- [x] 3.3 commands/worktree-delete.md, commands/worktree-list.md を作成する
+- [x] 3.4 commands/project-board-status-update.md を作成する
+- [x] 3.5 commands/crg-auto-build.md を作成する
+- [x] 3.6 commands/opsx-propose.md を作成する
+- [x] 3.7 commands/opsx-apply.md, commands/opsx-archive.md を作成する
+- [x] 3.8 commands/ac-extract.md を作成する
 - [x] 3.9 skills/workflow-test-ready/SKILL.md を作成する
 
 ## 4. workflow-setup SKILL.md 縮小

@@ -73,8 +73,8 @@ run_test_skip() {
   ((SKIP++))
 }
 
-EXEC_CMD="commands/autopilot-phase-execute/COMMAND.md"
-POST_CMD="commands/autopilot-phase-postprocess/COMMAND.md"
+EXEC_CMD="commands/autopilot-phase-execute.md"
+POST_CMD="commands/autopilot-phase-postprocess.md"
 
 # =============================================================================
 # Requirement: autopilot-phase-execute コマンド
@@ -93,7 +93,7 @@ test_exec_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${EXEC_CMD}" ]]; then
   run_test "autopilot-phase-execute COMMAND.md が存在する" test_exec_file_exists
 else
-  run_test_skip "autopilot-phase-execute COMMAND.md が存在する" "commands/autopilot-phase-execute/COMMAND.md not yet created"
+  run_test_skip "autopilot-phase-execute COMMAND.md が存在する" "commands/autopilot-phase-execute.md not yet created"
 fi
 
 test_exec_frontmatter_type() {
@@ -277,7 +277,7 @@ test_post_file_exists() {
 if [[ -f "${PROJECT_ROOT}/${POST_CMD}" ]]; then
   run_test "autopilot-phase-postprocess COMMAND.md が存在する" test_post_file_exists
 else
-  run_test_skip "autopilot-phase-postprocess COMMAND.md が存在する" "commands/autopilot-phase-postprocess/COMMAND.md not yet created"
+  run_test_skip "autopilot-phase-postprocess COMMAND.md が存在する" "commands/autopilot-phase-postprocess.md not yet created"
 fi
 
 test_post_frontmatter_type() {

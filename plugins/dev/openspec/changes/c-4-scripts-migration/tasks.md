@@ -39,9 +39,9 @@
 
 ## 7. COMMAND.md パス参照更新
 
-- [x] 7.1 commands/worktree-create/COMMAND.md のスクリプトパスを新リポジトリ相対パスに更新
-- [x] 7.2 commands/project-create/COMMAND.md のスクリプトパスを新リポジトリ相対パスに更新
-- [x] 7.3 commands/project-migrate/COMMAND.md のスクリプトパスを新リポジトリ相対パスに更新
+- [x] 7.1 commands/worktree-create.md のスクリプトパスを新リポジトリ相対パスに更新
+- [x] 7.2 commands/project-create.md のスクリプトパスを新リポジトリ相対パスに更新
+- [x] 7.3 commands/project-migrate.md のスクリプトパスを新リポジトリ相対パスに更新
 
 ## 8. 最終確認
 

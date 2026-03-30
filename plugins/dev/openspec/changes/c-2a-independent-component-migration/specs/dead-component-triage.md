@@ -19,7 +19,7 @@
 
 #### Scenario: atomic の section 配置
 - **WHEN** dead-component-detect, dead-component-execute, triage-execute が移植された
-- **THEN** commands/<name>/COMMAND.md として配置されている
+- **THEN** commands/<name>.md として配置されている
 
 #### Scenario: Dead Component/Triage系の deps.yaml 登録
 - **WHEN** 5個全てのコンポーネントが移植された

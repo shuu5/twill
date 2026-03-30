@@ -270,7 +270,7 @@ run_test "パーサー [edge: 空入力でクラッシュしない]" test_parser
 
 # merge-gate SKILL.md に集約ロジック記述があるか
 test_merge_gate_aggregation_rule() {
-  local merge_gate_skill="commands/merge-gate/COMMAND.md"
+  local merge_gate_skill="commands/merge-gate.md"
   assert_file_exists "$merge_gate_skill" || return 1
   assert_file_contains "$merge_gate_skill" '(集約|aggregat|findings)' || return 1
   return 0
@@ -279,7 +279,7 @@ run_test "merge-gate に findings 集約ルールが記述されている" test_
 
 # Edge case: specialist 名が findings に付与されることが要件に含まれる
 test_findings_include_specialist_name() {
-  local merge_gate_skill="commands/merge-gate/COMMAND.md"
+  local merge_gate_skill="commands/merge-gate.md"
   assert_file_exists "$merge_gate_skill" || return 1
   assert_file_contains "$merge_gate_skill" '(specialist.*名|worker.*名|出典|source|specialist.*label)' || return 1
   return 0
@@ -307,7 +307,7 @@ run_test "パーサースクリプトに AI 判定ロジックがない" test_pa
 
 # phase-review SKILL.md に AI 裁量排除ルールがあるか
 test_phase_review_no_ai_rule() {
-  local phase_review_skill="commands/phase-review/COMMAND.md"
+  local phase_review_skill="commands/phase-review.md"
   assert_file_exists "$phase_review_skill" || return 1
   assert_file_contains "$phase_review_skill" '(機械的|AI.*禁止|裁量.*排除|パーサー.*出力|構造化データ)' || return 1
   return 0

@@ -19,5 +19,5 @@
 worktree-create, project-create, project-migrate の COMMAND.md が参照するスクリプトパスを `$HOME/.claude/plugins/dev/scripts/` から新リポジトリ内の相対パスに更新しなければならない（MUST）。
 
 #### Scenario: worktree-create COMMAND.md のパス更新
-- **WHEN** commands/worktree-create/COMMAND.md を確認する
+- **WHEN** commands/worktree-create.md を確認する
 - **THEN** スクリプト呼び出しが `bash $SCRIPT_DIR/../../scripts/worktree-create.sh` または同等の相対パスを使用している

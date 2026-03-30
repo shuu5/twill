@@ -4,7 +4,7 @@
 
 全 Phase 完了後に結果集計、レポート出力、doobidoo 保存、session-archive.sh でアーカイブを行わなければならない（MUST）。マーカーファイルを参照せず state-read.sh で全 Issue 状態を取得しなければならない（MUST）。
 
-COMMAND.md を `commands/autopilot-summary/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-summary.md` に配置する（MUST）。
 
 入力: PLAN_FILE, SESSION_ID, SESSION_STATE_FILE, PHASE_COUNT。
 処理:
@@ -38,7 +38,7 @@ ALL_ISSUES は plan.yaml から正しく構築しなければならない（MUST
 
 セッション JSONL の事後分析で 5 カテゴリのワークフロー信頼性問題を検出し self-improve Issue を起票しなければならない（SHALL）。
 
-COMMAND.md を `commands/session-audit/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/session-audit.md` に配置する（MUST）。
 
 入力: COUNT（デフォルト 5）または --since PERIOD。
 処理:

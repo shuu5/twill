@@ -50,4 +50,4 @@ self-improve-review はエラーログのクリアオプションを提供しな
 
 #### Scenario: deps.yaml への登録
 - **WHEN** self-improve-review コマンドが追加される
-- **THEN** deps.yaml の commands セクションに type: atomic、path: commands/self-improve-review/COMMAND.md として登録される
+- **THEN** deps.yaml の commands セクションに type: atomic、path: commands/self-improve-review.md として登録される

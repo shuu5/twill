@@ -50,16 +50,16 @@ FOR each ISSUE in $ISSUES:
     → 状態記録（skipped）、continue
 
   # Worker 起動（autopilot-launch を Read → 実行）
-  → commands/autopilot-launch/COMMAND.md を Read → 実行
+  → commands/autopilot-launch.md を Read → 実行
 
   # ポーリング（autopilot-poll を Read → 実行、POLL_MODE=single）
   POLL_MODE=single
-  → commands/autopilot-poll/COMMAND.md を Read → 実行
+  → commands/autopilot-poll.md を Read → 実行
 
   # 結果処理
   STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
   IF STATUS == "merge-ready":
-    → commands/merge-gate/COMMAND.md を Read → 実行
+    → commands/merge-gate.md を Read → 実行
   STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
   IF STATUS == "done":
     → tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
@@ -92,18 +92,18 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
   FOR each ISSUE in $BATCH:
     STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
     IF STATUS == "done": continue
-    → commands/autopilot-launch/COMMAND.md を Read → 実行
+    → commands/autopilot-launch.md を Read → 実行
 
   # バッチ全体ポーリング
   POLL_MODE=phase
   ISSUES="${BATCH[*]}"
-  → commands/autopilot-poll/COMMAND.md を Read → 実行
+  → commands/autopilot-poll.md を Read → 実行
 
   # merge-ready の Issue に対して merge-gate を順次実行
   FOR each ISSUE in $BATCH:
     STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
     IF STATUS == "merge-ready":
-      → commands/merge-gate/COMMAND.md を Read → 実行
+      → commands/merge-gate.md を Read → 実行
 
   # window 管理 + 状態記録
   FOR each ISSUE in $BATCH:

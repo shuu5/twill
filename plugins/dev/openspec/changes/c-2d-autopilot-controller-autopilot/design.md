@@ -16,7 +16,7 @@ co-autopilot SKILL.md は既に新アーキテクチャ（chain-driven, autopilo
 
 **Goals:**
 
-- 全 11 コンポーネントを `commands/<name>/COMMAND.md` 形式で作成
+- 全 11 コンポーネントを `commands/<name>.md` 形式で作成
 - マーカーファイル参照を state-read.sh / state-write.sh 呼び出しに完全置換
 - DEV_AUTOPILOT_SESSION 環境変数を廃止し、state-read --type session での状態確認に置換
 - deps.yaml に 11 コマンド定義を追加し co-autopilot calls を更新

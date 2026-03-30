@@ -2,7 +2,7 @@
 
 C-2a で Issue/Project/Architect/Plugin 管理系 + OpenSpec/汎用系（計 42 コンポーネント）、C-2b で Setup/Workflow-setup 系（11 コンポーネント）を移植済み。残る PR サイクル関連 6 コンポーネントを移植し、全 18 コンポーネントを揃える。
 
-既存 12 コンポーネントは deps.yaml v3.0 に登録済みで COMMAND.md も作成済み。旧プラグイン（claude-plugin-dev）のフラットファイル構造（`commands/xxx.md`）から新プラグインのディレクトリ構造（`commands/xxx/COMMAND.md`）へ変換する。
+既存 12 コンポーネントは deps.yaml v3.0 に登録済みで COMMAND.md も作成済み。旧プラグイン（claude-plugin-dev）のフラットファイル構造（`commands/xxx.md`）から新プラグインのディレクトリ構造（`commands/xxx.md`）へ変換する。
 
 chain-driven + autopilot-first 設計により、旧プラグインの `--auto-merge` フラグ分岐・環境変数チェック・マーカーファイル管理は除去する。
 

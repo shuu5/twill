@@ -93,7 +93,7 @@ run_test_skip() {
 }
 
 DEPS_YAML="deps.yaml"
-MERGE_GATE_SKILL="commands/merge-gate/COMMAND.md"
+MERGE_GATE_SKILL="commands/merge-gate.md"
 TECH_STACK_SCRIPT="scripts/tech-stack-detect.sh"
 
 # =============================================================================

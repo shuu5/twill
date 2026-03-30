@@ -1,11 +1,11 @@
 ## 1. COMMAND.md 作成（6 コンポーネント）
 
-- [x] 1.1 `commands/ac-deploy-trigger/COMMAND.md` を作成（旧プラグインから移植、ディレクトリ構造に変換）
-- [x] 1.2 `commands/test-phase/COMMAND.md` を作成（chain 外スタンドアロン、specialist は Task tool 呼び出し）
-- [x] 1.3 `commands/auto-merge/COMMAND.md` を作成（autopilot-first 簡素化、--auto-merge フラグ除去）
-- [x] 1.4 `commands/pr-cycle-analysis/COMMAND.md` を作成（4 カテゴリパターン分析、doobidoo 連携）
-- [x] 1.5 `commands/schema-update/COMMAND.md` を作成（webapp-hono 専用、5 ステップワークフロー）
-- [x] 1.6 `commands/spec-diagnose/COMMAND.md` を作成（テスト失敗診断、修正禁止）
+- [x] 1.1 `commands/ac-deploy-trigger.md` を作成（旧プラグインから移植、ディレクトリ構造に変換）
+- [x] 1.2 `commands/test-phase.md` を作成（chain 外スタンドアロン、specialist は Task tool 呼び出し）
+- [x] 1.3 `commands/auto-merge.md` を作成（autopilot-first 簡素化、--auto-merge フラグ除去）
+- [x] 1.4 `commands/pr-cycle-analysis.md` を作成（4 カテゴリパターン分析、doobidoo 連携）
+- [x] 1.5 `commands/schema-update.md` を作成（webapp-hono 専用、5 ステップワークフロー）
+- [x] 1.6 `commands/spec-diagnose.md` を作成（テスト失敗診断、修正禁止）
 
 ## 2. deps.yaml 更新
 

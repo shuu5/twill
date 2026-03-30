@@ -4,7 +4,7 @@
 
 1 Phase 分の Issue ループ処理を実行する。state-read.sh / state-write.sh で状態判定を行い、マーカーファイルを参照してはならない（MUST）。
 
-COMMAND.md を `commands/autopilot-phase-execute/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-phase-execute.md` に配置する（MUST）。
 
 入力: P（Phase 番号）, SESSION_STATE_FILE, MODE（sequential/parallel）, PLAN_FILE, SESSION_ID, PROJECT_DIR, REPO_MODE, CROSS_ISSUE_WARNINGS, PHASE_INSIGHTS。
 処理:
@@ -37,7 +37,7 @@ merge-gate 失敗時に rebase を試みてはならない（MUST）（不変条
 
 Phase 後処理チェーン（collect → retrospective → patterns → cross-issue）を統合実行しなければならない（MUST）。後処理の実行順序を変更してはならない（MUST）。
 
-COMMAND.md を `commands/autopilot-phase-postprocess/COMMAND.md` に配置する（MUST）。
+COMMAND.md を `commands/autopilot-phase-postprocess.md` に配置する（MUST）。
 
 入力: P（Phase 番号）, SESSION_STATE_FILE, PLAN_FILE, SESSION_ID, PHASE_COUNT。
 出力: PHASE_INSIGHTS, CROSS_ISSUE_WARNINGS。
