@@ -654,6 +654,8 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
                 result['direct_commands'].add(c['composite'])
             elif c.get('phase'):
                 result['direct_commands'].add(c['phase'])
+            elif c.get('atomic'):
+                result['direct_commands'].add(c['atomic'])
 
     for agent_name, agent_data in deps.get('agents', {}).items():
         for c in agent_data.get('calls', []):
@@ -663,6 +665,8 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
                 result['direct_commands'].add(c['composite'])
             elif c.get('phase'):
                 result['direct_commands'].add(c['phase'])
+            elif c.get('atomic'):
+                result['direct_commands'].add(c['atomic'])
 
     # L2: L1コマンドから呼ばれるコマンド
     for cmd_name in result['direct_commands']:
@@ -672,6 +676,10 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
                 result['sub_commands'].add(c['command'])
             elif c.get('composite'):
                 result['sub_commands'].add(c['composite'])
+            elif c.get('atomic'):
+                result['sub_commands'].add(c['atomic'])
+            elif c.get('phase'):
+                result['sub_commands'].add(c['phase'])
 
     # 孤立コマンドの検出
     orphans = find_orphans(graph, deps)
@@ -697,6 +705,7 @@ def generate_ordering_edges(deps: dict) -> list:
         # キー → graphviz prefix のマッピング
         key_prefix = {
             'command': 'cmd', 'composite': 'cmd', 'phase': 'cmd',
+            'atomic': 'cmd', 'script': 'script',
             'skill': 'skill', 'reference': 'skill', 'workflow': 'skill',
             'agent': 'agent', 'specialist': 'agent', 'worker': 'agent',
         }
