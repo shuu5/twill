@@ -469,6 +469,15 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
                     (node_data['type'], node_data['name'])
                 )
 
+    # agent.skills の逆方向（deps から直接読む）
+    for agent_name, agent_data in deps.get('agents', {}).items():
+        for skill in agent_data.get('skills', []):
+            target_id = f"skill:{skill}"
+            if target_id in graph:
+                graph[target_id]['required_by'].append(
+                    ('agent', agent_name)
+                )
+
     return graph
 
 
@@ -668,18 +677,20 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
             elif c.get('atomic'):
                 result['direct_commands'].add(c['atomic'])
 
-    # L2: L1コマンドから呼ばれるコマンド
-    for cmd_name in result['direct_commands']:
-        cmd_data = deps.get('commands', {}).get(cmd_name, {})
-        for c in cmd_data.get('calls', []):
-            if c.get('command'):
-                result['sub_commands'].add(c['command'])
-            elif c.get('composite'):
-                result['sub_commands'].add(c['composite'])
-            elif c.get('atomic'):
-                result['sub_commands'].add(c['atomic'])
-            elif c.get('phase'):
-                result['sub_commands'].add(c['phase'])
+    # L2+: コマンドから再帰的に呼ばれるコマンド（BFS）
+    visited = set(result['direct_commands'])
+    frontier = set(result['direct_commands'])
+    while frontier:
+        next_frontier = set()
+        for cmd_name in frontier:
+            cmd_data = deps.get('commands', {}).get(cmd_name, {})
+            for c in cmd_data.get('calls', []):
+                child = c.get('command') or c.get('composite') or c.get('atomic') or c.get('phase')
+                if child and child not in visited:
+                    result['sub_commands'].add(child)
+                    visited.add(child)
+                    next_frontier.add(child)
+        frontier = next_frontier
 
     # 孤立コマンドの検出
     orphans = find_orphans(graph, deps)

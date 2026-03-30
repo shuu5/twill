@@ -1,0 +1,113 @@
+change_id: fix-graph-orphan-ref-node
+generated_at: "2026-03-30T00:00:00Z"
+test_framework: pytest
+scenarios:
+  # --- agent-skills-reverse-dep.md ---
+
+  - id: agent-skills-reverse-dep-required-by
+    name: "agent が skills フィールドで reference skill を参照"
+    spec_file: "specs/agent-skills-reverse-dep.md"
+    spec_line: 7
+    requirement: "agent.skills の reverse dependency 反映"
+    test_file: "tests/scenarios/test_graph_orphan_ref_node.py"
+    test_name: "TestAgentSkillsReverseDep::test_skills_field_populates_required_by"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: null
+    failure_reason: "build_graph() does not iterate agent.skills in the reverse-dep loop — required_by stays empty"
+
+  - id: agent-skills-missing-skill-skip
+    name: "agent.skills の参照先がグラフに存在しない"
+    spec_file: "specs/agent-skills-reverse-dep.md"
+    spec_line: 11
+    requirement: "agent.skills の reverse dependency 反映"
+    test_file: "tests/scenarios/test_graph_orphan_ref_node.py"
+    test_name: "TestAgentSkillsReverseDep::test_missing_skill_reference_is_silently_ignored"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: agent-skills-orphan-prevention
+    name: "agent.skills で参照される skill が orphan にならない"
+    spec_file: "specs/agent-skills-reverse-dep.md"
+    spec_line: 15
+    requirement: "agent.skills の reverse dependency 反映"
+    test_file: "tests/scenarios/test_graph_orphan_ref_node.py"
+    test_name: "TestAgentSkillsReverseDep::test_skill_referenced_by_agent_skills_not_orphan"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  # --- classify-layers-recursive.md ---
+
+  - id: classify-layers-l3-traversal
+    name: "L2 コマンドがさらに commands を呼ぶ（L3）"
+    spec_file: "specs/classify-layers-recursive.md"
+    spec_line: 7
+    requirement: "classify_layers の再帰的 sub-command 走査"
+    test_file: "tests/scenarios/test_graph_orphan_ref_node.py"
+    test_name: "TestClassifyLayersRecursive::test_l3_command_classified_as_sub_command"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: null
+    failure_reason: "classify_layers() only traverses L1->L2 (one level); L3 commands not added to sub_commands"
+
+  - id: classify-layers-4level-chain
+    name: "3 段以上のチェーン"
+    spec_file: "specs/classify-layers-recursive.md"
+    spec_line: 11
+    requirement: "classify_layers の再帰的 sub-command 走査"
+    test_file: "tests/scenarios/test_graph_orphan_ref_node.py"
+    test_name: "TestClassifyLayersRecursive::test_4_level_chain_all_sub_commands"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: null
+    failure_reason: "classify_layers() stops at depth 2; cmd-c and cmd-d are missed"
+
+  - id: classify-layers-circular
+    name: "循環呼び出し"
+    spec_file: "specs/classify-layers-recursive.md"
+    spec_line: 15
+    requirement: "classify_layers の再帰的 sub-command 走査"
+    test_file: "tests/scenarios/test_graph_orphan_ref_node.py"
+    test_name: "TestClassifyLayersRecursive::test_circular_chain_does_not_hang"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  # --- legend-reference-type.md ---
+
+  - id: legend-reference-present
+    name: "reference 型 skill が存在する"
+    spec_file: "specs/legend-reference-type.md"
+    spec_line: 7
+    requirement: "Legend に reference 型が正しく表示される"
+    test_file: "tests/scenarios/test_graph_orphan_ref_node.py"
+    test_name: "TestLegendReferenceType::test_legend_shows_reference_when_present"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: legend-reference-absent
+    name: "reference 型 skill が存在しない"
+    spec_file: "specs/legend-reference-type.md"
+    spec_line: 11
+    requirement: "Legend に reference 型が正しく表示される"
+    test_file: "tests/scenarios/test_graph_orphan_ref_node.py"
+    test_name: "TestLegendReferenceType::test_legend_no_reference_when_absent"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
