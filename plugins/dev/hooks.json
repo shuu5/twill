@@ -3,11 +3,23 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "bash scripts/hooks/post-tool-use-validate.sh"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/post-tool-use-validate.sh",
+            "timeout": 10000
+          }
+        ]
       },
       {
         "matcher": "Bash",
-        "command": "bash scripts/hooks/post-tool-use-bash-error.sh $EXIT_CODE"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/hooks/post-tool-use-bash-error.sh",
+            "timeout": 10000
+          }
+        ]
       }
     ]
   }

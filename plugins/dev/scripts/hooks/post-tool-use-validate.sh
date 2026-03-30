@@ -2,6 +2,9 @@
 # PostToolUse hook: Edit/Write 後に loom validate を実行
 set -euo pipefail
 
+# stdin を消費（Claude Code PostToolUse は stdin に JSON を渡す）
+cat > /dev/null 2>&1 || true
+
 # loom コマンドが存在しない場合はスキップ
 if ! command -v loom &>/dev/null; then
   exit 0

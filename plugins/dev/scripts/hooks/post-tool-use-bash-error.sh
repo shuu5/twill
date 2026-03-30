@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 # PostToolUse hook: Bash exit_code != 0 → .self-improve/errors.jsonl に記録
 # B-7: Self-Improve Review の機械層基盤
+#
+# Claude Code PostToolUse hook は stdin に JSON を渡す。
+# tool_response から exit code を抽出する。
 
-EXIT_CODE="${1:-0}"
+# stdin から JSON を読み取り
+INPUT=$(cat)
+
+# tool_response の stdout/stderr から exit code を抽出
+# Bash tool の tool_response format: "Exit code N\n..." or 正常出力
+EXIT_CODE=0
+TOOL_RESPONSE=$(printf '%s' "$INPUT" | jq -r '.tool_response // empty' 2>/dev/null)
+if printf '%s' "$TOOL_RESPONSE" | grep -qP '^Exit code (\d+)'; then
+  EXIT_CODE=$(printf '%s' "$TOOL_RESPONSE" | grep -oP '^Exit code \K\d+' | head -1)
+fi
 
 # 整数バリデーション
 if [[ ! "$EXIT_CODE" =~ ^[0-9]+$ ]]; then
@@ -24,20 +36,17 @@ mkdir -p -m 700 "$ERRORS_DIR"
 
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# TOOL_INPUT から command を抽出（先頭200文字）
-COMMAND=""
-if [[ -n "${TOOL_INPUT:-}" ]]; then
-  COMMAND=$(printf '%s' "$TOOL_INPUT" | head -c 200)
-fi
+# stdin JSON から command を抽出
+COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null | head -c 200)
 
-# TOOL_OUTPUT から stderr_snippet を抽出（先頭500文字）
-STDERR_SNIPPET=""
-if [[ -n "${TOOL_OUTPUT:-}" ]]; then
-  STDERR_SNIPPET=$(printf '%s' "$TOOL_OUTPUT" | head -c 500)
-fi
+# tool_response から stderr_snippet を抽出（先頭500文字）
+STDERR_SNIPPET=$(printf '%s' "$TOOL_RESPONSE" | head -c 500)
 
 # cwd
-CWD="${PWD:-}"
+CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // empty' 2>/dev/null)
+if [[ -z "$CWD" ]]; then
+  CWD="${PWD:-}"
+fi
 
 # JSON エスケープ（RFC 7159: U+0000-U+001F 制御文字を全て処理）
 json_escape() {
