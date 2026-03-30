@@ -20,6 +20,12 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
+    cmd_architect_completeness_check [label="architect-completeness-check\n(645 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_architect_decompose [label="architect-decompose\n(1,056 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_architect_group_refine [label="architect-group-refine\n(1,084 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_architect_issue_create [label="architect-issue-create\n(2,352 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_evaluate_architecture [label="evaluate-architecture\n(796 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_explore [label="explore\n(1,490 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -31,6 +37,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_architect; }
+    { rank=same; cmd_architect_completeness_check; cmd_architect_decompose; cmd_architect_group_refine; cmd_architect_issue_create; cmd_evaluate_architecture; cmd_explore; }
 
     // Edges
     skill_co_architect -> cmd_explore;
@@ -39,5 +46,12 @@ digraph Dependencies {
     skill_co_architect -> cmd_architect_group_refine;
     skill_co_architect -> cmd_architect_issue_create;
     skill_co_architect -> cmd_evaluate_architecture;
+
+    // Ordering constraints (invisible edges)
+    cmd_explore -> cmd_architect_completeness_check [style=invis, weight=10];
+    cmd_architect_completeness_check -> cmd_architect_decompose [style=invis, weight=10];
+    cmd_architect_decompose -> cmd_architect_group_refine [style=invis, weight=10];
+    cmd_architect_group_refine -> cmd_architect_issue_create [style=invis, weight=10];
+    cmd_architect_issue_create -> cmd_evaluate_architecture [style=invis, weight=10];
 
 }

@@ -20,6 +20,7 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
+    cmd_triage_execute [label="triage-execute\n(1,185 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -31,6 +32,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_tech_debt_triage; }
+    { rank=same; cmd_triage_execute; }
 
     // Edges
     skill_workflow_tech_debt_triage -> cmd_triage_execute;

@@ -15,11 +15,17 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="dev:workflow-setup\n(624 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="dev:workflow-setup\n(1,100 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
+    cmd_init [label="init\n(621 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_worktree_create [label="worktree-create\n(464 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_board_status_update [label="project-board-status-update\n(450 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_crg_auto_build [label="crg-auto-build\n(312 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_opsx_propose [label="opsx-propose\n(406 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_ac_extract [label="ac-extract\n(366 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -31,6 +37,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_setup; }
+    { rank=same; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_opsx_propose; cmd_ac_extract; }
 
     // Edges
     skill_workflow_setup -> cmd_init;
@@ -39,5 +46,12 @@ digraph Dependencies {
     skill_workflow_setup -> cmd_crg_auto_build;
     skill_workflow_setup -> cmd_opsx_propose;
     skill_workflow_setup -> cmd_ac_extract;
+
+    // Ordering constraints (invisible edges)
+    cmd_init -> cmd_worktree_create [style=invis, weight=10];
+    cmd_worktree_create -> cmd_project_board_status_update [style=invis, weight=10];
+    cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];
+    cmd_crg_auto_build -> cmd_opsx_propose [style=invis, weight=10];
+    cmd_opsx_propose -> cmd_ac_extract [style=invis, weight=10];
 
 }

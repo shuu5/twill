@@ -20,6 +20,21 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
+    cmd_self_improve_collect [label="self-improve-collect\n(910 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_self_improve_propose [label="self-improve-propose\n(1,205 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_self_improve_close [label="self-improve-close\n(691 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_ecc_monitor [label="ecc-monitor\n(1,172 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_init [label="autopilot-init\n(527 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_launch [label="autopilot-launch\n(915 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_poll [label="autopilot-poll\n(877 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_phase_execute [label="autopilot-phase-execute\n(1,407 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_phase_postprocess [label="autopilot-phase-postprocess\n(609 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_collect [label="autopilot-collect\n(523 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_retrospective [label="autopilot-retrospective\n(741 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_patterns [label="autopilot-patterns\n(692 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_cross_issue [label="autopilot-cross-issue\n(768 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_summary [label="autopilot-summary\n(1,170 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_session_audit [label="session-audit\n(959 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -31,6 +46,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_autopilot; }
+    { rank=same; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; cmd_autopilot_init; cmd_autopilot_launch; cmd_autopilot_poll; cmd_autopilot_phase_execute; cmd_autopilot_phase_postprocess; cmd_autopilot_collect; cmd_autopilot_retrospective; cmd_autopilot_patterns; cmd_autopilot_cross_issue; cmd_autopilot_summary; cmd_session_audit; }
 
     // Edges
     skill_co_autopilot -> cmd_autopilot_init;
@@ -48,5 +64,21 @@ digraph Dependencies {
     skill_co_autopilot -> cmd_self_improve_propose;
     skill_co_autopilot -> cmd_self_improve_close;
     skill_co_autopilot -> cmd_ecc_monitor;
+
+    // Ordering constraints (invisible edges)
+    cmd_autopilot_init -> cmd_autopilot_launch [style=invis, weight=10];
+    cmd_autopilot_launch -> cmd_autopilot_poll [style=invis, weight=10];
+    cmd_autopilot_poll -> cmd_autopilot_phase_execute [style=invis, weight=10];
+    cmd_autopilot_phase_execute -> cmd_autopilot_phase_postprocess [style=invis, weight=10];
+    cmd_autopilot_phase_postprocess -> cmd_autopilot_collect [style=invis, weight=10];
+    cmd_autopilot_collect -> cmd_autopilot_retrospective [style=invis, weight=10];
+    cmd_autopilot_retrospective -> cmd_autopilot_patterns [style=invis, weight=10];
+    cmd_autopilot_patterns -> cmd_autopilot_cross_issue [style=invis, weight=10];
+    cmd_autopilot_cross_issue -> cmd_autopilot_summary [style=invis, weight=10];
+    cmd_autopilot_summary -> cmd_session_audit [style=invis, weight=10];
+    cmd_session_audit -> cmd_self_improve_collect [style=invis, weight=10];
+    cmd_self_improve_collect -> cmd_self_improve_propose [style=invis, weight=10];
+    cmd_self_improve_propose -> cmd_self_improve_close [style=invis, weight=10];
+    cmd_self_improve_close -> cmd_ecc_monitor [style=invis, weight=10];
 
 }

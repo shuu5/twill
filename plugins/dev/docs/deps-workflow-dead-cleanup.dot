@@ -20,6 +20,8 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
+    cmd_dead_component_detect [label="dead-component-detect\n(901 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_dead_component_execute [label="dead-component-execute\n(1,082 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -31,9 +33,13 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_dead_cleanup; }
+    { rank=same; cmd_dead_component_detect; cmd_dead_component_execute; }
 
     // Edges
     skill_workflow_dead_cleanup -> cmd_dead_component_detect;
     skill_workflow_dead_cleanup -> cmd_dead_component_execute;
+
+    // Ordering constraints (invisible edges)
+    cmd_dead_component_detect -> cmd_dead_component_execute [style=invis, weight=10];
 
 }

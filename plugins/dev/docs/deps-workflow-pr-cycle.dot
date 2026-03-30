@@ -15,15 +15,26 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_pr_cycle [label="dev:workflow-pr-cycle\n(660 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_cycle [label="dev:workflow-pr-cycle\n(1,226 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_phase_review [label="phase-review\n(544 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_fix_phase [label="fix-phase\n(380 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_e2e_screening [label="e2e-screening\n(322 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,026 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_ts_preflight [label="ts-preflight\n(349 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_scope_judge [label="scope-judge\n(394 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_pr_test [label="pr-test\n(359 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_post_fix_verify [label="post-fix-verify\n(353 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_warning_fix [label="warning-fix\n(363 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_pr_cycle_report [label="pr-cycle-report\n(329 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_all_pass_check [label="all-pass-check\n(407 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_ac_verify [label="ac-verify\n(332 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_phase_review [label="phase-review\n(571 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_fix_phase [label="fix-phase\n(409 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_e2e_screening [label="e2e-screening\n(351 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,046 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_ac_deploy_trigger [label="ac-deploy-trigger\n(457 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_auto_merge [label="auto-merge\n(475 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(838 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -37,7 +48,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_pr_cycle; }
-    { rank=same; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; }
+    { rank=same; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_post_fix_verify; cmd_warning_fix; cmd_pr_cycle_report; cmd_all_pass_check; cmd_ac_verify; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; cmd_ac_deploy_trigger; cmd_auto_merge; cmd_pr_cycle_analysis; }
     { rank=same; script_tech_stack_detect; script_specialist_output_parse; }
 
     // Edges
@@ -55,10 +66,28 @@ digraph Dependencies {
     skill_workflow_pr_cycle -> cmd_pr_cycle_analysis;
     skill_workflow_pr_cycle -> cmd_all_pass_check;
     skill_workflow_pr_cycle -> cmd_merge_gate;
+    skill_workflow_pr_cycle -> cmd_auto_merge;
     cmd_phase_review -> script_specialist_output_parse;
     cmd_phase_review -> script_tech_stack_detect;
     cmd_merge_gate -> script_specialist_output_parse;
     cmd_merge_gate -> script_tech_stack_detect;
-    cmd_merge_gate -> cmd_auto_merge;
+
+    // Ordering constraints (invisible edges)
+    cmd_ac_deploy_trigger -> cmd_ac_verify [style=invis, weight=10];
+    cmd_ac_verify -> cmd_ts_preflight [style=invis, weight=10];
+    cmd_ts_preflight -> cmd_phase_review [style=invis, weight=10];
+    cmd_phase_review -> cmd_scope_judge [style=invis, weight=10];
+    cmd_scope_judge -> cmd_pr_test [style=invis, weight=10];
+    cmd_pr_test -> cmd_fix_phase [style=invis, weight=10];
+    cmd_fix_phase -> cmd_post_fix_verify [style=invis, weight=10];
+    cmd_post_fix_verify -> cmd_warning_fix [style=invis, weight=10];
+    cmd_warning_fix -> cmd_e2e_screening [style=invis, weight=10];
+    cmd_e2e_screening -> cmd_pr_cycle_report [style=invis, weight=10];
+    cmd_pr_cycle_report -> cmd_pr_cycle_analysis [style=invis, weight=10];
+    cmd_pr_cycle_analysis -> cmd_all_pass_check [style=invis, weight=10];
+    cmd_all_pass_check -> cmd_merge_gate [style=invis, weight=10];
+    cmd_merge_gate -> cmd_auto_merge [style=invis, weight=10];
+    script_specialist_output_parse -> script_tech_stack_detect [style=invis, weight=10];
+    script_specialist_output_parse -> script_tech_stack_detect [style=invis, weight=10];
 
 }
