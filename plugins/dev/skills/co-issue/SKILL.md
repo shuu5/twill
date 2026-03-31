@@ -45,13 +45,57 @@ TaskUpdate Phase 2 → completed
 
 TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
+### Step 3a: 構造化（各 Issue 順次）
+
 各 Issue 候補に対して順に:
 
-1. **曖昧点検出**: `/dev:issue-dig` → PASS で次へ、WARN/FAIL は質問提示後続行（最大1回再実行）
-2. **構造化**: `/dev:issue-structure` でテンプレート適用（bug/feature）
-3. **推奨ラベル抽出**: issue-structure 出力の `## 推奨ラベル` セクションから `ctx/<name>` を抽出し recommended_labels に記録（セクションなし→空）
-4. **品質評価**: `/dev:issue-assess` → completeness < 100% は補完再評価（最大1回）、duplicates は [A] 統合 [B] Related [C] 無関係、needs_split は候補追加
-5. **tech-debt 棚卸し**（該当時のみ）: `/dev:issue-tech-debt-absorb` → Phase 4 で使用
+1. **構造化**: `/dev:issue-structure` でテンプレート適用（bug/feature）
+2. **推奨ラベル抽出**: issue-structure 出力の `## 推奨ラベル` セクションから `ctx/<name>` を抽出し recommended_labels に記録（セクションなし→空）
+3. **tech-debt 棚卸し**（該当時のみ）: `/dev:issue-tech-debt-absorb` → Phase 4 で使用
+
+### Step 3b: specialist 並列レビュー
+
+`--quick` 指定時はこのステップをスキップし、Step 3a のみで Phase 3 を完了する。
+
+全 Issue の構造化完了後、全 Issue × 2 specialist を一括並列 spawn（Agent tool）:
+
+```
+FOR each structured_issue IN issues:
+  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n{structured_issue.body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n{structured_issue.body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
+```
+
+**注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。
+
+**重要**: 全 specialist を単一メッセージで一括発行すること（並列実行）。model は指定不要（agent frontmatter の model: sonnet が適用される）。
+
+### Step 3c: 結果集約・ブロック判定
+
+全 specialist 完了後、結果を集約:
+
+1. **findings 統合**: 全 specialist の findings を Issue 別にマージ
+2. **ブロック判定**: `severity == CRITICAL && confidence >= 80` が 1 件以上 → 当該 Issue は Phase 4 ブロック
+3. **ユーザー提示**: Issue 別に findings テーブルを表示
+
+```markdown
+## specialist レビュー結果
+
+### Issue: <title>
+
+| specialist | status | findings |
+|-----------|--------|----------|
+| issue-critic | WARN | 2 findings (0 CRITICAL, 1 WARNING, 1 INFO) |
+| issue-feasibility | PASS | 0 findings |
+
+#### findings 詳細
+| severity | confidence | category | message |
+|----------|-----------|----------|---------|
+| WARNING | 75 | ambiguity | 受け入れ基準の項目3が定量化されていない |
+| INFO | 60 | scope | Phase 2 との境界が明確 |
+```
+
+4. **CRITICAL ブロック時**: 「以下の Issue に CRITICAL findings があります。修正後に再実行してください」と表示。修正完了後、Step 3b を再実行可能
+5. **split 提案ハンドリング**: `category: scope` の split 提案がある場合、ユーザーに提示し承認を求める。承認後に分割するが、分割後の新 Issue に対して specialist 再レビューは行わない（最大 1 ラウンド）
 
 TaskUpdate Phase 3 → completed
 

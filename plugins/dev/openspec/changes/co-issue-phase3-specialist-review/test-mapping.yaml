@@ -1,0 +1,530 @@
+change_id: co-issue-phase3-specialist-review
+generated_at: "2026-03-31T14:37:40Z"
+test_framework: bats
+test_file: tests/bats/structure/co-issue-phase3-specialist.bats
+
+# Notes:
+# - All scenarios below are structural/file-level tests verifiable with BATS.
+# - Runtime LLM behaviour (parallel spawn, CRITICAL-blocking flow, specialist scoring)
+#   is intentionally excluded: those are not mechanically testable.
+# - Tests 31 and 32 (loom check / loom validate) pass pre-implementation because
+#   the loom tools operate on the current tree; they will continue to pass after
+#   implementation confirms no regressions were introduced.
+
+scenarios:
+  # -----------------------------------------------------------------------
+  # Spec: specs/deps-update.md
+  # Requirement: deps.yaml に新コンポーネントを登録
+  # -----------------------------------------------------------------------
+  - id: "deps-update-issue-critic-exists"
+    name: "issue-critic が deps.yaml に登録されていること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 7
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: issue-critic entry exists in deps.yaml"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-issue-critic-type"
+    name: "issue-critic の type が specialist であること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 7
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: issue-critic has type specialist"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-issue-critic-path"
+    name: "issue-critic の path が agents/issue-critic.md であること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 7
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: issue-critic path points to agents/issue-critic.md"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-issue-feasibility-exists"
+    name: "issue-feasibility が deps.yaml に登録されていること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 8
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: issue-feasibility entry exists in deps.yaml"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-issue-feasibility-type"
+    name: "issue-feasibility の type が specialist であること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 8
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: issue-feasibility has type specialist"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-issue-feasibility-path"
+    name: "issue-feasibility の path が agents/issue-feasibility.md であること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 8
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: issue-feasibility path points to agents/issue-feasibility.md"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-ref-quality-exists"
+    name: "ref-issue-quality-criteria が deps.yaml に登録されていること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 9
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: ref-issue-quality-criteria entry exists in deps.yaml"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-ref-quality-type"
+    name: "ref-issue-quality-criteria の type が reference であること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 9
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: ref-issue-quality-criteria has type reference"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-ref-quality-path"
+    name: "ref-issue-quality-criteria の path が refs/ref-issue-quality-criteria.md であること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 9
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: ref-issue-quality-criteria path points to refs/ref-issue-quality-criteria.md"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Spec: specs/deps-update.md
+  # Requirement: co-issue calls 更新
+  # -----------------------------------------------------------------------
+  - id: "deps-update-co-issue-calls-critic"
+    name: "co-issue calls に specialist: issue-critic が含まれること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 15
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: co-issue calls includes specialist issue-critic"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-co-issue-calls-feasibility"
+    name: "co-issue calls に specialist: issue-feasibility が含まれること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 16
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: co-issue calls includes specialist issue-feasibility"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-co-issue-calls-ref-quality"
+    name: "co-issue calls に reference: ref-issue-quality-criteria が含まれること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 17
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: co-issue calls includes reference ref-issue-quality-criteria"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-update-co-issue-can-spawn-specialist"
+    name: "co-issue can_spawn に specialist が含まれること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 18
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: co-issue can_spawn includes specialist"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Spec: specs/deps-update.md
+  # Scenario: loom check が PASS
+  # -----------------------------------------------------------------------
+  - id: "deps-update-loom-check-pass"
+    name: "loom check が PASS"
+    spec_file: "specs/deps-update.md"
+    spec_line: 24
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: loom check passes with no missing files"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31T14:37:40Z"
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Spec: specs/deps-update.md
+  # Scenario: loom validate が PASS
+  # -----------------------------------------------------------------------
+  - id: "deps-update-loom-validate-pass"
+    name: "loom validate が PASS"
+    spec_file: "specs/deps-update.md"
+    spec_line: 29
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "deps-update: loom validate passes with no type violations"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31T14:37:40Z"
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Spec: specs/co-issue-phase3-redesign.md
+  # Requirement: issue-dig 廃止
+  # -----------------------------------------------------------------------
+  - id: "phase3-issue-dig-removed-from-deps"
+    name: "issue-dig が deps.yaml から削除されていること"
+    spec_file: "specs/co-issue-phase3-redesign.md"
+    spec_line: 41
+    requirement: "issue-dig 廃止"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "phase3-redesign: issue-dig entry does NOT exist in deps.yaml"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-issue-dig-not-in-co-issue-calls"
+    name: "co-issue calls に issue-dig が含まれないこと"
+    spec_file: "specs/co-issue-phase3-redesign.md"
+    spec_line: 44
+    requirement: "issue-dig 廃止"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "phase3-redesign: co-issue calls does NOT reference issue-dig"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-issue-dig-file-deleted"
+    name: "commands/issue-dig.md が削除されていること"
+    spec_file: "specs/co-issue-phase3-redesign.md"
+    spec_line: 41
+    requirement: "issue-dig 廃止"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "phase3-redesign: commands/issue-dig.md does NOT exist"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Spec: specs/co-issue-phase3-redesign.md
+  # Requirement: issue-assess 廃止
+  # -----------------------------------------------------------------------
+  - id: "phase3-issue-assess-removed-from-deps"
+    name: "issue-assess が deps.yaml から削除されていること"
+    spec_file: "specs/co-issue-phase3-redesign.md"
+    spec_line: 50
+    requirement: "issue-assess 廃止"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "phase3-redesign: issue-assess entry does NOT exist in deps.yaml"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-issue-assess-not-in-co-issue-calls"
+    name: "co-issue calls に issue-assess が含まれないこと"
+    spec_file: "specs/co-issue-phase3-redesign.md"
+    spec_line: 53
+    requirement: "issue-assess 廃止"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "phase3-redesign: co-issue calls does NOT reference issue-assess"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-issue-assess-file-deleted"
+    name: "commands/issue-assess.md が削除されていること"
+    spec_file: "specs/co-issue-phase3-redesign.md"
+    spec_line: 50
+    requirement: "issue-assess 廃止"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "phase3-redesign: commands/issue-assess.md does NOT exist"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Spec: specs/issue-critic-agent.md
+  # Requirement: issue-critic agent 作成
+  # -----------------------------------------------------------------------
+  - id: "issue-critic-agent-file-exists"
+    name: "agents/issue-critic.md が存在すること"
+    spec_file: "specs/issue-critic-agent.md"
+    spec_line: 3
+    requirement: "issue-critic agent 作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "issue-critic-agent: agents/issue-critic.md exists"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-critic-agent-model-sonnet"
+    name: "issue-critic.md に model: sonnet frontmatter があること"
+    spec_file: "specs/issue-critic-agent.md"
+    spec_line: 9
+    requirement: "issue-critic agent 作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "issue-critic-agent: agents/issue-critic.md has model: sonnet in frontmatter"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-critic-agent-maxturns-15"
+    name: "issue-critic.md に maxTurns: 15 frontmatter があること"
+    spec_file: "specs/issue-critic-agent.md"
+    spec_line: 9
+    requirement: "issue-critic agent 作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "issue-critic-agent: agents/issue-critic.md has maxTurns: 15 in frontmatter"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-critic-agent-categories"
+    name: "issue-critic.md が findings categories に言及すること"
+    spec_file: "specs/issue-critic-agent.md"
+    spec_line: 7
+    requirement: "issue-critic agent 作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "issue-critic-agent: agents/issue-critic.md mentions findings categories (assumption/ambiguity/scope)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Spec: specs/issue-feasibility-agent.md
+  # Requirement: issue-feasibility agent 作成
+  # -----------------------------------------------------------------------
+  - id: "issue-feasibility-agent-file-exists"
+    name: "agents/issue-feasibility.md が存在すること"
+    spec_file: "specs/issue-feasibility-agent.md"
+    spec_line: 3
+    requirement: "issue-feasibility agent 作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "issue-feasibility-agent: agents/issue-feasibility.md exists"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-feasibility-agent-model-sonnet"
+    name: "issue-feasibility.md に model: sonnet frontmatter があること"
+    spec_file: "specs/issue-feasibility-agent.md"
+    spec_line: 9
+    requirement: "issue-feasibility agent 作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "issue-feasibility-agent: agents/issue-feasibility.md has model: sonnet in frontmatter"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-feasibility-agent-maxturns-15"
+    name: "issue-feasibility.md に maxTurns: 15 frontmatter があること"
+    spec_file: "specs/issue-feasibility-agent.md"
+    spec_line: 9
+    requirement: "issue-feasibility agent 作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "issue-feasibility-agent: agents/issue-feasibility.md has maxTurns: 15 in frontmatter"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-feasibility-agent-category"
+    name: "issue-feasibility.md が feasibility category に言及すること"
+    spec_file: "specs/issue-feasibility-agent.md"
+    spec_line: 7
+    requirement: "issue-feasibility agent 作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "issue-feasibility-agent: agents/issue-feasibility.md mentions feasibility category"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Spec: specs/ref-issue-quality-criteria.md
+  # Requirement: Issue 品質基準リファレンス作成
+  # -----------------------------------------------------------------------
+  - id: "ref-quality-criteria-file-exists"
+    name: "refs/ref-issue-quality-criteria.md が存在すること"
+    spec_file: "specs/ref-issue-quality-criteria.md"
+    spec_line: 3
+    requirement: "Issue 品質基準リファレンス作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "ref-issue-quality-criteria: refs/ref-issue-quality-criteria.md exists"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "ref-quality-criteria-severity-levels"
+    name: "ref が CRITICAL / WARNING / INFO の severity 基準を含むこと"
+    spec_file: "specs/ref-issue-quality-criteria.md"
+    spec_line: 12
+    requirement: "Issue 品質基準リファレンス作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "ref-issue-quality-criteria: mentions severity levels CRITICAL, WARNING, INFO"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "ref-quality-criteria-no-critical-overuse"
+    name: "ref が過剰 CRITICAL 防止の注意書きを含むこと"
+    spec_file: "specs/ref-issue-quality-criteria.md"
+    spec_line: 15
+    requirement: "Issue 品質基準リファレンス作成"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "ref-issue-quality-criteria: mentions CRITICAL use restriction (not overuse)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Edge cases
+  # -----------------------------------------------------------------------
+  - id: "edge-both-specialists-coexist"
+    name: "issue-critic と issue-feasibility が deps.yaml に共存すること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 7
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "edge: both issue-critic and issue-feasibility coexist in deps.yaml"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-co-issue-calls-no-old-refs"
+    name: "co-issue calls に issue-dig/issue-assess がいかなる形式でも残らないこと"
+    spec_file: "specs/co-issue-phase3-redesign.md"
+    spec_line: 12
+    requirement: "issue-dig 廃止 / issue-assess 廃止"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "edge: co-issue calls has no reference to issue-dig or issue-assess in any form"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-co-issue-calls-resolve"
+    name: "co-issue の全 calls 参照が deps.yaml に解決できること"
+    spec_file: "specs/deps-update.md"
+    spec_line: 24
+    requirement: "deps.yaml に新コンポーネントを登録"
+    test_file: "tests/bats/structure/co-issue-phase3-specialist.bats"
+    test_name: "edge: co-issue calls references all resolve to existing components"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31T14:37:40Z"
+    failure_reason: null
+
+# -----------------------------------------------------------------------
+# Scenarios intentionally NOT tested with BATS (LLM runtime behaviour)
+# -----------------------------------------------------------------------
+# The following scenarios from the specs are out of scope for BATS tests
+# because they describe LLM runtime behaviour, not structural/file properties:
+#
+# - co-issue-phase3-redesign.md: "通常の Phase 3 実行"
+#   (parallel spawn of 6 agents is a runtime execution concern)
+# - co-issue-phase3-redesign.md: "CRITICAL findings によるブロック"
+#   (blocking behaviour depends on specialist LLM output)
+# - co-issue-phase3-redesign.md: "WARNING のみの場合"
+#   (depends on specialist LLM output)
+# - co-issue-phase3-redesign.md: "split 提案の適用"
+#   (user interaction + LLM behaviour)
+# - co-issue-phase3-redesign.md: "--quick 指定時"
+#   (runtime flag handling in SKILL.md, not structurally verifiable)
+# - issue-critic-agent.md: 曖昧な受け入れ基準の検出, 未検証の仮定, etc.
+#   (LLM agent behaviour)
+# - issue-feasibility-agent.md: 対象ファイルが存在しない, 影響範囲の見落とし, etc.
+#   (LLM agent behaviour)
+# - ref-issue-quality-criteria.md: specialist への品質基準注入, severity 判定基準
+#   (LLM agent injection behaviour)

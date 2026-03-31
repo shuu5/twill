@@ -79,19 +79,20 @@ skills:
     type: controller
     path: skills/co-issue/SKILL.md
     spawnable_by: [user]
-    can_spawn: [composite, atomic, reference]
+    can_spawn: [composite, atomic, specialist, reference]
     calls:
       - atomic: explore
-      - atomic: issue-dig
       - atomic: issue-structure
-      - composite: issue-assess
       - atomic: issue-tech-debt-absorb
       - atomic: issue-create
       - atomic: issue-bulk-create
       - atomic: project-board-sync
+      - specialist: issue-critic
+      - specialist: issue-feasibility
       - reference: ref-issue-template-bug
       - reference: ref-issue-template-feature
       - reference: ref-project-model
+      - reference: ref-issue-quality-criteria
     description: "要望をGitHub Issueに変換するワークフロー"
 
   co-project:
@@ -283,6 +284,11 @@ refs:
     type: reference
     path: refs/ref-project-model.md
     description: "Issue 管理データモデル（5軸ラベル体系）"
+
+  ref-issue-quality-criteria:
+    type: reference
+    path: refs/ref-issue-quality-criteria.md
+    description: "Issue 品質レビュー specialist 用の severity 判定基準"
 
   ref-dci:
     type: reference
@@ -501,13 +507,6 @@ commands:
 
   # === C-2a: Issue管理系（7個） ===
 
-  issue-dig:
-    type: atomic
-    path: commands/issue-dig.md
-    spawnable_by: [controller]
-    can_spawn: []
-    description: "Per-Issue 曖昧点検出（4観点）"
-
   issue-structure:
     type: atomic
     path: commands/issue-structure.md
@@ -542,17 +541,6 @@ commands:
     spawnable_by: [controller]
     can_spawn: []
     description: "Issue作成後に Project V2 へ自動追加+フィールドミラー"
-
-  issue-assess:
-    type: composite
-    path: commands/issue-assess.md
-    spawnable_by: [controller]
-    can_spawn: [specialist]
-    calls:
-      - specialist: template-validator
-      - specialist: context-checker
-      - reference: ref-specialist-output-schema
-    description: "Issue品質評価（テンプレート準拠+コンテキストチェック並列）"
 
   # === C-2a: Project管理系（8個） ===
 
@@ -1376,6 +1364,23 @@ agents:
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
     description: "OpenSpec Scenarioの品質レビュー"
+
+  # Issue レビュー系（sonnet）
+  issue-critic:
+    type: specialist
+    path: agents/issue-critic.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "Issue の仮定・曖昧点・盲点・粒度・split・依存検出"
+
+  issue-feasibility:
+    type: specialist
+    path: agents/issue-feasibility.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "実コード読みで Issue の実装可能性・影響範囲検証"
 
   # 品質判断系（sonnet）
   worker-code-reviewer:
