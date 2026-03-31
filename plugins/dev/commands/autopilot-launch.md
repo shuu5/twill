@@ -51,7 +51,7 @@ status=running で初期化される。
 
 ```bash
 WINDOW_NAME="ap-#${ISSUE}"
-PROMPT="/dev:workflow-setup --auto --auto-merge #${ISSUE}"
+PROMPT="/dev:workflow-setup #${ISSUE}"
 ```
 
 ### Step 4: コンテキスト注入構築

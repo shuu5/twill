@@ -41,7 +41,7 @@ COMMAND.md を `commands/autopilot-launch.md` に配置する（MUST）。
 4. `tmux new-window -n "ap-#${ISSUE}" -c "$PROJECT_DIR"` で Worker 起動（DEV_AUTOPILOT_SESSION なし）
 5. pane-died フックで crash-detect.sh を呼び出す設定
 
-Worker 起動プロンプトは `/dev:workflow-setup --auto --auto-merge #${ISSUE}` を使用しなければならない（SHALL）。
+Worker 起動プロンプトは `/dev:workflow-setup #${ISSUE}` を使用しなければならない（SHALL）。
 
 #### Scenario: 正常起動
 - **WHEN** cld が PATH に存在し Issue 番号が有効
