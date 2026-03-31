@@ -17,6 +17,25 @@ if ! command -v jq &>/dev/null; then
   exit 1
 fi
 
+# セッション完了判定: 全 issue が done なら true を返す
+# issues フィールドが不在または空の場合も完了済みとして扱う
+is_session_completed() {
+  local session_file="$1"
+  local has_issues
+  has_issues=$(jq 'has("issues") and (.issues | length > 0)' "$session_file" 2>/dev/null) || return 1
+  if [[ -z "$has_issues" ]]; then
+    # jq が空出力（ファイル破損等）→ 未完了扱い（fail-closed）
+    return 1
+  fi
+  if [[ "$has_issues" != "true" ]]; then
+    # issues フィールドなし or 空 → 完了済みとみなす
+    return 0
+  fi
+  local all_done
+  all_done=$(jq '[.issues[].status] | all(. == "done")' "$session_file" 2>/dev/null) || return 1
+  [[ "$all_done" == "true" ]]
+}
+
 usage() {
   cat <<EOF
 Usage: $(basename "$0") [--check-only]
@@ -60,7 +79,11 @@ if [[ -f "$SESSION_FILE" ]]; then
     elapsed=$(( now_epoch - started_epoch ))
     hours=$(( elapsed / 3600 ))
 
-    if (( hours >= 24 )); then
+    if [[ "$force" == "true" ]] && is_session_completed "$SESSION_FILE"; then
+      # 完了済みセッション: --force で経過時間に関係なく即座に削除
+      echo "WARN: 完了済みセッション (${hours}h経過) を強制削除します: $session_id" >&2
+      rm -f "$SESSION_FILE"
+    elif (( hours >= 24 )); then
       if [[ "$force" == "true" ]]; then
         echo "WARN: stale セッション (${hours}h経過) を強制削除します: $session_id" >&2
         rm -f "$SESSION_FILE"
@@ -70,8 +93,13 @@ if [[ -f "$SESSION_FILE" ]]; then
         exit 2
       fi
     else
-      echo "ERROR: 既存セッションが実行中です (session_id=$session_id, ${hours}h経過)" >&2
-      echo "同一プロジェクトでの複数 autopilot セッションの同時実行は禁止されています" >&2
+      if [[ "$force" == "true" ]]; then
+        echo "ERROR: 実行中の issue があるセッションです (session_id=$session_id, ${hours}h経過)" >&2
+        echo "24h 経過後に再試行してください" >&2
+      else
+        echo "ERROR: 既存セッションが実行中です (session_id=$session_id, ${hours}h経過)" >&2
+        echo "同一プロジェクトでの複数 autopilot セッションの同時実行は禁止されています" >&2
+      fi
       exit 1
     fi
   fi

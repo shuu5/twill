@@ -1,0 +1,17 @@
+specs:
+  stale-session-force-delete:
+    type: unit
+    test_file: tests/bats/scripts/autopilot-init.bats
+    scenarios:
+      - "all issues done + --force + under 24h"
+      - "all issues done + --force + over 24h"
+      - "running issue + --force + under 24h"
+      - "running issue + --force + over 24h"
+      - "issues field absent + --force"
+      - "no --force + under 24h"
+  eval-removal:
+    type: unit
+    test_file: tests/bats/scripts/autopilot-init.bats
+    scenarios:
+      - "autopilot-init.md does not use eval for autopilot-init.sh"
+      - "autopilot-init.md does not use eval for session-create.sh"

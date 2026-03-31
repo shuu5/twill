@@ -23,12 +23,13 @@ fi
 ### Step 2: .autopilot/ 初期化
 
 ```bash
-eval "$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/autopilot-init.sh)"
+AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/autopilot-init.sh
 ```
 
 - 成功時: .autopilot/, .autopilot/issues/, .autopilot/archive/ が作成される
 - 排他制御: 既存セッション検出時はエラー終了（24h 以内）
 - stale セッション（24h 超）: `--force` で強制削除可
+- 完了済みセッション（全 issue done）: `--force` で即座に削除可
 
 ### Step 3: Phase 数取得
 
@@ -39,17 +40,18 @@ PHASE_COUNT=$(grep -c "^  - phase:" "$PLAN_FILE")
 ### Step 4: session.json 作成
 
 ```bash
-eval "$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/session-create.sh --plan-path "$PLAN_FILE" --phase-count "$PHASE_COUNT")"
+SESSION_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/session-create.sh --plan-path "$PLAN_FILE" --phase-count "$PHASE_COUNT")
+SESSION_ID=$(echo "$SESSION_OUTPUT" | grep -oP 'session_id=\K[0-9a-f]+')
 ```
 
-成功時: SESSION_ID が出力される。
+成功時: 出力 `OK: session.json を作成しました (session_id=XXXX)` から SESSION_ID を取得。
 
 ### Step 5: 出力変数設定
 
 co-autopilot に返却する変数:
 
 ```bash
-SESSION_ID=<session-create.sh が出力した値>
+SESSION_ID=<Step 4 で取得した値>
 PHASE_COUNT=<Step 3 で取得した値>
 SESSION_STATE_FILE="$AUTOPILOT_DIR/session.json"
 ```
