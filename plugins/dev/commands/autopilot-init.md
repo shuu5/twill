@@ -23,7 +23,7 @@ fi
 ### Step 2: .autopilot/ 初期化
 
 ```bash
-eval "$(bash $SCRIPTS_ROOT/autopilot-init.sh)"
+eval "$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/autopilot-init.sh)"
 ```
 
 - 成功時: .autopilot/, .autopilot/issues/, .autopilot/archive/ が作成される
@@ -39,7 +39,7 @@ PHASE_COUNT=$(grep -c "^  - phase:" "$PLAN_FILE")
 ### Step 4: session.json 作成
 
 ```bash
-eval "$(bash $SCRIPTS_ROOT/session-create.sh --plan-path "$PLAN_FILE" --phase-count "$PHASE_COUNT")"
+eval "$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/session-create.sh --plan-path "$PLAN_FILE" --phase-count "$PHASE_COUNT")"
 ```
 
 成功時: SESSION_ID が出力される。
@@ -51,7 +51,7 @@ co-autopilot に返却する変数:
 ```bash
 SESSION_ID=<session-create.sh が出力した値>
 PHASE_COUNT=<Step 3 で取得した値>
-SESSION_STATE_FILE="$PROJECT_ROOT/.autopilot/session.json"
+SESSION_STATE_FILE="$AUTOPILOT_DIR/session.json"
 ```
 
 ## 禁止事項（MUST NOT）

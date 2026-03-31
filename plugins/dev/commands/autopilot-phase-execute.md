@@ -86,12 +86,12 @@ resolve_issue_repo_context() {
 ```
 FOR each ISSUE in $ISSUES:
   # 再開時の done スキップ
-  STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
   IF STATUS == "done":
     → 状態記録（done）、continue
 
   # should_skip 判定
-  IF bash $SCRIPTS_ROOT/autopilot-should-skip.sh "$PLAN_FILE" "$ISSUE" "$SESSION_STATE_FILE" → exit 0:
+  IF AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/autopilot-should-skip.sh "$PLAN_FILE" "$ISSUE" "$SESSION_STATE_FILE" → exit 0:
     → 状態記録（skipped）、continue
 
   # Worker 起動（autopilot-launch を Read → 実行）
@@ -102,10 +102,10 @@ FOR each ISSUE in $ISSUES:
   → commands/autopilot-poll.md を Read → 実行
 
   # 結果処理
-  STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
   IF STATUS == "merge-ready":
     → commands/merge-gate.md を Read → 実行
-  STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
   IF STATUS == "done":
     → tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
     → 状態記録（done）
@@ -121,10 +121,10 @@ FOR each ISSUE in $ISSUES:
 # 有効 Issue リストを構築（skip/done を除外）
 ACTIVE_ISSUES=()
 FOR each ISSUE in $ISSUES:
-  STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
   IF STATUS == "done":
     → 状態記録（done）、continue
-  IF bash $SCRIPTS_ROOT/autopilot-should-skip.sh → exit 0:
+  IF AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/autopilot-should-skip.sh → exit 0:
     → 状態記録（skipped）、continue
   ACTIVE_ISSUES+=($ISSUE)
 
@@ -135,7 +135,7 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
 
   # バッチ内の Issue を並列 launch
   FOR each ISSUE in $BATCH:
-    STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
     IF STATUS == "done": continue
     → commands/autopilot-launch.md を Read → 実行
 
@@ -146,13 +146,13 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
 
   # merge-ready の Issue に対して merge-gate を順次実行
   FOR each ISSUE in $BATCH:
-    STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
     IF STATUS == "merge-ready":
       → commands/merge-gate.md を Read → 実行
 
   # window 管理 + 状態記録
   FOR each ISSUE in $BATCH:
-    STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
     IF STATUS == "done":
       → tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
       → 状態記録（done）
@@ -166,11 +166,11 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
 
 ```bash
 # done の場合
-bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot \
+AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot \
   --set "status=done" --set "pr_number=$PR_NUMBER"
 
 # skipped の場合
-bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot \
+AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot \
   --set "status=failed" --set "failure={\"message\": \"dependency_failed\", \"step\": \"skip\"}"
 
 # fail 情報は crash-detect.sh / autopilot-poll が既に記録済み

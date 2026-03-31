@@ -1,0 +1,15 @@
+change: fix-autopilotdir-state-split
+generated: 2026-03-31
+tests:
+  unit:
+    - file: tests/bats/scripts/autopilotdir-state-split.bats
+      scenarios:
+        - "AUTOPILOT_DIR override: autopilot-init creates dirs at specified path"
+        - "AUTOPILOT_DIR override: default fallback uses PROJECT_ROOT/.autopilot"
+        - "autopilot-init respects AUTOPILOT_DIR for session-create"
+        - "session-create writes to AUTOPILOT_DIR/session.json not PROJECT_ROOT"
+        - "state-read uses AUTOPILOT_DIR to find issue state"
+        - "state-write uses AUTOPILOT_DIR to update issue state"
+        - "Pilot and Worker share same state file via AUTOPILOT_DIR"
+        - "state-read returns empty for non-existent issue when AUTOPILOT_DIR set"
+        - "AUTOPILOT_DIR with trailing slash is handled correctly"
