@@ -21,6 +21,15 @@ autopilot-phase-execute から呼び出される。
 
 ## 実行ロジック（MUST）
 
+### Step 0.5: ISSUE 変数バリデーション
+
+```bash
+if [[ ! "$ISSUE" =~ ^[0-9]+$ ]]; then
+  echo "Error: ISSUE は正の整数で指定してください"
+  return 1
+fi
+```
+
 ### Step 1: cld パス解決
 
 ```bash
@@ -77,17 +86,76 @@ if [ -n "$CONTEXT_TEXT" ]; then
 fi
 ```
 
+### Step 4.5: 入力バリデーション
+
+```bash
+# ISSUE_REPO_OWNER バリデーション（^[a-zA-Z0-9_-]+$）
+if [ -n "${ISSUE_REPO_OWNER:-}" ]; then
+  if [[ ! "$ISSUE_REPO_OWNER" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    echo "Error: ISSUE_REPO_OWNER の形式が正しくありません（許可パターン: ^[a-zA-Z0-9_-]+$）"
+    bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot $REPO_ARG \
+      --set "status=failed" \
+      --set "failure={\"message\": \"invalid_repo_owner\", \"step\": \"launch_worker\"}"
+    return 1
+  fi
+fi
+
+# ISSUE_REPO_NAME バリデーション（^[a-zA-Z0-9_.-]+$）
+if [ -n "${ISSUE_REPO_NAME:-}" ]; then
+  if [[ ! "$ISSUE_REPO_NAME" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+    echo "Error: ISSUE_REPO_NAME の形式が正しくありません（許可パターン: ^[a-zA-Z0-9_.-]+$）"
+    bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot $REPO_ARG \
+      --set "status=failed" \
+      --set "failure={\"message\": \"invalid_repo_name\", \"step\": \"launch_worker\"}"
+    return 1
+  fi
+fi
+
+# PILOT_AUTOPILOT_DIR バリデーション（絶対パス必須 + パストラバーサル禁止）
+if [ -n "${PILOT_AUTOPILOT_DIR:-}" ]; then
+  if [[ ! "$PILOT_AUTOPILOT_DIR" =~ ^/ ]]; then
+    echo "Error: PILOT_AUTOPILOT_DIR は絶対パスで指定してください"
+    bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot $REPO_ARG \
+      --set "status=failed" \
+      --set "failure={\"message\": \"invalid_autopilot_dir\", \"step\": \"launch_worker\"}"
+    return 1
+  fi
+  if [[ "$PILOT_AUTOPILOT_DIR" =~ /\.\./ || "$PILOT_AUTOPILOT_DIR" =~ /\.\.$ ]]; then
+    echo "Error: PILOT_AUTOPILOT_DIR にパストラバーサルは使用できません"
+    bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot $REPO_ARG \
+      --set "status=failed" \
+      --set "failure={\"message\": \"invalid_autopilot_dir\", \"step\": \"launch_worker\"}"
+    return 1
+  fi
+fi
+```
+
 ### Step 5: tmux window 作成 + cld 起動
 
 ```bash
 # クロスリポジトリ: ISSUE_REPO_PATH が設定されていれば外部リポジトリで起動
 EFFECTIVE_PROJECT_DIR="$PROJECT_DIR"
 if [ -n "${ISSUE_REPO_PATH:-}" ]; then
-  if [ ! -d "$ISSUE_REPO_PATH" ]; then
-    echo "Error: リポジトリパスが見つかりません: $ISSUE_REPO_PATH"
+  # ISSUE_REPO_PATH バリデーション（絶対パス必須 + パストラバーサル禁止）
+  if [[ ! "$ISSUE_REPO_PATH" =~ ^/ ]]; then
+    echo "Error: ISSUE_REPO_PATH は絶対パスで指定してください"
     bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot $REPO_ARG \
       --set "status=failed" \
-      --set "failure={\"message\": \"repo_path_not_found\", \"path\": \"$ISSUE_REPO_PATH\", \"step\": \"launch_worker\"}"
+      --set "failure={\"message\": \"invalid_repo_path\", \"step\": \"launch_worker\"}"
+    return 1
+  fi
+  if [[ "$ISSUE_REPO_PATH" =~ /\.\./ || "$ISSUE_REPO_PATH" =~ /\.\.$ ]]; then
+    echo "Error: ISSUE_REPO_PATH にパストラバーサルは使用できません"
+    bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot $REPO_ARG \
+      --set "status=failed" \
+      --set "failure={\"message\": \"invalid_repo_path\", \"step\": \"launch_worker\"}"
+    return 1
+  fi
+  if [ ! -d "$ISSUE_REPO_PATH" ]; then
+    echo "Error: リポジトリパスが見つかりません"
+    bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot $REPO_ARG \
+      --set "status=failed" \
+      --set "failure={\"message\": \"repo_path_not_found\", \"step\": \"launch_worker\"}"
     return 1
   fi
   EFFECTIVE_PROJECT_DIR="$ISSUE_REPO_PATH"
@@ -103,20 +171,23 @@ fi
 # クロスリポジトリ: AUTOPILOT_DIR を Pilot 側に固定（Worker が状態を共有するため）
 AUTOPILOT_ENV=""
 if [ -n "${PILOT_AUTOPILOT_DIR:-}" ]; then
-  AUTOPILOT_ENV="AUTOPILOT_DIR=${PILOT_AUTOPILOT_DIR}"
+  QUOTED_AUTOPILOT_DIR=$(printf '%q' "$PILOT_AUTOPILOT_DIR")
+  AUTOPILOT_ENV="AUTOPILOT_DIR=${QUOTED_AUTOPILOT_DIR}"
 fi
 
 # クロスリポジトリ: REPO_OWNER/REPO_NAME を環境変数で Worker に渡す
 REPO_ENV=""
 if [ -n "${ISSUE_REPO_OWNER:-}" ] && [ -n "${ISSUE_REPO_NAME:-}" ]; then
-  REPO_ENV="REPO_OWNER=${ISSUE_REPO_OWNER} REPO_NAME=${ISSUE_REPO_NAME}"
+  QUOTED_REPO_OWNER=$(printf '%q' "$ISSUE_REPO_OWNER")
+  QUOTED_REPO_NAME=$(printf '%q' "$ISSUE_REPO_NAME")
+  REPO_ENV="REPO_OWNER=${QUOTED_REPO_OWNER} REPO_NAME=${QUOTED_REPO_NAME}"
 fi
 
 QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
 tmux new-window -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
-  "env $AUTOPILOT_ENV $REPO_ENV $QUOTED_CLD $CONTEXT_ARGS $QUOTED_PROMPT"
+  "env ${AUTOPILOT_ENV} ${REPO_ENV} $QUOTED_CLD $CONTEXT_ARGS $QUOTED_PROMPT"
 ```
 
 **重要**: DEV_AUTOPILOT_SESSION 環境変数は設定しない。Worker は state-read.sh で自身の issue-{N}.json を参照して autopilot 配下であることを判定する。
