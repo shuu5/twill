@@ -5,6 +5,30 @@ autopilot-first 前提で設計。状態管理は issue-{N}.json + state-write.s
 
 ## 実行ロジック（MUST）
 
+### Step 0: autopilot 配下判定（不変条件B/C）
+
+ISSUE_NUM がブランチ名や環境変数から取得できる場合、autopilot 配下かを判定する。
+
+```bash
+AUTOPILOT_STATUS=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
+IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
+```
+
+**IS_AUTOPILOT=true の場合（MUST）:**
+1. merge を実行しない（`gh pr merge` 禁止）
+2. worktree 削除を実行しない（不変条件B: Pilot 専任）
+3. `state-write.sh` で status を `merge-ready` に遷移のみ:
+
+```bash
+bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready
+echo "autopilot 配下: merge-ready 宣言。Pilot による merge-gate を待機。"
+```
+
+4. ここで処理を終了する（Step 1 以降をスキップ）
+
+**IS_AUTOPILOT=false の場合**: 従来通り Step 1 以降を実行。
+`issue-{N}.json` が存在しない、または `$ISSUE_NUM` が未設定の場合も IS_AUTOPILOT=false として扱い、従来動作を維持する。
+
 ### Step 1: squash マージ
 
 ```bash

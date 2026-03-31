@@ -57,6 +57,13 @@ if [[ -n "${REPO_OWNER:-}" && -n "${REPO_NAME:-}" ]]; then
   GH_REPO_FLAG="-R ${REPO_OWNER}/${REPO_NAME}"
 fi
 
+# CWD ガード: worktrees/ 配下からの実行を拒否（不変条件B/C）
+cwd=$(pwd)
+if [[ "$cwd" == */worktrees/* ]]; then
+  echo "[merge-gate-execute] ERROR: worktrees/ 配下からの実行は禁止されています。main/ worktree から実行してください（不変条件B/C）" >&2
+  exit 1
+fi
+
 case "$MODE" in
   --reject)
     echo "[merge-gate] Issue #${ISSUE}: リジェクト（Critical/High 問題検出）" >&2

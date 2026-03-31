@@ -22,12 +22,34 @@ THEN → PASS
 ELSE → FAIL
 ```
 
+### Step 1.5: autopilot 配下判定（不変条件B/C）
+
+ISSUE_NUM が取得できる場合、autopilot 配下かを判定する。
+
+```bash
+AUTOPILOT_STATUS=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
+IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
+```
+
 ### Step 2: 状態遷移
 
 #### PASS の場合
 
+autopilot 配下判定結果に応じて遷移先を決定:
+
+**IS_AUTOPILOT=true の場合（MUST）:**
+
 ```bash
-bash scripts/state-write.sh issue "${ISSUE_NUM}" status merge-ready
+bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready
+echo "autopilot 配下: merge-ready 宣言。Pilot による merge-gate を待機。"
+```
+
+merge-ready に遷移し、Pilot による merge-gate を待機する。merge は実行しない。
+
+**IS_AUTOPILOT=false の場合:**
+
+```bash
+bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready
 ```
 
 issue-{N}.json の status を `merge-ready` に遷移。Pilot が merge-gate を実行する。
@@ -35,7 +57,7 @@ issue-{N}.json の status を `merge-ready` に遷移。Pilot が merge-gate を
 #### FAIL の場合
 
 ```bash
-bash scripts/state-write.sh issue "${ISSUE_NUM}" status failed
+bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker --set status=failed
 ```
 
 issue-{N}.json の status を `failed` に遷移。失敗ステップと理由を記録。
