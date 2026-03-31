@@ -72,15 +72,15 @@ echo "--- Requirement: 単一リポジトリ時の PILOT_AUTOPILOT_DIR デフォ
 
 # Scenario: 単一リポジトリで resolve_issue_repo_context を呼び出す
 # WHEN: repo_id が _default である
-# THEN: PILOT_AUTOPILOT_DIR は $AUTOPILOT_DIR の値に設定される
+# THEN: PILOT_AUTOPILOT_DIR は ${PROJECT_DIR}/.autopilot に設定される
 
 test_default_branch_sets_autopilot_dir() {
-  # else ブランチで PILOT_AUTOPILOT_DIR に $AUTOPILOT_DIR が設定されていることを検証
-  # 空文字列ではなく、$AUTOPILOT_DIR への参照があること
-  assert_file_contains "$TARGET_CMD" 'PILOT_AUTOPILOT_DIR=.*\$AUTOPILOT_DIR'
+  # else ブランチで PILOT_AUTOPILOT_DIR に ${PROJECT_DIR}/.autopilot が設定されていることを検証
+  # LLM コンテキスト依存の $AUTOPILOT_DIR ではなく、明示的な絶対パスで設定
+  assert_file_contains "$TARGET_CMD" 'PILOT_AUTOPILOT_DIR=.*\${PROJECT_DIR}/\.autopilot'
 }
 
-run_test "単一リポジトリ時に PILOT_AUTOPILOT_DIR が \$AUTOPILOT_DIR に設定される" \
+run_test "単一リポジトリ時に PILOT_AUTOPILOT_DIR が \${PROJECT_DIR}/.autopilot に設定される" \
   test_default_branch_sets_autopilot_dir
 
 test_no_empty_pilotautopilotdir() {

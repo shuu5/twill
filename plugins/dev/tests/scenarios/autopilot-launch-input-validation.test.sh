@@ -227,7 +227,7 @@ echo "--- Requirement: AUTOPILOT_ENV / REPO_ENV のクォート展開 ---"
 test_autopilot_env_quoted() {
   assert_file_exists "$LAUNCH_CMD" || return 1
   assert_file_contains "$LAUNCH_CMD" \
-    "printf\s+'%q'.*PILOT_AUTOPILOT_DIR" || return 1
+    "printf\s+'%q'.*EFFECTIVE_AUTOPILOT_DIR" || return 1
   return 0
 }
 run_test "AUTOPILOT_ENV の値が printf '%q' でクォートされている" \

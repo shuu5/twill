@@ -17,7 +17,7 @@ autopilot-phase-execute から呼び出される。
 | `$ISSUE_REPO_OWNER` | リポジトリ owner（クロスリポジトリ時） |
 | `$ISSUE_REPO_NAME` | リポジトリ name（クロスリポジトリ時） |
 | `$ISSUE_REPO_PATH` | リポジトリパス（クロスリポジトリ時） |
-| `$PILOT_AUTOPILOT_DIR` | Pilot 側の .autopilot/ パス（クロスリポジトリ時、Worker の AUTOPILOT_DIR に設定） |
+| `$PILOT_AUTOPILOT_DIR` | Pilot 側の .autopilot/ パス（Worker の AUTOPILOT_DIR に設定。通常は `${PROJECT_DIR}/.autopilot` が設定される） |
 
 ## 実行ロジック（MUST）
 
@@ -168,12 +168,10 @@ else
   LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR"
 fi
 
-# クロスリポジトリ: AUTOPILOT_DIR を Pilot 側に固定（Worker が状態を共有するため）
-AUTOPILOT_ENV=""
-if [ -n "${PILOT_AUTOPILOT_DIR:-}" ]; then
-  QUOTED_AUTOPILOT_DIR=$(printf '%q' "$PILOT_AUTOPILOT_DIR")
-  AUTOPILOT_ENV="AUTOPILOT_DIR=${QUOTED_AUTOPILOT_DIR}"
-fi
+# AUTOPILOT_DIR を Worker に常に設定（単一リポジトリ・クロスリポジトリ共通）
+EFFECTIVE_AUTOPILOT_DIR="${PILOT_AUTOPILOT_DIR:-${PROJECT_DIR}/.autopilot}"
+QUOTED_AUTOPILOT_DIR=$(printf '%q' "$EFFECTIVE_AUTOPILOT_DIR")
+AUTOPILOT_ENV="AUTOPILOT_DIR=${QUOTED_AUTOPILOT_DIR}"
 
 # クロスリポジトリ: REPO_OWNER/REPO_NAME を環境変数で Worker に渡す
 REPO_ENV=""
