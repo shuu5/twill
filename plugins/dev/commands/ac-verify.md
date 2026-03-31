@@ -1,5 +1,8 @@
 # AC 検証（テスト結果と AC の照合）
 
+## Context (auto-injected)
+- Issue: !`git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo ""`
+
 テスト結果とレビュー結果を Issue の受け入れ基準（AC）と照合し、
 達成状況をマッピングして Issue コメントとして投稿する。
 

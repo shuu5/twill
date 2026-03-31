@@ -222,6 +222,10 @@ if [ -f "pyproject.toml" ]; then
     uv sync 2>/dev/null || echo "  警告: uv sync に失敗しました"
 fi
 
+# 初回 push で upstream を自動設定（cd "$WORKTREE_DIR" 済み）
+echo "upstream を設定中..."
+git push -u origin "$BRANCH_NAME" 2>/dev/null || echo "  警告: upstream push 失敗（ネットワークエラー等）。worktree 作成は成功しています。"
+
 echo ""
 echo "=== worktree作成完了 ==="
 echo "パス: $WORKTREE_DIR"

@@ -1,0 +1,457 @@
+change_id: pr-cycle-bare-repo-fix
+generated_at: "2026-03-31T00:00:00Z"
+test_framework: bash
+scenarios:
+  # =========================================================================
+  # Requirement: state-write.sh 呼び出し形式の修正
+  # =========================================================================
+  - id: "all-pass-check-merge-ready-named-flags"
+    name: "all-pass-check が PASS 時に merge-ready へ遷移"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 7
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "all-pass-check PASS 時: state-write.sh に --type --issue --role --set 形式で merge-ready を書き込む"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-merge-ready-no-positional"
+    name: "all-pass-check PASS 旧位置引数形式が残っていない (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 7
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "all-pass-check [edge: 旧位置引数形式 state-write.sh issue N ... が残っていない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-fail-named-flags"
+    name: "all-pass-check が FAIL 時に failed へ遷移"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 11
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "all-pass-check FAIL 時: state-write.sh に --type --issue --role --set 形式で failed を書き込む"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-issue-num-in-flags"
+    name: "all-pass-check --issue フラグに ISSUE_NUM が渡されている (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 11
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "all-pass-check [edge: --issue フラグに ISSUE_NUM 変数が渡されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-pass-done-named-flags"
+    name: "merge-gate が PASS 時に done へ遷移"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 15
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate PASS 時: state-write.sh --type issue --role pilot --set status=done"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-pass-merged-at-named-flags"
+    name: "merge-gate PASS 時に merged_at を書き込む"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 15
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate PASS 時: --set merged_at=... が実行される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-pass-pilot-role"
+    name: "merge-gate PASS 時に --role pilot が使われている (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 15
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate [edge: PASS 時の状態遷移で --role pilot が使われている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-reject-first-failed-named-flags"
+    name: "merge-gate が REJECT 時（1回目）に状態を更新"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 19
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate REJECT 1回目: --role worker --set status=failed が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-reject-fix-instructions"
+    name: "merge-gate REJECT 1回目 fix_instructions named flags (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 19
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate REJECT 1回目: --set fix_instructions=... が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-reject-status-running"
+    name: "merge-gate REJECT 1回目 status=running named flags"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 19
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate REJECT 1回目: --set status=running が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-reject-retry-count-named-flags"
+    name: "merge-gate REJECT 1回目 retry_count named flags (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 19
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate [edge: REJECT 1回目で retry_count が --set 形式で書き込まれている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-reject-final-pilot-failed"
+    name: "merge-gate が REJECT 時（2回目）に確定失敗"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 23
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate REJECT 2回目: --role pilot --set status=failed が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-no-positional-args"
+    name: "merge-gate 旧位置引数形式が残っていない (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 23
+    requirement: "state-write.sh 呼び出し形式の修正"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate [edge: 旧位置引数形式 state-write.sh issue N ... が残っていない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: DCI Context セクションの追加
+  # =========================================================================
+  - id: "all-pass-check-dci-context-header"
+    name: "all-pass-check に DCI Context が存在する"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 31
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "all-pass-check に '## Context (auto-injected)' セクションが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-dci-branch"
+    name: "all-pass-check DCI: BRANCH 変数"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 31
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "all-pass-check DCI: Branch が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-dci-issue-num"
+    name: "all-pass-check DCI: ISSUE_NUM 変数"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 31
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "all-pass-check DCI: Issue (ISSUE_NUM) が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-dci-position"
+    name: "all-pass-check DCI セクションが先頭 30 行以内 (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 31
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "all-pass-check [edge: DCI Context セクションが先頭 30 行以内にある]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-dci-context-header"
+    name: "merge-gate に DCI Context が存在する"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 35
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate に '## Context (auto-injected)' セクションが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-dci-branch"
+    name: "merge-gate DCI: BRANCH 変数"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 35
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate DCI: Branch が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-dci-issue-num"
+    name: "merge-gate DCI: ISSUE_NUM 変数"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 35
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate DCI: Issue (ISSUE_NUM) が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-dci-position"
+    name: "merge-gate DCI セクションが先頭 30 行以内 (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 35
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate [edge: DCI Context セクションが先頭 30 行以内にある]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "ac-verify-dci-context-header"
+    name: "ac-verify に DCI Context が存在する"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 39
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "ac-verify に '## Context (auto-injected)' セクションが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "ac-verify-dci-position"
+    name: "ac-verify DCI セクションが先頭 30 行以内 (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 39
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "ac-verify [edge: DCI Context セクションが先頭 30 行以内にある]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-dci-git-branch"
+    name: "all-pass-check DCI が git branch --show-current を使用 (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 31
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "all-pass-check [edge: DCI Context で git branch --show-current を使用]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-dci-git-branch"
+    name: "merge-gate DCI が git branch --show-current を使用 (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 35
+    requirement: "DCI Context セクションの追加"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate [edge: DCI Context で git branch --show-current を使用]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: bare repo 互換の merge フロー
+  # =========================================================================
+  - id: "merge-gate-no-delete-branch"
+    name: "squash merge に --delete-branch が含まれない"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 47
+    requirement: "bare repo 互換の merge フロー"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate: squash merge コマンドに --delete-branch が含まれない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-squash-merge-command"
+    name: "merge-gate に gh pr merge --squash が存在する"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 47
+    requirement: "bare repo 互換の merge フロー"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate: gh pr merge ... --squash コマンドが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-no-delete-branch-anywhere"
+    name: "merge-gate ファイル全体で --delete-branch が一切存在しない (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 47
+    requirement: "bare repo 互換の merge フロー"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate [edge: ファイル全体で --delete-branch が一切存在しない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-worktree-delete-branch-name"
+    name: "worktree-delete.sh にブランチ名が渡される"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 51
+    requirement: "bare repo 互換の merge フロー"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate: worktree-delete.sh に ${BRANCH} ブランチ名が渡されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-worktree-delete-no-full-path"
+    name: "worktree-delete.sh にフルパスが渡されていない (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 51
+    requirement: "bare repo 互換の merge フロー"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "merge-gate [edge: worktree-delete.sh にフルパスが渡されていない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: worktree-create.sh の upstream 自動設定
+  # =========================================================================
+  - id: "worktree-create-push-upstream"
+    name: "新規 worktree で upstream が設定される"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 61
+    requirement: "worktree-create.sh の upstream 自動設定"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "worktree-create.sh: git push -u origin <branch> で upstream を設定する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-create-push-branch-var"
+    name: "git push -u origin に BRANCH_NAME が渡されている (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 61
+    requirement: "worktree-create.sh の upstream 自動設定"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "worktree-create.sh [edge: git push -u origin に BRANCH_NAME が渡されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-create-push-failure-warn-only"
+    name: "upstream 設定失敗時は警告のみ"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 65
+    requirement: "worktree-create.sh の upstream 自動設定"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "worktree-create.sh: git push -u 失敗時に || で警告のみ表示して継続する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-create-push-failure-message"
+    name: "upstream push 失敗時に警告メッセージを出力する (edge)"
+    spec_file: "specs/pr-cycle-bare-repo-fix/spec.md"
+    spec_line: 65
+    requirement: "worktree-create.sh の upstream 自動設定"
+    test_file: "tests/scenarios/pr-cycle-bare-repo-fix.test.sh"
+    test_name: "worktree-create.sh [edge: upstream push 失敗時に警告メッセージを出力する]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
