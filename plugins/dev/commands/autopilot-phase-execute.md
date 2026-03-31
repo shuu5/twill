@@ -74,7 +74,7 @@ resolve_issue_repo_context() {
     ISSUE_REPO_OWNER=""
     ISSUE_REPO_NAME=""
     ISSUE_REPO_PATH=""
-    PILOT_AUTOPILOT_DIR=""
+    PILOT_AUTOPILOT_DIR="$AUTOPILOT_DIR"
   fi
 }
 ```
