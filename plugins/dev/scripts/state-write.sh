@@ -14,13 +14,14 @@ fi
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") --type <issue|session> [--issue N] [--set key=value]... [--role <pilot|worker>] [--init]
+Usage: $(basename "$0") --type <issue|session> [--issue N] [--repo <repo_id>] [--set key=value]... [--role <pilot|worker>] [--init]
 
 状態ファイルにフィールドを書き込む。status 更新時は遷移バリデーションを実行。
 
 Options:
   --type <issue|session>  対象ファイルタイプ（必須）
   --issue N               Issue番号（type=issue 時必須）
+  --repo <repo_id>        リポジトリ識別子（クロスリポジトリ時。省略時は従来パス）
   --set key=value         設定するフィールド（複数指定可）
   --role <pilot|worker>   実行ロール（必須）
   --init                  新規作成（type=issue: status=running で初期化）
@@ -38,6 +39,7 @@ EOF
 type=""
 issue=""
 role=""
+repo=""
 init=false
 declare -a sets=()
 
@@ -45,6 +47,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --type) type="$2"; shift 2 ;;
     --issue) issue="$2"; shift 2 ;;
+    --repo) repo="$2"; shift 2 ;;
     --set) sets+=("$2"); shift 2 ;;
     --role) role="$2"; shift 2 ;;
     --init) init=true; shift ;;
@@ -104,10 +107,20 @@ if [[ "$role" == "pilot" && "$type" == "issue" ]]; then
   done
 fi
 
-# ── ファイルパスの決定 ──
+# ── repo_id バリデーション ──
+if [[ -n "$repo" && ! "$repo" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+  echo "ERROR: 不正な repo_id: $repo（英数字、ハイフン、アンダースコアのみ許可）" >&2
+  exit 1
+fi
+
+# ── ファイルパスの決定（クロスリポジトリ名前空間対応） ──
 
 if [[ "$type" == "issue" ]]; then
-  file="$AUTOPILOT_DIR/issues/issue-${issue}.json"
+  if [[ -n "$repo" && -d "$AUTOPILOT_DIR/repos/$repo" ]]; then
+    file="$AUTOPILOT_DIR/repos/$repo/issues/issue-${issue}.json"
+  else
+    file="$AUTOPILOT_DIR/issues/issue-${issue}.json"
+  fi
 elif [[ "$type" == "session" ]]; then
   file="$AUTOPILOT_DIR/session.json"
 fi

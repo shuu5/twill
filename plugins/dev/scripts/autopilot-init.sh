@@ -98,6 +98,20 @@ trap 'rmdir "$LOCK_DIR" 2>/dev/null' EXIT
 mkdir -p "$ISSUES_DIR"
 mkdir -p "$ARCHIVE_DIR"
 
+# クロスリポジトリ: repos 名前空間ディレクトリ作成
+# plan.yaml の repos セクションが存在する場合、各 repo_id 用のサブディレクトリを作成
+PLAN_FILE="$AUTOPILOT_DIR/plan.yaml"
+if [[ -f "$PLAN_FILE" ]] && grep -q '^repos:' "$PLAN_FILE"; then
+  REPOS_DIR="$AUTOPILOT_DIR/repos"
+  # repos: セクションから repo_id を抽出（インデント2スペース + コロン行）
+  while IFS= read -r line; do
+    repo_id=$(echo "$line" | sed -n 's/^  \([a-zA-Z0-9_-]*\):/\1/p')
+    if [[ -n "$repo_id" ]]; then
+      mkdir -p "$REPOS_DIR/$repo_id/issues"
+    fi
+  done < <(sed -n '/^repos:/,/^[a-z]/p' "$PLAN_FILE" | head -n -1)
+fi
+
 # .gitignore に .autopilot/ を追加（未追加の場合）
 gitignore="$PROJECT_ROOT/.gitignore"
 if [[ -f "$gitignore" ]]; then
@@ -111,3 +125,9 @@ fi
 echo "OK: .autopilot/ を初期化しました"
 echo "  issues: $ISSUES_DIR"
 echo "  archive: $ARCHIVE_DIR"
+if [[ -d "${REPOS_DIR:-}" ]]; then
+  echo "  repos: $REPOS_DIR"
+  for d in "$REPOS_DIR"/*/; do
+    [[ -d "$d" ]] && echo "    - $(basename "$d")"
+  done
+fi

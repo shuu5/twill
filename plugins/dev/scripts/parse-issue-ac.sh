@@ -8,11 +8,13 @@
 set -uo pipefail
 
 if [ $# -lt 1 ]; then
-    echo "Usage: parse-issue-ac.sh <issue-number>" >&2
+    echo "Usage: parse-issue-ac.sh <issue-number> [owner/repo]" >&2
     exit 1
 fi
 
 ISSUE_NUMBER="$1"
+# クロスリポジトリ: 第2引数で owner/repo を明示指定可能
+EXPLICIT_REPO="${2:-}"
 
 # 整数検証（引数インジェクション防止）
 if ! [[ "$ISSUE_NUMBER" =~ ^[0-9]+$ ]]; then
@@ -20,26 +22,39 @@ if ! [[ "$ISSUE_NUMBER" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
+# owner/repo バリデーション
+if [[ -n "$EXPLICIT_REPO" && ! "$EXPLICIT_REPO" =~ ^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+$ ]]; then
+    echo "エラー: 不正な owner/repo 形式: ${EXPLICIT_REPO}" >&2
+    exit 1
+fi
+
+# API パス構築（クロスリポジトリ対応）
+if [[ -n "$EXPLICIT_REPO" ]]; then
+    API_REPO_PATH="repos/${EXPLICIT_REPO}"
+else
+    API_REPO_PATH="repos/{owner}/{repo}"
+fi
+
 # Issue body 取得
-ISSUE_BODY=$(gh api "repos/{owner}/{repo}/issues/${ISSUE_NUMBER}" --jq '.body' 2>/dev/null) || true
+ISSUE_BODY=$(gh api "${API_REPO_PATH}/issues/${ISSUE_NUMBER}" --jq '.body' 2>/dev/null) || true
 if [ -z "$ISSUE_BODY" ]; then
     echo "エラー: Issue #${ISSUE_NUMBER} の取得に失敗" >&2
     exit 1
 fi
 
 # Issue コメント取得（body とは別変数で保持）
-ISSUE_COMMENTS=$(gh api "repos/{owner}/{repo}/issues/${ISSUE_NUMBER}/comments" --jq '[.[].body] | join("\n---\n")' 2>/dev/null) || true
+ISSUE_COMMENTS=$(gh api "${API_REPO_PATH}/issues/${ISSUE_NUMBER}/comments" --jq '[.[].body] | join("\n---\n")' 2>/dev/null) || true
 
 # PR Review コメント取得（PR が存在する場合のみ）
-PR_NUMBER=$(gh api "repos/{owner}/{repo}/issues/${ISSUE_NUMBER}" --jq '.pull_request.url // empty' 2>/dev/null | grep -oP '\d+$') || true
+PR_NUMBER=$(gh api "${API_REPO_PATH}/issues/${ISSUE_NUMBER}" --jq '.pull_request.url // empty' 2>/dev/null | grep -oP '\d+$') || true
 # PR番号の整数検証（APIレスポンス改ざん防止）
 if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
     PR_NUMBER=""
 fi
 PR_REVIEW_COMMENTS=""
 if [ -n "$PR_NUMBER" ]; then
-    PR_REVIEW_COMMENTS=$(gh api "repos/{owner}/{repo}/pulls/${PR_NUMBER}/comments" --jq '[.[].body] | join("\n---\n")' 2>/dev/null) || true
-    PR_REVIEWS=$(gh api "repos/{owner}/{repo}/pulls/${PR_NUMBER}/reviews" --jq '[.[].body // empty | select(. != "")] | join("\n---\n")' 2>/dev/null) || true
+    PR_REVIEW_COMMENTS=$(gh api "${API_REPO_PATH}/pulls/${PR_NUMBER}/comments" --jq '[.[].body] | join("\n---\n")' 2>/dev/null) || true
+    PR_REVIEWS=$(gh api "${API_REPO_PATH}/pulls/${PR_NUMBER}/reviews" --jq '[.[].body // empty | select(. != "")] | join("\n---\n")' 2>/dev/null) || true
     if [ -n "$PR_REVIEWS" ]; then
         if [ -n "$PR_REVIEW_COMMENTS" ]; then
             PR_REVIEW_COMMENTS="${PR_REVIEW_COMMENTS}"$'\n---\n'"${PR_REVIEWS}"

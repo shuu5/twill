@@ -53,14 +53,29 @@ if ! [[ "$RETRY_COUNT" =~ ^[0-9]+$ ]]; then
   RETRY_COUNT=0
 fi
 
+# クロスリポジトリ: REPO_OWNER/REPO_NAME が設定されていれば -R フラグを構築
+GH_REPO_FLAG=""
+if [[ -n "${REPO_OWNER:-}" && -n "${REPO_NAME:-}" ]]; then
+  # owner/name フォーマット検証（引数インジェクション防止）
+  if [[ ! "${REPO_OWNER}" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    echo "[merge-gate] Error: 不正な REPO_OWNER: ${REPO_OWNER}" >&2; exit 1
+  fi
+  if [[ ! "${REPO_NAME}" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+    echo "[merge-gate] Error: 不正な REPO_NAME: ${REPO_NAME}" >&2; exit 1
+  fi
+  GH_REPO_FLAG="-R ${REPO_OWNER}/${REPO_NAME}"
+fi
+
 echo "[merge-gate] Issue #${ISSUE}: PR #${PR_NUMBER} のインテリジェントレビューを開始..." >&2
 
-# PR差分取得
+# PR差分取得（クロスリポジトリ対応: GH_REPO_FLAG）
 PR_DIFF_FILE="/tmp/merge-gate-diff-${ISSUE}.txt"
 PR_FILES_RAW=""
 
-if gh pr diff "$PR_NUMBER" > "$PR_DIFF_FILE" 2>/tmp/merge-gate-diff-error-${ISSUE}.log; then
-  PR_FILES_RAW=$(gh pr diff "$PR_NUMBER" --name-only 2>/dev/null || true)
+# shellcheck disable=SC2086
+if gh pr diff "$PR_NUMBER" $GH_REPO_FLAG > "$PR_DIFF_FILE" 2>/tmp/merge-gate-diff-error-${ISSUE}.log; then
+  # shellcheck disable=SC2086
+  PR_FILES_RAW=$(gh pr diff "$PR_NUMBER" $GH_REPO_FLAG --name-only 2>/dev/null || true)
 else
   echo "[merge-gate] Warning: PR差分取得失敗 — フォールバック可能" >&2
   : > "$PR_DIFF_FILE"

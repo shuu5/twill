@@ -119,6 +119,38 @@ setup_project_board() {
         && echo "   リポジトリリンク: 完了" \
         || echo "   警告: リポジトリリンクに失敗しました" >&2
 
+    # クロスリポジトリ: ADDITIONAL_REPOS が設定されている場合、追加リポジトリもリンク
+    # ADDITIONAL_REPOS は "owner/name" のスペース区切りリスト
+    for add_repo in ${ADDITIONAL_REPOS:-}; do
+        # owner/repo フォーマット検証（インジェクション防止）
+        if [[ ! "$add_repo" =~ ^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+$ ]]; then
+            echo "   警告: 不正なリポジトリ形式をスキップ: $add_repo" >&2
+            continue
+        fi
+        local add_owner="${add_repo%%/*}"
+        local add_name="${add_repo#*/}"
+        local add_repo_id
+        add_repo_id=$(gh api graphql -f query='
+            query($owner: String!, $name: String!) {
+                repository(owner: $owner, name: $name) { id }
+            }
+        ' -f owner="$add_owner" -f name="$add_name" \
+            --jq '.data.repository.id' 2>/dev/null) || true
+        if [ -n "$add_repo_id" ]; then
+            gh api graphql -f query='
+                mutation($projectId: ID!, $repositoryId: ID!) {
+                    linkProjectV2ToRepository(input: {projectId: $projectId, repositoryId: $repositoryId}) {
+                        repository { id }
+                    }
+                }
+            ' -f projectId="$board_project_id" -f repositoryId="$add_repo_id" >/dev/null 2>&1 \
+                && echo "   追加リポジトリリンク: ${add_repo} 完了" \
+                || echo "   警告: ${add_repo} リンクに失敗しました" >&2
+        else
+            echo "   警告: リポジトリ ${add_repo} の情報取得に失敗しました" >&2
+        fi
+    done
+
     # カスタムフィールド作成
     create_board_field "$board_project_id" "Context"
     create_board_field "$board_project_id" "Phase"

@@ -11,9 +11,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 generate_branch_name_from_issue() {
     local issue_number="$1"
 
-    # gh CLI でIssue情報取得
+    # gh CLI でIssue情報取得（クロスリポジトリ対応: REPO_FLAG）
     local issue_json
-    issue_json=$(gh issue view "$issue_number" --json title,labels 2>/dev/null)
+    # shellcheck disable=SC2086
+    issue_json=$(gh issue view "$issue_number" $REPO_FLAG --json title,labels 2>/dev/null)
     if [ $? -ne 0 ]; then
         echo "エラー: Issue #$issue_number が見つかりません" >&2
         return 1
@@ -68,11 +69,26 @@ generate_branch_name_from_issue() {
 BRANCH_NAME=""
 BASE_BRANCH="main"
 ISSUE_NUMBER=""
+REPO_FLAG=""        # クロスリポジトリ用: "-R owner/repo"
+REPO_PATH=""        # クロスリポジトリ用: 外部リポジトリのパス
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --from)
             BASE_BRANCH="$2"
+            shift 2
+            ;;
+        -R)
+            # owner/repo フォーマット検証（引数インジェクション防止）
+            if [[ ! "$2" =~ ^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+$ ]]; then
+                echo "エラー: 不正な -R 引数: $2（owner/repo 形式が必要）"
+                exit 1
+            fi
+            REPO_FLAG="-R $2"
+            shift 2
+            ;;
+        --repo-path)
+            REPO_PATH="$2"
             shift 2
             ;;
         *)
@@ -133,18 +149,34 @@ if [ ${#BRANCH_NAME} -gt 50 ]; then
 fi
 
 # プロジェクトルートを自動検出
-# --git-common-dir: bare repo/worktree どちらでも共通.gitディレクトリを返す
-GIT_COMMON_DIR=$(git rev-parse --git-common-dir 2>/dev/null)
-if [ -z "$GIT_COMMON_DIR" ]; then
-    echo "エラー: gitリポジトリ内で実行してください"
-    exit 1
+# クロスリポジトリ: --repo-path が指定されている場合はそちらを使用
+if [ -n "$REPO_PATH" ]; then
+    if [ ! -d "$REPO_PATH" ]; then
+        echo "エラー: リポジトリパスが見つかりません: $REPO_PATH"
+        exit 1
+    fi
+    # bare repo 構造の検出
+    if [ -d "$REPO_PATH/.bare" ]; then
+        GIT_COMMON_DIR="$REPO_PATH/.bare"
+    elif [ -d "$REPO_PATH/.git" ]; then
+        GIT_COMMON_DIR="$REPO_PATH/.git"
+    else
+        echo "エラー: $REPO_PATH は git リポジトリではありません"
+        exit 1
+    fi
+    PROJECT_DIR="$REPO_PATH"
+else
+    # --git-common-dir: bare repo/worktree どちらでも共通.gitディレクトリを返す
+    GIT_COMMON_DIR=$(git rev-parse --git-common-dir 2>/dev/null)
+    if [ -z "$GIT_COMMON_DIR" ]; then
+        echo "エラー: gitリポジトリ内で実行してください"
+        exit 1
+    fi
+    # 絶対パスに変換
+    GIT_COMMON_DIR=$(cd "$GIT_COMMON_DIR" && pwd)
+    PROJECT_DIR=$(dirname "$GIT_COMMON_DIR")
 fi
 
-# 絶対パスに変換
-GIT_COMMON_DIR=$(cd "$GIT_COMMON_DIR" && pwd)
-
-# PROJECT_DIR は common git dir の親ディレクトリ
-PROJECT_DIR=$(dirname "$GIT_COMMON_DIR")
 PROJECT_NAME=$(basename "$PROJECT_DIR")
 
 WORKTREE_DIR="$PROJECT_DIR/worktrees/$BRANCH_NAME"

@@ -14,13 +14,14 @@ fi
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") --type <issue|session> [--issue N] [--field <name>]
+Usage: $(basename "$0") --type <issue|session> [--issue N] [--repo <repo_id>] [--field <name>]
 
 状態ファイルからフィールドを読み取る。
 
 Options:
   --type <issue|session>  対象ファイルタイプ（必須）
   --issue N               Issue番号（type=issue 時必須）
+  --repo <repo_id>        リポジトリ識別子（クロスリポジトリ時。省略時は従来パス）
   --field <name>          取得するフィールド名（省略時は全JSON出力）
   -h, --help              このヘルプを表示
 
@@ -31,11 +32,13 @@ EOF
 type=""
 issue=""
 field=""
+repo=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --type) type="$2"; shift 2 ;;
     --issue) issue="$2"; shift 2 ;;
+    --repo) repo="$2"; shift 2 ;;
     --field) field="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "ERROR: 不明なオプション: $1" >&2; exit 1 ;;
@@ -70,9 +73,19 @@ if [[ -n "$field" && ! "$field" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
   exit 1
 fi
 
-# ファイルパスの決定
+# repo_id のバリデーション
+if [[ -n "$repo" && ! "$repo" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+  echo "ERROR: 不正な repo_id: $repo（英数字、ハイフン、アンダースコアのみ許可）" >&2
+  exit 1
+fi
+
+# ファイルパスの決定（クロスリポジトリ名前空間対応）
 if [[ "$type" == "issue" ]]; then
-  file="$AUTOPILOT_DIR/issues/issue-${issue}.json"
+  if [[ -n "$repo" && -d "$AUTOPILOT_DIR/repos/$repo" ]]; then
+    file="$AUTOPILOT_DIR/repos/$repo/issues/issue-${issue}.json"
+  else
+    file="$AUTOPILOT_DIR/issues/issue-${issue}.json"
+  fi
 elif [[ "$type" == "session" ]]; then
   file="$AUTOPILOT_DIR/session.json"
 fi

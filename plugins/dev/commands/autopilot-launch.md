@@ -9,10 +9,15 @@ autopilot-phase-execute から呼び出される。
 | 変数 | 説明 |
 |------|------|
 | `$ISSUE` | Issue 番号（数値） |
-| `$PROJECT_DIR` | プロジェクトディレクトリ |
+| `$PROJECT_DIR` | プロジェクトディレクトリ（デフォルトリポジトリ） |
 | `$SESSION_STATE_FILE` | session.json のパス |
 | `$CROSS_ISSUE_WARNINGS` | cross-issue 警告の連想配列（Issue番号→警告メッセージ） |
 | `$PHASE_INSIGHTS` | 前 Phase の retrospective 知見（空の場合あり） |
+| `$ISSUE_REPO_ID` | リポジトリ識別子（クロスリポジトリ時。省略時は _default） |
+| `$ISSUE_REPO_OWNER` | リポジトリ owner（クロスリポジトリ時） |
+| `$ISSUE_REPO_NAME` | リポジトリ name（クロスリポジトリ時） |
+| `$ISSUE_REPO_PATH` | リポジトリパス（クロスリポジトリ時） |
+| `$PILOT_AUTOPILOT_DIR` | Pilot 側の .autopilot/ パス（クロスリポジトリ時、Worker の AUTOPILOT_DIR に設定） |
 
 ## 実行ロジック（MUST）
 
@@ -32,7 +37,12 @@ fi
 ### Step 2: issue-{N}.json 初期化
 
 ```bash
-bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role worker --init
+# クロスリポジトリ: --repo で名前空間化されたパスに初期化
+REPO_ARG=""
+if [ -n "${ISSUE_REPO_ID:-}" ] && [ "$ISSUE_REPO_ID" != "_default" ]; then
+  REPO_ARG="--repo $ISSUE_REPO_ID"
+fi
+bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role worker $REPO_ARG --init
 ```
 
 status=running で初期化される。
@@ -70,17 +80,42 @@ fi
 ### Step 5: tmux window 作成 + cld 起動
 
 ```bash
+# クロスリポジトリ: ISSUE_REPO_PATH が設定されていれば外部リポジトリで起動
+EFFECTIVE_PROJECT_DIR="$PROJECT_DIR"
+if [ -n "${ISSUE_REPO_PATH:-}" ]; then
+  if [ ! -d "$ISSUE_REPO_PATH" ]; then
+    echo "Error: リポジトリパスが見つかりません: $ISSUE_REPO_PATH"
+    bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot $REPO_ARG \
+      --set "status=failed" \
+      --set "failure={\"message\": \"repo_path_not_found\", \"path\": \"$ISSUE_REPO_PATH\", \"step\": \"launch_worker\"}"
+    return 1
+  fi
+  EFFECTIVE_PROJECT_DIR="$ISSUE_REPO_PATH"
+fi
+
 # bare repo では main/ worktree で起動する（CLAUDE.md 制約: main/ 配下必須）
-if [ -d "$PROJECT_DIR/.bare" ]; then
-  LAUNCH_DIR="$PROJECT_DIR/main"
+if [ -d "$EFFECTIVE_PROJECT_DIR/.bare" ]; then
+  LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR/main"
 else
-  LAUNCH_DIR="$PROJECT_DIR"
+  LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR"
+fi
+
+# クロスリポジトリ: AUTOPILOT_DIR を Pilot 側に固定（Worker が状態を共有するため）
+AUTOPILOT_ENV=""
+if [ -n "${PILOT_AUTOPILOT_DIR:-}" ]; then
+  AUTOPILOT_ENV="AUTOPILOT_DIR=${PILOT_AUTOPILOT_DIR}"
+fi
+
+# クロスリポジトリ: REPO_OWNER/REPO_NAME を環境変数で Worker に渡す
+REPO_ENV=""
+if [ -n "${ISSUE_REPO_OWNER:-}" ] && [ -n "${ISSUE_REPO_NAME:-}" ]; then
+  REPO_ENV="REPO_OWNER=${ISSUE_REPO_OWNER} REPO_NAME=${ISSUE_REPO_NAME}"
 fi
 
 QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 tmux new-window -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
-  "$QUOTED_CLD $CONTEXT_ARGS $QUOTED_PROMPT"
+  "env $AUTOPILOT_ENV $REPO_ENV $QUOTED_CLD $CONTEXT_ARGS $QUOTED_PROMPT"
 ```
 
 **重要**: DEV_AUTOPILOT_SESSION 環境変数は設定しない。Worker は state-read.sh で自身の issue-{N}.json を参照して autopilot 配下であることを判定する。

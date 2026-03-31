@@ -44,6 +44,19 @@ MODE="${1:-merge}"
 FINDING_SUMMARY="${FINDING_SUMMARY:-}"
 FIX_INSTRUCTIONS="${FIX_INSTRUCTIONS:-}"
 
+# クロスリポジトリ: REPO_OWNER/REPO_NAME が設定されていれば -R フラグを構築
+GH_REPO_FLAG=""
+if [[ -n "${REPO_OWNER:-}" && -n "${REPO_NAME:-}" ]]; then
+  # owner/name フォーマット検証（引数インジェクション防止）
+  if [[ ! "${REPO_OWNER}" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    echo "[merge-gate-execute] Error: 不正な REPO_OWNER: ${REPO_OWNER}" >&2; exit 1
+  fi
+  if [[ ! "${REPO_NAME}" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+    echo "[merge-gate-execute] Error: 不正な REPO_NAME: ${REPO_NAME}" >&2; exit 1
+  fi
+  GH_REPO_FLAG="-R ${REPO_OWNER}/${REPO_NAME}"
+fi
+
 case "$MODE" in
   --reject)
     echo "[merge-gate] Issue #${ISSUE}: リジェクト（Critical/High 問題検出）" >&2
@@ -76,7 +89,8 @@ case "$MODE" in
 
     echo "[merge-gate] Issue #${ISSUE}: PR #${PR_NUMBER} のマージを実行... (REPO_MODE=${REPO_MODE})"
     MERGE_ERROR_LOG=$(mktemp /tmp/merge-error-XXXXXX.log)
-    if gh pr merge "$PR_NUMBER" --squash 2>"$MERGE_ERROR_LOG"; then
+    # shellcheck disable=SC2086
+    if gh pr merge "$PR_NUMBER" $GH_REPO_FLAG --squash 2>"$MERGE_ERROR_LOG"; then
       # ブランチクリーンアップ（マージ成功後）
       if [ "$REPO_MODE" = "worktree" ]; then
         # worktree mode: worktree を先に削除してからブランチを削除
