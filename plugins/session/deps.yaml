@@ -1,0 +1,69 @@
+# loom-plugin-session 依存関係定義
+# version: 3.0
+# plugin: session
+
+version: "3.0"
+plugin: session
+
+entry_points:
+  - skills/spawn/SKILL.md
+  - skills/observe/SKILL.md
+  - skills/fork/SKILL.md
+
+skills:
+  spawn:
+    type: controller
+    path: skills/spawn/SKILL.md
+    spawnable_by: [user]
+    can_spawn: []
+    description: "新規セッション spawn（コンテキスト非継承）"
+
+  observe:
+    type: controller
+    path: skills/observe/SKILL.md
+    spawnable_by: [user]
+    can_spawn: []
+    description: "tmux ウィンドウ/ペイン観察・AI 要約"
+
+  fork:
+    type: controller
+    path: skills/fork/SKILL.md
+    spawnable_by: [user]
+    can_spawn: []
+    description: "セッション fork（コンテキスト継承）"
+
+scripts:
+  session-state:
+    type: script
+    path: scripts/session-state.sh
+    description: "セッション状態検出ライブラリ（state/list/wait）"
+
+  session-comm:
+    type: script
+    path: scripts/session-comm.sh
+    description: "セッション間通信プリミティブ（capture/inject/wait-ready）"
+
+  cld:
+    type: script
+    path: scripts/cld
+    description: "Claude Code ランチャー（plugin 自動検出 + systemd-run）"
+
+  cld-spawn:
+    type: script
+    path: scripts/cld-spawn
+    description: "新規セッション起動（tmux new-window）"
+
+  cld-observe:
+    type: script
+    path: scripts/cld-observe
+    description: "ペイン出力キャプチャ・メタデータ付き出力"
+
+  cld-fork:
+    type: script
+    path: scripts/cld-fork
+    description: "セッション fork 起動（--continue --fork-session）"
+
+  claude-session-save:
+    type: script
+    path: scripts/claude-session-save.sh
+    description: "session_id ↔ tmux ペイン マッピング保存（SessionStart hook）"

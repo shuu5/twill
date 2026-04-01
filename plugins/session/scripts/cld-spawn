@@ -1,0 +1,54 @@
+#!/bin/bash
+# cld-spawn - Start a new Claude Code session in a new tmux window
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+
+# tmux check
+if [[ -z "${TMUX:-}" ]]; then
+    echo "Error: tmux内で実行してください" >&2
+    exit 1
+fi
+
+CWD="$(pwd)"
+CD_SPECIFIED=false
+
+# Parse options
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --cd)
+            [[ -z "${2:-}" ]] && { echo "Error: --cd にディレクトリを指定してください" >&2; exit 1; }
+            CWD="$2"
+            CD_SPECIFIED=true
+            shift 2
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# --cd 指定時のみチルダ展開・正規化・存在チェックを実行
+if $CD_SPECIFIED; then
+    CWD="${CWD/#\~/$HOME}"
+    CWD="$(realpath -m "$CWD")"
+    if [[ ! -d "$CWD" ]]; then
+        echo "Error: ディレクトリが存在しません: $CWD" >&2
+        exit 1
+    fi
+fi
+
+WINDOW_NAME="spawn-$(date +%H%M%S)"
+
+# Build cld command (new session, no --continue --fork-session)
+# CLD_PATH: テスト時のスタブ差し替え用（本番では未設定 → $SCRIPT_DIR/cld）
+CLD_CMD="${CLD_PATH:-$SCRIPT_DIR/cld}"
+if [[ $# -gt 0 ]]; then
+    # Pass remaining args as initial prompt
+    for arg in "$@"; do
+        CLD_CMD+=" $(printf '%q' "$arg")"
+    done
+fi
+
+tmux new-window -n "$WINDOW_NAME" -c "$CWD" "$CLD_CMD"
+echo "spawned → tmux window '$WINDOW_NAME'"

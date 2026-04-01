@@ -1,0 +1,26 @@
+#!/bin/bash
+# cld-fork - Fork current Claude Code session in a new tmux window
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# tmux check
+if [[ -z "${TMUX:-}" ]]; then
+    echo "Error: tmux内で実行してください" >&2
+    exit 1
+fi
+
+CWD="$(pwd)"
+WINDOW_NAME="fork-$(date +%H%M%S)"
+
+# Build cld command with --continue --fork-session
+CLD_CMD="$SCRIPT_DIR/cld --continue --fork-session"
+if [[ $# -gt 0 ]]; then
+    # Pass remaining args as initial prompt
+    for arg in "$@"; do
+        CLD_CMD+=" $(printf '%q' "$arg")"
+    done
+fi
+
+tmux new-window -n "$WINDOW_NAME" -c "$CWD" "$CLD_CMD"
+echo "forked → tmux window '$WINDOW_NAME'"
