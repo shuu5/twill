@@ -1,0 +1,303 @@
+change_id: 82-depsyaml-calls-svg-orphan-2
+generated_at: "2026-04-01T00:00:00Z"
+test_framework: bash
+coverage: edge-cases
+
+scenarios:
+  # ---------------------------------------------------------------------------
+  # Requirement: co-autopilot に autopilot-plan calls 宣言を追加
+  # ---------------------------------------------------------------------------
+  - id: "autopilot-plan-in-calls"
+    name: "autopilot-plan が co-autopilot の calls に含まれる"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 7
+    requirement: "co-autopilot に autopilot-plan calls 宣言を追加"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "co-autopilot.calls に autopilot-plan が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-plan-calls-no-duplicate"
+    name: "[edge: 冪等性] co-autopilot.calls に autopilot-plan の重複なし"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 7
+    requirement: "co-autopilot に autopilot-plan calls 宣言を追加"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "[edge: 冪等性] co-autopilot.calls に autopilot-plan の重複エントリがない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-orphans-autopilot-plan-not-isolated"
+    name: "loom orphans で autopilot-plan が Isolated でなくなる"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 11
+    requirement: "co-autopilot に autopilot-plan calls 宣言を追加"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "loom orphans: script:autopilot-plan が Isolated に含まれない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-orphans-output-format"
+    name: "[edge: 出力フォーマット] loom orphans に Isolated セクションが存在する"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 11
+    requirement: "co-autopilot に autopilot-plan calls 宣言を追加"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "[edge: 出力フォーマット] loom orphans に Isolated/orphan セクションが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: dead code スクリプトの deps.yaml エントリ整理
+  # ---------------------------------------------------------------------------
+  - id: "merge-gate-scripts-files-exist"
+    name: "merge-gate スクリプトファイル自体は保持されている"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 21
+    requirement: "dead code スクリプトの deps.yaml エントリ整理"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "merge-gate スクリプトファイル自体は保持されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-callers-check"
+    name: "merge-gate 関連: 呼び出し元なし → deps.yaml エントリ削除済み"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 21
+    requirement: "dead code スクリプトの deps.yaml エントリ整理"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "merge-gate 関連: 呼び出し元なし → deps.yaml エントリ削除済み"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "fix-phase-scripts-files-exist"
+    name: "fix-phase スクリプトファイル自体は保持されている"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 25
+    requirement: "dead code スクリプトの deps.yaml エントリ整理"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "fix-phase スクリプトファイル自体は保持されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "fix-phase-callers-check"
+    name: "fix-phase 関連: 呼び出し元なし → deps.yaml エントリ削除済み"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 25
+    requirement: "dead code スクリプトの deps.yaml エントリ整理"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "fix-phase 関連: 呼び出し元なし → deps.yaml エントリ削除済み"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "switchover-not-in-deps"
+    name: "switchover: スイッチオーバー完了済みのため deps.yaml から削除済み"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 29
+    requirement: "dead code スクリプトの deps.yaml エントリ整理"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "switchover: スイッチオーバー完了済みのため deps.yaml から削除済み"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "switchover-script-file-exists"
+    name: "switchover: スクリプトファイル自体は保持されている"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 29
+    requirement: "dead code スクリプトの deps.yaml エントリ整理"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "switchover: スクリプトファイル自体は保持されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "branch-create-or-integrated"
+    name: "branch-create: worktree-create 統合済みなら deps.yaml エントリ削除済み"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 29
+    requirement: "dead code スクリプトの deps.yaml エントリ整理"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "branch-create: worktree-create 統合済みなら deps.yaml エントリ削除済み"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "check-db-migration-not-in-deps"
+    name: "check-db-migration: webapp 固有のため deps.yaml から削除済み"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 29
+    requirement: "dead code スクリプトの deps.yaml エントリ整理"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "check-db-migration: webapp 固有のため deps.yaml から削除済み"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: 意図的孤立コンポーネントの明示
+  # ---------------------------------------------------------------------------
+  - id: "user-direct-commands-standalone-comment"
+    name: "ユーザー直接起動コマンドに standalone コメント付与"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 37
+    requirement: "意図的孤立コンポーネントの明示"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "ユーザー直接起動コマンドに '# standalone: ユーザー直接起動' コメントあり"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "user-direct-commands-standalone-comment-flexible"
+    name: "[edge: コメント書式] standalone コメントフォーマットバリエーション許容"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 37
+    requirement: "意図的孤立コンポーネントの明示"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "[edge: コメント書式] ユーザー直接起動コメントのフォーマットバリエーション許容"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-specific-commands-standalone-comment"
+    name: "プロジェクト固有コマンドに standalone コメント付与"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 41
+    requirement: "意図的孤立コンポーネントの明示"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "プロジェクト固有コマンドに '# standalone: プロジェクト固有ユーティリティ' コメントあり"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "low-freq-commands-standalone-comment"
+    name: "低頻度ユーティリティに standalone コメント付与"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 45
+    requirement: "意図的孤立コンポーネントの明示"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "低頻度ユーティリティに '# standalone: 低頻度ユーティリティ' コメントあり"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "standalone-comment-consistency"
+    name: "[edge: コメント一貫性] standalone コメントに理由が付与されている"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 35
+    requirement: "意図的孤立コンポーネントの明示"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "[edge: コメント一貫性] standalone コメントに理由が付与されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: SVG グラフの再生成
+  # ---------------------------------------------------------------------------
+  - id: "svg-autopilot-dot-has-edge"
+    name: "docs/deps-co-autopilot.dot に autopilot-plan ノード/エッジが存在する"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 53
+    requirement: "SVG グラフの再生成"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "docs/deps-co-autopilot.dot に autopilot-plan ノード/エッジが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "svg-autopilot-svg-has-content"
+    name: "docs/deps-co-autopilot.svg に autopilot-plan が描画されている"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 53
+    requirement: "SVG グラフの再生成"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "docs/deps-co-autopilot.svg に autopilot-plan が描画されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-check-passes"
+    name: "loom check が PASS する"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 57
+    requirement: "SVG グラフの再生成"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "loom check: すべてのファイルチェックが PASS する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-validate-passes"
+    name: "loom validate が PASS する"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 61
+    requirement: "SVG グラフの再生成"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "loom validate: violations が 0 件である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-valid"
+    name: "[edge: YAML 整合性] deps.yaml が有効な YAML である"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 1
+    requirement: "SVG グラフの再生成"
+    test_file: "tests/scenarios/calls-completion.test.sh"
+    test_name: "[edge: YAML 整合性] deps.yaml が有効な YAML である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

@@ -100,7 +100,7 @@
 <title>cmd_all_pass_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="301.39,-998.44 221.39,-998.44 221.39,-962.44 301.39,-962.44 301.39,-998.44"/>
 <text text-anchor="middle" x="261.39" y="-983.44" font-family="Helvetica,sans-Serif" font-size="10.00">all&#45;pass&#45;check</text>
-<text text-anchor="middle" x="261.39" y="-972.44" font-family="Helvetica,sans-Serif" font-size="10.00">(407 tok)</text>
+<text text-anchor="middle" x="261.39" y="-972.44" font-family="Helvetica,sans-Serif" font-size="10.00">(703 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_all_pass_check -->
 <g id="edge13" class="edge">
@@ -113,7 +113,7 @@
 <title>cmd_ac_verify</title>
 <polygon fill="#e3f2fd" stroke="black" points="288.89,-1636.44 233.89,-1636.44 233.89,-1600.44 288.89,-1600.44 288.89,-1636.44"/>
 <text text-anchor="middle" x="261.39" y="-1621.44" font-family="Helvetica,sans-Serif" font-size="10.00">ac&#45;verify</text>
-<text text-anchor="middle" x="261.39" y="-1610.44" font-family="Helvetica,sans-Serif" font-size="10.00">(332 tok)</text>
+<text text-anchor="middle" x="261.39" y="-1610.44" font-family="Helvetica,sans-Serif" font-size="10.00">(362 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_ac_verify -->
 <g id="edge2" class="edge">
@@ -165,7 +165,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="293.89,-940.44 228.89,-940.44 228.89,-904.44 293.89,-904.44 293.89,-940.44"/>
 <text text-anchor="middle" x="261.39" y="-925.44" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="261.39" y="-914.44" font-family="Helvetica,sans-Serif" font-size="10.00">(1,047 tok)</text>
+<text text-anchor="middle" x="261.39" y="-914.44" font-family="Helvetica,sans-Serif" font-size="10.00">(1,167 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_merge_gate -->
 <g id="edge14" class="edge">
@@ -191,7 +191,7 @@
 <title>cmd_auto_merge</title>
 <polygon fill="#e3f2fd" stroke="black" points="293.89,-882.44 228.89,-882.44 228.89,-846.44 293.89,-846.44 293.89,-882.44"/>
 <text text-anchor="middle" x="261.39" y="-867.44" font-family="Helvetica,sans-Serif" font-size="10.00">auto&#45;merge</text>
-<text text-anchor="middle" x="261.39" y="-856.44" font-family="Helvetica,sans-Serif" font-size="10.00">(475 tok)</text>
+<text text-anchor="middle" x="261.39" y="-856.44" font-family="Helvetica,sans-Serif" font-size="10.00">(793 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_auto_merge -->
 <g id="edge15" class="edge">
@@ -204,7 +204,7 @@
 <title>cmd_pr_cycle_analysis</title>
 <polygon fill="#e3f2fd" stroke="black" points="306.39,-1056.44 216.39,-1056.44 216.39,-1020.44 306.39,-1020.44 306.39,-1056.44"/>
 <text text-anchor="middle" x="261.39" y="-1041.44" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;cycle&#45;analysis</text>
-<text text-anchor="middle" x="261.39" y="-1030.44" font-family="Helvetica,sans-Serif" font-size="10.00">(838 tok)</text>
+<text text-anchor="middle" x="261.39" y="-1030.44" font-family="Helvetica,sans-Serif" font-size="10.00">(974 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_pr_cycle_analysis -->
 <g id="edge12" class="edge">
@@ -224,7 +224,7 @@
 <title>script_state_write</title>
 <polygon fill="#ff9800" stroke="black" points="509.67,-1142.44 483.98,-1166.93 432.6,-1166.93 406.91,-1142.44 432.6,-1117.95 483.98,-1117.95 509.67,-1142.44"/>
 <text text-anchor="middle" x="458.29" y="-1145.44" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;write</text>
-<text text-anchor="middle" x="458.29" y="-1134.44" font-family="Helvetica,sans-Serif" font-size="10.00">(2,000 tok)</text>
+<text text-anchor="middle" x="458.29" y="-1134.44" font-family="Helvetica,sans-Serif" font-size="10.00">(2,165 tok)</text>
 </g>
 <!-- cmd_all_pass_check&#45;&gt;script_state_write -->
 <g id="edge16" class="edge">

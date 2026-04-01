@@ -15,7 +15,7 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="dev:workflow-setup\n(1,090 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="dev:workflow-setup\n(1,140 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
@@ -32,8 +32,8 @@ digraph Dependencies {
     // L3: Agents
 
     // L3.5: Scripts
-    script_worktree_create [label="worktree-create\n(1,695 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_parse_issue_ac [label="parse-issue-ac\n(1,090 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_create [label="worktree-create\n(2,126 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_parse_issue_ac [label="parse-issue-ac\n(1,224 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 

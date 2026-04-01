@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="dev:co-issue\n(1,330 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="dev:co-issue\n(1,740 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -20,20 +20,18 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_issue_dig [label="issue-dig\n(1,016 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_structure [label="issue-structure\n(1,175 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_create [label="issue-create\n(985 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_bulk_create [label="issue-bulk-create\n(1,667 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_tech_debt_absorb [label="issue-tech-debt-absorb\n(709 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_board_sync [label="project-board-sync\n(2,082 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_issue_assess [label="issue-assess\n(1,221 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_project_board_sync [label="project-board-sync\n(2,745 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_explore [label="explore\n(1,490 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
     // L3: Agents
-    agent_template_validator [label="template-validator\n(922 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_context_checker [label="context-checker\n(1,792 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_issue_critic [label="issue-critic\n(1,017 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_issue_feasibility [label="issue-feasibility\n(920 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
 
@@ -41,37 +39,34 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_issue; }
-    { rank=same; cmd_issue_dig; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_project_board_sync; cmd_issue_assess; cmd_explore; }
-    { rank=same; agent_template_validator; agent_context_checker; }
+    { rank=same; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_project_board_sync; cmd_explore; }
+    { rank=same; agent_issue_critic; agent_issue_feasibility; }
 
     // Edges
     skill_co_issue -> cmd_explore;
-    skill_co_issue -> cmd_issue_dig;
     skill_co_issue -> cmd_issue_structure;
-    skill_co_issue -> cmd_issue_assess;
     skill_co_issue -> cmd_issue_tech_debt_absorb;
     skill_co_issue -> cmd_issue_create;
     skill_co_issue -> cmd_issue_bulk_create;
     skill_co_issue -> cmd_project_board_sync;
+    skill_co_issue -> agent_issue_critic [style=dashed];
+    skill_co_issue -> agent_issue_feasibility [style=dashed];
     skill_co_issue -> skill_ref_issue_template_bug;
     skill_co_issue -> skill_ref_issue_template_feature;
     skill_co_issue -> skill_ref_project_model;
-    cmd_issue_assess -> agent_template_validator [style=dashed];
-    cmd_issue_assess -> agent_context_checker [style=dashed];
-    cmd_issue_assess -> skill_ref_specialist_output_schema;
+    skill_co_issue -> skill_ref_issue_quality_criteria;
 
     // Ordering constraints (invisible edges)
-    cmd_explore -> cmd_issue_dig [style=invis, weight=10];
-    cmd_issue_dig -> cmd_issue_structure [style=invis, weight=10];
-    cmd_issue_structure -> cmd_issue_assess [style=invis, weight=10];
-    cmd_issue_assess -> cmd_issue_tech_debt_absorb [style=invis, weight=10];
+    cmd_explore -> cmd_issue_structure [style=invis, weight=10];
+    cmd_issue_structure -> cmd_issue_tech_debt_absorb [style=invis, weight=10];
     cmd_issue_tech_debt_absorb -> cmd_issue_create [style=invis, weight=10];
     cmd_issue_create -> cmd_issue_bulk_create [style=invis, weight=10];
     cmd_issue_bulk_create -> cmd_project_board_sync [style=invis, weight=10];
-    cmd_project_board_sync -> skill_ref_issue_template_bug [style=invis, weight=10];
+    cmd_project_board_sync -> agent_issue_critic [style=invis, weight=10];
+    agent_issue_critic -> agent_issue_feasibility [style=invis, weight=10];
+    agent_issue_feasibility -> skill_ref_issue_template_bug [style=invis, weight=10];
     skill_ref_issue_template_bug -> skill_ref_issue_template_feature [style=invis, weight=10];
     skill_ref_issue_template_feature -> skill_ref_project_model [style=invis, weight=10];
-    agent_template_validator -> agent_context_checker [style=invis, weight=10];
-    agent_context_checker -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    skill_ref_project_model -> skill_ref_issue_quality_criteria [style=invis, weight=10];
 
 }

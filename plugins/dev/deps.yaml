@@ -318,7 +318,7 @@ refs:
 
 # コマンド（B-4 で拡充）
 commands:
-  self-improve-review:
+  self-improve-review: # standalone: ユーザー直接起動
     type: atomic
     path: commands/self-improve-review.md
     spawnable_by: [controller, workflow]
@@ -349,7 +349,7 @@ commands:
       - script: worktree-create
     description: "worktree 作成"
 
-  worktree-list:
+  worktree-list: # standalone: ユーザー直接起動
     type: atomic
     path: commands/worktree-list.md
     spawnable_by: [controller, workflow]
@@ -399,7 +399,7 @@ commands:
       step: "2"
     description: "OpenSpec 実装ラッパー"
 
-  opsx-archive:
+  opsx-archive: # standalone: 低頻度ユーティリティ
     type: atomic
     path: commands/opsx-archive.md
     spawnable_by: [controller, workflow]
@@ -727,35 +727,35 @@ commands:
 
   # === C-2a: OpenSpec/汎用系（5個） ===
 
-  explore:
+  explore: # standalone: ユーザー直接起動
     type: atomic
     path: commands/explore.md
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "アイデア検討・問題調査・要件整理のための思考パートナー"
 
-  propose:
+  propose: # standalone: ユーザー直接起動
     type: atomic
     path: commands/propose.md
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "change ディレクトリを作成し全 artifact を一括生成"
 
-  apply:
+  apply: # standalone: ユーザー直接起動
     type: atomic
     path: commands/apply.md
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "OpenSpec change の tasks.md に沿ってタスクを実装"
 
-  archive:
+  archive: # standalone: ユーザー直接起動
     type: atomic
     path: commands/archive.md
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "完了済み change を archive/ に移動"
 
-  check:
+  check: # standalone: ユーザー直接起動
     type: atomic
     path: commands/check.md
     spawnable_by: [controller, workflow]
@@ -828,7 +828,7 @@ commands:
 
   # === C-2a: その他（1個） ===
 
-  loom-validate:
+  loom-validate: # standalone: プロジェクト固有ユーティリティ
     type: atomic
     path: commands/loom-validate.md
     spawnable_by: [controller, workflow]
@@ -837,21 +837,21 @@ commands:
 
   # === C-2b: Setup/Workflow-setup 系（5個） ===
 
-  services:
+  services: # standalone: プロジェクト固有ユーティリティ
     type: atomic
     path: commands/services.md
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "開発サービス起動管理（コンテナ、Supabase、開発サーバー等）"
 
-  ui-capture:
+  ui-capture: # standalone: 低頻度ユーティリティ
     type: atomic
     path: commands/ui-capture.md
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "UI スクショ撮影 + セマンティック解析でコンテキスト化"
 
-  e2e-plan:
+  e2e-plan: # standalone: 低頻度ユーティリティ
     type: atomic
     path: commands/e2e-plan.md
     spawnable_by: [controller, workflow]
@@ -1013,14 +1013,14 @@ commands:
       step: "7.3"
     description: "PR-cycle 結果からパターン分析し self-improve Issue 自動起票"
 
-  schema-update:
+  schema-update: # standalone: プロジェクト固有ユーティリティ
     type: atomic
     path: commands/schema-update.md
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "Zod スキーマ更新 + OpenAPI 再生成 + 検証（webapp-hono 専用）"
 
-  spec-diagnose:
+  spec-diagnose: # standalone: 低頻度ユーティリティ
     type: atomic
     path: commands/spec-diagnose.md
     spawnable_by: [workflow]
@@ -1197,7 +1197,7 @@ scripts:
     description: "specialist 出力の共通スキーマパース（status + findings）"
 
   # C-4: 旧 plugin から移植
-  autopilot-plan:
+  autopilot-plan: # standalone: co-autopilot SKILL.md からインライン bash 実行（controller→script は型ルール上 calls 不可）
     type: script
     path: scripts/autopilot-plan.sh
     description: "autopilot 実行計画 (plan.yaml) 生成（explicit/issues モード）"
@@ -1207,17 +1207,17 @@ scripts:
     path: scripts/autopilot-should-skip.sh
     description: "依存グラフベースの skip 判定"
 
-  merge-gate-init:
+  merge-gate-init: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
     type: script
     path: scripts/merge-gate-init.sh
     description: "merge-gate 初期化（状態読み取り + PR差分取得 + GATE_TYPE判定）"
 
-  merge-gate-execute:
+  merge-gate-execute: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
     type: script
     path: scripts/merge-gate-execute.sh
     description: "merge-gate マージ実行 / リジェクト（state-write.sh 統合）"
 
-  merge-gate-issues:
+  merge-gate-issues: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
     type: script
     path: scripts/merge-gate-issues.sh
     description: "tech-debt / self-improve Issue 自動起票"
@@ -1227,7 +1227,7 @@ scripts:
     path: scripts/worktree-create.sh
     description: "bare repo 向け worktree 作成（Issue番号→ブランチ名生成）"
 
-  branch-create:
+  branch-create: # standalone: 通常 repo 向け（worktree モードでは worktree-create を使用）
     type: script
     path: scripts/branch-create.sh
     description: "通常 repo 向けフィーチャーブランチ作成"
@@ -1242,7 +1242,7 @@ scripts:
     path: scripts/project-migrate.sh
     description: "既存プロジェクトの最新テンプレート移行"
 
-  classify-failure:
+  classify-failure: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
     type: script
     path: scripts/classify-failure.sh
     description: "PR cycle 障害原因を harness / code / unknown に分類"
@@ -1257,30 +1257,24 @@ scripts:
     path: scripts/session-audit.sh
     description: "セッション JSONL から監査サマリー抽出"
 
-  check-db-migration:
-    type: script
-    path: scripts/check-db-migration.py
-    description: "Zod スキーマ ↔ DB マイグレーション整合性チェック"
+  # check-db-migration: removed — webapp 固有、dev plugin 不使用（scripts/check-db-migration.py は保持）
 
   ecc-monitor:
     type: script
     path: scripts/ecc-monitor.sh
     description: "ECC リポジトリの変更検知・カテゴリ分類"
 
-  codex-review:
+  codex-review: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
     type: script
     path: scripts/codex-review.sh
     description: "Codex CLI による補完的コードレビュー"
 
-  create-harness-issue:
+  create-harness-issue: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
     type: script
     path: scripts/create-harness-issue.sh
     description: "harness 分類時に cross-repo Issue 自動作成"
 
-  switchover:
-    type: script
-    path: scripts/switchover.sh
-    description: "プラグイン切替管理（check/switch/rollback/retire）"
+  # switchover: removed — スイッチオーバー完了済み（scripts/switchover.sh は保持）
 
 # エージェント（C-3 で追加）
 agents:
@@ -1333,7 +1327,7 @@ agents:
     can_spawn: []
     description: "オミクスデータファイルの検証"
 
-  template-validator:
+  template-validator: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
     path: agents/template-validator.md
     model: haiku
@@ -1341,7 +1335,7 @@ agents:
     can_spawn: []
     description: "Issueテンプレート準拠バリデーター"
 
-  context-checker:
+  context-checker: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
     path: agents/context-checker.md
     model: haiku
@@ -1456,7 +1450,7 @@ agents:
     description: "LLM_CRITERIAベースの品質評価"
 
   # ユーティリティ系（sonnet）
-  docs-researcher:
+  docs-researcher: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
     path: agents/docs-researcher.md
     model: sonnet
@@ -1472,7 +1466,7 @@ agents:
     can_spawn: []
     description: "E2Eテストの偽陽性リスク検出"
 
-  autofix-loop:
+  autofix-loop: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
     path: agents/autofix-loop.md
     model: sonnet
@@ -1496,7 +1490,7 @@ agents:
     can_spawn: []
     description: "ScenarioからE2Eテスト生成"
 
-  e2e-heal:
+  e2e-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
     path: agents/e2e-heal.md
     model: sonnet
@@ -1504,7 +1498,7 @@ agents:
     can_spawn: []
     description: "失敗E2Eテストの分析・修復"
 
-  e2e-visual-heal:
+  e2e-visual-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
     path: agents/e2e-visual-heal.md
     model: sonnet

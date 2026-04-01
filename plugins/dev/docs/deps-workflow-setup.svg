@@ -15,7 +15,7 @@
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="71.42" cy="-169.49" rx="71.34" ry="21.43"/>
 <text text-anchor="middle" x="71.42" y="-172.49" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;setup</text>
-<text text-anchor="middle" x="71.42" y="-161.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,090 tok)</text>
+<text text-anchor="middle" x="71.42" y="-161.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,140 tok)</text>
 </g>
 <!-- cmd_init -->
 <g id="node2" class="node">
@@ -102,7 +102,7 @@
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="531.09,-256.49 496.76,-280.98 428.09,-280.98 393.75,-256.49 428.09,-232.01 496.76,-232.01 531.09,-256.49"/>
 <text text-anchor="middle" x="462.42" y="-259.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="462.42" y="-248.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,695 tok)</text>
+<text text-anchor="middle" x="462.42" y="-248.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,126 tok)</text>
 </g>
 <!-- cmd_worktree_create&#45;&gt;script_worktree_create -->
 <g id="edge7" class="edge">
@@ -118,7 +118,7 @@
 <title>script_parse_issue_ac</title>
 <polygon fill="#ff9800" stroke="black" points="527.56,-24.49 494.99,-48.98 429.85,-48.98 397.28,-24.49 429.85,-0.01 494.99,-0.01 527.56,-24.49"/>
 <text text-anchor="middle" x="462.42" y="-27.49" font-family="Helvetica,sans-Serif" font-size="10.00">parse&#45;issue&#45;ac</text>
-<text text-anchor="middle" x="462.42" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,090 tok)</text>
+<text text-anchor="middle" x="462.42" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,224 tok)</text>
 </g>
 <!-- cmd_ac_extract&#45;&gt;script_parse_issue_ac -->
 <g id="edge8" class="edge">

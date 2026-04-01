@@ -22,7 +22,7 @@
 <title>cmd_opsx_apply</title>
 <polygon fill="#e3f2fd" stroke="black" points="296.62,-36 232.62,-36 232.62,0 296.62,0 296.62,-36"/>
 <text text-anchor="middle" x="264.62" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00">opsx&#45;apply</text>
-<text text-anchor="middle" x="264.62" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(298 tok)</text>
+<text text-anchor="middle" x="264.62" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(411 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_opsx_apply -->
 <g id="edge2" class="edge">

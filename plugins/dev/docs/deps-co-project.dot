@@ -29,7 +29,7 @@ digraph Dependencies {
     cmd_snapshot_classify [label="snapshot-classify\n(870 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_snapshot_generate [label="snapshot-generate\n(735 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_interview [label="plugin-interview\n(1,086 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_research [label="plugin-research\n(643 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_research [label="plugin-research\n(655 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_design [label="plugin-design\n(1,192 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_generate [label="plugin-generate\n(2,083 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(458 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -47,7 +47,7 @@ digraph Dependencies {
     agent_worker_architecture [label="worker-architecture\n(1,242 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
-    script_project_create [label="project-create\n(4,494 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_project_create [label="project-create\n(4,935 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_project_migrate [label="project-migrate\n(2,333 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External

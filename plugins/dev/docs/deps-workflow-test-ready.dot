@@ -20,7 +20,7 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_opsx_apply [label="opsx-apply\n(298 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_opsx_apply [label="opsx-apply\n(411 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_scaffold [label="test-scaffold\n(718 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands

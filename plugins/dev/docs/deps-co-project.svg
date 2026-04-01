@@ -139,7 +139,7 @@
 <title>cmd_plugin_research</title>
 <polygon fill="#e3f2fd" stroke="black" points="280.31,-661.77 197.31,-661.77 197.31,-625.77 280.31,-625.77 280.31,-661.77"/>
 <text text-anchor="middle" x="238.81" y="-646.77" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;research</text>
-<text text-anchor="middle" x="238.81" y="-635.77" font-family="Helvetica,sans-Serif" font-size="10.00">(643 tok)</text>
+<text text-anchor="middle" x="238.81" y="-635.77" font-family="Helvetica,sans-Serif" font-size="10.00">(655 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;cmd_plugin_research -->
 <g id="edge10" class="edge">
@@ -293,7 +293,7 @@
 <title>script_project_create</title>
 <polygon fill="#ff9800" stroke="black" points="500.13,-1165.77 469.07,-1190.26 406.97,-1190.26 375.91,-1165.77 406.97,-1141.28 469.07,-1141.28 500.13,-1165.77"/>
 <text text-anchor="middle" x="438.02" y="-1168.77" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;create</text>
-<text text-anchor="middle" x="438.02" y="-1157.77" font-family="Helvetica,sans-Serif" font-size="10.00">(4,494 tok)</text>
+<text text-anchor="middle" x="438.02" y="-1157.77" font-family="Helvetica,sans-Serif" font-size="10.00">(4,935 tok)</text>
 </g>
 <!-- cmd_project_create&#45;&gt;script_project_create -->
 <g id="edge22" class="edge">
