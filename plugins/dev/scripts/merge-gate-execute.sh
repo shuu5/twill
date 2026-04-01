@@ -64,6 +64,15 @@ if [[ "$cwd" == */worktrees/* ]]; then
   exit 1
 fi
 
+# Worker ロール検出ガード（defense-in-depth）: autopilot Worker（tmux window 名 ap-#N）からの merge を拒否
+# 注意: tmux window 名はユーザー変更可能。本ガードは多層防御の補助層であり、単独で認可判定を行わない
+CURRENT_WINDOW=$(tmux display-message -p '#W' 2>/dev/null || echo "")
+if [[ "$CURRENT_WINDOW" =~ ^ap-#[0-9]+$ ]]; then
+  SANITIZED_WINDOW=$(printf '%s' "$CURRENT_WINDOW" | tr -cd '[:alnum:]#_-')
+  echo "[merge-gate-execute] ERROR: autopilot Worker（${SANITIZED_WINDOW}）からの merge 実行は禁止されています（不変条件C）" >&2
+  exit 1
+fi
+
 case "$MODE" in
   --reject)
     echo "[merge-gate] Issue #${ISSUE}: リジェクト（Critical/High 問題検出）" >&2
