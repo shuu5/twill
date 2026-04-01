@@ -119,7 +119,7 @@ issue-{N}.json の status から自動判定:
 - `done` → skip
 - `failed` → 依存先 skip（不変条件 D）
 - `merge-ready` → 即 merge-gate 実行
-- `running` → crash-detect.sh でクラッシュ検知（不変条件 G）
+- `running` → crash-detect.sh でクラッシュ検知（不変条件 G）。session-state.sh 利用可能時は 5 状態検出（idle/input-waiting/processing/error/exited）、非存在時は tmux list-panes フォールバック
 
 ## 不変条件（9件）
 

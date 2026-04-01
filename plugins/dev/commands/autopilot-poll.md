@@ -3,6 +3,8 @@
 state-read.sh を使用して Issue 状態をポーリングし、crash-detect.sh でクラッシュ検知を行う。
 autopilot-phase-execute から呼び出される。
 
+session-state.sh が利用可能な場合は wait サブコマンドを活用してポーリング効率を改善する。
+
 ## 前提変数
 
 | 変数 | 説明 |
@@ -12,17 +14,35 @@ autopilot-phase-execute から呼び出される。
 | `$POLL_MODE` | `single` or `phase` |
 | `$SESSION_STATE_FILE` | session.json のパス |
 
+## session-state.sh 検出
+
+```bash
+SESSION_STATE_CMD="${SESSION_STATE_CMD-$HOME/ubuntu-note-system/scripts/session-state.sh}"
+# パス安全性検証: 相対パス・空文字列・.. を含むパスを拒否
+if [[ -n "$SESSION_STATE_CMD" && "$SESSION_STATE_CMD" == /* && "$SESSION_STATE_CMD" != *..* && -x "$SESSION_STATE_CMD" ]]; then
+  USE_SESSION_STATE=true
+else
+  USE_SESSION_STATE=false
+fi
+```
+
 ## 実行ロジック（MUST）
 
 ### poll_single（単一 Issue ポーリング）
 
 ```bash
-MAX_POLL=360  # 360回 × 10秒 = 60分
+MAX_POLL=360  # session-state: 360回 × 10秒wait = 60分 / fallback: 360回 × 10秒sleep = 60分
 POLL_COUNT=0
 WINDOW_NAME="ap-#${ISSUE}"
 
 while true; do
-  sleep 10
+  # session-state.sh 利用時: wait で効率的にポーリング
+  # フォールバック時: 従来の sleep 10
+  if [ "$USE_SESSION_STATE" = "true" ]; then
+    "$SESSION_STATE_CMD" wait "$WINDOW_NAME" exited --timeout 10 2>/dev/null || true
+  else
+    sleep 10
+  fi
   POLL_COUNT=$((POLL_COUNT + 1))
 
   STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
@@ -38,7 +58,7 @@ while true; do
       echo "Issue #${ISSUE}: merge-ready"
       break ;;
     running)
-      # クラッシュ検知
+      # クラッシュ検知（crash-detect.sh が session-state.sh 統合済み）
       bash $SCRIPTS_ROOT/crash-detect.sh --issue "$ISSUE" --window "$WINDOW_NAME"
       CRASH_EXIT=$?
       if [ "$CRASH_EXIT" -eq 2 ]; then
@@ -105,7 +125,26 @@ while true; do
     break
   fi
 
-  sleep 10
+  # session-state.sh 利用時: wait で効率的にポーリング
+  # フォールバック時: 従来の sleep 10
+  if [ "$USE_SESSION_STATE" = "true" ]; then
+    # Phase モードでは最初の running issue の window で wait
+    FIRST_RUNNING_WINDOW=""
+    for ISSUE in $ISSUES; do
+      STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+      if [ "$STATUS" = "running" ]; then
+        FIRST_RUNNING_WINDOW="ap-#${ISSUE}"
+        break
+      fi
+    done
+    if [ -n "$FIRST_RUNNING_WINDOW" ]; then
+      "$SESSION_STATE_CMD" wait "$FIRST_RUNNING_WINDOW" exited --timeout 10 2>/dev/null || true
+    else
+      sleep 10
+    fi
+  else
+    sleep 10
+  fi
 done
 ```
 

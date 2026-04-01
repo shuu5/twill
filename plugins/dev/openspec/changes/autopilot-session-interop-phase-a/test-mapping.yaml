@@ -1,0 +1,262 @@
+change_id: autopilot-session-interop-phase-a
+generated_at: "2026-04-01T00:00:00Z"
+test_framework: bats
+scenarios:
+  # ---------------------------------------------------------------------------
+  # Requirement: crash-detect 5状態検出
+  # Source: specs/crash-detect/spec.md
+  # ---------------------------------------------------------------------------
+
+  - id: "crash-detect-exited-via-session-state"
+    name: "session-state.sh で exited 状態を検出"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 7
+    requirement: "crash-detect 5状態検出"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect detects crash via session-state.sh when state is exited"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-error-via-session-state"
+    name: "session-state.sh で error 状態を検出"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 11
+    requirement: "crash-detect 5状態検出"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect detects crash via session-state.sh when state is error"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-processing-via-session-state"
+    name: "session-state.sh で processing 状態を検出"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 15
+    requirement: "crash-detect 5状態検出"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect exits 0 via session-state.sh when state is processing"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-idle-via-session-state"
+    name: "session-state.sh で idle 状態を検出"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 19
+    requirement: "crash-detect 5状態検出"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect exits 0 via session-state.sh when state is idle"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-input-waiting-via-session-state"
+    name: "session-state.sh で input-waiting 状態を検出"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 23
+    requirement: "crash-detect 5状態検出"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect exits 0 via session-state.sh when state is input-waiting"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: crash-detect フォールバック
+  # Source: specs/crash-detect/spec.md
+  # ---------------------------------------------------------------------------
+
+  - id: "crash-detect-fallback-session-state-not-found-pane-absent"
+    name: "session-state.sh 非存在時のフォールバック（ペイン消失）"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 31
+    requirement: "crash-detect フォールバック"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect falls back to tmux when SESSION_STATE_CMD path does not exist (pane absent)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-fallback-session-state-not-found-pane-present"
+    name: "session-state.sh 非存在時のフォールバック（ペイン存在）"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 31
+    requirement: "crash-detect フォールバック"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect falls back to tmux when SESSION_STATE_CMD path does not exist (pane present)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-fallback-session-state-exec-failure-pane-absent"
+    name: "session-state.sh が実行失敗した場合のフォールバック（ペイン消失）"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 35
+    requirement: "crash-detect フォールバック"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect falls back to tmux when session-state.sh execution fails"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-fallback-session-state-exec-failure-pane-present"
+    name: "session-state.sh が実行失敗した場合のフォールバック（ペイン存在）"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 35
+    requirement: "crash-detect フォールバック"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect falls back to tmux pane-present when session-state.sh fails"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: crash-detect 既存インターフェース互換
+  # Source: specs/crash-detect/spec.md
+  # ---------------------------------------------------------------------------
+
+  - id: "crash-detect-cli-interface-compatibility"
+    name: "既存引数形式の維持"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 43
+    requirement: "crash-detect 既存インターフェース互換"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect maintains existing CLI interface and exit code contract"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: crash-detect failure 情報の拡張
+  # Source: specs/crash-detect/spec.md
+  # ---------------------------------------------------------------------------
+
+  - id: "crash-detect-failure-json-detected-state-error"
+    name: "session-state.sh 経由の failure 情報（error）"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 51
+    requirement: "crash-detect failure 情報の拡張"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect failure JSON contains detected_state=error when session-state reports error"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-failure-json-detected-state-pane-absent"
+    name: "フォールバック経由の failure 情報（pane_absent）"
+    spec_file: "specs/crash-detect/spec.md"
+    spec_line: 55
+    requirement: "crash-detect failure 情報の拡張"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect failure JSON contains detected_state=pane_absent in fallback path"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: crash-detect テスト更新（tests/spec.md）
+  # Source: specs/tests/spec.md
+  # ---------------------------------------------------------------------------
+
+  - id: "crash-detect-test-exited-stub"
+    name: "session-state.sh 利用時の exited 検知テスト"
+    spec_file: "specs/tests/spec.md"
+    spec_line: 7
+    requirement: "crash-detect テスト更新"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect detects crash via session-state.sh when state is exited"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-test-error-stub"
+    name: "session-state.sh 利用時の error 検知テスト"
+    spec_file: "specs/tests/spec.md"
+    spec_line: 12
+    requirement: "crash-detect テスト更新"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect detects crash via session-state.sh when state is error"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-test-processing-stub"
+    name: "session-state.sh 利用時の processing 正常テスト"
+    spec_file: "specs/tests/spec.md"
+    spec_line: 17
+    requirement: "crash-detect テスト更新"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect exits 0 via session-state.sh when state is processing"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-test-fallback"
+    name: "session-state.sh 非存在時のフォールバックテスト"
+    spec_file: "specs/tests/spec.md"
+    spec_line: 21
+    requirement: "crash-detect テスト更新"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect falls back to tmux when SESSION_STATE_CMD path does not exist (pane absent)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-test-non-running-compat"
+    name: "既存テストの互換性維持（非 running 状態）"
+    spec_file: "specs/tests/spec.md"
+    spec_line: 25
+    requirement: "crash-detect テスト更新"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect skips non-running issue with exit 0"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-test-arg-validation-compat"
+    name: "引数バリデーションテストの維持"
+    spec_file: "specs/tests/spec.md"
+    spec_line: 29
+    requirement: "crash-detect テスト更新"
+    test_file: "tests/bats/scripts/crash-detect.bats"
+    test_name: "crash-detect fails without --issue"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

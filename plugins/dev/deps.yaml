@@ -1061,7 +1061,11 @@ commands:
       - script: state-read
       - script: state-write
       - script: crash-detect
-    description: "Issue 状態ポーリング（state-read + crash-detect.sh）"
+      - external: session-state.sh
+        path: "~/ubuntu-note-system/scripts/session-state.sh"
+        optional: true
+        note: "session-state.sh wait で効率的ポーリング。非存在時は sleep 10 フォールバック"
+    description: "Issue 状態ポーリング（state-read + crash-detect.sh + session-state.sh）"
 
   autopilot-phase-execute:
     type: atomic
@@ -1184,7 +1188,14 @@ scripts:
   crash-detect:
     type: script
     path: scripts/crash-detect.sh
-    description: "Worker crash 検知（tmux ペイン消失→failed 遷移）"
+    calls:
+      - script: state-read
+      - script: state-write
+      - external: session-state.sh
+        path: "~/ubuntu-note-system/scripts/session-state.sh"
+        optional: true
+        note: "5状態検出（idle/input-waiting/processing/error/exited）。非存在時は tmux list-panes フォールバック"
+    description: "Worker crash 検知（session-state.sh 5状態検出 + tmux フォールバック）"
 
   tech-stack-detect:
     type: script
