@@ -101,6 +101,13 @@ FOR each ISSUE in $ISSUES:
   POLL_MODE=single
   → commands/autopilot-poll.md を Read → 実行
 
+  # proactive health check（論理的異常検知、crash-detect とは責務分離）
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  IF STATUS == "running":
+    HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/health-check.sh --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
+      echo "WARNING: Issue #${ISSUE}: health check 異常検知: $HEALTH_OUTPUT"
+    }
+
   # 結果処理
   STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
   IF STATUS == "merge-ready":
@@ -143,6 +150,14 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
   POLL_MODE=phase
   ISSUES="${BATCH[*]}"
   → commands/autopilot-poll.md を Read → 実行
+
+  # proactive health check（論理的異常検知、crash-detect とは責務分離）
+  FOR each ISSUE in $BATCH:
+    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+    IF STATUS == "running":
+      HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/health-check.sh --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
+        echo "WARNING: Issue #${ISSUE}: health check 異常検知: $HEALTH_OUTPUT"
+      }
 
   # merge-ready の Issue に対して merge-gate を順次実行
   FOR each ISSUE in $BATCH:

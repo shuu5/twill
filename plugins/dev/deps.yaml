@@ -1089,7 +1089,12 @@ commands:
       - script: state-read
       - script: state-write
       - script: autopilot-should-skip
-    description: "Phase Issue ループ実行（launch → poll → merge-gate）"
+      - script: health-check
+      - external: session-state.sh
+        path: "~/ubuntu-note-system/scripts/session-state.sh"
+        optional: true
+        note: "health-check.sh 内で input-waiting 検知に使用。非存在時はスキップ"
+    description: "Phase Issue ループ実行（launch → poll → merge-gate → health-check）"
 
   autopilot-phase-postprocess:
     type: atomic
@@ -1209,6 +1214,17 @@ scripts:
         optional: true
         note: "5状態検出（idle/input-waiting/processing/error/exited）。非存在時は tmux list-panes フォールバック"
     description: "Worker crash 検知（session-state.sh 5状態検出 + tmux フォールバック）"
+
+  health-check:
+    type: script
+    path: scripts/health-check.sh
+    calls:
+      - script: state-read
+      - external: session-state.sh
+        path: "~/ubuntu-note-system/scripts/session-state.sh"
+        optional: true
+        note: "input-waiting 検知に使用。非存在時はスキップ"
+    description: "Worker 論理的異常検知（chain停止・エラー出力・input-waiting長時間）+ health-report 生成"
 
   tech-stack-detect:
     type: script
