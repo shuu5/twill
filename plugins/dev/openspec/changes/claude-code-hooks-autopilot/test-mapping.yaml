@@ -1,0 +1,21 @@
+# Test mapping: specs → test files
+# Generated for change: claude-code-hooks-autopilot
+
+mappings:
+  - spec: specs/ask-user-question-auto-respond.md
+    tests:
+      - tests/scenarios/ask-user-question-auto-respond.test.sh
+    type: unit
+    coverage: edge-cases
+
+  - spec: specs/post-compact-checkpoint.md
+    tests:
+      - tests/scenarios/post-compact-checkpoint.test.sh
+    type: unit
+    coverage: edge-cases
+
+  - spec: specs/permission-request-auto-approve.md
+    tests:
+      - tests/scenarios/permission-request-auto-approve.test.sh
+    type: unit
+    coverage: edge-cases
