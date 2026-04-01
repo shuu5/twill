@@ -44,6 +44,11 @@ if echo "$PHASE_BLOCK" | grep -q '{ number:'; then
     repo=$(echo "$line" | grep -oP 'repo:\s*\K[a-zA-Z0-9_-]+')
     [ -n "$num" ] && ISSUES_WITH_REPO+=("${repo}:${num}")
   done <<< "$(echo "$PHASE_BLOCK" | grep '{ number:')"
+  # フォールバック: 混合フォーマット時の bare int もパース（_default repo として扱う）
+  BARE_INTS=$(echo "$PHASE_BLOCK" | grep -P '^\s+- \d+$' | grep -oP '\d+' || true)
+  for bi in $BARE_INTS; do
+    ISSUES_WITH_REPO+=("_default:${bi}")
+  done
   ISSUES=$(printf '%s\n' "${ISSUES_WITH_REPO[@]}" | cut -d: -f2)
 else
   # レガシー形式: bare integer

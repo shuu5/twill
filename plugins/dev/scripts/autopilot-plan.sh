@@ -260,12 +260,17 @@ emit_repos_yaml() {
 # 引数: issue_uid (例: "42" or "lpd#42")
 emit_issue_yaml() {
     local uid="$1"
-    if [[ "$CROSS_REPO" == "true" && "$uid" == *"#"* ]]; then
-        local repo_id="${uid%%#*}"
-        local number="${uid#*#}"
-        echo "    - { number: ${number}, repo: ${repo_id} }"
+    if [[ "$CROSS_REPO" == "true" ]]; then
+        if [[ "$uid" == *"#"* ]]; then
+            local repo_id="${uid%%#*}"
+            local number="${uid#*#}"
+            echo "    - { number: ${number}, repo: ${repo_id} }"
+        else
+            # CROSS_REPO モードでも default repo の Issue は統一形式で出力
+            echo "    - { number: ${uid}, repo: _default }"
+        fi
     else
-        # 後方互換: bare integer
+        # 単一リポジトリ: bare integer
         echo "    - ${uid}"
     fi
 }
