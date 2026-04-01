@@ -184,7 +184,7 @@ class TestTypesYamlScriptDefinition(_ScriptTestBase):
     def test_types_yaml_loading_script_key(self):
         """Scenario: types.yaml 読み込み
         WHEN loom-engine.py が起動し types.yaml を読み込む
-        THEN TYPE_RULES に script キーが存在し、section=scripts, can_spawn=set(), spawnable_by={'atomic', 'composite'} が設定される"""
+        THEN TYPE_RULES に script キーが存在し、section=scripts, can_spawn={'script'}, spawnable_by={'atomic', 'composite', 'script'} が設定される"""
         result = run_engine(self.plugin_dir, "--rules")
         assert result.returncode == 0
         # The script type should appear in rules output
@@ -207,8 +207,8 @@ class TestTypesYamlScriptDefinition(_ScriptTestBase):
         assert script_line is not None, f"No script line found in rules output:\n{result.stdout}"
         # Verify section is scripts
         assert "scripts" in script_line
-        # Verify can_spawn is empty (none)
-        assert "(none)" in script_line or "none" in script_line.lower()
+        # Verify can_spawn includes script (updated from empty to [script])
+        assert "script" in script_line
         # Verify spawnable_by includes atomic and composite
         assert "atomic" in script_line
         assert "composite" in script_line

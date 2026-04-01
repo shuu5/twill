@@ -50,7 +50,7 @@ _FALLBACK_TYPE_RULES = {
     'composite':   {'section': 'commands', 'can_spawn': {'specialist', 'script'},               'spawnable_by': {'workflow', 'controller'}},
     'specialist':  {'section': 'agents',   'can_spawn': set(),                                  'spawnable_by': {'workflow', 'composite', 'controller'}},
     'reference':   {'section': 'skills',   'can_spawn': set(),                                  'spawnable_by': {'controller', 'atomic', 'agents.skills', 'all'}},
-    'script':      {'section': 'scripts',  'can_spawn': set(),                                  'spawnable_by': {'atomic', 'composite'}},
+    'script':      {'section': 'scripts',  'can_spawn': {'script'},                              'spawnable_by': {'atomic', 'composite', 'script'}},
 }
 TYPE_ALIASES = {}
 
@@ -166,6 +166,109 @@ def get_plugin_name(deps: dict, plugin_root: Path) -> str:
     2. plugin_root.name（ディレクトリ名）
     """
     return deps.get('plugin', plugin_root.name)
+
+
+# cross-plugin 参照の plugin 名バリデーション（英数字・ハイフン・アンダースコアのみ）
+_PLUGIN_NAME_RE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_-]*$')
+
+
+def parse_cross_plugin_ref(value: str) -> Optional[Tuple[str, str]]:
+    """calls 値が cross-plugin 参照かどうかを判定し、(plugin, component) を返す。
+
+    cross-plugin 参照は 'plugin:component' 形式（コロンを1つ含む）。
+    ローカル参照（コロンなし）の場合は None を返す。
+    plugin 名は英数字・ハイフン・アンダースコアのみ許可（パストラバーサル防止）。
+    """
+    if ':' in value:
+        parts = value.split(':', 1)
+        if parts[0] and parts[1] and _PLUGIN_NAME_RE.match(parts[0]):
+            return (parts[0], parts[1])
+    return None
+
+
+# cross-plugin deps.yaml のキャッシュ（キーは (plugin_name, plugin_root) タプル）
+_cross_plugin_cache: Dict[Tuple[str, str], Optional[dict]] = {}
+
+
+def resolve_cross_plugin(plugin_name: str, plugin_root: Optional[Path] = None) -> Optional[dict]:
+    """参照先 plugin の deps.yaml を読み込んで返す。
+
+    探索順序:
+    1. plugin_root の親ディレクトリに同名ディレクトリがある場合（worktree/monorepo 構成）
+    2. ~/.claude/plugins/{plugin_name}/deps.yaml
+
+    見つからない場合は None を返す（warning は呼び出し元で出力）。
+    """
+    cache_key = (plugin_name, str(plugin_root) if plugin_root else '')
+    if cache_key in _cross_plugin_cache:
+        return _cross_plugin_cache[cache_key]
+
+    # plugin 名の再検証（防御的プログラミング）
+    if not _PLUGIN_NAME_RE.match(plugin_name):
+        _cross_plugin_cache[cache_key] = None
+        return None
+
+    search_paths = []
+    allowed_bases = []
+
+    # 1. plugin_root の親ディレクトリ（同一階層の兄弟 plugin）
+    if plugin_root:
+        parent = plugin_root.parent.resolve()
+        sibling = parent / plugin_name
+        if sibling.is_dir():
+            search_paths.append(sibling / "deps.yaml")
+            allowed_bases.append(parent)
+
+    # 2. ~/.claude/plugins/{plugin_name}/
+    home_plugins_base = (Path.home() / ".claude" / "plugins").resolve()
+    home_plugins = home_plugins_base / plugin_name
+    search_paths.append(home_plugins / "deps.yaml")
+    allowed_bases.append(home_plugins_base)
+
+    for deps_path in search_paths:
+        resolved = deps_path.resolve()
+        # パストラバーサル防止: 解決後パスが許可ベースディレクトリ配下であることを検証
+        if not any(str(resolved).startswith(str(base) + '/') for base in allowed_bases):
+            continue
+        if resolved.exists():
+            try:
+                with open(resolved, 'r', encoding='utf-8') as f:
+                    deps = yaml.safe_load(f)
+                _cross_plugin_cache[cache_key] = deps
+                return deps
+            except Exception as e:
+                print(f"Warning: Failed to load cross-plugin deps.yaml '{resolved}': {e}", file=sys.stderr)
+
+    _cross_plugin_cache[cache_key] = None
+    return None
+
+
+def get_cross_plugin_component(plugin_name: str, component_name: str,
+                                plugin_root: Optional[Path] = None) -> Optional[Tuple[str, dict, Path]]:
+    """cross-plugin 参照先のコンポーネント情報を取得する。
+
+    Returns: (section, component_data, target_plugin_root) or None
+    """
+    deps = resolve_cross_plugin(plugin_name, plugin_root)
+    if deps is None:
+        return None
+
+    # 参照先 plugin_root を探索
+    target_root = None
+    if plugin_root:
+        sibling = plugin_root.parent / plugin_name
+        if sibling.is_dir():
+            target_root = sibling
+    if target_root is None:
+        home_path = Path.home() / ".claude" / "plugins" / plugin_name
+        if home_path.is_dir():
+            target_root = home_path
+
+    for section in ('skills', 'commands', 'agents', 'scripts'):
+        if component_name in deps.get(section, {}):
+            return (section, deps[section][component_name], target_root)
+
+    return None
 
 
 def build_envelope(command: str, version: str, plugin: str, items: list, exit_code: int) -> dict:
@@ -307,6 +410,7 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
         """calls リストを (type, name, step) タプルのリストに変換
 
         step は calls エントリの 'step' フィールド値（v3.0）。なければ None。
+        cross-plugin 参照（'plugin:component' 形式）は ('xref', 'plugin:component', step) として返す。
         """
         result = []
         # キー → グラフ上のノードタイプ
@@ -326,8 +430,14 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
         for c in call_list:
             for key, node_type in key_map.items():
                 if c.get(key):
+                    value = c[key]
                     step = c.get('step')
-                    result.append((node_type, c[key], step))
+                    # cross-plugin 参照の検出
+                    xref = parse_cross_plugin_ref(value)
+                    if xref:
+                        result.append(('xref', value, step))
+                    else:
+                        result.append((node_type, value, step))
                     break
         return result
 
@@ -425,6 +535,44 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
             'step_in': data.get('step_in'),
         }
 
+    # cross-plugin 参照ノードを収集・生成
+    xref_nodes = set()
+    for node_data in graph.values():
+        for (t, n, *_rest) in node_data.get('calls', []):
+            if t == 'xref':
+                xref_nodes.add(n)
+    for xref_value in xref_nodes:
+        node_id = f"xref:{xref_value}"
+        if node_id not in graph:
+            xref_parsed = parse_cross_plugin_ref(xref_value)
+            plugin_name = xref_parsed[0] if xref_parsed else ''
+            comp_name = xref_parsed[1] if xref_parsed else xref_value
+            # 参照先の情報を解決
+            comp_info = get_cross_plugin_component(plugin_name, comp_name, plugin_root)
+            if comp_info:
+                _section, comp_data, _target_root = comp_info
+                desc = comp_data.get('description', '')
+                comp_type = comp_data.get('type', '')
+            else:
+                desc = f'cross-plugin ref: {xref_value}'
+                comp_type = ''
+            graph[node_id] = {
+                'type': 'xref',
+                'xref_plugin': plugin_name,
+                'xref_component': comp_name,
+                'xref_type': comp_type,
+                'name': xref_value,
+                'path': None,
+                'description': desc,
+                'calls': [],
+                'uses_agents': [],
+                'external': [],
+                'requires_mcp': [],
+                'required_by': [],
+                'conditional': None,
+                'tokens': 0,
+            }
+
     # 外部依存
     for name, data in deps.get('external', {}).items():
         for cmd in data.get('commands', []):
@@ -484,7 +632,7 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
 def find_node(graph: Dict, target: str) -> Optional[str]:
     """ターゲット名からノードIDを検索"""
     # 完全一致を試行
-    for prefix in ['skill', 'command', 'agent', 'script', 'external']:
+    for prefix in ['skill', 'command', 'agent', 'script', 'external', 'xref']:
         node_id = f"{prefix}:{target}"
         if node_id in graph:
             return node_id
@@ -2075,13 +2223,45 @@ def print_rich_tree(graph: Dict, node_id: str):
     console.print(Panel(tree, title="Dependency Tree"))
 
 
-def check_files(graph: Dict, plugin_root: Path) -> List[Tuple[str, str, str]]:
-    """ファイル存在確認"""
+def check_files(graph: Dict, plugin_root: Path) -> Tuple[List[Tuple[str, str, str]], List[str]]:
+    """ファイル存在確認
+
+    Returns: (results, xref_warnings)
+    """
     results = []
+    xref_warnings = []
 
     for node_id, node_data in graph.items():
         if node_data['type'] == 'external':
             results.append(('external', node_id, None))
+            continue
+
+        if node_data['type'] == 'xref':
+            # cross-plugin 参照のファイル存在チェック
+            xref_plugin = node_data.get('xref_plugin', '')
+            xref_comp = node_data.get('xref_component', '')
+            comp_info = get_cross_plugin_component(xref_plugin, xref_comp, plugin_root)
+            if comp_info is None:
+                xref_warnings.append(
+                    f"[xref-unresolved] {node_id}: cross-plugin ref could not be resolved "
+                    f"(plugin '{xref_plugin}' not found)"
+                )
+                continue
+            _section, comp_data, target_root = comp_info
+            path = comp_data.get('path')
+            if not path:
+                results.append(('no_path', node_id, None))
+                continue
+            if target_root:
+                full_path = target_root / path
+                if full_path.exists():
+                    results.append(('ok', node_id, path))
+                else:
+                    results.append(('missing', node_id, path))
+            else:
+                xref_warnings.append(
+                    f"[xref-no-root] {node_id}: cannot resolve plugin root for '{xref_plugin}'"
+                )
             continue
 
         path = node_data.get('path')
@@ -2095,7 +2275,7 @@ def check_files(graph: Dict, plugin_root: Path) -> List[Tuple[str, str, str]]:
         else:
             results.append(('missing', node_id, path))
 
-    return results
+    return results, xref_warnings
 
 
 def find_orphans(graph: Dict, deps: dict) -> Dict[str, List[str]]:
@@ -2160,10 +2340,10 @@ def resolve_type(t: str) -> str:
     return TYPE_ALIASES.get(t, t)
 
 
-def validate_types(deps: dict, graph: Dict) -> Tuple[int, List[str]]:
+def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) -> Tuple[int, List[str], List[str]]:
     """型ルール（can_spawn/spawnable_by）の整合性を検証
 
-    4つのチェック:
+    5つのチェック:
     1. セクション配置: controller は skills に、atomic は commands に等
     2. can_spawn 宣言: 宣言値が TYPE_RULES の許可範囲内か
     3. spawnable_by 宣言: 宣言値が TYPE_RULES の許可範囲内か
@@ -2273,7 +2453,59 @@ def validate_types(deps: dict, graph: Dict) -> Tuple[int, List[str]]:
                     else:
                         ok_count += 1
 
-    return ok_count, violations
+    # Check 5: cross-plugin 参照エッジの型整合性
+    warnings = []
+    for section in ('skills', 'commands', 'agents', 'scripts'):
+        for name, data in deps.get(section, {}).items():
+            caller_type = resolve_type(data.get('type', ''))
+            caller_rule = TYPE_RULES.get(caller_type)
+            if not caller_rule:
+                continue
+
+            for call in data.get('calls', []):
+                for call_key, callee_value in call.items():
+                    if call_key == 'step' or not isinstance(callee_value, str):
+                        continue
+                    xref = parse_cross_plugin_ref(callee_value)
+                    if not xref:
+                        continue
+
+                    target_plugin, target_comp = xref
+                    comp_info = get_cross_plugin_component(target_plugin, target_comp, plugin_root)
+                    if comp_info is None:
+                        # 参照先 plugin が見つからない → warning
+                        warnings.append(
+                            f"[xref-unresolved] {section}/{name}: cross-plugin ref '{callee_value}' "
+                            f"could not be resolved (plugin '{target_plugin}' not found)"
+                        )
+                        continue
+
+                    _target_section, comp_data, _target_root = comp_info
+                    callee_type = resolve_type(comp_data.get('type', ''))
+                    callee_rule = TYPE_RULES.get(callee_type)
+                    if not callee_rule:
+                        continue
+
+                    # caller の can_spawn に callee の型が含まれるか
+                    if callee_type not in caller_rule['can_spawn']:
+                        violations.append(
+                            f"[edge] {section}/{name} ({caller_type}) -> xref:{callee_value} ({callee_type}): "
+                            f"'{caller_type}' cannot spawn '{callee_type}' (allowed: {sorted(caller_rule['can_spawn'])})"
+                        )
+                    else:
+                        ok_count += 1
+
+                    # callee の spawnable_by に caller の型が含まれるか
+                    callee_spawnable = {resolve_type(s) for s in callee_rule['spawnable_by']}
+                    if caller_type not in callee_spawnable:
+                        violations.append(
+                            f"[edge] {section}/{name} ({caller_type}) -> xref:{callee_value} ({callee_type}): "
+                            f"'{callee_type}' is not spawnable_by '{caller_type}' (allowed: {sorted(callee_rule['spawnable_by'])})"
+                        )
+                    else:
+                        ok_count += 1
+
+    return ok_count, violations, warnings
 
 
 def validate_body_refs(deps: dict, plugin_root: Path) -> Tuple[int, List[str]]:
@@ -5507,7 +5739,7 @@ def main():
             sys.exit(1)
 
     if args.check:
-        results = check_files(graph, plugin_root)
+        results, check_xref_warnings = check_files(graph, plugin_root)
 
         ok_count = sum(1 for r in results if r[0] == 'ok')
         missing_count = sum(1 for r in results if r[0] == 'missing')
@@ -5526,6 +5758,7 @@ def main():
 
         if args.format == 'json':
             items = _check_results_to_items(results)
+            items.extend(_violations_to_items(check_xref_warnings, "warning"))
             items.extend(chain_items)
             envelope = build_envelope("check", get_deps_version(deps), plugin_name, items, exit_code)
             output_json(envelope)
@@ -5534,6 +5767,12 @@ def main():
         print(f"=== File Check Results ===")
         print(f"OK: {ok_count}, Missing: {missing_count}, No path: {no_path_count}, External: {external_count}")
         print()
+
+        if check_xref_warnings:
+            print("Warnings:")
+            for w in check_xref_warnings:
+                print(f"  - {w}")
+            print()
 
         if missing_count > 0:
             print("Missing files:")
@@ -5560,7 +5799,7 @@ def main():
                 sys.exit(1)
 
     if args.validate:
-        ok_count, violations = validate_types(deps, graph)
+        ok_count, violations, xref_warnings = validate_types(deps, graph, plugin_root)
         # body 参照チェック
         body_ok, body_violations = validate_body_refs(deps, plugin_root)
         ok_count += body_ok
@@ -5578,6 +5817,7 @@ def main():
 
         if args.format == 'json':
             items = _violations_to_items(violations)
+            items.extend(_violations_to_items(xref_warnings, "warning"))
             envelope = build_envelope("validate", get_deps_version(deps), plugin_name, items, exit_code)
             output_json(envelope)
             sys.exit(exit_code)
@@ -5585,6 +5825,12 @@ def main():
         print(f"=== Type Validation Results ===")
         print(f"OK: {ok_count}, Violations: {len(violations)}")
         print()
+
+        if xref_warnings:
+            print("Warnings:")
+            for w in xref_warnings:
+                print(f"  - {w}")
+            print()
 
         if violations:
             print("Violations:")
@@ -5632,7 +5878,7 @@ def main():
 
     if args.deep_validate:
         # --validate の全チェックも実行
-        ok_count, violations = validate_types(deps, graph)
+        ok_count, violations, xref_warnings = validate_types(deps, graph, plugin_root)
         # body 参照チェック
         body_ok, body_violations = validate_body_refs(deps, plugin_root)
         ok_count += body_ok
@@ -5644,6 +5890,7 @@ def main():
 
         # deep-validate 固有チェック
         criticals, dv_warnings, dv_infos = deep_validate(deps, plugin_root)
+        dv_warnings.extend(xref_warnings)
         # chain 双方向整合性検証
         cv_criticals, cv_warnings, cv_infos = chain_validate(deps, plugin_root)
         criticals.extend(cv_criticals)

@@ -35,5 +35,5 @@ types:
 
   script:
     section: scripts
-    can_spawn: []
-    spawnable_by: [atomic, composite]
+    can_spawn: [script]
+    spawnable_by: [atomic, composite, script]
