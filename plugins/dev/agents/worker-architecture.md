@@ -9,6 +9,9 @@ tools:
   - Read
   - Glob
   - Grep
+skills:
+- ref-specialist-output-schema
+- ref-architecture
 ---
 
 # worker-architecture: アーキテクチャパターン検証

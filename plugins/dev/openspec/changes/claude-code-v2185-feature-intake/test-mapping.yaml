@@ -1,0 +1,46 @@
+change-id: claude-code-v2185-feature-intake
+generated: 2026-04-01
+coverage: edge-cases
+
+mappings:
+  - spec: specs/hook-if-conditions/spec.md
+    test: tests/scenarios/hook-if-conditions.test.sh
+    type: unit
+    scenarios:
+      - "既存 PostToolUse hook の維持"
+      - "既存 PostToolUseFailure hook の維持"
+      - "if 条件付き hook の構文検証"
+
+  - spec: specs/controller-effort/spec.md
+    test: tests/scenarios/controller-effort.test.sh
+    type: unit
+    scenarios:
+      - "co-autopilot に effort: high を設定"
+      - "workflow-dead-cleanup に effort: low を設定"
+      - "全 Controller に effort が存在する"
+      - "effort 値は許可値のみ"
+
+  - spec: specs/specialist-skills-injection/spec.md
+    test: tests/scenarios/specialist-skills-injection.test.sh
+    type: unit
+    scenarios:
+      - "reviewer 系 specialist に共通 ref を注入"
+      - "body 内参照と skills フィールドの一致"
+      - "ref-* 未参照の specialist"
+
+  - spec: specs/controller-tools-restriction/spec.md
+    test: tests/scenarios/controller-tools-restriction.test.sh
+    type: unit
+    scenarios:
+      - "co-autopilot のスポーン制限"
+      - "co-issue のスポーン制限"
+      - "スポーン制限外のエージェント呼び出し"
+
+  - spec: specs/deps-yaml-sync/spec.md
+    test: tests/scenarios/deps-yaml-sync.test.sh
+    type: unit
+    scenarios:
+      - "Controller の effort が deps.yaml に反映"
+      - "specialist の skills が deps.yaml に反映"
+      - "loom check が PASS"
+      - "loom validate が PASS"

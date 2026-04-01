@@ -6,6 +6,8 @@ model: haiku
 effort: low
 maxTurns: 15
 tools: [Read]
+skills:
+- ref-specialist-output-schema
 ---
 
 # Template Validator Agent

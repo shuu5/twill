@@ -9,6 +9,9 @@ description: |
   says 実装して/implement,
   wants to run issues automatically.
 type: controller
+effort: high
+tools:
+- Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests)
 spawnable_by:
 - user
 ---

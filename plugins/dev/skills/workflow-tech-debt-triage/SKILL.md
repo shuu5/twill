@@ -1,4 +1,17 @@
-# tech-debt 棚卸し Workflow
+---
+name: dev:workflow-tech-debt-triage
+description: |
+  tech-debt Issue の全件棚卸しワークフロー。
+
+  Use when user: says tech-debt/技術的負債/棚卸し/triage,
+  or when maintenance is needed.
+type: workflow
+effort: medium
+spawnable_by:
+- user
+---
+
+# tech-debt 棚���し Workflow
 
 **tech-debt Issue の全件棚卸しワークフロー。**
 

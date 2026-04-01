@@ -18,6 +18,7 @@
         "hooks": [
           {
             "type": "command",
+            "if": "Edit(deps.yaml)|Write(deps.yaml)|Edit(*/SKILL.md)|Write(*/SKILL.md)|Edit(agents/*.md)|Write(agents/*.md)",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/post-tool-use-validate.sh",
             "timeout": 10000
           }

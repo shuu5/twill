@@ -6,6 +6,8 @@ model: sonnet
 effort: high
 maxTurns: 40
 tools: [Bash, Read, Glob, Grep, Write, Edit]
+skills:
+- ref-specialist-output-schema
 ---
 
 # /dev:spec-scaffold-tests コマンド

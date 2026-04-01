@@ -10,6 +10,8 @@ tools:
   - Read
   - Glob
   - Grep
+skills:
+- ref-specialist-output-schema
 ---
 
 # worker-structure: 構造検証

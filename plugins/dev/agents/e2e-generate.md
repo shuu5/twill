@@ -6,6 +6,8 @@ model: sonnet
 effort: high
 maxTurns: 40
 tools: [Read, Write, Edit, Glob, Grep]
+skills:
+- ref-specialist-output-schema
 ---
 
 # E2E Generate Command

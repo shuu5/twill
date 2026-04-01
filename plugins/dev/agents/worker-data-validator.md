@@ -8,6 +8,8 @@ model: haiku
 effort: low
 maxTurns: 15
 tools: [Read, Grep, Glob]
+skills:
+- ref-specialist-output-schema
 ---
 
 # Data Validator Specialist

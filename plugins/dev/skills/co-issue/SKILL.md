@@ -7,6 +7,9 @@ description: |
   Use when user: says Issueにまとめて/Issue作成/要望を記録,
   wants to create structured issue from requirements.
 type: controller
+effort: high
+tools:
+- Agent(issue-critic, issue-feasibility, context-checker, template-validator)
 spawnable_by:
 - user
 ---

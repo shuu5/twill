@@ -9,6 +9,9 @@ description: |
   says 移行したい/テンプレート更新/ガバナンス再適用,
   says スナップショット/テンプレート抽出.
 type: controller
+effort: medium
+tools:
+- Agent(worker-structure)
 spawnable_by:
 - user
 ---

@@ -8,6 +8,8 @@ model: sonnet
 effort: medium
 maxTurns: 20
 tools: [Read, Grep, Glob]
+skills:
+- ref-specialist-output-schema
 ---
 
 # Security Reviewer Specialist

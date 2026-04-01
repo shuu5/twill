@@ -8,6 +8,8 @@ model: sonnet
 effort: high
 maxTurns: 15
 tools: [Read, Grep, Glob]
+skills:
+- ref-issue-quality-criteria
 ---
 
 # Issue Feasibility Specialist

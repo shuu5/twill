@@ -11,6 +11,8 @@ model: sonnet
 effort: high
 tools: [Bash, Read, Glob, Grep, Edit, Write, Task]
 maxTurns: 40
+skills:
+- ref-specialist-output-schema
 ---
 
 テスト失敗に対する自動修正を、サーキットブレーカー付きで実行。

@@ -8,6 +8,8 @@ model: haiku
 effort: medium
 maxTurns: 20
 tools: [Read, Grep, Glob]
+skills:
+- ref-specialist-output-schema
 ---
 
 # Supabase Migration Checker Specialist

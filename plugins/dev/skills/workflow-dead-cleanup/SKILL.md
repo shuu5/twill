@@ -1,3 +1,16 @@
+---
+name: dev:workflow-dead-cleanup
+description: |
+  不要コンポーネントの検出と削除。
+
+  Use when user: says 不要コンポーネント削除/dead cleanup/デッドコード,
+  or when called from tech-debt-triage.
+type: workflow
+effort: low
+spawnable_by:
+- user
+---
+
 # Dead Component 削除 Workflow
 
 ## フロー制御（MUST）

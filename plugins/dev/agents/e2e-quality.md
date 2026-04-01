@@ -6,6 +6,8 @@ model: sonnet
 effort: medium
 maxTurns: 20
 tools: [Bash, Read, Glob, Grep, Task]
+skills:
+- ref-specialist-output-schema
 ---
 
 # /dev:e2e-quality

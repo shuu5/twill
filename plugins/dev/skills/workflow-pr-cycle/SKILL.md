@@ -1,3 +1,18 @@
+---
+name: dev:workflow-pr-cycle
+description: |
+  PRサイクル（verify → review → test → fix → visual → report → merge）。
+  pr-cycle chain のオーケストレーター。
+
+  Use when user: says PRサイクル/pr-cycle/レビュー開始,
+  or when called from workflow-test-ready.
+type: workflow
+effort: medium
+spawnable_by:
+- user
+- workflow-test-ready
+---
+
 # PRサイクルワークフロー（chain-driven）
 
 pr-cycle chain のオーケストレーター。chain ステップの実行順序は deps.yaml で宣言されている。

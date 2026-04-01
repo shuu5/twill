@@ -6,6 +6,8 @@ model: haiku
 effort: low
 maxTurns: 15
 tools: [Bash, Read]
+skills:
+- ref-specialist-output-schema
 ---
 
 # Context Checker Agent

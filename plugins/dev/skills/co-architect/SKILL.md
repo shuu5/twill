@@ -9,6 +9,9 @@ description: |
   says 設計を構造化したい/Context分解/Phase計画,
   says --group/グループ深堀り/スケルトン精緻化.
 type: controller
+effort: high
+tools:
+- Agent(worker-architecture, worker-structure)
 spawnable_by:
 - user
 ---

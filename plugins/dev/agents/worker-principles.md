@@ -9,6 +9,8 @@ tools:
   - Read
   - Glob
   - Grep
+skills:
+- ref-specialist-output-schema
 ---
 
 # worker-principles: 5原則+Controller品質検証

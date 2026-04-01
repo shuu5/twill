@@ -1,3 +1,17 @@
+---
+name: dev:workflow-test-ready
+description: |
+  テスト生成と準備確認を実行する。workflow-setup の後に呼び出す。
+
+  Use when user: says テスト準備/test-ready,
+  or when called from workflow-setup chain.
+type: workflow
+effort: medium
+spawnable_by:
+- user
+- workflow-setup
+---
+
 # テスト準備 Workflow
 
 テスト生成と準備確認を実行する。workflow-setup の後に呼び出す。

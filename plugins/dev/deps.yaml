@@ -46,6 +46,8 @@ skills:
   co-autopilot:
     type: controller
     path: skills/co-autopilot/SKILL.md
+    effort: high
+    tools: [Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests)]
     spawnable_by: [user]
     can_spawn: [composite, atomic, specialist]
     calls:
@@ -78,6 +80,8 @@ skills:
   co-issue:
     type: controller
     path: skills/co-issue/SKILL.md
+    effort: high
+    tools: [Agent(issue-critic, issue-feasibility, context-checker, template-validator)]
     spawnable_by: [user]
     can_spawn: [composite, atomic, specialist, reference]
     calls:
@@ -98,6 +102,8 @@ skills:
   co-project:
     type: controller
     path: skills/co-project/SKILL.md
+    effort: medium
+    tools: [Agent(worker-structure)]
     spawnable_by: [user]
     can_spawn: [composite, atomic, reference]
     calls:
@@ -127,6 +133,8 @@ skills:
   co-architect:
     type: controller
     path: skills/co-architect/SKILL.md
+    effort: high
+    tools: [Agent(worker-architecture, worker-structure)]
     spawnable_by: [user]
     can_spawn: [atomic, reference]
     calls:
@@ -143,6 +151,7 @@ skills:
   workflow-setup:
     type: workflow
     path: skills/workflow-setup/SKILL.md
+    effort: medium
     spawnable_by: [controller]
     can_spawn: [atomic]
     calls:
@@ -163,6 +172,7 @@ skills:
   workflow-test-ready:
     type: workflow
     path: skills/workflow-test-ready/SKILL.md
+    effort: medium
     spawnable_by: [controller]
     can_spawn: [composite, atomic]
     calls:
@@ -175,6 +185,7 @@ skills:
   workflow-pr-cycle:
     type: workflow
     path: skills/workflow-pr-cycle/SKILL.md
+    effort: medium
     spawnable_by: [controller]
     can_spawn: [composite, atomic]
     calls:
@@ -211,6 +222,7 @@ skills:
   workflow-dead-cleanup:
     type: workflow
     path: skills/workflow-dead-cleanup/SKILL.md
+    effort: low
     spawnable_by: [controller]
     can_spawn: [atomic]
     calls:
@@ -223,6 +235,7 @@ skills:
   workflow-tech-debt-triage:
     type: workflow
     path: skills/workflow-tech-debt-triage/SKILL.md
+    effort: medium
     spawnable_by: [controller]
     can_spawn: [atomic]
     calls:
@@ -1296,6 +1309,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "構造検証（loom実行 + frontmatter整合性チェック）"
 
   worker-principles:
@@ -1304,6 +1318,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "5原則+controller品質検証"
 
   worker-env-validator:
@@ -1312,6 +1327,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "環境変数の整合性検証"
 
   worker-rls-reviewer:
@@ -1320,6 +1336,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "Supabase RLSポリシーの論理的正確性検証"
 
   worker-supabase-migration-checker:
@@ -1328,6 +1345,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "Supabase DBマイグレーションSQL品質レビュー"
 
   worker-data-validator:
@@ -1336,6 +1354,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "オミクスデータファイルの検証"
 
   template-validator: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1344,6 +1363,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "Issueテンプレート準拠バリデーター"
 
   context-checker: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1352,6 +1372,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "Issueプロジェクトコンテキストチェック"
 
   worker-e2e-reviewer:
@@ -1360,6 +1381,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "Playwright E2Eテストのレビュー"
 
   worker-spec-reviewer:
@@ -1368,6 +1390,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "OpenSpec Scenarioの品質レビュー"
 
   # Issue レビュー系（sonnet）
@@ -1377,6 +1400,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-issue-quality-criteria]
     description: "Issue の仮定・曖昧点・盲点・粒度・split・依存検出"
 
   issue-feasibility:
@@ -1385,6 +1409,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-issue-quality-criteria]
     description: "実コード読みで Issue の実装可能性・影響範囲検証"
 
   # 品質判断系（sonnet）
@@ -1394,6 +1419,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "コード品質レビュー"
 
   worker-security-reviewer:
@@ -1402,6 +1428,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "セキュリティ脆弱性検出"
 
   worker-nextjs-reviewer:
@@ -1410,6 +1437,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "Next.js 15 + React 19 コードレビュー"
 
   worker-fastapi-reviewer:
@@ -1418,6 +1446,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "FastAPI + Pydantic v2 コードレビュー"
 
   worker-hono-reviewer:
@@ -1426,6 +1455,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "Hono + Zod + monorepo整合性レビュー"
 
   worker-r-reviewer:
@@ -1434,6 +1464,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "Rコード（.R, .Rmd, .qmd）のレビュー"
 
   worker-architecture:
@@ -1442,6 +1473,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema, ref-architecture]
     description: "アーキテクチャパターン検証"
 
   worker-llm-output-reviewer:
@@ -1450,6 +1482,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "LLM出力品質レビュー"
 
   worker-llm-eval-runner:
@@ -1458,6 +1491,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "LLM_CRITERIAベースの品質評価"
 
   # ユーティリティ系（sonnet）
@@ -1467,6 +1501,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "ドキュメント動的取得"
 
   e2e-quality:
@@ -1475,6 +1510,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "E2Eテストの偽陽性リスク検出"
 
   autofix-loop: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1483,6 +1519,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "自動修正ループ"
 
   spec-scaffold-tests:
@@ -1491,6 +1528,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "OpenSpec ScenarioからBDDテスト自動生成"
 
   e2e-generate:
@@ -1499,6 +1537,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "ScenarioからE2Eテスト生成"
 
   e2e-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1507,6 +1546,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "失敗E2Eテストの分析・修復"
 
   e2e-visual-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1515,4 +1555,5 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
+    skills: [ref-specialist-output-schema]
     description: "Visual検証失敗の分析・修復"

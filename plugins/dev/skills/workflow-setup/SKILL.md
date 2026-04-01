@@ -1,3 +1,18 @@
+---
+name: dev:workflow-setup
+description: |
+  開発準備ワークフロー（worktree作成 → OpenSpec → テスト準備）。
+  setup chain のオーケストレーター。
+
+  Use when user: says 開発準備/setup/ワークフロー開始,
+  or when called from co-autopilot workflow.
+type: workflow
+effort: medium
+spawnable_by:
+- user
+- co-autopilot
+---
+
 # 開発準備 Workflow（chain-driven）
 
 setup chain のオーケストレーター。chain ステップの実行順序は deps.yaml で宣言されている。

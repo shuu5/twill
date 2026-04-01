@@ -11,6 +11,8 @@ tools:
   - Read
   - Glob
   - Grep
+skills:
+- ref-specialist-output-schema
 ---
 
 # docs-researcher: Claude Code ドキュメント調査
