@@ -47,6 +47,19 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 コンポーネント編集 → deps.yaml 更新 → loom check → loom update-readme
 ```
 
+## Project Board
+
+このプロジェクトは GitHub Project Board（`shuu5/loom-dev-ecosystem` Project #3）で Issue を管理する。
+Board はクロスリポジトリ（loom-plugin-dev + loom）のため、**Board アイテムの取得には `gh project item-list` を使う**。
+
+```bash
+# 非 Done の Board アイテムを取得（正解）
+gh project item-list 3 --owner shuu5 --format json --limit 200 \
+  | jq -r '.items[] | select(.status != "Done") | "\(.content.number) [\(.status)] repo=\(.content.repository) \(.content.title)"'
+
+# NG: gh issue list は現在リポジトリのみ → クロスリポジトリ Board には使えない
+```
+
 ## 視覚化
 
 `loom` CLI 必須（独自スクリプト禁止）。
