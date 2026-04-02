@@ -14,6 +14,8 @@ setup() {
         echo "shuu5/test-repo" ;;
       *"issue create"*)
         echo "https://github.com/shuu5/test-repo/issues/100" ;;
+      *"project list"*)
+        echo "{\"projects\":[]}" ;;
       *)
         echo "" ;;
     esac
@@ -80,6 +82,8 @@ JSON
         echo "shuu5/test-repo" ;;
       *"issue create"*)
         echo "https://github.com/shuu5/test-repo/issues/101" ;;
+      *"project list"*)
+        echo "{\"projects\":[]}" ;;
       *)
         echo "" ;;
     esac
@@ -113,6 +117,74 @@ JSON
   assert_output --partial "SELF_IMPROVE_ISSUES=''"
 }
 
+@test "merge-gate-issues calls add_to_project_board after tech-debt issue creation" {
+  local findings_file="/tmp/merge-gate-findings-board-test-$$.json"
+  cat > "$findings_file" <<'JSON'
+[{"message":"test finding","severity":"low","file":"src/main.ts","line":"1","category":"lint"}]
+JSON
+  export FINDINGS_FILE="$findings_file"
+
+  # Track gh project calls
+  local call_log="/tmp/merge-gate-gh-calls-$$.log"
+  stub_command "gh" '
+    echo "$*" >> '"$call_log"'
+    case "$*" in
+      *"pr view"*)
+        echo "shuu5/test-repo" ;;
+      *"issue create"*)
+        echo "https://github.com/shuu5/test-repo/issues/200" ;;
+      *"project list"*)
+        echo "{\"projects\":[{\"number\":3,\"title\":\"test\"}]}" ;;
+      *"api graphql"*)
+        echo "{\"data\":{\"user\":{\"projectV2\":{\"id\":\"PVT_test\",\"repositories\":{\"nodes\":[{\"nameWithOwner\":\"shuu5/test-repo\"}]}}}}}" ;;
+      *"project item-add"*)
+        echo "{\"id\":\"PVTI_test\"}" ;;
+      *)
+        echo "" ;;
+    esac
+  '
+
+  run bash "$SANDBOX/scripts/merge-gate-issues.sh"
+
+  assert_success
+  assert_output --partial "issues/200"
+
+  # Verify project board calls were made
+  assert [ -f "$call_log" ]
+  run grep "project list" "$call_log"
+  assert_success
+
+  rm -f "$findings_file" "$call_log"
+}
+
+@test "merge-gate-issues skips board registration when no project linked" {
+  local findings_file="/tmp/merge-gate-findings-noboard-$$.json"
+  cat > "$findings_file" <<'JSON'
+[{"message":"test finding","severity":"low","file":"src/main.ts","line":"1","category":"lint"}]
+JSON
+  export FINDINGS_FILE="$findings_file"
+
+  stub_command "gh" '
+    case "$*" in
+      *"pr view"*)
+        echo "shuu5/test-repo" ;;
+      *"issue create"*)
+        echo "https://github.com/shuu5/test-repo/issues/201" ;;
+      *"project list"*)
+        echo "{\"projects\":[]}" ;;
+      *)
+        echo "" ;;
+    esac
+  '
+
+  run bash "$SANDBOX/scripts/merge-gate-issues.sh"
+
+  assert_success
+  assert_output --partial "issues/201"
+
+  rm -f "$findings_file"
+}
+
 @test "merge-gate-issues validates DEV_REPO format" {
   stub_command "gh" '
     case "$*" in
@@ -123,7 +195,7 @@ JSON
     esac
   '
   stub_command "git" '
-    echo "invalid" ;;
+    echo "invalid"
   '
 
   run bash "$SANDBOX/scripts/merge-gate-issues.sh"

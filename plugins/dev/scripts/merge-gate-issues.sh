@@ -51,6 +51,54 @@ fi
 TECH_DEBT_URLS=""
 SELF_IMPROVE_URLS=""
 
+# --- Project Board 登録ヘルパー ---
+# Usage: add_to_project_board <issue_url> <repo>
+add_to_project_board() {
+  local issue_url="$1"
+  local repo="$2"
+  local owner="${repo%%/*}"
+
+  # Issue番号を URL から抽出
+  local issue_num
+  issue_num=$(echo "$issue_url" | grep -oP '/issues/\K[0-9]+$' || true)
+  if [ -z "$issue_num" ]; then
+    echo "[merge-gate-issues] Warning: Issue番号を抽出できません: $issue_url" >&2
+    return 0
+  fi
+
+  # Project 一覧取得
+  local projects
+  projects=$(gh project list --owner "$owner" --format json 2>/dev/null || true)
+  if [ -z "$projects" ] || [ "$(echo "$projects" | jq '.projects | length')" = "0" ]; then
+    return 0  # Project なし → サイレントスキップ
+  fi
+
+  local graphql_user='query($owner: String!, $num: Int!) { user(login: $owner) { projectV2(number: $num) { id repositories(first: 20) { nodes { nameWithOwner } } } } }'
+  local graphql_org='query($owner: String!, $num: Int!) { organization(login: $owner) { projectV2(number: $num) { id repositories(first: 20) { nodes { nameWithOwner } } } } }'
+
+  local project_nums
+  project_nums=$(echo "$projects" | jq -r '.projects[].number')
+
+  for pnum in $project_nums; do
+    [[ "$pnum" =~ ^[0-9]+$ ]] || continue
+    local result project_data linked
+    result=$(gh api graphql -f query="$graphql_user" -f owner="$owner" -F num="$pnum" 2>/dev/null || true)
+    project_data=$(echo "$result" | jq -r '.data.user.projectV2 // empty' 2>/dev/null)
+    if [ -z "$project_data" ]; then
+      result=$(gh api graphql -f query="$graphql_org" -f owner="$owner" -F num="$pnum" 2>/dev/null || true)
+      project_data=$(echo "$result" | jq -r '.data.organization.projectV2 // empty' 2>/dev/null)
+    fi
+    [ -z "$project_data" ] && continue
+
+    linked=$(echo "$project_data" | jq -r '.repositories.nodes[].nameWithOwner' 2>/dev/null)
+    if echo "$linked" | grep -qxF "$repo"; then
+      gh project item-add "$pnum" --owner "$owner" \
+        --url "https://github.com/$repo/issues/$issue_num" 2>/dev/null || true
+      return 0
+    fi
+  done
+}
+
 # --- DEV_REPO の特定 ---
 DEV_REPO=$(gh pr view "$PR_NUMBER" --json headRepository -q '.headRepository.nameWithOwner' 2>/dev/null || true)
 # フォールバック: git remote から取得
@@ -99,6 +147,7 @@ ISSUE_BODY
 
     if [ -n "$ISSUE_URL" ]; then
       TECH_DEBT_URLS="${TECH_DEBT_URLS:+$TECH_DEBT_URLS }${ISSUE_URL}"
+      add_to_project_board "$ISSUE_URL" "$DEV_REPO"
     fi
   done
 fi
@@ -108,8 +157,8 @@ if [ -n "$SELF_IMPROVE_FILE" ] && [ -f "$SELF_IMPROVE_FILE" ]; then
   SI_COUNT=$(jq 'length' "$SELF_IMPROVE_FILE")
   for i in $(seq 0 $((SI_COUNT - 1))); do
     MSG=$(jq -r ".[$i].message" "$SELF_IMPROVE_FILE")
-    MISSED_BY=$(jq -r ".[$i].missed_by" "$SELF_IMPROVE_FILE")
-    SUGGESTION=$(jq -r ".[$i].improvement_suggestion" "$SELF_IMPROVE_FILE")
+    MISSED_BY=$(jq -r ".[$i].missed_by" "$SELF_IMPROVE_FILE" | tr -d '`$"' | head -c 200)
+    SUGGESTION=$(jq -r ".[$i].improvement_suggestion" "$SELF_IMPROVE_FILE" | tr -d '`$"' | head -c 500)
     SI_DEV_REPO=$(jq -r ".[$i].dev_repo // \"\"" "$SELF_IMPROVE_FILE")
     # SI_DEV_REPO バリデーション（owner/repo 形式のみ許可、不正時はフォールバック）
     if ! [[ "$SI_DEV_REPO" =~ ^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$ ]]; then
@@ -145,6 +194,7 @@ ISSUE_BODY
 
     if [ -n "$ISSUE_URL" ]; then
       SELF_IMPROVE_URLS="${SELF_IMPROVE_URLS:+$SELF_IMPROVE_URLS }${ISSUE_URL}"
+      add_to_project_board "$ISSUE_URL" "${SI_DEV_REPO:-shuu5/ubuntu-note-system}"
     fi
   done
 fi
