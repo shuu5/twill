@@ -47,10 +47,13 @@ ELSE
 
 **重要**: 以下の全ステップを上から順に実行すること。各ステップ完了後、**即座に**次のステップに進むこと。プロンプトで停止してはならない。
 
-### Step 1: change-id 解決
-openspec/changes/ から最新の change-id を自動検出する。1 つ → 自動選択、複数 → 最新を自動選択。
+### Step 1: change-id 解決【機械的 → runner】
+```bash
+CHANGE_ID=$(bash scripts/chain-runner.sh change-id-resolve)
+```
+出力の change-id を記録。
 
-### Step 2: テスト生成（条件判定）
+### Step 2: テスト生成（条件判定）【LLM 判断】
 以下の条件を判定し、該当する場合のみテスト生成を実行する。
 
 ```
@@ -66,8 +69,11 @@ ELSE
 
 テスト対象コードが存在しない場合（Markdown のみの変更等）はスキップ理由を報告して Step 3 に進む。
 
-### Step 3: check 実行（準備確認）
-`/dev:check` を Skill tool で実行する。
+### Step 3: check 実行（準備確認）【機械的 → runner】
+```bash
+bash scripts/chain-runner.sh check
+```
+runner の出力から FAIL 有無を判定する。FAIL あれば `/dev:check` を Skill tool で実行して詳細確認。
 
 結果判定:
 - CRITICAL FAIL 項目が存在 → Step 4 をスキップし、FAIL 内容を報告して停止

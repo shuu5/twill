@@ -1259,6 +1259,16 @@ scripts:
     path: scripts/merge-gate-issues.sh
     description: "tech-debt / self-improve Issue 自動起票"
 
+  chain-runner:
+    type: script
+    path: scripts/chain-runner.sh
+    calls:
+      - script: worktree-create
+      - script: parse-issue-ac
+      - script: state-read
+      - script: state-write
+    description: "機械的 chain ステップを bash で直接実行（Worker トークン消費削減）"
+
   worktree-create:
     type: script
     path: scripts/worktree-create.sh
