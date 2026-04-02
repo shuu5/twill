@@ -1,0 +1,179 @@
+change_id: fix-validate-22-violations
+generated_at: "2026-04-02T00:00:00Z"
+test_framework: bash
+scenarios:
+  - scenario: "autopilot-poll の calls 修正"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 7
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_autopilot_poll_no_external_keys"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "autopilot-poll の cross-plugin 参照設定"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 7
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_autopilot_poll_has_cross_plugin_ref"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "autopilot-phase-execute の calls 修正"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 11
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_autopilot_phase_execute_no_external_keys"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "autopilot-phase-execute の cross-plugin 参照設定"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 11
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_autopilot_phase_execute_has_cross_plugin_ref"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "crash-detect の calls 修正"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 15
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_crash_detect_no_external_keys"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "crash-detect の cross-plugin 参照設定"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 15
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_crash_detect_has_cross_plugin_ref"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "health-check の calls 修正"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 19
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_health_check_no_external_keys"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "health-check の cross-plugin 参照設定"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 19
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_health_check_has_cross_plugin_ref"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "validate 全件 PASS (exit code)"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 27
+    requirement: "loom validate が Violations 0 で PASS"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_validate_exit_code_zero"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "validate 全件 PASS (Violations: 0 出力)"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 27
+    requirement: "loom validate が Violations 0 で PASS"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_validate_violations_zero"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "validate 全件 PASS (v3-calls-key 違反なし)"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 27
+    requirement: "loom validate が Violations 0 で PASS"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_validate_no_v3_calls_key_violations"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "check 全件 PASS"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 35
+    requirement: "loom check が Missing 0 を維持"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_check_missing_zero"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "edge-case: autopilot-poll 既存 script 参照の保全"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 7
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_autopilot_poll_existing_scripts_intact"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "edge-case: autopilot-phase-execute 既存 script 参照の保全"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 11
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_autopilot_phase_execute_existing_scripts_intact"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "edge-case: crash-detect 既存 script 参照の保全"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 15
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_crash_detect_existing_scripts_intact"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "edge-case: health-check 既存 script 参照の保全"
+    spec_file: specs/cross-plugin-ref-migration/spec.md
+    spec_line: 19
+    requirement: "external 依存を cross-plugin 参照に移行"
+    test_file: tests/test-cross-plugin-ref.sh
+    test_name: "test_health_check_existing_scripts_intact"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
