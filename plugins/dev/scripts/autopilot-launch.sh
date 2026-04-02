@@ -19,6 +19,7 @@ Required:
   --autopilot-dir DIR     .autopilot ディレクトリ（絶対パス）
 
 Optional:
+  --model MODEL           cld のモデル指定（デフォルト: sonnet）
   --context TEXT          コンテキスト注入テキスト（--append-system-prompt に変換）
   --repo-owner OWNER      クロスリポジトリ: リポジトリ owner
   --repo-name NAME        クロスリポジトリ: リポジトリ name
@@ -52,6 +53,7 @@ record_failure() {
 ISSUE=""
 PROJECT_DIR=""
 AUTOPILOT_DIR=""
+MODEL="sonnet"
 CONTEXT=""
 REPO_OWNER=""
 REPO_NAME=""
@@ -62,6 +64,7 @@ while [[ $# -gt 0 ]]; do
     --issue) ISSUE="$2"; shift 2 ;;
     --project-dir) PROJECT_DIR="$2"; shift 2 ;;
     --autopilot-dir) AUTOPILOT_DIR="$2"; shift 2 ;;
+    --model) MODEL="$2"; shift 2 ;;
     --context) CONTEXT="$2"; shift 2 ;;
     --repo-owner) REPO_OWNER="$2"; shift 2 ;;
     --repo-name) REPO_NAME="$2"; shift 2 ;;
@@ -211,12 +214,12 @@ QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
 tmux new-window -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
-  "env ${AUTOPILOT_ENV} ${REPO_ENV} $QUOTED_CLD $CONTEXT_ARGS $QUOTED_PROMPT"
+  "env ${AUTOPILOT_ENV} ${REPO_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
 
 # --- クラッシュ検知フック設定 (Task 1.10) ---
 tmux set-option -t "$WINDOW_NAME" remain-on-exit on
 QUOTED_CRASH_CMD=$(printf '%q ' bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$ISSUE" --window "$WINDOW_NAME")
 tmux set-hook -t "$WINDOW_NAME" pane-died "run-shell '$QUOTED_CRASH_CMD'"
 
-echo "Worker 起動完了: Issue #$ISSUE (window=$WINDOW_NAME, dir=$LAUNCH_DIR)"
+echo "Worker 起動完了: Issue #$ISSUE (window=$WINDOW_NAME, model=$MODEL, dir=$LAUNCH_DIR)"
 exit 0
