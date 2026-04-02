@@ -5,9 +5,9 @@ on:
     types: [closed]
 
 env:
-  PROJECT_ID: "PVT_kwHOCNFEd84BS03g"
-  STATUS_FIELD_ID: "PVTSSF_lAHOCNFEd84BS03gzhAPzog"
-  DONE_OPTION_ID: "98236657"
+  PROJECT_ID: ${{ vars.PROJECT_ID }}
+  STATUS_FIELD_ID: ${{ vars.STATUS_FIELD_ID }}
+  DONE_OPTION_ID: ${{ vars.DONE_OPTION_ID }}
 
 jobs:
   set-status-done:
