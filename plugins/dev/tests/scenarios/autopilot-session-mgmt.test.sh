@@ -273,24 +273,27 @@ else
 fi
 
 test_launch_tmux_window() {
+  # ロジックは scripts/autopilot-launch.sh に移行済み
+  assert_file_contains "scripts/autopilot-launch.sh" 'tmux.*new-window|tmux.*new.window|ap-#' || \
   assert_file_contains "$LAUNCH_CMD" 'tmux.*new-window|tmux.*new.window|ap-#'
 }
 
-if [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
+if [[ -f "${PROJECT_ROOT}/scripts/autopilot-launch.sh" ]] || [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
   run_test "autopilot-launch が tmux window 作成を記述" test_launch_tmux_window
 else
-  run_test_skip "autopilot-launch が tmux window 作成を記述" "COMMAND.md not yet created"
+  run_test_skip "autopilot-launch が tmux window 作成を記述" "autopilot-launch not found"
 fi
 
 test_launch_workflow_setup() {
   # --auto/--auto-merge フラグは #47 で廃止済み。現在は /dev:workflow-setup #N 形式
+  assert_file_contains "scripts/autopilot-launch.sh" "workflow-setup" || \
   assert_file_contains "$LAUNCH_CMD" "workflow-setup"
 }
 
-if [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
+if [[ -f "${PROJECT_ROOT}/scripts/autopilot-launch.sh" ]] || [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
   run_test "autopilot-launch が workflow-setup を記述" test_launch_workflow_setup
 else
-  run_test_skip "autopilot-launch が workflow-setup を記述" "COMMAND.md not yet created"
+  run_test_skip "autopilot-launch が workflow-setup を記述" "autopilot-launch not found"
 fi
 
 # Scenario: cross-issue 警告付き起動 (line 51)
@@ -308,13 +311,14 @@ else
 fi
 
 test_launch_append_system_prompt() {
+  assert_file_contains "scripts/autopilot-launch.sh" "append-system-prompt|append.*system.*prompt" || \
   assert_file_contains "$LAUNCH_CMD" "append-system-prompt|append.*system.*prompt"
 }
 
-if [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
+if [[ -f "${PROJECT_ROOT}/scripts/autopilot-launch.sh" ]] || [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
   run_test "autopilot-launch が --append-system-prompt を記述" test_launch_append_system_prompt
 else
-  run_test_skip "autopilot-launch が --append-system-prompt を記述" "COMMAND.md not yet created"
+  run_test_skip "autopilot-launch が --append-system-prompt を記述" "autopilot-launch not found"
 fi
 
 # Scenario: cld 未検出 (line 55)
@@ -322,13 +326,14 @@ fi
 # THEN: state-write で status=failed に遷移し、failure.message に "cld_not_found" を記録する
 
 test_launch_cld_not_found_handling() {
+  assert_file_contains "scripts/autopilot-launch.sh" "cld_not_found|cld.*not.*found|cld.*存在しない|cld.*見つかりません" || \
   assert_file_contains "$LAUNCH_CMD" "cld_not_found|cld.*not.*found|cld.*存在しない"
 }
 
-if [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
+if [[ -f "${PROJECT_ROOT}/scripts/autopilot-launch.sh" ]] || [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
   run_test "autopilot-launch cld 未検出時のエラー記述" test_launch_cld_not_found_handling
 else
-  run_test_skip "autopilot-launch cld 未検出時のエラー記述" "COMMAND.md not yet created"
+  run_test_skip "autopilot-launch cld 未検出時のエラー記述" "autopilot-launch not found"
 fi
 
 # Edge case: DEV_AUTOPILOT_SESSION を設定していないこと（禁止の言及は許容）
@@ -359,13 +364,14 @@ fi
 
 # Edge case: crash-detect.sh のペイン死亡フック設定
 test_launch_pane_died_hook() {
+  assert_file_contains "scripts/autopilot-launch.sh" "pane-died|crash-detect|pane.*died" || \
   assert_file_contains "$LAUNCH_CMD" "pane-died|crash-detect|pane.*died"
 }
 
-if [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
+if [[ -f "${PROJECT_ROOT}/scripts/autopilot-launch.sh" ]] || [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
   run_test "autopilot-launch [edge: pane-died フックで crash-detect.sh 設定]" test_launch_pane_died_hook
 else
-  run_test_skip "autopilot-launch [edge: pane-died フックで crash-detect.sh 設定]" "COMMAND.md not yet created"
+  run_test_skip "autopilot-launch [edge: pane-died フックで crash-detect.sh 設定]" "autopilot-launch not found"
 fi
 
 # Edge case: PHASE_INSIGHTS 入力の記述

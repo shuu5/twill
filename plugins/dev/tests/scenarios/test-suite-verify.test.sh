@@ -196,13 +196,13 @@ test_scenarios_files_exact_count() {
   assert_dir_exists "$SCENARIOS_DIR" || return 1
   local count
   count=$(find "${PROJECT_ROOT}/${SCENARIOS_DIR}" -name "*.test.sh" 2>/dev/null | wc -l)
-  if [[ "$count" -ne 67 ]]; then
-    echo "  [INFO] Expected 67 scenario files, found: ${count}" >&2
+  if [[ "$count" -ne 68 ]]; then
+    echo "  [INFO] Expected 68 scenario files, found: ${count}" >&2
     return 1
   fi
   return 0
 }
-run_test "scenario テスト [edge: ファイル数が 67 件]" test_scenarios_files_exact_count
+run_test "scenario テスト [edge: ファイル数が 68 件]" test_scenarios_files_exact_count
 
 # Edge case: scenario テストが共通形式（run_test / PASS / FAIL）に準拠
 test_scenarios_use_run_test() {

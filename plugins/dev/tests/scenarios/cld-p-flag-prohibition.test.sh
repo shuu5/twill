@@ -70,7 +70,9 @@ run_test_skip() {
   ((SKIP++)) || true
 }
 
-TARGET_FILE="commands/autopilot-launch.md"
+# ロジックは scripts/autopilot-launch.sh に移行済み。両方を検索対象にする。
+TARGET_FILE="scripts/autopilot-launch.sh"
+TARGET_FILE_MD="commands/autopilot-launch.md"
 
 # =============================================================================
 # Requirement: cld -p / --print フラグ使用禁止の明記
@@ -82,16 +84,15 @@ echo "--- Requirement: cld -p / --print フラグ使用禁止の明記 ---"
 # WHEN: commands/autopilot-launch.md の禁止事項セクションを確認する
 # THEN: cld -p / cld --print の使用禁止が記載されていること
 test_prohibited_cld_p_flag_listed() {
-  assert_file_exists "$TARGET_FILE" || return 1
-  # Must contain a prohibition section
-  assert_file_contains "$TARGET_FILE" "禁止事項" || return 1
-  # Must mention -p / --print prohibition
-  assert_file_contains "$TARGET_FILE" "\-p\b|--print" || return 1
-  # The prohibition must appear within or after the 禁止事項 section
-  # Check that -p or --print appears after 禁止事項 in the file
+  # 禁止事項は .md に記載。.sh のコメントにも存在する可能性あり
+  local f="$TARGET_FILE_MD"
+  assert_file_exists "$f" || f="$TARGET_FILE"
+  assert_file_exists "$f" || return 1
+  assert_file_contains "$f" "禁止事項" || return 1
+  assert_file_contains "$f" "\-p\b|--print" || return 1
   local prohibit_line p_flag_line
-  prohibit_line=$(grep -n "禁止事項" "${PROJECT_ROOT}/${TARGET_FILE}" | tail -1 | cut -d: -f1)
-  p_flag_line=$(grep -n "\-p\b\|--print" "${PROJECT_ROOT}/${TARGET_FILE}" | tail -1 | cut -d: -f1)
+  prohibit_line=$(grep -n "禁止事項" "${PROJECT_ROOT}/${f}" | tail -1 | cut -d: -f1)
+  p_flag_line=$(grep -n "\-p\b\|--print" "${PROJECT_ROOT}/${f}" | tail -1 | cut -d: -f1)
   [[ -n "$prohibit_line" && -n "$p_flag_line" && "$p_flag_line" -gt "$prohibit_line" ]]
 }
 run_test "禁止事項セクションに cld -p 禁止が記載されている" test_prohibited_cld_p_flag_listed
@@ -133,13 +134,13 @@ run_test "cld -p 禁止 [edge: 禁止理由が -p 記載と近傍に存在]" tes
 
 # Edge case: 禁止事項が MUST NOT / してはならない 相当の強い表現で記載されている
 test_prohibited_strong_prohibition_language() {
-  assert_file_exists "$TARGET_FILE" || return 1
-  # Within the prohibition block, should use SHALL NOT / MUST NOT / してはならない
+  local f="$TARGET_FILE_MD"
+  assert_file_exists "$f" || f="$TARGET_FILE"
+  assert_file_exists "$f" || return 1
   local prohibit_line
-  prohibit_line=$(grep -n "禁止事項" "${PROJECT_ROOT}/${TARGET_FILE}" | tail -1 | cut -d: -f1)
+  prohibit_line=$(grep -n "禁止事項" "${PROJECT_ROOT}/${f}" | tail -1 | cut -d: -f1)
   [[ -n "$prohibit_line" ]] || return 1
-  # From the 禁止事項 section to end, look for strong prohibition language near -p
-  tail -n "+${prohibit_line}" "${PROJECT_ROOT}/${TARGET_FILE}" | grep -qP "\-p\b|--print"
+  tail -n "+${prohibit_line}" "${PROJECT_ROOT}/${f}" | grep -qP "\-p\b|--print"
 }
 run_test "cld -p 禁止 [edge: 禁止事項セクション配下に -p 記載が存在]" test_prohibited_strong_prohibition_language
 
@@ -149,25 +150,26 @@ run_test "cld -p 禁止 [edge: 禁止事項セクション配下に -p 記載が
 # Note: This scenario tests the documentation's effectiveness as guidance.
 #       We verify that the prohibition is placed where Pilot Claude will see it.
 test_prohibition_visible_to_pilot() {
-  assert_file_exists "$TARGET_FILE" || return 1
-  # The prohibition must be in ## 禁止事項 section (MUST NOT section)
-  assert_file_contains "$TARGET_FILE" "## 禁止事項" || return 1
-  # -p / --print must appear in the prohibition list items
+  local f="$TARGET_FILE_MD"
+  assert_file_exists "$f" || f="$TARGET_FILE"
+  assert_file_exists "$f" || return 1
+  assert_file_contains "$f" "## 禁止事項" || return 1
   local prohibit_line
-  prohibit_line=$(grep -n "## 禁止事項" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
+  prohibit_line=$(grep -n "## 禁止事項" "${PROJECT_ROOT}/${f}" | head -1 | cut -d: -f1)
   [[ -n "$prohibit_line" ]] || return 1
-  tail -n "+${prohibit_line}" "${PROJECT_ROOT}/${TARGET_FILE}" | grep -qP "^\s*-\s.*(\-p\b|--print)"
+  tail -n "+${prohibit_line}" "${PROJECT_ROOT}/${f}" | grep -qP "^\s*-\s.*(\-p\b|--print)"
 }
 run_test "禁止事項により -p / --print フラグが排除される" test_prohibition_visible_to_pilot
 
 # Edge case: 禁止事項セクションのリスト項目として箇条書きで記載されている
 test_prohibition_as_list_item() {
-  assert_file_exists "$TARGET_FILE" || return 1
+  local f="$TARGET_FILE_MD"
+  assert_file_exists "$f" || f="$TARGET_FILE"
+  assert_file_exists "$f" || return 1
   local prohibit_line
-  prohibit_line=$(grep -n "## 禁止事項" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
+  prohibit_line=$(grep -n "## 禁止事項" "${PROJECT_ROOT}/${f}" | head -1 | cut -d: -f1)
   [[ -n "$prohibit_line" ]] || return 1
-  # After the 禁止事項 heading, find a list item containing -p or --print
-  tail -n "+${prohibit_line}" "${PROJECT_ROOT}/${TARGET_FILE}" | grep -qP "^-\s.*(-p\b|--print)"
+  tail -n "+${prohibit_line}" "${PROJECT_ROOT}/${f}" | grep -qP "^-\s.*(-p\b|--print)"
 }
 run_test "Pilot 向け禁止 [edge: 禁止事項が箇条書きリスト項目として記載]" test_prohibition_as_list_item
 
@@ -182,104 +184,43 @@ echo "--- Requirement: Step 5 コード例への注意コメント追加 ---"
 # THEN: positional arg でプロンプトを渡す方式であることを示すコメントが存在すること
 test_step5_positional_arg_comment() {
   assert_file_exists "$TARGET_FILE" || return 1
-  # Step 5 section must exist
-  assert_file_contains "$TARGET_FILE" "Step 5" || return 1
-  # Within Step 5 section, a comment about positional arg should exist
-  local step5_line step6_line
-  step5_line=$(grep -n "Step 5" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  step6_line=$(grep -n "Step 6" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  [[ -n "$step5_line" ]] || return 1
-  local end_line="${step6_line:-9999}"
-  sed -n "${step5_line},${end_line}p" "${PROJECT_ROOT}/${TARGET_FILE}" | grep -qP "#.*positional|positional.*arg|#.*プロンプト.*渡す|#.*prompt"
+  # .sh に移行後: positional arg コメントがスクリプト内に存在する
+  assert_file_contains "$TARGET_FILE" "positional|プロンプト.*渡す|#.*prompt"
 }
 run_test "Step 5 にプロンプトを positional arg で渡す旨のコメントが存在する" test_step5_positional_arg_comment
 
 # THEN: -p / --print を使用してはならない旨のコメントが存在すること
 test_step5_no_p_flag_comment() {
   assert_file_exists "$TARGET_FILE" || return 1
-  local step5_line step6_line
-  step5_line=$(grep -n "Step 5" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  step6_line=$(grep -n "Step 6" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  [[ -n "$step5_line" ]] || return 1
-  local end_line="${step6_line:-9999}"
-  # Within Step 5's code block, there should be a comment about NOT using -p or --print
-  sed -n "${step5_line},${end_line}p" "${PROJECT_ROOT}/${TARGET_FILE}" | grep -qP "#.*-p\b|#.*--print|#.*\-p.*禁止|#.*使用.*しない"
+  # .sh に移行後: -p/--print 禁止コメントがスクリプト内に存在する
+  assert_file_contains "$TARGET_FILE" "#.*-p.*禁止|#.*--print.*禁止|#.*print.*禁止|-p.*禁止"
 }
 run_test "Step 5 に -p / --print を使用しない旨のコメントが存在する" test_step5_no_p_flag_comment
 
 # Edge case: コメントがコードブロック内（```bash ... ```）に存在する
 test_step5_comment_inside_codeblock() {
   assert_file_exists "$TARGET_FILE" || return 1
-  local step5_line step6_line
-  step5_line=$(grep -n "Step 5" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  step6_line=$(grep -n "Step 6" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  [[ -n "$step5_line" ]] || return 1
-  local end_line="${step6_line:-9999}"
-  local block
-  block=$(sed -n "${step5_line},${end_line}p" "${PROJECT_ROOT}/${TARGET_FILE}")
-  # Must have a code block
-  echo "$block" | grep -qP '```' || return 1
-  # The -p comment must appear within the code block (after ``` and before closing ```)
-  local in_block=0
-  while IFS= read -r line; do
-    if [[ "$line" =~ '```' ]]; then
-      if [[ $in_block -eq 0 ]]; then
-        in_block=1
-      else
-        in_block=0
-      fi
-    fi
-    if [[ $in_block -eq 1 ]] && echo "$line" | grep -qP "#.*-p\b|#.*--print|#.*\-p.*禁止"; then
-      return 0
-    fi
-  done <<< "$block"
-  return 1
+  # .sh に移行後: スクリプト内にコメントとして存在する（コードブロック不要）
+  assert_file_contains "$TARGET_FILE" "#.*positional|#.*-p.*禁止|#.*--print.*禁止"
 }
 run_test "Step 5 コメント [edge: コメントがコードブロック内に存在]" test_step5_comment_inside_codeblock
 
 # Edge case: Step 5 のコード例が cld 起動コマンドを含む（コメントが実際の起動コードに付随）
 test_step5_codeblock_has_cld_launch() {
   assert_file_exists "$TARGET_FILE" || return 1
-  local step5_line step6_line
-  step5_line=$(grep -n "Step 5" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  step6_line=$(grep -n "Step 6" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  [[ -n "$step5_line" ]] || return 1
-  local end_line="${step6_line:-9999}"
-  # Step 5 code block should contain the cld launch (tmux new-window ... cld ...)
-  sed -n "${step5_line},${end_line}p" "${PROJECT_ROOT}/${TARGET_FILE}" | grep -qP "tmux.*new-window|QUOTED_CLD|\$CLD_PATH"
+  # .sh に移行後: tmux new-window と CLD_PATH がスクリプト内に存在する
+  assert_file_contains "$TARGET_FILE" "tmux.*new-window|QUOTED_CLD|CLD_PATH"
 }
 run_test "Step 5 コメント [edge: コード例が cld 起動コマンドを含む]" test_step5_codeblock_has_cld_launch
 
 # Edge case: Step 5 に -p フラグの使用例が実際には含まれていない（誤って追加されていない）
 test_step5_no_p_flag_in_code() {
   assert_file_exists "$TARGET_FILE" || return 1
-  local step5_line step6_line
-  step5_line=$(grep -n "Step 5" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  step6_line=$(grep -n "Step 6" "${PROJECT_ROOT}/${TARGET_FILE}" | head -1 | cut -d: -f1)
-  [[ -n "$step5_line" ]] || return 1
-  local end_line="${step6_line:-9999}"
-  # The code itself (non-comment lines) must NOT contain -p or --print as an actual flag
-  local in_block=0
-  while IFS= read -r line; do
-    if [[ "$line" =~ '```' ]]; then
-      if [[ $in_block -eq 0 ]]; then
-        in_block=1
-      else
-        in_block=0
-      fi
-    fi
-    if [[ $in_block -eq 1 ]]; then
-      # Skip comment lines
-      if echo "$line" | grep -qP "^\s*#"; then
-        continue
-      fi
-      # Non-comment line must not have -p or --print as a flag argument
-      if echo "$line" | grep -qP "\s-p\b|\s--print\b"; then
-        return 1
-      fi
-    fi
-  done < <(sed -n "${step5_line},${end_line}p" "${PROJECT_ROOT}/${TARGET_FILE}")
-  return 0
+  # .sh に移行後: 非コメント行に -p / --print フラグが含まれていない
+  # コメント行を除外して検査
+  local result
+  result=$(grep -v '^\s*#' "${PROJECT_ROOT}/${TARGET_FILE}" | grep -P "\s-p\b|\s--print\b" || true)
+  [[ -z "$result" ]]
 }
 run_test "Step 5 コメント [edge: 実コード行に -p / --print フラグが含まれない]" test_step5_no_p_flag_in_code
 

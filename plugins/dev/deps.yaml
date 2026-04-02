@@ -1061,6 +1061,7 @@ commands:
     spawnable_by: [controller]
     can_spawn: []
     calls:
+      - script: autopilot-launch
       - script: state-write
       - script: crash-detect
     description: "Worker 起動（tmux window 作成 + state-write --init）"
@@ -1176,6 +1177,14 @@ scripts:
     type: script
     path: scripts/autopilot-init.sh
     description: ".autopilot/ ディレクトリ初期化とセッション排他制御"
+
+  autopilot-launch:
+    type: script
+    path: scripts/autopilot-launch.sh
+    calls:
+      - script: state-write
+      - script: crash-detect
+    description: "Worker 起動（tmux window 作成 + cld 起動 + クラッシュ検知フック設定）"
 
   session-create:
     type: script

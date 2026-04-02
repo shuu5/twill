@@ -319,6 +319,7 @@ echo ""
 echo "--- Requirement: autopilot-launch プロンプト変更 ---"
 
 AUTOPILOT_LAUNCH="commands/autopilot-launch.md"
+AUTOPILOT_LAUNCH_SH="scripts/autopilot-launch.sh"
 
 test_autopilot_launch_file_exists() {
   assert_file_exists "$AUTOPILOT_LAUNCH"
@@ -331,25 +332,29 @@ else
 fi
 
 test_autopilot_launch_prompt_no_auto_flags() {
-  # PROMPT には --auto も --auto-merge も含まれてはならない
-  assert_file_not_contains "$AUTOPILOT_LAUNCH" "workflow-setup.*--auto"
+  # PROMPT には --auto も --auto-merge も含まれてはならない（.md or .sh）
+  assert_file_not_contains "$AUTOPILOT_LAUNCH_SH" "workflow-setup.*--auto"
 }
 
-if [[ -f "${PROJECT_ROOT}/${AUTOPILOT_LAUNCH}" ]]; then
+if [[ -f "${PROJECT_ROOT}/${AUTOPILOT_LAUNCH_SH}" ]]; then
+  run_test "autopilot-launch のプロンプトに --auto/--auto-merge が含まれない" test_autopilot_launch_prompt_no_auto_flags
+elif [[ -f "${PROJECT_ROOT}/${AUTOPILOT_LAUNCH}" ]]; then
   run_test "autopilot-launch のプロンプトに --auto/--auto-merge が含まれない" test_autopilot_launch_prompt_no_auto_flags
 else
-  run_test_skip "autopilot-launch のプロンプトに --auto/--auto-merge が含まれない" "${AUTOPILOT_LAUNCH} not found"
+  run_test_skip "autopilot-launch のプロンプトに --auto/--auto-merge が含まれない" "autopilot-launch not found"
 fi
 
 test_autopilot_launch_prompt_issue_only() {
-  # /dev:workflow-setup #${ISSUE} 形式（フラグなし）が存在する
-  assert_file_contains "$AUTOPILOT_LAUNCH" "workflow-setup #\\\$\{?ISSUE\}?"
+  # /dev:workflow-setup #${ISSUE} 形式（フラグなし）が .sh に存在する
+  assert_file_contains "$AUTOPILOT_LAUNCH_SH" "workflow-setup #\\\$\{?ISSUE\}?"
 }
 
-if [[ -f "${PROJECT_ROOT}/${AUTOPILOT_LAUNCH}" ]]; then
+if [[ -f "${PROJECT_ROOT}/${AUTOPILOT_LAUNCH_SH}" ]]; then
+  run_test "autopilot-launch のプロンプトが /dev:workflow-setup #\${ISSUE} 形式である" test_autopilot_launch_prompt_issue_only
+elif [[ -f "${PROJECT_ROOT}/${AUTOPILOT_LAUNCH}" ]]; then
   run_test "autopilot-launch のプロンプトが /dev:workflow-setup #\${ISSUE} 形式である" test_autopilot_launch_prompt_issue_only
 else
-  run_test_skip "autopilot-launch のプロンプトが /dev:workflow-setup #\${ISSUE} 形式である" "${AUTOPILOT_LAUNCH} not found"
+  run_test_skip "autopilot-launch のプロンプトが /dev:workflow-setup #\${ISSUE} 形式である" "autopilot-launch not found"
 fi
 
 # =============================================================================
