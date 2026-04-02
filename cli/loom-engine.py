@@ -4777,12 +4777,12 @@ def complexity_report(graph: Dict, deps: dict, plugin_root: Path):
 
 
 def _is_within_root(file_path: Path, root: Path) -> bool:
-    """file_path が root 配下にあるか安全に検証（シンボリックリンク解決後）"""
+    """file_path が root の strict subdirectory かどうかを安全に検証（シンボリックリンク解決後）"""
     try:
         resolved = file_path.resolve()
         root_resolved = root.resolve()
-        # commonpath で厳密に判定（prefix 一致の誤判定を防止）
-        return os.path.commonpath([resolved, root_resolved]) == str(root_resolved)
+        # root 自身は False（strict subdirectory チェック）
+        return str(resolved).startswith(str(root_resolved) + os.sep)
     except (ValueError, OSError):
         return False
 

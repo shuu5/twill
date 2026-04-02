@@ -254,6 +254,30 @@ class TestSectionEPathTraversalGuard(_TraversalTestBase):
 
 
 # ===========================================================================
+# Boundary condition: root 自身
+# ===========================================================================
+
+class TestSectionEBoundaryRootSelf(_TraversalTestBase):
+    """_is_within_root(root, root) は False を返す（strict subdirectory）。"""
+
+    def test_root_itself_is_not_within_root(self):
+        """WHEN file_path == root（plugin_root / "." は resolve() 後に plugin_root 自身と等しくなる）
+        THEN _is_within_root() は False を返し、サイレントスキップされる"""
+        plugin_dir = _make_plugin_fixture(
+            self.tmpdir,
+            specialist_path=".",  # resolve() 後に plugin_root 自身と等しくなる
+            create_file=False,
+        )
+        result = run_engine(plugin_dir, "--deep-validate")
+
+        # root 自身は _is_within_root() で False → サイレントスキップ
+        assert "[specialist-output-schema]" not in result.stdout, (
+            f"Expected silent skip for root-self path, but got:\n{result.stdout}"
+        )
+        assert result.returncode == 0
+
+
+# ===========================================================================
 # Edge cases
 # ===========================================================================
 
