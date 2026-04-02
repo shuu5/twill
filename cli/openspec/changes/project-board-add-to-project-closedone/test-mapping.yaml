@@ -1,0 +1,87 @@
+change_id: project-board-add-to-project-closedone
+generated_at: "2026-04-02T00:00:00+00:00"
+test_framework: pytest
+scenarios:
+  - id: "add-to-project-new-issue"
+    name: "新規 Issue 作成時の自動追加"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 7
+    requirement: "Issue を Project Board に自動追加"
+    test_file: "tests/scenarios/test_add_to_project_workflow.py"
+    test_name: "TestNewIssueTrigger"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "add-to-project-reopen-issue"
+    name: "Issue reopen 時の自動追加"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 11
+    requirement: "Issue を Project Board に自動追加"
+    test_file: "tests/scenarios/test_add_to_project_workflow.py"
+    test_name: "TestReopenedIssueTrigger"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "add-to-project-transfer-issue"
+    name: "Issue transfer 時の自動追加"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 15
+    requirement: "Issue を Project Board に自動追加"
+    test_file: "tests/scenarios/test_add_to_project_workflow.py"
+    test_name: "TestTransferredIssueTrigger"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-status-done-board-registered-close"
+    name: "Board 登録済み Issue のクローズ"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 7
+    requirement: "Issue クローズ時に Status を Done に更新"
+    test_file: "tests/scenarios/test_project_status_done_workflow.py"
+    test_name: "TestBoardRegisteredIssueClose"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-status-done-board-unregistered-close"
+    name: "Board 未登録 Issue のクローズ"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 11
+    requirement: "Issue クローズ時に Status を Done に更新"
+    test_file: "tests/scenarios/test_project_status_done_workflow.py"
+    test_name: "TestBoardUnregisteredIssueClose"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-status-done-item-search-success"
+    name: "Item 検索成功時の Status 更新"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 19
+    requirement: "GraphQL による Item 検索と条件付き更新"
+    test_file: "tests/scenarios/test_project_status_done_workflow.py"
+    test_name: "TestItemSearchSuccess"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-status-done-item-search-empty"
+    name: "Item 検索結果が空の場合"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 23
+    requirement: "GraphQL による Item 検索と条件付き更新"
+    test_file: "tests/scenarios/test_project_status_done_workflow.py"
+    test_name: "TestItemSearchEmpty"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
