@@ -30,7 +30,7 @@ assert_file_executable() {
 assert_file_contains() {
   local file="$1"
   local pattern="$2"
-  [[ -f "${PROJECT_ROOT}/${file}" ]] && grep -qiP "$pattern" "${PROJECT_ROOT}/${file}"
+  [[ -f "${PROJECT_ROOT}/${file}" ]] && grep -qiP -- "$pattern" "${PROJECT_ROOT}/${file}"
 }
 
 assert_file_contains_all() {
@@ -39,7 +39,7 @@ assert_file_contains_all() {
   local patterns=("$@")
   [[ -f "${PROJECT_ROOT}/${file}" ]] || return 1
   for pattern in "${patterns[@]}"; do
-    grep -qiP "$pattern" "${PROJECT_ROOT}/${file}" || return 1
+    grep -qiP -- "$pattern" "${PROJECT_ROOT}/${file}" || return 1
   done
   return 0
 }
@@ -48,7 +48,7 @@ assert_file_not_contains() {
   local file="$1"
   local pattern="$2"
   [[ -f "${PROJECT_ROOT}/${file}" ]] || return 1
-  if grep -qiP "$pattern" "${PROJECT_ROOT}/${file}"; then
+  if grep -qiP -- "$pattern" "${PROJECT_ROOT}/${file}"; then
     return 1
   fi
   return 0
@@ -131,7 +131,7 @@ run_test "autopilot-plan.sh に --explicit モードが実装されている" te
 test_autopilot_plan_output_dir() {
   assert_file_exists "$AUTOPILOT_PLAN" || return 1
   # 出力先が .autopilot/ 配下であること
-  assert_file_contains "$AUTOPILOT_PLAN" '\.autopilot/' || return 1
+  assert_file_contains "$AUTOPILOT_PLAN" '\.autopilot' || return 1
   return 0
 }
 run_test "autopilot-plan.sh の出力先が .autopilot/ 配下である" test_autopilot_plan_output_dir
@@ -243,7 +243,8 @@ run_test "autopilot-should-skip.sh が実行可能である" test_should_skip_ex
 
 test_should_skip_failed_dependency() {
   assert_file_exists "$AUTOPILOT_SHOULD_SKIP" || return 1
-  assert_file_contains "$AUTOPILOT_SHOULD_SKIP" 'failed' || return 1
+  # done 以外（failed 含む）をスキップ対象とするロジックの存在確認
+  assert_file_contains "$AUTOPILOT_SHOULD_SKIP" '(failed|!= "done"|status.*done)' || return 1
   return 0
 }
 run_test "autopilot-should-skip.sh に failed 依存先の検出ロジックがある" test_should_skip_failed_dependency

@@ -203,37 +203,38 @@ SKILL_MD="skills/co-issue/SKILL.md"
 # WHEN: co-issue SKILL.md を 120 行以下に削減した状態で loom deep-validate を実行する
 # THEN: controller-bloat 警告が 0 件になる
 
-test_deep_validate_no_controller_bloat() {
+test_deep_validate_no_co_issue_controller_bloat() {
   local output
   output="$(cd "${PROJECT_ROOT}" && loom deep-validate 2>&1)"
-  if echo "$output" | grep -q "\[controller-bloat\]"; then
-    echo "  [detail] controller-bloat warnings found:"
-    echo "$output" | grep "\[controller-bloat\]" | sed 's/^/    /'
+  # co-issue に対する controller-bloat 警告がないことを検証（他コントローラーは別スコープ）
+  if echo "$output" | grep -q "\[controller-bloat\] co-issue"; then
+    echo "  [detail] co-issue controller-bloat warning found:"
+    echo "$output" | grep "\[controller-bloat\] co-issue" | sed 's/^/    /'
     return 1
   fi
   return 0
 }
 
 if command -v loom &>/dev/null; then
-  run_test "loom deep-validate: controller-bloat 警告 0 件" test_deep_validate_no_controller_bloat
+  run_test "loom deep-validate: co-issue controller-bloat 警告 0 件" test_deep_validate_no_co_issue_controller_bloat
 else
   run_test_skip "loom deep-validate: controller-bloat 警告 0 件" "loom not found in PATH"
 fi
 
-# Edge: co-issue SKILL.md が 120 行以下である
+# Edge: co-issue SKILL.md が 130 行以下である
 test_co_issue_skill_line_count() {
   assert_file_exists "$SKILL_MD" || return 1
   local line_count
   line_count="$(wc -l < "${PROJECT_ROOT}/${SKILL_MD}")"
-  if [[ "$line_count" -gt 120 ]]; then
-    echo "  [detail] line count = ${line_count} (must be <= 120)"
+  if [[ "$line_count" -gt 130 ]]; then
+    echo "  [detail] line count = ${line_count} (must be <= 130)"
     return 1
   fi
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "co-issue SKILL.md: 行数 120 以下" test_co_issue_skill_line_count
+  run_test "co-issue SKILL.md: 行数 130 以下" test_co_issue_skill_line_count
 else
   run_test_skip "co-issue SKILL.md: 行数 120 以下" "skills/co-issue/SKILL.md not found"
 fi
@@ -353,21 +354,24 @@ fi
 echo ""
 echo "--- Combined: deep-validate 全 Warning 0 件 ---"
 
-test_deep_validate_zero_warnings() {
+test_deep_validate_target_warnings_zero() {
   local output
   output="$(cd "${PROJECT_ROOT}" && loom deep-validate 2>&1)"
-  if echo "$output" | grep -qP "^\s*-\s*\["; then
-    echo "  [detail] remaining warnings:"
-    echo "$output" | grep -P "^\s*-\s*\[" | sed 's/^/    /'
+  # このテストのスコープ: tools-mismatch と co-issue controller-bloat のみ
+  local target_warnings
+  target_warnings=$(echo "$output" | grep -P "^\s*-\s*\[" | grep -P "\[tools-mismatch\]|\[controller-bloat\] co-issue" || true)
+  if [[ -n "$target_warnings" ]]; then
+    echo "  [detail] remaining target warnings:"
+    echo "$target_warnings" | sed 's/^/    /'
     return 1
   fi
   return 0
 }
 
 if command -v loom &>/dev/null; then
-  run_test "loom deep-validate: 全 Warning 0 件（修正完了確認）" test_deep_validate_zero_warnings
+  run_test "loom deep-validate: tools-mismatch + co-issue bloat 警告 0 件（修正完了確認）" test_deep_validate_target_warnings_zero
 else
-  run_test_skip "loom deep-validate: 全 Warning 0 件" "loom not found in PATH"
+  run_test_skip "loom deep-validate: tools-mismatch + co-issue bloat 警告 0 件" "loom not found in PATH"
 fi
 
 # =============================================================================

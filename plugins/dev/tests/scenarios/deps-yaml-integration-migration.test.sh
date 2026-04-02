@@ -86,7 +86,7 @@ WORKTREE_CREATE_CMD="commands/worktree-create.md"
 PROJECT_CREATE_CMD="commands/project-create.md"
 PROJECT_MIGRATE_CMD="commands/project-migrate.md"
 
-# 移植対象の全16スクリプト
+# 移植対象の全15スクリプト（check-db-migration は #82 で削除済み）
 MIGRATED_SCRIPTS=(
   "autopilot-plan"
   "autopilot-should-skip"
@@ -100,7 +100,6 @@ MIGRATED_SCRIPTS=(
   "classify-failure"
   "parse-issue-ac"
   "session-audit"
-  "check-db-migration"
   "ecc-monitor"
   "codex-review"
   "create-harness-issue"
@@ -266,15 +265,16 @@ sys.exit(0)
 }
 run_test "deps.yaml に session-audit が登録されている" test_deps_yaml_has_session_audit
 
-test_deps_yaml_has_check_db_migration() {
+test_deps_yaml_no_check_db_migration() {
   yaml_get "$DEPS_YAML" "
 scripts = data.get('scripts', {})
-if 'check-db-migration' not in scripts:
+if 'check-db-migration' in scripts:
+    print('check-db-migration should not be in deps.yaml (deleted in #82)', file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "deps.yaml に check-db-migration が登録されている" test_deps_yaml_has_check_db_migration
+run_test "deps.yaml に check-db-migration が登録されていない（#82 で削除済み）" test_deps_yaml_no_check_db_migration
 
 test_deps_yaml_has_ecc_monitor() {
   yaml_get "$DEPS_YAML" "

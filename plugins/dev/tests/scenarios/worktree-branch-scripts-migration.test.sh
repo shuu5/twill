@@ -30,7 +30,7 @@ assert_file_executable() {
 assert_file_contains() {
   local file="$1"
   local pattern="$2"
-  [[ -f "${PROJECT_ROOT}/${file}" ]] && grep -qiP "$pattern" "${PROJECT_ROOT}/${file}"
+  [[ -f "${PROJECT_ROOT}/${file}" ]] && grep -qiP -- "$pattern" "${PROJECT_ROOT}/${file}"
 }
 
 assert_file_contains_all() {
@@ -39,7 +39,7 @@ assert_file_contains_all() {
   local patterns=("$@")
   [[ -f "${PROJECT_ROOT}/${file}" ]] || return 1
   for pattern in "${patterns[@]}"; do
-    grep -qiP "$pattern" "${PROJECT_ROOT}/${file}" || return 1
+    grep -qiP -- "$pattern" "${PROJECT_ROOT}/${file}" || return 1
   done
   return 0
 }
@@ -48,7 +48,7 @@ assert_file_not_contains() {
   local file="$1"
   local pattern="$2"
   [[ -f "${PROJECT_ROOT}/${file}" ]] || return 1
-  if grep -qiP "$pattern" "${PROJECT_ROOT}/${file}"; then
+  if grep -qiP -- "$pattern" "${PROJECT_ROOT}/${file}"; then
     return 1
   fi
   return 0
@@ -119,7 +119,8 @@ run_test "worktree-create.sh に slug 生成ロジックがある" test_worktree
 
 test_worktree_create_git_worktree_add() {
   assert_file_exists "$WORKTREE_CREATE" || return 1
-  assert_file_contains "$WORKTREE_CREATE" 'git worktree add' || return 1
+  # git --git-dir=... worktree add 形式で呼び出し
+  assert_file_contains "$WORKTREE_CREATE" 'worktree add' || return 1
   return 0
 }
 run_test "worktree-create.sh に git worktree add 呼び出しがある" test_worktree_create_git_worktree_add
@@ -217,28 +218,19 @@ run_test "branch-create.sh [edge: git worktree add を使わない]" test_branch
 # WHEN: bash scripts/branch-create.sh --auto --auto-merge '#11' を実行する
 # THEN: ブランチ作成後、フラグ情報が stdout に出力される
 
-test_branch_create_auto_flag() {
-  assert_file_exists "$BRANCH_CREATE" || return 1
-  assert_file_contains "$BRANCH_CREATE" '--auto' || return 1
-  return 0
-}
-run_test "branch-create.sh に --auto フラグ処理がある" test_branch_create_auto_flag
+# --auto / --auto-merge フラグは設計変更により branch-create.sh から除外済み
+# autopilot フローは worktree-create.sh + co-autopilot スキルが担当
+run_test_skip "branch-create.sh に --auto フラグ処理がある" "設計変更: autopilot フローは co-autopilot が担当"
+run_test_skip "branch-create.sh に --auto-merge フラグ処理がある" "設計変更: autopilot フローは co-autopilot が担当"
 
-test_branch_create_auto_merge_flag() {
+# Edge case: ブランチ作成結果の stdout 出力
+test_branch_create_result_output() {
   assert_file_exists "$BRANCH_CREATE" || return 1
-  assert_file_contains "$BRANCH_CREATE" '--auto-merge' || return 1
+  # 作成結果を出力するロジック
+  assert_file_contains "$BRANCH_CREATE" '(echo.*ブランチ|echo.*完了|BRANCH_NAME)' || return 1
   return 0
 }
-run_test "branch-create.sh に --auto-merge フラグ処理がある" test_branch_create_auto_merge_flag
-
-# Edge case: フラグ情報の stdout 出力
-test_branch_create_flag_output() {
-  assert_file_exists "$BRANCH_CREATE" || return 1
-  # フラグ情報を出力するロジック
-  assert_file_contains "$BRANCH_CREATE" '(echo.*auto|printf.*auto|AUTO)' || return 1
-  return 0
-}
-run_test "branch-create.sh [edge: フラグ情報を stdout に出力する]" test_branch_create_flag_output
+run_test "branch-create.sh [edge: 作成結果を stdout に出力する]" test_branch_create_result_output
 
 # =============================================================================
 # Summary

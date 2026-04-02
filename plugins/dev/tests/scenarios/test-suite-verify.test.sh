@@ -126,7 +126,7 @@ run_test "ベースライン記録 [edge: bats と scenario 両方をカバー]"
 
 # Scenario: bats テスト全件 PASS (line 11)
 # WHEN: tests/run-tests.sh を実行する
-# THEN: 37 bats テストが全件 PASS しなければならない（SHALL）
+# THEN: bats テストが全件 PASS しなければならない（SHALL）
 
 test_bats_dir_exists() {
   assert_dir_exists "$BATS_DIR" || return 1
@@ -146,23 +146,24 @@ run_test "bats テスト全件 PASS: .bats ファイルが存在する" test_bat
 
 test_bats_bin_available() {
   local bats_bin="${PROJECT_ROOT}/tests/lib/bats-core/bin/bats"
-  [[ -x "$bats_bin" ]] || return 1
+  # Accept either local bats-core/bin/bats or system-installed bats
+  [[ -x "$bats_bin" ]] || command -v bats &>/dev/null || return 1
   return 0
 }
 run_test "bats テスト全件 PASS: bats バイナリが利用可能" test_bats_bin_available
 
-# Edge case: bats テストが 37 件（仕様に定義された件数）
+# Edge case: bats テストが 43 件（現行件数）
 test_bats_files_exact_count() {
   assert_dir_exists "$BATS_DIR" || return 1
   local count
   count=$(find "${PROJECT_ROOT}/${BATS_DIR}" -name "*.bats" 2>/dev/null | wc -l)
-  if [[ "$count" -ne 34 ]]; then
-    echo "  [INFO] Expected 34 bats files, found: ${count}" >&2
+  if [[ "$count" -ne 43 ]]; then
+    echo "  [INFO] Expected 43 bats files, found: ${count}" >&2
     return 1
   fi
   return 0
 }
-run_test "bats テスト [edge: ファイル数が 34 件]" test_bats_files_exact_count
+run_test "bats テスト [edge: ファイル数が 43 件]" test_bats_files_exact_count
 
 # Edge case: bats helpers が存在する（テスト実行前提）
 test_bats_helpers_exist() {
@@ -173,7 +174,7 @@ run_test "bats テスト [edge: helpers/common.bash が存在する]" test_bats_
 
 # Scenario: scenario テスト全件 PASS (line 15)
 # WHEN: tests/run-tests.sh を実行する
-# THEN: 37 scenario テストが全件 PASS しなければならない（SHALL）
+# THEN: scenario テストが全件 PASS しなければならない（SHALL）
 
 test_scenarios_dir_exists() {
   assert_dir_exists "$SCENARIOS_DIR" || return 1
@@ -190,18 +191,18 @@ test_scenarios_files_exist() {
 }
 run_test "scenario テスト全件 PASS: .test.sh ファイルが存在する" test_scenarios_files_exist
 
-# Edge case: scenario テストが 37 件（仕様に定義された件数）
+# Edge case: scenario テストが 67 件（現行件数）
 test_scenarios_files_exact_count() {
   assert_dir_exists "$SCENARIOS_DIR" || return 1
   local count
   count=$(find "${PROJECT_ROOT}/${SCENARIOS_DIR}" -name "*.test.sh" 2>/dev/null | wc -l)
-  if [[ "$count" -ne 43 ]]; then
-    echo "  [INFO] Expected 43 scenario files, found: ${count}" >&2
+  if [[ "$count" -ne 67 ]]; then
+    echo "  [INFO] Expected 67 scenario files, found: ${count}" >&2
     return 1
   fi
   return 0
 }
-run_test "scenario テスト [edge: ファイル数が 43 件]" test_scenarios_files_exact_count
+run_test "scenario テスト [edge: ファイル数が 67 件]" test_scenarios_files_exact_count
 
 # Edge case: scenario テストが共通形式（run_test / PASS / FAIL）に準拠
 test_scenarios_use_run_test() {
@@ -439,9 +440,9 @@ chains = data.get('chains', {})
 if not chains:
     sys.exit(1)
 
-# 全コンポーネントエントリを収集
+# 全コンポーネントエントリを収集（commands を最後にして優先）
 all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
+for section in ['scripts', 'skills', 'commands']:
     entries = data.get(section, {})
     if isinstance(entries, dict):
         all_entries.update(entries)

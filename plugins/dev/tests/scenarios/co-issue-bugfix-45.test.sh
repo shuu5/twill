@@ -143,8 +143,8 @@ test_label_per_issue_in_bulk() {
 test_label_individual_for_each_issue() {
   # SKILL.md must not apply a single global label to all issues — each issue gets its own
   assert_file_exists "$SKILL_MD" || return 1
-  # The skill documents per-issue label assignment
-  assert_file_contains "$SKILL_MD" "各.*Issue.*ラベル|ラベル.*各.*Issue|individual.*label|per-issue.*label|issue.*label.*個別"
+  # Per-issue の推奨ラベル抽出が記述されている（各 Issue の構造化ループ内で recommended_labels に記録）
+  assert_file_contains "$SKILL_MD" "recommended_labels"
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then

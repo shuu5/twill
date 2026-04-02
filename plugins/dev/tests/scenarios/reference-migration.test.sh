@@ -85,7 +85,7 @@ DEPS_YAML="deps.yaml"
 
 # --- Reference 一覧 ---
 
-# 11 new references to migrate
+# 12 new references to migrate
 NEW_REFS=(
   ref-types
   ref-practices
@@ -93,6 +93,7 @@ NEW_REFS=(
   ref-architecture
   ref-architecture-spec
   ref-project-model
+  ref-issue-quality-criteria
   ref-dci
   self-improve-format
   baseline-coding-style
@@ -419,7 +420,7 @@ test_all_11_new_refs_exist() {
   fi
   return 0
 }
-run_test "全 11 new reference ファイルが refs/ に存在" test_all_11_new_refs_exist
+run_test "全 12 new reference ファイルが refs/ に存在" test_all_11_new_refs_exist
 
 # 全 reference に frontmatter type: reference がある
 test_all_refs_have_type_reference() {
@@ -442,7 +443,7 @@ test_all_refs_have_type_reference() {
   fi
   return 0
 }
-run_test "全 11 new reference に type: reference frontmatter" test_all_refs_have_type_reference
+run_test "全 12 new reference に type: reference frontmatter" test_all_refs_have_type_reference
 
 # Scenario: reference の deps.yaml 登録 (line 44)
 # WHEN: 全 11 references の deps.yaml 登録が完了した
@@ -453,13 +454,13 @@ test_deps_refs_count_15() {
   yaml_get "$DEPS_YAML" "
 refs = data.get('refs', {})
 count = len(refs)
-if count != 15:
-    print(f'Expected 15 refs, got {count}', file=sys.stderr)
+if count != 16:
+    print(f'Expected 16 refs, got {count}', file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "deps.yaml refs セクションに 15 エントリ (既存 4 + 新規 11)" test_deps_refs_count_15
+run_test "deps.yaml refs セクションに 16 エントリ (既存 4 + 新規 12)" test_deps_refs_count_15
 
 # 全 11 new refs が deps.yaml に登録されている
 test_deps_all_new_refs_registered() {
@@ -476,7 +477,7 @@ if missing:
 sys.exit(0)
 "
 }
-run_test "deps.yaml に全 11 new references が登録されている" test_deps_all_new_refs_registered
+run_test "deps.yaml に全 12 new references が登録されている" test_deps_all_new_refs_registered
 
 # 既存 4 refs も残っている
 test_deps_existing_refs_preserved() {

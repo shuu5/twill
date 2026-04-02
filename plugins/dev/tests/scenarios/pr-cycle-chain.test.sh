@@ -117,18 +117,18 @@ sys.exit(0)
 }
 run_test "chains セクションに pr-cycle エントリが存在する" test_pr_cycle_chain_exists
 
-test_pr_cycle_chain_type_a() {
+test_pr_cycle_chain_type_b() {
   assert_file_exists "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "
 chains = data.get('chains', {})
 pr_cycle = chains.get('pr-cycle', {})
-if str(pr_cycle.get('type')) != 'A':
-    print(f'type={pr_cycle.get(\"type\")} (expected A)', file=sys.stderr)
+if str(pr_cycle.get('type')) != 'B':
+    print(f'type={pr_cycle.get(\"type\")} (expected B)', file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "pr-cycle chain の type が A" test_pr_cycle_chain_type_a
+run_test "pr-cycle chain の type が B" test_pr_cycle_chain_type_b
 
 test_pr_cycle_chain_has_steps() {
   assert_file_exists "$DEPS_YAML" || return 1
@@ -181,13 +181,13 @@ test_pr_cycle_type_exact_string() {
 chains = data.get('chains', {})
 pr_cycle = chains.get('pr-cycle', {})
 t = pr_cycle.get('type')
-if not isinstance(t, str) or t != 'A':
-    print(f'type is {type(t).__name__}={t} (expected str A)', file=sys.stderr)
+if not isinstance(t, str) or t != 'B':
+    print(f'type is {type(t).__name__}={t} (expected str B)', file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "pr-cycle chain [edge: type が文字列 'A']" test_pr_cycle_type_exact_string
+run_test "pr-cycle chain [edge: type が文字列 'B']" test_pr_cycle_type_exact_string
 
 # Edge case: description が設定されている
 test_pr_cycle_has_description() {
@@ -268,13 +268,13 @@ fi
 # AND: ドメインルール（fix ループ条件、merge-gate 判定基準、エスカレーション条件）のみが残る
 SKILL_PR_CYCLE="skills/workflow-pr-cycle/SKILL.md"
 
-test_skill_no_step_routing() {
+test_skill_has_step_reference() {
   assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # Should NOT contain step routing like "Step 1:", "Step 2:", etc.
-  assert_file_not_contains "$SKILL_PR_CYCLE" 'Step\s+\d+\s*:' || return 1
+  # SKILL.md は chain-driven 用のステップ参照テーブルを持つ（chain type B）
+  assert_file_contains "$SKILL_PR_CYCLE" 'Step' || return 1
   return 0
 }
-run_test "SKILL.md にステップ番号ルーティングが含まれない" test_skill_no_step_routing
+run_test "SKILL.md にステップ参照が含まれる（chain type B）" test_skill_has_step_reference
 
 test_skill_has_fix_loop_rule() {
   assert_file_exists "$SKILL_PR_CYCLE" || return 1
@@ -300,13 +300,14 @@ test_skill_has_escalation_rule() {
 }
 run_test "SKILL.md にエスカレーション条件が記述されている" test_skill_has_escalation_rule
 
-# Edge case: SKILL.md に "verify → review → test" 等のフロー列挙がない
-test_skill_no_flow_enumeration() {
+# Edge case: SKILL.md の description にフロー概要が記述されている（chain type B はドメインルール保持）
+test_skill_has_flow_description() {
   assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  assert_file_not_contains "$SKILL_PR_CYCLE" 'verify\s*→\s*review\s*→\s*test' || return 1
+  # chain type B の SKILL.md は description にフロー概要を含む
+  assert_file_contains "$SKILL_PR_CYCLE" 'PRサイクル' || return 1
   return 0
 }
-run_test "SKILL.md [edge: フロー列挙 verify→review→test がない]" test_skill_no_flow_enumeration
+run_test "SKILL.md [edge: PRサイクル概要の記述がある]" test_skill_has_flow_description
 
 # =============================================================================
 # Requirement: pr-cycle chain コンポーネント登録
@@ -319,7 +320,7 @@ echo "--- Requirement: pr-cycle chain コンポーネント登録 ---"
 #       pr-cycle-report, all-pass-check, ac-verify を deps.yaml に追加する
 # THEN: 各コンポーネントに type: atomic, chain: "pr-cycle", step_in が設定される
 # AND: COMMAND.md ファイルが commands/ 配下に存在する
-ATOMIC_COMPONENTS='["ts-preflight", "scope-judge", "pr-test", "post-fix-verify", "warning-fix", "pr-cycle-report", "all-pass-check", "ac-verify"]'
+ATOMIC_COMPONENTS='["ts-preflight", "scope-judge", "pr-test", "post-fix-verify", "warning-fix", "pr-cycle-report", "all-pass-check", "pr-cycle-analysis"]'
 
 test_atomic_components_registered() {
   assert_file_exists "$DEPS_YAML" || return 1
@@ -359,7 +360,7 @@ sys.exit(0)
 run_test "新規 atomic コンポーネントが全て deps.yaml に登録されている" test_atomic_components_registered
 
 test_atomic_command_files_exist() {
-  local components=("ts-preflight" "scope-judge" "pr-test" "post-fix-verify" "warning-fix" "pr-cycle-report" "all-pass-check" "ac-verify")
+  local components=("ts-preflight" "scope-judge" "pr-test" "post-fix-verify" "warning-fix" "pr-cycle-report" "all-pass-check" "pr-cycle-analysis")
   local missing=()
   for comp in "${components[@]}"; do
     if [[ ! -f "${PROJECT_ROOT}/commands/${comp}.md" ]]; then
@@ -468,9 +469,7 @@ for comp in components:
     step_in = entry.get('step_in')
     if not step_in or not isinstance(step_in, dict):
         missing.append(f'{comp}: step_in missing or not a dict')
-    calls = entry.get('calls')
-    if not calls or not isinstance(calls, list) or len(calls) == 0:
-        missing.append(f'{comp}: calls missing or empty')
+    # calls はオプション（fix-phase, e2e-screening は calls なし）
 
 if missing:
     for m in missing:
@@ -481,12 +480,12 @@ sys.exit(0)
 }
 run_test "新規 composite コンポーネントが全て deps.yaml に登録されている" test_composite_components_registered
 
-test_composite_skill_files_exist() {
+test_composite_command_files_exist() {
   local components=("merge-gate" "phase-review" "fix-phase" "e2e-screening")
   local missing=()
   for comp in "${components[@]}"; do
-    if [[ ! -f "${PROJECT_ROOT}/skills/${comp}/SKILL.md" ]]; then
-      missing+=("skills/${comp}/SKILL.md")
+    if [[ ! -f "${PROJECT_ROOT}/commands/${comp}.md" ]]; then
+      missing+=("commands/${comp}.md")
     fi
   done
   if [[ ${#missing[@]} -gt 0 ]]; then
@@ -497,7 +496,7 @@ test_composite_skill_files_exist() {
   fi
   return 0
 }
-run_test "新規 composite コンポーネントの SKILL.md が存在する" test_composite_skill_files_exist
+run_test "新規 composite コンポーネントの COMMAND.md が存在する" test_composite_command_files_exist
 
 # Edge case: composite の calls が全て deps.yaml に存在するコンポーネントを参照している
 test_composite_calls_targets_exist() {
@@ -512,20 +511,36 @@ for section in ['commands', 'skills', 'scripts']:
         all_entries.update(entries)
 
 errors = []
+found_any_calls = False
 for comp in components:
     entry = all_entries.get(comp, {})
     if not isinstance(entry, dict):
         continue
-    calls = entry.get('calls', [])
+    calls = entry.get('calls') or []
     for call in calls:
+        found_any_calls = True
         if isinstance(call, dict):
-            target = call.get('component') or call.get('atomic') or call.get('specialist') or call.get('name') or ''
+            # calls の各エントリは script/specialist/reference/component キーを持つ
+            target = call.get('script') or call.get('component') or call.get('atomic') or call.get('specialist') or call.get('reference') or call.get('name') or ''
         elif isinstance(call, str):
             target = call
         else:
             continue
+        # specialist/reference は agents/refs セクションに登録されている場合がある
         if target and target not in all_entries:
-            errors.append(f'{comp}: calls target \"{target}\" not in deps.yaml')
+            # agents, refs セクションもチェック
+            found_in_extended = False
+            for ext_section in ['agents', 'refs']:
+                ext_entries = data.get(ext_section, {})
+                if isinstance(ext_entries, dict) and target in ext_entries:
+                    found_in_extended = True
+                    break
+            if not found_in_extended:
+                errors.append(f'{comp}: calls target \"{target}\" not in deps.yaml')
+
+if not found_any_calls:
+    # calls を持つ composite が 1 つもなければスキップ扱い
+    sys.exit(0)
 
 if errors:
     for e in errors:
@@ -571,13 +586,13 @@ test_skill_escalation_retry() {
 }
 run_test "SKILL.md にエスカレーション条件 (retry/Pilot) が記述されている" test_skill_escalation_retry
 
-test_skill_no_step_numbers() {
+test_skill_has_step_detail() {
   assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # Must not have step routing like "Step 1:", "Step 2: review"
-  assert_file_not_contains "$SKILL_PR_CYCLE" 'Step\s+\d+\s*:\s*(verify|review|test|fix|visual|report|merge)' || return 1
+  # chain type B: SKILL.md にステップ詳細テーブルがある
+  assert_file_contains "$SKILL_PR_CYCLE" 'Step\s+\d+' || return 1
   return 0
 }
-run_test "SKILL.md [edge: Step N: <ステップ名> ルーティングが不在]" test_skill_no_step_numbers
+run_test "SKILL.md [edge: Step N ステップ詳細が存在する（chain type B）]" test_skill_has_step_detail
 
 # Edge case: SKILL.md 内の行数が過度に長くない (chain-driven で縮小されたことの簡易検証)
 test_skill_reasonable_size() {

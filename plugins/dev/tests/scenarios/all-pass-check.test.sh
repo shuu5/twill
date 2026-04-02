@@ -237,7 +237,11 @@ run_test "--auto-merge [edge: commands/ skills/ にも残骸がない]" test_no_
 # Edge case: DEV_AUTOPILOT_SESSION がプロジェクト全体で使われていない
 test_no_dev_autopilot_session_anywhere() {
   # 否定的参照（"使用しない"、"してはならない"等）は許容。export/設定する参照のみ検出
-  if grep -rP 'DEV_AUTOPILOT_SESSION' "${PROJECT_ROOT}/commands/" "${PROJECT_ROOT}/skills/" "${PROJECT_ROOT}/scripts/" 2>/dev/null | grep -vE 'しない|してはならない|使用しない|廃止|not use|not set' | grep -q .; then
+  # switchover.sh は旧環境からの移行ツールであり、レガシー検出目的の参照は許容
+  if grep -rP 'DEV_AUTOPILOT_SESSION' "${PROJECT_ROOT}/commands/" "${PROJECT_ROOT}/skills/" "${PROJECT_ROOT}/scripts/" 2>/dev/null \
+    | grep -vE 'しない|してはならない|使用しない|廃止|not use|not set|設定しない' \
+    | grep -v 'switchover\.sh' \
+    | grep -q .; then
     return 1
   fi
   return 0

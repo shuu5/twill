@@ -166,7 +166,7 @@ fi
 # Test: Phase 3 - Per-Issue 精緻化ループ
 test_phase3_refinement_loop() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "issue-dig|精緻化" || return 1
+  assert_file_contains "$SKILL_MD" "精緻化|構造化" || return 1
   assert_file_contains "$SKILL_MD" "issue-structure" || return 1
   return 0
 }
@@ -180,17 +180,17 @@ fi
 # Edge case: Phase 3 の全サブステップが言及されている
 test_phase3_all_substeps() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "issue-dig" || return 1
   assert_file_contains "$SKILL_MD" "issue-structure" || return 1
-  assert_file_contains "$SKILL_MD" "issue-assess" || return 1
   assert_file_contains "$SKILL_MD" "issue-tech-debt-absorb|tech.debt" || return 1
+  assert_file_contains "$SKILL_MD" "issue-critic" || return 1
+  assert_file_contains "$SKILL_MD" "issue-feasibility" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Phase 3 [edge: 全サブステップ dig/structure/assess/tech-debt-absorb]" test_phase3_all_substeps
+  run_test "Phase 3 [edge: 全サブステップ structure/tech-debt/critic/feasibility]" test_phase3_all_substeps
 else
-  run_test_skip "Phase 3 [edge: 全サブステップ]" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "Phase 3 [edge: 全サブステップ structure/tech-debt/critic/feasibility]" "skills/co-issue/SKILL.md not yet created"
 fi
 
 # Test: Phase 4 - 一括作成（issue-create / issue-bulk-create）

@@ -287,7 +287,7 @@ commands = data.get('commands', {})
 if isinstance(commands, dict) and 'self-improve-review' in commands:
     cmd = commands['self-improve-review']
     assert cmd.get('type') == 'atomic', f'type should be atomic, got {cmd.get(\"type\")}'
-    assert 'COMMAND.md' in cmd.get('path', ''), f'path should contain COMMAND.md'
+    assert 'self-improve-review' in cmd.get('path', ''), f'path should contain self-improve-review'
     sys.exit(0)
 sys.exit(1)
 " 2>/dev/null

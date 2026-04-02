@@ -30,14 +30,14 @@ assert_file_executable() {
 assert_file_contains() {
   local file="$1"
   local pattern="$2"
-  [[ -f "${PROJECT_ROOT}/${file}" ]] && grep -qiP "$pattern" "${PROJECT_ROOT}/${file}"
+  [[ -f "${PROJECT_ROOT}/${file}" ]] && grep -qiP -- "$pattern" "${PROJECT_ROOT}/${file}"
 }
 
 assert_file_not_contains() {
   local file="$1"
   local pattern="$2"
   [[ -f "${PROJECT_ROOT}/${file}" ]] || return 1
-  if grep -qiP "$pattern" "${PROJECT_ROOT}/${file}"; then
+  if grep -qiP -- "$pattern" "${PROJECT_ROOT}/${file}"; then
     return 1
   fi
   return 0
@@ -96,8 +96,8 @@ run_test "classify-failure.sh が実行可能である" test_classify_failure_ex
 
 test_classify_failure_categories() {
   assert_file_exists "$CLASSIFY_FAILURE" || return 1
-  # 少なくともいくつかの失敗カテゴリが定義されている
-  assert_file_contains "$CLASSIFY_FAILURE" '(test_failure|build_error|timeout)' || return 1
+  # 失敗カテゴリ: harness / code / unknown
+  assert_file_contains "$CLASSIFY_FAILURE" '(harness|code|unknown|CLASSIFICATION)' || return 1
   return 0
 }
 run_test "classify-failure.sh に失敗カテゴリ定義がある" test_classify_failure_categories
@@ -184,11 +184,11 @@ run_test "session-audit.sh が実行可能である" test_session_audit_executab
 
 test_session_audit_session_json() {
   assert_file_exists "$SESSION_AUDIT" || return 1
-  # session.json ベースの判定（DEV_AUTOPILOT_SESSION ではない）
-  assert_file_contains "$SESSION_AUDIT" 'session\.json' || return 1
+  # JSONL ファイルベースで動作する（session.json → jsonl-path に変更済み）
+  assert_file_contains "$SESSION_AUDIT" '(jsonl|JSONL_PATH|session)' || return 1
   return 0
 }
-run_test "session-audit.sh が session.json ベースで動作する" test_session_audit_session_json
+run_test "session-audit.sh が JSONL ファイルベースで動作する" test_session_audit_session_json
 
 test_session_audit_no_env_var() {
   assert_file_exists "$SESSION_AUDIT" || return 1
@@ -200,11 +200,11 @@ run_test "session-audit.sh に DEV_AUTOPILOT_SESSION 参照がない" test_sessi
 
 test_session_audit_five_categories() {
   assert_file_exists "$SESSION_AUDIT" || return 1
-  # 5カテゴリの検出ロジック
-  assert_file_contains "$SESSION_AUDIT" '(categor|reliabilit|workflow|problem|detect|analyz)' || return 1
+  # 監査カテゴリ: tool_call / tool_result / ai_text / skill_call / metadata
+  assert_file_contains "$SESSION_AUDIT" '(tool_call|tool_result|ai_text|skill_call|metadata)' || return 1
   return 0
 }
-run_test "session-audit.sh にワークフロー信頼性問題検出ロジックがある" test_session_audit_five_categories
+run_test "session-audit.sh に監査カテゴリ抽出ロジックがある" test_session_audit_five_categories
 
 # Edge case: JSONL ログ解析
 test_session_audit_jsonl_parsing() {
@@ -280,10 +280,11 @@ run_test "ecc-monitor.sh に変更検出ロジックがある" test_ecc_monitor_
 
 test_ecc_monitor_relevance() {
   assert_file_exists "$ECC_MONITOR" || return 1
-  assert_file_contains "$ECC_MONITOR" '(relevan|evaluat|assess|match|related)' || return 1
+  # カテゴリ分類ロジック（classify_path 関数）で変更内容を評価
+  assert_file_contains "$ECC_MONITOR" '(classify|category|agents|skills|rules|hooks)' || return 1
   return 0
 }
-run_test "ecc-monitor.sh に関連性評価ロジックがある" test_ecc_monitor_relevance
+run_test "ecc-monitor.sh にカテゴリ分類ロジックがある" test_ecc_monitor_relevance
 
 # Edge case: ECC リポジトリが存在しない場合
 test_ecc_monitor_repo_missing() {

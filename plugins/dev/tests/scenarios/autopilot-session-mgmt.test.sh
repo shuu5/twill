@@ -283,13 +283,14 @@ else
 fi
 
 test_launch_workflow_setup() {
-  assert_file_contains "$LAUNCH_CMD" "workflow-setup.*--auto.*--auto-merge"
+  # --auto/--auto-merge フラグは #47 で廃止済み。現在は /dev:workflow-setup #N 形式
+  assert_file_contains "$LAUNCH_CMD" "workflow-setup"
 }
 
 if [[ -f "${PROJECT_ROOT}/${LAUNCH_CMD}" ]]; then
-  run_test "autopilot-launch が workflow-setup --auto --auto-merge を記述" test_launch_workflow_setup
+  run_test "autopilot-launch が workflow-setup を記述" test_launch_workflow_setup
 else
-  run_test_skip "autopilot-launch が workflow-setup --auto --auto-merge を記述" "COMMAND.md not yet created"
+  run_test_skip "autopilot-launch が workflow-setup を記述" "COMMAND.md not yet created"
 fi
 
 # Scenario: cross-issue 警告付き起動 (line 51)

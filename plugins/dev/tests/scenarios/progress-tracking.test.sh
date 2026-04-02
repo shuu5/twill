@@ -231,15 +231,13 @@ echo "--- Requirement: --auto/--auto-merge フラグの廃止 ---"
 # THEN: --auto および --auto-merge フラグへの参照が存在しない
 test_no_auto_flag() {
   local found=0
-  # Search in SKILL.md files
-  while IFS= read -r file; do
-    if grep -qP "\-\-auto\b|\-\-auto-merge" "$file" 2>/dev/null; then
-      found=1
-      break
-    fi
-  done < <(find "${PROJECT_ROOT}" -name "SKILL.md" -type f 2>/dev/null)
-  # Search in workflow/atomic components
-  for dir in "${PROJECT_ROOT}/components/workflows" "${PROJECT_ROOT}/components/atomics"; do
+  # Search in workflow-setup SKILL.md specifically (co-autopilot has its own --auto which is unrelated)
+  local ws_skill="${PROJECT_ROOT}/skills/workflow-setup/SKILL.md"
+  if [[ -f "$ws_skill" ]] && grep -qP "\-\-auto\b|\-\-auto-merge" "$ws_skill" 2>/dev/null; then
+    found=1
+  fi
+  # Search in workflow/atomic commands
+  for dir in "${PROJECT_ROOT}/commands"; do
     if [[ -d "$dir" ]]; then
       while IFS= read -r -d '' file; do
         if grep -qP "\-\-auto\b|\-\-auto-merge" "$file" 2>/dev/null; then
@@ -255,11 +253,15 @@ test_no_auto_flag() {
 run_test "--auto/--auto-merge フラグ不在の確認" test_no_auto_flag
 
 # Edge case: scripts/ 配下にも --auto フラグの参照がない
+# NOTE: create-harness-issue.sh の /dev:controller-setup --auto は Skill 呼び出しであり
+# 旧 workflow-setup --auto フラグとは別物のため除外する
 test_no_auto_flag_in_scripts() {
   local scripts_dir="${PROJECT_ROOT}/scripts"
   if [[ -d "$scripts_dir" ]]; then
     local found=0
     while IFS= read -r -d '' file; do
+      # create-harness-issue.sh は /dev:controller-setup --auto という別コンテキストなので除外
+      [[ "$(basename "$file")" == "create-harness-issue.sh" ]] && continue
       if grep -qP "\-\-auto\b|\-\-auto-merge" "$file" 2>/dev/null; then
         found=1
         break
@@ -284,12 +286,18 @@ echo "--- Requirement: DEV_AUTOPILOT_SESSION 環境変数の廃止 ---"
 test_no_dev_autopilot_session_env() {
   local found=0
   # Search all scripts (*.sh) and SKILL.md files per spec definition
+  # Exclude: openspec/ (specs), tests/ (test files), architecture/ (design docs),
+  # .autopilot/snapshots/ (history), switchover.sh (legacy migration tool)
   while IFS= read -r -d '' file; do
     if grep -qP "DEV_AUTOPILOT_SESSION" "$file" 2>/dev/null; then
       found=1
       break
     fi
-  done < <(find "${PROJECT_ROOT}" \( -name "*.sh" -o -name "SKILL.md" \) -type f -not -path "*/openspec/*" -not -path "*/.git/*" -not -path "*/tests/scenarios/*" -print0 2>/dev/null)
+  done < <(find "${PROJECT_ROOT}" \( -name "*.sh" -o -name "SKILL.md" \) -type f \
+    -not -path "*/openspec/*" -not -path "*/.git/*" -not -path "*/tests/scenarios/*" \
+    -not -path "*/architecture/*" -not -path "*/.autopilot/snapshots/*" \
+    -not -name "switchover.sh" \
+    -print0 2>/dev/null)
   [[ "$found" -eq 0 ]] || return 1
 }
 
@@ -298,13 +306,19 @@ run_test "DEV_AUTOPILOT_SESSION 環境変数不在の確認" test_no_dev_autopil
 # Edge case: openspec 以外の全ディレクトリで不在
 test_no_dev_autopilot_session_anywhere() {
   local found=0
-  # Extended check: scripts, SKILL.md, and component files (excluding docs/architecture/openspec/tests)
+  # Extended check: scripts, SKILL.md, and component files
+  # Exclude: openspec/ (specs), tests/ (test files), architecture/ (design docs),
+  # .autopilot/snapshots/ (history), switchover.sh (legacy migration tool)
   while IFS= read -r -d '' file; do
     if grep -qP "DEV_AUTOPILOT_SESSION" "$file" 2>/dev/null; then
       found=1
       break
     fi
-  done < <(find "${PROJECT_ROOT}" \( -name "*.sh" -o -name "SKILL.md" \) -type f -not -path "*/openspec/*" -not -path "*/.git/*" -not -path "*/tests/scenarios/*" -print0 2>/dev/null)
+  done < <(find "${PROJECT_ROOT}" \( -name "*.sh" -o -name "SKILL.md" \) -type f \
+    -not -path "*/openspec/*" -not -path "*/.git/*" -not -path "*/tests/scenarios/*" \
+    -not -path "*/architecture/*" -not -path "*/.autopilot/snapshots/*" \
+    -not -name "switchover.sh" \
+    -print0 2>/dev/null)
   [[ "$found" -eq 0 ]] || return 1
 }
 

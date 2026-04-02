@@ -389,20 +389,22 @@ fi
 echo ""
 echo "--- deps.yaml co-autopilot can_spawn 検証 ---"
 
-# spec 要件: co-autopilot の can_spawn に script を追加（state-read, state-write 等の呼び出し）
-test_co_autopilot_can_spawn_script() {
+# spec 要件: co-autopilot の can_spawn に composite, atomic, specialist が含まれる
+test_co_autopilot_can_spawn_types() {
   assert_file_exists "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "
 skills = data.get('skills', {})
 ca = skills.get('co-autopilot', {})
 cs = ca.get('can_spawn', [])
-if 'script' not in cs:
-    print(f'can_spawn={cs}, missing script', file=sys.stderr)
+required = ['composite', 'atomic', 'specialist']
+missing = [t for t in required if t not in cs]
+if missing:
+    print(f'can_spawn={cs}, missing {missing}', file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "deps.yaml co-autopilot can_spawn に script 含む" test_co_autopilot_can_spawn_script
+run_test "deps.yaml co-autopilot can_spawn に composite/atomic/specialist 含む" test_co_autopilot_can_spawn_types
 
 # Edge case: can_spawn がリスト型
 test_co_autopilot_can_spawn_is_list() {

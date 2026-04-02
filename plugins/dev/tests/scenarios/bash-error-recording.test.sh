@@ -38,8 +38,19 @@ teardown_sandbox() {
 
 run_hook_in_sandbox() {
   local exit_code_arg="${1:-0}"
-  # Run the hook from the sandbox, with SCRIPT_DIR pointing into sandbox
-  bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" "$exit_code_arg" 2>/dev/null
+  # The hook reads PostToolUseFailure JSON from stdin
+  # PostToolUseFailure includes: tool_name, tool_input, error, error_type, etc.
+  local json_input
+  if [[ "$exit_code_arg" =~ ^[0-9]+$ ]] && [[ "$exit_code_arg" -ne 0 ]]; then
+    json_input="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"test_command\"},\"error\":\"Exit code ${exit_code_arg}\",\"error_type\":\"tool_error\"}"
+  elif [[ "$exit_code_arg" == "0" ]]; then
+    # exit 0 means no error; PostToolUseFailure would not be called, but we simulate it
+    json_input="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"test_command\"},\"error\":\"Exit code 0\",\"error_type\":\"tool_error\"}"
+  else
+    # Non-integer or invalid input
+    json_input="{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"test_command\"},\"error\":\"${exit_code_arg}\",\"error_type\":\"tool_error\"}"
+  fi
+  echo "$json_input" | bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 2>/dev/null
 }
 
 get_errors_file() {
@@ -190,30 +201,28 @@ else
   run_test_skip "正常なエラー記録 [edge: timestamp ISO8601 形式]" "hook script not found"
 fi
 
-# Scenario: 成功時は記録しない (line 18)
-# WHEN: Bash tool が exit_code 0 で終了する
-# THEN: .self-improve/errors.jsonl には何も追記されない
-test_no_recording_on_success() {
+# Scenario: PostToolUseFailure は常にエラー記録する (line 18)
+# NOTE: PostToolUseFailure hook は「エラー時のみ」呼ばれるため、hook 自体は常に記録する。
+# exit_code 0 が error フィールドに含まれていても、PostToolUseFailure なので最低 exit_code=1 として記録。
+test_always_records_on_failure_hook() {
   run_hook_in_sandbox 0
   local errors_file
   errors_file=$(get_errors_file)
-  # File should not exist or be empty
-  if [[ -f "$errors_file" ]]; then
-    local line_count
-    line_count=$(wc -l < "$errors_file")
-    [[ "$line_count" -eq 0 ]] || return 1
-  fi
-  # Success: file doesn't exist or is empty
+  # PostToolUseFailure hook は常に記録（exit 0 でも最低 1 に引き上げ）
+  [[ -f "$errors_file" ]] || return 1
+  local line_count
+  line_count=$(wc -l < "$errors_file")
+  [[ "$line_count" -ge 1 ]] || return 1
 }
 
 if [[ -f "$HOOK_SCRIPT" ]]; then
-  run_test "成功時は記録しない" test_no_recording_on_success
+  run_test "PostToolUseFailure hook は exit_code 0 でも最低 1 として記録する" test_always_records_on_failure_hook
 else
-  run_test_skip "成功時は記録しない" "hook script not found"
+  run_test_skip "PostToolUseFailure hook は exit_code 0 でも最低 1 として記録する" "hook script not found"
 fi
 
-# Edge case: exit_code 0 の後に非ゼロが来ても0時点の記録はない
-test_success_then_error_no_extra() {
+# Edge case: 連続呼び出しで全て記録される（PostToolUseFailure は常にエラー）
+test_consecutive_calls_all_recorded() {
   run_hook_in_sandbox 0
   run_hook_in_sandbox 1
   local errors_file
@@ -221,14 +230,14 @@ test_success_then_error_no_extra() {
   [[ -f "$errors_file" ]] || return 1
   local line_count
   line_count=$(wc -l < "$errors_file")
-  # Only 1 line (from exit_code 1), not 2
-  [[ "$line_count" -eq 1 ]] || return 1
+  # PostToolUseFailure なので両方記録される
+  [[ "$line_count" -eq 2 ]] || return 1
 }
 
 if [[ -f "$HOOK_SCRIPT" ]]; then
-  run_test "成功時は記録しない [edge: 0 の後の非ゼロのみ記録]" test_success_then_error_no_extra
+  run_test "連続呼び出しで全て記録される [edge: PostToolUseFailure は常にエラー]" test_consecutive_calls_all_recorded
 else
-  run_test_skip "成功時は記録しない [edge: 0 の後の非ゼロのみ記録]" "hook script not found"
+  run_test_skip "連続呼び出しで全て記録される [edge: PostToolUseFailure は常にエラー]" "hook script not found"
 fi
 
 # Scenario: command の切り詰め (line 22)
@@ -296,19 +305,19 @@ fi
 test_always_exit_zero() {
   local result
   # Valid error case
-  bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 1 2>/dev/null
+  echo '{"error":"Exit code 1"}' | bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 2>/dev/null
   result=$?
   [[ "$result" -eq 0 ]] || return 1
-  # Success case
-  bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 0 2>/dev/null
+  # No error field
+  echo '{}' | bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 2>/dev/null
   result=$?
   [[ "$result" -eq 0 ]] || return 1
-  # Invalid input
-  bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" "not_a_number" 2>/dev/null
+  # Invalid JSON
+  echo "not_json" | bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 2>/dev/null
   result=$?
   [[ "$result" -eq 0 ]] || return 1
-  # No argument
-  bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 2>/dev/null
+  # Empty stdin
+  echo "" | bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 2>/dev/null
   result=$?
   [[ "$result" -eq 0 ]] || return 1
 }
@@ -319,41 +328,40 @@ else
   run_test_skip "hook が常に exit 0 を返す" "hook script not found"
 fi
 
-# Edge case: 不正な引数（文字列、負数、空）を渡しても crash しない
-test_invalid_args_no_crash() {
+# Edge case: 不正な stdin を渡しても crash しない
+test_invalid_stdin_no_crash() {
   local result
-  for arg in "" "abc" "-1" "99999" "1.5" "null"; do
-    bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" "$arg" 2>/dev/null
+  for input in "" "abc" "{}" '{"error":""}' '{"error":"no exit code"}' "null"; do
+    echo "$input" | bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 2>/dev/null
     result=$?
     [[ "$result" -eq 0 ]] || return 1
   done
 }
 
 if [[ -f "$HOOK_SCRIPT" ]]; then
-  run_test "不正な引数でも crash しない [edge: 各種不正入力]" test_invalid_args_no_crash
+  run_test "不正な stdin でも crash しない [edge: 各種不正入力]" test_invalid_stdin_no_crash
 else
-  run_test_skip "不正な引数でも crash しない" "hook script not found"
+  run_test_skip "不正な stdin でも crash しない" "hook script not found"
 fi
 
-# Edge case: 不正な引数では errors.jsonl に書き込まない
-test_invalid_args_no_write() {
-  for arg in "" "abc" "-1" "1.5" "null"; do
-    bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" "$arg" 2>/dev/null
+# Edge case: 不正な stdin でも記録する（PostToolUseFailure は常にエラー、exit_code 不明時は 1）
+test_invalid_stdin_still_records() {
+  for input in "" "abc" "not json" "{}"; do
+    echo "$input" | bash "${SANDBOX}/scripts/hooks/post-tool-use-bash-error.sh" 2>/dev/null
   done
   local errors_file
   errors_file=$(get_errors_file)
-  # Should not have written anything for invalid args
-  if [[ -f "$errors_file" ]]; then
-    local line_count
-    line_count=$(wc -l < "$errors_file")
-    [[ "$line_count" -eq 0 ]] || return 1
-  fi
+  # PostToolUseFailure hook は常に記録（exit_code 不明時は 1 にフォールバック）
+  [[ -f "$errors_file" ]] || return 1
+  local line_count
+  line_count=$(wc -l < "$errors_file")
+  [[ "$line_count" -ge 1 ]] || return 1
 }
 
 if [[ -f "$HOOK_SCRIPT" ]]; then
-  run_test "不正な引数では記録しない [edge: 整数バリデーション]" test_invalid_args_no_write
+  run_test "不正な stdin でも記録する [edge: PostToolUseFailure は常にエラー扱い]" test_invalid_stdin_still_records
 else
-  run_test_skip "不正な引数では記録しない" "hook script not found"
+  run_test_skip "不正な stdin でも記録する" "hook script not found"
 fi
 
 # =============================================================================

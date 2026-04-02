@@ -370,18 +370,24 @@ test_no_plugin_gate() {
 }
 run_test "merge-gate に plugin_gate が存在しない" test_no_plugin_gate
 
-# Edge case: merge-gate ディレクトリ内の全ファイルにパス分岐変数がない
-test_no_gate_vars_in_any_file() {
-  local dir="${PROJECT_ROOT}/commands/merge-gate"
-  if [[ ! -d "$dir" ]]; then
+# Edge case: merge-gate 関連ファイルにパス分岐変数がない
+test_no_gate_vars_in_merge_gate_files() {
+  local file="${PROJECT_ROOT}/commands/merge-gate.md"
+  if [[ ! -f "$file" ]]; then
     return 1
   fi
-  if grep -rP 'GATE_TYPE|standard_gate|plugin_gate' "$dir" 2>/dev/null; then
+  if grep -P 'GATE_TYPE|standard_gate|plugin_gate' "$file" 2>/dev/null; then
     return 1
   fi
+  # merge-gate 関連スクリプトもチェック
+  for script in "${PROJECT_ROOT}/scripts/merge-gate-"*.sh; do
+    if [[ -f "$script" ]] && grep -P 'standard_gate|plugin_gate' "$script" 2>/dev/null; then
+      return 1
+    fi
+  done
   return 0
 }
-run_test "merge-gate ディレクトリ [edge: 全ファイルにパス分岐変数がない]" test_no_gate_vars_in_any_file
+run_test "merge-gate 関連ファイル [edge: パス分岐変数がない]" test_no_gate_vars_in_merge_gate_files
 
 # =============================================================================
 # Summary

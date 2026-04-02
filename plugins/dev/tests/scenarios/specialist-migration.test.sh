@@ -94,7 +94,7 @@ run_test_skip() {
 
 DEPS_YAML="deps.yaml"
 
-# --- 26 specialist 一覧（pr-test は既存 atomic command と重複のため除外） ---
+# --- 28 specialist 一覧（pr-test は既存 atomic command と重複のため除外） ---
 ALL_SPECIALISTS=(
   worker-code-reviewer
   worker-security-reviewer
@@ -122,6 +122,8 @@ ALL_SPECIALISTS=(
   e2e-generate
   e2e-heal
   e2e-visual-heal
+  issue-critic
+  issue-feasibility
 )
 
 HAIKU_SPECIALISTS=(
@@ -154,6 +156,8 @@ SONNET_SPECIALISTS=(
   e2e-generate
   e2e-heal
   e2e-visual-heal
+  issue-critic
+  issue-feasibility
 )
 
 # =============================================================================
@@ -178,19 +182,19 @@ test_all_27_specialists_exist() {
   fi
   return 0
 }
-run_test "全 26 specialist ファイルが agents/ に存在する" test_all_27_specialists_exist
+run_test "全 28 specialist ファイルが agents/ に存在する" test_all_27_specialists_exist
 
 # Edge case: agents/ ディレクトリにちょうど 26 ファイルが存在する（余分なファイルがない）
 test_agents_exactly_27() {
   local count
   count=$(find "${PROJECT_ROOT}/agents" -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l)
-  if [[ "$count" -ne 26 ]]; then
-    echo "Expected 26 agent files, found ${count}" >&2
+  if [[ "$count" -ne 28 ]]; then
+    echo "Expected 28 agent files, found ${count}" >&2
     return 1
   fi
   return 0
 }
-run_test "agents/ にちょうど 26 ファイル [edge: 余分なファイルがない]" test_agents_exactly_27
+run_test "agents/ にちょうど 28 ファイル [edge: 余分なファイルがない]" test_agents_exactly_27
 
 # Scenario: 品質判断系 specialist の移植 (line 15)
 # WHEN: worker-code-reviewer を移植する
@@ -330,20 +334,20 @@ test_sonnet_model_allocation() {
   fi
   return 0
 }
-run_test "品質判断系 specialist (17個) が全て model: sonnet" test_sonnet_model_allocation
+run_test "品質判断系 specialist (18個) が全て model: sonnet" test_sonnet_model_allocation
 
 # Edge case: haiku + sonnet の合計が 27
 test_model_allocation_total() {
   local haiku_count=${#HAIKU_SPECIALISTS[@]}
   local sonnet_count=${#SONNET_SPECIALISTS[@]}
   local total=$((haiku_count + sonnet_count))
-  if [[ "$total" -ne 26 ]]; then
-    echo "haiku(${haiku_count}) + sonnet(${sonnet_count}) = ${total}, expected 26" >&2
+  if [[ "$total" -ne 28 ]]; then
+    echo "haiku(${haiku_count}) + sonnet(${sonnet_count}) = ${total}, expected 28" >&2
     return 1
   fi
   return 0
 }
-run_test "haiku + sonnet の合計が 27 [edge: 漏れ・重複なし]" test_model_allocation_total
+run_test "haiku + sonnet の合計が 28 [edge: 漏れ・重複なし]" test_model_allocation_total
 
 # Edge case: model フィールドが haiku または sonnet のみ（他の値がない）
 test_model_values_only_haiku_or_sonnet() {
@@ -489,7 +493,7 @@ if missing:
 sys.exit(0)
 "
 }
-run_test "deps.yaml agents セクションに全 26 specialist が存在" test_deps_all_27_agents
+run_test "deps.yaml agents セクションに全 28 specialist が存在" test_deps_all_27_agents
 
 # Edge case: agents セクションにちょうど 26 エントリ
 test_deps_agents_count_27() {
@@ -497,13 +501,13 @@ test_deps_agents_count_27() {
   yaml_get "$DEPS_YAML" "
 agents = data.get('agents', {})
 count = len(agents)
-if count != 26:
-    print(f'Expected 26 agents, got {count}', file=sys.stderr)
+if count != 28:
+    print(f'Expected 28 agents, got {count}', file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "deps.yaml agents セクションにちょうど 26 エントリ [edge: 余分なエントリなし]" test_deps_agents_count_27
+run_test "deps.yaml agents セクションにちょうど 28 エントリ [edge: 余分なエントリなし]" test_deps_agents_count_27
 
 # 全 agents エントリの必須フィールド検証
 test_deps_agents_required_fields() {
@@ -678,9 +682,18 @@ test_baseline_ref_path_updated() {
 run_test "specialist に旧 refs/baseline/ パス参照がない" test_baseline_ref_path_updated
 
 # Edge case: specialist ファイルに ref-specialist-output-schema への参照がある
+# issue-critic, issue-feasibility は ref-issue-quality-criteria を使用するため除外
+SCHEMA_EXEMPT_SPECIALISTS=("issue-critic" "issue-feasibility")
 test_output_schema_reference() {
   local failed=()
   for name in "${ALL_SPECIALISTS[@]}"; do
+    # Skip agents that use different reference schemas
+    local skip=0
+    for exempt in "${SCHEMA_EXEMPT_SPECIALISTS[@]}"; do
+      [[ "$name" == "$exempt" ]] && skip=1 && break
+    done
+    [[ $skip -eq 1 ]] && continue
+
     local file="agents/${name}.md"
     if ! assert_file_exists "$file"; then
       continue

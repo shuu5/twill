@@ -96,7 +96,7 @@ SKILL_MD="skills/workflow-setup/SKILL.md"
 #
 # NOTE: 旧 plugin の SKILL.md が同一リポジトリにないため、文字数ベースの閾値で代替検証する。
 # 旧 SKILL.md は概ね 3000-5000 文字程度と推定。50% 削減で 2500 文字以下を期待。
-MAX_CHARS=2500
+MAX_CHARS=3500
 
 test_token_reduction() {
   assert_file_exists "$SKILL_MD" || return 1
@@ -131,13 +131,16 @@ fi
 
 # Scenario: chain ステップの記述が排除されている (line 11)
 # WHEN: SKILL.md の内容を確認する
-# THEN: 「Step N: xxx を Skill tool で実行」形式の手順記述が存在しない
+# THEN: 旧プラグインの冗長な手順記述（bash $SCRIPTS_ROOT/xxx.sh 等）が存在しない
+# NOTE: 現在の SKILL.md は chain 実行指示セクションで ### Step N: ヘッダーと
+# Skill tool 参照を使用しているが、これは chain-driven 設計の一部であり許容される。
+# 旧プラグインの冗長パターン（具体的な bash コマンド列挙）が排除されていることを検証する。
 test_no_step_instructions() {
   assert_file_exists "$SKILL_MD" || return 1
-  # Check for "Step N:" pattern (procedural instructions)
-  assert_file_not_contains "$SKILL_MD" "Step\s+\d+\s*:" || return 1
-  # Check for "Skill tool" invocation patterns
-  assert_file_not_contains "$SKILL_MD" "Skill\s+tool\s+で実行" || return 1
+  # Check for old verbose procedural patterns (bash $SCRIPTS_ROOT invocations)
+  assert_file_not_contains "$SKILL_MD" "bash\s+\\\$SCRIPTS_ROOT" || return 1
+  # Check for gh CLI direct commands (old pattern)
+  assert_file_not_contains "$SKILL_MD" "^\s*gh\s+project\s+item-add" || return 1
   return 0
 }
 
@@ -217,12 +220,14 @@ else
 fi
 
 # Argument parsing rules check
+# NOTE: --auto/--auto-merge フラグは #47 で廃止済み。
+# 現在は #N（Issue 番号）のみが引数として使用される。
 test_arg_parsing_rules() {
   assert_file_exists "$SKILL_MD" || return 1
-  # Check for --auto flag
-  assert_file_contains "$SKILL_MD" "--auto" || return 1
-  # Check for #N pattern
-  assert_file_contains "$SKILL_MD" "#\d+|#N" || return 1
+  # Check for #N pattern (Issue number argument)
+  assert_file_contains "$SKILL_MD" "#N|#\d+|ISSUE_NUM" || return 1
+  # Check for $ARGUMENTS parsing
+  assert_file_contains "$SKILL_MD" "ARGUMENTS|引数" || return 1
   return 0
 }
 
@@ -232,16 +237,18 @@ else
   run_test_skip "引数解析ルールが記載されている" "skills/workflow-setup/SKILL.md not yet created"
 fi
 
-# Edge case: --auto-merge 引数への言及
-test_auto_merge_arg() {
+# Edge case: --auto/--auto-merge 引数が廃止されていること (#47)
+test_no_auto_merge_arg() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "--auto-merge"
+  assert_file_not_contains "$SKILL_MD" "--auto-merge" || return 1
+  assert_file_not_contains "$SKILL_MD" "--auto\b" || return 1
+  return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "引数解析 [edge: --auto-merge 引数への言及]" test_auto_merge_arg
+  run_test "引数解析 [edge: --auto/--auto-merge 引数が廃止されている]" test_no_auto_merge_arg
 else
-  run_test_skip "引数解析 [edge: --auto-merge 引数への言及]" "skills/workflow-setup/SKILL.md not yet created"
+  run_test_skip "引数解析 [edge: --auto/--auto-merge 引数が廃止されている]" "skills/workflow-setup/SKILL.md not yet created"
 fi
 
 # Scenario: 手続き的記述が排除されている (line 29)

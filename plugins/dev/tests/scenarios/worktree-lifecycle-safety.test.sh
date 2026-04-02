@@ -197,24 +197,21 @@ echo "--- Requirement: crash 検知によるステータス遷移 ---"
 # THEN: issue-{N}.json の status が failed に遷移し、failure フィールドに crash 情報が記録される
 test_tmux_crash_detection() {
   create_issue_file 42 "running"
-  # This test verifies spec requirements in the implementation
-  # The actual crash detection is triggered by the polling mechanism
-  # For structural verification, check that the crash detection pattern exists
-  local polling_script
-  polling_script=$(find "${PROJECT_ROOT}/scripts" -name "*poll*" -o -name "*monitor*" 2>/dev/null | head -1)
-  if [[ -n "$polling_script" && -f "$polling_script" ]]; then
-    grep -qP "tmux.*list-panes|list-panes" "$polling_script" || return 1
-    grep -qP "failed|crash" "$polling_script" || return 1
+  # crash-detect.sh が tmux list-panes と crash/failed 処理を持つことを検証
+  local crash_script="${PROJECT_ROOT}/scripts/crash-detect.sh"
+  if [[ -f "$crash_script" ]]; then
+    grep -qP "tmux.*list-panes|list-panes" "$crash_script" || return 1
+    grep -qP "failed|crash" "$crash_script" || return 1
   else
     return 1
   fi
 }
 
-# Check for any polling/monitoring script
-if find "${PROJECT_ROOT}/scripts" -name "*poll*" -o -name "*monitor*" 2>/dev/null | grep -q .; then
+# Check for crash detection script
+if [[ -f "${PROJECT_ROOT}/scripts/crash-detect.sh" ]]; then
   run_test "tmux ペイン消失の検知" test_tmux_crash_detection
 else
-  run_test_skip "tmux ペイン消失の検知" "polling/monitoring script not found"
+  run_test_skip "tmux ペイン消失の検知" "crash-detect.sh not found"
 fi
 
 # Edge case: failure フィールドに message, step, timestamp が含まれる

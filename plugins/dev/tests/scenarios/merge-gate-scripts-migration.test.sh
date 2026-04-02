@@ -263,7 +263,7 @@ run_test "merge-gate-execute.sh [edge: MARKER_DIR 直接操作が排除されて
 
 test_merge_gate_execute_reject_mode() {
   assert_file_exists "$MERGE_GATE_EXECUTE" || return 1
-  assert_file_contains "$MERGE_GATE_EXECUTE" '--reject' || return 1
+  assert_file_contains "$MERGE_GATE_EXECUTE" 'reject\)' || return 1
   assert_file_contains "$MERGE_GATE_EXECUTE" 'merge_gate_rejected' || return 1
   return 0
 }
@@ -282,7 +282,7 @@ run_test "merge-gate-execute.sh に retry_count 記録がある" test_merge_gate
 
 test_merge_gate_execute_reject_final_mode() {
   assert_file_exists "$MERGE_GATE_EXECUTE" || return 1
-  assert_file_contains "$MERGE_GATE_EXECUTE" '--reject-final' || return 1
+  assert_file_contains "$MERGE_GATE_EXECUTE" 'reject-final\)' || return 1
   assert_file_contains "$MERGE_GATE_EXECUTE" 'merge_gate_rejected_final' || return 1
   return 0
 }
@@ -291,8 +291,8 @@ run_test "merge-gate-execute.sh に --reject-final モードがある" test_merg
 # Edge case: 3つのモード（merge, reject, reject-final）の分岐が全て存在
 test_merge_gate_execute_all_modes() {
   assert_file_exists "$MERGE_GATE_EXECUTE" || return 1
-  assert_file_contains "$MERGE_GATE_EXECUTE" '--reject-final' || return 1
-  assert_file_contains "$MERGE_GATE_EXECUTE" '--reject' || return 1
+  assert_file_contains "$MERGE_GATE_EXECUTE" 'reject-final\)' || return 1
+  assert_file_contains "$MERGE_GATE_EXECUTE" 'reject\)' || return 1
   # デフォルト（merge）モードの存在
   assert_file_contains "$MERGE_GATE_EXECUTE" '(merge|default)' || return 1
   return 0

@@ -315,9 +315,10 @@ test_components_chain_field() {
   yaml_get "$DEPS_YAML" "
 import json
 components = json.loads('${CHAIN_COMPONENTS}')
-# Search across all sections (commands, skills, scripts)
+# Search across all sections (commands first, then skills, then scripts)
+# Use first-found to avoid scripts overwriting commands with same name
 all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
+for section in ['scripts', 'skills', 'commands']:
     entries = data.get(section, {})
     if isinstance(entries, dict):
         all_entries.update(entries)
@@ -351,7 +352,7 @@ test_components_chain_field_exact() {
 import json
 components = json.loads('${CHAIN_COMPONENTS}')
 all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
+for section in ['scripts', 'skills', 'commands']:
     entries = data.get(section, {})
     if isinstance(entries, dict):
         all_entries.update(entries)
@@ -376,9 +377,9 @@ test_step_in_bidirectional() {
   yaml_get "$DEPS_YAML" "
 import json
 
-# Collect all entries
+# Collect all entries (commands last to take priority over scripts with same name)
 all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
+for section in ['scripts', 'skills', 'commands']:
     entries = data.get(section, {})
     if isinstance(entries, dict):
         all_entries.update(entries)
@@ -429,7 +430,7 @@ test_calls_have_required_fields() {
   assert_file_exists "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "
 all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
+for section in ['scripts', 'skills', 'commands']:
     entries = data.get(section, {})
     if isinstance(entries, dict):
         all_entries.update(entries)
@@ -461,7 +462,7 @@ test_step_in_has_chain() {
 import json
 components = json.loads('${CHAIN_COMPONENTS}')
 all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
+for section in ['scripts', 'skills', 'commands']:
     entries = data.get(section, {})
     if isinstance(entries, dict):
         all_entries.update(entries)
