@@ -1,107 +1,24 @@
 # 自動マージ実行（autopilot-first）
 
 merge-gate から呼び出され、squash マージ → archive → cleanup を実行する。
-autopilot-first 前提で設計。状態管理は issue-{N}.json + state-write.sh に一元化。
+autopilot-first 前提で設計。4 Layer ガードで不変条件 C を機械的に担保。
 
-## 実行ロジック（MUST）
-
-### Step 0: autopilot 配下判定（不変条件B/C）
-
-ISSUE_NUM がブランチ名や環境変数から取得できる場合、autopilot 配下かを判定する。
+## スクリプト実行（MUST）
 
 ```bash
-AUTOPILOT_STATUS=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
-IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
+SCRIPT_DIR="${CLAUDE_PLUGIN_ROOT}/scripts"
+bash "$SCRIPT_DIR/auto-merge.sh" --issue "$ISSUE_NUM" --pr "$PR_NUMBER" --branch "$BRANCH"
 ```
 
-**IS_AUTOPILOT=true の場合（MUST）:**
-1. merge を実行しない（`gh pr merge` 禁止）
-2. worktree 削除を実行しない（不変条件B: Pilot 専任）
-3. `state-write.sh` で status を `merge-ready` に遷移のみ:
-
-```bash
-bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready
-echo "autopilot 配下: merge-ready 宣言。Pilot による merge-gate を待機。"
-```
-
-4. ここで処理を終了する（Step 1 以降をスキップ）
-
-**IS_AUTOPILOT=false の場合**: フォールバックガードを実行後、従来通り Step 1 以降を実行。
-`issue-{N}.json` が存在しない、または `$ISSUE_NUM` が未設定の場合も IS_AUTOPILOT=false として扱い、従来動作を維持する。
-
-#### フォールバックガード（第4層: issue-{N}.json 直接存在確認）
-
-`IS_AUTOPILOT=false` かつ `ISSUE_NUM` が設定されている場合、main worktree の `.autopilot/issue-{N}.json` を `state-read.sh` を介さず直接確認する。ファイルが存在する場合は誤判定と見なし、merge を禁止する。
-
-```bash
-# フォールバック: state-read.sh とは独立した直接ファイル存在確認
-if [[ "$IS_AUTOPILOT" == "false" && -n "${ISSUE_NUM:-}" && "${ISSUE_NUM}" =~ ^[0-9]+$ ]]; then
-  MAIN_WORKTREE_PATH="$(git worktree list --porcelain | awk '/^worktree / { wt=substr($0,10) } /branch refs\/heads\/main$/ { print wt; exit }')"
-  if [[ -n "$MAIN_WORKTREE_PATH" ]]; then
-    MAIN_AUTOPILOT_DIR="${MAIN_WORKTREE_PATH}/.autopilot"
-    if [[ -f "${MAIN_AUTOPILOT_DIR}/issue-${ISSUE_NUM}.json" ]]; then
-      echo "⚠️ フォールバックガード発動: issue-${ISSUE_NUM}.json が存在するため merge を禁止"
-      bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready
-      echo "autopilot 配下（フォールバック検出）: merge-ready 宣言。Pilot による merge-gate を待機。"
-      # ここで処理を終了する（Step 1 以降をスキップ）
-      exit 0
-    fi
-  fi
-fi
-```
-
-`ISSUE_NUM` が未設定（空文字列）の場合、フォールバックチェックはスキップされ、既存の merge フローを通常実行する。
-
-### Step 1: squash マージ
-
-```bash
-gh pr merge --squash --delete-branch
-```
-
-マージ失敗時（コンフリクト等）:
-- 停止のみ。自動 rebase は試みない（MUST NOT）
-- issue-{N}.json の status を failed に遷移
-
-### Step 2: archive（OpenSpec change 存在時）
-
-```bash
-git checkout main && git pull origin main
-```
-
-OpenSpec change が存在する場合:
-```bash
-CHANGE_ID=$(ls openspec/changes/ 2>/dev/null | grep -v archive | head -1)
-if [ -n "${CHANGE_ID}" ]; then
-  deltaspec archive "${CHANGE_ID}" --yes --skip-specs
-fi
-```
-
-archive 失敗時: 警告をログに記録するが処理は続行（マージは完了済みのため）。
-OpenSpec 未使用時: archive ステップをスキップ。
-
-### Step 3: cleanup
-
-REPO_MODE による分岐:
-
-```bash
-if [ "${REPO_MODE}" = "standard" ]; then
-  git branch -d "${BRANCH}"
-else
-  WORKTREE_PATH=$(git rev-parse --show-toplevel)
-  MAIN_WORKTREE=$(git worktree list | grep '\[main\]' | awk '{print $1}')
-  cd "${MAIN_WORKTREE}"
-  git worktree remove "${WORKTREE_PATH}" 2>/dev/null || true
-  git branch -d "${BRANCH}" 2>/dev/null || true
-fi
-```
-
-cleanup 失敗時: 警告を出力するが処理は続行。
-
-### Step 4: 完了
-
-issue-{N}.json の status を done に遷移。
+スクリプトが以下を全て処理する:
+- Layer 2: CWD ガード（worktrees/ 配下実行拒否）
+- Layer 3: tmux window ガード（ap-#N パターン検出）
+- Layer 1: IS_AUTOPILOT 判定（state-read.sh）
+- Layer 4: フォールバック（issue-{N}.json 直接存在確認）
+- autopilot 配下: merge-ready 宣言のみ（merge 禁止）
+- 非 autopilot: squash merge + OpenSpec archive + worktree 削除
 
 ## 禁止事項（MUST NOT）
 
+- スクリプトを介さず直接 `gh pr merge` を実行してはならない
 - マージ失敗時に自動 rebase を試みてはならない
-- cleanup 失敗で処理全体を停止してはならない

@@ -75,7 +75,7 @@ assert_file_not_contains() {
   return 0
 }
 
-TARGET_CMD="commands/auto-merge.md"
+TARGET_CMD="scripts/auto-merge.sh"
 
 # ---------------------------------------------------------------------------
 # Functional guard runner
