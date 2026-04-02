@@ -166,6 +166,8 @@ REPO_ARG=""
 if [[ -n "$REPO_ID" ]]; then
   REPO_ARG="--repo $REPO_ID"
 fi
+# state-write.sh は AUTOPILOT_DIR 環境変数を参照するため export 必須
+export AUTOPILOT_DIR
 # shellcheck disable=SC2086
 bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role worker $REPO_ARG --init
 
