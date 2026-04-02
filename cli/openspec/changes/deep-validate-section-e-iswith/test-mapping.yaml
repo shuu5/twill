@@ -1,0 +1,122 @@
+change_id: deep-validate-section-e-iswith
+generated_at: "2026-04-02T04:04:29Z"
+test_framework: pytest
+scenarios:
+  - id: "valid-path-within-root-runs-schema-validation"
+    name: "正常な path はスキーマ検証される"
+    spec_file: "specs/section-e-path-traversal-guard.md"
+    spec_line: 7
+    requirement: "section E パストラバーサル防御"
+    test_file: "tests/scenarios/test_section_e_path_traversal_guard.py"
+    test_name: "TestSectionEPathTraversalGuard::test_valid_path_within_root_runs_schema_validation"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "valid-path-within-root-detects-missing-keywords"
+    name: "正常な path はスキーマ検証される（キーワード不足の副証明）"
+    spec_file: "specs/section-e-path-traversal-guard.md"
+    spec_line: 7
+    requirement: "section E パストラバーサル防御"
+    test_file: "tests/scenarios/test_section_e_path_traversal_guard.py"
+    test_name: "TestSectionEPathTraversalGuard::test_valid_path_within_root_detects_missing_keywords"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "path-traversal-etc-passwd-is-silently-skipped"
+    name: "パストラバーサルを含む path は拒否される（../../etc/passwd）"
+    spec_file: "specs/section-e-path-traversal-guard.md"
+    spec_line: 11
+    requirement: "section E パストラバーサル防御"
+    test_file: "tests/scenarios/test_section_e_path_traversal_guard.py"
+    test_name: "TestSectionEPathTraversalGuard::test_path_traversal_etc_passwd_is_silently_skipped"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "path-traversal-parent-dir-is-silently-skipped"
+    name: "パストラバーサルを含む path は拒否される（../outside-plugin/secret.md）"
+    spec_file: "specs/section-e-path-traversal-guard.md"
+    spec_line: 11
+    requirement: "section E パストラバーサル防御"
+    test_file: "tests/scenarios/test_section_e_path_traversal_guard.py"
+    test_name: "TestSectionEPathTraversalGuard::test_path_traversal_parent_dir_is_silently_skipped"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "path-traversal-absolute-path-is-silently-skipped"
+    name: "パストラバーサルを含む path は拒否される（絶対パス /etc/passwd）"
+    spec_file: "specs/section-e-path-traversal-guard.md"
+    spec_line: 11
+    requirement: "section E パストラバーサル防御"
+    test_file: "tests/scenarios/test_section_e_path_traversal_guard.py"
+    test_name: "TestSectionEPathTraversalGuard::test_path_traversal_absolute_path_is_silently_skipped"
+    type: unit
+    criteria: []
+    # NOTE: 修正前の実装では /etc/passwd が実在するため FAIL（バグ再現テスト）。
+    # _is_within_root() チェック追加後に passing へ移行する。
+    status: failing
+    last_run: "2026-04-02T04:04:29Z"
+    failure_reason: "修正前の実装バグ再現: /etc/passwd が実在するためスキーマ検証が走る。_is_within_root() チェック追加で解消される。"
+
+  - id: "path-traversal-no-error-or-warning-message"
+    name: "パストラバーサルを含む path は拒否される（エラー・警告メッセージなし）"
+    spec_file: "specs/section-e-path-traversal-guard.md"
+    spec_line: 11
+    requirement: "section E パストラバーサル防御"
+    test_file: "tests/scenarios/test_section_e_path_traversal_guard.py"
+    test_name: "TestSectionEPathTraversalGuard::test_path_traversal_does_not_emit_error_or_warning_for_traversal"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "path-traversal-mid-path-encoded-traversal"
+    name: "エッジケース: 中間ディレクトリ経由のパストラバーサル"
+    spec_file: "specs/section-e-path-traversal-guard.md"
+    spec_line: 11
+    requirement: "section E パストラバーサル防御"
+    test_file: "tests/scenarios/test_section_e_path_traversal_guard.py"
+    test_name: "TestSectionEPathTraversalEdgeCases::test_path_with_encoded_traversal_in_dir_is_handled"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "valid-deep-nested-path-within-root-is-validated"
+    name: "エッジケース: 深いネストパス（ルート内）は正常に検証される"
+    spec_file: "specs/section-e-path-traversal-guard.md"
+    spec_line: 7
+    requirement: "section E パストラバーサル防御"
+    test_file: "tests/scenarios/test_section_e_path_traversal_guard.py"
+    test_name: "TestSectionEPathTraversalEdgeCases::test_valid_deep_nested_path_within_root_is_validated"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "nonexistent-path-within-root-skipped-no-schema-warning"
+    name: "エッジケース: ルート内だが存在しないファイルはスキーマ検証をスキップする"
+    spec_file: "specs/section-e-path-traversal-guard.md"
+    spec_line: 7
+    requirement: "section E パストラバーサル防御"
+    test_file: "tests/scenarios/test_section_e_path_traversal_guard.py"
+    test_name: "TestSectionEPathTraversalEdgeCases::test_nonexistent_path_within_root_is_skipped_without_schema_warning"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

@@ -2918,6 +2918,8 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
             if not path_str:
                 continue
             path = plugin_root / path_str
+            if not _is_within_root(path, plugin_root):
+                continue
             if not path.exists():
                 continue
 
