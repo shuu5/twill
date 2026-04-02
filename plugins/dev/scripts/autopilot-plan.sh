@@ -6,6 +6,7 @@
 #   autopilot-plan.sh --explicit "19,18 → 20 → 23" --project-dir DIR --repo-mode MODE
 #   autopilot-plan.sh --issues "84 78 83" --project-dir DIR --repo-mode MODE
 #   autopilot-plan.sh --issues "lpd#42 loom#50" --project-dir DIR --repo-mode MODE --repos '{"lpd":{"owner":"shuu5","name":"loom-plugin-dev","path":"..."}}'
+#   autopilot-plan.sh --board --project-dir DIR --repo-mode MODE
 # =============================================================================
 set -euo pipefail
 
@@ -20,8 +21,15 @@ REPOS_JSON=""  # クロスリポジトリ設定（JSON文字列）
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --explicit) MODE="explicit"; INPUT="$2"; shift 2 ;;
-        --issues)   MODE="issues";   INPUT="$2"; shift 2 ;;
+        --explicit)
+            [[ -n "$MODE" ]] && { echo "Error: --explicit/--issues/--board は同時に指定できません" >&2; exit 1; }
+            MODE="explicit"; INPUT="$2"; shift 2 ;;
+        --issues)
+            [[ -n "$MODE" ]] && { echo "Error: --explicit/--issues/--board は同時に指定できません" >&2; exit 1; }
+            MODE="issues"; INPUT="$2"; shift 2 ;;
+        --board)
+            [[ -n "$MODE" ]] && { echo "Error: --explicit/--issues/--board は同時に指定できません" >&2; exit 1; }
+            MODE="board"; shift ;;
         --project-dir) PROJECT_DIR="$2"; shift 2 ;;
         --repo-mode)   REPO_MODE="$2"; shift 2 ;;
         --repos)       REPOS_JSON="$2"; shift 2 ;;
@@ -29,8 +37,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ -z "$MODE" || -z "$INPUT" || -z "$PROJECT_DIR" || -z "$REPO_MODE" ]]; then
-    echo "Usage: $0 --explicit|--issues INPUT --project-dir DIR --repo-mode MODE [--repos JSON]" >&2
+if [[ "$MODE" == "board" ]]; then
+    if [[ -z "$PROJECT_DIR" || -z "$REPO_MODE" ]]; then
+        echo "Usage: $0 --board --project-dir DIR --repo-mode MODE" >&2
+        exit 1
+    fi
+elif [[ -z "$MODE" || -z "$INPUT" || -z "$PROJECT_DIR" || -z "$REPO_MODE" ]]; then
+    echo "Usage: $0 --explicit|--issues|--board INPUT --project-dir DIR --repo-mode MODE [--repos JSON]" >&2
     exit 1
 fi
 
@@ -577,9 +590,14 @@ parse_issues() {
     echo "  Issues: ${#issue_uids[@]}"
 }
 
+# --- --board モード（外部ファイルから読み込み） ---
+# shellcheck source=autopilot-plan-board.sh
+source "${SCRIPT_DIR}/autopilot-plan-board.sh"
+
 # --- メイン ---
 case "$MODE" in
     explicit) parse_explicit "$INPUT" ;;
     issues)   parse_issues "$INPUT" ;;
+    board)    fetch_board_issues ;;
     *)        echo "Error: 不明なモード: $MODE" >&2; exit 1 ;;
 esac

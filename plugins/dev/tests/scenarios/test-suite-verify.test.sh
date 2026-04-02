@@ -152,18 +152,18 @@ test_bats_bin_available() {
 }
 run_test "bats テスト全件 PASS: bats バイナリが利用可能" test_bats_bin_available
 
-# Edge case: bats テストが 45 件（現行件数）
+# Edge case: bats テストが 47 件（現行件数）
 test_bats_files_exact_count() {
   assert_dir_exists "$BATS_DIR" || return 1
   local count
   count=$(find "${PROJECT_ROOT}/${BATS_DIR}" -name "*.bats" 2>/dev/null | wc -l)
-  if [[ "$count" -ne 45 ]]; then
-    echo "  [INFO] Expected 45 bats files, found: ${count}" >&2
+  if [[ "$count" -ne 47 ]]; then
+    echo "  [INFO] Expected 47 bats files, found: ${count}" >&2
     return 1
   fi
   return 0
 }
-run_test "bats テスト [edge: ファイル数が 45 件]" test_bats_files_exact_count
+run_test "bats テスト [edge: ファイル数が 47 件]" test_bats_files_exact_count
 
 # Edge case: bats helpers が存在する（テスト実行前提）
 test_bats_helpers_exist() {
