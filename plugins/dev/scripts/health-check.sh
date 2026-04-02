@@ -126,7 +126,7 @@ check_error_output() {
   error_lines=$(echo "$PANE_CAPTURE" | grep -iE 'Error|FATAL|panic|Traceback' 2>/dev/null || echo "")
 
   if [[ -n "$error_lines" ]]; then
-    echo "error_output:$(echo "$error_lines" | head -5)"
+    echo "error_output:$(echo "$error_lines" | head -5 | tr '\n' '; ' | sed 's/; $//')"
   fi
 }
 
