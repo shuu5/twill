@@ -73,7 +73,11 @@ Project にリンクされていない場合、クロスリポ検出はスキッ
 - [A] 選択時: `cross_repo_split = true`、`target_repos` に対象リポリストを記録。Phase 3 以降はリポ単位の子 Issue 構造で精緻化
 - [B] 選択時: 従来通り単一 Issue として Phase 3 以降に進む
 
-### Step 2b: 通常の分解判断
+### Step 2b: quick 判定（Phase 3b への指示）
+
+以下の条件を全て満たす場合に quick 候補（`is_quick_candidate: true`）とし、Phase 3b に `quick-classification` 検証を指示する: 変更ファイル 1-2 個 AND 変更量 ~20行以下 AND patch レベル記述済み（または Markdown/config のみ）。
+
+### Step 2c: 通常の分解判断
 
 複数の場合は AskUserQuestion で分解内容を確認: [A] この分解で進める [B] 調整 [C] 単一のまま続行。
 
@@ -98,9 +102,9 @@ TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
 ### Step 3b: specialist 並列レビュー
 
-`--quick` 指定時はこのステップをスキップし、Step 3a のみで Phase 3 を完了する。
+`--quick` 指定時はこのステップをスキップし、Step 3a のみで Phase 3 を完了する。`--quick` フラグ使用時は quick ラベルを付与してはならない（MUST NOT）。
 
-全 Issue の構造化完了後、全 Issue × 2 specialist を一括並列 spawn（Agent tool）:
+全 Issue の構造化完了後、全 Issue × 2 specialist を一括並列 spawn（Agent tool）。`is_quick_candidate: true` の Issue は prompt に `<quick_classification>` タグを追加注入し、specialist が `quick-classification` カテゴリで妥当性を検証する（issue-critic: 隠れた複雑性、issue-feasibility: ~20行以下の確認）。逆方向の推奨も許可（severity: INFO）。
 
 ```
 FOR each structured_issue IN issues:
@@ -146,9 +150,10 @@ TaskUpdate Phase 3 → completed
 
 TaskCreate 「Phase 4: Issue 作成」(status: in_progress)
 
-1. **ユーザー確認（MUST）**: 全候補を提示、承認後に作成
+1. **ユーザー確認（MUST）**: 全候補を提示、承認後に作成。quick 候補には `[quick]` マーク表示
 2. **作成**:
    - **通常（`cross_repo_split = false`）**: 単一→`/dev:issue-create`、複数→`/dev:issue-bulk-create`。tech-debt 吸収時は Related セクション付加。recommended_labels がある場合は `--label` 引数に追加
+   - **quick ラベル付与**: `is_quick_candidate: true` かつ Phase 3b に `quick-classification: inappropriate` finding なし → `--label quick` 付与。`--quick` フラグ使用時は非付与（MUST NOT）
    - **クロスリポ分割（`cross_repo_split = true`）**: 以下の Step 4-CR を実行
 3. **Project Board 同期**: 各 Issue 後 `/dev:project-board-sync N`（失敗は警告のみ）
 4. **クリーンアップ**: `.controller-issue/` を削除（中止時も同様）

@@ -48,32 +48,49 @@ err() {
 # Step 実装
 # =====================================================================
 
+# Issue の quick ラベルを検出する（Issue 番号が正の整数の場合のみ）
+detect_quick_label() {
+  local issue_num="${1:-}"
+  [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]] || { echo "false"; return 0; }
+  local labels
+  labels=$(gh issue view "$issue_num" --json labels --jq '.labels[].name' 2>/dev/null || echo "")
+  if echo "$labels" | grep -qxF "quick"; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
 # --- init: 開発状態判定 ---
+# Usage: step_init [issue_num]
 step_init() {
+  local issue_num="${1:-}"
   local root
   root="$(resolve_project_root)"
   local branch
   branch="$(git branch --show-current 2>/dev/null || echo "detached")"
+  local is_quick
+  is_quick="$(detect_quick_label "$issue_num")"
 
   # ブランチ判定
   if [[ "$branch" == "main" || "$branch" == "master" ]]; then
-    jq -n --arg branch "$branch" '{"recommended_action":"worktree","branch":$branch}'
-    ok "init" "recommended_action=worktree (branch=$branch)"
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"worktree","branch":$branch,"is_quick":$is_quick}'
+    ok "init" "recommended_action=worktree (branch=$branch, is_quick=$is_quick)"
     return 0
   fi
 
   # openspec 判定
   if [[ ! -d "$root/openspec" ]]; then
-    jq -n --arg branch "$branch" '{"recommended_action":"direct","branch":$branch,"openspec":false}'
-    ok "init" "recommended_action=direct (no openspec)"
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"direct","branch":$branch,"openspec":false,"is_quick":$is_quick}'
+    ok "init" "recommended_action=direct (no openspec, is_quick=$is_quick)"
     return 0
   fi
 
   # changes 判定
   local changes_dir="$root/openspec/changes"
   if [[ ! -d "$changes_dir" ]] || [[ -z "$(ls -A "$changes_dir" 2>/dev/null)" ]]; then
-    jq -n --arg branch "$branch" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_exists":false}'
-    ok "init" "recommended_action=propose (no changes)"
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_exists":false,"is_quick":$is_quick}'
+    ok "init" "recommended_action=propose (no changes, is_quick=$is_quick)"
     return 0
   fi
 
@@ -86,15 +103,15 @@ step_init() {
     # approved 判定: .openspec.yaml の status を確認
     local yaml="$changes_dir/$latest_change/.openspec.yaml"
     if [[ -f "$yaml" ]] && grep -q 'status:.*approved' "$yaml" 2>/dev/null; then
-      jq -n --arg branch "$branch" --arg cid "$latest_change" '{"recommended_action":"apply","branch":$branch,"openspec":true,"change_id":$cid,"proposal_status":"approved"}'
-      ok "init" "recommended_action=apply (change=$latest_change, approved)"
+      jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"apply","branch":$branch,"openspec":true,"change_id":$cid,"proposal_status":"approved","is_quick":$is_quick}'
+      ok "init" "recommended_action=apply (change=$latest_change, approved, is_quick=$is_quick)"
     else
-      jq -n --arg branch "$branch" --arg cid "$latest_change" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_id":$cid,"proposal_status":"pending"}'
-      ok "init" "recommended_action=propose (change=$latest_change, pending)"
+      jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_id":$cid,"proposal_status":"pending","is_quick":$is_quick}'
+      ok "init" "recommended_action=propose (change=$latest_change, pending, is_quick=$is_quick)"
     fi
   else
-    jq -n --arg branch "$branch" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_exists":true}'
-    ok "init" "recommended_action=propose (no proposal)"
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_exists":true,"is_quick":$is_quick}'
+    ok "init" "recommended_action=propose (no proposal, is_quick=$is_quick)"
   fi
 }
 
