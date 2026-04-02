@@ -2822,7 +2822,12 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
     for name, spec in deps.get('skills', {}).items():
         comp_type = spec.get('type', '')
         if comp_type == 'controller':
-            path = plugin_root / spec.get('path', '')
+            path_str = spec.get('path', '')
+            if not path_str:
+                continue
+            path = plugin_root / path_str
+            if not _is_within_root(path, plugin_root):
+                continue
             body_lines = _count_body_lines(path)
             if body_lines > 200:
                 add_critical(f"[controller-bloat] {name}: {body_lines} lines (>200)")
@@ -2854,7 +2859,12 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
             ds_data = all_components.get(ds_name, (None, {}))
             if not ds_data[0]:
                 continue
-            ds_path = plugin_root / ds_data[1].get('path', '')
+            ds_path_str = ds_data[1].get('path', '')
+            if not ds_path_str:
+                continue
+            ds_path = plugin_root / ds_path_str
+            if not _is_within_root(ds_path, plugin_root):
+                continue
             if not ds_path.exists():
                 continue
             try:
@@ -2879,6 +2889,8 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
             if not path_str:
                 continue
             path = plugin_root / path_str
+            if not _is_within_root(path, plugin_root):
+                continue
             declared = _parse_frontmatter_tools(path)
             used_mcp = _scan_body_for_mcp_tools(path)
             for tool in used_mcp - declared:

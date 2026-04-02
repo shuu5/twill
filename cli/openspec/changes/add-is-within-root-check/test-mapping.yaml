@@ -1,0 +1,106 @@
+change_id: add-is-within-root-check
+generated_at: "2026-04-02T11:04:56Z"
+test_framework: pytest
+scenarios:
+  # ---------------------------------------------------------------------------
+  # Requirement: deep_validate section A ルート外パスガード
+  # ---------------------------------------------------------------------------
+  - id: "section-a-traversal-skip"
+    name: "section A でルート外パスをスキップ"
+    spec_file: "specs/is-within-root-guard.md"
+    spec_line: 7
+    requirement: "deep_validate section A ルート外パスガード"
+    test_file: "tests/scenarios/test_is_within_root_guard_sections_abc.py"
+    test_name: "TestSectionAIsWithinRootGuard::test_section_a_traversal_path_is_silently_skipped"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "section-a-normal-path"
+    name: "section A で正常パスは従来通り処理"
+    spec_file: "specs/is-within-root-guard.md"
+    spec_line: 11
+    requirement: "deep_validate section A ルート外パスガード"
+    test_file: "tests/scenarios/test_is_within_root_guard_sections_abc.py"
+    test_name: "TestSectionAIsWithinRootGuard::test_section_a_valid_path_bloated_controller_warns"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: deep_validate section B ルート外パスガード
+  # ---------------------------------------------------------------------------
+  - id: "section-b-traversal-skip"
+    name: "section B でルート外パスをスキップ"
+    spec_file: "specs/is-within-root-guard.md"
+    spec_line: 19
+    requirement: "deep_validate section B ルート外パスガード"
+    test_file: "tests/scenarios/test_is_within_root_guard_sections_abc.py"
+    test_name: "TestSectionBIsWithinRootGuard::test_section_b_outside_file_traversal_skips_check"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "guard not yet implemented — test is red until section B fix is applied"
+
+  - id: "section-b-normal-path"
+    name: "section B で正常パスは従来通り処理"
+    spec_file: "specs/is-within-root-guard.md"
+    spec_line: 23
+    requirement: "deep_validate section B ルート外パスガード"
+    test_file: "tests/scenarios/test_is_within_root_guard_sections_abc.py"
+    test_name: "TestSectionBIsWithinRootGuard::test_section_b_valid_path_ref_in_body_warns"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: deep_validate section C ルート外パスガード
+  # ---------------------------------------------------------------------------
+  - id: "section-c-traversal-skip"
+    name: "section C でルート外パスをスキップ"
+    spec_file: "specs/is-within-root-guard.md"
+    spec_line: 31
+    requirement: "deep_validate section C ルート外パスガード"
+    test_file: "tests/scenarios/test_is_within_root_guard_sections_abc.py"
+    test_name: "TestSectionCIsWithinRootGuard::test_section_c_outside_file_traversal_skips_check"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "guard not yet implemented — test is red until section C fix is applied"
+
+  - id: "section-c-normal-path"
+    name: "section C で正常パスは従来通り処理"
+    spec_file: "specs/is-within-root-guard.md"
+    spec_line: 35
+    requirement: "deep_validate section C ルート外パスガード"
+    test_file: "tests/scenarios/test_is_within_root_guard_sections_abc.py"
+    test_name: "TestSectionCIsWithinRootGuard::test_section_c_valid_path_mcp_tool_not_declared_warns"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: section E 回帰なし
+  # ---------------------------------------------------------------------------
+  - id: "section-e-regression"
+    name: "section E のチェックが維持される"
+    spec_file: "specs/is-within-root-guard.md"
+    spec_line: 43
+    requirement: "section E 回帰なし"
+    test_file: "tests/scenarios/test_is_within_root_guard_sections_abc.py"
+    test_name: "TestSectionERegressionGuard::test_section_e_traversal_specialist_is_silently_skipped"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
