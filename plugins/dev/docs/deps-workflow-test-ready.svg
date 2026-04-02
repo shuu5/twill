@@ -15,7 +15,7 @@
 <title>skill_workflow_test_ready</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="85.56" cy="-47" rx="85.62" ry="21.43"/>
 <text text-anchor="middle" x="85.56" y="-50" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;test&#45;ready</text>
-<text text-anchor="middle" x="85.56" y="-39" font-family="Helvetica,sans-Serif" font-size="10.00">(260 tok)</text>
+<text text-anchor="middle" x="85.56" y="-39" font-family="Helvetica,sans-Serif" font-size="10.00">(807 tok)</text>
 </g>
 <!-- cmd_opsx_apply -->
 <g id="node2" class="node">
@@ -49,7 +49,7 @@
 <title>agent_spec_scaffold_tests</title>
 <ellipse fill="#ede7f6" stroke="black" cx="428.83" cy="-140" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="428.83" y="-143" font-family="Helvetica,sans-Serif" font-size="10.00">spec&#45;scaffold&#45;tests</text>
-<text text-anchor="middle" x="428.83" y="-132" font-family="Helvetica,sans-Serif" font-size="10.00">(1,751 tok)</text>
+<text text-anchor="middle" x="428.83" y="-132" font-family="Helvetica,sans-Serif" font-size="10.00">(1,761 tok)</text>
 </g>
 <!-- cmd_test_scaffold&#45;&gt;agent_spec_scaffold_tests -->
 <g id="edge3" class="edge">
@@ -62,7 +62,7 @@
 <title>agent_e2e_generate</title>
 <ellipse fill="#ede7f6" stroke="black" cx="428.83" cy="-76" rx="51.74" ry="21.43"/>
 <text text-anchor="middle" x="428.83" y="-79" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;generate</text>
-<text text-anchor="middle" x="428.83" y="-68" font-family="Helvetica,sans-Serif" font-size="10.00">(2,019 tok)</text>
+<text text-anchor="middle" x="428.83" y="-68" font-family="Helvetica,sans-Serif" font-size="10.00">(2,028 tok)</text>
 </g>
 <!-- cmd_test_scaffold&#45;&gt;agent_e2e_generate -->
 <g id="edge4" class="edge">
@@ -83,6 +83,18 @@
 <polygon fill="black" stroke="black" points="590.32,-62.26 600.85,-61.09 591.89,-55.44 590.32,-62.26"/>
 </g>
 <!-- agent_spec_scaffold_tests&#45;&gt;agent_e2e_generate -->
+<!-- agent_spec_scaffold_tests&#45;&gt;skill_ref_specialist_output_schema -->
+<g id="edge6" class="edge">
+<title>agent_spec_scaffold_tests&#45;&gt;skill_ref_specialist_output_schema</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M480.88,-125.56C513.99,-116.19 557.37,-103.91 592.68,-93.92"/>
+<polygon fill="black" stroke="black" points="593.74,-97.26 602.41,-91.17 591.83,-90.52 593.74,-97.26"/>
+</g>
+<!-- agent_e2e_generate&#45;&gt;skill_ref_specialist_output_schema -->
+<g id="edge7" class="edge">
+<title>agent_e2e_generate&#45;&gt;skill_ref_specialist_output_schema</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M477.8,-69.11C501.13,-68.01 530.07,-67.57 557.8,-67.81"/>
+<polygon fill="black" stroke="black" points="557.9,-71.32 567.95,-67.93 557.99,-64.32 557.9,-71.32"/>
+</g>
 <!-- agent_e2e_generate&#45;&gt;skill_ref_specialist_output_schema -->
 </g>
 </svg>

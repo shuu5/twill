@@ -15,7 +15,7 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="50.91" cy="-256" rx="50.82" ry="21.43"/>
 <text text-anchor="middle" x="50.91" y="-259" font-family="Helvetica,sans-Serif" font-size="10.00">dev:co&#45;issue</text>
-<text text-anchor="middle" x="50.91" y="-248" font-family="Helvetica,sans-Serif" font-size="10.00">(1,740 tok)</text>
+<text text-anchor="middle" x="50.91" y="-248" font-family="Helvetica,sans-Serif" font-size="10.00">(3,445 tok)</text>
 </g>
 <!-- cmd_issue_structure -->
 <g id="node2" class="node">
@@ -100,7 +100,7 @@
 <title>agent_issue_critic</title>
 <ellipse fill="#ede7f6" stroke="black" cx="393.22" cy="-282" rx="45.01" ry="21.43"/>
 <text text-anchor="middle" x="393.22" y="-285" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;critic</text>
-<text text-anchor="middle" x="393.22" y="-274" font-family="Helvetica,sans-Serif" font-size="10.00">(1,017 tok)</text>
+<text text-anchor="middle" x="393.22" y="-274" font-family="Helvetica,sans-Serif" font-size="10.00">(1,026 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;agent_issue_critic -->
 <g id="edge7" class="edge">
@@ -113,7 +113,7 @@
 <title>agent_issue_feasibility</title>
 <ellipse fill="#ede7f6" stroke="black" cx="393.22" cy="-218" rx="59.29" ry="21.43"/>
 <text text-anchor="middle" x="393.22" y="-221" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;feasibility</text>
-<text text-anchor="middle" x="393.22" y="-210" font-family="Helvetica,sans-Serif" font-size="10.00">(920 tok)</text>
+<text text-anchor="middle" x="393.22" y="-210" font-family="Helvetica,sans-Serif" font-size="10.00">(929 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;agent_issue_feasibility -->
 <g id="edge8" class="edge">
@@ -176,7 +176,19 @@
 <!-- cmd_project_board_sync&#45;&gt;agent_issue_critic -->
 <!-- cmd_explore&#45;&gt;cmd_issue_structure -->
 <!-- agent_issue_critic&#45;&gt;agent_issue_feasibility -->
+<!-- agent_issue_critic&#45;&gt;skill_ref_issue_quality_criteria -->
+<g id="edge13" class="edge">
+<title>agent_issue_critic&#45;&gt;skill_ref_issue_quality_criteria</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M437.6,-287C550.84,-298.84 864.04,-323.71 1116.38,-270 1150.01,-262.84 1186.41,-249.59 1214.14,-238.25"/>
+<polygon fill="black" stroke="black" points="1215.67,-241.41 1223.57,-234.34 1212.99,-234.94 1215.67,-241.41"/>
+</g>
 <!-- agent_issue_feasibility&#45;&gt;skill_ref_issue_template_bug -->
+<!-- agent_issue_feasibility&#45;&gt;skill_ref_issue_quality_criteria -->
+<g id="edge14" class="edge">
+<title>agent_issue_feasibility&#45;&gt;skill_ref_issue_quality_criteria</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M438.51,-231.74C460.04,-237.72 486.43,-244.03 510.62,-247 777.84,-279.79 848.49,-273.79 1116.38,-247 1142.29,-244.41 1170.43,-239.25 1194.88,-234"/>
+<polygon fill="black" stroke="black" points="1195.74,-237.39 1204.76,-231.82 1194.24,-230.55 1195.74,-237.39"/>
+</g>
 <!-- skill_ref_issue_template_bug&#45;&gt;skill_ref_issue_template_feature -->
 <!-- skill_ref_issue_template_feature&#45;&gt;skill_ref_project_model -->
 <!-- skill_ref_project_model&#45;&gt;skill_ref_issue_quality_criteria -->

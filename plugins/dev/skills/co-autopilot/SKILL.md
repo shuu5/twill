@@ -87,24 +87,40 @@ TaskCreate で全体タスク「Autopilot: N Phases, M Issues」を登録。
 入力: PLAN_FILE。
 出力: SESSION_ID, PHASE_COUNT, SESSION_STATE_FILE が設定される。
 
-## Step 4: Phase ループ
+## Step 4: Phase ループ（orchestrator 委譲）
 
 ```
 FOR P in 1..PHASE_COUNT:
   TaskCreate "Phase P: Issue #X, #Y" (status: in_progress)
 
-  → commands/autopilot-phase-execute.md を Read → 実行
-  → commands/autopilot-phase-postprocess.md を Read → 実行
+  # autopilot-orchestrator.sh に Phase 実行を委譲
+  REPORT=$(bash $SCRIPTS_ROOT/autopilot-orchestrator.sh \
+    --plan "$PLAN_FILE" \
+    --phase "$P" \
+    --session "$SESSION_STATE_FILE" \
+    --project-dir "$PROJECT_DIR" \
+    --autopilot-dir "$AUTOPILOT_DIR" \
+    $REPOS_ARG)
+
+  # orchestrator が JSON レポート（PHASE_COMPLETE）を返す
+  # Pilot は LLM 判断が必要な postprocess のみ実行
+  → commands/autopilot-phase-postprocess.md を Read → 実行（retrospective / cross-issue のみ）
 
   TaskUpdate Phase P → completed
 ```
 
-### Phase 内の Worker 実行フロー
+orchestrator が一括処理する内容:
+- batch 分割・Worker 起動（autopilot-launch.sh）
+- ポーリング（state-read.sh + crash-detect.sh、session-state.sh 対応）
+- chain 遷移停止検知 + 自動 nudge（tmux capture-pane + send-keys）
+- merge-gate 実行（merge-gate-execute.sh）
+- window 管理（crash-detect → kill の原子的実行）
+- Phase 完了レポート JSON 出力
 
-Worker は tmux window で起動され、chain ステップを逐次実行:
-1. worktree 作成 → cd → 実装（setup chain → apply → pr-cycle chain）
-2. 完了時: issue-{N}.json status を `merge-ready` に更新
-3. Pilot が merge-gate 実行 → 成功で `done` に遷移
+Pilot LLM の責務は以下に限定:
+- 計画承認（Step 2）
+- retrospective 分析（postprocess 内）
+- cross-issue 影響分析（postprocess 内）
 
 ### self-improve ECC 照合（autopilot-patterns 内）
 
@@ -116,11 +132,19 @@ autopilot-patterns が self-improve Issue 候補を検出した場合:
 ### 依存先 fail 時の skip 伝播（不変条件 D）
 
 Phase N で fail した Issue に依存する Phase N+1 以降の全 Issue を自動 skip。
-skip された Issue の issue-{N}.json は `failed` + `{ message: "dependency failed" }` で記録。
+orchestrator 内で autopilot-should-skip.sh を呼び出し、自動的に skip + state 記録する。
 
-## Step 5: 完了サマリー
+## Step 5: 完了サマリー（orchestrator 委譲）
 
-`commands/autopilot-summary.md` を Read → 実行。全 Phase 完了後に結果集計・レポート出力。
+```bash
+SUMMARY=$(bash $SCRIPTS_ROOT/autopilot-orchestrator.sh \
+  --summary \
+  --session "$SESSION_STATE_FILE" \
+  --autopilot-dir "$AUTOPILOT_DIR")
+```
+
+orchestrator が全 issue-{N}.json を集約し、done/failed/skipped の件数と詳細を JSON で出力。
+Pilot は JSON をパースしてユーザーに結果を報告する。
 
 TaskUpdate 全体タスク → completed。
 
@@ -149,6 +173,13 @@ issue-{N}.json の status から自動判定:
 ## Emergency Bypass
 
 co-autopilot 自体の障害時のみ手動パスを許可。bypass 使用時は retrospective で理由を記録。
+
+### orchestrator 障害時の手動パス
+
+autopilot-orchestrator.sh に障害がある場合、以下の手動パスで Phase 実行可能:
+1. `commands/autopilot-phase-execute.md` を Read → 手動実行（従来方式）
+2. `commands/autopilot-poll.md` を Read → 手動ポーリング
+3. `commands/autopilot-summary.md` を Read → 手動サマリー
 
 ## 禁止事項（MUST NOT）
 

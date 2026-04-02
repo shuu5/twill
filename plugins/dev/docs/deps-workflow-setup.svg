@@ -15,7 +15,7 @@
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="71.42" cy="-169.49" rx="71.34" ry="21.43"/>
 <text text-anchor="middle" x="71.42" y="-172.49" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;setup</text>
-<text text-anchor="middle" x="71.42" y="-161.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,140 tok)</text>
+<text text-anchor="middle" x="71.42" y="-161.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,241 tok)</text>
 </g>
 <!-- cmd_init -->
 <g id="node2" class="node">
@@ -35,7 +35,7 @@
 <title>cmd_worktree_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="310.34,-274.49 226.34,-274.49 226.34,-238.49 310.34,-238.49 310.34,-274.49"/>
 <text text-anchor="middle" x="268.34" y="-259.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="268.34" y="-248.49" font-family="Helvetica,sans-Serif" font-size="10.00">(464 tok)</text>
+<text text-anchor="middle" x="268.34" y="-248.49" font-family="Helvetica,sans-Serif" font-size="10.00">(461 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;cmd_worktree_create -->
 <g id="edge2" class="edge">
@@ -48,7 +48,7 @@
 <title>cmd_project_board_status_update</title>
 <polygon fill="#e3f2fd" stroke="black" points="335.84,-216.49 200.84,-216.49 200.84,-180.49 335.84,-180.49 335.84,-216.49"/>
 <text text-anchor="middle" x="268.34" y="-201.49" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;board&#45;status&#45;update</text>
-<text text-anchor="middle" x="268.34" y="-190.49" font-family="Helvetica,sans-Serif" font-size="10.00">(450 tok)</text>
+<text text-anchor="middle" x="268.34" y="-190.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,203 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;cmd_project_board_status_update -->
 <g id="edge3" class="edge">
