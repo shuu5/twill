@@ -100,7 +100,7 @@ FOR P in 1..PHASE_COUNT:
     --session "$SESSION_STATE_FILE" \
     --project-dir "$PROJECT_DIR" \
     --autopilot-dir "$AUTOPILOT_DIR" \
-    $REPOS_ARG)
+    $REPOS_ARG 2>"$AUTOPILOT_DIR/logs/phase-${P}.log")
 
   # orchestrator が JSON レポート（PHASE_COMPLETE）を返す
   # Pilot は LLM 判断が必要な postprocess のみ実行

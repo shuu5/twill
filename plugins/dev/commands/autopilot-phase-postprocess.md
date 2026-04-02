@@ -22,6 +22,12 @@ co-autopilot の Phase ループから呼び出される。
 
 ## 実行ロジック（MUST）
 
+### Step 0: 開始時刻記録
+
+```bash
+POSTPROCESS_START_TIME=$(date +%s)
+```
+
 ### Step 1: Phase 内 Issue リスト取得
 
 ```bash
@@ -54,6 +60,22 @@ IF P < PHASE_COUNT（最終 Phase でない）:
 ELSE:
   PHASE_INSIGHTS=""
   declare -A CROSS_ISSUE_WARNINGS=()
+```
+
+### Step 6: postprocess_duration_sec 記録
+
+```bash
+POSTPROCESS_END_TIME=$(date +%s)
+POSTPROCESS_DURATION_SEC=$((POSTPROCESS_END_TIME - POSTPROCESS_START_TIME))
+```
+
+session.json の `.retrospectives` 配列から当該 Phase のエントリを検索し、`postprocess_duration_sec` を追記する（エントリが存在しない場合はスキップ）:
+
+```bash
+jq --argjson phase "$P" --argjson dur "$POSTPROCESS_DURATION_SEC" \
+  '.retrospectives = [.retrospectives[] | if .phase == $phase then . + {postprocess_duration_sec: $dur} else . end]' \
+  "$SESSION_STATE_FILE" > "${SESSION_STATE_FILE}.tmp" \
+  && mv "${SESSION_STATE_FILE}.tmp" "$SESSION_STATE_FILE"
 ```
 
 ## 禁止事項（MUST NOT）

@@ -189,12 +189,12 @@ filter_active_issues() {
     status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$ISSUE" --field status 2>/dev/null || echo "")
 
     if [[ "$status" == "done" ]]; then
-      echo "[orchestrator] Issue #${ISSUE}: skip (already done)"
+      echo "[orchestrator] Issue #${ISSUE}: skip (already done)" >&2
       continue
     fi
 
     if bash "$SCRIPTS_ROOT/autopilot-should-skip.sh" "$PLAN_FILE" "$ISSUE" 2>/dev/null; then
-      echo "[orchestrator] Issue #${ISSUE}: skip (dependency failed)"
+      echo "[orchestrator] Issue #${ISSUE}: skip (dependency failed)" >&2
       bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
         --set "status=failed" --set 'failure={"message":"dependency_failed","step":"skip"}' || true
       continue
@@ -248,20 +248,20 @@ poll_single() {
 
     case "$status" in
       done)
-        echo "[orchestrator] Issue #${issue}: 完了"
+        echo "[orchestrator] Issue #${issue}: 完了" >&2
         return 0 ;;
       failed)
-        echo "[orchestrator] Issue #${issue}: 失敗"
+        echo "[orchestrator] Issue #${issue}: 失敗" >&2
         return 0 ;;
       merge-ready)
-        echo "[orchestrator] Issue #${issue}: merge-ready"
+        echo "[orchestrator] Issue #${issue}: merge-ready" >&2
         return 0 ;;
       running)
         # クラッシュ検知
         local crash_exit=0
         bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$issue" --window "$window_name" 2>/dev/null || crash_exit=$?
         if [[ "$crash_exit" -eq 2 ]]; then
-          echo "[orchestrator] Issue #${issue}: ワーカークラッシュ検知"
+          echo "[orchestrator] Issue #${issue}: ワーカークラッシュ検知" >&2
           return 0
         fi
 
@@ -271,7 +271,7 @@ poll_single() {
     esac
 
     if [[ "$poll_count" -ge "$MAX_POLL" ]]; then
-      echo "[orchestrator] Issue #${issue}: タイムアウト（${MAX_POLL}回×${POLL_INTERVAL}秒）"
+      echo "[orchestrator] Issue #${issue}: タイムアウト（${MAX_POLL}回×${POLL_INTERVAL}秒）" >&2
       bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
         --set "status=failed" \
         --set 'failure={"message":"poll_timeout","step":"polling"}'
@@ -303,7 +303,7 @@ poll_phase() {
           local crash_exit=0
           bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$issue" --window "$window_name" 2>/dev/null || crash_exit=$?
           if [[ "$crash_exit" -eq 2 ]]; then
-            echo "[orchestrator] Issue #${issue}: ワーカークラッシュ検知"
+            echo "[orchestrator] Issue #${issue}: ワーカークラッシュ検知" >&2
           fi
           check_and_nudge "$issue" "$window_name"
           ;;
@@ -316,7 +316,7 @@ poll_phase() {
 
     poll_count=$((poll_count + 1))
     if [[ "$poll_count" -ge "$MAX_POLL" ]]; then
-      echo "[orchestrator] Phase: タイムアウト — 未完了 Issue を failed に変換"
+      echo "[orchestrator] Phase: タイムアウト — 未完了 Issue を failed に変換" >&2
       for issue in "${issues[@]}"; do
         local status
         status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
@@ -394,7 +394,7 @@ check_and_nudge() {
     # 出力が変わっていない → 停止パターンをチェック
     for pattern in "${CHAIN_STOP_PATTERNS[@]}"; do
       if echo "$pane_output" | grep -qP "$pattern"; then
-        echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})"
+        echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
         tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
         NUDGE_COUNTS[$issue]=$((count + 1))
         return 0
@@ -419,21 +419,21 @@ run_merge_gate() {
   branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
 
   if [[ -z "$pr_number" || -z "$branch" ]]; then
-    echo "[orchestrator] Issue #${issue}: PR 番号またはブランチが取得できません — auto-merge.sh にフォールバック"
+    echo "[orchestrator] Issue #${issue}: PR 番号またはブランチが取得できません — auto-merge.sh にフォールバック" >&2
     # auto-merge.sh は自身で PR 情報を解決可能な場合がある
     return 1
   fi
 
-  echo "[orchestrator] Issue #${issue}: merge-gate 実行 (PR #${pr_number})"
+  echo "[orchestrator] Issue #${issue}: merge-gate 実行 (PR #${pr_number})" >&2
 
   export ISSUE="$issue"
   export PR_NUMBER="$pr_number"
   export BRANCH="$branch"
 
   if bash "$SCRIPTS_ROOT/merge-gate-execute.sh" 2>&1; then
-    echo "[orchestrator] Issue #${issue}: merge 成功"
+    echo "[orchestrator] Issue #${issue}: merge 成功" >&2
   else
-    echo "[orchestrator] Issue #${issue}: merge 失敗"
+    echo "[orchestrator] Issue #${issue}: merge 失敗" >&2
   fi
 }
 
@@ -550,6 +550,7 @@ if [[ "$SUMMARY_MODE" == "true" ]]; then
 fi
 
 # --- Phase 実行 ---
+mkdir -p "$AUTOPILOT_DIR/logs"
 echo "[orchestrator] Phase ${PHASE} 開始" >&2
 
 # Step 1: Phase 内 Issue リスト取得
