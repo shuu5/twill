@@ -87,7 +87,7 @@ _fetch_filtered_items() {
     local project_num="$1" repo_owner="$2"
 
     local items_json
-    if ! items_json=$(gh project item-list "$project_num" --owner "$repo_owner" --format json 2>/dev/null); then
+    if ! items_json=$(gh project item-list "$project_num" --owner "$repo_owner" --format json --limit 200 2>/dev/null); then
         echo "Error: Project #${project_num} の item-list 取得に失敗しました" >&2
         exit 1
     fi
