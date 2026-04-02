@@ -152,15 +152,25 @@ _build_cross_repo_json() {
     if [[ ${#cross_repos[@]} -gt 0 ]]; then
         CROSS_REPO=true
         local repos_json="{}"
+        local parent_dir
+        parent_dir="$(dirname "$PROJECT_DIR")"
         for rid in "${!cross_repos[@]}"; do
-            local cr_owner cr_name
+            local cr_owner cr_name cr_path
             cr_owner="${cross_repos[$rid]%%:*}"
             cr_name="${cross_repos[$rid]#*:}"
-            repos_json=$(echo "$repos_json" | jq --arg rid "$rid" --arg owner "$cr_owner" --arg name "$cr_name" \
-                '. + {($rid): {owner: $owner, name: $name, path: ""}}')
+            # PROJECT_DIR の兄弟ディレクトリからクロスリポジトリのローカルパスを探索
+            cr_path=""
+            if [[ -d "${parent_dir}/${cr_name}" ]]; then
+                cr_path="${parent_dir}/${cr_name}"
+            fi
+            if [[ -z "$cr_path" ]]; then
+                echo "⚠ クロスリポジトリ ${cr_owner}/${cr_name} のローカルパスが見つかりません（${parent_dir}/${cr_name} を検索）" >&2
+            fi
+            repos_json=$(echo "$repos_json" | jq --arg rid "$rid" --arg owner "$cr_owner" --arg name "$cr_name" --arg path "$cr_path" \
+                '. + {($rid): {owner: $owner, name: $name, path: $path}}')
             REPO_OWNERS[$rid]="$cr_owner"
             REPO_NAMES[$rid]="$cr_name"
-            REPO_PATHS[$rid]=""
+            REPO_PATHS[$rid]="$cr_path"
         done
         REPOS_JSON="$repos_json"
     fi
