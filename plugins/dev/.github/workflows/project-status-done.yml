@@ -1,0 +1,95 @@
+name: Set Project Status to Done on Issue Close
+
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  set-status-done:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+      PROJECT_ID: "PVT_kwHOCNFEd84BS03g"
+      STATUS_FIELD_ID: "PVTSSF_lAHOCNFEd84BS03gzhAPzog"
+      DONE_OPTION_ID: "98236657"
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      REPO_FULL_NAME: ${{ github.repository }}
+    steps:
+      - name: Find Project Item for Issue
+        id: find-item
+        run: |
+          ITEM_ID=""
+          HAS_NEXT="true"
+          CURSOR=""
+
+          while [ "$HAS_NEXT" = "true" ]; do
+            if [ -z "$CURSOR" ]; then
+              CURSOR_ARG=""
+            else
+              CURSOR_ARG=", after: \"$CURSOR\""
+            fi
+
+            RESPONSE=$(gh api graphql -f query="
+              query(\$projectId: ID!) {
+                node(id: \$projectId) {
+                  ... on ProjectV2 {
+                    items(first: 100${CURSOR_ARG:+$CURSOR_ARG}) {
+                      pageInfo { hasNextPage endCursor }
+                      nodes {
+                        id
+                        content {
+                          ... on Issue {
+                            number
+                            repository { nameWithOwner }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            " -f projectId="$PROJECT_ID")
+
+            ITEM_ID=$(echo "$RESPONSE" | jq -r --argjson num "$ISSUE_NUMBER" --arg repo "$REPO_FULL_NAME" \
+              '.data.node.items.nodes[] | select(.content.number == $num and .content.repository.nameWithOwner == $repo) | .id // empty')
+
+            if [ -n "$ITEM_ID" ]; then
+              break
+            fi
+
+            HAS_NEXT=$(echo "$RESPONSE" | jq -r '.data.node.items.pageInfo.hasNextPage')
+            CURSOR=$(echo "$RESPONSE" | jq -r '.data.node.items.pageInfo.endCursor')
+          done
+
+          if [ -z "$ITEM_ID" ]; then
+            echo "Not in project, skipping"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Found item: $ITEM_ID"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "item_id=$ITEM_ID" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update Status to Done
+        if: steps.find-item.outputs.found == 'true'
+        env:
+          ITEM_ID: ${{ steps.find-item.outputs.item_id }}
+        run: |
+          gh api graphql -f query='
+            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $projectId
+                itemId: $itemId
+                fieldId: $fieldId
+                value: { singleSelectOptionId: $optionId }
+              }) {
+                projectV2Item { id }
+              }
+            }
+          ' \
+            -f projectId="$PROJECT_ID" \
+            -f itemId="$ITEM_ID" \
+            -f fieldId="$STATUS_FIELD_ID" \
+            -f optionId="$DONE_OPTION_ID"
+
+          echo "Status updated to Done for issue #$ISSUE_NUMBER"
