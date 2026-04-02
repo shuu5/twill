@@ -188,3 +188,7 @@ git status --porcelain
 
 - **FAIL項目がある場合に `/dev:workflow-pr-cycle` を推奨してはならない**
 - **チェック内で修正を行ってはならない**: 状態報告のみ
+
+## チェックポイント（MUST）
+
+`/dev:opsx-apply` を Skill tool で自動実行。
