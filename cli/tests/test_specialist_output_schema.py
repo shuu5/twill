@@ -450,7 +450,7 @@ class TestOutputSchemaEdgeCases(_SchemaTestBase):
 
     def test_output_schema_empty_string(self):
         """WHEN output_schema field is empty string
-        THEN treated as not-custom, normal keyword validation runs"""
+        THEN treated as invalid value, empty output_schema warning is reported"""
         body = (
             "## Purpose\nAnalyze.\n\n"
             "## Output\nReturn PASS.\n\n"
@@ -461,10 +461,12 @@ class TestOutputSchemaEdgeCases(_SchemaTestBase):
         )
         result = run_engine(plugin_dir, "--deep-validate")
 
-        # Empty string is not "custom", so normal validation should run
-        # All keywords present, so no warning expected
-        assert "[specialist-output-schema]" not in result.stdout, (
-            f"Expected normal validation with empty output_schema but got:\n{result.stdout}"
+        # Empty string is an invalid value, should produce a specific warning
+        assert "[specialist-output-schema]" in result.stdout, (
+            f"Expected empty output_schema warning but got:\n{result.stdout}"
+        )
+        assert "empty output_schema value" in result.stdout, (
+            f"Expected 'empty output_schema value' message but got:\n{result.stdout}"
         )
 
 

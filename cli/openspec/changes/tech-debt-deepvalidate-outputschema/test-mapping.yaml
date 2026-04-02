@@ -1,0 +1,87 @@
+change_id: tech-debt-deepvalidate-outputschema
+generated_at: "2026-04-02T00:00:00+00:00"
+test_framework: pytest
+scenarios:
+  - id: "empty-string-output-schema"
+    name: "空文字列の output_schema"
+    spec_file: "specs/output-schema-validation.md"
+    spec_line: 7
+    requirement: "output_schema 空文字列の検出"
+    test_file: "tests/scenarios/test_output_schema_validation.py"
+    test_name: "TestOutputSchemaValidation::test_empty_string_output_schema_reports_empty_warning"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "valid-custom-value"
+    name: "有効な custom 値"
+    spec_file: "specs/output-schema-validation.md"
+    spec_line: 11
+    requirement: "output_schema 空文字列の検出"
+    test_file: "tests/scenarios/test_output_schema_validation.py"
+    test_name: "TestOutputSchemaValidation::test_custom_output_schema_no_warning"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "undeclared-none"
+    name: "未宣言（None）"
+    spec_file: "specs/output-schema-validation.md"
+    spec_line: 15
+    requirement: "output_schema 空文字列の検出"
+    test_file: "tests/scenarios/test_output_schema_validation.py"
+    test_name: "TestOutputSchemaValidation::test_undeclared_output_schema_runs_keyword_validation"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "undeclared-none-keyword-detection"
+    name: "未宣言（None） — keyword validation fires when keywords are absent"
+    spec_file: "specs/output-schema-validation.md"
+    spec_line: 15
+    requirement: "output_schema 空文字列の検出"
+    test_file: "tests/scenarios/test_output_schema_validation.py"
+    test_name: "TestOutputSchemaValidation::test_undeclared_output_schema_keyword_validation_detects_missing"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "invalid-nonempty-value"
+    name: "その他の無効な値"
+    spec_file: "specs/output-schema-validation.md"
+    spec_line: 19
+    requirement: "output_schema 空文字列の検出"
+    test_file: "tests/scenarios/test_output_schema_validation.py"
+    test_name: "TestOutputSchemaValidation::test_invalid_nonempty_output_schema_reports_invalid_warning"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "invalid-nonempty-value-skips-keyword-validation"
+    name: "その他の無効な値 — keyword validation is skipped after invalid value warning"
+    spec_file: "specs/output-schema-validation.md"
+    spec_line: 19
+    requirement: "output_schema 空文字列の検出"
+    test_file: "tests/scenarios/test_output_schema_validation.py"
+    test_name: "TestOutputSchemaValidation::test_invalid_nonempty_output_schema_skips_keyword_validation"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "invalid-nonempty-value-various"
+    name: "その他の無効な値 — multiple invalid value strings are all rejected"
+    spec_file: "specs/output-schema-validation.md"
+    spec_line: 19
+    requirement: "output_schema 空文字列の検出"
+    test_file: "tests/scenarios/test_output_schema_validation.py"
+    test_name: "TestOutputSchemaValidation::test_various_invalid_values_all_report_warning"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

@@ -2910,8 +2910,11 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
             output_schema = cdata.get('output_schema', None)
             if output_schema == 'custom':
                 continue
-            if output_schema is not None and output_schema != '':
-                add_warning(f"[specialist-output-schema] {cname}: invalid output_schema value '{output_schema}' (expected 'custom' or omit)")
+            if output_schema is not None:
+                if output_schema == '':
+                    add_warning(f"[specialist-output-schema] {cname}: empty output_schema value (expected 'custom' or omit)")
+                else:
+                    add_warning(f"[specialist-output-schema] {cname}: invalid output_schema value '{output_schema}' (expected 'custom' or omit)")
                 continue
 
             path_str = cdata.get('path', '')
@@ -4097,6 +4100,9 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
         if output_schema_val == 'custom':
             schema_str = 'Skip'
             schema_ok = True
+        elif output_schema_val is not None:
+            schema_str = 'Invalid'
+            schema_ok = False
         else:
             schema_kw = _check_output_schema_keywords(path)
             schema_ok = all(schema_kw.values())
@@ -4268,6 +4274,9 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
         if output_schema_val == 'custom':
             schema_str = 'Skip'
             schema_ok = True
+        elif output_schema_val is not None:
+            schema_str = 'Invalid'
+            schema_ok = False
         else:
             schema_kw = _check_output_schema_keywords(path)
             schema_ok = all(schema_kw.values())
