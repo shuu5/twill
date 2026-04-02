@@ -20,7 +20,7 @@ teardown() { common_teardown; }
 #!/usr/bin/env bash
 case "$*" in
   *"repo view"*"--json nameWithOwner"*)
-    echo '{"nameWithOwner": "shuu5/loom-plugin-dev"}' ;;
+    echo 'shuu5/loom-plugin-dev' ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"api graphql"*)
@@ -98,7 +98,7 @@ GHSTUB
 #!/usr/bin/env bash
 case "$*" in
   *"repo view"*"--json nameWithOwner"*)
-    echo '{"nameWithOwner": "shuu5/loom-plugin-dev"}' ;;
+    echo 'shuu5/loom-plugin-dev' ;;
   *"project list"*)
     echo '{"projects": [
       {"number": 5, "title": "generic board"},
@@ -141,7 +141,7 @@ GHSTUB
 #!/usr/bin/env bash
 case "$*" in
   *"repo view"*"--json nameWithOwner"*)
-    echo '{"nameWithOwner": "shuu5/loom-plugin-dev"}' ;;
+    echo 'shuu5/loom-plugin-dev' ;;
   *"project list"*)
     echo '{"projects": [
       {"number": 3, "title": "alpha project"},
@@ -184,7 +184,7 @@ GHSTUB
 #!/usr/bin/env bash
 case "$*" in
   *"repo view"*"--json nameWithOwner"*)
-    echo '{"nameWithOwner": "shuu5/loom-plugin-dev"}' ;;
+    echo 'shuu5/loom-plugin-dev' ;;
   *"project list"*)
     echo '{"projects": [{"number": 9, "title": "unrelated project"}]}' ;;
   *"api graphql"*)
@@ -208,7 +208,7 @@ GHSTUB
 #!/usr/bin/env bash
 case "$*" in
   *"repo view"*"--json nameWithOwner"*)
-    echo '{"nameWithOwner": "shuu5/loom-plugin-dev"}' ;;
+    echo 'shuu5/loom-plugin-dev' ;;
   *"project list"*)
     echo '{"projects": []}' ;;
   *)

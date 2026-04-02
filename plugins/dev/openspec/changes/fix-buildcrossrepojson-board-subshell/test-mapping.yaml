@@ -1,0 +1,68 @@
+change_id: fix-buildcrossrepojson-board-subshell
+generated_at: "2026-04-02T11:00:01Z"
+test_framework: bats
+scenarios:
+  - id: "cross-repo-board-repos-section"
+    name: "クロスリポジトリ Issue が plan.yaml に repos セクション付きで出力される"
+    spec_file: "specs/fix-subshell-propagation.md"
+    spec_line: 26
+    requirement: "クロスリポジトリ Board シナリオテスト"
+    test_file: "tests/bats/scripts/autopilot-plan-board-fetch.bats"
+    test_name: "autopilot-plan --board cross-repo generates plan.yaml with repos section containing other-repo"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cross-repo-board-issue-numbers"
+    name: "クロスリポジトリ Issue が plan.yaml に repos セクション付きで出力される（issue 番号検証）"
+    spec_file: "specs/fix-subshell-propagation.md"
+    spec_line: 26
+    requirement: "クロスリポジトリ Board シナリオテスト"
+    test_file: "tests/bats/scripts/autopilot-plan-board-fetch.bats"
+    test_name: "autopilot-plan --board cross-repo plan.yaml includes both local issues 42 43 and cross-repo issue 56"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cross-repo-propagation-owner-name"
+    name: "クロスリポジトリ Board で CROSS_REPO が伝搬する"
+    spec_file: "specs/fix-subshell-propagation.md"
+    spec_line: 7
+    requirement: "_build_cross_repo_json グローバル変数伝搬の修正"
+    test_file: "tests/bats/scripts/autopilot-plan-board-fetch.bats"
+    test_name: "autopilot-plan --board cross-repo repos section has correct owner and name for other-repo"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cross-repo-only-board"
+    name: "クロスリポジトリのみの Board（ローカル Issue なし）"
+    spec_file: "specs/fix-subshell-propagation.md"
+    spec_line: 26
+    requirement: "クロスリポジトリ Board シナリオテスト"
+    test_file: "tests/bats/scripts/autopilot-plan-board-fetch.bats"
+    test_name: "autopilot-plan --board with only cross-repo issues generates plan.yaml with repos section"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "single-repo-regression"
+    name: "単一リポジトリ Board の回帰なし"
+    spec_file: "specs/fix-subshell-propagation.md"
+    spec_line: 11
+    requirement: "_build_cross_repo_json グローバル変数伝搬の修正"
+    test_file: "tests/bats/scripts/autopilot-plan-board-fetch.bats"
+    test_name: "autopilot-plan --board single-repo does not produce repos section after cross-repo fix"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

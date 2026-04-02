@@ -114,7 +114,7 @@ _fetch_filtered_items() {
 # フィルタ済み Board items からクロスリポジトリ設定を構築し、
 # parse_issues() 用の issue_list を返す。
 # 引数: filtered_json, current_repo（owner/name 形式）
-# 出力（stdout）: issue_list 文字列（例: "42 43 loom#56"）
+# 出力: BUILD_RESULT グローバル変数（例: "42 43 loom#56"）
 # 副作用: CROSS_REPO, REPO_OWNERS, REPO_NAMES, REPO_PATHS, REPOS_JSON を更新
 _build_cross_repo_json() {
     local filtered="$1" current_repo="$2"
@@ -165,7 +165,7 @@ _build_cross_repo_json() {
         REPOS_JSON="$repos_json"
     fi
 
-    echo "${issue_list# }"
+    BUILD_RESULT="${issue_list# }"
 }
 
 # --- エントリポイント ---
@@ -179,8 +179,9 @@ fetch_board_issues() {
     local filtered
     filtered=$(_fetch_filtered_items "$project_num" "$repo_owner")
 
-    local issue_list
-    issue_list=$(_build_cross_repo_json "$filtered" "$current_repo")
+    BUILD_RESULT=""
+    _build_cross_repo_json "$filtered" "$current_repo"
+    local issue_list="$BUILD_RESULT"
 
     parse_issues "$issue_list"
 }
