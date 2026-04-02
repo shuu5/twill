@@ -37,6 +37,17 @@
         ]
       }
     ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-compact-checkpoint.sh",
+            "timeout": 10000
+          }
+        ]
+      }
+    ],
     "PostCompact": [
       {
         "hooks": [

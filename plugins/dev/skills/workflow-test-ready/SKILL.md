@@ -85,3 +85,18 @@ runner の出力から FAIL 有無を判定する。FAIL あれば `/dev:check` 
 ## 禁止事項（MUST NOT）
 
 - Unit/Integration テスト生成を独断でスキップしてはならない
+
+## compaction 復帰プロトコル
+
+compaction 後に workflow-test-ready chain を再開する場合、完了済みステップをスキップすること。
+
+```bash
+ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' || echo "")
+for step in change-id-resolve test-scaffold check opsx-apply; do
+  bash scripts/compaction-resume.sh "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
+  # 通常手順で実行
+done
+```
+
+- `compaction-resume.sh <ISSUE_NUM> <step>` が exit 0 → 実行、exit 1 → スキップ
+- LLM ステップ（test-scaffold, opsx-apply）は SKILL.md の手順を再実行すること

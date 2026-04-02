@@ -140,3 +140,19 @@ bash scripts/chain-runner.sh all-pass-check FAIL
 ### Step 8: merge-gate（マージ判定）【LLM 判断】
 `commands/merge-gate.md` を Read → 実行。上記「ドメインルール」の fix ループ・エスカレーション条件に従う。
 
+## compaction 復帰プロトコル
+
+compaction 後に workflow-pr-cycle chain を再開する場合、完了済みステップをスキップすること。
+
+```bash
+ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' || echo "")
+for step in ts-preflight pr-test all-pass-check pr-cycle-report; do
+  bash scripts/compaction-resume.sh "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
+  # 通常手順で実行（chain-runner または LLM 実行）
+done
+```
+
+- `compaction-resume.sh <ISSUE_NUM> <step>` が exit 0 → 実行、exit 1 → スキップ
+- fix ループ・merge-gate は LLM ステップのため状態を確認してから再実行すること
+- all-pass-check がスキップされた場合は PR の CI 結果を直接確認すること
+

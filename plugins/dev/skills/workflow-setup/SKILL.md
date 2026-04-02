@@ -125,3 +125,13 @@ autopilot 判定（state-read.sh でステータス確認）。
 
 **軽量 chain（is_quick=true）**: IS_AUTOPILOT=true → 直接実装後 commit → push → `gh pr create --fill --label quick` → merge-gate（pr-cycle スキップ）。false → 「直接実装 → merge-gate で完了可」と案内。
 
+## compaction 復帰プロトコル
+
+compaction 後に chain を再開する場合、各ステップ実行前に以下を確認すること:
+
+```bash
+ISSUE_NUM=<N>
+bash scripts/compaction-resume.sh "$ISSUE_NUM" "<step>" || { echo "スキップ"; continue; }
+# exit 0 → 実行、exit 1 → スキップ（完了済み）
+```
+

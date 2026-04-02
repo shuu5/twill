@@ -11,6 +11,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # =====================================================================
+# Compaction Recovery: chain ステップ順序定義（SSOT: scripts/chain-steps.sh）
+# =====================================================================
+# shellcheck source=./chain-steps.sh
+source "${SCRIPT_DIR}/chain-steps.sh"
+
+# =====================================================================
 # 共通ユーティリティ関数
 # =====================================================================
 
@@ -44,6 +50,21 @@ err() {
   echo "✗ ${step}: $*" >&2
 }
 
+# Compaction Recovery: current_step を issue-{N}.json に記録
+# 引数: step_id（記録するステップ名）
+# issue_num はブランチ名から自動抽出。取得できない場合はサイレントスキップ
+record_current_step() {
+  local step_id="${1:-}"
+  [[ -z "$step_id" ]] && return 0
+  # step_id の形式を検証（英数字とハイフンのみ許可）
+  [[ "$step_id" =~ ^[a-z0-9-]+$ ]] || return 0
+  local issue_num
+  issue_num="$(extract_issue_num)"
+  [[ -z "$issue_num" ]] && return 0
+  # record current_step in state-write.sh
+  bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$issue_num" --role worker --set "current_step=${step_id}" 2>/dev/null || true
+}
+
 # =====================================================================
 # Step 実装
 # =====================================================================
@@ -64,6 +85,7 @@ detect_quick_label() {
 # --- init: 開発状態判定 ---
 # Usage: step_init [issue_num]
 step_init() {
+  record_current_step "init"
   local issue_num="${1:-}"
   local root
   root="$(resolve_project_root)"
@@ -117,12 +139,14 @@ step_init() {
 
 # --- worktree-create: worktree-create.sh ラッパー ---
 step_worktree_create() {
+  record_current_step "worktree-create"
   bash "$SCRIPT_DIR/worktree-create.sh" "$@"
   ok "worktree-create" "完了"
 }
 
 # --- board-status-update: Project Board Status 更新 ---
 step_board_status_update() {
+  record_current_step "board-status-update"
   local issue_num="${1:-}"
 
   # 引数なし or 空 → スキップ
@@ -257,6 +281,7 @@ step_board_status_update() {
 
 # --- ac-extract: AC 抽出 ---
 step_ac_extract() {
+  record_current_step "ac-extract"
   local snapshot_dir="${1:-}"
   local issue_num
   issue_num="$(extract_issue_num)"
@@ -293,6 +318,7 @@ step_ac_extract() {
 
 # --- arch-ref: architecture/ コンテキスト抽出 ---
 step_arch_ref() {
+  record_current_step "arch-ref"
   local issue_num="${1:-}"
   if [[ -z "$issue_num" ]]; then
     issue_num="$(extract_issue_num)"
@@ -356,6 +382,7 @@ step_arch_ref() {
 
 # --- change-id-resolve: openspec change-id 解決 ---
 step_change_id_resolve() {
+  record_current_step "change-id-resolve"
   local root
   root="$(resolve_project_root)"
   local changes_dir="$root/openspec/changes"
@@ -379,6 +406,7 @@ step_change_id_resolve() {
 
 # --- ts-preflight: TypeScript 機械的検証 ---
 step_ts_preflight() {
+  record_current_step "ts-preflight"
   local root
   root="$(resolve_project_root)"
 
@@ -421,6 +449,7 @@ step_ts_preflight() {
 
 # --- pr-test: テスト実行 ---
 step_pr_test() {
+  record_current_step "pr-test"
   local root
   root="$(resolve_project_root)"
   local exit_code=0
@@ -455,6 +484,7 @@ step_pr_test() {
 
 # --- all-pass-check: 全パス判定 ---
 step_all_pass_check() {
+  record_current_step "all-pass-check"
   # 引数: step_results を JSON 形式で受け取る（stdin or 引数）
   local issue_num
   issue_num="$(extract_issue_num)"
@@ -493,6 +523,7 @@ step_all_pass_check() {
 
 # --- pr-cycle-report: 結果レポート構造化集約 ---
 step_pr_cycle_report() {
+  record_current_step "pr-cycle-report"
   # 引数: PR_NUM, レポート内容は stdin から受け取る
   local pr_num="${1:-}"
 
@@ -532,6 +563,7 @@ step_pr_cycle_report() {
 
 # --- check: 準備確認 ---
 step_check() {
+  record_current_step "check"
   local root
   root="$(resolve_project_root)"
   local has_fail=false
