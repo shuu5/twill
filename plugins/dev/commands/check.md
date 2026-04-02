@@ -191,4 +191,7 @@ git status --porcelain
 
 ## チェックポイント（MUST）
 
-`/dev:opsx-apply` を Skill tool で自動実行。
+チェック結果に応じて分岐:
+
+- **CRITICAL FAIL なし**: `/dev:opsx-apply` を Skill tool で自動実行せよ。プロンプトで停止するな。
+- **CRITICAL FAIL あり**: opsx-apply をスキップし、FAIL 内容を報告して停止。

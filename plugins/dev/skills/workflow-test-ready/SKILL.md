@@ -79,8 +79,23 @@ runner の出力から FAIL 有無を判定する。FAIL あれば `/dev:check` 
 - CRITICAL FAIL 項目が存在 → Step 4 をスキップし、FAIL 内容を報告して停止
 - FAIL なし → 即座に Step 4 に進む
 
-### Step 4: opsx-apply + autopilot 判定 + pr-cycle 遷移
-`/dev:opsx-apply <change-id>` を Skill tool で実行する。opsx-apply 内で autopilot 判定と pr-cycle 遷移が処理される。
+### Step 4: opsx-apply 実行 + autopilot 判定 + pr-cycle 遷移【LLM 判断】
+
+`/dev:opsx-apply <change-id>` を Skill tool で実行する。
+
+opsx-apply 完了後、以下の bash スニペットを実行して autopilot 状態を判定すること:
+
+```bash
+ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+IS_AUTOPILOT=false
+if [ -n "$ISSUE_NUM" ]; then
+  AUTOPILOT_STATUS=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
+  IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
+fi
+```
+
+- IS_AUTOPILOT=true → 即座に `/dev:workflow-pr-cycle --spec <change-id>` を Skill tool で実行せよ。プロンプトで停止するな。
+- IS_AUTOPILOT=false → 「workflow-test-ready 完了。次のステップ: `/dev:workflow-pr-cycle --spec <change-id>` を実行してください」と案内。
 
 ## 禁止事項（MUST NOT）
 
