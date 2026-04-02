@@ -1,0 +1,5 @@
+{
+  "name": "session",
+  "version": "1.0.0",
+  "description": "tmux セッション管理プラグイン（spawn/observe/fork）"
+}
