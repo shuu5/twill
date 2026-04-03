@@ -155,6 +155,7 @@ step_worktree_create() {
 step_board_status_update() {
   record_current_step "board-status-update"
   local issue_num="${1:-}"
+  local target_status="${2:-In Progress}"
 
   # 引数なし or 空 → スキップ
   if [[ -z "$issue_num" ]]; then
@@ -187,27 +188,27 @@ step_board_status_update() {
     return 0
   }
 
-  # Status フィールドの "In Progress" オプション ID を取得
-  local fields status_field_id in_progress_option_id
+  # Status フィールドの target_status オプション ID を取得
+  local fields status_field_id status_option_id
   fields=$(gh project field-list "$final_num" --owner "$owner" --format json 2>/dev/null) || {
     skip "board-status-update" "フィールド取得失敗"
     return 0
   }
   status_field_id=$(echo "$fields" | jq -r '.fields[] | select(.name == "Status") | .id')
-  in_progress_option_id=$(echo "$fields" | jq -r '.fields[] | select(.name == "Status") | .options[] | select(.name == "In Progress") | .id')
+  status_option_id=$(echo "$fields" | jq -r ".fields[] | select(.name == \"Status\") | .options[] | select(.name == \"$target_status\") | .id")
 
-  if [[ -z "$status_field_id" || -z "$in_progress_option_id" ]]; then
-    skip "board-status-update" "Status フィールドまたは In Progress オプションが見つからない"
+  if [[ -z "$status_field_id" || -z "$status_option_id" ]]; then
+    skip "board-status-update" "Status フィールドまたは $target_status オプションが見つからない"
     return 0
   fi
 
   gh project item-edit --id "$item_id" --project-id "$final_id" \
-    --field-id "$status_field_id" --single-select-option-id "$in_progress_option_id" 2>/dev/null || {
+    --field-id "$status_field_id" --single-select-option-id "$status_option_id" 2>/dev/null || {
     skip "board-status-update" "Status 更新失敗"
     return 0
   }
 
-  ok "board-status-update" "Project Board Status → In Progress (#$issue_num)"
+  ok "board-status-update" "Project Board Status → $target_status (#$issue_num)"
 }
 
 # --- board-archive: Project Board アイテムをアーカイブ ---
