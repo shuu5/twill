@@ -196,8 +196,8 @@ test_scenarios_files_exact_count() {
   assert_dir_exists "$SCENARIOS_DIR" || return 1
   local count
   count=$(find "${PROJECT_ROOT}/${SCENARIOS_DIR}" -name "*.test.sh" 2>/dev/null | wc -l)
-  if [[ "$count" -ne 75 ]]; then
-    echo "  [INFO] Expected 75 scenario files, found: ${count}" >&2
+  if [[ "$count" -ne 76 ]]; then
+    echo "  [INFO] Expected 76 scenario files, found: ${count}" >&2
     return 1
   fi
   return 0

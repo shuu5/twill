@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="dev:co-issue\n(3,742 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="dev:co-issue\n(3,821 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -32,6 +32,7 @@ digraph Dependencies {
     // L3: Agents
     agent_issue_critic [label="issue-critic\n(1,026 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_issue_feasibility [label="issue-feasibility\n(929 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(955 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
 
@@ -40,7 +41,7 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_co_issue; }
     { rank=same; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_project_board_sync; cmd_explore; }
-    { rank=same; agent_issue_critic; agent_issue_feasibility; }
+    { rank=same; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; }
 
     // Edges
     skill_co_issue -> cmd_explore;
@@ -51,12 +52,14 @@ digraph Dependencies {
     skill_co_issue -> cmd_project_board_sync;
     skill_co_issue -> agent_issue_critic [style=dashed];
     skill_co_issue -> agent_issue_feasibility [style=dashed];
+    skill_co_issue -> agent_worker_codex_reviewer [style=dashed];
     skill_co_issue -> skill_ref_issue_template_bug;
     skill_co_issue -> skill_ref_issue_template_feature;
     skill_co_issue -> skill_ref_project_model;
     skill_co_issue -> skill_ref_issue_quality_criteria;
     agent_issue_critic -> skill_ref_issue_quality_criteria [style=dotted];
     agent_issue_feasibility -> skill_ref_issue_quality_criteria [style=dotted];
+    agent_worker_codex_reviewer -> skill_ref_issue_quality_criteria [style=dotted];
 
     // Ordering constraints (invisible edges)
     cmd_explore -> cmd_issue_structure [style=invis, weight=10];
@@ -66,7 +69,8 @@ digraph Dependencies {
     cmd_issue_bulk_create -> cmd_project_board_sync [style=invis, weight=10];
     cmd_project_board_sync -> agent_issue_critic [style=invis, weight=10];
     agent_issue_critic -> agent_issue_feasibility [style=invis, weight=10];
-    agent_issue_feasibility -> skill_ref_issue_template_bug [style=invis, weight=10];
+    agent_issue_feasibility -> agent_worker_codex_reviewer [style=invis, weight=10];
+    agent_worker_codex_reviewer -> skill_ref_issue_template_bug [style=invis, weight=10];
     skill_ref_issue_template_bug -> skill_ref_issue_template_feature [style=invis, weight=10];
     skill_ref_issue_template_feature -> skill_ref_project_model [style=invis, weight=10];
     skill_ref_project_model -> skill_ref_issue_quality_criteria [style=invis, weight=10];

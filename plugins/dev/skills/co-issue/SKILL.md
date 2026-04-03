@@ -104,12 +104,13 @@ TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
 `--quick` 指定時はこのステップをスキップし、Step 3a のみで Phase 3 を完了する。`--quick` フラグ使用時は quick ラベルを付与してはならない（MUST NOT）。
 
-全 Issue の構造化完了後、全 Issue × 2 specialist を一括並列 spawn（Agent tool）。`is_quick_candidate: true` の Issue は prompt に `<quick_classification>` タグを追加注入し、specialist が `quick-classification` カテゴリで妥当性を検証する（issue-critic: 隠れた複雑性、issue-feasibility: ~20行以下の確認）。逆方向の推奨も許可（severity: INFO）。
+全 Issue の構造化完了後、全 Issue × 3 specialist を一括並列 spawn（Agent tool）。`is_quick_candidate: true` の Issue は prompt に `<quick_classification>` タグを追加注入し、specialist が `quick-classification` カテゴリで妥当性を検証する（issue-critic: 隠れた複雑性、issue-feasibility: ~20行以下の確認）。逆方向の推奨も許可（severity: INFO）。
 
 ```
 FOR each structured_issue IN issues:
   Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n{structured_issue.body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
   Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n{structured_issue.body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n{structured_issue.body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
 ```
 
 **注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。
@@ -133,6 +134,7 @@ FOR each structured_issue IN issues:
 |-----------|--------|----------|
 | issue-critic | WARN | 2 findings (0 CRITICAL, 1 WARNING, 1 INFO) |
 | issue-feasibility | PASS | 0 findings |
+| worker-codex-reviewer | PASS | 0 findings |
 
 #### findings 詳細
 | severity | confidence | category | message |

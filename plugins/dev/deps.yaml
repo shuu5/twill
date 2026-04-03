@@ -81,7 +81,7 @@ skills:
     type: controller
     path: skills/co-issue/SKILL.md
     effort: high
-    tools: [Agent(issue-critic, issue-feasibility, context-checker, template-validator)]
+    tools: [Agent(issue-critic, issue-feasibility, worker-codex-reviewer, context-checker, template-validator)]
     spawnable_by: [user]
     can_spawn: [composite, atomic, specialist, reference]
     calls:
@@ -93,6 +93,7 @@ skills:
       - atomic: project-board-sync
       - specialist: issue-critic
       - specialist: issue-feasibility
+      - specialist: worker-codex-reviewer
       - reference: ref-issue-template-bug
       - reference: ref-issue-template-feature
       - reference: ref-project-model
@@ -1453,6 +1454,15 @@ agents:
     can_spawn: []
     skills: [ref-issue-quality-criteria]
     description: "実コード読みで Issue の実装可能性・影響範囲検証"
+
+  worker-codex-reviewer:
+    type: specialist
+    path: agents/worker-codex-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-issue-quality-criteria, ref-specialist-output-schema]
+    description: "Codex CLI による補完的レビュー（Issue/PR 両対応）"
 
   # 品質判断系（sonnet）
   worker-code-reviewer:

@@ -94,7 +94,7 @@ run_test_skip() {
 
 DEPS_YAML="deps.yaml"
 
-# --- 28 specialist 一覧（pr-test は既存 atomic command と重複のため除外） ---
+# --- 29 specialist 一覧（pr-test は既存 atomic command と重複のため除外） ---
 ALL_SPECIALISTS=(
   worker-code-reviewer
   worker-security-reviewer
@@ -124,6 +124,7 @@ ALL_SPECIALISTS=(
   e2e-visual-heal
   issue-critic
   issue-feasibility
+  worker-codex-reviewer
 )
 
 HAIKU_SPECIALISTS=(
@@ -158,6 +159,7 @@ SONNET_SPECIALISTS=(
   e2e-visual-heal
   issue-critic
   issue-feasibility
+  worker-codex-reviewer
 )
 
 # =============================================================================
@@ -188,8 +190,8 @@ run_test "全 28 specialist ファイルが agents/ に存在する" test_all_27
 test_agents_exactly_27() {
   local count
   count=$(find "${PROJECT_ROOT}/agents" -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l)
-  if [[ "$count" -ne 28 ]]; then
-    echo "Expected 28 agent files, found ${count}" >&2
+  if [[ "$count" -ne 29 ]]; then
+    echo "Expected 29 agent files, found ${count}" >&2
     return 1
   fi
   return 0
@@ -341,8 +343,8 @@ test_model_allocation_total() {
   local haiku_count=${#HAIKU_SPECIALISTS[@]}
   local sonnet_count=${#SONNET_SPECIALISTS[@]}
   local total=$((haiku_count + sonnet_count))
-  if [[ "$total" -ne 28 ]]; then
-    echo "haiku(${haiku_count}) + sonnet(${sonnet_count}) = ${total}, expected 28" >&2
+  if [[ "$total" -ne 29 ]]; then
+    echo "haiku(${haiku_count}) + sonnet(${sonnet_count}) = ${total}, expected 29" >&2
     return 1
   fi
   return 0
@@ -501,8 +503,8 @@ test_deps_agents_count_27() {
   yaml_get "$DEPS_YAML" "
 agents = data.get('agents', {})
 count = len(agents)
-if count != 28:
-    print(f'Expected 28 agents, got {count}', file=sys.stderr)
+if count != 29:
+    print(f'Expected 29 agents, got {count}', file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
