@@ -174,6 +174,29 @@ export AUTOPILOT_DIR
 # shellcheck disable=SC2086
 bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role worker $REPO_ARG --init
 
+# --- quick ラベル検出 ---
+IS_QUICK_LAUNCH=false
+GH_ISSUE_REPO_FLAG=""
+if [[ -n "$REPO_OWNER" && -n "$REPO_NAME" ]]; then
+  GH_ISSUE_REPO_FLAG="--repo ${REPO_OWNER}/${REPO_NAME}"
+fi
+# shellcheck disable=SC2086
+if gh issue view "$ISSUE" $GH_ISSUE_REPO_FLAG --json labels --jq '.labels[].name' 2>/dev/null | grep -qxF "quick"; then
+  IS_QUICK_LAUNCH=true
+fi
+
+# --- quick 指示をシステムプロンプトとして CONTEXT に追記 ---
+if [[ "$IS_QUICK_LAUNCH" == "true" ]]; then
+  QUICK_INSTRUCTION="[quick Issue] このIssueにはquickラベルが付いています。workflow-test-readyは実行してはいけません。直接実装→commit→push→gh pr create --fill --label quick→merge-gateのみを実行してください。"
+  if [[ -n "$CONTEXT" ]]; then
+    CONTEXT="${CONTEXT}
+
+${QUICK_INSTRUCTION}"
+  else
+    CONTEXT="$QUICK_INSTRUCTION"
+  fi
+fi
+
 # --- プロンプト構築 ---
 WINDOW_NAME="ap-#${ISSUE}"
 PROMPT="/dev:workflow-setup #${ISSUE}"

@@ -16,6 +16,30 @@ spawnable_by:
 
 テスト生成と準備確認を実行する。workflow-setup の後に呼び出す。
 
+## quick Issue ガード（MUST — 最初に評価すること）
+
+以下のスニペットを実行して quick 状態を確認すること:
+
+```bash
+ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+IS_QUICK=false
+if [ -n "$ISSUE_NUM" ]; then
+  # NOTE: このスニペットは skills/workflow-setup/SKILL.md の Step 4 と同一ロジック。
+  # どちらかを変更した場合は両ファイルを同期すること。
+  QUICK_STATE=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field is_quick 2>/dev/null || echo "")
+  if [[ "$QUICK_STATE" == "true" ]]; then
+    IS_QUICK=true
+  elif [[ -z "$QUICK_STATE" ]]; then
+    if gh issue view "$ISSUE_NUM" --json labels --jq '.labels[].name' 2>/dev/null | grep -qxF "quick"; then
+      IS_QUICK=true
+    fi
+  fi
+fi
+```
+
+**【MUST NOT】** `IS_QUICK=true` の場合、このスキルの処理を続行してはならない。
+`IS_QUICK=true` のとき → 「quick Issue は workflow-test-ready をスキップします。`commands/merge-gate.md` を Read して merge-gate のみ実行してください。」と出力して即座に終了すること。
+
 ## フロー制御（MUST）
 
 ### 1. change-id 解決

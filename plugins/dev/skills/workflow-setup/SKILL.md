@@ -127,20 +127,37 @@ NEXT=$(bash scripts/chain-runner.sh next-step "$ISSUE_NUM" "opsx-propose")
 bash scripts/chain-runner.sh ac-extract
 ```
 
-### Step 4: workflow-test-ready へ遷移【autopilot 判定 → runner + LLM】
+### Step 4: workflow-test-ready へ遷移【quick 判定 → autopilot 判定 → runner + LLM】
 
-以下の bash スニペットを実行して autopilot 状態を判定すること:
+以下の bash スニペットを実行して quick 状態と autopilot 状態を判定すること:
 
 ```bash
 ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
 IS_AUTOPILOT=false
+IS_QUICK=false
 if [ -n "$ISSUE_NUM" ]; then
   AUTOPILOT_STATUS=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
   IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
+  # NOTE: このスニペットは skills/workflow-test-ready/SKILL.md の quick ガードと同一ロジック。
+  # どちらかを変更した場合は両ファイルを同期すること。
+  QUICK_STATE=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field is_quick 2>/dev/null || echo "")
+  if [[ "$QUICK_STATE" == "true" ]]; then
+    IS_QUICK=true
+  elif [[ -z "$QUICK_STATE" ]]; then
+    # fallback: gh API でラベル確認
+    if gh issue view "$ISSUE_NUM" --json labels --jq '.labels[].name' 2>/dev/null | grep -qxF "quick"; then
+      IS_QUICK=true
+    fi
+  fi
 fi
 ```
 
-- IS_AUTOPILOT=true → 即座に `/dev:workflow-test-ready` を Skill tool で実行せよ。プロンプトで停止するな。
+**【MUST NOT】** `IS_QUICK=true` かつ `IS_AUTOPILOT=true` の場合、`/dev:workflow-test-ready` を Skill tool で実行してはならない。
+
+分岐（IS_QUICK チェックを IS_AUTOPILOT チェックより先に評価すること）:
+
+- IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready を呼び出さずに、「直接実装 → commit → push → `gh pr create --fill --label quick` → `commands/merge-gate.md` を Read して merge-gate のみ実行せよ」と案内せよ。プロンプトで停止するな。
+- IS_QUICK=false かつ IS_AUTOPILOT=true → 即座に `/dev:workflow-test-ready` を Skill tool で実行せよ。プロンプトで停止するな。
 - IS_AUTOPILOT=false → 「setup chain 完了。次のステップ: `/dev:workflow-test-ready` を実行してください」と案内。
 
 ## compaction 復帰プロトコル
