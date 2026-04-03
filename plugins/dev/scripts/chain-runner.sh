@@ -203,10 +203,10 @@ step_board_status_update() {
   '
 
   local matched_project_num="" matched_project_id="" title_match_num="" title_match_id=""
-  local project_numbers
-  project_numbers=$(echo "$projects" | jq -r '.projects[].number')
+  local project_nums
+  mapfile -t project_nums < <(echo "$projects" | jq -r '.projects[].number')
 
-  for pnum in $project_numbers; do
+  for pnum in "${project_nums[@]}"; do
     local result project_data
     result=$(gh api graphql -f query="$graphql_query" -f owner="$owner" -F num="$pnum" 2>/dev/null) || true
     project_data=$(echo "$result" | jq -r '.data.user.projectV2 // empty' 2>/dev/null)
@@ -338,10 +338,10 @@ step_board_archive() {
   '
 
   local matched_project_num="" title_match_num=""
-  local project_numbers
-  project_numbers=$(echo "$projects" | jq -r '.projects[].number')
+  local project_nums
+  mapfile -t project_nums < <(echo "$projects" | jq -r '.projects[].number')
 
-  for pnum in $project_numbers; do
+  for pnum in "${project_nums[@]}"; do
     local result project_data
     result=$(gh api graphql -f query="$graphql_query" -f owner="$owner" -F num="$pnum" 2>/dev/null) || true
     project_data=$(echo "$result" | jq -r '.data.user.projectV2 // empty' 2>/dev/null)

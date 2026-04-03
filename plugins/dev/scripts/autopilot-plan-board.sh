@@ -19,14 +19,15 @@ _detect_project_board() {
     repo_owner="${repo%%/*}"
     repo_name="${repo##*/}"
 
-    local projects project_numbers
+    local projects
     if ! projects=$(gh project list --owner "$repo_owner" --format json 2>/dev/null); then
         echo "Error: Project 一覧を取得できません。gh auth refresh -s project を実行してください" >&2
         exit 1
     fi
-    project_numbers=$(echo "$projects" | jq -r '.projects[].number')
+    local project_nums
+    mapfile -t project_nums < <(echo "$projects" | jq -r '.projects[].number')
 
-    if [[ -z "$project_numbers" ]]; then
+    if [[ ${#project_nums[@]} -eq 0 ]]; then
         echo "Error: owner $repo_owner に Project が存在しません" >&2
         exit 1
     fi
@@ -36,7 +37,7 @@ _detect_project_board() {
 
     local matched_project_num="" title_match_num=""
 
-    for pnum in $project_numbers; do
+    for pnum in "${project_nums[@]}"; do
         if [[ ! "$pnum" =~ ^[0-9]+$ ]]; then
             continue
         fi

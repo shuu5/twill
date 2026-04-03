@@ -37,7 +37,7 @@ REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
 OWNER="${REPO%%/*}"
 REPO_NAME="${REPO##*/}"
 
-PROJECT_NUMBERS=$(gh project list --owner "$OWNER" --format json | jq -r '.projects[].number')
+mapfile -t PROJECT_NUMS < <(gh project list --owner "$OWNER" --format json | jq -r '.projects[].number')
 
 GRAPHQL_QUERY='
   query($owner: String!, $num: Int!) {
@@ -65,7 +65,7 @@ GRAPHQL_QUERY_ORG='
 MATCHED_PROJECTS=()
 TITLE_MATCH_PROJECT=""
 
-for PROJECT_NUM in $PROJECT_NUMBERS; do
+for PROJECT_NUM in "${PROJECT_NUMS[@]}"; do
   RESULT=$(gh api graphql -f query="$GRAPHQL_QUERY" -f owner="$OWNER" -F num="$PROJECT_NUM" 2>/dev/null) || continue
   PROJECT_DATA=$(echo "$RESULT" | jq -r '.data.user.projectV2 // empty')
 
