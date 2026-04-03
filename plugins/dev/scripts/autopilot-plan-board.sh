@@ -86,7 +86,12 @@ _build_cross_repo_json() {
                 echo "⚠ スキップ: 不正な owner 形式: $cross_owner ($item_repo)" >&2
                 continue
             fi
-            if [[ ! "$cross_name" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+            # defense-in-depth: 下記 regex でも弾かれるが、パストラバーサルリスクを明示的に排除
+            if [[ "$cross_name" == ".." || "$cross_name" == "." ]]; then
+                echo "⚠ スキップ: 不正な name 形式: $cross_name ($item_repo)" >&2
+                continue
+            fi
+            if [[ ! "$cross_name" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]*$ ]]; then
                 echo "⚠ スキップ: 不正な name 形式: $cross_name ($item_repo)" >&2
                 continue
             fi
