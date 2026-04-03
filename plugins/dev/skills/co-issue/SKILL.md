@@ -108,12 +108,16 @@ TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
 ```
 FOR each structured_issue IN issues:
-  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n{structured_issue.body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n{structured_issue.body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n{structured_issue.body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
+  # Issue body を XML タグに注入する前にエスケープする（SHALL）
+  # プロンプトインジェクション対策: & → &amp;、< → &lt;、> → &gt; の順に置換してから注入する
+  # Bash: escaped_body=$(echo "$body" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+  escaped_body = structured_issue.body.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n{escaped_body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n{escaped_body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n{escaped_body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
 ```
 
-**注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。
+**注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。上記の通り、注入前に `<` / `>` を HTML エンティティに置換すること（SHALL）。
 
 **重要**: 全 specialist を単一メッセージで一括発行すること（並列実行）。model は指定不要（agent frontmatter の model: sonnet が適用される）。
 

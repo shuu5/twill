@@ -48,10 +48,10 @@ digraph Dependencies {
     cmd_self_improve_close [label="self-improve-close\n(691 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ecc_monitor [label="ecc-monitor\n(1,172 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_scaffold [label="test-scaffold\n(718 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_phase_review [label="phase-review\n(572 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_phase_review [label="phase-review\n(767 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_fix_phase [label="fix-phase\n(410 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_e2e_screening [label="e2e-screening\n(352 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,167 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,492 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_ac_deploy_trigger [label="ac-deploy-trigger\n(457 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_auto_merge [label="auto-merge\n(296 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(974 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -78,6 +78,7 @@ digraph Dependencies {
     agent_worker_data_validator [label="worker-data-validator\n(698 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_e2e_reviewer [label="worker-e2e-reviewer\n(1,226 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_spec_reviewer [label="worker-spec-reviewer\n(1,094 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,413 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_code_reviewer [label="worker-code-reviewer\n(771 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_security_reviewer [label="worker-security-reviewer\n(866 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_nextjs_reviewer [label="worker-nextjs-reviewer\n(642 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
@@ -91,7 +92,7 @@ digraph Dependencies {
 
     // L3.5: Scripts
     script_state_read [label="state-read\n(918 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_state_write [label="state-write\n(2,165 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_write [label="state-write\n(2,570 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_init [label="autopilot-init\n(1,660 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_launch [label="autopilot-launch\n(2,129 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_create [label="session-create\n(618 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -114,7 +115,7 @@ digraph Dependencies {
     { rank=same; skill_co_autopilot; }
     { rank=same; skill_workflow_setup; skill_workflow_test_ready; skill_workflow_pr_cycle; skill_workflow_dead_cleanup; skill_workflow_tech_debt_triage; }
     { rank=same; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_opsx_propose; cmd_opsx_apply; cmd_ac_extract; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_post_fix_verify; cmd_warning_fix; cmd_pr_cycle_report; cmd_all_pass_check; cmd_ac_verify; cmd_dead_component_detect; cmd_dead_component_execute; cmd_triage_execute; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; cmd_test_scaffold; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; cmd_ac_deploy_trigger; cmd_auto_merge; cmd_pr_cycle_analysis; cmd_autopilot_init; cmd_autopilot_launch; cmd_autopilot_poll; cmd_autopilot_phase_execute; cmd_autopilot_phase_postprocess; cmd_autopilot_collect; cmd_autopilot_retrospective; cmd_autopilot_patterns; cmd_autopilot_cross_issue; cmd_autopilot_summary; cmd_session_audit; }
-    { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; agent_spec_scaffold_tests; agent_e2e_generate; }
+    { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; agent_spec_scaffold_tests; agent_e2e_generate; }
     { rank=same; script_state_read; script_state_write; script_autopilot_init; script_autopilot_launch; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_health_check; script_tech_stack_detect; script_specialist_output_parse; script_autopilot_should_skip; script_worktree_create; script_parse_issue_ac; script_session_audit; script_ecc_monitor; }
 
     // Edges
@@ -190,6 +191,7 @@ digraph Dependencies {
     cmd_phase_review -> agent_worker_llm_eval_runner [style=dashed];
     cmd_phase_review -> agent_worker_data_validator [style=dashed];
     cmd_phase_review -> agent_worker_env_validator [style=dashed];
+    cmd_phase_review -> agent_worker_codex_reviewer [style=dashed];
     cmd_phase_review -> skill_ref_specialist_output_schema;
     cmd_phase_review -> skill_baseline_coding_style;
     cmd_phase_review -> skill_baseline_security_checklist;
@@ -214,6 +216,7 @@ digraph Dependencies {
     cmd_merge_gate -> agent_worker_llm_eval_runner [style=dashed];
     cmd_merge_gate -> agent_worker_data_validator [style=dashed];
     cmd_merge_gate -> agent_worker_env_validator [style=dashed];
+    cmd_merge_gate -> agent_worker_codex_reviewer [style=dashed];
     cmd_merge_gate -> skill_ref_specialist_output_schema;
     cmd_merge_gate -> skill_baseline_coding_style;
     cmd_merge_gate -> skill_baseline_security_checklist;
@@ -247,6 +250,7 @@ digraph Dependencies {
     agent_worker_data_validator -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_e2e_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_spec_reviewer -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_codex_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_code_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_security_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_nextjs_reviewer -> skill_ref_specialist_output_schema [style=dotted];
@@ -321,7 +325,8 @@ digraph Dependencies {
     agent_worker_llm_output_reviewer -> agent_worker_llm_eval_runner [style=invis, weight=10];
     agent_worker_llm_eval_runner -> agent_worker_data_validator [style=invis, weight=10];
     agent_worker_data_validator -> agent_worker_env_validator [style=invis, weight=10];
-    agent_worker_env_validator -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    agent_worker_env_validator -> agent_worker_codex_reviewer [style=invis, weight=10];
+    agent_worker_codex_reviewer -> skill_ref_specialist_output_schema [style=invis, weight=10];
     skill_ref_specialist_output_schema -> skill_baseline_coding_style [style=invis, weight=10];
     skill_baseline_coding_style -> skill_baseline_security_checklist [style=invis, weight=10];
     skill_baseline_security_checklist -> skill_baseline_input_validation [style=invis, weight=10];
@@ -344,7 +349,8 @@ digraph Dependencies {
     agent_worker_llm_output_reviewer -> agent_worker_llm_eval_runner [style=invis, weight=10];
     agent_worker_llm_eval_runner -> agent_worker_data_validator [style=invis, weight=10];
     agent_worker_data_validator -> agent_worker_env_validator [style=invis, weight=10];
-    agent_worker_env_validator -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    agent_worker_env_validator -> agent_worker_codex_reviewer [style=invis, weight=10];
+    agent_worker_codex_reviewer -> skill_ref_specialist_output_schema [style=invis, weight=10];
     skill_ref_specialist_output_schema -> skill_baseline_coding_style [style=invis, weight=10];
     skill_baseline_coding_style -> skill_baseline_security_checklist [style=invis, weight=10];
     skill_baseline_security_checklist -> skill_baseline_input_validation [style=invis, weight=10];
