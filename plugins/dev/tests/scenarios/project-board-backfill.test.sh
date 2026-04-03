@@ -79,6 +79,8 @@ run_test_skip() {
 
 BACKFILL_SCRIPT="scripts/project-board-backfill.sh"
 STATUS_UPDATE_CMD="commands/project-board-status-update.md"
+# TITLE_MATCH_PROJECT / MATCHED_PROJECTS パターンは resolve-project-lib (#137) で共通化済み
+LIB_SCRIPT="scripts/lib/resolve-project.sh"
 SYNC_CMD="commands/project-board-sync.md"
 DEPS_YAML="deps.yaml"
 
@@ -232,36 +234,35 @@ run_test "backfill [edge: スキップ後にループ継続する]" test_backfil
 echo ""
 echo "--- Requirement: Project 検出 (TITLE_MATCH_PROJECT) ---"
 
-# TITLE_MATCH_PROJECT パターンの使用
+# TITLE_MATCH_PROJECT パターンの使用（resolve-project-lib #137 で LIB_SCRIPT に集約）
 test_backfill_title_match_project() {
-  assert_file_exists "$BACKFILL_SCRIPT" || return 1
-  assert_file_contains "$BACKFILL_SCRIPT" 'TITLE_MATCH_PROJECT' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'title_match' || return 1
   return 0
 }
 run_test "backfill に TITLE_MATCH_PROJECT パターンがある" test_backfill_title_match_project
 
-# MATCHED_PROJECTS の収集ロジック
+# MATCHED_PROJECTS の収集ロジック（resolve-project-lib #137 で LIB_SCRIPT に集約）
 test_backfill_matched_projects() {
-  assert_file_exists "$BACKFILL_SCRIPT" || return 1
-  assert_file_contains "$BACKFILL_SCRIPT" 'MATCHED_PROJECTS' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'matched_num|matched_id' || return 1
   return 0
 }
 run_test "backfill に MATCHED_PROJECTS 収集ロジックがある" test_backfill_matched_projects
 
 # Edge case: タイトルマッチが最初のマッチより優先される
 test_backfill_title_priority_over_first() {
-  assert_file_exists "$BACKFILL_SCRIPT" || return 1
-  # タイトルマッチ優先ロジック: if TITLE_MATCH → use it, elif MATCHED → use first
-  assert_file_contains "$BACKFILL_SCRIPT" 'TITLE_MATCH_PROJECT' || return 1
-  assert_file_contains "$BACKFILL_SCRIPT" 'MATCHED_PROJECTS\[0\]' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  # タイトルマッチ優先ロジック: ${title_match_num:-$matched_num} パターン
+  assert_file_contains "$LIB_SCRIPT" 'title_match_num:-' || return 1
   return 0
 }
 run_test "backfill [edge: TITLE_MATCH_PROJECT が最初のマッチより優先]" test_backfill_title_priority_over_first
 
 # Edge case: user → organization フォールバック
 test_backfill_user_org_fallback() {
-  assert_file_exists "$BACKFILL_SCRIPT" || return 1
-  assert_file_contains "$BACKFILL_SCRIPT" 'organization' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'organization' || return 1
   return 0
 }
 run_test "backfill [edge: user→organization フォールバック]" test_backfill_user_org_fallback

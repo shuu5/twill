@@ -63,6 +63,8 @@ ARCHIVE_SCRIPT="scripts/project-board-archive.sh"
 BACKFILL_SCRIPT="scripts/project-board-backfill.sh"
 CHAIN_RUNNER="scripts/chain-runner.sh"
 AUTOPILOT_BOARD="scripts/autopilot-plan-board.sh"
+# mapfile パターンは resolve-project-lib リファクタリングにより共通ライブラリに移動
+LIB_SCRIPT="scripts/lib/resolve-project.sh"
 
 # =============================================================================
 # Requirement: PROJECT_NUMBERS の mapfile パターン統一
@@ -74,23 +76,22 @@ echo ""
 echo "--- Scenario: project-board-archive.sh のイテレーション ---"
 
 test_archive_uses_mapfile() {
-  assert_file_exists "$ARCHIVE_SCRIPT" || return 1
-  # mapfile -t で配列格納
-  assert_file_contains "$ARCHIVE_SCRIPT" 'mapfile\s+-t\s+PROJECT_NUMS' || return 1
+  # mapfile パターンは resolve-project-lib (#137) で LIB_SCRIPT に集約済み
+  # archive は resolve_project を source 経由で呼び出す
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'mapfile\s+-t\s+project_nums' || return 1
 }
 run_test "archive [mapfile -t PROJECT_NUMS が使われている]" test_archive_uses_mapfile
 
 test_archive_uses_process_substitution() {
-  assert_file_exists "$ARCHIVE_SCRIPT" || return 1
-  # process substitution < <(...) で jq 出力を読み込む
-  assert_file_contains "$ARCHIVE_SCRIPT" 'mapfile\s+-t\s+PROJECT_NUMS\s+<\s+<\(' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'mapfile\s+-t\s+project_nums\s+<\s+<\(' || return 1
 }
 run_test "archive [mapfile で process substitution < <(...) を使っている]" test_archive_uses_process_substitution
 
 test_archive_iterates_with_quoted_array() {
-  assert_file_exists "$ARCHIVE_SCRIPT" || return 1
-  # "${PROJECT_NUMS[@]}" でイテレーション
-  assert_file_contains "$ARCHIVE_SCRIPT" '"\$\{PROJECT_NUMS\[@\]\}"' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" '"\$\{project_nums\[@\]\}"' || return 1
 }
 run_test 'archive ["${PROJECT_NUMS[@]}" でイテレーションしている]' test_archive_iterates_with_quoted_array
 
@@ -118,20 +119,21 @@ echo ""
 echo "--- Scenario: project-board-backfill.sh のイテレーション ---"
 
 test_backfill_uses_mapfile() {
-  assert_file_exists "$BACKFILL_SCRIPT" || return 1
-  assert_file_contains "$BACKFILL_SCRIPT" 'mapfile\s+-t\s+PROJECT_NUMS' || return 1
+  # mapfile パターンは resolve-project-lib (#137) で LIB_SCRIPT に集約済み
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'mapfile\s+-t\s+project_nums' || return 1
 }
 run_test "backfill [mapfile -t PROJECT_NUMS が使われている]" test_backfill_uses_mapfile
 
 test_backfill_uses_process_substitution() {
-  assert_file_exists "$BACKFILL_SCRIPT" || return 1
-  assert_file_contains "$BACKFILL_SCRIPT" 'mapfile\s+-t\s+PROJECT_NUMS\s+<\s+<\(' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'mapfile\s+-t\s+project_nums\s+<\s+<\(' || return 1
 }
 run_test "backfill [mapfile で process substitution < <(...) を使っている]" test_backfill_uses_process_substitution
 
 test_backfill_iterates_with_quoted_array() {
-  assert_file_exists "$BACKFILL_SCRIPT" || return 1
-  assert_file_contains "$BACKFILL_SCRIPT" '"\$\{PROJECT_NUMS\[@\]\}"' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" '"\$\{project_nums\[@\]\}"' || return 1
 }
 run_test 'backfill ["${PROJECT_NUMS[@]}" でイテレーションしている]' test_backfill_iterates_with_quoted_array
 
@@ -158,28 +160,32 @@ echo ""
 echo "--- Scenario: chain-runner.sh の2箇所のイテレーション ---"
 
 test_chain_runner_uses_mapfile() {
-  assert_file_exists "$CHAIN_RUNNER" || return 1
-  assert_file_contains "$CHAIN_RUNNER" 'mapfile\s+-t\s+project_nums' || return 1
+  # mapfile パターンは resolve-project-lib (#137) で LIB_SCRIPT に集約済み
+  # chain-runner は resolve_project を source 経由で呼び出す
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'mapfile\s+-t\s+project_nums' || return 1
 }
 run_test "chain-runner [mapfile -t project_nums が使われている]" test_chain_runner_uses_mapfile
 
 test_chain_runner_uses_process_substitution() {
-  assert_file_exists "$CHAIN_RUNNER" || return 1
-  assert_file_contains "$CHAIN_RUNNER" 'mapfile\s+-t\s+project_nums\s+<\s+<\(' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'mapfile\s+-t\s+project_nums\s+<\s+<\(' || return 1
 }
 run_test "chain-runner [mapfile で process substitution < <(...) を使っている]" test_chain_runner_uses_process_substitution
 
 test_chain_runner_iterates_with_quoted_array() {
-  assert_file_exists "$CHAIN_RUNNER" || return 1
-  assert_file_contains "$CHAIN_RUNNER" '"\$\{project_nums\[@\]\}"' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" '"\$\{project_nums\[@\]\}"' || return 1
 }
 run_test 'chain-runner ["${project_nums[@]}" でイテレーションしている]' test_chain_runner_iterates_with_quoted_array
 
 test_chain_runner_has_two_mapfile_locations() {
+  # resolve-project-lib (#137) で共通化: LIB_SCRIPT に1箇所、chain-runner は2回呼び出し
+  assert_file_exists "$LIB_SCRIPT" || return 1
   assert_file_exists "$CHAIN_RUNNER" || return 1
-  # spec: 2箇所で使われている (board-status-update と board-archive の両方)
+  # resolve_project が chain-runner で2回呼ばれている (board-status-update, board-archive)
   local count
-  count=$(grep -cP 'mapfile\s+-t\s+project_nums' "${PROJECT_ROOT}/${CHAIN_RUNNER}" 2>/dev/null) || count=0
+  count=$(grep -cP 'resolve_project' "${PROJECT_ROOT}/${CHAIN_RUNNER}" 2>/dev/null) || count=0
   [[ "${count:-0}" -ge 2 ]]
 }
 run_test "chain-runner [edge: mapfile パターンが2箇所以上存在する]" test_chain_runner_has_two_mapfile_locations
@@ -218,20 +224,22 @@ echo ""
 echo "--- Scenario: autopilot-plan-board.sh のイテレーション（バリデーション維持） ---"
 
 test_autopilot_board_uses_mapfile() {
-  assert_file_exists "$AUTOPILOT_BOARD" || return 1
-  assert_file_contains "$AUTOPILOT_BOARD" 'mapfile\s+-t\s+project_nums' || return 1
+  # mapfile パターンは resolve-project-lib (#137) で LIB_SCRIPT に集約済み
+  # autopilot-plan-board は _detect_project_board 経由で resolve_project を呼び出す
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'mapfile\s+-t\s+project_nums' || return 1
 }
 run_test "autopilot-plan-board [mapfile -t project_nums が使われている]" test_autopilot_board_uses_mapfile
 
 test_autopilot_board_uses_process_substitution() {
-  assert_file_exists "$AUTOPILOT_BOARD" || return 1
-  assert_file_contains "$AUTOPILOT_BOARD" 'mapfile\s+-t\s+project_nums\s+<\s+<\(' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" 'mapfile\s+-t\s+project_nums\s+<\s+<\(' || return 1
 }
 run_test "autopilot-plan-board [mapfile で process substitution < <(...) を使っている]" test_autopilot_board_uses_process_substitution
 
 test_autopilot_board_iterates_with_quoted_array() {
-  assert_file_exists "$AUTOPILOT_BOARD" || return 1
-  assert_file_contains "$AUTOPILOT_BOARD" '"\$\{project_nums\[@\]\}"' || return 1
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" '"\$\{project_nums\[@\]\}"' || return 1
 }
 run_test 'autopilot-plan-board ["${project_nums[@]}" でイテレーションしている]' test_autopilot_board_iterates_with_quoted_array
 
@@ -243,9 +251,9 @@ test_autopilot_board_no_unquoted_wordsplit() {
 run_test "autopilot-plan-board [edge: unquoted word-split パターン for X in \$VAR が除去されている]" test_autopilot_board_no_unquoted_wordsplit
 
 test_autopilot_board_numeric_validation_guard_present() {
-  assert_file_exists "$AUTOPILOT_BOARD" || return 1
-  # 数値バリデーションガード: [[ ! "$pnum" =~ ^[0-9]+$ ]] && continue が維持されている
-  assert_file_contains "$AUTOPILOT_BOARD" '!\s+"\$pnum"\s+=~\s+\^\[0-9\]\+\$' || return 1
+  # 数値バリデーションガードは resolve-project-lib (#137) で LIB_SCRIPT に集約済み
+  assert_file_exists "$LIB_SCRIPT" || return 1
+  assert_file_contains "$LIB_SCRIPT" '!\s+"\$pnum"\s+=~\s+\^\[0-9\]\+\$' || return 1
 }
 run_test "autopilot-plan-board [edge: 数値バリデーションガードが維持されている]" test_autopilot_board_numeric_validation_guard_present
 

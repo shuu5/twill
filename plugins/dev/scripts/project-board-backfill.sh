@@ -37,80 +37,12 @@ if ! gh project list --owner @me --limit 1 >/dev/null 2>&1; then
   exit 0
 fi
 
-# ── Step 1: Project 検出（TITLE_MATCH_PROJECT パターン） ──────
-REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
-OWNER="${REPO%%/*}"
-REPO_NAME="${REPO##*/}"
+# ── Step 1: Project 検出 ──────────────────────────────────────
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/resolve-project.sh
+source "${SCRIPT_DIR}/lib/resolve-project.sh"
 
-# Project 一覧を取得
-mapfile -t PROJECT_NUMS < <(gh project list --owner "$OWNER" --format json | jq -r '.projects[].number')
-
-GRAPHQL_QUERY='
-  query($owner: String!, $num: Int!) {
-    user(login: $owner) {
-      projectV2(number: $num) {
-        id
-        title
-        repositories(first: 20) { nodes { nameWithOwner } }
-      }
-    }
-  }
-'
-GRAPHQL_QUERY_ORG='
-  query($owner: String!, $num: Int!) {
-    organization(login: $owner) {
-      projectV2(number: $num) {
-        id
-        title
-        repositories(first: 20) { nodes { nameWithOwner } }
-      }
-    }
-  }
-'
-
-MATCHED_PROJECTS=()
-TITLE_MATCH_PROJECT=""
-
-for PROJECT_NUM in "${PROJECT_NUMS[@]}"; do
-  # まず user() で試行
-  RESULT=$(gh api graphql -f query="$GRAPHQL_QUERY" -f owner="$OWNER" -F num="$PROJECT_NUM" 2>/dev/null) || continue
-  PROJECT_DATA=$(echo "$RESULT" | jq -r '.data.user.projectV2 // empty')
-
-  # user() が null なら organization() にフォールバック
-  if [ -z "$PROJECT_DATA" ]; then
-    RESULT=$(gh api graphql -f query="$GRAPHQL_QUERY_ORG" -f owner="$OWNER" -F num="$PROJECT_NUM" 2>/dev/null) || continue
-    PROJECT_DATA=$(echo "$RESULT" | jq -r '.data.organization.projectV2 // empty')
-  fi
-
-  if [ -z "$PROJECT_DATA" ]; then
-    continue
-  fi
-
-  # Note: repositories(first: 20) — 20件を超えるリンクがある場合は truncate される
-  LINKED=$(echo "$PROJECT_DATA" | jq -r '.repositories.nodes[].nameWithOwner')
-  PROJECT_TITLE=$(echo "$PROJECT_DATA" | jq -r '.title // empty')
-
-  if echo "$LINKED" | grep -qxF "$REPO"; then
-    PROJECT_ID=$(echo "$PROJECT_DATA" | jq -r '.id')
-    MATCHED_PROJECTS+=("$PROJECT_NUM:$PROJECT_ID")
-
-    if [[ "$PROJECT_TITLE" == *"$REPO_NAME"* ]] && [ -z "$TITLE_MATCH_PROJECT" ]; then
-      TITLE_MATCH_PROJECT="$PROJECT_NUM:$PROJECT_ID"
-    fi
-  fi
-done
-
-# 優先選択
-if [ -n "$TITLE_MATCH_PROJECT" ]; then
-  PROJECT_NUM="${TITLE_MATCH_PROJECT%%:*}"
-  PROJECT_ID="${TITLE_MATCH_PROJECT#*:}"
-elif [ ${#MATCHED_PROJECTS[@]} -gt 0 ]; then
-  if [ ${#MATCHED_PROJECTS[@]} -gt 1 ]; then
-    echo "⚠️ 複数の Project が検出されました。最初の Project を使用します。"
-  fi
-  PROJECT_NUM="${MATCHED_PROJECTS[0]%%:*}"
-  PROJECT_ID="${MATCHED_PROJECTS[0]#*:}"
-else
+if ! read -r PROJECT_NUM PROJECT_ID OWNER _REPO_NAME REPO < <(resolve_project 2>/dev/null); then
   echo "ℹ️ リポジトリにリンクされた Project がありません。スキップします。"
   exit 0
 fi
@@ -199,4 +131,4 @@ echo "---"
 echo "合計: 成功=$SUCCESS_COUNT スキップ=$SKIP_COUNT 失敗=$FAIL_COUNT"
 echo ""
 echo "検証コマンド:"
-echo "  gh project item-list --owner @me $PROJECT_NUM --format json | jq '[.items[].content.number] | sort'"
+echo "  gh project item-list $PROJECT_NUM --owner $OWNER --format json | jq '[.items[].content.number] | sort'"

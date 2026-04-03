@@ -15,6 +15,8 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # =====================================================================
 # shellcheck source=./chain-steps.sh
 source "${SCRIPT_DIR}/chain-steps.sh"
+# shellcheck source=./lib/resolve-project.sh
+source "${SCRIPT_DIR}/lib/resolve-project.sh"
 
 # =====================================================================
 # 共通ユーティリティ関数
@@ -165,84 +167,8 @@ step_board_status_update() {
     return 0
   fi
 
-  local repo owner repo_name
-  repo=$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null) || {
-    skip "board-status-update" "リポジトリ情報取得失敗"
-    return 0
-  }
-  owner="${repo%%/*}"
-  repo_name="${repo##*/}"
-
-  local projects
-  projects=$(gh project list --owner "$owner" --format json 2>/dev/null) || {
-    skip "board-status-update" "Project 一覧取得失敗"
-    return 0
-  }
-
-  local graphql_query='
-    query($owner: String!, $num: Int!) {
-      user(login: $owner) {
-        projectV2(number: $num) {
-          id
-          title
-          repositories(first: 20) { nodes { nameWithOwner } }
-        }
-      }
-    }
-  '
-  local graphql_query_org='
-    query($owner: String!, $num: Int!) {
-      organization(login: $owner) {
-        projectV2(number: $num) {
-          id
-          title
-          repositories(first: 20) { nodes { nameWithOwner } }
-        }
-      }
-    }
-  '
-
-  local matched_project_num="" matched_project_id="" title_match_num="" title_match_id=""
-  local project_nums
-  mapfile -t project_nums < <(echo "$projects" | jq -r '.projects[].number')
-
-  for pnum in "${project_nums[@]}"; do
-    local result project_data
-    result=$(gh api graphql -f query="$graphql_query" -f owner="$owner" -F num="$pnum" 2>/dev/null) || true
-    project_data=$(echo "$result" | jq -r '.data.user.projectV2 // empty' 2>/dev/null)
-
-    if [[ -z "$project_data" ]]; then
-      result=$(gh api graphql -f query="$graphql_query_org" -f owner="$owner" -F num="$pnum" 2>/dev/null) || true
-      project_data=$(echo "$result" | jq -r '.data.organization.projectV2 // empty' 2>/dev/null)
-    fi
-
-    [[ -z "$project_data" ]] && continue
-
-    local linked project_title
-    linked=$(echo "$project_data" | jq -r '.repositories.nodes[].nameWithOwner' 2>/dev/null)
-    project_title=$(echo "$project_data" | jq -r '.title // empty' 2>/dev/null)
-
-    if echo "$linked" | grep -qxF "$repo"; then
-      local pid
-      pid=$(echo "$project_data" | jq -r '.id')
-
-      if [[ -z "$matched_project_num" ]]; then
-        matched_project_num="$pnum"
-        matched_project_id="$pid"
-      fi
-
-      if [[ "$project_title" == *"$repo_name"* ]] && [[ -z "$title_match_num" ]]; then
-        title_match_num="$pnum"
-        title_match_id="$pid"
-      fi
-    fi
-  done
-
-  # 優先: タイトルマッチ > 最初のマッチ
-  local final_num="${title_match_num:-$matched_project_num}"
-  local final_id="${title_match_id:-$matched_project_id}"
-
-  if [[ -z "$final_num" ]]; then
+  local final_num final_id owner repo_name repo
+  if ! read -r final_num final_id owner repo_name repo < <(resolve_project 2>/dev/null); then
     skip "board-status-update" "リンクされた Project なし"
     return 0
   fi
@@ -300,77 +226,8 @@ step_board_archive() {
     return 0
   fi
 
-  local repo owner
-  repo=$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null) || {
-    skip "board-archive" "リポジトリ情報取得失敗"
-    return 0
-  }
-  owner="${repo%%/*}"
-  local repo_name="${repo##*/}"
-
-  local projects
-  projects=$(gh project list --owner "$owner" --format json 2>/dev/null) || {
-    skip "board-archive" "Project 一覧取得失敗"
-    return 0
-  }
-
-  local graphql_query='
-    query($owner: String!, $num: Int!) {
-      user(login: $owner) {
-        projectV2(number: $num) {
-          id
-          title
-          repositories(first: 20) { nodes { nameWithOwner } }
-        }
-      }
-    }
-  '
-  local graphql_query_org='
-    query($owner: String!, $num: Int!) {
-      organization(login: $owner) {
-        projectV2(number: $num) {
-          id
-          title
-          repositories(first: 20) { nodes { nameWithOwner } }
-        }
-      }
-    }
-  '
-
-  local matched_project_num="" title_match_num=""
-  local project_nums
-  mapfile -t project_nums < <(echo "$projects" | jq -r '.projects[].number')
-
-  for pnum in "${project_nums[@]}"; do
-    local result project_data
-    result=$(gh api graphql -f query="$graphql_query" -f owner="$owner" -F num="$pnum" 2>/dev/null) || true
-    project_data=$(echo "$result" | jq -r '.data.user.projectV2 // empty' 2>/dev/null)
-
-    if [[ -z "$project_data" ]]; then
-      result=$(gh api graphql -f query="$graphql_query_org" -f owner="$owner" -F num="$pnum" 2>/dev/null) || true
-      project_data=$(echo "$result" | jq -r '.data.organization.projectV2 // empty' 2>/dev/null)
-    fi
-
-    [[ -z "$project_data" ]] && continue
-
-    local linked project_title
-    linked=$(echo "$project_data" | jq -r '.repositories.nodes[].nameWithOwner' 2>/dev/null)
-    project_title=$(echo "$project_data" | jq -r '.title // empty' 2>/dev/null)
-
-    if echo "$linked" | grep -qxF "$repo"; then
-      if [[ -z "$matched_project_num" ]]; then
-        matched_project_num="$pnum"
-      fi
-      if [[ "$project_title" == *"$repo_name"* ]] && [[ -z "$title_match_num" ]]; then
-        title_match_num="$pnum"
-      fi
-    fi
-  done
-
-  # 優先: タイトルマッチ > 最初のマッチ
-  local final_num="${title_match_num:-$matched_project_num}"
-
-  if [[ -z "$final_num" ]]; then
+  local final_num _final_id owner _repo_name _repo
+  if ! read -r final_num _final_id owner _repo_name _repo < <(resolve_project 2>/dev/null); then
     skip "board-archive" "リンクされた Project なし"
     return 0
   fi

@@ -11,72 +11,19 @@
 # 出力（stdout）: "project_num repo_owner repo_name repo_fullname" （スペース区切り）
 # 失敗時: stderr にエラーメッセージを出力し exit 1。
 _detect_project_board() {
-    local repo repo_owner repo_name
-    if ! repo=$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null); then
-        echo "Error: リポジトリ情報を取得できません。git リポジトリ内で実行してください" >&2
-        exit 1
-    fi
-    repo_owner="${repo%%/*}"
-    repo_name="${repo##*/}"
+    local _script_dir
+    _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # shellcheck source=./lib/resolve-project.sh
+    source "${_script_dir}/lib/resolve-project.sh"
 
-    local projects
-    if ! projects=$(gh project list --owner "$repo_owner" --format json 2>/dev/null); then
-        echo "Error: Project 一覧を取得できません。gh auth refresh -s project を実行してください" >&2
-        exit 1
-    fi
-    local project_nums
-    mapfile -t project_nums < <(echo "$projects" | jq -r '.projects[].number')
-
-    if [[ ${#project_nums[@]} -eq 0 ]]; then
-        echo "Error: owner $repo_owner に Project が存在しません" >&2
+    local project_num project_id repo_owner repo_name repo_fullname
+    if ! read -r project_num project_id repo_owner repo_name repo_fullname < <(resolve_project); then
         exit 1
     fi
 
-    local graphql_user='query($owner: String!, $num: Int!) { user(login: $owner) { projectV2(number: $num) { id title repositories(first: 20) { nodes { nameWithOwner } } } } }'
-    local graphql_org='query($owner: String!, $num: Int!) { organization(login: $owner) { projectV2(number: $num) { id title repositories(first: 20) { nodes { nameWithOwner } } } } }'
-
-    local matched_project_num="" title_match_num=""
-
-    for pnum in "${project_nums[@]}"; do
-        if [[ ! "$pnum" =~ ^[0-9]+$ ]]; then
-            continue
-        fi
-        local result project_data
-        result=$(gh api graphql -f query="$graphql_user" -f owner="$repo_owner" -F num="$pnum" 2>/dev/null || true)
-        project_data=$(echo "$result" | jq -r '.data.user.projectV2 // empty' 2>/dev/null)
-
-        if [[ -z "$project_data" ]]; then
-            result=$(gh api graphql -f query="$graphql_org" -f owner="$repo_owner" -F num="$pnum" 2>/dev/null || true)
-            project_data=$(echo "$result" | jq -r '.data.organization.projectV2 // empty' 2>/dev/null)
-        fi
-
-        [[ -z "$project_data" ]] && continue
-
-        local linked project_title
-        linked=$(echo "$project_data" | jq -r '.repositories.nodes[].nameWithOwner')
-        project_title=$(echo "$project_data" | jq -r '.title // empty')
-
-        if echo "$linked" | grep -qxF "$repo"; then
-            if [[ -z "$matched_project_num" ]]; then
-                matched_project_num="$pnum"
-            fi
-            if [[ "$project_title" == *"$repo_name"* && -z "$title_match_num" ]]; then
-                title_match_num="$pnum"
-            fi
-        fi
-    done
-
-    # タイトルマッチ優先
-    if [[ -n "$title_match_num" ]]; then
-        matched_project_num="$title_match_num"
-    fi
-
-    if [[ -z "$matched_project_num" ]]; then
-        echo "Error: リポジトリにリンクされた Project Board が見つかりません" >&2
-        exit 1
-    fi
-
-    echo "$matched_project_num $repo_owner $repo_name $repo"
+    # project_id は呼び出し元 fetch_board_issues では不要のため出力しない
+    # resolve_project の5値出力から4値にアダプト
+    echo "$project_num $repo_owner $repo_name $repo_fullname"
 }
 
 # --- Board items 取得 + フィルタリング ---

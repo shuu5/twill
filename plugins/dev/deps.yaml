@@ -1272,6 +1272,11 @@ scripts:
     path: scripts/merge-gate-issues.sh
     description: "tech-debt / self-improve Issue 自動起票"
 
+  resolve-project: # lib: chain-runner, project-board-archive, project-board-backfill, autopilot-plan-board から source
+    type: script
+    path: scripts/lib/resolve-project.sh
+    description: "リポジトリにリンクされた Project を GraphQL で検出する共通関数（resolve_project）"
+
   chain-runner:
     type: script
     path: scripts/chain-runner.sh
@@ -1280,6 +1285,7 @@ scripts:
       - script: parse-issue-ac
       - script: state-read
       - script: state-write
+      - script: resolve-project
     description: "機械的 chain ステップを bash で直接実行（Worker トークン消費削減）"
 
   worktree-create:
