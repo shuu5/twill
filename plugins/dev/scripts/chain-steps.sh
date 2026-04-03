@@ -19,6 +19,7 @@ CHAIN_STEPS=(
   test-scaffold
   check
   opsx-apply
+  post-opsx-apply
   ts-preflight
   pr-test
   all-pass-check

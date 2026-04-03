@@ -81,9 +81,27 @@ runner の出力から FAIL 有無を判定する。FAIL あれば `/dev:check` 
 
 ### Step 4: opsx-apply 実行 + autopilot 判定 + pr-cycle 遷移【LLM 判断】
 
+opsx-apply を開始する前に、compaction 復帰用に state を記録すること:
+
+```bash
+ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+if [[ -n "$ISSUE_NUM" ]]; then
+  bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker \
+    --set "current_step=opsx-apply" 2>/dev/null || true
+fi
+```
+
 `/dev:opsx-apply <change-id>` を Skill tool で実行する。
 
-opsx-apply 完了後、以下の bash スニペットを実行して autopilot 状態を判定すること:
+opsx-apply 完了後、compaction 復帰用に state を記録してから autopilot 状態を判定すること:
+
+```bash
+ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+if [[ -n "$ISSUE_NUM" ]]; then
+  bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker \
+    --set "current_step=post-opsx-apply" 2>/dev/null || true
+fi
+```
 
 ```bash
 ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
@@ -107,11 +125,26 @@ compaction 後に workflow-test-ready chain を再開する場合、完了済み
 
 ```bash
 ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' || echo "")
-for step in change-id-resolve test-scaffold check opsx-apply; do
+for step in change-id-resolve test-scaffold check opsx-apply post-opsx-apply; do
   bash scripts/compaction-resume.sh "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
-  # 通常手順で実行
+  case "$step" in
+    opsx-apply)
+      # Step 4 の opsx-apply 手順を再実行（state 記録 → /dev:opsx-apply → state 記録）
+      ;;
+    post-opsx-apply)
+      # Step 4 後半の IS_AUTOPILOT 判定を再実行:
+      #   1. CHANGE_ID=$(bash scripts/chain-runner.sh change-id-resolve) で change-id を取得
+      #   2. IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行
+      #   3. IS_AUTOPILOT=true → 即座に /dev:workflow-pr-cycle --spec <change-id> を Skill tool で実行
+      #   4. IS_AUTOPILOT=false → 案内メッセージを表示して停止
+      ;;
+    *)
+      # 通常手順で実行
+      ;;
+  esac
 done
 ```
 
 - `compaction-resume.sh <ISSUE_NUM> <step>` が exit 0 → 実行、exit 1 → スキップ
-- LLM ステップ（test-scaffold, opsx-apply）は SKILL.md の手順を再実行すること
+- LLM ステップ（test-scaffold, opsx-apply, post-opsx-apply）は SKILL.md の手順を再実行すること
+- `post-opsx-apply` 復帰時: IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行し、IS_AUTOPILOT=true なら即座に `/dev:workflow-pr-cycle --spec <change-id>` を Skill tool で実行すること
