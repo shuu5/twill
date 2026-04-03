@@ -107,6 +107,36 @@ if [[ "$role" == "pilot" && "$type" == "issue" ]]; then
   done
 fi
 
+# ── Pilot identity 検証（defense-in-depth） ──
+# --role pilot で status フィールドを書き込む場合、呼び出し元が Worker でないことを多層検証する
+# 注意: tmux window 名・CWD はユーザー変更可能。本ガードは単独での完全な identity 保証ではなく
+#       defense-in-depth の補助層として機能する（主防御は merge-gate.md からの raw コマンド排除）
+if [[ "$role" == "pilot" && "$type" == "issue" ]]; then
+  _has_status_update=false
+  for kv in "${sets[@]}"; do
+    if [[ "${kv%%=*}" == "status" ]]; then
+      _has_status_update=true
+      break
+    fi
+  done
+
+  if [[ "$_has_status_update" == "true" ]]; then
+    # Layer 1: tmux window 名チェック（ap-#N パターンは Worker と判定）
+    _current_window=$(tmux display-message -p '#W' 2>/dev/null || echo "")
+    if [[ "$_current_window" =~ ^ap-#[0-9]+$ ]]; then
+      _sanitized_window=$(printf '%s' "$_current_window" | tr -cd '[:alnum:]#_-')
+      echo "ERROR: autopilot Worker（${_sanitized_window}）から --role pilot の status 書き込みは禁止されています（不変条件C）" >&2
+      exit 1
+    fi
+
+    # Layer 2: CWD チェック（worktrees/ 配下は Worker と判定）
+    if [[ "$(pwd)" == */worktrees/* ]]; then
+      echo "ERROR: worktrees/ 配下からの --role pilot の status 書き込みは禁止されています（不変条件C）" >&2
+      exit 1
+    fi
+  fi
+fi
+
 # ── repo_id バリデーション ──
 if [[ -n "$repo" && ! "$repo" =~ ^[a-zA-Z0-9_-]+$ ]]; then
   echo "ERROR: 不正な repo_id: $repo（英数字、ハイフン、アンダースコアのみ許可）" >&2

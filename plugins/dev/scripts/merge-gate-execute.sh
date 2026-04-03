@@ -73,6 +73,14 @@ if [[ "$CURRENT_WINDOW" =~ ^ap-#[0-9]+$ ]]; then
   exit 1
 fi
 
+# autopilot 状態確認（CWD/tmux ガード通過後の情報提供ログ）
+# merge-gate-execute.sh は Pilot セッションから呼ばれる想定のため、autopilot 下でも merge を許可する
+# （不変条件 C の主防御は CWD/tmux ガードおよび merge-gate.md からの raw コマンド排除）
+_autopilot_status=$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$ISSUE" --field status 2>/dev/null || echo "")
+if [[ "$_autopilot_status" == "running" || "$_autopilot_status" == "merge-ready" ]]; then
+  echo "[merge-gate-execute] autopilot 検出 (status=${_autopilot_status}): Pilot セッションとして merge を実行"
+fi
+
 case "$MODE" in
   --reject)
     echo "[merge-gate] Issue #${ISSUE}: リジェクト（Critical/High 問題検出）" >&2
@@ -80,6 +88,7 @@ case "$MODE" in
     bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
       --set status=failed \
       --set "failure={\"reason\":\"merge_gate_rejected\",\"details\":$(printf '%s' "$FINDING_SUMMARY" | jq -Rs .),\"step\":\"merge-gate\",\"retry_count\":1,\"fix_instructions\":$(printf '%s' "$FIX_INSTRUCTIONS" | jq -Rs .)}"
+    tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
     ;;
 
   --reject-final)
@@ -87,6 +96,7 @@ case "$MODE" in
     bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
       --set status=failed \
       --set "failure={\"reason\":\"merge_gate_rejected_final\",\"details\":$(printf '%s' "$FINDING_SUMMARY" | jq -Rs .),\"step\":\"merge-gate\",\"retry_count\":2}"
+    tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
     ;;
 
   *)

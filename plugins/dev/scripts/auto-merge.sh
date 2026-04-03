@@ -92,7 +92,7 @@ fi
 # ============================================================
 IS_AUTOPILOT=false
 AUTOPILOT_STATUS=$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
-if [[ "$AUTOPILOT_STATUS" == "running" ]]; then
+if [[ "$AUTOPILOT_STATUS" == "running" || "$AUTOPILOT_STATUS" == "merge-ready" ]]; then
   IS_AUTOPILOT=true
 fi
 
