@@ -65,6 +65,21 @@ if [[ ! "$QUERY_STEP" =~ ^[a-z0-9-]+$ ]]; then
   exit 2
 fi
 
+# ── is_quick チェック（QUICK_SKIP_STEPS に含まれるなら即スキップ）──
+IS_QUICK="$(bash "$SCRIPT_DIR/state-read.sh" \
+  --type issue \
+  --issue "$ISSUE_NUM" \
+  --field is_quick \
+  2>/dev/null || echo "")"
+
+if [[ "$IS_QUICK" == "true" ]]; then
+  for skip_step in "${QUICK_SKIP_STEPS[@]}"; do
+    if [[ "$QUERY_STEP" == "$skip_step" ]]; then
+      exit 1
+    fi
+  done
+fi
+
 # ── current_step 取得 ──
 CURRENT_STEP=""
 CURRENT_STEP="$(bash "$SCRIPT_DIR/state-read.sh" \

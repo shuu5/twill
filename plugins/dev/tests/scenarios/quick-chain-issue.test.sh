@@ -93,26 +93,26 @@ DEPS_YAML="deps.yaml"
 echo ""
 echo "--- Requirement: 軽量 chain 定義 ---"
 
-# Scenario: workflow-setup SKILL.md に is_quick 分岐ロジックがある
-test_workflow_setup_has_is_quick_branch() {
+# Scenario: workflow-setup SKILL.md が next-step コマンドを使って quick 分岐を機械化している
+test_workflow_setup_has_next_step_branch() {
   assert_file_exists "skills/workflow-setup/SKILL.md" || return 1
-  assert_file_contains "skills/workflow-setup/SKILL.md" "is_quick" || return 1
+  assert_file_contains "skills/workflow-setup/SKILL.md" "next-step" || return 1
 }
-run_test "workflow-setup SKILL.md に is_quick 分岐ロジックがある" test_workflow_setup_has_is_quick_branch
+run_test "workflow-setup SKILL.md が next-step コマンドを使って quick 分岐を機械化している" test_workflow_setup_has_next_step_branch
 
-# Scenario: workflow-setup SKILL.md に opsx-propose スキップの記述がある
+# Scenario: workflow-setup SKILL.md に opsx-propose の条件実行の記述がある
 test_workflow_setup_skips_opsx() {
   assert_file_exists "skills/workflow-setup/SKILL.md" || return 1
-  assert_file_contains "skills/workflow-setup/SKILL.md" "opsx-propose.*スキップ|スキップ.*opsx-propose" || return 1
+  assert_file_contains "skills/workflow-setup/SKILL.md" "NEXT=opsx-propose|opsx-propose.*の場合のみ" || return 1
 }
-run_test "workflow-setup SKILL.md に opsx-propose スキップの記述がある" test_workflow_setup_skips_opsx
+run_test "workflow-setup SKILL.md に opsx-propose の条件実行の記述がある" test_workflow_setup_skips_opsx
 
-# Scenario: workflow-setup SKILL.md に ac-extract スキップの記述がある
+# Scenario: workflow-setup SKILL.md に ac-extract の条件実行の記述がある
 test_workflow_setup_skips_ac_extract() {
   assert_file_exists "skills/workflow-setup/SKILL.md" || return 1
-  assert_file_contains "skills/workflow-setup/SKILL.md" "ac-extract.*スキップ|スキップ.*ac-extract" || return 1
+  assert_file_contains "skills/workflow-setup/SKILL.md" "NEXT=ac-extract|ac-extract.*の場合のみ" || return 1
 }
-run_test "workflow-setup SKILL.md に ac-extract スキップの記述がある" test_workflow_setup_skips_ac_extract
+run_test "workflow-setup SKILL.md に ac-extract の条件実行の記述がある" test_workflow_setup_skips_ac_extract
 
 # Edge case: workflow-setup SKILL.md に setup chain の loom validate が PASS（Violations: 0）
 test_loom_validate_pass() {
@@ -174,10 +174,11 @@ run_test "chain-runner.sh が labels を参照する" test_init_uses_gh_labels
 echo ""
 echo "--- Requirement: workflow-setup chain 分岐 ---"
 
-# Scenario: workflow-setup SKILL.md に quick 分岐の記述がある
+# Scenario: workflow-setup SKILL.md が next-step による機械的 quick 分岐を実装している
 test_workflow_setup_quick_branch() {
   assert_file_exists "skills/workflow-setup/SKILL.md" || return 1
-  assert_file_contains "skills/workflow-setup/SKILL.md" "is_quick|quick" || return 1
+  # quick 分岐は chain-runner.sh next-step コマンドに委譲（LLM 自然言語判断を除去）
+  assert_file_contains "skills/workflow-setup/SKILL.md" "next-step|QUICK_SKIP" || return 1
 }
 run_test "workflow-setup SKILL.md に quick 分岐の記述がある" test_workflow_setup_quick_branch
 

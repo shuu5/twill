@@ -24,3 +24,15 @@ CHAIN_STEPS=(
   all-pass-check
   pr-cycle-report
 )
+
+# quick Issue でスキップするステップの一覧（SSOT）
+QUICK_SKIP_STEPS=(
+  crg-auto-build
+  arch-ref
+  opsx-propose
+  ac-extract
+  change-id-resolve
+  test-scaffold
+  check
+  opsx-apply
+)
