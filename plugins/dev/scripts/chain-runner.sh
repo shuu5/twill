@@ -696,7 +696,7 @@ step_check() {
   fi
 
   # テスト
-  if find "$root/tests/" \( -name "*.sh" -o -name "*.bats" -o -name "*.test.*" -o -name "*.R" -o -name "*.py" \) 2>/dev/null | head -1 | grep -q .; then
+  if find "$root/tests/" \( -name "*.sh" -o -name "*.bats" -o -name "*.test.*" -o -name "*.R" -o -name "*.py" \) -print -quit 2>/dev/null | grep -q .; then
     echo "Tests: PASS"
   else
     echo "Tests: FAIL (テストファイルなし)"
