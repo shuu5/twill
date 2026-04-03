@@ -124,7 +124,8 @@ if [[ "$role" == "pilot" && "$type" == "issue" ]]; then
     # CWD チェック（worktrees/ 配下は Worker と判定）
     # Workers は必ず worktrees/ 配下で動作するため、CWD チェックが信頼できる主要判定層
     # 注意: tmux window 名チェックはテスト環境で誤検知が発生するため採用しない
-    if [[ "$(pwd)" == */worktrees/* ]]; then
+    _cwd=$(pwd)
+    if [[ "$_cwd" == */worktrees/* ]]; then
       echo "ERROR: worktrees/ 配下からの --role pilot の status 書き込みは禁止されています（不変条件C）" >&2
       exit 1
     fi
