@@ -31,6 +31,22 @@ CONDITIONAL=$(bash scripts/tech-stack-detect.sh < <(git diff --name-only origin/
 
 tech-stack-detect が返した specialist をリストに追加する。
 
+#### 補完的レビュアー（codex 環境チェック）
+
+コード変更がある場合のみ、以下のチェックを実施して条件を満たせば worker-codex-reviewer をリストに追加する。
+
+```bash
+if command -v codex >/dev/null 2>&1 && [ -n "${CODEX_API_KEY:-}" ]; then
+  # worker-codex-reviewer をリストに追加
+fi
+```
+
+| 条件 | 追加される specialist |
+|------|----------------------|
+| コード変更あり AND `command -v codex` 成功 AND `CODEX_API_KEY` 設定済み | worker-codex-reviewer |
+
+条件未達（codex 未インストール or `CODEX_API_KEY` 未設定）の場合は specialist リストに追加しない。
+
 #### specialist リストが空の場合
 
 変更ファイルがレビュー対象外（.gitignore 等のみ）の場合、specialist リストは空となり自動 PASS。

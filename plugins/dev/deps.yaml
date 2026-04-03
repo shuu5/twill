@@ -923,6 +923,7 @@ commands:
       - specialist: worker-llm-eval-runner
       - specialist: worker-data-validator
       - specialist: worker-env-validator
+      - specialist: worker-codex-reviewer
       - reference: ref-specialist-output-schema
       - reference: baseline-coding-style
       - reference: baseline-security-checklist
@@ -981,6 +982,7 @@ commands:
       - specialist: worker-llm-eval-runner
       - specialist: worker-data-validator
       - specialist: worker-env-validator
+      - specialist: worker-codex-reviewer
       - reference: ref-specialist-output-schema
       - reference: baseline-coding-style
       - reference: baseline-security-checklist
