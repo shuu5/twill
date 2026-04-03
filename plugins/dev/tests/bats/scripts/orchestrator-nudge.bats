@@ -29,6 +29,24 @@ set -euo pipefail
 issue="$1"
 pane_output="$3"
 
+AUTOPILOT_DIR="${AUTOPILOT_DIR:-}"
+
+# is_quick 取得: state ファイルから一次取得
+is_quick=""
+if [[ -n "$AUTOPILOT_DIR" ]]; then
+  state_file="$AUTOPILOT_DIR/issues/issue-${issue}.json"
+  if [[ -f "$state_file" ]]; then
+    is_quick=$(jq -r '.is_quick // empty' "$state_file" 2>/dev/null || true)
+  fi
+fi
+
+# test-ready 系パターン: quick Issue の場合はスキップ（return 1 相当 = exit 1）
+if echo "$pane_output" | grep -qP "setup chain 完了|workflow-test-ready.*で次に進めます"; then
+  if [[ "$is_quick" == "true" ]]; then
+    exit 1
+  fi
+fi
+
 # パターン検査 → 次コマンド決定（orchestrator 実装と同一の if-elif 構造）
 if echo "$pane_output" | grep -qP "setup chain 完了"; then
   echo "/dev:workflow-test-ready #${issue}"
@@ -124,4 +142,68 @@ teardown() {
 
   assert_success
   assert_output ""
+}
+
+# ---------------------------------------------------------------------------
+# Requirement: quick Issue での test-ready nudge スキップ
+# ---------------------------------------------------------------------------
+
+# Scenario: quick Issue で setup chain 完了 → nudge しない
+# WHEN: is_quick=true の Issue で pane_output が "setup chain 完了" を含む
+# THEN: exit 1 を返し、/dev:workflow-test-ready を送信しない
+@test "nudge: quick Issue + 'setup chain 完了' → exit 1 (no nudge)" {
+  create_issue_json 152 "running" '. + {is_quick: true}'
+
+  run bash "$SANDBOX/scripts/nudge-dispatch.sh" "152" "ap-#152" "setup chain 完了"
+
+  assert_failure
+  assert_output ""
+}
+
+# Scenario: quick Issue で "workflow-test-ready で次に進めます" → nudge しない
+# WHEN: is_quick=true の Issue で pane_output が "workflow-test-ready で次に進めます" を含む
+# THEN: exit 1 を返し、/dev:workflow-test-ready を送信しない
+@test "nudge: quick Issue + 'workflow-test-ready で次に進めます' → exit 1 (no nudge)" {
+  create_issue_json 152 "running" '. + {is_quick: true}'
+
+  run bash "$SANDBOX/scripts/nudge-dispatch.sh" "152" "ap-#152" "workflow-test-ready で次に進めます"
+
+  assert_failure
+  assert_output ""
+}
+
+# Scenario: 通常 Issue は従来通り動作する
+# WHEN: is_quick=false の Issue で pane_output が "setup chain 完了" を含む
+# THEN: /dev:workflow-test-ready #N を返す
+@test "nudge: normal Issue (is_quick=false) + 'setup chain 完了' → /dev:workflow-test-ready #N" {
+  create_issue_json 153 "running" '. + {is_quick: false}'
+
+  run bash "$SANDBOX/scripts/nudge-dispatch.sh" "153" "ap-#153" "setup chain 完了"
+
+  assert_success
+  assert_output "/dev:workflow-test-ready #153"
+}
+
+# Scenario: quick Issue で通常パターンは影響を受けない
+# WHEN: is_quick=true の Issue で pane_output が "テスト準備が完了しました" を含む
+# THEN: /dev:workflow-pr-cycle #N を返す（test-ready 以外のパターンは従来通り）
+@test "nudge: quick Issue + 'テスト準備.*完了' → /dev:workflow-pr-cycle #N (unaffected)" {
+  create_issue_json 152 "running" '. + {is_quick: true}'
+
+  run bash "$SANDBOX/scripts/nudge-dispatch.sh" "152" "ap-#152" "テスト準備が完了しました"
+
+  assert_success
+  assert_output "/dev:workflow-pr-cycle #152"
+}
+
+# Scenario: state ファイルに is_quick が未記録 → 通常動作（nudge 送信）
+# WHEN: state ファイルに is_quick フィールドがない
+# THEN: test-ready パターンで /dev:workflow-test-ready #N を返す（fallback: is_quick 空 = false 扱い）
+@test "nudge: is_quick フィールド未記録の Issue → 通常通り nudge 送信" {
+  create_issue_json 200 "running"
+
+  run bash "$SANDBOX/scripts/nudge-dispatch.sh" "200" "ap-#200" "setup chain 完了"
+
+  assert_success
+  assert_output "/dev:workflow-test-ready #200"
 }

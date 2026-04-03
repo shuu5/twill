@@ -388,6 +388,25 @@ declare -A LAST_OUTPUT_HASH=()
 _nudge_command_for_pattern() {
   local pane_output="$1"
   local issue="$2"
+
+  # quick Issue の場合は test-ready 系 nudge をスキップ
+  local is_quick=""
+  is_quick=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field is_quick 2>/dev/null || true)
+  if [[ -z "$is_quick" ]]; then
+    # fallback: gh API で quick ラベルを直接確認
+    if gh issue view "$issue" --json labels --jq '.labels[].name' 2>/dev/null | grep -qxF "quick"; then
+      is_quick="true"
+    else
+      is_quick="false"
+    fi
+  fi
+
+  if [[ "$is_quick" == "true" ]]; then
+    if echo "$pane_output" | grep -qP "setup chain 完了|workflow-test-ready.*で次に進めます"; then
+      return 1
+    fi
+  fi
+
   if echo "$pane_output" | grep -qP "setup chain 完了"; then
     echo "/dev:workflow-test-ready #${issue}"
   elif echo "$pane_output" | grep -qP ">>> 提案完了"; then
