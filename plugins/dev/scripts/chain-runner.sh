@@ -84,6 +84,29 @@ detect_quick_label() {
   fi
 }
 
+# --- quick-guard: quick Issue 判定（exit 1 = quick, exit 0 = 非 quick）---
+# state 優先 → detect_quick_label() fallback
+# ブランチから Issue 番号が抽出できない場合は exit 0（保守的）
+step_quick_guard() {
+  local issue_num
+  issue_num="$(extract_issue_num)"
+  if [[ -z "$issue_num" ]]; then
+    return 0
+  fi
+
+  local is_quick
+  is_quick="$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
+
+  if [[ -z "$is_quick" ]]; then
+    is_quick="$(detect_quick_label "$issue_num")"
+  fi
+
+  if [[ "$is_quick" == "true" ]]; then
+    return 1
+  fi
+  return 0
+}
+
 # --- init: 開発状態判定 ---
 # Usage: step_init [issue_num]
 step_init() {
@@ -658,11 +681,12 @@ main() {
     all-pass-check)      step_all_pass_check "$@" ;;
     pr-cycle-report)     step_pr_cycle_report "$@" ;;
     check)               step_check "$@" ;;
+    quick-guard)         step_quick_guard "$@" ;;
     *)
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
       echo "         change-id-resolve, next-step, ts-preflight, pr-test, all-pass-check," >&2
-      echo "         pr-cycle-report, check" >&2
+      echo "         pr-cycle-report, check, quick-guard" >&2
       exit 1
       ;;
   esac

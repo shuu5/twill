@@ -1289,6 +1289,21 @@ scripts:
       - script: state-read
       - script: state-write
       - script: resolve-project
+    commands:
+      - init
+      - worktree-create
+      - board-status-update
+      - board-archive
+      - ac-extract
+      - arch-ref
+      - change-id-resolve
+      - next-step
+      - ts-preflight
+      - pr-test
+      - all-pass-check
+      - pr-cycle-report
+      - check
+      - quick-guard
     description: "機械的 chain ステップを bash で直接実行（Worker トークン消費削減）"
 
   worktree-create:

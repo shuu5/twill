@@ -165,7 +165,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="293.89,-983.23 228.89,-983.23 228.89,-947.23 293.89,-947.23 293.89,-983.23"/>
 <text text-anchor="middle" x="261.39" y="-968.23" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="261.39" y="-957.23" font-family="Helvetica,sans-Serif" font-size="10.00">(1,492 tok)</text>
+<text text-anchor="middle" x="261.39" y="-957.23" font-family="Helvetica,sans-Serif" font-size="10.00">(1,504 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_merge_gate -->
 <g id="edge14" class="edge">
@@ -224,7 +224,7 @@
 <title>script_state_write</title>
 <polygon fill="#ff9800" stroke="black" points="509.67,-1185.23 483.98,-1209.72 432.6,-1209.72 406.91,-1185.23 432.6,-1160.74 483.98,-1160.74 509.67,-1185.23"/>
 <text text-anchor="middle" x="458.29" y="-1188.23" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;write</text>
-<text text-anchor="middle" x="458.29" y="-1177.23" font-family="Helvetica,sans-Serif" font-size="10.00">(2,570 tok)</text>
+<text text-anchor="middle" x="458.29" y="-1177.23" font-family="Helvetica,sans-Serif" font-size="10.00">(2,513 tok)</text>
 </g>
 <!-- cmd_all_pass_check&#45;&gt;script_state_write -->
 <g id="edge16" class="edge">
@@ -343,7 +343,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="731.1" cy="-186.23" rx="81.13" ry="21.43"/>
 <text text-anchor="middle" x="731.1" y="-189.23" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="731.1" y="-178.23" font-family="Helvetica,sans-Serif" font-size="10.00">(1,413 tok)</text>
+<text text-anchor="middle" x="731.1" y="-178.23" font-family="Helvetica,sans-Serif" font-size="10.00">(1,421 tok)</text>
 </g>
 <!-- cmd_phase_review&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge35" class="edge">

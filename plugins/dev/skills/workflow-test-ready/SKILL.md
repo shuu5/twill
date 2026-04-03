@@ -71,6 +71,14 @@ ELSE
 
 **重要**: 以下の全ステップを上から順に実行すること。各ステップ完了後、**即座に**次のステップに進むこと。プロンプトで停止してはならない。
 
+### Quick Guard: quick Issue 検出（defense in depth）【機械的 → runner】
+
+```bash
+bash scripts/chain-runner.sh quick-guard || { echo "quick Issue のため test-ready をスキップします"; exit 0; }
+```
+
+quick Issue の場合はここで終了。非 quick Issue はそのまま Step 1 へ。
+
 ### Step 1: change-id 解決【機械的 → runner】
 ```bash
 CHANGE_ID=$(bash scripts/chain-runner.sh change-id-resolve)

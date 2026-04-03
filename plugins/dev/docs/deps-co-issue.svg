@@ -15,7 +15,7 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="50.91" cy="-276.98" rx="50.82" ry="21.43"/>
 <text text-anchor="middle" x="50.91" y="-279.98" font-family="Helvetica,sans-Serif" font-size="10.00">dev:co&#45;issue</text>
-<text text-anchor="middle" x="50.91" y="-268.98" font-family="Helvetica,sans-Serif" font-size="10.00">(3,926 tok)</text>
+<text text-anchor="middle" x="50.91" y="-268.98" font-family="Helvetica,sans-Serif" font-size="10.00">(3,958 tok)</text>
 </g>
 <!-- cmd_issue_structure -->
 <g id="node2" class="node">
@@ -126,7 +126,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="415.14" cy="-200.98" rx="81.13" ry="21.43"/>
 <text text-anchor="middle" x="415.14" y="-203.98" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="415.14" y="-192.98" font-family="Helvetica,sans-Serif" font-size="10.00">(1,413 tok)</text>
+<text text-anchor="middle" x="415.14" y="-192.98" font-family="Helvetica,sans-Serif" font-size="10.00">(1,421 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge9" class="edge">
