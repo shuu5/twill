@@ -359,14 +359,26 @@ poll_phase() {
 declare -A NUDGE_COUNTS=()
 declare -A LAST_OUTPUT_HASH=()
 
-# chain 停止パターン
-CHAIN_STOP_PATTERNS=(
-  "setup chain 完了"
-  ">>> 提案完了"
-  "テスト準備.*完了"
-  "PR サイクル.*完了"
-  "workflow-test-ready.*で次に進めます"
-)
+# chain 停止パターン → 次コマンドマッピング
+# パターンが一致した場合: exit 0 + 次コマンドを stdout（空文字 = 空 Enter）
+# パターン不一致の場合: exit 1
+_nudge_command_for_pattern() {
+  local pane_output="$1"
+  local issue="$2"
+  if echo "$pane_output" | grep -qP "setup chain 完了"; then
+    echo "/dev:workflow-test-ready #${issue}"
+  elif echo "$pane_output" | grep -qP ">>> 提案完了"; then
+    echo ""
+  elif echo "$pane_output" | grep -qP "テスト準備.*完了"; then
+    echo "/dev:workflow-pr-cycle #${issue}"
+  elif echo "$pane_output" | grep -qP "PR サイクル.*完了"; then
+    echo ""
+  elif echo "$pane_output" | grep -qP "workflow-test-ready.*で次に進めます"; then
+    echo "/dev:workflow-test-ready #${issue}"
+  else
+    return 1
+  fi
+}
 
 check_and_nudge() {
   local issue="$1"
@@ -391,15 +403,15 @@ check_and_nudge() {
   local last_hash="${LAST_OUTPUT_HASH[$issue]:-}"
 
   if [[ "$current_hash" == "$last_hash" ]]; then
-    # 出力が変わっていない → 停止パターンをチェック
-    for pattern in "${CHAIN_STOP_PATTERNS[@]}"; do
-      if echo "$pane_output" | grep -qP "$pattern"; then
-        echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
-        tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
-        NUDGE_COUNTS[$issue]=$((count + 1))
-        return 0
-      fi
-    done
+    # 停止パターンをチェックし、対応する次コマンドを送信
+    local next_cmd
+    if next_cmd="$(_nudge_command_for_pattern "$pane_output" "$issue")"; then
+      echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
+      tmux send-keys -t "$window_name" "$next_cmd" Enter 2>/dev/null || true
+      NUDGE_COUNTS[$issue]=$((count + 1))
+      LAST_OUTPUT_HASH[$issue]="$current_hash"
+      return 0
+    fi
   fi
 
   LAST_OUTPUT_HASH[$issue]="$current_hash"
