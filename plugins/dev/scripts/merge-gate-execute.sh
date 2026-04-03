@@ -138,7 +138,9 @@ case "$MODE" in
       tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
       # Board アーカイブ（ISSUE_NUM が空の場合はスキップ）
       if [[ -n "${ISSUE:-}" ]]; then
-        bash "$SCRIPT_DIR/chain-runner.sh" board-archive "$ISSUE" 2>/dev/null || true
+        if ! bash "$SCRIPT_DIR/chain-runner.sh" board-archive "$ISSUE"; then
+          echo "[merge-gate] Issue #${ISSUE}: ⚠️ Board アーカイブに失敗しました（マージは成功）" >&2
+        fi
       fi
     else
       # エラーメッセージから認証情報をマスキング
