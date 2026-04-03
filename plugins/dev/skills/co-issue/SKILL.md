@@ -126,7 +126,7 @@ FOR each structured_issue IN issues:
 全 specialist 完了後、結果を集約:
 
 1. **findings 統合**: 全 specialist の findings を Issue 別にマージ
-2. **ブロック判定**: `severity == CRITICAL && confidence >= 80` が 1 件以上 → 当該 Issue は Phase 4 ブロック
+2. **ブロック判定**: `severity == CRITICAL && confidence >= 80 && finding_target == "issue_description"` が 1 件以上 → 当該 Issue は Phase 4 ブロック（`codebase_state` はブロック対象外。`finding_target` 欠如または enum 外の値の場合は `issue_description` として扱う）
 3. **ユーザー提示**: Issue 別に findings テーブルを表示
 
 ```markdown

@@ -66,23 +66,31 @@ findings:
   line: 1
   message: "スコープに記載された agents/nonexistent-agent.md が存在しない。パスの確認が必要"
   category: feasibility
+  finding_target: issue_description
 - severity: WARNING
   confidence: 80
   file: skills/co-issue/SKILL.md
   line: 44
   message: "co-issue Phase 3 の変更が Phase 4 の issue-create 呼び出しにも影響する可能性。Phase 4 のフロー確認を推奨"
   category: feasibility
+  finding_target: codebase_state
 - severity: INFO
   confidence: 65
   file: deps.yaml
   line: 78
   message: "co-issue の can_spawn 更新が必要だが、Issue body に言及あり。対応済み"
   category: feasibility
+  finding_target: codebase_state
 ```
 
 **ルール**:
 - status は findings から自動導出: CRITICAL あり → FAIL, WARNING あり → WARN, それ以外 → PASS
 - severity は CRITICAL / WARNING / INFO の 3 段階のみ
-- 各 finding に severity, confidence (0-100), file, line, message, category を必ず含める
+- 各 finding に severity, confidence (0-100), file, line, message, category, finding_target を必ず含める
 - category: feasibility
+- finding_target: `issue_description`（Issue 記述の品質問題）または `codebase_state`（コードベース状態の確認）
 - findings が空の場合: `findings: []` と出力し status: PASS とする
+
+## finding_target 分類ガイドライン
+
+分類基準は `ref-specialist-output-schema.md` の「co-issue specialist 追加要件」セクションを参照。issue-feasibility の findings はコードベース調査に基づくため `codebase_state` が多くなる。Issue のスコープ記述が誤っている（ファイルが存在しない等）場合は `issue_description` を使用すること。
