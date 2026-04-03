@@ -228,6 +228,20 @@ launch_worker() {
   bash "$SCRIPTS_ROOT/autopilot-launch.sh" "${launch_args[@]}"
 }
 
+# Worker 完了後のクリーンアップ（tmux window kill + remote branch delete）
+cleanup_worker() {
+  local issue="$1"
+  local window_name="ap-#${issue}"
+  echo "[orchestrator] cleanup: Issue #${issue} — window/branch クリーンアップ" >&2
+  tmux kill-window -t "$window_name" 2>/dev/null || true
+  local branch
+  branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
+  # ブランチ名バリデーション（コマンドインジェクション防止）
+  if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
+    git push origin --delete "$branch" 2>/dev/null || true
+  fi
+}
+
 # 単一 Issue のポーリング
 poll_single() {
   local issue="$1"
@@ -249,9 +263,11 @@ poll_single() {
     case "$status" in
       done)
         echo "[orchestrator] Issue #${issue}: 完了" >&2
+        cleanup_worker "$issue"
         return 0 ;;
       failed)
         echo "[orchestrator] Issue #${issue}: 失敗" >&2
+        cleanup_worker "$issue"
         return 0 ;;
       merge-ready)
         echo "[orchestrator] Issue #${issue}: merge-ready" >&2
@@ -275,6 +291,7 @@ poll_single() {
       bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
         --set "status=failed" \
         --set 'failure={"message":"poll_timeout","step":"polling"}'
+      cleanup_worker "$issue"
       return 0
     fi
   done
@@ -284,6 +301,7 @@ poll_single() {
 poll_phase() {
   local -a issues=("$@")
   local poll_count=0
+  local -A cleaned_up=()
 
   while true; do
     local all_resolved=true
@@ -294,6 +312,10 @@ poll_phase() {
 
       case "$status" in
         done|failed)
+          if [[ -z "${cleaned_up[$issue]:-}" ]]; then
+            cleanup_worker "$issue"
+            cleaned_up[$issue]=1
+          fi
           continue ;;
         merge-ready)
           continue ;;
@@ -324,6 +346,7 @@ poll_phase() {
           bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
             --set "status=failed" \
             --set 'failure={"message":"poll_timeout","step":"polling"}'
+          cleanup_worker "$issue"
         fi
       done
       break
