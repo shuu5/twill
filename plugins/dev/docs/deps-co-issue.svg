@@ -15,7 +15,7 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="50.91" cy="-256" rx="50.82" ry="21.43"/>
 <text text-anchor="middle" x="50.91" y="-259" font-family="Helvetica,sans-Serif" font-size="10.00">dev:co&#45;issue</text>
-<text text-anchor="middle" x="50.91" y="-248" font-family="Helvetica,sans-Serif" font-size="10.00">(3,445 tok)</text>
+<text text-anchor="middle" x="50.91" y="-248" font-family="Helvetica,sans-Serif" font-size="10.00">(3,742 tok)</text>
 </g>
 <!-- cmd_issue_structure -->
 <g id="node2" class="node">
@@ -74,7 +74,7 @@
 <title>cmd_project_board_sync</title>
 <polygon fill="#e3f2fd" stroke="black" points="266.32,-300 169.32,-300 169.32,-264 266.32,-264 266.32,-300"/>
 <text text-anchor="middle" x="217.82" y="-285" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;board&#45;sync</text>
-<text text-anchor="middle" x="217.82" y="-274" font-family="Helvetica,sans-Serif" font-size="10.00">(2,745 tok)</text>
+<text text-anchor="middle" x="217.82" y="-274" font-family="Helvetica,sans-Serif" font-size="10.00">(3,120 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_project_board_sync -->
 <g id="edge6" class="edge">

@@ -15,14 +15,14 @@
 <title>skill_workflow_test_ready</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="85.56" cy="-47" rx="85.62" ry="21.43"/>
 <text text-anchor="middle" x="85.56" y="-50" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;test&#45;ready</text>
-<text text-anchor="middle" x="85.56" y="-39" font-family="Helvetica,sans-Serif" font-size="10.00">(807 tok)</text>
+<text text-anchor="middle" x="85.56" y="-39" font-family="Helvetica,sans-Serif" font-size="10.00">(1,228 tok)</text>
 </g>
 <!-- cmd_opsx_apply -->
 <g id="node2" class="node">
 <title>cmd_opsx_apply</title>
 <polygon fill="#e3f2fd" stroke="black" points="296.62,-36 232.62,-36 232.62,0 296.62,0 296.62,-36"/>
 <text text-anchor="middle" x="264.62" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00">opsx&#45;apply</text>
-<text text-anchor="middle" x="264.62" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(411 tok)</text>
+<text text-anchor="middle" x="264.62" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(249 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_opsx_apply -->
 <g id="edge2" class="edge">

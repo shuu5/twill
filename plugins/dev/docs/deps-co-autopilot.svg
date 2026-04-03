@@ -15,14 +15,14 @@
 <title>skill_co_autopilot</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="60.81" cy="-808.49" rx="60.62" ry="21.43"/>
 <text text-anchor="middle" x="60.81" y="-811.49" font-family="Helvetica,sans-Serif" font-size="10.00">dev:co&#45;autopilot</text>
-<text text-anchor="middle" x="60.81" y="-800.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,954 tok)</text>
+<text text-anchor="middle" x="60.81" y="-800.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,964 tok)</text>
 </g>
 <!-- skill_workflow_setup -->
 <g id="node2" class="node">
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="282.15" cy="-1494.49" rx="71.34" ry="21.43"/>
 <text text-anchor="middle" x="282.15" y="-1497.49" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;setup</text>
-<text text-anchor="middle" x="282.15" y="-1486.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,241 tok)</text>
+<text text-anchor="middle" x="282.15" y="-1486.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,639 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_setup -->
 <g id="edge16" class="edge">
@@ -35,7 +35,7 @@
 <title>skill_workflow_test_ready</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="282.15" cy="-1430.49" rx="85.62" ry="21.43"/>
 <text text-anchor="middle" x="282.15" y="-1433.49" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;test&#45;ready</text>
-<text text-anchor="middle" x="282.15" y="-1422.49" font-family="Helvetica,sans-Serif" font-size="10.00">(807 tok)</text>
+<text text-anchor="middle" x="282.15" y="-1422.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,228 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_test_ready -->
 <g id="edge17" class="edge">
@@ -48,7 +48,7 @@
 <title>skill_workflow_pr_cycle</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="282.15" cy="-1366.49" rx="79.39" ry="21.43"/>
 <text text-anchor="middle" x="282.15" y="-1369.49" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;pr&#45;cycle</text>
-<text text-anchor="middle" x="282.15" y="-1358.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,300 tok)</text>
+<text text-anchor="middle" x="282.15" y="-1358.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,669 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_pr_cycle -->
 <g id="edge18" class="edge">
@@ -191,7 +191,7 @@
 <title>cmd_autopilot_phase_postprocess</title>
 <polygon fill="#e3f2fd" stroke="black" points="587.53,-826.49 448.53,-826.49 448.53,-790.49 587.53,-790.49 587.53,-826.49"/>
 <text text-anchor="middle" x="518.03" y="-811.49" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;phase&#45;postprocess</text>
-<text text-anchor="middle" x="518.03" y="-800.49" font-family="Helvetica,sans-Serif" font-size="10.00">(601 tok)</text>
+<text text-anchor="middle" x="518.03" y="-800.49" font-family="Helvetica,sans-Serif" font-size="10.00">(802 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;cmd_autopilot_phase_postprocess -->
 <g id="edge5" class="edge">
@@ -374,7 +374,7 @@
 <title>cmd_opsx_apply</title>
 <polygon fill="#e3f2fd" stroke="black" points="550.03,-2280.49 486.03,-2280.49 486.03,-2244.49 550.03,-2244.49 550.03,-2280.49"/>
 <text text-anchor="middle" x="518.03" y="-2265.49" font-family="Helvetica,sans-Serif" font-size="10.00">opsx&#45;apply</text>
-<text text-anchor="middle" x="518.03" y="-2254.49" font-family="Helvetica,sans-Serif" font-size="10.00">(411 tok)</text>
+<text text-anchor="middle" x="518.03" y="-2254.49" font-family="Helvetica,sans-Serif" font-size="10.00">(249 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_opsx_apply -->
 <g id="edge29" class="edge">
@@ -1213,7 +1213,7 @@
 <title>script_autopilot_launch</title>
 <polygon fill="#ff9800" stroke="black" points="814.58,-734.49 779.93,-758.98 710.63,-758.98 675.97,-734.49 710.63,-710.01 779.93,-710.01 814.58,-734.49"/>
 <text text-anchor="middle" x="745.28" y="-737.49" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;launch</text>
-<text text-anchor="middle" x="745.28" y="-726.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,086 tok)</text>
+<text text-anchor="middle" x="745.28" y="-726.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,129 tok)</text>
 </g>
 <!-- cmd_autopilot_launch&#45;&gt;script_autopilot_launch -->
 <g id="edge103" class="edge">

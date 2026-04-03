@@ -15,12 +15,12 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_test_ready [label="dev:workflow-test-ready\n(807 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_test_ready [label="dev:workflow-test-ready\n(1,228 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_opsx_apply [label="opsx-apply\n(411 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_opsx_apply [label="opsx-apply\n(249 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_scaffold [label="test-scaffold\n(718 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands

@@ -11,14 +11,14 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_autopilot [label="dev:co-autopilot\n(1,954 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="dev:co-autopilot\n(1,964 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="dev:workflow-setup\n(1,241 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_test_ready [label="dev:workflow-test-ready\n(807 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_pr_cycle [label="dev:workflow-pr-cycle\n(1,300 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="dev:workflow-setup\n(1,639 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_test_ready [label="dev:workflow-test-ready\n(1,228 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_cycle [label="dev:workflow-pr-cycle\n(1,669 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_dead_cleanup [label="dev:workflow-dead-cleanup\n(249 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_tech_debt_triage [label="dev:workflow-tech-debt-triage\n(1,015 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
@@ -30,7 +30,7 @@ digraph Dependencies {
     cmd_project_board_status_update [label="project-board-status-update\n(1,203 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_crg_auto_build [label="crg-auto-build\n(312 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_opsx_propose [label="opsx-propose\n(406 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_opsx_apply [label="opsx-apply\n(411 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_opsx_apply [label="opsx-apply\n(249 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ac_extract [label="ac-extract\n(366 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ts_preflight [label="ts-preflight\n(349 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_scope_judge [label="scope-judge\n(394 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -59,7 +59,7 @@ digraph Dependencies {
     cmd_autopilot_launch [label="autopilot-launch\n(918 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_poll [label="autopilot-poll\n(1,306 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_phase_execute [label="autopilot-phase-execute\n(2,274 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_autopilot_phase_postprocess [label="autopilot-phase-postprocess\n(601 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_phase_postprocess [label="autopilot-phase-postprocess\n(802 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_collect [label="autopilot-collect\n(523 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_retrospective [label="autopilot-retrospective\n(760 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_patterns [label="autopilot-patterns\n(711 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -93,7 +93,7 @@ digraph Dependencies {
     script_state_read [label="state-read\n(918 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_state_write [label="state-write\n(2,165 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_init [label="autopilot-init\n(1,660 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_launch [label="autopilot-launch\n(2,086 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_launch [label="autopilot-launch\n(2,129 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_create [label="session-create\n(618 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_archive [label="session-archive\n(456 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_add_warning [label="session-add-warning\n(537 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

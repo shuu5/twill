@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="dev:co-issue\n(3,445 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="dev:co-issue\n(3,742 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -24,7 +24,7 @@ digraph Dependencies {
     cmd_issue_create [label="issue-create\n(985 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_bulk_create [label="issue-bulk-create\n(1,667 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_tech_debt_absorb [label="issue-tech-debt-absorb\n(709 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_board_sync [label="project-board-sync\n(2,745 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_board_sync [label="project-board-sync\n(3,120 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_explore [label="explore\n(1,490 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
