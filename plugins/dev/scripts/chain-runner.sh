@@ -279,6 +279,121 @@ step_board_status_update() {
   ok "board-status-update" "Project Board Status → In Progress (#$issue_num)"
 }
 
+# --- board-archive: Project Board アイテムをアーカイブ ---
+step_board_archive() {
+  record_current_step "board-archive"
+  local issue_num="${1:-}"
+
+  # 引数なし or 空 → スキップ
+  if [[ -z "$issue_num" ]]; then
+    return 0
+  fi
+
+  # 正の整数チェック
+  if ! [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+    return 0
+  fi
+
+  # project スコープ確認
+  if ! gh project list --owner @me --limit 1 >/dev/null 2>&1; then
+    skip "board-archive" "gh auth refresh -s project が必要"
+    return 0
+  fi
+
+  local repo owner
+  repo=$(gh repo view --json nameWithOwner -q '.nameWithOwner' 2>/dev/null) || {
+    skip "board-archive" "リポジトリ情報取得失敗"
+    return 0
+  }
+  owner="${repo%%/*}"
+  local repo_name="${repo##*/}"
+
+  local projects
+  projects=$(gh project list --owner "$owner" --format json 2>/dev/null) || {
+    skip "board-archive" "Project 一覧取得失敗"
+    return 0
+  }
+
+  local graphql_query='
+    query($owner: String!, $num: Int!) {
+      user(login: $owner) {
+        projectV2(number: $num) {
+          id
+          title
+          repositories(first: 20) { nodes { nameWithOwner } }
+        }
+      }
+    }
+  '
+  local graphql_query_org='
+    query($owner: String!, $num: Int!) {
+      organization(login: $owner) {
+        projectV2(number: $num) {
+          id
+          title
+          repositories(first: 20) { nodes { nameWithOwner } }
+        }
+      }
+    }
+  '
+
+  local matched_project_num="" title_match_num=""
+  local project_numbers
+  project_numbers=$(echo "$projects" | jq -r '.projects[].number')
+
+  for pnum in $project_numbers; do
+    local result project_data
+    result=$(gh api graphql -f query="$graphql_query" -f owner="$owner" -F num="$pnum" 2>/dev/null) || true
+    project_data=$(echo "$result" | jq -r '.data.user.projectV2 // empty' 2>/dev/null)
+
+    if [[ -z "$project_data" ]]; then
+      result=$(gh api graphql -f query="$graphql_query_org" -f owner="$owner" -F num="$pnum" 2>/dev/null) || true
+      project_data=$(echo "$result" | jq -r '.data.organization.projectV2 // empty' 2>/dev/null)
+    fi
+
+    [[ -z "$project_data" ]] && continue
+
+    local linked project_title
+    linked=$(echo "$project_data" | jq -r '.repositories.nodes[].nameWithOwner' 2>/dev/null)
+    project_title=$(echo "$project_data" | jq -r '.title // empty' 2>/dev/null)
+
+    if echo "$linked" | grep -qxF "$repo"; then
+      if [[ -z "$matched_project_num" ]]; then
+        matched_project_num="$pnum"
+      fi
+      if [[ "$project_title" == *"$repo_name"* ]] && [[ -z "$title_match_num" ]]; then
+        title_match_num="$pnum"
+      fi
+    fi
+  done
+
+  # 優先: タイトルマッチ > 最初のマッチ
+  local final_num="${title_match_num:-$matched_project_num}"
+
+  if [[ -z "$final_num" ]]; then
+    skip "board-archive" "リンクされた Project なし"
+    return 0
+  fi
+
+  # アイテム ID 取得
+  local item_id
+  item_id=$(gh project item-list "$final_num" --owner "$owner" --format json --limit 200 2>/dev/null \
+    | jq -r --argjson n "$issue_num" '.items[] | select(.content.number == $n and .content.type == "Issue") | .id' 2>/dev/null) || true
+
+  if [[ -z "$item_id" ]]; then
+    skip "board-archive" "アイテムIDが取得できませんでした — スキップ"
+    return 0
+  fi
+
+  # アーカイブ実行
+  if gh project item-archive "$final_num" --owner "$owner" --id "$item_id" 2>/dev/null; then
+    ok "board-archive" "Board アイテムをアーカイブしました (#$issue_num)"
+  else
+    skip "board-archive" "アーカイブに失敗しました — スキップ"
+  fi
+  return 0
+}
+
 # --- ac-extract: AC 抽出 ---
 step_ac_extract() {
   record_current_step "ac-extract"
@@ -616,7 +731,7 @@ main() {
   local step="${1:-}"
   if [[ -z "$step" ]]; then
     echo "Usage: chain-runner.sh <step-name> [args...]" >&2
-    echo "Steps: init, worktree-create, board-status-update, ac-extract, arch-ref," >&2
+    echo "Steps: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
     echo "       change-id-resolve, ts-preflight, pr-test, all-pass-check," >&2
     echo "       pr-cycle-report, check" >&2
     exit 1
@@ -627,6 +742,7 @@ main() {
     init)                step_init "$@" ;;
     worktree-create)     step_worktree_create "$@" ;;
     board-status-update) step_board_status_update "$@" ;;
+    board-archive)       step_board_archive "$@" ;;
     ac-extract)          step_ac_extract "$@" ;;
     arch-ref)            step_arch_ref "$@" ;;
     change-id-resolve)   step_change_id_resolve "$@" ;;
@@ -637,7 +753,7 @@ main() {
     check)               step_check "$@" ;;
     *)
       echo "ERROR: 未知のステップ: $step" >&2
-      echo "利用可能: init, worktree-create, board-status-update, ac-extract, arch-ref," >&2
+      echo "利用可能: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
       echo "         change-id-resolve, ts-preflight, pr-test, all-pass-check," >&2
       echo "         pr-cycle-report, check" >&2
       exit 1

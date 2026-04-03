@@ -1,0 +1,146 @@
+change_id: board-done-auto-archive
+generated_at: "2026-04-02T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "board-archive-normal"
+    name: "正常アーカイブ"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 6
+    requirement: "Board アーカイブコマンド"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "board-archive: 正常アーカイブ — gh project item-archive 呼び出しと終了コード 0"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "board-archive-success-message"
+    name: "正常アーカイブ — 成功メッセージの検証"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 6
+    requirement: "Board アーカイブコマンド"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "board-archive: 成功時に checkmark メッセージを出力する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "board-archive-not-in-item-list"
+    name: "アーカイブ後 item-list に含まれない"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 10
+    requirement: "Board アーカイブコマンド"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "board-archive: アーカイブ成功後に item-list で Issue 131 が返らない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "board-archive-item-id-not-found"
+    name: "アイテムID取得失敗 → warning のみ → 終了コード 0"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 14
+    requirement: "Board アーカイブコマンド"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "board-archive: item-list に対象 Issue がない場合 — warning を出して終了コード 0"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "board-archive-item-id-not-found-no-block"
+    name: "アイテムID取得失敗でもマージフローをブロックしない"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 14
+    requirement: "Board アーカイブコマンド"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "board-archive: アイテムID取得失敗でも終了コードは 0 (マージフロー非ブロック)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "board-archive-item-archive-fails"
+    name: "gh project item-archive 失敗 → warning のみ → 終了コード 0"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 18
+    requirement: "Board アーカイブコマンド"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "board-archive: item-archive がエラーを返した場合 — warning を出して終了コード 0"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "board-archive-item-archive-fails-no-block"
+    name: "gh project item-archive 失敗でもマージフローをブロックしない"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 18
+    requirement: "Board アーカイブコマンド"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "board-archive: item-archive 失敗でも終了コードは 0 (マージフロー非ブロック)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-pass-triggers-board-archive"
+    name: "merge-gate PASS 後の自動アーカイブ実行"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 27
+    requirement: "merge-gate PASS 時の自動アーカイブ"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "merge-gate-execute: PASS 後に board-archive を呼び出す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-pass-board-archive-output"
+    name: "merge-gate PASS 後の自動アーカイブ — 成功メッセージ確認"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 27
+    requirement: "merge-gate PASS 時の自動アーカイブ"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "merge-gate-execute: PASS 後に board-archive の成功メッセージが出力される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "board-archive-failure-merge-still-succeeds"
+    name: "アーカイブ失敗でもマージ成立"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 32
+    requirement: "merge-gate PASS 時の自動アーカイブ"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "merge-gate-execute: board-archive が warning で return 0 でもマージの終了コードは 0"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "board-archive-failure-status-done-preserved"
+    name: "アーカイブ失敗でも Issue status=done を維持"
+    spec_file: "specs/board-archive/spec.md"
+    spec_line: 32
+    requirement: "merge-gate PASS 時の自動アーカイブ"
+    test_file: "tests/bats/scripts/board-archive.bats"
+    test_name: "merge-gate-execute: board-archive 失敗でも Issue status は done のまま"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

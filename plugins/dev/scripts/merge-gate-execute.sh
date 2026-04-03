@@ -136,6 +136,10 @@ case "$MODE" in
         --set "merged_at=$(date -Is)"
       echo "[merge-gate] Issue #${ISSUE}: マージ + クリーンアップ完了"
       tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
+      # Board アーカイブ（ISSUE_NUM が空の場合はスキップ）
+      if [[ -n "${ISSUE:-}" ]]; then
+        bash "$SCRIPT_DIR/chain-runner.sh" board-archive "$ISSUE" 2>/dev/null || true
+      fi
     else
       # エラーメッセージから認証情報をマスキング
       ERROR_RAW=$(cat "$MERGE_ERROR_LOG" 2>/dev/null | sed -E 's/ghp_[a-zA-Z0-9]+/ghp_***MASKED***/g; s/Bearer [^ ]+/Bearer ***MASKED***/g' | head -c 500 || echo "unknown error")
