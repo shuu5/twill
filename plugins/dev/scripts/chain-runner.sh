@@ -96,6 +96,11 @@ step_init() {
   local is_quick
   is_quick="$(detect_quick_label "$issue_num")"
 
+  # is_quick を state に永続化（state ファイルが存在する場合のみ）
+  if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+    bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$issue_num" --role worker --set "is_quick=$is_quick" 2>/dev/null || true
+  fi
+
   # ブランチ判定
   if [[ "$branch" == "main" || "$branch" == "master" ]]; then
     jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"worktree","branch":$branch,"is_quick":$is_quick}'
@@ -352,6 +357,49 @@ step_arch_ref() {
   fi
 }
 
+# --- next-step: is_quick と current_step から次ステップ名を返す ---
+# Usage: step_next_step <issue_num> <current_step>
+# stdout に次ステップ名を出力（全完了時は "done"）
+# NOTE: クエリコマンドのため record_current_step は呼ばない（chain 状態を変更しない）
+step_next_step() {
+  local issue_num="${1:-}"
+  local current_step="${2:-}"
+
+  # 引数バリデーション
+  if [[ -z "$issue_num" ]] || [[ ! "$issue_num" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: issue_num は正の整数で指定してください" >&2
+    return 1
+  fi
+
+  # is_quick を state から取得（存在しない場合は false）
+  local is_quick
+  is_quick="$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
+  [[ "$is_quick" == "true" ]] || is_quick="false"
+
+  # current_step のインデックスを探す
+  local found=false
+  for step in "${CHAIN_STEPS[@]}"; do
+    if [[ "$found" == "true" ]]; then
+      # is_quick=true かつ QUICK_SKIP_STEPS に含まれるステップはスキップ
+      if [[ "$is_quick" == "true" ]] && printf '%s\n' "${QUICK_SKIP_STEPS[@]}" | grep -qxF "$step"; then
+        continue
+      fi
+      echo "$step"
+      return 0
+    fi
+    [[ "$step" == "$current_step" ]] && found=true
+  done
+
+  # current_step が未設定またはリスト外 → 先頭ステップを返す
+  if [[ "$found" == "false" ]]; then
+    echo "${CHAIN_STEPS[0]}"
+    return 0
+  fi
+
+  # 全ステップ完了
+  echo "done"
+}
+
 # --- change-id-resolve: openspec change-id 解決 ---
 step_change_id_resolve() {
   record_current_step "change-id-resolve"
@@ -589,7 +637,7 @@ main() {
   if [[ -z "$step" ]]; then
     echo "Usage: chain-runner.sh <step-name> [args...]" >&2
     echo "Steps: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
-    echo "       change-id-resolve, ts-preflight, pr-test, all-pass-check," >&2
+    echo "       change-id-resolve, next-step, ts-preflight, pr-test, all-pass-check," >&2
     echo "       pr-cycle-report, check" >&2
     exit 1
   fi
@@ -603,6 +651,7 @@ main() {
     ac-extract)          step_ac_extract "$@" ;;
     arch-ref)            step_arch_ref "$@" ;;
     change-id-resolve)   step_change_id_resolve "$@" ;;
+    next-step)           step_next_step "$@" ;;
     ts-preflight)        step_ts_preflight "$@" ;;
     pr-test)             step_pr_test "$@" ;;
     all-pass-check)      step_all_pass_check "$@" ;;
@@ -611,7 +660,7 @@ main() {
     *)
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
-      echo "         change-id-resolve, ts-preflight, pr-test, all-pass-check," >&2
+      echo "         change-id-resolve, next-step, ts-preflight, pr-test, all-pass-check," >&2
       echo "         pr-cycle-report, check" >&2
       exit 1
       ;;

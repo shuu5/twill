@@ -102,6 +102,7 @@ if [[ -z "$field" ]]; then
   jq '.' "$file"
 else
   # 単一フィールド出力（存在しないフィールドは空文字列）
-  value=$(jq -r ".$field // empty" "$file" 2>/dev/null)
+  # boolean false を空文字として扱わないよう null チェックを明示
+  value=$(jq -r "if .${field} == null then \"\" else (.${field} | tostring) end" "$file" 2>/dev/null)
   echo "$value"
 fi
