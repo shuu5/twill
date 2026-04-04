@@ -235,12 +235,19 @@ cleanup_worker() {
   local entry="${2:-_default:${issue}}"
   local window_name="ap-#${issue}"
   echo "[orchestrator] cleanup: Issue #${issue} — window/branch クリーンアップ" >&2
+
+  # Step 1: tmux window を先に終了（Worker がworktreeで動作していない状態を保証してから削除）
   tmux kill-window -t "$window_name" 2>/dev/null || true
+
   local branch
   branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
   # ブランチ名バリデーション（コマンドインジェクション防止）
   if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
-    # クロスリポ対応: entry の ISSUE_REPO_PATH が設定されていれば git -C で対象リポの origin を使用
+    # Step 2: worktree削除（ローカルブランチ込み）— 各ステップ独立実行、失敗は警告のみで続行
+    bash "$SCRIPTS_ROOT/worktree-delete.sh" "$branch" 2>/dev/null || \
+      echo "[orchestrator] Issue #${issue}: ⚠️ worktree削除失敗（クリーンアップは続行）" >&2
+
+    # Step 3: リモートブランチ削除（クロスリポ対応）
     resolve_issue_repo_context "$entry"
     # ISSUE_REPO_PATH パストラバーサル防止: 絶対パスかつ ".." を含まないことを確認
     if [[ -n "$ISSUE_REPO_PATH" && "$ISSUE_REPO_PATH" == /* && "$ISSUE_REPO_PATH" != *..* ]]; then
@@ -777,12 +784,34 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
   fi
 
   # merge-ready の Issue に対して merge-gate を順次実行
+  # issue → entry マッピング構築（クロスリポ cleanup_worker 呼び出し用）
+  declare -A _batch_issue_to_entry=()
+  for _e in "${BATCH_LAUNCHED_ENTRIES[@]}"; do
+    _batch_issue_to_entry["${_e#*:}"]="$_e"
+  done
+
   for issue in "${BATCH_ISSUES[@]}"; do
     status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
     if [[ "$status" == "merge-ready" ]]; then
-      run_merge_gate "$issue"
+      run_merge_gate "$issue" || true  # set -euo pipefail 環境でのオーケストレーター終了を防止
+      # merge-gate 後: status に応じて Pilot 側でクリーンアップを集約実行（不変条件B）
+      local _status_after
+      _status_after=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+      local _issue_entry="${_batch_issue_to_entry[$issue]:-_default:${issue}}"
+      if [[ "$_status_after" == "done" ]]; then
+        # merge 成功: 全リソースをクリーンアップ
+        cleanup_worker "$issue" "$_issue_entry"
+      elif [[ "$_status_after" == "failed" ]]; then
+        # reject-final（確定失敗）: worktree とリモートブランチも解放（不変条件B）
+        local _retry
+        _retry=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field retry_count 2>/dev/null || echo "0")
+        if [[ "${_retry:-0}" -ge 1 ]]; then
+          cleanup_worker "$issue" "$_issue_entry"
+        fi
+      fi
     fi
   done
+  unset _batch_issue_to_entry
 done
 
 # Step 4: Phase 完了レポート

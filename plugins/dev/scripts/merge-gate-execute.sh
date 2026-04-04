@@ -121,35 +121,45 @@ case "$MODE" in
     MERGE_ERROR_LOG=$(mktemp /tmp/merge-error-XXXXXX.log)
     # shellcheck disable=SC2086
     if gh pr merge "$PR_NUMBER" $GH_REPO_FLAG --squash 2>"$MERGE_ERROR_LOG"; then
-      # ブランチクリーンアップ（マージ成功後）
-      if [ "$REPO_MODE" = "worktree" ]; then
-        # worktree mode: worktree を先に削除してからブランチを削除
-        WORKTREE_PATH=$(git worktree list --porcelain | awk -v target="branch refs/heads/${BRANCH}" '/^worktree / { wt=substr($0, 10) } $0 == target { print wt; exit }')
-        if [ -n "$WORKTREE_PATH" ]; then
-          if git worktree remove --force "$WORKTREE_PATH" 2>/dev/null; then
-            echo "[merge-gate] Issue #${ISSUE}: worktree 削除成功: ${WORKTREE_PATH}"
-          else
-            echo "[merge-gate] Issue #${ISSUE}: ⚠️ worktree 削除失敗（マージは成功）: ${WORKTREE_PATH}" >&2
-          fi
-        fi
-        # リモートブランチ削除
-        if git push origin --delete "${BRANCH}" 2>/dev/null; then
-          echo "[merge-gate] Issue #${ISSUE}: リモートブランチ削除成功: ${BRANCH}"
-        else
-          echo "[merge-gate] Issue #${ISSUE}: ⚠️ リモートブランチ削除失敗（マージは成功）: ${BRANCH}" >&2
-        fi
+      # autopilot 判定: AUTOPILOT_DIR 配下に issue-{N}.json が存在する場合はクリーンアップをスキップし Pilot へ委譲
+      _AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+      # パストラバーサル防止: AUTOPILOT_DIR に ".." が含まれる場合はデフォルト値を使用
+      if [[ "$_AUTOPILOT_DIR" == *..* ]]; then
+        _AUTOPILOT_DIR=".autopilot"
+      fi
+      if [[ -f "${_AUTOPILOT_DIR}/issues/issue-${ISSUE}.json" ]]; then
+        echo "[merge-gate] Issue #${ISSUE}: autopilot 検出 — クリーンアップを Pilot へ委譲"
       else
-        # standard mode: 従来通りローカル+リモートブランチ削除
-        git push origin --delete "${BRANCH}" 2>/dev/null || echo "[merge-gate] Issue #${ISSUE}: ⚠️ リモートブランチ削除失敗（マージは成功）" >&2
-        git branch -D "${BRANCH}" 2>/dev/null || true
+        # 非 autopilot パス: 従来通りクリーンアップ実行
+        if [ "$REPO_MODE" = "worktree" ]; then
+          # worktree mode: worktree を先に削除してからブランチを削除
+          WORKTREE_PATH=$(git worktree list --porcelain | awk -v target="branch refs/heads/${BRANCH}" '/^worktree / { wt=substr($0, 10) } $0 == target { print wt; exit }')
+          if [ -n "$WORKTREE_PATH" ]; then
+            if git worktree remove --force "$WORKTREE_PATH" 2>/dev/null; then
+              echo "[merge-gate] Issue #${ISSUE}: worktree 削除成功: ${WORKTREE_PATH}"
+            else
+              echo "[merge-gate] Issue #${ISSUE}: ⚠️ worktree 削除失敗（マージは成功）: ${WORKTREE_PATH}" >&2
+            fi
+          fi
+          # リモートブランチ削除
+          if git push origin --delete "${BRANCH}" 2>/dev/null; then
+            echo "[merge-gate] Issue #${ISSUE}: リモートブランチ削除成功: ${BRANCH}"
+          else
+            echo "[merge-gate] Issue #${ISSUE}: ⚠️ リモートブランチ削除失敗（マージは成功）: ${BRANCH}" >&2
+          fi
+        else
+          # standard mode: 従来通りローカル+リモートブランチ削除
+          git push origin --delete "${BRANCH}" 2>/dev/null || echo "[merge-gate] Issue #${ISSUE}: ⚠️ リモートブランチ削除失敗（マージは成功）" >&2
+          git branch -D "${BRANCH}" 2>/dev/null || true
+        fi
+        tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
       fi
 
-      # state-write.sh で done に遷移
+      # state-write.sh で done に遷移（autopilot / 非 autopilot 共通）
       bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
         --set status=done \
         --set "merged_at=$(date -Is)"
-      echo "[merge-gate] Issue #${ISSUE}: マージ + クリーンアップ完了"
-      tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
+      echo "[merge-gate] Issue #${ISSUE}: マージ完了"
       # Board Status → Done（merge 成功後の正しいライフサイクル。Archive は autopilot Phase 完了処理が担う）
       if ! bash "$SCRIPT_DIR/chain-runner.sh" board-status-update "$ISSUE" "Done"; then
         echo "[merge-gate] Issue #${ISSUE}: ⚠️ Board Status → Done に失敗しました（マージは成功）" >&2

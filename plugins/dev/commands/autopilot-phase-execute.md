@@ -119,8 +119,8 @@ FOR each ISSUE in $ISSUES:
     → commands/merge-gate.md を Read → 実行
   STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
   IF STATUS == "done":
-    → tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
     → 状態記録（done）
+    # tmux kill-window は autopilot-orchestrator.sh の cleanup_worker が担当（不変条件B）
   ELIF STATUS == "failed":
     → 状態記録（fail）
     → 残り全 Issue を skipped に設定
@@ -174,8 +174,8 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
   FOR each ISSUE in $BATCH:
     STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
     IF STATUS == "done":
-      → tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
       → 状態記録（done）
+      # tmux kill-window は autopilot-orchestrator.sh の cleanup_worker が担当（不変条件B）
     ELIF STATUS == "failed":
       → 状態記録（fail）
 ```
