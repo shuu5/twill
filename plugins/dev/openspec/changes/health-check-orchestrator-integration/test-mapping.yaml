@@ -1,0 +1,353 @@
+change_id: health-check-orchestrator-integration
+generated_at: "2026-04-04T00:00:00Z"
+test_framework: bats
+scenarios:
+  # =========================================================================
+  # Requirement: health-check 定期呼び出し
+  # Source: specs/health-check-integration/spec.md
+  # =========================================================================
+
+  # Scenario: health-check が定期実行される
+  - id: "health-check-periodic-execution"
+    name: "health-check が定期実行される"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 6
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: poll_count が HEALTH_CHECK_INTERVAL の倍数で health-check.sh が呼ばれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-periodic-execution-multiple"
+    name: "health-check が定期実行される (2倍数)"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 6
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: poll_count=12 (2×HEALTH_CHECK_INTERVAL) でも health-check.sh が呼ばれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-skip-non-multiple"
+    name: "非倍数では health-check をスキップする"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 6
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: poll_count が HEALTH_CHECK_INTERVAL の非倍数では health-check.sh を呼ばない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-skip-poll-count-1"
+    name: "poll_count=1 では health-check をスキップする (edge case)"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 6
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: poll_count=1 (非倍数) では health-check.sh を呼ばない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # Scenario: crash-detect 後は health-check をスキップする
+  - id: "health-check-skip-after-crash-detect"
+    name: "crash-detect 後は health-check をスキップする"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 11
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: crash-detect exit 2 のサイクルでは health-check.sh を呼ばない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-runs-when-no-crash"
+    name: "crash-detect exit 0 のサイクルでは health-check.sh が呼ばれる (対比)"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 11
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: crash-detect exit 0 のサイクルでは health-check.sh が呼ばれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: health-check 検知時の汎用 nudge
+  # Source: specs/health-check-integration/spec.md
+  # =========================================================================
+
+  # Scenario: stall 検知時に nudge が送信される
+  - id: "health-check-stall-nudge-sent"
+    name: "stall 検知時に nudge が送信される"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 18
+    requirement: "health-check 検知時の汎用 nudge"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: stall 検知時に tmux send-keys で nudge が送信される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-stall-nudge-count-incremented"
+    name: "stall 検知時に NUDGE_COUNTS がインクリメントされる"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 18
+    requirement: "health-check 検知時の汎用 nudge"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: stall 検知時に NUDGE_COUNTS がインクリメントされる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-nudge-count-cumulative"
+    name: "nudge カウントが累積される"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 18
+    requirement: "health-check 検知時の汎用 nudge"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: nudge カウントが累積される（2回目は count=2）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # Scenario: health-check 引数エラーはスキップされる
+  - id: "health-check-arg-error-skip-nudge"
+    name: "health-check 引数エラーはスキップされる - nudge 非送信"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 22
+    requirement: "health-check 検知時の汎用 nudge"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: health-check exit 1 + stderr あり → nudge 送信しない（引数エラーはスキップ）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-arg-error-skip-state-write"
+    name: "health-check 引数エラーはスキップされる - state-write 非呼び出し"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 22
+    requirement: "health-check 検知時の汎用 nudge"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: health-check exit 1 + stderr あり → state-write.sh を呼ばない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-empty-stderr-is-stall"
+    name: "health-check exit 1 + stderr 空 → 正常な stall 検知（対比）"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 22
+    requirement: "health-check 検知時の汎用 nudge"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: health-check exit 1 + stderr 空 → nudge 送信される（正常な stall 検知）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # Scenario: check_and_nudge が優先される
+  - id: "check-and-nudge-priority-no-additional-nudge"
+    name: "check_and_nudge が優先される - 追加 nudge なし"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 26
+    requirement: "health-check 検知時の汎用 nudge"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: check_and_nudge マッチ成功時は health-check nudge を送信しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "check-and-nudge-priority-no-count-increment"
+    name: "check_and_nudge が優先される - NUDGE_COUNTS 非インクリメント"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 26
+    requirement: "health-check 検知時の汎用 nudge"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: check_and_nudge マッチ成功時は NUDGE_COUNTS をインクリメントしない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "check-and-nudge-no-match-sends-nudge"
+    name: "check_and_nudge 非マッチ時は health-check nudge が送信される（対比）"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 26
+    requirement: "health-check 検知時の汎用 nudge"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: check_and_nudge 非マッチ時は health-check nudge が送信される（対比ケース）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: nudge 上限到達時の failed 遷移
+  # Source: specs/health-check-integration/spec.md
+  # =========================================================================
+
+  # Scenario: nudge 上限到達で failed に遷移する
+  - id: "nudge-max-failed-transition-status"
+    name: "nudge 上限到達で failed に遷移する - status=failed"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 32
+    requirement: "nudge 上限到達時の failed 遷移"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: NUDGE_COUNTS >= MAX_NUDGE で status=failed に遷移する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "nudge-max-failed-transition-message"
+    name: "nudge 上限到達で failed に遷移する - failure.message=health_check_stall"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 32
+    requirement: "nudge 上限到達時の failed 遷移"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: NUDGE_COUNTS >= MAX_NUDGE で failure.message=health_check_stall が書き込まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "nudge-max-failed-transition-json"
+    name: "nudge 上限到達で failed に遷移する - issue JSON 更新確認"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 32
+    requirement: "nudge 上限到達時の failed 遷移"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: NUDGE_COUNTS >= MAX_NUDGE で issue JSON の status が failed に更新される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "nudge-max-boundary-not-failed"
+    name: "NUDGE_COUNTS = MAX_NUDGE - 1 では failed に遷移しない（境界値）"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 32
+    requirement: "nudge 上限到達時の failed 遷移"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: NUDGE_COUNTS = MAX_NUDGE - 1 では failed に遷移しない（境界値）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "nudge-max-no-additional-nudge"
+    name: "nudge 上限到達では追加 nudge を送信しない"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 32
+    requirement: "nudge 上限到達時の failed 遷移"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: NUDGE_COUNTS >= MAX_NUDGE では追加 nudge を送信しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "nudge-over-max-also-fails"
+    name: "NUDGE_COUNTS > MAX_NUDGE でも failed に遷移する（超過ケース）"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 32
+    requirement: "nudge 上限到達時の failed 遷移"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: NUDGE_COUNTS > MAX_NUDGE でも failed に遷移する（超過ケース）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Edge cases
+  # =========================================================================
+
+  - id: "health-check-exit0-no-nudge-no-failed"
+    name: "health-check exit 0 では nudge も failed 遷移もしない"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 6
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: health-check exit 0 では nudge も failed 遷移もしない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-interval-1-every-poll"
+    name: "HEALTH_CHECK_INTERVAL=1 ではすべての poll_count で health-check が呼ばれる"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 6
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: HEALTH_CHECK_INTERVAL=1 ではすべての poll_count で health-check が呼ばれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-poll-missing-args"
+    name: "必須引数欠落時はエラー終了する"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 6
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: --issue, --window, --poll-count 欠落時はエラー終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "health-check-crash-plus-non-multiple"
+    name: "crash-detect exit 2 + 非倍数 poll_count でも health-check を呼ばない"
+    spec_file: "specs/health-check-integration/spec.md"
+    spec_line: 11
+    requirement: "health-check 定期呼び出し"
+    test_file: "tests/bats/scripts/autopilot-orchestrator.bats"
+    test_name: "health-check-integration: crash-detect exit 2 かつ poll 非倍数でも health-check を呼ばない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
