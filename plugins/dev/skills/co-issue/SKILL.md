@@ -169,12 +169,16 @@ FOR each structured_issue IN issues:
   ELSE:  # scope_files 3 以上: 各ファイルの調査を制限
     depth_instruction = "各ファイルは存在確認と直接参照のみ。再帰追跡禁止。残り turns が少なくなったら（3 以下目安）出力生成を優先"
 
-  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
+  # related_context 内変数もユーザー入力由来のため機械的にエスケープする（SHALL）
+  escaped_related_issues=$(printf '%s\n' "$related_issues" | bash scripts/escape-issue-body.sh)
+  escaped_deps_yaml_entries=$(printf '%s\n' "$deps_yaml_entries" | bash scripts/escape-issue-body.sh)
+
+  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
 ```
 
-**注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。上記の通り、`scripts/escape-issue-body.sh` を経由してエスケープすること（SHALL）。
+**注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。上記の通り、`scripts/escape-issue-body.sh` を経由してエスケープすること（SHALL）。**`<related_context>` タグ内に注入する全変数は `escape-issue-body.sh` を通すこと（SHALL）。**
 
 **重要**: 全 specialist を単一メッセージで一括発行すること（並列実行）。model は指定不要（agent frontmatter の model: sonnet が適用される）。
 
