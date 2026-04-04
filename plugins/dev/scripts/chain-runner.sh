@@ -218,7 +218,7 @@ step_board_status_update() {
     return 0
   }
   status_field_id=$(echo "$fields" | jq -r '.fields[] | select(.name == "Status") | .id')
-  status_option_id=$(echo "$fields" | jq -r ".fields[] | select(.name == \"Status\") | .options[] | select(.name == \"$target_status\") | .id")
+  status_option_id=$(echo "$fields" | jq --raw-output --arg status "${target_status}" '.fields[] | select(.name == "Status") | .options[] | select(.name == $status) | .id')
 
   if [[ -z "$status_field_id" || -z "$status_option_id" ]]; then
     skip "board-status-update" "Status フィールドまたは $target_status オプションが見つからない"
