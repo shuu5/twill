@@ -638,12 +638,16 @@ check_and_nudge() {
 # =============================================================================
 
 run_merge_gate() {
-  local issue="$1"
+  local entry="$1"
+  local repo_id="${entry%%:*}"
+  local issue="${entry#*:}"
+  local -a _state_read_repo_args=()
+  [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
 
   # PR 番号とブランチを state から取得
   local pr_number branch
-  pr_number=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field pr_number 2>/dev/null || echo "")
-  branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
+  pr_number=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field pr_number 2>/dev/null || echo "")
+  branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field branch 2>/dev/null || echo "")
 
   if [[ -z "$pr_number" || -z "$branch" ]]; then
     echo "[orchestrator] Issue #${issue}: PR 番号またはブランチが取得できません — auto-merge.sh にフォールバック" >&2
@@ -863,25 +867,25 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
   done
 
   for issue in "${BATCH_ISSUES[@]}"; do
-    status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+    _entry="${_batch_issue_to_entry[$issue]:-_default:${issue}}"
+    _repo_id="${_entry%%:*}"
+    _repo_args=()
+    [[ "$_repo_id" != "_default" ]] && _repo_args=(--repo "$_repo_id")
+    status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$issue" --field status 2>/dev/null || echo "")
     if [[ "$status" == "merge-ready" ]]; then
-      run_merge_gate "$issue" || true  # set -euo pipefail 環境でのオーケストレーター終了を防止
+      run_merge_gate "$_entry" || true  # set -euo pipefail 環境でのオーケストレーター終了を防止
       # merge-gate 後: status に応じて Pilot 側でクリーンアップを集約実行（不変条件B）
-      local _status_after
-      _status_after=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
-      local _issue_entry="${_batch_issue_to_entry[$issue]:-_default:${issue}}"
+      _status_after=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$issue" --field status 2>/dev/null || echo "")
       if [[ "$_status_after" == "done" ]]; then
         # merge 成功: 全リソースをクリーンアップ
-        cleanup_worker "$issue" "$_issue_entry"
+        cleanup_worker "$issue" "$_entry"
       elif [[ "$_status_after" == "failed" ]]; then
         # reject-final（確定失敗）: worktree とリモートブランチも解放（不変条件B）
-        local _retry
-        _retry=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field retry_count 2>/dev/null || echo "0")
+        _retry=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$issue" --field retry_count 2>/dev/null || echo "0")
         # failure.reason を確認: merge_gate_rejected_final は retry_count 0 でも確定失敗（#229）
-        local _failure_reason=""
-        _failure_reason=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field failure.reason 2>/dev/null || echo "")
+        _failure_reason=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$issue" --field failure.reason 2>/dev/null || echo "")
         if [[ "${_retry:-0}" -ge 1 ]] || [[ "$_failure_reason" == "merge_gate_rejected_final" ]]; then
-          cleanup_worker "$issue" "$_issue_entry"
+          cleanup_worker "$issue" "$_entry"
         fi
       fi
     fi

@@ -165,7 +165,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="293.89,-1009.22 228.89,-1009.22 228.89,-973.22 293.89,-973.22 293.89,-1009.22"/>
 <text text-anchor="middle" x="261.39" y="-994.22" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="261.39" y="-983.22" font-family="Helvetica,sans-Serif" font-size="10.00">(1,650 tok)</text>
+<text text-anchor="middle" x="261.39" y="-983.22" font-family="Helvetica,sans-Serif" font-size="10.00">(1,701 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_merge_gate -->
 <g id="edge14" class="edge">
@@ -658,7 +658,7 @@
 <title>script_worktree_delete</title>
 <polygon fill="#ff9800" stroke="black" points="525.83,-1164.22 492.06,-1188.71 424.52,-1188.71 390.75,-1164.22 424.52,-1139.73 492.06,-1139.73 525.83,-1164.22"/>
 <text text-anchor="middle" x="458.29" y="-1167.22" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;delete</text>
-<text text-anchor="middle" x="458.29" y="-1156.22" font-family="Helvetica,sans-Serif" font-size="10.00">(877 tok)</text>
+<text text-anchor="middle" x="458.29" y="-1156.22" font-family="Helvetica,sans-Serif" font-size="10.00">(956 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;script_worktree_delete -->
 <g id="edge43" class="edge">

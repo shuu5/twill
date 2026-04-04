@@ -1111,7 +1111,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="563.72,-3747.84 498.72,-3747.84 498.72,-3711.84 563.72,-3711.84 563.72,-3747.84"/>
 <text text-anchor="middle" x="531.22" y="-3732.84" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="531.22" y="-3721.84" font-family="Helvetica,sans-Serif" font-size="10.00">(1,650 tok)</text>
+<text text-anchor="middle" x="531.22" y="-3721.84" font-family="Helvetica,sans-Serif" font-size="10.00">(1,701 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_merge_gate -->
 <g id="edge86" class="edge">
@@ -1836,7 +1836,7 @@
 <title>script_worktree_delete</title>
 <polygon fill="#ff9800" stroke="black" points="826.01,-2711.84 792.24,-2736.33 724.7,-2736.33 690.93,-2711.84 724.7,-2687.35 792.24,-2687.35 826.01,-2711.84"/>
 <text text-anchor="middle" x="758.47" y="-2714.84" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;delete</text>
-<text text-anchor="middle" x="758.47" y="-2703.84" font-family="Helvetica,sans-Serif" font-size="10.00">(877 tok)</text>
+<text text-anchor="middle" x="758.47" y="-2703.84" font-family="Helvetica,sans-Serif" font-size="10.00">(956 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;script_worktree_delete -->
 <g id="edge137" class="edge">
@@ -1888,7 +1888,7 @@
 <title>script_autopilot_init</title>
 <polygon fill="#ff9800" stroke="black" points="814.64,-5556.84 786.56,-5581.33 730.38,-5581.33 702.29,-5556.84 730.38,-5532.35 786.56,-5532.35 814.64,-5556.84"/>
 <text text-anchor="middle" x="758.47" y="-5559.84" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;init</text>
-<text text-anchor="middle" x="758.47" y="-5548.84" font-family="Helvetica,sans-Serif" font-size="10.00">(1,660 tok)</text>
+<text text-anchor="middle" x="758.47" y="-5548.84" font-family="Helvetica,sans-Serif" font-size="10.00">(1,736 tok)</text>
 </g>
 <!-- cmd_autopilot_init&#45;&gt;script_autopilot_init -->
 <g id="edge162" class="edge">
@@ -1921,7 +1921,7 @@
 <title>script_autopilot_launch</title>
 <polygon fill="#ff9800" stroke="black" points="827.77,-2924.84 793.12,-2949.33 723.81,-2949.33 689.16,-2924.84 723.81,-2900.35 793.12,-2900.35 827.77,-2924.84"/>
 <text text-anchor="middle" x="758.47" y="-2927.84" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;launch</text>
-<text text-anchor="middle" x="758.47" y="-2916.84" font-family="Helvetica,sans-Serif" font-size="10.00">(2,453 tok)</text>
+<text text-anchor="middle" x="758.47" y="-2916.84" font-family="Helvetica,sans-Serif" font-size="10.00">(3,055 tok)</text>
 </g>
 <!-- cmd_autopilot_launch&#45;&gt;script_autopilot_launch -->
 <g id="edge164" class="edge">
@@ -1948,7 +1948,7 @@
 <title>script_state_read</title>
 <polygon fill="#ff9800" stroke="black" points="807.45,-2853.84 782.96,-2878.33 733.98,-2878.33 709.49,-2853.84 733.98,-2829.35 782.96,-2829.35 807.45,-2853.84"/>
 <text text-anchor="middle" x="758.47" y="-2856.84" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;read</text>
-<text text-anchor="middle" x="758.47" y="-2845.84" font-family="Helvetica,sans-Serif" font-size="10.00">(956 tok)</text>
+<text text-anchor="middle" x="758.47" y="-2845.84" font-family="Helvetica,sans-Serif" font-size="10.00">(986 tok)</text>
 </g>
 <!-- cmd_autopilot_poll&#45;&gt;script_state_read -->
 <g id="edge167" class="edge">
@@ -2550,7 +2550,7 @@
 <title>script_autopilot_orchestrator</title>
 <polygon fill="#ff9800" stroke="black" points="846.83,-5769.84 802.65,-5794.33 714.29,-5794.33 670.1,-5769.84 714.29,-5745.35 802.65,-5745.35 846.83,-5769.84"/>
 <text text-anchor="middle" x="758.47" y="-5772.84" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;orchestrator</text>
-<text text-anchor="middle" x="758.47" y="-5761.84" font-family="Helvetica,sans-Serif" font-size="10.00">(9,018 tok)</text>
+<text text-anchor="middle" x="758.47" y="-5761.84" font-family="Helvetica,sans-Serif" font-size="10.00">(9,303 tok)</text>
 </g>
 <!-- script_merge_gate_init -->
 <g id="node140" class="node">
@@ -2585,7 +2585,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="815.78,-6124.84 787.12,-6149.33 729.81,-6149.33 701.16,-6124.84 729.81,-6100.35 787.12,-6100.35 815.78,-6124.84"/>
 <text text-anchor="middle" x="758.47" y="-6127.84" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="758.47" y="-6116.84" font-family="Helvetica,sans-Serif" font-size="10.00">(6,018 tok)</text>
+<text text-anchor="middle" x="758.47" y="-6116.84" font-family="Helvetica,sans-Serif" font-size="10.00">(6,271 tok)</text>
 </g>
 <!-- script_branch_create -->
 <g id="node146" class="node">

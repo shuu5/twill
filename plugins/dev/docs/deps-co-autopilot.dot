@@ -51,7 +51,7 @@ digraph Dependencies {
     cmd_phase_review [label="phase-review\n(767 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_fix_phase [label="fix-phase\n(410 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_e2e_screening [label="e2e-screening\n(352 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,650 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,701 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_ac_deploy_trigger [label="ac-deploy-trigger\n(457 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_auto_merge [label="auto-merge\n(296 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(974 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -92,14 +92,14 @@ digraph Dependencies {
     agent_e2e_generate [label="e2e-generate\n(2,028 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
-    script_state_read [label="state-read\n(956 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_read [label="state-read\n(986 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_state_write [label="state-write\n(2,571 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_init [label="autopilot-init\n(1,660 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_launch [label="autopilot-launch\n(2,453 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_init [label="autopilot-init\n(1,736 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_launch [label="autopilot-launch\n(3,055 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_create [label="session-create\n(618 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_archive [label="session-archive\n(456 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_add_warning [label="session-add-warning\n(537 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_worktree_delete [label="worktree-delete\n(877 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_delete [label="worktree-delete\n(956 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_crash_detect [label="crash-detect\n(1,209 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_health_check [label="health-check\n(2,193 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
