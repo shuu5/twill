@@ -292,13 +292,24 @@ cleanup_worker() {
   # Step 1: tmux window を先に終了（Worker がworktreeで動作していない状態を保証してから削除）
   tmux kill-window -t "$window_name" 2>/dev/null || true
 
+  # REPO_MODE 自動判定（auto-merge.sh / merge-gate-execute.sh と同一パターン）
+  local repo_mode _git_dir
+  _git_dir=$(git rev-parse --git-dir 2>/dev/null || echo "")
+  if [[ "$_git_dir" == ".git" || -z "$_git_dir" ]]; then
+    repo_mode="standard"
+  else
+    repo_mode="worktree"
+  fi
+
   local branch
   branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
   # ブランチ名バリデーション（コマンドインジェクション防止）
   if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
-    # Step 2: worktree削除（ローカルブランチ込み）— 各ステップ独立実行、失敗は警告のみで続行
-    bash "$SCRIPTS_ROOT/worktree-delete.sh" "$branch" 2>/dev/null || \
-      echo "[orchestrator] Issue #${issue}: ⚠️ worktree削除失敗（クリーンアップは続行）" >&2
+    # Step 2: worktree削除（ローカルブランチ込み）— bare repo（worktreeモード）のみ実行
+    if [[ "$repo_mode" == "worktree" ]]; then
+      bash "$SCRIPTS_ROOT/worktree-delete.sh" "$branch" 2>/dev/null || \
+        echo "[orchestrator] Issue #${issue}: ⚠️ worktree削除失敗（クリーンアップは続行）" >&2
+    fi
 
     # Step 3: リモートブランチ削除（クロスリポ対応）
     resolve_issue_repo_context "$entry"
