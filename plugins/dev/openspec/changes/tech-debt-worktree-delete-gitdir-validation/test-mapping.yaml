@@ -1,0 +1,148 @@
+change_id: tech-debt-worktree-delete-gitdir-validation
+generated_at: "2026-04-05T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "gitdir-dotdot-rejected"
+    name: "gitdir に `..` が含まれる場合"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: 7
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir containing .. is rejected with error to stderr and exit 1"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "validation code not yet implemented in worktree-delete.sh"
+
+  - id: "gitdir-normal-passes"
+    name: "正常な gitdir 値の場合"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: 13
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir without .. passes validation and proceeds to bare_root logic"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-05T00:00:00Z"
+    failure_reason: null
+
+  - id: "gitdir-bare-suffix-pattern"
+    name: "gitdir が `.bare` で終わる場合（既存パターン）"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: 18
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir ending with /.bare uses bare_root extraction and continues"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-05T00:00:00Z"
+    failure_reason: null
+
+  - id: "gitdir-bare-worktrees-pattern"
+    name: "gitdir が `.bare/worktrees/...` パターンの場合（既存パターン）"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: 23
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir with .bare/worktrees pattern extracts bare_root and continues"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-05T00:00:00Z"
+    failure_reason: null
+
+  # Edge cases (not in spec Scenarios, added per coverage=edge-cases request)
+
+  - id: "gitdir-empty-string"
+    name: "gitdir が空文字列の場合（エッジケース）"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: null
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "empty gitdir does not trigger path-traversal error"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-05T00:00:00Z"
+    failure_reason: null
+
+  - id: "gitdir-dotdot-middle"
+    name: "gitdir の中間に `..` が含まれる場合（エッジケース）"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: null
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir with .. in the middle is rejected"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "validation code not yet implemented in worktree-delete.sh"
+
+  - id: "gitdir-dotdot-start"
+    name: "gitdir が `..` で始まる場合（エッジケース）"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: null
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir starting with .. is rejected"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "validation code not yet implemented in worktree-delete.sh"
+
+  - id: "gitdir-dotdot-hidden-conservative"
+    name: "gitdir に `..hidden` コンポーネントが含まれる場合（保守的動作）"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: null
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir with ..hidden component is treated conservatively (rejected)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "validation code not yet implemented in worktree-delete.sh"
+
+  - id: "gitdir-single-dot-allowed"
+    name: "gitdir に単一ドット `.` コンポーネントが含まれる場合（拒否しない）"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: null
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir with single dot component is not rejected"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-05T00:00:00Z"
+    failure_reason: null
+
+  - id: "gitdir-error-to-stderr-only"
+    name: "エラーメッセージが stderr に出力される（stdout は空）"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: null
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir path-traversal error is written to stderr"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-05T00:00:00Z"
+    failure_reason: null
+
+  - id: "gitdir-error-stderr-content"
+    name: "stderr に ERROR メッセージが含まれる"
+    spec_file: "specs/gitdir-validation.md"
+    spec_line: null
+    requirement: "worktree-delete.sh gitdir パストラバーサル検証"
+    test_file: "tests/bats/scripts/worktree-delete-gitdir-validation.bats"
+    test_name: "gitdir path-traversal error message appears on stderr stream"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "validation code not yet implemented in worktree-delete.sh"

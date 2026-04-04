@@ -53,7 +53,15 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # bare repo のルートを特定
 bare_root=""
 if [[ -f "$PROJECT_ROOT/.git" ]]; then
-  gitdir=$(cat "$PROJECT_ROOT/.git" | sed 's/^gitdir: //')
+  gitdir=$(sed 's/^gitdir: //' "$PROJECT_ROOT/.git")
+  if [[ "$gitdir" != /* ]]; then
+    echo "ERROR: gitdir は絶対パスである必要があります" >&2
+    exit 1
+  fi
+  if [[ "$gitdir" =~ (^|/)\.\.(/|$) ]]; then
+    echo "ERROR: gitdir 値に不正なパスコンポーネント (..) が含まれています" >&2
+    exit 1
+  fi
   # .bare を含むパスからプロジェクトルートを推定
   # gitdir が /path/.bare で終わる場合と /path/.bare/worktrees/xxx の場合の両方に対応
   if [[ "$gitdir" =~ /\.bare$ ]]; then
