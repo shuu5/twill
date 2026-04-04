@@ -138,18 +138,19 @@ TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
 全 Issue の構造化完了後、全 Issue × 3 specialist を一括並列 spawn（Agent tool）。`is_quick_candidate: true` の Issue は prompt に `<quick_classification>` タグを追加注入し、specialist が `quick-classification` カテゴリで妥当性を検証する（issue-critic: 隠れた複雑性、issue-feasibility: ~20行以下の確認）。逆方向の推奨も許可（severity: INFO）。
 
-```
+**アーキテクチャ制約（SHALL）**: Issue body を受け取る全 specialist は必ずエスケープ済み入力を受け取る。エスケープ処理は `scripts/escape-issue-body.sh` を使用して機械的に強制する（LLM への「注意して」は禁止）。
+
+```bash
 FOR each structured_issue IN issues:
-  # Issue body を XML タグに注入する前にエスケープする（SHALL）
-  # プロンプトインジェクション対策: & → &amp;、< → &lt;、> → &gt; の順に置換してから注入する
-  # Bash: escaped_body=$(echo "$body" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
-  escaped_body = structured_issue.body.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n{escaped_body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n{escaped_body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n{escaped_body}\n</review_target>\n\n<target_files>\n{structured_issue.scope_files}\n</target_files>\n\n<related_context>\n{related_issues}\n{deps_yaml_entries}\n</related_context>")
+  # Issue body を XML タグに注入する前に機械的にエスケープする（SHALL）
+  # プロンプトインジェクション対策: scripts/escape-issue-body.sh が & → &amp;、< → &lt;、> → &gt; の順に置換する
+  escaped_body=$(printf '%s\n' "$structured_issue_body" | bash scripts/escape-issue-body.sh)
+  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${structured_issue_scope_files}\n</target_files>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${structured_issue_scope_files}\n</target_files>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${structured_issue_scope_files}\n</target_files>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
 ```
 
-**注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。上記の通り、注入前に `<` / `>` を HTML エンティティに置換すること（SHALL）。
+**注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。上記の通り、`scripts/escape-issue-body.sh` を経由してエスケープすること（SHALL）。
 
 **重要**: 全 specialist を単一メッセージで一括発行すること（並列実行）。model は指定不要（agent frontmatter の model: sonnet が適用される）。
 

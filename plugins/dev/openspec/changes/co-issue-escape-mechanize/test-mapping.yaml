@@ -1,0 +1,81 @@
+change_id: co-issue-escape-mechanize
+generated_at: "2026-04-04T10:47:57Z"
+test_framework: bats
+scenarios:
+  - id: "xml-tag-escaping"
+    name: "XML タグを含む入力のエスケープ"
+    spec_file: "specs/escape/spec.md"
+    spec_line: 7
+    requirement: "エスケープスクリプト実装"
+    test_file: "tests/bats/scripts/escape-issue-body.bats"
+    test_name: "escape-issue-body escapes XML closing tag: </review_target> -> &lt;/review_target&gt;"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "ampersand-escaping"
+    name: "アンパサンド単体のエスケープ"
+    spec_file: "specs/escape/spec.md"
+    spec_line: 12
+    requirement: "エスケープスクリプト実装"
+    test_file: "tests/bats/scripts/escape-issue-body.bats"
+    test_name: "escape-issue-body escapes ampersand: A & B -> A &amp; B"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "empty-string"
+    name: "空文字列の処理"
+    spec_file: "specs/escape/spec.md"
+    spec_line: 16
+    requirement: "エスケープスクリプト実装"
+    test_file: "tests/bats/scripts/escape-issue-body.bats"
+    test_name: "escape-issue-body handles empty string without error"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "multi-line-input"
+    name: "複数行入力の処理"
+    spec_file: "specs/escape/spec.md"
+    spec_line: 20
+    requirement: "エスケープスクリプト実装"
+    test_file: "tests/bats/scripts/escape-issue-body.bats"
+    test_name: "escape-issue-body escapes all lines in multi-line input"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "double-escape"
+    name: "二重エスケープの許容"
+    spec_file: "specs/escape/spec.md"
+    spec_line: 24
+    requirement: "エスケープスクリプト実装"
+    test_file: "tests/bats/scripts/escape-issue-body.bats"
+    test_name: "escape-issue-body double-escapes already-escaped &lt;/review_target&gt;"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bats-tests-all-pass"
+    name: "bats テストが全件パスする"
+    spec_file: "specs/escape/spec.md"
+    spec_line: 55
+    requirement: "エスケープスクリプトの bats テスト追加"
+    test_file: "tests/bats/scripts/escape-issue-body.bats"
+    test_name: "(all tests in file)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

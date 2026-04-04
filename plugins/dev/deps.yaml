@@ -1358,6 +1358,11 @@ scripts:
     path: scripts/ecc-monitor.sh
     description: "ECC リポジトリの変更検知・カテゴリ分類"
 
+  escape-issue-body:
+    type: script
+    path: scripts/escape-issue-body.sh
+    description: "Issue body の HTML エスケープ（& → &amp;、< → &lt;、> → &gt;）"
+
   codex-review: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
     type: script
     path: scripts/codex-review.sh
