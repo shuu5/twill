@@ -64,7 +64,7 @@ TaskUpdate Phase 1 → completed
 
 1. `architecture/domain/glossary.md` を読み込み、`### MUST 用語` セクションのテーブルから用語名（列1）を抽出する
 2. `.controller-issue/explore-summary.md` から主要用語・概念名を抽出する
-3. explore-summary.md の用語と MUST 用語を照合し、完全一致しない用語を列挙する（部分一致・略語は除外）
+3. explore-summary.md から抽出した用語のうち、MUST 用語テーブルに存在しない（未登録の）用語を列挙する（部分一致・略語は除外）
 4. 不一致用語が 1 件以上あれば INFO レベルで以下を通知する（3軸判断はステップ6で行う）:
    > `[INFO] この概念は architecture spec に未定義です: <用語1>, <用語2>, ... （以降で登録判断を実施します）`
 5. `refs/ref-glossary-criteria.md` を DCI で Read する（ARCH_CONTEXT に含まれない個別 ref のため個別に Read すること）
