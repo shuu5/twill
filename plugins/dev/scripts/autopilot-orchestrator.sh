@@ -161,6 +161,7 @@ get_phase_issues() {
 }
 
 # Issue のリポジトリコンテキストを解決
+# 副作用: グローバル変数 ISSUE, ISSUE_REPO_ID, ISSUE_REPO_OWNER, ISSUE_REPO_NAME, ISSUE_REPO_PATH を上書きする
 resolve_issue_repo_context() {
   local entry="$1"  # "repo_id:number"
   ISSUE="${entry#*:}"
@@ -171,9 +172,9 @@ resolve_issue_repo_context() {
   ISSUE_REPO_PATH=""
 
   if [[ "$ISSUE_REPO_ID" != "_default" && -n "$REPOS_JSON" ]]; then
-    ISSUE_REPO_OWNER=$(echo "$REPOS_JSON" | jq -r --arg k "$ISSUE_REPO_ID" '.[$k].owner')
-    ISSUE_REPO_NAME=$(echo "$REPOS_JSON" | jq -r --arg k "$ISSUE_REPO_ID" '.[$k].name')
-    ISSUE_REPO_PATH=$(echo "$REPOS_JSON" | jq -r --arg k "$ISSUE_REPO_ID" '.[$k].path')
+    ISSUE_REPO_OWNER=$(echo "$REPOS_JSON" | jq -r --arg k "$ISSUE_REPO_ID" '.[$k].owner // empty')
+    ISSUE_REPO_NAME=$(echo "$REPOS_JSON" | jq -r --arg k "$ISSUE_REPO_ID" '.[$k].name // empty')
+    ISSUE_REPO_PATH=$(echo "$REPOS_JSON" | jq -r --arg k "$ISSUE_REPO_ID" '.[$k].path // empty')
   fi
 }
 
@@ -231,6 +232,7 @@ launch_worker() {
 # Worker 完了後のクリーンアップ（tmux window kill + remote branch delete）
 cleanup_worker() {
   local issue="$1"
+  local entry="${2:-_default:${issue}}"
   local window_name="ap-#${issue}"
   echo "[orchestrator] cleanup: Issue #${issue} — window/branch クリーンアップ" >&2
   tmux kill-window -t "$window_name" 2>/dev/null || true
@@ -238,13 +240,22 @@ cleanup_worker() {
   branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
   # ブランチ名バリデーション（コマンドインジェクション防止）
   if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
-    git push origin --delete "$branch" 2>/dev/null || true
+    # クロスリポ対応: entry の ISSUE_REPO_PATH が設定されていれば git -C で対象リポの origin を使用
+    resolve_issue_repo_context "$entry"
+    # ISSUE_REPO_PATH パストラバーサル防止: 絶対パスかつ ".." を含まないことを確認
+    if [[ -n "$ISSUE_REPO_PATH" && "$ISSUE_REPO_PATH" == /* && "$ISSUE_REPO_PATH" != *..* ]]; then
+      git -C "$ISSUE_REPO_PATH" push origin --delete "$branch" 2>/dev/null || true
+    else
+      git push origin --delete "$branch" 2>/dev/null || true
+    fi
   fi
 }
 
 # 単一 Issue のポーリング
 poll_single() {
-  local issue="$1"
+  local entry="$1"
+  resolve_issue_repo_context "$entry"
+  local issue="$ISSUE"
   local window_name="ap-#${issue}"
   local poll_count=0
 
@@ -263,11 +274,11 @@ poll_single() {
     case "$status" in
       done)
         echo "[orchestrator] Issue #${issue}: 完了" >&2
-        cleanup_worker "$issue"
+        cleanup_worker "$issue" "$entry"
         return 0 ;;
       failed)
         echo "[orchestrator] Issue #${issue}: 失敗" >&2
-        cleanup_worker "$issue"
+        cleanup_worker "$issue" "$entry"
         return 0 ;;
       merge-ready)
         echo "[orchestrator] Issue #${issue}: merge-ready" >&2
@@ -283,7 +294,7 @@ poll_single() {
 
         # chain 遷移停止検知 + nudge（パターンマッチ優先）
         local nudge_matched=0
-        check_and_nudge "$issue" "$window_name" && nudge_matched=1 || true
+        check_and_nudge "$issue" "$window_name" "$entry" && nudge_matched=1 || true
 
         # health-check（check_and_nudge でカバーできない stall を補完検知）
         # POLL_INTERVAL=10s × HEALTH_CHECK_INTERVAL=6 = 60s 毎に実行
@@ -315,7 +326,7 @@ poll_single() {
       bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
         --set "status=failed" \
         --set 'failure={"message":"poll_timeout","step":"polling"}'
-      cleanup_worker "$issue"
+      cleanup_worker "$issue" "$entry"
       return 0
     fi
   done
@@ -323,21 +334,30 @@ poll_single() {
 
 # Phase 全体のポーリング（並列モード）
 poll_phase() {
-  local -a issues=("$@")
+  local -a entries=("$@")
   local poll_count=0
   local -A cleaned_up=()
+  # entry → issue 番号マッピングを構築（"repo_id:issue_num" → issue_num）
+  local -a issue_list=()
+  local -A issue_to_entry=()
+  for e in "${entries[@]}"; do
+    local _issue="${e#*:}"
+    issue_list+=("$_issue")
+    issue_to_entry["$_issue"]="$e"
+  done
 
   while true; do
     local all_resolved=true
 
-    for issue in "${issues[@]}"; do
+    for issue in "${issue_list[@]}"; do
+      local issue_entry="${issue_to_entry[$issue]}"
       local status
       status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
 
       case "$status" in
         done|failed)
           if [[ -z "${cleaned_up[$issue]:-}" ]]; then
-            cleanup_worker "$issue"
+            cleanup_worker "$issue" "$issue_entry"
             cleaned_up[$issue]=1
           fi
           continue ;;
@@ -355,7 +375,7 @@ poll_phase() {
 
           # chain 遷移停止検知 + nudge（パターンマッチ優先）
           local nudge_matched=0
-          check_and_nudge "$issue" "$window_name" && nudge_matched=1 || true
+          check_and_nudge "$issue" "$window_name" "$issue_entry" && nudge_matched=1 || true
 
           # health-check（check_and_nudge でカバーできない stall を補完検知）
           if [[ "$nudge_matched" -eq 0 ]]; then
@@ -389,14 +409,15 @@ poll_phase() {
     poll_count=$((poll_count + 1))
     if [[ "$poll_count" -ge "$MAX_POLL" ]]; then
       echo "[orchestrator] Phase: タイムアウト — 未完了 Issue を failed に変換" >&2
-      for issue in "${issues[@]}"; do
+      for issue in "${issue_list[@]}"; do
+        local issue_entry="${issue_to_entry[$issue]}"
         local status
         status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
         if [[ "$status" == "running" ]]; then
           bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
             --set "status=failed" \
             --set 'failure={"message":"poll_timeout","step":"polling"}'
-          cleanup_worker "$issue"
+          cleanup_worker "$issue" "$issue_entry"
         fi
       done
       break
@@ -405,7 +426,7 @@ poll_phase() {
     # wait / sleep
     if [[ "$USE_SESSION_STATE" == "true" ]]; then
       local first_running_window=""
-      for issue in "${issues[@]}"; do
+      for issue in "${issue_list[@]}"; do
         local status
         status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
         if [[ "$status" == "running" ]]; then
@@ -439,13 +460,20 @@ declare -A HEALTH_CHECK_COUNTER=()
 _nudge_command_for_pattern() {
   local pane_output="$1"
   local issue="$2"
+  local entry="${3:-_default:${issue}}"
 
   # quick Issue の場合は test-ready 系 nudge をスキップ
   local is_quick=""
   is_quick=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field is_quick 2>/dev/null || true)
   if [[ -z "$is_quick" ]]; then
     # fallback: gh API で quick ラベルを直接確認
-    if gh issue view "$issue" --json labels --jq '.labels[].name' 2>/dev/null | grep -qxF "quick"; then
+    # クロスリポ対応: entry から ISSUE_REPO_OWNER/ISSUE_REPO_NAME を解決し --repo フラグを付与
+    resolve_issue_repo_context "$entry"
+    local -a gh_flags=()
+    if [[ -n "$ISSUE_REPO_OWNER" && -n "$ISSUE_REPO_NAME" ]]; then
+      gh_flags+=(--repo "$ISSUE_REPO_OWNER/$ISSUE_REPO_NAME")
+    fi
+    if gh issue view "$issue" "${gh_flags[@]}" --json labels --jq '.labels[].name' 2>/dev/null | grep -qxF "quick"; then
       is_quick="true"
     else
       is_quick="false"
@@ -476,6 +504,7 @@ _nudge_command_for_pattern() {
 check_and_nudge() {
   local issue="$1"
   local window_name="$2"
+  local entry="${3:-_default:${issue}}"
 
   # nudge 上限チェック
   local count="${NUDGE_COUNTS[$issue]:-0}"
@@ -512,7 +541,7 @@ check_and_nudge() {
   if [[ "$current_hash" == "$last_hash" ]]; then
     # 停止パターンをチェックし、対応する次コマンドを送信
     local next_cmd
-    if next_cmd="$(_nudge_command_for_pattern "$pane_output" "$issue")"; then
+    if next_cmd="$(_nudge_command_for_pattern "$pane_output" "$issue" "$entry")"; then
       echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
       tmux send-keys -t "$window_name" "$next_cmd" Enter 2>/dev/null || true
       NUDGE_COUNTS[$issue]=$((count + 1))
@@ -720,6 +749,7 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
   BATCH_ISSUES=()
 
   # Worker 起動
+  BATCH_LAUNCHED_ENTRIES=()
   for entry in "${BATCH[@]}"; do
     resolve_issue_repo_context "$entry"
     local_issue="$ISSUE"
@@ -732,17 +762,18 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
     echo "[orchestrator] Issue #${local_issue}: Worker 起動" >&2
     launch_worker "$entry"
     BATCH_ISSUES+=("$local_issue")
+    BATCH_LAUNCHED_ENTRIES+=("$entry")
   done
 
-  if [[ ${#BATCH_ISSUES[@]} -eq 0 ]]; then
+  if [[ ${#BATCH_LAUNCHED_ENTRIES[@]} -eq 0 ]]; then
     continue
   fi
 
-  # ポーリング
-  if [[ ${#BATCH_ISSUES[@]} -eq 1 ]]; then
-    poll_single "${BATCH_ISSUES[0]}"
+  # ポーリング（entry を渡してリポコンテキストを伝搬）
+  if [[ ${#BATCH_LAUNCHED_ENTRIES[@]} -eq 1 ]]; then
+    poll_single "${BATCH_LAUNCHED_ENTRIES[0]}"
   else
-    poll_phase "${BATCH_ISSUES[@]}"
+    poll_phase "${BATCH_LAUNCHED_ENTRIES[@]}"
   fi
 
   # merge-ready の Issue に対して merge-gate を順次実行
