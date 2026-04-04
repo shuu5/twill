@@ -23,6 +23,14 @@
 | DCI | Dynamic Context Injection。実行時にファイルを Read してコンテキストに注入するパターン | 全体 |
 | CRG | Code Review Graph。MCP 経由でコード依存関係を可視化・分析するツール | Loom Integration |
 
+## 照合ポリシー
+
+用語照合は**完全一致のみ**をサポートする（fuzzy-match は非サポート）。
+
+- 単複変化（issue/issues）・略語展開（co-autopilot/autopilot）・英日表記ゆれ（Phase/フェーズ）・識別子表記（camelCase/snake_case）の正規化は行わない
+- 理由: 正規化コストが現状の課題に対して低優先。用語登録時に「正式名称」を一意に定めることで、完全一致での検出を保証する
+- 適用箇所: `co-issue` Step 1.5 の glossary 照合、`worker-architecture` D-4 の drift 検出
+
 ### SHOULD 用語
 
 | 用語 | 定義 | Context |
