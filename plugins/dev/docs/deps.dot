@@ -9,7 +9,7 @@ digraph Dependencies {
 
     // L0: Controller Skills
     skill_co_autopilot [label="dev:co-autopilot\n(1,964 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_issue [label="dev:co-issue\n(7,684 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="dev:co-issue\n(7,739 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_project [label="dev:co-project\n(1,321 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_architect [label="dev:co-architect\n(1,293 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
@@ -160,9 +160,9 @@ digraph Dependencies {
     script_specialist_output_parse [label="specialist-output-parse\n(605 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_plan [label="autopilot-plan\n(5,609 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_should_skip [label="autopilot-should-skip\n(401 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_orchestrator [label="autopilot-orchestrator\n(9,383 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_orchestrator [label="autopilot-orchestrator\n(9,770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_init [label="merge-gate-init\n(1,192 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_merge_gate_execute [label="merge-gate-execute\n(2,413 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_execute [label="merge-gate-execute\n(2,434 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_issues [label="merge-gate-issues\n(1,981 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_project [label="resolve-project\n(929 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(6,271 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

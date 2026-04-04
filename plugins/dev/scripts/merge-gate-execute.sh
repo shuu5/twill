@@ -160,7 +160,8 @@ case "$MODE" in
         --set status=done \
         --set "merged_at=$(date -Is)"
       echo "[merge-gate] Issue #${ISSUE}: マージ完了"
-      # Board Status → Done（merge 成功後の正しいライフサイクル。Archive は autopilot Phase 完了処理が担う）
+      # Board Status → Done（merge 成功後の正しいライフサイクル）
+      # OpenSpec archive: autopilot は orchestrator の archive_done_issues() が担い、非 autopilot は auto-merge.sh が担う
       if ! bash "$SCRIPT_DIR/chain-runner.sh" board-status-update "$ISSUE" "Done"; then
         echo "[merge-gate] Issue #${ISSUE}: ⚠️ Board Status → Done に失敗しました（マージは成功）" >&2
       fi

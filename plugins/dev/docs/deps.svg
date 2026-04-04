@@ -298,7 +298,7 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="74" cy="-1668.47" rx="50.82" ry="21.43"/>
 <text text-anchor="middle" x="74" y="-1671.47" font-family="Helvetica,sans-Serif" font-size="10.00">dev:co&#45;issue</text>
-<text text-anchor="middle" x="74" y="-1660.47" font-family="Helvetica,sans-Serif" font-size="10.00">(7,684 tok)</text>
+<text text-anchor="middle" x="74" y="-1660.47" font-family="Helvetica,sans-Serif" font-size="10.00">(7,739 tok)</text>
 </g>
 <!-- cmd_issue_structure -->
 <g id="node25" class="node">
@@ -2568,7 +2568,7 @@
 <title>script_autopilot_orchestrator</title>
 <polygon fill="#ff9800" stroke="black" points="846.83,-5727.47 802.65,-5751.96 714.29,-5751.96 670.1,-5727.47 714.29,-5702.98 802.65,-5702.98 846.83,-5727.47"/>
 <text text-anchor="middle" x="758.47" y="-5730.47" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;orchestrator</text>
-<text text-anchor="middle" x="758.47" y="-5719.47" font-family="Helvetica,sans-Serif" font-size="10.00">(9,383 tok)</text>
+<text text-anchor="middle" x="758.47" y="-5719.47" font-family="Helvetica,sans-Serif" font-size="10.00">(9,770 tok)</text>
 </g>
 <!-- script_merge_gate_init -->
 <g id="node140" class="node">
@@ -2582,7 +2582,7 @@
 <title>script_merge_gate_execute</title>
 <polygon fill="#ff9800" stroke="black" points="842.67,-5869.47 800.57,-5893.96 716.37,-5893.96 674.27,-5869.47 716.37,-5844.98 800.57,-5844.98 842.67,-5869.47"/>
 <text text-anchor="middle" x="758.47" y="-5872.47" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate&#45;execute</text>
-<text text-anchor="middle" x="758.47" y="-5861.47" font-family="Helvetica,sans-Serif" font-size="10.00">(2,413 tok)</text>
+<text text-anchor="middle" x="758.47" y="-5861.47" font-family="Helvetica,sans-Serif" font-size="10.00">(2,434 tok)</text>
 </g>
 <!-- script_merge_gate_issues -->
 <g id="node142" class="node">
