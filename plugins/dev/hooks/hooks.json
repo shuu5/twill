@@ -23,6 +23,16 @@
             "timeout": 10000
           }
         ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/post-skill-chain-nudge.sh",
+            "timeout": 5000
+          }
+        ]
       }
     ],
     "PostToolUseFailure": [
