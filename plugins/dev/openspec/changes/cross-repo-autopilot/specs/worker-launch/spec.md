@@ -2,15 +2,15 @@
 
 ### Requirement: Worker のリポジトリ別起動
 
-autopilot-launch が Worker を起動する際、Issue の repo_id から repos セクションの path を解決し、正しいリポジトリの main worktree で Claude Code を起動しなければならない（SHALL）。
+autopilot-launch が Worker を起動する際、Issue の repo_id から repos セクションの path を解決し、正しいリポジトリの Pilot が事前作成した worktree ディレクトリで Claude Code を起動しなければならない（SHALL）。
 
 #### Scenario: 外部リポジトリ Issue の Worker 起動
 - **WHEN** loom#50 の Worker が起動される
-- **THEN** `repos.loom.path` を解決し、bare repo 構造なら `{path}/main` で、standard repo なら `{path}` で Claude Code が起動される
+- **THEN** `repos.loom.path` を解決し、bare repo 構造なら `{path}/worktrees/{branch}/` で、standard repo なら `{path}/{branch}/` で Pilot が作成した worktree ディレクトリにて Claude Code が起動される
 
 #### Scenario: デフォルトリポジトリ Issue の Worker 起動
 - **WHEN** lpd#42 の Worker が起動され、lpd がデフォルトリポジトリである
-- **THEN** 従来通り `PROJECT_DIR/main` で起動される
+- **THEN** 従来通り `PROJECT_DIR/worktrees/{branch}/` で Pilot が作成した worktree ディレクトリにて起動される
 
 ### Requirement: AUTOPILOT_DIR の Pilot 固定
 

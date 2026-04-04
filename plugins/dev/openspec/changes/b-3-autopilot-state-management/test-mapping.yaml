@@ -519,9 +519,9 @@ scenarios:
     status: deferred-to-c5
 
   - id: "invariant-b-worktree-pilot-only"
-    name: "不変条件B: Worktree 削除 Pilot 専任"
-    requirement: "Worker は worktree を作成するが削除しない。削除は常に Pilot が実行"
-    test_strategy: "worktree-delete.sh の CWD ガードで保証。worktrees/ 配下からの呼び出し拒否テスト"
+    name: "不変条件B: Worktree ライフサイクル Pilot 専任（ADR-008）"
+    requirement: "Worktree の作成・削除は Pilot が行う。Worker は使用のみ（作成・削除とも禁止）"
+    test_strategy: "worktree-delete.sh の CWD ガードで削除ガードを保証。worktrees/ 配下からの呼び出し拒否テスト"
     verified_by: ["worktree-worker-delete-denied", "worktree-self-delete-denied"]
     type: invariant
     status: deferred-to-c5

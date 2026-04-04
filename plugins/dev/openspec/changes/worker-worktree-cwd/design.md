@@ -4,7 +4,7 @@ Claude Code は CWD をセッション起動ディレクトリにリセットす
 
 `autopilot-launch.sh` L204-215 に LAUNCH_DIR を決定するロジックがあり、現在は bare repo の場合 `$EFFECTIVE_PROJECT_DIR/main` に固定されている。この部分に `--worktree-dir` 引数を追加し、Pilot から worktree パスを渡すことで解決する。
 
-Pilot 側（`autopilot-orchestrator.sh` の `launch_worker()`）は現在 `worktree-create.sh` を呼び出していない。Worker 側の chain に `worktree-create` ステップが含まれているため、今後は Pilot が事前に worktree を作成してからパスを `autopilot-launch.sh --worktree-dir` で渡す必要がある。
+Pilot 側（`autopilot-orchestrator.sh` の `launch_worker()`）は現在 `worktree-create.sh` を呼び出していない。ADR-008 に従い、Pilot が事前に worktree を作成してからパスを `autopilot-launch.sh --worktree-dir` で渡す形に変更する。これにより Worker の chain から `worktree-create` ステップを除去できる。
 
 ## Goals / Non-Goals
 

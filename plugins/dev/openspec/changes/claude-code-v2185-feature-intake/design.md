@@ -76,7 +76,7 @@ specialist が body 内で参照している ref-* をそのまま skills フィ
 
 ### D6: isolation: worktree は見送り
 
-co-autopilot Worker は既に worktree-create.sh で独自 worktree を作成・管理している。Claude Code の `isolation: "worktree"` を併用すると二重 worktree になり、パスの不整合が発生するリスクがある。
+co-autopilot は ADR-008 に従い Pilot が事前作成した worktree ディレクトリで Worker を起動する。Claude Code の `isolation: "worktree"` を併用すると二重 worktree になり、パスの不整合が発生するリスクがある。
 
 ## Risks / Trade-offs
 

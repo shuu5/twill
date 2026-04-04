@@ -6,7 +6,7 @@ co-autopilot のライフサイクル全体を定義するシナリオ。
 
 - **WHEN** ユーザーが `co-autopilot #42` を実行する
 - **THEN** plan.yaml に Phase 1（issues: [42]）が生成される
-- **AND** Worker が worktree `worktrees/feat/42-xxx/` を作成する
+- **AND** Pilot が worktree `worktrees/feat/42-xxx/` を事前作成する
 - **AND** Worker が chain ステップを逐次実行する
 - **AND** Worker が issue-42.json の status を `merge-ready` に更新する
 - **AND** Pilot が merge-gate を実行する
