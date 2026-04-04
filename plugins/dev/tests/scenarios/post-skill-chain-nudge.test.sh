@@ -329,13 +329,14 @@ fi
 # Requirement: settings.json への PostToolUse hook 登録
 # ---------------------------------------------------------------------------
 
-SETTINGS_JSON="hooks/hooks.json"
+SETTINGS_JSON="$HOME/.claude/settings.json"
 
-# hooks.json に Skill matcher の PostToolUse エントリが存在する
+# settings.json に Skill matcher の PostToolUse エントリが存在する
 test_hooks_json_skill_posttooluse() {
   python3 -c "
-import json, sys
-with open('${PROJECT_ROOT}/${SETTINGS_JSON}') as f:
+import json, sys, os
+path = os.path.expandvars('${SETTINGS_JSON}')
+with open(path) as f:
     data = json.load(f)
 hooks = data.get('hooks', {}).get('PostToolUse', [])
 found = any(
@@ -346,28 +347,28 @@ sys.exit(0 if found else 1)
 " 2>/dev/null
 }
 
-if [[ -f "${PROJECT_ROOT}/${SETTINGS_JSON}" ]]; then
-  run_test "hooks.json に Skill matcher の PostToolUse hook エントリが存在する" test_hooks_json_skill_posttooluse
+if [[ -f "${SETTINGS_JSON}" ]]; then
+  run_test "settings.json に Skill matcher の PostToolUse hook エントリが存在する" test_hooks_json_skill_posttooluse
 else
-  run_test_skip "hooks.json に Skill matcher の PostToolUse hook エントリが存在する" "hooks.json not found"
+  run_test_skip "settings.json に Skill matcher の PostToolUse hook エントリが存在する" "settings.json not found"
 fi
 
-# hooks.json に post-skill-chain-nudge.sh への参照が存在する
+# settings.json に post-skill-chain-nudge.sh への参照が存在する
 test_hooks_json_references_nudge_script() {
-  assert_file_contains "$SETTINGS_JSON" 'post-skill-chain-nudge'
+  grep -q 'post-skill-chain-nudge' "${SETTINGS_JSON}"
 }
 
-if [[ -f "${PROJECT_ROOT}/${SETTINGS_JSON}" ]]; then
-  run_test "hooks.json が post-skill-chain-nudge.sh を参照している" test_hooks_json_references_nudge_script
+if [[ -f "${SETTINGS_JSON}" ]]; then
+  run_test "settings.json が post-skill-chain-nudge.sh を参照している" test_hooks_json_references_nudge_script
 else
-  run_test_skip "hooks.json が post-skill-chain-nudge.sh を参照している" "hooks.json not found"
+  run_test_skip "settings.json が post-skill-chain-nudge.sh を参照している" "settings.json not found"
 fi
 
 # [edge-case] hook エントリに timeout が設定されている
 test_hooks_json_nudge_has_timeout() {
   python3 -c "
-import json, sys
-with open('${PROJECT_ROOT}/${SETTINGS_JSON}') as f:
+import json, sys, os
+with open(os.path.expandvars('${SETTINGS_JSON}')) as f:
     data = json.load(f)
 hooks = data.get('hooks', {}).get('PostToolUse', [])
 for h in hooks:
@@ -383,10 +384,10 @@ sys.exit(1)
 " 2>/dev/null
 }
 
-if [[ -f "${PROJECT_ROOT}/${SETTINGS_JSON}" ]]; then
-  run_test "hooks.json の post-skill-chain-nudge エントリに timeout が設定されている [edge]" test_hooks_json_nudge_has_timeout
+if [[ -f "${SETTINGS_JSON}" ]]; then
+  run_test "settings.json の post-skill-chain-nudge エントリに timeout が設定されている [edge]" test_hooks_json_nudge_has_timeout
 else
-  run_test_skip "hooks.json の post-skill-chain-nudge エントリに timeout が設定されている [edge]" "hooks.json not found"
+  run_test_skip "settings.json の post-skill-chain-nudge エントリに timeout が設定されている [edge]" "settings.json not found"
 fi
 
 # =============================================================================

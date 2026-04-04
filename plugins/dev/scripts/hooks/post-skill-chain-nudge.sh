@@ -5,6 +5,10 @@
 # Claude Code の PostToolUse hook は stdin に JSON を渡す。
 # 本スクリプトは stdout に出力することで LLM コンテキストに注入する。
 # エラー時は stderr にログ出力し、必ず exit 0 で終了する（Worker を止めてはならない）。
+# NOTE: set -euo pipefail は使用しない（exit 0 保証のため）。エラーは || true で吸収する。
+
+# エラー時も exit 0 を保証する（Worker を止めてはならない）
+trap 'exit 0' EXIT ERR
 
 # stdin を読み捨て（パイプブロック防止）
 INPUT=$(cat 2>/dev/null || true)
