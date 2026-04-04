@@ -115,8 +115,6 @@ graph LR
 
 ## Component Mapping
 
-本 Context が担う controller/workflow/command の対応:
-
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **(co-autopilot 内)** | autopilot-patterns | パターン検出・high confidence 時に Issue 起票 |
@@ -127,12 +125,13 @@ graph LR
 | **atomic** | self-improve-review | エラーログ分析（User-Triggered） |
 | **atomic** | ecc-monitor | ECC リポジトリ変更検知 |
 | **atomic** | pr-cycle-analysis | PR-cycle 結果からの改善機会検出 |
-| **atomic** | session-audit | セッション JSONL 事後分析 |
+| **atomic** | session-audit | セッション JSONL 事後分析（5カテゴリ検出） |
 
 **注意**: self-improve は独立 controller を持たない。co-autopilot の後処理として統合されている（ADR-002）。self-improve-review のみがユーザー直接トリガーで、co-issue フローに接続する。
 
 ## Dependencies
 
 - **Upstream <- Autopilot**: パターン検出データ（session.json patterns）
+- **Upstream <- PR Cycle**: pr-cycle-analysis でパターン検出
 - **Downstream -> Issue Management**: self-improve Issue 起票
 - **Downstream -> Issue Management**: self-improve-review が co-issue フローに接続（explore-summary.md 経由）

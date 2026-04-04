@@ -2,8 +2,9 @@
 
 ## Responsibility
 
-Issue の作成、トリアージ、精緻化、tech-debt 管理。
+Issue の作成、トリアージ、精緻化、tech-debt 管理、**クロスリポ Issue 分割**。
 要望を構造化 Issue に変換するワークフローを提供し、AC（Acceptance Criteria）の機械検証可能性を保証する。
+**Architecture Spec を DCI で注入**し、設計意図に沿った Issue 品質を確保する。
 
 ## Key Entities
 
@@ -22,11 +23,6 @@ GitHub Issue。プロジェクトの作業単位。
 
 ### AcceptanceCriteria
 テスト可能な条件のリスト。機械検証可能であるべき。
-
-| フィールド | 型 | 説明 |
-|---|---|---|
-| description | string | 条件の記述 |
-| testable | boolean | 機械的にテスト可能か |
 
 ### IssueTemplate
 Issue 作成テンプレート。必須フィールドを定義する。
@@ -52,74 +48,92 @@ tech-debt Issue のトリアージカテゴリ。
 
 ```mermaid
 flowchart TD
-    A[explore: 問題探索] --> B[decompose: 分解判断]
-    B --> C[dig: 曖昧点検出]
-    C --> D[structure: 構造化]
-    D --> E[assess: 品質評価]
-    E --> F{品質 OK?}
-    F -- Yes --> G[create: Issue 作成]
-    F -- No --> C
-    G --> H[board-sync: Board 追加]
+    A["Phase 1: 探索<br/>(+ architecture context 注入)"] --> A2["Step 1.5: glossary 照合"]
+    A2 --> B["Phase 2: 分解判断<br/>(+ クロスリポ検出)"]
+    B --> C["Phase 3: 精緻化<br/>(構造化 + specialist レビュー)"]
+    C --> D{品質 OK?}
+    D -- Yes --> E["Phase 4: 一括作成<br/>(+ board-sync)"]
+    D -- No --> C
 ```
 
-**代替 Phase 1 入力**:
-- 通常: `/dev:explore` による対話的問題探索
-- Self-Improve: `/dev:self-improve-review` によるエラーログ分析
-- いずれも `.controller-issue/explore-summary.md` を出力し、Phase 2 以降は共通フロー
-
-### Tech-debt triage フロー
+### Architecture Context 注入（Phase 1 冒頭）
 
 ```mermaid
 flowchart TD
-    A[tech-debt Issue 全件取得] --> B[4カテゴリ分類]
-    B --> C[ユーザー確認]
-    C --> D[一括処理]
-    D --> E[warning: 即時対応]
-    D --> F[deferred-high: 計画対応]
-    D --> G[low: 任意]
-    D --> H[obsolete: クローズ]
+    A{architecture/ 存在?} -- Yes --> B["Read: vision.md"]
+    A -- No --> E["通常の explore"]
+    B --> C["Read: context-map.md"]
+    C --> D["Read: glossary.md"]
+    D --> F["ARCH_CONTEXT として explore に注入"]
 ```
 
-### Dead component cleanup フロー
+Architecture Spec が co-issue に注入されることで:
+- 探索が既存の設計意図に沿って行われる
+- 用語の一貫性が glossary 照合で検証される
+- 新概念の検出が architecture drift として通知される
+
+### Glossary 照合（Step 1.5）
+
+explore-summary.md の用語と glossary.md の MUST 用語を照合。不一致は **INFO レベル**で通知（非ブロッキング）。完全一致のみ対象。
+
+### クロスリポ Issue 分割（Step 2a）
 
 ```mermaid
 flowchart TD
-    A[loom complexity 実行] --> B[Dead component 検出]
-    B --> C[ユーザー確認]
-    C --> D[削除実行]
+    A["explore-summary 分析"] --> B{複数リポ言及?}
+    B -- Yes --> C["リポ一覧を動的取得<br/>(gh project linked-repos)"]
+    C --> D["AskUserQuestion:<br/>リポ単位で分割?"]
+    D -- 分割 --> E["parent Issue + 子 Issue 構造"]
+    D -- 単一 --> F["通常の単一 Issue"]
+    B -- No --> F
 ```
+
+**リポ一覧取得**: ハードコード禁止。GitHub Project のリンク済みリポジトリから動的取得。
+
+### Specialist 並列レビュー（Step 3b）
+
+全 Issue × 3 specialist を一括並列 spawn:
+- **issue-critic**: 仮定・曖昧点・盲点・粒度・split・隠れた依存を検出
+- **issue-feasibility**: 実コード読みで実装可能性・影響範囲を検証
+- **worker-codex-reviewer**: 補完的レビュー（異なるモデル視点）
+
+ブロック判定: `severity == CRITICAL && confidence >= 80 && finding_target == "issue_description"`
 
 ## Constraints
 
-- Issue 作成前に必ず品質評価 (issue-assess) を通過すること
+- Issue 作成前に specialist レビューを通過すること（`--quick` 時はスキップ可）
 - tech-debt Issue は定期的にトリアージすること
-- project-board-sync は Issue 作成成功後に自動実行。失敗時は警告のみ（autopilot をブロックしない）
+- project-board-sync は Issue 作成成功後に自動実行。失敗時は警告のみ
+- **プロンプトインジェクション対策**: Issue body を XML タグに注入する前にエスケープ必須（SHALL）
 
 ## Rules
 
-- **Non-implementation controller**: co-issue はコード変更を伴わない。chain-driven 不要（順序は co-issue SKILL.md で自然言語定義）
+- **Non-implementation controller**: co-issue はコード変更を伴わない。chain-driven 不要
 - **DeltaSpec 適用**: 常に propose -> apply パス。direct パス廃止（軽微変更 <10行 のみ例外）
 - **AC の機械検証可能性**: AcceptanceCriteria は可能な限り機械的にテスト可能な条件として記述する
+- **Architecture Spec の DCI 参照**: Phase 1 冒頭で architecture/ を Read。存在しない場合はスキップ（エラーにしない）
+- **Glossary 照合は INFO**: merge-gate の WARNING（ブロッキング可）とは異なり、Issue 作成フローを止めない
 
 ## Component Mapping
-
-本 Context が担う controller/workflow/command の対応:
 
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **controller** | co-issue | 要望→Issue 変換ワークフロー |
 | **atomic** | issue-create | GitHub Issue 作成 |
 | **atomic** | issue-structure | Issue 内容の構造化（テンプレート適用） |
-| **atomic** | issue-dig | Per-Issue の曖昧点検出（4観点） |
-| **atomic** | issue-assess | Issue 品質評価 |
 | **atomic** | issue-bulk-create | 親Issue + 子Issue 群の一括起票 |
 | **atomic** | issue-tech-debt-absorb | tech-debt Issue の吸収提案 |
 | **atomic** | ac-extract | AC（受け入れ基準）抽出 |
 | **atomic** | ac-deploy-trigger | AC から deploy E2E 実行フラグ設定 |
 | **atomic** | project-board-sync | Issue → Project V2 自動追加 |
 | **atomic** | project-board-status-update | Board Status 更新 |
-| **composite** | triage-execute | 分類済み tech-debt の一括処理 |
-| **reference** | ref-self-improve-format | self-improve Issue テンプレート |
+| **specialist** | issue-critic | Issue の仮定・曖昧点・盲点検出 |
+| **specialist** | issue-feasibility | 実装可能性・影響範囲検証 |
+| **specialist** | worker-codex-reviewer | 補完的レビュー |
+| **reference** | ref-issue-template-bug | Bug Report テンプレート |
+| **reference** | ref-issue-template-feature | Feature Request テンプレート |
+| **reference** | ref-project-model | Issue 管理データモデル |
+| **reference** | ref-issue-quality-criteria | severity 判定基準 |
 
 ## Dependencies
 
@@ -127,3 +141,4 @@ flowchart TD
 - **Downstream -> PR Cycle**: AC 情報を提供（ac-extract）
 - **Upstream <- Self-Improve**: self-improve Issue を受け取る
 - **Upstream <- Project Management**: Board ステータス更新
+- **DCI <- Architecture Spec**: vision.md, context-map.md, glossary.md を Phase 1 で Read

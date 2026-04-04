@@ -10,10 +10,10 @@
 |------|---------|------|
 | Core | Autopilot | セッション管理、Phase実行、計画生成のオーケストレーター |
 | Core | PR Cycle | レビュー、テスト、マージの品質ゲート |
-| Supporting | Issue Management | Issue作成、トリアージ、精緻化 |
-| Supporting | Project Management | プロジェクト作成、移行、スナップショット |
-| Supporting | Self-Improve | パターン検出、ECC照合 |
-| Generic | Loom Integration | loom CLI連携、validate/audit/chain |
+| Supporting | Issue Management | Issue作成、トリアージ、精緻化、クロスリポ分割 |
+| Supporting | Project Management | プロジェクト作成、移行、Project Board 管理 |
+| Supporting | Self-Improve | パターン検出、ECC照合、セッション監査 |
+| Generic | Loom Integration | loom CLI連携、validate/audit/chain、CRG |
 
 ## 依存関係図
 
@@ -26,12 +26,16 @@ graph TD
 
     subgraph "Supporting"
         IM["Issue Management<br/>(Create & Triage)"]
-        PM["Project Management<br/>(Create & Maintain)"]
+        PM["Project Management<br/>(Board & Config)"]
         SI["Self-Improve<br/>(Pattern Detect)"]
     end
 
     subgraph "Generic"
         LI["Loom Integration<br/>(Validate & Audit)"]
+    end
+
+    subgraph "Cross-cutting"
+        AS["Architecture Spec<br/>(DCI 注入源)"]
     end
 
     AP -->|"Customer-Supplier<br/>merge-gate 呼出"| PR
@@ -44,12 +48,16 @@ graph TD
 
     PM -->|"Conformist<br/>Board ステータス更新"| IM
     PM -.->|"Shared Kernel<br/>bare repo + worktree"| AP
+    PM -->|"Customer-Supplier<br/>Board クエリ"| AP
 
     LI -.->|"Open Host Service"| AP
     LI -.->|"Open Host Service"| PR
     LI -.->|"Open Host Service"| IM
     LI -.->|"Open Host Service"| PM
     LI -.->|"Open Host Service"| SI
+
+    AS -.->|"DCI 注入"| IM
+    AS -.->|"DCI 注入"| AP
 ```
 
 ## 関係の詳細
@@ -62,17 +70,41 @@ graph TD
 | Issue Mgmt | PR Cycle | Customer-Supplier | ac-extract による AC 抽出 |
 | Self-Improve | Issue Mgmt | Customer-Supplier | self-improve Issue 起票 |
 | Project Mgmt | Issue Mgmt | Conformist | Board ステータス更新 |
+| Project Mgmt | Autopilot | Customer-Supplier | Board クエリ（Status=Todo の Issue 選択） |
 | Project Mgmt | Autopilot | Shared Kernel | bare repo + worktree 構造 |
 | Loom Integration | 全 Context | Open Host Service | validate/audit/chain 結果 |
+| Architecture Spec | Issue Mgmt | DCI | vision.md, context-map.md, glossary.md を Read |
+| Architecture Spec | Autopilot | DCI | co-architect 経由で設計意図参照 |
 
-## Issue → Context マッピング
+## Architecture Spec の DCI フロー
 
-| Context | Primary Issues | Secondary Issues |
-|---------|---------------|-----------------|
-| Autopilot | #5, #6, #11, #15, #17 | #7, #8, #16 |
-| PR Cycle | #7, #10, #16, #18 | #11 |
-| Issue Management | — | #8, #9 |
-| Project Management | — | #4, #8, #9, #11 |
-| Self-Improve | #19 | #8, #9 |
-| Loom Integration | #4 | #6, #7, #9, #10, #15 |
-| Cross-cutting | #1, #2, #3, #8, #9, #12, #13, #14 | — |
+```mermaid
+graph LR
+    subgraph "architecture/"
+        V["vision.md"]
+        CM["context-map.md"]
+        G["glossary.md"]
+        CTX["contexts/*.md"]
+    end
+
+    subgraph "co-issue"
+        P1["Phase 1: 探索"]
+        S15["Step 1.5: glossary照合"]
+    end
+
+    subgraph "co-architect"
+        E["explore"]
+        CC["completeness-check"]
+    end
+
+    V -->|"Read"| P1
+    CM -->|"Read"| P1
+    G -->|"Read"| P1
+    G -->|"MUST用語照合"| S15
+
+    V -->|"Read"| E
+    CTX -->|"Read"| E
+    CTX -->|"Read"| CC
+```
+
+**更新トリガー**: architecture spec の内容に影響する変更（新概念の追加、Context 境界の変更、設計判断の変更）が発生した場合、co-architect 経由で spec を更新する。

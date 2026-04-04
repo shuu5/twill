@@ -60,6 +60,16 @@ classDiagram
         total_issues: number
         critical_path: number[]
     }
+    class ProjectBoard {
+        project_number: number
+        owner: string
+        linked_repos: string[]
+    }
+    class Orchestrator {
+        poll_interval: number
+        nudge_timeout: number
+        health_check: HealthCheck
+    }
     Controller --> Workflow : spawns
     Workflow --> AtomicCommand : calls (chain steps)
     Workflow --> Specialist : spawns (parallel)
@@ -69,6 +79,9 @@ classDiagram
     SessionState --> AutopilotPlan : references
     AutopilotPlan *-- Phase : contains
     Phase ..> IssueState : tracks
+    Controller ..> ProjectBoard : queries (Issue 選択)
+    Orchestrator --> IssueState : polls
+    Orchestrator --> Script : executes (health-check, crash-detect)
 ```
 
 ### Controller Spawning 関係図
@@ -96,9 +109,12 @@ graph TD
 
     CI -->|spawns| CM
     CI -->|spawns| AT
+    CI -->|spawns| SP
     CI -->|spawns| RF
 
+    CP -->|spawns| CM
     CP -->|spawns| AT
+    CP -->|spawns| RF
 
     CR -->|spawns| AT
     CR -->|spawns| RF
@@ -112,10 +128,10 @@ graph TD
 ```
 
 **Spawning ルール**:
-- co-autopilot のみが specialist を spawn できる（Implementation 操作のレビュー・テスト）
-- co-issue, co-architect は reference を参照できる（設計情報の参照）
-- co-project は atomic のみ（構成変更の最小単位で操作）
-- workflow は co-autopilot が chain として orchestrate する
+- co-autopilot のみが workflow を orchestrate できる（Implementation 操作のレビュー・テスト）
+- co-issue は specialist を spawn できる（issue-critic, issue-feasibility, worker-codex-reviewer）
+- co-project は composite + atomic（構成変更の最小単位で操作）
+- co-architect は atomic + reference のみ（設計情報の参照・評価）
 
 ### Issue 状態遷移図
 
@@ -182,6 +198,28 @@ stateDiagram-v2
 
 **排他制御**: session.json は Pilot のみが書き込む。複数 autopilot セッションの同時実行は禁止（session.json 存在チェックで排他）。
 
+### Orchestrator パターン
+
+Pilot 内で Issue 実行ループを管理するコンポーネント。
+
+```mermaid
+flowchart TD
+    O["Orchestrator (Pilot)"] --> L["autopilot-launch"]
+    L --> P["autopilot-poll (10秒間隔)"]
+    P --> HC["health-check.sh"]
+    P --> CD["crash-detect.sh"]
+    P --> SR["state-read.sh"]
+    P -->|停滞検出| N["nudge (プロンプト再注入)"]
+    P -->|完了検出| MG["merge-gate"]
+```
+
+**Orchestrator の責務**:
+- Worker の起動（tmux new-window + cld）
+- 状態ポーリング（state-read.sh で issue-{N}.json を監視）
+- クラッシュ検知（crash-detect.sh で tmux window 消失を検出）
+- ヘルスチェック（health-check.sh で chain_stall を検出）
+- nudge（停滞 Worker へのプロンプト再注入）
+
 ### Chain 定義と実行フロー
 
 ```mermaid
@@ -215,3 +253,28 @@ flowchart TD
 ```
 
 **Chain の役割**: deps.yaml の chains セクションがステップ順序を宣言的に定義する。Workflow は chain 定義を読み取り、各ステップに対応する atomic/composite コマンドを逐次実行する。順序変更は deps.yaml の編集のみで完結し、Workflow のコード変更は不要。
+
+### Project Board 統合
+
+```mermaid
+flowchart LR
+    subgraph "GitHub Projects V2"
+        PB["loom-dev-ecosystem (#3)"]
+        PB -->|"linked"| R1["shuu5/loom-plugin-dev"]
+        PB -->|"linked"| R2["shuu5/loom"]
+    end
+
+    subgraph "Autopilot"
+        PI["Pilot"]
+        PI -->|"gh project item-list<br/>Status=Todo"| PB
+        PI -->|"gh project item-edit<br/>Status=In Progress/Done"| PB
+    end
+
+    subgraph "co-issue"
+        IS["Issue 作成"]
+        IS -->|"project-board-sync"| PB
+    end
+```
+
+**二層構造**: ローカル状態ファイル（即時性）+ Project Board（永続化・可視化）。
+Board 同期失敗は autopilot をブロックしない（WARNING のみ）。

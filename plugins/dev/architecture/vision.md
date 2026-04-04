@@ -1,7 +1,7 @@
 ## Vision
 
 chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開発ワークフロープラグイン。
-旧 dev plugin (claude-plugin-dev) の複雑性ホットスポットを解消し、「機械的にできることは機械に任せる」原則を徹底する。
+「機械的にできることは機械に任せる」原則を徹底し、Issue → 実装 → PR → マージの全サイクルを自律化する。
 
 ## Constraints
 
@@ -10,20 +10,9 @@ chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開
 - Controller は4つのみ（co-autopilot, co-issue, co-project, co-architect）
 - Bare repo + worktree 一律（branch モード廃止）
 - 状態管理は統一 JSON 2種（issue-{N}.json + session.json）
+- **Project Board 必須**（ADR-006）: 全プロジェクトで GitHub Projects V2 を使用。autopilot の Issue 選択元、ステータス同期先
+- **クロスリポジトリ対応**（ADR-007）: loom-dev-ecosystem プロジェクトで複数リポを統合管理
 - Emergency Bypass: co-autopilot 障害時のみ手動パス許可（retrospective 記録義務あり）
-
-### 旧 plugin 複雑性ホットスポットと回避策
-
-旧 dev plugin (claude-plugin-dev) で発生した複雑性ホットスポットと、本プラグインでの回避策:
-
-| ホットスポット | 旧 plugin の問題 | 回避策 |
-|----------------|-----------------|--------|
-| 9 Controller | 責務境界が曖昧、テストパス爆発 | 4 controller に統合（ADR-002）。Implementation は co-autopilot に一本化 |
-| --auto / --auto-merge フラグ | 3パス分岐（手動/auto/auto-merge）でコードの複雑性増大 | Autopilot-first（ADR-001）。全実装が co-autopilot 経由。フラグ廃止 |
-| 6種マーカーファイル | .done, .fail, .merge-ready 等の散在状態管理 | 統一状態ファイル（ADR-003）。issue-{N}.json + session.json の2種に集約 |
-| direct パス | propose → apply の正規パスと direct パスの並存 | direct パス廃止（軽微変更 <10行 のみ例外）。propose → apply を唯一のパスに |
-| standard/plugin 2パス | レビュアー構築の静的2パスが拡張困難 | 動的レビュアー構築。変更内容からspecialistを自動選択（tech-stack-detect） |
-| controller-self-improve 独立 | controller 間の状態共有が複雑 | co-autopilot に吸収（ADR-002）。session 後処理として統合 |
 
 ### Controller 操作カテゴリ
 
@@ -53,10 +42,19 @@ co-architect が「設計 + 実装」を要求された場合: 設計完了 → 
 | specialist 出力の機械的フィルタ | severity == CRITICAL && confidence >= 80 | PR レビューの最終判断 | WARNING の対処優先度は文脈依存 |
 | 依存グラフの循環検出 | plan.yaml 生成時の DAG 検証 | Phase 分割の最適化 | 並列度と依存管理のバランス |
 | retry 上限の強制 | retry_count チェック | fix-phase の修正戦略 | 修正方針は問題の性質に依存 |
+| Project Board ステータス同期 | gh project item-edit | Issue の優先度判断 | ビジネスコンテキストに依存 |
+| クロスリポ Issue 分割の検出 | gh project linked-repos クエリ | 分割粒度の判断 | リポ間依存の評価は文脈依存 |
+
+### Architecture Spec の役割
+
+Architecture Spec は**設計意図の前方参照**として機能する living document。
+
+- **DCI 注入源**: co-issue（Phase 1 の architecture context 注入、Step 1.5 の glossary 照合）と co-architect が直接参照する
+- **陳腐化は有害**: 不正確な Spec は co-issue の Issue 品質を低下させる。変更時は architecture spec の更新を検討する
+- **歴史は git に委ねる**: 現在の設計意図のみを記述。移行経緯や旧プラグインとの比較は git history で参照可能
 
 ## Non-Goals
 
 - **技術スタック固有の機能**: Next.js, FastAPI, R/Bioconductor 等のフレームワーク固有操作はコンパニオンプラグインの責務。dev plugin は技術スタックに依存しない汎用ワークフロー（Issue → 実装 → PR → マージ）のみを提供する。tech-stack-detect スクリプトで specialist を選択するが、specialist 自体はコンパニオンプラグインまたは汎用 specialist として提供される
 - **loom CLI 本体の機能開発**: deps.yaml パーサー、型システム、validate/audit/chain コマンドは shuu5/loom リポジトリの責務。dev plugin は loom CLI を Open Host Service として消費するのみ
 - **AI/LLM の判断を機械化すること**: Issue 分解、コードレビュー品質、エラー診断、merge 失敗時の対処は LLM の判断領域。これらを rule-based に置換しようとしない
-- **旧 plugin との後方互換性**: 旧 dev plugin (claude-plugin-dev) のインターフェースとの互換性は維持しない。クリーンな再設計を優先する

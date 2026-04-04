@@ -98,8 +98,6 @@ flowchart TD
 
 ## Component Mapping
 
-本 Context が担う controller/workflow/command の対応:
-
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **atomic** | loom-validate | PostToolUse hook: Edit/Write 後の自動 validate |
@@ -107,11 +105,14 @@ flowchart TD
 | **atomic** | evaluate-architecture | アーキテクチャパターン評価 |
 | **atomic** | dead-component-detect | loom complexity による Dead component 検出 |
 | **atomic** | dead-component-execute | Dead component 削除実行 |
+| **atomic** | crg-auto-build | CRG (Code Review Graph) グラフ自動ビルド |
+| **atomic** | setup-crg | CRG MCP セットアップ |
 | **specialist** | worker-structure | loom audit/check 結果を消費するレビュー specialist |
 | **specialist** | worker-architecture | アーキテクチャパターン検証 specialist |
 | **reference** | ref-types | deps.yaml 型ルールリファレンス |
 | **reference** | ref-deps-format | deps.yaml フォーマットリファレンス |
 | **reference** | ref-architecture-spec | architecture/ 仕様リファレンス |
+| **reference** | ref-architecture | アーキテクチャパターン評価チェックリスト |
 
 ### loom CLI コマンドと使用コンポーネントの対応表
 
@@ -164,21 +165,6 @@ flowchart TD
 | specialist | agents | worker-code-reviewer 等 | 27 |
 | reference | skills | ref-types, ref-architecture-spec 等 | 11 |
 | script | scripts | autopilot-plan.sh 等 (loom#31 完了後) | 18 |
-
-## loom Issue 完了 → lpd ブロック解除マップ
-
-| loom Issue | 完了で解除される lpd Issue | ブロック理由 | 優先度 |
-|---|---|---|---|
-| **#31** (scripts) | #4 (B-2), #9 (C-2a), #11 (C-4) | deps.yaml v3.0 scripts セクション必須 | **Must-1st** |
-| **#28** (rename) | #4 (B-2) | co-* naming に path/dir rename 必要 | **Must-2nd** |
-| **#30** (--check/--all) | #6 (B-4), #7 (B-5) | chain-driven 乖離検出 | **Must-3rd** |
-| **#29** (model) | #10 (C-3) | specialist model 宣言の品質保証 | **Must-4th** |
-| **#34** (JSON, Phase 1) | #7 (B-5) | merge-gate plugin gate の JSON 消費 | **Must-5th** |
-| #32 (Template B) | — | 便利だが blocking ではない | Should |
-| #33 (output schema) | — | C-3 品質向上だが blocking ではない | Should |
-| #35 (Arch Spec) | — | ドキュメント整備のみ | Could |
-
-**クリティカルパス**: loom#31 → loom#28 → lpd#4 (B-2) → lpd#5 (B-3) → lpd#6 (B-4) → lpd#7 (B-5)
 
 ## Dependencies
 
