@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: autopilot summary, session-audit, SKILL.md & deps.yaml
-# Generated from: openspec/changes/c-2d-autopilot-controller-autopilot/specs/summary-audit/spec.md
+# Generated from: openspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/summary-audit/spec.md
 # Coverage level: edge-cases
 # Verifies: autopilot-summary, session-audit COMMAND.md + SKILL.md calls + deps.yaml
 # =============================================================================

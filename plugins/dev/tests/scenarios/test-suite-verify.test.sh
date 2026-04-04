@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: test-suite-fix.md
-# Generated from: openspec/changes/test-suite-verify/specs/test-suite-fix.md
+# Generated from: openspec/changes/archive/2026-03-31-test-suite-verify/specs/test-suite-fix.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail
@@ -231,9 +231,9 @@ test_split_rule_documented() {
   # design.md または proposal.md に「10件超」「別 Issue」の記述があることを確認
   local found=0
   for doc in \
-    "openspec/changes/test-suite-verify/design.md" \
-    "openspec/changes/test-suite-verify/proposal.md" \
-    "openspec/changes/test-suite-verify/specs/test-suite-fix.md"; do
+    "openspec/changes/archive/2026-03-31-test-suite-verify/design.md" \
+    "openspec/changes/archive/2026-03-31-test-suite-verify/proposal.md" \
+    "openspec/changes/archive/2026-03-31-test-suite-verify/specs/test-suite-fix.md"; do
     if [[ -f "${PROJECT_ROOT}/${doc}" ]]; then
       if grep -qP "10件|別.*Issue|分割" "${PROJECT_ROOT}/${doc}" 2>/dev/null; then
         found=1
@@ -248,7 +248,7 @@ run_test "失敗数超過時の分割: スコープ制限ルールが仕様書�
 
 # Edge case: スコープ制限条件（10件超）が specs に明記されている
 test_split_rule_in_spec() {
-  local spec="openspec/changes/test-suite-verify/specs/test-suite-fix.md"
+  local spec="openspec/changes/archive/2026-03-31-test-suite-verify/specs/test-suite-fix.md"
   assert_file_exists "$spec" || return 1
   assert_file_contains "$spec" "10件" || return 1
   assert_file_contains "$spec" "別.*Issue|分割" || return 1

@@ -472,14 +472,14 @@ fi
 # =============================================================================
 # Requirement: c-2d session-management spec のプロンプト修正
 # Scenario: openspec c-2d の矛盾解消 (openspec-contradiction-fix.md line 10)
-# WHEN: openspec/changes/c-2d-autopilot-controller-autopilot/specs/session-management/spec.md を確認する
+# WHEN: openspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/session-management/spec.md を確認する
 # THEN: autopilot-launch コマンド要件のプロンプト記述が /dev:workflow-setup #${ISSUE} のみであり
 #       --auto --auto-merge が含まれない
 # =============================================================================
 echo ""
 echo "--- Requirement: c-2d session-management spec のプロンプト修正 ---"
 
-C2D_SPEC="openspec/changes/c-2d-autopilot-controller-autopilot/specs/session-management/spec.md"
+C2D_SPEC="openspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/session-management/spec.md"
 
 test_c2d_spec_file_exists() {
   assert_file_exists "$C2D_SPEC"

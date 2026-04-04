@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: autopilot post-processing commands
-# Generated from: openspec/changes/c-2d-autopilot-controller-autopilot/specs/post-processing/spec.md
+# Generated from: openspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/post-processing/spec.md
 # Coverage level: edge-cases
 # Verifies: autopilot-collect, autopilot-retrospective, autopilot-patterns, autopilot-cross-issue COMMAND.md
 # =============================================================================

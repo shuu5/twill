@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Functional Tests: state-file-management.md
-# Generated from: openspec/changes/b-3-autopilot-state-management/specs/state-file-management.md
+# Generated from: openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/state-file-management.md
 # Coverage level: edge-cases
 # Tests state-write.sh / state-read.sh behavior, role-based access, transition validation
 # =============================================================================
