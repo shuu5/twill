@@ -177,6 +177,7 @@ if [[ "$init" == "true" ]]; then
         pr: null,
         window: "",
         started_at: $started_at,
+        updated_at: $started_at,
         current_step: "",
         retry_count: 0,
         fix_instructions: null,
@@ -266,6 +267,11 @@ for kv in "${sets[@]}"; do
     current_json=$(echo "$current_json" | jq --arg v "$value" ".$key = \$v")
   fi
 done
+
+# updated_at 自動更新（issue type のみ）
+if [[ "$type" == "issue" ]]; then
+  current_json=$(echo "$current_json" | jq --arg t "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '.updated_at = $t')
+fi
 
 # アトミック書き込み（.tmp + mv パターン）
 echo "$current_json" | jq '.' > "${file}.tmp" && mv "${file}.tmp" "$file"

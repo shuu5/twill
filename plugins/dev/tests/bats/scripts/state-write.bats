@@ -245,3 +245,46 @@ teardown() {
   # File should be valid JSON
   jq '.' "$SANDBOX/.autopilot/issues/issue-1.json" > /dev/null
 }
+
+@test "state-write --init sets updated_at field for issue type" {
+  run bash "$SANDBOX/scripts/state-write.sh" \
+    --type issue --issue 5 --role worker --init
+
+  assert_success
+
+  updated_at=$(jq -r '.updated_at' "$SANDBOX/.autopilot/issues/issue-5.json")
+  [ "$updated_at" != "null" ]
+  [ -n "$updated_at" ]
+}
+
+@test "state-write --set updates updated_at for issue type" {
+  create_issue_json 6 "running"
+
+  before=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  sleep 1
+
+  run bash "$SANDBOX/scripts/state-write.sh" \
+    --type issue --issue 6 --role worker --set current_step=test
+
+  assert_success
+
+  updated_at=$(jq -r '.updated_at' "$SANDBOX/.autopilot/issues/issue-6.json")
+  [ "$updated_at" != "null" ]
+  [ -n "$updated_at" ]
+  # updated_at should be >= before
+  [[ "$updated_at" > "$before" || "$updated_at" == "$before" ]]
+}
+
+@test "state-write --set does not add updated_at for session type" {
+  # Create a minimal session.json manually
+  mkdir -p "$SANDBOX/.autopilot"
+  echo '{"status":"active","current_issue":null}' > "$SANDBOX/.autopilot/session.json"
+
+  run bash "$SANDBOX/scripts/state-write.sh" \
+    --type session --role pilot --set current_issue=1
+
+  assert_success
+
+  updated_at=$(jq -r '.updated_at' "$SANDBOX/.autopilot/session.json")
+  [ "$updated_at" == "null" ]
+}
