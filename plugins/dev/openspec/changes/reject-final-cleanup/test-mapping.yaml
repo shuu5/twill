@@ -1,0 +1,55 @@
+change_id: reject-final-cleanup
+generated_at: "2026-04-05T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "reject-final-retry-count-0"
+    name: "初回実行でreject-final（retry_count=0）"
+    spec_file: "specs/cleanup-on-reject-final/spec.md"
+    spec_line: 7
+    requirement: "reject-final確定失敗後のworktreeとリモートブランチのクリーンアップ"
+    test_file: "tests/unit/reject-final-cleanup/merge-gate-loop-cleanup.bats"
+    test_name: "merge-gate-loop: reject-final（retry_count=0）でcleanup_workerが呼ばれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "reject-final-retry-count-gte-1"
+    name: "リトライ後のreject-final（retry_count>=1）"
+    spec_file: "specs/cleanup-on-reject-final/spec.md"
+    spec_line: 13
+    requirement: "reject-final確定失敗後のworktreeとリモートブランチのクリーンアップ"
+    test_file: "tests/unit/reject-final-cleanup/merge-gate-loop-cleanup.bats"
+    test_name: "merge-gate-loop: リトライ後のreject-final（retry_count=1）でcleanup_workerが呼ばれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "normal-reject-retry-count-0"
+    name: "通常reject（retry_count=0、リトライ可）"
+    spec_file: "specs/cleanup-on-reject-final/spec.md"
+    spec_line: 18
+    requirement: "reject-final確定失敗後のworktreeとリモートブランチのクリーンアップ"
+    test_file: "tests/unit/reject-final-cleanup/merge-gate-loop-cleanup.bats"
+    test_name: "merge-gate-loop: 通常reject（failure.reason=merge_gate_rejected, retry_count=0）ではcleanup_workerが呼ばれない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "failure-reason-absent-old-state"
+    name: "failure.reasonが存在しない古いstateファイル"
+    spec_file: "specs/cleanup-on-reject-final/spec.md"
+    spec_line: 26
+    requirement: "failure.reasonによるreject-final識別"
+    test_file: "tests/unit/reject-final-cleanup/merge-gate-loop-cleanup.bats"
+    test_name: "merge-gate-loop: failure.reasonが空文字列の場合、retry_count=0ではcleanup_workerが呼ばれない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
