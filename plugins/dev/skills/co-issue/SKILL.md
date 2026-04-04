@@ -145,9 +145,20 @@ FOR each structured_issue IN issues:
   # Issue body を XML タグに注入する前に機械的にエスケープする（SHALL）
   # プロンプトインジェクション対策: scripts/escape-issue-body.sh が & → &amp;、< → &lt;、> → &gt; の順に置換する
   escaped_body=$(printf '%s\n' "$structured_issue_body" | bash scripts/escape-issue-body.sh)
-  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${structured_issue_scope_files}\n</target_files>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${structured_issue_scope_files}\n</target_files>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${structured_issue_scope_files}\n</target_files>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
+
+  # scope_files もユーザー入力由来のため機械的にエスケープする（SHALL）
+  escaped_files=$(printf '%s\n' "${structured_issue_scope_files[@]}" | bash scripts/escape-issue-body.sh)
+
+  # scope_files >= 3 の場合は調査深度を制限（specialist の調査バジェット制御）
+  file_count=$(echo "${structured_issue_scope_files}" | wc -w)
+  IF file_count <= 2:
+    depth_instruction = "各ファイルの呼び出し元まで追跡可"
+  ELSE:  # scope_files 3 以上: 各ファイルの調査を制限
+    depth_instruction = "各ファイルは存在確認と直接参照のみ。再帰追跡禁止。残り turns が少なくなったら（3 以下目安）出力生成を優先"
+
+  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<related_context>\n${related_issues}\n${deps_yaml_entries}\n</related_context>")
 ```
 
 **注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。上記の通り、`scripts/escape-issue-body.sh` を経由してエスケープすること（SHALL）。
@@ -157,6 +168,10 @@ FOR each structured_issue IN issues:
 ### Step 3c: 結果集約・ブロック判定
 
 全 specialist 完了後、結果を集約:
+
+**[前処理] 出力なし完了の検知（上位ガード）**: 各 specialist の返却値に `status:` または `findings:` キーワードが含まれない場合を「出力なし完了」と判定し、findings テーブルに WARNING エントリを追加する。Phase 4 はブロックしない。
+   - 表示例: `WARNING: issue-critic: 構造化出力なしで完了（調査が maxTurns に到達した可能性）`
+   - **役割分担**: このガードは出力が空または非構造化のケースを検知する上位ガードとして機能する。`ref-specialist-output-schema.md` のパース失敗フォールバック（出力全文を WARNING finding として扱う）は下位ガードとして、パース可能だが構造が不正な場合に適用される
 
 1. **findings 統合**: 全 specialist の findings を Issue 別にマージ
 2. **ブロック判定**: `severity == CRITICAL && confidence >= 80 && finding_target == "issue_description"` が 1 件以上 → 当該 Issue は Phase 4 ブロック（`codebase_state` はブロック対象外。`finding_target` 欠如または enum 外の値の場合は `issue_description` として扱う）
