@@ -96,6 +96,16 @@ if [[ "$AUTOPILOT_STATUS" == "running" || "$AUTOPILOT_STATUS" == "merge-ready" ]
   IS_AUTOPILOT=true
 fi
 
+# 矛盾状態フォールバック: IS_AUTOPILOT=false だが AUTOPILOT_STATUS=running の場合（不変条件C 防御）
+# 現行ロジックでは AUTOPILOT_STATUS=running → IS_AUTOPILOT=true のため通常発生しない。
+# 将来のリファクタリング時の安全弁として、矛盾を検出した場合は merge を中止する。
+if [[ "$IS_AUTOPILOT" == "false" && "$AUTOPILOT_STATUS" == "running" ]]; then
+  echo "[auto-merge] ⚠️ 状態矛盾検出: IS_AUTOPILOT=false だが status=running" >&2
+  bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready 2>/dev/null || true
+  echo "[auto-merge] autopilot 配下（状態矛盾検出）: merge-ready 宣言。Pilot による merge-gate を待機。"
+  exit 0
+fi
+
 # ============================================================
 # Layer 4: フォールバックガード（issue-{N}.json 直接存在確認）
 # state-read.sh では false だが、issue-{N}.json が存在する場合の安全弁
@@ -106,7 +116,7 @@ if [[ "$IS_AUTOPILOT" == "false" ]]; then
     MAIN_AUTOPILOT_DIR="${MAIN_WORKTREE_PATH}/.autopilot"
     if [[ -f "${MAIN_AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}.json" ]]; then
       echo "[auto-merge] ⚠️ フォールバックガード発動: issue-${ISSUE_NUM}.json が存在するため merge を禁止" >&2
-      bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready
+      bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready 2>/dev/null || true
       echo "[auto-merge] autopilot 配下（フォールバック検出）: merge-ready 宣言。Pilot による merge-gate を待機。"
       exit 0
     fi
@@ -117,7 +127,7 @@ fi
 # autopilot 配下: merge-ready 宣言のみ（merge 禁止）
 # ============================================================
 if [[ "$IS_AUTOPILOT" == "true" ]]; then
-  bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready
+  bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready 2>/dev/null || true
   echo "[auto-merge] autopilot 配下: merge-ready 宣言。Pilot による merge-gate を待機。"
   exit 0
 fi
@@ -146,7 +156,7 @@ if ! git checkout main 2>/dev/null || ! git pull origin main 2>/dev/null; then
   echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ git checkout main / pull 失敗（merge は成功済み）" >&2
 fi
 
-CHANGE_ID=$(ls openspec/changes/ 2>/dev/null | grep -v archive | head -1)
+CHANGE_ID=$(ls openspec/changes/ 2>/dev/null | grep -v archive | head -1 || true)
 if [[ -n "${CHANGE_ID}" ]]; then
   if deltaspec archive "${CHANGE_ID}" --yes --skip-specs 2>/dev/null; then
     echo "[auto-merge] Issue #${ISSUE_NUM}: OpenSpec archive 完了: ${CHANGE_ID}"

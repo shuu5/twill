@@ -73,12 +73,10 @@ if [[ "$CURRENT_WINDOW" =~ ^ap-#[0-9]+$ ]]; then
   exit 1
 fi
 
-# autopilot 状態確認（CWD/tmux ガード通過後の情報提供ログ）
-# merge-gate-execute.sh は Pilot セッションから呼ばれる想定のため、autopilot 下でも merge を許可する
-# （不変条件 C の主防御は CWD/tmux ガードおよび merge-gate.md からの raw コマンド排除）
+# autopilot 状態確認（case 分岐に先立って取得し、merge パスで再利用）
 _autopilot_status=$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$ISSUE" --field status 2>/dev/null || echo "")
-if [[ "$_autopilot_status" == "running" || "$_autopilot_status" == "merge-ready" ]]; then
-  echo "[merge-gate-execute] autopilot 検出 (status=${_autopilot_status}): Pilot セッションとして merge を実行"
+if [[ "$_autopilot_status" == "merge-ready" ]]; then
+  echo "[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行"
 fi
 
 case "$MODE" in
@@ -101,6 +99,12 @@ case "$MODE" in
 
   *)
     # デフォルト: マージ実行
+
+    # 不変条件C: status=running での merge 実行を拒否（Worker が merge-ready 未宣言）
+    if [[ "$_autopilot_status" == "running" ]]; then
+      echo "[merge-gate-execute] ERROR: status=running（merge-ready 未宣言）での merge 実行は禁止されています（不変条件C）" >&2
+      exit 1
+    fi
 
     # REPO_MODE 自動判定: git rev-parse --git-dir が .git 以外を返す場合は worktree
     GIT_DIR_PATH=$(git rev-parse --git-dir 2>/dev/null || echo "")
