@@ -81,9 +81,7 @@ architecture/
 ファイル名: kebab-case（例: `user-auth.md`, `payment.md`）
 
 ```markdown
-## Name
-
-<!-- Context 名 -->
+# <Context 名>
 
 ## Responsibility
 

@@ -28,7 +28,7 @@ architecture/ ディレクトリの完全性を検証し、不足ファイル・
 
 **vision.md**: `## Vision`, `## Constraints`, `## Non-Goals`
 
-**domain/contexts/*.md** (各ファイル): `## Name`, `## Responsibility`, `## Key Entities`, `## Dependencies`
+**domain/contexts/*.md** (各ファイル): `# <Context名>`（H1見出し）, `## Responsibility`, `## Key Entities`, `## Dependencies`
 
 **phases/*.md** (各ファイル): `## Scope`, `## Issues`, `## Implementation Status`
 
