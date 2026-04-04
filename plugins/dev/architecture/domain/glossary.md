@@ -11,8 +11,8 @@
 | session.json | per-autopilot-run のセッション状態。Phase 進捗、cross-issue 警告、パターン検出を管理 | Autopilot |
 | specialist | 並列実行される AI エージェント（共通出力スキーマ準拠）。haiku/sonnet で実行 | PR Cycle |
 | Phase | autopilot の実行単位。依存グラフでグルーピングされた Issue 群 | Autopilot |
-| Pilot | main/ worktree から実行する制御側。worktree 削除・merge 実行の専任者 | Autopilot |
-| Worker | worktree 内で実装を行う側。merge 禁止・worktree 削除禁止 | Autopilot |
+| Pilot | main/ worktree から実行する制御側。worktree 作成・削除・merge 実行・クリーンアップの専任者 | Autopilot |
+| Worker | Pilot が作成した worktree 内で cld セッションとして起動される実装側。merge 禁止・worktree 操作禁止 | Autopilot |
 | Orchestrator | Pilot 内の Issue 実行ループ管理コンポーネント。launch → poll → merge-gate → health-check を統括 | Autopilot |
 | Project Board | GitHub Projects V2 ボード。Issue ステータスの SSOT。autopilot の Issue 選択元 | Project Management |
 | loom-dev-ecosystem | クロスリポジトリプロジェクト（#3）。loom + loom-plugin-dev を統合管理 | Project Management |
@@ -39,3 +39,5 @@
 | tech-stack-detect | 変更ファイルの拡張子・パスから specialist を自動選択するスクリプト | PR Cycle |
 | nudge | autopilot orchestrator が停滞 Worker に送信するプロンプト再注入 | Autopilot |
 | health-check | Worker の chain_stall（長時間停止）を検知する監視スクリプト | Autopilot |
+| resolve_issue_num() | state file ベースの Issue 番号解決関数。AUTOPILOT_DIR → git branch の優先順で判定 | Autopilot |
+| architecture drift detection | co-issue Phase 3.5 で Issue が architecture spec に影響するか検出する仕組み（INFO レベル） | Issue Management |

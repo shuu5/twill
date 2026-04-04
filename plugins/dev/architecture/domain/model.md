@@ -204,21 +204,25 @@ Pilot 内で Issue 実行ループを管理するコンポーネント。
 
 ```mermaid
 flowchart TD
-    O["Orchestrator (Pilot)"] --> L["autopilot-launch"]
+    O["Orchestrator (Pilot)"] --> WT["worktree-create.sh"]
+    WT --> L["autopilot-launch --worktree-dir"]
     L --> P["autopilot-poll (10秒間隔)"]
     P --> HC["health-check.sh"]
     P --> CD["crash-detect.sh"]
     P --> SR["state-read.sh"]
     P -->|停滞検出| N["nudge (プロンプト再注入)"]
     P -->|完了検出| MG["merge-gate"]
+    MG -->|PASS| CL["cleanup<br/>(tmux → worktree → remote branch)"]
 ```
 
 **Orchestrator の責務**:
-- Worker の起動（tmux new-window + cld）
+- Worktree 事前作成（Worker 起動前に worktree-create.sh を実行、不変条件 B）
+- Worker の起動（worktree ディレクトリで cld セッション開始、`--worktree-dir`）
 - 状態ポーリング（state-read.sh で issue-{N}.json を監視）
 - クラッシュ検知（crash-detect.sh で tmux window 消失を検出）
 - ヘルスチェック（health-check.sh で chain_stall を検出）
 - nudge（停滞 Worker へのプロンプト再注入）
+- クリーンアップ（merge-gate 成功後: tmux kill-window → worktree-delete → git push --delete）
 
 ### Chain 定義と実行フロー
 

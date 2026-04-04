@@ -57,6 +57,7 @@ graph TD
     LI -.->|"Open Host Service"| SI
 
     AS -.->|"DCI 注入"| IM
+    IM -.->|"drift detection<br/>(INFO)"| AS
     AS -.->|"DCI 注入"| AP
 ```
 
@@ -74,6 +75,7 @@ graph TD
 | Project Mgmt | Autopilot | Shared Kernel | bare repo + worktree 構造 |
 | Loom Integration | 全 Context | Open Host Service | validate/audit/chain 結果 |
 | Architecture Spec | Issue Mgmt | DCI | vision.md, context-map.md, glossary.md を Read |
+| Issue Mgmt | Architecture Spec | Drift Detection | Step 3.5 で architecture 影響を検出し co-architect を提案（INFO） |
 | Architecture Spec | Autopilot | DCI | co-architect 経由で設計意図参照 |
 
 ## Architecture Spec の DCI フロー
@@ -90,6 +92,7 @@ graph LR
     subgraph "co-issue"
         P1["Phase 1: 探索"]
         S15["Step 1.5: glossary照合"]
+        S35["Step 3.5: drift detection"]
     end
 
     subgraph "co-architect"
@@ -107,4 +110,6 @@ graph LR
     CTX -->|"Read"| CC
 ```
 
-**更新トリガー**: architecture spec の内容に影響する変更（新概念の追加、Context 境界の変更、設計判断の変更）が発生した場合、co-architect 経由で spec を更新する。
+    S35 -.->|"INFO: arch影響検出"| V
+
+**更新トリガー**: architecture spec の内容に影響する変更（新概念の追加、Context 境界の変更、設計判断の変更）が発生した場合、co-architect 経由で spec を更新する。co-issue の Step 3.5 drift detection がこのトリガーの早期検知を支援する。

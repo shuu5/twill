@@ -51,7 +51,8 @@ flowchart TD
     A["Phase 1: 探索<br/>(+ architecture context 注入)"] --> A2["Step 1.5: glossary 照合"]
     A2 --> B["Phase 2: 分解判断<br/>(+ クロスリポ検出)"]
     B --> C["Phase 3: 精緻化<br/>(構造化 + specialist レビュー)"]
-    C --> D{品質 OK?}
+    C --> C2["Step 3.5: architecture drift detection<br/>(INFO)"]
+    C2 --> D{品質 OK?}
     D -- Yes --> E["Phase 4: 一括作成<br/>(+ board-sync)"]
     D -- No --> C
 ```
@@ -89,6 +90,27 @@ flowchart TD
 ```
 
 **リポ一覧取得**: ハードコード禁止。GitHub Project のリンク済みリポジトリから動的取得。
+
+### Architecture Drift Detection（Step 3.5）
+
+精緻化完了後、Issue が architecture spec に影響するか検出し、ユーザーに co-architect を提案する。
+
+```mermaid
+flowchart TD
+    A["精緻化済み Issue"] --> B{arch-ref タグ<br/>あり?}
+    B -- Yes --> F["INFO: explicit reference"]
+    B -- No --> C{不変条件/Entity/Workflow<br/>変更言及?}
+    C -- Yes --> F2["INFO: structural change"]
+    C -- No --> D{ctx/* ラベル<br/>3 以上?}
+    D -- Yes --> F3["INFO: cross-context impact"]
+    D -- No --> G["スキップ"]
+    F --> H["提案: /dev:co-architect"]
+    F2 --> H
+    F3 --> H
+```
+
+**非ブロッキング**: glossary 照合（Step 1.5）と同レベル。Issue 作成フローを止めない。
+**Contract**: contracts/architecture-spec-dci.md で詳細定義。
 
 ### Specialist 並列レビュー（Step 3b）
 
@@ -142,3 +164,4 @@ flowchart TD
 - **Upstream <- Self-Improve**: self-improve Issue を受け取る
 - **Upstream <- Project Management**: Board ステータス更新
 - **DCI <- Architecture Spec**: vision.md, context-map.md, glossary.md を Phase 1 で Read
+- **Drift Detection -> Architecture Spec**: Step 3.5 で architecture 影響を検出し co-architect を提案（INFO）

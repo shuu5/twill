@@ -52,8 +52,32 @@ THEN
 | 新しい Contract の追加 | contracts/*.md |
 | Project Board / クロスリポ関連の変更 | contexts/project-mgmt.md |
 
+## co-issue からのフィードバック（Step 3.5: Architecture Drift Detection）
+
+co-issue は Issue 精緻化後に architecture drift を検出し、ユーザーに co-architect の実行を **INFO レベル**で提案する。co-issue 自体が architecture を更新することはない（Non-implementation controller）。
+
+### 検出シグナル（3層）
+
+| レベル | シグナル | 検出方法 |
+|--------|---------|---------|
+| 明示的 | `<!-- arch-ref-start -->` タグ | Issue body のパース |
+| 構造的 | 不変条件・Entity Schema・Workflow 変更言及 | glossary.md の MUST 用語 + architecture/ ファイル名との照合 |
+| ヒューリスティック | スコープが 3 Context 以上に跨る | ctx/* ラベルの数 + 影響範囲の Context 分析 |
+
+### 出力
+
+```
+INFO: 以下の Issue が architecture spec に影響する可能性があります:
+  #N: explicit reference (architecture/domain/contexts/autopilot.md)
+  #M: invariant change (不変条件B)
+architecture spec の事前更新を検討してください: /dev:co-architect
+```
+
+**非ブロッキング**: glossary 照合（Step 1.5）と同レベル。co-issue フローを止めない。
+
 ## 品質保証
 
 - architecture spec の陳腐化は co-issue の Issue 品質を直接低下させる
 - glossary.md の MUST 用語が不完全だと、Step 1.5 の照合が不十分になる
 - vision.md の Constraints が現実と乖離すると、explore が誤った方向に誘導される
+- **Step 3.5 drift detection が機能することで、陳腐化の早期検知が可能になる**
