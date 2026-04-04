@@ -1,0 +1,235 @@
+change_id: fix-resolve-issue-num-parallel-worker
+generated_at: "2026-04-05T00:00:00Z"
+test_framework: bats
+scenarios:
+  # --- Requirement: WORKER_ISSUE_NUM Priority 0 参照 ---
+
+  - id: "worker-issue-num-set"
+    name: "WORKER_ISSUE_NUM が設定されている場合"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 7
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM]: WORKER_ISSUE_NUM=238 設定時は 238 を返す"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-set-no-git"
+    name: "WORKER_ISSUE_NUM が設定されている場合（git branch 非呼び出し確認）"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 7
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM]: WORKER_ISSUE_NUM 設定時は git branch を呼ばない"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-unset-priority1"
+    name: "WORKER_ISSUE_NUM が未設定の場合（Priority 1 動作）"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 12
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM]: WORKER_ISSUE_NUM 未設定時は Priority 1 (AUTOPILOT_DIR スキャン) で動作する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-unset-priority2"
+    name: "WORKER_ISSUE_NUM が未設定の場合（Priority 2 フォールバック）"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 12
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM]: WORKER_ISSUE_NUM 未設定かつ running 0件時は git branch にフォールバック"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-parallel-229"
+    name: "並列 Phase での複数 Worker（WORKER_ISSUE_NUM=229）"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 16
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM]: 並列 Phase で複数 running 時も WORKER_ISSUE_NUM=229 を返す（最小の 227 ではない）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-parallel-227"
+    name: "並列 Phase での複数 Worker（WORKER_ISSUE_NUM=227）"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 16
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM]: 並列 Phase で WORKER_ISSUE_NUM=227 の Worker は 227 を返す"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-parallel-228"
+    name: "並列 Phase での複数 Worker（WORKER_ISSUE_NUM=228）"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 16
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM]: 並列 Phase で WORKER_ISSUE_NUM=228 の Worker は 228 を返す"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-empty-string"
+    name: "WORKER_ISSUE_NUM が空文字列の場合はフォールバック"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 7
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM edge]: WORKER_ISSUE_NUM='' の場合は AUTOPILOT_DIR スキャンにフォールバック"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-no-autopilot-dir"
+    name: "WORKER_ISSUE_NUM 設定かつ AUTOPILOT_DIR 未設定の場合"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 7
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM edge]: AUTOPILOT_DIR 未設定でも WORKER_ISSUE_NUM=238 を返す"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-no-running-issues"
+    name: "WORKER_ISSUE_NUM 設定かつ running issue 0件の場合"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 7
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM edge]: running issue 0件でも WORKER_ISSUE_NUM=238 を返す"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-min-value"
+    name: "WORKER_ISSUE_NUM=1（最小有効値）"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 7
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM edge]: WORKER_ISSUE_NUM=1 は 1 を返す"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-issue-num-mismatch"
+    name: "WORKER_ISSUE_NUM と AUTOPILOT_DIR の running issue が不一致でも WORKER_ISSUE_NUM 優先"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 7
+    requirement: "WORKER_ISSUE_NUM Priority 0 参照"
+    test_file: "tests/bats/scripts/resolve-issue-num-worker-issue-num.bats"
+    test_name: "resolve_issue_num [WORKER_ISSUE_NUM edge]: WORKER_ISSUE_NUM と AUTOPILOT_DIR が不一致でも WORKER_ISSUE_NUM を優先"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: autopilot-launch.sh の WORKER_ISSUE_NUM export ---
+
+  - id: "launch-worker-issue-num-inject"
+    name: "Worker 起動時の環境変数注入"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 26
+    requirement: "autopilot-launch.sh の WORKER_ISSUE_NUM export"
+    test_file: "tests/bats/scripts/autopilot-launch-worker-issue-num.bats"
+    test_name: "autopilot-launch [WORKER_ISSUE_NUM]: --issue 238 起動時に WORKER_ISSUE_NUM=238 が env に含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-worker-issue-num-matches-issue"
+    name: "WORKER_ISSUE_NUM の値が --issue 引数と一致する"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 26
+    requirement: "autopilot-launch.sh の WORKER_ISSUE_NUM export"
+    test_file: "tests/bats/scripts/autopilot-launch-worker-issue-num.bats"
+    test_name: "autopilot-launch [WORKER_ISSUE_NUM]: WORKER_ISSUE_NUM の値が --issue 引数と一致する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-worker-issue-num-coexist-autopilot-dir"
+    name: "既存環境変数との共存（AUTOPILOT_DIR）"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 30
+    requirement: "autopilot-launch.sh の WORKER_ISSUE_NUM export"
+    test_file: "tests/bats/scripts/autopilot-launch-worker-issue-num.bats"
+    test_name: "autopilot-launch [WORKER_ISSUE_NUM]: AUTOPILOT_DIR が tmux env に含まれる（既存変数維持）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-worker-issue-num-coexist-cross-repo"
+    name: "既存環境変数との共存（REPO_OWNER・REPO_NAME）"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 30
+    requirement: "autopilot-launch.sh の WORKER_ISSUE_NUM export"
+    test_file: "tests/bats/scripts/autopilot-launch-worker-issue-num.bats"
+    test_name: "autopilot-launch [WORKER_ISSUE_NUM]: クロスリポジトリ起動時も REPO_OWNER・REPO_NAME・WORKER_ISSUE_NUM が共存する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-worker-issue-num-worktree"
+    name: "--worktree-dir 指定時も WORKER_ISSUE_NUM が渡される"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 26
+    requirement: "autopilot-launch.sh の WORKER_ISSUE_NUM export"
+    test_file: "tests/bats/scripts/autopilot-launch-worker-issue-num.bats"
+    test_name: "autopilot-launch [WORKER_ISSUE_NUM edge]: --worktree-dir 指定時も WORKER_ISSUE_NUM が環境変数に含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-worker-issue-num-quick-label"
+    name: "quick ラベル付き Issue 起動時も WORKER_ISSUE_NUM が注入される"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 26
+    requirement: "autopilot-launch.sh の WORKER_ISSUE_NUM export"
+    test_file: "tests/bats/scripts/autopilot-launch-worker-issue-num.bats"
+    test_name: "autopilot-launch [WORKER_ISSUE_NUM edge]: quick ラベル付き Issue でも WORKER_ISSUE_NUM が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-worker-issue-num-tmux-env-position"
+    name: "WORKER_ISSUE_NUM は env コマンドの引数として渡される"
+    spec_file: "specs/resolve-issue-num/spec.md"
+    spec_line: 26
+    requirement: "autopilot-launch.sh の WORKER_ISSUE_NUM export"
+    test_file: "tests/bats/scripts/autopilot-launch-worker-issue-num.bats"
+    test_name: "autopilot-launch [WORKER_ISSUE_NUM edge]: WORKER_ISSUE_NUM は env コマンドの引数として渡される（tmux new-window 内）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
