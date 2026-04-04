@@ -21,9 +21,60 @@ skills:
 ## 目的
 対象プラグインにパターン（AT並列/パイプライン/ファンアウト・ファンイン/Context Snapshot/Subagent Delegation/Session Isolation/Compaction Recovery）が適切に適用されているかを検証し、最適化機会を検出する。
 
-## 入力
-phase から以下の情報を受け取る:
-- `plugin_path`: 対象プラグインのパス
+## 入力モード
+
+入力は `plugin_path` モードと `pr_diff` モードの2つをサポートする。
+
+- `plugin_path`: 対象プラグインのパス（既存モード。プラグイン構造検証）
+- `pr_diff`: PR の差分テキスト（merge-gate からの呼び出し用。ADR/invariant/contract 検証）
+
+`pr_diff` が提供された場合は **PR diff モード**で動作する。それ以外は従来の **plugin_path モード**で動作する。
+
+---
+
+## PR diff モード（`pr_diff` 入力時）
+
+merge-gate から `pr_diff` モードで呼び出された場合、以下の手順を実行する。
+
+### D-1. architecture/ ファイル読み込み
+
+プロジェクトルートの `architecture/` 配下を Glob で走査し、以下を Read する:
+
+- `architecture/domain/invariants.md`（存在する場合）
+- `architecture/decisions/` 配下の全 ADR ファイル
+- `architecture/contracts/` 配下の全 contract ファイル
+
+### D-2. PR diff と architecture の整合性検証
+
+PR diff の内容と読み込んだ architecture ドキュメントを照合する:
+
+- **ADR 違反**: ADR で決定した設計方針に反するコード変更を検出する
+- **invariant 違反**: 不変条件に違反するロジックを検出する
+- **contract 違反**: contract で定義したインターフェース・スキーマから逸脱する変更を検出する
+
+### D-3. 出力
+
+architecture 違反の finding は `category: architecture-violation` で出力する（以下の few-shot 例参照）。
+
+```json
+{
+  "status": "FAIL",
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "confidence": 90,
+      "file": "commands/merge-gate.md",
+      "line": 35,
+      "message": "ADR-003 で定義した severity 3段階（CRITICAL/WARNING/INFO）に違反し、旧4段階の表記が使われている",
+      "category": "architecture-violation"
+    }
+  ]
+}
+```
+
+---
+
+## plugin_path モード（従来動作）
 
 ## 手順
 

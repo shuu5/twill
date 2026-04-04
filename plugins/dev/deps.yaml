@@ -983,6 +983,7 @@ commands:
       - specialist: worker-data-validator
       - specialist: worker-env-validator
       - specialist: worker-codex-reviewer
+      - specialist: worker-architecture
       - reference: ref-specialist-output-schema
       - reference: baseline-coding-style
       - reference: baseline-security-checklist

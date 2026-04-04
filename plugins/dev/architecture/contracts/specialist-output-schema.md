@@ -46,7 +46,7 @@ ADR-004 の実装仕様。全 specialist が準拠する出力形式を定義す
           },
           "category": {
             "type": "string",
-            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles"],
+            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "architecture-violation"],
             "description": "finding の分類"
           }
         }
@@ -98,6 +98,7 @@ status の自動導出ルール:
 | `coding-convention` | worker-code-reviewer |
 | `structure` | worker-structure |
 | `principles` | worker-principles |
+| `architecture-violation` | worker-architecture（pr_diff モード） |
 
 ## Few-shot 例
 

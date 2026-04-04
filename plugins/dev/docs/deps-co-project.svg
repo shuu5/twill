@@ -361,7 +361,7 @@
 <title>agent_worker_architecture</title>
 <ellipse fill="#ede7f6" stroke="black" cx="438.02" cy="-285.92" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="438.02" y="-288.92" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
-<text text-anchor="middle" x="438.02" y="-277.92" font-family="Helvetica,sans-Serif" font-size="10.00">(1,256 tok)</text>
+<text text-anchor="middle" x="438.02" y="-277.92" font-family="Helvetica,sans-Serif" font-size="10.00">(1,801 tok)</text>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;agent_worker_architecture -->
 <g id="edge26" class="edge">
@@ -445,9 +445,10 @@
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <g id="edge36" class="edge">
 <title>agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M490.91,-271.79C522.47,-269.07 563.13,-268.69 597.24,-270.65"/>
-<polygon fill="black" stroke="black" points="597.39,-274.16 607.6,-271.33 597.85,-267.18 597.39,-274.16"/>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M473.87,-267.45C514.97,-259.35 583.11,-259.08 626.01,-266.64"/>
+<polygon fill="black" stroke="black" points="625.59,-270.13 636.08,-268.67 626.97,-263.27 625.59,-270.13"/>
 </g>
+<!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_architecture -->

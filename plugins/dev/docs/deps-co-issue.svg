@@ -15,14 +15,14 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="50.91" cy="-276.98" rx="50.82" ry="21.43"/>
 <text text-anchor="middle" x="50.91" y="-279.98" font-family="Helvetica,sans-Serif" font-size="10.00">dev:co&#45;issue</text>
-<text text-anchor="middle" x="50.91" y="-268.98" font-family="Helvetica,sans-Serif" font-size="10.00">(3,958 tok)</text>
+<text text-anchor="middle" x="50.91" y="-268.98" font-family="Helvetica,sans-Serif" font-size="10.00">(4,179 tok)</text>
 </g>
 <!-- cmd_issue_structure -->
 <g id="node2" class="node">
 <title>cmd_issue_structure</title>
 <polygon fill="#e3f2fd" stroke="black" points="258.32,-578.98 177.32,-578.98 177.32,-542.98 258.32,-542.98 258.32,-578.98"/>
 <text text-anchor="middle" x="217.82" y="-563.98" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;structure</text>
-<text text-anchor="middle" x="217.82" y="-552.98" font-family="Helvetica,sans-Serif" font-size="10.00">(1,175 tok)</text>
+<text text-anchor="middle" x="217.82" y="-552.98" font-family="Helvetica,sans-Serif" font-size="10.00">(1,332 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_issue_structure -->
 <g id="edge2" class="edge">

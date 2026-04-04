@@ -28,6 +28,18 @@ PR diff のファイルリストから specialist を動的に構築する。
 |------|----------------------|
 | deps.yaml 変更あり | worker-structure + worker-principles |
 | コード変更あり | worker-code-reviewer + worker-security-reviewer |
+| `architecture/` が存在する | worker-architecture（`pr_diff` モードで呼び出し） |
+
+`architecture/` 存在チェック:
+
+```bash
+if [ -d "$(git rev-parse --show-toplevel)/architecture" ]; then
+  # worker-architecture を specialist リストに追加
+  # 呼び出し時は pr_diff モードを指定する
+fi
+```
+
+`architecture/` が存在しないプロジェクトでは worker-architecture を追加してはならない（MUST NOT）。
 
 #### conditional specialist
 

@@ -30,7 +30,27 @@ spawnable_by:
 
 TaskCreate 「Phase 1: 問題探索」(status: in_progress)
 
-`/dev:explore` を Skill tool で呼び出し、「問題空間の理解に集中。Issue 化や実装方法は意識しない」と注入。
+### architecture context 注入（Phase 1 冒頭）
+
+`architecture/` ディレクトリが存在する場合、以下のファイルを Read して `ARCH_CONTEXT` として保持する:
+
+```
+IF [ -d "$(git rev-parse --show-toplevel)/architecture" ]
+THEN
+  Read: architecture/vision.md（存在する場合）
+  Read: architecture/domain/context-map.md（存在する場合）
+  Read: architecture/domain/glossary.md（存在する場合）
+```
+
+ファイルが存在しない場合はスキップし、エラーを出力しない。`ARCH_CONTEXT` が空の場合は従来通り explore を実行する。
+
+`/dev:explore` を Skill tool で呼び出し、「問題空間の理解に集中。Issue 化や実装方法は意識しない」と注入。`ARCH_CONTEXT` が存在する場合、以下を explore の prompt に追加注入する:
+
+```
+## Architecture Context
+
+{ARCH_CONTEXT の内容}
+```
 
 探索完了後、`.controller-issue/explore-summary.md` に書き出し: 問題の本質（1-3文）、影響範囲、関連コンテキスト、探索で得た洞察。Phase 1 完了前に Issue 構造化を開始してはならない。
 
