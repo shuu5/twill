@@ -2,6 +2,7 @@
 # resolve-issue-num.sh - CWD 非依存の Issue 番号解決
 #
 # resolve_issue_num() を提供する。
+# 優先度 0: WORKER_ISSUE_NUM 環境変数（Worker 起動時に autopilot-launch.sh が設定）
 # 優先度 1: AUTOPILOT_DIR の state file スキャン（status=running）
 # 優先度 2: git branch --show-current フォールバック
 #
@@ -12,6 +13,17 @@
 resolve_issue_num() {
   local issue_num=""
   local num f
+
+  # Priority 0: WORKER_ISSUE_NUM（Worker 起動時に明示的に設定された Issue 番号）
+  # 並列 Phase で複数 Worker が同時実行される場合、全 Worker が同じ AUTOPILOT_DIR を
+  # 共有するため Priority 1 では最小番号が返される。Priority 0 でこれを回避する。
+  if [ -n "${WORKER_ISSUE_NUM:-}" ]; then
+    # 数値バリデーション: 不正値は無視して Priority 1 以降にフォールバック
+    if [[ "${WORKER_ISSUE_NUM}" =~ ^[1-9][0-9]*$ ]]; then
+      echo "${WORKER_ISSUE_NUM}"
+      return
+    fi
+  fi
 
   # Priority 1: AUTOPILOT_DIR state file scan
   if [ -n "${AUTOPILOT_DIR:-}" ] && [ -d "${AUTOPILOT_DIR}/issues" ]; then

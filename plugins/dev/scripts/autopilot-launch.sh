@@ -256,6 +256,11 @@ if [[ -n "$REPO_OWNER" && -n "$REPO_NAME" ]]; then
   REPO_ENV="REPO_OWNER=${QUOTED_REPO_OWNER} REPO_NAME=${QUOTED_REPO_NAME}"
 fi
 
+# --- WORKER_ISSUE_NUM 環境変数構築 ---
+# resolve_issue_num Priority 0 として参照。並列 Phase で各 Worker が正しい Issue 番号を取得するために必要。
+QUOTED_ISSUE=$(printf '%q' "$ISSUE")
+WORKER_ISSUE_NUM_ENV="WORKER_ISSUE_NUM=${QUOTED_ISSUE}"
+
 # --- コンテキスト引数構築 (Task 1.9) ---
 CONTEXT_ARGS=""
 if [[ -n "$CONTEXT" ]]; then
@@ -268,7 +273,7 @@ QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
 tmux new-window -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
-  "env ${AUTOPILOT_ENV} ${REPO_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
+  "env ${AUTOPILOT_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
 
 # --- クラッシュ検知フック設定 (Task 1.10) ---
 tmux set-option -t "$WINDOW_NAME" remain-on-exit on
