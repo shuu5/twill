@@ -113,6 +113,8 @@ if [[ "$AUTOPILOT_STATUS" == "running" || "$AUTOPILOT_STATUS" == "merge-ready" ]
   # 既に merge-ready の場合は宣言済みのためスキップ
   if [[ "$AUTOPILOT_STATUS" != "merge-ready" ]]; then
     bash scripts/state-write.sh --type issue --issue "${ISSUE_NUM}" --role worker --set "status=merge-ready"
+  else
+    echo "⚠️ merge-gate: 既に merge-ready 宣言済み（再入検出）。Pilot による merge を待機中。Worker は chain を停止してください。"
   fi
   echo "merge-gate: PASS。merge-ready 宣言済み。Pilot による merge を待機中。"
 else

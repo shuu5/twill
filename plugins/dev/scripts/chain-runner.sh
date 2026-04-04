@@ -672,7 +672,11 @@ main() {
     board-archive)       step_board_archive "$@" ;;
     ac-extract)          step_ac_extract "$@" ;;
     arch-ref)            step_arch_ref "$@" ;;
+    opsx-propose)        record_current_step "opsx-propose"; ok "opsx-propose" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
+    opsx-apply)          record_current_step "opsx-apply"; ok "opsx-apply" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
+    post-opsx-apply)     record_current_step "post-opsx-apply"; ok "post-opsx-apply" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     change-id-resolve)   step_change_id_resolve "$@" ;;
+    test-scaffold)       record_current_step "test-scaffold"; ok "test-scaffold" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     next-step)           step_next_step "$@" ;;
     ts-preflight)        step_ts_preflight "$@" ;;
     pr-test)             step_pr_test "$@" ;;
