@@ -143,27 +143,43 @@ stateDiagram-v2
 
 **Pilot (CWD = main/)**:
 - Issue 選択（**Project Board クエリ: Status=Todo**）
+- Worktree 事前作成 + Worker 起動（worktree ディレクトリで cld セッション開始）
 - Orchestrator による Worker 監視（ポーリング + health-check + crash-detect）
 - merge-gate 実行（PR レビュー・テスト・判定）
-- Worktree 削除（merge 成功後）
+- クリーンアップ（tmux window → worktree → remote branch 削除）
 
 **Worker (CWD = worktrees/{branch}/)**:
-- Worktree 作成・ブランチ作成
 - 実装（chain ステップの逐次実行）
 - テスト実行
 - `merge-ready` 宣言（issue-{N}.json の status 更新）
 
+※ Worktree の作成・削除は Pilot 専任（不変条件 B）。Worker は Pilot が作成した worktree 内で起動される。
+
 ### Worktree ライフサイクル安全ルール
 
-**鉄則: Worker は自分の worktree を削除しない。削除は常に Pilot (main/) が行う。**（不変条件 B）
+**鉄則: Worktree の作成・削除は Pilot (main/) が行う。Worker は使用のみ。**（不変条件 B、ADR-008）
 
 | フェーズ | 実行者 | 操作 | CWD |
 |----------|--------|------|-----|
-| 作成 | Worker | worktree-create.sh | main/ → worktrees/{branch}/ |
+| 作成 | Pilot | worktree-create.sh | main/ |
+| Worker 起動 | Pilot | autopilot-launch.sh --worktree-dir | main/ → Worker(worktrees/{branch}/) |
 | 使用 | Worker | chain ステップ逐次実行 | worktrees/{branch}/ |
 | merge-ready 宣言 | Worker | status 更新 | worktrees/{branch}/ |
 | merge-gate | Pilot | PR レビュー → squash merge | main/ |
-| 削除 | Pilot | worktree-delete.sh | main/ |
+| クリーンアップ | Pilot | tmux kill → worktree-delete → remote branch delete | main/ |
+
+### IS_AUTOPILOT 判定（CWD 非依存）
+
+Worker/Pilot の役割判定は state file ベースで行う。`git branch --show-current` への依存は defense in depth のフォールバックのみ。
+
+| 優先度 | 判定方法 | 条件 |
+|--------|---------|------|
+| 1 | State file スキャン | `$AUTOPILOT_DIR/issues/issue-*.json` に `status=running` が存在 |
+| 2 | フォールバック | `git branch --show-current` が feature ブランチパターンに一致 |
+
+- `resolve_issue_num()` 関数が統一的な Issue 番号解決を提供
+- 複数 running issue 時は最小番号を採用
+- 壊れた JSON はスキップ（stderr に警告）
 
 ### Emergency Bypass
 
@@ -183,7 +199,7 @@ co-autopilot 障害時のみ手動パスを許可する。
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **controller** | co-autopilot | Issue 群の自律実装オーケストレーター |
-| **workflow** | workflow-setup | worktree 作成 + OpenSpec 提案 |
+| **workflow** | workflow-setup | OpenSpec 提案 + テスト準備（worktree は Pilot が事前作成済み） |
 | **workflow** | workflow-test-ready | テスト生成 + 準備確認 |
 | **workflow** | workflow-pr-cycle | verify → review → test → fix → report |
 | **atomic** | autopilot-init | セッション初期化 |
