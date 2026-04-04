@@ -627,7 +627,7 @@
 <title>agent_worker_architecture</title>
 <ellipse fill="#ede7f6" stroke="black" cx="731.1" cy="-218.22" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="731.1" y="-221.22" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
-<text text-anchor="middle" x="731.1" y="-210.22" font-family="Helvetica,sans-Serif" font-size="10.00">(1,801 tok)</text>
+<text text-anchor="middle" x="731.1" y="-210.22" font-family="Helvetica,sans-Serif" font-size="10.00">(2,186 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_architecture -->
 <g id="edge61" class="edge">

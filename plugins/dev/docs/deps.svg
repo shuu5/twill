@@ -26,7 +26,7 @@
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="295.34" cy="-3589.87" rx="71.34" ry="21.43"/>
 <text text-anchor="middle" x="295.34" y="-3592.87" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;setup</text>
-<text text-anchor="middle" x="295.34" y="-3581.87" font-family="Helvetica,sans-Serif" font-size="10.00">(1,645 tok)</text>
+<text text-anchor="middle" x="295.34" y="-3581.87" font-family="Helvetica,sans-Serif" font-size="10.00">(1,979 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_setup -->
 <g id="edge16" class="edge">
@@ -39,7 +39,7 @@
 <title>skill_workflow_test_ready</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="295.34" cy="-3525.87" rx="85.62" ry="21.43"/>
 <text text-anchor="middle" x="295.34" y="-3528.87" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;test&#45;ready</text>
-<text text-anchor="middle" x="295.34" y="-3517.87" font-family="Helvetica,sans-Serif" font-size="10.00">(1,228 tok)</text>
+<text text-anchor="middle" x="295.34" y="-3517.87" font-family="Helvetica,sans-Serif" font-size="10.00">(2,047 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_test_ready -->
 <g id="edge17" class="edge">
@@ -221,7 +221,7 @@
 <title>cmd_autopilot_retrospective</title>
 <polygon fill="#e3f2fd" stroke="black" points="587.72,-2867.87 474.72,-2867.87 474.72,-2831.87 587.72,-2831.87 587.72,-2867.87"/>
 <text text-anchor="middle" x="531.22" y="-2852.87" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;retrospective</text>
-<text text-anchor="middle" x="531.22" y="-2841.87" font-family="Helvetica,sans-Serif" font-size="10.00">(760 tok)</text>
+<text text-anchor="middle" x="531.22" y="-2841.87" font-family="Helvetica,sans-Serif" font-size="10.00">(1,146 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;cmd_autopilot_retrospective -->
 <g id="edge7" class="edge">
@@ -298,7 +298,7 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="74" cy="-1545.87" rx="50.82" ry="21.43"/>
 <text text-anchor="middle" x="74" y="-1548.87" font-family="Helvetica,sans-Serif" font-size="10.00">dev:co&#45;issue</text>
-<text text-anchor="middle" x="74" y="-1537.87" font-family="Helvetica,sans-Serif" font-size="10.00">(4,179 tok)</text>
+<text text-anchor="middle" x="74" y="-1537.87" font-family="Helvetica,sans-Serif" font-size="10.00">(4,471 tok)</text>
 </g>
 <!-- cmd_issue_structure -->
 <g id="node25" class="node">
@@ -383,7 +383,7 @@
 <title>agent_issue_critic</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1031.28" cy="-2147.87" rx="45.01" ry="21.43"/>
 <text text-anchor="middle" x="1031.28" y="-2150.87" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;critic</text>
-<text text-anchor="middle" x="1031.28" y="-2139.87" font-family="Helvetica,sans-Serif" font-size="10.00">(1,026 tok)</text>
+<text text-anchor="middle" x="1031.28" y="-2139.87" font-family="Helvetica,sans-Serif" font-size="10.00">(1,218 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;agent_issue_critic -->
 <g id="edge28" class="edge">
@@ -396,7 +396,7 @@
 <title>agent_issue_feasibility</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1031.28" cy="-2083.87" rx="59.29" ry="21.43"/>
 <text text-anchor="middle" x="1031.28" y="-2086.87" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;feasibility</text>
-<text text-anchor="middle" x="1031.28" y="-2075.87" font-family="Helvetica,sans-Serif" font-size="10.00">(929 tok)</text>
+<text text-anchor="middle" x="1031.28" y="-2075.87" font-family="Helvetica,sans-Serif" font-size="10.00">(1,124 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;agent_issue_feasibility -->
 <g id="edge29" class="edge">
@@ -1323,7 +1323,7 @@
 <title>agent_worker_architecture</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1031.28" cy="-1845.87" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="1031.28" y="-1848.87" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
-<text text-anchor="middle" x="1031.28" y="-1837.87" font-family="Helvetica,sans-Serif" font-size="10.00">(1,801 tok)</text>
+<text text-anchor="middle" x="1031.28" y="-1837.87" font-family="Helvetica,sans-Serif" font-size="10.00">(2,186 tok)</text>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;agent_worker_architecture -->
 <g id="edge97" class="edge">
@@ -1909,7 +1909,7 @@
 <title>script_autopilot_launch</title>
 <polygon fill="#ff9800" stroke="black" points="827.77,-2655.87 793.12,-2680.36 723.81,-2680.36 689.16,-2655.87 723.81,-2631.38 793.12,-2631.38 827.77,-2655.87"/>
 <text text-anchor="middle" x="758.47" y="-2658.87" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;launch</text>
-<text text-anchor="middle" x="758.47" y="-2647.87" font-family="Helvetica,sans-Serif" font-size="10.00">(2,129 tok)</text>
+<text text-anchor="middle" x="758.47" y="-2647.87" font-family="Helvetica,sans-Serif" font-size="10.00">(2,361 tok)</text>
 </g>
 <!-- cmd_autopilot_launch&#45;&gt;script_autopilot_launch -->
 <g id="edge163" class="edge">
@@ -2566,7 +2566,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="815.78,-5691.87 787.12,-5716.36 729.81,-5716.36 701.16,-5691.87 729.81,-5667.38 787.12,-5667.38 815.78,-5691.87"/>
 <text text-anchor="middle" x="758.47" y="-5694.87" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="758.47" y="-5683.87" font-family="Helvetica,sans-Serif" font-size="10.00">(5,775 tok)</text>
+<text text-anchor="middle" x="758.47" y="-5683.87" font-family="Helvetica,sans-Serif" font-size="10.00">(5,958 tok)</text>
 </g>
 <!-- script_branch_create -->
 <g id="node145" class="node">

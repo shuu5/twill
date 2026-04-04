@@ -56,6 +56,18 @@ THEN
 
 TaskUpdate Phase 1 → completed
 
+## Step 1.5: glossary 照合（architecture drift 通知）
+
+**通知レベル: INFO（非ブロッキング）** — merge-gate の WARNING（ブロッキング可）とは異なり、Issue 作成フローを止めない。完全一致のみを対象とし、略語・表記ゆれは照合しない。
+
+`architecture/domain/glossary.md` が存在する場合のみ実行。存在しない場合はこのステップ全体をスキップして Phase 2 に進む。
+
+1. `architecture/domain/glossary.md` を読み込み、`### MUST 用語` セクションのテーブルから用語名（列1）を抽出する
+2. `.controller-issue/explore-summary.md` から主要用語・概念名を抽出する
+3. explore-summary.md の用語と MUST 用語を照合し、完全一致しない用語を列挙する（部分一致・略語は除外）
+4. 不一致用語が 1 件以上あれば INFO レベルで以下を通知し、フローを停止せずに Phase 2 に継続する:
+   > `[INFO] この概念は architecture spec に未定義です: <用語1>, <用語2>, ...`
+
 ## Phase 2: 分解判断
 
 TaskCreate 「Phase 2: 分解判断」(status: in_progress)

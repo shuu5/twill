@@ -15,7 +15,7 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="50.91" cy="-276.98" rx="50.82" ry="21.43"/>
 <text text-anchor="middle" x="50.91" y="-279.98" font-family="Helvetica,sans-Serif" font-size="10.00">dev:co&#45;issue</text>
-<text text-anchor="middle" x="50.91" y="-268.98" font-family="Helvetica,sans-Serif" font-size="10.00">(4,179 tok)</text>
+<text text-anchor="middle" x="50.91" y="-268.98" font-family="Helvetica,sans-Serif" font-size="10.00">(4,471 tok)</text>
 </g>
 <!-- cmd_issue_structure -->
 <g id="node2" class="node">
@@ -100,7 +100,7 @@
 <title>agent_issue_critic</title>
 <ellipse fill="#ede7f6" stroke="black" cx="415.14" cy="-328.98" rx="45.01" ry="21.43"/>
 <text text-anchor="middle" x="415.14" y="-331.98" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;critic</text>
-<text text-anchor="middle" x="415.14" y="-320.98" font-family="Helvetica,sans-Serif" font-size="10.00">(1,026 tok)</text>
+<text text-anchor="middle" x="415.14" y="-320.98" font-family="Helvetica,sans-Serif" font-size="10.00">(1,218 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;agent_issue_critic -->
 <g id="edge7" class="edge">
@@ -113,7 +113,7 @@
 <title>agent_issue_feasibility</title>
 <ellipse fill="#ede7f6" stroke="black" cx="415.14" cy="-264.98" rx="59.29" ry="21.43"/>
 <text text-anchor="middle" x="415.14" y="-267.98" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;feasibility</text>
-<text text-anchor="middle" x="415.14" y="-256.98" font-family="Helvetica,sans-Serif" font-size="10.00">(929 tok)</text>
+<text text-anchor="middle" x="415.14" y="-256.98" font-family="Helvetica,sans-Serif" font-size="10.00">(1,124 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;agent_issue_feasibility -->
 <g id="edge8" class="edge">

@@ -16,6 +16,7 @@ autopilot-phase-postprocess から呼び出される。
 | `$SESSION_ID` | autopilot セッション ID |
 | `$SESSION_STATE_FILE` | session.json のパス |
 | `$PHASE_COUNT` | 総 Phase 数 |
+| `$CHANGED_FILES` | Step 1 で done Issue の PR から収集した変更ファイルリスト（スペース区切り、Step 4.5 で使用） |
 
 ## 出力変数
 
@@ -30,12 +31,15 @@ autopilot-phase-postprocess から呼び出される。
 各 Issue について state-read.sh で情報を収集:
 
 ```bash
+CHANGED_FILES=""
 for ISSUE in $ISSUES; do
   STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
   case "$STATUS" in
     done)
       PR=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field pr_number)
-      # done Issue の PR 番号と変更ファイルを集約
+      # done Issue の PR 番号と変更ファイルを集約。CHANGED_FILES に追記
+      FILES=$(gh pr view "$PR" --json files -q '.files[].path' 2>/dev/null || true)
+      CHANGED_FILES="${CHANGED_FILES} ${FILES}"
       ;;
     failed)
       FAILURE=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field failure)
@@ -72,6 +76,31 @@ mcp__doobidoo__memory_store({
   metadata: { type: "phase-retrospective", session_id: "${SESSION_ID}", phase: ${P} }
 })
 ```
+
+### Step 4.5: architecture 差分チェック
+
+**スコープ**: done Issue の変更ファイルのみ（failed/skipped Issue は対象外）。**提示のみ** — session.json への記録・自動 Issue 化は行わない。
+
+`architecture/` ディレクトリが存在しない場合、このステップ全体をスキップする（出力なし）。
+
+1. Phase で変更されたファイルを収集する（Step 1 の **done Issue** から集約した変更ファイルリストを使用）
+2. 変更ファイルのパスと `architecture/` 内のコンテキストファイルを照合し、乖離が疑われる候補を列挙する:
+
+| 変更ファイルのパターン | 照合する architecture ファイル |
+|---|---|
+| `commands/`, `skills/`, `agents/` | `architecture/domain/model.md`（Component Mapping）|
+| `scripts/state-*.sh` | `architecture/domain/model.md`（IssueState / SessionState）|
+| `scripts/`, `commands/` (新規追加) | `architecture/domain/glossary.md`（MUST 用語）|
+| `architecture/decisions/`, `architecture/contracts/` に影響する変更 | 対応 ADR / contract ファイル |
+
+3. 乖離候補が 1 件以上あれば以下を提示する。自動 Issue 化は行わない:
+
+```
+以下の architecture 項目の更新を検討してください:
+- <ファイルパス>: <照合する architecture ドキュメント> の更新が必要な可能性
+```
+
+候補がない場合は「architecture 更新候補なし」と出力して次へ進む。
 
 ### Step 5: session.json に追記
 

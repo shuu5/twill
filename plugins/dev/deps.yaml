@@ -1544,7 +1544,7 @@ agents:
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-architecture]
-    description: "アーキテクチャパターン検証"
+    description: "アーキテクチャパターン検証 (PR diff モード: architecture/domain/glossary.md, architecture/domain/model.md, architecture/vision.md を参照)"
 
   worker-llm-output-reviewer:
     type: specialist
