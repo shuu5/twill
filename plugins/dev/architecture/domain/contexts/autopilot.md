@@ -56,11 +56,13 @@ Pilot 内の Issue 実行ループ管理コンポーネント。
 
 | 機能 | 実装 | 説明 |
 |------|------|------|
-| Worker 起動 | autopilot-launch.sh | tmux new-window + cld でセッション開始 |
+| Worktree 事前作成 | worktree-create.sh | Worker 起動前に Pilot が worktree を作成（不変条件 B） |
+| Worker 起動 | autopilot-launch.sh | worktree ディレクトリで cld セッション開始（`--worktree-dir`） |
 | 状態ポーリング | state-read.sh (10秒間隔) | issue-{N}.json の status を監視 |
 | クラッシュ検知 | crash-detect.sh | tmux window 消失を検出 → status=failed |
 | ヘルスチェック | health-check.sh | chain_stall（長時間停止）を検出 |
 | nudge | session:session-state | 停滞 Worker へのプロンプト再注入 |
+| クリーンアップ | autopilot-orchestrator.sh | merge-gate 成功後に tmux → worktree → remote branch を順次削除 |
 
 ## Key Workflows
 
@@ -90,15 +92,15 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[Worker 起動] --> B[worktree 作成]
-    B --> C[cd worktrees/branch/]
-    C --> D[chain step 逐次実行]
+    A["Worker 起動<br/>(CWD = worktrees/branch/)"] --> D[chain step 逐次実行]
     D --> E{全 step 成功?}
     E -- Yes --> F[status = merge-ready]
     E -- No --> G[status = failed]
     F --> H[セッション終了]
     G --> H
 ```
+
+Worker は Pilot が事前作成した worktree ディレクトリで cld セッションとして起動される。CWD リセットはセッション起動ディレクトリに戻るため、リセット後も正しいブランチで動作し続ける。
 
 ### 状態遷移
 
@@ -120,7 +122,7 @@ stateDiagram-v2
 | ID | 不変条件 | 概要 |
 |----|----------|------|
 | **A** | 状態の一意性 | issue-{N}.json の `status` は常に定義された遷移パスのみ許可 |
-| **B** | Worktree 削除 pilot 専任 | Worker は worktree を作成するが削除しない |
+| **B** | Worktree ライフサイクル Pilot 専任 | Worktree の作成・削除は Pilot が行う。Worker は使用のみ（ADR-008） |
 | **C** | Worker マージ禁止 | Worker は `merge-ready` を宣言するのみ。マージは Pilot が実行 |
 | **D** | 依存先 fail 時の skip 伝播 | Phase N で fail した Issue に依存する Issue は自動 skip |
 | **E** | merge-gate リトライ制限 | リトライは最大1回。2回目リジェクト = 確定失敗 |
