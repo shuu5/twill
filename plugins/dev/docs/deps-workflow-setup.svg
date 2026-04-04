@@ -15,7 +15,7 @@
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="71.42" cy="-169.49" rx="71.34" ry="21.43"/>
 <text text-anchor="middle" x="71.42" y="-172.49" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;setup</text>
-<text text-anchor="middle" x="71.42" y="-161.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,979 tok)</text>
+<text text-anchor="middle" x="71.42" y="-161.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,987 tok)</text>
 </g>
 <!-- cmd_init -->
 <g id="node2" class="node">

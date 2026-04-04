@@ -18,7 +18,7 @@ disable-model-invocation: true
 | 変数 | Context ラベル | シェルコマンド | フォールバック | 用途 |
 |------|--------------|--------------|--------------|------|
 | BRANCH | Branch | [BANG]`git branch --show-current` | `""` | ブランチ名 |
-| ISSUE_NUM | Issue | [BANG]`git branch --show-current \| grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null \|\| echo ""` | `""` | ブランチ名から抽出した Issue 番号 |
+| ISSUE_NUM | Issue | [BANG]`source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null \|\| true; resolve_issue_num 2>/dev/null \|\| echo ""` | `""` | state file（AUTOPILOT_DIR）または branch から解決した Issue 番号 |
 | REPO_MODE | Repo mode | [BANG]`[ -d ".git" ] && echo "standard" \|\| echo "worktree"` | `"standard"` | リポジトリ形式 |
 | PR_NUMBER | PR | [BANG]`gh pr view --json number -q '.number' 2>/dev/null \|\| echo "none"` | `"none"` | PR 番号 |
 | CHANGE_ID | Change ID | [BANG]`ls openspec/changes/ 2>/dev/null \| grep -v archive \| head -1 \|\| echo ""` | `""` | OpenSpec change ID |
@@ -53,7 +53,7 @@ allowed-tools: Bash, Read, Write
 
 ## Context (auto-injected)
 - Branch: [BANG]`git branch --show-current`
-- Issue: [BANG]`git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo ""`
+- Issue: [BANG]`source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo ""`
 
 # コマンド本文
 

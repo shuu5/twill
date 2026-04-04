@@ -90,9 +90,10 @@ ECC照合:
 
 ### Step 5: ユーザー確認
 
-autopilot 判定（ISSUE_NUM はブランチ名から抽出）:
+autopilot 判定（ISSUE_NUM は state file / ブランチ名から解決）:
 ```bash
-ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num)
 IS_AUTOPILOT=false
 if [ -n "$ISSUE_NUM" ]; then
   AUTOPILOT_STATUS=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")

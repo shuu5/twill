@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_cycle</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="79.2" cy="-1364.22" rx="79.39" ry="21.43"/>
 <text text-anchor="middle" x="79.2" y="-1367.22" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;pr&#45;cycle</text>
-<text text-anchor="middle" x="79.2" y="-1356.22" font-family="Helvetica,sans-Serif" font-size="10.00">(1,669 tok)</text>
+<text text-anchor="middle" x="79.2" y="-1356.22" font-family="Helvetica,sans-Serif" font-size="10.00">(1,679 tok)</text>
 </g>
 <!-- cmd_ts_preflight -->
 <g id="node2" class="node">
@@ -100,7 +100,7 @@
 <title>cmd_all_pass_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="301.39,-1092.22 221.39,-1092.22 221.39,-1056.22 301.39,-1056.22 301.39,-1092.22"/>
 <text text-anchor="middle" x="261.39" y="-1077.22" font-family="Helvetica,sans-Serif" font-size="10.00">all&#45;pass&#45;check</text>
-<text text-anchor="middle" x="261.39" y="-1066.22" font-family="Helvetica,sans-Serif" font-size="10.00">(703 tok)</text>
+<text text-anchor="middle" x="261.39" y="-1066.22" font-family="Helvetica,sans-Serif" font-size="10.00">(717 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_all_pass_check -->
 <g id="edge13" class="edge">
@@ -113,7 +113,7 @@
 <title>cmd_ac_verify</title>
 <polygon fill="#e3f2fd" stroke="black" points="288.89,-1730.22 233.89,-1730.22 233.89,-1694.22 288.89,-1694.22 288.89,-1730.22"/>
 <text text-anchor="middle" x="261.39" y="-1715.22" font-family="Helvetica,sans-Serif" font-size="10.00">ac&#45;verify</text>
-<text text-anchor="middle" x="261.39" y="-1704.22" font-family="Helvetica,sans-Serif" font-size="10.00">(362 tok)</text>
+<text text-anchor="middle" x="261.39" y="-1704.22" font-family="Helvetica,sans-Serif" font-size="10.00">(376 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_ac_verify -->
 <g id="edge2" class="edge">
@@ -165,7 +165,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="293.89,-1009.22 228.89,-1009.22 228.89,-973.22 293.89,-973.22 293.89,-1009.22"/>
 <text text-anchor="middle" x="261.39" y="-994.22" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="261.39" y="-983.22" font-family="Helvetica,sans-Serif" font-size="10.00">(1,636 tok)</text>
+<text text-anchor="middle" x="261.39" y="-983.22" font-family="Helvetica,sans-Serif" font-size="10.00">(1,650 tok)</text>
 </g>
 <!-- skill_workflow_pr_cycle&#45;&gt;cmd_merge_gate -->
 <g id="edge14" class="edge">

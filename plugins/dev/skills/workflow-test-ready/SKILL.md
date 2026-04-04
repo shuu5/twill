@@ -21,7 +21,8 @@ spawnable_by:
 以下のスニペットを実行して quick 状態を確認すること:
 
 ```bash
-ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num)
 IS_QUICK=false
 if [ -n "$ISSUE_NUM" ]; then
   # NOTE: このスニペットは skills/workflow-setup/SKILL.md の Step 4 と同一ロジック。
@@ -116,7 +117,8 @@ runner の出力から FAIL 有無を判定する。FAIL あれば `/dev:check` 
 opsx-apply を開始する前に、compaction 復帰用に state を記録すること:
 
 ```bash
-ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num)
 if [[ -n "$ISSUE_NUM" ]]; then
   bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker \
     --set "current_step=opsx-apply" 2>/dev/null || true
@@ -128,7 +130,8 @@ fi
 opsx-apply 完了後、compaction 復帰用に state を記録してから autopilot 状態を判定すること:
 
 ```bash
-ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num)
 if [[ -n "$ISSUE_NUM" ]]; then
   bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker \
     --set "current_step=post-opsx-apply" 2>/dev/null || true
@@ -136,7 +139,8 @@ fi
 ```
 
 ```bash
-ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num)
 IS_AUTOPILOT=false
 if [ -n "$ISSUE_NUM" ]; then
   AUTOPILOT_STATUS=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
@@ -156,7 +160,8 @@ fi
 compaction 後に workflow-test-ready chain を再開する場合、完了済みステップをスキップすること。
 
 ```bash
-ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' || echo "")
+source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num)
 for step in change-id-resolve test-scaffold check opsx-apply post-opsx-apply; do
   bash scripts/compaction-resume.sh "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
   case "$step" in

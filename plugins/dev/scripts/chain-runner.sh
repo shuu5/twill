@@ -17,17 +17,12 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "${SCRIPT_DIR}/chain-steps.sh"
 # shellcheck source=./lib/resolve-project.sh
 source "${SCRIPT_DIR}/lib/resolve-project.sh"
+# shellcheck source=./resolve-issue-num.sh
+source "${SCRIPT_DIR}/resolve-issue-num.sh"
 
 # =====================================================================
 # 共通ユーティリティ関数
 # =====================================================================
-
-# ブランチ名から Issue 番号を抽出
-# e.g. feat/119-chain-runner → 119
-extract_issue_num() {
-  git branch --show-current 2>/dev/null \
-    | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo ""
-}
 
 # worktree のプロジェクトルートを解決
 resolve_project_root() {
@@ -61,7 +56,7 @@ record_current_step() {
   # step_id の形式を検証（英数字とハイフンのみ許可）
   [[ "$step_id" =~ ^[a-z0-9-]+$ ]] || return 0
   local issue_num
-  issue_num="$(extract_issue_num)"
+  issue_num="$(resolve_issue_num)"
   [[ -z "$issue_num" ]] && return 0
   # record current_step in state-write.sh
   bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$issue_num" --role worker --set "current_step=${step_id}" 2>/dev/null || true
@@ -89,7 +84,7 @@ detect_quick_label() {
 # ブランチから Issue 番号が抽出できない場合は exit 0（保守的）
 step_quick_guard() {
   local issue_num
-  issue_num="$(extract_issue_num)"
+  issue_num="$(resolve_issue_num)"
   if [[ -z "$issue_num" ]]; then
     return 0
   fi
@@ -288,7 +283,7 @@ step_ac_extract() {
   record_current_step "ac-extract"
   local snapshot_dir="${1:-}"
   local issue_num
-  issue_num="$(extract_issue_num)"
+  issue_num="$(resolve_issue_num)"
 
   if [[ -z "$issue_num" ]]; then
     skip "ac-extract" "Issue 番号なし — スキップ"
@@ -325,7 +320,7 @@ step_arch_ref() {
   record_current_step "arch-ref"
   local issue_num="${1:-}"
   if [[ -z "$issue_num" ]]; then
-    issue_num="$(extract_issue_num)"
+    issue_num="$(resolve_issue_num)"
   fi
 
   if [[ -z "$issue_num" ]]; then
@@ -534,7 +529,7 @@ step_all_pass_check() {
   record_current_step "all-pass-check"
   # 引数: step_results を JSON 形式で受け取る（stdin or 引数）
   local issue_num
-  issue_num="$(extract_issue_num)"
+  issue_num="$(resolve_issue_num)"
 
   # 結果は呼び出し側（SKILL.md）が判定して引数で渡す
   local overall_result="${1:-PASS}"

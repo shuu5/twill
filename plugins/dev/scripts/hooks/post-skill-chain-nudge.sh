@@ -22,9 +22,11 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# --- Step 2: ブランチから Issue 番号を抽出 ---
+# --- Step 2: state file ベースで Issue 番号を解決 ---
 ISSUE_NUM=""
-ISSUE_NUM=$(git branch --show-current 2>/dev/null | grep -oP '^\w+/\K\d+(?=-)' || true)
+# shellcheck source=../resolve-issue-num.sh
+source "${SCRIPTS_ROOT}/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num 2>/dev/null || true)
 
 # 明示的な数値検証（Input Validation: シェルインジェクション防止）
 if [[ -z "$ISSUE_NUM" || ! "$ISSUE_NUM" =~ ^[0-9]+$ ]]; then

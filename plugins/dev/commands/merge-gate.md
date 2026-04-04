@@ -2,7 +2,7 @@
 
 ## Context (auto-injected)
 - Branch: !`git branch --show-current`
-- Issue: !`git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo ""`
+- Issue: !`source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo ""`
 - PR: !`gh pr view --json number -q '.number' 2>/dev/null || echo "none"`
 
 PR の最終判定を行う。動的レビュアー構築 → 並列 specialist 実行 → 結果集約 → PASS/REJECT。

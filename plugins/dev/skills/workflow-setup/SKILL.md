@@ -132,7 +132,8 @@ bash scripts/chain-runner.sh ac-extract
 以下の bash スニペットを実行して quick 状態と autopilot 状態を判定すること:
 
 ```bash
-ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
+source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num)
 IS_AUTOPILOT=false
 IS_QUICK=false
 if [ -n "$ISSUE_NUM" ]; then

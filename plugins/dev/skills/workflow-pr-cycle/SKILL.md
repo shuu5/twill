@@ -145,7 +145,8 @@ bash scripts/chain-runner.sh all-pass-check FAIL
 compaction 後に workflow-pr-cycle chain を再開する場合、完了済みステップをスキップすること。
 
 ```bash
-ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' || echo "")
+source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num)
 for step in ts-preflight pr-test all-pass-check pr-cycle-report; do
   bash scripts/compaction-resume.sh "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
   # 通常手順で実行（chain-runner または LLM 実行）
