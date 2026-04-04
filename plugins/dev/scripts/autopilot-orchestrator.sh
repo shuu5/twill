@@ -281,8 +281,32 @@ poll_single() {
           return 0
         fi
 
-        # chain 遷移停止検知 + nudge
-        check_and_nudge "$issue" "$window_name"
+        # chain 遷移停止検知 + nudge（パターンマッチ優先）
+        local nudge_matched=0
+        check_and_nudge "$issue" "$window_name" && nudge_matched=1 || true
+
+        # health-check（check_and_nudge でカバーできない stall を補完検知）
+        # POLL_INTERVAL=10s × HEALTH_CHECK_INTERVAL=6 = 60s 毎に実行
+        if [[ "$nudge_matched" -eq 0 ]]; then
+          local hc_counter="${HEALTH_CHECK_COUNTER[$issue]:-0}"
+          HEALTH_CHECK_COUNTER[$issue]=$((hc_counter + 1))
+          if (( HEALTH_CHECK_COUNTER[$issue] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
+            local health_stderr health_exit=0
+            health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
+            if [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
+              if [[ "${NUDGE_COUNTS[$issue]:-0}" -lt "$MAX_NUDGE" ]]; then
+                echo "[orchestrator] Issue #${issue}: health-check stall 検知 — 汎用 nudge" >&2
+                tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
+                NUDGE_COUNTS[$issue]=$(( ${NUDGE_COUNTS[$issue]:-0} + 1 ))
+              else
+                echo "[orchestrator] Issue #${issue}: health-check stall + nudge 上限到達 — failed" >&2
+                bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
+                  --set "status=failed" \
+                  --set 'failure={"message":"health_check_stall","step":"polling"}'
+              fi
+            fi
+          fi
+        fi
         ;;
     esac
 
@@ -326,8 +350,34 @@ poll_phase() {
           bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$issue" --window "$window_name" 2>/dev/null || crash_exit=$?
           if [[ "$crash_exit" -eq 2 ]]; then
             echo "[orchestrator] Issue #${issue}: ワーカークラッシュ検知" >&2
+            continue
           fi
-          check_and_nudge "$issue" "$window_name"
+
+          # chain 遷移停止検知 + nudge（パターンマッチ優先）
+          local nudge_matched=0
+          check_and_nudge "$issue" "$window_name" && nudge_matched=1 || true
+
+          # health-check（check_and_nudge でカバーできない stall を補完検知）
+          if [[ "$nudge_matched" -eq 0 ]]; then
+            local hc_counter="${HEALTH_CHECK_COUNTER[$issue]:-0}"
+            HEALTH_CHECK_COUNTER[$issue]=$((hc_counter + 1))
+            if (( HEALTH_CHECK_COUNTER[$issue] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
+              local health_stderr health_exit=0
+              health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
+              if [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
+                if [[ "${NUDGE_COUNTS[$issue]:-0}" -lt "$MAX_NUDGE" ]]; then
+                  echo "[orchestrator] Issue #${issue}: health-check stall 検知 — 汎用 nudge" >&2
+                  tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
+                  NUDGE_COUNTS[$issue]=$(( ${NUDGE_COUNTS[$issue]:-0} + 1 ))
+                else
+                  echo "[orchestrator] Issue #${issue}: health-check stall + nudge 上限到達 — failed" >&2
+                  bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
+                    --set "status=failed" \
+                    --set 'failure={"message":"health_check_stall","step":"polling"}'
+                fi
+              fi
+            fi
+          fi
           ;;
         *)
           all_resolved=false ;;
@@ -381,6 +431,7 @@ poll_phase() {
 # nudge カウントを管理する連想配列
 declare -A NUDGE_COUNTS=()
 declare -A LAST_OUTPUT_HASH=()
+declare -A HEALTH_CHECK_COUNTER=()
 
 # chain 停止パターン → 次コマンドマッピング
 # パターンが一致した場合: exit 0 + 次コマンドを stdout（空文字 = 空 Enter）
