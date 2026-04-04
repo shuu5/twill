@@ -344,61 +344,65 @@ poll_phase() {
   local -a entries=("$@")
   local poll_count=0
   local -A cleaned_up=()
-  # entry → issue 番号マッピングを構築（"repo_id:issue_num" → issue_num）
+  # entry 形式（"repo_id:issue_num"）のままリスト・マッピングを構築（クロスリポ衝突防止）
   local -a issue_list=()
   local -A issue_to_entry=()
   for e in "${entries[@]}"; do
-    local _issue="${e#*:}"
-    issue_list+=("$_issue")
-    issue_to_entry["$_issue"]="$e"
+    issue_list+=("$e")
+    issue_to_entry["$e"]="$e"
   done
 
   while true; do
     local all_resolved=true
 
-    for issue in "${issue_list[@]}"; do
-      local issue_entry="${issue_to_entry[$issue]}"
+    for entry in "${issue_list[@]}"; do
+      local repo_id="${entry%%:*}"
+      local issue_num="${entry#*:}"
+      local issue_entry="${issue_to_entry[$entry]}"
       local status
-      status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+      local -a _state_read_repo_args=()
+      [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
+      status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
 
       case "$status" in
         done|failed)
-          if [[ -z "${cleaned_up[$issue]:-}" ]]; then
-            cleanup_worker "$issue" "$issue_entry"
-            cleaned_up[$issue]=1
+          if [[ -z "${cleaned_up[$entry]:-}" ]]; then
+            cleanup_worker "$issue_num" "$issue_entry"
+            cleaned_up[$entry]=1
           fi
           continue ;;
         merge-ready)
           continue ;;
         running)
           all_resolved=false
-          local window_name="ap-#${issue}"
+          local window_name
+          [[ "$repo_id" == "_default" ]] && window_name="ap-#${issue_num}" || window_name="ap-${repo_id}-#${issue_num}"
           local crash_exit=0
-          bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$issue" --window "$window_name" 2>/dev/null || crash_exit=$?
+          bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$issue_num" --window "$window_name" 2>/dev/null || crash_exit=$?
           if [[ "$crash_exit" -eq 2 ]]; then
-            echo "[orchestrator] Issue #${issue}: ワーカークラッシュ検知" >&2
+            echo "[orchestrator] Issue #${issue_num}: ワーカークラッシュ検知" >&2
             continue
           fi
 
           # chain 遷移停止検知 + nudge（パターンマッチ優先）
           local nudge_matched=0
-          check_and_nudge "$issue" "$window_name" "$issue_entry" && nudge_matched=1 || true
+          check_and_nudge "$issue_num" "$window_name" "$issue_entry" && nudge_matched=1 || true
 
           # health-check（check_and_nudge でカバーできない stall を補完検知）
           if [[ "$nudge_matched" -eq 0 ]]; then
-            local hc_counter="${HEALTH_CHECK_COUNTER[$issue]:-0}"
-            HEALTH_CHECK_COUNTER[$issue]=$((hc_counter + 1))
-            if (( HEALTH_CHECK_COUNTER[$issue] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
+            local hc_counter="${HEALTH_CHECK_COUNTER[$issue_num]:-0}"
+            HEALTH_CHECK_COUNTER[$issue_num]=$((hc_counter + 1))
+            if (( HEALTH_CHECK_COUNTER[$issue_num] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
               local health_stderr health_exit=0
-              health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
+              health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue_num" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
               if [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
-                if [[ "${NUDGE_COUNTS[$issue]:-0}" -lt "$MAX_NUDGE" ]]; then
-                  echo "[orchestrator] Issue #${issue}: health-check stall 検知 — 汎用 nudge" >&2
+                if [[ "${NUDGE_COUNTS[$issue_num]:-0}" -lt "$MAX_NUDGE" ]]; then
+                  echo "[orchestrator] Issue #${issue_num}: health-check stall 検知 — 汎用 nudge" >&2
                   tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
-                  NUDGE_COUNTS[$issue]=$(( ${NUDGE_COUNTS[$issue]:-0} + 1 ))
+                  NUDGE_COUNTS[$issue_num]=$(( ${NUDGE_COUNTS[$issue_num]:-0} + 1 ))
                 else
-                  echo "[orchestrator] Issue #${issue}: health-check stall + nudge 上限到達 — failed" >&2
-                  bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
+                  echo "[orchestrator] Issue #${issue_num}: health-check stall + nudge 上限到達 — failed" >&2
+                  bash "$SCRIPTS_ROOT/state-write.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
                     --set "status=failed" \
                     --set 'failure={"message":"health_check_stall","step":"polling"}'
                 fi
@@ -411,20 +415,24 @@ poll_phase() {
       esac
     done
 
-    $all_resolved && break
+    [[ "$all_resolved" == "true" ]] && break
 
     poll_count=$((poll_count + 1))
     if [[ "$poll_count" -ge "$MAX_POLL" ]]; then
       echo "[orchestrator] Phase: タイムアウト — 未完了 Issue を failed に変換" >&2
-      for issue in "${issue_list[@]}"; do
-        local issue_entry="${issue_to_entry[$issue]}"
+      for entry in "${issue_list[@]}"; do
+        local repo_id="${entry%%:*}"
+        local issue_num="${entry#*:}"
+        local issue_entry="${issue_to_entry[$entry]}"
+        local -a _state_read_repo_args=()
+        [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
         local status
-        status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+        status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
         if [[ "$status" == "running" ]]; then
-          bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
+          bash "$SCRIPTS_ROOT/state-write.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
             --set "status=failed" \
             --set 'failure={"message":"poll_timeout","step":"polling"}'
-          cleanup_worker "$issue" "$issue_entry"
+          cleanup_worker "$issue_num" "$issue_entry"
         fi
       done
       break
@@ -433,11 +441,15 @@ poll_phase() {
     # wait / sleep
     if [[ "$USE_SESSION_STATE" == "true" ]]; then
       local first_running_window=""
-      for issue in "${issue_list[@]}"; do
+      for entry in "${issue_list[@]}"; do
+        local repo_id="${entry%%:*}"
+        local issue_num="${entry#*:}"
+        local -a _state_read_repo_args=()
+        [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
         local status
-        status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+        status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
         if [[ "$status" == "running" ]]; then
-          first_running_window="ap-#${issue}"
+          [[ "$repo_id" == "_default" ]] && first_running_window="ap-#${issue_num}" || first_running_window="ap-${repo_id}-#${issue_num}"
           break
         fi
       done
