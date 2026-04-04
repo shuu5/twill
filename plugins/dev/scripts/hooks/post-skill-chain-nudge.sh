@@ -26,8 +26,8 @@ SCRIPTS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ISSUE_NUM=""
 ISSUE_NUM=$(git branch --show-current 2>/dev/null | grep -oP '^\w+/\K\d+(?=-)' || true)
 
-if [[ -z "$ISSUE_NUM" ]]; then
-  # Issue 番号が取得できない場合は透過終了
+# 明示的な数値検証（Input Validation: シェルインジェクション防止）
+if [[ -z "$ISSUE_NUM" || ! "$ISSUE_NUM" =~ ^[0-9]+$ ]]; then
   exit 0
 fi
 
@@ -53,7 +53,7 @@ fi
 SAFE_NEXT_STEP=$(printf '%s' "$NEXT_STEP" | tr -cd 'a-zA-Z0-9/:._-')
 
 if [[ -z "$SAFE_NEXT_STEP" ]]; then
-  echo "post-skill-chain-nudge: next_step サニタイズ後に空になりました: $NEXT_STEP" >&2
+  printf 'post-skill-chain-nudge: next_step サニタイズ後に空になりました: %s\n' "$NEXT_STEP" >&2
   exit 0
 fi
 
