@@ -98,6 +98,7 @@ skills:
       - reference: ref-issue-template-feature
       - reference: ref-project-model
       - reference: ref-issue-quality-criteria
+      - reference: ref-glossary-criteria
     description: "要望をGitHub Issueに変換するワークフロー"
 
   co-project:
@@ -308,6 +309,11 @@ refs:
     type: reference
     path: refs/ref-dci.md
     description: "DCI（Dynamic Context Injection）共通パターン"
+
+  ref-glossary-criteria:
+    type: reference
+    path: refs/ref-glossary-criteria.md
+    description: "glossary 用語登録判断基準（3軸基準 + 判定ロジック + 具体例）"
 
   self-improve-format:
     type: reference

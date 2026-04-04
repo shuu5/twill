@@ -356,7 +356,7 @@
 <title>agent_worker_code_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="731.1" cy="-1178.22" rx="77.56" ry="21.43"/>
 <text text-anchor="middle" x="731.1" y="-1181.22" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;code&#45;reviewer</text>
-<text text-anchor="middle" x="731.1" y="-1170.22" font-family="Helvetica,sans-Serif" font-size="10.00">(771 tok)</text>
+<text text-anchor="middle" x="731.1" y="-1170.22" font-family="Helvetica,sans-Serif" font-size="10.00">(964 tok)</text>
 </g>
 <!-- cmd_phase_review&#45;&gt;agent_worker_code_reviewer -->
 <g id="edge21" class="edge">
