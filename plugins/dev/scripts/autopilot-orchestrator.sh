@@ -397,12 +397,10 @@ poll_phase() {
   local -a entries=("$@")
   local poll_count=0
   local -A cleaned_up=()
-  # entry 形式（"repo_id:issue_num"）のままリスト・マッピングを構築（クロスリポ衝突防止）
+  # entry 形式（"repo_id:issue_num"）のままリストを構築（クロスリポ衝突防止）
   local -a issue_list=()
-  local -A issue_to_entry=()
   for e in "${entries[@]}"; do
     issue_list+=("$e")
-    issue_to_entry["$e"]="$e"
   done
 
   while true; do
@@ -411,7 +409,6 @@ poll_phase() {
     for entry in "${issue_list[@]}"; do
       local repo_id="${entry%%:*}"
       local issue_num="${entry#*:}"
-      local issue_entry="${issue_to_entry[$entry]}"
       local status
       local -a _state_read_repo_args=()
       [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
@@ -420,7 +417,7 @@ poll_phase() {
       case "$status" in
         done|failed)
           if [[ -z "${cleaned_up[$entry]:-}" ]]; then
-            cleanup_worker "$issue_num" "$issue_entry"
+            cleanup_worker "$issue_num" "$entry"
             cleaned_up[$entry]=1
           fi
           continue ;;
@@ -439,7 +436,7 @@ poll_phase() {
 
           # chain 遷移停止検知 + nudge（パターンマッチ優先）
           local nudge_matched=0
-          check_and_nudge "$issue_num" "$window_name" "$issue_entry" && nudge_matched=1 || true
+          check_and_nudge "$issue_num" "$window_name" "$entry" && nudge_matched=1 || true
 
           # health-check（check_and_nudge でカバーできない stall を補完検知）
           if [[ "$nudge_matched" -eq 0 ]]; then
@@ -476,7 +473,6 @@ poll_phase() {
       for entry in "${issue_list[@]}"; do
         local repo_id="${entry%%:*}"
         local issue_num="${entry#*:}"
-        local issue_entry="${issue_to_entry[$entry]}"
         local -a _state_read_repo_args=()
         [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
         local status
@@ -485,7 +481,7 @@ poll_phase() {
           bash "$SCRIPTS_ROOT/state-write.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
             --set "status=failed" \
             --set 'failure={"message":"poll_timeout","step":"polling"}'
-          cleanup_worker "$issue_num" "$issue_entry"
+          cleanup_worker "$issue_num" "$entry"
         fi
       done
       break
