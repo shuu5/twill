@@ -163,8 +163,15 @@ step_init() {
 }
 
 # --- worktree-create: worktree-create.sh ラッパー ---
+# ADR-008: autopilot 時は Pilot が事前作成済みのためスキップ
 step_worktree_create() {
   record_current_step "worktree-create"
+  local branch
+  branch="$(git branch --show-current 2>/dev/null || echo "main")"
+  if [[ "$branch" != "main" && "$branch" != "master" ]]; then
+    ok "worktree-create" "既に worktree 内（branch=$branch）— スキップ"
+    return 0
+  fi
   bash "$SCRIPT_DIR/worktree-create.sh" "$@"
   ok "worktree-create" "完了"
 }

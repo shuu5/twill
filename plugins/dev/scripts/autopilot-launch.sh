@@ -235,11 +235,29 @@ if [[ -n "$REPO_PATH" ]]; then
   EFFECTIVE_PROJECT_DIR="$REPO_PATH"
 fi
 
-# --worktree-dir が指定された場合はその値を優先（CWD リセット対策）
+# --- Pre-create worktree for Worker (ADR-008: Pilot owns worktree lifecycle) ---
+# bare repo かつ --worktree-dir 未指定時、Pilot が worktree を事前作成して Worker をそこで起動する。
+# Worker の CWD が worktree になるため、deltaspec 等が main/ に書き込む汚染を防止する。
+if [[ -z "$WORKTREE_DIR" ]] && [[ -d "$EFFECTIVE_PROJECT_DIR/.bare" ]]; then
+  WT_OUTPUT=$(cd "$EFFECTIVE_PROJECT_DIR/main" && bash "$SCRIPT_DIR/worktree-create.sh" "#${ISSUE}" 2>&1)
+  WT_EXIT=$?
+  if [[ $WT_EXIT -eq 0 ]]; then
+    WORKTREE_DIR=$(echo "$WT_OUTPUT" | grep "^パス:" | sed 's/^パス: //')
+  else
+    # 既存 worktree を検索（再開時）
+    WORKTREE_DIR=$(git --git-dir="$EFFECTIVE_PROJECT_DIR/.bare" worktree list 2>/dev/null | \
+      grep "\[.*/${ISSUE}-" | awk '{print $1}' | head -1)
+  fi
+  if [[ -n "$WORKTREE_DIR" ]]; then
+    echo "Worktree: $WORKTREE_DIR"
+  fi
+fi
+
+# --worktree-dir が指定された場合（または上記で事前作成された場合）はその値を優先
 if [[ -n "$WORKTREE_DIR" ]]; then
   LAUNCH_DIR="$WORKTREE_DIR"
 elif [[ -d "$EFFECTIVE_PROJECT_DIR/.bare" ]]; then
-  # bare repo では main/ worktree で起動する（CLAUDE.md 制約: main/ 配下必須）
+  # fallback: bare repo で worktree 作成失敗時は main/ で起動
   LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR/main"
 else
   LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR"

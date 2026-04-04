@@ -879,13 +879,7 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
         _retry=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field retry_count 2>/dev/null || echo "0")
         # failure.reason を確認: merge_gate_rejected_final は retry_count 0 でも確定失敗（#229）
         local _failure_reason=""
-        # issue は state-read.sh の数値バリデーション済みだが、直接ファイルパス構築前に再確認
-        if [[ "$issue" =~ ^[0-9]+$ ]]; then
-          local _state_file="${AUTOPILOT_DIR}/issues/issue-${issue}.json"
-          if [[ -f "$_state_file" ]]; then
-            _failure_reason=$(jq -r '.failure.reason // ""' "$_state_file" 2>/dev/null || echo "")
-          fi
-        fi
+        _failure_reason=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field failure.reason 2>/dev/null || echo "")
         if [[ "${_retry:-0}" -ge 1 ]] || [[ "$_failure_reason" == "merge_gate_rejected_final" ]]; then
           cleanup_worker "$issue" "$_issue_entry"
         fi

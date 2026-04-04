@@ -68,8 +68,9 @@ if [[ "$type" == "issue" && -n "$issue" && ! "$issue" =~ ^[0-9]+$ ]]; then
 fi
 
 # field ホワイトリスト検証（jq インジェクション防止）
-if [[ -n "$field" && ! "$field" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
-  echo "ERROR: 不正なフィールド名: $field（英数字とアンダースコアのみ許可）" >&2
+# ドット区切りのネストフィールド（例: failure.reason）を許可
+if [[ -n "$field" && ! "$field" =~ ^[a-zA-Z_][a-zA-Z0-9_.]*$ ]]; then
+  echo "ERROR: 不正なフィールド名: $field（英数字、アンダースコア、ドットのみ許可）" >&2
   exit 1
 fi
 

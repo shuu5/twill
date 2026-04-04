@@ -179,7 +179,7 @@ stateDiagram-v2
 | fix_instructions | null \| string | Yes | fix-phase 用修正指示テキスト |
 | merged_at | null \| string (ISO 8601) | Yes | マージ完了時刻 |
 | files_changed | string[] | Yes | 変更されたファイルパス配列 |
-| failure | null \| { message, step, timestamp } | Yes | 失敗情報 |
+| failure | null \| { message, step, timestamp, reason? } | Yes | 失敗情報。reason: `merge_gate_rejected` \| `merge_gate_rejected_final` \| `merge_failed` |
 
 **アクセスルール**: Pilot = read only, Worker = write。同一 Issue の並行書き込みは発生しない（per-Issue ファイル）。
 
