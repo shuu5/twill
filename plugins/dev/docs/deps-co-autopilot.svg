@@ -217,7 +217,7 @@
 <title>cmd_autopilot_retrospective</title>
 <polygon fill="#e3f2fd" stroke="black" points="574.53,-839.49 461.53,-839.49 461.53,-803.49 574.53,-803.49 574.53,-839.49"/>
 <text text-anchor="middle" x="518.03" y="-824.49" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;retrospective</text>
-<text text-anchor="middle" x="518.03" y="-813.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,146 tok)</text>
+<text text-anchor="middle" x="518.03" y="-813.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,296 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;cmd_autopilot_retrospective -->
 <g id="edge7" class="edge">
@@ -675,7 +675,7 @@
 <title>script_state_write</title>
 <polygon fill="#ff9800" stroke="black" points="796.66,-734.49 770.97,-758.98 719.59,-758.98 693.9,-734.49 719.59,-710.01 770.97,-710.01 796.66,-734.49"/>
 <text text-anchor="middle" x="745.28" y="-737.49" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;write</text>
-<text text-anchor="middle" x="745.28" y="-726.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,513 tok)</text>
+<text text-anchor="middle" x="745.28" y="-726.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,571 tok)</text>
 </g>
 <!-- cmd_all_pass_check&#45;&gt;script_state_write -->
 <g id="edge50" class="edge">

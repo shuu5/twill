@@ -432,6 +432,20 @@ check_and_nudge() {
     return 0
   fi
 
+  # Layer 1 (PostToolUse hook) との競合防止:
+  # last_hook_nudge_at が NUDGE_TIMEOUT 以内なら tmux nudge をスキップ
+  local last_hook_nudge_at
+  last_hook_nudge_at=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field last_hook_nudge_at 2>/dev/null || true)
+  if [[ -n "$last_hook_nudge_at" ]]; then
+    local hook_epoch now_epoch elapsed
+    hook_epoch=$(date -u -d "$last_hook_nudge_at" +%s 2>/dev/null || echo "0")
+    now_epoch=$(date -u +%s)
+    elapsed=$(( now_epoch - hook_epoch ))
+    if [[ "$elapsed" -lt "$NUDGE_TIMEOUT" ]]; then
+      return 0
+    fi
+  fi
+
   # tmux capture-pane で最新出力を取得
   local pane_output
   pane_output=$(tmux capture-pane -t "$window_name" -p -S -5 2>/dev/null || true)

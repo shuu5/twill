@@ -22,7 +22,7 @@
 <title>cmd_architect_completeness_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="326.62,-330.41 179.62,-330.41 179.62,-294.41 326.62,-294.41 326.62,-330.41"/>
 <text text-anchor="middle" x="253.12" y="-315.41" font-family="Helvetica,sans-Serif" font-size="10.00">architect&#45;completeness&#45;check</text>
-<text text-anchor="middle" x="253.12" y="-304.41" font-family="Helvetica,sans-Serif" font-size="10.00">(645 tok)</text>
+<text text-anchor="middle" x="253.12" y="-304.41" font-family="Helvetica,sans-Serif" font-size="10.00">(653 tok)</text>
 </g>
 <!-- skill_co_architect&#45;&gt;cmd_architect_completeness_check -->
 <g id="edge2" class="edge">

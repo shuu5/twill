@@ -224,7 +224,7 @@
 <title>script_state_write</title>
 <polygon fill="#ff9800" stroke="black" points="509.67,-1235.22 483.98,-1259.71 432.6,-1259.71 406.91,-1235.22 432.6,-1210.73 483.98,-1210.73 509.67,-1235.22"/>
 <text text-anchor="middle" x="458.29" y="-1238.22" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;write</text>
-<text text-anchor="middle" x="458.29" y="-1227.22" font-family="Helvetica,sans-Serif" font-size="10.00">(2,513 tok)</text>
+<text text-anchor="middle" x="458.29" y="-1227.22" font-family="Helvetica,sans-Serif" font-size="10.00">(2,571 tok)</text>
 </g>
 <!-- cmd_all_pass_check&#45;&gt;script_state_write -->
 <g id="edge16" class="edge">
