@@ -188,9 +188,25 @@ TaskUpdate Phase 3 → completed
 
 TaskCreate 「Phase 4: Issue 作成」(status: in_progress)
 
+**`refined` ラベル事前作成（`--quick` 未使用時のみ）**: Phase 4 開始前に以下を実行し、`refined` ラベルを冪等作成する。`REFINED_LABEL_OK` フラグでラベル作成成功を追跡し、**成功した場合のみ** Issue の `--label` 引数に `refined` を追加すること（MUST）:
+
+```bash
+REFINED_LABEL_OK=false
+if gh label create refined --color 0E8A16 --description "co-issue specialist review completed" 2>/dev/null || \
+   gh label edit refined --color 0E8A16 --description "co-issue specialist review completed" 2>/dev/null; then
+  REFINED_LABEL_OK=true
+else
+  echo "⚠️ refined ラベルの作成に失敗しました。refined ラベルは付与されません" >&2
+fi
+```
+
+`REFINED_LABEL_OK=false` の場合は `refined` ラベルを付与しない。ワークフローは停止しない（MUST NOT）。
+
+**注意**: `REFINED_LABEL_OK` はシェル変数ではなくLLMのコンテキスト内の判断フラグである。`/dev:issue-create` 等の slash command を呼び出す際、LLM はこの値を参照して `--label refined` の引数有無を判断すること（MUST）。
+
 1. **ユーザー確認（MUST）**: 全候補を提示、承認後に作成。quick 候補には `[quick]` マーク表示
 2. **作成**:
-   - **通常（`cross_repo_split = false`）**: 単一→`/dev:issue-create`、複数→`/dev:issue-bulk-create`。tech-debt 吸収時は Related セクション付加。recommended_labels がある場合は `--label` 引数に追加
+   - **通常（`cross_repo_split = false`）**: 単一→`/dev:issue-create`、複数→`/dev:issue-bulk-create`。tech-debt 吸収時は Related セクション付加。recommended_labels がある場合は `--label` 引数に追加。`REFINED_LABEL_OK=true` の場合は `--label refined` も追加（slash command の引数として直接指定）
    - **quick ラベル付与**: `is_quick_candidate: true` かつ Phase 3b に `quick-classification: inappropriate` finding なし → `--label quick` 付与。`--quick` フラグ使用時は非付与（MUST NOT）
    - **クロスリポ分割（`cross_repo_split = true`）**: 以下の Step 4-CR を実行
 3. **Project Board 同期**: 各 Issue 後 `/dev:project-board-sync N`（失敗は警告のみ）
@@ -228,15 +244,18 @@ cat > "${WORK_DIR}/parent-issue.md" <<'ISSUE_EOF'
 <!-- CHILD_CHECKLIST_PLACEHOLDER -->
 ISSUE_EOF
 
+PARENT_LABELS=(--label "enhancement")
+[[ "${REFINED_LABEL_OK}" == "true" ]] && PARENT_LABELS+=(--label "refined")
+
 PARENT_URL=$(gh issue create \
   --title "[Feature] ${SAFE_TITLE}" \
-  --label "enhancement" \
+  "${PARENT_LABELS[@]}" \
   --body-file "${WORK_DIR}/parent-issue.md")
 PARENT_NUM=$(echo "${PARENT_URL}" | grep -oE '[0-9]+$')
 [[ "${PARENT_NUM}" =~ ^[0-9]+$ ]] || { echo "ERROR: 親Issue番号の取得に失敗" >&2; exit 1; }
 ```
 
-recommended_labels がある場合は `--label` 引数に追加。
+recommended_labels がある場合は `--label` 引数に `PARENT_LABELS` に追加すること。
 
 #### 4-CR-2: 子 Issue 作成（リポ別）
 
@@ -249,6 +268,19 @@ CURRENT_REPO="${REPO#*/}"
 CHILD_REFS=()
 
 for TARGET_REPO in "${TARGET_REPOS[@]}"; do
+  # --quick 未使用時: 対象リポに refined ラベルを冪等作成
+  CHILD_REFINED_OK=false
+  if [[ "${REFINED_LABEL_OK}" == "true" ]]; then
+    if gh label create refined --color 0E8A16 --description "co-issue specialist review completed" \
+         -R "${OWNER}/${TARGET_REPO}" 2>/dev/null || \
+       gh label edit refined --color 0E8A16 --description "co-issue specialist review completed" \
+         -R "${OWNER}/${TARGET_REPO}" 2>/dev/null; then
+      CHILD_REFINED_OK=true
+    else
+      echo "⚠️ ${TARGET_REPO} への refined ラベル作成に失敗しました（refined は付与されません）" >&2
+    fi
+  fi
+
   cat > "${WORK_DIR}/child-issue.md" <<ISSUE_EOF
 ## 概要
 
@@ -259,10 +291,13 @@ for TARGET_REPO in "${TARGET_REPOS[@]}"; do
 ${OWNER}/${CURRENT_REPO}#${PARENT_NUM}
 ISSUE_EOF
 
+  CHILD_LABELS=(--label "enhancement")
+  [[ "${CHILD_REFINED_OK}" == "true" ]] && CHILD_LABELS+=(--label "refined")
+
   CHILD_URL=$(gh issue create \
     -R "${OWNER}/${TARGET_REPO}" \
     --title "[Feature] ${TARGET_REPO}: ${SAFE_TITLE}" \
-    --label "enhancement" \
+    "${CHILD_LABELS[@]}" \
     --body-file "${WORK_DIR}/child-issue.md") && {
     CHILD_NUM=$(echo "${CHILD_URL}" | grep -oE '[0-9]+$')
     [[ "${CHILD_NUM}" =~ ^[0-9]+$ ]] || continue
@@ -273,7 +308,7 @@ ISSUE_EOF
 done
 ```
 
-子 Issue 作成が失敗しても残りのリポへの作成を継続する。成功した子 Issue のみチェックリストに記載する。
+子 Issue 作成が失敗しても残りのリポへの作成を継続する。成功した子 Issue のみチェックリストに記載する。`--quick` 未使用時は各リポへの `refined` ラベル作成成功（`CHILD_REFINED_OK=true`）を確認してから `--label refined` を追加すること（`REFINED_LABEL_OK=false` の場合はスキップ）。
 
 #### 4-CR-3: parent Issue にチェックリスト追記
 
