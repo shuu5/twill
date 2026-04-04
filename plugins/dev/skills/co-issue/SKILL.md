@@ -196,7 +196,7 @@ FOR each structured_issue IN issues:
 ```
 
 4. **CRITICAL ブロック時**: 「以下の Issue に CRITICAL findings があります。修正後に再実行してください」と表示。修正完了後、Step 3b を再実行可能
-5. **split 提案ハンドリング**: `category: scope` の split 提案がある場合、ユーザーに提示し承認を求める。承認後に分割するが、分割後の新 Issue に対して specialist 再レビューは行わない（最大 1 ラウンド）
+5. **split 提案ハンドリング**: `category: scope` の split 提案がある場合、ユーザーに提示し承認を求める。承認後に分割するが、分割後の新 Issue に対して specialist 再レビューは行わない（最大 1 ラウンド）。承認後に生成された各 Issue candidate には `is_split_generated: true` をコンテキストフラグとして設定すること（MUST）。このフラグは Phase 4 まで保持する。なお `cross_repo_split = true` による子 Issue は specialist レビュー済み body から生成されるため、`is_split_generated` の対象外とする
 
 TaskUpdate Phase 3 → completed
 
@@ -218,11 +218,11 @@ fi
 
 `REFINED_LABEL_OK=false` の場合は `refined` ラベルを付与しない。ワークフローは停止しない（MUST NOT）。
 
-**注意**: `REFINED_LABEL_OK` はシェル変数ではなくLLMのコンテキスト内の判断フラグである。`/dev:issue-create` 等の slash command を呼び出す際、LLM はこの値を参照して `--label refined` の引数有無を判断すること（MUST）。
+**注意**: `REFINED_LABEL_OK` はシェル変数ではなくLLMのコンテキスト内の判断フラグである。`/dev:issue-create` 等の slash command を呼び出す際、LLM はこの値を参照して `--label refined` の引数有無を判断すること（MUST）。同様に `is_split_generated` も LLM コンテキスト内フラグであり、Phase 3c Step 5 の split 承認で生成された Issue candidate に `true` が設定される。`is_split_generated: true` の Issue には `refined` を付与しない（MUST NOT）。なお `cross_repo_split = true` パスでは `is_split_generated` の対象外となるため、Step 4-CR での `REFINED_LABEL_OK` ガードは `is_split_generated` を考慮しない。
 
 1. **ユーザー確認（MUST）**: 全候補を提示、承認後に作成。quick 候補には `[quick]` マーク表示
 2. **作成**:
-   - **通常（`cross_repo_split = false`）**: 単一→`/dev:issue-create`、複数→`/dev:issue-bulk-create`。tech-debt 吸収時は Related セクション付加。recommended_labels がある場合は `--label` 引数に追加。`REFINED_LABEL_OK=true` の場合は `--label refined` も追加（slash command の引数として直接指定）
+   - **通常（`cross_repo_split = false`）**: 単一→`/dev:issue-create`、複数→`/dev:issue-bulk-create`。tech-debt 吸収時は Related セクション付加。recommended_labels がある場合は `--label` 引数に追加。`REFINED_LABEL_OK=true` **かつ** `is_split_generated != true` の場合は `--label refined` も追加（slash command の引数として直接指定）。`is_split_generated: true` の Issue には `refined` を付与しない（MUST NOT）
    - **quick ラベル付与**: `is_quick_candidate: true` かつ Phase 3b に `quick-classification: inappropriate` finding なし → `--label quick` 付与。`--quick` フラグ使用時は非付与（MUST NOT）
    - **クロスリポ分割（`cross_repo_split = true`）**: 以下の Step 4-CR を実行
 3. **Project Board 同期**: 各 Issue 後 `/dev:project-board-sync N`（失敗は警告のみ）
