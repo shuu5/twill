@@ -305,6 +305,11 @@ refs:
     path: refs/ref-issue-quality-criteria.md
     description: "Issue 品質レビュー specialist 用の severity 判定基準"
 
+  ref-investigation-budget:
+    type: reference
+    path: refs/ref-investigation-budget.md
+    description: "調査バジェット制御ルール（issue-critic / issue-feasibility 共通）"
+
   ref-dci:
     type: reference
     path: refs/ref-dci.md
@@ -1481,7 +1486,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-issue-quality-criteria]
+    skills: [ref-issue-quality-criteria, ref-investigation-budget]
     description: "Issue の仮定・曖昧点・盲点・粒度・split・依存検出"
 
   issue-feasibility:
@@ -1490,7 +1495,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-issue-quality-criteria]
+    skills: [ref-issue-quality-criteria, ref-investigation-budget]
     description: "実コード読みで Issue の実装可能性・影響範囲検証"
 
   worker-codex-reviewer:

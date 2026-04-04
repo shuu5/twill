@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="dev:co-issue\n(7,348 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="dev:co-issue\n(7,478 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -30,8 +30,8 @@ digraph Dependencies {
     // L2: Sub Commands
 
     // L3: Agents
-    agent_issue_critic [label="issue-critic\n(1,409 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_issue_feasibility [label="issue-feasibility\n(1,316 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_issue_critic [label="issue-critic\n(1,268 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_issue_feasibility [label="issue-feasibility\n(1,175 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,421 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts

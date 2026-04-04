@@ -84,188 +84,117 @@ ISSUE_FEASIBILITY="agents/issue-feasibility.md"
 SKILL_MD="skills/co-issue/SKILL.md"
 
 # =============================================================================
-# Requirement: issue-critic 調査バジェット制御
+# Requirement: issue-critic 調査バジェット制御（ref 参照化）
 # =============================================================================
 echo ""
-echo "--- Requirement: issue-critic 調査バジェット制御 ---"
+echo "--- Requirement: issue-critic 調査バジェット制御（ref 参照化） ---"
 
-# Scenario: scope_files が 4 件の場合の調査制限 (spec line 7)
-# WHEN: issue-critic が scope_files: [A, B, C, D] を含む Issue をレビューする
-# THEN: 各ファイルの調査に使用する tool calls は最大 3 回に制限され、
-#       ファイル A の調査完了後に B, C, D に進む
+REF_INVESTIGATION_BUDGET="refs/ref-investigation-budget.md"
 
-# Test: scope_files 3 以上の場合の調査制限指示が存在する
-test_issue_critic_scope_files_budget() {
+# Test: ref-investigation-budget.md が存在する
+test_ref_investigation_budget_exists() {
+  assert_file_exists "$REF_INVESTIGATION_BUDGET" || return 1
+  return 0
+}
+
+run_test "ref-investigation-budget.md が存在する" test_ref_investigation_budget_exists
+
+# Test: ref ファイルに調査バジェット制御の内容が含まれる
+test_ref_investigation_budget_content() {
+  assert_file_exists "$REF_INVESTIGATION_BUDGET" || return 1
+  assert_file_contains "$REF_INVESTIGATION_BUDGET" "scope_files.*[3-9]|3.*ファイル以上|scope.*3以上" || return 1
+  return 0
+}
+
+run_test "ref-investigation-budget: scope_files >= 3 の調査制限内容が存在する" test_ref_investigation_budget_content
+
+# Test: issue-critic の frontmatter skills に ref-investigation-budget が含まれる
+test_issue_critic_skills_ref_budget() {
   assert_file_exists "$ISSUE_CRITIC" || return 1
-  assert_file_contains "$ISSUE_CRITIC" "scope_files.*[3-9]|3.*ファイル以上|3.*files.*以上|scope.*3以上" || return 1
+  assert_file_contains "$ISSUE_CRITIC" "ref-investigation-budget" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]]; then
-  run_test "issue-critic: scope_files >= 3 の調査制限指示が存在する" test_issue_critic_scope_files_budget
+  run_test "issue-critic: frontmatter skills に ref-investigation-budget が含まれる" test_issue_critic_skills_ref_budget
 else
-  run_test_skip "issue-critic: scope_files >= 3 の調査制限指示" "agents/issue-critic.md not found"
+  run_test_skip "issue-critic: frontmatter skills に ref-investigation-budget" "agents/issue-critic.md not found"
 fi
 
-# Test: tool calls 上限（2-3 回）の制限指示が存在する
-test_issue_critic_tool_call_limit() {
+# Test: issue-critic 本文に ref 参照指示が含まれる
+test_issue_critic_ref_instruction() {
   assert_file_exists "$ISSUE_CRITIC" || return 1
-  assert_file_contains "$ISSUE_CRITIC" "2-3.*tool|tool.*2-3|2.*3.*tool calls|tool calls.*制限|各ファイル.*[23].*tool" || return 1
+  assert_file_contains "$ISSUE_CRITIC" "ref-investigation-budget.*Glob.*Read|Glob.*Read.*ref-investigation-budget" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]]; then
-  run_test "issue-critic: 各ファイル 2-3 tool calls 制限指示が存在する" test_issue_critic_tool_call_limit
+  run_test "issue-critic: 本文に ref-investigation-budget の Glob/Read 指示が含まれる" test_issue_critic_ref_instruction
 else
-  run_test_skip "issue-critic: 2-3 tool calls 制限指示" "agents/issue-critic.md not found"
+  run_test_skip "issue-critic: ref-investigation-budget Glob/Read 指示" "agents/issue-critic.md not found"
 fi
 
-# Edge case: ファイルを順次調査する（A → B → C → D）旨の記述
-test_issue_critic_sequential_investigation() {
+# Edge case: issue-critic 本文に旧セクション（調査バジェット制御の詳細）が直接記述されていない
+test_issue_critic_no_inline_budget() {
   assert_file_exists "$ISSUE_CRITIC" || return 1
-  assert_file_contains "$ISSUE_CRITIC" "順.*次|ファイルごと|各ファイル|per.*file|file.*順" || return 1
+  # ref 参照指示行以外で "3.*ファイル以上" や "2-3.*tool" が直接存在しないことを確認
+  local inline
+  inline=$(grep -v "ref-investigation-budget" "${PROJECT_ROOT}/${ISSUE_CRITIC}" | grep -E "3.*ファイル以上|2-3.*tool calls|再帰追跡禁止" | wc -l)
+  [[ "$inline" -eq 0 ]] || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]]; then
-  run_test "issue-critic [edge: 各ファイルの順次調査指示]" test_issue_critic_sequential_investigation
+  run_test "issue-critic [edge: 調査バジェット制御の詳細がインライン記述されていない]" test_issue_critic_no_inline_budget
 else
-  run_test_skip "issue-critic [edge: 順次調査指示]" "agents/issue-critic.md not found"
-fi
-
-# Scenario: turns 残り 3 以下での出力優先 (spec line 11)
-# WHEN: issue-critic の残り turns が 3 以下になる
-# THEN: 進行中の調査を打ち切り、それまでの調査結果に基づいて構造化 findings を出力する
-
-# Test: 残り turns 監視と出力優先指示が存在する
-test_issue_critic_turns_remaining_output() {
-  assert_file_exists "$ISSUE_CRITIC" || return 1
-  assert_file_contains "$ISSUE_CRITIC" "残り.*turns.*[23]|turns.*残り.*[23]|turns.*3以下|3.*turns.*出力|出力.*優先.*turns" || return 1
-  return 0
-}
-
-if [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]]; then
-  run_test "issue-critic: 残り turns 3 以下で出力優先指示が存在する" test_issue_critic_turns_remaining_output
-else
-  run_test_skip "issue-critic: 残り turns 3 以下で出力優先" "agents/issue-critic.md not found"
-fi
-
-# Test: 調査打ち切りと findings 出力に関する記述
-test_issue_critic_abort_and_output() {
-  assert_file_exists "$ISSUE_CRITIC" || return 1
-  assert_file_contains "$ISSUE_CRITIC" "打ち切り|中断.*出力|調査.*中断|出力.*生成.*優先|findings.*出力.*優先" || return 1
-  return 0
-}
-
-if [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]]; then
-  run_test "issue-critic: 調査打ち切り + findings 出力指示" test_issue_critic_abort_and_output
-else
-  run_test_skip "issue-critic: 調査打ち切り + findings 出力" "agents/issue-critic.md not found"
-fi
-
-# Edge case: 再帰的な依存追跡禁止が明記されている
-test_issue_critic_no_recursive_tracking() {
-  assert_file_exists "$ISSUE_CRITIC" || return 1
-  assert_file_contains "$ISSUE_CRITIC" "再帰.*禁止|再帰.*追跡.*禁止|SHALL NOT.*再帰|recursive.*禁止|再帰的.*追跡.*行っては" || return 1
-  return 0
-}
-
-if [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]]; then
-  run_test "issue-critic [edge: 再帰的依存追跡禁止が明記]" test_issue_critic_no_recursive_tracking
-else
-  run_test_skip "issue-critic [edge: 再帰追跡禁止]" "agents/issue-critic.md not found"
-fi
-
-# Edge case: 「ファイル存在確認 + 直接の呼び出し元 1 段」の記述
-test_issue_critic_shallow_investigation_depth() {
-  assert_file_exists "$ISSUE_CRITIC" || return 1
-  assert_file_contains "$ISSUE_CRITIC" "存在確認.*呼び出し元|呼び出し元.*1段|直接.*呼び出し元|1段.*追跡" || return 1
-  return 0
-}
-
-if [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]]; then
-  run_test "issue-critic [edge: 存在確認+直接呼び出し元1段の指示]" test_issue_critic_shallow_investigation_depth
-else
-  run_test_skip "issue-critic [edge: 浅い調査深度指示]" "agents/issue-critic.md not found"
+  run_test_skip "issue-critic [edge: インライン記述不在]" "agents/issue-critic.md not found"
 fi
 
 # =============================================================================
-# Requirement: issue-feasibility 調査バジェット制御
+# Requirement: issue-feasibility 調査バジェット制御（ref 参照化）
 # =============================================================================
 echo ""
-echo "--- Requirement: issue-feasibility 調査バジェット制御 ---"
+echo "--- Requirement: issue-feasibility 調査バジェット制御（ref 参照化） ---"
 
-# Scenario: scope_files が 4 件の場合の調査制限 (spec line 19)
-# WHEN: issue-feasibility が scope_files: [A, B, C, D] を含む Issue の実装可能性を検証する
-# THEN: 各ファイルの調査に使用する tool calls は最大 3 回に制限される
-
-# Test: scope_files 3 以上の場合の調査制限指示が存在する
-test_issue_feasibility_scope_files_budget() {
+# Test: issue-feasibility の frontmatter skills に ref-investigation-budget が含まれる
+test_issue_feasibility_skills_ref_budget() {
   assert_file_exists "$ISSUE_FEASIBILITY" || return 1
-  assert_file_contains "$ISSUE_FEASIBILITY" "scope_files.*[3-9]|3.*ファイル以上|3.*files.*以上|scope.*3以上" || return 1
+  assert_file_contains "$ISSUE_FEASIBILITY" "ref-investigation-budget" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${ISSUE_FEASIBILITY}" ]]; then
-  run_test "issue-feasibility: scope_files >= 3 の調査制限指示が存在する" test_issue_feasibility_scope_files_budget
+  run_test "issue-feasibility: frontmatter skills に ref-investigation-budget が含まれる" test_issue_feasibility_skills_ref_budget
 else
-  run_test_skip "issue-feasibility: scope_files >= 3 の調査制限指示" "agents/issue-feasibility.md not found"
+  run_test_skip "issue-feasibility: frontmatter skills に ref-investigation-budget" "agents/issue-feasibility.md not found"
 fi
 
-# Test: tool calls 上限（2-3 回）の制限指示が存在する
-test_issue_feasibility_tool_call_limit() {
+# Test: issue-feasibility 本文に ref 参照指示が含まれる
+test_issue_feasibility_ref_instruction() {
   assert_file_exists "$ISSUE_FEASIBILITY" || return 1
-  assert_file_contains "$ISSUE_FEASIBILITY" "2-3.*tool|tool.*2-3|2.*3.*tool calls|tool calls.*制限|各ファイル.*[23].*tool" || return 1
+  assert_file_contains "$ISSUE_FEASIBILITY" "ref-investigation-budget.*Glob.*Read|Glob.*Read.*ref-investigation-budget" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${ISSUE_FEASIBILITY}" ]]; then
-  run_test "issue-feasibility: 各ファイル 2-3 tool calls 制限指示が存在する" test_issue_feasibility_tool_call_limit
+  run_test "issue-feasibility: 本文に ref-investigation-budget の Glob/Read 指示が含まれる" test_issue_feasibility_ref_instruction
 else
-  run_test_skip "issue-feasibility: 2-3 tool calls 制限指示" "agents/issue-feasibility.md not found"
+  run_test_skip "issue-feasibility: ref-investigation-budget Glob/Read 指示" "agents/issue-feasibility.md not found"
 fi
 
-# Edge case: 再帰的な依存追跡禁止が明記されている
-test_issue_feasibility_no_recursive_tracking() {
+# Edge case: issue-feasibility 本文に旧セクション（調査バジェット制御の詳細）が直接記述されていない
+test_issue_feasibility_no_inline_budget() {
   assert_file_exists "$ISSUE_FEASIBILITY" || return 1
-  assert_file_contains "$ISSUE_FEASIBILITY" "再帰.*禁止|再帰.*追跡.*禁止|SHALL NOT.*再帰|recursive.*禁止|再帰的.*追跡.*行っては" || return 1
+  local inline
+  inline=$(grep -v "ref-investigation-budget" "${PROJECT_ROOT}/${ISSUE_FEASIBILITY}" | grep -E "3.*ファイル以上|2-3.*tool calls|再帰追跡禁止" | wc -l)
+  [[ "$inline" -eq 0 ]] || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${ISSUE_FEASIBILITY}" ]]; then
-  run_test "issue-feasibility [edge: 再帰的依存追跡禁止が明記]" test_issue_feasibility_no_recursive_tracking
+  run_test "issue-feasibility [edge: 調査バジェット制御の詳細がインライン記述されていない]" test_issue_feasibility_no_inline_budget
 else
-  run_test_skip "issue-feasibility [edge: 再帰追跡禁止]" "agents/issue-feasibility.md not found"
-fi
-
-# Scenario: turns 残り 3 以下での出力優先 (spec line 23)
-# WHEN: issue-feasibility の残り turns が 3 以下になる
-# THEN: 進行中の調査を打ち切り、構造化 findings を出力する
-
-# Test: 残り turns 監視と出力優先指示が存在する
-test_issue_feasibility_turns_remaining_output() {
-  assert_file_exists "$ISSUE_FEASIBILITY" || return 1
-  assert_file_contains "$ISSUE_FEASIBILITY" "残り.*turns.*[23]|turns.*残り.*[23]|turns.*3以下|3.*turns.*出力|出力.*優先.*turns" || return 1
-  return 0
-}
-
-if [[ -f "${PROJECT_ROOT}/${ISSUE_FEASIBILITY}" ]]; then
-  run_test "issue-feasibility: 残り turns 3 以下で出力優先指示が存在する" test_issue_feasibility_turns_remaining_output
-else
-  run_test_skip "issue-feasibility: 残り turns 3 以下で出力優先" "agents/issue-feasibility.md not found"
-fi
-
-# Edge case: 「ファイル存在確認 + 直接の呼び出し元 1 段」の記述
-test_issue_feasibility_shallow_investigation_depth() {
-  assert_file_exists "$ISSUE_FEASIBILITY" || return 1
-  assert_file_contains "$ISSUE_FEASIBILITY" "存在確認.*呼び出し元|呼び出し元.*1段|直接.*呼び出し元|1段.*追跡" || return 1
-  return 0
-}
-
-if [[ -f "${PROJECT_ROOT}/${ISSUE_FEASIBILITY}" ]]; then
-  run_test "issue-feasibility [edge: 存在確認+直接呼び出し元1段の指示]" test_issue_feasibility_shallow_investigation_depth
-else
-  run_test_skip "issue-feasibility [edge: 浅い調査深度指示]" "agents/issue-feasibility.md not found"
+  run_test_skip "issue-feasibility [edge: インライン記述不在]" "agents/issue-feasibility.md not found"
 fi
 
 # =============================================================================
@@ -517,49 +446,43 @@ fi
 echo ""
 echo "--- Cross-cutting: エージェントファイルと SKILL.md の整合性 ---"
 
-# Test: issue-critic と issue-feasibility の両方に同等のバジェット制御指示がある
+# Test: issue-critic と issue-feasibility の両方が ref-investigation-budget を参照する
 test_both_agents_have_budget_control() {
   assert_file_exists "$ISSUE_CRITIC" || return 1
   assert_file_exists "$ISSUE_FEASIBILITY" || return 1
-  # Both should contain turns-remaining / output priority instruction
-  assert_file_contains "$ISSUE_CRITIC" "残り.*turns|turns.*残り|turns.*3以下|出力.*優先" || return 1
-  assert_file_contains "$ISSUE_FEASIBILITY" "残り.*turns|turns.*残り|turns.*3以下|出力.*優先" || return 1
+  # Both should reference ref-investigation-budget via skills frontmatter
+  assert_file_contains "$ISSUE_CRITIC" "ref-investigation-budget" || return 1
+  assert_file_contains "$ISSUE_FEASIBILITY" "ref-investigation-budget" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]] && [[ -f "${PROJECT_ROOT}/${ISSUE_FEASIBILITY}" ]]; then
-  run_test "issue-critic と issue-feasibility の両方に turns 出力優先指示がある" test_both_agents_have_budget_control
+  run_test "issue-critic と issue-feasibility の両方が ref-investigation-budget を参照する" test_both_agents_have_budget_control
 else
   run_test_skip "両エージェントの整合性確認" "One or both agent files not found"
 fi
 
-# Test: issue-critic と issue-feasibility の両方に再帰追跡禁止指示がある
-test_both_agents_have_recursive_ban() {
-  assert_file_exists "$ISSUE_CRITIC" || return 1
-  assert_file_exists "$ISSUE_FEASIBILITY" || return 1
-  assert_file_contains "$ISSUE_CRITIC" "再帰.*禁止|再帰.*追跡.*禁止|recursive.*禁止" || return 1
-  assert_file_contains "$ISSUE_FEASIBILITY" "再帰.*禁止|再帰.*追跡.*禁止|recursive.*禁止" || return 1
+# Test: ref-investigation-budget.md に再帰追跡禁止指示が含まれる
+test_ref_has_recursive_ban() {
+  assert_file_exists "$REF_INVESTIGATION_BUDGET" || return 1
+  assert_file_contains "$REF_INVESTIGATION_BUDGET" "再帰.*禁止|再帰追跡禁止|recursive.*禁止" || return 1
   return 0
 }
 
-if [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]] && [[ -f "${PROJECT_ROOT}/${ISSUE_FEASIBILITY}" ]]; then
-  run_test "issue-critic と issue-feasibility の両方に再帰追跡禁止指示がある" test_both_agents_have_recursive_ban
-else
-  run_test_skip "両エージェントの再帰追跡禁止整合性" "One or both agent files not found"
-fi
+run_test "ref-investigation-budget: 再帰追跡禁止指示が含まれる" test_ref_has_recursive_ban
 
-# Edge case: SKILL.md の Phase 3b 注入指示と agent 側の自己制限指示が二重防御になっている
+# Edge case: SKILL.md の Phase 3b 注入指示と ref による agent 自己制限の二重防御構造
 test_defense_in_depth_structure() {
   assert_file_exists "$SKILL_MD" || return 1
   assert_file_exists "$ISSUE_CRITIC" || return 1
-  # SKILL.md should have depth injection AND agents should have self-limiting instructions
+  # SKILL.md should have depth injection AND agents should reference the budget ref
   assert_file_contains "$SKILL_MD" "scope_files.*[3-9]|3.*以上.*scope" || return 1
-  assert_file_contains "$ISSUE_CRITIC" "残り.*turns|turns.*3以下|出力.*優先" || return 1
+  assert_file_contains "$ISSUE_CRITIC" "ref-investigation-budget" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]] && [[ -f "${PROJECT_ROOT}/${ISSUE_CRITIC}" ]]; then
-  run_test "[edge: SKILL.md 注入 + agent 自己制限の二重防御構造]" test_defense_in_depth_structure
+  run_test "[edge: SKILL.md 注入 + agent ref 参照の二重防御構造]" test_defense_in_depth_structure
 else
   run_test_skip "[edge: 二重防御構造]" "SKILL.md or issue-critic.md not found"
 fi

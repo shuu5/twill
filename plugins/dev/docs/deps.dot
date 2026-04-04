@@ -9,7 +9,7 @@ digraph Dependencies {
 
     // L0: Controller Skills
     skill_co_autopilot [label="dev:co-autopilot\n(1,964 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_issue [label="dev:co-issue\n(7,348 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="dev:co-issue\n(7,478 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_project [label="dev:co-project\n(1,321 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_architect [label="dev:co-architect\n(1,293 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
@@ -124,8 +124,8 @@ digraph Dependencies {
     agent_context_checker [label="context-checker\n(1,802 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_e2e_reviewer [label="worker-e2e-reviewer\n(1,226 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_spec_reviewer [label="worker-spec-reviewer\n(1,094 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_issue_critic [label="issue-critic\n(1,409 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_issue_feasibility [label="issue-feasibility\n(1,316 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_issue_critic [label="issue-critic\n(1,268 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_issue_feasibility [label="issue-feasibility\n(1,175 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,421 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_code_reviewer [label="worker-code-reviewer\n(964 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_security_reviewer [label="worker-security-reviewer\n(866 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
@@ -384,7 +384,9 @@ digraph Dependencies {
     agent_worker_e2e_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_spec_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_issue_critic -> skill_ref_issue_quality_criteria [style=dotted];
+    agent_issue_critic -> skill_ref_investigation_budget [style=dotted];
     agent_issue_feasibility -> skill_ref_issue_quality_criteria [style=dotted];
+    agent_issue_feasibility -> skill_ref_investigation_budget [style=dotted];
     agent_worker_codex_reviewer -> skill_ref_issue_quality_criteria [style=dotted];
     agent_worker_codex_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_code_reviewer -> skill_ref_specialist_output_schema [style=dotted];
