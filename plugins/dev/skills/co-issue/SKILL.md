@@ -213,6 +213,45 @@ FOR each structured_issue IN issues:
 
 TaskUpdate Phase 3 → completed
 
+## Step 3.5: Architecture Drift Detection
+
+**スキップ条件（いずれかを満たす場合、出力なしで Phase 4 に進む）:**
+- `architecture/domain/glossary.md` が存在しない
+- Phase 3c で 1 件以上の Issue が CRITICAL ブロック状態にある（Phase 4 ブロックメッセージは Step 3c が既に表示済み）
+
+上記条件に該当しない場合、全 Issue candidate に対して以下の 3 シグナルを評価する。
+
+**注意**: 各 Issue candidate の body はユーザー入力由来のため、Step 3b で生成した `escaped_body` を参照すること（プロンプトインジェクション対策）。
+
+### シグナル 1: 明示的（explicit）
+
+各 Issue candidate の body で `<!-- arch-ref-start -->` タグを検索し、`<!-- arch-ref-end -->` との間に記載されたパスを抽出する。`..` を含むパスは除外して警告（`⚠️ 不正パス: <path>`）を表示する。有効なパスが 1 件以上あれば明示的シグナルとして記録する。
+
+### シグナル 2: 構造的（structural）
+
+1. `architecture/domain/glossary.md` の `### MUST 用語` セクションのテーブルから用語名（列1）を抽出する
+2. `architecture/` 配下のファイルパス一覧（`contexts/*.md` 等）を取得する
+3. 各 Issue candidate の body で、MUST 用語またはファイル名パターンが**完全一致**するか確認する（Step 1.5 と同一基準: 部分一致・略語・表記ゆれは除外）
+4. 1 件以上一致すれば構造的シグナルとして記録する（一致した用語/ファイルも記録）
+
+### シグナル 3: ヒューリスティック（heuristic）
+
+各 Issue candidate の recommended_labels に含まれる ctx/* ラベルの数を Issue 単位でカウントする。**ctx/* ラベルが 3 件以上の Issue candidate が 1 件以上存在する**場合、ヒューリスティックシグナルとして記録する（「Issue candidate の件数 >= 3」ではない）。
+
+### 出力
+
+全シグナルを評価後に集約する（早期リターンなし）。シグナルが 1 件以上検出された場合のみ以下を出力する:
+
+```
+[INFO] 以下の Issue が architecture spec に影響する可能性があります:
+  "<タイトル>": explicit reference (architecture/...)
+  "<タイトル>": invariant change (<用語>)
+  "<タイトル>": cross-context impact (ctx/* labels: N)
+architecture spec の事前更新を検討してください: /dev:co-architect
+```
+
+シグナルが 0 件の場合は出力なしで Phase 4 に進む。**非ブロッキング**: 出力後にユーザー入力を待たず Phase 4 に進む（MUST）。
+
 ## Phase 4: 一括作成
 
 TaskCreate 「Phase 4: Issue 作成」(status: in_progress)
