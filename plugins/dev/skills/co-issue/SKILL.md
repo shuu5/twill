@@ -186,9 +186,12 @@ FOR each structured_issue IN issues:
 
 全 specialist 完了後、結果を集約:
 
-**[前処理] 出力なし完了の検知（上位ガード）**: 各 specialist の返却値に `status:` または `findings:` キーワードが含まれない場合を「出力なし完了」と判定し、findings テーブルに WARNING エントリを追加する。Phase 4 はブロックしない。
+**[前処理] 出力なし完了の検知（上位ガード）**: 各 specialist の返却値を行単位に分解し、各行に対して以下の正規表現でマッチを試み、いずれにもマッチしない場合を「出力なし完了」と判定し、findings テーブルに WARNING エントリを追加する。Phase 4 はブロックしない。
+   - status 検出: `^status:\s*(PASS|WARN|FAIL)\b` （行頭、コロン後スペース任意、有効値のみ、単語境界で末尾を限定）
+   - findings 検出: `^findings:` （行頭）
    - 表示例: `WARNING: issue-critic: 構造化出力なしで完了（調査が maxTurns に到達した可能性）`
-   - **役割分担**: このガードは出力が空または非構造化のケースを検知する上位ガードとして機能する。`ref-specialist-output-schema.md` のパース失敗フォールバック（出力全文を WARNING finding として扱う）は下位ガードとして、パース可能だが構造が不正な場合に適用される
+   - **役割分担**: このガードは YAML 形式の行単位出力を想定した上位ガードとして機能する。JSON 形式（`{"status": "PASS", "findings": []}` 等）や行頭以外に `status:` が現れる出力は下位ガード（`ref-specialist-output-schema.md` のパース失敗フォールバック）に委ねる。下位ガードはパース可能だが構造が不正な場合に適用され、出力全文を WARNING finding として扱う
+   - **注記**: 本ガードは `refs/ref-specialist-output-schema.md` L151 の消費側パースルール（`status: (PASS|WARN|FAIL)`、行頭縛りなし）の上位ガードとして、行頭縛りと単語境界を追加適用する（ref 自体は変更しない）
 
 1. **findings 統合**: 全 specialist の findings を Issue 別にマージ
 2. **ブロック判定**: `severity == CRITICAL && confidence >= 80 && finding_target == "issue_description"` が 1 件以上 → 当該 Issue は Phase 4 ブロック（`codebase_state` はブロック対象外。`finding_target` 欠如または enum 外の値の場合は `issue_description` として扱う）
