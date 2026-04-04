@@ -239,7 +239,7 @@ fi
 # bare repo かつ --worktree-dir 未指定時、Pilot が worktree を事前作成して Worker をそこで起動する。
 # Worker の CWD が worktree になるため、deltaspec 等が main/ に書き込む汚染を防止する。
 if [[ -z "$WORKTREE_DIR" ]] && [[ -d "$EFFECTIVE_PROJECT_DIR/.bare" ]]; then
-  WT_OUTPUT=$(cd "$EFFECTIVE_PROJECT_DIR/main" && bash "$SCRIPT_DIR/worktree-create.sh" "#${ISSUE}" 2>&1)
+  WT_OUTPUT=$(cd "$EFFECTIVE_PROJECT_DIR/main" && bash "$SCRIPTS_ROOT/worktree-create.sh" "#${ISSUE}" 2>&1)
   WT_EXIT=$?
   if [[ $WT_EXIT -eq 0 ]]; then
     WORKTREE_DIR=$(echo "$WT_OUTPUT" | grep "^パス:" | sed 's/^パス: //')
