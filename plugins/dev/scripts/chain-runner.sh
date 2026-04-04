@@ -235,6 +235,9 @@ step_board_status_update() {
 }
 
 # --- board-archive: Project Board アイテムをアーカイブ ---
+# 用途: autopilot Phase 完了処理（autopilot-orchestrator.sh）から呼び出される。
+# merge-gate-execute.sh からは呼び出されない（merge 後は board-status-update "Done" で Done 遷移し、
+# Archive は autopilot Phase 完了時に一括処理する設計）。
 step_board_archive() {
   record_current_step "board-archive"
   local issue_num="${1:-}"

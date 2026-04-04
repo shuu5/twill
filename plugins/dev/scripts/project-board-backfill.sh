@@ -51,7 +51,7 @@ echo "Project: #$PROJECT_NUM ($PROJECT_ID)"
 
 # ── Step 2: Status フィールド情報取得（ループ外で1回） ─────────
 STATUS_FIELD_ID=""
-IN_PROGRESS_OPTION_ID=""
+TODO_OPTION_ID=""
 
 FIELDS_JSON=$(gh api graphql -f query='
 query($nodeId: ID!) {
@@ -72,9 +72,18 @@ query($nodeId: ID!) {
 
 if [ -n "$FIELDS_JSON" ]; then
   STATUS_FIELD_ID=$(echo "$FIELDS_JSON" | jq -r '.id')
-  IN_PROGRESS_OPTION_ID=$(echo "$FIELDS_JSON" | jq -r '.options[] | select(.name == "In Progress") | .id')
+  TODO_OPTION_ID=$(echo "$FIELDS_JSON" | jq -r '.options[] | select(.name == "Todo") | .id')
 else
   echo "⚠️ Status フィールドを取得できませんでした。Status 設定はスキップされます。"
+fi
+
+# ── Step 2.5: 既存 Board アイテムの Issue 番号リスト取得（冪等性確保） ─
+EXISTING_ISSUE_NUMS=()
+EXISTING_ITEMS_JSON=$(gh project item-list "$PROJECT_NUM" --owner "$OWNER" --format json --limit 500 2>/dev/null) || true
+if [ -n "$EXISTING_ITEMS_JSON" ]; then
+  while IFS= read -r num; do
+    [[ -n "$num" ]] && EXISTING_ISSUE_NUMS+=("$num")
+  done < <(echo "$EXISTING_ITEMS_JSON" | jq -r '.items[].content.number // empty' 2>/dev/null)
 fi
 
 # ── Step 3: Issue ループ ───────────────────────────────────────
@@ -89,6 +98,13 @@ SKIP_COUNT=0
 FAIL_COUNT=0
 
 for (( i=START; i<=END; i++ )); do
+  # 既存 Board アイテムのスキップ（冪等性確保）
+  if printf '%s\n' "${EXISTING_ISSUE_NUMS[@]}" | grep -qxF "$i"; then
+    echo "| #$i | - | - | 既存アイテム（スキップ） |"
+    SKIP_COUNT=$((SKIP_COUNT + 1))
+    continue
+  fi
+
   # Issue 存在チェック
   if ! gh issue view "$i" --repo "$REPO" --json number >/dev/null 2>&1; then
     echo "| #$i | - | - | ⚠️ Issue が存在しない |"
@@ -108,12 +124,12 @@ for (( i=START; i<=END; i++ )); do
 
   ITEM_ID=$(echo "$ITEM_RESULT" | jq -r '.id // empty')
 
-  # Status を In Progress に設定
+  # Status を Todo に設定
   STATUS_MSG="-"
-  if [ -n "$STATUS_FIELD_ID" ] && [ -n "$IN_PROGRESS_OPTION_ID" ] && [ -n "$ITEM_ID" ]; then
+  if [ -n "$STATUS_FIELD_ID" ] && [ -n "$TODO_OPTION_ID" ] && [ -n "$ITEM_ID" ]; then
     if gh project item-edit --project-id "$PROJECT_ID" --id "$ITEM_ID" \
-      --field-id "$STATUS_FIELD_ID" --single-select-option-id "$IN_PROGRESS_OPTION_ID" >/dev/null 2>&1; then
-      STATUS_MSG="In Progress"
+      --field-id "$STATUS_FIELD_ID" --single-select-option-id "$TODO_OPTION_ID" >/dev/null 2>&1; then
+      STATUS_MSG="Todo"
     else
       STATUS_MSG="⚠️ 設定失敗"
     fi

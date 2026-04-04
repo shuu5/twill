@@ -594,6 +594,22 @@ generate_summary() {
     }'
 }
 
+# Phase 内の Done Issue のみを選択的にアーカイブする
+# 他 Phase・手動 Issue はアーカイブ対象外（仕様: specs/phase-selective-archive）
+# 引数: issue 番号リスト（スペース区切り）
+archive_done_issues() {
+  local issue
+  for issue in "$@"; do
+    local status
+    status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+    if [[ "$status" == "done" ]]; then
+      if ! bash "$SCRIPTS_ROOT/chain-runner.sh" board-archive "$issue" 2>/dev/null; then
+        echo "[orchestrator] Issue #${issue}: ⚠️ Board アーカイブに失敗しました（Phase 完了は続行）" >&2
+      fi
+    fi
+  done
+}
+
 # =============================================================================
 # メイン実行
 # =============================================================================
@@ -627,6 +643,8 @@ if [[ ${#ACTIVE_ISSUES[@]} -eq 0 ]]; then
     ALL_ISSUE_NUMS+=("${entry#*:}")
   done
   generate_phase_report "$PHASE" "${ALL_ISSUE_NUMS[@]}"
+  # 当該 Phase の Done アイテムのみを選択的にアーカイブ
+  archive_done_issues "${ALL_ISSUE_NUMS[@]}"
   exit 0
 fi
 
@@ -677,5 +695,8 @@ for entry in "${ISSUES_WITH_REPO[@]}"; do
   ALL_ISSUE_NUMS+=("${entry#*:}")
 done
 generate_phase_report "$PHASE" "${ALL_ISSUE_NUMS[@]}"
+
+# Step 5: 当該 Phase の Done アイテムのみを選択的にアーカイブ
+archive_done_issues "${ALL_ISSUE_NUMS[@]}"
 
 echo "[orchestrator] Phase ${PHASE} 完了" >&2

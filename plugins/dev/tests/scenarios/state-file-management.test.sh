@@ -48,8 +48,10 @@ teardown_sandbox() {
 }
 
 # Run state-write.sh in the sandbox context
+# Subshell で SANDBOX に cd することで worktrees/ CWD ガード（不変条件C）を回避し、
+# Pilot ロールのテストがワークツリー配下から実行されても正常動作させる。
 run_state_write() {
-  AUTOPILOT_DIR="${SANDBOX}/.autopilot" bash "${SANDBOX}/scripts/state-write.sh" "$@" 2>/dev/null
+  ( cd "$SANDBOX" && AUTOPILOT_DIR="${SANDBOX}/.autopilot" bash "${SANDBOX}/scripts/state-write.sh" "$@" 2>/dev/null )
 }
 
 # Run state-read.sh in the sandbox context

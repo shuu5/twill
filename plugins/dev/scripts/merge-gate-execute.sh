@@ -146,11 +146,9 @@ case "$MODE" in
         --set "merged_at=$(date -Is)"
       echo "[merge-gate] Issue #${ISSUE}: マージ + クリーンアップ完了"
       tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
-      # Board アーカイブ（ISSUE_NUM が空の場合はスキップ）
-      if [[ -n "${ISSUE:-}" ]]; then
-        if ! bash "$SCRIPT_DIR/chain-runner.sh" board-archive "$ISSUE"; then
-          echo "[merge-gate] Issue #${ISSUE}: ⚠️ Board アーカイブに失敗しました（マージは成功）" >&2
-        fi
+      # Board Status → Done（merge 成功後の正しいライフサイクル。Archive は autopilot Phase 完了処理が担う）
+      if ! bash "$SCRIPT_DIR/chain-runner.sh" board-status-update "$ISSUE" "Done"; then
+        echo "[merge-gate] Issue #${ISSUE}: ⚠️ Board Status → Done に失敗しました（マージは成功）" >&2
       fi
     else
       # エラーメッセージから認証情報をマスキング
