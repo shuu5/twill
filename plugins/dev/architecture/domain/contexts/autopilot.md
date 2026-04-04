@@ -122,7 +122,7 @@ stateDiagram-v2
 | ID | 不変条件 | 概要 |
 |----|----------|------|
 | **A** | 状態の一意性 | issue-{N}.json の `status` は常に定義された遷移パスのみ許可 |
-| **B** | Worktree ライフサイクル Pilot 専任 | Worktree の作成・削除は Pilot が行う。Worker は使用のみ（ADR-008） |
+| **B** | Worktree ライフサイクル Pilot 専任（作成・削除ともに Pilot） | Worktree の作成・削除は Pilot が行う。Worker は使用のみ（ADR-008） |
 | **C** | Worker マージ禁止 | Worker は `merge-ready` を宣言するのみ。マージは Pilot が実行 |
 | **D** | 依存先 fail 時の skip 伝播 | Phase N で fail した Issue に依存する Issue は自動 skip |
 | **E** | merge-gate リトライ制限 | リトライは最大1回。2回目リジェクト = 確定失敗 |

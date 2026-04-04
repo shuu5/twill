@@ -4,7 +4,7 @@
 # Spec: openspec/changes/chain-runner-next-step-quick/specs/chain-runner-next-step.md
 #
 # Coverage:
-#   1. next-step: 通常 Issue の次ステップ返却 (is_quick=false, current_step=init → worktree-create)
+#   1. next-step: 通常 Issue の次ステップ返却 (is_quick=false, current_step=init → board-status-update)
 #   2. next-step: quick Issue の QUICK_SKIP_STEPS 除外 (is_quick=true, current_step=board-status-update)
 #   3. next-step: 全ステップ完了時 (current_step=最終ステップ → done)
 #   4. step_init: quick ラベル付き Issue の is_quick=true 永続化
@@ -104,13 +104,13 @@ _create_issue_with_quick() {
 # ---------------------------------------------------------------------------
 
 # Scenario: 通常 Issue の次ステップ返却
-@test "next-step: is_quick=false で current_step=init のとき worktree-create を返す" {
+@test "next-step: is_quick=false で current_step=init のとき board-status-update を返す" {
   _create_issue_with_quick 151 "running" "init" "false"
 
   run bash "$SANDBOX/scripts/chain-runner.sh" next-step 151
 
   assert_success
-  assert_output "worktree-create"
+  assert_output "board-status-update"
 }
 
 # Scenario: quick Issue の QUICK_SKIP_STEPS 除外
@@ -173,7 +173,7 @@ _create_issue_with_quick() {
   run bash "$SANDBOX/scripts/chain-runner.sh" next-step 151
 
   assert_success
-  assert_output "worktree-create"
+  assert_output "board-status-update"
 }
 
 # Edge: quick Issue でも最終ステップ以降なら done を返す
@@ -203,14 +203,14 @@ _create_issue_with_quick() {
   assert_output "init"
 }
 
-# Edge: quick Issue, current_step=init → next は worktree-create (スキップ対象外)
-@test "next-step: is_quick=true で current_step=init のとき worktree-create を返す" {
+# Edge: quick Issue, current_step=init → next は board-status-update (worktree-create は chain から除去済み)
+@test "next-step: is_quick=true で current_step=init のとき board-status-update を返す" {
   _create_issue_with_quick 151 "running" "init" "true"
 
   run bash "$SANDBOX/scripts/chain-runner.sh" next-step 151
 
   assert_success
-  assert_output "worktree-create"
+  assert_output "board-status-update"
 }
 
 # ---------------------------------------------------------------------------

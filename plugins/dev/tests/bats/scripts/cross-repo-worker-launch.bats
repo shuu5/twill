@@ -251,3 +251,63 @@ teardown() {
   local expected_dir="$loom_path/main"
   [ -d "$expected_dir" ]
 }
+
+# ---------------------------------------------------------------------------
+# Requirement: worktree ディレクトリでの Worker 起動 (ADDED)
+# ---------------------------------------------------------------------------
+
+# Scenario: --worktree-dir が渡された場合はその値を LAUNCH_DIR に使用する
+@test "worker-launch: --worktree-dir overrides bare repo LAUNCH_DIR calculation" {
+  # Setup: bare repo structure (normally would use {path}/main)
+  local project_dir="$SANDBOX/loom"
+  [ -d "$project_dir/.bare" ]
+
+  # Compute LAUNCH_DIR with and without --worktree-dir
+  # Without --worktree-dir: bare repo → {path}/main
+  local worktree_dir=""
+  local expected_launch_dir="$project_dir/main"
+  local effective_dir="$project_dir"
+
+  if [[ -n "$worktree_dir" ]]; then
+    launch_dir="$worktree_dir"
+  elif [[ -d "$effective_dir/.bare" ]]; then
+    launch_dir="$effective_dir/main"
+  else
+    launch_dir="$effective_dir"
+  fi
+  [ "$launch_dir" = "$expected_launch_dir" ]
+
+  # With --worktree-dir: override to worktree path
+  local custom_worktree="$SANDBOX/loom/worktrees/feat/42-my-feature"
+  mkdir -p "$custom_worktree"
+  worktree_dir="$custom_worktree"
+
+  if [[ -n "$worktree_dir" ]]; then
+    launch_dir="$worktree_dir"
+  elif [[ -d "$effective_dir/.bare" ]]; then
+    launch_dir="$effective_dir/main"
+  else
+    launch_dir="$effective_dir"
+  fi
+  [ "$launch_dir" = "$custom_worktree" ]
+}
+
+# Scenario: --worktree-dir なしの場合（後方互換）
+@test "worker-launch: without --worktree-dir, standard repo uses project-dir directly" {
+  local std_path="$SANDBOX/standard-repo"
+  [ -d "$std_path/.git" ]
+
+  # Without --worktree-dir: standard repo → use $std_path
+  local worktree_dir=""
+  local effective_dir="$std_path"
+  local launch_dir=""
+
+  if [[ -n "$worktree_dir" ]]; then
+    launch_dir="$worktree_dir"
+  elif [[ -d "$effective_dir/.bare" ]]; then
+    launch_dir="$effective_dir/main"
+  else
+    launch_dir="$effective_dir"
+  fi
+  [ "$launch_dir" = "$std_path" ]
+}

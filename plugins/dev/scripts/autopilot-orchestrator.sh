@@ -213,10 +213,63 @@ launch_worker() {
   local entry="$1"
   resolve_issue_repo_context "$entry"
 
+  # --- 不変条件 B: worktree 作成は Pilot 専任 ---
+  # Worker 起動前に worktree を作成し、worktree パスを --worktree-dir で渡す
+  local effective_project_dir="$PROJECT_DIR"
+  if [[ -n "$ISSUE_REPO_PATH" ]]; then
+    effective_project_dir="$ISSUE_REPO_PATH"
+  fi
+
+  local worktree_dir=""
+  # 既存 worktree の確認（冪等性: branch が state に記録済みの場合）
+  local -a _repo_args=()
+  [[ "$ISSUE_REPO_ID" != "_default" ]] && _repo_args=(--repo "$ISSUE_REPO_ID")
+  local existing_branch
+  existing_branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$ISSUE" --field branch 2>/dev/null || echo "")
+  # ブランチ名バリデーション（パストラバーサル防止、cleanup_worker と同一パターン）
+  if [[ -n "$existing_branch" && "$existing_branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
+    local candidate_dir="$effective_project_dir/worktrees/$existing_branch"
+    if [[ -d "$candidate_dir" ]]; then
+      worktree_dir="$candidate_dir"
+      echo "[orchestrator] Issue #${ISSUE}: 既存 worktree を使用: $worktree_dir" >&2
+    fi
+  fi
+
+  # 既存 worktree が見つからない場合は worktree-create.sh で作成
+  if [[ -z "$worktree_dir" ]]; then
+    local create_args=("#${ISSUE}")
+    if [[ -n "$ISSUE_REPO_PATH" ]]; then
+      create_args+=(--repo-path "$ISSUE_REPO_PATH")
+    fi
+    if [[ -n "$ISSUE_REPO_OWNER" && -n "$ISSUE_REPO_NAME" ]]; then
+      create_args+=(-R "${ISSUE_REPO_OWNER}/${ISSUE_REPO_NAME}")
+    fi
+    local wt_output
+    wt_output=$(bash "$SCRIPTS_ROOT/worktree-create.sh" "${create_args[@]}" 2>&1) || {
+      echo "[orchestrator] Issue #${ISSUE}: worktree 作成失敗: $wt_output" >&2
+      bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
+        --set "status=failed" \
+        --set 'failure={"message":"worktree_create_failed","step":"launch_worker"}' || true
+      return 1
+    }
+    # 改行のみ除去（スペースはパスの一部になり得るため tr -d '\n' を使用）
+    worktree_dir=$(echo "$wt_output" | grep "^パス: " | head -1 | sed 's/^パス: //' | tr -d '\n')
+    # worktree_dir のバリデーション（絶対パス + パストラバーサル防止）
+    if [[ -z "$worktree_dir" || "$worktree_dir" != /* || "$worktree_dir" =~ /\.\./ || "$worktree_dir" =~ /\.\.$ || ! -d "$worktree_dir" ]]; then
+      echo "[orchestrator] Issue #${ISSUE}: worktree パスを取得できません: $wt_output" >&2
+      bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
+        --set "status=failed" \
+        --set 'failure={"message":"worktree_path_resolve_failed","step":"launch_worker"}' || true
+      return 1
+    fi
+    echo "[orchestrator] Issue #${ISSUE}: worktree 作成完了: $worktree_dir" >&2
+  fi
+
   local launch_args=(
     --issue "$ISSUE"
     --project-dir "$PROJECT_DIR"
     --autopilot-dir "$AUTOPILOT_DIR"
+    --worktree-dir "$worktree_dir"
   )
 
   if [[ -n "$ISSUE_REPO_OWNER" && -n "$ISSUE_REPO_NAME" ]]; then

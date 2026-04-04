@@ -9,7 +9,6 @@
 
 CHAIN_STEPS=(
   init
-  worktree-create
   board-status-update
   crg-auto-build
   arch-ref

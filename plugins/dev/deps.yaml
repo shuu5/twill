@@ -1270,11 +1270,12 @@ scripts:
       - script: state-read
       - script: state-write
       - script: autopilot-launch
+      - script: worktree-create
       - script: autopilot-should-skip
       - script: crash-detect
       - script: merge-gate-execute
       - script: session:session-state
-    description: "Pilot 側 Phase 実行オーケストレーター（ループ・ポーリング・merge-gate・nudge・サマリー）"
+    description: "Pilot 側 Phase 実行オーケストレーター（ループ・ポーリング・merge-gate・nudge・サマリー）。worktree 事前作成（不変条件 B）"
 
   merge-gate-init: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
     type: script
@@ -1307,7 +1308,6 @@ scripts:
       - script: resolve-project
     commands:
       - init
-      - worktree-create
       - board-status-update
       - board-archive
       - ac-extract

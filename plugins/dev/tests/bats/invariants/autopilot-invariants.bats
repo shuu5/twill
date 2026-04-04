@@ -89,6 +89,21 @@ teardown() {
   [[ "$output" != *"Worker"* ]] && [[ "$output" != *"不変条件 B"* ]]
 }
 
+@test "invariant-B: Worker chain (chain-steps.sh) does not include worktree-create" {
+  # worktree-create は Pilot 専任（不変条件 B）。Worker の chain に含まれてはならない。
+  source "$REPO_ROOT/scripts/chain-steps.sh"
+
+  local found=false
+  for step in "${CHAIN_STEPS[@]}"; do
+    if [[ "$step" == "worktree-create" ]]; then
+      found=true
+      break
+    fi
+  done
+
+  [ "$found" = "false" ]
+}
+
 # ===========================================================================
 # Invariant C: Worker merge prohibition
 # ===========================================================================

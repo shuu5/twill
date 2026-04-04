@@ -16,7 +16,7 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="dev:workflow-setup\n(1,987 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="dev:workflow-setup\n(2,024 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_test_ready [label="dev:workflow-test-ready\n(2,089 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_pr_cycle [label="dev:workflow-pr-cycle\n(1,679 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_dead_cleanup [label="dev:workflow-dead-cleanup\n(249 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
@@ -148,7 +148,7 @@ digraph Dependencies {
     script_state_read [label="state-read\n(956 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_state_write [label="state-write\n(2,571 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_init [label="autopilot-init\n(1,660 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_launch [label="autopilot-launch\n(2,361 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_launch [label="autopilot-launch\n(2,453 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_create [label="session-create\n(618 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_archive [label="session-archive\n(456 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_add_warning [label="session-add-warning\n(537 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -160,9 +160,9 @@ digraph Dependencies {
     script_specialist_output_parse [label="specialist-output-parse\n(605 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_plan [label="autopilot-plan\n(5,609 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_should_skip [label="autopilot-should-skip\n(401 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_orchestrator [label="autopilot-orchestrator\n(8,011 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_orchestrator [label="autopilot-orchestrator\n(9,018 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_init [label="merge-gate-init\n(1,192 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_merge_gate_execute [label="merge-gate-execute\n(2,354 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_execute [label="merge-gate-execute\n(2,413 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_issues [label="merge-gate-issues\n(1,981 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_project [label="resolve-project\n(929 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(6,018 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

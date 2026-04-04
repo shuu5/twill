@@ -26,7 +26,7 @@
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="295.34" cy="-3831.84" rx="71.34" ry="21.43"/>
 <text text-anchor="middle" x="295.34" y="-3834.84" font-family="Helvetica,sans-Serif" font-size="10.00">dev:workflow&#45;setup</text>
-<text text-anchor="middle" x="295.34" y="-3823.84" font-family="Helvetica,sans-Serif" font-size="10.00">(1,987 tok)</text>
+<text text-anchor="middle" x="295.34" y="-3823.84" font-family="Helvetica,sans-Serif" font-size="10.00">(2,024 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_setup -->
 <g id="edge16" class="edge">
@@ -1921,7 +1921,7 @@
 <title>script_autopilot_launch</title>
 <polygon fill="#ff9800" stroke="black" points="827.77,-2924.84 793.12,-2949.33 723.81,-2949.33 689.16,-2924.84 723.81,-2900.35 793.12,-2900.35 827.77,-2924.84"/>
 <text text-anchor="middle" x="758.47" y="-2927.84" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;launch</text>
-<text text-anchor="middle" x="758.47" y="-2916.84" font-family="Helvetica,sans-Serif" font-size="10.00">(2,361 tok)</text>
+<text text-anchor="middle" x="758.47" y="-2916.84" font-family="Helvetica,sans-Serif" font-size="10.00">(2,453 tok)</text>
 </g>
 <!-- cmd_autopilot_launch&#45;&gt;script_autopilot_launch -->
 <g id="edge164" class="edge">
@@ -2550,7 +2550,7 @@
 <title>script_autopilot_orchestrator</title>
 <polygon fill="#ff9800" stroke="black" points="846.83,-5769.84 802.65,-5794.33 714.29,-5794.33 670.1,-5769.84 714.29,-5745.35 802.65,-5745.35 846.83,-5769.84"/>
 <text text-anchor="middle" x="758.47" y="-5772.84" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;orchestrator</text>
-<text text-anchor="middle" x="758.47" y="-5761.84" font-family="Helvetica,sans-Serif" font-size="10.00">(8,011 tok)</text>
+<text text-anchor="middle" x="758.47" y="-5761.84" font-family="Helvetica,sans-Serif" font-size="10.00">(9,018 tok)</text>
 </g>
 <!-- script_merge_gate_init -->
 <g id="node140" class="node">
@@ -2564,7 +2564,7 @@
 <title>script_merge_gate_execute</title>
 <polygon fill="#ff9800" stroke="black" points="842.67,-5911.84 800.57,-5936.33 716.37,-5936.33 674.27,-5911.84 716.37,-5887.35 800.57,-5887.35 842.67,-5911.84"/>
 <text text-anchor="middle" x="758.47" y="-5914.84" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate&#45;execute</text>
-<text text-anchor="middle" x="758.47" y="-5903.84" font-family="Helvetica,sans-Serif" font-size="10.00">(2,354 tok)</text>
+<text text-anchor="middle" x="758.47" y="-5903.84" font-family="Helvetica,sans-Serif" font-size="10.00">(2,413 tok)</text>
 </g>
 <!-- script_merge_gate_issues -->
 <g id="node142" class="node">

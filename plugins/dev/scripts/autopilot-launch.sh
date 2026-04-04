@@ -24,6 +24,7 @@ Optional:
   --repo-owner OWNER      クロスリポジトリ: リポジトリ owner
   --repo-name NAME        クロスリポジトリ: リポジトリ name
   --repo-path PATH        クロスリポジトリ: リポジトリパス（絶対パス）
+  --worktree-dir DIR      Worker 起動ディレクトリ（指定時は LAUNCH_DIR を上書き）
   -h, --help              このヘルプを表示
 
 Exit codes:
@@ -58,6 +59,7 @@ CONTEXT=""
 REPO_OWNER=""
 REPO_NAME=""
 REPO_PATH=""
+WORKTREE_DIR=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -69,6 +71,7 @@ while [[ $# -gt 0 ]]; do
     --repo-owner) REPO_OWNER="$2"; shift 2 ;;
     --repo-name) REPO_NAME="$2"; shift 2 ;;
     --repo-path) REPO_PATH="$2"; shift 2 ;;
+    --worktree-dir) WORKTREE_DIR="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Error: 不明なオプション: $1" >&2; exit 1 ;;
   esac
@@ -86,6 +89,12 @@ fi
 # ISSUE 数値バリデーション
 if [[ ! "$ISSUE" =~ ^[1-9][0-9]*$ ]]; then
   echo "Error: --issue は正の整数で指定してください: $ISSUE" >&2
+  exit 1
+fi
+
+# MODEL バリデーション（コマンドインジェクション防止）
+if [[ ! "$MODEL" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+  echo "Error: --model の形式が正しくありません（許可パターン: ^[a-zA-Z0-9._-]+$）: $MODEL" >&2
   exit 1
 fi
 
@@ -156,6 +165,25 @@ if [[ -n "$REPO_PATH" ]]; then
   fi
 fi
 
+# WORKTREE_DIR バリデーション（指定時のみ）
+if [[ -n "$WORKTREE_DIR" ]]; then
+  if [[ "$WORKTREE_DIR" != /* ]]; then
+    echo "Error: --worktree-dir は絶対パスで指定してください: $WORKTREE_DIR" >&2
+    record_failure "invalid_worktree_dir" "launch_worker"
+    exit 1
+  fi
+  if [[ "$WORKTREE_DIR" =~ /\.\./ || "$WORKTREE_DIR" =~ /\.\.$ ]]; then
+    echo "Error: --worktree-dir にパストラバーサルは使用できません: $WORKTREE_DIR" >&2
+    record_failure "invalid_worktree_dir" "launch_worker"
+    exit 1
+  fi
+  if [[ ! -d "$WORKTREE_DIR" ]]; then
+    echo "Error: --worktree-dir が見つかりません: $WORKTREE_DIR" >&2
+    record_failure "worktree_dir_not_found" "launch_worker"
+    exit 1
+  fi
+fi
+
 # --- cld パス解決 (Task 1.5) ---
 CLD_PATH=$(command -v cld 2>/dev/null || true)
 if [[ -z "$CLD_PATH" ]]; then
@@ -207,8 +235,11 @@ if [[ -n "$REPO_PATH" ]]; then
   EFFECTIVE_PROJECT_DIR="$REPO_PATH"
 fi
 
-# bare repo では main/ worktree で起動する（CLAUDE.md 制約: main/ 配下必須）
-if [[ -d "$EFFECTIVE_PROJECT_DIR/.bare" ]]; then
+# --worktree-dir が指定された場合はその値を優先（CWD リセット対策）
+if [[ -n "$WORKTREE_DIR" ]]; then
+  LAUNCH_DIR="$WORKTREE_DIR"
+elif [[ -d "$EFFECTIVE_PROJECT_DIR/.bare" ]]; then
+  # bare repo では main/ worktree で起動する（CLAUDE.md 制約: main/ 配下必須）
   LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR/main"
 else
   LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR"
