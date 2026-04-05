@@ -45,6 +45,7 @@ digraph Dependencies {
     agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,421 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
+    script_escape_issue_body [label="escape-issue-body\n(63 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
@@ -53,6 +54,7 @@ digraph Dependencies {
     { rank=same; skill_ref_issue_template_bug; skill_ref_issue_template_feature; skill_ref_project_model; skill_ref_issue_quality_criteria; skill_ref_glossary_criteria; }
     { rank=same; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_issue_cross_repo_create; cmd_project_board_sync; cmd_explore; }
     { rank=same; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; }
+    { rank=same; script_escape_issue_body; }
 
     // Edges
     skill_co_issue -> cmd_explore;
@@ -74,6 +76,7 @@ digraph Dependencies {
     cmd_issue_spec_review -> agent_issue_critic [style=dashed];
     cmd_issue_spec_review -> agent_issue_feasibility [style=dashed];
     cmd_issue_spec_review -> agent_worker_codex_reviewer [style=dashed];
+    cmd_issue_spec_review -> script_escape_issue_body;
     cmd_issue_glossary_check -> skill_ref_glossary_criteria;
     agent_issue_critic -> skill_ref_issue_quality_criteria [style=dotted];
     agent_issue_feasibility -> skill_ref_issue_quality_criteria [style=dotted];
@@ -97,5 +100,6 @@ digraph Dependencies {
     skill_ref_issue_quality_criteria -> skill_ref_glossary_criteria [style=invis, weight=10];
     agent_issue_critic -> agent_issue_feasibility [style=invis, weight=10];
     agent_issue_feasibility -> agent_worker_codex_reviewer [style=invis, weight=10];
+    agent_worker_codex_reviewer -> script_escape_issue_body [style=invis, weight=10];
 
 }

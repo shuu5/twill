@@ -80,6 +80,7 @@ skills:
       - atomic: self-improve-collect
       - atomic: self-improve-propose
       - atomic: self-improve-close
+      - atomic: self-improve-review
       - atomic: ecc-monitor
       - workflow: workflow-setup
       - workflow: workflow-test-ready
@@ -88,6 +89,8 @@ skills:
       - workflow: workflow-pr-merge
       - workflow: workflow-dead-cleanup
       - workflow: workflow-tech-debt-triage
+      - script: autopilot-orchestrator
+      - script: autopilot-plan
       - reference: self-improve-format
     description: "依存グラフに基づくIssue群一括自律実装オーケストレーター"
 
@@ -224,6 +227,8 @@ skills:
         step: "1"
       - atomic: opsx-apply
         step: "2"
+      - atomic: check
+      - atomic: e2e-plan
     description: "テスト生成と準備確認ワークフロー"
 
   workflow-pr-verify:
@@ -243,6 +248,7 @@ skills:
         step: "2.5"
       - atomic: pr-test
         step: "3"
+      - composite: test-phase
     description: "PR検証ワークフロー（preflight → review → scope → test）"
 
   workflow-pr-fix:
@@ -258,6 +264,7 @@ skills:
         step: "4.5"
       - atomic: warning-fix
         step: "5"
+      - atomic: spec-diagnose
     description: "PR修正ワークフロー（fix → post-fix-verify → warning-fix）"
 
   workflow-pr-merge:
@@ -626,12 +633,13 @@ commands:
     type: composite
     path: commands/issue-spec-review.md
     spawnable_by: [controller]
-    can_spawn: [specialist]
+    can_spawn: [specialist, script]
     tools: [Agent(issue-critic, issue-feasibility, worker-codex-reviewer)]
     calls:
       - specialist: issue-critic
       - specialist: issue-feasibility
       - specialist: worker-codex-reviewer
+      - script: escape-issue-body
     description: "1 Issue × 3 specialist 並列レビュー（chain 分割）"
 
   issue-review-aggregate:
@@ -1151,11 +1159,13 @@ commands:
     type: atomic
     path: commands/auto-merge.md
     spawnable_by: [workflow]
-    can_spawn: []
+    can_spawn: [script]
     chain: "pr-merge"
     step_in:
       parent: workflow-pr-merge
       step: "8.5"
+    calls:
+      - script: auto-merge
     description: "squash マージ → archive → cleanup 実行（autopilot-first）"
 
   pr-cycle-analysis:
@@ -1365,6 +1375,7 @@ scripts:
     calls:
       - script: state-read
       - script: session:session-state
+      - script: health-report
     description: "Worker 論理的異常検知（chain停止・エラー出力・input-waiting長時間）+ health-report 生成"
 
   post-skill-chain-nudge:
@@ -1387,9 +1398,11 @@ scripts:
     description: "specialist 出力の共通スキーマパース（status + findings）"
 
   # C-4: 旧 plugin から移植
-  autopilot-plan: # standalone: co-autopilot SKILL.md からインライン bash 実行（controller→script は型ルール上 calls 不可）
+  autopilot-plan:
     type: script
     path: scripts/autopilot-plan.sh
+    calls:
+      - script: autopilot-plan-board
     description: "autopilot 実行計画 (plan.yaml) 生成（explicit/issues モード）"
 
   autopilot-should-skip:
@@ -1430,6 +1443,8 @@ scripts:
       - script: state-read
       - script: state-write
       - script: resolve-project
+      - script: chain-steps
+      - script: resolve-issue-num
     commands:
       - init
       - board-status-update
@@ -1470,6 +1485,54 @@ scripts:
     type: script
     path: scripts/session-audit.sh
     description: "セッション JSONL から監査サマリー抽出"
+
+  auto-merge:
+    type: script
+    path: scripts/auto-merge.sh
+    description: "autopilot-first auto-merge（4 Layer ガード付き、Worker マージ禁止の機械的担保）"
+
+  chain-steps:
+    type: script
+    path: scripts/chain-steps.sh
+    description: "chain ステップ順序の共有定義（SSOT）"
+
+  compaction-resume:
+    type: script
+    path: scripts/compaction-resume.sh
+    calls:
+      - script: chain-steps
+    description: "compaction 後の chain 復帰判定"
+
+  resolve-issue-num:
+    type: script
+    path: scripts/resolve-issue-num.sh
+    description: "CWD 非依存の Issue 番号解決（WORKER_ISSUE_NUM → worktree → git branch）"
+
+  health-report:
+    type: script
+    path: scripts/health-report.sh
+    description: "autopilot 異常検知用の構造化ヘルスレポート生成"
+
+  autopilot-plan-board:
+    type: script
+    path: scripts/autopilot-plan-board.sh
+    calls:
+      - script: resolve-project
+    description: "autopilot-plan.sh の --board モード関数群"
+
+  project-board-archive:
+    type: script
+    path: scripts/project-board-archive.sh
+    calls:
+      - script: resolve-project
+    description: "Project Board の Done アイテム一括アーカイブ"
+
+  project-board-backfill:
+    type: script
+    path: scripts/project-board-backfill.sh
+    calls:
+      - script: resolve-project
+    description: "欠落 Issue を Project Board に一括追加"
 
   # check-db-migration: removed — webapp 固有、dev plugin 不使用（scripts/check-db-migration.py は保持）
 
@@ -1715,14 +1778,14 @@ agents:
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "E2Eテストの偽陽性リスク検出"
 
-  autofix-loop: # standalone: Task tool 経由で動的 spawn（calls 不要）
+  autofix-loop:
     type: specialist
     path: agents/autofix-loop.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "自動修正ループ"
+    description: "自動修正ループ（spec-diagnose は workflow-pr-fix 経由で呼出）"
 
   spec-scaffold-tests:
     type: specialist
