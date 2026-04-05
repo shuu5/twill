@@ -50,13 +50,13 @@ Issue 起点の開発フロー:
 /twl:workflow-setup #<issue-number>
 
 # 2. 実装（tasks.md に沿って実装）
-/twl:opsx-apply <change-id>
+/twl:change-apply <change-id>
 
 # 3. PR サイクル（レビュー + テスト + 修正）
 /twl:workflow-pr-cycle
 
 # 4. アーカイブ + worktree 削除
-/twl:opsx-archive
+/twl:change-archive
 /twl:worktree-delete
 ```
 

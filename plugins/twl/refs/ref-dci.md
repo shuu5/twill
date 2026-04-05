@@ -72,7 +72,7 @@ allowed-tools: Bash, Read, Write
 | scope-judge | PR_NUMBER |
 | check | PROJECT_ROOT |
 | init | BRANCH, REPO_MODE |
-| opsx-apply | BRANCH, ISSUE_NUM |
+| change-apply | BRANCH, ISSUE_NUM |
 | pr-cycle-analysis | PR_NUMBER |
 | controller-autopilot | REPO_MODE |
 | env:rebuild | BRANCH |

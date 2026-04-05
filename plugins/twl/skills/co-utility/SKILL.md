@@ -29,7 +29,7 @@ standalone ユーティリティコマンドの統合エントリポイント。
 
 | カテゴリ | キーワード | コマンド |
 |---------|-----------|---------|
-| **OpenSpec** | propose, apply, archive, opsx, 提案, 実装, アーカイブ | propose, apply, archive, opsx-archive |
+| **OpenSpec** | propose, apply, archive, change, 提案, 実装, アーカイブ | change-propose, change-apply, change-archive |
 | **Worktree** | worktree, 一覧, 削除, list, delete | worktree-list, worktree-delete |
 | **検証** | validate, check, 検証, チェック, diagnose, 診断 | twl-validate, check, spec-diagnose |
 | **開発** | services, サービス, ui, capture, スクショ, e2e, schema | services, ui-capture, e2e-plan, schema-update |
@@ -51,10 +51,9 @@ standalone ユーティリティコマンドの統合エントリポイント。
 利用可能なユーティリティコマンド:
 
 📦 OpenSpec
-  /twl:propose   — change ディレクトリを作成し全 artifact を一括生成
-  /twl:apply     — OpenSpec change の tasks.md に沿ってタスクを実装
-  /twl:archive   — 完了済み change を archive/ に移動
-  /twl:opsx-archive — OpenSpec アーカイブ（低頻度）
+  /twl:change-propose — change ディレクトリを作成し全 artifact を一括生成
+  /twl:change-apply   — OpenSpec change の tasks.md に沿ってタスクを実装
+  /twl:change-archive — 完了済み change を archive/ に移動
 
 🌳 Worktree
   /twl:worktree-list   — worktree 一覧表示

@@ -26,5 +26,5 @@ MCP ツール `build_or_update_graph_tool(full_rebuild=True)` を呼び出す。
 
 ## チェックポイント（MUST）
 
-`/twl:opsx-propose` を Skill tool で自動実行。
+`/twl:change-propose` を Skill tool で自動実行。
 

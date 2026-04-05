@@ -22,7 +22,7 @@ chains:
       - worktree-create
       - project-board-status-update
       - crg-auto-build
-      - opsx-propose
+      - change-propose
       - ac-extract
 
   pr-verify:
@@ -179,10 +179,9 @@ skills:
     spawnable_by: [user]
     can_spawn: [atomic]
     calls:
-      - atomic: propose
-      - atomic: apply
-      - atomic: archive
-      - atomic: opsx-archive
+      - atomic: change-propose
+      - atomic: change-apply
+      - atomic: change-archive
       - atomic: worktree-list
       - atomic: worktree-delete
       - atomic: twl-validate
@@ -210,7 +209,7 @@ skills:
         step: "2.3"
       - atomic: crg-auto-build
         step: "2.4"
-      - atomic: opsx-propose
+      - atomic: change-propose
         step: "3"
       - atomic: ac-extract
         step: "3.5"
@@ -225,7 +224,7 @@ skills:
     calls:
       - composite: test-scaffold
         step: "1"
-      - atomic: opsx-apply
+      - atomic: change-apply
         step: "2"
       - atomic: check
       - atomic: e2e-plan
@@ -286,7 +285,9 @@ skills:
         step: "8"
       - atomic: auto-merge
         step: "8.5"
-    description: "PRマージワークフロー（e2e → report → analysis → check → merge）"
+      - atomic: change-archive
+        step: "9"
+    description: "PRマージワークフロー（e2e → report → analysis → check → archive → merge）"
 
   workflow-dead-cleanup:
     type: workflow
@@ -470,33 +471,36 @@ commands:
       step: "2.4"
     description: "CRG グラフ自動ビルド"
 
-  opsx-propose:
+  change-propose:
     type: atomic
-    path: commands/opsx-propose.md
+    path: commands/change-propose.md
     spawnable_by: [controller, workflow]
     can_spawn: []
     chain: "setup"
     step_in:
       parent: workflow-setup
       step: "3"
-    description: "OpenSpec 提案ラッパー"
+    description: "OpenSpec 提案（change-propose）"
 
-  opsx-apply:
+  change-apply:
     type: atomic
-    path: commands/opsx-apply.md
+    path: commands/change-apply.md
     spawnable_by: [controller, workflow]
     can_spawn: []
     step_in:
       parent: workflow-test-ready
       step: "2"
-    description: "OpenSpec 実装ラッパー"
+    description: "OpenSpec 実装（change-apply）"
 
-  opsx-archive: # standalone: 低頻度ユーティリティ
+  change-archive:
     type: atomic
-    path: commands/opsx-archive.md
+    path: commands/change-archive.md
     spawnable_by: [controller, workflow]
     can_spawn: []
-    description: "OpenSpec アーカイブ"
+    step_in:
+      parent: workflow-pr-merge
+      step: "9"
+    description: "OpenSpec アーカイブ（change-archive）"
 
   ac-extract:
     type: atomic
@@ -885,26 +889,6 @@ commands:
     can_spawn: []
     description: "アイデア検討・問題調査・要件整理のための思考パートナー"
 
-  propose: # standalone: ユーザー直接起動
-    type: atomic
-    path: commands/propose.md
-    spawnable_by: [controller, workflow]
-    can_spawn: []
-    description: "change ディレクトリを作成し全 artifact を一括生成"
-
-  apply: # standalone: ユーザー直接起動
-    type: atomic
-    path: commands/apply.md
-    spawnable_by: [controller, workflow]
-    can_spawn: []
-    description: "OpenSpec change の tasks.md に沿ってタスクを実装"
-
-  archive: # standalone: ユーザー直接起動
-    type: atomic
-    path: commands/archive.md
-    spawnable_by: [controller, workflow]
-    can_spawn: []
-    description: "完了済み change を archive/ に移動"
 
   check: # standalone: ユーザー直接起動
     type: atomic
