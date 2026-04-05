@@ -26,6 +26,7 @@ _REPO_RE = re.compile(r"^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+$")
 _RESERVED_NAMES_RE = re.compile(r"^(main|master|HEAD)$")
 _ALLOWED_PREFIXES = ("feat/", "fix/", "refactor/", "docs/", "test/", "chore/")
 _BRANCH_CHAR_RE = re.compile(r"^[a-z0-9/-]+$")
+_BASE_BRANCH_RE = re.compile(r"^[a-zA-Z0-9/_.-]+$")
 _BRACKET_PREFIX_RE = re.compile(r"^\[[^\]]*\]\s*")
 
 
@@ -113,7 +114,7 @@ def generate_branch_name(issue_number: str, repo: str | None = None) -> str:
     slug = _slugify(title)
 
     # 50-char total limit: prefix + "/" + issue_number + "-" + slug
-    max_slug_len = 45 - len(prefix) - len(issue_number)
+    max_slug_len = max(0, 45 - len(prefix) - len(issue_number))
     if len(slug) > max_slug_len:
         slug = slug[:max_slug_len].rstrip("-")
 
@@ -221,6 +222,11 @@ class WorktreeManager:
         """
         if repo and not _REPO_RE.match(repo):
             raise WorktreeArgError(f"不正な -R 引数: {repo!r}（owner/repo 形式が必要）")
+
+        if not _BASE_BRANCH_RE.match(base_branch):
+            raise WorktreeArgError(
+                f"不正な --from 引数: {base_branch!r}（英数字・スラッシュ・ハイフン・ドットのみ許可）"
+            )
 
         issue_number: str | None = None
 

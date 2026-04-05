@@ -12,8 +12,10 @@ CLI usage:
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -28,6 +30,8 @@ _NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$")
 _REPO_RE = re.compile(r"^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+$")
 
 AVAILABLE_TYPES = ("rnaseq", "webapp-llm", "webapp-hono")
+
+_CO_AUTHOR = "Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 
 # Type → default project root env var
 _TYPE_ROOT_ENV: dict[str, str] = {
@@ -71,14 +75,12 @@ def _cleanup_openspec_local(project_dir: Path) -> None:
     """Remove project-local opsx commands and openspec skills (deprecated)."""
     opsx_dir = project_dir / ".claude" / "commands" / "opsx"
     if opsx_dir.is_dir():
-        import shutil
         shutil.rmtree(opsx_dir)
         print("   ✓ プロジェクトローカル opsx コマンドを削除（グローバルに委譲）")
 
     found = False
     for skill_dir in (project_dir / ".claude" / "skills").glob("openspec-*/"):
         if skill_dir.is_dir():
-            import shutil
             shutil.rmtree(skill_dir)
             found = True
     if found:
@@ -108,10 +110,9 @@ def _copy_template_layer(
             continue
         if item.is_dir() and name in ("agents", "commands", "rules"):
             continue
-        if name.startswith(".") and name == ".claude":
+        if name == ".claude":
             continue
 
-        import shutil
         dest = dest_dir / name
         if item.is_dir():
             shutil.copytree(item, dest, dirs_exist_ok=True)
@@ -122,7 +123,6 @@ def _copy_template_layer(
     for item in layer_dir.glob(".[!.]*"):
         if item.name == ".claude":
             continue
-        import shutil
         dest = dest_dir / item.name
         if item.is_dir():
             shutil.copytree(item, dest, dirs_exist_ok=True)
@@ -292,7 +292,7 @@ class ProjectManager:
             f"- Type: {project_type or 'generic'}\n"
             f"- Template inheritance: {inheritance_str}\n"
             f"- Project-specific CLAUDE.md\n\n"
-            f"Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+            f"{_CO_AUTHOR}"
         )
         r = _run(["git", "-C", str(main_dir), "commit", "-m", commit_msg])
         if r.returncode != 0:
@@ -437,7 +437,6 @@ class ProjectManager:
             print("   警告: Project Board の作成に失敗しました")
             return ""
 
-        import json
         data = json.loads(r.stdout)
         proj = data.get("data", {}).get("createProjectV2", {}).get("projectV2", {})
         board_project_id = proj.get("id", "")
@@ -511,6 +510,13 @@ class ProjectManager:
 
         print(f"=== プロジェクト移行分析: {project_name} ===")
         print("")
+
+        # Validate explicit project_type
+        if project_type and project_type not in AVAILABLE_TYPES:
+            raise ProjectArgError(
+                f"不明なプロジェクトタイプ: {project_type}\n"
+                f"利用可能なタイプ: {', '.join(AVAILABLE_TYPES)}"
+            )
 
         # 1. Analyse current state
         print("1. 現状分析...")
@@ -596,10 +602,12 @@ class ProjectManager:
             return "rnaseq"
 
         pkg_json = project_dir / "package.json"
+        pkg_json_content = pkg_json.read_text(encoding="utf-8", errors="ignore") if pkg_json.exists() else ""
         backend_pkg_json = project_dir / "apps" / "backend" / "package.json"
+        backend_content = backend_pkg_json.read_text(encoding="utf-8", errors="ignore") if backend_pkg_json.exists() else ""
         if (
-            (pkg_json.exists() and '"hono"' in pkg_json.read_text(encoding="utf-8", errors="ignore"))
-            or (backend_pkg_json.exists() and '"@hono/zod-openapi"' in backend_pkg_json.read_text(encoding="utf-8", errors="ignore"))
+            (pkg_json.exists() and '"hono"' in pkg_json_content)
+            or (backend_pkg_json.exists() and '"@hono/zod-openapi"' in backend_content)
             or (project_dir / "packages" / "schema").is_dir()
         ):
             print("   タイプ検出: webapp-hono (Hono/Zod monorepo構造)")

@@ -10,8 +10,10 @@ Covers:
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch, call
 
 import pytest
@@ -182,10 +184,6 @@ class TestGenerateBranchName:
         assert len(branch) <= 50
         assert branch == branch.lower()
         assert re.match(r"^[a-z0-9/-]+$", branch)
-
-
-import re
-from typing import Any
 
 
 # ---------------------------------------------------------------------------
