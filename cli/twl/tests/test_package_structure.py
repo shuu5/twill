@@ -58,9 +58,15 @@ class TestSrcLayout:
             "src/twl/cli.py must exist"
 
 
+import pytest
+
+ENGINE_EXISTS = (TWL_DIR / "twl-engine.py").exists()
+
+
 class TestEntryPoint:
     """AC1, AC2: python3 -m twl entry point behavior."""
 
+    @pytest.mark.skipif(not ENGINE_EXISTS, reason="twl-engine.py not found")
     def test_help_exits_zero(self):
         """AC1: python3 -m twl --help shows help and exits 0."""
         result = subprocess.run(
@@ -75,6 +81,7 @@ class TestEntryPoint:
             f"python3 -m twl --help failed: {output}"
         assert len(output) > 0, "help output must not be empty"
 
+    @pytest.mark.skipif(not ENGINE_EXISTS, reason="twl-engine.py not found")
     def test_unknown_flag_shows_usage(self):
         """AC2: unknown command falls through to twl-engine.py error handling."""
         result = subprocess.run(

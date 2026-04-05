@@ -6,7 +6,12 @@ from pathlib import Path
 
 def run() -> None:
     """Load twl-engine.py and call its main() function."""
-    engine_path = Path(__file__).parent.parent.parent / "twl-engine.py"
+    import os
+    env_path = os.environ.get("TWL_ENGINE_PATH")
+    if env_path:
+        engine_path = Path(env_path)
+    else:
+        engine_path = Path(__file__).parent.parent.parent / "twl-engine.py"
     if not engine_path.exists():
         print(f"Error: twl-engine.py not found at {engine_path}", file=sys.stderr)
         sys.exit(1)
