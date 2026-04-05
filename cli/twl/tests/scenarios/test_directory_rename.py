@@ -18,7 +18,7 @@ from unittest.mock import patch
 
 import yaml
 
-TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "src" / "twl" / "engine.py"
 
 
 # ---------------------------------------------------------------------------
