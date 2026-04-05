@@ -2,7 +2,7 @@
 name: spawn
 description: |
   新規セッションで指定プロンプトを実行。コンテキスト引き継ぎなし。
-  tmux new-window で cld を起動し、引数をプロンプトとして渡す。
+  tmux new-window で cld を起動し、wait-ready + inject-file でプロンプトを送達。
 
   Use when user wants to: spawn new session, run background task,
   start independent session, run command in new window,
@@ -27,6 +27,7 @@ description: |
 |------|--------------|------|
 | 即実行 | 引数なし | カレントディレクトリで `cld-spawn` を即座に実行 |
 | cd | 「tradingで」「別ディレクトリで」「paperプロジェクトで」 | AskUserQuestion でプロジェクト選択 |
+| window名指定 | 「11というウィンドウで」「window名はXで」 | `--window-name` オプション使用 |
 | prompt | cd 意図なしのテキスト | `cld-spawn "$PROMPT"` を即実行 |
 
 ## 実行手順
@@ -66,14 +67,20 @@ description: |
    ```bash
    SCRIPT_DIR="${CLAUDE_PLUGIN_ROOT}/scripts"
 
-   # cd ありの場合
-   bash "$SCRIPT_DIR/cld-spawn" --cd "$TARGET_DIR" "$FULL_PROMPT"
+   # オプション構築
+   OPTS=()
+   [[ -n "$TARGET_DIR" ]] && OPTS+=(--cd "$TARGET_DIR")
+   [[ -n "$WINDOW_NAME" ]] && OPTS+=(--window-name "$WINDOW_NAME")
 
-   # cd なしの場合
-   bash "$SCRIPT_DIR/cld-spawn" "$FULL_PROMPT"
+   bash "$SCRIPT_DIR/cld-spawn" "${OPTS[@]}" "$FULL_PROMPT"
    ```
 
-   cld-spawn の stdout からウィンドウ名を取得（`spawned → tmux window 'WINDOW_NAME'` の形式）。
+   cld-spawn は以下を順に実行:
+   1. tmux new-window で cld を引数なし起動
+   2. `session-state.sh wait` で input-waiting 状態を待機（デフォルト60秒）
+   3. プロンプトを一時ファイルに書き出し `session-comm.sh inject-file` で送達
+
+   stdout からウィンドウ名を取得（`spawned → tmux window 'WINDOW_NAME'` の形式）。
 
 4. watch 処理（WITH_WATCH=true の場合）
 

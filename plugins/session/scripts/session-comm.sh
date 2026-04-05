@@ -5,6 +5,7 @@
 # Usage:
 #   session-comm.sh capture <window> [--lines N] [--raw]
 #   session-comm.sh inject <window> <text> [--force] [--no-enter]
+#   session-comm.sh inject-file <window> <file> [--force] [--no-enter]
 #   session-comm.sh wait-ready <window> [--timeout N]
 #
 # Dependencies: session-state.sh (#277)
@@ -29,13 +30,15 @@ usage() {
 Usage:
   session-comm.sh capture <window> [--lines N] [--all] [--raw]
   session-comm.sh inject <window> <text> [--force] [--no-enter]
+  session-comm.sh inject-file <window> <file> [--force] [--no-enter]
   session-comm.sh wait-ready <window> [--timeout SECONDS]
 
 Subcommands:
-  capture     Capture pane content (ANSI stripped by default)
-              --all   Capture full scrollback (mutually exclusive with --lines)
-  inject      Send text to a window (state-checked)
-  wait-ready  Wait until window is input-waiting
+  capture      Capture pane content (ANSI stripped by default)
+               --all   Capture full scrollback (mutually exclusive with --lines)
+  inject       Send single-line text to a window (state-checked)
+  inject-file  Send file content to a window via tmux load-buffer (multi-line safe)
+  wait-ready   Wait until window is input-waiting
 EOF
     exit 1
 }
@@ -245,6 +248,91 @@ cmd_inject() {
 }
 
 # =============================================================================
+# サブコマンド: inject-file
+# =============================================================================
+cmd_inject_file() {
+    local window_name=""
+    local file_path=""
+    local force=false
+    local no_enter=false
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --force)
+                force=true
+                shift
+                ;;
+            --no-enter)
+                no_enter=true
+                shift
+                ;;
+            -*)
+                echo "Error: unknown option '$1'" >&2
+                usage
+                ;;
+            *)
+                if [[ -z "$window_name" ]]; then
+                    window_name="$1"
+                elif [[ -z "$file_path" ]]; then
+                    file_path="$1"
+                else
+                    echo "Error: unexpected argument '$1'" >&2
+                    usage
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [[ -z "$window_name" ]]; then
+        echo "Error: window name required" >&2
+        usage
+    fi
+    if [[ -z "$file_path" ]]; then
+        echo "Error: file path required" >&2
+        usage
+    fi
+    if [[ ! -f "$file_path" ]]; then
+        echo "Error: file not found: $file_path" >&2
+        exit 1
+    fi
+
+    local target
+    target=$(resolve_target "$window_name") || exit 1
+
+    # 状態チェック
+    local state
+    if ! state=$("$SCRIPT_DIR/session-state.sh" state "$window_name" 2>/dev/null); then
+        echo "Warning: session-state.sh failed for '$window_name'" >&2
+        state="unknown"
+    fi
+
+    if [[ "$state" != "input-waiting" ]]; then
+        if $force; then
+            echo "Warning: target '$window_name' is in state '$state' (not input-waiting), sending anyway" >&2
+        else
+            echo "Error: target '$window_name' is in state '$state' (expected: input-waiting)" >&2
+            exit 2
+        fi
+    fi
+
+    # tmux load-buffer + paste-buffer で改行を含むテキストを安全に送達
+    tmux load-buffer "$file_path" || {
+        echo "Error: failed to load buffer from '$file_path'" >&2
+        exit 1
+    }
+
+    tmux paste-buffer -t "$target" || {
+        echo "Error: failed to paste buffer to '$window_name'" >&2
+        exit 1
+    }
+
+    if ! $no_enter; then
+        tmux send-keys -t "$target" Enter
+    fi
+}
+
+# =============================================================================
 # サブコマンド: wait-ready
 # =============================================================================
 cmd_wait_ready() {
@@ -300,6 +388,10 @@ case "${1:-}" in
     inject)
         shift
         cmd_inject "$@"
+        ;;
+    inject-file)
+        shift
+        cmd_inject_file "$@"
         ;;
     wait-ready)
         shift

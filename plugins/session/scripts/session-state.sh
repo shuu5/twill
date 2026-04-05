@@ -94,7 +94,25 @@ detect_state() {
     fi
 
     # idle: claudeプロセスが稼働していない
-    if [[ "$pane_cmd" != "claude" ]]; then
+    # pane_current_command が claude でない場合でも、systemd-run 経由（cld ラッパー）で
+    # 起動されている可能性があるため、pane のプロセスグループに claude が含まれるかを確認する
+    local has_claude=false
+    if [[ "$pane_cmd" == "claude" ]]; then
+        has_claude=true
+    else
+        local pane_pid
+        pane_pid=$(tmux list-panes -t "$target" -F '#{pane_pid}' 2>/dev/null | head -1)
+        if [[ -n "$pane_pid" ]]; then
+            # pane_pid のプロセスグループ内に claude が存在するか確認
+            local pgid
+            pgid=$(ps -o pgid= -p "$pane_pid" 2>/dev/null | tr -d ' ')
+            if [[ -n "$pgid" ]] && pgrep -g "$pgid" 2>/dev/null | xargs -r ps -o comm= -p 2>/dev/null | grep -q "^claude$"; then
+                has_claude=true
+            fi
+        fi
+    fi
+
+    if ! $has_claude; then
         echo "idle"
         return
     fi
@@ -111,9 +129,20 @@ detect_state() {
     last_lines=$(echo "$captured" | sed '/^[[:space:]]*$/d' | tail -5)
 
     # input-waiting: プロンプトパターンが末尾にある
+    # Claude Code TUI �� capture-pane で UTF-8 バイト列を返すため、
+    # ❯ (U+276F) の直接マッチに加え、バイト列パターンとステータスバーでも検出
     if echo "$last_lines" | tail -1 | grep -qP "$PROMPT_PATTERN"; then
         echo "input-waiting"
         return
+    fi
+    # フォールバック: TUI のステータスバーパターンで input-waiting を検出
+    # "bypass permissions" または "esc to interrupt" が末尾にあり、
+    # かつ処理中インジケータ（Thinking, Working 等）がなければ input-waiting
+    if echo "$last_lines" | grep -q "bypass permissions\|esc to interrupt"; then
+        if ! echo "$captured" | grep -qP "Thinking|Working|Fiddle-faddling|Cooked for|Worked for"; then
+            echo "input-waiting"
+            return
+        fi
     fi
 
     # error: エラーパターンが末尾に存在（プロンプトが不在の場合のみ）
