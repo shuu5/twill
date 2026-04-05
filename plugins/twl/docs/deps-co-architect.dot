@@ -18,6 +18,8 @@ digraph Dependencies {
     // L0.5: Workflow Skills
 
     // Reference Skills
+    skill_ref_architecture [label="twl:ref-architecture\n(2,273 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_architecture_spec [label="twl:ref-architecture-spec\n(1,179 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_architect_completeness_check [label="architect-completeness-check\n(653 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -37,6 +39,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_architect; }
+    { rank=same; skill_ref_architecture; skill_ref_architecture_spec; }
     { rank=same; cmd_architect_completeness_check; cmd_architect_decompose; cmd_architect_group_refine; cmd_architect_issue_create; cmd_evaluate_architecture; cmd_explore; }
 
     // Edges

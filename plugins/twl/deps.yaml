@@ -10,6 +10,7 @@ entry_points:
   - skills/co-issue/SKILL.md
   - skills/co-project/SKILL.md
   - skills/co-architect/SKILL.md
+  - skills/co-utility/SKILL.md
 
 # チェーン（B-4 で追加、B-5 で pr-cycle 追加）
 chains:
@@ -164,6 +165,30 @@ skills:
       - reference: ref-architecture-spec
       - reference: ref-architecture
     description: "対話的アーキテクチャ構築ワークフロー"
+
+  co-utility:
+    type: controller
+    path: skills/co-utility/SKILL.md
+    effort: low
+    tools: []
+    spawnable_by: [user]
+    can_spawn: [atomic]
+    calls:
+      - atomic: propose
+      - atomic: apply
+      - atomic: archive
+      - atomic: opsx-archive
+      - atomic: worktree-list
+      - atomic: worktree-delete
+      - atomic: twl-validate
+      - atomic: check
+      - atomic: spec-diagnose
+      - atomic: services
+      - atomic: ui-capture
+      - atomic: e2e-plan
+      - atomic: schema-update
+      - atomic: self-improve-review
+    description: "standalone ユーティリティコマンドの統合エントリポイント"
 
   workflow-setup:
     type: workflow
@@ -547,13 +572,14 @@ commands:
     type: atomic
     path: commands/all-pass-check.md
     spawnable_by: [workflow]
-    can_spawn: []
+    can_spawn: [script]
     chain: "pr-merge"
     step_in:
       parent: workflow-pr-merge
       step: "7.5"
     calls:
       - script: state-write
+      - script: checkpoint-write
     description: "全パス判定（autopilot-first）"
 
   ac-verify:
@@ -993,6 +1019,7 @@ commands:
     calls:
       - script: specialist-output-parse
       - script: tech-stack-detect
+      - script: checkpoint-write
       - specialist: worker-structure
       - specialist: worker-principles
       - specialist: worker-code-reviewer
@@ -1025,6 +1052,8 @@ commands:
     step_in:
       parent: workflow-pr-fix
       step: "4"
+    calls:
+      - script: checkpoint-read
     description: "自動修正ループ + E2E 修復"
 
   e2e-screening:
@@ -1036,6 +1065,8 @@ commands:
     step_in:
       parent: workflow-pr-merge
       step: "6"
+    calls:
+      - script: checkpoint-write
     description: "Visual 検証（Screening + Heal）"
 
   merge-gate:
@@ -1052,6 +1083,9 @@ commands:
       - script: tech-stack-detect
       - script: state-write
       - script: worktree-delete
+      - script: checkpoint-write
+      - script: checkpoint-read
+      - script: merge-gate-execute
       - specialist: worker-structure
       - specialist: worker-principles
       - specialist: worker-code-reviewer
@@ -1461,6 +1495,16 @@ scripts:
     description: "harness 分類時に cross-repo Issue 自動作成"
 
   # switchover: removed — スイッチオーバー完了済み（scripts/switchover.sh は保持）
+
+  checkpoint-write:
+    type: script
+    path: scripts/checkpoint-write.sh
+    description: "composite 完了時に specialist findings を .autopilot/checkpoints/<step>.json に書き出す"
+
+  checkpoint-read:
+    type: script
+    path: scripts/checkpoint-read.sh
+    description: "checkpoint ファイルから要約フィールドまたは CRITICAL findings を読み取る"
 
 # エージェント（C-3 で追加）
 agents:

@@ -1,0 +1,84 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="co-utility";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+    skill_co_utility [label="twl:co-utility\n(1,033 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+
+    // Reference Skills
+
+    // L1: Direct Commands
+    cmd_self_improve_review [label="self-improve-review\n(1,086 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_worktree_list [label="worktree-list\n(200 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_opsx_archive [label="opsx-archive\n(238 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_propose [label="propose\n(1,052 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_apply [label="apply\n(852 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_archive [label="archive\n(808 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_check [label="check\n(1,948 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_twl_validate [label="twl-validate\n(869 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_services [label="services\n(967 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_ui_capture [label="ui-capture\n(637 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_e2e_plan [label="e2e-plan\n(435 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_worktree_delete [label="worktree-delete\n(390 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_schema_update [label="schema-update\n(477 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_spec_diagnose [label="spec-diagnose\n(634 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+    script_worktree_delete [label="worktree-delete\n(956 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_co_utility; }
+    { rank=same; cmd_self_improve_review; cmd_worktree_list; cmd_opsx_archive; cmd_propose; cmd_apply; cmd_archive; cmd_check; cmd_twl_validate; cmd_services; cmd_ui_capture; cmd_e2e_plan; cmd_worktree_delete; cmd_schema_update; cmd_spec_diagnose; }
+    { rank=same; script_worktree_delete; }
+
+    // Edges
+    skill_co_utility -> cmd_propose;
+    skill_co_utility -> cmd_apply;
+    skill_co_utility -> cmd_archive;
+    skill_co_utility -> cmd_opsx_archive;
+    skill_co_utility -> cmd_worktree_list;
+    skill_co_utility -> cmd_worktree_delete;
+    skill_co_utility -> cmd_twl_validate;
+    skill_co_utility -> cmd_check;
+    skill_co_utility -> cmd_spec_diagnose;
+    skill_co_utility -> cmd_services;
+    skill_co_utility -> cmd_ui_capture;
+    skill_co_utility -> cmd_e2e_plan;
+    skill_co_utility -> cmd_schema_update;
+    skill_co_utility -> cmd_self_improve_review;
+    cmd_worktree_delete -> script_worktree_delete;
+
+    // Ordering constraints (invisible edges)
+    cmd_propose -> cmd_apply [style=invis, weight=10];
+    cmd_apply -> cmd_archive [style=invis, weight=10];
+    cmd_archive -> cmd_opsx_archive [style=invis, weight=10];
+    cmd_opsx_archive -> cmd_worktree_list [style=invis, weight=10];
+    cmd_worktree_list -> cmd_worktree_delete [style=invis, weight=10];
+    cmd_worktree_delete -> cmd_twl_validate [style=invis, weight=10];
+    cmd_twl_validate -> cmd_check [style=invis, weight=10];
+    cmd_check -> cmd_spec_diagnose [style=invis, weight=10];
+    cmd_spec_diagnose -> cmd_services [style=invis, weight=10];
+    cmd_services -> cmd_ui_capture [style=invis, weight=10];
+    cmd_ui_capture -> cmd_e2e_plan [style=invis, weight=10];
+    cmd_e2e_plan -> cmd_schema_update [style=invis, weight=10];
+    cmd_schema_update -> cmd_self_improve_review [style=invis, weight=10];
+
+}

@@ -18,6 +18,11 @@ digraph Dependencies {
     // L0.5: Workflow Skills
 
     // Reference Skills
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_types [label="twl:ref-types\n(2,168 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_practices [label="twl:ref-practices\n(6,372 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_deps_format [label="twl:ref-deps-format\n(1,832 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_architecture [label="twl:ref-architecture\n(2,273 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_project_create [label="project-create\n(450 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -54,6 +59,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_project; }
+    { rank=same; skill_ref_specialist_output_schema; skill_ref_types; skill_ref_practices; skill_ref_deps_format; skill_ref_architecture; }
     { rank=same; cmd_project_create; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_architecture; }
     { rank=same; script_project_create; script_project_migrate; }

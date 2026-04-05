@@ -18,6 +18,11 @@ digraph Dependencies {
     // L0.5: Workflow Skills
 
     // Reference Skills
+    skill_ref_issue_template_bug [label="twl:ref-issue-template-bug\n(136 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_issue_template_feature [label="twl:ref-issue-template-feature\n(120 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_project_model [label="twl:ref-project-model\n(1,803 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_issue_quality_criteria [label="twl:ref-issue-quality-criteria\n(1,002 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_glossary_criteria [label="twl:ref-glossary-criteria\n(873 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_issue_structure [label="issue-structure\n(1,332 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -45,6 +50,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_issue; }
+    { rank=same; skill_ref_issue_template_bug; skill_ref_issue_template_feature; skill_ref_project_model; skill_ref_issue_quality_criteria; skill_ref_glossary_criteria; }
     { rank=same; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_issue_cross_repo_create; cmd_project_board_sync; cmd_explore; }
     { rank=same; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; }
 

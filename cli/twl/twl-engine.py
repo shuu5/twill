@@ -535,6 +535,30 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
             'step_in': data.get('step_in'),
         }
 
+    # refs セクション（reference 型スキル）
+    for name, data in deps.get('refs', {}).items():
+        node_id = f"skill:{name}"
+        if node_id in graph:
+            continue  # skills セクションに同名があれば skip
+        path = data.get('path')
+        tokens = count_tokens(plugin_root / path) if path else 0
+        graph[node_id] = {
+            'type': 'skill',
+            'skill_type': 'reference',
+            'name': name,
+            'path': path,
+            'description': data.get('description', ''),
+            'calls': parse_calls(data.get('calls', [])),
+            'uses_agents': data.get('uses_agents', []),
+            'external': data.get('external', []),
+            'requires_mcp': data.get('requires_mcp', []),
+            'required_by': [],
+            'conditional': None,
+            'tokens': tokens,
+            'chain': data.get('chain'),
+            'step_in': data.get('step_in'),
+        }
+
     # cross-plugin 参照ノードを収集・生成
     xref_nodes = set()
     for node_data in graph.values():
@@ -790,6 +814,11 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
             result['workflows'].append(skill_name)
         elif skill_type == 'reference':
             result['references'].append(skill_name)
+
+    # refs セクション（reference 型スキル）
+    for ref_name in deps.get('refs', {}):
+        if ref_name not in result['references']:
+            result['references'].append(ref_name)
 
     # エージェントの分類（orchestrator を分離）
     for agent_name, agent_data in deps.get('agents', {}).items():
@@ -1247,6 +1276,8 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
     existing_types = set()
     for skill_data in deps.get('skills', {}).values():
         existing_types.add(skill_data.get('type', 'controller'))
+    for ref_data in deps.get('refs', {}).values():
+        existing_types.add(ref_data.get('type', 'reference'))
     for cmd_data in deps.get('commands', {}).values():
         existing_types.add(cmd_data.get('type', 'atomic'))
     for agent_data in deps.get('agents', {}).values():
@@ -2290,6 +2321,10 @@ def find_orphans(graph: Dict, deps: dict) -> Dict[str, List[str]]:
         elif skill_type == 'reference':
             references.add(f"skill:{skill_name}")
 
+    # refs セクションの reference も除外対象
+    for ref_name in deps.get('refs', {}):
+        references.add(f"skill:{ref_name}")
+
     # redirects / launcher を特定
     redirects = set()
     for cmd_name, cmd_data in deps.get('commands', {}).items():
@@ -2355,9 +2390,9 @@ def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) 
     violations = []
 
     # セクション → コンポーネント型のマッピング
-    section_map = {'skills': 'skill', 'commands': 'command', 'agents': 'agent', 'scripts': 'script'}
+    section_map = {'skills': 'skill', 'commands': 'command', 'agents': 'agent', 'scripts': 'script', 'refs': 'skill'}
 
-    for section in ('skills', 'commands', 'agents', 'scripts'):
+    for section in ('skills', 'commands', 'agents', 'scripts', 'refs'):
         for name, data in deps.get(section, {}).items():
             comp_type = data.get('type')
             if not comp_type:
@@ -2369,10 +2404,14 @@ def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) 
                 violations.append(f"[unknown-type] {section}/{name}: type '{comp_type}' is not defined in TYPE_RULES")
                 continue
 
-            # Check 1: セクション配置
-            if rule['section'] != section:
+            # Check 1: セクション配置（refs セクションは skills の特殊形態として許可）
+            expected_section = rule['section']
+            actual_section = section
+            if actual_section == 'refs' and expected_section == 'skills':
+                ok_count += 1  # refs セクションの reference は valid
+            elif expected_section != actual_section:
                 violations.append(
-                    f"[section] {section}/{name}: type '{comp_type}' should be in '{rule['section']}', not '{section}'"
+                    f"[section] {section}/{name}: type '{comp_type}' should be in '{expected_section}', not '{actual_section}'"
                 )
             else:
                 ok_count += 1
@@ -2415,7 +2454,7 @@ def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) 
         'script': 'scripts',
     }
 
-    for section in ('skills', 'commands', 'agents', 'scripts'):
+    for section in ('skills', 'commands', 'agents', 'scripts', 'refs'):
         for name, data in deps.get(section, {}).items():
             caller_type = resolve_type(data.get('type', ''))
             caller_rule = TYPE_RULES.get(caller_type)
@@ -2428,7 +2467,10 @@ def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) 
                     if not target_section:
                         continue
 
+                    # callee をターゲットセクションから探索。reference は refs セクションにもある
                     callee_data = deps.get(target_section, {}).get(callee_name, {})
+                    if not callee_data and target_section == 'skills':
+                        callee_data = deps.get('refs', {}).get(callee_name, {})
                     callee_type = resolve_type(callee_data.get('type', ''))
                     callee_rule = TYPE_RULES.get(callee_type)
                     if not callee_rule:

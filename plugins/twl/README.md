@@ -98,6 +98,12 @@ Autopilot で複数 Issue を一括実装:
 </details>
 
 <details>
+<summary>co-utility</summary>
+
+![co-utility](./docs/deps-co-utility.svg)
+</details>
+
+<details>
 <summary>workflow-setup</summary>
 
 ![workflow-setup](./docs/deps-workflow-setup.svg)
@@ -110,9 +116,21 @@ Autopilot で複数 Issue を一括実装:
 </details>
 
 <details>
-<summary>workflow-pr-cycle</summary>
+<summary>workflow-pr-verify</summary>
 
-![workflow-pr-cycle](./docs/deps-workflow-pr-cycle.svg)
+![workflow-pr-verify](./docs/deps-workflow-pr-verify.svg)
+</details>
+
+<details>
+<summary>workflow-pr-fix</summary>
+
+![workflow-pr-fix](./docs/deps-workflow-pr-fix.svg)
+</details>
+
+<details>
+<summary>workflow-pr-merge</summary>
+
+![workflow-pr-merge](./docs/deps-workflow-pr-merge.svg)
 </details>
 
 <details>
