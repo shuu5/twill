@@ -19,8 +19,8 @@ specialist raw output は参照しない。
 
 ```bash
 # phase-review checkpoint から CRITICAL findings を取得
-CRITICAL_FINDINGS=$(bash scripts/checkpoint-read.sh --step phase-review --critical-findings)
-CRITICAL_COUNT=$(bash scripts/checkpoint-read.sh --step phase-review --field critical_count)
+CRITICAL_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --critical-findings)
+CRITICAL_COUNT=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field critical_count)
 ```
 
 ### 発動条件

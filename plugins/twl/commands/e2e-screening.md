@@ -37,11 +37,11 @@ ELSE スキップ（PASS を返す）
 
 ### checkpoint 書き出し（MUST）
 
-結果判定後、checkpoint-write.sh で結果を永続化する。
+結果判定後、checkpoint.py で結果を永続化する。
 
 ```bash
 # STATUS: 結果判定の PASS/FAIL、FINDINGS: E2E 結果の findings 配列（空配列可）
-bash scripts/checkpoint-write.sh --step e2e-screening --status "$STATUS" --findings "$FINDINGS"
+python3 -m twl.autopilot.checkpoint write --step e2e-screening --status "$STATUS" --findings "$FINDINGS"
 ```
 
 ## チェックポイント（MUST）

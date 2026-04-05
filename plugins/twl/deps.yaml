@@ -1528,12 +1528,12 @@ scripts:
 
   checkpoint-write:
     type: script
-    path: scripts/checkpoint-write.sh
+    path: src/twl/autopilot/checkpoint.py
     description: "composite 完了時に specialist findings を .autopilot/checkpoints/<step>.json に書き出す"
 
   checkpoint-read:
     type: script
-    path: scripts/checkpoint-read.sh
+    path: src/twl/autopilot/checkpoint.py
     description: "checkpoint ファイルから要約フィールドまたは CRITICAL findings を読み取る"
 
 # エージェント（C-3 で追加）
