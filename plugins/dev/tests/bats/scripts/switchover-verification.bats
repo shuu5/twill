@@ -36,16 +36,16 @@ teardown() {
   grep -qi "比較\|comparison\|compare" "$WORKTREE_ROOT/docs/switchover-guide.md"
 }
 
-@test "verification-guide: documents loom validate pass criteria" {
-  grep -q "loom validate" "$WORKTREE_ROOT/docs/switchover-guide.md"
+@test "verification-guide: documents twl validate pass criteria" {
+  grep -q "twl validate" "$WORKTREE_ROOT/docs/switchover-guide.md"
 }
 
-@test "verification-guide: documents loom check pass criteria" {
-  grep -q "loom check" "$WORKTREE_ROOT/docs/switchover-guide.md"
+@test "verification-guide: documents twl check pass criteria" {
+  grep -q "twl check" "$WORKTREE_ROOT/docs/switchover-guide.md"
 }
 
-@test "verification-guide: documents loom audit pass criteria" {
-  grep -q "loom audit" "$WORKTREE_ROOT/docs/switchover-guide.md"
+@test "verification-guide: documents twl audit pass criteria" {
+  grep -q "twl audit" "$WORKTREE_ROOT/docs/switchover-guide.md"
 }
 
 # ---------------------------------------------------------------------------

@@ -11,8 +11,8 @@
 #   - File existence: agents/issue-critic.md, agents/issue-feasibility.md
 #   - File existence: refs/ref-issue-quality-criteria.md
 #   - File removal: commands/issue-dig.md, commands/issue-assess.md must NOT exist
-#   - loom check passes (no missing files)
-#   - loom validate passes (no type violations)
+#   - twl check passes (no missing files)
+#   - twl validate passes (no type violations)
 #
 # What is NOT tested here:
 #   - co-issue SKILL.md runtime behaviour (LLM behaviour, not structurally verifiable)
@@ -365,30 +365,30 @@ EOF
 }
 
 # ---------------------------------------------------------------------------
-# Requirement: loom check / loom validate が PASS すること
+# Requirement: twl check / twl validate が PASS すること
 # Spec: specs/deps-update.md
 # ---------------------------------------------------------------------------
 
-# Scenario: loom check が PASS すること（全ファイルが存在する）
-@test "deps-update: loom check passes with no missing files" {
+# Scenario: twl check が PASS すること（全ファイルが存在する）
+@test "deps-update: twl check passes with no missing files" {
   local output exit_code
-  output=$(cd "$REPO_ROOT" && loom check 2>&1)
+  output=$(cd "$REPO_ROOT" && twl check 2>&1)
   exit_code=$?
   [[ $exit_code -eq 0 ]] \
-    || fail "loom check failed (exit=$exit_code). Output: $output"
+    || fail "twl check failed (exit=$exit_code). Output: $output"
   echo "$output" | grep -qi 'Missing: 0' \
-    || fail "loom check reports missing files. Output: $output"
+    || fail "twl check reports missing files. Output: $output"
 }
 
-# Scenario: loom validate が PASS すること（型制約違反なし）
-@test "deps-update: loom validate passes with no type violations" {
+# Scenario: twl validate が PASS すること（型制約違反なし）
+@test "deps-update: twl validate passes with no type violations" {
   local output exit_code
-  output=$(cd "$REPO_ROOT" && loom validate 2>&1)
+  output=$(cd "$REPO_ROOT" && twl validate 2>&1)
   exit_code=$?
   [[ $exit_code -eq 0 ]] \
-    || fail "loom validate failed (exit=$exit_code). Output: $output"
+    || fail "twl validate failed (exit=$exit_code). Output: $output"
   echo "$output" | grep -qi 'Violations: 0' \
-    || fail "loom validate reports violations. Output: $output"
+    || fail "twl validate reports violations. Output: $output"
 }
 
 # ---------------------------------------------------------------------------

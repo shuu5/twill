@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# switchover.sh - loom-plugin-dev スイッチオーバー管理
+# switchover.sh - plugin-dev スイッチオーバー管理
 # サブコマンド: check / switch / rollback / retire
 set -euo pipefail
 
@@ -35,27 +35,27 @@ EOF
 _run_check() {
   local has_error=false
 
-  # 1. loom validate
-  echo "=== loom validate ==="
+  # 1. twl validate
+  echo "=== twl validate ==="
   local validate_out
-  if validate_out=$(loom validate 2>&1); then
+  if validate_out=$(twl validate 2>&1); then
     echo "$validate_out"
     echo "✓ validate: OK"
   else
     echo "$validate_out"
-    echo "✗ 検証失敗: loom validate"
+    echo "✗ 検証失敗: twl validate"
     has_error=true
   fi
 
-  # 2. loom check
-  echo "=== loom check ==="
+  # 2. twl check
+  echo "=== twl check ==="
   local check_out
-  if check_out=$(loom check 2>&1); then
+  if check_out=$(twl check 2>&1); then
     echo "$check_out"
     echo "✓ check: OK"
   else
     echo "$check_out"
-    echo "✗ 検証失敗: loom check"
+    echo "✗ 検証失敗: twl check"
     has_error=true
   fi
 

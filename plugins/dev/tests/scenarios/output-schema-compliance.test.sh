@@ -425,17 +425,17 @@ test_frontmatter_format() {
 run_test "specialist ファイルが空行で始まらない [edge: frontmatter 形式]" test_frontmatter_format
 
 # =============================================================================
-# Cross-cutting: loom validate
+# Cross-cutting: twl validate
 # =============================================================================
 echo ""
-echo "--- Cross-cutting: loom validate ---"
+echo "--- Cross-cutting: twl validate ---"
 
-test_loom_validate_final() {
-  if ! command -v loom &>/dev/null; then
+test_twl_validate_final() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output exit_code
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
     echo "$output" >&2
@@ -444,10 +444,10 @@ test_loom_validate_final() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom validate 最終確認（全体）" test_loom_validate_final
+if command -v twl &>/dev/null; then
+  run_test "twl validate 最終確認（全体）" test_twl_validate_final
 else
-  run_test_skip "loom validate 最終確認（全体）" "loom command not found"
+  run_test_skip "twl validate 最終確認（全体）" "twl command not found"
 fi
 
 # =============================================================================

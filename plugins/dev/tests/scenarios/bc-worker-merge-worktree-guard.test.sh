@@ -148,7 +148,7 @@ echo ""
 echo "  [Scenario: worktrees/ 配下から実行]"
 
 test_guard_rejects_worktree_path() {
-  local fake_cwd="/home/user/projects/loom-plugin-dev/worktrees/fix/58-test"
+  local fake_cwd="/home/user/projects/twill/worktrees/fix/58-test"
   run_guard_with_pwd "${fake_cwd}"
   local rc=$?
   # Expect non-zero (rejection)
@@ -165,7 +165,7 @@ test_guard_rejects_nested_worktree_path() {
 run_test "worktrees/ 配下の深いネストパスも拒否する [edge]" test_guard_rejects_nested_worktree_path
 
 test_guard_outputs_error_message() {
-  local fake_cwd="/home/user/projects/loom-plugin-dev/worktrees/fix/58-test"
+  local fake_cwd="/home/user/projects/twill/worktrees/fix/58-test"
   local stderr_output
   stderr_output=$(bash -c "
     set -uo pipefail
@@ -189,7 +189,7 @@ echo ""
 echo "  [Scenario: main/ (non-worktrees) から実行]"
 
 test_guard_allows_main_path() {
-  local fake_cwd="/home/user/projects/loom-plugin-dev/main"
+  local fake_cwd="/home/user/projects/twill/main"
   run_guard_with_pwd "${fake_cwd}"
   local rc=$?
   [[ $rc -eq 0 ]]

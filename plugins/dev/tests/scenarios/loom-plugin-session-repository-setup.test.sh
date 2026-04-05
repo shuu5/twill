@@ -7,7 +7,7 @@
 set -uo pipefail
 
 # Target repo root (loom-plugin-session)
-PROJECT_ROOT="${LOOM_PLUGIN_SESSION_ROOT:-/home/shuu5/projects/local-projects/loom-plugin-session/main}"
+PROJECT_ROOT="${TWILL_PLUGIN_SESSION_ROOT:-/home/shuu5/projects/local-projects/twill-plugin-session/main}"
 
 # Counters
 PASS=0

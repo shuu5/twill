@@ -332,43 +332,43 @@ for c in required:
 }
 run_test "4 controllers [edge: path が実在ファイルを指す]" test_all_controllers_path_exists
 
-# Scenario: loom validate パス (line 29)
-# WHEN: deps.yaml 更新後に loom validate を実行する
+# Scenario: twl validate パス (line 29)
+# WHEN: deps.yaml 更新後に twl validate を実行する
 # THEN: バリデーションが PASS し、全コンポーネントの参照が正しく解決される
 
-test_loom_validate_pass() {
-  if ! command -v loom &>/dev/null; then
+test_twl_validate_pass() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   local exit_code=$?
   [[ $exit_code -eq 0 ]]
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom validate が PASS する" test_loom_validate_pass
+if command -v twl &>/dev/null; then
+  run_test "twl validate が PASS する" test_twl_validate_pass
 else
-  run_test_skip "loom validate が PASS する" "loom command not found"
+  run_test_skip "twl validate が PASS する" "twl command not found"
 fi
 
-# Edge case: loom validate の出力に ERROR がない
-test_loom_validate_no_errors() {
-  if ! command -v loom &>/dev/null; then
+# Edge case: twl validate の出力に ERROR がない
+test_twl_validate_no_errors() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   if echo "$output" | grep -qiP "^ERROR|:\s*ERROR"; then
     return 1
   fi
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom validate [edge: エラー出力なし]" test_loom_validate_no_errors
+if command -v twl &>/dev/null; then
+  run_test "twl validate [edge: エラー出力なし]" test_twl_validate_no_errors
 else
-  run_test_skip "loom validate [edge: エラー出力なし]" "loom command not found"
+  run_test_skip "twl validate [edge: エラー出力なし]" "twl command not found"
 fi
 
 # =============================================================================
@@ -491,23 +491,23 @@ echo "--- Requirement: 内部参照の正確性 ---"
 
 # Scenario: 未定義参照の検出 (line 38)
 # WHEN: SKILL.md 内で deps.yaml に未定義のコマンドを参照する
-# THEN: loom validate がエラーを報告する
+# THEN: twl validate がエラーを報告する
 
-# Edge case: loom check が通過する（deps.yaml 構造の正当性）
-test_loom_check_pass() {
-  if ! command -v loom &>/dev/null; then
+# Edge case: twl check が通過する（deps.yaml 構造の正当性）
+test_twl_check_pass() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom check 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl check 2>&1)
   local exit_code=$?
   [[ $exit_code -eq 0 ]]
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom check が PASS する" test_loom_check_pass
+if command -v twl &>/dev/null; then
+  run_test "twl check が PASS する" test_twl_check_pass
 else
-  run_test_skip "loom check が PASS する" "loom command not found"
+  run_test_skip "twl check が PASS する" "twl command not found"
 fi
 
 # Edge case: entry_points が 4 controllers を含む

@@ -372,7 +372,7 @@ test_audit_5_categories() {
   assert_file_contains "$AUDIT_CMD" "silent-failure" || return 1
   assert_file_contains "$AUDIT_CMD" "ai-compensation" || return 1
   assert_file_contains "$AUDIT_CMD" "retry-loop" || return 1
-  assert_file_contains "$AUDIT_CMD" "loom-inline-logic" || return 1
+  assert_file_contains "$AUDIT_CMD" "twl-inline-logic" || return 1
   return 0
 }
 

@@ -50,11 +50,11 @@ YAML 構造を壊さないよう注意。
 
 ### Step 3: 整合性検証
 
-#### 3a. loom check 実行
+#### 3a. twl check 実行
 
 ```bash
 cd <plugin_dir>
-loom check 2>&1
+twl check 2>&1
 ```
 
 **成功時**:
@@ -72,7 +72,7 @@ loom check 2>&1
 
 ```bash
 cd <plugin_dir>
-loom update-readme 2>&1
+twl update-readme 2>&1
 ```
 
 ### Step 4: 結果サマリー
@@ -84,7 +84,7 @@ loom update-readme 2>&1
 - 削除ファイル:
   - skills/xxx.md
   - commands/yyy.md
-- loom check: ✓ 成功
+- twl check: ✓ 成功
 - SVG 再生成: ✓ 成功
 
 次のステップ:
@@ -100,12 +100,12 @@ loom update-readme 2>&1
 | パス検証失敗 | 警告表示、該当項目スキップ、続行 |
 | ファイル削除失敗 | 警告表示、続行 |
 | deps.yaml パース失敗 | エラー内容を表示、ワークフロー終了 |
-| loom check 失敗 | リバート案内、ワークフロー終了 |
+| twl check 失敗 | リバート案内、ワークフロー終了 |
 
 ---
 
 ## 禁止事項（MUST NOT）
 
 - **パス検証なしでファイルを削除してはならない**
-- **loom check 失敗時に SVG 再生成を実行してはならない**
+- **twl check 失敗時に SVG 再生成を実行してはならない**
 - **外部参照ありコンポーネントを警告なしで削除してはならない**（controller で確認済みだが二重チェック）

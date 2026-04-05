@@ -8,17 +8,17 @@
 ### 1. ファイル存在確認
 ```bash
 cd ~/ubuntu-note-system/claude/plugins/t-{name}
-loom check
+twl check
 ```
 
 ### 2. 型ルール検証
 ```bash
-loom validate
+twl validate
 ```
 
 ### 2.5. deep-validate チェック
 ```bash
-loom audit
+twl audit
 ```
 - `[controller-bloat]`: controller/team-controller の行数（120行Warning, 200行Critical）
 - `[ref-placement]`: reference の calls 宣言が実消費者にあるか
@@ -50,7 +50,7 @@ claude plugin validate ~/ubuntu-note-system/claude/plugins/t-{name}
 
 ### 6. orphan ノード検出
 ```bash
-loom orphans
+twl orphans
 ```
 - 全コンポーネントが上流から到達可能か確認
 - orphan がある場合は Critical として報告
@@ -58,7 +58,7 @@ loom orphans
 
 ### 7. 依存ツリー表示
 ```bash
-loom tree
+twl tree
 ```
 
 ### 8. README/SVG 整合性確認

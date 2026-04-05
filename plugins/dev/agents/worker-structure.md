@@ -1,6 +1,6 @@
 ---
 name: dev:worker-structure
-description: "構造検証specialist: loom実行 + frontmatter整合性チェック"
+description: "構造検証specialist: twl実行 + frontmatter整合性チェック"
 type: specialist
 model: haiku
 effort: low
@@ -27,11 +27,11 @@ phase から以下の情報を受け取る:
 
 ## 手順
 
-### 1. loom による検証
+### 1. twl による検証
 ```bash
 cd {plugin_path}
-loom check
-loom validate
+twl check
+twl validate
 ```
 
 ### 2. frontmatter 整合性チェック
@@ -46,18 +46,18 @@ Glob で全コンポーネントファイルを列挙し、Read で frontmatter 
 - **atomic (commands/)**: `allowed-tools` の妥当性
 - **reference**: `disable-model-invocation: true` の存在
 
-### 2.5. loom audit 結果の参照（機械的チェック済み前提）
+### 2.5. twl audit 結果の参照（機械的チェック済み前提）
 
-`loom audit` の出力（Controller Size、Inline Implementation、Tools Consistency、1C1W、Self-Contained）は
+`twl audit` の出力（Controller Size、Inline Implementation、Tools Consistency、1C1W、Self-Contained）は
 呼び出し元（phase-review または merge-gate）が Bash で事前実行済み。
 結果は以下のいずれかに保存されている:
 
-- `${SNAPSHOT_DIR}/workers/loom-infra-check.md`（phase-review 経由）
-- `${SNAPSHOT_DIR}/workers/loom-audit-${plugin_name}.md`（merge-gate 経由）
+- `${SNAPSHOT_DIR}/workers/twl-infra-check.md`（phase-review 経由）
+- `${SNAPSHOT_DIR}/workers/twl-audit-${plugin_name}.md`（merge-gate 経由）
 
 このファイルを Read し、CRITICAL/WARNING の有無を確認した上で、AI 判断が必要な分析に集中する。
 
-**注意**: Controller Size・Inline Implementation・Tools Consistency 等の機械的チェックは `loom audit` でカバー済みのため、本 specialist では実行しない。
+**注意**: Controller Size・Inline Implementation・Tools Consistency 等の機械的チェックは `twl audit` でカバー済みのため、本 specialist では実行しない。
 
 ### 2.6. allowed-tools クロスバリデーション
 
@@ -80,7 +80,7 @@ deps.yaml の calls 構造を走査し:
 
 ### 3. orphan ノード検出
 ```bash
-loom orphans
+twl orphans
 ```
 - 上流から到達不能なコンポーネントがないか確認
 - orphan がある場合は severity: CRITICAL で報告

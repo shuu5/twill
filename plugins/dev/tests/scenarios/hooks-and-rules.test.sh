@@ -68,10 +68,10 @@ run_test_skip() {
 }
 
 # =============================================================================
-# Requirement: PostToolUse hook による loom validate 自動実行
+# Requirement: PostToolUse hook による twl validate 自動実行
 # =============================================================================
 echo ""
-echo "--- Requirement: PostToolUse hook による loom validate 自動実行 ---"
+echo "--- Requirement: PostToolUse hook による twl validate 自動実行 ---"
 
 # hooks.json is expected at .claude-plugin/hooks.json or .claude/hooks.json
 HOOKS_FILE=""
@@ -83,10 +83,10 @@ elif [[ -f "${PROJECT_ROOT}/.claude/hooks.json" ]]; then
   HOOKS_FILE=".claude/hooks.json"
 fi
 
-# Scenario: Edit 操作後に loom validate が実行される (line 7)
+# Scenario: Edit 操作後に twl validate が実行される (line 7)
 # WHEN: Edit ツールでファイルを変更する
-# THEN: PostToolUse hook が発火し loom validate が実行される
-test_hook_edit_loom_validate() {
+# THEN: PostToolUse hook が発火し twl validate が実行される
+test_hook_edit_twl_validate() {
   [[ -n "$HOOKS_FILE" ]] || return 1
   assert_file_exists "$HOOKS_FILE" || return 1
   assert_valid_json "$HOOKS_FILE" || return 1
@@ -104,9 +104,9 @@ sys.exit(0 if found else 1)
 }
 
 if [[ -n "$HOOKS_FILE" ]]; then
-  run_test "Edit 操作後に loom validate が実行される" test_hook_edit_loom_validate
+  run_test "Edit 操作後に twl validate が実行される" test_hook_edit_twl_validate
 else
-  run_test_skip "Edit 操作後に loom validate が実行される" "hooks.json not found"
+  run_test_skip "Edit 操作後に twl validate が実行される" "hooks.json not found"
 fi
 
 # Edge case: hooks.json が有効な JSON
@@ -135,7 +135,7 @@ else
 fi
 
 # Scenario: validate 違反時に報告される (line 11)
-# WHEN: loom validate が violation を検出する
+# WHEN: twl validate が violation を検出する
 # THEN: 違反内容がユーザーに報告される
 # Note: This is a behavioral test - we verify the hook configuration includes output reporting
 test_hook_validate_reports() {

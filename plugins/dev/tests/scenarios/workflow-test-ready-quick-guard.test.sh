@@ -212,7 +212,7 @@ test_deps_yaml_valid() {
 }
 run_test "deps.yaml が有効な YAML である" test_deps_yaml_valid
 
-# Scenario: deps.yaml 更新後に loom check が通る
+# Scenario: deps.yaml 更新後に twl check が通る
 # deps.yaml に chain-runner.sh の quick-guard コマンドが記述されているか
 test_deps_yaml_has_quick_guard() {
   assert_file_exists "deps.yaml" || return 1
@@ -220,13 +220,13 @@ test_deps_yaml_has_quick_guard() {
 }
 run_test "deps.yaml の chain-runner.sh エントリに quick-guard が記述されている" test_deps_yaml_has_quick_guard
 
-# Scenario: loom check が通る（loom コマンドが利用可能な場合のみ）
-test_loom_check_passes() {
-  if ! command -v loom &>/dev/null; then
+# Scenario: twl check が通る（twl コマンドが利用可能な場合のみ）
+test_twl_check_passes() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom check 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl check 2>&1)
   local exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
     echo "$output" >&2
@@ -235,10 +235,10 @@ test_loom_check_passes() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "deps.yaml 更新後に loom check がエラーなく完了する" test_loom_check_passes
+if command -v twl &>/dev/null; then
+  run_test "deps.yaml 更新後に twl check がエラーなく完了する" test_twl_check_passes
 else
-  run_test_skip "deps.yaml 更新後に loom check がエラーなく完了する" "loom command not found"
+  run_test_skip "deps.yaml 更新後に twl check がエラーなく完了する" "twl command not found"
 fi
 
 # =============================================================================

@@ -61,7 +61,7 @@ Agent tool（model: haiku）を使用して分析:
 | 2 | silent-failure | Bash 成功だが出力が期待と違い AI が補償行動 |
 | 3 | ai-compensation | Skill 実行中にスキル定義外の推論・ツール使用 |
 | 4 | retry-loop | 同一ツール+類似入力が 3 回以上連続 |
-| 5 | loom-inline-logic | Skill 実行中に長い Bash パイプラインが出現 |
+| 5 | twl-inline-logic | Skill 実行中に長い Bash パイプラインが出現 |
 
 各検出を JSON 形式で出力（category, confidence, description, evidence, suggestion）。
 

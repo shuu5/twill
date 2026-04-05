@@ -366,10 +366,10 @@ test_session_audit_five_categories() {
   assert_file_contains "$cmd" "silent-failure" || return 1
   assert_file_contains "$cmd" "ai-compensation" || return 1
   assert_file_contains "$cmd" "retry-loop" || return 1
-  assert_file_contains "$cmd" "loom-inline-logic" || return 1
+  assert_file_contains "$cmd" "twl-inline-logic" || return 1
   return 0
 }
-run_test "session-audit - 5 カテゴリ（script-fragility/silent-failure/ai-compensation/retry-loop/loom-inline-logic）が定義されている" test_session_audit_five_categories
+run_test "session-audit - 5 カテゴリ（script-fragility/silent-failure/ai-compensation/retry-loop/twl-inline-logic）が定義されている" test_session_audit_five_categories
 
 test_session_audit_script_exists() {
   assert_file_exists "scripts/session-audit.sh" || return 1

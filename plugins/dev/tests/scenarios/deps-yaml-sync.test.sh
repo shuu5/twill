@@ -176,35 +176,35 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Scenario: loom check が PASS
+# Scenario: twl check が PASS
 # ---------------------------------------------------------------------------
 
-test_loom_check_pass() {
-  local loom_bin
-  loom_bin=$(which loom 2>/dev/null) || return 1
-  cd "${PROJECT_ROOT}" && loom check > /dev/null 2>&1
+test_twl_check_pass() {
+  local twl_bin
+  twl_bin=$(which twl 2>/dev/null) || return 1
+  cd "${PROJECT_ROOT}" && twl check > /dev/null 2>&1
 }
 
-if which loom > /dev/null 2>&1; then
-  run_test "loom check が PASS" test_loom_check_pass
+if which twl > /dev/null 2>&1; then
+  run_test "twl check が PASS" test_twl_check_pass
 else
-  run_test_skip "loom check が PASS" "loom CLI not found"
+  run_test_skip "twl check が PASS" "twl CLI not found"
 fi
 
 # ---------------------------------------------------------------------------
-# Scenario: loom validate が PASS
+# Scenario: twl validate が PASS
 # ---------------------------------------------------------------------------
 
-test_loom_validate_pass() {
-  local loom_bin
-  loom_bin=$(which loom 2>/dev/null) || return 1
-  cd "${PROJECT_ROOT}" && loom validate > /dev/null 2>&1
+test_twl_validate_pass() {
+  local twl_bin
+  twl_bin=$(which twl 2>/dev/null) || return 1
+  cd "${PROJECT_ROOT}" && twl validate > /dev/null 2>&1
 }
 
-if which loom > /dev/null 2>&1; then
-  run_test "loom validate が PASS" test_loom_validate_pass
+if which twl > /dev/null 2>&1; then
+  run_test "twl validate が PASS" test_twl_validate_pass
 else
-  run_test_skip "loom validate が PASS" "loom CLI not found"
+  run_test_skip "twl validate が PASS" "twl CLI not found"
 fi
 
 # =============================================================================

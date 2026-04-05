@@ -16,7 +16,7 @@ setup() {
   ln -s "$SANDBOX/new-plugin" "$PLUGIN_DIR/dev"
   export PLUGIN_DIR
 
-  # Default stubs: loom validate/check pass, no tmux sessions
+  # Default stubs: twl validate/check pass, no tmux sessions
   stub_command "loom" '
     case "$*" in
       *validate*)
@@ -57,14 +57,14 @@ teardown() {
   assert_output --partial "切替可能"
 }
 
-@test "check: verifies loom validate passes" {
+@test "check: verifies twl validate passes" {
   run bash "$SANDBOX/scripts/switchover.sh" check
 
   assert_success
   assert_output --partial "validate"
 }
 
-@test "check: verifies loom check passes" {
+@test "check: verifies twl check passes" {
   run bash "$SANDBOX/scripts/switchover.sh" check
 
   assert_success
@@ -144,10 +144,10 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# Scenario: loom validate 失敗
+# Scenario: twl validate 失敗
 # ---------------------------------------------------------------------------
 
-@test "check: fails when loom validate fails" {
+@test "check: fails when twl validate fails" {
   stub_command "loom" '
     case "$*" in
       *validate*)
@@ -186,7 +186,7 @@ teardown() {
   assert_output --partial "validate"
 }
 
-@test "check: fails when loom check fails" {
+@test "check: fails when twl check fails" {
   stub_command "loom" '
     case "$*" in
       *validate*)
@@ -226,11 +226,11 @@ teardown() {
 
   run bash "$SANDBOX/scripts/switchover.sh" check
 
-  # Should still succeed if loom checks pass (no tmux = no sessions)
+  # Should still succeed if twl checks pass (no tmux = no sessions)
   assert_success
 }
 
-@test "check: fails when both loom validate and check fail" {
+@test "check: fails when both twl validate and check fail" {
   stub_command "loom" '
     echo "FAIL" >&2
     exit 1
@@ -299,6 +299,6 @@ teardown() {
   run bash "$SANDBOX/scripts/switchover.sh" check
 
   # Should still run checks, may warn about missing symlink
-  # The loom checks determine pass/fail, not symlink presence
+  # The twl checks determine pass/fail, not symlink presence
   assert_success || assert_output --partial "symlink"
 }

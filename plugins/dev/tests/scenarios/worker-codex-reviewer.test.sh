@@ -463,7 +463,7 @@ echo ""
 echo "--- Requirement: deps.yaml 更新 ---"
 
 # Scenario: deps.yaml 登録確認 (spec line 49)
-# WHEN: loom check を実行する
+# WHEN: twl check を実行する
 # THEN: worker-codex-reviewer が agents セクションに登録され、
 #       co-issue.calls に specialist: worker-codex-reviewer が含まれ、PASS する
 

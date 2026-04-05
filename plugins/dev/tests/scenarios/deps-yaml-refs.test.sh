@@ -256,91 +256,91 @@ test_deps_yaml_valid() {
 run_test "refs [edge: deps.yaml が有効な YAML]" test_deps_yaml_valid
 
 # =============================================================================
-# Requirement: loom check の通過
+# Requirement: twl check の通過
 # =============================================================================
 echo ""
-echo "--- Requirement: loom check の通過 ---"
+echo "--- Requirement: twl check の通過 ---"
 
-# Scenario: loom check が pass する (line 22)
-# WHEN: deps.yaml 更新後に loom check を実行する
+# Scenario: twl check が pass する (line 22)
+# WHEN: deps.yaml 更新後に twl check を実行する
 # THEN: exit code が 0 で、エラーが報告されない
-test_loom_check_pass() {
-  if ! command -v loom &>/dev/null; then
+test_twl_check_pass() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom check 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl check 2>&1)
   local exit_code=$?
   [[ $exit_code -eq 0 ]]
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom check が pass する" test_loom_check_pass
+if command -v twl &>/dev/null; then
+  run_test "twl check が pass する" test_twl_check_pass
 else
-  run_test_skip "loom check が pass する" "loom command not found"
+  run_test_skip "twl check が pass する" "twl command not found"
 fi
 
-# Edge case: loom check の出力に ERROR がない
-test_loom_check_no_errors() {
-  if ! command -v loom &>/dev/null; then
+# Edge case: twl check の出力に ERROR がない
+test_twl_check_no_errors() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom check 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl check 2>&1)
   if echo "$output" | grep -qiP "^ERROR|:\s*ERROR"; then
     return 1
   fi
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom check [edge: エラー出力なし]" test_loom_check_no_errors
+if command -v twl &>/dev/null; then
+  run_test "twl check [edge: エラー出力なし]" test_twl_check_no_errors
 else
-  run_test_skip "loom check [edge: エラー出力なし]" "loom command not found"
+  run_test_skip "twl check [edge: エラー出力なし]" "twl command not found"
 fi
 
 # =============================================================================
-# Requirement: loom validate の通過
+# Requirement: twl validate の通過
 # =============================================================================
 echo ""
-echo "--- Requirement: loom validate の通過 ---"
+echo "--- Requirement: twl validate の通過 ---"
 
-# Scenario: loom validate が新規 violation なしで完了する (line 30)
-# WHEN: loom validate を実行する
+# Scenario: twl validate が新規 violation なしで完了する (line 30)
+# WHEN: twl validate を実行する
 # THEN: 新規 violation が 0 件である
-test_loom_validate_pass() {
-  if ! command -v loom &>/dev/null; then
+test_twl_validate_pass() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   local exit_code=$?
   [[ $exit_code -eq 0 ]]
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom validate が新規 violation なしで完了する" test_loom_validate_pass
+if command -v twl &>/dev/null; then
+  run_test "twl validate が新規 violation なしで完了する" test_twl_validate_pass
 else
-  run_test_skip "loom validate が新規 violation なしで完了する" "loom command not found"
+  run_test_skip "twl validate が新規 violation なしで完了する" "twl command not found"
 fi
 
-# Edge case: loom validate の出力に "violation" が 0 件
-test_loom_validate_zero_violations() {
-  if ! command -v loom &>/dev/null; then
+# Edge case: twl validate の出力に "violation" が 0 件
+test_twl_validate_zero_violations() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   if echo "$output" | grep -qiP "violation"; then
     echo "$output" | grep -qiP "0.*violation|no.*violation|violation.*\b0\b" || return 1
   fi
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom validate [edge: violation 0件表示]" test_loom_validate_zero_violations
+if command -v twl &>/dev/null; then
+  run_test "twl validate [edge: violation 0件表示]" test_twl_validate_zero_violations
 else
-  run_test_skip "loom validate [edge: violation 0件表示]" "loom command not found"
+  run_test_skip "twl validate [edge: violation 0件表示]" "twl command not found"
 fi
 
 # =============================================================================

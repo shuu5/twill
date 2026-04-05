@@ -101,7 +101,7 @@ NEW_REFS=(
   baseline-input-validation
 )
 
-# 4 loom sync targets
+# 4 twl sync targets
 SYNC_REFS=(
   ref-types
   ref-practices
@@ -132,21 +132,21 @@ EXISTING_REFS=(
   ref-issue-template-feature
 )
 
-SYNC_MARKER="<!-- Synced from loom docs/ — do not edit directly -->"
+SYNC_MARKER="<!-- Synced from twl docs/ — do not edit directly -->"
 
 # =============================================================================
-# Requirement: loom sync 対象 reference の移植
+# Requirement: twl sync 対象 reference の移植
 # =============================================================================
 echo ""
-echo "--- Requirement: loom sync 対象 reference の移植 ---"
+echo "--- Requirement: twl sync 対象 reference の移植 ---"
 
-# Scenario: loom sync 対象ファイルの作成 (line 7)
+# Scenario: twl sync 対象ファイルの作成 (line 7)
 # WHEN: ref-types を移植する
 # THEN: refs/ref-types.md が作成され、先頭に同期マーカーが存在し、frontmatter に type: reference が宣言されている
 test_ref_types_exists_with_marker() {
   assert_file_exists "refs/ref-types.md" || return 1
   # Check sync marker in first 5 lines
-  if ! head -15 "${PROJECT_ROOT}/refs/ref-types.md" | grep -qF "Synced from loom docs/"; then
+  if ! head -15 "${PROJECT_ROOT}/refs/ref-types.md" | grep -qF "Synced from twl docs/"; then
     echo "Sync marker not found in first 5 lines" >&2
     return 1
   fi
@@ -168,7 +168,7 @@ test_all_sync_refs_exist() {
   fi
   return 0
 }
-run_test "loom sync 対象 4 ファイル全て存在" test_all_sync_refs_exist
+run_test "twl sync 対象 4 ファイル全て存在" test_all_sync_refs_exist
 
 # 全 4 sync refs に同期マーカーがある
 test_all_sync_refs_have_marker() {
@@ -179,7 +179,7 @@ test_all_sync_refs_have_marker() {
       failed+=("${name}: file not found")
       continue
     fi
-    if ! head -15 "${PROJECT_ROOT}/${file}" | grep -qF "Synced from loom docs/"; then
+    if ! head -15 "${PROJECT_ROOT}/${file}" | grep -qF "Synced from twl docs/"; then
       failed+=("${name}: sync marker not found")
     fi
   done
@@ -191,7 +191,7 @@ test_all_sync_refs_have_marker() {
   fi
   return 0
 }
-run_test "loom sync 対象 4 ファイル全てに同期マーカー" test_all_sync_refs_have_marker
+run_test "twl sync 対象 4 ファイル全てに同期マーカー" test_all_sync_refs_have_marker
 
 # Edge case: 同期マーカーがファイルの先頭行（1行目または frontmatter 直後）にある
 test_sync_marker_position() {
@@ -202,7 +202,7 @@ test_sync_marker_position() {
       continue
     fi
     # マーカーは先頭 5 行以内にあるべき
-    if ! head -15 "${PROJECT_ROOT}/${file}" | grep -qF "Synced from loom docs/"; then
+    if ! head -15 "${PROJECT_ROOT}/${file}" | grep -qF "Synced from twl docs/"; then
       failed+=("${name}: marker not in first 5 lines")
     fi
   done
@@ -225,7 +225,7 @@ test_non_sync_refs_no_marker() {
     if ! assert_file_exists "$file"; then
       continue
     fi
-    if head -15 "${PROJECT_ROOT}/${file}" | grep -qF "Synced from loom docs/"; then
+    if head -15 "${PROJECT_ROOT}/${file}" | grep -qF "Synced from twl docs/"; then
       failed+=("${name}: has sync marker but should not")
     fi
   done
@@ -239,13 +239,13 @@ test_non_sync_refs_no_marker() {
 }
 run_test "sync 対象外ファイルに同期マーカーがない [edge]" test_non_sync_refs_no_marker
 
-# Scenario: loom sync-docs --check の通過 (line 11)
-test_loom_sync_docs_check() {
-  if ! command -v loom &>/dev/null; then
+# Scenario: twl sync-docs --check の通過 (line 11)
+test_twl_sync_docs_check() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output exit_code
-  output=$(cd "${PROJECT_ROOT}" && loom sync-docs --check 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl sync-docs --check 2>&1)
   exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
     echo "$output" >&2
@@ -254,15 +254,15 @@ test_loom_sync_docs_check() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  # loom sync-docs may not be available yet
-  if cd "${PROJECT_ROOT}" && loom sync-docs --help &>/dev/null 2>&1; then
-    run_test "loom sync-docs --check がエラーなしで通過" test_loom_sync_docs_check
+if command -v twl &>/dev/null; then
+  # twl sync-docs may not be available yet
+  if cd "${PROJECT_ROOT}" && twl sync-docs --help &>/dev/null 2>&1; then
+    run_test "twl sync-docs --check がエラーなしで通過" test_twl_sync_docs_check
   else
-    run_test_skip "loom sync-docs --check がエラーなしで通過" "loom sync-docs subcommand not available"
+    run_test_skip "twl sync-docs --check がエラーなしで通過" "twl sync-docs subcommand not available"
   fi
 else
-  run_test_skip "loom sync-docs --check がエラーなしで通過" "loom command not found"
+  run_test_skip "twl sync-docs --check がエラーなしで通過" "twl command not found"
 fi
 
 # =============================================================================
@@ -561,13 +561,13 @@ sys.exit(0)
 }
 run_test "deps.yaml 全 refs の path が refs/<name>.md [edge: パス整合性]" test_deps_refs_path_consistency
 
-# Scenario: loom validate が通過 (line 48)
-test_loom_validate_refs() {
-  if ! command -v loom &>/dev/null; then
+# Scenario: twl validate が通過 (line 48)
+test_twl_validate_refs() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output exit_code
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
     echo "$output" >&2
@@ -576,10 +576,10 @@ test_loom_validate_refs() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom validate がエラーなしで通過する (refs)" test_loom_validate_refs
+if command -v twl &>/dev/null; then
+  run_test "twl validate がエラーなしで通過する (refs)" test_twl_validate_refs
 else
-  run_test_skip "loom validate がエラーなしで通過する (refs)" "loom command not found"
+  run_test_skip "twl validate がエラーなしで通過する (refs)" "twl command not found"
 fi
 
 # =============================================================================

@@ -105,7 +105,7 @@ Loom 監査結果: <Verdict>（<行数>行 / 上限80行）
 
 - [ ] `<抽出先パス>` が作成されている
 - [ ] 元の controller から該当インライン実装が除去されている
-- [ ] deps.yaml が更新されている（loom check: 0 violations）
+- [ ] deps.yaml が更新されている（twl check: 0 violations）
 - [ ] 既存の動作が変わらないこと
 
 ## Related

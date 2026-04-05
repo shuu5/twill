@@ -435,7 +435,7 @@ run_test "autopilot-plan-board [bash 構文エラーなし]" test_autopilot_boar
 # =============================================================================
 # Requirement: deps.yaml への lib エントリ追加
 # Scenario: deps.yaml 更新
-# WHEN: loom check を実行する
+# WHEN: twl check を実行する
 # THEN: scripts/lib/resolve-project.sh が deps.yaml に登録されており、エラーが出ない
 # =============================================================================
 echo ""
@@ -453,14 +453,14 @@ test_deps_yaml_has_lib_path() {
 }
 run_test "deps.yaml [scripts/lib/resolve-project.sh のパスが登録されている]" test_deps_yaml_has_lib_path
 
-# edge: loom CLI が利用可能な場合は loom check も実行
-if command -v loom >/dev/null 2>&1; then
-  test_loom_check_passes() {
-    cd "${PROJECT_ROOT}" && loom check >/dev/null 2>&1
+# edge: twl CLI が利用可能な場合は twl check も実行
+if command -v twl >/dev/null 2>&1; then
+  test_twl_check_passes() {
+    cd "${PROJECT_ROOT}" && twl check >/dev/null 2>&1
   }
-  run_test "deps.yaml [edge: loom check がエラーなし]" test_loom_check_passes
+  run_test "deps.yaml [edge: twl check がエラーなし]" test_twl_check_passes
 else
-  run_test_skip "deps.yaml [edge: loom check がエラーなし]" "loom CLI が見つかりません"
+  run_test_skip "deps.yaml [edge: twl check がエラーなし]" "twl CLI が見つかりません"
 fi
 
 # =============================================================================

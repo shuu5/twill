@@ -1,4 +1,4 @@
-# loom-plugin-dev 依存関係定義
+# plugin-dev 依存関係定義
 # version: 3.0
 # plugin: dev
 
@@ -268,26 +268,26 @@ refs:
     path: refs/ref-issue-template-feature.md
     description: "Feature Request Issue テンプレート"
 
-  # C-3: loom sync 対象 (4)
+  # C-3: twl sync 対象 (4)
   ref-types:
     type: reference
     path: refs/ref-types.md
-    description: "型システム仕様（loom sync）"
+    description: "型システム仕様（twl sync）"
 
   ref-practices:
     type: reference
     path: refs/ref-practices.md
-    description: "5原則+ライフサイクル+パターン選択ガイド（loom sync）"
+    description: "5原則+ライフサイクル+パターン選択ガイド（twl sync）"
 
   ref-deps-format:
     type: reference
     path: refs/ref-deps-format.md
-    description: "deps.yaml 形式仕様（loom sync）"
+    description: "deps.yaml 形式仕様（twl sync）"
 
   ref-architecture:
     type: reference
     path: refs/ref-architecture.md
-    description: "アーキテクチャパターン評価チェックリスト（loom sync）"
+    description: "アーキテクチャパターン評価チェックリスト（twl sync）"
 
   # C-3: プラグイン固有 (4)
   ref-architecture-spec:
@@ -853,12 +853,12 @@ commands:
 
   # === C-2a: その他（1個） ===
 
-  loom-validate: # standalone: プロジェクト固有ユーティリティ
+  twl-validate: # standalone: プロジェクト固有ユーティリティ
     type: atomic
-    path: commands/loom-validate.md
+    path: commands/twl-validate.md
     spawnable_by: [controller, workflow]
     can_spawn: []
-    description: "構造・型ルール検証（loom + plugin validate）"
+    description: "構造・型ルール検証（twl + plugin validate）"
 
   # === C-2b: Setup/Workflow-setup 系（5個） ===
 
@@ -1396,7 +1396,7 @@ agents:
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
     skills: [ref-specialist-output-schema]
-    description: "構造検証（loom実行 + frontmatter整合性チェック）"
+    description: "構造検証（twl実行 + frontmatter整合性チェック）"
 
   worker-principles:
     type: specialist

@@ -1,6 +1,6 @@
 # Dead Component 検出
 
-loom complexity で Dead Component を検出し、情報を収集・表示する。
+twl complexity で Dead Component を検出し、情報を収集・表示する。
 
 ## 入力
 
@@ -12,11 +12,11 @@ workflow-dead-cleanup から以下のコンテキストが渡される:
 
 ### Step 1: Dead Component 検出
 
-プラグインディレクトリで `loom complexity` を実行し、Dead Components セクションをパースする。
+プラグインディレクトリで `twl complexity` を実行し、Dead Components セクションをパースする。
 
 ```bash
 cd <plugin_dir>
-loom complexity 2>&1
+twl complexity 2>&1
 ```
 
 出力の `## Dead Components` セクションからテーブルをパース:
@@ -86,5 +86,5 @@ done
 
 ## 禁止事項（MUST NOT）
 
-- **検出結果を改変してはならない**: loom complexity の出力をそのまま反映
-- **reference 型コンポーネントを検出対象に含めてはならない**（loom が除外済みだが二重チェック）
+- **検出結果を改変してはならない**: twl complexity の出力をそのまま反映
+- **reference 型コンポーネントを検出対象に含めてはならない**（twl が除外済みだが二重チェック）

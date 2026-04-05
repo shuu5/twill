@@ -7,7 +7,7 @@ spawnable_by:
 - atomic
 ---
 
-<!-- Synced from loom docs/ — do not edit directly -->
+<!-- Synced from twl docs/ — do not edit directly -->
 
 # deps.yaml 形式仕様
 
@@ -32,7 +32,7 @@ hooks: { ... }              # 任意
 
 | フィールド | 目的 | 影響範囲 |
 |-----------|------|---------|
-| **`can_spawn`** | この型が spawn できる**型名**のバリデーション | `loom check` の型ルール検証のみ |
+| **`can_spawn`** | この型が spawn できる**型名**のバリデーション | `twl check` の型ルール検証のみ |
 | **`calls`** | このコンポーネントが実際に呼び出す**コンポーネント名** | **SVG 依存グラフのエッジ生成** + orphan 検出 |
 
 ### 重要なルール

@@ -256,16 +256,16 @@ sys.exit(0)
 }
 run_test "steps [edge: 最初が init / 最後が ac-extract]" test_chains_steps_first_last
 
-# Scenario: loom chain validate が pass する (line 15)
-# WHEN: loom chain validate を実行する
+# Scenario: twl chain validate が pass する (line 15)
+# WHEN: twl chain validate を実行する
 # THEN: setup chain に関する CRITICAL エラーが 0 件である
-test_loom_chain_validate() {
-  if ! command -v loom &>/dev/null; then
+test_twl_chain_validate() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  # loom chain validate は wrapper 未対応のため loom validate で chain 検証
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  # twl chain validate は wrapper 未対応のため twl validate で chain 検証
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   # Check no chain-bidir or chain-type errors related to setup chain
   if echo "$output" | grep -qP "\[chain-bidir\]|\[chain-type\]|\[step-order\]"; then
     echo "$output" | grep -P "\[chain" >&2
@@ -274,29 +274,29 @@ test_loom_chain_validate() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom chain validate が pass する" test_loom_chain_validate
+if command -v twl &>/dev/null; then
+  run_test "twl chain validate が pass する" test_twl_chain_validate
 else
-  run_test_skip "loom chain validate が pass する" "loom command not found"
+  run_test_skip "twl chain validate が pass する" "twl command not found"
 fi
 
-# Edge case: loom chain validate 出力に setup 関連の WARNING もない
-test_loom_chain_validate_no_warnings() {
-  if ! command -v loom &>/dev/null; then
+# Edge case: twl chain validate 出力に setup 関連の WARNING もない
+test_twl_chain_validate_no_warnings() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   if echo "$output" | grep -qP "\[chain.*WARNING\].*setup|setup.*\[chain.*WARNING\]"; then
     return 1
   fi
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom chain validate [edge: setup 関連 WARNING なし]" test_loom_chain_validate_no_warnings
+if command -v twl &>/dev/null; then
+  run_test "twl chain validate [edge: setup 関連 WARNING なし]" test_twl_chain_validate_no_warnings
 else
-  run_test_skip "loom chain validate [edge: setup 関連 WARNING なし]" "loom command not found"
+  run_test_skip "twl chain validate [edge: setup 関連 WARNING なし]" "twl command not found"
 fi
 
 # =============================================================================
@@ -480,15 +480,15 @@ sys.exit(0)
 }
 run_test "step_in [edge: step_in に parent フィールドが含まれる]" test_step_in_has_chain
 
-# Scenario: loom check での双方向検証 (line 31)
-# WHEN: loom check を実行する
+# Scenario: twl check での双方向検証 (line 31)
+# WHEN: twl check を実行する
 # THEN: [chain-bidir] および [step-bidir] エラーが 0 件である
-test_loom_check_bidir() {
-  if ! command -v loom &>/dev/null; then
+test_twl_check_bidir() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom check 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl check 2>&1)
   local exit_code=$?
   if echo "$output" | grep -qP "\[chain-bidir\].*error|\[step-bidir\].*error"; then
     echo "$output" | grep -P "\[chain-bidir\]|\[step-bidir\]" >&2
@@ -497,27 +497,27 @@ test_loom_check_bidir() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom check で [chain-bidir] [step-bidir] エラーが 0 件" test_loom_check_bidir
+if command -v twl &>/dev/null; then
+  run_test "twl check で [chain-bidir] [step-bidir] エラーが 0 件" test_twl_check_bidir
 else
-  run_test_skip "loom check で [chain-bidir] [step-bidir] エラーが 0 件" "loom command not found"
+  run_test_skip "twl check で [chain-bidir] [step-bidir] エラーが 0 件" "twl command not found"
 fi
 
-# Edge case: loom check 全体が exit 0
-test_loom_check_exit_zero() {
-  if ! command -v loom &>/dev/null; then
+# Edge case: twl check 全体が exit 0
+test_twl_check_exit_zero() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom check 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl check 2>&1)
   local exit_code=$?
   [[ $exit_code -eq 0 ]]
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom check [edge: exit code が 0]" test_loom_check_exit_zero
+if command -v twl &>/dev/null; then
+  run_test "twl check [edge: exit code が 0]" test_twl_check_exit_zero
 else
-  run_test_skip "loom check [edge: exit code が 0]" "loom command not found"
+  run_test_skip "twl check [edge: exit code が 0]" "twl command not found"
 fi
 
 # =============================================================================

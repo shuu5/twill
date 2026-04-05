@@ -114,13 +114,13 @@ test_workflow_setup_skips_ac_extract() {
 }
 run_test "workflow-setup SKILL.md に ac-extract の条件実行の記述がある" test_workflow_setup_skips_ac_extract
 
-# Edge case: workflow-setup SKILL.md に setup chain の loom validate が PASS（Violations: 0）
-test_loom_validate_pass() {
-  if ! command -v loom &>/dev/null; then
+# Edge case: workflow-setup SKILL.md に setup chain の twl validate が PASS（Violations: 0）
+test_twl_validate_pass() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   if echo "$output" | grep -qP "Violations: [^0]"; then
     echo "$output" | grep "Violations" >&2
     return 1
@@ -128,10 +128,10 @@ test_loom_validate_pass() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "quick-setup chain [edge: loom validate Violations: 0]" test_loom_validate_pass
+if command -v twl &>/dev/null; then
+  run_test "quick-setup chain [edge: twl validate Violations: 0]" test_twl_validate_pass
 else
-  run_test_skip "quick-setup chain [edge: loom validate Violations: 0]" "loom command not found"
+  run_test_skip "quick-setup chain [edge: twl validate Violations: 0]" "twl command not found"
 fi
 
 # Edge case: chain-runner.sh に detect_quick_label ヘルパーが存在する
@@ -222,17 +222,17 @@ test_co_issue_phase4_label() {
 run_test "co-issue SKILL.md に quick ラベル付与の記述がある" test_co_issue_phase4_label
 
 # =============================================================================
-# Requirement: loom validate が quick-setup chain でも pass する
+# Requirement: twl validate が quick-setup chain でも pass する
 # =============================================================================
 echo ""
-echo "--- Requirement: loom validate ---"
+echo "--- Requirement: twl validate ---"
 
-test_loom_validate_quick_setup() {
-  if ! command -v loom &>/dev/null; then
+test_twl_validate_quick_setup() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   if echo "$output" | grep -qP "\[chain-bidir\]|\[chain-type\]|\[step-order\]"; then
     echo "$output" | grep -P "\[chain" >&2
     return 1
@@ -240,10 +240,10 @@ test_loom_validate_quick_setup() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom validate が quick-setup chain でも pass する" test_loom_validate_quick_setup
+if command -v twl &>/dev/null; then
+  run_test "twl validate が quick-setup chain でも pass する" test_twl_validate_quick_setup
 else
-  run_test_skip "loom validate が quick-setup chain でも pass する" "loom command not found"
+  run_test_skip "twl validate が quick-setup chain でも pass する" "twl command not found"
 fi
 
 # =============================================================================

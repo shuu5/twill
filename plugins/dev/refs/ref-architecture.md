@@ -7,7 +7,7 @@ spawnable_by:
 - atomic
 ---
 
-<!-- Synced from loom docs/ — do not edit directly -->
+<!-- Synced from twl docs/ — do not edit directly -->
 
 # Loom アーキテクチャパターン評価チェックリスト
 

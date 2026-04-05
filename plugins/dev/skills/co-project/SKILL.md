@@ -120,7 +120,7 @@ manifest.yaml + テンプレートファイルを生成。
 ## plugin テンプレートについて
 
 旧 controller-plugin は co-project に吸収。plugin は create モードの `--type plugin` として扱う。
-plugin の保守は通常ワークフロー（workflow-setup → apply → pr-cycle）+ loom CLI で行う。
+plugin の保守は通常ワークフロー（workflow-setup → apply → pr-cycle）+ twl CLI で行う。
 
 ## 禁止事項（MUST NOT）
 

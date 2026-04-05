@@ -5,7 +5,7 @@
 # Usage:
 #   autopilot-plan.sh --explicit "19,18 → 20 → 23" --project-dir DIR --repo-mode MODE
 #   autopilot-plan.sh --issues "84 78 83" --project-dir DIR --repo-mode MODE
-#   autopilot-plan.sh --issues "lpd#42 loom#50" --project-dir DIR --repo-mode MODE --repos '{"lpd":{"owner":"shuu5","name":"loom-plugin-dev","path":"..."}}'
+#   autopilot-plan.sh --issues "lpd#42 twill#50" --project-dir DIR --repo-mode MODE --repos '{"lpd":{"owner":"shuu5","name":"twill","path":"..."}}'
 #   autopilot-plan.sh --board --project-dir DIR --repo-mode MODE
 # =============================================================================
 set -euo pipefail

@@ -62,7 +62,7 @@ _fetch_filtered_items() {
 # フィルタ済み Board items からクロスリポジトリ設定を構築し、
 # parse_issues() 用の issue_list を返す。
 # 引数: filtered_json, current_repo（owner/name 形式）
-# 出力: BUILD_RESULT グローバル変数（例: "42 43 loom#56"）
+# 出力: BUILD_RESULT グローバル変数（例: "42 43 twill#56"）
 # 副作用: CROSS_REPO, REPO_OWNERS, REPO_NAMES, REPO_PATHS, REPOS_JSON を更新
 _build_cross_repo_json() {
     local filtered="$1" current_repo="$2"

@@ -157,9 +157,9 @@ claude plugin add ~/ubuntu-note-system/claude/plugins/t-{name}
 
 \```bash
 cd ~/ubuntu-note-system/claude/plugins/t-{name}
-loom check
-loom validate
-loom tree
+twl check
+twl validate
+twl tree
 \```
 ```
 
@@ -169,7 +169,7 @@ loom tree
 deps.yaml から全体図 + コントローラー別分離図を生成:
 ```bash
 cd ~/ubuntu-note-system/claude/plugins/t-{name}
-loom update-readme
+twl update-readme
 ```
 - 全体 SVG: `docs/deps.svg`
 - コントローラー別 SVG: `docs/deps-{controller-name}.svg`
@@ -177,14 +177,14 @@ loom update-readme
 
 ### 10. orphan チェック（生成後検証）
 ```bash
-loom orphans
+twl orphans
 ```
 - 生成直後に orphan がないことを確認
 - orphan がある場合: deps.yaml の calls を再確認し修正
 
 ### 11. deep-validate チェック（生成品質検証）
 ```bash
-loom audit
+twl audit
 ```
 - controller-bloat / ref-placement / tools-mismatch を検証
 - 問題がある場合: 該当ファイルを即座に修正してから完了

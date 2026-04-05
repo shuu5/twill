@@ -392,13 +392,13 @@ sys.exit(0)
 }
 run_test "chain チェック PASS: deps.yaml に chains セクションが存在する" test_chains_section_exists
 
-# loom check による chain 整合性検証
-test_loom_check_no_chain_errors() {
-  if ! command -v loom &>/dev/null; then
+# twl check による chain 整合性検証
+test_twl_check_no_chain_errors() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom check 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl check 2>&1)
   # [chain-bidir], [chain-type], [step-order] エラーが 0 件
   if echo "$output" | grep -qP "\[chain-bidir\]|\[chain-type\]|\[step-order\]"; then
     echo "$output" | grep -P "\[chain" >&2
@@ -407,24 +407,24 @@ test_loom_check_no_chain_errors() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "chain チェック PASS: loom check で chain エラーが 0 件" test_loom_check_no_chain_errors
+if command -v twl &>/dev/null; then
+  run_test "chain チェック PASS: twl check で chain エラーが 0 件" test_twl_check_no_chain_errors
 else
-  run_test_skip "chain チェック PASS: loom check で chain エラーが 0 件" "loom not found"
+  run_test_skip "chain チェック PASS: twl check で chain エラーが 0 件" "twl not found"
 fi
 
-# loom check 全体が exit 0
-test_loom_check_exit_zero() {
-  if ! command -v loom &>/dev/null; then
+# twl check 全体が exit 0
+test_twl_check_exit_zero() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
-  cd "${PROJECT_ROOT}" && loom check &>/dev/null
+  cd "${PROJECT_ROOT}" && twl check &>/dev/null
 }
 
-if command -v loom &>/dev/null; then
-  run_test "chain チェック PASS: loom check が exit 0" test_loom_check_exit_zero
+if command -v twl &>/dev/null; then
+  run_test "chain チェック PASS: twl check が exit 0" test_twl_check_exit_zero
 else
-  run_test_skip "chain チェック PASS: loom check が exit 0" "loom not found"
+  run_test_skip "chain チェック PASS: twl check が exit 0" "twl not found"
 fi
 
 # Edge case: 全 chain 定義が双方向参照を持つ

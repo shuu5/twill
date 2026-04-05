@@ -40,13 +40,13 @@ gh label create "self-improve" --color "7057ff" --description "Dev plugin self-i
 | `silent-failure` | Bash成功だが出力が期待と違い、AIが補償行動をとるパターン | session-audit |
 | `ai-compensation` | Skill実行中にスキル定義外の推論・ツール使用が発生 | session-audit |
 | `retry-loop` | 同一ツール+類似入力が3回以上連続するパターン | session-audit |
-| `loom-inline-logic` | Skill実行中に長いBashパイプラインが出現するパターン | session-audit |
+| `twl-inline-logic` | Skill実行中に長いBashパイプラインが出現するパターン | session-audit |
 
 ## Issue本文テンプレート
 
 ```markdown
 ## パターン
-- **カテゴリ**: <prompt-quality|rule-gap|false-positive|autofix-repeat|process-inefficiency|script-fragility|silent-failure|ai-compensation|retry-loop|loom-inline-logic>
+- **カテゴリ**: <prompt-quality|rule-gap|false-positive|autofix-repeat|process-inefficiency|script-fragility|silent-failure|ai-compensation|retry-loop|twl-inline-logic>
 - **重複排除キー**: `<category>:<pattern-hash>`
 - **検出ソース**: <pr-cycle-analysis|merge-gate|retrospective|session-audit>
 - **信頼度**: <0-100>

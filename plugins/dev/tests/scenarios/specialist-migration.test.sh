@@ -629,15 +629,15 @@ sys.exit(0)
 }
 run_test "deps.yaml の model とファイル内 model が一致 [edge: 不整合なし]" test_deps_agents_model_matches_file
 
-# Scenario: loom validate が通過 (line 42)
+# Scenario: twl validate が通過 (line 42)
 # WHEN: 全 specialist の deps.yaml 登録が完了した
-# THEN: loom validate がエラーなしで通過する
-test_loom_validate() {
-  if ! command -v loom &>/dev/null; then
+# THEN: twl validate がエラーなしで通過する
+test_twl_validate() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output exit_code
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
     echo "$output" >&2
@@ -646,10 +646,10 @@ test_loom_validate() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom validate がエラーなしで通過する" test_loom_validate
+if command -v twl &>/dev/null; then
+  run_test "twl validate がエラーなしで通過する" test_twl_validate
 else
-  run_test_skip "loom validate がエラーなしで通過する" "loom command not found"
+  run_test_skip "twl validate がエラーなしで通過する" "twl command not found"
 fi
 
 # =============================================================================

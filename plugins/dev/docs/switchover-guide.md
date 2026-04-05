@@ -1,11 +1,11 @@
 # スイッチオーバーガイド
 
-claude-plugin-dev から loom-plugin-dev への切替手順。
+claude-plugin-dev から plugin-dev への切替手順。
 
 ## 前提条件
 
 - C-1〜C-5 の全 Issue が完了・マージ済み
-- loom validate / loom check / loom audit が全 pass
+- twl validate / twl check / twl audit が全 pass
 - 全 autopilot セッションが完了（in-flight セッション中の切替は禁止）
 
 ## Phase 1: 並行検証
@@ -15,7 +15,7 @@ claude-plugin-dev から loom-plugin-dev への切替手順。
 symlink を変更せずに新プラグインをテストする:
 
 ```bash
-claude --plugin-dir ~/projects/local-projects/loom-plugin-dev/main
+claude --plugin-dir ~/projects/local-projects/plugin-dev/main
 ```
 
 ### Step 2: 動作比較
@@ -26,13 +26,13 @@ claude --plugin-dir ~/projects/local-projects/loom-plugin-dev/main
 2. `--plugin-dir` で同じ Issue を新プラグインで処理
 3. 結果を比較（出力品質、エラー有無、ワークフロー完遂）
 
-### Step 3: loom 検証ツール実行
+### Step 3: twl 検証ツール実行
 
 ```bash
-cd ~/projects/local-projects/loom-plugin-dev/main
-loom validate    # deps.yaml 構文・型検証
-loom check       # 構造整合性チェック
-loom audit       # 全体監査
+cd ~/projects/local-projects/plugin-dev/main
+twl validate    # deps.yaml 構文・型検証
+twl check       # 構造整合性チェック
+twl audit       # 全体監査
 ```
 
 全て pass であることを確認。
@@ -43,20 +43,20 @@ loom audit       # 全体監査
 bash scripts/switchover.sh check
 ```
 
-loom validate/check、autopilot セッション未稼働、symlink 状態を自動確認。
+twl validate/check、autopilot セッション未稼働、symlink 状態を自動確認。
 
 ## Phase 2: symlink 切替
 
 ### Step 5: 切替実行
 
 ```bash
-bash scripts/switchover.sh switch --new ~/projects/local-projects/loom-plugin-dev/main
+bash scripts/switchover.sh switch --new ~/projects/local-projects/plugin-dev/main
 ```
 
 自動で以下を実行:
 1. `switchover.sh check` による事前チェック
 2. 旧 symlink を `~/.claude/plugins/dev.bak` にバックアップ
-3. 新 symlink `~/.claude/plugins/dev → loom-plugin-dev/main` を作成
+3. 新 symlink `~/.claude/plugins/dev → plugin-dev/main` を作成
 
 ## Phase 3: 試運転
 

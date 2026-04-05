@@ -163,9 +163,9 @@ echo ""
 echo "--- Requirement: project-board-sync の Project 検出改善 ---"
 
 # Scenario: リポジトリ名と Project タイトルが一致する場合 (line 7)
-# WHEN: リポジトリ shuu5/loom-plugin-dev にリンクされた Project が loom-plugin-dev (#3) と
+# WHEN: リポジトリ shuu5/twill にリンクされた Project が twill (#3) と
 #       ipatho1 研究基盤 (#5) の2つ存在する
-# THEN: Project タイトルがリポジトリ名を含む loom-plugin-dev (#3) が選択される
+# THEN: Project タイトルがリポジトリ名を含む twill (#3) が選択される
 
 test_project_title_match_preferred() {
   # project-board-sync.md must document title-based matching as the primary selection strategy

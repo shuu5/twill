@@ -3,12 +3,12 @@
 # Document Verification Tests: skills-migration.md
 # Generated from: openspec/changes/loom-plugin-session/specs/skills-migration.md
 # Coverage level: edge-cases
-# Target repo: ~/projects/local-projects/loom-plugin-session/main/
+# Target repo: ~/projects/local-projects/twill-plugin-session/main/
 # =============================================================================
 set -uo pipefail
 
 # Target repo root (loom-plugin-session)
-TARGET_ROOT="${LOOM_PLUGIN_SESSION_ROOT:-/home/shuu5/projects/local-projects/loom-plugin-session/main}"
+TARGET_ROOT="${TWILL_PLUGIN_SESSION_ROOT:-/home/shuu5/projects/local-projects/twill-plugin-session/main}"
 
 # Counters
 PASS=0

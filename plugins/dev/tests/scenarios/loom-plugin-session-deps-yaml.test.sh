@@ -3,12 +3,12 @@
 # Document Verification Tests: deps-yaml.md
 # Generated from: openspec/changes/loom-plugin-session/specs/deps-yaml.md
 # Coverage level: edge-cases
-# Target repo: ~/projects/local-projects/loom-plugin-session/main/
+# Target repo: ~/projects/local-projects/twill-plugin-session/main/
 # =============================================================================
 set -uo pipefail
 
 # Target repo root (loom-plugin-session)
-TARGET_ROOT="${LOOM_PLUGIN_SESSION_ROOT:-/home/shuu5/projects/local-projects/loom-plugin-session/main}"
+TARGET_ROOT="${TWILL_PLUGIN_SESSION_ROOT:-/home/shuu5/projects/local-projects/twill-plugin-session/main}"
 
 # Counters
 PASS=0
@@ -413,66 +413,66 @@ sys.exit(0)
 run_test "[edge: deps.yaml の全スキルに type が定義されている]" test_deps_yaml_skills_have_type
 
 # =============================================================================
-# Requirement: loom check PASS
+# Requirement: twl check PASS
 # =============================================================================
 echo ""
-echo "--- Requirement: loom check PASS ---"
+echo "--- Requirement: twl check PASS ---"
 
-# Scenario: loom check 実行 (line 27)
-# WHEN: plugin ルートで loom check を実行する
+# Scenario: twl check 実行 (line 27)
+# WHEN: plugin ルートで twl check を実行する
 # THEN: Missing 0 で PASS が返る
 
-if command -v loom &>/dev/null; then
-  test_loom_check_pass() {
+if command -v twl &>/dev/null; then
+  test_twl_check_pass() {
     local output
-    output=$(cd "${TARGET_ROOT}" && loom check 2>&1)
+    output=$(cd "${TARGET_ROOT}" && twl check 2>&1)
     local exit_code=$?
     # Missing 0 を含むこと、または PASS が含まれること
     if [[ $exit_code -ne 0 ]]; then
-      echo "loom check failed with exit code $exit_code" >&2
+      echo "twl check failed with exit code $exit_code" >&2
       echo "$output" >&2
       return 1
     fi
     if echo "$output" | grep -qiP '(Missing.*[1-9]|FAIL)'; then
-      echo "loom check has Missing or FAIL: $output" >&2
+      echo "twl check has Missing or FAIL: $output" >&2
       return 1
     fi
     return 0
   }
-  run_test "loom check が Missing 0 で PASS する" test_loom_check_pass
+  run_test "twl check が Missing 0 で PASS する" test_twl_check_pass
 else
-  run_test_skip "loom check が Missing 0 で PASS する" "loom コマンドが見つかりません"
+  run_test_skip "twl check が Missing 0 で PASS する" "twl コマンドが見つかりません"
 fi
 
 # =============================================================================
-# Requirement: loom validate PASS
+# Requirement: twl validate PASS
 # =============================================================================
 echo ""
-echo "--- Requirement: loom validate PASS ---"
+echo "--- Requirement: twl validate PASS ---"
 
-# Scenario: loom validate 実行 (line 33)
-# WHEN: plugin ルートで loom validate を実行する
+# Scenario: twl validate 実行 (line 33)
+# WHEN: plugin ルートで twl validate を実行する
 # THEN: Violations 0 で PASS が返る
 
-if command -v loom &>/dev/null; then
-  test_loom_validate_pass() {
+if command -v twl &>/dev/null; then
+  test_twl_validate_pass() {
     local output
-    output=$(cd "${TARGET_ROOT}" && loom validate 2>&1)
+    output=$(cd "${TARGET_ROOT}" && twl validate 2>&1)
     local exit_code=$?
     if [[ $exit_code -ne 0 ]]; then
-      echo "loom validate failed with exit code $exit_code" >&2
+      echo "twl validate failed with exit code $exit_code" >&2
       echo "$output" >&2
       return 1
     fi
     if echo "$output" | grep -qiP '(Violation.*[1-9]|FAIL)'; then
-      echo "loom validate has Violations or FAIL: $output" >&2
+      echo "twl validate has Violations or FAIL: $output" >&2
       return 1
     fi
     return 0
   }
-  run_test "loom validate が Violations 0 で PASS する" test_loom_validate_pass
+  run_test "twl validate が Violations 0 で PASS する" test_twl_validate_pass
 else
-  run_test_skip "loom validate が Violations 0 で PASS する" "loom コマンドが見つかりません"
+  run_test_skip "twl validate が Violations 0 で PASS する" "twl コマンドが見つかりません"
 fi
 
 # Edge case: deps.yaml 内のスクリプトパスが実際に存在すること

@@ -11,8 +11,8 @@
 ### 1. 構造検証
 ```bash
 cd {plugin-path}
-loom check
-loom validate
+twl check
+twl validate
 ```
 
 ### 2. frontmatter 整合性チェック
@@ -59,14 +59,14 @@ ref-architecture を参照し、5パターンの適用状態を評価:
 
 ### 5. orphan ノード検出
 ```bash
-loom orphans
+twl orphans
 ```
 - 上流から到達不能なノードを検出
 - orphan は Critical として報告
 
 ### 5.5. deep-validate チェック
 ```bash
-loom audit
+twl audit
 ```
 
 以下のカテゴリで問題を検出:

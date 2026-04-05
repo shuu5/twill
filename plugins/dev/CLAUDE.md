@@ -1,12 +1,10 @@
-# loom-plugin-dev
+# plugin-dev
 
-Claude Code dev plugin（chain-driven + autopilot-first）。claude-plugin-dev の後継として新規構築。
+Claude Code dev plugin（chain-driven + autopilot-first）。TWiLL モノリポ `plugins/dev/` として管理。
 
 ## 構成
 
-- bare repo: `~/projects/local-projects/loom-plugin-dev/.bare`
-- main worktree: `~/projects/local-projects/loom-plugin-dev/main/`
-- feature worktrees: `~/projects/local-projects/loom-plugin-dev/worktrees/<branch>/`
+- モノリポ: `~/projects/local-projects/twill/main/plugins/dev/`
 
 ## 設計哲学
 
@@ -49,14 +47,14 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 ## 編集フロー（必須）
 
 ```
-コンポーネント編集 → deps.yaml 更新 → loom check → loom update-readme
+コンポーネント編集 → deps.yaml 更新 → twl check → twl update-readme
 ```
 
 ## Project Board
 
 - Project: `loom-dev-ecosystem` (#3)、Owner: `shuu5`
-- リンク済みリポ: loom-plugin-dev, loom
+- リンク済みリポ: twill
 
 ## 視覚化
 
-`loom` CLI 必須（独自スクリプト禁止）。
+`twl` CLI 必須（独自スクリプト禁止）。

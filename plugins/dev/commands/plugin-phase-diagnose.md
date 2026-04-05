@@ -19,7 +19,7 @@ Task({
   name: "worker-structure",
   subagent_type: "general-purpose",
   prompt: "{plugin_path} の構造検証を実行してください。
-    loom check/validate/orphans、frontmatter整合性、cross-reference を確認し、
+    twl check/validate/orphans、frontmatter整合性、cross-reference を確認し、
     Critical/Warning/Info で分類した結果をまとめてください。"
 })
 ```

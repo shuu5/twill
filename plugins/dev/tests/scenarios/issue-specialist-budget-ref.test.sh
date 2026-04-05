@@ -308,7 +308,7 @@ echo ""
 echo "--- Requirement: deps.yaml の更新 ---"
 
 # Scenario: deps.yaml 整合性
-# WHEN: loom check を実行する
+# WHEN: twl check を実行する
 # THEN: エラーなく完了する
 
 # Test: deps.yaml の refs セクションに ref-investigation-budget が存在する
@@ -353,31 +353,31 @@ else
   run_test_skip "deps.yaml: issue-feasibility skills 確認" "deps.yaml not found"
 fi
 
-# Test: loom check が成功する（deps.yaml 整合性の統合テスト）
-test_loom_check_passes() {
-  local loom_bin
-  loom_bin="$(command -v loom 2>/dev/null)" || true
-  if [[ -z "$loom_bin" ]]; then
+# Test: twl check が成功する（deps.yaml 整合性の統合テスト）
+test_twl_check_passes() {
+  local twl_bin
+  twl_bin="$(command -v twl 2>/dev/null)" || true
+  if [[ -z "$twl_bin" ]]; then
     return 77  # SKIP marker
   fi
-  (cd "${PROJECT_ROOT}" && loom check 2>&1) && return 0 || return 1
+  (cd "${PROJECT_ROOT}" && twl check 2>&1) && return 0 || return 1
 }
 
-if command -v loom &>/dev/null; then
+if command -v twl &>/dev/null; then
   result=0
-  test_loom_check_passes || result=$?
+  test_twl_check_passes || result=$?
   if [[ $result -eq 77 ]]; then
-    run_test_skip "loom check: エラーなく完了する" "loom binary not found"
+    run_test_skip "twl check: エラーなく完了する" "twl binary not found"
   elif [[ $result -eq 0 ]]; then
-    echo "  PASS: loom check: エラーなく完了する"
+    echo "  PASS: twl check: エラーなく完了する"
     ((PASS++)) || true
   else
-    echo "  FAIL: loom check: エラーなく完了する"
+    echo "  FAIL: twl check: エラーなく完了する"
     ((FAIL++)) || true
-    ERRORS+=("loom check: エラーなく完了する")
+    ERRORS+=("twl check: エラーなく完了する")
   fi
 else
-  run_test_skip "loom check: エラーなく完了する" "loom binary not found"
+  run_test_skip "twl check: エラーなく完了する" "twl binary not found"
 fi
 
 # =============================================================================

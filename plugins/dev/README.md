@@ -1,4 +1,4 @@
-# loom-plugin-dev
+# plugin-dev
 
 Claude Code dev plugin（chain-driven + autopilot-first）。claude-plugin-dev の後継として新規構築。
 

@@ -225,15 +225,15 @@ sys.exit(0)
 run_test "pr-cycle chain [edge: steps に重複がない]" test_pr_cycle_steps_no_duplicates
 
 # Scenario: chain validate パス (line 12)
-# WHEN: loom chain validate を実行する
+# WHEN: twl chain validate を実行する
 # THEN: pr-cycle chain の双方向参照整合性が検証され pass する
 # AND: 各コンポーネントの chain/step_in フィールドが chain 定義と一致する
 test_pr_cycle_chain_validate() {
-  if ! command -v loom &>/dev/null; then
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && loom validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
   # Check no chain errors related to pr-cycle chain
   if echo "$output" | grep -qP "\[chain-bidir\]|\[chain-type\]|\[step-order\]"; then
     echo "$output" | grep -P "\[chain" >&2
@@ -242,24 +242,24 @@ test_pr_cycle_chain_validate() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom chain validate が pass する (pr-cycle)" test_pr_cycle_chain_validate
+if command -v twl &>/dev/null; then
+  run_test "twl chain validate が pass する (pr-cycle)" test_pr_cycle_chain_validate
 else
-  run_test_skip "loom chain validate が pass する (pr-cycle)" "loom command not found"
+  run_test_skip "twl chain validate が pass する (pr-cycle)" "twl command not found"
 fi
 
-# Edge case: loom validate が exit 0
-test_loom_validate_exit_zero() {
-  if ! command -v loom &>/dev/null; then
+# Edge case: twl validate が exit 0
+test_twl_validate_exit_zero() {
+  if ! command -v twl &>/dev/null; then
     return 1
   fi
-  cd "${PROJECT_ROOT}" && loom validate &>/dev/null
+  cd "${PROJECT_ROOT}" && twl validate &>/dev/null
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom validate [edge: exit code が 0]" test_loom_validate_exit_zero
+if command -v twl &>/dev/null; then
+  run_test "twl validate [edge: exit code が 0]" test_twl_validate_exit_zero
 else
-  run_test_skip "loom validate [edge: exit code が 0]" "loom command not found"
+  run_test_skip "twl validate [edge: exit code が 0]" "twl command not found"
 fi
 
 # Scenario: chain ステップと SKILL.md の責務分離 (line 17)

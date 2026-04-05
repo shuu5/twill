@@ -35,7 +35,7 @@
 ## AC 検証結果
 
 - [x] AC1: deps.yaml chains に pr-cycle chain が定義されている
-- [x] AC2: `loom chain validate` が pass する
+- [x] AC2: `twl chain validate` が pass する
 - [ ] AC3: merge-gate が動的レビュアー構築で単一パスに統合されている
 ```
 

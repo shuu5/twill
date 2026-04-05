@@ -69,12 +69,12 @@ echo ""
 echo "--- Requirement: コマンド frontmatter tools 宣言 ---"
 
 # Scenario: frontmatter 追加後の deep-validate (spec line 15)
-# WHEN: 6 コマンドに frontmatter tools フィールドを追加した状態で loom deep-validate を実行する
+# WHEN: 6 コマンドに frontmatter tools フィールドを追加した状態で twl deep-validate を実行する
 # THEN: tools-mismatch 警告が 0 件になる
 
 test_deep_validate_no_tools_mismatch() {
   local output
-  output="$(cd "${PROJECT_ROOT}" && loom deep-validate 2>&1)"
+  output="$(cd "${PROJECT_ROOT}" && twl deep-validate 2>&1)"
   if echo "$output" | grep -q "\[tools-mismatch\]"; then
     echo "  [detail] tools-mismatch warnings found:"
     echo "$output" | grep "\[tools-mismatch\]" | sed 's/^/    /'
@@ -83,10 +83,10 @@ test_deep_validate_no_tools_mismatch() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom deep-validate: tools-mismatch 警告 0 件" test_deep_validate_no_tools_mismatch
+if command -v twl &>/dev/null; then
+  run_test "twl deep-validate: tools-mismatch 警告 0 件" test_deep_validate_no_tools_mismatch
 else
-  run_test_skip "loom deep-validate: tools-mismatch 警告 0 件" "loom not found in PATH"
+  run_test_skip "twl deep-validate: tools-mismatch 警告 0 件" "twl not found in PATH"
 fi
 
 # Scenario: frontmatter 形式の正確性 (spec line 19)
@@ -200,12 +200,12 @@ echo "--- Requirement: co-issue SKILL.md controller-bloat 解消 ---"
 SKILL_MD="skills/co-issue/SKILL.md"
 
 # Scenario: 行数削減後の deep-validate (spec line 27)
-# WHEN: co-issue SKILL.md を 120 行以下に削減した状態で loom deep-validate を実行する
+# WHEN: co-issue SKILL.md を 120 行以下に削減した状態で twl deep-validate を実行する
 # THEN: controller-bloat 警告が 0 件になる
 
 test_deep_validate_no_co_issue_controller_bloat() {
   local output
-  output="$(cd "${PROJECT_ROOT}" && loom deep-validate 2>&1)"
+  output="$(cd "${PROJECT_ROOT}" && twl deep-validate 2>&1)"
   # co-issue は #113 クロスリポ対応で 265 行に拡張。controller-bloat 警告は既知。
   # Step 4-CR を外部コマンドに抽出するリファクタリングで解消予定。
   if echo "$output" | grep -q "\[controller-bloat\] co-issue"; then
@@ -216,10 +216,10 @@ test_deep_validate_no_co_issue_controller_bloat() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom deep-validate: co-issue controller-bloat 警告 0 件" test_deep_validate_no_co_issue_controller_bloat
+if command -v twl &>/dev/null; then
+  run_test "twl deep-validate: co-issue controller-bloat 警告 0 件" test_deep_validate_no_co_issue_controller_bloat
 else
-  run_test_skip "loom deep-validate: controller-bloat 警告 0 件" "loom not found in PATH"
+  run_test_skip "twl deep-validate: controller-bloat 警告 0 件" "twl not found in PATH"
 fi
 
 # Edge: co-issue SKILL.md が 280 行以下である（#113 クロスリポ対応で拡張）
@@ -357,7 +357,7 @@ echo "--- Combined: deep-validate 全 Warning 0 件 ---"
 
 test_deep_validate_target_warnings_zero() {
   local output
-  output="$(cd "${PROJECT_ROOT}" && loom deep-validate 2>&1)"
+  output="$(cd "${PROJECT_ROOT}" && twl deep-validate 2>&1)"
   # このテストのスコープ: tools-mismatch のみ
   # co-issue controller-bloat は #113 クロスリポ対応で既知の警告として除外
   local target_warnings
@@ -370,10 +370,10 @@ test_deep_validate_target_warnings_zero() {
   return 0
 }
 
-if command -v loom &>/dev/null; then
-  run_test "loom deep-validate: tools-mismatch + co-issue bloat 警告 0 件（修正完了確認）" test_deep_validate_target_warnings_zero
+if command -v twl &>/dev/null; then
+  run_test "twl deep-validate: tools-mismatch + co-issue bloat 警告 0 件（修正完了確認）" test_deep_validate_target_warnings_zero
 else
-  run_test_skip "loom deep-validate: tools-mismatch + co-issue bloat 警告 0 件" "loom not found in PATH"
+  run_test_skip "twl deep-validate: tools-mismatch + co-issue bloat 警告 0 件" "twl not found in PATH"
 fi
 
 # =============================================================================
