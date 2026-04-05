@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_project [label="dev:co-project\n(1,321 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_project [label="twl:co-project\n(1,321 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -31,18 +31,18 @@ digraph Dependencies {
     cmd_plugin_interview [label="plugin-interview\n(1,086 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_research [label="plugin-research\n(655 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_design [label="plugin-design\n(1,192 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_generate [label="plugin-generate\n(2,083 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_generate [label="plugin-generate\n(2,082 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(458 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_diagnose [label="plugin-diagnose\n(945 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_diagnose [label="plugin-diagnose\n(944 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_fix [label="plugin-fix\n(1,074 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_verify [label="plugin-verify\n(518 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_phase_diagnose [label="plugin-phase-diagnose\n(631 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_plugin_phase_verify [label="plugin-phase-verify\n(635 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_plugin_phase_verify [label="plugin-phase-verify\n(634 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands
 
     // L3: Agents
-    agent_worker_structure [label="worker-structure\n(1,247 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_structure [label="worker-structure\n(1,244 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_principles [label="worker-principles\n(1,154 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_architecture [label="worker-architecture\n(2,186 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 

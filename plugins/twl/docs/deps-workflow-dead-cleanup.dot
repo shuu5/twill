@@ -15,13 +15,13 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_dead_cleanup [label="dev:workflow-dead-cleanup\n(249 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_dead_cleanup [label="twl:workflow-dead-cleanup\n(249 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_dead_component_detect [label="dead-component-detect\n(901 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_dead_component_execute [label="dead-component-execute\n(1,082 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_dead_component_detect [label="dead-component-detect\n(899 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_dead_component_execute [label="dead-component-execute\n(1,081 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
