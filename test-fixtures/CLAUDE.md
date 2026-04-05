@@ -1,6 +1,6 @@
 # test-fixtures
 
-TWiLL フレームワークのテスト用フィクスチャ。plugin-dev の動作検証用テストプロジェクト。TWiLL モノリポ `test-fixtures/` として管理。
+TWiLL フレームワークのテスト用フィクスチャ。plugin-twl の動作検証用テストプロジェクト。TWiLL モノリポ `test-fixtures/` として管理。
 
 ## 構成
 
@@ -20,12 +20,12 @@ TWiLL フレームワークのテスト用フィクスチャ。plugin-dev の動
 - ブランチ命名: `feat/`, `fix/`, `refactor/`, `docs/`, `test/`, `chore/`
 - コミット: Conventional Commits 形式
 - テスト: 実装前にテスト生成（TDD）
-- PR: `/dev:controller-pr-cycle` 経由で作成
+- PR: `/twl:workflow-pr-cycle` 経由で作成
 
 ### スキーマ改善サイクル
 
 開発中にスキーマの不整合を発見した場合:
 1. SSoT（Zod スキーマ / OpenAPI）を先に修正
 2. 実装コードを SSoT に合わせて修正
-3. `/dev:check` で整合性確認
+3. `/twl:check` で整合性確認
 <!-- GOVERNANCE-END -->
