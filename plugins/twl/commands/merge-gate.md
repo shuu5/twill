@@ -90,12 +90,12 @@ PARSED=$(echo "$OUTPUT" | python3 -m twl.autopilot.parser)
 
 ### checkpoint 書き出し（MUST）
 
-結果集約後、checkpoint-write.sh で findings を永続化する。
+結果集約後、checkpoint.py で findings を永続化する。
 
 ```bash
 STATUS=$(echo "$PARSED" | jq -r '.status')
 FINDINGS=$(echo "$PARSED" | jq -c '.findings')
-bash scripts/checkpoint-write.sh --step merge-gate --status "$STATUS" --findings "$FINDINGS"
+python3 -m twl.autopilot.checkpoint write --step merge-gate --status "$STATUS" --findings "$FINDINGS"
 ```
 
 ### all-pass-check checkpoint 読み込み
@@ -103,7 +103,7 @@ bash scripts/checkpoint-write.sh --step merge-gate --status "$STATUS" --findings
 all-pass-check の checkpoint が存在する場合、`status` フィールドで事前判定を確認する。
 
 ```bash
-ALL_PASS_STATUS=$(bash scripts/checkpoint-read.sh --step all-pass-check --field status 2>/dev/null || echo "")
+ALL_PASS_STATUS=$(python3 -m twl.autopilot.checkpoint read --step all-pass-check --field status 2>/dev/null || echo "")
 ```
 
 ### severity フィルタ判定
