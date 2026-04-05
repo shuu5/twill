@@ -177,7 +177,7 @@ specialist 出力が上記スキーマに準拠しない場合:
 
 | Specialist | 根拠 |
 |---|---|
-| worker-structure | loom check/audit の結果をパターンマッチで検証 |
+| worker-structure | twl check/audit の結果をパターンマッチで検証 |
 | worker-env-validator | .env.example との突合（パターンマッチ） |
 | worker-data-validator | データファイルの形式チェック（パターンマッチ） |
 | template-validator | Issue テンプレートの必須フィールド検証 |

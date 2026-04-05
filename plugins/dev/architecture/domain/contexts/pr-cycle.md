@@ -87,7 +87,7 @@ flowchart TD
 
 | 条件 | 追加される specialist |
 |------|----------------------|
-| deps.yaml 変更あり | worker-structure（loom audit/check 統合）+ worker-principles |
+| deps.yaml 変更あり | worker-structure（twl audit/check 統合）+ worker-principles |
 | コード変更あり | worker-code-reviewer + worker-security-reviewer |
 | Tech-stack 該当あり | conditional specialist（Tech-stack 検出ロジックで決定） |
 
@@ -151,7 +151,7 @@ flowchart TD
 | **atomic** | auto-merge | squash マージ → archive → cleanup |
 | **specialist** | worker-code-reviewer | コード品質レビュー |
 | **specialist** | worker-security-reviewer | セキュリティ脆弱性検出 |
-| **specialist** | worker-structure | loom audit/check 統合 |
+| **specialist** | worker-structure | twl audit/check 統合 |
 | **specialist** | worker-principles | 5原則 + controller 品質検証 |
 | **specialist** | worker-architecture | アーキテクチャパターン検証 |
 | **script** | tech-stack-detect | 変更ファイルから tech-stack を判定 |
@@ -161,5 +161,5 @@ flowchart TD
 
 - **Upstream <- Autopilot**: autopilot から merge-gate として呼び出される。Contract: autopilot-pr-cycle.md
 - **Upstream <- Issue Management**: AC 情報を取得（ac-extract）。スコープ判定で Issue 情報を参照
-- **Upstream <- Loom Integration**: merge-gate の plugin gate で loom validate 結果を消費
+- **Upstream <- TWiLL Integration**: merge-gate の plugin gate で twl validate 結果を消費
 - **Downstream -> Self-Improve**: pr-cycle-analysis でパターン検出、self-improve Issue 起票

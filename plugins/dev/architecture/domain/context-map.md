@@ -13,7 +13,7 @@
 | Supporting | Issue Management | Issue作成、トリアージ、精緻化、クロスリポ分割 |
 | Supporting | Project Management | プロジェクト作成、移行、Project Board 管理 |
 | Supporting | Self-Improve | パターン検出、ECC照合、セッション監査 |
-| Generic | Loom Integration | loom CLI連携、validate/audit/chain、CRG |
+| Generic | TWiLL Integration | twl CLI連携、validate/audit/chain、CRG |
 
 ## 依存関係図
 
@@ -31,7 +31,7 @@ graph TD
     end
 
     subgraph "Generic"
-        LI["Loom Integration<br/>(Validate & Audit)"]
+        LI["TWiLL Integration<br/>(Validate & Audit)"]
     end
 
     subgraph "Cross-cutting"
@@ -73,7 +73,7 @@ graph TD
 | Project Mgmt | Issue Mgmt | Conformist | Board ステータス更新 |
 | Project Mgmt | Autopilot | Customer-Supplier | Board クエリ（Status=Todo の Issue 選択） |
 | Project Mgmt | Autopilot | Shared Kernel | bare repo + worktree 構造 |
-| Loom Integration | 全 Context | Open Host Service | validate/audit/chain 結果 |
+| TWiLL Integration | 全 Context | Open Host Service | validate/audit/chain 結果 |
 | Architecture Spec | Issue Mgmt | DCI | vision.md, context-map.md, glossary.md を Read |
 | Issue Mgmt | Architecture Spec | Drift Detection | Step 3.5 で architecture 影響を検出し co-architect を提案（INFO） |
 | Architecture Spec | Autopilot | DCI | co-architect 経由で設計意図参照 |

@@ -52,7 +52,7 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 
 ## Project Board
 
-- Project: `loom-dev-ecosystem` (#3)、Owner: `shuu5`
+- Project: `twill-ecosystem` (#3)、Owner: `shuu5`
 - リンク済みリポ: twill
 
 ## 視覚化

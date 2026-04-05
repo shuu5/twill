@@ -15,13 +15,15 @@
 | Worker | Pilot が作成した worktree 内で cld セッションとして起動される実装側。merge 禁止・worktree 操作禁止 | Autopilot |
 | Orchestrator | Pilot 内の Issue 実行ループ管理コンポーネント。launch → poll → merge-gate → health-check を統括 | Autopilot |
 | Project Board | GitHub Projects V2 ボード。Issue ステータスの SSOT。autopilot の Issue 選択元 | Project Management |
-| loom-dev-ecosystem | クロスリポジトリプロジェクト（#3）。loom + loom-plugin-dev を統合管理 | Project Management |
+| TWiLL | Type-Woven, invariant-Led Layering。フレームワークの正式名称。CLI コマンド `twl` で操作 | 全体 |
+| twl | TWiLL の CLI コマンド短縮形。旧名 `loom` | 全体 |
+| twill-ecosystem | クロスリポジトリプロジェクト（#3）。TWiLL モノリポを統合管理 | Project Management |
 | DeltaSpec | OpenSpec の変更仕様管理 | Issue Management |
 | ECC | 外部知識ソース（doobidoo memory）。自己改善の教師データとして活用 | Self-Improve |
 | Emergency Bypass | co-autopilot 障害時のみ許可される手動実装パス。retrospective 記録義務あり | Autopilot |
 | Architecture Spec | 設計意図の前方参照。co-issue/co-architect が DCI で参照する living document | 全体 |
 | DCI | Dynamic Context Injection。実行時にファイルを Read してコンテキストに注入するパターン | 全体 |
-| CRG | Code Review Graph。MCP 経由でコード依存関係を可視化・分析するツール | Loom Integration |
+| CRG | Code Review Graph。MCP 経由でコード依存関係を可視化・分析するツール | TWiLL Integration |
 
 ## 照合ポリシー
 
@@ -40,8 +42,8 @@
 | plan.yaml | autopilot 計画。Phase 分割・Issue 間依存定義 | Autopilot |
 | retry_count | merge-gate リジェクト後のリトライ回数（最大1） | PR Cycle |
 | cross-repo Issue 分割 | 複数リポにまたがる要望をリポ単位の子 Issue に分割する co-issue の機能 | Issue Management |
-| script | bash/python スクリプトを deps.yaml で SSOT 追跡するためのコンポーネント型 | Loom Integration |
-| PostToolUse hook | Claude Code のツール実行後に自動実行されるシェルスクリプト | Loom Integration |
+| script | bash/python スクリプトを deps.yaml で SSOT 追跡するためのコンポーネント型 | TWiLL Integration |
+| PostToolUse hook | Claude Code のツール実行後に自動実行されるシェルスクリプト | TWiLL Integration |
 | architecture context 注入 | co-issue Phase 1 で architecture/ の vision.md, context-map.md, glossary.md を Read して探索に使用 | Issue Management |
 | glossary 照合 | co-issue Step 1.5 で MUST 用語との完全一致を検証し、未定義概念を INFO 通知 | Issue Management |
 | tech-stack-detect | 変更ファイルの拡張子・パスから specialist を自動選択するスクリプト | PR Cycle |

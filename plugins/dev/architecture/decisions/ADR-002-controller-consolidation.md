@@ -31,8 +31,8 @@ co-autopilot, co-issue, co-project, co-architect, self-improve, plugin, issue-re
 | 旧 Controller | 吸収先 | 根拠 |
 |----------------|--------|------|
 | self-improve | co-autopilot | 自リポジトリ Issue 検出時に ECC 照合を workflow 内で自動追加。別概念にしない |
-| plugin | co-project | テンプレート（"plugin"）として吸収。保守は通常ワークフロー + loom CLI |
-| issue-refactor | merge-gate | 自動 Issue 起票で代替。手動なら loom audit → co-issue |
+| plugin | co-project | テンプレート（"plugin"）として吸収。保守は通常ワークフロー + twl CLI |
+| issue-refactor | merge-gate | 自動 Issue 起票で代替。手動なら twl audit → co-issue |
 | project-migrate | co-project | 引数 `migrate` として統合 |
 | project-snapshot | co-project | 引数 `snapshot` として統合 |
 
@@ -48,5 +48,5 @@ co-autopilot, co-issue, co-project, co-architect, self-improve, plugin, issue-re
 - SKILL.md の肥大化リスク
 
 ### Mitigations
-- bloat 基準（200行以下）の遵守を loom audit で検証
+- bloat 基準（200行以下）の遵守を twl audit で検証
 - 責務増大時は workflow への委譲で SKILL.md を薄く保つ

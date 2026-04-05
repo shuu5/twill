@@ -82,15 +82,13 @@ OWNER="${REPO%%/*}"
 
 ```mermaid
 flowchart LR
-    subgraph "loom-dev-ecosystem (#3)"
-        LPD["shuu5/loom-plugin-dev"]
-        LOOM["shuu5/loom"]
+    subgraph "twill-ecosystem (#3)"
+        TWILL["shuu5/twill"]
     end
 
     subgraph "Issue 管理"
         GH["gh project item-list --limit 200"]
-        GH --> LPD
-        GH --> LOOM
+        GH --> TWILL
     end
 ```
 
@@ -138,7 +136,7 @@ project-name/
 
 - **Non-implementation controller**: co-project はコード変更を伴わない場合がある。chain-driven 不要
 - **co-project 引数ルーティング**: create / migrate / snapshot の 3 モード
-- **plugin は co-project のテンプレートの一種**: 保守は通常ワークフロー + loom CLI
+- **plugin は co-project のテンプレートの一種**: 保守は通常ワークフロー + twl CLI
 - **クロスリポ Issue リスト取得**: `gh project item-list` 必須（`gh issue list` は単一リポ専用）
 - **--limit 200 必須**: Project Board クエリ時のデフォルト件数は不足するため明示指定
 

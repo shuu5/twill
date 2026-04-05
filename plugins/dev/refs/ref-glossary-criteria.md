@@ -7,7 +7,7 @@ co-issue Step 1.5 で LLM が未登録用語を自動分類するための判断
 | 軸 | 登録すべき | 登録不要 |
 |---|---|---|
 | **Context 横断性** | 複数の Bounded Context で使用される（`architecture/domain/context-map.md` で確認） | 1つの Bounded Context 内で完結する |
-| **ドメイン固有性** | このプラグイン（plugin-dev）のドメイン固有概念 | プラットフォーム・インフラ・汎用 DDD 用語 |
+| **ドメイン固有性** | このプラグイン（plugins/dev）のドメイン固有概念 | プラットフォーム・インフラ・汎用 DDD 用語 |
 | **定着度** | コードベース・Issue・PR で定着済み（複数ファイルで使用 or 複数 Issue/PR で言及） | 提案段階の新概念（今回初出 or 単一箇所のみ） |
 
 ## 判定ロジック

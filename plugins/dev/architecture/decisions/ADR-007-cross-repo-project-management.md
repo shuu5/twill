@@ -13,11 +13,11 @@ loom-plugin-dev は loom CLI（shuu5/loom）に依存しており、機能追加
 
 ## Decision
 
-### loom-dev-ecosystem プロジェクト
+### twill-ecosystem プロジェクト
 
-GitHub Projects V2 の `loom-dev-ecosystem`（#3, owner: shuu5）をクロスリポジトリ統合管理に使用する。
+GitHub Projects V2 の `twill-ecosystem`（#3, owner: shuu5）をクロスリポジトリ統合管理に使用する。
 
-**リンク済みリポ**: loom-plugin-dev, loom
+**リンク済みリポ**: twill
 
 ### co-issue のクロスリポ Issue 分割
 

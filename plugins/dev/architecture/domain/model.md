@@ -263,9 +263,8 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph "GitHub Projects V2"
-        PB["loom-dev-ecosystem (#3)"]
-        PB -->|"linked"| R1["shuu5/loom-plugin-dev"]
-        PB -->|"linked"| R2["shuu5/loom"]
+        PB["twill-ecosystem (#3)"]
+        PB -->|"linked"| R1["shuu5/twill"]
     end
 
     subgraph "Autopilot"
