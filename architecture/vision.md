@@ -6,7 +6,7 @@ TWiLL (Type-Woven, invariant-Led Layering) は Claude Code プラグインの開
 ## Constraints
 
 - **モノリポ単一ブランチ**: bare repo + worktree 運用。main が唯一の長期ブランチ
-- **コンポーネント自律性**: 各コンポーネント（cli/twl, cli/deltaspec, plugins/twl, plugins/session）は独立した関心事を持ち、自身の CLAUDE.md で開発ルールを定義する
+- **コンポーネント自律性**: 各コンポーネント（cli/twl, plugins/twl, plugins/session）は独立した関心事を持ち、自身の CLAUDE.md で開発ルールを定義する
 - **依存方向の一方向性**: plugins → cli の方向のみ許可。cli は plugins を知らない
 - **SSOT 原則**: deps.yaml（プラグイン構造）、types.yaml（型ルール）が各領域の唯一の情報源
 
