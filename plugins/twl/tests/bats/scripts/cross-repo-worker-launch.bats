@@ -134,7 +134,7 @@ teardown() {
 
   # Simulate Worker running from loom repo but with AUTOPILOT_DIR fixed to Pilot
   # AUTOPILOT_DIR is already set to $SANDBOX/.autopilot by common_setup
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --repo loom --issue 50 --role worker \
     --set current_step="completed"
 
@@ -160,7 +160,7 @@ teardown() {
     > "$SANDBOX/.autopilot/repos/loom/issues/issue-50.json"
 
   # Even when running from a different CWD, AUTOPILOT_DIR must point to Pilot
-  AUTOPILOT_DIR="$SANDBOX/.autopilot" run bash "$SANDBOX/scripts/state-read.sh" \
+  AUTOPILOT_DIR="$SANDBOX/.autopilot" run python3 -m twl.autopilot.state read \
     --type issue --repo loom --issue 50 --field status
 
   if [ "$status" -ne 0 ]; then
@@ -168,7 +168,7 @@ teardown() {
     # with legacy path
     local legacy_issue
     create_issue_json 99 "running"
-    AUTOPILOT_DIR="$SANDBOX/.autopilot" run bash "$SANDBOX/scripts/state-read.sh" \
+    AUTOPILOT_DIR="$SANDBOX/.autopilot" run python3 -m twl.autopilot.state read \
       --type issue --issue 99 --field status
     assert_success
     assert_output "running"

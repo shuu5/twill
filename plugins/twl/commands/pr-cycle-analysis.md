@@ -69,7 +69,7 @@ autopilot 判定（ISSUE_NUM はブランチ名から抽出）:
 ISSUE_NUM=$(git branch --show-current | grep -oP '^\w+/\K\d+(?=-)' 2>/dev/null || echo "")
 IS_AUTOPILOT=false
 if [ -n "$ISSUE_NUM" ]; then
-  AUTOPILOT_STATUS=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
+  AUTOPILOT_STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
   IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
 fi
 ```

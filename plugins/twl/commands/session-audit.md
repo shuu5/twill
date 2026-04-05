@@ -46,7 +46,7 @@ find "$SESSION_DIR" -name "*.jsonl" -mtime -"$DAYS" -o -mmin -"$MINUTES"
 ### Step 2: 監査サマリー抽出
 
 ```bash
-bash "$SCRIPTS_ROOT/session-audit.sh" "$JSONL_PATH"
+python3 -m twl.autopilot.session audit "$JSONL_PATH"
 ```
 
 全セッションのサマリーを 1 つのファイルに結合。

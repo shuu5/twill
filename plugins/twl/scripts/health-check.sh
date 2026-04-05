@@ -8,7 +8,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"
-STATE_READ="$SCRIPT_DIR/state-read.sh"
+# shellcheck source=./lib/python-env.sh
+source "${SCRIPT_DIR}/lib/python-env.sh"
 
 # 閾値（環境変数で上書き可能）
 CHAIN_STALL_MIN="${DEV_HEALTH_CHAIN_STALL_MIN:-10}"
@@ -92,7 +93,7 @@ PANE_CAPTURE=$(tmux capture-pane -t "$window" -p -S -50 2>/dev/null | sanitize_c
 
 check_chain_stall() {
   local updated_at
-  updated_at=$("$STATE_READ" --type issue --issue "$issue" --field updated_at 2>/dev/null || echo "")
+  updated_at=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field updated_at 2>/dev/null || echo "")
 
   if [[ -z "$updated_at" ]]; then
     return
@@ -155,7 +156,7 @@ check_input_waiting() {
     elapsed_min=$(( (now_epoch - since_epoch) / 60 ))
   else
     local updated_at
-    updated_at=$("$STATE_READ" --type issue --issue "$issue" --field updated_at 2>/dev/null || echo "")
+    updated_at=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field updated_at 2>/dev/null || echo "")
     if [[ -z "$updated_at" ]]; then
       return
     fi

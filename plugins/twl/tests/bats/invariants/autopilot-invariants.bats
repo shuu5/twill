@@ -27,11 +27,11 @@ teardown() {
   create_issue_json 1 "running"
 
   # Run two state-write processes concurrently
-  bash "$SANDBOX/scripts/state-write.sh" \
+  python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role worker --set current_step=step-a &
   local pid1=$!
 
-  bash "$SANDBOX/scripts/state-write.sh" \
+  python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role worker --set current_step=step-b &
   local pid2=$!
 
@@ -181,7 +181,7 @@ EOF
 @test "invariant-E: first retry allowed (retry_count=0 -> running)" {
   create_issue_json 1 "failed" '.retry_count = 0'
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=running
 
   assert_success
@@ -194,7 +194,7 @@ EOF
 @test "invariant-E: second retry rejected (retry_count=1)" {
   create_issue_json 1 "failed" '.retry_count = 1'
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=running
 
   assert_failure

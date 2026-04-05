@@ -27,13 +27,13 @@ teardown() {
   mkdir -p "$SANDBOX/.autopilot/repos/loom/issues"
 
   # Write state for lpd#10
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 10 --role worker --init \
     --repo lpd
   [ "$status" -eq 0 ]
 
   # Write state for loom#10
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 10 --role worker --init \
     --repo loom
   [ "$status" -eq 0 ]
@@ -52,7 +52,7 @@ teardown() {
 # THEN 従来の .autopilot/issues/issue-{N}.json パスが使用される
 @test "state-namespace: no repos section falls back to legacy .autopilot/issues/ path" {
   # state-write.sh without --repo must write to legacy path
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 42 --role worker --init
 
   assert_success
@@ -67,7 +67,7 @@ teardown() {
 @test "state-namespace: state-read without --repo reads from legacy path" {
   create_issue_json 7 "running"
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 7 --field status
 
   assert_success
@@ -92,7 +92,7 @@ teardown() {
       fix_instructions: null, merged_at: null, files_changed: [], failure: null}' \
     > "$SANDBOX/.autopilot/repos/lpd/issues/issue-42.json"
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --repo lpd --issue 42 --field status
 
   if [ "$status" -ne 0 ]; then
@@ -109,7 +109,7 @@ teardown() {
 @test "state-read: omitting --repo reads from legacy .autopilot/issues/ path" {
   create_issue_json 42 "failed"
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 42 --field status
 
   assert_success
@@ -133,7 +133,7 @@ teardown() {
       fix_instructions: null, merged_at: null, files_changed: [], failure: null}' \
     > "$SANDBOX/.autopilot/repos/loom/issues/issue-50.json"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --repo loom --issue 50 --role worker \
     --set current_step="merge-gate"
 
@@ -159,7 +159,7 @@ teardown() {
       fix_instructions: null, merged_at: null, files_changed: [], failure: null}' \
     > "$SANDBOX/.autopilot/repos/loom/issues/issue-50.json"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --repo loom --issue 50 --role worker \
     --set current_step="review"
 
@@ -200,7 +200,7 @@ teardown() {
     }' > "$SANDBOX/.autopilot/session.json"
 
   # Verify repos field is present
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type session --field repos
 
   assert_success
@@ -208,7 +208,7 @@ teardown() {
   [ -n "$output" ]
 
   # Verify default_repo field
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type session --field default_repo
 
   assert_success

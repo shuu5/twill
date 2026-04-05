@@ -49,12 +49,12 @@ FOR each next_issue in NEXT_PHASE_ISSUES:
     - 意味的関連（LLM 判断） → confidence: "low"
 ```
 
-### Step 4: session-add-warning.sh で session.json に追記
+### Step 4: session add-warning で session.json に追記
 
 ```bash
 for ISSUE in $NEXT_PHASE_ISSUES; do
   if [ -n "${WARNING_MSG}" ]; then
-    bash $SCRIPTS_ROOT/session-add-warning.sh --issue "$ISSUE" --warning "$WARNING_MSG"
+    python3 -m twl.autopilot.session add-warning --issue "$SOURCE_ISSUE" --target-issue "$ISSUE" --file "$CONFLICT_FILE" --reason "$WARNING_MSG"
   fi
 done
 ```
@@ -64,8 +64,8 @@ done
 ```bash
 declare -A CROSS_ISSUE_WARNINGS
 for ISSUE in $NEXT_PHASE_ISSUES; do
-  WARNINGS=$(bash $SCRIPTS_ROOT/state-read.sh --type session --field "cross_issue_warnings" | \
-    jq -r ".[] | select(.issue == \"$ISSUE\") | .warning")
+  WARNINGS=$(python3 -m twl.autopilot.state read --type session --field "cross_issue_warnings" | \
+    jq -r ".[] | select(.issue == \"$ISSUE\") | .reason")
   if [ -n "$WARNINGS" ]; then
     CROSS_ISSUE_WARNINGS[$ISSUE]="$WARNINGS"
   fi
@@ -78,6 +78,6 @@ high confidence 警告のみ Worker 起動プロンプトに注入する（autop
 
 ## 禁止事項（MUST NOT）
 
-- session.json を直接編集してはならない（session-add-warning.sh に委譲）
+- session.json を直接編集してはならない（python3 -m twl.autopilot.session add-warning に委譲）
 - 最終 Phase で実行してはならない
 - マーカーファイルを参照してはならない

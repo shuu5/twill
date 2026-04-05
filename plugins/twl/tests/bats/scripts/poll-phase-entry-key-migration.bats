@@ -186,10 +186,10 @@ while true; do
     # state-read.sh 呼び出し: --repo は _default 以外に付与
     status=""
     if [[ "$repo_id" == "_default" ]]; then
-      status=$(bash "$SCRIPTS_ROOT/state-read.sh" \
+      status=$(python3 -m twl.autopilot.state read \
         --type issue --issue "$issue_num" --field status 2>/dev/null) || status=""
     else
-      status=$(bash "$SCRIPTS_ROOT/state-read.sh" \
+      status=$(python3 -m twl.autopilot.state read \
         --type issue --repo "$repo_id" --issue "$issue_num" --field status 2>/dev/null) || status=""
     fi
 

@@ -40,7 +40,7 @@ PHASE_COUNT=$(grep -c "^  - phase:" "$PLAN_FILE")
 ### Step 4: session.json 作成
 
 ```bash
-SESSION_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/session-create.sh --plan-path "$PLAN_FILE" --phase-count "$PHASE_COUNT")
+SESSION_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.session create --plan-path "$PLAN_FILE" --phase-count "$PHASE_COUNT")
 SESSION_ID=$(echo "$SESSION_OUTPUT" | grep -oP 'session_id=\K[0-9a-f]+')
 ```
 
@@ -58,6 +58,6 @@ SESSION_STATE_FILE="$AUTOPILOT_DIR/session.json"
 
 ## 禁止事項（MUST NOT）
 
-- session.json を直接作成してはならない（session-create.sh に委譲）
+- session.json を直接作成してはならない（python3 -m twl.autopilot.session create に委譲）
 - .autopilot/ を直接 mkdir してはならない（autopilot-init.sh に委譲）
 - 排他制御を迂回してはならない

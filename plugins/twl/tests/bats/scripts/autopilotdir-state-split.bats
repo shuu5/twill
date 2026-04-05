@@ -107,7 +107,7 @@ YAML
 JSON
 
   # Pilot reads using same AUTOPILOT_DIR
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 42 --field status
 
   assert_success
@@ -127,7 +127,7 @@ JSON
 JSON
 
   # Pilot updates state
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 42 --role pilot --set "status=done"
 
   assert_success
@@ -145,19 +145,19 @@ JSON
   mkdir -p "$AUTOPILOT_DIR/issues"
 
   # Worker creates issue state (--init)
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 99 --role worker --init
 
   assert_success
   [ -f "$AUTOPILOT_DIR/issues/issue-99.json" ]
 
   # Worker updates to merge-ready
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 99 --role worker --set "status=merge-ready"
   assert_success
 
   # Pilot reads the same file
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 99 --field status
 
   assert_success
@@ -172,7 +172,7 @@ JSON
   export AUTOPILOT_DIR="$SANDBOX/empty-state"
   mkdir -p "$AUTOPILOT_DIR/issues"
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 999 --field status
 
   assert_success
@@ -189,7 +189,7 @@ JSON
 {"issue": 1, "status": "running", "started_at": "$now", "retry_count": 0}
 JSON
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 1 --field status
 
   assert_success

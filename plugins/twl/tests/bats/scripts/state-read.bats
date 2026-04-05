@@ -19,7 +19,7 @@ teardown() {
 @test "state-read returns single field value" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 1 --field status
 
   assert_success
@@ -28,7 +28,7 @@ teardown() {
 
 # Scenario: non-existent file returns empty string and exit 0
 @test "state-read returns empty string for non-existent file" {
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 99 --field status
 
   assert_success
@@ -42,7 +42,7 @@ teardown() {
 @test "state-read returns full JSON without --field" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 1
 
   assert_success
@@ -53,14 +53,14 @@ teardown() {
 }
 
 @test "state-read fails without --type" {
-  run bash "$SANDBOX/scripts/state-read.sh" --issue 1 --field status
+  run python3 -m twl.autopilot.state read --issue 1 --field status
 
   assert_failure
   assert_output --partial "--type"
 }
 
 @test "state-read fails with invalid type" {
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type bogus --issue 1 --field status
 
   assert_failure
@@ -68,7 +68,7 @@ teardown() {
 }
 
 @test "state-read fails without --issue for type=issue" {
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --field status
 
   assert_failure
@@ -76,7 +76,7 @@ teardown() {
 }
 
 @test "state-read fails with non-numeric issue" {
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue abc --field status
 
   assert_failure
@@ -86,7 +86,7 @@ teardown() {
 @test "state-read rejects jq injection in field name" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 1 --field '.foo'
 
   assert_failure
@@ -96,7 +96,7 @@ teardown() {
 @test "state-read returns empty for non-existent field" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type issue --issue 1 --field nonexistent
 
   assert_success
@@ -106,7 +106,7 @@ teardown() {
 @test "state-read can read session.json" {
   create_session_json
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type session --field session_id
 
   assert_success
@@ -116,7 +116,7 @@ teardown() {
 @test "state-read returns empty string for non-existent session.json" {
   # No session.json exists in sandbox
 
-  run bash "$SANDBOX/scripts/state-read.sh" \
+  run python3 -m twl.autopilot.state read \
     --type session --field session_id
 
   assert_success
@@ -124,7 +124,7 @@ teardown() {
 }
 
 @test "state-read --help shows usage" {
-  run bash "$SANDBOX/scripts/state-read.sh" --help
+  run python3 -m twl.autopilot.state read --help
 
   assert_success
   assert_output --partial "Usage:"

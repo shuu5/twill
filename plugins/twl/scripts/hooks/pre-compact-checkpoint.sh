@@ -21,6 +21,8 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SCRIPTS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=../lib/python-env.sh
+source "${SCRIPTS_ROOT}/lib/python-env.sh"
 
 # ── 実行中 Issue の特定 ──
 ISSUE_NUM=""
@@ -42,7 +44,7 @@ fi
 
 # ── 現在の current_step を取得 ──
 CURRENT_STEP=""
-CURRENT_STEP="$(bash "$SCRIPTS_ROOT/state-read.sh" \
+CURRENT_STEP="$(python3 -m twl.autopilot.state read \
   --type issue --issue "$ISSUE_NUM" --field current_step \
   2>/dev/null || echo "")"
 
@@ -59,7 +61,7 @@ fi
 
 # ── current_step を再書き込み（compaction 前確定保存） ──
 # 冪等: 既に同じ値でも書き込む（compaction サマリへの反映を確実にする）
-bash "$SCRIPTS_ROOT/state-write.sh" \
+python3 -m twl.autopilot.state write \
   --type issue --issue "$ISSUE_NUM" --role worker \
   --set "current_step=${CURRENT_STEP}" 2>/dev/null || true
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# session-audit.bats - unit tests for scripts/session-audit.sh
+# session-audit.bats - unit tests for python3 -m twl.autopilot.session audit
 
 load '../helpers/common'
 
@@ -18,14 +18,14 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "session-audit fails without argument" {
-  run bash "$SANDBOX/scripts/session-audit.sh"
+  run python3 -m twl.autopilot.session audit
 
   assert_failure
   assert_output --partial "Usage"
 }
 
 @test "session-audit fails with non-existent file" {
-  run bash "$SANDBOX/scripts/session-audit.sh" "$SANDBOX/nonexistent.jsonl"
+  run python3 -m twl.autopilot.session audit "$SANDBOX/nonexistent.jsonl"
 
   assert_failure
   assert_output --partial "not found"
@@ -34,7 +34,7 @@ teardown() {
 @test "session-audit fails with empty file" {
   touch "$SANDBOX/empty.jsonl"
 
-  run bash "$SANDBOX/scripts/session-audit.sh" "$SANDBOX/empty.jsonl"
+  run python3 -m twl.autopilot.session audit "$SANDBOX/empty.jsonl"
 
   assert_failure
   assert_output --partial "empty"
@@ -47,7 +47,7 @@ teardown() {
 {"type":"user","timestamp":"2024-01-01T00:01:01Z","message":{"content":[{"type":"tool_result","tool_use_id":"t1","content":"file1.txt"}]}}
 JSONL
 
-  run bash "$SANDBOX/scripts/session-audit.sh" "$SANDBOX/test.jsonl"
+  run python3 -m twl.autopilot.session audit "$SANDBOX/test.jsonl"
 
   assert_success
   # Should contain metadata entry
@@ -65,7 +65,7 @@ JSONL
 {"type":"assistant","sessionId":"test","timestamp":"2024-01-01T00:00:00Z","message":{"content":[{"type":"text","text":"test"}]}}
 JSONL
 
-  run bash "$SANDBOX/scripts/session-audit.sh" "$SANDBOX/test.jsonl"
+  run python3 -m twl.autopilot.session audit "$SANDBOX/test.jsonl"
 
   assert_failure
   assert_output --partial "Path must be under"
@@ -78,7 +78,7 @@ this is not json
 {"type":"assistant","sessionId":"test","timestamp":"2024-01-01T00:00:01Z","message":{"content":[{"type":"text","text":"also valid"}]}}
 JSONL
 
-  run bash "$SANDBOX/scripts/session-audit.sh" "$SANDBOX/test.jsonl"
+  run python3 -m twl.autopilot.session audit "$SANDBOX/test.jsonl"
 
   assert_success
   # Should skip invalid lines and process valid ones
@@ -91,7 +91,7 @@ JSONL
 {"type":"user","timestamp":"2024-01-01T00:00:01Z","message":{"content":[{"type":"tool_result","tool_use_id":"t1","content":"file content"}]}}
 JSONL
 
-  run bash "$SANDBOX/scripts/session-audit.sh" "$SANDBOX/test.jsonl"
+  run python3 -m twl.autopilot.session audit "$SANDBOX/test.jsonl"
 
   assert_success
   # Should contain tool_call entry
@@ -106,7 +106,7 @@ JSONL
 {"type":"assistant","sessionId":"test","timestamp":"2024-01-01T00:00:00Z","message":{"content":[{"type":"text","text":"$long_text"}]}}
 JSONL
 
-  run bash "$SANDBOX/scripts/session-audit.sh" "$SANDBOX/test.jsonl"
+  run python3 -m twl.autopilot.session audit "$SANDBOX/test.jsonl"
 
   assert_success
   # ai_text should be truncated to AI_TEXT_LIMIT (200)
@@ -119,7 +119,7 @@ JSONL
   touch "$SANDBOX/unreadable.jsonl"
   chmod 000 "$SANDBOX/unreadable.jsonl"
 
-  run bash "$SANDBOX/scripts/session-audit.sh" "$SANDBOX/unreadable.jsonl"
+  run python3 -m twl.autopilot.session audit "$SANDBOX/unreadable.jsonl"
 
   assert_failure
 

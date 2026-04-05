@@ -33,16 +33,16 @@ autopilot-phase-postprocess から呼び出される。
 ```bash
 CHANGED_FILES=""
 for ISSUE in $ISSUES; do
-  STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
   case "$STATUS" in
     done)
-      PR=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field pr_number)
+      PR=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field pr_number)
       # done Issue の PR 番号と変更ファイルを集約。CHANGED_FILES に追記
       FILES=$(gh pr view "$PR" --json files -q '.files[].path' 2>/dev/null || true)
       CHANGED_FILES="${CHANGED_FILES} ${FILES}"
       ;;
     failed)
-      FAILURE=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field failure)
+      FAILURE=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field failure)
       # failure 情報を集約
       ;;
   esac

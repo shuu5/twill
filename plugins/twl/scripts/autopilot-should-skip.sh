@@ -12,6 +12,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/python-env.sh
+source "${SCRIPT_DIR}/lib/python-env.sh"
 
 PLAN_FILE="${1:?Usage: $0 <plan.yaml> <issue_number>}"
 ISSUE="${2:?Usage: $0 <plan.yaml> <issue_number>}"
@@ -35,7 +37,7 @@ fi
 
 # --- 各依存先の状態をチェック（state-read.sh 経由） ---
 for dep in $DEPS; do
-  STATUS=$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$dep" --field status 2>/dev/null || true)
+  STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$dep" --field status 2>/dev/null || true)
 
   # done のみが「依存解決済み」— それ以外は全てスキップ
   if [ "$STATUS" != "done" ]; then

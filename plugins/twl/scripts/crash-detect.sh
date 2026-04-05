@@ -7,8 +7,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"
-STATE_READ="$SCRIPT_DIR/state-read.sh"
-STATE_WRITE="$SCRIPT_DIR/state-write.sh"
+# shellcheck source=./lib/python-env.sh
+source "${SCRIPT_DIR}/lib/python-env.sh"
 
 # session-state.sh の解決（環境変数で上書き可能）
 SESSION_STATE_CMD="${SESSION_STATE_CMD-$HOME/ubuntu-note-system/scripts/session-state.sh}"
@@ -50,7 +50,7 @@ report_crash() {
   local now current_step failure_json
 
   now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  current_step=$("$STATE_READ" --type issue --issue "$issue" --field current_step)
+  current_step=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field current_step)
 
   echo "CRASH: Worker crash を検知しました (Issue #$issue, window=$window, state=$detected_state)" >&2
 
@@ -61,7 +61,7 @@ report_crash() {
     --arg detected_state "$detected_state" \
     '{ message: $message, step: $step, timestamp: $timestamp, detected_state: $detected_state }')
 
-  "$STATE_WRITE" --type issue --issue "$issue" --role pilot \
+  python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
     --set "status=failed" \
     --set "failure=$failure_json"
 }
@@ -90,7 +90,7 @@ if [[ ! "$issue" =~ ^[0-9]+$ ]]; then
 fi
 
 # 現在の status を取得
-status=$("$STATE_READ" --type issue --issue "$issue" --field status)
+status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status)
 
 # running 以外はチェック不要（merge-ready で終了は正常）
 if [[ "$status" != "running" ]]; then

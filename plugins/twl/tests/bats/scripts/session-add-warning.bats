@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# session-add-warning.bats - unit tests for scripts/session-add-warning.sh
+# session-add-warning.bats - unit tests for python3 -m twl.autopilot.session add-warning
 
 load '../helpers/common'
 
@@ -12,14 +12,14 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# Requirement: session management scripts unit test
+# Requirement: session management unit test
 # ---------------------------------------------------------------------------
 
 # Scenario: warning addition
 @test "session-add-warning appends warning to session.json" {
   create_session_json
 
-  run bash "$SANDBOX/scripts/session-add-warning.sh" \
+  run python3 -m twl.autopilot.session add-warning \
     --issue 1 --target-issue 2 --file "src/main.ts" --reason "concurrent edit"
 
   assert_success
@@ -43,7 +43,7 @@ teardown() {
 @test "session-add-warning fails without required args" {
   create_session_json
 
-  run bash "$SANDBOX/scripts/session-add-warning.sh" \
+  run python3 -m twl.autopilot.session add-warning \
     --issue 1
 
   assert_failure
@@ -53,7 +53,7 @@ teardown() {
 @test "session-add-warning fails when session.json does not exist" {
   rm -f "$SANDBOX/.autopilot/session.json"
 
-  run bash "$SANDBOX/scripts/session-add-warning.sh" \
+  run python3 -m twl.autopilot.session add-warning \
     --issue 1 --target-issue 2 --file "a.ts" --reason "test"
 
   assert_failure
@@ -63,9 +63,9 @@ teardown() {
 @test "session-add-warning can add multiple warnings" {
   create_session_json
 
-  bash "$SANDBOX/scripts/session-add-warning.sh" \
+  python3 -m twl.autopilot.session add-warning \
     --issue 1 --target-issue 2 --file "a.ts" --reason "first"
-  bash "$SANDBOX/scripts/session-add-warning.sh" \
+  python3 -m twl.autopilot.session add-warning \
     --issue 3 --target-issue 4 --file "b.ts" --reason "second"
 
   local count
@@ -76,7 +76,7 @@ teardown() {
 @test "session-add-warning preserves existing session.json data" {
   create_session_json
 
-  bash "$SANDBOX/scripts/session-add-warning.sh" \
+  python3 -m twl.autopilot.session add-warning \
     --issue 1 --target-issue 2 --file "a.ts" --reason "test"
 
   # Verify other fields are preserved

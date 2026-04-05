@@ -21,6 +21,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/python-env.sh
+source "${SCRIPT_DIR}/lib/python-env.sh"
 
 # =====================================================================
 # chain ステップ順序定義（SSOT: scripts/chain-steps.sh）
@@ -66,7 +68,7 @@ if [[ ! "$QUERY_STEP" =~ ^[a-z0-9-]+$ ]]; then
 fi
 
 # ── is_quick チェック（QUICK_SKIP_STEPS に含まれるなら即スキップ）──
-IS_QUICK="$(bash "$SCRIPT_DIR/state-read.sh" \
+IS_QUICK="$(python3 -m twl.autopilot.state read \
   --type issue \
   --issue "$ISSUE_NUM" \
   --field is_quick \
@@ -82,7 +84,7 @@ fi
 
 # ── current_step 取得 ──
 CURRENT_STEP=""
-CURRENT_STEP="$(bash "$SCRIPT_DIR/state-read.sh" \
+CURRENT_STEP="$(python3 -m twl.autopilot.state read \
   --type issue \
   --issue "$ISSUE_NUM" \
   --field current_step \

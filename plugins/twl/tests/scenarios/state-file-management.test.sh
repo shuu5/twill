@@ -10,9 +10,9 @@ set -uo pipefail
 # Project root (relative to test file location)
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
-# Script paths (will be created during implementation)
-STATE_WRITE="${PROJECT_ROOT}/scripts/state-write.sh"
-STATE_READ="${PROJECT_ROOT}/scripts/state-read.sh"
+# Python module path (replaces state-write.sh / state-read.sh)
+_GIT_ROOT="$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "$PROJECT_ROOT/../../../")"
+export PYTHONPATH="${_GIT_ROOT}/cli/twl/src${PYTHONPATH:+:${PYTHONPATH}}"
 
 # Counters
 PASS=0
@@ -27,17 +27,6 @@ SANDBOX=""
 setup_sandbox() {
   SANDBOX=$(mktemp -d)
   mkdir -p "${SANDBOX}/.autopilot/issues"
-  # Copy scripts if they exist
-  if [[ -f "$STATE_WRITE" ]]; then
-    mkdir -p "${SANDBOX}/scripts"
-    cp "$STATE_WRITE" "${SANDBOX}/scripts/state-write.sh"
-    chmod +x "${SANDBOX}/scripts/state-write.sh"
-  fi
-  if [[ -f "$STATE_READ" ]]; then
-    mkdir -p "${SANDBOX}/scripts"
-    cp "$STATE_READ" "${SANDBOX}/scripts/state-read.sh"
-    chmod +x "${SANDBOX}/scripts/state-read.sh"
-  fi
 }
 
 teardown_sandbox() {
@@ -47,16 +36,16 @@ teardown_sandbox() {
   SANDBOX=""
 }
 
-# Run state-write.sh in the sandbox context
+# Run state write in the sandbox context
 # Subshell で SANDBOX に cd することで worktrees/ CWD ガード（不変条件C）を回避し、
 # Pilot ロールのテストがワークツリー配下から実行されても正常動作させる。
 run_state_write() {
-  ( cd "$SANDBOX" && AUTOPILOT_DIR="${SANDBOX}/.autopilot" bash "${SANDBOX}/scripts/state-write.sh" "$@" 2>/dev/null )
+  ( cd "$SANDBOX" && AUTOPILOT_DIR="${SANDBOX}/.autopilot" python3 -m twl.autopilot.state write "$@" 2>/dev/null )
 }
 
-# Run state-read.sh in the sandbox context
+# Run state read in the sandbox context
 run_state_read() {
-  AUTOPILOT_DIR="${SANDBOX}/.autopilot" bash "${SANDBOX}/scripts/state-read.sh" "$@" 2>/dev/null
+  AUTOPILOT_DIR="${SANDBOX}/.autopilot" python3 -m twl.autopilot.state read "$@" 2>/dev/null
 }
 
 # Helper: create an issue file with given status and optional fields
@@ -105,7 +94,7 @@ run_test_skip() {
 }
 
 scripts_available() {
-  [[ -f "$STATE_WRITE" && -f "$STATE_READ" ]]
+  python3 -c "import twl.autopilot.state" 2>/dev/null
 }
 
 # =============================================================================
@@ -277,7 +266,7 @@ test_read_specific_field() {
   [[ "$output" == "merge-ready" ]] || return 1
 }
 
-if [[ -f "$STATE_READ" ]]; then
+if scripts_available; then
   run_test "特定フィールドの読み取り" test_read_specific_field
 else
   run_test_skip "特定フィールドの読み取り" "state-read.sh not found"
@@ -291,7 +280,7 @@ test_read_numeric_field() {
   [[ "$output" == "1" ]] || return 1
 }
 
-if [[ -f "$STATE_READ" ]]; then
+if scripts_available; then
   run_test "フィールド読み取り [edge: 数値フィールド]" test_read_numeric_field
 else
   run_test_skip "フィールド読み取り [edge: 数値フィールド]" "state-read.sh not found"
@@ -308,7 +297,7 @@ test_read_all_fields() {
   echo "$output" | python3 -c "import json,sys; data=json.load(sys.stdin); assert 'status' in data" 2>/dev/null || return 1
 }
 
-if [[ -f "$STATE_READ" ]]; then
+if scripts_available; then
   run_test "全フィールドの読み取り" test_read_all_fields
 else
   run_test_skip "全フィールドの読み取り" "state-read.sh not found"
@@ -322,7 +311,7 @@ test_read_all_valid_json() {
   echo "$output" | python3 -c "import json,sys; json.load(sys.stdin)" 2>/dev/null || return 1
 }
 
-if [[ -f "$STATE_READ" ]]; then
+if scripts_available; then
   run_test "全フィールド読み取り [edge: 有効な JSON 出力]" test_read_all_valid_json
 else
   run_test_skip "全フィールド読み取り [edge: 有効な JSON 出力]" "state-read.sh not found"
@@ -339,7 +328,7 @@ test_read_nonexistent_file() {
   [[ -z "$output" ]] || return 1
 }
 
-if [[ -f "$STATE_READ" ]]; then
+if scripts_available; then
   run_test "存在しないファイルへのアクセス" test_read_nonexistent_file
 else
   run_test_skip "存在しないファイルへのアクセス" "state-read.sh not found"
@@ -354,7 +343,7 @@ test_read_nonexistent_all_fields() {
   [[ -z "$output" ]] || return 1
 }
 
-if [[ -f "$STATE_READ" ]]; then
+if scripts_available; then
   run_test "存在しないファイル [edge: 全フィールドも空文字列]" test_read_nonexistent_all_fields
 else
   run_test_skip "存在しないファイル [edge: 全フィールドも空文字列]" "state-read.sh not found"
@@ -375,7 +364,7 @@ test_worker_session_write_denied() {
   [[ "$result" -ne 0 ]] || return 1
 }
 
-if [[ -f "$STATE_WRITE" ]]; then
+if scripts_available; then
   run_test "Worker が session.json に書き込みを試みる" test_worker_session_write_denied
 else
   run_test_skip "Worker が session.json に書き込みを試みる" "state-write.sh not found"
@@ -396,7 +385,7 @@ EOF
   run_state_write --type session --set current_phase=2 --role pilot || return 1
 }
 
-if [[ -f "$STATE_WRITE" ]]; then
+if scripts_available; then
   run_test "Worker session 書き込み拒否 [edge: Pilot は許可]" test_pilot_session_write_allowed
 else
   run_test_skip "Worker session 書き込み拒否 [edge: Pilot は許可]" "state-write.sh not found"
@@ -414,7 +403,7 @@ test_pilot_issue_status_done() {
   [[ "$status" == "done" ]] || return 1
 }
 
-if [[ -f "$STATE_WRITE" ]]; then
+if scripts_available; then
   run_test "Pilot が issue status=done に書き込み" test_pilot_issue_status_done
 else
   run_test_skip "Pilot が issue status=done に書き込み" "state-write.sh not found"
@@ -430,7 +419,7 @@ test_pilot_issue_non_status_field_denied() {
   [[ "$result" -ne 0 ]] || return 1
 }
 
-if [[ -f "$STATE_WRITE" ]]; then
+if scripts_available; then
   run_test "Pilot が issue の status 以外フィールド書き込み拒否" test_pilot_issue_non_status_field_denied
 else
   run_test_skip "Pilot が issue の status 以外フィールド書き込み拒否" "state-write.sh not found"
@@ -442,7 +431,7 @@ test_pilot_issue_merged_at_allowed() {
   run_state_write --type issue --issue 42 --set "merged_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" --role pilot || return 1
 }
 
-if [[ -f "$STATE_WRITE" ]]; then
+if scripts_available; then
   run_test "Pilot issue フィールド制限 [edge: merged_at は許可]" test_pilot_issue_merged_at_allowed
 else
   run_test_skip "Pilot issue フィールド制限 [edge: merged_at は許可]" "state-write.sh not found"
@@ -518,7 +507,7 @@ test_done_is_terminal() {
   done
 }
 
-if [[ -f "$STATE_WRITE" ]]; then
+if scripts_available; then
   run_test "done からの遷移拒否" test_done_is_terminal
 else
   run_test_skip "done からの遷移拒否" "state-write.sh not found"
@@ -536,7 +525,7 @@ test_done_file_unchanged() {
   [[ "$before_hash" == "$after_hash" ]] || return 1
 }
 
-if [[ -f "$STATE_WRITE" ]]; then
+if scripts_available; then
   run_test "done 遷移拒否 [edge: ファイル内容未変更]" test_done_file_unchanged
 else
   run_test_skip "done 遷移拒否 [edge: ファイル内容未変更]" "state-write.sh not found"

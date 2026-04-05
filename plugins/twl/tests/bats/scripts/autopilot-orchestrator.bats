@@ -208,7 +208,7 @@ current_count="${NUDGE_COUNTS[$ISSUE]:-0}"
 if [[ "$current_count" -ge "$MAX_NUDGE" ]]; then
   # Scenario 6: nudge 上限到達 → failed 遷移
   echo "[poll] NUDGE_COUNTS[${ISSUE}]=${current_count} >= MAX_NUDGE=${MAX_NUDGE} — transitioning to failed" >&2
-  bash "$SCRIPTS_ROOT/state-write.sh" \
+  python3 -m twl.autopilot.state write \
     --type issue --issue "$ISSUE" --role pilot \
     --set "status=failed" \
     --set 'failure={"message":"health_check_stall","step":"polling"}'

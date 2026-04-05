@@ -18,7 +18,7 @@ teardown() {
 
 # Scenario: issue state init
 @test "state-write --init creates issue JSON with status=running" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role worker --init
 
   assert_success
@@ -42,7 +42,7 @@ teardown() {
 @test "state-write rejects done -> running transition" {
   create_issue_json 1 "done"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=running
 
   assert_failure
@@ -53,7 +53,7 @@ teardown() {
 @test "state-write rejects retry when retry_count >= 1" {
   create_issue_json 1 "failed" '.retry_count = 1'
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=running
 
   assert_failure
@@ -65,7 +65,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "state-write fails without --type" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --role worker --issue 1 --set status=running
 
   assert_failure
@@ -73,7 +73,7 @@ teardown() {
 }
 
 @test "state-write fails without --role" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --set status=running
 
   assert_failure
@@ -81,7 +81,7 @@ teardown() {
 }
 
 @test "state-write fails with invalid type" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type bogus --issue 1 --role worker --set status=running
 
   assert_failure
@@ -89,7 +89,7 @@ teardown() {
 }
 
 @test "state-write fails with non-numeric issue" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue abc --role worker --init
 
   assert_failure
@@ -97,7 +97,7 @@ teardown() {
 }
 
 @test "state-write refuses worker writing to session" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type session --role worker --set status=running
 
   assert_failure
@@ -107,7 +107,7 @@ teardown() {
 @test "state-write refuses pilot writing non-allowed fields to issue" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set branch=test
 
   assert_failure
@@ -117,7 +117,7 @@ teardown() {
 @test "state-write allows valid running -> merge-ready transition" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=merge-ready
 
   assert_success
@@ -131,7 +131,7 @@ teardown() {
 @test "state-write allows valid running -> failed transition" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=failed
 
   assert_success
@@ -144,7 +144,7 @@ teardown() {
 @test "state-write allows merge-ready -> done transition" {
   create_issue_json 1 "merge-ready"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=done
 
   assert_success
@@ -157,7 +157,7 @@ teardown() {
 @test "state-write allows failed -> running retry when retry_count=0" {
   create_issue_json 1 "failed" '.retry_count = 0'
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=running
 
   assert_success
@@ -170,7 +170,7 @@ teardown() {
 @test "state-write rejects invalid transition running -> done" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=done
 
   assert_failure
@@ -180,7 +180,7 @@ teardown() {
 @test "state-write --init fails if issue already exists" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role worker --init
 
   assert_failure
@@ -188,7 +188,7 @@ teardown() {
 }
 
 @test "state-write --init rejects pilot for issue init" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --init
 
   assert_failure
@@ -196,7 +196,7 @@ teardown() {
 }
 
 @test "state-write --init for session type is rejected" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type session --role pilot --init
 
   assert_failure
@@ -206,7 +206,7 @@ teardown() {
 @test "state-write rejects jq injection in field name" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role worker --set '.foo=bar'
 
   assert_failure
@@ -214,7 +214,7 @@ teardown() {
 }
 
 @test "state-write fails when file does not exist (no --init)" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 99 --role pilot --set status=failed
 
   assert_failure
@@ -224,7 +224,7 @@ teardown() {
 @test "state-write fails with no --set and no --init" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role worker
 
   assert_failure
@@ -234,7 +234,7 @@ teardown() {
 @test "state-write uses atomic write (tmp + mv pattern)" {
   create_issue_json 1 "running"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role worker --set current_step=test
 
   assert_success
@@ -247,7 +247,7 @@ teardown() {
 }
 
 @test "state-write --init sets updated_at field for issue type" {
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 5 --role worker --init
 
   assert_success
@@ -263,7 +263,7 @@ teardown() {
   before=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   sleep 1
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 6 --role worker --set current_step=test
 
   assert_success
@@ -280,7 +280,7 @@ teardown() {
   mkdir -p "$SANDBOX/.autopilot"
   echo '{"status":"active","current_issue":null}' > "$SANDBOX/.autopilot/session.json"
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type session --role pilot --set current_issue=1
 
   assert_success
