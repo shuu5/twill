@@ -54,7 +54,7 @@
 <polyline fill="none" stroke="black" points="671.22,-615 671.22,-609 "/>
 <polyline fill="none" stroke="black" points="677.22,-609 671.22,-609 "/>
 <text text-anchor="middle" x="624.72" y="-600" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;project&#45;model</text>
-<text text-anchor="middle" x="624.72" y="-589" font-family="Helvetica,sans-Serif" font-size="10.00">(1,803 tok)</text>
+<text text-anchor="middle" x="624.72" y="-589" font-family="Helvetica,sans-Serif" font-size="10.00">(2,158 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;skill_ref_project_model -->
 <g id="edge14" class="edge">
@@ -97,7 +97,7 @@
 <title>cmd_issue_structure</title>
 <polygon fill="#e3f2fd" stroke="black" points="255.58,-558 174.58,-558 174.58,-522 255.58,-522 255.58,-558"/>
 <text text-anchor="middle" x="215.08" y="-543" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;structure</text>
-<text text-anchor="middle" x="215.08" y="-532" font-family="Helvetica,sans-Serif" font-size="10.00">(1,332 tok)</text>
+<text text-anchor="middle" x="215.08" y="-532" font-family="Helvetica,sans-Serif" font-size="10.00">(1,608 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_issue_structure -->
 <g id="edge2" class="edge">
@@ -214,7 +214,7 @@
 <title>cmd_project_board_sync</title>
 <polygon fill="#e3f2fd" stroke="black" points="263.58,-36 166.58,-36 166.58,0 263.58,0 263.58,-36"/>
 <text text-anchor="middle" x="215.08" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;board&#45;sync</text>
-<text text-anchor="middle" x="215.08" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(3,118 tok)</text>
+<text text-anchor="middle" x="215.08" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(2,325 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_project_board_sync -->
 <g id="edge11" class="edge">

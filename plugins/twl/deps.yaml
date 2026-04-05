@@ -144,6 +144,7 @@ skills:
       - atomic: plugin-verify
       - composite: plugin-phase-diagnose
       - composite: plugin-phase-verify
+      - atomic: label-sync
       - reference: ref-types
       - reference: ref-practices
       - reference: ref-deps-format
@@ -668,6 +669,13 @@ commands:
     spawnable_by: [controller]
     can_spawn: []
     description: "Issue作成後に Project V2 へ自動追加+フィールドミラー"
+
+  label-sync:
+    type: atomic
+    path: commands/label-sync.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "architecture spec → GitHub ラベル自動同期"
 
   # === C-2a: Project管理系（9個） ===
 
