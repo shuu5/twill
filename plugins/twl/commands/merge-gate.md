@@ -80,10 +80,10 @@ fi
 
 ### 結果集約
 
-specialist-output-parse スクリプトで全出力をパースし findings を統合する。
+specialist 出力を Python モジュールでパースし findings を統合する。
 
 ```bash
-PARSED=$(echo "$OUTPUT" | bash scripts/specialist-output-parse.sh)
+PARSED=$(echo "$OUTPUT" | python3 -m twl.autopilot.parser)
 ```
 
 **AI による自由形式の変換は禁止**。パーサーの構造化データのみを使用する。
@@ -136,8 +136,8 @@ if [[ "$AUTOPILOT_STATUS" == "running" || "$AUTOPILOT_STATUS" == "merge-ready" ]
   fi
   echo "merge-gate: PASS。merge-ready 宣言済み。Pilot による merge を待機中。"
 else
-  # 非 autopilot 時（Pilot が実行）: merge-gate-execute.sh 経由でマージを実行する
-  ISSUE="${ISSUE_NUM}" PR_NUMBER="${PR_NUMBER}" BRANCH="${BRANCH}" bash scripts/merge-gate-execute.sh
+  # 非 autopilot 時（Pilot が実行）: mergegate Python モジュールでマージを実行する
+  ISSUE="${ISSUE_NUM}" PR_NUMBER="${PR_NUMBER}" BRANCH="${BRANCH}" python3 -m twl.autopilot.mergegate
 fi
 ```
 

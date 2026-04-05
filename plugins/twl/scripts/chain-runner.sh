@@ -15,8 +15,6 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # =====================================================================
 # shellcheck source=./chain-steps.sh
 source "${SCRIPT_DIR}/chain-steps.sh"
-# shellcheck source=./lib/resolve-project.sh
-source "${SCRIPT_DIR}/lib/resolve-project.sh"
 # shellcheck source=./lib/python-env.sh
 source "${SCRIPT_DIR}/lib/python-env.sh"
 # shellcheck source=./resolve-issue-num.sh
@@ -200,11 +198,17 @@ step_board_status_update() {
     return 0
   fi
 
-  local final_num final_id owner repo_name repo
-  if ! read -r final_num final_id owner repo_name repo < <(resolve_project 2>/dev/null); then
+  local final_num final_id owner repo_name repo _resolve_json
+  _resolve_json=$(python3 -m twl.autopilot.github resolve-project 2>/dev/null) || _resolve_json=""
+  if [[ -z "$_resolve_json" ]]; then
     skip "board-status-update" "リンクされた Project なし"
     return 0
   fi
+  final_num=$(echo "$_resolve_json" | jq -r '.project_num')
+  final_id=$(echo "$_resolve_json" | jq -r '.project_id')
+  owner=$(echo "$_resolve_json" | jq -r '.owner')
+  repo_name=$(echo "$_resolve_json" | jq -r '.repo_name')
+  repo=$(echo "$_resolve_json" | jq -r '.repo_fullname')
 
   # Issue を Project に追加
   local item_id
@@ -262,11 +266,14 @@ step_board_archive() {
     return 0
   fi
 
-  local final_num _final_id owner _repo_name _repo
-  if ! read -r final_num _final_id owner _repo_name _repo < <(resolve_project 2>/dev/null); then
+  local final_num owner _resolve_json2
+  _resolve_json2=$(python3 -m twl.autopilot.github resolve-project 2>/dev/null) || _resolve_json2=""
+  if [[ -z "$_resolve_json2" ]]; then
     skip "board-archive" "リンクされた Project なし"
     return 0
   fi
+  final_num=$(echo "$_resolve_json2" | jq -r '.project_num')
+  owner=$(echo "$_resolve_json2" | jq -r '.owner')
 
   # アイテム ID 取得
   local item_id
@@ -315,7 +322,7 @@ step_ac_extract() {
   fi
 
   local ac_output
-  ac_output=$(bash "$SCRIPT_DIR/parse-issue-ac.sh" "$issue_num" 2>/dev/null) && {
+  ac_output=$(python3 -m twl.autopilot.github extract-ac "$issue_num" 2>/dev/null) && {
     printf '%s\n\n%s\n' "## 受け入れ基準（Issue #${issue_num}）" "$ac_output" > "$output_file"
     ok "ac-extract" "AC 抽出完了 (Issue #$issue_num)"
   } || {

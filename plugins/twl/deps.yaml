@@ -513,7 +513,7 @@ commands:
       parent: workflow-setup
       step: "3.5"
     calls:
-      - script: parse-issue-ac
+      - script: autopilot-github
     description: "AC（受け入れ基準）抽出"
 
   ts-preflight:
@@ -1027,7 +1027,7 @@ commands:
       parent: workflow-pr-verify
       step: "2"
     calls:
-      - script: specialist-output-parse
+      - script: autopilot-parser
       - script: tech-stack-detect
       - script: checkpoint-write
       - specialist: worker-structure
@@ -1089,13 +1089,13 @@ commands:
       parent: workflow-pr-merge
       step: "8"
     calls:
-      - script: specialist-output-parse
+      - script: autopilot-parser
       - script: tech-stack-detect
       - script: state-write
       - script: worktree-delete
       - script: checkpoint-write
       - script: checkpoint-read
-      - script: merge-gate-execute
+      - script: autopilot-mergegate
       - specialist: worker-structure
       - specialist: worker-principles
       - specialist: worker-code-reviewer
@@ -1378,10 +1378,10 @@ scripts:
     path: scripts/tech-stack-detect.sh
     description: "変更ファイルから tech-stack を判定し conditional specialist を返す"
 
-  specialist-output-parse:
+  autopilot-parser:
     type: script
-    path: scripts/specialist-output-parse.sh
-    description: "specialist 出力の共通スキーマパース（status + findings）"
+    path: src/twl/autopilot/parser.py
+    description: "specialist 出力の共通スキーマパース（status + findings）+ 障害分類（Python: python3 -m twl.autopilot.parser）"
 
   # C-4: 旧 plugin から移植
   autopilot-plan:
@@ -1406,29 +1406,23 @@ scripts:
       - script: worktree-create
       - script: autopilot-should-skip
       - script: crash-detect
-      - script: merge-gate-execute
+      - script: autopilot-mergegate
       - script: session:session-state
     description: "Pilot 側 Phase 実行オーケストレーター（Python: python3 -m twl.autopilot.orchestrator; ループ・ポーリング・merge-gate・nudge・サマリー）"
 
-  merge-gate-execute: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
+  autopilot-mergegate:
     type: script
-    path: scripts/merge-gate-execute.sh
-    description: "merge-gate マージ実行 / リジェクト（state-write.sh 統合）"
-
-  resolve-project: # lib: chain-runner, project-board-archive, project-board-backfill, autopilot-plan-board から source
-    type: script
-    path: scripts/lib/resolve-project.sh
-    description: "リポジトリにリンクされた Project を GraphQL で検出する共通関数（resolve_project）"
+    path: src/twl/autopilot/mergegate.py
+    description: "merge-gate マージ実行 / リジェクト（Python: python3 -m twl.autopilot.mergegate）"
 
   chain-runner:
     type: script
     path: src/twl/autopilot/chain.py
     calls:
       - script: worktree-create
-      - script: parse-issue-ac
+      - script: autopilot-github
       - script: state-read
       - script: state-write
-      - script: resolve-project
       - script: chain-steps
       - script: resolve-issue-num
     commands:
@@ -1462,10 +1456,10 @@ scripts:
     path: scripts/project-migrate.sh
     description: "既存プロジェクトの最新テンプレート移行"
 
-  parse-issue-ac:
+  autopilot-github:
     type: script
-    path: scripts/parse-issue-ac.sh
-    description: "Issue body + コメントから受け入れ基準（AC）抽出"
+    path: src/twl/autopilot/github.py
+    description: "GitHub API ラッパー（Issue AC抽出・PR findings・Project解決・Issue作成）（Python: python3 -m twl.autopilot.github）"
 
   session-audit:
     type: script
@@ -1503,21 +1497,21 @@ scripts:
     type: script
     path: src/twl/autopilot/plan.py
     calls:
-      - script: resolve-project
+      - script: autopilot-github
     description: "autopilot-plan の --board モード関数群（Python: plan.py の PlanGenerator.fetch_board_issues）"
 
   project-board-archive:
     type: script
     path: scripts/project-board-archive.sh
     calls:
-      - script: resolve-project
+      - script: autopilot-github
     description: "Project Board の Done アイテム一括アーカイブ"
 
   project-board-backfill:
     type: script
     path: scripts/project-board-backfill.sh
     calls:
-      - script: resolve-project
+      - script: autopilot-github
     description: "欠落 Issue を Project Board に一括追加"
 
   # check-db-migration: removed — webapp 固有、dev plugin 不使用（scripts/check-db-migration.py は保持）

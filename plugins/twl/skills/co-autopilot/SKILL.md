@@ -113,7 +113,7 @@ orchestrator が一括処理する内容:
 - batch 分割・Worker 起動（autopilot-launch.sh）
 - ポーリング（state-read.sh + crash-detect.sh、session-state.sh 対応）
 - chain 遷移停止検知 + 自動 nudge（tmux capture-pane + send-keys）
-- merge-gate 実行（merge-gate-execute.sh）
+- merge-gate 実行（twl.autopilot.mergegate）
 - window 管理（crash-detect → kill の原子的実行）
 - Phase 完了レポート JSON 出力
 
