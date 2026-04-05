@@ -1,12 +1,10 @@
-# loom-plugin-test
+# test-fixtures
 
-loom-plugin-dev の動作検証用テストプロジェクト。
+TWiLL フレームワークのテスト用フィクスチャ。plugin-dev の動作検証用テストプロジェクト。TWiLL モノリポ `test-fixtures/` として管理。
 
 ## 構成
 
-- bare repo: `~/projects/local-projects/loom-plugin-test/.bare`
-- main worktree: `~/projects/local-projects/loom-plugin-test/main/`
-- feature worktrees: `~/projects/local-projects/loom-plugin-test/worktrees/<branch>/`
+- モノリポ: `~/projects/local-projects/twill/main/test-fixtures/`
 
 <!-- GOVERNANCE-START -->
 
