@@ -1,7 +1,7 @@
 ## 1. 型定義とパーサー基盤
 
 - [x] 1.1 types.yaml に `script` 型を追加（section: scripts, can_spawn: [], spawnable_by: [atomic, composite]）
-- [x] 1.2 loom-engine.py の _FALLBACK_TYPE_RULES に script エントリ追加
+- [x] 1.2 twl-engine.py の _FALLBACK_TYPE_RULES に script エントリ追加
 - [x] 1.3 build_graph に scripts セクション処理ループ追加（`script:{name}` ノード生成）
 - [x] 1.4 parse_calls の key_map に `'script': 'script'` 追加
 - [x] 1.5 find_node の prefix リストに `'script'` 追加

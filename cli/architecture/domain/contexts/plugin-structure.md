@@ -28,9 +28,9 @@ Plugin Structure
 
 | コマンド | 説明 |
 |---------|------|
-| `loom` (デフォルト) | Graphviz DOT 形式で依存グラフを出力 |
-| `loom --check` | deps.yaml の path フィールドが参照するファイルの存在確認 |
-| `loom --list` | 全コンポーネントのリスト表示 |
-| `loom --orphans` | 孤立コンポーネントを検出 |
-| `loom --tokens` | 各コンポーネントのトークン数を表示 |
-| `loom --update-readme` | README.md に SVG 依存グラフを埋め込み更新 |
+| `twl` (デフォルト) | Graphviz DOT 形式で依存グラフを出力 |
+| `twl --check` | deps.yaml の path フィールドが参照するファイルの存在確認 |
+| `twl --list` | 全コンポーネントのリスト表示 |
+| `twl --orphans` | 孤立コンポーネントを検出 |
+| `twl --tokens` | 各コンポーネントのトークン数を表示 |
+| `twl --update-readme` | README.md に SVG 依存グラフを埋め込み更新 |

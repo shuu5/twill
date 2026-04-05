@@ -15,7 +15,7 @@ architecture/ ディレクトリはスケルトン状態で、vision.md/model.md
 
 **Non-Goals:**
 
-- loom-engine.py のコード変更
+- twl-engine.py のコード変更
 - 新しい Context の追加（既存6 Context の精緻化のみ）
 - Phase 2 以降の計画策定
 
@@ -28,6 +28,6 @@ architecture/ ディレクトリはスケルトン状態で、vision.md/model.md
 
 ## Risks / Trade-offs
 
-- **陳腐化リスク**: ドキュメントはコードと同期されないため、loom-engine.py の変更時に architecture/ が古くなる可能性がある。ADR は不変だが glossary/model は保守が必要
+- **陳腐化リスク**: ドキュメントはコードと同期されないため、twl-engine.py の変更時に architecture/ が古くなる可能性がある。ADR は不変だが glossary/model は保守が必要
 - **loom-plugin-dev#14 との整合性**: 並行して精緻化が進む場合に矛盾が生じる可能性。本 Issue 完了後に整合性確認を実施
 - **スコープ膨張**: glossary の網羅性を追求すると工数が膨らむ。deps.yaml/types.yaml のフィールド名に限定し、実装詳細は含めない

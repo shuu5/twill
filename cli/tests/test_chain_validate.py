@@ -15,7 +15,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -141,9 +141,9 @@ def _write_body(plugin_dir: Path, path_str: str, body: str) -> None:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -682,16 +682,16 @@ class TestPromptConsistency(_ChainTestBase):
 
 
 # ===========================================================================
-# Requirement: loom check integration
+# Requirement: twl check integration
 # ===========================================================================
 
-class TestLoomCheckIntegration(_ChainTestBase):
+class TestTwlCheckIntegration(_ChainTestBase):
     """v3.0 triggers chain_validate, v2.0 skips it."""
 
     # --- v3.0 with valid chains ---
 
     def test_v3_check_includes_chain_validation(self):
-        """WHEN loom check runs on v3.0 deps.yaml with valid chains
+        """WHEN twl check runs on v3.0 deps.yaml with valid chains
         THEN file check AND chain validation both pass."""
         result = run_engine(self.plugin_dir, "--check")
         assert result.returncode == 0, f"stdout: {result.stdout}\nstderr: {result.stderr}"
@@ -700,7 +700,7 @@ class TestLoomCheckIntegration(_ChainTestBase):
     # --- v3.0 with chain violation should fail check ---
 
     def test_v3_check_fails_on_chain_critical(self):
-        """WHEN loom check runs on v3.0 with chain-bidir CRITICAL
+        """WHEN twl check runs on v3.0 with chain-bidir CRITICAL
         THEN non-zero exit code."""
         def mutator(deps):
             del deps["commands"]["ac-extract"]["chain"]
@@ -713,7 +713,7 @@ class TestLoomCheckIntegration(_ChainTestBase):
     # --- v2.0 skips chain validation ---
 
     def test_v2_check_skips_chain_validation(self):
-        """WHEN loom check runs on v2.0 deps.yaml
+        """WHEN twl check runs on v2.0 deps.yaml
         THEN chain validation is not executed, only file checks."""
         def mutator(deps):
             deps["version"] = "2.0"
@@ -825,7 +825,7 @@ if __name__ == "__main__":
         TestChainTypeGuard,
         TestStepOrdering,
         TestPromptConsistency,
-        TestLoomCheckIntegration,
+        TestTwlCheckIntegration,
         TestChainValidateEdgeCases,
     ]
     passed = 0

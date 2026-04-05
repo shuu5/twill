@@ -14,7 +14,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -54,9 +54,9 @@ def _create_component_files(plugin_dir: Path, deps: dict, *, body_overrides: dic
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -135,7 +135,7 @@ class TestWriteFlag(_WriteTestBase):
     # --- Scenario: --write でチェックポイントセクション置換 ---
 
     def test_write_replaces_checkpoint_section(self):
-        """WHEN `loom chain generate dev-pr-cycle --write` を実行し、
+        """WHEN `twl chain generate dev-pr-cycle --write` を実行し、
         プロンプトファイルに `## チェックポイント` セクションが存在する
         THEN 既存のチェックポイントセクションが生成されたテンプレートで置換される"""
         body_overrides = {

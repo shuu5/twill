@@ -1,6 +1,6 @@
 ## Context
 
-`loom chain generate` は現在 `<name>` と `<name> --write` のみ対応。chain-driven アーキテクチャの運用では、`--write` 後のファイル手動編集によるドリフト検出と、複数 chain の一括操作が不可欠。`sync-docs --check` が同様のパターンを実装済みで、設計を踏襲する。
+`twl chain generate` は現在 `<name>` と `<name> --write` のみ対応。chain-driven アーキテクチャの運用では、`--write` 後のファイル手動編集によるドリフト検出と、複数 chain の一括操作が不可欠。`sync-docs --check` が同様のパターンを実装済みで、設計を踏襲する。
 
 既存の `handle_chain_subcommand()` は argparse で `chain_name`（必須）と `--write` を受け取る。`--check` と `--all` を追加する際、`chain_name` を optional に変更し、`--all` との排他制御が必要。
 
@@ -69,7 +69,7 @@ chain: workflow-pr-cycle
   commands/fix-phase.md            ... DRIFT
 
 Summary: 2/5 chains ok, 2 files drifted in 1 chain.
-Run 'loom chain generate --all --write' to fix.
+Run 'twl chain generate --all --write' to fix.
 
 === Diff: commands/phase-review.md ===
 --- expected

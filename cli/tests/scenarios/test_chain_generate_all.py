@@ -15,7 +15,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -59,9 +59,9 @@ def _create_component_files(plugin_dir: Path, deps: dict, *, body_overrides: dic
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -207,7 +207,7 @@ class TestAllBatchOperations(_AllTestBase):
     # --- Scenario: --all で全 chain を stdout 出力 ---
 
     def test_all_stdout_outputs_all_chains(self):
-        """WHEN `loom chain generate --all` を実行する
+        """WHEN `twl chain generate --all` を実行する
         THEN deps.yaml 内の全 chain の Template A/B/C を順次 stdout に出力する"""
         plugin_dir = make_multi_chain_fixture(self.tmpdir)
 
@@ -240,7 +240,7 @@ class TestAllBatchOperations(_AllTestBase):
     # --- Scenario: --all --write で全 chain を一括書き込み ---
 
     def test_all_write_updates_all_files(self):
-        """WHEN `loom chain generate --all --write` を実行する
+        """WHEN `twl chain generate --all --write` を実行する
         THEN 全 chain のテンプレートを対応ファイルに書き込む"""
         body_overrides = {
             "wf-setup": (
@@ -276,7 +276,7 @@ class TestAllBatchOperations(_AllTestBase):
     # --- Scenario: --all --check で全 chain を一括チェック ---
 
     def test_all_check_reports_per_chain(self):
-        """WHEN `loom chain generate --all --check` を実行する
+        """WHEN `twl chain generate --all --check` を実行する
         THEN ファイルレベルのサマリー（chain ごとに ok/DRIFT）を表示する"""
         body_overrides = {
             "wf-setup": (
@@ -369,7 +369,7 @@ class TestAllChainNameExclusion(_AllTestBase):
     # --- Scenario: --all と chain name の同時指定 ---
 
     def test_all_with_chain_name_error(self):
-        """WHEN `loom chain generate --all workflow-setup` を実行する
+        """WHEN `twl chain generate --all workflow-setup` を実行する
         THEN エラーメッセージを stderr に出力し、exit code 1 で終了する"""
         plugin_dir = make_multi_chain_fixture(self.tmpdir)
 
@@ -387,7 +387,7 @@ class TestAllChainNameExclusion(_AllTestBase):
         )
 
     def test_chain_name_with_all_error(self):
-        """WHEN `loom chain generate dev-pr-cycle --all` を実行する（逆順）
+        """WHEN `twl chain generate dev-pr-cycle --all` を実行する（逆順）
         THEN 同様にエラーとなる"""
         plugin_dir = make_multi_chain_fixture(self.tmpdir)
 
@@ -411,7 +411,7 @@ class TestNoArgumentError(_AllTestBase):
     # --- Scenario: 引数なし実行 ---
 
     def test_no_arguments_error(self):
-        """WHEN `loom chain generate` を引数なしで実行する
+        """WHEN `twl chain generate` を引数なしで実行する
         THEN usage メッセージを表示し、exit code 非ゼロで終了する"""
         plugin_dir = make_multi_chain_fixture(self.tmpdir)
 

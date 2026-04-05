@@ -19,7 +19,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -109,9 +109,9 @@ def make_script_fixture(tmpdir: Path) -> Path:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -148,7 +148,7 @@ class TestOrphansScript(_MaintenanceTestBase):
 
     def test_unused_script_detected(self):
         """Scenario: 未使用 script の検出
-        WHEN loom --orphans を実行し、どのコンポーネントからも calls されていない script が存在する
+        WHEN twl --orphans を実行し、どのコンポーネントからも calls されていない script が存在する
         THEN unused リストにその script:{name} が含まれる"""
         result = run_engine(self.plugin_dir, "--orphans")
         assert result.returncode == 0, f"stderr: {result.stderr}"
@@ -211,7 +211,7 @@ class TestDeadComponentScript(_MaintenanceTestBase):
 
     def test_unreachable_script_detected(self):
         """Scenario: 到達不能 script の検出
-        WHEN loom --complexity を実行し、controller -> ... -> atomic -> script の経路が存在しない script がある
+        WHEN twl --complexity を実行し、controller -> ... -> atomic -> script の経路が存在しない script がある
         THEN Dead Components リストにその script が含まれる"""
         result = run_engine(self.plugin_dir, "--complexity")
         assert result.returncode == 0, f"stderr: {result.stderr}"
@@ -255,7 +255,7 @@ class TestCheckFilesScript(_MaintenanceTestBase):
 
     def test_script_file_exists_ok(self):
         """Scenario: スクリプトファイルが存在する
-        WHEN loom --check を実行し、script の path が指すファイルが存在する
+        WHEN twl --check を実行し、script の path が指すファイルが存在する
         THEN そのノードは ok と判定される"""
         result = run_engine(self.plugin_dir, "--check")
         assert result.returncode == 0, f"stdout: {result.stdout}\nstderr: {result.stderr}"
@@ -266,7 +266,7 @@ class TestCheckFilesScript(_MaintenanceTestBase):
 
     def test_script_file_missing(self):
         """Scenario: スクリプトファイルが見つからない
-        WHEN loom --check を実行し、script の path が指すファイルが存在しない
+        WHEN twl --check を実行し、script の path が指すファイルが存在しない
         THEN そのノードは missing と判定され、エラー出力に含まれる"""
         # Delete the script file
         (self.plugin_dir / "scripts" / "used-script.sh").unlink()
@@ -309,7 +309,7 @@ class TestRenameScript(_MaintenanceTestBase):
 
     def test_rename_script_key_and_calls(self):
         """Scenario: script の rename
-        WHEN loom --rename old-script new-script を実行し、old-script が scripts セクションに存在する
+        WHEN twl --rename old-script new-script を実行し、old-script が scripts セクションに存在する
         THEN deps.yaml の scripts セクションのキーが new-script に変更され、
              全 calls 内の {script: old-script} が {script: new-script} に更新される"""
         result = run_engine(
@@ -337,7 +337,7 @@ class TestRenameScript(_MaintenanceTestBase):
 
     def test_rename_nonexistent_fails(self):
         """Scenario: rename 対象が見つからない
-        WHEN loom --rename nonexistent new-name を実行し、
+        WHEN twl --rename nonexistent new-name を実行し、
              skills/commands/agents/scripts/chains のいずれにも nonexistent が存在しない
         THEN エラーメッセージが表示され、変更は行われない"""
         deps_before = (self.plugin_dir / "deps.yaml").read_text()
@@ -389,7 +389,7 @@ class TestComplexityScript(_MaintenanceTestBase):
 
     def test_complexity_script_type_balance(self):
         """Scenario: complexity での script 集計
-        WHEN loom --complexity を実行し、scripts セクションにコンポーネントが存在する
+        WHEN twl --complexity を実行し、scripts セクションにコンポーネントが存在する
         THEN Type Balance セクションに script の件数が表示される"""
         result = run_engine(self.plugin_dir, "--complexity")
         assert result.returncode == 0, f"stderr: {result.stderr}"

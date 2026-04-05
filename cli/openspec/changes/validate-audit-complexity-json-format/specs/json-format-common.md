@@ -2,7 +2,7 @@
 
 ### Requirement: --format json 引数
 
-loom CLI に `--format` 引数を追加し、値 `json` を受け付けなければならない（SHALL）。未指定時は既存のテキスト出力を維持する。
+twl CLI に `--format` 引数を追加し、値 `json` を受け付けなければならない（SHALL）。未指定時は既存のテキスト出力を維持する。
 
 #### Scenario: --format json 指定時
 - **WHEN** `--validate --format json` を実行する

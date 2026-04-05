@@ -1,6 +1,6 @@
 ## Why
 
-loom CLI は skills/commands/agents の3セクションを追跡するが、scripts/ 配下の実行スクリプト（.sh/.py）は deps.yaml で管理されていない。これにより可視化・存在確認・rename追従・dead component検出が不可能であり、SSOT原則に反している。
+twl CLI は skills/commands/agents の3セクションを追跡するが、scripts/ 配下の実行スクリプト（.sh/.py）は deps.yaml で管理されていない。これにより可視化・存在確認・rename追従・dead component検出が不可能であり、SSOT原則に反している。
 
 ## What Changes
 
@@ -37,6 +37,6 @@ loom CLI は skills/commands/agents の3セクションを追跡するが、scri
 ## Impact
 
 - **types.yaml**: `script` 型エントリ追加（1箇所）
-- **loom-engine.py**: build_graph, parse_calls, classify_layers, generate_graphviz, generate_subgraph_graphviz, generate_mermaid, validate_types, validate_v3_schema, find_orphans, check_dead_components, rename_component, audit_report, deep_validate, complexity_report, main 等の関数に変更
+- **twl-engine.py**: build_graph, parse_calls, classify_layers, generate_graphviz, generate_subgraph_graphviz, generate_mermaid, validate_types, validate_v3_schema, find_orphans, check_dead_components, rename_component, audit_report, deep_validate, complexity_report, main 等の関数に変更
 - **tests/**: 既存テストの更新 + script 型用の新規テスト追加
 - **下位互換性**: scripts セクション未定義のプラグインには影響なし

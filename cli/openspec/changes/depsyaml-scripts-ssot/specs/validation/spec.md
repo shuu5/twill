@@ -46,7 +46,7 @@ deep_validate 関数は script 型のコンポーネントに対して frontmatt
 audit_report 関数は script 型のコンポーネントに対して Inline Implementation / Tools Accuracy / Self-Contained チェックをスキップしなければならない（MUST）。
 
 #### Scenario: audit の script スキップ
-- **WHEN** `loom --audit` を実行し、scripts セクションにコンポーネントが存在する
+- **WHEN** `twl --audit` を実行し、scripts セクションにコンポーネントが存在する
 - **THEN** Section 2 (Inline Implementation)、Section 4 (Tools Accuracy)、Section 5 (Self-Contained) の各テーブルに script コンポーネントの行が含まれない
 
 ### Requirement: validate_body_refs で script 型をスキップする

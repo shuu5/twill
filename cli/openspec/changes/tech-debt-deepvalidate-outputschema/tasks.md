@@ -1,6 +1,6 @@
 ## 1. output_schema 検証ロジック修正
 
-- [x] 1.1 `loom-engine.py` line 2913 の `output_schema is not None and output_schema != ''` 条件を再構成し、空文字列を独立した invalid value として検出する
+- [x] 1.1 `twl-engine.py` line 2913 の `output_schema is not None and output_schema != ''` 条件を再構成し、空文字列を独立した invalid value として検出する
 - [x] 1.2 空文字列専用の警告メッセージ `empty output_schema value (expected 'custom' or omit)` を追加
 
 ## 2. テスト

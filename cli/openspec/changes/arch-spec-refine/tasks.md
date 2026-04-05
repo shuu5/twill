@@ -21,7 +21,7 @@
 
 - [x] 4.1 全6 Context ファイルを Key Entities / Dependencies / Constraints の3セクション構造に変換
 - [x] 4.2 各 Context の Key Entities にエンティティ名・責務を列挙
-- [x] 4.3 各 Context に対応する loom CLI コマンドをマッピング
+- [x] 4.3 各 Context に対応する twl CLI コマンドをマッピング
 
 ## 5. decisions/ 新規作成
 

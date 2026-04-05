@@ -1,6 +1,6 @@
 ## Context
 
-loom-engine.py は argparse ベースの CLI ツールで、`--check`, `--validate`, `--rename` 等のフラグ/サブコマンドで deps.yaml を操作する。v3.0 で `chains`/`step`/`step_in` フィールドが導入され、`chain_validate()` で双方向整合性検証が実装済み。
+twl-engine.py は argparse ベースの CLI ツールで、`--check`, `--validate`, `--rename` 等のフラグ/サブコマンドで deps.yaml を操作する。v3.0 で `chains`/`step`/`step_in` フィールドが導入され、`chain_validate()` で双方向整合性検証が実装済み。
 
 chains 構造:
 ```yaml

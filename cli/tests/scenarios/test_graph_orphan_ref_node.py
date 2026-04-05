@@ -27,7 +27,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -61,9 +61,9 @@ def _create_component_files(plugin_dir: Path, deps: dict) -> None:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str, timeout: int = 30) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -74,7 +74,7 @@ def run_engine(plugin_dir: Path, *extra_args: str, timeout: int = 30) -> subproc
 def _invoke_build_graph(deps: dict) -> dict:
     """Directly import and call build_graph for unit-level assertions."""
     import importlib.util
-    spec = importlib.util.spec_from_file_location("loom_engine", str(LOOM_ENGINE))
+    spec = importlib.util.spec_from_file_location("twl_engine", str(TWL_ENGINE))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod.build_graph(deps, plugin_root=Path("/nonexistent"))
@@ -83,7 +83,7 @@ def _invoke_build_graph(deps: dict) -> dict:
 def _invoke_classify_layers(deps: dict, graph: dict) -> dict:
     """Directly import and call classify_layers."""
     import importlib.util
-    spec = importlib.util.spec_from_file_location("loom_engine", str(LOOM_ENGINE))
+    spec = importlib.util.spec_from_file_location("twl_engine", str(TWL_ENGINE))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod.classify_layers(deps, graph)
@@ -92,7 +92,7 @@ def _invoke_classify_layers(deps: dict, graph: dict) -> dict:
 def _invoke_find_orphans(graph: dict, deps: dict) -> dict:
     """Directly import and call find_orphans."""
     import importlib.util
-    spec = importlib.util.spec_from_file_location("loom_engine", str(LOOM_ENGINE))
+    spec = importlib.util.spec_from_file_location("twl_engine", str(TWL_ENGINE))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod.find_orphans(graph, deps)
@@ -347,7 +347,7 @@ class TestAgentSkillsReverseDep:
         assert "skill:my-controller" in graph, "Controller node must be built"
 
     def test_missing_skill_reference_cli_does_not_crash(self):
-        """Integration: WHEN loom --graphviz runs with a missing skill reference
+        """Integration: WHEN twl --graphviz runs with a missing skill reference
         THEN the command completes without error"""
         plugin_dir = self.tmpdir / "test-missing-skill"
         plugin_dir.mkdir()

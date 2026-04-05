@@ -71,7 +71,7 @@ class TestAdr0001PythonSingleFile:
         # The decision should reference single file / 単一ファイル
         has_rationale = bool(
             re.search(
-                r"single\s+file|単一ファイル|loom-engine\.py",
+                r"single\s+file|単一ファイル|twl-engine\.py",
                 content,
                 re.IGNORECASE,
             )
@@ -79,7 +79,7 @@ class TestAdr0001PythonSingleFile:
         assert has_rationale, (
             "ADR-0001 does not contain rationale for single file architecture "
             "(expected mentions of 'single file', '単一ファイル', "
-            "or 'loom-engine.py')"
+            "or 'twl-engine.py')"
         )
 
 

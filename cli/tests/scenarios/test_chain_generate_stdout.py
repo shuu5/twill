@@ -4,7 +4,7 @@
 Spec: openspec/changes/chain-generate/specs/chain-generate-stdout.md
 
 These tests are TDD-style: they define expected behavior BEFORE implementation.
-The `chain generate` subcommand will be invoked via `loom chain generate <chain-name>`.
+The `chain generate` subcommand will be invoked via `twl chain generate <chain-name>`.
 """
 
 import shutil
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -45,9 +45,9 @@ def _create_component_files(plugin_dir: Path, deps: dict) -> None:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -249,12 +249,12 @@ class _ChainGenerateTestBase:
 # ===========================================================================
 
 class TestChainGenerateSubcommand(_ChainGenerateTestBase):
-    """Tests for `loom chain generate <chain-name>` subcommand basic behavior."""
+    """Tests for `twl chain generate <chain-name>` subcommand basic behavior."""
 
     # --- Scenario: 正常な chain generate 実行 ---
 
     def test_normal_chain_generate_outputs_templates(self):
-        """WHEN `loom chain generate dev-pr-cycle` を v3.0 deps.yaml のあるプラグインルートで実行する
+        """WHEN `twl chain generate dev-pr-cycle` を v3.0 deps.yaml のあるプラグインルートで実行する
         THEN dev-pr-cycle chain の Template A/B/C が stdout に出力される"""
         plugin_dir = make_v3_chain_fixture(self.tmpdir)
 
@@ -273,7 +273,7 @@ class TestChainGenerateSubcommand(_ChainGenerateTestBase):
         )
 
     def test_normal_chain_generate_contains_all_template_types(self):
-        """WHEN `loom chain generate dev-pr-cycle` を実行する
+        """WHEN `twl chain generate dev-pr-cycle` を実行する
         THEN Template A, B, C 全てに対応する出力セクションが含まれる"""
         plugin_dir = make_v3_chain_fixture(self.tmpdir)
 
@@ -292,7 +292,7 @@ class TestChainGenerateSubcommand(_ChainGenerateTestBase):
     # --- Scenario: 存在しない chain 名 ---
 
     def test_nonexistent_chain_name_error(self):
-        """WHEN `loom chain generate nonexistent-chain` を実行する
+        """WHEN `twl chain generate nonexistent-chain` を実行する
         THEN エラーメッセージ "Chain 'nonexistent-chain' not found in deps.yaml" が表示され、
         終了コード 1 で終了する"""
         plugin_dir = make_v3_chain_fixture(self.tmpdir)
@@ -327,7 +327,7 @@ class TestChainGenerateSubcommand(_ChainGenerateTestBase):
     # --- Scenario: v2.0 deps.yaml ---
 
     def test_v2_deps_yaml_error(self):
-        """WHEN v2.0 の deps.yaml に対して `loom chain generate` を実行する
+        """WHEN v2.0 の deps.yaml に対して `twl chain generate` を実行する
         THEN エラーメッセージ "chain generate requires deps.yaml v3.0+" が表示され、
         終了コード 1 で終了する"""
         plugin_dir = make_v2_fixture(self.tmpdir)
@@ -421,7 +421,7 @@ class TestChainGenerateSubcommand(_ChainGenerateTestBase):
     # --- Edge: no chain-name argument ---
 
     def test_no_chain_name_argument_error(self):
-        """WHEN `loom chain generate` をchain名なしで実行する
+        """WHEN `twl chain generate` をchain名なしで実行する
         THEN エラーが発生する（argparseのrequired引数エラーまたはカスタムエラー）"""
         plugin_dir = make_v3_chain_fixture(self.tmpdir)
 

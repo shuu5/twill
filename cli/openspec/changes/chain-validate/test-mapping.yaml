@@ -331,12 +331,12 @@ scenarios:
     last_run: null
     failure_reason: null
 
-  # ===== Requirement: loom check integration =====
-  - id: loom-check-v3-valid
-    name: "v3.0 deps.yaml で loom check 実行 - valid"
+  # ===== Requirement: twl check integration =====
+  - id: twl-check-v3-valid
+    name: "v3.0 deps.yaml で twl check 実行 - valid"
     spec_file: "specs/chain-validate/spec.md"
     spec_line: 75
-    requirement: "loom check integration"
+    requirement: "twl check integration"
     test_file: "tests/test_chain_validate.py"
     test_name: "TestLoomCheckIntegration::test_v3_check_includes_chain_validation"
     type: unit
@@ -344,11 +344,11 @@ scenarios:
     last_run: null
     failure_reason: null
 
-  - id: loom-check-v3-critical-fails
+  - id: twl-check-v3-critical-fails
     name: "v3.0 with chain-bidir CRITICAL fails check"
     spec_file: "specs/chain-validate/spec.md"
     spec_line: 75
-    requirement: "loom check integration"
+    requirement: "twl check integration"
     test_file: "tests/test_chain_validate.py"
     test_name: "TestLoomCheckIntegration::test_v3_check_fails_on_chain_critical"
     type: unit
@@ -356,11 +356,11 @@ scenarios:
     last_run: null
     failure_reason: null
 
-  - id: loom-check-v2-skips
-    name: "v2.0 deps.yaml で loom check 実行 - skips chain"
+  - id: twl-check-v2-skips
+    name: "v2.0 deps.yaml で twl check 実行 - skips chain"
     spec_file: "specs/chain-validate/spec.md"
     spec_line: 79
-    requirement: "loom check integration"
+    requirement: "twl check integration"
     test_file: "tests/test_chain_validate.py"
     test_name: "TestLoomCheckIntegration::test_v2_check_skips_chain_validation"
     type: unit
@@ -368,11 +368,11 @@ scenarios:
     last_run: null
     failure_reason: null
 
-  - id: loom-validate-v3-chain-checks
+  - id: twl-validate-v3-chain-checks
     name: "v3.0 validate includes chain checks"
     spec_file: "specs/chain-validate/spec.md"
     spec_line: 75
-    requirement: "loom check integration"
+    requirement: "twl check integration"
     test_file: "tests/test_chain_validate.py"
     test_name: "TestLoomCheckIntegration::test_v3_validate_includes_chain_checks"
     type: unit
@@ -380,11 +380,11 @@ scenarios:
     last_run: null
     failure_reason: null
 
-  - id: loom-validate-v2-skips
+  - id: twl-validate-v2-skips
     name: "v2.0 validate skips chain checks"
     spec_file: "specs/chain-validate/spec.md"
     spec_line: 79
-    requirement: "loom check integration"
+    requirement: "twl check integration"
     test_file: "tests/test_chain_validate.py"
     test_name: "TestLoomCheckIntegration::test_v2_validate_skips_chain_checks"
     type: unit

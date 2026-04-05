@@ -19,7 +19,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -144,9 +144,9 @@ def make_script_fixture_no_scripts(tmpdir: Path) -> Path:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -183,7 +183,7 @@ class TestTypesYamlScriptDefinition(_ScriptTestBase):
 
     def test_types_yaml_loading_script_key(self):
         """Scenario: types.yaml 読み込み
-        WHEN loom-engine.py が起動し types.yaml を読み込む
+        WHEN twl-engine.py が起動し types.yaml を読み込む
         THEN TYPE_RULES に script キーが存在し、section=scripts, can_spawn={'script'}, spawnable_by={'atomic', 'composite', 'script'} が設定される"""
         result = run_engine(self.plugin_dir, "--rules")
         assert result.returncode == 0
@@ -192,8 +192,8 @@ class TestTypesYamlScriptDefinition(_ScriptTestBase):
         assert "scripts" in result.stdout  # section=scripts
 
     def test_loom_rules_displays_script(self):
-        """Scenario: loom rules 表示
-        WHEN loom rules を実行する
+        """Scenario: twl rules 表示
+        WHEN twl rules を実行する
         THEN script 型の行が表示され、section/can_spawn/spawnable_by が正しく出力される"""
         result = run_engine(self.plugin_dir, "--rules")
         assert result.returncode == 0
@@ -294,7 +294,7 @@ class TestFindNodeScript(_ScriptTestBase):
 
     def test_find_node_script_by_name(self):
         """Scenario: script ノードの名前検索
-        WHEN loom --target autopilot-plan を実行し、script:autopilot-plan ノードが存在する
+        WHEN twl --target autopilot-plan を実行し、script:autopilot-plan ノードが存在する
         THEN find_node が script:autopilot-plan を返す"""
         result = run_engine(self.plugin_dir, "--target", "autopilot-plan")
         assert result.returncode == 0

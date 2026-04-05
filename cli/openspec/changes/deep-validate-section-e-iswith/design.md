@@ -2,7 +2,7 @@
 
 `deep_validate()` は deps.yaml の整合性を多段階で検証する関数。section E は specialist コンポーネントの `output_schema` フィールドを検証し、`path` で指定されたファイル内の出力スキーマキーワードを確認する。現在、`path` から構築した `plugin_root / path_str` に対して `_is_within_root()` チェックが適用されていない。
 
-`_is_within_root()` は既に `loom-engine.py:4756` で定義済みで、他の 13 箇所で使用されている。
+`_is_within_root()` は既に `twl-engine.py:4756` で定義済みで、他の 13 箇所で使用されている。
 
 ## Goals / Non-Goals
 

@@ -1,8 +1,8 @@
 ## Context
 
-loom-engine.py (4640行) は Claude Code プラグインの依存関係解析CLIである。現在 skills/commands/agents の3セクションを deps.yaml から読み込み、グラフノードとして構築している。scripts/ 配下の実行スクリプトは deps.yaml で管理されておらず、SSOT原則に反している。
+twl-engine.py (4640行) は Claude Code プラグインの依存関係解析CLIである。現在 skills/commands/agents の3セクションを deps.yaml から読み込み、グラフノードとして構築している。scripts/ 配下の実行スクリプトは deps.yaml で管理されておらず、SSOT原則に反している。
 
-types.yaml が型ルールの SSOT であり、各型の section/can_spawn/spawnable_by を定義する。loom-engine.py は起動時にこれを読み込み TYPE_RULES を構築する。
+types.yaml が型ルールの SSOT であり、各型の section/can_spawn/spawnable_by を定義する。twl-engine.py は起動時にこれを読み込み TYPE_RULES を構築する。
 
 Issue #31 の設計判断により `script` 型は types.yaml に新規追加し、既存の型システムコードパスに乗せる方針が確定している。
 

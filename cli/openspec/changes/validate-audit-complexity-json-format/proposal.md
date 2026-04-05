@@ -1,6 +1,6 @@
 ## Why
 
-現在の loom CLI 検証コマンド（validate, audit, deep-validate, complexity, check）は全て Markdown テキスト出力のみ。loom-plugin-dev の merge-gate やスクリプトが検証結果を機械的に消費する際、Markdown パースが必要になる。設計哲学「機械的にできることは機械に任せる」に基づき、構造化 JSON 出力を提供する。
+現在の twl CLI 検証コマンド（validate, audit, deep-validate, complexity, check）は全て Markdown テキスト出力のみ。loom-plugin-dev の merge-gate やスクリプトが検証結果を機械的に消費する際、Markdown パースが必要になる。設計哲学「機械的にできることは機械に任せる」に基づき、構造化 JSON 出力を提供する。
 
 ## What Changes
 
@@ -28,7 +28,7 @@
 
 ## Impact
 
-- **対象ファイル**: `loom-engine.py`（メインエンジン）
+- **対象ファイル**: `twl-engine.py`（メインエンジン）
 - **後方互換**: `--format` 未指定時は既存出力を完全維持
 - **exit code**: JSON 出力でも既存と同一（violations あれば非ゼロ）
 - **依存先**: shuu5/loom-plugin-dev#7（B-5: merge-gate が JSON を消費）

@@ -22,6 +22,6 @@
 
 ## Impact
 
-- **変更対象**: `loom-engine.py`（`chain_generate_write()`, `chain_generate_check()` の拡張、ヘルパー関数追加）
+- **変更対象**: `twl-engine.py`（`chain_generate_write()`, `chain_generate_check()` の拡張、ヘルパー関数追加）
 - **テスト追加**: Template B の write/check に対するユニットテスト
 - **既存機能**: Template A の動作に影響なし

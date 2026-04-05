@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for loom sync-docs command."""
+"""Tests for twl sync-docs command."""
 
 import subprocess
 import sys
@@ -8,7 +8,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent / "twl-engine.py"
 
 
 def make_docs(loom_root: Path):
@@ -43,8 +43,8 @@ def make_deps_yaml(target_dir: Path):
     )
 
 
-def run_sync_docs(target_dir: str, check: bool = False, engine: str = str(LOOM_ENGINE)):
-    """Run loom-engine.py --sync-docs."""
+def run_sync_docs(target_dir: str, check: bool = False, engine: str = str(TWL_ENGINE)):
+    """Run twl-engine.py --sync-docs."""
     cmd = [sys.executable, engine, "--sync-docs", target_dir]
     if check:
         cmd.append("--check")
@@ -54,15 +54,15 @@ def run_sync_docs(target_dir: str, check: bool = False, engine: str = str(LOOM_E
 def test_basic_sync():
     """ref-*.md files are synced to target dir with minimal frontmatter."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        loom_root = Path(tmpdir) / "loom"
+        loom_root = Path(tmpdir) / "twl"
         loom_root.mkdir()
         make_docs(loom_root)
 
         target = Path(tmpdir) / "target"
         target.mkdir()
 
-        engine = loom_root / "loom-engine.py"
-        engine.write_text(LOOM_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
+        engine = loom_root / "twl-engine.py"
+        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
 
         result = run_sync_docs(str(target), engine=str(engine))
         assert result.returncode == 0, f"stdout={result.stdout}\nstderr={result.stderr}"
@@ -76,14 +76,14 @@ def test_basic_sync():
         # Check minimal frontmatter
         content = (target / "ref-alpha.md").read_text(encoding="utf-8")
         assert content.startswith("---\ntype: reference\n---")
-        assert "<!-- Synced from loom docs/" in content
+        assert "<!-- Synced from twl docs/" in content
         assert "# Alpha" in content
 
 
 def test_sync_with_deps_yaml():
     """Synced files get frontmatter from deps.yaml reference definitions."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        loom_root = Path(tmpdir) / "loom"
+        loom_root = Path(tmpdir) / "twl"
         loom_root.mkdir()
         make_docs(loom_root)
 
@@ -91,8 +91,8 @@ def test_sync_with_deps_yaml():
         target.mkdir()
         make_deps_yaml(target)
 
-        engine = loom_root / "loom-engine.py"
-        engine.write_text(LOOM_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
+        engine = loom_root / "twl-engine.py"
+        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
 
         result = run_sync_docs(str(target), engine=str(engine))
         assert result.returncode == 0, f"stderr={result.stderr}"
@@ -112,15 +112,15 @@ def test_sync_with_deps_yaml():
 def test_check_in_sync():
     """--check returns 0 when files are in sync."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        loom_root = Path(tmpdir) / "loom"
+        loom_root = Path(tmpdir) / "twl"
         loom_root.mkdir()
         make_docs(loom_root)
 
         target = Path(tmpdir) / "target"
         target.mkdir()
 
-        engine = loom_root / "loom-engine.py"
-        engine.write_text(LOOM_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
+        engine = loom_root / "twl-engine.py"
+        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
 
         # First sync
         run_sync_docs(str(target), engine=str(engine))
@@ -134,15 +134,15 @@ def test_check_in_sync():
 def test_check_detects_diff():
     """--check returns 1 when body content differs."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        loom_root = Path(tmpdir) / "loom"
+        loom_root = Path(tmpdir) / "twl"
         loom_root.mkdir()
         make_docs(loom_root)
 
         target = Path(tmpdir) / "target"
         target.mkdir()
 
-        engine = loom_root / "loom-engine.py"
-        engine.write_text(LOOM_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
+        engine = loom_root / "twl-engine.py"
+        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
 
         # Sync first
         run_sync_docs(str(target), engine=str(engine))
@@ -159,15 +159,15 @@ def test_check_detects_diff():
 def test_check_detects_missing():
     """--check reports missing files."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        loom_root = Path(tmpdir) / "loom"
+        loom_root = Path(tmpdir) / "twl"
         loom_root.mkdir()
         make_docs(loom_root)
 
         target = Path(tmpdir) / "target"
         target.mkdir()
 
-        engine = loom_root / "loom-engine.py"
-        engine.write_text(LOOM_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
+        engine = loom_root / "twl-engine.py"
+        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
 
         result = run_sync_docs(str(target), check=True, engine=str(engine))
         assert result.returncode == 1
@@ -177,7 +177,7 @@ def test_check_detects_missing():
 def test_existing_files_not_overwritten():
     """Files not matching ref-*.md pattern in target are preserved."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        loom_root = Path(tmpdir) / "loom"
+        loom_root = Path(tmpdir) / "twl"
         loom_root.mkdir()
         make_docs(loom_root)
 
@@ -188,8 +188,8 @@ def test_existing_files_not_overwritten():
         existing = target / "custom-ref.md"
         existing.write_text("# My custom ref\n", encoding="utf-8")
 
-        engine = loom_root / "loom-engine.py"
-        engine.write_text(LOOM_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
+        engine = loom_root / "twl-engine.py"
+        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
 
         run_sync_docs(str(target), engine=str(engine))
 

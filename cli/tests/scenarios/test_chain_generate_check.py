@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -60,9 +60,9 @@ def _create_component_files(plugin_dir: Path, deps: dict, *, body_overrides: dic
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -155,7 +155,7 @@ class TestCheckDriftDetection(_CheckTestBase):
     # --- Scenario: チェックポイントが一致する場合 ---
 
     def test_check_all_match_ok_status(self):
-        """WHEN `loom chain generate <name> --check` を実行し、
+        """WHEN `twl chain generate <name> --check` を実行し、
         全ファイルの Template A が生成結果と一致する
         THEN 各ファイルに `ok` ステータスを表示し、exit code 0 で終了する"""
         body_overrides = {
@@ -205,7 +205,7 @@ class TestCheckDriftDetection(_CheckTestBase):
     # --- Scenario: チェックポイントが不一致の場合 ---
 
     def test_check_mismatch_drift_status(self):
-        """WHEN `loom chain generate <name> --check` を実行し、
+        """WHEN `twl chain generate <name> --check` を実行し、
         いずれかのファイルで Template A が不一致
         THEN 不一致ファイルに `DRIFT` ステータスを表示し、exit code 1 で終了する"""
         body_overrides = {
@@ -383,7 +383,7 @@ class TestCheckWriteExclusion(_CheckTestBase):
     # --- Scenario: --check と --write の同時指定 ---
 
     def test_check_and_write_simultaneous_error(self):
-        """WHEN `loom chain generate <name> --check --write` を実行する
+        """WHEN `twl chain generate <name> --check --write` を実行する
         THEN エラーメッセージを stderr に出力し、exit code 1 で終了する"""
         body_overrides = {
             "workflow-setup": (
@@ -409,7 +409,7 @@ class TestCheckWriteExclusion(_CheckTestBase):
         )
 
     def test_check_and_write_reverse_order_also_error(self):
-        """WHEN `loom chain generate <name> --write --check` を実行する（逆順）
+        """WHEN `twl chain generate <name> --write --check` を実行する（逆順）
         THEN 同様にエラーとなる"""
         plugin_dir = make_check_fixture(self.tmpdir)
 

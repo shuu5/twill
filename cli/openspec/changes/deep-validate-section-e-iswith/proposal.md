@@ -4,7 +4,7 @@
 
 ## What Changes
 
-- `loom-engine.py` line 2920-2922: `path.exists()` の前に `_is_within_root()` チェックを追加
+- `twl-engine.py` line 2920-2922: `path.exists()` の前に `_is_within_root()` チェックを追加
 - パストラバーサルを検出するユニットテストを追加
 
 ## Capabilities
@@ -19,6 +19,6 @@
 
 ## Impact
 
-- `loom-engine.py`: `deep_validate()` 内 section E の path 構築部分（1 箇所）
+- `twl-engine.py`: `deep_validate()` 内 section E の path 構築部分（1 箇所）
 - テスト: パストラバーサル拒否のテストケース追加
 - 既存動作への影響なし（正常な path は `_is_within_root()` を通過する）

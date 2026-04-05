@@ -7,7 +7,7 @@
 プロンプトファイルのパスは deps.yaml の各コンポーネントの `path` フィールドから取得しなければならない（MUST）。
 
 #### Scenario: --write でチェックポイントセクション置換
-- **WHEN** `loom chain generate dev-pr-cycle --write` を実行し、プロンプトファイルに `## チェックポイント` セクションが存在する
+- **WHEN** `twl chain generate dev-pr-cycle --write` を実行し、プロンプトファイルに `## チェックポイント` セクションが存在する
 - **THEN** 既存のチェックポイントセクションが生成されたテンプレートで置換される
 
 #### Scenario: セクション未検出時の警告

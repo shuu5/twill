@@ -1,6 +1,6 @@
 ## Why
 
-`loom graph` / `loom update-svgs` が生成する DOT/SVG で、orphan 分類が不正確であり ref ノード描画にも不備がある。sub-commands が誤って Orphan（ピンク）として描画され、reference 型スキルが Legend に含まれない。
+`twl graph` / `twl update-svgs` が生成する DOT/SVG で、orphan 分類が不正確であり ref ノード描画にも不備がある。sub-commands が誤って Orphan（ピンク）として描画され、reference 型スキルが Legend に含まれない。
 
 ## What Changes
 
@@ -21,7 +21,7 @@
 
 ## Impact
 
-- **対象ファイル**: `loom-engine.py`（build_graph, classify_layers, generate_graphviz の 3 関数）
+- **対象ファイル**: `twl-engine.py`（build_graph, classify_layers, generate_graphviz の 3 関数）
 - **推定変更量**: 約 45 行
 - **既存テスト**: 変更後も全テスト PASS が必須
 - **依存関係**: shuu5/loom-plugin-dev#41（deps.yaml calls 完全化）と並行実装可能

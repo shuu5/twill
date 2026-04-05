@@ -57,7 +57,7 @@ class TestAddToProjectWorkflowExists:
 class TestNewIssueTrigger:
     """Scenario: 新規 Issue 作成時の自動追加
 
-    WHEN: loom リポジトリで新規 Issue が作成される
+    WHEN: twill リポジトリで新規 Issue が作成される
     THEN: Issue が Project Board (loom-dev-ecosystem) に自動追加される
     """
 
@@ -190,7 +190,7 @@ class TestReopenedIssueTrigger:
 class TestTransferredIssueTrigger:
     """Scenario: Issue transfer 時の自動追加
 
-    WHEN: 他リポから Issue が loom リポジトリに転送される
+    WHEN: 他リポから Issue が twill リポジトリに転送される
     THEN: 転送された Issue が Project Board に自動追加される
     """
 

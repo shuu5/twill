@@ -1,6 +1,6 @@
 ## Why
 
-`loom rename` は deps.yaml キー名・calls 参照・v3.0 フィールド・frontmatter・body 参照の 5 箇所を更新するが、`path` フィールド・`entry_points` リスト・実ファイル/ディレクトリの rename が未対応。rename 後にプラグインが壊れる（`loom check` で path 不在エラー）。
+`twl rename` は deps.yaml キー名・calls 参照・v3.0 フィールド・frontmatter・body 参照の 5 箇所を更新するが、`path` フィールド・`entry_points` リスト・実ファイル/ディレクトリの rename が未対応。rename 後にプラグインが壊れる（`twl check` で path 不在エラー）。
 
 ## What Changes
 
@@ -25,7 +25,7 @@
 
 ## Impact
 
-- 変更ファイル: `loom-engine.py`（`rename_component()` 関数）
+- 変更ファイル: `twl-engine.py`（`rename_component()` 関数）
 - 既存テスト: rename 関連テストに path/entry_points/directory のアサーション追加が必要
 - 前例: `promote_component()` が同様のファイル移動ロジックを持つ（`Path.rename()` + 空ディレクトリ削除）
 - 部分一致リスク: `co-auto` rename が `co-autopilot` に波及しないよう境界マッチが必要

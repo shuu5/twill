@@ -15,7 +15,7 @@ Type System
 
 ## Constraints
 
-- types.yaml が唯一の型定義ソース。loom-engine.py 内のハードコードは types.yaml から起動時にロード
+- types.yaml が唯一の型定義ソース。twl-engine.py 内のハードコードは types.yaml から起動時にロード
 - can_spawn には型名のみ指定可能（コンポーネント名は不可）
 - spawnable_by には型名 + 特殊値（user, launcher, all, agents.skills）を指定可能
 
@@ -23,6 +23,6 @@ Type System
 
 | コマンド | 説明 |
 |---------|------|
-| `loom --validate` | can_spawn/spawnable_by の型ルール整合性を検証 |
-| `loom --rules` | types.yaml の型ルールテーブルを表示 |
-| `loom --sync-check <ref>` | types.yaml と参照ドキュメントの整合性を比較 |
+| `twl --validate` | can_spawn/spawnable_by の型ルール整合性を検証 |
+| `twl --rules` | types.yaml の型ルールテーブルを表示 |
+| `twl --sync-check <ref>` | types.yaml と参照ドキュメントの整合性を比較 |

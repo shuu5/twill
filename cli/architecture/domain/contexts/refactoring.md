@@ -24,8 +24,8 @@ Refactoring
 
 | コマンド | 説明 |
 |---------|------|
-| `loom --rename <old> <new>` | コンポーネント名を一括変更 |
-| `loom --promote <name> <new_type>` | コンポーネント型を変更（セクション移動含む） |
-| `loom --dry-run` | rename/promote の変更をプレビュー |
-| `loom --orphans` | 孤立コンポーネントを検出 |
-| `loom --complexity` | 複雑さメトリクスレポートを生成 |
+| `twl --rename <old> <new>` | コンポーネント名を一括変更 |
+| `twl --promote <name> <new_type>` | コンポーネント型を変更（セクション移動含む） |
+| `twl --dry-run` | rename/promote の変更をプレビュー |
+| `twl --orphans` | 孤立コンポーネントを検出 |
+| `twl --complexity` | 複雑さメトリクスレポートを生成 |

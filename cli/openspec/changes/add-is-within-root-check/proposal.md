@@ -20,7 +20,7 @@
 
 ## Impact
 
-- 影響ファイル: `loom-engine.py` の `deep_validate()` 関数内のみ
+- 影響ファイル: `twl-engine.py` の `deep_validate()` 関数内のみ
 - API 変更: なし
 - 依存関係変更: なし
 - リスク: 低（既存パターンの適用のみ）

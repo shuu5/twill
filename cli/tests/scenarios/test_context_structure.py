@@ -179,7 +179,7 @@ class TestCliCommandMapping:
     """Scenario: CLI コマンドマッピング検証
 
     WHEN: 任意の Context ファイルを確認する
-    THEN: その Context に対応する loom CLI コマンドが列挙されている
+    THEN: その Context に対応する twl CLI コマンドが列挙されている
     """
 
     @pytest.fixture
@@ -195,7 +195,7 @@ class TestCliCommandMapping:
             content = filepath.read_text(encoding="utf-8")
             # Check for CLI command references:
             # - A dedicated section (e.g., "## CLI Commands" or "## CLI コマンド")
-            # - Or references to `loom <command>` in the content
+            # - Or references to `twl <command>` in the content
             has_cli_section = bool(
                 re.search(
                     r"#{2,4}\s+.*(?:CLI|コマンド|Command)",
@@ -203,13 +203,13 @@ class TestCliCommandMapping:
                     re.IGNORECASE,
                 )
             )
-            has_loom_commands = bool(
-                re.search(r"loom\s+\w+", content)
+            has_twl_commands = bool(
+                re.search(r"twl\s+\w+", content)
             )
             has_command_backtick = bool(
                 re.search(r"`(?:check|validate|deep-validate|audit|chain|promote|rename|sync-docs|visualize|init)`", content)
             )
-            if not (has_cli_section or has_loom_commands or has_command_backtick):
+            if not (has_cli_section or has_twl_commands or has_command_backtick):
                 errors.append(
                     f"{filepath.name}: no CLI command mapping found"
                 )

@@ -39,7 +39,7 @@ CALLED_BY_PATTERN = r'。\S+ (?:Step \d+ )?から呼び出される。$'
 YAML frontmatter の `description:` 行を直接文字列操作する。理由:
 - 既存コードが行ベース解析を使用（行3123-3136）
 - YAML パーサーを使うとコメントやフォーマットが変わるリスク
-- description は単一行保証（loom の制約）
+- description は単一行保証（twl の制約）
 
 ### 3. --check の Template B 検出方式
 
@@ -55,4 +55,4 @@ YAML frontmatter の `description:` 行を直接文字列操作する。理由:
 ## Risks / Trade-offs
 
 - **正規表現の脆弱性**: called-by パターンに一致する手書きテキストが誤置換される可能性 → パターンを厳密に定義することで軽減
-- **複数行 description**: 現在は単一行前提。複数行 YAML (`|`, `>`) には対応しない → loom の既存制約として許容
+- **複数行 description**: 現在は単一行前提。複数行 YAML (`|`, `>`) には対応しない → twl の既存制約として許容

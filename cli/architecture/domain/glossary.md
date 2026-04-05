@@ -52,7 +52,7 @@
 | check (`--check`) | ファイル存在確認。deps.yaml の path で指定されたファイルが実在するか検証 | ファイルシステム | Validation |
 | validate (`--validate`) | 型ルール検証。can_spawn/spawnable_by の制約が types.yaml と整合するか検証 | deps.yaml + types.yaml | Validation |
 | deep-validate (`--deep-validate`) | 深層検証。frontmatter/body の整合性、controller bloat、reference 配置、tools 一貫性を検証 | deps.yaml + 実ファイル内容 | Validation |
-| audit (`--audit`) | Loom 準拠度監査。5セクション（Structure, Dependency, Content, Chain, Metrics）の総合レポートを生成 | 全体 | Validation |
+| audit (`--audit`) | TWiLL 準拠度監査。5セクション（Structure, Dependency, Content, Chain, Metrics）の総合レポートを生成 | 全体 | Validation |
 
 ### その他の用語
 

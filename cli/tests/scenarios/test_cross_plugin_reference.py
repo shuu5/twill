@@ -21,7 +21,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -62,9 +62,9 @@ def _create_component_files(plugin_dir: Path, deps: dict) -> None:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -294,7 +294,7 @@ class TestCrossPluginReferenceParsing(_CrossPluginTestBase):
     def test_cross_plugin_reference_parsed_as_cross_plugin(self):
         """Scenario: 正常な cross-plugin 参照のパース
         WHEN deps.yaml の calls に `atomic: "session:session-state"` が記述されている
-        THEN loom はこれを session plugin の session-state コンポーネントへの
+        THEN twl はこれを session plugin の session-state コンポーネントへの
              cross-plugin 参照として認識する"""
         caller_dir = make_caller_plugin(self.tmpdir)
         session_dir = make_session_plugin(self.tmpdir)
@@ -316,7 +316,7 @@ class TestCrossPluginReferenceParsing(_CrossPluginTestBase):
     def test_local_reference_without_colon(self):
         """Scenario: コロンなしの値は従来通りローカル参照
         WHEN deps.yaml の calls に `atomic: "my-command"` が記述されている（コロンなし）
-        THEN loom はこれを同一 plugin 内のコンポーネントへのローカル参照として処理する"""
+        THEN twl はこれを同一 plugin 内のコンポーネントへのローカル参照として処理する"""
         plugin_dir = make_caller_local_only_plugin(self.tmpdir)
 
         result = run_engine(plugin_dir, "--validate")
@@ -333,7 +333,7 @@ class TestCrossPluginReferenceParsing(_CrossPluginTestBase):
 # ===========================================================================
 
 class TestCrossPluginValidate(_CrossPluginTestBase):
-    """loom validate は cross-plugin 参照の型整合性を検証する。"""
+    """twl validate は cross-plugin 参照の型整合性を検証する。"""
 
     def test_cross_plugin_type_compatible_no_violation(self):
         """Scenario: 参照先の型整合性が正しい場合
@@ -412,7 +412,7 @@ class TestCrossPluginValidate(_CrossPluginTestBase):
 # ===========================================================================
 
 class TestCrossPluginCheck(_CrossPluginTestBase):
-    """loom check は cross-plugin 参照先のファイル存在を検証する。"""
+    """twl check は cross-plugin 参照先のファイル存在を検証する。"""
 
     def test_cross_plugin_file_exists_reports_ok(self):
         """Scenario: 参照先ファイルが存在する場合

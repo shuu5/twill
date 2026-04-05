@@ -1,6 +1,6 @@
 ## Context
 
-`loom-engine.py` には既に `validate_v3_schema()` が存在し、v3.0 固有の構文検証（calls キー、step 型、step_in 構造、chain 参照、chains 構造）を行っている。しかしこれは「各フィールドが正しい型・参照先を持つか」の片方向チェックであり、「双方向で整合しているか」は検証していない。
+`twl-engine.py` には既に `validate_v3_schema()` が存在し、v3.0 固有の構文検証（calls キー、step 型、step_in 構造、chain 参照、chains 構造）を行っている。しかしこれは「各フィールドが正しい型・参照先を持つか」の片方向チェックであり、「双方向で整合しているか」は検証していない。
 
 既存パターン: `deep_validate()` は `(criticals, warnings, infos)` タプルを返す。`chain_validate` も同じシグネチャに従う。
 
@@ -13,13 +13,13 @@
 - Chain 種別（A/B）ごとの参加者型制約を検証
 - calls 内 step 番号の昇順を検証
 - プロンプト body 内の `/{plugin}:{name}` パターンと `Step {N} から呼び出される` パターンを deps.yaml と照合
-- `loom check`（`--check` フラグ）実行時に v3.0 検出で自動統合
+- `twl check`（`--check` フラグ）実行時に v3.0 検出で自動統合
 
 **Non-Goals:**
 
 - deps.yaml スキーマ定義自体の変更（#11 スコープ）
 - chain テンプレート生成
-- `loom rename` 時の chain 自動更新（#5 スコープ）
+- `twl rename` 時の chain 自動更新（#5 スコープ）
 - body 内の一般的な参照検証（chain/step 以外、#7 スコープ）
 
 ## Decisions

@@ -15,8 +15,8 @@
 - **THEN** 各エンティティに名前と責務の説明が記載されている
 
 ### Requirement: CLI コマンドマッピング
-各 Context ファイルは、その Context が担う loom CLI コマンドの一覧を含まなければならない（SHALL）。
+各 Context ファイルは、その Context が担う twl CLI コマンドの一覧を含まなければならない（SHALL）。
 
 #### Scenario: CLI コマンドマッピング検証
 - **WHEN** 任意の Context ファイルを確認する
-- **THEN** その Context に対応する loom CLI コマンドが列挙されている
+- **THEN** その Context に対応する twl CLI コマンドが列挙されている

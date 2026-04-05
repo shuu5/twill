@@ -1,21 +1,21 @@
 #!/bin/bash
-# loom - Loom framework CLI
-# Wrapper around loom-engine.py (analyze-deps.py)
+# twl - TWiLL framework CLI
+# Wrapper around twl-engine.py (analyze-deps.py)
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-ENGINE="$SCRIPT_DIR/loom-engine.py"
+ENGINE="$SCRIPT_DIR/twl-engine.py"
 
 if [ ! -f "$ENGINE" ]; then
-    echo "Error: loom-engine.py not found at $ENGINE" >&2
+    echo "Error: twl-engine.py not found at $ENGINE" >&2
     exit 1
 fi
 
 show_help() {
     cat <<'EOF'
-loom - Loom framework CLI
+twl - TWiLL framework CLI
 
-Usage: loom <command> [args]
+Usage: twl <command> [args]
 
 Commands:
   rename <old> <new>       コンポーネント名を一括変更（4箇所 + v3.0 chain）
@@ -29,7 +29,7 @@ Commands:
   orphans         未使用/孤立ノード検出
   complexity      7メトリクス複雑さレポート
   update-readme   SVG グラフ生成 + README.md 更新
-  audit           Loom 準拠度の機械的チェック（5セクションレポート）
+  audit           TWiLL 準拠度の機械的チェック（5セクションレポート）
   deep-validate   深層検証（controller bloat, ref placement, tools）
   reverse <name>  逆依存関係を表示
   target <name>   依存関係を表示
@@ -46,19 +46,19 @@ Options:
   --no-tokens     グラフ出力でトークン数を非表示
 
 Examples:
-  cd ~/.claude/plugins/dev && loom check
-  cd ~/.claude/plugins/dev && loom reverse worker-structure
-  loom rename old-name new-name
-  loom rename old-name new-name --dry-run
-  loom promote my-action controller
-  loom promote my-action controller --dry-run
-  loom update-svgs
-  loom rules
-  loom sync-check --ref docs/ref-types.md
-  loom sync-docs ~/.claude/plugins/dev/refs/
-  loom sync-docs ~/.claude/plugins/dev/refs/ --check
-  loom chain generate my-chain
-  loom chain generate --check --all
+  cd ~/.claude/plugins/dev && twl check
+  cd ~/.claude/plugins/dev && twl reverse worker-structure
+  twl rename old-name new-name
+  twl rename old-name new-name --dry-run
+  twl promote my-action controller
+  twl promote my-action controller --dry-run
+  twl update-svgs
+  twl rules
+  twl sync-check --ref docs/ref-types.md
+  twl sync-docs ~/.claude/plugins/dev/refs/
+  twl sync-docs ~/.claude/plugins/dev/refs/ --check
+  twl chain generate my-chain
+  twl chain generate --check --all
 EOF
 }
 
@@ -75,7 +75,7 @@ case "$CMD" in
     rename)
         if [ $# -lt 2 ]; then
             echo "Error: rename requires <old-name> <new-name>" >&2
-            echo "Usage: loom rename <old-name> <new-name> [--dry-run]" >&2
+            echo "Usage: twl rename <old-name> <new-name> [--dry-run]" >&2
             exit 1
         fi
         OLD_NAME="$1"
@@ -87,7 +87,7 @@ case "$CMD" in
     promote)
         if [ $# -lt 2 ]; then
             echo "Error: promote requires <name> <new-type>" >&2
-            echo "Usage: loom promote <name> <new-type> [--dry-run]" >&2
+            echo "Usage: twl promote <name> <new-type> [--dry-run]" >&2
             exit 1
         fi
         COMP_NAME="$1"
@@ -107,7 +107,7 @@ case "$CMD" in
     sync-check)
         if [ $# -eq 0 ] || [ "$1" != "--ref" ]; then
             echo "Error: sync-check requires --ref <path>" >&2
-            echo "Usage: loom sync-check --ref <path>" >&2
+            echo "Usage: twl sync-check --ref <path>" >&2
             exit 1
         fi
         shift
@@ -120,7 +120,7 @@ case "$CMD" in
     sync-docs)
         if [ $# -eq 0 ]; then
             echo "Error: sync-docs requires <target-dir>" >&2
-            echo "Usage: loom sync-docs <target-dir> [--check]" >&2
+            echo "Usage: twl sync-docs <target-dir> [--check]" >&2
             exit 1
         fi
         TARGET_DIR="$1"
@@ -179,7 +179,7 @@ case "$CMD" in
     chain)
         if [ $# -eq 0 ]; then
             echo "Error: chain requires a subcommand (e.g. generate)" >&2
-            echo "Usage: loom chain generate <chain-name> [--write|--check|--all]" >&2
+            echo "Usage: twl chain generate <chain-name> [--write|--check|--all]" >&2
             exit 1
         fi
         python3 "$ENGINE" chain "$@"
@@ -221,7 +221,7 @@ case "$CMD" in
         ;;
     *)
         echo "Error: unknown command '$CMD'" >&2
-        echo "Run 'loom help' for usage" >&2
+        echo "Run 'twl help' for usage" >&2
         exit 1
         ;;
 esac

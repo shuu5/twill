@@ -20,7 +20,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -96,9 +96,9 @@ def make_specialist_fixture(tmpdir: Path, *, model: str | None = "sonnet") -> Pa
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -138,12 +138,12 @@ class TestAllowedModelsConstant:
 
     def test_allowed_models_is_set_with_expected_values(self):
         """Scenario: constant is accessible
-        WHEN loom-engine.py is imported
+        WHEN twl-engine.py is imported
         THEN ALLOWED_MODELS is a set containing {"haiku", "sonnet", "opus"}."""
         # We test by running a subprocess that imports and checks
         check_script = (
             "import sys, importlib.util; "
-            f"spec = importlib.util.spec_from_file_location('engine', '{LOOM_ENGINE}'); "
+            f"spec = importlib.util.spec_from_file_location('engine', '{TWL_ENGINE}'); "
             "mod = importlib.util.module_from_spec(spec); "
             "spec.loader.exec_module(mod); "
             "am = getattr(mod, 'ALLOWED_MODELS', None); "

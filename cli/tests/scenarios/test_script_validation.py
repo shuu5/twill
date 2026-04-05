@@ -19,7 +19,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -103,9 +103,9 @@ def make_script_fixture(tmpdir: Path) -> Path:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -302,7 +302,7 @@ class TestAuditReportScriptSkip(_ValidationTestBase):
 
     def test_audit_script_skip(self):
         """Scenario: audit の script スキップ
-        WHEN loom --audit を実行し、scripts セクションにコンポーネントが存在する
+        WHEN twl --audit を実行し、scripts セクションにコンポーネントが存在する
         THEN Section 2 (Inline Implementation), Section 4 (Tools Accuracy),
              Section 5 (Self-Contained) の各テーブルに script コンポーネントの行が含まれない"""
         result = run_engine(self.plugin_dir, "--audit")

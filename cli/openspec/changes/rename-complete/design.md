@@ -1,6 +1,6 @@
 ## Context
 
-`rename_component()` は現在 5 箇所（deps.yaml キー/calls/v3.0 フィールド/frontmatter/body）を更新する。しかし path フィールド・entry_points・実ファイルが未更新のため、rename 後に `loom check` が path 不在で失敗する。
+`rename_component()` は現在 5 箇所（deps.yaml キー/calls/v3.0 フィールド/frontmatter/body）を更新する。しかし path フィールド・entry_points・実ファイルが未更新のため、rename 後に `twl check` が path 不在で失敗する。
 
 `promote_component()` が既にファイル移動ロジック（`Path.rename()` + 空ディレクトリ削除 + ロールバック）を持ち、参考実装として利用可能。
 

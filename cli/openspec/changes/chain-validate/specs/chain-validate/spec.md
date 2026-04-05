@@ -69,13 +69,13 @@ Chain の `type` フィールドに基づき、参加者の型が許可範囲内
 
 ## MODIFIED Requirements
 
-### Requirement: loom check への chain 検証統合
-`loom check` 実行時に deps.yaml が v3.0 であることを検出した場合、`chain_validate` を自動的に呼び出さなければならない（MUST）。
+### Requirement: twl check への chain 検証統合
+`twl check` 実行時に deps.yaml が v3.0 であることを検出した場合、`chain_validate` を自動的に呼び出さなければならない（MUST）。
 
-#### Scenario: v3.0 deps.yaml で loom check 実行
-- **WHEN** `loom check` が v3.0 の deps.yaml を持つプラグインで実行される
+#### Scenario: v3.0 deps.yaml で twl check 実行
+- **WHEN** `twl check` が v3.0 の deps.yaml を持つプラグインで実行される
 - **THEN** ファイル存在チェックに加えて chain 検証結果も表示され、CRITICAL があれば非ゼロ終了する
 
-#### Scenario: v2.0 deps.yaml で loom check 実行
-- **WHEN** `loom check` が v2.0 の deps.yaml を持つプラグインで実行される
+#### Scenario: v2.0 deps.yaml で twl check 実行
+- **WHEN** `twl check` が v2.0 の deps.yaml を持つプラグインで実行される
 - **THEN** chain 検証は実行されず、従来のファイル存在チェックのみが行われる

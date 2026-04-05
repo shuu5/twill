@@ -4,7 +4,7 @@
 
 ## What Changes
 
-- `loom-engine.py` line 2913 付近: `output_schema` の空文字列を独立した invalid value として検出・警告
+- `twl-engine.py` line 2913 付近: `output_schema` の空文字列を独立した invalid value として検出・警告
 - 既存の `!= ""` ガードを削除し、空文字列専用の警告パスを追加
 
 ## Capabilities
@@ -19,6 +19,6 @@
 
 ## Impact
 
-- `loom-engine.py`: `deep_validate()` section E の output_schema 検証ブロック（line 2910-2914 付近）
+- `twl-engine.py`: `deep_validate()` section E の output_schema 検証ブロック（line 2910-2914 付近）
 - 既存テスト: 動作変更なし（`custom` / `None` のパスは不変）
 - 新規テスト: 空文字列ケースの警告検証が必要

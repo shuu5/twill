@@ -1,6 +1,6 @@
 ## Context
 
-`loom-engine.py` の `build_graph()` / `classify_layers()` / `generate_graphviz()` に 3 つのバグがある。
+`twl-engine.py` の `build_graph()` / `classify_layers()` / `generate_graphviz()` に 3 つのバグがある。
 
 1. `build_graph()` (L446-462): agent の `skills` フィールドが reverse dependency (`required_by`) に反映されない。agent が reference skill を skills として持つ場合、その skill の required_by が空のままになる
 2. `classify_layers()` (L671-682): L1→L2 の 1 段のみ走査。L2 コマンドがさらに calls で呼ぶ L3 以降のコマンドが走査されず orphan 扱いになる

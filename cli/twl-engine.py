@@ -59,7 +59,7 @@ ALLOWED_MODELS = {"haiku", "sonnet", "opus"}
 
 
 def _get_loom_root() -> Path:
-    """loom-engine.py の配置ディレクトリ（= loom リポジトリルート）を返す"""
+    """twl-engine.py の配置ディレクトリ（= twill リポジトリルート）を返す"""
     return Path(__file__).resolve().parent
 
 
@@ -418,7 +418,7 @@ def build_graph(deps: dict, plugin_root: Path = None) -> Dict[str, Dict]:
         key_map = {
             # v2.0 section-name keys
             'command': 'command', 'skill': 'skill', 'agent': 'agent',
-            # v3.0 type-name keys (loom type → graph node type)
+            # v3.0 type-name keys (twill type → graph node type)
             'atomic': 'command', 'composite': 'command',
             'controller': 'skill', 'workflow': 'skill', 'reference': 'skill',
             'specialist': 'agent',
@@ -3758,7 +3758,7 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
 def handle_chain_subcommand(argv: list) -> None:
     """chain サブコマンドを処理する。sys.exit() で終了。"""
     parser = argparse.ArgumentParser(
-        prog='loom chain generate',
+        prog='twl chain generate',
         description='Generate step chain templates from deps.yaml'
     )
     parser.add_argument('chain_name', nargs='?', default=None,
@@ -3834,7 +3834,7 @@ def handle_chain_subcommand(argv: list) -> None:
                      if total_drifted > 0 else "."))
 
             if all_diffs:
-                print("Run 'loom chain generate --all --write' to fix.")
+                print("Run 'twl chain generate --all --write' to fix.")
                 print()
                 for d in all_diffs:
                     print(d)
@@ -3869,7 +3869,7 @@ def handle_chain_subcommand(argv: list) -> None:
 
             if diffs:
                 print()
-                print(f"Run 'loom chain generate {args.chain_name} --write' to fix.")
+                print(f"Run 'twl chain generate {args.chain_name} --write' to fix.")
                 print()
                 for d in diffs:
                     print(d)
@@ -3984,7 +3984,7 @@ def _check_output_schema_keywords(file_path: Path) -> Dict[str, bool]:
 
 
 def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
-    """5セクションの Loom 準拠度データを収集（print なし）
+    """5セクションの TWiLL 準拠度データを収集（print なし）
 
     Returns: items リスト（severity, component, message, section, value, threshold）
     """
@@ -4135,7 +4135,7 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
 
 
 def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
-    """5セクションの Loom 準拠度レポートを出力
+    """5セクションの TWiLL 準拠度レポートを出力
 
     Returns: (critical_count, warning_count, ok_count)
     """
@@ -4986,7 +4986,7 @@ def promote_component(plugin_root: Path, deps: dict, name: str, new_type: str, d
 
     for c in changes:
         print(c)
-    print(f"\nDone. Run 'loom validate' to verify.")
+    print(f"\nDone. Run 'twl validate' to verify.")
     return True
 
 
@@ -5336,7 +5336,7 @@ def rename_component(plugin_root: Path, deps: dict, old_name: str, new_name: str
 
     for c in changes:
         print(c)
-    print(f"\nDone. Run 'loom validate' to verify.")
+    print(f"\nDone. Run 'twl validate' to verify.")
     return True
 
 
@@ -5347,7 +5347,7 @@ def print_rules():
     source = str(types_path) if types_path.exists() else "fallback (hardcoded)"
     rules = load_type_rules(loom_root)
 
-    print(f"=== Loom Type Rules ===")
+    print(f"=== TWiLL Type Rules ===")
     print(f"Source: {source}")
     print()
 
@@ -5486,7 +5486,7 @@ def _extract_body(content: str) -> str:
         if end != -1:
             text = text[end + 4:].lstrip('\n')
     # sync コメント除去
-    sync_marker = '<!-- Synced from loom docs/'
+    sync_marker = '<!-- Synced from twl docs/'
     if text.startswith(sync_marker):
         newline = text.find('\n')
         if newline != -1:
@@ -5552,7 +5552,7 @@ def _build_frontmatter(filename: str, deps: dict) -> str:
     return f'---\n{body}\n---'
 
 
-SYNC_COMMENT = '<!-- Synced from loom docs/ — do not edit directly -->'
+SYNC_COMMENT = '<!-- Synced from twl docs/ — do not edit directly -->'
 
 
 def sync_docs(target_dir: str, check_only: bool = False):
@@ -5617,7 +5617,7 @@ def sync_docs(target_dir: str, check_only: bool = False):
 
         if has_diff:
             print()
-            print("Differences found. Run 'loom sync-docs <dir>' to sync.")
+            print("Differences found. Run 'twl sync-docs <dir>' to sync.")
             sys.exit(1)
         else:
             print()
@@ -5648,7 +5648,7 @@ def main():
             sys.exit(0)
         else:
             print(f"Error: unknown chain subcommand '{sys.argv[2] if len(sys.argv) >= 3 else ''}'", file=sys.stderr)
-            print("Usage: loom chain generate <chain-name> [--write]", file=sys.stderr)
+            print("Usage: twl chain generate <chain-name> [--write]", file=sys.stderr)
             sys.exit(1)
 
     parser = argparse.ArgumentParser(description='Analyze plugin dependencies')
@@ -5666,7 +5666,7 @@ def main():
     parser.add_argument('--tokens', action='store_true', help='Show token counts for all nodes')
     parser.add_argument('--no-tokens', action='store_true', help='Hide token counts in graph output')
     parser.add_argument('--deep-validate', action='store_true', help='Deep validation (controller bloat, ref placement, tools consistency)')
-    parser.add_argument('--audit', action='store_true', help='Loom compliance audit (5-section markdown report)')
+    parser.add_argument('--audit', action='store_true', help='TWiLL compliance audit (5-section markdown report)')
     parser.add_argument('--complexity', action='store_true', help='Complexity metrics report')
     parser.add_argument('--rename', nargs=2, metavar=('OLD', 'NEW'), help='Rename a component (updates deps.yaml, frontmatter, body refs)')
     parser.add_argument('--promote', nargs=2, metavar=('NAME', 'NEW_TYPE'), help='Change component type (promote/demote with section move, file move, can_spawn/spawnable_by adjustment)')
@@ -5972,7 +5972,7 @@ def main():
             output_json(envelope)
             sys.exit(exit_code)
 
-        print("=== Loom Compliance Audit ===")
+        print("=== TWiLL Compliance Audit ===")
         print()
         audit_criticals, audit_warnings, audit_oks = audit_report(deps, plugin_root)
         if audit_criticals > 0:

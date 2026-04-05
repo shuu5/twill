@@ -23,11 +23,11 @@ Visualization
 
 | コマンド | 説明 |
 |---------|------|
-| `loom` (デフォルト) | Graphviz DOT 形式で出力 |
-| `loom --graphviz` | Graphviz DOT 形式で出力（明示指定） |
-| `loom --mermaid` | Mermaid 形式で出力 |
-| `loom --tree` | ASCII ツリー形式で出力 |
-| `loom --rich` | Rich ライブラリによるカラーツリー出力 |
-| `loom --update-readme` | SVG を生成し README.md に埋め込み |
-| `loom --target <name>` | 指定コンポーネントの依存を追跡表示 |
-| `loom --reverse <name>` | 指定コンポーネントの逆依存を表示 |
+| `twl` (デフォルト) | Graphviz DOT 形式で出力 |
+| `twl --graphviz` | Graphviz DOT 形式で出力（明示指定） |
+| `twl --mermaid` | Mermaid 形式で出力 |
+| `twl --tree` | ASCII ツリー形式で出力 |
+| `twl --rich` | Rich ライブラリによるカラーツリー出力 |
+| `twl --update-readme` | SVG を生成し README.md に埋め込み |
+| `twl --target <name>` | 指定コンポーネントの依存を追跡表示 |
+| `twl --reverse <name>` | 指定コンポーネントの逆依存を表示 |

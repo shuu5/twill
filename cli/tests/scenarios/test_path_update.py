@@ -15,7 +15,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -45,9 +45,9 @@ def _create_component_files(plugin_dir: Path, deps: dict) -> None:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -126,7 +126,7 @@ class TestPathUpdate:
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
     # ---- Scenario: 標準的な path 更新 ----
-    # WHEN: `loom rename controller-project co-project` を実行し、
+    # WHEN: `twl rename controller-project co-project` を実行し、
     #       対象の path が `skills/controller-project/SKILL.md` である
     # THEN: path は `skills/co-project/SKILL.md` に更新される
 
@@ -156,7 +156,7 @@ class TestPathUpdate:
         )
 
     # ---- Scenario: 部分一致しない ----
-    # WHEN: `loom rename co-auto co-autopilot` を実行し、
+    # WHEN: `twl rename co-auto co-autopilot` を実行し、
     #       別コンポーネントの path に `skills/co-autopilot-launch/SKILL.md` がある
     # THEN: 別コンポーネントの path は変更されない
 
@@ -198,7 +198,7 @@ class TestPathUpdate:
         assert bystander_path.count("co-autopilot") == 1 or "co-autopilot-launch" in bystander_path
 
     # ---- Scenario: dry-run での path 変更表示 ----
-    # WHEN: `loom rename controller-project co-project --dry-run` を実行する
+    # WHEN: `twl rename controller-project co-project --dry-run` を実行する
     # THEN: path の変更が `path: skills/controller-project/SKILL.md → skills/co-project/SKILL.md`
     #       形式でプレビュー表示される
 

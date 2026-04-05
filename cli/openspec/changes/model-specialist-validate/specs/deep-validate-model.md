@@ -2,10 +2,10 @@
 
 ### Requirement: ALLOWED_MODELS 定数定義
 
-loom-engine.py のモジュールレベルに `ALLOWED_MODELS = {"haiku", "sonnet", "opus"}` を定数として定義しなければならない（SHALL）。
+twl-engine.py のモジュールレベルに `ALLOWED_MODELS = {"haiku", "sonnet", "opus"}` を定数として定義しなければならない（SHALL）。
 
 #### Scenario: 定数が参照可能
-- **WHEN** loom-engine.py をインポートする
+- **WHEN** twl-engine.py をインポートする
 - **THEN** ALLOWED_MODELS が set 型で `{"haiku", "sonnet", "opus"}` を含む
 
 ### Requirement: specialist の model 未宣言を WARNING で報告

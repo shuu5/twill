@@ -19,8 +19,8 @@ scenarios:
     last_run: null
     failure_reason: null
 
-  - id: loom-rules-display
-    name: "loom rules 表示"
+  - id: twl-rules-display
+    name: "twl rules 表示"
     spec_file: "specs/type-system/spec.md"
     spec_line: 10
     requirement: "types.yaml に script 型を定義"

@@ -21,7 +21,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -138,9 +138,9 @@ def make_no_script_fixture(tmpdir: Path) -> Path:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -188,7 +188,7 @@ class TestGraphvizScriptNode(_VizTestBase):
 
     def test_graphviz_script_node_shape_and_color(self):
         """Scenario: graphviz 出力での script ノード
-        WHEN loom --graphviz を実行し、scripts セクションにコンポーネントが存在する
+        WHEN twl --graphviz を実行し、scripts セクションにコンポーネントが存在する
         THEN DOT 出力に shape=hexagon, style=filled, fillcolor="#FF9800" を持つ script ノードが含まれる"""
         result = run_engine(self.plugin_dir, "--graphviz")
         assert result.returncode == 0, f"stderr: {result.stderr}"
@@ -227,7 +227,7 @@ class TestSubgraphScriptNode(_VizTestBase):
 
     def test_subgraph_script_display(self):
         """Scenario: サブグラフでの script 表示
-        WHEN loom --update-readme でサブグラフ SVG を生成する
+        WHEN twl --update-readme でサブグラフ SVG を生成する
         THEN script ノードがサブグラフ内に含まれ、オレンジ六角形で描画される"""
         # Use --graphviz with target to get subgraph-like output
         result = run_engine(self.plugin_dir, "--target", "my-action", "--graphviz")
@@ -271,7 +271,7 @@ class TestMermaidScriptNode(_VizTestBase):
 
     def test_mermaid_script_hexagon(self):
         """Scenario: mermaid 出力での script ノード
-        WHEN loom --mermaid を実行し、scripts セクションにコンポーネントが存在する
+        WHEN twl --mermaid を実行し、scripts セクションにコンポーネントが存在する
         THEN Mermaid 出力に script ノードが六角形構文で含まれ、style 定義にオレンジ色が指定される"""
         result = run_engine(self.plugin_dir, "--mermaid")
         assert result.returncode == 0, f"stderr: {result.stderr}"
@@ -299,7 +299,7 @@ class TestTreeScriptDisplay(_VizTestBase):
 
     def test_tree_script_as_child(self):
         """Scenario: tree での script 表示
-        WHEN loom --target my-action を実行し、そのコンポーネントが {script: autopilot-plan} を呼ぶ
+        WHEN twl --target my-action を実行し、そのコンポーネントが {script: autopilot-plan} を呼ぶ
         THEN ツリー出力に script:autopilot-plan が子ノードとして表示される"""
         result = run_engine(self.plugin_dir, "--target", "my-action")
         assert result.returncode == 0, f"stderr: {result.stderr}"
@@ -318,7 +318,7 @@ class TestListScriptSection(_VizTestBase):
 
     def test_list_scripts_section(self):
         """Scenario: list での script 表示
-        WHEN loom --list を実行し、scripts セクションにコンポーネントが存在する
+        WHEN twl --list を実行し、scripts セクションにコンポーネントが存在する
         THEN ## SCRIPTS セクションに script ノードが名前・説明付きで表示される"""
         result = run_engine(self.plugin_dir, "--list")
         assert result.returncode == 0, f"stderr: {result.stderr}"
@@ -339,7 +339,7 @@ class TestTokensScriptSection(_VizTestBase):
 
     def test_tokens_scripts_section(self):
         """Scenario: tokens での script 表示
-        WHEN loom --tokens を実行し、scripts セクションにコンポーネントが存在する
+        WHEN twl --tokens を実行し、scripts セクションにコンポーネントが存在する
         THEN ## Scripts セクションに各スクリプトのトークン数が表示される"""
         result = run_engine(self.plugin_dir, "--tokens")
         assert result.returncode == 0, f"stderr: {result.stderr}"

@@ -1,8 +1,8 @@
-# Loom — LLM ワークフロー構造化フレームワーク
+# TWiLL — LLM ワークフロー構造化フレームワーク
 
-**Loom** は、LLM のコンテキストウィンドウ制約を前提としたプロンプト分割・ワークフロー構造化フレームワークである。
+**TWiLL** は、LLM のコンテキストウィンドウ制約を前提としたプロンプト分割・ワークフロー構造化フレームワークである。
 
-## Loom の構成要素
+## TWiLL の構成要素
 
 | 要素 | 定義場所 | 概要 |
 |------|---------|------|
@@ -11,20 +11,20 @@
 | **7パターン** | 本ドキュメント | 並列レビュー、パイプライン、ファンアウト/ファンイン、Context Snapshot、Subagent Delegation、Session Isolation、Compaction Recovery |
 | **Controller 設計原則** | 本ドキュメント | サイズ制限、インライン実装禁止、Phase 委譲、1 Controller = 1 Workflow |
 | **アーキテクチャ評価** | `ref-architecture` | パターン適用状態の検証チェックリスト |
-| **依存グラフ SSOT** | `ref-deps-format` + `loom` | deps.yaml による宣言的構造管理とツーリング |
+| **依存グラフ SSOT** | `ref-deps-format` + `twl` | deps.yaml による宣言的構造管理とツーリング |
 
-### Loom のメタファー
+### TWiLL のメタファー
 
 ```
 経糸 (warp) = 型システム — コンポーネントの構造的骨格
 緯糸 (weft) = コンテキスト — プロンプト、snapshot、外部記憶
 布 (fabric) = 完成したワークフロー
-織機 (loom) = forge — 布を織る道具そのもの
+織機 (twill) = forge — 布を織る道具そのもの
 ```
 
-### Loom と ACE の関係
+### TWiLL と ACE の関係
 
-ACE (Adaptive Context Engineering) は「LLM のコンテキストウィンドウを適応的に管理する」広い概念。Loom はその具体的実装フレームワークであり、型・原則・パターン・ツーリングを通じて ACE を実現する。
+ACE (Adaptive Context Engineering) は「LLM のコンテキストウィンドウを適応的に管理する」広い概念。TWiLL はその具体的実装フレームワークであり、型・原則・パターン・ツーリングを通じて ACE を実現する。
 
 ---
 
@@ -151,7 +151,7 @@ controller と composite の責務を分離する:
 | Task spawn テンプレート（prompt、model） | **composite** | Task() 呼び出し例 |
 | 結果統合ロジック（フィルタ、ソート、集計） | **composite** | 信頼度80未満をフィルタ |
 
-**理由（Loom: コンテキスト配分原則）**:
+**理由（TWiLL: コンテキスト配分原則）**:
 - controller SKILL.md はワークフロー開始時にコンテキストに読み込まれる
 - composite の詳細が controller に含まれると、不要なステップでもコンテキストを占有する
 - composite 内容変更時に controller も修正が必要になる（SSOT 違反）
@@ -200,7 +200,7 @@ Critical/High 検出時は【人間承認待ち】。
 | 成果物 | 要件 | 生成方法 |
 |--------|------|----------|
 | README.md | エントリーポイント表・構成・依存グラフ・インストール・検証 | generate Step 9 |
-| docs/deps.svg | 全体依存グラフ | `loom update-readme` |
+| docs/deps.svg | 全体依存グラフ | `twl update-readme` |
 | docs/deps-{controller}.svg | コントローラー別分離図 | 同上（自動生成） |
 
 ### README.md 必須セクション

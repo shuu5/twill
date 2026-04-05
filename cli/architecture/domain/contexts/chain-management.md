@@ -25,8 +25,8 @@ Chain Management
 
 | コマンド | 説明 |
 |---------|------|
-| `loom chain generate <name>` | 指定 chain のテンプレートを生成（表示のみ） |
-| `loom chain generate <name> --write` | テンプレートを実ファイルに書き込み |
-| `loom chain generate <name> --check` | 生成済みテンプレートのドリフトを検出 |
-| `loom chain generate --all` | 全 chain のテンプレートを一括生成 |
-| `loom chain validate` | chain 定義の整合性を検証（5項目） |
+| `twl chain generate <name>` | 指定 chain のテンプレートを生成（表示のみ） |
+| `twl chain generate <name> --write` | テンプレートを実ファイルに書き込み |
+| `twl chain generate <name> --check` | 生成済みテンプレートのドリフトを検出 |
+| `twl chain generate --all` | 全 chain のテンプレートを一括生成 |
+| `twl chain validate` | chain 定義の整合性を検証（5項目） |

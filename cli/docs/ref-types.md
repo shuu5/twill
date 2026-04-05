@@ -1,4 +1,4 @@
-# Loom 型システム仕様
+# TWiLL 型システム仕様
 
 ## 統合型テーブル
 
@@ -64,7 +64,7 @@
 
 `calls` と `can_spawn` は目的が異なる:
 
-- **`can_spawn`**: この型が spawn できる**型名**を列挙。`loom check` でバリデーションに使用
+- **`can_spawn`**: この型が spawn できる**型名**を列挙。`twl check` でバリデーションに使用
 - **`calls`**: 実際に呼び出す**コンポーネント名**を列挙。**SVG 依存グラフのエッジ生成**に使用
 
 specialist を Task tool で spawn する場合、`can_spawn: [specialist]` だけでなく `calls: [{ agent: {名前} }]` も必要。

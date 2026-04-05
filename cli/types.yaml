@@ -1,6 +1,6 @@
-# Loom Type Rules - SSOT (Single Source of Truth)
-# 型ルール定義。loom-engine.py はこのファイルから TYPE_RULES を構築する。
-# dev:ref-types ドキュメントとの整合性は `loom sync-check --ref <path>` で検証可能。
+# TWiLL Type Rules - SSOT (Single Source of Truth)
+# 型ルール定義。twl-engine.py はこのファイルから TYPE_RULES を構築する。
+# dev:ref-types ドキュメントとの整合性は `twl sync-check --ref <path>` で検証可能。
 
 types:
   controller:

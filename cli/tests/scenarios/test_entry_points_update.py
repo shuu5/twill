@@ -15,7 +15,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -45,9 +45,9 @@ def _create_component_files(plugin_dir: Path, deps: dict) -> None:
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -168,7 +168,7 @@ class TestEntryPointsUpdate:
         shutil.rmtree(self.tmpdir, ignore_errors=True)
 
     # ---- Scenario: entry_points 内のパス更新 ----
-    # WHEN: `loom rename controller-project co-project` を実行し、
+    # WHEN: `twl rename controller-project co-project` を実行し、
     #       entry_points に `skills/controller-project/SKILL.md` が含まれる
     # THEN: entry_points の該当エントリが `skills/co-project/SKILL.md` に更新される
 
@@ -223,7 +223,7 @@ class TestEntryPointsUpdate:
         )
 
     # ---- Scenario: entry_points が未定義 ----
-    # WHEN: `loom rename some-cmd new-cmd` を実行し、
+    # WHEN: `twl rename some-cmd new-cmd` を実行し、
     #       deps.yaml に entry_points キーが存在しない
     # THEN: エラーなく正常に完了する（entry_points 更新はスキップされる）
 
@@ -257,7 +257,7 @@ class TestEntryPointsUpdate:
         assert "some-cmd" not in deps["skills"]
 
     # ---- Scenario: dry-run での entry_points 変更表示 ----
-    # WHEN: `loom rename controller-project co-project --dry-run` を実行し、
+    # WHEN: `twl rename controller-project co-project --dry-run` を実行し、
     #       entry_points に該当パスが含まれる
     # THEN: entry_points の変更が
     #       `entry_points: skills/controller-project/SKILL.md → skills/co-project/SKILL.md`

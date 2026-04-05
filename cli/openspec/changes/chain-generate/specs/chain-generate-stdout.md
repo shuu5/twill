@@ -2,22 +2,22 @@
 
 ### Requirement: chain generate サブコマンド
 
-`loom chain generate <chain-name>` コマンドで、指定された chain の Template A/B/C を stdout に出力しなければならない（SHALL）。
+`twl chain generate <chain-name>` コマンドで、指定された chain の Template A/B/C を stdout に出力しなければならない（SHALL）。
 
 deps.yaml version が 3.x 未満の場合はエラーメッセージを出力して終了しなければならない（MUST）。
 
 指定された chain-name が deps.yaml の chains セクションに存在しない場合はエラーメッセージを出力して終了しなければならない（MUST）。
 
 #### Scenario: 正常な chain generate 実行
-- **WHEN** `loom chain generate dev-pr-cycle` を v3.0 deps.yaml のあるプラグインルートで実行する
+- **WHEN** `twl chain generate dev-pr-cycle` を v3.0 deps.yaml のあるプラグインルートで実行する
 - **THEN** dev-pr-cycle chain の Template A/B/C が stdout に出力される
 
 #### Scenario: 存在しない chain 名
-- **WHEN** `loom chain generate nonexistent-chain` を実行する
+- **WHEN** `twl chain generate nonexistent-chain` を実行する
 - **THEN** エラーメッセージ "Chain 'nonexistent-chain' not found in deps.yaml" が表示され、終了コード 1 で終了する
 
 #### Scenario: v2.0 deps.yaml
-- **WHEN** v2.0 の deps.yaml に対して `loom chain generate` を実行する
+- **WHEN** v2.0 の deps.yaml に対して `twl chain generate` を実行する
 - **THEN** エラーメッセージ "chain generate requires deps.yaml v3.0+" が表示され、終了コード 1 で終了する
 
 ### Requirement: Template A チェックポイント生成

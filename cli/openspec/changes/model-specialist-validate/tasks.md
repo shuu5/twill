@@ -1,6 +1,6 @@
 ## 1. ALLOWED_MODELS 定数定義
 
-- [x] 1.1 loom-engine.py のモジュールレベルに `ALLOWED_MODELS = {"haiku", "sonnet", "opus"}` を追加
+- [x] 1.1 twl-engine.py のモジュールレベルに `ALLOWED_MODELS = {"haiku", "sonnet", "opus"}` を追加
 
 ## 2. deep_validate に model-required ルール追加
 

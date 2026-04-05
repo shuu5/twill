@@ -15,7 +15,7 @@ from pathlib import Path
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -59,9 +59,9 @@ def _create_component_files(plugin_dir: Path, deps: dict, *, body_overrides: dic
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -138,7 +138,7 @@ class TestArgparseBackwardCompatibility(_ArgparseTestBase):
     # --- Scenario: 単一 chain の stdout 出力（既存動作の維持） ---
 
     def test_single_chain_stdout_backward_compatible(self):
-        """WHEN `loom chain generate <name>` を実行する
+        """WHEN `twl chain generate <name>` を実行する
         THEN 指定 chain の Template A/B/C を stdout に出力する（既存動作と同一）"""
         plugin_dir = make_argparse_fixture(self.tmpdir)
 
@@ -188,7 +188,7 @@ class TestArgparseBackwardCompatibility(_ArgparseTestBase):
     # --- Scenario: 単一 chain の書き込み（既存動作の維持） ---
 
     def test_single_chain_write_backward_compatible(self):
-        """WHEN `loom chain generate <name> --write` を実行する
+        """WHEN `twl chain generate <name> --write` を実行する
         THEN 指定 chain のテンプレートをファイルに書き込む（既存動作と同一）"""
         body_overrides = {
             "workflow-setup": (

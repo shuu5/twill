@@ -22,7 +22,7 @@ from importlib import util as importlib_util
 
 import yaml
 
-LOOM_ENGINE = Path(__file__).parent.parent.parent / "loom-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
 
 
 # ---------------------------------------------------------------------------
@@ -59,17 +59,17 @@ def _create_component_files(plugin_dir: Path, deps: dict) -> None:
 
 
 def _load_engine_module():
-    """Import loom-engine.py as a module for direct function testing."""
-    spec = importlib_util.spec_from_file_location("loom_engine", str(LOOM_ENGINE))
+    """Import twl-engine.py as a module for direct function testing."""
+    spec = importlib_util.spec_from_file_location("twl_engine", str(TWL_ENGINE))
     mod = importlib_util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
-    """Run loom-engine.py in the given plugin directory."""
+    """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(LOOM_ENGINE)] + list(extra_args),
+        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -216,7 +216,7 @@ class TestAuditCollect(_Phase2TestBase):
 
         # Should produce text output, not JSON
         output = result.stdout
-        assert "=== Loom Compliance Audit ===" in output
+        assert "=== TWiLL Compliance Audit ===" in output
         # The text output should contain table-like formatting
         assert "##" in output or "|" in output
 

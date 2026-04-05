@@ -1,6 +1,6 @@
 ## Context
 
-loom-engine.py の検証コマンドは2種類の出力アーキテクチャを持つ:
+twl-engine.py の検証コマンドは2種類の出力アーキテクチャを持つ:
 
 1. **構造化 return 型**: validate_types() → `Tuple[int, List[str]]`, deep_validate() → `Tuple[List[str], List[str], List[str]]`, check_files() → `List[Tuple[str, str, str]]`。データが関数の戻り値で取得でき、JSON シリアライズが容易。
 2. **print() 直接出力型**: audit_report(), complexity_report() は内部で print() を直接呼び出し（audit: 約50箇所、complexity: 約55箇所）、return 値にデータを含まない。

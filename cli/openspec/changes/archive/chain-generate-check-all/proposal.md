@@ -1,6 +1,6 @@
 ## Why
 
-`loom chain generate` は単一 chain の生成・書き込みのみ対応しており、書き込み後のドリフト検出手段と複数 chain の一括処理がない。chain-driven アーキテクチャの信頼性維持には、`sync-docs --check` と同パターンの機械的な乖離検出と一括操作が必要。
+`twl chain generate` は単一 chain の生成・書き込みのみ対応しており、書き込み後のドリフト検出手段と複数 chain の一括処理がない。chain-driven アーキテクチャの信頼性維持には、`sync-docs --check` と同パターンの機械的な乖離検出と一括操作が必要。
 
 ## What Changes
 
@@ -24,7 +24,7 @@
 
 ## Impact
 
-- 変更対象: `loom-engine.py`（`handle_chain_subcommand`, `chain_generate_write` 周辺）
+- 変更対象: `twl-engine.py`（`handle_chain_subcommand`, `chain_generate_write` 周辺）
 - テスト追加: `tests/test_chain_generate_check.py`, `tests/test_chain_generate_all.py`（新規）
 - 依存: なし（既存の `chain_generate()` ロジックを流用）
 - 下流への影響: #32 が Template B の --check 拡張を担当

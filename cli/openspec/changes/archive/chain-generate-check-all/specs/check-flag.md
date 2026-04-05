@@ -5,11 +5,11 @@
 `chain generate <name> --check` は、chain 定義から生成した Template A とファイル上の現在の内容を正規化済みハッシュで比較し、不一致時に unified diff を表示しなければならない（SHALL）。
 
 #### Scenario: チェックポイントが一致する場合
-- **WHEN** `loom chain generate <name> --check` を実行し、全ファイルの Template A が生成結果と一致する
+- **WHEN** `twl chain generate <name> --check` を実行し、全ファイルの Template A が生成結果と一致する
 - **THEN** 各ファイルに `ok` ステータスを表示し、exit code 0 で終了する
 
 #### Scenario: チェックポイントが不一致の場合
-- **WHEN** `loom chain generate <name> --check` を実行し、いずれかのファイルで Template A が不一致
+- **WHEN** `twl chain generate <name> --check` を実行し、いずれかのファイルで Template A が不一致
 - **THEN** 不一致ファイルに `DRIFT` ステータスを表示し、unified diff を出力し、exit code 1 で終了する
 
 #### Scenario: チェックポイントセクションが存在しない場合
@@ -33,5 +33,5 @@
 `--check` と `--write` を同時に指定した場合、エラーとして処理しなければならない（MUST）。
 
 #### Scenario: --check と --write の同時指定
-- **WHEN** `loom chain generate <name> --check --write` を実行する
+- **WHEN** `twl chain generate <name> --check --write` を実行する
 - **THEN** エラーメッセージを stderr に出力し、exit code 1 で終了する

@@ -25,7 +25,7 @@ Validation
 
 | コマンド | 説明 |
 |---------|------|
-| `loom --check` | ファイル存在確認 |
-| `loom --validate` | 型ルール整合性検証 |
-| `loom --deep-validate` | frontmatter/body の深層検証 |
-| `loom --audit` | Loom 準拠度の5セクション総合監査 |
+| `twl --check` | ファイル存在確認 |
+| `twl --validate` | 型ルール整合性検証 |
+| `twl --deep-validate` | frontmatter/body の深層検証 |
+| `twl --audit` | TWiLL 準拠度の5セクション総合監査 |

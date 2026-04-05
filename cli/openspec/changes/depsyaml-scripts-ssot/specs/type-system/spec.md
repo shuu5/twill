@@ -4,11 +4,11 @@
 types.yaml の types セクションに `script` 型を追加しなければならない（SHALL）。section は `scripts`、can_spawn は `[]`、spawnable_by は `[atomic, composite]` とする。
 
 #### Scenario: types.yaml 読み込み
-- **WHEN** loom-engine.py が起動し types.yaml を読み込む
+- **WHEN** twl-engine.py が起動し types.yaml を読み込む
 - **THEN** TYPE_RULES に `script` キーが存在し、section=`scripts`, can_spawn=`set()`, spawnable_by=`{'atomic', 'composite'}` が設定される
 
-#### Scenario: loom rules 表示
-- **WHEN** `loom rules` を実行する
+#### Scenario: twl rules 表示
+- **WHEN** `twl rules` を実行する
 - **THEN** script 型の行が表示され、section/can_spawn/spawnable_by が正しく出力される
 
 ### Requirement: deps.yaml の scripts セクションをパースする
@@ -39,7 +39,7 @@ parse_calls 内の key_map に `'script': 'script'` を追加し、`{script: nam
 find_node 関数の検索 prefix リストに `script` を追加しなければならない（MUST）。これにより `--target` や `--reverse` で script ノードを名前指定で検索できる。
 
 #### Scenario: script ノードの名前検索
-- **WHEN** `loom --target autopilot-plan` を実行し、`script:autopilot-plan` ノードが存在する
+- **WHEN** `twl --target autopilot-plan` を実行し、`script:autopilot-plan` ノードが存在する
 - **THEN** find_node が `script:autopilot-plan` を返す
 
 ### Requirement: 逆依存グラフで script ノードを含める
