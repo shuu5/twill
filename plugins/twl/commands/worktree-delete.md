@@ -11,7 +11,7 @@
 ## スクリプト実行（MUST）
 
 ```bash
-bash $HOME/.claude/plugins/dev/scripts/worktree-delete.sh <branch-name>
+bash $HOME/.claude/plugins/twl/scripts/worktree-delete.sh <branch-name>
 ```
 
 スクリプトが以下を全て処理する:

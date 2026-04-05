@@ -36,7 +36,7 @@ if echo "$ERROR_TEXT" | grep -qiE 'SKILL\.md|skill.*parse|command not found.*ski
     harness_score=$((harness_score + 25))
     EVIDENCE+=("Skill/Command実行エラーを検出")
     # コンポーネント特定: SKILL.mdのパスを抽出
-    skill_path=$(echo "$ERROR_TEXT" | grep -oP 'plugins/dev/\S*SKILL\.md' | head -1 || true)
+    skill_path=$(echo "$ERROR_TEXT" | grep -oP 'plugins/(dev|twl)/\S*SKILL\.md' | head -1 || true)
     [ -n "$skill_path" ] && COMPONENT="$skill_path"
 fi
 

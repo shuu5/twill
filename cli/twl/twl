@@ -46,8 +46,8 @@ Options:
   --no-tokens     グラフ出力でトークン数を非表示
 
 Examples:
-  cd ~/.claude/plugins/dev && twl check
-  cd ~/.claude/plugins/dev && twl reverse worker-structure
+  cd ~/.claude/plugins/twl && twl check
+  cd ~/.claude/plugins/twl && twl reverse worker-structure
   twl rename old-name new-name
   twl rename old-name new-name --dry-run
   twl promote my-action controller
@@ -55,8 +55,8 @@ Examples:
   twl update-svgs
   twl rules
   twl sync-check --ref docs/ref-types.md
-  twl sync-docs ~/.claude/plugins/dev/refs/
-  twl sync-docs ~/.claude/plugins/dev/refs/ --check
+  twl sync-docs ~/.claude/plugins/twl/refs/
+  twl sync-docs ~/.claude/plugins/twl/refs/ --check
   twl chain generate my-chain
   twl chain generate --check --all
 EOF

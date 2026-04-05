@@ -74,7 +74,7 @@ if [ -z "$PR_NUMBER" ]; then
 fi
 
 # dev plugin バージョン（git hash）
-DEV_PLUGIN_VERSION=$(git -C "$HOME/.claude/plugins/dev" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+DEV_PLUGIN_VERSION=$(git -C "$HOME/.claude/plugins/twl" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 # --- 重複チェック ---
 # 同一コンポーネントのopen Issueを検索

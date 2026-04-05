@@ -27,7 +27,7 @@
 
 ```bash
 if [ -n "${ISSUE_NUM}" ]; then
-    AC_OUTPUT=$(bash claude/plugins/dev/scripts/parse-issue-ac.sh "${ISSUE_NUM}" 2>/dev/null) && {
+    AC_OUTPUT=$(bash claude/plugins/twl/scripts/parse-issue-ac.sh "${ISSUE_NUM}" 2>/dev/null) && {
         printf '%s\n\n%s\n' "## 受け入れ基準（Issue #${ISSUE_NUM}）" "${AC_OUTPUT}" > "${SNAPSHOT_DIR}/01.5-ac-checklist.md"
     } || {
         echo "AC セクションなし — スキップ" > "${SNAPSHOT_DIR}/01.5-ac-checklist.md"

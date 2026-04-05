@@ -16,8 +16,8 @@
 
 | タイプ | テンプレート | タイトルプレフィックス |
 |--------|-------------|---------------------|
-| Feature | `plugins/dev/templates/issue/feature.md` | `[Feature]` |
-| Bug | `plugins/dev/templates/issue/bug.md` | `[Bug]` |
+| Feature | `plugins/twl/templates/issue/feature.md` | `[Feature]` |
+| Bug | `plugins/twl/templates/issue/bug.md` | `[Bug]` |
 | Docs | （テンプレートなし） | `[Docs]` |
 
 ### Step 1.5: architecture/ 検出と ctx/* 候補リスト構築
