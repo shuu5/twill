@@ -14,7 +14,7 @@ from twl.validation.audit import audit_collect, audit_report
 from twl.validation.complexity import complexity_collect, complexity_report
 from twl.chain.validate import chain_validate
 from twl.chain.generate import handle_chain_subcommand
-from twl.viz.graphviz import generate_graphviz, print_graphviz, update_readme
+from twl.viz.graphviz import print_graphviz, update_readme
 from twl.viz.mermaid import print_mermaid
 from twl.viz.tree import print_rich_tree
 from twl.refactor.rename import rename_component

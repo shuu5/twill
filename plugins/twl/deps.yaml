@@ -192,7 +192,7 @@ skills:
     path: skills/workflow-setup/SKILL.md
     effort: medium
     spawnable_by: [controller]
-    can_spawn: [atomic]
+    can_spawn: [atomic, script]
     calls:
       - atomic: init
         step: "1"
@@ -206,6 +206,8 @@ skills:
         step: "3"
       - atomic: ac-extract
         step: "3.5"
+      - script: chain-runner
+      - script: compaction-resume
     description: "開発準備ワークフロー（chain-driven）"
 
   workflow-test-ready:
@@ -213,7 +215,7 @@ skills:
     path: skills/workflow-test-ready/SKILL.md
     effort: medium
     spawnable_by: [controller]
-    can_spawn: [composite, atomic]
+    can_spawn: [composite, atomic, script]
     calls:
       - composite: test-scaffold
         step: "1"
@@ -221,6 +223,8 @@ skills:
         step: "2"
       - atomic: check
       - atomic: e2e-plan
+      - script: chain-runner
+      - script: compaction-resume
     description: "テスト生成と準備確認ワークフロー"
 
   workflow-pr-verify:
@@ -228,7 +232,7 @@ skills:
     path: skills/workflow-pr-verify/SKILL.md
     effort: medium
     spawnable_by: [controller]
-    can_spawn: [composite, atomic]
+    can_spawn: [composite, atomic, script]
     calls:
       - atomic: ac-deploy-trigger
       - atomic: ac-verify
@@ -241,6 +245,8 @@ skills:
       - atomic: pr-test
         step: "3"
       - composite: test-phase
+      - script: chain-runner
+      - script: compaction-resume
     description: "PR検証ワークフロー（preflight → review → scope → test）"
 
   workflow-pr-fix:
@@ -264,7 +270,7 @@ skills:
     path: skills/workflow-pr-merge/SKILL.md
     effort: medium
     spawnable_by: [controller]
-    can_spawn: [composite, atomic]
+    can_spawn: [composite, atomic, script]
     calls:
       - composite: e2e-screening
         step: "6"
@@ -280,6 +286,8 @@ skills:
         step: "8.5"
       - atomic: change-archive
         step: "9"
+      - script: chain-runner
+      - script: compaction-resume
     description: "PRマージワークフロー（e2e → report → analysis → check → archive → merge）"
 
   workflow-dead-cleanup:
