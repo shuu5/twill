@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "twl"
+version = "0.1.0"
+description = "TWiLL CLI — Type-Woven, invariant-Led Layering"
+requires-python = ">=3.10"
+dependencies = [
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+ai = [
+    "tiktoken>=0.5",
+    "rich>=13.0",
+]
+
+[project.scripts]
+twl = "twl.cli:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
