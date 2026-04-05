@@ -59,7 +59,6 @@ Where 軸は 2 レイヤーで構成する:
 | ルートレベル context-map.md のコンポーネントパス | scope/ ラベル |
 |-----------------------------------------------|-------------|
 | cli/twl | scope/cli-twl |
-| cli/deltaspec | scope/cli-deltaspec |
 | plugins/twl | scope/plugins-twl |
 | plugins/session | scope/plugins-session |
 | test-fixtures | scope/test-fixtures |

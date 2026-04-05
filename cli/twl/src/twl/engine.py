@@ -59,7 +59,21 @@ ALLOWED_MODELS = {"haiku", "sonnet", "opus"}
 
 
 def _get_loom_root() -> Path:
-    """twl-engine.py の配置ディレクトリ（= twill リポジトリルート）を返す"""
+    """types.yaml を含むディレクトリを engine.py から上方向に探索して返す。
+
+    パッケージ構造（src/twl/engine.py）とテストでのフラットコピー（twl-engine.py）
+    の両方に対応するため、__file__ 起点で types.yaml を探索する。
+    見つからない場合は engine.py の直親ディレクトリをフォールバックとして返す。
+    """
+    current = Path(__file__).resolve().parent
+    for _ in range(5):
+        if (current / "types.yaml").exists():
+            return current
+        parent = current.parent
+        if parent == current:
+            break
+        current = parent
+    # フォールバック: engine.py の直親ディレクトリ（旧 twl-engine.py 相当）
     return Path(__file__).resolve().parent
 
 
@@ -1262,6 +1276,23 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
         for ext in agent_data.get('external', []):
             ext_id = safe_id(f"ext_{ext}")
             lines.append(f"    {agent_id} -> {ext_id} [style=dashed];")
+
+    # script -> scripts/commands/skills
+    for script_name, script_data in deps.get('scripts', {}).items():
+        src_id = safe_id(f"script_{script_name}")
+        for call in script_data.get('calls', []):
+            if call.get('script'):
+                target_id = safe_id(f"script_{call['script']}")
+                lines.append(f"    {src_id} -> {target_id} [style=dashed];")
+            elif call.get('atomic'):
+                target_id = safe_id(f"cmd_{call['atomic']}")
+                lines.append(f"    {src_id} -> {target_id} [style=dashed];")
+            elif call.get('composite'):
+                target_id = safe_id(f"cmd_{call['composite']}")
+                lines.append(f"    {src_id} -> {target_id} [style=dashed];")
+            elif call.get('command'):
+                target_id = safe_id(f"cmd_{call['command']}")
+                lines.append(f"    {src_id} -> {target_id} [style=dashed];")
 
     lines.append("")
 
