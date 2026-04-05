@@ -121,9 +121,9 @@ _create_issue_with_quick() {
   run bash "$SANDBOX/scripts/chain-runner.sh" next-step 151
 
   assert_success
-  # QUICK_SKIP_STEPS: crg-auto-build, arch-ref, opsx-propose, ac-extract, change-id-resolve, test-scaffold, check, opsx-apply
-  # board-status-update の後: crg-auto-build (skip) → arch-ref (skip) → opsx-propose (skip) → ac-extract (skip)
-  # → change-id-resolve (skip) → test-scaffold (skip) → check (skip) → opsx-apply (skip) → ts-preflight
+  # QUICK_SKIP_STEPS: crg-auto-build, arch-ref, change-propose, ac-extract, change-id-resolve, test-scaffold, check, change-apply
+  # board-status-update の後: crg-auto-build (skip) → arch-ref (skip) → change-propose (skip) → ac-extract (skip)
+  # → change-id-resolve (skip) → test-scaffold (skip) → check (skip) → change-apply (skip) → ts-preflight
   assert_output "ts-preflight"
 }
 
@@ -313,7 +313,7 @@ SWSTUB
     fi
 
     # 必須要素を確認
-    required=(crg-auto-build arch-ref opsx-propose ac-extract change-id-resolve test-scaffold check opsx-apply)
+    required=(crg-auto-build arch-ref change-propose ac-extract change-id-resolve test-scaffold check change-apply)
     for step in \"\${required[@]}\"; do
       found=false
       for s in \"\${QUICK_SKIP_STEPS[@]}\"; do
@@ -360,33 +360,33 @@ SWSTUB
 # ---------------------------------------------------------------------------
 
 # Scenario: quick Issue での QUICK_SKIP_STEPS スキップ
-@test "compaction-resume: is_quick=true の state で opsx-propose を指定すると exit 1 (スキップ)" {
-  # is_quick=true, current_step=opsx-propose より後のステップを設定
+@test "compaction-resume: is_quick=true の state で change-propose を指定すると exit 1 (スキップ)" {
+  # is_quick=true, current_step=change-propose より後のステップを設定
   # compaction-resume は QUICK_SKIP_STEPS ステップを is_quick=true の場合に問答無用でスキップ
   _create_issue_with_quick 151 "running" "ts-preflight" "true"
 
-  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 opsx-propose
+  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 change-propose
 
   # exit 1 = スキップ可
   assert_failure
 }
 
 # Scenario: 通常 Issue での QUICK_SKIP_STEPS 非スキップ（通常のインデックス比較で判定）
-@test "compaction-resume: is_quick=false の state で opsx-propose は通常のスキップ判定に従う" {
-  # is_quick=false, current_step=opsx-propose より後 → opsx-propose は完了済みなのでスキップ
+@test "compaction-resume: is_quick=false の state で change-propose は通常のスキップ判定に従う" {
+  # is_quick=false, current_step=change-propose より後 → change-propose は完了済みなのでスキップ
   _create_issue_with_quick 151 "running" "ts-preflight" "false"
 
-  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 opsx-propose
+  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 change-propose
 
-  # opsx-propose (idx=5) < ts-preflight (idx=11) → スキップ (exit 1)
+  # change-propose (idx=5) < ts-preflight (idx=11) → スキップ (exit 1)
   assert_failure
 }
 
-# Edge: is_quick=false, current_step=opsx-propose (同じステップ) → 要実行 (exit 0)
+# Edge: is_quick=false, current_step=change-propose (同じステップ) → 要実行 (exit 0)
 @test "compaction-resume: is_quick=false で current_step と同じステップは要実行 (exit 0)" {
-  _create_issue_with_quick 151 "running" "opsx-propose" "false"
+  _create_issue_with_quick 151 "running" "change-propose" "false"
 
-  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 opsx-propose
+  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 change-propose
 
   # exit 0 = 要実行
   assert_success
@@ -407,7 +407,7 @@ SWSTUB
 @test "compaction-resume: is_quick=true で current_step が空なら全ステップ要実行 (exit 0)" {
   _create_issue_with_quick 151 "running" "" "true"
 
-  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 opsx-propose
+  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 change-propose
 
   # current_step 未設定 → compaction 未発生 → 要実行
   assert_success
@@ -417,7 +417,7 @@ SWSTUB
 @test "compaction-resume: state ファイルが存在しない場合は要実行 (exit 0)" {
   # issue-151.json を作らない
 
-  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 opsx-propose
+  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 change-propose
 
   assert_success
 }
@@ -441,8 +441,8 @@ SWSTUB
     failure: null
   }' > "$file"
 
-  # opsx-propose (idx=5) < ts-preflight (idx=11) → スキップ (exit 1)
-  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 opsx-propose
+  # change-propose (idx=5) < ts-preflight (idx=11) → スキップ (exit 1)
+  run bash "$SANDBOX/scripts/compaction-resume.sh" 151 change-propose
 
   assert_failure
 }

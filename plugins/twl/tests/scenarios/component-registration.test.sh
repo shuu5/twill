@@ -92,9 +92,9 @@ echo "--- Requirement: 新規 atomic コンポーネント登録 ---"
 # Scenario: 全 chain 参加コンポーネントが登録済み (line 7)
 # WHEN: deps.yaml の commands セクションを確認する
 # THEN: init, worktree-create, worktree-delete, worktree-list, project-board-status-update,
-#       crg-auto-build, opsx-propose, opsx-apply, opsx-archive, ac-extract が atomic として登録されている
+#       crg-auto-build, change-propose, change-apply, change-archive, ac-extract が atomic として登録されている
 # worktree-delete は scripts セクション（B-3 で追加済み）のため commands には含まない
-ATOMIC_COMPONENTS='["init", "worktree-create", "worktree-list", "project-board-status-update", "crg-auto-build", "opsx-propose", "opsx-apply", "opsx-archive", "ac-extract"]'
+ATOMIC_COMPONENTS='["init", "worktree-create", "worktree-list", "project-board-status-update", "crg-auto-build", "change-propose", "change-apply", "change-archive", "ac-extract"]'
 
 test_all_atomic_components_registered() {
   assert_file_exists "$DEPS_YAML" || return 1
@@ -315,7 +315,7 @@ run_test "workflow-setup [edge: description フィールド存在]" test_workflo
 # WHEN: workflow-setup の calls を確認する
 # THEN: step "1"（init）から step "4"（workflow-test-ready）まで全 chain 参加コンポーネントが calls に含まれる
 # chain steps のみ（workflow-test-ready は型制約で chain 外）
-CHAIN_STEP_COMPONENTS='["init", "worktree-create", "project-board-status-update", "crg-auto-build", "opsx-propose", "ac-extract"]'
+CHAIN_STEP_COMPONENTS='["init", "worktree-create", "project-board-status-update", "crg-auto-build", "change-propose", "ac-extract"]'
 
 test_workflow_setup_calls_coverage() {
   assert_file_exists "$DEPS_YAML" || return 1

@@ -66,7 +66,7 @@ ELSE
 
 ### 4. チェックポイント出力
 
-`/twl:opsx-apply <change-id>` を自動実行。
+`/twl:change-apply <change-id>` を自動実行。
 
 ## chain 実行指示（MUST — 全ステップを順に実行せよ。途中で停止するな）
 
@@ -112,29 +112,29 @@ runner の出力から FAIL 有無を判定する。FAIL あれば `/twl:check` 
 - CRITICAL FAIL 項目が存在 → Step 4 をスキップし、FAIL 内容を報告して停止
 - FAIL なし → 即座に Step 4 に進む
 
-### Step 4: opsx-apply 実行 + autopilot 判定 + pr-cycle 遷移【LLM 判断】
+### Step 4: change-apply 実行 + autopilot 判定 + pr-cycle 遷移【LLM 判断】
 
-opsx-apply を開始する前に、compaction 復帰用に state を記録すること:
+change-apply を開始する前に、compaction 復帰用に state を記録すること:
 
 ```bash
 source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 if [[ -n "$ISSUE_NUM" ]]; then
   bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker \
-    --set "current_step=opsx-apply" 2>/dev/null || true
+    --set "current_step=change-apply" 2>/dev/null || true
 fi
 ```
 
-`/twl:opsx-apply <change-id>` を Skill tool で実行する。
+`/twl:change-apply <change-id>` を Skill tool で実行する。
 
-opsx-apply 完了後、compaction 復帰用に state を記録してから autopilot 状態を判定すること:
+change-apply 完了後、compaction 復帰用に state を記録してから autopilot 状態を判定すること:
 
 ```bash
 source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 if [[ -n "$ISSUE_NUM" ]]; then
   bash scripts/state-write.sh --type issue --issue "$ISSUE_NUM" --role worker \
-    --set "current_step=post-opsx-apply" 2>/dev/null || true
+    --set "current_step=post-change-apply" 2>/dev/null || true
 fi
 ```
 
@@ -162,13 +162,13 @@ compaction 後に workflow-test-ready chain を再開する場合、完了済み
 ```bash
 source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
-for step in change-id-resolve test-scaffold check opsx-apply post-opsx-apply; do
+for step in change-id-resolve test-scaffold check change-apply post-change-apply; do
   bash scripts/compaction-resume.sh "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
   case "$step" in
-    opsx-apply)
-      # Step 4 の opsx-apply 手順を再実行（state 記録 → /twl:opsx-apply → state 記録）
+    change-apply)
+      # Step 4 の change-apply 手順を再実行（state 記録 → /twl:change-apply → state 記録）
       ;;
-    post-opsx-apply)
+    post-change-apply)
       # Step 4 後半の IS_AUTOPILOT 判定を再実行:
       #   1. CHANGE_ID=$(bash scripts/chain-runner.sh change-id-resolve) で change-id を取得
       #   2. IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行
@@ -183,5 +183,5 @@ done
 ```
 
 - `compaction-resume.sh <ISSUE_NUM> <step>` が exit 0 → 実行、exit 1 → スキップ
-- LLM ステップ（test-scaffold, opsx-apply, post-opsx-apply）は SKILL.md の手順を再実行すること
-- `post-opsx-apply` 復帰時: IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行し、IS_AUTOPILOT=true なら即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill tool で実行すること
+- LLM ステップ（test-scaffold, change-apply, post-change-apply）は SKILL.md の手順を再実行すること
+- `post-change-apply` 復帰時: IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行し、IS_AUTOPILOT=true なら即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill tool で実行すること

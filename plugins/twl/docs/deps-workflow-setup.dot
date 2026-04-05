@@ -15,7 +15,7 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="twl:workflow-setup\n(2,024 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="twl:workflow-setup\n(2,027 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
@@ -23,8 +23,8 @@ digraph Dependencies {
     cmd_init [label="init\n(621 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_worktree_create [label="worktree-create\n(461 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_status_update [label="project-board-status-update\n(1,203 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_crg_auto_build [label="crg-auto-build\n(312 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_opsx_propose [label="opsx-propose\n(406 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_crg_auto_build [label="crg-auto-build\n(313 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_change_propose [label="change-propose\n(1,345 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ac_extract [label="ac-extract\n(366 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
@@ -39,7 +39,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_setup; }
-    { rank=same; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_opsx_propose; cmd_ac_extract; }
+    { rank=same; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_change_propose; cmd_ac_extract; }
     { rank=same; script_worktree_create; script_parse_issue_ac; }
 
     // Edges
@@ -47,7 +47,7 @@ digraph Dependencies {
     skill_workflow_setup -> cmd_worktree_create;
     skill_workflow_setup -> cmd_project_board_status_update;
     skill_workflow_setup -> cmd_crg_auto_build;
-    skill_workflow_setup -> cmd_opsx_propose;
+    skill_workflow_setup -> cmd_change_propose;
     skill_workflow_setup -> cmd_ac_extract;
     cmd_worktree_create -> script_worktree_create;
     cmd_ac_extract -> script_parse_issue_ac;
@@ -56,7 +56,7 @@ digraph Dependencies {
     cmd_init -> cmd_worktree_create [style=invis, weight=10];
     cmd_worktree_create -> cmd_project_board_status_update [style=invis, weight=10];
     cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];
-    cmd_crg_auto_build -> cmd_opsx_propose [style=invis, weight=10];
-    cmd_opsx_propose -> cmd_ac_extract [style=invis, weight=10];
+    cmd_crg_auto_build -> cmd_change_propose [style=invis, weight=10];
+    cmd_change_propose -> cmd_ac_extract [style=invis, weight=10];
 
 }

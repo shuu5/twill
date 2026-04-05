@@ -141,7 +141,7 @@ git status --porcelain
 
 | 項目 | FAIL理由 | 対応 |
 |------|---------|------|
-| OpenSpec | proposal未作成 | `/twl:opsx-propose`を実行 |
+| OpenSpec | proposal未作成 | `/twl:change-propose`を実行 |
 | OpenSpec | proposal未承認 | 「承認してください」と待機 |
 | Verify | CRITICAL検出 | 具体的な修正項目を表示、修正後に再度 `deltaspec validate` |
 | テスト | テストファイルなし | テスト作成を提案 |
@@ -193,5 +193,5 @@ git status --porcelain
 
 チェック結果に応じて分岐:
 
-- **CRITICAL FAIL なし**: `/twl:opsx-apply` を Skill tool で自動実行せよ。プロンプトで停止するな。
-- **CRITICAL FAIL あり**: opsx-apply をスキップし、FAIL 内容を報告して停止。
+- **CRITICAL FAIL なし**: `/twl:change-apply` を Skill tool で自動実行せよ。プロンプトで停止するな。
+- **CRITICAL FAIL あり**: change-apply をスキップし、FAIL 内容を報告して停止。

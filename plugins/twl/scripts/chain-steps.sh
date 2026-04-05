@@ -12,13 +12,13 @@ CHAIN_STEPS=(
   board-status-update
   crg-auto-build
   arch-ref
-  opsx-propose
+  change-propose
   ac-extract
   change-id-resolve
   test-scaffold
   check
-  opsx-apply
-  post-opsx-apply
+  change-apply
+  post-change-apply
   ts-preflight
   pr-test
   all-pass-check
@@ -29,10 +29,10 @@ CHAIN_STEPS=(
 QUICK_SKIP_STEPS=(
   crg-auto-build
   arch-ref
-  opsx-propose
+  change-propose
   ac-extract
   change-id-resolve
   test-scaffold
   check
-  opsx-apply
+  change-apply
 )

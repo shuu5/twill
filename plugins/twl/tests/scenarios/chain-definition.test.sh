@@ -169,8 +169,8 @@ run_test "setup chain [edge: description が空文字でない]" test_chains_set
 
 # Scenario: steps が正しい順序で定義されている (line 11)
 # WHEN: setup chain の steps を確認する
-# THEN: init -> worktree-create -> project-board-status-update -> crg-auto-build -> opsx-propose -> ac-extract -> workflow-test-ready の順序で列挙されている
-EXPECTED_STEPS='["init", "worktree-create", "project-board-status-update", "crg-auto-build", "opsx-propose", "ac-extract"]'
+# THEN: init -> worktree-create -> project-board-status-update -> crg-auto-build -> change-propose -> ac-extract -> workflow-test-ready の順序で列挙されている
+EXPECTED_STEPS='["init", "worktree-create", "project-board-status-update", "crg-auto-build", "change-propose", "ac-extract"]'
 
 test_chains_steps_order() {
   assert_file_exists "$DEPS_YAML" || return 1
@@ -306,9 +306,9 @@ echo ""
 echo "--- Requirement: chain 参加コンポーネントの双方向参照 ---"
 
 # Scenario: コンポーネント側の chain フィールド (line 23)
-# WHEN: init, worktree-create, project-board-status-update, crg-auto-build, opsx-propose, ac-extract, workflow-test-ready の deps.yaml エントリを確認する
+# WHEN: init, worktree-create, project-board-status-update, crg-auto-build, change-propose, ac-extract, workflow-test-ready の deps.yaml エントリを確認する
 # THEN: 全コンポーネントに chain: "setup" が設定されている
-CHAIN_COMPONENTS='["init", "worktree-create", "project-board-status-update", "crg-auto-build", "opsx-propose", "ac-extract"]'
+CHAIN_COMPONENTS='["init", "worktree-create", "project-board-status-update", "crg-auto-build", "change-propose", "ac-extract"]'
 
 test_components_chain_field() {
   assert_file_exists "$DEPS_YAML" || return 1

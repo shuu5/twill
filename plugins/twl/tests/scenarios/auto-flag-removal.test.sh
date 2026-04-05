@@ -174,48 +174,34 @@ else
 fi
 
 # =============================================================================
-# Requirement: opsx-apply のフラグ除去
-# Scenario: opsx-apply から --auto 分岐除去 (line 39)
-# WHEN: commands/opsx-apply.md を確認する
-# THEN: --auto への参照が存在しない。Step 3 の分岐が IS_AUTOPILOT 判定に置換されている
+# Requirement: change-apply のフラグ除去
+# Scenario: change-apply から --auto 分岐除去 (line 39)
+# WHEN: commands/change-apply.md を確認する
+# THEN: --auto への参照が存在しない
 # =============================================================================
 echo ""
-echo "--- Requirement: opsx-apply のフラグ除去 ---"
+echo "--- Requirement: change-apply のフラグ除去 ---"
 
-OPSX_APPLY="commands/opsx-apply.md"
+CHANGE_APPLY="commands/change-apply.md"
 
-test_opsx_apply_file_exists() {
-  assert_file_exists "$OPSX_APPLY"
+test_change_apply_file_exists() {
+  assert_file_exists "$CHANGE_APPLY"
 }
 
-if [[ -f "${PROJECT_ROOT}/${OPSX_APPLY}" ]]; then
-  run_test "commands/opsx-apply.md が存在する" test_opsx_apply_file_exists
+if [[ -f "${PROJECT_ROOT}/${CHANGE_APPLY}" ]]; then
+  run_test "commands/change-apply.md が存在する" test_change_apply_file_exists
 else
-  run_test_skip "commands/opsx-apply.md が存在する" "${OPSX_APPLY} not found"
+  run_test_skip "commands/change-apply.md が存在する" "${CHANGE_APPLY} not found"
 fi
 
-test_opsx_apply_no_auto_flag() {
-  assert_file_not_contains "$OPSX_APPLY" "--auto[^-]|--auto$"
+test_change_apply_no_auto_flag() {
+  assert_file_not_contains "$CHANGE_APPLY" "--auto[^-]|--auto$"
 }
 
-if [[ -f "${PROJECT_ROOT}/${OPSX_APPLY}" ]]; then
-  run_test "commands/opsx-apply.md に --auto フラグが存在しない" test_opsx_apply_no_auto_flag
+if [[ -f "${PROJECT_ROOT}/${CHANGE_APPLY}" ]]; then
+  run_test "commands/change-apply.md に --auto フラグが存在しない" test_change_apply_no_auto_flag
 else
-  run_test_skip "commands/opsx-apply.md に --auto フラグが存在しない" "${OPSX_APPLY} not found"
-fi
-
-# Scenario: opsx-apply の自動継続 (line 44)
-# WHEN: autopilot 配下で opsx-apply が全タスク完了後に到達する
-# THEN: state-read.sh で判定し、自動的に workflow-pr-cycle を実行する
-
-test_opsx_apply_state_read_or_is_autopilot() {
-  assert_file_contains "$OPSX_APPLY" "state-read\.sh|state-read|IS_AUTOPILOT"
-}
-
-if [[ -f "${PROJECT_ROOT}/${OPSX_APPLY}" ]]; then
-  run_test "commands/opsx-apply.md が state-read.sh または IS_AUTOPILOT 判定を使用する" test_opsx_apply_state_read_or_is_autopilot
-else
-  run_test_skip "commands/opsx-apply.md が state-read.sh または IS_AUTOPILOT 判定を使用する" "${OPSX_APPLY} not found"
+  run_test_skip "commands/change-apply.md に --auto フラグが存在しない" "${CHANGE_APPLY} not found"
 fi
 
 # =============================================================================

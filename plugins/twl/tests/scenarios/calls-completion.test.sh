@@ -269,7 +269,7 @@ test_project_specific_commands_standalone_comment() {
 run_test "プロジェクト固有コマンドに '# standalone: プロジェクト固有ユーティリティ' コメントあり" test_project_specific_commands_standalone_comment
 
 # Scenario: 低頻度ユーティリティにコメント付与 (spec.md line 45)
-# WHEN: ui-capture, spec-diagnose, e2e-plan, opsx-archive の各エントリを確認する
+# WHEN: ui-capture, spec-diagnose, e2e-plan の各エントリを確認する
 # THEN: `# standalone: 低頻度ユーティリティ` コメントが付与されている
 
 test_low_freq_commands_standalone_comment() {
@@ -277,7 +277,7 @@ test_low_freq_commands_standalone_comment() {
   deps_content=$(cat "${PROJECT_ROOT}/deps.yaml")
   local missing=()
 
-  for cmd in ui-capture spec-diagnose e2e-plan opsx-archive; do
+  for cmd in ui-capture spec-diagnose e2e-plan; do
     if ! echo "${deps_content}" | grep -A5 "^  ${cmd}:" | grep -qP "#.*standalone.*低頻度ユーティリティ"; then
       missing+=("${cmd}")
     fi

@@ -16,7 +16,7 @@
 #   current_step=board-status-update の場合
 #     compaction-resume.sh 129 worktree-create → exit 1 (スキップ: worktree-create は完了済み)
 #     compaction-resume.sh 129 board-status-update → exit 0 (実行: 途中の可能性あり)
-#     compaction-resume.sh 129 opsx-propose → exit 0 (実行: 未到達)
+#     compaction-resume.sh 129 change-propose → exit 0 (実行: 未到達)
 
 set -euo pipefail
 

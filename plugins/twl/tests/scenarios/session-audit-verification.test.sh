@@ -261,7 +261,7 @@ test_workflow_setup_all_steps() {
   assert_file_contains "$skill" "worktree-create" || return 1
   assert_file_contains "$skill" "project-board-status-update" || return 1
   assert_file_contains "$skill" "crg-auto-build" || return 1
-  assert_file_contains "$skill" "opsx-propose" || return 1
+  assert_file_contains "$skill" "change-propose" || return 1
   assert_file_contains "$skill" "ac-extract" || return 1
   assert_file_contains "$skill" "workflow-test-ready" || return 1
   return 0
@@ -325,7 +325,7 @@ fi
 
 test_workflow_setup_commands_exist() {
   local all_ok=0
-  for cmd in "init" "worktree-create" "crg-auto-build" "opsx-propose" "ac-extract"; do
+  for cmd in "init" "worktree-create" "crg-auto-build" "change-propose" "ac-extract"; do
     if [[ ! -f "${PROJECT_ROOT}/commands/${cmd}.md" ]]; then
       echo "    Missing: commands/${cmd}.md" >&2
       all_ok=1
