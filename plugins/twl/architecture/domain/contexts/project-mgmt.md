@@ -61,7 +61,7 @@ flowchart TD
         B --> C{リンク済み?}
         C -- Yes --> D[gh project item-add]
         C -- No --> E[スキップ + WARNING]
-        D --> F[フィールドミラー]
+        D --> F[Status 設定]
     end
 
     subgraph "project-board-status-update"
@@ -154,7 +154,7 @@ project-name/
 | **atomic** | snapshot-generate | manifest.yaml + テンプレートファイル生成 |
 | **atomic** | setup-crg | CRG (Code Review Graph) MCP セットアップ |
 | **atomic** | crg-auto-build | CRG グラフ自動ビルド |
-| **atomic** | project-board-sync | Issue → Project V2 自動追加 + フィールドミラー |
+| **atomic** | project-board-sync | Issue → Project V2 自動追加 + Status 設定 |
 | **atomic** | project-board-status-update | Board Status 更新 |
 
 ## Dependencies

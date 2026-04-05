@@ -16,7 +16,7 @@ GitHub Issue。プロジェクトの作業単位。
 | number | number | GitHub Issue 番号 |
 | title | string | タイトル |
 | body | string | 本文（テンプレート準拠） |
-| labels | string[] | ラベル（5軸ラベル体系） |
+| labels | string[] | ラベル（5軸ラベル体系: scope/* + ctx/*） |
 | milestone | string \| null | マイルストーン |
 | ac | AcceptanceCriteria[] | 受け入れ基準 |
 | related_issues | number[] | 関連 Issue 番号 |

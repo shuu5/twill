@@ -31,20 +31,6 @@ cleanup_openspec_local() {
     fi
 }
 
-# Project Board フィールド作成ヘルパー
-create_board_field() {
-    local project_id="$1" field_name="$2"
-    gh api graphql -f query='
-        mutation($projectId: ID!, $name: String!) {
-            createProjectV2Field(input: {projectId: $projectId, dataType: SINGLE_SELECT, name: $name}) {
-                projectV2Field { ... on ProjectV2SingleSelectField { id name } }
-            }
-        }
-    ' -f projectId="$project_id" -f name="$field_name" >/dev/null 2>&1 \
-        && echo "   フィールド作成: $field_name (SingleSelect)" \
-        || echo "   警告: $field_name フィールド作成に失敗しました" >&2
-}
-
 # Project Board 初期設定（set -e 安全: 全 API 呼び出しを || true でガード）
 setup_project_board() {
     local github_user="$1" project_name="$2"
@@ -151,9 +137,6 @@ setup_project_board() {
         fi
     done
 
-    # カスタムフィールド作成
-    create_board_field "$board_project_id" "Context"
-    create_board_field "$board_project_id" "Phase"
 }
 
 # プロジェクトルート解決

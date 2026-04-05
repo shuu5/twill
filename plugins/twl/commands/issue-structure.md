@@ -20,9 +20,19 @@
 | Bug | `plugins/twl/templates/issue/bug.md` | `[Bug]` |
 | Docs | （テンプレートなし） | `[Docs]` |
 
-### Step 1.5: architecture/ 検出と ctx/* 候補リスト構築
+### Step 1.5: scope/* + ctx/* 候補リスト構築
 
-git root に `architecture/` ディレクトリが存在するか確認する。存在しない場合は本ステップを skip し、Step 2 へ進む。
+#### Step 1.5a: scope/* 候補リスト構築
+
+ルートレベル `architecture/domain/context-map.md` を **Read** する。存在しない場合は scope/* 候補リストを空とする。
+
+存在する場合:
+1. flowchart の subgraph 内のノード名からコンポーネント名を抽出
+2. スラッシュ → ハイフン変換で `scope/<name>` 候補リストを構築
+
+#### Step 1.5b: ctx/* 候補リスト構築
+
+git root に `architecture/` ディレクトリが存在するか確認する。存在しない場合は ctx/* 候補リストを空とし、Step 2 へ進む。
 
 存在する場合、ref-project-model §2 の導出ルールに従い ctx/\<name\> 候補リストを構築:
 
@@ -30,7 +40,7 @@ git root に `architecture/` ディレクトリが存在するか確認する。
 2. **Glob** で `architecture/contracts/*.md` を検索 → ファイル名（拡張子除去）を `ctx/<name>` として収集
 3. **Read** で `architecture/domain/model.md` を確認 → `## Shared Kernel` セクションが存在すれば `ctx/shared-kernel` を追加
 
-候補リストが空（contexts/ も contracts/ もファイルなし）の場合は skip。
+候補リストが空（contexts/ も contracts/ もファイルなし）の場合は ctx/* を skip。
 
 ### Step 2: テンプレート読込
 
@@ -59,10 +69,19 @@ git root に `architecture/` ディレクトリが存在するか確認する。
 
 テンプレートなし。タイトル（`[Docs] xxx`）と適切な本文を生成。
 
-### Step 2.5: ctx/\<name\> 提案
+### Step 2.5: scope/* + ctx/\<name\> 提案
 
 Step 1.5 で候補リストが構築された場合のみ実行。
 
+#### scope/* 提案
+
+Step 1.5a で scope/* 候補リストが構築された場合:
+1. 要望テキストの内容と各コンポーネントのパスを照合し、最も関連性の高い `scope/<name>` を1つ選択する
+2. 該当なしの場合は提案を行わない
+
+#### ctx/* 提案
+
+Step 1.5b で ctx/* 候補リストが構築された場合:
 1. 各候補 context の `.md` ファイルを **Read** し、context の責務・スコープを把握する
 2. 要望テキストの内容と各 context の責務を照合し、最も関連性の高い ctx/\<name\> を1つ選択する
 3. 判定結果:
@@ -74,15 +93,16 @@ Step 1.5 で候補リストが構築された場合のみ実行。
 
 構造化したタイトルと本文を出力する。後続ステップ（issue-assess, issue-create）で使用される。
 
-Step 2.5 で ctx/\<name\> の提案がある場合、出力末尾に以下を追加:
+Step 2.5 で scope/* または ctx/\<name\> の提案がある場合、出力末尾に以下を追加:
 
 ```
 ## 推奨ラベル
 
-- `ctx/<name>`: <context の説明>
+- `scope/plugins-twl`: plugins/twl コンポーネント
+- `ctx/autopilot`: Autopilot Context (Core)
 ```
 
-提案がない場合（architecture/ なし、候補なし、該当なし）はこのセクションを出力しない。
+scope/* と ctx/* を並記する。提案がない場合（architecture/ なし、候補なし、該当なし）はこのセクションを出力しない。
 
 #### arch-ref タグ生成（Step 2.5 の提案と連動）
 
