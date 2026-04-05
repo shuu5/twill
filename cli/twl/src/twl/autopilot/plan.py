@@ -496,32 +496,34 @@ def _parse_args(argv: list[str]) -> dict[str, Any]:
         "repo_mode": "",
         "repos_json": "",
     }
+    value_opts = {"--explicit", "--issues", "--project-dir", "--repo-mode", "--repos"}
     i = 0
     while i < len(argv):
         a = argv[i]
-        if a == "--explicit":
+        if a in ("-h", "--help"):
+            print("Usage: python3 -m twl.autopilot.plan --explicit|--issues|--board ...")
+            sys.exit(0)
+        elif a in ("--explicit", "--issues"):
             if args["mode"]:
                 raise PlanArgError("--explicit/--issues/--board は同時に指定できません")
-            args["mode"] = "explicit"
-            args["input"] = argv[i + 1]; i += 2
-        elif a == "--issues":
-            if args["mode"]:
-                raise PlanArgError("--explicit/--issues/--board は同時に指定できません")
-            args["mode"] = "issues"
+            if i + 1 >= len(argv):
+                raise PlanArgError(f"{a} には値が必要です")
+            args["mode"] = "explicit" if a == "--explicit" else "issues"
             args["input"] = argv[i + 1]; i += 2
         elif a == "--board":
             if args["mode"]:
                 raise PlanArgError("--explicit/--issues/--board は同時に指定できません")
             args["mode"] = "board"; i += 1
-        elif a == "--project-dir":
-            args["project_dir"] = argv[i + 1]; i += 2
-        elif a == "--repo-mode":
-            args["repo_mode"] = argv[i + 1]; i += 2
-        elif a == "--repos":
-            args["repos_json"] = argv[i + 1]; i += 2
-        elif a in ("-h", "--help"):
-            print("Usage: python3 -m twl.autopilot.plan --explicit|--issues|--board ...")
-            sys.exit(0)
+        elif a in ("--project-dir", "--repo-mode", "--repos"):
+            if i + 1 >= len(argv):
+                raise PlanArgError(f"{a} には値が必要です")
+            if a == "--project-dir":
+                args["project_dir"] = argv[i + 1]
+            elif a == "--repo-mode":
+                args["repo_mode"] = argv[i + 1]
+            elif a == "--repos":
+                args["repos_json"] = argv[i + 1]
+            i += 2
         else:
             raise PlanArgError(f"不明な引数: {a}")
     return args

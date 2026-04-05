@@ -17,9 +17,11 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -263,7 +265,6 @@ class PhaseOrchestrator:
             self._poll_phase(launched)
 
         # merge-gate for merge-ready issues
-        entry_map = {_parse_issue_entry(e)[1]: e for e in launched}
         for entry in launched:
             repo_id, issue = _parse_issue_entry(entry)
             status = _read_state(issue, "status", self.autopilot_dir, repo_id)
@@ -403,6 +404,13 @@ class PhaseOrchestrator:
                     all_resolved = False
                     if self._is_crashed(issue, wname):
                         print(f"[orchestrator] Issue #{issue}: ワーカークラッシュ検知", file=sys.stderr)
+                        _write_state(issue, "pilot",
+                                     ["status=failed",
+                                      'failure={"message":"worker_crashed","step":"polling"}'],
+                                     self.autopilot_dir, repo_id)
+                        if entry not in cleaned_up:
+                            self._cleanup_worker(issue, entry)
+                            cleaned_up.add(entry)
                         continue
                     self._check_and_nudge(issue, wname, entry)
                 else:
@@ -444,7 +452,6 @@ class PhaseOrchestrator:
         last_hook = _read_state(issue, "last_hook_nudge_at", self.autopilot_dir)
         if last_hook:
             try:
-                from datetime import datetime, timezone
                 dt = datetime.fromisoformat(last_hook.replace("Z", "+00:00"))
                 elapsed = int((datetime.now(timezone.utc) - dt).total_seconds())
                 if elapsed < NUDGE_TIMEOUT:
@@ -735,18 +742,23 @@ def _parse_args(argv: list[str]) -> dict[str, Any]:
         if a in ("-h", "--help"):
             print("Usage: python3 -m twl.autopilot.orchestrator [OPTIONS]")
             sys.exit(0)
-        elif a == "--plan":
-            args["plan"] = argv[i + 1]; i += 2
-        elif a == "--phase":
-            args["phase"] = argv[i + 1]; i += 2
-        elif a == "--session":
-            args["session"] = argv[i + 1]; i += 2
-        elif a == "--project-dir":
-            args["project_dir"] = argv[i + 1]; i += 2
-        elif a == "--autopilot-dir":
-            args["autopilot_dir"] = argv[i + 1]; i += 2
-        elif a == "--repos":
-            args["repos"] = argv[i + 1]; i += 2
+        elif a in ("--plan", "--phase", "--session", "--project-dir", "--autopilot-dir", "--repos"):
+            if i + 1 >= len(argv):
+                print(f"Error: {a} には値が必要です", file=sys.stderr)
+                sys.exit(1)
+            if a == "--plan":
+                args["plan"] = argv[i + 1]
+            elif a == "--phase":
+                args["phase"] = argv[i + 1]
+            elif a == "--session":
+                args["session"] = argv[i + 1]
+            elif a == "--project-dir":
+                args["project_dir"] = argv[i + 1]
+            elif a == "--autopilot-dir":
+                args["autopilot_dir"] = argv[i + 1]
+            elif a == "--repos":
+                args["repos"] = argv[i + 1]
+            i += 2
         elif a == "--summary":
             args["summary"] = True; i += 1
         else:
@@ -760,7 +772,6 @@ def main(argv: list[str] | None = None) -> int:
     parsed = _parse_args(args_list)
 
     autopilot_dir = parsed["autopilot_dir"]
-    os.environ["AUTOPILOT_DIR"] = autopilot_dir
 
     try:
         if parsed["summary"]:
@@ -769,6 +780,7 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
             _validate_path("session", parsed["session"])
             _validate_path("autopilot-dir", autopilot_dir)
+            os.environ["AUTOPILOT_DIR"] = autopilot_dir
 
             result = generate_summary(autopilot_dir)
             print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -792,6 +804,8 @@ def main(argv: list[str] | None = None) -> int:
                              ("project-dir", project_dir), ("autopilot-dir", autopilot_dir)]:
             _validate_path(name, value)
 
+        os.environ["AUTOPILOT_DIR"] = autopilot_dir
+
         orchestrator = PhaseOrchestrator(
             plan_file=plan,
             phase=int(phase_str),
@@ -811,9 +825,6 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
-
-# Fix missing shutil import
-import shutil
 
 if __name__ == "__main__":
     sys.exit(main())

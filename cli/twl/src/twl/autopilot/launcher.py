@@ -174,23 +174,27 @@ class WorkerLauncher:
         window_name = f"ap-#{issue}"
         prompt = f"/twl:workflow-setup #{issue}"
 
-        env_parts = [f"AUTOPILOT_DIR={self._shell_quote(autopilot_dir)}"]
+        # Pass env vars via tmux -e flags to avoid nested shell quoting issues
+        env_flags: list[str] = [
+            "-e", f"AUTOPILOT_DIR={autopilot_dir}",
+            "-e", f"WORKER_ISSUE_NUM={issue}",
+        ]
         if repo_owner and repo_name:
-            env_parts.append(f"REPO_OWNER={self._shell_quote(repo_owner)}")
-            env_parts.append(f"REPO_NAME={self._shell_quote(repo_name)}")
-        env_parts.append(f"WORKER_ISSUE_NUM={self._shell_quote(issue)}")
-        env_str = " ".join(env_parts)
+            env_flags += ["-e", f"REPO_OWNER={repo_owner}", "-e", f"REPO_NAME={repo_name}"]
 
-        context_args = f"--append-system-prompt {self._shell_quote(context)}" if context else ""
+        cld_args = [cld_path, "--model", model]
+        if context:
+            cld_args += ["--append-system-prompt", context]
+        cld_args.append(prompt)
 
-        tmux_cmd = (
-            f"env {env_str} {self._shell_quote(cld_path)} "
-            f"--model {model} {context_args} {self._shell_quote(prompt)}"
+        tmux_argv = (
+            ["tmux", "new-window", "-n", window_name, "-c", launch_dir]
+            + env_flags
+            + ["--"]
+            + cld_args
         )
 
-        result = subprocess.run(
-            ["tmux", "new-window", "-n", window_name, "-c", launch_dir, tmux_cmd],
-        )
+        result = subprocess.run(tmux_argv)
         if result.returncode != 0:
             raise LaunchError(f"tmux new-window 失敗")
 
@@ -296,30 +300,23 @@ def _parse_args(argv: list[str]) -> dict[str, Any]:
         "repo_path": "",
         "worktree_dir": "",
     }
+    value_opts = {
+        "--issue": "issue", "--project-dir": "project_dir", "--autopilot-dir": "autopilot_dir",
+        "--model": "model", "--context": "context", "--repo-owner": "repo_owner",
+        "--repo-name": "repo_name", "--repo-path": "repo_path", "--worktree-dir": "worktree_dir",
+    }
     i = 0
     while i < len(argv):
         a = argv[i]
         if a in ("-h", "--help"):
             print("Usage: python3 -m twl.autopilot.launcher --issue N --project-dir DIR --autopilot-dir DIR")
             sys.exit(0)
-        elif a == "--issue":
-            args["issue"] = argv[i + 1]; i += 2
-        elif a == "--project-dir":
-            args["project_dir"] = argv[i + 1]; i += 2
-        elif a == "--autopilot-dir":
-            args["autopilot_dir"] = argv[i + 1]; i += 2
-        elif a == "--model":
-            args["model"] = argv[i + 1]; i += 2
-        elif a == "--context":
-            args["context"] = argv[i + 1]; i += 2
-        elif a == "--repo-owner":
-            args["repo_owner"] = argv[i + 1]; i += 2
-        elif a == "--repo-name":
-            args["repo_name"] = argv[i + 1]; i += 2
-        elif a == "--repo-path":
-            args["repo_path"] = argv[i + 1]; i += 2
-        elif a == "--worktree-dir":
-            args["worktree_dir"] = argv[i + 1]; i += 2
+        elif a in value_opts:
+            if i + 1 >= len(argv):
+                print(f"Error: {a} には値が必要です", file=sys.stderr)
+                sys.exit(1)
+            args[value_opts[a]] = argv[i + 1]
+            i += 2
         else:
             print(f"Error: 不明なオプション: {a}", file=sys.stderr)
             sys.exit(1)

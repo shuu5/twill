@@ -113,7 +113,6 @@ class AutopilotInitializer:
         is_completed = _is_session_completed(session_file)
 
         if force and is_completed:
-            import sys
             print(f"WARN: 完了済みセッション ({hours}h経過) を強制削除します: {session_id}", file=sys.stderr)
             session_file.unlink(missing_ok=True)
             issues_dir = self.autopilot_dir / "issues"
@@ -124,7 +123,6 @@ class AutopilotInitializer:
 
         if hours >= 24:
             if force:
-                import sys
                 print(f"WARN: stale セッション ({hours}h経過) を強制削除します: {session_id}", file=sys.stderr)
                 session_file.unlink(missing_ok=True)
                 issues_dir = self.autopilot_dir / "issues"
