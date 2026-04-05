@@ -17,4 +17,4 @@ TWiLL (Type-Woven, invariant-Led Layering) モノリポ。
 
 ## Project Board
 
-- Project: `twill-ecosystem` (#3)、Owner: `shuu5`
+- Project: `twill-ecosystem` (#6)、Owner: `shuu5`
