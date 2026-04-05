@@ -136,10 +136,8 @@ def main() -> None:
             sys.exit(1)
         target_dir = rest[0]
         extra = rest[1:]
-        if "--check" in extra:
-            sys.argv = [sys.argv[0], "--sync-docs", target_dir, "--check"]
-        else:
-            sys.argv = [sys.argv[0], "--sync-docs", target_dir] + extra
+        check_flag = ["--check"] if "--check" in extra else []
+        sys.argv = [sys.argv[0], "--sync-docs", target_dir] + check_flag
     elif cmd == "update-svgs":
         _run_update_svgs()
         return
@@ -157,7 +155,6 @@ def main() -> None:
 
 def _run_update_svgs() -> None:
     """全 plugin の SVG を一括再生成する。"""
-    import os
     import subprocess
     from pathlib import Path
 
