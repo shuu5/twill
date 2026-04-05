@@ -179,19 +179,12 @@ skills:
     spawnable_by: [user]
     can_spawn: [atomic]
     calls:
-      - atomic: change-propose
-      - atomic: change-apply
-      - atomic: change-archive
       - atomic: worktree-list
       - atomic: worktree-delete
       - atomic: twl-validate
-      - atomic: check
-      - atomic: spec-diagnose
       - atomic: services
       - atomic: ui-capture
-      - atomic: e2e-plan
       - atomic: schema-update
-      - atomic: self-improve-review
     description: "standalone ユーティリティコマンドの統合エントリポイント"
 
   workflow-setup:
