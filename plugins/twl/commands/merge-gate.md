@@ -88,6 +88,24 @@ PARSED=$(echo "$OUTPUT" | bash scripts/specialist-output-parse.sh)
 
 **AI による自由形式の変換は禁止**。パーサーの構造化データのみを使用する。
 
+### checkpoint 書き出し（MUST）
+
+結果集約後、checkpoint-write.sh で findings を永続化する。
+
+```bash
+STATUS=$(echo "$PARSED" | jq -r '.status')
+FINDINGS=$(echo "$PARSED" | jq -c '.findings')
+bash scripts/checkpoint-write.sh --step merge-gate --status "$STATUS" --findings "$FINDINGS"
+```
+
+### all-pass-check checkpoint 読み込み
+
+all-pass-check の checkpoint が存在する場合、`status` フィールドで事前判定を確認する。
+
+```bash
+ALL_PASS_STATUS=$(bash scripts/checkpoint-read.sh --step all-pass-check --field status 2>/dev/null || echo "")
+```
+
 ### severity フィルタ判定
 
 ```

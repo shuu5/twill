@@ -70,6 +70,18 @@ PARSED=$(echo "$SPECIALIST_OUTPUT" | bash scripts/specialist-output-parse.sh)
 
 AI による自由形式の変換は禁止。パーサーの構造化データのみを使用する。
 
+### checkpoint 書き出し（MUST）
+
+結果集約後、checkpoint-write.sh で findings を永続化する。
+次ステップ（fix-phase）は checkpoint の要約フィールドのみを参照し、specialist raw output を引き継がない。
+
+```bash
+# PARSED から status と findings を抽出して checkpoint に書き出す
+STATUS=$(echo "$PARSED" | jq -r '.status')
+FINDINGS=$(echo "$PARSED" | jq -c '.findings')
+bash scripts/checkpoint-write.sh --step phase-review --status "$STATUS" --findings "$FINDINGS"
+```
+
 ## チェックポイント（MUST）
 
 `/twl:scope-judge` を Skill tool で自動実行。

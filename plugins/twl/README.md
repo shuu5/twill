@@ -38,8 +38,8 @@ Claude Code twl plugin（chain-driven + autopilot-first）。claude-plugin-dev �
 | Commands | 90 | atomic 81 + composite 9 |
 | Agents | 29 | specialist 29 |
 | Refs | 18 | reference 18 |
-| Scripts | 32 | script 32 |
-| **合計** | **178** | |
+| Scripts | 34 | script 34 |
+| **合計** | **180** | |
 
 ## 使い方
 

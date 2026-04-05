@@ -12,10 +12,22 @@ chain ステップの実行順序は deps.yaml で宣言されている。
 
 ## ドメインルール
 
+### checkpoint 読み込み（MUST）
+
+phase-review の checkpoint から CRITICAL findings を読み込む。
+specialist raw output は参照しない。
+
+```bash
+# phase-review checkpoint から CRITICAL findings を取得
+CRITICAL_FINDINGS=$(bash scripts/checkpoint-read.sh --step phase-review --critical-findings)
+CRITICAL_COUNT=$(bash scripts/checkpoint-read.sh --step phase-review --field critical_count)
+```
+
 ### 発動条件
 
 ```
-IF phase-review の findings に severity=CRITICAL かつ confidence>=80 が存在
+IF phase-review の checkpoint に critical_count > 0 かつ
+   CRITICAL findings の confidence>=80 が存在
 THEN fix-phase を実行
 ELSE スキップ
 ```

@@ -29,17 +29,20 @@ digraph Dependencies {
     // L3: Agents
 
     // L3.5: Scripts
+    script_checkpoint_read [label="checkpoint-read\n(470 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
     { rank=same; skill_workflow_pr_fix; }
     { rank=same; cmd_post_fix_verify; cmd_warning_fix; cmd_fix_phase; }
+    { rank=same; script_checkpoint_read; }
 
     // Edges
     skill_workflow_pr_fix -> cmd_fix_phase;
     skill_workflow_pr_fix -> cmd_post_fix_verify;
     skill_workflow_pr_fix -> cmd_warning_fix;
+    cmd_fix_phase -> script_checkpoint_read;
 
     // Ordering constraints (invisible edges)
     cmd_fix_phase -> cmd_post_fix_verify [style=invis, weight=10];
