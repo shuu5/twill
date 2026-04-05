@@ -12,6 +12,10 @@ def run() -> None:
         sys.exit(1)
 
     spec = importlib.util.spec_from_file_location("twl_engine", engine_path)
+    if spec is None or spec.loader is None:
+        print(f"Error: failed to load twl-engine.py from {engine_path}", file=sys.stderr)
+        sys.exit(1)
+
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     module.main()
