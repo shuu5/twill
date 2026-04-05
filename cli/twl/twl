@@ -34,6 +34,7 @@ Commands:
   reverse <name>  逆依存関係を表示
   target <name>   依存関係を表示
   update-svgs     全 plugin の SVG を一括再生成
+  spec <cmd>      Spec Management（new/status/list/archive/validate/instructions）
   chain generate  chain 定義から成果物を生成（テンプレート出力/書き込み/乖離検出）
   graph           Graphviz DOT 出力 (デフォルト)
   mermaid         Mermaid フローチャート出力
@@ -175,6 +176,9 @@ case "$CMD" in
         ;;
     list)
         python3 "$ENGINE" --list "$@"
+        ;;
+    spec)
+        python3 "$ENGINE" spec "$@"
         ;;
     chain)
         if [ $# -eq 0 ]; then
