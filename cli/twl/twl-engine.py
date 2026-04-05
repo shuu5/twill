@@ -5689,7 +5689,6 @@ def main():
         sys.path.insert(0, str(_engine_dir / 'src'))
         from twl.spec import main as spec_main
         spec_main(sys.argv[2:])
-        sys.exit(0)
 
     # chain サブコマンドの前処理（sys.argv を先に検査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'chain':

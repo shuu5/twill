@@ -6,19 +6,12 @@ import sys
 import time
 from pathlib import Path
 
+from .new import _KEBAB_RE
 from .paths import OpenspecNotFound, find_openspec_root, get_changes_dir
 
 _DELTA_HDR_RE = re.compile(r"^## (ADDED|MODIFIED|REMOVED|RENAMED) Requirements", re.MULTILINE)
 _REQ_RE = re.compile(r"^### Requirement:", re.MULTILINE)
 _SHALL_MUST_RE = re.compile(r"\b(SHALL|MUST)\b")
-_SCENARIO_RE = re.compile(r"^#### Scenario:", re.MULTILINE)
-
-
-def _has_specs(change_dir: Path) -> bool:
-    specs_dir = change_dir / "specs"
-    if not specs_dir.is_dir():
-        return False
-    return any(specs_dir.glob("*/spec.md"))
 
 
 def _validate_change(change_dir: Path) -> list[str]:
@@ -76,6 +69,10 @@ def cmd_validate(
     validate_all: bool = False,
     json_mode: bool = False,
 ) -> int:
+    if name and not _KEBAB_RE.match(name):
+        print(f"Error: Change name must be kebab-case: {name}", file=sys.stderr)
+        return 1
+
     try:
         root = find_openspec_root()
     except OpenspecNotFound as e:

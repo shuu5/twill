@@ -5,6 +5,7 @@ import re
 import sys
 from pathlib import Path
 
+from .new import _KEBAB_RE
 from .paths import OpenspecNotFound, find_openspec_root, get_changes_dir
 
 _TASK_RE = re.compile(r"^- \[(?P<done>[x ])\] (?P<desc>.+)$")
@@ -158,6 +159,10 @@ def _apply_instructions(name: str, change_dir: Path, schema_name: str, json_mode
 
 
 def cmd_instructions(artifact: str, name: str, json_mode: bool = False) -> int:
+    if not _KEBAB_RE.match(name):
+        print(f"Error: Change name must be kebab-case: {name}", file=sys.stderr)
+        return 1
+
     try:
         root = find_openspec_root()
     except OpenspecNotFound as e:

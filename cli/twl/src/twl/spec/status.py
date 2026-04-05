@@ -4,6 +4,7 @@ import json
 import sys
 from pathlib import Path
 
+from .new import _KEBAB_RE
 from .paths import OpenspecNotFound, find_openspec_root, get_changes_dir
 
 
@@ -50,6 +51,10 @@ def _build_status(change_dir: Path) -> dict:
 
 
 def cmd_status(name: str, json_mode: bool = False, schema_name: str = "spec-driven") -> int:
+    if not _KEBAB_RE.match(name):
+        print(f"Error: Change name must be kebab-case: {name}", file=sys.stderr)
+        return 1
+
     try:
         root = find_openspec_root()
     except OpenspecNotFound as e:
