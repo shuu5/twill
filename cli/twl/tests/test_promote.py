@@ -116,7 +116,7 @@ def make_fixture(tmpdir: Path) -> Path:
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
     """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
+        [sys.executable, "-m", "twl"] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,

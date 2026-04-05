@@ -1,24 +1,24 @@
 [build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "twl"
 version = "0.1.0"
-description = "TWiLL CLI — Type-Woven, invariant-Led Layering"
-requires-python = ">=3.10"
+description = "TWiLL CLI - plugin structure analysis, validation, and visualization"
+requires-python = ">=3.9"
 dependencies = [
-    "PyYAML>=6.0",
+    "pyyaml",
 ]
 
 [project.optional-dependencies]
-ai = [
-    "tiktoken>=0.5",
-    "rich>=13.0",
+full = [
+    "tiktoken",
+    "rich",
 ]
 
 [project.scripts]
-twl = "twl.cli:run"
+twl = "twl.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
