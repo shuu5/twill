@@ -1,0 +1,104 @@
+# test-fixture: minimal-plugin
+# version: 3.0
+# TWiLL check/validate 検証用の最小プラグイン
+
+version: "3.0"
+plugin: minimal-plugin
+
+entry_points:
+  - skills/sample-controller/SKILL.md
+
+chains:
+  sample-chain:
+    type: "A"
+    description: "サンプルチェーン"
+    steps:
+      - do-task
+
+# スキル（controller x1 + workflow x1 + reference x1）
+skills:
+  sample-controller:
+    type: controller
+    path: skills/sample-controller/SKILL.md
+    effort: low
+    spawnable_by: [user]
+    can_spawn: [workflow, atomic, specialist, reference]
+    calls:
+      - workflow: sample-workflow
+      - atomic: do-task
+      - specialist: sample-reviewer
+      - reference: sample-ref
+    description: "テスト用コントローラー"
+
+  sample-workflow:
+    type: workflow
+    path: skills/sample-workflow/SKILL.md
+    effort: low
+    spawnable_by: [controller]
+    can_spawn: [atomic, specialist]
+    calls:
+      - atomic: do-task
+      - atomic: do-check
+      - specialist: sample-reviewer
+    description: "テスト用ワークフロー"
+
+  sample-ref:
+    type: reference
+    path: skills/sample-ref.md
+    spawnable_by: [controller, atomic]
+    can_spawn: []
+    description: "テスト用リファレンス"
+
+# コマンド（atomic x2 + composite x1）
+commands:
+  do-task:
+    type: atomic
+    path: commands/do-task.md
+    spawnable_by: [workflow, controller]
+    can_spawn: [reference, script]
+    calls:
+      - reference: sample-ref
+      - script: helper
+    description: "テスト用タスク実行コマンド"
+    chain: sample-chain
+    step_in:
+      parent: sample-chain
+      step: "1"
+
+  do-check:
+    type: atomic
+    path: commands/do-check.md
+    spawnable_by: [workflow, controller]
+    can_spawn: [reference]
+    calls:
+      - reference: sample-ref
+    description: "テスト用チェックコマンド"
+
+  batch-process:
+    type: composite
+    path: commands/batch-process.md
+    spawnable_by: [workflow, controller]
+    can_spawn: [specialist, script]
+    calls:
+      - specialist: sample-reviewer
+      - script: helper
+    description: "テスト用コンポジットコマンド"
+
+# エージェント（specialist x1）
+agents:
+  sample-reviewer:
+    type: specialist
+    path: agents/sample-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "テスト用レビューエージェント"
+
+# スクリプト（script x1）
+scripts:
+  helper:
+    type: script
+    path: scripts/helper.sh
+    spawnable_by: [atomic, composite, script]
+    can_spawn: []
+    description: "テスト用ヘルパースクリプト"

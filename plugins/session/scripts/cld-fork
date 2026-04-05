@@ -2,7 +2,7 @@
 # cld-fork - Fork current Claude Code session in a new tmux window
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 
 # tmux check
 if [[ -z "${TMUX:-}" ]]; then
@@ -11,16 +11,42 @@ if [[ -z "${TMUX:-}" ]]; then
 fi
 
 CWD="$(pwd)"
-WINDOW_NAME="fork-$(date +%H%M%S)"
+WINDOW_NAME="fork-$(date +%H%M%S)-$$"
 
-# Build cld command with --continue --fork-session
-CLD_CMD="$SCRIPT_DIR/cld --continue --fork-session"
-if [[ $# -gt 0 ]]; then
-    # Pass remaining args as initial prompt
-    for arg in "$@"; do
-        CLD_CMD+=" $(printf '%q' "$arg")"
-    done
+# Build launcher script to avoid shell quoting issues with tmux
+# tmux new-window passes command to sh -c, which breaks multi-level quoting.
+# Writing a temp script ensures arguments are preserved exactly.
+LAUNCHER=$(mktemp /tmp/cld-fork-XXXXXX.sh)
+chmod +x "$LAUNCHER"
+
+{
+    echo '#!/bin/bash'
+    echo "cd $(printf '%q' "$CWD") || exit 1"
+    printf '%q ' "${CLD_PATH:-$SCRIPT_DIR/cld}" --continue --fork-session
+    if [[ $# -gt 0 ]]; then
+        printf '%q ' "$@"
+    fi
+    printf '\n'
+    # Keep window open on error for diagnosis
+    cat <<'TRAP'
+EXIT_CODE=$?
+if [ $EXIT_CODE -ne 0 ]; then
+    echo ""
+    echo "=== claude exited with code $EXIT_CODE ==="
+    echo "Press Enter to close, or Ctrl-C to keep open."
+    read -r || sleep 60
 fi
+TRAP
+} > "$LAUNCHER"
 
-tmux new-window -n "$WINDOW_NAME" -c "$CWD" "$CLD_CMD"
-echo "forked → tmux window '$WINDOW_NAME'"
+tmux new-window -n "$WINDOW_NAME" "bash '$LAUNCHER'; rm -f '$LAUNCHER'"
+
+# Verify window was created
+sleep 0.5
+if tmux list-windows -F '#{window_name}' | grep -qF "$WINDOW_NAME"; then
+    echo "forked → tmux window '$WINDOW_NAME'"
+else
+    rm -f "$LAUNCHER"
+    echo "Error: tmux window の作成に失敗しました" >&2
+    exit 1
+fi
