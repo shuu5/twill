@@ -55,8 +55,17 @@ digraph Dependencies {
     agent_e2e_quality [label="e2e-quality\n(2,270 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
+    script_state_read [label="state-read\n(986 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_write [label="state-write\n(2,571 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_specialist_output_parse [label="specialist-output-parse\n(605 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_resolve_project [label="resolve-project\n(929 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(6,274 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_create [label="worktree-create\n(2,126 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_parse_issue_ac [label="parse-issue-ac\n(1,224 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(230 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_compaction_resume [label="compaction-resume\n(1,009 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_write [label="checkpoint-write\n(646 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
@@ -66,7 +75,7 @@ digraph Dependencies {
     { rank=same; skill_ref_specialist_output_schema; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; }
     { rank=same; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_ac_verify; cmd_phase_review; cmd_ac_deploy_trigger; cmd_test_phase; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; agent_e2e_quality; }
-    { rank=same; script_tech_stack_detect; script_specialist_output_parse; script_checkpoint_write; }
+    { rank=same; script_state_read; script_state_write; script_tech_stack_detect; script_specialist_output_parse; script_resolve_project; script_chain_runner; script_worktree_create; script_parse_issue_ac; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_checkpoint_write; }
 
     // Edges
     skill_workflow_pr_verify -> cmd_ac_deploy_trigger;
@@ -76,6 +85,8 @@ digraph Dependencies {
     skill_workflow_pr_verify -> cmd_scope_judge;
     skill_workflow_pr_verify -> cmd_pr_test;
     skill_workflow_pr_verify -> cmd_test_phase;
+    skill_workflow_pr_verify -> script_chain_runner;
+    skill_workflow_pr_verify -> script_compaction_resume;
     cmd_phase_review -> script_specialist_output_parse;
     cmd_phase_review -> script_tech_stack_detect;
     cmd_phase_review -> script_checkpoint_write;
@@ -122,12 +133,18 @@ digraph Dependencies {
     agent_e2e_quality -> skill_ref_specialist_output_schema [style=dotted];
 
     // Ordering constraints (invisible edges)
+    script_chain_runner -> script_compaction_resume [style=invis, weight=10];
+    script_chain_runner -> script_compaction_resume [style=invis, weight=10];
     cmd_ac_deploy_trigger -> cmd_ac_verify [style=invis, weight=10];
     cmd_ac_verify -> cmd_ts_preflight [style=invis, weight=10];
     cmd_ts_preflight -> cmd_phase_review [style=invis, weight=10];
     cmd_phase_review -> cmd_scope_judge [style=invis, weight=10];
     cmd_scope_judge -> cmd_pr_test [style=invis, weight=10];
     cmd_pr_test -> cmd_test_phase [style=invis, weight=10];
+    cmd_test_phase -> script_chain_runner [style=invis, weight=10];
+    script_chain_runner -> script_compaction_resume [style=invis, weight=10];
+    script_chain_runner -> script_compaction_resume [style=invis, weight=10];
+    script_state_write -> script_checkpoint_write [style=invis, weight=10];
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     script_specialist_output_parse -> script_tech_stack_detect [style=invis, weight=10];
@@ -154,6 +171,7 @@ digraph Dependencies {
     skill_baseline_coding_style -> skill_baseline_security_checklist [style=invis, weight=10];
     skill_baseline_security_checklist -> skill_baseline_input_validation [style=invis, weight=10];
     script_specialist_output_parse -> script_tech_stack_detect [style=invis, weight=10];
+    script_tech_stack_detect -> script_state_write [style=invis, weight=10];
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     agent_worker_principles -> agent_worker_code_reviewer [style=invis, weight=10];
     agent_worker_code_reviewer -> agent_worker_security_reviewer [style=invis, weight=10];
@@ -173,5 +191,8 @@ digraph Dependencies {
     skill_baseline_coding_style -> skill_baseline_security_checklist [style=invis, weight=10];
     skill_baseline_security_checklist -> skill_baseline_input_validation [style=invis, weight=10];
     agent_e2e_quality -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
 
 }
