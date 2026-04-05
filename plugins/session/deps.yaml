@@ -16,7 +16,7 @@ skills:
     path: skills/spawn/SKILL.md
     spawnable_by: [user]
     can_spawn: []
-    description: "新規セッション spawn（コンテキスト非継承）"
+    description: "新規セッション spawn（コンテキスト非継承、--worktree 対応）"
 
   observe:
     type: controller
