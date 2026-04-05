@@ -11,7 +11,6 @@ TWiLL (Type-Woven, invariant-Led Layering) モノリポ。
 ## ディレクトリ構造
 
 - `cli/twl/` — TWiLL CLI エンジン（`twl` コマンド）
-- `cli/deltaspec/` — 変更仕様管理 CLI（`deltaspec` コマンド）
 - `plugins/twl/` — 開発ワークフロープラグイン（旧 dev）
 - `plugins/session/` — セッション管理プラグイン
 - `test-fixtures/` — テスト用フィクスチャ

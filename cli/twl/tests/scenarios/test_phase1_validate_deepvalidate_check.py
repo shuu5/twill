@@ -19,7 +19,7 @@ from pathlib import Path
 
 import yaml
 
-TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
+TWL_ENGINE = Path(__file__).parent.parent.parent / "src" / "twl" / "engine.py"
 
 
 # ---------------------------------------------------------------------------

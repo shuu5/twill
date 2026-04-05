@@ -1370,6 +1370,7 @@ scripts:
       - script: state-read
       - script: state-write
       - script: chain-runner
+      - script: resolve-issue-num
     description: "PostToolUse hook: Skill tool 完了後に autopilot Worker の chain 継続を stdout 注入（Layer 1 defense in depth）"
 
   tech-stack-detect:
