@@ -582,6 +582,7 @@ commands:
     calls:
       - script: state-write
       - script: checkpoint-write
+      - reference: ref-dci
     description: "全パス判定（autopilot-first）"
 
   ac-verify:
@@ -1121,6 +1122,7 @@ commands:
       - specialist: worker-codex-reviewer
       - specialist: worker-architecture
       - reference: ref-specialist-output-schema
+      - reference: ref-dci
       - reference: baseline-coding-style
       - reference: baseline-security-checklist
       - reference: baseline-input-validation
@@ -1230,6 +1232,7 @@ commands:
       - script: autopilot-should-skip
       - script: health-check
       - script: session:session-state
+      - reference: ref-dci
     description: "Phase Issue ループ実行（launch → poll → merge-gate → health-check）"
 
   autopilot-phase-postprocess:
@@ -1408,20 +1411,10 @@ scripts:
       - script: session:session-state
     description: "Pilot 側 Phase 実行オーケストレーター（ループ・ポーリング・merge-gate・nudge・サマリー）。worktree 事前作成（不変条件 B）"
 
-  merge-gate-init: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
-    type: script
-    path: scripts/merge-gate-init.sh
-    description: "merge-gate 初期化（状態読み取り + PR差分取得 + GATE_TYPE判定）"
-
   merge-gate-execute: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
     type: script
     path: scripts/merge-gate-execute.sh
     description: "merge-gate マージ実行 / リジェクト（state-write.sh 統合）"
-
-  merge-gate-issues: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
-    type: script
-    path: scripts/merge-gate-issues.sh
-    description: "tech-debt / self-improve Issue 自動起票"
 
   resolve-project: # lib: chain-runner, project-board-archive, project-board-backfill, autopilot-plan-board から source
     type: script
@@ -1458,11 +1451,6 @@ scripts:
     path: scripts/worktree-create.sh
     description: "bare repo 向け worktree 作成（Issue番号→ブランチ名生成）"
 
-  branch-create: # standalone: 通常 repo 向け（worktree モードでは worktree-create を使用）
-    type: script
-    path: scripts/branch-create.sh
-    description: "通常 repo 向けフィーチャーブランチ作成"
-
   project-create:
     type: script
     path: scripts/project-create.sh
@@ -1472,11 +1460,6 @@ scripts:
     type: script
     path: scripts/project-migrate.sh
     description: "既存プロジェクトの最新テンプレート移行"
-
-  classify-failure: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
-    type: script
-    path: scripts/classify-failure.sh
-    description: "PR cycle 障害原因を harness / code / unknown に分類"
 
   parse-issue-ac:
     type: script
@@ -1500,18 +1483,6 @@ scripts:
     path: scripts/escape-issue-body.sh
     description: "Issue body の HTML エスケープ（& → &amp;、< → &lt;、> → &gt;）"
 
-  codex-review: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
-    type: script
-    path: scripts/codex-review.sh
-    description: "Codex CLI による補完的コードレビュー"
-
-  create-harness-issue: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
-    type: script
-    path: scripts/create-harness-issue.sh
-    description: "harness 分類時に cross-repo Issue 自動作成"
-
-  # switchover: removed — スイッチオーバー完了済み（scripts/switchover.sh は保持）
-
   checkpoint-write:
     type: script
     path: scripts/checkpoint-write.sh
@@ -1531,7 +1502,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "構造検証（twl実行 + frontmatter整合性チェック）"
 
   worker-principles:
@@ -1540,7 +1511,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "5原則+controller品質検証"
 
   worker-env-validator:
@@ -1549,7 +1520,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "環境変数の整合性検証"
 
   worker-rls-reviewer:
@@ -1558,7 +1529,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Supabase RLSポリシーの論理的正確性検証"
 
   worker-supabase-migration-checker:
@@ -1567,7 +1538,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Supabase DBマイグレーションSQL品質レビュー"
 
   worker-data-validator:
@@ -1576,7 +1547,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "オミクスデータファイルの検証"
 
   template-validator: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1585,7 +1556,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Issueテンプレート準拠バリデーター"
 
   context-checker: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1594,7 +1565,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Issueプロジェクトコンテキストチェック"
 
   worker-e2e-reviewer:
@@ -1603,7 +1574,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Playwright E2Eテストのレビュー"
 
   worker-spec-reviewer:
@@ -1612,7 +1583,7 @@ agents:
     model: haiku
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "OpenSpec Scenarioの品質レビュー"
 
   # Issue レビュー系（sonnet）
@@ -1622,7 +1593,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-issue-quality-criteria, ref-investigation-budget]
+    skills: [ref-issue-quality-criteria, ref-investigation-budget, ref-specialist-few-shot]
     description: "Issue の仮定・曖昧点・盲点・粒度・split・依存検出"
 
   issue-feasibility:
@@ -1631,7 +1602,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-issue-quality-criteria, ref-investigation-budget]
+    skills: [ref-issue-quality-criteria, ref-investigation-budget, ref-specialist-few-shot]
     description: "実コード読みで Issue の実装可能性・影響範囲検証"
 
   worker-codex-reviewer:
@@ -1640,7 +1611,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-issue-quality-criteria, ref-specialist-output-schema]
+    skills: [ref-issue-quality-criteria, ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Codex CLI による補完的レビュー（Issue/PR 両対応）"
 
   # 品質判断系（sonnet）
@@ -1650,7 +1621,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "コード品質レビュー"
 
   worker-security-reviewer:
@@ -1659,7 +1630,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "セキュリティ脆弱性検出"
 
   worker-nextjs-reviewer:
@@ -1668,7 +1639,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Next.js 15 + React 19 コードレビュー"
 
   worker-fastapi-reviewer:
@@ -1677,7 +1648,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "FastAPI + Pydantic v2 コードレビュー"
 
   worker-hono-reviewer:
@@ -1686,7 +1657,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Hono + Zod + monorepo整合性レビュー"
 
   worker-r-reviewer:
@@ -1695,7 +1666,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Rコード（.R, .Rmd, .qmd）のレビュー"
 
   worker-architecture:
@@ -1704,7 +1675,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema, ref-architecture]
+    skills: [ref-specialist-output-schema, ref-architecture, ref-specialist-few-shot]
     description: "アーキテクチャパターン検証 (PR diff モード: architecture/domain/glossary.md, architecture/domain/model.md, architecture/vision.md を参照)"
 
   worker-llm-output-reviewer:
@@ -1713,7 +1684,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "LLM出力品質レビュー"
 
   worker-llm-eval-runner:
@@ -1722,7 +1693,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "LLM_CRITERIAベースの品質評価"
 
   # ユーティリティ系（sonnet）
@@ -1732,7 +1703,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "ドキュメント動的取得"
 
   e2e-quality:
@@ -1741,7 +1712,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "E2Eテストの偽陽性リスク検出"
 
   autofix-loop: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1750,7 +1721,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "自動修正ループ"
 
   spec-scaffold-tests:
@@ -1759,7 +1730,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "OpenSpec ScenarioからBDDテスト自動生成"
 
   e2e-generate:
@@ -1768,7 +1739,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "ScenarioからE2Eテスト生成"
 
   e2e-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1777,7 +1748,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "失敗E2Eテストの分析・修復"
 
   e2e-visual-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
@@ -1786,5 +1757,5 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Visual検証失敗の分析・修復"

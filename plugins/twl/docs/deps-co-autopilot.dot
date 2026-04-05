@@ -26,6 +26,7 @@ digraph Dependencies {
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_dci [label="twl:ref-dci\n(1,211 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_self_improve_format [label="twl:self-improve-format\n(1,365 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,570 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(1,815 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -125,7 +126,7 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_co_autopilot; }
     { rank=same; skill_workflow_setup; skill_workflow_test_ready; skill_workflow_pr_verify; skill_workflow_pr_fix; skill_workflow_pr_merge; skill_workflow_dead_cleanup; skill_workflow_tech_debt_triage; }
-    { rank=same; skill_ref_specialist_output_schema; skill_self_improve_format; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; }
+    { rank=same; skill_ref_specialist_output_schema; skill_ref_dci; skill_self_improve_format; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; }
     { rank=same; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_opsx_propose; cmd_opsx_apply; cmd_ac_extract; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_post_fix_verify; cmd_warning_fix; cmd_pr_cycle_report; cmd_all_pass_check; cmd_ac_verify; cmd_dead_component_detect; cmd_dead_component_execute; cmd_triage_execute; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; cmd_test_scaffold; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; cmd_ac_deploy_trigger; cmd_auto_merge; cmd_pr_cycle_analysis; cmd_autopilot_init; cmd_autopilot_launch; cmd_autopilot_poll; cmd_autopilot_phase_execute; cmd_autopilot_phase_postprocess; cmd_autopilot_collect; cmd_autopilot_retrospective; cmd_autopilot_patterns; cmd_autopilot_cross_issue; cmd_autopilot_summary; cmd_session_audit; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_architecture; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; agent_spec_scaffold_tests; agent_e2e_generate; }
     { rank=same; script_state_read; script_state_write; script_autopilot_init; script_autopilot_launch; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_health_check; script_tech_stack_detect; script_specialist_output_parse; script_autopilot_should_skip; script_merge_gate_execute; script_worktree_create; script_parse_issue_ac; script_session_audit; script_ecc_monitor; script_checkpoint_write; script_checkpoint_read; }
@@ -184,6 +185,7 @@ digraph Dependencies {
     cmd_ac_extract -> script_parse_issue_ac;
     cmd_all_pass_check -> script_state_write;
     cmd_all_pass_check -> script_checkpoint_write;
+    cmd_all_pass_check -> skill_ref_dci;
     cmd_ecc_monitor -> script_ecc_monitor;
     cmd_test_scaffold -> agent_spec_scaffold_tests [style=dashed];
     cmd_test_scaffold -> agent_e2e_generate [style=dashed];
@@ -240,6 +242,7 @@ digraph Dependencies {
     cmd_merge_gate -> agent_worker_codex_reviewer [style=dashed];
     cmd_merge_gate -> agent_worker_architecture [style=dashed];
     cmd_merge_gate -> skill_ref_specialist_output_schema;
+    cmd_merge_gate -> skill_ref_dci;
     cmd_merge_gate -> skill_baseline_coding_style;
     cmd_merge_gate -> skill_baseline_security_checklist;
     cmd_merge_gate -> skill_baseline_input_validation;
@@ -255,6 +258,7 @@ digraph Dependencies {
     cmd_autopilot_phase_execute -> script_state_write;
     cmd_autopilot_phase_execute -> script_autopilot_should_skip;
     cmd_autopilot_phase_execute -> script_health_check;
+    cmd_autopilot_phase_execute -> skill_ref_dci;
     cmd_autopilot_collect -> script_state_read;
     cmd_autopilot_collect -> script_state_write;
     cmd_autopilot_retrospective -> script_state_read;
@@ -328,6 +332,7 @@ digraph Dependencies {
     cmd_merge_gate -> cmd_auto_merge [style=invis, weight=10];
     cmd_dead_component_detect -> cmd_dead_component_execute [style=invis, weight=10];
     script_state_write -> script_checkpoint_write [style=invis, weight=10];
+    script_checkpoint_write -> skill_ref_dci [style=invis, weight=10];
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
     agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
@@ -384,7 +389,8 @@ digraph Dependencies {
     agent_worker_env_validator -> agent_worker_codex_reviewer [style=invis, weight=10];
     agent_worker_codex_reviewer -> agent_worker_architecture [style=invis, weight=10];
     agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
-    skill_ref_specialist_output_schema -> skill_baseline_coding_style [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_ref_dci [style=invis, weight=10];
+    skill_ref_dci -> skill_baseline_coding_style [style=invis, weight=10];
     skill_baseline_coding_style -> skill_baseline_security_checklist [style=invis, weight=10];
     skill_baseline_security_checklist -> skill_baseline_input_validation [style=invis, weight=10];
     script_autopilot_init -> script_session_create [style=invis, weight=10];

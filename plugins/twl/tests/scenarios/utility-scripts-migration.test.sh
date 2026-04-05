@@ -66,57 +66,10 @@ run_test_skip() {
   ((SKIP++)) || true
 }
 
-CLASSIFY_FAILURE="scripts/classify-failure.sh"
 PARSE_ISSUE_AC="scripts/parse-issue-ac.sh"
 SESSION_AUDIT="scripts/session-audit.sh"
 CHECK_DB_MIGRATION="scripts/check-db-migration.py"
 ECC_MONITOR="scripts/ecc-monitor.sh"
-CODEX_REVIEW="scripts/codex-review.sh"
-CREATE_HARNESS_ISSUE="scripts/create-harness-issue.sh"
-
-# =============================================================================
-# Requirement: classify-failure スクリプト移植
-# =============================================================================
-echo ""
-echo "--- Requirement: classify-failure スクリプト移植 ---"
-
-# Scenario: 失敗ログの分類 (line 8)
-# WHEN: テスト失敗ログが入力される
-# THEN: 失敗カテゴリ（test_failure, build_error, timeout 等）が stdout に出力される
-
-test_classify_failure_exists() {
-  assert_file_exists "$CLASSIFY_FAILURE"
-}
-run_test "classify-failure.sh が存在する" test_classify_failure_exists
-
-test_classify_failure_executable() {
-  assert_file_executable "$CLASSIFY_FAILURE"
-}
-run_test "classify-failure.sh が実行可能である" test_classify_failure_executable
-
-test_classify_failure_categories() {
-  assert_file_exists "$CLASSIFY_FAILURE" || return 1
-  # 失敗カテゴリ: harness / code / unknown
-  assert_file_contains "$CLASSIFY_FAILURE" '(harness|code|unknown|CLASSIFICATION)' || return 1
-  return 0
-}
-run_test "classify-failure.sh に失敗カテゴリ定義がある" test_classify_failure_categories
-
-test_classify_failure_stdin_input() {
-  assert_file_exists "$CLASSIFY_FAILURE" || return 1
-  # stdin からの入力処理（read / cat / pipe）
-  assert_file_contains "$CLASSIFY_FAILURE" '(read|cat|stdin|\$1|/dev/stdin)' || return 1
-  return 0
-}
-run_test "classify-failure.sh に入力処理ロジックがある" test_classify_failure_stdin_input
-
-# Edge case: 分類不能な失敗ログのデフォルトカテゴリ
-test_classify_failure_default_category() {
-  assert_file_exists "$CLASSIFY_FAILURE" || return 1
-  assert_file_contains "$CLASSIFY_FAILURE" '(unknown|default|other|unclassified)' || return 1
-  return 0
-}
-run_test "classify-failure.sh [edge: 分類不能時のデフォルトカテゴリ]" test_classify_failure_default_category
 
 # =============================================================================
 # Requirement: parse-issue-ac スクリプト移植
@@ -293,90 +246,6 @@ test_ecc_monitor_repo_missing() {
   return 0
 }
 run_test "ecc-monitor.sh [edge: リポジトリ不在時のエラーハンドリング]" test_ecc_monitor_repo_missing
-
-# =============================================================================
-# Requirement: codex-review スクリプト移植
-# =============================================================================
-echo ""
-echo "--- Requirement: codex-review スクリプト移植 ---"
-
-# Scenario: Codex レビュー実行 (line 48)
-# WHEN: bash scripts/codex-review.sh を実行する
-# THEN: Codex によるコードレビューが実行される
-
-test_codex_review_exists() {
-  assert_file_exists "$CODEX_REVIEW"
-}
-run_test "codex-review.sh が存在する" test_codex_review_exists
-
-test_codex_review_executable() {
-  assert_file_executable "$CODEX_REVIEW"
-}
-run_test "codex-review.sh が実行可能である" test_codex_review_executable
-
-test_codex_review_invocation() {
-  assert_file_exists "$CODEX_REVIEW" || return 1
-  assert_file_contains "$CODEX_REVIEW" '(codex|review|openai)' || return 1
-  return 0
-}
-run_test "codex-review.sh に Codex レビュー呼び出しがある" test_codex_review_invocation
-
-# Edge case: レビュー結果の出力フォーマット
-test_codex_review_output_format() {
-  assert_file_exists "$CODEX_REVIEW" || return 1
-  assert_file_contains "$CODEX_REVIEW" '(output|result|report|finding)' || return 1
-  return 0
-}
-run_test "codex-review.sh [edge: レビュー結果出力処理]" test_codex_review_output_format
-
-# =============================================================================
-# Requirement: create-harness-issue スクリプト移植
-# =============================================================================
-echo ""
-echo "--- Requirement: create-harness-issue スクリプト移植 ---"
-
-# Scenario: self-improve Issue 起票 (line 56)
-# WHEN: 改善提案データが入力される
-# THEN: GitHub Issue が適切なラベル・テンプレートで作成される
-
-test_create_harness_issue_exists() {
-  assert_file_exists "$CREATE_HARNESS_ISSUE"
-}
-run_test "create-harness-issue.sh が存在する" test_create_harness_issue_exists
-
-test_create_harness_issue_executable() {
-  assert_file_executable "$CREATE_HARNESS_ISSUE"
-}
-run_test "create-harness-issue.sh が実行可能である" test_create_harness_issue_executable
-
-test_create_harness_issue_gh_create() {
-  assert_file_exists "$CREATE_HARNESS_ISSUE" || return 1
-  assert_file_contains "$CREATE_HARNESS_ISSUE" 'gh issue create' || return 1
-  return 0
-}
-run_test "create-harness-issue.sh に gh issue create 呼び出しがある" test_create_harness_issue_gh_create
-
-test_create_harness_issue_labels() {
-  assert_file_exists "$CREATE_HARNESS_ISSUE" || return 1
-  assert_file_contains "$CREATE_HARNESS_ISSUE" '(label|self-improve|harness)' || return 1
-  return 0
-}
-run_test "create-harness-issue.sh にラベル付与がある" test_create_harness_issue_labels
-
-test_create_harness_issue_template() {
-  assert_file_exists "$CREATE_HARNESS_ISSUE" || return 1
-  assert_file_contains "$CREATE_HARNESS_ISSUE" '(template|body|title)' || return 1
-  return 0
-}
-run_test "create-harness-issue.sh にテンプレート処理がある" test_create_harness_issue_template
-
-# Edge case: 入力データのバリデーション
-test_create_harness_issue_input_validation() {
-  assert_file_exists "$CREATE_HARNESS_ISSUE" || return 1
-  assert_file_contains "$CREATE_HARNESS_ISSUE" '(valid|check|empty|required|usage)' || return 1
-  return 0
-}
-run_test "create-harness-issue.sh [edge: 入力データバリデーション]" test_create_harness_issue_input_validation
 
 # =============================================================================
 # Summary
