@@ -1,0 +1,3 @@
+{
+  "compactPrompt": "このセッションは twl plugin の Worker チェーン実行中です。コンテキストの圧縮サマリには以下を必ず含めること:\n1. 現在実行中の Issue 番号（例: #129）\n2. 現在のチェーンステップ（current_step の値、例: opsx-propose）\n3. issue-{N}.json の絶対パス（例: /path/to/.autopilot/issues/issue-129.json）\n4. チェーン再開時の次のアクション（compaction-resume.sh <ISSUE_NUM> <step> でスキップ判定可能）\nこれにより compaction 後に Worker がチェーンの正しいステップから再開できる。"
+}

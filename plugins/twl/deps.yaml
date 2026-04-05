@@ -1,0 +1,1654 @@
+# plugin-twl 依存関係定義
+# version: 3.0
+# plugin: twl
+
+version: "3.0"
+plugin: twl
+
+entry_points:
+  - skills/co-autopilot/SKILL.md
+  - skills/co-issue/SKILL.md
+  - skills/co-project/SKILL.md
+  - skills/co-architect/SKILL.md
+
+# チェーン（B-4 で追加、B-5 で pr-cycle 追加）
+chains:
+  setup:
+    type: "A"
+    description: "開発準備ワークフロー（worktree作成 → OpenSpec → テスト準備）"
+    steps:
+      - init
+      - worktree-create
+      - project-board-status-update
+      - crg-auto-build
+      - opsx-propose
+      - ac-extract
+
+  pr-cycle:
+    type: "B"
+    description: "PRサイクル（verify → review → test → fix → visual → report → merge）"
+    steps:
+      - ts-preflight
+      - phase-review
+      - scope-judge
+      - pr-test
+      - fix-phase
+      - post-fix-verify
+      - warning-fix
+      - e2e-screening
+      - pr-cycle-report
+      - pr-cycle-analysis
+      - all-pass-check
+      - merge-gate
+
+# スキル（controller x4 + workflow x2）
+skills:
+  co-autopilot:
+    type: controller
+    path: skills/co-autopilot/SKILL.md
+    effort: high
+    tools: [Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests)]
+    spawnable_by: [user]
+    can_spawn: [composite, atomic, specialist]
+    calls:
+      - atomic: autopilot-init
+        step: "3"
+      - atomic: autopilot-launch
+      - atomic: autopilot-poll
+      - atomic: autopilot-phase-execute
+      - atomic: autopilot-phase-postprocess
+      - atomic: autopilot-collect
+      - atomic: autopilot-retrospective
+      - atomic: autopilot-patterns
+      - atomic: autopilot-cross-issue
+      - atomic: autopilot-summary
+        step: "5"
+      - atomic: session-audit
+        step: "5.5"
+      - atomic: self-improve-collect
+      - atomic: self-improve-propose
+      - atomic: self-improve-close
+      - atomic: ecc-monitor
+      - workflow: workflow-setup
+      - workflow: workflow-test-ready
+      - workflow: workflow-pr-cycle
+      - workflow: workflow-dead-cleanup
+      - workflow: workflow-tech-debt-triage
+      - reference: self-improve-format
+    description: "依存グラフに基づくIssue群一括自律実装オーケストレーター"
+
+  co-issue:
+    type: controller
+    path: skills/co-issue/SKILL.md
+    effort: high
+    tools: [Agent(issue-critic, issue-feasibility, worker-codex-reviewer, context-checker, template-validator)]
+    spawnable_by: [user]
+    can_spawn: [composite, atomic, specialist, reference]
+    calls:
+      - atomic: explore
+      - atomic: issue-structure
+      - atomic: issue-tech-debt-absorb
+      - atomic: issue-create
+      - atomic: issue-bulk-create
+      - atomic: project-board-sync
+      - specialist: issue-critic
+      - specialist: issue-feasibility
+      - specialist: worker-codex-reviewer
+      - reference: ref-issue-template-bug
+      - reference: ref-issue-template-feature
+      - reference: ref-project-model
+      - reference: ref-issue-quality-criteria
+      - reference: ref-glossary-criteria
+    description: "要望をGitHub Issueに変換するワークフロー"
+
+  co-project:
+    type: controller
+    path: skills/co-project/SKILL.md
+    effort: medium
+    tools: [Agent(worker-structure)]
+    spawnable_by: [user]
+    can_spawn: [composite, atomic, reference]
+    calls:
+      - atomic: project-create
+      - atomic: project-governance
+      - atomic: project-migrate
+      - atomic: container-dependency-check
+      - atomic: setup-crg
+      - atomic: snapshot-analyze
+      - atomic: snapshot-classify
+      - atomic: snapshot-generate
+      - atomic: plugin-interview
+      - atomic: plugin-research
+      - atomic: plugin-design
+      - atomic: plugin-generate
+      - atomic: plugin-migrate-analyze
+      - atomic: plugin-diagnose
+      - atomic: plugin-fix
+      - atomic: plugin-verify
+      - composite: plugin-phase-diagnose
+      - composite: plugin-phase-verify
+      - reference: ref-types
+      - reference: ref-practices
+      - reference: ref-deps-format
+    description: "プロジェクト管理（create / migrate / snapshot）"
+
+  co-architect:
+    type: controller
+    path: skills/co-architect/SKILL.md
+    effort: high
+    tools: [Agent(worker-architecture, worker-structure)]
+    spawnable_by: [user]
+    can_spawn: [atomic, reference]
+    calls:
+      - atomic: explore
+      - atomic: architect-completeness-check
+      - atomic: architect-decompose
+      - atomic: architect-group-refine
+      - atomic: architect-issue-create
+      - atomic: evaluate-architecture
+      - reference: ref-architecture-spec
+      - reference: ref-architecture
+    description: "対話的アーキテクチャ構築ワークフロー"
+
+  workflow-setup:
+    type: workflow
+    path: skills/workflow-setup/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [atomic]
+    calls:
+      - atomic: init
+        step: "1"
+      - atomic: worktree-create
+        step: "2"
+      - atomic: project-board-status-update
+        step: "2.3"
+      - atomic: crg-auto-build
+        step: "2.4"
+      - atomic: opsx-propose
+        step: "3"
+      - atomic: ac-extract
+        step: "3.5"
+    description: "開発準備ワークフロー（chain-driven）"
+
+  workflow-test-ready:
+    type: workflow
+    path: skills/workflow-test-ready/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [composite, atomic]
+    calls:
+      - composite: test-scaffold
+        step: "1"
+      - atomic: opsx-apply
+        step: "2"
+    description: "テスト生成と準備確認ワークフロー"
+
+  workflow-pr-cycle:
+    type: workflow
+    path: skills/workflow-pr-cycle/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [composite, atomic]
+    calls:
+      - atomic: ac-deploy-trigger
+      - atomic: ac-verify
+      - atomic: ts-preflight
+        step: "1"
+      - composite: phase-review
+        step: "2"
+      - atomic: scope-judge
+        step: "2.5"
+      - atomic: pr-test
+        step: "3"
+      - composite: fix-phase
+        step: "4"
+      - atomic: post-fix-verify
+        step: "4.5"
+      - atomic: warning-fix
+        step: "5"
+      - composite: e2e-screening
+        step: "6"
+      - atomic: pr-cycle-report
+        step: "7"
+      - atomic: pr-cycle-analysis
+        step: "7.3"
+      - atomic: all-pass-check
+        step: "7.5"
+      - composite: merge-gate
+        step: "8"
+      - atomic: auto-merge
+        step: "8.5"
+    description: "PRサイクルワークフロー（chain-driven）"
+
+  workflow-dead-cleanup:
+    type: workflow
+    path: skills/workflow-dead-cleanup/SKILL.md
+    effort: low
+    spawnable_by: [controller]
+    can_spawn: [atomic]
+    calls:
+      - atomic: dead-component-detect
+        step: "1"
+      - atomic: dead-component-execute
+        step: "3"
+    description: "Dead Component 検出結果に基づく確認付き削除ワークフロー"
+
+  workflow-tech-debt-triage:
+    type: workflow
+    path: skills/workflow-tech-debt-triage/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [atomic]
+    calls:
+      - atomic: triage-execute
+        step: "6"
+    description: "tech-debt Issue の棚卸しワークフロー"
+
+
+# リファレンス（B-6 で追加）
+refs:
+  ref-specialist-output-schema:
+    type: reference
+    path: refs/ref-specialist-output-schema.md
+    description: "specialist 共通出力スキーマ定義"
+
+  ref-specialist-few-shot:
+    type: reference
+    path: refs/ref-specialist-few-shot.md
+    description: "specialist プロンプト用 few-shot テンプレート"
+
+  ref-issue-template-bug:
+    type: reference
+    path: refs/ref-issue-template-bug.md
+    description: "Bug Report Issue テンプレート"
+
+  ref-issue-template-feature:
+    type: reference
+    path: refs/ref-issue-template-feature.md
+    description: "Feature Request Issue テンプレート"
+
+  # C-3: twl sync 対象 (4)
+  ref-types:
+    type: reference
+    path: refs/ref-types.md
+    description: "型システム仕様（twl sync）"
+
+  ref-practices:
+    type: reference
+    path: refs/ref-practices.md
+    description: "5原則+ライフサイクル+パターン選択ガイド（twl sync）"
+
+  ref-deps-format:
+    type: reference
+    path: refs/ref-deps-format.md
+    description: "deps.yaml 形式仕様（twl sync）"
+
+  ref-architecture:
+    type: reference
+    path: refs/ref-architecture.md
+    description: "アーキテクチャパターン評価チェックリスト（twl sync）"
+
+  # C-3: プラグイン固有 (4)
+  ref-architecture-spec:
+    type: reference
+    path: refs/ref-architecture-spec.md
+    description: "Architecture Spec ディレクトリ構造仕様"
+
+  ref-project-model:
+    type: reference
+    path: refs/ref-project-model.md
+    description: "Issue 管理データモデル（5軸ラベル体系）"
+
+  ref-issue-quality-criteria:
+    type: reference
+    path: refs/ref-issue-quality-criteria.md
+    description: "Issue 品質レビュー specialist 用の severity 判定基準"
+
+  ref-investigation-budget:
+    type: reference
+    path: refs/ref-investigation-budget.md
+    description: "調査バジェット制御ルール（issue-critic / issue-feasibility 共通）"
+
+  ref-dci:
+    type: reference
+    path: refs/ref-dci.md
+    description: "DCI（Dynamic Context Injection）共通パターン"
+
+  ref-glossary-criteria:
+    type: reference
+    path: refs/ref-glossary-criteria.md
+    description: "glossary 用語登録判断基準（3軸基準 + 判定ロジック + 具体例）"
+
+  self-improve-format:
+    type: reference
+    path: refs/self-improve-format.md
+    description: "self-improve Issue 共通フォーマット定義"
+
+  # C-3: Baseline (3)
+  baseline-coding-style:
+    type: reference
+    path: refs/baseline-coding-style.md
+    description: "コーディング基準（BAD/GOODコード対比）"
+
+  baseline-security-checklist:
+    type: reference
+    path: refs/baseline-security-checklist.md
+    description: "セキュリティチェックリスト（OWASP Top 10）"
+
+  baseline-input-validation:
+    type: reference
+    path: refs/baseline-input-validation.md
+    description: "入力検証パターン（Zod/Pydantic）"
+
+# コマンド（B-4 で拡充）
+commands:
+  self-improve-review: # standalone: ユーザー直接起動
+    type: atomic
+    path: commands/self-improve-review.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "セッション中のBashエラーをレビューし問題をIssue化候補として構造化"
+
+  init:
+    type: atomic
+    path: commands/init.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "1"
+    description: "開発状態判定"
+
+  worktree-create:
+    type: atomic
+    path: commands/worktree-create.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "2"
+    calls:
+      - script: worktree-create
+    description: "worktree 作成"
+
+  worktree-list: # standalone: ユーザー直接起動
+    type: atomic
+    path: commands/worktree-list.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "worktree 一覧表示"
+
+  project-board-status-update:
+    type: atomic
+    path: commands/project-board-status-update.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "2.3"
+    description: "Project Board Status を In Progress に更新"
+
+  crg-auto-build:
+    type: atomic
+    path: commands/crg-auto-build.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "2.4"
+    description: "CRG グラフ自動ビルド"
+
+  opsx-propose:
+    type: atomic
+    path: commands/opsx-propose.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "3"
+    description: "OpenSpec 提案ラッパー"
+
+  opsx-apply:
+    type: atomic
+    path: commands/opsx-apply.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    step_in:
+      parent: workflow-test-ready
+      step: "2"
+    description: "OpenSpec 実装ラッパー"
+
+  opsx-archive: # standalone: 低頻度ユーティリティ
+    type: atomic
+    path: commands/opsx-archive.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "OpenSpec アーカイブ"
+
+  ac-extract:
+    type: atomic
+    path: commands/ac-extract.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    chain: "setup"
+    step_in:
+      parent: workflow-setup
+      step: "3.5"
+    calls:
+      - script: parse-issue-ac
+    description: "AC（受け入れ基準）抽出"
+
+  ts-preflight:
+    type: atomic
+    path: commands/ts-preflight.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "1"
+    description: "TypeScript 機械的検証（型チェック・lint）"
+
+  scope-judge:
+    type: atomic
+    path: commands/scope-judge.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "2.5"
+    description: "スコープ判定 + Deferred Issue 作成"
+
+  pr-test:
+    type: atomic
+    path: commands/pr-test.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "3"
+    description: "テスト実行"
+
+  post-fix-verify:
+    type: atomic
+    path: commands/post-fix-verify.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "4.5"
+    description: "fix 後の軽量コードレビュー"
+
+  warning-fix:
+    type: atomic
+    path: commands/warning-fix.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "5"
+    description: "Warning ベストエフォート修正"
+
+  pr-cycle-report:
+    type: atomic
+    path: commands/pr-cycle-report.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "7"
+    description: "PRサイクル結果フォーマット・投稿"
+
+  all-pass-check:
+    type: atomic
+    path: commands/all-pass-check.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "7.5"
+    calls:
+      - script: state-write
+    description: "全パス判定（autopilot-first）"
+
+  ac-verify:
+    type: atomic
+    path: commands/ac-verify.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    description: "AC 検証（テスト結果と AC の照合）"
+
+  # === C-2a: Issue管理系（7個） ===
+
+  issue-structure:
+    type: atomic
+    path: commands/issue-structure.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Issue内容の構造化（タイプ判定+テンプレート+フィールド埋め）"
+
+  issue-create:
+    type: atomic
+    path: commands/issue-create.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "GitHub Issue 作成"
+
+  issue-bulk-create:
+    type: atomic
+    path: commands/issue-bulk-create.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "親Issue+子Issue群の一括起票"
+
+  issue-tech-debt-absorb:
+    type: atomic
+    path: commands/issue-tech-debt-absorb.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "tech-debt Issue の吸収提案・選択"
+
+  project-board-sync:
+    type: atomic
+    path: commands/project-board-sync.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Issue作成後に Project V2 へ自動追加+フィールドミラー"
+
+  # === C-2a: Project管理系（8個） ===
+
+  project-create:
+    type: atomic
+    path: commands/project-create.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: project-create
+    description: "プロジェクト新規作成（bare repo + worktree + テンプレート + OpenSpec）"
+
+  project-governance:
+    type: atomic
+    path: commands/project-governance.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "ガバナンス適用（Hooks + スキーマscaffold + CLAUDE.md拡張）"
+
+  project-migrate:
+    type: atomic
+    path: commands/project-migrate.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: project-migrate
+    description: "既存プロジェクトの最新テンプレート移行"
+
+  container-dependency-check:
+    type: atomic
+    path: commands/container-dependency-check.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "テンプレートのコンテナ依存と container-manager の実状態照合"
+
+  setup-crg:
+    type: atomic
+    path: commands/setup-crg.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "code-review-graph MCP セットアップ"
+
+  snapshot-analyze:
+    type: atomic
+    path: commands/snapshot-analyze.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プロジェクト分析（ファイルスキャン、スタック自動検出）"
+
+  snapshot-classify:
+    type: atomic
+    path: commands/snapshot-classify.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "AI Tier 分類 + ユーザー確認テーブル表示"
+
+  snapshot-generate:
+    type: atomic
+    path: commands/snapshot-generate.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "manifest.yaml + テンプレートファイル生成"
+
+  # === C-2a: Architect系（5個） ===
+
+  architect-completeness-check:
+    type: atomic
+    path: commands/architect-completeness-check.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "アーキテクチャ完全性チェック"
+
+  architect-decompose:
+    type: atomic
+    path: commands/architect-decompose.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "contexts/ + phases/ → Issue候補リスト分解 + 整合性チェック"
+
+  architect-group-refine:
+    type: atomic
+    path: commands/architect-group-refine.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "スケルトンIssueグループの一括精緻化"
+
+  architect-issue-create:
+    type: atomic
+    path: commands/architect-issue-create.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Issue候補リストから GitHub Issue 一括作成"
+
+  evaluate-architecture:
+    type: atomic
+    path: commands/evaluate-architecture.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "設計のアーキテクチャパターン評価"
+
+  # === C-2a: Plugin管理系（10個） ===
+
+  plugin-interview:
+    type: atomic
+    path: commands/plugin-interview.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プラグイン作成のためのユーザー要件インタビュー"
+
+  plugin-research:
+    type: atomic
+    path: commands/plugin-research.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プラグイン設計情報を Web 取得し構造化サマリー作成"
+
+  plugin-design:
+    type: atomic
+    path: commands/plugin-design.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "型マッピング + deps.yaml 設計"
+
+  plugin-generate:
+    type: atomic
+    path: commands/plugin-generate.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プラグインファイル一式生成"
+
+  plugin-migrate-analyze:
+    type: atomic
+    path: commands/plugin-migrate-analyze.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "既存プラグインの AT 移行分析"
+
+  plugin-diagnose:
+    type: atomic
+    path: commands/plugin-diagnose.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "プラグインの問題診断（構造+5原則チェック）"
+
+  plugin-fix:
+    type: atomic
+    path: commands/plugin-fix.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "診断結果に基づくコンポーネント修正適用"
+
+  plugin-verify:
+    type: atomic
+    path: commands/plugin-verify.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "統合検証+5原則チェック"
+
+  plugin-phase-diagnose:
+    type: composite
+    path: commands/plugin-phase-diagnose.md
+    spawnable_by: [controller]
+    can_spawn: [specialist]
+    calls:
+      - specialist: worker-structure
+      - specialist: worker-principles
+      - specialist: worker-architecture
+      - reference: ref-specialist-output-schema
+      - reference: ref-architecture
+    description: "並列診断フェーズ（specialist x3 並列 spawn + 統合処理）"
+
+  plugin-phase-verify:
+    type: composite
+    path: commands/plugin-phase-verify.md
+    spawnable_by: [controller]
+    can_spawn: [specialist]
+    calls:
+      - specialist: worker-structure
+      - specialist: worker-principles
+      - specialist: worker-architecture
+      - reference: ref-specialist-output-schema
+      - reference: ref-architecture
+    description: "並列検証フェーズ（specialist x3 並列 spawn + 統合処理）"
+
+  # === C-2a: OpenSpec/汎用系（5個） ===
+
+  explore: # standalone: ユーザー直接起動
+    type: atomic
+    path: commands/explore.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "アイデア検討・問題調査・要件整理のための思考パートナー"
+
+  propose: # standalone: ユーザー直接起動
+    type: atomic
+    path: commands/propose.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "change ディレクトリを作成し全 artifact を一括生成"
+
+  apply: # standalone: ユーザー直接起動
+    type: atomic
+    path: commands/apply.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "OpenSpec change の tasks.md に沿ってタスクを実装"
+
+  archive: # standalone: ユーザー直接起動
+    type: atomic
+    path: commands/archive.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "完了済み change を archive/ に移動"
+
+  check: # standalone: ユーザー直接起動
+    type: atomic
+    path: commands/check.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "ワークフロー準備状況チェック"
+
+  # === C-2a: Dead Component/Triage系（3個 atomic） ===
+
+  dead-component-detect:
+    type: atomic
+    path: commands/dead-component-detect.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    step_in:
+      parent: workflow-dead-cleanup
+      step: "1"
+    description: "Dead Component 検出・情報収集・一覧テーブル表示"
+
+  dead-component-execute:
+    type: atomic
+    path: commands/dead-component-execute.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    step_in:
+      parent: workflow-dead-cleanup
+      step: "3"
+    description: "選択された Dead Component の削除実行・整合性検証"
+
+  triage-execute:
+    type: atomic
+    path: commands/triage-execute.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    step_in:
+      parent: workflow-tech-debt-triage
+      step: "6"
+    description: "分類済み tech-debt Issue の一括処理"
+
+  # === C-2a: Self-improve/ECC系（4個） ===
+
+  self-improve-collect:
+    type: atomic
+    path: commands/self-improve-collect.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "self-improve Issue の収集・分類・関連コンポーネント特定"
+
+  self-improve-propose:
+    type: atomic
+    path: commands/self-improve-propose.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "ECC 知識照合を含む改善提案生成"
+
+  self-improve-close:
+    type: atomic
+    path: commands/self-improve-close.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "self-improve Issue のクローズ処理"
+
+  ecc-monitor:
+    type: atomic
+    path: commands/ecc-monitor.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: ecc-monitor
+    description: "ECC リポジトリの変更検知・関連性評価"
+
+  # === C-2a: その他（1個） ===
+
+  twl-validate: # standalone: プロジェクト固有ユーティリティ
+    type: atomic
+    path: commands/twl-validate.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "構造・型ルール検証（twl + plugin validate）"
+
+  # === C-2b: Setup/Workflow-setup 系（5個） ===
+
+  services: # standalone: プロジェクト固有ユーティリティ
+    type: atomic
+    path: commands/services.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "開発サービス起動管理（コンテナ、Supabase、開発サーバー等）"
+
+  ui-capture: # standalone: 低頻度ユーティリティ
+    type: atomic
+    path: commands/ui-capture.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "UI スクショ撮影 + セマンティック解析でコンテキスト化"
+
+  e2e-plan: # standalone: 低頻度ユーティリティ
+    type: atomic
+    path: commands/e2e-plan.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "E2E テスト計画作成"
+
+  test-scaffold:
+    type: composite
+    path: commands/test-scaffold.md
+    spawnable_by: [controller, workflow]
+    can_spawn: [specialist]
+    step_in:
+      parent: workflow-test-ready
+      step: "1"
+    calls:
+      - specialist: spec-scaffold-tests
+      - specialist: e2e-generate
+      - reference: ref-specialist-output-schema
+    description: "テスト生成の統合コマンド（specialist 統合管理）"
+
+  worktree-delete:
+    type: atomic
+    path: commands/worktree-delete.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    calls:
+      - script: worktree-delete
+    description: "worktree + ブランチ削除（script ラッパー）"
+
+  phase-review:
+    type: composite
+    path: commands/phase-review.md
+    spawnable_by: [workflow]
+    can_spawn: [specialist, script]
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "2"
+    calls:
+      - script: specialist-output-parse
+      - script: tech-stack-detect
+      - specialist: worker-structure
+      - specialist: worker-principles
+      - specialist: worker-code-reviewer
+      - specialist: worker-security-reviewer
+      - specialist: worker-nextjs-reviewer
+      - specialist: worker-fastapi-reviewer
+      - specialist: worker-supabase-migration-checker
+      - specialist: worker-r-reviewer
+      - specialist: worker-e2e-reviewer
+      - specialist: worker-hono-reviewer
+      - specialist: worker-rls-reviewer
+      - specialist: worker-spec-reviewer
+      - specialist: worker-llm-output-reviewer
+      - specialist: worker-llm-eval-runner
+      - specialist: worker-data-validator
+      - specialist: worker-env-validator
+      - specialist: worker-codex-reviewer
+      - reference: ref-specialist-output-schema
+      - reference: baseline-coding-style
+      - reference: baseline-security-checklist
+      - reference: baseline-input-validation
+    description: "並列 specialist レビュー（動的レビュアー構築）"
+
+  fix-phase:
+    type: composite
+    path: commands/fix-phase.md
+    spawnable_by: [workflow]
+    can_spawn: [script]
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "4"
+    description: "自動修正ループ + E2E 修復"
+
+  e2e-screening:
+    type: composite
+    path: commands/e2e-screening.md
+    spawnable_by: [workflow]
+    can_spawn: [script]
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "6"
+    description: "Visual 検証（Screening + Heal）"
+
+  merge-gate:
+    type: composite
+    path: commands/merge-gate.md
+    spawnable_by: [workflow]
+    can_spawn: [specialist, script]
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "8"
+    calls:
+      - script: specialist-output-parse
+      - script: tech-stack-detect
+      - script: state-write
+      - script: worktree-delete
+      - specialist: worker-structure
+      - specialist: worker-principles
+      - specialist: worker-code-reviewer
+      - specialist: worker-security-reviewer
+      - specialist: worker-nextjs-reviewer
+      - specialist: worker-fastapi-reviewer
+      - specialist: worker-supabase-migration-checker
+      - specialist: worker-r-reviewer
+      - specialist: worker-e2e-reviewer
+      - specialist: worker-hono-reviewer
+      - specialist: worker-rls-reviewer
+      - specialist: worker-spec-reviewer
+      - specialist: worker-llm-output-reviewer
+      - specialist: worker-llm-eval-runner
+      - specialist: worker-data-validator
+      - specialist: worker-env-validator
+      - specialist: worker-codex-reviewer
+      - specialist: worker-architecture
+      - reference: ref-specialist-output-schema
+      - reference: baseline-coding-style
+      - reference: baseline-security-checklist
+      - reference: baseline-input-validation
+    description: "マージ判定（動的レビュー → severity フィルタ → PASS/REJECT）"
+
+  # === C-2c: PR-cycle 関連（6個） ===
+
+  ac-deploy-trigger:
+    type: atomic
+    path: commands/ac-deploy-trigger.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    description: "AC テキストから外部アクセスキーワードを検出し deploy E2E フラグ設定"
+
+  test-phase:
+    type: composite
+    path: commands/test-phase.md
+    spawnable_by: [controller, workflow]
+    can_spawn: [specialist]
+    calls:
+      - specialist: e2e-quality
+      - reference: ref-specialist-output-schema
+    description: "テストフェーズ（サービスヘルスチェック + E2E品質ゲート + テスト実行）"
+
+  auto-merge:
+    type: atomic
+    path: commands/auto-merge.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    step_in:
+      parent: workflow-pr-cycle
+      step: "8.5"
+    description: "squash マージ → archive → cleanup 実行（autopilot-first）"
+
+  pr-cycle-analysis:
+    type: atomic
+    path: commands/pr-cycle-analysis.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-cycle"
+    step_in:
+      parent: workflow-pr-cycle
+      step: "7.3"
+    description: "PR-cycle 結果からパターン分析し self-improve Issue 自動起票"
+
+  schema-update: # standalone: プロジェクト固有ユーティリティ
+    type: atomic
+    path: commands/schema-update.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "Zod スキーマ更新 + OpenAPI 再生成 + 検証（webapp-hono 専用）"
+
+  spec-diagnose: # standalone: 低頻度ユーティリティ
+    type: atomic
+    path: commands/spec-diagnose.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    description: "テスト失敗の原因診断（仕様誤り vs 実装誤り判定）"
+
+  # === C-2d: Autopilot / Controller-autopilot 系（11個） ===
+
+  autopilot-init:
+    type: atomic
+    path: commands/autopilot-init.md
+    spawnable_by: [controller]
+    can_spawn: []
+    step_in:
+      parent: co-autopilot
+      step: "3"
+    calls:
+      - script: autopilot-init
+      - script: session-create
+    description: "セッション初期化（autopilot-init.sh + session-create.sh ラッパー）"
+
+  autopilot-launch:
+    type: atomic
+    path: commands/autopilot-launch.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: autopilot-launch
+      - script: state-write
+      - script: crash-detect
+    description: "Worker 起動（tmux window 作成 + state-write --init）"
+
+  autopilot-poll:
+    type: atomic
+    path: commands/autopilot-poll.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: state-read
+      - script: state-write
+      - script: crash-detect
+      - script: session:session-state
+    description: "Issue 状態ポーリング（state-read + crash-detect.sh + session-state.sh）"
+
+  autopilot-phase-execute:
+    type: atomic
+    path: commands/autopilot-phase-execute.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: state-read
+      - script: state-write
+      - script: autopilot-should-skip
+      - script: health-check
+      - script: session:session-state
+    description: "Phase Issue ループ実行（launch → poll → merge-gate → health-check）"
+
+  autopilot-phase-postprocess:
+    type: atomic
+    path: commands/autopilot-phase-postprocess.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Phase 後処理チェーン（collect → retrospective → patterns → cross-issue）"
+
+  autopilot-collect:
+    type: atomic
+    path: commands/autopilot-collect.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: state-read
+      - script: state-write
+    description: "完了 Issue の変更ファイル収集（PR 差分 → session.json）"
+
+  autopilot-retrospective:
+    type: atomic
+    path: commands/autopilot-retrospective.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: state-read
+    description: "Phase 振り返り分析（パターン検出 + PHASE_INSIGHTS 生成）"
+
+  autopilot-patterns:
+    type: atomic
+    path: commands/autopilot-patterns.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: state-read
+    description: "繰り返しパターン検出 + self-improve Issue 起票"
+
+  autopilot-cross-issue:
+    type: atomic
+    path: commands/autopilot-cross-issue.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: state-read
+      - script: session-add-warning
+    description: "Cross-issue 影響分析（session-add-warning.sh 経由）"
+
+  autopilot-summary:
+    type: atomic
+    path: commands/autopilot-summary.md
+    spawnable_by: [controller]
+    can_spawn: []
+    step_in:
+      parent: co-autopilot
+      step: "5"
+    calls:
+      - script: state-read
+      - script: session-archive
+    description: "完了サマリー + 通知 + session-archive.sh"
+
+  session-audit:
+    type: atomic
+    path: commands/session-audit.md
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    step_in:
+      parent: co-autopilot
+      step: "5.5"
+    calls:
+      - script: session-audit
+    description: "セッション JSONL 事後分析（5 カテゴリ検出 + self-improve 起票）"
+
+# スクリプト（B-3 で追加）
+scripts:
+  state-read:
+    type: script
+    path: scripts/state-read.sh
+    description: "issue-{N}.json / session.json の読み取り"
+
+  state-write:
+    type: script
+    path: scripts/state-write.sh
+    description: "issue-{N}.json / session.json の書き込み（遷移バリデーション付き）"
+
+  autopilot-init:
+    type: script
+    path: scripts/autopilot-init.sh
+    description: ".autopilot/ ディレクトリ初期化とセッション排他制御"
+
+  autopilot-launch:
+    type: script
+    path: scripts/autopilot-launch.sh
+    calls:
+      - script: state-write
+      - script: crash-detect
+    description: "Worker 起動（tmux window 作成 + cld 起動 + クラッシュ検知フック設定）"
+
+  session-create:
+    type: script
+    path: scripts/session-create.sh
+    description: "session.json の新規作成"
+
+  session-archive:
+    type: script
+    path: scripts/session-archive.sh
+    description: "セッション完了時のアーカイブ"
+
+  session-add-warning:
+    type: script
+    path: scripts/session-add-warning.sh
+    description: "cross-issue 警告の session.json 追記"
+
+  worktree-delete:
+    type: script
+    path: scripts/worktree-delete.sh
+    description: "worktree + ブランチ削除（Pilot 専任）"
+
+  crash-detect:
+    type: script
+    path: scripts/crash-detect.sh
+    calls:
+      - script: state-read
+      - script: state-write
+      - script: session:session-state
+    description: "Worker crash 検知（session-state.sh 5状態検出 + tmux フォールバック）"
+
+  health-check:
+    type: script
+    path: scripts/health-check.sh
+    calls:
+      - script: state-read
+      - script: session:session-state
+    description: "Worker 論理的異常検知（chain停止・エラー出力・input-waiting長時間）+ health-report 生成"
+
+  post-skill-chain-nudge:
+    type: script
+    path: scripts/hooks/post-skill-chain-nudge.sh
+    calls:
+      - script: state-read
+      - script: state-write
+      - script: chain-runner
+    description: "PostToolUse hook: Skill tool 完了後に autopilot Worker の chain 継続を stdout 注入（Layer 1 defense in depth）"
+
+  tech-stack-detect:
+    type: script
+    path: scripts/tech-stack-detect.sh
+    description: "変更ファイルから tech-stack を判定し conditional specialist を返す"
+
+  specialist-output-parse:
+    type: script
+    path: scripts/specialist-output-parse.sh
+    description: "specialist 出力の共通スキーマパース（status + findings）"
+
+  # C-4: 旧 plugin から移植
+  autopilot-plan: # standalone: co-autopilot SKILL.md からインライン bash 実行（controller→script は型ルール上 calls 不可）
+    type: script
+    path: scripts/autopilot-plan.sh
+    description: "autopilot 実行計画 (plan.yaml) 生成（explicit/issues モード）"
+
+  autopilot-should-skip:
+    type: script
+    path: scripts/autopilot-should-skip.sh
+    description: "依存グラフベースの skip 判定"
+
+  autopilot-orchestrator:
+    type: script
+    path: scripts/autopilot-orchestrator.sh
+    calls:
+      - script: state-read
+      - script: state-write
+      - script: autopilot-launch
+      - script: worktree-create
+      - script: autopilot-should-skip
+      - script: crash-detect
+      - script: merge-gate-execute
+      - script: session:session-state
+    description: "Pilot 側 Phase 実行オーケストレーター（ループ・ポーリング・merge-gate・nudge・サマリー）。worktree 事前作成（不変条件 B）"
+
+  merge-gate-init: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
+    type: script
+    path: scripts/merge-gate-init.sh
+    description: "merge-gate 初期化（状態読み取り + PR差分取得 + GATE_TYPE判定）"
+
+  merge-gate-execute: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
+    type: script
+    path: scripts/merge-gate-execute.sh
+    description: "merge-gate マージ実行 / リジェクト（state-write.sh 統合）"
+
+  merge-gate-issues: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
+    type: script
+    path: scripts/merge-gate-issues.sh
+    description: "tech-debt / self-improve Issue 自動起票"
+
+  resolve-project: # lib: chain-runner, project-board-archive, project-board-backfill, autopilot-plan-board から source
+    type: script
+    path: scripts/lib/resolve-project.sh
+    description: "リポジトリにリンクされた Project を GraphQL で検出する共通関数（resolve_project）"
+
+  chain-runner:
+    type: script
+    path: scripts/chain-runner.sh
+    calls:
+      - script: worktree-create
+      - script: parse-issue-ac
+      - script: state-read
+      - script: state-write
+      - script: resolve-project
+    commands:
+      - init
+      - board-status-update
+      - board-archive
+      - ac-extract
+      - arch-ref
+      - change-id-resolve
+      - next-step
+      - ts-preflight
+      - pr-test
+      - all-pass-check
+      - pr-cycle-report
+      - check
+      - quick-guard
+    description: "機械的 chain ステップを bash で直接実行（Worker トークン消費削減）"
+
+  worktree-create:
+    type: script
+    path: scripts/worktree-create.sh
+    description: "bare repo 向け worktree 作成（Issue番号→ブランチ名生成）"
+
+  branch-create: # standalone: 通常 repo 向け（worktree モードでは worktree-create を使用）
+    type: script
+    path: scripts/branch-create.sh
+    description: "通常 repo 向けフィーチャーブランチ作成"
+
+  project-create:
+    type: script
+    path: scripts/project-create.sh
+    description: "プロジェクト新規作成（タイプ別テンプレート対応）"
+
+  project-migrate:
+    type: script
+    path: scripts/project-migrate.sh
+    description: "既存プロジェクトの最新テンプレート移行"
+
+  classify-failure: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
+    type: script
+    path: scripts/classify-failure.sh
+    description: "PR cycle 障害原因を harness / code / unknown に分類"
+
+  parse-issue-ac:
+    type: script
+    path: scripts/parse-issue-ac.sh
+    description: "Issue body + コメントから受け入れ基準（AC）抽出"
+
+  session-audit:
+    type: script
+    path: scripts/session-audit.sh
+    description: "セッション JSONL から監査サマリー抽出"
+
+  # check-db-migration: removed — webapp 固有、dev plugin 不使用（scripts/check-db-migration.py は保持）
+
+  ecc-monitor:
+    type: script
+    path: scripts/ecc-monitor.sh
+    description: "ECC リポジトリの変更検知・カテゴリ分類"
+
+  escape-issue-body:
+    type: script
+    path: scripts/escape-issue-body.sh
+    description: "Issue body の HTML エスケープ（& → &amp;、< → &lt;、> → &gt;）"
+
+  codex-review: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
+    type: script
+    path: scripts/codex-review.sh
+    description: "Codex CLI による補完的コードレビュー"
+
+  create-harness-issue: # standalone: pr-cycle helper script（fix-phase.md から未呼出）
+    type: script
+    path: scripts/create-harness-issue.sh
+    description: "harness 分類時に cross-repo Issue 自動作成"
+
+  # switchover: removed — スイッチオーバー完了済み（scripts/switchover.sh は保持）
+
+# エージェント（C-3 で追加）
+agents:
+  # 構造チェック系（haiku）
+  worker-structure:
+    type: specialist
+    path: agents/worker-structure.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "構造検証（twl実行 + frontmatter整合性チェック）"
+
+  worker-principles:
+    type: specialist
+    path: agents/worker-principles.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "5原則+controller品質検証"
+
+  worker-env-validator:
+    type: specialist
+    path: agents/worker-env-validator.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "環境変数の整合性検証"
+
+  worker-rls-reviewer:
+    type: specialist
+    path: agents/worker-rls-reviewer.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "Supabase RLSポリシーの論理的正確性検証"
+
+  worker-supabase-migration-checker:
+    type: specialist
+    path: agents/worker-supabase-migration-checker.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "Supabase DBマイグレーションSQL品質レビュー"
+
+  worker-data-validator:
+    type: specialist
+    path: agents/worker-data-validator.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "オミクスデータファイルの検証"
+
+  template-validator: # standalone: Task tool 経由で動的 spawn（calls 不要）
+    type: specialist
+    path: agents/template-validator.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "Issueテンプレート準拠バリデーター"
+
+  context-checker: # standalone: Task tool 経由で動的 spawn（calls 不要）
+    type: specialist
+    path: agents/context-checker.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "Issueプロジェクトコンテキストチェック"
+
+  worker-e2e-reviewer:
+    type: specialist
+    path: agents/worker-e2e-reviewer.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "Playwright E2Eテストのレビュー"
+
+  worker-spec-reviewer:
+    type: specialist
+    path: agents/worker-spec-reviewer.md
+    model: haiku
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "OpenSpec Scenarioの品質レビュー"
+
+  # Issue レビュー系（sonnet）
+  issue-critic:
+    type: specialist
+    path: agents/issue-critic.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-issue-quality-criteria, ref-investigation-budget]
+    description: "Issue の仮定・曖昧点・盲点・粒度・split・依存検出"
+
+  issue-feasibility:
+    type: specialist
+    path: agents/issue-feasibility.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-issue-quality-criteria, ref-investigation-budget]
+    description: "実コード読みで Issue の実装可能性・影響範囲検証"
+
+  worker-codex-reviewer:
+    type: specialist
+    path: agents/worker-codex-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-issue-quality-criteria, ref-specialist-output-schema]
+    description: "Codex CLI による補完的レビュー（Issue/PR 両対応）"
+
+  # 品質判断系（sonnet）
+  worker-code-reviewer:
+    type: specialist
+    path: agents/worker-code-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "コード品質レビュー"
+
+  worker-security-reviewer:
+    type: specialist
+    path: agents/worker-security-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "セキュリティ脆弱性検出"
+
+  worker-nextjs-reviewer:
+    type: specialist
+    path: agents/worker-nextjs-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "Next.js 15 + React 19 コードレビュー"
+
+  worker-fastapi-reviewer:
+    type: specialist
+    path: agents/worker-fastapi-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "FastAPI + Pydantic v2 コードレビュー"
+
+  worker-hono-reviewer:
+    type: specialist
+    path: agents/worker-hono-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "Hono + Zod + monorepo整合性レビュー"
+
+  worker-r-reviewer:
+    type: specialist
+    path: agents/worker-r-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "Rコード（.R, .Rmd, .qmd）のレビュー"
+
+  worker-architecture:
+    type: specialist
+    path: agents/worker-architecture.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema, ref-architecture]
+    description: "アーキテクチャパターン検証 (PR diff モード: architecture/domain/glossary.md, architecture/domain/model.md, architecture/vision.md を参照)"
+
+  worker-llm-output-reviewer:
+    type: specialist
+    path: agents/worker-llm-output-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "LLM出力品質レビュー"
+
+  worker-llm-eval-runner:
+    type: specialist
+    path: agents/worker-llm-eval-runner.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "LLM_CRITERIAベースの品質評価"
+
+  # ユーティリティ系（sonnet）
+  docs-researcher: # standalone: Task tool 経由で動的 spawn（calls 不要）
+    type: specialist
+    path: agents/docs-researcher.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "ドキュメント動的取得"
+
+  e2e-quality:
+    type: specialist
+    path: agents/e2e-quality.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "E2Eテストの偽陽性リスク検出"
+
+  autofix-loop: # standalone: Task tool 経由で動的 spawn（calls 不要）
+    type: specialist
+    path: agents/autofix-loop.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "自動修正ループ"
+
+  spec-scaffold-tests:
+    type: specialist
+    path: agents/spec-scaffold-tests.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "OpenSpec ScenarioからBDDテスト自動生成"
+
+  e2e-generate:
+    type: specialist
+    path: agents/e2e-generate.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "ScenarioからE2Eテスト生成"
+
+  e2e-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
+    type: specialist
+    path: agents/e2e-heal.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "失敗E2Eテストの分析・修復"
+
+  e2e-visual-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
+    type: specialist
+    path: agents/e2e-visual-heal.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "Visual検証失敗の分析・修復"

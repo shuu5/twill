@@ -1,0 +1,263 @@
+change_id: remove-auto-flags-add-state-detection
+generated_at: "2026-03-31T00:00:00Z"
+test_framework: bats-style-bash
+scenarios:
+  - id: "no-auto-merge-in-codebase"
+    name: "プロジェクト全体からの --auto-merge 除去"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 93
+    requirement: "--auto-merge フラグの完全除去"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "commands/ と skills/ に --auto-merge が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-auto-merge-in-workflow-setup"
+    name: "workflow-setup SKILL.md に --auto-merge が存在しない"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 26
+    requirement: "workflow-setup の引数解析統一"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "workflow-setup SKILL.md に --auto-merge フラグが存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-auto-flag-in-workflow-setup"
+    name: "workflow-setup から --auto/--auto-merge 除去"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 27
+    requirement: "workflow-setup の引数解析統一"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "workflow-setup SKILL.md に --auto フラグが存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "workflow-setup-uses-state-read"
+    name: "workflow-setup の自動継続判定"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 31
+    requirement: "workflow-setup の引数解析統一"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "workflow-setup SKILL.md が state-read.sh を参照する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "workflow-setup-is-autopilot-condition"
+    name: "workflow-setup が IS_AUTOPILOT 判定を使用する"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 32
+    requirement: "workflow-setup の引数解析統一"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "workflow-setup SKILL.md が IS_AUTOPILOT 判定を使用する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "opsx-apply-no-auto-flag"
+    name: "opsx-apply から --auto 分岐除去"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 38
+    requirement: "opsx-apply のフラグ除去"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "commands/apply.md に --auto フラグが存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "opsx-apply-uses-state-read"
+    name: "opsx-apply の自動継続"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 43
+    requirement: "opsx-apply のフラグ除去"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "commands/apply.md が state-read.sh または IS_AUTOPILOT 判定を使用する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pr-cycle-no-auto-arg"
+    name: "pr-cycle-analysis から --auto 除去"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 51
+    requirement: "pr-cycle-analysis のフラグ除去"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "skills/workflow-pr-cycle/SKILL.md に --auto 引数が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pr-cycle-uses-state-read"
+    name: "autopilot 配下での自動起票"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 55
+    requirement: "pr-cycle-analysis のフラグ除去"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "skills/workflow-pr-cycle/SKILL.md が state-read.sh または IS_AUTOPILOT を参照する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "self-improve-no-auto-arg"
+    name: "self-improve-propose から --auto 除去"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 62
+    requirement: "self-improve-propose のフラグ除去"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "commands/self-improve-propose.md に --auto 引数が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "self-improve-uses-state-read"
+    name: "autopilot 配下での自動承認"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 66
+    requirement: "self-improve-propose のフラグ除去"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "commands/self-improve-propose.md が state-read.sh または IS_AUTOPILOT を参照する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-launch-prompt-no-flags"
+    name: "autopilot-launch のプロンプト"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 74
+    requirement: "autopilot-launch プロンプト変更"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "autopilot-launch のプロンプトに --auto/--auto-merge が含まれない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-launch-prompt-issue-format"
+    name: "autopilot-launch のプロンプトが /twl:workflow-setup #${ISSUE} 形式"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 75
+    requirement: "autopilot-launch プロンプト変更"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "autopilot-launch のプロンプトが /twl:workflow-setup #${ISSUE} 形式である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-autopilot-no-auto-merge"
+    name: "co-autopilot から --auto-merge 言及除去"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 83
+    requirement: "co-autopilot の --auto-merge 除去"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "skills/co-autopilot/SKILL.md に --auto-merge が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-autopilot-auto-flag-survives"
+    name: "co-autopilot に --auto が存続している（Pilot 層フラグ）"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 84
+    requirement: "co-autopilot の --auto-merge 除去"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "skills/co-autopilot/SKILL.md に --auto が存続している（Pilot 層フラグ）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-read-supports-issue-type"
+    name: "autopilot 配下での判定 - state-read.sh --type issue"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 11
+    requirement: "issue-{N}.json ベース autopilot 判定パターン"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "state-read.sh が --type issue / --issue フラグをサポートする"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-read-supports-field-status"
+    name: "autopilot 配下での判定 - --field status"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 11
+    requirement: "issue-{N}.json ベース autopilot 判定パターン"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "state-read.sh が --field status をサポートする"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-read-running-value"
+    name: "autopilot 配下での判定 - status=running"
+    spec_file: "specs/autopilot-state-detection.md"
+    spec_line: 12
+    requirement: "issue-{N}.json ベース autopilot 判定パターン"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "state-read.sh が status=running を認識する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "c2d-spec-no-auto-merge-in-prompt"
+    name: "openspec c-2d の矛盾解消"
+    spec_file: "specs/openspec-contradiction-fix.md"
+    spec_line: 10
+    requirement: "c-2d session-management spec のプロンプト修正"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "c-2d spec の autopilot-launch プロンプトに --auto --auto-merge が含まれない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "c2d-spec-prompt-issue-format"
+    name: "openspec c-2d のプロンプト形式確認"
+    spec_file: "specs/openspec-contradiction-fix.md"
+    spec_line: 11
+    requirement: "c-2d session-management spec のプロンプト修正"
+    test_file: "tests/scenarios/auto-flag-removal.test.sh"
+    test_name: "c-2d spec の Worker 起動プロンプトが /twl:workflow-setup #${ISSUE} 形式である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
