@@ -29,11 +29,9 @@ standalone ユーティリティコマンドの統合エントリポイント。
 
 | カテゴリ | キーワード | コマンド |
 |---------|-----------|---------|
-| **OpenSpec** | propose, apply, archive, change, 提案, 実装, アーカイブ | change-propose, change-apply, change-archive |
 | **Worktree** | worktree, 一覧, 削除, list, delete | worktree-list, worktree-delete |
-| **検証** | validate, check, 検証, チェック, diagnose, 診断 | twl-validate, check, spec-diagnose |
-| **開発** | services, サービス, ui, capture, スクショ, e2e, schema | services, ui-capture, e2e-plan, schema-update |
-| **改善** | self-improve, セルフレビュー, レビュー, エラー | self-improve-review |
+| **検証** | validate, 検証, チェック | twl-validate |
+| **開発** | services, サービス, ui, capture, スクショ, schema | services, ui-capture, schema-update |
 
 ### 判定ロジック
 
@@ -50,28 +48,17 @@ standalone ユーティリティコマンドの統合エントリポイント。
 ```
 利用可能なユーティリティコマンド:
 
-📦 OpenSpec
-  /twl:change-propose — change ディレクトリを作成し全 artifact を一括生成
-  /twl:change-apply   — OpenSpec change の tasks.md に沿ってタスクを実装
-  /twl:change-archive — 完了済み change を archive/ に移動
-
 🌳 Worktree
   /twl:worktree-list   — worktree 一覧表示
   /twl:worktree-delete — worktree + ブランチ削除
 
-🔍 検証・診断
+🔍 検証
   /twl:twl-validate  — 構造・型ルール検証（twl + plugin validate）
-  /twl:check         — ワークフロー準備状況チェック
-  /twl:spec-diagnose — テスト失敗の原因診断（仕様誤り vs 実装誤り）
 
 🛠 開発ユーティリティ
   /twl:services      — 開発サービス起動管理
   /twl:ui-capture    — UI スクショ撮影 + セマンティック解析
-  /twl:e2e-plan      — E2E テスト計画作成
   /twl:schema-update — Zod スキーマ更新 + OpenAPI 再生成
-
-📊 改善
-  /twl:self-improve-review — セッション中のBashエラーをレビュー
 ```
 
 AskUserQuestion: 「どのコマンドを実行しますか？番号またはコマンド名で指定してください」

@@ -340,9 +340,6 @@ digraph Dependencies {
     skill_workflow_tech_debt_triage -> script_autopilot_orchestrator [style=invis, weight=10];
     script_autopilot_orchestrator -> script_autopilot_plan [style=invis, weight=10];
     script_autopilot_plan -> skill_self_improve_format [style=invis, weight=10];
-    cmd_change_propose -> cmd_change_apply [style=invis, weight=10];
-    cmd_change_apply -> cmd_change_archive [style=invis, weight=10];
-    cmd_check -> cmd_spec_diagnose [style=invis, weight=10];
     cmd_init -> cmd_worktree_create [style=invis, weight=10];
     cmd_worktree_create -> cmd_project_board_status_update [style=invis, weight=10];
     cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];
