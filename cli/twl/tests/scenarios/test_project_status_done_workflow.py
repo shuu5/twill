@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-REPO_ROOT = Path(__file__).parent.parent.parent
+REPO_ROOT = Path(__file__).parent.parent.parent.parent.parent
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "project-status-done.yml"
 
 # Hardcoded IDs from design.md / Issue #56 body
