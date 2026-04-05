@@ -1,0 +1,28 @@
+#!/bin/bash
+# cld - Claude Code launcher with auto plugin discovery
+set -euo pipefail
+
+if ! command -v claude &>/dev/null; then
+    echo "Error: claude が見つかりません（npm install -g @anthropic-ai/claude-code）" >&2
+    exit 1
+fi
+
+PLUGINS_BASE="$HOME/.claude/plugins"
+PLUGIN_ARGS=()
+
+for dir in "$PLUGINS_BASE"/*/; do
+    if [[ -f "${dir}.claude-plugin/plugin.json" ]]; then
+        PLUGIN_ARGS+=(--plugin-dir "$dir")
+    fi
+done
+
+ENV_ARGS=()
+while IFS= read -r line; do
+    key="${line%%=*}"
+    val="${line#*=}"
+    ENV_ARGS+=(--setenv="${key}=${val}")
+done < <(env | grep '^DEV_')
+
+exec systemd-run --user --scope -p MemoryMax=12G \
+    "${ENV_ARGS[@]}" \
+    claude --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" "$@"

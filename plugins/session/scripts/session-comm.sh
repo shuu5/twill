@@ -1,0 +1,315 @@
+#!/bin/bash
+# =============================================================================
+# session-comm.sh - Claude Code セッション間通信プリミティブ
+#
+# Usage:
+#   session-comm.sh capture <window> [--lines N] [--raw]
+#   session-comm.sh inject <window> <text> [--force] [--no-enter]
+#   session-comm.sh wait-ready <window> [--timeout N]
+#
+# Dependencies: session-state.sh (#277)
+# =============================================================================
+set -euo pipefail
+
+# テスト時のみ SESSION_COMM_SCRIPT_DIR を許可（_TEST_MODE ガード必須）
+if [[ -n "${_TEST_MODE:-}" ]] && [[ -n "${SESSION_COMM_SCRIPT_DIR:-}" ]]; then
+    SCRIPT_DIR="$SESSION_COMM_SCRIPT_DIR"
+else
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+MAX_INJECT_LEN=4096
+DEFAULT_CAPTURE_LINES=50
+DEFAULT_TIMEOUT=30
+
+# =============================================================================
+# ユーティリティ
+# =============================================================================
+usage() {
+    cat <<'EOF'
+Usage:
+  session-comm.sh capture <window> [--lines N] [--all] [--raw]
+  session-comm.sh inject <window> <text> [--force] [--no-enter]
+  session-comm.sh wait-ready <window> [--timeout SECONDS]
+
+Subcommands:
+  capture     Capture pane content (ANSI stripped by default)
+              --all   Capture full scrollback (mutually exclusive with --lines)
+  inject      Send text to a window (state-checked)
+  wait-ready  Wait until window is input-waiting
+EOF
+    exit 1
+}
+
+# ウィンドウのtmuxターゲットを解決
+resolve_target() {
+    local window_name="$1"
+    if [[ "$window_name" == *:* ]]; then
+        if ! [[ "$window_name" =~ ^[A-Za-z0-9_./-]+:[0-9]+$ ]]; then
+            echo "Error: invalid target format '$window_name'" >&2
+            return 1
+        fi
+        if ! tmux has-session -t "${window_name%%:*}" 2>/dev/null; then
+            echo "Error: session '${window_name%%:*}' not found" >&2
+            return 1
+        fi
+        echo "$window_name"
+        return
+    fi
+    local target
+    target=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
+        | awk -v name="$window_name" '$2 == name { print $1; exit }')
+    if [[ -z "$target" ]]; then
+        echo "Error: window '$window_name' not found" >&2
+        return 1
+    fi
+    echo "$target"
+}
+
+# ANSI エスケープコード除去
+strip_ansi() {
+    sed 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b\][^\x07]*\x07//g; s/\x1b(B//g'
+}
+
+# 制御文字サニタイズ（タブ以外の 0x00-0x1F を除去。改行・CRも除去: 単一行入力のみ）
+sanitize_text() {
+    tr -d '\000-\010\012-\015\016-\037'
+}
+
+# =============================================================================
+# サブコマンド: capture
+# =============================================================================
+cmd_capture() {
+    local window_name=""
+    local lines=$DEFAULT_CAPTURE_LINES
+    local lines_set=false
+    local raw=false
+    local all=false
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --lines)
+                if [[ -z "${2:-}" ]]; then
+                    echo "Error: --lines requires a value" >&2
+                    exit 1
+                fi
+                lines="$2"
+                lines_set=true
+                if ! [[ "$lines" =~ ^[0-9]+$ ]] || [[ "$lines" -eq 0 ]]; then
+                    echo "Error: --lines requires a positive integer" >&2
+                    exit 1
+                fi
+                shift 2
+                ;;
+            --all)
+                all=true
+                shift
+                ;;
+            --raw)
+                raw=true
+                shift
+                ;;
+            -*)
+                echo "Error: unknown option '$1'" >&2
+                usage
+                ;;
+            *)
+                if [[ -z "$window_name" ]]; then
+                    window_name="$1"
+                else
+                    echo "Error: unexpected argument '$1'" >&2
+                    usage
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [[ -z "$window_name" ]]; then
+        echo "Error: window name required" >&2
+        usage
+    fi
+
+    # --all と --lines は排他
+    if $all && $lines_set; then
+        echo "Error: --all and --lines are mutually exclusive" >&2
+        exit 1
+    fi
+
+    local target
+    target=$(resolve_target "$window_name") || exit 1
+
+    local captured
+    if $all; then
+        captured=$(tmux capture-pane -p -t "$target" -S - 2>/dev/null) || {
+            echo "Error: failed to capture pane for '$window_name'" >&2
+            exit 1
+        }
+    else
+        captured=$(tmux capture-pane -p -t "$target" -S "-${lines}" 2>/dev/null) || {
+            echo "Error: failed to capture pane for '$window_name'" >&2
+            exit 1
+        }
+    fi
+
+    if $raw; then
+        printf '%s\n' "$captured"
+    else
+        printf '%s\n' "$captured" | strip_ansi
+    fi
+}
+
+# =============================================================================
+# サブコマンド: inject
+# =============================================================================
+cmd_inject() {
+    local window_name=""
+    local text=""
+    local force=false
+    local no_enter=false
+
+    # 最初の2つの位置引数を取得
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --force)
+                force=true
+                shift
+                ;;
+            --no-enter)
+                no_enter=true
+                shift
+                ;;
+            -*)
+                echo "Error: unknown option '$1'" >&2
+                usage
+                ;;
+            *)
+                if [[ -z "$window_name" ]]; then
+                    window_name="$1"
+                elif [[ -z "$text" ]]; then
+                    text="$1"
+                else
+                    echo "Error: unexpected argument '$1'" >&2
+                    usage
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [[ -z "$window_name" ]]; then
+        echo "Error: window name required" >&2
+        usage
+    fi
+    if [[ -z "$text" ]]; then
+        echo "Error: text required" >&2
+        usage
+    fi
+
+    # サニタイズ
+    text=$(printf '%s' "$text" | sanitize_text)
+
+    # 最大長チェック
+    if [[ ${#text} -gt $MAX_INJECT_LEN ]]; then
+        echo "Error: text exceeds maximum length of ${MAX_INJECT_LEN} bytes" >&2
+        exit 1
+    fi
+
+    local target
+    target=$(resolve_target "$window_name") || exit 1
+
+    # 状態チェック（stdout=状態文字列、stderr=エラー情報を分離）
+    local state
+    if ! state=$("$SCRIPT_DIR/session-state.sh" state "$window_name" 2>/dev/null); then
+        echo "Warning: session-state.sh failed for '$window_name'" >&2
+        state="unknown"
+    fi
+
+    if [[ "$state" != "input-waiting" ]]; then
+        if $force; then
+            echo "Warning: target '$window_name' is in state '$state' (not input-waiting), sending anyway" >&2
+        else
+            echo "Error: target '$window_name' is in state '$state' (expected: input-waiting)" >&2
+            exit 2
+        fi
+    fi
+
+    # send-keys で送信（-l: literal モード、キー名解釈を抑制）
+    tmux send-keys -t "$target" -l "$text" || {
+        echo "Error: failed to send keys to '$window_name'" >&2
+        exit 1
+    }
+
+    if ! $no_enter; then
+        tmux send-keys -t "$target" Enter
+    fi
+}
+
+# =============================================================================
+# サブコマンド: wait-ready
+# =============================================================================
+cmd_wait_ready() {
+    local window_name=""
+    local timeout=$DEFAULT_TIMEOUT
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --timeout)
+                if [[ -z "${2:-}" ]]; then
+                    echo "Error: --timeout requires a value" >&2
+                    exit 1
+                fi
+                timeout="$2"
+                if ! [[ "$timeout" =~ ^[1-9][0-9]*$ ]]; then
+                    echo "Error: --timeout requires a positive integer" >&2
+                    usage
+                fi
+                shift 2
+                ;;
+            -*)
+                echo "Error: unknown option '$1'" >&2
+                usage
+                ;;
+            *)
+                if [[ -z "$window_name" ]]; then
+                    window_name="$1"
+                else
+                    echo "Error: unexpected argument '$1'" >&2
+                    usage
+                fi
+                shift
+                ;;
+        esac
+    done
+
+    if [[ -z "$window_name" ]]; then
+        echo "Error: window name required" >&2
+        usage
+    fi
+
+    exec "$SCRIPT_DIR/session-state.sh" wait "$window_name" input-waiting --timeout "$timeout"
+}
+
+# =============================================================================
+# メインディスパッチ
+# =============================================================================
+case "${1:-}" in
+    capture)
+        shift
+        cmd_capture "$@"
+        ;;
+    inject)
+        shift
+        cmd_inject "$@"
+        ;;
+    wait-ready)
+        shift
+        cmd_wait_ready "$@"
+        ;;
+    -h|--help|"")
+        usage
+        ;;
+    *)
+        echo "Error: unknown subcommand '$1'" >&2
+        usage
+        ;;
+esac
