@@ -5714,6 +5714,13 @@ def sync_docs(target_dir: str, check_only: bool = False):
 
 
 def main():
+    # spec サブコマンドの前処理（sys.argv を先に検査）
+    if len(sys.argv) >= 2 and sys.argv[1] == 'spec':
+        _engine_dir = Path(__file__).resolve().parent
+        sys.path.insert(0, str(_engine_dir / 'src'))
+        from twl.spec import main as spec_main
+        spec_main(sys.argv[2:])
+
     # chain サブコマンドの前処理（sys.argv を先に検査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'chain':
         if len(sys.argv) >= 3 and sys.argv[2] == 'generate':
