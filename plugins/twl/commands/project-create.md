@@ -18,8 +18,7 @@
 ## 実行
 
 ```bash
-SCRIPT_DIR="${CLAUDE_PLUGIN_ROOT}/scripts"
-bash "$SCRIPT_DIR/project-create.sh" $ARGUMENTS
+python3 -m twl.autopilot.project create $ARGUMENTS
 ```
 
 ## 実行フロー
