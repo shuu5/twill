@@ -23,10 +23,8 @@ from __future__ import annotations
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -300,39 +298,32 @@ class MergeGate:
 
     def _run_merge(self, gh_repo_flag: list[str]) -> bool:
         """Execute gh pr merge --squash. Returns True on success."""
-        error_log = tempfile.NamedTemporaryFile(
-            prefix="merge-error-", suffix=".log", delete=False, mode="w"
+        result = subprocess.run(
+            ["gh", "pr", "merge", self.pr_number, *gh_repo_flag, "--squash"],
+            capture_output=True,
+            text=True,
         )
-        try:
-            result = subprocess.run(
-                ["gh", "pr", "merge", self.pr_number, *gh_repo_flag, "--squash"],
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode == 0:
-                return True
+        if result.returncode == 0:
+            return True
 
-            # Mask credentials in error
-            raw_err = result.stderr
-            raw_err = re.sub(r"ghp_[a-zA-Z0-9]+", "ghp_***MASKED***", raw_err)
-            raw_err = re.sub(r"Bearer\s+\S+", "Bearer ***MASKED***", raw_err)
-            raw_err = raw_err[:500]
+        # Mask credentials in error
+        raw_err = result.stderr
+        raw_err = re.sub(r"ghp_[a-zA-Z0-9]+", "ghp_***MASKED***", raw_err)
+        raw_err = re.sub(r"Bearer\s+\S+", "Bearer ***MASKED***", raw_err)
+        raw_err = raw_err[:500]
 
-            failure = json.dumps({
-                "reason": "merge_failed",
-                "details": raw_err,
-                "step": "merge-gate",
-                "pr": f"#{self.pr_number}",
-            })
-            _state_write(self.issue, "pilot", status="failed", failure=failure)
-            print(
-                f"[merge-gate] Issue #{self.issue}: マージ失敗 - {raw_err}",
-                file=sys.stderr,
-            )
-            return False
-        finally:
-            error_log.close()
-            Path(error_log.name).unlink(missing_ok=True)
+        failure = json.dumps({
+            "reason": "merge_failed",
+            "details": raw_err,
+            "step": "merge-gate",
+            "pr": f"#{self.pr_number}",
+        })
+        _state_write(self.issue, "pilot", status="failed", failure=failure)
+        print(
+            f"[merge-gate] Issue #{self.issue}: マージ失敗 - {raw_err}",
+            file=sys.stderr,
+        )
+        return False
 
     def _post_merge_cleanup(self, repo_mode: str, autopilot_status: str) -> None:
         """Clean up worktree/branch after successful merge (non-autopilot path only)."""
@@ -412,8 +403,20 @@ class MergeGate:
         env = os.environ.get("AUTOPILOT_DIR", "")
         if env:
             p = Path(env)
+            # Security: reject path traversal
             if ".." in p.parts:
-                p = Path(".autopilot")
+                return Path(".autopilot")
+            # Security: reject absolute paths that escape git root
+            if p.is_absolute():
+                try:
+                    root = subprocess.check_output(
+                        ["git", "rev-parse", "--show-toplevel"],
+                        stderr=subprocess.DEVNULL,
+                        text=True,
+                    ).strip()
+                    p.relative_to(root)  # raises ValueError if outside root
+                except (subprocess.CalledProcessError, ValueError, OSError):
+                    return Path(".autopilot")
             return p
         try:
             root = subprocess.check_output(

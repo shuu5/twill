@@ -112,7 +112,7 @@ def extract_issue_ac(issue_num: str, repo: str | None = None) -> list[str]:
     issue_data = _gh_json("issue", "view", issue_num, *repo_flag, "--json", "body,number")
     body: str = issue_data.get("body") or ""
     if not body:
-        raise GitHubError(f"Issue #{issue_num} の取得に失敗しました")
+        raise GitHubError(f"Issue #{issue_num} の body が空です")
 
     # Extract 受け入れ基準 section from body
     ac_section = _extract_ac_section(body)
@@ -168,9 +168,9 @@ def get_pr_findings(pr_num: str, repo: str | None = None) -> dict[str, Any]:
     if not _PR_NUM_RE.match(pr_num):
         raise GitHubError(f"不正なPR番号: {pr_num!r}")
 
-    repo_flag = ["-R", repo] if repo else []
     if repo:
         _validate_repo(repo)
+    repo_flag = ["-R", repo] if repo else []
 
     # Reviews
     reviews: list[dict[str, Any]] = []
@@ -377,7 +377,9 @@ def create_issue(
 
     # Extract number from URL
     num_match = re.search(r"/issues/(\d+)$", url)
-    number = int(num_match.group(1)) if num_match else 0
+    if not num_match:
+        raise GitHubError(f"Issue 作成後の URL から番号を取得できませんでした: {url!r}")
+    number = int(num_match.group(1))
 
     return {"number": number, "url": url, "title": title}
 

@@ -100,12 +100,15 @@ def parse_specialist_output(text: str) -> ParseResult:
 
 def _fallback_result(raw_text: str) -> ParseResult:
     """Fallback: wrap full output as a WARNING finding with confidence=50."""
+    # Truncate and sanitize to prevent log injection from large/malicious inputs
+    truncated = raw_text[:2000]
+    truncated = "".join(c if c.isprintable() or c in ("\n", "\t") else "?" for c in truncated)
     finding: dict[str, Any] = {
         "severity": "WARNING",
         "confidence": 50,
         "file": "unknown",
         "line": 0,
-        "message": f"Parse failed. Raw output: {raw_text}",
+        "message": f"Parse failed. Raw output: {truncated}",
         "category": "parse-failure",
     }
     return ParseResult(status="WARN", findings=[finding], parse_error=True)
