@@ -1,5 +1,5 @@
 ---
-name: twl:co-issue
+name: dev:co-issue
 description: |
   要望をGitHub Issueに変換するワークフロー。
   4 Phase 構成: 問題探索 → 分解判断 → Per-Issue 精緻化 → 一括作成。
@@ -44,7 +44,7 @@ THEN
 
 ファイルが存在しない場合はスキップし、エラーを出力しない。`ARCH_CONTEXT` が空の場合は従来通り explore を実行する。
 
-`/twl:explore` を Skill tool で呼び出し、「問題空間の理解に集中。Issue 化や実装方法は意識しない」と注入。`ARCH_CONTEXT` が存在する場合、以下を explore の prompt に追加注入する:
+`/dev:explore` を Skill tool で呼び出し、「問題空間の理解に集中。Issue 化や実装方法は意識しない」と注入。`ARCH_CONTEXT` が存在する場合、以下を explore の prompt に追加注入する:
 
 ```
 ## Architecture Context
@@ -91,7 +91,7 @@ explore-summary.md を読み込み、単一/複数 Issue を判断。
 
 explore-summary.md の内容から、以下の条件でクロスリポ横断を検出する:
 
-1. **複数リポ名の明示的言及**: 2つ以上の異なるリポ名（twill 等）が言及されている
+1. **複数リポ名の明示的言及**: 2つ以上の異なるリポ名（loom, loom-plugin-dev, loom-plugin-session 等）が言及されている
 2. **クロスリポキーワード**: 「全リポ」「3リポ」「各リポ」「クロスリポ」「全リポジトリ」等のキーワードが含まれる
 3. **複数リポのファイルパス**: 異なるリポのパスが含まれる
 
@@ -136,9 +136,9 @@ TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
 各 Issue 候補に対して順に:
 
-1. **構造化**: `/twl:issue-structure` でテンプレート適用（bug/feature）
+1. **構造化**: `/dev:issue-structure` でテンプレート適用（bug/feature）
 2. **推奨ラベル抽出**: issue-structure 出力の `## 推奨ラベル` セクションから `ctx/<name>` を抽出し recommended_labels に記録（セクションなし→空）
-3. **tech-debt 棚卸し**（該当時のみ）: `/twl:issue-tech-debt-absorb` → Phase 4 で使用
+3. **tech-debt 棚卸し**（該当時のみ）: `/dev:issue-tech-debt-absorb` → Phase 4 で使用
 
 **クロスリポ分割時の構造化ルール**（`cross_repo_split = true` の場合）:
 
@@ -149,7 +149,11 @@ TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
 `--quick` 指定時はこのステップをスキップし、Step 3a のみで Phase 3 を完了する。`--quick` フラグ使用時は quick ラベルを付与してはならない（MUST NOT）。
 
-全 Issue の構造化完了後、全 Issue × 3 specialist を一括並列 spawn（Agent tool）。`is_quick_candidate: true` の Issue は prompt に `<quick_classification>` タグを追加注入し、specialist が `quick-classification` カテゴリで妥当性を検証する（issue-critic: 隠れた複雑性、issue-feasibility: ~20行以下の確認）。逆方向の推奨も許可（severity: INFO）。
+**spawn 粒度制約（MUST）**: 1回の Agent spawn には **1 Issue のみ** を渡すこと。複数 Issue を1つの prompt に連結して渡してはならない（MUST NOT）。specialist の maxTurns: 15 は 1 Issue 用に設計されており、複数 Issue を一括投入すると turns 不足で構造化出力なしに終了する。
+
+**実行パターン**: Issue ごとに 3 specialist を spawn する。5 Issue なら 15 Agent を一括並列 spawn（単一メッセージで全 Agent tool call を発行）。各 Agent の prompt には対象の 1 Issue のみを含める。
+
+`is_quick_candidate: true` の Issue は prompt に `<quick_classification>` タグを追加注入し、specialist が `quick-classification` カテゴリで妥当性を検証する（issue-critic: 隠れた複雑性、issue-feasibility: ~20行以下の確認）。逆方向の推奨も許可（severity: INFO）。
 
 **アーキテクチャ制約（SHALL）**: Issue body を受け取る全 specialist は必ずエスケープ済み入力を受け取る。エスケープ処理は `scripts/escape-issue-body.sh` を使用して機械的に強制する（LLM への「注意して」は禁止）。
 
@@ -173,9 +177,9 @@ FOR each structured_issue IN issues:
   escaped_related_issues=$(printf '%s\n' "$related_issues" | bash scripts/escape-issue-body.sh)
   escaped_deps_yaml_entries=$(printf '%s\n' "$deps_yaml_entries" | bash scripts/escape-issue-body.sh)
 
-  Agent(subagent_type="twl:twl:issue-critic", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="twl:twl:issue-feasibility", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="twl:twl:worker-codex-reviewer", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
 ```
 
 **注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。上記の通り、`scripts/escape-issue-body.sh` を経由してエスケープすること（SHALL）。**`<related_context>` タグ内に注入する全変数は `escape-issue-body.sh` を通すこと（SHALL）。**
@@ -254,7 +258,7 @@ TaskUpdate Phase 3 → completed
   "<タイトル>": explicit reference (architecture/...)
   "<タイトル>": invariant change (<用語>)
   "<タイトル>": cross-context impact (ctx/* labels: N)
-architecture spec の事前更新を検討してください: /twl:co-architect
+architecture spec の事前更新を検討してください: /dev:co-architect
 ```
 
 シグナルが 0 件の場合は出力なしで Phase 4 に進む。**非ブロッキング**: 出力後にユーザー入力を待たず Phase 4 に進む（MUST）。
@@ -277,16 +281,16 @@ fi
 
 `REFINED_LABEL_OK=false` の場合は `refined` ラベルを付与しない。ワークフローは停止しない（MUST NOT）。
 
-**注意**: `REFINED_LABEL_OK` はシェル変数ではなくLLMのコンテキスト内の判断フラグである。`/twl:issue-create` 等の slash command を呼び出す際、LLM はこの値を参照して `--label refined` の引数有無を判断すること（MUST）。同様に `is_split_generated` も LLM コンテキスト内フラグであり、Phase 3c Step 5 の split 承認で生成された Issue candidate に `true` が設定される。`is_split_generated: true` の Issue には `refined` を付与しない（MUST NOT）。なお `cross_repo_split = true` パスでは `is_split_generated` の対象外となるため、Step 4-CR での `REFINED_LABEL_OK` ガードは `is_split_generated` を考慮しない。
+**注意**: `REFINED_LABEL_OK` はシェル変数ではなくLLMのコンテキスト内の判断フラグである。`/dev:issue-create` 等の slash command を呼び出す際、LLM はこの値を参照して `--label refined` の引数有無を判断すること（MUST）。同様に `is_split_generated` も LLM コンテキスト内フラグであり、Phase 3c Step 5 の split 承認で生成された Issue candidate に `true` が設定される。`is_split_generated: true` の Issue には `refined` を付与しない（MUST NOT）。なお `cross_repo_split = true` パスでは `is_split_generated` の対象外となるため、Step 4-CR での `REFINED_LABEL_OK` ガードは `is_split_generated` を考慮しない。
 
 1. **ユーザー確認（MUST）**: 全候補を提示、承認後に作成。quick 候補には `[quick]` マーク表示
 2. **作成**:
-   - **通常（`cross_repo_split = false`）**: 単一→`/twl:issue-create`、複数→`/twl:issue-bulk-create`。tech-debt 吸収時は Related セクション付加。recommended_labels がある場合は `--label` 引数に追加。`REFINED_LABEL_OK=true` **かつ** `is_split_generated != true` の場合は `--label refined` も追加（slash command の引数として直接指定）。`is_split_generated: true` の Issue には `refined` を付与しない（MUST NOT）
+   - **通常（`cross_repo_split = false`）**: 単一→`/dev:issue-create`、複数→`/dev:issue-bulk-create`。tech-debt 吸収時は Related セクション付加。recommended_labels がある場合は `--label` 引数に追加。`REFINED_LABEL_OK=true` **かつ** `is_split_generated != true` の場合は `--label refined` も追加（slash command の引数として直接指定）。`is_split_generated: true` の Issue には `refined` を付与しない（MUST NOT）
    - **quick ラベル付与**: `is_quick_candidate: true` かつ Phase 3b に `quick-classification: inappropriate` finding なし → `--label quick` 付与。`--quick` フラグ使用時は非付与（MUST NOT）
    - **クロスリポ分割（`cross_repo_split = true`）**: 以下の Step 4-CR を実行
-3. **Project Board 同期**: 各 Issue 後 `/twl:project-board-sync N`（失敗は警告のみ）
+3. **Project Board 同期**: 各 Issue 後 `/dev:project-board-sync N`（失敗は警告のみ）
 4. **クリーンアップ**: `.controller-issue/` を削除（中止時も同様）
-5. **完了通知**: Issue URL 表示、`/twl:workflow-setup #N` で開発開始を案内
+5. **完了通知**: Issue URL 表示、`/dev:workflow-setup #N` で開発開始を案内
 
 ### Step 4-CR: クロスリポ分割時の作成フロー
 
