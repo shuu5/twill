@@ -38,14 +38,15 @@ if ! gh project list --owner @me --limit 1 >/dev/null 2>&1; then
 fi
 
 # ── Step 1: Project 検出 ──────────────────────────────────────
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=./lib/resolve-project.sh
-source "${SCRIPT_DIR}/lib/resolve-project.sh"
-
-if ! read -r PROJECT_NUM PROJECT_ID OWNER _REPO_NAME REPO < <(resolve_project 2>/dev/null); then
+_RESOLVE_JSON=$(python3 -m twl.autopilot.github resolve-project 2>/dev/null) || _RESOLVE_JSON=""
+if [[ -z "$_RESOLVE_JSON" ]]; then
   echo "ℹ️ リポジトリにリンクされた Project がありません。スキップします。"
   exit 0
 fi
+PROJECT_NUM=$(echo "$_RESOLVE_JSON" | jq -r '.project_num')
+PROJECT_ID=$(echo "$_RESOLVE_JSON" | jq -r '.project_id')
+OWNER=$(echo "$_RESOLVE_JSON" | jq -r '.owner')
+REPO=$(echo "$_RESOLVE_JSON" | jq -r '.repo_fullname')
 
 echo "Project: #$PROJECT_NUM ($PROJECT_ID)"
 

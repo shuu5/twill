@@ -1,0 +1,458 @@
+"""GitHub API wrapper for autopilot operations.
+
+Replaces: parse-issue-ac.sh, merge-gate-issues.sh, create-harness-issue.sh,
+          scripts/lib/resolve-project.sh
+
+CLI usage:
+    python3 -m twl.autopilot.github extract-ac <issue-number> [owner/repo]
+    python3 -m twl.autopilot.github resolve-project [owner]
+    python3 -m twl.autopilot.github pr-findings <pr-number> [owner/repo]
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import subprocess
+import sys
+from typing import Any
+
+
+# ---------------------------------------------------------------------------
+# Validation helpers
+# ---------------------------------------------------------------------------
+
+_ISSUE_NUM_RE = re.compile(r"^\d+$")
+_REPO_RE = re.compile(r"^[a-zA-Z0-9_-]+/[a-zA-Z0-9_.-]+$")
+_OWNER_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
+_PR_NUM_RE = re.compile(r"^\d+$")
+
+
+def _validate_issue_num(issue_num: str) -> None:
+    if not _ISSUE_NUM_RE.match(issue_num):
+        raise GitHubError(f"Issue番号は整数である必要があります: {issue_num!r}")
+
+
+def _validate_repo(repo: str) -> None:
+    if not _REPO_RE.match(repo):
+        raise GitHubError(f"不正な owner/repo 形式: {repo!r}")
+
+
+def _gh(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+    """Run a gh command and return the completed process."""
+    cmd = ["gh", *args]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if check and result.returncode != 0:
+        raise GitHubError(f"gh command failed: {' '.join(cmd)}\n{result.stderr}")
+    return result
+
+
+def _gh_json(*args: str) -> Any:
+    """Run a gh command and parse JSON output."""
+    result = _gh(*args)
+    return json.loads(result.stdout)
+
+
+# ---------------------------------------------------------------------------
+# Error types
+# ---------------------------------------------------------------------------
+
+
+class GitHubError(Exception):
+    """Raised for GitHub API errors."""
+
+
+class ACNotFoundError(GitHubError):
+    """Raised when no AC section or checklist is found."""
+
+
+# ---------------------------------------------------------------------------
+# Issue AC extraction (replaces parse-issue-ac.sh)
+# ---------------------------------------------------------------------------
+
+_CHECKBOX_RE = re.compile(r"^\s*-\s*\[[ x]\]\s*(.+)", re.IGNORECASE)
+
+
+def _extract_ac_from_text(text: str) -> list[str]:
+    """Extract AC checkbox items from markdown text."""
+    lines = text.splitlines()
+    return [
+        m.group(1).strip()
+        for line in lines
+        if (m := _CHECKBOX_RE.match(line))
+    ]
+
+
+def extract_issue_ac(issue_num: str, repo: str | None = None) -> list[str]:
+    """Extract acceptance criteria checklist from an Issue.
+
+    Mirrors parse-issue-ac.sh behaviour:
+    - Fetch issue body via gh API
+    - Also fetch comments and PR review comments
+    - Extract ``- [ ]`` / ``- [x]`` items from the 受け入れ基準 section
+
+    Args:
+        issue_num: Issue number (integer string).
+        repo: Optional ``owner/repo`` string for cross-repo access.
+
+    Returns:
+        List of AC text strings (numbered lines omitted — callers can enumerate).
+
+    Raises:
+        GitHubError: On API failure.
+        ACNotFoundError: If no AC section or checklist found.
+    """
+    _validate_issue_num(issue_num)
+    if repo:
+        _validate_repo(repo)
+
+    repo_flag = ["-R", repo] if repo else []
+
+    # Fetch issue body
+    issue_data = _gh_json("issue", "view", issue_num, *repo_flag, "--json", "body,number")
+    body: str = issue_data.get("body") or ""
+    if not body:
+        raise GitHubError(f"Issue #{issue_num} の取得に失敗しました")
+
+    # Extract 受け入れ基準 section from body
+    ac_section = _extract_ac_section(body)
+    body_acs = _extract_ac_from_text(ac_section) if ac_section else _extract_ac_from_text(body)
+
+    # Fetch comments
+    comment_acs: list[str] = []
+    try:
+        comments = _gh_json("issue", "view", issue_num, *repo_flag, "--json", "comments")
+        for comment in comments.get("comments", []):
+            comment_acs.extend(_extract_ac_from_text(comment.get("body") or ""))
+    except (GitHubError, json.JSONDecodeError):
+        pass
+
+    all_acs = body_acs + comment_acs
+    if not all_acs:
+        raise ACNotFoundError(f"Issue #{issue_num} にACチェックボックスが見つかりません")
+
+    return all_acs
+
+
+def _extract_ac_section(body: str) -> str:
+    """Extract the 受け入れ基準 section from issue body markdown."""
+    lines = body.splitlines()
+    in_section = False
+    section_lines: list[str] = []
+
+    for line in lines:
+        if re.match(r"^##\s+受け入れ基準", line):
+            in_section = True
+            continue
+        if in_section:
+            if re.match(r"^##\s+", line):
+                break
+            section_lines.append(line)
+
+    return "\n".join(section_lines)
+
+
+# ---------------------------------------------------------------------------
+# PR findings extraction (AC2 — reviews, status checks)
+# ---------------------------------------------------------------------------
+
+
+def get_pr_findings(pr_num: str, repo: str | None = None) -> dict[str, Any]:
+    """Extract PR review and status check findings.
+
+    Returns:
+        Dict with keys:
+          - reviews: list of review dicts (state, body, author)
+          - status_checks: list of check run dicts (name, conclusion)
+    """
+    if not _PR_NUM_RE.match(pr_num):
+        raise GitHubError(f"不正なPR番号: {pr_num!r}")
+
+    repo_flag = ["-R", repo] if repo else []
+    if repo:
+        _validate_repo(repo)
+
+    # Reviews
+    reviews: list[dict[str, Any]] = []
+    try:
+        review_data = _gh_json(
+            "pr", "view", pr_num, *repo_flag,
+            "--json", "reviews",
+        )
+        for r in review_data.get("reviews", []):
+            reviews.append({
+                "state": r.get("state", ""),
+                "body": r.get("body", ""),
+                "author": r.get("author", {}).get("login", ""),
+            })
+    except (GitHubError, json.JSONDecodeError):
+        pass
+
+    # Status checks (check runs)
+    status_checks: list[dict[str, Any]] = []
+    try:
+        checks_data = _gh_json(
+            "pr", "view", pr_num, *repo_flag,
+            "--json", "statusCheckRollup",
+        )
+        for check in checks_data.get("statusCheckRollup", []):
+            status_checks.append({
+                "name": check.get("name", check.get("context", "")),
+                "conclusion": check.get("conclusion", check.get("state", "")),
+            })
+    except (GitHubError, json.JSONDecodeError):
+        pass
+
+    return {"reviews": reviews, "status_checks": status_checks}
+
+
+# ---------------------------------------------------------------------------
+# Project resolution (replaces scripts/lib/resolve-project.sh)
+# ---------------------------------------------------------------------------
+
+_GRAPHQL_USER = """
+query($owner: String!, $num: Int!) {
+  user(login: $owner) {
+    projectV2(number: $num) {
+      id
+      title
+      repositories(first: 20) { nodes { nameWithOwner } }
+    }
+  }
+}
+"""
+
+_GRAPHQL_ORG = """
+query($owner: String!, $num: Int!) {
+  organization(login: $owner) {
+    projectV2(number: $num) {
+      id
+      title
+      repositories(first: 20) { nodes { nameWithOwner } }
+    }
+  }
+}
+"""
+
+
+def resolve_project(owner: str | None = None) -> dict[str, Any]:
+    """Find the GitHub Project V2 linked to the current repository.
+
+    Mirrors scripts/lib/resolve-project.sh behaviour:
+    - Enumerate all projects owned by ``owner``
+    - Match project that links to the current repo
+    - Prefer project whose title contains the repo name
+
+    Returns:
+        Dict with keys: project_num, project_id, owner, repo_name, repo_fullname
+
+    Raises:
+        GitHubError: If no linked project found.
+    """
+    # Determine owner and repo
+    repo_info = _gh_json("repo", "view", "--json", "nameWithOwner,owner")
+    repo_fullname: str = repo_info["nameWithOwner"]
+    resolved_owner: str = owner or repo_info["owner"]["login"]
+    repo_name = repo_fullname.split("/", 1)[1]
+
+    if not _OWNER_RE.match(resolved_owner):
+        raise GitHubError(f"不正な owner: {resolved_owner!r}")
+
+    # List projects
+    projects_result = _gh(
+        "project", "list",
+        "--owner", resolved_owner,
+        "--format", "json",
+        check=False,
+    )
+    if projects_result.returncode != 0:
+        raise GitHubError(
+            "Project 一覧を取得できません。gh auth refresh -s project を実行してください"
+        )
+
+    projects_data = json.loads(projects_result.stdout)
+    project_nums: list[int] = [p["number"] for p in projects_data.get("projects", [])]
+
+    if not project_nums:
+        raise GitHubError(f"owner {resolved_owner} に Project が存在しません")
+
+    matched_num: int | None = None
+    matched_id: str | None = None
+    title_match_num: int | None = None
+    title_match_id: str | None = None
+
+    for pnum in project_nums:
+        project_data = _query_project(resolved_owner, pnum)
+        if project_data is None:
+            continue
+
+        linked_repos: list[str] = [
+            n["nameWithOwner"]
+            for n in project_data.get("repositories", {}).get("nodes", [])
+        ]
+        if repo_fullname not in linked_repos:
+            continue
+
+        pid: str = project_data["id"]
+        title: str = project_data.get("title", "")
+
+        if matched_num is None:
+            matched_num = pnum
+            matched_id = pid
+
+        if repo_name in title and title_match_num is None:
+            title_match_num = pnum
+            title_match_id = pid
+
+    final_num = title_match_num if title_match_num is not None else matched_num
+    final_id = title_match_id if title_match_id is not None else matched_id
+
+    if final_num is None or final_id is None:
+        raise GitHubError("リポジトリにリンクされた Project Board が見つかりません")
+
+    return {
+        "project_num": final_num,
+        "project_id": final_id,
+        "owner": resolved_owner,
+        "repo_name": repo_name,
+        "repo_fullname": repo_fullname,
+    }
+
+
+def _query_project(owner: str, project_num: int) -> dict[str, Any] | None:
+    """Query a project via GraphQL, trying user then org queries."""
+    for query in (_GRAPHQL_USER, _GRAPHQL_ORG):
+        result = subprocess.run(
+            ["gh", "api", "graphql",
+             "-f", f"query={query}",
+             "-f", f"owner={owner}",
+             "-F", f"num={project_num}"],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            continue
+        data = json.loads(result.stdout).get("data", {})
+        # user or organization path
+        for key in ("user", "organization"):
+            proj = data.get(key, {}).get("projectV2")
+            if proj:
+                return proj
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Issue creation helpers (replaces create-harness-issue.sh / merge-gate-issues.sh)
+# ---------------------------------------------------------------------------
+
+
+def create_issue(
+    title: str,
+    body: str,
+    labels: list[str] | None = None,
+    repo: str | None = None,
+) -> dict[str, Any]:
+    """Create a GitHub Issue and return its metadata.
+
+    Args:
+        title: Issue title.
+        body: Issue body (markdown).
+        labels: Optional list of label names to apply.
+        repo: Optional ``owner/repo`` for cross-repo creation.
+
+    Returns:
+        Dict with keys: number, url, title
+    """
+    repo_flag = ["-R", repo] if repo else []
+    if repo:
+        _validate_repo(repo)
+
+    args = ["issue", "create", *repo_flag, "--title", title, "--body", body]
+    for label in (labels or []):
+        args += ["--label", label]
+
+    result = _gh(*args)
+    # gh issue create outputs the issue URL on stdout
+    url = result.stdout.strip()
+
+    # Extract number from URL
+    num_match = re.search(r"/issues/(\d+)$", url)
+    number = int(num_match.group(1)) if num_match else 0
+
+    return {"number": number, "url": url, "title": title}
+
+
+def add_issue_to_project(issue_url: str, project_num: int, owner: str) -> bool:
+    """Add an issue to a GitHub Project V2.
+
+    Returns True on success, False on failure (does not raise).
+    """
+    if not _OWNER_RE.match(owner):
+        return False
+
+    result = subprocess.run(
+        ["gh", "project", "item-add", str(project_num),
+         "--owner", owner, "--url", issue_url],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return False
+    return True
+
+
+# ---------------------------------------------------------------------------
+# CLI entrypoint
+# ---------------------------------------------------------------------------
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = argv if argv is not None else sys.argv[1:]
+
+    if not args:
+        print("Usage: python3 -m twl.autopilot.github <command> [args...]", file=sys.stderr)
+        print("Commands: extract-ac, resolve-project, pr-findings", file=sys.stderr)
+        return 1
+
+    command = args[0]
+    rest = args[1:]
+
+    try:
+        if command == "extract-ac":
+            if not rest:
+                print("Usage: extract-ac <issue-number> [owner/repo]", file=sys.stderr)
+                return 1
+            issue_num = rest[0]
+            repo = rest[1] if len(rest) > 1 else None
+            acs = extract_issue_ac(issue_num, repo)
+            for i, ac in enumerate(acs, 1):
+                print(f"{i}. {ac}")
+            return 0
+
+        elif command == "resolve-project":
+            owner = rest[0] if rest else None
+            info = resolve_project(owner)
+            print(json.dumps(info))
+            return 0
+
+        elif command == "pr-findings":
+            if not rest:
+                print("Usage: pr-findings <pr-number> [owner/repo]", file=sys.stderr)
+                return 1
+            pr_num = rest[0]
+            repo = rest[1] if len(rest) > 1 else None
+            findings = get_pr_findings(pr_num, repo)
+            print(json.dumps(findings))
+            return 0
+
+        else:
+            print(f"Unknown command: {command}", file=sys.stderr)
+            return 1
+
+    except (GitHubError, ACNotFoundError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

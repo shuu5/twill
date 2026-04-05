@@ -11,18 +11,21 @@
 # 出力（stdout）: "project_num repo_owner repo_name repo_fullname" （スペース区切り）
 # 失敗時: stderr にエラーメッセージを出力し exit 1。
 _detect_project_board() {
-    local _script_dir
-    _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    # shellcheck source=./lib/resolve-project.sh
-    source "${_script_dir}/lib/resolve-project.sh"
-
-    local project_num project_id repo_owner repo_name repo_fullname
-    if ! read -r project_num project_id repo_owner repo_name repo_fullname < <(resolve_project); then
+    local _resolve_json project_num repo_owner repo_name repo_fullname
+    _resolve_json=$(python3 -m twl.autopilot.github resolve-project 2>/dev/null) || {
+        echo "Error: リポジトリにリンクされた Project が見つかりません" >&2
+        exit 1
+    }
+    if [[ -z "$_resolve_json" ]]; then
+        echo "Error: リポジトリにリンクされた Project が見つかりません" >&2
         exit 1
     fi
+    project_num=$(echo "$_resolve_json" | jq -r '.project_num')
+    repo_owner=$(echo "$_resolve_json" | jq -r '.owner')
+    repo_name=$(echo "$_resolve_json" | jq -r '.repo_name')
+    repo_fullname=$(echo "$_resolve_json" | jq -r '.repo_fullname')
 
     # project_id は呼び出し元 fetch_board_issues では不要のため出力しない
-    # resolve_project の5値出力から4値にアダプト
     echo "$project_num $repo_owner $repo_name $repo_fullname"
 }
 

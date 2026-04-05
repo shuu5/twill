@@ -667,7 +667,7 @@ run_merge_gate() {
   export PR_NUMBER="$pr_number"
   export BRANCH="$branch"
 
-  if bash "$SCRIPTS_ROOT/merge-gate-execute.sh" 2>&1; then
+  if python3 -m twl.autopilot.mergegate 2>&1; then
     echo "[orchestrator] Issue #${issue}: merge 成功" >&2
   else
     echo "[orchestrator] Issue #${issue}: merge 失敗" >&2

@@ -62,10 +62,10 @@ fi
 
 ### 結果集約
 
-全 specialist の出力を specialist-output-parse スクリプトでパースし、findings を統合する。
+全 specialist の出力を Python モジュールでパースし、findings を統合する。
 
 ```bash
-PARSED=$(echo "$SPECIALIST_OUTPUT" | bash scripts/specialist-output-parse.sh)
+PARSED=$(echo "$SPECIALIST_OUTPUT" | python3 -m twl.autopilot.parser)
 ```
 
 AI による自由形式の変換は禁止。パーサーの構造化データのみを使用する。

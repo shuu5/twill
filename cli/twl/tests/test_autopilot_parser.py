@@ -1,0 +1,162 @@
+"""Tests for twl.autopilot.parser.
+
+Covers:
+  - Normal parse: status + findings JSON block (AC4)
+  - Parse failure fallback: WARN + confidence=50 finding (AC4)
+  - Status-only output (no JSON block)
+  - Failure classifier: step → category/severity mapping
+"""
+
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from twl.autopilot.parser import (
+    ParseResult,
+    classify_failure,
+    parse_specialist_output,
+)
+
+
+# ---------------------------------------------------------------------------
+# parse_specialist_output
+# ---------------------------------------------------------------------------
+
+
+class TestParseSpecialistOutput:
+    def test_pass_with_empty_findings(self):
+        text = "status: PASS\nNo issues found."
+        result = parse_specialist_output(text)
+        assert result.status == "PASS"
+        assert result.findings == []
+        assert result.parse_error is False
+
+    def test_fail_with_findings_block(self):
+        findings = [
+            {
+                "severity": "CRITICAL",
+                "confidence": 90,
+                "file": "src/foo.py",
+                "line": 10,
+                "message": "SQL injection risk",
+                "category": "security",
+            }
+        ]
+        text = (
+            "status: FAIL\n"
+            "```json\n"
+            + json.dumps(findings)
+            + "\n```"
+        )
+        result = parse_specialist_output(text)
+        assert result.status == "FAIL"
+        assert len(result.findings) == 1
+        assert result.findings[0]["severity"] == "CRITICAL"
+        assert result.parse_error is False
+
+    def test_warn_status(self):
+        text = "status: WARN\nSome warnings detected."
+        result = parse_specialist_output(text)
+        assert result.status == "WARN"
+        assert result.parse_error is False
+
+    def test_case_insensitive_status(self):
+        text = "status: pass"
+        result = parse_specialist_output(text)
+        assert result.status == "PASS"
+
+    def test_fallback_on_missing_status(self):
+        text = "No status line here at all."
+        result = parse_specialist_output(text)
+        assert result.status == "WARN"
+        assert result.parse_error is True
+        assert len(result.findings) == 1
+        assert result.findings[0]["confidence"] == 50
+        assert result.findings[0]["category"] == "parse-failure"
+
+    def test_fallback_on_invalid_json_block(self):
+        text = "status: PASS\n```json\nnot valid json\n```"
+        result = parse_specialist_output(text)
+        assert result.status == "WARN"
+        assert result.parse_error is True
+        assert result.findings[0]["confidence"] == 50
+
+    def test_fallback_message_contains_raw_output(self):
+        raw = "some specialist output that cannot be parsed"
+        result = parse_specialist_output(raw)
+        assert raw in result.findings[0]["message"]
+
+    def test_to_dict(self):
+        result = ParseResult(status="PASS", findings=[], parse_error=False)
+        d = result.to_dict()
+        assert d["status"] == "PASS"
+        assert d["findings"] == []
+        assert d["parse_error"] is False
+
+    def test_to_json_is_valid(self):
+        result = ParseResult(status="FAIL", findings=[{"a": 1}], parse_error=False)
+        parsed = json.loads(result.to_json())
+        assert parsed["status"] == "FAIL"
+        assert parsed["findings"] == [{"a": 1}]
+
+    def test_multiple_findings(self):
+        findings = [
+            {"severity": "CRITICAL", "confidence": 90, "file": "a.py", "line": 1,
+             "message": "msg1", "category": "security"},
+            {"severity": "HIGH", "confidence": 80, "file": "b.py", "line": 2,
+             "message": "msg2", "category": "quality"},
+        ]
+        text = "status: FAIL\n```json\n" + json.dumps(findings) + "\n```"
+        result = parse_specialist_output(text)
+        assert len(result.findings) == 2
+
+    def test_non_list_json_block_triggers_fallback(self):
+        # JSON block is an object, not a list
+        text = 'status: PASS\n```json\n{"key": "value"}\n```'
+        result = parse_specialist_output(text)
+        assert result.parse_error is True
+
+
+# ---------------------------------------------------------------------------
+# classify_failure
+# ---------------------------------------------------------------------------
+
+
+class TestClassifyFailure:
+    def test_pr_test_is_critical(self):
+        finding = classify_failure("pr-test", "Tests failed")
+        assert finding["severity"] == "CRITICAL"
+        assert finding["confidence"] >= 80
+        assert finding["category"] == "test-failure"
+
+    def test_ts_preflight_is_critical(self):
+        finding = classify_failure("ts-preflight", "Type error")
+        assert finding["severity"] == "CRITICAL"
+        assert finding["category"] == "typecheck-failure"
+
+    def test_merge_gate_is_critical(self):
+        finding = classify_failure("merge-gate", "Blocked")
+        assert finding["severity"] == "CRITICAL"
+        assert finding["category"] == "merge-gate-failure"
+
+    def test_all_pass_check_is_high(self):
+        finding = classify_failure("all-pass-check", "Quality gate failed")
+        assert finding["severity"] == "HIGH"
+        assert finding["category"] == "quality-failure"
+
+    def test_unknown_step(self):
+        finding = classify_failure("unknown-step", "Some error")
+        assert finding["severity"] == "MEDIUM"
+        assert finding["category"] == "unknown-failure"
+
+    def test_finding_contains_step_and_details(self):
+        finding = classify_failure("pr-test", "Unit test failure in foo.py")
+        assert "pr-test" in finding["message"]
+        assert "Unit test failure in foo.py" in finding["message"]
+
+    def test_finding_has_required_keys(self):
+        finding = classify_failure("check", "Details")
+        required_keys = {"severity", "confidence", "file", "line", "message", "category"}
+        assert required_keys.issubset(finding.keys())

@@ -20,14 +20,14 @@
 
 | 条件 | 動作 |
 |------|------|
-| Issue 番号あり | `parse-issue-ac.sh` を実行し AC を抽出 |
+| Issue 番号あり | `twl.autopilot.github extract-ac` を実行し AC を抽出 |
 | Issue 番号なし | 「Issue 番号なし — スキップ」と記録 |
 | AC セクションなし | 「AC セクションなし — スキップ」と記録 |
 | AC 抽出成功 | 番号付き AC リストを保存 |
 
 ```bash
 if [ -n "${ISSUE_NUM}" ]; then
-    AC_OUTPUT=$(bash claude/plugins/twl/scripts/parse-issue-ac.sh "${ISSUE_NUM}" 2>/dev/null) && {
+    AC_OUTPUT=$(python3 -m twl.autopilot.github extract-ac "${ISSUE_NUM}" 2>/dev/null) && {
         printf '%s\n\n%s\n' "## 受け入れ基準（Issue #${ISSUE_NUM}）" "${AC_OUTPUT}" > "${SNAPSHOT_DIR}/01.5-ac-checklist.md"
     } || {
         echo "AC セクションなし — スキップ" > "${SNAPSHOT_DIR}/01.5-ac-checklist.md"
