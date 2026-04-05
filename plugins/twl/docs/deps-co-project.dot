@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_project [label="twl:co-project\n(1,321 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_project [label="twl:co-project\n(1,395 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -26,6 +26,7 @@ digraph Dependencies {
 
     // L1: Direct Commands
     cmd_project_create [label="project-create\n(450 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_board_configure [label="project-board-configure\n(1,167 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_governance [label="project-governance\n(974 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_migrate [label="project-migrate\n(472 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_container_dependency_check [label="container-dependency-check\n(493 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -60,13 +61,14 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_co_project; }
     { rank=same; skill_ref_specialist_output_schema; skill_ref_types; skill_ref_practices; skill_ref_deps_format; skill_ref_architecture; }
-    { rank=same; cmd_project_create; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
+    { rank=same; cmd_project_create; cmd_project_board_configure; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_architecture; }
     { rank=same; script_project_create; script_project_migrate; }
 
     // Edges
     skill_co_project -> cmd_project_create;
     skill_co_project -> cmd_project_governance;
+    skill_co_project -> cmd_project_board_configure;
     skill_co_project -> cmd_project_migrate;
     skill_co_project -> cmd_container_dependency_check;
     skill_co_project -> cmd_setup_crg;
@@ -105,7 +107,8 @@ digraph Dependencies {
 
     // Ordering constraints (invisible edges)
     cmd_project_create -> cmd_project_governance [style=invis, weight=10];
-    cmd_project_governance -> cmd_project_migrate [style=invis, weight=10];
+    cmd_project_governance -> cmd_project_board_configure [style=invis, weight=10];
+    cmd_project_board_configure -> cmd_project_migrate [style=invis, weight=10];
     cmd_project_migrate -> cmd_container_dependency_check [style=invis, weight=10];
     cmd_container_dependency_check -> cmd_setup_crg [style=invis, weight=10];
     cmd_setup_crg -> cmd_snapshot_analyze [style=invis, weight=10];

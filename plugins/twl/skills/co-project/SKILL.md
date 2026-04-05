@@ -58,6 +58,11 @@ spawnable_by:
 
 `/twl:project-governance --path <project-main-dir> --type <type>` を実行。
 
+### Step 3.5: Board ビュー標準設定
+
+`/twl:project-board-configure` を実行。`--no-github` 指定時はスキップ。
+不足フィールドが検出された場合はブラウザが開き、ユーザーに設定を案内する。
+
 ### Step 4: 完了レポート
 
 プロジェクトパス、タイプ、ガバナンス状況、スタック情報（Rich Mode時）を表示。

@@ -127,6 +127,7 @@ skills:
     calls:
       - atomic: project-create
       - atomic: project-governance
+      - atomic: project-board-configure
       - atomic: project-migrate
       - atomic: container-dependency-check
       - atomic: setup-crg
@@ -668,7 +669,7 @@ commands:
     can_spawn: []
     description: "Issue作成後に Project V2 へ自動追加+フィールドミラー"
 
-  # === C-2a: Project管理系（8個） ===
+  # === C-2a: Project管理系（9個） ===
 
   project-create:
     type: atomic
@@ -678,6 +679,13 @@ commands:
     calls:
       - script: project-create
     description: "プロジェクト新規作成（bare repo + worktree + テンプレート + OpenSpec）"
+
+  project-board-configure:
+    type: atomic
+    path: commands/project-board-configure.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Board ビューの表示フィールド監査 + 不足時ブラウザ案内"
 
   project-governance:
     type: atomic
