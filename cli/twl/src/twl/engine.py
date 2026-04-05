@@ -59,7 +59,21 @@ ALLOWED_MODELS = {"haiku", "sonnet", "opus"}
 
 
 def _get_loom_root() -> Path:
-    """twl-engine.py の配置ディレクトリ（= twill リポジトリルート）を返す"""
+    """types.yaml を含むディレクトリを engine.py から上方向に探索して返す。
+
+    パッケージ構造（src/twl/engine.py）とテストでのフラットコピー（twl-engine.py）
+    の両方に対応するため、__file__ 起点で types.yaml を探索する。
+    見つからない場合は engine.py の直親ディレクトリをフォールバックとして返す。
+    """
+    current = Path(__file__).resolve().parent
+    for _ in range(5):
+        if (current / "types.yaml").exists():
+            return current
+        parent = current.parent
+        if parent == current:
+            break
+        current = parent
+    # フォールバック: engine.py の直親ディレクトリ（旧 twl-engine.py 相当）
     return Path(__file__).resolve().parent
 
 

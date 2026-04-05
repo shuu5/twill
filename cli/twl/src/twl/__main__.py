@@ -1,4 +1,3 @@
-"""Entry point for `python3 -m twl`."""
-from twl.cli import run
+from twl.cli import main
 
-run()
+main()
