@@ -204,6 +204,7 @@
 <!-- cmd_propose&#45;&gt;cmd_apply -->
 <!-- cmd_apply&#45;&gt;cmd_archive -->
 <!-- cmd_archive&#45;&gt;cmd_opsx_archive -->
+<!-- cmd_check&#45;&gt;cmd_e2e_plan -->
 <!-- cmd_check&#45;&gt;cmd_spec_diagnose -->
 <!-- cmd_twl_validate&#45;&gt;cmd_check -->
 <!-- cmd_services&#45;&gt;cmd_ui_capture -->

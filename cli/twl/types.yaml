@@ -5,12 +5,12 @@
 types:
   controller:
     section: skills
-    can_spawn: [workflow, atomic, composite, specialist, reference]
+    can_spawn: [workflow, atomic, composite, specialist, reference, script]
     spawnable_by: [user, launcher]
 
   workflow:
     section: skills
-    can_spawn: [atomic, composite, specialist]
+    can_spawn: [atomic, composite, specialist, script]
     spawnable_by: [controller, user]
 
   atomic:
@@ -36,4 +36,4 @@ types:
   script:
     section: scripts
     can_spawn: [script]
-    spawnable_by: [atomic, composite, script]
+    spawnable_by: [atomic, composite, script, controller, workflow]

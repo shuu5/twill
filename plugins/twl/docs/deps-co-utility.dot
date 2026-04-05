@@ -80,5 +80,6 @@ digraph Dependencies {
     cmd_ui_capture -> cmd_e2e_plan [style=invis, weight=10];
     cmd_e2e_plan -> cmd_schema_update [style=invis, weight=10];
     cmd_schema_update -> cmd_self_improve_review [style=invis, weight=10];
+    cmd_check -> cmd_e2e_plan [style=invis, weight=10];
 
 }

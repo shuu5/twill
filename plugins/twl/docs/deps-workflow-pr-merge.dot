@@ -60,6 +60,7 @@ digraph Dependencies {
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_specialist_output_parse [label="specialist-output-parse\n(605 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_execute [label="merge-gate-execute\n(2,434 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_auto_merge [label="auto-merge\n(2,524 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_write [label="checkpoint-write\n(646 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_read [label="checkpoint-read\n(470 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
@@ -70,7 +71,7 @@ digraph Dependencies {
     { rank=same; skill_ref_specialist_output_schema; skill_ref_dci; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; }
     { rank=same; cmd_pr_cycle_report; cmd_all_pass_check; cmd_e2e_screening; cmd_merge_gate; cmd_auto_merge; cmd_pr_cycle_analysis; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_architecture; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; }
-    { rank=same; script_state_write; script_worktree_delete; script_tech_stack_detect; script_specialist_output_parse; script_merge_gate_execute; script_checkpoint_write; script_checkpoint_read; }
+    { rank=same; script_state_write; script_worktree_delete; script_tech_stack_detect; script_specialist_output_parse; script_merge_gate_execute; script_auto_merge; script_checkpoint_write; script_checkpoint_read; }
 
     // Edges
     skill_workflow_pr_merge -> cmd_e2e_screening;
@@ -113,6 +114,7 @@ digraph Dependencies {
     cmd_merge_gate -> skill_baseline_coding_style;
     cmd_merge_gate -> skill_baseline_security_checklist;
     cmd_merge_gate -> skill_baseline_input_validation;
+    cmd_auto_merge -> script_auto_merge;
     agent_worker_structure -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_principles -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_env_validator -> skill_ref_specialist_output_schema [style=dotted];
