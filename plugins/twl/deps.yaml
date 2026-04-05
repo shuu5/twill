@@ -1314,16 +1314,16 @@ scripts:
 
   autopilot-init:
     type: script
-    path: scripts/autopilot-init.sh
-    description: ".autopilot/ ディレクトリ初期化とセッション排他制御"
+    path: src/twl/autopilot/init.py
+    description: ".autopilot/ ディレクトリ初期化とセッション排他制御（Python: python3 -m twl.autopilot.init）"
 
   autopilot-launch:
     type: script
-    path: scripts/autopilot-launch.sh
+    path: src/twl/autopilot/launcher.py
     calls:
       - script: state-write
       - script: crash-detect
-    description: "Worker 起動（tmux window 作成 + cld 起動 + クラッシュ検知フック設定）"
+    description: "Worker 起動（tmux window 作成 + cld 起動 + クラッシュ検知フック設定）（Python: python3 -m twl.autopilot.launcher）"
 
   session-create:
     type: script
@@ -1386,10 +1386,10 @@ scripts:
   # C-4: 旧 plugin から移植
   autopilot-plan:
     type: script
-    path: scripts/autopilot-plan.sh
+    path: src/twl/autopilot/plan.py
     calls:
       - script: autopilot-plan-board
-    description: "autopilot 実行計画 (plan.yaml) 生成（explicit/issues モード）"
+    description: "autopilot 実行計画 (plan.yaml) 生成（Python: python3 -m twl.autopilot.plan; explicit/issues/board モード）"
 
   autopilot-should-skip:
     type: script
@@ -1398,7 +1398,7 @@ scripts:
 
   autopilot-orchestrator:
     type: script
-    path: scripts/autopilot-orchestrator.sh
+    path: src/twl/autopilot/orchestrator.py
     calls:
       - script: state-read
       - script: state-write
@@ -1408,7 +1408,7 @@ scripts:
       - script: crash-detect
       - script: merge-gate-execute
       - script: session:session-state
-    description: "Pilot 側 Phase 実行オーケストレーター（ループ・ポーリング・merge-gate・nudge・サマリー）。worktree 事前作成（不変条件 B）"
+    description: "Pilot 側 Phase 実行オーケストレーター（Python: python3 -m twl.autopilot.orchestrator; ループ・ポーリング・merge-gate・nudge・サマリー）"
 
   merge-gate-execute: # standalone: merge-gate helper script（merge-gate.md がインライン実装）
     type: script
@@ -1422,7 +1422,7 @@ scripts:
 
   chain-runner:
     type: script
-    path: scripts/chain-runner.sh
+    path: src/twl/autopilot/chain.py
     calls:
       - script: worktree-create
       - script: parse-issue-ac
@@ -1445,7 +1445,7 @@ scripts:
       - pr-cycle-report
       - check
       - quick-guard
-    description: "機械的 chain ステップを bash で直接実行（Worker トークン消費削減）"
+    description: "機械的 chain ステップを実行（Python: python3 -m twl.autopilot.chain; ChainRunner クラス）"
 
   worktree-create:
     type: script
@@ -1479,8 +1479,8 @@ scripts:
 
   chain-steps:
     type: script
-    path: scripts/chain-steps.sh
-    description: "chain ステップ順序の共有定義（SSOT）"
+    path: src/twl/autopilot/chain.py
+    description: "chain ステップ順序の共有定義（SSOT）— CHAIN_STEPS / QUICK_SKIP_STEPS 定数は chain.py で管理"
 
   compaction-resume:
     type: script
@@ -1501,10 +1501,10 @@ scripts:
 
   autopilot-plan-board:
     type: script
-    path: scripts/autopilot-plan-board.sh
+    path: src/twl/autopilot/plan.py
     calls:
       - script: resolve-project
-    description: "autopilot-plan.sh の --board モード関数群"
+    description: "autopilot-plan の --board モード関数群（Python: plan.py の PlanGenerator.fetch_board_issues）"
 
   project-board-archive:
     type: script
