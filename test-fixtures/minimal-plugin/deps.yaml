@@ -61,9 +61,6 @@ commands:
       - script: helper
     description: "テスト用タスク実行コマンド"
     chain: sample-chain
-    step_in:
-      parent: sample-chain
-      step: "1"
 
   do-check:
     type: atomic
