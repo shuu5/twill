@@ -16,8 +16,7 @@
 ## 実行
 
 ```bash
-SCRIPT_DIR="${CLAUDE_PLUGIN_ROOT}/scripts"
-bash "$SCRIPT_DIR/project-migrate.sh" $ARGUMENTS
+python3 -m twl.autopilot.project migrate $ARGUMENTS
 ```
 
 ## 動作フロー

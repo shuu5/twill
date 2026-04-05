@@ -162,7 +162,7 @@ step_init() {
   fi
 }
 
-# --- worktree-create: worktree-create.sh ラッパー ---
+# --- worktree-create: Python モジュールラッパー ---
 # ADR-008: autopilot 時は Pilot が事前作成済みのためスキップ
 step_worktree_create() {
   record_current_step "worktree-create"
@@ -172,7 +172,7 @@ step_worktree_create() {
     ok "worktree-create" "既に worktree 内（branch=$branch）— スキップ"
     return 0
   fi
-  bash "$SCRIPT_DIR/worktree-create.sh" "$@"
+  python3 -m twl.autopilot.worktree create "$@"
   ok "worktree-create" "完了"
 }
 

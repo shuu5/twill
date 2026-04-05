@@ -19,11 +19,10 @@
 ## スクリプト実行（MUST）
 
 ```bash
-SCRIPT_DIR="${CLAUDE_PLUGIN_ROOT}/scripts"
-bash "$SCRIPT_DIR/worktree-create.sh" $ARGUMENTS
+python3 -m twl.autopilot.worktree create $ARGUMENTS
 ```
 
-スクリプトが worktree 作成・依存同期・コンテナ検出を全て処理する。
+Python モジュールが worktree 作成・依存同期を全て処理する。
 
 ## エラーハンドリング
 
@@ -35,7 +34,7 @@ bash "$SCRIPT_DIR/worktree-create.sh" $ARGUMENTS
 
 ## 禁止事項（MUST NOT）
 
-- 直接 `git worktree add` を実行してはならない（スクリプト経由のみ）
+- 直接 `git worktree add` を実行してはならない（Python モジュール経由のみ）
 - 既存ブランチを勝手に使用しない
 
 ## チェックポイント（MUST）

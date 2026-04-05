@@ -1443,18 +1443,18 @@ scripts:
 
   worktree-create:
     type: script
-    path: scripts/worktree-create.sh
-    description: "bare repo 向け worktree 作成（Issue番号→ブランチ名生成）"
+    path: src/twl/autopilot/worktree.py
+    description: "bare repo 向け worktree 作成（Issue番号→ブランチ名生成）（Python: python3 -m twl.autopilot.worktree create）"
 
   project-create:
     type: script
-    path: scripts/project-create.sh
-    description: "プロジェクト新規作成（タイプ別テンプレート対応）"
+    path: src/twl/autopilot/project.py
+    description: "プロジェクト新規作成（タイプ別テンプレート対応）（Python: python3 -m twl.autopilot.project create）"
 
   project-migrate:
     type: script
-    path: scripts/project-migrate.sh
-    description: "既存プロジェクトの最新テンプレート移行"
+    path: src/twl/autopilot/project.py
+    description: "既存プロジェクトの最新テンプレート移行（Python: python3 -m twl.autopilot.project migrate）"
 
   autopilot-github:
     type: script
