@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# session-create.bats - unit tests for scripts/session-create.sh
+# session-create.bats - unit tests for python3 -m twl.autopilot.session create
 
 load '../helpers/common'
 
@@ -14,12 +14,12 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# Requirement: session management scripts unit test
+# Requirement: session management unit test
 # ---------------------------------------------------------------------------
 
 # Scenario: session.json creation
 @test "session-create creates session.json with required fields" {
-  run bash "$SANDBOX/scripts/session-create.sh" \
+  run python3 -m twl.autopilot.session create \
     --plan-path "$SANDBOX/.autopilot/plan.yaml" \
     --phase-count 3
 
@@ -44,7 +44,7 @@ teardown() {
 @test "session-create fails if session.json already exists" {
   create_session_json
 
-  run bash "$SANDBOX/scripts/session-create.sh" \
+  run python3 -m twl.autopilot.session create \
     --plan-path "$SANDBOX/.autopilot/plan.yaml" \
     --phase-count 2
 
@@ -53,7 +53,7 @@ teardown() {
 }
 
 @test "session-create fails without --plan-path" {
-  run bash "$SANDBOX/scripts/session-create.sh" \
+  run python3 -m twl.autopilot.session create \
     --phase-count 2
 
   assert_failure
@@ -61,7 +61,7 @@ teardown() {
 }
 
 @test "session-create fails without --phase-count" {
-  run bash "$SANDBOX/scripts/session-create.sh" \
+  run python3 -m twl.autopilot.session create \
     --plan-path "$SANDBOX/.autopilot/plan.yaml"
 
   assert_failure
@@ -69,7 +69,7 @@ teardown() {
 }
 
 @test "session-create fails with non-numeric phase-count" {
-  run bash "$SANDBOX/scripts/session-create.sh" \
+  run python3 -m twl.autopilot.session create \
     --plan-path "$SANDBOX/.autopilot/plan.yaml" \
     --phase-count abc
 
@@ -78,7 +78,7 @@ teardown() {
 }
 
 @test "session-create generates 8-char hex session_id" {
-  run bash "$SANDBOX/scripts/session-create.sh" \
+  run python3 -m twl.autopilot.session create \
     --plan-path "$SANDBOX/.autopilot/plan.yaml" \
     --phase-count 1
 
@@ -93,7 +93,7 @@ teardown() {
 @test "session-create creates .autopilot dir if missing" {
   rm -rf "$SANDBOX/.autopilot"
 
-  run bash "$SANDBOX/scripts/session-create.sh" \
+  run python3 -m twl.autopilot.session create \
     --plan-path "$SANDBOX/.autopilot/plan.yaml" \
     --phase-count 1
 

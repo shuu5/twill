@@ -11,6 +11,8 @@
 set -euo pipefail
 
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/python-env.sh
+source "${SCRIPTS_ROOT}/lib/python-env.sh"
 
 # --- session-state.sh 検出 ---
 SESSION_STATE_CMD="${SESSION_STATE_CMD-$HOME/ubuntu-note-system/scripts/session-state.sh}"
@@ -187,7 +189,7 @@ filter_active_issues() {
     resolve_issue_repo_context "$entry"
 
     local status
-    status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$ISSUE" --field status 2>/dev/null || echo "")
+    status=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status 2>/dev/null || echo "")
 
     if [[ "$status" == "done" ]]; then
       echo "[orchestrator] Issue #${ISSUE}: skip (already done)" >&2
@@ -196,7 +198,7 @@ filter_active_issues() {
 
     if bash "$SCRIPTS_ROOT/autopilot-should-skip.sh" "$PLAN_FILE" "$ISSUE" 2>/dev/null; then
       echo "[orchestrator] Issue #${ISSUE}: skip (dependency failed)" >&2
-      bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
+      python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
         --set "status=failed" --set 'failure={"message":"dependency_failed","step":"skip"}' || true
       continue
     fi
@@ -225,7 +227,7 @@ launch_worker() {
   local -a _repo_args=()
   [[ "$ISSUE_REPO_ID" != "_default" ]] && _repo_args=(--repo "$ISSUE_REPO_ID")
   local existing_branch
-  existing_branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$ISSUE" --field branch 2>/dev/null || echo "")
+  existing_branch=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$ISSUE" --field branch 2>/dev/null || echo "")
   # ブランチ名バリデーション（パストラバーサル防止、cleanup_worker と同一パターン）
   if [[ -n "$existing_branch" && "$existing_branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
     local candidate_dir="$effective_project_dir/worktrees/$existing_branch"
@@ -247,7 +249,7 @@ launch_worker() {
     local wt_output
     wt_output=$(bash "$SCRIPTS_ROOT/worktree-create.sh" "${create_args[@]}" 2>&1) || {
       echo "[orchestrator] Issue #${ISSUE}: worktree 作成失敗: $wt_output" >&2
-      bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
+      python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
         --set "status=failed" \
         --set 'failure={"message":"worktree_create_failed","step":"launch_worker"}' || true
       return 1
@@ -257,7 +259,7 @@ launch_worker() {
     # worktree_dir のバリデーション（絶対パス + パストラバーサル防止）
     if [[ -z "$worktree_dir" || "$worktree_dir" != /* || "$worktree_dir" =~ /\.\./ || "$worktree_dir" =~ /\.\.$ || ! -d "$worktree_dir" ]]; then
       echo "[orchestrator] Issue #${ISSUE}: worktree パスを取得できません: $wt_output" >&2
-      bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
+      python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
         --set "status=failed" \
         --set 'failure={"message":"worktree_path_resolve_failed","step":"launch_worker"}' || true
       return 1
@@ -302,7 +304,7 @@ cleanup_worker() {
   fi
 
   local branch
-  branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
+  branch=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
   # ブランチ名バリデーション（コマンドインジェクション防止）
   if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
     # Step 2: worktree削除（ローカルブランチ込み）— bare repo（worktreeモード）のみ実行
@@ -340,7 +342,7 @@ poll_single() {
     poll_count=$((poll_count + 1))
 
     local status
-    status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+    status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status 2>/dev/null || echo "")
 
     case "$status" in
       done)
@@ -382,7 +384,7 @@ poll_single() {
                 NUDGE_COUNTS[$issue]=$(( ${NUDGE_COUNTS[$issue]:-0} + 1 ))
               else
                 echo "[orchestrator] Issue #${issue}: health-check stall + nudge 上限到達 — failed" >&2
-                bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
+                python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
                   --set "status=failed" \
                   --set 'failure={"message":"health_check_stall","step":"polling"}'
               fi
@@ -394,7 +396,7 @@ poll_single() {
 
     if [[ "$poll_count" -ge "$MAX_POLL" ]]; then
       echo "[orchestrator] Issue #${issue}: タイムアウト（${MAX_POLL}回×${POLL_INTERVAL}秒）" >&2
-      bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$issue" --role pilot \
+      python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
         --set "status=failed" \
         --set 'failure={"message":"poll_timeout","step":"polling"}'
       cleanup_worker "$issue" "$entry"
@@ -423,7 +425,7 @@ poll_phase() {
       local status
       local -a _state_read_repo_args=()
       [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
-      status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
+      status=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
 
       case "$status" in
         done|failed)
@@ -463,7 +465,7 @@ poll_phase() {
                   NUDGE_COUNTS[$issue_num]=$(( ${NUDGE_COUNTS[$issue_num]:-0} + 1 ))
                 else
                   echo "[orchestrator] Issue #${issue_num}: health-check stall + nudge 上限到達 — failed" >&2
-                  bash "$SCRIPTS_ROOT/state-write.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
+                  python3 -m twl.autopilot.state write --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
                     --set "status=failed" \
                     --set 'failure={"message":"health_check_stall","step":"polling"}'
                 fi
@@ -487,9 +489,9 @@ poll_phase() {
         local -a _state_read_repo_args=()
         [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
         local status
-        status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
+        status=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
         if [[ "$status" == "running" ]]; then
-          bash "$SCRIPTS_ROOT/state-write.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
+          python3 -m twl.autopilot.state write --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
             --set "status=failed" \
             --set 'failure={"message":"poll_timeout","step":"polling"}'
           cleanup_worker "$issue_num" "$entry"
@@ -507,7 +509,7 @@ poll_phase() {
         local -a _state_read_repo_args=()
         [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
         local status
-        status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
+        status=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
         if [[ "$status" == "running" ]]; then
           [[ "$repo_id" == "_default" ]] && first_running_window="ap-#${issue_num}" || first_running_window="ap-${repo_id}-#${issue_num}"
           break
@@ -543,7 +545,7 @@ _nudge_command_for_pattern() {
 
   # quick Issue の場合は test-ready 系 nudge をスキップ
   local is_quick=""
-  is_quick=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field is_quick 2>/dev/null || true)
+  is_quick=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field is_quick 2>/dev/null || true)
   if [[ -z "$is_quick" ]]; then
     # fallback: gh API で quick ラベルを直接確認
     # クロスリポ対応: entry から ISSUE_REPO_OWNER/ISSUE_REPO_NAME を解決し --repo フラグを付与
@@ -598,7 +600,7 @@ check_and_nudge() {
   # Layer 1 (PostToolUse hook) との競合防止:
   # last_hook_nudge_at が NUDGE_TIMEOUT 以内なら tmux nudge をスキップ
   local last_hook_nudge_at
-  last_hook_nudge_at=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field last_hook_nudge_at 2>/dev/null || true)
+  last_hook_nudge_at=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field last_hook_nudge_at 2>/dev/null || true)
   if [[ -n "$last_hook_nudge_at" ]]; then
     local hook_epoch now_epoch elapsed
     hook_epoch=$(date -u -d "$last_hook_nudge_at" +%s 2>/dev/null || echo "0")
@@ -650,8 +652,8 @@ run_merge_gate() {
 
   # PR 番号とブランチを state から取得
   local pr_number branch
-  pr_number=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field pr_number 2>/dev/null || echo "")
-  branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field branch 2>/dev/null || echo "")
+  pr_number=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field pr_number 2>/dev/null || echo "")
+  branch=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field branch 2>/dev/null || echo "")
 
   if [[ -z "$pr_number" || -z "$branch" ]]; then
     echo "[orchestrator] Issue #${issue}: PR 番号またはブランチが取得できません — auto-merge.sh にフォールバック" >&2
@@ -685,7 +687,7 @@ generate_phase_report() {
 
   for issue in "${all_issues[@]}"; do
     local status
-    status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+    status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status 2>/dev/null || echo "")
     case "$status" in
       done) done_issues+=("$issue") ;;
       failed) failed_issues+=("$issue") ;;
@@ -697,7 +699,7 @@ generate_phase_report() {
   local -a changed_files=()
   for issue in "${done_issues[@]}"; do
     local cf
-    cf=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field changed_files 2>/dev/null || echo "")
+    cf=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field changed_files 2>/dev/null || echo "")
     if [[ -n "$cf" && "$cf" != "null" ]]; then
       while IFS= read -r f; do
         [[ -n "$f" ]] && changed_files+=("$f")
@@ -782,7 +784,7 @@ archive_done_issues() {
   local issue
   for issue in "$@"; do
     local status
-    status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+    status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status 2>/dev/null || echo "")
     if [[ "$status" == "done" ]]; then
       if ! bash "$SCRIPTS_ROOT/chain-runner.sh" board-archive "$issue" 2>/dev/null; then
         echo "[orchestrator] Issue #${issue}: ⚠️ Board アーカイブに失敗しました（Phase 完了は続行）" >&2
@@ -877,7 +879,7 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
     resolve_issue_repo_context "$entry"
     local_issue="$ISSUE"
 
-    status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$local_issue" --field status 2>/dev/null || echo "")
+    status=$(python3 -m twl.autopilot.state read --type issue --issue "$local_issue" --field status 2>/dev/null || echo "")
     if [[ "$status" == "done" ]]; then
       continue
     fi
@@ -911,19 +913,19 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
     _repo_id="${_entry%%:*}"
     _repo_args=()
     [[ "$_repo_id" != "_default" ]] && _repo_args=(--repo "$_repo_id")
-    status=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$issue" --field status 2>/dev/null || echo "")
+    status=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$issue" --field status 2>/dev/null || echo "")
     if [[ "$status" == "merge-ready" ]]; then
       run_merge_gate "$_entry" || true  # set -euo pipefail 環境でのオーケストレーター終了を防止
       # merge-gate 後: status に応じて Pilot 側でクリーンアップを集約実行（不変条件B）
-      _status_after=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$issue" --field status 2>/dev/null || echo "")
+      _status_after=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$issue" --field status 2>/dev/null || echo "")
       if [[ "$_status_after" == "done" ]]; then
         # merge 成功: 全リソースをクリーンアップ
         cleanup_worker "$issue" "$_entry"
       elif [[ "$_status_after" == "failed" ]]; then
         # reject-final（確定失敗）: worktree とリモートブランチも解放（不変条件B）
-        _retry=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$issue" --field retry_count 2>/dev/null || echo "0")
+        _retry=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$issue" --field retry_count 2>/dev/null || echo "0")
         # failure.reason を確認: merge_gate_rejected_final は retry_count 0 でも確定失敗（#229）
-        _failure_reason=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue "${_repo_args[@]}" --issue "$issue" --field failure.reason 2>/dev/null || echo "")
+        _failure_reason=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$issue" --field failure.reason 2>/dev/null || echo "")
         if [[ "${_retry:-0}" -ge 1 ]] || [[ "$_failure_reason" == "merge_gate_rejected_final" ]]; then
           cleanup_worker "$issue" "$_entry"
         fi

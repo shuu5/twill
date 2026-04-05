@@ -210,12 +210,6 @@ class StateManager:
             raise StateError("done は終端状態です。status を変更できません")
         allowed = _TRANSITIONS.get(current, set())
         if new_status not in allowed:
-            if current == "failed" and new_status == "running":
-                retry = data.get("retry_count", 0)
-                raise StateError(
-                    f"リトライ上限に達しています (retry_count={retry} >= 1)。"
-                    "failed → running への遷移は不可"
-                )
             raise StateError(f"不正な状態遷移: {current} → {new_status}")
         if current == "failed" and new_status == "running":
             retry = data.get("retry_count", 0)

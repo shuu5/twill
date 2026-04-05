@@ -16,6 +16,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/python-env.sh
+source "${SCRIPT_DIR}/lib/python-env.sh"
 
 usage() {
   cat <<EOF
@@ -91,7 +93,7 @@ fi
 # Layer 1: IS_AUTOPILOT 判定（state-read.sh）
 # ============================================================
 IS_AUTOPILOT=false
-AUTOPILOT_STATUS=$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
+AUTOPILOT_STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
 if [[ "$AUTOPILOT_STATUS" == "running" || "$AUTOPILOT_STATUS" == "merge-ready" ]]; then
   IS_AUTOPILOT=true
 fi
@@ -101,7 +103,7 @@ fi
 # 将来のリファクタリング時の安全弁として、矛盾を検出した場合は merge を中止する。
 if [[ "$IS_AUTOPILOT" == "false" && "$AUTOPILOT_STATUS" == "running" ]]; then
   echo "[auto-merge] ⚠️ 状態矛盾検出: IS_AUTOPILOT=false だが status=running" >&2
-  bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready 2>/dev/null || true
+  python3 -m twl.autopilot.state write --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready 2>/dev/null || true
   echo "[auto-merge] autopilot 配下（状態矛盾検出）: merge-ready 宣言。Pilot による merge-gate を待機。"
   exit 0
 fi
@@ -116,7 +118,7 @@ if [[ "$IS_AUTOPILOT" == "false" ]]; then
     MAIN_AUTOPILOT_DIR="${MAIN_WORKTREE_PATH}/.autopilot"
     if [[ -f "${MAIN_AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}.json" ]]; then
       echo "[auto-merge] ⚠️ フォールバックガード発動: issue-${ISSUE_NUM}.json が存在するため merge を禁止" >&2
-      bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready 2>/dev/null || true
+      python3 -m twl.autopilot.state write --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready 2>/dev/null || true
       echo "[auto-merge] autopilot 配下（フォールバック検出）: merge-ready 宣言。Pilot による merge-gate を待機。"
       exit 0
     fi
@@ -127,7 +129,7 @@ fi
 # autopilot 配下: merge-ready 宣言のみ（merge 禁止）
 # ============================================================
 if [[ "$IS_AUTOPILOT" == "true" ]]; then
-  bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready 2>/dev/null || true
+  python3 -m twl.autopilot.state write --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready 2>/dev/null || true
   echo "[auto-merge] autopilot 配下: merge-ready 宣言。Pilot による merge-gate を待機。"
   exit 0
 fi

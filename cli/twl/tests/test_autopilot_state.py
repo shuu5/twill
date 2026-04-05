@@ -166,7 +166,9 @@ class TestStateWriteFields:
         _init_issue(state, "1")
         state.write(type_="issue", role="worker", issue="1", sets=["current_step=test"])
         data = _load_issue(autopilot_dir, "1")
-        assert data["updated_at"] != data["started_at"] or True  # just ensure field exists
+        import re
+        assert "updated_at" in data
+        assert re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", data["updated_at"])
 
     def test_invalid_key_name(self, state: StateManager) -> None:
         _init_issue(state, "1")

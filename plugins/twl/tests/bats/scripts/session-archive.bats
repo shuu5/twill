@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# session-archive.bats - unit tests for scripts/session-archive.sh
+# session-archive.bats - unit tests for python3 -m twl.autopilot.session archive
 
 load '../helpers/common'
 
@@ -12,7 +12,7 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# Requirement: session management scripts unit test
+# Requirement: session management unit test
 # ---------------------------------------------------------------------------
 
 @test "session-archive moves session.json and issues to archive" {
@@ -20,7 +20,7 @@ teardown() {
   create_issue_json 1 "done"
   create_issue_json 2 "done"
 
-  run bash "$SANDBOX/scripts/session-archive.sh"
+  run python3 -m twl.autopilot.session archive
 
   assert_success
   assert_output --partial "アーカイブしました"
@@ -45,7 +45,7 @@ teardown() {
 @test "session-archive fails when session.json does not exist" {
   rm -f "$SANDBOX/.autopilot/session.json"
 
-  run bash "$SANDBOX/scripts/session-archive.sh"
+  run python3 -m twl.autopilot.session archive
 
   assert_failure
   assert_output --partial "session.json が存在しません"
@@ -55,7 +55,7 @@ teardown() {
   create_session_json
   # No issue files
 
-  run bash "$SANDBOX/scripts/session-archive.sh"
+  run python3 -m twl.autopilot.session archive
 
   assert_success
   [ -f "$SANDBOX/.autopilot/archive/test1234/session.json" ]
@@ -65,7 +65,7 @@ teardown() {
   mkdir -p "$SANDBOX/.autopilot"
   echo '{"session_id": "../../../etc"}' > "$SANDBOX/.autopilot/session.json"
 
-  run bash "$SANDBOX/scripts/session-archive.sh"
+  run python3 -m twl.autopilot.session archive
 
   assert_failure
   assert_output --partial "不正な session_id"

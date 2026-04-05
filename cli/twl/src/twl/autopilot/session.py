@@ -208,7 +208,7 @@ def _make_metadata(path: Path, lines: list[dict[str, Any]]) -> dict[str, Any]:
         "session_id": session_id,
         "source": path.name,
         "file_size_bytes": path.stat().st_size,
-        "line_count": sum(1 for _ in open(path, encoding="utf-8", errors="replace")),
+        "line_count": len(lines),
         "time_range": {
             "start": timestamps[0] if timestamps else "",
             "end": timestamps[-1] if timestamps else "",
