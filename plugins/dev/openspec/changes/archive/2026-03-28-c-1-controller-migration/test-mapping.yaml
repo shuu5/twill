@@ -1,0 +1,296 @@
+change_id: c-1-controller-migration
+generated_at: "2026-03-28T00:00:00Z"
+test_framework: bash
+scenarios:
+  # --- co-autopilot/spec.md ---
+  - id: "co-autopilot-normal-execution"
+    name: "通常の autopilot 実行"
+    spec_file: "specs/co-autopilot/spec.md"
+    spec_line: 16
+    requirement: "co-autopilot SKILL.md 実装"
+    test_file: "tests/scenarios/co-autopilot-skill.test.sh"
+    test_name: "SKILL.md が stub ではない / Step 0-5 構成 / plan.yaml / Phase ループ / autopilot-summary"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-autopilot-auto-flag"
+    name: "--auto フラグ付き実行"
+    spec_file: "specs/co-autopilot/spec.md"
+    spec_line: 20
+    requirement: "co-autopilot SKILL.md 実装"
+    test_file: "tests/scenarios/co-autopilot-skill.test.sh"
+    test_name: "--auto フラグの記述 / 自動承認ロジック"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-autopilot-phase-failure"
+    name: "Phase 内 Issue 失敗時"
+    spec_file: "specs/co-autopilot/spec.md"
+    spec_line: 24
+    requirement: "co-autopilot SKILL.md 実装"
+    test_file: "tests/scenarios/co-autopilot-skill.test.sh"
+    test_name: "Issue 失敗時の挙動記述 / 依存先 skip"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-autopilot-self-improve-ecc"
+    name: "self-improve Issue 検出時"
+    spec_file: "specs/co-autopilot/spec.md"
+    spec_line: 34
+    requirement: "self-improve ECC 照合の統合"
+    test_file: "tests/scenarios/co-autopilot-skill.test.sh"
+    test_name: "self-improve / ECC 照合 / session.json / autopilot-patterns"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-autopilot-task-create"
+    name: "Phase 進捗の可視化"
+    spec_file: "specs/co-autopilot/spec.md"
+    spec_line: 43
+    requirement: "TaskCreate による進捗管理"
+    test_file: "tests/scenarios/co-autopilot-skill.test.sh"
+    test_name: "TaskCreate / TaskUpdate ペア"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- co-issue/spec.md ---
+  - id: "co-issue-single-issue"
+    name: "単一 Issue 作成"
+    spec_file: "specs/co-issue/spec.md"
+    spec_line: 14
+    requirement: "co-issue SKILL.md 4 Phase フロー実装"
+    test_file: "tests/scenarios/co-issue-skill.test.sh"
+    test_name: "4 Phase 構成 / Phase 3 精緻化 / Phase 4 issue-create"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-issue-multiple-decomposition"
+    name: "複数 Issue 分解"
+    spec_file: "specs/co-issue/spec.md"
+    spec_line: 18
+    requirement: "co-issue SKILL.md 4 Phase フロー実装"
+    test_file: "tests/scenarios/co-issue-skill.test.sh"
+    test_name: "issue-bulk-create / project-board-sync"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-issue-explore-summary-exists"
+    name: "explore-summary が存在する場合"
+    spec_file: "specs/co-issue/spec.md"
+    spec_line: 27
+    requirement: "explore-summary 検出による Phase 1 スキップ"
+    test_file: "tests/scenarios/co-issue-skill.test.sh"
+    test_name: "explore-summary.md 検出 / 選択肢提示 / .controller-issue/ パス"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-issue-explore-summary-absent"
+    name: "explore-summary が存在しない場合"
+    spec_file: "specs/co-issue/spec.md"
+    spec_line: 31
+    requirement: "explore-summary 検出による Phase 1 スキップ"
+    test_file: "tests/scenarios/co-issue-skill.test.sh"
+    test_name: "Phase 1 から開始する記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-issue-task-create"
+    name: "4 Phase の進捗追跡"
+    spec_file: "specs/co-issue/spec.md"
+    spec_line: 39
+    requirement: "TaskCreate による Phase 進捗管理"
+    test_file: "tests/scenarios/co-issue-skill.test.sh"
+    test_name: "TaskCreate / TaskUpdate ペア"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-issue-cleanup"
+    name: "Issue 作成完了"
+    spec_file: "specs/co-issue/spec.md"
+    spec_line: 47
+    requirement: "Phase 4 完了後のクリーンアップ"
+    test_file: "tests/scenarios/co-issue-skill.test.sh"
+    test_name: ".controller-issue/ 削除 / Issue URL / workflow-setup 案内"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- co-project/spec.md ---
+  - id: "co-project-create-mode"
+    name: "create モード実行"
+    spec_file: "specs/co-project/spec.md"
+    spec_line: 14
+    requirement: "co-project SKILL.md 3モードルーティング実装"
+    test_file: "tests/scenarios/co-project-skill.test.sh"
+    test_name: "project-create / governance / 入力確認〜完了レポート"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-project-migrate-mode"
+    name: "migrate モード実行"
+    spec_file: "specs/co-project/spec.md"
+    spec_line: 18
+    requirement: "co-project SKILL.md 3モードルーティング実装"
+    test_file: "tests/scenarios/co-project-skill.test.sh"
+    test_name: "project-migrate / 現在地確認 / governance 再適用"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-project-snapshot-mode"
+    name: "snapshot モード実行"
+    spec_file: "specs/co-project/spec.md"
+    spec_line: 22
+    requirement: "co-project SKILL.md 3モードルーティング実装"
+    test_file: "tests/scenarios/co-project-skill.test.sh"
+    test_name: "snapshot-analyze / snapshot-classify / snapshot-generate"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-project-plugin-template"
+    name: "plugin テンプレートでのプロジェクト作成"
+    spec_file: "specs/co-project/spec.md"
+    spec_line: 31
+    requirement: "plugin 管理の co-project テンプレート統合"
+    test_file: "tests/scenarios/co-project-skill.test.sh"
+    test_name: "plugin / --type 記述 / create モード統合"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-project-rich-mode"
+    name: "Rich Mode テンプレートでの作成"
+    spec_file: "specs/co-project/spec.md"
+    spec_line: 38
+    requirement: "create モードの Rich Mode 対応"
+    test_file: "tests/scenarios/co-project-skill.test.sh"
+    test_name: "manifest.yaml / container-dependency-check / スタック情報テーブル"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- co-architect/spec.md ---
+  - id: "co-architect-normal-flow"
+    name: "通常のアーキテクチャ設計フロー"
+    spec_file: "specs/co-architect/spec.md"
+    spec_line: 19
+    requirement: "co-architect SKILL.md 対話的設計フロー実装"
+    test_file: "tests/scenarios/co-architect-skill.test.sh"
+    test_name: "Step 0-8 構成 / 各 Step の内容"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-architect-group-mode"
+    name: "--group モードによるスケルトン Issue 精緻化"
+    spec_file: "specs/co-architect/spec.md"
+    spec_line: 23
+    requirement: "co-architect SKILL.md 対話的設計フロー実装"
+    test_file: "tests/scenarios/co-architect-skill.test.sh"
+    test_name: "architect-group-refine / 呼び出し後終了 / context-name"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-architect-task-create"
+    name: "9 Step の進捗追跡"
+    spec_file: "specs/co-architect/spec.md"
+    spec_line: 33
+    requirement: "TaskCreate による Step 進捗管理"
+    test_file: "tests/scenarios/co-architect-skill.test.sh"
+    test_name: "TaskCreate / TaskUpdate ペア"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "co-architect-ddd-output"
+    name: "設計探索結果の永続化"
+    spec_file: "specs/co-architect/spec.md"
+    spec_line: 40
+    requirement: "architecture/ ファイルへの DDD 構造出力"
+    test_file: "tests/scenarios/co-architect-skill.test.sh"
+    test_name: "architecture/ / vision.md / domain/ / decisions/ / contexts/"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- issue-templates-and-deps/spec.md ---
+  - id: "issue-template-bug"
+    name: "bug テンプレートの参照"
+    spec_file: "specs/issue-templates-and-deps/spec.md"
+    spec_line: 10
+    requirement: "Issue テンプレート移植"
+    test_file: "tests/scenarios/issue-templates-and-deps.test.sh"
+    test_name: "bug テンプレートファイル存在 / 空でない / セクション / ヘッダー"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-template-feature"
+    name: "feature テンプレートの参照"
+    spec_file: "specs/issue-templates-and-deps/spec.md"
+    spec_line: 14
+    requirement: "Issue テンプレート移植"
+    test_file: "tests/scenarios/issue-templates-and-deps.test.sh"
+    test_name: "feature テンプレートファイル存在 / 空でない / セクション / ヘッダー"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-loom-validate"
+    name: "loom validate パス"
+    spec_file: "specs/issue-templates-and-deps/spec.md"
+    spec_line: 29
+    requirement: "deps.yaml controller 定義の更新"
+    test_file: "tests/scenarios/issue-templates-and-deps.test.sh"
+    test_name: "loom validate PASS / エラー出力なし / controller 登録 / entry_points"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-undefined-reference"
+    name: "未定義参照の検出"
+    spec_file: "specs/issue-templates-and-deps/spec.md"
+    spec_line: 38
+    requirement: "内部参照の正確性"
+    test_file: "tests/scenarios/issue-templates-and-deps.test.sh"
+    test_name: "loom check PASS / loom validate PASS"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

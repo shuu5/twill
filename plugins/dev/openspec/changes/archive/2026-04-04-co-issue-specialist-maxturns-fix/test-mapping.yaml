@@ -1,0 +1,388 @@
+change_id: co-issue-specialist-maxturns-fix
+generated_at: "2026-04-04T00:00:00+09:00"
+test_framework: bash
+test_file: tests/scenarios/co-issue-specialist-maxturns-fix.test.sh
+scenarios:
+  # =========================================================================
+  # Requirement: issue-critic 調査バジェット制御
+  # =========================================================================
+
+  - id: "issue-critic-scope-files-budget"
+    name: "scope_files が 4 件の場合の調査制限"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 7
+    requirement: "issue-critic 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-critic: scope_files >= 3 の調査制限指示が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-critic-tool-call-limit"
+    name: "scope_files が 4 件の場合の調査制限 - tool calls 上限"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 7
+    requirement: "issue-critic 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-critic: 各ファイル 2-3 tool calls 制限指示が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-critic-sequential-investigation"
+    name: "scope_files が 4 件の場合の調査制限 - 順次調査"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 7
+    requirement: "issue-critic 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-critic [edge: 各ファイルの順次調査指示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-critic-turns-remaining-output"
+    name: "turns 残り 3 以下での出力優先"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 11
+    requirement: "issue-critic 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-critic: 残り turns 3 以下で出力優先指示が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-critic-abort-and-output"
+    name: "turns 残り 3 以下での出力優先 - 打ち切り指示"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 11
+    requirement: "issue-critic 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-critic: 調査打ち切り + findings 出力指示"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-critic-no-recursive-tracking"
+    name: "再帰的依存追跡禁止"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 5
+    requirement: "issue-critic 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-critic [edge: 再帰的依存追跡禁止が明記]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-critic-shallow-investigation-depth"
+    name: "ファイル存在確認 + 直接呼び出し元 1 段"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 5
+    requirement: "issue-critic 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-critic [edge: 存在確認+直接呼び出し元1段の指示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: issue-feasibility 調査バジェット制御
+  # =========================================================================
+
+  - id: "issue-feasibility-scope-files-budget"
+    name: "scope_files が 4 件の場合の調査制限"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 19
+    requirement: "issue-feasibility 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-feasibility: scope_files >= 3 の調査制限指示が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-feasibility-tool-call-limit"
+    name: "scope_files が 4 件の場合の調査制限 - tool calls 上限"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 19
+    requirement: "issue-feasibility 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-feasibility: 各ファイル 2-3 tool calls 制限指示が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-feasibility-no-recursive-tracking"
+    name: "再帰的依存追跡禁止"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 17
+    requirement: "issue-feasibility 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-feasibility [edge: 再帰的依存追跡禁止が明記]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-feasibility-turns-remaining-output"
+    name: "turns 残り 3 以下での出力優先"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 23
+    requirement: "issue-feasibility 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-feasibility: 残り turns 3 以下で出力優先指示が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-feasibility-shallow-investigation-depth"
+    name: "ファイル存在確認 + 直接呼び出し元 1 段"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 17
+    requirement: "issue-feasibility 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-feasibility [edge: 存在確認+直接呼び出し元1段の指示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: Phase 3b scope_files 依存の調査深度指示注入
+  # =========================================================================
+
+  - id: "skill-phase3b-scope-depth-injection-3plus"
+    name: "scope_files が 3 以上の specialist spawn"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 7
+    requirement: "Phase 3b scope_files 依存の調査深度指示注入"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Phase 3b: scope_files >= 3 の調査深度指示注入"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-phase3b-recursive-ban-injected"
+    name: "scope_files が 3 以上の specialist spawn - 再帰追跡禁止注入"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 7
+    requirement: "Phase 3b scope_files 依存の調査深度指示注入"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Phase 3b: 再帰追跡禁止指示がスポーンプロンプトに注入される"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-phase3b-turns-priority-injected"
+    name: "scope_files が 3 以上の specialist spawn - 残りturns=3 出力優先注入"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 7
+    requirement: "Phase 3b scope_files 依存の調査深度指示注入"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Phase 3b: 残りturns=3で出力優先の注入指示"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-phase3b-scope-depth-injection-2or-less"
+    name: "scope_files が 2 以下の specialist spawn"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 11
+    requirement: "Phase 3b scope_files 依存の調査深度指示注入"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Phase 3b: scope_files <= 2 の場合の呼び出し元追跡許可指示"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-phase3b-conditional-structure"
+    name: "scope_files 数による分岐構造"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 7
+    requirement: "Phase 3b scope_files 依存の調査深度指示注入"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Phase 3b [edge: scope_files 数による分岐構造が存在する]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: Step 3c 出力なし完了の検知と WARNING 表示
+  # =========================================================================
+
+  - id: "skill-step3c-no-output-detection"
+    name: "specialist が構造化出力なしで完了 - 検知ロジック"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 19
+    requirement: "Step 3c 出力なし完了の検知と WARNING 表示"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c: 出力なし完了の検知ロジックが記述されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-step3c-warning-added-to-findings"
+    name: "specialist が構造化出力なしで完了 - WARNING 追加"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 19
+    requirement: "Step 3c 出力なし完了の検知と WARNING 表示"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c: 出力なし完了時に WARNING エントリを追加する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-step3c-maxtturns-mention-in-warning"
+    name: "specialist が構造化出力なしで完了 - maxTurns 言及"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 19
+    requirement: "Step 3c 出力なし完了の検知と WARNING 表示"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c: WARNING に maxTurns 到達可能性の言及がある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-step3c-warning-non-blocking"
+    name: "specialist が構造化出力なしで完了 - Phase 4 非ブロッキング"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 17
+    requirement: "Step 3c 出力なし完了の検知と WARNING 表示"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c: WARNING は Phase 4 をブロックしない（非ブロッキング）"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-step3c-normal-parse-maintained"
+    name: "specialist が正常に構造化出力を返す"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 23
+    requirement: "Step 3c 出力なし完了の検知と WARNING 表示"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c: 正常な構造化出力は通常パース処理が維持される"
+    type: unit
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-step3c-both-keywords-required"
+    name: "specialist が構造化出力なしで完了 - 両キーワード不在条件"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 19
+    requirement: "Step 3c 出力なし完了の検知と WARNING 表示"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c [edge: status: も findings: も含まれない条件が明示]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: Step 3c ガード順序の明記
+  # =========================================================================
+
+  - id: "skill-step3c-upper-guard-exists"
+    name: "役割分担ドキュメント - 上位ガード"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 31
+    requirement: "Step 3c ガード順序の明記"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c: 出力なし検知が上位ガードとして記述されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-step3c-lower-guard-exists"
+    name: "役割分担ドキュメント - 下位ガード"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 31
+    requirement: "Step 3c ガード順序の明記"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c: パース失敗フォールバックが下位ガードとして記述されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-step3c-guard-order-documented"
+    name: "役割分担ドキュメント - 処理順序"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 31
+    requirement: "Step 3c ガード順序の明記"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c: 上位ガード → 下位ガードの処理順序が明記されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-step3c-guard-role-distinction"
+    name: "役割分担ドキュメント - 役割区別"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 31
+    requirement: "Step 3c ガード順序の明記"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "SKILL.md Step 3c [edge: 上位/下位ガードの役割が区別されている]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Cross-cutting: Consistency
+  # =========================================================================
+
+  - id: "cross-both-agents-have-budget-control"
+    name: "両エージェントの turns 出力優先指示の整合性"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 11
+    requirement: "issue-critic 調査バジェット制御 / issue-feasibility 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-critic と issue-feasibility の両方に turns 出力優先指示がある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cross-both-agents-have-recursive-ban"
+    name: "両エージェントの再帰追跡禁止指示の整合性"
+    spec_file: "specs/agent-budget-control/spec.md"
+    spec_line: 5
+    requirement: "issue-critic 調査バジェット制御 / issue-feasibility 調査バジェット制御"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "issue-critic と issue-feasibility の両方に再帰追跡禁止指示がある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cross-defense-in-depth-structure"
+    name: "SKILL.md 注入 + agent 自己制限の二重防御構造"
+    spec_file: "specs/co-issue-depth-control/spec.md"
+    spec_line: 5
+    requirement: "Phase 3b scope_files 依存の調査深度指示注入"
+    test_file: "tests/scenarios/co-issue-specialist-maxturns-fix.test.sh"
+    test_name: "[edge: SKILL.md 注入 + agent 自己制限の二重防御構造]"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

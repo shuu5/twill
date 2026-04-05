@@ -1,0 +1,239 @@
+change_id: 41-depsyaml-calls-completion
+generated_at: "2026-03-30T14:52:57Z"
+test_framework: shell-loom-cli
+# This change modifies deps.yaml metadata only (no application code).
+# Tests are loom CLI validation checks, not traditional unit tests.
+# Run all scenarios from the worktree root: /home/shuu5/projects/local-projects/loom-plugin-dev/worktrees/fix/41-depsyaml-calls-refsagentsscriptsworkflow/
+
+scenarios:
+  - id: "command-calls-single-script"
+    name: "コマンドがスクリプトを実行する場合"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 8
+    requirement: "Script calls 宣言"
+    test_file: null
+    test_name: "loom validate -- worktree-create has calls: [script: worktree-create]"
+    type: unit
+    validation_command: "loom validate"
+    validation_target: "command:worktree-create"
+    validation_note: >
+      deps.yaml の worktree-create エントリに `calls: [- script: worktree-create]` が存在することを
+      `loom validate` が violations: 0 で確認する。
+      手動確認: grep -A5 'name: worktree-create' deps.yaml | grep 'script: worktree-create'
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "command-calls-multiple-scripts"
+    name: "複数スクリプトを実行するコマンド"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 13
+    requirement: "Script calls 宣言"
+    test_file: null
+    test_name: "loom validate -- autopilot-init has calls for autopilot-init.sh and session-create.sh"
+    type: unit
+    validation_command: "loom validate"
+    validation_target: "command:autopilot-init"
+    validation_note: >
+      deps.yaml の autopilot-init エントリの calls に `- script: autopilot-init` と
+      `- script: session-create` が両方存在することを `loom validate` violations: 0 で確認する。
+      手動確認: grep -A10 'name: autopilot-init' deps.yaml | grep -E 'script: (autopilot-init|session-create)'
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "composite-spawns-dynamic-specialists"
+    name: "composite が specialist を spawn する場合"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 22
+    requirement: "Agent calls 宣言"
+    test_file: null
+    test_name: "loom validate -- phase-review has all candidate agents in calls"
+    type: unit
+    validation_command: "loom validate"
+    validation_target: "command:phase-review"
+    validation_note: >
+      deps.yaml の phase-review エントリの calls に全候補 agent が `- agent: <name>` 形式で列挙されていることを
+      `loom validate` violations: 0 で確認する。
+      手動確認: grep -A20 'name: phase-review' deps.yaml | grep 'agent:'
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "composite-spawns-fixed-specialists"
+    name: "固定 specialist を spawn する composite"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 26
+    requirement: "Agent calls 宣言"
+    test_file: null
+    test_name: "loom validate -- issue-assess has agent: template-validator and agent: context-checker"
+    type: unit
+    validation_command: "loom validate"
+    validation_target: "command:issue-assess"
+    validation_note: >
+      deps.yaml の issue-assess エントリの calls に `- agent: template-validator` と
+      `- agent: context-checker` が存在することを `loom validate` violations: 0 で確認する。
+      手動確認: grep -A10 'name: issue-assess' deps.yaml | grep -E 'agent: (template-validator|context-checker)'
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "command-calls-reference-directly"
+    name: "コマンドが reference を直接参照する場合"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 34
+    requirement: "Reference calls 宣言"
+    test_file: null
+    test_name: "loom validate -- co-issue calls reference: ref-issue-template-bug"
+    type: unit
+    validation_command: "loom validate"
+    validation_target: "controller:co-issue"
+    validation_note: >
+      issue-structure を calls する co-issue コントローラーの calls に
+      `- reference: ref-issue-template-bug` が存在することを `loom validate` violations: 0 で確認する。
+      手動確認: grep -A20 'name: co-issue' deps.yaml | grep 'reference: ref-issue-template-bug'
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "agent-reference-via-composite"
+    name: "agent が reference を参照する場合"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 38
+    requirement: "Reference calls 宣言"
+    test_file: null
+    test_name: "loom validate -- phase-review or merge-gate calls reference: baseline-coding-style"
+    type: unit
+    validation_command: "loom validate"
+    validation_target: "command:phase-review or command:merge-gate"
+    validation_note: >
+      worker-code-reviewer を spawn する composite（phase-review または merge-gate）の calls に
+      `- reference: baseline-coding-style` が存在することを `loom validate` violations: 0 で確認する。
+      手動確認: grep -B2 -A20 'name: phase-review\|name: merge-gate' deps.yaml | grep 'reference: baseline-coding-style'
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "controller-calls-workflow"
+    name: "controller が workflow を起動する場合"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 47
+    requirement: "Workflow calls 宣言"
+    test_file: null
+    test_name: "loom validate -- co-autopilot has calls: [workflow: workflow-setup]"
+    type: unit
+    validation_command: "loom validate"
+    validation_target: "controller:co-autopilot"
+    validation_note: >
+      deps.yaml の co-autopilot エントリの calls に `- workflow: workflow-setup` が存在することを
+      `loom validate` violations: 0 で確認する。
+      手動確認: grep -A20 'name: co-autopilot' deps.yaml | grep 'workflow: workflow-setup'
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-workflows-referenced"
+    name: "全 workflow が参照される"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 51
+    requirement: "Workflow calls 宣言"
+    test_file: null
+    test_name: "loom orphans -- 5 workflows not in Unused section"
+    type: unit
+    validation_command: "loom orphans"
+    validation_target: "workflow:workflow-setup workflow:workflow-test-ready workflow:workflow-pr-cycle workflow:workflow-dead-cleanup workflow:workflow-tech-debt-triage"
+    validation_note: >
+      `loom orphans` の出力で workflow-setup, workflow-test-ready, workflow-pr-cycle,
+      workflow-dead-cleanup, workflow-tech-debt-triage の5件が Unused セクションに現れないこと。
+      手動確認: loom orphans 2>&1 | grep -E 'workflow-(setup|test-ready|pr-cycle|dead-cleanup|tech-debt-triage)'
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "subcommand-checkpoint-calls"
+    name: "チェックポイントでの sub-command 呼び出し"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 59
+    requirement: "Sub-command calls 宣言"
+    test_file: null
+    test_name: "loom validate -- workflow-setup calls project-board-status-update"
+    type: unit
+    validation_command: "loom validate"
+    validation_target: "workflow:workflow-setup"
+    validation_note: >
+      worktree-create が所属する親 workflow-setup の calls に
+      `- command: project-board-status-update` が存在することを `loom validate` violations: 0 で確認する。
+      手動確認: grep -A20 'name: workflow-setup' deps.yaml | grep 'project-board-status-update'
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "orphan-count-reduced"
+    name: "orphan 削減の検証"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 68
+    requirement: "Orphan 削減検証"
+    test_file: null
+    test_name: "loom orphans -- Isolated count <= 10"
+    type: unit
+    validation_command: "loom orphans"
+    validation_target: "global"
+    validation_note: >
+      全 calls 追加完了後に `loom orphans` を実行し、Isolated セクションの件数が 10 件以下であること。
+      手動確認: loom orphans 2>&1 | grep -c 'Isolated\|isolated' で件数確認。
+      または loom orphans の出力末尾サマリーで Isolated 数を確認する。
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-check-validate-pass"
+    name: "loom check/validate の継続 PASS"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 72
+    requirement: "Orphan 削減検証"
+    test_file: null
+    test_name: "loom check && loom validate -- both pass with violations: 0 and missing: 0"
+    type: unit
+    validation_command: "loom check && loom validate"
+    validation_target: "global"
+    validation_note: >
+      deps.yaml 変更後に `loom check` と `loom validate` を両方実行し、
+      violations: 0 かつ missing: 0 で PASS を返すこと。
+      手動確認: loom check && loom validate
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "svg-edge-count-increased"
+    name: "SVG 再生成"
+    spec_file: "specs/calls-completion/spec.md"
+    spec_line: 81
+    requirement: "SVG エッジ数の増加"
+    test_file: null
+    test_name: "loom update-readme -- SVG/DOT edge count greater than baseline"
+    type: unit
+    validation_command: "loom update-readme"
+    validation_target: "global"
+    validation_note: >
+      `loom update-readme` 実行後、生成された DOT/SVG のエッジ数（`->` の出現数）が
+      変更前のベースライン値より増加していること。
+      手動確認:
+        before=$(git show HEAD:README.md | grep -o '\->' | wc -l)
+        loom update-readme
+        after=$(grep -o '\->' README.md | wc -l)
+        [ "$after" -gt "$before" ] && echo PASS || echo FAIL
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

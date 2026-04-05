@@ -1,0 +1,55 @@
+change_id: fix-repo-name-validation-dotdot
+generated_at: "2026-04-04T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "dotdot-rejected"
+    name: "`..` がバリデーションで拒否される"
+    spec_file: "specs/repo-name-validation.md"
+    spec_line: 9
+    requirement: "リポジトリ名バリデーションで `..` および `.` を拒否する"
+    test_file: "tests/bats/scripts/autopilot-plan-board-repo-name-validation.bats"
+    test_name: "repo name '..' is rejected and entry is skipped"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dot-rejected"
+    name: "`.` がバリデーションで拒否される"
+    spec_file: "specs/repo-name-validation.md"
+    spec_line: 14
+    requirement: "リポジトリ名バリデーションで `..` および `.` を拒否する"
+    test_file: "tests/bats/scripts/autopilot-plan-board-repo-name-validation.bats"
+    test_name: "repo name '.' is rejected and entry is skipped"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "valid-names-pass"
+    name: "有効なリポジトリ名が通過する"
+    spec_file: "specs/repo-name-validation.md"
+    spec_line: 19
+    requirement: "リポジトリ名バリデーションで `..` および `.` を拒否する"
+    test_file: "tests/bats/scripts/autopilot-plan-board-repo-name-validation.bats"
+    test_name: "valid repo name 'my-repo' passes validation"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "change-scope-limited"
+    name: "変更範囲が `autopilot-plan-board.sh` のみに限定される"
+    spec_file: "specs/repo-name-validation.md"
+    spec_line: 24
+    requirement: "リポジトリ名バリデーションで `..` および `.` を拒否する"
+    test_file: "tests/bats/scripts/autopilot-plan-board-repo-name-validation.bats"
+    test_name: "validation regex change is scoped only to autopilot-plan-board.sh"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

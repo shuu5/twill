@@ -1,0 +1,5 @@
+.self-improve/
+.code-review-graph/
+.autopilot/
+.controller-issue/
+scripts/__pycache__/

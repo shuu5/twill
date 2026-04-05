@@ -1,0 +1,411 @@
+change_id: c-4-scripts-migration
+generated_at: "2026-03-29T00:00:00+09:00"
+test_framework: bash
+scenarios:
+  # =========================================================================
+  # autopilot-scripts.md
+  # =========================================================================
+
+  # --- Requirement: autopilot-plan スクリプト移植 ---
+
+  - id: "autopilot-plan-explicit-mode"
+    name: "explicit モードで plan.yaml 生成"
+    spec_file: "specs/autopilot-scripts.md"
+    spec_line: 7
+    requirement: "autopilot-plan スクリプト移植"
+    test_file: "tests/scenarios/autopilot-scripts-migration.test.sh"
+    test_name: "autopilot-plan.sh に --explicit モードが実装されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-plan-issues-phase-split"
+    name: "issues モードで依存グラフから Phase 分割"
+    spec_file: "specs/autopilot-scripts.md"
+    spec_line: 11
+    requirement: "autopilot-plan スクリプト移植"
+    test_file: "tests/scenarios/autopilot-scripts-migration.test.sh"
+    test_name: "autopilot-plan.sh に --issues モードが実装されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-plan-deps-conflict"
+    name: "deps.yaml 競合検出と Phase 分離"
+    spec_file: "specs/autopilot-scripts.md"
+    spec_line: 15
+    requirement: "autopilot-plan スクリプト移植"
+    test_file: "tests/scenarios/autopilot-scripts-migration.test.sh"
+    test_name: "autopilot-plan.sh に deps.yaml 競合検出ロジックがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: autopilot-should-skip スクリプト移植 ---
+
+  - id: "autopilot-should-skip-failed-dep"
+    name: "依存先が failed の場合スキップ"
+    spec_file: "specs/autopilot-scripts.md"
+    spec_line: 24
+    requirement: "autopilot-should-skip スクリプト移植"
+    test_file: "tests/scenarios/autopilot-scripts-migration.test.sh"
+    test_name: "autopilot-should-skip.sh に failed 依存先の検出ロジックがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-should-skip-done-dep"
+    name: "依存先が全て done の場合実行"
+    spec_file: "specs/autopilot-scripts.md"
+    spec_line: 28
+    requirement: "autopilot-should-skip スクリプト移植"
+    test_file: "tests/scenarios/autopilot-scripts-migration.test.sh"
+    test_name: "autopilot-should-skip.sh に done 状態の検出ロジックがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-should-skip-no-dep"
+    name: "依存なしの場合実行"
+    spec_file: "specs/autopilot-scripts.md"
+    spec_line: 32
+    requirement: "autopilot-should-skip スクリプト移植"
+    test_file: "tests/scenarios/autopilot-scripts-migration.test.sh"
+    test_name: "autopilot-should-skip.sh に依存なし→実行のロジックがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # merge-gate-scripts.md
+  # =========================================================================
+
+  # --- Requirement: merge-gate-init スクリプト移植 ---
+
+  - id: "merge-gate-init-normal"
+    name: "正常な merge-gate 初期化"
+    spec_file: "specs/merge-gate-scripts.md"
+    spec_line: 8
+    requirement: "merge-gate-init スクリプト移植"
+    test_file: "tests/scenarios/merge-gate-scripts-migration.test.sh"
+    test_name: "merge-gate-init.sh が PR_NUMBER, BRANCH, GATE_TYPE を出力する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-init-not-merge-ready"
+    name: "merge-ready 状態でない Issue"
+    spec_file: "specs/merge-gate-scripts.md"
+    spec_line: 12
+    requirement: "merge-gate-init スクリプト移植"
+    test_file: "tests/scenarios/merge-gate-scripts-migration.test.sh"
+    test_name: "merge-gate-init.sh に merge-ready でない場合のエラー処理がある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-init-gate-type"
+    name: "GATE_TYPE の自動判定"
+    spec_file: "specs/merge-gate-scripts.md"
+    spec_line: 16
+    requirement: "merge-gate-init スクリプト移植"
+    test_file: "tests/scenarios/merge-gate-scripts-migration.test.sh"
+    test_name: "merge-gate-init.sh に GATE_TYPE=plugin 判定ロジックがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: merge-gate-execute スクリプト移植 ---
+
+  - id: "merge-gate-execute-merge-success"
+    name: "マージ成功時の状態遷移"
+    spec_file: "specs/merge-gate-scripts.md"
+    spec_line: 24
+    requirement: "merge-gate-execute スクリプト移植"
+    test_file: "tests/scenarios/merge-gate-scripts-migration.test.sh"
+    test_name: "merge-gate-execute.sh が state-write.sh で status=done を記録する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-execute-reject"
+    name: "リジェクト時の状態遷移"
+    spec_file: "specs/merge-gate-scripts.md"
+    spec_line: 28
+    requirement: "merge-gate-execute スクリプト移植"
+    test_file: "tests/scenarios/merge-gate-scripts-migration.test.sh"
+    test_name: "merge-gate-execute.sh に --reject モードと rejected 理由がある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-execute-reject-final"
+    name: "確定失敗時の状態遷移"
+    spec_file: "specs/merge-gate-scripts.md"
+    spec_line: 32
+    requirement: "merge-gate-execute スクリプト移植"
+    test_file: "tests/scenarios/merge-gate-scripts-migration.test.sh"
+    test_name: "merge-gate-execute.sh に --reject-final モードがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: merge-gate-issues スクリプト移植 ---
+
+  - id: "merge-gate-issues-tech-debt"
+    name: "tech-debt Issue の自動起票"
+    spec_file: "specs/merge-gate-scripts.md"
+    spec_line: 40
+    requirement: "merge-gate-issues スクリプト移植"
+    test_file: "tests/scenarios/merge-gate-scripts-migration.test.sh"
+    test_name: "merge-gate-issues.sh に gh issue create 呼び出しがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # worktree-branch-scripts.md
+  # =========================================================================
+
+  # --- Requirement: worktree-create スクリプト移植 ---
+
+  - id: "worktree-create-by-issue"
+    name: "Issue番号指定での worktree 作成"
+    spec_file: "specs/worktree-branch-scripts.md"
+    spec_line: 8
+    requirement: "worktree-create スクリプト移植"
+    test_file: "tests/scenarios/worktree-branch-scripts-migration.test.sh"
+    test_name: "worktree-create.sh に git worktree add 呼び出しがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-create-branch-validation"
+    name: "ブランチ名バリデーション"
+    spec_file: "specs/worktree-branch-scripts.md"
+    spec_line: 12
+    requirement: "worktree-create スクリプト移植"
+    test_file: "tests/scenarios/worktree-branch-scripts-migration.test.sh"
+    test_name: "worktree-create.sh にブランチ名バリデーションがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: branch-create スクリプト移植 ---
+
+  - id: "branch-create-by-issue"
+    name: "Issue番号指定でのブランチ作成"
+    spec_file: "specs/worktree-branch-scripts.md"
+    spec_line: 20
+    requirement: "branch-create スクリプト移植"
+    test_file: "tests/scenarios/worktree-branch-scripts-migration.test.sh"
+    test_name: "branch-create.sh に git ブランチ作成呼び出しがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "branch-create-auto-flags"
+    name: "--auto --auto-merge フラグの引き継ぎ"
+    spec_file: "specs/worktree-branch-scripts.md"
+    spec_line: 24
+    requirement: "branch-create スクリプト移植"
+    test_file: "tests/scenarios/worktree-branch-scripts-migration.test.sh"
+    test_name: "branch-create.sh に --auto-merge フラグ処理がある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # project-scripts.md
+  # =========================================================================
+
+  # --- Requirement: project-create スクリプト移植 ---
+
+  - id: "project-create-new"
+    name: "新規プロジェクト作成"
+    spec_file: "specs/project-scripts.md"
+    spec_line: 8
+    requirement: "project-create スクリプト移植"
+    test_file: "tests/scenarios/project-scripts-migration.test.sh"
+    test_name: "project-create.sh に bare repo 初期化ロジックがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: project-migrate スクリプト移植 ---
+
+  - id: "project-migrate-template-update"
+    name: "テンプレート更新"
+    spec_file: "specs/project-scripts.md"
+    spec_line: 17
+    requirement: "project-migrate スクリプト移植"
+    test_file: "tests/scenarios/project-scripts-migration.test.sh"
+    test_name: "project-migrate.sh にテンプレート差分検出ロジックがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # utility-scripts.md
+  # =========================================================================
+
+  # --- Requirement: classify-failure スクリプト移植 ---
+
+  - id: "classify-failure-categorize"
+    name: "失敗ログの分類"
+    spec_file: "specs/utility-scripts.md"
+    spec_line: 8
+    requirement: "classify-failure スクリプト移植"
+    test_file: "tests/scenarios/utility-scripts-migration.test.sh"
+    test_name: "classify-failure.sh に失敗カテゴリ定義がある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: parse-issue-ac スクリプト移植 ---
+
+  - id: "parse-issue-ac-extract"
+    name: "AC 抽出"
+    spec_file: "specs/utility-scripts.md"
+    spec_line: 17
+    requirement: "parse-issue-ac スクリプト移植"
+    test_file: "tests/scenarios/utility-scripts-migration.test.sh"
+    test_name: "parse-issue-ac.sh に AC セクション抽出ロジックがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: session-audit スクリプト移植 ---
+
+  - id: "session-audit-analysis"
+    name: "セッション事後分析"
+    spec_file: "specs/utility-scripts.md"
+    spec_line: 24
+    requirement: "session-audit スクリプト移植"
+    test_file: "tests/scenarios/utility-scripts-migration.test.sh"
+    test_name: "session-audit.sh が session.json ベースで動作する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: check-db-migration スクリプト移植 ---
+
+  - id: "check-db-migration-verify"
+    name: "DB マイグレーションチェック"
+    spec_file: "specs/utility-scripts.md"
+    spec_line: 32
+    requirement: "check-db-migration スクリプト移植"
+    test_file: "tests/scenarios/utility-scripts-migration.test.sh"
+    test_name: "check-db-migration.py にマイグレーション整合性検証がある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: ecc-monitor スクリプト移植 ---
+
+  - id: "ecc-monitor-detect"
+    name: "ECC 変更検知"
+    spec_file: "specs/utility-scripts.md"
+    spec_line: 40
+    requirement: "ecc-monitor スクリプト移植"
+    test_file: "tests/scenarios/utility-scripts-migration.test.sh"
+    test_name: "ecc-monitor.sh に変更検出ロジックがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: codex-review スクリプト移植 ---
+
+  - id: "codex-review-execute"
+    name: "Codex レビュー実行"
+    spec_file: "specs/utility-scripts.md"
+    spec_line: 48
+    requirement: "codex-review スクリプト移植"
+    test_file: "tests/scenarios/utility-scripts-migration.test.sh"
+    test_name: "codex-review.sh に Codex レビュー呼び出しがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: create-harness-issue スクリプト移植 ---
+
+  - id: "create-harness-issue-self-improve"
+    name: "self-improve Issue 起票"
+    spec_file: "specs/utility-scripts.md"
+    spec_line: 56
+    requirement: "create-harness-issue スクリプト移植"
+    test_file: "tests/scenarios/utility-scripts-migration.test.sh"
+    test_name: "create-harness-issue.sh に gh issue create 呼び出しがある"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # deps-yaml-integration.md
+  # =========================================================================
+
+  # --- Requirement: deps.yaml への script エントリ追加 ---
+
+  - id: "deps-yaml-all-scripts-registered"
+    name: "全 script が deps.yaml に登録される"
+    spec_file: "specs/deps-yaml-integration.md"
+    spec_line: 8
+    requirement: "deps.yaml への script エントリ追加"
+    test_file: "tests/scenarios/deps-yaml-integration-migration.test.sh"
+    test_name: "deps.yaml に 26 以上の script が登録されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-path-consistency"
+    name: "script パスの一貫性"
+    spec_file: "specs/deps-yaml-integration.md"
+    spec_line: 12
+    requirement: "deps.yaml への script エントリ追加"
+    test_file: "tests/scenarios/deps-yaml-integration-migration.test.sh"
+    test_name: "deps.yaml の全 script パスが scripts/<name>.sh|.py 形式である"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: COMMAND.md のスクリプトパス更新 ---
+
+  - id: "command-md-path-update"
+    name: "worktree-create COMMAND.md のパス更新"
+    spec_file: "specs/deps-yaml-integration.md"
+    spec_line: 22
+    requirement: "COMMAND.md のスクリプトパス更新"
+    test_file: "tests/scenarios/deps-yaml-integration-migration.test.sh"
+    test_name: "worktree-create COMMAND.md に旧固定パス参照がない"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

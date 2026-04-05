@@ -1,0 +1,241 @@
+change_id: co-issue-bugfix-45
+generated_at: "2026-03-30T00:00:00Z"
+test_framework: bash
+test_file: tests/scenarios/co-issue-bugfix-45.test.sh
+
+scenarios:
+  # ---------------------------------------------------------------------------
+  # Requirement: co-issue 推奨ラベル受け渡しチェーン
+  # Source: specs/label-passthrough.md
+  # ---------------------------------------------------------------------------
+
+  - id: label-passthrough-present
+    name: "推奨ラベルあり時のラベル自動付与"
+    spec_file: "specs/label-passthrough.md"
+    spec_line: 7
+    requirement: "co-issue 推奨ラベル受け渡しチェーン"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "推奨ラベルあり: issue-structure 出力から推奨ラベルセクションを参照"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31"
+    failure_reason: null
+
+  - id: label-passthrough-present-arg
+    name: "推奨ラベルあり時のラベル自動付与 (--label 引数)"
+    spec_file: "specs/label-passthrough.md"
+    spec_line: 7
+    requirement: "co-issue 推奨ラベル受け渡しチェーン"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "推奨ラベルあり: --label 引数として issue-create に渡す記述がある"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31"
+    failure_reason: null
+
+  - id: label-passthrough-absent
+    name: "推奨ラベルなし時のスキップ"
+    spec_file: "specs/label-passthrough.md"
+    spec_line: 11
+    requirement: "co-issue 推奨ラベル受け渡しチェーン"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "推奨ラベルなし: ラベルなし時は --label なしで issue-create を呼び出す記述がある"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31"
+    failure_reason: null
+
+  - id: label-passthrough-bulk-path
+    name: "複数 Issue 一括作成時のラベル個別適用 (issue-bulk-create パス)"
+    spec_file: "specs/label-passthrough.md"
+    spec_line: 15
+    requirement: "co-issue 推奨ラベル受け渡しチェーン"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "複数 Issue 一括作成: issue-bulk-create パスが記述されている"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: label-passthrough-bulk-individual
+    name: "複数 Issue 一括作成時のラベル個別適用 (各 Issue 個別ラベル)"
+    spec_file: "specs/label-passthrough.md"
+    spec_line: 15
+    requirement: "co-issue 推奨ラベル受け渡しチェーン"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "複数 Issue 一括作成: 各 Issue に個別ラベルを適用する記述がある [edge]"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31"
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: project-board-sync の Project 検出改善
+  # Source: specs/project-detection.md
+  # ---------------------------------------------------------------------------
+
+  - id: project-detection-title-match
+    name: "リポジトリ名と Project タイトルが一致する場合"
+    spec_file: "specs/project-detection.md"
+    spec_line: 7
+    requirement: "project-board-sync の Project 検出改善"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "タイトルマッチ優先: タイトルマッチングによる Project 選択が記述されている"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: project-detection-title-contains-repo
+    name: "リポジトリ名と Project タイトルが一致する場合 (contains チェック)"
+    spec_file: "specs/project-detection.md"
+    spec_line: 7
+    requirement: "project-board-sync の Project 検出改善"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "タイトルマッチ優先: リポジトリ名をタイトルが含む場合に優先することが記述されている [edge]"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31"
+    failure_reason: null
+
+  - id: project-detection-fallback-first
+    name: "タイトルマッチなしの場合のフォールバック (最初の Project 使用)"
+    spec_file: "specs/project-detection.md"
+    spec_line: 11
+    requirement: "project-board-sync の Project 検出改善"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "フォールバック: マッチなし時は最初の Project を使用することが記述されている"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: project-detection-fallback-warning
+    name: "タイトルマッチなしの場合のフォールバック (警告出力)"
+    spec_file: "specs/project-detection.md"
+    spec_line: 11
+    requirement: "project-board-sync の Project 検出改善"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "フォールバック: 警告メッセージを出力することが記述されている [edge]"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: project-detection-single-no-matching
+    name: "単一 Project の場合 (マッチング不要)"
+    spec_file: "specs/project-detection.md"
+    spec_line: 15
+    requirement: "project-board-sync の Project 検出改善"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "単一 Project: 1件のみの場合がドキュメントされている"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: project-detection-single-matching-skipped
+    name: "単一 Project の場合 (マッチングロジックスキップ)"
+    spec_file: "specs/project-detection.md"
+    spec_line: 15
+    requirement: "project-board-sync の Project 検出改善"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "単一 Project: マッチングロジックをスキップする記述がある [edge]"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: Context フィールドのフォールバック推定
+  # Source: specs/context-fallback.md
+  # ---------------------------------------------------------------------------
+
+  - id: ctx-fallback-reads-architecture
+    name: "ctx/* ラベルなしで architecture/ に context 定義がある場合 (architecture 参照)"
+    spec_file: "specs/context-fallback.md"
+    spec_line: 7
+    requirement: "Context フィールドのフォールバック推定"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "ctx フォールバック: architecture/domain/contexts/*.md を参照する記述がある"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31"
+    failure_reason: null
+
+  - id: ctx-fallback-keyword-match
+    name: "ctx/* ラベルなしで architecture/ に context 定義がある場合 (キーワードマッチ)"
+    spec_file: "specs/context-fallback.md"
+    spec_line: 7
+    requirement: "Context フィールドのフォールバック推定"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "ctx フォールバック: Issue タイトル・本文とキーワードマッチする記述がある"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: ctx-fallback-highest-relevance
+    name: "ctx/* ラベルなしで architecture/ に context 定義がある場合 (最高関連性選択)"
+    spec_file: "specs/context-fallback.md"
+    spec_line: 7
+    requirement: "Context フィールドのフォールバック推定"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "ctx フォールバック: 最も関連性の高い Context を設定する記述がある [edge]"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31"
+    failure_reason: null
+
+  - id: ctx-fallback-no-architecture-skip
+    name: "architecture/ が存在しない場合"
+    spec_file: "specs/context-fallback.md"
+    spec_line: 11
+    requirement: "Context フィールドのフォールバック推定"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "architecture/ なし: architecture/ が存在しない場合はスキップする記述がある"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31"
+    failure_reason: null
+
+  - id: ctx-fallback-no-match-warning
+    name: "マッチする context がない場合 (警告メッセージ)"
+    spec_file: "specs/context-fallback.md"
+    spec_line: 15
+    requirement: "Context フィールドのフォールバック推定"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "マッチなし: 警告メッセージ「Context を推定できませんでした」が記述されている"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-03-31"
+    failure_reason: null
+
+  - id: ctx-fallback-no-match-skip
+    name: "マッチする context がない場合 (フィールドスキップ)"
+    spec_file: "specs/context-fallback.md"
+    spec_line: 15
+    requirement: "Context フィールドのフォールバック推定"
+    test_file: "tests/scenarios/co-issue-bugfix-45.test.sh"
+    test_name: "マッチなし: Context フィールドをスキップする記述がある [edge]"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null

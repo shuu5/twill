@@ -1,0 +1,147 @@
+change_id: bc-worker-merge-worktree-guard
+generated_at: "2026-03-31T00:00:00+09:00"
+test_framework: bash
+
+# Note on test strategy:
+#   merge-gate-execute.sh is a bash script — CWD guard behavior is tested with
+#   direct bash unit tests (bc-worker-merge-worktree-guard.test.sh).
+#
+#   auto-merge.md and all-pass-check.md are LLM guidance documents (not directly
+#   executable code). Their tests verify that the required instruction text is
+#   present in the documents. Runtime conformance (whether the LLM actually
+#   follows the instructions) requires manual verification or LLM-eval.
+
+scenarios:
+  # ---------------------------------------------------------------------------
+  # Requirement: auto-merge autopilot 配下判定
+  # Target file: commands/auto-merge.md (LLM guidance doc)
+  # ---------------------------------------------------------------------------
+
+  - id: "auto-merge-autopilot-running-guard"
+    name: "autopilot 配下で Worker が pr-cycle を完走"
+    spec_file: "specs/autopilot-guard.md"
+    spec_line: 7
+    requirement: "auto-merge autopilot 配下判定"
+    test_file: "tests/scenarios/bc-worker-llm-guidance.test.sh"
+    test_name: >-
+      auto-merge.md に status=running チェックの記述がある
+      / auto-merge.md に autopilot 配下でマージを実行しない記述がある
+      / auto-merge.md に autopilot 配下で worktree 削除をしない記述がある
+      / auto-merge.md に state-write.sh 経由での merge-ready 遷移が記述されている
+    type: manual
+    # This is an LLM guidance document. Document-structure tests check that
+    # the required instructions are written, but runtime behavior depends on
+    # the LLM following the document. Full verification requires manual review
+    # or LLM-eval of actual autopilot execution logs.
+    verification_note: |
+      manual verification required:
+        - confirm LLM reads issue-{N}.json status before proceeding
+        - confirm LLM skips gh pr merge when status=running
+        - confirm LLM skips worktree deletion when status=running
+        - confirm LLM calls state-write.sh with status=merge-ready
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "auto-merge-non-autopilot-full-flow"
+    name: "autopilot 非配下で Worker が pr-cycle を完走"
+    spec_file: "specs/autopilot-guard.md"
+    spec_line: 13
+    requirement: "auto-merge autopilot 配下判定"
+    test_file: "tests/scenarios/bc-worker-llm-guidance.test.sh"
+    test_name: >-
+      auto-merge.md に非autopilot時の merge→archive→cleanup フローが記述されている
+      / auto-merge.md に issue-{N}.json 不在時の動作が記述されている
+    type: manual
+    verification_note: |
+      manual verification required:
+        - confirm LLM executes full merge → archive → cleanup when issue-{N}.json
+          is absent or status != running
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: all-pass-check autopilot 配下 merge-ready 宣言
+  # Target file: commands/all-pass-check.md (LLM guidance doc)
+  # ---------------------------------------------------------------------------
+
+  - id: "all-pass-check-autopilot-all-pass"
+    name: "autopilot 配下で全ステップ PASS"
+    spec_file: "specs/autopilot-guard.md"
+    spec_line: 21
+    requirement: "all-pass-check autopilot 配下 merge-ready 宣言"
+    test_file: "tests/scenarios/bc-worker-llm-guidance.test.sh"
+    test_name: >-
+      all-pass-check.md に status=running チェックの記述がある
+      / all-pass-check.md に全PASS時の merge-ready 遷移が記述されている
+      / all-pass-check.md に WARN を PASS として扱う記述がある
+    type: manual
+    verification_note: |
+      manual verification required:
+        - confirm LLM checks issue-{N}.json status=running before deciding
+        - confirm LLM calls state-write.sh --set status=merge-ready on all-PASS
+        - confirm WARN steps (no CRITICAL) are treated as PASS
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-autopilot-fail"
+    name: "autopilot 配下で FAIL あり"
+    spec_file: "specs/autopilot-guard.md"
+    spec_line: 25
+    requirement: "all-pass-check autopilot 配下 merge-ready 宣言"
+    test_file: "tests/scenarios/bc-worker-llm-guidance.test.sh"
+    test_name: >-
+      all-pass-check.md に FAIL 時の failed 遷移が記述されている
+      / all-pass-check.md に失敗ステップの記録が記述されている
+    type: manual
+    verification_note: |
+      manual verification required:
+        - confirm LLM calls state-write.sh --set status=failed when any step FAILs
+        - confirm LLM records the failing step name and reason in issue-{N}.json
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: merge-gate-execute CWD ガード
+  # Target file: scripts/merge-gate-execute.sh (bash script — directly testable)
+  # ---------------------------------------------------------------------------
+
+  - id: "merge-gate-execute-cwd-guard-reject"
+    name: "worktrees/ 配下から merge-gate-execute を実行"
+    spec_file: "specs/autopilot-guard.md"
+    spec_line: 34
+    requirement: "merge-gate-execute CWD ガード"
+    test_file: "tests/scenarios/bc-worker-merge-worktree-guard.test.sh"
+    test_name: >-
+      worktrees/ パスからの実行を拒否する (exit 1)
+      / worktrees/ 配下の深いネストパスも拒否する [edge]
+      / worktrees/ パスからの実行時にエラーメッセージを出力する
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-execute-cwd-guard-allow"
+    name: "main/ worktree から merge-gate-execute を実行"
+    spec_file: "specs/autopilot-guard.md"
+    spec_line: 37
+    requirement: "merge-gate-execute CWD ガード"
+    test_file: "tests/scenarios/bc-worker-merge-worktree-guard.test.sh"
+    test_name: >-
+      main/ パスからの実行を許可する (exit 0)
+      / 標準プロジェクトパスからの実行を許可する [edge]
+      / worktrees をサブストリングで含む非該当パスは許可する [edge]
+      / 任意の非worktreesパスからの実行を許可する [edge]
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

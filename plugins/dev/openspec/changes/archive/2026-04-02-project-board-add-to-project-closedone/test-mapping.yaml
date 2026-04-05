@@ -1,0 +1,299 @@
+change_id: project-board-add-to-project-closedone
+generated_at: "2026-04-02T00:00:00Z"
+test_framework: bash-scenario
+note: >
+  Target artifacts are GitHub Actions YAML files (.github/workflows/).
+  No application code exists. Tests verify workflow structure and content
+  via grep-based assertions on the generated YAML files.
+scenarios:
+  # ---------------------------------------------------------------------------
+  # add-to-project.md
+  # ---------------------------------------------------------------------------
+  - id: "new-issue-auto-add"
+    name: "新規 Issue 作成時の自動追加"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 7
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "issues opened トリガーが定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "new-issue-auto-add-edge-pat"
+    name: "新規 Issue 作成時の自動追加 [edge: PAT 使用]"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 7
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "新規 Issue [edge: ADD_TO_PROJECT_PAT が github-token に設定]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "new-issue-auto-add-edge-secrets"
+    name: "新規 Issue 作成時の自動追加 [edge: secrets. 経由参照]"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 7
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "新規 Issue [edge: secrets.ADD_TO_PROJECT_PAT で参照されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-reopen-readd"
+    name: "Issue reopen 時の再追加"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 11
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "issues reopened トリガーが定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-reopen-readd-edge-same-block"
+    name: "Issue reopen 時の再追加 [edge: opened/reopened 同一 types リスト]"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 11
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "reopen [edge: opened と reopened が同一 types リスト内]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-transfer-add"
+    name: "Issue transfer 時の追加"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 15
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "issues transferred トリガーが定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-transfer-add-edge-all-triggers"
+    name: "Issue transfer 時の追加 [edge: 3 トリガー全列挙]"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 15
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "transfer [edge: opened/reopened/transferred の3トリガーが全て定義]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-transfer-add-edge-types-required"
+    name: "Issue transfer 時の追加 [edge: types: 明示指定必須]"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 15
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "transfer [edge: types: が明示指定されている（transferred は省略不可）]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pat-not-set-error"
+    name: "PAT 未設定時のエラー"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 19
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "PAT 未設定 [ADD_TO_PROJECT_PAT が github-token として使用されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pat-not-set-error-edge-no-github-token"
+    name: "PAT 未設定時のエラー [edge: GITHUB_TOKEN を project token として不使用]"
+    spec_file: "specs/add-to-project.md"
+    spec_line: 19
+    requirement: "Issue の Project Board 自動追加"
+    test_file: "tests/scenarios/project-board-add-to-project.test.sh"
+    test_name: "PAT 未設定 [edge: GITHUB_TOKEN を project token として使用していない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # project-status-done.md
+  # ---------------------------------------------------------------------------
+  - id: "registered-issue-close-done"
+    name: "Board 登録済み Issue の close"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 7
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "updateProjectV2ItemFieldValue mutation が使用されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "registered-issue-close-done-edge-option-id"
+    name: "Board 登録済み Issue の close [edge: optionId 形式使用]"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 7
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "Board 登録済み [edge: mutation が optionId/singleSelectValue 形式を使用]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "unregistered-issue-close-graceful"
+    name: "Board 未登録 Issue の close"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 11
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "Board 未登録 Issue でも workflow が success で終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "unregistered-issue-close-graceful-edge-no-exit1"
+    name: "Board 未登録 Issue の close [edge: 無条件 exit 1 がない]"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 11
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "Board 未登録 [edge: Item 未発見時に無条件 exit 1 がない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "unregistered-issue-close-graceful-edge-item-check"
+    name: "Board 未登録 Issue の close [edge: mutation 前の Item チェック]"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 11
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "Board 未登録 [edge: Item ID を変数に格納してから mutation を実行する構造]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "graphql-mutation-execution"
+    name: "GraphQL mutation の実行"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 15
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "gh api graphql コマンドが使用されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "graphql-mutation-execution-edge-all-fields"
+    name: "GraphQL mutation の実行 [edge: 必須フィールド3つ全含]"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 15
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "GraphQL mutation [edge: projectId/itemId/fieldId の3フィールドが全て含まれる]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "graphql-mutation-execution-edge-variables"
+    name: "GraphQL mutation の実行 [edge: 変数渡しでインジェクション防止]"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 15
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "GraphQL mutation [edge: -f/--field で変数を渡し文字列連結を避けている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "item-search-implementation"
+    name: "Item 検索の実装"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 19
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "Issue number でフィルタする構造がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "item-search-implementation-edge-repo-filter"
+    name: "Item 検索の実装 [edge: repository フィルタ]"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 19
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "Item 検索 [edge: Issue number だけでなく repository でもフィルタしている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "item-search-implementation-edge-pagination"
+    name: "Item 検索の実装 [edge: pagination 考慮]"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 19
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "Item 検索 [edge: first: N で items 件数が制限されている（pagination 考慮）]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "item-search-implementation-edge-jq"
+    name: "Item 検索の実装 [edge: jq パース]"
+    spec_file: "specs/project-status-done.md"
+    spec_line: 19
+    requirement: "Issue close 時の Status Done 自動更新"
+    test_file: "tests/scenarios/project-board-status-done.test.sh"
+    test_name: "Item 検索 [edge: jq で GraphQL レスポンスをパース]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

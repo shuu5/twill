@@ -1,0 +1,492 @@
+change_id: autopilot-launch-sh
+generated_at: "2026-04-02T00:00:00Z"
+test_framework: bash-inline
+scenarios:
+  # ==========================================================================
+  # Requirement: autopilot-launch.sh スクリプト新設
+  # ==========================================================================
+
+  - id: "launch-sh-exists"
+    name: "必須引数による正常起動 - スクリプト存在確認"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 7
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "autopilot-launch.sh が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-sh-executable"
+    name: "必須引数による正常起動 - 実行可能ビット"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 7
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "autopilot-launch.sh が実行可能である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-sh-tmux-new-window"
+    name: "必須引数による正常起動 - tmux new-window"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 8
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "tmux new-window でウィンドウを作成する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-sh-autopilot-dir-env"
+    name: "必須引数による正常起動 - AUTOPILOT_DIR 環境変数"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 9
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "cld 起動時に AUTOPILOT_DIR 環境変数を渡す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cld-resolve"
+    name: "cld パス解決 - command -v cld"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 12
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "command -v cld で cld パスを解決する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cld-missing-exit2"
+    name: "cld パス解決 - 未発見時終了コード 2"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 13
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "cld 未発見時に終了コード 2 で終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cld-missing-state-write"
+    name: "cld パス解決 - 未発見時 state-write failed"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 13
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "cld 未発見時に state-write で failed を記録する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-init-type-issue"
+    name: "issue state 初期化 - --type issue"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 16
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "state-write.sh --type issue で初期化する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-init-role-worker"
+    name: "issue state 初期化 - --role worker"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 17
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "state-write.sh --role worker が指定される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-numeric-validation"
+    name: "ISSUE 数値バリデーション"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 20
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "ISSUE 数値バリデーション（正規表現 or 算術チェック）が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-zero-rejected"
+    name: "ISSUE 数値バリデーション - ゼロ値拒否（edge case）"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 21
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "[edge] ISSUE=0 はバリデーションエラーになる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-empty-rejected"
+    name: "ISSUE 数値バリデーション - 空値拒否（edge case）"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 21
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "[edge] ISSUE 未指定（空）時はバリデーションエラーになる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-negative-rejected"
+    name: "ISSUE 数値バリデーション - 負数拒否（edge case）"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 21
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "[edge] ISSUE=-1 のような負数はバリデーションエラーになる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "path-traversal-check"
+    name: "パストラバーサル防止 - .. 検出"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 24
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "パストラバーサル（..）チェックが実装されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "path-traversal-state-write"
+    name: "パストラバーサル防止 - state-write failed"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 25
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "パストラバーサル検出時に state-write で failed を記録する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bare-repo-detection"
+    name: "bare repo 検出と LAUNCH_DIR 計算 - .bare/ 検出"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 28
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: ".bare/ ディレクトリの検出ロジックが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-dir-main"
+    name: "bare repo 検出と LAUNCH_DIR 計算 - /main 付加"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 29
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: ".bare/ 検出時に LAUNCH_DIR に /main を付加する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "launch-dir-fallback"
+    name: "bare repo 検出と LAUNCH_DIR 計算 - フォールバック"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 31
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: ".bare/ 非検出時は LAUNCH_DIR = PROJECT_DIR をフォールバックとする"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bare-is-directory-check"
+    name: "bare repo 検出 - -d フラグ確認（edge case）"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 28
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "[edge] .bare/ がディレクトリであるか -d フラグで確認する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "context-printf-quote"
+    name: "コンテキスト注入 - printf '%q' クォーティング"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 35
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "--context の値を printf '%q' でクォーティングする"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "context-append-system-prompt"
+    name: "コンテキスト注入 - --append-system-prompt 変換"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 36
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "--context の値を --append-system-prompt として cld に渡す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "context-optional"
+    name: "コンテキスト注入 - 未指定時省略（edge case）"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 35
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "[edge] --context 未指定時は --append-system-prompt を省略する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cross-repo-owner-env"
+    name: "クロスリポジトリ対応 - REPO_OWNER 環境変数"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 39
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "REPO_OWNER 環境変数が Worker に渡される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cross-repo-name-env"
+    name: "クロスリポジトリ対応 - REPO_NAME 環境変数"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 40
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "REPO_NAME 環境変数が Worker に渡される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "repo-path-effective-dir"
+    name: "クロスリポジトリ repo-path - EFFECTIVE_PROJECT_DIR"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 43
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "--repo-path を EFFECTIVE_PROJECT_DIR として使用する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "repo-path-existence-check"
+    name: "クロスリポジトリ repo-path - 存在確認"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 44
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "--repo-path が存在しない場合に failed を記録して終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "repo-path-absolute"
+    name: "クロスリポジトリ repo-path - 絶対パスチェック（edge case）"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 43
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "[edge] --repo-path は絶対パスでなければならない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-remain-on-exit"
+    name: "クラッシュ検知フック設定 - remain-on-exit"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 47
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "remain-on-exit on が設定される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-pane-died"
+    name: "クラッシュ検知フック設定 - pane-died フック"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 47
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "pane-died フックが設定される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crash-detect-script"
+    name: "クラッシュ検知フック設定 - crash-detect.sh 呼び出し"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 48
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "crash-detect.sh が pane-died フックで呼び出される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "scripts-root-resolution"
+    name: "SCRIPTS_ROOT 自動解決"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 51
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "SCRIPTS_ROOT を dirname $0 または BASH_SOURCE で解決する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "scripts-root-cd-pwd"
+    name: "SCRIPTS_ROOT 自動解決 - cd && pwd 標準形式"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 52
+    requirement: "autopilot-launch.sh スクリプト新設"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "SCRIPTS_ROOT が cd && pwd の標準形式で解決される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # Requirement: 終了コード体系
+  # ==========================================================================
+
+  - id: "exit-0-success"
+    name: "正常終了 - 終了コード 0"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 58
+    requirement: "終了コード体系"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "正常起動時に終了コード 0 で終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "exit-1-validation"
+    name: "バリデーションエラー - 終了コード 1"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 62
+    requirement: "終了コード体系"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "バリデーション失敗時に終了コード 1 で終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "exit-1-state-write-failed"
+    name: "バリデーションエラー - state-write failed"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 63
+    requirement: "終了コード体系"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "バリデーション失敗時に state-write で failed を記録する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "exit-2-external-cmd"
+    name: "外部コマンド不在 - 終了コード 2"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 67
+    requirement: "終了コード体系"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "外部コマンド不在時に終了コード 2 で終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "exit-codes-distinct"
+    name: "終了コード体系 - 1 と 2 の区別（edge case）"
+    spec_file: "specs/autopilot-launch-sh/spec.md"
+    spec_line: 55
+    requirement: "終了コード体系"
+    test_file: "tests/scenarios/autopilot-launch-sh.test.sh"
+    test_name: "終了コード 1（バリデーション）と 2（コマンド不在）が明確に区別されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

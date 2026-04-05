@@ -1,0 +1,289 @@
+change_id: b-6-specialist-few-shot
+generated_at: "2026-03-27T18:00:00+09:00"
+test_framework: bash
+scenarios:
+  # ===========================================================================
+  # specialist-output-schema.md
+  # ===========================================================================
+
+  # --- Requirement: ref-specialist-output-schema reference コンポーネント ---
+
+  - id: "schema-required-fields"
+    name: "スキーマ必須フィールドの定義"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 14
+    requirement: "ref-specialist-output-schema reference コンポーネント"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "スキーマ必須フィールド - status が定義されている"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "severity-three-levels"
+    name: "severity 3 段階の定義"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 18
+    requirement: "ref-specialist-output-schema reference コンポーネント"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "severity 3 段階の定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: status 自動導出ルール ---
+
+  - id: "status-fail-rule"
+    name: "FAIL 判定"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 32
+    requirement: "status 自動導出ルール"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "status 自動導出 - FAIL 判定ルール記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "status-warn-rule"
+    name: "WARN 判定"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 36
+    requirement: "status 自動導出ルール"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "status 自動導出 - WARN 判定ルール記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "status-pass-rule"
+    name: "PASS 判定"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 40
+    requirement: "status 自動導出ルール"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "status 自動導出 - PASS 判定ルール記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: 消費側パースルール ---
+
+  - id: "parse-summary-line"
+    name: "サマリー行パースの成功"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 53
+    requirement: "消費側パースルール"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "サマリー行パースルール記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "block-reject"
+    name: "ブロック判定（REJECT）"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 57
+    requirement: "消費側パースルール"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "ブロック判定 - REJECT ルール記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "block-pass-low-confidence"
+    name: "ブロック判定（PASS — confidence 不足）"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 61
+    requirement: "消費側パースルール"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "ブロック判定 - confidence 閾値 80 の記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "parse-fallback"
+    name: "パース失敗時のフォールバック"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 65
+    requirement: "消費側パースルール"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "パース失敗時フォールバック記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: output_schema: custom 除外条件 ---
+
+  - id: "custom-schema-exclusion"
+    name: "output_schema: custom の除外"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 76
+    requirement: "output_schema: custom 除外条件"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "output_schema: custom 除外条件の記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "custom-schema-fallback"
+    name: "custom specialist のフォールバック処理"
+    spec_file: "specs/specialist-output-schema.md"
+    spec_line: 81
+    requirement: "output_schema: custom 除外条件"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "custom specialist フォールバック処理の記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # specialist-few-shot.md
+  # ===========================================================================
+
+  # --- Requirement: ref-specialist-few-shot reference コンポーネント ---
+
+  - id: "fewshot-template-structure"
+    name: "few-shot テンプレートの構造"
+    spec_file: "specs/specialist-few-shot.md"
+    spec_line: 13
+    requirement: "ref-specialist-few-shot reference コンポーネント"
+    test_file: "tests/scenarios/specialist-few-shot.test.sh"
+    test_name: "few-shot テンプレート - FAIL ケースの存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "fewshot-finding-fields"
+    name: "findings 必須フィールドの網羅"
+    spec_file: "specs/specialist-few-shot.md"
+    spec_line: 18
+    requirement: "ref-specialist-few-shot reference コンポーネント"
+    test_file: "tests/scenarios/specialist-few-shot.test.sh"
+    test_name: "findings 必須フィールドの網羅"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: コンテキスト消費の最小化 ---
+
+  - id: "fewshot-single-example"
+    name: "テンプレート例数の制限"
+    spec_file: "specs/specialist-few-shot.md"
+    spec_line: 29
+    requirement: "コンテキスト消費の最小化"
+    test_file: "tests/scenarios/specialist-few-shot.test.sh"
+    test_name: "テンプレート例数 - 1 例のみ"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: specialist プロンプトへの注入形式 ---
+
+  - id: "injection-section-format"
+    name: "注入セクションの形式"
+    spec_file: "specs/specialist-few-shot.md"
+    spec_line: 42
+    requirement: "specialist プロンプトへの注入形式"
+    test_file: "tests/scenarios/specialist-few-shot.test.sh"
+    test_name: "注入セクション - ヘッダーの存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: Model 割り当て表の包含 ---
+
+  - id: "model-assignment-table"
+    name: "model 割り当て表の存在"
+    spec_file: "specs/specialist-few-shot.md"
+    spec_line: 56
+    requirement: "Model 割り当て表の包含"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "model 割り当て表 - haiku と sonnet が記載"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "model-no-opus-specialist"
+    name: "opus が specialist に割り当てられていない"
+    spec_file: "specs/specialist-few-shot.md"
+    spec_line: 60
+    requirement: "Model 割り当て表の包含"
+    test_file: "tests/scenarios/specialist-output-schema.test.sh"
+    test_name: "model 割り当て - opus が specialist に未割り当て"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # deps-yaml-refs.md
+  # ===========================================================================
+
+  # --- Requirement: deps.yaml refs セクション ---
+
+  - id: "refs-section-exists"
+    name: "refs セクションの存在"
+    spec_file: "specs/deps-yaml-refs.md"
+    spec_line: 12
+    requirement: "deps.yaml refs セクション"
+    test_file: "tests/scenarios/deps-yaml-refs.test.sh"
+    test_name: "refs セクションの存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "refs-entry-format"
+    name: "reference エントリの形式"
+    spec_file: "specs/deps-yaml-refs.md"
+    spec_line: 16
+    requirement: "deps.yaml refs セクション"
+    test_file: "tests/scenarios/deps-yaml-refs.test.sh"
+    test_name: "reference エントリ形式 - output-schema (type, path, description)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: loom check の通過 ---
+
+  - id: "loom-check-pass"
+    name: "loom check が pass する"
+    spec_file: "specs/deps-yaml-refs.md"
+    spec_line: 22
+    requirement: "loom check の通過"
+    test_file: "tests/scenarios/deps-yaml-refs.test.sh"
+    test_name: "loom check が pass する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- Requirement: loom validate の通過 ---
+
+  - id: "loom-validate-pass"
+    name: "loom validate が新規 violation なしで完了する"
+    spec_file: "specs/deps-yaml-refs.md"
+    spec_line: 30
+    requirement: "loom validate の通過"
+    test_file: "tests/scenarios/deps-yaml-refs.test.sh"
+    test_name: "loom validate が新規 violation なしで完了する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

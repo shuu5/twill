@@ -1,0 +1,324 @@
+change_id: is-autopilot-cwd-independent
+generated_at: "2026-04-04T14:36:07Z"
+test_framework: bats
+scenarios:
+  # =========================================================================
+  # Requirement: resolve_issue_num 関数の新設
+  # Source: specs/resolve-issue-num.md
+  # =========================================================================
+
+  - id: "resolve-issue-num--autopilot-dir-running"
+    name: "AUTOPILOT_DIR 設定時に running issue から番号取得"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 6
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num: AUTOPILOT_DIR 設定時に running issue から番号取得"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--multiple-running-min"
+    name: "running issue が複数件存在する場合に最小番号を採用"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 10
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num: running issue が複数件存在する場合に最小番号を採用"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--zero-running-fallback"
+    name: "running issue が0件の場合にフォールバック"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 14
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num: running issue が0件の場合は git branch にフォールバック"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--no-autopilot-dir-fallback"
+    name: "AUTOPILOT_DIR 未設定時にフォールバック"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 18
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num: AUTOPILOT_DIR 未設定時は git branch にフォールバック"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--broken-json-skip"
+    name: "壊れた JSON をスキップして続行"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 22
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num: 壊れた JSON をスキップして stderr に警告を出力し続行する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: chain-runner.sh の Issue 番号解決を resolve_issue_num に移行
+  # Source: specs/resolve-issue-num.md
+  # =========================================================================
+
+  - id: "chain-runner--autopilot-dir-issue-resolve"
+    name: "chain-runner.sh が AUTOPILOT_DIR から Issue 番号を取得する"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 31
+    requirement: "chain-runner.sh の Issue 番号解決を resolve_issue_num に移行"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "chain-runner.sh: AUTOPILOT_DIR 設定時は git branch を呼ばずに state file から番号を解決する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: post-skill-chain-nudge.sh の Issue 番号解決を resolve_issue_num に移行
+  # Source: specs/resolve-issue-num.md
+  # =========================================================================
+
+  - id: "nudge-hook--cwd-independent"
+    name: "nudge フックが CWD に依存せず Issue 番号を取得する"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 37
+    requirement: "post-skill-chain-nudge.sh の Issue 番号解決を resolve_issue_num に移行"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "post-skill-chain-nudge.sh: AUTOPILOT_DIR から正しい Issue 番号を取得し CWD に依存しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: refs/ref-dci.md の DCI 標準パターン更新
+  # Source: specs/resolve-issue-num.md（静的検証）
+  # =========================================================================
+
+  - id: "ref-dci--new-pattern-sample"
+    name: "ref-dci.md のサンプルコードが新パターンを示す"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 45
+    requirement: "refs/ref-dci.md の DCI 標準パターン更新"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "ref-dci.md: resolve_issue_num の使用例が含まれており git branch はフォールバックとして記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: SKILL.md 群の bash スニペット更新
+  # Source: specs/resolve-issue-num.md（静的検証）
+  # =========================================================================
+
+  - id: "skill-md--new-pattern-snippet"
+    name: "SKILL.md の bash スニペットが新パターンを使用する"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 53
+    requirement: "SKILL.md 群の bash スニペット更新"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "workflow-setup/SKILL.md: source scripts/resolve-issue-num.sh と resolve_issue_num() の順で記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: commands の DCI コンテキスト更新
+  # Source: specs/resolve-issue-num.md（静的検証）
+  # =========================================================================
+
+  - id: "commands--merge-gate-state-file-resolve"
+    name: "merge-gate コマンドが state file から Issue 番号を取得する"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 59
+    requirement: "commands の DCI コンテキスト更新"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "merge-gate.md: resolve_issue_num ベースの ISSUE_NUM 取得記述が含まれている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Edge cases: resolve_issue_num 境界値・異常系
+  # Source: --coverage=edge-cases 指示
+  # =========================================================================
+
+  - id: "resolve-issue-num--edge-empty-issues-dir"
+    name: "[edge] AUTOPILOT_DIR の issues/ が空の場合はフォールバック"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 6
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: AUTOPILOT_DIR の issues/ が空の場合は git branch にフォールバック"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-done-pending-ignored"
+    name: "[edge] status=done/pending の issue は無視して git フォールバック"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 6
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: status=done の issue は無視して git branch にフォールバック"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-three-running-min"
+    name: "[edge] running issue が3件以上の場合も最小番号を採用"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 10
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: running issue が3件以上の場合も最小番号を採用"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-single-digit-vs-double"
+    name: "[edge] 1桁と2桁の issue 番号混在でも数値最小を採用"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 10
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: issue 番号が1桁と2桁が混在する場合も数値最小を採用"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-no-status-field"
+    name: "[edge] JSON は valid だが status フィールドが存在しない場合はスキップ"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 22
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: status フィールドなしの JSON はスキップして git フォールバック"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-detached-head"
+    name: "[edge] git branch が空を返す場合（detached HEAD）は空文字を返す"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 18
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: running 0件 + git branch が空の場合は空文字を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-main-branch"
+    name: "[edge] git branch が Issue 番号を含まないブランチ名の場合は空文字"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 18
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: git branch が Issue 番号を含まないブランチ名を返す場合は空文字"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-nonexistent-autopilot-dir"
+    name: "[edge] AUTOPILOT_DIR が存在しないパスを指す場合は git フォールバック"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 18
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: AUTOPILOT_DIR が存在しないパスを指す場合は git branch にフォールバック"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-state-over-git"
+    name: "[edge] state file と git branch 両方有効な場合は state file 優先"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 6
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: state file と git branch 両方有効な場合は state file 優先"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-mixed-broken-valid"
+    name: "[edge] 壊れた JSON と有効 running issue が混在する場合は有効な番号を返す"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 22
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: 壊れた JSON と有効 running issue が混在する場合は有効な番号を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-nonconsecutive-min"
+    name: "[edge] 非連続な issue 番号（1, 999, 500）でも最小番号 1 を返す"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 10
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num [edge]: 非連続な issue 番号（1, 999, 500）でも最小番号 1 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-issue-num--edge-only-broken-json-fallback"
+    name: "[edge] 壊れた JSON のみ存在する場合も exit 0 で git フォールバック"
+    spec_file: "specs/resolve-issue-num.md"
+    spec_line: 22
+    requirement: "resolve_issue_num 関数の新設"
+    test_file: "tests/bats/scripts/resolve-issue-num.bats"
+    test_name: "resolve_issue_num: 壊れた JSON のみ存在する場合も exit 0 で続行（git フォールバック）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

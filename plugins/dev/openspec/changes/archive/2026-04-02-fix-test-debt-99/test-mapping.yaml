@@ -1,0 +1,64 @@
+# test-mapping.yaml for fix-test-debt-99
+# This change modifies existing test files (no new test files added)
+
+mappings:
+  - requirement: "廃止フラグ参照テストの修正"
+    scenarios:
+      - "auto フラグ不在確認テストの修正"
+      - "DEV_AUTOPILOT_SESSION 不在確認テストの修正"
+    test_files:
+      - tests/scenarios/auto-flag-removal.test.sh
+      - tests/scenarios/all-pass-check.test.sh
+
+  - requirement: "削除済みコンポーネントのテスト修正"
+    scenarios:
+      - "削除済みスクリプトテストの除去または修正"
+    test_files:
+      - tests/scenarios/autopilot-scripts-migration.test.sh
+      - tests/scenarios/worktree-branch-scripts-migration.test.sh
+      - tests/scenarios/calls-completion.test.sh
+
+  - requirement: "deps.yaml 構造変更に伴うテスト修正"
+    scenarios:
+      - "コンポーネント数・ファイル数テストの更新"
+      - "chain/step_in 構造テストの更新"
+    test_files:
+      - tests/scenarios/chain-definition.test.sh
+      - tests/scenarios/autopilot-summary-audit.test.sh
+
+  - requirement: "SKILL.md 構造テストの修正"
+    scenarios:
+      - "co-issue SKILL.md 行数テスト"
+      - "pr-cycle SKILL.md 構造テスト"
+    test_files:
+      - tests/scenarios/co-issue-phase3-specialist-review.test.sh
+
+  - requirement: "merge-gate テストの修正"
+    scenarios:
+      - "merge-gate モード検証テストの修正"
+    test_files:
+      - tests/scenarios/bc-worker-merge-worktree-guard.test.sh
+
+  - requirement: "loom deep-validate 警告テストの修正"
+    scenarios:
+      - "deep-validate 警告テストの更新"
+    test_files:
+      - tests/scenarios/calls-completion.test.sh
+
+  - requirement: "Bash エラー記録テストの修正"
+    scenarios:
+      - "エラー記録テストの修正"
+    test_files:
+      - tests/scenarios/bash-error-recording.test.sh
+
+  - requirement: "worktree-create テストの修正"
+    scenarios:
+      - "worktree-create 機能テストの修正"
+    test_files:
+      - tests/scenarios/worktree-branch-scripts-migration.test.sh
+
+  - requirement: "ベースラインテストの修正"
+    scenarios:
+      - "テストファイル数ベースラインの更新"
+    test_files:
+      - tests/scenarios/c-5-test-suite.test.sh

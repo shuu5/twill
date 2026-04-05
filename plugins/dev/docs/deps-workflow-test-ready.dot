@@ -1,0 +1,55 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="workflow-test-ready";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+    skill_workflow_test_ready [label="dev:workflow-test-ready\n(2,089 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+
+    // Reference Skills
+
+    // L1: Direct Commands
+    cmd_opsx_apply [label="opsx-apply\n(249 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_test_scaffold [label="test-scaffold\n(718 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+    agent_spec_scaffold_tests [label="spec-scaffold-tests\n(1,761 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_e2e_generate [label="e2e-generate\n(2,028 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+
+    // L3.5: Scripts
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_workflow_test_ready; }
+    { rank=same; cmd_opsx_apply; cmd_test_scaffold; }
+    { rank=same; agent_spec_scaffold_tests; agent_e2e_generate; }
+
+    // Edges
+    skill_workflow_test_ready -> cmd_test_scaffold;
+    skill_workflow_test_ready -> cmd_opsx_apply;
+    cmd_test_scaffold -> agent_spec_scaffold_tests [style=dashed];
+    cmd_test_scaffold -> agent_e2e_generate [style=dashed];
+    cmd_test_scaffold -> skill_ref_specialist_output_schema;
+    agent_spec_scaffold_tests -> skill_ref_specialist_output_schema [style=dotted];
+    agent_e2e_generate -> skill_ref_specialist_output_schema [style=dotted];
+
+    // Ordering constraints (invisible edges)
+    cmd_test_scaffold -> cmd_opsx_apply [style=invis, weight=10];
+    agent_spec_scaffold_tests -> agent_e2e_generate [style=invis, weight=10];
+    agent_e2e_generate -> skill_ref_specialist_output_schema [style=invis, weight=10];
+
+}

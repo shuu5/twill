@@ -1,0 +1,399 @@
+change_id: c-2a-independent-component-migration
+generated_at: "2026-03-28T00:00:00Z"
+test_framework: bash
+scenarios:
+  # ============================================================
+  # specs/architect.md — Architect系コンポーネント移植
+  # ============================================================
+  - id: "architect-deps-yaml-registration"
+    name: "Architect系の deps.yaml 登録"
+    spec_file: "specs/architect.md"
+    spec_line: 14
+    requirement: "Architect系コンポーネント移植"
+    test_file: "tests/scenarios/architect.test.sh"
+    test_name: "deps.yaml commands に architect-completeness-check / architect-decompose / architect-group-refine / architect-issue-create / evaluate-architecture が type: atomic で定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "architect-spawnable-by"
+    name: "Architect系の spawnable_by 設定"
+    spec_file: "specs/architect.md"
+    spec_line: 18
+    requirement: "Architect系コンポーネント移植"
+    test_file: "tests/scenarios/architect.test.sh"
+    test_name: "全5個の spawnable_by に controller が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "architect-file-placement"
+    name: "Architect系のファイル配置"
+    spec_file: "specs/architect.md"
+    spec_line: 22
+    requirement: "Architect系コンポーネント移植"
+    test_file: "tests/scenarios/architect.test.sh"
+    test_name: "commands/<name>.md が全5個存在 / skills/ には配置されていない"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # specs/dead-component-triage.md — Dead Component/Triage系コンポーネント移植
+  # ============================================================
+  - id: "dead-component-workflow-section-placement"
+    name: "workflow の section 配置"
+    spec_file: "specs/dead-component-triage.md"
+    spec_line: 16
+    requirement: "Dead Component/Triage系コンポーネント移植"
+    test_file: "tests/scenarios/dead-component-triage.test.sh"
+    test_name: "skills/workflow-dead-cleanup/SKILL.md 存在 / skills/workflow-tech-debt-triage/SKILL.md 存在 / commands/ には不在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dead-component-atomic-section-placement"
+    name: "atomic の section 配置"
+    spec_file: "specs/dead-component-triage.md"
+    spec_line: 20
+    requirement: "Dead Component/Triage系コンポーネント移植"
+    test_file: "tests/scenarios/dead-component-triage.test.sh"
+    test_name: "commands/dead-component-detect.md 存在 / commands/dead-component-execute.md 存在 / commands/triage-execute.md 存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dead-component-deps-yaml-registration"
+    name: "Dead Component/Triage系の deps.yaml 登録"
+    spec_file: "specs/dead-component-triage.md"
+    spec_line: 24
+    requirement: "Dead Component/Triage系コンポーネント移植"
+    test_file: "tests/scenarios/dead-component-triage.test.sh"
+    test_name: "atomic 3個は commands セクション / workflow 2個は skills セクション"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dead-component-workflow-spawnable-by"
+    name: "workflow の spawnable_by 設定"
+    spec_file: "specs/dead-component-triage.md"
+    spec_line: 28
+    requirement: "Dead Component/Triage系コンポーネント移植"
+    test_file: "tests/scenarios/dead-component-triage.test.sh"
+    test_name: "workflow-dead-cleanup / workflow-tech-debt-triage の spawnable_by に controller / can_spawn に atomic が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # specs/issue-management.md — Issue管理系コンポーネント移植
+  # ============================================================
+  - id: "issue-mgmt-deps-yaml-registration"
+    name: "Issue管理系の deps.yaml 登録"
+    spec_file: "specs/issue-management.md"
+    spec_line: 16
+    requirement: "Issue管理系コンポーネント移植"
+    test_file: "tests/scenarios/issue-management.test.sh"
+    test_name: "deps.yaml commands に issue-dig / issue-structure / issue-create / issue-bulk-create / issue-tech-debt-absorb / project-board-sync / issue-assess が type: atomic で定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-mgmt-spawnable-by"
+    name: "Issue管理系の spawnable_by 設定"
+    spec_file: "specs/issue-management.md"
+    spec_line: 20
+    requirement: "Issue管理系コンポーネント移植"
+    test_file: "tests/scenarios/issue-management.test.sh"
+    test_name: "issue-dig / issue-structure / issue-create の spawnable_by に controller が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-mgmt-file-placement"
+    name: "Issue管理系のファイル配置"
+    spec_file: "specs/issue-management.md"
+    spec_line: 24
+    requirement: "Issue管理系コンポーネント移植"
+    test_file: "tests/scenarios/issue-management.test.sh"
+    test_name: "commands/<name>.md が全7個存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-create-template-reference"
+    name: "テンプレート参照の整合性"
+    spec_file: "specs/issue-management.md"
+    spec_line: 32
+    requirement: "issue-create の参照更新"
+    test_file: "tests/scenarios/issue-management.test.sh"
+    test_name: "issue-create COMMAND.md 内に ref-issue-template-bug / ref-issue-template-feature への参照が存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # specs/misc-and-validation.md — loom-validate / 全体整合性 / 命名規則
+  # ============================================================
+  - id: "loom-validate-deps-yaml-registration"
+    name: "loom-validate の deps.yaml 登録"
+    spec_file: "specs/misc-and-validation.md"
+    spec_line: 10
+    requirement: "loom-validate コンポーネント移植"
+    test_file: "tests/scenarios/misc-and-validation.test.sh"
+    test_name: "deps.yaml commands に loom-validate が type: atomic で定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-validate-file-placement"
+    name: "loom-validate のファイル配置"
+    spec_file: "specs/misc-and-validation.md"
+    spec_line: 14
+    requirement: "loom-validate コンポーネント移植"
+    test_file: "tests/scenarios/misc-and-validation.test.sh"
+    test_name: "commands/loom-validate.md が存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loom-check-pass"
+    name: "loom validate の実行"
+    spec_file: "specs/misc-and-validation.md"
+    spec_line: 22
+    requirement: "全体整合性検証"
+    test_file: "tests/scenarios/misc-and-validation.test.sh"
+    test_name: "loom check が 0 エラーで完了"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "section-violation-zero"
+    name: "section 違反 0 件"
+    spec_file: "specs/misc-and-validation.md"
+    spec_line: 26
+    requirement: "全体整合性検証"
+    test_file: "tests/scenarios/misc-and-validation.test.sh"
+    test_name: "section 違反（atomic が skills/ に配置等）が 0 件"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "controller-reference-update"
+    name: "controller 参照の更新"
+    spec_file: "specs/misc-and-validation.md"
+    spec_line: 34
+    requirement: "body 内参照の新命名規則合致"
+    test_file: "tests/scenarios/misc-and-validation.test.sh"
+    test_name: "旧名 controller-autopilot / controller-issue 等が不在 / co-autopilot / co-issue 等の新名に変換済み"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-invocation-format"
+    name: "スキル呼び出しの形式"
+    spec_file: "specs/misc-and-validation.md"
+    spec_line: 38
+    requirement: "body 内参照の新命名規則合致"
+    test_file: "tests/scenarios/misc-and-validation.test.sh"
+    test_name: "body 内の Skill tool 呼び出しが dev:<component-name> 形式"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # specs/openspec-general.md — OpenSpec/汎用系コンポーネント移植
+  # ============================================================
+  - id: "openspec-section-placement"
+    name: "section 誤配置の修正"
+    spec_file: "specs/openspec-general.md"
+    spec_line: 14
+    requirement: "OpenSpec/汎用系コンポーネント移植"
+    test_file: "tests/scenarios/openspec-general.test.sh"
+    test_name: "commands/explore.md / commands/propose.md / commands/apply.md / commands/archive.md 存在 / skills/ には不在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "openspec-deps-yaml-registration"
+    name: "OpenSpec/汎用系の deps.yaml 登録"
+    spec_file: "specs/openspec-general.md"
+    spec_line: 18
+    requirement: "OpenSpec/汎用系コンポーネント移植"
+    test_file: "tests/scenarios/openspec-general.test.sh"
+    test_name: "deps.yaml commands に explore / propose / apply / archive / check が type: atomic で定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "openspec-explore-spawnable-by"
+    name: "explore の spawnable_by 設定"
+    spec_file: "specs/openspec-general.md"
+    spec_line: 22
+    requirement: "OpenSpec/汎用系コンポーネント移植"
+    test_file: "tests/scenarios/openspec-general.test.sh"
+    test_name: "explore の spawnable_by に controller と workflow の両方が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "openspec-propose-apply-archive-spawnable-by"
+    name: "propose/apply/archive の spawnable_by 設定"
+    spec_file: "specs/openspec-general.md"
+    spec_line: 26
+    requirement: "OpenSpec/汎用系コンポーネント移植"
+    test_file: "tests/scenarios/openspec-general.test.sh"
+    test_name: "propose / apply / archive の spawnable_by に controller と workflow が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # specs/plugin-management.md — Plugin管理系コンポーネント移植
+  # ============================================================
+  - id: "plugin-mgmt-deps-yaml-registration"
+    name: "Plugin管理系の deps.yaml 登録"
+    spec_file: "specs/plugin-management.md"
+    spec_line: 21
+    requirement: "Plugin管理系コンポーネント移植"
+    test_file: "tests/scenarios/plugin-management.test.sh"
+    test_name: "atomic 8個が type: atomic / composite 2個が type: composite で deps.yaml に定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plugin-mgmt-spawnable-by"
+    name: "Plugin管理系の spawnable_by 設定"
+    spec_file: "specs/plugin-management.md"
+    spec_line: 25
+    requirement: "Plugin管理系コンポーネント移植"
+    test_file: "tests/scenarios/plugin-management.test.sh"
+    test_name: "全10個の spawnable_by に controller が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plugin-mgmt-composite-can-spawn"
+    name: "composite の can_spawn 設定"
+    spec_file: "specs/plugin-management.md"
+    spec_line: 29
+    requirement: "Plugin管理系コンポーネント移植"
+    test_file: "tests/scenarios/plugin-management.test.sh"
+    test_name: "plugin-phase-diagnose / plugin-phase-verify の can_spawn に specialist が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plugin-mgmt-file-placement"
+    name: "Plugin管理系のファイル配置"
+    spec_file: "specs/plugin-management.md"
+    spec_line: 33
+    requirement: "Plugin管理系コンポーネント移植"
+    test_file: "tests/scenarios/plugin-management.test.sh"
+    test_name: "commands/<name>.md が全10個存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # specs/project-management.md — Project管理系コンポーネント移植
+  # ============================================================
+  - id: "project-mgmt-deps-yaml-registration"
+    name: "Project管理系の deps.yaml 登録"
+    spec_file: "specs/project-management.md"
+    spec_line: 17
+    requirement: "Project管理系コンポーネント移植"
+    test_file: "tests/scenarios/project-management.test.sh"
+    test_name: "deps.yaml commands に全8個が type: atomic で定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-mgmt-spawnable-by"
+    name: "Project管理系の spawnable_by 設定"
+    spec_file: "specs/project-management.md"
+    spec_line: 21
+    requirement: "Project管理系コンポーネント移植"
+    test_file: "tests/scenarios/project-management.test.sh"
+    test_name: "project-create / project-governance / project-migrate の spawnable_by に controller が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-mgmt-file-placement"
+    name: "Project管理系のファイル配置"
+    spec_file: "specs/project-management.md"
+    spec_line: 25
+    requirement: "Project管理系コンポーネント移植"
+    test_file: "tests/scenarios/project-management.test.sh"
+    test_name: "commands/<name>.md が全8個存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # specs/self-improve-ecc.md — Self-improve/ECC系コンポーネント移植
+  # ============================================================
+  - id: "self-improve-deps-yaml-registration"
+    name: "Self-improve/ECC系の deps.yaml 登録"
+    spec_file: "specs/self-improve-ecc.md"
+    spec_line: 14
+    requirement: "Self-improve/ECC系コンポーネント移植"
+    test_file: "tests/scenarios/self-improve-ecc.test.sh"
+    test_name: "deps.yaml commands に self-improve-collect / self-improve-propose / self-improve-close / ecc-monitor が type: atomic で定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "self-improve-spawnable-by"
+    name: "Self-improve/ECC系の spawnable_by 設定"
+    spec_file: "specs/self-improve-ecc.md"
+    spec_line: 18
+    requirement: "Self-improve/ECC系コンポーネント移植"
+    test_file: "tests/scenarios/self-improve-ecc.test.sh"
+    test_name: "全4個の spawnable_by に controller が含まれる"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "self-improve-file-placement"
+    name: "Self-improve/ECC系のファイル配置"
+    spec_file: "specs/self-improve-ecc.md"
+    spec_line: 22
+    requirement: "Self-improve/ECC系コンポーネント移植"
+    test_file: "tests/scenarios/self-improve-ecc.test.sh"
+    test_name: "commands/<name>.md が全4個存在"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

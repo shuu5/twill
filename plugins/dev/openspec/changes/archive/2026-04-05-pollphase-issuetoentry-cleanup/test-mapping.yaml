@@ -1,0 +1,133 @@
+change_id: pollphase-issuetoentry-cleanup
+generated_at: "2026-04-05T00:00:00Z"
+test_framework: bash
+scenarios:
+  - id: "no-declare-local-issue-to-entry"
+    name: "issue_to_entry 配列が削除される"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 7
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase(): declare/local -A issue_to_entry 宣言が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-issue-to-entry-assignment"
+    name: "issue_to_entry 配列が削除される [edge: 代入なし]"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 7
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase() [edge: issue_to_entry[] への代入が存在しない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-issue-to-entry-any"
+    name: "issue_to_entry 配列が削除される [edge: 変数名ゼロ]"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 7
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase() [edge: issue_to_entry 変数名が一切存在しない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-local-issue-entry"
+    name: "issue_entry 変数が削除される"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 11
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase(): local issue_entry 宣言/代入が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-issue-entry-reference"
+    name: "issue_entry 変数が削除される [edge: $issue_entry 参照なし]"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 11
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase() [edge: $issue_entry 参照が存在しない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-issue-entry-any"
+    name: "issue_entry 変数が削除される [edge: 変数名ゼロ]"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 11
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase() [edge: issue_entry 変数名が一切存在しない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cleanup-worker-uses-entry"
+    name: "cleanup_worker が entry を直接使用する"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 15
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase(): cleanup_worker の第2引数が $entry である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cleanup-worker-not-issue-entry"
+    name: "cleanup_worker が entry を直接使用する [edge: $issue_entry 不使用]"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 15
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase() [edge: cleanup_worker の引数に $issue_entry が使われていない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cleanup-worker-timeout-block-entry"
+    name: "cleanup_worker が entry を直接使用する [edge: タイムアウトブロック]"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 15
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase() [edge: タイムアウトブロックの cleanup_worker も $entry を使う]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "check-and-nudge-no-issue-entry"
+    name: "cleanup_worker が entry を直接使用する [edge: check_and_nudge も $issue_entry 不使用]"
+    spec_file: "specs/poll-phase-cleanup.md"
+    spec_line: 15
+    requirement: "poll_phase の冗長変数削除"
+    test_file: "tests/scenarios/poll-phase-redundant-vars-cleanup.test.sh"
+    test_name: "poll_phase() [edge: check_and_nudge の引数に $issue_entry が使われていない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

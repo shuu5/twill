@@ -1,0 +1,636 @@
+change_id: autopilot-proactive-monitoring
+generated_at: "2026-04-01T01:14:31Z"
+test_framework: bats
+scenarios:
+  # =========================================================================
+  # Requirement: health-check スクリプト
+  # Source: specs/health-check.md
+  # =========================================================================
+
+  - scenario: "chain 停止検知"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects chain_stall when updated_at exceeds default threshold (10 min)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "chain 停止検知 - 境界値: 閾値ちょうど (no-fire)"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check does NOT detect chain_stall when updated_at is exactly at threshold (10 min boundary)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "chain 停止検知 - 境界値: 閾値-1"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check does NOT detect chain_stall when updated_at is 9 min ago (threshold-1)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "chain 停止検知 - 境界値: 閾値+1"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects chain_stall when updated_at is threshold+1 (11 min)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "chain 停止検知 - 経過分数出力"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check outputs elapsed minutes in chain_stall detection"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "エラー出力検知 - Error パターン"
+    spec_file: "specs/health-check.md"
+    spec_line: 11
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects error_output when tmux capture contains 'Error'"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "エラー出力検知 - FATAL パターン"
+    spec_file: "specs/health-check.md"
+    spec_line: 11
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects error_output when tmux capture contains 'FATAL'"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "エラー出力検知 - panic パターン"
+    spec_file: "specs/health-check.md"
+    spec_line: 11
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects error_output when tmux capture contains 'panic'"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "エラー出力検知 - Traceback パターン"
+    spec_file: "specs/health-check.md"
+    spec_line: 11
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects error_output when tmux capture contains 'Traceback'"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "エラー出力検知 - クリーン出力は検知しない"
+    spec_file: "specs/health-check.md"
+    spec_line: 11
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check does NOT detect error_output for clean tmux output"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "エラー出力検知 - 空の capture-pane 出力"
+    spec_file: "specs/health-check.md"
+    spec_line: 11
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check does NOT detect error_output for empty tmux capture-pane output"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "エラー出力検知 - マッチ行を出力に含める"
+    spec_file: "specs/health-check.md"
+    spec_line: 11
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check includes matching line in error_output detection"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "input-waiting 長時間検知 - 閾値超過"
+    spec_file: "specs/health-check.md"
+    spec_line: 15
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects input_waiting when session-state reports input-waiting >= default threshold (5 min)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "input-waiting 長時間検知 - 境界値: 閾値-1"
+    spec_file: "specs/health-check.md"
+    spec_line: 15
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check does NOT detect input_waiting when state is input-waiting but duration is below threshold (4 min)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "input-waiting 長時間検知 - 境界値: 閾値ちょうど"
+    spec_file: "specs/health-check.md"
+    spec_line: 15
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check does NOT detect input_waiting when state is input-waiting at exactly threshold boundary (5 min)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "input-waiting 長時間検知 - 境界値: 閾値+1"
+    spec_file: "specs/health-check.md"
+    spec_line: 15
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects input_waiting at threshold+1 (6 min)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "input-waiting 長時間検知 - 非waiting状態は検知しない"
+    spec_file: "specs/health-check.md"
+    spec_line: 15
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check does NOT detect input_waiting when session-state returns non-waiting state"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "input-waiting 長時間検知 - 経過分数出力"
+    spec_file: "specs/health-check.md"
+    spec_line: 15
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check outputs elapsed minutes in input_waiting detection"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "session-state.sh 非存在時のフォールバック - input_waiting スキップ"
+    spec_file: "specs/health-check.md"
+    spec_line: 19
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check skips input_waiting check when SESSION_STATE_CMD is not set"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "session-state.sh 非存在時のフォールバック - chain_stall は動作"
+    spec_file: "specs/health-check.md"
+    spec_line: 19
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check skips input_waiting but still runs chain_stall check when session-state.sh absent"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "session-state.sh 非存在時のフォールバック - error_output は動作"
+    spec_file: "specs/health-check.md"
+    spec_line: 19
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check skips input_waiting but still runs error_output check when session-state.sh absent"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "session-state.sh 非存在時のフォールバック - 存在しないパス指定"
+    spec_file: "specs/health-check.md"
+    spec_line: 19
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check skips input_waiting when SESSION_STATE_CMD points to nonexistent path"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "異常なし - exit 0 かつ出力なし"
+    spec_file: "specs/health-check.md"
+    spec_line: 23
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check exits 0 with no output when all three checks pass"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: 閾値の設定可能性
+  # Source: specs/health-check.md
+  # =========================================================================
+
+  - scenario: "環境変数による閾値カスタマイズ - chain_stall 20分に変更"
+    spec_file: "specs/health-check.md"
+    spec_line: 31
+    requirement: "閾値の設定可能性"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check uses custom DEV_HEALTH_CHAIN_STALL_MIN=20 threshold"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "環境変数による閾値カスタマイズ - chain_stall 20分超で発火"
+    spec_file: "specs/health-check.md"
+    spec_line: 31
+    requirement: "閾値の設定可能性"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check fires chain_stall with custom DEV_HEALTH_CHAIN_STALL_MIN=20 when 21 min elapsed"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "環境変数による閾値カスタマイズ - input_waiting 3分に変更"
+    spec_file: "specs/health-check.md"
+    spec_line: 31
+    requirement: "閾値の設定可能性"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check uses custom DEV_HEALTH_INPUT_WAIT_MIN=3 threshold"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "環境変数による閾値カスタマイズ - input_waiting 3分未満は発火しない"
+    spec_file: "specs/health-check.md"
+    spec_line: 31
+    requirement: "閾値の設定可能性"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check does NOT fire input_waiting with custom DEV_HEALTH_INPUT_WAIT_MIN=3 when 2 min elapsed"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "環境変数未設定時のデフォルト - chain_stall 10分"
+    spec_file: "specs/health-check.md"
+    spec_line: 35
+    requirement: "閾値の設定可能性"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check uses default chain_stall threshold of 10 minutes when env var is unset"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "環境変数未設定時のデフォルト - input_waiting 5分"
+    spec_file: "specs/health-check.md"
+    spec_line: 35
+    requirement: "閾値の設定可能性"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check uses default input_waiting threshold of 5 minutes when env var is unset"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Edge cases (health-check.bats)
+  # =========================================================================
+
+  - scenario: "複数パターン同時検知 - chain_stall + error_output"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects multiple patterns simultaneously (chain_stall + error_output)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "複数パターン同時検知 - chain_stall + input_waiting"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects multiple patterns simultaneously (chain_stall + input_waiting)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "複数パターン同時検知 - 全3パターン"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check detects all three patterns simultaneously"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "引数バリデーション - --issue 欠落"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check exits with error when --issue is missing"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "引数バリデーション - --window 欠落"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check exits with error when --window is missing"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "引数バリデーション - 非数値 --issue"
+    spec_file: "specs/health-check.md"
+    spec_line: 7
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check exits with error for non-numeric --issue"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "issue JSON 非存在時のグレースフルハンドリング"
+    spec_file: "specs/health-check.md"
+    spec_line: 19
+    requirement: "health-check スクリプト"
+    test_file: "tests/bats/scripts/health-check.bats"
+    test_name: "health-check handles missing issue JSON gracefully (no updated_at)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: health-report 出力
+  # Source: specs/health-report.md
+  # =========================================================================
+
+  - scenario: "レポートファイル生成 - chain_stall 検知時"
+    spec_file: "specs/health-report.md"
+    spec_line: 7
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report generates report file at correct path when chain_stall detected"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "レポートファイル生成 - ファイル名パターン検証"
+    spec_file: "specs/health-report.md"
+    spec_line: 7
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report filename matches pattern issue-{N}-{YYYYMMDD-HHMMSS}.md"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "レポート内容 - 検知パターン種別"
+    spec_file: "specs/health-report.md"
+    spec_line: 11
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report file contains detection pattern type"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "レポート内容 - 検知時刻"
+    spec_file: "specs/health-report.md"
+    spec_line: 11
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report file contains detection timestamp"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "レポート内容 - tmux capture-pane 出力セクション"
+    spec_file: "specs/health-report.md"
+    spec_line: 11
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report file contains tmux capture-pane output section"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "レポート内容 - Issue Draft セクション"
+    spec_file: "specs/health-report.md"
+    spec_line: 11
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report file contains Issue Draft section"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "Issue Draft テンプレート形式 - Title フィールド"
+    spec_file: "specs/health-report.md"
+    spec_line: 19
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report Issue Draft contains required Title field"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "Issue Draft テンプレート形式 - 概要セクション"
+    spec_file: "specs/health-report.md"
+    spec_line: 19
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report Issue Draft contains 概要 section"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "Issue Draft テンプレート形式 - 再現状況セクション"
+    spec_file: "specs/health-report.md"
+    spec_line: 19
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report Issue Draft contains 再現状況 section"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "Issue Draft テンプレート形式 - 対応候補セクション"
+    spec_file: "specs/health-report.md"
+    spec_line: 19
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report Issue Draft contains 対応候補 section"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "Issue Draft テンプレート形式 - error_output パターン"
+    spec_file: "specs/health-report.md"
+    spec_line: 19
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report Issue Draft Title includes detection pattern for error_output"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "Issue Draft テンプレート形式 - input_waiting パターン"
+    spec_file: "specs/health-report.md"
+    spec_line: 19
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report Issue Draft Title includes detection pattern for input_waiting"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "ディレクトリ自動作成 - health-reports が存在しない"
+    spec_file: "specs/health-report.md"
+    spec_line: 34
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report auto-creates .autopilot/health-reports/ when directory does not exist"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "ディレクトリ自動作成 - 深い階層の mkdir -p"
+    spec_file: "specs/health-report.md"
+    spec_line: 34
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report auto-creates nested directory structure with mkdir -p"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Requirement: gh issue create の禁止
+  # Source: specs/health-report.md
+  # =========================================================================
+
+  - scenario: "Issue 自動作成の防止 - gh issue create 非呼び出し"
+    spec_file: "specs/health-report.md"
+    spec_line: 43
+    requirement: "gh issue create の禁止"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report does NOT call gh issue create"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "Issue 自動作成の防止 - error_output でも GitHub API 非呼び出し"
+    spec_file: "specs/health-report.md"
+    spec_line: 43
+    requirement: "gh issue create の禁止"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report does not call any GitHub API even for error_output pattern"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # Edge cases (health-report.bats)
+  # =========================================================================
+
+  - scenario: "複数 Issue のレポートが分離して生成される"
+    spec_file: "specs/health-report.md"
+    spec_line: 7
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report generates separate files for multiple issues"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "引数バリデーション - --issue 欠落"
+    spec_file: "specs/health-report.md"
+    spec_line: 7
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report exits with error when --issue is missing"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - scenario: "引数バリデーション - --pattern 欠落"
+    spec_file: "specs/health-report.md"
+    spec_line: 7
+    requirement: "health-report 出力"
+    test_file: "tests/bats/scripts/health-report.bats"
+    test_name: "health-report exits with error when --pattern is missing"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

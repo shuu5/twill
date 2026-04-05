@@ -1,0 +1,387 @@
+change_id: cross-repo-autopilot
+generated_at: "2026-03-31T00:00:00Z"
+test_framework: bats
+scenarios:
+  # ============================================================
+  # plan-yaml-schema (specs/plan-yaml-schema/spec.md)
+  # ============================================================
+
+  - id: "plan-yaml-schema--cross-repo-plan-generation"
+    name: "クロスリポジトリ plan.yaml 生成"
+    spec_file: "specs/plan-yaml-schema/spec.md"
+    spec_line: 7
+    requirement: "plan.yaml repos セクション"
+    test_file: "tests/bats/scripts/cross-repo-plan-yaml-schema.bats"
+    test_name: "plan.yaml: cross-repo --issues generates repos section with owner/name/path"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plan-yaml-schema--backward-compat-no-repos"
+    name: "後方互換 — repos セクション省略"
+    spec_file: "specs/plan-yaml-schema/spec.md"
+    spec_line: 11
+    requirement: "plan.yaml repos セクション"
+    test_file: "tests/bats/scripts/cross-repo-plan-yaml-schema.bats"
+    test_name: "plan.yaml: single-repo --issues without --repos omits repos section"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plan-yaml-schema--issue-repo-identification"
+    name: "Issue ごとの repo 識別"
+    spec_file: "specs/plan-yaml-schema/spec.md"
+    spec_line: 19
+    requirement: "Issue のリポジトリ識別子付与"
+    test_file: "tests/bats/scripts/cross-repo-plan-yaml-schema.bats"
+    test_name: "plan.yaml: issues with repo field resolve against repos section"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plan-yaml-schema--bare-integer-resolution"
+    name: "bare integer の後方互換解決"
+    spec_file: "specs/plan-yaml-schema/spec.md"
+    spec_line: 30
+    requirement: "Issue 参照形式の解決"
+    test_file: "tests/bats/scripts/cross-repo-plan-yaml-schema.bats"
+    test_name: "plan.yaml: bare integer issue resolves to current-repo issue"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plan-yaml-schema--owner-repo-n-resolution"
+    name: "owner/repo#N 形式の解決"
+    spec_file: "specs/plan-yaml-schema/spec.md"
+    spec_line: 34
+    requirement: "Issue 参照形式の解決"
+    test_file: "tests/bats/scripts/cross-repo-plan-yaml-schema.bats"
+    test_name: "plan.yaml: owner/repo#N notation reverse-lookups repo_id from repos section"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plan-yaml-schema--cross-repo-dependency"
+    name: "クロスリポジトリ依存関係"
+    spec_file: "specs/plan-yaml-schema/spec.md"
+    spec_line: 44
+    requirement: "依存関係の repo_id 修飾"
+    test_file: "tests/bats/scripts/cross-repo-plan-yaml-schema.bats"
+    test_name: "plan.yaml: cross-repo dependency lpd#42 waits for loom#50"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # state-namespace (specs/state-namespace/spec.md)
+  # ============================================================
+
+  - id: "state-namespace--same-issue-number-isolation"
+    name: "異なるリポジトリの同一 Issue 番号"
+    spec_file: "specs/state-namespace/spec.md"
+    spec_line: 7
+    requirement: "状態ファイルのリポジトリ名前空間化"
+    test_file: "tests/bats/scripts/cross-repo-state-namespace.bats"
+    test_name: "state-namespace: same issue number in different repos creates separate files"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-namespace--legacy-fallback-no-repos"
+    name: "後方互換 — repos 未使用時のフォールバック"
+    spec_file: "specs/state-namespace/spec.md"
+    spec_line: 11
+    requirement: "状態ファイルのリポジトリ名前空間化"
+    test_file: "tests/bats/scripts/cross-repo-state-namespace.bats"
+    test_name: "state-namespace: no repos section falls back to legacy .autopilot/issues/ path"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-namespace--state-read-repo-id"
+    name: "repo_id 指定での読み取り"
+    spec_file: "specs/state-namespace/spec.md"
+    spec_line: 22
+    requirement: "state-read.sh のリポジトリ対応"
+    test_file: "tests/bats/scripts/cross-repo-state-namespace.bats"
+    test_name: "state-read: --repo lpd --issue 42 reads from namespaced path"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-namespace--state-read-legacy-compat"
+    name: "repo_id 省略での後方互換"
+    spec_file: "specs/state-namespace/spec.md"
+    spec_line: 26
+    requirement: "state-read.sh のリポジトリ対応"
+    test_file: "tests/bats/scripts/cross-repo-state-namespace.bats"
+    test_name: "state-read: omitting --repo reads from legacy .autopilot/issues/ path"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-namespace--state-write-repo-id"
+    name: "repo_id 指定での書き込み"
+    spec_file: "specs/state-namespace/spec.md"
+    spec_line: 34
+    requirement: "state-write.sh のリポジトリ対応"
+    test_file: "tests/bats/scripts/cross-repo-state-namespace.bats"
+    test_name: "state-write: --repo loom --issue 50 writes to namespaced path"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-namespace--session-json-repos-fields"
+    name: "session.json にリポジトリ情報が記録される"
+    spec_file: "specs/state-namespace/spec.md"
+    spec_line: 42
+    requirement: "session.json のリポジトリ情報"
+    test_file: "tests/bats/scripts/cross-repo-state-namespace.bats"
+    test_name: "state-namespace: cross-repo session.json contains repos and default_repo fields"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-namespace--init-creates-repo-dirs"
+    name: "クロスリポジトリ初期化"
+    spec_file: "specs/state-namespace/spec.md"
+    spec_line: 48
+    requirement: "autopilot-init.sh のディレクトリ作成"
+    test_file: "tests/bats/scripts/cross-repo-state-namespace.bats"
+    test_name: "autopilot-init: repos section creates per-repo subdirectories"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # worker-launch (specs/worker-launch/spec.md)
+  # ============================================================
+
+  - id: "worker-launch--external-repo-bare"
+    name: "外部リポジトリ Issue の Worker 起動"
+    spec_file: "specs/worker-launch/spec.md"
+    spec_line: 7
+    requirement: "Worker のリポジトリ別起動"
+    test_file: "tests/bats/scripts/cross-repo-worker-launch.bats"
+    test_name: "worker-launch: external repo issue uses {path}/main for bare repo"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-launch--default-repo-issue"
+    name: "デフォルトリポジトリ Issue の Worker 起動"
+    spec_file: "specs/worker-launch/spec.md"
+    spec_line: 13
+    requirement: "Worker のリポジトリ別起動"
+    test_file: "tests/bats/scripts/cross-repo-worker-launch.bats"
+    test_name: "worker-launch: default-repo issue uses PROJECT_DIR/main"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-launch--autopilot-dir-pilot-fixed"
+    name: "外部リポジトリ Worker の状態ファイルアクセス"
+    spec_file: "specs/worker-launch/spec.md"
+    spec_line: 19
+    requirement: "AUTOPILOT_DIR の Pilot 固定"
+    test_file: "tests/bats/scripts/cross-repo-worker-launch.bats"
+    test_name: "worker-launch: AUTOPILOT_DIR is fixed to Pilot .autopilot/ regardless of worker repo"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-launch--missing-repo-path-error"
+    name: "リポジトリパスが存在しない"
+    spec_file: "specs/worker-launch/spec.md"
+    spec_line: 27
+    requirement: "bare repo パス検証"
+    test_file: "tests/bats/scripts/cross-repo-worker-launch.bats"
+    test_name: "worker-launch: missing repo path emits error and skips issue"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worker-launch--non-bare-repo-standard-path"
+    name: "bare repo 構造でない"
+    spec_file: "specs/worker-launch/spec.md"
+    spec_line: 31
+    requirement: "bare repo パス検証"
+    test_file: "tests/bats/scripts/cross-repo-worker-launch.bats"
+    test_name: "worker-launch: non-bare repo (has .git/) uses {path} directly as launch dir"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # gh-cli-repo-flag (specs/gh-cli-repo-flag/spec.md)
+  # ============================================================
+
+  - id: "gh-cli-repo-flag--plan-external-issue-R"
+    name: "外部リポジトリ Issue の取得"
+    spec_file: "specs/gh-cli-repo-flag/spec.md"
+    spec_line: 7
+    requirement: "autopilot-plan.sh の -R フラグ対応"
+    test_file: "tests/bats/scripts/cross-repo-gh-cli-repo-flag.bats"
+    test_name: "gh-cli: autopilot-plan fetches external repo issue with -R flag"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-cli-repo-flag--plan-default-issue-no-R"
+    name: "デフォルトリポジトリ Issue の取得"
+    spec_file: "specs/gh-cli-repo-flag/spec.md"
+    spec_line: 12
+    requirement: "autopilot-plan.sh の -R フラグ対応"
+    test_file: "tests/bats/scripts/cross-repo-gh-cli-repo-flag.bats"
+    test_name: "gh-cli: autopilot-plan fetches default-repo issue WITHOUT -R flag"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-cli-repo-flag--worktree-create-external-R"
+    name: "外部リポジトリの worktree 作成"
+    spec_file: "specs/gh-cli-repo-flag/spec.md"
+    spec_line: 19
+    requirement: "worktree-create.sh の -R フラグ対応"
+    test_file: "tests/bats/scripts/cross-repo-gh-cli-repo-flag.bats"
+    test_name: "gh-cli: worktree-create uses -R flag and loom bare repo for external issue"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-cli-repo-flag--merge-gate-init-pr-diff-R"
+    name: "外部リポジトリ PR の diff 取得"
+    spec_file: "specs/gh-cli-repo-flag/spec.md"
+    spec_line: 26
+    requirement: "merge-gate-init.sh の -R フラグ対応"
+    test_file: "tests/bats/scripts/cross-repo-gh-cli-repo-flag.bats"
+    test_name: "gh-cli: merge-gate-init uses -R flag for external repo PR diff"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-cli-repo-flag--merge-gate-execute-pr-merge-R"
+    name: "外部リポジトリ PR のマージ"
+    spec_file: "specs/gh-cli-repo-flag/spec.md"
+    spec_line: 33
+    requirement: "merge-gate-execute.sh の -R フラグ対応"
+    test_file: "tests/bats/scripts/cross-repo-gh-cli-repo-flag.bats"
+    test_name: "gh-cli: merge-gate-execute uses -R flag for external repo PR merge"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-cli-repo-flag--parse-issue-ac-explicit-owner-repo"
+    name: "外部リポジトリ Issue の AC パース"
+    spec_file: "specs/gh-cli-repo-flag/spec.md"
+    spec_line: 41
+    requirement: "parse-issue-ac.sh の -R フラグ対応"
+    test_file: "tests/bats/scripts/cross-repo-gh-cli-repo-flag.bats"
+    test_name: "gh-cli: parse-issue-ac uses explicit owner/repo for external issue"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ============================================================
+  # project-board-sync (specs/project-board-sync/spec.md)
+  # ============================================================
+
+  - id: "project-board-sync--link-two-repos"
+    name: "2 リポジトリのリンク"
+    spec_file: "specs/project-board-sync/spec.md"
+    spec_line: 7
+    requirement: "project-create.sh の複数リポジトリリンク"
+    test_file: "tests/bats/scripts/cross-repo-project-board-sync.bats"
+    test_name: "project-board-sync: project-create links all repos in repos section"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-board-sync--cross-repo-issue-sync"
+    name: "クロスリポジトリ Issue の同期"
+    spec_file: "specs/project-board-sync/spec.md"
+    spec_line: 14
+    requirement: "project-board-sync のクロスリポジトリ対応"
+    test_file: "tests/bats/scripts/cross-repo-project-board-sync.bats"
+    test_name: "project-board-sync: both lpd#42 and loom#50 are added to same project board"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-board-sync--repos-arg-passthrough"
+    name: "repos 引数の受け渡し"
+    spec_file: "specs/project-board-sync/spec.md"
+    spec_line: 24
+    requirement: "co-autopilot SKILL.md の repos 引数解析"
+    test_file: "tests/bats/scripts/cross-repo-project-board-sync.bats"
+    test_name: "project-board-sync: co-autopilot --repos arg passes repos info to autopilot-plan"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "project-board-sync--repos-arg-omit-compat"
+    name: "repos 引数省略時の後方互換"
+    spec_file: "specs/project-board-sync/spec.md"
+    spec_line: 28
+    requirement: "co-autopilot SKILL.md の repos 引数解析"
+    test_file: "tests/bats/scripts/cross-repo-project-board-sync.bats"
+    test_name: "project-board-sync: co-autopilot without --repos maintains single-repo behaviour"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

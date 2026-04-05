@@ -1,0 +1,7 @@
+schema: spec-driven
+
+context: |
+  loom-plugin-dev は Claude Code の開発ワークフロープラグイン。
+  chain-driven + autopilot-first アーキテクチャ。
+  deps.yaml v3.0 + types.yaml 型システム準拠。
+  旧 dev plugin (claude-plugin-dev) の後継として新規構築。

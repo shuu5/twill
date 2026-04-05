@@ -1,0 +1,55 @@
+change_id: 42-fix-deep-validate-warnings
+generated_at: "2026-03-30T00:00:00Z"
+test_framework: shell
+scenarios:
+  - id: frontmatter-added-deep-validate
+    name: "frontmatter 追加後の deep-validate"
+    spec_file: "specs/tools-mismatch-fix/spec.md"
+    spec_line: 15
+    requirement: "コマンド frontmatter tools 宣言"
+    test_file: "tests/scenarios/deep-validate-warnings-fix.test.sh"
+    test_name: "loom deep-validate: tools-mismatch 警告 0 件"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: frontmatter-format-accuracy
+    name: "frontmatter 形式の正確性"
+    spec_file: "specs/tools-mismatch-fix/spec.md"
+    spec_line: 19
+    requirement: "コマンド frontmatter tools 宣言"
+    test_file: "tests/scenarios/deep-validate-warnings-fix.test.sh"
+    test_name: "全 6 コマンド: frontmatter が --- で始まる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: line-reduction-deep-validate
+    name: "行数削減後の deep-validate"
+    spec_file: "specs/tools-mismatch-fix/spec.md"
+    spec_line: 27
+    requirement: "co-issue SKILL.md controller-bloat 解消"
+    test_file: "tests/scenarios/deep-validate-warnings-fix.test.sh"
+    test_name: "loom deep-validate: controller-bloat 警告 0 件"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: function-preservation-check
+    name: "機能保持の確認"
+    spec_file: "specs/tools-mismatch-fix/spec.md"
+    spec_line: 31
+    requirement: "co-issue SKILL.md controller-bloat 解消"
+    test_file: "tests/scenarios/deep-validate-warnings-fix.test.sh"
+    test_name: "co-issue SKILL.md: Phase 1-4 全保持、Phase 5 以上なし"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

@@ -1,0 +1,150 @@
+change_id: worker-cleanup-to-pilot
+generated_at: "2026-04-04T23:38:20+09:00"
+test_framework: bats
+scenarios:
+  # ── Requirement: Pilot側クリーンアップシーケンス実行 ──────────────────────
+  - id: "merge-gate-cleanup-normal"
+    name: "merge-gate成功後のクリーンアップ正常系"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 9
+    requirement: "Pilot側クリーンアップシーケンス実行"
+    test_file: "tests/bats/scripts/orchestrator-cleanup-sequence.bats"
+    test_name: "cleanup_worker: tmux kill-window → worktree-delete → git push の順で実行される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "tmux-window-idempotent"
+    name: "tmux windowが既に存在しない場合の冪等動作"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 13
+    requirement: "Pilot側クリーンアップシーケンス実行"
+    test_file: "tests/bats/scripts/orchestrator-cleanup-sequence.bats"
+    test_name: "cleanup_worker: tmux kill-window 失敗（window不在）でも次ステップへ進む"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "worktree-already-deleted-idempotent"
+    name: "worktreeが既に削除済みの場合の冪等動作"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 17
+    requirement: "Pilot側クリーンアップシーケンス実行"
+    test_file: "tests/bats/scripts/orchestrator-cleanup-sequence.bats"
+    test_name: "cleanup_worker: worktree-delete.sh が worktree不在でも正常終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cleanup-step-failure-continue"
+    name: "クリーンアップステップ失敗時の継続"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 21
+    requirement: "Pilot側クリーンアップシーケンス実行"
+    test_file: "tests/bats/scripts/orchestrator-cleanup-sequence.bats"
+    test_name: "cleanup_worker: worktree-delete.sh 失敗時に警告メッセージを出力する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ── Requirement: merge-gate-execute.shのautopilot分岐 ─────────────────────
+  - id: "autopilot-cleanup-skip"
+    name: "autopilot時のクリーンアップスキップ"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 33
+    requirement: "merge-gate-execute.shのautopilot分岐"
+    test_file: "tests/bats/scripts/merge-gate-execute-autopilot-skip.bats"
+    test_name: "merge-gate-execute: autopilot環境ではクリーンアップをスキップしPilotへ委譲する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "実装未完了（autopilot分岐ロジックはスペック提案段階）"
+
+  - id: "non-autopilot-legacy-behavior"
+    name: "非autopilot時の従来動作維持"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 38
+    requirement: "merge-gate-execute.shのautopilot分岐"
+    test_file: "tests/bats/scripts/merge-gate-execute-autopilot-skip.bats"
+    test_name: "merge-gate-execute: 非autopilot環境ではworktree削除を自身で実行する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ── Requirement: クロスリポジトリcleanup対応 ──────────────────────────────
+  - id: "cross-repo-remote-branch-delete"
+    name: "クロスリポジトリのリモートブランチ削除"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 55
+    requirement: "クロスリポジトリcleanup対応"
+    test_file: "tests/bats/scripts/orchestrator-cleanup-sequence.bats"
+    test_name: "cleanup_worker: クロスリポ設定があるとき git -C <repo_path> push origin --delete を実行する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "same-repo-normal-delete"
+    name: "同一リポジトリIssueの通常削除"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 59
+    requirement: "クロスリポジトリcleanup対応"
+    test_file: "tests/bats/scripts/orchestrator-cleanup-sequence.bats"
+    test_name: "cleanup_worker: repoフィールドなし（_default）のときカレントディレクトリでgit push --deleteを実行する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ── 補完テスト（edge-cases） ────────────────────────────────────────────────
+  - id: "tmux-window-target-format"
+    name: "tmux kill-window ターゲット名フォーマット"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 9
+    requirement: "Pilot側クリーンアップシーケンス実行"
+    test_file: "tests/bats/scripts/orchestrator-cleanup-sequence.bats"
+    test_name: "cleanup_worker: tmux kill-window は ap-#{issue} window を対象とする"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "cleanup-all-steps-fail-complete"
+    name: "全ステップ失敗でも complete まで到達"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 21
+    requirement: "Pilot側クリーンアップシーケンス実行"
+    test_file: "tests/bats/scripts/orchestrator-cleanup-sequence.bats"
+    test_name: "cleanup_worker: tmux失敗 + worktree失敗でも complete まで到達する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "branch-validation-injection-guard"
+    name: "ブランチ名バリデーション（コマンドインジェクション防止）"
+    spec_file: "specs/pilot-cleanup/spec.md"
+    spec_line: 55
+    requirement: "クロスリポジトリcleanup対応"
+    test_file: "tests/bats/scripts/orchestrator-cleanup-sequence.bats"
+    test_name: "cleanup_worker: ブランチ名バリデーション失敗時はgit push --deleteをスキップする"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

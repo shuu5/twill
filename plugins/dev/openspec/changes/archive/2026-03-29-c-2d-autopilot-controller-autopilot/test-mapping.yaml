@@ -1,0 +1,475 @@
+change_id: c-2d-autopilot-controller-autopilot
+generated_at: "2026-03-29T00:00:00Z"
+test_framework: bash
+scenarios:
+  # --- session-management/spec.md ---
+  - id: autopilot-init-normal
+    name: "正常初期化"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 18
+    requirement: "autopilot-init コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-init COMMAND.md が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: autopilot-init-existing-session
+    name: "既存セッション検出"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 23
+    requirement: "autopilot-init コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-init 既存セッションのエラーハンドリング記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: autopilot-init-legacy-marker
+    name: "旧マーカー残存警告"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 27
+    requirement: "autopilot-init コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-init 旧マーカー残存警告の記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: autopilot-launch-normal
+    name: "正常起動"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 47
+    requirement: "autopilot-launch コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-launch COMMAND.md が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: autopilot-launch-cross-issue
+    name: "cross-issue 警告付き起動"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 51
+    requirement: "autopilot-launch コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-launch が CROSS_ISSUE_WARNINGS 入力を記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: autopilot-launch-cld-not-found
+    name: "cld 未検出"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 55
+    requirement: "autopilot-launch コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-launch cld 未検出時のエラー記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: autopilot-poll-single-complete
+    name: "正常完了検知（single）"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 74
+    requirement: "autopilot-poll コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-poll COMMAND.md が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: autopilot-poll-crash
+    name: "クラッシュ検知"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 78
+    requirement: "autopilot-poll コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-poll が crash-detect.sh を参照"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: autopilot-poll-timeout
+    name: "タイムアウト"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 82
+    requirement: "autopilot-poll コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-poll タイムアウトハンドリングの記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: autopilot-poll-phase-mode
+    name: "phase モードの一括ポーリング"
+    spec_file: "specs/session-management/spec.md"
+    spec_line: 86
+    requirement: "autopilot-poll コマンド"
+    test_file: "tests/scenarios/autopilot-session-mgmt.test.sh"
+    test_name: "autopilot-poll phase モードの記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- phase-execution/spec.md ---
+  - id: phase-execute-sequential
+    name: "sequential モードでの正常実行"
+    spec_file: "specs/phase-execution/spec.md"
+    spec_line: 20
+    requirement: "autopilot-phase-execute コマンド"
+    test_file: "tests/scenarios/autopilot-phase-execution.test.sh"
+    test_name: "autopilot-phase-execute が launch → poll → merge-gate チェーンを記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: phase-execute-parallel
+    name: "parallel モードでのバッチ実行"
+    spec_file: "specs/phase-execution/spec.md"
+    spec_line: 25
+    requirement: "autopilot-phase-execute コマンド"
+    test_file: "tests/scenarios/autopilot-phase-execution.test.sh"
+    test_name: "autopilot-phase-execute parallel モードの記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: phase-execute-dependency-skip
+    name: "依存先 fail 時の skip 伝播"
+    spec_file: "specs/phase-execution/spec.md"
+    spec_line: 29
+    requirement: "autopilot-phase-execute コマンド"
+    test_file: "tests/scenarios/autopilot-phase-execution.test.sh"
+    test_name: "autopilot-phase-execute 依存先 fail 時の skip 伝播記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: phase-execute-done-skip
+    name: "done 状態の Issue スキップ（再開時）"
+    spec_file: "specs/phase-execution/spec.md"
+    spec_line: 33
+    requirement: "autopilot-phase-execute コマンド"
+    test_file: "tests/scenarios/autopilot-phase-execution.test.sh"
+    test_name: "autopilot-phase-execute done 状態スキップの記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: phase-postprocess-intermediate
+    name: "中間 Phase の後処理"
+    spec_file: "specs/phase-execution/spec.md"
+    spec_line: 54
+    requirement: "autopilot-phase-postprocess コマンド"
+    test_file: "tests/scenarios/autopilot-phase-execution.test.sh"
+    test_name: "autopilot-phase-postprocess が collect→retrospective→patterns→cross-issue を記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: phase-postprocess-final
+    name: "最終 Phase の後処理"
+    spec_file: "specs/phase-execution/spec.md"
+    spec_line: 58
+    requirement: "autopilot-phase-postprocess コマンド"
+    test_file: "tests/scenarios/autopilot-phase-execution.test.sh"
+    test_name: "autopilot-phase-postprocess 最終 Phase で cross-issue スキップの記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- post-processing/spec.md ---
+  - id: collect-done-files
+    name: "done Issue の変更ファイル収集"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 16
+    requirement: "autopilot-collect コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-collect が gh pr diff で変更ファイル取得を記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: collect-pr-diff-fail
+    name: "PR 差分取得失敗"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 21
+    requirement: "autopilot-collect コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-collect PR 差分取得失敗時の警告/スキップ記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: collect-failed-skip
+    name: "failed Issue のスキップ"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 25
+    requirement: "autopilot-collect コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-collect failed Issue のスキップ記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: retro-success
+    name: "成功 Phase の振り返り"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 44
+    requirement: "autopilot-retrospective コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-retrospective が doobidoo memory_store を記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: retro-failure
+    name: "失敗含む Phase の振り返り"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 48
+    requirement: "autopilot-retrospective コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-retrospective 失敗パターン分析の記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: retro-final-phase
+    name: "最終 Phase の振り返り"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 52
+    requirement: "autopilot-retrospective コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-retrospective 最終 Phase で PHASE_INSIGHTS 空の記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: patterns-repeated-failure
+    name: "繰り返し失敗パターン検出"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 71
+    requirement: "autopilot-patterns コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-patterns パターン検出閾値 count >= 2 の記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: patterns-self-improve
+    name: "self-improve Issue 起票"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 76
+    requirement: "autopilot-patterns コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-patterns self-improve 起票閾値 confidence >= 80 の記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: patterns-low-confidence
+    name: "低 confidence パターン"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 80
+    requirement: "autopilot-patterns コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-patterns 低 confidence 時の Issue 不起票記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: cross-issue-file-conflict
+    name: "ファイル名完全一致の競合検出"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 100
+    requirement: "autopilot-cross-issue コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-cross-issue が session-add-warning.sh を参照"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: cross-issue-no-conflict
+    name: "競合なし"
+    spec_file: "specs/post-processing/spec.md"
+    spec_line: 105
+    requirement: "autopilot-cross-issue コマンド"
+    test_file: "tests/scenarios/autopilot-post-processing.test.sh"
+    test_name: "autopilot-cross-issue 競合なし時の動作記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # --- summary-audit/spec.md ---
+  - id: summary-all-success
+    name: "全 Issue 成功時のサマリー"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 22
+    requirement: "autopilot-summary コマンド"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "autopilot-summary COMMAND.md が存在する"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: summary-with-failures
+    name: "失敗含むサマリー"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 26
+    requirement: "autopilot-summary コマンド"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "autopilot-summary 失敗サマリーの記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: summary-audit-fail
+    name: "session-audit 失敗時"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 30
+    requirement: "autopilot-summary コマンド"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "autopilot-summary session-audit 失敗時のスキップ記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: summary-archive
+    name: "セッションアーカイブ"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 34
+    requirement: "autopilot-summary コマンド"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "autopilot-summary サマリー後のアーカイブ記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: audit-default-5
+    name: "直近 5 セッション分析"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 54
+    requirement: "session-audit コマンド"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "session-audit デフォルト COUNT=5 の記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: audit-since
+    name: "期間指定分析"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 58
+    requirement: "session-audit コマンド"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "session-audit --since オプションの記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: audit-confidence-filter
+    name: "confidence 閾値フィルタリング"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 62
+    requirement: "session-audit コマンド"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "session-audit confidence >= 70 閾値の記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: audit-dedup
+    name: "重複排除"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 66
+    requirement: "session-audit コマンド"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "session-audit 重複排除の記述"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: skill-calls-all-11
+    name: "calls に全 11 コマンドが記載"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 76
+    requirement: "co-autopilot SKILL.md の calls 更新"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "co-autopilot SKILL.md が全 11 コマンドを参照"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: skill-no-markers
+    name: "マーカーファイル参照の完全除去"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 80
+    requirement: "co-autopilot SKILL.md の calls 更新"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "co-autopilot SKILL.md マーカーファイル参照なし"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: deps-all-11-commands
+    name: "deps.yaml に全 11 コマンドが定義"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 88
+    requirement: "deps.yaml への 11 コマンド追加"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "deps.yaml に全 11 コマンド定義"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: deps-co-autopilot-calls
+    name: "co-autopilot の calls 更新"
+    spec_file: "specs/summary-audit/spec.md"
+    spec_line: 92
+    requirement: "deps.yaml への 11 コマンド追加"
+    test_file: "tests/scenarios/autopilot-summary-audit.test.sh"
+    test_name: "deps.yaml co-autopilot calls に全 11 コマンド"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null

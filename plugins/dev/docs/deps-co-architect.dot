@@ -1,0 +1,61 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="co-architect";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+    skill_co_architect [label="dev:co-architect\n(1,293 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+
+    // Reference Skills
+
+    // L1: Direct Commands
+    cmd_architect_completeness_check [label="architect-completeness-check\n(653 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_architect_decompose [label="architect-decompose\n(1,056 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_architect_group_refine [label="architect-group-refine\n(1,084 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_architect_issue_create [label="architect-issue-create\n(2,352 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_evaluate_architecture [label="evaluate-architecture\n(796 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_explore [label="explore\n(1,490 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_co_architect; }
+    { rank=same; cmd_architect_completeness_check; cmd_architect_decompose; cmd_architect_group_refine; cmd_architect_issue_create; cmd_evaluate_architecture; cmd_explore; }
+
+    // Edges
+    skill_co_architect -> cmd_explore;
+    skill_co_architect -> cmd_architect_completeness_check;
+    skill_co_architect -> cmd_architect_decompose;
+    skill_co_architect -> cmd_architect_group_refine;
+    skill_co_architect -> cmd_architect_issue_create;
+    skill_co_architect -> cmd_evaluate_architecture;
+    skill_co_architect -> skill_ref_architecture_spec;
+    skill_co_architect -> skill_ref_architecture;
+
+    // Ordering constraints (invisible edges)
+    cmd_explore -> cmd_architect_completeness_check [style=invis, weight=10];
+    cmd_architect_completeness_check -> cmd_architect_decompose [style=invis, weight=10];
+    cmd_architect_decompose -> cmd_architect_group_refine [style=invis, weight=10];
+    cmd_architect_group_refine -> cmd_architect_issue_create [style=invis, weight=10];
+    cmd_architect_issue_create -> cmd_evaluate_architecture [style=invis, weight=10];
+    cmd_evaluate_architecture -> skill_ref_architecture_spec [style=invis, weight=10];
+    skill_ref_architecture_spec -> skill_ref_architecture [style=invis, weight=10];
+
+}
