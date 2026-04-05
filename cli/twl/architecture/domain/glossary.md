@@ -54,6 +54,18 @@
 | deep-validate (`--deep-validate`) | 深層検証。frontmatter/body の整合性、controller bloat、reference 配置、tools 一貫性を検証 | deps.yaml + 実ファイル内容 | Validation |
 | audit (`--audit`) | TWiLL 準拠度監査。5セクション（Structure, Dependency, Content, Chain, Metrics）の総合レポートを生成 | 全体 | Validation |
 
+### Spec Management 用語
+
+| 用語 | 定義 | Context |
+|------|------|---------|
+| Change | openspec/changes/<name>/ に対応する変更単位。提案から実装タスクまでの成果物群を管理 | Spec Management |
+| Artifact | Change 内の成果物（proposal, design, specs, tasks）。依存関係と完了状態を持つ | Spec Management |
+| ArtifactStatus | Artifact の状態。ready（作成可能）, blocked（依存未完了）, done（完了） | Spec Management |
+| delta header | spec ファイル内の変更種別ヘッダ（ADDED/MODIFIED/REMOVED/RENAMED Requirements） | Spec Management |
+| openspec root | openspec/ ディレクトリを持つプロジェクトルート。cwd から上方探索で発見 | Spec Management |
+| spec-driven | 標準スキーマ。proposal → design, specs → tasks の依存グラフで成果物を管理 | Spec Management |
+| Instruction | Artifact 作成のための指示テキスト・テンプレート・依存情報の構造化出力 | Spec Management |
+
 ### その他の用語
 
 | 用語 | 定義 | Context |
