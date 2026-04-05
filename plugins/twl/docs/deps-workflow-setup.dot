@@ -32,15 +32,22 @@ digraph Dependencies {
     // L3: Agents
 
     // L3.5: Scripts
+    script_state_read [label="state-read\n(986 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_write [label="state-write\n(2,571 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_resolve_project [label="resolve-project\n(929 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(6,274 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(2,126 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_parse_issue_ac [label="parse-issue-ac\n(1,224 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(230 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_compaction_resume [label="compaction-resume\n(1,009 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
     { rank=same; skill_workflow_setup; }
     { rank=same; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_change_propose; cmd_ac_extract; }
-    { rank=same; script_worktree_create; script_parse_issue_ac; }
+    { rank=same; script_state_read; script_state_write; script_resolve_project; script_chain_runner; script_worktree_create; script_parse_issue_ac; script_chain_steps; script_compaction_resume; script_resolve_issue_num; }
 
     // Edges
     skill_workflow_setup -> cmd_init;
@@ -49,6 +56,8 @@ digraph Dependencies {
     skill_workflow_setup -> cmd_crg_auto_build;
     skill_workflow_setup -> cmd_change_propose;
     skill_workflow_setup -> cmd_ac_extract;
+    skill_workflow_setup -> script_chain_runner;
+    skill_workflow_setup -> script_compaction_resume;
     cmd_worktree_create -> script_worktree_create;
     cmd_ac_extract -> script_parse_issue_ac;
 
@@ -58,5 +67,13 @@ digraph Dependencies {
     cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];
     cmd_crg_auto_build -> cmd_change_propose [style=invis, weight=10];
     cmd_change_propose -> cmd_ac_extract [style=invis, weight=10];
+    cmd_ac_extract -> script_chain_runner [style=invis, weight=10];
+    script_chain_runner -> script_compaction_resume [style=invis, weight=10];
+    script_chain_runner -> script_compaction_resume [style=invis, weight=10];
+    script_chain_runner -> script_compaction_resume [style=invis, weight=10];
+    script_chain_runner -> script_compaction_resume [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
 
 }

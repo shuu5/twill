@@ -1277,6 +1277,23 @@ def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bo
             ext_id = safe_id(f"ext_{ext}")
             lines.append(f"    {agent_id} -> {ext_id} [style=dashed];")
 
+    # script -> scripts/commands/skills
+    for script_name, script_data in deps.get('scripts', {}).items():
+        src_id = safe_id(f"script_{script_name}")
+        for call in script_data.get('calls', []):
+            if call.get('script'):
+                target_id = safe_id(f"script_{call['script']}")
+                lines.append(f"    {src_id} -> {target_id} [style=dashed];")
+            elif call.get('atomic'):
+                target_id = safe_id(f"cmd_{call['atomic']}")
+                lines.append(f"    {src_id} -> {target_id} [style=dashed];")
+            elif call.get('composite'):
+                target_id = safe_id(f"cmd_{call['composite']}")
+                lines.append(f"    {src_id} -> {target_id} [style=dashed];")
+            elif call.get('command'):
+                target_id = safe_id(f"cmd_{call['command']}")
+                lines.append(f"    {src_id} -> {target_id} [style=dashed];")
+
     lines.append("")
 
     # === 並び順制御 ===
