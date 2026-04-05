@@ -436,6 +436,16 @@ class TestSessionAudit:
         finally:
             os.environ.pop("SESSION_AUDIT_ALLOW_ANY_PATH", None)
 
+    def test_audit_path_restricted_without_env_override(
+        self, session: SessionManager, tmp_path: Path
+    ) -> None:
+        """audit() rejects paths outside ~/.claude/projects/ in normal mode."""
+        os.environ.pop("SESSION_AUDIT_ALLOW_ANY_PATH", None)
+        f = tmp_path / "session.jsonl"
+        f.write_text('{"type":"user"}\n')
+        with pytest.raises(Exception, match="Path must be under"):
+            session.audit(str(f))
+
 
 # ===========================================================================
 # CLI integration via main()

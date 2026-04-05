@@ -417,7 +417,7 @@ def _parse_create_args(argv: list[str]) -> dict[str, Any]:
         raise SessionArgError("--phase-count は必須です")
     try:
         args["phase_count"] = int(args["phase_count"])
-        if args["phase_count"] < 0:
+        if args["phase_count"] <= 0:
             raise ValueError
     except (ValueError, TypeError):
         raise SessionArgError(f"--phase-count は正の整数を指定してください: {args['phase_count']}")
