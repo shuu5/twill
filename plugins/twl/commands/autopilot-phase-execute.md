@@ -91,7 +91,7 @@ resolve_issue_repo_context() {
 ```
 FOR each ISSUE in $ISSUES:
   # 再開時の done スキップ
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
   IF STATUS == "done":
     → 状態記録（done）、continue
 
@@ -107,17 +107,17 @@ FOR each ISSUE in $ISSUES:
   → commands/autopilot-poll.md を Read → 実行
 
   # proactive health check（論理的異常検知、crash-detect とは責務分離）
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
   IF STATUS == "running":
     HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/health-check.sh --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
       echo "WARNING: Issue #${ISSUE}: health check 異常検知: $HEALTH_OUTPUT"
     }
 
   # 結果処理
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
   IF STATUS == "merge-ready":
     → commands/merge-gate.md を Read → 実行
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
   IF STATUS == "done":
     → 状態記録（done）
     # tmux kill-window は autopilot-orchestrator.sh の cleanup_worker が担当（不変条件B）
@@ -133,7 +133,7 @@ FOR each ISSUE in $ISSUES:
 # 有効 Issue リストを構築（skip/done を除外）
 ACTIVE_ISSUES=()
 FOR each ISSUE in $ISSUES:
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
   IF STATUS == "done":
     → 状態記録（done）、continue
   IF AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/autopilot-should-skip.sh → exit 0:
@@ -147,7 +147,7 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
 
   # バッチ内の Issue を並列 launch
   FOR each ISSUE in $BATCH:
-    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
     IF STATUS == "done": continue
     → commands/autopilot-launch.md を Read → 実行
 
@@ -158,7 +158,7 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
 
   # proactive health check（論理的異常検知、crash-detect とは責務分離）
   FOR each ISSUE in $BATCH:
-    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
     IF STATUS == "running":
       HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/health-check.sh --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
         echo "WARNING: Issue #${ISSUE}: health check 異常検知: $HEALTH_OUTPUT"
@@ -166,13 +166,13 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
 
   # merge-ready の Issue に対して merge-gate を順次実行
   FOR each ISSUE in $BATCH:
-    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
     IF STATUS == "merge-ready":
       → commands/merge-gate.md を Read → 実行
 
   # window 管理 + 状態記録
   FOR each ISSUE in $BATCH:
-    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
     IF STATUS == "done":
       → 状態記録（done）
       # tmux kill-window は autopilot-orchestrator.sh の cleanup_worker が担当（不変条件B）
@@ -186,11 +186,11 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
 
 ```bash
 # done の場合
-AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot \
+AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
   --set "status=done" --set "pr_number=$PR_NUMBER"
 
 # skipped の場合
-AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot \
+AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
   --set "status=failed" --set "failure={\"message\": \"dependency_failed\", \"step\": \"skip\"}"
 
 # fail 情報は crash-detect.sh / autopilot-poll が既に記録済み

@@ -5,6 +5,8 @@ set -euo pipefail
 
 # --- SCRIPTS_ROOT 自動解決 (Task 1.3) ---
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/python-env.sh
+source "${SCRIPTS_ROOT}/lib/python-env.sh"
 
 # --- usage (Task 1.1) ---
 usage() {
@@ -45,7 +47,7 @@ record_failure() {
   failure_json=$(jq -n --arg message "$message" --arg step "$step" \
     '{message: $message, step: $step}')
   # shellcheck disable=SC2086
-  bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role pilot $repo_arg \
+  python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot $repo_arg \
     --set "status=failed" \
     --set "failure=$failure_json"
 }
@@ -200,7 +202,7 @@ fi
 # state-write.sh は AUTOPILOT_DIR 環境変数を参照するため export 必須
 export AUTOPILOT_DIR
 # shellcheck disable=SC2086
-bash "$SCRIPTS_ROOT/state-write.sh" --type issue --issue "$ISSUE" --role worker $REPO_ARG --init
+python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role worker $REPO_ARG --init
 
 # --- quick ラベル検出 ---
 IS_QUICK_LAUNCH=false

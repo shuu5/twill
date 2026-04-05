@@ -1304,13 +1304,13 @@ commands:
 scripts:
   state-read:
     type: script
-    path: scripts/state-read.sh
-    description: "issue-{N}.json / session.json の読み取り"
+    path: src/twl/autopilot/state.py
+    description: "issue-{N}.json / session.json の読み取り（Python: python3 -m twl.autopilot.state read）"
 
   state-write:
     type: script
-    path: scripts/state-write.sh
-    description: "issue-{N}.json / session.json の書き込み（遷移バリデーション付き）"
+    path: src/twl/autopilot/state.py
+    description: "issue-{N}.json / session.json の書き込み（遷移バリデーション付き）（Python: python3 -m twl.autopilot.state write）"
 
   autopilot-init:
     type: script
@@ -1327,18 +1327,18 @@ scripts:
 
   session-create:
     type: script
-    path: scripts/session-create.sh
-    description: "session.json の新規作成"
+    path: src/twl/autopilot/session.py
+    description: "session.json の新規作成（Python: python3 -m twl.autopilot.session create）"
 
   session-archive:
     type: script
-    path: scripts/session-archive.sh
-    description: "セッション完了時のアーカイブ"
+    path: src/twl/autopilot/session.py
+    description: "セッション完了時のアーカイブ（Python: python3 -m twl.autopilot.session archive）"
 
   session-add-warning:
     type: script
-    path: scripts/session-add-warning.sh
-    description: "cross-issue 警告の session.json 追記"
+    path: src/twl/autopilot/session.py
+    description: "cross-issue 警告の session.json 追記（Python: python3 -m twl.autopilot.session add-warning）"
 
   worktree-delete:
     type: script
@@ -1469,8 +1469,8 @@ scripts:
 
   session-audit:
     type: script
-    path: scripts/session-audit.sh
-    description: "セッション JSONL から監査サマリー抽出"
+    path: src/twl/autopilot/session.py
+    description: "セッション JSONL から監査サマリー抽出（Python: python3 -m twl.autopilot.session audit）"
 
   auto-merge:
     type: script

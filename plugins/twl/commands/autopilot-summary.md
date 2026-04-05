@@ -38,16 +38,16 @@ DONE_COUNT=0; FAIL_COUNT=0; SKIP_COUNT=0
 DONE_ISSUES=""; FAIL_ISSUES=""; SKIP_ISSUES=""
 
 for ISSUE in $ALL_ISSUES; do
-  STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
   case "$STATUS" in
     done)
       DONE_COUNT=$((DONE_COUNT + 1))
-      PR=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field pr_number)
+      PR=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field pr_number)
       DONE_ISSUES="${DONE_ISSUES}\n  #${ISSUE} → PR #${PR}"
       ;;
     failed)
       FAIL_COUNT=$((FAIL_COUNT + 1))
-      FAILURE=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field failure)
+      FAILURE=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field failure)
       REASON=$(echo "$FAILURE" | jq -r '.message // "unknown"')
       FAIL_ISSUES="${FAIL_ISSUES}\n  #${ISSUE} (${REASON})"
       ;;
@@ -64,7 +64,7 @@ done
 session.json の started_at から経過時間を算出し、session-audit を自動実行:
 
 ```bash
-STARTED_AT=$(bash $SCRIPTS_ROOT/state-read.sh --type session --field started_at)
+STARTED_AT=$(python3 -m twl.autopilot.state read --type session --field started_at)
 if [ -n "$STARTED_AT" ]; then
   STARTED_EPOCH=$(date -d "$STARTED_AT" +%s 2>/dev/null || echo "")
   if [ -n "$STARTED_EPOCH" ]; then
@@ -130,7 +130,7 @@ mcp__doobidoo__memory_store({
 ### Step 5: セッションアーカイブ
 
 ```bash
-bash $SCRIPTS_ROOT/session-archive.sh
+python3 -m twl.autopilot.session archive
 ```
 
 ### Step 6: 通知

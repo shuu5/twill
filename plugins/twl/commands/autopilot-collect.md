@@ -18,12 +18,12 @@ autopilot-phase-postprocess から呼び出される。
 collect_changed_files() {
   local issue=$1
 
-  local status=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$issue" --field status)
+  local status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status)
   if [ "$status" != "done" ]; then
     return
   fi
 
-  local pr_number=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$issue" --field pr_number)
+  local pr_number=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field pr_number)
   if [ -z "$pr_number" ]; then
     echo "[collect] Warning: Issue #${issue} の PR 番号取得失敗 — スキップ"
     return
@@ -37,7 +37,7 @@ collect_changed_files() {
 
   # session.json に追記（state-write.sh 経由）
   local files_json=$(echo "$changed_files" | jq -R -s 'split("\n") | map(select(. != ""))')
-  bash $SCRIPTS_ROOT/state-write.sh --type session \
+  python3 -m twl.autopilot.state write --type session \
     --set "completed_issues.${issue}.pr=${pr_number}" \
     --set "completed_issues.${issue}.files=${files_json}" \
     --role pilot

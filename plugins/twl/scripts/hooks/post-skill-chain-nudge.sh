@@ -21,6 +21,8 @@ fi
 # --- スクリプトディレクトリ解決 ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPTS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=../lib/python-env.sh
+source "${SCRIPTS_ROOT}/lib/python-env.sh"
 
 # --- Step 2: state file ベースで Issue 番号を解決 ---
 ISSUE_NUM=""
@@ -35,7 +37,7 @@ fi
 
 # --- Step 3: current_step を state-read.sh で取得 ---
 CURRENT_STEP=""
-CURRENT_STEP=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$ISSUE_NUM" --field current_step 2>/dev/null || true)
+CURRENT_STEP=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field current_step 2>/dev/null || true)
 
 if [[ -z "$CURRENT_STEP" ]]; then
   # current_step が空の場合は透過終了（chain 未開始）
@@ -64,7 +66,7 @@ printf '[chain-continuation] 次は /twl:%s を Skill tool で実行せよ。停
 
 # --- Step 8: last_hook_nudge_at タイムスタンプを issue-{N}.json に記録 ---
 NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-bash "$SCRIPTS_ROOT/state-write.sh" \
+python3 -m twl.autopilot.state write \
   --type issue \
   --issue "$ISSUE_NUM" \
   --role worker \

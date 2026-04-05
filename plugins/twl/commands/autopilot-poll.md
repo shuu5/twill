@@ -45,7 +45,7 @@ while true; do
   fi
   POLL_COUNT=$((POLL_COUNT + 1))
 
-  STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+  STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
 
   case "$STATUS" in
     done)
@@ -70,7 +70,7 @@ while true; do
 
   if [ "$POLL_COUNT" -ge "$MAX_POLL" ]; then
     echo "Issue #${ISSUE}: タイムアウト（${MAX_POLL}回×10秒）"
-    bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot \
+    python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
       --set "status=failed" \
       --set "failure={\"message\": \"poll_timeout\", \"step\": \"polling\"}"
     break
@@ -88,7 +88,7 @@ while true; do
   ALL_RESOLVED=true
 
   for ISSUE in $ISSUES; do
-    STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+    STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
 
     case "$STATUS" in
       done|failed)
@@ -115,9 +115,9 @@ while true; do
   if [ "$POLL_COUNT" -ge "$MAX_POLL" ]; then
     echo "Phase: タイムアウト — 未完了 Issue を failed に変換"
     for ISSUE in $ISSUES; do
-      STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+      STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
       if [ "$STATUS" = "running" ]; then
-        bash $SCRIPTS_ROOT/state-write.sh --type issue --issue "$ISSUE" --role pilot \
+        python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
           --set "status=failed" \
           --set "failure={\"message\": \"poll_timeout\", \"step\": \"polling\"}"
       fi
@@ -131,7 +131,7 @@ while true; do
     # Phase モードでは最初の running issue の window で wait
     FIRST_RUNNING_WINDOW=""
     for ISSUE in $ISSUES; do
-      STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE" --field status)
+      STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
       if [ "$STATUS" = "running" ]; then
         FIRST_RUNNING_WINDOW="ap-#${ISSUE}"
         break

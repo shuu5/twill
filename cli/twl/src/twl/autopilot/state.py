@@ -1,0 +1,439 @@
+"""State management for autopilot issue/session JSON files.
+
+Replaces: state-read.sh, state-write.sh
+
+CLI usage:
+    python3 -m twl.autopilot.state read  --type <issue|session> [--issue N] [--repo R] [--field F]
+    python3 -m twl.autopilot.state write --type <issue|session> [--issue N] [--repo R]
+                                          --role <pilot|worker> [--set k=v]... [--init]
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+import sys
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+_VALID_KEY_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+_VALID_FIELD_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_.]*$")
+_VALID_REPO_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
+
+# Allowed state transitions: {current: {next, ...}}
+_TRANSITIONS: dict[str, set[str]] = {
+    "running": {"merge-ready", "failed"},
+    "merge-ready": {"done", "failed"},
+    "failed": {"running"},
+}
+
+_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure"}
+
+
+def _autopilot_dir() -> Path:
+    """Resolve AUTOPILOT_DIR (env var takes priority)."""
+    env = os.environ.get("AUTOPILOT_DIR", "")
+    if env:
+        return Path(env)
+    # Fallback: git rev-parse --show-toplevel / .autopilot
+    try:
+        import subprocess
+
+        root = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+        ).strip()
+        return Path(root) / ".autopilot"
+    except Exception:
+        return Path.cwd() / ".autopilot"
+
+
+def _resolve_file(autopilot_dir: Path, type_: str, issue: str | None, repo: str | None) -> Path:
+    if type_ == "issue":
+        if repo and (autopilot_dir / "repos" / repo).is_dir():
+            return autopilot_dir / "repos" / repo / "issues" / f"issue-{issue}.json"
+        return autopilot_dir / "issues" / f"issue-{issue}.json"
+    return autopilot_dir / "session.json"
+
+
+def _now_utc() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _get_nested(data: dict[str, Any], field: str) -> Any:
+    """Traverse dot-separated field path."""
+    parts = field.split(".")
+    cur: Any = data
+    for part in parts:
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(part)
+    return cur
+
+
+class StateError(Exception):
+    """Raised for validation/transition errors (exit code 1)."""
+
+
+class StateArgError(Exception):
+    """Raised for argument errors (exit code 2)."""
+
+
+class StateManager:
+    """Read/write autopilot state files with transition validation."""
+
+    def __init__(self, autopilot_dir: Path | None = None) -> None:
+        self.autopilot_dir = autopilot_dir or _autopilot_dir()
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    def read(
+        self,
+        type_: str,
+        issue: str | None = None,
+        repo: str | None = None,
+        field: str | None = None,
+    ) -> str:
+        """Return field value (or full JSON). Empty string if file absent."""
+        self._validate_type(type_)
+        if type_ == "issue":
+            self._require_issue(issue)
+            self._validate_issue_num(issue)  # type: ignore[arg-type]
+        if repo:
+            self._validate_repo(repo)
+        if field:
+            self._validate_field(field)
+
+        file = _resolve_file(self.autopilot_dir, type_, issue, repo)
+        if not file.is_file():
+            return ""
+
+        data = json.loads(file.read_text(encoding="utf-8"))
+
+        if field is None:
+            return json.dumps(data, ensure_ascii=False, indent=2)
+
+        value = _get_nested(data, field)
+        if value is None:
+            return ""
+        if isinstance(value, bool):
+            return str(value).lower()
+        return str(value)
+
+    def write(
+        self,
+        type_: str,
+        role: str,
+        issue: str | None = None,
+        repo: str | None = None,
+        sets: list[str] | None = None,
+        init: bool = False,
+        cwd: str | None = None,
+    ) -> str:
+        """Write fields to state file. Returns OK message."""
+        self._validate_type(type_)
+        self._validate_role(role)
+        if type_ == "issue":
+            self._require_issue(issue)
+            self._validate_issue_num(issue)  # type: ignore[arg-type]
+        if repo:
+            self._validate_repo(repo)
+        self._check_rbac(role, type_, sets or [])
+        if role == "pilot" and type_ == "issue":
+            self._check_pilot_identity(sets or [], cwd)
+
+        file = _resolve_file(self.autopilot_dir, type_, issue, repo)
+
+        if init:
+            if type_ == "issue" and role != "worker":
+                raise StateArgError("issue-{N}.json の --init は worker ロールのみ許可されています")
+            return self._init_issue(file, issue)  # type: ignore[arg-type]
+
+        if not file.is_file():
+            raise StateError(f"ファイルが存在しません: {file}")
+        if not sets:
+            raise StateArgError("--set が指定されていません")
+
+        data = json.loads(file.read_text(encoding="utf-8"))
+
+        for kv in sets:
+            key, _, raw_value = kv.partition("=")
+            if not _VALID_KEY_RE.match(key):
+                raise StateArgError(f"不正なフィールド名: {key}（英数字とアンダースコアのみ許可）")
+
+            if key == "status" and type_ == "issue":
+                data = self._transition(data, raw_value)
+            data = self._set_field(data, key, raw_value)
+
+        if type_ == "issue":
+            data["updated_at"] = _now_utc()
+
+        self._atomic_write(file, data)
+        return f"OK: {file} を更新しました"
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
+    def _init_issue(self, file: Path, issue: str) -> str:
+        if file.is_file():
+            raise StateError(f"issue-{issue}.json は既に存在します")
+        file.parent.mkdir(parents=True, exist_ok=True)
+        now = _now_utc()
+        data = {
+            "issue": int(issue),
+            "status": "running",
+            "branch": "",
+            "pr": None,
+            "window": "",
+            "started_at": now,
+            "updated_at": now,
+            "current_step": "",
+            "retry_count": 0,
+            "fix_instructions": None,
+            "merged_at": None,
+            "files_changed": [],
+            "failure": None,
+        }
+        self._atomic_write(file, data)
+        return f"OK: issue-{issue}.json を作成しました (status=running)"
+
+    def _transition(self, data: dict[str, Any], new_status: str) -> dict[str, Any]:
+        current = data.get("status", "")
+        if current == "done":
+            raise StateError("done は終端状態です。status を変更できません")
+        allowed = _TRANSITIONS.get(current, set())
+        if new_status not in allowed:
+            if current == "failed" and new_status == "running":
+                retry = data.get("retry_count", 0)
+                raise StateError(
+                    f"リトライ上限に達しています (retry_count={retry} >= 1)。"
+                    "failed → running への遷移は不可"
+                )
+            raise StateError(f"不正な状態遷移: {current} → {new_status}")
+        if current == "failed" and new_status == "running":
+            retry = data.get("retry_count", 0)
+            if retry >= 1:
+                raise StateError(
+                    f"リトライ上限に達しています (retry_count={retry} >= 1)。"
+                    "failed → running への遷移は不可"
+                )
+            data = dict(data)
+            data["retry_count"] = retry + 1
+        return data
+
+    def _set_field(self, data: dict[str, Any], key: str, raw: str) -> dict[str, Any]:
+        data = dict(data)
+        # Try JSON parse first (arrays, objects, null, numbers, booleans)
+        try:
+            data[key] = json.loads(raw)
+        except (json.JSONDecodeError, ValueError):
+            data[key] = raw
+        return data
+
+    def _atomic_write(self, file: Path, data: dict[str, Any]) -> None:
+        file.parent.mkdir(parents=True, exist_ok=True)
+        text = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+        fd, tmp = tempfile.mkstemp(dir=file.parent, prefix=f".{file.name}.")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                f.write(text)
+            os.replace(tmp, file)
+        except Exception:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+            raise
+
+    # ------------------------------------------------------------------
+    # Validation helpers
+    # ------------------------------------------------------------------
+
+    def _validate_type(self, type_: str) -> None:
+        if type_ not in ("issue", "session"):
+            raise StateArgError("--type は issue または session を指定してください")
+
+    def _validate_role(self, role: str) -> None:
+        if role not in ("pilot", "worker"):
+            raise StateArgError("--role は pilot または worker を指定してください")
+
+    def _require_issue(self, issue: str | None) -> None:
+        if not issue:
+            raise StateArgError("type=issue の場合 --issue は必須です")
+
+    def _validate_issue_num(self, issue: str) -> None:
+        if not re.match(r"^\d+$", issue):
+            raise StateArgError(f"--issue は正の整数を指定してください: {issue}")
+
+    def _validate_field(self, field: str) -> None:
+        if not _VALID_FIELD_RE.match(field):
+            raise StateArgError(
+                f"不正なフィールド名: {field}（英数字、アンダースコア、ドットのみ許可）"
+            )
+
+    def _validate_repo(self, repo: str) -> None:
+        if not _VALID_REPO_RE.match(repo):
+            raise StateArgError(
+                f"不正な repo_id: {repo}（英数字、ハイフン、アンダースコアのみ許可）"
+            )
+
+    def _check_rbac(self, role: str, type_: str, sets: list[str]) -> None:
+        if role == "worker" and type_ == "session":
+            raise StateError("Worker は session.json への書き込み権限がありません")
+        if role == "pilot" and type_ == "issue":
+            for kv in sets:
+                key = kv.partition("=")[0]
+                if key not in _PILOT_ISSUE_ALLOWED_KEYS:
+                    raise StateError(
+                        f"Pilot は issue-{{N}}.json の {key} フィールドへの書き込み権限がありません"
+                        f"（{', '.join(sorted(_PILOT_ISSUE_ALLOWED_KEYS))} のみ許可）"
+                    )
+
+    def _check_pilot_identity(self, sets: list[str], cwd: str | None) -> None:
+        has_status = any(kv.partition("=")[0] == "status" for kv in sets)
+        if not has_status:
+            return
+        check_cwd = cwd or os.getcwd()
+        if "/worktrees/" in check_cwd:
+            raise StateError(
+                "worktrees/ 配下からの --role pilot の status 書き込みは禁止されています（不変条件C）"
+            )
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+def _parse_read_args(argv: list[str]) -> dict[str, Any]:
+    args: dict[str, Any] = {"type": None, "issue": None, "repo": None, "field": None}
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if a in ("-h", "--help"):
+            _print_read_usage()
+            sys.exit(0)
+        elif a == "--type" and i + 1 < len(argv):
+            args["type"] = argv[i + 1]; i += 2
+        elif a == "--issue" and i + 1 < len(argv):
+            args["issue"] = argv[i + 1]; i += 2
+        elif a == "--repo" and i + 1 < len(argv):
+            args["repo"] = argv[i + 1]; i += 2
+        elif a == "--field" and i + 1 < len(argv):
+            args["field"] = argv[i + 1]; i += 2
+        else:
+            print(f"ERROR: 不明なオプション: {a}", file=sys.stderr)
+            sys.exit(1)
+    if not args["type"]:
+        print("ERROR: --type は必須です", file=sys.stderr)
+        sys.exit(1)
+    return args
+
+
+def _parse_write_args(argv: list[str]) -> dict[str, Any]:
+    args: dict[str, Any] = {
+        "type": None, "issue": None, "repo": None,
+        "role": None, "sets": [], "init": False,
+    }
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if a in ("-h", "--help"):
+            _print_write_usage()
+            sys.exit(0)
+        elif a == "--type" and i + 1 < len(argv):
+            args["type"] = argv[i + 1]; i += 2
+        elif a == "--issue" and i + 1 < len(argv):
+            args["issue"] = argv[i + 1]; i += 2
+        elif a == "--repo" and i + 1 < len(argv):
+            args["repo"] = argv[i + 1]; i += 2
+        elif a == "--role" and i + 1 < len(argv):
+            args["role"] = argv[i + 1]; i += 2
+        elif a == "--set" and i + 1 < len(argv):
+            args["sets"].append(argv[i + 1]); i += 2
+        elif a == "--init":
+            args["init"] = True; i += 1
+        else:
+            print(f"ERROR: 不明なオプション: {a}", file=sys.stderr)
+            sys.exit(1)
+    if not args["type"]:
+        print("ERROR: --type は必須です", file=sys.stderr)
+        sys.exit(1)
+    if not args["role"]:
+        print("ERROR: --role は必須です", file=sys.stderr)
+        sys.exit(1)
+    return args
+
+
+def _print_read_usage() -> None:
+    print(
+        "Usage: python3 -m twl.autopilot.state read "
+        "--type <issue|session> [--issue N] [--repo R] [--field F]"
+    )
+
+
+def _print_write_usage() -> None:
+    print(
+        "Usage: python3 -m twl.autopilot.state write "
+        "--type <issue|session> [--issue N] [--repo R] "
+        "--role <pilot|worker> [--set k=v]... [--init]"
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = argv if argv is not None else sys.argv[1:]
+    if not args:
+        print("Usage: python3 -m twl.autopilot.state <read|write> [options]", file=sys.stderr)
+        return 2
+
+    subcmd, rest = args[0], args[1:]
+    mgr = StateManager()
+
+    try:
+        if subcmd == "read":
+            parsed = _parse_read_args(rest)
+            result = mgr.read(
+                type_=parsed["type"],
+                issue=parsed["issue"],
+                repo=parsed["repo"],
+                field=parsed["field"],
+            )
+            print(result)
+            return 0
+
+        elif subcmd == "write":
+            parsed = _parse_write_args(rest)
+            msg = mgr.write(
+                type_=parsed["type"],
+                role=parsed["role"],
+                issue=parsed["issue"],
+                repo=parsed["repo"],
+                sets=parsed["sets"],
+                init=parsed["init"],
+            )
+            print(msg)
+            return 0
+
+        else:
+            print(f"ERROR: 不明なサブコマンド: {subcmd}", file=sys.stderr)
+            return 2
+
+    except StateArgError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 2
+    except StateError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -96,7 +96,7 @@ source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/nu
 ISSUE_NUM=$(resolve_issue_num)
 IS_AUTOPILOT=false
 if [ -n "$ISSUE_NUM" ]; then
-  AUTOPILOT_STATUS=$(bash scripts/state-read.sh --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
+  AUTOPILOT_STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
   IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
 fi
 ```

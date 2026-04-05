@@ -30,6 +30,14 @@ common_setup() {
 
   # Copy all scripts into sandbox
   cp "$REPO_ROOT"/scripts/*.sh "$SANDBOX/scripts/" 2>/dev/null || true
+  cp "$REPO_ROOT"/scripts/*.py "$SANDBOX/scripts/" 2>/dev/null || true
+
+  # Copy Python autopilot modules (replaces state/session bash scripts)
+  local _repo_git_root
+  _repo_git_root="$(cd "$REPO_ROOT" && git rev-parse --show-toplevel 2>/dev/null || echo "")"
+  if [[ -n "$_repo_git_root" && -d "$_repo_git_root/cli/twl/src" ]]; then
+    export PYTHONPATH="${_repo_git_root}/cli/twl/src${PYTHONPATH:+:${PYTHONPATH}}"
+  fi
 
   # Create a stub bin directory for external command stubs
   STUB_BIN="$SANDBOX/.stub-bin"

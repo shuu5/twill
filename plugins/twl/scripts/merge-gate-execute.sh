@@ -19,6 +19,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/python-env.sh
+source "${SCRIPT_DIR}/lib/python-env.sh"
 
 # jq 存在チェック
 if ! command -v jq &>/dev/null; then
@@ -74,7 +76,7 @@ if [[ "$CURRENT_WINDOW" =~ ^ap-#[0-9]+$ ]]; then
 fi
 
 # autopilot 状態確認（case 分岐に先立って取得し、merge パスで再利用）
-_autopilot_status=$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$ISSUE" --field status 2>/dev/null || echo "")
+_autopilot_status=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status 2>/dev/null || echo "")
 if [[ "$_autopilot_status" == "merge-ready" ]]; then
   echo "[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行"
 fi
@@ -83,7 +85,7 @@ case "$MODE" in
   --reject)
     echo "[merge-gate] Issue #${ISSUE}: リジェクト（Critical/High 問題検出）" >&2
     # state-write.sh で failed に遷移
-    bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
+    python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
       --set status=failed \
       --set "failure={\"reason\":\"merge_gate_rejected\",\"details\":$(printf '%s' "$FINDING_SUMMARY" | jq -Rs .),\"step\":\"merge-gate\",\"retry_count\":1,\"fix_instructions\":$(printf '%s' "$FIX_INSTRUCTIONS" | jq -Rs .)}"
     tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
@@ -91,7 +93,7 @@ case "$MODE" in
 
   --reject-final)
     echo "[merge-gate] Issue #${ISSUE}: 確定失敗（2回目のリジェクト）" >&2
-    bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
+    python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
       --set status=failed \
       --set "failure={\"reason\":\"merge_gate_rejected_final\",\"details\":$(printf '%s' "$FINDING_SUMMARY" | jq -Rs .),\"step\":\"merge-gate\",\"retry_count\":2}"
     tmux kill-window -t "ap-#${ISSUE}" 2>/dev/null || true
@@ -156,7 +158,7 @@ case "$MODE" in
       fi
 
       # state-write.sh で done に遷移（autopilot / 非 autopilot 共通）
-      bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
+      python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
         --set status=done \
         --set "merged_at=$(date -Is)"
       echo "[merge-gate] Issue #${ISSUE}: マージ完了"
@@ -168,7 +170,7 @@ case "$MODE" in
     else
       # エラーメッセージから認証情報をマスキング
       ERROR_RAW=$(cat "$MERGE_ERROR_LOG" 2>/dev/null | sed -E 's/ghp_[a-zA-Z0-9]+/ghp_***MASKED***/g; s/Bearer [^ ]+/Bearer ***MASKED***/g' | head -c 500 || echo "unknown error")
-      bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$ISSUE" --role pilot \
+      python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
         --set status=failed \
         --set "failure={\"reason\":\"merge_failed\",\"details\":$(printf '%s' "$ERROR_RAW" | jq -Rs .),\"step\":\"merge-gate\",\"pr\":\"#${PR_NUMBER}\"}"
       echo "[merge-gate] Issue #${ISSUE}: マージ失敗 - ${ERROR_RAW}" >&2

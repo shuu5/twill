@@ -17,6 +17,8 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "${SCRIPT_DIR}/chain-steps.sh"
 # shellcheck source=./lib/resolve-project.sh
 source "${SCRIPT_DIR}/lib/resolve-project.sh"
+# shellcheck source=./lib/python-env.sh
+source "${SCRIPT_DIR}/lib/python-env.sh"
 # shellcheck source=./resolve-issue-num.sh
 source "${SCRIPT_DIR}/resolve-issue-num.sh"
 
@@ -58,8 +60,8 @@ record_current_step() {
   local issue_num
   issue_num="$(resolve_issue_num)"
   [[ -z "$issue_num" ]] && return 0
-  # record current_step in state-write.sh
-  bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$issue_num" --role worker --set "current_step=${step_id}" 2>/dev/null || true
+  # record current_step via Python state module
+  python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "current_step=${step_id}" 2>/dev/null || true
 }
 
 # =====================================================================
@@ -90,7 +92,7 @@ step_quick_guard() {
   fi
 
   local is_quick
-  is_quick="$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
+  is_quick="$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
 
   if [[ -z "$is_quick" ]]; then
     is_quick="$(detect_quick_label "$issue_num")"
@@ -116,7 +118,7 @@ step_init() {
 
   # is_quick を state に永続化（state ファイルが存在する場合のみ）
   if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-    bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$issue_num" --role worker --set "is_quick=$is_quick" 2>/dev/null || true
+    python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "is_quick=$is_quick" 2>/dev/null || true
   fi
 
   # ブランチ判定
@@ -402,7 +404,7 @@ step_next_step() {
 
   # is_quick を state から取得（存在しない場合は false）
   local is_quick
-  is_quick="$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
+  is_quick="$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
   [[ "$is_quick" == "true" ]] || is_quick="false"
 
   # current_step のインデックスを探す
@@ -552,19 +554,19 @@ step_all_pass_check() {
 
   # autopilot 配下判定
   local autopilot_status
-  autopilot_status=$(bash "$SCRIPT_DIR/state-read.sh" --type issue --issue "$issue_num" --field status 2>/dev/null || echo "")
+  autopilot_status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field status 2>/dev/null || echo "")
   local is_autopilot=false
   [[ "$autopilot_status" == "running" ]] && is_autopilot=true
 
   if [[ "$overall_result" == "PASS" ]]; then
-    bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$issue_num" --role worker --set "status=merge-ready" 2>/dev/null || true
+    python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "status=merge-ready" 2>/dev/null || true
     if $is_autopilot; then
       ok "all-pass-check" "PASS — autopilot 配下: merge-ready 宣言。Pilot による merge-gate を待機"
     else
       ok "all-pass-check" "PASS — merge-ready"
     fi
   else
-    bash "$SCRIPT_DIR/state-write.sh" --type issue --issue "$issue_num" --role worker --set "status=failed" 2>/dev/null || true
+    python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "status=failed" 2>/dev/null || true
     skip "all-pass-check" "FAIL — status=failed"
     return 1
   fi

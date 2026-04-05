@@ -32,9 +32,9 @@ state-read.sh で failed Issue の failure 情報を取得:
 # .autopilot/issues/ の全 issue-*.json を走査
 for ISSUE_FILE in "$AUTOPILOT_DIR"/issues/issue-*.json; do
   ISSUE_NUM=$(basename "$ISSUE_FILE" | grep -oP '\d+')
-  STATUS=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE_NUM" --field status)
+  STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field status)
   if [ "$STATUS" = "failed" ]; then
-    FAILURE=$(bash $SCRIPTS_ROOT/state-read.sh --type issue --issue "$ISSUE_NUM" --field failure)
+    FAILURE=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field failure)
     REASON=$(echo "$FAILURE" | jq -r '.message // "unknown"')
     # reason をグルーピング
   fi

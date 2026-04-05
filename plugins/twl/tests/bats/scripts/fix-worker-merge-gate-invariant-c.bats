@@ -113,7 +113,7 @@ teardown() {
 
   stub_command "tmux" 'echo "ap-#1"'
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=done
 
   assert_failure
@@ -127,7 +127,7 @@ teardown() {
 
   stub_command "tmux" 'echo "ap-#42"'
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 42 --role pilot --set status=done
 
   assert_failure
@@ -148,7 +148,7 @@ teardown() {
   # tmux returns non-worker window (CWD check should still catch it)
   stub_command "tmux" 'echo "main"'
 
-  run bash -c "cd '$worker_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' bash '$SANDBOX/scripts/state-write.sh' --type issue --issue 1 --role pilot --set status=done"
+  run bash -c "cd '$worker_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' python3 -m twl.autopilot.state write --type issue --issue 1 --role pilot --set status=done"
 
   assert_failure
   assert_output --partial "worktree"
@@ -168,7 +168,7 @@ teardown() {
   # tmux returns a normal non-Worker window name
   stub_command "tmux" 'echo "claude"'
 
-  run bash -c "cd '$pilot_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' bash '$SANDBOX/scripts/state-write.sh' --type issue --issue 1 --role pilot --set status=done"
+  run bash -c "cd '$pilot_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' python3 -m twl.autopilot.state write --type issue --issue 1 --role pilot --set status=done"
 
   assert_success
   assert_output --partial "OK"
@@ -189,7 +189,7 @@ teardown() {
   # tmux returns exit 1 (not in tmux session)
   stub_command "tmux" 'exit 1'
 
-  run bash -c "cd '$pilot_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' bash '$SANDBOX/scripts/state-write.sh' --type issue --issue 1 --role pilot --set status=done"
+  run bash -c "cd '$pilot_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' python3 -m twl.autopilot.state write --type issue --issue 1 --role pilot --set status=done"
 
   assert_success
   assert_output --partial "OK"
@@ -203,7 +203,7 @@ teardown() {
   # already restricted by field-level and session-type checks, not identity guard)
   stub_command "tmux" 'echo "ap-#1"'
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role worker --set current_step=some-step
 
   assert_success
@@ -216,7 +216,7 @@ teardown() {
 
   stub_command "tmux" 'echo "ap-#0"'
 
-  run bash "$SANDBOX/scripts/state-write.sh" \
+  run python3 -m twl.autopilot.state write \
     --type issue --issue 1 --role pilot --set status=done
 
   assert_failure
@@ -234,7 +234,7 @@ teardown() {
   pilot_cwd="$SANDBOX/main"
   mkdir -p "$pilot_cwd"
 
-  run bash -c "cd '$pilot_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' bash '$SANDBOX/scripts/state-write.sh' --type issue --issue 1 --role pilot --set status=done"
+  run bash -c "cd '$pilot_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' python3 -m twl.autopilot.state write --type issue --issue 1 --role pilot --set status=done"
 
   assert_success
 }
@@ -249,7 +249,7 @@ teardown() {
   pilot_cwd="$SANDBOX/main"
   mkdir -p "$pilot_cwd"
 
-  run bash -c "cd '$pilot_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' bash '$SANDBOX/scripts/state-write.sh' --type issue --issue 1 --role pilot --set status=done"
+  run bash -c "cd '$pilot_cwd' && AUTOPILOT_DIR='$SANDBOX/.autopilot' python3 -m twl.autopilot.state write --type issue --issue 1 --role pilot --set status=done"
 
   assert_success
 }

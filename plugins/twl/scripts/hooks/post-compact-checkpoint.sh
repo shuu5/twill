@@ -18,6 +18,8 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SCRIPTS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=../lib/python-env.sh
+source "${SCRIPTS_ROOT}/lib/python-env.sh"
 
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
@@ -36,7 +38,7 @@ for state_file in "${AUTOPILOT_DIR}"/issue-*.json; do
 done
 
 if [[ -n "$ISSUE_NUM" ]]; then
-  bash "$SCRIPTS_ROOT/state-write.sh" \
+  python3 -m twl.autopilot.state write \
     --type issue --issue "$ISSUE_NUM" --role worker \
     --set "last_compact_at=$TIMESTAMP" 2>/dev/null || true
 fi

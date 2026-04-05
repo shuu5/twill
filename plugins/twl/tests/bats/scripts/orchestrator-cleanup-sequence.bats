@@ -46,7 +46,7 @@ echo "STEP:tmux_kill_window" >> "$CALL_LOG"
 tmux kill-window -t "$window_name" 2>/dev/null || true
 
 # Step 2: worktree-delete.sh（失敗時は警告して継続）
-branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
+branch=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
 if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
   echo "STEP:worktree_delete:${branch}" >> "$CALL_LOG"
   if ! bash "$SCRIPTS_ROOT/worktree-delete.sh" "$branch" 2>/dev/null; then
@@ -55,7 +55,7 @@ if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
 fi
 
 # Step 3: git push origin --delete（クロスリポ対応）
-branch=$(bash "$SCRIPTS_ROOT/state-read.sh" --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
+branch=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
 if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
   # クロスリポ解決: REPOS_JSON から entry のパスを取得
   ISSUE_REPO_PATH=""
