@@ -15,14 +15,14 @@ Covers:
 import json
 import shutil
 import subprocess
+import os
 import sys
 import tempfile
 from pathlib import Path
-from importlib import util as importlib_util
-
 import yaml
 
 TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
+TWL_SRC = str(Path(__file__).resolve().parent.parent.parent / "src")
 
 
 # ---------------------------------------------------------------------------
@@ -59,17 +59,28 @@ def _create_component_files(plugin_dir: Path, deps: dict) -> None:
 
 
 def _load_engine_module():
-    """Import twl-engine.py as a module for direct function testing."""
-    spec = importlib_util.spec_from_file_location("twl_engine", str(TWL_ENGINE))
-    mod = importlib_util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    """Import twl package modules for direct function testing."""
+    import types as _types
+    import sys as _sys
+    if TWL_SRC not in _sys.path:
+        _sys.path.insert(0, TWL_SRC)
+    from twl.core.plugin import build_graph
+    from twl.validation.audit import audit_collect, audit_report
+    from twl.validation.complexity import complexity_collect, complexity_report
+    mod = _types.SimpleNamespace(
+        build_graph=build_graph,
+        audit_collect=audit_collect,
+        audit_report=audit_report,
+        complexity_collect=complexity_collect,
+        complexity_report=complexity_report,
+    )
     return mod
 
 
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
     """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
+        [sys.executable, "-m", "twl"] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,

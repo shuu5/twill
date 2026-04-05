@@ -21,6 +21,7 @@ Covers 8 scenarios across 3 spec files:
 
 import shutil
 import subprocess
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -28,6 +29,7 @@ from pathlib import Path
 import yaml
 
 TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
+TWL_SRC = str(Path(__file__).resolve().parent.parent.parent / "src")
 
 
 # ---------------------------------------------------------------------------
@@ -63,7 +65,7 @@ def _create_component_files(plugin_dir: Path, deps: dict) -> None:
 def run_engine(plugin_dir: Path, *extra_args: str, timeout: int = 30) -> subprocess.CompletedProcess:
     """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
+        [sys.executable, "-m", "twl"] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -73,29 +75,29 @@ def run_engine(plugin_dir: Path, *extra_args: str, timeout: int = 30) -> subproc
 
 def _invoke_build_graph(deps: dict) -> dict:
     """Directly import and call build_graph for unit-level assertions."""
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("twl_engine", str(TWL_ENGINE))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod.build_graph(deps, plugin_root=Path("/nonexistent"))
+    import sys as _sys
+    if TWL_SRC not in _sys.path:
+        _sys.path.insert(0, TWL_SRC)
+    from twl.core.plugin import build_graph
+    return build_graph(deps, plugin_root=Path("/nonexistent"))
 
 
 def _invoke_classify_layers(deps: dict, graph: dict) -> dict:
     """Directly import and call classify_layers."""
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("twl_engine", str(TWL_ENGINE))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod.classify_layers(deps, graph)
+    import sys as _sys
+    if TWL_SRC not in _sys.path:
+        _sys.path.insert(0, TWL_SRC)
+    from twl.core.graph import classify_layers
+    return classify_layers(deps, graph)
 
 
 def _invoke_find_orphans(graph: dict, deps: dict) -> dict:
     """Directly import and call find_orphans."""
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("twl_engine", str(TWL_ENGINE))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod.find_orphans(graph, deps)
+    import sys as _sys
+    if TWL_SRC not in _sys.path:
+        _sys.path.insert(0, TWL_SRC)
+    from twl.validation.check import find_orphans
+    return find_orphans(graph, deps)
 
 
 # ---------------------------------------------------------------------------

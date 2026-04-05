@@ -14,6 +14,7 @@ Covers:
 
 import shutil
 import subprocess
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -21,6 +22,7 @@ from pathlib import Path
 import yaml
 
 TWL_ENGINE = Path(__file__).parent.parent.parent / "twl-engine.py"
+TWL_SRC = str(Path(__file__).resolve().parent.parent.parent / "src")
 
 
 # ---------------------------------------------------------------------------
@@ -98,7 +100,7 @@ def make_specialist_fixture(tmpdir: Path, *, model: str | None = "sonnet") -> Pa
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
     """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
+        [sys.executable, "-m", "twl"] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,
@@ -138,15 +140,13 @@ class TestAllowedModelsConstant:
 
     def test_allowed_models_is_set_with_expected_values(self):
         """Scenario: constant is accessible
-        WHEN twl-engine.py is imported
+        WHEN twl package is imported
         THEN ALLOWED_MODELS is a set containing {"haiku", "sonnet", "opus"}."""
         # We test by running a subprocess that imports and checks
         check_script = (
-            "import sys, importlib.util; "
-            f"spec = importlib.util.spec_from_file_location('engine', '{TWL_ENGINE}'); "
-            "mod = importlib.util.module_from_spec(spec); "
-            "spec.loader.exec_module(mod); "
-            "am = getattr(mod, 'ALLOWED_MODELS', None); "
+            f"import sys; sys.path.insert(0, {repr(TWL_SRC)}); "
+            "from twl.core.types import ALLOWED_MODELS; "
+            "am = ALLOWED_MODELS; "
             "assert am is not None, 'ALLOWED_MODELS not found'; "
             "assert isinstance(am, (set, frozenset)), f'expected set, got {type(am)}'; "
             "assert am == {'haiku', 'sonnet', 'opus'}, f'unexpected value: {am}'; "

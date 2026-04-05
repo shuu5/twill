@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "twl"
+version = "0.1.0"
+description = "TWiLL CLI - plugin structure analysis, validation, and visualization"
+requires-python = ">=3.9"
+dependencies = [
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+full = [
+    "tiktoken",
+    "rich",
+]
+
+[project.scripts]
+twl = "twl.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

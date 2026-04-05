@@ -8,6 +8,7 @@ These tests are TDD-style: they define expected behavior BEFORE implementation.
 
 import shutil
 import subprocess
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -56,7 +57,7 @@ def _create_component_files(plugin_dir: Path, deps: dict, *, body_overrides: dic
 def run_engine(plugin_dir: Path, *extra_args: str) -> subprocess.CompletedProcess:
     """Run twl-engine.py in the given plugin directory."""
     return subprocess.run(
-        [sys.executable, str(TWL_ENGINE)] + list(extra_args),
+        [sys.executable, "-m", "twl"] + list(extra_args),
         cwd=str(plugin_dir),
         capture_output=True,
         text=True,

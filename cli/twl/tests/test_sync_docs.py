@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tests for twl sync-docs command."""
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -8,7 +9,7 @@ from pathlib import Path
 
 import yaml
 
-TWL_ENGINE = Path(__file__).parent.parent / "twl-engine.py"
+_TWL_SRC = str(Path(__file__).resolve().parent.parent / "src")
 
 
 def make_docs(loom_root: Path):
@@ -43,12 +44,18 @@ def make_deps_yaml(target_dir: Path):
     )
 
 
-def run_sync_docs(target_dir: str, check: bool = False, engine: str = str(TWL_ENGINE)):
-    """Run twl-engine.py --sync-docs."""
-    cmd = [sys.executable, engine, "--sync-docs", target_dir]
+def run_sync_docs(target_dir: str, check: bool = False, loom_root: str = None):
+    """Run twl --sync-docs using the package.
+
+    loom_root: if provided, set TWL_LOOM_ROOT env var so sync_docs finds docs/ there.
+    """
+    cmd = [sys.executable, "-m", "twl", "--sync-docs", target_dir]
     if check:
         cmd.append("--check")
-    return subprocess.run(cmd, capture_output=True, text=True)
+    env = {**os.environ, "PYTHONPATH": _TWL_SRC}
+    if loom_root:
+        env["TWL_LOOM_ROOT"] = loom_root
+    return subprocess.run(cmd, capture_output=True, text=True, env=env)
 
 
 def test_basic_sync():
@@ -61,10 +68,7 @@ def test_basic_sync():
         target = Path(tmpdir) / "target"
         target.mkdir()
 
-        engine = loom_root / "twl-engine.py"
-        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
-
-        result = run_sync_docs(str(target), engine=str(engine))
+        result = run_sync_docs(str(target), loom_root=str(loom_root))
         assert result.returncode == 0, f"stdout={result.stdout}\nstderr={result.stderr}"
 
         # ref-*.md should be synced
@@ -91,10 +95,7 @@ def test_sync_with_deps_yaml():
         target.mkdir()
         make_deps_yaml(target)
 
-        engine = loom_root / "twl-engine.py"
-        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
-
-        result = run_sync_docs(str(target), engine=str(engine))
+        result = run_sync_docs(str(target), loom_root=str(loom_root))
         assert result.returncode == 0, f"stderr={result.stderr}"
 
         content = (target / "ref-alpha.md").read_text(encoding="utf-8")
@@ -119,14 +120,11 @@ def test_check_in_sync():
         target = Path(tmpdir) / "target"
         target.mkdir()
 
-        engine = loom_root / "twl-engine.py"
-        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
-
         # First sync
-        run_sync_docs(str(target), engine=str(engine))
+        run_sync_docs(str(target), loom_root=str(loom_root))
 
         # Then check
-        result = run_sync_docs(str(target), check=True, engine=str(engine))
+        result = run_sync_docs(str(target), check=True, loom_root=str(loom_root))
         assert result.returncode == 0
         assert "in sync" in result.stdout.lower()
 
@@ -141,17 +139,14 @@ def test_check_detects_diff():
         target = Path(tmpdir) / "target"
         target.mkdir()
 
-        engine = loom_root / "twl-engine.py"
-        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
-
         # Sync first
-        run_sync_docs(str(target), engine=str(engine))
+        run_sync_docs(str(target), loom_root=str(loom_root))
 
         # Modify target file body
         alpha = target / "ref-alpha.md"
         alpha.write_text(alpha.read_text(encoding="utf-8") + "\n# Extra section\n", encoding="utf-8")
 
-        result = run_sync_docs(str(target), check=True, engine=str(engine))
+        result = run_sync_docs(str(target), check=True, loom_root=str(loom_root))
         assert result.returncode == 1
         assert "[changed]" in result.stdout
 
@@ -166,10 +161,7 @@ def test_check_detects_missing():
         target = Path(tmpdir) / "target"
         target.mkdir()
 
-        engine = loom_root / "twl-engine.py"
-        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
-
-        result = run_sync_docs(str(target), check=True, engine=str(engine))
+        result = run_sync_docs(str(target), check=True, loom_root=str(loom_root))
         assert result.returncode == 1
         assert "[missing]" in result.stdout
 
@@ -188,10 +180,7 @@ def test_existing_files_not_overwritten():
         existing = target / "custom-ref.md"
         existing.write_text("# My custom ref\n", encoding="utf-8")
 
-        engine = loom_root / "twl-engine.py"
-        engine.write_text(TWL_ENGINE.read_text(encoding="utf-8"), encoding="utf-8")
-
-        run_sync_docs(str(target), engine=str(engine))
+        run_sync_docs(str(target), loom_root=str(loom_root))
 
         # Custom file should still exist unchanged
         assert existing.exists()
