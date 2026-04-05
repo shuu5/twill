@@ -163,7 +163,6 @@ digraph Dependencies {
     agent_worker_llm_eval_runner -> agent_worker_data_validator [style=invis, weight=10];
     agent_worker_data_validator -> agent_worker_env_validator [style=invis, weight=10];
     agent_worker_env_validator -> agent_worker_codex_reviewer [style=invis, weight=10];
-    skill_ref_specialist_output_schema -> skill_baseline_coding_style [style=invis, weight=10];
     skill_baseline_coding_style -> skill_baseline_security_checklist [style=invis, weight=10];
     skill_baseline_security_checklist -> skill_baseline_input_validation [style=invis, weight=10];
 

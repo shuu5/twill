@@ -19,6 +19,7 @@ digraph Dependencies {
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_dci [label="twl:ref-dci\n(1,211 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,570 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(1,815 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_input_validation [label="twl:baseline-input-validation\n(1,408 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -66,7 +67,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_pr_merge; }
-    { rank=same; skill_ref_specialist_output_schema; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; }
+    { rank=same; skill_ref_specialist_output_schema; skill_ref_dci; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; }
     { rank=same; cmd_pr_cycle_report; cmd_all_pass_check; cmd_e2e_screening; cmd_merge_gate; cmd_auto_merge; cmd_pr_cycle_analysis; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_architecture; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; }
     { rank=same; script_state_write; script_worktree_delete; script_tech_stack_detect; script_specialist_output_parse; script_merge_gate_execute; script_checkpoint_write; script_checkpoint_read; }
@@ -80,6 +81,7 @@ digraph Dependencies {
     skill_workflow_pr_merge -> cmd_auto_merge;
     cmd_all_pass_check -> script_state_write;
     cmd_all_pass_check -> script_checkpoint_write;
+    cmd_all_pass_check -> skill_ref_dci;
     cmd_e2e_screening -> script_checkpoint_write;
     cmd_merge_gate -> script_specialist_output_parse;
     cmd_merge_gate -> script_tech_stack_detect;
@@ -107,6 +109,7 @@ digraph Dependencies {
     cmd_merge_gate -> agent_worker_codex_reviewer [style=dashed];
     cmd_merge_gate -> agent_worker_architecture [style=dashed];
     cmd_merge_gate -> skill_ref_specialist_output_schema;
+    cmd_merge_gate -> skill_ref_dci;
     cmd_merge_gate -> skill_baseline_coding_style;
     cmd_merge_gate -> skill_baseline_security_checklist;
     cmd_merge_gate -> skill_baseline_input_validation;
@@ -136,6 +139,7 @@ digraph Dependencies {
     cmd_all_pass_check -> cmd_merge_gate [style=invis, weight=10];
     cmd_merge_gate -> cmd_auto_merge [style=invis, weight=10];
     script_state_write -> script_checkpoint_write [style=invis, weight=10];
+    script_checkpoint_write -> skill_ref_dci [style=invis, weight=10];
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
     agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
@@ -190,7 +194,8 @@ digraph Dependencies {
     agent_worker_env_validator -> agent_worker_codex_reviewer [style=invis, weight=10];
     agent_worker_codex_reviewer -> agent_worker_architecture [style=invis, weight=10];
     agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
-    skill_ref_specialist_output_schema -> skill_baseline_coding_style [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_ref_dci [style=invis, weight=10];
+    skill_ref_dci -> skill_baseline_coding_style [style=invis, weight=10];
     skill_baseline_coding_style -> skill_baseline_security_checklist [style=invis, weight=10];
     skill_baseline_security_checklist -> skill_baseline_input_validation [style=invis, weight=10];
 
