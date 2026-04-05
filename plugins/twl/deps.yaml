@@ -698,8 +698,6 @@ commands:
     path: commands/project-create.md
     spawnable_by: [controller]
     can_spawn: []
-    calls:
-      - script: project-create
     description: "プロジェクト新規作成（bare repo + worktree + テンプレート + OpenSpec）"
 
   project-board-configure:
@@ -721,8 +719,6 @@ commands:
     path: commands/project-migrate.md
     spawnable_by: [controller]
     can_spawn: []
-    calls:
-      - script: project-migrate
     description: "既存プロジェクトの最新テンプレート移行"
 
   container-dependency-check:
