@@ -1,5 +1,5 @@
 ---
-name: dev:worker-env-validator
+name: twl:worker-env-validator
 description: |
   環境変数の整合性検証（specialist）。
   コード中の環境変数参照と .env.example の突合、secrets漏洩チェックを実行。

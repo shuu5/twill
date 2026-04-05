@@ -1,5 +1,5 @@
 ---
-name: dev:worker-r-reviewer
+name: twl:worker-r-reviewer
 description: |
   Rコード（.R, .Rmd, .qmd）のレビュー（specialist）。
   tidyverse規約、統計的正確性、再現性を確認。

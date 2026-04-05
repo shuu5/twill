@@ -347,7 +347,7 @@ sys.exit(0)
 }
 run_test "frontmatter [edge: tools リストに Task が含まれない]" test_frontmatter_no_task_tool
 
-# Edge case: name フィールドが dev:worker-codex-reviewer 形式
+# Edge case: name フィールドが twl:worker-codex-reviewer 形式
 test_frontmatter_name_format() {
   assert_file_exists "$AGENT_FILE" || return 1
   assert_file_contains "$AGENT_FILE" "name:.*worker-codex-reviewer"
@@ -363,7 +363,7 @@ echo "--- Requirement: co-issue Phase 3b に worker-codex-reviewer を追加 ---
 # Scenario: Phase 3b 並列 spawn (spec line 33)
 # WHEN: co-issue Phase 3b が実行される
 # THEN: issue-critic, issue-feasibility と並列で
-#       Agent(subagent_type="dev:dev:worker-codex-reviewer", ...) が spawn される
+#       Agent(subagent_type="twl:twl:worker-codex-reviewer", ...) が spawn される
 
 test_skill_phase3b_codex_spawn() {
   assert_file_exists "$SKILL_MD" || return 1
@@ -380,8 +380,8 @@ run_test "Phase 3b 並列 spawn - Agent tool で worker-codex-reviewer を spawn
 
 test_skill_phase3b_subagent_type() {
   assert_file_exists "$SKILL_MD" || return 1
-  # spawn with dev:dev:worker-codex-reviewer subagent_type
-  assert_file_contains "$SKILL_MD" "dev:dev:worker-codex-reviewer|dev:worker-codex-reviewer"
+  # spawn with twl:twl:worker-codex-reviewer subagent_type
+  assert_file_contains "$SKILL_MD" "twl:twl:worker-codex-reviewer|twl:worker-codex-reviewer"
 }
 run_test "Phase 3b 並列 spawn - subagent_type に worker-codex-reviewer が設定されている" test_skill_phase3b_subagent_type
 

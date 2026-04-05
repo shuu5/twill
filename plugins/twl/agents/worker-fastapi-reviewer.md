@@ -1,5 +1,5 @@
 ---
-name: dev:worker-fastapi-reviewer
+name: twl:worker-fastapi-reviewer
 description: |
   FastAPI + Pydantic v2のコードレビュー（specialist）。
   非同期設計、依存性注入、型ヒントを検証。

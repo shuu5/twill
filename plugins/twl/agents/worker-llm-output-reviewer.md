@@ -1,5 +1,5 @@
 ---
-name: dev:worker-llm-output-reviewer
+name: twl:worker-llm-output-reviewer
 description: |
   LLM出力品質レビュー（specialist）。
   PR diffの静的分析により、プロンプト変更の意図との整合性を評価。

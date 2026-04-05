@@ -1,5 +1,5 @@
 ---
-name: dev:worker-e2e-reviewer
+name: twl:worker-e2e-reviewer
 description: |
   Playwright E2Eテストのレビュー（specialist）。
   テスト安定性、セレクタ品質、認証フロー、偽陽性リスクを検証。

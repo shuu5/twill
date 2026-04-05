@@ -1,5 +1,5 @@
 ---
-name: dev:self-improve-format
+name: twl:self-improve-format
 description: |
   self-improve Issue 共通フォーマット定義。
   全ソース（pr-cycle-analysis, merge-gate, retrospective, session-audit）で統一して使用。

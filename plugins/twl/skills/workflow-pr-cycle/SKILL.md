@@ -1,5 +1,5 @@
 ---
-name: dev:workflow-pr-cycle
+name: twl:workflow-pr-cycle
 description: |
   PRサイクル（verify → review → test → fix → visual → report → merge）。
   pr-cycle chain のオーケストレーター。

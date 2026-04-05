@@ -1,5 +1,5 @@
 ---
-name: dev:worker-codex-reviewer
+name: twl:worker-codex-reviewer
 description: |
   Codex CLI による補完的レビュー（Issue/PR 両対応）。
   issue-critic / issue-feasibility と並列 spawn され、異なるモデル視点で検証する。

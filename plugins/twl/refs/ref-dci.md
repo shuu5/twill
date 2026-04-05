@@ -1,5 +1,5 @@
 ---
-name: dev:ref-dci
+name: twl:ref-dci
 description: |
   DCI（Dynamic Context Injection）共通パターン。
   サブコマンドの frontmatter 直後に自動注入される変数定義とフォールバック設計。
@@ -46,7 +46,7 @@ frontmatter 直後、本文の前に配置する:
 
 ```markdown
 ---
-name: dev:example-command
+name: twl:example-command
 type: atomic
 allowed-tools: Bash, Read, Write
 ---

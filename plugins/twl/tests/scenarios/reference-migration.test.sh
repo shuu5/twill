@@ -273,13 +273,13 @@ echo "--- Requirement: プラグイン固有 reference の移植 ---"
 
 # Scenario: プラグイン固有 reference の作成 (line 20)
 # WHEN: ref-dci を移植する
-# THEN: refs/ref-dci.md が作成され、frontmatter に name: dev:ref-dci, type: reference が宣言されている
+# THEN: refs/ref-dci.md が作成され、frontmatter に name: twl:ref-dci, type: reference が宣言されている
 test_ref_dci_frontmatter() {
   assert_file_exists "refs/ref-dci.md" || return 1
-  assert_file_contains "refs/ref-dci.md" "^name:\s*dev:ref-dci" || return 1
+  assert_file_contains "refs/ref-dci.md" "^name:\s*twl:ref-dci" || return 1
   assert_file_contains "refs/ref-dci.md" "^type:\s*reference"
 }
-run_test "ref-dci.md に name: dev:ref-dci と type: reference" test_ref_dci_frontmatter
+run_test "ref-dci.md に name: twl:ref-dci と type: reference" test_ref_dci_frontmatter
 
 # 全 plugin-specific refs が存在
 test_all_plugin_refs_exist() {

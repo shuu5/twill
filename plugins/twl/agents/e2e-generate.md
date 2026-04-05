@@ -1,5 +1,5 @@
 ---
-name: dev:e2e-generate
+name: twl:e2e-generate
 description: ScenarioからE2Eテスト生成（mock/deployモード対応、検証パターン強制適用）
 type: specialist
 model: sonnet

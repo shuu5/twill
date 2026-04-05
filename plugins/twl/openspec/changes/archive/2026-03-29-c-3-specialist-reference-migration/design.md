@@ -30,7 +30,7 @@ loom-plugin-dev は chain-driven + autopilot-first アーキテクチャで旧 d
 
 ```yaml
 ---
-name: dev:<specialist-name>
+name: twl:<specialist-name>
 description: "<1行説明>（specialist）"
 type: specialist
 model: haiku | sonnet  # D-2 で決定

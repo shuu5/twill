@@ -1,5 +1,5 @@
 ---
-name: dev:ref-issue-quality-criteria
+name: twl:ref-issue-quality-criteria
 description: |
   Issue 品質レビュー specialist（issue-critic, issue-feasibility）が使用する品質基準。
   severity 判定基準、category 定義、過剰 CRITICAL 防止ルールを定義。

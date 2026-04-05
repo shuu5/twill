@@ -1,5 +1,5 @@
 ---
-name: dev:workflow-setup
+name: twl:workflow-setup
 description: |
   開発準備ワークフロー（worktree作成 → OpenSpec → テスト準備）。
   setup chain のオーケストレーター。

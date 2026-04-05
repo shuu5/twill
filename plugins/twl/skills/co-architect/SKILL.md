@@ -1,5 +1,5 @@
 ---
-name: dev:co-architect
+name: twl:co-architect
 description: |
   対話的アーキテクチャ構築ワークフロー。
   explore を活用し architecture/ に設計意図を段階的にキャプチャ。

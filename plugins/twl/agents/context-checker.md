@@ -1,5 +1,5 @@
 ---
-name: dev:context-checker
+name: twl:context-checker
 description: Issueプロジェクトコンテキストチェック（重複・粒度・関係性・tech-debt棚卸し）。findings を返す。
 type: specialist
 model: haiku

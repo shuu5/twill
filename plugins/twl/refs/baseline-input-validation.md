@@ -1,5 +1,5 @@
 ---
-name: dev:baseline-input-validation
+name: twl:baseline-input-validation
 description: |
   入力検証パターン。バリデーション設計原則とZod/Pydanticの推奨パターン。
 type: reference

@@ -1,5 +1,5 @@
 ---
-name: dev:self-improve-review
+name: twl:self-improve-review
 description: セッション中のBashエラーをレビューし、問題をIssue化候補として構造化
 type: atomic
 ---

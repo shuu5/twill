@@ -1,5 +1,5 @@
 ---
-name: dev:workflow-dead-cleanup
+name: twl:workflow-dead-cleanup
 description: |
   不要コンポーネントの検出と削除。
 

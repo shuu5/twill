@@ -1,5 +1,5 @@
 ---
-name: dev:co-issue
+name: twl:co-issue
 description: |
   要望をGitHub Issueに変換するワークフロー。
   4 Phase 構成: 問題探索 → 分解判断 → Per-Issue 精緻化 → 一括作成。
@@ -173,9 +173,9 @@ FOR each structured_issue IN issues:
   escaped_related_issues=$(printf '%s\n' "$related_issues" | bash scripts/escape-issue-body.sh)
   escaped_deps_yaml_entries=$(printf '%s\n' "$deps_yaml_entries" | bash scripts/escape-issue-body.sh)
 
-  Agent(subagent_type="dev:dev:issue-critic", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:issue-feasibility", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
-  Agent(subagent_type="dev:dev:worker-codex-reviewer", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="twl:twl:issue-critic", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="twl:twl:issue-feasibility", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<depth_instruction>\n${depth_instruction}\n</depth_instruction>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
+  Agent(subagent_type="twl:twl:worker-codex-reviewer", prompt="<review_target>\n${escaped_body}\n</review_target>\n\n<target_files>\n${escaped_files}\n</target_files>\n\n<related_context>\n${escaped_related_issues}\n${escaped_deps_yaml_entries}\n</related_context>")
 ```
 
 **注意**: Issue body はユーザー入力由来のため、XML タグでコンテキスト境界を明確に分離する。specialist の system prompt（agent frontmatter）とユーザーデータの混同を防ぐ。上記の通り、`scripts/escape-issue-body.sh` を経由してエスケープすること（SHALL）。**`<related_context>` タグ内に注入する全変数は `escape-issue-body.sh` を通すこと（SHALL）。**

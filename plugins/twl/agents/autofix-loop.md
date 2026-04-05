@@ -1,5 +1,5 @@
 ---
-name: dev:autofix-loop
+name: twl:autofix-loop
 description: |
   Ralph Loopパターンに基づく自動修正ループ。
   サーキットブレーカーで無限ループを防止。

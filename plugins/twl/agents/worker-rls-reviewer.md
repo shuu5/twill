@@ -1,5 +1,5 @@
 ---
-name: dev:worker-rls-reviewer
+name: twl:worker-rls-reviewer
 description: |
   Supabase RLSポリシーの論理的正確性とセキュリティ準拠をレビュー（specialist）。
   RLS有効化漏れ、ポリシーCRUD粒度、auth.uid() SELECTラップ、USING/WITH CHECK式の正確性を検証。

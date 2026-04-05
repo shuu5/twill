@@ -1,5 +1,5 @@
 ---
-name: dev:e2e-visual-heal
+name: twl:e2e-visual-heal
 description: Visual検証失敗の分析・修復
 type: specialist
 model: sonnet

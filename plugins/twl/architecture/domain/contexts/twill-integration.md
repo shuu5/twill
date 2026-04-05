@@ -120,14 +120,14 @@ flowchart TD
 |---|---|---|
 | `twl validate` | PostToolUse hook, merge-gate | Edit/Write 後の自動検証、PR レビュー時 |
 | `twl deep-validate` | worker-structure (specialist) | merge-gate 内の詳細検証 |
-| `twl check` | PostToolUse hook, dev:check | セッション開始時、PR 準備確認 |
+| `twl check` | PostToolUse hook, twl:check | セッション開始時、PR 準備確認 |
 | `twl audit` | worker-structure (specialist) | PR レビュー時の構造監査 |
 | `twl chain generate --write` | workflow-setup | chain 定義ファイル初期生成 |
 | `twl chain generate --check` | PostToolUse hook | deps.yaml 変更時の乖離検出 |
-| `twl chain validate` | dev:twl-validate | chain 整合性検証 |
+| `twl chain validate` | twl:twl-validate | chain 整合性検証 |
 | `twl rename` | co-project (migrate) | co-* naming 保守 |
 | `twl promote` | (手動) | 型昇格/降格 |
-| `twl graph` / `update-readme` | dev:plugin-verify | README SVG 埋め込み更新 |
+| `twl graph` / `update-readme` | twl:plugin-verify | README SVG 埋め込み更新 |
 | `twl tree` | (開発時参照) | 構造確認 |
 | `twl orphans` | dead-component-detect | Dead component 検出 |
 | `twl complexity` | dead-component-detect | fan-out/fan-in 監視 |

@@ -73,7 +73,7 @@ fi
 
 ```
 各 specialist について:
-  Task(subagent_type="dev:<specialist-name>", prompt="PR diff を入力としてレビューを実行")
+  Task(subagent_type="twl:<specialist-name>", prompt="PR diff を入力としてレビューを実行")
 ```
 
 各 specialist は共通出力スキーマ（ref-specialist-output-schema）に準拠した結果を返す。

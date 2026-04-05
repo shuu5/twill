@@ -32,7 +32,7 @@ agent の frontmatter は以下の仕様に準拠しなければならない（S
 
 #### Scenario: Phase 3b 並列 spawn
 - **WHEN** co-issue Phase 3b が実行される
-- **THEN** issue-critic, issue-feasibility と並列で `Agent(subagent_type="dev:dev:worker-codex-reviewer", ...)` が spawn される
+- **THEN** issue-critic, issue-feasibility と並列で `Agent(subagent_type="twl:twl:worker-codex-reviewer", ...)` が spawn される
 
 #### Scenario: findings テーブル統合
 - **WHEN** worker-codex-reviewer が findings を返す

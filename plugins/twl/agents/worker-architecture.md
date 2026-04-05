@@ -1,5 +1,5 @@
 ---
-name: dev:worker-architecture
+name: twl:worker-architecture
 description: "アーキテクチャパターン検証specialist: パターンの適用状態を評価"
 type: specialist
 model: sonnet

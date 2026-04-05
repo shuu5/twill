@@ -32,7 +32,7 @@ harness_score=0
 code_score=0
 
 # Pattern 1: Skill/Command実行エラー
-if echo "$ERROR_TEXT" | grep -qiE 'SKILL\.md|skill.*parse|command not found.*skill|skill.*not found|command.*not found.*dev:'; then
+if echo "$ERROR_TEXT" | grep -qiE 'SKILL\.md|skill.*parse|command not found.*skill|skill.*not found|command.*not found.*(dev|twl):'; then
     harness_score=$((harness_score + 25))
     EVIDENCE+=("Skill/Command実行エラーを検出")
     # コンポーネント特定: SKILL.mdのパスを抽出

@@ -1,5 +1,5 @@
 ---
-name: dev:issue-feasibility
+name: twl:issue-feasibility
 description: |
   実コード読みで Issue の実装可能性・影響範囲を検証する specialist。
   コンテキスト非継承で spawn され、コードベースと Issue body の乖離を検出する。

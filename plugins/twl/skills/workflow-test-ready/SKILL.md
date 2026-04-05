@@ -1,5 +1,5 @@
 ---
-name: dev:workflow-test-ready
+name: twl:workflow-test-ready
 description: |
   テスト生成と準備確認を実行する。workflow-setup の後に呼び出す。
 

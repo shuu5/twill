@@ -1,5 +1,5 @@
 ---
-name: dev:co-autopilot
+name: twl:co-autopilot
 description: |
   依存グラフに基づくIssue群一括自律実装オーケストレーター。
   Pilot セッションが tmux window 作成・cld 起動・Phase 管理・merge-gate を統括。

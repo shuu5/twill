@@ -1,5 +1,5 @@
 ---
-name: dev:baseline-coding-style
+name: twl:baseline-coding-style
 description: |
   コーディング基準。BAD/GOODコード対比パターン、ファイルサイズ制限、品質チェックリスト。
 type: reference

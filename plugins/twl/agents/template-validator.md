@@ -1,5 +1,5 @@
 ---
-name: dev:template-validator
+name: twl:template-validator
 description: Issueテンプレート準拠バリデーター。テンプレートフィールドの完備性と形式をチェック。
 type: specialist
 model: haiku

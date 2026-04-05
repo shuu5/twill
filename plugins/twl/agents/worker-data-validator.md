@@ -1,5 +1,5 @@
 ---
-name: dev:worker-data-validator
+name: twl:worker-data-validator
 description: |
   オミクスデータファイルの検証（specialist）。
   形式、欠損値、外れ値、メタデータの整合性を確認。

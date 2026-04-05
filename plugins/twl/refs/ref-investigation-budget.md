@@ -1,5 +1,5 @@
 ---
-name: dev:ref-investigation-budget
+name: twl:ref-investigation-budget
 description: |
   Issue 品質レビュー specialist（issue-critic, issue-feasibility）が使用する調査バジェット制御ルール。
   maxTurns 制限下での調査深度制御と出力優先ルールを定義。

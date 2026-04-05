@@ -1,5 +1,5 @@
 ---
-name: dev:issue-critic
+name: twl:issue-critic
 description: |
   Issue の仮定・曖昧点・盲点・粒度・split・隠れた依存を検出する specialist。
   コンテキスト非継承で spawn され、Issue body のみから独立してレビューする。

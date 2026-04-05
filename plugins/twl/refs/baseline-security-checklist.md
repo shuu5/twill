@@ -1,5 +1,5 @@
 ---
-name: dev:baseline-security-checklist
+name: twl:baseline-security-checklist
 description: |
   セキュリティチェックリスト。OWASP Top 10パターンテーブル、言語別脆弱性パターン、False Positiveリスト。
 type: reference

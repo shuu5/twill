@@ -36,4 +36,4 @@ specialist は Task tool で呼び出さなければならない（MUST）。Ski
 
 #### Scenario: E2E 品質ゲートの Task 呼び出し
 - **WHEN** E2E テストを含むテスト実行が必要
-- **THEN** `Task(subagent_type="dev:e2e-quality")` で E2E 品質ゲートを実行する
+- **THEN** `Task(subagent_type="twl:e2e-quality")` で E2E 品質ゲートを実行する

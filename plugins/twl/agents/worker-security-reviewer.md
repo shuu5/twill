@@ -1,5 +1,5 @@
 ---
-name: dev:worker-security-reviewer
+name: twl:worker-security-reviewer
 description: |
   セキュリティ脆弱性検出（specialist）。
   OWASP Top 10、認証/認可、データ検証を確認。

@@ -9,7 +9,7 @@
 
 ## 2. co-issue Phase 3b 修正
 
-- [x] 2.1 `skills/co-issue/SKILL.md` Phase 3b の spawn ブロックに `Agent(subagent_type="dev:dev:worker-codex-reviewer", ...)` を追加（既存 issue-critic/issue-feasibility と同形式）
+- [x] 2.1 `skills/co-issue/SKILL.md` Phase 3b の spawn ブロックに `Agent(subagent_type="twl:twl:worker-codex-reviewer", ...)` を追加（既存 issue-critic/issue-feasibility と同形式）
 - [x] 2.2 Step 3c の結果集約テーブルに worker-codex-reviewer 行を追加
 
 ## 3. deps.yaml 更新

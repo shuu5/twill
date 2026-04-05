@@ -1,5 +1,5 @@
 ---
-name: dev:ref-project-model
+name: twl:ref-project-model
 description: |
   Issue 管理データモデル。5軸ラベル体系（What/Where/Maturity/When/Progress）、
   ctx/* 導出ルール、Producer/Consumer 表を定義。

@@ -102,7 +102,7 @@ main/
 
 ```markdown
 ---
-name: dev:co-autopilot
+name: twl:co-autopilot
 description: ...
 type: controller
 spawnable_by: [user]

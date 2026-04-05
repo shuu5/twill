@@ -1,5 +1,5 @@
 ---
-name: dev:worker-hono-reviewer
+name: twl:worker-hono-reviewer
 description: |
   Hono + Zod + monorepo整合性レビュー（specialist）。
   Zodスキーマ一貫性、OpenAPI同期、@hono/zod-openapiルート定義を検証。

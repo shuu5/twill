@@ -1,5 +1,5 @@
 ---
-name: dev:ref-deps-format
+name: twl:ref-deps-format
 description: AT対応deps.yaml形式仕様
 type: reference
 spawnable_by:

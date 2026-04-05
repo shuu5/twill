@@ -1,5 +1,5 @@
 ---
-name: dev:co-project
+name: twl:co-project
 description: |
   プロジェクト管理（create / migrate / snapshot）。
   旧 controller-project, controller-project-migrate, controller-project-snapshot,

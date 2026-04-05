@@ -1,5 +1,5 @@
 ---
-name: dev:worker-structure
+name: twl:worker-structure
 description: "構造検証specialist: twl実行 + frontmatter整合性チェック"
 type: specialist
 model: haiku

@@ -1,5 +1,5 @@
 ---
-name: dev:worker-supabase-migration-checker
+name: twl:worker-supabase-migration-checker
 description: |
   Supabase DBマイグレーションSQL品質レビュー（specialist）。
   SQL構文、Zodスキーマ↔DBカラム型対応、FK制約整合性、インデックスカバレッジを検証。

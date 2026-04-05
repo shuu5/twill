@@ -1,5 +1,5 @@
 ---
-name: dev:worker-principles
+name: twl:worker-principles
 description: "5原則+controller品質検証specialist: workerプロンプト品質+controller責務チェック"
 type: specialist
 model: haiku

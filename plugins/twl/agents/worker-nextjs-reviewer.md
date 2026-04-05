@@ -1,5 +1,5 @@
 ---
-name: dev:worker-nextjs-reviewer
+name: twl:worker-nextjs-reviewer
 description: |
   Next.js 15 + React 19のコードレビュー（specialist）。
   Server/Client Components、型安全性、パフォーマンスを検証。

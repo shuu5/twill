@@ -1,5 +1,5 @@
 ---
-name: dev:ref-architecture-spec
+name: twl:ref-architecture-spec
 description: |
   Architecture Spec ディレクトリ構造仕様。
   プロジェクトレベルの設計意図を構造化するための各ファイルの役割・フォーマット・テンプレートを定義。

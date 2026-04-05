@@ -267,7 +267,7 @@ test_all_specialists_type_exact() {
 }
 run_test "全 specialist の type が正確に 'specialist' [edge: 大文字・余分な文字なし]" test_all_specialists_type_exact
 
-# Edge case: name フィールドが dev:<specialist-name> 形式
+# Edge case: name フィールドが twl:<specialist-name> 形式
 test_all_specialists_name_format() {
   local failed=()
   for name in "${ALL_SPECIALISTS[@]}"; do
@@ -276,8 +276,8 @@ test_all_specialists_name_format() {
       failed+=("${name}: file not found")
       continue
     fi
-    if ! grep -qP "^name:\s*dev:${name}\s*$" "${PROJECT_ROOT}/${file}"; then
-      failed+=("${name}: name is not 'dev:${name}'")
+    if ! grep -qP "^name:\s*twl:${name}\s*$" "${PROJECT_ROOT}/${file}"; then
+      failed+=("${name}: name is not 'twl:${name}'")
     fi
   done
   if [[ ${#failed[@]} -gt 0 ]]; then
@@ -288,7 +288,7 @@ test_all_specialists_name_format() {
   fi
   return 0
 }
-run_test "全 specialist の name が dev:<name> 形式 [edge: 名前一致]" test_all_specialists_name_format
+run_test "全 specialist の name が twl:<name> 形式 [edge: 名前一致]" test_all_specialists_name_format
 
 # --- モデル割り当て検証 ---
 

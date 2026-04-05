@@ -1,5 +1,5 @@
 ---
-name: dev:worker-llm-eval-runner
+name: twl:worker-llm-eval-runner
 description: |
   LLM_CRITERIAベースの品質評価（specialist）。
   コードベースとPR diffの静的分析により、LLM_CRITERIAの各基準を個別評価。

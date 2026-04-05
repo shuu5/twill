@@ -1,5 +1,5 @@
 ---
-name: dev:ref-practices
+name: twl:ref-practices
 description: 5原則+ライフサイクル+チェックポイント+パターン選択ガイド
 type: reference
 spawnable_by:

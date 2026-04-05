@@ -57,7 +57,7 @@ fi
 
 ```
 各 specialist について:
-  Task(subagent_type="dev:<specialist-name>", prompt="...")
+  Task(subagent_type="twl:<specialist-name>", prompt="...")
 ```
 
 ### 結果集約

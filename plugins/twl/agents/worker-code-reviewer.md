@@ -1,5 +1,5 @@
 ---
-name: dev:worker-code-reviewer
+name: twl:worker-code-reviewer
 description: |
   コード品質レビュー（specialist）。
   コーディング規約、可読性、バグパターンを検出。

@@ -1,5 +1,5 @@
 ---
-name: dev:worker-spec-reviewer
+name: twl:worker-spec-reviewer
 description: |
   OpenSpec Scenarioの品質レビュー（specialist）。
   WHEN/THEN形式、網羅性、矛盾を検出。

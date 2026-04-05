@@ -1,5 +1,5 @@
 ---
-name: dev:e2e-heal
+name: twl:e2e-heal
 description: 失敗E2Eテストの分析・修復
 type: specialist
 model: sonnet

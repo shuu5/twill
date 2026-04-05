@@ -1,5 +1,5 @@
 ---
-name: dev:docs-researcher
+name: twl:docs-researcher
 description: "Claude Code関連ドキュメントの動的取得専門エージェント"
 type: specialist
 model: sonnet

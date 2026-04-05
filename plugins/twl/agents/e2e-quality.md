@@ -1,5 +1,5 @@
 ---
-name: dev:e2e-quality
+name: twl:e2e-quality
 description: E2Eテストの偽陽性リスクを検出する品質ゲート
 type: specialist
 model: sonnet

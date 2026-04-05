@@ -1,5 +1,5 @@
 ---
-name: dev:ref-architecture
+name: twl:ref-architecture
 description: アーキテクチャパターン評価チェックリスト
 type: reference
 spawnable_by:

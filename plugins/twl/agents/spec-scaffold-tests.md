@@ -1,5 +1,5 @@
 ---
-name: dev:spec-scaffold-tests
+name: twl:spec-scaffold-tests
 description: OpenSpec ScenarioからBDDテストを自動生成（Unit/Integration）
 type: specialist
 model: sonnet

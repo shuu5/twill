@@ -1,5 +1,5 @@
 ---
-name: dev:ref-types
+name: twl:ref-types
 description: 型システム仕様
 type: reference
 spawnable_by:

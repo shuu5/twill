@@ -1,5 +1,5 @@
 ---
-name: dev:workflow-tech-debt-triage
+name: twl:workflow-tech-debt-triage
 description: |
   tech-debt Issue の全件棚卸しワークフロー。
 
