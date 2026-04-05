@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Document Verification Tests: pr-cycle-chain.md
-# Generated from: openspec/changes/b-5-pr-cycle-merge-gate-chain-driven/specs/pr-cycle-chain.md
-# Coverage level: edge-cases
+# Document Verification Tests: pr-cycle chain 分割（pr-verify, pr-fix, pr-merge）
+# Issue #10: workflow-pr-cycle を 3 workflow に分割
 # =============================================================================
 set -uo pipefail
 
@@ -26,17 +25,6 @@ assert_file_contains() {
   local file="$1"
   local pattern="$2"
   [[ -f "${PROJECT_ROOT}/${file}" ]] && grep -qiP "$pattern" "${PROJECT_ROOT}/${file}"
-}
-
-assert_file_contains_all() {
-  local file="$1"
-  shift
-  local patterns=("$@")
-  [[ -f "${PROJECT_ROOT}/${file}" ]] || return 1
-  for pattern in "${patterns[@]}"; do
-    grep -qiP "$pattern" "${PROJECT_ROOT}/${file}" || return 1
-  done
-  return 0
 }
 
 assert_file_not_contains() {
@@ -95,160 +83,343 @@ run_test_skip() {
 DEPS_YAML="deps.yaml"
 
 # =============================================================================
-# Requirement: pr-cycle chain 定義
+# Requirement: pr-verify chain 定義
 # =============================================================================
 echo ""
-echo "--- Requirement: pr-cycle chain 定義 ---"
+echo "--- Requirement: pr-verify chain 定義 ---"
 
-# Scenario: chain 定義の完全性 (line 7)
-# WHEN: deps.yaml に pr-cycle chain が定義される
-# THEN: chains セクションに type: "A" と steps リストが含まれる
-# AND: 全ステップのコンポーネントが deps.yaml の commands/skills セクションに存在する
-test_pr_cycle_chain_exists() {
-  assert_file_exists "$DEPS_YAML" || return 1
-  assert_valid_yaml "$DEPS_YAML" || return 1
+test_pr_verify_chain_exists() {
   yaml_get "$DEPS_YAML" "
 chains = data.get('chains', {})
-if 'pr-cycle' not in chains:
-    print('pr-cycle chain not found in chains', file=sys.stderr)
+if 'pr-verify' not in chains:
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "chains セクションに pr-cycle エントリが存在する" test_pr_cycle_chain_exists
+run_test "chains セクションに pr-verify エントリが存在する" test_pr_verify_chain_exists
 
-test_pr_cycle_chain_type_b() {
-  assert_file_exists "$DEPS_YAML" || return 1
+test_pr_verify_chain_type_b() {
   yaml_get "$DEPS_YAML" "
 chains = data.get('chains', {})
-pr_cycle = chains.get('pr-cycle', {})
-if str(pr_cycle.get('type')) != 'B':
-    print(f'type={pr_cycle.get(\"type\")} (expected B)', file=sys.stderr)
+pr = chains.get('pr-verify', {})
+if str(pr.get('type')) != 'B':
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "pr-cycle chain の type が B" test_pr_cycle_chain_type_b
+run_test "pr-verify chain の type が B" test_pr_verify_chain_type_b
 
-test_pr_cycle_chain_has_steps() {
-  assert_file_exists "$DEPS_YAML" || return 1
+test_pr_verify_steps() {
   yaml_get "$DEPS_YAML" "
 chains = data.get('chains', {})
-pr_cycle = chains.get('pr-cycle', {})
-steps = pr_cycle.get('steps', [])
-if not steps or len(steps) == 0:
-    print('pr-cycle chain has no steps', file=sys.stderr)
+steps = chains.get('pr-verify', {}).get('steps', [])
+expected = ['ts-preflight', 'phase-review', 'scope-judge', 'pr-test']
+if steps != expected:
+    print(f'got={steps}, expected={expected}', file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "pr-cycle chain に steps リストが存在する" test_pr_cycle_chain_has_steps
+run_test "pr-verify chain のステップが正しい" test_pr_verify_steps
 
-test_pr_cycle_all_steps_registered() {
-  assert_file_exists "$DEPS_YAML" || return 1
+# =============================================================================
+# Requirement: pr-fix chain 定義
+# =============================================================================
+echo ""
+echo "--- Requirement: pr-fix chain 定義 ---"
+
+test_pr_fix_chain_exists() {
   yaml_get "$DEPS_YAML" "
 chains = data.get('chains', {})
-pr_cycle = chains.get('pr-cycle', {})
-steps_raw = pr_cycle.get('steps', [])
+if 'pr-fix' not in chains:
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "chains セクションに pr-fix エントリが存在する" test_pr_fix_chain_exists
 
-step_names = []
-for s in steps_raw:
-    if isinstance(s, str):
-        step_names.append(s)
-    elif isinstance(s, dict):
-        name = s.get('name') or s.get('component') or s.get('step') or ''
-        step_names.append(name)
+test_pr_fix_chain_type_b() {
+  yaml_get "$DEPS_YAML" "
+chains = data.get('chains', {})
+pr = chains.get('pr-fix', {})
+if str(pr.get('type')) != 'B':
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "pr-fix chain の type が B" test_pr_fix_chain_type_b
 
+test_pr_fix_steps() {
+  yaml_get "$DEPS_YAML" "
+chains = data.get('chains', {})
+steps = chains.get('pr-fix', {}).get('steps', [])
+expected = ['fix-phase', 'post-fix-verify', 'warning-fix']
+if steps != expected:
+    print(f'got={steps}, expected={expected}', file=sys.stderr)
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "pr-fix chain のステップが正しい" test_pr_fix_steps
+
+# =============================================================================
+# Requirement: pr-merge chain 定義
+# =============================================================================
+echo ""
+echo "--- Requirement: pr-merge chain 定義 ---"
+
+test_pr_merge_chain_exists() {
+  yaml_get "$DEPS_YAML" "
+chains = data.get('chains', {})
+if 'pr-merge' not in chains:
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "chains セクションに pr-merge エントリが存在する" test_pr_merge_chain_exists
+
+test_pr_merge_chain_type_b() {
+  yaml_get "$DEPS_YAML" "
+chains = data.get('chains', {})
+pr = chains.get('pr-merge', {})
+if str(pr.get('type')) != 'B':
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "pr-merge chain の type が B" test_pr_merge_chain_type_b
+
+test_pr_merge_steps() {
+  yaml_get "$DEPS_YAML" "
+chains = data.get('chains', {})
+steps = chains.get('pr-merge', {}).get('steps', [])
+expected = ['e2e-screening', 'pr-cycle-report', 'pr-cycle-analysis', 'all-pass-check', 'merge-gate', 'auto-merge']
+if steps != expected:
+    print(f'got={steps}, expected={expected}', file=sys.stderr)
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "pr-merge chain のステップが正しい" test_pr_merge_steps
+
+# =============================================================================
+# Requirement: 旧 pr-cycle chain が削除されている
+# =============================================================================
+echo ""
+echo "--- Requirement: 旧 pr-cycle chain 削除 ---"
+
+test_old_pr_cycle_chain_removed() {
+  yaml_get "$DEPS_YAML" "
+chains = data.get('chains', {})
+if 'pr-cycle' in chains:
+    print('pr-cycle chain still exists', file=sys.stderr)
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "旧 pr-cycle chain が chains セクションから削除されている" test_old_pr_cycle_chain_removed
+
+# =============================================================================
+# Requirement: 新 workflow SKILL.md の存在
+# =============================================================================
+echo ""
+echo "--- Requirement: 新 workflow SKILL.md ---"
+
+test_workflow_pr_verify_exists() {
+  assert_file_exists "skills/workflow-pr-verify/SKILL.md"
+}
+run_test "workflow-pr-verify/SKILL.md が存在する" test_workflow_pr_verify_exists
+
+test_workflow_pr_fix_exists() {
+  assert_file_exists "skills/workflow-pr-fix/SKILL.md"
+}
+run_test "workflow-pr-fix/SKILL.md が存在する" test_workflow_pr_fix_exists
+
+test_workflow_pr_merge_exists() {
+  assert_file_exists "skills/workflow-pr-merge/SKILL.md"
+}
+run_test "workflow-pr-merge/SKILL.md が存在する" test_workflow_pr_merge_exists
+
+# =============================================================================
+# Requirement: 各 workflow の chain 実行指示
+# =============================================================================
+echo ""
+echo "--- Requirement: chain 実行指示 ---"
+
+test_verify_has_chain_instructions() {
+  assert_file_contains "skills/workflow-pr-verify/SKILL.md" 'chain 実行指示（MUST'
+}
+run_test "workflow-pr-verify に chain 実行指示がある" test_verify_has_chain_instructions
+
+test_fix_has_chain_instructions() {
+  assert_file_contains "skills/workflow-pr-fix/SKILL.md" 'chain 実行指示（MUST'
+}
+run_test "workflow-pr-fix に chain 実行指示がある" test_fix_has_chain_instructions
+
+test_merge_has_chain_instructions() {
+  assert_file_contains "skills/workflow-pr-merge/SKILL.md" 'chain 実行指示（MUST'
+}
+run_test "workflow-pr-merge に chain 実行指示がある" test_merge_has_chain_instructions
+
+# =============================================================================
+# Requirement: 各 workflow の compaction 復帰プロトコル
+# =============================================================================
+echo ""
+echo "--- Requirement: compaction 復帰プロトコル ---"
+
+test_verify_has_compaction() {
+  assert_file_contains "skills/workflow-pr-verify/SKILL.md" 'compaction 復帰'
+}
+run_test "workflow-pr-verify に compaction 復帰プロトコルがある" test_verify_has_compaction
+
+test_fix_has_compaction() {
+  assert_file_contains "skills/workflow-pr-fix/SKILL.md" 'compaction 復帰'
+}
+run_test "workflow-pr-fix に compaction 復帰プロトコルがある" test_fix_has_compaction
+
+test_merge_has_compaction() {
+  assert_file_contains "skills/workflow-pr-merge/SKILL.md" 'compaction 復帰'
+}
+run_test "workflow-pr-merge に compaction 復帰プロトコルがある" test_merge_has_compaction
+
+# =============================================================================
+# Requirement: ドメインルール配置
+# =============================================================================
+echo ""
+echo "--- Requirement: ドメインルール配置 ---"
+
+test_fix_has_fix_loop_rule() {
+  assert_file_contains "skills/workflow-pr-fix/SKILL.md" 'fix.*(loop|ループ|条件)'
+}
+run_test "workflow-pr-fix に fix ループ条件がある" test_fix_has_fix_loop_rule
+
+test_merge_has_escalation_rule() {
+  assert_file_contains "skills/workflow-pr-merge/SKILL.md" '(エスカレーション|retry|Pilot|手動介入)'
+}
+run_test "workflow-pr-merge にエスカレーション条件がある" test_merge_has_escalation_rule
+
+test_merge_has_merge_failure_rule() {
+  assert_file_contains "skills/workflow-pr-merge/SKILL.md" '不変条件 F'
+}
+run_test "workflow-pr-merge に不変条件 F がある" test_merge_has_merge_failure_rule
+
+# =============================================================================
+# Requirement: deps.yaml の workflow エントリ
+# =============================================================================
+echo ""
+echo "--- Requirement: deps.yaml workflow エントリ ---"
+
+test_deps_workflow_pr_verify() {
+  yaml_get "$DEPS_YAML" "
+skills = data.get('skills', {})
+w = skills.get('workflow-pr-verify')
+if not w or w.get('type') != 'workflow':
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "deps.yaml に workflow-pr-verify が登録されている" test_deps_workflow_pr_verify
+
+test_deps_workflow_pr_fix() {
+  yaml_get "$DEPS_YAML" "
+skills = data.get('skills', {})
+w = skills.get('workflow-pr-fix')
+if not w or w.get('type') != 'workflow':
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "deps.yaml に workflow-pr-fix が登録されている" test_deps_workflow_pr_fix
+
+test_deps_workflow_pr_merge() {
+  yaml_get "$DEPS_YAML" "
+skills = data.get('skills', {})
+w = skills.get('workflow-pr-merge')
+if not w or w.get('type') != 'workflow':
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "deps.yaml に workflow-pr-merge が登録されている" test_deps_workflow_pr_merge
+
+test_deps_no_old_workflow_pr_cycle() {
+  yaml_get "$DEPS_YAML" "
+skills = data.get('skills', {})
+if 'workflow-pr-cycle' in skills:
+    print('workflow-pr-cycle still in skills', file=sys.stderr)
+    sys.exit(1)
+sys.exit(0)
+"
+}
+run_test "deps.yaml から旧 workflow-pr-cycle が削除されている" test_deps_no_old_workflow_pr_cycle
+
+# =============================================================================
+# Requirement: コンポーネント step_in 参照更新
+# =============================================================================
+echo ""
+echo "--- Requirement: step_in 参照更新 ---"
+
+test_step_in_references() {
+  yaml_get "$DEPS_YAML" "
 all_entries = {}
 for section in ['commands', 'skills', 'scripts']:
     entries = data.get(section, {})
     if isinstance(entries, dict):
         all_entries.update(entries)
 
-missing = [n for n in step_names if n not in all_entries]
-if missing:
-    print(f'Missing components: {missing}', file=sys.stderr)
+errors = []
+# verify components
+for comp in ['ts-preflight', 'phase-review', 'scope-judge', 'pr-test']:
+    entry = all_entries.get(comp, {})
+    step_in = entry.get('step_in', {}) if isinstance(entry, dict) else {}
+    if step_in.get('parent') != 'workflow-pr-verify':
+        errors.append(f'{comp}: parent={step_in.get(\"parent\")} (expected workflow-pr-verify)')
+
+# fix components
+for comp in ['fix-phase', 'post-fix-verify', 'warning-fix']:
+    entry = all_entries.get(comp, {})
+    step_in = entry.get('step_in', {}) if isinstance(entry, dict) else {}
+    if step_in.get('parent') != 'workflow-pr-fix':
+        errors.append(f'{comp}: parent={step_in.get(\"parent\")} (expected workflow-pr-fix)')
+
+# merge components
+for comp in ['e2e-screening', 'pr-cycle-report', 'pr-cycle-analysis', 'all-pass-check', 'merge-gate', 'auto-merge']:
+    entry = all_entries.get(comp, {})
+    step_in = entry.get('step_in', {}) if isinstance(entry, dict) else {}
+    if step_in.get('parent') != 'workflow-pr-merge':
+        errors.append(f'{comp}: parent={step_in.get(\"parent\")} (expected workflow-pr-merge)')
+
+if errors:
+    for e in errors:
+        print(e, file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "全ステップのコンポーネントが deps.yaml に登録されている" test_pr_cycle_all_steps_registered
+run_test "全コンポーネントの step_in.parent が新 workflow を参照している" test_step_in_references
 
-# Edge case: type が文字列 "A" (数値や小文字でない)
-test_pr_cycle_type_exact_string() {
-  assert_file_exists "$DEPS_YAML" || return 1
-  yaml_get "$DEPS_YAML" "
-chains = data.get('chains', {})
-pr_cycle = chains.get('pr-cycle', {})
-t = pr_cycle.get('type')
-if not isinstance(t, str) or t != 'B':
-    print(f'type is {type(t).__name__}={t} (expected str B)', file=sys.stderr)
-    sys.exit(1)
-sys.exit(0)
-"
+# =============================================================================
+# Requirement: workflow-test-ready 遷移先更新
+# =============================================================================
+echo ""
+echo "--- Requirement: workflow-test-ready 遷移先 ---"
+
+test_test_ready_references_pr_verify() {
+  assert_file_contains "skills/workflow-test-ready/SKILL.md" 'workflow-pr-verify'
 }
-run_test "pr-cycle chain [edge: type が文字列 'B']" test_pr_cycle_type_exact_string
+run_test "workflow-test-ready が workflow-pr-verify を参照している" test_test_ready_references_pr_verify
 
-# Edge case: description が設定されている
-test_pr_cycle_has_description() {
-  assert_file_exists "$DEPS_YAML" || return 1
-  yaml_get "$DEPS_YAML" "
-chains = data.get('chains', {})
-pr_cycle = chains.get('pr-cycle', {})
-desc = pr_cycle.get('description', '')
-if not desc or not desc.strip():
-    sys.exit(1)
-sys.exit(0)
-"
+test_test_ready_no_old_reference() {
+  assert_file_not_contains "skills/workflow-test-ready/SKILL.md" 'workflow-pr-cycle'
 }
-run_test "pr-cycle chain [edge: description が設定されている]" test_pr_cycle_has_description
+run_test "workflow-test-ready に旧 workflow-pr-cycle 参照がない" test_test_ready_no_old_reference
 
-# Edge case: steps に重複がない
-test_pr_cycle_steps_no_duplicates() {
-  assert_file_exists "$DEPS_YAML" || return 1
-  yaml_get "$DEPS_YAML" "
-chains = data.get('chains', {})
-pr_cycle = chains.get('pr-cycle', {})
-steps_raw = pr_cycle.get('steps', [])
-step_names = []
-for s in steps_raw:
-    if isinstance(s, str):
-        step_names.append(s)
-    elif isinstance(s, dict):
-        name = s.get('name') or s.get('component') or s.get('step') or ''
-        step_names.append(name)
-if len(step_names) != len(set(step_names)):
-    sys.exit(1)
-sys.exit(0)
-"
-}
-run_test "pr-cycle chain [edge: steps に重複がない]" test_pr_cycle_steps_no_duplicates
+# =============================================================================
+# Requirement: twl validate パス
+# =============================================================================
+echo ""
+echo "--- Requirement: twl validate ---"
 
-# Scenario: chain validate パス (line 12)
-# WHEN: twl chain validate を実行する
-# THEN: pr-cycle chain の双方向参照整合性が検証され pass する
-# AND: 各コンポーネントの chain/step_in フィールドが chain 定義と一致する
-test_pr_cycle_chain_validate() {
-  if ! command -v twl &>/dev/null; then
-    return 1
-  fi
-  local output
-  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
-  # Check no chain errors related to pr-cycle chain
-  if echo "$output" | grep -qP "\[chain-bidir\]|\[chain-type\]|\[step-order\]"; then
-    echo "$output" | grep -P "\[chain" >&2
-    return 1
-  fi
-  return 0
-}
-
-if command -v twl &>/dev/null; then
-  run_test "twl chain validate が pass する (pr-cycle)" test_pr_cycle_chain_validate
-else
-  run_test_skip "twl chain validate が pass する (pr-cycle)" "twl command not found"
-fi
-
-# Edge case: twl validate が exit 0
 test_twl_validate_exit_zero() {
   if ! command -v twl &>/dev/null; then
     return 1
@@ -257,356 +428,10 @@ test_twl_validate_exit_zero() {
 }
 
 if command -v twl &>/dev/null; then
-  run_test "twl validate [edge: exit code が 0]" test_twl_validate_exit_zero
+  run_test "twl validate が exit 0" test_twl_validate_exit_zero
 else
-  run_test_skip "twl validate [edge: exit code が 0]" "twl command not found"
+  run_test_skip "twl validate が exit 0" "twl command not found"
 fi
-
-# Scenario: chain ステップと SKILL.md の責務分離 (line 17)
-# WHEN: workflow-pr-cycle SKILL.md が chain-driven に縮小される
-# THEN: SKILL.md にはステップ順序やルーティングロジックが含まれない
-# AND: ドメインルール（fix ループ条件、merge-gate 判定基準、エスカレーション条件）のみが残る
-SKILL_PR_CYCLE="skills/workflow-pr-cycle/SKILL.md"
-
-test_skill_has_step_reference() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # SKILL.md は chain-driven 用のステップ参照テーブルを持つ（chain type B）
-  assert_file_contains "$SKILL_PR_CYCLE" 'Step' || return 1
-  return 0
-}
-run_test "SKILL.md にステップ参照が含まれる（chain type B）" test_skill_has_step_reference
-
-test_skill_has_fix_loop_rule() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # Should contain fix loop domain rule
-  assert_file_contains "$SKILL_PR_CYCLE" 'fix.*(loop|ループ|条件|phase)' || return 1
-  return 0
-}
-run_test "SKILL.md に fix ループ条件が記述されている" test_skill_has_fix_loop_rule
-
-test_skill_has_merge_gate_criteria() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # Should contain merge-gate judgment criteria
-  assert_file_contains "$SKILL_PR_CYCLE" '(CRITICAL|merge.gate|severity|confidence)' || return 1
-  return 0
-}
-run_test "SKILL.md に merge-gate 判定基準が記述されている" test_skill_has_merge_gate_criteria
-
-test_skill_has_escalation_rule() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # Should contain escalation condition
-  assert_file_contains "$SKILL_PR_CYCLE" '(エスカレーション|escalat|retry|Pilot|手動)' || return 1
-  return 0
-}
-run_test "SKILL.md にエスカレーション条件が記述されている" test_skill_has_escalation_rule
-
-# Edge case: SKILL.md の description にフロー概要が記述されている（chain type B はドメインルール保持）
-test_skill_has_flow_description() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # chain type B の SKILL.md は description にフロー概要を含む
-  assert_file_contains "$SKILL_PR_CYCLE" 'PRサイクル' || return 1
-  return 0
-}
-run_test "SKILL.md [edge: PRサイクル概要の記述がある]" test_skill_has_flow_description
-
-# =============================================================================
-# Requirement: pr-cycle chain コンポーネント登録
-# =============================================================================
-echo ""
-echo "--- Requirement: pr-cycle chain コンポーネント登録 ---"
-
-# Scenario: 新規 atomic コンポーネント登録 (line 27)
-# WHEN: ts-preflight, scope-judge, pr-test, post-fix-verify, warning-fix,
-#       pr-cycle-report, all-pass-check, ac-verify を deps.yaml に追加する
-# THEN: 各コンポーネントに type: atomic, chain: "pr-cycle", step_in が設定される
-# AND: COMMAND.md ファイルが commands/ 配下に存在する
-ATOMIC_COMPONENTS='["ts-preflight", "scope-judge", "pr-test", "post-fix-verify", "warning-fix", "pr-cycle-report", "all-pass-check", "pr-cycle-analysis"]'
-
-test_atomic_components_registered() {
-  assert_file_exists "$DEPS_YAML" || return 1
-  yaml_get "$DEPS_YAML" "
-import json
-components = json.loads('${ATOMIC_COMPONENTS}')
-all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
-    entries = data.get(section, {})
-    if isinstance(entries, dict):
-        all_entries.update(entries)
-
-missing = []
-for comp in components:
-    entry = all_entries.get(comp)
-    if entry is None:
-        missing.append(f'{comp}: not found in deps.yaml')
-        continue
-    if not isinstance(entry, dict):
-        missing.append(f'{comp}: not a dict')
-        continue
-    if entry.get('type') != 'atomic':
-        missing.append(f'{comp}: type={entry.get(\"type\")} (expected atomic)')
-    if str(entry.get('chain')) != 'pr-cycle':
-        missing.append(f'{comp}: chain={entry.get(\"chain\")} (expected pr-cycle)')
-    step_in = entry.get('step_in')
-    if not step_in or not isinstance(step_in, dict):
-        missing.append(f'{comp}: step_in missing or not a dict')
-
-if missing:
-    for m in missing:
-        print(m, file=sys.stderr)
-    sys.exit(1)
-sys.exit(0)
-"
-}
-run_test "新規 atomic コンポーネントが全て deps.yaml に登録されている" test_atomic_components_registered
-
-test_atomic_command_files_exist() {
-  local components=("ts-preflight" "scope-judge" "pr-test" "post-fix-verify" "warning-fix" "pr-cycle-report" "all-pass-check" "pr-cycle-analysis")
-  local missing=()
-  for comp in "${components[@]}"; do
-    if [[ ! -f "${PROJECT_ROOT}/commands/${comp}.md" ]]; then
-      missing+=("commands/${comp}.md")
-    fi
-  done
-  if [[ ${#missing[@]} -gt 0 ]]; then
-    for m in "${missing[@]}"; do
-      echo "  missing: $m" >&2
-    done
-    return 1
-  fi
-  return 0
-}
-run_test "新規 atomic コンポーネントの COMMAND.md が存在する" test_atomic_command_files_exist
-
-# Edge case: step_in に parent フィールドがある
-test_atomic_step_in_has_parent() {
-  assert_file_exists "$DEPS_YAML" || return 1
-  yaml_get "$DEPS_YAML" "
-import json
-components = json.loads('${ATOMIC_COMPONENTS}')
-all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
-    entries = data.get(section, {})
-    if isinstance(entries, dict):
-        all_entries.update(entries)
-
-errors = []
-for comp in components:
-    entry = all_entries.get(comp, {})
-    if not isinstance(entry, dict):
-        errors.append(f'{comp}: not a dict')
-        continue
-    step_in = entry.get('step_in', {})
-    if not isinstance(step_in, dict) or not step_in.get('parent'):
-        errors.append(f'{comp}: step_in missing parent')
-
-if errors:
-    for e in errors:
-        print(e, file=sys.stderr)
-    sys.exit(1)
-sys.exit(0)
-"
-}
-run_test "atomic コンポーネント [edge: step_in に parent がある]" test_atomic_step_in_has_parent
-
-# Edge case: step_in.step が非空文字列
-test_atomic_step_in_step_nonempty() {
-  assert_file_exists "$DEPS_YAML" || return 1
-  yaml_get "$DEPS_YAML" "
-import json
-components = json.loads('${ATOMIC_COMPONENTS}')
-all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
-    entries = data.get(section, {})
-    if isinstance(entries, dict):
-        all_entries.update(entries)
-
-for comp in components:
-    entry = all_entries.get(comp, {})
-    if not isinstance(entry, dict):
-        sys.exit(1)
-    step_in = entry.get('step_in', {})
-    if not isinstance(step_in, dict):
-        sys.exit(1)
-    step = step_in.get('step')
-    if not step or not str(step).strip():
-        print(f'{comp}: step_in.step is empty', file=sys.stderr)
-        sys.exit(1)
-sys.exit(0)
-"
-}
-run_test "atomic コンポーネント [edge: step_in.step が非空]" test_atomic_step_in_step_nonempty
-
-# Scenario: 新規 composite コンポーネント登録 (line 31)
-# WHEN: merge-gate, phase-review, fix-phase, e2e-screening を deps.yaml に追加する
-# THEN: 各コンポーネントに type: composite, chain: "pr-cycle", step_in, calls が設定される
-# AND: SKILL.md ファイルが skills/ 配下に存在する
-COMPOSITE_COMPONENTS='["merge-gate", "phase-review", "fix-phase", "e2e-screening"]'
-
-test_composite_components_registered() {
-  assert_file_exists "$DEPS_YAML" || return 1
-  yaml_get "$DEPS_YAML" "
-import json
-components = json.loads('${COMPOSITE_COMPONENTS}')
-all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
-    entries = data.get(section, {})
-    if isinstance(entries, dict):
-        all_entries.update(entries)
-
-missing = []
-for comp in components:
-    entry = all_entries.get(comp)
-    if entry is None:
-        missing.append(f'{comp}: not found in deps.yaml')
-        continue
-    if not isinstance(entry, dict):
-        missing.append(f'{comp}: not a dict')
-        continue
-    if entry.get('type') != 'composite':
-        missing.append(f'{comp}: type={entry.get(\"type\")} (expected composite)')
-    if str(entry.get('chain')) != 'pr-cycle':
-        missing.append(f'{comp}: chain={entry.get(\"chain\")} (expected pr-cycle)')
-    step_in = entry.get('step_in')
-    if not step_in or not isinstance(step_in, dict):
-        missing.append(f'{comp}: step_in missing or not a dict')
-    # calls はオプション（fix-phase, e2e-screening は calls なし）
-
-if missing:
-    for m in missing:
-        print(m, file=sys.stderr)
-    sys.exit(1)
-sys.exit(0)
-"
-}
-run_test "新規 composite コンポーネントが全て deps.yaml に登録されている" test_composite_components_registered
-
-test_composite_command_files_exist() {
-  local components=("merge-gate" "phase-review" "fix-phase" "e2e-screening")
-  local missing=()
-  for comp in "${components[@]}"; do
-    if [[ ! -f "${PROJECT_ROOT}/commands/${comp}.md" ]]; then
-      missing+=("commands/${comp}.md")
-    fi
-  done
-  if [[ ${#missing[@]} -gt 0 ]]; then
-    for m in "${missing[@]}"; do
-      echo "  missing: $m" >&2
-    done
-    return 1
-  fi
-  return 0
-}
-run_test "新規 composite コンポーネントの COMMAND.md が存在する" test_composite_command_files_exist
-
-# Edge case: composite の calls が全て deps.yaml に存在するコンポーネントを参照している
-test_composite_calls_targets_exist() {
-  assert_file_exists "$DEPS_YAML" || return 1
-  yaml_get "$DEPS_YAML" "
-import json
-components = json.loads('${COMPOSITE_COMPONENTS}')
-all_entries = {}
-for section in ['commands', 'skills', 'scripts']:
-    entries = data.get(section, {})
-    if isinstance(entries, dict):
-        all_entries.update(entries)
-
-errors = []
-found_any_calls = False
-for comp in components:
-    entry = all_entries.get(comp, {})
-    if not isinstance(entry, dict):
-        continue
-    calls = entry.get('calls') or []
-    for call in calls:
-        found_any_calls = True
-        if isinstance(call, dict):
-            # calls の各エントリは script/specialist/reference/component キーを持つ
-            target = call.get('script') or call.get('component') or call.get('atomic') or call.get('specialist') or call.get('reference') or call.get('name') or ''
-        elif isinstance(call, str):
-            target = call
-        else:
-            continue
-        # specialist/reference は agents/refs セクションに登録されている場合がある
-        if target and target not in all_entries:
-            # agents, refs セクションもチェック
-            found_in_extended = False
-            for ext_section in ['agents', 'refs']:
-                ext_entries = data.get(ext_section, {})
-                if isinstance(ext_entries, dict) and target in ext_entries:
-                    found_in_extended = True
-                    break
-            if not found_in_extended:
-                errors.append(f'{comp}: calls target \"{target}\" not in deps.yaml')
-
-if not found_any_calls:
-    # calls を持つ composite が 1 つもなければスキップ扱い
-    sys.exit(0)
-
-if errors:
-    for e in errors:
-        print(e, file=sys.stderr)
-    sys.exit(1)
-sys.exit(0)
-"
-}
-run_test "composite [edge: calls の参照先が全て deps.yaml に存在する]" test_composite_calls_targets_exist
-
-# =============================================================================
-# Requirement: workflow-pr-cycle SKILL.md 縮小
-# =============================================================================
-echo ""
-echo "--- Requirement: workflow-pr-cycle SKILL.md 縮小 ---"
-
-# Scenario: ドメインルールのみ残留 (line 43)
-# WHEN: workflow-pr-cycle SKILL.md を更新する
-# THEN: fix ループの条件が記述されている
-# AND: merge-gate 判定基準（CRITICAL && confidence >= 80）が記述されている
-# AND: エスカレーション条件（retry_count >= 1 で Pilot 報告）が記述されている
-# AND: ステップ番号のルーティングは含まれない
-test_skill_fix_loop_domain_rule() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  assert_file_contains "$SKILL_PR_CYCLE" '(fix|テスト失敗|再テスト|fix.phase)' || return 1
-  return 0
-}
-run_test "SKILL.md にfix ループドメインルールが記述されている" test_skill_fix_loop_domain_rule
-
-test_skill_merge_gate_threshold() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # Should contain the threshold: CRITICAL + confidence >= 80
-  assert_file_contains "$SKILL_PR_CYCLE" '(CRITICAL|confidence|80)' || return 1
-  return 0
-}
-run_test "SKILL.md にmerge-gate 閾値 (CRITICAL/confidence/80) が記述されている" test_skill_merge_gate_threshold
-
-test_skill_escalation_retry() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # Should mention retry / escalation / Pilot report
-  assert_file_contains "$SKILL_PR_CYCLE" '(retry|リトライ|エスカレーション|Pilot|手動介入)' || return 1
-  return 0
-}
-run_test "SKILL.md にエスカレーション条件 (retry/Pilot) が記述されている" test_skill_escalation_retry
-
-test_skill_has_step_detail() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  # chain type B: SKILL.md にステップ詳細テーブルがある
-  assert_file_contains "$SKILL_PR_CYCLE" 'Step\s+\d+' || return 1
-  return 0
-}
-run_test "SKILL.md [edge: Step N ステップ詳細が存在する（chain type B）]" test_skill_has_step_detail
-
-# Edge case: SKILL.md 内の行数が過度に長くない (chain-driven で縮小されたことの簡易検証)
-test_skill_reasonable_size() {
-  assert_file_exists "$SKILL_PR_CYCLE" || return 1
-  local lines
-  lines=$(wc -l < "${PROJECT_ROOT}/${SKILL_PR_CYCLE}")
-  # 縮小後は 200 行以下が目安 (元は数百行のフロー記述があった想定)
-  if [[ $lines -gt 300 ]]; then
-    echo "SKILL.md is ${lines} lines (expected <= 300 for chain-driven reduction)" >&2
-    return 1
-  fi
-  return 0
-}
-run_test "SKILL.md [edge: 行数が 300 以下 (chain-driven 縮小)]" test_skill_reasonable_size
 
 # =============================================================================
 # Summary

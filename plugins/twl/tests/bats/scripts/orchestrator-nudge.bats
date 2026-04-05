@@ -53,8 +53,12 @@ if echo "$pane_output" | grep -qP "setup chain 完了"; then
 elif echo "$pane_output" | grep -qP ">>> 提案完了"; then
   echo ""
 elif echo "$pane_output" | grep -qP "テスト準備.*完了"; then
-  echo "/twl:workflow-pr-cycle #${issue}"
-elif echo "$pane_output" | grep -qP "PR サイクル.*完了"; then
+  echo "/twl:workflow-pr-verify #${issue}"
+elif echo "$pane_output" | grep -qP "workflow-pr-verify.*完了"; then
+  echo "/twl:workflow-pr-fix #${issue}"
+elif echo "$pane_output" | grep -qP "workflow-pr-fix.*完了"; then
+  echo "/twl:workflow-pr-merge #${issue}"
+elif echo "$pane_output" | grep -qP "PR マージ.*完了|workflow-pr-merge.*完了"; then
   echo ""
 elif echo "$pane_output" | grep -qP "workflow-test-ready.*で次に進めます"; then
   echo "/twl:workflow-test-ready #${issue}"
@@ -104,17 +108,33 @@ teardown() {
   assert_output ""
 }
 
-# Scenario: テスト準備完了パターン → workflow-pr-cycle コマンド送信
-@test "nudge: 'テスト準備.*完了' → /twl:workflow-pr-cycle #N" {
+# Scenario: テスト準備完了パターン → workflow-pr-verify コマンド送信
+@test "nudge: 'テスト準備.*完了' → /twl:workflow-pr-verify #N" {
   run bash "$SANDBOX/scripts/nudge-dispatch.sh" "135" "ap-#135" "テスト準備が完了しました"
 
   assert_success
-  assert_output "/twl:workflow-pr-cycle #135"
+  assert_output "/twl:workflow-pr-verify #135"
 }
 
-# Scenario: PR サイクル完了パターン → 空コマンド（chain 終端）
-@test "nudge: 'PR サイクル.*完了' → 空（chain 終端）" {
-  run bash "$SANDBOX/scripts/nudge-dispatch.sh" "135" "ap-#135" "PR サイクルが完了しました"
+# Scenario: workflow-pr-verify 完了 → workflow-pr-fix コマンド送信
+@test "nudge: 'workflow-pr-verify.*完了' → /twl:workflow-pr-fix #N" {
+  run bash "$SANDBOX/scripts/nudge-dispatch.sh" "135" "ap-#135" "workflow-pr-verify が完了しました"
+
+  assert_success
+  assert_output "/twl:workflow-pr-fix #135"
+}
+
+# Scenario: workflow-pr-fix 完了 → workflow-pr-merge コマンド送信
+@test "nudge: 'workflow-pr-fix.*完了' → /twl:workflow-pr-merge #N" {
+  run bash "$SANDBOX/scripts/nudge-dispatch.sh" "135" "ap-#135" "workflow-pr-fix が完了しました"
+
+  assert_success
+  assert_output "/twl:workflow-pr-merge #135"
+}
+
+# Scenario: PR マージ完了パターン → 空コマンド（chain 終端）
+@test "nudge: 'workflow-pr-merge.*完了' → 空（chain 終端）" {
+  run bash "$SANDBOX/scripts/nudge-dispatch.sh" "135" "ap-#135" "workflow-pr-merge が完了しました"
 
   assert_success
   assert_output ""
@@ -186,14 +206,14 @@ teardown() {
 
 # Scenario: quick Issue で通常パターンは影響を受けない
 # WHEN: is_quick=true の Issue で pane_output が "テスト準備が完了しました" を含む
-# THEN: /twl:workflow-pr-cycle #N を返す（test-ready 以外のパターンは従来通り）
-@test "nudge: quick Issue + 'テスト準備.*完了' → /twl:workflow-pr-cycle #N (unaffected)" {
+# THEN: /twl:workflow-pr-verify #N を返す（test-ready 以外のパターンは従来通り）
+@test "nudge: quick Issue + 'テスト準備.*完了' → /twl:workflow-pr-verify #N (unaffected)" {
   create_issue_json 152 "running" '. + {is_quick: true}'
 
   run bash "$SANDBOX/scripts/nudge-dispatch.sh" "152" "ap-#152" "テスト準備が完了しました"
 
   assert_success
-  assert_output "/twl:workflow-pr-cycle #152"
+  assert_output "/twl:workflow-pr-verify #152"
 }
 
 # Scenario: state ファイルに is_quick が未記録 → 通常動作（nudge 送信）

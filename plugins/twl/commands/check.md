@@ -149,11 +149,11 @@ git status --porcelain
 | ガバナンス | 未適用 | `/twl:co-project` を提案 |
 | スキーマ | 未初期化 | `/twl:project-governance --update` を提案 |
 
-**重要**: FAIL項目がある場合、`/twl:workflow-pr-cycle` への進行をブロック。
+**重要**: FAIL項目がある場合、`/twl:workflow-pr-verify` への進行をブロック。
 
 ## PRサイクル開始条件
 
-以下をすべて満たす場合のみ `/twl:workflow-pr-cycle` を推奨:
+以下をすべて満たす場合のみ `/twl:workflow-pr-verify` を推奨:
 
 1. OpenSpec: PASS または N/A
 2. Verify: PASS または N/A（FAILの場合はブロック）
@@ -165,7 +165,7 @@ git status --porcelain
 
 - `/twl:workflow-setup` - 統合開発ワークフロー（推奨入口）
 - `/twl:workflow-setup` + `/twl:workflow-test-ready` - 開発準備
-- `/twl:workflow-pr-cycle` - PRサイクル実行
+- `/twl:workflow-pr-verify` - PRサイクル実行
 - `deltaspec validate <change-id> --json` - 整合性検証（手動実行時）
 
 ---
@@ -186,7 +186,7 @@ git status --porcelain
 
 ### 禁止事項（MUST NOT）
 
-- **FAIL項目がある場合に `/twl:workflow-pr-cycle` を推奨してはならない**
+- **FAIL項目がある場合に `/twl:workflow-pr-verify` を推奨してはならない**
 - **チェック内で修正を行ってはならない**: 状態報告のみ
 
 ## チェックポイント（MUST）

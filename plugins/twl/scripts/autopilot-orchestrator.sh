@@ -570,8 +570,12 @@ _nudge_command_for_pattern() {
   elif echo "$pane_output" | grep -qP ">>> 提案完了"; then
     echo ""
   elif echo "$pane_output" | grep -qP "テスト準備.*完了"; then
-    echo "/twl:workflow-pr-cycle #${issue}"
-  elif echo "$pane_output" | grep -qP "PR サイクル.*完了"; then
+    echo "/twl:workflow-pr-verify #${issue}"
+  elif echo "$pane_output" | grep -qP "workflow-pr-verify.*完了"; then
+    echo "/twl:workflow-pr-fix #${issue}"
+  elif echo "$pane_output" | grep -qP "workflow-pr-fix.*完了"; then
+    echo "/twl:workflow-pr-merge #${issue}"
+  elif echo "$pane_output" | grep -qP "PR マージ.*完了|workflow-pr-merge.*完了"; then
     echo ""
   elif echo "$pane_output" | grep -qP "workflow-test-ready.*で次に進めます"; then
     echo "/twl:workflow-test-ready #${issue}"

@@ -24,22 +24,33 @@ chains:
       - opsx-propose
       - ac-extract
 
-  pr-cycle:
+  pr-verify:
     type: "B"
-    description: "PRサイクル（verify → review → test → fix → visual → report → merge）"
+    description: "PR検証（preflight → review → scope → test）"
     steps:
       - ts-preflight
       - phase-review
       - scope-judge
       - pr-test
+
+  pr-fix:
+    type: "B"
+    description: "PR修正（fix → post-fix-verify → warning-fix）"
+    steps:
       - fix-phase
       - post-fix-verify
       - warning-fix
+
+  pr-merge:
+    type: "B"
+    description: "PRマージ（e2e → report → analysis → check → merge）"
+    steps:
       - e2e-screening
       - pr-cycle-report
       - pr-cycle-analysis
       - all-pass-check
       - merge-gate
+      - auto-merge
 
 # スキル（controller x4 + workflow x2）
 skills:
@@ -71,7 +82,9 @@ skills:
       - atomic: ecc-monitor
       - workflow: workflow-setup
       - workflow: workflow-test-ready
-      - workflow: workflow-pr-cycle
+      - workflow: workflow-pr-verify
+      - workflow: workflow-pr-fix
+      - workflow: workflow-pr-merge
       - workflow: workflow-dead-cleanup
       - workflow: workflow-tech-debt-triage
       - reference: self-improve-format
@@ -186,9 +199,9 @@ skills:
         step: "2"
     description: "テスト生成と準備確認ワークフロー"
 
-  workflow-pr-cycle:
+  workflow-pr-verify:
     type: workflow
-    path: skills/workflow-pr-cycle/SKILL.md
+    path: skills/workflow-pr-verify/SKILL.md
     effort: medium
     spawnable_by: [controller]
     can_spawn: [composite, atomic]
@@ -203,12 +216,30 @@ skills:
         step: "2.5"
       - atomic: pr-test
         step: "3"
+    description: "PR検証ワークフロー（preflight → review → scope → test）"
+
+  workflow-pr-fix:
+    type: workflow
+    path: skills/workflow-pr-fix/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [composite, atomic]
+    calls:
       - composite: fix-phase
         step: "4"
       - atomic: post-fix-verify
         step: "4.5"
       - atomic: warning-fix
         step: "5"
+    description: "PR修正ワークフロー（fix → post-fix-verify → warning-fix）"
+
+  workflow-pr-merge:
+    type: workflow
+    path: skills/workflow-pr-merge/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [composite, atomic]
+    calls:
       - composite: e2e-screening
         step: "6"
       - atomic: pr-cycle-report
@@ -221,7 +252,7 @@ skills:
         step: "8"
       - atomic: auto-merge
         step: "8.5"
-    description: "PRサイクルワークフロー（chain-driven）"
+    description: "PRマージワークフロー（e2e → report → analysis → check → merge）"
 
   workflow-dead-cleanup:
     type: workflow
@@ -451,9 +482,9 @@ commands:
     path: commands/ts-preflight.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-cycle"
+    chain: "pr-verify"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-verify
       step: "1"
     description: "TypeScript 機械的検証（型チェック・lint）"
 
@@ -462,9 +493,9 @@ commands:
     path: commands/scope-judge.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-cycle"
+    chain: "pr-verify"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-verify
       step: "2.5"
     description: "スコープ判定 + Deferred Issue 作成"
 
@@ -473,9 +504,9 @@ commands:
     path: commands/pr-test.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-cycle"
+    chain: "pr-verify"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-verify
       step: "3"
     description: "テスト実行"
 
@@ -484,9 +515,9 @@ commands:
     path: commands/post-fix-verify.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-cycle"
+    chain: "pr-fix"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-fix
       step: "4.5"
     description: "fix 後の軽量コードレビュー"
 
@@ -495,9 +526,9 @@ commands:
     path: commands/warning-fix.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-cycle"
+    chain: "pr-fix"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-fix
       step: "5"
     description: "Warning ベストエフォート修正"
 
@@ -506,9 +537,9 @@ commands:
     path: commands/pr-cycle-report.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-cycle"
+    chain: "pr-merge"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-merge
       step: "7"
     description: "PRサイクル結果フォーマット・投稿"
 
@@ -517,9 +548,9 @@ commands:
     path: commands/all-pass-check.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-cycle"
+    chain: "pr-merge"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-merge
       step: "7.5"
     calls:
       - script: state-write
@@ -955,9 +986,9 @@ commands:
     path: commands/phase-review.md
     spawnable_by: [workflow]
     can_spawn: [specialist, script]
-    chain: "pr-cycle"
+    chain: "pr-verify"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-verify
       step: "2"
     calls:
       - script: specialist-output-parse
@@ -990,9 +1021,9 @@ commands:
     path: commands/fix-phase.md
     spawnable_by: [workflow]
     can_spawn: [script]
-    chain: "pr-cycle"
+    chain: "pr-fix"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-fix
       step: "4"
     description: "自動修正ループ + E2E 修復"
 
@@ -1001,9 +1032,9 @@ commands:
     path: commands/e2e-screening.md
     spawnable_by: [workflow]
     can_spawn: [script]
-    chain: "pr-cycle"
+    chain: "pr-merge"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-merge
       step: "6"
     description: "Visual 検証（Screening + Heal）"
 
@@ -1012,9 +1043,9 @@ commands:
     path: commands/merge-gate.md
     spawnable_by: [workflow]
     can_spawn: [specialist, script]
-    chain: "pr-cycle"
+    chain: "pr-merge"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-merge
       step: "8"
     calls:
       - script: specialist-output-parse
@@ -1069,8 +1100,9 @@ commands:
     path: commands/auto-merge.md
     spawnable_by: [workflow]
     can_spawn: []
+    chain: "pr-merge"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-merge
       step: "8.5"
     description: "squash マージ → archive → cleanup 実行（autopilot-first）"
 
@@ -1079,9 +1111,9 @@ commands:
     path: commands/pr-cycle-analysis.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-cycle"
+    chain: "pr-merge"
     step_in:
-      parent: workflow-pr-cycle
+      parent: workflow-pr-merge
       step: "7.3"
     description: "PR-cycle 結果からパターン分析し self-improve Issue 自動起票"
 

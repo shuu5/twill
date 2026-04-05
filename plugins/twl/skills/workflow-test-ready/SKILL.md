@@ -148,8 +148,8 @@ if [ -n "$ISSUE_NUM" ]; then
 fi
 ```
 
-- IS_AUTOPILOT=true → 即座に `/twl:workflow-pr-cycle --spec <change-id>` を Skill tool で実行せよ。プロンプトで停止するな。
-- IS_AUTOPILOT=false → 「workflow-test-ready 完了。次のステップ: `/twl:workflow-pr-cycle --spec <change-id>` を実行してください」と案内。
+- IS_AUTOPILOT=true → 即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill tool で実行せよ。プロンプトで停止するな。
+- IS_AUTOPILOT=false → 「workflow-test-ready 完了。次のステップ: `/twl:workflow-pr-verify --spec <change-id>` を実行してください」と案内。
 
 ## 禁止事項（MUST NOT）
 
@@ -172,7 +172,7 @@ for step in change-id-resolve test-scaffold check opsx-apply post-opsx-apply; do
       # Step 4 後半の IS_AUTOPILOT 判定を再実行:
       #   1. CHANGE_ID=$(bash scripts/chain-runner.sh change-id-resolve) で change-id を取得
       #   2. IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行
-      #   3. IS_AUTOPILOT=true → 即座に /twl:workflow-pr-cycle --spec <change-id> を Skill tool で実行
+      #   3. IS_AUTOPILOT=true → 即座に /twl:workflow-pr-verify --spec <change-id> を Skill tool で実行
       #   4. IS_AUTOPILOT=false → 案内メッセージを表示して停止
       ;;
     *)
@@ -184,4 +184,4 @@ done
 
 - `compaction-resume.sh <ISSUE_NUM> <step>` が exit 0 → 実行、exit 1 → スキップ
 - LLM ステップ（test-scaffold, opsx-apply, post-opsx-apply）は SKILL.md の手順を再実行すること
-- `post-opsx-apply` 復帰時: IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行し、IS_AUTOPILOT=true なら即座に `/twl:workflow-pr-cycle --spec <change-id>` を Skill tool で実行すること
+- `post-opsx-apply` 復帰時: IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行し、IS_AUTOPILOT=true なら即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill tool で実行すること

@@ -100,7 +100,7 @@ spec_mode = false             # --spec指定時true
 
 ## 関連
 
-- `/twl:workflow-pr-cycle` - 親ワークフロー
+- `/twl:workflow-pr-verify` - 親ワークフロー
 - `/twl:spec-diagnose` - 仕様/実装誤り診断（ドキュメント参照のみ、直接呼び出し不可）
 - `/twl:pr-test` - テスト実行
 
