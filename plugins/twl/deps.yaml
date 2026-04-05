@@ -81,7 +81,7 @@ skills:
     type: controller
     path: skills/co-issue/SKILL.md
     effort: high
-    tools: [Agent(issue-critic, issue-feasibility, worker-codex-reviewer, context-checker, template-validator)]
+    tools: [Skill(issue-spec-review, issue-review-aggregate, issue-glossary-check, issue-arch-drift, issue-cross-repo-create), Agent(context-checker, template-validator)]
     spawnable_by: [user]
     can_spawn: [composite, atomic, specialist, reference]
     calls:
@@ -90,16 +90,18 @@ skills:
       - atomic: issue-tech-debt-absorb
       - atomic: issue-create
       - atomic: issue-bulk-create
+      - composite: issue-spec-review
+      - atomic: issue-review-aggregate
+      - atomic: issue-glossary-check
+      - atomic: issue-arch-drift
+      - atomic: issue-cross-repo-create
       - atomic: project-board-sync
-      - specialist: issue-critic
-      - specialist: issue-feasibility
-      - specialist: worker-codex-reviewer
       - reference: ref-issue-template-bug
       - reference: ref-issue-template-feature
       - reference: ref-project-model
       - reference: ref-issue-quality-criteria
       - reference: ref-glossary-criteria
-    description: "要望をGitHub Issueに変換するワークフロー"
+    description: "要望をGitHub Issueに変換するワークフロー（ディスパッチ専用）"
 
   co-project:
     type: controller
@@ -559,6 +561,48 @@ commands:
     spawnable_by: [controller]
     can_spawn: []
     description: "tech-debt Issue の吸収提案・選択"
+
+  issue-spec-review:
+    type: composite
+    path: commands/issue-spec-review.md
+    spawnable_by: [controller]
+    can_spawn: [specialist]
+    tools: [Agent(issue-critic, issue-feasibility, worker-codex-reviewer)]
+    calls:
+      - specialist: issue-critic
+      - specialist: issue-feasibility
+      - specialist: worker-codex-reviewer
+    description: "1 Issue × 3 specialist 並列レビュー（chain 分割）"
+
+  issue-review-aggregate:
+    type: atomic
+    path: commands/issue-review-aggregate.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "specialist レビュー結果の集約・ブロック判定"
+
+  issue-glossary-check:
+    type: atomic
+    path: commands/issue-glossary-check.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - reference: ref-glossary-criteria
+    description: "glossary 照合（architecture drift 通知）"
+
+  issue-arch-drift:
+    type: atomic
+    path: commands/issue-arch-drift.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "Architecture Drift Detection（3シグナル評価）"
+
+  issue-cross-repo-create:
+    type: atomic
+    path: commands/issue-cross-repo-create.md
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "クロスリポ分割 Issue 作成（parent + 子 Issue）"
 
   project-board-sync:
     type: atomic
