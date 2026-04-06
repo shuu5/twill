@@ -57,7 +57,7 @@ TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
 **Step 3a**: 各 Issue に `/twl:issue-structure` でテンプレート適用。推奨ラベル抽出。tech-debt 棚卸し（該当時）。クロスリポ分割時は parent + 子 Issue の構造化ルールに従う。
 
-**Step 3b**: `--quick` 指定時はスキップ。各 Issue に `/twl:issue-spec-review` を呼び出す（1 Issue = 1 呼び出し）。全 Issue の呼び出しを可能な限り並列実行。
+**Step 3b**: 各 Issue に `/twl:issue-spec-review` を呼び出す（1 Issue = 1 呼び出し）。全 Issue の呼び出しを可能な限り並列実行。quick 候補であっても specialist レビューは必ず実行する（スキップ禁止）。
 
 **Step 3c**: `/twl:issue-review-aggregate` を呼び出す。ブロック Issue なし → Step 3.5 へ。CRITICAL あり → ユーザー通知、修正後 Step 3b 再実行可。split 承認 → `is_split_generated: true` フラグ設定（Phase 4 まで保持）。
 
@@ -69,7 +69,7 @@ TaskUpdate Phase 3 → completed
 
 TaskCreate 「Phase 4: Issue 作成」(status: in_progress)
 
-**refined ラベル事前作成**（`--quick` 未使用時のみ）: `gh label create refined` → `REFINED_LABEL_OK` フラグ追跡。失敗時はラベル非付与でワークフロー続行。`is_split_generated: true` の Issue には refined 非付与（MUST NOT）。
+**refined ラベル事前作成**: `gh label create refined` → `REFINED_LABEL_OK` フラグ追跡。失敗時はラベル非付与でワークフロー続行。`is_split_generated: true` の Issue には refined 非付与（MUST NOT）。
 
 1. **ユーザー確認（MUST）**: 全候補提示、quick 候補に `[quick]` マーク
 2. **作成**:
