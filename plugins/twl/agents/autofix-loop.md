@@ -9,7 +9,7 @@ description: |
 type: specialist
 model: sonnet
 effort: high
-tools: [Bash, Read, Glob, Grep, Edit, Write, Task]
+tools: [Bash, Read, Glob, Grep, Edit, Write]
 maxTurns: 40
 skills:
 - ref-specialist-output-schema
