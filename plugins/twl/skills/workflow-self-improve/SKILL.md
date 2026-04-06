@@ -3,8 +3,7 @@ name: twl:workflow-self-improve
 description: |
   Self-Improve 改善適用ワークフロー（collect → propose → close + ecc-monitor）。
 
-  Use when user: says self-improve適用/改善適用/self-improve workflow,
-  or when called from co-autopilot post-processing.
+  co-autopilot の後処理として呼び出される。直接ユーザートリガーは co-autopilot 経由。
 type: workflow
 effort: medium
 spawnable_by:

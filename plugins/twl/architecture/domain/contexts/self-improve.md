@@ -119,6 +119,7 @@ graph LR
 |------|--------------|------|
 | **(co-autopilot 内)** | autopilot-patterns | パターン検出・high confidence 時に Issue 起票 |
 | **(co-autopilot 内)** | autopilot-retrospective | Phase 振り返り・知見生成 |
+| **workflow** | workflow-self-improve | 改善適用フロー（collect → propose → close + ecc-monitor）|
 | **atomic** | self-improve-collect | self-improve Issue の収集・分類 |
 | **atomic** | self-improve-propose | ECC 照合 + 改善提案生成 |
 | **atomic** | self-improve-close | Issue クローズ処理 |
@@ -127,7 +128,7 @@ graph LR
 | **atomic** | pr-cycle-analysis | PR-cycle 結果からの改善機会検出 |
 | **atomic** | session-audit | セッション JSONL 事後分析（5カテゴリ検出） |
 
-**注意**: self-improve は独立 controller を持たない。co-autopilot の後処理として統合されている（ADR-002）。self-improve-review のみがユーザー直接トリガーで、co-issue フローに接続する。
+**注意**: self-improve は独立 controller を持たない。co-autopilot の後処理として統合されている（ADR-002）。改善適用フローは workflow-self-improve に委譲（Issue #67）。self-improve-review のみがユーザー直接トリガーで、co-issue フローに接続する。
 
 ## Dependencies
 
