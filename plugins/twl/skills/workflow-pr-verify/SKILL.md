@@ -32,7 +32,7 @@ workflow-pr-cycle を 3 分割した第1段階。TypeScript preflight、speciali
 
 ### Step 1: ts-preflight（TypeScript 機械的検証）【機械的 → runner】
 ```bash
-bash scripts/chain-runner.sh ts-preflight
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" ts-preflight
 ```
 TypeScript プロジェクトでない場合は自動スキップ。
 
@@ -44,13 +44,13 @@ TypeScript プロジェクトでない場合は自動スキップ。
 
 ### Step 3: pr-test（テスト実行）【機械的 → runner】
 ```bash
-bash scripts/chain-runner.sh pr-test
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-test
 ```
 
 ### 完了後の遷移
 
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 IS_AUTOPILOT=false
 if [ -n "$ISSUE_NUM" ]; then
@@ -67,10 +67,10 @@ fi
 compaction 後に workflow-pr-verify chain を再開する場合、完了済みステップをスキップすること。
 
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 for step in ts-preflight pr-test; do
-  bash scripts/compaction-resume.sh "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
+  bash "${CLAUDE_PLUGIN_ROOT}/scripts/compaction-resume.sh" "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
   # 通常手順で実行（chain-runner または LLM 実行）
 done
 ```

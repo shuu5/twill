@@ -21,7 +21,7 @@ spawnable_by:
 以下のスニペットを実行して quick 状態を確認すること:
 
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 IS_QUICK=false
 if [ -n "$ISSUE_NUM" ]; then
@@ -75,14 +75,14 @@ ELSE
 ### Quick Guard: quick Issue 検出（defense in depth）【機械的 → runner】
 
 ```bash
-bash scripts/chain-runner.sh quick-guard || { echo "quick Issue のため test-ready をスキップします"; exit 0; }
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" quick-guard || { echo "quick Issue のため test-ready をスキップします"; exit 0; }
 ```
 
 quick Issue の場合はここで終了。非 quick Issue はそのまま Step 1 へ。
 
 ### Step 1: change-id 解決【機械的 → runner】
 ```bash
-CHANGE_ID=$(bash scripts/chain-runner.sh change-id-resolve)
+CHANGE_ID=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" change-id-resolve)
 ```
 出力の change-id を記録。
 
@@ -104,7 +104,7 @@ ELSE
 
 ### Step 3: check 実行（準備確認）【機械的 → runner】
 ```bash
-bash scripts/chain-runner.sh check
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" check
 ```
 runner の出力から FAIL 有無を判定する。FAIL あれば `/twl:check` を Skill tool で実行して詳細確認。
 
@@ -117,7 +117,7 @@ runner の出力から FAIL 有無を判定する。FAIL あれば `/twl:check` 
 change-apply を開始する前に、compaction 復帰用に state を記録すること:
 
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 if [[ -n "$ISSUE_NUM" ]]; then
   python3 -m twl.autopilot.state write --type issue --issue "$ISSUE_NUM" --role worker \
@@ -130,7 +130,7 @@ fi
 change-apply 完了後、compaction 復帰用に state を記録してから autopilot 状態を判定すること:
 
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 if [[ -n "$ISSUE_NUM" ]]; then
   python3 -m twl.autopilot.state write --type issue --issue "$ISSUE_NUM" --role worker \
@@ -139,7 +139,7 @@ fi
 ```
 
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 IS_AUTOPILOT=false
 if [ -n "$ISSUE_NUM" ]; then
@@ -160,17 +160,17 @@ fi
 compaction 後に workflow-test-ready chain を再開する場合、完了済みステップをスキップすること。
 
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 for step in change-id-resolve test-scaffold check change-apply post-change-apply; do
-  bash scripts/compaction-resume.sh "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
+  bash "${CLAUDE_PLUGIN_ROOT}/scripts/compaction-resume.sh" "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
   case "$step" in
     change-apply)
       # Step 4 の change-apply 手順を再実行（state 記録 → /twl:change-apply → state 記録）
       ;;
     post-change-apply)
       # Step 4 後半の IS_AUTOPILOT 判定を再実行:
-      #   1. CHANGE_ID=$(bash scripts/chain-runner.sh change-id-resolve) で change-id を取得
+      #   1. CHANGE_ID=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" change-id-resolve) で change-id を取得
       #   2. IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行
       #   3. IS_AUTOPILOT=true → 即座に /twl:workflow-pr-verify --spec <change-id> を Skill tool で実行
       #   4. IS_AUTOPILOT=false → 案内メッセージを表示して停止
