@@ -693,6 +693,7 @@ commands:
       - specialist: issue-feasibility
       - specialist: worker-codex-reviewer
       - script: escape-issue-body
+      - script: spec-review-manifest
     description: "1 Issue × 3 specialist 並列レビュー（chain 分割）"
 
   issue-review-aggregate:
@@ -1619,6 +1620,11 @@ scripts:
     type: script
     path: scripts/escape-issue-body.sh
     description: "Issue body の HTML エスケープ（& → &amp;、< → &lt;、> → &gt;）"
+
+  spec-review-manifest:
+    type: script
+    path: scripts/spec-review-manifest.sh
+    description: "issue-spec-review 必須 specialist リスト出力（3 行 = 3 agent type）"
 
   checkpoint-write:
     type: script
