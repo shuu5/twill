@@ -10,7 +10,7 @@ def main(argv: list[str] | None = None) -> None:
 
     parser = argparse.ArgumentParser(
         prog="twl spec",
-        description="Manage delta specs (openspec/changes/)",
+        description="Manage delta specs (deltaspec/changes/)",
     )
     sub = parser.add_subparsers(dest="subcmd", metavar="<command>")
 

@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from .new import _KEBAB_RE
-from .paths import OpenspecNotFound, find_openspec_root, get_changes_dir
+from .paths import OpenspecNotFound, find_deltaspec_root, get_changes_dir
 
 _TASK_RE = re.compile(r"^- \[(?P<done>[x ])\] (?P<desc>.+)$")
 
@@ -164,7 +164,7 @@ def cmd_instructions(artifact: str, name: str, json_mode: bool = False) -> int:
         return 1
 
     try:
-        root = find_openspec_root()
+        root = find_deltaspec_root()
     except OpenspecNotFound as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
@@ -175,9 +175,9 @@ def cmd_instructions(artifact: str, name: str, json_mode: bool = False) -> int:
         return 1
 
     schema_name = "spec-driven"
-    openspec_yaml = change_dir / ".openspec.yaml"
-    if openspec_yaml.exists():
-        for line in openspec_yaml.read_text(encoding="utf-8").splitlines():
+    deltaspec_yaml = change_dir / ".deltaspec.yaml"
+    if deltaspec_yaml.exists():
+        for line in deltaspec_yaml.read_text(encoding="utf-8").splitlines():
             if line.startswith("schema:"):
                 schema_name = line.split(":", 1)[1].strip()
                 break

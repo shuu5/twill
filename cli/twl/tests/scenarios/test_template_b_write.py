@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for chain generate --write Template B functionality (frontmatter called-by).
 
-Spec: openspec/changes/chain-generate-write-template-b/specs/template-b-write.md
+Spec: deltaspec/changes/chain-generate-write-template-b/specs/template-b-write.md
 
 These tests are TDD-style: they define expected behavior BEFORE full implementation.
 Template B writes/updates the called-by sentence in frontmatter description.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for deep_validate model checks on specialist components.
 
-Spec: openspec/changes/model-specialist-validate/specs/deep-validate-model.md
+Spec: deltaspec/changes/model-specialist-validate/specs/deep-validate-model.md
 
 Covers:
 - ALLOWED_MODELS constant definition

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for fix-graph-orphan-ref-node: build_graph, classify_layers, find_orphans, generate_graphviz.
 
-Spec: openspec/changes/fix-graph-orphan-ref-node/specs/
+Spec: deltaspec/changes/fix-graph-orphan-ref-node/specs/
 
 Covers 8 scenarios across 3 spec files:
   agent-skills-reverse-dep.md

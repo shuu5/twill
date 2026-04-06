@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for ADR creation requirements.
 
-Spec: openspec/changes/arch-spec-refine/specs/adr-creation.md
+Spec: deltaspec/changes/arch-spec-refine/specs/adr-creation.md
 
 Verifies that ADR-0001 and ADR-0002 exist with the required 4-section
 structure (Status, Context, Decision, Consequences).

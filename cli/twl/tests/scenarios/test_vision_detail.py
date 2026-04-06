@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for vision.md detail requirements.
 
-Spec: openspec/changes/arch-spec-refine/specs/vision-detail.md
+Spec: deltaspec/changes/arch-spec-refine/specs/vision-detail.md
 
 Verifies that architecture/vision.md contains detailed technical constraints
 and non-goals with reasons.

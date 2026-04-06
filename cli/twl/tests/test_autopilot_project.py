@@ -160,9 +160,9 @@ class TestCreateScaffolding:
         symlink = tmp_path / "my-project" / ".claude"
         assert symlink.is_symlink()
 
-    def test_openspec_dirs_created_when_deltaspec_absent(self, tmp_path: Path) -> None:
-        """When deltaspec is missing, openspec dirs should still be created
-        (the shell logged a warning but created dirs — Python mirrors this)."""
+    def test_deltaspec_dirs_not_created_when_deltaspec_absent(self, tmp_path: Path) -> None:
+        """When deltaspec CLI is missing, deltaspec dirs are NOT created
+        (matches bash behavior: only deltaspec CLI creates them)."""
         def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
             cmd = " ".join(str(a) for a in args)
             if "worktree add" in cmd:
@@ -180,10 +180,10 @@ class TestCreateScaffolding:
                 project_root=str(tmp_path),
                 no_github=True,
             )
-        # When deltaspec is absent, openspec dirs are NOT created
+        # When deltaspec is absent, deltaspec dirs are NOT created
         # (matches bash behavior: only deltaspec creates them)
         project_dir = tmp_path / "my-project" / "main"
-        assert not (project_dir / "openspec").exists()
+        assert not (project_dir / "deltaspec").exists()
 
     def test_src_and_tests_dirs_created_for_generic(self, tmp_path: Path) -> None:
         self._run_create("my-project", tmp_path, self._make_mgr(tmp_path))
@@ -276,10 +276,10 @@ class TestMigrate:
         with pytest.raises(ProjectError, match="プロジェクトルート"):
             mgr.migrate(project_dir=empty)
 
-    def test_detects_v1_openspec(self, tmp_path: Path) -> None:
+    def test_detects_v1_deltaspec(self, tmp_path: Path) -> None:
         project = self._make_project(tmp_path)
-        (project / "openspec").mkdir()
-        (project / "openspec" / "config.yaml").write_text("")
+        (project / "deltaspec").mkdir()
+        (project / "deltaspec" / "config.yaml").write_text("")
 
         changes: list[str] = []
 
@@ -302,8 +302,8 @@ class TestMigrate:
 
     def test_applies_deltaspec_for_v0(self, tmp_path: Path) -> None:
         project = self._make_project(tmp_path)
-        (project / "openspec").mkdir()
-        (project / "openspec" / "project.md").write_text("")  # v0.x marker
+        (project / "deltaspec").mkdir()
+        (project / "deltaspec" / "project.md").write_text("")  # v0.x marker
 
         def fake_detect(_self: ProjectManager, _dir: Path) -> str:
             return "webapp-llm"

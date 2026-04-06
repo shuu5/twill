@@ -621,9 +621,9 @@ class PhaseOrchestrator:
                      "board-archive", issue],
                     capture_output=True,
                 )
-                self._archive_openspec_changes(issue)
+                self._archive_deltaspec_changes(issue)
 
-    def _archive_openspec_changes(self, issue: str) -> None:
+    def _archive_deltaspec_changes(self, issue: str) -> None:
         try:
             root = subprocess.check_output(
                 ["git", "rev-parse", "--show-toplevel"],
@@ -636,12 +636,12 @@ class PhaseOrchestrator:
             print(f"[orchestrator] Issue #{issue}: ⚠️ deltaspec CLI が見つかりません", file=sys.stderr)
             return
 
-        changes_dir = Path(root) / "openspec" / "changes"
+        changes_dir = Path(root) / "deltaspec" / "changes"
         if not changes_dir.is_dir():
             return
 
         found = False
-        for yaml_path in changes_dir.rglob(".openspec.yaml"):
+        for yaml_path in changes_dir.rglob(".deltaspec.yaml"):
             content = yaml_path.read_text(encoding="utf-8")
             if f"\nissue: {issue}\n" in content or content.startswith(f"issue: {issue}\n"):
                 found = True

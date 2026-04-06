@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for domain model detail requirements.
 
-Spec: openspec/changes/arch-spec-refine/specs/model-detail.md
+Spec: deltaspec/changes/arch-spec-refine/specs/model-detail.md
 
 Verifies that architecture/domain/model.md contains detailed class diagrams
 with typed attributes, aggregate boundaries, and value object listings.

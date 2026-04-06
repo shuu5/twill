@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for Context file structure requirements.
 
-Spec: openspec/changes/arch-spec-refine/specs/context-structure.md
+Spec: deltaspec/changes/arch-spec-refine/specs/context-structure.md
 
 Verifies that architecture/domain/contexts/*.md files contain the required
 3-section structure (Key Entities, Dependencies, Constraints), detailed

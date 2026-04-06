@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for Phase 2: audit/complexity data collection separation and JSON output.
 
-Spec: openspec/changes/validate-audit-complexity-json-format/specs/phase2-audit-complexity.md
+Spec: deltaspec/changes/validate-audit-complexity-json-format/specs/phase2-audit-complexity.md
 
 Covers:
 - audit_collect() data collection separation and return value

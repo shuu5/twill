@@ -50,7 +50,7 @@ The system SHALL do foo.
 
 
 def make_change(tmp_path: Path, name: str, spec_content: str | None = None) -> Path:
-    change_dir = tmp_path / "openspec" / "changes" / name
+    change_dir = tmp_path / "deltaspec" / "changes" / name
     specs_dir = change_dir / "specs" / "cap-a"
     specs_dir.mkdir(parents=True)
     if spec_content is not None:
@@ -113,14 +113,14 @@ def test_validate_json_output(tmp_path, monkeypatch, capsys):
 def test_validate_no_specs_dir(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     # Change with no specs dir — passes vacuously
-    (tmp_path / "openspec" / "changes" / "empty").mkdir(parents=True)
+    (tmp_path / "deltaspec" / "changes" / "empty").mkdir(parents=True)
     rc = cmd_validate("empty")
     assert rc == 0
 
 
 def test_validate_missing_change(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "openspec" / "changes").mkdir(parents=True)
+    (tmp_path / "deltaspec" / "changes").mkdir(parents=True)
     # Missing change just warns, doesn't error out, but total=0
     rc = cmd_validate("ghost")
     assert rc == 0  # 0 failed out of 0

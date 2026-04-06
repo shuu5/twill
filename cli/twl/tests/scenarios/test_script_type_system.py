@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for deps.yaml scripts SSOT: Type System scenarios.
 
-Spec: openspec/changes/depsyaml-scripts-ssot/specs/type-system/spec.md
+Spec: deltaspec/changes/depsyaml-scripts-ssot/specs/type-system/spec.md
 
 Covers:
 - types.yaml script type definition and loading

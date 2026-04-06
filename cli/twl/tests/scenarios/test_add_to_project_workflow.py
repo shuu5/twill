@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for Issue to Project Board auto-add workflow YAML structure.
 
-Spec: openspec/changes/project-board-add-to-project-closedone/specs/add-to-project.md
+Spec: deltaspec/changes/project-board-add-to-project-closedone/specs/add-to-project.md
 
 Requirement: Issue を Project Board に自動追加
 

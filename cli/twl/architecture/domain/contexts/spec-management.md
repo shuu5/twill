@@ -3,7 +3,7 @@ Spec Management
 
 ## Key Entities
 
-- **Change**: openspec/changes/<name>/ に対応。スキーマ（spec-driven）に基づく成果物群を持つ
+- **Change**: deltaspec/changes/<name>/ に対応。スキーマ（spec-driven）に基づく成果物群を持つ
 - **Artifact**: Change 内の成果物単位（proposal, design, specs, tasks）。依存関係と完了状態を持つ
 - **ArtifactStatus**: ready | blocked | done。依存する Artifact の完了状態から算出
 - **Instruction**: Artifact 作成のための指示テキストとテンプレート。JSON 出力対応
@@ -16,8 +16,8 @@ Spec Management
 
 ## Constraints
 
-- openspec/ ディレクトリは cwd から上方探索で発見する（プロジェクトルートに依存しない）
-- スキーマは現在 "spec-driven" のみ。.openspec.yaml の schema フィールドで識別
+- deltaspec/ ディレクトリは cwd から上方探索で発見する（プロジェクトルートに依存しない）
+- スキーマは現在 "spec-driven" のみ。.deltaspec.yaml の schema フィールドで識別
 - Artifact 間の依存グラフ: proposal → design, specs（並列）→ tasks
 - archive 時に specs/ 内の delta headers（ADDED/MODIFIED/REMOVED）を main specs に統合
 
