@@ -25,7 +25,7 @@ chain ステップの実行順序は deps.yaml で宣言されている。
 SPECIALISTS=$(git diff --name-only origin/main | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode merge-gate)
 
 # hook 用一時ファイル作成
-CONTEXT_ID="merge-gate-$(git branch --show-current)"
+CONTEXT_ID="merge-gate-$(git branch --show-current | tr '/' '-')"
 echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
 ```
 
