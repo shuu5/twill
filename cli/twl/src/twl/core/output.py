@@ -46,12 +46,12 @@ def _parse_violation_to_item(violation: str, default_severity: str = "critical")
     return item
 
 
-def _violations_to_items(violations: List[str], severity: str = "critical") -> List[dict]:
+def violations_to_items(violations: List[str], severity: str = "critical") -> List[dict]:
     """violation 文字列リストを items リストに変換"""
     return [_parse_violation_to_item(v, severity) for v in violations]
 
 
-def _check_results_to_items(results: List[Tuple[str, str, str]]) -> List[dict]:
+def check_results_to_items(results: List[Tuple[str, str, str]]) -> List[dict]:
     """check_files() の結果を items 形式に変換"""
     severity_map = {"missing": "critical", "no_path": "warning", "ok": "ok", "external": "info"}
     message_map = {"missing": "File missing", "no_path": "No path defined", "ok": "File exists", "external": "External component"}
@@ -90,7 +90,7 @@ def _extract_check_label(msg: str) -> str:
     return code
 
 
-def _deep_validate_to_items(criticals: List[str], warnings: List[str], infos: List[str]) -> List[dict]:
+def deep_validate_to_items(criticals: List[str], warnings: List[str], infos: List[str]) -> List[dict]:
     """deep_validate() の結果を items 形式に変換"""
     items = []
     for msg in criticals:
