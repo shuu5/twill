@@ -12,6 +12,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 
 # --- 引数パース ---
@@ -19,6 +20,10 @@ MODE=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --mode)
+      if [[ $# -lt 2 ]]; then
+        echo "Error: --mode requires a value" >&2
+        exit 1
+      fi
       MODE="$2"
       shift 2
       ;;
@@ -113,7 +118,7 @@ fi
 
 # merge-gate モードのみ: architecture/ 存在チェック → worker-architecture
 if [[ "$MODE" == "merge-gate" ]]; then
-  if [[ -d "$PROJECT_ROOT/architecture" ]]; then
+  if [[ -d "$PLUGIN_ROOT/architecture" ]]; then
     SPECIALISTS["worker-architecture"]=1
   fi
 fi
