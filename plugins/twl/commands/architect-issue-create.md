@@ -62,157 +62,45 @@ done
 
 ## Step 4: 親 Issue 作成
 
+プロジェクト名をサニタイズし、body を `--body-file` 経由で渡す:
+
 ```bash
 SAFE_PROJECT=$(printf '%s' "<project-name>" | tr -d '`$"'\''')
-
-cat > "${WORK_DIR}/parent-issue.md" <<'ISSUE_EOF'
-## 概要
-
-__PROJECT_NAME__ のアーキテクチャ実装計画。
-architecture/ の設計に基づき、Phase 構成で Issue を管理する。
-
-## Phase 構成
-
-(Phase ごとの Issue 一覧テーブル)
-
-## Sub-Issues
-
-(起票後に SubIssuesSummary で進捗追跡)
-ISSUE_EOF
-
-# プレースホルダーを安全に展開
-python3 -c "
-import sys
-body = open(sys.argv[1]).read()
-body = body.replace('__PROJECT_NAME__', sys.argv[2])
-open(sys.argv[1], 'w').write(body)
-" "${WORK_DIR}/parent-issue.md" "${SAFE_PROJECT}"
-
-PARENT_URL=$(gh issue create \
-  --title "[Architecture] ${SAFE_PROJECT}: 実装計画" \
-  --label "enhancement" \
-  --body-file "${WORK_DIR}/parent-issue.md")
+# WORK_DIR/parent-issue.md にテンプレートを書き出し、python3 で __PROJECT_NAME__ を置換
+PARENT_URL=$(gh issue create --title "[Architecture] ${SAFE_PROJECT}: 実装計画" --label "enhancement" --body-file "${WORK_DIR}/parent-issue.md")
 PARENT_NUM=$(echo "${PARENT_URL}" | grep -oP '\d+$')
-
 [[ "${PARENT_NUM}" =~ ^[0-9]+$ ]] || { echo "ERROR: 親Issue番号の取得に失敗" >&2; exit 1; }
 ```
 
+テンプレート内容: 概要 + Phase構成テーブル + Sub-Issues セクション。
+
 ## Step 5: 子 Issue の依存順ソート・作成
 
-Issue 候補リストを依存順にトポロジカルソートし、依存先が先に作成されるようにする。
-作成済み Issue の仮番号→実番号マッピングテーブルを保持する:
+候補リストをトポロジカルソートし、`declare -A ISSUE_MAP` で仮番号→実番号を管理。
 
-```bash
-# マッピングテーブル: 仮番号 → 実 GitHub Issue 番号
-declare -A ISSUE_MAP
-
-# 依存順にソートされた候補リストをイテレート
-for CANDIDATE in <sorted-candidates>; do
-  # タイトルのサニタイズ
-  SAFE_TITLE=$(printf '%s' "${TITLE}" | tr -d '`$"'\''' | head -c 200)
-
-  # 依存関係の仮番号を実番号に置換
-  DEPS_TEXT=""
-  for DEP_ID in <candidate-dependencies>; do
-    REAL_NUM="${ISSUE_MAP[${DEP_ID}]}"
-    if [ -z "${REAL_NUM}" ]; then
-      echo "WARN: 依存 '${DEP_ID}' の Issue 番号が未解決。スキップします" >&2
-      continue
-    fi
-    DEPS_TEXT="${DEPS_TEXT}- depends-on: #${REAL_NUM}
-"
-  done
-
-  # ボディをファイルに書き出し（クォート付き heredoc で展開を防止）
-  cat > "${WORK_DIR}/child-issue.md" <<'ISSUE_EOF'
-## 概要
-
-__DESCRIPTION__
-
-## Architecture Reference
-<!-- arch-ref-start -->
-__ARCH_REFS__
-<!-- arch-ref-end -->
-
-## Dependencies
-<!-- deps-start -->
-__DEPS_TEXT__
-<!-- deps-end -->
-
-## 受け入れ基準
-
-(architect-decompose の候補リストから転記)
-
-## Related
-
-Parent: #__PARENT_NUM__
-ISSUE_EOF
-
-  # python3 で安全にプレースホルダを置換（シェル展開を回避）
-  python3 -c "
-import sys
-body = open(sys.argv[1]).read()
-body = body.replace('__DESCRIPTION__', sys.argv[2])
-body = body.replace('__ARCH_REFS__', sys.argv[3])
-body = body.replace('__DEPS_TEXT__', sys.argv[4])
-body = body.replace('__PARENT_NUM__', sys.argv[5])
-open(sys.argv[1], 'w').write(body)
-" "${WORK_DIR}/child-issue.md" "${DESCRIPTION}" "${ARCH_REFS}" "${DEPS_TEXT}" "${PARENT_NUM}"
-
-  # Milestone 番号を取得（jq --arg で安全に変数を渡す）
-  MILESTONE_TITLE="Phase ${PHASE_NUM}: ${PHASE_TITLE}"
-  MILESTONE_NUM=$(gh api repos/{owner}/{repo}/milestones 2>/dev/null | jq --arg title "${MILESTONE_TITLE}" '.[] | select(.title==$title) | .number')
-
-  # Milestone 引数を条件付きで構築（空の場合は省略）
-  MILESTONE_ARGS=()
-  if [ -n "${MILESTONE_NUM}" ]; then
-    MILESTONE_ARGS=(--milestone "${MILESTONE_NUM}")
-  fi
-
-  # ctx/* ラベルを scope から生成（複数 scope 対応、bash 配列で安全に構築）
-  CTX_LABEL_ARGS=()
-  for SCOPE in <candidate-scopes>; do
-    SAFE_SCOPE=$(printf '%s' "${SCOPE}" | tr -d '`$"'\''' | tr -cd 'a-zA-Z0-9_-')
-    [ -n "${SAFE_SCOPE}" ] && CTX_LABEL_ARGS+=(--label "ctx/${SAFE_SCOPE}")
-  done
-
-  # Issue 作成（ラベル + Milestone 付き）
-  CHILD_URL=$(gh issue create \
-    --title "${SAFE_TITLE}" \
-    --label "enhancement" \
-    --label "arch/skeleton" \
-    "${CTX_LABEL_ARGS[@]}" \
-    "${MILESTONE_ARGS[@]}" \
-    --body-file "${WORK_DIR}/child-issue.md")
-  CHILD_NUM=$(echo "${CHILD_URL}" | grep -oP '\d+$')
-
-  [[ "${CHILD_NUM}" =~ ^[0-9]+$ ]] || { echo "ERROR: 子Issue番号の取得に失敗: ${SAFE_TITLE}" >&2; continue; }
-
-  # マッピングテーブルに追加
-  ISSUE_MAP[${CANDIDATE_ID}]="${CHILD_NUM}"
-done
-```
+各候補について:
+1. タイトルサニタイズ（`tr -d` + `head -c 200`）
+2. 依存関係の仮番号→実番号置換（未解決は WARN + スキップ）
+3. body を `WORK_DIR/child-issue.md` に書き出し（heredoc + python3 プレースホルダ置換）
+   - セクション: 概要、Architecture Reference（`<!-- arch-ref-start/end -->`）、Dependencies（`<!-- deps-start/end -->`）、受け入れ基準、Related（Parent: #N）
+4. Milestone 番号を `gh api repos/{owner}/{repo}/milestones` + jq で取得
+5. ctx/* ラベルを scope から動的構築（`CTX_LABEL_ARGS` 配列）
+6. `gh issue create --title --label enhancement --label arch/skeleton --body-file` で作成
+7. `[[ "${CHILD_NUM}" =~ ^[0-9]+$ ]] || continue` でバリデーション
+8. `ISSUE_MAP[${CANDIDATE_ID}]="${CHILD_NUM}"` に記録
 
 ## Step 6: GraphQL Sub-Issues 親子紐付け
 
 ```bash
-# 親 Issue の node ID を取得
 PARENT_NODE_ID=$(gh issue view "${PARENT_NUM}" --json id -q '.id')
-
 for CANDIDATE_ID in "${!ISSUE_MAP[@]}"; do
   REAL_NUM="${ISSUE_MAP[${CANDIDATE_ID}]}"
-  if [ -z "${REAL_NUM}" ]; then
-    echo "WARN: 候補 '${CANDIDATE_ID}' の Issue 番号が未解決。紐付けをスキップします" >&2
-    continue
-  fi
+  [ -z "${REAL_NUM}" ] && continue
   CHILD_NODE_ID=$(gh issue view "${REAL_NUM}" --json id -q '.id')
-
   gh api graphql -f query='
     mutation($parentId: ID!, $childId: ID!) {
       addSubIssue(input: { issueId: $parentId, subIssueId: $childId }) {
-        issue {
-          subIssuesSummary { completed total percentCompleted }
-        }
+        issue { subIssuesSummary { completed total percentCompleted } }
       }
     }
   ' -f parentId="${PARENT_NODE_ID}" -f childId="${CHILD_NODE_ID}"
@@ -221,33 +109,5 @@ done
 
 ## Step 7: 完了サマリー表示
 
-```bash
-# SubIssuesSummary を取得
-SUMMARY=$(gh api graphql -f query='
-  query($id: ID!) {
-    node(id: $id) {
-      ... on Issue {
-        subIssuesSummary { completed total percentCompleted }
-      }
-    }
-  }
-' -f id="${PARENT_NODE_ID}" --jq '.data.node.subIssuesSummary')
-
-echo "=== Issue 一括作成完了 ==="
-echo "親 Issue: #${PARENT_NUM}"
-echo "子 Issue: ${#ISSUE_MAP[@]} 件"
-echo "SubIssuesSummary: ${SUMMARY}"
-echo ""
-echo "--- 作成された Issue ---"
-for KEY in "${!ISSUE_MAP[@]}"; do
-  echo "  候補 #${KEY} → GitHub #${ISSUE_MAP[${KEY}]}"
-done
-echo ""
-echo "--- ラベル ---"
-echo "  状態: arch/skeleton (全件)"
-echo "  コンテキスト: ctx/* (各候補の scope に対応)"
-echo ""
-echo "--- Milestone ---"
-echo "  Phase ごとに Milestone を設定済み"
-```
+SubIssuesSummary を GraphQL で取得し、親 Issue 番号・子 Issue 数・マッピング・ラベル・Milestone を出力。
 

@@ -24,74 +24,31 @@
 
 #### Step 1.5a: scope/* 候補リスト構築
 
-ルートレベル `architecture/domain/context-map.md` を **Read** する。存在しない場合は scope/* 候補リストを空とする。
-
-存在する場合:
-1. flowchart の subgraph 内のノード名からコンポーネント名を抽出（例: `cli/twl`, `plugins/twl`）
-2. スラッシュ → ハイフン変換で `scope/<name>` 候補リストを構築（例: `scope/cli-twl`, `scope/plugins-twl`）
-3. 各コンポーネントパスの `<component>/architecture/domain/context-map.md` を **Read** し（存在する場合）、サブコンポーネントがあれば追加の scope/* 候補を収集する。`COMPONENT_PATHS` として抽出したコンポーネントパスのリストを保持し、Step 1.5b で使用する
+`architecture/domain/context-map.md` を Read。存在しなければ scope/* 候補空。存在すれば:
+- flowchart subgraph ノードからコンポーネント名抽出 → スラッシュ→ハイフン変換 → `scope/<name>`
+- 各コンポーネントの `<component>/architecture/domain/context-map.md` も Read してサブコンポーネント追加
+- `COMPONENT_PATHS` を保持（Step 1.5b で使用）
 
 #### Step 1.5b: ctx/* 候補リスト構築
 
-git root に `architecture/` ディレクトリが存在するか確認する。存在しない場合は ctx/* 候補リストを空とし、Step 2 へ進む。
+`architecture/` なし → ctx/* 空。ありの場合（ref-project-model §2 導出ルール）:
+1. Glob `architecture/domain/contexts/*.md` → `ctx/<name>`
+2. 各 `COMPONENT_PATHS` の `<component>/architecture/domain/contexts/*.md` → `ctx/<name>`（`CTX_FILE_PATHS` マッピング保持。同名はコンポーネントパス優先、Step 2.5 で scope 照合して選択）
+3. Glob `architecture/contracts/*.md` → `ctx/<name>`
+4. `architecture/domain/model.md` の `## Shared Kernel` → `ctx/shared-kernel`
 
-存在する場合、ref-project-model §2 の導出ルールに従い ctx/\<name\> 候補リストを構築:
-
-1. **Glob** で `architecture/domain/contexts/*.md` を検索 → ファイル名（拡張子除去）を `ctx/<name>` として収集
-2. Step 1.5a で取得した `COMPONENT_PATHS` の各コンポーネントについて **Glob** で `<component>/architecture/domain/contexts/*.md` を検索 → ファイル名（拡張子除去）を `ctx/<name>` として収集し、`CTX_FILE_PATHS` に `ctx/<name>` → `<component>/architecture/domain/contexts/<name>.md` のエントリを追記する。同名 context が複数コンポーネントに存在する場合（例: `plugins/twl` と `cli/twl` 両方に `autopilot.md`）は、全コンポーネントのパスを保持し、Step 2.5 で scope/* と照合して最も関連性の高いコンポーネントのパスを選択する。リポルートとコンポーネントで同名が存在する場合、コンポーネントパスを優先する
-3. **Glob** で `architecture/contracts/*.md` を検索 → ファイル名（拡張子除去）を `ctx/<name>` として収集
-4. **Read** で `architecture/domain/model.md` を確認 → `## Shared Kernel` セクションが存在すれば `ctx/shared-kernel` を追加
-
-`CTX_FILE_PATHS` として各 ctx/* 名から対応するファイルパス（コンポーネントパス含む）へのマッピングを保持し、Step 3 の arch-ref タグ生成で使用する。同名 context が複数コンポーネントに存在する場合は Step 2.5 で確定したコンポーネントパスのエントリを使用する。
-
-候補リストが空（contexts/ も contracts/ もファイルなし）の場合は ctx/* を skip。
+候補空なら ctx/* skip。
 
 ### Step 2: テンプレート読込
 
-テンプレートを **Read tool** で読み込み、フィールドを埋める。
+テンプレートを Read し、フィールドを埋める:
+- **Feature**: `plugins/twl/templates/issue/feature.md` — タイトル、概要、背景、スコープ、技術的アプローチ、受け入れ基準（`- [ ]`）
+- **Bug**: `plugins/twl/templates/issue/bug.md` — タイトル、概要、再現手順、期待/実際の動作、環境情報、補足
+- **Docs**: テンプレートなし。`[Docs] xxx` タイトルと適切な本文
 
-**Feature の場合**:
+### Step 2.5: scope/* + ctx/* 提案
 
-1. **タイトル**: `[Feature] xxx`
-2. **概要**: 1-2文での説明
-3. **背景・動機**: なぜ必要か
-4. **スコープ**: 含む/含まないを明確化（不明なら省略可）
-5. **技術的アプローチ**: 実現方法（不明なら省略可）
-6. **受け入れ基準**: 完成条件（`- [ ]` チェックリスト形式）
-
-**Bug の場合**:
-
-1. **タイトル**: `[Bug] xxx`
-2. **概要**: バグの内容を1-2文
-3. **再現手順**: 番号付き手順（2ステップ以上）
-4. **期待される動作**: 本来どう動作すべきか
-5. **実際の動作**: 現在どうなっているか
-6. **環境情報**: OS/ブラウザ/Node.js（わかる範囲で）
-7. **補足情報**: エラーログ、スクリーンショット等（あれば）
-
-**Docs の場合**:
-
-テンプレートなし。タイトル（`[Docs] xxx`）と適切な本文を生成。
-
-### Step 2.5: scope/* + ctx/\<name\> 提案
-
-Step 1.5 で候補リストが構築された場合のみ実行。
-
-#### scope/* 提案
-
-Step 1.5a で scope/* 候補リストが構築された場合:
-1. 要望テキストの内容と各コンポーネントのパスを照合し、最も関連性の高い `scope/<name>` を1つ選択する
-2. 該当なしの場合は提案を行わない
-
-#### ctx/* 提案
-
-Step 1.5b で ctx/* 候補リストが構築された場合:
-1. 各候補 context の `.md` ファイルを **Read** し、context の責務・スコープを把握する
-2. 要望テキストの内容と各 context の責務を照合し、最も関連性の高い ctx/\<name\> を1つ選択する
-3. 判定結果:
-   - **単一マッチ**: 該当する `ctx/<name>` を提案ラベルとして記録
-   - **複数マッチ**: 最も主要な `ctx/<name>` を1つ提案し、関連する他を補足表示
-   - **該当なし**: 「既存の context に該当しない可能性があります。新しい Bounded Context の追加を検討してください」と表示し、提案は行わない
+候補リストがある場合のみ。scope/*: 要望と各コンポーネントパスを照合→1つ選択。ctx/*: 各候補の `.md` を Read し責務照合→単一マッチ（記録）/ 複数（主要1つ提案+補足）/ 該当なし（新 Context 検討を案内）。
 
 ### Step 3: 結果出力
 

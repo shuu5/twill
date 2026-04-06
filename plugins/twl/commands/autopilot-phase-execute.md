@@ -31,154 +31,39 @@ fi
 
 ### Step 1: Phase 内 Issue リスト取得
 
-```bash
-# plan.yaml のフォーマット判定: クロスリポジトリ（{ number: N, repo: id }）or レガシー（bare int）
-PHASE_BLOCK=$(sed -n "/  - phase: ${P}/,/  - phase:/p" "$PLAN_FILE")
+`plan.yaml` から Phase ブロックを `sed` で抽出し、フォーマット判定:
+- **クロスリポジトリ** (`{ number: N, repo: id }`): `ISSUES_WITH_REPO` 配列に `"repo_id:number"` 形式で格納。混合フォーマットの bare int は `_default:N` として追加
+- **レガシー** (bare int): 全て `_default:N` として ISSUES_WITH_REPO に格納
 
-if echo "$PHASE_BLOCK" | grep -q '{ number:'; then
-  # クロスリポジトリ形式: { number: N, repo: repo_id } を解析
-  # ISSUES_WITH_REPO: "repo_id:number" の配列
-  ISSUES_WITH_REPO=()
-  while IFS= read -r line; do
-    num=$(echo "$line" | grep -oP 'number:\s*\K\d+')
-    repo=$(echo "$line" | grep -oP 'repo:\s*\K[a-zA-Z0-9_-]+')
-    [ -n "$num" ] && ISSUES_WITH_REPO+=("${repo}:${num}")
-  done <<< "$(echo "$PHASE_BLOCK" | grep '{ number:')"
-  # フォールバック: 混合フォーマット時の bare int もパース（_default repo として扱う）
-  BARE_INTS=$(echo "$PHASE_BLOCK" | grep -P '^\s+- \d+$' | grep -oP '\d+' || true)
-  for bi in $BARE_INTS; do
-    ISSUES_WITH_REPO+=("_default:${bi}")
-  done
-  ISSUES=$(printf '%s\n' "${ISSUES_WITH_REPO[@]}" | cut -d: -f2)
-else
-  # レガシー形式: bare integer
-  ISSUES=$(echo "$PHASE_BLOCK" | grep -oP '    - \K\d+' || true)
-  ISSUES_WITH_REPO=()
-  for issue in $ISSUES; do
-    ISSUES_WITH_REPO+=("_default:${issue}")
-  done
-fi
-```
-
-Issue ごとのリポジトリ情報を autopilot-launch に渡す:
-
-```bash
-# ISSUES_WITH_REPO から repo コンテキストを展開
-resolve_issue_repo_context() {
-  local entry="$1"  # "repo_id:number"
-  local repo_id="${entry%%:*}"
-  ISSUE="${entry#*:}"
-  ISSUE_REPO_ID="$repo_id"
-
-  if [ "$repo_id" != "_default" ] && [ -n "$REPOS_JSON" ]; then
-    ISSUE_REPO_OWNER=$(echo "$REPOS_JSON" | jq -r --arg k "$repo_id" '.[$k].owner')
-    ISSUE_REPO_NAME=$(echo "$REPOS_JSON" | jq -r --arg k "$repo_id" '.[$k].name')
-    ISSUE_REPO_PATH=$(echo "$REPOS_JSON" | jq -r --arg k "$repo_id" '.[$k].path')
-    PILOT_AUTOPILOT_DIR="${PROJECT_DIR}/.autopilot"
-  else
-    ISSUE_REPO_OWNER=""
-    ISSUE_REPO_NAME=""
-    ISSUE_REPO_PATH=""
-    PILOT_AUTOPILOT_DIR="${PROJECT_DIR}/.autopilot"
-  fi
-}
-```
+`resolve_issue_repo_context(entry)` で `ISSUES_WITH_REPO` エントリから以下の変数をセット:
+- `ISSUE` (番号), `ISSUE_REPO_ID` (repo_id)
+- `_default` → 空文字セット（単一リポジトリ）
+- それ以外 → `$REPOS_JSON` から jq で `ISSUE_REPO_OWNER`, `ISSUE_REPO_NAME`, `ISSUE_REPO_PATH` を取得
+- `PILOT_AUTOPILOT_DIR="${PROJECT_DIR}/.autopilot"` を常にセット
 
 ### Step 2: 実行モード分岐
 
 #### 2a. sequential モード（standard repo）
 
-```
-FOR each ISSUE in $ISSUES:
-  # 再開時の done スキップ
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
-  IF STATUS == "done":
-    → 状態記録（done）、continue
-
-  # should_skip 判定
-  IF AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-should-skip.sh" "$PLAN_FILE" "$ISSUE" "$SESSION_STATE_FILE" → exit 0:
-    → 状態記録（skipped）、continue
-
-  # Worker 起動（autopilot-launch を Read → 実行）
-  → commands/autopilot-launch.md を Read → 実行
-
-  # ポーリング（autopilot-poll を Read → 実行、POLL_MODE=single）
-  POLL_MODE=single
-  → commands/autopilot-poll.md を Read → 実行
-
-  # proactive health check（論理的異常検知、crash-detect とは責務分離）
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
-  IF STATUS == "running":
-    HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/health-check.sh" --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
-      echo "WARNING: Issue #${ISSUE}: health check 異常検知: $HEALTH_OUTPUT"
-    }
-
-  # 結果処理
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
-  IF STATUS == "merge-ready":
-    → commands/merge-gate.md を Read → 実行
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
-  IF STATUS == "done":
-    → 状態記録（done）
-    # tmux kill-window は autopilot-orchestrator.sh の cleanup_worker が担当（不変条件B）
-  ELIF STATUS == "failed":
-    → 状態記録（fail）
-    → 残り全 Issue を skipped に設定
-    → break
-```
+各 Issue を順に処理:
+1. done → スキップ、should_skip → skipped
+2. `commands/autopilot-launch.md` Read → Worker 起動
+3. `commands/autopilot-poll.md` Read → POLL_MODE=single でポーリング
+4. running なら `health-check.sh --issue $ISSUE --window "ap-#${ISSUE}"` で異常検知
+5. merge-ready → `commands/merge-gate.md` Read → merge-gate 実行
+6. done → 状態記録、failed → 残り全 Issue を skipped → break
 
 #### 2b. parallel モード（worktree repo）
 
-```
-# 有効 Issue リストを構築（skip/done を除外）
-ACTIVE_ISSUES=()
-FOR each ISSUE in $ISSUES:
-  STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
-  IF STATUS == "done":
-    → 状態記録（done）、continue
-  IF AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-should-skip.sh" → exit 0:
-    → 状態記録（skipped）、continue
-  ACTIVE_ISSUES+=($ISSUE)
+1. done/skip を除外して ACTIVE_ISSUES を構築
+2. MAX_PARALLEL 個ずつバッチ分割
+3. バッチ内を並列 launch（`commands/autopilot-launch.md`）
+4. POLL_MODE=phase でバッチ全体ポーリング（`commands/autopilot-poll.md`）
+5. running Issue に health-check 実行
+6. merge-ready Issue に merge-gate 順次実行（`commands/merge-gate.md`）
+7. 各 Issue の状態記録（done/failed）
 
-# バッチ分割: ACTIVE_ISSUES を MAX_PARALLEL 個ずつに分割
-TOTAL=${#ACTIVE_ISSUES[@]}
-FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
-  BATCH=(${ACTIVE_ISSUES[@]:$BATCH_START:$MAX_PARALLEL})
-
-  # バッチ内の Issue を並列 launch
-  FOR each ISSUE in $BATCH:
-    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
-    IF STATUS == "done": continue
-    → commands/autopilot-launch.md を Read → 実行
-
-  # バッチ全体ポーリング
-  POLL_MODE=phase
-  ISSUES="${BATCH[*]}"
-  → commands/autopilot-poll.md を Read → 実行
-
-  # proactive health check（論理的異常検知、crash-detect とは責務分離）
-  FOR each ISSUE in $BATCH:
-    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
-    IF STATUS == "running":
-      HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/health-check.sh" --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
-        echo "WARNING: Issue #${ISSUE}: health check 異常検知: $HEALTH_OUTPUT"
-      }
-
-  # merge-ready の Issue に対して merge-gate を順次実行
-  FOR each ISSUE in $BATCH:
-    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
-    IF STATUS == "merge-ready":
-      → commands/merge-gate.md を Read → 実行
-
-  # window 管理 + 状態記録
-  FOR each ISSUE in $BATCH:
-    STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
-    IF STATUS == "done":
-      → 状態記録（done）
-      # tmux kill-window は autopilot-orchestrator.sh の cleanup_worker が担当（不変条件B）
-    ELIF STATUS == "failed":
-      → 状態記録（fail）
-```
+**共通**: state read/write は `AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state` 経由。tmux kill-window は orchestrator が担当（不変条件B）。
 
 ### Step 3: 状態ファイル更新
 
