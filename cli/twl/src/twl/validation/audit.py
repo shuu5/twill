@@ -87,7 +87,7 @@ def _check_output_schema_keywords(file_path: Path) -> Dict[str, bool]:
 
 
 def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
-    """5セクションの TWiLL 準拠度データを収集（print なし）
+    """6セクションの TWiLL 準拠度データを収集（print なし）
 
     Returns: items リスト（severity, component, message, section, value, threshold）
     """
@@ -239,9 +239,9 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
     # Section 6: Token Bloat
     from twl.core.plugin import count_tokens
     from twl.validation.deep import TOKEN_THRESHOLDS
+    from twl.core.types import resolve_type as _rt
 
     for name, comp in sorted(all_components.items()):
-        from twl.core.types import resolve_type as _rt
         comp_type = _rt(comp['type'])
         if comp_type not in TOKEN_THRESHOLDS:
             continue
@@ -337,7 +337,7 @@ def _scan_body_for_mcp_tools(file_path: Path) -> Set[str]:
 
 
 def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
-    """5セクションの TWiLL 準拠度レポートを出力
+    """7セクションの TWiLL 準拠度レポートを出力
 
     Returns: (critical_count, warning_count, ok_count)
     """
