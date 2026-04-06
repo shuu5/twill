@@ -533,13 +533,10 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
         warn_t, crit_t = _TT[comp_type]
         if tok > crit_t:
             severity = 'CRITICAL'
-            criticals += 1
         elif tok > warn_t:
             severity = 'WARNING'
-            warnings += 1
         else:
             severity = 'OK'
-            oks += 1
         print(f"| {name} | {comp_type} | {tok} | {warn_t} | {crit_t} | {severity} |")
     print()
 
