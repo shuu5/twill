@@ -86,4 +86,4 @@ JSON でもテキストでも同一の exit code ルール:
 
 - **audit/complexity の print() リファクタ**: 影響箇所が多い（計105箇所程度）。既存テストの期待出力への影響を最小化するため、collect() を新設し既存関数は collect() + print() のラッパーとする
 - **validate の violation パース**: 現在 violations は自由形式文字列（`[code] section/name: message`）。パースの信頼性を高めるため、validate 関数側で構造化データを返すヘルパーを追加する必要がある
-- **Phase 分割のトレードオフ**: Phase 1 のみで merge-gate は動作可能だが、audit/complexity の JSON 化が遅れると loom-plugin-dev の他コンポーネントが手動パースを続ける可能性がある
+- **Phase 分割のトレードオフ**: Phase 1 のみで merge-gate は動作可能だが、audit/complexity の JSON 化が遅れると plugins/twl の他コンポーネントが手動パースを続ける可能性がある

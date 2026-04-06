@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: scripts-migration.md
-# Generated from: openspec/changes/loom-plugin-session/specs/scripts-migration.md
+# Generated from: openspec/changes/twl-plugin-session/specs/scripts-migration.md
 # Coverage level: edge-cases
 # Target repo: ~/projects/local-projects/twill-plugin-session/main/
 # =============================================================================
 set -uo pipefail
 
-# Target repo root (loom-plugin-session)
+# Target repo root (twl-plugin-session)
 TARGET_ROOT="${TWILL_PLUGIN_SESSION_ROOT:-/home/shuu5/projects/local-projects/twill-plugin-session/main}"
 
 # Counters
@@ -605,7 +605,7 @@ run_test "[edge: claude-session-save.sh が tmux 外で早期終了する]" test
 # =============================================================================
 echo ""
 echo "============================================="
-echo "loom-plugin-session-scripts-migration: Results: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
+echo "twl-plugin-session-scripts-migration: Results: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
 if [[ ${#ERRORS[@]} -gt 0 ]]; then
   echo "Failed tests:"
   for err in "${ERRORS[@]}"; do

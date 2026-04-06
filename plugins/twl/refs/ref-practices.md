@@ -1,19 +1,14 @@
 ---
-name: twl:ref-practices
-description: 5原則+ライフサイクル+チェックポイント+パターン選択ガイド
 type: reference
-spawnable_by:
-- controller
-- atomic
 ---
 
 <!-- Synced from twl docs/ — do not edit directly -->
 
-# Loom — LLM ワークフロー構造化フレームワーク
+# TWiLL — LLM ワークフロー構造化フレームワーク
 
-**Loom** は、LLM のコンテキストウィンドウ制約を前提としたプロンプト分割・ワークフロー構造化フレームワークである。
+**TWiLL** は、LLM のコンテキストウィンドウ制約を前提としたプロンプト分割・ワークフロー構造化フレームワークである。
 
-## Loom の構成要素
+## TWiLL の構成要素
 
 | 要素 | 定義場所 | 概要 |
 |------|---------|------|
@@ -24,7 +19,7 @@ spawnable_by:
 | **アーキテクチャ評価** | `ref-architecture` | パターン適用状態の検証チェックリスト |
 | **依存グラフ SSOT** | `ref-deps-format` + `twl` | deps.yaml による宣言的構造管理とツーリング |
 
-### Loom のメタファー
+### TWiLL のメタファー
 
 ```
 経糸 (warp) = 型システム — コンポーネントの構造的骨格
@@ -33,9 +28,9 @@ spawnable_by:
 織機 (twill) = forge — 布を織る道具そのもの
 ```
 
-### Loom と ACE の関係
+### TWiLL と ACE の関係
 
-ACE (Adaptive Context Engineering) は「LLM のコンテキストウィンドウを適応的に管理する」広い概念。Loom はその具体的実装フレームワークであり、型・原則・パターン・ツーリングを通じて ACE を実現する。
+ACE (Adaptive Context Engineering) は「LLM のコンテキストウィンドウを適応的に管理する」広い概念。TWiLL はその具体的実装フレームワークであり、型・原則・パターン・ツーリングを通じて ACE を実現する。
 
 ---
 
@@ -129,7 +124,7 @@ controller と workflow は異なる責務を持つ。ルーティングハブ c
 |--------|-----|------|
 | 1セッション内の完結フロー | レビュー → テスト → 修復ループ | セッション管理不要、フロー制御のみ |
 | 再利用可能なフロー | 複数 controller から共通呼び出し | DRY 原則、workflow として分離 |
-| user-invocable なステップ集約 | `/twl:workflow-test-ready` | ユーザーが直接実行可能（`user-invocable: true`） |
+| user-invocable なステップ集約 | `/dev:workflow-test-ready` | ユーザーが直接実行可能（`user-invocable: true`） |
 
 #### controller が直接 atomic/composite を呼べるケース
 
@@ -162,7 +157,7 @@ controller と composite の責務を分離する:
 | Task spawn テンプレート（prompt、model） | **composite** | Task() 呼び出し例 |
 | 結果統合ロジック（フィルタ、ソート、集計） | **composite** | 信頼度80未満をフィルタ |
 
-**理由（Loom: コンテキスト配分原則）**:
+**理由（TWiLL: コンテキスト配分原則）**:
 - controller SKILL.md はワークフロー開始時にコンテキストに読み込まれる
 - composite の詳細が controller に含まれると、不要なステップでもコンテキストを占有する
 - composite 内容変更時に controller も修正が必要になる（SSOT 違反）
@@ -189,17 +184,6 @@ Critical/High 検出時は【人間承認待ち】。
 1. **サイズ制限**: controller の本文（frontmatter除外）は ~80行推奨。
    - 120行超 = Warning（分割検討）
    - 200行超 = Critical（即座に分割必須）
-
-   **トークンベース閾値**（一次基準、行数基準は deprecated）:
-
-   | 型 | Warning | Critical |
-   |---|---|---|
-   | controller | 1,500 tok | 2,500 tok |
-   | workflow | 1,200 tok | 2,000 tok |
-   | atomic / composite | 1,500 tok | 2,500 tok |
-   | specialist | 1,800 tok | 2,500 tok |
-
-   reference / script は対象外（意図的に長い / LLM ��ロンプトではない）。
 
 2. **インライン実装禁止**: データ加工、バリデーション、フォーマット処理は
    atomic/composite/specialist に委譲。controller の Step は呼び出し指示のみ。

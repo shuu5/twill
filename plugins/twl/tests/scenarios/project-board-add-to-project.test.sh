@@ -97,7 +97,7 @@ run_test "add-to-project.yml に on: と jobs: がある" test_workflow_valid_ya
 # =============================================================================
 # Scenario: 新規 Issue 作成時の自動追加 (spec line 7)
 # WHEN: リポジトリで新しい Issue が作成される
-# THEN: Issue が Project Board（#3: loom-dev-ecosystem）に自動追加される
+# THEN: Issue が Project Board（#3: twill-ecosystem）に自動追加される
 # =============================================================================
 echo ""
 echo "--- Requirement: 新規 Issue 作成時の自動追加 ---"
@@ -128,7 +128,7 @@ test_project_url_points_to_project_3() {
   # shuu5/projects/3 を指している
   assert_file_contains "$WORKFLOW_FILE" "(shuu5/projects/3|projects/3)"
 }
-run_test "project-url が loom-dev-ecosystem (#3) を指している" test_project_url_points_to_project_3
+run_test "project-url が twill-ecosystem (#3) を指している" test_project_url_points_to_project_3
 
 # Edge case: PAT をトークンとして使用（GITHUB_TOKEN ではなく ADD_TO_PROJECT_PAT）
 test_uses_add_to_project_pat() {

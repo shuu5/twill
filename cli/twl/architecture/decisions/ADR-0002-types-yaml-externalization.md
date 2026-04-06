@@ -9,7 +9,7 @@ Accepted
 初期の twl-engine.py は型ルール（can_spawn/spawnable_by）を Python dict としてハードコードしていた。
 型の追加（script 型の新設）や変更のたびに twl-engine.py を編集する必要があり、変更の影響範囲が大きかった。
 
-また、型ルールは loom-plugin-dev 側の ref-types ドキュメントと同期する必要があり、
+また、型ルールは plugins/twl 側の ref-types ドキュメントと同期する必要があり、
 単一の情報源（SSOT）が存在しないことで不整合が発生していた。
 
 ## Decision

@@ -1,15 +1,10 @@
 ---
-name: twl:ref-types
-description: 型システム仕様
 type: reference
-spawnable_by:
-- controller
-- atomic
 ---
 
 <!-- Synced from twl docs/ — do not edit directly -->
 
-# Loom 型システム仕様
+# TWiLL 型システム仕様
 
 ## 統合型テーブル
 
