@@ -1,6 +1,6 @@
 ## Why
 
-loom-plugin-dev が loom-plugin-session に依存する構造が発生しているが、現在の deps.yaml v3 には cross-plugin 参照の表現手段がない。また types.yaml の `script.can_spawn` が空集合 `[]` で、bash script が別 script を呼ぶ実態と乖離しており、`twl validate` で script→script edge violations が発生している。
+plugins/twl が plugins/session に依存する構造が発生しているが、現在の deps.yaml v3 には cross-plugin 参照の表現手段がない。また types.yaml の `script.can_spawn` が空集合 `[]` で、bash script が別 script を呼ぶ実態と乖離しており、`twl validate` で script→script edge violations が発生している。
 
 ## What Changes
 

@@ -24,4 +24,4 @@
 - **対象ファイル**: `twl-engine.py`（build_graph, classify_layers, generate_graphviz の 3 関数）
 - **推定変更量**: 約 45 行
 - **既存テスト**: 変更後も全テスト PASS が必須
-- **依存関係**: shuu5/loom-plugin-dev#41（deps.yaml calls 完全化）と並行実装可能
+- **依存関係**: shuu5/plugins/twl#41（deps.yaml calls 完全化）と並行実装可能

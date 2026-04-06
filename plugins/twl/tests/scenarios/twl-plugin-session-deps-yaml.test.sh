@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: deps-yaml.md
-# Generated from: openspec/changes/loom-plugin-session/specs/deps-yaml.md
+# Generated from: openspec/changes/twl-plugin-session/specs/deps-yaml.md
 # Coverage level: edge-cases
 # Target repo: ~/projects/local-projects/twill-plugin-session/main/
 # =============================================================================
 set -uo pipefail
 
-# Target repo root (loom-plugin-session)
+# Target repo root (twl-plugin-session)
 TARGET_ROOT="${TWILL_PLUGIN_SESSION_ROOT:-/home/shuu5/projects/local-projects/twill-plugin-session/main}"
 
 # Counters
@@ -526,7 +526,7 @@ run_test "[edge: deps.yaml の全スキルファイルが実際に存在する]"
 # =============================================================================
 echo ""
 echo "============================================="
-echo "loom-plugin-session-deps-yaml: Results: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
+echo "twl-plugin-session-deps-yaml: Results: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
 if [[ ${#ERRORS[@]} -gt 0 ]]; then
   echo "Failed tests:"
   for err in "${ERRORS[@]}"; do

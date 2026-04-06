@@ -5,7 +5,7 @@ Accepted
 
 ## Context
 
-初期の loom-plugin-dev では Project Board は optional だった。しかし運用を通じて以下の問題が顕在化した:
+初期の plugins/twl では Project Board は optional だった。しかし運用を通じて以下の問題が顕在化した:
 
 - autopilot が Issue 選択時に `gh issue list` を使用すると、単一リポの Issue しか取得できない
 - 複数リポにまたがる twill-ecosystem では、Issue の優先順位やステータスがリポ横断で管理できない

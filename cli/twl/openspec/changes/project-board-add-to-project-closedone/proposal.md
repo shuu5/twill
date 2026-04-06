@@ -1,6 +1,6 @@
 ## Why
 
-loom リポジトリで Issue 作成時に自動で Project Board (loom-dev-ecosystem) に追加し、Issue クローズ時に Status を Done に更新する GitHub Actions workflow が未整備。手動管理は漏れが発生しやすく、開発フローの自動化が必要。
+twill リポジトリで Issue 作成時に自動で Project Board (twill-ecosystem) に追加し、Issue クローズ時に Status を Done に更新する GitHub Actions workflow が未整備。手動管理は漏れが発生しやすく、開発フローの自動化が必要。
 
 ## What Changes
 
@@ -22,5 +22,5 @@ loom リポジトリで Issue 作成時に自動で Project Board (loom-dev-ecos
 ## Impact
 
 - 新規ファイル: `.github/workflows/add-to-project.yml`, `.github/workflows/project-status-done.yml`
-- 依存: `ADD_TO_PROJECT_PAT` Secret（loom-plugin-dev#114 で登録予定）
+- 依存: `ADD_TO_PROJECT_PAT` Secret（plugins/twl#114 で登録予定）
 - 既存コードへの影響なし
