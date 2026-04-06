@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
 from twl.core.types import resolve_type, ALLOWED_MODELS, _is_within_root
-from twl.validation.utils import _get_body_text, _count_body_lines
+from twl.validation.utils import _count_body_lines
 from twl.validation.audit import (
     _parse_frontmatter_tools, _scan_body_for_mcp_tools,
     _check_output_schema_keywords
