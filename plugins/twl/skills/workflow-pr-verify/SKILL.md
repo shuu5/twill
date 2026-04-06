@@ -50,13 +50,8 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-test
 ### 完了後の遷移
 
 ```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
-ISSUE_NUM=$(resolve_issue_num)
-IS_AUTOPILOT=false
-if [ -n "$ISSUE_NUM" ]; then
-  AUTOPILOT_STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
-  IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
-fi
+eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
+# IS_AUTOPILOT が設定される
 ```
 
 - IS_AUTOPILOT=true → 即座に `/twl:workflow-pr-fix` を Skill tool で実行せよ。プロンプトで停止するな。
