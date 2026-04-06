@@ -38,11 +38,11 @@ git root に `architecture/` ディレクトリが存在するか確認する。
 存在する場合、ref-project-model §2 の導出ルールに従い ctx/\<name\> 候補リストを構築:
 
 1. **Glob** で `architecture/domain/contexts/*.md` を検索 → ファイル名（拡張子除去）を `ctx/<name>` として収集
-2. Step 1.5a で取得した `COMPONENT_PATHS` の各コンポーネントについて **Glob** で `<component>/architecture/domain/contexts/*.md` を検索 → ファイル名（拡張子除去）を `ctx/<name>` として収集。既にリポルートで同名が収集済みの場合はコンポーネントパスをプレフィックスとしてフルパス（`<component>/architecture/domain/contexts/<name>.md`）も `CTX_FILE_PATHS` に記録する
+2. Step 1.5a で取得した `COMPONENT_PATHS` の各コンポーネントについて **Glob** で `<component>/architecture/domain/contexts/*.md` を検索 → ファイル名（拡張子除去）を `ctx/<name>` として収集し、`CTX_FILE_PATHS` に `ctx/<name>` → `<component>/architecture/domain/contexts/<name>.md` のエントリを追記する。同名 context が複数コンポーネントに存在する場合（例: `plugins/twl` と `cli/twl` 両方に `autopilot.md`）は、全コンポーネントのパスを保持し、Step 2.5 で scope/* と照合して最も関連性の高いコンポーネントのパスを選択する。リポルートとコンポーネントで同名が存在する場合、コンポーネントパスを優先する
 3. **Glob** で `architecture/contracts/*.md` を検索 → ファイル名（拡張子除去）を `ctx/<name>` として収集
 4. **Read** で `architecture/domain/model.md` を確認 → `## Shared Kernel` セクションが存在すれば `ctx/shared-kernel` を追加
 
-`CTX_FILE_PATHS` として各 ctx/* 名から対応するファイルパス（コンポーネントパス含む）へのマッピングを保持し、Step 3 の arch-ref タグ生成で使用する。
+`CTX_FILE_PATHS` として各 ctx/* 名から対応するファイルパス（コンポーネントパス含む）へのマッピングを保持し、Step 3 の arch-ref タグ生成で使用する。同名 context が複数コンポーネントに存在する場合は Step 2.5 で確定したコンポーネントパスのエントリを使用する。
 
 候補リストが空（contexts/ も contracts/ もファイルなし）の場合は ctx/* を skip。
 
