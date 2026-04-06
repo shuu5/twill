@@ -75,7 +75,7 @@ TaskCreate 「Phase 4: Issue 作成」(status: in_progress)
 2. **作成**:
    - 通常: 単一→`/twl:issue-create`、複数→`/twl:issue-bulk-create`。`REFINED_LABEL_OK=true` かつ `is_split_generated != true` → `--label refined`。quick 条件充足 → `--label quick`
    - クロスリポ: `/twl:issue-cross-repo-create` を呼び出す
-3. **Project Board 同期**: 各 Issue 後 `/twl:project-board-sync N`（失敗は警告のみ）
+3. **Project Board 同期**: 各 Issue 後 `/twl:project-board-sync N`（失敗は警告のみ）。**MUST**: `chain-runner.sh board-status-update` を直接呼ばないこと（デフォルトが In Progress のため新規 Issue が誤って In Progress になる）
 4. **クリーンアップ**: `.controller-issue/` を削除（中止時も同様）
 5. **完了通知**: Issue URL 表示、`/twl:workflow-setup #N` で開発開始を案内
 
