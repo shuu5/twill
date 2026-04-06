@@ -432,6 +432,11 @@ refs:
     path: refs/ref-glossary-criteria.md
     description: "glossary 用語登録判断基準（3軸基準 + 判定ロジック + 具体例）"
 
+  ref-compaction-recovery:
+    type: reference
+    path: refs/ref-compaction-recovery.md
+    description: "compaction 復帰プロトコル共通リファレンス"
+
   self-improve-format:
     type: reference
     path: refs/self-improve-format.md

@@ -15,143 +15,37 @@ spawnable_by:
 
 # 開発準備 Workflow（chain-driven）
 
-setup chain のオーケストレーター。chain ステップの実行順序は deps.yaml で宣言されている。
-本 SKILL.md には chain で表現できないドメインルールのみを記載する。
-
-## chain ライフサイクル
-
-| Step | コンポーネント | 型 |
-|------|--------------|------|
-| 1 | init | atomic |
-| 2.3 | project-board-status-update | atomic |
-| 2.4 | crg-auto-build | next-step 判定 → atomic |
-| — | arch-ref コンテキスト取得 | next-step 判定 → SKILL.md 固有 |
-| 3 | change-propose | next-step 判定 → atomic |
-| 3.5 | ac-extract | next-step 判定 → atomic |
-| → | workflow-test-ready | workflow（controller 経由） |
+setup chain のオーケストレーター。chain 実行順序は deps.yaml に宣言。本 SKILL.md ��� chain で表現できないドメインルールのみ記載。
 
 ## ドメインルール
 
-### 引数解析
+- **引数**: `$ARGUMENTS` の `#N` → `ISSUE_NUM`。worktree-create にそのまま渡す
+- **arch-ref 取得** (Step 2.5): Issue 起点のみ。body/comments の `<!-- arch-ref-start -->` タグ間の `architecture/` パスを Read（最大5件、`..` 拒否、不在は警告のみ）
+- **OpenSpec 分岐** (Step 3): init の `recommended_action` に基づく。`propose` → change-propose 実行（ARCH_CONTEXT 注入）、`apply` → 実装案内、`direct` → 直接案内。言語: 構造キー英語、説明日本語
+- **Board Status** (Step 2.3): ISSUE_NUM 存在時のみ。なければ無言スキップ
+- **軽微変更**: 10行未満は直接実装可。slug 生成は `worktree-create.sh` に委譲
 
-`$ARGUMENTS` から以下を解析:
-- `#N` → Issue 番号（`ISSUE_NUM`）。worktree-create にそのまま渡す
+## chain 実行指示（MUST — 全ステップを順に実行。途中停止禁止）
 
-### arch-ref コンテキスト取得（Step 2.5）
+`CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"` として以下を順に実行:
 
-Issue 起点の場合のみ実行。
-
-- `gh issue view $ISSUE_NUM --json body --jq '.body'` で body 取得
-- `gh api repos/{owner}/{repo}/issues/${ISSUE_NUM}/comments` でコメント取得
-- `<!-- arch-ref-start -->` タグがあれば、タグ間の `architecture/` パスを Read
-
-**制約**:
-- 最大 5 件
-- `..` を含むパスは拒否
-- ファイル不在は警告のみ
-- タグなし → ARCH_CONTEXT = なし
-
-### OpenSpec 分岐条件（Step 3）
-
-init の `recommended_action` に基づき:
-
-| recommended_action | 動作 |
-|---|---|
-| `propose` | change-propose を実行。ARCH_CONTEXT があれば `## Architecture Context` として注入 |
-| `apply` | 実装開始を案内 |
-| `direct` | 直接実装可能と案内 |
-
-OpenSpec artifact の言語: 構造キーワード・ヘッダーは英語、説明文・要件名は日本語。
-
-### Project Board Status 更新（Step 2.3）
-
-ISSUE_NUM が存在する場合のみ実行。なければスキップ（メッセージ出力なし）。
-
-### 軽微変更
-
-10 行未満の変更は直接実装可。slug 生成は `worktree-create.sh` に委譲。
-
-## chain 実行指示（MUST — 全ステップを順に実行せよ。途中で停止するな）
-
-**重要**: 以下の全ステップを上から順に実行すること。各ステップ完了後、**即座に**次のステップに進むこと。プロンプトで停止してはならない。
-
-### Step 1: init（開発状態判定）【機械的 → runner】
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" init "$ISSUE_NUM"
-```
-出力の JSON から `recommended_action` を記録。
-
-### Step 2: worktree-create（worktree 作成）【Manual 実行時のみ】
-**Worker（IS_AUTOPILOT=true）時はスキップ**（Pilot が事前作成済みのため）。
-Manual 実行時（IS_AUTOPILOT=false）かつ init の `recommended_action` が `worktree` の場合のみ実行:
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" worktree-create "$ARGUMENTS"
-```
-
-### Step 2.3: project-board-status-update（Project Board 更新）【機械的 → runner】
-ISSUE_NUM がある場合のみ。
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" board-status-update "$ISSUE_NUM"
-```
-
-### Step 2.4: crg-auto-build（CRG グラフビルド）【next-step 判定 → LLM 判断】
-以下で次ステップを確認し、`crg-auto-build` を返した場合のみ実行:
-```bash
-NEXT=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" next-step "$ISSUE_NUM" "board-status-update")
-```
-`NEXT=crg-auto-build` → `commands/crg-auto-build.md` を Read → 実行。それ以外 → スキップ。
-
-### Step 2.5: arch-ref コンテキスト取得【next-step 判定 → runner】
-```bash
-NEXT=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" next-step "$ISSUE_NUM" "crg-auto-build")
-```
-`NEXT=arch-ref` の場合のみ実行:
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" arch-ref "$ISSUE_NUM"
-```
-出力されたパスがあれば Read して ARCH_CONTEXT として保持。
-
-### Step 3: change-propose（OpenSpec 提案）【next-step 判定 → LLM 判断】
-```bash
-NEXT=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" next-step "$ISSUE_NUM" "arch-ref")
-```
-`NEXT=change-propose` の場合のみ: init の `recommended_action` に基づき「ドメインルール > OpenSpec 分岐条件」に従い実行。
-`commands/change-propose.md` を Read → 実行。
-
-### Step 3.5: ac-extract（AC 抽出）【next-step 判定 → runner】
-```bash
-NEXT=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" next-step "$ISSUE_NUM" "change-propose")
-```
-`NEXT=ac-extract` の場合のみ:
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" ac-extract
-```
-
-### Step 4: workflow-test-ready へ遷移【quick 判定 → autopilot 判定 → runner + LLM】
-
-以下の bash スニペットを実行して quick 状態と autopilot 状態を判定すること:
-
-```bash
-eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
-eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" quick-detect)"
-# IS_AUTOPILOT と IS_QUICK が設定される
-```
-
-**【MUST NOT】** `IS_QUICK=true` かつ `IS_AUTOPILOT=true` の場合、`/twl:workflow-test-ready` を Skill tool で実行してはならない。
-
-分岐（IS_QUICK チェックを IS_AUTOPILOT チェックより先に評価すること）:
-
-- IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready を呼び出さずに、「直接実装 → commit → push → `gh pr create --fill --label quick` → `commands/merge-gate.md` を Read して merge-gate のみ実行せよ」と案内せよ。プロンプトで停止するな。
-- IS_QUICK=false かつ IS_AUTOPILOT=true → 即座に `/twl:workflow-test-ready` を Skill tool で実行せよ。プロンプトで停止するな。
-- IS_AUTOPILOT=false → 「setup chain 完了。次のステップ: `/twl:workflow-test-ready` を実行してください」と案内。
+1. **init**: `bash "$CR" init "$ISSUE_NUM"` → JSON の `recommended_action` を記録
+2. **worktree-create**: IS_AUTOPILOT=true ならスキップ。Manual かつ `recommended_action=worktree` のみ: `bash "$CR" worktree-create "$ARGUMENTS"`
+3. **board-status-update**: ISSUE_NUM ありのみ: `bash "$CR" board-status-update "$ISSUE_NUM"`
+4. **crg-auto-build**: `NEXT=$(bash "$CR" next-step "$ISSUE_NUM" "board-status-update")`。`crg-auto-build` → `commands/crg-auto-build.md` Read → 実行
+5. **arch-ref**: `NEXT=$(bash "$CR" next-step "$ISSUE_NUM" "crg-auto-build")`。`arch-ref` → `bash "$CR" arch-ref "$ISSUE_NUM"` → 出力パス Read → ARCH_CONTEXT 保持
+6. **change-propose**: `NEXT=$(bash "$CR" next-step "$ISSUE_NUM" "arch-ref")`。`change-propose` → ドメインルールの OpenSpec 分岐に従い `commands/change-propose.md` Read → 実行
+7. **ac-extract**: `NEXT=$(bash "$CR" next-step "$ISSUE_NUM" "change-propose")`。`ac-extract` → `bash "$CR" ac-extract`
+8. **workflow-test-ready 遷移**:
+   ```bash
+   eval "$(bash "$CR" autopilot-detect)"
+   eval "$(bash "$CR" quick-detect)"
+   ```
+   - IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready **呼び出し禁止**。直接実装 → commit → push → `gh pr create --fill --label quick` → `commands/merge-gate.md` Read → merge-gate 実行
+   - IS_QUICK=false かつ IS_AUTOPILOT=true → 即座に `/twl:workflow-test-ready` を Skill 実行（停止禁止）
+   - IS_AUTOPILOT=false → 「setup chain 完了。次: `/twl:workflow-test-ready`」と案内
 
 ## compaction 復帰プロトコル
 
-compaction 後に chain を再開する場合、各ステップ実行前に以下を確認すること:
-
-```bash
-ISSUE_NUM=<N>
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/compaction-resume.sh" "$ISSUE_NUM" "<step>" || { echo "スキップ"; continue; }
-# exit 0 → 実行、exit 1 → スキップ（完了済み）
-```
+`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `init board-status-update crg-auto-build arch-ref change-propose ac-extract`
 

@@ -69,7 +69,4 @@ eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
 
 ## compaction 復帰プロトコル
 
-compaction 後に workflow-pr-fix chain を再開する場合、完了済みステップをスキップすること。
-
-- fix ループは LLM ステップのため issue-{N}.json の状態を確認してから再実行すること
-- fix-phase が完了済みなら post-fix-verify → warning-fix から再開
+`refs/ref-compaction-recovery.md` を Read し従うこと。fix ループは LLM ステップのため issue-{N}.json の状態を確認してから再実行。fix-phase 完了済みなら post-fix-verify → warning-fix から再開。
