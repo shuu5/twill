@@ -1,0 +1,54 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="workflow-self-improve";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+    skill_workflow_self_improve [label="twl:workflow-self-improve\n(728 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+
+    // Reference Skills
+
+    // L1: Direct Commands
+    cmd_self_improve_collect [label="self-improve-collect\n(910 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_self_improve_propose [label="self-improve-propose\n(1,309 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_self_improve_close [label="self-improve-close\n(691 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_ecc_monitor [label="ecc-monitor\n(1,172 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+    script_ecc_monitor [label="ecc-monitor\n(1,137 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_workflow_self_improve; }
+    { rank=same; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; }
+    { rank=same; script_ecc_monitor; }
+
+    // Edges
+    skill_workflow_self_improve -> cmd_self_improve_collect;
+    skill_workflow_self_improve -> cmd_self_improve_propose;
+    skill_workflow_self_improve -> cmd_self_improve_close;
+    skill_workflow_self_improve -> cmd_ecc_monitor;
+    cmd_ecc_monitor -> script_ecc_monitor;
+
+    // Ordering constraints (invisible edges)
+    cmd_self_improve_collect -> cmd_self_improve_propose [style=invis, weight=10];
+    cmd_self_improve_propose -> cmd_self_improve_close [style=invis, weight=10];
+    cmd_self_improve_close -> cmd_ecc_monitor [style=invis, weight=10];
+
+}

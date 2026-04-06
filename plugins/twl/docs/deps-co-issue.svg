@@ -15,7 +15,7 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="48.79" cy="-453" rx="48.58" ry="21.43"/>
 <text text-anchor="middle" x="48.79" y="-456" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;issue</text>
-<text text-anchor="middle" x="48.79" y="-445" font-family="Helvetica,sans-Serif" font-size="10.00">(1,366 tok)</text>
+<text text-anchor="middle" x="48.79" y="-445" font-family="Helvetica,sans-Serif" font-size="10.00">(1,426 tok)</text>
 </g>
 <!-- skill_ref_issue_template_bug -->
 <g id="node2" class="node">
@@ -54,7 +54,7 @@
 <polyline fill="none" stroke="black" points="679.73,-586 679.73,-580 "/>
 <polyline fill="none" stroke="black" points="685.73,-580 679.73,-580 "/>
 <text text-anchor="middle" x="633.23" y="-571" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;project&#45;model</text>
-<text text-anchor="middle" x="633.23" y="-560" font-family="Helvetica,sans-Serif" font-size="10.00">(2,158 tok)</text>
+<text text-anchor="middle" x="633.23" y="-560" font-family="Helvetica,sans-Serif" font-size="10.00">(2,148 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;skill_ref_project_model -->
 <g id="edge14" class="edge">
@@ -149,7 +149,7 @@
 <title>cmd_issue_spec_review</title>
 <polygon fill="#bbdefb" stroke="black" points="262.58,-326 167.58,-326 167.58,-290 262.58,-290 262.58,-326"/>
 <text text-anchor="middle" x="215.08" y="-311" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;spec&#45;review</text>
-<text text-anchor="middle" x="215.08" y="-300" font-family="Helvetica,sans-Serif" font-size="10.00">(1,069 tok)</text>
+<text text-anchor="middle" x="215.08" y="-300" font-family="Helvetica,sans-Serif" font-size="10.00">(1,129 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_issue_spec_review -->
 <g id="edge6" class="edge">

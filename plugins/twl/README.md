@@ -144,4 +144,10 @@ Autopilot で複数 Issue を一括実装:
 
 ![workflow-tech-debt-triage](./docs/deps-workflow-tech-debt-triage.svg)
 </details>
+
+<details>
+<summary>workflow-self-improve</summary>
+
+![workflow-self-improve](./docs/deps-workflow-self-improve.svg)
+</details>
 <!-- DEPS-SUBGRAPHS-END -->
