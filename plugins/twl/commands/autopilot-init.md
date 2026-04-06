@@ -23,7 +23,7 @@ fi
 ### Step 2: .autopilot/ 初期化
 
 ```bash
-AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/autopilot-init.sh
+AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-init.sh"
 ```
 
 - 成功時: .autopilot/, .autopilot/issues/, .autopilot/archive/ が作成される

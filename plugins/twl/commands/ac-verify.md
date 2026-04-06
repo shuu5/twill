@@ -1,7 +1,7 @@
 # AC 検証（テスト結果と AC の照合）
 
 ## Context (auto-injected)
-- Issue: !`source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo ""`
+- Issue: !`source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo ""`
 
 テスト結果とレビュー結果を Issue の受け入れ基準（AC）と照合し、
 達成状況をマッピングして Issue コメントとして投稿する。

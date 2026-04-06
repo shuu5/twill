@@ -21,10 +21,10 @@
 Issue body はユーザー入力由来のため、`scripts/escape-issue-body.sh` で機械的にエスケープする（LLM への「注意して」は禁止）。
 
 ```bash
-escaped_body=$(printf '%s\n' "$issue_body" | bash scripts/escape-issue-body.sh)
-escaped_files=$(printf '%s\n' "$scope_files" | bash scripts/escape-issue-body.sh)
-escaped_related_issues=$(printf '%s\n' "$related_issues" | bash scripts/escape-issue-body.sh)
-escaped_deps_yaml_entries=$(printf '%s\n' "$deps_yaml_entries" | bash scripts/escape-issue-body.sh)
+escaped_body=$(printf '%s\n' "$issue_body" | bash "${CLAUDE_PLUGIN_ROOT}/scripts/escape-issue-body.sh")
+escaped_files=$(printf '%s\n' "$scope_files" | bash "${CLAUDE_PLUGIN_ROOT}/scripts/escape-issue-body.sh")
+escaped_related_issues=$(printf '%s\n' "$related_issues" | bash "${CLAUDE_PLUGIN_ROOT}/scripts/escape-issue-body.sh")
+escaped_deps_yaml_entries=$(printf '%s\n' "$deps_yaml_entries" | bash "${CLAUDE_PLUGIN_ROOT}/scripts/escape-issue-body.sh")
 ```
 
 ### Step 2: 調査深度決定

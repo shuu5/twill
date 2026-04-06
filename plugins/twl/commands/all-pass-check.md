@@ -2,7 +2,7 @@
 
 ## Context (auto-injected)
 - Branch: !`git branch --show-current`
-- Issue: !`source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo ""`
+- Issue: !`source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo ""`
 - PR: !`gh pr view --json number -q '.number' 2>/dev/null || echo "none"`
 
 PR-cycle の全ステップ結果を検証し、merge-ready への遷移可否を判定する。

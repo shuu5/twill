@@ -2,7 +2,7 @@
 
 ## Context (auto-injected)
 - Branch: !`git branch --show-current`
-- Issue: !`source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo ""`
+- Issue: !`source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo ""`
 - PR: !`gh pr view --json number -q '.number' 2>/dev/null || echo "none"`
 
 PR の最終判定を行う。動的レビュアー構築 → 並列 specialist 実行 → 結果集約 → PASS/REJECT。
@@ -44,7 +44,7 @@ fi
 #### conditional specialist
 
 ```bash
-CONDITIONAL=$(bash scripts/tech-stack-detect.sh < <(git diff --name-only origin/main))
+CONDITIONAL=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/tech-stack-detect.sh" < <(git diff --name-only origin/main))
 ```
 
 #### 補完的レビュアー（codex 環境チェック）

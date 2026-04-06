@@ -59,14 +59,14 @@ fi
 
 ```bash
 # --explicit / --issues モード
-bash $SCRIPTS_ROOT/autopilot-plan.sh \
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-plan.sh" \
   --explicit|--issues "<input>" \
   --project-dir "$PROJECT_DIR" \
   --repo-mode "$REPO_MODE" \
   $REPOS_ARG
 
 # --board モード（Board の非 Done Issue を自動取得）
-bash $SCRIPTS_ROOT/autopilot-plan.sh \
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-plan.sh" \
   --board \
   --project-dir "$PROJECT_DIR" \
   --repo-mode "$REPO_MODE"
@@ -94,7 +94,7 @@ FOR P in 1..PHASE_COUNT:
   TaskCreate "Phase P: Issue #X, #Y" (status: in_progress)
 
   # autopilot-orchestrator.sh に Phase 実行を委譲
-  REPORT=$(bash $SCRIPTS_ROOT/autopilot-orchestrator.sh \
+  REPORT=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-orchestrator.sh" \
     --plan "$PLAN_FILE" \
     --phase "$P" \
     --session "$SESSION_STATE_FILE" \
@@ -137,7 +137,7 @@ orchestrator 内で autopilot-should-skip.sh を呼び出し、自動的に skip
 ## Step 5: 完了サマリー（orchestrator 委譲）
 
 ```bash
-SUMMARY=$(bash $SCRIPTS_ROOT/autopilot-orchestrator.sh \
+SUMMARY=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-orchestrator.sh" \
   --summary \
   --session "$SESSION_STATE_FILE" \
   --autopilot-dir "$AUTOPILOT_DIR")

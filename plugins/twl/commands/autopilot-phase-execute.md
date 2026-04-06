@@ -96,7 +96,7 @@ FOR each ISSUE in $ISSUES:
     → 状態記録（done）、continue
 
   # should_skip 判定
-  IF AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/autopilot-should-skip.sh "$PLAN_FILE" "$ISSUE" "$SESSION_STATE_FILE" → exit 0:
+  IF AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-should-skip.sh" "$PLAN_FILE" "$ISSUE" "$SESSION_STATE_FILE" → exit 0:
     → 状態記録（skipped）、continue
 
   # Worker 起動（autopilot-launch を Read → 実行）
@@ -109,7 +109,7 @@ FOR each ISSUE in $ISSUES:
   # proactive health check（論理的異常検知、crash-detect とは責務分離）
   STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
   IF STATUS == "running":
-    HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/health-check.sh --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
+    HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/health-check.sh" --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
       echo "WARNING: Issue #${ISSUE}: health check 異常検知: $HEALTH_OUTPUT"
     }
 
@@ -136,7 +136,7 @@ FOR each ISSUE in $ISSUES:
   STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
   IF STATUS == "done":
     → 状態記録（done）、continue
-  IF AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/autopilot-should-skip.sh → exit 0:
+  IF AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-should-skip.sh" → exit 0:
     → 状態記録（skipped）、continue
   ACTIVE_ISSUES+=($ISSUE)
 
@@ -160,7 +160,7 @@ FOR ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)):
   FOR each ISSUE in $BATCH:
     STATUS=$(AUTOPILOT_DIR=$AUTOPILOT_DIR python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field status)
     IF STATUS == "running":
-      HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash $SCRIPTS_ROOT/health-check.sh --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
+      HEALTH_OUTPUT=$(AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/health-check.sh" --issue "$ISSUE" --window "ap-#${ISSUE}" 2>/dev/null) || {
         echo "WARNING: Issue #${ISSUE}: health check 異常検知: $HEALTH_OUTPUT"
       }
 
