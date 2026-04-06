@@ -437,6 +437,12 @@ refs:
     path: refs/ref-compaction-recovery.md
     description: "compaction 復帰プロトコル共通リファレンス"
 
+  ref-prompt-guide:
+    type: reference
+    path: refs/ref-prompt-guide.md
+    spawnable_by: [all]
+    description: "型別プロンプト執筆ルール・構造的リファクタリング戦略・トークン目標適用ガイド"
+
   self-improve-format:
     type: reference
     path: refs/self-improve-format.md
