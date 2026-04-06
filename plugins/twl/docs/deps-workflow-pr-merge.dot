@@ -15,21 +15,21 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_pr_merge [label="twl:workflow-pr-merge\n(1,091 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_merge [label="twl:workflow-pr-merge\n(1,118 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_dci [label="twl:ref-dci\n(1,211 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_dci [label="twl:ref-dci\n(1,206 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,570 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(1,815 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_input_validation [label="twl:baseline-input-validation\n(1,408 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
-    cmd_change_archive [label="change-archive\n(685 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_change_archive [label="change-archive\n(684 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_cycle_report [label="pr-cycle-report\n(329 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_all_pass_check [label="all-pass-check\n(827 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_all_pass_check [label="all-pass-check\n(824 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_e2e_screening [label="e2e-screening\n(441 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,875 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,878 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_auto_merge [label="auto-merge\n(296 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(976 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 

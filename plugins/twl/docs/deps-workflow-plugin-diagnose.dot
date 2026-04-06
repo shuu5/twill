@@ -1,0 +1,89 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="workflow-plugin-diagnose";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+    skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(683 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+
+    // Reference Skills
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_architecture [label="twl:ref-architecture\n(2,273 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+
+    // L1: Direct Commands
+    cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(458 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_diagnose [label="plugin-diagnose\n(944 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_fix [label="plugin-fix\n(1,074 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_verify [label="plugin-verify\n(518 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_phase_diagnose [label="plugin-phase-diagnose\n(631 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_plugin_phase_verify [label="plugin-phase-verify\n(634 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+    agent_worker_structure [label="worker-structure\n(1,244 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_principles [label="worker-principles\n(1,154 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_architecture [label="worker-architecture\n(2,186 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+
+    // L3.5: Scripts
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_workflow_plugin_diagnose; }
+    { rank=same; skill_ref_specialist_output_schema; skill_ref_architecture; }
+    { rank=same; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
+    { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_architecture; }
+
+    // Edges
+    skill_workflow_plugin_diagnose -> cmd_plugin_migrate_analyze;
+    skill_workflow_plugin_diagnose -> cmd_plugin_diagnose;
+    skill_workflow_plugin_diagnose -> cmd_plugin_phase_diagnose;
+    skill_workflow_plugin_diagnose -> cmd_plugin_fix;
+    skill_workflow_plugin_diagnose -> cmd_plugin_verify;
+    skill_workflow_plugin_diagnose -> cmd_plugin_phase_verify;
+    cmd_plugin_phase_diagnose -> agent_worker_structure [style=dashed];
+    cmd_plugin_phase_diagnose -> agent_worker_principles [style=dashed];
+    cmd_plugin_phase_diagnose -> agent_worker_architecture [style=dashed];
+    cmd_plugin_phase_diagnose -> skill_ref_specialist_output_schema;
+    cmd_plugin_phase_diagnose -> skill_ref_architecture;
+    cmd_plugin_phase_verify -> agent_worker_structure [style=dashed];
+    cmd_plugin_phase_verify -> agent_worker_principles [style=dashed];
+    cmd_plugin_phase_verify -> agent_worker_architecture [style=dashed];
+    cmd_plugin_phase_verify -> skill_ref_specialist_output_schema;
+    cmd_plugin_phase_verify -> skill_ref_architecture;
+    agent_worker_structure -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_principles -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_architecture -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_architecture -> skill_ref_architecture [style=dotted];
+
+    // Ordering constraints (invisible edges)
+    cmd_plugin_migrate_analyze -> cmd_plugin_diagnose [style=invis, weight=10];
+    cmd_plugin_diagnose -> cmd_plugin_phase_diagnose [style=invis, weight=10];
+    cmd_plugin_phase_diagnose -> cmd_plugin_fix [style=invis, weight=10];
+    cmd_plugin_fix -> cmd_plugin_verify [style=invis, weight=10];
+    cmd_plugin_verify -> cmd_plugin_phase_verify [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
+    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_ref_architecture [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
+    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_ref_architecture [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
+
+}

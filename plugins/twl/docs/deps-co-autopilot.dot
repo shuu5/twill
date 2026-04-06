@@ -11,23 +11,23 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_autopilot [label="twl:co-autopilot\n(1,962 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="twl:co-autopilot\n(1,980 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="twl:workflow-setup\n(2,032 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_test_ready [label="twl:workflow-test-ready\n(2,107 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_pr_verify [label="twl:workflow-pr-verify\n(842 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_pr_fix [label="twl:workflow-pr-fix\n(866 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_pr_merge [label="twl:workflow-pr-merge\n(1,091 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="twl:workflow-setup\n(2,089 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_test_ready [label="twl:workflow-test-ready\n(2,123 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_verify [label="twl:workflow-pr-verify\n(855 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_fix [label="twl:workflow-pr-fix\n(863 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_merge [label="twl:workflow-pr-merge\n(1,118 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_dead_cleanup [label="twl:workflow-dead-cleanup\n(249 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_tech_debt_triage [label="twl:workflow-tech-debt-triage\n(1,015 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_self_improve [label="twl:workflow-self-improve\n(728 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_self_improve [label="twl:workflow-self-improve\n(730 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_dci [label="twl:ref-dci\n(1,211 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_dci [label="twl:ref-dci\n(1,206 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,570 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(1,815 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_input_validation [label="twl:baseline-input-validation\n(1,408 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -38,9 +38,9 @@ digraph Dependencies {
     cmd_worktree_create [label="worktree-create\n(448 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_status_update [label="project-board-status-update\n(1,203 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_crg_auto_build [label="crg-auto-build\n(313 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_change_propose [label="change-propose\n(1,345 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_change_apply [label="change-apply\n(857 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_change_archive [label="change-archive\n(685 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_change_propose [label="change-propose\n(1,343 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_change_apply [label="change-apply\n(856 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_change_archive [label="change-archive\n(684 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ac_extract [label="ac-extract\n(368 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ts_preflight [label="ts-preflight\n(349 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_scope_judge [label="scope-judge\n(394 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -48,31 +48,31 @@ digraph Dependencies {
     cmd_post_fix_verify [label="post-fix-verify\n(353 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_warning_fix [label="warning-fix\n(363 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_cycle_report [label="pr-cycle-report\n(329 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_all_pass_check [label="all-pass-check\n(827 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_ac_verify [label="ac-verify\n(375 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_all_pass_check [label="all-pass-check\n(824 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_ac_verify [label="ac-verify\n(373 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_check [label="check\n(1,949 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_dead_component_detect [label="dead-component-detect\n(899 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_dead_component_execute [label="dead-component-execute\n(1,081 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_triage_execute [label="triage-execute\n(1,185 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_self_improve_collect [label="self-improve-collect\n(910 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_self_improve_propose [label="self-improve-propose\n(1,309 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_self_improve_propose [label="self-improve-propose\n(1,306 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_self_improve_close [label="self-improve-close\n(691 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_ecc_monitor [label="ecc-monitor\n(1,172 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_ecc_monitor [label="ecc-monitor\n(1,108 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_e2e_plan [label="e2e-plan\n(435 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_scaffold [label="test-scaffold\n(718 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_phase_review [label="phase-review\n(910 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_phase_review [label="phase-review\n(916 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_fix_phase [label="fix-phase\n(532 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_e2e_screening [label="e2e-screening\n(441 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,875 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,878 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_ac_deploy_trigger [label="ac-deploy-trigger\n(457 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_phase [label="test-phase\n(608 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_auto_merge [label="auto-merge\n(296 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(976 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_spec_diagnose [label="spec-diagnose\n(634 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_autopilot_init [label="autopilot-init\n(604 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_autopilot_launch [label="autopilot-launch\n(918 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_autopilot_poll [label="autopilot-poll\n(1,310 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_autopilot_phase_execute [label="autopilot-phase-execute\n(2,307 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_init [label="autopilot-init\n(608 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_launch [label="autopilot-launch\n(922 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_poll [label="autopilot-poll\n(1,319 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_phase_execute [label="autopilot-phase-execute\n(2,325 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_phase_postprocess [label="autopilot-phase-postprocess\n(802 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_collect [label="autopilot-collect\n(525 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_retrospective [label="autopilot-retrospective\n(1,299 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];

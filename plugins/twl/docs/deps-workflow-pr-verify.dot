@@ -15,7 +15,7 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_pr_verify [label="twl:workflow-pr-verify\n(842 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_verify [label="twl:workflow-pr-verify\n(855 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -27,8 +27,8 @@ digraph Dependencies {
     cmd_ts_preflight [label="ts-preflight\n(349 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_scope_judge [label="scope-judge\n(394 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_test [label="pr-test\n(359 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_ac_verify [label="ac-verify\n(375 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_phase_review [label="phase-review\n(910 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_ac_verify [label="ac-verify\n(373 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_phase_review [label="phase-review\n(916 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_ac_deploy_trigger [label="ac-deploy-trigger\n(457 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_phase [label="test-phase\n(608 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 

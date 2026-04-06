@@ -15,14 +15,14 @@
 <title>skill_workflow_pr_merge</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="79.9" cy="-684.49" rx="79.81" ry="21.43"/>
 <text text-anchor="middle" x="79.9" y="-687.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;merge</text>
-<text text-anchor="middle" x="79.9" y="-676.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,091 tok)</text>
+<text text-anchor="middle" x="79.9" y="-676.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,118 tok)</text>
 </g>
 <!-- cmd_change_archive -->
 <g id="node7" class="node">
 <title>cmd_change_archive</title>
 <polygon fill="#e3f2fd" stroke="black" points="304.31,-540.49 221.31,-540.49 221.31,-504.49 304.31,-504.49 304.31,-540.49"/>
 <text text-anchor="middle" x="262.81" y="-525.49" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;archive</text>
-<text text-anchor="middle" x="262.81" y="-514.49" font-family="Helvetica,sans-Serif" font-size="10.00">(685 tok)</text>
+<text text-anchor="middle" x="262.81" y="-514.49" font-family="Helvetica,sans-Serif" font-size="10.00">(684 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_change_archive -->
 <g id="edge7" class="edge">
@@ -48,7 +48,7 @@
 <title>cmd_all_pass_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="302.81,-760.49 222.81,-760.49 222.81,-724.49 302.81,-724.49 302.81,-760.49"/>
 <text text-anchor="middle" x="262.81" y="-745.49" font-family="Helvetica,sans-Serif" font-size="10.00">all&#45;pass&#45;check</text>
-<text text-anchor="middle" x="262.81" y="-734.49" font-family="Helvetica,sans-Serif" font-size="10.00">(827 tok)</text>
+<text text-anchor="middle" x="262.81" y="-734.49" font-family="Helvetica,sans-Serif" font-size="10.00">(824 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_all_pass_check -->
 <g id="edge4" class="edge">
@@ -74,7 +74,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="295.31,-702.49 230.31,-702.49 230.31,-666.49 295.31,-666.49 295.31,-702.49"/>
 <text text-anchor="middle" x="262.81" y="-687.49" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="262.81" y="-676.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,875 tok)</text>
+<text text-anchor="middle" x="262.81" y="-676.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,878 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_merge_gate -->
 <g id="edge5" class="edge">
@@ -150,7 +150,7 @@
 <polyline fill="none" stroke="black" points="993.2,-308.49 993.2,-302.49 "/>
 <polyline fill="none" stroke="black" points="999.2,-302.49 993.2,-302.49 "/>
 <text text-anchor="middle" x="967.7" y="-293.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;dci</text>
-<text text-anchor="middle" x="967.7" y="-282.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,211 tok)</text>
+<text text-anchor="middle" x="967.7" y="-282.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,206 tok)</text>
 </g>
 <!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_dci -->
 <!-- skill_baseline_coding_style -->

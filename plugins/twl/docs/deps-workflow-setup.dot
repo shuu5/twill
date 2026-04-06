@@ -15,7 +15,7 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="twl:workflow-setup\n(2,032 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="twl:workflow-setup\n(2,089 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
@@ -24,7 +24,7 @@ digraph Dependencies {
     cmd_worktree_create [label="worktree-create\n(448 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_status_update [label="project-board-status-update\n(1,203 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_crg_auto_build [label="crg-auto-build\n(313 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_change_propose [label="change-propose\n(1,345 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_change_propose [label="change-propose\n(1,343 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ac_extract [label="ac-extract\n(368 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
