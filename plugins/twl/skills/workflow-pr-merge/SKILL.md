@@ -67,7 +67,7 @@ THEN
 ### Step 7: pr-cycle-report（結果レポート）【機械的 → runner】
 各ステップの結果を Markdown レポートとして構築し、runner に渡す:
 ```bash
-echo "$REPORT" | bash scripts/chain-runner.sh pr-cycle-report
+echo "$REPORT" | bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-cycle-report
 ```
 
 ### Step 7.3: pr-cycle-analysis（パターン分析）【LLM 判断】
@@ -76,11 +76,11 @@ echo "$REPORT" | bash scripts/chain-runner.sh pr-cycle-report
 ### Step 7.5: all-pass-check（全パス判定）【機械的 → runner】
 全ステップの結果が PASS であれば:
 ```bash
-bash scripts/chain-runner.sh all-pass-check PASS
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" all-pass-check PASS
 ```
 FAIL があれば:
 ```bash
-bash scripts/chain-runner.sh all-pass-check FAIL
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" all-pass-check FAIL
 ```
 
 ### Step 8: merge-gate（マージ判定）【LLM 判断】
@@ -89,7 +89,7 @@ bash scripts/chain-runner.sh all-pass-check FAIL
 ### Step 8.5: auto-merge（自動マージ）【機械的 → runner】
 merge-gate が PASS の場合のみ:
 ```bash
-bash scripts/chain-runner.sh auto-merge
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" auto-merge
 ```
 
 ## compaction 復帰プロトコル
@@ -97,10 +97,10 @@ bash scripts/chain-runner.sh auto-merge
 compaction 後に workflow-pr-merge chain を再開する場合、完了済みステップをスキップすること。
 
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 for step in all-pass-check pr-cycle-report; do
-  bash scripts/compaction-resume.sh "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
+  bash "${CLAUDE_PLUGIN_ROOT}/scripts/compaction-resume.sh" "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
   # 通常手順で実行（chain-runner または LLM 実行）
 done
 ```
