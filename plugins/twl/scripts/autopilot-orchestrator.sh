@@ -237,7 +237,7 @@ launch_worker() {
     fi
   fi
 
-  # 既存 worktree が見つからない場合は worktree-create.sh で作成
+  # 既存 worktree が見つからない場合は Python モジュールで作成
   if [[ -z "$worktree_dir" ]]; then
     local create_args=("#${ISSUE}")
     if [[ -n "$ISSUE_REPO_PATH" ]]; then
@@ -247,7 +247,7 @@ launch_worker() {
       create_args+=(-R "${ISSUE_REPO_OWNER}/${ISSUE_REPO_NAME}")
     fi
     local wt_output
-    wt_output=$(bash "$SCRIPTS_ROOT/worktree-create.sh" "${create_args[@]}" 2>&1) || {
+    wt_output=$(python3 -m twl.autopilot.worktree create "${create_args[@]}" 2>&1) || {
       echo "[orchestrator] Issue #${ISSUE}: worktree 作成失敗: $wt_output" >&2
       python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
         --set "status=failed" \

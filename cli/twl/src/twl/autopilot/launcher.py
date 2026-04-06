@@ -230,7 +230,7 @@ class WorkerLauncher:
             create_args += ["-R", f"{repo_owner}/{repo_name}"]
 
         result = subprocess.run(
-            ["bash", str(self.scripts_root / "worktree-create.sh")] + create_args,
+            ["python3", "-m", "twl.autopilot.worktree", "create"] + create_args,
             capture_output=True, text=True,
             cwd=str(Path(effective_project_dir) / "main"),
         )
