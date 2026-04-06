@@ -312,17 +312,37 @@ class MergeGate:
         raw_err = re.sub(r"Bearer\s+\S+", "Bearer ***MASKED***", raw_err)
         raw_err = raw_err[:500]
 
-        failure = json.dumps({
-            "reason": "merge_failed",
-            "details": raw_err,
-            "step": "merge-gate",
-            "pr": f"#{self.pr_number}",
-        })
-        _state_write(self.issue, "pilot", status="failed", failure=failure)
-        print(
-            f"[merge-gate] Issue #{self.issue}: マージ失敗 - {raw_err}",
-            file=sys.stderr,
+        # Detect merge conflict vs other failures
+        is_conflict = any(
+            kw in raw_err.lower()
+            for kw in ("conflict", "not mergeable", "merge conflict")
         )
+
+        if is_conflict:
+            failure = json.dumps({
+                "reason": "merge_conflict",
+                "details": raw_err,
+                "step": "merge-gate",
+                "pr": f"#{self.pr_number}",
+            })
+            _state_write(self.issue, "pilot", status="conflict", failure=failure)
+            print(
+                f"[merge-gate] Issue #{self.issue}: コンフリクト検出 - "
+                f"Pilot がリベース→push 後に status=merge-ready に戻してリトライ可能",
+                file=sys.stderr,
+            )
+        else:
+            failure = json.dumps({
+                "reason": "merge_failed",
+                "details": raw_err,
+                "step": "merge-gate",
+                "pr": f"#{self.pr_number}",
+            })
+            _state_write(self.issue, "pilot", status="failed", failure=failure)
+            print(
+                f"[merge-gate] Issue #{self.issue}: マージ失敗 - {raw_err}",
+                file=sys.stderr,
+            )
         return False
 
     def _post_merge_cleanup(self, repo_mode: str, autopilot_status: str) -> None:

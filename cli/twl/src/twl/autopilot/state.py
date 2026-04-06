@@ -26,8 +26,9 @@ _VALID_REPO_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
 # Allowed state transitions: {current: {next, ...}}
 _TRANSITIONS: dict[str, set[str]] = {
     "running": {"merge-ready", "failed"},
-    "merge-ready": {"done", "failed"},
+    "merge-ready": {"done", "failed", "conflict"},
     "failed": {"running"},
+    "conflict": {"merge-ready", "failed"},
 }
 
 _PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure"}
@@ -229,6 +230,15 @@ class StateManager:
                 )
             data = dict(data)
             data["retry_count"] = retry + 1
+        if current == "conflict" and new_status == "merge-ready":
+            conflict_retry = data.get("conflict_retry_count", 0)
+            if conflict_retry >= 1:
+                raise StateError(
+                    f"conflict リトライ上限に達しています (conflict_retry_count={conflict_retry} >= 1)。"
+                    "conflict → merge-ready への遷移は不可"
+                )
+            data = dict(data)
+            data["conflict_retry_count"] = conflict_retry + 1
         return data
 
     def _set_field(self, data: dict[str, Any], key: str, raw: str) -> dict[str, Any]:
