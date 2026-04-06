@@ -623,6 +623,7 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
     print("| Component | Status | Severity |")
     print("|-----------|--------|----------|")
 
+    # audit_collect の prompt_compliance 項目を表示（カウントは既に items から計算済み）
     current_hash = _compute_ref_prompt_guide_hash(plugin_root)
     for section_key in ('skills', 'commands', 'agents'):
         for name, spec in sorted(deps.get(section_key, {}).items()):
@@ -630,25 +631,20 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
             if refined_by is None:
                 status_str = '未レビュー'
                 severity = 'INFO'
-                oks += 1
             else:
                 m = re.match(r'^ref-prompt-guide@([0-9a-f]{8})$', str(refined_by))
                 if not m:
                     status_str = f'フォーマット不正: {refined_by}'
                     severity = 'WARNING'
-                    warnings += 1
                 elif current_hash is None:
                     status_str = f'照合不可: {refined_by}'
                     severity = 'INFO'
-                    oks += 1
                 elif m.group(1) == current_hash:
                     status_str = f'最新 ({refined_by})'
                     severity = 'OK'
-                    oks += 1
                 else:
                     status_str = f'stale ({refined_by} → 現在={current_hash})'
                     severity = 'WARNING'
-                    warnings += 1
             print(f"| {name} | {status_str} | {severity} |")
     print()
 
