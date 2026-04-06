@@ -3,11 +3,22 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
 from twl.core.types import resolve_type, ALLOWED_MODELS, _is_within_root
+from twl.core.plugin import count_tokens
 from twl.validation.utils import _count_body_lines
 from twl.validation.audit import (
     _parse_frontmatter_tools, _scan_body_for_mcp_tools,
     _check_output_schema_keywords
 )
+
+# Token bloat thresholds per type (warning, critical)
+TOKEN_THRESHOLDS: Dict[str, Tuple[int, int]] = {
+    'controller': (1500, 2500),
+    'workflow': (1200, 2000),
+    'atomic': (1500, 2500),
+    'composite': (1500, 2500),
+    'specialist': (1800, 2500),
+}
+# reference and script types are intentionally excluded
 
 
 def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], List[str]]:
@@ -57,6 +68,29 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
                 add_critical(f"[controller-bloat] {name}: {body_lines} lines (>200)")
             elif body_lines > 120:
                 add_warning(f"[controller-bloat] {name}: {body_lines} lines (>120)")
+
+    # (A2) Token bloat チェック（全型対応）
+    for section in ('skills', 'commands', 'agents'):
+        for name, spec in deps.get(section, {}).items():
+            comp_type = resolve_type(spec.get('type', ''))
+            if comp_type not in TOKEN_THRESHOLDS:
+                continue
+            path_str = spec.get('path', '')
+            if not path_str:
+                continue
+            path = plugin_root / path_str
+            if not _is_within_root(path, plugin_root):
+                continue
+            if not path.exists():
+                continue
+            tok = count_tokens(path)
+            if tok == 0:
+                continue
+            warn_threshold, crit_threshold = TOKEN_THRESHOLDS[comp_type]
+            if tok > crit_threshold:
+                add_critical(f"[token-bloat] {name} ({comp_type}): {tok} tok (>{crit_threshold})")
+            elif tok > warn_threshold:
+                add_warning(f"[token-bloat] {name} ({comp_type}): {tok} tok (>{warn_threshold})")
 
     # (B) Reference 配置監査
     # 全コンポーネントの calls から reference と downstream を収集

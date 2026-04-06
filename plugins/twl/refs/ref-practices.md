@@ -190,6 +190,17 @@ Critical/High 検出時は【人間承認待ち】。
    - 120行超 = Warning（分割検討）
    - 200行超 = Critical（即座に分割必須）
 
+   **トークンベース閾値**（一次基準、行数基準は deprecated）:
+
+   | 型 | Warning | Critical |
+   |---|---|---|
+   | controller | 1,500 tok | 2,500 tok |
+   | workflow | 1,200 tok | 2,000 tok |
+   | atomic / composite | 1,500 tok | 2,500 tok |
+   | specialist | 1,800 tok | 2,500 tok |
+
+   reference / script は対象外（意図的に長い / LLM ��ロンプトではない）。
+
 2. **インライン実装禁止**: データ加工、バリデーション、フォーマット処理は
    atomic/composite/specialist に委譲。controller の Step は呼び出し指示のみ。
    - OK: 「`commands/execute-prepare.md` を Read し、その指示に従い実行」

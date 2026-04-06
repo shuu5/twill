@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for audit_report Section 6: Model Declaration.
+"""Tests for audit_report Section 7: Model Declaration.
 
 Spec: openspec/changes/model-specialist-validate/specs/audit-model-section.md
 
@@ -8,7 +8,7 @@ Covers:
 - model undeclared specialist shows WARNING row
 - unknown model value shows INFO row
 - opus model shows WARNING row
-- Section 6 header format
+- Section 7 header format
 """
 
 import shutil
@@ -137,13 +137,13 @@ class _AuditTestBase:
         return result.stdout
 
     def _get_section6_lines(self) -> list[str]:
-        """Extract only Section 6 lines from audit output."""
+        """Extract only Section 7 lines from audit output."""
         output = self._run_audit()
         lines = output.splitlines()
         in_section6 = False
         section6_lines = []
         for line in lines:
-            if "## 6. Model Declaration" in line:
+            if "## 7. Model Declaration" in line:
                 in_section6 = True
                 section6_lines.append(line)
                 continue
@@ -168,7 +168,7 @@ class TestAuditModelDeclaredOk(_AuditTestBase):
         WHEN specialist has model: sonnet
         THEN table outputs '| my-specialist | specialist | sonnet | OK |'."""
         output = self._run_audit()
-        assert "6. Model Declaration" in output
+        assert "7. Model Declaration" in output
         # Check table row (flexible whitespace matching)
         assert "my-specialist" in output
         assert "sonnet" in output
@@ -196,14 +196,14 @@ class TestAuditModelUndeclaredWarning(_AuditTestBase):
         WHEN specialist has no model field
         THEN table outputs '| {name} | specialist | (none) | WARNING |' and increments warnings."""
         lines = self._get_section6_lines()
-        assert any("6. Model Declaration" in l for l in lines)
+        assert any("7. Model Declaration" in l for l in lines)
         for line in lines:
             if "no-model-agent" in line and "specialist" in line:
                 assert "(none)" in line, f"Expected '(none)' in line: {line}"
                 assert "WARNING" in line, f"Expected WARNING severity in line: {line}"
                 break
         else:
-            assert False, f"Could not find no-model-agent row in Section 6: {lines}"
+            assert False, f"Could not find no-model-agent row in Section 7: {lines}"
 
 
 # ===========================================================================
@@ -220,7 +220,7 @@ class TestAuditUnknownModelInfo(_AuditTestBase):
         WHEN specialist has model value not in ALLOWED_MODELS
         THEN table outputs '| {name} | specialist | {value} | INFO |'."""
         output = self._run_audit()
-        assert "6. Model Declaration" in output
+        assert "7. Model Declaration" in output
         lines = output.splitlines()
         for line in lines:
             if "typo-agent" in line and "sonne" in line:
@@ -244,13 +244,13 @@ class TestAuditOpusWarning(_AuditTestBase):
         WHEN specialist has model: opus
         THEN table outputs '| {name} | specialist | opus | WARNING |' and increments warnings."""
         lines = self._get_section6_lines()
-        assert any("6. Model Declaration" in l for l in lines)
+        assert any("7. Model Declaration" in l for l in lines)
         for line in lines:
             if "opus-agent" in line and "opus" in line:
                 assert "WARNING" in line, f"Expected WARNING severity in line: {line}"
                 break
         else:
-            assert False, f"Could not find opus-agent row in Section 6: {lines}"
+            assert False, f"Could not find opus-agent row in Section 7: {lines}"
 
 
 # ===========================================================================
@@ -258,19 +258,19 @@ class TestAuditOpusWarning(_AuditTestBase):
 # ===========================================================================
 
 class TestAuditTableFormat(_AuditTestBase):
-    """Section 6 has correct header format."""
+    """Section 7 has correct header format."""
 
     specialists = {"my-specialist": "sonnet"}
 
     def test_section_6_header(self):
         """Scenario: table header
         WHEN audit is executed
-        THEN Section 6 starts with '## 6. Model Declaration' and has
+        THEN Section 7 starts with '## 7. Model Declaration' and has
              '| Name | Type | Model | Severity |' header."""
         output = self._run_audit()
 
         # Check section header
-        assert "## 6. Model Declaration" in output
+        assert "## 7. Model Declaration" in output
 
         # Check table header
         lines = output.splitlines()
@@ -317,9 +317,9 @@ class TestAuditMixedSpecialists(_AuditTestBase):
     }
 
     def test_all_specialists_appear_in_table(self):
-        """Edge case: all specialists should appear in Section 6 table."""
+        """Edge case: all specialists should appear in Section 7 table."""
         output = self._run_audit()
-        assert "6. Model Declaration" in output
+        assert "7. Model Declaration" in output
         for name in ("good-agent", "no-model-agent", "typo-agent", "opus-agent"):
             assert name in output, f"Missing {name} in audit output"
 
@@ -343,7 +343,7 @@ class TestAuditMixedSpecialists(_AuditTestBase):
                     found.add(name)
 
         assert found == set(expected.keys()), (
-            f"Not all specialists found in Section 6. Missing: {set(expected.keys()) - found}"
+            f"Not all specialists found in Section 7. Missing: {set(expected.keys()) - found}"
         )
 
 
