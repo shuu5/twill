@@ -19,16 +19,16 @@ PRサイクル開始前の準備状況を確認するコマンド。
 
 Context の `Project root` 値を `WORKTREE_BASE` として使用する。
 
-### 1. OpenSpec（openspec/がある場合のみ）
+### 1. OpenSpec（deltaspec/がある場合のみ）
 
 ```bash
 # proposalの存在確認
-ls $WORKTREE_BASE/openspec/changes/*/proposal.md 2>/dev/null
+ls $WORKTREE_BASE/deltaspec/changes/*/proposal.md 2>/dev/null
 ```
 
 - **PASS**: proposal.mdが存在し、承認済み
 - **WARN**: proposal.mdが存在するが未承認
-- **FAIL**: openspec/があるのにproposal.mdがない
+- **FAIL**: deltaspec/があるのにproposal.mdがない
 
 ### 2. Verify状態（OpenSpec使用時）
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: PILOT_AUTOPILOT_DIR default value fix
-# Generated from: openspec/changes/fix-pilotautopilotdir-empty-default/specs/default-autopilot-dir/spec.md
+# Generated from: deltaspec/changes/fix-pilotautopilotdir-empty-default/specs/default-autopilot-dir/spec.md
 # Coverage level: edge-cases
 # Verifies: commands/autopilot-phase-execute.md resolve_issue_repo_context()
 # =============================================================================

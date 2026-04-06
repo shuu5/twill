@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: auto flag removal and state-based detection
-# Generated from: openspec/changes/remove-auto-flags-add-state-detection/specs/
+# Generated from: deltaspec/changes/remove-auto-flags-add-state-detection/specs/
 #   - autopilot-state-detection.md
 #   - openspec-contradiction-fix.md
 # Coverage level: edge-cases
@@ -458,14 +458,14 @@ fi
 # =============================================================================
 # Requirement: c-2d session-management spec のプロンプト修正
 # Scenario: openspec c-2d の矛盾解消 (openspec-contradiction-fix.md line 10)
-# WHEN: openspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/session-management/spec.md を確認する
+# WHEN: deltaspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/session-management/spec.md を確認する
 # THEN: autopilot-launch コマンド要件のプロンプト記述が /twl:workflow-setup #${ISSUE} のみであり
 #       --auto --auto-merge が含まれない
 # =============================================================================
 echo ""
 echo "--- Requirement: c-2d session-management spec のプロンプト修正 ---"
 
-C2D_SPEC="openspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/session-management/spec.md"
+C2D_SPEC="deltaspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/session-management/spec.md"
 
 test_c2d_spec_file_exists() {
   assert_file_exists "$C2D_SPEC"

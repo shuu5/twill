@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Scenario Tests: calls-completion
-# Generated from: openspec/changes/82-depsyaml-calls-svg-orphan-2/specs/calls-completion/spec.md
+# Generated from: deltaspec/changes/82-depsyaml-calls-svg-orphan-2/specs/calls-completion/spec.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

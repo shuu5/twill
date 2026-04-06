@@ -19,7 +19,7 @@ Scenario 種別に応じて specialist を適切に呼び出し。
 
 ### 1. Scenario 解析
 
-`openspec/changes/<change-id>/specs/` を確認し、Scenario を分類:
+`deltaspec/changes/<change-id>/specs/` を確認し、Scenario を分類:
 
 | キーワード | 分類 |
 |-----------|------|

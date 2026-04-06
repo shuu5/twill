@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: Issue テンプレート & deps.yaml 更新
-# Generated from: openspec/changes/c-1-controller-migration/specs/issue-templates-and-deps/spec.md
+# Generated from: deltaspec/changes/c-1-controller-migration/specs/issue-templates-and-deps/spec.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

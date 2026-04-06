@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: co-project SKILL.md
-# Generated from: openspec/changes/c-1-controller-migration/specs/co-project/spec.md
+# Generated from: deltaspec/changes/c-1-controller-migration/specs/co-project/spec.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

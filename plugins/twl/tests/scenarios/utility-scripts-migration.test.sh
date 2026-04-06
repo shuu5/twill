@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: utility-scripts.md
-# Generated from: openspec/changes/c-4-scripts-migration/specs/utility-scripts.md
+# Generated from: deltaspec/changes/c-4-scripts-migration/specs/utility-scripts.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

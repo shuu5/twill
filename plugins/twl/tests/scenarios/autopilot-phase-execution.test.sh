@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: autopilot phase execution commands
-# Generated from: openspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/phase-execution/spec.md
+# Generated from: deltaspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/phase-execution/spec.md
 # Coverage level: edge-cases
 # Verifies: autopilot-phase-execute, autopilot-phase-postprocess COMMAND.md
 # =============================================================================

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Scenario Tests: specialist への ref-* スキル事前注入
-# Generated from: openspec/changes/claude-code-v2185-feature-intake/specs/specialist-skills-injection/spec.md
+# Generated from: deltaspec/changes/claude-code-v2185-feature-intake/specs/specialist-skills-injection/spec.md
 # change-id: claude-code-v2185-feature-intake
 # Coverage level: edge-cases
 # =============================================================================

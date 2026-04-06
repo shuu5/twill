@@ -41,11 +41,11 @@ gh issue list --label tech-debt/deferred-high --state open --json number,title,b
 
 ### Step 2: 解決済み検出
 
-各 tech-debt Issue のタイトルから主要キーワード（名詞・固有名詞）を抽出し、`openspec/specs/*/spec.md` 内の Requirement 名・Scenario 名と照合する。
+各 tech-debt Issue のタイトルから主要キーワード（名詞・固有名詞）を抽出し、`deltaspec/specs/*/spec.md` 内の Requirement 名・Scenario 名と照合する。
 
 ```bash
 # キーワードごとに検索
-grep -rli -F -- "$KEYWORD" openspec/specs/*/spec.md 2>/dev/null
+grep -rli -F -- "$KEYWORD" deltaspec/specs/*/spec.md 2>/dev/null
 ```
 
 - 部分文字列一致（大文字小文字区別なし）で対応 spec が見つかった Issue → 「解決済み」

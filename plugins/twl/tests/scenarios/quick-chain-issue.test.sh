@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: quick-chain-issue
-# Generated from: openspec/changes/quick-chain-issue/specs/quick-detection.md
-#                  openspec/changes/quick-chain-issue/specs/lightweight-chain.md
+# Generated from: deltaspec/changes/quick-chain-issue/specs/quick-detection.md
+#                  deltaspec/changes/quick-chain-issue/specs/lightweight-chain.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

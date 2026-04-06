@@ -22,7 +22,7 @@
 <title>cmd_change_archive</title>
 <polygon fill="#e3f2fd" stroke="black" points="304.31,-540.49 221.31,-540.49 221.31,-504.49 304.31,-504.49 304.31,-540.49"/>
 <text text-anchor="middle" x="262.81" y="-525.49" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;archive</text>
-<text text-anchor="middle" x="262.81" y="-514.49" font-family="Helvetica,sans-Serif" font-size="10.00">(684 tok)</text>
+<text text-anchor="middle" x="262.81" y="-514.49" font-family="Helvetica,sans-Serif" font-size="10.00">(685 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_change_archive -->
 <g id="edge7" class="edge">
@@ -74,7 +74,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="295.31,-702.49 230.31,-702.49 230.31,-666.49 295.31,-666.49 295.31,-702.49"/>
 <text text-anchor="middle" x="262.81" y="-687.49" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="262.81" y="-676.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,878 tok)</text>
+<text text-anchor="middle" x="262.81" y="-676.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,639 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_merge_gate -->
 <g id="edge5" class="edge">
@@ -113,7 +113,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="506.4,-95.49 477.74,-119.98 420.43,-119.98 391.78,-95.49 420.43,-71.01 477.74,-71.01 506.4,-95.49"/>
 <text text-anchor="middle" x="449.09" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="449.09" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
+<text text-anchor="middle" x="449.09" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;script_chain_runner -->
 <g id="edge8" class="edge">
@@ -504,7 +504,7 @@
 <title>script_worktree_delete</title>
 <polygon fill="#ff9800" stroke="black" points="516.63,-1506.49 482.86,-1530.98 415.32,-1530.98 381.55,-1506.49 415.32,-1482.01 482.86,-1482.01 516.63,-1506.49"/>
 <text text-anchor="middle" x="449.09" y="-1509.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;delete</text>
-<text text-anchor="middle" x="449.09" y="-1498.49" font-family="Helvetica,sans-Serif" font-size="10.00">(956 tok)</text>
+<text text-anchor="middle" x="449.09" y="-1498.49" font-family="Helvetica,sans-Serif" font-size="10.00">(998 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;script_worktree_delete -->
 <g id="edge17" class="edge">
@@ -543,7 +543,7 @@
 <title>script_autopilot_mergegate</title>
 <polygon fill="#ff9800" stroke="black" points="532.15,-1202.49 490.62,-1226.98 407.56,-1226.98 366.02,-1202.49 407.56,-1178.01 490.62,-1178.01 532.15,-1202.49"/>
 <text text-anchor="middle" x="449.09" y="-1205.49" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;mergegate</text>
-<text text-anchor="middle" x="449.09" y="-1194.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,407 tok)</text>
+<text text-anchor="middle" x="449.09" y="-1194.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,452 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;script_autopilot_mergegate -->
 <g id="edge20" class="edge">
@@ -576,7 +576,7 @@
 <title>script_auto_merge</title>
 <polygon fill="#ff9800" stroke="black" points="502.23,-166.49 475.66,-190.98 422.52,-190.98 395.94,-166.49 422.52,-142.01 475.66,-142.01 502.23,-166.49"/>
 <text text-anchor="middle" x="449.09" y="-169.49" font-family="Helvetica,sans-Serif" font-size="10.00">auto&#45;merge</text>
-<text text-anchor="middle" x="449.09" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,855 tok)</text>
+<text text-anchor="middle" x="449.09" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,856 tok)</text>
 </g>
 <!-- cmd_auto_merge&#45;&gt;script_auto_merge -->
 <g id="edge44" class="edge">
@@ -761,7 +761,7 @@
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="517.76,-1906.49 483.42,-1930.98 414.75,-1930.98 380.42,-1906.49 414.75,-1882.01 483.42,-1882.01 517.76,-1906.49"/>
 <text text-anchor="middle" x="449.09" y="-1909.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="449.09" y="-1898.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,307 tok)</text>
+<text text-anchor="middle" x="449.09" y="-1898.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,529 tok)</text>
 </g>
 <!-- script_autopilot_github -->
 <g id="node40" class="node">
@@ -775,7 +775,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="504,-2048.49 476.54,-2072.98 421.63,-2072.98 394.18,-2048.49 421.63,-2024.01 476.54,-2024.01 504,-2048.49"/>
 <text text-anchor="middle" x="449.09" y="-2051.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="449.09" y="-2040.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
+<text text-anchor="middle" x="449.09" y="-2040.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node44" class="node">

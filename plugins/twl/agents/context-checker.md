@@ -93,7 +93,7 @@ gh issue list --label tech-debt/deferred-high --state open --json title,number,l
 
 | 優先度 | 分類 | 条件 | 表示上限 |
 |--------|------|------|----------|
-| 1 | **解決済み候補** | tech-debt のタイトルのキーワードが `openspec/specs/` 内の Requirement 名または Scenario 名に部分文字列一致（大文字小文字区別なし） | 最大3件 |
+| 1 | **解決済み候補** | tech-debt のタイトルのキーワードが `deltaspec/specs/` 内の Requirement 名または Scenario 名に部分文字列一致（大文字小文字区別なし） | 最大3件 |
 | 2 | **吸収可能** | tech-debt のタイトル・本文の主要キーワードが新 Issue のスコープと CRITICAL/WARNING で一致 | 最大5件 |
 | 3 | **無関係** | 上記いずれにも該当しない | 非表示 |
 
@@ -106,10 +106,10 @@ gh issue list --label tech-debt/deferred-high --state open --json title,number,l
 
 ```bash
 KEYWORD="<keyword>"
-grep -rli -F -- "$KEYWORD" openspec/specs/*/spec.md 2>/dev/null
+grep -rli -F -- "$KEYWORD" deltaspec/specs/*/spec.md 2>/dev/null
 ```
 
-tech-debt のタイトルから抽出したキーワードを `openspec/specs/` 内の spec.md で固定文字列検索（`-F`）する。`-i` で大文字小文字を区別せず、`--` でオプション終端を明示する。対応する Requirement が存在すれば「解決済み候補」として分類する。
+tech-debt のタイトルから抽出したキーワードを `deltaspec/specs/` 内の spec.md で固定文字列検索（`-F`）する。`-i` で大文字小文字を区別せず、`--` でオプション終端を明示する。対応する Requirement が存在すれば「解決済み候補」として分類する。
 
 #### 4.4 表示制限
 

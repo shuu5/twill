@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: deps-yaml-refs.md
-# Generated from: openspec/changes/b-6-specialist-few-shot/specs/deps-yaml-refs.md
+# Generated from: deltaspec/changes/b-6-specialist-few-shot/specs/deps-yaml-refs.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Unit Tests: auto-merge.md フォールバックガード（issue-{N}.json 直接確認）
-# Generated from: openspec/changes/autopilot-fallback-guard/specs/fallback-guard.md
+# Generated from: deltaspec/changes/autopilot-fallback-guard/specs/fallback-guard.md
 # Requirement: auto-merge フォールバックガード（issue-{N}.json 直接確認）
 # Coverage level: edge-cases (happy path + edge cases)
 #

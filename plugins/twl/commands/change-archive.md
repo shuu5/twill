@@ -43,10 +43,10 @@ Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
 
 ### Step 4: delta spec sync 判定
 
-Check for delta specs at `openspec/changes/<name>/specs/`. If none exist, proceed without sync prompt.
+Check for delta specs at `deltaspec/changes/<name>/specs/`. If none exist, proceed without sync prompt.
 
 **If delta specs exist:**
-- Compare each delta spec with its corresponding main spec at `openspec/specs/<capability>/spec.md`
+- Compare each delta spec with its corresponding main spec at `deltaspec/specs/<capability>/spec.md`
 - Determine what changes would be applied (adds, modifications, removals, renames)
 - Show a combined summary before prompting
 
@@ -75,4 +75,4 @@ twl spec archive "<change-id>" --yes --skip-specs
 
 - worktree-delete を自動実行してはならない（ユーザー確認が必要）
 - Don't block archive on warnings - just inform and confirm
-- Preserve .openspec.yaml when moving to archive (it moves with the directory)
+- Preserve .deltaspec.yaml when moving to archive (it moves with the directory)

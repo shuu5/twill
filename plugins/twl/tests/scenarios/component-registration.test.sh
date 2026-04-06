@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: component-registration.md
-# Generated from: openspec/changes/b-4-workflow-setup-chain-driven/specs/component-registration.md
+# Generated from: deltaspec/changes/b-4-workflow-setup-chain-driven/specs/component-registration.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

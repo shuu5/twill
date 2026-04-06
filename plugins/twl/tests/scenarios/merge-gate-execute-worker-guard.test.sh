@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Unit Tests: merge-gate-execute.sh Worker ロール検出ガード
-# Generated from: openspec/changes/autopilot-fallback-guard/specs/fallback-guard.md
+# Generated from: deltaspec/changes/autopilot-fallback-guard/specs/fallback-guard.md
 # Requirement: merge-gate-execute Worker ロール検出ガード
 # Coverage level: edge-cases (happy path + edge cases)
 #

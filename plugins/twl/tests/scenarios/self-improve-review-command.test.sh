@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document/Structure Verification Tests: self-improve-review-command.md
-# Generated from: openspec/changes/b-7-self-improve-review-hook/specs/self-improve-review-command.md
+# Generated from: deltaspec/changes/b-7-self-improve-review-hook/specs/self-improve-review-command.md
 # Coverage level: edge-cases
 #
 # Note: self-improve-review is a markdown-based AI command (COMMAND.md).

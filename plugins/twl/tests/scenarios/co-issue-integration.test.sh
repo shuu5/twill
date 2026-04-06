@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document/Structure Verification Tests: co-issue-integration.md
-# Generated from: openspec/changes/b-7-self-improve-review-hook/specs/co-issue-integration.md
+# Generated from: deltaspec/changes/b-7-self-improve-review-hook/specs/co-issue-integration.md
 # Coverage level: edge-cases
 #
 # Note: co-issue integration is a markdown-based AI skill (SKILL.md).

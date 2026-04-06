@@ -9,7 +9,7 @@
 
 ## 前提条件
 
-- `openspec/changes/<change-id>/test-mapping.yaml` が存在すること
+- `deltaspec/changes/<change-id>/test-mapping.yaml` が存在すること
 - テストが実行済みで結果が取得可能なこと
 
 ## 実行フロー

@@ -21,7 +21,7 @@ disable-model-invocation: true
 | ISSUE_NUM | Issue | [BANG]`source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null \|\| true; resolve_issue_num 2>/dev/null \|\| echo ""` | `""` | state file（AUTOPILOT_DIR）または branch から解決した Issue 番号 |
 | REPO_MODE | Repo mode | [BANG]`[ -d ".git" ] && echo "standard" \|\| echo "worktree"` | `"standard"` | リポジトリ形式 |
 | PR_NUMBER | PR | [BANG]`gh pr view --json number -q '.number' 2>/dev/null \|\| echo "none"` | `"none"` | PR 番号 |
-| CHANGE_ID | Change ID | [BANG]`ls openspec/changes/ 2>/dev/null \| grep -v archive \| head -1 \|\| echo ""` | `""` | OpenSpec change ID |
+| CHANGE_ID | Change ID | [BANG]`ls deltaspec/changes/ 2>/dev/null \| grep -v archive \| head -1 \|\| echo ""` | `""` | DeltaSpec change ID |
 | PROJECT_ROOT | Project root | [BANG]`git rev-parse --show-toplevel 2>/dev/null \|\| echo "."` | `"."` | プロジェクトルートパス |
 
 **注**: `[BANG]` は実際の適用時には `!` に置換する。本ドキュメント内ではコードフェンス内誤実行バグ（claude-code Issue #12781）回避のためプレースホルダーを使用。

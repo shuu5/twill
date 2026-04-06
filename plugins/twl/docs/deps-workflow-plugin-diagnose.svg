@@ -111,7 +111,7 @@
 <polyline fill="none" stroke="black" points="750.74,-89.31 750.74,-83.31 "/>
 <polyline fill="none" stroke="black" points="756.74,-83.31 750.74,-83.31 "/>
 <text text-anchor="middle" x="707.74" y="-74.31" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;architecture</text>
-<text text-anchor="middle" x="707.74" y="-63.31" font-family="Helvetica,sans-Serif" font-size="10.00">(2,273 tok)</text>
+<text text-anchor="middle" x="707.74" y="-63.31" font-family="Helvetica,sans-Serif" font-size="10.00">(2,234 tok)</text>
 </g>
 <!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_architecture -->
 <!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_architecture -->

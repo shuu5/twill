@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: co-autopilot SKILL.md
-# Generated from: openspec/changes/c-1-controller-migration/specs/co-autopilot/spec.md
+# Generated from: deltaspec/changes/c-1-controller-migration/specs/co-autopilot/spec.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

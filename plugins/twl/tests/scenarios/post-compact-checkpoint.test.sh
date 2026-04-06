@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Functional Tests: post-compact-checkpoint.md
-# Generated from: openspec/changes/claude-code-hooks-autopilot/specs/post-compact-checkpoint.md
+# Generated from: deltaspec/changes/claude-code-hooks-autopilot/specs/post-compact-checkpoint.md
 # Coverage level: edge-cases
 # Tests the actual behavior of scripts/hooks/post-compact-checkpoint.sh
 # =============================================================================

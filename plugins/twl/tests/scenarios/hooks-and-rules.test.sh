@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: hooks-and-rules.md
-# Generated from: openspec/changes/b-2-bare-repo-depsyaml-v30-co-naming/specs/hooks-and-rules.md
+# Generated from: deltaspec/changes/b-2-bare-repo-depsyaml-v30-co-naming/specs/hooks-and-rules.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

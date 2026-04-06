@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Scenario Tests: Controller tools フィールドによる Agent スポーン制限
-# Generated from: openspec/changes/claude-code-v2185-feature-intake/specs/controller-tools-restriction/spec.md
+# Generated from: deltaspec/changes/claude-code-v2185-feature-intake/specs/controller-tools-restriction/spec.md
 # change-id: claude-code-v2185-feature-intake
 # Coverage level: edge-cases
 # =============================================================================

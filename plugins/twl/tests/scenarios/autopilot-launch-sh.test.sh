@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: autopilot-launch-sh
-# Generated from: openspec/changes/autopilot-launch-sh/specs/autopilot-launch-sh/spec.md
+# Generated from: deltaspec/changes/autopilot-launch-sh/specs/autopilot-launch-sh/spec.md
 # Coverage level: edge-cases
 # Type: unit
 # =============================================================================

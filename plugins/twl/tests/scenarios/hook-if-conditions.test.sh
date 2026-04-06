@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Scenario Tests: hook if 条件フィルタリング追加
-# Generated from: openspec/changes/claude-code-v2185-feature-intake/specs/hook-if-conditions/spec.md
+# Generated from: deltaspec/changes/claude-code-v2185-feature-intake/specs/hook-if-conditions/spec.md
 # change-id: claude-code-v2185-feature-intake
 # Coverage level: edge-cases
 # =============================================================================

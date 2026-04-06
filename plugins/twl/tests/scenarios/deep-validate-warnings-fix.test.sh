@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: deep-validate warnings fix
-# Generated from: openspec/changes/42-fix-deep-validate-warnings/specs/tools-mismatch-fix/spec.md
+# Generated from: deltaspec/changes/42-fix-deep-validate-warnings/specs/tools-mismatch-fix/spec.md
 # Coverage level: edge-cases
 # change-id: 42-fix-deep-validate-warnings
 # =============================================================================

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Unit Tests: scripts/auto-merge.sh（4 Layer ガード + squash merge）
-# Generated from: openspec/changes/auto-merge-script/specs/auto-merge-sh.md
+# Generated from: deltaspec/changes/auto-merge-script/specs/auto-merge-sh.md
 # Coverage level: edge-cases (happy path + edge cases)
 #
 # Strategy:

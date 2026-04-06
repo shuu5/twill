@@ -2,8 +2,8 @@
 # =============================================================================
 # Document Verification Tests: co-issue-specialist-maxturns-fix
 # Generated from:
-#   openspec/changes/co-issue-specialist-maxturns-fix/specs/agent-budget-control/spec.md
-#   openspec/changes/co-issue-specialist-maxturns-fix/specs/co-issue-depth-control/spec.md
+#   deltaspec/changes/co-issue-specialist-maxturns-fix/specs/agent-budget-control/spec.md
+#   deltaspec/changes/co-issue-specialist-maxturns-fix/specs/co-issue-depth-control/spec.md
 # Coverage level: edge-cases
 # Type: unit
 #

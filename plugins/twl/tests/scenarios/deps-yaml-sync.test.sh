@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Scenario Tests: deps.yaml 新フィールド反映
-# Generated from: openspec/changes/claude-code-v2185-feature-intake/specs/deps-yaml-sync/spec.md
+# Generated from: deltaspec/changes/claude-code-v2185-feature-intake/specs/deps-yaml-sync/spec.md
 # change-id: claude-code-v2185-feature-intake
 # Coverage level: edge-cases
 # =============================================================================

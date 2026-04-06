@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: architecture-documents.md
-# Generated from: openspec/changes/b-1-chain-driven-autopilot-first/specs/architecture-documents.md
+# Generated from: deltaspec/changes/b-1-chain-driven-autopilot-first/specs/architecture-documents.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

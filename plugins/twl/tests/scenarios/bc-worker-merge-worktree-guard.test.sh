@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Unit Tests: merge-gate-execute.sh CWD Guard
-# Generated from: openspec/changes/bc-worker-merge-worktree-guard/specs/autopilot-guard.md
+# Generated from: deltaspec/changes/bc-worker-merge-worktree-guard/specs/autopilot-guard.md
 # Requirement: merge-gate-execute CWD ガード
 # Coverage level: edge-cases
 #

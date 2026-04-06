@@ -8,7 +8,7 @@
 |-----------|-----|------|
 | repo_mode | `worktree` | リポジトリ形式（bare repo + worktree 固定） |
 | branch | `main` / `feat/xxx` / `detached` | 現在のブランチ |
-| openspec | `true` / `false` | openspec/ が存在するか |
+| openspec | `true` / `false` | deltaspec/ が存在するか |
 | change_exists | `true` / `false` | changes/ 内にディレクトリがあるか |
 | change_id | `xxx` / `null` | 最新の change ID |
 | proposal_status | `approved` / `pending` / `none` | proposal.md の状態 |
@@ -40,7 +40,7 @@ environment:
 ## 判定フロー（MUST）
 
 1. **ブランチ確認**: `main` / `master` → `recommended_action: worktree`、feature ブランチ → 次へ
-2. **openspec/ 確認**: なし → `direct`、changes/ 空 → 変更規模判定、proposal.md あり → ステップ 3 へ
+2. **deltaspec/ 確認**: なし → `direct`、changes/ 空 → 変更規模判定、proposal.md あり → ステップ 3 へ
 3. **proposal 状態**: `status: approved` あり → `apply`、なし → `pending`
 4. **環境判定**: コンテナ・パッケージマネージャを検出
 5. **変更規模判定**: 10 行未満 → `direct`、それ以外 → `propose`

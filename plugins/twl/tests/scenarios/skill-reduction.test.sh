@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: skill-reduction.md
-# Generated from: openspec/changes/b-4-workflow-setup-chain-driven/specs/skill-reduction.md
+# Generated from: deltaspec/changes/b-4-workflow-setup-chain-driven/specs/skill-reduction.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

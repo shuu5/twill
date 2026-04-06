@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Functional Tests: worktree-lifecycle-safety.md
-# Generated from: openspec/changes/b-3-autopilot-state-management/specs/worktree-lifecycle-safety.md
+# Generated from: deltaspec/changes/b-3-autopilot-state-management/specs/worktree-lifecycle-safety.md
 # Coverage level: edge-cases
 # Tests worktree-delete.sh Pilot-only rule, crash detection, cleanup
 # =============================================================================
@@ -217,7 +217,7 @@ fi
 # Edge case: failure フィールドに message, step, timestamp が含まれる
 test_crash_failure_fields() {
   # Structural check: the spec or implementation mentions crash failure fields
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/worktree-lifecycle-safety.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/worktree-lifecycle-safety.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "message.*step.*timestamp|crash.*情報" "$spec_file" || return 1
 }
@@ -263,7 +263,7 @@ echo "--- Requirement: merge 後の worktree クリーンアップ ---"
 # THEN: Pilot が worktree-delete.sh で worktree を削除し、tmux kill-window で window を終了する
 test_merge_cleanup() {
   # Structural verification: check spec mentions both worktree-delete and tmux kill-window
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/worktree-lifecycle-safety.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/worktree-lifecycle-safety.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "worktree-delete" "$spec_file" || return 1
   grep -qP "tmux.*kill-window|kill-window" "$spec_file" || return 1
@@ -274,7 +274,7 @@ run_test "merge 成功後のクリーンアップ" test_merge_cleanup
 # Edge case: クリーンアップの順序が worktree 削除 → tmux kill の順
 test_cleanup_order() {
   # Check the spec or implementation defines the cleanup order
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/worktree-lifecycle-safety.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/worktree-lifecycle-safety.md"
   [[ -f "$spec_file" ]] || return 1
   # worktree-delete should appear before tmux kill-window in the spec
   local wt_line tmux_line

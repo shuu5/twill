@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: all-pass-check.md
-# Generated from: openspec/changes/b-5-pr-cycle-merge-gate-chain-driven/specs/all-pass-check.md
+# Generated from: deltaspec/changes/b-5-pr-cycle-merge-gate-chain-driven/specs/all-pass-check.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

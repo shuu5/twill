@@ -18,7 +18,7 @@ digraph Dependencies {
     // L0.5: Workflow Skills
 
     // Reference Skills
-    skill_ref_architecture [label="twl:ref-architecture\n(2,273 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_architecture [label="twl:ref-architecture\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_architecture_spec [label="twl:ref-architecture-spec\n(1,179 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
