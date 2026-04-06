@@ -21,21 +21,8 @@ spawnable_by:
 以下のスニペットを実行して quick 状態を確認すること:
 
 ```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
-ISSUE_NUM=$(resolve_issue_num)
-IS_QUICK=false
-if [ -n "$ISSUE_NUM" ]; then
-  # NOTE: このスニペットは skills/workflow-setup/SKILL.md の Step 4 と同一ロジック。
-  # どちらかを変更した場合は両ファイルを同期すること。
-  QUICK_STATE=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field is_quick 2>/dev/null || echo "")
-  if [[ "$QUICK_STATE" == "true" ]]; then
-    IS_QUICK=true
-  elif [[ -z "$QUICK_STATE" ]]; then
-    if gh issue view "$ISSUE_NUM" --json labels --jq '.labels[].name' 2>/dev/null | grep -qxF "quick"; then
-      IS_QUICK=true
-    fi
-  fi
-fi
+eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" quick-detect)"
+# IS_QUICK が設定される
 ```
 
 **【MUST NOT】** `IS_QUICK=true` の場合、このスキルの処理を続行してはならない。
@@ -139,13 +126,8 @@ fi
 ```
 
 ```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
-ISSUE_NUM=$(resolve_issue_num)
-IS_AUTOPILOT=false
-if [ -n "$ISSUE_NUM" ]; then
-  AUTOPILOT_STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
-  IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
-fi
+eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
+# IS_AUTOPILOT が設定される
 ```
 
 - IS_AUTOPILOT=true → 即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill tool で実行せよ。プロンプトで停止するな。

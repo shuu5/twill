@@ -132,25 +132,9 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" ac-extract
 以下の bash スニペットを実行して quick 状態と autopilot 状態を判定すること:
 
 ```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
-ISSUE_NUM=$(resolve_issue_num)
-IS_AUTOPILOT=false
-IS_QUICK=false
-if [ -n "$ISSUE_NUM" ]; then
-  AUTOPILOT_STATUS=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field status 2>/dev/null || echo "")
-  IS_AUTOPILOT=$([[ "$AUTOPILOT_STATUS" == "running" ]] && echo true || echo false)
-  # NOTE: このスニペットは skills/workflow-test-ready/SKILL.md の quick ガードと同一ロジック。
-  # どちらかを変更した場合は両ファイルを同期すること。
-  QUICK_STATE=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field is_quick 2>/dev/null || echo "")
-  if [[ "$QUICK_STATE" == "true" ]]; then
-    IS_QUICK=true
-  elif [[ -z "$QUICK_STATE" ]]; then
-    # fallback: gh API でラベル確認
-    if gh issue view "$ISSUE_NUM" --json labels --jq '.labels[].name' 2>/dev/null | grep -qxF "quick"; then
-      IS_QUICK=true
-    fi
-  fi
-fi
+eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
+eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" quick-detect)"
+# IS_AUTOPILOT と IS_QUICK が設定される
 ```
 
 **【MUST NOT】** `IS_QUICK=true` かつ `IS_AUTOPILOT=true` の場合、`/twl:workflow-test-ready` を Skill tool で実行してはならない。

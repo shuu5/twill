@@ -102,6 +102,43 @@ step_quick_guard() {
   return 0
 }
 
+# --- autopilot-detect: autopilot 状態を eval 可能な key=value 形式で出力 ---
+step_autopilot_detect() {
+  local issue_num
+  issue_num="$(resolve_issue_num)"
+  if [[ -z "$issue_num" ]]; then
+    echo "IS_AUTOPILOT=false"
+    return 0
+  fi
+  local autopilot_status
+  autopilot_status="$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field status 2>/dev/null || echo "")"
+  if [[ "$autopilot_status" == "running" ]]; then
+    echo "IS_AUTOPILOT=true"
+  else
+    echo "IS_AUTOPILOT=false"
+  fi
+}
+
+# --- quick-detect: quick Issue 状態を eval 可能な key=value 形式で出力 ---
+step_quick_detect() {
+  local issue_num
+  issue_num="$(resolve_issue_num)"
+  if [[ -z "$issue_num" ]]; then
+    echo "IS_QUICK=false"
+    return 0
+  fi
+  local is_quick
+  is_quick="$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
+  if [[ -z "$is_quick" ]]; then
+    is_quick="$(detect_quick_label "$issue_num")"
+  fi
+  if [[ "$is_quick" == "true" ]]; then
+    echo "IS_QUICK=true"
+  else
+    echo "IS_QUICK=false"
+  fi
+}
+
 # --- init: 開発状態判定 ---
 # Usage: step_init [issue_num]
 step_init() {
@@ -700,11 +737,13 @@ main() {
     pr-cycle-report)     step_pr_cycle_report "$@" ;;
     check)               step_check "$@" ;;
     quick-guard)         step_quick_guard "$@" ;;
+    autopilot-detect)    step_autopilot_detect "$@" ;;
+    quick-detect)        step_quick_detect "$@" ;;
     *)
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
       echo "         change-id-resolve, next-step, ts-preflight, pr-test, all-pass-check," >&2
-      echo "         pr-cycle-report, check, quick-guard" >&2
+      echo "         pr-cycle-report, check, quick-guard, autopilot-detect, quick-detect" >&2
       exit 1
       ;;
   esac

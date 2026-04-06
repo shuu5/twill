@@ -7,7 +7,8 @@ CLI usage:
 
 Steps: init, worktree-create, board-status-update, board-archive, ac-extract,
        arch-ref, change-id-resolve, next-step, ts-preflight, pr-test,
-       all-pass-check, pr-cycle-report, check, quick-guard
+       all-pass-check, pr-cycle-report, check, quick-guard,
+       autopilot-detect, quick-detect
 """
 
 from __future__ import annotations
@@ -124,6 +125,36 @@ class ChainRunner:
         if not issue_num:
             return
         self._write_state_field(issue_num, f"current_step={step_id}")
+
+    # ------------------------------------------------------------------
+    # Step: autopilot-detect
+    # ------------------------------------------------------------------
+
+    def step_autopilot_detect(self) -> None:
+        """Print eval-able IS_AUTOPILOT=true/false to stdout."""
+        issue_num = self._resolve_issue_num()
+        if not issue_num:
+            print("IS_AUTOPILOT=false")
+            return
+        status = self._read_state_field(issue_num, "status")
+        value = "true" if status == "running" else "false"
+        print(f"IS_AUTOPILOT={value}")
+
+    # ------------------------------------------------------------------
+    # Step: quick-detect
+    # ------------------------------------------------------------------
+
+    def step_quick_detect(self) -> None:
+        """Print eval-able IS_QUICK=true/false to stdout."""
+        issue_num = self._resolve_issue_num()
+        if not issue_num:
+            print("IS_QUICK=false")
+            return
+        is_quick = self._read_state_field(issue_num, "is_quick")
+        if not is_quick:
+            is_quick = self._detect_quick_label(issue_num)
+        value = "true" if is_quick == "true" else "false"
+        print(f"IS_QUICK={value}")
 
     # ------------------------------------------------------------------
     # Step: quick-guard
@@ -687,7 +718,8 @@ def main(argv: list[str] | None = None) -> int:
         print("Usage: python3 -m twl.autopilot.chain <step-name> [args...]", file=sys.stderr)
         print("Steps: init, next-step, quick-guard, check, change-id-resolve,", file=sys.stderr)
         print("       all-pass-check, ts-preflight, pr-test, pr-cycle-report,", file=sys.stderr)
-        print("       board-status-update, ac-extract", file=sys.stderr)
+        print("       board-status-update, ac-extract,", file=sys.stderr)
+        print("       autopilot-detect, quick-detect", file=sys.stderr)
         return 1
 
     step = args[0]
@@ -702,6 +734,14 @@ def main(argv: list[str] | None = None) -> int:
                 return 1
             result = runner.next_step(rest[0], rest[1])
             print(result)
+            return 0
+
+        elif step == "autopilot-detect":
+            runner.step_autopilot_detect()
+            return 0
+
+        elif step == "quick-detect":
+            runner.step_quick_detect()
             return 0
 
         elif step == "quick-guard":
