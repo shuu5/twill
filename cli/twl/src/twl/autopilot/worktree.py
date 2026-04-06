@@ -198,6 +198,57 @@ def _resolve_git_dir(project_dir: Path, git_common_dir: Path) -> Path:
     return git_common_dir
 
 
+# ---------------------------------------------------------------------------
+# Hook helpers
+# ---------------------------------------------------------------------------
+
+
+def _run_hook(hook_name: str, worktree_dir: Path, project_dir: Path) -> bool:
+    """Find and run .twl/<hook_name> executable. Returns True if hook was executed.
+
+    Search order:
+    1. <worktree_dir>/.twl/<hook_name>  (committed to the branch)
+    2. <project_dir>/main/.twl/<hook_name>  (project-root fallback)
+
+    Non-zero exit codes from the hook are printed as warnings; the hook is
+    still considered "executed" (returns True) so _sync_deps() is skipped.
+    Environment variable TWL_PROJECT_ROOT is passed to the hook.
+    """
+    candidates = [
+        worktree_dir / ".twl" / hook_name,
+        project_dir / "main" / ".twl" / hook_name,
+    ]
+    env = {**os.environ, "TWL_PROJECT_ROOT": str(project_dir)}
+
+    for hook_path in candidates:
+        if hook_path.is_file() and os.access(hook_path, os.X_OK):
+            print(f"  フック実行中: {hook_path}")
+            result = subprocess.run(
+                [str(hook_path)],
+                cwd=str(worktree_dir),
+                env=env,
+            )
+            if result.returncode != 0:
+                print(
+                    f"  警告: フック {hook_name} が非0終了コードで終了しました"
+                    f" (rc={result.returncode})"
+                )
+            return True
+    return False
+
+
+def _project_dir_from_worktree(worktree_dir: Path) -> Path | None:
+    """Resolve project_dir (parent of .bare) from a worktree directory."""
+    result = subprocess.run(
+        ["git", "rev-parse", "--git-common-dir"],
+        capture_output=True, text=True, cwd=str(worktree_dir),
+    )
+    if result.returncode != 0:
+        return None
+    git_common_dir = Path(result.stdout.strip()).resolve()
+    return git_common_dir.parent
+
+
 class WorktreeManager:
     """Manages git worktrees for bare-repo projects."""
 
@@ -265,9 +316,11 @@ class WorktreeManager:
         if result.returncode != 0:
             raise WorktreeError(f"worktree 作成に失敗しました:\n{result.stderr}")
 
-        # Sync dependencies
-        print("依存関係を同期中...")
-        self._sync_deps(worktree_dir)
+        # Run setup hook (or fall back to _sync_deps)
+        print("セットアップを実行中...")
+        hook_ran = _run_hook("setup", worktree_dir, project_dir)
+        if not hook_ran:
+            self._sync_deps(worktree_dir)
 
         # Push upstream
         print("upstream を設定中...")
@@ -420,6 +473,21 @@ class WorktreeManager:
             if result.returncode != 0:
                 print("  警告: uv sync に失敗しました")
 
+    @staticmethod
+    def run_teardown_hook(worktree_dir: Path) -> None:
+        """Run .twl/teardown hook for the given worktree directory.
+
+        Resolves project_dir via git, then delegates to _run_hook().
+        Safe to call even when worktree_dir does not exist (no-op).
+        """
+        if not worktree_dir.is_dir():
+            return
+        project_dir = _project_dir_from_worktree(worktree_dir)
+        if project_dir is None:
+            print("  警告: git common dir を解決できませんでした。teardown フックをスキップします")
+            return
+        _run_hook("teardown", worktree_dir, project_dir)
+
 
 # ---------------------------------------------------------------------------
 # Completion script generation
@@ -515,6 +583,18 @@ def main(argv: list[str] | None = None) -> int:
 
     command = args[0]
     rest = args[1:]
+
+    if command == "teardown-hook":
+        if not rest:
+            print("エラー: worktree ディレクトリを指定してください", file=sys.stderr)
+            print(
+                "使用方法: python3 -m twl.autopilot.worktree teardown-hook <worktree-dir>",
+                file=sys.stderr,
+            )
+            return 2
+        worktree_dir = Path(rest[0])
+        WorktreeManager.run_teardown_hook(worktree_dir)
+        return 0
 
     if command == "completions":
         shell: str | None = None

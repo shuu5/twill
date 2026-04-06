@@ -85,6 +85,11 @@ if [[ "$cwd" == "$worktree_path"* ]]; then
   exit 1
 fi
 
+# teardown フック実行（削除前）
+if [[ -d "$worktree_path" ]]; then
+  python3 -m twl.autopilot.worktree teardown-hook "$worktree_path" || true
+fi
+
 # worktree 削除
 if [[ -d "$worktree_path" ]]; then
   git worktree remove "$worktree_path" --force 2>/dev/null || {
