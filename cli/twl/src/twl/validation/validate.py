@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Set, Tuple
 from twl.core.types import TYPE_RULES, resolve_type
 from twl.core.plugin import get_plugin_name, get_deps_version, parse_cross_plugin_ref, get_cross_plugin_component
 from twl.refactor.promote import _is_within_root
-from twl.validation.audit import _get_body_text
+from twl.validation.utils import _get_body_text
 
 
 def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) -> Tuple[int, List[str], List[str]]:

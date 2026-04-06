@@ -3,26 +3,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
 from twl.core.types import resolve_type, ALLOWED_MODELS, _is_within_root
+from twl.validation.utils import _get_body_text, _count_body_lines
 from twl.validation.audit import (
-    _get_body_text, _parse_frontmatter_tools, _scan_body_for_mcp_tools,
+    _parse_frontmatter_tools, _scan_body_for_mcp_tools,
     _check_output_schema_keywords
 )
-
-
-def _count_body_lines(file_path: Path) -> int:
-    """frontmatter を除外した本文行数を返す"""
-    if not file_path.exists():
-        return 0
-    try:
-        lines = file_path.read_text(encoding='utf-8').splitlines()
-    except Exception:
-        return 0
-    # frontmatter 除外
-    if lines and lines[0].strip() == '---':
-        for i, line in enumerate(lines[1:], 1):
-            if line.strip() == '---':
-                return len(lines) - i - 1
-    return len(lines)
 
 
 def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], List[str]]:

@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
 from twl.core.types import resolve_type, ALLOWED_MODELS
+from twl.validation.utils import _get_body_text, _count_body_lines
 
 
 REQUIRED_OUTPUT_KEYWORDS = {
@@ -11,22 +12,6 @@ REQUIRED_OUTPUT_KEYWORDS = {
     "severity": {"severity"},                  # 必須
     "confidence": {"confidence"},              # 必須
 }
-
-
-def _get_body_text(file_path: Path) -> str:
-    """frontmatter を除外した本文テキストを返す"""
-    if not file_path.exists():
-        return ''
-    try:
-        content = file_path.read_text(encoding='utf-8')
-    except Exception:
-        return ''
-    lines = content.splitlines()
-    if lines and lines[0].strip() == '---':
-        for i, line in enumerate(lines[1:], 1):
-            if line.strip() == '---':
-                return '\n'.join(lines[i + 1:])
-    return '\n'.join(lines)
 
 
 def _count_inline_bash_lines(file_path: Path) -> Tuple[int, int]:
@@ -106,7 +91,6 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
 
     Returns: items リスト（severity, component, message, section, value, threshold）
     """
-    from twl.validation.deep import _count_body_lines
     from twl.core.types import _is_within_root
 
     COMMON_TOOLS = {'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'Task',
@@ -344,8 +328,6 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
     COMMON_TOOLS = {'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep', 'Task',
                     'SendMessage', 'AskUserQuestion', 'WebSearch', 'WebFetch',
                     'Agent', 'Skill'}
-
-    from twl.validation.deep import _count_body_lines
 
     # === Section 1: Controller Size ===
     print("## 1. Controller Size")
