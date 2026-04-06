@@ -294,7 +294,7 @@ cleanup_worker() {
   # Step 1: tmux window を先に終了（Worker がworktreeで動作していない状態を保証してから削除）
   tmux kill-window -t "$window_name" 2>/dev/null || true
 
-  # REPO_MODE 自動判定（auto-merge.sh / merge-gate-execute.sh と同一パターン）
+  # REPO_MODE 自動判定（mergegate.py と同一パターン）
   local repo_mode _git_dir
   _git_dir=$(git rev-parse --git-dir 2>/dev/null || echo "")
   if [[ "$_git_dir" == ".git" || -z "$_git_dir" ]]; then
