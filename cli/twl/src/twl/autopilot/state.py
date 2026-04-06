@@ -37,29 +37,33 @@ _PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure"}
 def _autopilot_dir() -> Path:
     """Resolve AUTOPILOT_DIR (env var takes priority).
 
-    Fallback uses ``git rev-parse --git-common-dir`` so that worktrees
-    resolve to the bare root (e.g. ``.bare``) instead of the worktree's
-    own ``.git`` directory.  From there we walk up to the repository root
-    and append ``.autopilot``.
+    Fallback uses ``git worktree list --porcelain`` to find the main
+    worktree (first listed entry) and appends ``.autopilot``.  This
+    correctly resolves bare-repo + worktree setups where the previous
+    ``git-common-dir`` approach returned the bare root instead of the
+    main worktree path.
     """
     env = os.environ.get("AUTOPILOT_DIR", "")
     if env:
         return Path(env)
-    # Fallback: git-common-dir → repo root → .autopilot
+    # Fallback: git worktree list → main worktree → .autopilot
     try:
         import subprocess
 
-        common_dir = subprocess.check_output(
-            ["git", "rev-parse", "--git-common-dir"],
+        output = subprocess.check_output(
+            ["git", "worktree", "list", "--porcelain"],
             stderr=subprocess.DEVNULL,
             text=True,
         ).strip()
-        # common_dir is e.g. /path/to/.bare  (bare repo) or /path/to/.git (standard)
-        # The repo root is its parent directory
-        repo_root = Path(common_dir).resolve().parent
-        return repo_root / ".autopilot"
+        # First "worktree " line is the main worktree
+        for line in output.splitlines():
+            if line.startswith("worktree "):
+                main_wt = line[len("worktree "):]
+                return Path(main_wt) / ".autopilot"
+        # No worktree line found — fall through
     except Exception:
-        return Path.cwd() / ".autopilot"
+        pass
+    return Path.cwd() / ".autopilot"
 
 
 def _resolve_file(autopilot_dir: Path, type_: str, issue: str | None, repo: str | None) -> Path:

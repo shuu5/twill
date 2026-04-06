@@ -29,6 +29,17 @@ resolve_project_root() {
   git rev-parse --show-toplevel 2>/dev/null || pwd
 }
 
+# AUTOPILOT_DIR を解決（env var 優先、未設定時は main worktree から推定）
+resolve_autopilot_dir() {
+  if [[ -n "${AUTOPILOT_DIR:-}" ]]; then
+    echo "$AUTOPILOT_DIR"
+    return
+  fi
+  local main_wt
+  main_wt=$(git worktree list --porcelain | awk '/^worktree /{print substr($0,10); exit}')
+  echo "${main_wt}/.autopilot"
+}
+
 # 成功出力
 ok() {
   local step="$1"; shift
@@ -59,7 +70,7 @@ record_current_step() {
   issue_num="$(resolve_issue_num)"
   [[ -z "$issue_num" ]] && return 0
   # record current_step via Python state module
-  python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "current_step=${step_id}" 2>/dev/null || true
+  python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "current_step=${step_id}" 2>/dev/null || true
 }
 
 # =====================================================================
@@ -90,7 +101,7 @@ step_quick_guard() {
   fi
 
   local is_quick
-  is_quick="$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
+  is_quick="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
 
   if [[ -z "$is_quick" ]]; then
     is_quick="$(detect_quick_label "$issue_num")"
@@ -111,7 +122,7 @@ step_autopilot_detect() {
     return 0
   fi
   local autopilot_status
-  autopilot_status="$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field status 2>/dev/null || echo "")"
+  autopilot_status="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field status 2>/dev/null || echo "")"
   if [[ "$autopilot_status" == "running" ]]; then
     echo "IS_AUTOPILOT=true"
   else
@@ -128,7 +139,7 @@ step_quick_detect() {
     return 0
   fi
   local is_quick
-  is_quick="$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
+  is_quick="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
   if [[ -z "$is_quick" ]]; then
     is_quick="$(detect_quick_label "$issue_num")"
   fi
@@ -153,7 +164,7 @@ step_init() {
 
   # is_quick を state に永続化（state ファイルが存在する場合のみ）
   if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-    python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "is_quick=$is_quick" 2>/dev/null || true
+    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "is_quick=$is_quick" 2>/dev/null || true
   fi
 
   # ブランチ判定
@@ -448,7 +459,7 @@ step_next_step() {
 
   # is_quick を state から取得（存在しない場合は false）
   local is_quick
-  is_quick="$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
+  is_quick="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
   [[ "$is_quick" == "true" ]] || is_quick="false"
 
   # current_step のインデックスを探す
@@ -598,7 +609,7 @@ step_all_pass_check() {
 
   # autopilot 配下判定
   local autopilot_status
-  autopilot_status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue_num" --field status 2>/dev/null || echo "")
+  autopilot_status=$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field status 2>/dev/null || echo "")
   local is_autopilot=false
   [[ "$autopilot_status" == "running" ]] && is_autopilot=true
 
@@ -606,14 +617,14 @@ step_all_pass_check() {
     local _cr_branch _cr_pr
     _cr_branch=$(git branch --show-current 2>/dev/null || echo "")
     _cr_pr=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
-    python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "status=merge-ready" --set "pr=$_cr_pr" --set "branch=$_cr_branch" 2>/dev/null || true
+    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "status=merge-ready" --set "pr=$_cr_pr" --set "branch=$_cr_branch" 2>/dev/null || true
     if $is_autopilot; then
       ok "all-pass-check" "PASS — autopilot 配下: merge-ready 宣言。Pilot による merge-gate を待機"
     else
       ok "all-pass-check" "PASS — merge-ready"
     fi
   else
-    python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "status=failed" 2>/dev/null || true
+    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "status=failed" 2>/dev/null || true
     skip "all-pass-check" "FAIL — status=failed"
     return 1
   fi
