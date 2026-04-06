@@ -21,17 +21,15 @@ spawnable_by:
 
 ## explore-summary 検出（起動時チェック）
 
-`.controller-issue/explore-summary.md` の存在を確認。存在時は「前回の探索結果が残っています。継続しますか？」と確認:
-- [A] 継続する → Phase 1 スキップ、Phase 2 から再開
-- [B] 最初から → explore-summary.md を削除し Phase 1 から開始
+`.controller-issue/explore-summary.md` が存在すれば「継続しますか？」と確認。[A] 継続 → Phase 2 から再開、[B] 最初から → 削除して Phase 1 から開始。
 
 ## Phase 1: 問題探索
 
 TaskCreate 「Phase 1: 問題探索」(status: in_progress)
 
-`architecture/` が存在する場合、vision.md, context-map.md, glossary.md を Read して `ARCH_CONTEXT` として保持（存在しないファイルはスキップ）。`/twl:explore` を呼び出し「問題空間の理解に集中」と注入。ARCH_CONTEXT があれば explore prompt に追加注入。探索後 `.controller-issue/explore-summary.md` に書き出し。
+`architecture/` が存在する場合、vision.md・context-map.md・glossary.md を Read して `ARCH_CONTEXT` として保持（不在はスキップ）。`/twl:explore` に「問題空間の理解に集中」と ARCH_CONTEXT を注入して呼び出す。探索後 `.controller-issue/explore-summary.md` に書き出す。
 
-explore-summary から scope/* が判明した場合、リポルート `architecture/domain/context-map.md` の flowchart ノードラベル（例: `cli/twl`, `plugins/twl`）を参照してコンポーネントパスを特定し、該当コンポーネントの `<component>/architecture/vision.md`、`<component>/architecture/domain/context-map.md`、`<component>/architecture/domain/glossary.md` を Read して ARCH_CONTEXT に追加（存在しないファイルはスキップ）。複数 scope/* の場合は各コンポーネントの architecture を追加する。
+explore-summary から scope/* が判明した場合、`architecture/domain/context-map.md` の flowchart ノードラベルでコンポーネントパスを特定し、該当コンポーネントの architecture ファイルを ARCH_CONTEXT に追加する（複数 scope/* の場合は各コンポーネント分を追加）。
 
 TaskUpdate Phase 1 → completed
 
@@ -59,9 +57,9 @@ TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
 **Step 3a**: 各 Issue に `/twl:issue-structure` でテンプレート適用。推奨ラベル抽出。tech-debt 棚卸し（該当時）。クロスリポ分割時は parent + 子 Issue の構造化ルールに従う。
 
-**Step 3b**: 各 Issue に `/twl:issue-spec-review` を呼び出す（1 Issue = 1 呼び出し）。全 Issue の呼び出しを可能な限り並列実行。quick 候補であっても specialist レビューは必ず実行する（スキップ禁止）。
+**Step 3b**: 各 Issue に `/twl:issue-spec-review` を呼び出す（1 Issue = 1 呼び出し、並列実行可、quick 候補もスキップ禁止）。
 
-**Step 3c**: `/twl:issue-review-aggregate` を呼び出す。ブロック Issue なし → Step 3.5 へ。CRITICAL あり → ユーザー通知、修正後 Step 3b 再実行可。split 承認 → `is_split_generated: true` フラグ設定（Phase 4 まで保持）。
+**Step 3c**: `/twl:issue-review-aggregate` を呼び出す。CRITICAL なし → Step 3.5 へ。CRITICAL あり → ユーザー通知・修正後 Step 3b 再実行可。split 承認 → `is_split_generated: true` フラグ設定（Phase 4 まで保持）。
 
 **Step 3.5**: `/twl:issue-arch-drift` を呼び出す（CRITICAL ブロック中はスキップ）。非ブロッキング。
 

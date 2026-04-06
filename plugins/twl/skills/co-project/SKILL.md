@@ -124,22 +124,13 @@ manifest.yaml + テンプレートファイルを生成。
 
 ---
 
----
-
 ## plugin-create モード
 
-`/twl:workflow-plugin-create` を実行して委譲。
-
-interview → research → design → generate の 4 ステップで新規プラグインを作成。
-
----
+`/twl:workflow-plugin-create` を実行して委譲（interview → research → design → generate）。
 
 ## plugin-diagnose モード
 
-`/twl:workflow-plugin-diagnose` を実行して委譲。
-
-migrate-analyze（optional）→ diagnose → phase-diagnose → fix → verify → phase-verify の
-6 ステップで既存プラグインを診断・修正・検証。
+`/twl:workflow-plugin-diagnose` を実行して委譲（migrate-analyze → diagnose → phase-diagnose → fix → verify → phase-verify）。
 
 ## 禁止事項（MUST NOT）
 

@@ -45,35 +45,6 @@ OpenSpec ScenarioまたはPlanからPlaywright E2Eテストコードを生成。
 | SSE/WebSocket遅延 | ストリーミングには `setTimeout(r, 50)` で現実的遅延を追加 |
 | 4層アサーション | API→Data→UI→Visual の4層を全テストに適用 |
 
-#### mockモード代表コード例
-
-```typescript
-test('[シナリオ名]', async ({ page }) => {
-  let capturedRequest: Request | null = null;
-  const responsePromise = page.waitForResponse('**/api/endpoint');
-
-  await page.route('**/api/endpoint', async route => {
-    capturedRequest = route.request();
-    await route.fulfill({ body: JSON.stringify(data) });
-  });
-
-  await page.goto('/page');
-  await page.click('[data-testid="action-button"]');
-
-  // API層
-  const response = await responsePromise;
-  expect(response.ok()).toBeTruthy();
-  // Data層
-  expect(capturedRequest).not.toBeNull();
-  expect(capturedRequest!.postDataJSON()).toMatchObject({ expected: 'data' });
-  // UI層
-  await expect(page.locator('[data-testid="result"]')).toBeVisible();
-  await expect(page.locator('[data-testid="result"]')).toHaveText('Expected Text');
-  // Visual層（@critical）
-  await expect(page).toHaveScreenshot('result-displayed.png');
-});
-```
-
 ### deployモード: 5層検証（必須）
 
 4層 + Network層を追加。`page.route()` は使用しない。
@@ -96,49 +67,6 @@ test('[シナリオ名]', async ({ page }) => {
 | Network層監視 | `page.on('console')` で CORS/PNA/SecureContext エラーを検出 |
 | SecureContext | 非localhost HTTP でのフォールバック動作を確認 |
 | 5層アサーション | API→Data→UI→Visual→Network の5層を全テストに適用 |
-
-#### deployモード代表コード例
-
-```typescript
-test.describe('[機能名] (deploy)', () => {
-  let testData: { id: string };
-
-  test.beforeEach(async ({ page, request }) => {
-    const res = await request.post('/api/test-setup', { data: { fixture: 'scenario' } });
-    testData = await res.json();
-    page.on('console', msg => {
-      if (msg.type() === 'error' &&
-          (msg.text().includes('CORS') || msg.text().includes('Private Network') || msg.text().includes('blocked'))) {
-        throw new Error(`Network error: ${msg.text()}`);
-      }
-    });
-  });
-
-  test.afterEach(async ({ request }) => {
-    await request.delete(`/api/test-cleanup/${testData.id}`);
-  });
-
-  test('[シナリオ名]', async ({ page }) => {
-    const responsePromise = page.waitForResponse(
-      resp => resp.url().includes('/api/endpoint') && resp.status() === 200
-    );
-    await page.goto('/page');
-    await page.click('[data-testid="action-button"]');
-
-    // API層
-    const response = await responsePromise;
-    expect(response.ok()).toBeTruthy();
-    // Data層
-    const data = await response.json();
-    expect(data).toMatchObject({ expected: 'shape' });
-    // UI層
-    await expect(page.locator('[data-testid="result"]')).toBeVisible();
-    // Visual層
-    await expect(page).toHaveScreenshot('result.png');
-    // Network層（beforeEachで監視済み）
-  });
-});
-```
 
 ## テスト構造共通ルール
 
@@ -165,25 +93,6 @@ test.describe('[機能名]', () => {
 
 ## 出力形式（MUST）
 
-ref-specialist-output-schema に従い、以下の JSON 構造で出力すること。
-
-```json
-{
-  "status": "PASS | WARN | FAIL",
-  "findings": [
-    {
-      "severity": "CRITICAL | WARNING | INFO",
-      "confidence": 0-100,
-      "file": "path/to/file",
-      "line": 42,
-      "message": "説明",
-      "category": "カテゴリ名"
-    }
-  ]
-}
-```
-
-- **status**: PASS（CRITICAL/WARNING なし）、WARN（WARNING あり CRITICAL なし）、FAIL（CRITICAL 1件以上）
-- **severity**: CRITICAL / WARNING / INFO の3段階のみ使用
-- **confidence**: 確信度（80以上でブロック判定対象）
-- findings が0件の場合は `"status": "PASS", "findings": []`
+ref-specialist-output-schema + ref-specialist-few-shot に従い JSON を出力すること。
+findings 配列に severity / confidence / file / line / message / category を含める。
+status は PASS / WARN / FAIL。findings 0件時: `{"status": "PASS", "findings": []}`

@@ -15,7 +15,7 @@
 <title>skill_co_project</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="53.03" cy="-409" rx="53.07" ry="21.43"/>
 <text text-anchor="middle" x="53.03" y="-412" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;project</text>
-<text text-anchor="middle" x="53.03" y="-401" font-family="Helvetica,sans-Serif" font-size="10.00">(1,525 tok)</text>
+<text text-anchor="middle" x="53.03" y="-401" font-family="Helvetica,sans-Serif" font-size="10.00">(1,480 tok)</text>
 </g>
 <!-- skill_workflow_plugin_create -->
 <g id="node2" class="node">
@@ -263,7 +263,7 @@
 <title>cmd_plugin_generate</title>
 <polygon fill="#e3f2fd" stroke="black" points="534.88,-1102 451.88,-1102 451.88,-1066 534.88,-1066 534.88,-1102"/>
 <text text-anchor="middle" x="493.38" y="-1087" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;generate</text>
-<text text-anchor="middle" x="493.38" y="-1076" font-family="Helvetica,sans-Serif" font-size="10.00">(2,082 tok)</text>
+<text text-anchor="middle" x="493.38" y="-1076" font-family="Helvetica,sans-Serif" font-size="10.00">(1,419 tok)</text>
 </g>
 <!-- skill_workflow_plugin_create&#45;&gt;cmd_plugin_generate -->
 <g id="edge19" class="edge">
@@ -433,7 +433,7 @@
 <title>agent_worker_architecture</title>
 <ellipse fill="#ede7f6" stroke="black" cx="692.6" cy="-871" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="692.6" y="-874" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
-<text text-anchor="middle" x="692.6" y="-863" font-family="Helvetica,sans-Serif" font-size="10.00">(2,186 tok)</text>
+<text text-anchor="middle" x="692.6" y="-863" font-family="Helvetica,sans-Serif" font-size="10.00">(1,724 tok)</text>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;agent_worker_architecture -->
 <g id="edge28" class="edge">

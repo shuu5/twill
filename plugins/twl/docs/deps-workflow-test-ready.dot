@@ -22,7 +22,7 @@ digraph Dependencies {
 
     // L1: Direct Commands
     cmd_change_apply [label="change-apply\n(856 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_check [label="check\n(1,949 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_check [label="check\n(1,165 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_e2e_plan [label="e2e-plan\n(435 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_scaffold [label="test-scaffold\n(718 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
@@ -30,7 +30,7 @@ digraph Dependencies {
 
     // L3: Agents
     agent_spec_scaffold_tests [label="spec-scaffold-tests\n(1,762 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_e2e_generate [label="e2e-generate\n(2,028 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_e2e_generate [label="e2e-generate\n(1,321 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
     script_state_read [label="state-read\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

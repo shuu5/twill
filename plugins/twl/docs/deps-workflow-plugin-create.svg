@@ -61,7 +61,7 @@
 <title>cmd_plugin_generate</title>
 <polygon fill="#e3f2fd" stroke="black" points="325.35,-36 242.35,-36 242.35,0 325.35,0 325.35,-36"/>
 <text text-anchor="middle" x="283.85" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;generate</text>
-<text text-anchor="middle" x="283.85" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(2,082 tok)</text>
+<text text-anchor="middle" x="283.85" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(1,419 tok)</text>
 </g>
 <!-- skill_workflow_plugin_create&#45;&gt;cmd_plugin_generate -->
 <g id="edge4" class="edge">

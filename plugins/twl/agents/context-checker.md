@@ -8,6 +8,7 @@ maxTurns: 15
 tools: [Bash, Read]
 skills:
 - ref-specialist-output-schema
+- ref-specialist-few-shot
 ---
 
 # Context Checker Agent
@@ -130,25 +131,6 @@ tech-debt のタイトルから抽出したキーワードを `deltaspec/specs/`
 
 ## 出力形式（MUST）
 
-ref-specialist-output-schema に従い、以下の JSON 構造で出力すること。
-
-```json
-{
-  "status": "PASS | WARN | FAIL",
-  "findings": [
-    {
-      "severity": "CRITICAL | WARNING | INFO",
-      "confidence": 0-100,
-      "file": "path/to/file",
-      "line": 42,
-      "message": "説明",
-      "category": "カテゴリ名"
-    }
-  ]
-}
-```
-
-- **status**: PASS（CRITICAL/WARNING なし）、WARN（WARNING あり CRITICAL なし）、FAIL（CRITICAL 1件以上）
-- **severity**: CRITICAL / WARNING / INFO の3段階のみ使用
-- **confidence**: 確信度（80以上でブロック判定対象）
-- findings が0件の場合は `"status": "PASS", "findings": []`
+ref-specialist-output-schema + ref-specialist-few-shot に従い JSON を出力すること。
+findings 配列に severity / confidence / file / line / message / category を含める。
+status は PASS / WARN / FAIL。findings 0件時: `{"status": "PASS", "findings": []}`
