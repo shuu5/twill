@@ -236,6 +236,40 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
             "threshold": 1,
         })
 
+    # Section 6: Token Bloat
+    from twl.core.plugin import count_tokens
+    from twl.validation.deep import TOKEN_THRESHOLDS
+
+    for name, comp in sorted(all_components.items()):
+        from twl.core.types import resolve_type as _rt
+        comp_type = _rt(comp['type'])
+        if comp_type not in TOKEN_THRESHOLDS:
+            continue
+        path_str = comp['path']
+        if not path_str:
+            continue
+        path = plugin_root / path_str
+        if not _is_within_root(path, plugin_root) or not path.exists():
+            continue
+        tok = count_tokens(path)
+        if tok == 0:
+            continue
+        warn_threshold, crit_threshold = TOKEN_THRESHOLDS[comp_type]
+        if tok > crit_threshold:
+            severity = 'critical'
+        elif tok > warn_threshold:
+            severity = 'warning'
+        else:
+            severity = 'ok'
+        items.append({
+            "severity": severity,
+            "component": name,
+            "message": f"{comp_type}: {tok} tok (warn={warn_threshold}, crit={crit_threshold})",
+            "section": "token_bloat",
+            "value": tok,
+            "threshold": warn_threshold,
+        })
+
     return items
 
 
@@ -474,8 +508,40 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
         print(f"| {name} | {comp['type']} | {p} | {o} | {c} | {schema_str} | {severity} |")
     print()
 
-    # === Section 6: Model Declaration ===
-    print("## 6. Model Declaration")
+    # === Section 6: Token Bloat ===
+    print("## 6. Token Bloat")
+    print()
+    print("| Component | Type | Tokens | Warn | Crit | Severity |")
+    print("|-----------|------|--------|------|------|----------|")
+
+    from twl.core.plugin import count_tokens as _ct
+    from twl.validation.deep import TOKEN_THRESHOLDS as _TT
+
+    for name, comp in sorted(all_components.items()):
+        comp_type = resolve_type(comp['type'])
+        if comp_type not in _TT:
+            continue
+        path_str = comp['path']
+        if not path_str:
+            continue
+        path = plugin_root / path_str
+        if not path.exists():
+            continue
+        tok = _ct(path)
+        if tok == 0:
+            continue
+        warn_t, crit_t = _TT[comp_type]
+        if tok > crit_t:
+            severity = 'CRITICAL'
+        elif tok > warn_t:
+            severity = 'WARNING'
+        else:
+            severity = 'OK'
+        print(f"| {name} | {comp_type} | {tok} | {warn_t} | {crit_t} | {severity} |")
+    print()
+
+    # === Section 7: Model Declaration ===
+    print("## 7. Model Declaration")
     print()
     print("| Name | Type | Model | Severity |")
     print("|------|------|-------|----------|")
