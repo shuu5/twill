@@ -167,4 +167,52 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
             if missing:
                 add_warning(f"[specialist-output-schema] {cname}: missing output schema keywords: {', '.join(missing)}")
 
+    # (F) 非ポータブル scripts/ パス検出
+    # skills/*/SKILL.md と commands/*.md をファイルシステム glob で走査
+    _NON_PORTABLE_PATTERNS = [
+        re.compile(r'bash\s+scripts/'),
+        re.compile(r'\$SCRIPTS_ROOT'),
+    ]
+    _SOURCE_SCRIPTS_PATTERN = re.compile(r'source\s+.*scripts/')
+
+    def _check_non_portable_paths(md_path: Path) -> List[str]:
+        violations: List[str] = []
+        try:
+            content = md_path.read_text(encoding='utf-8')
+        except Exception:
+            return violations
+        for lineno, line in enumerate(content.splitlines(), start=1):
+            if 'CLAUDE_PLUGIN_ROOT' in line:
+                continue
+            for pat in _NON_PORTABLE_PATTERNS:
+                if pat.search(line):
+                    violations.append(f"  line {lineno}: {line.strip()}")
+                    break
+            else:
+                if _SOURCE_SCRIPTS_PATTERN.search(line):
+                    violations.append(f"  line {lineno}: {line.strip()}")
+        return violations
+
+    for skill_md in plugin_root.glob('skills/*/SKILL.md'):
+        if not _is_within_root(skill_md, plugin_root):
+            continue
+        violations = _check_non_portable_paths(skill_md)
+        rel = skill_md.relative_to(plugin_root)
+        for v in violations:
+            add_critical(
+                f"[non-portable-path] {rel}: non-portable script path: "
+                f"use ${{CLAUDE_PLUGIN_ROOT}}/scripts/ instead of relative scripts/\n{v}"
+            )
+
+    for cmd_md in plugin_root.glob('commands/*.md'):
+        if not _is_within_root(cmd_md, plugin_root):
+            continue
+        violations = _check_non_portable_paths(cmd_md)
+        rel = cmd_md.relative_to(plugin_root)
+        for v in violations:
+            add_critical(
+                f"[non-portable-path] {rel}: non-portable script path: "
+                f"use ${{CLAUDE_PLUGIN_ROOT}}/scripts/ instead of relative scripts/\n{v}"
+            )
+
     return criticals, warnings, infos
