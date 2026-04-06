@@ -655,7 +655,7 @@ run_merge_gate() {
 
   # PR 番号とブランチを state から取得
   local pr_number branch
-  pr_number=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field pr_number 2>/dev/null || echo "")
+  pr_number=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field pr 2>/dev/null || echo "")
   branch=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field branch 2>/dev/null || echo "")
 
   if [[ -z "$pr_number" || -z "$branch" ]]; then
