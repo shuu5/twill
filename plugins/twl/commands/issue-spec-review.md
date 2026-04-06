@@ -46,9 +46,15 @@ ELSE:
   quick_tag = ""
 ```
 
-### Step 4: 3 specialist 並列 spawn（MUST）
+### Step 4: specialist 並列 spawn（MUST）
 
-**単一メッセージで正確に 3 つの Agent tool call を同時発行すること（MUST）。2 つだけで止めてはならない。issue-critic, issue-feasibility, worker-codex-reviewer の 3 つ全てが必須。**
+まず manifest からリストを取得する:
+
+```bash
+specialists=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/spec-review-manifest.sh")
+```
+
+**manifest の各行に対して Agent tool call を生成すること（MUST）。manifest に含まれる全 specialist を単一メッセージで同時発行した後でのみ Step 5 に進むこと（MUST）。manifest 外の specialist を追加・削除してはならない。**
 
 ```
 Agent(subagent_type="twl:twl:issue-critic", prompt="
