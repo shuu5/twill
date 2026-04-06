@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_verify</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="77.78" cy="-425.49" rx="77.56" ry="21.43"/>
 <text text-anchor="middle" x="77.78" y="-428.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;verify</text>
-<text text-anchor="middle" x="77.78" y="-417.49" font-family="Helvetica,sans-Serif" font-size="10.00">(842 tok)</text>
+<text text-anchor="middle" x="77.78" y="-417.49" font-family="Helvetica,sans-Serif" font-size="10.00">(855 tok)</text>
 </g>
 <!-- cmd_ts_preflight -->
 <g id="node6" class="node">
@@ -61,7 +61,7 @@
 <title>cmd_ac_verify</title>
 <polygon fill="#e3f2fd" stroke="black" points="285.56,-617.49 230.56,-617.49 230.56,-581.49 285.56,-581.49 285.56,-617.49"/>
 <text text-anchor="middle" x="258.06" y="-602.49" font-family="Helvetica,sans-Serif" font-size="10.00">ac&#45;verify</text>
-<text text-anchor="middle" x="258.06" y="-591.49" font-family="Helvetica,sans-Serif" font-size="10.00">(375 tok)</text>
+<text text-anchor="middle" x="258.06" y="-591.49" font-family="Helvetica,sans-Serif" font-size="10.00">(373 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;cmd_ac_verify -->
 <g id="edge2" class="edge">
@@ -74,7 +74,7 @@
 <title>cmd_phase_review</title>
 <polygon fill="#bbdefb" stroke="black" points="295.06,-501.49 221.06,-501.49 221.06,-465.49 295.06,-465.49 295.06,-501.49"/>
 <text text-anchor="middle" x="258.06" y="-486.49" font-family="Helvetica,sans-Serif" font-size="10.00">phase&#45;review</text>
-<text text-anchor="middle" x="258.06" y="-475.49" font-family="Helvetica,sans-Serif" font-size="10.00">(910 tok)</text>
+<text text-anchor="middle" x="258.06" y="-475.49" font-family="Helvetica,sans-Serif" font-size="10.00">(916 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;cmd_phase_review -->
 <g id="edge4" class="edge">

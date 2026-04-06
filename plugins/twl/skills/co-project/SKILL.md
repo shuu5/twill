@@ -26,11 +26,13 @@ spawnable_by:
 
 | キーワード | モード |
 |-----------|--------|
-| `create`, 作成, 新規 | create |
+| `create`, 作成, 新規 + `--type plugin` 以外 | create |
 | `migrate`, 移行, アップグレード, テンプレート更新, ガバナンス再適用 | migrate |
 | `snapshot`, スナップショット, テンプレート抽出 | snapshot |
+| `--type plugin`, プラグイン作りたい, 新規プラグイン（テンプレート非指定） | plugin-create |
+| `diagnose`, 診断, 修正, 改善 + プラグインコンテキスト | plugin-diagnose |
 
-判定不能時 → AskUserQuestion で [A] create [B] migrate [C] snapshot を選択。
+判定不能時 → AskUserQuestion で [A] create [B] migrate [C] snapshot [D] plugin-create [E] plugin-diagnose を選択。
 
 ---
 
@@ -122,10 +124,22 @@ manifest.yaml + テンプレートファイルを生成。
 
 ---
 
-## plugin テンプレートについて
+---
 
-旧 controller-plugin は co-project に吸収。plugin は create モードの `--type plugin` として扱う。
-plugin の保守は通常ワークフロー（workflow-setup → apply → pr-cycle）+ twl CLI で行う。
+## plugin-create モード
+
+`/twl:workflow-plugin-create` を実行して委譲。
+
+interview → research → design → generate の 4 ステップで新規プラグインを作成。
+
+---
+
+## plugin-diagnose モード
+
+`/twl:workflow-plugin-diagnose` を実行して委譲。
+
+migrate-analyze（optional）→ diagnose → phase-diagnose → fix → verify → phase-verify の
+6 ステップで既存プラグインを診断・修正・検証。
 
 ## 禁止事項（MUST NOT）
 

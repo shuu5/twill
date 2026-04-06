@@ -150,4 +150,16 @@ Autopilot で複数 Issue を一括実装:
 
 ![workflow-self-improve](./docs/deps-workflow-self-improve.svg)
 </details>
+
+<details>
+<summary>workflow-plugin-create</summary>
+
+![workflow-plugin-create](./docs/deps-workflow-plugin-create.svg)
+</details>
+
+<details>
+<summary>workflow-plugin-diagnose</summary>
+
+![workflow-plugin-diagnose](./docs/deps-workflow-plugin-diagnose.svg)
+</details>
 <!-- DEPS-SUBGRAPHS-END -->

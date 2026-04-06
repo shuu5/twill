@@ -15,7 +15,7 @@
 <title>skill_workflow_self_improve</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="90.51" cy="-111.49" rx="90.52" ry="21.43"/>
 <text text-anchor="middle" x="90.51" y="-114.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;self&#45;improve</text>
-<text text-anchor="middle" x="90.51" y="-103.49" font-family="Helvetica,sans-Serif" font-size="10.00">(728 tok)</text>
+<text text-anchor="middle" x="90.51" y="-103.49" font-family="Helvetica,sans-Serif" font-size="10.00">(730 tok)</text>
 </g>
 <!-- cmd_self_improve_collect -->
 <g id="node2" class="node">
@@ -35,7 +35,7 @@
 <title>cmd_self_improve_propose</title>
 <polygon fill="#e3f2fd" stroke="black" points="346.02,-158.49 239.02,-158.49 239.02,-122.49 346.02,-122.49 346.02,-158.49"/>
 <text text-anchor="middle" x="292.52" y="-143.49" font-family="Helvetica,sans-Serif" font-size="10.00">self&#45;improve&#45;propose</text>
-<text text-anchor="middle" x="292.52" y="-132.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,309 tok)</text>
+<text text-anchor="middle" x="292.52" y="-132.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,306 tok)</text>
 </g>
 <!-- skill_workflow_self_improve&#45;&gt;cmd_self_improve_propose -->
 <g id="edge2" class="edge">
@@ -61,7 +61,7 @@
 <title>cmd_ecc_monitor</title>
 <polygon fill="#e3f2fd" stroke="black" points="326.52,-42.49 258.52,-42.49 258.52,-6.49 326.52,-6.49 326.52,-42.49"/>
 <text text-anchor="middle" x="292.52" y="-27.49" font-family="Helvetica,sans-Serif" font-size="10.00">ecc&#45;monitor</text>
-<text text-anchor="middle" x="292.52" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,172 tok)</text>
+<text text-anchor="middle" x="292.52" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,108 tok)</text>
 </g>
 <!-- skill_workflow_self_improve&#45;&gt;cmd_ecc_monitor -->
 <g id="edge4" class="edge">

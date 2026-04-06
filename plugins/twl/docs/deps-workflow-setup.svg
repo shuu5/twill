@@ -15,7 +15,7 @@
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="69.3" cy="-182.49" rx="69.09" ry="21.43"/>
 <text text-anchor="middle" x="69.3" y="-185.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;setup</text>
-<text text-anchor="middle" x="69.3" y="-174.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,032 tok)</text>
+<text text-anchor="middle" x="69.3" y="-174.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,089 tok)</text>
 </g>
 <!-- cmd_init -->
 <g id="node2" class="node">
@@ -74,7 +74,7 @@
 <title>cmd_change_propose</title>
 <polygon fill="#e3f2fd" stroke="black" points="307.09,-171.49 221.09,-171.49 221.09,-135.49 307.09,-135.49 307.09,-171.49"/>
 <text text-anchor="middle" x="264.09" y="-156.49" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;propose</text>
-<text text-anchor="middle" x="264.09" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,345 tok)</text>
+<text text-anchor="middle" x="264.09" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,343 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;cmd_change_propose -->
 <g id="edge5" class="edge">

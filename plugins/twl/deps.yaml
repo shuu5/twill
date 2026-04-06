@@ -122,7 +122,7 @@ skills:
     effort: medium
     tools: [Agent(worker-structure)]
     spawnable_by: [user]
-    can_spawn: [composite, atomic, reference]
+    can_spawn: [workflow, composite, atomic, reference]
     calls:
       - atomic: project-create
       - atomic: project-governance
@@ -133,21 +133,13 @@ skills:
       - atomic: snapshot-analyze
       - atomic: snapshot-classify
       - atomic: snapshot-generate
-      - atomic: plugin-interview
-      - atomic: plugin-research
-      - atomic: plugin-design
-      - atomic: plugin-generate
-      - atomic: plugin-migrate-analyze
-      - atomic: plugin-diagnose
-      - atomic: plugin-fix
-      - atomic: plugin-verify
-      - composite: plugin-phase-diagnose
-      - composite: plugin-phase-verify
+      - workflow: workflow-plugin-create
+      - workflow: workflow-plugin-diagnose
       - atomic: label-sync
       - reference: ref-types
       - reference: ref-practices
       - reference: ref-deps-format
-    description: "プロジェクト管理（create / migrate / snapshot）"
+    description: "プロジェクト管理（create / migrate / snapshot / plugin-create / plugin-diagnose）"
 
   co-architect:
     type: controller
@@ -326,6 +318,44 @@ skills:
       - atomic: ecc-monitor
         step: "4"
     description: "Self-Improve 改善適用フロー（collect → propose → close + ecc-monitor）"
+
+  workflow-plugin-create:
+    type: workflow
+    path: skills/workflow-plugin-create/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [atomic]
+    calls:
+      - atomic: plugin-interview
+        step: "1"
+      - atomic: plugin-research
+        step: "2"
+      - atomic: plugin-design
+        step: "3"
+      - atomic: plugin-generate
+        step: "4"
+    description: "新規プラグイン作成ワークフロー（interview → research → design → generate）"
+
+  workflow-plugin-diagnose:
+    type: workflow
+    path: skills/workflow-plugin-diagnose/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [composite, atomic]
+    calls:
+      - atomic: plugin-migrate-analyze
+        step: "1"
+      - atomic: plugin-diagnose
+        step: "2"
+      - composite: plugin-phase-diagnose
+        step: "3"
+      - atomic: plugin-fix
+        step: "4"
+      - atomic: plugin-verify
+        step: "5"
+      - composite: plugin-phase-verify
+        step: "6"
+    description: "既存プラグイン診断・修正ワークフロー（migrate-analyze → diagnose → phase-diagnose → fix → verify → phase-verify）"
 
 
 # リファレンス（B-6 で追加）
@@ -811,64 +841,91 @@ commands:
   plugin-interview:
     type: atomic
     path: commands/plugin-interview.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-plugin-create
+      step: "1"
     description: "プラグイン作成のためのユーザー要件インタビュー"
 
   plugin-research:
     type: atomic
     path: commands/plugin-research.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-plugin-create
+      step: "2"
     description: "プラグイン設計情報を Web 取得し構造化サマリー作成"
 
   plugin-design:
     type: atomic
     path: commands/plugin-design.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-plugin-create
+      step: "3"
     description: "型マッピング + deps.yaml 設計"
 
   plugin-generate:
     type: atomic
     path: commands/plugin-generate.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-plugin-create
+      step: "4"
     description: "プラグインファイル一式生成"
 
   plugin-migrate-analyze:
     type: atomic
     path: commands/plugin-migrate-analyze.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-plugin-diagnose
+      step: "1"
     description: "既存プラグインの AT 移行分析"
 
   plugin-diagnose:
     type: atomic
     path: commands/plugin-diagnose.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-plugin-diagnose
+      step: "2"
     description: "プラグインの問題診断（構造+5原則チェック）"
 
   plugin-fix:
     type: atomic
     path: commands/plugin-fix.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-plugin-diagnose
+      step: "4"
     description: "診断結果に基づくコンポーネント修正適用"
 
   plugin-verify:
     type: atomic
     path: commands/plugin-verify.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: []
+    step_in:
+      parent: workflow-plugin-diagnose
+      step: "5"
     description: "統合検証+5原則チェック"
 
   plugin-phase-diagnose:
     type: composite
     path: commands/plugin-phase-diagnose.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: [specialist]
+    step_in:
+      parent: workflow-plugin-diagnose
+      step: "3"
     calls:
       - specialist: worker-structure
       - specialist: worker-principles
@@ -880,8 +937,11 @@ commands:
   plugin-phase-verify:
     type: composite
     path: commands/plugin-phase-verify.md
-    spawnable_by: [controller]
+    spawnable_by: [workflow]
     can_spawn: [specialist]
+    step_in:
+      parent: workflow-plugin-diagnose
+      step: "6"
     calls:
       - specialist: worker-structure
       - specialist: worker-principles
