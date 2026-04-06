@@ -885,7 +885,10 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
     fi
 
     echo "[orchestrator] Issue #${local_issue}: Worker 起動" >&2
-    launch_worker "$entry"
+    launch_worker "$entry" || {
+      echo "[orchestrator] Issue #${local_issue}: Worker 起動失敗（スキップ）" >&2
+      continue
+    }
     BATCH_ISSUES+=("$local_issue")
     BATCH_LAUNCHED_ENTRIES+=("$entry")
   done
