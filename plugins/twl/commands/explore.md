@@ -79,7 +79,7 @@ You have full context of the delta spec system. Use it naturally, don't force it
 
 At the start, quickly check what exists:
 ```bash
-deltaspec list
+twl spec list
 ```
 
 This tells you:

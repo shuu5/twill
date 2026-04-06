@@ -11,14 +11,14 @@
 ### Step 1: change-id 解決
 
 If no change name provided, prompt for selection.
-Run `deltaspec list` to get available changes. Use the **AskUserQuestion tool** to let the user select.
+Run `twl spec list` to get available changes. Use the **AskUserQuestion tool** to let the user select.
 Show only active changes (not already archived).
 
 **IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
 
 ### Step 2: artifact 完了確認
 
-Run `deltaspec status --change "<name>" --json` to check artifact completion.
+Run `twl spec status --change "<name>" --json` to check artifact completion.
 
 Parse the JSON to understand:
 - `schemaName`: The workflow being used
@@ -59,7 +59,7 @@ If user chooses sync, apply delta specs to main specs manually (read delta, merg
 ### Step 5: CLI でアーカイブ実行
 
 ```bash
-deltaspec archive "<change-id>" --yes --skip-specs
+twl spec archive "<change-id>" --yes --skip-specs
 ```
 
 ### Step 6: チェックポイント出力
