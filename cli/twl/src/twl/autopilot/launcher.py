@@ -270,11 +270,12 @@ class WorkerLauncher:
 
     def _detect_scripts_root(self) -> Path:
         try:
-            root = subprocess.check_output(
-                ["git", "rev-parse", "--show-toplevel"],
+            common_dir = subprocess.check_output(
+                ["git", "rev-parse", "--git-common-dir"],
                 stderr=subprocess.DEVNULL, text=True,
             ).strip()
-            return Path(root) / "plugins" / "twl" / "scripts"
+            repo_root = Path(common_dir).resolve().parent
+            return repo_root / "plugins" / "twl" / "scripts"
         except Exception:
             return Path.cwd() / "plugins" / "twl" / "scripts"
 

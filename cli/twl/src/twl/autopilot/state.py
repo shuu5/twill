@@ -34,20 +34,29 @@ _PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure"}
 
 
 def _autopilot_dir() -> Path:
-    """Resolve AUTOPILOT_DIR (env var takes priority)."""
+    """Resolve AUTOPILOT_DIR (env var takes priority).
+
+    Fallback uses ``git rev-parse --git-common-dir`` so that worktrees
+    resolve to the bare root (e.g. ``.bare``) instead of the worktree's
+    own ``.git`` directory.  From there we walk up to the repository root
+    and append ``.autopilot``.
+    """
     env = os.environ.get("AUTOPILOT_DIR", "")
     if env:
         return Path(env)
-    # Fallback: git rev-parse --show-toplevel / .autopilot
+    # Fallback: git-common-dir → repo root → .autopilot
     try:
         import subprocess
 
-        root = subprocess.check_output(
-            ["git", "rev-parse", "--show-toplevel"],
+        common_dir = subprocess.check_output(
+            ["git", "rev-parse", "--git-common-dir"],
             stderr=subprocess.DEVNULL,
             text=True,
         ).strip()
-        return Path(root) / ".autopilot"
+        # common_dir is e.g. /path/to/.bare  (bare repo) or /path/to/.git (standard)
+        # The repo root is its parent directory
+        repo_root = Path(common_dir).resolve().parent
+        return repo_root / ".autopilot"
     except Exception:
         return Path.cwd() / ".autopilot"
 
@@ -306,7 +315,7 @@ class StateManager:
 # ---------------------------------------------------------------------------
 
 def _parse_read_args(argv: list[str]) -> dict[str, Any]:
-    args: dict[str, Any] = {"type": None, "issue": None, "repo": None, "field": None}
+    args: dict[str, Any] = {"type": None, "issue": None, "repo": None, "field": None, "autopilot_dir": None}
     i = 0
     while i < len(argv):
         a = argv[i]
@@ -321,6 +330,8 @@ def _parse_read_args(argv: list[str]) -> dict[str, Any]:
             args["repo"] = argv[i + 1]; i += 2
         elif a == "--field" and i + 1 < len(argv):
             args["field"] = argv[i + 1]; i += 2
+        elif a == "--autopilot-dir" and i + 1 < len(argv):
+            args["autopilot_dir"] = argv[i + 1]; i += 2
         else:
             print(f"ERROR: 不明なオプション: {a}", file=sys.stderr)
             sys.exit(1)
@@ -333,7 +344,7 @@ def _parse_read_args(argv: list[str]) -> dict[str, Any]:
 def _parse_write_args(argv: list[str]) -> dict[str, Any]:
     args: dict[str, Any] = {
         "type": None, "issue": None, "repo": None,
-        "role": None, "sets": [], "init": False,
+        "role": None, "sets": [], "init": False, "autopilot_dir": None,
     }
     i = 0
     while i < len(argv):
@@ -353,6 +364,8 @@ def _parse_write_args(argv: list[str]) -> dict[str, Any]:
             args["sets"].append(argv[i + 1]); i += 2
         elif a == "--init":
             args["init"] = True; i += 1
+        elif a == "--autopilot-dir" and i + 1 < len(argv):
+            args["autopilot_dir"] = argv[i + 1]; i += 2
         else:
             print(f"ERROR: 不明なオプション: {a}", file=sys.stderr)
             sys.exit(1)
@@ -368,7 +381,7 @@ def _parse_write_args(argv: list[str]) -> dict[str, Any]:
 def _print_read_usage() -> None:
     print(
         "Usage: python3 -m twl.autopilot.state read "
-        "--type <issue|session> [--issue N] [--repo R] [--field F]"
+        "--type <issue|session> [--issue N] [--repo R] [--field F] [--autopilot-dir DIR]"
     )
 
 
@@ -376,7 +389,7 @@ def _print_write_usage() -> None:
     print(
         "Usage: python3 -m twl.autopilot.state write "
         "--type <issue|session> [--issue N] [--repo R] "
-        "--role <pilot|worker> [--set k=v]... [--init]"
+        "--role <pilot|worker> [--set k=v]... [--init] [--autopilot-dir DIR]"
     )
 
 
@@ -387,11 +400,12 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     subcmd, rest = args[0], args[1:]
-    mgr = StateManager()
 
     try:
         if subcmd == "read":
             parsed = _parse_read_args(rest)
+            ap_dir = Path(parsed["autopilot_dir"]) if parsed.get("autopilot_dir") else None
+            mgr = StateManager(autopilot_dir=ap_dir)
             result = mgr.read(
                 type_=parsed["type"],
                 issue=parsed["issue"],
@@ -403,6 +417,8 @@ def main(argv: list[str] | None = None) -> int:
 
         elif subcmd == "write":
             parsed = _parse_write_args(rest)
+            ap_dir = Path(parsed["autopilot_dir"]) if parsed.get("autopilot_dir") else None
+            mgr = StateManager(autopilot_dir=ap_dir)
             msg = mgr.write(
                 type_=parsed["type"],
                 role=parsed["role"],
