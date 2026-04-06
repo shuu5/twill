@@ -188,7 +188,7 @@ class WorkerLauncher:
         cld_args.append(prompt)
 
         tmux_argv = (
-            ["tmux", "new-window", "-n", window_name, "-c", launch_dir]
+            ["tmux", "new-window", "-d", "-n", window_name, "-c", launch_dir]
             + env_flags
             + ["--"]
             + cld_args

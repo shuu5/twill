@@ -292,7 +292,7 @@ fi
 QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
-tmux new-window -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
+tmux new-window -d -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
   "env ${AUTOPILOT_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
 
 # --- クラッシュ検知フック設定 (Task 1.10) ---
