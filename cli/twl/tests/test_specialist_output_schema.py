@@ -18,7 +18,6 @@ from typing import Dict, Optional
 
 import yaml
 
-TWL_ENGINE = Path(__file__).parent.parent / "src" / "twl" / "engine.py"
 
 
 # ---------------------------------------------------------------------------

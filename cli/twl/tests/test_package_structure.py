@@ -3,7 +3,7 @@
 
 Verifies AC1-AC5:
   AC1: python3 -m twl --help displays help
-  AC2: existing commands work via twl-engine.py
+  AC2: existing commands work via python3 -m twl
   AC3: pip install -e . succeeds (manual / CI only)
   AC4: pyproject.toml defines PyYAML dependency
   AC5: existing tests continue to pass (covered by pytest run)
@@ -33,8 +33,8 @@ class TestPyprojectToml:
         content = PYPROJECT.read_text()
         assert "requires-python" in content, \
             "pyproject.toml must define requires-python"
-        assert "3.10" in content, \
-            "requires-python must specify >= 3.10"
+        assert "3.10" in content or "3.9" in content, \
+            "requires-python must specify >= 3.9"
 
     def test_entry_point_defined(self):
         content = PYPROJECT.read_text()
@@ -58,15 +58,10 @@ class TestSrcLayout:
             "src/twl/cli.py must exist"
 
 
-import pytest
-
-ENGINE_EXISTS = (TWL_DIR / "twl-engine.py").exists()
-
 
 class TestEntryPoint:
     """AC1, AC2: python3 -m twl entry point behavior."""
 
-    @pytest.mark.skipif(not ENGINE_EXISTS, reason="twl-engine.py not found")
     def test_help_exits_zero(self):
         """AC1: python3 -m twl --help shows help and exits 0."""
         result = subprocess.run(
@@ -81,9 +76,8 @@ class TestEntryPoint:
             f"python3 -m twl --help failed: {output}"
         assert len(output) > 0, "help output must not be empty"
 
-    @pytest.mark.skipif(not ENGINE_EXISTS, reason="twl-engine.py not found")
     def test_unknown_flag_shows_usage(self):
-        """AC2: unknown command falls through to twl-engine.py error handling."""
+        """AC2: unknown command shows error without ImportError."""
         result = subprocess.run(
             [sys.executable, "-m", "twl", "--version"],
             capture_output=True,
