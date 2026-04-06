@@ -35,7 +35,7 @@
 <title>cmd_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="293.38,-171.49 230.38,-171.49 230.38,-135.49 293.38,-135.49 293.38,-171.49"/>
 <text text-anchor="middle" x="261.88" y="-156.49" font-family="Helvetica,sans-Serif" font-size="10.00">check</text>
-<text text-anchor="middle" x="261.88" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,949 tok)</text>
+<text text-anchor="middle" x="261.88" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,165 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_check -->
 <g id="edge3" class="edge">
@@ -132,7 +132,7 @@
 <title>agent_e2e_generate</title>
 <ellipse fill="#ede7f6" stroke="black" cx="440.16" cy="-315.49" rx="51.74" ry="21.43"/>
 <text text-anchor="middle" x="440.16" y="-318.49" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;generate</text>
-<text text-anchor="middle" x="440.16" y="-307.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,028 tok)</text>
+<text text-anchor="middle" x="440.16" y="-307.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,321 tok)</text>
 </g>
 <!-- cmd_test_scaffold&#45;&gt;agent_e2e_generate -->
 <g id="edge8" class="edge">

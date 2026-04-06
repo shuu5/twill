@@ -29,7 +29,7 @@ digraph Dependencies {
     cmd_pr_cycle_report [label="pr-cycle-report\n(329 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_all_pass_check [label="all-pass-check\n(824 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_e2e_screening [label="e2e-screening\n(441 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,639 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,319 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_auto_merge [label="auto-merge\n(296 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(976 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
@@ -51,7 +51,7 @@ digraph Dependencies {
     agent_worker_fastapi_reviewer [label="worker-fastapi-reviewer\n(639 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_hono_reviewer [label="worker-hono-reviewer\n(847 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_r_reviewer [label="worker-r-reviewer\n(717 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_architecture [label="worker-architecture\n(2,186 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_architecture [label="worker-architecture\n(1,724 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_output_reviewer [label="worker-llm-output-reviewer\n(1,162 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_eval_runner [label="worker-llm-eval-runner\n(1,174 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 

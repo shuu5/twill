@@ -476,7 +476,7 @@
 <title>agent_e2e_quality</title>
 <ellipse fill="#ede7f6" stroke="black" cx="706.04" cy="-291.49" rx="45.01" ry="21.43"/>
 <text text-anchor="middle" x="706.04" y="-294.49" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;quality</text>
-<text text-anchor="middle" x="706.04" y="-283.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,270 tok)</text>
+<text text-anchor="middle" x="706.04" y="-283.49" font-family="Helvetica,sans-Serif" font-size="10.00">(998 tok)</text>
 </g>
 <!-- cmd_test_phase&#45;&gt;agent_e2e_quality -->
 <g id="edge34" class="edge">

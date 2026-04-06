@@ -57,6 +57,8 @@ chains:
 skills:
   co-autopilot:
     type: controller
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/co-autopilot/SKILL.md
     effort: high
     tools: [Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests)]
@@ -92,6 +94,8 @@ skills:
 
   co-issue:
     type: controller
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/co-issue/SKILL.md
     effort: high
     tools: [Skill(issue-spec-review, issue-review-aggregate, issue-glossary-check, issue-arch-drift, issue-cross-repo-create), Agent(context-checker, template-validator)]
@@ -118,6 +122,8 @@ skills:
 
   co-project:
     type: controller
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/co-project/SKILL.md
     effort: medium
     tools: [Agent(worker-structure)]
@@ -676,6 +682,8 @@ commands:
 
   issue-bulk-create:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/issue-bulk-create.md
     spawnable_by: [controller]
     can_spawn: []
@@ -882,6 +890,8 @@ commands:
 
   plugin-generate:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-generate.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -974,6 +984,8 @@ commands:
 
   check: # standalone: ユーザー直接起動
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/check.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1174,6 +1186,8 @@ commands:
 
   merge-gate:
     type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/merge-gate.md
     spawnable_by: [workflow]
     can_spawn: [specialist, script]
@@ -1710,6 +1724,8 @@ agents:
 
   context-checker: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/context-checker.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1820,6 +1836,8 @@ agents:
 
   worker-architecture:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-architecture.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1868,6 +1886,8 @@ agents:
 
   e2e-quality:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/e2e-quality.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1895,6 +1915,8 @@ agents:
 
   e2e-generate:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/e2e-generate.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]

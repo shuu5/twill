@@ -15,7 +15,7 @@
 <title>skill_co_autopilot</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="58.69" cy="-1243.49" rx="58.88" ry="21.43"/>
 <text text-anchor="middle" x="58.69" y="-1246.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;autopilot</text>
-<text text-anchor="middle" x="58.69" y="-1235.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,980 tok)</text>
+<text text-anchor="middle" x="58.69" y="-1235.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,432 tok)</text>
 </g>
 <!-- skill_workflow_setup -->
 <g id="node2" class="node">
@@ -427,7 +427,7 @@
 <title>cmd_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="535.2,-3691.49 472.2,-3691.49 472.2,-3655.49 535.2,-3655.49 535.2,-3691.49"/>
 <text text-anchor="middle" x="503.7" y="-3676.49" font-family="Helvetica,sans-Serif" font-size="10.00">check</text>
-<text text-anchor="middle" x="503.7" y="-3665.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,949 tok)</text>
+<text text-anchor="middle" x="503.7" y="-3665.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,165 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_check -->
 <g id="edge33" class="edge">
@@ -688,7 +688,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="536.2,-2017.49 471.2,-2017.49 471.2,-1981.49 536.2,-1981.49 536.2,-2017.49"/>
 <text text-anchor="middle" x="503.7" y="-2002.49" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="503.7" y="-1991.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,639 tok)</text>
+<text text-anchor="middle" x="503.7" y="-1991.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,319 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_merge_gate -->
 <g id="edge54" class="edge">
@@ -999,7 +999,7 @@
 <title>agent_e2e_generate</title>
 <ellipse fill="#ede7f6" stroke="black" cx="986.48" cy="-2998.49" rx="51.74" ry="21.43"/>
 <text text-anchor="middle" x="986.48" y="-3001.49" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;generate</text>
-<text text-anchor="middle" x="986.48" y="-2990.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,028 tok)</text>
+<text text-anchor="middle" x="986.48" y="-2990.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,321 tok)</text>
 </g>
 <!-- cmd_test_scaffold&#45;&gt;agent_e2e_generate -->
 <g id="edge73" class="edge">
@@ -1432,7 +1432,7 @@
 <title>agent_worker_architecture</title>
 <ellipse fill="#ede7f6" stroke="black" cx="986.48" cy="-1644.49" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="986.48" y="-1647.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
-<text text-anchor="middle" x="986.48" y="-1636.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,186 tok)</text>
+<text text-anchor="middle" x="986.48" y="-1636.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,724 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_architecture -->
 <g id="edge125" class="edge">
@@ -1520,7 +1520,7 @@
 <title>agent_e2e_quality</title>
 <ellipse fill="#ede7f6" stroke="black" cx="986.48" cy="-2934.49" rx="45.01" ry="21.43"/>
 <text text-anchor="middle" x="986.48" y="-2937.49" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;quality</text>
-<text text-anchor="middle" x="986.48" y="-2926.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,270 tok)</text>
+<text text-anchor="middle" x="986.48" y="-2926.49" font-family="Helvetica,sans-Serif" font-size="10.00">(998 tok)</text>
 </g>
 <!-- cmd_test_phase&#45;&gt;agent_e2e_quality -->
 <g id="edge131" class="edge">
