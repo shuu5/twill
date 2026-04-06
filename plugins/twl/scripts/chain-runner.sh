@@ -603,7 +603,10 @@ step_all_pass_check() {
   [[ "$autopilot_status" == "running" ]] && is_autopilot=true
 
   if [[ "$overall_result" == "PASS" ]]; then
-    python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "status=merge-ready" 2>/dev/null || true
+    local _cr_branch _cr_pr
+    _cr_branch=$(git branch --show-current 2>/dev/null || echo "")
+    _cr_pr=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
+    python3 -m twl.autopilot.state write --type issue --issue "$issue_num" --role worker --set "status=merge-ready" --set "pr=$_cr_pr" --set "branch=$_cr_branch" 2>/dev/null || true
     if $is_autopilot; then
       ok "all-pass-check" "PASS — autopilot 配下: merge-ready 宣言。Pilot による merge-gate を待機"
     else
