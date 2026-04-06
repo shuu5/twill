@@ -21,7 +21,6 @@ import tempfile
 from pathlib import Path
 import yaml
 
-TWL_ENGINE = Path(__file__).parent.parent.parent / "src" / "twl" / "engine.py"
 TWL_SRC = str(Path(__file__).resolve().parent.parent.parent / "src")
 
 

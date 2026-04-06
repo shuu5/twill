@@ -10,7 +10,6 @@ from pathlib import Path
 
 import yaml
 
-TWL_ENGINE = Path(__file__).parent.parent / "src" / "twl" / "engine.py"
 TWL_CLI = Path(__file__).parent.parent / "twl"
 
 
