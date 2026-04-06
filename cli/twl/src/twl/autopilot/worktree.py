@@ -289,11 +289,12 @@ class WorktreeManager:
 
         return worktree_dir
 
-    def _list_worktrees(self, project_dir: Path) -> list[tuple[str, Path]]:
+    def _list_worktrees(self, project_dir: Path, git_common_dir: Path) -> list[tuple[str, Path]]:
         """Return [(branch_name, worktree_path)] for entries under worktrees/."""
+        git_dir = _resolve_git_dir(project_dir, git_common_dir)
         result = subprocess.run(
-            ["git", "worktree", "list", "--porcelain"],
-            capture_output=True, text=True, cwd=project_dir,
+            ["git", "--git-dir", str(git_dir), "worktree", "list", "--porcelain"],
+            capture_output=True, text=True,
         )
         if result.returncode != 0:
             raise WorktreeError("git worktree list に失敗しました")
@@ -332,16 +333,19 @@ class WorktreeManager:
         return entries
 
     def _resolve_worktree(
-        self, branch_query: str, project_dir: Path
+        self, branch_query: str, project_dir: Path, git_common_dir: Path
     ) -> tuple[str, Path]:
         """Resolve a (possibly partial) branch name to (branch, path).
 
-        Raises WorktreeError if no match or multiple matches.
+        Exact match takes priority over substring match.
+        Raises WorktreeError if no match or multiple substring matches.
         """
-        entries = self._list_worktrees(project_dir)
-        matches = [
-            (b, p) for b, p in entries if branch_query in b
-        ]
+        entries = self._list_worktrees(project_dir, git_common_dir)
+        # Exact match takes priority
+        exact = [(b, p) for b, p in entries if b == branch_query]
+        if exact:
+            return exact[0]
+        matches = [(b, p) for b, p in entries if branch_query in b]
         if not matches:
             raise WorktreeError(
                 f"worktree が見つかりません: {branch_query!r}\n"
@@ -356,8 +360,8 @@ class WorktreeManager:
 
     def list(self) -> None:
         """Print worktrees under worktrees/ with optional autopilot state."""
-        _, project_dir = _resolve_git_common_dir(self.repo_path)
-        entries = self._list_worktrees(project_dir)
+        git_common_dir, project_dir = _resolve_git_common_dir(self.repo_path)
+        entries = self._list_worktrees(project_dir, git_common_dir)
         if not entries:
             print("(worktree なし)")
             return
@@ -379,14 +383,14 @@ class WorktreeManager:
 
     def cd(self, branch_query: str) -> None:
         """Print the path of a worktree matching branch_query to stdout."""
-        _, project_dir = _resolve_git_common_dir(self.repo_path)
-        _, worktree_path = self._resolve_worktree(branch_query, project_dir)
+        git_common_dir, project_dir = _resolve_git_common_dir(self.repo_path)
+        _, worktree_path = self._resolve_worktree(branch_query, project_dir, git_common_dir)
         print(worktree_path)
 
     def start(self, branch_query: str) -> None:
         """Exec into a worktree and resume the Claude Code session (claude -c)."""
-        _, project_dir = _resolve_git_common_dir(self.repo_path)
-        _, worktree_path = self._resolve_worktree(branch_query, project_dir)
+        git_common_dir, project_dir = _resolve_git_common_dir(self.repo_path)
+        _, worktree_path = self._resolve_worktree(branch_query, project_dir, git_common_dir)
         if not worktree_path.is_dir():
             raise WorktreeError(f"worktree ディレクトリが存在しません: {worktree_path}")
         os.chdir(worktree_path)

@@ -14,7 +14,7 @@ import re
 import subprocess
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -563,3 +563,32 @@ class TestWorktreeManagerList:
             mgr = WorktreeManager(repo_path=str(tmp_path))
             with pytest.raises(WorktreeError, match="複数"):
                 mgr.cd("10")
+
+    def test_cd_exact_match_takes_priority(self, tmp_path: Path, capsys: Any) -> None:
+        """Exact match wins over substring: cd feat/10-foo should not fail when feat/100-bar exists."""
+        worktrees_dir = tmp_path / "worktrees"
+        wt1 = worktrees_dir / "feat" / "10-foo"
+        wt2 = worktrees_dir / "feat" / "100-bar"
+        wt1.mkdir(parents=True)
+        wt2.mkdir(parents=True)
+
+        porcelain = _make_porcelain([
+            ("feat/10-foo", str(wt1)),
+            ("feat/100-bar", str(wt2)),
+        ])
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(tmp_path / ".bare"))
+            if "worktree list" in cmd:
+                return self._make_completed(0, stdout=porcelain)
+            return self._make_completed(0)
+
+        (tmp_path / ".bare").mkdir()
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager(repo_path=str(tmp_path))
+            mgr.cd("feat/10-foo")  # exact match — should not raise
+
+        out = capsys.readouterr().out.strip()
+        assert out == str(wt1)
