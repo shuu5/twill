@@ -1858,6 +1858,13 @@ scripts:
     path: scripts/spec-review-manifest.sh
     description: "issue-spec-review 必須 specialist リスト出力（3 行 = 3 agent type）"
 
+  pr-review-manifest:
+    type: script
+    path: scripts/pr-review-manifest.sh
+    calls:
+      - script: tech-stack-detect
+    description: "PR review 系 specialist 選択の動的マニフェスト（phase-review / merge-gate / post-fix-verify）"
+
   checkpoint-write:
     type: script
     path: ../../cli/twl/src/twl/autopilot/checkpoint.py
