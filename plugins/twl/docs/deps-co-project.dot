@@ -26,10 +26,10 @@ digraph Dependencies {
 
     // L1: Direct Commands
     cmd_label_sync [label="label-sync\n(1,185 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_create [label="project-create\n(450 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_create [label="project-create\n(440 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_configure [label="project-board-configure\n(1,167 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_governance [label="project-governance\n(974 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_migrate [label="project-migrate\n(472 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_migrate [label="project-migrate\n(462 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_container_dependency_check [label="container-dependency-check\n(493 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_setup_crg [label="setup-crg\n(754 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_snapshot_analyze [label="snapshot-analyze\n(600 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -54,8 +54,6 @@ digraph Dependencies {
     agent_worker_architecture [label="worker-architecture\n(2,186 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
-    script_project_create [label="project-create\n(4,726 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_project_migrate [label="project-migrate\n(2,333 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
@@ -64,7 +62,6 @@ digraph Dependencies {
     { rank=same; skill_ref_specialist_output_schema; skill_ref_types; skill_ref_practices; skill_ref_deps_format; skill_ref_architecture; }
     { rank=same; cmd_label_sync; cmd_project_create; cmd_project_board_configure; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_architecture; }
-    { rank=same; script_project_create; script_project_migrate; }
 
     // Edges
     skill_co_project -> cmd_project_create;
@@ -90,8 +87,6 @@ digraph Dependencies {
     skill_co_project -> skill_ref_types;
     skill_co_project -> skill_ref_practices;
     skill_co_project -> skill_ref_deps_format;
-    cmd_project_create -> script_project_create;
-    cmd_project_migrate -> script_project_migrate;
     cmd_plugin_phase_diagnose -> agent_worker_structure [style=dashed];
     cmd_plugin_phase_diagnose -> agent_worker_principles [style=dashed];
     cmd_plugin_phase_diagnose -> agent_worker_architecture [style=dashed];

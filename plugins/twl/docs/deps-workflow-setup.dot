@@ -15,31 +15,30 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="twl:workflow-setup\n(2,027 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="twl:workflow-setup\n(2,032 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
     cmd_init [label="init\n(621 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_worktree_create [label="worktree-create\n(461 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_worktree_create [label="worktree-create\n(448 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_status_update [label="project-board-status-update\n(1,203 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_crg_auto_build [label="crg-auto-build\n(313 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_change_propose [label="change-propose\n(1,345 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_ac_extract [label="ac-extract\n(366 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_ac_extract [label="ac-extract\n(368 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
     // L3: Agents
 
     // L3.5: Scripts
-    script_state_read [label="state-read\n(986 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_state_write [label="state-write\n(2,571 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_resolve_project [label="resolve-project\n(929 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_runner [label="chain-runner\n(6,274 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_worktree_create [label="worktree-create\n(2,126 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_parse_issue_ac [label="parse-issue-ac\n(1,224 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_steps [label="chain-steps\n(230 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_compaction_resume [label="compaction-resume\n(1,009 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_read [label="state-read\n(4,288 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_write [label="state-write\n(4,288 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(7,161 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_create [label="worktree-create\n(3,307 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(7,161 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_compaction_resume [label="compaction-resume\n(1,031 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
@@ -47,7 +46,7 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_workflow_setup; }
     { rank=same; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_change_propose; cmd_ac_extract; }
-    { rank=same; script_state_read; script_state_write; script_resolve_project; script_chain_runner; script_worktree_create; script_parse_issue_ac; script_chain_steps; script_compaction_resume; script_resolve_issue_num; }
+    { rank=same; script_state_read; script_state_write; script_chain_runner; script_worktree_create; script_autopilot_github; script_chain_steps; script_compaction_resume; script_resolve_issue_num; }
 
     // Edges
     skill_workflow_setup -> cmd_init;
@@ -59,7 +58,7 @@ digraph Dependencies {
     skill_workflow_setup -> script_chain_runner;
     skill_workflow_setup -> script_compaction_resume;
     cmd_worktree_create -> script_worktree_create;
-    cmd_ac_extract -> script_parse_issue_ac;
+    cmd_ac_extract -> script_autopilot_github;
 
     // Ordering constraints (invisible edges)
     cmd_init -> cmd_worktree_create [style=invis, weight=10];

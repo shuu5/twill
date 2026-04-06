@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_fix</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="67.88" cy="-105" rx="67.76" ry="21.43"/>
 <text text-anchor="middle" x="67.88" y="-108" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;fix</text>
-<text text-anchor="middle" x="67.88" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00">(863 tok)</text>
+<text text-anchor="middle" x="67.88" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00">(866 tok)</text>
 </g>
 <!-- cmd_post_fix_verify -->
 <g id="node2" class="node">
@@ -48,7 +48,7 @@
 <title>cmd_fix_phase</title>
 <polygon fill="#bbdefb" stroke="black" points="261.76,-210 205.76,-210 205.76,-174 261.76,-174 261.76,-210"/>
 <text text-anchor="middle" x="233.76" y="-195" font-family="Helvetica,sans-Serif" font-size="10.00">fix&#45;phase</text>
-<text text-anchor="middle" x="233.76" y="-184" font-family="Helvetica,sans-Serif" font-size="10.00">(528 tok)</text>
+<text text-anchor="middle" x="233.76" y="-184" font-family="Helvetica,sans-Serif" font-size="10.00">(532 tok)</text>
 </g>
 <!-- skill_workflow_pr_fix&#45;&gt;cmd_fix_phase -->
 <g id="edge1" class="edge">
@@ -77,7 +77,7 @@
 <title>script_checkpoint_read</title>
 <polygon fill="#ff9800" stroke="black" points="472.42,-192 437.2,-216.49 366.76,-216.49 331.55,-192 366.76,-167.51 437.2,-167.51 472.42,-192"/>
 <text text-anchor="middle" x="401.98" y="-195" font-family="Helvetica,sans-Serif" font-size="10.00">checkpoint&#45;read</text>
-<text text-anchor="middle" x="401.98" y="-184" font-family="Helvetica,sans-Serif" font-size="10.00">(470 tok)</text>
+<text text-anchor="middle" x="401.98" y="-184" font-family="Helvetica,sans-Serif" font-size="10.00">(2,418 tok)</text>
 </g>
 <!-- cmd_fix_phase&#45;&gt;script_checkpoint_read -->
 <g id="edge5" class="edge">

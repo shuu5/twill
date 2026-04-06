@@ -15,14 +15,14 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_pr_fix [label="twl:workflow-pr-fix\n(863 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_fix [label="twl:workflow-pr-fix\n(866 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
     cmd_post_fix_verify [label="post-fix-verify\n(353 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_warning_fix [label="warning-fix\n(363 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_fix_phase [label="fix-phase\n(528 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_fix_phase [label="fix-phase\n(532 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_spec_diagnose [label="spec-diagnose\n(634 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
@@ -30,7 +30,7 @@ digraph Dependencies {
     // L3: Agents
 
     // L3.5: Scripts
-    script_checkpoint_read [label="checkpoint-read\n(470 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_checkpoint_read [label="checkpoint-read\n(2,418 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
