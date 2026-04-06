@@ -35,9 +35,24 @@ resolve_autopilot_dir() {
     echo "$AUTOPILOT_DIR"
     return
   fi
+  # main ブランチの worktree を探す（bare / null-HEAD エントリをスキップ）
   local main_wt
-  main_wt=$(git worktree list --porcelain | awk '/^worktree /{print substr($0,10); exit}')
-  echo "${main_wt}/.autopilot"
+  main_wt=$(git worktree list --porcelain | awk '
+    /^worktree /{ wt=substr($0,10) }
+    /^HEAD 0{40}$/{ wt="" }
+    /^bare$/{ wt="" }
+    /^branch refs\/heads\/main$/{ if(wt!="") { print wt; exit } }
+  ')
+  if [[ -z "$main_wt" ]]; then
+    # main ブランチが見つからない場合は最初の real worktree
+    main_wt=$(git worktree list --porcelain | awk '
+      /^worktree /{ wt=substr($0,10) }
+      /^HEAD 0{40}$/{ wt="" }
+      /^bare$/{ wt="" }
+      /^branch /{ if(wt!="") { print wt; exit } }
+    ')
+  fi
+  echo "${main_wt:-.}/.autopilot"
 }
 
 # 成功出力
