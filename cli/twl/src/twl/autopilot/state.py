@@ -37,29 +37,59 @@ _PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure"}
 def _autopilot_dir() -> Path:
     """Resolve AUTOPILOT_DIR (env var takes priority).
 
-    Fallback uses ``git rev-parse --git-common-dir`` so that worktrees
-    resolve to the bare root (e.g. ``.bare``) instead of the worktree's
-    own ``.git`` directory.  From there we walk up to the repository root
-    and append ``.autopilot``.
+    Fallback uses ``git worktree list --porcelain`` to find the main
+    worktree (the entry on ``branch refs/heads/main``) and appends
+    ``.autopilot``.  In bare-repo setups the first entry is the bare
+    root, so we skip it and look for the ``main`` branch entry.
     """
     env = os.environ.get("AUTOPILOT_DIR", "")
     if env:
         return Path(env)
-    # Fallback: git-common-dir → repo root → .autopilot
+    # Fallback: git worktree list → main branch worktree → .autopilot
     try:
         import subprocess
 
-        common_dir = subprocess.check_output(
-            ["git", "rev-parse", "--git-common-dir"],
+        output = subprocess.check_output(
+            ["git", "worktree", "list", "--porcelain"],
             stderr=subprocess.DEVNULL,
             text=True,
         ).strip()
-        # common_dir is e.g. /path/to/.bare  (bare repo) or /path/to/.git (standard)
-        # The repo root is its parent directory
-        repo_root = Path(common_dir).resolve().parent
-        return repo_root / ".autopilot"
+        # Parse worktree blocks separated by blank lines.
+        # In bare-repo setups the first entry is the bare root
+        # (HEAD 000...0, or path contains .bare).  We look for
+        # the entry with branch refs/heads/main first, then
+        # fall back to the first entry with a real HEAD.
+        blocks = output.split("\n\n")
+        first_real_wt = None
+        for block in blocks:
+            lines = block.strip().splitlines()
+            wt_path = None
+            head_val = None
+            is_bare = False
+            is_main_branch = False
+            for line in lines:
+                if line.startswith("worktree "):
+                    wt_path = line[len("worktree "):]
+                elif line.startswith("HEAD "):
+                    head_val = line[len("HEAD "):]
+                elif line == "bare":
+                    is_bare = True
+                elif line == "branch refs/heads/main":
+                    is_main_branch = True
+            # Skip bare entries and null-HEAD entries (bare root)
+            null_head = head_val and set(head_val) <= {"0"}
+            if not wt_path or is_bare or null_head:
+                continue
+            if first_real_wt is None:
+                first_real_wt = wt_path
+            if is_main_branch:
+                return Path(wt_path) / ".autopilot"
+        # No main branch found — use first real worktree
+        if first_real_wt:
+            return Path(first_real_wt) / ".autopilot"
     except Exception:
-        return Path.cwd() / ".autopilot"
+        pass
+    return Path.cwd() / ".autopilot"
 
 
 def _resolve_file(autopilot_dir: Path, type_: str, issue: str | None, repo: str | None) -> Path:
@@ -341,7 +371,7 @@ def _parse_read_args(argv: list[str]) -> dict[str, Any]:
         elif a == "--field" and i + 1 < len(argv):
             args["field"] = argv[i + 1]; i += 2
         elif a == "--autopilot-dir" and i + 1 < len(argv):
-            args["autopilot_dir"] = argv[i + 1]; i += 2
+            args["autopilot_dir"] = argv[i + 1] or None; i += 2
         else:
             print(f"ERROR: 不明なオプション: {a}", file=sys.stderr)
             sys.exit(1)
@@ -375,7 +405,7 @@ def _parse_write_args(argv: list[str]) -> dict[str, Any]:
         elif a == "--init":
             args["init"] = True; i += 1
         elif a == "--autopilot-dir" and i + 1 < len(argv):
-            args["autopilot_dir"] = argv[i + 1]; i += 2
+            args["autopilot_dir"] = argv[i + 1] or None; i += 2
         else:
             print(f"ERROR: 不明なオプション: {a}", file=sys.stderr)
             sys.exit(1)
