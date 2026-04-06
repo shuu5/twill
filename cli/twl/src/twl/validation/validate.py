@@ -378,4 +378,28 @@ def validate_v3_schema(deps: dict) -> Tuple[int, List[str]]:
                     f"use top-level 'scripts' section with 'calls' references instead"
                 )
 
+    # Check 7: refined_by / refined_at フォーマット検証
+    _REFINED_BY_PATTERN = re.compile(r'^ref-prompt-guide@[0-9a-f]{8}$')
+    _REFINED_AT_PATTERN = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+    for section in ('skills', 'commands', 'agents'):
+        for comp_name, data in deps.get(section, {}).items():
+            refined_by = data.get('refined_by')
+            if refined_by is not None:
+                if not _REFINED_BY_PATTERN.match(str(refined_by)):
+                    violations.append(
+                        f"[refined_by-format] {section}/{comp_name}: "
+                        f"refined_by must match 'ref-prompt-guide@[0-9a-f]{{8}}', got: {refined_by!r}"
+                    )
+                else:
+                    ok_count += 1
+            refined_at = data.get('refined_at')
+            if refined_at is not None:
+                if not _REFINED_AT_PATTERN.match(str(refined_at)):
+                    violations.append(
+                        f"[refined_at-format] {section}/{comp_name}: "
+                        f"refined_at must be ISO 8601 date (YYYY-MM-DD), got: {refined_at!r}"
+                    )
+                else:
+                    ok_count += 1
+
     return ok_count, violations
