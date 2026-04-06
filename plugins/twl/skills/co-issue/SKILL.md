@@ -31,6 +31,8 @@ TaskCreate 「Phase 1: 問題探索」(status: in_progress)
 
 `architecture/` が存在する場合、vision.md, context-map.md, glossary.md を Read して `ARCH_CONTEXT` として保持（存在しないファイルはスキップ）。`/twl:explore` を呼び出し「問題空間の理解に集中」と注入。ARCH_CONTEXT があれば explore prompt に追加注入。探索後 `.controller-issue/explore-summary.md` に書き出し。
 
+explore-summary から scope/* が判明した場合、リポルート `architecture/domain/context-map.md` の flowchart ノードラベル（例: `cli/twl`, `plugins/twl`）を参照してコンポーネントパスを特定し、該当コンポーネントの `<component>/architecture/vision.md`、`<component>/architecture/domain/context-map.md`、`<component>/architecture/domain/glossary.md` を Read して ARCH_CONTEXT に追加（存在しないファイルはスキップ）。複数 scope/* の場合は各コンポーネントの architecture を追加する。
+
 TaskUpdate Phase 1 → completed
 
 ## Step 1.5: glossary 照合
