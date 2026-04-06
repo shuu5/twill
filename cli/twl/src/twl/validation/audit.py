@@ -1,3 +1,4 @@
+import hashlib
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
@@ -86,8 +87,16 @@ def _check_output_schema_keywords(file_path: Path) -> Dict[str, bool]:
     return result
 
 
+def _compute_ref_prompt_guide_hash(plugin_root: Path) -> Optional[str]:
+    """ref-prompt-guide.md の SHA-1 ハッシュ先頭8文字を返す（ファイル不在は None）"""
+    ref_path = plugin_root / "refs" / "ref-prompt-guide.md"
+    if not ref_path.exists():
+        return None
+    return hashlib.sha1(ref_path.read_bytes()).hexdigest()[:8]
+
+
 def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
-    """6セクションの TWiLL 準拠度データを収集（print なし）
+    """7セクションの TWiLL 準拠度データを収集（print なし）
 
     Returns: items リスト（severity, component, message, section, value, threshold）
     """
@@ -270,6 +279,43 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
             "threshold": warn_threshold,
         })
 
+    # Section 7: Prompt Compliance
+    current_hash = _compute_ref_prompt_guide_hash(plugin_root)
+    for section in ('skills', 'commands', 'agents'):
+        for name, spec in sorted(deps.get(section, {}).items()):
+            refined_by = spec.get('refined_by')
+            if refined_by is None:
+                severity = 'info'
+                message = "未レビュー（refined_by 未設定）"
+                value = 0
+            else:
+                # Format: ref-prompt-guide@XXXXXXXX
+                m = re.match(r'^ref-prompt-guide@([0-9a-f]{8})$', str(refined_by))
+                if not m:
+                    severity = 'warning'
+                    message = f"refined_by フォーマット不正: {refined_by}"
+                    value = 0
+                elif current_hash is None:
+                    severity = 'info'
+                    message = "ref-prompt-guide.md が見つからないためハッシュ照合不可"
+                    value = 1
+                elif m.group(1) == current_hash:
+                    severity = 'ok'
+                    message = f"最新 ({refined_by})"
+                    value = 1
+                else:
+                    severity = 'warning'
+                    message = f"stale: {refined_by} (現在={current_hash})"
+                    value = 0
+            items.append({
+                "severity": severity,
+                "component": name,
+                "message": message,
+                "section": "prompt_compliance",
+                "value": value,
+                "threshold": 1,
+            })
+
     return items
 
 
@@ -337,7 +383,7 @@ def _scan_body_for_mcp_tools(file_path: Path) -> Set[str]:
 
 
 def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
-    """7セクションの TWiLL 準拠度レポートを出力
+    """8セクションの TWiLL 準拠度レポートを出力
 
     Returns: (critical_count, warning_count, ok_count)
     """
@@ -569,6 +615,41 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
             severity = 'OK'
             oks += 1
         print(f"| {name} | {comp['type']} | {model_str} | {severity} |")
+    print()
+
+    # === Section 8: Prompt Compliance ===
+    print("## 8. Prompt Compliance")
+    print()
+    print("| Component | Status | Severity |")
+    print("|-----------|--------|----------|")
+
+    current_hash = _compute_ref_prompt_guide_hash(plugin_root)
+    for section_key in ('skills', 'commands', 'agents'):
+        for name, spec in sorted(deps.get(section_key, {}).items()):
+            refined_by = spec.get('refined_by')
+            if refined_by is None:
+                status_str = '未レビュー'
+                severity = 'INFO'
+                oks += 1
+            else:
+                m = re.match(r'^ref-prompt-guide@([0-9a-f]{8})$', str(refined_by))
+                if not m:
+                    status_str = f'フォーマット不正: {refined_by}'
+                    severity = 'WARNING'
+                    warnings += 1
+                elif current_hash is None:
+                    status_str = f'照合不可: {refined_by}'
+                    severity = 'INFO'
+                    oks += 1
+                elif m.group(1) == current_hash:
+                    status_str = f'最新 ({refined_by})'
+                    severity = 'OK'
+                    oks += 1
+                else:
+                    status_str = f'stale ({refined_by} → 現在={current_hash})'
+                    severity = 'WARNING'
+                    warnings += 1
+            print(f"| {name} | {status_str} | {severity} |")
     print()
 
     # === Summary ===
