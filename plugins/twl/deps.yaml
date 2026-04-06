@@ -149,6 +149,8 @@ skills:
 
   co-architect:
     type: controller
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/co-architect/SKILL.md
     effort: high
     tools: [Agent(worker-architecture, worker-structure)]
@@ -167,6 +169,8 @@ skills:
 
   co-utility:
     type: controller
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/co-utility/SKILL.md
     effort: low
     tools: []
@@ -183,6 +187,8 @@ skills:
 
   workflow-setup:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-setup/SKILL.md
     effort: medium
     spawnable_by: [controller]
@@ -206,6 +212,8 @@ skills:
 
   workflow-test-ready:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-test-ready/SKILL.md
     effort: medium
     spawnable_by: [controller]
@@ -223,6 +231,8 @@ skills:
 
   workflow-pr-verify:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-pr-verify/SKILL.md
     effort: medium
     spawnable_by: [controller]
@@ -245,6 +255,8 @@ skills:
 
   workflow-pr-fix:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-pr-fix/SKILL.md
     effort: medium
     spawnable_by: [controller]
@@ -261,6 +273,8 @@ skills:
 
   workflow-pr-merge:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-pr-merge/SKILL.md
     effort: medium
     spawnable_by: [controller]
@@ -286,6 +300,8 @@ skills:
 
   workflow-dead-cleanup:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-dead-cleanup/SKILL.md
     effort: low
     spawnable_by: [controller]
@@ -299,6 +315,8 @@ skills:
 
   workflow-tech-debt-triage:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-tech-debt-triage/SKILL.md
     effort: medium
     spawnable_by: [controller]
@@ -310,6 +328,8 @@ skills:
 
   workflow-self-improve:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-self-improve/SKILL.md
     effort: medium
     spawnable_by: [controller]
@@ -327,6 +347,8 @@ skills:
 
   workflow-plugin-create:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-plugin-create/SKILL.md
     effort: medium
     spawnable_by: [controller]
@@ -344,6 +366,8 @@ skills:
 
   workflow-plugin-diagnose:
     type: workflow
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: skills/workflow-plugin-diagnose/SKILL.md
     effort: medium
     spawnable_by: [controller]
@@ -474,6 +498,8 @@ refs:
 commands:
   self-improve-review: # standalone: ユーザー直接起動
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/self-improve-review.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -481,6 +507,8 @@ commands:
 
   init:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/init.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -492,6 +520,8 @@ commands:
 
   worktree-create:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/worktree-create.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -505,6 +535,8 @@ commands:
 
   worktree-list: # standalone: ユーザー直接起動
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/worktree-list.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -512,6 +544,8 @@ commands:
 
   project-board-status-update:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/project-board-status-update.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -523,6 +557,8 @@ commands:
 
   crg-auto-build:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/crg-auto-build.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -534,6 +570,8 @@ commands:
 
   change-propose:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/change-propose.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -545,6 +583,8 @@ commands:
 
   change-apply:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/change-apply.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -555,6 +595,8 @@ commands:
 
   change-archive:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/change-archive.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -565,6 +607,8 @@ commands:
 
   ac-extract:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/ac-extract.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -578,6 +622,8 @@ commands:
 
   ts-preflight:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/ts-preflight.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -589,6 +635,8 @@ commands:
 
   scope-judge:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/scope-judge.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -600,6 +648,8 @@ commands:
 
   pr-test:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/pr-test.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -611,6 +661,8 @@ commands:
 
   post-fix-verify:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/post-fix-verify.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -622,6 +674,8 @@ commands:
 
   warning-fix:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/warning-fix.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -633,6 +687,8 @@ commands:
 
   pr-cycle-report:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/pr-cycle-report.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -644,6 +700,8 @@ commands:
 
   all-pass-check:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/all-pass-check.md
     spawnable_by: [workflow]
     can_spawn: [script]
@@ -659,6 +717,8 @@ commands:
 
   ac-verify:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/ac-verify.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -668,6 +728,8 @@ commands:
 
   issue-structure:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/issue-structure.md
     spawnable_by: [controller]
     can_spawn: []
@@ -675,6 +737,8 @@ commands:
 
   issue-create:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/issue-create.md
     spawnable_by: [controller]
     can_spawn: []
@@ -691,6 +755,8 @@ commands:
 
   issue-tech-debt-absorb:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/issue-tech-debt-absorb.md
     spawnable_by: [controller]
     can_spawn: []
@@ -698,6 +764,8 @@ commands:
 
   issue-spec-review:
     type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/issue-spec-review.md
     spawnable_by: [controller]
     can_spawn: [specialist, script]
@@ -712,6 +780,8 @@ commands:
 
   issue-review-aggregate:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/issue-review-aggregate.md
     spawnable_by: [controller]
     can_spawn: []
@@ -719,6 +789,8 @@ commands:
 
   issue-glossary-check:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/issue-glossary-check.md
     spawnable_by: [controller]
     can_spawn: []
@@ -728,6 +800,8 @@ commands:
 
   issue-arch-drift:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/issue-arch-drift.md
     spawnable_by: [controller]
     can_spawn: []
@@ -735,6 +809,8 @@ commands:
 
   issue-cross-repo-create:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/issue-cross-repo-create.md
     spawnable_by: [controller]
     can_spawn: []
@@ -742,6 +818,8 @@ commands:
 
   project-board-sync:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/project-board-sync.md
     spawnable_by: [controller]
     can_spawn: []
@@ -749,6 +827,8 @@ commands:
 
   label-sync:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/label-sync.md
     spawnable_by: [controller]
     can_spawn: []
@@ -758,6 +838,8 @@ commands:
 
   project-create:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/project-create.md
     spawnable_by: [controller]
     can_spawn: []
@@ -765,6 +847,8 @@ commands:
 
   project-board-configure:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/project-board-configure.md
     spawnable_by: [controller]
     can_spawn: []
@@ -772,6 +856,8 @@ commands:
 
   project-governance:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/project-governance.md
     spawnable_by: [controller]
     can_spawn: []
@@ -779,6 +865,8 @@ commands:
 
   project-migrate:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/project-migrate.md
     spawnable_by: [controller]
     can_spawn: []
@@ -786,6 +874,8 @@ commands:
 
   container-dependency-check:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/container-dependency-check.md
     spawnable_by: [controller]
     can_spawn: []
@@ -793,6 +883,8 @@ commands:
 
   setup-crg:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/setup-crg.md
     spawnable_by: [controller]
     can_spawn: []
@@ -800,6 +892,8 @@ commands:
 
   snapshot-analyze:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/snapshot-analyze.md
     spawnable_by: [controller]
     can_spawn: []
@@ -807,6 +901,8 @@ commands:
 
   snapshot-classify:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/snapshot-classify.md
     spawnable_by: [controller]
     can_spawn: []
@@ -814,6 +910,8 @@ commands:
 
   snapshot-generate:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/snapshot-generate.md
     spawnable_by: [controller]
     can_spawn: []
@@ -823,6 +921,8 @@ commands:
 
   architect-completeness-check:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/architect-completeness-check.md
     spawnable_by: [controller]
     can_spawn: []
@@ -830,6 +930,8 @@ commands:
 
   architect-decompose:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/architect-decompose.md
     spawnable_by: [controller]
     can_spawn: []
@@ -837,6 +939,8 @@ commands:
 
   architect-group-refine:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/architect-group-refine.md
     spawnable_by: [controller]
     can_spawn: []
@@ -844,6 +948,8 @@ commands:
 
   architect-issue-create:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/architect-issue-create.md
     spawnable_by: [controller]
     can_spawn: []
@@ -851,6 +957,8 @@ commands:
 
   evaluate-architecture:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/evaluate-architecture.md
     spawnable_by: [controller]
     can_spawn: []
@@ -860,6 +968,8 @@ commands:
 
   plugin-interview:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-interview.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -870,6 +980,8 @@ commands:
 
   plugin-research:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-research.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -880,6 +992,8 @@ commands:
 
   plugin-design:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-design.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -902,6 +1016,8 @@ commands:
 
   plugin-migrate-analyze:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-migrate-analyze.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -912,6 +1028,8 @@ commands:
 
   plugin-diagnose:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-diagnose.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -922,6 +1040,8 @@ commands:
 
   plugin-fix:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-fix.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -932,6 +1052,8 @@ commands:
 
   plugin-verify:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-verify.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -942,6 +1064,8 @@ commands:
 
   plugin-phase-diagnose:
     type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-phase-diagnose.md
     spawnable_by: [workflow]
     can_spawn: [specialist]
@@ -958,6 +1082,8 @@ commands:
 
   plugin-phase-verify:
     type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/plugin-phase-verify.md
     spawnable_by: [workflow]
     can_spawn: [specialist]
@@ -976,6 +1102,8 @@ commands:
 
   explore: # standalone: ユーザー直接起動
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/explore.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -995,6 +1123,8 @@ commands:
 
   dead-component-detect:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/dead-component-detect.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -1005,6 +1135,8 @@ commands:
 
   dead-component-execute:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/dead-component-execute.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -1015,6 +1147,8 @@ commands:
 
   triage-execute:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/triage-execute.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -1027,6 +1161,8 @@ commands:
 
   self-improve-collect:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/self-improve-collect.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1037,6 +1173,8 @@ commands:
 
   self-improve-propose:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/self-improve-propose.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1047,6 +1185,8 @@ commands:
 
   self-improve-close:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/self-improve-close.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1057,6 +1197,8 @@ commands:
 
   ecc-monitor:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/ecc-monitor.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1071,6 +1213,8 @@ commands:
 
   twl-validate: # standalone: プロジェクト固有ユーティリティ
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/twl-validate.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1080,6 +1224,8 @@ commands:
 
   services: # standalone: プロジェクト固有ユーティリティ
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/services.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1087,6 +1233,8 @@ commands:
 
   ui-capture: # standalone: 低頻度ユーティリティ
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/ui-capture.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1094,6 +1242,8 @@ commands:
 
   e2e-plan: # standalone: 低頻度ユーティリティ
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/e2e-plan.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1101,6 +1251,8 @@ commands:
 
   test-scaffold:
     type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/test-scaffold.md
     spawnable_by: [controller, workflow]
     can_spawn: [specialist]
@@ -1115,6 +1267,8 @@ commands:
 
   worktree-delete:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/worktree-delete.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1124,6 +1278,8 @@ commands:
 
   phase-review:
     type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/phase-review.md
     spawnable_by: [workflow]
     can_spawn: [specialist, script]
@@ -1160,6 +1316,8 @@ commands:
 
   fix-phase:
     type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/fix-phase.md
     spawnable_by: [workflow]
     can_spawn: [script]
@@ -1173,6 +1331,8 @@ commands:
 
   e2e-screening:
     type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/e2e-screening.md
     spawnable_by: [workflow]
     can_spawn: [script]
@@ -1232,6 +1392,8 @@ commands:
 
   ac-deploy-trigger:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/ac-deploy-trigger.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -1239,6 +1401,8 @@ commands:
 
   test-phase:
     type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/test-phase.md
     spawnable_by: [controller, workflow]
     can_spawn: [specialist]
@@ -1249,6 +1413,8 @@ commands:
 
   auto-merge:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/auto-merge.md
     spawnable_by: [workflow]
     can_spawn: [script]
@@ -1262,6 +1428,8 @@ commands:
 
   pr-cycle-analysis:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/pr-cycle-analysis.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -1273,6 +1441,8 @@ commands:
 
   schema-update: # standalone: プロジェクト固有ユーティリティ
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/schema-update.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1280,6 +1450,8 @@ commands:
 
   spec-diagnose: # standalone: 低頻度ユーティリティ
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/spec-diagnose.md
     spawnable_by: [workflow]
     can_spawn: []
@@ -1289,6 +1461,8 @@ commands:
 
   autopilot-init:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-init.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1302,6 +1476,8 @@ commands:
 
   autopilot-launch:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-launch.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1313,6 +1489,8 @@ commands:
 
   autopilot-poll:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-poll.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1325,6 +1503,8 @@ commands:
 
   autopilot-phase-execute:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-phase-execute.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1339,6 +1519,8 @@ commands:
 
   autopilot-phase-postprocess:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-phase-postprocess.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1352,6 +1534,8 @@ commands:
 
   autopilot-collect:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-collect.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1362,6 +1546,8 @@ commands:
 
   autopilot-retrospective:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-retrospective.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1371,6 +1557,8 @@ commands:
 
   autopilot-patterns:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-patterns.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1380,6 +1568,8 @@ commands:
 
   autopilot-cross-issue:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-cross-issue.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1390,6 +1580,8 @@ commands:
 
   autopilot-summary:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/autopilot-summary.md
     spawnable_by: [controller]
     can_spawn: []
@@ -1403,6 +1595,8 @@ commands:
 
   session-audit:
     type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: commands/session-audit.md
     spawnable_by: [controller, workflow]
     can_spawn: []
@@ -1427,11 +1621,15 @@ scripts:
 
   autopilot-init:
     type: script
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: ../../cli/twl/src/twl/autopilot/init.py
     description: ".autopilot/ ディレクトリ初期化とセッション排他制御（Python: python3 -m twl.autopilot.init）"
 
   autopilot-launch:
     type: script
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: ../../cli/twl/src/twl/autopilot/launcher.py
     calls:
       - script: state-write
@@ -1455,6 +1653,8 @@ scripts:
 
   worktree-delete:
     type: script
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: scripts/worktree-delete.sh
     description: "worktree + ブランチ削除（Pilot 専任）"
 
@@ -1558,16 +1758,22 @@ scripts:
 
   worktree-create:
     type: script
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: ../../cli/twl/src/twl/autopilot/worktree.py
     description: "bare repo 向け worktree 作成（Issue番号→ブランチ名生成）（Python: python3 -m twl.autopilot.worktree create）"
 
   project-create:
     type: script
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: ../../cli/twl/src/twl/autopilot/project.py
     description: "プロジェクト新規作成（タイプ別テンプレート対応）（Python: python3 -m twl.autopilot.project create）"
 
   project-migrate:
     type: script
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: ../../cli/twl/src/twl/autopilot/project.py
     description: "既存プロジェクトの最新テンプレート移行（Python: python3 -m twl.autopilot.project migrate）"
 
@@ -1578,11 +1784,15 @@ scripts:
 
   session-audit:
     type: script
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: ../../cli/twl/src/twl/autopilot/session.py
     description: "セッション JSONL から監査サマリー抽出（Python: python3 -m twl.autopilot.session audit）"
 
   auto-merge:
     type: script
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: scripts/auto-merge.sh
     description: "autopilot-first auto-merge（4 Layer ガード付き、Worker マージ禁止の機械的担保）"
 
@@ -1633,6 +1843,8 @@ scripts:
 
   ecc-monitor:
     type: script
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: scripts/ecc-monitor.sh
     description: "ECC リポジトリの変更検知・カテゴリ分類"
 
@@ -1661,6 +1873,8 @@ agents:
   # 構造チェック系（haiku）
   worker-structure:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-structure.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1670,6 +1884,8 @@ agents:
 
   worker-principles:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-principles.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1679,6 +1895,8 @@ agents:
 
   worker-env-validator:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-env-validator.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1688,6 +1906,8 @@ agents:
 
   worker-rls-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-rls-reviewer.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1697,6 +1917,8 @@ agents:
 
   worker-supabase-migration-checker:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-supabase-migration-checker.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1706,6 +1928,8 @@ agents:
 
   worker-data-validator:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-data-validator.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1715,6 +1939,8 @@ agents:
 
   template-validator: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/template-validator.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1735,6 +1961,8 @@ agents:
 
   worker-e2e-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-e2e-reviewer.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1744,6 +1972,8 @@ agents:
 
   worker-spec-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-spec-reviewer.md
     model: haiku
     spawnable_by: [workflow, composite, controller]
@@ -1754,6 +1984,8 @@ agents:
   # Issue レビュー系（sonnet）
   issue-critic:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/issue-critic.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1763,6 +1995,8 @@ agents:
 
   issue-feasibility:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/issue-feasibility.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1772,6 +2006,8 @@ agents:
 
   worker-codex-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-codex-reviewer.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1782,6 +2018,8 @@ agents:
   # 品質判断系（sonnet）
   worker-code-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-code-reviewer.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1791,6 +2029,8 @@ agents:
 
   worker-security-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-security-reviewer.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1800,6 +2040,8 @@ agents:
 
   worker-nextjs-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-nextjs-reviewer.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1809,6 +2051,8 @@ agents:
 
   worker-fastapi-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-fastapi-reviewer.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1818,6 +2062,8 @@ agents:
 
   worker-hono-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-hono-reviewer.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1827,6 +2073,8 @@ agents:
 
   worker-r-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-r-reviewer.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1847,6 +2095,8 @@ agents:
 
   worker-llm-output-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-llm-output-reviewer.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1856,6 +2106,8 @@ agents:
 
   worker-llm-eval-runner:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-llm-eval-runner.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1865,10 +2117,12 @@ agents:
 
   worker-prompt-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/worker-prompt-reviewer.md
     model: sonnet
     effort: medium
-    spawnable_by: [workflow, composite, controller, user]
+    spawnable_by: [workflow, composite, controller]
     can_spawn: []
     tools: [Read, Grep, Glob]
     skills: [ref-prompt-guide, ref-specialist-output-schema]
@@ -1877,6 +2131,8 @@ agents:
   # ユーティリティ系（sonnet）
   docs-researcher: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/docs-researcher.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1897,6 +2153,8 @@ agents:
 
   autofix-loop:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/autofix-loop.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1906,6 +2164,8 @@ agents:
 
   spec-scaffold-tests:
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/spec-scaffold-tests.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1926,6 +2186,8 @@ agents:
 
   e2e-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/e2e-heal.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
@@ -1935,6 +2197,8 @@ agents:
 
   e2e-visual-heal: # standalone: Task tool 経由で動的 spawn（calls 不要）
     type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
     path: agents/e2e-visual-heal.md
     model: sonnet
     spawnable_by: [workflow, composite, controller]
