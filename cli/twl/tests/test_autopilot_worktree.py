@@ -14,7 +14,7 @@ import re
 import subprocess
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -28,6 +28,19 @@ from twl.autopilot.worktree import (
     _label_to_prefix,
     main,
 )
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _make_porcelain(entries: list[tuple[str, str]]) -> str:
+    """Build git worktree list --porcelain output for the given (branch, path) pairs."""
+    lines = []
+    for branch, path in entries:
+        lines += [f"worktree {path}", "HEAD abc123", f"branch refs/heads/{branch}", ""]
+    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -375,3 +388,207 @@ class TestMain:
         with patch.object(WorktreeManager, "create", fake_create):
             main(["create", "feat/1-test", "--from", "develop"])
         assert captured["base_branch"] == "develop"
+
+    def test_list_returns_0(self) -> None:
+        with patch.object(WorktreeManager, "list", return_value=None):
+            assert main(["list"]) == 0
+
+    def test_cd_no_arg_returns_2(self) -> None:
+        assert main(["cd"]) == 2
+
+    def test_cd_success_returns_0(self, capsys: Any) -> None:
+        with patch.object(WorktreeManager, "cd", return_value=None):
+            assert main(["cd", "feat/1-test"]) == 0
+
+    def test_start_no_arg_returns_2(self) -> None:
+        assert main(["start"]) == 2
+
+    def test_start_success_returns_0(self) -> None:
+        with patch.object(WorktreeManager, "start", return_value=None):
+            assert main(["start", "feat/1-test"]) == 0
+
+    def test_worktree_error_in_cd_returns_1(self) -> None:
+        with patch.object(WorktreeManager, "cd", side_effect=WorktreeError("not found")):
+            assert main(["cd", "nonexistent"]) == 1
+
+    def test_worktree_error_in_list_returns_1(self) -> None:
+        with patch.object(WorktreeManager, "list", side_effect=WorktreeError("git error")):
+            assert main(["list"]) == 1
+
+
+# ---------------------------------------------------------------------------
+# WorktreeManager list / cd / _resolve_worktree
+# ---------------------------------------------------------------------------
+
+
+class TestWorktreeManagerList:
+    def _make_completed(self, rc: int = 0, stdout: str = "", stderr: str = "") -> MagicMock:
+        m = MagicMock(spec=subprocess.CompletedProcess)
+        m.returncode = rc
+        m.stdout = stdout
+        m.stderr = stderr
+        return m
+
+    def test_list_prints_branch_and_path(self, tmp_path: Path, capsys: Any) -> None:
+        worktrees_dir = tmp_path / "worktrees"
+        wt_path = worktrees_dir / "feat" / "1-foo"
+        wt_path.mkdir(parents=True)
+
+        porcelain = _make_porcelain([("feat/1-foo", str(wt_path))])
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(tmp_path / ".bare"))
+            if "worktree list" in cmd:
+                return self._make_completed(0, stdout=porcelain)
+            return self._make_completed(0)
+
+        (tmp_path / ".bare").mkdir()
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager(repo_path=str(tmp_path))
+            mgr.list()
+
+        out = capsys.readouterr().out
+        assert "feat/1-foo" in out
+        assert str(wt_path) in out
+
+    def test_list_empty_prints_message(self, tmp_path: Path, capsys: Any) -> None:
+        (tmp_path / ".bare").mkdir()
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(tmp_path / ".bare"))
+            if "worktree list" in cmd:
+                return self._make_completed(0, stdout="")
+            return self._make_completed(0)
+
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager(repo_path=str(tmp_path))
+            mgr.list()
+
+        out = capsys.readouterr().out
+        assert "なし" in out
+
+    def test_cd_prints_path(self, tmp_path: Path, capsys: Any) -> None:
+        worktrees_dir = tmp_path / "worktrees"
+        wt_path = worktrees_dir / "feat" / "17-foo"
+        wt_path.mkdir(parents=True)
+
+        porcelain = _make_porcelain([("feat/17-foo", str(wt_path))])
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(tmp_path / ".bare"))
+            if "worktree list" in cmd:
+                return self._make_completed(0, stdout=porcelain)
+            return self._make_completed(0)
+
+        (tmp_path / ".bare").mkdir()
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager(repo_path=str(tmp_path))
+            mgr.cd("17")
+
+        out = capsys.readouterr().out.strip()
+        assert out == str(wt_path)
+
+    def test_cd_partial_match_works(self, tmp_path: Path, capsys: Any) -> None:
+        worktrees_dir = tmp_path / "worktrees"
+        wt_path = worktrees_dir / "feat" / "42-bar"
+        wt_path.mkdir(parents=True)
+
+        porcelain = _make_porcelain([("feat/42-bar", str(wt_path))])
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(tmp_path / ".bare"))
+            if "worktree list" in cmd:
+                return self._make_completed(0, stdout=porcelain)
+            return self._make_completed(0)
+
+        (tmp_path / ".bare").mkdir()
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager(repo_path=str(tmp_path))
+            mgr.cd("42-bar")
+
+        out = capsys.readouterr().out.strip()
+        assert out == str(wt_path)
+
+    def test_cd_no_match_raises(self, tmp_path: Path) -> None:
+        worktrees_dir = tmp_path / "worktrees"
+        wt_path = worktrees_dir / "feat" / "1-foo"
+        wt_path.mkdir(parents=True)
+
+        porcelain = _make_porcelain([("feat/1-foo", str(wt_path))])
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(tmp_path / ".bare"))
+            if "worktree list" in cmd:
+                return self._make_completed(0, stdout=porcelain)
+            return self._make_completed(0)
+
+        (tmp_path / ".bare").mkdir()
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager(repo_path=str(tmp_path))
+            with pytest.raises(WorktreeError, match="見つかりません"):
+                mgr.cd("nonexistent")
+
+    def test_cd_multiple_matches_raises(self, tmp_path: Path) -> None:
+        worktrees_dir = tmp_path / "worktrees"
+        wt1 = worktrees_dir / "feat" / "10-foo"
+        wt2 = worktrees_dir / "feat" / "100-bar"
+        wt1.mkdir(parents=True)
+        wt2.mkdir(parents=True)
+
+        porcelain = _make_porcelain([
+            ("feat/10-foo", str(wt1)),
+            ("feat/100-bar", str(wt2)),
+        ])
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(tmp_path / ".bare"))
+            if "worktree list" in cmd:
+                return self._make_completed(0, stdout=porcelain)
+            return self._make_completed(0)
+
+        (tmp_path / ".bare").mkdir()
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager(repo_path=str(tmp_path))
+            with pytest.raises(WorktreeError, match="複数"):
+                mgr.cd("10")
+
+    def test_cd_exact_match_takes_priority(self, tmp_path: Path, capsys: Any) -> None:
+        """Exact match wins over substring: cd feat/10-foo should not fail when feat/100-bar exists."""
+        worktrees_dir = tmp_path / "worktrees"
+        wt1 = worktrees_dir / "feat" / "10-foo"
+        wt2 = worktrees_dir / "feat" / "100-bar"
+        wt1.mkdir(parents=True)
+        wt2.mkdir(parents=True)
+
+        porcelain = _make_porcelain([
+            ("feat/10-foo", str(wt1)),
+            ("feat/100-bar", str(wt2)),
+        ])
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(tmp_path / ".bare"))
+            if "worktree list" in cmd:
+                return self._make_completed(0, stdout=porcelain)
+            return self._make_completed(0)
+
+        (tmp_path / ".bare").mkdir()
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager(repo_path=str(tmp_path))
+            mgr.cd("feat/10-foo")  # exact match — should not raise
+
+        out = capsys.readouterr().out.strip()
+        assert out == str(wt1)
