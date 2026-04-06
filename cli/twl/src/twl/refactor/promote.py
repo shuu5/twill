@@ -1,4 +1,3 @@
-import os
 import re
 import sys
 from pathlib import Path
@@ -10,18 +9,7 @@ except ImportError:
     print("Error: PyYAML not installed. Run: pip install pyyaml", file=sys.stderr)
     sys.exit(1)
 
-from twl.core.types import TYPE_RULES, resolve_type
-
-
-def _is_within_root(file_path: Path, root: Path) -> bool:
-    """file_path が root の strict subdirectory かどうかを安全に検証（シンボリックリンク解決後）"""
-    try:
-        resolved = file_path.resolve()
-        root_resolved = root.resolve()
-        # root 自身は False（strict subdirectory チェック）
-        return str(resolved).startswith(str(root_resolved) + os.sep)
-    except (ValueError, OSError):
-        return False
+from twl.core.types import TYPE_RULES, _is_within_root, resolve_type
 
 
 def _compute_new_path(name: str, new_section: str) -> str:
