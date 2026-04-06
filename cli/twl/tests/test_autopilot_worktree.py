@@ -26,6 +26,8 @@ from twl.autopilot.worktree import (
     validate_branch_name,
     _slugify,
     _label_to_prefix,
+    _run_hook,
+    _project_dir_from_worktree,
     main,
 )
 
@@ -375,3 +377,234 @@ class TestMain:
         with patch.object(WorktreeManager, "create", fake_create):
             main(["create", "feat/1-test", "--from", "develop"])
         assert captured["base_branch"] == "develop"
+
+    def test_teardown_hook_no_args_returns_2(self) -> None:
+        assert main(["teardown-hook"]) == 2
+
+    def test_teardown_hook_calls_run_teardown_hook(self, tmp_path: Path) -> None:
+        called_with: list[Path] = []
+
+        def fake_teardown(wt_dir: Path) -> None:
+            called_with.append(wt_dir)
+
+        with patch.object(WorktreeManager, "run_teardown_hook", staticmethod(fake_teardown)):
+            result = main(["teardown-hook", str(tmp_path)])
+        assert result == 0
+        assert called_with == [tmp_path]
+
+
+# ---------------------------------------------------------------------------
+# _run_hook
+# ---------------------------------------------------------------------------
+
+
+class TestRunHook:
+    def test_runs_worktree_hook_first(self, tmp_path: Path) -> None:
+        project_dir = tmp_path / "project"
+        worktree_dir = tmp_path / "worktrees" / "feat" / "1-test"
+        worktree_hook = worktree_dir / ".twl" / "setup"
+        worktree_hook.parent.mkdir(parents=True)
+        worktree_hook.write_text("#!/bin/sh\nexit 0\n")
+        worktree_hook.chmod(0o755)
+
+        # Also create project root hook (should NOT be called)
+        main_hook = project_dir / "main" / ".twl" / "setup"
+        main_hook.parent.mkdir(parents=True)
+        main_hook.write_text("#!/bin/sh\nexit 0\n")
+        main_hook.chmod(0o755)
+
+        calls: list[Any] = []
+        original_run = subprocess.run
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            calls.append(args)
+            return MagicMock(returncode=0)
+
+        with patch("subprocess.run", side_effect=fake_run):
+            result = _run_hook("setup", worktree_dir, project_dir)
+
+        assert result is True
+        assert any(str(worktree_hook) in str(a) for a in calls[0])
+
+    def test_falls_back_to_project_root_hook(self, tmp_path: Path) -> None:
+        project_dir = tmp_path / "project"
+        worktree_dir = tmp_path / "worktrees" / "feat" / "1-test"
+        worktree_dir.mkdir(parents=True)
+
+        main_hook = project_dir / "main" / ".twl" / "setup"
+        main_hook.parent.mkdir(parents=True)
+        main_hook.write_text("#!/bin/sh\nexit 0\n")
+        main_hook.chmod(0o755)
+
+        calls: list[Any] = []
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            calls.append(args)
+            return MagicMock(returncode=0)
+
+        with patch("subprocess.run", side_effect=fake_run):
+            result = _run_hook("setup", worktree_dir, project_dir)
+
+        assert result is True
+        assert any(str(main_hook) in str(a) for a in calls[0])
+
+    def test_returns_false_when_no_hook(self, tmp_path: Path) -> None:
+        project_dir = tmp_path / "project"
+        worktree_dir = tmp_path / "worktrees" / "feat" / "1-test"
+        worktree_dir.mkdir(parents=True)
+        (project_dir / "main" / ".twl").mkdir(parents=True)
+
+        result = _run_hook("setup", worktree_dir, project_dir)
+        assert result is False
+
+    def test_non_executable_hook_ignored(self, tmp_path: Path) -> None:
+        project_dir = tmp_path / "project"
+        worktree_dir = tmp_path / "worktrees" / "feat" / "1-test"
+        hook = worktree_dir / ".twl" / "setup"
+        hook.parent.mkdir(parents=True)
+        hook.write_text("#!/bin/sh\nexit 0\n")
+        hook.chmod(0o644)  # not executable
+
+        result = _run_hook("setup", worktree_dir, project_dir)
+        assert result is False
+
+    def test_warning_on_nonzero_exit(self, tmp_path: Path, capsys: Any) -> None:
+        project_dir = tmp_path / "project"
+        worktree_dir = tmp_path / "worktrees" / "feat" / "1-test"
+        hook = worktree_dir / ".twl" / "setup"
+        hook.parent.mkdir(parents=True)
+        hook.write_text("#!/bin/sh\nexit 1\n")
+        hook.chmod(0o755)
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            return MagicMock(returncode=1)
+
+        with patch("subprocess.run", side_effect=fake_run):
+            result = _run_hook("setup", worktree_dir, project_dir)
+
+        assert result is True
+        captured = capsys.readouterr()
+        assert "警告" in captured.out
+
+    def test_twl_project_root_env_passed(self, tmp_path: Path) -> None:
+        project_dir = tmp_path / "project"
+        worktree_dir = tmp_path / "worktrees" / "feat" / "1-test"
+        hook = worktree_dir / ".twl" / "setup"
+        hook.parent.mkdir(parents=True)
+        hook.write_text("#!/bin/sh\nexit 0\n")
+        hook.chmod(0o755)
+
+        captured_kwargs: dict[str, Any] = {}
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            captured_kwargs.update(kwargs)
+            return MagicMock(returncode=0)
+
+        with patch("subprocess.run", side_effect=fake_run):
+            _run_hook("setup", worktree_dir, project_dir)
+
+        assert captured_kwargs.get("env", {}).get("TWL_PROJECT_ROOT") == str(project_dir)
+
+
+# ---------------------------------------------------------------------------
+# WorktreeManager.run_teardown_hook
+# ---------------------------------------------------------------------------
+
+
+class TestRunTeardownHook:
+    def test_skips_when_dir_missing(self, tmp_path: Path) -> None:
+        missing = tmp_path / "nonexistent"
+        # Should not raise
+        WorktreeManager.run_teardown_hook(missing)
+
+    def test_calls_run_hook_when_dir_exists(self, tmp_path: Path) -> None:
+        worktree_dir = tmp_path / "wt"
+        worktree_dir.mkdir()
+        project_dir = tmp_path / "project"
+
+        with patch(
+            "twl.autopilot.worktree._project_dir_from_worktree",
+            return_value=project_dir,
+        ) as mock_proj, patch(
+            "twl.autopilot.worktree._run_hook",
+        ) as mock_hook:
+            WorktreeManager.run_teardown_hook(worktree_dir)
+
+        mock_proj.assert_called_once_with(worktree_dir)
+        mock_hook.assert_called_once_with("teardown", worktree_dir, project_dir)
+
+    def test_warns_when_project_dir_unresolvable(
+        self, tmp_path: Path, capsys: Any
+    ) -> None:
+        worktree_dir = tmp_path / "wt"
+        worktree_dir.mkdir()
+
+        with patch(
+            "twl.autopilot.worktree._project_dir_from_worktree",
+            return_value=None,
+        ):
+            WorktreeManager.run_teardown_hook(worktree_dir)
+
+        captured = capsys.readouterr()
+        assert "警告" in captured.out
+
+
+# ---------------------------------------------------------------------------
+# WorktreeManager.create — hook / _sync_deps fallback
+# ---------------------------------------------------------------------------
+
+
+class TestWorktreeManagerCreateHookFallback:
+    def _make_completed(self, rc: int = 0, stdout: str = "", stderr: str = "") -> MagicMock:
+        m = MagicMock(spec=subprocess.CompletedProcess)
+        m.returncode = rc
+        m.stdout = stdout
+        m.stderr = stderr
+        return m
+
+    def test_sync_deps_skipped_when_setup_hook_present(self, tmp_path: Path) -> None:
+        bare = tmp_path / ".bare"
+        bare.mkdir()
+
+        worktree_dir = tmp_path / "worktrees" / "feat" / "1-test"
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(bare))
+            if "worktree add" in cmd:
+                worktree_dir.mkdir(parents=True, exist_ok=True)
+                # Create setup hook
+                hook = worktree_dir / ".twl" / "setup"
+                hook.parent.mkdir()
+                hook.write_text("#!/bin/sh\nexit 0\n")
+                hook.chmod(0o755)
+                return self._make_completed(0)
+            return self._make_completed(0)
+
+        with patch("subprocess.run", side_effect=fake_run):
+            with patch.object(WorktreeManager, "_sync_deps") as mock_sync:
+                mgr = WorktreeManager()
+                mgr.create("feat/1-test")
+        mock_sync.assert_not_called()
+
+    def test_sync_deps_called_when_no_setup_hook(self, tmp_path: Path) -> None:
+        bare = tmp_path / ".bare"
+        bare.mkdir()
+
+        worktree_dir = tmp_path / "worktrees" / "feat" / "1-test"
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(bare))
+            if "worktree add" in cmd:
+                worktree_dir.mkdir(parents=True, exist_ok=True)
+                return self._make_completed(0)
+            return self._make_completed(0)
+
+        with patch("subprocess.run", side_effect=fake_run):
+            with patch.object(WorktreeManager, "_sync_deps") as mock_sync:
+                mgr = WorktreeManager()
+                mgr.create("feat/1-test")
+        mock_sync.assert_called_once_with(worktree_dir)

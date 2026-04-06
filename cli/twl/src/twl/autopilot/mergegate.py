@@ -28,6 +28,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from twl.autopilot.worktree import WorktreeManager
+
 
 # ---------------------------------------------------------------------------
 # Validation helpers
@@ -380,6 +382,9 @@ class MergeGate:
                 break
 
         if worktree_path:
+            # Run teardown hook before removing the worktree
+            WorktreeManager.run_teardown_hook(Path(worktree_path))
+
             r = subprocess.run(
                 ["git", "worktree", "remove", "--force", worktree_path],
                 capture_output=True,
