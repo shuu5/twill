@@ -390,7 +390,10 @@ class WorktreeManager:
         if not worktree_path.is_dir():
             raise WorktreeError(f"worktree ディレクトリが存在しません: {worktree_path}")
         os.chdir(worktree_path)
-        os.execvp("claude", ["claude", "-c"])
+        try:
+            os.execvp("claude", ["claude", "-c"])
+        except FileNotFoundError:
+            raise WorktreeError("claude コマンドが見つかりません。Claude Code がインストールされているか確認してください")
 
     @staticmethod
     def _sync_deps(worktree_dir: Path) -> None:
