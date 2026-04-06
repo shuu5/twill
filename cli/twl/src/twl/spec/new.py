@@ -5,7 +5,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from .paths import OpenspecNotFound, find_deltaspec_root, get_changes_dir
+from .paths import DeltaspecNotFound, find_deltaspec_root, get_changes_dir
 
 _KEBAB_RE = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?$")
 
@@ -20,7 +20,7 @@ def cmd_new(name: str) -> int:
 
     try:
         root = find_deltaspec_root()
-    except OpenspecNotFound as e:
+    except DeltaspecNotFound as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 

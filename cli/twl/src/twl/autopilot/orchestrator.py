@@ -651,12 +651,12 @@ class PhaseOrchestrator:
                     capture_output=True,
                 )
                 if r.returncode == 0:
-                    print(f"[orchestrator] Issue #{issue}: OpenSpec archive 完了: {change_id}")
+                    print(f"[orchestrator] Issue #{issue}: DeltaSpec archive 完了: {change_id}")
                 else:
-                    print(f"[orchestrator] Issue #{issue}: ⚠️ OpenSpec archive 失敗: {change_id}", file=sys.stderr)
+                    print(f"[orchestrator] Issue #{issue}: ⚠️ DeltaSpec archive 失敗: {change_id}", file=sys.stderr)
 
         if not found:
-            print(f"[orchestrator] Issue #{issue}: OpenSpec change が見つかりません", file=sys.stderr)
+            print(f"[orchestrator] Issue #{issue}: DeltaSpec change が見つかりません", file=sys.stderr)
 
     def _detect_scripts_root(self) -> Path:
         try:

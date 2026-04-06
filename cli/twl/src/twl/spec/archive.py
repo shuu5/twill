@@ -5,7 +5,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from .paths import OpenspecNotFound, find_deltaspec_root, get_changes_dir, get_specs_dir
+from .paths import DeltaspecNotFound, find_deltaspec_root, get_changes_dir, get_specs_dir
 from .new import _KEBAB_RE
 
 _ADDED_RE = re.compile(r"^## ADDED Requirements", re.MULTILINE)
@@ -87,7 +87,7 @@ def cmd_archive(name: str, yes: bool = False, skip_specs: bool = False) -> int:
 
     try:
         root = find_deltaspec_root()
-    except OpenspecNotFound as e:
+    except DeltaspecNotFound as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 

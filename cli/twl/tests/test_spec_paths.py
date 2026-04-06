@@ -9,7 +9,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from twl.spec.paths import (
-    OpenspecNotFound,
+    DeltaspecNotFound,
     find_deltaspec_root,
     get_change_dir,
     get_changes_dir,
@@ -30,7 +30,7 @@ def test_find_deltaspec_root_from_subdir(tmp_path):
 
 
 def test_find_deltaspec_root_not_found(tmp_path):
-    with pytest.raises(OpenspecNotFound):
+    with pytest.raises(DeltaspecNotFound):
         find_deltaspec_root(tmp_path)
 
 

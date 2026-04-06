@@ -3,7 +3,7 @@
 from pathlib import Path
 
 
-class OpenspecNotFound(Exception):
+class DeltaspecNotFound(Exception):
     pass
 
 
@@ -11,7 +11,7 @@ def find_deltaspec_root(start: Path | None = None) -> Path:
     """Walk up from start (default: cwd) until deltaspec/ is found.
 
     Returns the project root containing deltaspec/, not the deltaspec/ dir itself.
-    Raises OpenspecNotFound if not found.
+    Raises DeltaspecNotFound if not found.
     """
     current = (start or Path.cwd()).resolve()
     while True:
@@ -19,7 +19,7 @@ def find_deltaspec_root(start: Path | None = None) -> Path:
             return current
         parent = current.parent
         if parent == current:
-            raise OpenspecNotFound(
+            raise DeltaspecNotFound(
                 "deltaspec/ directory not found. Run from a project with deltaspec/ initialized."
             )
         current = parent

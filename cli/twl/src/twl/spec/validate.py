@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 from .new import _KEBAB_RE
-from .paths import OpenspecNotFound, find_deltaspec_root, get_changes_dir
+from .paths import DeltaspecNotFound, find_deltaspec_root, get_changes_dir
 
 _DELTA_HDR_RE = re.compile(r"^## (ADDED|MODIFIED|REMOVED|RENAMED) Requirements", re.MULTILINE)
 _REQ_RE = re.compile(r"^### Requirement:", re.MULTILINE)
@@ -75,7 +75,7 @@ def cmd_validate(
 
     try:
         root = find_deltaspec_root()
-    except OpenspecNotFound as e:
+    except DeltaspecNotFound as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 

@@ -6,7 +6,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from .paths import OpenspecNotFound, find_deltaspec_root, get_changes_dir
+from .paths import DeltaspecNotFound, find_deltaspec_root, get_changes_dir
 
 _TASK_RE = re.compile(r"^- \[[ x]\]")
 _TASK_DONE_RE = re.compile(r"^- \[x\]")
@@ -44,7 +44,7 @@ def _rel_time(mtime: float) -> str:
 def cmd_list(json_mode: bool = False, sort_order: str = "recent") -> int:
     try:
         root = find_deltaspec_root()
-    except OpenspecNotFound as e:
+    except DeltaspecNotFound as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
