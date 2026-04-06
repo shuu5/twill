@@ -23,6 +23,8 @@ from twl.autopilot.worktree import (
     WorktreeError,
     WorktreeArgError,
     generate_branch_name,
+    generate_bash_completion,
+    generate_zsh_completion,
     validate_branch_name,
     _slugify,
     _label_to_prefix,
@@ -592,3 +594,126 @@ class TestWorktreeManagerList:
 
         out = capsys.readouterr().out.strip()
         assert out == str(wt1)
+
+
+# ---------------------------------------------------------------------------
+# generate_bash_completion / generate_zsh_completion
+# ---------------------------------------------------------------------------
+
+
+class TestGenerateBashCompletion:
+    def test_returns_string(self) -> None:
+        script = generate_bash_completion()
+        assert isinstance(script, str)
+
+    def test_contains_complete_command(self) -> None:
+        script = generate_bash_completion()
+        assert "complete -F _twl_worktree_complete" in script
+
+    def test_default_cmd_name(self) -> None:
+        script = generate_bash_completion()
+        assert "twl-worktree" in script
+
+    def test_custom_cmd_name(self) -> None:
+        script = generate_bash_completion("wt")
+        assert "complete -F _twl_worktree_complete wt" in script
+
+    def test_contains_subcommands(self) -> None:
+        script = generate_bash_completion()
+        for sub in ("create", "list", "cd", "start", "completions"):
+            assert sub in script
+
+    def test_cd_start_fetch_worktree_branches(self) -> None:
+        script = generate_bash_completion()
+        assert "git worktree list --porcelain" in script
+        assert "cd|start" in script
+
+    def test_valid_bash_syntax_chars(self) -> None:
+        script = generate_bash_completion()
+        assert script.count("{") == script.count("}")
+
+
+class TestGenerateZshCompletion:
+    def test_returns_string(self) -> None:
+        script = generate_zsh_completion()
+        assert isinstance(script, str)
+
+    def test_contains_compdef(self) -> None:
+        script = generate_zsh_completion()
+        assert "compdef _twl_worktree_zsh_complete" in script
+
+    def test_default_cmd_name(self) -> None:
+        script = generate_zsh_completion()
+        assert "twl-worktree" in script
+
+    def test_custom_cmd_name(self) -> None:
+        script = generate_zsh_completion("wt")
+        assert "compdef _twl_worktree_zsh_complete wt" in script
+
+    def test_contains_subcommands(self) -> None:
+        script = generate_zsh_completion()
+        for sub in ("create", "list", "cd", "start", "completions"):
+            assert sub in script
+
+    def test_cd_start_fetch_worktree_branches(self) -> None:
+        script = generate_zsh_completion()
+        assert "git worktree list --porcelain" in script
+        assert "cd|start" in script
+
+    def test_branches_line_paren_balance(self) -> None:
+        script = generate_zsh_completion()
+        branches_line = next(
+            line for line in script.splitlines() if "branches=(" in line
+        )
+        assert branches_line.count("(") == branches_line.count(")")
+
+
+# ---------------------------------------------------------------------------
+# CLI completions subcommand
+# ---------------------------------------------------------------------------
+
+
+class TestMainCompletions:
+    def test_bash_returns_0(self, capsys: pytest.CaptureFixture[str]) -> None:
+        rc = main(["completions", "--shell", "bash"])
+        assert rc == 0
+
+    def test_zsh_returns_0(self, capsys: pytest.CaptureFixture[str]) -> None:
+        rc = main(["completions", "--shell", "zsh"])
+        assert rc == 0
+
+    def test_bash_outputs_script(self, capsys: pytest.CaptureFixture[str]) -> None:
+        main(["completions", "--shell", "bash"])
+        out = capsys.readouterr().out
+        assert "complete -F _twl_worktree_complete" in out
+
+    def test_zsh_outputs_script(self, capsys: pytest.CaptureFixture[str]) -> None:
+        main(["completions", "--shell", "zsh"])
+        out = capsys.readouterr().out
+        assert "compdef _twl_worktree_zsh_complete" in out
+
+    def test_custom_cmd_name_bash(self, capsys: pytest.CaptureFixture[str]) -> None:
+        main(["completions", "--shell", "bash", "--cmd", "myalias"])
+        out = capsys.readouterr().out
+        assert "myalias" in out
+
+    def test_custom_cmd_name_zsh(self, capsys: pytest.CaptureFixture[str]) -> None:
+        main(["completions", "--shell", "zsh", "--cmd", "myalias"])
+        out = capsys.readouterr().out
+        assert "myalias" in out
+
+    def test_missing_shell_returns_2(self) -> None:
+        rc = main(["completions"])
+        assert rc == 2
+
+    def test_unknown_shell_returns_2(self) -> None:
+        rc = main(["completions", "--shell", "fish"])
+        assert rc == 2
+
+    def test_invalid_cmd_name_returns_2(self) -> None:
+        rc = main(["completions", "--shell", "bash", "--cmd", "foo;rm -rf ~"])
+        assert rc == 2
+
+    def test_cmd_name_with_braces_returns_2(self) -> None:
+        rc = main(["completions", "--shell", "bash", "--cmd", "foo{bar}"])
+        assert rc == 2

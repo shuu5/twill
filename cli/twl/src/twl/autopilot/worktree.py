@@ -422,6 +422,70 @@ class WorktreeManager:
 
 
 # ---------------------------------------------------------------------------
+# Completion script generation
+# ---------------------------------------------------------------------------
+
+_BASH_COMPLETION_TEMPLATE = """\
+_twl_worktree_complete() {{
+    local cur prev subcmds
+    cur="${{COMP_WORDS[COMP_CWORD]}}"
+    prev="${{COMP_WORDS[COMP_CWORD-1]}}"
+    subcmds="create list cd start completions"
+
+    if [[ $COMP_CWORD -eq 1 ]]; then
+        COMPREPLY=($(compgen -W "${{subcmds}}" -- "${{cur}}"))
+        return
+    fi
+
+    case "${{prev}}" in
+        cd|start)
+            local branches
+            branches=$(git worktree list --porcelain 2>/dev/null | awk '/^branch /{{sub(/^refs\\/heads\\//, "", $2); print $2}}')
+            COMPREPLY=($(compgen -W "${{branches}}" -- "${{cur}}"))
+            ;;
+        *)
+            COMPREPLY=()
+            ;;
+    esac
+}}
+
+complete -F _twl_worktree_complete {cmd_name}
+"""
+
+_ZSH_COMPLETION_TEMPLATE = """\
+_twl_worktree_zsh_complete() {{
+    local -a subcmds
+    subcmds=(create list cd start completions)
+
+    if (( CURRENT == 2 )); then
+        _describe 'subcommand' subcmds
+        return
+    fi
+
+    case "${{words[2]}}" in
+        cd|start)
+            local -a branches
+            branches=(${{(f)"$(git worktree list --porcelain 2>/dev/null | awk '/^branch /{{sub(/refs\\/heads\\//, "", $2); print $2}}')"}})
+            _describe 'branch' branches
+            ;;
+    esac
+}}
+
+compdef _twl_worktree_zsh_complete {cmd_name}
+"""
+
+
+def generate_bash_completion(cmd_name: str = "twl-worktree") -> str:
+    """Return a bash completion script for the given command name."""
+    return _BASH_COMPLETION_TEMPLATE.format(cmd_name=cmd_name)
+
+
+def generate_zsh_completion(cmd_name: str = "twl-worktree") -> str:
+    """Return a zsh completion script for the given command name."""
+    return _ZSH_COMPLETION_TEMPLATE.format(cmd_name=cmd_name)
+
+
+# ---------------------------------------------------------------------------
 # CLI entrypoint
 # ---------------------------------------------------------------------------
 
@@ -437,6 +501,8 @@ Commands:
         twlcd() { cd "$(python3 -m twl.autopilot.worktree cd "$1")"; }
   start <branch-name> [--repo-path <path>]
       Change to the worktree directory and exec 'claude -c'.
+  completions --shell bash|zsh [--cmd <name>]
+      Print a shell completion script (eval to activate).
 """
 
 
@@ -449,6 +515,33 @@ def main(argv: list[str] | None = None) -> int:
 
     command = args[0]
     rest = args[1:]
+
+    if command == "completions":
+        shell: str | None = None
+        cmd_name = "twl-worktree"
+        i = 0
+        while i < len(rest):
+            if rest[i] == "--shell" and i + 1 < len(rest):
+                shell = rest[i + 1]
+                i += 2
+            elif rest[i] == "--cmd" and i + 1 < len(rest):
+                cmd_name = rest[i + 1]
+                i += 2
+            else:
+                i += 1
+        _CMD_NAME_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
+        if not _CMD_NAME_RE.match(cmd_name):
+            print("エラー: --cmd には英数字・ハイフン・アンダースコアのみ使用できます", file=sys.stderr)
+            return 2
+        if shell == "bash":
+            print(generate_bash_completion(cmd_name), end="")
+            return 0
+        elif shell == "zsh":
+            print(generate_zsh_completion(cmd_name), end="")
+            return 0
+        else:
+            print("エラー: --shell bash または --shell zsh を指定してください", file=sys.stderr)
+            return 2
 
     if command not in ("create", "list", "cd", "start"):
         print(f"Unknown command: {command}", file=sys.stderr)
