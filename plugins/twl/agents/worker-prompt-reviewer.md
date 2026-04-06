@@ -107,7 +107,7 @@ ref-specialist-output-schema に従い、以下の JSON 構造で出力するこ
 
 ```json
 {
-  "status": "PASS | NEEDS_WORK",
+  "status": "PASS | WARN | FAIL",
   "findings": [
     {
       "severity": "CRITICAL | WARNING | INFO",
@@ -124,7 +124,7 @@ ref-specialist-output-schema に従い、以下の JSON 構造で出力するこ
 }
 ```
 
-- **status**: PASS（CRITICAL/WARNING なし）、NEEDS_WORK（WARNING 以上1件以上）
+- **status**: PASS（CRITICAL/WARNING なし）、WARN（WARNING あり CRITICAL なし）、FAIL（CRITICAL 1件以上）
 - **severity**: CRITICAL / WARNING / INFO の3段階のみ使用
 - **confidence**: 確信度（80以上でブロック判定対象）
 - findings が0件の場合は `"status": "PASS", "findings": []`
