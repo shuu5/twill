@@ -27,6 +27,9 @@ SUBAGENT_TYPE=$(printf '%s' "$INPUT" | jq -r '.tool_input.subagent_type // empty
 # Strip twl:twl: prefix for comparison
 SPECIALIST_NAME="${SUBAGENT_TYPE#twl:twl:}"
 
+# Validate: allow only safe characters (prevent content injection via newlines/control chars)
+[[ "$SPECIALIST_NAME" =~ ^[a-zA-Z0-9:_-]+$ ]] || exit 0
+
 # Find all active manifest files
 shopt -s nullglob
 MANIFEST_FILES=(/tmp/.specialist-manifest-*.txt)
@@ -43,6 +46,9 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
   CONTEXT="${CONTEXT%.txt}"
 
   SPAWNED_FILE="/tmp/.specialist-spawned-${CONTEXT}.txt"
+
+  # Refuse to write to symlinks (prevent symlink attack on /tmp files)
+  [[ -L "$SPAWNED_FILE" ]] && continue
 
   # Read manifest (strip blank lines, comments, and twl:twl: prefix)
   mapfile -t MANIFEST_LIST < <(grep -v '^#' "$MANIFEST_FILE" | grep -v '^[[:space:]]*$' | sed 's|^twl:twl:||')
