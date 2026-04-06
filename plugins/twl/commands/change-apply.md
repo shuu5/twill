@@ -13,13 +13,13 @@ OpenSpec change の tasks.md に沿ってタスクを実装する。完了後に
 If a name is provided, use it. Otherwise:
 - Infer from conversation context if the user mentioned a change
 - Auto-select if only one active change exists
-- If ambiguous, run `deltaspec list` to get available changes and use the **AskUserQuestion tool** to let the user select
+- If ambiguous, run `twl spec list` to get available changes and use the **AskUserQuestion tool** to let the user select
 
 Always announce: "Using change: <name>".
 
 ### Step 2: ステータス確認
 ```bash
-deltaspec status --change "<name>" --json
+twl spec status --change "<name>" --json
 ```
 Parse the JSON to understand:
 - `schemaName`: The workflow being used (e.g., "spec-driven")
@@ -28,7 +28,7 @@ Parse the JSON to understand:
 ### Step 3: apply 指示取得
 
 ```bash
-deltaspec instructions apply --change "<name>" --json
+twl spec instructions apply --change "<name>" --json
 ```
 
 This returns:

@@ -32,7 +32,7 @@ ls $WORKTREE_BASE/openspec/changes/*/proposal.md 2>/dev/null
 
 ### 2. Verify状態（OpenSpec使用時）
 
-前回の `deltaspec validate` 結果を表示:
+前回の `twl spec validate` 結果を表示:
 
 - **PASS**: 全検証次元がOK
 - **WARN**: WARNING項目あり（続行可）
@@ -143,7 +143,7 @@ git status --porcelain
 |------|---------|------|
 | OpenSpec | proposal未作成 | `/twl:change-propose`を実行 |
 | OpenSpec | proposal未承認 | 「承認してください」と待機 |
-| Verify | CRITICAL検出 | 具体的な修正項目を表示、修正後に再度 `deltaspec validate` |
+| Verify | CRITICAL検出 | 具体的な修正項目を表示、修正後に再度 `twl spec validate` |
 | テスト | テストファイルなし | テスト作成を提案 |
 | CI/CD | ワークフローなし | 作成を提案（WARNなので続行可） |
 | ガバナンス | 未適用 | `/twl:co-project` を提案 |
@@ -166,7 +166,7 @@ git status --porcelain
 - `/twl:workflow-setup` - 統合開発ワークフロー（推奨入口）
 - `/twl:workflow-setup` + `/twl:workflow-test-ready` - 開発準備
 - `/twl:workflow-pr-verify` - PRサイクル実行
-- `deltaspec validate <change-id> --json` - 整合性検証（手動実行時）
+- `twl spec validate <change-id> --json` - 整合性検証（手動実行時）
 
 ---
 

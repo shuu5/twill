@@ -22,13 +22,13 @@ From their description, derive a kebab-case name (e.g., "add user authentication
 
 ### Step 2: change ディレクトリ作成
 ```bash
-deltaspec new change "<name>"
+twl spec new change "<name>"
 ```
 This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml`.
 
 ### Step 3: artifact ビルド順序取得
 ```bash
-deltaspec status --change "<name>" --json
+twl spec status --change "<name>" --json
 ```
 Parse the JSON to get:
 - `applyRequires`: array of artifact IDs needed before implementation (e.g., `["tasks"]`)
@@ -41,7 +41,7 @@ Loop through artifacts in dependency order (artifacts with no pending dependenci
 a. **For each artifact that is `ready` (dependencies satisfied)**:
    - Get instructions:
      ```bash
-     deltaspec instructions <artifact-id> --change "<name>" --json
+     twl spec instructions <artifact-id> --change "<name>" --json
      ```
    - The instructions JSON includes:
      - `context`: Project background (constraints for you - do NOT include in output)
@@ -56,7 +56,7 @@ a. **For each artifact that is `ready` (dependencies satisfied)**:
    - Show brief progress: "Created <artifact-id>"
 
 b. **Continue until all `applyRequires` artifacts are complete**
-   - After creating each artifact, re-run `deltaspec status --change "<name>" --json`
+   - After creating each artifact, re-run `twl spec status --change "<name>" --json`
    - Check if every artifact ID in `applyRequires` has `status: "done"` in the artifacts array
    - Stop when all `applyRequires` artifacts are done
 
@@ -90,7 +90,7 @@ c. **If an artifact requires user input** (unclear context):
 
 ### Step 6: 最終ステータス表示
 ```bash
-deltaspec status --change "<name>"
+twl spec status --change "<name>"
 ```
 
 チェックポイント出力:
@@ -108,7 +108,7 @@ After completing all artifacts, summarize:
 
 ## Artifact Creation Guidelines
 
-- Follow the `instruction` field from `deltaspec instructions` for each artifact type
+- Follow the `instruction` field from `twl spec instructions` for each artifact type
 - The schema defines what each artifact should contain - follow it
 - Read dependency artifacts for context before creating new ones
 - Use `template` as the structure for your output file - fill in its sections
