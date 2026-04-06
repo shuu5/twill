@@ -355,7 +355,7 @@ skills:
         step: "5"
       - composite: plugin-phase-verify
         step: "6"
-    description: "既存プラグイン診断・修正ワークフロー（migrate-analyze → diagnose → fix → verify）"
+    description: "既存プラグイン診断・修正ワークフロー（migrate-analyze → diagnose → phase-diagnose → fix → verify → phase-verify）"
 
 
 # リファレンス（B-6 で追加）
