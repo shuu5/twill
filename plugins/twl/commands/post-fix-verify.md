@@ -1,7 +1,7 @@
-# fix 後の軽量コードレビュー
+# fix 後の specialist 並列レビュー（chain-driven）
 
-fix-phase で修正されたコードの差分に対して軽量レビューを実行する。
-fix が新たな問題を導入していないことを確認する。
+fix-phase で修正されたコードの差分に対して specialist 並列レビューを実行する。
+fix が新たな問題を導入していないことを専門 specialist により検証する。
 
 ## 入力
 
@@ -9,7 +9,7 @@ fix が新たな問題を導入していないことを確認する。
 
 ## 出力
 
-- 検証結果（PASS / WARN + findings）
+- 検証結果（PASS / WARN / FAIL + findings）
 
 ## 実行ロジック（MUST）
 
@@ -20,17 +20,39 @@ git diff HEAD~1 --name-only  # fix で変更されたファイル
 git diff HEAD~1              # 差分内容
 ```
 
-### Step 2: 軽量レビュー
+### Step 2: マニフェスト取得
 
-fix 差分に対して以下を検証:
+```bash
+SPECIALISTS=$(git diff HEAD~1 --name-only | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode post-fix-verify)
+CONTEXT_ID="post-fix-verify-$(git branch --show-current | tr '/' '-')"
+echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
+```
 
-| チェック | 内容 |
-|---------|------|
-| 構文チェック | 変更ファイルの構文エラーがないこと |
-| スコープ逸脱 | fix が元の finding のスコープを超えていないこと |
-| 新規問題 | fix が新たな CRITICAL finding を導入していないこと |
+### Step 3: specialist 並列 spawn
 
-### Step 3: 結果判定
+マニフェスト出力の全件を並列 Task spawn する。
+手動でリストを構築してはならない（MUST NOT）。
+マニフェストに含まれない specialist を追加してはならない（MUST NOT）。
+
+マニフェスト出力が空（0行）の場合、specialist spawn をスキップし自動 PASS とする。
+
+```
+各 specialist について:
+  Task(subagent_type="twl:<specialist-name>", prompt="fix 差分を入力として渡す")
+```
+
+### Step 4: 結果集約
+
+全 specialist の出力を Python パーサーでパースし、findings を統合する。
+
+```bash
+PARSED=$(echo "$SPECIALIST_OUTPUT" | python3 -m twl.autopilot.parser)
+rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt /tmp/.specialist-spawned-${CONTEXT_ID}.txt
+```
+
+AI による自由形式の変換は禁止。パーサーの構造化データのみを使用する。
+
+### Step 5: 結果判定
 
 ```
 IF 新規 CRITICAL finding なし → PASS
@@ -41,4 +63,3 @@ IF 新規 CRITICAL finding あり → FAIL（再 fix 必要）
 ## チェックポイント（MUST）
 
 `/twl:warning-fix` を Skill tool で自動実行。
-

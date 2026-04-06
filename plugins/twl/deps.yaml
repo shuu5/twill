@@ -660,17 +660,22 @@ commands:
     description: "テスト実行"
 
   post-fix-verify:
-    type: atomic
+    type: composite
     refined_by: "ref-prompt-guide@2c7a62f2"
     refined_at: "2026-04-07"
     path: commands/post-fix-verify.md
     spawnable_by: [workflow]
-    can_spawn: []
+    can_spawn: [specialist]
     chain: "pr-fix"
     step_in:
       parent: workflow-pr-fix
       step: "4.5"
-    description: "fix 後の軽量コードレビュー"
+    calls:
+      - specialist: worker-code-reviewer
+      - specialist: worker-security-reviewer
+      - specialist: worker-codex-reviewer
+      - script: pr-review-manifest
+    description: "fix 後の specialist 並列レビュー"
 
   warning-fix:
     type: atomic
