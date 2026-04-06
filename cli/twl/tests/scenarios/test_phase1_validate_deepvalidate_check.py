@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for Phase 1: validate/deep-validate/check JSON output.
 
-Spec: openspec/changes/validate-audit-complexity-json-format/specs/phase1-validate-deepvalidate-check.md
+Spec: deltaspec/changes/validate-audit-complexity-json-format/specs/phase1-validate-deepvalidate-check.md
 
 Covers:
 - validate JSON output (violations, clean state, chain_validate integration)

@@ -12,9 +12,9 @@ from twl.spec.status import cmd_status
 
 
 def make_change(tmp_path: Path, name: str, **artifacts) -> Path:
-    change_dir = tmp_path / "openspec" / "changes" / name
+    change_dir = tmp_path / "deltaspec" / "changes" / name
     change_dir.mkdir(parents=True)
-    (change_dir / ".openspec.yaml").write_text("schema: spec-driven\ncreated: 2024-01-01\n")
+    (change_dir / ".deltaspec.yaml").write_text("schema: spec-driven\ncreated: 2024-01-01\n")
     if artifacts.get("proposal"):
         (change_dir / "proposal.md").write_text("# Proposal\n")
     if artifacts.get("design"):
@@ -65,7 +65,7 @@ def test_status_json_output(tmp_path, monkeypatch, capsys):
 
 def test_status_missing_change(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "openspec" / "changes").mkdir(parents=True)
+    (tmp_path / "deltaspec" / "changes").mkdir(parents=True)
     rc = cmd_status("nonexistent")
     assert rc == 1
 

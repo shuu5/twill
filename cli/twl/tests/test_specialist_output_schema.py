@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for specialist output schema keyword validation in deep-validate and audit.
 
-Spec: openspec/changes/specialist-deep-validate/specs/deep-validate-output-schema.md
+Spec: deltaspec/changes/specialist-deep-validate/specs/deep-validate-output-schema.md
 
 Coverage: edge-cases
 - 9 spec scenarios (ADDED + MODIFIED requirements)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for deep_validate() section E path traversal guard.
 
-Spec: openspec/changes/deep-validate-section-e-iswith/specs/section-e-path-traversal-guard.md
+Spec: deltaspec/changes/deep-validate-section-e-iswith/specs/section-e-path-traversal-guard.md
 
 Coverage: edge-cases
 - Scenario 1: 正常な path はスキーマ検証される

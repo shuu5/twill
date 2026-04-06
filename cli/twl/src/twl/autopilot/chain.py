@@ -197,24 +197,24 @@ class ChainRunner:
             return result
 
         root = self._project_root()
-        openspec_dir = root / "openspec"
+        deltaspec_dir = root / "deltaspec"
 
-        if not openspec_dir.is_dir():
+        if not deltaspec_dir.is_dir():
             result = {
                 "recommended_action": "direct",
                 "branch": branch,
-                "openspec": False,
+                "deltaspec": False,
                 "is_quick": is_quick == "true",
             }
-            self._ok("init", f"recommended_action=direct (no openspec, is_quick={is_quick})")
+            self._ok("init", f"recommended_action=direct (no deltaspec, is_quick={is_quick})")
             return result
 
-        changes_dir = openspec_dir / "changes"
+        changes_dir = deltaspec_dir / "changes"
         if not changes_dir.is_dir() or not any(changes_dir.iterdir()):
             result = {
                 "recommended_action": "propose",
                 "branch": branch,
-                "openspec": True,
+                "deltaspec": True,
                 "change_exists": False,
                 "is_quick": is_quick == "true",
             }
@@ -230,7 +230,7 @@ class ChainRunner:
             result = {
                 "recommended_action": "propose",
                 "branch": branch,
-                "openspec": True,
+                "deltaspec": True,
                 "change_exists": True,
                 "is_quick": is_quick == "true",
             }
@@ -241,12 +241,12 @@ class ChainRunner:
         proposal = latest / "proposal.md"
 
         if proposal.is_file():
-            yaml_file = latest / ".openspec.yaml"
+            yaml_file = latest / ".deltaspec.yaml"
             if yaml_file.is_file() and "status: approved" in yaml_file.read_text():
                 result = {
                     "recommended_action": "apply",
                     "branch": branch,
-                    "openspec": True,
+                    "deltaspec": True,
                     "change_id": latest.name,
                     "proposal_status": "approved",
                     "is_quick": is_quick == "true",
@@ -256,7 +256,7 @@ class ChainRunner:
                 result = {
                     "recommended_action": "propose",
                     "branch": branch,
-                    "openspec": True,
+                    "deltaspec": True,
                     "change_id": latest.name,
                     "proposal_status": "pending",
                     "is_quick": is_quick == "true",
@@ -266,7 +266,7 @@ class ChainRunner:
             result = {
                 "recommended_action": "propose",
                 "branch": branch,
-                "openspec": True,
+                "deltaspec": True,
                 "change_exists": True,
                 "is_quick": is_quick == "true",
             }
@@ -347,17 +347,17 @@ class ChainRunner:
         root = self._project_root()
         has_fail = False
 
-        # OpenSpec
-        openspec_dir = root / "openspec"
-        if openspec_dir.is_dir():
-            proposals = list((openspec_dir / "changes").glob("*/proposal.md")) if (openspec_dir / "changes").is_dir() else []
+        # DeltaSpec
+        deltaspec_dir = root / "deltaspec"
+        if deltaspec_dir.is_dir():
+            proposals = list((deltaspec_dir / "changes").glob("*/proposal.md")) if (deltaspec_dir / "changes").is_dir() else []
             if proposals:
-                print("OpenSpec: PASS")
+                print("DeltaSpec: PASS")
             else:
-                print("OpenSpec: FAIL (proposal.md なし)")
+                print("DeltaSpec: FAIL (proposal.md なし)")
                 has_fail = True
         else:
-            print("OpenSpec: N/A")
+            print("DeltaSpec: N/A")
 
         # Tests
         tests_dir = root / "tests"
@@ -400,14 +400,14 @@ class ChainRunner:
     # ------------------------------------------------------------------
 
     def step_change_id_resolve(self) -> str:
-        """Resolve the latest OpenSpec change ID."""
+        """Resolve the latest DeltaSpec change ID."""
         self.record_step("", "change-id-resolve")
         root = self._project_root()
-        changes_dir = root / "openspec" / "changes"
+        changes_dir = root / "deltaspec" / "changes"
 
         if not changes_dir.is_dir():
-            self._err("change-id-resolve", "openspec/changes/ が存在しない")
-            raise ChainError("openspec/changes/ が存在しない")
+            self._err("change-id-resolve", "deltaspec/changes/ が存在しない")
+            raise ChainError("deltaspec/changes/ が存在しない")
 
         dirs = sorted(
             [d for d in changes_dir.iterdir() if d.is_dir()],

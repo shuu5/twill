@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for glossary.md completeness requirements.
 
-Spec: openspec/changes/arch-spec-refine/specs/glossary-completeness.md
+Spec: deltaspec/changes/arch-spec-refine/specs/glossary-completeness.md
 
 Verifies that architecture/domain/glossary.md contains all required terms
 from deps.yaml fields, types.yaml types, and validation commands.

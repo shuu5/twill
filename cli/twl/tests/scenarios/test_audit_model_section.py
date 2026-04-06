@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for audit_report Section 7: Model Declaration.
 
-Spec: openspec/changes/model-specialist-validate/specs/audit-model-section.md
+Spec: deltaspec/changes/model-specialist-validate/specs/audit-model-section.md
 
 Covers:
 - model declared specialist shows OK row

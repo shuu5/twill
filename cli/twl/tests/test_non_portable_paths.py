@@ -7,7 +7,7 @@ Coverage:
 - $SCRIPTS_ROOT パターン検出
 - ${CLAUDE_PLUGIN_ROOT}/scripts/ パターンは false positive なし
 - skills/*/SKILL.md と commands/*.md を走査
-- openspec/, tests/, docs/ は検査対象外
+- deltaspec/, tests/, docs/ は検査対象外
 """
 
 import shutil
@@ -151,13 +151,13 @@ class TestNonPortablePathsInCommands(_BaseTest):
 class TestNonPortablePathsExclusions(_BaseTest):
     """検査対象外ディレクトリの確認"""
 
-    def test_openspec_excluded(self):
-        """GIVEN openspec/ 配下のファイルに bash scripts/ が含まれる
+    def test_deltaspec_excluded(self):
+        """GIVEN deltaspec/ 配下のファイルに bash scripts/ が含まれる
         THEN deep-validate は [non-portable-path] を報告しない"""
         _minimal_deps(self.plugin_dir)
-        openspec_dir = self.plugin_dir / "openspec" / "changes" / "test-change" / "specs"
-        openspec_dir.mkdir(parents=True)
-        (openspec_dir / "spec.md").write_text(
+        deltaspec_dir = self.plugin_dir / "deltaspec" / "changes" / "test-change" / "specs"
+        deltaspec_dir.mkdir(parents=True)
+        (deltaspec_dir / "spec.md").write_text(
             "```bash\nbash scripts/run.sh\n```\n", encoding="utf-8"
         )
         result = run_engine(self.plugin_dir, "--deep-validate")

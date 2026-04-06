@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for chain generate --write functionality (file writing, section detection).
 
-Spec: openspec/changes/chain-generate/specs/chain-generate-write.md
+Spec: deltaspec/changes/chain-generate/specs/chain-generate-write.md
 
 These tests are TDD-style: they define expected behavior BEFORE implementation.
 """

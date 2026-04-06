@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for Issue close → Project Board Status Done workflow YAML structure.
 
-Spec: openspec/changes/project-board-add-to-project-closedone/specs/project-status-done.md
+Spec: deltaspec/changes/project-board-add-to-project-closedone/specs/project-status-done.md
 
 Requirements:
 - Issue クローズ時に Status を Done に更新

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for deps.yaml scripts SSOT: Maintenance scenarios.
 
-Spec: openspec/changes/depsyaml-scripts-ssot/specs/maintenance/spec.md
+Spec: deltaspec/changes/depsyaml-scripts-ssot/specs/maintenance/spec.md
 
 Covers:
 - find_orphans: detect unused scripts, skip used scripts

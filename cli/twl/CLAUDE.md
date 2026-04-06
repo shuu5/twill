@@ -35,5 +35,5 @@ cli/twl/
 ├── docs/                # フレームワークドキュメント（ref-*.md）
 ├── tests/               # pytest テスト
 │   └── scenarios/       # シナリオテスト
-└── openspec/            # 変更仕様
+└── deltaspec/           # 変更仕様
 ```

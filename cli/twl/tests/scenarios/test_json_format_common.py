@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for JSON format common requirements.
 
-Spec: openspec/changes/validate-audit-complexity-json-format/specs/json-format-common.md
+Spec: deltaspec/changes/validate-audit-complexity-json-format/specs/json-format-common.md
 
 Covers:
 - --format json argument acceptance
