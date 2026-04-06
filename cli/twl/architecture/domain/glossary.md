@@ -66,6 +66,19 @@
 | spec-driven | 標準スキーマ。proposal → design, specs → tasks の依存グラフで成果物を管理 | Spec Management |
 | Instruction | Artifact 作成のための指示テキスト・テンプレート・依存情報の構造化出力 | Spec Management |
 
+### Autopilot 用語
+
+| 用語 | 定義 | Context |
+|------|------|---------|
+| State | `.autopilot/` 配下の JSON ファイルで管理される issue/session の状態 | Autopilot |
+| State Transition | ステートマシン遷移（running → merge-ready → done/failed）。不正な遷移は例外 | Autopilot |
+| Orchestrator | Phase 単位の並列セッション管理。ポーリングループで worker を監視 | Autopilot |
+| MergeGate | PR マージの実行・拒否判定。issue 状態と PR レビュー結果から評価 | Autopilot |
+| Checkpoint | specialist の findings を step 単位で PASS/WARN/FAIL として永続化 | Autopilot |
+| Plan | Issue 依存グラフから生成する実装計画（plan.yaml）。Phase 分割と並列グルーピング | Autopilot |
+| Launcher | tmux window の作成と Claude Code セッション起動の制御 | Autopilot |
+| Worktree | git worktree の作成・削除・一覧取得 | Autopilot |
+
 ### その他の用語
 
 | 用語 | 定義 | Context |

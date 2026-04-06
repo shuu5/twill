@@ -15,7 +15,7 @@ Type System
 
 ## Constraints
 
-- types.yaml が唯一の型定義ソース。twl-engine.py 内のハードコードは types.yaml から起動時にロード
+- types.yaml が唯一の型定義ソース。`src/twl/core/types.py` が起動時にロード
 - can_spawn には型名のみ指定可能（コンポーネント名は不可）
 - spawnable_by には型名 + 特殊値（user, launcher, all, agents.skills）を指定可能
 

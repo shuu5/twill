@@ -117,6 +117,7 @@ flowchart TD
     VZ[Visualization]
     R[Refactoring]
     SM[Spec Management]
+    AP[Autopilot]
 
     TS -->|upstream| PS
     TS -->|upstream| CM
@@ -131,4 +132,6 @@ flowchart TD
 
 **凡例**: 矢印は upstream → downstream の関係。upstream Context のエンティティを downstream Context が参照する。
 
-**Spec Management** は現時点では独立した Context（他との依存なし）。openspec/ ディレクトリを操作対象とし、Plugin Structure とはデータを共有しない。
+**Spec Management** は独立した Context（他との依存なし）。openspec/ ディレクトリを操作対象とし、Plugin Structure とはデータを共有しない。
+
+**Autopilot** は独立した Context。`.autopilot/` ディレクトリの状態管理・オーケストレーション・merge-gate を担当し、他の twl Context とはデータを共有しない。`plugins/twl/` の autopilot 系スキルが CLI 経由で呼び出す。
