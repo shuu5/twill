@@ -1300,22 +1300,22 @@ commands:
 scripts:
   state-read:
     type: script
-    path: src/twl/autopilot/state.py
+    path: ../../cli/twl/src/twl/autopilot/state.py
     description: "issue-{N}.json / session.json の読み取り（Python: python3 -m twl.autopilot.state read）"
 
   state-write:
     type: script
-    path: src/twl/autopilot/state.py
+    path: ../../cli/twl/src/twl/autopilot/state.py
     description: "issue-{N}.json / session.json の書き込み（遷移バリデーション付き）（Python: python3 -m twl.autopilot.state write）"
 
   autopilot-init:
     type: script
-    path: src/twl/autopilot/init.py
+    path: ../../cli/twl/src/twl/autopilot/init.py
     description: ".autopilot/ ディレクトリ初期化とセッション排他制御（Python: python3 -m twl.autopilot.init）"
 
   autopilot-launch:
     type: script
-    path: src/twl/autopilot/launcher.py
+    path: ../../cli/twl/src/twl/autopilot/launcher.py
     calls:
       - script: state-write
       - script: crash-detect
@@ -1323,17 +1323,17 @@ scripts:
 
   session-create:
     type: script
-    path: src/twl/autopilot/session.py
+    path: ../../cli/twl/src/twl/autopilot/session.py
     description: "session.json の新規作成（Python: python3 -m twl.autopilot.session create）"
 
   session-archive:
     type: script
-    path: src/twl/autopilot/session.py
+    path: ../../cli/twl/src/twl/autopilot/session.py
     description: "セッション完了時のアーカイブ（Python: python3 -m twl.autopilot.session archive）"
 
   session-add-warning:
     type: script
-    path: src/twl/autopilot/session.py
+    path: ../../cli/twl/src/twl/autopilot/session.py
     description: "cross-issue 警告の session.json 追記（Python: python3 -m twl.autopilot.session add-warning）"
 
   worktree-delete:
@@ -1376,13 +1376,13 @@ scripts:
 
   autopilot-parser:
     type: script
-    path: src/twl/autopilot/parser.py
+    path: ../../cli/twl/src/twl/autopilot/parser.py
     description: "specialist 出力の共通スキーマパース（status + findings）+ 障害分類（Python: python3 -m twl.autopilot.parser）"
 
   # C-4: 旧 plugin から移植
   autopilot-plan:
     type: script
-    path: src/twl/autopilot/plan.py
+    path: ../../cli/twl/src/twl/autopilot/plan.py
     calls:
       - script: autopilot-plan-board
     description: "autopilot 実行計画 (plan.yaml) 生成（Python: python3 -m twl.autopilot.plan; explicit/issues/board モード）"
@@ -1394,7 +1394,7 @@ scripts:
 
   autopilot-orchestrator:
     type: script
-    path: src/twl/autopilot/orchestrator.py
+    path: ../../cli/twl/src/twl/autopilot/orchestrator.py
     calls:
       - script: state-read
       - script: state-write
@@ -1408,12 +1408,12 @@ scripts:
 
   autopilot-mergegate:
     type: script
-    path: src/twl/autopilot/mergegate.py
+    path: ../../cli/twl/src/twl/autopilot/mergegate.py
     description: "merge-gate マージ実行 / リジェクト（Python: python3 -m twl.autopilot.mergegate）"
 
   chain-runner:
     type: script
-    path: src/twl/autopilot/chain.py
+    path: ../../cli/twl/src/twl/autopilot/chain.py
     calls:
       - script: worktree-create
       - script: autopilot-github
@@ -1439,27 +1439,27 @@ scripts:
 
   worktree-create:
     type: script
-    path: src/twl/autopilot/worktree.py
+    path: ../../cli/twl/src/twl/autopilot/worktree.py
     description: "bare repo 向け worktree 作成（Issue番号→ブランチ名生成）（Python: python3 -m twl.autopilot.worktree create）"
 
   project-create:
     type: script
-    path: src/twl/autopilot/project.py
+    path: ../../cli/twl/src/twl/autopilot/project.py
     description: "プロジェクト新規作成（タイプ別テンプレート対応）（Python: python3 -m twl.autopilot.project create）"
 
   project-migrate:
     type: script
-    path: src/twl/autopilot/project.py
+    path: ../../cli/twl/src/twl/autopilot/project.py
     description: "既存プロジェクトの最新テンプレート移行（Python: python3 -m twl.autopilot.project migrate）"
 
   autopilot-github:
     type: script
-    path: src/twl/autopilot/github.py
+    path: ../../cli/twl/src/twl/autopilot/github.py
     description: "GitHub API ラッパー（Issue AC抽出・PR findings・Project解決・Issue作成）（Python: python3 -m twl.autopilot.github）"
 
   session-audit:
     type: script
-    path: src/twl/autopilot/session.py
+    path: ../../cli/twl/src/twl/autopilot/session.py
     description: "セッション JSONL から監査サマリー抽出（Python: python3 -m twl.autopilot.session audit）"
 
   auto-merge:
@@ -1469,7 +1469,7 @@ scripts:
 
   chain-steps:
     type: script
-    path: src/twl/autopilot/chain.py
+    path: ../../cli/twl/src/twl/autopilot/chain.py
     description: "chain ステップ順序の共有定義（SSOT）— CHAIN_STEPS / QUICK_SKIP_STEPS 定数は chain.py で管理"
 
   compaction-resume:
@@ -1491,7 +1491,7 @@ scripts:
 
   autopilot-plan-board:
     type: script
-    path: src/twl/autopilot/plan.py
+    path: scripts/autopilot-plan-board.sh
     calls:
       - script: autopilot-github
     description: "autopilot-plan の --board モード関数群（Python: plan.py の PlanGenerator.fetch_board_issues）"
@@ -1524,12 +1524,12 @@ scripts:
 
   checkpoint-write:
     type: script
-    path: src/twl/autopilot/checkpoint.py
+    path: ../../cli/twl/src/twl/autopilot/checkpoint.py
     description: "composite 完了時に specialist findings を .autopilot/checkpoints/<step>.json に書き出す"
 
   checkpoint-read:
     type: script
-    path: src/twl/autopilot/checkpoint.py
+    path: ../../cli/twl/src/twl/autopilot/checkpoint.py
     description: "checkpoint ファイルから要約フィールドまたは CRITICAL findings を読み取る"
 
 # エージェント（C-3 で追加）
