@@ -94,17 +94,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" auto-merge
 
 ## compaction 復帰プロトコル
 
-compaction 後に workflow-pr-merge chain を再開する場合、完了済みステップをスキップすること。
+`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `all-pass-check pr-cycle-report`
 
-```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
-ISSUE_NUM=$(resolve_issue_num)
-for step in all-pass-check pr-cycle-report; do
-  bash "${CLAUDE_PLUGIN_ROOT}/scripts/compaction-resume.sh" "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
-  # 通常手順で実行（chain-runner または LLM 実行）
-done
-```
-
-- `compaction-resume.sh <ISSUE_NUM> <step>` が exit 0 → 実行、exit 1 → スキップ
 - merge-gate エスカレーションは LLM ステップのため状態を確認してから再実行すること
-- all-pass-check がスキップされた場合は PR の CI 結果を直接確認すること
+- all-pass-check スキップ時は PR の CI 結果を直接確認すること

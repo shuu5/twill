@@ -14,156 +14,48 @@ spawnable_by:
 
 # テスト準備 Workflow
 
-テスト生成と準備確認を実行する。workflow-setup の後に呼び出す。
+workflow-setup の後に呼び出す。`CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"` として使用。
 
-## quick Issue ガード（MUST — 最初に評価すること）
+## chain 実行指示（MUST — 全ステップ順に実行。途中停止禁止）
 
-以下のスニペットを実行して quick 状態を確認すること:
-
+### Quick Guard
 ```bash
-eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" quick-detect)"
-# IS_QUICK が設定される
+bash "$CR" quick-guard || { echo "quick Issue — test-ready スキップ"; exit 0; }
 ```
+quick なら終了。非 quick → Step 1 へ。
 
-**【MUST NOT】** `IS_QUICK=true` の場合、このスキルの処理を続行してはならない。
-`IS_QUICK=true` のとき → 「quick Issue は workflow-test-ready をスキップします。`commands/merge-gate.md` を Read して merge-gate のみ実行してください。」と出力して即座に終了すること。
+### Step 1: change-id 解決
+`CHANGE_ID=$(bash "$CR" change-id-resolve)` → change-id を記録。
 
-## フロー制御（MUST）
+### Step 2: テスト生成（LLM 判断）
+openspec/changes/\<change-id>/specs/ に Scenario が存在 AND test-mapping.yaml 未存在 のとき:
+- a. `/twl:test-scaffold <change-id> --type=unit --coverage=edge-cases`
+- b. E2E テスト（デフォルト yes）
 
-### 1. change-id 解決
+条件不成立 or テスト対象コードなし → スキップ理由を報告。**テスト生成の独断スキップ禁止。**
 
-openspec/changes/ から最新を自動検出。
+### Step 3: check 実行
+`bash "$CR" check` → CRITICAL FAIL あれば報告して停止、なければ Step 4 へ。
 
-### 2. テスト生成（条件判定）
+### Step 4: change-apply + autopilot 遷移
 
-```
-IF openspec/ が存在
-  AND openspec/changes/<change-id>/specs/ に Scenario が存在
-  AND openspec/changes/<change-id>/test-mapping.yaml が存在しない
-THEN
-  a. Unit/Integration テスト → /twl:test-scaffold <change-id> --type=unit --coverage=edge-cases
-  b. E2E テスト → デフォルト yes で自動実行
-ELSE
-  → スキップ理由を報告
-```
-
-### 3. 準備確認
-
-`/twl:check` を Skill tool で実行。
-
-### 4. チェックポイント出力
-
-`/twl:change-apply <change-id>` を自動実行。
-
-## chain 実行指示（MUST — 全ステップを順に実行せよ。途中で停止するな）
-
-**重要**: 以下の全ステップを上から順に実行すること。各ステップ完了後、**即座に**次のステップに進むこと。プロンプトで停止してはならない。
-
-### Quick Guard: quick Issue 検出（defense in depth）【機械的 → runner】
-
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" quick-guard || { echo "quick Issue のため test-ready をスキップします"; exit 0; }
-```
-
-quick Issue の場合はここで終了。非 quick Issue はそのまま Step 1 へ。
-
-### Step 1: change-id 解決【機械的 → runner】
-```bash
-CHANGE_ID=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" change-id-resolve)
-```
-出力の change-id を記録。
-
-### Step 2: テスト生成（条件判定）【LLM 判断】
-以下の条件を判定し、該当する場合のみテスト生成を実行する。
-
-```
-IF openspec/ が存在
-  AND openspec/changes/<change-id>/specs/ に Scenario が存在
-  AND openspec/changes/<change-id>/test-mapping.yaml が存在しない
-THEN
-  a. Unit/Integration テスト → /twl:test-scaffold <change-id> --type=unit --coverage=edge-cases
-  b. E2E テスト → デフォルト yes で自動実行
-ELSE
-  → スキップ理由を報告
-```
-
-テスト対象コードが存在しない場合（Markdown のみの変更等）はスキップ理由を報告して Step 3 に進む。
-
-### Step 3: check 実行（準備確認）【機械的 → runner】
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" check
-```
-runner の出力から FAIL 有無を判定する。FAIL あれば `/twl:check` を Skill tool で実行して詳細確認。
-
-結果判定:
-- CRITICAL FAIL 項目が存在 → Step 4 をスキップし、FAIL 内容を報告して停止
-- FAIL なし → 即座に Step 4 に進む
-
-### Step 4: change-apply 実行 + autopilot 判定 + pr-cycle 遷移【LLM 判断】
-
-change-apply を開始する前に、compaction 復帰用に state を記録すること:
-
+state 記録 → change-apply → state 記録 → autopilot 判定:
 ```bash
 source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
-if [[ -n "$ISSUE_NUM" ]]; then
-  python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker \
-    --set "current_step=change-apply" 2>/dev/null || true
-fi
+[[ -n "$ISSUE_NUM" ]] && python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "current_step=change-apply" 2>/dev/null || true
 ```
-
-`/twl:change-apply <change-id>` を Skill tool で実行する。
-
-change-apply 完了後、compaction 復帰用に state を記録してから autopilot 状態を判定すること:
-
+`/twl:change-apply <change-id>` を Skill 実行。完了後:
 ```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
-ISSUE_NUM=$(resolve_issue_num)
-if [[ -n "$ISSUE_NUM" ]]; then
-  python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker \
-    --set "current_step=post-change-apply" 2>/dev/null || true
-fi
+[[ -n "$ISSUE_NUM" ]] && python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "current_step=post-change-apply" 2>/dev/null || true
+eval "$(bash "$CR" autopilot-detect)"
 ```
-
-```bash
-eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
-# IS_AUTOPILOT が設定される
-```
-
-- IS_AUTOPILOT=true → 即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill tool で実行せよ。プロンプトで停止するな。
-- IS_AUTOPILOT=false → 「workflow-test-ready 完了。次のステップ: `/twl:workflow-pr-verify --spec <change-id>` を実行してください」と案内。
-
-## 禁止事項（MUST NOT）
-
-- Unit/Integration テスト生成を独断でスキップしてはならない
+- IS_AUTOPILOT=true → 即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill 実行（停止禁止）
+- IS_AUTOPILOT=false → 「完了。次: `/twl:workflow-pr-verify --spec <change-id>`」と案内
 
 ## compaction 復帰プロトコル
 
-compaction 後に workflow-test-ready chain を再開する場合、完了済みステップをスキップすること。
+`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `change-id-resolve test-scaffold check change-apply post-change-apply`
 
-```bash
-source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
-ISSUE_NUM=$(resolve_issue_num)
-for step in change-id-resolve test-scaffold check change-apply post-change-apply; do
-  bash "${CLAUDE_PLUGIN_ROOT}/scripts/compaction-resume.sh" "$ISSUE_NUM" "$step" || { echo "⏭ $step スキップ"; continue; }
-  case "$step" in
-    change-apply)
-      # Step 4 の change-apply 手順を再実行（state 記録 → /twl:change-apply → state 記録）
-      ;;
-    post-change-apply)
-      # Step 4 後半の IS_AUTOPILOT 判定を再実行:
-      #   1. CHANGE_ID=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" change-id-resolve) で change-id を取得
-      #   2. IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行
-      #   3. IS_AUTOPILOT=true → 即座に /twl:workflow-pr-verify --spec <change-id> を Skill tool で実行
-      #   4. IS_AUTOPILOT=false → 案内メッセージを表示して停止
-      ;;
-    *)
-      # 通常手順で実行
-      ;;
-  esac
-done
-```
-
-- `compaction-resume.sh <ISSUE_NUM> <step>` が exit 0 → 実行、exit 1 → スキップ
-- LLM ステップ（test-scaffold, change-apply, post-change-apply）は SKILL.md の手順を再実行すること
-- `post-change-apply` 復帰時: IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行し、IS_AUTOPILOT=true なら即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill tool で実行すること
+- `change-apply` 復帰: Step 4 の手順を再実行（state 記録 → `/twl:change-apply` → state 記録）
+- `post-change-apply` 復帰: IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行し、`IS_AUTOPILOT=true` なら即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill tool で実行
