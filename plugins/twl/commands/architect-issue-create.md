@@ -69,6 +69,7 @@ SAFE_PROJECT=$(printf '%s' "<project-name>" | tr -d '`$"'\''')
 # WORK_DIR/parent-issue.md にテンプレートを書き出し、python3 で __PROJECT_NAME__ を置換
 PARENT_URL=$(gh issue create --title "[Architecture] ${SAFE_PROJECT}: 実装計画" --label "enhancement" --body-file "${WORK_DIR}/parent-issue.md")
 PARENT_NUM=$(echo "${PARENT_URL}" | grep -oP '\d+$')
+[[ "${PARENT_NUM}" =~ ^[0-9]+$ ]] || { echo "ERROR: 親Issue番号の取得に失敗" >&2; exit 1; }
 ```
 
 テンプレート内容: 概要 + Phase構成テーブル + Sub-Issues セクション。
@@ -85,13 +86,25 @@ PARENT_NUM=$(echo "${PARENT_URL}" | grep -oP '\d+$')
 4. Milestone 番号を `gh api repos/{owner}/{repo}/milestones` + jq で取得
 5. ctx/* ラベルを scope から動的構築（`CTX_LABEL_ARGS` 配列）
 6. `gh issue create --title --label enhancement --label arch/skeleton --body-file` で作成
-7. `ISSUE_MAP[${CANDIDATE_ID}]="${CHILD_NUM}"` に記録
+7. `[[ "${CHILD_NUM}" =~ ^[0-9]+$ ]] || continue` でバリデーション
+8. `ISSUE_MAP[${CANDIDATE_ID}]="${CHILD_NUM}"` に記録
 
 ## Step 6: GraphQL Sub-Issues 親子紐付け
 
 ```bash
 PARENT_NODE_ID=$(gh issue view "${PARENT_NUM}" --json id -q '.id')
-# 各子 Issue の node ID を取得し addSubIssue mutation で紐付け
+for CANDIDATE_ID in "${!ISSUE_MAP[@]}"; do
+  REAL_NUM="${ISSUE_MAP[${CANDIDATE_ID}]}"
+  [ -z "${REAL_NUM}" ] && continue
+  CHILD_NODE_ID=$(gh issue view "${REAL_NUM}" --json id -q '.id')
+  gh api graphql -f query='
+    mutation($parentId: ID!, $childId: ID!) {
+      addSubIssue(input: { issueId: $parentId, subIssueId: $childId }) {
+        issue { subIssuesSummary { completed total percentCompleted } }
+      }
+    }
+  ' -f parentId="${PARENT_NODE_ID}" -f childId="${CHILD_NODE_ID}"
+done
 ```
 
 ## Step 7: 完了サマリー表示

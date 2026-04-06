@@ -35,7 +35,11 @@ fi
 - **クロスリポジトリ** (`{ number: N, repo: id }`): `ISSUES_WITH_REPO` 配列に `"repo_id:number"` 形式で格納。混合フォーマットの bare int は `_default:N` として追加
 - **レガシー** (bare int): 全て `_default:N` として ISSUES_WITH_REPO に格納
 
-`resolve_issue_repo_context()` で `ISSUES_WITH_REPO` エントリから repo コンテキスト（owner/name/path）を展開。`_default` は単一リポジトリ、それ以外は `$REPOS_JSON` から jq で取得。
+`resolve_issue_repo_context(entry)` で `ISSUES_WITH_REPO` エントリから以下の変数をセット:
+- `ISSUE` (番号), `ISSUE_REPO_ID` (repo_id)
+- `_default` → 空文字セット（単一リポジトリ）
+- それ以外 → `$REPOS_JSON` から jq で `ISSUE_REPO_OWNER`, `ISSUE_REPO_NAME`, `ISSUE_REPO_PATH` を取得
+- `PILOT_AUTOPILOT_DIR="${PROJECT_DIR}/.autopilot"` を常にセット
 
 ### Step 2: 実行モード分岐
 
