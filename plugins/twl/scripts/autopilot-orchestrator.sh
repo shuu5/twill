@@ -356,6 +356,9 @@ poll_single() {
       merge-ready)
         echo "[orchestrator] Issue #${issue}: merge-ready" >&2
         return 0 ;;
+      conflict)
+        echo "[orchestrator] Issue #${issue}: コンフリクト検出 — Pilot のリベース待ち" >&2
+        return 0 ;;
       running)
         # クラッシュ検知
         local crash_exit=0
@@ -434,7 +437,7 @@ poll_phase() {
             cleaned_up[$entry]=1
           fi
           continue ;;
-        merge-ready)
+        merge-ready|conflict)
           continue ;;
         running)
           all_resolved=false
