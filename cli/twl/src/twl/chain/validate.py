@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Set, Tuple
 
 from twl.core.types import resolve_type
 from twl.core.plugin import get_deps_version
-from twl.validation.audit import _get_body_text
+from twl.validation.utils import _get_body_text
 
 
 def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], List[str]]:
