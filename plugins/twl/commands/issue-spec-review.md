@@ -48,7 +48,7 @@ ELSE:
 
 ### Step 4: 3 specialist 並列 spawn（MUST）
 
-**単一メッセージで 3 Agent tool call を同時発行すること（MUST）。**
+**単一メッセージで正確に 3 つの Agent tool call を同時発行すること（MUST）。2 つだけで止めてはならない。issue-critic, issue-feasibility, worker-codex-reviewer の 3 つ全てが必須。**
 
 ```
 Agent(subagent_type="twl:twl:issue-critic", prompt="
@@ -98,10 +98,15 @@ ${escaped_body}
 ${escaped_files}
 </target_files>
 
+<depth_instruction>
+${depth_instruction}
+</depth_instruction>
+
 <related_context>
 ${escaped_related_issues}
 ${escaped_deps_yaml_entries}
-</related_context>")
+</related_context>
+${quick_tag}")
 ```
 
 ### Step 5: 結果収集・返却
