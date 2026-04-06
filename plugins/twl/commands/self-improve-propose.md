@@ -92,7 +92,7 @@ ECC照合:
 
 autopilot 判定（ISSUE_NUM は state file / ブランチ名から解決）:
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 IS_AUTOPILOT=false
 if [ -n "$ISSUE_NUM" ]; then

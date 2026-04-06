@@ -59,7 +59,7 @@ while true; do
       break ;;
     running)
       # クラッシュ検知（crash-detect.sh が session-state.sh 統合済み）
-      bash $SCRIPTS_ROOT/crash-detect.sh --issue "$ISSUE" --window "$WINDOW_NAME"
+      bash "${CLAUDE_PLUGIN_ROOT}/scripts/crash-detect.sh" --issue "$ISSUE" --window "$WINDOW_NAME"
       CRASH_EXIT=$?
       if [ "$CRASH_EXIT" -eq 2 ]; then
         echo "Issue #${ISSUE}: ワーカークラッシュ検知"
@@ -99,7 +99,7 @@ while true; do
       running)
         ALL_RESOLVED=false
         WINDOW_NAME="ap-#${ISSUE}"
-        bash $SCRIPTS_ROOT/crash-detect.sh --issue "$ISSUE" --window "$WINDOW_NAME"
+        bash "${CLAUDE_PLUGIN_ROOT}/scripts/crash-detect.sh" --issue "$ISSUE" --window "$WINDOW_NAME"
         if [ $? -eq 2 ]; then
           echo "Issue #${ISSUE}: ワーカークラッシュ検知"
         fi

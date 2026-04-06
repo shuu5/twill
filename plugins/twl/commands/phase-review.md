@@ -26,7 +26,7 @@ PR diff のファイルリストから specialist を動的に決定する。
 #### conditional specialist（tech-stack-detect 連携）
 
 ```bash
-CONDITIONAL=$(bash scripts/tech-stack-detect.sh < <(git diff --name-only origin/main))
+CONDITIONAL=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/tech-stack-detect.sh" < <(git diff --name-only origin/main))
 ```
 
 tech-stack-detect が返した specialist をリストに追加する。

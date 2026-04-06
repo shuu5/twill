@@ -59,7 +59,7 @@ if [ -n "${ISSUE_REPO_PATH:-}" ]; then
   LAUNCH_ARGS="$LAUNCH_ARGS --repo-path $ISSUE_REPO_PATH"
 fi
 
-bash $SCRIPTS_ROOT/autopilot-launch.sh $LAUNCH_ARGS
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-launch.sh" $LAUNCH_ARGS
 ```
 
 ## 禁止事項（MUST NOT）
