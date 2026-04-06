@@ -21,10 +21,10 @@ digraph Dependencies {
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_types [label="twl:ref-types\n(2,168 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_practices [label="twl:ref-practices\n(6,485 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_deps_format [label="twl:ref-deps-format\n(1,832 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_architecture [label="twl:ref-architecture\n(2,273 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_types [label="twl:ref-types\n(2,144 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_practices [label="twl:ref-practices\n(6,471 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_deps_format [label="twl:ref-deps-format\n(1,804 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_architecture [label="twl:ref-architecture\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_label_sync [label="label-sync\n(1,185 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: Worker chain Compaction Recovery
-# Generated from: openspec/changes/worker-chain-compaction-recovery/specs/
+# Generated from: deltaspec/changes/worker-chain-compaction-recovery/specs/
 # Coverage level: edge-cases
 # Verifies: chain-runner.sh, state-write.sh, compaction-resume.sh,
 #           pre-compact-checkpoint.sh, hooks.json, SKILL.md recovery protocols

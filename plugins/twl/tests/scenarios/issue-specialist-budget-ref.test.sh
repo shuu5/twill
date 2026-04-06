@@ -2,7 +2,7 @@
 # =============================================================================
 # Document Verification Tests: issue-specialist-budget-ref
 # Generated from:
-#   openspec/changes/issue-specialist-budget-ref/specs/investigation-budget-ref/spec.md
+#   deltaspec/changes/issue-specialist-budget-ref/specs/investigation-budget-ref/spec.md
 # Coverage level: edge-cases
 # Type: unit
 #

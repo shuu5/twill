@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Scenario Tests: PostToolUse hook による chain 継続注入
-# Generated from: openspec/changes/autopilot-chain-posttooluse-hook/specs/post-skill-chain-nudge.md
+# Generated from: deltaspec/changes/autopilot-chain-posttooluse-hook/specs/post-skill-chain-nudge.md
 # change-id: autopilot-chain-posttooluse-hook
 # Coverage level: edge-cases
 #

@@ -16,7 +16,7 @@ entry_points:
 chains:
   setup:
     type: "A"
-    description: "開発準備ワークフロー（worktree作成 → OpenSpec → テスト準備）"
+    description: "開発準備ワークフロー（worktree作成 → DeltaSpec → テスト準備）"
     steps:
       - init
       - worktree-create
@@ -529,7 +529,7 @@ commands:
     step_in:
       parent: workflow-setup
       step: "3"
-    description: "OpenSpec 提案（change-propose）"
+    description: "DeltaSpec 提案（change-propose）"
 
   change-apply:
     type: atomic
@@ -539,7 +539,7 @@ commands:
     step_in:
       parent: workflow-test-ready
       step: "2"
-    description: "OpenSpec 実装（change-apply）"
+    description: "DeltaSpec 実装（change-apply）"
 
   change-archive:
     type: atomic
@@ -549,7 +549,7 @@ commands:
     step_in:
       parent: workflow-pr-merge
       step: "9"
-    description: "OpenSpec アーカイブ（change-archive）"
+    description: "DeltaSpec アーカイブ（change-archive）"
 
   ac-extract:
     type: atomic
@@ -746,7 +746,7 @@ commands:
     path: commands/project-create.md
     spawnable_by: [controller]
     can_spawn: []
-    description: "プロジェクト新規作成（bare repo + worktree + テンプレート + OpenSpec）"
+    description: "プロジェクト新規作成（bare repo + worktree + テンプレート + DeltaSpec）"
 
   project-board-configure:
     type: atomic
@@ -955,7 +955,7 @@ commands:
       - reference: ref-architecture
     description: "並列検証フェーズ（specialist x3 並列 spawn + 統合処理）"
 
-  # === C-2a: OpenSpec/汎用系（5個） ===
+  # === C-2a: DeltaSpec/汎用系（5個） ===
 
   explore: # standalone: ユーザー直接起動
     type: atomic
@@ -1721,7 +1721,7 @@ agents:
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "OpenSpec Scenarioの品質レビュー"
+    description: "DeltaSpec Scenarioの品質レビュー"
 
   # Issue レビュー系（sonnet）
   issue-critic:
@@ -1868,7 +1868,7 @@ agents:
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "OpenSpec ScenarioからBDDテスト自動生成"
+    description: "DeltaSpec ScenarioからBDDテスト自動生成"
 
   e2e-generate:
     type: specialist

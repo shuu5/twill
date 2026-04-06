@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Functional Tests: ask-user-question-auto-respond.md
-# Generated from: openspec/changes/claude-code-hooks-autopilot/specs/ask-user-question-auto-respond.md
+# Generated from: deltaspec/changes/claude-code-hooks-autopilot/specs/ask-user-question-auto-respond.md
 # Coverage level: edge-cases
 # Tests the actual behavior of scripts/hooks/pre-tool-use-ask-user-question.sh
 # =============================================================================

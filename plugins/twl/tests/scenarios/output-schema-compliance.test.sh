@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: output-schema-compliance
-# Generated from: openspec/changes/c-3-specialist-reference-migration/specs/output-schema-compliance/spec.md
+# Generated from: deltaspec/changes/c-3-specialist-reference-migration/specs/output-schema-compliance/spec.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

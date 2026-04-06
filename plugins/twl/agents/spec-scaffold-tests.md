@@ -20,7 +20,7 @@ OpenSpec提案内のScenarioを解析し、テストファイルとtest-mapping.
 
 ## 前提条件
 
-- `openspec/changes/<change-id>/specs/` が存在すること
+- `deltaspec/changes/<change-id>/specs/` が存在すること
 - specs内に`#### Scenario:`形式でScenarioが定義されていること
 
 ## 実行フロー
@@ -28,7 +28,7 @@ OpenSpec提案内のScenarioを解析し、テストファイルとtest-mapping.
 ### 1. 入力確認
 
 - change-id バリデーション: `^[a-zA-Z0-9_-]+$` のみ許可（パストラバーサル防止）
-- `openspec/changes/<change-id>/specs/` の存在確認
+- `deltaspec/changes/<change-id>/specs/` の存在確認
 - 既存 `test-mapping.yaml` がある場合は上書き確認
 
 ### 2. Scenarioパース
@@ -98,7 +98,7 @@ LLM_CRITERIA:
 
 ### 6. test-mapping.yaml生成
 
-`openspec/changes/<change-id>/test-mapping.yaml` を生成:
+`deltaspec/changes/<change-id>/test-mapping.yaml` を生成:
 
 ```yaml
 change_id: <change-id>

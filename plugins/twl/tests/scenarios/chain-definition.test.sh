@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: chain-definition.md
-# Generated from: openspec/changes/b-4-workflow-setup-chain-driven/specs/chain-definition.md
+# Generated from: deltaspec/changes/b-4-workflow-setup-chain-driven/specs/chain-definition.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

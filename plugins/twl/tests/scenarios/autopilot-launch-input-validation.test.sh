@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: autopilot-launch-input-validation
-# Generated from: openspec/changes/autopilot-launch-input-validation/specs/input-validation/spec.md
+# Generated from: deltaspec/changes/autopilot-launch-input-validation/specs/input-validation/spec.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

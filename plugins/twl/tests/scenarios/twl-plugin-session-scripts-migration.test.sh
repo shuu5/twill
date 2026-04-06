@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: scripts-migration.md
-# Generated from: openspec/changes/twl-plugin-session/specs/scripts-migration.md
+# Generated from: deltaspec/changes/twl-plugin-session/specs/scripts-migration.md
 # Coverage level: edge-cases
 # Target repo: ~/projects/local-projects/twill-plugin-session/main/
 # =============================================================================

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: resolve-project-lib
-# Generated from: openspec/changes/resolve-project-lib/specs/resolve-project/spec.md
+# Generated from: deltaspec/changes/resolve-project-lib/specs/resolve-project/spec.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

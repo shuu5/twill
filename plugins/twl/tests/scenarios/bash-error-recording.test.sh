@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Functional Tests: bash-error-recording.md
-# Generated from: openspec/changes/b-7-self-improve-review-hook/specs/bash-error-recording.md
+# Generated from: deltaspec/changes/b-7-self-improve-review-hook/specs/bash-error-recording.md
 # Coverage level: edge-cases
 # Tests the actual behavior of scripts/hooks/post-tool-use-bash-error.sh
 # =============================================================================

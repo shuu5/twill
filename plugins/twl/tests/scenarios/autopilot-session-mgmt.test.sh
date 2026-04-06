@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: autopilot session management commands
-# Generated from: openspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/session-management/spec.md
+# Generated from: deltaspec/changes/archive/2026-03-29-c-2d-autopilot-controller-autopilot/specs/session-management/spec.md
 # Coverage level: edge-cases
 # Verifies: autopilot-init, autopilot-launch, autopilot-poll COMMAND.md
 # =============================================================================

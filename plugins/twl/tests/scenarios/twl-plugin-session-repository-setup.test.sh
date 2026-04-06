@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: repository-setup.md
-# Generated from: openspec/changes/97-twl-plugin-session/specs/repository-setup.md
+# Generated from: deltaspec/changes/97-twl-plugin-session/specs/repository-setup.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

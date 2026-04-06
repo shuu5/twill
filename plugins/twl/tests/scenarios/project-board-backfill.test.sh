@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: project-board-backfill.sh
-# Generated from: openspec/changes/77-fix-project-board-status-update/specs/project-detection/spec.md
+# Generated from: deltaspec/changes/77-fix-project-board-status-update/specs/project-detection/spec.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

@@ -24,7 +24,7 @@ From their description, derive a kebab-case name (e.g., "add user authentication
 ```bash
 twl spec new change "<name>"
 ```
-This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml`.
+This creates a scaffolded change at `deltaspec/changes/<name>/` with `.deltaspec.yaml`.
 
 ### Step 3: artifact ビルド順序取得
 ```bash

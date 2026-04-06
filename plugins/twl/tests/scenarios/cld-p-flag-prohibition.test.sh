@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: cld-p-flag-prohibition
-# Generated from: openspec/changes/fix-cld-p-flag-prohibition/specs/cld-p-flag-prohibition.md
+# Generated from: deltaspec/changes/fix-cld-p-flag-prohibition/specs/cld-p-flag-prohibition.md
 # Coverage level: edge-cases
 # Type: unit (documentation-verification)
 # =============================================================================

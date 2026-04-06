@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: add-to-project workflow
-# Generated from: openspec/changes/project-board-add-to-project-closedone/specs/add-to-project.md
+# Generated from: deltaspec/changes/project-board-add-to-project-closedone/specs/add-to-project.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

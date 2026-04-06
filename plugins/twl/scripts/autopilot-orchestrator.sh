@@ -810,10 +810,10 @@ _archive_openspec_changes_for_issue() {
     return 0
   fi
 
-  local changes_dir="$root/openspec/changes"
+  local changes_dir="$root/deltaspec/changes"
   if [[ ! -d "$changes_dir" ]]; then return 0; fi
 
-  # .openspec.yaml の issue フィールドで対応 change を特定
+  # .deltaspec.yaml の issue フィールドで対応 change を特定
   local found=false
   while IFS= read -r yaml_path; do
     local change_dir change_id
@@ -825,7 +825,7 @@ _archive_openspec_changes_for_issue() {
     else
       echo "[orchestrator] Issue #${issue}: ⚠️ OpenSpec archive 失敗: ${change_id}（Phase 完了は続行）" >&2
     fi
-  done < <(grep -rl "^issue: ${issue}$" "$changes_dir" --include=".openspec.yaml" 2>/dev/null || true)
+  done < <(grep -rl "^issue: ${issue}$" "$changes_dir" --include=".deltaspec.yaml" 2>/dev/null || true)
 
   if [[ "$found" == "false" ]]; then
     echo "[orchestrator] Issue #${issue}: OpenSpec change が見つかりません（issue フィールド未設定または存在しない）" >&2

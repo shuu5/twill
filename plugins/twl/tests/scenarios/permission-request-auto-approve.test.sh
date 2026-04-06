@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Functional Tests: permission-request-auto-approve.md
-# Generated from: openspec/changes/claude-code-hooks-autopilot/specs/permission-request-auto-approve.md
+# Generated from: deltaspec/changes/claude-code-hooks-autopilot/specs/permission-request-auto-approve.md
 # Coverage level: edge-cases
 # Tests the actual behavior of scripts/hooks/permission-request-auto-approve.sh
 # =============================================================================

@@ -50,7 +50,7 @@
 <polyline fill="none" stroke="black" points="928.31,-650 928.31,-644 "/>
 <polyline fill="none" stroke="black" points="934.31,-644 928.31,-644 "/>
 <text text-anchor="middle" x="898.81" y="-635" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;types</text>
-<text text-anchor="middle" x="898.81" y="-624" font-family="Helvetica,sans-Serif" font-size="10.00">(2,168 tok)</text>
+<text text-anchor="middle" x="898.81" y="-624" font-family="Helvetica,sans-Serif" font-size="10.00">(2,144 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;skill_ref_types -->
 <g id="edge13" class="edge">
@@ -65,7 +65,7 @@
 <polyline fill="none" stroke="black" points="935.81,-592 935.81,-586 "/>
 <polyline fill="none" stroke="black" points="941.81,-586 935.81,-586 "/>
 <text text-anchor="middle" x="898.81" y="-577" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;practices</text>
-<text text-anchor="middle" x="898.81" y="-566" font-family="Helvetica,sans-Serif" font-size="10.00">(6,485 tok)</text>
+<text text-anchor="middle" x="898.81" y="-566" font-family="Helvetica,sans-Serif" font-size="10.00">(6,471 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;skill_ref_practices -->
 <g id="edge14" class="edge">
@@ -80,7 +80,7 @@
 <polyline fill="none" stroke="black" points="941.81,-534 941.81,-528 "/>
 <polyline fill="none" stroke="black" points="947.81,-528 941.81,-528 "/>
 <text text-anchor="middle" x="898.81" y="-519" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;deps&#45;format</text>
-<text text-anchor="middle" x="898.81" y="-508" font-family="Helvetica,sans-Serif" font-size="10.00">(1,832 tok)</text>
+<text text-anchor="middle" x="898.81" y="-508" font-family="Helvetica,sans-Serif" font-size="10.00">(1,804 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;skill_ref_deps_format -->
 <g id="edge15" class="edge">
@@ -366,7 +366,7 @@
 <polyline fill="none" stroke="black" points="941.81,-831 941.81,-825 "/>
 <polyline fill="none" stroke="black" points="947.81,-825 941.81,-825 "/>
 <text text-anchor="middle" x="898.81" y="-816" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;architecture</text>
-<text text-anchor="middle" x="898.81" y="-805" font-family="Helvetica,sans-Serif" font-size="10.00">(2,273 tok)</text>
+<text text-anchor="middle" x="898.81" y="-805" font-family="Helvetica,sans-Serif" font-size="10.00">(2,234 tok)</text>
 </g>
 <!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_architecture -->
 <!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_architecture -->

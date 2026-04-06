@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: specialist-output-schema.md
-# Generated from: openspec/changes/b-6-specialist-few-shot/specs/specialist-output-schema.md
+# Generated from: deltaspec/changes/b-6-specialist-few-shot/specs/specialist-output-schema.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: auto-merge.md + all-pass-check.md
-# Generated from: openspec/changes/bc-worker-merge-worktree-guard/specs/autopilot-guard.md
+# Generated from: deltaspec/changes/bc-worker-merge-worktree-guard/specs/autopilot-guard.md
 # Requirements:
 #   - auto-merge autopilot 配下判定 (lines 3-15)
 #   - all-pass-check autopilot 配下 merge-ready 宣言 (lines 17-27)

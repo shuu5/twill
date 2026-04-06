@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: co-issue-bugfix-45
-# Generated from: openspec/changes/co-issue-bugfix-45/specs/
+# Generated from: deltaspec/changes/co-issue-bugfix-45/specs/
 # Coverage level: edge-cases
 #
 # Scenarios:
@@ -83,7 +83,7 @@ BOARD_SYNC_MD="commands/project-board-sync.md"
 
 # =============================================================================
 # Requirement: co-issue 推奨ラベル受け渡しチェーン
-# Source: openspec/changes/co-issue-bugfix-45/specs/label-passthrough.md
+# Source: deltaspec/changes/co-issue-bugfix-45/specs/label-passthrough.md
 # =============================================================================
 echo ""
 echo "--- Requirement: co-issue 推奨ラベル受け渡しチェーン ---"
@@ -157,7 +157,7 @@ fi
 
 # =============================================================================
 # Requirement: project-board-sync の Project 検出改善
-# Source: openspec/changes/co-issue-bugfix-45/specs/project-detection.md
+# Source: deltaspec/changes/co-issue-bugfix-45/specs/project-detection.md
 # =============================================================================
 echo ""
 echo "--- Requirement: project-board-sync の Project 検出改善 ---"
@@ -238,7 +238,7 @@ fi
 
 # =============================================================================
 # Requirement: Context フィールドのフォールバック推定
-# Source: openspec/changes/co-issue-bugfix-45/specs/context-fallback.md
+# Source: deltaspec/changes/co-issue-bugfix-45/specs/context-fallback.md
 # =============================================================================
 echo ""
 echo "--- Requirement: Context フィールドのフォールバック推定 ---"

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Unit Tests: workflow-test-ready quick ガード
-# Generated from: openspec/changes/workflow-test-ready-quick-guard/specs/quick-guard.md
+# Generated from: deltaspec/changes/workflow-test-ready-quick-guard/specs/quick-guard.md
 # Coverage level: edge-cases
 #
 # Requirements:

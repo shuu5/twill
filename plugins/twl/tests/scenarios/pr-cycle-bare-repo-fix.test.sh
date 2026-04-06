@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: pr-cycle-bare-repo-fix
-# Generated from: openspec/changes/pr-cycle-bare-repo-fix/specs/pr-cycle-bare-repo-fix/spec.md
+# Generated from: deltaspec/changes/pr-cycle-bare-repo-fix/specs/pr-cycle-bare-repo-fix/spec.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

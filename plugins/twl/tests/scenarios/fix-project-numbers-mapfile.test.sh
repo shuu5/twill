@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: fix-project-numbers-mapfile
-# Generated from: openspec/changes/fix-project-numbers-mapfile/specs/mapfile-pattern/spec.md
+# Generated from: deltaspec/changes/fix-project-numbers-mapfile/specs/mapfile-pattern/spec.md
 # Coverage level: edge-cases
 # Requirement: PROJECT_NUMBERS の mapfile パターン統一 + shellcheck 準拠
 # =============================================================================

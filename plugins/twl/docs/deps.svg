@@ -104,7 +104,7 @@
 <title>skill_workflow_tech_debt_triage</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="291.1" cy="-4332" rx="100.32" ry="21.43"/>
 <text text-anchor="middle" x="291.1" y="-4335" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;tech&#45;debt&#45;triage</text>
-<text text-anchor="middle" x="291.1" y="-4324" font-family="Helvetica,sans-Serif" font-size="10.00">(1,015 tok)</text>
+<text text-anchor="middle" x="291.1" y="-4324" font-family="Helvetica,sans-Serif" font-size="10.00">(1,016 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_tech_debt_triage -->
 <g id="edge19" class="edge">
@@ -299,7 +299,7 @@
 <title>script_autopilot_orchestrator</title>
 <polygon fill="#ff9800" stroke="black" points="833.5,-6557 789.32,-6581.49 700.96,-6581.49 656.78,-6557 700.96,-6532.51 789.32,-6532.51 833.5,-6557"/>
 <text text-anchor="middle" x="745.14" y="-6560" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;orchestrator</text>
-<text text-anchor="middle" x="745.14" y="-6549" font-family="Helvetica,sans-Serif" font-size="10.00">(8,000 tok)</text>
+<text text-anchor="middle" x="745.14" y="-6549" font-family="Helvetica,sans-Serif" font-size="10.00">(8,002 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;script_autopilot_orchestrator -->
 <g id="edge21" class="edge">
@@ -420,7 +420,7 @@
 <title>cmd_issue_bulk_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="568.51,-2214 477.51,-2214 477.51,-2178 568.51,-2178 568.51,-2214"/>
 <text text-anchor="middle" x="523.01" y="-2199" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;bulk&#45;create</text>
-<text text-anchor="middle" x="523.01" y="-2188" font-family="Helvetica,sans-Serif" font-size="10.00">(1,667 tok)</text>
+<text text-anchor="middle" x="523.01" y="-2188" font-family="Helvetica,sans-Serif" font-size="10.00">(1,666 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_issue_bulk_create -->
 <g id="edge27" class="edge">
@@ -572,7 +572,7 @@
 <polyline fill="none" stroke="black" points="1300.6,-696 1300.6,-690 "/>
 <polyline fill="none" stroke="black" points="1306.6,-690 1300.6,-690 "/>
 <text text-anchor="middle" x="1271.1" y="-681" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;types</text>
-<text text-anchor="middle" x="1271.1" y="-670" font-family="Helvetica,sans-Serif" font-size="10.00">(2,168 tok)</text>
+<text text-anchor="middle" x="1271.1" y="-670" font-family="Helvetica,sans-Serif" font-size="10.00">(2,144 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;skill_ref_types -->
 <g id="edge51" class="edge">
@@ -587,7 +587,7 @@
 <polyline fill="none" stroke="black" points="1308.1,-638 1308.1,-632 "/>
 <polyline fill="none" stroke="black" points="1314.1,-632 1308.1,-632 "/>
 <text text-anchor="middle" x="1271.1" y="-623" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;practices</text>
-<text text-anchor="middle" x="1271.1" y="-612" font-family="Helvetica,sans-Serif" font-size="10.00">(6,485 tok)</text>
+<text text-anchor="middle" x="1271.1" y="-612" font-family="Helvetica,sans-Serif" font-size="10.00">(6,471 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;skill_ref_practices -->
 <g id="edge52" class="edge">
@@ -602,7 +602,7 @@
 <polyline fill="none" stroke="black" points="1314.1,-580 1314.1,-574 "/>
 <polyline fill="none" stroke="black" points="1320.1,-574 1314.1,-574 "/>
 <text text-anchor="middle" x="1271.1" y="-565" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;deps&#45;format</text>
-<text text-anchor="middle" x="1271.1" y="-554" font-family="Helvetica,sans-Serif" font-size="10.00">(1,832 tok)</text>
+<text text-anchor="middle" x="1271.1" y="-554" font-family="Helvetica,sans-Serif" font-size="10.00">(1,804 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;skill_ref_deps_format -->
 <g id="edge53" class="edge">
@@ -754,7 +754,7 @@
 <polyline fill="none" stroke="black" points="1314.1,-2341 1314.1,-2335 "/>
 <polyline fill="none" stroke="black" points="1320.1,-2335 1314.1,-2335 "/>
 <text text-anchor="middle" x="1271.1" y="-2326" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;architecture</text>
-<text text-anchor="middle" x="1271.1" y="-2315" font-family="Helvetica,sans-Serif" font-size="10.00">(2,273 tok)</text>
+<text text-anchor="middle" x="1271.1" y="-2315" font-family="Helvetica,sans-Serif" font-size="10.00">(2,234 tok)</text>
 </g>
 <!-- skill_co_architect&#45;&gt;skill_ref_architecture -->
 <g id="edge61" class="edge">
@@ -991,7 +991,7 @@
 <title>cmd_change_propose</title>
 <polygon fill="#e3f2fd" stroke="black" points="566.01,-6349 480.01,-6349 480.01,-6313 566.01,-6313 566.01,-6349"/>
 <text text-anchor="middle" x="523.01" y="-6334" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;propose</text>
-<text text-anchor="middle" x="523.01" y="-6323" font-family="Helvetica,sans-Serif" font-size="10.00">(1,343 tok)</text>
+<text text-anchor="middle" x="523.01" y="-6323" font-family="Helvetica,sans-Serif" font-size="10.00">(1,344 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;cmd_change_propose -->
 <g id="edge72" class="edge">
@@ -1017,7 +1017,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="802.45,-6273 773.79,-6297.49 716.48,-6297.49 687.83,-6273 716.48,-6248.51 773.79,-6248.51 802.45,-6273"/>
 <text text-anchor="middle" x="745.14" y="-6276" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="745.14" y="-6265" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
+<text text-anchor="middle" x="745.14" y="-6265" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;script_chain_runner -->
 <g id="edge74" class="edge">
@@ -1161,7 +1161,7 @@
 <title>cmd_phase_review</title>
 <polygon fill="#bbdefb" stroke="black" points="560.01,-5365 486.01,-5365 486.01,-5329 560.01,-5329 560.01,-5365"/>
 <text text-anchor="middle" x="523.01" y="-5350" font-family="Helvetica,sans-Serif" font-size="10.00">phase&#45;review</text>
-<text text-anchor="middle" x="523.01" y="-5339" font-family="Helvetica,sans-Serif" font-size="10.00">(916 tok)</text>
+<text text-anchor="middle" x="523.01" y="-5339" font-family="Helvetica,sans-Serif" font-size="10.00">(771 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;cmd_phase_review -->
 <g id="edge85" class="edge">
@@ -1266,7 +1266,7 @@
 <title>cmd_change_archive</title>
 <polygon fill="#e3f2fd" stroke="black" points="564.51,-4570 481.51,-4570 481.51,-4534 564.51,-4534 564.51,-4570"/>
 <text text-anchor="middle" x="523.01" y="-4555" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;archive</text>
-<text text-anchor="middle" x="523.01" y="-4544" font-family="Helvetica,sans-Serif" font-size="10.00">(684 tok)</text>
+<text text-anchor="middle" x="523.01" y="-4544" font-family="Helvetica,sans-Serif" font-size="10.00">(685 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_change_archive -->
 <g id="edge101" class="edge">
@@ -1318,7 +1318,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="555.51,-4686 490.51,-4686 490.51,-4650 555.51,-4650 555.51,-4686"/>
 <text text-anchor="middle" x="523.01" y="-4671" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="523.01" y="-4660" font-family="Helvetica,sans-Serif" font-size="10.00">(1,878 tok)</text>
+<text text-anchor="middle" x="523.01" y="-4660" font-family="Helvetica,sans-Serif" font-size="10.00">(1,639 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_merge_gate -->
 <g id="edge99" class="edge">
@@ -1695,7 +1695,7 @@
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="813.81,-6415 779.48,-6439.49 710.8,-6439.49 676.47,-6415 710.8,-6390.51 779.48,-6390.51 813.81,-6415"/>
 <text text-anchor="middle" x="745.14" y="-6418" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="745.14" y="-6407" font-family="Helvetica,sans-Serif" font-size="10.00">(3,307 tok)</text>
+<text text-anchor="middle" x="745.14" y="-6407" font-family="Helvetica,sans-Serif" font-size="10.00">(6,529 tok)</text>
 </g>
 <!-- cmd_worktree_create&#45;&gt;script_worktree_create -->
 <g id="edge121" class="edge">
@@ -1971,7 +1971,7 @@
 <title>agent_spec_scaffold_tests</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4964" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4967" font-family="Helvetica,sans-Serif" font-size="10.00">spec&#45;scaffold&#45;tests</text>
-<text text-anchor="middle" x="1014.69" y="-4956" font-family="Helvetica,sans-Serif" font-size="10.00">(1,761 tok)</text>
+<text text-anchor="middle" x="1014.69" y="-4956" font-family="Helvetica,sans-Serif" font-size="10.00">(1,762 tok)</text>
 </g>
 <!-- cmd_test_scaffold&#45;&gt;agent_spec_scaffold_tests -->
 <g id="edge142" class="edge">
@@ -1998,7 +1998,7 @@
 <title>script_worktree_delete</title>
 <polygon fill="#ff9800" stroke="black" points="812.68,-3330 778.91,-3354.49 711.37,-3354.49 677.6,-3330 711.37,-3305.51 778.91,-3305.51 812.68,-3330"/>
 <text text-anchor="middle" x="745.14" y="-3333" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;delete</text>
-<text text-anchor="middle" x="745.14" y="-3322" font-family="Helvetica,sans-Serif" font-size="10.00">(956 tok)</text>
+<text text-anchor="middle" x="745.14" y="-3322" font-family="Helvetica,sans-Serif" font-size="10.00">(998 tok)</text>
 </g>
 <!-- cmd_worktree_delete&#45;&gt;script_worktree_delete -->
 <g id="edge145" class="edge">
@@ -2452,7 +2452,7 @@
 <title>script_autopilot_mergegate</title>
 <polygon fill="#ff9800" stroke="black" points="828.21,-4541 786.67,-4565.49 703.61,-4565.49 662.07,-4541 703.61,-4516.51 786.67,-4516.51 828.21,-4541"/>
 <text text-anchor="middle" x="745.14" y="-4544" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;mergegate</text>
-<text text-anchor="middle" x="745.14" y="-4533" font-family="Helvetica,sans-Serif" font-size="10.00">(4,407 tok)</text>
+<text text-anchor="middle" x="745.14" y="-4533" font-family="Helvetica,sans-Serif" font-size="10.00">(4,452 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;script_autopilot_mergegate -->
 <g id="edge178" class="edge">
@@ -2499,7 +2499,7 @@
 <title>script_auto_merge</title>
 <polygon fill="#ff9800" stroke="black" points="798.28,-3827 771.71,-3851.49 718.57,-3851.49 691.99,-3827 718.57,-3802.51 771.71,-3802.51 798.28,-3827"/>
 <text text-anchor="middle" x="745.14" y="-3830" font-family="Helvetica,sans-Serif" font-size="10.00">auto&#45;merge</text>
-<text text-anchor="middle" x="745.14" y="-3819" font-family="Helvetica,sans-Serif" font-size="10.00">(2,855 tok)</text>
+<text text-anchor="middle" x="745.14" y="-3819" font-family="Helvetica,sans-Serif" font-size="10.00">(2,856 tok)</text>
 </g>
 <!-- cmd_auto_merge&#45;&gt;script_auto_merge -->
 <g id="edge204" class="edge">
@@ -2851,7 +2851,7 @@
 <title>agent_context_checker</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3774" rx="60.62" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3777" font-family="Helvetica,sans-Serif" font-size="10.00">context&#45;checker</text>
-<text text-anchor="middle" x="1014.69" y="-3766" font-family="Helvetica,sans-Serif" font-size="10.00">(1,802 tok)</text>
+<text text-anchor="middle" x="1014.69" y="-3766" font-family="Helvetica,sans-Serif" font-size="10.00">(1,803 tok)</text>
 </g>
 <!-- agent_context_checker&#45;&gt;skill_ref_specialist_output_schema -->
 <g id="edge243" class="edge">
@@ -3238,21 +3238,21 @@
 <title>script_project_create</title>
 <polygon fill="#ff9800" stroke="black" points="807.25,-6699 776.19,-6723.49 714.09,-6723.49 683.03,-6699 714.09,-6674.51 776.19,-6674.51 807.25,-6699"/>
 <text text-anchor="middle" x="745.14" y="-6702" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;create</text>
-<text text-anchor="middle" x="745.14" y="-6691" font-family="Helvetica,sans-Serif" font-size="10.00">(7,597 tok)</text>
+<text text-anchor="middle" x="745.14" y="-6691" font-family="Helvetica,sans-Serif" font-size="10.00">(7,604 tok)</text>
 </g>
 <!-- script_project_migrate -->
 <g id="node173" class="node">
 <title>script_project_migrate</title>
 <polygon fill="#ff9800" stroke="black" points="811.41,-6770 778.28,-6794.49 712,-6794.49 678.87,-6770 712,-6745.51 778.28,-6745.51 811.41,-6770"/>
 <text text-anchor="middle" x="745.14" y="-6773" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;migrate</text>
-<text text-anchor="middle" x="745.14" y="-6762" font-family="Helvetica,sans-Serif" font-size="10.00">(7,597 tok)</text>
+<text text-anchor="middle" x="745.14" y="-6762" font-family="Helvetica,sans-Serif" font-size="10.00">(7,604 tok)</text>
 </g>
 <!-- script_chain_steps -->
 <g id="node177" class="node">
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="800.05,-6841 772.59,-6865.49 717.68,-6865.49 690.23,-6841 717.68,-6816.51 772.59,-6816.51 800.05,-6841"/>
 <text text-anchor="middle" x="745.14" y="-6844" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="745.14" y="-6833" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
+<text text-anchor="middle" x="745.14" y="-6833" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node179" class="node">

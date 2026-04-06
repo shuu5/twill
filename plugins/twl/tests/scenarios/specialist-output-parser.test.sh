@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: specialist-output-parser.md
-# Generated from: openspec/changes/b-5-pr-cycle-merge-gate-chain-driven/specs/specialist-output-parser.md
+# Generated from: deltaspec/changes/b-5-pr-cycle-merge-gate-chain-driven/specs/specialist-output-parser.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail

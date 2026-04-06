@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: worker-codex-reviewer
-# Generated from: openspec/changes/add-worker-codex-reviewer/specs/worker-codex-reviewer/spec.md
+# Generated from: deltaspec/changes/add-worker-codex-reviewer/specs/worker-codex-reviewer/spec.md
 # Coverage level: edge-cases
 # change-id: add-worker-codex-reviewer
 # =============================================================================

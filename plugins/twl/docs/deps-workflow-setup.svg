@@ -74,7 +74,7 @@
 <title>cmd_change_propose</title>
 <polygon fill="#e3f2fd" stroke="black" points="307.09,-171.49 221.09,-171.49 221.09,-135.49 307.09,-135.49 307.09,-171.49"/>
 <text text-anchor="middle" x="264.09" y="-156.49" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;propose</text>
-<text text-anchor="middle" x="264.09" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,343 tok)</text>
+<text text-anchor="middle" x="264.09" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,344 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;cmd_change_propose -->
 <g id="edge5" class="edge">
@@ -100,7 +100,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="530.19,-95.49 501.53,-119.98 444.22,-119.98 415.57,-95.49 444.22,-71.01 501.53,-71.01 530.19,-95.49"/>
 <text text-anchor="middle" x="472.88" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="472.88" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
+<text text-anchor="middle" x="472.88" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;script_chain_runner -->
 <g id="edge7" class="edge">
@@ -128,7 +128,7 @@
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="541.55,-327.49 507.21,-351.98 438.54,-351.98 404.2,-327.49 438.54,-303.01 507.21,-303.01 541.55,-327.49"/>
 <text text-anchor="middle" x="472.88" y="-330.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="472.88" y="-319.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,307 tok)</text>
+<text text-anchor="middle" x="472.88" y="-319.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,529 tok)</text>
 </g>
 <!-- cmd_worktree_create&#45;&gt;script_worktree_create -->
 <g id="edge9" class="edge">
@@ -179,7 +179,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="527.79,-540.49 500.33,-564.98 445.42,-564.98 417.96,-540.49 445.42,-516.01 500.33,-516.01 527.79,-540.49"/>
 <text text-anchor="middle" x="472.88" y="-543.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="472.88" y="-532.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
+<text text-anchor="middle" x="472.88" y="-532.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node15" class="node">

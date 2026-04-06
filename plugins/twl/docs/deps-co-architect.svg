@@ -24,7 +24,7 @@
 <polyline fill="none" stroke="black" points="484.38,-36 484.38,-30 "/>
 <polyline fill="none" stroke="black" points="490.38,-30 484.38,-30 "/>
 <text text-anchor="middle" x="441.38" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;architecture</text>
-<text text-anchor="middle" x="441.38" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(2,273 tok)</text>
+<text text-anchor="middle" x="441.38" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(2,234 tok)</text>
 </g>
 <!-- skill_co_architect&#45;&gt;skill_ref_architecture -->
 <g id="edge8" class="edge">

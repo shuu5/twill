@@ -28,7 +28,7 @@ quick なら終了。非 quick → Step 1 へ。
 `CHANGE_ID=$(bash "$CR" change-id-resolve)` → change-id を記録。
 
 ### Step 2: テスト生成（LLM 判断）
-openspec/changes/\<change-id>/specs/ に Scenario が存在 AND test-mapping.yaml 未存在 のとき:
+deltaspec/changes/\<change-id>/specs/ に Scenario が存在 AND test-mapping.yaml 未存在 のとき:
 - a. `/twl:test-scaffold <change-id> --type=unit --coverage=edge-cases`
 - b. E2E テスト（デフォルト yes）
 

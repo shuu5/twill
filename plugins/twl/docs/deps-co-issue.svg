@@ -123,7 +123,7 @@
 <title>cmd_issue_bulk_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="260.58,-384 169.58,-384 169.58,-348 260.58,-348 260.58,-384"/>
 <text text-anchor="middle" x="215.08" y="-369" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;bulk&#45;create</text>
-<text text-anchor="middle" x="215.08" y="-358" font-family="Helvetica,sans-Serif" font-size="10.00">(1,667 tok)</text>
+<text text-anchor="middle" x="215.08" y="-358" font-family="Helvetica,sans-Serif" font-size="10.00">(1,666 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_issue_bulk_create -->
 <g id="edge5" class="edge">

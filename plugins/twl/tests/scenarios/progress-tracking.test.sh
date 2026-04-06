@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Functional Tests: progress-tracking.md
-# Generated from: openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md
+# Generated from: deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md
 # Coverage level: edge-cases
 # Tests TaskCreate/TaskUpdate usage, flag removal
 # =============================================================================
@@ -70,7 +70,7 @@ echo "--- Requirement: TaskCreate による Phase 進捗登録 ---"
 # THEN: TaskCreate で Phase 1: Issue #42, #43, #44 のタスクが status=in_progress で登録される
 test_phase_task_create() {
   # Structural verification: spec defines TaskCreate usage for Phase start
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "TaskCreate" "$spec_file" || return 1
   grep -qP "Phase.*1.*Issue.*#42.*#43.*#44" "$spec_file" || return 1
@@ -81,7 +81,7 @@ run_test "Phase 開始時のタスク登録" test_phase_task_create
 
 # Edge case: タスク名に Phase 番号と Issue 番号リストが含まれる
 test_phase_task_name_format() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "Phase.*[0-9]+.*Issue.*#[0-9]+" "$spec_file" || return 1
 }
@@ -92,7 +92,7 @@ run_test "Phase タスク登録 [edge: タスク名フォーマット]" test_pha
 # WHEN: Phase 2 が開始され、対象 Issue が #45 のみ
 # THEN: TaskCreate で Phase 2: Issue #45 のタスクが status=in_progress で登録される
 test_single_issue_phase() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "Phase 2.*Issue.*#45" "$spec_file" || return 1
 }
@@ -101,7 +101,7 @@ run_test "単一 Issue の Phase" test_single_issue_phase
 
 # Edge case: 単一 Issue でも複数 Issue でも同じ TaskCreate インターフェースが使用される
 test_task_create_uniform_interface() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   # Both scenarios use TaskCreate
   local count
@@ -121,7 +121,7 @@ echo "--- Requirement: TaskUpdate による Issue 完了追跡 ---"
 # WHEN: issue-42.json の status が done に遷移する
 # THEN: 対応する Phase タスクの説明に #42: done が追記される
 test_issue_done_task_update() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "TaskUpdate" "$spec_file" || return 1
   grep -qP "#42.*done" "$spec_file" || return 1
@@ -131,7 +131,7 @@ run_test "Issue 正常完了" test_issue_done_task_update
 
 # Edge case: TaskUpdate は説明フィールドへの追記であり、上書きではない
 test_task_update_append() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "追記" "$spec_file" || return 1
 }
@@ -142,7 +142,7 @@ run_test "Issue 正常完了 [edge: 説明への追記]" test_task_update_append
 # WHEN: issue-42.json の status が failed に確定する（リトライ上限到達）
 # THEN: 対応する Phase タスクの説明に #42: failed が追記される
 test_issue_failed_task_update() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "#42.*failed" "$spec_file" || return 1
   grep -qP "リトライ上限" "$spec_file" || return 1
@@ -152,7 +152,7 @@ run_test "Issue 失敗" test_issue_failed_task_update
 
 # Edge case: failed は リトライ上限到達時のみ TaskUpdate される（一時的な failed では不可）
 test_issue_failed_only_permanent() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "確定|リトライ上限到達" "$spec_file" || return 1
 }
@@ -163,7 +163,7 @@ run_test "Issue 失敗 [edge: リトライ上限到達時のみ]" test_issue_fai
 # WHEN: Phase 内の全 Issue が done または failed (確定) に遷移する
 # THEN: Phase タスクの status が completed に更新される
 test_phase_completed() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "Phase.*全.*Issue.*完了|全.*Issue.*done.*failed" "$spec_file" || return 1
   grep -qP "completed" "$spec_file" || return 1
@@ -173,7 +173,7 @@ run_test "Phase 全 Issue 完了" test_phase_completed
 
 # Edge case: done と failed の混在でも Phase は completed になる
 test_phase_completed_mixed() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "done.*または.*failed|done.*failed" "$spec_file" || return 1
 }
@@ -203,7 +203,7 @@ test_specialist_no_task_create() {
     [[ "$found" -eq 0 ]] || return 1
   else
     # Structural verification from spec
-    local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+    local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
     [[ -f "$spec_file" ]] || return 1
     grep -qP "specialist.*TaskCreate.*TaskUpdate.*使用.*ない|TaskCreate.*TaskUpdate.*呼び出さない" "$spec_file" || return 1
   fi
@@ -213,7 +213,7 @@ run_test "specialist 実行中の TaskCreate 不使用" test_specialist_no_task_
 
 # Edge case: 理由がオーバーヘッド回避として明記されている
 test_specialist_reason_documented() {
-  local spec_file="${PROJECT_ROOT}/openspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
+  local spec_file="${PROJECT_ROOT}/deltaspec/changes/archive/2026-03-27-b-3-autopilot-state-management/specs/progress-tracking.md"
   [[ -f "$spec_file" ]] || return 1
   grep -qP "短命タスク|オーバーヘッド" "$spec_file" || return 1
 }
@@ -286,7 +286,7 @@ echo "--- Requirement: DEV_AUTOPILOT_SESSION 環境変数の廃止 ---"
 test_no_dev_autopilot_session_env() {
   local found=0
   # Search all scripts (*.sh) and SKILL.md files per spec definition
-  # Exclude: openspec/ (specs), tests/ (test files), architecture/ (design docs),
+  # Exclude: deltaspec/ (specs), tests/ (test files), architecture/ (design docs),
   # .autopilot/snapshots/ (history), switchover.sh (legacy migration tool)
   while IFS= read -r -d '' file; do
     if grep -qP "DEV_AUTOPILOT_SESSION" "$file" 2>/dev/null; then
@@ -294,7 +294,7 @@ test_no_dev_autopilot_session_env() {
       break
     fi
   done < <(find "${PROJECT_ROOT}" \( -name "*.sh" -o -name "SKILL.md" \) -type f \
-    -not -path "*/openspec/*" -not -path "*/.git/*" -not -path "*/tests/scenarios/*" \
+    -not -path "*/deltaspec/*" -not -path "*/.git/*" -not -path "*/tests/scenarios/*" \
     -not -path "*/architecture/*" -not -path "*/.autopilot/snapshots/*" \
     -not -name "switchover.sh" \
     -print0 2>/dev/null)
@@ -307,7 +307,7 @@ run_test "DEV_AUTOPILOT_SESSION 環境変数不在の確認" test_no_dev_autopil
 test_no_dev_autopilot_session_anywhere() {
   local found=0
   # Extended check: scripts, SKILL.md, and component files
-  # Exclude: openspec/ (specs), tests/ (test files), architecture/ (design docs),
+  # Exclude: deltaspec/ (specs), tests/ (test files), architecture/ (design docs),
   # .autopilot/snapshots/ (history), switchover.sh (legacy migration tool)
   while IFS= read -r -d '' file; do
     if grep -qP "DEV_AUTOPILOT_SESSION" "$file" 2>/dev/null; then
@@ -315,7 +315,7 @@ test_no_dev_autopilot_session_anywhere() {
       break
     fi
   done < <(find "${PROJECT_ROOT}" \( -name "*.sh" -o -name "SKILL.md" \) -type f \
-    -not -path "*/openspec/*" -not -path "*/.git/*" -not -path "*/tests/scenarios/*" \
+    -not -path "*/deltaspec/*" -not -path "*/.git/*" -not -path "*/tests/scenarios/*" \
     -not -path "*/architecture/*" -not -path "*/.autopilot/snapshots/*" \
     -not -name "switchover.sh" \
     -print0 2>/dev/null)

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: fix-resolve-issue-num-parallel-worker
-# Generated from: openspec/changes/fix-resolve-issue-num-parallel-worker/specs/resolve-issue-num/spec.md
+# Generated from: deltaspec/changes/fix-resolve-issue-num-parallel-worker/specs/resolve-issue-num/spec.md
 # Coverage level: edge-cases
 # Type: unit
 # =============================================================================

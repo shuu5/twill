@@ -189,15 +189,15 @@ step_init() {
     return 0
   fi
 
-  # openspec 判定
-  if [[ ! -d "$root/openspec" ]]; then
+  # deltaspec 判定
+  if [[ ! -d "$root/deltaspec" ]]; then
     jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"direct","branch":$branch,"openspec":false,"is_quick":$is_quick}'
     ok "init" "recommended_action=direct (no openspec, is_quick=$is_quick)"
     return 0
   fi
 
   # changes 判定
-  local changes_dir="$root/openspec/changes"
+  local changes_dir="$root/deltaspec/changes"
   if [[ ! -d "$changes_dir" ]] || [[ -z "$(ls -A "$changes_dir" 2>/dev/null)" ]]; then
     jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_exists":false,"is_quick":$is_quick}'
     ok "init" "recommended_action=propose (no changes, is_quick=$is_quick)"
@@ -210,8 +210,8 @@ step_init() {
   local proposal="$changes_dir/$latest_change/proposal.md"
 
   if [[ -f "$proposal" ]]; then
-    # approved 判定: .openspec.yaml の status を確認
-    local yaml="$changes_dir/$latest_change/.openspec.yaml"
+    # approved 判定: .deltaspec.yaml の status を確認
+    local yaml="$changes_dir/$latest_change/.deltaspec.yaml"
     if [[ -f "$yaml" ]] && grep -q 'status:.*approved' "$yaml" 2>/dev/null; then
       jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"apply","branch":$branch,"openspec":true,"change_id":$cid,"proposal_status":"approved","is_quick":$is_quick}'
       ok "init" "recommended_action=apply (change=$latest_change, approved, is_quick=$is_quick)"
@@ -501,15 +501,15 @@ step_next_step() {
   echo "done"
 }
 
-# --- change-id-resolve: openspec change-id 解決 ---
+# --- change-id-resolve: deltaspec change-id 解決 ---
 step_change_id_resolve() {
   record_current_step "change-id-resolve"
   local root
   root="$(resolve_project_root)"
-  local changes_dir="$root/openspec/changes"
+  local changes_dir="$root/deltaspec/changes"
 
   if [[ ! -d "$changes_dir" ]]; then
-    err "change-id-resolve" "openspec/changes/ が存在しない"
+    err "change-id-resolve" "deltaspec/changes/ が存在しない"
     return 1
   fi
 
@@ -693,8 +693,8 @@ step_check() {
   local has_fail=false
 
   # OpenSpec
-  if [[ -d "$root/openspec" ]]; then
-    if ls "$root/openspec/changes/"*/proposal.md >/dev/null 2>&1; then
+  if [[ -d "$root/deltaspec" ]]; then
+    if ls "$root/deltaspec/changes/"*/proposal.md >/dev/null 2>&1; then
       echo "OpenSpec: PASS"
     else
       echo "OpenSpec: FAIL (proposal.md なし)"

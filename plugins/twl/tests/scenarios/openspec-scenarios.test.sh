@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: openspec-scenarios.md
-# Generated from: openspec/changes/b-1-chain-driven-autopilot-first/specs/openspec-scenarios.md
+# Generated from: deltaspec/changes/b-1-chain-driven-autopilot-first/specs/openspec-scenarios.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail
@@ -69,7 +69,7 @@ echo ""
 echo "--- Requirement: Autopilot Lifecycle シナリオ ---"
 
 # Target file for this requirement
-AUTOPILOT_SPEC="openspec/specs/autopilot-lifecycle.md"
+AUTOPILOT_SPEC="deltaspec/specs/autopilot-lifecycle.md"
 
 # Scenario: 正常系ライフサイクル (line 9)
 # WHEN: 単一 Issue で co-autopilot を起動する
@@ -156,7 +156,7 @@ run_test "Emergency Bypass [edge: 許可条件が限定的]" test_autopilot_emer
 echo ""
 echo "--- Requirement: merge-gate シナリオ ---"
 
-MERGEGATE_SPEC="openspec/specs/merge-gate.md"
+MERGEGATE_SPEC="deltaspec/specs/merge-gate.md"
 
 # Scenario: 動的レビュアー構築 (line 31)
 # WHEN: PR の変更ファイルに deps.yaml と TypeScript ファイルが含まれる
@@ -254,7 +254,7 @@ run_test "merge-gate REJECT [edge: リトライ上限 最大1回]" test_mergegat
 echo ""
 echo "--- Requirement: Project Create シナリオ ---"
 
-PROJECT_SPEC="openspec/specs/project-create.md"
+PROJECT_SPEC="deltaspec/specs/project-create.md"
 
 # Scenario: 正常系プロジェクト作成 (line 53)
 # WHEN: co-project create my-project を実行する

@@ -28,7 +28,7 @@ digraph Dependencies {
     cmd_scope_judge [label="scope-judge\n(394 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_test [label="pr-test\n(359 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ac_verify [label="ac-verify\n(373 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_phase_review [label="phase-review\n(916 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_phase_review [label="phase-review\n(771 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_ac_deploy_trigger [label="ac-deploy-trigger\n(457 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_phase [label="test-phase\n(608 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
@@ -59,10 +59,10 @@ digraph Dependencies {
     script_state_write [label="state-write\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(1,580 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_runner [label="chain-runner\n(7,545 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_worktree_create [label="worktree-create\n(3,307 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(7,551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_create [label="worktree-create\n(6,529 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_steps [label="chain-steps\n(7,545 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(7,551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_compaction_resume [label="compaction-resume\n(1,031 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_write [label="checkpoint-write\n(2,418 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

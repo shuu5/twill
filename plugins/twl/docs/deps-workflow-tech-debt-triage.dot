@@ -15,7 +15,7 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_tech_debt_triage [label="twl:workflow-tech-debt-triage\n(1,015 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_tech_debt_triage [label="twl:workflow-tech-debt-triage\n(1,016 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 

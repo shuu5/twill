@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Unit Tests: poll_phase() 冗長変数削除
-# Generated from: openspec/changes/pollphase-issuetoentry-cleanup/specs/poll-phase-cleanup.md
+# Generated from: deltaspec/changes/pollphase-issuetoentry-cleanup/specs/poll-phase-cleanup.md
 # change-id: pollphase-issuetoentry-cleanup
 # Coverage level: edge-cases
 # Verifies: scripts/autopilot-orchestrator.sh の poll_phase() から

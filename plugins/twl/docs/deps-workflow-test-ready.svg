@@ -74,7 +74,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="497.47,-95.49 468.81,-119.98 411.5,-119.98 382.85,-95.49 411.5,-71.01 468.81,-71.01 497.47,-95.49"/>
 <text text-anchor="middle" x="440.16" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="440.16" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
+<text text-anchor="middle" x="440.16" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;script_chain_runner -->
 <g id="edge5" class="edge">
@@ -119,7 +119,7 @@
 <title>agent_spec_scaffold_tests</title>
 <ellipse fill="#ede7f6" stroke="black" cx="440.16" cy="-379.49" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="440.16" y="-382.49" font-family="Helvetica,sans-Serif" font-size="10.00">spec&#45;scaffold&#45;tests</text>
-<text text-anchor="middle" x="440.16" y="-371.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,761 tok)</text>
+<text text-anchor="middle" x="440.16" y="-371.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,762 tok)</text>
 </g>
 <!-- cmd_test_scaffold&#45;&gt;agent_spec_scaffold_tests -->
 <g id="edge7" class="edge">
@@ -180,7 +180,7 @@
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="508.83,-589.49 474.5,-613.98 405.82,-613.98 371.49,-589.49 405.82,-565.01 474.5,-565.01 508.83,-589.49"/>
 <text text-anchor="middle" x="440.16" y="-592.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="440.16" y="-581.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,307 tok)</text>
+<text text-anchor="middle" x="440.16" y="-581.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,529 tok)</text>
 </g>
 <!-- script_autopilot_github -->
 <g id="node13" class="node">
@@ -194,7 +194,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="495.07,-731.49 467.62,-755.98 412.7,-755.98 385.25,-731.49 412.7,-707.01 467.62,-707.01 495.07,-731.49"/>
 <text text-anchor="middle" x="440.16" y="-734.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="440.16" y="-723.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
+<text text-anchor="middle" x="440.16" y="-723.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node16" class="node">

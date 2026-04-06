@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: deps-yaml.md
-# Generated from: openspec/changes/twl-plugin-session/specs/deps-yaml.md
+# Generated from: deltaspec/changes/twl-plugin-session/specs/deps-yaml.md
 # Coverage level: edge-cases
 # Target repo: ~/projects/local-projects/twill-plugin-session/main/
 # =============================================================================
