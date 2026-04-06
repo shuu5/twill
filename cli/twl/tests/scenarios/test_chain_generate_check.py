@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for chain generate --check functionality (drift detection, normalization).
 
-Spec: openspec/changes/chain-generate-check-all/specs/check-flag.md
+Spec: deltaspec/changes/chain-generate-check-all/specs/check-flag.md
 
 These tests are TDD-style: they define expected behavior BEFORE implementation.
 The `chain generate --check` subcommand compares generated Template A against

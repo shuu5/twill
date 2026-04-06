@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for deep_validate() section A/B/C _is_within_root() guard.
 
-Spec: openspec/changes/add-is-within-root-check/specs/is-within-root-guard.md
+Spec: deltaspec/changes/add-is-within-root-check/specs/is-within-root-guard.md
 
 Coverage: edge-cases
 

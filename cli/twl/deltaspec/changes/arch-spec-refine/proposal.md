@@ -1,7 +1,7 @@
 ## Why
 
 architecture/ ディレクトリは現在スケルトン状態（構造と概要のみ）で、設計意図の詳細が欠落している。
-loom-plugin-dev の新規構築や今後の Issue 起票において、アーキテクチャ判断の根拠となるドキュメントが不十分。
+plugins/twl の新規構築や今後の Issue 起票において、アーキテクチャ判断の根拠となるドキュメントが不十分。
 
 ## What Changes
 
@@ -30,4 +30,4 @@ loom-plugin-dev の新規構築や今後の Issue 起票において、アーキ
 
 - 対象ファイル: architecture/ 配下の全 .md ファイル（10 既存 + 2 新規 ADR）
 - コードへの影響: なし（ドキュメント変更のみ）
-- loom-plugin-dev#14 との整合性確認が必要
+- plugins/twl#14 との整合性確認が必要

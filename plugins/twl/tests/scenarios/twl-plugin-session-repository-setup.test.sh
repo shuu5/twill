@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Document Verification Tests: repository-setup.md
-# Generated from: openspec/changes/97-loom-plugin-session/specs/repository-setup.md
+# Generated from: openspec/changes/97-twl-plugin-session/specs/repository-setup.md
 # Coverage level: edge-cases
 # =============================================================================
 set -uo pipefail
 
-# Target repo root (loom-plugin-session)
+# Target repo root (twl-plugin-session)
 PROJECT_ROOT="${TWILL_PLUGIN_SESSION_ROOT:-/home/shuu5/projects/local-projects/twill-plugin-session/main}"
 
 # Counters
@@ -80,7 +80,7 @@ echo ""
 echo "--- Requirement: bare repo リポジトリ作成 ---"
 
 # Scenario: リポジトリ初期化 (line 7)
-# WHEN: gh repo create shuu5/loom-plugin-session --public でリポジトリを作成し、bare repo 構成でクローンする
+# WHEN: gh repo create shuu5/twl-plugin-session --public でリポジトリを作成し、bare repo 構成でクローンする
 # THEN: .bare/ ディレクトリが存在し、main/.git がファイルで .bare を指す
 
 test_bare_dir_exists() {
@@ -140,7 +140,7 @@ echo "--- Requirement: CLAUDE.md 作成 ---"
 
 # Scenario: CLAUDE.md の内容 (line 19)
 # WHEN: CLAUDE.md を確認する
-# THEN: bare repo 構造検証ルール、編集フロー、loom CLI 必須ルールが記載されている
+# THEN: bare repo 構造検証ルール、編集フロー、twl CLI 必須ルールが記載されている
 
 test_claude_md_exists() {
   assert_file_exists "$CLAUDE_MD"
@@ -158,18 +158,18 @@ run_test "CLAUDE.md に bare repo 構造検証ルールが記載されている"
 test_claude_md_edit_flow() {
   assert_file_exists "$CLAUDE_MD" || return 1
   # 編集フローが記載されていること
-  assert_file_contains "$CLAUDE_MD" '(編集フロー|edit.*flow|loom.*check|check.*loom)' || return 1
+  assert_file_contains "$CLAUDE_MD" '(編集フロー|edit.*flow|twl.*check|check.*twl)' || return 1
   return 0
 }
 run_test "CLAUDE.md に編集フローが記載されている" test_claude_md_edit_flow
 
-test_claude_md_loom_cli_rule() {
+test_claude_md_twl_cli_rule() {
   assert_file_exists "$CLAUDE_MD" || return 1
-  # loom CLI 必須ルールが記載されていること
-  assert_file_contains "$CLAUDE_MD" 'loom' || return 1
+  # twl CLI 必須ルールが記載されていること
+  assert_file_contains "$CLAUDE_MD" 'twl' || return 1
   return 0
 }
-run_test "CLAUDE.md に loom CLI 必須ルールが記載されている" test_claude_md_loom_cli_rule
+run_test "CLAUDE.md に twl CLI 必須ルールが記載されている" test_claude_md_twl_cli_rule
 
 # Edge case: CLAUDE.md にセッション起動ルール（main/ 配下）が記載されているか
 test_claude_md_session_start_rule() {
@@ -191,7 +191,7 @@ run_test "[edge: CLAUDE.md が空でない]" test_claude_md_not_empty
 # =============================================================================
 echo ""
 echo "============================================="
-echo "loom-plugin-session-repository-setup: Results: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
+echo "twl-plugin-session-repository-setup: Results: ${PASS} passed, ${FAIL} failed, ${SKIP} skipped"
 if [[ ${#ERRORS[@]} -gt 0 ]]; then
   echo "Failed tests:"
   for err in "${ERRORS[@]}"; do

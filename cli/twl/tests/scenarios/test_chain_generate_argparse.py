@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for handle_chain_subcommand argparse extension (--check, --all, exclusion).
 
-Spec: openspec/changes/chain-generate-check-all/specs/argparse-update.md
+Spec: deltaspec/changes/chain-generate-check-all/specs/argparse-update.md
 
 These tests verify backward compatibility (existing stdout/--write behavior)
 and the exit code system for all command variations.

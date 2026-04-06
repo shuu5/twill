@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for output_schema field validation in deep_validate().
 
-Spec: openspec/changes/tech-debt-deepvalidate-outputschema/specs/output-schema-validation.md
+Spec: deltaspec/changes/tech-debt-deepvalidate-outputschema/specs/output-schema-validation.md
 
 Requirement: output_schema 空文字列の検出
 

@@ -621,9 +621,9 @@ class PhaseOrchestrator:
                      "board-archive", issue],
                     capture_output=True,
                 )
-                self._archive_openspec_changes(issue)
+                self._archive_deltaspec_changes(issue)
 
-    def _archive_openspec_changes(self, issue: str) -> None:
+    def _archive_deltaspec_changes(self, issue: str) -> None:
         try:
             root = subprocess.check_output(
                 ["git", "rev-parse", "--show-toplevel"],
@@ -636,12 +636,12 @@ class PhaseOrchestrator:
             print(f"[orchestrator] Issue #{issue}: ⚠️ deltaspec CLI が見つかりません", file=sys.stderr)
             return
 
-        changes_dir = Path(root) / "openspec" / "changes"
+        changes_dir = Path(root) / "deltaspec" / "changes"
         if not changes_dir.is_dir():
             return
 
         found = False
-        for yaml_path in changes_dir.rglob(".openspec.yaml"):
+        for yaml_path in changes_dir.rglob(".deltaspec.yaml"):
             content = yaml_path.read_text(encoding="utf-8")
             if f"\nissue: {issue}\n" in content or content.startswith(f"issue: {issue}\n"):
                 found = True
@@ -651,12 +651,12 @@ class PhaseOrchestrator:
                     capture_output=True,
                 )
                 if r.returncode == 0:
-                    print(f"[orchestrator] Issue #{issue}: OpenSpec archive 完了: {change_id}")
+                    print(f"[orchestrator] Issue #{issue}: DeltaSpec archive 完了: {change_id}")
                 else:
-                    print(f"[orchestrator] Issue #{issue}: ⚠️ OpenSpec archive 失敗: {change_id}", file=sys.stderr)
+                    print(f"[orchestrator] Issue #{issue}: ⚠️ DeltaSpec archive 失敗: {change_id}", file=sys.stderr)
 
         if not found:
-            print(f"[orchestrator] Issue #{issue}: OpenSpec change が見つかりません", file=sys.stderr)
+            print(f"[orchestrator] Issue #{issue}: DeltaSpec change が見つかりません", file=sys.stderr)
 
     def _detect_scripts_root(self) -> Path:
         try:

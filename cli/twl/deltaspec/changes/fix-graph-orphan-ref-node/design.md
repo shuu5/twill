@@ -17,7 +17,7 @@
 
 **Non-Goals:**
 
-- deps.yaml への calls 追加（shuu5/loom-plugin-dev#41 のスコープ）
+- deps.yaml への calls 追加（shuu5/plugins/twl#41 のスコープ）
 - graph レイアウト最適化
 - 新規テストファイルの追加（既存テストの修正のみ）
 

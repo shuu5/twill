@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for directory/file rename and rollback in rename_component().
 
-Spec: openspec/changes/rename-complete/specs/directory-rename/spec.md
+Spec: deltaspec/changes/rename-complete/specs/directory-rename/spec.md
 Requirements:
   - ディレクトリ/ファイルの実 rename
   - rename 失敗時のロールバック

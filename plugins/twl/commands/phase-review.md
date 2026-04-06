@@ -14,42 +14,29 @@ chain ステップの実行順序は deps.yaml で宣言されている。
 
 ### 動的レビュアー構築
 
-PR diff のファイルリストから specialist を動的に決定する。
-
-#### 基本ルール
-
-| 条件 | 追加される specialist |
-|------|----------------------|
-| deps.yaml 変更あり | worker-structure + worker-principles |
-| コード変更あり（.ts, .py, .sh, .md 等） | worker-code-reviewer + worker-security-reviewer |
-
-#### conditional specialist（tech-stack-detect 連携）
+**Step 1: マニフェストスクリプト実行**
 
 ```bash
-CONDITIONAL=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/tech-stack-detect.sh" < <(git diff --name-only origin/main))
+SPECIALISTS=$(git diff --name-only origin/main | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode phase-review)
+
+# hook 用一時ファイル作成
+CONTEXT_ID="phase-review-$(git branch --show-current | tr '/' '-')"
+echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
 ```
 
-tech-stack-detect が返した specialist をリストに追加する。
+**Step 2: マニフェスト出力の全件を並列 Task spawn**
 
-#### 補完的レビュアー（codex 環境チェック）
+マニフェストの各行に対して Task spawn を発行する。
+手動でリストを構築してはならない（MUST NOT）。
+マニフェストに含まれない specialist を追加してはならない（MUST NOT）。
 
-コード変更がある場合のみ、以下のチェックを実施して条件を満たせば worker-codex-reviewer をリストに追加する。
+マニフェスト出力が空（0行）の場合、specialist spawn をスキップし自動 PASS とする。
+
+**Step 3: 結果収集後に一時ファイル削除**
 
 ```bash
-if command -v codex >/dev/null 2>&1 && [ -n "${CODEX_API_KEY:-}" ]; then
-  # worker-codex-reviewer をリストに追加
-fi
+rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt /tmp/.specialist-spawned-${CONTEXT_ID}.txt
 ```
-
-| 条件 | 追加される specialist |
-|------|----------------------|
-| コード変更あり AND `command -v codex` 成功 AND `CODEX_API_KEY` 設定済み | worker-codex-reviewer |
-
-条件未達（codex 未インストール or `CODEX_API_KEY` 未設定）の場合は specialist リストに追加しない。
-
-#### specialist リストが空の場合
-
-変更ファイルがレビュー対象外（.gitignore 等のみ）の場合、specialist リストは空となり自動 PASS。
 
 ### 並列 specialist 実行
 

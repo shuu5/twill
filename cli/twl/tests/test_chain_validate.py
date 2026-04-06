@@ -4,7 +4,7 @@
 These tests are written BEFORE the implementation (TDD).
 The chain_validate function will be called as part of --validate (v3.0 only).
 
-Spec: openspec/changes/chain-validate/specs/chain-validate/spec.md
+Spec: deltaspec/changes/chain-validate/specs/chain-validate/spec.md
 """
 
 import shutil

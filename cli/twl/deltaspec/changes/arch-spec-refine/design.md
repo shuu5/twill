@@ -1,6 +1,6 @@
 ## Context
 
-architecture/ ディレクトリはスケルトン状態で、vision.md/model.md/glossary.md/contexts/*/phases/ の構造は整っているが内容が概要レベル。loom-plugin-dev の設計判断や Issue 起票の根拠として使うには不十分。
+architecture/ ディレクトリはスケルトン状態で、vision.md/model.md/glossary.md/contexts/*/phases/ の構造は整っているが内容が概要レベル。plugins/twl の設計判断や Issue 起票の根拠として使うには不十分。
 
 本変更はコード変更を伴わず、architecture/ 配下の Markdown ファイルのみを編集・追加する。
 
@@ -29,5 +29,5 @@ architecture/ ディレクトリはスケルトン状態で、vision.md/model.md
 ## Risks / Trade-offs
 
 - **陳腐化リスク**: ドキュメントはコードと同期されないため、twl-engine.py の変更時に architecture/ が古くなる可能性がある。ADR は不変だが glossary/model は保守が必要
-- **loom-plugin-dev#14 との整合性**: 並行して精緻化が進む場合に矛盾が生じる可能性。本 Issue 完了後に整合性確認を実施
+- **plugins/twl#14 との整合性**: 並行して精緻化が進む場合に矛盾が生じる可能性。本 Issue 完了後に整合性確認を実施
 - **スコープ膨張**: glossary の網羅性を追求すると工数が膨らむ。deps.yaml/types.yaml のフィールド名に限定し、実装詳細は含めない

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for chain generate stdout output (Template A/B/C).
 
-Spec: openspec/changes/chain-generate/specs/chain-generate-stdout.md
+Spec: deltaspec/changes/chain-generate/specs/chain-generate-stdout.md
 
 These tests are TDD-style: they define expected behavior BEFORE implementation.
 The `chain generate` subcommand will be invoked via `twl chain generate <chain-name>`.

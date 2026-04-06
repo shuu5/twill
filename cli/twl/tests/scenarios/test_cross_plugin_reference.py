@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for Cross-plugin 参照構文 and script.can_spawn 拡張.
 
-Spec: openspec/changes/plugin-typesyaml-scriptcanspawn/specs/cross-plugin-reference.md
+Spec: deltaspec/changes/plugin-typesyaml-scriptcanspawn/specs/cross-plugin-reference.md
 
 Covers:
 - Cross-plugin 参照構文のパース（コロン区切り識別）

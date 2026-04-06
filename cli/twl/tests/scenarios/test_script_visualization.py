@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for deps.yaml scripts SSOT: Visualization scenarios.
 
-Spec: openspec/changes/depsyaml-scripts-ssot/specs/visualization/spec.md
+Spec: deltaspec/changes/depsyaml-scripts-ssot/specs/visualization/spec.md
 
 Covers:
 - graphviz: script nodes as orange hexagons, edges to script nodes

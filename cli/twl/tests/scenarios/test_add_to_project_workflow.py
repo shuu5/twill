@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for Issue to Project Board auto-add workflow YAML structure.
 
-Spec: openspec/changes/project-board-add-to-project-closedone/specs/add-to-project.md
+Spec: deltaspec/changes/project-board-add-to-project-closedone/specs/add-to-project.md
 
 Requirement: Issue を Project Board に自動追加
 
@@ -58,7 +58,7 @@ class TestNewIssueTrigger:
     """Scenario: 新規 Issue 作成時の自動追加
 
     WHEN: twill リポジトリで新規 Issue が作成される
-    THEN: Issue が Project Board (loom-dev-ecosystem) に自動追加される
+    THEN: Issue が Project Board (twill-ecosystem) に自動追加される
     """
 
     def setup_method(self) -> None:
@@ -106,7 +106,7 @@ class TestNewIssueTrigger:
                     )
 
     def test_project_url_configured(self) -> None:
-        """add-to-project step includes project-url pointing to loom-dev-ecosystem."""
+        """add-to-project step includes project-url pointing to twill-ecosystem."""
         jobs = self.wf.get("jobs", {})
         for job_name, job in jobs.items():
             for step in job.get("steps", []):
@@ -225,7 +225,7 @@ class TestTransferredIssueTrigger:
         wf_text = WORKFLOW_PATH.read_text(encoding="utf-8")
         assert "ADD_TO_PROJECT_PAT" in wf_text, (
             "ADD_TO_PROJECT_PAT secret not referenced in workflow.\n"
-            "This PAT is required for project: scope access to loom-dev-ecosystem."
+            "This PAT is required for project: scope access to twill-ecosystem."
         )
 
 

@@ -5,7 +5,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from .paths import OpenspecNotFound, find_openspec_root, get_changes_dir
+from .paths import DeltaspecNotFound, find_deltaspec_root, get_changes_dir
 
 _KEBAB_RE = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?$")
 
@@ -19,8 +19,8 @@ def cmd_new(name: str) -> int:
         return 1
 
     try:
-        root = find_openspec_root()
-    except OpenspecNotFound as e:
+        root = find_deltaspec_root()
+    except DeltaspecNotFound as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
@@ -30,12 +30,12 @@ def cmd_new(name: str) -> int:
         return 1
 
     change_dir.mkdir(parents=True)
-    openspec_yaml = change_dir / ".openspec.yaml"
-    openspec_yaml.write_text(
+    deltaspec_yaml = change_dir / ".deltaspec.yaml"
+    deltaspec_yaml.write_text(
         f"schema: spec-driven\ncreated: {date.today().isoformat()}\n",
         encoding="utf-8",
     )
 
     print(f"- Creating change '{name}'...")
-    print(f"✔ Created change '{name}' at openspec/changes/{name}/ (schema: spec-driven)")
+    print(f"✔ Created change '{name}' at deltaspec/changes/{name}/ (schema: spec-driven)")
     return 0

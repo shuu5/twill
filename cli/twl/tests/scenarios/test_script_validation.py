@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for deps.yaml scripts SSOT: Validation scenarios.
 
-Spec: openspec/changes/depsyaml-scripts-ssot/specs/validation/spec.md
+Spec: deltaspec/changes/depsyaml-scripts-ssot/specs/validation/spec.md
 
 Covers:
 - validate_types: scripts section checks (section placement, edge checks)

@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from .new import _KEBAB_RE
-from .paths import OpenspecNotFound, find_openspec_root, get_changes_dir
+from .paths import DeltaspecNotFound, find_deltaspec_root, get_changes_dir
 
 
 def _has_specs(change_dir: Path) -> bool:
@@ -56,8 +56,8 @@ def cmd_status(name: str, json_mode: bool = False, schema_name: str = "spec-driv
         return 1
 
     try:
-        root = find_openspec_root()
-    except OpenspecNotFound as e:
+        root = find_deltaspec_root()
+    except DeltaspecNotFound as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
@@ -66,10 +66,10 @@ def cmd_status(name: str, json_mode: bool = False, schema_name: str = "spec-driv
         print(f"Error: Change '{name}' not found", file=sys.stderr)
         return 1
 
-    # Read schema from .openspec.yaml if present
-    openspec_yaml = change_dir / ".openspec.yaml"
-    if openspec_yaml.exists():
-        for line in openspec_yaml.read_text(encoding="utf-8").splitlines():
+    # Read schema from .deltaspec.yaml if present
+    deltaspec_yaml = change_dir / ".deltaspec.yaml"
+    if deltaspec_yaml.exists():
+        for line in deltaspec_yaml.read_text(encoding="utf-8").splitlines():
             if line.startswith("schema:"):
                 schema_name = line.split(":", 1)[1].strip()
                 break

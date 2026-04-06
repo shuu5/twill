@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for chain generate --all functionality (batch operations across all chains).
 
-Spec: openspec/changes/chain-generate-check-all/specs/all-flag.md
+Spec: deltaspec/changes/chain-generate-check-all/specs/all-flag.md
 
 These tests are TDD-style: they define expected behavior BEFORE implementation.
 The `chain generate --all` subcommand operates on every chain in deps.yaml.

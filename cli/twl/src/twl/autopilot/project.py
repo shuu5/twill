@@ -71,20 +71,20 @@ def _resolve_project_root(project_type: str, explicit_root: str | None) -> Path:
     return Path(root) if root else Path.home() / "projects"
 
 
-def _cleanup_openspec_local(project_dir: Path) -> None:
-    """Remove project-local opsx commands and openspec skills (deprecated)."""
+def _cleanup_deprecated_local(project_dir: Path) -> None:
+    """Remove project-local opsx commands and deltaspec skills (deprecated)."""
     opsx_dir = project_dir / ".claude" / "commands" / "opsx"
     if opsx_dir.is_dir():
         shutil.rmtree(opsx_dir)
         print("   ✓ プロジェクトローカル opsx コマンドを削除（グローバルに委譲）")
 
     found = False
-    for skill_dir in (project_dir / ".claude" / "skills").glob("openspec-*/"):
+    for skill_dir in (project_dir / ".claude" / "skills").glob("deltaspec-*/"):
         if skill_dir.is_dir():
             shutil.rmtree(skill_dir)
             found = True
     if found:
-        print("   ✓ プロジェクトローカル openspec スキルを削除（グローバルに委譲）")
+        print("   ✓ プロジェクトローカル deltaspec スキルを削除（グローバルに委譲）")
 
 
 # ---------------------------------------------------------------------------
@@ -267,10 +267,10 @@ class ProjectManager:
         print("7. DeltaSpecを初期化...")
         r = _run(["which", "deltaspec"])
         if r.returncode == 0:
-            (main_dir / "openspec" / "specs").mkdir(parents=True, exist_ok=True)
-            (main_dir / "openspec" / "changes").mkdir(parents=True, exist_ok=True)
+            (main_dir / "deltaspec" / "specs").mkdir(parents=True, exist_ok=True)
+            (main_dir / "deltaspec" / "changes").mkdir(parents=True, exist_ok=True)
             print("   DeltaSpec initialized")
-            _cleanup_openspec_local(main_dir)
+            _cleanup_deprecated_local(main_dir)
         else:
             print("   警告: deltaspec CLIが見つかりません")
 
@@ -520,7 +520,7 @@ class ProjectManager:
 
         # 1. Analyse current state
         print("1. 現状分析...")
-        openspec_version = self._detect_openspec_version(cwd)
+        deltaspec_version = self._detect_deltaspec_version(cwd)
         resolved_type = project_type or self._detect_project_type(cwd)
 
         if not (cwd / "CLAUDE.md").exists():
@@ -535,9 +535,9 @@ class ProjectManager:
         print("")
         changes: list[str] = []
 
-        if openspec_version in ("v0.x", "partial", "none"):
-            action = "移行（project.md削除、config.yaml生成）" if openspec_version == "v0.x" else "初期化（config.yaml生成）"
-            changes.append(f"OpenSpec {openspec_version} → {action}")
+        if deltaspec_version in ("v0.x", "partial", "none"):
+            action = "移行（project.md削除、config.yaml生成）" if deltaspec_version == "v0.x" else "初期化（config.yaml生成）"
+            changes.append(f"DeltaSpec {deltaspec_version} → {action}")
 
         if (cwd / "CLAUDE.md").exists():
             changes.append("CLAUDE.md 更新（テンプレートとマージ）")
@@ -562,14 +562,14 @@ class ProjectManager:
         print("4. 変更を適用...")
 
         # DeltaSpec
-        if openspec_version != "v1.x":
+        if deltaspec_version != "v1.x":
             self._apply_deltaspec(cwd)
 
         # CLAUDE.md
         self._apply_claude_md(cwd, resolved_type, project_name)
 
         # Check archived specs
-        archive_dir = cwd / "openspec" / "archive"
+        archive_dir = cwd / "deltaspec" / "archive"
         if archive_dir.is_dir():
             archived = list(archive_dir.rglob("spec.md"))
             if archived:
@@ -582,18 +582,18 @@ class ProjectManager:
         print("次のステップ:")
         print("  git add -A && git commit -m 'chore: migrate to latest template'")
 
-    def _detect_openspec_version(self, project_dir: Path) -> str:
-        if (project_dir / "openspec" / "config.yaml").exists():
-            print("   OpenSpec: v1.x (config.yaml)")
+    def _detect_deltaspec_version(self, project_dir: Path) -> str:
+        if (project_dir / "deltaspec" / "config.yaml").exists():
+            print("   DeltaSpec: v1.x (config.yaml)")
             return "v1.x"
-        elif (project_dir / "openspec" / "project.md").exists():
-            print("   OpenSpec: v0.x (project.md) → 移行が必要")
+        elif (project_dir / "deltaspec" / "project.md").exists():
+            print("   DeltaSpec: v0.x (project.md) → 移行が必要")
             return "v0.x"
-        elif (project_dir / "openspec").is_dir():
-            print("   OpenSpec: 部分的 → 再初期化が必要")
+        elif (project_dir / "deltaspec").is_dir():
+            print("   DeltaSpec: 部分的 → 再初期化が必要")
             return "partial"
         else:
-            print("   OpenSpec: なし → 新規初期化")
+            print("   DeltaSpec: なし → 新規初期化")
             return "none"
 
     def _detect_project_type(self, project_dir: Path) -> str:
@@ -631,10 +631,10 @@ class ProjectManager:
         r = _run(["which", "deltaspec"])
         if r.returncode == 0:
             print("   DeltaSpec 初期化...")
-            (project_dir / "openspec" / "specs").mkdir(parents=True, exist_ok=True)
-            (project_dir / "openspec" / "changes").mkdir(parents=True, exist_ok=True)
+            (project_dir / "deltaspec" / "specs").mkdir(parents=True, exist_ok=True)
+            (project_dir / "deltaspec" / "changes").mkdir(parents=True, exist_ok=True)
             print("      DeltaSpec 初期化完了")
-            _cleanup_openspec_local(project_dir)
+            _cleanup_deprecated_local(project_dir)
         else:
             print("      警告: deltaspec CLIが見つかりません")
 

@@ -19,53 +19,29 @@ chain ステップの実行順序は deps.yaml で宣言されている。
 
 ### 動的レビュアー構築
 
-PR diff のファイルリストから specialist を動的に構築する。
-旧 standard/plugin 2 パスの分岐は**存在しない**（単一パス）。
-
-#### 基本ルール
-
-| 条件 | 追加される specialist |
-|------|----------------------|
-| deps.yaml 変更あり | worker-structure + worker-principles |
-| コード変更あり | worker-code-reviewer + worker-security-reviewer |
-| `architecture/` が存在する | worker-architecture（`pr_diff` モードで呼び出し） |
-
-`architecture/` 存在チェック:
+**Step 1: マニフェストスクリプト実行**
 
 ```bash
-if [ -d "$(git rev-parse --show-toplevel)/architecture" ]; then
-  # worker-architecture を specialist リストに追加
-  # 呼び出し時は pr_diff モードを指定する
-fi
+SPECIALISTS=$(git diff --name-only origin/main | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode merge-gate)
+
+# hook 用一時ファイル作成
+CONTEXT_ID="merge-gate-$(git branch --show-current | tr '/' '-')"
+echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
 ```
 
-`architecture/` が存在しないプロジェクトでは worker-architecture を追加してはならない（MUST NOT）。
+**Step 2: マニフェスト出力の全件を並列 Task spawn**
 
-#### conditional specialist
+マニフェストの各行に対して Task spawn を発行する。
+手動でリストを構築してはならない（MUST NOT）。
+マニフェストに含まれない specialist を追加してはならない（MUST NOT）。
+
+マニフェスト出力が空（0行）の場合、specialist spawn をスキップし自動 PASS とする。
+
+**Step 3: 結果収集後に一時ファイル削除**
 
 ```bash
-CONDITIONAL=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/tech-stack-detect.sh" < <(git diff --name-only origin/main))
+rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt /tmp/.specialist-spawned-${CONTEXT_ID}.txt
 ```
-
-#### 補完的レビュアー（codex 環境チェック）
-
-コード変更がある場合のみ、以下のチェックを実施して条件を満たせば worker-codex-reviewer をリストに追加する。
-
-```bash
-if command -v codex >/dev/null 2>&1 && [ -n "${CODEX_API_KEY:-}" ]; then
-  # worker-codex-reviewer をリストに追加
-fi
-```
-
-| 条件 | 追加される specialist |
-|------|----------------------|
-| コード変更あり AND `command -v codex` 成功 AND `CODEX_API_KEY` 設定済み | worker-codex-reviewer |
-
-条件未達（codex 未インストール or `CODEX_API_KEY` 未設定）の場合は specialist リストに追加しない。
-
-#### specialist リスト空の場合
-
-レビュー対象外の変更のみ → 自動 PASS。
 
 ### 並列 specialist 実行
 

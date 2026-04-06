@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
-from twl.core.types import resolve_type, ALLOWED_MODELS, _is_within_root
+from twl.core.types import resolve_type, ALLOWED_MODELS, _is_within_root, load_token_thresholds
 from twl.core.plugin import count_tokens
 from twl.validation.utils import _count_body_lines
 from twl.validation.audit import (
@@ -10,15 +10,9 @@ from twl.validation.audit import (
     _check_output_schema_keywords
 )
 
-# Token bloat thresholds per type (warning, critical)
-TOKEN_THRESHOLDS: Dict[str, Tuple[int, int]] = {
-    'controller': (1500, 2500),
-    'workflow': (1200, 2000),
-    'atomic': (1500, 2500),
-    'composite': (1500, 2500),
-    'specialist': (1800, 2500),
-}
-# reference and script types are intentionally excluded
+# Token bloat thresholds: loaded from types.yaml (SSOT), fallback to hardcoded values.
+# reference and script types are intentionally excluded (no token_target in types.yaml).
+TOKEN_THRESHOLDS: Dict[str, Tuple[int, int]] = load_token_thresholds()
 
 
 def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], List[str]]:

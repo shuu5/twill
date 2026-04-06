@@ -12,7 +12,7 @@ controller は各候補をイテレートしながら、候補ごとに `COMPONE
 
 ## セキュリティ注意（MUST）
 
-Issue のタイトル・ボディに含める値は Loom Audit 出力由来のため、シェルメタ文字を含む可能性がある。
+Issue のタイトル・ボディに含める値は twl audit 出力由来のため、シェルメタ文字を含む可能性がある。
 
 - `--title` の値は `printf '%s' | tr -d` でバッククォート・`$`・ダブルクォート・シングルクォートを除去してサニタイズする
 - `--body` は必ず `--body-file` でファイル経由で渡す（`--body` での直接渡しは**禁止**）
@@ -36,8 +36,8 @@ SAFE_PLUGIN=$(printf '%s' "<plugin-name>" | tr -d '`$"'\''')
 cat > "${TMPDIR}/parent-issue.md" <<'ISSUE_EOF'
 ## 概要
 
-<plugin-name> プラグインの Loom 準拠度改善のためのリファクタリング。
-Loom 監査の CRITICAL/WARNING 検出結果に基づき、インライン実装を外部コマンドに抽出する。
+<plugin-name> プラグインの TWiLL 準拠度改善のためのリファクタリング。
+twl audit の CRITICAL/WARNING 検出結果に基づき、インライン実装を外部コマンドに抽出する。
 
 ## 抽出候補
 
@@ -50,7 +50,7 @@ ISSUE_EOF
 
 # 起票して親 Issue 番号を取得（URL から数値を抽出）
 PARENT_URL=$(gh issue create \
-  --title "[Refactor] ${SAFE_PLUGIN}: Loom リファクタリング" \
+  --title "[Refactor] ${SAFE_PLUGIN}: TWiLL リファクタリング" \
   --label "enhancement" \
   --body-file "${TMPDIR}/parent-issue.md")
 PARENT_NUM=$(echo "${PARENT_URL}" | grep -oP '\d+$')
@@ -89,7 +89,7 @@ for CANDIDATE in "${CANDIDATES[@]}"; do
 ## 背景・動機
 
 親 Issue: #<親Issue番号>
-Loom 監査結果: <Verdict>（<行数>行 / 上限80行）
+twl audit 結果: <Verdict>（<行数>行 / 上限80行）
 
 ## スコープ
 

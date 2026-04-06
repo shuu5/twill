@@ -13,7 +13,7 @@ from twl.spec.list import cmd_list
 
 
 def make_change(tmp_path: Path, name: str, tasks: str = "") -> Path:
-    change_dir = tmp_path / "openspec" / "changes" / name
+    change_dir = tmp_path / "deltaspec" / "changes" / name
     change_dir.mkdir(parents=True)
     if tasks:
         (change_dir / "tasks.md").write_text(tasks)
@@ -22,7 +22,7 @@ def make_change(tmp_path: Path, name: str, tasks: str = "") -> Path:
 
 def test_list_empty(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "openspec" / "changes").mkdir(parents=True)
+    (tmp_path / "deltaspec" / "changes").mkdir(parents=True)
     rc = cmd_list()
     assert rc == 0
     assert "No changes found." in capsys.readouterr().out
@@ -42,7 +42,7 @@ def test_list_shows_changes(tmp_path, monkeypatch, capsys):
 def test_list_excludes_archive(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     make_change(tmp_path, "alpha")
-    (tmp_path / "openspec" / "changes" / "archive" / "old").mkdir(parents=True)
+    (tmp_path / "deltaspec" / "changes" / "archive" / "old").mkdir(parents=True)
     rc = cmd_list()
     assert rc == 0
     out = capsys.readouterr().out

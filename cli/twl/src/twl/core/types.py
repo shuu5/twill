@@ -3,7 +3,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 try:
     import yaml
@@ -14,6 +14,14 @@ except ImportError:
 
 # === 型ルール定数 ===
 # SSOT: types.yaml（存在すれば）。フォールバック: 以下のハードコード値。
+_FALLBACK_TOKEN_THRESHOLDS: Dict[str, Tuple[int, int]] = {
+    'controller': (1500, 2500),
+    'workflow': (1200, 2000),
+    'atomic': (1500, 2500),
+    'composite': (1500, 2500),
+    'specialist': (1800, 2500),
+}
+
 _FALLBACK_TYPE_RULES = {
     'controller':  {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference'}, 'spawnable_by': {'user', 'launcher'}},
     'workflow':    {'section': 'skills',   'can_spawn': {'atomic', 'composite', 'specialist'},  'spawnable_by': {'controller', 'user'}},
@@ -71,6 +79,36 @@ def load_type_rules(loom_root: Optional[Path] = None) -> dict:
 
 
 TYPE_RULES = load_type_rules()
+
+
+def load_token_thresholds(loom_root: Optional[Path] = None) -> Dict[str, Tuple[int, int]]:
+    """types.yaml から token_target を読み取り {type: (warning, critical)} を返す。
+
+    token_target を持つ型のみ結果に含める（reference/script は意図的に除外）。
+    types.yaml が読めない場合はハードコードのフォールバック値を返す。
+    """
+    if loom_root is None:
+        loom_root = _get_loom_root()
+    types_path = loom_root / "types.yaml"
+
+    if not types_path.exists():
+        return dict(_FALLBACK_TOKEN_THRESHOLDS)
+    try:
+        with open(types_path, encoding='utf-8') as f:
+            data = yaml.safe_load(f)
+        if not data or 'types' not in data:
+            return dict(_FALLBACK_TOKEN_THRESHOLDS)
+        result: Dict[str, Tuple[int, int]] = {}
+        for type_name, type_def in data['types'].items():
+            tt = type_def.get('token_target')
+            if tt and isinstance(tt, dict):
+                warning = int(tt.get('warning', 1500))
+                critical = int(tt.get('critical', 2500))
+                result[type_name] = (warning, critical)
+        return result if result else dict(_FALLBACK_TOKEN_THRESHOLDS)
+    except Exception as e:
+        print(f"Warning: Failed to load token_target from types.yaml: {e}, using fallback", file=sys.stderr)
+        return dict(_FALLBACK_TOKEN_THRESHOLDS)
 
 
 def resolve_type(t: str) -> str:
@@ -147,6 +185,8 @@ def sync_check(ref_path: str):
             return set()
         return {x.strip().lower() for x in raw.split(',') if x.strip() and x.strip() not in ('-', '—')}
 
+    valid_sections = {'skills', 'commands', 'agents', 'scripts'}
+
     for m in table_pattern.finditer(content):
         type_name = m.group(1).strip().lower()
         # ヘッダー行やセパレータ行をスキップ
@@ -156,6 +196,9 @@ def sync_check(ref_path: str):
             continue
 
         section = m.group(2).strip().lower()
+        # 有効なセクション名を持つ行のみ型ルールテーブルとして認識（誤検出防止）
+        if section not in valid_sections:
+            continue
         can_spawn_raw = m.group(3).strip()
         spawnable_by_raw = m.group(4).strip()
 
@@ -165,56 +208,101 @@ def sync_check(ref_path: str):
             'spawnable_by': _parse_list(spawnable_by_raw),
         }
 
-    if not ref_rules:
-        print(f"Warning: No type table found in {ref_path}", file=sys.stderr)
-        print("Expected format: | type | section | can_spawn | spawnable_by |")
-        sys.exit(1)
-
     print(f"=== Sync Check: types.yaml vs {ref_path} ===")
     print()
 
     diffs = []
-    # types.yaml にあって ref にない
-    for type_name in sorted(rules.keys()):
-        if type_name not in ref_rules:
-            diffs.append(f"[missing-in-ref] '{type_name}' is in types.yaml but not in {ref_file.name}")
 
-    # ref にあって types.yaml にない
-    for type_name in sorted(ref_rules.keys()):
-        if type_name not in rules:
-            diffs.append(f"[missing-in-yaml] '{type_name}' is in {ref_file.name} but not in types.yaml")
+    if not ref_rules:
+        print(f"  (no type rules table found in {ref_file.name}, skipping type rules check)")
+        print()
+    else:
+        # types.yaml にあって ref にない
+        for type_name in sorted(rules.keys()):
+            if type_name not in ref_rules:
+                diffs.append(f"[missing-in-ref] '{type_name}' is in types.yaml but not in {ref_file.name}")
 
-    # 両方にある型のフィールド差分
-    for type_name in sorted(set(rules.keys()) & set(ref_rules.keys())):
-        yaml_rule = rules[type_name]
-        ref_rule = ref_rules[type_name]
+        # ref にあって types.yaml にない
+        for type_name in sorted(ref_rules.keys()):
+            if type_name not in rules:
+                diffs.append(f"[missing-in-yaml] '{type_name}' is in {ref_file.name} but not in types.yaml")
 
-        if yaml_rule['section'] != ref_rule['section']:
-            diffs.append(f"[section-mismatch] {type_name}: yaml='{yaml_rule['section']}' vs ref='{ref_rule['section']}'")
+        # 両方にある型のフィールド差分
+        for type_name in sorted(set(rules.keys()) & set(ref_rules.keys())):
+            yaml_rule = rules[type_name]
+            ref_rule = ref_rules[type_name]
 
-        yaml_cs = yaml_rule['can_spawn']
-        ref_cs = ref_rule['can_spawn']
-        if yaml_cs != ref_cs:
-            only_yaml = yaml_cs - ref_cs
-            only_ref = ref_cs - yaml_cs
-            parts = []
-            if only_yaml:
-                parts.append(f"only in yaml: {sorted(only_yaml)}")
-            if only_ref:
-                parts.append(f"only in ref: {sorted(only_ref)}")
-            diffs.append(f"[can_spawn-mismatch] {type_name}: {', '.join(parts)}")
+            if yaml_rule['section'] != ref_rule['section']:
+                diffs.append(f"[section-mismatch] {type_name}: yaml='{yaml_rule['section']}' vs ref='{ref_rule['section']}'")
 
-        yaml_sb = yaml_rule['spawnable_by']
-        ref_sb = ref_rule['spawnable_by']
-        if yaml_sb != ref_sb:
-            only_yaml = yaml_sb - ref_sb
-            only_ref = ref_sb - yaml_sb
-            parts = []
-            if only_yaml:
-                parts.append(f"only in yaml: {sorted(only_yaml)}")
-            if only_ref:
-                parts.append(f"only in ref: {sorted(only_ref)}")
-            diffs.append(f"[spawnable_by-mismatch] {type_name}: {', '.join(parts)}")
+            yaml_cs = yaml_rule['can_spawn']
+            ref_cs = ref_rule['can_spawn']
+            if yaml_cs != ref_cs:
+                only_yaml = yaml_cs - ref_cs
+                only_ref = ref_cs - yaml_cs
+                parts = []
+                if only_yaml:
+                    parts.append(f"only in yaml: {sorted(only_yaml)}")
+                if only_ref:
+                    parts.append(f"only in ref: {sorted(only_ref)}")
+                diffs.append(f"[can_spawn-mismatch] {type_name}: {', '.join(parts)}")
+
+            yaml_sb = yaml_rule['spawnable_by']
+            ref_sb = ref_rule['spawnable_by']
+            if yaml_sb != ref_sb:
+                only_yaml = yaml_sb - ref_sb
+                only_ref = ref_sb - yaml_sb
+                parts = []
+                if only_yaml:
+                    parts.append(f"only in yaml: {sorted(only_yaml)}")
+                if only_ref:
+                    parts.append(f"only in ref: {sorted(only_ref)}")
+                diffs.append(f"[spawnable_by-mismatch] {type_name}: {', '.join(parts)}")
+
+    # === token_target テーブルチェック ===
+    # パターン: | 型名 | 1,234 tok | 1,234 tok | 備考 |
+    token_thresholds = load_token_thresholds(loom_root)
+    token_table_pattern = re.compile(
+        r'^\|\s*(\w+)\s*\|\s*([\d,]+)\s*tok\s*\|\s*([\d,]+)\s*tok\s*\|',
+        re.MULTILINE
+    )
+    ref_token: Dict[str, Tuple[int, int]] = {}
+    for m in token_table_pattern.finditer(content):
+        type_name = m.group(1).strip().lower()
+        if type_name in ('型', 'type', 'name', '---', ''):
+            continue
+        try:
+            warning_val = int(m.group(2).replace(',', ''))
+            critical_val = int(m.group(3).replace(',', ''))
+            ref_token[type_name] = (warning_val, critical_val)
+        except ValueError:
+            continue
+
+    if token_thresholds and ref_token:
+        # types.yaml の token_target 型が ref テーブルに存在するかチェック
+        for type_name in sorted(token_thresholds.keys()):
+            if type_name not in ref_token:
+                diffs.append(f"[token-missing-in-ref] '{type_name}' token_target is in types.yaml but not in {ref_file.name} table")
+
+        # ref テーブルの型が types.yaml にあるかチェック
+        for type_name in sorted(ref_token.keys()):
+            if type_name not in token_thresholds:
+                diffs.append(f"[token-missing-in-yaml] '{type_name}' is in {ref_file.name} token table but not in types.yaml token_target")
+
+        # warning < critical チェック
+        for type_name in sorted(ref_token.keys()):
+            warn_val, crit_val = ref_token[type_name]
+            if warn_val >= crit_val:
+                diffs.append(f"[token-invalid] {type_name}: warning ({warn_val}) must be < critical ({crit_val})")
+
+        # 値の一致チェック
+        for type_name in sorted(set(token_thresholds.keys()) & set(ref_token.keys())):
+            yaml_warn, yaml_crit = token_thresholds[type_name]
+            ref_warn, ref_crit = ref_token[type_name]
+            if yaml_warn != ref_warn or yaml_crit != ref_crit:
+                diffs.append(
+                    f"[token-mismatch] {type_name}: yaml=({yaml_warn},{yaml_crit}) vs ref=({ref_warn},{ref_crit})"
+                )
 
     if diffs:
         print(f"Found {len(diffs)} difference(s):")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for path field auto-update in rename_component().
 
-Spec: openspec/changes/rename-complete/specs/path-update/spec.md
+Spec: deltaspec/changes/rename-complete/specs/path-update/spec.md
 Requirement: path フィールドの自動更新
 
 Coverage: edge-cases

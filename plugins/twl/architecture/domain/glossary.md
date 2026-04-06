@@ -16,7 +16,7 @@
 | Orchestrator | Pilot 内の Issue 実行ループ管理コンポーネント。launch → poll → merge-gate → health-check を統括 | Autopilot |
 | Project Board | GitHub Projects V2 ボード。Issue ステータスの SSOT。autopilot の Issue 選択元 | Project Management |
 | TWiLL | Type-Woven, invariant-Led Layering。フレームワークの正式名称。CLI コマンド `twl` で操作 | 全体 |
-| twl | TWiLL の CLI コマンド短縮形。旧名 `loom` | 全体 |
+| twl | TWiLL の CLI コマンド短縮形 | 全体 |
 | twill-ecosystem | クロスリポジトリプロジェクト（#3）。TWiLL モノリポを統合管理 | Project Management |
 | DeltaSpec | OpenSpec の変更仕様管理 | Issue Management |
 | ECC | 外部知識ソース（doobidoo memory）。自己改善の教師データとして活用 | Self-Improve |

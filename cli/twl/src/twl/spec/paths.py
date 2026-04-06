@@ -1,36 +1,36 @@
-"""openspec root detection and path resolution."""
+"""deltaspec root detection and path resolution."""
 
 from pathlib import Path
 
 
-class OpenspecNotFound(Exception):
+class DeltaspecNotFound(Exception):
     pass
 
 
-def find_openspec_root(start: Path | None = None) -> Path:
-    """Walk up from start (default: cwd) until openspec/ is found.
+def find_deltaspec_root(start: Path | None = None) -> Path:
+    """Walk up from start (default: cwd) until deltaspec/ is found.
 
-    Returns the project root containing openspec/, not the openspec/ dir itself.
-    Raises OpenspecNotFound if not found.
+    Returns the project root containing deltaspec/, not the deltaspec/ dir itself.
+    Raises DeltaspecNotFound if not found.
     """
     current = (start or Path.cwd()).resolve()
     while True:
-        if (current / "openspec").is_dir():
+        if (current / "deltaspec").is_dir():
             return current
         parent = current.parent
         if parent == current:
-            raise OpenspecNotFound(
-                "openspec/ directory not found. Run from a project with openspec/ initialized."
+            raise DeltaspecNotFound(
+                "deltaspec/ directory not found. Run from a project with deltaspec/ initialized."
             )
         current = parent
 
 
 def get_changes_dir(root: Path) -> Path:
-    return root / "openspec" / "changes"
+    return root / "deltaspec" / "changes"
 
 
 def get_specs_dir(root: Path) -> Path:
-    return root / "openspec" / "specs"
+    return root / "deltaspec" / "specs"
 
 
 def get_change_dir(root: Path, name: str) -> Path:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for chain generate --check Template B functionality (called-by drift detection).
 
-Spec: openspec/changes/chain-generate-write-template-b/specs/template-b-check.md
+Spec: deltaspec/changes/chain-generate-write-template-b/specs/template-b-check.md
 
 These tests are TDD-style: they define expected behavior BEFORE full implementation.
 Template B --check detects drift in frontmatter description called-by sentences.

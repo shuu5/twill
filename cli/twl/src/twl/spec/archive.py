@@ -5,7 +5,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from .paths import OpenspecNotFound, find_openspec_root, get_changes_dir, get_specs_dir
+from .paths import DeltaspecNotFound, find_deltaspec_root, get_changes_dir, get_specs_dir
 from .new import _KEBAB_RE
 
 _ADDED_RE = re.compile(r"^## ADDED Requirements", re.MULTILINE)
@@ -86,8 +86,8 @@ def cmd_archive(name: str, yes: bool = False, skip_specs: bool = False) -> int:
         return 1
 
     try:
-        root = find_openspec_root()
-    except OpenspecNotFound as e:
+        root = find_deltaspec_root()
+    except DeltaspecNotFound as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
@@ -99,7 +99,7 @@ def cmd_archive(name: str, yes: bool = False, skip_specs: bool = False) -> int:
     if not yes:
         print(f"Archive change '{name}'?")
         if not skip_specs:
-            print("This will update main specs in openspec/specs/.")
+            print("This will update main specs in deltaspec/specs/.")
         answer = input("Continue? [y/N] ").strip().lower()
         if answer not in ("y", "yes"):
             print("Cancelled.")

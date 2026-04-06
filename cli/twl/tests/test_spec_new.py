@@ -11,7 +11,7 @@ from twl.spec.new import cmd_new
 
 
 def make_project(tmp_path: Path) -> Path:
-    (tmp_path / "openspec" / "changes").mkdir(parents=True)
+    (tmp_path / "deltaspec" / "changes").mkdir(parents=True)
     return tmp_path
 
 
@@ -19,11 +19,11 @@ def test_creates_change_directory(tmp_path, monkeypatch):
     monkeypatch.chdir(make_project(tmp_path))
     rc = cmd_new("my-change")
     assert rc == 0
-    change_dir = tmp_path / "openspec" / "changes" / "my-change"
+    change_dir = tmp_path / "deltaspec" / "changes" / "my-change"
     assert change_dir.is_dir()
-    openspec_yaml = change_dir / ".openspec.yaml"
-    assert openspec_yaml.exists()
-    content = openspec_yaml.read_text()
+    deltaspec_yaml = change_dir / ".deltaspec.yaml"
+    assert deltaspec_yaml.exists()
+    content = deltaspec_yaml.read_text()
     assert "schema: spec-driven" in content
     assert "created:" in content
 
@@ -53,7 +53,7 @@ def test_accepts_numbers_and_hyphens(tmp_path, monkeypatch):
     assert rc == 0
 
 
-def test_error_without_openspec(tmp_path, monkeypatch):
+def test_error_without_deltaspec(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     rc = cmd_new("my-change")
     assert rc == 1

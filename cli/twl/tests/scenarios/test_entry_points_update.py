@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Tests for entry_points list auto-update in rename_component().
 
-Spec: openspec/changes/rename-complete/specs/entry-points-update/spec.md
+Spec: deltaspec/changes/rename-complete/specs/entry-points-update/spec.md
 Requirement: entry_points リストの自動更新
 
 Coverage: edge-cases
