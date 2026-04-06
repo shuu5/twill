@@ -5,11 +5,15 @@ Replaces: worktree-create.sh
 CLI usage:
     python3 -m twl.autopilot.worktree create <branch-name|#issue> [--from <base>]
                                               [-R <owner/repo>] [--repo-path <path>]
+    python3 -m twl.autopilot.worktree list [--repo-path <path>]
+    python3 -m twl.autopilot.worktree cd <branch-name> [--repo-path <path>]
+    python3 -m twl.autopilot.worktree start <branch-name> [--repo-path <path>]
 """
 
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -285,6 +289,109 @@ class WorktreeManager:
 
         return worktree_dir
 
+    def _list_worktrees(self, project_dir: Path) -> list[tuple[str, Path]]:
+        """Return [(branch_name, worktree_path)] for entries under worktrees/."""
+        result = subprocess.run(
+            ["git", "worktree", "list", "--porcelain"],
+            capture_output=True, text=True, cwd=project_dir,
+        )
+        if result.returncode != 0:
+            raise WorktreeError("git worktree list に失敗しました")
+
+        worktrees_dir = project_dir / "worktrees"
+        entries: list[tuple[str, Path]] = []
+        current_path: Path | None = None
+        current_branch: str | None = None
+
+        for line in result.stdout.splitlines():
+            if line.startswith("worktree "):
+                current_path = Path(line[len("worktree "):])
+                current_branch = None
+            elif line.startswith("branch "):
+                ref = line[len("branch "):]
+                # refs/heads/feat/17-foo → feat/17-foo
+                current_branch = ref.removeprefix("refs/heads/")
+            elif line == "" and current_path is not None:
+                try:
+                    current_path.relative_to(worktrees_dir)
+                    if current_branch:
+                        entries.append((current_branch, current_path))
+                except ValueError:
+                    pass
+                current_path = None
+                current_branch = None
+
+        # Flush last entry if file doesn't end with blank line
+        if current_path is not None and current_branch is not None:
+            try:
+                current_path.relative_to(worktrees_dir)
+                entries.append((current_branch, current_path))
+            except ValueError:
+                pass
+
+        return entries
+
+    def _resolve_worktree(
+        self, branch_query: str, project_dir: Path
+    ) -> tuple[str, Path]:
+        """Resolve a (possibly partial) branch name to (branch, path).
+
+        Raises WorktreeError if no match or multiple matches.
+        """
+        entries = self._list_worktrees(project_dir)
+        matches = [
+            (b, p) for b, p in entries if branch_query in b
+        ]
+        if not matches:
+            raise WorktreeError(
+                f"worktree が見つかりません: {branch_query!r}\n"
+                f"利用可能な worktree: {[b for b, _ in entries] or '(なし)'}"
+            )
+        if len(matches) > 1:
+            candidates = "\n".join(f"  {b}  {p}" for b, p in matches)
+            raise WorktreeError(
+                f"複数の worktree がマッチしました: {branch_query!r}\n{candidates}"
+            )
+        return matches[0]
+
+    def list(self) -> None:
+        """Print worktrees under worktrees/ with optional autopilot state."""
+        _, project_dir = _resolve_git_common_dir(self.repo_path)
+        entries = self._list_worktrees(project_dir)
+        if not entries:
+            print("(worktree なし)")
+            return
+
+        autopilot_dir = project_dir / ".autopilot" / "issues"
+        for branch, path in entries:
+            state = ""
+            if autopilot_dir.is_dir():
+                # Try to find a matching state file by branch name
+                for state_file in autopilot_dir.glob("issue-*.json"):
+                    try:
+                        data = json.loads(state_file.read_text())
+                        if data.get("branch") == branch:
+                            state = f"[{data.get('status', '')}]"
+                            break
+                    except (json.JSONDecodeError, OSError):
+                        pass
+            print(f"{branch}\t{path}\t{state}".rstrip())
+
+    def cd(self, branch_query: str) -> None:
+        """Print the path of a worktree matching branch_query to stdout."""
+        _, project_dir = _resolve_git_common_dir(self.repo_path)
+        _, worktree_path = self._resolve_worktree(branch_query, project_dir)
+        print(worktree_path)
+
+    def start(self, branch_query: str) -> None:
+        """Exec into a worktree and resume the Claude Code session (claude -c)."""
+        _, project_dir = _resolve_git_common_dir(self.repo_path)
+        _, worktree_path = self._resolve_worktree(branch_query, project_dir)
+        if not worktree_path.is_dir():
+            raise WorktreeError(f"worktree ディレクトリが存在しません: {worktree_path}")
+        os.chdir(worktree_path)
+        os.execvp("claude", ["claude", "-c"])
+
     @staticmethod
     def _sync_deps(worktree_dir: Path) -> None:
         """Sync language-specific dependencies if lock files are present."""
@@ -312,60 +419,99 @@ class WorktreeManager:
 # ---------------------------------------------------------------------------
 
 
+_USAGE = """\
+Usage: python3 -m twl.autopilot.worktree <command> [options]
+
+Commands:
+  create <branch-name|#issue> [--from <base>] [-R <owner/repo>] [--repo-path <path>]
+  list [--repo-path <path>]
+  cd <branch-name> [--repo-path <path>]
+      Output the worktree path; use with a shell function:
+        twlcd() { cd "$(python3 -m twl.autopilot.worktree cd "$1")"; }
+  start <branch-name> [--repo-path <path>]
+      Change to the worktree directory and exec 'claude -c'.
+"""
+
+
 def main(argv: list[str] | None = None) -> int:
     args = argv if argv is not None else sys.argv[1:]
 
     if not args:
-        print(
-            "Usage: python3 -m twl.autopilot.worktree create <branch-name|#issue>"
-            " [--from <base>] [-R <owner/repo>] [--repo-path <path>]",
-            file=sys.stderr,
-        )
+        print(_USAGE, file=sys.stderr)
         return 1
 
     command = args[0]
     rest = args[1:]
 
-    if command != "create":
+    if command not in ("create", "list", "cd", "start"):
         print(f"Unknown command: {command}", file=sys.stderr)
         return 1
 
-    # Parse create arguments
-    branch_name = ""
-    base_branch = "main"
-    repo: str | None = None
+    # Parse shared --repo-path option
     repo_path: str | None = None
-
+    filtered: list[str] = []
     i = 0
     while i < len(rest):
-        arg = rest[i]
-        if arg == "--from" and i + 1 < len(rest):
-            base_branch = rest[i + 1]
-            i += 2
-        elif arg == "-R" and i + 1 < len(rest):
-            repo = rest[i + 1]
-            i += 2
-        elif arg == "--repo-path" and i + 1 < len(rest):
+        if rest[i] == "--repo-path" and i + 1 < len(rest):
             repo_path = rest[i + 1]
             i += 2
         else:
-            if not branch_name:
-                branch_name = arg
+            filtered.append(rest[i])
             i += 1
-
-    if not branch_name:
-        print("エラー: ブランチ名を指定してください", file=sys.stderr)
-        print(
-            "使用方法: python3 -m twl.autopilot.worktree create"
-            " <branch-name | #issue-number> [--from <base-branch>]",
-            file=sys.stderr,
-        )
-        return 2
+    rest = filtered
 
     try:
         mgr = WorktreeManager(repo_path=repo_path)
+
+        if command == "list":
+            mgr.list()
+            return 0
+
+        if command == "cd":
+            if not rest:
+                print("エラー: ブランチ名を指定してください", file=sys.stderr)
+                return 2
+            mgr.cd(rest[0])
+            return 0
+
+        if command == "start":
+            if not rest:
+                print("エラー: ブランチ名を指定してください", file=sys.stderr)
+                return 2
+            mgr.start(rest[0])
+            return 0  # unreachable after execvp, but satisfies type checker
+
+        # command == "create"
+        branch_name = ""
+        base_branch = "main"
+        repo: str | None = None
+
+        i = 0
+        while i < len(rest):
+            arg = rest[i]
+            if arg == "--from" and i + 1 < len(rest):
+                base_branch = rest[i + 1]
+                i += 2
+            elif arg == "-R" and i + 1 < len(rest):
+                repo = rest[i + 1]
+                i += 2
+            else:
+                if not branch_name:
+                    branch_name = arg
+                i += 1
+
+        if not branch_name:
+            print("エラー: ブランチ名を指定してください", file=sys.stderr)
+            print(
+                "使用方法: python3 -m twl.autopilot.worktree create"
+                " <branch-name | #issue-number> [--from <base-branch>]",
+                file=sys.stderr,
+            )
+            return 2
+
         mgr.create(branch_name, base_branch=base_branch, repo=repo)
         return 0
+
     except WorktreeArgError as e:
         print(f"エラー: {e}", file=sys.stderr)
         return 2
