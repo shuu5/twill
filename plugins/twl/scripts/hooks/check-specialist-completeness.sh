@@ -52,8 +52,11 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
 
   SPAWNED_FILE="/tmp/.specialist-spawned-${CONTEXT}.txt"
 
-  # Read manifest (strip blank lines, comments, and twl:twl: prefix)
-  mapfile -t MANIFEST_LIST < <(grep -v '^#' "$MANIFEST_FILE" | grep -v '^[[:space:]]*$' | sed 's|^twl:twl:||')
+  # Refuse symlinks for spawned tracking file (prevent symlink attack on write target)
+  [[ -L "$SPAWNED_FILE" ]] && continue
+
+  # Read manifest (strip blank lines, comments, twl:twl: prefix, and unsafe entries)
+  mapfile -t MANIFEST_LIST < <(grep -v '^#' "$MANIFEST_FILE" | grep -v '^[[:space:]]*$' | sed 's|^twl:twl:||' | grep -E '^[a-zA-Z0-9:_-]+$')
   [[ ${#MANIFEST_LIST[@]} -eq 0 ]] && continue
 
   # If current specialist is in this manifest, record it atomically with flock
@@ -63,16 +66,16 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
       {
         flock 9
         echo "$SPECIALIST_NAME" >> "$SPAWNED_FILE"
-        sort -u "$SPAWNED_FILE" -o "$SPAWNED_FILE"
+        LC_ALL=C sort -u "$SPAWNED_FILE" -o "$SPAWNED_FILE"
       } 9>> "$SPAWNED_FILE"
       break
     fi
   done
 
   # Check completeness using set difference (more accurate than count comparison)
-  mapfile -t MISSING < <(comm -23 \
-    <(printf '%s\n' "${MANIFEST_LIST[@]}" | sort) \
-    <( [[ -f "$SPAWNED_FILE" ]] && sort "$SPAWNED_FILE" || true ))
+  mapfile -t MISSING < <(LC_ALL=C comm -23 \
+    <(printf '%s\n' "${MANIFEST_LIST[@]}" | LC_ALL=C sort) \
+    <( [[ -f "$SPAWNED_FILE" ]] && LC_ALL=C sort "$SPAWNED_FILE" || true ))
 
   if [[ ${#MISSING[@]} -eq 0 ]]; then
     # All specialists spawned for this context, noop
