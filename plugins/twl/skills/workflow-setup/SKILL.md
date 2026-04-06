@@ -47,5 +47,5 @@ setup chain のオーケストレーター。chain 実行順序は deps.yaml に
 
 ## compaction 復帰プロトコル
 
-`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `init worktree-create project-board-status-update crg-auto-build change-propose ac-extract`
+`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `init board-status-update crg-auto-build arch-ref change-propose ac-extract`
 
