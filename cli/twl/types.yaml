@@ -7,33 +7,50 @@ types:
     section: skills
     can_spawn: [workflow, atomic, composite, specialist, reference, script]
     spawnable_by: [user, launcher]
+    token_target:
+      warning: 1500
+      critical: 2500
 
   workflow:
     section: skills
     can_spawn: [atomic, composite, specialist, script]
     spawnable_by: [controller, user]
+    token_target:
+      warning: 1200
+      critical: 2000
 
   atomic:
     section: commands
     can_spawn: [reference, script]
     spawnable_by: [workflow, controller]
+    token_target:
+      warning: 1500
+      critical: 2500
 
   composite:
     section: commands
     can_spawn: [specialist, script, reference]
     spawnable_by: [workflow, controller]
+    token_target:
+      warning: 1500
+      critical: 2500
 
   specialist:
     section: agents
     can_spawn: []
     spawnable_by: [workflow, composite, controller]
+    token_target:
+      warning: 1800
+      critical: 2500
 
   reference:
     section: skills
     can_spawn: []
     spawnable_by: [controller, atomic, composite, workflow, agents.skills, all]
+    # token_target なし（意図的除外）
 
   script:
     section: scripts
     can_spawn: [script]
     spawnable_by: [atomic, composite, script, controller, workflow]
+    # token_target なし（意図的除外）

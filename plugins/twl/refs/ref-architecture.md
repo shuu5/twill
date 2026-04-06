@@ -1,15 +1,10 @@
 ---
-name: twl:ref-architecture
-description: アーキテクチャパターン評価チェックリスト
 type: reference
-spawnable_by:
-- controller
-- atomic
 ---
 
 <!-- Synced from twl docs/ — do not edit directly -->
 
-# Loom アーキテクチャパターン評価チェックリスト
+# TWiLL アーキテクチャパターン評価チェックリスト
 
 ## 対象パターン（7種）
 

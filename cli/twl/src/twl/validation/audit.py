@@ -238,8 +238,8 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
 
     # Section 6: Token Bloat
     from twl.core.plugin import count_tokens
-    from twl.validation.deep import TOKEN_THRESHOLDS
-    from twl.core.types import resolve_type as _rt
+    from twl.core.types import load_token_thresholds as _ltt, resolve_type as _rt
+    TOKEN_THRESHOLDS = _ltt()
 
     for name, comp in sorted(all_components.items()):
         comp_type = _rt(comp['type'])
@@ -515,7 +515,8 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
     print("|-----------|------|--------|------|------|----------|")
 
     from twl.core.plugin import count_tokens as _ct
-    from twl.validation.deep import TOKEN_THRESHOLDS as _TT
+    from twl.core.types import load_token_thresholds as _ltt2
+    _TT = _ltt2()
 
     for name, comp in sorted(all_components.items()):
         comp_type = resolve_type(comp['type'])
