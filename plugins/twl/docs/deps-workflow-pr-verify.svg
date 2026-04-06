@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_verify</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="77.78" cy="-425.49" rx="77.56" ry="21.43"/>
 <text text-anchor="middle" x="77.78" y="-428.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;verify</text>
-<text text-anchor="middle" x="77.78" y="-417.49" font-family="Helvetica,sans-Serif" font-size="10.00">(855 tok)</text>
+<text text-anchor="middle" x="77.78" y="-417.49" font-family="Helvetica,sans-Serif" font-size="10.00">(666 tok)</text>
 </g>
 <!-- cmd_ts_preflight -->
 <g id="node6" class="node">
@@ -113,7 +113,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="501.16,-95.49 472.5,-119.98 415.19,-119.98 386.54,-95.49 415.19,-71.01 472.5,-71.01 501.16,-95.49"/>
 <text text-anchor="middle" x="443.85" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="443.85" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,161 tok)</text>
+<text text-anchor="middle" x="443.85" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;script_chain_runner -->
 <g id="edge8" class="edge">
@@ -634,14 +634,14 @@
 <title>script_state_read</title>
 <polygon fill="#ff9800" stroke="black" points="495.22,-1567.49 469.54,-1591.98 418.16,-1591.98 392.47,-1567.49 418.16,-1543.01 469.54,-1543.01 495.22,-1567.49"/>
 <text text-anchor="middle" x="443.85" y="-1570.49" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;read</text>
-<text text-anchor="middle" x="443.85" y="-1559.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,288 tok)</text>
+<text text-anchor="middle" x="443.85" y="-1559.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,611 tok)</text>
 </g>
 <!-- script_state_write -->
 <g id="node32" class="node">
 <title>script_state_write</title>
 <polygon fill="#ff9800" stroke="black" points="495.22,-1496.49 469.54,-1520.98 418.16,-1520.98 392.47,-1496.49 418.16,-1472.01 469.54,-1472.01 495.22,-1496.49"/>
 <text text-anchor="middle" x="443.85" y="-1499.49" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;write</text>
-<text text-anchor="middle" x="443.85" y="-1488.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,288 tok)</text>
+<text text-anchor="middle" x="443.85" y="-1488.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,611 tok)</text>
 </g>
 <!-- script_state_read&#45;&gt;script_state_write -->
 <!-- script_state_read&#45;&gt;script_state_write -->
@@ -674,7 +674,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="498.76,-1922.49 471.3,-1946.98 416.39,-1946.98 388.93,-1922.49 416.39,-1898.01 471.3,-1898.01 498.76,-1922.49"/>
 <text text-anchor="middle" x="443.85" y="-1925.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="443.85" y="-1914.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,161 tok)</text>
+<text text-anchor="middle" x="443.85" y="-1914.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node40" class="node">

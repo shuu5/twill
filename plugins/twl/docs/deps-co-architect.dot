@@ -25,7 +25,7 @@ digraph Dependencies {
     cmd_architect_completeness_check [label="architect-completeness-check\n(653 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_architect_decompose [label="architect-decompose\n(1,056 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_architect_group_refine [label="architect-group-refine\n(1,084 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_architect_issue_create [label="architect-issue-create\n(2,352 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_architect_issue_create [label="architect-issue-create\n(1,463 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_evaluate_architecture [label="evaluate-architecture\n(796 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_explore [label="explore\n(1,490 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 

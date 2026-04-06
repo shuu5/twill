@@ -16,14 +16,14 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="twl:workflow-setup\n(2,089 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_test_ready [label="twl:workflow-test-ready\n(2,123 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_pr_verify [label="twl:workflow-pr-verify\n(855 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_pr_fix [label="twl:workflow-pr-fix\n(863 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_pr_merge [label="twl:workflow-pr-merge\n(1,118 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="twl:workflow-setup\n(894 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_test_ready [label="twl:workflow-test-ready\n(761 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_verify [label="twl:workflow-pr-verify\n(666 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_fix [label="twl:workflow-pr-fix\n(775 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_merge [label="twl:workflow-pr-merge\n(988 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_dead_cleanup [label="twl:workflow-dead-cleanup\n(249 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_tech_debt_triage [label="twl:workflow-tech-debt-triage\n(1,015 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_self_improve [label="twl:workflow-self-improve\n(730 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_self_improve [label="twl:workflow-self-improve\n(739 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -72,7 +72,7 @@ digraph Dependencies {
     cmd_autopilot_init [label="autopilot-init\n(608 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_launch [label="autopilot-launch\n(922 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_poll [label="autopilot-poll\n(1,319 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_autopilot_phase_execute [label="autopilot-phase-execute\n(2,325 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_phase_execute [label="autopilot-phase-execute\n(1,207 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_phase_postprocess [label="autopilot-phase-postprocess\n(802 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_collect [label="autopilot-collect\n(525 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_retrospective [label="autopilot-retrospective\n(1,299 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -107,8 +107,8 @@ digraph Dependencies {
     agent_e2e_generate [label="e2e-generate\n(2,028 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
-    script_state_read [label="state-read\n(4,288 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_state_write [label="state-write\n(4,288 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_read [label="state-read\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_write [label="state-write\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_init [label="autopilot-init\n(2,271 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_launch [label="autopilot-launch\n(3,313 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_create [label="session-create\n(4,023 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -123,12 +123,12 @@ digraph Dependencies {
     script_autopilot_should_skip [label="autopilot-should-skip\n(422 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_orchestrator [label="autopilot-orchestrator\n(8,000 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_mergegate [label="autopilot-mergegate\n(4,407 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_runner [label="chain-runner\n(7,161 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(7,545 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(3,307 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_audit [label="session-audit\n(4,023 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_auto_merge [label="auto-merge\n(2,547 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_steps [label="chain-steps\n(7,161 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_auto_merge [label="auto-merge\n(2,855 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(7,545 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_compaction_resume [label="compaction-resume\n(1,031 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_health_report [label="health-report\n(804 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

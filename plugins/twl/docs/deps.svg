@@ -26,7 +26,7 @@
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="291.1" cy="-6169" rx="69.09" ry="21.43"/>
 <text text-anchor="middle" x="291.1" y="-6172" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;setup</text>
-<text text-anchor="middle" x="291.1" y="-6161" font-family="Helvetica,sans-Serif" font-size="10.00">(2,089 tok)</text>
+<text text-anchor="middle" x="291.1" y="-6161" font-family="Helvetica,sans-Serif" font-size="10.00">(894 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_setup -->
 <g id="edge13" class="edge">
@@ -39,7 +39,7 @@
 <title>skill_workflow_test_ready</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="291.1" cy="-5949" rx="83.38" ry="21.43"/>
 <text text-anchor="middle" x="291.1" y="-5952" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;test&#45;ready</text>
-<text text-anchor="middle" x="291.1" y="-5941" font-family="Helvetica,sans-Serif" font-size="10.00">(2,123 tok)</text>
+<text text-anchor="middle" x="291.1" y="-5941" font-family="Helvetica,sans-Serif" font-size="10.00">(761 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_test_ready -->
 <g id="edge14" class="edge">
@@ -52,7 +52,7 @@
 <title>skill_workflow_pr_verify</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="291.1" cy="-5547" rx="77.56" ry="21.43"/>
 <text text-anchor="middle" x="291.1" y="-5550" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;verify</text>
-<text text-anchor="middle" x="291.1" y="-5539" font-family="Helvetica,sans-Serif" font-size="10.00">(855 tok)</text>
+<text text-anchor="middle" x="291.1" y="-5539" font-family="Helvetica,sans-Serif" font-size="10.00">(666 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_pr_verify -->
 <g id="edge15" class="edge">
@@ -65,7 +65,7 @@
 <title>skill_workflow_pr_fix</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="291.1" cy="-5050" rx="67.76" ry="21.43"/>
 <text text-anchor="middle" x="291.1" y="-5053" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;fix</text>
-<text text-anchor="middle" x="291.1" y="-5042" font-family="Helvetica,sans-Serif" font-size="10.00">(863 tok)</text>
+<text text-anchor="middle" x="291.1" y="-5042" font-family="Helvetica,sans-Serif" font-size="10.00">(775 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_pr_fix -->
 <g id="edge16" class="edge">
@@ -78,7 +78,7 @@
 <title>skill_workflow_pr_merge</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="291.1" cy="-4697" rx="79.81" ry="21.43"/>
 <text text-anchor="middle" x="291.1" y="-4700" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;merge</text>
-<text text-anchor="middle" x="291.1" y="-4689" font-family="Helvetica,sans-Serif" font-size="10.00">(1,118 tok)</text>
+<text text-anchor="middle" x="291.1" y="-4689" font-family="Helvetica,sans-Serif" font-size="10.00">(988 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_pr_merge -->
 <g id="edge17" class="edge">
@@ -117,7 +117,7 @@
 <title>skill_workflow_self_improve</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="291.1" cy="-4268" rx="90.52" ry="21.43"/>
 <text text-anchor="middle" x="291.1" y="-4271" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;self&#45;improve</text>
-<text text-anchor="middle" x="291.1" y="-4260" font-family="Helvetica,sans-Serif" font-size="10.00">(730 tok)</text>
+<text text-anchor="middle" x="291.1" y="-4260" font-family="Helvetica,sans-Serif" font-size="10.00">(739 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;skill_workflow_self_improve -->
 <g id="edge20" class="edge">
@@ -126,7 +126,7 @@
 <polygon fill="black" stroke="black" points="231.33,-4249.88 241.92,-4250.08 233.77,-4243.32 231.33,-4249.88"/>
 </g>
 <!-- cmd_self_improve_review -->
-<g id="node34" class="node">
+<g id="node35" class="node">
 <title>cmd_self_improve_review</title>
 <polygon fill="#e3f2fd" stroke="black" points="573.51,-6187 472.51,-6187 472.51,-6151 573.51,-6151 573.51,-6187"/>
 <text text-anchor="middle" x="523.01" y="-6172" font-family="Helvetica,sans-Serif" font-size="10.00">self&#45;improve&#45;review</text>
@@ -139,7 +139,7 @@
 <polygon fill="black" stroke="black" points="461.91,-6158.25 472.48,-6157.54 463.78,-6151.5 461.91,-6158.25"/>
 </g>
 <!-- cmd_autopilot_init -->
-<g id="node112" class="node">
+<g id="node113" class="node">
 <title>cmd_autopilot_init</title>
 <polygon fill="#e3f2fd" stroke="black" points="557.51,-3954 488.51,-3954 488.51,-3918 557.51,-3918 557.51,-3954"/>
 <text text-anchor="middle" x="523.01" y="-3939" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;init</text>
@@ -152,7 +152,7 @@
 <polygon fill="black" stroke="black" points="483.02,-3962 490.01,-3954.04 479.58,-3955.9 483.02,-3962"/>
 </g>
 <!-- cmd_autopilot_launch -->
-<g id="node113" class="node">
+<g id="node114" class="node">
 <title>cmd_autopilot_launch</title>
 <polygon fill="#e3f2fd" stroke="black" points="565.51,-3896 480.51,-3896 480.51,-3860 565.51,-3860 565.51,-3896"/>
 <text text-anchor="middle" x="523.01" y="-3881" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;launch</text>
@@ -165,7 +165,7 @@
 <polygon fill="black" stroke="black" points="472.15,-3899.03 480.43,-3892.42 469.84,-3892.42 472.15,-3899.03"/>
 </g>
 <!-- cmd_autopilot_poll -->
-<g id="node114" class="node">
+<g id="node115" class="node">
 <title>cmd_autopilot_poll</title>
 <polygon fill="#e3f2fd" stroke="black" points="558.51,-3838 487.51,-3838 487.51,-3802 558.51,-3802 558.51,-3838"/>
 <text text-anchor="middle" x="523.01" y="-3823" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;poll</text>
@@ -178,11 +178,11 @@
 <polygon fill="black" stroke="black" points="477.73,-3825.83 487.42,-3821.55 477.18,-3818.85 477.73,-3825.83"/>
 </g>
 <!-- cmd_autopilot_phase_execute -->
-<g id="node115" class="node">
+<g id="node116" class="node">
 <title>cmd_autopilot_phase_execute</title>
 <polygon fill="#e3f2fd" stroke="black" points="583.01,-3780 463.01,-3780 463.01,-3744 583.01,-3744 583.01,-3780"/>
 <text text-anchor="middle" x="523.01" y="-3765" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;phase&#45;execute</text>
-<text text-anchor="middle" x="523.01" y="-3754" font-family="Helvetica,sans-Serif" font-size="10.00">(2,325 tok)</text>
+<text text-anchor="middle" x="523.01" y="-3754" font-family="Helvetica,sans-Serif" font-size="10.00">(1,207 tok)</text>
 </g>
 <!-- skill_co_autopilot&#45;&gt;cmd_autopilot_phase_execute -->
 <g id="edge4" class="edge">
@@ -191,7 +191,7 @@
 <polygon fill="black" stroke="black" points="452.62,-3760.65 462.7,-3757.4 452.79,-3753.65 452.62,-3760.65"/>
 </g>
 <!-- cmd_autopilot_phase_postprocess -->
-<g id="node116" class="node">
+<g id="node117" class="node">
 <title>cmd_autopilot_phase_postprocess</title>
 <polygon fill="#e3f2fd" stroke="black" points="592.51,-3722 453.51,-3722 453.51,-3686 592.51,-3686 592.51,-3722"/>
 <text text-anchor="middle" x="523.01" y="-3707" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;phase&#45;postprocess</text>
@@ -204,7 +204,7 @@
 <polygon fill="black" stroke="black" points="443.04,-3696.89 453.29,-3694.2 443.6,-3689.91 443.04,-3696.89"/>
 </g>
 <!-- cmd_autopilot_collect -->
-<g id="node117" class="node">
+<g id="node118" class="node">
 <title>cmd_autopilot_collect</title>
 <polygon fill="#e3f2fd" stroke="black" points="565.51,-3664 480.51,-3664 480.51,-3628 565.51,-3628 565.51,-3664"/>
 <text text-anchor="middle" x="523.01" y="-3649" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;collect</text>
@@ -217,7 +217,7 @@
 <polygon fill="black" stroke="black" points="469.9,-3639.42 480.32,-3637.52 470.99,-3632.5 469.9,-3639.42"/>
 </g>
 <!-- cmd_autopilot_retrospective -->
-<g id="node118" class="node">
+<g id="node119" class="node">
 <title>cmd_autopilot_retrospective</title>
 <polygon fill="#e3f2fd" stroke="black" points="579.51,-3606 466.51,-3606 466.51,-3570 579.51,-3570 579.51,-3606"/>
 <text text-anchor="middle" x="523.01" y="-3591" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;retrospective</text>
@@ -230,7 +230,7 @@
 <polygon fill="black" stroke="black" points="455.87,-3578.02 466.29,-3576.11 456.96,-3571.11 455.87,-3578.02"/>
 </g>
 <!-- cmd_autopilot_patterns -->
-<g id="node119" class="node">
+<g id="node120" class="node">
 <title>cmd_autopilot_patterns</title>
 <polygon fill="#e3f2fd" stroke="black" points="569.01,-3548 477.01,-3548 477.01,-3512 569.01,-3512 569.01,-3548"/>
 <text text-anchor="middle" x="523.01" y="-3533" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;patterns</text>
@@ -243,7 +243,7 @@
 <polygon fill="black" stroke="black" points="466.52,-3520.93 476.99,-3519.33 467.81,-3514.05 466.52,-3520.93"/>
 </g>
 <!-- cmd_autopilot_cross_issue -->
-<g id="node120" class="node">
+<g id="node121" class="node">
 <title>cmd_autopilot_cross_issue</title>
 <polygon fill="#e3f2fd" stroke="black" points="576.51,-3490 469.51,-3490 469.51,-3454 576.51,-3454 576.51,-3490"/>
 <text text-anchor="middle" x="523.01" y="-3475" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;cross&#45;issue</text>
@@ -256,7 +256,7 @@
 <polygon fill="black" stroke="black" points="459,-3461.02 469.46,-3459.39 460.27,-3454.13 459,-3461.02"/>
 </g>
 <!-- cmd_autopilot_summary -->
-<g id="node121" class="node">
+<g id="node122" class="node">
 <title>cmd_autopilot_summary</title>
 <polygon fill="#e3f2fd" stroke="black" points="571.51,-3432 474.51,-3432 474.51,-3396 571.51,-3396 571.51,-3432"/>
 <text text-anchor="middle" x="523.01" y="-3417" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;summary</text>
@@ -269,7 +269,7 @@
 <polygon fill="black" stroke="black" points="463.98,-3403.59 474.47,-3402.11 465.35,-3396.73 463.98,-3403.59"/>
 </g>
 <!-- cmd_session_audit -->
-<g id="node122" class="node">
+<g id="node123" class="node">
 <title>cmd_session_audit</title>
 <polygon fill="#e3f2fd" stroke="black" points="560.01,-3374 486.01,-3374 486.01,-3338 560.01,-3338 560.01,-3374"/>
 <text text-anchor="middle" x="523.01" y="-3359" font-family="Helvetica,sans-Serif" font-size="10.00">session&#45;audit</text>
@@ -282,7 +282,7 @@
 <polygon fill="black" stroke="black" points="475.35,-3347.62 485.87,-3346.37 476.87,-3340.78 475.35,-3347.62"/>
 </g>
 <!-- script_autopilot_plan -->
-<g id="node165" class="node">
+<g id="node166" class="node">
 <title>script_autopilot_plan</title>
 <polygon fill="#ff9800" stroke="black" points="805.48,-6486 775.31,-6510.49 714.97,-6510.49 684.8,-6486 714.97,-6461.51 775.31,-6461.51 805.48,-6486"/>
 <text text-anchor="middle" x="745.14" y="-6489" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;plan</text>
@@ -295,7 +295,7 @@
 <polygon fill="black" stroke="black" points="690.9,-6504.44 698.95,-6497.55 688.36,-6497.92 690.9,-6504.44"/>
 </g>
 <!-- script_autopilot_orchestrator -->
-<g id="node167" class="node">
+<g id="node168" class="node">
 <title>script_autopilot_orchestrator</title>
 <polygon fill="#ff9800" stroke="black" points="833.5,-6557 789.32,-6581.49 700.96,-6581.49 656.78,-6557 700.96,-6532.51 789.32,-6532.51 833.5,-6557"/>
 <text text-anchor="middle" x="745.14" y="-6560" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;orchestrator</text>
@@ -390,11 +390,11 @@
 <polygon fill="black" stroke="black" points="1265.15,-2237.04 1269.2,-2246.83 1272.13,-2236.65 1265.15,-2237.04"/>
 </g>
 <!-- cmd_issue_structure -->
-<g id="node52" class="node">
+<g id="node53" class="node">
 <title>cmd_issue_structure</title>
 <polygon fill="#e3f2fd" stroke="black" points="563.51,-2388 482.51,-2388 482.51,-2352 563.51,-2352 563.51,-2388"/>
 <text text-anchor="middle" x="523.01" y="-2373" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;structure</text>
-<text text-anchor="middle" x="523.01" y="-2362" font-family="Helvetica,sans-Serif" font-size="10.00">(2,178 tok)</text>
+<text text-anchor="middle" x="523.01" y="-2362" font-family="Helvetica,sans-Serif" font-size="10.00">(1,227 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_issue_structure -->
 <g id="edge24" class="edge">
@@ -403,7 +403,7 @@
 <polygon fill="black" stroke="black" points="472.22,-2370.89 482.47,-2368.2 472.79,-2363.91 472.22,-2370.89"/>
 </g>
 <!-- cmd_issue_create -->
-<g id="node53" class="node">
+<g id="node54" class="node">
 <title>cmd_issue_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="558.01,-2272 488.01,-2272 488.01,-2236 558.01,-2236 558.01,-2272"/>
 <text text-anchor="middle" x="523.01" y="-2257" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;create</text>
@@ -416,7 +416,7 @@
 <polygon fill="black" stroke="black" points="477.56,-2252.41 487.94,-2250.26 478.49,-2245.47 477.56,-2252.41"/>
 </g>
 <!-- cmd_issue_bulk_create -->
-<g id="node54" class="node">
+<g id="node55" class="node">
 <title>cmd_issue_bulk_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="568.51,-2214 477.51,-2214 477.51,-2178 568.51,-2178 568.51,-2214"/>
 <text text-anchor="middle" x="523.01" y="-2199" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;bulk&#45;create</text>
@@ -429,7 +429,7 @@
 <polygon fill="black" stroke="black" points="466.95,-2191.56 477.38,-2189.67 468.05,-2184.65 466.95,-2191.56"/>
 </g>
 <!-- cmd_issue_tech_debt_absorb -->
-<g id="node55" class="node">
+<g id="node56" class="node">
 <title>cmd_issue_tech_debt_absorb</title>
 <polygon fill="#e3f2fd" stroke="black" points="581.01,-2330 465.01,-2330 465.01,-2294 581.01,-2294 581.01,-2330"/>
 <text text-anchor="middle" x="523.01" y="-2315" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;tech&#45;debt&#45;absorb</text>
@@ -442,7 +442,7 @@
 <polygon fill="black" stroke="black" points="454.52,-2309.22 464.88,-2307.01 455.41,-2302.27 454.52,-2309.22"/>
 </g>
 <!-- cmd_issue_spec_review -->
-<g id="node56" class="node">
+<g id="node57" class="node">
 <title>cmd_issue_spec_review</title>
 <polygon fill="#bbdefb" stroke="black" points="570.51,-2156 475.51,-2156 475.51,-2120 570.51,-2120 570.51,-2156"/>
 <text text-anchor="middle" x="523.01" y="-2141" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;spec&#45;review</text>
@@ -455,7 +455,7 @@
 <polygon fill="black" stroke="black" points="464.98,-2133.79 475.37,-2131.72 465.96,-2126.86 464.98,-2133.79"/>
 </g>
 <!-- cmd_issue_review_aggregate -->
-<g id="node57" class="node">
+<g id="node58" class="node">
 <title>cmd_issue_review_aggregate</title>
 <polygon fill="#e3f2fd" stroke="black" points="581.51,-2098 464.51,-2098 464.51,-2062 581.51,-2062 581.51,-2098"/>
 <text text-anchor="middle" x="523.01" y="-2083" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;review&#45;aggregate</text>
@@ -468,7 +468,7 @@
 <polygon fill="black" stroke="black" points="454.02,-2079.25 464.22,-2076.38 454.46,-2072.26 454.02,-2079.25"/>
 </g>
 <!-- cmd_issue_glossary_check -->
-<g id="node58" class="node">
+<g id="node59" class="node">
 <title>cmd_issue_glossary_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="577.51,-1948 468.51,-1948 468.51,-1912 577.51,-1912 577.51,-1948"/>
 <text text-anchor="middle" x="523.01" y="-1933" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;glossary&#45;check</text>
@@ -481,7 +481,7 @@
 <polygon fill="black" stroke="black" points="458.23,-1930.34 468.3,-1927.06 458.38,-1923.35 458.23,-1930.34"/>
 </g>
 <!-- cmd_issue_arch_drift -->
-<g id="node59" class="node">
+<g id="node60" class="node">
 <title>cmd_issue_arch_drift</title>
 <polygon fill="#e3f2fd" stroke="black" points="563.51,-1890 482.51,-1890 482.51,-1854 563.51,-1854 563.51,-1890"/>
 <text text-anchor="middle" x="523.01" y="-1875" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;arch&#45;drift</text>
@@ -494,7 +494,7 @@
 <polygon fill="black" stroke="black" points="472.28,-1873.29 482.34,-1869.98 472.41,-1866.29 472.28,-1873.29"/>
 </g>
 <!-- cmd_issue_cross_repo_create -->
-<g id="node60" class="node">
+<g id="node61" class="node">
 <title>cmd_issue_cross_repo_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="582.51,-1832 463.51,-1832 463.51,-1796 582.51,-1796 582.51,-1832"/>
 <text text-anchor="middle" x="523.01" y="-1817" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;cross&#45;repo&#45;create</text>
@@ -507,11 +507,11 @@
 <polygon fill="black" stroke="black" points="453.14,-1812.9 463.22,-1809.66 453.32,-1805.9 453.14,-1812.9"/>
 </g>
 <!-- cmd_project_board_sync -->
-<g id="node61" class="node">
+<g id="node62" class="node">
 <title>cmd_project_board_sync</title>
 <polygon fill="#e3f2fd" stroke="black" points="571.51,-1774 474.51,-1774 474.51,-1738 571.51,-1738 571.51,-1774"/>
 <text text-anchor="middle" x="523.01" y="-1759" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;board&#45;sync</text>
-<text text-anchor="middle" x="523.01" y="-1748" font-family="Helvetica,sans-Serif" font-size="10.00">(2,325 tok)</text>
+<text text-anchor="middle" x="523.01" y="-1748" font-family="Helvetica,sans-Serif" font-size="10.00">(1,167 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;cmd_project_board_sync -->
 <g id="edge33" class="edge">
@@ -520,7 +520,7 @@
 <polygon fill="black" stroke="black" points="464,-1753.02 474.23,-1750.27 464.52,-1746.04 464,-1753.02"/>
 </g>
 <!-- cmd_explore -->
-<g id="node87" class="node">
+<g id="node88" class="node">
 <title>cmd_explore</title>
 <polygon fill="#e3f2fd" stroke="black" points="554.51,-2782 491.51,-2782 491.51,-2746 554.51,-2746 554.51,-2782"/>
 <text text-anchor="middle" x="523.01" y="-2767" font-family="Helvetica,sans-Serif" font-size="10.00">explore</text>
@@ -587,7 +587,7 @@
 <polyline fill="none" stroke="black" points="1308.1,-638 1308.1,-632 "/>
 <polyline fill="none" stroke="black" points="1314.1,-632 1308.1,-632 "/>
 <text text-anchor="middle" x="1271.1" y="-623" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;practices</text>
-<text text-anchor="middle" x="1271.1" y="-612" font-family="Helvetica,sans-Serif" font-size="10.00">(6,372 tok)</text>
+<text text-anchor="middle" x="1271.1" y="-612" font-family="Helvetica,sans-Serif" font-size="10.00">(6,485 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;skill_ref_practices -->
 <g id="edge52" class="edge">
@@ -611,7 +611,7 @@
 <polygon fill="black" stroke="black" points="1211.75,-564.01 1221.85,-560.79 1211.95,-557.01 1211.75,-564.01"/>
 </g>
 <!-- cmd_label_sync -->
-<g id="node62" class="node">
+<g id="node63" class="node">
 <title>cmd_label_sync</title>
 <polygon fill="#e3f2fd" stroke="black" points="554.51,-696 491.51,-696 491.51,-660 554.51,-660 554.51,-696"/>
 <text text-anchor="middle" x="523.01" y="-681" font-family="Helvetica,sans-Serif" font-size="10.00">label&#45;sync</text>
@@ -624,7 +624,7 @@
 <polygon fill="black" stroke="black" points="481.2,-677.61 491.5,-675.15 481.91,-670.65 481.2,-677.61"/>
 </g>
 <!-- cmd_project_create -->
-<g id="node63" class="node">
+<g id="node64" class="node">
 <title>cmd_project_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="561.01,-500 485.01,-500 485.01,-464 561.01,-464 561.01,-500"/>
 <text text-anchor="middle" x="523.01" y="-485" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;create</text>
@@ -637,7 +637,7 @@
 <polygon fill="black" stroke="black" points="474.27,-479.72 484.62,-477.48 475.13,-472.78 474.27,-479.72"/>
 </g>
 <!-- cmd_project_board_configure -->
-<g id="node64" class="node">
+<g id="node65" class="node">
 <title>cmd_project_board_configure</title>
 <polygon fill="#e3f2fd" stroke="black" points="581.01,-384 465.01,-384 465.01,-348 581.01,-348 581.01,-384"/>
 <text text-anchor="middle" x="523.01" y="-369" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;board&#45;configure</text>
@@ -650,7 +650,7 @@
 <polygon fill="black" stroke="black" points="455.29,-376.23 464.89,-371.75 454.59,-369.27 455.29,-376.23"/>
 </g>
 <!-- cmd_project_governance -->
-<g id="node65" class="node">
+<g id="node66" class="node">
 <title>cmd_project_governance</title>
 <polygon fill="#e3f2fd" stroke="black" points="572.51,-442 473.51,-442 473.51,-406 572.51,-406 572.51,-442"/>
 <text text-anchor="middle" x="523.01" y="-427" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;governance</text>
@@ -663,7 +663,7 @@
 <polygon fill="black" stroke="black" points="463.15,-425.79 473.25,-422.58 463.36,-418.79 463.15,-425.79"/>
 </g>
 <!-- cmd_project_migrate -->
-<g id="node66" class="node">
+<g id="node67" class="node">
 <title>cmd_project_migrate</title>
 <polygon fill="#e3f2fd" stroke="black" points="563.51,-326 482.51,-326 482.51,-290 563.51,-290 563.51,-326"/>
 <text text-anchor="middle" x="523.01" y="-311" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;migrate</text>
@@ -676,7 +676,7 @@
 <polygon fill="black" stroke="black" points="473.19,-319.81 482.44,-314.65 471.99,-312.92 473.19,-319.81"/>
 </g>
 <!-- cmd_container_dependency_check -->
-<g id="node67" class="node">
+<g id="node68" class="node">
 <title>cmd_container_dependency_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="593.51,-268 452.51,-268 452.51,-232 593.51,-232 593.51,-268"/>
 <text text-anchor="middle" x="523.01" y="-253" font-family="Helvetica,sans-Serif" font-size="10.00">container&#45;dependency&#45;check</text>
@@ -689,7 +689,7 @@
 <polygon fill="black" stroke="black" points="442.82,-263.3 452.19,-258.36 441.78,-256.38 442.82,-263.3"/>
 </g>
 <!-- cmd_setup_crg -->
-<g id="node68" class="node">
+<g id="node69" class="node">
 <title>cmd_setup_crg</title>
 <polygon fill="#e3f2fd" stroke="black" points="551.51,-210 494.51,-210 494.51,-174 551.51,-174 551.51,-210"/>
 <text text-anchor="middle" x="523.01" y="-195" font-family="Helvetica,sans-Serif" font-size="10.00">setup&#45;crg</text>
@@ -702,7 +702,7 @@
 <polygon fill="black" stroke="black" points="484.5,-195.95 494.39,-192.14 484.28,-188.96 484.5,-195.95"/>
 </g>
 <!-- cmd_snapshot_analyze -->
-<g id="node69" class="node">
+<g id="node70" class="node">
 <title>cmd_snapshot_analyze</title>
 <polygon fill="#e3f2fd" stroke="black" points="569.51,-152 476.51,-152 476.51,-116 569.51,-116 569.51,-152"/>
 <text text-anchor="middle" x="523.01" y="-137" font-family="Helvetica,sans-Serif" font-size="10.00">snapshot&#45;analyze</text>
@@ -715,7 +715,7 @@
 <polygon fill="black" stroke="black" points="466.15,-134.22 476.24,-130.97 466.33,-127.22 466.15,-134.22"/>
 </g>
 <!-- cmd_snapshot_classify -->
-<g id="node70" class="node">
+<g id="node71" class="node">
 <title>cmd_snapshot_classify</title>
 <polygon fill="#e3f2fd" stroke="black" points="569.51,-94 476.51,-94 476.51,-58 569.51,-58 569.51,-94"/>
 <text text-anchor="middle" x="523.01" y="-79" font-family="Helvetica,sans-Serif" font-size="10.00">snapshot&#45;classify</text>
@@ -728,7 +728,7 @@
 <polygon fill="black" stroke="black" points="466.11,-72.96 476.36,-70.27 466.68,-65.98 466.11,-72.96"/>
 </g>
 <!-- cmd_snapshot_generate -->
-<g id="node71" class="node">
+<g id="node72" class="node">
 <title>cmd_snapshot_generate</title>
 <polygon fill="#e3f2fd" stroke="black" points="571.51,-36 474.51,-36 474.51,0 571.51,0 571.51,-36"/>
 <text text-anchor="middle" x="523.01" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00">snapshot&#45;generate</text>
@@ -778,7 +778,7 @@
 <polygon fill="black" stroke="black" points="1217.31,-2695.76 1225.56,-2689.11 1214.96,-2689.17 1217.31,-2695.76"/>
 </g>
 <!-- cmd_architect_completeness_check -->
-<g id="node72" class="node">
+<g id="node73" class="node">
 <title>cmd_architect_completeness_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="596.51,-2724 449.51,-2724 449.51,-2688 596.51,-2688 596.51,-2724"/>
 <text text-anchor="middle" x="523.01" y="-2709" font-family="Helvetica,sans-Serif" font-size="10.00">architect&#45;completeness&#45;check</text>
@@ -791,7 +791,7 @@
 <polygon fill="black" stroke="black" points="439.03,-2706.53 449.15,-2703.39 439.28,-2699.54 439.03,-2706.53"/>
 </g>
 <!-- cmd_architect_decompose -->
-<g id="node73" class="node">
+<g id="node74" class="node">
 <title>cmd_architect_decompose</title>
 <polygon fill="#e3f2fd" stroke="black" points="576.51,-2666 469.51,-2666 469.51,-2630 576.51,-2630 576.51,-2666"/>
 <text text-anchor="middle" x="523.01" y="-2651" font-family="Helvetica,sans-Serif" font-size="10.00">architect&#45;decompose</text>
@@ -804,7 +804,7 @@
 <polygon fill="black" stroke="black" points="459.57,-2657.38 469.2,-2652.96 458.92,-2650.41 459.57,-2657.38"/>
 </g>
 <!-- cmd_architect_group_refine -->
-<g id="node74" class="node">
+<g id="node75" class="node">
 <title>cmd_architect_group_refine</title>
 <polygon fill="#e3f2fd" stroke="black" points="577.01,-2608 469.01,-2608 469.01,-2572 577.01,-2572 577.01,-2608"/>
 <text text-anchor="middle" x="523.01" y="-2593" font-family="Helvetica,sans-Serif" font-size="10.00">architect&#45;group&#45;refine</text>
@@ -817,11 +817,11 @@
 <polygon fill="black" stroke="black" points="459.66,-2604.26 468.9,-2599.07 458.44,-2597.37 459.66,-2604.26"/>
 </g>
 <!-- cmd_architect_issue_create -->
-<g id="node75" class="node">
+<g id="node76" class="node">
 <title>cmd_architect_issue_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="578.01,-2550 468.01,-2550 468.01,-2514 578.01,-2514 578.01,-2550"/>
 <text text-anchor="middle" x="523.01" y="-2535" font-family="Helvetica,sans-Serif" font-size="10.00">architect&#45;issue&#45;create</text>
-<text text-anchor="middle" x="523.01" y="-2524" font-family="Helvetica,sans-Serif" font-size="10.00">(2,352 tok)</text>
+<text text-anchor="middle" x="523.01" y="-2524" font-family="Helvetica,sans-Serif" font-size="10.00">(1,463 tok)</text>
 </g>
 <!-- skill_co_architect&#45;&gt;cmd_architect_issue_create -->
 <g id="edge58" class="edge">
@@ -830,7 +830,7 @@
 <polygon fill="black" stroke="black" points="458.41,-2543.32 467.82,-2538.43 457.42,-2536.39 458.41,-2543.32"/>
 </g>
 <!-- cmd_evaluate_architecture -->
-<g id="node76" class="node">
+<g id="node77" class="node">
 <title>cmd_evaluate_architecture</title>
 <polygon fill="#e3f2fd" stroke="black" points="576.51,-2492 469.51,-2492 469.51,-2456 576.51,-2456 576.51,-2492"/>
 <text text-anchor="middle" x="523.01" y="-2477" font-family="Helvetica,sans-Serif" font-size="10.00">evaluate&#45;architecture</text>
@@ -856,7 +856,7 @@
 <text text-anchor="middle" x="74" y="-1455" font-family="Helvetica,sans-Serif" font-size="10.00">(777 tok)</text>
 </g>
 <!-- cmd_worktree_list -->
-<g id="node37" class="node">
+<g id="node38" class="node">
 <title>cmd_worktree_list</title>
 <polygon fill="#e3f2fd" stroke="black" points="558.01,-1624 488.01,-1624 488.01,-1588 558.01,-1588 558.01,-1624"/>
 <text text-anchor="middle" x="523.01" y="-1609" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;list</text>
@@ -869,7 +869,7 @@
 <polygon fill="black" stroke="black" points="477.24,-1603.36 487.65,-1601.38 478.27,-1596.44 477.24,-1603.36"/>
 </g>
 <!-- cmd_twl_validate -->
-<g id="node96" class="node">
+<g id="node97" class="node">
 <title>cmd_twl_validate</title>
 <polygon fill="#e3f2fd" stroke="black" points="556.01,-1508 490.01,-1508 490.01,-1472 556.01,-1472 556.01,-1508"/>
 <text text-anchor="middle" x="523.01" y="-1493" font-family="Helvetica,sans-Serif" font-size="10.00">twl&#45;validate</text>
@@ -882,7 +882,7 @@
 <polygon fill="black" stroke="black" points="479.54,-1490.94 489.74,-1488.05 479.97,-1483.95 479.54,-1490.94"/>
 </g>
 <!-- cmd_services -->
-<g id="node97" class="node">
+<g id="node98" class="node">
 <title>cmd_services</title>
 <polygon fill="#e3f2fd" stroke="black" points="550.51,-1450 495.51,-1450 495.51,-1414 550.51,-1414 550.51,-1450"/>
 <text text-anchor="middle" x="523.01" y="-1435" font-family="Helvetica,sans-Serif" font-size="10.00">services</text>
@@ -895,7 +895,7 @@
 <polygon fill="black" stroke="black" points="485.52,-1438.04 495.26,-1433.86 485.04,-1431.06 485.52,-1438.04"/>
 </g>
 <!-- cmd_ui_capture -->
-<g id="node98" class="node">
+<g id="node99" class="node">
 <title>cmd_ui_capture</title>
 <polygon fill="#e3f2fd" stroke="black" points="552.51,-1392 493.51,-1392 493.51,-1356 552.51,-1356 552.51,-1392"/>
 <text text-anchor="middle" x="523.01" y="-1377" font-family="Helvetica,sans-Serif" font-size="10.00">ui&#45;capture</text>
@@ -908,7 +908,7 @@
 <polygon fill="black" stroke="black" points="483.92,-1384.38 493.14,-1379.16 482.68,-1377.49 483.92,-1384.38"/>
 </g>
 <!-- cmd_worktree_delete -->
-<g id="node101" class="node">
+<g id="node102" class="node">
 <title>cmd_worktree_delete</title>
 <polygon fill="#e3f2fd" stroke="black" points="564.51,-1566 481.51,-1566 481.51,-1530 564.51,-1530 564.51,-1566"/>
 <text text-anchor="middle" x="523.01" y="-1551" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;delete</text>
@@ -921,7 +921,7 @@
 <polygon fill="black" stroke="black" points="471.09,-1544.85 481.47,-1542.73 472.03,-1537.91 471.09,-1544.85"/>
 </g>
 <!-- cmd_schema_update -->
-<g id="node110" class="node">
+<g id="node111" class="node">
 <title>cmd_schema_update</title>
 <polygon fill="#e3f2fd" stroke="black" points="564.51,-1334 481.51,-1334 481.51,-1298 564.51,-1298 564.51,-1334"/>
 <text text-anchor="middle" x="523.01" y="-1319" font-family="Helvetica,sans-Serif" font-size="10.00">schema&#45;update</text>
@@ -935,7 +935,7 @@
 </g>
 <!-- skill_workflow_setup&#45;&gt;skill_workflow_test_ready -->
 <!-- cmd_init -->
-<g id="node35" class="node">
+<g id="node36" class="node">
 <title>cmd_init</title>
 <polygon fill="#e3f2fd" stroke="black" points="550.51,-6581 495.51,-6581 495.51,-6545 550.51,-6545 550.51,-6581"/>
 <text text-anchor="middle" x="523.01" y="-6566" font-family="Helvetica,sans-Serif" font-size="10.00">init</text>
@@ -948,7 +948,7 @@
 <polygon fill="black" stroke="black" points="484.85,-6558.04 495.43,-6557.68 486.93,-6551.36 484.85,-6558.04"/>
 </g>
 <!-- cmd_worktree_create -->
-<g id="node36" class="node">
+<g id="node37" class="node">
 <title>cmd_worktree_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="565.01,-6523 481.01,-6523 481.01,-6487 565.01,-6487 565.01,-6523"/>
 <text text-anchor="middle" x="523.01" y="-6508" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
@@ -961,7 +961,7 @@
 <polygon fill="black" stroke="black" points="470.15,-6493.54 480.71,-6494.3 472.93,-6487.11 470.15,-6493.54"/>
 </g>
 <!-- cmd_project_board_status_update -->
-<g id="node38" class="node">
+<g id="node39" class="node">
 <title>cmd_project_board_status_update</title>
 <polygon fill="#e3f2fd" stroke="black" points="590.51,-6465 455.51,-6465 455.51,-6429 590.51,-6429 590.51,-6465"/>
 <text text-anchor="middle" x="523.01" y="-6450" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;board&#45;status&#45;update</text>
@@ -974,7 +974,7 @@
 <polygon fill="black" stroke="black" points="455.71,-6426.87 466.11,-6428.92 459.25,-6420.84 455.71,-6426.87"/>
 </g>
 <!-- cmd_crg_auto_build -->
-<g id="node39" class="node">
+<g id="node40" class="node">
 <title>cmd_crg_auto_build</title>
 <polygon fill="#e3f2fd" stroke="black" points="560.51,-6407 485.51,-6407 485.51,-6371 560.51,-6371 560.51,-6407"/>
 <text text-anchor="middle" x="523.01" y="-6392" font-family="Helvetica,sans-Serif" font-size="10.00">crg&#45;auto&#45;build</text>
@@ -987,7 +987,7 @@
 <polygon fill="black" stroke="black" points="474.92,-6377.98 485.51,-6378.45 477.52,-6371.48 474.92,-6377.98"/>
 </g>
 <!-- cmd_change_propose -->
-<g id="node40" class="node">
+<g id="node41" class="node">
 <title>cmd_change_propose</title>
 <polygon fill="#e3f2fd" stroke="black" points="566.01,-6349 480.01,-6349 480.01,-6313 566.01,-6313 566.01,-6349"/>
 <text text-anchor="middle" x="523.01" y="-6334" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;propose</text>
@@ -1000,7 +1000,7 @@
 <polygon fill="black" stroke="black" points="469.31,-6316.1 479.88,-6316.8 472.06,-6309.66 469.31,-6316.1"/>
 </g>
 <!-- cmd_ac_extract -->
-<g id="node43" class="node">
+<g id="node44" class="node">
 <title>cmd_ac_extract</title>
 <polygon fill="#e3f2fd" stroke="black" points="553.01,-6291 493.01,-6291 493.01,-6255 553.01,-6255 553.01,-6291"/>
 <text text-anchor="middle" x="523.01" y="-6276" font-family="Helvetica,sans-Serif" font-size="10.00">ac&#45;extract</text>
@@ -1013,11 +1013,11 @@
 <polygon fill="black" stroke="black" points="482.41,-6258.93 492.96,-6259.86 485.29,-6252.55 482.41,-6258.93"/>
 </g>
 <!-- script_chain_runner -->
-<g id="node169" class="node">
+<g id="node170" class="node">
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="802.45,-6273 773.79,-6297.49 716.48,-6297.49 687.83,-6273 716.48,-6248.51 773.79,-6248.51 802.45,-6273"/>
 <text text-anchor="middle" x="745.14" y="-6276" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="745.14" y="-6265" font-family="Helvetica,sans-Serif" font-size="10.00">(7,161 tok)</text>
+<text text-anchor="middle" x="745.14" y="-6265" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;script_chain_runner -->
 <g id="edge74" class="edge">
@@ -1026,7 +1026,7 @@
 <polygon fill="black" stroke="black" points="689.16,-6263.94 699.69,-6262.77 690.73,-6257.12 689.16,-6263.94"/>
 </g>
 <!-- script_compaction_resume -->
-<g id="node177" class="node">
+<g id="node178" class="node">
 <title>script_compaction_resume</title>
 <polygon fill="#ff9800" stroke="black" points="828.21,-6065 786.67,-6089.49 703.61,-6089.49 662.07,-6065 703.61,-6040.51 786.67,-6040.51 828.21,-6065"/>
 <text text-anchor="middle" x="745.14" y="-6068" font-family="Helvetica,sans-Serif" font-size="10.00">compaction&#45;resume</text>
@@ -1040,7 +1040,7 @@
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;skill_workflow_pr_verify -->
 <!-- cmd_change_apply -->
-<g id="node41" class="node">
+<g id="node42" class="node">
 <title>cmd_change_apply</title>
 <polygon fill="#e3f2fd" stroke="black" points="560.01,-6083 486.01,-6083 486.01,-6047 560.01,-6047 560.01,-6083"/>
 <text text-anchor="middle" x="523.01" y="-6068" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;apply</text>
@@ -1053,7 +1053,7 @@
 <polygon fill="black" stroke="black" points="475.27,-6051.08 485.86,-6051.56 477.88,-6044.59 475.27,-6051.08"/>
 </g>
 <!-- cmd_check -->
-<g id="node88" class="node">
+<g id="node89" class="node">
 <title>cmd_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="554.51,-6025 491.51,-6025 491.51,-5989 554.51,-5989 554.51,-6025"/>
 <text text-anchor="middle" x="523.01" y="-6010" font-family="Helvetica,sans-Serif" font-size="10.00">check</text>
@@ -1066,7 +1066,7 @@
 <polygon fill="black" stroke="black" points="480.89,-6000.24 491.45,-5999.29 482.61,-5993.45 480.89,-6000.24"/>
 </g>
 <!-- cmd_e2e_plan -->
-<g id="node99" class="node">
+<g id="node100" class="node">
 <title>cmd_e2e_plan</title>
 <polygon fill="#e3f2fd" stroke="black" points="550.51,-5967 495.51,-5967 495.51,-5931 550.51,-5931 550.51,-5967"/>
 <text text-anchor="middle" x="523.01" y="-5952" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;plan</text>
@@ -1079,7 +1079,7 @@
 <polygon fill="black" stroke="black" points="485.26,-5952.5 495.26,-5949 485.26,-5945.5 485.26,-5952.5"/>
 </g>
 <!-- cmd_test_scaffold -->
-<g id="node100" class="node">
+<g id="node101" class="node">
 <title>cmd_test_scaffold</title>
 <polygon fill="#bbdefb" stroke="black" points="558.51,-5863 487.51,-5863 487.51,-5827 558.51,-5827 558.51,-5863"/>
 <text text-anchor="middle" x="523.01" y="-5848" font-family="Helvetica,sans-Serif" font-size="10.00">test&#45;scaffold</text>
@@ -1105,7 +1105,7 @@
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;skill_workflow_pr_fix -->
 <!-- cmd_ts_preflight -->
-<g id="node44" class="node">
+<g id="node45" class="node">
 <title>cmd_ts_preflight</title>
 <polygon fill="#e3f2fd" stroke="black" points="554.01,-5643 492.01,-5643 492.01,-5607 554.01,-5607 554.01,-5643"/>
 <text text-anchor="middle" x="523.01" y="-5628" font-family="Helvetica,sans-Serif" font-size="10.00">ts&#45;preflight</text>
@@ -1118,7 +1118,7 @@
 <polygon fill="black" stroke="black" points="481.27,-5614.88 491.87,-5614.77 483.52,-5608.25 481.27,-5614.88"/>
 </g>
 <!-- cmd_scope_judge -->
-<g id="node45" class="node">
+<g id="node46" class="node">
 <title>cmd_scope_judge</title>
 <polygon fill="#e3f2fd" stroke="black" points="557.51,-5539 488.51,-5539 488.51,-5503 557.51,-5503 557.51,-5539"/>
 <text text-anchor="middle" x="523.01" y="-5524" font-family="Helvetica,sans-Serif" font-size="10.00">scope&#45;judge</text>
@@ -1131,7 +1131,7 @@
 <polygon fill="black" stroke="black" points="478.81,-5529.41 488.35,-5524.81 478.02,-5522.45 478.81,-5529.41"/>
 </g>
 <!-- cmd_pr_test -->
-<g id="node46" class="node">
+<g id="node47" class="node">
 <title>cmd_pr_test</title>
 <polygon fill="#e3f2fd" stroke="black" points="550.51,-5481 495.51,-5481 495.51,-5445 550.51,-5445 550.51,-5481"/>
 <text text-anchor="middle" x="523.01" y="-5466" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;test</text>
@@ -1144,7 +1144,7 @@
 <polygon fill="black" stroke="black" points="487.03,-5479.51 495.22,-5472.79 484.63,-5472.93 487.03,-5479.51"/>
 </g>
 <!-- cmd_ac_verify -->
-<g id="node51" class="node">
+<g id="node52" class="node">
 <title>cmd_ac_verify</title>
 <polygon fill="#e3f2fd" stroke="black" points="550.51,-5701 495.51,-5701 495.51,-5665 550.51,-5665 550.51,-5701"/>
 <text text-anchor="middle" x="523.01" y="-5686" font-family="Helvetica,sans-Serif" font-size="10.00">ac&#45;verify</text>
@@ -1157,7 +1157,7 @@
 <polygon fill="black" stroke="black" points="484.62,-5673.59 495.21,-5673.86 487.11,-5667.04 484.62,-5673.59"/>
 </g>
 <!-- cmd_phase_review -->
-<g id="node102" class="node">
+<g id="node103" class="node">
 <title>cmd_phase_review</title>
 <polygon fill="#bbdefb" stroke="black" points="560.01,-5365 486.01,-5365 486.01,-5329 560.01,-5329 560.01,-5365"/>
 <text text-anchor="middle" x="523.01" y="-5350" font-family="Helvetica,sans-Serif" font-size="10.00">phase&#45;review</text>
@@ -1170,7 +1170,7 @@
 <polygon fill="black" stroke="black" points="477.76,-5364.85 485.75,-5357.89 475.16,-5358.36 477.76,-5364.85"/>
 </g>
 <!-- cmd_ac_deploy_trigger -->
-<g id="node106" class="node">
+<g id="node107" class="node">
 <title>cmd_ac_deploy_trigger</title>
 <polygon fill="#e3f2fd" stroke="black" points="567.51,-5759 478.51,-5759 478.51,-5723 567.51,-5723 567.51,-5759"/>
 <text text-anchor="middle" x="523.01" y="-5744" font-family="Helvetica,sans-Serif" font-size="10.00">ac&#45;deploy&#45;trigger</text>
@@ -1183,7 +1183,7 @@
 <polygon fill="black" stroke="black" points="467.74,-5726.19 478.3,-5727.03 470.57,-5719.78 467.74,-5726.19"/>
 </g>
 <!-- cmd_test_phase -->
-<g id="node107" class="node">
+<g id="node108" class="node">
 <title>cmd_test_phase</title>
 <polygon fill="#bbdefb" stroke="black" points="554.01,-5423 492.01,-5423 492.01,-5387 554.01,-5387 554.01,-5423"/>
 <text text-anchor="middle" x="523.01" y="-5408" font-family="Helvetica,sans-Serif" font-size="10.00">test&#45;phase</text>
@@ -1209,7 +1209,7 @@
 </g>
 <!-- skill_workflow_pr_fix&#45;&gt;skill_workflow_pr_merge -->
 <!-- cmd_post_fix_verify -->
-<g id="node47" class="node">
+<g id="node48" class="node">
 <title>cmd_post_fix_verify</title>
 <polygon fill="#e3f2fd" stroke="black" points="561.01,-5184 485.01,-5184 485.01,-5148 561.01,-5148 561.01,-5184"/>
 <text text-anchor="middle" x="523.01" y="-5169" font-family="Helvetica,sans-Serif" font-size="10.00">post&#45;fix&#45;verify</text>
@@ -1222,7 +1222,7 @@
 <polygon fill="black" stroke="black" points="474.16,-5151.63 484.74,-5152.12 476.78,-5145.14 474.16,-5151.63"/>
 </g>
 <!-- cmd_warning_fix -->
-<g id="node48" class="node">
+<g id="node49" class="node">
 <title>cmd_warning_fix</title>
 <polygon fill="#e3f2fd" stroke="black" points="555.01,-5126 491.01,-5126 491.01,-5090 555.01,-5090 555.01,-5126"/>
 <text text-anchor="middle" x="523.01" y="-5111" font-family="Helvetica,sans-Serif" font-size="10.00">warning&#45;fix</text>
@@ -1235,7 +1235,7 @@
 <polygon fill="black" stroke="black" points="480.42,-5101.12 490.97,-5100.17 482.13,-5094.33 480.42,-5101.12"/>
 </g>
 <!-- cmd_fix_phase -->
-<g id="node103" class="node">
+<g id="node104" class="node">
 <title>cmd_fix_phase</title>
 <polygon fill="#bbdefb" stroke="black" points="551.01,-4964 495.01,-4964 495.01,-4928 551.01,-4928 551.01,-4964"/>
 <text text-anchor="middle" x="523.01" y="-4949" font-family="Helvetica,sans-Serif" font-size="10.00">fix&#45;phase</text>
@@ -1248,7 +1248,7 @@
 <polygon fill="black" stroke="black" points="487.27,-4965.56 494.93,-4958.25 484.38,-4959.18 487.27,-4965.56"/>
 </g>
 <!-- cmd_spec_diagnose -->
-<g id="node111" class="node">
+<g id="node112" class="node">
 <title>cmd_spec_diagnose</title>
 <polygon fill="#e3f2fd" stroke="black" points="563.01,-5068 483.01,-5068 483.01,-5032 563.01,-5032 563.01,-5068"/>
 <text text-anchor="middle" x="523.01" y="-5053" font-family="Helvetica,sans-Serif" font-size="10.00">spec&#45;diagnose</text>
@@ -1262,7 +1262,7 @@
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;skill_workflow_dead_cleanup -->
 <!-- cmd_change_archive -->
-<g id="node42" class="node">
+<g id="node43" class="node">
 <title>cmd_change_archive</title>
 <polygon fill="#e3f2fd" stroke="black" points="564.51,-4570 481.51,-4570 481.51,-4534 564.51,-4534 564.51,-4570"/>
 <text text-anchor="middle" x="523.01" y="-4555" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;archive</text>
@@ -1275,7 +1275,7 @@
 <polygon fill="black" stroke="black" points="473.39,-4573.26 481.28,-4566.18 470.7,-4566.8 473.39,-4573.26"/>
 </g>
 <!-- cmd_pr_cycle_report -->
-<g id="node49" class="node">
+<g id="node50" class="node">
 <title>cmd_pr_cycle_report</title>
 <polygon fill="#e3f2fd" stroke="black" points="562.51,-4860 483.51,-4860 483.51,-4824 562.51,-4824 562.51,-4860"/>
 <text text-anchor="middle" x="523.01" y="-4845" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;cycle&#45;report</text>
@@ -1288,7 +1288,7 @@
 <polygon fill="black" stroke="black" points="472.58,-4828.01 483.16,-4828.57 475.24,-4821.53 472.58,-4828.01"/>
 </g>
 <!-- cmd_all_pass_check -->
-<g id="node50" class="node">
+<g id="node51" class="node">
 <title>cmd_all_pass_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="563.01,-4744 483.01,-4744 483.01,-4708 563.01,-4708 563.01,-4744"/>
 <text text-anchor="middle" x="523.01" y="-4729" font-family="Helvetica,sans-Serif" font-size="10.00">all&#45;pass&#45;check</text>
@@ -1301,7 +1301,7 @@
 <polygon fill="black" stroke="black" points="472.34,-4723.26 482.7,-4721.04 473.22,-4716.32 472.34,-4723.26"/>
 </g>
 <!-- cmd_e2e_screening -->
-<g id="node104" class="node">
+<g id="node105" class="node">
 <title>cmd_e2e_screening</title>
 <polygon fill="#bbdefb" stroke="black" points="561.51,-4512 484.51,-4512 484.51,-4476 561.51,-4476 561.51,-4512"/>
 <text text-anchor="middle" x="523.01" y="-4497" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;screening</text>
@@ -1314,7 +1314,7 @@
 <polygon fill="black" stroke="black" points="476.29,-4512.42 484.22,-4505.4 473.64,-4505.94 476.29,-4512.42"/>
 </g>
 <!-- cmd_merge_gate -->
-<g id="node105" class="node">
+<g id="node106" class="node">
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="555.51,-4686 490.51,-4686 490.51,-4650 555.51,-4650 555.51,-4686"/>
 <text text-anchor="middle" x="523.01" y="-4671" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
@@ -1327,7 +1327,7 @@
 <polygon fill="black" stroke="black" points="480.8,-4676.73 490.29,-4672 479.93,-4669.78 480.8,-4676.73"/>
 </g>
 <!-- cmd_auto_merge -->
-<g id="node108" class="node">
+<g id="node109" class="node">
 <title>cmd_auto_merge</title>
 <polygon fill="#e3f2fd" stroke="black" points="555.51,-4628 490.51,-4628 490.51,-4592 555.51,-4592 555.51,-4628"/>
 <text text-anchor="middle" x="523.01" y="-4613" font-family="Helvetica,sans-Serif" font-size="10.00">auto&#45;merge</text>
@@ -1340,7 +1340,7 @@
 <polygon fill="black" stroke="black" points="482.3,-4628.77 490.42,-4621.95 479.83,-4622.22 482.3,-4628.77"/>
 </g>
 <!-- cmd_pr_cycle_analysis -->
-<g id="node109" class="node">
+<g id="node110" class="node">
 <title>cmd_pr_cycle_analysis</title>
 <polygon fill="#e3f2fd" stroke="black" points="568.01,-4802 478.01,-4802 478.01,-4766 568.01,-4766 568.01,-4802"/>
 <text text-anchor="middle" x="523.01" y="-4787" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;cycle&#45;analysis</text>
@@ -1366,7 +1366,7 @@
 </g>
 <!-- skill_workflow_dead_cleanup&#45;&gt;skill_workflow_tech_debt_triage -->
 <!-- cmd_dead_component_detect -->
-<g id="node89" class="node">
+<g id="node90" class="node">
 <title>cmd_dead_component_detect</title>
 <polygon fill="#e3f2fd" stroke="black" points="582.51,-4454 463.51,-4454 463.51,-4418 582.51,-4418 582.51,-4454"/>
 <text text-anchor="middle" x="523.01" y="-4439" font-family="Helvetica,sans-Serif" font-size="10.00">dead&#45;component&#45;detect</text>
@@ -1379,7 +1379,7 @@
 <polygon fill="black" stroke="black" points="452.82,-4427.52 463.28,-4425.78 454.02,-4420.62 452.82,-4427.52"/>
 </g>
 <!-- cmd_dead_component_execute -->
-<g id="node90" class="node">
+<g id="node91" class="node">
 <title>cmd_dead_component_execute</title>
 <polygon fill="#e3f2fd" stroke="black" points="586.01,-4396 460.01,-4396 460.01,-4360 586.01,-4360 586.01,-4396"/>
 <text text-anchor="middle" x="523.01" y="-4381" font-family="Helvetica,sans-Serif" font-size="10.00">dead&#45;component&#45;execute</text>
@@ -1393,7 +1393,7 @@
 </g>
 <!-- skill_workflow_tech_debt_triage&#45;&gt;skill_workflow_self_improve -->
 <!-- cmd_triage_execute -->
-<g id="node91" class="node">
+<g id="node92" class="node">
 <title>cmd_triage_execute</title>
 <polygon fill="#e3f2fd" stroke="black" points="562.01,-4338 484.01,-4338 484.01,-4302 562.01,-4302 562.01,-4338"/>
 <text text-anchor="middle" x="523.01" y="-4323" font-family="Helvetica,sans-Serif" font-size="10.00">triage&#45;execute</text>
@@ -1406,7 +1406,7 @@
 <polygon fill="black" stroke="black" points="474.19,-4326 483.99,-4321.98 473.82,-4319.01 474.19,-4326"/>
 </g>
 <!-- cmd_self_improve_collect -->
-<g id="node92" class="node">
+<g id="node93" class="node">
 <title>cmd_self_improve_collect</title>
 <polygon fill="#e3f2fd" stroke="black" points="573.51,-4234 472.51,-4234 472.51,-4198 573.51,-4198 573.51,-4234"/>
 <text text-anchor="middle" x="523.01" y="-4219" font-family="Helvetica,sans-Serif" font-size="10.00">self&#45;improve&#45;collect</text>
@@ -1419,7 +1419,7 @@
 <polygon fill="black" stroke="black" points="463.43,-4232.84 472.41,-4227.22 461.88,-4226.01 463.43,-4232.84"/>
 </g>
 <!-- cmd_self_improve_propose -->
-<g id="node93" class="node">
+<g id="node94" class="node">
 <title>cmd_self_improve_propose</title>
 <polygon fill="#e3f2fd" stroke="black" points="576.51,-4176 469.51,-4176 469.51,-4140 576.51,-4140 576.51,-4176"/>
 <text text-anchor="middle" x="523.01" y="-4161" font-family="Helvetica,sans-Serif" font-size="10.00">self&#45;improve&#45;propose</text>
@@ -1432,7 +1432,7 @@
 <polygon fill="black" stroke="black" points="467.04,-4183.15 474.93,-4176.08 464.36,-4176.68 467.04,-4183.15"/>
 </g>
 <!-- cmd_self_improve_close -->
-<g id="node94" class="node">
+<g id="node95" class="node">
 <title>cmd_self_improve_close</title>
 <polygon fill="#e3f2fd" stroke="black" points="571.01,-4118 475.01,-4118 475.01,-4082 571.01,-4082 571.01,-4118"/>
 <text text-anchor="middle" x="523.01" y="-4103" font-family="Helvetica,sans-Serif" font-size="10.00">self&#45;improve&#45;close</text>
@@ -1445,7 +1445,7 @@
 <polygon fill="black" stroke="black" points="467.17,-4123.44 474.84,-4116.13 464.28,-4117.07 467.17,-4123.44"/>
 </g>
 <!-- cmd_ecc_monitor -->
-<g id="node95" class="node">
+<g id="node96" class="node">
 <title>cmd_ecc_monitor</title>
 <polygon fill="#e3f2fd" stroke="black" points="557.01,-4060 489.01,-4060 489.01,-4024 557.01,-4024 557.01,-4060"/>
 <text text-anchor="middle" x="523.01" y="-4045" font-family="Helvetica,sans-Serif" font-size="10.00">ecc&#45;monitor</text>
@@ -1460,7 +1460,7 @@
 <!-- skill_workflow_self_improve&#45;&gt;script_autopilot_orchestrator -->
 <!-- skill_workflow_plugin_create&#45;&gt;skill_workflow_plugin_diagnose -->
 <!-- cmd_plugin_interview -->
-<g id="node77" class="node">
+<g id="node78" class="node">
 <title>cmd_plugin_interview</title>
 <polygon fill="#e3f2fd" stroke="black" points="565.01,-1276 481.01,-1276 481.01,-1240 565.01,-1240 565.01,-1276"/>
 <text text-anchor="middle" x="523.01" y="-1261" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;interview</text>
@@ -1473,7 +1473,7 @@
 <polygon fill="black" stroke="black" points="470.09,-1247.67 480.66,-1248.42 472.87,-1241.24 470.09,-1247.67"/>
 </g>
 <!-- cmd_plugin_research -->
-<g id="node78" class="node">
+<g id="node79" class="node">
 <title>cmd_plugin_research</title>
 <polygon fill="#e3f2fd" stroke="black" points="564.51,-1218 481.51,-1218 481.51,-1182 564.51,-1182 564.51,-1218"/>
 <text text-anchor="middle" x="523.01" y="-1203" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;research</text>
@@ -1486,7 +1486,7 @@
 <polygon fill="black" stroke="black" points="470.7,-1189.63 481.27,-1190.34 473.45,-1183.19 470.7,-1189.63"/>
 </g>
 <!-- cmd_plugin_design -->
-<g id="node79" class="node">
+<g id="node80" class="node">
 <title>cmd_plugin_design</title>
 <polygon fill="#e3f2fd" stroke="black" points="560.01,-1160 486.01,-1160 486.01,-1124 560.01,-1124 560.01,-1160"/>
 <text text-anchor="middle" x="523.01" y="-1145" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;design</text>
@@ -1499,7 +1499,7 @@
 <polygon fill="black" stroke="black" points="475.1,-1133.19 485.68,-1133.55 477.63,-1126.67 475.1,-1133.19"/>
 </g>
 <!-- cmd_plugin_generate -->
-<g id="node80" class="node">
+<g id="node81" class="node">
 <title>cmd_plugin_generate</title>
 <polygon fill="#e3f2fd" stroke="black" points="564.51,-1102 481.51,-1102 481.51,-1066 564.51,-1066 564.51,-1102"/>
 <text text-anchor="middle" x="523.01" y="-1087" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;generate</text>
@@ -1513,7 +1513,7 @@
 </g>
 <!-- skill_workflow_plugin_diagnose&#45;&gt;cmd_label_sync -->
 <!-- cmd_plugin_migrate_analyze -->
-<g id="node81" class="node">
+<g id="node82" class="node">
 <title>cmd_plugin_migrate_analyze</title>
 <polygon fill="#e3f2fd" stroke="black" points="580.01,-1044 466.01,-1044 466.01,-1008 580.01,-1008 580.01,-1044"/>
 <text text-anchor="middle" x="523.01" y="-1029" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;migrate&#45;analyze</text>
@@ -1526,7 +1526,7 @@
 <polygon fill="black" stroke="black" points="455.68,-1007.68 465.93,-1010.36 459.59,-1001.87 455.68,-1007.68"/>
 </g>
 <!-- cmd_plugin_diagnose -->
-<g id="node82" class="node">
+<g id="node83" class="node">
 <title>cmd_plugin_diagnose</title>
 <polygon fill="#e3f2fd" stroke="black" points="565.01,-986 481.01,-986 481.01,-950 565.01,-950 565.01,-986"/>
 <text text-anchor="middle" x="523.01" y="-971" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;diagnose</text>
@@ -1539,7 +1539,7 @@
 <polygon fill="black" stroke="black" points="470.15,-958.12 480.72,-958.85 472.92,-951.69 470.15,-958.12"/>
 </g>
 <!-- cmd_plugin_fix -->
-<g id="node83" class="node">
+<g id="node84" class="node">
 <title>cmd_plugin_fix</title>
 <polygon fill="#e3f2fd" stroke="black" points="554.51,-870 491.51,-870 491.51,-834 554.51,-834 554.51,-870"/>
 <text text-anchor="middle" x="523.01" y="-855" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;fix</text>
@@ -1552,7 +1552,7 @@
 <polygon fill="black" stroke="black" points="480.86,-844.53 491.45,-844.57 483.2,-837.93 480.86,-844.53"/>
 </g>
 <!-- cmd_plugin_verify -->
-<g id="node84" class="node">
+<g id="node85" class="node">
 <title>cmd_plugin_verify</title>
 <polygon fill="#e3f2fd" stroke="black" points="557.51,-812 488.51,-812 488.51,-776 557.51,-776 557.51,-812"/>
 <text text-anchor="middle" x="523.01" y="-797" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;verify</text>
@@ -1565,7 +1565,7 @@
 <polygon fill="black" stroke="black" points="477.63,-781.56 488.22,-782 480.22,-775.05 477.63,-781.56"/>
 </g>
 <!-- cmd_plugin_phase_diagnose -->
-<g id="node85" class="node">
+<g id="node86" class="node">
 <title>cmd_plugin_phase_diagnose</title>
 <polygon fill="#bbdefb" stroke="black" points="579.51,-928 466.51,-928 466.51,-892 579.51,-892 579.51,-928"/>
 <text text-anchor="middle" x="523.01" y="-913" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;phase&#45;diagnose</text>
@@ -1578,7 +1578,7 @@
 <polygon fill="black" stroke="black" points="456,-891.08 466.31,-893.48 459.75,-885.17 456,-891.08"/>
 </g>
 <!-- cmd_plugin_phase_verify -->
-<g id="node86" class="node">
+<g id="node87" class="node">
 <title>cmd_plugin_phase_verify</title>
 <polygon fill="#bbdefb" stroke="black" points="572.01,-754 474.01,-754 474.01,-718 572.01,-718 572.01,-754"/>
 <text text-anchor="middle" x="523.01" y="-739" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;phase&#45;verify</text>
@@ -1612,7 +1612,7 @@
 </g>
 <!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_dci -->
 <!-- skill_baseline_coding_style -->
-<g id="node31" class="node">
+<g id="node32" class="node">
 <title>skill_baseline_coding_style</title>
 <polygon fill="#e1f5fe" stroke="black" points="1327.1,-3011 1209.1,-3011 1209.1,-2975 1333.1,-2975 1333.1,-3005 1327.1,-3011"/>
 <polyline fill="none" stroke="black" points="1327.1,-3011 1327.1,-3005 "/>
@@ -1647,17 +1647,26 @@
 <text text-anchor="middle" x="1271.1" y="-2605" font-family="Helvetica,sans-Serif" font-size="10.00">(275 tok)</text>
 </g>
 <!-- skill_ref_dci&#45;&gt;skill_baseline_coding_style -->
-<!-- skill_self_improve_format -->
+<!-- skill_ref_compaction_recovery -->
 <g id="node30" class="node">
+<title>skill_ref_compaction_recovery</title>
+<polygon fill="#e1f5fe" stroke="black" points="1333.6,-3243 1202.6,-3243 1202.6,-3207 1339.6,-3207 1339.6,-3237 1333.6,-3243"/>
+<polyline fill="none" stroke="black" points="1333.6,-3243 1333.6,-3237 "/>
+<polyline fill="none" stroke="black" points="1339.6,-3237 1333.6,-3237 "/>
+<text text-anchor="middle" x="1271.1" y="-3228" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;compaction&#45;recovery</text>
+<text text-anchor="middle" x="1271.1" y="-3217" font-family="Helvetica,sans-Serif" font-size="10.00">(263 tok)</text>
+</g>
+<!-- skill_self_improve_format -->
+<g id="node31" class="node">
 <title>skill_self_improve_format</title>
-<polygon fill="#e1f5fe" stroke="black" points="1323.1,-3243 1213.1,-3243 1213.1,-3207 1329.1,-3207 1329.1,-3237 1323.1,-3243"/>
-<polyline fill="none" stroke="black" points="1323.1,-3243 1323.1,-3237 "/>
-<polyline fill="none" stroke="black" points="1329.1,-3237 1323.1,-3237 "/>
-<text text-anchor="middle" x="1271.1" y="-3228" font-family="Helvetica,sans-Serif" font-size="10.00">twl:self&#45;improve&#45;format</text>
-<text text-anchor="middle" x="1271.1" y="-3217" font-family="Helvetica,sans-Serif" font-size="10.00">(1,365 tok)</text>
+<polygon fill="#e1f5fe" stroke="black" points="1323.1,-3301 1213.1,-3301 1213.1,-3265 1329.1,-3265 1329.1,-3295 1323.1,-3301"/>
+<polyline fill="none" stroke="black" points="1323.1,-3301 1323.1,-3295 "/>
+<polyline fill="none" stroke="black" points="1329.1,-3295 1323.1,-3295 "/>
+<text text-anchor="middle" x="1271.1" y="-3286" font-family="Helvetica,sans-Serif" font-size="10.00">twl:self&#45;improve&#45;format</text>
+<text text-anchor="middle" x="1271.1" y="-3275" font-family="Helvetica,sans-Serif" font-size="10.00">(1,365 tok)</text>
 </g>
 <!-- skill_baseline_security_checklist -->
-<g id="node32" class="node">
+<g id="node33" class="node">
 <title>skill_baseline_security_checklist</title>
 <polygon fill="#e1f5fe" stroke="black" points="1339.1,-2953 1197.1,-2953 1197.1,-2917 1345.1,-2917 1345.1,-2947 1339.1,-2953"/>
 <polyline fill="none" stroke="black" points="1339.1,-2953 1339.1,-2947 "/>
@@ -1668,7 +1677,7 @@
 <!-- skill_baseline_coding_style&#45;&gt;skill_baseline_security_checklist -->
 <!-- skill_baseline_coding_style&#45;&gt;skill_baseline_security_checklist -->
 <!-- skill_baseline_input_validation -->
-<g id="node33" class="node">
+<g id="node34" class="node">
 <title>skill_baseline_input_validation</title>
 <polygon fill="#e1f5fe" stroke="black" points="1333.6,-2895 1202.6,-2895 1202.6,-2859 1339.6,-2859 1339.6,-2889 1333.6,-2895"/>
 <polyline fill="none" stroke="black" points="1333.6,-2895 1333.6,-2889 "/>
@@ -1682,7 +1691,7 @@
 <!-- cmd_init&#45;&gt;cmd_worktree_create -->
 <!-- cmd_worktree_create&#45;&gt;cmd_project_board_status_update -->
 <!-- script_worktree_create -->
-<g id="node170" class="node">
+<g id="node171" class="node">
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="813.81,-6415 779.48,-6439.49 710.8,-6439.49 676.47,-6415 710.8,-6390.51 779.48,-6390.51 813.81,-6415"/>
 <text text-anchor="middle" x="745.14" y="-6418" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
@@ -1702,7 +1711,7 @@
 <!-- cmd_change_archive&#45;&gt;script_chain_runner -->
 <!-- cmd_ac_extract&#45;&gt;script_chain_runner -->
 <!-- script_autopilot_github -->
-<g id="node173" class="node">
+<g id="node174" class="node">
 <title>script_autopilot_github</title>
 <polygon fill="#ff9800" stroke="black" points="812.68,-6344 778.91,-6368.49 711.37,-6368.49 677.6,-6344 711.37,-6319.51 778.91,-6319.51 812.68,-6344"/>
 <text text-anchor="middle" x="745.14" y="-6347" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;github</text>
@@ -1728,11 +1737,11 @@
 </g>
 <!-- cmd_all_pass_check&#45;&gt;cmd_merge_gate -->
 <!-- script_state_write -->
-<g id="node153" class="node">
+<g id="node154" class="node">
 <title>script_state_write</title>
 <polygon fill="#ff9800" stroke="black" points="796.52,-3401 770.83,-3425.49 719.45,-3425.49 693.76,-3401 719.45,-3376.51 770.83,-3376.51 796.52,-3401"/>
 <text text-anchor="middle" x="745.14" y="-3404" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;write</text>
-<text text-anchor="middle" x="745.14" y="-3393" font-family="Helvetica,sans-Serif" font-size="10.00">(4,288 tok)</text>
+<text text-anchor="middle" x="745.14" y="-3393" font-family="Helvetica,sans-Serif" font-size="10.00">(4,611 tok)</text>
 </g>
 <!-- cmd_all_pass_check&#45;&gt;script_state_write -->
 <g id="edge123" class="edge">
@@ -1741,7 +1750,7 @@
 <polygon fill="black" stroke="black" points="692.45,-3414.45 700.82,-3407.96 690.23,-3407.81 692.45,-3414.45"/>
 </g>
 <!-- script_checkpoint_write -->
-<g id="node185" class="node">
+<g id="node186" class="node">
 <title>script_checkpoint_write</title>
 <polygon fill="#ff9800" stroke="black" points="816.84,-3259 780.99,-3283.49 709.29,-3283.49 673.44,-3259 709.29,-3234.51 780.99,-3234.51 816.84,-3259"/>
 <text text-anchor="middle" x="745.14" y="-3262" font-family="Helvetica,sans-Serif" font-size="10.00">checkpoint&#45;write</text>
@@ -1760,7 +1769,7 @@
 <!-- cmd_issue_tech_debt_absorb&#45;&gt;cmd_issue_create -->
 <!-- cmd_issue_spec_review&#45;&gt;cmd_issue_review_aggregate -->
 <!-- agent_issue_critic -->
-<g id="node133" class="node">
+<g id="node134" class="node">
 <title>agent_issue_critic</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-2616" rx="45.01" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-2619" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;critic</text>
@@ -1773,7 +1782,7 @@
 <polygon fill="black" stroke="black" points="959.01,-2617.35 969.39,-2615.22 959.95,-2610.41 959.01,-2617.35"/>
 </g>
 <!-- agent_issue_feasibility -->
-<g id="node134" class="node">
+<g id="node135" class="node">
 <title>agent_issue_feasibility</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-2552" rx="59.29" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-2555" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;feasibility</text>
@@ -1786,7 +1795,7 @@
 <polygon fill="black" stroke="black" points="945.09,-2550.46 955.6,-2549.1 946.53,-2543.62 945.09,-2550.46"/>
 </g>
 <!-- agent_worker_codex_reviewer -->
-<g id="node135" class="node">
+<g id="node136" class="node">
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-2488" rx="81.13" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-2491" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
@@ -1799,7 +1808,7 @@
 <polygon fill="black" stroke="black" points="931.11,-2478.63 941.7,-2478.63 933.42,-2472.02 931.11,-2478.63"/>
 </g>
 <!-- script_escape_issue_body -->
-<g id="node184" class="node">
+<g id="node185" class="node">
 <title>script_escape_issue_body</title>
 <polygon fill="#ff9800" stroke="black" points="825.17,-2167 785.16,-2191.49 705.12,-2191.49 665.11,-2167 705.12,-2142.51 785.16,-2142.51 825.17,-2167"/>
 <text text-anchor="middle" x="745.14" y="-2170" font-family="Helvetica,sans-Serif" font-size="10.00">escape&#45;issue&#45;body</text>
@@ -1858,7 +1867,7 @@
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;cmd_plugin_fix -->
 <!-- agent_worker_structure -->
-<g id="node123" class="node">
+<g id="node124" class="node">
 <title>agent_worker_structure</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4478" rx="61.54" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4481" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;structure</text>
@@ -1871,7 +1880,7 @@
 <polygon fill="black" stroke="black" points="942.8,-4477.85 953.3,-4476.45 944.21,-4471 942.8,-4477.85"/>
 </g>
 <!-- agent_worker_principles -->
-<g id="node124" class="node">
+<g id="node125" class="node">
 <title>agent_worker_principles</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4414" rx="63.78" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4417" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;principles</text>
@@ -1884,7 +1893,7 @@
 <polygon fill="black" stroke="black" points="940.57,-4413.32 951.09,-4412.06 942.08,-4406.48 940.57,-4413.32"/>
 </g>
 <!-- agent_worker_architecture -->
-<g id="node142" class="node">
+<g id="node143" class="node">
 <title>agent_worker_architecture</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-2332" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-2335" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
@@ -1934,7 +1943,7 @@
 <!-- cmd_self_improve_propose&#45;&gt;cmd_self_improve_close -->
 <!-- cmd_self_improve_close&#45;&gt;cmd_ecc_monitor -->
 <!-- script_ecc_monitor -->
-<g id="node183" class="node">
+<g id="node184" class="node">
 <title>script_ecc_monitor</title>
 <polygon fill="#ff9800" stroke="black" points="800.68,-3756 772.91,-3780.49 717.37,-3780.49 689.6,-3756 717.37,-3731.51 772.91,-3731.51 800.68,-3756"/>
 <text text-anchor="middle" x="745.14" y="-3759" font-family="Helvetica,sans-Serif" font-size="10.00">ecc&#45;monitor</text>
@@ -1958,7 +1967,7 @@
 </g>
 <!-- cmd_test_scaffold&#45;&gt;cmd_change_apply -->
 <!-- agent_spec_scaffold_tests -->
-<g id="node148" class="node">
+<g id="node149" class="node">
 <title>agent_spec_scaffold_tests</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4964" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4967" font-family="Helvetica,sans-Serif" font-size="10.00">spec&#45;scaffold&#45;tests</text>
@@ -1971,7 +1980,7 @@
 <polygon fill="black" stroke="black" points="1017.65,-4995.5 1014.03,-4985.54 1010.65,-4995.58 1017.65,-4995.5"/>
 </g>
 <!-- agent_e2e_generate -->
-<g id="node149" class="node">
+<g id="node150" class="node">
 <title>agent_e2e_generate</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4854" rx="51.74" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4857" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;generate</text>
@@ -1985,7 +1994,7 @@
 </g>
 <!-- cmd_worktree_delete&#45;&gt;cmd_twl_validate -->
 <!-- script_worktree_delete -->
-<g id="node159" class="node">
+<g id="node160" class="node">
 <title>script_worktree_delete</title>
 <polygon fill="#ff9800" stroke="black" points="812.68,-3330 778.91,-3354.49 711.37,-3354.49 677.6,-3330 711.37,-3305.51 778.91,-3305.51 812.68,-3330"/>
 <text text-anchor="middle" x="745.14" y="-3333" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;delete</text>
@@ -2035,7 +2044,7 @@
 <polygon fill="black" stroke="black" points="942.28,-4421.68 951.29,-4416.09 940.77,-4414.84 942.28,-4421.68"/>
 </g>
 <!-- agent_worker_env_validator -->
-<g id="node125" class="node">
+<g id="node126" class="node">
 <title>agent_worker_env_validator</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3198" rx="73.58" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3201" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;env&#45;validator</text>
@@ -2048,7 +2057,7 @@
 <polygon fill="black" stroke="black" points="933.76,-3208.05 942.39,-3201.9 931.81,-3201.33 933.76,-3208.05"/>
 </g>
 <!-- agent_worker_rls_reviewer -->
-<g id="node126" class="node">
+<g id="node127" class="node">
 <title>agent_worker_rls_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3646" rx="70.01" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3649" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;rls&#45;reviewer</text>
@@ -2061,7 +2070,7 @@
 <polygon fill="black" stroke="black" points="936.49,-3655.22 945.25,-3649.26 934.68,-3648.46 936.49,-3655.22"/>
 </g>
 <!-- agent_worker_supabase_migration_checker -->
-<g id="node127" class="node">
+<g id="node128" class="node">
 <title>agent_worker_supabase_migration_checker</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4094" rx="120.83" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4097" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;supabase&#45;migration&#45;checker</text>
@@ -2074,7 +2083,7 @@
 <polygon fill="black" stroke="black" points="911.07,-4114.99 917.94,-4106.92 907.54,-4108.94 911.07,-4114.99"/>
 </g>
 <!-- agent_worker_data_validator -->
-<g id="node128" class="node">
+<g id="node129" class="node">
 <title>agent_worker_data_validator</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3262" rx="75.82" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3265" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;data&#45;validator</text>
@@ -2087,7 +2096,7 @@
 <polygon fill="black" stroke="black" points="931.97,-3272.65 940.51,-3266.39 929.93,-3265.95 931.97,-3272.65"/>
 </g>
 <!-- agent_worker_e2e_reviewer -->
-<g id="node131" class="node">
+<g id="node132" class="node">
 <title>agent_worker_e2e_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3966" rx="73.58" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3969" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;e2e&#45;reviewer</text>
@@ -2100,7 +2109,7 @@
 <polygon fill="black" stroke="black" points="933.55,-3976.22 942.17,-3970.06 931.59,-3969.5 933.55,-3976.22"/>
 </g>
 <!-- agent_worker_spec_reviewer -->
-<g id="node132" class="node">
+<g id="node133" class="node">
 <title>agent_worker_spec_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3582" rx="77.56" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3585" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;spec&#45;reviewer</text>
@@ -2119,7 +2128,7 @@
 <polygon fill="black" stroke="black" points="927.79,-2500.15 936.08,-2493.56 925.49,-2493.53 927.79,-2500.15"/>
 </g>
 <!-- agent_worker_code_reviewer -->
-<g id="node136" class="node">
+<g id="node137" class="node">
 <title>agent_worker_code_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4350" rx="77.56" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4353" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;code&#45;reviewer</text>
@@ -2132,7 +2141,7 @@
 <polygon fill="black" stroke="black" points="930.31,-4361.38 938.76,-4354.99 928.17,-4354.72 930.31,-4361.38"/>
 </g>
 <!-- agent_worker_security_reviewer -->
-<g id="node137" class="node">
+<g id="node138" class="node">
 <title>agent_worker_security_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4286" rx="86.95" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4289" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;security&#45;reviewer</text>
@@ -2145,7 +2154,7 @@
 <polygon fill="black" stroke="black" points="924.19,-4299.85 932.25,-4292.98 921.67,-4293.32 924.19,-4299.85"/>
 </g>
 <!-- agent_worker_nextjs_reviewer -->
-<g id="node138" class="node">
+<g id="node139" class="node">
 <title>agent_worker_nextjs_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4222" rx="81.13" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4225" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;nextjs&#45;reviewer</text>
@@ -2158,7 +2167,7 @@
 <polygon fill="black" stroke="black" points="927.96,-4234.28 936.26,-4227.7 925.67,-4227.67 927.96,-4234.28"/>
 </g>
 <!-- agent_worker_fastapi_reviewer -->
-<g id="node139" class="node">
+<g id="node140" class="node">
 <title>agent_worker_fastapi_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4158" rx="83.38" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4161" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;fastapi&#45;reviewer</text>
@@ -2171,7 +2180,7 @@
 <polygon fill="black" stroke="black" points="926.49,-4170.85 934.71,-4164.17 924.11,-4164.27 926.49,-4170.85"/>
 </g>
 <!-- agent_worker_hono_reviewer -->
-<g id="node140" class="node">
+<g id="node141" class="node">
 <title>agent_worker_hono_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3710" rx="77.56" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3713" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;hono&#45;reviewer</text>
@@ -2184,7 +2193,7 @@
 <polygon fill="black" stroke="black" points="930.23,-3721.32 938.68,-3714.93 928.09,-3714.65 930.23,-3721.32"/>
 </g>
 <!-- agent_worker_r_reviewer -->
-<g id="node141" class="node">
+<g id="node142" class="node">
 <title>agent_worker_r_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4030" rx="65.11" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4033" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;r&#45;reviewer</text>
@@ -2197,7 +2206,7 @@
 <polygon fill="black" stroke="black" points="941.05,-4037.97 950.01,-4032.31 939.47,-4031.15 941.05,-4037.97"/>
 </g>
 <!-- agent_worker_llm_output_reviewer -->
-<g id="node143" class="node">
+<g id="node144" class="node">
 <title>agent_worker_llm_output_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3518" rx="92.76" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3521" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;llm&#45;output&#45;reviewer</text>
@@ -2210,7 +2219,7 @@
 <polygon fill="black" stroke="black" points="920.98,-3533.24 928.81,-3526.1 918.24,-3526.8 920.98,-3533.24"/>
 </g>
 <!-- agent_worker_llm_eval_runner -->
-<g id="node144" class="node">
+<g id="node145" class="node">
 <title>agent_worker_llm_eval_runner</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3454" rx="79.81" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3457" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;llm&#45;eval&#45;runner</text>
@@ -2223,7 +2232,7 @@
 <polygon fill="black" stroke="black" points="928.75,-3465.87 937.11,-3459.36 926.52,-3459.23 928.75,-3465.87"/>
 </g>
 <!-- script_tech_stack_detect -->
-<g id="node163" class="node">
+<g id="node164" class="node">
 <title>script_tech_stack_detect</title>
 <polygon fill="#ff9800" stroke="black" points="820.37,-4820 782.76,-4844.49 707.52,-4844.49 669.9,-4820 707.52,-4795.51 782.76,-4795.51 820.37,-4820"/>
 <text text-anchor="middle" x="745.14" y="-4823" font-family="Helvetica,sans-Serif" font-size="10.00">tech&#45;stack&#45;detect</text>
@@ -2236,7 +2245,7 @@
 <polygon fill="black" stroke="black" points="681.03,-4839.64 688.64,-4832.26 678.1,-4833.28 681.03,-4839.64"/>
 </g>
 <!-- script_autopilot_parser -->
-<g id="node164" class="node">
+<g id="node165" class="node">
 <title>script_autopilot_parser</title>
 <polygon fill="#ff9800" stroke="black" points="812.68,-4891 778.91,-4915.49 711.37,-4915.49 677.6,-4891 711.37,-4866.51 778.91,-4866.51 812.68,-4891"/>
 <text text-anchor="middle" x="745.14" y="-4894" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;parser</text>
@@ -2256,7 +2265,7 @@
 </g>
 <!-- cmd_fix_phase&#45;&gt;cmd_post_fix_verify -->
 <!-- script_checkpoint_read -->
-<g id="node186" class="node">
+<g id="node187" class="node">
 <title>script_checkpoint_read</title>
 <polygon fill="#ff9800" stroke="black" points="815.58,-4749 780.36,-4773.49 709.92,-4773.49 674.7,-4749 709.92,-4724.51 780.36,-4724.51 815.58,-4749"/>
 <text text-anchor="middle" x="745.14" y="-4752" font-family="Helvetica,sans-Serif" font-size="10.00">checkpoint&#45;read</text>
@@ -2439,7 +2448,7 @@
 <polygon fill="black" stroke="black" points="683.1,-4878.43 693.68,-4879.06 685.8,-4871.97 683.1,-4878.43"/>
 </g>
 <!-- script_autopilot_mergegate -->
-<g id="node168" class="node">
+<g id="node169" class="node">
 <title>script_autopilot_mergegate</title>
 <polygon fill="#ff9800" stroke="black" points="828.21,-4541 786.67,-4565.49 703.61,-4565.49 662.07,-4541 703.61,-4516.51 786.67,-4516.51 828.21,-4541"/>
 <text text-anchor="middle" x="745.14" y="-4544" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;mergegate</text>
@@ -2471,7 +2480,7 @@
 <polygon fill="black" stroke="black" points="1199.28,-3194.55 1204.31,-3185.23 1194.56,-3189.38 1199.28,-3194.55"/>
 </g>
 <!-- agent_e2e_quality -->
-<g id="node146" class="node">
+<g id="node147" class="node">
 <title>agent_e2e_quality</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4744" rx="45.01" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4747" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;quality</text>
@@ -2486,11 +2495,11 @@
 <!-- cmd_test_phase&#45;&gt;script_chain_runner -->
 <!-- cmd_auto_merge&#45;&gt;cmd_change_archive -->
 <!-- script_auto_merge -->
-<g id="node175" class="node">
+<g id="node176" class="node">
 <title>script_auto_merge</title>
 <polygon fill="#ff9800" stroke="black" points="798.28,-3827 771.71,-3851.49 718.57,-3851.49 691.99,-3827 718.57,-3802.51 771.71,-3802.51 798.28,-3827"/>
 <text text-anchor="middle" x="745.14" y="-3830" font-family="Helvetica,sans-Serif" font-size="10.00">auto&#45;merge</text>
-<text text-anchor="middle" x="745.14" y="-3819" font-family="Helvetica,sans-Serif" font-size="10.00">(2,547 tok)</text>
+<text text-anchor="middle" x="745.14" y="-3819" font-family="Helvetica,sans-Serif" font-size="10.00">(2,855 tok)</text>
 </g>
 <!-- cmd_auto_merge&#45;&gt;script_auto_merge -->
 <g id="edge204" class="edge">
@@ -2501,7 +2510,7 @@
 <!-- cmd_pr_cycle_analysis&#45;&gt;cmd_all_pass_check -->
 <!-- cmd_autopilot_init&#45;&gt;cmd_autopilot_launch -->
 <!-- script_autopilot_init -->
-<g id="node154" class="node">
+<g id="node155" class="node">
 <title>script_autopilot_init</title>
 <polygon fill="#ff9800" stroke="black" points="801.32,-3685 773.23,-3709.49 717.05,-3709.49 688.96,-3685 717.05,-3660.51 773.23,-3660.51 801.32,-3685"/>
 <text text-anchor="middle" x="745.14" y="-3688" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;init</text>
@@ -2514,7 +2523,7 @@
 <polygon fill="black" stroke="black" points="691.22,-3701.21 699.38,-3694.45 688.79,-3694.65 691.22,-3701.21"/>
 </g>
 <!-- script_session_create -->
-<g id="node156" class="node">
+<g id="node157" class="node">
 <title>script_session_create</title>
 <polygon fill="#ff9800" stroke="black" points="810.28,-3614 777.71,-3638.49 712.57,-3638.49 680,-3614 712.57,-3589.51 777.71,-3589.51 810.28,-3614"/>
 <text text-anchor="middle" x="745.14" y="-3617" font-family="Helvetica,sans-Serif" font-size="10.00">session&#45;create</text>
@@ -2534,7 +2543,7 @@
 <polygon fill="black" stroke="black" points="693.15,-3414.99 701.49,-3408.46 690.9,-3408.36 693.15,-3414.99"/>
 </g>
 <!-- script_autopilot_launch -->
-<g id="node155" class="node">
+<g id="node156" class="node">
 <title>script_autopilot_launch</title>
 <polygon fill="#ff9800" stroke="black" points="814.44,-3543 779.79,-3567.49 710.49,-3567.49 675.83,-3543 710.49,-3518.51 779.79,-3518.51 814.44,-3543"/>
 <text text-anchor="middle" x="745.14" y="-3546" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;launch</text>
@@ -2547,7 +2556,7 @@
 <polygon fill="black" stroke="black" points="683.96,-3561.57 691.75,-3554.4 681.18,-3555.15 683.96,-3561.57"/>
 </g>
 <!-- script_crash_detect -->
-<g id="node160" class="node">
+<g id="node161" class="node">
 <title>script_crash_detect</title>
 <polygon fill="#ff9800" stroke="black" points="803.08,-2913 774.11,-2937.49 716.17,-2937.49 687.2,-2913 716.17,-2888.51 774.11,-2888.51 803.08,-2913"/>
 <text text-anchor="middle" x="745.14" y="-2916" font-family="Helvetica,sans-Serif" font-size="10.00">crash&#45;detect</text>
@@ -2561,11 +2570,11 @@
 </g>
 <!-- cmd_autopilot_poll&#45;&gt;cmd_autopilot_phase_execute -->
 <!-- script_state_read -->
-<g id="node152" class="node">
+<g id="node153" class="node">
 <title>script_state_read</title>
 <polygon fill="#ff9800" stroke="black" points="796.52,-3472 770.83,-3496.49 719.45,-3496.49 693.76,-3472 719.45,-3447.51 770.83,-3447.51 796.52,-3472"/>
 <text text-anchor="middle" x="745.14" y="-3475" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;read</text>
-<text text-anchor="middle" x="745.14" y="-3464" font-family="Helvetica,sans-Serif" font-size="10.00">(4,288 tok)</text>
+<text text-anchor="middle" x="745.14" y="-3464" font-family="Helvetica,sans-Serif" font-size="10.00">(4,611 tok)</text>
 </g>
 <!-- cmd_autopilot_poll&#45;&gt;script_state_read -->
 <g id="edge210" class="edge">
@@ -2586,7 +2595,7 @@
 <polygon fill="black" stroke="black" points="691.04,-2930.21 698.98,-2923.2 688.4,-2923.72 691.04,-2930.21"/>
 </g>
 <!-- script_session_session_state -->
-<g id="node187" class="node">
+<g id="node188" class="node">
 <title>script_session_session_state</title>
 <ellipse fill="none" stroke="black" cx="1014.69" cy="-2815" rx="85.89" ry="18"/>
 <text text-anchor="middle" x="1014.69" y="-2812.5" font-family="Helvetica,sans-Serif" font-size="10.00">script_session_session_state</text>
@@ -2617,7 +2626,7 @@
 <polygon fill="black" stroke="black" points="693.54,-3415.31 701.87,-3408.76 691.27,-3408.69 693.54,-3415.31"/>
 </g>
 <!-- script_health_check -->
-<g id="node161" class="node">
+<g id="node162" class="node">
 <title>script_health_check</title>
 <polygon fill="#ff9800" stroke="black" points="803.72,-2634 774.43,-2658.49 715.85,-2658.49 686.56,-2634 715.85,-2609.51 774.43,-2609.51 803.72,-2634"/>
 <text text-anchor="middle" x="745.14" y="-2637" font-family="Helvetica,sans-Serif" font-size="10.00">health&#45;check</text>
@@ -2630,7 +2639,7 @@
 <polygon fill="black" stroke="black" points="688.08,-2649.27 696.2,-2642.47 685.61,-2642.72 688.08,-2649.27"/>
 </g>
 <!-- script_autopilot_should_skip -->
-<g id="node166" class="node">
+<g id="node167" class="node">
 <title>script_autopilot_should_skip</title>
 <polygon fill="#ff9800" stroke="black" points="831.74,-2705 788.44,-2729.49 701.84,-2729.49 658.54,-2705 701.84,-2680.51 788.44,-2680.51 831.74,-2705"/>
 <text text-anchor="middle" x="745.14" y="-2708" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;should&#45;skip</text>
@@ -2684,7 +2693,7 @@
 <polygon fill="black" stroke="black" points="683.73,-3475.5 693.73,-3472 683.73,-3468.5 683.73,-3475.5"/>
 </g>
 <!-- script_session_add_warning -->
-<g id="node158" class="node">
+<g id="node159" class="node">
 <title>script_session_add_warning</title>
 <polygon fill="#ff9800" stroke="black" points="831.74,-2563 788.44,-2587.49 701.84,-2587.49 658.54,-2563 701.84,-2538.51 788.44,-2538.51 831.74,-2563"/>
 <text text-anchor="middle" x="745.14" y="-2566" font-family="Helvetica,sans-Serif" font-size="10.00">session&#45;add&#45;warning</text>
@@ -2704,7 +2713,7 @@
 <polygon fill="black" stroke="black" points="694,-3462.41 704.56,-3461.57 695.78,-3455.64 694,-3462.41"/>
 </g>
 <!-- script_session_archive -->
-<g id="node157" class="node">
+<g id="node158" class="node">
 <title>script_session_archive</title>
 <polygon fill="#ff9800" stroke="black" points="814.44,-2492 779.79,-2516.49 710.49,-2516.49 675.83,-2492 710.49,-2467.51 779.79,-2467.51 814.44,-2492"/>
 <text text-anchor="middle" x="745.14" y="-2495" font-family="Helvetica,sans-Serif" font-size="10.00">session&#45;archive</text>
@@ -2718,7 +2727,7 @@
 </g>
 <!-- cmd_session_audit&#45;&gt;cmd_self_improve_review -->
 <!-- script_session_audit -->
-<g id="node174" class="node">
+<g id="node175" class="node">
 <title>script_session_audit</title>
 <polygon fill="#ff9800" stroke="black" points="805.48,-2421 775.31,-2445.49 714.97,-2445.49 684.8,-2421 714.97,-2396.51 775.31,-2396.51 805.48,-2421"/>
 <text text-anchor="middle" x="745.14" y="-2424" font-family="Helvetica,sans-Serif" font-size="10.00">session&#45;audit</text>
@@ -2819,7 +2828,7 @@
 <!-- agent_worker_data_validator&#45;&gt;agent_worker_env_validator -->
 <!-- agent_worker_data_validator&#45;&gt;agent_worker_env_validator -->
 <!-- agent_template_validator -->
-<g id="node129" class="node">
+<g id="node130" class="node">
 <title>agent_template_validator</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3838" rx="66.44" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3841" font-family="Helvetica,sans-Serif" font-size="10.00">template&#45;validator</text>
@@ -2838,7 +2847,7 @@
 <polygon fill="black" stroke="black" points="1201.31,-3134.64 1207,-3125.7 1196.98,-3129.14 1201.31,-3134.64"/>
 </g>
 <!-- agent_context_checker -->
-<g id="node130" class="node">
+<g id="node131" class="node">
 <title>agent_context_checker</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3774" rx="60.62" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3777" font-family="Helvetica,sans-Serif" font-size="10.00">context&#45;checker</text>
@@ -3077,7 +3086,7 @@
 <!-- agent_worker_llm_eval_runner&#45;&gt;agent_worker_data_validator -->
 <!-- agent_worker_llm_eval_runner&#45;&gt;agent_worker_data_validator -->
 <!-- agent_docs_researcher -->
-<g id="node145" class="node">
+<g id="node146" class="node">
 <title>agent_docs_researcher</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3902" rx="60.62" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3905" font-family="Helvetica,sans-Serif" font-size="10.00">docs&#45;researcher</text>
@@ -3109,7 +3118,7 @@
 <polygon fill="black" stroke="black" points="1201.19,-3134.53 1206.75,-3125.52 1196.78,-3129.09 1201.19,-3134.53"/>
 </g>
 <!-- agent_autofix_loop -->
-<g id="node147" class="node">
+<g id="node148" class="node">
 <title>agent_autofix_loop</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3390" rx="47.25" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3393" font-family="Helvetica,sans-Serif" font-size="10.00">autofix&#45;loop</text>
@@ -3154,7 +3163,7 @@
 <polygon fill="black" stroke="black" points="1201.48,-3134.26 1207.09,-3125.27 1197.1,-3128.8 1201.48,-3134.26"/>
 </g>
 <!-- agent_e2e_heal -->
-<g id="node150" class="node">
+<g id="node151" class="node">
 <title>agent_e2e_heal</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-3326" rx="44.6" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-3329" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;heal</text>
@@ -3173,7 +3182,7 @@
 <polygon fill="black" stroke="black" points="1201.62,-3135.56 1207.92,-3127.04 1197.68,-3129.78 1201.62,-3135.56"/>
 </g>
 <!-- agent_e2e_visual_heal -->
-<g id="node151" class="node">
+<g id="node152" class="node">
 <title>agent_e2e_visual_heal</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1014.69" cy="-4634" rx="57.97" ry="21.43"/>
 <text text-anchor="middle" x="1014.69" y="-4637" font-family="Helvetica,sans-Serif" font-size="10.00">e2e&#45;visual&#45;heal</text>
@@ -3207,7 +3216,7 @@
 <!-- script_crash_detect&#45;&gt;script_session_session_state -->
 <!-- script_health_check&#45;&gt;script_session_session_state -->
 <!-- script_post_skill_chain_nudge -->
-<g id="node162" class="node">
+<g id="node163" class="node">
 <title>script_post_skill_chain_nudge</title>
 <polygon fill="#ff9800" stroke="black" points="835.9,-6628 790.52,-6652.49 699.76,-6652.49 654.38,-6628 699.76,-6603.51 790.52,-6603.51 835.9,-6628"/>
 <text text-anchor="middle" x="745.14" y="-6631" font-family="Helvetica,sans-Serif" font-size="10.00">post&#45;skill&#45;chain&#45;nudge</text>
@@ -3225,56 +3234,56 @@
 <!-- script_chain_runner&#45;&gt;script_compaction_resume -->
 <!-- script_chain_runner&#45;&gt;script_compaction_resume -->
 <!-- script_project_create -->
-<g id="node171" class="node">
+<g id="node172" class="node">
 <title>script_project_create</title>
 <polygon fill="#ff9800" stroke="black" points="807.25,-6699 776.19,-6723.49 714.09,-6723.49 683.03,-6699 714.09,-6674.51 776.19,-6674.51 807.25,-6699"/>
 <text text-anchor="middle" x="745.14" y="-6702" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;create</text>
 <text text-anchor="middle" x="745.14" y="-6691" font-family="Helvetica,sans-Serif" font-size="10.00">(7,597 tok)</text>
 </g>
 <!-- script_project_migrate -->
-<g id="node172" class="node">
+<g id="node173" class="node">
 <title>script_project_migrate</title>
 <polygon fill="#ff9800" stroke="black" points="811.41,-6770 778.28,-6794.49 712,-6794.49 678.87,-6770 712,-6745.51 778.28,-6745.51 811.41,-6770"/>
 <text text-anchor="middle" x="745.14" y="-6773" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;migrate</text>
 <text text-anchor="middle" x="745.14" y="-6762" font-family="Helvetica,sans-Serif" font-size="10.00">(7,597 tok)</text>
 </g>
 <!-- script_chain_steps -->
-<g id="node176" class="node">
+<g id="node177" class="node">
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="800.05,-6841 772.59,-6865.49 717.68,-6865.49 690.23,-6841 717.68,-6816.51 772.59,-6816.51 800.05,-6841"/>
 <text text-anchor="middle" x="745.14" y="-6844" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="745.14" y="-6833" font-family="Helvetica,sans-Serif" font-size="10.00">(7,161 tok)</text>
+<text text-anchor="middle" x="745.14" y="-6833" font-family="Helvetica,sans-Serif" font-size="10.00">(7,545 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
-<g id="node178" class="node">
+<g id="node179" class="node">
 <title>script_resolve_issue_num</title>
 <polygon fill="#ff9800" stroke="black" points="823.41,-6912 784.27,-6936.49 706.01,-6936.49 666.87,-6912 706.01,-6887.51 784.27,-6887.51 823.41,-6912"/>
 <text text-anchor="middle" x="745.14" y="-6915" font-family="Helvetica,sans-Serif" font-size="10.00">resolve&#45;issue&#45;num</text>
 <text text-anchor="middle" x="745.14" y="-6904" font-family="Helvetica,sans-Serif" font-size="10.00">(716 tok)</text>
 </g>
 <!-- script_health_report -->
-<g id="node179" class="node">
+<g id="node180" class="node">
 <title>script_health_report</title>
 <polygon fill="#ff9800" stroke="black" points="803.08,-6983 774.11,-7007.49 716.17,-7007.49 687.2,-6983 716.17,-6958.51 774.11,-6958.51 803.08,-6983"/>
 <text text-anchor="middle" x="745.14" y="-6986" font-family="Helvetica,sans-Serif" font-size="10.00">health&#45;report</text>
 <text text-anchor="middle" x="745.14" y="-6975" font-family="Helvetica,sans-Serif" font-size="10.00">(804 tok)</text>
 </g>
 <!-- script_autopilot_plan_board -->
-<g id="node180" class="node">
+<g id="node181" class="node">
 <title>script_autopilot_plan_board</title>
 <polygon fill="#ff9800" stroke="black" points="827.57,-7054 786.36,-7078.49 703.92,-7078.49 662.71,-7054 703.92,-7029.51 786.36,-7029.51 827.57,-7054"/>
 <text text-anchor="middle" x="745.14" y="-7057" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;plan&#45;board</text>
 <text text-anchor="middle" x="745.14" y="-7046" font-family="Helvetica,sans-Serif" font-size="10.00">(1,741 tok)</text>
 </g>
 <!-- script_project_board_archive -->
-<g id="node181" class="node">
+<g id="node182" class="node">
 <title>script_project_board_archive</title>
 <polygon fill="#ff9800" stroke="black" points="832.37,-7125 788.75,-7149.49 701.52,-7149.49 657.91,-7125 701.52,-7100.51 788.75,-7100.51 832.37,-7125"/>
 <text text-anchor="middle" x="745.14" y="-7128" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;board&#45;archive</text>
 <text text-anchor="middle" x="745.14" y="-7117" font-family="Helvetica,sans-Serif" font-size="10.00">(835 tok)</text>
 </g>
 <!-- script_project_board_backfill -->
-<g id="node182" class="node">
+<g id="node183" class="node">
 <title>script_project_board_backfill</title>
 <polygon fill="#ff9800" stroke="black" points="832.37,-7196 788.75,-7220.49 701.52,-7220.49 657.91,-7196 701.52,-7171.51 788.75,-7171.51 832.37,-7196"/>
 <text text-anchor="middle" x="745.14" y="-7199" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;board&#45;backfill</text>
@@ -3286,19 +3295,19 @@
 <!-- script_checkpoint_read&#45;&gt;script_autopilot_mergegate -->
 <!-- script_session_session_state&#45;&gt;skill_ref_dci -->
 <!-- legend_controller -->
-<g id="node188" class="node">
+<g id="node189" class="node">
 <title>legend_controller</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="74" cy="-4597" rx="50.07" ry="18"/>
 <text text-anchor="middle" x="74" y="-4594.5" font-family="Helvetica,sans-Serif" font-size="10.00">Controller (skill)</text>
 </g>
 <!-- legend_workflow -->
-<g id="node189" class="node">
+<g id="node190" class="node">
 <title>legend_workflow</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="74" cy="-4539" rx="48.72" ry="18"/>
 <text text-anchor="middle" x="74" y="-4536.5" font-family="Helvetica,sans-Serif" font-size="10.00">Workflow (skill)</text>
 </g>
 <!-- legend_reference -->
-<g id="node190" class="node">
+<g id="node191" class="node">
 <title>legend_reference</title>
 <polygon fill="#e1f5fe" stroke="black" points="112,-4499 30,-4499 30,-4463 118,-4463 118,-4493 112,-4499"/>
 <polyline fill="none" stroke="black" points="112,-4499 112,-4493 "/>
@@ -3306,25 +3315,25 @@
 <text text-anchor="middle" x="74" y="-4478.5" font-family="Helvetica,sans-Serif" font-size="10.00">Reference (skill)</text>
 </g>
 <!-- legend_atomic -->
-<g id="node191" class="node">
+<g id="node192" class="node">
 <title>legend_atomic</title>
 <polygon fill="#e3f2fd" stroke="black" points="123.5,-4441 24.5,-4441 24.5,-4405 123.5,-4405 123.5,-4441"/>
 <text text-anchor="middle" x="74" y="-4420.5" font-family="Helvetica,sans-Serif" font-size="10.00">Atomic (command)</text>
 </g>
 <!-- legend_composite -->
-<g id="node192" class="node">
+<g id="node193" class="node">
 <title>legend_composite</title>
 <polygon fill="#bbdefb" stroke="black" points="132,-4383 16,-4383 16,-4347 132,-4347 132,-4383"/>
 <text text-anchor="middle" x="74" y="-4362.5" font-family="Helvetica,sans-Serif" font-size="10.00">Composite (command)</text>
 </g>
 <!-- legend_specialist -->
-<g id="node193" class="node">
+<g id="node194" class="node">
 <title>legend_specialist</title>
 <ellipse fill="#ede7f6" stroke="black" cx="74" cy="-4307" rx="54.31" ry="18"/>
 <text text-anchor="middle" x="74" y="-4304.5" font-family="Helvetica,sans-Serif" font-size="10.00">Specialist (agent)</text>
 </g>
 <!-- legend_script -->
-<g id="node194" class="node">
+<g id="node195" class="node">
 <title>legend_script</title>
 <polygon fill="#ff9800" stroke="black" points="102.6,-4249 88.3,-4267 59.7,-4267 45.4,-4249 59.7,-4231 88.3,-4231 102.6,-4249"/>
 <text text-anchor="middle" x="74" y="-4246.5" font-family="Helvetica,sans-Serif" font-size="10.00">Script</text>

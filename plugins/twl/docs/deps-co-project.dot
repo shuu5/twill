@@ -22,7 +22,7 @@ digraph Dependencies {
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_types [label="twl:ref-types\n(2,168 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_practices [label="twl:ref-practices\n(6,372 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_practices [label="twl:ref-practices\n(6,485 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_deps_format [label="twl:ref-deps-format\n(1,832 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_architecture [label="twl:ref-architecture\n(2,273 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 

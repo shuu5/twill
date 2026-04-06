@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_fix</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="67.88" cy="-105" rx="67.76" ry="21.43"/>
 <text text-anchor="middle" x="67.88" y="-108" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;fix</text>
-<text text-anchor="middle" x="67.88" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00">(863 tok)</text>
+<text text-anchor="middle" x="67.88" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00">(775 tok)</text>
 </g>
 <!-- cmd_post_fix_verify -->
 <g id="node2" class="node">

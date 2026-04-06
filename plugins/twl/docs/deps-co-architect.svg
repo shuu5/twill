@@ -91,7 +91,7 @@
 <title>cmd_architect_issue_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="303.88,-152 193.88,-152 193.88,-116 303.88,-116 303.88,-152"/>
 <text text-anchor="middle" x="248.88" y="-137" font-family="Helvetica,sans-Serif" font-size="10.00">architect&#45;issue&#45;create</text>
-<text text-anchor="middle" x="248.88" y="-126" font-family="Helvetica,sans-Serif" font-size="10.00">(2,352 tok)</text>
+<text text-anchor="middle" x="248.88" y="-126" font-family="Helvetica,sans-Serif" font-size="10.00">(1,463 tok)</text>
 </g>
 <!-- skill_co_architect&#45;&gt;cmd_architect_issue_create -->
 <g id="edge5" class="edge">
