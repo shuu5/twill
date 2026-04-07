@@ -9,127 +9,53 @@ PR の最終判定を行う。動的レビュアー構築 → 並列 specialist 
 chain ステップの実行順序は deps.yaml で宣言されている。
 本コマンドには chain で表現できないドメインルールのみを記載する。
 
-## chain ライフサイクル
-
-| Step | コンポーネント | 型 |
-|------|--------------|------|
-| 8 | merge-gate（本コンポーネント） | composite |
+chain Step 8（composite）。chain ライフサイクルは deps.yaml を参照。
 
 ## ドメインルール
 
 ### 動的レビュアー構築
 
-**Step 1: マニフェストスクリプト実行**
-
 ```bash
 SPECIALISTS=$(git diff --name-only origin/main | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode merge-gate)
-
-# hook 用一時ファイル作成
 CONTEXT_ID="merge-gate-$(git branch --show-current | tr '/' '-')"
 echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
 ```
 
-**Step 2: マニフェスト出力の全件を並列 Task spawn**
+マニフェスト各行を Task spawn 対象とする（手動追加・削除は MUST NOT）。出力 0 行は自動 PASS。結果収集後 `/tmp/.specialist-{manifest,spawned}-${CONTEXT_ID}.txt` を削除。
 
-マニフェストの各行に対して Task spawn を発行する。
-手動でリストを構築してはならない（MUST NOT）。
-マニフェストに含まれない specialist を追加してはならない（MUST NOT）。
+### 並列 specialist 実行 → 結果集約
 
-マニフェスト出力が空（0行）の場合、specialist spawn をスキップし自動 PASS とする。
-
-**Step 3: 結果収集後に一時ファイル削除**
-
-```bash
-rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt /tmp/.specialist-spawned-${CONTEXT_ID}.txt
-```
-
-### 並列 specialist 実行
-
-全 specialist を Task spawn で並列実行する。
-
-```
-各 specialist について:
-  Task(subagent_type="twl:<specialist-name>", prompt="PR diff を入力としてレビューを実行")
-```
-
-各 specialist は共通出力スキーマ（ref-specialist-output-schema）に準拠した結果を返す。
-
-### 結果集約
-
-specialist 出力を Python モジュールでパースし findings を統合する。
+各 specialist を `Task(subagent_type="twl:<name>", prompt="PR diff を入力としてレビューを実行")` で並列起動。出力は ref-specialist-output-schema 準拠。
 
 ```bash
 PARSED=$(echo "$OUTPUT" | python3 -m twl.autopilot.parser)
-```
-
-**AI による自由形式の変換は禁止**。パーサーの構造化データのみを使用する。
-
-### checkpoint 書き出し（MUST）
-
-結果集約後、checkpoint.py で findings を永続化する。
-
-```bash
 STATUS=$(echo "$PARSED" | jq -r '.status')
 FINDINGS=$(echo "$PARSED" | jq -c '.findings')
 python3 -m twl.autopilot.checkpoint write --step merge-gate --status "$STATUS" --findings "$FINDINGS"
 ```
 
-### all-pass-check checkpoint 読み込み
+AI による自由形式変換は禁止。
 
-all-pass-check の checkpoint が存在する場合、`status` フィールドで事前判定を確認する。
-
-```bash
-ALL_PASS_STATUS=$(python3 -m twl.autopilot.checkpoint read --step all-pass-check --field status 2>/dev/null || echo "")
-```
-
-### ac-verify checkpoint 読み込み（MUST）
-
-ac-verify の checkpoint が存在する場合、その findings を BLOCKING 計算に統合する。
-ac-verify が CRITICAL Finding を返した場合、merge-gate は REJECT 判定する。
+### checkpoint 統合（MUST）
 
 ```bash
-AC_VERIFY_STATUS=$(python3 -m twl.autopilot.checkpoint read --step ac-verify --field status 2>/dev/null || echo "")
 AC_VERIFY_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step ac-verify --field findings 2>/dev/null || echo "[]")
-
-# phase-review/merge-gate findings と統合
 COMBINED_FINDINGS=$(jq -s 'add' <(echo "$FINDINGS") <(echo "$AC_VERIFY_FINDINGS"))
 ```
 
-ac-verify checkpoint が存在しない（未実行）場合は WARN を出して継続する。
-ただし autopilot 配下では chain で必ず実行されているため、不在は異常ケース扱い。
+all-pass-check checkpoint も同形式で読み込む。ac-verify checkpoint 不在時は WARN を出して継続（autopilot 配下では異常ケース）。
 
-### severity フィルタ判定
+### severity フィルタ判定（機械的のみ）
 
 ```
-BLOCKING = (phase-review findings + ac-verify findings) WHERE severity == "CRITICAL" AND confidence >= 80
+BLOCKING = COMBINED_FINDINGS WHERE severity == "CRITICAL" AND confidence >= 80
+PASS  ⇔ BLOCKING == 0
+REJECT ⇔ BLOCKING >= 1
 ```
 
-| 条件 | 判定 |
-|------|------|
-| BLOCKING が 0 件 | **PASS** |
-| BLOCKING が 1 件以上 | **REJECT** |
+### PASS / REJECT 時の状態遷移
 
-AI 推論による判定は禁止。上記の機械的フィルタのみで判定する。
-
-### PASS 時の状態遷移
-
-autopilot 状態を state-read で確認し、フローを分岐する（不変条件 C）。
-
-- **autopilot 時（Worker 実行）**: status が `merge-ready` でなければ `status=merge-ready` を state write して停止。既に `merge-ready` なら再入検出としてスキップ。
-- **非 autopilot 時（Pilot 実行）**: `ISSUE`, `PR_NUMBER`, `BRANCH` 環境変数を設定して `python3 -m twl.autopilot.mergegate` でマージを実行。
-
-### REJECT 時の状態遷移（1回目、retry_count=0）
-
-issue-{N}.json を `failed` → `running` に遷移（retry_count は state-write.sh が自動インクリメント）。`fix_instructions` に BLOCKING_FINDINGS を記録。Worker が fix-phase を実行する。
-
-### REJECT 時の状態遷移（2回目、retry_count>=1 — 不変条件 E）
-
-issue-{N}.json を `failed`（確定）に遷移。Pilot に手動介入を要求する。
-
-### 設計方針
-
-動的レビュアー構築による単一パス設計のため、旧プラグインのパス分岐・フラグ分岐・マーカーファイル管理は不要。
-状態管理は issue-{N}.json と state-write.sh に一元化されている。
+PASS / REJECT 後の状態遷移ロジック（autopilot/Pilot 分岐、retry_count 管理、fix_instructions 記録、不変条件 C/E）の正典は `architecture/autopilot-invariants.md` および `commands/autopilot-state-write.md`。本 composite は judgement を出力するのみで、状態遷移の実装は呼び出し元 controller / state-write.sh に委譲する。
 
 ## チェックポイント（MUST）
 
