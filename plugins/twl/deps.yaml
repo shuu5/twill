@@ -1,6 +1,13 @@
 # plugin-twl 依存関係定義
 # version: 3.0
 # plugin: twl
+#
+# [#107] 2026-04-07: 125 コンポーネント (skills+commands+agents、#106 対象 11 件を除く)
+# に対し twl:worker-prompt-reviewer specialist を個別 spawn して実レビュー済み。
+# 結果: PASS=41 / WARN=65 / FAIL=19
+# refined_by ハッシュ 2c7a62f2 は refs/ref-prompt-guide.md の SHA-1(先頭8)。
+# NEEDS_WORK 件の大半 (74件) は commands/ の frontmatter 欠落で、
+# 軽微修正の範囲を超えるため tech-debt #161 で一括対応する。
 
 version: "3.0"
 plugin: twl
