@@ -670,11 +670,24 @@ run_merge_gate() {
   export PR_NUMBER="$pr_number"
   export BRANCH="$branch"
 
-  if python3 -m twl.autopilot.mergegate 2>&1; then
-    echo "[orchestrator] Issue #${issue}: merge 成功" >&2
-  else
-    echo "[orchestrator] Issue #${issue}: merge 失敗" >&2
-  fi
+  # exit code の明示的ハンドリング:
+  #   0 = merge 成功 + Issue CLOSED 確認済み
+  #   1 = merge 失敗 (conflict / push error 等)
+  #   2 = merge 成功だが Issue close 失敗 (status=failed に遷移済み)
+  local rc=0
+  python3 -m twl.autopilot.mergegate 2>&1 || rc=$?
+  case "$rc" in
+    0)
+      echo "[orchestrator] Issue #${issue}: merge 成功" >&2
+      ;;
+    2)
+      echo "[orchestrator] Issue #${issue}: Issue close 失敗で escalate (status=failed)" >&2
+      ;;
+    *)
+      echo "[orchestrator] Issue #${issue}: merge 失敗 (exit=${rc})" >&2
+      ;;
+  esac
+  return "$rc"
 }
 
 # =============================================================================
