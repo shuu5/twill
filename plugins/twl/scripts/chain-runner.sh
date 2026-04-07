@@ -55,6 +55,40 @@ resolve_autopilot_dir() {
   echo "${main_wt:-.}/.autopilot"
 }
 
+# =====================================================================
+# Trace Event (Phase 3 / Layer 1 経験的監査)
+# =====================================================================
+# TWL_CHAIN_TRACE 環境変数が設定されている場合、step の start/end を
+# JSON Lines 形式で append する。設定がなければノーオペ（後方互換）。
+trace_event() {
+  local step="$1" phase="$2" exit_code="${3:-}"
+  [[ -z "${TWL_CHAIN_TRACE:-}" ]] && return 0
+  local trace_file="$TWL_CHAIN_TRACE"
+  # パストラバーサル拒否
+  case "$trace_file" in
+    *..*) return 0 ;;
+  esac
+  # 親ディレクトリ作成（失敗してもサイレント）
+  mkdir -p "$(dirname "$trace_file")" 2>/dev/null || return 0
+  local ts
+  ts=$(date -Iseconds 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
+  if command -v jq >/dev/null 2>&1; then
+    jq -nc \
+      --arg step "$step" \
+      --arg phase "$phase" \
+      --arg ts "$ts" \
+      --arg exit_code "$exit_code" \
+      --arg pid "$$" \
+      '{step: $step, phase: $phase, ts: $ts, exit_code: (if $exit_code == "" then null else ($exit_code | tonumber? // null) end), pid: ($pid | tonumber)}' \
+      >> "$trace_file" 2>/dev/null || true
+  else
+    local exit_field
+    if [[ -z "$exit_code" ]]; then exit_field="null"; else exit_field="$exit_code"; fi
+    printf '{"step":"%s","phase":"%s","ts":"%s","exit_code":%s,"pid":%s}\n' \
+      "$step" "$phase" "$ts" "$exit_field" "$$" >> "$trace_file" 2>/dev/null || true
+  fi
+}
+
 # 成功出力
 ok() {
   local step="$1"; shift
@@ -793,15 +827,34 @@ step_check() {
 # =====================================================================
 
 main() {
+  # --trace <path> フラグ前処理（Phase 3 / Layer 1 経験的監査）
+  # 環境変数 TWL_CHAIN_TRACE と等価。フラグは複数回指定不可。
+  while [[ "${1:-}" == --trace || "${1:-}" == --trace=* ]]; do
+    if [[ "$1" == --trace=* ]]; then
+      TWL_CHAIN_TRACE="${1#--trace=}"
+      shift
+    else
+      if [[ -z "${2:-}" ]]; then
+        echo "ERROR: --trace にはパスを指定してください" >&2
+        exit 1
+      fi
+      TWL_CHAIN_TRACE="$2"
+      shift 2
+    fi
+    export TWL_CHAIN_TRACE
+  done
+
   local step="${1:-}"
   if [[ -z "$step" ]]; then
-    echo "Usage: chain-runner.sh <step-name> [args...]" >&2
+    echo "Usage: chain-runner.sh [--trace <path>] <step-name> [args...]" >&2
     echo "Steps: init, worktree-create, board-status-update, project-board-status-update, board-archive," >&2
     echo "       ac-extract, arch-ref, change-id-resolve, next-step, ts-preflight, pr-test, ac-verify," >&2
     echo "       all-pass-check, pr-cycle-report, auto-merge, check" >&2
     exit 1
   fi
   shift
+
+  trace_event "$step" "start"
 
   local _main_rc=0
   set +e
@@ -840,6 +893,8 @@ main() {
   esac
   _main_rc=$?
   set -e
+
+  trace_event "$step" "end" "$_main_rc"
 
   # Worker terminal status 検証ガード (Issue #131)
   # chain main 終端（=all-pass-check ステップ完了後）で issue-{N}.json の

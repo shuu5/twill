@@ -265,9 +265,25 @@ else
   LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR"
 fi
 
+# --- Trace path 計算 (Phase 3 / Layer 1 経験的監査) ---
+# session.json から session_id を取得し、Worker に TWL_CHAIN_TRACE を渡す。
+# session_id が取得できない場合はタイムスタンプベースの ID を使用する。
+TRACE_SESSION_ID=""
+if [[ -f "$AUTOPILOT_DIR/session.json" ]]; then
+  TRACE_SESSION_ID=$(jq -r '.session_id // ""' "$AUTOPILOT_DIR/session.json" 2>/dev/null || echo "")
+fi
+if [[ -z "$TRACE_SESSION_ID" ]]; then
+  TRACE_SESSION_ID=$(date -u +"%Y%m%d-%H%M%S")
+fi
+TRACE_PATH="${AUTOPILOT_DIR}/trace/${TRACE_SESSION_ID}/issue-${ISSUE}.jsonl"
+mkdir -p "$(dirname "$TRACE_PATH")" 2>/dev/null || true
+
 # --- AUTOPILOT_DIR / REPO_ENV 環境変数構築 (Task 1.8) ---
 QUOTED_AUTOPILOT_DIR=$(printf '%q' "$AUTOPILOT_DIR")
 AUTOPILOT_ENV="AUTOPILOT_DIR=${QUOTED_AUTOPILOT_DIR}"
+
+QUOTED_TRACE_PATH=$(printf '%q' "$TRACE_PATH")
+TRACE_ENV="TWL_CHAIN_TRACE=${QUOTED_TRACE_PATH}"
 
 REPO_ENV=""
 if [[ -n "$REPO_OWNER" && -n "$REPO_NAME" ]]; then
@@ -293,7 +309,7 @@ QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
 tmux new-window -d -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
-  "env ${AUTOPILOT_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
+  "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
 
 # --- クラッシュ検知フック設定 (Task 1.10) ---
 tmux set-option -t "$WINDOW_NAME" remain-on-exit on

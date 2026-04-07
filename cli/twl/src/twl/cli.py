@@ -416,6 +416,11 @@ def handle_viz(args, graph, deps, plugin_root, plugin_name, show_tokens):
 
 
 def main():
+    # audit-history サブコマンドの前処理（Phase 3 / Layer 1 経験的監査）
+    if len(sys.argv) >= 2 and sys.argv[1] == 'audit-history':
+        from twl.autopilot.audit_history import main as audit_history_main
+        sys.exit(audit_history_main(sys.argv[2:]))
+
     # chain サブコマンドの前処理（sys.argv を先に検査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'chain':
         if len(sys.argv) >= 3 and sys.argv[2] == 'generate':
