@@ -172,3 +172,38 @@ EOF
   assert_success
   assert_output --partial "worker-supabase-migration-checker"
 }
+
+# ===========================================================================
+# Requirement: worker-issue-pr-alignment 常時必須（Issue 番号が解決可能なとき）
+# ===========================================================================
+
+@test "merge-gate: includes worker-issue-pr-alignment when WORKER_ISSUE_NUM set" {
+  run bash -c "export WORKER_ISSUE_NUM=135; echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  assert_output --partial "worker-issue-pr-alignment"
+}
+
+@test "phase-review: includes worker-issue-pr-alignment when WORKER_ISSUE_NUM set" {
+  run bash -c "export WORKER_ISSUE_NUM=135; echo 'src/index.ts' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode phase-review"
+  assert_success
+  assert_output --partial "worker-issue-pr-alignment"
+}
+
+@test "merge-gate: skips worker-issue-pr-alignment when issue number unresolvable" {
+  # Empty AUTOPILOT_DIR + non-issue branch + no WORKER_ISSUE_NUM
+  run bash -c "unset WORKER_ISSUE_NUM AUTOPILOT_DIR; cd '$SANDBOX' && (git checkout -b plain-branch 2>/dev/null || true); echo '' | bash scripts/pr-review-manifest.sh --mode merge-gate 2>/dev/null"
+  assert_success
+  refute_output --partial "worker-issue-pr-alignment"
+}
+
+@test "post-fix-verify: does not include worker-issue-pr-alignment" {
+  run bash -c "export WORKER_ISSUE_NUM=135; echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
+  assert_success
+  refute_output --partial "worker-issue-pr-alignment"
+}
+
+@test "merge-gate: skip warning logged to stderr when issue unresolvable" {
+  run bash -c "unset WORKER_ISSUE_NUM AUTOPILOT_DIR; cd '$SANDBOX' && (git checkout -b plain-branch 2>/dev/null || true); echo '' | bash scripts/pr-review-manifest.sh --mode merge-gate 2>&1 1>/dev/null"
+  assert_success
+  assert_output --partial "WARNING: pr-review-manifest"
+}

@@ -123,6 +123,27 @@ if [[ "$MODE" == "merge-gate" ]]; then
   fi
 fi
 
+# --- 常時追加: AC alignment specialist (Issue 番号が解決可能な場合のみ) ---
+# phase-review / merge-gate モードで Issue 番号が解決可能な場合に worker-issue-pr-alignment を必須化。
+# 変更ファイルパターンに依存しない（コード変更ゼロでも Issue 内容と乖離している可能性があるため）。
+# Issue 番号が解決できない場合（chain 外で merge-gate 実行など）はスキップ + warning ログ。
+if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
+  ISSUE_NUM=""
+  resolver="$SCRIPT_DIR/resolve-issue-num.sh"
+  if [[ -f "$resolver" ]]; then
+    # shellcheck disable=SC1090
+    source "$resolver" 2>/dev/null || true
+    if declare -f resolve_issue_num >/dev/null 2>&1; then
+      ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
+    fi
+  fi
+  if [[ -n "$ISSUE_NUM" ]]; then
+    SPECIALISTS["worker-issue-pr-alignment"]=1
+  else
+    echo "WARNING: pr-review-manifest: Issue 番号が解決不能のため worker-issue-pr-alignment をスキップします" >&2
+  fi
+fi
+
 # --- 結果出力（重複なし、ソート済み）---
 for specialist in "${!SPECIALISTS[@]}"; do
   echo "$specialist"
