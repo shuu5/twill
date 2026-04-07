@@ -1715,6 +1715,11 @@ scripts:
       - script: resolve-issue-num
     description: "PostToolUse hook: Skill tool 完了後に autopilot Worker の chain 継続を stdout 注入（Layer 1 defense in depth）"
 
+  pre-tool-use-worktree-boundary:
+    type: script
+    path: scripts/hooks/pre-tool-use-worktree-boundary.sh
+    description: "PreToolUse hook: Edit/Write/NotebookEdit 対象パスを realpath -m 正規化し worktree 外なら deny（不変条件 B Worker 境界ガード, AUTOPILOT_DIR 設定時のみ）"
+
   tech-stack-detect:
     type: script
     path: scripts/tech-stack-detect.sh
