@@ -408,6 +408,145 @@ class TestExecuteWithIssueVerify:
             mock_verify.assert_called_once()
 
 
+# ---------------------------------------------------------------------------
+# _ensure_closes_link (Issue #136)
+# ---------------------------------------------------------------------------
+
+
+class TestEnsureClosesLink:
+    """Pre-merge fail-safe: PR 本文に Closes #N が無ければ機械的に追記する。"""
+
+    def test_skip_when_pr_view_fails(self, gate):
+        """gh pr view が失敗した場合は何もしない（既存挙動維持）。"""
+        with patch("subprocess.run",
+                   return_value=MagicMock(returncode=1, stdout="", stderr="boom")) as mock_run:
+            gate._ensure_closes_link([])
+            # Only pr view called, no pr edit
+            assert mock_run.call_count == 1
+            assert "view" in mock_run.call_args.args[0]
+
+    def test_skip_when_closes_already_present(self, gate):
+        """PR 本文に Closes #N が既にあれば追記しない。"""
+        body = "Some description\n\nCloses #42\n"
+        with patch("subprocess.run",
+                   return_value=MagicMock(returncode=0, stdout=body)) as mock_run:
+            gate._ensure_closes_link([])
+            # Only pr view called, no pr edit
+            assert mock_run.call_count == 1
+
+    def test_skip_when_fixes_present(self, gate):
+        """PR 本文に Fixes #N があっても追記しない（auto-close 同等扱い）。"""
+        body = "fix bug\n\nFixes #42"
+        with patch("subprocess.run",
+                   return_value=MagicMock(returncode=0, stdout=body)) as mock_run:
+            gate._ensure_closes_link([])
+            assert mock_run.call_count == 1
+
+    def test_skip_when_resolves_present_case_insensitive(self, gate):
+        body = "stuff\n\nresolves #42"
+        with patch("subprocess.run",
+                   return_value=MagicMock(returncode=0, stdout=body)) as mock_run:
+            gate._ensure_closes_link([])
+            assert mock_run.call_count == 1
+
+    def test_appends_closes_when_absent(self, gate):
+        """PR 本文に Closes #N が無ければ gh pr edit で追記する。"""
+        body = "Some description without close link"
+        calls: list[list[str]] = []
+
+        def fake_run(cmd, **kwargs):
+            calls.append(list(cmd))
+            if "view" in cmd:
+                return MagicMock(returncode=0, stdout=body, stderr="")
+            return MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("subprocess.run", side_effect=fake_run):
+            gate._ensure_closes_link([])
+
+        # 2 calls: view + edit
+        assert len(calls) == 2
+        edit_cmd = calls[1]
+        assert "edit" in edit_cmd
+        # body argument の中に Closes #42 が含まれる
+        body_idx = edit_cmd.index("--body") + 1
+        assert "Closes #42" in edit_cmd[body_idx]
+        # 元の本文も保持
+        assert "Some description without close link" in edit_cmd[body_idx]
+
+    def test_does_not_match_other_issue_number(self, gate):
+        """Closes #420 は #42 のマッチに使えない（word boundary）。"""
+        body = "fix\n\nCloses #420"
+        calls: list[list[str]] = []
+
+        def fake_run(cmd, **kwargs):
+            calls.append(list(cmd))
+            if "view" in cmd:
+                return MagicMock(returncode=0, stdout=body, stderr="")
+            return MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("subprocess.run", side_effect=fake_run):
+            gate._ensure_closes_link([])
+
+        # edit が呼ばれているはず（#42 は #420 と別物）
+        assert len(calls) == 2
+        assert "edit" in calls[1]
+
+    def test_passes_repo_flag_through(self, gate):
+        body = "no close link"
+        calls: list[list[str]] = []
+
+        def fake_run(cmd, **kwargs):
+            calls.append(list(cmd))
+            if "view" in cmd:
+                return MagicMock(returncode=0, stdout=body, stderr="")
+            return MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("subprocess.run", side_effect=fake_run):
+            gate._ensure_closes_link(["-R", "owner/repo"])
+
+        # Both view and edit must include the repo flag
+        for c in calls:
+            assert "-R" in c
+            assert "owner/repo" in c
+
+    def test_edit_failure_does_not_raise(self, gate):
+        """gh pr edit 失敗時も例外を出さない（merge は継続）。"""
+        body = "no link"
+
+        def fake_run(cmd, **kwargs):
+            if "view" in cmd:
+                return MagicMock(returncode=0, stdout=body, stderr="")
+            return MagicMock(returncode=1, stdout="", stderr="edit failed")
+
+        with patch("subprocess.run", side_effect=fake_run):
+            gate._ensure_closes_link([])  # should not raise
+
+    def test_called_before_run_merge_in_execute(self, gate):
+        """execute() フローの中で _ensure_closes_link が _run_merge より先に呼ばれる。"""
+        order: list[str] = []
+
+        def fake_ensure(self, _flag):
+            order.append("ensure")
+
+        def fake_merge(self, _flag):
+            order.append("merge")
+            return True
+
+        with patch("os.getcwd", return_value="/home/u/repo/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
+             patch("twl.autopilot.mergegate._state_write"), \
+             patch("twl.autopilot.mergegate._board_update"), \
+             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
+             patch.object(MergeGate, "_verify_and_close_issue", return_value=True), \
+             patch.object(MergeGate, "_ensure_closes_link", new=fake_ensure), \
+             patch.object(MergeGate, "_run_merge", new=fake_merge), \
+             patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="")):
+            gate.execute()
+
+        assert order == ["ensure", "merge"]
+
+
 class TestGhRepoFlag:
     def test_no_repo_args_no_flag(self, autopilot_dir, scripts_root):
         gate = MergeGate(

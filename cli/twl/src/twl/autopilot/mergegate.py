@@ -244,6 +244,10 @@ class MergeGate:
             f"PR #{self.pr_number} のマージを実行... (REPO_MODE={repo_mode})"
         )
 
+        # Pre-merge fail-safe: ensure PR body contains Closes #N so GitHub
+        # auto-close fires on merge. Issue #136.
+        self._ensure_closes_link(gh_repo_flag)
+
         merge_ok = self._run_merge(gh_repo_flag)
         if not merge_ok:
             sys.exit(1)
@@ -376,6 +380,49 @@ class MergeGate:
         # 再確認
         state_after = self._gh_issue_state(gh_repo_flag)
         return state_after == "CLOSED"
+
+    def _ensure_closes_link(self, gh_repo_flag: list[str]) -> None:
+        """Ensure PR body contains Closes #N before merge.
+
+        Issue #136 — GitHub の auto-close は PR 本文 (body) に
+        ``Closes|Fixes|Resolves #N`` がある場合のみ発火する。
+        merge 直前に PR 本文を確認し、無ければ ``gh pr edit --body`` で
+        機械的に追記する pre-merge fail-safe。
+
+        本文取得失敗時は既存挙動を維持するためスキップ（warning も出さない）。
+        """
+        result = subprocess.run(
+            ["gh", "pr", "view", self.pr_number, *gh_repo_flag,
+             "--json", "body", "-q", ".body"],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0:
+            return  # 取得失敗時は既存挙動維持
+        body = result.stdout.rstrip("\n")
+        closes_pattern = re.compile(
+            rf"\b(Closes|Fixes|Resolves)\s+#{re.escape(self.issue)}\b",
+            re.IGNORECASE,
+        )
+        if closes_pattern.search(body):
+            return  # 既に存在
+        new_body = f"{body}\n\nCloses #{self.issue}\n"
+        edit_result = subprocess.run(
+            ["gh", "pr", "edit", self.pr_number, *gh_repo_flag,
+             "--body", new_body],
+            capture_output=True, text=True,
+        )
+        if edit_result.returncode == 0:
+            print(
+                f"[merge-gate] Issue #{self.issue}: "
+                f"PR #{self.pr_number} 本文に Closes #{self.issue} を機械的に追記"
+            )
+        else:
+            print(
+                f"[merge-gate] Issue #{self.issue}: "
+                f"⚠️ PR 本文への Closes 追記失敗（merge は継続）: "
+                f"{edit_result.stderr.strip()}",
+                file=sys.stderr,
+            )
 
     def _run_merge(self, gh_repo_flag: list[str]) -> bool:
         """Execute gh pr merge --squash. Returns True on success."""
