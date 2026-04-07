@@ -1768,6 +1768,7 @@ scripts:
       - script: state-write
       - script: chain-steps
       - script: resolve-issue-num
+      - script: worker-terminal-guard
     commands:
       - init
       - board-status-update
@@ -1787,6 +1788,11 @@ scripts:
       - autopilot-detect
       - quick-detect
     description: "機械的 chain ステップを実行（Python: python3 -m twl.autopilot.chain; ChainRunner クラス）"
+
+  worker-terminal-guard:
+    type: script
+    path: scripts/worker-terminal-guard.sh
+    description: "Worker chain 終端で issue-{N}.json の status が terminal 集合 {merge-ready,done,failed,conflict} に含まれるか検証。非 terminal 時は status=failed + failure.message=non_terminal_chain_end を書き込み exit 1（Issue #131）"
 
   worktree-create:
     type: script
