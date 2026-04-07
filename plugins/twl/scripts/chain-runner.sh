@@ -323,6 +323,19 @@ step_board_archive() {
     return 0
   fi
 
+  # NEW: GitHub state 二重チェック (fail-closed, Issue #138)
+  # 空文字 (取得失敗) も "CLOSED でない" として skip 扱いにする
+  local gh_state
+  gh_state=$(gh issue view "$issue_num" --json state -q .state 2>/dev/null || echo "")
+  if [[ "$gh_state" != "CLOSED" ]]; then
+    if [[ -z "$gh_state" ]]; then
+      skip "board-archive" "Issue #${issue_num} の GitHub state 取得失敗 — fail-closed で archive をスキップ"
+    else
+      skip "board-archive" "Issue #${issue_num} が GitHub 上で ${gh_state} — archive をスキップ"
+    fi
+    return 0
+  fi
+
   # project スコープ確認
   if ! gh project list --owner @me --limit 1 >/dev/null 2>&1; then
     skip "board-archive" "gh auth refresh -s project が必要"

@@ -180,6 +180,8 @@ class PhaseOrchestrator:
         self._nudge_counts: dict[str, int] = {}
         self._last_output_hash: dict[str, str] = {}
         self._health_check_counter: dict[str, int] = {}
+        # skipped_archives: fail-closed で archive を skip した Issue 番号（Issue #138）
+        self._skipped_archives: list[int] = []
 
     def run(self) -> dict[str, Any]:
         """Execute phase. Returns phase report dict."""
@@ -199,8 +201,9 @@ class PhaseOrchestrator:
         if not active_entries:
             print(f"[orchestrator] Phase {self.phase}: 全 Issue が skip/done", file=sys.stderr)
             all_nums = [_parse_issue_entry(e)[1] for e in all_entries]
-            report = self._generate_phase_report(all_nums)
+            # 先に archive を実行して skipped_archives を集約してからレポート生成（Issue #138）
             self._archive_done_issues(all_nums)
+            report = self._generate_phase_report(all_nums)
             return report
 
         # Step 3: Batch execution
@@ -209,10 +212,12 @@ class PhaseOrchestrator:
             batch = active_entries[batch_start:batch_start + MAX_PARALLEL]
             self._run_batch(batch)
 
-        # Step 4: Generate report
+        # Step 4: Archive (先に archive して skipped_archives を集約)
         all_nums = [_parse_issue_entry(e)[1] for e in all_entries]
-        report = self._generate_phase_report(all_nums)
         self._archive_done_issues(all_nums)
+
+        # Step 5: Generate report (skipped_archives を含む)
+        report = self._generate_phase_report(all_nums)
         return report
 
     def _filter_active(self, entries: list[str]) -> list[str]:
@@ -609,19 +614,66 @@ class PhaseOrchestrator:
                 "failed": failed,
                 "skipped": skipped,
             },
+            "skipped_archives": list(self._skipped_archives),
             "changed_files": changed_files,
         }
 
+    def _gh_issue_state(self, issue: str) -> str:
+        """Return GitHub Issue state ('OPEN' / 'CLOSED' / '' on failure).
+
+        fail-closed helper: 呼び出し側は空文字 (取得失敗) を "CLOSED でない" として扱う。
+        Issue #138: archive_done_issues の二重チェックで使用。
+        """
+        try:
+            r = subprocess.run(
+                ["gh", "issue", "view", issue, "--json", "state", "-q", ".state"],
+                capture_output=True, text=True, timeout=30,
+            )
+            if r.returncode != 0:
+                return ""
+            return r.stdout.strip()
+        except Exception:
+            return ""
+
     def _archive_done_issues(self, issue_nums: list[str]) -> None:
+        """Fail-closed archive: local status=done かつ GitHub state=CLOSED のみ archive.
+
+        Issue #138: 空文字 (取得失敗) / OPEN は skip し、_skipped_archives に追加する。
+        """
         for issue in issue_nums:
             status = _read_state(issue, "status", self.autopilot_dir)
-            if status == "done":
-                subprocess.run(
-                    ["bash", str(self.scripts_root / "chain-runner.sh"),
-                     "board-archive", issue],
-                    capture_output=True,
+            if status != "done":
+                continue
+
+            # NEW: GitHub Issue state 二重チェック (fail-closed)
+            gh_state = self._gh_issue_state(issue)
+            if gh_state != "CLOSED":
+                if not gh_state:
+                    print(
+                        f"[orchestrator] Issue #{issue}: ⚠️ GitHub state 取得失敗 — fail-closed で archive をスキップ",
+                        file=sys.stderr,
+                    )
+                else:
+                    print(
+                        f"[orchestrator] Issue #{issue}: ⚠️ ローカル state=done だが GitHub state={gh_state} — archive をスキップ",
+                        file=sys.stderr,
+                    )
+                print(
+                    f"[orchestrator] Issue #{issue}: 手動 close または autopilot state 修正が必要です",
+                    file=sys.stderr,
                 )
-                self._archive_deltaspec_changes(issue)
+                try:
+                    self._skipped_archives.append(int(issue))
+                except ValueError:
+                    pass
+                continue
+
+            subprocess.run(
+                ["bash", str(self.scripts_root / "chain-runner.sh"),
+                 "board-archive", issue],
+                capture_output=True,
+            )
+            self._archive_deltaspec_changes(issue)
 
     def _archive_deltaspec_changes(self, issue: str) -> None:
         try:

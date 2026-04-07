@@ -73,10 +73,12 @@ _stub_gh_with_item_archive() {
   cat > "$STUB_BIN/gh" <<'GHSTUB'
 #!/usr/bin/env bash
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -97,10 +99,12 @@ _stub_gh_no_item() {
   cat > "$STUB_BIN/gh" <<'GHSTUB'
 #!/usr/bin/env bash
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -119,10 +123,12 @@ _stub_gh_archive_fails() {
   cat > "$STUB_BIN/gh" <<'GHSTUB'
 #!/usr/bin/env bash
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -146,10 +152,12 @@ _stub_gh_merge_with_archive() {
 case "$*" in
   *"pr merge"*)
     echo "merged" ;;
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -175,10 +183,12 @@ GHSTUB_LOG_HEAD
   printf 'echo "$*" >> "%s"\n' "$log_path" >> "$STUB_BIN/gh"
   cat >> "$STUB_BIN/gh" <<'GHSTUB_LOG_BODY'
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -235,10 +245,12 @@ GHSTUB_LOG_BODY
 #!/usr/bin/env bash
 COUNTER_FILE="$counter_file"
 case "\$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -350,10 +362,12 @@ GHSTUB
   cat > "$STUB_BIN/gh" <<'GHSTUB'
 #!/usr/bin/env bash
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": []}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": null}}}' ;;
   *)
@@ -382,10 +396,12 @@ GHSTUB_MERGE_LOG_HEAD
 case "$*" in
   *"pr merge"*)
     exit 0 ;;
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -442,10 +458,12 @@ GHSTUB_MERGE_LOG_BODY
 case "$*" in
   *"pr merge"*)
     exit 0 ;;
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -479,10 +497,12 @@ GHSTUB
 case "$*" in
   *"pr merge"*)
     exit 0 ;;
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)

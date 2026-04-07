@@ -61,7 +61,7 @@ _stub_gh_with_done_items() {
   )
 
   # Write stub using printf to allow variable expansion for items_json
-  printf '#!/usr/bin/env bash\necho "$*" >> "%s"\ncase "$*" in\n  *"project item-list"*)\n    echo '"'"'{"items": %s}'"'"' ;;\n  *"project item-archive"*)\n    echo "archived" ;;\n  *)\n    echo "{}" ;;\nesac\n' \
+  printf '#!/usr/bin/env bash\necho "$*" >> "%s"\ncase "$*" in\n  *"issue view"*)\n    echo "CLOSED" ;;\n  *"project item-list"*)\n    echo '"'"'{"items": %s}'"'"' ;;\n  *"project item-archive"*)\n    echo "archived" ;;\n  *)\n    echo "{}" ;;\nesac\n' \
     "$log_path" "$items_json" > "$STUB_BIN/gh"
   chmod +x "$STUB_BIN/gh"
 }
@@ -73,6 +73,8 @@ _stub_gh_no_done_items() {
 #!/usr/bin/env bash
 echo "\$*" >> "${log_path}"
 case "\$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project item-list"*)
     echo '{"items": []}' ;;
   *"project item-archive"*)
@@ -91,6 +93,8 @@ _stub_gh_with_one_done_item() {
 #!/usr/bin/env bash
 echo "\$*" >> "${log_path}"
 case "\$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project item-list"*)
     echo '{"items": [{"id": "PVTI_item101", "content": {"number": 101, "repository": "shuu5/loom-plugin-dev", "type": "Issue"}, "status": "Done", "title": "Issue 101"}]}' ;;
   *"project item-archive"*)
@@ -109,6 +113,8 @@ _stub_gh_with_two_done_items() {
 #!/usr/bin/env bash
 echo "\$*" >> "${log_path}"
 case "\$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project item-list"*)
     echo '{"items": [
       {"id": "PVTI_item101", "content": {"number": 101, "repository": "shuu5/loom-plugin-dev", "type": "Issue"}, "status": "Done", "title": "Issue 101"},
@@ -130,6 +136,8 @@ _stub_gh_archive_fails() {
 #!/usr/bin/env bash
 echo "\$*" >> "${log_path}"
 case "\$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project item-list"*)
     echo '{"items": [{"id": "PVTI_item101", "content": {"number": 101, "repository": "shuu5/loom-plugin-dev", "type": "Issue"}, "status": "Done", "title": "Issue 101"}]}' ;;
   *"project item-archive"*)
@@ -149,6 +157,8 @@ _stub_gh_project_not_found() {
 #!/usr/bin/env bash
 echo "\$*" >> "${log_path}"
 case "\$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project item-list"*)
     echo "Could not find project" >&2
     exit 1 ;;
