@@ -95,8 +95,188 @@ def _compute_ref_prompt_guide_hash(plugin_root: Path) -> Optional[str]:
     return hashlib.sha1(ref_path.read_bytes()).hexdigest()[:8]
 
 
+def _parse_dispatch_table(runner_text: str) -> Set[str]:
+    """chain-runner.sh の case "$STEP" in ... esac から step 名を抽出する
+
+    認識パターン:
+        <step-name>)   step_<func> "$@" ;;
+        <step-name>)   record_current_step "..."; ok "..." "..." ;;
+    """
+    if not runner_text:
+        return set()
+    pattern = re.compile(
+        r'^\s*([a-z][a-z0-9-]*)\)\s*(?:record_current_step|step_[a-z_]+)',
+        re.M,
+    )
+    return set(pattern.findall(runner_text))
+
+
+def _read_skill_text(skills_root: Path, workflow_name: str) -> str:
+    """workflow の SKILL.md を読み込む（フロントマター含む全文）"""
+    skill_path = skills_root / workflow_name / "SKILL.md"
+    if not skill_path.exists():
+        return ""
+    try:
+        return skill_path.read_text(encoding="utf-8")
+    except Exception:
+        return ""
+
+
+def _skill_has_invocation(skill_text: str, target: str) -> bool:
+    """SKILL.md text 内に target component への明示的実行指示があるかを判定
+
+    Phase 1: 厳密マッチ（false positive 抑制）
+        - commands/<target>.md / agents/<target>.md / skills/<target>/ の Read 指示
+        - chain-runner.sh <target> / "$CR" <target> 等の実行指示
+        - bash chain-runner.sh <target>
+    """
+    if not skill_text or not target:
+        return False
+    if f"commands/{target}.md" in skill_text:
+        return True
+    if f"agents/{target}.md" in skill_text:
+        return True
+    if f"skills/{target}/" in skill_text:
+        return True
+    # chain-runner.sh の引数として呼ばれている明示パターン
+    invocation_patterns = [
+        rf'chain-runner\.sh\s+{re.escape(target)}\b',
+        rf'"\$CR"\s+{re.escape(target)}\b',
+        rf'\$CR\s+{re.escape(target)}\b',
+        rf'cr\s+{re.escape(target)}\b',
+    ]
+    for pat in invocation_patterns:
+        if re.search(pat, skill_text):
+            return True
+    return False
+
+
+def _lookup_component(deps: dict, target: str) -> Optional[dict]:
+    """deps.yaml の各セクションから target コンポーネントを検索"""
+    for section in ('skills', 'commands', 'agents', 'scripts'):
+        spec = deps.get(section, {}).get(target)
+        if spec is not None:
+            return spec
+    return None
+
+
+def _get_dispatch_mode(deps: dict, target: str) -> Optional[str]:
+    """target コンポーネントの dispatch_mode を返す（未宣言は None）"""
+    spec = _lookup_component(deps, target)
+    if spec is None:
+        return None
+    mode = spec.get('dispatch_mode')
+    if mode is None:
+        return None
+    return str(mode)
+
+
+def _is_llm_driven(deps: dict, target: str) -> bool:
+    """target が LLM 駆動として宣言されているかを判定"""
+    return _get_dispatch_mode(deps, target) == 'llm'
+
+
+def _is_trigger_only(deps: dict, target: str) -> bool:
+    """target が trigger 経由のみで起動されると宣言されているかを判定"""
+    return _get_dispatch_mode(deps, target) == 'trigger'
+
+
+def _iter_workflows(deps: dict):
+    """deps.yaml の skills セクションから type=workflow を yield する"""
+    for name, spec in deps.get('skills', {}).items():
+        if spec.get('type') == 'workflow':
+            yield name, spec
+
+
+def audit_chain_integrity(deps: dict, plugin_root: Path) -> List[dict]:
+    """Section 9: Chain Integrity
+
+    deps.yaml × chain-runner.sh × SKILL.md text の三者整合性を検証する。
+
+    検出対象:
+    - orphan_call (WARNING): step 番号なし + LLM 駆動宣言なし + trigger 宣言なし
+    - dispatch_gap (CRITICAL): step あり + chain-runner.sh dispatch なし
+                                + LLM 駆動宣言なし + SKILL.md 言及なし
+
+    Returns: items リスト（severity, component, message, section, value, threshold）
+    """
+    items: List[dict] = []
+
+    runner_path = plugin_root / "scripts" / "chain-runner.sh"
+    runner_text = ""
+    if runner_path.exists():
+        try:
+            runner_text = runner_path.read_text(encoding="utf-8")
+        except Exception:
+            runner_text = ""
+    dispatched_steps = _parse_dispatch_table(runner_text)
+
+    skills_root = plugin_root / "skills"
+
+    for wf_name, wf_spec in sorted(_iter_workflows(deps)):
+        skill_text = _read_skill_text(skills_root, wf_name)
+        for call in wf_spec.get('calls', []):
+            if not isinstance(call, dict):
+                continue
+            # ターゲットの型と名前を抽出（v3.0 type-name keys）
+            target = None
+            ctype = None
+            for k in ('atomic', 'composite', 'workflow', 'controller', 'specialist', 'reference', 'script'):
+                if k in call:
+                    target = call[k]
+                    ctype = k
+                    break
+            if not target:
+                continue
+            step = call.get('step')
+
+            llm = _is_llm_driven(deps, target)
+            trigger = _is_trigger_only(deps, target)
+            mentioned = _skill_has_invocation(skill_text, target)
+
+            # 1. Orphan call
+            if step is None and not llm and not trigger and not mentioned:
+                items.append({
+                    "severity": "warning",
+                    "component": f"{wf_name}→{target}",
+                    "message": f"orphan_call: step 番号なし、LLM/trigger 駆動宣言なし、SKILL.md 言及もなし",
+                    "section": "chain_integrity",
+                    "value": 0,
+                    "threshold": 1,
+                })
+                continue
+
+            # 2. Dispatch gap (atomic / script のみ)
+            if step is not None and ctype in ('atomic', 'script'):
+                if target not in dispatched_steps and not llm and not mentioned:
+                    items.append({
+                        "severity": "critical",
+                        "component": f"{wf_name}→{target}",
+                        "message": (
+                            f"dispatch_gap: step {step} 宣言、chain-runner.sh に "
+                            f"step_{target.replace('-', '_')} なし、SKILL.md 実行指示もなし"
+                        ),
+                        "section": "chain_integrity",
+                        "value": 0,
+                        "threshold": 1,
+                    })
+                    continue
+
+            # OK row（カウント用）
+            items.append({
+                "severity": "ok",
+                "component": f"{wf_name}→{target}",
+                "message": f"ok: step={step or '-'} type={ctype}",
+                "section": "chain_integrity",
+                "value": 1,
+                "threshold": 1,
+            })
+
+    return items
+
+
 def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
-    """7セクションの TWiLL 準拠度データを収集（print なし）
+    """9セクションの TWiLL 準拠度データを収集（print なし）
 
     Returns: items リスト（severity, component, message, section, value, threshold）
     """
@@ -316,6 +496,9 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
                 "threshold": 1,
             })
 
+    # Section 9: Chain Integrity
+    items.extend(audit_chain_integrity(deps, plugin_root))
+
     return items
 
 
@@ -383,7 +566,18 @@ def _scan_body_for_mcp_tools(file_path: Path) -> Set[str]:
 
 
 def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
-    """8セクションの TWiLL 準拠度レポートを出力
+    """9セクションの TWiLL 準拠度レポートを出力
+
+    Sections:
+        1. Controller Size
+        2. Inline Implementation
+        3. 1C=1W (Step 0 Routing)
+        4. Tools Accuracy
+        5. Self-Contained
+        6. Token Bloat
+        7. Model Declaration
+        8. Prompt Compliance
+        9. Chain Integrity
 
     Returns: (critical_count, warning_count, ok_count)
     """
@@ -646,6 +840,30 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
                     status_str = f'stale ({refined_by} → 現在={current_hash})'
                     severity = 'WARNING'
             print(f"| {name} | {status_str} | {severity} |")
+    print()
+
+    # === Section 9: Chain Integrity ===
+    print("## 9. Chain Integrity")
+    print()
+    print("| Workflow → Target | Issue | Severity |")
+    print("|-------------------|-------|----------|")
+    # Note: chain_integrity items are already included in audit_collect's items
+    # at the top of this function (and counted into criticals/warnings/oks).
+    chain_items = [i for i in items if i['section'] == 'chain_integrity']
+    has_issue = False
+    for item in chain_items:
+        sev = item['severity']
+        if sev == 'critical':
+            sev_label = 'CRITICAL'
+        elif sev == 'warning':
+            sev_label = 'WARNING'
+        else:
+            continue  # OK 行は非表示（量削減）
+        has_issue = True
+        print(f"| {item['component']} | {item['message']} | {sev_label} |")
+    if not has_issue:
+        ok_count_s9 = sum(1 for i in chain_items if i['severity'] in ('ok', 'info'))
+        print(f"| (all {ok_count_s9} entries) | OK | OK |")
     print()
 
     # === Summary ===

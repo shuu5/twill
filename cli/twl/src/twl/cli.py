@@ -260,12 +260,64 @@ def handle_deep_validate(args, deps, graph, plugin_root, plugin_name):
 
 
 def handle_audit(args, deps, plugin_root, plugin_name):
+    section_filter = getattr(args, 'section', None)
+    section_name_map = {
+        1: 'controller_size',
+        2: 'inline_implementation',
+        3: 'step0_routing',
+        4: 'tools_accuracy',
+        5: 'self_contained',
+        6: 'token_bloat',
+        7: 'prompt_compliance',  # audit_collect uses Section 7 = prompt_compliance (Model is report-only)
+        8: 'prompt_compliance',
+        9: 'chain_integrity',
+    }
+
     if args.format == 'json':
         items = audit_collect(deps, plugin_root)
+        if section_filter is not None:
+            target_section = section_name_map.get(section_filter)
+            if target_section:
+                items = [i for i in items if i['section'] == target_section]
         exit_code = 1 if any(i['severity'] == 'critical' for i in items) else 0
         envelope = build_envelope("audit", get_deps_version(deps), plugin_name, items, exit_code)
         output_json(envelope)
         sys.exit(exit_code)
+
+    if section_filter == 9:
+        from twl.validation.audit import audit_chain_integrity
+        print("=== TWiLL Compliance Audit (Section 9 only) ===")
+        print()
+        print("## 9. Chain Integrity")
+        print()
+        print("| Workflow → Target | Issue | Severity |")
+        print("|-------------------|-------|----------|")
+        chain_items = audit_chain_integrity(deps, plugin_root)
+        criticals = 0
+        warnings = 0
+        oks = 0
+        for item in chain_items:
+            sev = item['severity']
+            if sev == 'critical':
+                criticals += 1
+                print(f"| {item['component']} | {item['message']} | CRITICAL |")
+            elif sev == 'warning':
+                warnings += 1
+                print(f"| {item['component']} | {item['message']} | WARNING |")
+            else:
+                oks += 1
+        if not (criticals or warnings):
+            print(f"| (all {oks} entries) | OK | OK |")
+        print()
+        print(f"## Summary")
+        print(f"| Severity | Count |")
+        print(f"|----------|-------|")
+        print(f"| CRITICAL | {criticals} |")
+        print(f"| WARNING  | {warnings} |")
+        print(f"| OK       | {oks} |")
+        if criticals > 0:
+            sys.exit(1)
+        return
 
     print("=== TWiLL Compliance Audit ===")
     print()
@@ -389,7 +441,8 @@ def main():
     parser.add_argument('--tokens', action='store_true', help='Show token counts for all nodes')
     parser.add_argument('--no-tokens', action='store_true', help='Hide token counts in graph output')
     parser.add_argument('--deep-validate', action='store_true', help='Deep validation (controller bloat, ref placement, tools consistency)')
-    parser.add_argument('--audit', action='store_true', help='TWiLL compliance audit (5-section markdown report)')
+    parser.add_argument('--audit', action='store_true', help='TWiLL compliance audit (9-section markdown report)')
+    parser.add_argument('--section', type=int, metavar='N', help='Filter --audit output to a single section number (1-9)')
     parser.add_argument('--complexity', action='store_true', help='Complexity metrics report')
     parser.add_argument('--rename', nargs=2, metavar=('OLD', 'NEW'), help='Rename a component (updates deps.yaml, frontmatter, body refs)')
     parser.add_argument('--promote', nargs=2, metavar=('NAME', 'NEW_TYPE'), help='Change component type (promote/demote with section move, file move, can_spawn/spawnable_by adjustment)')
