@@ -51,7 +51,16 @@ TaskCreate で全体タスク「Autopilot: N Phases, M Issues」を登録。
 
 ## Step 4: Phase ループ（orchestrator 委譲）
 
-`autopilot-orchestrator.sh --plan --phase --session --project-dir --autopilot-dir [$REPOS_ARG]` で Phase 実行を委譲。orchestrator は JSON レポート（PHASE_COMPLETE）を返す。Pilot は `commands/autopilot-phase-postprocess.md` を Read → 実行（retrospective / cross-issue のみ）。TaskUpdate Phase P → completed。
+`autopilot-orchestrator.sh --plan --phase --session --project-dir --autopilot-dir [$REPOS_ARG]` で Phase 実行を委譲。orchestrator は JSON レポート（PHASE_COMPLETE）を返す。
+
+### Step 4.5: Phase 完了サニティチェック（MUST）
+
+PHASE_COMPLETE 受信後、`commands/autopilot-phase-sanity.md` を Read → 実行する。
+**処理ロジックの詳細は autopilot-phase-sanity.md を正典とする**（SKILL.md 側では責務範囲のみ記述）。
+
+役割: 各 done Issue の GitHub Issue close 状態を verify し、必要に応じて修正後の results JSON（auto_close_fallback / sanity_warnings 付き）を返す。Pilot LLM は PR diff・Issue body を読まず、Issue state のみを参照する（context budget 維持）。
+
+Pilot は次に `commands/autopilot-phase-postprocess.md` を Read → 実行（retrospective / cross-issue のみ）。TaskUpdate Phase P → completed。
 
 orchestrator が一括処理する内容:
 - batch 分割・Worker 起動・ポーリング・chain 遷移停止検知 + 自動 nudge
