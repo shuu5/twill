@@ -163,7 +163,7 @@
 <title>agent_worker_architecture</title>
 <ellipse fill="#ede7f6" stroke="black" cx="501.53" cy="-129.31" rx="70.92" ry="21.43"/>
 <text text-anchor="middle" x="501.53" y="-132.31" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
-<text text-anchor="middle" x="501.53" y="-121.31" font-family="Helvetica,sans-Serif" font-size="10.00">(1,724 tok)</text>
+<text text-anchor="middle" x="501.53" y="-121.31" font-family="Helvetica,sans-Serif" font-size="10.00">(1,695 tok)</text>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;agent_worker_architecture -->
 <g id="edge9" class="edge">

@@ -15,7 +15,7 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="twl:workflow-setup\n(936 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="twl:workflow-setup\n(979 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
@@ -35,6 +35,7 @@ digraph Dependencies {
     script_state_read [label="state-read\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_state_write [label="state-write\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(7,551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worker_terminal_guard [label="worker-terminal-guard\n(573 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,529 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_steps [label="chain-steps\n(7,551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -46,7 +47,7 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_workflow_setup; }
     { rank=same; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_change_propose; cmd_ac_extract; }
-    { rank=same; script_state_read; script_state_write; script_chain_runner; script_worktree_create; script_autopilot_github; script_chain_steps; script_compaction_resume; script_resolve_issue_num; }
+    { rank=same; script_state_read; script_state_write; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_chain_steps; script_compaction_resume; script_resolve_issue_num; }
 
     // Edges
     skill_workflow_setup -> cmd_init;

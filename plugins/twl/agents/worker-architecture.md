@@ -91,8 +91,6 @@ PR diff から以下を検出し、該当があれば `severity: WARNING`, `cate
 - これらが specialist に委任されているか deps.yaml の calls と照合
 
 ### 4. パターン評価
-ref-architecture のチェックリストに照合し、各パターンについて判定:
-
 ref-architecture のチェックリストに照合し、各パターンを判定:
 
 | パターン | 確認項目 |

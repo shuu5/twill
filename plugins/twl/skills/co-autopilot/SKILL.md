@@ -51,30 +51,11 @@ TaskCreate で全体タスク「Autopilot: N Phases, M Issues」を登録。
 
 ## Step 4: Phase ループ（orchestrator 委譲）
 
-`autopilot-orchestrator.sh --plan --phase --session --project-dir --autopilot-dir [$REPOS_ARG]` で Phase 実行を委譲。orchestrator は JSON レポート（PHASE_COMPLETE）を返す。
+`autopilot-orchestrator.sh --plan --phase --session --project-dir --autopilot-dir [$REPOS_ARG]` で Phase 実行を委譲。orchestrator は JSON レポート（PHASE_COMPLETE）を返す。実装詳細（batch 分割・Worker 起動・ポーリング・merge-gate・skip 伝播 [不変条件 D]）は orchestrator が正典。Pilot LLM の責務は計画承認・retrospective・cross-issue 分析に限定。
 
 ### Step 4.5: Phase 完了サニティチェック（MUST）
 
-PHASE_COMPLETE 受信後、`commands/autopilot-phase-sanity.md` を Read → 実行する。
-**処理ロジックの詳細は autopilot-phase-sanity.md を正典とする**（SKILL.md 側では責務範囲のみ記述）。
-
-役割: 各 done Issue の GitHub Issue close 状態を verify し、必要に応じて修正後の results JSON（auto_close_fallback / sanity_warnings 付き）を返す。Pilot LLM は PR diff・Issue body を読まず、Issue state のみを参照する（context budget 維持）。
-
-Pilot は次に `commands/autopilot-phase-postprocess.md` を Read → 実行（retrospective / cross-issue のみ）。TaskUpdate Phase P → completed。
-
-orchestrator が一括処理する内容:
-- batch 分割・Worker 起動・ポーリング・chain 遷移停止検知 + 自動 nudge
-- merge-gate 実行・window 管理・Phase 完了レポート JSON 出力
-
-Pilot LLM の責務は計画承認・retrospective 分析・cross-issue 影響分析に限定する。
-
-### self-improve ECC 照合
-
-autopilot-patterns が self-improve Issue 候補を検出した場合、自リポジトリの Issue であれば ECC 照合を自動追加し `session.json` の `self_improve_issues` に記録する。
-
-### 依存先 fail 時の skip 伝播（不変条件 D）
-
-Phase N で fail した Issue に依存する後続 Issue を自動 skip する（orchestrator 内で autopilot-should-skip.sh を実行）。
+PHASE_COMPLETE 受信後、`commands/autopilot-phase-sanity.md` を Read → 実行（処理は同ファイルが正典）。続けて `commands/autopilot-phase-postprocess.md` を Read → 実行（retrospective / cross-issue / self-improve ECC 照合）。TaskUpdate Phase P → completed。
 
 ## Step 5: 完了サマリー（orchestrator 委譲）
 
@@ -88,19 +69,9 @@ issue-{N}.json の status から自動判定:
 - `merge-ready` → 即 merge-gate 実行
 - `running` → crash-detect.sh でクラッシュ検知（不変条件 G）
 
-## 不変条件（9件）
+## 不変条件
 
-| ID | 概要 |
-|----|------|
-| A | 状態の一意性（running/merge-ready/done/failed） |
-| B | Worktree 削除 Pilot 専任 |
-| C | Worker マージ禁止（merge-ready 宣言のみ） |
-| D | 依存先 fail 時の skip 伝播 |
-| E | merge-gate リトライ制限（最大1回） |
-| F | merge 失敗時 rebase 禁止 |
-| G | クラッシュ検知保証 |
-| H | deps.yaml 変更排他性（separate Phase） |
-| I | 循環依存拒否 |
+不変条件 A〜I の正典は `architecture/autopilot-invariants.md`（A=状態一意, B=Worktree 削除 Pilot 専任, C=Worker マージ禁止, D=fail skip 伝播, E=merge-gate リトライ最大1, F=merge 失敗時 rebase 禁止, G=クラッシュ検知, H=deps.yaml 変更排他, I=循環依存拒否）。本文中の ID 参照のみが各 Step の制約根拠。
 
 ## Emergency Bypass
 

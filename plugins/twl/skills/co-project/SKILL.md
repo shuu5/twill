@@ -40,10 +40,7 @@ spawnable_by:
 
 ### Step 1: 入力確認
 
-- **プロジェクト名**（必須）: 未指定 → AskUserQuestion
-- **テンプレートタイプ**（必須）: 未指定 → AskUserQuestion
-  - plugin テンプレートを含む任意のタイプが指定可能
-- **ルートパス**: `--root` 未指定 → タイプ別デフォルト
+- プロジェクト名（必須）/ テンプレートタイプ（必須、plugin 含む任意）/ ルートパス（`--root` 未指定はタイプ別デフォルト）。未指定項目は AskUserQuestion で取得。
 
 ### Step 2: プロジェクト作成
 
@@ -124,13 +121,10 @@ manifest.yaml + テンプレートファイルを生成。
 
 ---
 
-## plugin-create モード
+## plugin-create / plugin-diagnose モード
 
-`/twl:workflow-plugin-create` を実行して委譲（interview → research → design → generate）。
-
-## plugin-diagnose モード
-
-`/twl:workflow-plugin-diagnose` を実行して委譲（migrate-analyze → diagnose → phase-diagnose → fix → verify → phase-verify）。
+- plugin-create: `/twl:workflow-plugin-create` に委譲（interview → research → design → generate）
+- plugin-diagnose: `/twl:workflow-plugin-diagnose` に委譲（migrate-analyze → diagnose → phase-diagnose → fix → verify → phase-verify）
 
 ## 禁止事項（MUST NOT）
 

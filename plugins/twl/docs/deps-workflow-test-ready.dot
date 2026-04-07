@@ -36,6 +36,7 @@ digraph Dependencies {
     script_state_read [label="state-read\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_state_write [label="state-write\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(7,551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worker_terminal_guard [label="worker-terminal-guard\n(573 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,529 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_steps [label="chain-steps\n(7,551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -49,7 +50,7 @@ digraph Dependencies {
     { rank=same; skill_ref_specialist_output_schema; }
     { rank=same; cmd_change_apply; cmd_check; cmd_e2e_plan; cmd_test_scaffold; }
     { rank=same; agent_spec_scaffold_tests; agent_e2e_generate; }
-    { rank=same; script_state_read; script_state_write; script_chain_runner; script_worktree_create; script_autopilot_github; script_chain_steps; script_compaction_resume; script_resolve_issue_num; }
+    { rank=same; script_state_read; script_state_write; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_chain_steps; script_compaction_resume; script_resolve_issue_num; }
 
     // Edges
     skill_workflow_test_ready -> cmd_test_scaffold;

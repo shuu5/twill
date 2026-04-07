@@ -28,7 +28,7 @@ digraph Dependencies {
     cmd_pr_cycle_report [label="pr-cycle-report\n(329 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_all_pass_check [label="all-pass-check\n(824 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_e2e_screening [label="e2e-screening\n(441 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,561 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(794 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_auto_merge [label="auto-merge\n(296 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(976 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
@@ -50,7 +50,7 @@ digraph Dependencies {
     agent_worker_fastapi_reviewer [label="worker-fastapi-reviewer\n(639 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_hono_reviewer [label="worker-hono-reviewer\n(847 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_r_reviewer [label="worker-r-reviewer\n(717 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_architecture [label="worker-architecture\n(1,724 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_architecture [label="worker-architecture\n(1,695 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_issue_pr_alignment [label="worker-issue-pr-alignment\n(1,859 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_output_reviewer [label="worker-llm-output-reviewer\n(1,162 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_eval_runner [label="worker-llm-eval-runner\n(1,174 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
@@ -61,8 +61,9 @@ digraph Dependencies {
     script_worktree_delete [label="worktree-delete\n(998 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(2,496 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_mergegate [label="autopilot-mergegate\n(5,316 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_mergegate [label="autopilot-mergegate\n(5,843 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(7,551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worker_terminal_guard [label="worker-terminal-guard\n(573 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,529 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_auto_merge [label="auto-merge\n(2,856 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -79,7 +80,7 @@ digraph Dependencies {
     { rank=same; skill_ref_specialist_output_schema; skill_ref_dci; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; }
     { rank=same; cmd_pr_cycle_report; cmd_all_pass_check; cmd_e2e_screening; cmd_merge_gate; cmd_auto_merge; cmd_pr_cycle_analysis; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_architecture; agent_worker_issue_pr_alignment; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; }
-    { rank=same; script_state_read; script_state_write; script_worktree_delete; script_tech_stack_detect; script_autopilot_parser; script_autopilot_mergegate; script_chain_runner; script_worktree_create; script_autopilot_github; script_auto_merge; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_checkpoint_write; script_checkpoint_read; }
+    { rank=same; script_state_read; script_state_write; script_worktree_delete; script_tech_stack_detect; script_autopilot_parser; script_autopilot_mergegate; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_auto_merge; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_checkpoint_write; script_checkpoint_read; }
 
     // Edges
     skill_workflow_pr_merge -> cmd_e2e_screening;

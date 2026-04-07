@@ -8,16 +8,16 @@ digraph Dependencies {
     edge [fontname="Helvetica", fontsize=9];
 
     // L0: Controller Skills
-    skill_co_autopilot [label="twl:co-autopilot\n(1,432 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="twl:co-autopilot\n(1,315 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_issue [label="twl:co-issue\n(1,441 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_project [label="twl:co-project\n(1,480 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_project [label="twl:co-project\n(1,456 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_architect [label="twl:co-architect\n(1,293 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_utility [label="twl:co-utility\n(777 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="twl:workflow-setup\n(936 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="twl:workflow-setup\n(979 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_test_ready [label="twl:workflow-test-ready\n(761 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_pr_verify [label="twl:workflow-pr-verify\n(855 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_pr_fix [label="twl:workflow-pr-fix\n(775 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
@@ -121,7 +121,7 @@ digraph Dependencies {
     cmd_phase_review [label="phase-review\n(771 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_fix_phase [label="fix-phase\n(532 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_e2e_screening [label="e2e-screening\n(441 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,561 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(794 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_ac_deploy_trigger [label="ac-deploy-trigger\n(457 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_phase [label="test-phase\n(608 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_auto_merge [label="auto-merge\n(296 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -132,6 +132,7 @@ digraph Dependencies {
     cmd_autopilot_launch [label="autopilot-launch\n(922 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_poll [label="autopilot-poll\n(1,319 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_phase_execute [label="autopilot-phase-execute\n(1,207 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_autopilot_phase_sanity [label="autopilot-phase-sanity\n(1,429 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_phase_postprocess [label="autopilot-phase-postprocess\n(802 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_collect [label="autopilot-collect\n(525 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_autopilot_retrospective [label="autopilot-retrospective\n(1,299 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -163,7 +164,7 @@ digraph Dependencies {
     agent_worker_fastapi_reviewer [label="worker-fastapi-reviewer\n(639 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_hono_reviewer [label="worker-hono-reviewer\n(847 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_r_reviewer [label="worker-r-reviewer\n(717 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_architecture [label="worker-architecture\n(1,724 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_architecture [label="worker-architecture\n(1,695 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_issue_pr_alignment [label="worker-issue-pr-alignment\n(1,859 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_output_reviewer [label="worker-llm-output-reviewer\n(1,162 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_eval_runner [label="worker-llm-eval-runner\n(1,174 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
@@ -188,13 +189,15 @@ digraph Dependencies {
     script_crash_detect [label="crash-detect\n(1,225 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_health_check [label="health-check\n(2,214 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_post_skill_chain_nudge [label="post-skill-chain-nudge\n(856 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_pre_tool_use_worktree_boundary [label="pre-tool-use-worktree-boundary\n(652 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(2,496 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_plan [label="autopilot-plan\n(5,515 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_plan [label="autopilot-plan\n(6,623 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_should_skip [label="autopilot-should-skip\n(422 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_orchestrator [label="autopilot-orchestrator\n(8,002 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_mergegate [label="autopilot-mergegate\n(5,316 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_orchestrator [label="autopilot-orchestrator\n(8,623 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_mergegate [label="autopilot-mergegate\n(5,843 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(7,551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worker_terminal_guard [label="worker-terminal-guard\n(573 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,529 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_project_create [label="project-create\n(7,604 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_project_migrate [label="project-migrate\n(7,604 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -206,10 +209,12 @@ digraph Dependencies {
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_health_report [label="health-report\n(804 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_plan_board [label="autopilot-plan-board\n(1,741 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_project_board_archive [label="project-board-archive\n(835 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_project_board_archive [label="project-board-archive\n(1,161 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_project_board_backfill [label="project-board-backfill\n(1,327 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_ecc_monitor [label="ecc-monitor\n(1,137 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_escape_issue_body [label="escape-issue-body\n(63 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_pr_create_helper [label="pr-create-helper\n(438 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_pr_link_issue [label="pr-link-issue\n(983 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_spec_review_manifest [label="spec-review-manifest\n(125 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_pr_review_manifest [label="pr-review-manifest\n(1,232 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_write [label="checkpoint-write\n(2,418 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -221,16 +226,17 @@ digraph Dependencies {
     { rank=same; skill_co_autopilot; skill_co_issue; skill_co_project; skill_co_architect; skill_co_utility; }
     { rank=same; skill_workflow_setup; skill_workflow_test_ready; skill_workflow_pr_verify; skill_workflow_pr_fix; skill_workflow_pr_merge; skill_workflow_dead_cleanup; skill_workflow_tech_debt_triage; skill_workflow_self_improve; skill_workflow_plugin_create; skill_workflow_plugin_diagnose; }
     { rank=same; skill_ref_specialist_output_schema; skill_ref_specialist_few_shot; skill_ref_issue_template_bug; skill_ref_issue_template_feature; skill_ref_types; skill_ref_practices; skill_ref_deps_format; skill_ref_architecture; skill_ref_architecture_spec; skill_ref_project_model; skill_ref_issue_quality_criteria; skill_ref_investigation_budget; skill_ref_dci; skill_ref_glossary_criteria; skill_ref_compaction_recovery; skill_ref_prompt_guide; skill_self_improve_format; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; }
-    { rank=same; cmd_self_improve_review; cmd_init; cmd_worktree_create; cmd_worktree_list; cmd_project_board_status_update; cmd_crg_auto_build; cmd_change_propose; cmd_change_apply; cmd_ac_extract; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_post_fix_verify; cmd_warning_fix; cmd_pr_cycle_report; cmd_all_pass_check; cmd_ac_verify; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_issue_cross_repo_create; cmd_project_board_sync; cmd_label_sync; cmd_project_create; cmd_project_board_configure; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_architect_completeness_check; cmd_architect_decompose; cmd_architect_group_refine; cmd_architect_issue_create; cmd_evaluate_architecture; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; cmd_explore; cmd_check; cmd_dead_component_detect; cmd_dead_component_execute; cmd_triage_execute; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; cmd_twl_validate; cmd_services; cmd_ui_capture; cmd_e2e_plan; cmd_test_scaffold; cmd_worktree_delete; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; cmd_ac_deploy_trigger; cmd_test_phase; cmd_auto_merge; cmd_pr_cycle_analysis; cmd_schema_update; cmd_spec_diagnose; cmd_autopilot_init; cmd_autopilot_launch; cmd_autopilot_poll; cmd_autopilot_phase_execute; cmd_autopilot_phase_postprocess; cmd_autopilot_collect; cmd_autopilot_retrospective; cmd_autopilot_patterns; cmd_autopilot_cross_issue; cmd_autopilot_summary; cmd_session_audit; }
+    { rank=same; cmd_self_improve_review; cmd_init; cmd_worktree_create; cmd_worktree_list; cmd_project_board_status_update; cmd_crg_auto_build; cmd_change_propose; cmd_change_apply; cmd_ac_extract; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_post_fix_verify; cmd_warning_fix; cmd_pr_cycle_report; cmd_all_pass_check; cmd_ac_verify; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_issue_cross_repo_create; cmd_project_board_sync; cmd_label_sync; cmd_project_create; cmd_project_board_configure; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_architect_completeness_check; cmd_architect_decompose; cmd_architect_group_refine; cmd_architect_issue_create; cmd_evaluate_architecture; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; cmd_explore; cmd_check; cmd_dead_component_detect; cmd_dead_component_execute; cmd_triage_execute; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; cmd_twl_validate; cmd_services; cmd_ui_capture; cmd_e2e_plan; cmd_test_scaffold; cmd_worktree_delete; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; cmd_ac_deploy_trigger; cmd_test_phase; cmd_auto_merge; cmd_pr_cycle_analysis; cmd_schema_update; cmd_spec_diagnose; cmd_autopilot_init; cmd_autopilot_launch; cmd_autopilot_poll; cmd_autopilot_phase_execute; cmd_autopilot_phase_sanity; cmd_autopilot_phase_postprocess; cmd_autopilot_collect; cmd_autopilot_retrospective; cmd_autopilot_patterns; cmd_autopilot_cross_issue; cmd_autopilot_summary; cmd_session_audit; }
     { rank=same; cmd_change_archive; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_template_validator; agent_context_checker; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_architecture; agent_worker_issue_pr_alignment; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; agent_worker_prompt_reviewer; agent_docs_researcher; agent_e2e_quality; agent_autofix_loop; agent_spec_scaffold_tests; agent_e2e_generate; agent_e2e_heal; agent_e2e_visual_heal; }
-    { rank=same; script_state_read; script_state_write; script_autopilot_init; script_autopilot_launch; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_health_check; script_post_skill_chain_nudge; script_tech_stack_detect; script_autopilot_parser; script_autopilot_plan; script_autopilot_should_skip; script_autopilot_orchestrator; script_autopilot_mergegate; script_chain_runner; script_worktree_create; script_project_create; script_project_migrate; script_autopilot_github; script_session_audit; script_auto_merge; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_health_report; script_autopilot_plan_board; script_project_board_archive; script_project_board_backfill; script_ecc_monitor; script_escape_issue_body; script_spec_review_manifest; script_pr_review_manifest; script_checkpoint_write; script_checkpoint_read; }
+    { rank=same; script_state_read; script_state_write; script_autopilot_init; script_autopilot_launch; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_health_check; script_post_skill_chain_nudge; script_pre_tool_use_worktree_boundary; script_tech_stack_detect; script_autopilot_parser; script_autopilot_plan; script_autopilot_should_skip; script_autopilot_orchestrator; script_autopilot_mergegate; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_project_create; script_project_migrate; script_autopilot_github; script_session_audit; script_auto_merge; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_health_report; script_autopilot_plan_board; script_project_board_archive; script_project_board_backfill; script_ecc_monitor; script_escape_issue_body; script_pr_create_helper; script_pr_link_issue; script_spec_review_manifest; script_pr_review_manifest; script_checkpoint_write; script_checkpoint_read; }
 
     // Edges
     skill_co_autopilot -> cmd_autopilot_init;
     skill_co_autopilot -> cmd_autopilot_launch;
     skill_co_autopilot -> cmd_autopilot_poll;
     skill_co_autopilot -> cmd_autopilot_phase_execute;
+    skill_co_autopilot -> cmd_autopilot_phase_sanity;
     skill_co_autopilot -> cmd_autopilot_phase_postprocess;
     skill_co_autopilot -> cmd_autopilot_collect;
     skill_co_autopilot -> cmd_autopilot_retrospective;
@@ -536,7 +542,8 @@ digraph Dependencies {
     cmd_autopilot_init -> cmd_autopilot_launch [style=invis, weight=10];
     cmd_autopilot_launch -> cmd_autopilot_poll [style=invis, weight=10];
     cmd_autopilot_poll -> cmd_autopilot_phase_execute [style=invis, weight=10];
-    cmd_autopilot_phase_execute -> cmd_autopilot_phase_postprocess [style=invis, weight=10];
+    cmd_autopilot_phase_execute -> cmd_autopilot_phase_sanity [style=invis, weight=10];
+    cmd_autopilot_phase_sanity -> cmd_autopilot_phase_postprocess [style=invis, weight=10];
     cmd_autopilot_phase_postprocess -> cmd_autopilot_collect [style=invis, weight=10];
     cmd_autopilot_collect -> cmd_autopilot_retrospective [style=invis, weight=10];
     cmd_autopilot_retrospective -> cmd_autopilot_patterns [style=invis, weight=10];
