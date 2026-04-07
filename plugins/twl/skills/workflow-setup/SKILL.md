@@ -41,7 +41,7 @@ setup chain のオーケストレーター。chain 実行順序は deps.yaml に
    eval "$(bash "$CR" autopilot-detect)"
    eval "$(bash "$CR" quick-detect)"
    ```
-   - IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready **呼び出し禁止**。直接実装 → commit → push → `gh pr create --fill --label quick` → `commands/merge-gate.md` Read → merge-gate 実行
+   - IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready **呼び出し禁止**。直接実装 → commit → push → `gh pr create --fill --label quick` → `bash "$CR" ac-verify` → `commands/ac-verify.md` Read → 実行（checkpoint 永続化必須）→ `commands/merge-gate.md` Read → merge-gate 実行（merge-gate は ac-verify checkpoint を統合する）
    - IS_QUICK=false かつ IS_AUTOPILOT=true → 即座に `/twl:workflow-test-ready` を Skill 実行（停止禁止）
    - IS_AUTOPILOT=false → 「setup chain 完了。次: `/twl:workflow-test-ready`」と案内
 

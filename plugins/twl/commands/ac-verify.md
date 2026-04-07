@@ -1,44 +1,128 @@
-# AC 検証（テスト結果と AC の照合）
+# AC 検証（AC↔diff/test 整合性チェック）
 
 ## Context (auto-injected)
 - Issue: !`source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo ""`
+- Branch: !`git branch --show-current 2>/dev/null || echo ""`
 
-テスト結果とレビュー結果を Issue の受け入れ基準（AC）と照合し、
-達成状況をマッピングして Issue コメントとして投稿する。
+PR diff・テスト結果・レビュー結果を Issue の受け入れ基準（AC）と機械的に照合し、
+未達成 AC を CRITICAL Finding として報告する。merge-gate と連動し、未達成があれば REJECT を導く。
+
+本コマンドは LLM 判断ステップ（chain-runner.sh の `step_ac_verify` がマーカーとして位置を記録する）。
 
 ## 入力
 
-- AC チェックリスト（ac-extract の出力）
-- テスト結果（pr-test の出力）
-- レビュー結果（phase-review の出力）
+- AC チェックリスト: `${SNAPSHOT_DIR}/01.5-ac-checklist.md`（ac-extract の出力。`SNAPSHOT_DIR` 未設定時は `.dev-session/`）
+- PR diff: `git diff --stat origin/main` + `git diff origin/main`
+- 変更ファイル一覧: `git diff --name-only origin/main`
+- pr-test の checkpoint: `python3 -m twl.autopilot.checkpoint read --step pr-test --field status`（存在すれば）
 
 ## 出力
 
-- AC マッピング結果（各 AC の達成/未達成）
-- Issue コメント
+- ac-verify checkpoint（`.autopilot/checkpoints/ac-verify.json`）
+- 各 AC 項目の判定（達成 / 未達成 / 手動確認要 / 達成 (diff-only)）
+- merge-gate が読み込める Findings 配列
 
 ## 実行ロジック（MUST）
 
-### Step 1: AC とテスト結果の照合
-
-各 AC 項目について:
-
-| 条件 | 判定 |
-|------|------|
-| 対応するテストが PASS | 達成 |
-| 対応するテストが FAIL | 未達成 |
-| 対応するテストなし | 手動確認要 |
-
-### Step 2: Issue コメント投稿
-
-```markdown
-## AC 検証結果
-
-- [x] AC1: deps.yaml chains に pr-cycle chain が定義されている
-- [x] AC2: `twl chain validate` が pass する
-- [ ] AC3: merge-gate が動的レビュアー構築で単一パスに統合されている
-```
+### Step 0: 入力収集
 
 ```bash
-gh issue comment ${ISSUE_NUM} --body "${AC_REPORT}"
+SNAPSHOT_DIR="${SNAPSHOT_DIR:-.dev-session}"
+AC_FILE="${SNAPSHOT_DIR}/01.5-ac-checklist.md"
+
+if [[ ! -f "$AC_FILE" ]]; then
+  # AC が抽出されていなければ WARN で抜ける
+  python3 -m twl.autopilot.checkpoint write --step ac-verify --status WARN --findings '[]'
+  echo "ac-verify: AC checklist 不在 — スキップ (WARN)"
+  exit 0
+fi
+
+DIFF_STAT="$(git diff --stat origin/main 2>/dev/null || true)"
+DIFF_FILES="$(git diff --name-only origin/main 2>/dev/null || true)"
+DIFF_BODY="$(git diff origin/main 2>/dev/null || true)"
+PR_TEST_STATUS="$(python3 -m twl.autopilot.checkpoint read --step pr-test --field status 2>/dev/null || echo "")"
 ```
+
+### Step 1: AC 項目ごとの判定（LLM 判断）
+
+各 AC 項目について以下のロジックで判定する。
+
+| 入力条件 | 判定 | severity |
+|---|---|---|
+| 対応するテストが PASS（pr-test status = PASS） | 達成 | — |
+| 対応するテストが FAIL（pr-test status = FAIL） | 未達成 | CRITICAL |
+| 対応するテストなし + diff にキーワード一致あり | 達成 (diff-only) | WARNING |
+| 対応するテストなし + diff にキーワード一致なし | 未達成 | CRITICAL |
+| AC が手動確認要（UI 確認・本番デプロイ確認等） | 手動確認要 | WARNING |
+
+**diff キーワード照合**: AC 文面から名詞句（ファイル名・関数名・コンポーネント名・コマンド名）を抽出し、`DIFF_FILES` および `DIFF_BODY` に出現するか確認する。AI による意味的解釈を許可するが、判定根拠を Finding の `evidence` に必ず記載すること。
+
+### Step 2: Findings 構築
+
+未達成または diff-only の AC それぞれについて Finding を生成する。
+ref-specialist-output-schema 準拠:
+
+```json
+{
+  "severity": "CRITICAL",
+  "category": "bug",
+  "confidence": 80,
+  "message": "AC #N『...』の実装が diff/test に確認できない",
+  "evidence": "diff には XXX への変更が見当たらない / pr-test FAIL"
+}
+```
+
+**注**: `category: ac-alignment` enum は Issue #135 (worker-issue-pr-alignment specialist) で
+ref-specialist-output-schema に追加される予定。Issue #135 完了前は暫定で `category: bug` を使用する。
+
+### Step 3: ステータス算出
+
+```
+CRITICAL Finding が 1 件以上 → status=FAIL
+WARNING Finding のみ → status=WARN
+Finding なし → status=PASS
+```
+
+### Step 4: checkpoint 書き出し（MUST）
+
+```bash
+FINDINGS_JSON='[ ... 構築した Findings 配列 ... ]'
+STATUS="FAIL"  # or WARN, PASS
+
+python3 -m twl.autopilot.checkpoint write \
+  --step ac-verify \
+  --status "$STATUS" \
+  --findings "$FINDINGS_JSON"
+```
+
+### Step 5: Issue コメント投稿（任意）
+
+```bash
+ISSUE_NUM="$(source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null; resolve_issue_num)"
+if [[ -n "$ISSUE_NUM" ]]; then
+  gh issue comment "$ISSUE_NUM" --body "$(cat <<EOF
+## AC 検証結果 (ac-verify)
+
+- 判定: $STATUS
+- AC 項目数: $AC_COUNT
+- 未達成: $UNMET_COUNT
+- 達成 (diff-only): $DIFF_ONLY_COUNT
+- 達成: $MET_COUNT
+
+(詳細: $FINDINGS_SUMMARY)
+EOF
+)"
+fi
+```
+
+## merge-gate 連動
+
+merge-gate は本ステップの checkpoint を読み込み、CRITICAL Finding を BLOCKING 集合に統合する。
+詳細は `commands/merge-gate.md` の「severity フィルタ判定」セクションを参照。
+
+## 設計方針
+
+- 機械的にできる照合（diff キーワード・テスト結果）は機械化
+- 意味的判断（AC 文面の解釈）のみ LLM に委ねる
+- 全判定は ref-specialist-output-schema 準拠の Finding として永続化される
+- merge-gate との接続は checkpoint ファイル経由（疎結合）

@@ -25,6 +25,7 @@ workflow-pr-cycle を 3 分割した第1段階。TypeScript preflight、speciali
 | 2 | phase-review | composite |
 | 2.5 | scope-judge | atomic |
 | 3 | pr-test | atomic |
+| 3.5 | ac-verify | atomic |
 
 ## chain 実行指示（MUST — 全ステップを順に実行せよ。途中で停止するな）
 
@@ -47,6 +48,18 @@ TypeScript プロジェクトでない場合は自動スキップ。
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-test
 ```
 
+### Step 3.5: ac-verify（AC↔diff 整合性チェック）【LLM 判断】
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" ac-verify
+```
+
+chain-runner はマーカー（current_step 記録）のみ実行する。続けて
+`commands/ac-verify.md` を Read → 実行ロジックに従い AC checklist と PR diff・pr-test
+checkpoint を照合し、`python3 -m twl.autopilot.checkpoint write --step ac-verify ...`
+で結果を永続化すること。前提: workflow-setup の ac-extract が済んでおり
+`${SNAPSHOT_DIR}/01.5-ac-checklist.md` が存在すること（不在時は WARN で抜ける）。
+
 ### 完了後の遷移
 
 ```bash
@@ -59,6 +72,6 @@ eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
 
 ## compaction 復帰プロトコル
 
-`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `ts-preflight pr-test`
+`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `ts-preflight pr-test ac-verify`
 
-- phase-review, scope-judge は LLM ステップのため状態を確認してから再実行すること
+- phase-review, scope-judge, ac-verify は LLM ステップのため状態を確認してから再実行すること

@@ -603,6 +603,24 @@ step_pr_test() {
   fi
 }
 
+# --- ac-verify: AC↔diff/test 整合性チェック（LLM ステップマーカー） ---
+# 機械的処理は行わない。current_step を記録し、LLM 側で commands/ac-verify.md を
+# Read → 実行する旨を通知するのみ。判定結果は ac-verify.json checkpoint に書かれる。
+step_ac_verify() {
+  record_current_step "ac-verify"
+  local issue_num
+  issue_num="$(resolve_issue_num)"
+  if [[ -z "$issue_num" ]]; then
+    skip "ac-verify" "Issue 番号なし — スキップ"
+    return 0
+  fi
+  echo "[chain-runner] ac-verify は LLM ステップです。" >&2
+  echo "[chain-runner] commands/ac-verify.md を Read して実行してください。" >&2
+  echo "[chain-runner] 入力: AC checklist + PR diff + pr-test checkpoint" >&2
+  echo "[chain-runner] 出力: .autopilot/checkpoints/ac-verify.json (merge-gate が読む)" >&2
+  ok "ac-verify" "LLM ステップへ遷移 (Issue #$issue_num)"
+}
+
 # --- all-pass-check: 全パス判定 ---
 step_all_pass_check() {
   record_current_step "all-pass-check"
@@ -741,7 +759,7 @@ main() {
   if [[ -z "$step" ]]; then
     echo "Usage: chain-runner.sh <step-name> [args...]" >&2
     echo "Steps: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
-    echo "       change-id-resolve, next-step, ts-preflight, pr-test, all-pass-check," >&2
+    echo "       change-id-resolve, next-step, ts-preflight, pr-test, ac-verify, all-pass-check," >&2
     echo "       pr-cycle-report, check" >&2
     exit 1
   fi
@@ -762,6 +780,7 @@ main() {
     next-step)           step_next_step "$@" ;;
     ts-preflight)        step_ts_preflight "$@" ;;
     pr-test)             step_pr_test "$@" ;;
+    ac-verify)           step_ac_verify "$@" ;;
     all-pass-check)      step_all_pass_check "$@" ;;
     pr-cycle-report)     step_pr_cycle_report "$@" ;;
     check)               step_check "$@" ;;
@@ -771,7 +790,7 @@ main() {
     *)
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
-      echo "         change-id-resolve, next-step, ts-preflight, pr-test, all-pass-check," >&2
+      echo "         change-id-resolve, next-step, ts-preflight, pr-test, ac-verify, all-pass-check," >&2
       echo "         pr-cycle-report, check, quick-guard, autopilot-detect, quick-detect" >&2
       exit 1
       ;;

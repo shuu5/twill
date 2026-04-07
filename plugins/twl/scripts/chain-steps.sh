@@ -21,6 +21,7 @@ CHAIN_STEPS=(
   post-change-apply
   ts-preflight
   pr-test
+  ac-verify
   all-pass-check
   pr-cycle-report
 )
