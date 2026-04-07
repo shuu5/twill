@@ -160,3 +160,118 @@ class TestClassifyFailure:
         finding = classify_failure("check", "Details")
         required_keys = {"severity", "confidence", "file", "line", "message", "category"}
         assert required_keys.issubset(finding.keys())
+
+
+# ---------------------------------------------------------------------------
+# ac-alignment post-processing (worker-issue-pr-alignment specialist)
+# ---------------------------------------------------------------------------
+
+
+class TestAcAlignmentProcessing:
+    def _make_finding(self, **overrides):
+        base = {
+            "severity": "CRITICAL",
+            "confidence": 80,
+            "file": "Issue body",
+            "line": 1,
+            "message": "AC が未達成",
+            "category": "ac-alignment",
+        }
+        base.update(overrides)
+        return base
+
+    def test_critical_without_quotes_downgraded_to_warning(self, monkeypatch):
+        monkeypatch.delenv("PR_LABELS", raising=False)
+        findings = [self._make_finding(message="AC が未達成（引用なし）")]
+        text = "status: FAIL\n```json\n" + json.dumps(findings) + "\n```"
+        result = parse_specialist_output(text)
+        # Re-derived: only WARNING remains → WARN
+        assert result.status == "WARN"
+        assert result.findings[0]["severity"] == "WARNING"
+        assert "downgraded" in result.findings[0]["message"]
+
+    def test_critical_with_two_quote_segments_kept(self, monkeypatch):
+        monkeypatch.delenv("PR_LABELS", raising=False)
+        msg = "Issue 引用: 「worker-prompt-reviewer 実行」 / diff 引用: 「diff にゼロ言及」"
+        findings = [self._make_finding(message=msg)]
+        text = "status: FAIL\n```json\n" + json.dumps(findings) + "\n```"
+        result = parse_specialist_output(text)
+        assert result.status == "FAIL"
+        assert result.findings[0]["severity"] == "CRITICAL"
+
+    def test_critical_with_blockquote_evidence_kept(self, monkeypatch):
+        monkeypatch.delenv("PR_LABELS", raising=False)
+        msg = "未達成。\n> Issue 行 1\n> diff hunk\n"
+        findings = [self._make_finding(message=msg)]
+        text = "status: FAIL\n```json\n" + json.dumps(findings) + "\n```"
+        result = parse_specialist_output(text)
+        assert result.findings[0]["severity"] == "CRITICAL"
+
+    def test_alignment_override_drops_findings(self, monkeypatch):
+        monkeypatch.setenv("PR_LABELS", "enhancement,alignment-override,refined")
+        msg = "「Issue 引用」 / 「diff 引用」"
+        findings = [
+            self._make_finding(message=msg),
+            self._make_finding(category="ac-alignment-unknown", severity="INFO", confidence=50, message=msg),
+            # non-alignment finding should be preserved
+            {
+                "severity": "CRITICAL",
+                "confidence": 90,
+                "file": "src/x.py",
+                "line": 1,
+                "message": "real bug",
+                "category": "vulnerability",
+            },
+        ]
+        text = "status: FAIL\n```json\n" + json.dumps(findings) + "\n```"
+        result = parse_specialist_output(text)
+        # alignment findings dropped, vulnerability kept → still FAIL
+        assert result.status == "FAIL"
+        assert len(result.findings) == 1
+        assert result.findings[0]["category"] == "vulnerability"
+
+    def test_unknown_category_passthrough(self):
+        # AC: 既存 parser が未知 category を WARNING 降格せず素通し
+        findings = [
+            {
+                "severity": "INFO",
+                "confidence": 50,
+                "file": "Issue body",
+                "line": 1,
+                "message": "判断不能",
+                "category": "ac-alignment-unknown",
+            }
+        ]
+        text = "status: PASS\n```json\n" + json.dumps(findings) + "\n```"
+        result = parse_specialist_output(text)
+        assert result.status == "PASS"
+        assert len(result.findings) == 1
+        assert result.findings[0]["category"] == "ac-alignment-unknown"
+        assert result.findings[0]["severity"] == "INFO"
+
+    def test_warning_alignment_finding_unchanged(self, monkeypatch):
+        # WARNING level alignment findings are kept as-is regardless of quotes
+        monkeypatch.delenv("PR_LABELS", raising=False)
+        findings = [self._make_finding(severity="WARNING", confidence=75, message="部分達成")]
+        text = "status: WARN\n```json\n" + json.dumps(findings) + "\n```"
+        result = parse_specialist_output(text)
+        assert result.status == "WARN"
+        assert result.findings[0]["severity"] == "WARNING"
+        assert "downgraded" not in result.findings[0]["message"]
+
+    def test_existing_specialist_unchanged(self):
+        # 後方互換: 既存 specialist (vulnerability category) は影響を受けない
+        findings = [
+            {
+                "severity": "CRITICAL",
+                "confidence": 90,
+                "file": "src/auth.ts",
+                "line": 42,
+                "message": "SQL injection",
+                "category": "vulnerability",
+            }
+        ]
+        text = "status: FAIL\n```json\n" + json.dumps(findings) + "\n```"
+        result = parse_specialist_output(text)
+        assert result.status == "FAIL"
+        assert result.findings[0]["severity"] == "CRITICAL"

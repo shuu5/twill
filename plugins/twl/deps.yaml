@@ -1324,6 +1324,7 @@ commands:
       - specialist: worker-data-validator
       - specialist: worker-env-validator
       - specialist: worker-codex-reviewer
+      - specialist: worker-issue-pr-alignment
       - reference: ref-specialist-output-schema
       - reference: baseline-coding-style
       - reference: baseline-security-checklist
@@ -1397,6 +1398,7 @@ commands:
       - specialist: worker-env-validator
       - specialist: worker-codex-reviewer
       - specialist: worker-architecture
+      - specialist: worker-issue-pr-alignment
       - reference: ref-specialist-output-schema
       - reference: ref-dci
       - reference: baseline-coding-style
@@ -1879,7 +1881,8 @@ scripts:
     path: scripts/pr-review-manifest.sh
     calls:
       - script: tech-stack-detect
-    description: "PR review 系 specialist 選択の動的マニフェスト（phase-review / merge-gate / post-fix-verify）"
+      - script: resolve-issue-num
+    description: "PR review 系 specialist 選択の動的マニフェスト（phase-review / merge-gate / post-fix-verify）。phase-review/merge-gate モードで Issue 番号が解決可能な場合 worker-issue-pr-alignment を出力に含める"
 
   checkpoint-write:
     type: script
@@ -2115,6 +2118,19 @@ agents:
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-architecture, ref-specialist-few-shot]
     description: "アーキテクチャパターン検証 (PR diff モード: architecture/domain/glossary.md, architecture/domain/model.md, architecture/vision.md を参照)"
+
+  worker-issue-pr-alignment:
+    type: specialist
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-07"
+    path: agents/worker-issue-pr-alignment.md
+    model: sonnet
+    effort: medium
+    gate_role: soft
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
+    description: "Issue body と PR diff の意味的整合性レビュー (soft gate、ac-alignment 専用 specialist)"
 
   worker-llm-output-reviewer:
     type: specialist

@@ -11,9 +11,20 @@ CLI usage:
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from typing import Any
+
+# ac-alignment categories handled by worker-issue-pr-alignment specialist
+_AC_ALIGNMENT_CATEGORIES = frozenset(["ac-alignment", "ac-alignment-unknown"])
+# Markdown blockquote, Japanese 「」 quotes, or pair of " quotes
+_QUOTE_PATTERNS = [
+    re.compile(r"^>\s+.+$", re.MULTILINE),
+    re.compile(r"「[^」]+」"),
+    re.compile(r"\"[^\"]{2,}\""),
+    re.compile(r"`[^`\n]{2,}`"),
+]
 
 
 # ---------------------------------------------------------------------------
@@ -95,7 +106,102 @@ def parse_specialist_output(text: str) -> ParseResult:
         # No JSON block → empty findings (status line alone is valid)
         findings = []
 
+    # Post-process ac-alignment findings (downgrade unsubstantiated CRITICALs,
+    # honour PR_LABELS=alignment-override skip).
+    new_findings, alignment_modified = _process_alignment_findings(findings)
+    if alignment_modified:
+        findings = new_findings
+        # 後処理で severity 構成が変わったので status を機械的に再導出
+        status = _derive_status(findings)
+
     return ParseResult(status=status, findings=findings, parse_error=False)
+
+
+def _has_quote_evidence(message: str) -> bool:
+    """Heuristic: at least 2 quoted segments (Issue 引用 + diff 引用)."""
+    if not message:
+        return False
+    total = 0
+    for pat in _QUOTE_PATTERNS:
+        total += len(pat.findall(message))
+        if total >= 2:
+            return True
+    return False
+
+
+def _alignment_override_active() -> bool:
+    """Check whether the PR has the `alignment-override` label.
+
+    Reads the PR_LABELS env var (comma-separated list of label names),
+    typically set by autopilot-launch.sh / merge-gate from `gh pr view`.
+    """
+    raw = os.environ.get("PR_LABELS", "")
+    if not raw:
+        return False
+    labels = {lbl.strip() for lbl in raw.split(",") if lbl.strip()}
+    return "alignment-override" in labels
+
+
+def _process_alignment_findings(
+    findings: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], bool]:
+    """Apply ac-alignment-specific post-processing.
+
+    1. If PR has `alignment-override` label → drop all ac-alignment findings.
+    2. CRITICAL findings without verbatim quotes → downgrade to WARNING (parser
+       cannot block on un-evidenced LLM judgements).
+
+    Returns (new_findings, modified_flag). modified_flag is True if any
+    alignment finding was dropped or downgraded.
+    """
+    # Fast path: no ac-alignment findings → no work
+    has_alignment = any(
+        isinstance(f, dict) and f.get("category") in _AC_ALIGNMENT_CATEGORIES
+        for f in findings
+    )
+    if not has_alignment:
+        return findings, False
+
+    override = _alignment_override_active()
+    out: list[dict[str, Any]] = []
+    modified = False
+    for f in findings:
+        if not isinstance(f, dict):
+            out.append(f)
+            continue
+        category = f.get("category", "")
+        if category not in _AC_ALIGNMENT_CATEGORIES:
+            out.append(f)
+            continue
+        if override:
+            modified = True
+            continue
+        if f.get("severity") == "CRITICAL" and not _has_quote_evidence(str(f.get("message", ""))):
+            new_f = dict(f)
+            new_f["severity"] = "WARNING"
+            new_f["message"] = (
+                "[downgraded: 逐語引用なし] " + str(f.get("message", ""))
+            )
+            out.append(new_f)
+            modified = True
+            continue
+        out.append(f)
+    return out, modified
+
+
+def _derive_status(findings: list[dict[str, Any]]) -> str:
+    """Derive status from findings (CRITICAL → FAIL, WARNING → WARN, else PASS)."""
+    has_critical = any(
+        isinstance(f, dict) and f.get("severity") == "CRITICAL" for f in findings
+    )
+    if has_critical:
+        return "FAIL"
+    has_warning = any(
+        isinstance(f, dict) and f.get("severity") == "WARNING" for f in findings
+    )
+    if has_warning:
+        return "WARN"
+    return "PASS"
 
 
 def _fallback_result(raw_text: str) -> ParseResult:

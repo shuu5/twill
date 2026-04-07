@@ -48,7 +48,7 @@ merge-gate / phase-review が機械的に消費可能な構造化出力を定義
           },
           "category": {
             "type": "string",
-            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles"],
+            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "ac-alignment", "ac-alignment-unknown"],
             "description": "finding の分類（merge-gate 共通）。co-issue specialist は co-issue 拡張 category を使用すること"
           },
           "finding_target": {
@@ -131,6 +131,17 @@ merge-gate specialist が使用する共通 category。
 | `coding-convention` | worker-code-reviewer |
 | `structure` | worker-structure |
 | `principles` | worker-principles |
+| `ac-alignment` | worker-issue-pr-alignment（Issue body と PR diff の意味的整合性 finding） |
+| `ac-alignment-unknown` | worker-issue-pr-alignment（達成度判断不能の AC、INFO のみ） |
+
+### ac-alignment specialist の追加要件（MUST）
+
+`category: ac-alignment` または `ac-alignment-unknown` を出力する specialist は以下を遵守すること:
+
+1. **逐語引用必須**: 各 Finding の `message` フィールドに Issue body / PR diff の逐語引用を含める。引用なしの Finding は parser が CRITICAL → WARNING に自動降格する
+2. **confidence 上限**: 原則 75（soft gate 役割を維持）。CRITICAL の場合のみ 80 を許可（明確なゼロ言及かつ ac-verify 未検出のケース）
+3. **Issue 1 (ac-verify) との重複回避**: ac-verify checkpoint を read し、既に CRITICAL 判定済みの AC については重複検出をスキップする
+4. **PR ラベル `alignment-override`**: 付与されている PR では parser がこれらの Finding をすべてスキップする
 
 ## category（co-issue 拡張）
 
