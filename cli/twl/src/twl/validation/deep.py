@@ -10,10 +10,6 @@ from twl.validation.audit import (
     _check_output_schema_keywords
 )
 
-# Token bloat thresholds: loaded from types.yaml (SSOT), fallback to hardcoded values.
-# reference and script types are intentionally excluded (no token_target in types.yaml).
-TOKEN_THRESHOLDS: Dict[str, Tuple[int, int]] = load_token_thresholds()
-
 
 def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], List[str]]:
     """深層検証: controller bloat, ref配置, tools整合性
@@ -64,10 +60,12 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
                 add_warning(f"[controller-bloat] {name}: {body_lines} lines (>120)")
 
     # (A2) Token bloat チェック（全型対応）
+    # types.yaml から token_target を毎回ロード（テストで値を差し替え可能にするため）
+    token_thresholds = load_token_thresholds()
     for section in ('skills', 'commands', 'agents'):
         for name, spec in deps.get(section, {}).items():
             comp_type = resolve_type(spec.get('type', ''))
-            if comp_type not in TOKEN_THRESHOLDS:
+            if comp_type not in token_thresholds:
                 continue
             path_str = spec.get('path', '')
             if not path_str:
@@ -80,7 +78,7 @@ def deep_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], 
             tok = count_tokens(path)
             if tok == 0:
                 continue
-            warn_threshold, crit_threshold = TOKEN_THRESHOLDS[comp_type]
+            warn_threshold, crit_threshold = token_thresholds[comp_type]
             if tok > crit_threshold:
                 add_critical(f"[token-bloat] {name} ({comp_type}): {tok} tok (>{crit_threshold})")
             elif tok > warn_threshold:

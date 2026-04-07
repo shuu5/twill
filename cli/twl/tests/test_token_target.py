@@ -186,6 +186,41 @@ class TestSyncCheckTokenTable:
         assert result.returncode != 0
         assert "token-invalid" in result.stdout
 
+    def test_deep_validate_reads_thresholds_dynamically(self, tmp_path, monkeypatch):
+        """WHEN types.yaml token_target is updated
+        THEN deep_validate uses the new thresholds without reimport.
+
+        AC #3: types.yaml の token_target を変更 → twl --deep-validate 再実行で反映。
+        deep.py に module-level TOKEN_THRESHOLDS 定数を残すと in-process では反映されない。
+        """
+        # 小さな warning 値を持つ types.yaml を準備
+        types_yaml = tmp_path / "types.yaml"
+        types_yaml.write_text(
+            "types:\n"
+            "  controller:\n"
+            "    section: skills\n"
+            "    can_spawn: [reference]\n"
+            "    spawnable_by: [user]\n"
+            "    token_target:\n"
+            "      warning: 1\n"
+            "      critical: 2\n",
+            encoding="utf-8",
+        )
+        monkeypatch.setenv("TWL_LOOM_ROOT", str(tmp_path))
+
+        # deep.py の module-level 定数キャッシュが残っていないことを確認するため、
+        # deep_validate を呼んだときに新しい types.yaml が反映される
+        from twl.validation import deep as deep_mod
+        # TOKEN_THRESHOLDS という名前の module-level 定数は存在しないこと
+        assert not hasattr(deep_mod, "TOKEN_THRESHOLDS"), (
+            "deep.py must not retain a module-level TOKEN_THRESHOLDS constant; "
+            "thresholds must be loaded inside deep_validate() to support dynamic updates."
+        )
+
+        # 実際に load_token_thresholds が更新値を読むことも確認
+        result = load_token_thresholds(tmp_path)
+        assert result["controller"] == (1, 2)
+
     def test_missing_type_in_token_table_fails(self, tmp_path):
         """WHEN a token_target type from types.yaml is missing in ref table
         THEN sync_check reports token-missing-in-ref."""
