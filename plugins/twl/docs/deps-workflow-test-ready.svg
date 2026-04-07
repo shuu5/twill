@@ -102,7 +102,7 @@
 <polyline fill="none" stroke="black" points="730.44,-333.49 730.44,-327.49 "/>
 <polyline fill="none" stroke="black" points="736.44,-327.49 730.44,-327.49 "/>
 <text text-anchor="middle" x="658.94" y="-318.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;specialist&#45;output&#45;schema</text>
-<text text-anchor="middle" x="658.94" y="-307.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,563 tok)</text>
+<text text-anchor="middle" x="658.94" y="-307.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,884 tok)</text>
 </g>
 <!-- cmd_change_apply&#45;&gt;cmd_check -->
 <!-- cmd_check&#45;&gt;cmd_e2e_plan -->

@@ -18,7 +18,7 @@ digraph Dependencies {
     skill_workflow_test_ready [label="twl:workflow-test-ready\n(761 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,884 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_change_apply [label="change-apply\n(856 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];

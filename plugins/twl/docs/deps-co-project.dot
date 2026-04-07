@@ -20,7 +20,7 @@ digraph Dependencies {
     skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(683 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,563 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,884 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_types [label="twl:ref-types\n(2,144 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_practices [label="twl:ref-practices\n(6,471 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_deps_format [label="twl:ref-deps-format\n(1,804 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -140,6 +140,5 @@ digraph Dependencies {
     skill_ref_specialist_output_schema -> skill_ref_architecture [style=invis, weight=10];
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
-    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
 
 }

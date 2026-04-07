@@ -357,7 +357,7 @@
 <polyline fill="none" stroke="black" points="970.31,-889 970.31,-883 "/>
 <polyline fill="none" stroke="black" points="976.31,-883 970.31,-883 "/>
 <text text-anchor="middle" x="898.81" y="-874" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;specialist&#45;output&#45;schema</text>
-<text text-anchor="middle" x="898.81" y="-863" font-family="Helvetica,sans-Serif" font-size="10.00">(2,563 tok)</text>
+<text text-anchor="middle" x="898.81" y="-863" font-family="Helvetica,sans-Serif" font-size="10.00">(2,884 tok)</text>
 </g>
 <!-- skill_ref_architecture -->
 <g id="node8" class="node">
@@ -492,10 +492,9 @@
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <g id="edge38" class="edge">
 <title>agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M726.4,-852.25C762.27,-844.72 819.73,-844.28 858.11,-850.93"/>
-<polygon fill="black" stroke="black" points="857.9,-854.46 868.39,-852.99 859.28,-847.6 857.9,-854.46"/>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M744.34,-856.52C764.5,-854.79 788.29,-854.17 811.03,-854.67"/>
+<polygon fill="black" stroke="black" points="810.95,-858.17 821.05,-854.96 811.15,-851.17 810.95,-858.17"/>
 </g>
-<!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_architecture -->
