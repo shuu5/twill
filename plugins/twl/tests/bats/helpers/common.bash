@@ -31,6 +31,11 @@ common_setup() {
   # Copy all scripts into sandbox
   cp "$REPO_ROOT"/scripts/*.sh "$SANDBOX/scripts/" 2>/dev/null || true
   cp "$REPO_ROOT"/scripts/*.py "$SANDBOX/scripts/" 2>/dev/null || true
+  # Copy lib/ subdirectory (common shell helpers, e.g. pr-create-helper.sh)
+  if [[ -d "$REPO_ROOT/scripts/lib" ]]; then
+    mkdir -p "$SANDBOX/scripts/lib"
+    cp "$REPO_ROOT"/scripts/lib/*.sh "$SANDBOX/scripts/lib/" 2>/dev/null || true
+  fi
 
   # Copy Python autopilot modules (replaces state/session bash scripts)
   local _repo_git_root

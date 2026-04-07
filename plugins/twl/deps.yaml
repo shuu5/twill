@@ -1892,6 +1892,16 @@ scripts:
     path: scripts/escape-issue-body.sh
     description: "Issue body の HTML エスケープ（& → &amp;、< → &lt;、> → &gt;）"
 
+  pr-create-helper:
+    type: script
+    path: scripts/lib/pr-create-helper.sh
+    description: "PR 作成共通ヘルパー（pr_create_with_closes 関数: PR 本文に Closes #N を機械的に挿入）"
+
+  pr-link-issue:
+    type: script
+    path: scripts/pr-link-issue.sh
+    description: "既存 PR の本文に Closes #N を追記する修復ヘルパー（--close-issue で gh issue close 直接実行）"
+
   spec-review-manifest:
     type: script
     path: scripts/spec-review-manifest.sh

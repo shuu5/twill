@@ -217,7 +217,7 @@ fi
 
 # --- quick 指示をシステムプロンプトとして CONTEXT に追記 ---
 if [[ "$IS_QUICK_LAUNCH" == "true" ]]; then
-  QUICK_INSTRUCTION="[quick Issue] このIssueにはquickラベルが付いています。workflow-test-readyは実行してはいけません。直接実装→commit→push→gh pr create --fill --label quick→merge-gateのみを実行してください。"
+  QUICK_INSTRUCTION="[quick Issue] このIssueにはquickラベルが付いています。workflow-test-readyは実行してはいけません。直接実装→commit→push→PR作成（'source \"\${CLAUDE_PLUGIN_ROOT}/scripts/lib/pr-create-helper.sh\" && pr_create_with_closes \"${ISSUE}\" quick' を実行し、PR 本文に必ず 'Closes #${ISSUE}' を機械的に挿入する）→merge-gateのみを実行してください。"
   if [[ -n "$CONTEXT" ]]; then
     CONTEXT="${CONTEXT}
 
