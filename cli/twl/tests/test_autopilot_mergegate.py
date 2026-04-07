@@ -284,6 +284,130 @@ class TestRejectFinal:
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# _gh_issue_state / _verify_and_close_issue (Issue #137)
+# ---------------------------------------------------------------------------
+
+
+class TestGhIssueState:
+    def test_returns_closed(self, gate):
+        with patch("subprocess.run",
+                   return_value=MagicMock(returncode=0, stdout="CLOSED\n")):
+            assert gate._gh_issue_state([]) == "CLOSED"
+
+    def test_returns_open(self, gate):
+        with patch("subprocess.run",
+                   return_value=MagicMock(returncode=0, stdout="OPEN\n")):
+            assert gate._gh_issue_state([]) == "OPEN"
+
+    def test_returns_empty_on_error(self, gate):
+        with patch("subprocess.run",
+                   return_value=MagicMock(returncode=1, stdout="", stderr="err")):
+            assert gate._gh_issue_state([]) == ""
+
+
+class TestVerifyAndCloseIssue:
+    def test_already_closed(self, gate):
+        with patch.object(gate, "_gh_issue_state", return_value="CLOSED"):
+            assert gate._verify_and_close_issue([]) is True
+
+    def test_open_then_close_success(self, gate):
+        # First call OPEN, then CLOSED after close
+        states = iter(["OPEN", "CLOSED"])
+        with patch.object(gate, "_gh_issue_state", side_effect=lambda _f: next(states)):
+            with patch("subprocess.run",
+                       return_value=MagicMock(returncode=0, stderr="")):
+                assert gate._verify_and_close_issue([]) is True
+
+    def test_open_then_close_failure(self, gate):
+        with patch.object(gate, "_gh_issue_state", return_value="OPEN"):
+            with patch("subprocess.run",
+                       return_value=MagicMock(returncode=1, stderr="forbidden")):
+                assert gate._verify_and_close_issue([]) is False
+
+    def test_open_close_ok_but_still_open(self, gate):
+        states = iter(["OPEN", "OPEN"])
+        with patch.object(gate, "_gh_issue_state", side_effect=lambda _f: next(states)):
+            with patch("subprocess.run",
+                       return_value=MagicMock(returncode=0, stderr="")):
+                assert gate._verify_and_close_issue([]) is False
+
+    def test_state_query_fails_returns_true(self, gate):
+        """When state query fails (gh unavailable), skip verify — return True."""
+        with patch.object(gate, "_gh_issue_state", return_value=""):
+            assert gate._verify_and_close_issue([]) is True
+
+
+class TestExecuteWithIssueVerify:
+    """execute() tests exercising the verify-and-close Issue #137 logic."""
+
+    def _base_patches(self, gate, verify_result):
+        """Helper returning context managers for common execute() patching."""
+        return [
+            patch("os.getcwd", return_value="/home/user/projects/main"),
+            patch("twl.autopilot.mergegate._check_worker_window_guard"),
+            patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"),
+            patch("twl.autopilot.mergegate._board_update"),
+            patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"),
+            patch.object(MergeGate, "_verify_and_close_issue", return_value=verify_result),
+        ]
+
+    def test_merge_ok_and_issue_closed_writes_done(self, gate):
+        with patch("os.getcwd", return_value="/home/user/projects/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
+             patch("twl.autopilot.mergegate._state_write") as mock_sw, \
+             patch("twl.autopilot.mergegate._board_update") as mock_board, \
+             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
+             patch.object(MergeGate, "_verify_and_close_issue", return_value=True), \
+             patch("subprocess.run",
+                   return_value=MagicMock(returncode=0, stdout="")):
+            gate.execute()
+            statuses = [c.kwargs.get("status") for c in mock_sw.call_args_list]
+            assert "done" in statuses
+            mock_board.assert_called_once()
+
+    def test_merge_ok_but_issue_close_fails_writes_failed_and_exit2(self, gate):
+        with patch("os.getcwd", return_value="/home/user/projects/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
+             patch("twl.autopilot.mergegate._state_write") as mock_sw, \
+             patch("twl.autopilot.mergegate._board_update") as mock_board, \
+             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
+             patch.object(MergeGate, "_verify_and_close_issue", return_value=False), \
+             patch("subprocess.run",
+                   return_value=MagicMock(returncode=0, stdout="")):
+            with pytest.raises(SystemExit) as exc:
+                gate.execute()
+            assert exc.value.code == 2
+            # Last _state_write must be status=failed with required failure fields
+            last_kwargs = mock_sw.call_args_list[-1].kwargs
+            assert last_kwargs["status"] == "failed"
+            failure = json.loads(last_kwargs["failure"])
+            assert failure["reason"] == "issue_not_closed_after_merge"
+            assert failure["step"] == "merge-gate-issue-close"
+            assert failure["pr"] == 101
+            assert "message" in failure
+            assert "timestamp" in failure
+            # Board must NOT transition to Done
+            mock_board.assert_not_called()
+
+    def test_merge_ok_does_not_skip_verify_when_closed(self, gate):
+        """Regression: execute must call _verify_and_close_issue after successful merge."""
+        with patch("os.getcwd", return_value="/home/user/projects/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
+             patch("twl.autopilot.mergegate._state_write"), \
+             patch("twl.autopilot.mergegate._board_update"), \
+             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
+             patch.object(MergeGate, "_verify_and_close_issue",
+                          return_value=True) as mock_verify, \
+             patch("subprocess.run",
+                   return_value=MagicMock(returncode=0, stdout="")):
+            gate.execute()
+            mock_verify.assert_called_once()
+
+
 class TestGhRepoFlag:
     def test_no_repo_args_no_flag(self, autopilot_dir, scripts_root):
         gate = MergeGate(

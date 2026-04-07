@@ -245,17 +245,45 @@ class MergeGate:
         )
 
         merge_ok = self._run_merge(gh_repo_flag)
-        if merge_ok:
-            self._post_merge_cleanup(repo_mode, autopilot_status)
+        if not merge_ok:
+            sys.exit(1)
+
+        self._post_merge_cleanup(repo_mode, autopilot_status)
+
+        # Layered defense: verify GitHub Issue is CLOSED before status=done.
+        # PR body 経由の auto-close 仕様に依存せず、明示的に close を試行する。
+        issue_closed = self._verify_and_close_issue(gh_repo_flag)
+        if not issue_closed:
+            # 不変条件 A 強化: merge-ready → done の前提条件
+            # (GitHub Issue が CLOSED) が満たされない場合は failed に遷移。
+            # retry_count 管理との整合のため merge-ready 維持ではなく failed。
+            failure = json.dumps({
+                "message": "PR merged but Issue could not be closed",
+                "step": "merge-gate-issue-close",
+                "timestamp": self._now_iso(),
+                "reason": "issue_not_closed_after_merge",
+                "pr": int(self.pr_number),
+            })
             _state_write(
                 self.issue, "pilot",
-                status="done",
-                merged_at=self._now_iso(),
+                status="failed",
+                failure=failure,
             )
-            print(f"[merge-gate] Issue #{self.issue}: マージ完了")
-            _board_update(self.issue, self.scripts_root, "Done")
-        else:
-            sys.exit(1)
+            print(
+                f"[merge-gate] Issue #{self.issue}: ⚠️ PR merge 成功したが Issue close 失敗。"
+                f"status=failed に遷移。Pilot retrospective で escalate されます。",
+                file=sys.stderr,
+            )
+            # board status は Done に遷移させない（In Progress のまま）
+            sys.exit(2)
+
+        _state_write(
+            self.issue, "pilot",
+            status="done",
+            merged_at=self._now_iso(),
+        )
+        print(f"[merge-gate] Issue #{self.issue}: マージ完了 + Issue CLOSED 確認済み")
+        _board_update(self.issue, self.scripts_root, "Done")
 
     def reject(self) -> None:
         """Reject (1st time): transition state to failed + record retry."""
@@ -297,6 +325,57 @@ class MergeGate:
         if self.repo_owner and self.repo_name:
             return ["-R", f"{self.repo_owner}/{self.repo_name}"]
         return []
+
+    def _gh_issue_state(self, gh_repo_flag: list[str]) -> str:
+        """Return GitHub Issue state ('OPEN', 'CLOSED', or '' on error)."""
+        result = subprocess.run(
+            ["gh", "issue", "view", self.issue, *gh_repo_flag,
+             "--json", "state", "-q", ".state"],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0:
+            return ""
+        return result.stdout.strip()
+
+    def _verify_and_close_issue(self, gh_repo_flag: list[str]) -> bool:
+        """Verify Issue is CLOSED on GitHub. Try to close if not.
+
+        Returns True if Issue is CLOSED (or successfully closed, or state
+        could not be queried — skip case preserves legacy behaviour).
+        Returns False only if OPEN and close attempt failed.
+        """
+        state = self._gh_issue_state(gh_repo_flag)
+        if state == "CLOSED":
+            return True
+        if state == "":
+            # 取得失敗時は warning + True（既存挙動・gh 不在環境互換）
+            print(
+                f"[merge-gate] Issue #{self.issue}: "
+                f"⚠️ Issue 状態取得失敗 — close 確認をスキップ",
+                file=sys.stderr,
+            )
+            return True
+
+        # OPEN — 明示的 close を試行
+        print(
+            f"[merge-gate] Issue #{self.issue}: "
+            f"PR merge 後も Issue が OPEN — 明示的 close を試行"
+        )
+        result = subprocess.run(
+            ["gh", "issue", "close", self.issue, *gh_repo_flag],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0:
+            print(
+                f"[merge-gate] Issue #{self.issue}: "
+                f"⚠️ gh issue close 失敗: {result.stderr.strip()}",
+                file=sys.stderr,
+            )
+            return False
+
+        # 再確認
+        state_after = self._gh_issue_state(gh_repo_flag)
+        return state_after == "CLOSED"
 
     def _run_merge(self, gh_repo_flag: list[str]) -> bool:
         """Execute gh pr merge --squash. Returns True on success."""

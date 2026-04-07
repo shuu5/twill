@@ -27,6 +27,8 @@ Autopilot
 - ステートマシン遷移は `_TRANSITIONS` 辞書で厳密に制約。不正な遷移は例外を発生させる
 - GitHub API 呼び出しは `gh` CLI を `subprocess` 経由で実行（GraphQL/REST 両対応）
 - tmux 操作は bash の glue スクリプト（`autopilot-launch.sh` 等）に委譲。Python 側はセッション状態管理のみ担当
+- **不変条件 A（status の一意性）**: `issue-{N}.json` の `status` は常に定義された遷移パス (`running → merge-ready → done/failed` 等) のみ許可。`merge-ready → done` の遷移は **GitHub Issue が CLOSED 状態にあることを前提条件**とする。MergeGate は `gh pr merge --squash` 成功後に `gh issue view --json state` で CLOSED を verify し、OPEN なら `gh issue close` を試行する layered defense を実施する。close できない場合は `status=failed` に遷移し exit code 2 を返す（`merge-ready` のまま停止しない — `retry_count` 管理との整合のため）
+- **IssueState.failure フィールド型定義**: `{message, step, timestamp, reason, pr, details?}` の統一形式。`message` は人間可読、`step` は chain step 名、`timestamp` は ISO 8601、`reason` は machine code、`pr` は PR 番号 (int)、`details` はオプショナルなコンテキスト
 
 ## CLI Commands
 
