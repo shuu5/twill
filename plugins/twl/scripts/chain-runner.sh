@@ -703,6 +703,25 @@ step_pr_cycle_report() {
   ok "pr-cycle-report" "PR #$pr_num にレポート投稿"
 }
 
+# --- auto-merge: スカッシュマージ実行（scripts/auto-merge.sh ラッパー） ---
+step_auto_merge() {
+  record_current_step "auto-merge"
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local auto_merge_script="$script_dir/auto-merge.sh"
+  if [[ ! -x "$auto_merge_script" ]]; then
+    err "auto-merge" "scripts/auto-merge.sh が見つからないか実行不可"
+    return 1
+  fi
+  if "$auto_merge_script" "$@"; then
+    ok "auto-merge" "auto-merge.sh 完了"
+  else
+    local rc=$?
+    err "auto-merge" "auto-merge.sh 失敗 (exit=$rc)"
+    return $rc
+  fi
+}
+
 # --- check: 準備確認 ---
 step_check() {
   record_current_step "check"
@@ -758,9 +777,9 @@ main() {
   local step="${1:-}"
   if [[ -z "$step" ]]; then
     echo "Usage: chain-runner.sh <step-name> [args...]" >&2
-    echo "Steps: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
-    echo "       change-id-resolve, next-step, ts-preflight, pr-test, ac-verify, all-pass-check," >&2
-    echo "       pr-cycle-report, check" >&2
+    echo "Steps: init, worktree-create, board-status-update, project-board-status-update, board-archive," >&2
+    echo "       ac-extract, arch-ref, change-id-resolve, next-step, ts-preflight, pr-test, ac-verify," >&2
+    echo "       all-pass-check, pr-cycle-report, auto-merge, check" >&2
     exit 1
   fi
   shift
@@ -769,6 +788,7 @@ main() {
     init)                step_init "$@" ;;
     worktree-create)     step_worktree_create "$@" ;;
     board-status-update) step_board_status_update "$@" ;;
+    project-board-status-update) step_board_status_update "$@" ;;
     board-archive)       step_board_archive "$@" ;;
     ac-extract)          step_ac_extract "$@" ;;
     arch-ref)            step_arch_ref "$@" ;;
@@ -783,15 +803,17 @@ main() {
     ac-verify)           step_ac_verify "$@" ;;
     all-pass-check)      step_all_pass_check "$@" ;;
     pr-cycle-report)     step_pr_cycle_report "$@" ;;
+    auto-merge)          step_auto_merge "$@" ;;
     check)               step_check "$@" ;;
     quick-guard)         step_quick_guard "$@" ;;
     autopilot-detect)    step_autopilot_detect "$@" ;;
     quick-detect)        step_quick_detect "$@" ;;
     *)
       echo "ERROR: 未知のステップ: $step" >&2
-      echo "利用可能: init, worktree-create, board-status-update, board-archive, ac-extract, arch-ref," >&2
-      echo "         change-id-resolve, next-step, ts-preflight, pr-test, ac-verify, all-pass-check," >&2
-      echo "         pr-cycle-report, check, quick-guard, autopilot-detect, quick-detect" >&2
+      echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
+      echo "         board-archive, ac-extract, arch-ref, change-id-resolve, next-step, ts-preflight," >&2
+      echo "         pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge, check," >&2
+      echo "         quick-guard, autopilot-detect, quick-detect" >&2
       exit 1
       ;;
   esac

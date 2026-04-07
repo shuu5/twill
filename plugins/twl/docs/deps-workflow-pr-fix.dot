@@ -20,7 +20,7 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_post_fix_verify [label="post-fix-verify\n(353 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_post_fix_verify [label="post-fix-verify\n(605 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_warning_fix [label="warning-fix\n(363 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_fix_phase [label="fix-phase\n(532 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_spec_diagnose [label="spec-diagnose\n(634 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -28,8 +28,15 @@ digraph Dependencies {
     // L2: Sub Commands
 
     // L3: Agents
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,421 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_code_reviewer [label="worker-code-reviewer\n(964 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_security_reviewer [label="worker-security-reviewer\n(866 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
+    script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_parser [label="autopilot-parser\n(2,496 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_pr_review_manifest [label="pr-review-manifest\n(1,232 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_read [label="checkpoint-read\n(2,418 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
@@ -37,18 +44,32 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_workflow_pr_fix; }
     { rank=same; cmd_post_fix_verify; cmd_warning_fix; cmd_fix_phase; cmd_spec_diagnose; }
-    { rank=same; script_checkpoint_read; }
+    { rank=same; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; }
+    { rank=same; script_tech_stack_detect; script_autopilot_parser; script_resolve_issue_num; script_pr_review_manifest; script_checkpoint_read; }
 
     // Edges
     skill_workflow_pr_fix -> cmd_fix_phase;
     skill_workflow_pr_fix -> cmd_post_fix_verify;
     skill_workflow_pr_fix -> cmd_warning_fix;
     skill_workflow_pr_fix -> cmd_spec_diagnose;
+    cmd_post_fix_verify -> agent_worker_code_reviewer [style=dashed];
+    cmd_post_fix_verify -> agent_worker_security_reviewer [style=dashed];
+    cmd_post_fix_verify -> agent_worker_codex_reviewer [style=dashed];
+    cmd_post_fix_verify -> script_pr_review_manifest;
+    cmd_post_fix_verify -> script_autopilot_parser;
     cmd_fix_phase -> script_checkpoint_read;
 
     // Ordering constraints (invisible edges)
     cmd_fix_phase -> cmd_post_fix_verify [style=invis, weight=10];
     cmd_post_fix_verify -> cmd_warning_fix [style=invis, weight=10];
     cmd_warning_fix -> cmd_spec_diagnose [style=invis, weight=10];
+    agent_worker_code_reviewer -> agent_worker_security_reviewer [style=invis, weight=10];
+    agent_worker_security_reviewer -> agent_worker_codex_reviewer [style=invis, weight=10];
+    agent_worker_codex_reviewer -> script_pr_review_manifest [style=invis, weight=10];
+    script_pr_review_manifest -> script_autopilot_parser [style=invis, weight=10];
+    script_autopilot_parser -> script_tech_stack_detect [style=invis, weight=10];
+    agent_worker_code_reviewer -> agent_worker_security_reviewer [style=invis, weight=10];
+    script_autopilot_parser -> script_tech_stack_detect [style=invis, weight=10];
+    agent_worker_code_reviewer -> agent_worker_security_reviewer [style=invis, weight=10];
 
 }

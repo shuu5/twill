@@ -294,11 +294,9 @@ skills:
         step: "8"
       - atomic: auto-merge
         step: "8.5"
-      - atomic: change-archive
-        step: "9"
       - script: chain-runner
       - script: compaction-resume
-    description: "PRマージワークフロー（e2e → report → analysis → check → archive → merge）"
+    description: "PRマージワークフロー（e2e → report → analysis → check → merge; archive は auto-merge.sh 内で実行）"
 
   workflow-dead-cleanup:
     type: workflow
@@ -595,17 +593,15 @@ commands:
       step: "2"
     description: "DeltaSpec 実装（change-apply）"
 
-  change-archive:
+  change-archive: # standalone: 手動アーカイブ用（auto-merge.sh が自動アーカイブを担う）
     type: atomic
     refined_by: "ref-prompt-guide@2c7a62f2"
     refined_at: "2026-04-07"
     path: commands/change-archive.md
     spawnable_by: [controller, workflow]
     can_spawn: []
-    step_in:
-      parent: workflow-pr-merge
-      step: "9"
-    description: "DeltaSpec アーカイブ（change-archive）"
+    dispatch_mode: llm
+    description: "DeltaSpec アーカイブ（手動実行用 standalone slash command）"
 
   ac-extract:
     type: atomic
@@ -989,6 +985,7 @@ commands:
     path: commands/plugin-interview.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-plugin-create
       step: "1"
@@ -1001,6 +998,7 @@ commands:
     path: commands/plugin-research.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-plugin-create
       step: "2"
@@ -1013,6 +1011,7 @@ commands:
     path: commands/plugin-design.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-plugin-create
       step: "3"
@@ -1025,6 +1024,7 @@ commands:
     path: commands/plugin-generate.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-plugin-create
       step: "4"
@@ -1037,6 +1037,7 @@ commands:
     path: commands/plugin-migrate-analyze.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-plugin-diagnose
       step: "1"
@@ -1049,6 +1050,7 @@ commands:
     path: commands/plugin-diagnose.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-plugin-diagnose
       step: "2"
@@ -1061,6 +1063,7 @@ commands:
     path: commands/plugin-fix.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-plugin-diagnose
       step: "4"
@@ -1073,6 +1076,7 @@ commands:
     path: commands/plugin-verify.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-plugin-diagnose
       step: "5"
@@ -1144,6 +1148,7 @@ commands:
     path: commands/dead-component-detect.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-dead-cleanup
       step: "1"
@@ -1156,6 +1161,7 @@ commands:
     path: commands/dead-component-execute.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-dead-cleanup
       step: "3"
@@ -1168,6 +1174,7 @@ commands:
     path: commands/triage-execute.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     step_in:
       parent: workflow-tech-debt-triage
       step: "6"
@@ -1263,6 +1270,7 @@ commands:
     path: commands/e2e-plan.md
     spawnable_by: [controller, workflow]
     can_spawn: []
+    dispatch_mode: llm
     description: "E2E テスト計画作成"
 
   test-scaffold:
@@ -1415,6 +1423,7 @@ commands:
     path: commands/ac-deploy-trigger.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     description: "AC テキストから外部アクセスキーワードを検出し deploy E2E フラグ設定"
 
   test-phase:
@@ -1424,6 +1433,7 @@ commands:
     path: commands/test-phase.md
     spawnable_by: [controller, workflow]
     can_spawn: [specialist]
+    dispatch_mode: llm
     calls:
       - specialist: e2e-quality
       - reference: ref-specialist-output-schema
@@ -1473,6 +1483,7 @@ commands:
     path: commands/spec-diagnose.md
     spawnable_by: [workflow]
     can_spawn: []
+    dispatch_mode: llm
     description: "テスト失敗の原因診断（仕様誤り vs 実装誤り判定）"
 
   # === C-2d: Autopilot / Controller-autopilot 系（11個） ===
@@ -1748,6 +1759,7 @@ scripts:
 
   chain-runner:
     type: script
+    dispatch_mode: trigger
     path: ../../cli/twl/src/twl/autopilot/chain.py
     calls:
       - script: worktree-create
@@ -1759,6 +1771,7 @@ scripts:
     commands:
       - init
       - board-status-update
+      - project-board-status-update
       - board-archive
       - ac-extract
       - arch-ref
@@ -1768,6 +1781,7 @@ scripts:
       - pr-test
       - all-pass-check
       - pr-cycle-report
+      - auto-merge
       - check
       - quick-guard
       - autopilot-detect
@@ -1821,10 +1835,11 @@ scripts:
 
   compaction-resume:
     type: script
+    dispatch_mode: trigger
     path: scripts/compaction-resume.sh
     calls:
       - script: chain-steps
-    description: "compaction 後の chain 復帰判定"
+    description: "compaction 後の chain 復帰判定（Claude Code compaction フック経由）"
 
   resolve-issue-num:
     type: script
