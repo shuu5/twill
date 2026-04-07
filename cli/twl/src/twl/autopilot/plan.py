@@ -130,6 +130,128 @@ def _issue_touches_deps_yaml(
 
 
 # ---------------------------------------------------------------------------
+# Touched-files extraction (for arbitrary file conflict prediction)
+# ---------------------------------------------------------------------------
+
+# Extension whitelist for plain-text path detection (false positive 抑制).
+_TOUCHED_FILE_EXT_WHITELIST = {
+    ".py", ".sh", ".md", ".ts", ".tsx", ".js", ".yaml", ".yml",
+    ".json", ".toml", ".bats",
+}
+
+# Path-like token: 1+ slash-separated segment, ends with whitelisted extension.
+_PATH_TOKEN_RE = re.compile(
+    r"(?<![\w./-])"  # left boundary: not part of an identifier/path
+    r"([a-zA-Z0-9_][\w./-]*?\.[a-zA-Z0-9]{1,5})"
+    r"(?![\w./-])"
+)
+
+
+def _is_whitelisted_path(token: str) -> bool:
+    if "/" not in token:
+        return False
+    dot = token.rfind(".")
+    if dot < 0:
+        return False
+    ext = token[dot:].lower()
+    return ext in _TOUCHED_FILE_EXT_WHITELIST
+
+
+def _extract_touched_files_section(body: str) -> set[str]:
+    """Extract paths from a `## Touched files` section (highest priority)."""
+    result: set[str] = set()
+    lines = body.splitlines()
+    in_section = False
+    for line in lines:
+        stripped = line.strip()
+        # Section header detection (case-insensitive, allow trailing content).
+        if re.match(r"^#+\s*Touched files\b", stripped, re.IGNORECASE):
+            in_section = True
+            continue
+        if in_section:
+            # New header → end of section.
+            if re.match(r"^#+\s+\S", stripped):
+                break
+            # Bullet item: extract first path-like token (allow backticks /
+            # surrounding prose).
+            m = re.match(r"^[-*+]\s+(.+?)\s*$", stripped)
+            if m:
+                content = m.group(1)
+                pm = _PATH_TOKEN_RE.search(content)
+                if pm:
+                    token = pm.group(1)
+                    if _is_whitelisted_path(token):
+                        result.add(token)
+    return result
+
+
+def _extract_touched_files(body: str, comments: str = "") -> set[str]:
+    """Extract touched file paths from issue body / comments.
+
+    Priority:
+        1. `## Touched files` section bullet items (most reliable).
+        2. Any path-like token in body+comments matching the extension whitelist.
+    """
+    section = _extract_touched_files_section(body)
+    if section:
+        return section
+
+    text = f"{body}\n{comments}"
+    result: set[str] = set()
+    for m in _PATH_TOKEN_RE.finditer(text):
+        token = m.group(1)
+        if _is_whitelisted_path(token):
+            result.add(token)
+    return result
+
+
+def _separate_touched_files_phases(
+    phases: list[list[str]],
+    touched_map: dict[str, set[str]],
+) -> list[list[str]]:
+    """Split phases to avoid file collisions.
+
+    For each phase, if multiple issues touch the same file path, keep the first
+    occurrence in the current phase and push later conflicting issues into a
+    newly inserted subsequent phase. Repeats until no in-phase conflict remains.
+    Generalises `_separate_deps_yaml_phases` to arbitrary files.
+    """
+    new_phases: list[list[str]] = []
+
+    for phase_issues in phases:
+        # Greedy bin-packing: keep splitting the current phase into sub-phases
+        # such that no sub-phase contains two issues touching the same file.
+        sub_phases: list[list[str]] = []
+        for uid in phase_issues:
+            files = touched_map.get(uid, set())
+            placed = False
+            for sub in sub_phases:
+                conflict = any(
+                    touched_map.get(other, set()) & files
+                    for other in sub
+                )
+                if not conflict:
+                    sub.append(uid)
+                    placed = True
+                    break
+            if not placed:
+                sub_phases.append([uid])
+
+        if len(sub_phases) > 1:
+            collisions = [
+                uid for sub in sub_phases[1:] for uid in sub
+            ]
+            print(
+                f"⚠ Phase 分離: ファイル衝突予測により Issue {collisions} を後続 Phase に押し出し",
+                file=sys.stderr,
+            )
+
+        new_phases.extend(sub_phases)
+
+    return new_phases
+
+
+# ---------------------------------------------------------------------------
 # Topological sort (Kahn's algorithm)
 # ---------------------------------------------------------------------------
 
@@ -291,6 +413,7 @@ class PlanGenerator:
             raise PlanError("Issue 番号が指定されていません")
 
         deps_yaml_issues: set[str] = set()
+        touched_map: dict[str, set[str]] = {}
         deps: dict[str, list[str]] = {}
         issues_set = set(issue_uids)
 
@@ -319,6 +442,8 @@ class PlanGenerator:
 
             if _issue_touches_deps_yaml(number, repo_id, self.repos, self.cross_repo, body, comments):
                 deps_yaml_issues.add(uid)
+
+            touched_map[uid] = _extract_touched_files(body, comments)
 
             search_text = f"{body}\n{comments}"
             dep_uids: list[str] = []
@@ -355,6 +480,8 @@ class PlanGenerator:
 
         if len(deps_yaml_issues) >= 2:
             phases = _separate_deps_yaml_phases(phases, deps_yaml_issues)
+
+        phases = _separate_touched_files_phases(phases, touched_map)
 
         self._write_plan(phases, deps, issue_uids)
         print(f"plan.yaml 生成完了: {self.plan_file}")
