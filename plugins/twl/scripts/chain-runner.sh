@@ -650,14 +650,20 @@ step_all_pass_check() {
     local _cr_branch _cr_pr
     _cr_branch=$(git branch --show-current 2>/dev/null || echo "")
     _cr_pr=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
-    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "status=merge-ready" --set "pr=$_cr_pr" --set "branch=$_cr_branch" 2>/dev/null || true
+    if ! python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "status=merge-ready" --set "pr=$_cr_pr" --set "branch=$_cr_branch" >&2; then
+      err "all-pass-check" "state write merge-ready 失敗"
+      return 1
+    fi
     if $is_autopilot; then
       ok "all-pass-check" "PASS — autopilot 配下: merge-ready 宣言。Pilot による merge-gate を待機"
     else
       ok "all-pass-check" "PASS — merge-ready"
     fi
   else
-    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "status=failed" 2>/dev/null || true
+    if ! python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "status=failed" >&2; then
+      err "all-pass-check" "state write failed 失敗"
+      return 1
+    fi
     skip "all-pass-check" "FAIL — status=failed"
     return 1
   fi
@@ -765,6 +771,8 @@ main() {
   fi
   shift
 
+  local _main_rc=0
+  set +e
   case "$step" in
     init)                step_init "$@" ;;
     worktree-create)     step_worktree_create "$@" ;;
@@ -795,6 +803,22 @@ main() {
       exit 1
       ;;
   esac
+  _main_rc=$?
+  set -e
+
+  # Worker terminal status 検証ガード (Issue #131)
+  # chain main 終端（=all-pass-check ステップ完了後）で issue-{N}.json の
+  # status が terminal 集合 {merge-ready, done, failed, conflict} に含まれている
+  # ことを検証。AUTOPILOT_DIR 設定時のみ作動し、非 autopilot フローには影響しない。
+  if [[ "$step" == "all-pass-check" && -n "${AUTOPILOT_DIR:-}" ]]; then
+    local _guard_issue_num
+    _guard_issue_num="$(resolve_issue_num 2>/dev/null || echo "")"
+    if [[ -n "$_guard_issue_num" ]]; then
+      bash "${SCRIPT_DIR}/worker-terminal-guard.sh" "$_guard_issue_num" || _main_rc=$?
+    fi
+  fi
+
+  return $_main_rc
 }
 
 main "$@"
