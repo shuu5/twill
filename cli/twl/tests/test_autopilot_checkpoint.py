@@ -125,6 +125,72 @@ class TestRead:
 
 
 # ---------------------------------------------------------------------------
+# ac-verify checkpoint round-trip (Issue #134)
+# ---------------------------------------------------------------------------
+
+
+class TestAcVerifyCheckpoint:
+    """ac-verify step が checkpoint に正しく書き込み・読み出しできることを検証。
+
+    Issue #134: ac-verify を chain に接続し AC↔diff 整合性チェックを実装する。
+    merge-gate は本 checkpoint を読んで BLOCKING に統合するため、
+    schema の round-trip 互換性を保証する必要がある。
+    """
+
+    def test_ac_verify_write_and_read_status(self, mgr: CheckpointManager) -> None:
+        mgr.write(step="ac-verify", status="FAIL")
+        assert mgr.read(step="ac-verify", field="status") == "FAIL"
+
+    def test_ac_verify_write_findings_with_critical(
+        self, mgr: CheckpointManager, ckpt_dir: Path
+    ) -> None:
+        findings = [
+            {
+                "severity": "CRITICAL",
+                "category": "bug",
+                "confidence": 80,
+                "message": "AC #1『X を実装』が diff に確認できない",
+                "evidence": "diff には X への変更が見当たらない",
+            },
+            {
+                "severity": "WARNING",
+                "category": "bug",
+                "confidence": 60,
+                "message": "AC #2 は diff-only の達成",
+                "evidence": "test 不在のため diff キーワード一致のみ",
+            },
+        ]
+        mgr.write(step="ac-verify", status="FAIL", findings=findings)
+
+        data = json.loads((ckpt_dir / "ac-verify.json").read_text())
+        assert data["step"] == "ac-verify"
+        assert data["status"] == "FAIL"
+        assert data["critical_count"] == 1
+        assert data["findings_summary"] == "1 CRITICAL, 1 WARNING"
+        assert len(data["findings"]) == 2
+
+    def test_ac_verify_critical_findings_filter(
+        self, mgr: CheckpointManager
+    ) -> None:
+        findings = [
+            {"severity": "CRITICAL", "message": "未達成 AC #1"},
+            {"severity": "WARNING", "message": "diff-only AC #2"},
+            {"severity": "CRITICAL", "message": "未達成 AC #3"},
+        ]
+        mgr.write(step="ac-verify", status="FAIL", findings=findings)
+        criticals = json.loads(
+            mgr.read(step="ac-verify", critical_findings=True)
+        )
+        assert len(criticals) == 2
+        assert all(f["severity"] == "CRITICAL" for f in criticals)
+
+    def test_ac_verify_pass_no_findings(self, mgr: CheckpointManager) -> None:
+        mgr.write(step="ac-verify", status="PASS", findings=[])
+        assert mgr.read(step="ac-verify", field="status") == "PASS"
+        assert mgr.read(step="ac-verify", field="critical_count") == "0"
+
+
+# ---------------------------------------------------------------------------
 # CLI main()
 # ---------------------------------------------------------------------------
 

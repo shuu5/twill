@@ -27,12 +27,13 @@ chains:
 
   pr-verify:
     type: "B"
-    description: "PR検証（preflight → review → scope → test）"
+    description: "PR検証（preflight → review → scope → test → ac-verify）"
     steps:
       - ts-preflight
       - phase-review
       - scope-judge
       - pr-test
+      - ac-verify
 
   pr-fix:
     type: "B"
@@ -239,7 +240,6 @@ skills:
     can_spawn: [composite, atomic, script]
     calls:
       - atomic: ac-deploy-trigger
-      - atomic: ac-verify
       - atomic: ts-preflight
         step: "1"
       - composite: phase-review
@@ -248,6 +248,8 @@ skills:
         step: "2.5"
       - atomic: pr-test
         step: "3"
+      - atomic: ac-verify
+        step: "3.5"
       - composite: test-phase
       - script: chain-runner
       - script: compaction-resume
@@ -728,7 +730,15 @@ commands:
     path: commands/ac-verify.md
     spawnable_by: [workflow]
     can_spawn: []
-    description: "AC 検証（テスト結果と AC の照合）"
+    chain: "pr-verify"
+    step_in:
+      parent: workflow-pr-verify
+      step: "3.5"
+    calls:
+      - script: chain-runner
+      - script: checkpoint-write
+      - script: checkpoint-read
+    description: "AC 検証（AC↔diff/test 整合性チェック、checkpoint 永続化）"
 
   # === C-2a: Issue管理系（7個） ===
 
