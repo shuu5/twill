@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # project-board-archive.sh - Project Board の Done アイテムを一括アーカイブ
 #
-# Usage: bash scripts/project-board-archive.sh [--dry-run]
-#   --dry-run: 実際のアーカイブなしに対象一覧を表示
+# Usage: bash scripts/project-board-archive.sh [--dry-run] [--no-verify]
+#   --dry-run:   実際のアーカイブなしに対象一覧を表示
+#   --no-verify: GitHub Issue state 二重チェックをスキップ（従来挙動）
+#
+# デフォルトは fail-closed: Project Board status=Done かつ
+# GitHub Issue state=CLOSED の両方を満たす場合のみ archive する（Issue #138）
 #
 # Example:
 #   bash scripts/project-board-archive.sh --dry-run
 #   bash scripts/project-board-archive.sh
+#   bash scripts/project-board-archive.sh --no-verify  # 従来挙動
 
 set -euo pipefail
 
@@ -16,9 +21,11 @@ source "${SCRIPT_DIR}/lib/python-env.sh"
 
 # ── 引数解析 ───────────────────────────────────────────────────
 DRY_RUN=false
+NO_VERIFY=false
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
+    --no-verify) NO_VERIFY=true ;;
     *) echo "Unknown option: $arg" >&2; exit 1 ;;
   esac
 done
@@ -70,9 +77,26 @@ if $DRY_RUN; then
 fi
 
 ARCHIVED_COUNT=0
+SKIPPED_COUNT=0
 while IFS= read -r ITEM; do
   ITEM_ID=$(echo "$ITEM" | jq -r '.id')
   ISSUE_NUM=$(echo "$ITEM" | jq -r '.content.number // "N/A"')
+
+  # NEW: GitHub Issue state 二重チェック (fail-closed, Issue #138)
+  # --no-verify 時はスキップ（従来挙動）
+  if ! $NO_VERIFY && [[ "$ISSUE_NUM" != "N/A" ]]; then
+    GH_STATE=$(gh issue view "$ISSUE_NUM" --json state -q .state 2>/dev/null || echo "")
+    if [[ "$GH_STATE" != "CLOSED" ]]; then
+      if [[ -z "$GH_STATE" ]]; then
+        echo "  ⚠️ #${ISSUE_NUM}: GitHub state 取得失敗 — fail-closed で archive をスキップ"
+      else
+        echo "  ⚠️ #${ISSUE_NUM}: GitHub state=${GH_STATE} — archive をスキップ"
+      fi
+      SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+      sleep 0.5
+      continue
+    fi
+  fi
 
   if gh project item-archive "$PROJECT_NUM" --owner "$OWNER" --id "$ITEM_ID" >/dev/null 2>&1; then
     ARCHIVED_COUNT=$((ARCHIVED_COUNT + 1))
@@ -86,3 +110,6 @@ done < <(echo "$DONE_ITEMS" | jq -c '.[]')
 
 echo ""
 echo "✓ ${ARCHIVED_COUNT} 件をアーカイブしました"
+if [[ "$SKIPPED_COUNT" -gt 0 ]]; then
+  echo "⚠️ ${SKIPPED_COUNT} 件を fail-closed により skip しました（GitHub state が CLOSED でない）"
+fi

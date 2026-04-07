@@ -131,10 +131,12 @@ GHSTUB_HEAD
 case "$*" in
   *"pr merge"*)
     exit 0 ;;
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-add"*)

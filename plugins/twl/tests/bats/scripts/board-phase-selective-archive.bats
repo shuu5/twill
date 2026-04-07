@@ -152,10 +152,12 @@ echo "\$*" >> "${log_path}"
 GHSTUB_HEAD
   cat >> "$STUB_BIN/gh" <<'GHSTUB_BODY'
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -371,10 +373,12 @@ echo "\$*" >> "${log_path}"
 GHSTUB_AVAIL_HEAD
   cat >> "$STUB_BIN/gh" <<'GHSTUB_AVAIL_BODY'
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -408,10 +412,12 @@ echo "\$*" >> "${log_path}"
 GHSTUB_OK_HEAD
   cat >> "$STUB_BIN/gh" <<'GHSTUB_OK_BODY'
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
   *"project item-list"*)
@@ -449,6 +455,8 @@ echo "\$*" >> "${log_path}"
 GHSTUB_RECOG_HEAD
   cat >> "$STUB_BIN/gh" <<'GHSTUB_RECOG_BODY'
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*) echo '{"projects": []}' ;;
   *) echo '{}' ;;
 esac
@@ -478,10 +486,12 @@ echo "\$*" >> "${log_path}"
 GHSTUB_NOPROJ_HEAD
   cat >> "$STUB_BIN/gh" <<'GHSTUB_NOPROJ_BODY'
 case "$*" in
+  *"issue view"*)
+    echo "CLOSED" ;;
   *"project list"*)
     echo '{"projects": []}' ;;
   *"repo view"*"--json nameWithOwner"*)
-    echo 'shuu5/loom-plugin-dev' ;;
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
   *"api graphql"*)
     echo '{"data": {"user": {"projectV2": null}}}' ;;
   *)

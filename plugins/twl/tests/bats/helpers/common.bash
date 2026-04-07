@@ -31,10 +31,10 @@ common_setup() {
   # Copy all scripts into sandbox
   cp "$REPO_ROOT"/scripts/*.sh "$SANDBOX/scripts/" 2>/dev/null || true
   cp "$REPO_ROOT"/scripts/*.py "$SANDBOX/scripts/" 2>/dev/null || true
-  # Copy lib/ subdirectory (common shell helpers, e.g. pr-create-helper.sh)
+  # Copy scripts/lib/* (sourced by chain-runner.sh, project-board-archive.sh, pr-create-helper.sh, etc.)
   if [[ -d "$REPO_ROOT/scripts/lib" ]]; then
     mkdir -p "$SANDBOX/scripts/lib"
-    cp "$REPO_ROOT"/scripts/lib/*.sh "$SANDBOX/scripts/lib/" 2>/dev/null || true
+    cp -r "$REPO_ROOT/scripts/lib/." "$SANDBOX/scripts/lib/" 2>/dev/null || true
   fi
 
   # Copy Python autopilot modules (replaces state/session bash scripts)

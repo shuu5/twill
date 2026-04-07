@@ -724,12 +724,14 @@ generate_phase_report() {
   done
 
   # JSON レポート出力
+  # skipped_archives: archive_done_issues が fail-closed で skip した Issue 番号（滞留検知用、Issue #138）
   jq -n \
     --arg signal "PHASE_COMPLETE" \
     --argjson phase "$phase" \
     --argjson done "$(printf '%s\n' "${done_issues[@]+"${done_issues[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0) | tonumber)')" \
     --argjson failed "$(printf '%s\n' "${failed_issues[@]+"${failed_issues[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0) | tonumber)')" \
     --argjson skipped "$(printf '%s\n' "${skipped_issues[@]+"${skipped_issues[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0) | tonumber)')" \
+    --argjson skipped_archives "$(printf '%s\n' "${SKIPPED_ARCHIVES[@]+"${SKIPPED_ARCHIVES[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0) | tonumber)')" \
     --argjson changed_files "$(printf '%s\n' "${changed_files[@]+"${changed_files[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0))')" \
     '{
       signal: $signal,
@@ -739,6 +741,7 @@ generate_phase_report() {
         failed: $failed,
         skipped: $skipped
       },
+      skipped_archives: $skipped_archives,
       changed_files: $changed_files
     }'
 }
@@ -796,18 +799,39 @@ generate_summary() {
 # Phase 内の Done Issue のみを選択的にアーカイブする
 # 他 Phase・手動 Issue はアーカイブ対象外（仕様: specs/phase-selective-archive）
 # 引数: issue 番号リスト（スペース区切り）
+#
+# fail-closed: ローカル status=done かつ GitHub Issue state=CLOSED の両方を満たす場合のみ archive
+# 空文字 (取得失敗) も "CLOSED でない" として skip 扱い（Issue #138）
+# skip された Issue は SKIPPED_ARCHIVES グローバル配列に追加される（滞留検知用）
+SKIPPED_ARCHIVES=()
 archive_done_issues() {
   local issue
   for issue in "$@"; do
     local status
     status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status 2>/dev/null || echo "")
-    if [[ "$status" == "done" ]]; then
-      if ! bash "$SCRIPTS_ROOT/chain-runner.sh" board-archive "$issue" 2>/dev/null; then
-        echo "[orchestrator] Issue #${issue}: ⚠️ Board アーカイブに失敗しました（Phase 完了は続行）" >&2
-      fi
-      # OpenSpec change archive
-      _archive_openspec_changes_for_issue "$issue"
+    if [[ "$status" != "done" ]]; then
+      continue
     fi
+
+    # NEW: GitHub Issue state 二重チェック (fail-closed)
+    local gh_state
+    gh_state=$(gh issue view "$issue" --json state -q .state 2>/dev/null || echo "")
+    if [[ "$gh_state" != "CLOSED" ]]; then
+      if [[ -z "$gh_state" ]]; then
+        echo "[orchestrator] Issue #${issue}: ⚠️ GitHub state 取得失敗 — fail-closed で archive をスキップ" >&2
+      else
+        echo "[orchestrator] Issue #${issue}: ⚠️ ローカル state=done だが GitHub state=${gh_state} — archive をスキップ" >&2
+      fi
+      echo "[orchestrator] Issue #${issue}: 手動 close または autopilot state 修正が必要です" >&2
+      SKIPPED_ARCHIVES+=("$issue")
+      continue
+    fi
+
+    if ! bash "$SCRIPTS_ROOT/chain-runner.sh" board-archive "$issue" 2>/dev/null; then
+      echo "[orchestrator] Issue #${issue}: ⚠️ Board アーカイブに失敗しました（Phase 完了は続行）" >&2
+    fi
+    # OpenSpec change archive
+    _archive_openspec_changes_for_issue "$issue"
   done
 }
 
@@ -877,9 +901,9 @@ if [[ ${#ACTIVE_ISSUES[@]} -eq 0 ]]; then
   for entry in "${ISSUES_WITH_REPO[@]}"; do
     ALL_ISSUE_NUMS+=("${entry#*:}")
   done
-  generate_phase_report "$PHASE" "${ALL_ISSUE_NUMS[@]}"
-  # 当該 Phase の Done アイテムのみを選択的にアーカイブ
+  # 先に archive を実行（SKIPPED_ARCHIVES をレポートに含めるため）
   archive_done_issues "${ALL_ISSUE_NUMS[@]}"
+  generate_phase_report "$PHASE" "${ALL_ISSUE_NUMS[@]}"
   exit 0
 fi
 
@@ -954,14 +978,15 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
   unset _batch_issue_to_entry
 done
 
-# Step 4: Phase 完了レポート
+# Step 4: 当該 Phase の Done アイテムのみを選択的にアーカイブ
+# fail-closed で skip された Issue は SKIPPED_ARCHIVES に集約される
 ALL_ISSUE_NUMS=()
 for entry in "${ISSUES_WITH_REPO[@]}"; do
   ALL_ISSUE_NUMS+=("${entry#*:}")
 done
-generate_phase_report "$PHASE" "${ALL_ISSUE_NUMS[@]}"
-
-# Step 5: 当該 Phase の Done アイテムのみを選択的にアーカイブ
 archive_done_issues "${ALL_ISSUE_NUMS[@]}"
+
+# Step 5: Phase 完了レポート（skipped_archives を含む）
+generate_phase_report "$PHASE" "${ALL_ISSUE_NUMS[@]}"
 
 echo "[orchestrator] Phase ${PHASE} 完了" >&2
