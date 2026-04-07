@@ -252,6 +252,24 @@ def validate_v3_schema(deps: dict) -> Tuple[int, List[str]]:
 
     # 許可される v3.0 型名キー
     v3_type_keys = {'atomic', 'composite', 'workflow', 'controller', 'specialist', 'reference', 'script'}
+    valid_dispatch_modes = {'llm', 'runner', 'trigger'}
+
+    # Check: dispatch_mode フィールド (任意) の値検証
+    for section in ('skills', 'commands', 'agents', 'scripts'):
+        for comp_name, data in deps.get(section, {}).items():
+            if not isinstance(data, dict):
+                continue
+            mode = data.get('dispatch_mode')
+            if mode is None:
+                continue
+            if not isinstance(mode, str) or mode not in valid_dispatch_modes:
+                violations.append(
+                    f"[v3-dispatch-mode] {section}/{comp_name}: "
+                    f"dispatch_mode must be one of {sorted(valid_dispatch_modes)}, got {mode!r}"
+                )
+            else:
+                ok_count += 1
+
     # v2.0 セクション名キー（v3.0 では非推奨）
     v2_section_keys = {'command', 'skill', 'agent'}
 
