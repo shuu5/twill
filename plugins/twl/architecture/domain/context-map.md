@@ -2,7 +2,7 @@
 
 ## 概要
 
-6 Bounded Context 間の依存関係を定義する。
+7 Bounded Context 間の依存関係を定義する。
 
 ## Context 分類
 
@@ -13,6 +13,7 @@
 | Supporting | Issue Management | Issue作成、トリアージ、精緻化、クロスリポ分割 |
 | Supporting | Project Management | プロジェクト作成、移行、Project Board 管理 |
 | Supporting | Self-Improve | パターン検出、ECC照合、セッション監査 |
+| Supporting | Live Observation | Observer/Observed セッション分離による能動的 self-improvement とテストプロジェクト管理 |
 | Generic | TWiLL Integration | twl CLI連携、validate/audit/chain、CRG |
 
 ## 依存関係図
@@ -28,6 +29,7 @@ graph TD
         IM["Issue Management<br/>(Create & Triage)"]
         PM["Project Management<br/>(Board & Config)"]
         SI["Self-Improve<br/>(Pattern Detect)"]
+        OBS["Live Observation<br/>(Observe & Detect)"]
     end
 
     subgraph "Generic"
@@ -55,6 +57,12 @@ graph TD
     LI -.->|"Open Host Service"| IM
     LI -.->|"Open Host Service"| PM
     LI -.->|"Open Host Service"| SI
+    LI -.->|"Open Host Service"| OBS
+
+    OBS -->|"Customer-Supplier<br/>observation Issue 起票"| IM
+    OBS -.->|"Read-only 観察"| AP
+    OBS -.->|"Read-only 観察"| IM
+    SI -.->|"並存 (異なるレイヤー)"| OBS
 
     AS -.->|"DCI 注入"| IM
     IM -.->|"drift detection<br/>(INFO)"| AS
@@ -77,6 +85,10 @@ graph TD
 | Architecture Spec | Issue Mgmt | DCI | vision.md, context-map.md, glossary.md を Read |
 | Issue Mgmt | Architecture Spec | Drift Detection | Step 3.5 で architecture 影響を検出し co-architect を提案（INFO） |
 | Architecture Spec | Autopilot | DCI | co-architect 経由で設計意図参照 |
+| Live Observation | Issue Mgmt | Customer-Supplier | observation Issue 起票（label: from-observation） |
+| Live Observation | Autopilot | Read-only 観察 | tmux capture-pane による Worker 出力取得 |
+| Live Observation | Issue Mgmt | Read-only 観察 | テストプロジェクト Issue の状態参照 |
+| Self-Improve | Live Observation | 並存 | 受動 retrospective と能動 observation の補完関係（ADR-011） |
 
 ## Architecture Spec の DCI フロー
 

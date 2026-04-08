@@ -5,6 +5,8 @@
 開発セッション中のパターン検出、ECC (External Context Cache) との照合、改善 Issue の起票。
 co-autopilot に吸収されており、独立 controller は存在しない。
 
+**注**: 本 Context は受動的 self-improvement（事後 retrospective）を担う。能動的 live observation は別 Context（Live Observation Context = `contexts/observation.md`）が担当する。両者は責務が重ならない（ADR-011）。
+
 ## Key Entities
 
 ### Pattern
@@ -106,6 +108,7 @@ graph LR
 - **独立 controller なし**: co-autopilot の後処理として統合。「別概念にしない」（設計判断 #2: 旧 controller-self-improve の吸収）
 - **confidence 閾値**: HIGH 以上でのみ Issue 起票推奨。MEDIUM 以下は session.json patterns に記録のみ
 - **self-improve-format テンプレート準拠**: 起票時は refs/self-improve-format.md の共通フォーマットに従う
+- **Live Observation Context との関係**: workflow-self-improve は autopilot 後処理として動く受動側、co-self-improve はユーザートリガーで動く能動側。両者は ADR-011 で並存が明示されている
 
 ### Error Recording ルール
 - PostToolUse hook は記録のみ。ブロック・アラート・自動対処を行わない
