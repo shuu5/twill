@@ -297,6 +297,22 @@ fi
 QUOTED_ISSUE=$(printf '%q' "$ISSUE")
 WORKER_ISSUE_NUM_ENV="WORKER_ISSUE_NUM=${QUOTED_ISSUE}"
 
+# --- PYTHONPATH 環境変数構築 ---
+# Worker の cld セッション内で python3 -m twl.autopilot.* が動作するために必要
+# bare repo 構造: PROJECT_DIR/.bare が存在 → main/ 配下に cli/twl/src がある
+# 通常 repo 構造: PROJECT_DIR 直下に cli/twl/src がある
+if [[ -d "$EFFECTIVE_PROJECT_DIR/.bare" ]]; then
+  _TWL_SRC="${EFFECTIVE_PROJECT_DIR}/main/cli/twl/src"
+else
+  _TWL_SRC="${EFFECTIVE_PROJECT_DIR}/cli/twl/src"
+fi
+if [[ -d "$_TWL_SRC" ]]; then
+  QUOTED_TWL_SRC=$(printf '%q' "$_TWL_SRC")
+  PYTHONPATH_ENV="PYTHONPATH=${QUOTED_TWL_SRC}"
+else
+  PYTHONPATH_ENV=""
+fi
+
 # --- コンテキスト引数構築 (Task 1.9) ---
 CONTEXT_ARGS=""
 if [[ -n "$CONTEXT" ]]; then
@@ -309,7 +325,7 @@ QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
 tmux new-window -d -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
-  "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
+  "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} ${PYTHONPATH_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
 
 # --- クラッシュ検知フック設定 (Task 1.10) ---
 tmux set-option -t "$WINDOW_NAME" remain-on-exit on

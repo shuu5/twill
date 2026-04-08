@@ -350,6 +350,43 @@ else
   run_test_skip "runtime: status=running は force-fail (exit 1 + state write)" "twl.autopilot.state 未インポート可能"
 fi
 
+test_runtime_pythonpath_unset_module_error() {
+  local sbx
+  sbx="$(_make_sandbox)"
+  _write_issue_status "$sbx" 197 "running"
+
+  local stderr_output rc
+  stderr_output=$(
+    export AUTOPILOT_DIR="${sbx}/.autopilot"
+    # PYTHONPATH を空にして ModuleNotFoundError を誘発
+    export PYTHONPATH=""
+    bash "$GUARD" "197" 2>&1 >/dev/null
+  )
+  rc=$?
+
+  # exit 1 が返ること（非 terminal として force-fail）
+  if [[ $rc -ne 1 ]]; then
+    rm -rf "$sbx"
+    return 1
+  fi
+
+  # stderr に PYTHONPATH 未設定の可能性 が含まれること
+  if ! echo "$stderr_output" | grep -q "PYTHONPATH 未設定の可能性"; then
+    rm -rf "$sbx"
+    return 1
+  fi
+
+  rm -rf "$sbx"
+  return 0
+}
+
+# PYTHONPATH 未設定テストは twl モジュールが通常パスにない場合のみ意味がある
+if ! PYTHONPATH="" python3 -c "import twl.autopilot.state" 2>/dev/null; then
+  run_test "runtime: PYTHONPATH 未設定時に ModuleNotFoundError 警告を出力する" test_runtime_pythonpath_unset_module_error
+else
+  run_test_skip "runtime: PYTHONPATH 未設定時に ModuleNotFoundError 警告を出力する" "twl モジュールがシステムパスにインストール済み"
+fi
+
 # =============================================================================
 # Summary
 # =============================================================================

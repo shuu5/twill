@@ -38,9 +38,19 @@ if ! [[ "$issue_num" =~ ^[0-9]+$ ]]; then
   exit 0
 fi
 
+_state_stderr=$(mktemp)
 current=$(python3 -m twl.autopilot.state read \
   --autopilot-dir "$AUTOPILOT_DIR" \
-  --type issue --issue "$issue_num" --field status 2>/dev/null || echo "")
+  --type issue --issue "$issue_num" --field status 2>"$_state_stderr" || echo "")
+
+if [[ -s "$_state_stderr" ]]; then
+  if grep -q "ModuleNotFoundError\|No module named" "$_state_stderr"; then
+    echo "[worker-terminal-guard] ERROR: PYTHONPATH 未設定の可能性があります。python3 -m twl.autopilot.state が ModuleNotFoundError で失敗しました。PYTHONPATH=$PYTHONPATH" >&2
+  else
+    echo "[worker-terminal-guard] WARN: state read stderr: $(cat "$_state_stderr")" >&2
+  fi
+fi
+rm -f "$_state_stderr"
 
 case "$current" in
   merge-ready|done|failed|conflict)
