@@ -1272,6 +1272,39 @@ commands:
       - script: ecc-monitor
     description: "ECC リポジトリの変更検知・関連性評価"
 
+  # === C-1d: Observer atomic 群（3個） ===
+
+  observe-once:
+    type: atomic
+    path: commands/observe-once.md
+    effort: low
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    calls:
+      - script: observe-wrapper
+      - script: session-state-wrapper
+      - script: session:cld-observe
+      - script: session:session-state
+    description: "1 回の session capture を取得し JSON 出力"
+
+  problem-detect:
+    type: atomic
+    path: commands/problem-detect.md
+    effort: low
+    spawnable_by: [controller, workflow]
+    can_spawn: [reference]
+    calls:
+      - reference: observation-pattern-catalog
+    description: "capture から rule-based で問題パターンを検出"
+
+  issue-draft-from-observation:
+    type: atomic
+    path: commands/issue-draft-from-observation.md
+    effort: medium
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "検出結果から Issue draft markdown を生成 (起票はしない)"
+
   # === C-2a: Test-project系（3個） ===
 
   test-project-init:
@@ -2054,6 +2087,20 @@ scripts:
     type: script
     path: ../../cli/twl/src/twl/autopilot/checkpoint.py
     description: "checkpoint ファイルから要約フィールドまたは CRITICAL findings を読み取る"
+
+  observe-wrapper:
+    type: script
+    path: scripts/observe-wrapper.sh
+    calls:
+      - script: session:cld-observe
+    description: "session plugin の cld-observe を呼び出す cross-plugin wrapper"
+
+  session-state-wrapper:
+    type: script
+    path: scripts/session-state-wrapper.sh
+    calls:
+      - script: session:session-state
+    description: "session plugin の session-state.sh を呼び出す cross-plugin wrapper"
 
 # エージェント（C-3 で追加）
 agents:
