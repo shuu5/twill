@@ -121,9 +121,9 @@ ${escaped_deps_yaml_entries}
 ${quick_tag}")
 ```
 
-### Step 5: 結果収集・返却
+### Step 5: 結果収集・返却（全 specialist 完了後にのみ実行）
 
-3 specialist の返却値をそのまま呼び出し元に返す。パースや集約はこのコマンドでは行わない（issue-review-aggregate の責務）。
+Step 4 で spawn した **3 specialist 全てが結果を返すまで** このステップに進んではならない（MUST）。1〜2 個の結果が返っただけで先に進むことは禁止。3 specialist の返却値をそのまま呼び出し元に返す。パースや集約はこのコマンドでは行わない（issue-review-aggregate の責務）。
 
 ## 出力
 
