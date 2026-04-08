@@ -29,9 +29,10 @@ Accepted
    - Phase 1 (explore) をスキップし、Phase 2 (decompose) から続行
    - 既存の co-issue ワークフローを完全再利用
 
-### 新 controller を作らない
-- 4 controller 制約（ADR-002）を維持
+### 新 controller を作らない（受動的 self-improve について）
+- 受動的 self-improve の controller 統合制約（ADR-002）を維持
 - self-improve-review は atomic コマンドとして、co-issue の Phase 1 代替入力として機能
+- **注**: ADR-011 で能動的 observation 用の co-self-improve controller が新設されたが、これは本 ADR の対象（受動的 self-improve）とは別レイヤー
 
 ## Consequences
 

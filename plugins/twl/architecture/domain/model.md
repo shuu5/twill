@@ -93,6 +93,8 @@ graph TD
         CI["co-issue<br/>(Non-implementation)"]
         CP["co-project<br/>(Non-implementation)"]
         CR["co-architect<br/>(Non-implementation)"]
+        CU["co-utility<br/>(Utility)"]
+        CS["co-self-improve<br/>(Observation)"]
     end
 
     subgraph "Spawnable Types"
@@ -118,6 +120,13 @@ graph TD
 
     CR -->|spawns| AT
     CR -->|spawns| RF
+
+    CU -->|spawns| AT
+    CU -->|spawns| RF
+
+    CS -->|spawns| AT
+    CS -->|spawns| SP
+    CS -.->|orchestrates| WF
 
     CA -.->|orchestrates| WF
     WF -->|chain steps| AT

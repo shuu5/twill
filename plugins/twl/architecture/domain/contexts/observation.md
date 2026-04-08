@@ -132,7 +132,7 @@ flowchart TD
 
 ## Dependencies
 
-- **Upstream <- Issue Management**: observation Issue の起票
-- **Upstream <- Project Management**: テストプロジェクト worktree 管理
+- **Downstream -> Issue Management**: observation Issue 起票（label: from-observation）
+- **Downstream -> Autopilot**: tmux capture-pane による Worker 出力の read-only 観察
 - **Downstream -> session plugin**: session:observe / session-state.sh でセッション出力を取得
 - **並存 -> Self-Improve**: 異なるレイヤー（受動 retrospective と能動 observation の補完関係）
