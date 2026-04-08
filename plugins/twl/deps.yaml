@@ -392,8 +392,10 @@ skills:
     spawnable_by: [controller]
     can_spawn: [composite, atomic, specialist]
     calls:
-      - composite: observe-and-detect
+      - composite: observe-and-detect  # bash 最適化で直接実行（composite のロジックを inline 化）
       - atomic: observe-retrospective
+      - script: observe-wrapper
+      - script: session-state-wrapper
     description: "observed session を継続観察し検出を集約"
 
   workflow-plugin-create:
@@ -1330,7 +1332,7 @@ commands:
     type: atomic
     path: commands/observe-retrospective.md
     effort: medium
-    spawnable_by: [controller]
+    spawnable_by: [controller, workflow]
     can_spawn: []
     description: "過去の observation を集約しパターン抽出"
 

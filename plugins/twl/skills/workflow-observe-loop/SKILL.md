@@ -33,7 +33,7 @@ spawnable_by:
 ### Step 2: ループ本体 (MUST: bash ループで実装)
 
 **MUST**: ループは bash で実装し、各サイクルの中間出力は捨てる (集約 JSON のみ retain)。
-LLM がサイクルごとに Skill 呼び出しすると token が線形増加するため、bash 内で composite atomic を直接実行する。
+LLM がサイクルごとに Skill 呼び出しすると token が線形増加するため、observe-and-detect composite のロジックを bash 内で直接実行する (observe-wrapper.sh + observe-detect.sh)。
 
 ```bash
 SESSION_ID="$(date +%s)-${OBSERVED_WINDOW}"
