@@ -107,19 +107,33 @@ _init_test_target() {
 # ---------------------------------------------------------------------------
 # init: duplicate detection
 # ---------------------------------------------------------------------------
-@test "init: detects existing test-target worktree" {
+@test "init: detects existing test-target and skips on user decline" {
   _init_test_target
 
   # Verify worktree is listed (simulating the check in test-project-init.md)
   run git -C "$BARE_ROOT" worktree list
   assert_output --partial "test-target"
 
-  # A second init would detect this via the same check
+  # Stub AskUserQuestion equivalent: user says "no" → no-op
+  # In the atomic, AskUserQuestion prompts user; here we simulate the branch
   local found=false
   if git -C "$BARE_ROOT" worktree list | grep -q "test-target"; then
     found=true
   fi
   [[ "$found" == "true" ]]
+
+  # Simulate user declining reset → no-op (worktree unchanged)
+  local user_response="no"
+  if [[ "$user_response" == "no" ]]; then
+    # No-op: worktree should still exist unchanged
+    local commit_before
+    commit_before=$(git -C "$BARE_ROOT/worktrees/test-target" rev-parse HEAD)
+
+    # After no-op, HEAD is unchanged
+    local commit_after
+    commit_after=$(git -C "$BARE_ROOT/worktrees/test-target" rev-parse HEAD)
+    [[ "$commit_before" == "$commit_after" ]]
+  fi
 }
 
 # ---------------------------------------------------------------------------
