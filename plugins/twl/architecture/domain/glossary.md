@@ -24,6 +24,13 @@
 | Architecture Spec | 設計意図の前方参照。co-issue/co-architect が DCI で参照する living document | 全体 |
 | DCI | Dynamic Context Injection。実行時にファイルを Read してコンテキストに注入するパターン | 全体 |
 | CRG | Code Review Graph。MCP 経由でコード依存関係を可視化・分析するツール | TWiLL Integration |
+| Observer | 別 session を能動的に観察する観察側 session。read-only で対象を覗き見る | Observation |
+| Observed | 観察される対象 session（autopilot/co-issue/co-architect 等） | Observation |
+| Live Observation | 実行中の session を外部から観察し問題を検出する活動 | Observation |
+| co-self-improve | Live Observation を統括する controller。テストプロジェクト管理も担う | Observation |
+| Test Target | observer の観察対象として隔離された worktree（test-target/main branch） | Observation |
+| Observation Pattern | 過去に検出された問題パターンとその検知ルール | Observation |
+| Test Scenario | テストプロジェクトに投入する Issue 群と期待結果のセット（smoke / regression / load） | Observation |
 
 ## 照合ポリシー
 
@@ -51,3 +58,7 @@
 | health-check | Worker の chain_stall（長時間停止）を検知する監視スクリプト | Autopilot |
 | resolve_issue_num() | state file ベースの Issue 番号解決関数。AUTOPILOT_DIR → git branch の優先順で判定 | Autopilot |
 | architecture drift detection | co-issue Phase 3.5 で Issue が architecture spec に影響するか検出する仕組み（INFO レベル） | Issue Management |
+| observer-evaluator | LLM 判定で微妙な問題を検出する specialist | Observation |
+| problem-detect | rule-based で capture から既知パターンを検出する atomic | Observation |
+| test-project-init/reset/scenario-load | テストプロジェクト隔離 worktree 管理 atomic 群 | Observation |
+| load-test baseline | 負荷テスト level（smoke/regression/load）の定量基準 reference | Observation |
