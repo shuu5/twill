@@ -18,7 +18,7 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from twl.autopilot.mergegate import MergeGate, MergeGateError
+from twl.autopilot.mergegate import MergeGate, MergeGateError, main
 
 
 # ---------------------------------------------------------------------------
@@ -690,6 +690,137 @@ class TestCheckBaseDrift:
             gate.execute()
 
         assert order == ["ensure", "drift", "merge"]
+
+
+# ---------------------------------------------------------------------------
+# --force flag (Issue #201)
+# ---------------------------------------------------------------------------
+
+
+class TestForceFlag:
+    """Emergency Bypass: --force skips status=running guard, keeps other guards."""
+
+    @pytest.fixture
+    def force_gate(self, autopilot_dir, scripts_root):
+        return MergeGate(
+            issue="42",
+            pr_number="101",
+            branch="feat/42-some-feature",
+            autopilot_dir=autopilot_dir,
+            scripts_root=scripts_root,
+            force=True,
+        )
+
+    def test_force_skips_running_guard(self, force_gate):
+        """--force AND status=running → running guard is skipped, merge proceeds."""
+        merge_called = []
+
+        def fake_run(cmd, **kwargs):
+            if "gh" in list(cmd) and "merge" in list(cmd):
+                merge_called.append(list(cmd))
+                return MagicMock(returncode=0, stdout="", stderr="")
+            return MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("os.getcwd", return_value="/home/user/projects/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="running"), \
+             patch("twl.autopilot.mergegate._state_write"), \
+             patch("twl.autopilot.mergegate._board_update"), \
+             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
+             patch.object(MergeGate, "_verify_and_close_issue", return_value=True), \
+             patch("subprocess.run", side_effect=fake_run):
+            force_gate.execute()  # must not raise
+
+        assert any("--squash" in c for c in merge_called), \
+            "gh pr merge --squash must be called"
+        assert not any("--merge" in c for c in merge_called), \
+            "gh pr merge --merge must NOT be called"
+
+    def test_force_still_rejects_worktree_path(self, force_gate):
+        """--force does NOT bypass worktree guard."""
+        with patch("os.getcwd",
+                   return_value="/home/user/projects/repo/worktrees/feat/42"):
+            with patch("twl.autopilot.mergegate._check_worker_window_guard"):
+                with patch("twl.autopilot.mergegate._state_read",
+                           return_value="running"):
+                    with pytest.raises(MergeGateError, match="worktrees/ 配下"):
+                        force_gate.execute()
+
+    def test_merge_subcommand_calls_squash(self, autopilot_dir, scripts_root):
+        """CLI: merge --issue N --pr N --branch BRANCH --force calls --squash."""
+        merge_called = []
+
+        def fake_run(cmd, **kwargs):
+            if "gh" in list(cmd) and "merge" in list(cmd):
+                merge_called.append(list(cmd))
+                return MagicMock(returncode=0, stdout="", stderr="")
+            return MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("os.getcwd", return_value="/home/user/projects/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="running"), \
+             patch("twl.autopilot.mergegate._state_write"), \
+             patch("twl.autopilot.mergegate._board_update"), \
+             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
+             patch("twl.autopilot.mergegate.MergeGate._detect_autopilot_dir",
+                   return_value=autopilot_dir), \
+             patch("twl.autopilot.mergegate.MergeGate._detect_scripts_root",
+                   return_value=scripts_root), \
+             patch.object(MergeGate, "_verify_and_close_issue", return_value=True), \
+             patch("subprocess.run", side_effect=fake_run):
+            ret = main(["merge", "--issue", "42", "--pr", "101",
+                        "--branch", "feat/42-some-feature", "--force"])
+
+        assert ret == 0
+        assert any("--squash" in c for c in merge_called), \
+            "gh pr merge --squash must be called"
+        assert not any("--merge" in c for c in merge_called), \
+            "gh pr merge --merge must NOT be called"
+
+    def test_merge_subcommand_without_force_rejects_running(self):
+        """CLI: merge without --force still rejects status=running."""
+        with patch("os.getcwd", return_value="/home/user/projects/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="running"), \
+             patch("twl.autopilot.mergegate.MergeGate._detect_autopilot_dir",
+                   return_value=Path("/tmp/.autopilot")), \
+             patch("twl.autopilot.mergegate.MergeGate._detect_scripts_root",
+                   return_value=Path("/tmp/scripts")):
+            ret = main(["merge", "--issue", "42", "--pr", "101",
+                        "--branch", "feat/42-some-feature"])
+        assert ret == 1
+
+    def test_merge_subcommand_invalid_issue_returns_1(self):
+        """CLI: invalid --issue value returns exit code 1."""
+        ret = main(["merge", "--issue", "bad!", "--pr", "101",
+                    "--branch", "feat/42"])
+        assert ret == 1
+
+    def test_legacy_env_mode_unchanged(self, monkeypatch, autopilot_dir, scripts_root):
+        """Env-var mode (no 'merge' subcommand) still works as before."""
+        monkeypatch.setenv("ISSUE", "5")
+        monkeypatch.setenv("PR_NUMBER", "10")
+        monkeypatch.setenv("BRANCH", "feat/5-test")
+        monkeypatch.delenv("REPO_OWNER", raising=False)
+        monkeypatch.delenv("REPO_NAME", raising=False)
+
+        def fake_run(cmd, **kwargs):
+            return MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("os.getcwd", return_value="/home/user/projects/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
+             patch("twl.autopilot.mergegate._state_write"), \
+             patch("twl.autopilot.mergegate._board_update"), \
+             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
+             patch("twl.autopilot.mergegate.MergeGate._detect_autopilot_dir",
+                   return_value=autopilot_dir), \
+             patch("twl.autopilot.mergegate.MergeGate._detect_scripts_root",
+                   return_value=scripts_root), \
+             patch.object(MergeGate, "_verify_and_close_issue", return_value=True), \
+             patch("subprocess.run", side_effect=fake_run):
+            ret = main([])  # no args → env-var mode
+        assert ret == 0
 
 
 class TestGhRepoFlag:

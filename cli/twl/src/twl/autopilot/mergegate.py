@@ -180,6 +180,7 @@ class MergeGate:
         repo_name: str = "",
         autopilot_dir: Path | None = None,
         scripts_root: Path | None = None,
+        force: bool = False,
     ) -> None:
         self.issue = issue
         self.pr_number = pr_number
@@ -190,6 +191,7 @@ class MergeGate:
         self.repo_name = repo_name
         self.autopilot_dir = autopilot_dir or self._detect_autopilot_dir()
         self.scripts_root = scripts_root or self._detect_scripts_root()
+        self.force = force
 
     # ------------------------------------------------------------------
     # Factory from environment variables (mirrors merge-gate-execute.sh)
@@ -234,7 +236,8 @@ class MergeGate:
                 f"[merge-gate-execute] autopilot 検出 (status=merge-ready): "
                 f"Pilot セッションとして merge を実行"
             )
-        _check_running_guard(autopilot_status)
+        if not self.force:
+            _check_running_guard(autopilot_status)
 
         repo_mode = _detect_repo_mode()
         gh_repo_flag = self._gh_repo_flag()
@@ -663,8 +666,48 @@ class MergeGate:
 
 
 def main(argv: list[str] | None = None) -> int:
+    import argparse
+
     args = argv if argv is not None else sys.argv[1:]
 
+    if args and args[0] == "merge":
+        # New subcommand mode: merge --issue N --pr N --branch BRANCH [--force]
+        parser = argparse.ArgumentParser(prog="python3 -m twl.autopilot.mergegate merge")
+        parser.add_argument("--issue", required=True, help="Issue number")
+        parser.add_argument("--pr", required=True, dest="pr_number", help="PR number")
+        parser.add_argument("--branch", required=True, help="Branch name")
+        parser.add_argument(
+            "--force", action="store_true", default=False,
+            help="Skip status=running guard (Emergency Bypass use only)",
+        )
+        try:
+            parsed = parser.parse_args(args[1:])
+        except SystemExit:
+            return 1
+
+        for name, val, pattern in [
+            ("--issue", parsed.issue, _ISSUE_RE),
+            ("--pr", parsed.pr_number, _PR_RE),
+            ("--branch", parsed.branch, _BRANCH_RE),
+        ]:
+            if not pattern.match(val):
+                print(f"[merge-gate] Error: 不正な{name}: {val!r}", file=sys.stderr)
+                return 1
+
+        gate = MergeGate(
+            issue=parsed.issue,
+            pr_number=parsed.pr_number,
+            branch=parsed.branch,
+            force=parsed.force,
+        )
+        try:
+            gate.execute()
+        except MergeGateError as e:
+            print(f"[merge-gate-execute] ERROR: {e}", file=sys.stderr)
+            return 1
+        return 0
+
+    # Legacy env-var mode (backward compatible)
     try:
         gate = MergeGate.from_env()
     except MergeGateError as e:
