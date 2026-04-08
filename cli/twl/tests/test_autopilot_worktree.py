@@ -317,6 +317,58 @@ class TestWorktreeManagerCreate:
         with pytest.raises(WorktreeArgError):
             mgr.create("feat/1-test", repo="bad repo!")
 
+    def test_fetches_origin_main_after_worktree_add(self, tmp_path: Path) -> None:
+        """Issue #198: origin/main ref should be fetched after worktree creation."""
+        bare = tmp_path / ".bare"
+        bare.mkdir()
+
+        fetch_calls: list[list[str]] = []
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "rev-parse" in cmd and "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(bare))
+            if "worktree add" in cmd:
+                target = Path(args[args.index(str(tmp_path / "worktrees" / "feat" / "1-test"))])
+                target.mkdir(parents=True, exist_ok=True)
+                return self._make_completed(0)
+            if "fetch" in cmd and "origin" in cmd and "main:refs/remotes/origin/main" in cmd:
+                fetch_calls.append(list(str(a) for a in args))
+                return self._make_completed(0)
+            return self._make_completed(0)
+
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager()
+            mgr.create("feat/1-test")
+
+        assert len(fetch_calls) == 1, "origin/main fetch should be called once after worktree add"
+        assert "main:refs/remotes/origin/main" in fetch_calls[0]
+
+    def test_fetch_origin_main_failure_is_non_fatal(self, tmp_path: Path) -> None:
+        """Issue #198: fetch failure should not prevent worktree creation."""
+        bare = tmp_path / ".bare"
+        bare.mkdir()
+
+        def fake_run(args, **kwargs):  # type: ignore[no-untyped-def]
+            cmd = " ".join(str(a) for a in args)
+            if "rev-parse" in cmd and "git-common-dir" in cmd:
+                return self._make_completed(0, stdout=str(bare))
+            if "worktree add" in cmd:
+                for i, a in enumerate(args):
+                    if "worktrees" in str(a):
+                        Path(a).mkdir(parents=True, exist_ok=True)
+                        break
+                return self._make_completed(0)
+            if "fetch" in cmd and "main:refs/remotes/origin/main" in cmd:
+                raise subprocess.TimeoutExpired(cmd="git fetch", timeout=30)
+            return self._make_completed(0)
+
+        with patch("subprocess.run", side_effect=fake_run):
+            mgr = WorktreeManager()
+            # Should NOT raise even though fetch times out
+            result = mgr.create("feat/1-test")
+        assert "feat/1-test" in str(result)
+
     def test_issue_number_resolves_branch(self, tmp_path: Path) -> None:
         bare = tmp_path / ".bare"
         bare.mkdir()

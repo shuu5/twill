@@ -17,7 +17,12 @@ chain ステップの実行順序は deps.yaml で宣言されている。
 **Step 1: マニフェストスクリプト実行**
 
 ```bash
-SPECIALISTS=$(git diff --name-only origin/main | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode phase-review)
+# origin/main が解決できない場合のフォールバック付き (Issue #198)
+if ! SPECIALISTS=$(git diff --name-only origin/main 2>/dev/null | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode phase-review); then
+  echo "WARN: origin/main not found, falling back to FETCH_HEAD" >&2
+  git fetch origin main
+  SPECIALISTS=$(git diff --name-only FETCH_HEAD | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode phase-review)
+fi
 
 # hook 用一時ファイル作成
 CONTEXT_ID="phase-review-$(git branch --show-current | tr '/' '-')"

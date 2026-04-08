@@ -316,6 +316,19 @@ class WorktreeManager:
         if result.returncode != 0:
             raise WorktreeError(f"worktree 作成に失敗しました:\n{result.stderr}")
 
+        # origin/main の参照を worktree 内で利用可能にする (Issue #198)
+        try:
+            subprocess.run(
+                ["git", "fetch", "origin", "main:refs/remotes/origin/main"],
+                cwd=str(worktree_dir),
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+        except (subprocess.TimeoutExpired, Exception) as e:
+            # ネットワークエラー等は警告のみ（オフライン環境許容）
+            print(f"WARN: origin/main fetch failed (non-fatal): {e}", file=sys.stderr)
+
         # Run setup hook (or fall back to _sync_deps)
         print("セットアップを実行中...")
         hook_ran = _run_hook("setup", worktree_dir, project_dir)

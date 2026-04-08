@@ -16,7 +16,12 @@ chain Step 8（composite）。chain ライフサイクルは deps.yaml を参照
 ### 動的レビュアー構築
 
 ```bash
-SPECIALISTS=$(git diff --name-only origin/main | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode merge-gate)
+# origin/main が解決できない場合のフォールバック付き (Issue #198)
+if ! SPECIALISTS=$(git diff --name-only origin/main 2>/dev/null | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode merge-gate); then
+  echo "WARN: origin/main not found, falling back to FETCH_HEAD" >&2
+  git fetch origin main
+  SPECIALISTS=$(git diff --name-only FETCH_HEAD | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode merge-gate)
+fi
 CONTEXT_ID="merge-gate-$(git branch --show-current | tr '/' '-')"
 echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
 ```
