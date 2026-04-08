@@ -49,6 +49,13 @@ if [ -n "${PHASE_INSIGHTS:-}" ]; then
     CONTEXT_TEXT="${CONTEXT_TEXT}[MUST] 前Phaseで繰り返し検出された失敗パターンに基づく必須要件:"$'\n'"${MUST_INSIGHTS}"
   fi
 
+  # ホスト/コンテナ分離ルール（常時注入）
+  [ -n "$CONTEXT_TEXT" ] && CONTEXT_TEXT="${CONTEXT_TEXT}"$'\n\n'
+  CONTEXT_TEXT="${CONTEXT_TEXT}[MUST] ホスト/コンテナ分離ルール:
+- テスト実行（pytest, bats, npm test）はコンテナ内で行うこと。ホストでの直接実行は禁止
+- pip install, apt-get install 等のパッケージ導入はホストで行わないこと
+- --break-system-packages フラグの使用は禁止"
+
   if [ -n "$OTHER_INSIGHTS" ]; then
     [ -n "$CONTEXT_TEXT" ] && CONTEXT_TEXT="${CONTEXT_TEXT}"$'\n\n'
     CONTEXT_TEXT="${CONTEXT_TEXT}[Retrospective] 前Phaseからの参考情報（ワーカーの判断を制約しない）:"$'\n'"${OTHER_INSIGHTS}"

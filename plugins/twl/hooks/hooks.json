@@ -20,6 +20,16 @@
             "timeout": 10000
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-tool-use-host-safety.sh",
+            "timeout": 10000
+          }
+        ]
       }
     ],
     "PostToolUse": [
