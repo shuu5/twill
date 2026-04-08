@@ -43,6 +43,7 @@ Options:
 Exit codes:
   0: 異常なし
   1: 異常検知（stdout に検知パターンを出力）
+  3: API overload stall 検知（529 overloaded_error + input-waiting 状態）
 
 Environment:
   DEV_HEALTH_CHAIN_STALL_MIN   chain 停止閾値（分、デフォルト: 10）
@@ -171,11 +172,36 @@ check_input_waiting() {
   fi
 }
 
+check_api_overload_stall() {
+  if [[ -z "$PANE_CAPTURE" ]]; then
+    return
+  fi
+
+  # 529 overloaded_error パターンを検知
+  if ! echo "$PANE_CAPTURE" | grep -qP '529.*overloaded_error|overloaded_error.*529'; then
+    return
+  fi
+
+  # input-waiting 状態を確認（リトライ上限到達でスタックしている条件）
+  if [[ "$USE_SESSION_STATE" != "true" ]]; then
+    return
+  fi
+
+  local state
+  state=$("$SESSION_STATE_CMD" state "$window" 2>/dev/null || echo "")
+
+  if [[ "$state" != "input-waiting" ]]; then
+    return
+  fi
+
+  echo "api_overload_stall:529 overloaded_error detected in tmux capture and worker is input-waiting (retry limit reached)"
+}
+
 # --- 検知実行（各関数の stdout を集約） ---
 RESULTS=()
 while IFS= read -r line; do
   [[ -n "$line" ]] && RESULTS+=("$line")
-done < <(check_chain_stall; check_error_output; check_input_waiting)
+done < <(check_chain_stall; check_error_output; check_input_waiting; check_api_overload_stall)
 
 if [[ ${#RESULTS[@]} -eq 0 ]]; then
   exit 0
@@ -184,12 +210,14 @@ fi
 # pattern と detail を分離して stdout に出力
 DETECTED_PATTERNS=()
 DETECTED_DETAILS=()
+HAS_API_OVERLOAD=false
 for result in "${RESULTS[@]}"; do
   pattern="${result%%:*}"
   detail="${result#*:}"
   DETECTED_PATTERNS+=("$pattern")
   DETECTED_DETAILS+=("${pattern}: ${detail}")
   echo "${pattern}: ${detail}"
+  [[ "$pattern" == "api_overload_stall" ]] && HAS_API_OVERLOAD=true
 done
 
 # --- health-report 生成 ---
@@ -205,6 +233,9 @@ build_action_suggestions() {
         ;;
       input_waiting)
         suggestions+="- Worker が入力待ち状態で長時間停止。AskUserQuestion への応答が必要か、またはハング状態の可能性"$'\n'
+        ;;
+      api_overload_stall)
+        suggestions+="- API 529 過負荷によるスタックを検知。orchestrator が自動的に fallback モデルへの切替を実行します（fallback_count が 0 の場合）"$'\n'
         ;;
     esac
   done
@@ -252,4 +283,8 @@ report_file="$report_dir/issue-${issue}-$(date +"%Y%m%d-%H%M%S").md"
 write_report_file "$report_file"
 echo "health-report: $report_file" >&2
 
+# exit 3: API overload stall 検知（fallback 判定のため exit code を分離）
+if [[ "$HAS_API_OVERLOAD" == "true" ]]; then
+  exit 3
+fi
 exit 1

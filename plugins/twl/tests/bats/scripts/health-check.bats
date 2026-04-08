@@ -850,3 +850,118 @@ all systems operational"
   echo "$output" | grep -q '"state"'
   echo "$output" | grep -q '"since"'
 }
+
+# ===========================================================================
+# Requirement: API overload stall 検知（exit code 3）
+# Issue: #200 - orchestrator に model fallback 機構を追加し API 529 overloaded 時に自動切替
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Scenario: 529 overloaded_error + input-waiting で exit 3
+# WHEN tmux capture に 529.*overloaded_error が含まれ、かつ input-waiting 状態
+# THEN exit code 3 かつ api_overload_stall が stdout に出力されなければならない
+# ---------------------------------------------------------------------------
+
+@test "health-check exits 3 when 529 overloaded_error in capture AND input-waiting state" {
+  create_issue_json 1 "running"
+  _stub_tmux_capture "Error: 529 overloaded_error: API is currently overloaded"
+  _stub_session_state "input-waiting" 6
+
+  SESSION_STATE_CMD="$STUB_BIN/session-state.sh" \
+    run bash "$SANDBOX/scripts/health-check.sh" \
+    --issue 1 --window "ap-#1"
+
+  [ "$status" -eq 3 ]
+  [[ "$output" == *"api_overload_stall"* ]]
+}
+
+@test "health-check exits 3 when overloaded_error followed by 529 in capture AND input-waiting state" {
+  create_issue_json 1 "running"
+  _stub_tmux_capture "overloaded_error 529: the API is overloaded"
+  _stub_session_state "input-waiting" 6
+
+  SESSION_STATE_CMD="$STUB_BIN/session-state.sh" \
+    run bash "$SANDBOX/scripts/health-check.sh" \
+    --issue 1 --window "ap-#1"
+
+  [ "$status" -eq 3 ]
+  [[ "$output" == *"api_overload_stall"* ]]
+}
+
+@test "health-check does NOT exit 3 when 529 overloaded_error present but state is NOT input-waiting" {
+  # WHEN 529 in capture but worker is still processing (not stuck at input-waiting)
+  create_issue_json 1 "running"
+  _stub_tmux_capture "Error: 529 overloaded_error: API is currently overloaded"
+  _stub_session_state "processing" 0
+
+  SESSION_STATE_CMD="$STUB_BIN/session-state.sh" \
+    run bash "$SANDBOX/scripts/health-check.sh" \
+    --issue 1 --window "ap-#1"
+
+  # Should detect error_output (not api_overload_stall), exit 1
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"error_output"* ]]
+  [[ "$output" != *"api_overload_stall"* ]]
+}
+
+@test "health-check does NOT exit 3 when input-waiting but no 529 overloaded_error in capture" {
+  # WHEN input-waiting without 529 error — normal input_waiting pattern (exit 1)
+  create_issue_json 1 "running"
+  _stub_tmux_capture_empty
+  _stub_session_state "input-waiting" 6
+
+  SESSION_STATE_CMD="$STUB_BIN/session-state.sh" \
+    run bash "$SANDBOX/scripts/health-check.sh" \
+    --issue 1 --window "ap-#1"
+
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"input_waiting"* ]]
+  [[ "$output" != *"api_overload_stall"* ]]
+}
+
+@test "health-check exits 3 when api_overload_stall co-detected with other patterns" {
+  # WHEN 529 + input-waiting + chain_stall all fire simultaneously
+  _create_issue_with_age_minutes 1 11
+  _stub_tmux_capture "Error: 529 overloaded_error: API overloaded"
+  _stub_session_state "input-waiting" 6
+
+  SESSION_STATE_CMD="$STUB_BIN/session-state.sh" \
+    run bash "$SANDBOX/scripts/health-check.sh" \
+    --issue 1 --window "ap-#1"
+
+  # exit 3 takes priority when api_overload_stall is detected
+  [ "$status" -eq 3 ]
+  [[ "$output" == *"api_overload_stall"* ]]
+}
+
+@test "health-check does NOT detect api_overload_stall when SESSION_STATE_CMD is absent" {
+  # WHEN session-state.sh is not available, api_overload_stall cannot be confirmed
+  create_issue_json 1 "running"
+  _stub_tmux_capture "Error: 529 overloaded_error: API is overloaded"
+
+  SESSION_STATE_CMD="/nonexistent/session-state.sh" \
+    run bash "$SANDBOX/scripts/health-check.sh" \
+    --issue 1 --window "ap-#1"
+
+  # Should detect error_output instead; no api_overload_stall
+  [[ "$output" != *"api_overload_stall"* ]]
+  # exit 3 must NOT be used without confirmed input-waiting state
+  [ "$status" -ne 3 ]
+}
+
+@test "health-check api_overload_stall stdout contains descriptive detail" {
+  create_issue_json 1 "running"
+  _stub_tmux_capture "some line with 529 overloaded_error here"
+  _stub_session_state "input-waiting" 6
+
+  SESSION_STATE_CMD="$STUB_BIN/session-state.sh" \
+    run bash "$SANDBOX/scripts/health-check.sh" \
+    --issue 1 --window "ap-#1"
+
+  [ "$status" -eq 3 ]
+  # Detail must mention both 529 and input-waiting
+  [[ "$output" == *"api_overload_stall:"* ]]
+  local detail_line
+  detail_line=$(echo "$output" | grep '^api_overload_stall:')
+  [[ "$detail_line" == *"529"* || "$detail_line" == *"overloaded"* ]]
+}

@@ -20,6 +20,7 @@ INPUT=""
 PROJECT_DIR=""
 REPO_MODE=""
 REPOS_JSON=""  # クロスリポジトリ設定（JSON文字列）
+PLAN_MODEL=""  # Worker モデル指定（省略時: sonnet）
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -35,6 +36,7 @@ while [[ $# -gt 0 ]]; do
         --project-dir) PROJECT_DIR="$2"; shift 2 ;;
         --repo-mode)   REPO_MODE="$2"; shift 2 ;;
         --repos)       REPOS_JSON="$2"; shift 2 ;;
+        --model)       PLAN_MODEL="$2"; shift 2 ;;
         *) echo "Error: 不明な引数: $1" >&2; exit 1 ;;
     esac
 done
@@ -257,6 +259,19 @@ warn_deps_yaml_conflict_explicit() {
     done
 }
 
+# --- model フィールド YAML 出力ヘルパー ---
+# PLAN_MODEL が指定されている場合のみ出力（省略時はフィールド自体を出力しない）
+emit_model_yaml() {
+    if [[ -n "$PLAN_MODEL" ]]; then
+        # モデル名バリデーション（コマンドインジェクション防止）
+        if [[ ! "$PLAN_MODEL" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+            echo "Error: --model の形式が正しくありません: $PLAN_MODEL" >&2
+            exit 1
+        fi
+        echo "model: \"${PLAN_MODEL}\""
+    fi
+}
+
 # --- repos セクション YAML 出力ヘルパー ---
 emit_repos_yaml() {
     if [[ "$CROSS_REPO" != "true" ]]; then
@@ -333,6 +348,7 @@ parse_explicit() {
         echo "session_id: \"${SESSION_ID}\""
         echo "repo_mode: \"${REPO_MODE}\""
         echo "project_dir: \"${PROJECT_DIR}\""
+        emit_model_yaml
         emit_repos_yaml
         echo "phases:"
         for entry in "${ALL_PHASES[@]}"; do
@@ -564,6 +580,7 @@ parse_issues() {
         echo "session_id: \"${SESSION_ID}\""
         echo "repo_mode: \"${REPO_MODE}\""
         echo "project_dir: \"${PROJECT_DIR}\""
+        emit_model_yaml
         emit_repos_yaml
         echo "phases:"
         for entry in "${phases_result[@]}"; do
