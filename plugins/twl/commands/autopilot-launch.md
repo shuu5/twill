@@ -37,10 +37,22 @@ if [ -n "${CROSS_ISSUE_WARNINGS[$ISSUE]:-}" ]; then
   CONTEXT_TEXT="[Cross-Issue Warning] 以下のIssueが関連ファイルを変更済みです（競合に注意）:"$'\n'"${CROSS_ISSUE_WARNINGS[$ISSUE]}"
 fi
 
-# retrospective 知見
+# retrospective 知見（強度別分岐）
 if [ -n "${PHASE_INSIGHTS:-}" ]; then
-  [ -n "$CONTEXT_TEXT" ] && CONTEXT_TEXT="${CONTEXT_TEXT}"$'\n\n'
-  CONTEXT_TEXT="${CONTEXT_TEXT}[Retrospective] 前Phaseからの参考情報（ワーカーの判断を制約しない）:"$'\n'"${PHASE_INSIGHTS}"
+  # [must] プレフィックスの知見を抽出 → MUST 要件セクションに直接注入
+  MUST_INSIGHTS=$(echo "$PHASE_INSIGHTS" | grep '^\[must\]' | sed 's/^\[must\] *//' || true)
+  # [warning] / [info] / プレフィックスなしの知見 → 参考情報セクションに注入
+  OTHER_INSIGHTS=$(echo "$PHASE_INSIGHTS" | grep -v '^\[must\]' || true)
+
+  if [ -n "$MUST_INSIGHTS" ]; then
+    [ -n "$CONTEXT_TEXT" ] && CONTEXT_TEXT="${CONTEXT_TEXT}"$'\n\n'
+    CONTEXT_TEXT="${CONTEXT_TEXT}[MUST] 前Phaseで繰り返し検出された失敗パターンに基づく必須要件:"$'\n'"${MUST_INSIGHTS}"
+  fi
+
+  if [ -n "$OTHER_INSIGHTS" ]; then
+    [ -n "$CONTEXT_TEXT" ] && CONTEXT_TEXT="${CONTEXT_TEXT}"$'\n\n'
+    CONTEXT_TEXT="${CONTEXT_TEXT}[Retrospective] 前Phaseからの参考情報（ワーカーの判断を制約しない）:"$'\n'"${OTHER_INSIGHTS}"
+  fi
 fi
 ```
 

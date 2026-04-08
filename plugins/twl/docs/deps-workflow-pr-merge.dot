@@ -18,19 +18,19 @@ digraph Dependencies {
     skill_workflow_pr_merge [label="twl:workflow-pr-merge\n(988 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,884 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,961 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_dci [label="twl:ref-dci\n(1,206 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,570 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(1,815 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_input_validation [label="twl:baseline-input-validation\n(1,408 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
-    cmd_pr_cycle_report [label="pr-cycle-report\n(329 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_all_pass_check [label="all-pass-check\n(824 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_e2e_screening [label="e2e-screening\n(441 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_pr_cycle_report [label="pr-cycle-report\n(345 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_all_pass_check [label="all-pass-check\n(842 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_e2e_screening [label="e2e-screening\n(460 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_merge_gate [label="merge-gate\n(794 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_auto_merge [label="auto-merge\n(296 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(976 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(990 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -51,7 +51,7 @@ digraph Dependencies {
     agent_worker_hono_reviewer [label="worker-hono-reviewer\n(847 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_r_reviewer [label="worker-r-reviewer\n(717 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_architecture [label="worker-architecture\n(1,695 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_issue_pr_alignment [label="worker-issue-pr-alignment\n(1,859 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_issue_pr_alignment [label="worker-issue-pr-alignment\n(1,932 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_output_reviewer [label="worker-llm-output-reviewer\n(1,162 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_eval_runner [label="worker-llm-eval-runner\n(1,174 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
@@ -61,7 +61,7 @@ digraph Dependencies {
     script_worktree_delete [label="worktree-delete\n(998 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(2,496 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_mergegate [label="autopilot-mergegate\n(5,843 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_mergegate [label="autopilot-mergegate\n(6,528 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(7,551 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worker_terminal_guard [label="worker-terminal-guard\n(573 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,529 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

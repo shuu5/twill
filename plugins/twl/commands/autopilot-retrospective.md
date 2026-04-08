@@ -63,11 +63,27 @@ mcp__doobidoo__memory_search(type=merge-gate-decision, session_id=$SESSION_ID)
 - 失敗パターン: 同種の失敗原因
 - merge-gate finding の傾向
 
-### Step 3: 次 Phase 向け知見の生成
+### Step 3: 次 Phase 向け知見の生成（強度勾配付き）
 
+知見は強度別 (info/warning/must) に分類される。各知見には文字列プレフィックスを付与する:
+
+- `[info]`: ワーカーの判断を制約しない参考情報（デフォルト）
+- `[warning]`: 注意喚起（特定ファイル/モジュールへの警告）
+- `[must]`: **同種失敗パターン 2 回以上検出時のみ** 昇格される。Worker prompt の MUST 要件セクションに直接注入される
+
+生成する知見:
 - 失敗パターンの回避策
 - 注意すべきファイル/モジュール
-- 知見はワーカーの判断を制約しない「参考情報」
+- 同種失敗パターンのカウント（Step 2 のパターン分析結果と session.json の `patterns` を照合）
+
+**`must` 昇格条件 (MUST)**: 同種の失敗パターンが session.json の `patterns` で `count >= 2` の場合にのみ `[must]` プレフィックスを付与する。1 回のみの失敗は `[warning]` に留める。
+
+例:
+```
+[info] Phase 2 で新規テスト追加パターンが定着
+[warning] plugins/twl/scripts/ の変更で PATH 問題が発生しやすい
+[must] マージ前に git diff origin/main --stat を実行して silent deletion がないか確認すること
+```
 
 **最終 Phase の場合**: 振り返りは実行するが PHASE_INSIGHTS は空文字列とする。
 
