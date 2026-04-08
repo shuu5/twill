@@ -18,7 +18,9 @@ slugify() {
   local s="$1" maxlen="${2:-50}"
   s=$(printf '%s' "$s" | LC_ALL=C tr -c '[:alnum:]-' '-' | sed -e 's/--\+/-/g' -e 's/^-//' -e 's/-$//')
   [ -z "$s" ] && s="x"
-  printf '%s' "${s:0:$maxlen}"
+  s="${s:0:$maxlen}"
+  s="${s%-}"
+  printf '%s' "$s"
 }
 
 # generate_window_name <prefix> <worktree_path> <cwd>
@@ -72,6 +74,7 @@ generate_window_name() {
     local new_branch_len=$(( ${#branch} - overflow ))
     [ "$new_branch_len" -lt 4 ] && new_branch_len=4
     branch="${branch:0:$new_branch_len}"
+    branch="${branch%-}"
     name="${prefix}-${repo_name}-${branch}"
     [ -n "$issue" ] && name="${name}-i${issue}"
     name="${name}-${hash}"
