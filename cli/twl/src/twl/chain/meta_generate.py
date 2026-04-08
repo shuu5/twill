@@ -63,11 +63,15 @@ def meta_chain_generate(deps: dict, meta_chain_name: str, plugin_root: Path) -> 
             message = entry.get('message', '')
 
             if stop:
-                # stop: 案内メッセージ
-                if message:
-                    transition_lines.append(f"- IS_AUTOPILOT=false → 「{message}」と案内")
+                # stop: 案内メッセージ（condition に応じてラベルを決定）
+                if 'autopilot' in condition and '!' not in condition:
+                    label = "IS_AUTOPILOT=true"
                 else:
-                    transition_lines.append("- IS_AUTOPILOT=false → ユーザーへ案内して停止")
+                    label = "IS_AUTOPILOT=false"
+                if message:
+                    transition_lines.append(f"- {label} → 「{message}」と案内")
+                else:
+                    transition_lines.append(f"- {label} → ユーザーへ案内して停止")
             elif goto and goto in flow_map:
                 # goto: 次のワークフローへ遷移
                 target_node = flow_map[goto]
