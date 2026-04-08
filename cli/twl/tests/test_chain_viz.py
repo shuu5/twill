@@ -87,8 +87,12 @@ def make_viz_fixture(tmpdir: Path) -> Path:
 
 class TestChainVizSingle:
     def setup_method(self):
-        self.tmpdir = Path(tempfile.mkdtemp())
+        self._tmpdir_obj = tempfile.TemporaryDirectory()
+        self.tmpdir = Path(self._tmpdir_obj.name)
         self.plugin_dir = make_viz_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        self._tmpdir_obj.cleanup()
         deps_path = self.plugin_dir / "deps.yaml"
         with open(deps_path, encoding="utf-8") as f:
             self.deps = yaml.safe_load(f)
@@ -156,8 +160,12 @@ class TestChainVizSingle:
 
 class TestChainVizAll:
     def setup_method(self):
-        self.tmpdir = Path(tempfile.mkdtemp())
+        self._tmpdir_obj = tempfile.TemporaryDirectory()
+        self.tmpdir = Path(self._tmpdir_obj.name)
         self.plugin_dir = make_viz_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        self._tmpdir_obj.cleanup()
         deps_path = self.plugin_dir / "deps.yaml"
         with open(deps_path, encoding="utf-8") as f:
             self.deps = yaml.safe_load(f)
@@ -233,8 +241,12 @@ class TestQuickBypass:
 
 class TestUpdateReadme:
     def setup_method(self):
-        self.tmpdir = Path(tempfile.mkdtemp())
+        self._tmpdir_obj = tempfile.TemporaryDirectory()
+        self.tmpdir = Path(self._tmpdir_obj.name)
         self.plugin_dir = make_viz_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        self._tmpdir_obj.cleanup()
 
     def test_update_readme_inserts_content(self):
         from twl.chain.viz import update_readme_chain_flow
@@ -273,8 +285,12 @@ def run_twl(args: list, cwd: Path) -> subprocess.CompletedProcess:
 
 class TestChainVizCLI:
     def setup_method(self):
-        self.tmpdir = Path(tempfile.mkdtemp())
+        self._tmpdir_obj = tempfile.TemporaryDirectory()
+        self.tmpdir = Path(self._tmpdir_obj.name)
         self.plugin_dir = make_viz_fixture(self.tmpdir)
+
+    def teardown_method(self):
+        self._tmpdir_obj.cleanup()
 
     def test_cli_single_chain_exits_0(self):
         result = run_twl(["chain", "viz", "setup"], cwd=self.plugin_dir)

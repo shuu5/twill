@@ -25,6 +25,11 @@ _DISPATCH_CLASS: Dict[str, str] = {
     "marker": "marker",
 }
 
+
+def _safe_mermaid_label(text: str) -> str:
+    """Escape text for use inside Mermaid node labels (quoted form)."""
+    return text.replace('"', "'").replace("[", "&#91;").replace("]", "&#93;")
+
 # QUICK_SKIP_STEPS は autopilot.chain からインポート（循環回避のためローカル定義も保持）
 _QUICK_SKIP_STEPS_FALLBACK: frozenset = frozenset([
     "crg-auto-build",
@@ -92,18 +97,19 @@ def chain_viz_single(deps: dict, chain_name: str) -> str:
     lines.append("")
 
     # subgraph
-    chain_label = chain_name.replace('"', "'")
+    chain_label = _safe_mermaid_label(chain_name)
     lines.append(f'    subgraph {re.sub(r"[^a-zA-Z0-9]", "_", chain_name)}["{chain_label} chain"]')
 
     valid_steps = [s for s in steps if isinstance(s, str)]
 
     for step in valid_steps:
         node_id = _safe_node_id(chain_name, step)
+        step_label = _safe_mermaid_label(step)
         cls = _get_dispatch_class(step, all_components)
         if cls != "unknown":
-            lines.append(f"        {node_id}[{step}]:::{cls}")
+            lines.append(f'        {node_id}["{step_label}"]:::{cls}')
         else:
-            lines.append(f"        {node_id}[{step}]")
+            lines.append(f'        {node_id}["{step_label}"]')
 
     lines.append("    end")
     lines.append("")
@@ -181,17 +187,18 @@ def chain_viz_all(deps: dict) -> str:
             steps = []
         valid_steps = [s for s in steps if isinstance(s, str)]
 
-        chain_label = chain_name.replace('"', "'")
+        chain_label = _safe_mermaid_label(chain_name)
         chain_id = re.sub(r"[^a-zA-Z0-9]", "_", chain_name)
         lines.append(f'    subgraph {chain_id}["{chain_label} chain"]')
 
         for step in valid_steps:
             node_id = _safe_node_id(chain_name, step)
+            step_label = _safe_mermaid_label(step)
             cls = _get_dispatch_class(step, all_components)
             if cls != "unknown":
-                lines.append(f"        {node_id}[{step}]:::{cls}")
+                lines.append(f'        {node_id}["{step_label}"]:::{cls}')
             else:
-                lines.append(f"        {node_id}[{step}]")
+                lines.append(f'        {node_id}["{step_label}"]')
 
         lines.append("    end")
         lines.append("")
