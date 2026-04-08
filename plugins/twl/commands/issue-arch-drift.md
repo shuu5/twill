@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # /twl:issue-arch-drift - Architecture Drift Detection
 
 Issue candidate 群に対して architecture spec との乖離を 3 シグナルで評価する。非ブロッキング INFO 通知。

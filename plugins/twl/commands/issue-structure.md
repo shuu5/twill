@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Glob, Read, Skill]
+effort: low
+maxTurns: 10
+---
 # /twl:issue-structure - Issue内容の構造化
 
 要望テキストを受け取り、Issueタイプを判定し、テンプレートに沿って構造化されたIssue内容を生成する。

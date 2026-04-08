@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: medium
+maxTurns: 30
+---
 # Issue 状態ポーリング
 
 state-read.sh を使用して Issue 状態をポーリングし、crash-detect.sh でクラッシュ検知を行う。

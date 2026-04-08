@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Glob, Grep, Read]
+effort: low
+maxTurns: 10
+---
 # architect-completeness-check
 
 architecture/ ディレクトリの完全性を検証し、不足ファイル・セクションを報告する。

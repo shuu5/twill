@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, AskUserQuestion, Edit, Read, Skill]
+effort: low
+maxTurns: 10
+---
 # /twl:issue-glossary-check - glossary 照合（architecture drift 通知）
 
 **通知レベル: INFO（非ブロッキング）** — merge-gate の WARNING（ブロッキング可）とは異なり、Issue 作成フローを止めない。完全一致のみを対象とし、略語・表記ゆれは照合しない。

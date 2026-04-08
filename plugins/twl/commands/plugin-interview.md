@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [AskUserQuestion, Bash, Edit, Glob, Grep, Read, WebFetch, WebSearch, Write]
+effort: low
+maxTurns: 10
+---
 # interview: ユーザー要件インタビュー
 
 ## 目的

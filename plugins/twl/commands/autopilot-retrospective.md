@@ -1,5 +1,8 @@
 ---
-tools: [mcp__doobidoo__memory_store, mcp__doobidoo__memory_search]
+tools: [mcp__doobidoo__memory_store, mcp__doobidoo__memory_search, Bash, Read]
+type: atomic
+effort: medium
+maxTurns: 30
 ---
 
 # Phase 振り返り

@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Write, Read]
+effort: low
+maxTurns: 10
+---
 # verify: 統合検証+5原則チェック
 
 ## 目的

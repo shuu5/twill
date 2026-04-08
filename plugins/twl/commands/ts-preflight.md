@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # TypeScript 機械的検証
 
 TypeScript プロジェクトの型チェック・lint・ビルドを機械的に実行する。

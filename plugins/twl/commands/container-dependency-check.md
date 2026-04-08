@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # コンテナ依存チェック
 
 manifest.yaml の `containers` セクションと `~/container-manager/` の実状態を照合する。

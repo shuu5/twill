@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Edit, Skill, Write, Read]
+effort: low
+maxTurns: 10
+---
 # Zod スキーマ更新ワークフロー
 
 webapp-hono タイプのプロジェクト（`packages/schema/` が存在）専用。

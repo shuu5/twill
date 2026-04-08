@@ -1,3 +1,9 @@
+---
+type: composite
+tools: [Agent, Bash, Skill, Task, Read]
+effort: medium
+maxTurns: 30
+---
 # テストフェーズ
 
 サービスヘルスチェック、E2E 品質ゲート、テスト実行を統合する composite フェーズ。

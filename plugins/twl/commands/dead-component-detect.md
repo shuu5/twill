@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # Dead Component 検出
 
 twl complexity で Dead Component を検出し、情報を収集・表示する。

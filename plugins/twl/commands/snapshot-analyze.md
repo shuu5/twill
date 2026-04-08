@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # スナップショット分析
 
 ソースプロジェクトを分析し、スタック情報とコンテナ依存を自動検出する。

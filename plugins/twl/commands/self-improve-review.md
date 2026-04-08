@@ -2,6 +2,9 @@
 name: twl:self-improve-review
 description: セッション中のBashエラーをレビューし、問題をIssue化候補として構造化
 type: atomic
+tools: [AskUserQuestion, Bash, Skill, Read]
+effort: low
+maxTurns: 10
 ---
 
 # self-improve-review

@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # 開発状態の判定
 
 現在のブランチとプロジェクト状態を分析し、推奨アクションを返す。

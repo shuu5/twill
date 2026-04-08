@@ -10,10 +10,11 @@ description: |
   says --group/グループ深堀り/スケルトン精緻化.
 type: controller
 effort: high
-tools:
+tools: [Agent(worker-architecture, worker-structure), AskUserQuestion, Read, Skill, Write]
 - Agent(worker-architecture, worker-structure)
 spawnable_by:
 - user
+maxTurns: 60
 ---
 
 # co-architect

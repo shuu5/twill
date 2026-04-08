@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # /twl:project-board-configure - Project Board ビュー標準設定
 
 Board 作成後にビューの表示フィールドを標準化するコマンド。

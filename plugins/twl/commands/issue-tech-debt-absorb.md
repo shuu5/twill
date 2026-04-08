@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, AskUserQuestion, Skill]
+effort: low
+maxTurns: 10
+---
 # /twl:issue-tech-debt-absorb - tech-debt 吸収提案
 
 品質評価（issue-assess）で検出された tech-debt findings を受け取り、吸収候補の選択と解決済み候補の表示を行う。

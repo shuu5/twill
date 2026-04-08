@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # Worker 起動
 
 tmux window を作成し Worker（cld）を起動する。

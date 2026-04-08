@@ -1,3 +1,9 @@
+---
+type: composite
+tools: [Bash, Agent, Skill, Task, Read]
+effort: medium
+maxTurns: 30
+---
 # テスト生成（統合）
 
 テスト生成を統合管理する composite コマンド。

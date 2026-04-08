@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # AC（受け入れ基準）抽出
 
 ブランチ名から Issue 番号を抽出し、Issue body から受け入れ基準を取得する。

@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # テスト実行
 
 プロジェクトのテストスイートを実行し、結果を返す。

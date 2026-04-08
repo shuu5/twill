@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # 変更ファイル収集
 
 Phase 完了後、done 状態の Issue の PR 差分から変更ファイルリストを取得し session.json に保存する。

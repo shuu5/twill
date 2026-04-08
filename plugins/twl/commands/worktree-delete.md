@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # worktree 削除
 
 指定した worktree とブランチを安全に削除する。

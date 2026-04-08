@@ -9,6 +9,8 @@ type: workflow
 effort: medium
 spawnable_by: [controller]
 can_spawn: [composite, atomic]
+tools: [Agent, Bash, Skill]
+maxTurns: 30
 ---
 
 # workflow-plugin-diagnose

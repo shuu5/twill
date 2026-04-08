@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # テスト失敗の原因診断
 
 テスト失敗の原因を診断し、仕様誤り（Scenario 修正が必要）か実装誤り（コード修正が必要）かを判定する。

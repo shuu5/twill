@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # CRG グラフ自動ビルド
 
 CRG 導入済みプロジェクトで graph.db が不在の場合、自動でフルビルドを実行する。

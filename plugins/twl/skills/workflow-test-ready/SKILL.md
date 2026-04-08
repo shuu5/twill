@@ -10,6 +10,8 @@ effort: medium
 spawnable_by:
 - user
 - workflow-setup
+tools: [Bash, Read, Skill]
+maxTurns: 30
 ---
 
 # テスト準備 Workflow

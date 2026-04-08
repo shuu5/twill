@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # Cross-issue 影響分析
 
 完了 Issue の変更ファイルと後続 Phase の Issue スコープを比較し、ファイル競合リスクを検出する。

@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill]
+effort: medium
+maxTurns: 30
+---
 # Project Board Status 更新
 
 Issue の Project Board Status を "In Progress" に更新する。

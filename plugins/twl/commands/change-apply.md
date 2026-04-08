@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [AskUserQuestion, Bash, Read, Skill, Task]
+effort: low
+maxTurns: 10
+---
 # OpenSpec 実装（change-apply）
 
 OpenSpec change の tasks.md に沿ってタスクを実装する。完了後に PR サイクルへの誘導を出力する。

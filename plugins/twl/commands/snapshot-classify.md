@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [AskUserQuestion, Bash, Read]
+effort: low
+maxTurns: 10
+---
 # スナップショット Tier 分類
 
 プロジェクト内の全ファイルを AI が分析し、4 Tier に分類する。

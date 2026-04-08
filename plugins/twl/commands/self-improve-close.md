@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # self-improve Issue クローズ
 
 改善PRのマージ結果に基づき、対応するself-improve Issueにコメントを追加してクローズする。

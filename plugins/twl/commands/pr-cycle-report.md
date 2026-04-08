@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill]
+effort: low
+maxTurns: 10
+---
 # PRサイクル結果フォーマット・投稿
 
 verify / review / test / fix の結果を構造化し、PR コメントとして投稿する。

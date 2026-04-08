@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [AskUserQuestion, Bash, Read, Skill]
+effort: low
+maxTurns: 10
+---
 # OpenSpec アーカイブ（change-archive）
 
 完了済み change を archive/ に移動し、delta specs を main specs に統合する。

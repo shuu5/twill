@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Glob, Grep, Read, Skill]
+effort: low
+maxTurns: 10
+---
 # E2E テスト計画作成
 
 コードベースの静的分析により、テストすべきシナリオを特定する。
