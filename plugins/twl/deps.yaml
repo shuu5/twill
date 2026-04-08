@@ -569,6 +569,7 @@ commands:
     step_in:
       parent: workflow-setup
       step: "1"
+    dispatch_mode: runner
     description: "開発状態判定"
 
   worktree-create:
@@ -584,6 +585,7 @@ commands:
       step: "2"
     calls:
       - script: worktree-create
+    dispatch_mode: runner
     description: "worktree 作成"
 
   worktree-list: # standalone: ユーザー直接起動
@@ -606,6 +608,7 @@ commands:
     step_in:
       parent: workflow-setup
       step: "2.3"
+    dispatch_mode: runner
     description: "Project Board Status を In Progress に更新"
 
   crg-auto-build:
@@ -619,6 +622,7 @@ commands:
     step_in:
       parent: workflow-setup
       step: "2.4"
+    dispatch_mode: runner
     description: "CRG グラフ自動ビルド"
 
   change-propose:
@@ -632,6 +636,7 @@ commands:
     step_in:
       parent: workflow-setup
       step: "3"
+    dispatch_mode: llm
     description: "DeltaSpec 提案（change-propose）"
 
   change-apply:
@@ -644,6 +649,7 @@ commands:
     step_in:
       parent: workflow-test-ready
       step: "2"
+    dispatch_mode: llm
     description: "DeltaSpec 実装（change-apply）"
 
   change-archive: # standalone: 手動アーカイブ用（auto-merge.sh が自動アーカイブを担う）
@@ -669,6 +675,7 @@ commands:
       step: "3.5"
     calls:
       - script: autopilot-github
+    dispatch_mode: runner
     description: "AC（受け入れ基準）抽出"
 
   ts-preflight:
@@ -682,6 +689,7 @@ commands:
     step_in:
       parent: workflow-pr-verify
       step: "1"
+    dispatch_mode: runner
     description: "TypeScript 機械的検証（型チェック・lint）"
 
   scope-judge:
@@ -695,6 +703,7 @@ commands:
     step_in:
       parent: workflow-pr-verify
       step: "2.5"
+    dispatch_mode: llm
     description: "スコープ判定 + Deferred Issue 作成"
 
   pr-test:
@@ -708,6 +717,7 @@ commands:
     step_in:
       parent: workflow-pr-verify
       step: "3"
+    dispatch_mode: runner
     description: "テスト実行"
 
   post-fix-verify:
@@ -727,6 +737,7 @@ commands:
       - specialist: worker-codex-reviewer
       - script: pr-review-manifest
       - script: autopilot-parser
+    dispatch_mode: llm
     description: "fix 後の specialist 並列レビュー"
 
   warning-fix:
@@ -740,6 +751,7 @@ commands:
     step_in:
       parent: workflow-pr-fix
       step: "5"
+    dispatch_mode: llm
     description: "Warning ベストエフォート修正"
 
   pr-cycle-report:
@@ -753,6 +765,7 @@ commands:
     step_in:
       parent: workflow-pr-merge
       step: "7"
+    dispatch_mode: runner
     description: "PRサイクル結果フォーマット・投稿"
 
   all-pass-check:
@@ -770,6 +783,7 @@ commands:
       - script: state-write
       - script: checkpoint-write
       - reference: ref-dci
+    dispatch_mode: runner
     description: "全パス判定（autopilot-first）"
 
   ac-verify:
@@ -787,6 +801,7 @@ commands:
       - script: chain-runner
       - script: checkpoint-write
       - script: checkpoint-read
+    dispatch_mode: llm
     description: "AC 検証（AC↔diff/test 整合性チェック、checkpoint 永続化）"
 
   # === C-2a: Issue管理系（7個） ===
@@ -1423,6 +1438,7 @@ commands:
       - specialist: spec-scaffold-tests
       - specialist: e2e-generate
       - reference: ref-specialist-output-schema
+    dispatch_mode: llm
     description: "テスト生成の統合コマンド（specialist 統合管理）"
 
   worktree-delete:
@@ -1447,6 +1463,7 @@ commands:
     step_in:
       parent: workflow-pr-verify
       step: "2"
+    dispatch_mode: llm
     calls:
       - script: autopilot-parser
       - script: tech-stack-detect
@@ -1488,6 +1505,7 @@ commands:
       step: "4"
     calls:
       - script: checkpoint-read
+    dispatch_mode: llm
     description: "自動修正ループ + E2E 修復"
 
   e2e-screening:
@@ -1503,6 +1521,7 @@ commands:
       step: "6"
     calls:
       - script: checkpoint-write
+    dispatch_mode: llm
     description: "Visual 検証（Screening + Heal）"
 
   merge-gate:
@@ -1548,6 +1567,7 @@ commands:
       - reference: baseline-coding-style
       - reference: baseline-security-checklist
       - reference: baseline-input-validation
+    dispatch_mode: llm
     description: "マージ判定（動的レビュー → severity フィルタ → PASS/REJECT）"
 
   # === C-2c: PR-cycle 関連（6個） ===
@@ -1588,6 +1608,7 @@ commands:
       step: "8.5"
     calls:
       - script: auto-merge
+    dispatch_mode: runner
     description: "squash マージ → archive → cleanup 実行（autopilot-first）"
 
   pr-cycle-analysis:
@@ -1601,6 +1622,7 @@ commands:
     step_in:
       parent: workflow-pr-merge
       step: "7.3"
+    dispatch_mode: llm
     description: "PR-cycle 結果からパターン分析し self-improve Issue 自動起票"
 
   schema-update: # standalone: プロジェクト固有ユーティリティ

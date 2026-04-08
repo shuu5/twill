@@ -1,3 +1,4 @@
+import ast
 import re
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
@@ -5,6 +6,60 @@ from typing import Dict, List, Optional, Set, Tuple
 from twl.core.types import resolve_type
 from twl.core.plugin import get_deps_version
 from twl.validation.utils import _get_body_text
+
+
+def _load_chain_py_steps(plugin_root: Path) -> List[str]:
+    """Parse CHAIN_STEPS from cli/twl/src/twl/autopilot/chain.py via AST."""
+    candidates = [
+        plugin_root / "cli" / "twl" / "src" / "twl" / "autopilot" / "chain.py",
+        plugin_root.parent / "cli" / "twl" / "src" / "twl" / "autopilot" / "chain.py",
+    ]
+    chain_py = None
+    for c in candidates:
+        if c.is_file():
+            chain_py = c
+            break
+    if chain_py is None:
+        return []
+    try:
+        tree = ast.parse(chain_py.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Assign)
+                and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id == "CHAIN_STEPS"
+                and isinstance(node.value, ast.List)
+            ):
+                return [
+                    elt.s for elt in node.value.elts
+                    if isinstance(elt, ast.Constant) and isinstance(elt.s, str)
+                ]
+    except Exception:
+        pass
+    return []
+
+
+def _load_chain_runner_steps(plugin_root: Path) -> Set[str]:
+    """Extract step names from chain-runner.sh case statement."""
+    candidates = [
+        plugin_root / "scripts" / "chain-runner.sh",
+        plugin_root / "plugins" / "twl" / "scripts" / "chain-runner.sh",
+    ]
+    chain_runner = None
+    for c in candidates:
+        if c.is_file():
+            chain_runner = c
+            break
+    if chain_runner is None:
+        return set()
+    steps: Set[str] = set()
+    pattern = re.compile(r"^\s+([a-z][a-z0-9-]+)\)\s")
+    for line in chain_runner.read_text(encoding="utf-8").splitlines():
+        m = pattern.match(line)
+        if m:
+            steps.add(m.group(1))
+    return steps
 
 
 def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str], List[str]]:
@@ -253,6 +308,68 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
                     f"[prompt-chain] {comp_name}: "
                     f"body mentions '{ref_parent} Step {ref_step}' "
                     f"but step_in.parent='{step_in.get('parent')}'"
+                )
+            else:
+                ok_count += 1
+
+    # --- 6. chain-py-ssot: chain.py CHAIN_STEPS ⟺ deps.yaml dispatch_mode 整合性 ---
+    chain_py_steps = _load_chain_py_steps(plugin_root)
+    chain_py_set: Set[str] = set(chain_py_steps)
+
+    if chain_py_steps:
+        # 6a. deps.yaml chains の各コンポーネントを chain.py に照合
+        for chain_name, chain_data in chains.items():
+            if not isinstance(chain_data, dict):
+                continue
+            steps = chain_data.get('steps', [])
+            if not isinstance(steps, list):
+                continue
+            for step_entry in steps:
+                if not isinstance(step_entry, str):
+                    continue
+                comp = all_components.get(step_entry)
+                if comp is None:
+                    continue
+                dispatch_mode = comp[1].get('dispatch_mode')
+                if dispatch_mode is None:
+                    warnings.append(
+                        f"[chain-py-ssot] {step_entry}: "
+                        f"in chains/{chain_name}/steps but has no dispatch_mode field"
+                    )
+                elif dispatch_mode == 'script' and step_entry not in chain_py_set:
+                    criticals.append(
+                        f"[chain-py-ssot] {step_entry}: "
+                        f"dispatch_mode=runner but not in chain.py CHAIN_STEPS"
+                    )
+                elif dispatch_mode in ('llm', 'runner', 'trigger', 'marker'):
+                    ok_count += 1
+
+        # 6b. chain.py CHAIN_STEPS の各ステップで deps.yaml に存在するものを照合
+        for step_name in chain_py_steps:
+            comp = all_components.get(step_name)
+            if comp is None:
+                continue
+            dispatch_mode = comp[1].get('dispatch_mode')
+            in_chain = comp[1].get('chain') is not None
+            if dispatch_mode is None and in_chain:
+                warnings.append(
+                    f"[chain-py-ssot] {step_name}: "
+                    f"in CHAIN_STEPS and in chains but has no dispatch_mode"
+                )
+            elif dispatch_mode is not None:
+                ok_count += 1
+
+    # --- 7. chain-runner-ssot: chain-runner.sh case 文 と CHAIN_STEPS の同期検証 ---
+    runner_steps = _load_chain_runner_steps(plugin_root)
+    if runner_steps and chain_py_steps:
+        orchestration_only = {'next-step', 'autopilot-detect', 'quick-detect', 'quick-guard'}
+        for step_name in chain_py_steps:
+            if step_name in orchestration_only:
+                continue
+            if step_name not in runner_steps:
+                warnings.append(
+                    f"[chain-runner-ssot] {step_name}: "
+                    f"in CHAIN_STEPS but not found in chain-runner.sh case statement"
                 )
             else:
                 ok_count += 1
