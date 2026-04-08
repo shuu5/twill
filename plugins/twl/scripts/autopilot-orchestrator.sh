@@ -401,12 +401,13 @@ poll_single() {
                 echo "[orchestrator] Issue #${issue}: API overload stall + fallback 上限到達 — failed" >&2
                 python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
                   --set "status=failed" \
-                  --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}'
+                  --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}' || true
               else
                 echo "[orchestrator] Issue #${issue}: API overload — fallback to ${FALLBACK_MODEL} (attempt 1/1)" >&2
                 tmux kill-window -t "$window_name" 2>/dev/null || true
                 python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
                   --set "fallback_count=1" || true
+                poll_count=0
                 launch_worker "$entry" "$FALLBACK_MODEL" || \
                   echo "[orchestrator] Issue #${issue}: fallback Worker 起動失敗" >&2
               fi
@@ -500,7 +501,7 @@ poll_phase() {
                   echo "[orchestrator] Issue #${issue_num}: API overload stall + fallback 上限到達 — failed" >&2
                   python3 -m twl.autopilot.state write --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
                     --set "status=failed" \
-                    --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}'
+                    --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}' || true
                 else
                   echo "[orchestrator] Issue #${issue_num}: API overload — fallback to ${FALLBACK_MODEL} (attempt 1/1)" >&2
                   tmux kill-window -t "$window_name" 2>/dev/null || true

@@ -900,6 +900,7 @@ all systems operational"
 
   # Should detect error_output (not api_overload_stall), exit 1
   [ "$status" -eq 1 ]
+  [[ "$output" == *"error_output"* ]]
   [[ "$output" != *"api_overload_stall"* ]]
 }
 

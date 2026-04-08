@@ -234,6 +234,9 @@ build_action_suggestions() {
       input_waiting)
         suggestions+="- Worker が入力待ち状態で長時間停止。AskUserQuestion への応答が必要か、またはハング状態の可能性"$'\n'
         ;;
+      api_overload_stall)
+        suggestions+="- API 529 過負荷によるスタックを検知。orchestrator が自動的に fallback モデルへの切替を実行します（fallback_count が 0 の場合）"$'\n'
+        ;;
     esac
   done
   echo "$suggestions"
