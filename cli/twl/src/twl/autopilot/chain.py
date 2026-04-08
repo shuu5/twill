@@ -7,7 +7,7 @@ CLI usage:
 
 Steps: init, worktree-create, board-status-update, board-archive, ac-extract,
        arch-ref, change-id-resolve, next-step, ts-preflight, pr-test,
-       all-pass-check, pr-cycle-report, check, quick-guard,
+       ac-verify, all-pass-check, pr-cycle-report, check, quick-guard,
        autopilot-detect, quick-detect
 """
 

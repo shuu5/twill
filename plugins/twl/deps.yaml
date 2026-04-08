@@ -585,7 +585,7 @@ commands:
       step: "2"
     calls:
       - script: worktree-create
-    dispatch_mode: runner
+    dispatch_mode: trigger
     description: "worktree 作成"
 
   worktree-list: # standalone: ユーザー直接起動
@@ -608,7 +608,7 @@ commands:
     step_in:
       parent: workflow-setup
       step: "2.3"
-    dispatch_mode: runner
+    dispatch_mode: trigger
     description: "Project Board Status を In Progress に更新"
 
   crg-auto-build:
@@ -622,7 +622,7 @@ commands:
     step_in:
       parent: workflow-setup
       step: "2.4"
-    dispatch_mode: runner
+    dispatch_mode: llm
     description: "CRG グラフ自動ビルド"
 
   change-propose:
@@ -1608,7 +1608,7 @@ commands:
       step: "8.5"
     calls:
       - script: auto-merge
-    dispatch_mode: runner
+    dispatch_mode: trigger
     description: "squash マージ → archive → cleanup 実行（autopilot-first）"
 
   pr-cycle-analysis:

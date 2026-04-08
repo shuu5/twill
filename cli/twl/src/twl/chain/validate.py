@@ -11,8 +11,9 @@ from twl.validation.utils import _get_body_text
 def _load_chain_py_steps(plugin_root: Path) -> List[str]:
     """Parse CHAIN_STEPS from cli/twl/src/twl/autopilot/chain.py via AST."""
     candidates = [
-        plugin_root / "cli" / "twl" / "src" / "twl" / "autopilot" / "chain.py",
+        plugin_root.parent.parent / "cli" / "twl" / "src" / "twl" / "autopilot" / "chain.py",
         plugin_root.parent / "cli" / "twl" / "src" / "twl" / "autopilot" / "chain.py",
+        plugin_root / "cli" / "twl" / "src" / "twl" / "autopilot" / "chain.py",
     ]
     chain_py = None
     for c in candidates:
@@ -24,16 +25,21 @@ def _load_chain_py_steps(plugin_root: Path) -> List[str]:
     try:
         tree = ast.parse(chain_py.read_text(encoding="utf-8"))
         for node in ast.walk(tree):
-            if (
-                isinstance(node, ast.Assign)
-                and len(node.targets) == 1
-                and isinstance(node.targets[0], ast.Name)
-                and node.targets[0].id == "CHAIN_STEPS"
-                and isinstance(node.value, ast.List)
-            ):
+            # Handle both `CHAIN_STEPS = [...]` (Assign) and `CHAIN_STEPS: list[str] = [...]` (AnnAssign)
+            name = None
+            value = None
+            if isinstance(node, ast.Assign) and len(node.targets) == 1:
+                target = node.targets[0]
+                if isinstance(target, ast.Name):
+                    name = target.id
+                    value = node.value
+            elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                name = node.target.id
+                value = node.value
+            if name == "CHAIN_STEPS" and isinstance(value, ast.List):
                 return [
-                    elt.s for elt in node.value.elts
-                    if isinstance(elt, ast.Constant) and isinstance(elt.s, str)
+                    elt.value for elt in value.elts
+                    if isinstance(elt, ast.Constant) and isinstance(elt.value, str)
                 ]
     except Exception:
         pass
@@ -336,12 +342,12 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
                         f"[chain-py-ssot] {step_entry}: "
                         f"in chains/{chain_name}/steps but has no dispatch_mode field"
                     )
-                elif dispatch_mode == 'script' and step_entry not in chain_py_set:
+                elif dispatch_mode == 'runner' and step_entry not in chain_py_set:
                     criticals.append(
                         f"[chain-py-ssot] {step_entry}: "
                         f"dispatch_mode=runner but not in chain.py CHAIN_STEPS"
                     )
-                elif dispatch_mode in ('llm', 'runner', 'trigger', 'marker'):
+                elif dispatch_mode in ('llm', 'runner', 'trigger'):
                     ok_count += 1
 
         # 6b. chain.py CHAIN_STEPS の各ステップで deps.yaml に存在するものを照合
@@ -360,11 +366,21 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
                 ok_count += 1
 
     # --- 7. chain-runner-ssot: chain-runner.sh case 文 と CHAIN_STEPS の同期検証 ---
+    # dispatch_mode=runner のステップのみチェック（llm/trigger は chain-runner.sh 不要）
     runner_steps = _load_chain_runner_steps(plugin_root)
     if runner_steps and chain_py_steps:
         orchestration_only = {'next-step', 'autopilot-detect', 'quick-detect', 'quick-guard'}
+        # runner-dispatched steps in deps.yaml
+        runner_dispatched: Set[str] = {
+            name for name, (_, data) in all_components.items()
+            if data.get('dispatch_mode') == 'runner'
+        }
         for step_name in chain_py_steps:
             if step_name in orchestration_only:
+                continue
+            comp = all_components.get(step_name)
+            # Only check runner-dispatched steps (or steps without dispatch_mode in deps.yaml)
+            if comp is not None and comp[1].get('dispatch_mode') not in (None, 'runner'):
                 continue
             if step_name not in runner_steps:
                 warnings.append(
