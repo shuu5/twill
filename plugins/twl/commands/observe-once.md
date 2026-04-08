@@ -21,10 +21,8 @@ maxTurns: 5
 bash "$CLAUDE_PLUGIN_ROOT/scripts/observe-wrapper.sh" "<window>" --lines 1
 ```
 
-失敗時は以下を stderr に出力して終了 (exit 2):
-```json
-{"error": "window '<window>' not found", "exit_code": 2}
-```
+失敗時（window 不在、session plugin 不在等）は stderr にエラーメッセージを出力して終了 (exit 2)。
+エラー出力は wrapper/cld-observe のプレーンテキスト形式をそのまま伝播する（JSON 変換しない）。
 
 ### Step 2: capture 取得
 

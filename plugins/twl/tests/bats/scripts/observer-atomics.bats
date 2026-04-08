@@ -48,11 +48,9 @@ esac
 MOCK
   chmod +x "$SANDBOX/session/scripts/session-state.sh"
 
-  # Patch wrappers to point at sandbox session plugin
-  sed -i "s|SCRIPT_DIR}/../../session/scripts|SANDBOX_SESSION|g" "$SANDBOX/scripts/observe-wrapper.sh"
-  sed -i "s|SANDBOX_SESSION|$SANDBOX/session/scripts|g" "$SANDBOX/scripts/observe-wrapper.sh"
-  sed -i "s|SCRIPT_DIR}/../../session/scripts|SANDBOX_SESSION|g" "$SANDBOX/scripts/session-state-wrapper.sh"
-  sed -i "s|SANDBOX_SESSION|$SANDBOX/session/scripts|g" "$SANDBOX/scripts/session-state-wrapper.sh"
+  # Patch wrappers to point at sandbox session plugin (single-step full match)
+  sed -i 's|\${SCRIPT_DIR}/\.\./\.\./session/scripts|'"$SANDBOX"'/session/scripts|g' "$SANDBOX/scripts/observe-wrapper.sh"
+  sed -i 's|\${SCRIPT_DIR}/\.\./\.\./session/scripts|'"$SANDBOX"'/session/scripts|g' "$SANDBOX/scripts/session-state-wrapper.sh"
 }
 
 teardown() {
@@ -198,9 +196,9 @@ JSON
   CATEGORY=$(jq -r '.detections[0].category' "$SANDBOX/detection.json")
   [[ "$CATEGORY" == "merge-gate-failure" ]]
 
-  # Generate draft title
+  # Generate draft title and verify format
   TITLE="[Observation][$SEVERITY] $CATEGORY: $(jq -r '.detections[0].pattern' "$SANDBOX/detection.json")"
-  echo "$TITLE" | grep -q "from-observation\|Observation"
+  echo "$TITLE" | grep -q "\[Observation\]\[critical\]"
 
   # Verify required labels would be included
   LABELS='["from-observation", "ctx/observation", "scope/plugins-twl"]'
