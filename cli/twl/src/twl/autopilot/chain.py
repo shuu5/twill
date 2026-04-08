@@ -7,7 +7,7 @@ CLI usage:
 
 Steps: init, worktree-create, board-status-update, board-archive, ac-extract,
        arch-ref, change-id-resolve, next-step, ts-preflight, pr-test,
-       all-pass-check, pr-cycle-report, check, quick-guard,
+       ac-verify, all-pass-check, pr-cycle-report, check, quick-guard,
        autopilot-detect, quick-detect
 """
 
@@ -40,6 +40,7 @@ CHAIN_STEPS: list[str] = [
     "post-change-apply",
     "ts-preflight",
     "pr-test",
+    "ac-verify",
     "all-pass-check",
     "pr-cycle-report",
 ]
@@ -792,7 +793,7 @@ def main(argv: list[str] | None = None) -> int:
             runner.step_ac_extract(snapshot_dir)
             return 0
 
-        elif step in ("change-propose", "change-apply", "post-change-apply", "test-scaffold"):
+        elif step in ("change-propose", "change-apply", "post-change-apply", "test-scaffold", "ac-verify"):
             # LLM-executed steps: just record step
             issue_num = runner._resolve_issue_num()
             if issue_num:
