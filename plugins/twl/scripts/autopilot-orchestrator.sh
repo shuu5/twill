@@ -63,6 +63,7 @@ PROJECT_DIR=""
 AUTOPILOT_DIR=""
 REPOS_JSON=""
 SUMMARY_MODE=false
+WORKER_MODEL=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -73,12 +74,19 @@ while [[ $# -gt 0 ]]; do
     --autopilot-dir) AUTOPILOT_DIR="$2"; shift 2 ;;
     --repos)         REPOS_JSON="$2"; shift 2 ;;
     --summary)       SUMMARY_MODE=true; shift ;;
+    --model)         WORKER_MODEL="$2"; shift 2 ;;
     -h|--help)       usage; exit 0 ;;
     *) echo "Error: 不明なオプション: $1" >&2; exit 1 ;;
   esac
 done
 
 export AUTOPILOT_DIR
+
+# --- model 解決: CLI arg > plan.yaml > デフォルト（sonnet） ---
+# plan.yaml の model フィールドは Phase 実行モードで PLAN_FILE が確定後に読み込む
+# （SUMMARY_MODE では不要）
+FALLBACK_MODEL="${DEV_AUTOPILOT_FALLBACK_MODEL:-opus}"
+# WORKER_MODEL はモード分岐後に plan.yaml から補完される（下記）
 
 # --- モード分岐 ---
 if [[ "$SUMMARY_MODE" == "true" ]]; then
@@ -211,8 +219,10 @@ filter_active_issues() {
 }
 
 # Worker を起動
+# 引数: entry [model_override]
 launch_worker() {
   local entry="$1"
+  local model_override="${2:-}"
   resolve_issue_repo_context "$entry"
 
   # --- 不変条件 B: worktree 作成は Pilot 専任 ---
@@ -267,11 +277,13 @@ launch_worker() {
     echo "[orchestrator] Issue #${ISSUE}: worktree 作成完了: $worktree_dir" >&2
   fi
 
+  local effective_model="${model_override:-${WORKER_MODEL:-sonnet}}"
   local launch_args=(
     --issue "$ISSUE"
     --project-dir "$PROJECT_DIR"
     --autopilot-dir "$AUTOPILOT_DIR"
     --worktree-dir "$worktree_dir"
+    --model "$effective_model"
   )
 
   if [[ -n "$ISSUE_REPO_OWNER" && -n "$ISSUE_REPO_NAME" ]]; then
@@ -380,7 +392,25 @@ poll_single() {
           if (( HEALTH_CHECK_COUNTER[$issue] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
             local health_stderr health_exit=0
             health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
-            if [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
+            if [[ "$health_exit" -eq 3 ]]; then
+              # API overload stall: fallback to different model (1 回のみ)
+              local fallback_count
+              fallback_count=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field fallback_count 2>/dev/null || echo "0")
+              fallback_count="${fallback_count:-0}"
+              if [[ "$fallback_count" -ge 1 ]]; then
+                echo "[orchestrator] Issue #${issue}: API overload stall + fallback 上限到達 — failed" >&2
+                python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
+                  --set "status=failed" \
+                  --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}'
+              else
+                echo "[orchestrator] Issue #${issue}: API overload — fallback to ${FALLBACK_MODEL} (attempt 1/1)" >&2
+                tmux kill-window -t "$window_name" 2>/dev/null || true
+                python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
+                  --set "fallback_count=1" || true
+                launch_worker "$entry" "$FALLBACK_MODEL" || \
+                  echo "[orchestrator] Issue #${issue}: fallback Worker 起動失敗" >&2
+              fi
+            elif [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
               if [[ "${NUDGE_COUNTS[$issue]:-0}" -lt "$MAX_NUDGE" ]]; then
                 echo "[orchestrator] Issue #${issue}: health-check stall 検知 — 汎用 nudge" >&2
                 tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
@@ -461,7 +491,25 @@ poll_phase() {
             if (( HEALTH_CHECK_COUNTER[$issue_num] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
               local health_stderr health_exit=0
               health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue_num" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
-              if [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
+              if [[ "$health_exit" -eq 3 ]]; then
+                # API overload stall: fallback to different model (1 回のみ)
+                local fallback_count
+                fallback_count=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field fallback_count 2>/dev/null || echo "0")
+                fallback_count="${fallback_count:-0}"
+                if [[ "$fallback_count" -ge 1 ]]; then
+                  echo "[orchestrator] Issue #${issue_num}: API overload stall + fallback 上限到達 — failed" >&2
+                  python3 -m twl.autopilot.state write --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
+                    --set "status=failed" \
+                    --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}'
+                else
+                  echo "[orchestrator] Issue #${issue_num}: API overload — fallback to ${FALLBACK_MODEL} (attempt 1/1)" >&2
+                  tmux kill-window -t "$window_name" 2>/dev/null || true
+                  python3 -m twl.autopilot.state write --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
+                    --set "fallback_count=1" || true
+                  launch_worker "$entry" "$FALLBACK_MODEL" || \
+                    echo "[orchestrator] Issue #${issue_num}: fallback Worker 起動失敗" >&2
+                fi
+              elif [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
                 if [[ "${NUDGE_COUNTS[$issue_num]:-0}" -lt "$MAX_NUDGE" ]]; then
                   echo "[orchestrator] Issue #${issue_num}: health-check stall 検知 — 汎用 nudge" >&2
                   tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
@@ -880,6 +928,18 @@ fi
 
 # --- Phase 実行 ---
 mkdir -p "$AUTOPILOT_DIR/logs"
+
+# model 解決: CLI arg > plan.yaml > デフォルト（sonnet）
+if [[ -z "$WORKER_MODEL" && -f "$PLAN_FILE" ]]; then
+  _plan_model=$(grep '^model:' "$PLAN_FILE" | head -1 | sed 's/^model:[[:space:]]*//' | tr -d '"' | tr -d "'" || echo "")
+  if [[ -n "$_plan_model" && "$_plan_model" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+    WORKER_MODEL="$_plan_model"
+  fi
+fi
+if [[ -z "$WORKER_MODEL" ]]; then
+  WORKER_MODEL="sonnet"
+fi
+
 echo "[orchestrator] Phase ${PHASE} 開始" >&2
 
 # Step 1: Phase 内 Issue リスト取得
