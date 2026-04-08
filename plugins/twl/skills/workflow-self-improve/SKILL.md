@@ -68,5 +68,5 @@ fi
 
 本 workflow は**受動的** self-improvement（autopilot 後処理）を担当する。
 co-autopilot 完了時に自動呼び出しされ、蓄積された self-improve Issue を collect → propose → close する。
-**能動的**なライブセッション観察（out-of-process observation）は `co-self-improve` controller（ADR-010 で定義）が担当する。
+**能動的**なライブセッション観察（out-of-process observation）は `co-self-improve` controller（ADR-011 で定義）が担当する。
 両者は責務が重ならず、独立して動作する。
