@@ -20,17 +20,27 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
+    cmd_observe_once [label="observe-once\n(393 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_problem_detect [label="problem-detect\n(672 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_issue_draft_from_observation [label="issue-draft-from-observation\n(589 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_test_project_init [label="test-project-init\n(847 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_test_project_reset [label="test-project-reset\n(443 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_test_project_scenario_load [label="test-project-scenario-load\n(861 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
     // L3: Agents
 
     // L3.5: Scripts
+    script_observe_wrapper [label="observe-wrapper\n(122 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_session_state_wrapper [label="session-state-wrapper\n(126 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
     { rank=same; skill_co_self_improve; }
+    { rank=same; cmd_observe_once; cmd_problem_detect; cmd_issue_draft_from_observation; cmd_test_project_init; cmd_test_project_reset; cmd_test_project_scenario_load; }
+    { rank=same; script_observe_wrapper; script_session_state_wrapper; }
 
     // Edges
     skill_co_self_improve -> skill_workflow_observe_loop;
@@ -45,6 +55,9 @@ digraph Dependencies {
     skill_co_self_improve -> skill_test_scenario_catalog;
     skill_co_self_improve -> skill_observation_pattern_catalog;
     skill_co_self_improve -> skill_load_test_baselines;
+    cmd_observe_once -> script_observe_wrapper;
+    cmd_observe_once -> script_session_state_wrapper;
+    cmd_problem_detect -> skill_observation_pattern_catalog;
 
     // Ordering constraints (invisible edges)
     skill_workflow_observe_loop -> cmd_test_project_init [style=invis, weight=10];
@@ -58,5 +71,6 @@ digraph Dependencies {
     agent_observer_evaluator -> skill_test_scenario_catalog [style=invis, weight=10];
     skill_test_scenario_catalog -> skill_observation_pattern_catalog [style=invis, weight=10];
     skill_observation_pattern_catalog -> skill_load_test_baselines [style=invis, weight=10];
+    script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];
 
 }
