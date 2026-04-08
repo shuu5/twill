@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Agent, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # /twl:issue-review-aggregate - specialist レビュー結果の集約・ブロック判定
 
 issue-spec-review の出力を Issue 単位で集約し、ブロック判定と findings テーブルを生成する。

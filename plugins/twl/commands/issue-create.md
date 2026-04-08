@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill]
+effort: low
+maxTurns: 10
+---
 # /twl:issue-create - GitHub Issue作成
 
 GitHub Issueを作成するatomicコマンド。

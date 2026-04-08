@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Agent, Bash, Read]
+effort: medium
+maxTurns: 30
+---
 # AC 検証（AC↔diff/test 整合性チェック）
 
 ## Context (auto-injected)

@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read, Write]
+effort: low
+maxTurns: 10
+---
 # fix: コンポーネント修正適用
 
 ## 目的

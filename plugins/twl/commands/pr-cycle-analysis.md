@@ -1,5 +1,8 @@
 ---
-tools: [mcp__doobidoo__memory_search]
+tools: [mcp__doobidoo__memory_search, Bash, Skill, Read]
+type: atomic
+effort: low
+maxTurns: 10
 ---
 
 # PR-cycle パターン分析

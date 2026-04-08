@@ -11,6 +11,8 @@ effort: medium
 spawnable_by:
 - user
 - workflow-pr-verify
+tools: [Bash, Read, Skill]
+maxTurns: 30
 ---
 
 # PR修正ワークフロー（chain-driven）

@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill]
+effort: low
+maxTurns: 10
+---
 # Warning ベストエフォート修正
 
 レビューで検出された WARNING finding をベストエフォートで修正する。

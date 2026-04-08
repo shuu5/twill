@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read, Task]
+effort: low
+maxTurns: 10
+---
 # migrate-analyze: 既存プラグインのAT移行分析
 
 ## 目的

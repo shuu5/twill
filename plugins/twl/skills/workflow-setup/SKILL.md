@@ -11,6 +11,8 @@ effort: medium
 spawnable_by:
 - user
 - co-autopilot
+tools: [Bash, Read, Skill]
+maxTurns: 30
 ---
 
 # 開発準備 Workflow（chain-driven）

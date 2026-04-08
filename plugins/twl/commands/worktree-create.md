@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill]
+effort: low
+maxTurns: 10
+---
 # worktree 作成
 
 現在のプロジェクトに新しい worktree を作成する。

@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read, Skill]
+effort: low
+maxTurns: 10
+---
 # グループ精緻化 Atomic
 
 `--group <context-name>` 指定時に実行されるフロー。

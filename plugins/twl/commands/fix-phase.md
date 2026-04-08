@@ -1,3 +1,9 @@
+---
+type: composite
+tools: [Bash, Skill, Read]
+effort: medium
+maxTurns: 30
+---
 # 自動修正ループ（chain-driven）
 
 CRITICAL finding の自動修正と再検証を管理する。

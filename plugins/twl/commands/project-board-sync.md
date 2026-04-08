@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill]
+effort: low
+maxTurns: 10
+---
 # /twl:project-board-sync - Project Board自動連携
 
 Issue を GitHub Projects V2 に追加し、Status を設定する atomic コマンド。

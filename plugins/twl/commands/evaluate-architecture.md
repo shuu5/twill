@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, AskUserQuestion, Read, SendMessage, WebFetch, WebSearch]
+effort: low
+maxTurns: 10
+---
 # evaluate-architecture: アーキテクチャパターン評価
 
 ## 目的

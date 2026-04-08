@@ -1,3 +1,9 @@
+---
+type: composite
+tools: [Agent, Bash, Skill, Task, Read]
+effort: medium
+maxTurns: 30
+---
 # fix 後の specialist 並列レビュー（chain-driven）
 
 fix-phase で修正されたコードの差分に対して specialist 並列レビューを実行する。

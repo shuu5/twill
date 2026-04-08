@@ -1,5 +1,8 @@
 ---
-tools: [mcp__doobidoo__memory_store]
+tools: [mcp__doobidoo__memory_store, Bash, Skill, Read]
+type: atomic
+effort: medium
+maxTurns: 30
 ---
 
 # 完了サマリーと通知

@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Agent, Bash, Skill]
+effort: low
+maxTurns: 10
+---
 # セッション JSONL 事後分析
 
 セッション JSONL から監査サマリーを抽出し、ワークフロー信頼性問題を 5 カテゴリで自動検出する。

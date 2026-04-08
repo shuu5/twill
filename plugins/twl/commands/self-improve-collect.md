@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Agent, Bash, Read]
+effort: low
+maxTurns: 10
+---
 # self-improve Issue 収集
 
 `self-improve` ラベル付きGitHub Issueを収集し、構造化・分類・優先度ソートする。

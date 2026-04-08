@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: medium
+maxTurns: 30
+---
 # Phase 完了サニティチェック (atomic)
 
 PHASE_COMPLETE 受信後、各 done Issue の GitHub Issue close 状態を Pilot 側で軽量 verify する。

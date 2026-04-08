@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: medium
+maxTurns: 30
+---
 # /twl:issue-cross-repo-create - クロスリポ分割 Issue 作成
 
 `cross_repo_split = true` 時に parent Issue + リポ別子 Issue を作成する。

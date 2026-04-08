@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [AskUserQuestion, Bash, Skill]
+effort: low
+maxTurns: 10
+---
 # /twl:project-create
 
 プロジェクトを新規作成します。

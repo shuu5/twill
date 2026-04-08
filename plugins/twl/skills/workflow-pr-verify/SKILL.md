@@ -11,6 +11,8 @@ effort: medium
 spawnable_by:
 - user
 - workflow-test-ready
+tools: [Bash, Read, Skill]
+maxTurns: 30
 ---
 
 # PR検証ワークフロー（chain-driven）

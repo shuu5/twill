@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: medium
+maxTurns: 30
+---
 # Phase Issue ループ実行
 
 1 Phase 分の全 Issue に対して launch → poll → merge-gate → window 管理を実行する。

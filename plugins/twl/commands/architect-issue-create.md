@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: medium
+maxTurns: 30
+---
 # architect-issue-create
 
 architect-decompose の出力（Issue 候補リスト）を入力に、GitHub Issue を一括作成する。

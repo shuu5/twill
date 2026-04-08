@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
 # スナップショットテンプレート生成
 
 Tier 分類結果に基づいてテンプレートファイル群と manifest.yaml を生成する。

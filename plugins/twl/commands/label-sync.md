@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Glob, Read, Skill]
+effort: medium
+maxTurns: 30
+---
 # /twl:label-sync - Architecture Spec → GitHub ラベル自動同期
 
 architecture spec を SSOT として GitHub ラベルを作成・同期する atomic コマンド。

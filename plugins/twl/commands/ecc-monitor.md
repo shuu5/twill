@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # /twl:ecc-monitor - ECC知識モニター
 
 ECCリポジトリ（everything-claude-code）の変更を検知し、dev pluginへの取り込み候補を評価する。

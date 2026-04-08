@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [AskUserQuestion, Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # /twl:project-migrate
 
 既存プロジェクトを最新のテンプレートに移行します。

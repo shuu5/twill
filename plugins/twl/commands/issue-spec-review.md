@@ -1,3 +1,9 @@
+---
+type: composite
+tools: [Agent, Bash, Skill, Read]
+effort: medium
+maxTurns: 30
+---
 # /twl:issue-spec-review - 1 Issue の specialist 並列レビュー
 
 1 Issue に対して 3 specialist（issue-critic, issue-feasibility, worker-codex-reviewer）を並列 spawn し、構造化 findings を返す。

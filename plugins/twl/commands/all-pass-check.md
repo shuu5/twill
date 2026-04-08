@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Skill, Read]
+effort: low
+maxTurns: 10
+---
 # 全パス判定（autopilot-first）
 
 ## Context (auto-injected)

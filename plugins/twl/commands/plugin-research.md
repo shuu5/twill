@@ -1,5 +1,8 @@
 ---
-tools: [mcp__doobidoo__memory_search]
+tools: [mcp__doobidoo__memory_search, Agent, Bash, Task, WebFetch, WebSearch, Write, Read]
+type: atomic
+effort: low
+maxTurns: 10
 ---
 
 # research: プラグイン設計情報の動的取得

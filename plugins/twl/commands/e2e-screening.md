@@ -1,3 +1,9 @@
+---
+type: composite
+tools: [Bash, Skill, Read]
+effort: medium
+maxTurns: 30
+---
 # Visual 検証（chain-driven）
 
 E2E テストと Visual スクリーニングを管理する。

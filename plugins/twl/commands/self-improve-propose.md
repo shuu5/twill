@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read, Skill]
+effort: low
+maxTurns: 10
+---
 # self-improve 改善提案生成
 
 self-improve-collect の収集結果を入力に、ECC知識と照合して具体的な改善提案を生成する。

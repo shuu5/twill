@@ -1,3 +1,9 @@
+---
+type: composite
+tools: [Agent, Bash, Task, Read]
+effort: medium
+maxTurns: 30
+---
 # phase-diagnose: 並列診断（composite）
 
 ## 目的
