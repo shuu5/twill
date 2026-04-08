@@ -1,5 +1,0 @@
-specs:
-  quick-detection.md:
-    - tests/scenarios/quick-chain-issue.test.sh
-  lightweight-chain.md:
-    - tests/scenarios/quick-chain-issue.test.sh

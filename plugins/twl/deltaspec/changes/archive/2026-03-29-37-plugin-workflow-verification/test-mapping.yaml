@@ -1,5 +1,0 @@
-# openspec/changes/37-plugin-workflow-verification/test-mapping.yaml
-change_id: 37-plugin-workflow-verification
-generated_at: "2026-03-29"
-note: "全Scenarioは運用検証（手動実行確認）のため、自動テスト生成対象外"
-scenarios: []

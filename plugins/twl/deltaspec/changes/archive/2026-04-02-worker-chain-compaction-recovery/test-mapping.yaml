@@ -1,9 +1,0 @@
-change: worker-chain-compaction-recovery
-tests:
-  unit:
-    file: tests/scenarios/worker-chain-compaction-recovery.test.sh
-    coverage: edge-cases
-    type: document-verification
-  e2e:
-    skip: true
-    reason: "bash スクリプトと SKILL.md のみの変更。E2E テスト対象なし"

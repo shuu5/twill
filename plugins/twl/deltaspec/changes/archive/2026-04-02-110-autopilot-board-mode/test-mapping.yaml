@@ -1,5 +1,0 @@
-specs:
-  board-mode:
-    unit:
-      - tests/bats/scripts/autopilot-plan-board-fetch.bats
-      - tests/bats/scripts/autopilot-plan-board-detect.bats

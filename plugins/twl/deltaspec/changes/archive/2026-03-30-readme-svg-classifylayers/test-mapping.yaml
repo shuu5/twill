@@ -1,5 +1,0 @@
-change_id: readme-svg-classifylayers
-generated_at: "2026-03-30T11:05:00+09:00"
-skipped: true
-skip_reason: "docs-only change (README.md + SVG). No application code to test. All 7 scenarios are documentation content verification."
-scenarios: []
