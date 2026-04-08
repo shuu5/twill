@@ -248,6 +248,9 @@ class MergeGate:
         # auto-close fires on merge. Issue #136.
         self._ensure_closes_link(gh_repo_flag)
 
+        # Pre-merge check: detect silent file deletions from base staleness. Issue #166.
+        self._check_base_drift()
+
         merge_ok = self._run_merge(gh_repo_flag)
         if not merge_ok:
             sys.exit(1)
@@ -422,6 +425,66 @@ class MergeGate:
                 f"⚠️ PR 本文への Closes 追記失敗（merge は継続）: "
                 f"{edit_result.stderr.strip()}",
                 file=sys.stderr,
+            )
+
+    def _check_base_drift(self) -> None:
+        """Detect silent file deletions caused by worker base staleness."""
+        if os.environ.get("MERGE_GATE_SKIP_DRIFT_CHECK") == "1":
+            print(
+                f"[merge-gate] Issue #{self.issue}: ⚠️ "
+                f"MERGE_GATE_SKIP_DRIFT_CHECK=1 で base drift 検知をスキップ",
+                file=sys.stderr,
+            )
+            return
+        fetch_result = subprocess.run(
+            ["git", "fetch", "origin", "main"],
+            check=False,
+            capture_output=True,
+        )
+        if fetch_result.returncode != 0:
+            return  # fail-open: ネットワーク断で merge が止まらないようにする
+        diff_result = subprocess.run(
+            ["git", "diff", "--name-only", "--diff-filter=D", "origin/main...HEAD"],
+            capture_output=True,
+            text=True,
+        )
+        if diff_result.returncode != 0:
+            return
+        deleted_files = [line for line in diff_result.stdout.splitlines() if line.strip()]
+        if not deleted_files:
+            return
+
+        mb_result = subprocess.run(
+            ["git", "merge-base", "HEAD", "origin/main"],
+            capture_output=True,
+            text=True,
+        )
+        if mb_result.returncode != 0:
+            return
+        merge_base = mb_result.stdout.strip()
+
+        silent_deletions = []
+        for path in deleted_files:
+            # MUST: レンジを {merge_base}..HEAD に限定する。
+            # 限定しないとリポジトリ全履歴の削除 commit を拾い、silent deletion を取りこぼす。
+            log_result = subprocess.run(
+                ["git", "log", "--format=%H", "--diff-filter=D",
+                 f"{merge_base}..HEAD", "--", path],
+                capture_output=True,
+                text=True,
+            )
+            if not log_result.stdout.strip():
+                silent_deletions.append(path)
+
+        if silent_deletions:
+            paths_str = "\n  - " + "\n  - ".join(silent_deletions[:10])
+            if len(silent_deletions) > 10:
+                paths_str += f"\n  - ... and {len(silent_deletions) - 10} more"
+            raise MergeGateError(
+                f"base drift 検出: PR 内に削除 commit の無いファイルが "
+                f"{len(silent_deletions)} 件含まれています。"
+                f"`git rebase origin/main` → `git push --force-with-lease` を実行してください。"
+                f"{paths_str}"
             )
 
     def _run_merge(self, gh_repo_flag: list[str]) -> bool:
