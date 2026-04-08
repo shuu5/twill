@@ -426,9 +426,15 @@ def main():
         if len(sys.argv) >= 3 and sys.argv[2] == 'generate':
             handle_chain_subcommand(sys.argv[3:])
             sys.exit(0)
+        elif len(sys.argv) >= 3 and sys.argv[2] == 'viz':
+            from twl.chain.viz import handle_chain_viz_subcommand
+            handle_chain_viz_subcommand(sys.argv[3:])
+            sys.exit(0)
         else:
             print(f"Error: unknown chain subcommand '{sys.argv[2] if len(sys.argv) >= 3 else ''}'", file=sys.stderr)
             print("Usage: twl chain generate <chain-name> [--write]", file=sys.stderr)
+            print("       twl chain viz <chain-name>", file=sys.stderr)
+            print("       twl chain viz --all [--update-readme]", file=sys.stderr)
             sys.exit(1)
 
     parser = argparse.ArgumentParser(description='Analyze plugin dependencies')
