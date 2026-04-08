@@ -207,3 +207,58 @@ EOF
   assert_success
   assert_output --partial "WARNING: pr-review-manifest"
 }
+
+# ===========================================================================
+# Requirement: worker-workflow-integrity トリガー (Issue #145, Phase 4-B)
+# chain 関連ファイル (deps.yaml / SKILL.md / chain-runner.sh) 変更時のみ追加。
+# architecture/*.md 単独変更では起動しない (worker-architecture が担当)。
+# ===========================================================================
+
+@test "merge-gate: chain file (deps.yaml) change adds worker-workflow-integrity" {
+  run bash -c "echo 'plugins/twl/deps.yaml' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  assert_output --partial "worker-workflow-integrity"
+}
+
+@test "merge-gate: chain file (SKILL.md) change adds worker-workflow-integrity" {
+  run bash -c "echo 'plugins/twl/skills/workflow-pr-verify/SKILL.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  assert_output --partial "worker-workflow-integrity"
+}
+
+@test "merge-gate: chain file (chain-runner.sh) change adds worker-workflow-integrity" {
+  run bash -c "echo 'plugins/twl/scripts/chain-runner.sh' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  assert_output --partial "worker-workflow-integrity"
+}
+
+@test "merge-gate: architecture-only change does NOT add worker-workflow-integrity" {
+  mkdir -p "$SANDBOX/architecture"
+
+  run bash -c "echo 'architecture/domain/contexts/pr-cycle.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  refute_output --partial "worker-workflow-integrity"
+  # worker-architecture は追加されるはず (architecture/ が存在するため)
+  assert_output --partial "worker-architecture"
+}
+
+@test "merge-gate: unrelated code change does NOT add worker-workflow-integrity" {
+  run bash -c "echo 'src/index.ts' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  refute_output --partial "worker-workflow-integrity"
+}
+
+@test "merge-gate: chain file + architecture simultaneous change adds BOTH specialists" {
+  mkdir -p "$SANDBOX/architecture"
+
+  run bash -c "printf 'plugins/twl/deps.yaml\narchitecture/domain/contexts/pr-cycle.md\n' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  assert_output --partial "worker-workflow-integrity"
+  assert_output --partial "worker-architecture"
+}
+
+@test "phase-review: chain file change does NOT add worker-workflow-integrity (merge-gate only)" {
+  run bash -c "echo 'plugins/twl/deps.yaml' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode phase-review"
+  assert_success
+  refute_output --partial "worker-workflow-integrity"
+}

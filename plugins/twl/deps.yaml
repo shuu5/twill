@@ -1939,7 +1939,7 @@ scripts:
     calls:
       - script: tech-stack-detect
       - script: resolve-issue-num
-    description: "PR review 系 specialist 選択の動的マニフェスト（phase-review / merge-gate / post-fix-verify）。phase-review/merge-gate モードで Issue 番号が解決可能な場合 worker-issue-pr-alignment を出力に含める"
+    description: "PR review 系 specialist 選択の動的マニフェスト（phase-review / merge-gate / post-fix-verify）。phase-review/merge-gate モードで Issue 番号が解決可能な場合 worker-issue-pr-alignment を出力に含める。merge-gate モードで chain 関連ファイル (deps.yaml/SKILL.md/chain-runner.sh) 変更時は worker-workflow-integrity を追加"
 
   checkpoint-write:
     type: script
@@ -2188,6 +2188,20 @@ agents:
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Issue body と PR diff の意味的整合性レビュー (soft gate、ac-alignment 専用 specialist)"
+
+  worker-workflow-integrity:
+    type: specialist
+    refined_by: "ref-prompt-guide@de6a54f5"
+    refined_at: "2026-04-08"
+    path: agents/worker-workflow-integrity.md
+    model: sonnet
+    effort: high
+    gate_role: soft
+    dispatch_mode: trigger
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot, ref-prompt-guide]
+    description: "architecture spec と実装 (deps.yaml, chain-runner.sh, SKILL.md) の意味的整合性レビュー (soft gate、chain-integrity-drift 専用 specialist)"
 
   worker-llm-output-reviewer:
     type: specialist

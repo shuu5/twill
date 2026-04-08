@@ -48,7 +48,7 @@ merge-gate / phase-review が機械的に消費可能な構造化出力を定義
           },
           "category": {
             "type": "string",
-            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "ac-alignment", "ac-alignment-unknown"],
+            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "ac-alignment", "ac-alignment-unknown", "architecture-drift", "chain-integrity-drift"],
             "description": "finding の分類（merge-gate 共通）。co-issue specialist は co-issue 拡張 category を使用すること"
           },
           "finding_target": {
@@ -133,6 +133,8 @@ merge-gate specialist が使用する共通 category。
 | `principles` | worker-principles |
 | `ac-alignment` | worker-issue-pr-alignment（Issue body と PR diff の意味的整合性 finding） |
 | `ac-alignment-unknown` | worker-issue-pr-alignment（達成度判断不能の AC、INFO のみ） |
+| `architecture-drift` | worker-architecture（architecture spec と実装の全般的整合性 drift） |
+| `chain-integrity-drift` | worker-workflow-integrity（chain の宣言/dispatch/SKILL.md 三者間意味的乖離に特化） |
 
 ### ac-alignment specialist の追加要件（MUST）
 

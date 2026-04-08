@@ -123,6 +123,24 @@ if [[ "$MODE" == "merge-gate" ]]; then
   fi
 fi
 
+# merge-gate モードのみ: chain 関連ファイル (deps.yaml / SKILL.md / chain-runner.sh) 変更
+# → worker-workflow-integrity を追加 (Layer 3: chain-integrity-drift 検出)
+# architecture/*.md 単独変更は worker-architecture が担当するため、ここでは起動しない
+if [[ "$MODE" == "merge-gate" ]]; then
+  chain_related=false
+  for f in "${FILES[@]}"; do
+    case "$f" in
+      *deps.yaml|*SKILL.md|*chain-runner.sh|*autopilot/chain.py)
+        chain_related=true
+        break
+        ;;
+    esac
+  done
+  if $chain_related; then
+    SPECIALISTS["worker-workflow-integrity"]=1
+  fi
+fi
+
 # --- 常時追加: AC alignment specialist (Issue 番号が解決可能な場合のみ) ---
 # phase-review / merge-gate モードで Issue 番号が解決可能な場合に worker-issue-pr-alignment を必須化。
 # 変更ファイルパターンに依存しない（コード変更ゼロでも Issue 内容と乖離している可能性があるため）。
