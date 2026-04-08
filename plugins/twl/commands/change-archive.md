@@ -4,13 +4,13 @@ tools: [AskUserQuestion, Bash, Read, Skill]
 effort: low
 maxTurns: 10
 ---
-# OpenSpec アーカイブ（change-archive）
+# DeltaSpec アーカイブ（change-archive）
 
 完了済み change を archive/ に移動し、delta specs を main specs に統合する。
 
 ## 引数
 
-- `change-id`: OpenSpec change ID（省略時は自動検出）
+- `change-id`: DeltaSpec change ID（省略時は自動検出）
 
 ## フロー制御（MUST）
 

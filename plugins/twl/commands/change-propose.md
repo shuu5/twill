@@ -4,7 +4,7 @@ tools: [AskUserQuestion, Bash, Read, Skill]
 effort: medium
 maxTurns: 30
 ---
-# OpenSpec 提案（change-propose）
+# DeltaSpec 提案（change-propose）
 
 change ディレクトリを作成し全 artifact を一括生成する。CLI フォーマット要件を spec 生成指示に注入する。
 

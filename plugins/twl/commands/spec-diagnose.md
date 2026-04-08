@@ -11,7 +11,7 @@ maxTurns: 10
 
 ## 引数
 
-- `--change-id <change-id>`: OpenSpec 提案 ID（必須）
+- `--change-id <change-id>`: DeltaSpec 提案 ID（必須）
 
 ## 前提条件
 

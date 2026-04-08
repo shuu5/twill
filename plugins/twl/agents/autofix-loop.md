@@ -19,7 +19,7 @@ skills:
 
 ## 引数
 
-- `--spec <change-id>`: OpenSpec連携モード（失敗時に`/twl:spec-diagnose`実行）
+- `--spec <change-id>`: DeltaSpec連携モード（失敗時に`/twl:spec-diagnose`実行）
 - `--max-consecutive <n>`: 同一エラー連続失敗上限（デフォルト: 3）
 - `--max-total <n>`: セッション累計修正試行上限（デフォルト: 10）
 

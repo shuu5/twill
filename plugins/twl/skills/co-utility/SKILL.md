@@ -9,7 +9,7 @@ description: |
   says サービス起動/services/スクショ/UI capture,
   says schema更新/spec診断/e2e計画,
   says self-improve/セルフレビュー,
-  says OpenSpec propose/apply/archive.
+  says DeltaSpec propose/apply/archive.
 type: controller
 effort: low
 tools: []

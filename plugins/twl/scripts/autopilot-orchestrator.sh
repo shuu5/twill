@@ -879,20 +879,20 @@ archive_done_issues() {
     if ! bash "$SCRIPTS_ROOT/chain-runner.sh" board-archive "$issue" 2>/dev/null; then
       echo "[orchestrator] Issue #${issue}: ⚠️ Board アーカイブに失敗しました（Phase 完了は続行）" >&2
     fi
-    # OpenSpec change archive
-    _archive_openspec_changes_for_issue "$issue"
+    # DeltaSpec change archive
+    _archive_deltaspec_changes_for_issue "$issue"
   done
 }
 
-# Issue に紐づく openspec change を deltaspec archive で処理する
-_archive_openspec_changes_for_issue() {
+# Issue に紐づく deltaspec change を deltaspec archive で処理する
+_archive_deltaspec_changes_for_issue() {
   local issue="$1"
   local root
   root="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
   if [[ -z "$root" ]]; then return 0; fi
 
   if ! command -v deltaspec >/dev/null 2>&1; then
-    echo "[orchestrator] Issue #${issue}: ⚠️ deltaspec CLI が見つかりません — OpenSpec archive をスキップ" >&2
+    echo "[orchestrator] Issue #${issue}: ⚠️ deltaspec CLI が見つかりません — DeltaSpec archive をスキップ" >&2
     return 0
   fi
 
@@ -907,14 +907,14 @@ _archive_openspec_changes_for_issue() {
     change_id="$(basename "$change_dir")"
     found=true
     if deltaspec archive --yes --skip-specs -- "$change_id"; then
-      echo "[orchestrator] Issue #${issue}: OpenSpec archive 完了: ${change_id}"
+      echo "[orchestrator] Issue #${issue}: DeltaSpec archive 完了: ${change_id}"
     else
-      echo "[orchestrator] Issue #${issue}: ⚠️ OpenSpec archive 失敗: ${change_id}（Phase 完了は続行）" >&2
+      echo "[orchestrator] Issue #${issue}: ⚠️ DeltaSpec archive 失敗: ${change_id}（Phase 完了は続行）" >&2
     fi
   done < <(grep -rl "^issue: ${issue}$" "$changes_dir" --include=".deltaspec.yaml" 2>/dev/null || true)
 
   if [[ "$found" == "false" ]]; then
-    echo "[orchestrator] Issue #${issue}: OpenSpec change が見つかりません（issue フィールド未設定または存在しない）" >&2
+    echo "[orchestrator] Issue #${issue}: DeltaSpec change が見つかりません（issue フィールド未設定または存在しない）" >&2
   fi
 }
 
