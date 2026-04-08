@@ -1923,6 +1923,11 @@ scripts:
     path: scripts/lib/pr-create-helper.sh
     description: "PR 作成共通ヘルパー（pr_create_with_closes 関数: PR 本文に Closes #N を機械的に挿入）"
 
+  ac-checklist-gen:
+    type: script
+    path: scripts/ac-checklist-gen.sh
+    description: "Issue body の AC を checkbox 化し副作用キーワードを [!] でマーク"
+
   pr-link-issue:
     type: script
     path: scripts/pr-link-issue.sh
