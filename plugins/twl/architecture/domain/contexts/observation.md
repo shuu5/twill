@@ -121,14 +121,18 @@ flowchart TD
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **controller** | co-self-improve | Live Observation 統括。テストプロジェクト管理も担う |
-| **workflow** | workflow-observe | observe ループ + 問題検出 + Issue draft |
-| **workflow** | workflow-test-project | テストプロジェクト init → scenario-load → 実行 → reset |
+| **workflow** | workflow-observe-loop | observe ループ + 問題検出 + Issue draft |
 | **atomic** | test-project-init | 隔離 worktree 作成 |
 | **atomic** | test-project-reset | テストプロジェクト クリーンアップ |
-| **atomic** | scenario-load | Issue 群のテストプロジェクトへの投入 |
+| **atomic** | test-project-scenario-load | Issue 群のテストプロジェクトへの投入 |
+| **atomic** | observe-once | 単一キャプチャの取得と解析 |
 | **atomic** | problem-detect | rule-based で capture から既知パターンを検出 |
+| **atomic** | issue-draft-from-observation | 検出結果から Issue draft を生成 |
+| **atomic** | observe-retrospective | 過去の observation 結果を集約・パターン抽出 |
 | **specialist** | observer-evaluator | LLM 判定で微妙な問題を検出 |
-| **reference** | load-test baseline | 負荷テスト level (smoke/regression/load) の定量基準 |
+| **reference** | test-scenario-catalog | テストシナリオの一覧と定義 |
+| **reference** | observation-pattern-catalog | 検出パターンのカタログ |
+| **reference** | load-test-baselines | 負荷テスト level (smoke/regression/load) の定量基準 |
 
 ## Dependencies
 
