@@ -68,8 +68,18 @@ scripts:
     path: scripts/claude-session-save.sh
     description: "session_id ↔ tmux ペイン マッピング保存（SessionStart hook）"
 
+  session-name:
+    type: script
+    path: scripts/session-name.sh
+    description: "意味論的 tmux window 命名ヘルパー（generate_window_name / slugify / find_existing_window）"
+
 tests:
   session-comm-test:
     type: test
     path: tests/session-comm.test.sh
     description: "session-comm.sh inject-file submit fix の検証（#202）"
+
+  session-name-test:
+    type: test
+    path: ../twl/tests/bats/scripts/session-name.bats
+    description: "session-name.sh の unit tests（slugify / generate_window_name / find_existing_window）"

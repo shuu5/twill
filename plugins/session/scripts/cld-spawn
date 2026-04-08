@@ -9,6 +9,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+# shellcheck source=./session-name.sh
+source "$SCRIPT_DIR/session-name.sh"
 
 # tmux check
 if [[ -z "${TMUX:-}" ]]; then
@@ -19,6 +21,7 @@ fi
 CWD="$(pwd)"
 CD_SPECIFIED=false
 WINDOW_NAME=""
+FORCE_NEW=0
 WAIT_TIMEOUT=60
 
 # Parse options
@@ -34,6 +37,10 @@ while [[ $# -gt 0 ]]; do
             [[ -z "${2:-}" ]] && { echo "Error: --window-name に名前を指定してください" >&2; exit 1; }
             WINDOW_NAME="$2"
             shift 2
+            ;;
+        --force-new)
+            FORCE_NEW=1
+            shift
             ;;
         --timeout)
             [[ -z "${2:-}" ]] && { echo "Error: --timeout に秒数を指定してください" >&2; exit 1; }
@@ -60,9 +67,11 @@ if $CD_SPECIFIED; then
     fi
 fi
 
-# ウィンドウ名: 未指定時はデフォルト生成
+# ウィンドウ名: 未指定時は意味論的命名（失敗時は時刻ベースにフォールバック）
 if [[ -z "$WINDOW_NAME" ]]; then
-    WINDOW_NAME="spawn-$(date +%H%M%S)-$$"
+    if ! WINDOW_NAME=$(generate_window_name wt "$CWD" "$CWD" 2>/dev/null); then
+        WINDOW_NAME="wt-$(date +%H%M%S)-$$"
+    fi
 fi
 
 # 残りの引数をプロンプトとして結合
@@ -93,7 +102,40 @@ fi
 TRAP
 } > "$LAUNCHER"
 
+# 同一 canonical_context の既存 window 再利用（--force-new 未指定時）
+if [[ "$FORCE_NEW" -eq 0 ]]; then
+    _EXISTING=$(find_existing_window "$WINDOW_NAME")
+    if [[ -n "$_EXISTING" ]]; then
+        rm -f "$LAUNCHER"
+        tmux select-window -t "$_EXISTING"
+        echo "reusing existing window: $_EXISTING ($WINDOW_NAME)"
+        exit 0
+    fi
+fi
+
+# 排他ロックで TOCTOU を防止しつつ new-window を実行
+mkdir -p "$HOME/.local/state/twl"
+exec 200>"$HOME/.local/state/twl/window-create.lock"
+if ! flock -w 5 200; then
+    rm -f "$LAUNCHER"
+    echo "Error: ウィンドウ作成ロックを取得できませんでした" >&2
+    exit 1
+fi
+
+# ロック内で再チェック（競合プロセスが先に作成した可能性）
+if [[ "$FORCE_NEW" -eq 0 ]]; then
+    _EXISTING=$(find_existing_window "$WINDOW_NAME")
+    if [[ -n "$_EXISTING" ]]; then
+        exec 200>&-
+        rm -f "$LAUNCHER"
+        tmux select-window -t "$_EXISTING"
+        echo "reusing existing window: $_EXISTING ($WINDOW_NAME)"
+        exit 0
+    fi
+fi
+
 tmux new-window -n "$WINDOW_NAME" "bash '$LAUNCHER'; rm -f '$LAUNCHER'"
+exec 200>&-  # ロック解放
 
 # Verify window was created
 sleep 0.5

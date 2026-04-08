@@ -8,6 +8,13 @@ SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=./lib/python-env.sh
 source "${SCRIPTS_ROOT}/lib/python-env.sh"
 
+# session-name.sh の読み込み（意味論的 window 命名）
+_SESSION_NAME_SH="$(realpath -m "${SCRIPTS_ROOT}/../../session/scripts/session-name.sh")"
+if [[ -f "$_SESSION_NAME_SH" ]]; then
+  # shellcheck source=../../session/scripts/session-name.sh
+  source "$_SESSION_NAME_SH"
+fi
+
 # --- usage (Task 1.1) ---
 usage() {
   cat <<EOF
@@ -228,7 +235,7 @@ ${QUICK_INSTRUCTION}"
 fi
 
 # --- プロンプト構築 ---
-WINDOW_NAME="ap-#${ISSUE}"
+WINDOW_NAME="ap-#${ISSUE}"  # 後で LAUNCH_DIR 確定後に上書きする
 PROMPT="/twl:workflow-setup #${ISSUE}"
 
 # --- LAUNCH_DIR 計算 (Task 1.7) ---
@@ -319,6 +326,18 @@ if [[ -n "$CONTEXT" ]]; then
   QUOTED_CONTEXT=$(printf '%q' "$CONTEXT")
   CONTEXT_ARGS="--append-system-prompt $QUOTED_CONTEXT"
 fi
+
+# --- 意味論的 window 命名（LAUNCH_DIR 確定後に生成）---
+if declare -f generate_window_name > /dev/null 2>&1; then
+  if ! WINDOW_NAME=$(generate_window_name ap "$LAUNCH_DIR" "$LAUNCH_DIR" 2>/dev/null); then
+    WINDOW_NAME="ap-#${ISSUE}"
+  fi
+fi
+
+# window 名を autopilot state に保存（orchestrator が参照するため）
+# shellcheck disable=SC2086
+python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot $REPO_ARG \
+  --set "window=$WINDOW_NAME" 2>/dev/null || true
 
 # --- tmux new-window + cld 起動 (Task 1.9) ---
 QUOTED_CLD=$(printf '%q' "$CLD_PATH")
