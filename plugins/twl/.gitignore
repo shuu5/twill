@@ -3,3 +3,4 @@
 .autopilot/
 .controller-issue/
 scripts/__pycache__/
+.observation/
