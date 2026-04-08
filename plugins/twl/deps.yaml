@@ -385,6 +385,17 @@ skills:
         step: "4"
     description: "Self-Improve 改善適用フロー（collect → propose → close + ecc-monitor）"
 
+  workflow-observe-loop:
+    type: workflow
+    path: skills/workflow-observe-loop/SKILL.md
+    effort: high
+    spawnable_by: [controller]
+    can_spawn: [composite, atomic, specialist]
+    calls:
+      - composite: observe-and-detect
+      - atomic: observe-retrospective
+    description: "observed session を継続観察し検出を集約"
+
   workflow-plugin-create:
     type: workflow
     refined_by: "ref-prompt-guide@2c7a62f2"
@@ -1304,6 +1315,24 @@ commands:
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "検出結果から Issue draft markdown を生成 (起票はしない)"
+
+  observe-and-detect:
+    type: composite
+    path: commands/observe-and-detect.md
+    effort: medium
+    spawnable_by: [workflow, controller]
+    can_spawn: [specialist]
+    calls:
+      - specialist: observer-evaluator
+    description: "1 サイクル分の observe + detect + (optional) evaluate"
+
+  observe-retrospective:
+    type: atomic
+    path: commands/observe-retrospective.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: []
+    description: "過去の observation を集約しパターン抽出"
 
   # === C-2a: Test-project系（3個） ===
 

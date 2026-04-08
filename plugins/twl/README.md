@@ -158,6 +158,12 @@ Autopilot で複数 Issue を一括実装:
 </details>
 
 <details>
+<summary>workflow-observe-loop</summary>
+
+![workflow-observe-loop](./docs/deps-workflow-observe-loop.svg)
+</details>
+
+<details>
 <summary>workflow-plugin-create</summary>
 
 ![workflow-plugin-create](./docs/deps-workflow-plugin-create.svg)
