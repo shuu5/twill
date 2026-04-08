@@ -74,7 +74,7 @@
 <title>cmd_phase_review</title>
 <polygon fill="#bbdefb" stroke="black" points="323.95,-629.49 240.95,-629.49 240.95,-593.49 323.95,-593.49 323.95,-629.49"/>
 <text text-anchor="middle" x="282.45" y="-614.49" font-family="Helvetica,sans-Serif" font-size="10.00">phase&#45;review</text>
-<text text-anchor="middle" x="282.45" y="-603.49" font-family="Helvetica,sans-Serif" font-size="10.00">(771 tok)</text>
+<text text-anchor="middle" x="282.45" y="-603.49" font-family="Helvetica,sans-Serif" font-size="10.00">(860 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;cmd_phase_review -->
 <g id="edge3" class="edge">
@@ -113,7 +113,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="557.7,-328.49 525.76,-352.98 461.89,-352.98 429.95,-328.49 461.89,-304.01 525.76,-304.01 557.7,-328.49"/>
 <text text-anchor="middle" x="493.83" y="-331.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="493.83" y="-320.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
+<text text-anchor="middle" x="493.83" y="-320.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,562 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;script_chain_runner -->
 <g id="edge8" class="edge">
@@ -709,14 +709,14 @@
 <title>script_worker_terminal_guard</title>
 <polygon fill="#ff9800" stroke="black" points="596.58,-1694.49 545.21,-1718.98 442.45,-1718.98 391.07,-1694.49 442.45,-1670.01 545.21,-1670.01 596.58,-1694.49"/>
 <text text-anchor="middle" x="493.83" y="-1697.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;terminal&#45;guard</text>
-<text text-anchor="middle" x="493.83" y="-1686.49" font-family="Helvetica,sans-Serif" font-size="10.00">(573 tok)</text>
+<text text-anchor="middle" x="493.83" y="-1686.49" font-family="Helvetica,sans-Serif" font-size="10.00">(695 tok)</text>
 </g>
 <!-- script_worktree_create -->
 <g id="node38" class="node">
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="571.46,-1765.49 532.64,-1789.98 455.01,-1789.98 416.19,-1765.49 455.01,-1741.01 532.64,-1741.01 571.46,-1765.49"/>
 <text text-anchor="middle" x="493.83" y="-1768.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="493.83" y="-1757.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,529 tok)</text>
+<text text-anchor="middle" x="493.83" y="-1757.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,686 tok)</text>
 </g>
 <!-- script_autopilot_github -->
 <g id="node39" class="node">
@@ -730,7 +730,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="553.54,-1907.49 523.68,-1931.98 463.97,-1931.98 434.12,-1907.49 463.97,-1883.01 523.68,-1883.01 553.54,-1907.49"/>
 <text text-anchor="middle" x="493.83" y="-1910.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="493.83" y="-1899.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
+<text text-anchor="middle" x="493.83" y="-1899.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,562 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node42" class="node">

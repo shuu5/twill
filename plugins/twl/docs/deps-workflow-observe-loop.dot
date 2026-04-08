@@ -15,12 +15,12 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,151 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,503 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_observe_and_detect [label="observe-and-detect\n(461 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_observe_and_detect [label="observe-and-detect\n(460 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_observe_retrospective [label="observe-retrospective\n(521 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
@@ -28,20 +28,28 @@ digraph Dependencies {
     // L3: Agents
 
     // L3.5: Scripts
+    script_observe_wrapper [label="observe-wrapper\n(122 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_session_state_wrapper [label="session-state-wrapper\n(126 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
     { rank=same; skill_workflow_observe_loop; }
     { rank=same; cmd_observe_and_detect; cmd_observe_retrospective; }
+    { rank=same; script_observe_wrapper; script_session_state_wrapper; }
 
     // Edges
     skill_workflow_observe_loop -> cmd_observe_and_detect;
     skill_workflow_observe_loop -> cmd_observe_retrospective;
+    skill_workflow_observe_loop -> script_observe_wrapper;
+    skill_workflow_observe_loop -> script_session_state_wrapper;
     cmd_observe_and_detect -> agent_observer_evaluator [style=dashed];
 
     // Ordering constraints (invisible edges)
     cmd_observe_retrospective -> agent_observer_evaluator [style=invis, weight=10];
     cmd_observe_and_detect -> cmd_observe_retrospective [style=invis, weight=10];
+    cmd_observe_retrospective -> script_observe_wrapper [style=invis, weight=10];
+    script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];
+    script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];
 
 }

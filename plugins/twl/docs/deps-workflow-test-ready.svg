@@ -74,7 +74,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="553.84,-95.49 521.91,-119.98 458.03,-119.98 426.09,-95.49 458.03,-71.01 521.91,-71.01 553.84,-95.49"/>
 <text text-anchor="middle" x="489.97" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="489.97" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
+<text text-anchor="middle" x="489.97" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,562 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;script_chain_runner -->
 <g id="edge5" class="edge">
@@ -180,14 +180,14 @@
 <title>script_worker_terminal_guard</title>
 <polygon fill="#ff9800" stroke="black" points="592.73,-589.49 541.35,-613.98 438.59,-613.98 387.21,-589.49 438.59,-565.01 541.35,-565.01 592.73,-589.49"/>
 <text text-anchor="middle" x="489.97" y="-592.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;terminal&#45;guard</text>
-<text text-anchor="middle" x="489.97" y="-581.49" font-family="Helvetica,sans-Serif" font-size="10.00">(573 tok)</text>
+<text text-anchor="middle" x="489.97" y="-581.49" font-family="Helvetica,sans-Serif" font-size="10.00">(695 tok)</text>
 </g>
 <!-- script_worktree_create -->
 <g id="node13" class="node">
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="567.6,-660.49 528.79,-684.98 451.15,-684.98 412.33,-660.49 451.15,-636.01 528.79,-636.01 567.6,-660.49"/>
 <text text-anchor="middle" x="489.97" y="-663.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="489.97" y="-652.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,529 tok)</text>
+<text text-anchor="middle" x="489.97" y="-652.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,686 tok)</text>
 </g>
 <!-- script_autopilot_github -->
 <g id="node14" class="node">
@@ -201,7 +201,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="549.68,-802.49 519.82,-826.98 460.11,-826.98 430.26,-802.49 460.11,-778.01 519.82,-778.01 549.68,-802.49"/>
 <text text-anchor="middle" x="489.97" y="-805.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="489.97" y="-794.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,551 tok)</text>
+<text text-anchor="middle" x="489.97" y="-794.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,562 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node17" class="node">

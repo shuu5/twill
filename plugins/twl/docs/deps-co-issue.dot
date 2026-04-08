@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="twl:co-issue\n(1,441 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(1,818 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -29,7 +29,7 @@ digraph Dependencies {
     cmd_issue_create [label="issue-create\n(1,002 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_bulk_create [label="issue-bulk-create\n(1,440 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_tech_debt_absorb [label="issue-tech-debt-absorb\n(730 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_issue_spec_review [label="issue-spec-review\n(1,231 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_issue_spec_review [label="issue-spec-review\n(1,308 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_issue_review_aggregate [label="issue-review-aggregate\n(1,157 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_glossary_check [label="issue-glossary-check\n(860 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_arch_drift [label="issue-arch-drift\n(788 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
