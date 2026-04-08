@@ -127,3 +127,4 @@ status: WARN
 - **Read-only**: ファイル変更は行わない（Write, Edit 不可）
 - **Task tool 禁止**: 全チェックを自身で実行
 - **Bash は読み取り系のみ**: `gh issue view`, `git diff`, `git branch` などの参照系コマンドのみ
+- **PR 外副作用は検知対象外**: Issue コメント・ラベル・外部ドキュメント等の PR 外副作用は本 specialist の検知範囲外。これらは `ac-verify Step 1.5`（commands/ac-verify.md）が補完する。

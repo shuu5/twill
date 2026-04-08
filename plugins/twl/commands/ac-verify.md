@@ -63,6 +63,40 @@ PR_TEST_STATUS="$(python3 -m twl.autopilot.checkpoint read --step pr-test --fiel
 
 **diff キーワード照合**: AC 文面から名詞句（ファイル名・関数名・コンポーネント名・コマンド名）を抽出し、`DIFF_FILES` および `DIFF_BODY` に出現するか確認する。AI による意味的解釈を許可するが、判定根拠を Finding の `evidence` に必ず記載すること。
 
+### Step 1.5: PR 外副作用 verify（新規）
+
+AC から以下の副作用キーワードを含む項目を抽出し、該当 API で現状態を verify する。
+
+**副作用キーワード（正規表現、部分一致）**:
+- `Issue にコメント` / `gh issue comment` / `comment.*Issue`
+- `gh label` / `ラベル追加` / `--add-label`
+- `README` / `ドキュメント更新` / `docs?/`
+- `architecture/`
+
+```bash
+ISSUE_NUM="$(source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null; resolve_issue_num)"
+if [[ -n "$ISSUE_NUM" ]]; then
+  ALL_COMMENTS="$(gh issue view "$ISSUE_NUM" --json comments -q '.comments[].body' 2>/dev/null || true)"
+fi
+```
+
+副作用キーワードを含む AC 項目それぞれについて:
+1. `ALL_COMMENTS` を取得（全コメントをまとめて参照）
+2. LLM が「該当内容が任意のコメントに含まれているか」を判定
+3. 未達成の場合は以下の Finding を生成し、後続の Step 2 で Findings 配列に append する:
+
+```json
+{
+  "severity": "WARNING",
+  "category": "ac-side-effect-missing",
+  "confidence": 75,
+  "message": "AC『...』は Issue comment 等の PR 外副作用を要求しているが、Issue #N のコメントに該当内容が見当たらない",
+  "evidence": "副作用キーワード: <keyword> / Issue comments: <取得件数>件"
+}
+```
+
+ISSUE_NUM が解決できない場合、または副作用キーワードを含む AC 項目がない場合はスキップする。
+
 ### Step 2: Findings 構築
 
 未達成または diff-only の AC それぞれについて Finding を生成する。
