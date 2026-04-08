@@ -6,6 +6,11 @@ import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
+from twl.chain.meta_generate import (
+    meta_chain_generate,
+    meta_chain_generate_check,
+    meta_chain_generate_write,
+)
 from twl.core.plugin import get_plugin_root, load_deps, get_deps_version
 
 
@@ -211,7 +216,7 @@ def chain_generate_write(result: dict, deps: dict, plugin_root: Path) -> None:
 
         file_path = plugin_root / path_str
         # パストラバーサル防御
-        if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
+        if not file_path.resolve().is_relative_to(plugin_root.resolve()):
             print(f"Warning: Path traversal detected for {comp_name}, skipping", file=sys.stderr)
             continue
         if not file_path.exists():
@@ -295,7 +300,7 @@ def chain_generate_write(result: dict, deps: dict, plugin_root: Path) -> None:
     template_c_target = result.get('template_c_target')
     if template_c and template_c_target:
         target_path = plugin_root / template_c_target
-        if not str(target_path.resolve()).startswith(str(plugin_root.resolve())):
+        if not target_path.resolve().is_relative_to(plugin_root.resolve()):
             print(f"Warning: Path traversal detected for Template C target, skipping", file=sys.stderr)
         elif not target_path.exists():
             print(f"Warning: Template C target not found: {target_path}, skipping", file=sys.stderr)
@@ -436,7 +441,7 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
             continue
 
         file_path = plugin_root / path_str
-        if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
+        if not file_path.resolve().is_relative_to(plugin_root.resolve()):
             continue
         if not file_path.exists():
             file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT', 'template': 'A'})
@@ -485,7 +490,7 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
             continue
 
         file_path = plugin_root / path_str
-        if not str(file_path.resolve()).startswith(str(plugin_root.resolve())):
+        if not file_path.resolve().is_relative_to(plugin_root.resolve()):
             continue
         if not file_path.exists():
             file_results.append({'comp': comp_name, 'path': path_str, 'status': 'DRIFT', 'template': 'B'})
@@ -525,7 +530,7 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
     template_c_target = result.get('template_c_target')
     if template_c and template_c_target:
         target_path = plugin_root / template_c_target
-        if str(target_path.resolve()).startswith(str(plugin_root.resolve())):
+        if target_path.resolve().is_relative_to(plugin_root.resolve()):
             if not target_path.exists():
                 file_results.append({'comp': '(SKILL.md)', 'path': template_c_target, 'status': 'DRIFT', 'template': 'C'})
                 diffs.append(f"=== Diff: {template_c_target} (Template C) ===\n--- expected\n+++ actual (file not found)\n")
@@ -600,10 +605,12 @@ def handle_chain_subcommand(argv: list) -> None:
         sys.exit(1)
 
     chains = deps.get('chains', {})
+    meta_chains = deps.get('meta_chains', {})
 
     if args.all_chains:
-        # --all モード
-        if not chains:
+        # --all モード（通常 chain + meta chain の両方を処理）
+        all_chains_combined = dict(chains)
+        if not all_chains_combined and not meta_chains:
             print("0 chains found")
             sys.exit(0)
 
@@ -634,6 +641,25 @@ def handle_chain_subcommand(argv: list) -> None:
                     total_drifted += len([r for r in file_results if r['status'] == 'DRIFT'])
                     all_diffs.extend(diffs)
 
+            for mname in meta_chains:
+                chains_total += 1
+                meta_result = meta_chain_generate(deps, mname, plugin_root)
+                meta_file_results, meta_diffs = meta_chain_generate_check(meta_result, deps, plugin_root)
+
+                has_drift = any(r['status'] == 'DRIFT' for r in meta_file_results)
+                if not has_drift:
+                    chains_ok += 1
+
+                print(f"meta_chain: {mname}")
+                for r in meta_file_results:
+                    status = "ok" if r['status'] == 'ok' else "DRIFT"
+                    print(f"  {r['path']:<40s} ... {status}")
+                print()
+
+                if meta_diffs:
+                    total_drifted += len([r for r in meta_file_results if r['status'] == 'DRIFT'])
+                    all_diffs.extend(meta_diffs)
+
             drifted_chains = chains_total - chains_ok
             print(f"Summary: {chains_ok}/{chains_total} chains ok"
                   + (f", {total_drifted} files drifted in {drifted_chains} chain{'s' if drifted_chains != 1 else ''}."
@@ -655,36 +681,83 @@ def handle_chain_subcommand(argv: list) -> None:
                 chain_generate_print(result, cname, chain_type)
                 if args.write:
                     chain_generate_write(result, deps, plugin_root)
+
+            for mname in meta_chains:
+                meta_result = meta_chain_generate(deps, mname, plugin_root)
+                template_d = meta_result.get('template_d', {})
+                if template_d:
+                    print(f"=== Template D: 遷移指示 ({mname}) ===")
+                    print()
+                    for skill_name, content in template_d.items():
+                        print(f"--- {skill_name} ---")
+                        print(content)
+                        print()
+                if args.write:
+                    meta_chain_generate_write(meta_result, deps, plugin_root)
             sys.exit(0)
     else:
-        # 単一 chain モード
-        if args.chain_name not in chains:
-            print(f"Error: Chain '{args.chain_name}' not found in deps.yaml", file=sys.stderr)
+        # 単一 chain モード（通常 chain または meta chain）
+        is_meta = args.chain_name in meta_chains
+        if not is_meta and args.chain_name not in chains:
+            print(f"Error: Chain '{args.chain_name}' not found in deps.yaml (chains or meta_chains)", file=sys.stderr)
             sys.exit(1)
 
-        chain_data = chains[args.chain_name]
-        chain_type = chain_data.get('type') if isinstance(chain_data, dict) else None
+        if is_meta:
+            # meta chain モード
+            meta_result = meta_chain_generate(deps, args.chain_name, plugin_root)
+            if args.check:
+                file_results, diffs = meta_chain_generate_check(meta_result, deps, plugin_root)
+                for r in file_results:
+                    status = "ok" if r['status'] == 'ok' else "DRIFT"
+                    print(f"  {r['path']:<40s} ... {status}")
 
-        result = chain_generate(deps, args.chain_name, plugin_root)
-
-        if args.check:
-            file_results, diffs = chain_generate_check(result, deps, plugin_root)
-            for r in file_results:
-                status = "ok" if r['status'] == 'ok' else "DRIFT"
-                print(f"  {r['path']:<40s} ... {status}")
-
-            if diffs:
-                print()
-                print(f"Run 'twl chain generate {args.chain_name} --write' to fix.")
-                print()
-                for d in diffs:
-                    print(d)
-                sys.exit(1)
+                if diffs:
+                    print()
+                    print(f"Run 'twl chain generate {args.chain_name} --write' to fix.")
+                    print()
+                    for d in diffs:
+                        print(d)
+                    sys.exit(1)
+                else:
+                    print()
+                    print("All files are in sync.")
+                    sys.exit(0)
             else:
-                print()
-                print("All files are in sync.")
-                sys.exit(0)
+                template_d = meta_result.get('template_d', {})
+                if template_d:
+                    print(f"=== Template D: 遷移指示 ({args.chain_name}) ===")
+                    print()
+                    for skill_name, content in template_d.items():
+                        print(f"--- {skill_name} ---")
+                        print(content)
+                        print()
+                if args.write:
+                    meta_chain_generate_write(meta_result, deps, plugin_root)
         else:
-            chain_generate_print(result, args.chain_name, chain_type)
-            if args.write:
-                chain_generate_write(result, deps, plugin_root)
+            # 通常 chain モード
+            chain_data = chains[args.chain_name]
+            chain_type = chain_data.get('type') if isinstance(chain_data, dict) else None
+
+            result = chain_generate(deps, args.chain_name, plugin_root)
+
+            if args.check:
+                file_results, diffs = chain_generate_check(result, deps, plugin_root)
+                for r in file_results:
+                    status = "ok" if r['status'] == 'ok' else "DRIFT"
+                    print(f"  {r['path']:<40s} ... {status}")
+
+                if diffs:
+                    print()
+                    print(f"Run 'twl chain generate {args.chain_name} --write' to fix.")
+                    print()
+                    for d in diffs:
+                        print(d)
+                    sys.exit(1)
+                else:
+                    print()
+                    print("All files are in sync.")
+                    sys.exit(0)
+            else:
+                chain_generate_print(result, args.chain_name, chain_type)
+                if args.write:
+                    chain_generate_write(result, deps, plugin_root)

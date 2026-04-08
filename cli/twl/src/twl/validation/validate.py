@@ -396,6 +396,94 @@ def validate_v3_schema(deps: dict) -> Tuple[int, List[str]]:
                     f"use top-level 'scripts' section with 'calls' references instead"
                 )
 
+    # Check 6b: meta_chains セクション構造検証
+    meta_chains = deps.get('meta_chains', {})
+    if meta_chains and isinstance(meta_chains, dict):
+        for meta_name, meta_data in meta_chains.items():
+            if not isinstance(meta_data, dict):
+                violations.append(
+                    f"[v3-meta-chains-type] meta_chains/{meta_name}: must be a dict"
+                )
+                continue
+
+            # type: "meta" 必須
+            mc_type = meta_data.get('type')
+            if mc_type != 'meta':
+                violations.append(
+                    f"[v3-meta-chains-type-field] meta_chains/{meta_name}: "
+                    f"type must be 'meta', got {mc_type!r}"
+                )
+            else:
+                ok_count += 1
+
+            # flow は list であること
+            flow = meta_data.get('flow')
+            if flow is None:
+                violations.append(
+                    f"[v3-meta-chains-flow] meta_chains/{meta_name}: "
+                    f"flow field is required"
+                )
+                continue
+            if not isinstance(flow, list):
+                violations.append(
+                    f"[v3-meta-chains-flow] meta_chains/{meta_name}: "
+                    f"flow must be a list"
+                )
+                continue
+
+            # flow ノードの id 収集（goto 解決に使用）
+            flow_ids: Set[str] = set()
+            for node in flow:
+                if isinstance(node, dict) and isinstance(node.get('id'), str):
+                    flow_ids.add(node['id'])
+
+            for i, node in enumerate(flow):
+                if not isinstance(node, dict):
+                    violations.append(
+                        f"[v3-meta-chains-node] meta_chains/{meta_name}/flow[{i}]: "
+                        f"node must be a dict"
+                    )
+                    continue
+
+                # id は必須
+                node_id = node.get('id')
+                if not isinstance(node_id, str) or not node_id:
+                    violations.append(
+                        f"[v3-meta-chains-node-id] meta_chains/{meta_name}/flow[{i}]: "
+                        f"node must have a string 'id'"
+                    )
+
+                # chain フィールド: 存在する場合は chains セクションに存在するか null
+                node_chain = node.get('chain')
+                if 'chain' in node and node_chain is not None:
+                    if not isinstance(node_chain, str):
+                        violations.append(
+                            f"[v3-meta-chains-chain-ref] meta_chains/{meta_name}/flow[{i}]: "
+                            f"chain must be a string or null"
+                        )
+                    elif node_chain not in chains:
+                        violations.append(
+                            f"[v3-meta-chains-chain-ref] meta_chains/{meta_name}/flow[{i}]: "
+                            f"chain '{node_chain}' not found in chains section"
+                        )
+                    else:
+                        ok_count += 1
+
+                # next の goto 参照整合性
+                next_entries = node.get('next', [])
+                if next_entries and isinstance(next_entries, list):
+                    for j, entry in enumerate(next_entries):
+                        if not isinstance(entry, dict):
+                            continue
+                        goto = entry.get('goto')
+                        if goto is not None and isinstance(goto, str) and goto not in flow_ids:
+                            violations.append(
+                                f"[v3-meta-chains-goto] meta_chains/{meta_name}/flow[{i}]/next[{j}]: "
+                                f"goto '{goto}' not found in flow ids"
+                            )
+                        elif goto is not None and isinstance(goto, str) and goto in flow_ids:
+                            ok_count += 1
+
     # Check 7: refined_by / refined_at フォーマット検証
     _REFINED_BY_PATTERN = re.compile(r'^ref-prompt-guide@[0-9a-f]{8}$')
     _REFINED_AT_PATTERN = re.compile(r'^\d{4}-\d{2}-\d{2}$')

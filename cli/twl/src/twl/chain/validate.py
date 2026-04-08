@@ -219,6 +219,7 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
     CHAIN_TYPE_ALLOWED = {
         'A': {'workflow', 'atomic'},
         'B': {'atomic', 'composite'},
+        'meta': None,  # meta chains have no step-level components; skip type guard
     }
     for chain_name, chain_data in chains.items():
         if not isinstance(chain_data, dict):
@@ -226,11 +227,14 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
         chain_type = chain_data.get('type')
         if chain_type is None:
             continue  # type フィールドなし → スキップ
-        allowed = CHAIN_TYPE_ALLOWED.get(chain_type)
-        if allowed is None:
+        if chain_type not in CHAIN_TYPE_ALLOWED:
             warnings.append(
                 f"[chain-type] chains/{chain_name}: unknown chain type '{chain_type}'"
             )
+            continue
+        allowed = CHAIN_TYPE_ALLOWED[chain_type]
+        if allowed is None:
+            # meta chains skip step-level type guard
             continue
         steps = chain_data.get('steps', [])
         if not isinstance(steps, list):
@@ -317,6 +321,54 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
                 )
             else:
                 ok_count += 1
+
+    # --- 5b. meta-chain-integrity: meta_chains 遷移整合性検証 ---
+    meta_chains = deps.get('meta_chains', {})
+    if meta_chains and isinstance(meta_chains, dict):
+        for meta_name, meta_data in meta_chains.items():
+            if not isinstance(meta_data, dict):
+                continue
+            flow = meta_data.get('flow')
+            if not isinstance(flow, list):
+                continue
+
+            # flow ノードの id 収集
+            flow_ids: Set[str] = {
+                node['id'] for node in flow
+                if isinstance(node, dict) and isinstance(node.get('id'), str)
+            }
+
+            for node in flow:
+                if not isinstance(node, dict):
+                    continue
+                node_id = node.get('id', '?')
+
+                # chain 参照が chains セクションに存在するか
+                node_chain = node.get('chain')
+                if 'chain' in node and node_chain is not None:
+                    if isinstance(node_chain, str) and node_chain not in chains:
+                        criticals.append(
+                            f"[meta-chain-integrity] meta_chains/{meta_name}/flow/{node_id}: "
+                            f"chain '{node_chain}' not found in chains section"
+                        )
+                    else:
+                        ok_count += 1
+
+                # next の goto 参照整合性
+                next_entries = node.get('next', [])
+                if isinstance(next_entries, list):
+                    for entry in next_entries:
+                        if not isinstance(entry, dict):
+                            continue
+                        goto = entry.get('goto')
+                        if goto is not None and isinstance(goto, str):
+                            if goto not in flow_ids:
+                                criticals.append(
+                                    f"[meta-chain-integrity] meta_chains/{meta_name}/flow/{node_id}: "
+                                    f"goto '{goto}' not found in flow ids"
+                                )
+                            else:
+                                ok_count += 1
 
     # --- 6. chain-py-ssot: chain.py CHAIN_STEPS ⟺ deps.yaml dispatch_mode 整合性 ---
     chain_py_steps = _load_chain_py_steps(plugin_root)
