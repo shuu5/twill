@@ -547,6 +547,151 @@ class TestEnsureClosesLink:
         assert order == ["ensure", "merge"]
 
 
+# ---------------------------------------------------------------------------
+# _check_base_drift (Issue #166)
+# ---------------------------------------------------------------------------
+
+
+class TestCheckBaseDrift:
+    """base drift 検知ロジックのテスト。"""
+
+    def _make_run(self, deleted_files: list[str], log_commits: dict[str, str]):
+        """subprocess.run の side_effect を生成するヘルパー。
+
+        Args:
+            deleted_files: git diff で返す削除ファイル一覧
+            log_commits: path → git log 出力（空文字 = silent deletion）
+        """
+        def fake_run(cmd, **kwargs):
+            cmd_list = list(cmd)
+            if cmd_list[:3] == ["git", "fetch", "origin"]:
+                return MagicMock(returncode=0, stdout="", stderr="")
+            if "--diff-filter=D" in cmd_list and "origin/main...HEAD" in cmd_list:
+                content = "\n".join(deleted_files) + "\n" if deleted_files else ""
+                return MagicMock(returncode=0, stdout=content, stderr="")
+            if cmd_list[:3] == ["git", "merge-base"]:
+                return MagicMock(returncode=0, stdout="abc123\n", stderr="")
+            if cmd_list[:2] == ["git", "log"]:
+                path = cmd_list[-1]
+                return MagicMock(returncode=0, stdout=log_commits.get(path, ""), stderr="")
+            return MagicMock(returncode=0, stdout="", stderr="")
+        return fake_run
+
+    def test_silent_deletion_raises_merge_gate_error(self, gate):
+        """PR 内に削除 commit のないファイルがある場合 MergeGateError を raise する。"""
+        fake_run = self._make_run(
+            deleted_files=["some/file.py"],
+            log_commits={"some/file.py": ""},  # 削除 commit なし = silent deletion
+        )
+        with patch("subprocess.run", side_effect=fake_run):
+            with pytest.raises(MergeGateError, match="base drift 検出"):
+                gate._check_base_drift()
+
+    def test_silent_deletion_does_not_call_gh_pr_merge(self, gate):
+        """base drift 検出時は gh pr merge --squash が呼ばれないこと。"""
+        merge_calls: list[list[str]] = []
+
+        def fake_run(cmd, **kwargs):
+            cmd_list = list(cmd)
+            if "merge" in cmd_list and "gh" in cmd_list:
+                merge_calls.append(cmd_list)
+                return MagicMock(returncode=0, stdout="", stderr="")
+            if cmd_list[:3] == ["git", "fetch", "origin"]:
+                return MagicMock(returncode=0, stdout="", stderr="")
+            if "--diff-filter=D" in cmd_list and "origin/main...HEAD" in cmd_list:
+                return MagicMock(returncode=0, stdout="deleted.py\n", stderr="")
+            if cmd_list[:3] == ["git", "merge-base"]:
+                return MagicMock(returncode=0, stdout="abc123\n", stderr="")
+            if cmd_list[:2] == ["git", "log"]:
+                return MagicMock(returncode=0, stdout="", stderr="")  # silent
+            return MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("os.getcwd", return_value="/home/user/projects/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
+             patch("twl.autopilot.mergegate._state_write"), \
+             patch("twl.autopilot.mergegate._board_update"), \
+             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
+             patch("subprocess.run", side_effect=fake_run):
+            with pytest.raises(MergeGateError, match="base drift 検出"):
+                gate.execute()
+
+        assert merge_calls == [], "gh pr merge が呼ばれてはならない"
+
+    def test_intentional_deletion_does_not_raise(self, gate):
+        """PR 内に明示的な削除 commit がある場合は raise しない（意図的削除）。"""
+        fake_run = self._make_run(
+            deleted_files=["intentionally-deleted.py"],
+            log_commits={"intentionally-deleted.py": "deadbeef\n"},  # 削除 commit あり
+        )
+        with patch("subprocess.run", side_effect=fake_run):
+            gate._check_base_drift()  # should not raise
+
+    def test_no_deleted_files_does_not_raise(self, gate):
+        """削除ファイルがない場合は何もしない。"""
+        fake_run = self._make_run(deleted_files=[], log_commits={})
+        with patch("subprocess.run", side_effect=fake_run):
+            gate._check_base_drift()  # should not raise
+
+    def test_bypass_env_skips_check(self, gate, monkeypatch, capsys):
+        """MERGE_GATE_SKIP_DRIFT_CHECK=1 で bypass され、stderr 警告が出力されること。"""
+        monkeypatch.setenv("MERGE_GATE_SKIP_DRIFT_CHECK", "1")
+        call_count = [0]
+
+        def fake_run(cmd, **kwargs):
+            call_count[0] += 1
+            return MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("subprocess.run", side_effect=fake_run):
+            gate._check_base_drift()  # should not raise
+
+        captured = capsys.readouterr()
+        assert "MERGE_GATE_SKIP_DRIFT_CHECK=1" in captured.err
+        # git fetch など subprocess が呼ばれていないこと
+        assert call_count[0] == 0
+
+    def test_fetch_failure_is_fail_open(self, gate):
+        """git fetch 失敗時は fail-open で処理を継続する（raise しない）。"""
+        def fake_run(cmd, **kwargs):
+            cmd_list = list(cmd)
+            if cmd_list[:3] == ["git", "fetch", "origin"]:
+                return MagicMock(returncode=1, stdout="", stderr="network error")
+            return MagicMock(returncode=0, stdout="", stderr="")
+
+        with patch("subprocess.run", side_effect=fake_run):
+            gate._check_base_drift()  # should not raise
+
+    def test_called_after_ensure_closes_link_before_run_merge_in_execute(self, gate):
+        """execute() フローの中で _check_base_drift が _ensure_closes_link の後、
+        _run_merge の前に呼ばれること。"""
+        order: list[str] = []
+
+        def fake_ensure(self, _flag):
+            order.append("ensure")
+
+        def fake_drift(self):
+            order.append("drift")
+
+        def fake_merge(self, _flag):
+            order.append("merge")
+            return True
+
+        with patch("os.getcwd", return_value="/home/u/repo/main"), \
+             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
+             patch("twl.autopilot.mergegate._state_write"), \
+             patch("twl.autopilot.mergegate._board_update"), \
+             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
+             patch.object(MergeGate, "_verify_and_close_issue", return_value=True), \
+             patch.object(MergeGate, "_ensure_closes_link", new=fake_ensure), \
+             patch.object(MergeGate, "_check_base_drift", new=fake_drift), \
+             patch.object(MergeGate, "_run_merge", new=fake_merge), \
+             patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="")):
+            gate.execute()
+
+        assert order == ["ensure", "drift", "merge"]
+
+
 class TestGhRepoFlag:
     def test_no_repo_args_no_flag(self, autopilot_dir, scripts_root):
         gate = MergeGate(
