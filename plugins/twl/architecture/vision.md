@@ -43,7 +43,7 @@ co-architect が「設計 + 実装」を要求された場合: 設計完了 → 
 | 型ルール検証（PostToolUse hook） | twl validate / check | パターン検出・知見の抽出 | 有意なパターンの選別は判断 |
 | specialist 出力の機械的フィルタ | severity == CRITICAL && confidence >= 80 | PR レビューの最終判断 | WARNING の対処優先度は文脈依存 |
 | 依存グラフの循環検出 | plan.yaml 生成時の DAG 検証 | Phase 分割の最適化 | 並列度と依存管理のバランス |
-| 　 | 　 | ライブセッションのパターン抽出 | 有意なパターンの選別は文脈依存 |
+| セッション出力の機械的キャプチャ | tmux capture-pane + rule-based 検出 | ライブセッションのパターン抽出 | 有意なパターンの選別は文脈依存 |
 | retry 上限の強制 | retry_count チェック | fix-phase の修正戦略 | 修正方針は問題の性質に依存 |
 | Project Board ステータス同期 | gh project item-edit | Issue の優先度判断 | ビジネスコンテキストに依存 |
 | クロスリポ Issue 分割の検出 | gh project linked-repos クエリ | 分割粒度の判断 | リポ間依存の評価は文脈依存 |
