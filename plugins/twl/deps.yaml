@@ -1904,6 +1904,11 @@ scripts:
     path: scripts/hooks/pre-tool-use-worktree-boundary.sh
     description: "PreToolUse hook: Edit/Write/NotebookEdit 対象パスを realpath -m 正規化し worktree 外なら deny（不変条件 B Worker 境界ガード, AUTOPILOT_DIR 設定時のみ）"
 
+  pre-tool-use-host-safety:
+    type: script
+    path: scripts/hooks/pre-tool-use-host-safety.sh
+    description: "PreToolUse hook: Bash tool でホスト環境を破壊しうるコマンド（pip install, apt install, --break-system-packages）を deny（AUTOPILOT_DIR 設定時のみ）"
+
   tech-stack-detect:
     type: script
     path: scripts/tech-stack-detect.sh
