@@ -62,6 +62,66 @@ chains:
       - merge-gate
       - auto-merge
 
+# メタ chain（ワークフロー間遷移 SSOT）
+meta_chains:
+  worker-lifecycle:
+    type: "meta"
+    description: "Worker の Issue 実装ライフサイクル（全 chain を結合）"
+    flow:
+      - id: setup
+        chain: setup
+        next:
+          - condition: "quick && autopilot"
+            goto: quick-path
+          - condition: "!quick && autopilot"
+            goto: test-ready
+          - condition: "!autopilot"
+            stop: true
+            message: "setup chain 完了。次: /twl:workflow-test-ready"
+      - id: quick-path
+        chain: null
+        description: "quick Issue の短縮パス（直接実装→PR→merge-gate）"
+        inline_steps:
+          - "直接実装 → commit → push"
+          - "PR 作成（pr-create-helper）"
+          - "ac-verify"
+          - "merge-gate"
+        next:
+          - goto: done
+      - id: test-ready
+        chain: null
+        skill: workflow-test-ready
+        next:
+          - condition: "autopilot"
+            goto: pr-verify
+          - condition: "!autopilot"
+            stop: true
+            message: "完了。次: /twl:workflow-pr-verify"
+      - id: pr-verify
+        chain: pr-verify
+        skill: workflow-pr-verify
+        next:
+          - condition: "autopilot"
+            goto: pr-fix
+          - condition: "!autopilot"
+            stop: true
+            message: "workflow-pr-verify 完了。次のステップ: /twl:workflow-pr-fix を実行してください"
+      - id: pr-fix
+        chain: pr-fix
+        skill: workflow-pr-fix
+        next:
+          - condition: "autopilot"
+            goto: pr-merge
+          - condition: "!autopilot"
+            stop: true
+            message: "workflow-pr-fix 完了。次のステップ: /twl:workflow-pr-merge を実行してください"
+      - id: pr-merge
+        chain: pr-merge
+        skill: workflow-pr-merge
+        terminal: true
+      - id: done
+        terminal: true
+
 # スキル（controller x4 + workflow x2）
 skills:
   co-autopilot:
