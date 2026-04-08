@@ -17,35 +17,35 @@ digraph Dependencies {
 
     // L0.5: Workflow Skills
     skill_workflow_plugin_create [label="twl:workflow-plugin-create\n(558 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(683 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(693 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,884 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,961 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_types [label="twl:ref-types\n(2,144 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_practices [label="twl:ref-practices\n(6,471 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_deps_format [label="twl:ref-deps-format\n(1,804 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_architecture [label="twl:ref-architecture\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
-    cmd_label_sync [label="label-sync\n(1,185 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_create [label="project-create\n(440 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_board_configure [label="project-board-configure\n(1,167 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_label_sync [label="label-sync\n(1,205 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_create [label="project-create\n(461 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_board_configure [label="project-board-configure\n(1,185 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_governance [label="project-governance\n(974 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_migrate [label="project-migrate\n(462 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_container_dependency_check [label="container-dependency-check\n(493 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_migrate [label="project-migrate\n(484 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_container_dependency_check [label="container-dependency-check\n(509 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_setup_crg [label="setup-crg\n(754 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_snapshot_analyze [label="snapshot-analyze\n(600 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_snapshot_classify [label="snapshot-classify\n(870 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_snapshot_generate [label="snapshot-generate\n(735 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_interview [label="plugin-interview\n(1,086 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_research [label="plugin-research\n(655 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_snapshot_analyze [label="snapshot-analyze\n(617 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_snapshot_classify [label="snapshot-classify\n(891 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_snapshot_generate [label="snapshot-generate\n(752 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_interview [label="plugin-interview\n(1,118 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_research [label="plugin-research\n(678 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_design [label="plugin-design\n(1,192 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_generate [label="plugin-generate\n(1,419 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(458 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(476 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_diagnose [label="plugin-diagnose\n(944 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_fix [label="plugin-fix\n(1,074 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_verify [label="plugin-verify\n(518 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_phase_diagnose [label="plugin-phase-diagnose\n(631 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_plugin_fix [label="plugin-fix\n(1,092 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_verify [label="plugin-verify\n(536 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_phase_diagnose [label="plugin-phase-diagnose\n(652 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_plugin_phase_verify [label="plugin-phase-verify\n(634 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands

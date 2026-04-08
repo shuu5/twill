@@ -15,18 +15,18 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(683 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(693 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,884 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,961 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_architecture [label="twl:ref-architecture\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
-    cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(458 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(476 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_diagnose [label="plugin-diagnose\n(944 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_fix [label="plugin-fix\n(1,074 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_verify [label="plugin-verify\n(518 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_phase_diagnose [label="plugin-phase-diagnose\n(631 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_plugin_fix [label="plugin-fix\n(1,092 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_verify [label="plugin-verify\n(536 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_plugin_phase_diagnose [label="plugin-phase-diagnose\n(652 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_plugin_phase_verify [label="plugin-phase-verify\n(634 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands

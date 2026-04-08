@@ -20,10 +20,10 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_self_improve_collect [label="self-improve-collect\n(910 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_self_improve_propose [label="self-improve-propose\n(1,306 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_self_improve_close [label="self-improve-close\n(691 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_ecc_monitor [label="ecc-monitor\n(1,108 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_self_improve_collect [label="self-improve-collect\n(929 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_self_improve_propose [label="self-improve-propose\n(1,324 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_self_improve_close [label="self-improve-close\n(707 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_ecc_monitor [label="ecc-monitor\n(1,126 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 

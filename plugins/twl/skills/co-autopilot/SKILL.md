@@ -52,10 +52,21 @@ TaskCreate で全体タスク「Autopilot: N Phases, M Issues」を登録。
 ## Step 4: Phase ループ（orchestrator 委譲）
 
 `autopilot-orchestrator.sh --plan --phase --session --project-dir --autopilot-dir [$REPOS_ARG]` で Phase 実行を委譲。orchestrator は JSON レポート（PHASE_COMPLETE）を返す。実装詳細（batch 分割・Worker 起動・ポーリング・merge-gate・skip 伝播 [不変条件 D]）は orchestrator が正典。Pilot LLM の責務は計画承認・retrospective・cross-issue 分析に限定。
+<!-- NOTE: Pilot 用 atomic (autopilot-pilot-precheck, autopilot-pilot-rebase, autopilot-multi-source-verdict) 経由であれば、PR diff stat / AC spot-check 等の能動評価は許容される。設計原則 P1 (ADR-010) 参照。 -->
 
 ### Step 4.5: Phase 完了サニティチェック（MUST）
 
-PHASE_COMPLETE 受信後、`commands/autopilot-phase-sanity.md` を Read → 実行（処理は同ファイルが正典）。続けて `commands/autopilot-phase-postprocess.md` を Read → 実行（retrospective / cross-issue / self-improve ECC 照合）。TaskUpdate Phase P → completed。
+PHASE_COMPLETE 受信後、以下の順序で実行する（各 atomic の処理詳細は各 .md を正典とする）:
+
+1. `commands/autopilot-phase-sanity.md` を Read → 実行（Issue close 状態 verify）
+2. `commands/autopilot-pilot-precheck.md` を Read → 実行（PR diff stat 削除確認 + AC spot-check）
+3. precheck が WARN (high-deletion) を出した場合 → `commands/autopilot-pilot-rebase.md` を Read → 実行（Pilot 介入 rebase）
+4. precheck / rebase の結果から再 verify が必要な場合 → `commands/autopilot-multi-source-verdict.md` を Read → 実行（multi-source 統合判断）
+5. `commands/autopilot-phase-postprocess.md` を Read → 実行（retrospective / cross-issue / self-improve ECC 照合）
+
+`PILOT_ACTIVE_REVIEW_DISABLE=1` の場合、手順 2-4 はスキップされる（各 atomic 内で opt-out 処理）。
+
+TaskUpdate Phase P → completed。
 
 ## Step 5: 完了サマリー（orchestrator 委譲）
 

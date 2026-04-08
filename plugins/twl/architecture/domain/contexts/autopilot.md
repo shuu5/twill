@@ -226,6 +226,12 @@ co-autopilot 障害時のみ手動パスを許可する。
 | **script** | worktree-create.sh | worktree + ブランチ作成 |
 | **script** | worktree-delete.sh | worktree + ブランチ削除 |
 
+## Design Principles
+
+| ID | 設計原則 | 概要 | enforcement |
+|----|----------|------|-------------|
+| **P1** | Pilot 能動評価の atomic 経由限定 | Pilot による PR diff / Issue body 能動評価は autopilot-pilot-* atomic を経由した場合のみ推奨。SKILL.md への直接記述による責務拡大は避ける | ADR-010 参照 + コードレビュー時の人手チェック |
+
 ## Dependencies
 
 - **Downstream -> PR Cycle**: merge-gate を呼び出してマージ判定。Contract: contracts/autopilot-pr-cycle.md
