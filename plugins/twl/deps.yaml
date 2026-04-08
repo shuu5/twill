@@ -1272,6 +1272,38 @@ commands:
       - script: ecc-monitor
     description: "ECC リポジトリの変更検知・関連性評価"
 
+  # === C-2a: Test-project系（3個） ===
+
+  test-project-init:
+    type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-08"
+    path: commands/test-project-init.md
+    effort: medium
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "test-target worktree (test-target/main orphan branch) を新規作成"
+
+  test-project-reset:
+    type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-08"
+    path: commands/test-project-reset.md
+    effort: low
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "test-target を初期状態に reset"
+
+  test-project-scenario-load:
+    type: atomic
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-08"
+    path: commands/test-project-scenario-load.md
+    effort: medium
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    description: "test-target にテストシナリオの dummy Issue 群をローカル配置"
+
   # === C-2a: その他（1個） ===
 
   twl-validate: # standalone: プロジェクト固有ユーティリティ
