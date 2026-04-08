@@ -1,6 +1,6 @@
 ---
 name: twl:spec-scaffold-tests
-description: OpenSpec ScenarioからBDDテストを自動生成（Unit/Integration）
+description: DeltaSpec ScenarioからBDDテストを自動生成（Unit/Integration）
 type: specialist
 model: sonnet
 effort: high
@@ -12,11 +12,11 @@ skills:
 
 # /twl:spec-scaffold-tests コマンド
 
-OpenSpec提案内のScenarioを解析し、テストファイルとtest-mapping.yamlを自動生成します。
+DeltaSpec提案内のScenarioを解析し、テストファイルとtest-mapping.yamlを自動生成します。
 
 ## 引数
 
-- `<change-id>`: OpenSpec提案ID（必須）
+- `<change-id>`: DeltaSpec提案ID（必須）
 
 ## 前提条件
 

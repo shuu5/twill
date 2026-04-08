@@ -33,7 +33,7 @@ python3 -m twl.autopilot.project create $ARGUMENTS
 2. ベアリポジトリ作成 + main worktree
 3. テンプレートCLAUDE.md適用
 4. タイプ別初期化（renv/pnpm）
-5. OpenSpec初期化
+5. DeltaSpec初期化
 6. GitHubリポジトリ作成（--no-github除く）
 7. code-review-graph 導入確認（AskUserQuestion で「code-review-graph を導入しますか？」→ はい: `/twl:setup-crg` 実行、いいえ: スキップ）
 

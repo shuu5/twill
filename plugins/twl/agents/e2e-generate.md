@@ -12,7 +12,7 @@ skills:
 
 # E2E Generate Command
 
-OpenSpec ScenarioまたはPlanからPlaywright E2Eテストコードを生成。
+DeltaSpec ScenarioまたはPlanからPlaywright E2Eテストコードを生成。
 **検証パターンをモードに応じて強制適用**。
 
 ## E2Eモード判定

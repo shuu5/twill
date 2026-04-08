@@ -52,7 +52,7 @@ bun run schema:validate
 ### Step 5: 整合性確認
 
 - `docs/schema/openapi.yaml` が更新されたか確認（`git diff`）
-- OpenSpec 仕様との整合性を確認
+- DeltaSpec 仕様との整合性を確認
 
 ## --check-only モード
 

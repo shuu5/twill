@@ -4,13 +4,13 @@ tools: [AskUserQuestion, Bash, Read, Skill, Task]
 effort: low
 maxTurns: 10
 ---
-# OpenSpec 実装（change-apply）
+# DeltaSpec 実装（change-apply）
 
-OpenSpec change の tasks.md に沿ってタスクを実装する。完了後に PR サイクルへの誘導を出力する。
+DeltaSpec change の tasks.md に沿ってタスクを実装する。完了後に PR サイクルへの誘導を出力する。
 
 ## 引数
 
-- `change-id`: OpenSpec change ID（省略時は自動検出）
+- `change-id`: DeltaSpec change ID（省略時は自動検出）
 
 ## フロー制御（MUST）
 

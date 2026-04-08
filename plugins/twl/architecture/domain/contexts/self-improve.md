@@ -101,7 +101,7 @@ graph LR
 
 - **cooldown 判定**: 同一パターンの重複 Issue 起票を防止。pattern name + 時間窓でチェック
 - **co-autopilot 内で自動起動**: セッション完了時の retrospective で検出
-- **ECC ソースの優先度**: doobidoo memory > openspec > git log
+- **ECC ソースの優先度**: doobidoo memory > deltaspec > git log
 
 ## Rules
 

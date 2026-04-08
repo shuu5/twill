@@ -14,7 +14,7 @@ maxTurns: 10
 |-----------|-----|------|
 | repo_mode | `worktree` | リポジトリ形式（bare repo + worktree 固定） |
 | branch | `main` / `feat/xxx` / `detached` | 現在のブランチ |
-| openspec | `true` / `false` | deltaspec/ が存在するか |
+| deltaspec | `true` / `false` | deltaspec/ が存在するか |
 | change_exists | `true` / `false` | changes/ 内にディレクトリがあるか |
 | change_id | `xxx` / `null` | 最新の change ID |
 | proposal_status | `approved` / `pending` / `none` | proposal.md の状態 |
@@ -26,9 +26,9 @@ maxTurns: 10
 | 値 | 意味 |
 |----|------|
 | `worktree` | main ブランチなので worktree 作成が必要 |
-| `propose` | OpenSpec 使用プロジェクトで変更提案が必要 |
+| `propose` | DeltaSpec 使用プロジェクトで変更提案が必要 |
 | `apply` | 承認済み proposal あり → 実装開始可能 |
-| `direct` | 軽微変更 or OpenSpec 未使用 → 直接実装 |
+| `direct` | 軽微変更 or DeltaSpec 未使用 → 直接実装 |
 
 ### environment の構造
 

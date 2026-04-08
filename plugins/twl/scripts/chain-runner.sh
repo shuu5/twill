@@ -225,15 +225,15 @@ step_init() {
 
   # deltaspec 判定
   if [[ ! -d "$root/deltaspec" ]]; then
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"direct","branch":$branch,"openspec":false,"is_quick":$is_quick}'
-    ok "init" "recommended_action=direct (no openspec, is_quick=$is_quick)"
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"direct","branch":$branch,"deltaspec":false,"is_quick":$is_quick}'
+    ok "init" "recommended_action=direct (no deltaspec, is_quick=$is_quick)"
     return 0
   fi
 
   # changes 判定
   local changes_dir="$root/deltaspec/changes"
   if [[ ! -d "$changes_dir" ]] || [[ -z "$(ls -A "$changes_dir" 2>/dev/null)" ]]; then
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_exists":false,"is_quick":$is_quick}'
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_exists":false,"is_quick":$is_quick}'
     ok "init" "recommended_action=propose (no changes, is_quick=$is_quick)"
     return 0
   fi
@@ -247,14 +247,14 @@ step_init() {
     # approved 判定: .deltaspec.yaml の status を確認
     local yaml="$changes_dir/$latest_change/.deltaspec.yaml"
     if [[ -f "$yaml" ]] && grep -q 'status:.*approved' "$yaml" 2>/dev/null; then
-      jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"apply","branch":$branch,"openspec":true,"change_id":$cid,"proposal_status":"approved","is_quick":$is_quick}'
+      jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"apply","branch":$branch,"deltaspec":true,"change_id":$cid,"proposal_status":"approved","is_quick":$is_quick}'
       ok "init" "recommended_action=apply (change=$latest_change, approved, is_quick=$is_quick)"
     else
-      jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_id":$cid,"proposal_status":"pending","is_quick":$is_quick}'
+      jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_id":$cid,"proposal_status":"pending","is_quick":$is_quick}'
       ok "init" "recommended_action=propose (change=$latest_change, pending, is_quick=$is_quick)"
     fi
   else
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"openspec":true,"change_exists":true,"is_quick":$is_quick}'
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_exists":true,"is_quick":$is_quick}'
     ok "init" "recommended_action=propose (no proposal, is_quick=$is_quick)"
   fi
 }
@@ -921,16 +921,16 @@ step_check() {
   root="$(resolve_project_root)"
   local has_fail=false
 
-  # OpenSpec
+  # DeltaSpec
   if [[ -d "$root/deltaspec" ]]; then
     if ls "$root/deltaspec/changes/"*/proposal.md >/dev/null 2>&1; then
-      echo "OpenSpec: PASS"
+      echo "DeltaSpec: PASS"
     else
-      echo "OpenSpec: FAIL (proposal.md なし)"
+      echo "DeltaSpec: FAIL (proposal.md なし)"
       has_fail=true
     fi
   else
-    echo "OpenSpec: N/A"
+    echo "DeltaSpec: N/A"
   fi
 
   # テスト

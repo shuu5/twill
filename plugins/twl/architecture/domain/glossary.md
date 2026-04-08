@@ -18,7 +18,7 @@
 | TWiLL | Type-Woven, invariant-Led Layering。フレームワークの正式名称。CLI コマンド `twl` で操作 | 全体 |
 | twl | TWiLL の CLI コマンド短縮形 | 全体 |
 | twill-ecosystem | クロスリポジトリプロジェクト（#3）。TWiLL モノリポを統合管理 | Project Management |
-| DeltaSpec | OpenSpec の変更仕様管理 | Issue Management |
+| DeltaSpec | DeltaSpec の変更仕様管理 | Issue Management |
 | ECC | 外部知識ソース（doobidoo memory）。自己改善の教師データとして活用 | Self-Improve |
 | Emergency Bypass | co-autopilot 障害時のみ許可される手動実装パス。retrospective 記録義務あり | Autopilot |
 | Architecture Spec | 設計意図の前方参照。co-issue/co-architect が DCI で参照する living document | 全体 |

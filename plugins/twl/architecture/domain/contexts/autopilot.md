@@ -200,7 +200,7 @@ co-autopilot 障害時のみ手動パスを許可する。
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **controller** | co-autopilot | Issue 群の自律実装オーケストレーター |
-| **workflow** | workflow-setup | OpenSpec 提案 + テスト準備（worktree は Pilot が事前作成済み） |
+| **workflow** | workflow-setup | DeltaSpec 提案 + テスト準備（worktree は Pilot が事前作成済み） |
 | **workflow** | workflow-test-ready | テスト生成 + 準備確認 |
 | **workflow** | workflow-pr-cycle | verify → review → test → fix → report |
 | **atomic** | autopilot-init | セッション初期化 |

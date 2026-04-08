@@ -178,7 +178,7 @@ rm -f "$MERGE_ERROR_LOG"
 echo "[auto-merge] Issue #${ISSUE_NUM}: merge 成功"
 
 # ============================================================
-# 非 autopilot: OpenSpec archive（存在時のみ）
+# 非 autopilot: DeltaSpec archive（存在時のみ）
 # ============================================================
 if ! git checkout main 2>/dev/null || ! git pull origin main 2>/dev/null; then
   echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ git checkout main / pull 失敗（merge は成功済み）" >&2
@@ -199,9 +199,9 @@ if command -v deltaspec >/dev/null 2>&1 && [[ -d deltaspec/changes ]]; then
   fi
   for CHANGE_ID in "${CHANGE_IDS[@]}"; do
     if deltaspec archive --yes --skip-specs -- "${CHANGE_ID}"; then
-      echo "[auto-merge] Issue #${ISSUE_NUM}: OpenSpec archive 完了: ${CHANGE_ID}"
+      echo "[auto-merge] Issue #${ISSUE_NUM}: DeltaSpec archive 完了: ${CHANGE_ID}"
     else
-      echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ OpenSpec archive 失敗: ${CHANGE_ID}（merge は成功済み）" >&2
+      echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ DeltaSpec archive 失敗: ${CHANGE_ID}（merge は成功済み）" >&2
     fi
   done
 fi
