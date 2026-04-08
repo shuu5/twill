@@ -322,12 +322,26 @@ cmd_inject_file() {
         exit 1
     }
 
-    tmux paste-buffer -t "$target" || {
-        echo "Error: failed to paste buffer to '$window_name'" >&2
-        exit 1
-    }
+    # tmux >= 3.2 では -p フラグで bracketed paste mode を有効化（仮説 A）
+    local tmux_major tmux_minor
+    tmux_major=$(tmux -V | sed 's/tmux \([0-9]*\)\..*/\1/')
+    tmux_minor=$(tmux -V | sed 's/tmux [0-9]*\.\([0-9]*\).*/\1/')
+    if [[ "$tmux_major" -gt 3 ]] || { [[ "$tmux_major" -eq 3 ]] && [[ "$tmux_minor" -ge 2 ]]; }; then
+        tmux paste-buffer -p -t "$target" || {
+            echo "Error: failed to paste buffer to '$window_name'" >&2
+            exit 1
+        }
+    else
+        tmux paste-buffer -t "$target" || {
+            echo "Error: failed to paste buffer to '$window_name'" >&2
+            exit 1
+        }
+    fi
 
     if ! $no_enter; then
+        # paste-buffer 後に短い待機を挟む（仮説 B: Ink の非同期イベントループが
+        # ペースト処理を完了する前に Enter が到着するタイミング問題を回避）
+        sleep 0.1
         tmux send-keys -t "$target" Enter
     fi
 }

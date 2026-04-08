@@ -67,3 +67,9 @@ scripts:
     type: script
     path: scripts/claude-session-save.sh
     description: "session_id ↔ tmux ペイン マッピング保存（SessionStart hook）"
+
+tests:
+  session-comm-test:
+    type: test
+    path: tests/session-comm.test.sh
+    description: "session-comm.sh inject-file submit fix の検証（#202）"
