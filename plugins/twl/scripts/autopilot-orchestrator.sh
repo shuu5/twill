@@ -170,6 +170,29 @@ get_phase_issues() {
   fi
 }
 
+# Worker の tmux window 名を解決する
+# autopilot-launch.sh が state に保存した window 名を優先し、未設定時はレガシーパターンにフォールバック
+resolve_worker_window() {
+  local issue="$1"
+  local repo_id="${2:-_default}"
+  local -a _repo_args=()
+  [[ "$repo_id" != "_default" ]] && _repo_args=(--repo "$repo_id")
+
+  local name
+  name=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$issue" --field window 2>/dev/null || echo "")
+  if [[ -n "$name" ]]; then
+    printf '%s' "$name"
+    return
+  fi
+
+  # フォールバック: レガシーパターン
+  if [[ "$repo_id" == "_default" ]]; then
+    printf '%s' "ap-#${issue}"
+  else
+    printf '%s' "ap-${repo_id}-#${issue}"
+  fi
+}
+
 # Issue のリポジトリコンテキストを解決
 # 副作用: グローバル変数 ISSUE, ISSUE_REPO_ID, ISSUE_REPO_OWNER, ISSUE_REPO_NAME, ISSUE_REPO_PATH を上書きする
 resolve_issue_repo_context() {
@@ -300,7 +323,9 @@ launch_worker() {
 cleanup_worker() {
   local issue="$1"
   local entry="${2:-_default:${issue}}"
-  local window_name="ap-#${issue}"
+  local repo_id="${entry%%:*}"
+  local window_name
+  window_name=$(resolve_worker_window "$issue" "$repo_id")
   echo "[orchestrator] cleanup: Issue #${issue} — window/branch クリーンアップ" >&2
 
   # Step 1: tmux window を先に終了（Worker がworktreeで動作していない状態を保証してから削除）
@@ -341,7 +366,8 @@ poll_single() {
   local entry="$1"
   resolve_issue_repo_context "$entry"
   local issue="$ISSUE"
-  local window_name="ap-#${issue}"
+  local window_name
+  window_name=$(resolve_worker_window "$issue" "$ISSUE_REPO_ID")
   local poll_count=0
 
   while true; do
@@ -473,7 +499,7 @@ poll_phase() {
         running)
           all_resolved=false
           local window_name
-          [[ "$repo_id" == "_default" ]] && window_name="ap-#${issue_num}" || window_name="ap-${repo_id}-#${issue_num}"
+          window_name=$(resolve_worker_window "$issue_num" "$repo_id")
           local crash_exit=0
           bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$issue_num" --window "$window_name" 2>/dev/null || crash_exit=$?
           if [[ "$crash_exit" -eq 2 ]]; then
@@ -563,7 +589,7 @@ poll_phase() {
         local status
         status=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
         if [[ "$status" == "running" ]]; then
-          [[ "$repo_id" == "_default" ]] && first_running_window="ap-#${issue_num}" || first_running_window="ap-${repo_id}-#${issue_num}"
+          first_running_window=$(resolve_worker_window "$issue_num" "$repo_id")
           break
         fi
       done
