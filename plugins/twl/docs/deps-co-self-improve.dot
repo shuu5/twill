@@ -1,0 +1,60 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="co-self-improve";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+    skill_co_self_improve [label="twl:co-self-improve\n(1,171 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+
+    // Reference Skills
+
+    // L1: Direct Commands
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_co_self_improve; }
+
+    // Edges
+    skill_co_self_improve -> skill_workflow_observe_loop;
+    skill_co_self_improve -> cmd_test_project_init;
+    skill_co_self_improve -> cmd_test_project_reset;
+    skill_co_self_improve -> cmd_test_project_scenario_load;
+    skill_co_self_improve -> cmd_observe_once;
+    skill_co_self_improve -> cmd_problem_detect;
+    skill_co_self_improve -> cmd_issue_draft_from_observation;
+    skill_co_self_improve -> agent_observer_evaluator [style=dashed];
+    skill_co_self_improve -> skill_test_scenario_catalog;
+    skill_co_self_improve -> skill_observation_pattern_catalog;
+    skill_co_self_improve -> skill_load_test_baselines;
+
+    // Ordering constraints (invisible edges)
+    skill_workflow_observe_loop -> cmd_test_project_init [style=invis, weight=10];
+    cmd_test_project_init -> cmd_test_project_reset [style=invis, weight=10];
+    cmd_test_project_reset -> cmd_test_project_scenario_load [style=invis, weight=10];
+    cmd_test_project_scenario_load -> cmd_observe_once [style=invis, weight=10];
+    cmd_observe_once -> cmd_problem_detect [style=invis, weight=10];
+    cmd_problem_detect -> cmd_issue_draft_from_observation [style=invis, weight=10];
+    cmd_issue_draft_from_observation -> agent_observer_evaluator [style=invis, weight=10];
+    agent_observer_evaluator -> skill_test_scenario_catalog [style=invis, weight=10];
+    skill_test_scenario_catalog -> skill_observation_pattern_catalog [style=invis, weight=10];
+    skill_observation_pattern_catalog -> skill_load_test_baselines [style=invis, weight=10];
+
+}

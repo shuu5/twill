@@ -104,6 +104,12 @@ Autopilot で複数 Issue を一括実装:
 </details>
 
 <details>
+<summary>co-self-improve</summary>
+
+![co-self-improve](./docs/deps-co-self-improve.svg)
+</details>
+
+<details>
 <summary>workflow-setup</summary>
 
 ![workflow-setup](./docs/deps-workflow-setup.svg)

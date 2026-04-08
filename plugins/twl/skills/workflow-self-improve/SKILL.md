@@ -63,3 +63,10 @@ fi
 - ユーザー確認なしでファイルを変更してはならない（IS_AUTOPILOT=true 時を除く）
 - cooldown 判定をスキップしてはならない
 - Step 1 で 0 件の場合に後続ステップを実行してはならない
+
+## co-self-improve との関係
+
+本 workflow は**受動的** self-improvement（autopilot 後処理）を担当する。
+co-autopilot 完了時に自動呼び出しされ、蓄積された self-improve Issue を collect → propose → close する。
+**能動的**なライブセッション観察（out-of-process observation）は `co-self-improve` controller（ADR-010 で定義）が担当する。
+両者は責務が重ならず、独立して動作する。

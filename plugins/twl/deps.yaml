@@ -201,6 +201,27 @@ skills:
       - atomic: schema-update
     description: "standalone ユーティリティコマンドの統合エントリポイント"
 
+  co-self-improve:
+    type: controller
+    path: skills/co-self-improve/SKILL.md
+    effort: high
+    tools: [Agent(observer-evaluator)]
+    spawnable_by: [user]
+    can_spawn: [workflow, atomic, specialist, reference]
+    calls:
+      - workflow: workflow-observe-loop  # 子 5 で実装
+      - atomic: test-project-init  # 子 3 で実装
+      - atomic: test-project-reset  # 子 3 で実装
+      - atomic: test-project-scenario-load  # 子 3 で実装
+      - atomic: observe-once  # 子 4 で実装
+      - atomic: problem-detect  # 子 4 で実装
+      - atomic: issue-draft-from-observation  # 子 4 で実装
+      - specialist: observer-evaluator  # 子 6 で実装
+      - reference: test-scenario-catalog  # 子 7 で実装
+      - reference: observation-pattern-catalog  # 子 7 で実装
+      - reference: load-test-baselines  # 子 7 で実装
+    description: "ライブセッション観察と能動的 self-improvement framework のエントリポイント controller"
+
   workflow-setup:
     type: workflow
     refined_by: "ref-prompt-guide@2c7a62f2"
