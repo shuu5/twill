@@ -24,16 +24,20 @@ spawnable_by:
 
 ### Step 1: 事前確認
 
-1. OBSERVED_WINDOW の存在確認 (`bash "$CLAUDE_PLUGIN_ROOT/scripts/session-state-wrapper.sh" state "$OBSERVED_WINDOW"`)
-2. 自 window と異なることを確認 (自分自身を観察すると無限ループ)
+1. 引数バリデーション:
+   - `OBSERVED_WINDOW`: `[[ "$OBSERVED_WINDOW" =~ ^[A-Za-z0-9_.:-]+$ ]]` で検証 (パスセパレータ拒否)
+   - `MAX_CYCLES`: `[[ "$MAX_CYCLES" =~ ^[1-9][0-9]*$ ]]` で整数値検証
+   - `INTERVAL`: `[[ "$INTERVAL" =~ ^[0-9]+$ ]]` で整数値検証
+2. OBSERVED_WINDOW の存在確認 (`bash "$CLAUDE_PLUGIN_ROOT/scripts/session-state-wrapper.sh" state "$OBSERVED_WINDOW"`)
+3. 自 window と異なることを確認 (自分自身を観察すると無限ループ)
    - 自 window 名: `tmux display-message -p '#W'` で取得
    - 一致する場合は exit 2 で終了
-3. ユーザーに「observe loop を開始します。停止は Ctrl-C」と通知
+4. ユーザーに「observe loop を開始します。停止は Ctrl-C」と通知
 
 ### Step 2: ループ本体 (MUST: bash ループで実装)
 
 **MUST**: ループは bash で実装し、各サイクルの中間出力は捨てる (集約 JSON のみ retain)。
-LLM がサイクルごとに Skill 呼び出しすると token が線形増加するため、observe-and-detect composite のロジックを bash 内で直接実行する (observe-wrapper.sh + observe-detect.sh)。
+LLM がサイクルごとに Skill 呼び出しすると token が線形増加するため、observe-and-detect composite のロジック (observe-once + problem-detect) を bash 内で直接実行する。
 
 ```bash
 SESSION_ID="$(date +%s)-${OBSERVED_WINDOW}"
@@ -42,8 +46,8 @@ mkdir -p "$WORK_DIR"
 DETECTIONS_FILE="$WORK_DIR/detections_raw.jsonl"
 : > "$DETECTIONS_FILE"
 
-for cycle in $(seq 1 $MAX_CYCLES); do
-  # 1. observe-once (bash 直接実行)
+for cycle in $(seq 1 "$MAX_CYCLES"); do
+  # 1. observe-once (observe-wrapper.sh で capture 取得)
   CAPTURE_JSON=$("$CLAUDE_PLUGIN_ROOT/scripts/observe-wrapper.sh" "$OBSERVED_WINDOW" --lines 30)
   if [ $? -ne 0 ]; then
     echo "observed session exited or error" >&2
@@ -54,16 +58,29 @@ for cycle in $(seq 1 $MAX_CYCLES); do
   CAPTURE_FILE="$WORK_DIR/capture_${cycle}.json"
   echo "$CAPTURE_JSON" > "$CAPTURE_FILE"
 
-  # 3. problem-detect (grep ベースのパターンマッチ)
-  #    problem-detect.md の stub パターンを bash で直接実行
-  DETECT_JSON=$(bash "$CLAUDE_PLUGIN_ROOT/scripts/observe-detect.sh" "$CAPTURE_FILE" "$cycle")
+  # 3. problem-detect (capture から stub パターンで grep マッチ)
+  #    problem-detect.md の stub パターンを inline で実行
+  CAPTURE_TEXT=$(echo "$CAPTURE_JSON" | jq -r '.capture // empty' 2>/dev/null || true)
+  DETECT_JSON="{\"cycle_id\":$cycle,\"window\":\"$OBSERVED_WINDOW\",\"detections\":[]}"
+  if [ -n "$CAPTURE_TEXT" ]; then
+    MATCHES=$(echo "$CAPTURE_TEXT" | grep -n -E 'Error:|APIError:|MergeGateError:|failed to|\[CRITICAL\]|nudge sent|silent.*deletion|AC.*矮小化|矮小化|force.with.lease' 2>/dev/null || true)
+    if [ -n "$MATCHES" ]; then
+      DETECT_JSON=$(echo "$MATCHES" | jq -R -s 'split("\n") | map(select(length > 0)) | map({
+        "line": .,
+        "line_number": (split(":")[0] | tonumber),
+        "pattern": "matched",
+        "severity": (if test("APIError|MergeGateError|\\[CRITICAL\\]|silent.*deletion|AC.*矮小化|矮小化") then "critical" else "warning" end),
+        "category": "auto-detect"
+      }) | {cycle_id: '"$cycle"', window: "'"$OBSERVED_WINDOW"'", detections: .}')
+    fi
+  fi
 
   # 4. 検出結果を JSONL に追記
   echo "$DETECT_JSON" >> "$DETECTIONS_FILE"
 
   # 5. 新規 detection があれば通知
-  NEW_COUNT=$(echo "$DETECT_JSON" | jq '.detections | length')
-  if [ "$NEW_COUNT" -gt 0 ]; then
+  NEW_COUNT=$(echo "$DETECT_JSON" | jq '.detections | length' 2>/dev/null || echo "0")
+  if [ "$NEW_COUNT" -gt 0 ] 2>/dev/null; then
     echo "[cycle $cycle] $NEW_COUNT detection(s) found" >&2
     if [ "$STOP_ON_DETECT" = "true" ]; then
       break
@@ -104,9 +121,10 @@ jq -s '[.[].detections[]] | group_by(.pattern + "_" + (.line_number|tostring))
   ) | .[0:10]' "$DETECTIONS_FILE" > "$WORK_DIR/top_detections.json"
 ```
 
-### Step 4: 結果報告
+### Step 4: retrospective + 結果報告
 
-集約結果を controller に返す:
+1. `commands/observe-retrospective.md` を Read → 実行 (過去 observation とのパターン照合)
+2. 集約結果を controller に返す:
 
 ```json
 {

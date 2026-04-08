@@ -1,5 +1,5 @@
 #!/usr/bin/env bats
-# workflow-observe-loop.bats - structural validation of workflow-observe-loop
+# workflow-observe-loop.bats - structural + behavioral validation
 
 load '../helpers/common'
 
@@ -23,10 +23,7 @@ teardown() {
   grep -q 'effort: high' "$skill_md"
   grep -q 'spawnable_by:' "$skill_md"
   grep -q '- controller' "$skill_md"
-}
-
-@test "workflow-observe-loop: SKILL.md contains Step 1-4" {
-  local skill_md="$REPO_ROOT/skills/workflow-observe-loop/SKILL.md"
+  # Step 1-4 存在
   grep -q '### Step 1' "$skill_md"
   grep -q '### Step 2' "$skill_md"
   grep -q '### Step 3' "$skill_md"
@@ -37,20 +34,24 @@ teardown() {
 # Case 2: 自 window 拒否ロジック明記
 # ---------------------------------------------------------------------------
 
-@test "workflow-observe-loop: self-window rejection documented" {
+@test "workflow-observe-loop: self-window rejection documented with exit 2" {
   local skill_md="$REPO_ROOT/skills/workflow-observe-loop/SKILL.md"
   grep -q '自 window' "$skill_md"
   grep -q 'exit 2' "$skill_md"
 }
 
 # ---------------------------------------------------------------------------
-# Case 3: bash ループ実装が MUST として明記
+# Case 3: bash ループ実装が MUST として明記 + context budget
 # ---------------------------------------------------------------------------
 
-@test "workflow-observe-loop: bash loop implementation is MUST" {
+@test "workflow-observe-loop: bash loop MUST and within 200 lines" {
   local skill_md="$REPO_ROOT/skills/workflow-observe-loop/SKILL.md"
-  run grep -c 'MUST.*bash' "$skill_md"
-  assert [ "$output" -ge 1 ]
+  # bash ループ MUST
+  grep -q 'MUST.*bash' "$skill_md"
+  # context budget: 200 行以内
+  local lines
+  lines=$(wc -l < "$skill_md")
+  [ "$lines" -le 200 ]
 }
 
 # ---------------------------------------------------------------------------
@@ -60,17 +61,17 @@ teardown() {
 @test "workflow-observe-loop: at least 4 MUST NOT items" {
   local skill_md="$REPO_ROOT/skills/workflow-observe-loop/SKILL.md"
   local count
-  count=$(grep -c '^\- ' <(sed -n '/禁止事項/,$ p' "$skill_md"))
+  count=$(sed -n '/禁止事項/,$ p' "$skill_md" | grep -c '^\- ')
   [ "$count" -ge 4 ]
 }
 
 # ---------------------------------------------------------------------------
-# Case 5: context budget (200 行以内)
+# Case 5: 集約検証 (pattern+line_number でユニーク化が文書化)
 # ---------------------------------------------------------------------------
 
-@test "workflow-observe-loop: SKILL.md is within 200 lines" {
+@test "workflow-observe-loop: aggregation uses pattern+line_number dedup" {
   local skill_md="$REPO_ROOT/skills/workflow-observe-loop/SKILL.md"
-  local lines
-  lines=$(wc -l < "$skill_md")
-  [ "$lines" -le 200 ]
+  grep -q 'pattern.*line_number' "$skill_md"
+  grep -q 'group_by' "$skill_md"
+  grep -q 'top.*10' "$skill_md"
 }
