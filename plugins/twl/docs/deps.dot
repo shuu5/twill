@@ -316,6 +316,7 @@ digraph Dependencies {
     skill_co_self_improve -> cmd_observe_once;
     skill_co_self_improve -> cmd_problem_detect;
     skill_co_self_improve -> cmd_issue_draft_from_observation;
+    skill_co_self_improve -> cmd_observe_retrospective;
     skill_co_self_improve -> agent_observer_evaluator [style=dashed];
     skill_co_self_improve -> skill_test_scenario_catalog;
     skill_co_self_improve -> skill_observation_pattern_catalog;
@@ -634,7 +635,8 @@ digraph Dependencies {
     cmd_test_project_scenario_load -> cmd_observe_once [style=invis, weight=10];
     cmd_observe_once -> cmd_problem_detect [style=invis, weight=10];
     cmd_problem_detect -> cmd_issue_draft_from_observation [style=invis, weight=10];
-    cmd_issue_draft_from_observation -> agent_observer_evaluator [style=invis, weight=10];
+    cmd_issue_draft_from_observation -> cmd_observe_retrospective [style=invis, weight=10];
+    cmd_observe_retrospective -> agent_observer_evaluator [style=invis, weight=10];
     agent_observer_evaluator -> skill_test_scenario_catalog [style=invis, weight=10];
     skill_test_scenario_catalog -> skill_observation_pattern_catalog [style=invis, weight=10];
     skill_observation_pattern_catalog -> skill_load_test_baselines [style=invis, weight=10];

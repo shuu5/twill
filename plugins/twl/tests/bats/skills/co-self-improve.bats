@@ -48,7 +48,7 @@ teardown() {
 @test "co-self-improve: deps.yaml entry has 11 calls" {
   local count
   count=$(yq '.skills."co-self-improve".calls | length' "$REPO_ROOT/deps.yaml")
-  [ "$count" -eq 11 ]
+  [ "$count" -eq 12 ]
 }
 
 # ---------------------------------------------------------------------------

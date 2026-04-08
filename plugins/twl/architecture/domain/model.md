@@ -137,7 +137,8 @@ graph TD
 ```
 
 **Spawning ルール**:
-- co-autopilot のみが workflow を orchestrate できる（Implementation 操作のレビュー・テスト）
+- co-autopilot は Implementation workflow を orchestrate できる（レビュー・テスト）
+- co-self-improve は Observation workflow を orchestrate できる（ADR-011: ライブ観察ループ）
 - co-issue は specialist を spawn できる（issue-critic, issue-feasibility, worker-codex-reviewer）
 - co-project は composite + atomic（構成変更の最小単位で操作）
 - co-architect は atomic + reference のみ（設計情報の参照・評価）

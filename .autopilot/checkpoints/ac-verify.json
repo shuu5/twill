@@ -1,0 +1,21 @@
+{
+  "step": "ac-verify",
+  "status": "WARN",
+  "findings": [
+    {
+      "severity": "WARNING",
+      "category": "bug",
+      "confidence": 60,
+      "message": "AC「bats テスト PASS」は bats-support/bats-assert ライブラリ未セットアップのため手動確認要",
+      "evidence": "tests/lib/bats-support/ が空ディレクトリ"
+    },
+    {
+      "severity": "WARNING",
+      "category": "bug",
+      "confidence": 60,
+      "message": "AC「Step 0 テキスト出力貼付」は PR merge 後に Issue comment で対応要",
+      "evidence": "副作用 AC — PR diff 外"
+    }
+  ],
+  "timestamp": "2026-04-08T00:00:00Z"
+}

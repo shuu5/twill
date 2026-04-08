@@ -121,7 +121,7 @@ flowchart TD
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **controller** | co-self-improve | Live Observation 統括。テストプロジェクト管理も担う |
-| **workflow** | workflow-observe | observe ループ + 問題検出 + Issue draft |
+| **workflow** | workflow-observe-loop | observe ループ + 問題検出 + Issue draft |
 | **workflow** | workflow-test-project | テストプロジェクト init → scenario-load → 実行 → reset |
 | **atomic** | test-project-init | 隔離 worktree 作成 |
 | **atomic** | test-project-reset | テストプロジェクト クリーンアップ |
