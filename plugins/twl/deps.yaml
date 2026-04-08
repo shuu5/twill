@@ -678,6 +678,38 @@ commands:
     dispatch_mode: runner
     description: "AC（受け入れ基準）抽出"
 
+  llm-delegate:
+    type: atomic
+    path: scripts/chain-runner.sh
+    spawnable_by: [workflow]
+    can_spawn: []
+    dispatch_mode: runner
+    description: "LLM ステップの開始を chain-runner に記録（current_step + llm_delegated_at）"
+
+  llm-complete:
+    type: atomic
+    path: scripts/chain-runner.sh
+    spawnable_by: [workflow]
+    can_spawn: []
+    dispatch_mode: runner
+    description: "LLM ステップの完了を chain-runner に記録（llm_completed_at）"
+
+  dispatch-info:
+    type: atomic
+    path: scripts/chain-runner.sh
+    spawnable_by: [workflow]
+    can_spawn: []
+    dispatch_mode: runner
+    description: "ステップの dispatch_mode と command パスを JSON で返す"
+
+  chain-status:
+    type: atomic
+    path: scripts/chain-runner.sh
+    spawnable_by: [workflow, controller]
+    can_spawn: []
+    dispatch_mode: runner
+    description: "全ステップの進捗状態（done/running/pending/skipped）と dispatch_mode を一覧表示"
+
   ts-preflight:
     type: atomic
     refined_by: "ref-prompt-guide@2c7a62f2"

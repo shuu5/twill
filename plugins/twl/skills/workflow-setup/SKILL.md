@@ -31,23 +31,25 @@ setup chain のオーケストレーター。chain 実行順序は deps.yaml に
 
 `CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"` として以下を順に実行:
 
-1. **init**: `bash "$CR" init "$ISSUE_NUM"` → JSON の `recommended_action` を記録
-2. **worktree-create**: IS_AUTOPILOT=true ならスキップ。Manual かつ `recommended_action=worktree` のみ: `bash "$CR" worktree-create "$ARGUMENTS"`
-3. **board-status-update**: ISSUE_NUM ありのみ: `bash "$CR" board-status-update "$ISSUE_NUM"`
-4. **crg-auto-build**: `NEXT=$(bash "$CR" next-step "$ISSUE_NUM" "board-status-update")`。`crg-auto-build` → `commands/crg-auto-build.md` Read → 実行
-5. **arch-ref**: `NEXT=$(bash "$CR" next-step "$ISSUE_NUM" "crg-auto-build")`。`arch-ref` → `bash "$CR" arch-ref "$ISSUE_NUM"` → 出力パス Read → ARCH_CONTEXT 保持
-6. **change-propose**: `NEXT=$(bash "$CR" next-step "$ISSUE_NUM" "arch-ref")`。`change-propose` → ドメインルールの OpenSpec 分岐に従い `commands/change-propose.md` Read → 実行
-7. **ac-extract**: `NEXT=$(bash "$CR" next-step "$ISSUE_NUM" "change-propose")`。`ac-extract` → `bash "$CR" ac-extract`
+1. **init** [runner]: `bash "$CR" init "$ISSUE_NUM"` → JSON の `recommended_action` を記録
+2. **worktree-create** [trigger]: IS_AUTOPILOT=true ならスキップ。Manual かつ `recommended_action=worktree` のみ: `bash "$CR" worktree-create "$ARGUMENTS"`
+3. **board-status-update** [runner]: ISSUE_NUM ありのみ: `bash "$CR" board-status-update "$ISSUE_NUM"`
+4. **crg-auto-build** [llm]: `bash "$CR" llm-delegate "crg-auto-build" "$ISSUE_NUM"` → `commands/crg-auto-build.md` Read → 実行 → `bash "$CR" llm-complete "crg-auto-build" "$ISSUE_NUM"`
+5. **arch-ref** [runner]: `bash "$CR" arch-ref "$ISSUE_NUM"` → 出力パス Read → ARCH_CONTEXT 保持
+6. **change-propose** [llm]: `bash "$CR" llm-delegate "change-propose" "$ISSUE_NUM"` → ドメインルールの OpenSpec 分岐に従い `commands/change-propose.md` Read → 実行 → `bash "$CR" llm-complete "change-propose" "$ISSUE_NUM"`
+7. **ac-extract** [runner]: `bash "$CR" ac-extract`
 8. **workflow-test-ready 遷移**:
    ```bash
    eval "$(bash "$CR" autopilot-detect)"
    eval "$(bash "$CR" quick-detect)"
    ```
-   - IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready **呼び出し禁止**。直接実装 → commit → push → PR 作成（`source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/pr-create-helper.sh" && pr_create_with_closes "$ISSUE_NUM" quick`、PR 本文に必ず `Closes #${ISSUE_NUM}` を機械的に挿入）→ `bash "$CR" ac-verify` → `commands/ac-verify.md` Read → 実行（checkpoint 永続化必須）→ `commands/merge-gate.md` Read → merge-gate 実行（merge-gate は ac-verify checkpoint を統合する）
+   - IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready **呼び出し禁止**。直接実装 → commit → push → PR 作成（`source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/pr-create-helper.sh" && pr_create_with_closes "$ISSUE_NUM" quick`、PR 本文に必ず `Closes #${ISSUE_NUM}` を機械的に挿入）→ `bash "$CR" llm-delegate "ac-verify" "$ISSUE_NUM"` → `commands/ac-verify.md` Read → 実行（checkpoint 永続化必須）→ `bash "$CR" llm-complete "ac-verify" "$ISSUE_NUM"` → `commands/merge-gate.md` Read → merge-gate 実行（merge-gate は ac-verify checkpoint を統合する）
    - IS_QUICK=false かつ IS_AUTOPILOT=true → 即座に `/twl:workflow-test-ready` を Skill 実行（停止禁止）
    - IS_AUTOPILOT=false → 「setup chain 完了。次: `/twl:workflow-test-ready`」と案内
 
 ## compaction 復帰プロトコル
 
 `refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `init board-status-update crg-auto-build arch-ref change-propose ac-extract`
+
+compaction 復帰時: `bash "$CR" chain-status "$ISSUE_NUM"` で現在状態を確認し、`current_step` から再開する。llm-delegate 記録済みステップは llm-complete 未実行の場合は再実行する。
 

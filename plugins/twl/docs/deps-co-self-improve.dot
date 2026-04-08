@@ -16,7 +16,7 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,151 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,503 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
@@ -24,7 +24,7 @@ digraph Dependencies {
     cmd_observe_once [label="observe-once\n(436 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_problem_detect [label="problem-detect\n(678 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_draft_from_observation [label="issue-draft-from-observation\n(591 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_observe_and_detect [label="observe-and-detect\n(461 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_observe_and_detect [label="observe-and-detect\n(460 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_observe_retrospective [label="observe-retrospective\n(521 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_project_init [label="test-project-init\n(847 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_project_reset [label="test-project-reset\n(443 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -61,6 +61,8 @@ digraph Dependencies {
     skill_co_self_improve -> skill_load_test_baselines;
     skill_workflow_observe_loop -> cmd_observe_and_detect;
     skill_workflow_observe_loop -> cmd_observe_retrospective;
+    skill_workflow_observe_loop -> script_observe_wrapper;
+    skill_workflow_observe_loop -> script_session_state_wrapper;
     cmd_observe_once -> script_observe_wrapper;
     cmd_observe_once -> script_session_state_wrapper;
     cmd_problem_detect -> skill_observation_pattern_catalog;
@@ -79,6 +81,8 @@ digraph Dependencies {
     skill_test_scenario_catalog -> skill_observation_pattern_catalog [style=invis, weight=10];
     skill_observation_pattern_catalog -> skill_load_test_baselines [style=invis, weight=10];
     cmd_observe_and_detect -> cmd_observe_retrospective [style=invis, weight=10];
+    cmd_observe_retrospective -> script_observe_wrapper [style=invis, weight=10];
+    script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];
     script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];
 
 }

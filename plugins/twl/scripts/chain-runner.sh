@@ -506,12 +506,15 @@ step_arch_ref() {
 }
 
 # --- next-step: is_quick と current_step から次ステップ名を返す ---
-# Usage: step_next_step <issue_num> <current_step>
+# Usage: step_next_step <issue_num> <current_step> [--json]
 # stdout に次ステップ名を出力（全完了時は "done"）
+# --json フラグ: {"step":"<name>","type":"<runner|llm>","command":"<path>"} 形式で出力
 # NOTE: クエリコマンドのため record_current_step は呼ばない（chain 状態を変更しない）
 step_next_step() {
   local issue_num="${1:-}"
   local current_step="${2:-}"
+  local output_json=false
+  [[ "${3:-}" == "--json" ]] && output_json=true
 
   # 引数バリデーション
   if [[ -z "$issue_num" ]] || [[ ! "$issue_num" =~ ^[0-9]+$ ]]; then
@@ -532,7 +535,18 @@ step_next_step() {
       if [[ "$is_quick" == "true" ]] && printf '%s\n' "${QUICK_SKIP_STEPS[@]}" | grep -qxF "$step"; then
         continue
       fi
-      echo "$step"
+      if $output_json; then
+        local _dispatch_mode="${CHAIN_STEP_DISPATCH[$step]:-runner}"
+        local _command_path="${CHAIN_STEP_COMMAND[$step]:-}"
+        if command -v jq >/dev/null 2>&1; then
+          jq -nc --arg step "$step" --arg type "$_dispatch_mode" --arg command "$_command_path" \
+            '{step: $step, type: $type, command: $command}'
+        else
+          echo "{\"step\":\"${step}\",\"type\":\"${_dispatch_mode}\",\"command\":\"${_command_path}\"}"
+        fi
+      else
+        echo "$step"
+      fi
       return 0
     fi
     [[ "$step" == "$current_step" ]] && found=true
@@ -546,6 +560,131 @@ step_next_step() {
 
   # 全ステップ完了
   echo "done"
+}
+
+# --- dispatch-info: ステップの dispatch_mode と command パスを返す ---
+# Usage: chain-runner.sh dispatch-info <step_name>
+# stdout に JSON {"step":"<name>","type":"<runner|llm>","command":"<path>"} を出力
+step_dispatch_info() {
+  local step_name="${1:-}"
+  if [[ -z "$step_name" ]]; then
+    echo "ERROR: step name required" >&2
+    return 1
+  fi
+  local dispatch_mode="${CHAIN_STEP_DISPATCH[$step_name]:-runner}"
+  local command_path="${CHAIN_STEP_COMMAND[$step_name]:-}"
+  if command -v jq >/dev/null 2>&1; then
+    jq -nc \
+      --arg step "$step_name" \
+      --arg type "$dispatch_mode" \
+      --arg command "$command_path" \
+      '{step: $step, type: $type, command: $command}'
+  else
+    echo "{\"step\":\"${step_name}\",\"type\":\"${dispatch_mode}\",\"command\":\"${command_path}\"}"
+  fi
+}
+
+# --- llm-delegate: LLM ステップの開始を chain-runner に記録 ---
+# Usage: chain-runner.sh llm-delegate <step_name> [issue_num]
+# LLM が特定のステップを実行し始める前に呼ぶ。current_step と llm_delegated_at を記録する。
+# compaction 復帰時に chain-runner の状態から正確にリカバリできる。
+step_llm_delegate() {
+  local step_name="${1:-}"
+  local issue_num="${2:-$(resolve_issue_num 2>/dev/null || echo "")}"
+  if [[ -z "$step_name" ]]; then
+    echo "ERROR: step name required" >&2
+    return 1
+  fi
+  [[ "$step_name" =~ ^[a-z0-9-]+$ ]] || { echo "ERROR: invalid step name" >&2; return 1; }
+  local dispatch_mode="${CHAIN_STEP_DISPATCH[$step_name]:-runner}"
+  if [[ "$dispatch_mode" != "llm" ]]; then
+    echo "WARN: ${step_name} の dispatch_mode は '${dispatch_mode}'（llm ではありません）" >&2
+  fi
+  local ts
+  ts=$(date -Iseconds 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
+  if [[ -n "$issue_num" ]]; then
+    python3 -m twl.autopilot.state write \
+      --autopilot-dir "$(resolve_autopilot_dir)" \
+      --type issue --issue "$issue_num" --role worker \
+      --set "current_step=${step_name}" \
+      --set "llm_delegated_at=${ts}" \
+      2>/dev/null || true
+  else
+    record_current_step "$step_name"
+  fi
+  ok "llm-delegate" "${step_name} → LLM 実行委譲"
+}
+
+# --- llm-complete: LLM ステップの完了を chain-runner に記録 ---
+# Usage: chain-runner.sh llm-complete <step_name> [issue_num]
+# LLM がステップを完了した後に呼ぶ。llm_completed_at を記録する。
+step_llm_complete() {
+  local step_name="${1:-}"
+  local issue_num="${2:-$(resolve_issue_num 2>/dev/null || echo "")}"
+  if [[ -z "$step_name" ]]; then
+    echo "ERROR: step name required" >&2
+    return 1
+  fi
+  [[ "$step_name" =~ ^[a-z0-9-]+$ ]] || { echo "ERROR: invalid step name" >&2; return 1; }
+  local ts
+  ts=$(date -Iseconds 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
+  if [[ -n "$issue_num" ]]; then
+    python3 -m twl.autopilot.state write \
+      --autopilot-dir "$(resolve_autopilot_dir)" \
+      --type issue --issue "$issue_num" --role worker \
+      --set "llm_completed_at=${ts}" \
+      2>/dev/null || true
+  fi
+  ok "llm-complete" "${step_name} 完了"
+}
+
+# --- chain-status: 全ステップの進捗状態を一覧表示 ---
+# Usage: chain-runner.sh chain-status [issue_num]
+# 各ステップの状態（done/running/pending/skipped）と dispatch_mode を表示
+step_chain_status() {
+  local issue_num="${1:-$(resolve_issue_num 2>/dev/null || echo "")}"
+  if [[ -z "$issue_num" ]]; then
+    echo "ERROR: issue_num が取得できません" >&2
+    return 1
+  fi
+
+  local current_step
+  current_step="$(python3 -m twl.autopilot.state read \
+    --autopilot-dir "$(resolve_autopilot_dir)" \
+    --type issue --issue "$issue_num" --field current_step 2>/dev/null || echo "")"
+
+  local is_quick
+  is_quick="$(python3 -m twl.autopilot.state read \
+    --autopilot-dir "$(resolve_autopilot_dir)" \
+    --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "false")"
+  [[ "$is_quick" == "true" ]] || is_quick="false"
+
+  echo "chain-status: Issue #${issue_num} (is_quick=${is_quick}, current=${current_step:-none})"
+  echo "---"
+
+  local found_current=false
+  for step in "${CHAIN_STEPS[@]}"; do
+    local dispatch_mode="${CHAIN_STEP_DISPATCH[$step]:-runner}"
+    local type_label="[${dispatch_mode}]"
+
+    if [[ "$is_quick" == "true" ]] && printf '%s\n' "${QUICK_SKIP_STEPS[@]}" | grep -qxF "$step"; then
+      echo "  ⊘ ${step} ${type_label} (skipped/quick)"
+      continue
+    fi
+
+    if [[ "$found_current" == "true" ]]; then
+      echo "  ○ ${step} ${type_label} (pending)"
+      continue
+    fi
+
+    if [[ "$step" == "$current_step" ]]; then
+      echo "  ▶ ${step} ${type_label} (running)"
+      found_current=true
+      continue
+    fi
+
+    echo "  ✓ ${step} ${type_label} (done)"
+  done
 }
 
 # --- change-id-resolve: deltaspec change-id 解決 ---
@@ -872,6 +1011,10 @@ main() {
     change-id-resolve)   step_change_id_resolve "$@" ;;
     test-scaffold)       record_current_step "test-scaffold"; ok "test-scaffold" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     next-step)           step_next_step "$@" ;;
+    dispatch-info)       step_dispatch_info "$@" ;;
+    llm-delegate)        step_llm_delegate "$@" ;;
+    llm-complete)        step_llm_complete "$@" ;;
+    chain-status)        step_chain_status "$@" ;;
     ts-preflight)        step_ts_preflight "$@" ;;
     pr-test)             step_pr_test "$@" ;;
     ac-verify)           step_ac_verify "$@" ;;
@@ -887,7 +1030,8 @@ main() {
       echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
       echo "         board-archive, ac-extract, arch-ref, change-id-resolve, next-step, ts-preflight," >&2
       echo "         pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge, check," >&2
-      echo "         quick-guard, autopilot-detect, quick-detect" >&2
+      echo "         quick-guard, autopilot-detect, quick-detect," >&2
+      echo "         dispatch-info, llm-delegate, llm-complete, chain-status" >&2
       exit 1
       ;;
   esac
