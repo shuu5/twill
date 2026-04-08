@@ -59,9 +59,9 @@ Line <line_number>: `<line excerpt>`
   "timestamp": "<timestamp>",
   "drafts": [
     {
-      "severity": "high",
+      "severity": "critical",
       "category": "merge-gate-failure",
-      "title": "[Observation][high] merge-gate-failure: MergeGateError:",
+      "title": "[Observation][critical] merge-gate-failure: MergeGateError:",
       "body": "<markdown draft>",
       "labels": ["from-observation", "ctx/observation", "scope/plugins-twl"]
     }

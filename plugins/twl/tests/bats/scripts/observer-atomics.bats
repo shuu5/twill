@@ -179,7 +179,7 @@ JSON
   "detections": [
     {
       "pattern": "MergeGateError:",
-      "severity": "high",
+      "severity": "critical",
       "category": "merge-gate-failure",
       "line": "MergeGateError: base drift detected",
       "line_number": 17
@@ -193,7 +193,7 @@ JSON
   [[ "$DETECTION_COUNT" -eq 1 ]]
 
   SEVERITY=$(jq -r '.detections[0].severity' "$SANDBOX/detection.json")
-  [[ "$SEVERITY" == "high" ]]
+  [[ "$SEVERITY" == "critical" ]]
 
   CATEGORY=$(jq -r '.detections[0].category' "$SANDBOX/detection.json")
   [[ "$CATEGORY" == "merge-gate-failure" ]]
