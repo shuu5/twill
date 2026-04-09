@@ -422,3 +422,87 @@ class TestCheckJsonOutput(_Phase1TestBase):
             "status" in i and i["status"] in ("ok", "missing") for i in output["items"]
         )
         assert has_file_items, "Should have file existence check items"
+
+
+# ===========================================================================
+# Requirement: handle_check は sys.exit を直接呼ばず exit code を返す
+# ===========================================================================
+
+class TestCheckProcessExitCode(_Phase1TestBase):
+    """Scenario tests for check process exit code (handle_check refactor)."""
+
+    def test_check_flag_ok_exits_zero(self):
+        """Scenario: --check フラグで全ファイル存在時のプロセス終了コード
+        WHEN: 全ファイルが存在する状態で --check を実行する
+        THEN: プロセスは exit code 0 で終了する（SHALL）
+        """
+        plugin_dir = _make_valid_plugin(self.tmpdir, name="exit-ok")
+        result = run_engine(plugin_dir, "--check")
+        assert result.returncode == 0, (
+            f"--check with all files present must exit 0, got {result.returncode}"
+        )
+
+    def test_check_flag_missing_exits_nonzero(self):
+        """Scenario: --check フラグでファイル欠損時のプロセス終了コード
+        WHEN: ファイルが欠損している状態で --check を実行する
+        THEN: プロセスは exit code 1 で終了する（SHALL）
+        """
+        plugin_dir = _make_missing_file_plugin(self.tmpdir)
+        result = run_engine(plugin_dir, "--check")
+        assert result.returncode == 1, (
+            f"--check with missing files must exit 1, got {result.returncode}"
+        )
+
+    def test_check_subcommand_ok_exits_zero(self):
+        """Scenario: check サブコマンドで全ファイル存在時のプロセス終了コード
+        WHEN: 全ファイルが存在する状態で check サブコマンドを実行する
+        THEN: プロセスは exit code 0 で終了する（SHALL）
+        """
+        plugin_dir = _make_valid_plugin(self.tmpdir, name="sub-ok")
+        result = subprocess.run(
+            [sys.executable, "-m", "twl", "check"],
+            cwd=str(plugin_dir),
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, (
+            f"'twl check' with all files present must exit 0, got {result.returncode}"
+        )
+
+    def test_check_subcommand_missing_exits_nonzero(self):
+        """Scenario: check サブコマンドでファイル欠損時のプロセス終了コード
+        WHEN: ファイルが欠損している状態で check サブコマンドを実行する
+        THEN: プロセスは exit code 1 で終了する（SHALL）
+        """
+        plugin_dir = _make_missing_file_plugin(self.tmpdir)
+        result = subprocess.run(
+            [sys.executable, "-m", "twl", "check"],
+            cwd=str(plugin_dir),
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 1, (
+            f"'twl check' with missing files must exit 1, got {result.returncode}"
+        )
+
+    def test_check_json_ok_exits_zero(self):
+        """Scenario: --check --format json で全ファイル存在時のプロセス終了コード
+        WHEN: 全ファイルが存在する状態で --check --format json を実行する
+        THEN: プロセスは exit code 0 で終了する（SHALL）
+        """
+        plugin_dir = _make_valid_plugin(self.tmpdir, name="json-ok")
+        result = run_engine(plugin_dir, "--check", "--format", "json")
+        assert result.returncode == 0, (
+            f"--check --format json with all files present must exit 0, got {result.returncode}"
+        )
+
+    def test_check_json_missing_exits_nonzero(self):
+        """Scenario: --check --format json でファイル欠損時のプロセス終了コード
+        WHEN: ファイルが欠損している状態で --check --format json を実行する
+        THEN: プロセスは exit code 1 で終了する（SHALL）
+        """
+        plugin_dir = _make_missing_file_plugin(self.tmpdir)
+        result = run_engine(plugin_dir, "--check", "--format", "json")
+        assert result.returncode == 1, (
+            f"--check --format json with missing files must exit 1, got {result.returncode}"
+        )

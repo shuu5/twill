@@ -44,8 +44,7 @@ def main():
         deps = load_deps(plugin_root)
         graph = build_graph(deps, plugin_root)
         plugin_name = get_plugin_name(deps, plugin_root)
-        handle_check(sub_args, graph, deps, plugin_root, plugin_name)
-        sys.exit(0)
+        sys.exit(handle_check(sub_args, graph, deps, plugin_root, plugin_name))
 
     # refine サブコマンド
     if len(sys.argv) >= 2 and sys.argv[1] == 'refine':
@@ -137,7 +136,7 @@ def main():
             sys.exit(1)
 
     if args.check:
-        handle_check(args, graph, deps, plugin_root, plugin_name)
+        sys.exit(handle_check(args, graph, deps, plugin_root, plugin_name))
 
     if args.validate:
         handle_validate(args, deps, graph, plugin_root, plugin_name)
