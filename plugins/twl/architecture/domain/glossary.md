@@ -5,7 +5,7 @@
 | 用語 | 定義 | Context |
 |------|------|---------|
 | co-autopilot | Issue 群の自律実装オーケストレーター。単一 Issue も co-autopilot 経由（Autopilot-first） | Autopilot |
-| chain | deps.yaml v3.0 のステップ順序定義。setup chain と pr-cycle chain の2種 | PR Cycle, Autopilot |
+| chain | deps.yaml v3.0 のステップ順序定義。setup / pr-verify / pr-fix / pr-merge 等、deps.yaml chains セクションで定義されるステップ順序。具体的な chain 名の列挙は deps.yaml chains セクションを参照 | PR Cycle, Autopilot |
 | merge-gate | PR のレビュー・テスト・マージ判定サブワークフロー。動的レビュアー構築で specialist を自動選択 | PR Cycle |
 | issue-{N}.json | per-Issue の統一状態ファイル。status, branch, pr, retry_count 等を管理 | Autopilot |
 | session.json | per-autopilot-run のセッション状態。Phase 進捗、cross-issue 警告、パターン検出を管理 | Autopilot |
@@ -62,3 +62,7 @@
 | problem-detect | rule-based で capture から既知パターンを検出する atomic | Observation |
 | test-project-init/reset/scenario-load | テストプロジェクト隔離 worktree 管理 atomic 群 | Observation |
 | load-test baseline | 負荷テスト level（smoke/regression/load）の定量基準 reference | Observation |
+| prompt-compliance | refined_by ハッシュ整合性をチェックする chain step（pr-verify chain）。dispatch_mode=runner | PR Cycle |
+| pseudo-pilot | Pilot の手動ワークフロー支援スクリプト群（plugins/twl/scripts/pseudo-pilot/）。PR 待機・Worker 完了待機 | Autopilot |
+| workflow-prompt-audit | stale コンポーネントの refined_by 整合性を一括監査する workflow（#209） | PR Cycle |
+| cli_dispatch | cli.py から分離された実装ロジックモジュール（#265） | TWiLL Integration |
