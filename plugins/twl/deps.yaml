@@ -607,6 +607,28 @@ refs:
     path: refs/baseline-input-validation.md
     description: "入力検証パターン（Zod/Pydantic）"
 
+  # co-self-improve data catalogs (#179)
+  test-scenario-catalog:
+    type: reference
+    path: refs/test-scenario-catalog.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "テストプロジェクト負荷シナリオ定義 (smoke + regression)"
+
+  observation-pattern-catalog:
+    type: reference
+    path: refs/observation-pattern-catalog.md
+    spawnable_by: [controller, workflow, atomic, specialist]
+    can_spawn: []
+    description: "rule-based 検出パターンカタログ"
+
+  load-test-baselines:
+    type: reference
+    path: refs/load-test-baselines.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "負荷テスト level の定量基準"
+
 # コマンド（B-4 で拡充）
 commands:
   self-improve-review: # standalone: ユーザー直接起動
