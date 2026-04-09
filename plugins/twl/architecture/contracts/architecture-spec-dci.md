@@ -54,26 +54,41 @@ THEN
 
 ## co-issue からのフィードバック（Step 3.5: Architecture Drift Detection）
 
-co-issue は Issue 精緻化後に architecture drift を検出し、ユーザーに co-architect の実行を **INFO レベル**で提案する。co-issue 自体が architecture を更新することはない（Non-implementation controller）。
+co-issue は Issue 精緻化後に architecture drift を検出し、ユーザーに co-architect の実行を提案する。co-issue 自体が architecture を更新することはない（Non-implementation controller）。
 
-### 検出シグナル（3層）
+重大度レベルの設計根拠は **ADR-012** を参照。
 
-| レベル | シグナル | 検出方法 |
+### 検出シグナル（3層）と重大度レベル
+
+| 重大度 | シグナル | 検出方法 |
 |--------|---------|---------|
-| 明示的 | `<!-- arch-ref-start -->` タグ | Issue body のパース |
-| 構造的 | 不変条件・Entity Schema・Workflow 変更言及 | glossary.md の MUST 用語 + architecture/ ファイル名との照合 |
-| ヒューリスティック | スコープが 3 Context 以上に跨る | ctx/* ラベルの数 + 影響範囲の Context 分析 |
+| **WARNING** | 明示的: `<!-- arch-ref-start -->` タグ | Issue body のパース |
+| **WARNING** | 構造的: 不変条件・Entity Schema・Workflow 変更言及 | glossary.md の MUST 用語 + architecture/ ファイル名との照合 |
+| INFO | ヒューリスティック: スコープが 3 Context 以上に跨る | ctx/* ラベルの数 + 影響範囲の Context 分析 |
 
 ### 出力
 
+**WARNING シグナル（明示的/構造的）検出時:**
+
 ```
-INFO: 以下の Issue が architecture spec に影響する可能性があります:
-  #N: explicit reference (architecture/domain/contexts/autopilot.md)
-  #M: invariant change (不変条件B)
+[WARNING] 以下の Issue が architecture spec に影響する可能性があります:
+  "<タイトル>": explicit reference (architecture/...)
+  "<タイトル>": invariant change (<用語>)
+architecture spec の事前更新を推奨します。今どうしますか？
+  1. 今すぐ更新する（/twl:co-architect）
+  2. 後で更新する（続行）
+  3. スキップ（続行）
+```
+
+**INFO シグナル（ヒューリスティックのみ）検出時:**
+
+```
+[INFO] 以下の Issue が architecture spec に影響する可能性があります:
+  "<タイトル>": cross-context impact (ctx/* labels: N)
 architecture spec の事前更新を検討してください: /twl:co-architect
 ```
 
-**非ブロッキング**: glossary 照合（Step 1.5）と同レベル。co-issue フローを止めない。
+**非ブロッキング**: WARNING 時は AskUserQuestion で確認するが、ユーザーが「後で更新」または「スキップ」を選択した場合は続行する。co-issue フローを強制停止しない（ADR-012）。
 
 ## 品質保証
 
