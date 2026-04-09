@@ -25,7 +25,8 @@ Accepted
    - エラーサマリーを提示、ユーザーが「問題」と「想定内」を選別
    - 選別された問題の会話コンテキストを参照して構造化
 
-3. **Issue化層 (co-issue)**: `.controller-issue/explore-summary.md` 経由で co-issue フローに接続
+3. **Issue化層 (co-issue)**: `.controller-issue/<session-id>/explore-summary.md` 経由で co-issue フローに接続
+   - self-improve-review は独自 SESSION_ID を生成し、セッション分離されたサブディレクトリに書き出す
    - Phase 1 (explore) をスキップし、Phase 2 (decompose) から続行
    - 既存の co-issue ワークフローを完全再利用
 

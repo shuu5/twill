@@ -206,16 +206,17 @@ else
   run_test_skip "explore-summary [edge: co-issue Phase 1 互換明示]" "COMMAND.md not yet created"
 fi
 
-# Edge case: 出力パスが .controller-issue/explore-summary.md で正確
+# Edge case: 出力パスがセッションIDサブディレクトリを使用する
 test_command_explore_summary_path() {
   assert_file_exists "$COMMAND_FILE" || return 1
-  assert_file_contains "$COMMAND_FILE" "\.controller-issue/explore-summary\.md"
+  # Should use session-ID based subdirectory: .controller-issue/<session-id>/explore-summary.md
+  assert_file_contains "$COMMAND_FILE" "session.id|SESSION_ID|session-id|<session-id>"
 }
 
 if assert_file_exists "$COMMAND_FILE" 2>/dev/null; then
-  run_test "explore-summary [edge: 出力パス正確]" test_command_explore_summary_path
+  run_test "explore-summary [edge: セッションIDサブディレクトリ出力]" test_command_explore_summary_path
 else
-  run_test_skip "explore-summary [edge: 出力パス正確]" "COMMAND.md not yet created"
+  run_test_skip "explore-summary [edge: セッションIDサブディレクトリ出力]" "COMMAND.md not yet created"
 fi
 
 # Scenario: co-issue 続行の確認 (line 36)

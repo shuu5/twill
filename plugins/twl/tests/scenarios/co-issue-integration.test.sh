@@ -90,16 +90,17 @@ else
   run_test_skip "explore-summary.md 存在時の検出" "co-issue SKILL.md not found"
 fi
 
-# Edge case: 検出パスが .controller-issue/explore-summary.md で正確
+# Edge case: 検出がセッションIDサブディレクトリのglobパターンを使用する
 test_coissue_explore_summary_path() {
   assert_file_exists "$CO_ISSUE_SKILL" || return 1
-  assert_file_contains "$CO_ISSUE_SKILL" "\.controller-issue/explore-summary\.md"
+  # Session-ID based path: .controller-issue/<session-id>/explore-summary.md
+  assert_file_contains "$CO_ISSUE_SKILL" "\.controller-issue/\*/explore-summary\.md|controller-issue.*session.id.*explore-summary|controller-issue.*session_id.*explore-summary|session-id.*explore-summary|session_id.*explore-summary|<session-id>.*explore-summary|SESSION_ID.*explore-summary|SESSION_DIR"
 }
 
 if assert_file_exists "$CO_ISSUE_SKILL" 2>/dev/null; then
-  run_test "explore-summary 検出 [edge: パスが正確]" test_coissue_explore_summary_path
+  run_test "explore-summary 検出 [edge: セッションIDサブディレクトリ対応]" test_coissue_explore_summary_path
 else
-  run_test_skip "explore-summary 検出 [edge: パスが正確]" "co-issue SKILL.md not found"
+  run_test_skip "explore-summary 検出 [edge: セッションIDサブディレクトリ対応]" "co-issue SKILL.md not found"
 fi
 
 # Edge case: ユーザーへの確認メッセージが記載されている
@@ -206,7 +207,7 @@ fi
 echo ""
 echo "--- Cross-cutting: self-improve-review ↔ co-issue 連携 ---"
 
-# Edge case: COMMAND.md と SKILL.md で .controller-issue/explore-summary.md パスが一致
+# Edge case: COMMAND.md と SKILL.md で .controller-issue/<session-id>/ パターンが一致
 test_cross_path_consistency() {
   local command_file="commands/self-improve-review.md"
   if ! assert_file_exists "$command_file" 2>/dev/null; then
@@ -215,15 +216,15 @@ test_cross_path_consistency() {
   if ! assert_file_exists "$CO_ISSUE_SKILL" 2>/dev/null; then
     return 1
   fi
-  # Both files should reference the same path
-  assert_file_contains "$command_file" "\.controller-issue/explore-summary\.md" || return 1
-  assert_file_contains "$CO_ISSUE_SKILL" "\.controller-issue/explore-summary\.md"
+  # Both files should reference session-ID based paths under .controller-issue/
+  assert_file_contains "$command_file" "controller-issue.*session|session.*controller-issue|SESSION_ID|session-id" || return 1
+  assert_file_contains "$CO_ISSUE_SKILL" "controller-issue.*session|session.*controller-issue|SESSION_ID|session-id|SESSION_DIR"
 }
 
 if assert_file_exists "commands/self-improve-review.md" 2>/dev/null && assert_file_exists "$CO_ISSUE_SKILL" 2>/dev/null; then
-  run_test "COMMAND.md と SKILL.md のパス一致 [cross-cutting]" test_cross_path_consistency
+  run_test "COMMAND.md と SKILL.md のセッションIDパス一致 [cross-cutting]" test_cross_path_consistency
 else
-  run_test_skip "COMMAND.md と SKILL.md のパス一致" "one or both files not yet created"
+  run_test_skip "COMMAND.md と SKILL.md のセッションIDパス一致" "one or both files not yet created"
 fi
 
 # =============================================================================

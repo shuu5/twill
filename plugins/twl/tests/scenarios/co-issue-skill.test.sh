@@ -265,16 +265,24 @@ else
   run_test_skip "explore-summary 存在時の選択肢提示" "skills/co-issue/SKILL.md not yet created"
 fi
 
-# Edge case: .controller-issue/ ディレクトリパスの正確な記述
+# Edge case: .controller-issue/<session-id>/ セッションIDサブディレクトリの記述
 test_controller_issue_dir_path() {
   assert_file_exists "$SKILL_MD" || return 1
   assert_file_contains "$SKILL_MD" "\.controller-issue/"
 }
 
+# Edge case: セッションIDによるディレクトリ分離の記述
+test_controller_issue_session_id() {
+  assert_file_exists "$SKILL_MD" || return 1
+  assert_file_contains "$SKILL_MD" "session.id|SESSION_ID|session-id|SESSION_DIR"
+}
+
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
   run_test "explore-summary [edge: .controller-issue/ パスの正確な記述]" test_controller_issue_dir_path
+  run_test "explore-summary [edge: セッションIDによるディレクトリ分離]" test_controller_issue_session_id
 else
   run_test_skip "explore-summary [edge: .controller-issue/ パス]" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "explore-summary [edge: セッションIDディレクトリ分離]" "skills/co-issue/SKILL.md not yet created"
 fi
 
 # Scenario: explore-summary が存在しない場合 (line 31)

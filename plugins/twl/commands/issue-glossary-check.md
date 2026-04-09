@@ -11,6 +11,7 @@ maxTurns: 10
 ## 入力
 
 - `ARCH_CONTEXT`: Phase 1 で読み込んだ architecture context（vision.md, context-map.md, glossary.md）
+- `SESSION_DIR`: co-issue の SESSION_DIR（例: `.controller-issue/1712649600_a3f2/`）
 
 ## スキップ条件
 
@@ -19,7 +20,7 @@ maxTurns: 10
 ## フロー（MUST）
 
 1. `architecture/domain/glossary.md` を読み込み、`### MUST 用語` セクションのテーブルから用語名（列1）を抽出する
-2. `.controller-issue/explore-summary.md` から主要用語・概念名を抽出する
+2. `<SESSION_DIR>/explore-summary.md`（例: `.controller-issue/1712649600_a3f2/explore-summary.md`）から主要用語・概念名を抽出する
 3. explore-summary.md から抽出した用語のうち、MUST 用語テーブルに存在しない（未登録の）用語を列挙する（部分一致・略語は除外）
 4. 不一致用語が 1 件以上あれば INFO レベルで以下を通知する（3軸判断はステップ6で行う）:
    > `[INFO] この概念は architecture spec に未定義です: <用語1>, <用語2>, ... （以降で登録判断を実施します）`
