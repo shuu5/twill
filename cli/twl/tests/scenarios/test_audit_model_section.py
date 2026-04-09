@@ -348,6 +348,48 @@ class TestAuditMixedSpecialists(_AuditTestBase):
 
 
 # ===========================================================================
+# AC2: audit_collect total == audit_report (criticals + warnings + oks)
+# ===========================================================================
+
+class TestAuditCollectCountConsistency(_AuditTestBase):
+    """audit_collect items total matches audit_report summary counts."""
+
+    specialists = {
+        "good-agent": "sonnet",
+        "no-model-agent": None,
+        "opus-agent": "opus",
+    }
+
+    def test_collect_and_report_counts_match(self):
+        """Scenario: count consistency
+        WHEN audit_collect and audit_report are called on the same deps
+        THEN (criticals + warnings + oks) from audit_report equals
+             the number of items from audit_collect."""
+        import sys
+        sys.path.insert(0, str(self.plugin_dir.parent.parent / "src"))
+        from twl.validation.audit import audit_collect, audit_report
+        import yaml
+        import io
+        from contextlib import redirect_stdout
+
+        deps = yaml.safe_load((self.plugin_dir / "deps.yaml").read_text())
+
+        items = audit_collect(deps, self.plugin_dir)
+        collect_total = len(items)
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            criticals, warnings, oks = audit_report(deps, self.plugin_dir)
+
+        report_total = criticals + warnings + oks
+        assert collect_total == report_total, (
+            f"audit_collect returned {collect_total} items but "
+            f"audit_report counted {report_total} "
+            f"(criticals={criticals}, warnings={warnings}, oks={oks})"
+        )
+
+
+# ===========================================================================
 # main runner (for direct invocation without pytest)
 # ===========================================================================
 
@@ -361,6 +403,7 @@ if __name__ == "__main__":
         TestAuditOpusWarning,
         TestAuditTableFormat,
         TestAuditMixedSpecialists,
+        TestAuditCollectCountConsistency,
     ]
     passed = 0
     failed = 0
