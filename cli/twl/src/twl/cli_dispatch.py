@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-from twl.core.types import print_rules, sync_check, sync_docs
 from twl.core.output import build_envelope, output_json, violations_to_items, check_results_to_items, deep_validate_to_items
 from twl.core.plugin import get_deps_version
 from twl.core.graph import find_node, get_reverse_dependencies, print_tree
