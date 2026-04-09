@@ -265,14 +265,14 @@ class ProjectManager:
 
         # 7. DeltaSpec init
         print("7. DeltaSpecを初期化...")
-        r = _run(["which", "deltaspec"])
+        r = _run(["which", "twl"])
         if r.returncode == 0:
             (main_dir / "deltaspec" / "specs").mkdir(parents=True, exist_ok=True)
             (main_dir / "deltaspec" / "changes").mkdir(parents=True, exist_ok=True)
             print("   DeltaSpec initialized")
             _cleanup_deprecated_local(main_dir)
         else:
-            print("   警告: deltaspec CLIが見つかりません")
+            print("   警告: twl CLIが見つかりません")
 
         # 7.5. .claude symlink at bare repo root
         print("7.5. bare repo rootに.claude symlinkを作成...")
@@ -631,7 +631,7 @@ class ProjectManager:
         )
 
     def _apply_deltaspec(self, project_dir: Path) -> None:
-        r = _run(["which", "deltaspec"])
+        r = _run(["which", "twl"])
         if r.returncode == 0:
             print("   DeltaSpec 初期化...")
             (project_dir / "deltaspec" / "specs").mkdir(parents=True, exist_ok=True)

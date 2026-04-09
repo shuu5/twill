@@ -184,7 +184,7 @@ if ! git checkout main 2>/dev/null || ! git pull origin main 2>/dev/null; then
   echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ git checkout main / pull 失敗（merge は成功済み）" >&2
 fi
 
-if command -v deltaspec >/dev/null 2>&1 && [[ -d deltaspec/changes ]]; then
+if command -v twl >/dev/null 2>&1 && [[ -d deltaspec/changes ]]; then
   # Issue 番号に紐づく change を特定（.deltaspec.yaml の issue フィールドを参照）
   CHANGE_IDS=()
   if [[ -n "${ISSUE_NUM:-}" ]]; then
@@ -198,7 +198,7 @@ if command -v deltaspec >/dev/null 2>&1 && [[ -d deltaspec/changes ]]; then
     [[ -n "$FALLBACK_CHANGE" ]] && CHANGE_IDS+=("$FALLBACK_CHANGE")
   fi
   for CHANGE_ID in "${CHANGE_IDS[@]}"; do
-    if deltaspec archive --yes --skip-specs -- "${CHANGE_ID}"; then
+    if twl spec archive --yes --skip-specs -- "${CHANGE_ID}"; then
       echo "[auto-merge] Issue #${ISSUE_NUM}: DeltaSpec archive 完了: ${CHANGE_ID}"
     else
       echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ DeltaSpec archive 失敗: ${CHANGE_ID}（merge は成功済み）" >&2

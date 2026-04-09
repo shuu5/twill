@@ -170,7 +170,7 @@ class TestCreateScaffolding:
                     if "main" in str(a) and "worktrees" not in str(a):
                         Path(a).mkdir(parents=True, exist_ok=True)
                         break
-            if "which" in cmd and "deltaspec" in cmd:
+            if "which" in cmd and "twl" in cmd:
                 return MagicMock(returncode=1, stdout="", stderr="")
             return MagicMock(returncode=0, stdout="", stderr="")
 
