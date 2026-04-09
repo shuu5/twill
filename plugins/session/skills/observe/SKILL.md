@@ -65,3 +65,33 @@ cld-observe の出力を分析し、以下の形式で報告する:
 - 対象ペインにコマンドを送信してはならない
 - inject や send-keys を使用してはならない
 - キャプチャ内容を外部に送信してはならない
+
+## 定期監視モード（--loop）
+
+`--loop` オプション指定時は `cld-observe-loop` を使用して複数ウィンドウを定期ポーリングする。
+
+### 起動方法
+
+```bash
+SCRIPT_DIR="${CLAUDE_PLUGIN_ROOT}/scripts"
+bash "$SCRIPT_DIR/cld-observe-loop" [TARGET|--pattern GLOB] [--interval SECONDS] [--max-cycles N] [--notify-dir DIR]
+```
+
+Bash tool の `run_in_background: true` で起動し、完了通知を待機する。
+
+### オプション
+
+| オプション | デフォルト | 説明 |
+|-----------|----------|------|
+| `TARGET` | — | 単一ウィンドウ名（`--pattern` と排他） |
+| `--pattern GLOB` | — | `session-state.sh list --json` の `window_name` を bash glob でフィルタ |
+| `--interval N` | 300 | ポーリング間隔（秒） |
+| `--max-cycles N` | 0 | 最大サイクル数（0 = 無制限） |
+| `--notify-dir D` | `/tmp/claude-notifications` | 通知ファイルディレクトリ |
+
+### 完了時の処理
+
+`cld-observe-loop` の stdout 出力を受け取り、以下を要約して報告する:
+- 検出された異常（exited/error/attention(unseen) 状態）とそのキャプチャ内容
+- 終了理由（max-cycles到達 / 全窓消失 / SIGINT受信）
+- 各サイクルの状態変化サマリー
