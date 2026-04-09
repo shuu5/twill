@@ -60,7 +60,7 @@ REJECT ⇔ BLOCKING >= 1
 
 ### PASS / REJECT 時の状態遷移
 
-PASS / REJECT 後の状態遷移ロジック（autopilot/Pilot 分岐、retry_count 管理、fix_instructions 記録、不変条件 C/E）の正典は `architecture/autopilot-invariants.md` および `commands/autopilot-state-write.md`。本 composite は judgement を出力するのみで、状態遷移の実装は呼び出し元 controller / state-write.sh に委譲する。
+PASS / REJECT 後の状態遷移ロジック（autopilot/Pilot 分岐、retry_count 管理、fix_instructions 記録、不変条件 C/E）の正典は `plugins/twl/architecture/domain/contexts/autopilot.md` および `cli/twl/src/twl/autopilot/state.py`。本 composite は judgement を出力するのみで、状態遷移の実装は呼び出し元 controller / state.py に委譲する。
 
 ## チェックポイント（MUST）
 
