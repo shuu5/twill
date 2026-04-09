@@ -114,9 +114,11 @@ python3 -m twl.autopilot.mergegate merge \
 
 ## 禁止事項（MUST NOT）
 
-- plan.yaml を独自生成してはならない（autopilot-plan.sh に委譲）
-- --auto 未指定時に計画確認をスキップしてはならない
+- plan.yaml を独自生成してはならない（制約 AP-1）
+- --auto 未指定時に計画確認をスキップしてはならない（UX ルール）
 - Worker が worktree を削除してはならない（不変条件 B）
 - merge-gate 失敗時に rebase を試みてはならない（不変条件 F）
-- trivial change であっても co-autopilot を bypass してはならない（Emergency Bypass 条件を除く）
+- trivial change であっても co-autopilot を bypass してはならない（制約 AP-2）
 - Pilot は Worker の代わりに Issue を直接実装（`Agent(Implement Issue #N)` 等によるコード変更・PR 作成）してはならない（不変条件 K）。Worker 失敗時は根本原因分析 → Issue 化で対処する
+
+Autopilot 制約の正典は `plugins/twl/architecture/domain/contexts/autopilot.md`

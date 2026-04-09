@@ -122,7 +122,9 @@ TaskUpdate → completed
 
 ## 禁止事項（MUST NOT）
 
-- ユーザー確認なしに Issue を自動作成してはならない（Step 7 の承認必須）
-- ユーザーの設計判断を代替してはならない（提案は可、決定はユーザー）
-- controller 内に実質処理を記述してはならない（atomic に委譲）
+- ユーザー確認なしに Issue を自動作成してはならない（制約 IM-1、Step 7 の承認必須）
+- ユーザーの設計判断を代替してはならない（UX ルール。提案は可、決定はユーザー）
+- controller 内に実質処理を記述してはならない（設計ルール。atomic に委譲）
   - 例外: Step 4 の Phase 計画確定は対話的操作のため controller 内で処理
+
+Issue Management 制約の正典は `plugins/twl/architecture/domain/contexts/issue-mgmt.md`
