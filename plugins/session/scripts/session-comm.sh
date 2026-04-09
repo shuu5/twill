@@ -5,7 +5,7 @@
 # Usage:
 #   session-comm.sh capture <window> [--lines N] [--raw]
 #   session-comm.sh inject <window> <text> [--force] [--no-enter]
-#   session-comm.sh inject-file <window> <file> [--force] [--no-enter]
+#   session-comm.sh inject-file <window> <file> [--force] [--no-enter] [--wait SECONDS] [--wait SECONDS]
 #   session-comm.sh wait-ready <window> [--timeout N]
 #
 # Dependencies: session-state.sh (#277)
@@ -30,7 +30,7 @@ usage() {
 Usage:
   session-comm.sh capture <window> [--lines N] [--all] [--raw]
   session-comm.sh inject <window> <text> [--force] [--no-enter]
-  session-comm.sh inject-file <window> <file> [--force] [--no-enter]
+  session-comm.sh inject-file <window> <file> [--force] [--no-enter] [--wait SECONDS]
   session-comm.sh wait-ready <window> [--timeout SECONDS]
 
 Subcommands:
@@ -38,6 +38,7 @@ Subcommands:
                --all   Capture full scrollback (mutually exclusive with --lines)
   inject       Send single-line text to a window (state-checked)
   inject-file  Send file content to a window via tmux load-buffer (multi-line safe)
+               --wait SECONDS  Wait for input-waiting state before injecting
   wait-ready   Wait until window is input-waiting
 EOF
     exit 1
@@ -255,6 +256,7 @@ cmd_inject_file() {
     local file_path=""
     local force=false
     local no_enter=false
+    local wait_timeout=0  # 0 = 待機なし（単発チェック）
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -265,6 +267,14 @@ cmd_inject_file() {
             --no-enter)
                 no_enter=true
                 shift
+                ;;
+            --wait)
+                wait_timeout="${2:-10}"
+                if ! [[ "$wait_timeout" =~ ^[1-9][0-9]*$ ]]; then
+                    echo "Error: --wait requires a positive integer" >&2
+                    exit 1
+                fi
+                shift 2
                 ;;
             -*)
                 echo "Error: unknown option '$1'" >&2
@@ -300,19 +310,26 @@ cmd_inject_file() {
     local target
     target=$(resolve_target "$window_name") || exit 1
 
-    # 状態チェック
-    local state
-    if ! state=$("$SCRIPT_DIR/session-state.sh" state "$window_name" 2>/dev/null); then
-        echo "Warning: session-state.sh failed for '$window_name'" >&2
-        state="unknown"
-    fi
-
-    if [[ "$state" != "input-waiting" ]]; then
-        if $force; then
-            echo "Warning: target '$window_name' is in state '$state' (not input-waiting), sending anyway" >&2
-        else
-            echo "Error: target '$window_name' is in state '$state' (expected: input-waiting)" >&2
+    # 状態チェック: --wait 指定時は input-waiting までアクティブ待機
+    if [[ "$wait_timeout" -gt 0 ]]; then
+        if ! "$SCRIPT_DIR/session-state.sh" wait "$window_name" input-waiting --timeout "$wait_timeout"; then
+            echo "Error: target '$window_name' did not reach input-waiting within ${wait_timeout}s" >&2
             exit 2
+        fi
+    else
+        local state
+        if ! state=$("$SCRIPT_DIR/session-state.sh" state "$window_name" 2>/dev/null); then
+            echo "Warning: session-state.sh failed for '$window_name'" >&2
+            state="unknown"
+        fi
+
+        if [[ "$state" != "input-waiting" ]]; then
+            if $force; then
+                echo "Warning: target '$window_name' is in state '$state' (not input-waiting), sending anyway" >&2
+            else
+                echo "Error: target '$window_name' is in state '$state' (expected: input-waiting)" >&2
+                exit 2
+            fi
         fi
     fi
 
@@ -322,7 +339,7 @@ cmd_inject_file() {
         exit 1
     }
 
-    # tmux >= 3.2 では -p フラグで bracketed paste mode を有効化（仮説 A）
+    # tmux >= 3.2 では -p フラグで bracketed paste mode を有効化
     local tmux_major tmux_minor
     tmux_major=$(tmux -V | sed 's/tmux \([0-9]*\)\..*/\1/')
     tmux_minor=$(tmux -V | sed 's/tmux [0-9]*\.\([0-9]*\).*/\1/')
@@ -339,9 +356,9 @@ cmd_inject_file() {
     fi
 
     if ! $no_enter; then
-        # paste-buffer 後に短い待機を挟む（仮説 B: Ink の非同期イベントループが
-        # ペースト処理を完了する前に Enter が到着するタイミング問題を回避）
-        sleep 0.1
+        # paste-buffer 後に待機（Ink の非同期イベントループがペースト処理を
+        # 完了する前に Enter が到着するタイミング問題を回避。#234）
+        sleep 0.3
         tmux send-keys -t "$target" Enter
     fi
 }

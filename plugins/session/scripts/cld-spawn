@@ -152,27 +152,20 @@ if [[ -z "$PROMPT" ]]; then
     exit 0
 fi
 
-# --- wait-ready + inject-file でプロンプトを送達 ---
+# --- inject-file --wait でプロンプトを送達（状態待機をアトミックに実行） ---
 
 # プロンプトを一時ファイルに書き出し
 PROMPT_FILE=$(mktemp /tmp/cld-spawn-prompt-XXXXXX.txt)
 printf '%s' "$PROMPT" > "$PROMPT_FILE"
 
-# input-waiting 状態を待機
-if ! "$SCRIPT_DIR/session-comm.sh" wait-ready "$WINDOW_NAME" --timeout "$WAIT_TIMEOUT"; then
-    rm -f "$PROMPT_FILE"
-    echo "Error: claude の起動待ちがタイムアウトしました（${WAIT_TIMEOUT}秒）" >&2
-    exit 1
-fi
-
-# inject-file でプロンプトを送達
-"$SCRIPT_DIR/session-comm.sh" inject-file "$WINDOW_NAME" "$PROMPT_FILE" --force
+# inject-file --wait で input-waiting 待機 + 送達をアトミックに実行
+"$SCRIPT_DIR/session-comm.sh" inject-file "$WINDOW_NAME" "$PROMPT_FILE" --wait "$WAIT_TIMEOUT"
 INJECT_EXIT=$?
 
 rm -f "$PROMPT_FILE"
 
 if [[ $INJECT_EXIT -ne 0 ]]; then
-    echo "Error: プロンプトの送達に失敗しました" >&2
+    echo "Error: プロンプトの送達に失敗しました（${WAIT_TIMEOUT}秒でタイムアウト or 送信エラー）" >&2
     exit 1
 fi
 
