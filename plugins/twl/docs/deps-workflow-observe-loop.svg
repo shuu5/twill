@@ -15,7 +15,7 @@
 <title>skill_workflow_observe_loop</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="103.24" cy="-96.49" rx="103.48" ry="21.43"/>
 <text text-anchor="middle" x="103.24" y="-99.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;observe&#45;loop</text>
-<text text-anchor="middle" x="103.24" y="-88.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,550 tok)</text>
+<text text-anchor="middle" x="103.24" y="-88.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,964 tok)</text>
 </g>
 <!-- cmd_observe_and_detect -->
 <g id="node2" class="node">

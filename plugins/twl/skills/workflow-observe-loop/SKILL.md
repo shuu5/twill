@@ -19,6 +19,7 @@ spawnable_by:
 - `INTERVAL`: polling 間隔秒 (default 30)
 - `MAX_CYCLES`: 最大サイクル数 (default 60, 30 秒 x 60 = 30 分)
 - `STOP_ON_DETECT`: 1 件検出で停止するか (default false)
+- `INTERVENE`: 検出時に介入判断まで実行するか (default false)。co-observer pair モードでは false にし、集約結果を caller に返して caller が介入する
 
 ## フロー (MUST)
 
@@ -120,6 +121,34 @@ jq -s '[.[].detections[]] | group_by(.pattern + "_" + (.line_number|tostring))
     else 2 end
   ) | .[0:10]' "$DETECTIONS_FILE" > "$WORK_DIR/top_detections.json"
 ```
+
+### Step 3.5: 介入判断サイクル（INTERVENE=true 時のみ）
+
+`INTERVENE=true` が指定された場合、集約後に介入判断まで実行する。
+`INTERVENE=false`（デフォルト）の場合は集約結果を caller に返して終了（caller が介入を担う）。
+
+```bash
+if [ "$INTERVENE" = "true" ]; then
+  # intervention-catalog に基づく 3 層振り分け
+  jq -c '.[]' "$WORK_DIR/top_detections.json" | while read -r detection; do
+    SEVERITY=$(echo "$detection" | jq -r '.severity')
+    CATEGORY=$(echo "$detection" | jq -r '.category')
+
+    # Layer 0: Auto (critical + auto-detect)
+    if [ "$SEVERITY" = "critical" ] && [ "$CATEGORY" = "auto-detect" ]; then
+      DETECTION_JSON="$detection" bash "$CLAUDE_PLUGIN_ROOT/scripts/intervene-dispatch.sh" auto
+    # Layer 1: Confirm (warning)
+    elif [ "$SEVERITY" = "warning" ]; then
+      DETECTION_JSON="$detection" bash "$CLAUDE_PLUGIN_ROOT/scripts/intervene-dispatch.sh" confirm
+    # Layer 2: Escalate (その他 critical)
+    elif [ "$SEVERITY" = "critical" ]; then
+      DETECTION_JSON="$detection" bash "$CLAUDE_PLUGIN_ROOT/scripts/intervene-dispatch.sh" escalate
+    fi
+  done
+fi
+```
+
+OB-2 制約との整合: 各 detection は集約 JSON から取得するため、raw capture は本ステップには持ち込まない。
 
 ### Step 4: retrospective + 結果報告
 

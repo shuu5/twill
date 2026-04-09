@@ -8,7 +8,7 @@ digraph Dependencies {
     edge [fontname="Helvetica", fontsize=9];
 
     // L0: Controller Skills
-    skill_co_autopilot [label="twl:co-autopilot\n(1,993 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="twl:co-autopilot\n(2,402 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_issue [label="twl:co-issue\n(1,192 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_project [label="twl:co-project\n(1,625 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_architect [label="twl:co-architect\n(1,357 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
@@ -26,7 +26,7 @@ digraph Dependencies {
     skill_workflow_dead_cleanup [label="twl:workflow-dead-cleanup\n(249 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_tech_debt_triage [label="twl:workflow-tech-debt-triage\n(1,040 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_self_improve [label="twl:workflow-self-improve\n(917 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,550 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,964 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_plugin_create [label="twl:workflow-plugin-create\n(558 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(693 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_prompt_audit [label="twl:workflow-prompt-audit\n(684 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
@@ -290,6 +290,7 @@ digraph Dependencies {
     skill_co_autopilot -> cmd_autopilot_patterns;
     skill_co_autopilot -> cmd_autopilot_cross_issue;
     skill_co_autopilot -> cmd_autopilot_summary;
+    skill_co_autopilot -> skill_co_observer;
     skill_co_autopilot -> cmd_session_audit;
     skill_co_autopilot -> cmd_self_improve_review;
     skill_co_autopilot -> skill_workflow_setup;
@@ -357,6 +358,7 @@ digraph Dependencies {
     skill_co_observer -> cmd_intervene_escalate;
     skill_co_observer -> skill_intervention_catalog;
     skill_co_observer -> skill_observation_pattern_catalog;
+    skill_co_observer -> skill_workflow_observe_loop;
     skill_workflow_setup -> cmd_init;
     skill_workflow_setup -> cmd_worktree_create;
     skill_workflow_setup -> cmd_project_board_status_update;
@@ -638,7 +640,6 @@ digraph Dependencies {
     cmd_autopilot_retrospective -> cmd_autopilot_patterns [style=invis, weight=10];
     cmd_autopilot_patterns -> cmd_autopilot_cross_issue [style=invis, weight=10];
     cmd_autopilot_cross_issue -> cmd_autopilot_summary [style=invis, weight=10];
-    cmd_autopilot_summary -> cmd_session_audit [style=invis, weight=10];
     cmd_session_audit -> cmd_self_improve_review [style=invis, weight=10];
     cmd_self_improve_review -> skill_workflow_setup [style=invis, weight=10];
     skill_workflow_setup -> skill_workflow_test_ready [style=invis, weight=10];
@@ -699,6 +700,7 @@ digraph Dependencies {
     cmd_intervene_confirm -> cmd_intervene_escalate [style=invis, weight=10];
     cmd_intervene_escalate -> skill_intervention_catalog [style=invis, weight=10];
     skill_intervention_catalog -> skill_observation_pattern_catalog [style=invis, weight=10];
+    skill_observation_pattern_catalog -> skill_workflow_observe_loop [style=invis, weight=10];
     cmd_init -> cmd_worktree_create [style=invis, weight=10];
     cmd_worktree_create -> cmd_project_board_status_update [style=invis, weight=10];
     cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];

@@ -143,9 +143,9 @@ skills:
     refined_at: "2026-04-07"
     path: skills/co-autopilot/SKILL.md
     effort: high
-    tools: [Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests)]
+    tools: [Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests), session:spawn]
     spawnable_by: [user]
-    can_spawn: [composite, atomic, specialist]
+    can_spawn: [composite, atomic, specialist, controller]
     calls:
       - atomic: autopilot-init
         step: "3"
@@ -167,6 +167,8 @@ skills:
       - atomic: autopilot-cross-issue
       - atomic: autopilot-summary
         step: "5"
+      - controller: co-observer
+        note: "Step 3.5: --with-observer フラグ時に session:spawn で起動"
       - atomic: session-audit
         step: "5.5"
       - atomic: self-improve-review
@@ -295,7 +297,7 @@ skills:
     path: skills/co-observer/SKILL.md
     effort: high
     tools: [Agent(observer-evaluator)]
-    spawnable_by: [user]
+    spawnable_by: [user, controller]
     can_spawn: [workflow, atomic, specialist, reference]
     supervises: [co-autopilot, co-issue, co-architect, co-project, co-utility]
     calls:
@@ -307,6 +309,8 @@ skills:
       - atomic: intervene-escalate
       - reference: intervention-catalog
       - reference: observation-pattern-catalog
+      - workflow: workflow-observe-loop
+        note: "Step 1-pair: pair モード時に呼び出し"
     description: "メタ認知レイヤー: 全 controller の監視・介入。テストシナリオ実行は co-self-improve に委譲"
 
   workflow-setup:
