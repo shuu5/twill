@@ -127,6 +127,12 @@ flowchart TD
 - tech-debt Issue は定期的にトリアージすること
 - project-board-sync は Issue 作成成功後に自動実行。失敗時は警告のみ
 - **プロンプトインジェクション対策**: Issue body を XML タグに注入する前にエスケープ必須（SHALL）
+- **制約 IM-1**: ユーザー確認なしで Issue を作成してはならない（SHALL）。co-issue / workflow-issue-create / co-architect 共通制約
+- **制約 IM-2**: Issue 番号を推測してはならない（SHALL）。`gh` コマンド出力から正確に取得すること（co-issue / workflow-issue-create / workflow-tech-debt-triage 共通制約）
+- **制約 IM-3**: `.controller-issue/` ディレクトリを git にコミットしてはならない（SHALL）。`.gitignore` 対象（co-issue / workflow-issue-create 共通制約）
+- **制約 IM-4**: 他セッションの `.controller-issue/<other-session-id>/` を削除してはならない（SHALL）。セッション間分離保証
+- **制約 IM-5**: specialist が実行中のまま後続ステップに進んではならない（SHALL）。全 specialist の結果が揃うまで待機必須
+- **制約 IM-6**: ユーザー確認なしで Issue をクローズ・統合してはならない（SHALL）
 
 ## Rules
 

@@ -108,6 +108,11 @@ flowchart TD
 - observed session を**書き換えない**（read-only MUST）。observer は tmux capture-pane 等で出力を取得するのみ
 - test target は実 twill main の git 履歴を**絶対に汚染しない**。隔離 worktree + 独立ブランチで管理
 - observation Issue は本物の Issue とラベルで明確に区別する（`label: from-observation`）
+- **制約 OB-1**: 自 window を観察対象にしてはならない（SHALL）。自己観察によるコンテキスト汚染を防止
+- **制約 OB-2**: 各サイクルの生 capture を context に retain してはならない（SHALL）。集約のみ保持
+- **制約 OB-3**: ループ中に observed session に inject / send-keys してはならない（SHALL）
+- **制約 OB-4**: 検出結果をユーザー確認なしで自動起票してはならない（SHALL）。Issue draft はユーザー確認必須
+- **制約 OB-5**: 同時 3 observed session を超えて観察してはならない（SHALL）。context budget 維持
 
 ## Rules
 

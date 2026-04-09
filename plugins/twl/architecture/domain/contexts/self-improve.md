@@ -102,6 +102,9 @@ graph LR
 - **cooldown 判定**: 同一パターンの重複 Issue 起票を防止。pattern name + 時間窓でチェック
 - **co-autopilot 内で自動起動**: セッション完了時の retrospective で検出
 - **ECC ソースの優先度**: doobidoo memory > deltaspec > git log
+- **制約 SI-1**: テストプロジェクト worktree から実 main branch にコミットしてはならない（SHALL）。隔離 worktree + 独立ブランチで管理
+- **制約 SI-2**: ユーザー確認なしでファイルを変更してはならない（SHALL）。IS_AUTOPILOT=true 時を除く
+- **制約 SI-3**: cooldown 判定をスキップしてはならない（SHALL）。同一パターンの重複 Issue 起票防止
 
 ## Rules
 

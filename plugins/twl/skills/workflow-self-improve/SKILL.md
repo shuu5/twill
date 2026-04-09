@@ -60,9 +60,11 @@ fi
 
 ## 禁止事項（MUST NOT）
 
-- ユーザー確認なしでファイルを変更してはならない（IS_AUTOPILOT=true 時を除く）
-- cooldown 判定をスキップしてはならない
-- Step 1 で 0 件の場合に後続ステップを実行してはならない
+- ユーザー確認なしでファイルを変更してはならない（制約 SI-2。IS_AUTOPILOT=true 時を除く）
+- cooldown 判定をスキップしてはならない（制約 SI-3）
+- Step 1 で 0 件の場合に後続ステップを実行してはならない（UX ルール）
+
+Self-Improve 制約の正典は `plugins/twl/architecture/domain/contexts/self-improve.md`
 
 ## co-self-improve との関係
 

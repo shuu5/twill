@@ -70,6 +70,8 @@ LLM コンテキスト内フラグとして受け渡し:
 
 ## 禁止事項（MUST NOT）
 
-- ユーザー確認なしで Issue 作成してはならない
-- Issue 番号を推測してはならない（gh 出力から取得）
-- `.controller-issue/` を git にコミットしてはならない
+- ユーザー確認なしで Issue 作成してはならない（制約 IM-1）
+- Issue 番号を推測してはならない（制約 IM-2）
+- `.controller-issue/` を git にコミットしてはならない（制約 IM-3）
+
+Issue Management 制約の正典は `plugins/twl/architecture/domain/contexts/issue-mgmt.md`

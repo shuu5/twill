@@ -140,7 +140,9 @@ jq -s '[.[].detections[]] | group_by(.pattern + "_" + (.line_number|tostring))
 
 ## 禁止事項 (MUST NOT)
 
-- 自 window を観察対象にしてはならない
-- ユーザー停止を無視してループを継続してはならない
-- 各サイクルの生 capture を context に retain してはならない (集約のみ)
-- ループ中に observed session に inject してはならない
+- 自 window を観察対象にしてはならない（制約 OB-1）
+- ユーザー停止を無視してループを継続してはならない（UX ルール）
+- 各サイクルの生 capture を context に retain してはならない（制約 OB-2。集約のみ）
+- ループ中に observed session に inject してはならない（制約 OB-3）
+
+Live Observation 制約の正典は `plugins/twl/architecture/domain/contexts/observation.md`

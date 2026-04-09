@@ -131,6 +131,8 @@ project-name/
   - co-project: create 時の Board 自動作成
   - co-autopilot: Issue 選択時の Board クエリ、完了時の Board 更新
   - co-issue: Issue 作成後の project-board-sync
+- **制約 PM-1**: ガバナンス適用をスキップしてはならない（SHALL）。create / migrate 共通
+- **制約 PM-2**: snapshot モードでソースプロジェクトを変更してはならない（SHALL）。read-only
 
 ## Rules
 

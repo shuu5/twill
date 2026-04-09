@@ -71,5 +71,7 @@ co-issue Phase 3（Per-Issue 精緻化ループ）のロジックを担当する
 
 ## 禁止事項（MUST NOT）
 
-- **複数 Issue を 1 回の `/twl:issue-spec-review` に渡してはならない**（1 Issue = 1 呼び出し。5 Issues なら 5 回呼び出す）
-- **specialist が実行中のまま Step 3c 以降に進んではならない**（全 specialist の結果が揃うまで待機必須）
+- **複数 Issue を 1 回の `/twl:issue-spec-review` に渡してはならない**（UX ルール。1 Issue = 1 呼び出し。5 Issues なら 5 回呼び出す）
+- **specialist が実行中のまま Step 3c 以降に進んではならない**（制約 IM-5。全 specialist の結果が揃うまで待機必須）
+
+Issue Management 制約の正典は `plugins/twl/architecture/domain/contexts/issue-mgmt.md`

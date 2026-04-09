@@ -137,6 +137,8 @@ stale/未レビューのコンポーネントを特定し worker-prompt-reviewer
 
 ## 禁止事項（MUST NOT）
 
-- ガバナンス適用をスキップしてはならない（create/migrate 共通）
-- プロジェクト名を推測してはならない（未指定時は必ず質問）
-- snapshot モードでソースプロジェクトを変更してはならない（read-only）
+- ガバナンス適用をスキップしてはならない（制約 PM-1）
+- プロジェクト名を推測してはならない（UX ルール。未指定時は必ず質問）
+- snapshot モードでソースプロジェクトを変更してはならない（制約 PM-2）
+
+Project Management 制約の正典は `plugins/twl/architecture/domain/contexts/project-mgmt.md`

@@ -139,6 +139,11 @@ stateDiagram-v2
 - issue-{N}.json は per-issue のため同一セッション内の複数 Issue 並行処理は安全
 - Pilot = read only, Worker = write
 
+### 実行制約
+
+- **制約 AP-1**: plan.yaml を独自生成してはならない（SHALL）。`autopilot-plan.sh` に委譲すること
+- **制約 AP-2**: Emergency Bypass 条件を除き、trivial change であっても co-autopilot を bypass してはならない（SHALL）
+
 ## Rules
 
 ### Pilot / Worker 役割分担
