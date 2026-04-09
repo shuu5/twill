@@ -513,6 +513,7 @@ skills:
     type: workflow
     path: skills/workflow-issue-create/SKILL.md
     effort: medium
+    refined_at: "2026-04-09"
     spawnable_by: [controller]
     can_spawn: [atomic]
     calls:
