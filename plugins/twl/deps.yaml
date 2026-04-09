@@ -209,11 +209,12 @@ skills:
       - atomic: snapshot-generate
       - workflow: workflow-plugin-create
       - workflow: workflow-plugin-diagnose
+      - workflow: workflow-prompt-audit
       - atomic: label-sync
       - reference: ref-types
       - reference: ref-practices
       - reference: ref-deps-format
-    description: "プロジェクト管理（create / migrate / snapshot / plugin-create / plugin-diagnose）"
+    description: "プロジェクト管理（create / migrate / snapshot / plugin-create / plugin-diagnose / prompt-audit）"
 
   co-architect:
     type: controller
@@ -492,6 +493,21 @@ skills:
       - composite: plugin-phase-verify
         step: "6"
     description: "既存プラグイン診断・修正ワークフロー（migrate-analyze → diagnose → phase-diagnose → fix → verify → phase-verify）"
+
+  workflow-prompt-audit:
+    type: workflow
+    path: skills/workflow-prompt-audit/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [composite, atomic, specialist]
+    calls:
+      - atomic: prompt-audit-scan
+        step: "1"
+      - composite: prompt-audit-review
+        step: "2"
+      - atomic: prompt-audit-apply
+        step: "3"
+    description: "プロンプトコンプライアンス監査ワークフロー（scan → review → apply）"
 
   workflow-issue-refine:
     type: workflow
@@ -1257,6 +1273,40 @@ commands:
       parent: workflow-plugin-diagnose
       step: "1"
     description: "既存プラグインの AT 移行分析"
+
+  prompt-audit-scan:
+    type: atomic
+    path: commands/prompt-audit-scan.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    dispatch_mode: llm
+    step_in:
+      parent: workflow-prompt-audit
+      step: "1"
+    description: "twl audit section 7 から stale/unreviewed コンポーネントを優先度順に抽出"
+
+  prompt-audit-review:
+    type: composite
+    path: commands/prompt-audit-review.md
+    spawnable_by: [workflow]
+    can_spawn: [specialist]
+    parallel: true
+    dispatch_mode: llm
+    step_in:
+      parent: workflow-prompt-audit
+      step: "2"
+    description: "worker-prompt-reviewer を parallel Task spawn して PASS/WARN/FAIL 収集"
+
+  prompt-audit-apply:
+    type: atomic
+    path: commands/prompt-audit-apply.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    dispatch_mode: llm
+    step_in:
+      parent: workflow-prompt-audit
+      step: "3"
+    description: "PASS → twl refine 更新、WARN → 報告、FAIL → tech-debt Issue 起票"
 
   plugin-diagnose:
     type: atomic
