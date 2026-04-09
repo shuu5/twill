@@ -1,0 +1,73 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="co-observer";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+    skill_co_observer [label="twl:co-observer\n(407 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+
+    // Reference Skills
+    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(725 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_intervention_catalog [label="twl:intervention-catalog\n(1,673 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+
+    // L1: Direct Commands
+    cmd_observe_once [label="observe-once\n(436 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_problem_detect [label="problem-detect\n(678 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_intervene_auto [label="intervene-auto\n(707 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_intervene_confirm [label="intervene-confirm\n(882 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_intervene_escalate [label="intervene-escalate\n(1,078 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+    script_observe_wrapper [label="observe-wrapper\n(122 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_session_state_wrapper [label="session-state-wrapper\n(126 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_co_observer; }
+    { rank=same; skill_observation_pattern_catalog; skill_intervention_catalog; }
+    { rank=same; cmd_observe_once; cmd_problem_detect; cmd_intervene_auto; cmd_intervene_confirm; cmd_intervene_escalate; }
+    { rank=same; script_observe_wrapper; script_session_state_wrapper; }
+
+    // Edges
+    skill_co_observer -> cmd_observe_once;
+    skill_co_observer -> cmd_problem_detect;
+    skill_co_observer -> cmd_intervene_auto;
+    skill_co_observer -> cmd_intervene_confirm;
+    skill_co_observer -> cmd_intervene_escalate;
+    skill_co_observer -> skill_intervention_catalog;
+    skill_co_observer -> skill_observation_pattern_catalog;
+    cmd_observe_once -> script_observe_wrapper;
+    cmd_observe_once -> script_session_state_wrapper;
+    cmd_problem_detect -> skill_observation_pattern_catalog;
+    cmd_intervene_auto -> skill_intervention_catalog;
+    cmd_intervene_confirm -> skill_intervention_catalog;
+    cmd_intervene_escalate -> skill_intervention_catalog;
+
+    // Ordering constraints (invisible edges)
+    cmd_observe_once -> cmd_problem_detect [style=invis, weight=10];
+    cmd_observe_once -> cmd_problem_detect [style=invis, weight=10];
+    cmd_problem_detect -> cmd_intervene_auto [style=invis, weight=10];
+    cmd_intervene_auto -> cmd_intervene_confirm [style=invis, weight=10];
+    cmd_intervene_confirm -> cmd_intervene_escalate [style=invis, weight=10];
+    cmd_intervene_escalate -> skill_intervention_catalog [style=invis, weight=10];
+    skill_intervention_catalog -> skill_observation_pattern_catalog [style=invis, weight=10];
+    script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];
+    script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];
+
+}

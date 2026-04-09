@@ -289,6 +289,24 @@ skills:
       - reference: load-test-baselines  # 子 7 で実装
     description: "ライブセッション観察と能動的 self-improvement framework のエントリポイント controller"
 
+  # co-observer: ADR-013 の observer 型（#310）
+  co-observer:
+    type: controller
+    path: skills/co-observer/SKILL.md
+    effort: high
+    tools: [Agent(observer-evaluator)]
+    spawnable_by: [user]
+    can_spawn: [workflow, atomic, specialist, reference]
+    calls:
+      - atomic: observe-once
+      - atomic: problem-detect
+      - atomic: intervene-auto
+      - atomic: intervene-confirm
+      - atomic: intervene-escalate
+      - reference: intervention-catalog
+      - reference: observation-pattern-catalog
+    description: "Observer メタ認知コントローラー（ADR-013）— 3 層介入プロトコルの実行エントリポイント"
+
   workflow-setup:
     type: workflow
     refined_by: "ref-prompt-guide@2c7a62f2"
@@ -676,6 +694,14 @@ refs:
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
     description: "負荷テスト level の定量基準"
+
+  # co-observer intervention catalog (#310)
+  intervention-catalog:
+    type: reference
+    path: refs/intervention-catalog.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "Observer 介入パターン定義（6 パターン / 3 層 Auto/Confirm/Escalate）"
 
 # コマンド（B-4 で拡充）
 commands:
@@ -1588,6 +1614,38 @@ commands:
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "過去の observation を集約しパターン抽出"
+
+  # === co-observer 介入コマンド (#310) ===
+
+  intervene-auto:
+    type: atomic
+    path: commands/intervene-auto.md
+    effort: low
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    calls:
+      - reference: intervention-catalog
+    description: "Layer 0 自動介入（non_terminal_chain_end 回復、Worker PR 未作成）"
+
+  intervene-confirm:
+    type: atomic
+    path: commands/intervene-confirm.md
+    effort: medium
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    calls:
+      - reference: intervention-catalog
+    description: "Layer 1 確認付き介入（Worker 長時間 idle、Wave 再計画）"
+
+  intervene-escalate:
+    type: atomic
+    path: commands/intervene-escalate.md
+    effort: low
+    spawnable_by: [controller, workflow]
+    can_spawn: []
+    calls:
+      - reference: intervention-catalog
+    description: "Layer 2 エスカレーション（コンフリクト解決、根本的設計課題）"
 
   # === C-2a: Test-project系（3個） ===
 

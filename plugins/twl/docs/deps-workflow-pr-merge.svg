@@ -100,7 +100,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="563.77,-379.49 531.83,-403.98 467.96,-403.98 436.02,-379.49 467.96,-355.01 531.83,-355.01 563.77,-379.49"/>
 <text text-anchor="middle" x="499.9" y="-382.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="499.9" y="-371.49" font-family="Helvetica,sans-Serif" font-size="10.00">(8,177 tok)</text>
+<text text-anchor="middle" x="499.9" y="-371.49" font-family="Helvetica,sans-Serif" font-size="10.00">(8,431 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;script_chain_runner -->
 <g id="edge7" class="edge">
@@ -792,7 +792,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="559.61,-2164.49 529.75,-2188.98 470.04,-2188.98 440.19,-2164.49 470.04,-2140.01 529.75,-2140.01 559.61,-2164.49"/>
 <text text-anchor="middle" x="499.9" y="-2167.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="499.9" y="-2156.49" font-family="Helvetica,sans-Serif" font-size="10.00">(8,177 tok)</text>
+<text text-anchor="middle" x="499.9" y="-2156.49" font-family="Helvetica,sans-Serif" font-size="10.00">(8,431 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node45" class="node">
