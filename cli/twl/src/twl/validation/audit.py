@@ -450,7 +450,7 @@ def audit_cross_layer_consistency(monorepo_root: Path) -> List[dict]:
 
 
 def audit_collect(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = None) -> List[dict]:
-    """9セクションの TWiLL 準拠度データを収集（print なし）
+    """10セクションの TWiLL 準拠度データを収集（print なし）
 
     Returns: items リスト（severity, component, message, section, value, threshold）
     """
@@ -633,7 +633,34 @@ def audit_collect(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] =
             "threshold": warn_threshold,
         })
 
-    # Section 7: Prompt Compliance
+    # Section 7: Model Declaration
+    for name, comp in sorted(all_components.items()):
+        resolved = resolve_type(comp['type'])
+        if resolved != 'specialist':
+            continue
+        model = comp.get('model')
+        if model is None:
+            severity = 'warning'
+            message = f"model 未宣言: {name}"
+        elif model == 'opus':
+            severity = 'warning'
+            message = f"opus 使用: {name}"
+        elif model not in ALLOWED_MODELS:
+            severity = 'info'
+            message = f"不明なモデル: {model}"
+        else:
+            severity = 'ok'
+            message = f"model: {model}"
+        items.append({
+            "severity": severity,
+            "component": name,
+            "message": message,
+            "section": "model_declaration",
+            "value": 0 if severity == 'warning' else 1,
+            "threshold": 1,
+        })
+
+    # Section 8: Prompt Compliance
     current_hash = _compute_ref_prompt_guide_hash(plugin_root)
     for section in ('skills', 'commands', 'agents'):
         for name, spec in sorted(deps.get(section, {}).items()):
@@ -976,19 +1003,15 @@ def audit_report(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = 
         if model is None:
             model_str = '(none)'
             severity = 'WARNING'
-            warnings += 1
         elif model == 'opus':
             model_str = model
             severity = 'WARNING'
-            warnings += 1
         elif model not in ALLOWED_MODELS:
             model_str = model
             severity = 'INFO'
-            oks += 1
         else:
             model_str = model
             severity = 'OK'
-            oks += 1
         print(f"| {name} | {comp['type']} | {model_str} | {severity} |")
     print()
 
