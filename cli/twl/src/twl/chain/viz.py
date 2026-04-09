@@ -15,6 +15,10 @@ from twl.core.plugin import get_plugin_root, load_deps
 README_MARKER_START = "<!-- CHAIN-FLOW-START -->"
 README_MARKER_END = "<!-- CHAIN-FLOW-END -->"
 
+# Architecture spec markers: <!-- CHAIN-FLOW:<chain-name> START/END -->
+ARCH_MARKER_START_RE = re.compile(r'<!-- CHAIN-FLOW:([\w][\w-]*) START -->')
+ARCH_MARKER_END_RE = re.compile(r'<!-- CHAIN-FLOW:([\w][\w-]*) END -->')
+
 # dispatch_mode → Mermaid classDef name
 _DISPATCH_CLASS: Dict[str, str] = {
     "runner": "script",
@@ -252,6 +256,163 @@ def _append_classdefs(lines: List[str]) -> None:
     lines.append("    classDef marker fill:#eeeeee,stroke:#9e9e9e")
 
 
+def _generate_for_marker(deps: dict, chain_name: str) -> Optional[str]:
+    """マーカーの chain_name に対応する Mermaid を生成する。'all' は全 chain 結合図。"""
+    if chain_name == "all":
+        return chain_viz_all(deps)
+    chains = deps.get("chains", {})
+    if chain_name not in chains:
+        return None
+    return chain_viz_single(deps, chain_name)
+
+
+def check_arch_chain_flow(plugin_root: Path, deps: dict) -> List[dict]:
+    """architecture/ 内の CHAIN-FLOW マーカーとドリフトを検出する。
+
+    Returns:
+        [{'file': str, 'chain': str, 'status': 'ok'|'DRIFT'|'UNCLOSED'|'UNKNOWN_CHAIN'}, ...]
+    """
+    import hashlib
+
+    arch_root = plugin_root / "architecture"
+    if not arch_root.exists():
+        return []
+
+    results: List[dict] = []
+
+    def _normalize(text: str) -> str:
+        lines = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+        return '\n'.join(line.rstrip() for line in lines)
+
+    for md_file in sorted(arch_root.rglob("*.md")):
+        rel_path = str(md_file.relative_to(plugin_root))
+        content = md_file.read_text(encoding="utf-8")
+        lines = content.split('\n')
+
+        starts: Dict[int, str] = {}  # line_idx → chain_name
+        ends: Dict[str, int] = {}    # chain_name → line_idx
+
+        for i, line in enumerate(lines):
+            sm = ARCH_MARKER_START_RE.search(line)
+            if sm:
+                starts[i] = sm.group(1)
+            em = ARCH_MARKER_END_RE.search(line)
+            if em:
+                ends[em.group(1)] = i
+
+        if not starts and not ends:
+            continue
+
+        # 未閉鎖チェック
+        for idx, chain_name in starts.items():
+            if chain_name not in ends:
+                results.append({
+                    'file': rel_path, 'chain': chain_name,
+                    'status': 'UNCLOSED', 'line': idx + 1,
+                })
+                continue
+
+            end_idx = ends[chain_name]
+            if end_idx <= idx:
+                results.append({
+                    'file': rel_path, 'chain': chain_name,
+                    'status': 'UNCLOSED', 'line': idx + 1,
+                })
+                continue
+
+            expected_mermaid = _generate_for_marker(deps, chain_name)
+            if expected_mermaid is None:
+                results.append({
+                    'file': rel_path, 'chain': chain_name,
+                    'status': 'UNKNOWN_CHAIN', 'line': idx + 1,
+                })
+                continue
+
+            actual_content = '\n'.join(lines[idx + 1:end_idx])
+            norm_expected = _normalize(expected_mermaid.strip())
+            norm_actual = _normalize(actual_content.strip())
+
+            if hashlib.sha256(norm_expected.encode('utf-8')).hexdigest() == \
+               hashlib.sha256(norm_actual.encode('utf-8')).hexdigest():
+                results.append({'file': rel_path, 'chain': chain_name, 'status': 'ok'})
+            else:
+                results.append({
+                    'file': rel_path, 'chain': chain_name, 'status': 'DRIFT',
+                    'expected': norm_expected, 'actual': norm_actual,
+                })
+
+    return results
+
+
+def update_arch_chain_flow(plugin_root: Path, deps: dict) -> int:
+    """architecture/ 内の CHAIN-FLOW マーカー付きフロー図を chain 定義から更新する。
+
+    Returns:
+        更新したファイル数。
+    """
+    arch_root = plugin_root / "architecture"
+    if not arch_root.exists():
+        print(f"Warning: architecture/ not found at {plugin_root}", file=sys.stderr)
+        return 0
+
+    updated = 0
+
+    for md_file in sorted(arch_root.rglob("*.md")):
+        content = md_file.read_text(encoding="utf-8")
+        new_content = content
+
+        # 全マーカーを検索して置換（後ろから処理して位置ずれを防ぐ）
+        starts = list(ARCH_MARKER_START_RE.finditer(new_content))
+        if not starts:
+            continue
+
+        # マーカーペアを逆順で処理
+        replacements: List[tuple] = []  # (start_pos, end_pos, replacement)
+        for m_start in starts:
+            chain_name = m_start.group(1)
+            pattern_end = re.compile(
+                r'<!-- CHAIN-FLOW:' + re.escape(chain_name) + r' END -->'
+            )
+            m_end = pattern_end.search(new_content, m_start.end())
+            if not m_end:
+                print(f"Warning: unclosed CHAIN-FLOW:{chain_name} in {md_file}", file=sys.stderr)
+                continue
+
+            mermaid = _generate_for_marker(deps, chain_name)
+            if mermaid is None:
+                print(f"Warning: unknown chain '{chain_name}' in {md_file}", file=sys.stderr)
+                continue
+
+            # START マーカーの後〜END マーカーの前を置換
+            replacement = (
+                m_start.end(),
+                m_end.start(),
+                '\n' + mermaid + '\n',
+            )
+            replacements.append(replacement)
+
+        if not replacements:
+            continue
+
+        # 後ろから置換してオフセットずれを防ぐ
+        pieces = []
+        prev_end = len(new_content)
+        for start_pos, end_pos, new_text in sorted(replacements, reverse=True):
+            pieces.append(new_content[end_pos:prev_end])
+            pieces.append(new_text)
+            prev_end = start_pos
+        pieces.append(new_content[:prev_end])
+        new_content = ''.join(reversed(pieces))
+
+        if new_content != content:
+            md_file.write_text(new_content, encoding="utf-8")
+            rel = md_file.relative_to(plugin_root)
+            print(f"Updated {rel}")
+            updated += 1
+
+    return updated
+
+
 def update_readme_chain_flow(plugin_root: Path, mermaid_content: str) -> bool:
     """README.md の CHAIN-FLOW セクションを更新する。
 
@@ -315,8 +476,22 @@ def handle_chain_viz_subcommand(argv: list) -> None:
         action="store_true",
         help="Embed flowchart into README.md between CHAIN-FLOW markers",
     )
+    parser.add_argument(
+        "--update-arch",
+        action="store_true",
+        help="Update architecture spec files with CHAIN-FLOW markers from chain definitions",
+    )
 
     args = parser.parse_args(argv)
+
+    plugin_root = get_plugin_root()
+    deps = load_deps(plugin_root)
+
+    if args.update_arch:
+        updated = update_arch_chain_flow(plugin_root, deps)
+        if updated == 0:
+            print("No architecture files updated (no CHAIN-FLOW markers found)")
+        return
 
     if args.all_chains and args.chain_name:
         print("Error: --all and chain name are mutually exclusive", file=sys.stderr)
@@ -326,9 +501,6 @@ def handle_chain_viz_subcommand(argv: list) -> None:
         parser.print_usage(sys.stderr)
         print("Error: either chain name or --all is required", file=sys.stderr)
         sys.exit(1)
-
-    plugin_root = get_plugin_root()
-    deps = load_deps(plugin_root)
 
     if args.all_chains:
         output = chain_viz_all(deps)

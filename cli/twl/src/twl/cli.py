@@ -69,6 +69,7 @@ def main():
             print("Usage: twl chain generate <chain-name> [--write]", file=sys.stderr)
             print("       twl chain viz <chain-name>", file=sys.stderr)
             print("       twl chain viz --all [--update-readme]", file=sys.stderr)
+            print("       twl chain viz --update-arch", file=sys.stderr)
             sys.exit(1)
 
     parser = argparse.ArgumentParser(description='Analyze plugin dependencies')
