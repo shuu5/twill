@@ -165,16 +165,18 @@ def test_separate_phases_preserves_existing_phase_boundaries():
     assert result == [["A"], ["B"]]
 
 
-def test_deps_yaml_separation_still_works_after_touched_files_pass():
-    """Invariant H (deps.yaml exclusivity) must still hold."""
+def test_deps_yaml_parallel_allowed_after_touched_files_pass():
+    """Invariant H relaxed: deps.yaml issues are allowed in the same phase (parallel execution).
+    merge-gate handles conflict resolution via auto-rebase.
+    """
     phases = [["A", "B", "C"]]
     deps_yaml_issues = {"A", "B"}
     phases = _separate_deps_yaml_phases(phases, deps_yaml_issues)
     # Then touched-files separation runs over the result.
     touched = {"A": set(), "B": set(), "C": set()}
     final = _separate_touched_files_phases(phases, touched)
-    # A and B (deps.yaml) must be in distinct phases.
+    # A and B (deps.yaml) are allowed in the same phase under relaxed invariant H.
     flat_phases = [set(p) for p in final]
     a_phase = next(i for i, p in enumerate(flat_phases) if "A" in p)
     b_phase = next(i for i, p in enumerate(flat_phases) if "B" in p)
-    assert a_phase != b_phase
+    assert a_phase == b_phase, "deps.yaml issues should be in the same phase (parallel allowed)"

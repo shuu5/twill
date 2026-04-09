@@ -254,6 +254,9 @@ class MergeGate:
         # Pre-merge check: detect silent file deletions from base staleness. Issue #166.
         self._check_base_drift()
 
+        # Pre-merge check: detect deps.yaml conflict and auto-rebase if needed. Issue #229.
+        self._check_deps_yaml_conflict_and_rebase()
+
         merge_ok = self._run_merge(gh_repo_flag)
         if not merge_ok:
             sys.exit(1)
@@ -489,6 +492,134 @@ class MergeGate:
                 f"`git rebase origin/main` → `git push --force-with-lease` を実行してください。"
                 f"{paths_str}"
             )
+
+    def _find_worktree_path(self) -> str:
+        """Return the local worktree path for self.branch, or empty string if not found."""
+        result = subprocess.run(
+            ["git", "worktree", "list", "--porcelain"],
+            capture_output=True, text=True,
+        )
+        current_wt = ""
+        for line in result.stdout.splitlines():
+            if line.startswith("worktree "):
+                current_wt = line[len("worktree "):]
+            elif line == f"branch refs/heads/{self.branch}":
+                return current_wt
+        return ""
+
+    def _check_deps_yaml_conflict_and_rebase(self) -> None:
+        """Detect deps.yaml conflict pre-merge and auto-rebase if needed. Issue #229.
+
+        Uses git merge-tree to detect if merging self.branch into origin/main would
+        produce a deps.yaml conflict. On conflict, attempts rebase in the branch's
+        worktree (max 1 retry, consistent with invariant E). On rebase failure,
+        transitions to conflict status.
+        """
+        # Fetch latest origin/main
+        subprocess.run(
+            ["git", "fetch", "origin", "main"],
+            capture_output=True,
+        )
+
+        # Use git merge-tree to detect conflicts (git >= 2.38 write-tree mode)
+        mt_result = subprocess.run(
+            ["git", "merge-tree", "--write-tree", "--no-messages",
+             "origin/main", self.branch],
+            capture_output=True, text=True,
+        )
+        # Exit code 0 = clean merge, 1 = conflicts
+        if mt_result.returncode == 0:
+            return
+
+        # Check if deps.yaml is among the conflicting files
+        conflicted_files = mt_result.stderr or mt_result.stdout
+        if "deps.yaml" not in conflicted_files:
+            # Non-deps.yaml conflict: let _run_merge handle it normally
+            return
+
+        print(
+            f"[merge-gate] Issue #{self.issue}: deps.yaml コンフリクト検出 - 自動 rebase を試行",
+            file=sys.stderr,
+        )
+
+        worktree_path = self._find_worktree_path()
+        if not worktree_path:
+            print(
+                f"[merge-gate] Issue #{self.issue}: ⚠️ worktree が見つかりません - rebase をスキップ",
+                file=sys.stderr,
+            )
+            return
+
+        # Attempt rebase in the branch's worktree
+        rebase_result = subprocess.run(
+            ["git", "-C", worktree_path, "rebase", "origin/main"],
+            capture_output=True, text=True,
+        )
+
+        if rebase_result.returncode != 0:
+            # Abort the failed rebase
+            subprocess.run(
+                ["git", "-C", worktree_path, "rebase", "--abort"],
+                capture_output=True,
+            )
+            failure = json.dumps({
+                "reason": "deps_yaml_rebase_failed",
+                "details": rebase_result.stderr[:500],
+                "step": "merge-gate-pre-rebase",
+                "pr": f"#{self.pr_number}",
+            })
+            _state_write(self.issue, "pilot", status="conflict", failure=failure)
+            print(
+                f"[merge-gate] Issue #{self.issue}: rebase 失敗 - status=conflict に遷移。"
+                f"手動で rebase → push 後に status=merge-ready に戻してリトライ可能",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        # Rebase succeeded: push the rebased branch
+        push_result = subprocess.run(
+            ["git", "-C", worktree_path, "push", "--force-with-lease"],
+            capture_output=True, text=True,
+        )
+        if push_result.returncode != 0:
+            failure = json.dumps({
+                "reason": "deps_yaml_rebase_push_failed",
+                "details": push_result.stderr[:500],
+                "step": "merge-gate-pre-rebase",
+                "pr": f"#{self.pr_number}",
+            })
+            _state_write(self.issue, "pilot", status="conflict", failure=failure)
+            print(
+                f"[merge-gate] Issue #{self.issue}: rebase 後 push 失敗 - status=conflict に遷移",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+        # Re-validate after rebase
+        twl_path = self.scripts_root.parent / "twl" / "twl"
+        if twl_path.exists():
+            check_result = subprocess.run(
+                [str(twl_path), "--check"],
+                capture_output=True, text=True,
+                cwd=worktree_path,
+            )
+            if check_result.returncode != 0:
+                failure = json.dumps({
+                    "reason": "deps_yaml_rebase_check_failed",
+                    "details": check_result.stdout[:500],
+                    "step": "merge-gate-pre-rebase",
+                    "pr": f"#{self.pr_number}",
+                })
+                _state_write(self.issue, "pilot", status="conflict", failure=failure)
+                print(
+                    f"[merge-gate] Issue #{self.issue}: rebase 後 twl --check 失敗 - status=conflict に遷移",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+
+        print(
+            f"[merge-gate] Issue #{self.issue}: deps.yaml 自動 rebase 成功 - merge を続行",
+        )
 
     def _run_merge(self, gh_repo_flag: list[str]) -> bool:
         """Execute gh pr merge --squash. Returns True on success."""

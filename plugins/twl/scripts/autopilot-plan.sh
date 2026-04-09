@@ -197,47 +197,23 @@ issue_touches_deps_yaml() {
     return 1
 }
 
-# Phase 配列から deps.yaml 競合を検出し sequential 化
-# phases_result 配列を直接書き換え
+# 不変条件 H 緩和: deps.yaml 変更 Issue の並列実行を許可し、コンフリクト時は merge-gate が自動 rebase を試行する
+# Phase 配列を変更せず、警告のみ出力する
 # グローバル: phases_result, DEPS_YAML_ISSUES（deps.yaml を変更する Issue のセット）
 separate_deps_yaml_phases() {
-    local -a new_phases=()
-    local new_phase_num=0
-
     for entry in "${phases_result[@]}"; do
         local pissues="${entry#*:}"
-        local -a issues_arr=($pissues)
-
-        # この Phase 内で deps.yaml を変更する Issue を抽出
         local -a deps_yaml_in_phase=()
-        local -a non_deps_yaml=()
-        for issue in "${issues_arr[@]}"; do
+        for issue in $pissues; do
             if [[ " ${DEPS_YAML_ISSUES[*]:-} " == *" $issue "* ]]; then
                 deps_yaml_in_phase+=("$issue")
-            else
-                non_deps_yaml+=("$issue")
             fi
         done
-
-        if [[ ${#deps_yaml_in_phase[@]} -le 1 ]]; then
-            # 競合なし: そのまま
-            new_phase_num=$((new_phase_num + 1))
-            new_phases+=("${new_phase_num}:${pissues}")
-        else
-            # 競合あり: non_deps_yaml を1 Phase、deps_yaml Issue を各1 Phase に分離
-            echo "⚠ Phase 分離: deps.yaml 変更 Issue ${deps_yaml_in_phase[*]} を sequential 化" >&2
-            if [[ ${#non_deps_yaml[@]} -gt 0 ]]; then
-                new_phase_num=$((new_phase_num + 1))
-                new_phases+=("${new_phase_num}:${non_deps_yaml[*]}")
-            fi
-            for di in "${deps_yaml_in_phase[@]}"; do
-                new_phase_num=$((new_phase_num + 1))
-                new_phases+=("${new_phase_num}:${di}")
-            done
+        if [[ ${#deps_yaml_in_phase[@]} -ge 2 ]]; then
+            echo "⚠ 注記: Phase に deps.yaml 変更 Issue ${deps_yaml_in_phase[*]} が複数あります（並列実行許可 - merge-gate が自動 rebase を試行）" >&2
         fi
     done
-
-    phases_result=("${new_phases[@]}")
+    # phases_result は変更しない（並列実行許可）
 }
 
 # --explicit モード用: 同一 Phase 内の deps.yaml 競合を警告
@@ -543,36 +519,9 @@ parse_issues() {
         remaining=("${next_remaining[@]}")
     done
 
-    # deps.yaml 競合 Phase 分離
+    # 不変条件 H 緩和: deps.yaml 変更 Issue の並列実行を許可（警告のみ）
     if [[ ${#DEPS_YAML_ISSUES[@]} -ge 2 ]]; then
         separate_deps_yaml_phases
-        phase_num=${#phases_result[@]}
-
-        local prev_phase_issues=""
-        local prev_is_deps_yaml=false
-        for entry in "${phases_result[@]}"; do
-            local pissues="${entry#*:}"
-            local current_is_deps_yaml=true
-            for uid in $pissues; do
-                if [[ ! " ${DEPS_YAML_ISSUES[*]} " == *" $uid "* ]]; then
-                    current_is_deps_yaml=false
-                    break
-                fi
-            done
-            if [[ -n "$prev_phase_issues" ]] && $prev_is_deps_yaml && $current_is_deps_yaml; then
-                for uid in $pissues; do
-                    for dep in $prev_phase_issues; do
-                        if [[ -z "${DEPS[$uid]:-}" ]]; then
-                            DEPS[$uid]="$dep"
-                        elif [[ ! " ${DEPS[$uid]} " == *" $dep "* ]]; then
-                            DEPS[$uid]="${DEPS[$uid]} $dep"
-                        fi
-                    done
-                done
-            fi
-            prev_phase_issues="$pissues"
-            prev_is_deps_yaml=$current_is_deps_yaml
-        done
     fi
 
     # plan.yaml 出力

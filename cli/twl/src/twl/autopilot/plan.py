@@ -288,23 +288,20 @@ def _separate_deps_yaml_phases(
     phases: list[list[str]],
     deps_yaml_issues: set[str],
 ) -> list[list[str]]:
-    """Split phases to avoid deps.yaml conflicts."""
-    new_phases: list[list[str]] = []
+    """Warn about deps.yaml conflicts without splitting phases.
 
+    Invariant H relaxed: deps.yaml changes are allowed in parallel.
+    Conflicts are resolved by merge-gate auto-rebase.
+    """
     for phase_issues in phases:
         dyi = [i for i in phase_issues if i in deps_yaml_issues]
-        non_dyi = [i for i in phase_issues if i not in deps_yaml_issues]
-
-        if len(dyi) <= 1:
-            new_phases.append(phase_issues)
-        else:
-            print(f"⚠ Phase 分離: deps.yaml 変更 Issue {dyi} を sequential 化", file=sys.stderr)
-            if non_dyi:
-                new_phases.append(non_dyi)
-            for di in dyi:
-                new_phases.append([di])
-
-    return new_phases
+        if len(dyi) >= 2:
+            print(
+                f"⚠ 注記: Phase に deps.yaml 変更 Issue {dyi} が複数あります"
+                f"（並列実行許可 - merge-gate が自動 rebase を試行）",
+                file=sys.stderr,
+            )
+    return phases
 
 
 # ---------------------------------------------------------------------------
