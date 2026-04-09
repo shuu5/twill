@@ -7,7 +7,8 @@ description: |
 
   Use when user: says プロジェクト作りたい/作成したい/新規プロジェクト,
   says 移行したい/テンプレート更新/ガバナンス再適用,
-  says スナップショット/テンプレート抽出.
+  says スナップショット/テンプレート抽出,
+  says prompt audit/プロンプト監査/prompt compliance/refined.
 type: controller
 effort: medium
 tools:
@@ -31,8 +32,9 @@ spawnable_by:
 | `snapshot`, スナップショット, テンプレート抽出 | snapshot |
 | `--type plugin`, プラグイン作りたい, 新規プラグイン（テンプレート非指定） | plugin-create |
 | `diagnose`, 診断, 修正, 改善 + プラグインコンテキスト | plugin-diagnose |
+| `prompt audit`, `プロンプト監査`, `prompt compliance`, `refined` | prompt-audit |
 
-判定不能時 → AskUserQuestion で [A] create [B] migrate [C] snapshot [D] plugin-create [E] plugin-diagnose を選択。
+判定不能時 → AskUserQuestion で [A] create [B] migrate [C] snapshot [D] plugin-create [E] plugin-diagnose [F] prompt-audit を選択。
 
 ---
 
@@ -125,6 +127,13 @@ manifest.yaml + テンプレートファイルを生成。
 
 - plugin-create: `/twl:workflow-plugin-create` に委譲（interview → research → design → generate）
 - plugin-diagnose: `/twl:workflow-plugin-diagnose` に委譲（migrate-analyze → diagnose → phase-diagnose → fix → verify → phase-verify）
+
+## prompt-audit モード
+
+`/twl:workflow-prompt-audit` に委譲（scan → review → apply の 3 step）。
+
+stale/未レビューのコンポーネントを特定し worker-prompt-reviewer で LLM レビューを実行、
+結果に基づき refined_by を自動更新または tech-debt Issue を起票する。
 
 ## 禁止事項（MUST NOT）
 
