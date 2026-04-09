@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 # autopilot-invariants.bats - Autopilot invariants A through K
 #
-# Tests the 9 invariant conditions that must always hold true in the
+# Tests the 11 invariant conditions that must always hold true in the
 # autopilot system. These are integration-level tests that exercise
 # multiple scripts together.
 
