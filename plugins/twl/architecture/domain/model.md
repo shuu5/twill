@@ -236,35 +236,71 @@ flowchart TD
 
 ### Chain 定義と実行フロー
 
+<!-- CHAIN-FLOW:all START -->
 ```mermaid
 flowchart TD
-    subgraph "Chain 定義 (deps.yaml chains)"
-        CH["chain: pr-cycle"]
-        S1["step 1: verify"]
-        S2["step 2: parallel-review"]
-        S3["step 3: test"]
-        S4["step 4: fix (conditional)"]
-        S5["step 5: report"]
-        CH --> S1 --> S2 --> S3 --> S4 --> S5
+
+    subgraph setup["setup chain"]
+        setup__init["init"]:::script
+        setup__worktree_create["worktree-create"]:::script
+        setup__project_board_status_update["project-board-status-update"]:::script
+        setup__crg_auto_build["crg-auto-build"]:::llm
+        setup__change_propose["change-propose"]:::llm
+        setup__ac_extract["ac-extract"]:::script
     end
 
-    subgraph "実行時"
-        W["Workflow (chain runner)"]
-        W -->|"step 1"| A1["atomic: ts-preflight"]
-        W -->|"step 2"| A2["composite: phase-review"]
-        A2 -->|"parallel spawn"| SP1["specialist: worker-code-reviewer"]
-        A2 -->|"parallel spawn"| SP2["specialist: worker-security-reviewer"]
-        W -->|"step 3"| A3["atomic: pr-test"]
-        W -->|"step 4"| A4["composite: fix-phase"]
-        W -->|"step 5"| A5["atomic: pr-cycle-report"]
+    subgraph pr_verify["pr-verify chain"]
+        pr_verify__prompt_compliance["prompt-compliance"]:::script
+        pr_verify__ts_preflight["ts-preflight"]:::script
+        pr_verify__phase_review["phase-review"]:::llm
+        pr_verify__scope_judge["scope-judge"]:::llm
+        pr_verify__pr_test["pr-test"]:::script
+        pr_verify__ac_verify["ac-verify"]:::llm
     end
 
-    S1 -.->|maps to| A1
-    S2 -.->|maps to| A2
-    S3 -.->|maps to| A3
-    S4 -.->|maps to| A4
-    S5 -.->|maps to| A5
+    subgraph pr_fix["pr-fix chain"]
+        pr_fix__fix_phase["fix-phase"]:::llm
+        pr_fix__post_fix_verify["post-fix-verify"]:::llm
+        pr_fix__warning_fix["warning-fix"]:::llm
+    end
+
+    subgraph pr_merge["pr-merge chain"]
+        pr_merge__e2e_screening["e2e-screening"]:::llm
+        pr_merge__pr_cycle_report["pr-cycle-report"]:::script
+        pr_merge__pr_cycle_analysis["pr-cycle-analysis"]:::llm
+        pr_merge__all_pass_check["all-pass-check"]:::script
+        pr_merge__merge_gate["merge-gate"]:::llm
+        pr_merge__auto_merge["auto-merge"]:::script
+    end
+
+    setup__init --> setup__worktree_create
+    setup__worktree_create --> setup__project_board_status_update
+    setup__project_board_status_update --> setup__crg_auto_build
+    setup__crg_auto_build --> setup__change_propose
+    setup__change_propose --> setup__ac_extract
+    pr_verify__prompt_compliance --> pr_verify__ts_preflight
+    pr_verify__ts_preflight --> pr_verify__phase_review
+    pr_verify__phase_review --> pr_verify__scope_judge
+    pr_verify__scope_judge --> pr_verify__pr_test
+    pr_verify__pr_test --> pr_verify__ac_verify
+    pr_fix__fix_phase --> pr_fix__post_fix_verify
+    pr_fix__post_fix_verify --> pr_fix__warning_fix
+    pr_merge__e2e_screening --> pr_merge__pr_cycle_report
+    pr_merge__pr_cycle_report --> pr_merge__pr_cycle_analysis
+    pr_merge__pr_cycle_analysis --> pr_merge__all_pass_check
+    pr_merge__all_pass_check --> pr_merge__merge_gate
+    pr_merge__merge_gate --> pr_merge__auto_merge
+
+    setup__ac_extract --> pr_verify__prompt_compliance
+    pr_verify__ac_verify --> pr_fix__fix_phase
+    pr_fix__warning_fix --> pr_merge__e2e_screening
+
+    classDef script fill:#c8e6c9,stroke:#4caf50
+    classDef llm fill:#bbdefb,stroke:#1976d2
+    classDef composite fill:#e1bee7,stroke:#7b1fa2
+    classDef marker fill:#eeeeee,stroke:#9e9e9e
 ```
+<!-- CHAIN-FLOW:all END -->
 
 **Chain の役割**: deps.yaml の chains セクションがステップ順序を宣言的に定義する。Workflow は chain 定義を読み取り、各ステップに対応する atomic/composite コマンドを逐次実行する。順序変更は deps.yaml の編集のみで完結し、Workflow のコード変更は不要。
 

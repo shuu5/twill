@@ -566,6 +566,42 @@ def chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tuple[L
     return file_results, diffs
 
 
+def chain_arch_drift_check(plugin_root: Path, deps: dict) -> Tuple[List[dict], List[str]]:
+    """architecture/ 内の CHAIN-FLOW マーカー付きフロー図のドリフトを検出する。
+
+    Returns:
+        (file_results, diffs)
+        file_results: [{'file': str, 'chain': str, 'status': 'ok'|'DRIFT'|'UNCLOSED'|'UNKNOWN_CHAIN'}, ...]
+        diffs: unified diff テキストのリスト
+    """
+    from twl.chain.viz import check_arch_chain_flow
+
+    results = check_arch_chain_flow(plugin_root, deps)
+    file_results = []
+    diffs = []
+
+    for r in results:
+        fr = {'file': r['file'], 'chain': r['chain'], 'status': r['status']}
+        file_results.append(fr)
+        if r['status'] == 'DRIFT':
+            expected_lines = _normalize_for_check(r['expected']).splitlines(keepends=True)
+            actual_lines = _normalize_for_check(r['actual']).splitlines(keepends=True)
+            diff_lines = list(difflib.unified_diff(
+                expected_lines, actual_lines,
+                fromfile='expected', tofile=r['file']
+            ))
+            diffs.append(
+                f"=== Arch Drift: {r['file']} (CHAIN-FLOW:{r['chain']}) ===\n"
+                + ''.join(diff_lines)
+            )
+        elif r['status'] in ('UNCLOSED', 'UNKNOWN_CHAIN'):
+            diffs.append(
+                f"=== Arch Error: {r['file']} (CHAIN-FLOW:{r['chain']}) — {r['status']} ===\n"
+            )
+
+    return file_results, diffs
+
+
 def handle_chain_subcommand(argv: list) -> None:
     """chain サブコマンドを処理する。sys.exit() で終了。"""
     parser = argparse.ArgumentParser(
@@ -660,10 +696,26 @@ def handle_chain_subcommand(argv: list) -> None:
                     total_drifted += len([r for r in meta_file_results if r['status'] == 'DRIFT'])
                     all_diffs.extend(meta_diffs)
 
+            # Architecture spec ドリフト検出
+            arch_file_results, arch_diffs = chain_arch_drift_check(plugin_root, deps)
+            arch_drifted = len([r for r in arch_file_results if r['status'] != 'ok'])
+            if arch_file_results:
+                print("arch-spec:")
+                for r in arch_file_results:
+                    status = "ok" if r['status'] == 'ok' else r['status']
+                    print(f"  {r['file']:<50s} [{r['chain']}] ... {status}")
+                print()
+            if arch_diffs:
+                total_drifted += arch_drifted
+                all_diffs.extend(arch_diffs)
+
             drifted_chains = chains_total - chains_ok
+            arch_summary = (f", {arch_drifted} arch-spec marker{'s' if arch_drifted != 1 else ''} drifted"
+                            if arch_drifted > 0 else "")
             print(f"Summary: {chains_ok}/{chains_total} chains ok"
                   + (f", {total_drifted} files drifted in {drifted_chains} chain{'s' if drifted_chains != 1 else ''}."
-                     if total_drifted > 0 else "."))
+                     if total_drifted > 0 else ".")
+                  + arch_summary)
 
             if all_diffs:
                 print("Run 'twl chain generate --all --write' to fix.")

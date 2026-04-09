@@ -53,35 +53,83 @@ merge-gate の判定結果。
 
 ### PR-cycle chain フロー
 
+#### pr-verify chain
+
+<!-- CHAIN-FLOW:pr-verify START -->
 ```mermaid
 flowchart TD
-    A[verify] --> B[parallel-review]
-    B --> C[test]
-    C --> D{テスト成功?}
-    D -- Yes --> E[post-fix-verify]
-    D -- No --> F[fix]
-    F --> C
-    E --> G[visual]
-    G --> H[report]
-    H --> I[all-pass-check]
-    I --> J{全 PASS?}
-    J -- Yes --> K[merge]
-    J -- No --> L[REJECT]
+
+    subgraph pr_verify["pr-verify chain"]
+        pr_verify__prompt_compliance["prompt-compliance"]:::script
+        pr_verify__ts_preflight["ts-preflight"]:::script
+        pr_verify__phase_review["phase-review"]:::llm
+        pr_verify__scope_judge["scope-judge"]:::llm
+        pr_verify__pr_test["pr-test"]:::script
+        pr_verify__ac_verify["ac-verify"]:::llm
+    end
+
+    pr_verify__prompt_compliance --> pr_verify__ts_preflight
+    pr_verify__ts_preflight --> pr_verify__phase_review
+    pr_verify__phase_review --> pr_verify__scope_judge
+    pr_verify__scope_judge --> pr_verify__pr_test
+    pr_verify__pr_test --> pr_verify__ac_verify
+
+    classDef script fill:#c8e6c9,stroke:#4caf50
+    classDef llm fill:#bbdefb,stroke:#1976d2
+    classDef composite fill:#e1bee7,stroke:#7b1fa2
+    classDef marker fill:#eeeeee,stroke:#9e9e9e
 ```
+<!-- CHAIN-FLOW:pr-verify END -->
 
-### merge-gate フロー
+#### pr-fix chain
 
+<!-- CHAIN-FLOW:pr-fix START -->
 ```mermaid
 flowchart TD
-    A[merge-gate 開始] --> B[動的レビュアー構築]
-    B --> C[並列 specialist 実行]
-    C --> D[結果集約]
-    D --> E{PASS / REJECT 判定}
-    E -- PASS --> F[merge 実行]
-    E -- REJECT --> G{retry_count < 1?}
-    G -- Yes --> H[fix -> 再実行]
-    G -- No --> I[確定失敗: Pilot に報告]
+
+    subgraph pr_fix["pr-fix chain"]
+        pr_fix__fix_phase["fix-phase"]:::llm
+        pr_fix__post_fix_verify["post-fix-verify"]:::llm
+        pr_fix__warning_fix["warning-fix"]:::llm
+    end
+
+    pr_fix__fix_phase --> pr_fix__post_fix_verify
+    pr_fix__post_fix_verify --> pr_fix__warning_fix
+
+    classDef script fill:#c8e6c9,stroke:#4caf50
+    classDef llm fill:#bbdefb,stroke:#1976d2
+    classDef composite fill:#e1bee7,stroke:#7b1fa2
+    classDef marker fill:#eeeeee,stroke:#9e9e9e
 ```
+<!-- CHAIN-FLOW:pr-fix END -->
+
+### pr-merge chain（merge-gate を含む）
+
+<!-- CHAIN-FLOW:pr-merge START -->
+```mermaid
+flowchart TD
+
+    subgraph pr_merge["pr-merge chain"]
+        pr_merge__e2e_screening["e2e-screening"]:::llm
+        pr_merge__pr_cycle_report["pr-cycle-report"]:::script
+        pr_merge__pr_cycle_analysis["pr-cycle-analysis"]:::llm
+        pr_merge__all_pass_check["all-pass-check"]:::script
+        pr_merge__merge_gate["merge-gate"]:::llm
+        pr_merge__auto_merge["auto-merge"]:::script
+    end
+
+    pr_merge__e2e_screening --> pr_merge__pr_cycle_report
+    pr_merge__pr_cycle_report --> pr_merge__pr_cycle_analysis
+    pr_merge__pr_cycle_analysis --> pr_merge__all_pass_check
+    pr_merge__all_pass_check --> pr_merge__merge_gate
+    pr_merge__merge_gate --> pr_merge__auto_merge
+
+    classDef script fill:#c8e6c9,stroke:#4caf50
+    classDef llm fill:#bbdefb,stroke:#1976d2
+    classDef composite fill:#e1bee7,stroke:#7b1fa2
+    classDef marker fill:#eeeeee,stroke:#9e9e9e
+```
+<!-- CHAIN-FLOW:pr-merge END -->
 
 ### 動的レビュアー構築ルール
 

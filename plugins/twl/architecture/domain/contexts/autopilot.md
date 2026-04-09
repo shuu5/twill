@@ -90,15 +90,71 @@ flowchart TD
 
 ### Worker 実行フロー
 
+<!-- CHAIN-FLOW:all START -->
 ```mermaid
 flowchart TD
-    A["Worker 起動<br/>(CWD = worktrees/branch/)"] --> D[chain step 逐次実行]
-    D --> E{全 step 成功?}
-    E -- Yes --> F[status = merge-ready]
-    E -- No --> G[status = failed]
-    F --> H[セッション終了]
-    G --> H
+
+    subgraph setup["setup chain"]
+        setup__init["init"]:::script
+        setup__worktree_create["worktree-create"]:::script
+        setup__project_board_status_update["project-board-status-update"]:::script
+        setup__crg_auto_build["crg-auto-build"]:::llm
+        setup__change_propose["change-propose"]:::llm
+        setup__ac_extract["ac-extract"]:::script
+    end
+
+    subgraph pr_verify["pr-verify chain"]
+        pr_verify__prompt_compliance["prompt-compliance"]:::script
+        pr_verify__ts_preflight["ts-preflight"]:::script
+        pr_verify__phase_review["phase-review"]:::llm
+        pr_verify__scope_judge["scope-judge"]:::llm
+        pr_verify__pr_test["pr-test"]:::script
+        pr_verify__ac_verify["ac-verify"]:::llm
+    end
+
+    subgraph pr_fix["pr-fix chain"]
+        pr_fix__fix_phase["fix-phase"]:::llm
+        pr_fix__post_fix_verify["post-fix-verify"]:::llm
+        pr_fix__warning_fix["warning-fix"]:::llm
+    end
+
+    subgraph pr_merge["pr-merge chain"]
+        pr_merge__e2e_screening["e2e-screening"]:::llm
+        pr_merge__pr_cycle_report["pr-cycle-report"]:::script
+        pr_merge__pr_cycle_analysis["pr-cycle-analysis"]:::llm
+        pr_merge__all_pass_check["all-pass-check"]:::script
+        pr_merge__merge_gate["merge-gate"]:::llm
+        pr_merge__auto_merge["auto-merge"]:::script
+    end
+
+    setup__init --> setup__worktree_create
+    setup__worktree_create --> setup__project_board_status_update
+    setup__project_board_status_update --> setup__crg_auto_build
+    setup__crg_auto_build --> setup__change_propose
+    setup__change_propose --> setup__ac_extract
+    pr_verify__prompt_compliance --> pr_verify__ts_preflight
+    pr_verify__ts_preflight --> pr_verify__phase_review
+    pr_verify__phase_review --> pr_verify__scope_judge
+    pr_verify__scope_judge --> pr_verify__pr_test
+    pr_verify__pr_test --> pr_verify__ac_verify
+    pr_fix__fix_phase --> pr_fix__post_fix_verify
+    pr_fix__post_fix_verify --> pr_fix__warning_fix
+    pr_merge__e2e_screening --> pr_merge__pr_cycle_report
+    pr_merge__pr_cycle_report --> pr_merge__pr_cycle_analysis
+    pr_merge__pr_cycle_analysis --> pr_merge__all_pass_check
+    pr_merge__all_pass_check --> pr_merge__merge_gate
+    pr_merge__merge_gate --> pr_merge__auto_merge
+
+    setup__ac_extract --> pr_verify__prompt_compliance
+    pr_verify__ac_verify --> pr_fix__fix_phase
+    pr_fix__warning_fix --> pr_merge__e2e_screening
+
+    classDef script fill:#c8e6c9,stroke:#4caf50
+    classDef llm fill:#bbdefb,stroke:#1976d2
+    classDef composite fill:#e1bee7,stroke:#7b1fa2
+    classDef marker fill:#eeeeee,stroke:#9e9e9e
 ```
+<!-- CHAIN-FLOW:all END -->
 
 Worker は Pilot が事前作成した worktree ディレクトリで cld セッションとして起動される。CWD リセットはセッション起動ディレクトリに戻るため、リセット後も正しいブランチで動作し続ける。
 
