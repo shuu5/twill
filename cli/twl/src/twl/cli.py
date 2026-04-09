@@ -427,6 +427,18 @@ def main():
         spec_main(sys.argv[2:])
         sys.exit(0)
 
+    # check サブコマンドの前処理
+    if len(sys.argv) >= 2 and sys.argv[1] == 'check':
+        sub_parser = argparse.ArgumentParser(description='Check file existence and chain validation')
+        sub_parser.add_argument('--format', choices=['json'], help='Output format')
+        sub_args = sub_parser.parse_args(sys.argv[2:])
+        plugin_root = get_plugin_root()
+        deps = load_deps(plugin_root)
+        graph = build_graph(deps, plugin_root)
+        plugin_name = get_plugin_name(deps, plugin_root)
+        handle_check(sub_args, graph, deps, plugin_root, plugin_name)
+        sys.exit(0)
+
     # chain サブコマンドの前処理（sys.argv を先に検査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'chain':
         if len(sys.argv) >= 3 and sys.argv[2] == 'generate':
