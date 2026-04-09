@@ -86,7 +86,7 @@ PROMPT_END
 cat "$TMPFILE" >> "$PROMPT_FILE"
 
 # stdin 経由でプロンプトを codex に渡す
-codex exec --sandbox read-only --quiet < "$PROMPT_FILE"
+codex exec --sandbox read-only < "$PROMPT_FILE"
 ```
 
 ### Step 4: 出力変換
