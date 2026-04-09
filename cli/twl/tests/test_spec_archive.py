@@ -35,7 +35,7 @@ _SPEC_WITH_REMOVED = """\
 ## REMOVED Requirements
 """
 
-_SPEC_WITH_MODIFIED = """\
+_SPEC_WITH_MODIFIED_BAR = """\
 ## MODIFIED Requirements
 
 ### Requirement: Bar
@@ -138,7 +138,7 @@ def test_archive_modified_appends_to_existing(tmp_path, monkeypatch, capsys):
     assert rc == 0
     content = (existing_dir / "spec.md").read_text()
     assert "Old content." in content
-    assert "The system SHALL do bar." in content
+    assert "The system SHALL do foo updated." in content
 
 
 def test_archive_added_and_modified_both_reflected(tmp_path, monkeypatch, capsys):
@@ -146,7 +146,8 @@ def test_archive_added_and_modified_both_reflected(tmp_path, monkeypatch, capsys
     make_change(tmp_path, "mychange", _SPEC_WITH_ADDED_AND_MODIFIED)
     rc = cmd_archive("mychange", yes=True)
     assert rc == 0
-    target = tmp_path / "deltaspec" / "specs" / "cap-a" / "spec.md"
+    # New specs default to flat format since #247
+    target = tmp_path / "deltaspec" / "specs" / "cap-a.md"
     assert target.exists()
     content = target.read_text()
     assert "The system SHALL do foo." in content
@@ -193,17 +194,17 @@ def test_archive_flat_added_appends_to_existing_flat_spec(tmp_path, monkeypatch,
 
 
 def test_archive_flat_modified_applies_to_existing_flat_spec(tmp_path, monkeypatch, capsys):
-    """Flat change spec with MODIFIED updates existing flat baseline spec."""
+    """Flat change spec with MODIFIED appends to existing flat baseline spec."""
     monkeypatch.chdir(tmp_path)
     existing = tmp_path / "deltaspec" / "specs" / "cap-a.md"
     existing.parent.mkdir(parents=True)
     existing.write_text("## Requirements\n\n### Requirement: Old\nOld SHALL exist.\n")
-    make_change_flat(tmp_path, "mychange", _SPEC_WITH_MODIFIED)
+    make_change_flat(tmp_path, "mychange", _SPEC_WITH_MODIFIED_BAR)
     rc = cmd_archive("mychange", yes=True)
     assert rc == 0
     content = existing.read_text()
-    assert "updated" in content
-    assert "Old SHALL exist." not in content  # replaced, not appended
+    assert "Old SHALL exist." in content  # existing content preserved (#248)
+    assert "The system SHALL do bar." in content  # modified content appended
 
 
 def test_archive_flat_modified_warns_when_no_baseline(tmp_path, monkeypatch, capsys):
