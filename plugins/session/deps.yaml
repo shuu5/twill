@@ -78,6 +78,11 @@ scripts:
     path: scripts/session-name.sh
     description: "意味論的 tmux window 命名ヘルパー（generate_window_name / slugify / find_existing_window）"
 
+  window-manifest:
+    type: script
+    path: scripts/window-manifest.sh
+    description: "window manifest atomic write ライブラリ（append/tombstone/schema_version 検証）"
+
 tests:
   session-comm-test:
     type: test
@@ -88,3 +93,8 @@ tests:
     type: test
     path: ../twl/tests/bats/scripts/session-name.bats
     description: "session-name.sh の unit tests（slugify / generate_window_name / find_existing_window）"
+
+  window-manifest-test:
+    type: test
+    path: tests/window-manifest.bats
+    description: "window-manifest.sh の bats unit tests（atomic write / tombstone / schema_version 検証）"
