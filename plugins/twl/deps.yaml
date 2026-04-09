@@ -167,6 +167,8 @@ skills:
       - workflow: workflow-self-improve
       - script: autopilot-orchestrator
       - script: autopilot-plan
+      - script: autopilot-cleanup
+        step: "5.6"
     description: "依存グラフに基づくIssue群一括自律実装オーケストレーター"
 
   co-issue:

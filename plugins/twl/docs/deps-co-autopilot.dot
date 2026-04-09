@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_autopilot [label="twl:co-autopilot\n(1,878 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="twl:co-autopilot\n(1,882 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -124,6 +124,7 @@ digraph Dependencies {
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(2,496 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_plan [label="autopilot-plan\n(6,623 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_cleanup [label="autopilot-cleanup\n(1,945 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_should_skip [label="autopilot-should-skip\n(422 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_orchestrator [label="autopilot-orchestrator\n(8,623 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_mergegate [label="autopilot-mergegate\n(6,927 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -151,7 +152,7 @@ digraph Dependencies {
     { rank=same; skill_ref_specialist_output_schema; skill_ref_dci; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; }
     { rank=same; cmd_self_improve_review; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_change_propose; cmd_change_apply; cmd_ac_extract; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_post_fix_verify; cmd_warning_fix; cmd_pr_cycle_report; cmd_all_pass_check; cmd_ac_verify; cmd_check; cmd_dead_component_detect; cmd_dead_component_execute; cmd_triage_execute; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; cmd_e2e_plan; cmd_test_scaffold; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; cmd_ac_deploy_trigger; cmd_test_phase; cmd_auto_merge; cmd_pr_cycle_analysis; cmd_spec_diagnose; cmd_autopilot_init; cmd_autopilot_launch; cmd_autopilot_poll; cmd_autopilot_phase_execute; cmd_autopilot_phase_sanity; cmd_autopilot_pilot_precheck; cmd_autopilot_pilot_rebase; cmd_autopilot_multi_source_verdict; cmd_autopilot_phase_postprocess; cmd_autopilot_collect; cmd_autopilot_retrospective; cmd_autopilot_patterns; cmd_autopilot_cross_issue; cmd_autopilot_summary; cmd_session_audit; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_architecture; agent_worker_issue_pr_alignment; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; agent_e2e_quality; agent_spec_scaffold_tests; agent_e2e_generate; }
-    { rank=same; script_state_read; script_state_write; script_autopilot_init; script_autopilot_launch; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_health_check; script_tech_stack_detect; script_autopilot_parser; script_autopilot_plan; script_autopilot_should_skip; script_autopilot_orchestrator; script_autopilot_mergegate; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_session_audit; script_auto_merge; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_health_report; script_autopilot_plan_board; script_ecc_monitor; script_pr_review_manifest; script_checkpoint_write; script_checkpoint_read; }
+    { rank=same; script_state_read; script_state_write; script_autopilot_init; script_autopilot_launch; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_health_check; script_tech_stack_detect; script_autopilot_parser; script_autopilot_plan; script_autopilot_cleanup; script_autopilot_should_skip; script_autopilot_orchestrator; script_autopilot_mergegate; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_session_audit; script_auto_merge; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_health_report; script_autopilot_plan_board; script_ecc_monitor; script_pr_review_manifest; script_checkpoint_write; script_checkpoint_read; }
 
     // Edges
     skill_co_autopilot -> cmd_autopilot_init;
@@ -180,6 +181,7 @@ digraph Dependencies {
     skill_co_autopilot -> skill_workflow_self_improve;
     skill_co_autopilot -> script_autopilot_orchestrator;
     skill_co_autopilot -> script_autopilot_plan;
+    skill_co_autopilot -> script_autopilot_cleanup;
     skill_workflow_setup -> cmd_init;
     skill_workflow_setup -> cmd_worktree_create;
     skill_workflow_setup -> cmd_project_board_status_update;
@@ -371,6 +373,7 @@ digraph Dependencies {
     skill_workflow_tech_debt_triage -> skill_workflow_self_improve [style=invis, weight=10];
     skill_workflow_self_improve -> script_autopilot_orchestrator [style=invis, weight=10];
     script_autopilot_orchestrator -> script_autopilot_plan [style=invis, weight=10];
+    script_autopilot_plan -> script_autopilot_cleanup [style=invis, weight=10];
     cmd_init -> cmd_worktree_create [style=invis, weight=10];
     cmd_worktree_create -> cmd_project_board_status_update [style=invis, weight=10];
     cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];

@@ -8,7 +8,7 @@ digraph Dependencies {
     edge [fontname="Helvetica", fontsize=9];
 
     // L0: Controller Skills
-    skill_co_autopilot [label="twl:co-autopilot\n(1,878 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="twl:co-autopilot\n(1,882 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_issue [label="twl:co-issue\n(1,347 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_project [label="twl:co-project\n(1,456 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_architect [label="twl:co-architect\n(1,317 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
@@ -217,7 +217,7 @@ digraph Dependencies {
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(2,496 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_plan [label="autopilot-plan\n(6,623 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_cleanup [label="autopilot-cleanup\n(1,770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_cleanup [label="autopilot-cleanup\n(1,945 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_should_skip [label="autopilot-should-skip\n(422 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_orchestrator [label="autopilot-orchestrator\n(8,623 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_mergegate [label="autopilot-mergegate\n(6,927 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -287,6 +287,7 @@ digraph Dependencies {
     skill_co_autopilot -> skill_workflow_self_improve;
     skill_co_autopilot -> script_autopilot_orchestrator;
     skill_co_autopilot -> script_autopilot_plan;
+    skill_co_autopilot -> script_autopilot_cleanup;
     skill_co_issue -> cmd_explore;
     skill_co_issue -> skill_workflow_issue_refine;
     skill_co_issue -> cmd_issue_create;
@@ -622,6 +623,7 @@ digraph Dependencies {
     skill_workflow_tech_debt_triage -> skill_workflow_self_improve [style=invis, weight=10];
     skill_workflow_self_improve -> script_autopilot_orchestrator [style=invis, weight=10];
     script_autopilot_orchestrator -> script_autopilot_plan [style=invis, weight=10];
+    script_autopilot_plan -> script_autopilot_cleanup [style=invis, weight=10];
     cmd_explore -> skill_workflow_issue_refine [style=invis, weight=10];
     skill_workflow_issue_refine -> cmd_issue_create [style=invis, weight=10];
     cmd_issue_create -> cmd_issue_bulk_create [style=invis, weight=10];
