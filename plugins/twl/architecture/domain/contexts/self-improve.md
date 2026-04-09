@@ -95,7 +95,7 @@ graph LR
 
 - **機械層**: PostToolUse hook が Bash エラーを `.self-improve/errors.jsonl` に記録（サイレント）
 - **判断層**: ユーザーが `/twl:self-improve-review` でトリガー。エラーサマリーから問題を選別
-- **Issue化層**: 選別結果を `.controller-issue/explore-summary.md` に書き出し、co-issue のフローに接続
+- **Issue化層**: 選別結果を `.controller-issue/<session-id>/explore-summary.md` に書き出し（独自 SESSION_ID を生成）、co-issue のフローに接続
 
 ## Constraints
 

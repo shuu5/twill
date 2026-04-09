@@ -26,6 +26,7 @@ LLM コンテキスト内フラグとして受け渡し:
 - **is_quick_candidate**: 各 Issue の quick 候補フラグ
 - **cross_repo_split**: クロスリポ分割フラグ
 - **target_repos**: クロスリポ対象リポジトリリスト
+- **session_dir**: co-issue の SESSION_DIR（クリーンアップ用、例: `.controller-issue/1712649600_a3f2/`）
 
 ## 出力インターフェース
 
@@ -61,7 +62,7 @@ LLM コンテキスト内フラグとして受け渡し:
 
 ### Step 5: クリーンアップ
 
-`.controller-issue/` ディレクトリを削除する（中止時も同様）。
+`session_dir`（例: `.controller-issue/1712649600_a3f2/`）を削除する（`rm -rf <session_dir>`）。中止時も同様。他セッションのディレクトリは削除してはならない（MUST NOT）。
 
 ### Step 6: 完了通知
 

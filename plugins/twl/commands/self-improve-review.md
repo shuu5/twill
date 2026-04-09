@@ -90,10 +90,12 @@ AskUserQuestion で選択肢を提示:
 
 ### Step 6: explore-summary.md 出力
 
-構造化結果を `.controller-issue/explore-summary.md` に書き出し。
+独自に SESSION_ID を生成: `$(date +%s)_$(cat /dev/urandom | tr -dc 'a-z0-9' | head -c4 2>/dev/null || echo "xxxx")`
+構造化結果を `.controller-issue/<session-id>/explore-summary.md` に書き出し。
 
 ```bash
-mkdir -p .controller-issue
+SESSION_ID="$(date +%s)_$(cat /dev/urandom | tr -dc 'a-z0-9' | head -c4 2>/dev/null || echo "xxxx")"
+mkdir -p ".controller-issue/${SESSION_ID}"
 ```
 
 **出力形式**（co-issue Phase 1 互換）:
