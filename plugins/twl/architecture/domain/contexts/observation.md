@@ -40,6 +40,19 @@ observed session の参照。
 | capture_excerpt | string | 問題を示す出力の抜粋 |
 | timestamp | string (ISO 8601) | 検出時刻 |
 
+### InterventionRecord
+Observer 介入ログの単位。
+
+| フィールド | 型 | 説明 |
+|---|---|---|
+| id | string | 介入一意識別子 |
+| intervention_type | `auto` \| `confirm` \| `escalate` | 介入種別（3 層プロトコルの層に対応） |
+| layer | `1` \| `2` \| `3` | 介入レイヤー番号（Auto=1, Confirm=2, Escalate=3） |
+| status | `pending` \| `approved` \| `rejected` \| `executed` | 介入状態 |
+| user_confirmed | boolean | Layer 2 以上でのユーザー確認済みフラグ |
+| target_session | string | 介入対象セッション識別子 |
+| timestamp | string (ISO 8601) | 介入実行時刻 |
+
 ### TestProject
 隔離 worktree の参照。
 
@@ -108,11 +121,29 @@ flowchart TD
 - observed session を**書き換えない**（read-only MUST）。observer は tmux capture-pane 等で出力を取得するのみ
 - test target は実 twill main の git 履歴を**絶対に汚染しない**。隔離 worktree + 独立ブランチで管理
 - observation Issue は本物の Issue とラベルで明確に区別する（`label: from-observation`）
-- **制約 OB-1**: 自 window を観察対象にしてはならない（SHALL）。自己観察によるコンテキスト汚染を防止
-- **制約 OB-2**: 各サイクルの生 capture を context に retain してはならない（SHALL）。集約のみ保持
-- **制約 OB-3**: ループ中に observed session に inject / send-keys してはならない（SHALL）
-- **制約 OB-4**: 検出結果をユーザー確認なしで自動起票してはならない（SHALL）。Issue draft はユーザー確認必須
-- **制約 OB-5**: 同時 3 observed session を超えて観察してはならない（SHALL）。context budget 維持
+
+### OB-* Constraints（co-self-improve / co-observer 共通ベース）
+
+| 制約 ID | 内容 | 適用範囲 |
+|---------|------|----------|
+| OB-1 | 自 window を観察対象にしてはならない（SHALL）。自己観察によるコンテキスト汚染を防止 | both |
+| OB-2 | 各サイクルの生 capture を context に retain してはならない（SHALL）。集約のみ保持 | both |
+| OB-3 | ループ中に observed session に inject / send-keys してはならない（SHALL） | **co-self-improve only** |
+| OB-4 | 検出結果をユーザー確認なしで自動起票してはならない（SHALL）。Issue draft はユーザー確認必須 | both |
+| OB-5 | 同時 3 observed session を超えて観察してはならない（SHALL）。context budget 維持 | **co-self-improve only** |
+
+> **OB-3 適用範囲注記**: co-observer は介入権限を持つメタ認知レイヤー（ADR-013）のため OB-3 適用外。介入ルールは OBS-1〜OBS-5 で定義。  
+> **OB-5 適用範囲注記**: co-self-improve の observed session 上限。co-observer の supervised controller 上限は OBS-4 で別定義（対象エンティティが異なる別概念）。
+
+### Observer Constraints (OBS-*)（co-observer 専用）
+
+| 制約 ID | 内容 | 適用範囲 |
+|---------|------|----------|
+| OBS-1 | 介入は 3 層プロトコル（Auto / Confirm / Escalate）に従わなければならない（SHALL） | co-observer only |
+| OBS-2 | Layer 2（Escalate）の介入はユーザー確認が MUST。確認なしの Escalate 介入を実行してはならない（SHALL） | co-observer only |
+| OBS-3 | Observer 自身が Issue の実装（コード変更）を行ってはならない（SHALL）。実装権限は Worker が保持（不変条件 K の Observer 版） | co-observer only |
+| OBS-4 | 同時に supervise できる controller session は 3 を超えてはならない（SHALL）。context budget 維持（OB-5 の Observer 版） | co-observer only |
+| OBS-5 | Observer は InterventionRecord を observed session の context に inject してはならない（SHALL）。介入ログは Observer 自身のコンテキストのみで保持（OB-2 の Observer 版） | co-observer only |
 
 ## Rules
 
@@ -125,7 +156,8 @@ flowchart TD
 
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
-| **controller** | co-self-improve | Live Observation 統括。テストプロジェクト管理も担う |
+| **controller** | co-self-improve | Live Observation 統括。テストプロジェクト管理も担う。OB-3 適用（observed session への inject 禁止） |
+| **controller** | co-observer | Observer 介入制御。OBS-1〜OBS-5 に従い 3 層プロトコルで controller session を supervise |
 | **workflow** | workflow-observe-loop | observe ループ + 問題検出 + Issue draft |
 | **atomic** | test-project-init | 隔離 worktree 作成 |
 | **atomic** | test-project-reset | テストプロジェクト クリーンアップ |
