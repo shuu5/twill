@@ -27,7 +27,7 @@ MAX_PARALLEL="${DEV_AUTOPILOT_MAX_PARALLEL:-4}"
 if ! [[ "$MAX_PARALLEL" =~ ^[1-9][0-9]*$ ]]; then
   MAX_PARALLEL=4
 fi
-MAX_POLL="${DEV_AUTOPILOT_MAX_POLL:-360}"
+MAX_POLL="${DEV_AUTOPILOT_MAX_POLL:-720}"
 MAX_NUDGE="${DEV_AUTOPILOT_MAX_NUDGE:-3}"
 NUDGE_TIMEOUT="${DEV_AUTOPILOT_NUDGE_TIMEOUT:-30}"
 POLL_INTERVAL=10
@@ -371,6 +371,17 @@ cleanup_worker() {
   fi
 }
 
+# rate-limit パターン検知（pane 出力から rate limit/overloaded/429 を検出）
+# 戻り値: 0=検知, 1=未検知
+detect_rate_limit() {
+  local window_name="$1"
+  local pane_output
+  pane_output=$(tmux capture-pane -t "$window_name" -p -S -20 2>/dev/null || true)
+  [[ -z "$pane_output" ]] && return 1
+  echo "$pane_output" | grep -qiP 'rate.limit|overloaded|429|too.many.requests' && return 0
+  return 1
+}
+
 # 単一 Issue のポーリング
 poll_single() {
   local entry="$1"
@@ -465,6 +476,12 @@ poll_single() {
     esac
 
     if [[ "$poll_count" -ge "$MAX_POLL" ]]; then
+      # rate-limit 検知時はカウンターリセットして継続
+      if detect_rate_limit "$window_name"; then
+        echo "[orchestrator] Issue #${issue}: rate-limit 検知 — ポーリングカウンターリセット（${poll_count}→0）" >&2
+        poll_count=0
+        continue
+      fi
       echo "[orchestrator] Issue #${issue}: タイムアウト（${MAX_POLL}回×${POLL_INTERVAL}秒）" >&2
       python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
         --set "status=failed" \
@@ -570,6 +587,29 @@ poll_phase() {
 
     poll_count=$((poll_count + 1))
     if [[ "$poll_count" -ge "$MAX_POLL" ]]; then
+      # running な Worker のいずれかで rate-limit 検知時はカウンターリセット
+      local rate_limited=false
+      for entry in "${issue_list[@]}"; do
+        local repo_id="${entry%%:*}"
+        local issue_num="${entry#*:}"
+        local -a _state_read_repo_args=()
+        [[ "$repo_id" != "_default" ]] && _state_read_repo_args=(--repo "$repo_id")
+        local status
+        status=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field status 2>/dev/null || echo "")
+        if [[ "$status" == "running" ]]; then
+          local wn
+          wn=$(resolve_worker_window "$issue_num" "$repo_id")
+          if detect_rate_limit "$wn"; then
+            echo "[orchestrator] Phase: Issue #${issue_num} で rate-limit 検知 — ポーリングカウンターリセット（${poll_count}→0）" >&2
+            rate_limited=true
+            break
+          fi
+        fi
+      done
+      if [[ "$rate_limited" == "true" ]]; then
+        poll_count=0
+        continue
+      fi
       echo "[orchestrator] Phase: タイムアウト — 未完了 Issue を failed に変換" >&2
       for entry in "${issue_list[@]}"; do
         local repo_id="${entry%%:*}"
