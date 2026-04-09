@@ -59,6 +59,17 @@ fi
 if [[ -z "$SESSION_ID" ]]; then
   SESSION_ID="unknown"
 fi
+# SESSION_ID パストラバーサル防止
+if [[ ! "$SESSION_ID" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+  echo "ERROR: SESSION_ID に不正な文字が含まれています: $SESSION_ID" >&2
+  exit 1
+fi
+
+# TTL 数値検証
+if [[ ! "$TTL" =~ ^[0-9]+$ ]]; then
+  echo "ERROR: TTL は正の整数である必要があります: $TTL" >&2
+  exit 1
+fi
 
 # ── アーカイブ先ディレクトリ ──
 ARCHIVE_DIR="$AUTOPILOT_DIR/archive/$SESSION_ID"
