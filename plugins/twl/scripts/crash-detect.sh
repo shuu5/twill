@@ -78,9 +78,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -z "$issue" || -z "$window" ]]; then
-  echo "ERROR: --issue と --window は必須です" >&2
+if [[ -z "$issue" ]]; then
+  echo "ERROR: --issue は必須です" >&2
   exit 1
+fi
+
+# window が空の場合は no-op（resolve_worker_window が解決不能だったケース）
+if [[ -z "$window" ]]; then
+  echo "INFO: --window が未指定のため crash-detect をスキップします (issue=#${issue})" >&2
+  exit 0
 fi
 
 # issue番号の数値バリデーション

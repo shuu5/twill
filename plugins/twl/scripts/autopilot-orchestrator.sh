@@ -185,12 +185,22 @@ resolve_worker_window() {
     return
   fi
 
-  # フォールバック: レガシーパターン
+  # フォールバック: tmux window 名パターン検索
+  local pattern
   if [[ "$repo_id" == "_default" ]]; then
-    printf '%s' "ap-#${issue}"
+    pattern="ap-.*[-i]${issue}[-]"
   else
-    printf '%s' "ap-${repo_id}-#${issue}"
+    pattern="ap-${repo_id}-.*[-i]${issue}[-]"
   fi
+  local found
+  found=$(tmux list-windows -F '#{window_name}' 2>/dev/null | grep -E "$pattern" | head -1 || echo "")
+  if [[ -n "$found" ]]; then
+    printf '%s' "$found"
+    return
+  fi
+
+  # パターン検索も失敗 → 空文字列（crash-detect スキップ）
+  printf ''
 }
 
 # Issue のリポジトリコンテキストを解決
