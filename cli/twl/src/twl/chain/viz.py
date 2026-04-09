@@ -250,10 +250,10 @@ def chain_viz_all(deps: dict) -> str:
 
 
 def _append_classdefs(lines: List[str]) -> None:
-    lines.append("    classDef script fill:#c8e6c9,stroke:#4caf50")
-    lines.append("    classDef llm fill:#bbdefb,stroke:#1976d2")
-    lines.append("    classDef composite fill:#e1bee7,stroke:#7b1fa2")
-    lines.append("    classDef marker fill:#eeeeee,stroke:#9e9e9e")
+    lines.append("    classDef script fill:#2e7d32,stroke:#1b5e20,color:#ffffff")
+    lines.append("    classDef llm fill:#1565c0,stroke:#0d47a1,color:#ffffff")
+    lines.append("    classDef composite fill:#7b1fa2,stroke:#4a148c,color:#ffffff")
+    lines.append("    classDef marker fill:#616161,stroke:#424242,color:#ffffff")
 
 
 def _generate_for_marker(deps: dict, chain_name: str) -> Optional[str]:
