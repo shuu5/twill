@@ -2317,6 +2317,18 @@ scripts:
     path: scripts/lib/pr-create-helper.sh
     description: "PR 作成共通ヘルパー（pr_create_with_closes 関数: PR 本文に Closes #N を機械的に挿入）"
 
+  pseudo-pilot-pr-wait:
+    type: script
+    path: scripts/pseudo-pilot/pr-wait.sh
+    description: Pseudo-Pilot 用 PR 作成 polling helper
+
+  pseudo-pilot-worker-done-wait:
+    type: script
+    path: scripts/pseudo-pilot/worker-done-wait.sh
+    description: Pseudo-Pilot 用 worker input-waiting polling helper
+    calls:
+      - script: session:session-state
+
   ac-checklist-gen:
     type: script
     path: scripts/ac-checklist-gen.sh

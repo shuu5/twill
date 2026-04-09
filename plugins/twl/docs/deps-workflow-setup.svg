@@ -74,7 +74,7 @@
 <title>cmd_change_propose</title>
 <polygon fill="#e3f2fd" stroke="black" points="337.56,-171.49 242.56,-171.49 242.56,-135.49 337.56,-135.49 337.56,-171.49"/>
 <text text-anchor="middle" x="290.06" y="-156.49" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;propose</text>
-<text text-anchor="middle" x="290.06" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,367 tok)</text>
+<text text-anchor="middle" x="290.06" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,715 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;cmd_change_propose -->
 <g id="edge5" class="edge">

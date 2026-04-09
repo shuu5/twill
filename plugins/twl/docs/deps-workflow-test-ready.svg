@@ -22,7 +22,7 @@
 <title>cmd_change_apply</title>
 <polygon fill="#e3f2fd" stroke="black" points="329.09,-229.49 246.09,-229.49 246.09,-193.49 329.09,-193.49 329.09,-229.49"/>
 <text text-anchor="middle" x="287.59" y="-214.49" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;apply</text>
-<text text-anchor="middle" x="287.59" y="-203.49" font-family="Helvetica,sans-Serif" font-size="10.00">(881 tok)</text>
+<text text-anchor="middle" x="287.59" y="-203.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,223 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_change_apply -->
 <g id="edge2" class="edge">

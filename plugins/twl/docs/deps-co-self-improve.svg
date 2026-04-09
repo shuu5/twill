@@ -15,14 +15,14 @@
 <title>skill_co_self_improve</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="78.49" cy="-310.64" rx="78.48" ry="21.43"/>
 <text text-anchor="middle" x="78.49" y="-313.64" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;self&#45;improve</text>
-<text text-anchor="middle" x="78.49" y="-302.64" font-family="Helvetica,sans-Serif" font-size="10.00">(1,171 tok)</text>
+<text text-anchor="middle" x="78.49" y="-302.64" font-family="Helvetica,sans-Serif" font-size="10.00">(1,225 tok)</text>
 </g>
 <!-- skill_workflow_observe_loop -->
 <g id="node2" class="node">
 <title>skill_workflow_observe_loop</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="318.22" cy="-575.64" rx="103.48" ry="21.43"/>
 <text text-anchor="middle" x="318.22" y="-578.64" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;observe&#45;loop</text>
-<text text-anchor="middle" x="318.22" y="-567.64" font-family="Helvetica,sans-Serif" font-size="10.00">(1,503 tok)</text>
+<text text-anchor="middle" x="318.22" y="-567.64" font-family="Helvetica,sans-Serif" font-size="10.00">(1,550 tok)</text>
 </g>
 <!-- skill_co_self_improve&#45;&gt;skill_workflow_observe_loop -->
 <g id="edge1" class="edge">

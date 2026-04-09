@@ -21,7 +21,7 @@ digraph Dependencies {
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
-    cmd_change_apply [label="change-apply\n(881 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_change_apply [label="change-apply\n(1,223 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_check [label="check\n(1,167 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_e2e_plan [label="e2e-plan\n(456 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_scaffold [label="test-scaffold\n(741 tok)", shape=box, style=filled, fillcolor="#bbdefb"];

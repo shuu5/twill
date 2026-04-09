@@ -176,6 +176,12 @@ Autopilot で複数 Issue を一括実装:
 </details>
 
 <details>
+<summary>workflow-prompt-audit</summary>
+
+![workflow-prompt-audit](./docs/deps-workflow-prompt-audit.svg)
+</details>
+
+<details>
 <summary>workflow-issue-refine</summary>
 
 ![workflow-issue-refine](./docs/deps-workflow-issue-refine.svg)

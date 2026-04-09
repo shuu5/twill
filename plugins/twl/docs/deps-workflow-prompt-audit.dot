@@ -1,0 +1,48 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="workflow-prompt-audit";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+    skill_workflow_prompt_audit [label="twl:workflow-prompt-audit\n(684 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+
+    // Reference Skills
+
+    // L1: Direct Commands
+    cmd_prompt_audit_scan [label="prompt-audit-scan\n(334 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_prompt_audit_review [label="prompt-audit-review\n(458 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_prompt_audit_apply [label="prompt-audit-apply\n(632 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_workflow_prompt_audit; }
+    { rank=same; cmd_prompt_audit_scan; cmd_prompt_audit_review; cmd_prompt_audit_apply; }
+
+    // Edges
+    skill_workflow_prompt_audit -> cmd_prompt_audit_scan;
+    skill_workflow_prompt_audit -> cmd_prompt_audit_review;
+    skill_workflow_prompt_audit -> cmd_prompt_audit_apply;
+
+    // Ordering constraints (invisible edges)
+    cmd_prompt_audit_scan -> cmd_prompt_audit_review [style=invis, weight=10];
+    cmd_prompt_audit_review -> cmd_prompt_audit_apply [style=invis, weight=10];
+
+}
