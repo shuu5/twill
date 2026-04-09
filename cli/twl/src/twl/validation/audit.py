@@ -1,5 +1,6 @@
 import hashlib
 import re
+import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -275,7 +276,180 @@ def audit_chain_integrity(deps: dict, plugin_root: Path) -> List[dict]:
     return items
 
 
-def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
+def _detect_monorepo_root(plugin_root: Path) -> Optional[Path]:
+    """git rev-parse --show-toplevel でモノリポルートを検出する。
+
+    失敗した場合は architecture/vision.md を持つ親ディレクトリを探して返す。
+    """
+    try:
+        result = subprocess.run(
+            ['git', 'rev-parse', '--show-toplevel'],
+            cwd=str(plugin_root),
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            return Path(result.stdout.strip())
+    except Exception:
+        pass
+    # フォールバック: 親ディレクトリを走査して architecture/vision.md を持つ最上位を探す
+    current = plugin_root.resolve()
+    found = None
+    while current != current.parent:
+        if (current / 'architecture' / 'vision.md').exists():
+            found = current
+        current = current.parent
+    return found
+
+
+def _extract_vision_sections(vision_path: Path) -> Dict[str, List[str]]:
+    """vision.md から ## Constraints と ## Non-Goals の箇条書き項目を抽出する。
+
+    Returns: {'constraints': [...], 'non_goals': [...]}
+    """
+    if not vision_path.exists():
+        return {'constraints': [], 'non_goals': []}
+    try:
+        text = vision_path.read_text(encoding='utf-8')
+    except Exception:
+        return {'constraints': [], 'non_goals': []}
+
+    sections: Dict[str, List[str]] = {'constraints': [], 'non_goals': []}
+    current_section: Optional[str] = None
+
+    for line in text.splitlines():
+        stripped = line.strip()
+        if re.match(r'^##\s+Constraints\s*$', stripped):
+            current_section = 'constraints'
+            continue
+        if re.match(r'^##\s+Non-Goals\s*$', stripped):
+            current_section = 'non_goals'
+            continue
+        if re.match(r'^##\s+', stripped):
+            current_section = None
+            continue
+        if current_section and re.match(r'^[-*]\s+', stripped):
+            item = stripped.lstrip('-*').strip()
+            sections[current_section].append(item)
+
+    return sections
+
+
+def _extract_bold_terms(text: str) -> List[str]:
+    """**term** パターンからボールド強調語を抽出する。"""
+    return re.findall(r'\*\*([^*]+)\*\*', text)
+
+
+def _check_layer_consistency(
+    lower_name: str,
+    lower_constraints: List[str],
+    lower_non_goals: List[str],
+    upper_constraints: List[str],
+) -> List[str]:
+    """ADR-0008 の整合性ルールに基づいて下位層と上位層の矛盾を検出する。
+
+    機械的に検出可能なルール:
+    - Type 4: 上位層 Constraints のボールド強調語が下位層 Non-Goals に含まれる
+      （Constraints に定義された項目が Non-Goals に格下げされている）
+
+    Returns: 検出された問題のメッセージリスト（空ならOK）
+    """
+    issues: List[str] = []
+
+    # 上位層 Constraints から強調語を抽出
+    upper_bold_terms: List[str] = []
+    for constraint in upper_constraints:
+        upper_bold_terms.extend(_extract_bold_terms(constraint))
+
+    # Type 4: 上位層 Constraints の強調語が下位層 Non-Goals に現れていないか確認
+    for term in upper_bold_terms:
+        for ng_item in lower_non_goals:
+            if term in ng_item:
+                issues.append(
+                    f"Type4（Constraints→Non-Goals格下げ疑い）: "
+                    f"上位層 Constraints キーワード「{term}」が {lower_name} の Non-Goals に含まれる"
+                )
+                break  # 同じ term について1回だけ報告
+
+    return issues
+
+
+def audit_cross_layer_consistency(monorepo_root: Path) -> List[dict]:
+    """Section 10: Cross-Layer Consistency (ADR-0008)
+
+    三層 Architecture Spec の整合性を検証する。
+
+    検出対象:
+    - Type 4 (WARNING): 上位層 Constraints のキーワードが下位層 Non-Goals に含まれる
+
+    Returns: items リスト（severity, component, message, section, value, threshold）
+    """
+    items: List[dict] = []
+
+    # ADR-0008 の正本ファイルパス定義
+    # CLI 層・Plugin 層はともに Monorepo 層を親とする兄弟関係
+    canonical_layers = [
+        ('monorepo', monorepo_root / 'architecture' / 'vision.md'),
+        ('cli_twl', monorepo_root / 'cli' / 'twl' / 'architecture' / 'vision.md'),
+        ('plugin_twl', monorepo_root / 'plugins' / 'twl' / 'architecture' / 'vision.md'),
+    ]
+
+    layer_data: Dict[str, Dict] = {}
+    for name, path in canonical_layers:
+        if not path.exists():
+            items.append({
+                'severity': 'info',
+                'component': name,
+                'message': f'architecture/vision.md が存在しない — スキップ',
+                'section': 'cross_layer_consistency',
+                'value': 1,
+                'threshold': 1,
+            })
+            continue
+        sections = _extract_vision_sections(path)
+        layer_data[name] = sections
+
+    if 'monorepo' not in layer_data:
+        return items
+
+    upper = layer_data['monorepo']
+
+    # CLI 層と Plugin 層を Monorepo 層と照合
+    for lower_name in ('cli_twl', 'plugin_twl'):
+        if lower_name not in layer_data:
+            continue
+        lower = layer_data[lower_name]
+        issues = _check_layer_consistency(
+            lower_name=lower_name,
+            lower_constraints=lower['constraints'],
+            lower_non_goals=lower['non_goals'],
+            upper_constraints=upper['constraints'],
+        )
+        if issues:
+            for issue in issues:
+                items.append({
+                    'severity': 'warning',
+                    'component': f'monorepo→{lower_name}',
+                    'message': issue,
+                    'section': 'cross_layer_consistency',
+                    'value': 0,
+                    'threshold': 1,
+                })
+        else:
+            items.append({
+                'severity': 'ok',
+                'component': f'monorepo→{lower_name}',
+                'message': 'OK: Constraints/Non-Goals 整合',
+                'section': 'cross_layer_consistency',
+                'value': 1,
+                'threshold': 1,
+            })
+
+    return items
+
+
+def audit_collect(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = None) -> List[dict]:
     """9セクションの TWiLL 準拠度データを収集（print なし）
 
     Returns: items リスト（severity, component, message, section, value, threshold）
@@ -499,6 +673,12 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
     # Section 9: Chain Integrity
     items.extend(audit_chain_integrity(deps, plugin_root))
 
+    # Section 10: Cross-Layer Consistency
+    if monorepo_root is None:
+        monorepo_root = _detect_monorepo_root(plugin_root)
+    if monorepo_root is not None:
+        items.extend(audit_cross_layer_consistency(monorepo_root))
+
     return items
 
 
@@ -565,8 +745,8 @@ def _scan_body_for_mcp_tools(file_path: Path) -> Set[str]:
     return tools
 
 
-def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
-    """9セクションの TWiLL 準拠度レポートを出力
+def audit_report(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = None) -> Tuple[int, int, int]:
+    """10セクションの TWiLL 準拠度レポートを出力
 
     Sections:
         1. Controller Size
@@ -578,10 +758,11 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
         7. Model Declaration
         8. Prompt Compliance
         9. Chain Integrity
+       10. Cross-Layer Consistency
 
     Returns: (critical_count, warning_count, ok_count)
     """
-    items = audit_collect(deps, plugin_root)
+    items = audit_collect(deps, plugin_root, monorepo_root=monorepo_root)
 
     criticals = sum(1 for i in items if i['severity'] == 'critical')
     warnings = sum(1 for i in items if i['severity'] == 'warning')
@@ -864,6 +1045,29 @@ def audit_report(deps: dict, plugin_root: Path) -> Tuple[int, int, int]:
     if not has_issue:
         ok_count_s9 = sum(1 for i in chain_items if i['severity'] in ('ok', 'info'))
         print(f"| (all {ok_count_s9} entries) | OK | OK |")
+    print()
+
+    # === Section 10: Cross-Layer Consistency ===
+    print("## 10. Cross-Layer Consistency")
+    print()
+    print("| Layer Pair | Issue | Severity |")
+    print("|------------|-------|----------|")
+    cross_items = [i for i in items if i['section'] == 'cross_layer_consistency']
+    if not cross_items:
+        print("| (monorepo_root not detected) | skipped | INFO |")
+    else:
+        has_cross_issue = False
+        for item in cross_items:
+            sev = item['severity']
+            if sev == 'warning':
+                sev_label = 'WARNING'
+                has_cross_issue = True
+                print(f"| {item['component']} | {item['message']} | {sev_label} |")
+            elif sev == 'info':
+                print(f"| {item['component']} | {item['message']} | INFO |")
+        if not has_cross_issue:
+            ok_count_s10 = sum(1 for i in cross_items if i['severity'] == 'ok')
+            print(f"| (all {ok_count_s10} pairs) | OK | OK |")
     print()
 
     # === Summary ===

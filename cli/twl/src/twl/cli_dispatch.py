@@ -265,6 +265,7 @@ def handle_audit(args, deps, plugin_root, plugin_name):
         7: 'prompt_compliance',  # audit_collect uses Section 7 = prompt_compliance (Model is report-only)
         8: 'prompt_compliance',
         9: 'chain_integrity',
+        10: 'cross_layer_consistency',
     }
 
     if args.format == 'json':
@@ -302,6 +303,55 @@ def handle_audit(args, deps, plugin_root, plugin_name):
                 oks += 1
         if not (criticals or warnings):
             print(f"| (all {oks} entries) | OK | OK |")
+        print()
+        print(f"## Summary")
+        print(f"| Severity | Count |")
+        print(f"|----------|-------|")
+        print(f"| CRITICAL | {criticals} |")
+        print(f"| WARNING  | {warnings} |")
+        print(f"| OK       | {oks} |")
+        if criticals > 0:
+            sys.exit(1)
+        return
+
+    if section_filter == 10:
+        from twl.validation.audit import audit_cross_layer_consistency, _detect_monorepo_root
+        monorepo_root = _detect_monorepo_root(plugin_root)
+        print("=== TWiLL Compliance Audit (Section 10 only) ===")
+        print()
+        print("## 10. Cross-Layer Consistency")
+        print()
+        print("| Layer Pair | Issue | Severity |")
+        print("|------------|-------|----------|")
+        if monorepo_root is None:
+            print("| (monorepo_root not detected) | git リポジトリ外または architecture/vision.md 不在 | INFO |")
+            print()
+            print("## Summary")
+            print("| Severity | Count |")
+            print("|----------|-------|")
+            print("| CRITICAL | 0 |")
+            print("| WARNING  | 0 |")
+            print("| OK       | 0 |")
+            return
+        cross_items = audit_cross_layer_consistency(monorepo_root)
+        criticals = 0
+        warnings = 0
+        oks = 0
+        for item in cross_items:
+            sev = item['severity']
+            if sev == 'critical':
+                criticals += 1
+                print(f"| {item['component']} | {item['message']} | CRITICAL |")
+            elif sev == 'warning':
+                warnings += 1
+                print(f"| {item['component']} | {item['message']} | WARNING |")
+            elif sev == 'info':
+                print(f"| {item['component']} | {item['message']} | INFO |")
+            else:
+                oks += 1
+        if not (criticals or warnings):
+            ok_pairs = sum(1 for i in cross_items if i['severity'] == 'ok')
+            print(f"| (all {ok_pairs} pairs) | OK | OK |")
         print()
         print(f"## Summary")
         print(f"| Severity | Count |")
