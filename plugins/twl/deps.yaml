@@ -177,17 +177,14 @@ skills:
     refined_at: "2026-04-07"
     path: skills/co-issue/SKILL.md
     effort: high
-    tools: [Skill(workflow-issue-refine, issue-glossary-check, issue-cross-repo-create), Agent(context-checker, template-validator)]
+    tools: [Skill(workflow-issue-refine, workflow-issue-create, issue-glossary-check), Agent(context-checker, template-validator)]
     spawnable_by: [user]
     can_spawn: [workflow, composite, atomic, specialist, reference]
     calls:
       - atomic: explore
       - workflow: workflow-issue-refine
-      - atomic: issue-create
-      - atomic: issue-bulk-create
+      - workflow: workflow-issue-create
       - atomic: issue-glossary-check
-      - atomic: issue-cross-repo-create
-      - atomic: project-board-sync
       - reference: ref-issue-template-bug
       - reference: ref-issue-template-feature
       - reference: ref-project-model
@@ -511,6 +508,19 @@ skills:
       - atomic: issue-review-aggregate
       - atomic: issue-arch-drift
     description: "Per-Issue 精緻化ワークフロー（co-issue Phase 3 を分離）"
+
+  workflow-issue-create:
+    type: workflow
+    path: skills/workflow-issue-create/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [atomic, script]
+    calls:
+      - atomic: issue-create
+      - atomic: issue-bulk-create
+      - atomic: issue-cross-repo-create
+      - atomic: project-board-sync
+    description: "Issue 一括作成ワークフロー（co-issue Phase 4 を分離）"
 
 
 # リファレンス（B-6 で追加）

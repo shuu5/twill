@@ -9,7 +9,7 @@ description: |
 type: controller
 effort: high
 tools:
-- Skill(workflow-issue-refine, issue-glossary-check, issue-cross-repo-create)
+- Skill(workflow-issue-refine, workflow-issue-create, issue-glossary-check)
 - Agent(context-checker, template-validator)
 spawnable_by:
 - user
@@ -70,15 +70,16 @@ TaskUpdate Phase 3 → completed
 
 TaskCreate 「Phase 4: Issue 作成」(status: in_progress)
 
-**refined ラベル事前作成**: `gh label create refined` → `REFINED_LABEL_OK` フラグ追跡。失敗時はラベル非付与でワークフロー続行。`is_split_generated: true` の Issue には refined 非付与（MUST NOT）。
+`/twl:workflow-issue-create` を呼び出す。以下を渡す:
 
-1. **ユーザー確認（MUST）**: 全候補提示、quick 候補に `[quick]` マーク
-2. **作成**:
-   - 通常: 単一→`/twl:issue-create`、複数→`/twl:issue-bulk-create`。`REFINED_LABEL_OK=true` かつ `is_split_generated != true` → `--label refined`。quick 条件充足 → `--label quick`
-   - クロスリポ: `/twl:issue-cross-repo-create` を呼び出す
-3. **Project Board 同期**: 各 Issue 後 `/twl:project-board-sync N`（失敗は警告のみ）。**MUST**: `chain-runner.sh board-status-update` を直接呼ばないこと（デフォルトが In Progress のため新規 Issue が誤って In Progress になる）
-4. **クリーンアップ**: `.controller-issue/` を削除（中止時も同様）
-5. **完了通知**: Issue URL 表示、`/twl:workflow-setup #N` で開発開始を案内
+- **refined_issues**: Phase 3 で精緻化された Issue リスト
+- **REFINED_LABEL_OK**: refined ラベル作成成否フラグ（workflow 内で作成）
+- **is_split_generated flags**: Phase 3 で生成された split フラグ
+- **is_quick_candidate flags**: Phase 2 Step 2b で判定された quick 候補フラグ
+- **cross_repo_split**: クロスリポ分割フラグ
+- **target_repos**: クロスリポ対象リポジトリリスト
+
+返却値（`created_issue_urls`）で完了通知。
 
 TaskUpdate Phase 4 → completed
 
