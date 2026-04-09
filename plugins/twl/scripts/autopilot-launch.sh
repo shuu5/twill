@@ -362,8 +362,7 @@ tmux set-hook -t "$WINDOW_NAME" pane-died "run-shell '$QUOTED_CRASH_CMD'"
 # tombstone hook は設定しない: pane-died は crash-detect.sh 用に設定済みであり
 # set-hook は後発呼び出しで上書きになるため競合が発生する。
 # autopilot window の tombstone は crash-detect.sh / worker 完了フローが担う。
-# worktree_path には WORKTREE_DIR が適切だが autopilot の解決ロジックが複雑なため
-# LAUNCH_DIR を代用する（consumer は cwd と同値でも git worktree 検出可能）。
+# worktree_path は WORKTREE_DIR を優先使用し、未設定時は LAUNCH_DIR にフォールバック。
 if declare -f manifest_append_entry > /dev/null 2>&1; then
   _WM_SESSION=$(tmux display-message -p '#{session_name}' 2>/dev/null || echo "main")
   _WM_INDEX=$(tmux list-windows -F '#{window_name} #{window_index}' 2>/dev/null \

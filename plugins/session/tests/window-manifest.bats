@@ -54,7 +54,8 @@ teardown() {
 
     # 中間 .XXXXXX 一時ファイルが残っていないことを確認（.lock ファイルは除外）
     local leftover
-    leftover=$(find "$SANDBOX" -name "window-manifest.json.????????" 2>/dev/null || true)
+    leftover=$(find "$SANDBOX" -name "window-manifest.json.*" \
+        ! -name "window-manifest.json.lock" 2>/dev/null || true)
     [[ -z "$leftover" ]]
 }
 
