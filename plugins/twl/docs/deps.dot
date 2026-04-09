@@ -9,7 +9,7 @@ digraph Dependencies {
 
     // L0: Controller Skills
     skill_co_autopilot [label="twl:co-autopilot\n(1,975 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_issue [label="twl:co-issue\n(1,179 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(792 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_project [label="twl:co-project\n(1,456 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_architect [label="twl:co-architect\n(1,317 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_utility [label="twl:co-utility\n(777 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
@@ -290,14 +290,9 @@ digraph Dependencies {
     skill_co_autopilot -> script_autopilot_plan;
     skill_co_autopilot -> script_autopilot_cleanup;
     skill_co_issue -> cmd_explore;
+    skill_co_issue -> cmd_issue_glossary_check;
     skill_co_issue -> skill_workflow_issue_refine;
     skill_co_issue -> skill_workflow_issue_create;
-    skill_co_issue -> cmd_issue_glossary_check;
-    skill_co_issue -> skill_ref_issue_template_bug;
-    skill_co_issue -> skill_ref_issue_template_feature;
-    skill_co_issue -> skill_ref_project_model;
-    skill_co_issue -> skill_ref_issue_quality_criteria;
-    skill_co_issue -> skill_ref_glossary_criteria;
     skill_co_project -> cmd_project_create;
     skill_co_project -> cmd_project_governance;
     skill_co_project -> cmd_project_board_configure;
@@ -626,14 +621,9 @@ digraph Dependencies {
     skill_workflow_self_improve -> script_autopilot_orchestrator [style=invis, weight=10];
     script_autopilot_orchestrator -> script_autopilot_plan [style=invis, weight=10];
     script_autopilot_plan -> script_autopilot_cleanup [style=invis, weight=10];
-    cmd_explore -> skill_workflow_issue_refine [style=invis, weight=10];
+    cmd_explore -> cmd_issue_glossary_check [style=invis, weight=10];
+    cmd_issue_glossary_check -> skill_workflow_issue_refine [style=invis, weight=10];
     skill_workflow_issue_refine -> skill_workflow_issue_create [style=invis, weight=10];
-    skill_workflow_issue_create -> cmd_issue_glossary_check [style=invis, weight=10];
-    cmd_issue_glossary_check -> skill_ref_issue_template_bug [style=invis, weight=10];
-    skill_ref_issue_template_bug -> skill_ref_issue_template_feature [style=invis, weight=10];
-    skill_ref_issue_template_feature -> skill_ref_project_model [style=invis, weight=10];
-    skill_ref_project_model -> skill_ref_issue_quality_criteria [style=invis, weight=10];
-    skill_ref_issue_quality_criteria -> skill_ref_glossary_criteria [style=invis, weight=10];
     cmd_project_create -> cmd_project_governance [style=invis, weight=10];
     cmd_project_governance -> cmd_project_board_configure [style=invis, weight=10];
     cmd_project_board_configure -> cmd_project_migrate [style=invis, weight=10];

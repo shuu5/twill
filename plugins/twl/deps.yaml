@@ -177,20 +177,15 @@ skills:
     refined_at: "2026-04-07"
     path: skills/co-issue/SKILL.md
     effort: high
-    tools: [Skill(workflow-issue-refine, workflow-issue-create, issue-glossary-check), Agent(context-checker, template-validator)]
+    tools: [Skill(workflow-issue-refine, workflow-issue-create, issue-glossary-check, explore)]
     spawnable_by: [user]
-    can_spawn: [workflow, composite, atomic, specialist, reference]
+    can_spawn: [composite, atomic, specialist, reference, workflow]
     calls:
       - atomic: explore
+      - atomic: issue-glossary-check
       - workflow: workflow-issue-refine
       - workflow: workflow-issue-create
-      - atomic: issue-glossary-check
-      - reference: ref-issue-template-bug
-      - reference: ref-issue-template-feature
-      - reference: ref-project-model
-      - reference: ref-issue-quality-criteria
-      - reference: ref-glossary-criteria
-    description: "要望をGitHub Issueに変換するワークフロー（ディスパッチ専用）"
+    description: "要望をGitHub Issueに変換するワークフロー（thin orchestrator）"
 
   co-project:
     type: controller
