@@ -84,7 +84,7 @@ workflow が完了（検出 0 件 or ユーザー停止 or タイムアウト）
 - observed session に inject / send-keys してはならない（制約 OB-3）
 - 検出結果をユーザー確認なしで自動 Issue 起票してはならない（制約 OB-4）
 - テストプロジェクト worktree から実 main branch にコミットしてはならない（制約 SI-1）
-- 同時に 4 個以上の observed session を観察してはならない（制約 OB-5）
+- 同時に 3 observed session を超えて観察してはならない（制約 OB-5）
 
 Live Observation 制約の正典は `plugins/twl/architecture/domain/contexts/observation.md`
 Self-Improve 制約の正典は `plugins/twl/architecture/domain/contexts/self-improve.md`
