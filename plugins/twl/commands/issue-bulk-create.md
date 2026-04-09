@@ -1,3 +1,9 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: medium
+maxTurns: 20
+---
 # Issue 一括起票
 
 親 Issue と子 Issue 群を一括起票し、親 Issue に子 Issue チェックリストを追記する。
