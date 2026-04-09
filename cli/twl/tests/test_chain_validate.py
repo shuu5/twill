@@ -816,6 +816,197 @@ class TestChainValidateEdgeCases(_ChainTestBase):
 # main runner (for direct invocation without pytest)
 # ===========================================================================
 
+# ===========================================================================
+# Requirement: chain-step-sync (check #8)
+# ===========================================================================
+
+def _make_chain_steps_sh(steps: list, dispatch: dict) -> str:
+    """Generate minimal chain-steps.sh content for testing."""
+    steps_block = "\n".join(f"  {s}" for s in steps)
+    dispatch_block = "\n".join(f"  [{k}]={v}" for k, v in dispatch.items())
+    return (
+        "#!/usr/bin/env bash\n"
+        f"CHAIN_STEPS=(\n{steps_block}\n)\n"
+        f"declare -A CHAIN_STEP_DISPATCH=(\n{dispatch_block}\n)\n"
+    )
+
+
+class TestChainStepSync:
+    """chain-steps.sh CHAIN_STEPS ⟺ deps.yaml chains steps (check #8)."""
+
+    def setup_method(self):
+        self.tmpdir = Path(tempfile.mkdtemp())
+        self.plugin_dir = make_chain_fixture(self.tmpdir)
+        # Create scripts/chain-steps.sh with steps matching the fixture chains
+        scripts_dir = self.plugin_dir / "scripts"
+        scripts_dir.mkdir(parents=True, exist_ok=True)
+        self.chain_steps_path = scripts_dir / "chain-steps.sh"
+
+    def teardown_method(self):
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+
+    def _write_chain_steps(self, steps: list, dispatch: dict):
+        self.chain_steps_path.write_text(
+            _make_chain_steps_sh(steps, dispatch), encoding="utf-8"
+        )
+
+    def _modify_deps(self, mutator):
+        deps = _load_deps(self.plugin_dir)
+        mutator(deps)
+        _write_deps(self.plugin_dir, deps)
+
+    # --- Happy path: all steps match ---
+
+    def test_no_chain_steps_sh_no_check(self):
+        """WHEN chain-steps.sh does not exist
+        THEN no chain-step-sync output."""
+        # Don't write chain-steps.sh
+        result = run_engine(self.plugin_dir, "--validate")
+        assert "[chain-step-sync]" not in result.stdout
+
+    def test_all_steps_in_sync_no_error(self):
+        """WHEN chain-steps.sh CHAIN_STEPS matches deps.yaml chains exactly
+        THEN no chain-step-sync warning or info."""
+        # fixture chains: workflow-setup=[my-workflow, ac-extract, ac-verify], review-flow=[my-review-wf]
+        self._write_chain_steps(
+            ["my-workflow", "ac-extract", "ac-verify", "my-review-wf"],
+            {"my-workflow": "runner", "ac-extract": "runner", "ac-verify": "runner", "my-review-wf": "runner"},
+        )
+        result = run_engine(self.plugin_dir, "--validate")
+        assert "[chain-step-sync]" not in result.stdout
+
+    # --- 8a. Steps in chain-steps.sh only → WARNING ---
+
+    def test_step_only_in_chain_steps_sh(self):
+        """WHEN chain-steps.sh has 'orphan-step' not in any deps.yaml chain
+        THEN WARNING [chain-step-sync] orphan-step: in chain-steps.sh CHAIN_STEPS but not found in any deps.yaml chain."""
+        self._write_chain_steps(
+            ["my-workflow", "ac-extract", "ac-verify", "my-review-wf", "orphan-step"],
+            {"orphan-step": "runner"},
+        )
+        result = run_engine(self.plugin_dir, "--validate")
+        assert "[chain-step-sync]" in result.stdout
+        assert "orphan-step" in result.stdout
+        assert "in chain-steps.sh CHAIN_STEPS but not found in any deps.yaml chain" in result.stdout
+
+    # --- 8b. Steps only in deps.yaml (non-LLM) → INFO ---
+
+    def test_step_only_in_deps_yaml_non_llm(self):
+        """WHEN deps.yaml chain has 'extra-step' not in chain-steps.sh and dispatch_mode=runner
+        THEN INFO [chain-step-sync] extra-step: in deps.yaml chains but not in chain-steps.sh CHAIN_STEPS."""
+        def mutator(deps):
+            deps["chains"]["workflow-setup"]["steps"].append("extra-step")
+            deps["commands"]["extra-step"] = {
+                "type": "atomic",
+                "path": "commands/extra-step.md",
+                "description": "Extra step",
+                "chain": "workflow-setup",
+                "dispatch_mode": "runner",
+                "calls": [],
+            }
+        self._modify_deps(mutator)
+        (self.plugin_dir / "commands" / "extra-step.md").write_text(
+            "---\nname: extra-step\ndescription: Test\n---\n\nContent.\n", encoding="utf-8"
+        )
+        self._write_chain_steps(
+            ["my-workflow", "ac-extract", "ac-verify", "my-review-wf"],
+            {},
+        )
+        result = run_engine(self.plugin_dir, "--deep-validate")
+        assert "[chain-step-sync]" in result.stdout
+        assert "extra-step" in result.stdout
+        assert "in deps.yaml chains but not in chain-steps.sh CHAIN_STEPS" in result.stdout
+
+    def test_step_only_in_deps_yaml_llm_skipped(self):
+        """WHEN deps.yaml chain has 'llm-step' not in chain-steps.sh and dispatch_mode=llm
+        THEN no chain-step-sync INFO (LLM steps are intentionally absent)."""
+        def mutator(deps):
+            deps["chains"]["workflow-setup"]["steps"].append("llm-step")
+            deps["commands"]["llm-step"] = {
+                "type": "atomic",
+                "path": "commands/llm-step.md",
+                "description": "LLM step",
+                "chain": "workflow-setup",
+                "dispatch_mode": "llm",
+                "calls": [],
+            }
+        self._modify_deps(mutator)
+        (self.plugin_dir / "commands" / "llm-step.md").write_text(
+            "---\nname: llm-step\ndescription: Test\n---\n\nContent.\n", encoding="utf-8"
+        )
+        self._write_chain_steps(
+            ["my-workflow", "ac-extract", "ac-verify", "my-review-wf"],
+            {},
+        )
+        result = run_engine(self.plugin_dir, "--validate")
+        result2 = run_engine(self.plugin_dir, "--deep-validate")
+        # llm-step should NOT appear in chain-step-sync output (even in deep-validate)
+        assert "llm-step" not in result2.stdout or "[chain-step-sync]" not in result2.stdout
+
+    # --- 8c. Name mismatch detection (Levenshtein) → WARNING ---
+
+    def test_name_mismatch_board_status_update(self):
+        """WHEN chain-steps.sh has 'board-status-update' and deps.yaml has 'project-board-status-update'
+        THEN WARNING [chain-step-sync] possible name mismatch."""
+        self._write_chain_steps(
+            ["my-workflow", "ac-extract", "ac-verify", "my-review-wf", "board-status-update"],
+            {"board-status-update": "runner"},
+        )
+
+        def mutator(deps):
+            deps["chains"]["workflow-setup"]["steps"].append("project-board-status-update")
+            deps["commands"]["project-board-status-update"] = {
+                "type": "atomic",
+                "path": "commands/project-board-status-update.md",
+                "description": "Board status",
+                "chain": "workflow-setup",
+                "dispatch_mode": "runner",
+                "calls": [],
+            }
+        self._modify_deps(mutator)
+        (self.plugin_dir / "commands" / "project-board-status-update.md").write_text(
+            "---\nname: project-board-status-update\ndescription: Test\n---\n\nContent.\n", encoding="utf-8"
+        )
+        result = run_engine(self.plugin_dir, "--validate")
+        assert "[chain-step-sync]" in result.stdout
+        assert "board-status-update" in result.stdout
+        assert "possible name mismatch" in result.stdout
+
+    # --- 8d. dispatch_mode mismatch → CRITICAL ---
+
+    def test_dispatch_mode_mismatch(self):
+        """WHEN step 'ac-extract' is runner in chain-steps.sh but llm in deps.yaml
+        THEN CRITICAL [chain-step-sync] ac-extract: dispatch_mode mismatch."""
+        def mutator(deps):
+            deps["commands"]["ac-extract"]["dispatch_mode"] = "llm"
+        self._modify_deps(mutator)
+        self._write_chain_steps(
+            ["my-workflow", "ac-extract", "ac-verify", "my-review-wf"],
+            {"ac-extract": "runner", "my-workflow": "runner", "ac-verify": "runner", "my-review-wf": "runner"},
+        )
+        result = run_engine(self.plugin_dir, "--validate")
+        assert result.returncode != 0
+        assert "[chain-step-sync]" in result.stdout
+        assert "ac-extract" in result.stdout
+        assert "dispatch_mode mismatch" in result.stdout
+
+    def test_dispatch_mode_match_no_error(self):
+        """WHEN dispatch_mode matches between chain-steps.sh and deps.yaml
+        THEN no chain-step-sync CRITICAL."""
+        def mutator(deps):
+            deps["commands"]["ac-extract"]["dispatch_mode"] = "runner"
+            deps["commands"]["ac-verify"]["dispatch_mode"] = "runner"
+            deps["skills"]["my-workflow"]["dispatch_mode"] = "runner"
+            deps["skills"]["my-review-wf"]["dispatch_mode"] = "runner"
+        self._modify_deps(mutator)
+        self._write_chain_steps(
+            ["my-workflow", "ac-extract", "ac-verify", "my-review-wf"],
+            {"my-workflow": "runner", "ac-extract": "runner", "ac-verify": "runner", "my-review-wf": "runner"},
+        )
+        result = run_engine(self.plugin_dir, "--validate")
+        assert "dispatch_mode mismatch" not in result.stdout
+
+
 if __name__ == "__main__":
     import traceback
 
@@ -827,6 +1018,7 @@ if __name__ == "__main__":
         TestPromptConsistency,
         TestTwlCheckIntegration,
         TestChainValidateEdgeCases,
+        TestChainStepSync,
     ]
     passed = 0
     failed = 0

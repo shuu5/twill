@@ -46,6 +46,63 @@ def _load_chain_py_steps(plugin_root: Path) -> List[str]:
     return []
 
 
+def _levenshtein(s1: str, s2: str) -> int:
+    """Simple Levenshtein distance."""
+    if len(s1) < len(s2):
+        return _levenshtein(s2, s1)
+    if not s2:
+        return len(s1)
+    prev = list(range(len(s2) + 1))
+    for c1 in s1:
+        curr = [prev[0] + 1]
+        for j, c2 in enumerate(s2):
+            curr.append(min(prev[j + 1] + 1, curr[j] + 1, prev[j] + (c1 != c2)))
+        prev = curr
+    return prev[len(s2)]
+
+
+def _parse_chain_steps_sh(plugin_root: Path) -> Tuple[List[str], Dict[str, str]]:
+    """Parse CHAIN_STEPS list and CHAIN_STEP_DISPATCH map from chain-steps.sh.
+
+    Returns (steps_list, dispatch_map) where dispatch_map maps step_name → mode.
+    """
+    candidates = [
+        plugin_root / "scripts" / "chain-steps.sh",
+        plugin_root / "plugins" / "twl" / "scripts" / "chain-steps.sh",
+    ]
+    chain_steps_sh = None
+    for c in candidates:
+        if c.is_file():
+            chain_steps_sh = c
+            break
+    if chain_steps_sh is None:
+        return [], {}
+
+    content = chain_steps_sh.read_text(encoding="utf-8")
+
+    # Parse CHAIN_STEPS=( ... ) — each non-comment, non-empty line is a step name
+    steps: List[str] = []
+    steps_match = re.search(r'CHAIN_STEPS=\((.*?)\)', content, re.DOTALL)
+    if steps_match:
+        for line in steps_match.group(1).splitlines():
+            line = line.strip()
+            if line and not line.startswith('#'):
+                steps.append(line)
+
+    # Parse declare -A CHAIN_STEP_DISPATCH=( [step]=mode ... )
+    dispatch: Dict[str, str] = {}
+    dispatch_match = re.search(
+        r'declare\s+-A\s+CHAIN_STEP_DISPATCH=\((.*?)\)', content, re.DOTALL
+    )
+    if dispatch_match:
+        for line in dispatch_match.group(1).splitlines():
+            m = re.match(r'\s*\[([a-z][a-z0-9-]+)\]=(\w+)', line)
+            if m:
+                dispatch[m.group(1)] = m.group(2)
+
+    return steps, dispatch
+
+
 def _load_chain_runner_steps(plugin_root: Path) -> Set[str]:
     """Extract step names from chain-runner.sh case statement."""
     candidates = [
@@ -438,6 +495,82 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
                 warnings.append(
                     f"[chain-runner-ssot] {step_name}: "
                     f"in CHAIN_STEPS but not found in chain-runner.sh case statement"
+                )
+            else:
+                ok_count += 1
+
+    # --- 8. chain-step-sync: chain-steps.sh CHAIN_STEPS ⟺ deps.yaml chains steps ---
+    sh_steps_list, sh_dispatch = _parse_chain_steps_sh(plugin_root)
+    if sh_steps_list:
+        sh_steps_set: Set[str] = set(sh_steps_list)
+
+        # Collect every step listed in deps.yaml chains
+        deps_chain_steps: Set[str] = set()
+        for chain_name, chain_data in chains.items():
+            if not isinstance(chain_data, dict):
+                continue
+            steps_list = chain_data.get('steps', [])
+            if not isinstance(steps_list, list):
+                continue
+            for step in steps_list:
+                if isinstance(step, str):
+                    deps_chain_steps.add(step)
+
+        sh_only = sh_steps_set - deps_chain_steps
+        deps_only = deps_chain_steps - sh_steps_set
+
+        # 8a. Steps only in chain-steps.sh → WARNING
+        for step in sorted(sh_only):
+            warnings.append(
+                f"[chain-step-sync] {step}: "
+                f"in chain-steps.sh CHAIN_STEPS but not found in any deps.yaml chain"
+            )
+
+        # 8b. Steps only in deps.yaml that are non-LLM → INFO
+        for step in sorted(deps_only):
+            comp = all_components.get(step)
+            dispatch_in_deps = comp[1].get('dispatch_mode') if comp else None
+            dispatch_in_sh = sh_dispatch.get(step)
+            # LLM-dispatched steps are intentionally absent from chain-steps.sh
+            if dispatch_in_deps == 'llm' or dispatch_in_sh == 'llm':
+                continue
+            infos.append(
+                f"[chain-step-sync] {step}: "
+                f"in deps.yaml chains but not in chain-steps.sh CHAIN_STEPS"
+            )
+
+        # 8c. Similar-but-not-identical names → WARNING (possible typo/rename)
+        reported_pairs: Set[Tuple[str, str]] = set()
+        for sh_step in sorted(sh_only):
+            for deps_step in sorted(deps_only):
+                pair = (sh_step, deps_step) if sh_step < deps_step else (deps_step, sh_step)
+                if pair in reported_pairs:
+                    continue
+                max_len = max(len(sh_step), len(deps_step))
+                if max_len == 0:
+                    continue
+                dist = _levenshtein(sh_step, deps_step)
+                if (max_len - dist) / max_len >= 0.6:
+                    reported_pairs.add(pair)
+                    warnings.append(
+                        f"[chain-step-sync] '{sh_step}' (chain-steps.sh) ≈ "
+                        f"'{deps_step}' (deps.yaml): "
+                        f"possible name mismatch (edit distance={dist})"
+                    )
+
+        # 8d. dispatch_mode mismatch for steps present in both → CRITICAL
+        for step in sorted(sh_steps_set & deps_chain_steps):
+            comp = all_components.get(step)
+            if comp is None:
+                continue
+            dispatch_in_deps = comp[1].get('dispatch_mode')
+            dispatch_in_sh = sh_dispatch.get(step)
+            if dispatch_in_deps is None or dispatch_in_sh is None:
+                continue
+            if dispatch_in_deps != dispatch_in_sh:
+                criticals.append(
+                    f"[chain-step-sync] {step}: dispatch_mode mismatch: "
+                    f"chain-steps.sh='{dispatch_in_sh}' vs deps.yaml='{dispatch_in_deps}'"
                 )
             else:
                 ok_count += 1
