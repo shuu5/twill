@@ -639,7 +639,7 @@ class ProjectManager:
             print("      DeltaSpec 初期化完了")
             _cleanup_deprecated_local(project_dir)
         else:
-            print("      警告: deltaspec CLIが見つかりません")
+            print("      警告: twl CLIが見つかりません")
 
     def _apply_claude_md(self, project_dir: Path, project_type: str, project_name: str) -> None:
         template_claude = self.templates_base / project_type / "CLAUDE.md"
