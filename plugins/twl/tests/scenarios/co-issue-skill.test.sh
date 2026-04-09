@@ -190,44 +190,47 @@ else
   run_test_skip "Phase 3 [edge: workflow-issue-refine への委譲記述]" "skills/co-issue/SKILL.md not yet created"
 fi
 
-# Test: Phase 4 - 一括作成（issue-create / issue-bulk-create）
+# Test: Phase 4 - workflow-issue-create への委譲
 test_phase4_create() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "issue-create" || return 1
+  assert_file_contains "$SKILL_MD" "workflow-issue-create" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Phase 4 - Issue 作成（issue-create 記述）" test_phase4_create
+  run_test "Phase 4 - workflow-issue-create への委譲記述" test_phase4_create
 else
-  run_test_skip "Phase 4 - Issue 作成" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "Phase 4 - workflow-issue-create への委譲" "skills/co-issue/SKILL.md not yet created"
 fi
 
 # Scenario: 複数 Issue 分解 (line 18)
 # WHEN: 分解判断で複数 Issue が必要と判定される
-# THEN: Phase 3 で各候補に対して精緻化ループが実行され、Phase 4 で issue-bulk-create が呼ばれる
+# THEN: Phase 3 で各候補に対して精緻化ループが実行され、Phase 4 で workflow-issue-create が呼ばれる
 
-test_bulk_create_mention() {
-  assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "issue-bulk-create|bulk.create"
+# Test: workflow-issue-create SKILL.md に issue-bulk-create 記述がある
+WORKFLOW_SKILL_MD="skills/workflow-issue-create/SKILL.md"
+
+test_bulk_create_in_workflow() {
+  assert_file_exists "$WORKFLOW_SKILL_MD" || return 1
+  assert_file_contains "$WORKFLOW_SKILL_MD" "issue-bulk-create|bulk.create"
 }
 
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "複数 Issue 時の issue-bulk-create 記述" test_bulk_create_mention
+if [[ -f "${PROJECT_ROOT}/${WORKFLOW_SKILL_MD}" ]]; then
+  run_test "workflow-issue-create に issue-bulk-create 記述" test_bulk_create_in_workflow
 else
-  run_test_skip "複数 Issue 時の issue-bulk-create" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "workflow-issue-create に issue-bulk-create" "skills/workflow-issue-create/SKILL.md not yet created"
 fi
 
-# Edge case: project-board-sync への言及
-test_board_sync_mention() {
-  assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "project-board-sync|board.sync"
+# Edge case: workflow-issue-create に project-board-sync への言及
+test_board_sync_in_workflow() {
+  assert_file_exists "$WORKFLOW_SKILL_MD" || return 1
+  assert_file_contains "$WORKFLOW_SKILL_MD" "project-board-sync|board.sync"
 }
 
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Phase 4 [edge: project-board-sync への言及]" test_board_sync_mention
+if [[ -f "${PROJECT_ROOT}/${WORKFLOW_SKILL_MD}" ]]; then
+  run_test "workflow-issue-create [edge: project-board-sync への言及]" test_board_sync_in_workflow
 else
-  run_test_skip "Phase 4 [edge: project-board-sync への言及]" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "workflow-issue-create [edge: project-board-sync への言及]" "skills/workflow-issue-create/SKILL.md not yet created"
 fi
 
 # =============================================================================
@@ -337,47 +340,47 @@ else
 fi
 
 # =============================================================================
-# Requirement: Phase 4 完了後のクリーンアップ
+# Requirement: Phase 4 完了後のクリーンアップ（workflow-issue-create 側で実行）
 # =============================================================================
 echo ""
 echo "--- Requirement: Phase 4 完了後のクリーンアップ ---"
 
 # Scenario: Issue 作成完了 (line 47)
 # WHEN: Phase 4 で Issue 作成が成功する
-# THEN: .controller-issue/ が削除され、作成された Issue の URL と次のステップが表示される
+# THEN: workflow-issue-create 内で .controller-issue/ が削除され、Issue URL と次のステップが表示される
 
-test_cleanup_mention() {
-  assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "\.controller-issue.*削除|cleanup|クリーンアップ|rm.*controller-issue"
+test_cleanup_in_workflow() {
+  assert_file_exists "$WORKFLOW_SKILL_MD" || return 1
+  assert_file_contains "$WORKFLOW_SKILL_MD" "\.controller-issue.*削除|cleanup|クリーンアップ|rm.*controller-issue"
 }
 
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test ".controller-issue/ ディレクトリ削除の記述" test_cleanup_mention
+if [[ -f "${PROJECT_ROOT}/${WORKFLOW_SKILL_MD}" ]]; then
+  run_test "workflow-issue-create に .controller-issue/ 削除の記述" test_cleanup_in_workflow
 else
-  run_test_skip ".controller-issue/ 削除の記述" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip ".controller-issue/ 削除の記述" "skills/workflow-issue-create/SKILL.md not yet created"
 fi
 
-test_issue_url_display() {
-  assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "URL|url|リンク"
+test_issue_url_in_workflow() {
+  assert_file_exists "$WORKFLOW_SKILL_MD" || return 1
+  assert_file_contains "$WORKFLOW_SKILL_MD" "URL|url|リンク"
 }
 
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Issue URL 表示の記述" test_issue_url_display
+if [[ -f "${PROJECT_ROOT}/${WORKFLOW_SKILL_MD}" ]]; then
+  run_test "workflow-issue-create に Issue URL 表示の記述" test_issue_url_in_workflow
 else
-  run_test_skip "Issue URL 表示の記述" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "Issue URL 表示の記述" "skills/workflow-issue-create/SKILL.md not yet created"
 fi
 
-# Edge case: workflow-setup への案内記述
-test_workflow_setup_guidance() {
-  assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "workflow-setup|/twl:workflow-setup"
+# Edge case: workflow-setup への案内記述（workflow-issue-create 側）
+test_workflow_setup_in_workflow() {
+  assert_file_exists "$WORKFLOW_SKILL_MD" || return 1
+  assert_file_contains "$WORKFLOW_SKILL_MD" "workflow-setup|/twl:workflow-setup"
 }
 
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "完了後 [edge: workflow-setup への案内記述]" test_workflow_setup_guidance
+if [[ -f "${PROJECT_ROOT}/${WORKFLOW_SKILL_MD}" ]]; then
+  run_test "workflow-issue-create [edge: workflow-setup への案内記述]" test_workflow_setup_in_workflow
 else
-  run_test_skip "完了後 [edge: workflow-setup への案内]" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "workflow-issue-create [edge: workflow-setup への案内]" "skills/workflow-issue-create/SKILL.md not yet created"
 fi
 
 # Edge case: YAML frontmatter に type: controller が記述

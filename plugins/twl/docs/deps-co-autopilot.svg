@@ -15,7 +15,7 @@
 <title>skill_co_autopilot</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="65.76" cy="-1369.49" rx="65.52" ry="21.43"/>
 <text text-anchor="middle" x="65.76" y="-1372.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;autopilot</text>
-<text text-anchor="middle" x="65.76" y="-1361.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,882 tok)</text>
+<text text-anchor="middle" x="65.76" y="-1361.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,975 tok)</text>
 </g>
 <!-- skill_workflow_setup -->
 <g id="node2" class="node">
@@ -1049,7 +1049,7 @@
 <title>script_state_write</title>
 <polygon fill="#ff9800" stroke="black" points="855.4,-921.49 826.74,-945.98 769.43,-945.98 740.78,-921.49 769.43,-897.01 826.74,-897.01 855.4,-921.49"/>
 <text text-anchor="middle" x="798.09" y="-924.49" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;write</text>
-<text text-anchor="middle" x="798.09" y="-913.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,611 tok)</text>
+<text text-anchor="middle" x="798.09" y="-913.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,924 tok)</text>
 </g>
 <!-- cmd_all_pass_check&#45;&gt;script_state_write -->
 <g id="edge77" class="edge">
@@ -1735,7 +1735,7 @@
 <title>script_state_read</title>
 <polygon fill="#ff9800" stroke="black" points="855.4,-992.49 826.74,-1016.98 769.43,-1016.98 740.78,-992.49 769.43,-968.01 826.74,-968.01 855.4,-992.49"/>
 <text text-anchor="middle" x="798.09" y="-995.49" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;read</text>
-<text text-anchor="middle" x="798.09" y="-984.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,611 tok)</text>
+<text text-anchor="middle" x="798.09" y="-984.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,924 tok)</text>
 </g>
 <!-- cmd_autopilot_poll&#45;&gt;script_state_read -->
 <g id="edge153" class="edge">

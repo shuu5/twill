@@ -180,4 +180,10 @@ Autopilot で複数 Issue を一括実装:
 
 ![workflow-issue-refine](./docs/deps-workflow-issue-refine.svg)
 </details>
+
+<details>
+<summary>workflow-issue-create</summary>
+
+![workflow-issue-create](./docs/deps-workflow-issue-create.svg)
+</details>
 <!-- DEPS-SUBGRAPHS-END -->

@@ -1,0 +1,51 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="workflow-issue-create";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+    skill_workflow_issue_create [label="twl:workflow-issue-create\n(826 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+
+    // Reference Skills
+
+    // L1: Direct Commands
+    cmd_issue_create [label="issue-create\n(1,002 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_issue_bulk_create [label="issue-bulk-create\n(1,440 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_issue_cross_repo_create [label="issue-cross-repo-create\n(1,425 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_board_sync [label="project-board-sync\n(1,184 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_workflow_issue_create; }
+    { rank=same; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_cross_repo_create; cmd_project_board_sync; }
+
+    // Edges
+    skill_workflow_issue_create -> cmd_issue_create;
+    skill_workflow_issue_create -> cmd_issue_bulk_create;
+    skill_workflow_issue_create -> cmd_issue_cross_repo_create;
+    skill_workflow_issue_create -> cmd_project_board_sync;
+
+    // Ordering constraints (invisible edges)
+    cmd_issue_create -> cmd_issue_bulk_create [style=invis, weight=10];
+    cmd_issue_bulk_create -> cmd_issue_cross_repo_create [style=invis, weight=10];
+    cmd_issue_cross_repo_create -> cmd_project_board_sync [style=invis, weight=10];
+
+}

@@ -158,14 +158,14 @@
 <title>script_state_read</title>
 <polygon fill="#ff9800" stroke="black" points="584.75,-469.49 556.1,-493.98 498.79,-493.98 470.13,-469.49 498.79,-445.01 556.1,-445.01 584.75,-469.49"/>
 <text text-anchor="middle" x="527.44" y="-472.49" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;read</text>
-<text text-anchor="middle" x="527.44" y="-461.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,611 tok)</text>
+<text text-anchor="middle" x="527.44" y="-461.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,924 tok)</text>
 </g>
 <!-- script_state_write -->
 <g id="node9" class="node">
 <title>script_state_write</title>
 <polygon fill="#ff9800" stroke="black" points="584.75,-398.49 556.1,-422.98 498.79,-422.98 470.13,-398.49 498.79,-374.01 556.1,-374.01 584.75,-398.49"/>
 <text text-anchor="middle" x="527.44" y="-401.49" font-family="Helvetica,sans-Serif" font-size="10.00">state&#45;write</text>
-<text text-anchor="middle" x="527.44" y="-390.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,611 tok)</text>
+<text text-anchor="middle" x="527.44" y="-390.49" font-family="Helvetica,sans-Serif" font-size="10.00">(4,924 tok)</text>
 </g>
 <!-- script_state_read&#45;&gt;script_state_write -->
 <!-- script_state_read&#45;&gt;script_state_write -->
