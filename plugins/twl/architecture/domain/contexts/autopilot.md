@@ -126,9 +126,9 @@ stateDiagram-v2
 | **C** | Worker マージ禁止 | Worker は `merge-ready` を宣言するのみ。マージは Pilot が実行 |
 | **D** | 依存先 fail 時の skip 伝播 | Phase N で fail した Issue に依存する Issue は自動 skip |
 | **E** | merge-gate リトライ制限 | リトライは最大1回。2回目リジェクト = 確定失敗 |
-| **F** | merge 失敗時 rebase 禁止 | squash merge 失敗時は停止のみ |
+| **F** | squash merge API 失敗時 rebase 禁止 | `gh pr merge --squash` API 呼び出し失敗後は rebase 禁止。停止のみ。merge 前のコンフリクト事前検知とは別概念 |
 | **G** | クラッシュ検知保証 | Worker の crash/timeout は必ず検知される |
-| **H** | deps.yaml 変更排他性 | 同一 Phase 内で deps.yaml を変更する複数 Issue は separate Phase |
+| **H** | deps.yaml コンフリクト時自動 rebase | deps.yaml 変更 Issue は並列実行を許可。merge-gate がコンフリクト検出時に自動 rebase を試行し、失敗時は conflict 状態に遷移。リトライ上限は 1 回（不変条件 E と整合）。不変条件 F（squash merge API 失敗後 rebase 禁止）とは別概念 |
 | **I** | 循環依存拒否 | plan.yaml 生成時に循環依存を検出した場合、拒否 |
 | **J** | merge 前 base drift 検知 | merge-gate 実行前に origin/main に対する silent deletion を検知し、検出時は merge を停止する |
 | **K** | Pilot 実装禁止 | Pilot は Issue の実装（コード変更・PR 作成）を直接行ってはならない。実装は常に Worker 経由。Emergency Bypass 時も `mergegate merge --force` 経由のみ許可 |
