@@ -81,7 +81,7 @@ def handle_check(args, graph, deps, plugin_root, plugin_name):
         items.extend(chain_items)
         envelope = build_envelope("check", get_deps_version(deps), plugin_name, items, exit_code)
         output_json(envelope)
-        sys.exit(exit_code)
+        return exit_code
 
     print(f"=== File Check Results ===")
     print(f"OK: {ok_count}, Missing: {missing_count}, No path: {no_path_count}, External: {external_count}")
@@ -98,7 +98,7 @@ def handle_check(args, graph, deps, plugin_root, plugin_name):
         for status, node_id, path in results:
             if status == 'missing':
                 print(f"  - {node_id}: {path}")
-        sys.exit(1)
+        return 1
     else:
         print("All files exist.")
 
@@ -113,8 +113,8 @@ def handle_check(args, graph, deps, plugin_root, plugin_name):
             print("Warning:")
             for w in cv_warnings_check:
                 print(f"  - {w}")
-        if cv_criticals_check:
-            sys.exit(1)
+
+    return exit_code
 
 
 def handle_validate(args, deps, graph, plugin_root, plugin_name):
