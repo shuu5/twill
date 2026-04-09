@@ -338,6 +338,21 @@ cleanup_worker() {
   window_name=$(resolve_worker_window "$issue" "$repo_id")
   echo "[orchestrator] cleanup: Issue #${issue} — window/branch クリーンアップ" >&2
 
+  # terminal guard: status が非 terminal なら force-fail（Issue #295）
+  local -a _cw_state_args=()
+  [[ "$repo_id" != "_default" ]] && _cw_state_args=(--repo "$repo_id")
+  local _cw_status
+  _cw_status=$(python3 -m twl.autopilot.state read --type issue "${_cw_state_args[@]}" --issue "$issue" --field status 2>/dev/null || echo "")
+  case "$_cw_status" in
+    merge-ready|done|failed|conflict) ;;
+    *)
+      echo "[orchestrator] WARNING: cleanup_worker for Issue #${issue} with non-terminal status=${_cw_status}. Force-failing." >&2
+      python3 -m twl.autopilot.state write --type issue "${_cw_state_args[@]}" --issue "$issue" --role pilot \
+        --set "status=failed" \
+        --set 'failure={"message":"non_terminal_at_cleanup","step":"orchestrator-cleanup"}' || true
+      ;;
+  esac
+
   # Step 1: tmux window を先に終了（Worker がworktreeで動作していない状態を保証してから削除）
   tmux kill-window -t "$window_name" 2>/dev/null || true
 
@@ -475,6 +490,7 @@ poll_single() {
         bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$issue" --window "$window_name" 2>/dev/null || crash_exit=$?
         if [[ "$crash_exit" -eq 2 ]]; then
           echo "[orchestrator] Issue #${issue}: ワーカークラッシュ検知" >&2
+          cleanup_worker "$issue" "$entry"
           return 0
         fi
 
@@ -1079,6 +1095,22 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
   else
     poll_phase "${BATCH_LAUNCHED_ENTRIES[@]}"
   fi
+
+  # poll ループ終了後: 非 terminal Issue を検出して cleanup_worker 経由で force-fail（Issue #295）
+  for _pt_entry in "${BATCH_LAUNCHED_ENTRIES[@]}"; do
+    _pt_issue="${_pt_entry#*:}"
+    _pt_repo="${_pt_entry%%:*}"
+    _pt_rargs=()
+    [[ "$_pt_repo" != "_default" ]] && _pt_rargs=(--repo "$_pt_repo")
+    _pt_status=$(python3 -m twl.autopilot.state read --type issue "${_pt_rargs[@]}" --issue "$_pt_issue" --field status 2>/dev/null || echo "")
+    case "$_pt_status" in
+      merge-ready|done|failed|conflict) ;;
+      *)
+        echo "[orchestrator] WARNING: Issue #${_pt_issue} has non-terminal status=${_pt_status} after poll. Triggering cleanup." >&2
+        cleanup_worker "$_pt_issue" "$_pt_entry"
+        ;;
+    esac
+  done
 
   # merge-ready の Issue に対して merge-gate を順次実行
   # issue → entry マッピング構築（クロスリポ cleanup_worker 呼び出し用）
