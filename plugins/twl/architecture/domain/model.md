@@ -70,6 +70,21 @@ classDiagram
         nudge_timeout: number
         health_check: HealthCheck
     }
+    class Observer {
+        name: co-*
+        type: observer
+        supervised: Controller[]
+    }
+    class InterventionRecord {
+        intervention_id: string
+        observer: string
+        target_controller: string
+        layer: string
+        status: detected|intervening|resolved
+        detected_at: string
+        resolved_at: string|null
+        reason: string
+    }
     Controller --> Workflow : spawns
     Workflow --> AtomicCommand : calls (chain steps)
     Workflow --> Specialist : spawns (parallel)
@@ -82,6 +97,8 @@ classDiagram
     Controller ..> ProjectBoard : queries (Issue 選択)
     Orchestrator --> IssueState : polls
     Orchestrator --> Script : executes (health-check, crash-detect)
+    Observer ..> Controller : supervises
+    Observer *-- InterventionRecord : records
 ```
 
 ### Controller Spawning 関係図
@@ -95,6 +112,7 @@ graph TD
         CR["co-architect<br/>(Non-implementation)"]
         CU["co-utility<br/>(Utility)"]
         CS["co-self-improve<br/>(Observation)"]
+        CO["co-observer<br/>(Meta-cognitive)"]
     end
 
     subgraph "Spawnable Types"
@@ -128,6 +146,18 @@ graph TD
     CS -->|spawns| SP
     CS -.->|orchestrates| WF
 
+    CO -.->|supervises| CA
+    CO -.->|supervises| CI
+    CO -.->|supervises| CP
+    CO -.->|supervises| CR
+    CO -.->|supervises| CU
+    CO -.->|supervises| CS
+    CO -->|spawns| WF
+    CO -->|spawns| AT
+    CO -->|spawns| CM
+    CO -->|spawns| SP
+    CO -->|spawns| RF
+
     CA -.->|orchestrates| WF
     WF -->|chain steps| AT
     WF -->|chain steps| CM
@@ -142,6 +172,8 @@ graph TD
 - co-issue は specialist を spawn できる（issue-critic, issue-feasibility, worker-codex-reviewer）
 - co-project は composite + atomic（構成変更の最小単位で操作）
 - co-architect は atomic + reference のみ（設計情報の参照・評価）
+- co-observer は全 controller を supervise できる（ADR-013: Observer 型）。spawn 関係は controller と同等（workflow, atomic, composite, specialist, reference）
+- co-self-improve と co-observer の共存: co-self-improve は Observation workflow を orchestrate し内部状態を改善する。co-observer は全 controller を meta-cognitive レイヤーで supervise し介入記録（InterventionRecord）を管理する
 
 ### Issue 状態遷移図
 
@@ -207,6 +239,21 @@ stateDiagram-v2
 | self_improve_issues | number[] | Yes | 自己改善で起票された Issue 番号 |
 
 **排他制御**: session.json は Pilot のみが書き込む。複数 autopilot セッションの同時実行は禁止（session.json 存在チェックで排他）。
+
+#### intervention-{N}.json（per-Observer-intervention）
+
+| フィールド | 型 | 必須 | 説明 |
+|---|---|---|---|
+| intervention_id | string | Yes | 介入一意識別子 |
+| observer | string | Yes | Observer 名（例: `co-observer`） |
+| target_controller | string | Yes | 対象 controller 名（例: `co-autopilot`） |
+| layer | string | Yes | 介入レイヤー（例: `meta-cognitive`, `observation`） |
+| status | `detected` \| `intervening` \| `resolved` | Yes | 介入状態 |
+| detected_at | string (ISO 8601) | Yes | 検出時刻 |
+| resolved_at | null \| string (ISO 8601) | Yes | 解決時刻（未解決時は null） |
+| reason | string | Yes | 介入理由の説明 |
+
+**アクセスルール**: Observer = write, Pilot = read only。介入ごとに独立ファイルを生成する（per-intervention ファイル）。
 
 ### Orchestrator パターン
 
