@@ -371,6 +371,55 @@ cleanup_worker() {
   fi
 }
 
+# health-check fallback 処理（poll_single / poll_phase 共通）
+# 引数:
+#   $1: issue 番号
+#   $2: window_name
+#   $3: entry（launch_worker 用）
+#   $4: health_exit（health-check.sh の終了コード）
+#   $5: health_stderr（health-check.sh の stderr 出力）
+#   $6...: state read 追加引数（クロスリポ用 --repo REPO_ID など）
+handle_health_check_fallback() {
+  local issue="$1"
+  local window_name="$2"
+  local entry="$3"
+  local health_exit="$4"
+  local health_stderr="$5"
+  shift 5
+  local -a state_repo_args=("$@")
+
+  if [[ "$health_exit" -eq 3 ]]; then
+    # API overload stall: fallback to different model (1 回のみ)
+    local fallback_count
+    fallback_count=$(python3 -m twl.autopilot.state read --type issue "${state_repo_args[@]}" --issue "$issue" --field fallback_count 2>/dev/null || echo "0")
+    fallback_count="${fallback_count:-0}"
+    if [[ "$fallback_count" -ge 1 ]]; then
+      echo "[orchestrator] Issue #${issue}: API overload stall + fallback 上限到達 — failed" >&2
+      python3 -m twl.autopilot.state write --type issue "${state_repo_args[@]}" --issue "$issue" --role pilot \
+        --set "status=failed" \
+        --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}' || true
+    else
+      echo "[orchestrator] Issue #${issue}: API overload — fallback to ${FALLBACK_MODEL} (attempt 1/1)" >&2
+      tmux kill-window -t "$window_name" 2>/dev/null || true
+      python3 -m twl.autopilot.state write --type issue "${state_repo_args[@]}" --issue "$issue" --role pilot \
+        --set "fallback_count=1" || true
+      launch_worker "$entry" "$FALLBACK_MODEL" || \
+        echo "[orchestrator] Issue #${issue}: fallback Worker 起動失敗" >&2
+    fi
+  elif [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
+    if [[ "${NUDGE_COUNTS[$issue]:-0}" -lt "$MAX_NUDGE" ]]; then
+      echo "[orchestrator] Issue #${issue}: health-check stall 検知 — 汎用 nudge" >&2
+      tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
+      NUDGE_COUNTS[$issue]=$(( ${NUDGE_COUNTS[$issue]:-0} + 1 ))
+    else
+      echo "[orchestrator] Issue #${issue}: health-check stall + nudge 上限到達 — failed" >&2
+      python3 -m twl.autopilot.state write --type issue "${state_repo_args[@]}" --issue "$issue" --role pilot \
+        --set "status=failed" \
+        --set 'failure={"message":"health_check_stall","step":"polling"}'
+    fi
+  fi
+}
+
 # rate-limit パターン検知（pane 出力から rate limit/overloaded/429 を検出）
 # 戻り値: 0=検知, 1=未検知
 detect_rate_limit() {
@@ -441,37 +490,9 @@ poll_single() {
           if (( HEALTH_CHECK_COUNTER[$issue] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
             local health_stderr health_exit=0
             health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
-            if [[ "$health_exit" -eq 3 ]]; then
-              # API overload stall: fallback to different model (1 回のみ)
-              local fallback_count
-              fallback_count=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field fallback_count 2>/dev/null || echo "0")
-              fallback_count="${fallback_count:-0}"
-              if [[ "$fallback_count" -ge 1 ]]; then
-                echo "[orchestrator] Issue #${issue}: API overload stall + fallback 上限到達 — failed" >&2
-                python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
-                  --set "status=failed" \
-                  --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}' || true
-              else
-                echo "[orchestrator] Issue #${issue}: API overload — fallback to ${FALLBACK_MODEL} (attempt 1/1)" >&2
-                tmux kill-window -t "$window_name" 2>/dev/null || true
-                python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
-                  --set "fallback_count=1" || true
-                poll_count=0
-                launch_worker "$entry" "$FALLBACK_MODEL" || \
-                  echo "[orchestrator] Issue #${issue}: fallback Worker 起動失敗" >&2
-              fi
-            elif [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
-              if [[ "${NUDGE_COUNTS[$issue]:-0}" -lt "$MAX_NUDGE" ]]; then
-                echo "[orchestrator] Issue #${issue}: health-check stall 検知 — 汎用 nudge" >&2
-                tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
-                NUDGE_COUNTS[$issue]=$(( ${NUDGE_COUNTS[$issue]:-0} + 1 ))
-              else
-                echo "[orchestrator] Issue #${issue}: health-check stall + nudge 上限到達 — failed" >&2
-                python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
-                  --set "status=failed" \
-                  --set 'failure={"message":"health_check_stall","step":"polling"}'
-              fi
-            fi
+            # API overload fallback 時は poll_count をリセット
+            [[ "$health_exit" -eq 3 ]] && poll_count=0
+            handle_health_check_fallback "$issue" "$window_name" "$entry" "$health_exit" "$health_stderr"
           fi
         fi
         ;;
@@ -550,36 +571,7 @@ poll_phase() {
             if (( HEALTH_CHECK_COUNTER[$issue_num] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
               local health_stderr health_exit=0
               health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue_num" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
-              if [[ "$health_exit" -eq 3 ]]; then
-                # API overload stall: fallback to different model (1 回のみ)
-                local fallback_count
-                fallback_count=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field fallback_count 2>/dev/null || echo "0")
-                fallback_count="${fallback_count:-0}"
-                if [[ "$fallback_count" -ge 1 ]]; then
-                  echo "[orchestrator] Issue #${issue_num}: API overload stall + fallback 上限到達 — failed" >&2
-                  python3 -m twl.autopilot.state write --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
-                    --set "status=failed" \
-                    --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}' || true
-                else
-                  echo "[orchestrator] Issue #${issue_num}: API overload — fallback to ${FALLBACK_MODEL} (attempt 1/1)" >&2
-                  tmux kill-window -t "$window_name" 2>/dev/null || true
-                  python3 -m twl.autopilot.state write --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
-                    --set "fallback_count=1" || true
-                  launch_worker "$entry" "$FALLBACK_MODEL" || \
-                    echo "[orchestrator] Issue #${issue_num}: fallback Worker 起動失敗" >&2
-                fi
-              elif [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
-                if [[ "${NUDGE_COUNTS[$issue_num]:-0}" -lt "$MAX_NUDGE" ]]; then
-                  echo "[orchestrator] Issue #${issue_num}: health-check stall 検知 — 汎用 nudge" >&2
-                  tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
-                  NUDGE_COUNTS[$issue_num]=$(( ${NUDGE_COUNTS[$issue_num]:-0} + 1 ))
-                else
-                  echo "[orchestrator] Issue #${issue_num}: health-check stall + nudge 上限到達 — failed" >&2
-                  python3 -m twl.autopilot.state write --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --role pilot \
-                    --set "status=failed" \
-                    --set 'failure={"message":"health_check_stall","step":"polling"}'
-                fi
-              fi
+              handle_health_check_fallback "$issue_num" "$window_name" "$entry" "$health_exit" "$health_stderr" "${_state_read_repo_args[@]}"
             fi
           fi
           ;;
