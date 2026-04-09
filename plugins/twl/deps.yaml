@@ -2257,7 +2257,7 @@ scripts:
   chain-steps:
     type: script
     path: ../../cli/twl/src/twl/autopilot/chain.py
-    description: "chain ステップ順序の共有定義（SSOT）— CHAIN_STEPS / QUICK_SKIP_STEPS 定数は chain.py で管理"
+    description: "chain ステップ順序の共有定義（SSOT）— CHAIN_STEPS / QUICK_SKIP_STEPS / STEP_TO_WORKFLOW / WORKFLOW_NEXT_SKILL 定数は chain.py で管理。chain-steps.sh はミラー"
 
   compaction-resume:
     type: script

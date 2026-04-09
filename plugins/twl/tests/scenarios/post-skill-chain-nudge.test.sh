@@ -391,6 +391,150 @@ else
 fi
 
 # =============================================================================
+# Requirement: ワークフロー境界対応
+# =============================================================================
+echo ""
+echo "--- Requirement: ワークフロー境界対応 ---"
+
+# ---------------------------------------------------------------------------
+# Scenario: ac-verify 完了後に workflow-pr-fix を nudge する
+# WHEN: CURRENT_STEP=ac-verify で hook が実行される
+# THEN: hook 出力が [chain-continuation] 次は /twl:workflow-pr-fix を含む
+# ---------------------------------------------------------------------------
+
+# hook が CHAIN_STEP_WORKFLOW を参照している（chain-steps.sh を source）
+test_hook_sources_chain_steps_for_workflow() {
+  assert_file_contains "$HOOK_SCRIPT" 'CHAIN_STEP_WORKFLOW|chain-steps\.sh'
+}
+
+if [[ -f "${PROJECT_ROOT}/${HOOK_SCRIPT}" ]]; then
+  run_test "hook が CHAIN_STEP_WORKFLOW（chain-steps.sh）を参照している" test_hook_sources_chain_steps_for_workflow
+else
+  run_test_skip "hook が CHAIN_STEP_WORKFLOW（chain-steps.sh）を参照している" "not yet created"
+fi
+
+# hook が CHAIN_WORKFLOW_NEXT_SKILL を参照している
+test_hook_uses_chain_workflow_next_skill() {
+  assert_file_contains "$HOOK_SCRIPT" 'CHAIN_WORKFLOW_NEXT_SKILL'
+}
+
+if [[ -f "${PROJECT_ROOT}/${HOOK_SCRIPT}" ]]; then
+  run_test "hook が CHAIN_WORKFLOW_NEXT_SKILL を参照している" test_hook_uses_chain_workflow_next_skill
+else
+  run_test_skip "hook が CHAIN_WORKFLOW_NEXT_SKILL を参照している" "not yet created"
+fi
+
+# ワークフロー境界判定ロジックが存在する（CURRENT_WORKFLOW と NEXT_WORKFLOW の比較）
+test_hook_workflow_boundary_detection() {
+  assert_file_contains "$HOOK_SCRIPT" 'CURRENT_WORKFLOW|NEXT_WORKFLOW'
+}
+
+if [[ -f "${PROJECT_ROOT}/${HOOK_SCRIPT}" ]]; then
+  run_test "hook にワークフロー境界判定ロジックが存在する" test_hook_workflow_boundary_detection
+else
+  run_test_skip "hook にワークフロー境界判定ロジックが存在する" "not yet created"
+fi
+
+# ---------------------------------------------------------------------------
+# Scenario: post-change-apply 完了後に workflow-pr-verify を nudge する
+# WHEN: CURRENT_STEP=post-change-apply で hook が実行される
+# THEN: hook 出力が [chain-continuation] 次は /twl:workflow-pr-verify を含む
+# ---------------------------------------------------------------------------
+
+# chain-steps.sh に CHAIN_STEP_WORKFLOW が定義されている
+CHAIN_STEPS_SH="scripts/chain-steps.sh"
+
+test_chain_steps_has_step_workflow_map() {
+  assert_file_contains "$CHAIN_STEPS_SH" 'CHAIN_STEP_WORKFLOW'
+}
+
+if [[ -f "${PROJECT_ROOT}/${CHAIN_STEPS_SH}" ]]; then
+  run_test "chain-steps.sh に CHAIN_STEP_WORKFLOW が定義されている" test_chain_steps_has_step_workflow_map
+else
+  run_test_skip "chain-steps.sh に CHAIN_STEP_WORKFLOW が定義されている" "not found"
+fi
+
+# chain-steps.sh に CHAIN_WORKFLOW_NEXT_SKILL が定義されている
+test_chain_steps_has_workflow_next_skill_map() {
+  assert_file_contains "$CHAIN_STEPS_SH" 'CHAIN_WORKFLOW_NEXT_SKILL'
+}
+
+if [[ -f "${PROJECT_ROOT}/${CHAIN_STEPS_SH}" ]]; then
+  run_test "chain-steps.sh に CHAIN_WORKFLOW_NEXT_SKILL が定義されている" test_chain_steps_has_workflow_next_skill_map
+else
+  run_test_skip "chain-steps.sh に CHAIN_WORKFLOW_NEXT_SKILL が定義されている" "not found"
+fi
+
+# ac-verify が pr-verify ワークフローにマッピングされている
+test_chain_steps_ac_verify_in_pr_verify() {
+  assert_file_contains "$CHAIN_STEPS_SH" '\[ac-verify\]=pr-verify'
+}
+
+if [[ -f "${PROJECT_ROOT}/${CHAIN_STEPS_SH}" ]]; then
+  run_test "chain-steps.sh で ac-verify が pr-verify にマッピングされている" test_chain_steps_ac_verify_in_pr_verify
+else
+  run_test_skip "chain-steps.sh で ac-verify が pr-verify にマッピングされている" "not found"
+fi
+
+# pr-verify の次 skill が workflow-pr-fix である
+test_chain_steps_pr_verify_next_is_workflow_pr_fix() {
+  assert_file_contains "$CHAIN_STEPS_SH" '\[pr-verify\]=workflow-pr-fix'
+}
+
+if [[ -f "${PROJECT_ROOT}/${CHAIN_STEPS_SH}" ]]; then
+  run_test "chain-steps.sh で pr-verify の次 skill が workflow-pr-fix である" test_chain_steps_pr_verify_next_is_workflow_pr_fix
+else
+  run_test_skip "chain-steps.sh で pr-verify の次 skill が workflow-pr-fix である" "not found"
+fi
+
+# post-change-apply が test-ready ワークフローにマッピングされている
+test_chain_steps_post_change_apply_in_test_ready() {
+  assert_file_contains "$CHAIN_STEPS_SH" '\[post-change-apply\]=test-ready'
+}
+
+if [[ -f "${PROJECT_ROOT}/${CHAIN_STEPS_SH}" ]]; then
+  run_test "chain-steps.sh で post-change-apply が test-ready にマッピングされている" test_chain_steps_post_change_apply_in_test_ready
+else
+  run_test_skip "chain-steps.sh で post-change-apply が test-ready にマッピングされている" "not found"
+fi
+
+# ---------------------------------------------------------------------------
+# Scenario: ワークフロー末尾（pr-merge chain 内）で hook が終了する
+# WHEN: CURRENT_STEP=pr-cycle-report（pr-merge chain 末尾）で hook が実行される
+# THEN: hook が何も出力せず exit 0 で終了する
+# ---------------------------------------------------------------------------
+
+# ワークフロー末尾（空文字の次 skill）で exit する処理が存在する
+test_hook_exits_at_workflow_terminal() {
+  # CHAIN_WORKFLOW_NEXT_SKILL が空の場合に exit するロジック
+  assert_file_contains "$HOOK_SCRIPT" 'CHAIN_WORKFLOW_NEXT_SKILL|NEXT_STEP.*:-\}|NEXT_STEP.*exit'
+}
+
+if [[ -f "${PROJECT_ROOT}/${HOOK_SCRIPT}" ]]; then
+  run_test "hook がワークフロー末尾で exit 0 する処理を持つ" test_hook_exits_at_workflow_terminal
+else
+  run_test_skip "hook がワークフロー末尾で exit 0 する処理を持つ" "not yet created"
+fi
+
+# ---------------------------------------------------------------------------
+# Scenario: 非ワークフロー境界ステップでは既存動作が維持される
+# WHEN: CURRENT_STEP=ts-preflight（pr-verify chain 内部）で hook が実行される
+# THEN: hook が次の chain ステップ（pr-test）を nudge する（workflow skill ではない）
+# ---------------------------------------------------------------------------
+
+# 境界判定で CURRENT_WORKFLOW == NEXT_WORKFLOW の場合に NEXT_STEP を変更しないロジック
+test_hook_preserves_intra_workflow_step() {
+  # CURRENT_WORKFLOW != NEXT_WORKFLOW の条件分岐が存在する
+  assert_file_contains "$HOOK_SCRIPT" 'CURRENT_WORKFLOW.*!=.*NEXT_WORKFLOW|CURRENT_WORKFLOW.*NEXT_WORKFLOW'
+}
+
+if [[ -f "${PROJECT_ROOT}/${HOOK_SCRIPT}" ]]; then
+  run_test "hook が同一ワークフロー内ステップで既存動作を維持する" test_hook_preserves_intra_workflow_step
+else
+  run_test_skip "hook が同一ワークフロー内ステップで既存動作を維持する" "not yet created"
+fi
+
+# =============================================================================
 # Requirement: orchestrator check_and_nudge の二重 nudge 防止
 # =============================================================================
 echo ""

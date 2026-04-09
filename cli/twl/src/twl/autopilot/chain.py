@@ -58,6 +58,35 @@ QUICK_SKIP_STEPS: frozenset[str] = frozenset([
     "prompt-compliance",
 ])
 
+# Workflow boundary metadata (SSOT — mirrors chain-steps.sh)
+STEP_TO_WORKFLOW: dict[str, str] = {
+    "init": "setup",
+    "board-status-update": "setup",
+    "crg-auto-build": "setup",
+    "arch-ref": "setup",
+    "change-propose": "setup",
+    "ac-extract": "setup",
+    "change-id-resolve": "test-ready",
+    "test-scaffold": "test-ready",
+    "check": "test-ready",
+    "change-apply": "test-ready",
+    "post-change-apply": "test-ready",
+    "prompt-compliance": "pr-verify",
+    "ts-preflight": "pr-verify",
+    "pr-test": "pr-verify",
+    "ac-verify": "pr-verify",
+    "all-pass-check": "pr-merge",
+    "pr-cycle-report": "pr-merge",
+}
+
+WORKFLOW_NEXT_SKILL: dict[str, str] = {
+    "setup": "workflow-test-ready",
+    "test-ready": "workflow-pr-verify",
+    "pr-verify": "workflow-pr-fix",
+    "pr-fix": "workflow-pr-merge",
+    "pr-merge": "",
+}
+
 
 class ChainError(Exception):
     """Raised for chain step errors."""

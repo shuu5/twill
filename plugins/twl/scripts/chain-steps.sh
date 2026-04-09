@@ -63,6 +63,36 @@ declare -A CHAIN_STEP_DISPATCH=(
   [pr-cycle-report]=runner
 )
 
+# ワークフロー境界メタデータ（SSOT は chain.py の STEP_TO_WORKFLOW — このファイルはミラー）
+declare -A CHAIN_STEP_WORKFLOW=(
+  [init]=setup
+  [board-status-update]=setup
+  [crg-auto-build]=setup
+  [arch-ref]=setup
+  [change-propose]=setup
+  [ac-extract]=setup
+  [change-id-resolve]=test-ready
+  [test-scaffold]=test-ready
+  [check]=test-ready
+  [change-apply]=test-ready
+  [post-change-apply]=test-ready
+  [prompt-compliance]=pr-verify
+  [ts-preflight]=pr-verify
+  [pr-test]=pr-verify
+  [ac-verify]=pr-verify
+  [all-pass-check]=pr-merge
+  [pr-cycle-report]=pr-merge
+)
+
+# ワークフロー完了後の次 skill（SSOT は chain.py の WORKFLOW_NEXT_SKILL — このファイルはミラー）
+declare -A CHAIN_WORKFLOW_NEXT_SKILL=(
+  [setup]=workflow-test-ready
+  [test-ready]=workflow-pr-verify
+  [pr-verify]=workflow-pr-fix
+  [pr-fix]=workflow-pr-merge
+  [pr-merge]=""
+)
+
 # LLM ステップのコマンドパス（空 = Skill で実行）
 declare -A CHAIN_STEP_COMMAND=(
   [crg-auto-build]=commands/crg-auto-build.md

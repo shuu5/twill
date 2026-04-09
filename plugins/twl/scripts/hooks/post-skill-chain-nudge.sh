@@ -53,6 +53,24 @@ if [[ -z "$NEXT_STEP" || "$NEXT_STEP" == "done" ]]; then
   exit 0
 fi
 
+# --- Step 5.5: ワークフロー境界判定 ---
+# chain-steps.sh の CHAIN_STEP_WORKFLOW / CHAIN_WORKFLOW_NEXT_SKILL を参照し、
+# ワークフロー境界（例: ac-verify → all-pass-check ではなく pr-verify → pr-fix）を検出する
+# shellcheck source=../chain-steps.sh
+source "${SCRIPTS_ROOT}/chain-steps.sh" 2>/dev/null || true
+
+CURRENT_WORKFLOW="${CHAIN_STEP_WORKFLOW[$CURRENT_STEP]:-}"
+NEXT_WORKFLOW="${CHAIN_STEP_WORKFLOW[$NEXT_STEP]:-}"
+
+if [[ -n "$CURRENT_WORKFLOW" && -n "$NEXT_WORKFLOW" && "$CURRENT_WORKFLOW" != "$NEXT_WORKFLOW" ]]; then
+  # ワークフロー境界: 次の workflow skill を nudge
+  NEXT_STEP="${CHAIN_WORKFLOW_NEXT_SKILL[$CURRENT_WORKFLOW]:-}"
+  if [[ -z "$NEXT_STEP" ]]; then
+    # ワークフロー末尾（pr-merge など）→ 終了
+    exit 0
+  fi
+fi
+
 # --- Step 6: サニタイズ（シェル/HTML インジェクション防止: 英数字・/:.-_ のみ許可） ---
 SAFE_NEXT_STEP=$(printf '%s' "$NEXT_STEP" | tr -cd 'a-zA-Z0-9/:._-')
 
