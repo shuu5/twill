@@ -53,7 +53,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "timeout: pr-wait.sh が PR 不在時に --timeout 1 で exit 1" {
-  stub_command "gh" 'return 1'
+  stub_command "gh" 'exit 1'
 
   run "$SANDBOX/scripts/pseudo-pilot/pr-wait.sh" "feat/123-test" --timeout 1 --interval 1
 
