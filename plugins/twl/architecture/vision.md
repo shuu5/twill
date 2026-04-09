@@ -7,7 +7,7 @@ chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開
 
 - TWiLL フレームワーク準拠（deps.yaml v3.0, types.yaml 型システム）
 - Claude Code プラグインシステム仕様に準拠
-- Controller は6つ（co-autopilot, co-issue, co-project, co-architect, co-utility, co-self-improve）
+- Controller は7つ（co-autopilot, co-issue, co-project, co-architect, co-utility, co-self-improve, co-observer）
 - Bare repo + worktree 一律（branch モード廃止）
 - 状態管理は統一 JSON 2種（issue-{N}.json + session.json）
 - **Project Board 必須**（ADR-006）: 全プロジェクトで GitHub Projects V2 を使用。autopilot の Issue 選択元、ステータス同期先
@@ -22,6 +22,7 @@ chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開
 | Non-implementation | Issue 作成・設計・プロジェクト管理 | co-issue, co-project, co-architect |
 | Utility | スタンドアロンユーティリティ操作 | co-utility |
 | Observation | ライブセッション観察・問題検出・Issue 起票 | co-self-improve |
+| Meta-cognitive | controller の動作を監視・介入するメタレイヤー | co-observer |
 
 Non-implementation controller は co-autopilot を spawn しない。
 co-architect が「設計 + 実装」を要求された場合: 設計完了 → Issue 起票（co-issue 経由）→ co-autopilot で実装。
@@ -47,6 +48,7 @@ co-architect が「設計 + 実装」を要求された場合: 設計完了 → 
 | retry 上限の強制 | retry_count チェック | fix-phase の修正戦略 | 修正方針は問題の性質に依存 |
 | Project Board ステータス同期 | gh project item-edit | Issue の優先度判断 | ビジネスコンテキストに依存 |
 | クロスリポ Issue 分割の検出 | gh project linked-repos クエリ | 分割粒度の判断 | リポ間依存の評価は文脈依存 |
+| 定型介入回復（intervention-catalog Layer 0） | intervention-catalog.yaml ルールマッチ | 介入要否・種類の判断 | 文脈依存（エラー内容・進行状況による） |
 
 ### Architecture Spec の役割
 
