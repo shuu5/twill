@@ -33,6 +33,17 @@ chains:
       - change-propose
       - ac-extract
 
+  test-ready:
+    type: "B"
+    description: "テスト生成と準備確認（DeltaSpec → テスト → 実装）"
+    steps:
+      - arch-ref
+      - change-id-resolve
+      - test-scaffold
+      - check
+      - change-apply
+      - post-change-apply
+
   pr-verify:
     type: "B"
     description: "PR検証（preflight → review → scope → test → ac-verify）"
@@ -90,7 +101,7 @@ meta_chains:
         next:
           - goto: done
       - id: test-ready
-        chain: null
+        chain: test-ready
         skill: workflow-test-ready
         next:
           - condition: "autopilot"
@@ -765,11 +776,39 @@ commands:
     path: commands/change-apply.md
     spawnable_by: [controller, workflow]
     can_spawn: []
+    chain: "test-ready"
     step_in:
       parent: workflow-test-ready
       step: "2"
     dispatch_mode: llm
     description: "DeltaSpec 実装（change-apply）"
+
+  arch-ref:
+    type: atomic
+    path: scripts/chain-runner.sh
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "test-ready"
+    dispatch_mode: runner
+    description: "architecture/ コンテキスト抽出（chain-runner ステップ）"
+
+  change-id-resolve:
+    type: atomic
+    path: scripts/chain-runner.sh
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "test-ready"
+    dispatch_mode: runner
+    description: "deltaspec change-id 解決（chain-runner ステップ）"
+
+  post-change-apply:
+    type: atomic
+    path: scripts/chain-runner.sh
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "test-ready"
+    dispatch_mode: runner
+    description: "change-apply 後のステップ記録（chain-runner ステップ）"
 
   change-archive: # standalone: 手動アーカイブ用（auto-merge.sh が自動アーカイブを担う）
     type: atomic
@@ -1402,6 +1441,8 @@ commands:
     path: commands/check.md
     spawnable_by: [controller, workflow]
     can_spawn: []
+    chain: "test-ready"
+    dispatch_mode: runner
     description: "ワークフロー準備状況チェック"
 
   # === C-2a: Dead Component/Triage系（3個 atomic） ===
@@ -1628,6 +1669,7 @@ commands:
     path: commands/test-scaffold.md
     spawnable_by: [controller, workflow]
     can_spawn: [specialist]
+    chain: "test-ready"
     step_in:
       parent: workflow-test-ready
       step: "1"
