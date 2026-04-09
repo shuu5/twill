@@ -74,10 +74,10 @@ flowchart TD
     pr_verify__scope_judge --> pr_verify__pr_test
     pr_verify__pr_test --> pr_verify__ac_verify
 
-    classDef script fill:#c8e6c9,stroke:#4caf50
-    classDef llm fill:#bbdefb,stroke:#1976d2
-    classDef composite fill:#e1bee7,stroke:#7b1fa2
-    classDef marker fill:#eeeeee,stroke:#9e9e9e
+    classDef script fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    classDef llm fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    classDef composite fill:#7b1fa2,stroke:#4a148c,color:#ffffff
+    classDef marker fill:#616161,stroke:#424242,color:#ffffff
 ```
 <!-- CHAIN-FLOW:pr-verify END -->
 
@@ -96,10 +96,10 @@ flowchart TD
     pr_fix__fix_phase --> pr_fix__post_fix_verify
     pr_fix__post_fix_verify --> pr_fix__warning_fix
 
-    classDef script fill:#c8e6c9,stroke:#4caf50
-    classDef llm fill:#bbdefb,stroke:#1976d2
-    classDef composite fill:#e1bee7,stroke:#7b1fa2
-    classDef marker fill:#eeeeee,stroke:#9e9e9e
+    classDef script fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    classDef llm fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    classDef composite fill:#7b1fa2,stroke:#4a148c,color:#ffffff
+    classDef marker fill:#616161,stroke:#424242,color:#ffffff
 ```
 <!-- CHAIN-FLOW:pr-fix END -->
 
@@ -124,10 +124,10 @@ flowchart TD
     pr_merge__all_pass_check --> pr_merge__merge_gate
     pr_merge__merge_gate --> pr_merge__auto_merge
 
-    classDef script fill:#c8e6c9,stroke:#4caf50
-    classDef llm fill:#bbdefb,stroke:#1976d2
-    classDef composite fill:#e1bee7,stroke:#7b1fa2
-    classDef marker fill:#eeeeee,stroke:#9e9e9e
+    classDef script fill:#2e7d32,stroke:#1b5e20,color:#ffffff
+    classDef llm fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    classDef composite fill:#7b1fa2,stroke:#4a148c,color:#ffffff
+    classDef marker fill:#616161,stroke:#424242,color:#ffffff
 ```
 <!-- CHAIN-FLOW:pr-merge END -->
 
