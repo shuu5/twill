@@ -19,6 +19,9 @@ digraph Dependencies {
     skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,503 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
+    skill_test_scenario_catalog [label="twl:test-scenario-catalog\n(1,714 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(725 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_load_test_baselines [label="twl:load-test-baselines\n(670 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_observe_once [label="observe-once\n(436 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -33,6 +36,7 @@ digraph Dependencies {
     // L2: Sub Commands
 
     // L3: Agents
+    agent_observer_evaluator [label="observer-evaluator\n(1,469 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
     script_observe_wrapper [label="observe-wrapper\n(122 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -43,7 +47,9 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_co_self_improve; }
     { rank=same; skill_workflow_observe_loop; }
+    { rank=same; skill_test_scenario_catalog; skill_observation_pattern_catalog; skill_load_test_baselines; }
     { rank=same; cmd_observe_once; cmd_problem_detect; cmd_issue_draft_from_observation; cmd_observe_and_detect; cmd_observe_retrospective; cmd_test_project_init; cmd_test_project_reset; cmd_test_project_scenario_load; }
+    { rank=same; agent_observer_evaluator; }
     { rank=same; script_observe_wrapper; script_session_state_wrapper; }
 
     // Edges

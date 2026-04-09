@@ -15,12 +15,12 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_setup [label="twl:workflow-setup\n(1,067 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_setup [label="twl:workflow-setup\n(1,068 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_init [label="init\n(639 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_init [label="init\n(640 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_worktree_create [label="worktree-create\n(464 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_status_update [label="project-board-status-update\n(1,221 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_crg_auto_build [label="crg-auto-build\n(331 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -35,7 +35,7 @@ digraph Dependencies {
     script_state_read [label="state-read\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_state_write [label="state-write\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(7,562 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_worker_terminal_guard [label="worker-terminal-guard\n(695 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_steps [label="chain-steps\n(7,562 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

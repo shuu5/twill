@@ -39,7 +39,7 @@
 <polyline fill="none" stroke="black" points="540.11,-94 540.11,-88 "/>
 <polyline fill="none" stroke="black" points="546.11,-88 540.11,-88 "/>
 <text text-anchor="middle" x="478.11" y="-79" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;architecture&#45;spec</text>
-<text text-anchor="middle" x="478.11" y="-68" font-family="Helvetica,sans-Serif" font-size="10.00">(1,179 tok)</text>
+<text text-anchor="middle" x="478.11" y="-68" font-family="Helvetica,sans-Serif" font-size="10.00">(1,180 tok)</text>
 </g>
 <!-- skill_co_architect&#45;&gt;skill_ref_architecture_spec -->
 <g id="edge7" class="edge">
@@ -117,7 +117,7 @@
 <title>cmd_explore</title>
 <polygon fill="#e3f2fd" stroke="black" points="305.11,-384 235.11,-384 235.11,-348 305.11,-348 305.11,-384"/>
 <text text-anchor="middle" x="270.11" y="-369" font-family="Helvetica,sans-Serif" font-size="10.00">explore</text>
-<text text-anchor="middle" x="270.11" y="-358" font-family="Helvetica,sans-Serif" font-size="10.00">(1,509 tok)</text>
+<text text-anchor="middle" x="270.11" y="-358" font-family="Helvetica,sans-Serif" font-size="10.00">(1,510 tok)</text>
 </g>
 <!-- skill_co_architect&#45;&gt;cmd_explore -->
 <g id="edge1" class="edge">

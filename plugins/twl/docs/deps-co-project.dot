@@ -31,7 +31,7 @@ digraph Dependencies {
     cmd_project_create [label="project-create\n(461 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_configure [label="project-board-configure\n(1,185 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_governance [label="project-governance\n(974 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_migrate [label="project-migrate\n(484 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_project_migrate [label="project-migrate\n(485 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_container_dependency_check [label="container-dependency-check\n(509 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_setup_crg [label="setup-crg\n(754 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_snapshot_analyze [label="snapshot-analyze\n(617 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];

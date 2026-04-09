@@ -19,7 +19,7 @@ digraph Dependencies {
 
     // Reference Skills
     skill_ref_architecture [label="twl:ref-architecture\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_architecture_spec [label="twl:ref-architecture-spec\n(1,179 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_architecture_spec [label="twl:ref-architecture-spec\n(1,180 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_architect_completeness_check [label="architect-completeness-check\n(672 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -27,7 +27,7 @@ digraph Dependencies {
     cmd_architect_group_refine [label="architect-group-refine\n(1,102 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_architect_issue_create [label="architect-issue-create\n(1,481 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_evaluate_architecture [label="evaluate-architecture\n(825 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_explore [label="explore\n(1,509 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_explore [label="explore\n(1,510 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 

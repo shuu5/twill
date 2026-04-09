@@ -332,7 +332,7 @@
 <title>agent_worker_spec_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="790.47" cy="-692.49" rx="86.03" ry="21.43"/>
 <text text-anchor="middle" x="790.47" y="-695.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;spec&#45;reviewer</text>
-<text text-anchor="middle" x="790.47" y="-684.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,094 tok)</text>
+<text text-anchor="middle" x="790.47" y="-684.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,095 tok)</text>
 </g>
 <!-- cmd_phase_review&#45;&gt;agent_worker_spec_reviewer -->
 <g id="edge27" class="edge">
@@ -709,7 +709,7 @@
 <title>script_worker_terminal_guard</title>
 <polygon fill="#ff9800" stroke="black" points="596.58,-1694.49 545.21,-1718.98 442.45,-1718.98 391.07,-1694.49 442.45,-1670.01 545.21,-1670.01 596.58,-1694.49"/>
 <text text-anchor="middle" x="493.83" y="-1697.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;terminal&#45;guard</text>
-<text text-anchor="middle" x="493.83" y="-1686.49" font-family="Helvetica,sans-Serif" font-size="10.00">(695 tok)</text>
+<text text-anchor="middle" x="493.83" y="-1686.49" font-family="Helvetica,sans-Serif" font-size="10.00">(770 tok)</text>
 </g>
 <!-- script_worktree_create -->
 <g id="node38" class="node">

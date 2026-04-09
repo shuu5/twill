@@ -341,7 +341,7 @@
 <title>agent_worker_spec_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="796.54" cy="-1041.49" rx="86.03" ry="21.43"/>
 <text text-anchor="middle" x="796.54" y="-1044.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;spec&#45;reviewer</text>
-<text text-anchor="middle" x="796.54" y="-1033.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,094 tok)</text>
+<text text-anchor="middle" x="796.54" y="-1033.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,095 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_spec_reviewer -->
 <g id="edge31" class="edge">
@@ -575,7 +575,7 @@
 <title>script_auto_merge</title>
 <polygon fill="#ff9800" stroke="black" points="560.24,-95.49 530.07,-119.98 469.73,-119.98 439.56,-95.49 469.73,-71.01 530.07,-71.01 560.24,-95.49"/>
 <text text-anchor="middle" x="499.9" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">auto&#45;merge</text>
-<text text-anchor="middle" x="499.9" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,856 tok)</text>
+<text text-anchor="middle" x="499.9" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,857 tok)</text>
 </g>
 <!-- cmd_auto_merge&#45;&gt;script_auto_merge -->
 <g id="edge44" class="edge">
@@ -771,7 +771,7 @@
 <title>script_worker_terminal_guard</title>
 <polygon fill="#ff9800" stroke="black" points="602.66,-1951.49 551.28,-1975.98 448.52,-1975.98 397.14,-1951.49 448.52,-1927.01 551.28,-1927.01 602.66,-1951.49"/>
 <text text-anchor="middle" x="499.9" y="-1954.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;terminal&#45;guard</text>
-<text text-anchor="middle" x="499.9" y="-1943.49" font-family="Helvetica,sans-Serif" font-size="10.00">(695 tok)</text>
+<text text-anchor="middle" x="499.9" y="-1943.49" font-family="Helvetica,sans-Serif" font-size="10.00">(770 tok)</text>
 </g>
 <!-- script_worktree_create -->
 <g id="node40" class="node">

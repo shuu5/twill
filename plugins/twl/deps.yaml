@@ -167,6 +167,8 @@ skills:
       - workflow: workflow-self-improve
       - script: autopilot-orchestrator
       - script: autopilot-plan
+      - script: autopilot-cleanup
+        step: "5.6"
     description: "依存グラフに基づくIssue群一括自律実装オーケストレーター"
 
   co-issue:
@@ -2072,6 +2074,13 @@ scripts:
     calls:
       - script: autopilot-plan-board
     description: "autopilot 実行計画 (plan.yaml) 生成（Python: python3 -m twl.autopilot.plan; explicit/issues/board モード）"
+
+  autopilot-cleanup:
+    type: script
+    path: scripts/autopilot-cleanup.sh
+    calls:
+      - script: worktree-delete
+    description: "セッション完了後の一括クリーンアップ（done/failed state file アーカイブ + 孤立 worktree 削除）"
 
   autopilot-should-skip:
     type: script

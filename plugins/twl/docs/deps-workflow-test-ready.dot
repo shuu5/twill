@@ -21,8 +21,8 @@ digraph Dependencies {
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,961 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
-    cmd_change_apply [label="change-apply\n(880 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_check [label="check\n(1,165 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_change_apply [label="change-apply\n(881 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_check [label="check\n(1,167 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_e2e_plan [label="e2e-plan\n(456 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_test_scaffold [label="test-scaffold\n(741 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
@@ -36,7 +36,7 @@ digraph Dependencies {
     script_state_read [label="state-read\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_state_write [label="state-write\n(4,611 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(7,562 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_worker_terminal_guard [label="worker-terminal-guard\n(695 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_steps [label="chain-steps\n(7,562 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
