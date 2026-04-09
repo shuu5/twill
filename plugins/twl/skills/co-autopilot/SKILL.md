@@ -82,7 +82,7 @@ issue-{N}.json の status から自動判定:
 
 ## 不変条件
 
-不変条件 A〜I の正典は `architecture/autopilot-invariants.md`（A=状態一意, B=Worktree 削除 Pilot 専任, C=Worker マージ禁止, D=fail skip 伝播, E=merge-gate リトライ最大1, F=merge 失敗時 rebase 禁止, G=クラッシュ検知, H=deps.yaml 変更排他, I=循環依存拒否）。本文中の ID 参照のみが各 Step の制約根拠。
+不変条件 A〜K の正典は `plugins/twl/architecture/domain/contexts/autopilot.md`（A=状態一意, B=Worktree 削除 Pilot 専任, C=Worker マージ禁止, D=fail skip 伝播, E=merge-gate リトライ最大1, F=merge 失敗時 rebase 禁止, G=クラッシュ検知, H=deps.yaml 変更排他, I=循環依存拒否, J=merge 前 base drift 検知, K=Pilot 実装禁止）。本文中の ID 参照のみが各 Step の制約根拠。
 
 ## Emergency Bypass
 
@@ -113,3 +113,4 @@ python3 -m twl.autopilot.mergegate merge \
 - Worker が worktree を削除してはならない（不変条件 B）
 - merge-gate 失敗時に rebase を試みてはならない（不変条件 F）
 - trivial change であっても co-autopilot を bypass してはならない（Emergency Bypass 条件を除く）
+- Pilot は Worker の代わりに Issue を直接実装（`Agent(Implement Issue #N)` 等によるコード変更・PR 作成）してはならない（不変条件 K）。Worker 失敗時は根本原因分析 → Issue 化で対処する

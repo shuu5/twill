@@ -117,7 +117,7 @@ stateDiagram-v2
 
 ## Constraints
 
-### 不変条件（10件）
+### 不変条件（11件）
 
 | ID | 不変条件 | 概要 |
 |----|----------|------|
@@ -131,6 +131,7 @@ stateDiagram-v2
 | **H** | deps.yaml 変更排他性 | 同一 Phase 内で deps.yaml を変更する複数 Issue は separate Phase |
 | **I** | 循環依存拒否 | plan.yaml 生成時に循環依存を検出した場合、拒否 |
 | **J** | merge 前 base drift 検知 | merge-gate 実行前に origin/main に対する silent deletion を検知し、検出時は merge を停止する |
+| **K** | Pilot 実装禁止 | Pilot は Issue の実装（コード変更・PR 作成）を直接行ってはならない。実装は常に Worker 経由。Emergency Bypass 時も `mergegate merge --force` 経由のみ許可 |
 
 ### 並行性の制約
 

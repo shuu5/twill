@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
-# autopilot-invariants.bats - Autopilot invariants A through I
+# autopilot-invariants.bats - Autopilot invariants A through K
 #
-# Tests the 9 invariant conditions that must always hold true in the
+# Tests the 11 invariant conditions that must always hold true in the
 # autopilot system. These are integration-level tests that exercise
 # multiple scripts together.
 
@@ -332,4 +332,44 @@ for t in sorted(types):
 
   assert_failure
   assert_output --partial "循環依存"
+}
+
+# ===========================================================================
+# Invariant J: Merge前 base drift 検知
+# ===========================================================================
+
+# (J のテストは merge-gate 内部で実装済み — ここでは不変条件テーブルとの整合性のみ確認)
+
+@test "invariant-J: autopilot.md defines invariant J" {
+  run grep -c "|\s*\*\*J\*\*" "$REPO_ROOT/architecture/domain/contexts/autopilot.md"
+  assert_success
+  [ "$output" -ge 1 ]
+}
+
+# ===========================================================================
+# Invariant K: Pilot implementation prohibition
+# ===========================================================================
+
+@test "invariant-K: autopilot.md defines invariant K (Pilot 実装禁止)" {
+  run grep -c "|\s*\*\*K\*\*" "$REPO_ROOT/architecture/domain/contexts/autopilot.md"
+  assert_success
+  [ "$output" -ge 1 ]
+}
+
+@test "invariant-K: co-autopilot SKILL.md MUST NOT section prohibits Pilot direct implementation" {
+  run grep -c "Pilot.*Worker.*直接実装\|Agent(Implement" "$REPO_ROOT/skills/co-autopilot/SKILL.md"
+  assert_success
+  [ "$output" -ge 1 ]
+}
+
+@test "invariant-K: co-autopilot SKILL.md references invariant K in MUST NOT" {
+  run grep -c "不変条件 K" "$REPO_ROOT/skills/co-autopilot/SKILL.md"
+  assert_success
+  [ "$output" -ge 1 ]
+}
+
+@test "invariant-K: SKILL.md invariant list includes K" {
+  # 不変条件一覧に K=Pilot 実装禁止 が含まれること
+  run grep "K=Pilot" "$REPO_ROOT/skills/co-autopilot/SKILL.md"
+  assert_success
 }
