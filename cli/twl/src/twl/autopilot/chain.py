@@ -38,6 +38,7 @@ CHAIN_STEPS: list[str] = [
     "check",
     "change-apply",
     "post-change-apply",
+    "prompt-compliance",
     "ts-preflight",
     "pr-test",
     "ac-verify",
@@ -54,6 +55,7 @@ QUICK_SKIP_STEPS: frozenset[str] = frozenset([
     "test-scaffold",
     "check",
     "change-apply",
+    "prompt-compliance",
 ])
 
 
@@ -425,6 +427,56 @@ class ChainRunner:
         return latest
 
     # ------------------------------------------------------------------
+    # Step: prompt-compliance
+    # ------------------------------------------------------------------
+
+    def step_prompt_compliance(self) -> bool:
+        """Check refined_by hash integrity for changed .md files."""
+        self.record_step("", "prompt-compliance")
+        root = self._project_root()
+
+        # 変更された .md ファイルを検出
+        result = subprocess.run(
+            ["git", "diff", "--name-only", "--diff-filter=AM", "origin/main", "--", "*.md"],
+            capture_output=True, text=True, cwd=root,
+        )
+        changed_md = result.stdout.strip()
+
+        if not changed_md:
+            self._ok("prompt-compliance", "PASS (.md 変更なし — スキップ)")
+            return True
+
+        # ref-prompt-guide.md 自体が変更された場合
+        if "refs/ref-prompt-guide.md" in changed_md:
+            self._ok("prompt-compliance", "WARN (ref-prompt-guide.md 変更検出 — 全コンポーネントの refined_by が stale。Tier 2 audit を推奨)")
+            return True
+
+        # twl --audit --section 7 --format json を実行
+        audit_result = subprocess.run(
+            ["twl", "--audit", "--section", "7", "--format", "json"],
+            capture_output=True, text=True, cwd=root,
+        )
+        try:
+            data = json.loads(audit_result.stdout)
+            items = data.get("items", [])
+        except (json.JSONDecodeError, AttributeError):
+            self._ok("prompt-compliance", "WARN (audit 出力のパース失敗 — スキップ)")
+            return True
+
+        error_count = sum(1 for i in items if i.get("severity") == "critical")
+        stale_count = sum(1 for i in items if i.get("severity") == "warning")
+
+        if error_count > 0:
+            self._skip("prompt-compliance", f"FAIL (refined_by フォーマット不正: {error_count} 件)")
+            return False
+        elif stale_count > 0:
+            self._ok("prompt-compliance", f"WARN (stale: {stale_count} 件 — twl refine で更新推奨)")
+            return True
+        else:
+            self._ok("prompt-compliance", "PASS")
+            return True
+
+    # ------------------------------------------------------------------
     # Step: ts-preflight
     # ------------------------------------------------------------------
 
@@ -718,7 +770,7 @@ def main(argv: list[str] | None = None) -> int:
     if not args:
         print("Usage: python3 -m twl.autopilot.chain <step-name> [args...]", file=sys.stderr)
         print("Steps: init, next-step, quick-guard, check, change-id-resolve,", file=sys.stderr)
-        print("       all-pass-check, ts-preflight, pr-test, pr-cycle-report,", file=sys.stderr)
+        print("       all-pass-check, prompt-compliance, ts-preflight, pr-test, pr-cycle-report,", file=sys.stderr)
         print("       board-status-update, ac-extract,", file=sys.stderr)
         print("       autopilot-detect, quick-detect", file=sys.stderr)
         return 1
@@ -766,6 +818,10 @@ def main(argv: list[str] | None = None) -> int:
         elif step == "all-pass-check":
             overall = rest[0] if rest else "PASS"
             ok = runner.step_all_pass_check(overall)
+            return 0 if ok else 1
+
+        elif step == "prompt-compliance":
+            ok = runner.step_prompt_compliance()
             return 0 if ok else 1
 
         elif step == "ts-preflight":

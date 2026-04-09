@@ -19,6 +19,7 @@ CHAIN_STEPS=(
   check
   change-apply
   post-change-apply
+  prompt-compliance
   ts-preflight
   pr-test
   ac-verify
@@ -36,6 +37,7 @@ QUICK_SKIP_STEPS=(
   test-scaffold
   check
   change-apply
+  prompt-compliance
 )
 
 # dispatch_mode SSOT: 各ステップの実行モード
@@ -53,6 +55,7 @@ declare -A CHAIN_STEP_DISPATCH=(
   [check]=runner
   [change-apply]=llm
   [post-change-apply]=llm
+  [prompt-compliance]=runner
   [ts-preflight]=runner
   [pr-test]=runner
   [ac-verify]=llm

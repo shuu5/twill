@@ -472,7 +472,7 @@ def audit_collect(deps: dict, plugin_root: Path) -> List[dict]:
                 # Format: ref-prompt-guide@XXXXXXXX
                 m = re.match(r'^ref-prompt-guide@([0-9a-f]{8})$', str(refined_by))
                 if not m:
-                    severity = 'warning'
+                    severity = 'critical'
                     message = f"refined_by フォーマット不正: {refined_by}"
                     value = 0
                 elif current_hash is None:
