@@ -15,6 +15,13 @@ if [[ -f "$_SESSION_NAME_SH" ]]; then
   source "$_SESSION_NAME_SH"
 fi
 
+# window-manifest.sh の読み込み (Phase 2 / #290)
+_WINDOW_MANIFEST_SH="$(realpath -m "${SCRIPTS_ROOT}/../../session/scripts/window-manifest.sh")"
+if [[ -f "$_WINDOW_MANIFEST_SH" ]]; then
+  # shellcheck source=../../session/scripts/window-manifest.sh
+  source "$_WINDOW_MANIFEST_SH"
+fi
+
 # --- usage (Task 1.1) ---
 usage() {
   cat <<EOF
@@ -350,6 +357,19 @@ tmux new-window -d -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
 tmux set-option -t "$WINDOW_NAME" remain-on-exit on
 QUOTED_CRASH_CMD=$(printf '%q ' bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$ISSUE" --window "$WINDOW_NAME")
 tmux set-hook -t "$WINDOW_NAME" pane-died "run-shell '$QUOTED_CRASH_CMD'"
+
+# --- window-manifest 書き出し (Phase 2 / #290) ---
+# tombstone hook は設定しない: pane-died は crash-detect.sh 用に設定済みであり
+# set-hook は後発呼び出しで上書きになるため競合が発生する。
+# autopilot window の tombstone は crash-detect.sh / worker 完了フローが担う。
+# worktree_path は WORKTREE_DIR を優先使用し、未設定時は LAUNCH_DIR にフォールバック。
+if declare -f manifest_append_entry > /dev/null 2>&1; then
+  _WM_SESSION=$(tmux display-message -p '#{session_name}' 2>/dev/null || echo "main")
+  _WM_INDEX=$(tmux list-windows -F '#{window_name} #{window_index}' 2>/dev/null \
+    | awk -v n="$WINDOW_NAME" '$1==n {print $2; exit}')
+  manifest_append_entry "$WINDOW_NAME" "$_WM_SESSION" "${_WM_INDEX:-0}" \
+    "${WORKTREE_DIR:-$LAUNCH_DIR}" "$LAUNCH_DIR" "ap" 2>/dev/null || true
+fi
 
 echo "Worker 起動完了: Issue #$ISSUE (window=$WINDOW_NAME, model=$MODEL, dir=$LAUNCH_DIR)"
 exit 0
