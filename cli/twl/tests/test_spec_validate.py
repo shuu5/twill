@@ -8,7 +8,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from twl.spec.validate import cmd_validate
+from twl.spec.validate import cmd_coverage, cmd_validate
 
 _VALID_SPEC = """\
 ## ADDED Requirements
@@ -124,3 +124,48 @@ def test_validate_missing_change(tmp_path, monkeypatch):
     # Missing change just warns, doesn't error out, but total=0
     rc = cmd_validate("ghost")
     assert rc == 0  # 0 failed out of 0
+
+
+# --- cmd_coverage tests ---
+
+
+def _make_coverage_fixture(tmp_path: Path, invariant_ids: list[str], referenced_ids: list[str]) -> None:
+    """Create architecture/domain/contexts/ctx.md and deltaspec/specs/spec.md for coverage testing."""
+    ctx_dir = tmp_path / "architecture" / "domain" / "contexts"
+    ctx_dir.mkdir(parents=True)
+    lines = ["# Context\n\n| ID | 不変条件 | 概要 |\n|----|----|----|\n"]
+    for inv_id in invariant_ids:
+        lines.append(f"| **{inv_id}** | some invariant | desc |\n")
+    (ctx_dir / "ctx.md").write_text("".join(lines))
+
+    specs_dir = tmp_path / "deltaspec" / "specs"
+    specs_dir.mkdir(parents=True)
+    spec_lines = ["# Spec\n\n"]
+    for ref_id in referenced_ids:
+        spec_lines.append(f"- 不変条件 {ref_id} が成立する\n")
+    (specs_dir / "spec.md").write_text("".join(spec_lines))
+
+    # Ensure deltaspec root marker exists
+    (tmp_path / "deltaspec").mkdir(exist_ok=True)
+
+
+def test_coverage_all_covered(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    _make_coverage_fixture(tmp_path, ["A", "B"], ["A", "B"])
+    rc = cmd_coverage()
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "2/2 covered" in out
+    assert "WARNING" not in out
+
+
+def test_coverage_missing_reference(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    _make_coverage_fixture(tmp_path, ["A", "B", "C"], ["A"])
+    rc = cmd_coverage()
+    assert rc == 0  # WARNING only, exit code 0
+    out = capsys.readouterr().out
+    assert "1/3 covered" in out
+    assert "WARNING" in out
+    assert "不変条件 B" in out
+    assert "不変条件 C" in out

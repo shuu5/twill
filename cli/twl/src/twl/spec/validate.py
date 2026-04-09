@@ -9,6 +9,9 @@ from pathlib import Path
 from .new import _KEBAB_RE
 from .paths import DeltaspecNotFound, find_deltaspec_root, get_changes_dir
 
+_INVARIANT_ID_RE = re.compile(r"^\|\s+\*\*([A-Z])\*\*\s+\|", re.MULTILINE)
+_INVARIANT_REF_RE = re.compile(r"不変条件\s+([A-Z])")
+
 _DELTA_HDR_RE = re.compile(r"^## (ADDED|MODIFIED|REMOVED|RENAMED) Requirements", re.MULTILINE)
 _REQ_RE = re.compile(r"^### Requirement:", re.MULTILINE)
 _SHALL_MUST_RE = re.compile(r"\b(SHALL|MUST)\b")
@@ -62,6 +65,50 @@ def _validate_change(change_dir: Path) -> list[str]:
                 issues.append(f"{cap}: Requirement '{req_name}' missing #### Scenario: block")
 
     return issues
+
+
+def cmd_coverage() -> int:
+    """Check that all invariant IDs in contexts/*.md are referenced in deltaspec/specs/*.md."""
+    try:
+        root = find_deltaspec_root()
+    except DeltaspecNotFound as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
+
+    contexts_dir = root / "architecture" / "domain" / "contexts"
+    specs_dir = root / "deltaspec" / "specs"
+
+    # Extract invariant IDs from contexts
+    invariant_ids: set[str] = set()
+    if contexts_dir.is_dir():
+        for ctx_file in sorted(contexts_dir.glob("*.md")):
+            text = ctx_file.read_text(encoding="utf-8")
+            for m in _INVARIANT_ID_RE.finditer(text):
+                invariant_ids.add(m.group(1))
+
+    if not invariant_ids:
+        print("⚠ WARNING: No invariant IDs found in architecture/domain/contexts/")
+        return 0
+
+    # Collect referenced invariant IDs from specs
+    referenced_ids: set[str] = set()
+    if specs_dir.is_dir():
+        for spec_file in sorted(specs_dir.glob("*.md")):
+            text = spec_file.read_text(encoding="utf-8")
+            for m in _INVARIANT_REF_RE.finditer(text):
+                referenced_ids.add(m.group(1))
+
+    uncovered = sorted(invariant_ids - referenced_ids)
+    covered = sorted(invariant_ids & referenced_ids)
+
+    print(f"Invariant coverage: {len(covered)}/{len(invariant_ids)} covered")
+    if uncovered:
+        for inv_id in uncovered:
+            print(f"⚠ WARNING: 不変条件 {inv_id} は deltaspec/specs/ 内に参照なし")
+    else:
+        print("✔ All invariants covered")
+
+    return 0
 
 
 def cmd_validate(

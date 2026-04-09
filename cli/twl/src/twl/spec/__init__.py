@@ -39,6 +39,7 @@ def main(argv: list[str] | None = None) -> None:
     p_validate.add_argument("name", nargs="?", help="Change name (omit for --all)")
     p_validate.add_argument("--all", action="store_true", help="Validate all changes")
     p_validate.add_argument("--json", action="store_true", help="JSON output")
+    p_validate.add_argument("--coverage", action="store_true", help="Check invariant coverage against deltaspec/specs/")
 
     # instructions
     p_instructions = sub.add_parser("instructions", help="Get artifact build instructions")
@@ -65,7 +66,9 @@ def main(argv: list[str] | None = None) -> None:
         from .archive import cmd_archive
         sys.exit(cmd_archive(args.name, yes=args.yes, skip_specs=args.skip_specs))
     elif args.subcmd == "validate":
-        from .validate import cmd_validate
+        from .validate import cmd_coverage, cmd_validate
+        if args.coverage:
+            sys.exit(cmd_coverage())
         sys.exit(cmd_validate(args.name, validate_all=args.all, json_mode=args.json))
     elif args.subcmd == "instructions":
         from .instructions import cmd_instructions
