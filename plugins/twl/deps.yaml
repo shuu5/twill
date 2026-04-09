@@ -175,19 +175,15 @@ skills:
     refined_at: "2026-04-07"
     path: skills/co-issue/SKILL.md
     effort: high
-    tools: [Skill(issue-spec-review, issue-review-aggregate, issue-glossary-check, issue-arch-drift, issue-cross-repo-create), Agent(context-checker, template-validator)]
+    tools: [Skill(workflow-issue-refine, issue-glossary-check, issue-cross-repo-create), Agent(context-checker, template-validator)]
     spawnable_by: [user]
-    can_spawn: [composite, atomic, specialist, reference]
+    can_spawn: [workflow, composite, atomic, specialist, reference]
     calls:
       - atomic: explore
-      - atomic: issue-structure
-      - atomic: issue-tech-debt-absorb
+      - workflow: workflow-issue-refine
       - atomic: issue-create
       - atomic: issue-bulk-create
-      - composite: issue-spec-review
-      - atomic: issue-review-aggregate
       - atomic: issue-glossary-check
-      - atomic: issue-arch-drift
       - atomic: issue-cross-repo-create
       - atomic: project-board-sync
       - reference: ref-issue-template-bug
@@ -499,6 +495,20 @@ skills:
       - composite: plugin-phase-verify
         step: "6"
     description: "既存プラグイン診断・修正ワークフロー（migrate-analyze → diagnose → phase-diagnose → fix → verify → phase-verify）"
+
+  workflow-issue-refine:
+    type: workflow
+    path: skills/workflow-issue-refine/SKILL.md
+    effort: medium
+    spawnable_by: [controller]
+    can_spawn: [composite, atomic]
+    calls:
+      - atomic: issue-structure
+      - atomic: issue-tech-debt-absorb
+      - composite: issue-spec-review
+      - atomic: issue-review-aggregate
+      - atomic: issue-arch-drift
+    description: "Per-Issue 精緻化ワークフロー（co-issue Phase 3 を分離）"
 
 
 # リファレンス（B-6 で追加）

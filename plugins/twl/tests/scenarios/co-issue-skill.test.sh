@@ -163,34 +163,31 @@ else
   run_test_skip "Phase 2 - 分解判断" "skills/co-issue/SKILL.md not yet created"
 fi
 
-# Test: Phase 3 - Per-Issue 精緻化ループ
+# Test: Phase 3 - Per-Issue 精緻化ループ（workflow-issue-refine 委譲）
 test_phase3_refinement_loop() {
   assert_file_exists "$SKILL_MD" || return 1
   assert_file_contains "$SKILL_MD" "精緻化|構造化" || return 1
-  assert_file_contains "$SKILL_MD" "issue-structure" || return 1
+  assert_file_contains "$SKILL_MD" "workflow-issue-refine" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Phase 3 - Per-Issue 精緻化ループ（issue-dig, issue-structure）" test_phase3_refinement_loop
+  run_test "Phase 3 - Per-Issue 精緻化ループ（workflow-issue-refine 委譲）" test_phase3_refinement_loop
 else
   run_test_skip "Phase 3 - Per-Issue 精緻化ループ" "skills/co-issue/SKILL.md not yet created"
 fi
 
-# Edge case: Phase 3 の全サブステップが言及されている
-test_phase3_all_substeps() {
+# Edge case: Phase 3 が workflow-issue-refine を呼び出す記述がある
+test_phase3_workflow_delegation() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "issue-structure" || return 1
-  assert_file_contains "$SKILL_MD" "issue-tech-debt-absorb|tech.debt" || return 1
-  assert_file_contains "$SKILL_MD" "issue-critic" || return 1
-  assert_file_contains "$SKILL_MD" "issue-feasibility" || return 1
+  assert_file_contains "$SKILL_MD" "workflow-issue-refine" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Phase 3 [edge: 全サブステップ structure/tech-debt/critic/feasibility]" test_phase3_all_substeps
+  run_test "Phase 3 [edge: workflow-issue-refine への委譲記述]" test_phase3_workflow_delegation
 else
-  run_test_skip "Phase 3 [edge: 全サブステップ structure/tech-debt/critic/feasibility]" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "Phase 3 [edge: workflow-issue-refine への委譲記述]" "skills/co-issue/SKILL.md not yet created"
 fi
 
 # Test: Phase 4 - 一括作成（issue-create / issue-bulk-create）

@@ -145,8 +145,9 @@ EOF
 # Spec: specs/deps-update.md
 # ---------------------------------------------------------------------------
 
-# Scenario: co-issue calls に specialist: issue-critic が含まれること
-@test "deps-update: co-issue calls includes specialist issue-critic" {
+# Scenario: co-issue calls に workflow: workflow-issue-refine が含まれること
+# (Phase 3 分離後、specialist は workflow-issue-refine 経由で呼び出される)
+@test "deps-update: co-issue calls includes workflow workflow-issue-refine" {
   python3 - "$DEPS_FILE" <<'EOF'
 import yaml, sys
 with open(sys.argv[1]) as f:
@@ -155,26 +156,28 @@ co_issue = data.get('skills', {}).get('co-issue', {})
 assert co_issue, "co-issue not found in skills section"
 calls = co_issue.get('calls', [])
 found = any(
-    isinstance(c, dict) and c.get('specialist') == 'issue-critic'
+    isinstance(c, dict) and c.get('workflow') == 'workflow-issue-refine'
     for c in calls
 )
-assert found, f"specialist: issue-critic not found in co-issue calls. calls={calls}"
+assert found, f"workflow: workflow-issue-refine not found in co-issue calls. calls={calls}"
 EOF
 }
 
-# Scenario: co-issue calls に specialist: issue-feasibility が含まれること
-@test "deps-update: co-issue calls includes specialist issue-feasibility" {
+# Scenario: workflow-issue-refine calls に issue-spec-review が含まれること
+# (specialist は workflow-issue-refine → issue-spec-review 経由)
+@test "deps-update: workflow-issue-refine calls includes issue-spec-review" {
   python3 - "$DEPS_FILE" <<'EOF'
 import yaml, sys
 with open(sys.argv[1]) as f:
     data = yaml.safe_load(f)
-co_issue = data.get('skills', {}).get('co-issue', {})
-calls = co_issue.get('calls', [])
+wir = data.get('skills', {}).get('workflow-issue-refine', {})
+assert wir, "workflow-issue-refine not found in skills section"
+calls = wir.get('calls', [])
 found = any(
-    isinstance(c, dict) and c.get('specialist') == 'issue-feasibility'
+    isinstance(c, dict) and c.get('composite') == 'issue-spec-review'
     for c in calls
 )
-assert found, f"specialist: issue-feasibility not found in co-issue calls. calls={calls}"
+assert found, f"composite: issue-spec-review not found in workflow-issue-refine calls. calls={calls}"
 EOF
 }
 
