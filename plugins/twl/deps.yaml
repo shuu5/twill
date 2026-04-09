@@ -2252,6 +2252,13 @@ scripts:
       - script: session:session-state
     description: "session plugin の session-state.sh を呼び出す cross-plugin wrapper"
 
+  observer-evaluator-parser:
+    type: script
+    path: scripts/observer-evaluator-parser.sh
+    spawnable_by: [composite, atomic, workflow]
+    can_spawn: []
+    description: "observer-evaluator の出力 JSON を validation (引用 MUST 検証 + confidence クランプ)"
+
 # エージェント（C-3 で追加）
 agents:
   # 構造チェック系（haiku）
@@ -2616,3 +2623,12 @@ agents:
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Visual検証失敗の分析・修復"
+
+  # observer 系 (sonnet)
+  observer-evaluator:
+    type: specialist
+    path: agents/observer-evaluator.md
+    model: sonnet
+    spawnable_by: [composite, controller, workflow]
+    can_spawn: []
+    description: "rule-based 検出を補完する LLM 判定 specialist (引用 MUST, confidence <=75)"
