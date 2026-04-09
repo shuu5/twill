@@ -74,7 +74,7 @@ TaskUpdate Phase P → completed。
 
 サマリー報告後、一括クリーンアップを実行:
 ```bash
-bash "$SCRIPTS_ROOT/autopilot-cleanup.sh" --autopilot-dir "$AUTOPILOT_DIR"
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-cleanup.sh" --autopilot-dir "$AUTOPILOT_DIR"
 ```
 done state file を即座にアーカイブし、TTL 超過の failed state file もアーカイブ。孤立 worktree を検出・削除する。`--dry-run` で事前確認も可能。
 

@@ -40,15 +40,15 @@ if [[ -z "$AUTOPILOT_DIR" ]]; then
   exit 1
 fi
 
-if [[ ! -d "$AUTOPILOT_DIR/issues" ]]; then
-  echo "OK: $AUTOPILOT_DIR/issues が存在しません。クリーンアップ不要" >&2
-  exit 0
-fi
-
-# パストラバーサル防止
+# パストラバーサル防止（ディレクトリ存在確認より先に実行）
 if [[ "$AUTOPILOT_DIR" =~ \.\. ]]; then
   echo "ERROR: AUTOPILOT_DIR に '..' は使用できません" >&2
   exit 1
+fi
+
+if [[ ! -d "$AUTOPILOT_DIR/issues" ]]; then
+  echo "OK: $AUTOPILOT_DIR/issues が存在しません。クリーンアップ不要" >&2
+  exit 0
 fi
 
 # ── session_id 取得 ──
@@ -92,7 +92,11 @@ for issue_file in "$AUTOPILOT_DIR/issues"/issue-*.json; do
       # failed → TTL 超過時のみアーカイブ
       started_at=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('started_at',''))" "$issue_file" 2>/dev/null || echo "")
       if [[ -n "$started_at" ]]; then
-        started_epoch=$(date -d "$started_at" +%s 2>/dev/null || echo "0")
+        started_epoch=$(date -d "$started_at" +%s 2>/dev/null || echo "")
+        if [[ -z "$started_epoch" ]]; then
+          echo "[cleanup] スキップ: issue-${issue_num}.json (status=failed, started_at パース失敗: $started_at)" >&2
+          continue
+        fi
         elapsed=$(( NOW_EPOCH - started_epoch ))
         if [[ $elapsed -ge $TTL ]]; then
           if $DRY_RUN; then
@@ -160,9 +164,11 @@ while IFS= read -r line; do
           if $DRY_RUN; then
             echo "[dry-run] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
           else
-            bash "$SCRIPTS_ROOT/worktree-delete.sh" "$wt_branch" 2>/dev/null || \
+            if bash "$SCRIPTS_ROOT/worktree-delete.sh" "$wt_branch" 2>/dev/null; then
+              echo "[cleanup] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
+            else
               echo "[cleanup] ⚠️ worktree 削除失敗: $wt_branch（続行）" >&2
-            echo "[cleanup] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
+            fi
           fi
           ORPHAN_COUNT=$((ORPHAN_COUNT + 1))
         fi

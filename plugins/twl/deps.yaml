@@ -2078,7 +2078,6 @@ scripts:
     path: scripts/autopilot-cleanup.sh
     calls:
       - script: worktree-delete
-      - script: state-read
     description: "セッション完了後の一括クリーンアップ（done/failed state file アーカイブ + 孤立 worktree 削除）"
 
   autopilot-should-skip:
