@@ -47,14 +47,14 @@ teardown() {
 # ---------------------------------------------------------------------------
 # Scenario: atomic write (temp + rename)
 # ---------------------------------------------------------------------------
-@test "manifest_append_entry: uses atomic write (no partial file)" {
+@test "manifest_append_entry: uses atomic write (no partial temp file)" {
     source "$MANIFEST_LIB"
     manifest_append_entry "wt-twill-feat-290-a1b2c3d4" "main" 1 \
         "/home/user/projects/twill" "/home/user/projects/twill" "wt"
 
-    # 中間 .XXXXXX ファイルが残っていないことを確認
+    # 中間 .XXXXXX 一時ファイルが残っていないことを確認（.lock ファイルは除外）
     local leftover
-    leftover=$(ls "$SANDBOX"/window-manifest.json.* 2>/dev/null || true)
+    leftover=$(find "$SANDBOX" -name "window-manifest.json.????????" 2>/dev/null || true)
     [[ -z "$leftover" ]]
 }
 

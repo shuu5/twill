@@ -50,8 +50,15 @@ _manifest_check_version() {
     return 0
 }
 
+# _manifest_lockfile
+# マニフェスト操作用ロックファイルパスを返す。
+_manifest_lockfile() {
+    printf '%s.lock' "$WINDOW_MANIFEST_FILE"
+}
+
 # manifest_append_entry <window_name> <session> <index> <worktree_path> <cwd> <prefix>
-# マニフェストに新規エントリを append する（atomic write）。
+# マニフェストに新規エントリを append する（flock + atomic write）。
+# Read-Modify-Write サイクルを flock で保護し並列呼び出し時の Lost Update を防止する。
 # 失敗時は警告のみ — 呼び出し元を停止しない。
 manifest_append_entry() {
     local window_name="$1" session="$2" index="$3"
@@ -59,48 +66,67 @@ manifest_append_entry() {
     local created_at
     created_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-    local current
-    current="$(_manifest_read_current)"
+    local lockfile
+    lockfile="$(_manifest_lockfile)"
+    local dir
+    dir="$(dirname "$WINDOW_MANIFEST_FILE")"
+    mkdir -p "$dir"
 
-    if ! _manifest_check_version "$current"; then
-        return 0  # 警告済み、エラー終了しない
-    fi
+    (
+        flock -x 9
+        local current
+        current="$(_manifest_read_current)"
 
-    local new_entry
-    new_entry=$(jq -n \
-        --arg wn "$window_name" \
-        --arg sess "$session" \
-        --argjson idx "$index" \
-        --arg wtp "$worktree_path" \
-        --arg c "$cwd" \
-        --arg pfx "$prefix" \
-        --arg ca "$created_at" \
-        '{window_name:$wn,session:$sess,index:$idx,worktree_path:$wtp,cwd:$c,prefix:$pfx,created_at:$ca,tombstone:false}')
+        if ! _manifest_check_version "$current"; then
+            exit 0  # 警告済み、エラー終了しない
+        fi
 
-    local updated
-    updated=$(printf '%s' "$current" | jq --argjson entry "$new_entry" '.entries += [$entry]')
+        local new_entry
+        new_entry=$(jq -n \
+            --arg wn "$window_name" \
+            --arg sess "$session" \
+            --argjson idx "$index" \
+            --arg wtp "$worktree_path" \
+            --arg c "$cwd" \
+            --arg pfx "$prefix" \
+            --arg ca "$created_at" \
+            '{window_name:$wn,session:$sess,index:$idx,worktree_path:$wtp,cwd:$c,prefix:$pfx,created_at:$ca,tombstone:false}')
 
-    _manifest_atomic_write "$updated"
+        local updated
+        updated=$(printf '%s' "$current" | jq --argjson entry "$new_entry" '.entries += [$entry]')
+
+        _manifest_atomic_write "$updated"
+    ) 9>"$lockfile"
 }
 
 # manifest_tombstone_entry <window_name>
-# 指定 window_name のエントリを tombstone=true に更新する（atomic write）。
+# 指定 window_name のエントリを tombstone=true に更新する（flock + atomic write）。
 # unknown fields は保持する。失敗時は警告のみ — 呼び出し元を停止しない。
 manifest_tombstone_entry() {
     local window_name="$1"
-    local current
-    current="$(_manifest_read_current)"
 
-    if ! _manifest_check_version "$current"; then
-        return 0  # 警告済み、エラー終了しない
-    fi
+    local lockfile
+    lockfile="$(_manifest_lockfile)"
+    local dir
+    dir="$(dirname "$WINDOW_MANIFEST_FILE")"
+    mkdir -p "$dir"
 
-    local updated
-    updated=$(printf '%s' "$current" | jq \
-        --arg wn "$window_name" \
-        '(.entries[] | select(.window_name == $wn) | .tombstone) = true')
+    (
+        flock -x 9
+        local current
+        current="$(_manifest_read_current)"
 
-    _manifest_atomic_write "$updated"
+        if ! _manifest_check_version "$current"; then
+            exit 0  # 警告済み、エラー終了しない
+        fi
+
+        local updated
+        updated=$(printf '%s' "$current" | jq \
+            --arg wn "$window_name" \
+            '(.entries[] | select(.window_name == $wn) | .tombstone) = true')
+
+        _manifest_atomic_write "$updated"
+    ) 9>"$lockfile"
 }
 
 # Direct invocation support
