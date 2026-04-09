@@ -55,9 +55,14 @@ co-issue Phase 3（Per-Issue 精緻化ループ）のロジックを担当する
 - CRITICAL あり -> ユーザー通知・修正後 Step 3b 再実行可
 - split 承認 -> `is_split_generated: true` フラグ設定（Phase 4 まで保持）
 
-## Step 3.5: Architecture Drift Detection（非ブロッキング）
+## Step 3.5: Architecture Drift Detection（条件付き WARNING）
 
-`/twl:issue-arch-drift` を呼び出す（CRITICAL ブロック中はスキップ）。非ブロッキング。
+`/twl:issue-arch-drift` を呼び出す（CRITICAL ブロック中はスキップ）。
+
+- **明示的/構造的シグナル検出時**: WARNING レベルで出力し、AskUserQuestion で co-architect delegation を確認する。ユーザーが「後で更新する」または「スキップ」を選択した場合は Phase 4 に進む（非ブロッキング）。
+- **ヒューリスティックシグナルのみの場合**: INFO レベルで出力し、ユーザー入力なしで Phase 4 に進む（非ブロッキング）。
+
+重大度レベルの設計根拠は **ADR-012** を参照。
 
 ## Output
 
