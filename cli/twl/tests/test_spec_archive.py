@@ -24,6 +24,25 @@ _SPEC_WITH_REMOVED = """\
 ## REMOVED Requirements
 """
 
+_SPEC_WITH_MODIFIED = """\
+## MODIFIED Requirements
+
+### Requirement: Bar
+The system SHALL do bar.
+"""
+
+_SPEC_WITH_ADDED_AND_MODIFIED = """\
+## ADDED Requirements
+
+### Requirement: Foo
+The system SHALL do foo.
+
+## MODIFIED Requirements
+
+### Requirement: Bar
+The system SHALL do bar.
+"""
+
 
 def make_change(tmp_path: Path, name: str, spec_content: str | None = None) -> Path:
     change_dir = tmp_path / "deltaspec" / "changes" / name
@@ -82,6 +101,32 @@ def test_archive_missing_change(tmp_path, monkeypatch):
     (tmp_path / "deltaspec" / "changes").mkdir(parents=True)
     rc = cmd_archive("ghost", yes=True)
     assert rc == 1
+
+
+def test_archive_modified_appends_to_existing(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    # Create existing spec first
+    existing_dir = tmp_path / "deltaspec" / "specs" / "cap-a"
+    existing_dir.mkdir(parents=True)
+    (existing_dir / "spec.md").write_text("## Requirements\n\n### Requirement: Existing\nOld content.\n")
+    make_change(tmp_path, "mychange", _SPEC_WITH_MODIFIED)
+    rc = cmd_archive("mychange", yes=True)
+    assert rc == 0
+    content = (existing_dir / "spec.md").read_text()
+    assert "Old content." in content
+    assert "The system SHALL do bar." in content
+
+
+def test_archive_added_and_modified_both_reflected(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    make_change(tmp_path, "mychange", _SPEC_WITH_ADDED_AND_MODIFIED)
+    rc = cmd_archive("mychange", yes=True)
+    assert rc == 0
+    target = tmp_path / "deltaspec" / "specs" / "cap-a" / "spec.md"
+    assert target.exists()
+    content = target.read_text()
+    assert "The system SHALL do foo." in content
+    assert "The system SHALL do bar." in content
 
 
 def test_archive_cancel(tmp_path, monkeypatch, capsys):

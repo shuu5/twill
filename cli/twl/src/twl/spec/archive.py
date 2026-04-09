@@ -63,7 +63,8 @@ def _integrate_specs(change_dir: Path, specs_dir: Path) -> None:
                 target_dir.mkdir(parents=True, exist_ok=True)
                 modified = _extract_block(text, "## MODIFIED Requirements")
                 new_text = re.sub(r"^## MODIFIED Requirements", "## Requirements", modified, flags=re.MULTILINE)
-                target_spec.write_text(new_text, encoding="utf-8")
+                existing = target_spec.read_text(encoding="utf-8")
+                target_spec.write_text(existing + "\n" + new_text, encoding="utf-8")
                 print(f"- Integrated MODIFIED specs for '{cap_name}'")
             else:
                 print(f"Warning: MODIFIED spec for '{cap_name}' skipped: no existing spec to modify", file=sys.stderr)
