@@ -14,6 +14,26 @@ flowchart TD
     PLUGIN_TWL -->|"test data"| TEST_FIXTURES
 ```
 
+## Architecture Spec 三層継承関係
+
+```mermaid
+flowchart TD
+    subgraph arch_layers["Architecture Spec 層"]
+        MONO["architecture/<br/>Monorepo層<br/>(vision, model, glossary)"]
+        CLI_ARCH["cli/twl/architecture/<br/>CLI層<br/>(vision, domain, decisions)"]
+        PLUGIN_ARCH["plugins/twl/architecture/<br/>Plugin層<br/>(vision, domain, decisions)"]
+    end
+
+    MONO -->|"制約継承<br/>(依存方向の一方向性)"| CLI_ARCH
+    MONO -->|"制約継承<br/>(TWiLL フレームワーク準拠)"| PLUGIN_ARCH
+```
+
+| 層 | パス | 役割 |
+|----|------|------|
+| Monorepo | `architecture/` | モノリポ全体の上位制約・コンポーネント間依存ルール |
+| CLI | `cli/twl/architecture/` | twl CLI 固有の設計制約・型システム・検証ルール |
+| Plugin | `plugins/twl/architecture/` | ワークフロープラグイン固有の設計制約・autopilot 仕様 |
+
 ## 依存方向ルール
 
 | From | To | 関係 | 備考 |
