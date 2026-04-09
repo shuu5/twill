@@ -109,15 +109,13 @@ teardown() {
 # ===========================================================================
 
 @test "invariant-C: merge-gate-execute rejects invalid ISSUE (no role check at script level)" {
-  # merge-gate-execute validates via ISSUE/PR_NUMBER/BRANCH env vars
-  # There is no explicit role check -- the invariant is enforced by
-  # ensuring only pilot calls merge-gate-execute (architecture-level)
-  # We test that the script requires proper env vars
-  unset ISSUE
-  run bash "$SANDBOX/scripts/merge-gate-execute.sh"
+  # merge-gate-execute は Python 化済み（mergegate.py）
+  # --issue に不正な値を渡すと拒否することを確認する
+  run python3 -m twl.autopilot.mergegate merge \
+    --issue "invalid!" --pr "100" --branch "feat/test"
 
   assert_failure
-  assert_output --partial "不正なISSUE番号"
+  assert_output --partial "不正な"
 }
 
 # ===========================================================================
@@ -181,7 +179,11 @@ EOF
 @test "invariant-E: first retry allowed (retry_count=0 -> running)" {
   create_issue_json 1 "failed" '.retry_count = 0'
 
+  # _check_pilot_identity() は CWD が worktrees/ 配下なら status 書き込みを拒否するため
+  # SANDBOX（worktrees/ 外）に移動してから実行する
+  cd "$SANDBOX"
   run python3 -m twl.autopilot.state write \
+    --autopilot-dir "$SANDBOX/.autopilot" \
     --type issue --issue 1 --role pilot --set status=running
 
   assert_success
@@ -194,7 +196,9 @@ EOF
 @test "invariant-E: second retry rejected (retry_count=1)" {
   create_issue_json 1 "failed" '.retry_count = 1'
 
+  cd "$SANDBOX"
   run python3 -m twl.autopilot.state write \
+    --autopilot-dir "$SANDBOX/.autopilot" \
     --type issue --issue 1 --role pilot --set status=running
 
   assert_failure
@@ -206,13 +210,19 @@ EOF
 # ===========================================================================
 
 @test "invariant-F: merge-gate-execute uses --squash flag" {
-  # Verify the source code contains --squash and not --rebase
-  run grep -c -- "--squash" "$REPO_ROOT/scripts/merge-gate-execute.sh"
+  # merge-gate-execute は Python 化済み（cli/twl/src/twl/autopilot/mergegate.py）
+  # REPO_ROOT = plugins/twl, worktree root = REPO_ROOT/../../
+  local mergegate_py
+  mergegate_py="$(cd "$REPO_ROOT/../.." && pwd)/cli/twl/src/twl/autopilot/mergegate.py"
+  [ -f "$mergegate_py" ] || skip "mergegate.py not found"
+
+  # squash フラグを使用していることを確認
+  run grep -c -- '"--squash"' "$mergegate_py"
   assert_success
   [ "$output" -ge 1 ]
 
-  run grep -c -- "--rebase" "$REPO_ROOT/scripts/merge-gate-execute.sh"
-  # Should be 0 occurrences
+  # --rebase フラグは使用していないことを確認（deps.yaml 競合時の rebase は対象外）
+  run grep -c -- '"--rebase"' "$mergegate_py"
   [ "$output" = "0" ]
 }
 
@@ -224,6 +234,10 @@ EOF
   create_issue_json 1 "running"
   stub_command "tmux" 'exit 1'
 
+  # crash-detect.sh は内部で --role pilot の status 書き込みを行う。
+  # _check_pilot_identity() は CWD が worktrees/ 配下なら拒否するため
+  # SANDBOX（worktrees/ 外）に移動してから実行する。
+  cd "$SANDBOX"
   run bash "$SANDBOX/scripts/crash-detect.sh" \
     --issue 1 --window "ap-#1"
 
@@ -346,6 +360,58 @@ for t in sorted(types):
   [ "$output" -ge 1 ]
 }
 
+@test "invariant-J: silent file deletion (no commit) is detected as base drift" {
+  # git stub: diff --diff-filter=D が削除ファイルを返す
+  # git stub: log で削除コミットが見つからない → silent deletion として検出
+  stub_command "git" '
+    case "$*" in
+      *"fetch"*)                    exit 0 ;;
+      *"diff"*"--diff-filter=D"*)   printf "deleted-file.py\n"; exit 0 ;;
+      *"merge-base"*)               printf "abc1234\n"; exit 0 ;;
+      *"log"*)                      printf ""; exit 0 ;;
+      *)                            exit 0 ;;
+    esac
+  '
+
+  run python3 -c "
+import sys
+from twl.autopilot.mergegate import MergeGate, MergeGateError
+gate = MergeGate(issue='1', pr_number='100', branch='feat/test')
+try:
+    gate._check_base_drift()
+    sys.exit(0)
+except MergeGateError:
+    sys.exit(1)
+"
+  assert_failure
+}
+
+@test "invariant-J: intentional deletion (has commit) is not flagged" {
+  # git stub: diff --diff-filter=D が削除ファイルを返す
+  # git stub: log で削除コミットが見つかる → 意図的削除として無視
+  stub_command "git" '
+    case "$*" in
+      *"fetch"*)                    exit 0 ;;
+      *"diff"*"--diff-filter=D"*)   printf "deleted-file.py\n"; exit 0 ;;
+      *"merge-base"*)               printf "abc1234\n"; exit 0 ;;
+      *"log"*)                      printf "def5678\n"; exit 0 ;;
+      *)                            exit 0 ;;
+    esac
+  '
+
+  run python3 -c "
+import sys
+from twl.autopilot.mergegate import MergeGate, MergeGateError
+gate = MergeGate(issue='1', pr_number='100', branch='feat/test')
+try:
+    gate._check_base_drift()
+    sys.exit(0)
+except MergeGateError:
+    sys.exit(1)
+"
+  assert_success
+}
+
 # ===========================================================================
 # Invariant K: Pilot implementation prohibition
 # ===========================================================================
@@ -371,5 +437,24 @@ for t in sorted(types):
 @test "invariant-K: SKILL.md invariant list includes K" {
   # 不変条件一覧に K=Pilot 実装禁止 が含まれること
   run grep "K=Pilot" "$REPO_ROOT/skills/co-autopilot/SKILL.md"
+  assert_success
+}
+
+@test "invariant-K: pilot cannot write implementation-only field (current_step)" {
+  # _check_rbac(): role=pilot は current_step への書き込みを拒否する
+  create_issue_json 1 "running"
+  run python3 -m twl.autopilot.state write \
+    --autopilot-dir "$SANDBOX/.autopilot" \
+    --type issue --issue 1 --role pilot --set current_step=change-apply
+  assert_failure
+  assert_output --partial "current_step"
+}
+
+@test "invariant-K: worker can write implementation-only field (current_step)" {
+  # _check_rbac(): role=worker は current_step への書き込みを許可する
+  create_issue_json 1 "running"
+  run python3 -m twl.autopilot.state write \
+    --autopilot-dir "$SANDBOX/.autopilot" \
+    --type issue --issue 1 --role worker --set current_step=change-apply
   assert_success
 }
