@@ -16,51 +16,51 @@ maxTurns: 10
 
 ### Step 1: change-id 解決
 
-If no change name provided, prompt for selection.
-Run `twl spec list` to get available changes. Use the **AskUserQuestion tool** to let the user select.
-Show only active changes (not already archived).
+change 名が指定されていない場合、選択を促す。
+`twl spec list` で利用可能な change を取得する。**AskUserQuestion tool** でユーザーに選択させる。
+アクティブな change のみ表示する（アーカイブ済みは除外）。
 
-**IMPORTANT**: Do NOT guess or auto-select a change. Always let the user choose.
+**重要**: change を推測または自動選択してはならない。必ずユーザーに選ばせる。
 
 ### Step 2: artifact 完了確認
 
-Run `twl spec status --change "<name>" --json` to check artifact completion.
+`twl spec status --change "<name>" --json` で artifact の完了状態を確認する。
 
-Parse the JSON to understand:
-- `schemaName`: The workflow being used
-- `artifacts`: List of artifacts with their status (`done` or other)
+JSON をパースして以下を把握:
+- `schemaName`: 使用中のワークフロー
+- `artifacts`: 各 artifact とそのステータス（`done` またはそれ以外）
 
-**If any artifacts are not `done`:**
-- Display warning listing incomplete artifacts
-- Use **AskUserQuestion tool** to confirm user wants to proceed
-- Proceed if user confirms
+**`done` でない artifact がある場合:**
+- 未完了の artifact を一覧表示して警告する
+- **AskUserQuestion tool** で続行の確認を取る
+- ユーザーが確認したら続行
 
 ### Step 3: タスク完了確認
 
-Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
-Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
+タスクファイル（通常 `tasks.md`）を読み込み、未完了タスクを確認する。
+`- [ ]`（未完了）と `- [x]`（完了）の数を集計する。
 
-**If incomplete tasks found:**
-- Display warning showing count of incomplete tasks
-- Use **AskUserQuestion tool** to confirm user wants to proceed
-- Proceed if user confirms
+**未完了タスクがある場合:**
+- 未完了タスク数を表示して警告する
+- **AskUserQuestion tool** で続行の確認を取る
+- ユーザーが確認したら続行
 
-**If no tasks file exists:** Proceed without task-related warning.
+**タスクファイルが存在しない場合:** タスク関連の警告なしで続行。
 
 ### Step 4: delta spec sync 判定
 
-Check for delta specs at `deltaspec/changes/<name>/specs/`. If none exist, proceed without sync prompt.
+`deltaspec/changes/<name>/specs/` に delta spec があるか確認する。存在しない場合は sync プロンプトなしで続行。
 
-**If delta specs exist:**
-- Compare each delta spec with its corresponding main spec at `deltaspec/specs/<capability>/spec.md`
-- Determine what changes would be applied (adds, modifications, removals, renames)
-- Show a combined summary before prompting
+**delta spec が存在する場合:**
+- 各 delta spec を `deltaspec/specs/<capability>/spec.md` の対応する main spec と比較する
+- 適用される変更内容を判定する（追加、変更、削除、リネーム）
+- プロンプト前に統合サマリーを表示する
 
-**Prompt options:**
-- If changes needed: "Sync now (recommended)", "Archive without syncing"
-- If already synced: "Archive now", "Sync anyway", "Cancel"
+**プロンプトの選択肢:**
+- 変更が必要な場合: 「今すぐ sync（推奨）」、「sync せずにアーカイブ」
+- 既に sync 済みの場合: 「アーカイブ実行」、「再度 sync」、「キャンセル」
 
-If user chooses sync, apply delta specs to main specs manually (read delta, merge into main spec).
+ユーザーが sync を選択した場合、delta spec を main spec に手動で適用する（delta を読み込み、main spec にマージ）。
 
 ### Step 5: CLI でアーカイブ実行
 
@@ -80,5 +80,5 @@ twl spec archive "<change-id>" --yes --skip-specs
 ## 禁止事項（MUST NOT）
 
 - worktree-delete を自動実行してはならない（ユーザー確認が必要）
-- Don't block archive on warnings - just inform and confirm
-- Preserve .deltaspec.yaml when moving to archive (it moves with the directory)
+- 警告でアーカイブをブロックしない — 情報提示と確認のみ
+- アーカイブ移動時に .deltaspec.yaml を保持する（ディレクトリごと移動される）
