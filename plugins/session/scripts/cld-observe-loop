@@ -126,8 +126,14 @@ get_target_windows() {
         echo ""
         return
     }
-    echo "$list_json" | jq -r --arg pat "$PATTERN" \
-        '.[] | select(.window_name | test($pat; "")) | .window_name' 2>/dev/null || true
+    # bash glob でフィルタ（設計メモ: [[ "$name" == $pattern ]]）
+    local names
+    names=$(echo "$list_json" | jq -r '.[].window_name' 2>/dev/null) || return 0
+    while IFS= read -r name; do
+        [[ -n "$name" ]] || continue
+        # shellcheck disable=SC2053
+        [[ "$name" == $PATTERN ]] && echo "$name"
+    done <<< "$names"
 }
 
 # --- 通知ファイル確認（seen != true の attention を検知） ---
@@ -151,10 +157,9 @@ check_notifications() {
             echo "[NOTIFY] $notify_file: state=attention seen=$seen"
             echo "$content"
         fi
-    done < <(find "$NOTIFY_DIR" -maxdepth 1 -name "${window_name}:*.json" -o -name "*:*.json" 2>/dev/null \
-        | grep -E "(^|/)${window_name}:[^/]+\.json$" 2>/dev/null || true)
+    done < <(find "$NOTIFY_DIR" -maxdepth 1 -name "${window_name}:*.json" 2>/dev/null || true)
 
-    $found
+    [[ "$found" == "true" ]]
 }
 
 # --- メインループ ---
