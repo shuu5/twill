@@ -211,6 +211,79 @@ test_inject_file_no_enter_flag() {
 }
 run_test "--no-enter 時に Enter が送信されない" test_inject_file_no_enter_flag
 
+# --wait 時に session-state.sh wait が呼ばれる
+test_inject_file_wait_calls_state_wait() {
+    local call_log
+    call_log=$(create_mock_tmux)
+    local mock_scripts_dir="${SANDBOX}/mock_scripts"
+    mkdir -p "$mock_scripts_dir"
+
+    # session-state.sh の wait サブコマンドをモック（成功を返す）
+    cat > "${mock_scripts_dir}/session-state.sh" << 'EOF'
+#!/bin/bash
+echo "$*" >> "${SESSION_STATE_LOG}"
+if [[ "$1" == "wait" ]]; then
+    exit 0
+fi
+if [[ "$1" == "state" ]]; then
+    echo "input-waiting"
+fi
+exit 0
+EOF
+    chmod +x "${mock_scripts_dir}/session-state.sh"
+
+    local state_log="${SANDBOX}/state_calls.log"
+    local tmpfile
+    tmpfile=$(mktemp)
+    echo "test prompt" > "$tmpfile"
+
+    PATH="${SANDBOX}/bin:$PATH" \
+    _TEST_MODE=1 \
+    SESSION_COMM_SCRIPT_DIR="$mock_scripts_dir" \
+    SESSION_STATE_LOG="$state_log" \
+    bash "$SCRIPT" inject-file "session:0" "$tmpfile" --wait 10 2>/dev/null || true
+
+    rm -f "$tmpfile"
+
+    # session-state.sh wait が呼ばれたことを確認
+    grep -q 'wait.*input-waiting' "$state_log"
+}
+run_test "--wait 指定時に session-state.sh wait が呼ばれる" test_inject_file_wait_calls_state_wait
+
+# --wait でタイムアウト時に exit 2 を返す
+test_inject_file_wait_timeout_exits_2() {
+    local call_log
+    call_log=$(create_mock_tmux)
+    local mock_scripts_dir="${SANDBOX}/mock_scripts"
+    mkdir -p "$mock_scripts_dir"
+
+    # session-state.sh wait が失敗を返すモック
+    cat > "${mock_scripts_dir}/session-state.sh" << 'EOF'
+#!/bin/bash
+if [[ "$1" == "wait" ]]; then
+    exit 1
+fi
+echo "input-waiting"
+exit 0
+EOF
+    chmod +x "${mock_scripts_dir}/session-state.sh"
+
+    local tmpfile
+    tmpfile=$(mktemp)
+    echo "test prompt" > "$tmpfile"
+
+    local exit_code=0
+    PATH="${SANDBOX}/bin:$PATH" \
+    _TEST_MODE=1 \
+    SESSION_COMM_SCRIPT_DIR="$mock_scripts_dir" \
+    bash "$SCRIPT" inject-file "session:0" "$tmpfile" --wait 5 2>/dev/null || exit_code=$?
+
+    rm -f "$tmpfile"
+
+    [[ "$exit_code" -eq 2 ]]
+}
+run_test "--wait タイムアウト時に exit 2 を返す" test_inject_file_wait_timeout_exits_2
+
 # =============================================================================
 # Summary
 # =============================================================================
