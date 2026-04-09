@@ -245,6 +245,47 @@ class TestStateTransitions:
         with pytest.raises(StateError, match="不正な状態遷移"):
             state.write(type_="issue", role="worker", issue="1", sets=["status=running"])
 
+    def test_failed_to_done_with_force_done(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_issue_with_status(autopilot_dir, "1", "failed")
+        state.write(
+            type_="issue", role="worker", issue="1",
+            sets=["status=done"],
+            force_done=True, override_reason="Emergency bypass merge completed",
+        )
+        data = _load_issue(autopilot_dir, "1")
+        assert data["status"] == "done"
+        assert data["manual_override"] is True
+        assert data["override_reason"] == "Emergency bypass merge completed"
+
+    def test_failed_to_done_without_force_done_rejected(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_issue_with_status(autopilot_dir, "1", "failed")
+        with pytest.raises(StateError, match="--force-done フラグが必須"):
+            state.write(type_="issue", role="worker", issue="1", sets=["status=done"])
+
+    def test_failed_to_done_force_done_without_reason_rejected(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_issue_with_status(autopilot_dir, "1", "failed")
+        with pytest.raises(StateArgError, match="--override-reason が必須"):
+            state.write(
+                type_="issue", role="worker", issue="1",
+                sets=["status=done"], force_done=True,
+            )
+
+    def test_failed_to_running_unaffected_by_force_done(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_issue_with_status(autopilot_dir, "1", "failed", retry_count=0)
+        state.write(type_="issue", role="worker", issue="1", sets=["status=running"])
+        data = _load_issue(autopilot_dir, "1")
+        assert data["status"] == "running"
+        assert data["retry_count"] == 1
+        assert "manual_override" not in data
+
 
 # ===========================================================================
 # StateManager — RBAC
@@ -499,3 +540,23 @@ class TestStateCLI:
 
         rc = main([])
         assert rc == 2
+
+    def test_force_done_cli(self, autopilot_dir: Path) -> None:
+        from twl.autopilot.state import main
+
+        _create_issue_with_status(autopilot_dir, "1", "failed")
+
+        os.environ["AUTOPILOT_DIR"] = str(autopilot_dir)
+        try:
+            rc = main([
+                "write", "--type", "issue", "--issue", "1",
+                "--role", "worker", "--set", "status=done",
+                "--force-done", "--override-reason", "Emergency bypass merge completed",
+            ])
+            assert rc == 0
+            data = _load_issue(autopilot_dir, "1")
+            assert data["status"] == "done"
+            assert data["manual_override"] is True
+            assert data["override_reason"] == "Emergency bypass merge completed"
+        finally:
+            os.environ.pop("AUTOPILOT_DIR", None)
