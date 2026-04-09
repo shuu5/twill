@@ -23,7 +23,8 @@ cli/twl/
 ├── src/twl/
 │   ├── __init__.py
 │   ├── __main__.py      # python3 -m twl エントリポイント
-│   ├── cli.py           # argparse + サブコマンドディスパッチ
+│   ├── cli.py           # argparse サブコマンド定義
+│   ├── cli_dispatch.py  # サブコマンド実装ロジック（cli.py から分離）
 │   ├── core/
 │   │   ├── plugin.py    # Plugin Structure: deps.yaml ロード、グラフ構築
 │   │   ├── types.py     # Type System: types.yaml ロード、型ルール
@@ -72,3 +73,5 @@ cli/twl/
 - pyproject.toml で `[project.scripts]` エントリポイントを定義し、`pip install -e .` 後は `twl` コマンドで直接実行可能
 - bash wrapper を残すことで、pip install なしでも `python3 -m twl` 経由で動作可能
 - 移行は Phase 分割で段階的に実施
+
+**Addendum (2026-04, #265):** cli.py が 6,074 行に肥大化したため、argparse 定義（cli.py）とサブコマンド実装ロジック（cli_dispatch.py）に分割した。パッケージ構造自体は変更なし。
