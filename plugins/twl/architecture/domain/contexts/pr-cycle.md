@@ -182,7 +182,9 @@ flowchart TD
 
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
-| **workflow** | workflow-pr-cycle | PR サイクル全体の chain-driven 実行 |
+| **workflow** | workflow-pr-verify | PR 検証（preflight → review → scope → test） |
+| **workflow** | workflow-pr-fix | PR 修正（fix → post-fix-verify → warning-fix） |
+| **workflow** | workflow-pr-merge | PRマージ（e2e → report → analysis → check → merge） |
 | **composite** | merge-gate | PR レビュー → テスト → 判定 → merge |
 | **composite** | phase-review | 並列 specialist レビュー（動的レビュアー構築） |
 | **composite** | fix-phase | 自動修正ループ + E2E 修復 |
@@ -204,6 +206,7 @@ flowchart TD
 | **specialist** | worker-architecture | アーキテクチャパターン検証 |
 | **script** | tech-stack-detect | 変更ファイルから tech-stack を判定 |
 | **script** | specialist-output-parse | specialist 出力の機械的パース |
+| **command** | prompt-compliance | refined_by ハッシュ整合性チェック |
 
 ## Dependencies
 

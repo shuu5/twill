@@ -291,7 +291,9 @@ co-autopilot 障害時のみ手動パスを許可する。
 | **controller** | co-autopilot | Issue 群の自律実装オーケストレーター |
 | **workflow** | workflow-setup | DeltaSpec 提案 + テスト準備（worktree は Pilot が事前作成済み） |
 | **workflow** | workflow-test-ready | テスト生成 + 準備確認 |
-| **workflow** | workflow-pr-cycle | verify → review → test → fix → report |
+| **workflow** | workflow-pr-verify | PR 検証（preflight → review → scope → test） |
+| **workflow** | workflow-pr-fix | PR 修正（fix → post-fix-verify → warning-fix） |
+| **workflow** | workflow-pr-merge | PRマージ（e2e → report → analysis → check → merge） |
 | **atomic** | autopilot-init | セッション初期化 |
 | **atomic** | autopilot-launch | Worker tmux window 起動 |
 | **atomic** | autopilot-poll | 状態ポーリング（Orchestrator の核） |
@@ -314,6 +316,8 @@ co-autopilot 障害時のみ手動パスを許可する。
 | **script** | session-archive.sh | セッション完了時のアーカイブ |
 | **script** | worktree-create.sh | worktree + ブランチ作成 |
 | **script** | worktree-delete.sh | worktree + ブランチ削除 |
+| **script** | pseudo-pilot/pr-wait.sh | Pilot 手動ワークフロー支援: PR 待機 |
+| **script** | pseudo-pilot/worker-done-wait.sh | Pilot 手動ワークフロー支援: Worker 完了待機 |
 
 ## Design Principles
 
