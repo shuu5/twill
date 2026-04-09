@@ -421,6 +421,12 @@ def main():
         from twl.autopilot.audit_history import main as audit_history_main
         sys.exit(audit_history_main(sys.argv[2:]))
 
+    # spec サブコマンドの前処理
+    if len(sys.argv) >= 2 and sys.argv[1] == 'spec':
+        from twl.spec import main as spec_main
+        spec_main(sys.argv[2:])
+        sys.exit(0)
+
     # chain サブコマンドの前処理（sys.argv を先に検査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'chain':
         if len(sys.argv) >= 3 and sys.argv[2] == 'generate':

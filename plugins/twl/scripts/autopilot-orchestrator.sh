@@ -974,8 +974,8 @@ _archive_deltaspec_changes_for_issue() {
   root="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
   if [[ -z "$root" ]]; then return 0; fi
 
-  if ! command -v deltaspec >/dev/null 2>&1; then
-    echo "[orchestrator] Issue #${issue}: ⚠️ deltaspec CLI が見つかりません — DeltaSpec archive をスキップ" >&2
+  if ! command -v twl >/dev/null 2>&1; then
+    echo "[orchestrator] Issue #${issue}: ⚠️ twl CLI が見つかりません — DeltaSpec archive をスキップ" >&2
     return 0
   fi
 
@@ -989,7 +989,7 @@ _archive_deltaspec_changes_for_issue() {
     change_dir="$(dirname "$yaml_path")"
     change_id="$(basename "$change_dir")"
     found=true
-    if deltaspec archive --yes --skip-specs -- "$change_id"; then
+    if twl spec archive --yes --skip-specs -- "$change_id"; then
       echo "[orchestrator] Issue #${issue}: DeltaSpec archive 完了: ${change_id}"
     else
       echo "[orchestrator] Issue #${issue}: ⚠️ DeltaSpec archive 失敗: ${change_id}（Phase 完了は続行）" >&2

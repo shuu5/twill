@@ -684,8 +684,8 @@ class PhaseOrchestrator:
         except Exception:
             return
 
-        if not shutil.which("deltaspec"):
-            print(f"[orchestrator] Issue #{issue}: ⚠️ deltaspec CLI が見つかりません", file=sys.stderr)
+        if not shutil.which("twl"):
+            print(f"[orchestrator] Issue #{issue}: ⚠️ twl CLI が見つかりません", file=sys.stderr)
             return
 
         changes_dir = Path(root) / "deltaspec" / "changes"
@@ -699,7 +699,7 @@ class PhaseOrchestrator:
                 found = True
                 change_id = yaml_path.parent.name
                 r = subprocess.run(
-                    ["deltaspec", "archive", "--yes", "--skip-specs", "--", change_id],
+                    ["twl", "spec", "archive", "--yes", "--skip-specs", "--", change_id],
                     capture_output=True,
                 )
                 if r.returncode == 0:
