@@ -137,7 +137,7 @@ flowchart TD
 ## Rules
 
 - **Non-implementation controller**: co-issue はコード変更を伴わない。chain-driven 不要
-- **DeltaSpec 適用**: 常に propose -> apply パス。direct パス廃止（軽微変更 <10行 のみ例外）
+- **DeltaSpec 適用**: `deltaspec/` 初期化済みプロジェクトでは propose → apply を推奨。未初期化プロジェクトおよび `quick` ラベル付き Issue（変更 <10行）は direct 許容。詳細は autopilot.md の「DeltaSpec 適用ポリシー」を参照
 - **AC の機械検証可能性**: AcceptanceCriteria は可能な限り機械的にテスト可能な条件として記述する
 - **Architecture Spec の DCI 参照**: Phase 1 冒頭で architecture/ を Read。存在しない場合はスキップ（エラーにしない）
 - **Glossary 照合は INFO**: merge-gate の WARNING（ブロッキング可）とは異なり、Issue 作成フローを止めない
