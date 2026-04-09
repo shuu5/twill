@@ -390,6 +390,8 @@ poll_single() {
   local window_name
   window_name=$(resolve_worker_window "$issue" "$ISSUE_REPO_ID")
   local poll_count=0
+  local rate_limit_resets=0
+  local max_rate_limit_resets=3
 
   while true; do
     # session-state.sh 利用時: wait で効率的にポーリング
@@ -476,9 +478,10 @@ poll_single() {
     esac
 
     if [[ "$poll_count" -ge "$MAX_POLL" ]]; then
-      # rate-limit 検知時はカウンターリセットして継続
-      if detect_rate_limit "$window_name"; then
-        echo "[orchestrator] Issue #${issue}: rate-limit 検知 — ポーリングカウンターリセット（${poll_count}→0）" >&2
+      # rate-limit 検知時はカウンターリセットして継続（上限あり）
+      if [[ "$rate_limit_resets" -lt "$max_rate_limit_resets" ]] && detect_rate_limit "$window_name"; then
+        rate_limit_resets=$((rate_limit_resets + 1))
+        echo "[orchestrator] Issue #${issue}: rate-limit 検知 — ポーリングカウンターリセット（${poll_count}→0, reset ${rate_limit_resets}/${max_rate_limit_resets}）" >&2
         poll_count=0
         continue
       fi
@@ -496,6 +499,8 @@ poll_single() {
 poll_phase() {
   local -a entries=("$@")
   local poll_count=0
+  local rate_limit_resets=0
+  local max_rate_limit_resets=3
   local -A cleaned_up=()
   # entry 形式（"repo_id:issue_num"）のままリストを構築（クロスリポ衝突防止）
   local -a issue_list=()
@@ -606,7 +611,9 @@ poll_phase() {
           fi
         fi
       done
-      if [[ "$rate_limited" == "true" ]]; then
+      if [[ "$rate_limited" == "true" && "$rate_limit_resets" -lt "$max_rate_limit_resets" ]]; then
+        rate_limit_resets=$((rate_limit_resets + 1))
+        echo "[orchestrator] Phase: rate-limit リセット（${poll_count}→0, reset ${rate_limit_resets}/${max_rate_limit_resets}）" >&2
         poll_count=0
         continue
       fi
