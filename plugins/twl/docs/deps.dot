@@ -14,7 +14,7 @@ digraph Dependencies {
     skill_co_architect [label="twl:co-architect\n(1,357 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_utility [label="twl:co-utility\n(777 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_self_improve [label="twl:co-self-improve\n(1,225 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_observer [label="twl:co-observer\n(399 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_observer [label="twl:co-observer\n(407 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 

@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_observer [label="twl:co-observer\n(399 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_observer [label="twl:co-observer\n(407 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 

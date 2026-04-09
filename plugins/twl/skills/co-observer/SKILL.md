@@ -10,6 +10,8 @@ description: |
   wants to intervene in a Worker's state.
 type: controller
 effort: high
+tools:
+- Agent(observer-evaluator)
 spawnable_by:
 - user
 ---

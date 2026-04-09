@@ -294,6 +294,7 @@ skills:
     type: controller
     path: skills/co-observer/SKILL.md
     effort: high
+    tools: [Agent(observer-evaluator)]
     spawnable_by: [user]
     can_spawn: [workflow, atomic, specialist, reference]
     calls:
