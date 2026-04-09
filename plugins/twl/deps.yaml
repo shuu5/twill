@@ -628,7 +628,7 @@ refs:
   observation-pattern-catalog:
     type: reference
     path: refs/observation-pattern-catalog.md
-    spawnable_by: [controller, workflow, atomic, specialist]
+    spawnable_by: [controller, workflow, atomic]
     can_spawn: []
     description: "rule-based 検出パターンカタログ"
 
