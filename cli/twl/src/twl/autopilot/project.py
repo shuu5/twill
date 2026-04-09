@@ -350,6 +350,9 @@ class ProjectManager:
             print("   警告: remoteの追加に失敗しました（既に存在する可能性）")
             return ""
 
+        # bare repo では fetch refspec が自動設定されないため明示的に追加
+        _run(["git", "-C", str(main_dir), "config", "remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*"])
+
         r = _run(["git", "-C", str(main_dir), "push", "-u", "origin", "main"])
         if r.returncode != 0:
             print("   警告: pushに失敗しました。後で手動で実行してください:")
