@@ -19,6 +19,7 @@ entry_points:
   - skills/co-architect/SKILL.md
   - skills/co-utility/SKILL.md
   - skills/co-self-improve/SKILL.md
+  - skills/co-observer/SKILL.md
 
 # チェーン（B-4 で追加、B-5 で pr-cycle 追加）
 chains:
@@ -289,23 +290,24 @@ skills:
       - reference: load-test-baselines  # 子 7 で実装
     description: "ライブセッション観察と能動的 self-improvement framework のエントリポイント controller"
 
-  # co-observer: ADR-013 の observer 型（#310）
   co-observer:
-    type: controller
+    type: observer
     path: skills/co-observer/SKILL.md
     effort: high
     tools: [Agent(observer-evaluator)]
     spawnable_by: [user]
     can_spawn: [workflow, atomic, specialist, reference]
+    supervises: [co-autopilot, co-issue, co-architect, co-project, co-utility]
     calls:
       - atomic: observe-once
       - atomic: problem-detect
+      - specialist: observer-evaluator
       - atomic: intervene-auto
       - atomic: intervene-confirm
       - atomic: intervene-escalate
       - reference: intervention-catalog
       - reference: observation-pattern-catalog
-    description: "Observer メタ認知コントローラー（ADR-013）— 3 層介入プロトコルの実行エントリポイント"
+    description: "メタ認知レイヤー: 全 controller の監視・介入。テストシナリオ実行は co-self-improve に委譲"
 
   workflow-setup:
     type: workflow

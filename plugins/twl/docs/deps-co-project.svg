@@ -93,7 +93,7 @@
 <polyline fill="none" stroke="black" points="1030.46,-112.18 1030.46,-106.18 "/>
 <polyline fill="none" stroke="black" points="1036.46,-106.18 1030.46,-106.18 "/>
 <text text-anchor="middle" x="980.96" y="-97.18" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;deps&#45;format</text>
-<text text-anchor="middle" x="980.96" y="-86.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,804 tok)</text>
+<text text-anchor="middle" x="980.96" y="-86.18" font-family="Helvetica,sans-Serif" font-size="10.00">(2,028 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;skill_ref_deps_format -->
 <g id="edge16" class="edge">

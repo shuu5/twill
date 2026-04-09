@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_self_improve [label="twl:co-self-improve\n(1,225 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_self_improve [label="twl:co-self-improve\n(1,381 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -87,6 +87,7 @@ digraph Dependencies {
     skill_test_scenario_catalog -> skill_observation_pattern_catalog [style=invis, weight=10];
     skill_observation_pattern_catalog -> skill_load_test_baselines [style=invis, weight=10];
     cmd_observe_once -> cmd_problem_detect [style=invis, weight=10];
+    cmd_problem_detect -> agent_observer_evaluator [style=invis, weight=10];
     cmd_observe_and_detect -> cmd_observe_retrospective [style=invis, weight=10];
     cmd_observe_retrospective -> script_observe_wrapper [style=invis, weight=10];
     script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];

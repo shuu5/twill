@@ -22,7 +22,7 @@ types:
   atomic:
     section: commands
     can_spawn: [reference, script]
-    spawnable_by: [workflow, controller]
+    spawnable_by: [workflow, controller, observer]
     token_target:
       warning: 1500
       critical: 2500
@@ -38,7 +38,7 @@ types:
   specialist:
     section: agents
     can_spawn: []
-    spawnable_by: [workflow, composite, controller]
+    spawnable_by: [workflow, composite, controller, observer]
     token_target:
       warning: 1800
       critical: 2500
@@ -46,7 +46,7 @@ types:
   reference:
     section: skills
     can_spawn: []
-    spawnable_by: [controller, atomic, composite, workflow, agents.skills, all]
+    spawnable_by: [controller, atomic, composite, workflow, observer, agents.skills, all]
     # token_target なし（意図的除外）
 
   script:

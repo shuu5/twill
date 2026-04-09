@@ -1,25 +1,31 @@
 ---
 name: twl:co-self-improve
 description: |
-  ライブセッション観察と能動的 self-improvement framework。
-  別 session (autopilot/co-issue/co-architect) を read-only 観察し、
-  問題検出 → Issue draft → ユーザー確認 → 起票までを統括する。
-  テストプロジェクト (隔離 worktree) 上での負荷シナリオ壁打ちも管理する。
+  テストシナリオ実行と self-improvement arm。
+  co-observer から委譲されるテスト実行モード（scenario-run）と、
+  テストプロジェクト管理、過去観察の retrospect を担う。
+  直接セッション監視は co-observer に移管済み（observe モード: deprecated）。
 
-  Use when user: says co-self-improve/observation/観察/壁打ち/テストプロジェクト/load test,
-  wants to observe a running session,
+  Use when user: says co-self-improve/壁打ち/テストプロジェクト/load test/scenario,
+  wants to run test scenarios on test-target worktree,
+  wants to manage the test project,
   wants to retrospect past observations.
+  Observation/監視 → co-observer を使うこと。
 type: controller
 effort: high
 tools:
 - Agent(observer-evaluator)
 spawnable_by:
 - user
+- co-observer
 ---
 
 # co-self-improve
 
-ライブセッション観察と能動的 self-improvement framework。
+テストシナリオ実行 arm。scenario-run / retrospect / test-project-manage の 3 モードに特化する。
+
+**位置づけ**: co-observer（上位）から委譲されるテスト実行モードとして機能する。
+セッション監視・介入は co-observer が担い、co-self-improve はシナリオ実行と知識蓄積に集中する。
 
 ## Step 0: モード判定
 
@@ -27,19 +33,22 @@ spawnable_by:
 
 | モード | キーワード | 動作 |
 |---|---|---|
-| observe | observe / 観察 / 監視 / window 名指定 | Step 1a → Step 2 |
 | scenario-run | scenario / シナリオ / 壁打ち / smoke / regression | Step 1b → Step 2 |
 | retrospect | retrospect / 振り返り / 集約 / pattern | Step 3 |
 | test-project-manage | init / reset / status / clean / cleanup | Step 4 |
 
-引数なし or 曖昧な場合は AskUserQuestion で 4 モードから選択させる。
+> **注意**: `observe / 観察 / 監視` キーワードは **deprecated**。
+> セッション監視は co-observer の supervise モードを使用してください。
 
-## Step 1a: observe モード — 対象 session 選択
+引数なし or 曖昧な場合は AskUserQuestion で 3 モードから選択させる。
 
-`tmux list-windows` で観察可能 window 一覧を取得し、**自 window を除外**してユーザーに提示。
-複数候補がある場合は AskUserQuestion で選択。
+## [DEPRECATED] observe モード
 
-## Step 1b: scenario-run モード — シナリオ選択 + spawn
+このモードは co-observer の supervise モードに移管されました。
+`observe / 観察 / 監視` のキーワードが入力された場合は、
+AskUserQuestion で co-observer への誘導を行う。
+
+## Step 1: scenario-run モード — シナリオ選択 + spawn
 
 1. `commands/test-project-init.md` を Read → 実行（test-target worktree が無ければ作成）
 2. `refs/test-scenario-catalog.md` を Read してシナリオ一覧表示
@@ -48,7 +57,7 @@ spawnable_by:
 5. `Skill(session:spawn)` で `--cd worktrees/test-target` を指定し observed session を起動
 6. spawn 後の window 名を取得し Step 2 へ
 
-## Step 2: observation loop 起動
+## Step 2: scenario 実行中の observation loop 起動
 
 `Skill(twl:workflow-observe-loop)` を呼び出し、対象 window を引数で渡す。
 workflow が完了（検出 0 件 or ユーザー停止 or タイムアウト）するまで委譲。
