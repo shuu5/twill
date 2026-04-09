@@ -63,6 +63,11 @@ scripts:
     path: scripts/cld-fork
     description: "セッション fork 起動（--continue --fork-session）"
 
+  cld-observe-loop:
+    type: script
+    path: scripts/cld-observe-loop
+    description: "定期監視ループ（複数ウィンドウを指定間隔でポーリング、通知ファイル監視付き）"
+
   claude-session-save:
     type: script
     path: scripts/claude-session-save.sh
