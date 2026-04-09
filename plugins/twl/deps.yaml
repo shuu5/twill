@@ -2073,6 +2073,14 @@ scripts:
       - script: autopilot-plan-board
     description: "autopilot 実行計画 (plan.yaml) 生成（Python: python3 -m twl.autopilot.plan; explicit/issues/board モード）"
 
+  autopilot-cleanup:
+    type: script
+    path: scripts/autopilot-cleanup.sh
+    calls:
+      - script: worktree-delete
+      - script: state-read
+    description: "セッション完了後の一括クリーンアップ（done/failed state file アーカイブ + 孤立 worktree 削除）"
+
   autopilot-should-skip:
     type: script
     path: scripts/autopilot-should-skip.sh

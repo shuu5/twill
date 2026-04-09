@@ -15,14 +15,14 @@
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="77.78" cy="-182.49" rx="77.56" ry="21.43"/>
 <text text-anchor="middle" x="77.78" y="-185.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;setup</text>
-<text text-anchor="middle" x="77.78" y="-174.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,067 tok)</text>
+<text text-anchor="middle" x="77.78" y="-174.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,068 tok)</text>
 </g>
 <!-- cmd_init -->
 <g id="node2" class="node">
 <title>cmd_init</title>
 <polygon fill="#e3f2fd" stroke="black" points="320.56,-403.49 259.56,-403.49 259.56,-367.49 320.56,-367.49 320.56,-403.49"/>
 <text text-anchor="middle" x="290.06" y="-388.49" font-family="Helvetica,sans-Serif" font-size="10.00">init</text>
-<text text-anchor="middle" x="290.06" y="-377.49" font-family="Helvetica,sans-Serif" font-size="10.00">(639 tok)</text>
+<text text-anchor="middle" x="290.06" y="-377.49" font-family="Helvetica,sans-Serif" font-size="10.00">(640 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;cmd_init -->
 <g id="edge1" class="edge">
@@ -179,7 +179,7 @@
 <title>script_worker_terminal_guard</title>
 <polygon fill="#ff9800" stroke="black" points="630.2,-540.49 578.82,-564.98 476.06,-564.98 424.68,-540.49 476.06,-516.01 578.82,-516.01 630.2,-540.49"/>
 <text text-anchor="middle" x="527.44" y="-543.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;terminal&#45;guard</text>
-<text text-anchor="middle" x="527.44" y="-532.49" font-family="Helvetica,sans-Serif" font-size="10.00">(695 tok)</text>
+<text text-anchor="middle" x="527.44" y="-532.49" font-family="Helvetica,sans-Serif" font-size="10.00">(770 tok)</text>
 </g>
 <!-- script_chain_steps -->
 <g id="node14" class="node">

@@ -42,7 +42,7 @@ digraph Dependencies {
     agent_worker_supabase_migration_checker [label="worker-supabase-migration-checker\n(1,338 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_data_validator [label="worker-data-validator\n(698 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_e2e_reviewer [label="worker-e2e-reviewer\n(1,226 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_spec_reviewer [label="worker-spec-reviewer\n(1,094 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_spec_reviewer [label="worker-spec-reviewer\n(1,095 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,421 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_code_reviewer [label="worker-code-reviewer\n(964 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_security_reviewer [label="worker-security-reviewer\n(866 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
@@ -61,7 +61,7 @@ digraph Dependencies {
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(2,496 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_runner [label="chain-runner\n(7,562 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_worker_terminal_guard [label="worker-terminal-guard\n(695 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_steps [label="chain-steps\n(7,562 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

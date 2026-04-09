@@ -1,0 +1,70 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="workflow-issue-refine";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+    skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(1,092 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+
+    // Reference Skills
+
+    // L1: Direct Commands
+    cmd_issue_structure [label="issue-structure\n(1,247 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_issue_tech_debt_absorb [label="issue-tech-debt-absorb\n(730 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_issue_spec_review [label="issue-spec-review\n(1,308 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_issue_review_aggregate [label="issue-review-aggregate\n(1,157 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_issue_arch_drift [label="issue-arch-drift\n(788 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+    agent_issue_critic [label="issue-critic\n(1,268 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_issue_feasibility [label="issue-feasibility\n(1,175 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,421 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+
+    // L3.5: Scripts
+    script_escape_issue_body [label="escape-issue-body\n(63 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_spec_review_manifest [label="spec-review-manifest\n(125 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_workflow_issue_refine; }
+    { rank=same; cmd_issue_structure; cmd_issue_tech_debt_absorb; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_arch_drift; }
+    { rank=same; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; }
+    { rank=same; script_escape_issue_body; script_spec_review_manifest; }
+
+    // Edges
+    skill_workflow_issue_refine -> cmd_issue_structure;
+    skill_workflow_issue_refine -> cmd_issue_tech_debt_absorb;
+    skill_workflow_issue_refine -> cmd_issue_spec_review;
+    skill_workflow_issue_refine -> cmd_issue_review_aggregate;
+    skill_workflow_issue_refine -> cmd_issue_arch_drift;
+    cmd_issue_spec_review -> agent_issue_critic [style=dashed];
+    cmd_issue_spec_review -> agent_issue_feasibility [style=dashed];
+    cmd_issue_spec_review -> agent_worker_codex_reviewer [style=dashed];
+    cmd_issue_spec_review -> script_escape_issue_body;
+    cmd_issue_spec_review -> script_spec_review_manifest;
+
+    // Ordering constraints (invisible edges)
+    cmd_issue_structure -> cmd_issue_tech_debt_absorb [style=invis, weight=10];
+    cmd_issue_tech_debt_absorb -> cmd_issue_spec_review [style=invis, weight=10];
+    cmd_issue_spec_review -> cmd_issue_review_aggregate [style=invis, weight=10];
+    cmd_issue_review_aggregate -> cmd_issue_arch_drift [style=invis, weight=10];
+    agent_issue_critic -> agent_issue_feasibility [style=invis, weight=10];
+    agent_issue_feasibility -> agent_worker_codex_reviewer [style=invis, weight=10];
+    agent_worker_codex_reviewer -> script_escape_issue_body [style=invis, weight=10];
+    script_escape_issue_body -> script_spec_review_manifest [style=invis, weight=10];
+
+}

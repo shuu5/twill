@@ -22,7 +22,7 @@
 <title>cmd_change_apply</title>
 <polygon fill="#e3f2fd" stroke="black" points="329.09,-229.49 246.09,-229.49 246.09,-193.49 329.09,-193.49 329.09,-229.49"/>
 <text text-anchor="middle" x="287.59" y="-214.49" font-family="Helvetica,sans-Serif" font-size="10.00">change&#45;apply</text>
-<text text-anchor="middle" x="287.59" y="-203.49" font-family="Helvetica,sans-Serif" font-size="10.00">(880 tok)</text>
+<text text-anchor="middle" x="287.59" y="-203.49" font-family="Helvetica,sans-Serif" font-size="10.00">(881 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_change_apply -->
 <g id="edge2" class="edge">
@@ -35,7 +35,7 @@
 <title>cmd_check</title>
 <polygon fill="#e3f2fd" stroke="black" points="322.59,-171.49 252.59,-171.49 252.59,-135.49 322.59,-135.49 322.59,-171.49"/>
 <text text-anchor="middle" x="287.59" y="-156.49" font-family="Helvetica,sans-Serif" font-size="10.00">check</text>
-<text text-anchor="middle" x="287.59" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,165 tok)</text>
+<text text-anchor="middle" x="287.59" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,167 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_check -->
 <g id="edge3" class="edge">
@@ -180,7 +180,7 @@
 <title>script_worker_terminal_guard</title>
 <polygon fill="#ff9800" stroke="black" points="592.73,-589.49 541.35,-613.98 438.59,-613.98 387.21,-589.49 438.59,-565.01 541.35,-565.01 592.73,-589.49"/>
 <text text-anchor="middle" x="489.97" y="-592.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;terminal&#45;guard</text>
-<text text-anchor="middle" x="489.97" y="-581.49" font-family="Helvetica,sans-Serif" font-size="10.00">(695 tok)</text>
+<text text-anchor="middle" x="489.97" y="-581.49" font-family="Helvetica,sans-Serif" font-size="10.00">(770 tok)</text>
 </g>
 <!-- script_worktree_create -->
 <g id="node13" class="node">

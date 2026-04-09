@@ -174,4 +174,10 @@ Autopilot で複数 Issue を一括実装:
 
 ![workflow-plugin-diagnose](./docs/deps-workflow-plugin-diagnose.svg)
 </details>
+
+<details>
+<summary>workflow-issue-refine</summary>
+
+![workflow-issue-refine](./docs/deps-workflow-issue-refine.svg)
+</details>
 <!-- DEPS-SUBGRAPHS-END -->

@@ -23,7 +23,7 @@ digraph Dependencies {
     cmd_post_fix_verify [label="post-fix-verify\n(628 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_warning_fix [label="warning-fix\n(380 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_fix_phase [label="fix-phase\n(552 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_spec_diagnose [label="spec-diagnose\n(650 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_spec_diagnose [label="spec-diagnose\n(651 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 

@@ -145,7 +145,7 @@
 <title>cmd_project_migrate</title>
 <polygon fill="#e3f2fd" stroke="black" points="586.07,-326.98 494.07,-326.98 494.07,-290.98 586.07,-290.98 586.07,-326.98"/>
 <text text-anchor="middle" x="540.07" y="-311.98" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;migrate</text>
-<text text-anchor="middle" x="540.07" y="-300.98" font-family="Helvetica,sans-Serif" font-size="10.00">(484 tok)</text>
+<text text-anchor="middle" x="540.07" y="-300.98" font-family="Helvetica,sans-Serif" font-size="10.00">(485 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;cmd_project_migrate -->
 <g id="edge4" class="edge">

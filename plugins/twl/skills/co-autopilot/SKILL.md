@@ -72,6 +72,12 @@ TaskUpdate Phase P → completed。
 
 `autopilot-orchestrator.sh --summary --session --autopilot-dir` で全 issue-{N}.json を集約し、done/failed/skipped の件数と詳細を JSON で出力。Pilot はパースしてユーザーに報告する。TaskUpdate 全体タスク → completed。
 
+サマリー報告後、一括クリーンアップを実行:
+```bash
+bash "$SCRIPTS_ROOT/autopilot-cleanup.sh" --autopilot-dir "$AUTOPILOT_DIR"
+```
+done state file を即座にアーカイブし、TTL 超過の failed state file もアーカイブ。孤立 worktree を検出・削除する。`--dry-run` で事前確認も可能。
+
 ## 再開機能
 
 issue-{N}.json の status から自動判定:

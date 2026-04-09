@@ -61,7 +61,7 @@
 <title>cmd_spec_diagnose</title>
 <polygon fill="#e3f2fd" stroke="black" points="297.74,-100.49 210.74,-100.49 210.74,-64.49 297.74,-64.49 297.74,-100.49"/>
 <text text-anchor="middle" x="254.24" y="-85.49" font-family="Helvetica,sans-Serif" font-size="10.00">spec&#45;diagnose</text>
-<text text-anchor="middle" x="254.24" y="-74.49" font-family="Helvetica,sans-Serif" font-size="10.00">(650 tok)</text>
+<text text-anchor="middle" x="254.24" y="-74.49" font-family="Helvetica,sans-Serif" font-size="10.00">(651 tok)</text>
 </g>
 <!-- skill_workflow_pr_fix&#45;&gt;cmd_spec_diagnose -->
 <g id="edge4" class="edge">

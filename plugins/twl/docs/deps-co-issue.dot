@@ -11,11 +11,12 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="twl:co-issue\n(1,818 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(1,347 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
+    skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(1,092 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_issue_template_bug [label="twl:ref-issue-template-bug\n(136 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -35,7 +36,7 @@ digraph Dependencies {
     cmd_issue_arch_drift [label="issue-arch-drift\n(788 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_cross_repo_create [label="issue-cross-repo-create\n(1,425 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_sync [label="project-board-sync\n(1,184 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_explore [label="explore\n(1,509 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_explore [label="explore\n(1,510 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -52,6 +53,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_issue; }
+    { rank=same; skill_workflow_issue_refine; }
     { rank=same; skill_ref_issue_template_bug; skill_ref_issue_template_feature; skill_ref_project_model; skill_ref_issue_quality_criteria; skill_ref_glossary_criteria; }
     { rank=same; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_issue_cross_repo_create; cmd_project_board_sync; cmd_explore; }
     { rank=same; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; }
@@ -59,14 +61,10 @@ digraph Dependencies {
 
     // Edges
     skill_co_issue -> cmd_explore;
-    skill_co_issue -> cmd_issue_structure;
-    skill_co_issue -> cmd_issue_tech_debt_absorb;
+    skill_co_issue -> skill_workflow_issue_refine;
     skill_co_issue -> cmd_issue_create;
     skill_co_issue -> cmd_issue_bulk_create;
-    skill_co_issue -> cmd_issue_spec_review;
-    skill_co_issue -> cmd_issue_review_aggregate;
     skill_co_issue -> cmd_issue_glossary_check;
-    skill_co_issue -> cmd_issue_arch_drift;
     skill_co_issue -> cmd_issue_cross_repo_create;
     skill_co_issue -> cmd_project_board_sync;
     skill_co_issue -> skill_ref_issue_template_bug;
@@ -74,6 +72,11 @@ digraph Dependencies {
     skill_co_issue -> skill_ref_project_model;
     skill_co_issue -> skill_ref_issue_quality_criteria;
     skill_co_issue -> skill_ref_glossary_criteria;
+    skill_workflow_issue_refine -> cmd_issue_structure;
+    skill_workflow_issue_refine -> cmd_issue_tech_debt_absorb;
+    skill_workflow_issue_refine -> cmd_issue_spec_review;
+    skill_workflow_issue_refine -> cmd_issue_review_aggregate;
+    skill_workflow_issue_refine -> cmd_issue_arch_drift;
     cmd_issue_spec_review -> agent_issue_critic [style=dashed];
     cmd_issue_spec_review -> agent_issue_feasibility [style=dashed];
     cmd_issue_spec_review -> agent_worker_codex_reviewer [style=dashed];
@@ -85,21 +88,21 @@ digraph Dependencies {
     agent_worker_codex_reviewer -> skill_ref_issue_quality_criteria [style=dotted];
 
     // Ordering constraints (invisible edges)
-    cmd_explore -> cmd_issue_structure [style=invis, weight=10];
-    cmd_issue_structure -> cmd_issue_tech_debt_absorb [style=invis, weight=10];
-    cmd_issue_tech_debt_absorb -> cmd_issue_create [style=invis, weight=10];
+    cmd_explore -> skill_workflow_issue_refine [style=invis, weight=10];
+    skill_workflow_issue_refine -> cmd_issue_create [style=invis, weight=10];
     cmd_issue_create -> cmd_issue_bulk_create [style=invis, weight=10];
-    cmd_issue_bulk_create -> cmd_issue_spec_review [style=invis, weight=10];
-    cmd_issue_spec_review -> cmd_issue_review_aggregate [style=invis, weight=10];
-    cmd_issue_review_aggregate -> cmd_issue_glossary_check [style=invis, weight=10];
-    cmd_issue_glossary_check -> cmd_issue_arch_drift [style=invis, weight=10];
-    cmd_issue_arch_drift -> cmd_issue_cross_repo_create [style=invis, weight=10];
+    cmd_issue_bulk_create -> cmd_issue_glossary_check [style=invis, weight=10];
+    cmd_issue_glossary_check -> cmd_issue_cross_repo_create [style=invis, weight=10];
     cmd_issue_cross_repo_create -> cmd_project_board_sync [style=invis, weight=10];
     cmd_project_board_sync -> skill_ref_issue_template_bug [style=invis, weight=10];
     skill_ref_issue_template_bug -> skill_ref_issue_template_feature [style=invis, weight=10];
     skill_ref_issue_template_feature -> skill_ref_project_model [style=invis, weight=10];
     skill_ref_project_model -> skill_ref_issue_quality_criteria [style=invis, weight=10];
     skill_ref_issue_quality_criteria -> skill_ref_glossary_criteria [style=invis, weight=10];
+    cmd_issue_structure -> cmd_issue_tech_debt_absorb [style=invis, weight=10];
+    cmd_issue_tech_debt_absorb -> cmd_issue_spec_review [style=invis, weight=10];
+    cmd_issue_spec_review -> cmd_issue_review_aggregate [style=invis, weight=10];
+    cmd_issue_review_aggregate -> cmd_issue_arch_drift [style=invis, weight=10];
     agent_issue_critic -> agent_issue_feasibility [style=invis, weight=10];
     agent_issue_feasibility -> agent_worker_codex_reviewer [style=invis, weight=10];
     agent_worker_codex_reviewer -> script_escape_issue_body [style=invis, weight=10];
