@@ -23,6 +23,12 @@
 
 set -uo pipefail
 
+# PYTHONPATH 設定（Issue #227: 独立実行時にも twl モジュールを利用可能にする）
+_WTG_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/python-env.sh
+source "${_WTG_SCRIPT_DIR}/lib/python-env.sh"
+unset _WTG_SCRIPT_DIR
+
 # AUTOPILOT_DIR 未設定 → no-op（非 autopilot 保護）
 if [[ -z "${AUTOPILOT_DIR:-}" ]]; then
   exit 0

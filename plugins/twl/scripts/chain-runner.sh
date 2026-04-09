@@ -21,6 +21,32 @@ source "${SCRIPT_DIR}/lib/python-env.sh"
 source "${SCRIPT_DIR}/resolve-issue-num.sh"
 
 # =====================================================================
+# PYTHONPATH 検証ガード（Issue #227）
+# python 呼び出し前に twl モジュールが import 可能か検証し、
+# 失敗時は python-env.sh を再 source して修復を試みる
+# =====================================================================
+_twl_python_verified=false
+ensure_pythonpath() {
+  if [[ "$_twl_python_verified" == "true" ]]; then
+    return 0
+  fi
+  if python3 -c "import twl" 2>/dev/null; then
+    _twl_python_verified=true
+    return 0
+  fi
+  echo "[chain-runner] WARN: twl モジュール import 失敗。PYTHONPATH 再設定を試行..." >&2
+  # python-env.sh を再 source（フォールバックチェーンが走る）
+  # shellcheck source=./lib/python-env.sh
+  source "${SCRIPT_DIR}/lib/python-env.sh"
+  if python3 -c "import twl" 2>/dev/null; then
+    _twl_python_verified=true
+    return 0
+  fi
+  echo "[chain-runner] ERROR: twl モジュールが import できません。PYTHONPATH=${PYTHONPATH:-<unset>}" >&2
+  return 1
+}
+
+# =====================================================================
 # 共通ユーティリティ関数
 # =====================================================================
 
@@ -118,6 +144,8 @@ record_current_step() {
   local issue_num
   issue_num="$(resolve_issue_num)"
   [[ -z "$issue_num" ]] && return 0
+  # PYTHONPATH 検証（Issue #227）
+  ensure_pythonpath || return 0
   # record current_step via Python state module
   python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "current_step=${step_id}" 2>/dev/null || true
 }
@@ -825,6 +853,9 @@ step_all_pass_check() {
     fi
     return 0
   fi
+
+  # PYTHONPATH 検証（Issue #227: all-pass-check は状態書き込みに必須）
+  ensure_pythonpath || { err "all-pass-check" "PYTHONPATH 設定不可"; return 1; }
 
   # autopilot 配下判定
   local autopilot_status
