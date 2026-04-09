@@ -179,7 +179,7 @@ skills:
     effort: high
     tools: [Skill(workflow-issue-refine, workflow-issue-create, issue-glossary-check, explore)]
     spawnable_by: [user]
-    can_spawn: [workflow, atomic, reference]
+    can_spawn: [composite, atomic, specialist, reference, workflow]
     calls:
       - atomic: explore
       - atomic: issue-glossary-check
