@@ -15,7 +15,7 @@
 <title>skill_workflow_issue_refine</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="98.99" cy="-134" rx="98.99" ry="21.43"/>
 <text text-anchor="middle" x="98.99" y="-137" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;issue&#45;refine</text>
-<text text-anchor="middle" x="98.99" y="-126" font-family="Helvetica,sans-Serif" font-size="10.00">(1,092 tok)</text>
+<text text-anchor="middle" x="98.99" y="-126" font-family="Helvetica,sans-Serif" font-size="10.00">(1,279 tok)</text>
 </g>
 <!-- cmd_issue_structure -->
 <g id="node2" class="node">
@@ -74,7 +74,7 @@
 <title>cmd_issue_arch_drift</title>
 <polygon fill="#e3f2fd" stroke="black" points="366.99,-36 276.99,-36 276.99,0 366.99,0 366.99,-36"/>
 <text text-anchor="middle" x="321.99" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;arch&#45;drift</text>
-<text text-anchor="middle" x="321.99" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(788 tok)</text>
+<text text-anchor="middle" x="321.99" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(1,079 tok)</text>
 </g>
 <!-- skill_workflow_issue_refine&#45;&gt;cmd_issue_arch_drift -->
 <g id="edge5" class="edge">
@@ -116,7 +116,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="537.21" cy="-134" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="537.21" y="-137" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="537.21" y="-126" font-family="Helvetica,sans-Serif" font-size="10.00">(1,426 tok)</text>
+<text text-anchor="middle" x="537.21" y="-126" font-family="Helvetica,sans-Serif" font-size="10.00">(1,441 tok)</text>
 </g>
 <!-- cmd_issue_spec_review&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge8" class="edge">

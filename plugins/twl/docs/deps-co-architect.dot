@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_architect [label="twl:co-architect\n(1,317 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_architect [label="twl:co-architect\n(1,357 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -27,7 +27,7 @@ digraph Dependencies {
     cmd_architect_group_refine [label="architect-group-refine\n(1,102 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_architect_issue_create [label="architect-issue-create\n(1,481 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_evaluate_architecture [label="evaluate-architecture\n(825 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_explore [label="explore\n(773 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_explore [label="explore\n(1,211 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 

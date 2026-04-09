@@ -11,13 +11,14 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_project [label="twl:co-project\n(1,456 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_project [label="twl:co-project\n(1,625 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
     skill_workflow_plugin_create [label="twl:workflow-plugin-create\n(558 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(693 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_prompt_audit [label="twl:workflow-prompt-audit\n(684 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -42,6 +43,9 @@ digraph Dependencies {
     cmd_plugin_design [label="plugin-design\n(1,192 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_generate [label="plugin-generate\n(1,419 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(476 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_prompt_audit_scan [label="prompt-audit-scan\n(334 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_prompt_audit_review [label="prompt-audit-review\n(458 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_prompt_audit_apply [label="prompt-audit-apply\n(632 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_diagnose [label="plugin-diagnose\n(944 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_fix [label="plugin-fix\n(1,092 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_plugin_verify [label="plugin-verify\n(536 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -61,9 +65,9 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_project; }
-    { rank=same; skill_workflow_plugin_create; skill_workflow_plugin_diagnose; }
+    { rank=same; skill_workflow_plugin_create; skill_workflow_plugin_diagnose; skill_workflow_prompt_audit; }
     { rank=same; skill_ref_specialist_output_schema; skill_ref_types; skill_ref_practices; skill_ref_deps_format; skill_ref_architecture; }
-    { rank=same; cmd_label_sync; cmd_project_create; cmd_project_board_configure; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
+    { rank=same; cmd_label_sync; cmd_project_create; cmd_project_board_configure; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_prompt_audit_scan; cmd_prompt_audit_review; cmd_prompt_audit_apply; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_architecture; }
 
     // Edges
@@ -78,6 +82,7 @@ digraph Dependencies {
     skill_co_project -> cmd_snapshot_generate;
     skill_co_project -> skill_workflow_plugin_create;
     skill_co_project -> skill_workflow_plugin_diagnose;
+    skill_co_project -> skill_workflow_prompt_audit;
     skill_co_project -> cmd_label_sync;
     skill_co_project -> skill_ref_types;
     skill_co_project -> skill_ref_practices;
@@ -92,6 +97,9 @@ digraph Dependencies {
     skill_workflow_plugin_diagnose -> cmd_plugin_fix;
     skill_workflow_plugin_diagnose -> cmd_plugin_verify;
     skill_workflow_plugin_diagnose -> cmd_plugin_phase_verify;
+    skill_workflow_prompt_audit -> cmd_prompt_audit_scan;
+    skill_workflow_prompt_audit -> cmd_prompt_audit_review;
+    skill_workflow_prompt_audit -> cmd_prompt_audit_apply;
     cmd_plugin_phase_diagnose -> agent_worker_structure [style=dashed];
     cmd_plugin_phase_diagnose -> agent_worker_principles [style=dashed];
     cmd_plugin_phase_diagnose -> agent_worker_architecture [style=dashed];
@@ -118,7 +126,8 @@ digraph Dependencies {
     cmd_snapshot_classify -> cmd_snapshot_generate [style=invis, weight=10];
     cmd_snapshot_generate -> skill_workflow_plugin_create [style=invis, weight=10];
     skill_workflow_plugin_create -> skill_workflow_plugin_diagnose [style=invis, weight=10];
-    skill_workflow_plugin_diagnose -> cmd_label_sync [style=invis, weight=10];
+    skill_workflow_plugin_diagnose -> skill_workflow_prompt_audit [style=invis, weight=10];
+    skill_workflow_prompt_audit -> cmd_label_sync [style=invis, weight=10];
     cmd_label_sync -> skill_ref_types [style=invis, weight=10];
     skill_ref_types -> skill_ref_practices [style=invis, weight=10];
     skill_ref_practices -> skill_ref_deps_format [style=invis, weight=10];
@@ -130,6 +139,8 @@ digraph Dependencies {
     cmd_plugin_phase_diagnose -> cmd_plugin_fix [style=invis, weight=10];
     cmd_plugin_fix -> cmd_plugin_verify [style=invis, weight=10];
     cmd_plugin_verify -> cmd_plugin_phase_verify [style=invis, weight=10];
+    cmd_prompt_audit_scan -> cmd_prompt_audit_review [style=invis, weight=10];
+    cmd_prompt_audit_review -> cmd_prompt_audit_apply [style=invis, weight=10];
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
     agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];

@@ -11,12 +11,12 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_self_improve [label="twl:co-self-improve\n(1,171 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_self_improve [label="twl:co-self-improve\n(1,225 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,503 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,550 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_test_scenario_catalog [label="twl:test-scenario-catalog\n(1,714 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];

@@ -61,7 +61,7 @@
 <title>cmd_merge_gate</title>
 <polygon fill="#bbdefb" stroke="black" points="326.02,-708.49 252.02,-708.49 252.02,-672.49 326.02,-672.49 326.02,-708.49"/>
 <text text-anchor="middle" x="289.02" y="-693.49" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate</text>
-<text text-anchor="middle" x="289.02" y="-682.49" font-family="Helvetica,sans-Serif" font-size="10.00">(882 tok)</text>
+<text text-anchor="middle" x="289.02" y="-682.49" font-family="Helvetica,sans-Serif" font-size="10.00">(885 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_merge_gate -->
 <g id="edge5" class="edge">
@@ -354,7 +354,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="796.54" cy="-721.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="796.54" y="-724.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="796.54" y="-713.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,426 tok)</text>
+<text text-anchor="middle" x="796.54" y="-713.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,441 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge36" class="edge">

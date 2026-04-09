@@ -15,7 +15,7 @@
 <title>skill_workflow_tech_debt_triage</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="113.84" cy="-21.21" rx="113.69" ry="21.43"/>
 <text text-anchor="middle" x="113.84" y="-24.21" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;tech&#45;debt&#45;triage</text>
-<text text-anchor="middle" x="113.84" y="-13.21" font-family="Helvetica,sans-Serif" font-size="10.00">(1,016 tok)</text>
+<text text-anchor="middle" x="113.84" y="-13.21" font-family="Helvetica,sans-Serif" font-size="10.00">(1,040 tok)</text>
 </g>
 <!-- cmd_triage_execute -->
 <g id="node2" class="node">
