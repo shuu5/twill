@@ -58,6 +58,10 @@ WINDOW_NAME=$(generate_window_name wt "$CWD" "$CWD")
 
 `cld-spawn` は `flock` により `~/.local/state/twl/window-create.lock` を排他ロックして new-window を実行し、並列 spawn での重複作成を防止する。
 
+## Window Manifest（Phase 2 — 後追い）
+
+window-manifest 書き出し（producer 責務）は #290 として追跡する。Phase 1（命名統一）の完了後に別 Issue で実装予定。
+
 ## 編集フロー（必須）
 
 ```
