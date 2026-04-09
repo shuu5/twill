@@ -228,6 +228,7 @@
 <!-- skill_test_scenario_catalog&#45;&gt;skill_observation_pattern_catalog -->
 <!-- skill_observation_pattern_catalog&#45;&gt;skill_load_test_baselines -->
 <!-- cmd_observe_once&#45;&gt;cmd_problem_detect -->
+<!-- cmd_observe_once&#45;&gt;cmd_problem_detect -->
 <!-- cmd_observe_once&#45;&gt;script_observe_wrapper -->
 <g id="edge17" class="edge">
 <title>cmd_observe_once&#45;&gt;script_observe_wrapper</title>
