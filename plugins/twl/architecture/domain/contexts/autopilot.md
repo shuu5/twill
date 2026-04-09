@@ -217,6 +217,18 @@ stateDiagram-v2
 
 ## Rules
 
+### DeltaSpec 適用ポリシー
+
+Worker が DeltaSpec を使用すべきかどうかの判断基準:
+
+| 条件 | 動作 | 根拠 |
+|------|------|------|
+| `deltaspec/` 未初期化（プロジェクトに `deltaspec/` ディレクトリなし） | direct（DeltaSpec なし） | プロジェクト設定前 |
+| `quick` ラベル付き Issue かつ変更 <10行 | direct | コスト対効果 |
+| 上記以外 | propose → apply | 仕様駆動の原則 |
+
+**デフォルト動作**: 判断に迷った場合は `propose → apply` パスを選択する。`deltaspec/` が初期化済みであれば、DeltaSpec を経由することが仕様駆動サイクルの設計意図と整合する。
+
 ### Pilot / Worker 役割分担
 
 **Pilot (CWD = main/)**:
