@@ -241,7 +241,7 @@
 | parse-issue-ac.sh | 移植 | parse-issue-ac.sh | C-4 |
 | classify-failure.sh | 移植 | classify-failure.sh | C-4 |
 | create-harness-issue.sh | 移植 | create-harness-issue.sh | C-4 |
-| codex-review.sh | 移植 | codex-review.sh | C-4 |
+| codex-review.sh | 移植 | codex-review.sh | C-4 | ※ #22 で削除済み |
 | project-create.sh | 移植 | project-create.sh | C-4 |
 | project-migrate.sh | 移植 | project-migrate.sh | C-4 |
 | worktree-create.sh | 移植 | worktree-create.sh | C-4 |

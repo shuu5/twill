@@ -74,7 +74,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="553.84,-95.49 521.91,-119.98 458.03,-119.98 426.09,-95.49 458.03,-71.01 521.91,-71.01 553.84,-95.49"/>
 <text text-anchor="middle" x="489.97" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="489.97" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,562 tok)</text>
+<text text-anchor="middle" x="489.97" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(8,177 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;script_chain_runner -->
 <g id="edge5" class="edge">
@@ -102,7 +102,7 @@
 <polyline fill="none" stroke="black" points="819.85,-333.49 819.85,-327.49 "/>
 <polyline fill="none" stroke="black" points="825.85,-327.49 819.85,-327.49 "/>
 <text text-anchor="middle" x="738.35" y="-318.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;specialist&#45;output&#45;schema</text>
-<text text-anchor="middle" x="738.35" y="-307.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,961 tok)</text>
+<text text-anchor="middle" x="738.35" y="-307.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,283 tok)</text>
 </g>
 <!-- cmd_change_apply&#45;&gt;cmd_check -->
 <!-- cmd_check&#45;&gt;cmd_e2e_plan -->
@@ -201,7 +201,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="549.68,-802.49 519.82,-826.98 460.11,-826.98 430.26,-802.49 460.11,-778.01 519.82,-778.01 549.68,-802.49"/>
 <text text-anchor="middle" x="489.97" y="-805.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="489.97" y="-794.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,562 tok)</text>
+<text text-anchor="middle" x="489.97" y="-794.49" font-family="Helvetica,sans-Serif" font-size="10.00">(8,177 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node17" class="node">

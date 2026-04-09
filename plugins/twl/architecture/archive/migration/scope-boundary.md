@@ -25,7 +25,7 @@ Issue #3 設計判断 #12 に基づくスコープ分類。
 | parse-issue-ac.sh | C-4 | ロジック変更なし、chain step として呼び出し方のみ変更 |
 | classify-failure.sh | C-4 | ロジック変更なし |
 | create-harness-issue.sh | C-4 | ロジック変更なし |
-| codex-review.sh | C-4 | ロジック変更なし |
+| codex-review.sh | C-4 | ロジック変更なし | ※ #22 で削除済み |
 | project-create.sh | C-4 | bare repo 構造は変更なし（既に対応済み） |
 | project-migrate.sh | C-4 | ロジック変更なし |
 | worktree-create.sh | C-4 | ロジック変更なし |

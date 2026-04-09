@@ -11,6 +11,7 @@ tools: [Bash, Read, Glob, Grep]
 skills:
 - ref-issue-quality-criteria
 - ref-specialist-output-schema
+- ref-specialist-few-shot
 ---
 
 # Codex Reviewer Specialist
