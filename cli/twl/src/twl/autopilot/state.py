@@ -27,11 +27,11 @@ _VALID_REPO_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
 _TRANSITIONS: dict[str, set[str]] = {
     "running": {"merge-ready", "failed"},
     "merge-ready": {"done", "failed", "conflict"},
-    "failed": {"running"},
+    "failed": {"running", "done"},
     "conflict": {"merge-ready", "failed"},
 }
 
-_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure"}
+_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override"}
 
 
 def _autopilot_dir() -> Path:
@@ -175,6 +175,8 @@ class StateManager:
         sets: list[str] | None = None,
         init: bool = False,
         cwd: str | None = None,
+        force_done: bool = False,
+        override_reason: str | None = None,
     ) -> str:
         """Write fields to state file. Returns OK message."""
         self._validate_type(type_)
@@ -208,7 +210,7 @@ class StateManager:
                 raise StateArgError(f"不正なフィールド名: {key}（英数字とアンダースコアのみ許可）")
 
             if key == "status" and type_ == "issue":
-                data = self._transition(data, raw_value)
+                data = self._transition(data, raw_value, force_done=force_done, override_reason=override_reason)
             data = self._set_field(data, key, raw_value)
 
         if type_ == "issue":
@@ -244,13 +246,32 @@ class StateManager:
         self._atomic_write(file, data)
         return f"OK: issue-{issue}.json を作成しました (status=running)"
 
-    def _transition(self, data: dict[str, Any], new_status: str) -> dict[str, Any]:
+    def _transition(
+        self,
+        data: dict[str, Any],
+        new_status: str,
+        *,
+        force_done: bool = False,
+        override_reason: str | None = None,
+    ) -> dict[str, Any]:
         current = data.get("status", "")
         if current == "done":
             raise StateError("done は終端状態です。status を変更できません")
         allowed = _TRANSITIONS.get(current, set())
         if new_status not in allowed:
             raise StateError(f"不正な状態遷移: {current} → {new_status}")
+        if current == "failed" and new_status == "done":
+            if not force_done:
+                raise StateError(
+                    "failed → done への遷移には --force-done フラグが必須です"
+                )
+            if not override_reason:
+                raise StateArgError(
+                    "--force-done 使用時は --override-reason が必須です"
+                )
+            data = dict(data)
+            data["manual_override"] = True
+            data["override_reason"] = override_reason
         if current == "failed" and new_status == "running":
             retry = data.get("retry_count", 0)
             if retry >= 1:
@@ -385,6 +406,7 @@ def _parse_write_args(argv: list[str]) -> dict[str, Any]:
     args: dict[str, Any] = {
         "type": None, "issue": None, "repo": None,
         "role": None, "sets": [], "init": False, "autopilot_dir": None,
+        "force_done": False, "override_reason": None,
     }
     i = 0
     while i < len(argv):
@@ -404,6 +426,10 @@ def _parse_write_args(argv: list[str]) -> dict[str, Any]:
             args["sets"].append(argv[i + 1]); i += 2
         elif a == "--init":
             args["init"] = True; i += 1
+        elif a == "--force-done":
+            args["force_done"] = True; i += 1
+        elif a == "--override-reason" and i + 1 < len(argv):
+            args["override_reason"] = argv[i + 1]; i += 2
         elif a == "--autopilot-dir" and i + 1 < len(argv):
             args["autopilot_dir"] = argv[i + 1] or None; i += 2
         else:
@@ -429,7 +455,8 @@ def _print_write_usage() -> None:
     print(
         "Usage: python3 -m twl.autopilot.state write "
         "--type <issue|session> [--issue N] [--repo R] "
-        "--role <pilot|worker> [--set k=v]... [--init] [--autopilot-dir DIR]"
+        "--role <pilot|worker> [--set k=v]... [--init] "
+        "[--force-done --override-reason REASON] [--autopilot-dir DIR]"
     )
 
 
@@ -466,6 +493,8 @@ def main(argv: list[str] | None = None) -> int:
                 repo=parsed["repo"],
                 sets=parsed["sets"],
                 init=parsed["init"],
+                force_done=parsed["force_done"],
+                override_reason=parsed["override_reason"],
             )
             print(msg)
             return 0
