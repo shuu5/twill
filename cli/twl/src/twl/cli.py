@@ -23,6 +23,14 @@ from twl.cli_dispatch import (
 )
 
 
+def _load_plugin_context():
+    plugin_root = get_plugin_root()
+    deps = load_deps(plugin_root)
+    graph = build_graph(deps, plugin_root)
+    plugin_name = get_plugin_name(deps, plugin_root)
+    return plugin_root, deps, graph, plugin_name
+
+
 def main():
     # audit-history サブコマンドの前処理（Phase 3 / Layer 1 経験的監査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'audit-history':
@@ -40,10 +48,7 @@ def main():
         sub_parser = argparse.ArgumentParser(description='Check file existence and chain validation')
         sub_parser.add_argument('--format', choices=['json'], help='Output format')
         sub_args = sub_parser.parse_args(sys.argv[2:])
-        plugin_root = get_plugin_root()
-        deps = load_deps(plugin_root)
-        graph = build_graph(deps, plugin_root)
-        plugin_name = get_plugin_name(deps, plugin_root)
+        plugin_root, deps, graph, plugin_name = _load_plugin_context()
         sys.exit(handle_check(sub_args, graph, deps, plugin_root, plugin_name))
 
     # refine サブコマンド
@@ -106,10 +111,7 @@ def main():
         sync_docs(args.sync_docs, check_only=args.check)
         sys.exit(0)
 
-    plugin_root = get_plugin_root()
-    deps = load_deps(plugin_root)
-    graph = build_graph(deps, plugin_root)
-    plugin_name = get_plugin_name(deps, plugin_root)
+    plugin_root, deps, graph, plugin_name = _load_plugin_context()
 
     if args.rename:
         old_name, new_name = args.rename
