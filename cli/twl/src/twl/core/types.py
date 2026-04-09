@@ -20,6 +20,7 @@ _FALLBACK_TOKEN_THRESHOLDS: Dict[str, Tuple[int, int]] = {
     'atomic': (1500, 2500),
     'composite': (1500, 2500),
     'specialist': (1800, 2500),
+    'observer': (2000, 3000),
 }
 
 _FALLBACK_TYPE_RULES = {
@@ -30,6 +31,7 @@ _FALLBACK_TYPE_RULES = {
     'specialist':  {'section': 'agents',   'can_spawn': set(),                                  'spawnable_by': {'workflow', 'composite', 'controller'}},
     'reference':   {'section': 'skills',   'can_spawn': set(),                                  'spawnable_by': {'controller', 'atomic', 'agents.skills', 'all'}},
     'script':      {'section': 'scripts',  'can_spawn': {'script'},                              'spawnable_by': {'atomic', 'composite', 'script'}},
+    'observer':    {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference', 'script'}, 'spawnable_by': {'user', 'launcher'}},
 }
 TYPE_ALIASES = {}
 
@@ -55,7 +57,7 @@ def load_type_rules(loom_root: Optional[Path] = None) -> dict:
         loom_root = _get_loom_root()
     types_path = loom_root / "types.yaml"
     def _deep_copy_rules(src: dict) -> dict:
-        return {k: {'section': v['section'], 'can_spawn': set(v['can_spawn']), 'spawnable_by': set(v['spawnable_by'])} for k, v in src.items()}
+        return {k: {'section': v['section'], 'can_spawn': set(v['can_spawn']), 'spawnable_by': set(v['spawnable_by']), 'can_supervise': set(v.get('can_supervise', []))} for k, v in src.items()}
 
     if not types_path.exists():
         return _deep_copy_rules(_FALLBACK_TYPE_RULES)
@@ -71,6 +73,7 @@ def load_type_rules(loom_root: Optional[Path] = None) -> dict:
                 'section': type_def.get('section', ''),
                 'can_spawn': set(type_def.get('can_spawn', [])),
                 'spawnable_by': set(type_def.get('spawnable_by', [])),
+                'can_supervise': set(type_def.get('can_supervise', [])),
             }
         return rules
     except Exception as e:
@@ -131,7 +134,7 @@ def print_rules():
     print(f"| {'Type':<12} | {'Section':<10} | {'Can Spawn':<45} | {'Spawnable By':<40} |")
     print(f"|{'-'*14}|{'-'*12}|{'-'*47}|{'-'*42}|")
 
-    known_order = ['controller', 'workflow', 'atomic', 'composite', 'specialist', 'reference']
+    known_order = ['controller', 'observer', 'workflow', 'atomic', 'composite', 'specialist', 'reference']
     ordered_types = [t for t in known_order if t in rules] + sorted(set(rules.keys()) - set(known_order))
     for type_name in ordered_types:
         rule = rules[type_name]
@@ -178,7 +181,7 @@ def sync_check(ref_path: str):
         r'^\|\s*\*{0,2}(\w+)\*{0,2}\s*\|\s*(\w+)\s*\|\s*([^|]*)\s*\|\s*([^|]*)\s*\|',
         re.MULTILINE
     )
-    valid_types = set(rules.keys()) | {'controller', 'workflow', 'atomic', 'composite', 'specialist', 'reference'}
+    valid_types = set(rules.keys()) | {'controller', 'observer', 'workflow', 'atomic', 'composite', 'specialist', 'reference'}
 
     def _parse_list(raw: str) -> set:
         if not raw or raw.strip('() ') in ('none', 'なし', '-', '—', ''):

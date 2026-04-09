@@ -147,6 +147,7 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
 
     result = {
         'controllers': [],
+        'observers': [],
         'workflows': [],
         'orchestrators': [],
         'references': [],
@@ -164,6 +165,8 @@ def classify_layers(deps: dict, graph: Dict) -> dict:
         skill_type = skill_data.get('type', 'workflow')
         if skill_type == 'controller':
             result['controllers'].append(skill_name)
+        elif skill_type == 'observer':
+            result['observers'].append(skill_name)
         elif skill_type == 'workflow':
             result['workflows'].append(skill_name)
         elif skill_type == 'reference':

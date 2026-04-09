@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
-from twl.core.types import TYPE_RULES, resolve_type
+from twl.core.types import TYPE_RULES, load_type_rules, resolve_type
 from twl.core.plugin import get_plugin_name, get_deps_version, parse_cross_plugin_ref, get_cross_plugin_component
 from twl.refactor.promote import _is_within_root
 from twl.validation.utils import _get_body_text
@@ -71,6 +71,18 @@ def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) 
             else:
                 ok_count += 1
 
+            # Check 3b: can_supervise 宣言値（can_supervise フィールドを持つ型のみ）
+            allowed_supervise = rule.get('can_supervise', set())
+            declared_supervise = set(data.get('can_supervise', []))
+            if declared_supervise:
+                invalid_supervise = {resolve_type(s) for s in declared_supervise} - {resolve_type(a) for a in allowed_supervise}
+                if invalid_supervise:
+                    violations.append(
+                        f"[can_supervise] {section}/{name}: declares can_supervise={sorted(invalid_supervise)} but type '{comp_type}' only allows {sorted(allowed_supervise)}"
+                    )
+                else:
+                    ok_count += 1
+
     # Check 4: 呼び出しエッジの型整合性
     # 各 calls エントリについて、caller の can_spawn に callee の型が含まれるか、
     # callee の spawnable_by に caller の型が含まれるかを確認
@@ -80,6 +92,7 @@ def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) 
         # v3.0 type-name keys
         'atomic': 'commands', 'composite': 'commands',
         'controller': 'skills', 'workflow': 'skills', 'reference': 'skills',
+        'observer': 'skills',
         'specialist': 'agents',
         # Agent Teams 固有の calls キー
         'phase': 'commands', 'worker': 'agents',
@@ -251,7 +264,7 @@ def validate_v3_schema(deps: dict) -> Tuple[int, List[str]]:
         return ok_count, violations
 
     # 許可される v3.0 型名キー
-    v3_type_keys = {'atomic', 'composite', 'workflow', 'controller', 'specialist', 'reference', 'script'}
+    v3_type_keys = {'atomic', 'composite', 'workflow', 'controller', 'observer', 'specialist', 'reference', 'script'}
     valid_dispatch_modes = {'llm', 'runner', 'trigger'}
 
     # Check: dispatch_mode フィールド (任意) の値検証
