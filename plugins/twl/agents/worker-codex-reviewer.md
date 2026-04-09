@@ -37,7 +37,7 @@ command -v codex >/dev/null 2>&1
 ```
 
 ```bash
-[ -n "${CODEX_API_KEY:-}" ]
+[ -n "${CODEX_API_KEY:-}" ] || [ -n "${OPENAI_API_KEY:-}" ] || [ -f ~/.codex/config.toml ]
 ```
 
 **いずれかが失敗した場合**はスキップ（graceful skip）し、以下を出力して即完了する（エラーメッセージは出力しない）:
