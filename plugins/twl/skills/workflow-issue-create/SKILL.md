@@ -4,15 +4,13 @@ description: |
   Issue 一括作成ワークフロー（co-issue Phase 4 を分離）。
   refined ラベル事前作成 → ユーザー確認 → creation routing → Project Board 同期 → クリーンアップ。
 
-  Use when user: says Issue作成/issue-create,
-  or when called from co-issue workflow.
+  co-issue Phase 4 から呼び出される。直接起動不可。
 type: workflow
 effort: medium
 spawnable_by:
 - controller
 can_spawn:
 - atomic
-- script
 ---
 
 # workflow-issue-create
@@ -24,7 +22,6 @@ co-issue Phase 4（一括作成）を独立させたワークフロー。
 LLM コンテキスト内フラグとして受け渡し:
 
 - **refined_issues**: 精緻化済み Issue リスト
-- **REFINED_LABEL_OK**: refined ラベル作成成否フラグ
 - **is_split_generated**: 各 Issue の split 由来フラグ
 - **is_quick_candidate**: 各 Issue の quick 候補フラグ
 - **cross_repo_split**: クロスリポ分割フラグ

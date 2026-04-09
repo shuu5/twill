@@ -514,7 +514,7 @@ skills:
     path: skills/workflow-issue-create/SKILL.md
     effort: medium
     spawnable_by: [controller]
-    can_spawn: [atomic, script]
+    can_spawn: [atomic]
     calls:
       - atomic: issue-create
       - atomic: issue-bulk-create

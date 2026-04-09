@@ -73,7 +73,6 @@ TaskCreate 「Phase 4: Issue 作成」(status: in_progress)
 `/twl:workflow-issue-create` を呼び出す。以下を渡す:
 
 - **refined_issues**: Phase 3 で精緻化された Issue リスト
-- **REFINED_LABEL_OK**: refined ラベル作成成否フラグ（workflow 内で作成）
 - **is_split_generated flags**: Phase 3 で生成された split フラグ
 - **is_quick_candidate flags**: Phase 2 Step 2b で判定された quick 候補フラグ
 - **cross_repo_split**: クロスリポ分割フラグ

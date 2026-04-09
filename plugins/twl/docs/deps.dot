@@ -9,7 +9,7 @@ digraph Dependencies {
 
     // L0: Controller Skills
     skill_co_autopilot [label="twl:co-autopilot\n(1,779 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_issue [label="twl:co-issue\n(1,205 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(1,179 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_project [label="twl:co-project\n(1,456 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_architect [label="twl:co-architect\n(1,317 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_utility [label="twl:co-utility\n(777 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
@@ -30,7 +30,7 @@ digraph Dependencies {
     skill_workflow_plugin_create [label="twl:workflow-plugin-create\n(558 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(693 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(1,092 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_issue_create [label="twl:workflow-issue-create\n(849 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_issue_create [label="twl:workflow-issue-create\n(826 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(2,961 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];

@@ -15,7 +15,7 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="53.03" cy="-317.85" rx="53.07" ry="21.43"/>
 <text text-anchor="middle" x="53.03" y="-320.85" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;issue</text>
-<text text-anchor="middle" x="53.03" y="-309.85" font-family="Helvetica,sans-Serif" font-size="10.00">(1,205 tok)</text>
+<text text-anchor="middle" x="53.03" y="-309.85" font-family="Helvetica,sans-Serif" font-size="10.00">(1,179 tok)</text>
 </g>
 <!-- skill_workflow_issue_refine -->
 <g id="node2" class="node">
@@ -35,7 +35,7 @@
 <title>skill_workflow_issue_create</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="265.18" cy="-317.85" rx="101.23" ry="21.43"/>
 <text text-anchor="middle" x="265.18" y="-320.85" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;issue&#45;create</text>
-<text text-anchor="middle" x="265.18" y="-309.85" font-family="Helvetica,sans-Serif" font-size="10.00">(849 tok)</text>
+<text text-anchor="middle" x="265.18" y="-309.85" font-family="Helvetica,sans-Serif" font-size="10.00">(826 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;skill_workflow_issue_create -->
 <g id="edge3" class="edge">

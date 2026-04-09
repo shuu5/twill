@@ -11,13 +11,13 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="twl:co-issue\n(1,205 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(1,179 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
     skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(1,092 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_issue_create [label="twl:workflow-issue-create\n(849 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_issue_create [label="twl:workflow-issue-create\n(826 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_issue_template_bug [label="twl:ref-issue-template-bug\n(136 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
