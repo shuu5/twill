@@ -47,7 +47,7 @@ teardown() {
   refute_output --partial "worker-structure"
 }
 
-@test "post-fix-verify excludes codex when CODEX_API_KEY is unset" {
+@test "post-fix-verify excludes codex when no auth method is available" {
   # Create a fake codex command in stub bin
   cat > "$STUB_BIN/codex" <<'EOF'
 #!/usr/bin/env bash
@@ -55,7 +55,7 @@ exit 0
 EOF
   chmod +x "$STUB_BIN/codex"
 
-  run bash -c "unset CODEX_API_KEY; echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
+  run bash -c "unset CODEX_API_KEY OPENAI_API_KEY; HOME='$SANDBOX' echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
   assert_success
   refute_output --partial "worker-codex-reviewer"
 }
@@ -68,6 +68,33 @@ EOF
   chmod +x "$STUB_BIN/codex"
 
   run bash -c "export CODEX_API_KEY=testkey; echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
+  assert_success
+  assert_output --partial "worker-codex-reviewer"
+}
+
+@test "post-fix-verify includes codex when OPENAI_API_KEY is set" {
+  cat > "$STUB_BIN/codex" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+  chmod +x "$STUB_BIN/codex"
+
+  run bash -c "unset CODEX_API_KEY; export OPENAI_API_KEY=testkey; echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
+  assert_success
+  assert_output --partial "worker-codex-reviewer"
+}
+
+@test "post-fix-verify includes codex when ~/.codex/config.toml exists" {
+  cat > "$STUB_BIN/codex" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+  chmod +x "$STUB_BIN/codex"
+
+  mkdir -p "$SANDBOX/.codex"
+  touch "$SANDBOX/.codex/config.toml"
+
+  run bash -c "unset CODEX_API_KEY OPENAI_API_KEY; HOME='$SANDBOX' bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify <<< ''"
   assert_success
   assert_output --partial "worker-codex-reviewer"
 }

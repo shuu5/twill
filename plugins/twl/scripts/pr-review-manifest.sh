@@ -62,7 +62,7 @@ if [[ "$MODE" == "post-fix-verify" ]]; then
   SPECIALISTS["worker-security-reviewer"]=1
 
   # codex 環境チェック
-  if command -v codex &>/dev/null && [[ -n "${CODEX_API_KEY:-}" ]]; then
+  if command -v codex &>/dev/null && [[ -n "${CODEX_API_KEY:-}" || -n "${OPENAI_API_KEY:-}" || -f ~/.codex/config.toml ]]; then
     SPECIALISTS["worker-codex-reviewer"]=1
   fi
 
@@ -112,7 +112,7 @@ if [[ ${#FILES[@]} -gt 0 ]]; then
 fi
 
 # codex 環境チェック
-if command -v codex &>/dev/null && [[ -n "${CODEX_API_KEY:-}" ]]; then
+if command -v codex &>/dev/null && [[ -n "${CODEX_API_KEY:-}" || -n "${OPENAI_API_KEY:-}" || -f ~/.codex/config.toml ]]; then
   SPECIALISTS["worker-codex-reviewer"]=1
 fi
 
