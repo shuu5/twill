@@ -54,3 +54,12 @@ types:
     can_spawn: [script]
     spawnable_by: [atomic, composite, script, controller, workflow]
     # token_target なし（意図的除外）
+
+  observer:
+    section: skills
+    can_spawn: [workflow, atomic, composite, specialist, reference, script]
+    can_supervise: [controller]
+    spawnable_by: [user, launcher]
+    token_target:
+      warning: 2000
+      critical: 3000

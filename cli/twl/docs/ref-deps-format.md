@@ -22,6 +22,8 @@ hooks: { ... }              # 任意
 | フィールド | 目的 | 影響範囲 |
 |-----------|------|---------|
 | **`can_spawn`** | この型が spawn できる**型名**のバリデーション | `twl check` の型ルール検証のみ |
+| **`can_supervise`** | この型が監視・管理できる**型名**のバリデーション（observer 専用） | `twl check` の型ルール検証のみ |
+| **`supervises`** | このコンポーネントが監視するコンポーネント名の宣言 | バリデーション + SVG 監視エッジ生成 |
 | **`calls`** | このコンポーネントが実際に呼び出す**コンポーネント名** | **SVG 依存グラフのエッジ生成** + orphan 検出 |
 
 ### 重要なルール
@@ -58,6 +60,19 @@ co-search:                                  # co-{purpose} 形式
     - agent: researcher                     # spawn する specialist
     - agent: critic                         # spawn する specialist
     - reference: ref-search-strategy
+```
+
+#### observer
+```yaml
+observe-session:                            # observe-{purpose} 形式
+  type: observer
+  path: skills/observe-session/SKILL.md
+  spawnable_by: [user, launcher]
+  can_spawn: [workflow, specialist]         # 型名を指定
+  can_supervise: [controller]              # 監視できる型名
+  supervises: [co-autopilot]               # 監視するコンポーネント名
+  calls:
+    - controller: co-autopilot             # 監視対象の controller
 ```
 
 #### workflow
