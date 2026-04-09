@@ -37,6 +37,7 @@ chains:
     type: "B"
     description: "PR検証（preflight → review → scope → test → ac-verify）"
     steps:
+      - prompt-compliance
       - ts-preflight
       - phase-review
       - scope-judge
@@ -330,6 +331,8 @@ skills:
     can_spawn: [composite, atomic, script]
     calls:
       - atomic: ac-deploy-trigger
+      - atomic: prompt-compliance
+        step: "0.5"
       - atomic: ts-preflight
         step: "1"
       - composite: phase-review
@@ -809,6 +812,18 @@ commands:
     can_spawn: []
     dispatch_mode: runner
     description: "全ステップの進捗状態（done/running/pending/skipped）と dispatch_mode を一覧表示"
+
+  prompt-compliance:
+    type: atomic
+    path: commands/prompt-compliance.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "pr-verify"
+    step_in:
+      parent: workflow-pr-verify
+      step: "0.5"
+    dispatch_mode: runner
+    description: "refined_by ハッシュ整合性検証（.md 変更時に stale/format-error を検出）"
 
   ts-preflight:
     type: atomic

@@ -23,6 +23,7 @@ workflow-pr-cycle を 3 分割した第1段階。TypeScript preflight、speciali
 
 | Step | コンポーネント | 型 |
 |------|--------------|------|
+| 0.5 | prompt-compliance | atomic |
 | 1 | ts-preflight | atomic |
 | 2 | phase-review | composite |
 | 2.5 | scope-judge | atomic |
@@ -32,6 +33,12 @@ workflow-pr-cycle を 3 分割した第1段階。TypeScript preflight、speciali
 ## chain 実行指示（MUST — 全ステップを順に実行せよ。途中で停止するな）
 
 **重要**: 以下の全ステップを上から順に実行すること。各ステップ完了後、**即座に**次のステップに進むこと。プロンプトで停止してはならない。
+
+### Step 0.5: prompt-compliance（refined_by ハッシュ整合性）【機械的 → runner】
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" prompt-compliance
+```
+.md ファイル変更なし→PASS スキップ。refined_by フォーマット不正→FAIL（ブロック）。stale→WARN（非ブロック）。
 
 ### Step 1: ts-preflight（TypeScript 機械的検証）【機械的 → runner】
 ```bash
@@ -74,6 +81,6 @@ eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
 
 ## compaction 復帰プロトコル
 
-`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `ts-preflight pr-test ac-verify`
+`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `prompt-compliance ts-preflight pr-test ac-verify`
 
 - phase-review, scope-judge, ac-verify は LLM ステップのため状態を確認してから再実行すること

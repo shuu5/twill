@@ -782,6 +782,45 @@ step_ts_preflight() {
   fi
 }
 
+# --- prompt-compliance: refined_by ハッシュ整合性検証 ---
+step_prompt_compliance() {
+  record_current_step "prompt-compliance"
+
+  # 変更された .md ファイルを検出（origin/main との diff、追加・変更のみ）
+  local changed_md
+  changed_md=$(git diff --name-only --diff-filter=AM origin/main -- '*.md' 2>/dev/null)
+
+  if [[ -z "$changed_md" ]]; then
+    ok "prompt-compliance" "PASS (.md 変更なし — スキップ)"
+    return 0
+  fi
+
+  # ref-prompt-guide.md 自体が変更された場合: 全コンポーネントが stale になるため WARN
+  if echo "$changed_md" | grep -q 'refs/ref-prompt-guide\.md'; then
+    ok "prompt-compliance" "WARN (ref-prompt-guide.md 変更検出 — 全コンポーネントの refined_by が stale。Tier 2 audit を推奨)"
+    return 0
+  fi
+
+  # twl --audit --section 7 --format json で prompt_compliance 項目を取得
+  local result
+  result=$(twl --audit --section 7 --format json 2>/dev/null)
+
+  local stale_count error_count
+  stale_count=$(echo "$result" | jq '[.items[] | select(.severity == "warning")] | length' 2>/dev/null || echo 0)
+  error_count=$(echo "$result" | jq '[.items[] | select(.severity == "critical")] | length' 2>/dev/null || echo 0)
+
+  if [[ "$error_count" -gt 0 ]]; then
+    skip "prompt-compliance" "FAIL (refined_by フォーマット不正: ${error_count} 件)"
+    return 1
+  elif [[ "$stale_count" -gt 0 ]]; then
+    ok "prompt-compliance" "WARN (stale: ${stale_count} 件 — twl refine で更新推奨)"
+    return 0
+  else
+    ok "prompt-compliance" "PASS"
+    return 0
+  fi
+}
+
 # --- pr-test: テスト実行 ---
 step_pr_test() {
   record_current_step "pr-test"
@@ -1046,6 +1085,7 @@ main() {
     llm-delegate)        step_llm_delegate "$@" ;;
     llm-complete)        step_llm_complete "$@" ;;
     chain-status)        step_chain_status "$@" ;;
+    prompt-compliance)   step_prompt_compliance "$@" ;;
     ts-preflight)        step_ts_preflight "$@" ;;
     pr-test)             step_pr_test "$@" ;;
     ac-verify)           step_ac_verify "$@" ;;
@@ -1059,7 +1099,7 @@ main() {
     *)
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
-      echo "         board-archive, ac-extract, arch-ref, change-id-resolve, next-step, ts-preflight," >&2
+      echo "         board-archive, ac-extract, arch-ref, change-id-resolve, next-step, prompt-compliance, ts-preflight," >&2
       echo "         pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge, check," >&2
       echo "         quick-guard, autopilot-detect, quick-detect," >&2
       echo "         dispatch-info, llm-delegate, llm-complete, chain-status" >&2

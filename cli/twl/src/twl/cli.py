@@ -19,6 +19,7 @@ from twl.viz.mermaid import print_mermaid
 from twl.viz.tree import print_rich_tree
 from twl.refactor.rename import rename_component
 from twl.refactor.promote import promote_component
+from twl.refactor.refine import handle_refine
 
 
 def handle_complexity(args, graph, deps, plugin_root, plugin_name):
@@ -438,6 +439,10 @@ def main():
         plugin_name = get_plugin_name(deps, plugin_root)
         handle_check(sub_args, graph, deps, plugin_root, plugin_name)
         sys.exit(0)
+
+    # refine サブコマンド
+    if len(sys.argv) >= 2 and sys.argv[1] == 'refine':
+        sys.exit(handle_refine(sys.argv[2:]))
 
     # chain サブコマンドの前処理（sys.argv を先に検査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'chain':
