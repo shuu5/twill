@@ -767,14 +767,38 @@ check_and_nudge() {
   local last_hash="${LAST_OUTPUT_HASH[$issue]:-}"
 
   if [[ "$current_hash" == "$last_hash" ]]; then
-    # 停止パターンをチェックし、対応する次コマンドを送信
-    local next_cmd
-    if next_cmd="$(_nudge_command_for_pattern "$pane_output" "$issue" "$entry")"; then
-      echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
-      tmux send-keys -t "$window_name" "$next_cmd" Enter 2>/dev/null || true
-      NUDGE_COUNTS[$issue]=$((count + 1))
-      LAST_OUTPUT_HASH[$issue]="$current_hash"
-      return 0
+    # --- 状態ベース判定（優先） ---
+    local state_nudge_sent=0
+    # shellcheck source=chain-steps.sh
+    source "${SCRIPTS_ROOT}/chain-steps.sh" 2>/dev/null || true
+    local current_step
+    current_step=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field current_step 2>/dev/null || true)
+
+    if [[ -n "$current_step" ]]; then
+      local current_wf="${CHAIN_STEP_WORKFLOW[$current_step]:-}"
+      local next_step
+      next_step=$(bash "$SCRIPTS_ROOT/chain-runner.sh" next-step "$issue" "$current_step" 2>/dev/null || true)
+      local next_wf="${CHAIN_STEP_WORKFLOW[$next_step]:-}"
+
+      if [[ -n "$current_wf" && "$current_wf" != "$next_wf" && -n "${CHAIN_WORKFLOW_NEXT_SKILL[$current_wf]:-}" ]]; then
+        local next_skill="${CHAIN_WORKFLOW_NEXT_SKILL[$current_wf]}"
+        echo "[orchestrator] Issue #${issue}: 状態ベース nudge — current_step=${current_step} → /twl:${next_skill} (${count}/${MAX_NUDGE})" >&2
+        tmux send-keys -t "$window_name" "/twl:${next_skill} #${issue}" Enter 2>/dev/null || true
+        NUDGE_COUNTS[$issue]=$((count + 1))
+        LAST_OUTPUT_HASH[$issue]="$current_hash"
+        state_nudge_sent=1
+      fi
+    fi
+
+    # --- パターンマッチ（フォールバック） ---
+    if [[ "$state_nudge_sent" -eq 0 ]]; then
+      local next_cmd
+      if next_cmd="$(_nudge_command_for_pattern "$pane_output" "$issue" "$entry")"; then
+        echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
+        tmux send-keys -t "$window_name" "$next_cmd" Enter 2>/dev/null || true
+        NUDGE_COUNTS[$issue]=$((count + 1))
+        LAST_OUTPUT_HASH[$issue]="$current_hash"
+      fi
     fi
   fi
 
