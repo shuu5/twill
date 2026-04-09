@@ -9,7 +9,7 @@ description: |
 type: controller
 effort: high
 tools:
-- Skill(issue-spec-review, issue-review-aggregate, issue-glossary-check, issue-arch-drift, issue-cross-repo-create)
+- Skill(workflow-issue-refine, issue-glossary-check, issue-cross-repo-create)
 - Agent(context-checker, template-validator)
 spawnable_by:
 - user
@@ -55,22 +55,14 @@ TaskUpdate Phase 2 → completed
 
 TaskCreate 「Phase 3: 精緻化（N件）」(status: in_progress)
 
-**Step 3a**: 各 Issue に `/twl:issue-structure` でテンプレート適用。推奨ラベル抽出。tech-debt 棚卸し（該当時）。クロスリポ分割時は parent + 子 Issue の構造化ルールに従う。
+`/twl:workflow-issue-refine` を呼び出す。以下を渡す:
 
-**Step 3b: specialist レビュー（MUST — spawn 粒度・同期バリア厳守）**
+- **unstructured_issues**: Phase 2 で分解された Issue リスト
+- **ARCH_CONTEXT**: Phase 1 で収集した architecture コンテキスト
+- **is_quick_candidate flags**: Phase 2 Step 2b で判定された quick 候補フラグ
+- **cross_repo_split**: クロスリポ分割フラグ
 
-`/twl:issue-spec-review` を **1 Issue につき 1 回** 呼び出す。複数 Issue をまとめて 1 回の呼び出しに渡してはならない（MUST NOT）。
-
-- **spawn 数の公式**: N Issues → N 回の `/twl:issue-spec-review` 呼び出し → 各呼び出しが内部で 3 specialist を spawn → 合計 3N specialist
-- **具体例**: 5 Issues なら `/twl:issue-spec-review` を 5 回呼び出し、15 specialist が起動される。3 回の呼び出しで済ませてはならない
-- **並列実行可**: N 回の Skill 呼び出しは並列で発行してよい
-- **quick 候補もスキップ禁止**: `is_quick_candidate: true` の Issue も必ずレビューする
-
-**同期バリア（MUST）**: Step 3b の全 `/twl:issue-spec-review` 呼び出しが **完了を返すまで** Step 3c に進んではならない。specialist がまだ実行中の状態で aggregate や修正に着手することは禁止（MUST NOT）。全結果が揃ってから次に進む。
-
-**Step 3c（全 Step 3b 完了後にのみ実行）**: `/twl:issue-review-aggregate` を呼び出す。CRITICAL なし → Step 3.5 へ。CRITICAL あり → ユーザー通知・修正後 Step 3b 再実行可。split 承認 → `is_split_generated: true` フラグ設定（Phase 4 まで保持）。
-
-**Step 3.5**: `/twl:issue-arch-drift` を呼び出す（CRITICAL ブロック中はスキップ）。非ブロッキング。
+返却値（`review_results`, `blocked_issues`, `split_issues`, `is_split_generated` flags, `recommended_labels`）を Phase 4 で使用する。
 
 TaskUpdate Phase 3 → completed
 
@@ -96,5 +88,3 @@ TaskUpdate Phase 4 → completed
 - ユーザー確認なしで Issue 作成してはならない
 - Issue 番号を推測してはならない（gh 出力から取得）
 - `.controller-issue/` を git にコミットしてはならない
-- **複数 Issue を 1 回の `/twl:issue-spec-review` に渡してはならない**（1 Issue = 1 呼び出し。5 Issues なら 5 回呼び出す）
-- **specialist が実行中のまま Step 3c 以降に進んではならない**（全 specialist の結果が揃うまで待機必須）
