@@ -58,6 +58,9 @@ fi
 # ワークフロー境界（例: ac-verify → all-pass-check ではなく pr-verify → pr-fix）を検出する
 # shellcheck source=../chain-steps.sh
 source "${SCRIPTS_ROOT}/chain-steps.sh" 2>/dev/null || true
+# ガード: source 失敗時に空の連想配列として宣言し、bad array subscript を防止
+declare -A CHAIN_STEP_WORKFLOW 2>/dev/null || true
+declare -A CHAIN_WORKFLOW_NEXT_SKILL 2>/dev/null || true
 
 CURRENT_WORKFLOW="${CHAIN_STEP_WORKFLOW[$CURRENT_STEP]:-}"
 NEXT_WORKFLOW="${CHAIN_STEP_WORKFLOW[$NEXT_STEP]:-}"

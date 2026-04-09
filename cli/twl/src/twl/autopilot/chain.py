@@ -83,6 +83,8 @@ WORKFLOW_NEXT_SKILL: dict[str, str] = {
     "setup": "workflow-test-ready",
     "test-ready": "workflow-pr-verify",
     "pr-verify": "workflow-pr-fix",
+    # NOTE: "pr-fix" has no steps in STEP_TO_WORKFLOW (repair loop is dynamic).
+    # When pr-fix chain steps are added, add their entries to STEP_TO_WORKFLOW too.
     "pr-fix": "workflow-pr-merge",
     "pr-merge": "",
 }

@@ -5,7 +5,7 @@
 #   source "$(dirname "${BASH_SOURCE[0]}")/chain-steps.sh"
 #
 # workflow-setup → workflow-test-ready → workflow-pr-cycle の全ステップ順。
-# chain-runner.sh と compaction-resume.sh の両方がこのファイルを参照する。
+# chain-runner.sh、compaction-resume.sh、post-skill-chain-nudge.sh がこのファイルを参照する。
 
 CHAIN_STEPS=(
   init
@@ -85,6 +85,8 @@ declare -A CHAIN_STEP_WORKFLOW=(
 )
 
 # ワークフロー完了後の次 skill（SSOT は chain.py の WORKFLOW_NEXT_SKILL — このファイルはミラー）
+# NOTE: [pr-fix] は現在 CHAIN_STEP_WORKFLOW にステップが未登録（repair loop は動的）。
+#       将来 pr-fix chain ステップ追加時に CHAIN_STEP_WORKFLOW へのエントリも追加すること。
 declare -A CHAIN_WORKFLOW_NEXT_SKILL=(
   [setup]=workflow-test-ready
   [test-ready]=workflow-pr-verify
