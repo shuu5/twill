@@ -61,3 +61,15 @@ eval "$(bash "$CR" autopilot-detect)"
 
 - `change-apply` 復帰: Step 4 の手順を再実行（state 記録 → `/twl:change-apply` → state 記録）
 - `post-change-apply` 復帰: IS_AUTOPILOT 判定スニペット（Step 4 後半）を実行し、`IS_AUTOPILOT=true` なら即座に `/twl:workflow-pr-verify --spec <change-id>` を Skill tool で実行
+
+## 完了後の遷移（meta chain 定義から自動生成）
+
+```bash
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
+eval "$(bash "$CR" autopilot-detect)"
+```
+
+- IS_AUTOPILOT=true → `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=test-ready"` を実行して停止
+- IS_AUTOPILOT=false → 「完了。次: /twl:workflow-pr-verify」と案内
+

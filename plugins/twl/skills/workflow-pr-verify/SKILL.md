@@ -69,18 +69,20 @@ checkpoint を照合し、`python3 -m twl.autopilot.checkpoint write --step ac-v
 で結果を永続化すること。前提: workflow-setup の ac-extract が済んでおり
 `${SNAPSHOT_DIR}/01.5-ac-checklist.md` が存在すること（不在時は WARN で抜ける）。
 
-### 完了後の遷移
+## 完了後の遷移（meta chain 定義から自動生成）
 
 ```bash
-eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
-# IS_AUTOPILOT が設定される
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
+eval "$(bash "$CR" autopilot-detect)"
 ```
 
-- IS_AUTOPILOT=true → 即座に `/twl:workflow-pr-fix` を Skill tool で実行せよ。プロンプトで停止するな。
-- IS_AUTOPILOT=false → 「workflow-pr-verify 完了。次のステップ: `/twl:workflow-pr-fix` を実行してください」と案内。
+- IS_AUTOPILOT=true → `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=pr-verify"` を実行して停止
+- IS_AUTOPILOT=false → 「workflow-pr-verify 完了。次のステップ: /twl:workflow-pr-fix を実行してください」と案内
 
 ## compaction 復帰プロトコル
 
 `refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `prompt-compliance ts-preflight pr-test ac-verify`
 
 - phase-review, scope-judge, ac-verify は LLM ステップのため状態を確認してから再実行すること
+

@@ -6,6 +6,9 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 
+_VALID_WORKFLOW_DONE_RE = re.compile(r'^[a-zA-Z0-9_-]+$')
+
+
 def _normalize_for_check(text: str) -> str:
     """比較用にテキストを正規化する（trailing whitespace 除去 + LF 統一）。"""
     lines = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
@@ -61,19 +64,32 @@ def meta_chain_generate(deps: dict, meta_chain_name: str, plugin_root: Path) -> 
             goto = entry.get('goto')
             stop = entry.get('stop', False)
             message = entry.get('message', '')
+            workflow_done = entry.get('workflow_done', '')
 
             if stop:
-                # stop: 案内メッセージ（condition に応じてラベルを決定）
                 if 'autopilot' in condition and '!' not in condition:
-                    label = "IS_AUTOPILOT=true"
+                    if workflow_done and _VALID_WORKFLOW_DONE_RE.match(workflow_done):
+                        # ADR-014: workflow_done state write + 停止
+                        state_cmd = (
+                            f'python3 -m twl.autopilot.state write '
+                            f'--autopilot-dir "${{AUTOPILOT_DIR:-}}" '
+                            f'--type issue --issue "$ISSUE_NUM" '
+                            f'--role worker --set "workflow_done={workflow_done}"'
+                        )
+                        transition_lines.append(
+                            f'- IS_AUTOPILOT=true → `{state_cmd}` を実行して停止'
+                        )
+                    elif message:
+                        transition_lines.append(f"- IS_AUTOPILOT=true → 「{message}」と案内")
+                    else:
+                        transition_lines.append("- IS_AUTOPILOT=true → ユーザーへ案内して停止")
                 else:
-                    label = "IS_AUTOPILOT=false"
-                if message:
-                    transition_lines.append(f"- {label} → 「{message}」と案内")
-                else:
-                    transition_lines.append(f"- {label} → ユーザーへ案内して停止")
+                    if message:
+                        transition_lines.append(f"- IS_AUTOPILOT=false → 「{message}」と案内")
+                    else:
+                        transition_lines.append("- IS_AUTOPILOT=false → ユーザーへ案内して停止")
             elif goto and goto in flow_map:
-                # goto: 次のワークフローへ遷移
+                # goto: 次のワークフローへ遷移（後方互換）
                 target_node = flow_map[goto]
                 target_skill = target_node.get('skill')
                 if target_skill and isinstance(target_skill, str):
@@ -97,6 +113,8 @@ def meta_chain_generate(deps: dict, meta_chain_name: str, plugin_root: Path) -> 
 
         lines = ["## 完了後の遷移（meta chain 定義から自動生成）", ""]
         lines.append("```bash")
+        lines.append('source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true')
+        lines.append('ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")')
         lines.append('eval "$(bash "$CR" autopilot-detect)"')
         lines.append("```")
         lines.append("")
@@ -123,7 +141,7 @@ def meta_chain_generate_check(result: dict, deps: dict, plugin_root: Path) -> Tu
             all_components[comp_name] = (section, data)
 
     transition_pattern = re.compile(
-        r'^##\s+完了後の遷移.*$',
+        r'^#{2,3}\s+完了後の遷移.*$',
         re.MULTILINE | re.IGNORECASE
     )
 
@@ -196,7 +214,7 @@ def meta_chain_generate_write(result: dict, deps: dict, plugin_root: Path) -> No
             all_components[comp_name] = (section, data)
 
     transition_pattern = re.compile(
-        r'^##\s+完了後の遷移.*$',
+        r'^#{2,3}\s+完了後の遷移.*$',
         re.MULTILINE | re.IGNORECASE
     )
 
