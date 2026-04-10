@@ -54,10 +54,13 @@ ELSE:
 
 ### Step 4: specialist 並列 spawn（MUST）
 
-まず manifest からリストを取得する:
+まず manifest からリストを取得し、hook 追跡用ファイルに書き出す:
 
 ```bash
-specialists=$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/spec-review-manifest.sh")
+CONTEXT_ID="spec-review-$(date +%s%N | tail -c8)"
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/spec-review-manifest.sh" \
+  > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
+specialists=$(cat /tmp/.specialist-manifest-${CONTEXT_ID}.txt)
 ```
 
 **manifest の各行に対して Agent tool call を生成すること（MUST）。manifest に含まれる全 specialist を単一メッセージで同時発行した後でのみ Step 5 に進むこと（MUST）。manifest 外の specialist を追加・削除してはならない。**
@@ -124,6 +127,13 @@ ${quick_tag}")
 ### Step 5: 結果収集・返却（全 specialist 完了後にのみ実行）
 
 Step 4 で spawn した **3 specialist 全てが結果を返すまで** このステップに進んではならない（MUST）。1〜2 個の結果が返っただけで先に進むことは禁止。3 specialist の返却値をそのまま呼び出し元に返す。パースや集約はこのコマンドでは行わない（issue-review-aggregate の責務）。
+
+全 specialist の結果返却後、hook 追跡用一時ファイルを削除する:
+
+```bash
+rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt \
+      /tmp/.specialist-spawned-${CONTEXT_ID}.txt
+```
 
 ## 出力
 
