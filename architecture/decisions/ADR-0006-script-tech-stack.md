@@ -125,7 +125,6 @@ scripts:
 |---|---|---|
 | `hooks/permission-request-auto-approve.sh` | — | bash 維持（hook stdout 注入が必須） |
 | `hooks/post-compact-checkpoint.sh` | — | bash 維持（hook stdout 注入が必須） |
-| `hooks/post-skill-chain-nudge.sh` | — | bash 維持（hook stdout 注入が必須） |
 | `hooks/post-tool-use-bash-error.sh` | — | bash 維持（hook stdout 注入が必須） |
 | `hooks/post-tool-use-validate.sh` | — | bash 維持（hook stdout 注入が必須） |
 | `hooks/pre-compact-checkpoint.sh` | — | bash 維持（hook stdout 注入が必須） |

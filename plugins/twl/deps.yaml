@@ -2214,16 +2214,6 @@ scripts:
       - script: health-report
     description: "Worker 論理的異常検知（chain停止・エラー出力・input-waiting長時間）+ health-report 生成"
 
-  post-skill-chain-nudge:
-    type: script
-    path: scripts/hooks/post-skill-chain-nudge.sh
-    calls:
-      - script: state-read
-      - script: state-write
-      - script: chain-runner
-      - script: resolve-issue-num
-    description: "PostToolUse hook: Skill tool 完了後に autopilot Worker の chain 継続を stdout 注入（Layer 1 defense in depth）"
-
   pre-tool-use-worktree-boundary:
     type: script
     path: scripts/hooks/pre-tool-use-worktree-boundary.sh
