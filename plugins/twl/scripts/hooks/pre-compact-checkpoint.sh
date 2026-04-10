@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# PreCompact hook: compaction 前に chain 進行位置（current_step）を保存
+# PreCompact hook: compaction 前に chain 進行位置と重要変数を保存
 #
 # compaction は observability-only でブロック不可。
-# このスクリプトは current_step を issue-{N}.json に書き込むのみ。
+# current_step を issue-{N}.json に書き込み、重要変数を context.md に追記する。
 # エラーが発生してもワークフローを停止しない（|| true / exit 0 保証）
 set -uo pipefail
 
@@ -64,5 +64,35 @@ fi
 python3 -m twl.autopilot.state write \
   --type issue --issue "$ISSUE_NUM" --role worker \
   --set "current_step=${CURRENT_STEP}" 2>/dev/null || true
+
+# ── 重要変数を context.md に追記 ──
+CONTEXT_DIR="${AUTOPILOT_DIR}/issues"
+CONTEXT_FILE="${CONTEXT_DIR}/issue-${ISSUE_NUM}-context.md"
+mkdir -p "$CONTEXT_DIR" 2>/dev/null || true
+
+# state から重要変数を取得
+CHANGE_ID="$(python3 -m twl.autopilot.state read \
+  --type issue --issue "$ISSUE_NUM" --field change_id \
+  2>/dev/null || echo "")"
+PR_NUMBER="$(python3 -m twl.autopilot.state read \
+  --type issue --issue "$ISSUE_NUM" --field pr_number \
+  2>/dev/null || echo "")"
+MODE="$(python3 -m twl.autopilot.state read \
+  --type issue --issue "$ISSUE_NUM" --field mode \
+  2>/dev/null || echo "")"
+WORKFLOW_DONE="$(python3 -m twl.autopilot.state read \
+  --type issue --issue "$ISSUE_NUM" --field workflow_done \
+  2>/dev/null || echo "")"
+COMPACT_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")"
+
+{
+  echo ""
+  echo "## compaction_checkpoint (${COMPACT_AT})"
+  echo "current_step: ${CURRENT_STEP}"
+  [[ -n "$CHANGE_ID" ]] && echo "change_id: ${CHANGE_ID}"
+  [[ -n "$PR_NUMBER" ]] && echo "pr_number: ${PR_NUMBER}"
+  [[ -n "$MODE" ]] && echo "mode: ${MODE}"
+  [[ -n "$WORKFLOW_DONE" ]] && echo "workflow_done: ${WORKFLOW_DONE}"
+} >> "$CONTEXT_FILE" 2>/dev/null || true
 
 exit 0

@@ -28,6 +28,7 @@ setup_sandbox() {
   mkdir -p "${SANDBOX}/scripts/hooks"
   mkdir -p "${SANDBOX}/scripts"
   mkdir -p "${SANDBOX}/.autopilot"
+  mkdir -p "${SANDBOX}/.autopilot/issues"
 
   if [[ -f "$HOOK_SCRIPT" ]]; then
     cp "$HOOK_SCRIPT" "${SANDBOX}/scripts/hooks/post-compact-checkpoint.sh"
