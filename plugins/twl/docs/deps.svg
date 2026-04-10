@@ -19,7 +19,7 @@
 <title>skill_co_autopilot</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="80" cy="-7091" rx="65.52" ry="21.43"/>
 <text text-anchor="middle" x="80" y="-7094" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;autopilot</text>
-<text text-anchor="middle" x="80" y="-7083" font-family="Helvetica,sans-Serif" font-size="10.00">(2,801 tok)</text>
+<text text-anchor="middle" x="80" y="-7083" font-family="Helvetica,sans-Serif" font-size="10.00">(2,688 tok)</text>
 </g>
 <!-- skill_workflow_setup -->
 <g id="node7" class="node">
@@ -2031,7 +2031,7 @@
 <polyline fill="none" stroke="black" points="1776.14,-1985 1776.14,-1979 "/>
 <polyline fill="none" stroke="black" points="1782.14,-1979 1776.14,-1979 "/>
 <text text-anchor="middle" x="1715.14" y="-1970" font-family="Helvetica,sans-Serif" font-size="10.00">twl:intervention&#45;catalog</text>
-<text text-anchor="middle" x="1715.14" y="-1959" font-family="Helvetica,sans-Serif" font-size="10.00">(1,673 tok)</text>
+<text text-anchor="middle" x="1715.14" y="-1959" font-family="Helvetica,sans-Serif" font-size="10.00">(1,675 tok)</text>
 </g>
 <!-- skill_intervention_catalog&#45;&gt;skill_observation_pattern_catalog -->
 <!-- cmd_self_improve_review&#45;&gt;skill_workflow_setup -->
@@ -2459,7 +2459,7 @@
 <title>cmd_intervene_auto</title>
 <polygon fill="#e3f2fd" stroke="black" points="628.68,-2180 539.68,-2180 539.68,-2144 628.68,-2144 628.68,-2180"/>
 <text text-anchor="middle" x="584.18" y="-2165" font-family="Helvetica,sans-Serif" font-size="10.00">intervene&#45;auto</text>
-<text text-anchor="middle" x="584.18" y="-2154" font-family="Helvetica,sans-Serif" font-size="10.00">(707 tok)</text>
+<text text-anchor="middle" x="584.18" y="-2154" font-family="Helvetica,sans-Serif" font-size="10.00">(708 tok)</text>
 </g>
 <!-- cmd_intervene_auto&#45;&gt;skill_intervention_catalog -->
 <g id="edge187" class="edge">
@@ -2472,7 +2472,7 @@
 <title>cmd_intervene_confirm</title>
 <polygon fill="#e3f2fd" stroke="black" points="636.18,-2122 532.18,-2122 532.18,-2086 636.18,-2086 636.18,-2122"/>
 <text text-anchor="middle" x="584.18" y="-2107" font-family="Helvetica,sans-Serif" font-size="10.00">intervene&#45;confirm</text>
-<text text-anchor="middle" x="584.18" y="-2096" font-family="Helvetica,sans-Serif" font-size="10.00">(882 tok)</text>
+<text text-anchor="middle" x="584.18" y="-2096" font-family="Helvetica,sans-Serif" font-size="10.00">(883 tok)</text>
 </g>
 <!-- cmd_intervene_auto&#45;&gt;cmd_intervene_confirm -->
 <!-- cmd_intervene_confirm&#45;&gt;skill_intervention_catalog -->
@@ -2486,7 +2486,7 @@
 <title>cmd_intervene_escalate</title>
 <polygon fill="#e3f2fd" stroke="black" points="638.18,-2064 530.18,-2064 530.18,-2028 638.18,-2028 638.18,-2064"/>
 <text text-anchor="middle" x="584.18" y="-2049" font-family="Helvetica,sans-Serif" font-size="10.00">intervene&#45;escalate</text>
-<text text-anchor="middle" x="584.18" y="-2038" font-family="Helvetica,sans-Serif" font-size="10.00">(1,078 tok)</text>
+<text text-anchor="middle" x="584.18" y="-2038" font-family="Helvetica,sans-Serif" font-size="10.00">(1,080 tok)</text>
 </g>
 <!-- cmd_intervene_confirm&#45;&gt;cmd_intervene_escalate -->
 <!-- cmd_intervene_escalate&#45;&gt;skill_intervention_catalog -->

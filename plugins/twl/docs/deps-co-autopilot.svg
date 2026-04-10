@@ -15,7 +15,7 @@
 <title>skill_co_autopilot</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="65.76" cy="-1369.49" rx="65.52" ry="21.43"/>
 <text text-anchor="middle" x="65.76" y="-1372.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;autopilot</text>
-<text text-anchor="middle" x="65.76" y="-1361.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,801 tok)</text>
+<text text-anchor="middle" x="65.76" y="-1361.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,688 tok)</text>
 </g>
 <!-- skill_workflow_setup -->
 <g id="node2" class="node">
