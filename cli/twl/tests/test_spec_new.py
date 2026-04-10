@@ -57,3 +57,38 @@ def test_error_without_deltaspec(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     rc = cmd_new("my-change")
     assert rc == 1
+
+
+def test_issue_name_adds_issue_field(tmp_path, monkeypatch):
+    monkeypatch.chdir(make_project(tmp_path))
+    rc = cmd_new("issue-123")
+    assert rc == 0
+    content = (tmp_path / "deltaspec" / "changes" / "issue-123" / ".deltaspec.yaml").read_text()
+    assert "issue: 123" in content
+    assert "name: issue-123" in content
+    assert "status: pending" in content
+
+
+def test_non_issue_name_no_issue_field(tmp_path, monkeypatch):
+    monkeypatch.chdir(make_project(tmp_path))
+    rc = cmd_new("add-user-auth")
+    assert rc == 0
+    content = (tmp_path / "deltaspec" / "changes" / "add-user-auth" / ".deltaspec.yaml").read_text()
+    assert "issue:" not in content
+    assert "name: add-user-auth" in content
+
+
+def test_issue_name_large_number(tmp_path, monkeypatch):
+    monkeypatch.chdir(make_project(tmp_path))
+    rc = cmd_new("issue-1234")
+    assert rc == 0
+    content = (tmp_path / "deltaspec" / "changes" / "issue-1234" / ".deltaspec.yaml").read_text()
+    assert "issue: 1234" in content
+
+
+def test_non_issue_pattern_no_field(tmp_path, monkeypatch):
+    monkeypatch.chdir(make_project(tmp_path))
+    rc = cmd_new("fix-issue-tracker")
+    assert rc == 0
+    content = (tmp_path / "deltaspec" / "changes" / "fix-issue-tracker" / ".deltaspec.yaml").read_text()
+    assert "issue:" not in content

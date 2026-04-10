@@ -8,6 +8,7 @@ from pathlib import Path
 from .paths import DeltaspecNotFound, find_deltaspec_root, get_changes_dir
 
 _KEBAB_RE = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?$")
+_ISSUE_RE = re.compile(r"^issue-(\d+)$")
 
 
 def cmd_new(name: str) -> int:
@@ -29,10 +30,14 @@ def cmd_new(name: str) -> int:
         print(f"Error: Change '{name}' already exists at {change_dir}/", file=sys.stderr)
         return 1
 
+    m = _ISSUE_RE.match(name)
+    issue_line = f"issue: {m.group(1)}\n" if m else ""
+
     change_dir.mkdir(parents=True)
     deltaspec_yaml = change_dir / ".deltaspec.yaml"
     deltaspec_yaml.write_text(
-        f"schema: spec-driven\ncreated: {date.today().isoformat()}\n",
+        f"schema: spec-driven\ncreated: {date.today().isoformat()}\n"
+        f"name: {name}\nstatus: pending\n{issue_line}",
         encoding="utf-8",
     )
 
