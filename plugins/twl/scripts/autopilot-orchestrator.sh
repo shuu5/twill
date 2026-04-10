@@ -865,8 +865,8 @@ run_merge_gate() {
   branch=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue" --field branch 2>/dev/null || echo "")
 
   if [[ -z "$pr_number" || -z "$branch" ]]; then
-    echo "[orchestrator] Issue #${issue}: PR 番号またはブランチが取得できません — auto-merge.sh にフォールバック" >&2
-    # auto-merge.sh は自身で PR 情報を解決可能な場合がある
+    echo "[orchestrator] Issue #${issue}: PR 番号またはブランチが取得できません — mergegate.py の実行をスキップ" >&2
+    # PR 情報が不足しているため mergegate.py を実行できない（auto-merge.sh は呼び出さない）
     return 1
   fi
 
