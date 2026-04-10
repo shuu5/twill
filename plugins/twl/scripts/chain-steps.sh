@@ -40,6 +40,13 @@ QUICK_SKIP_STEPS=(
   prompt-compliance
 )
 
+# direct モード（DeltaSpec なし）でスキップするステップの一覧（SSOT）
+DIRECT_SKIP_STEPS=(
+  change-propose
+  change-id-resolve
+  change-apply
+)
+
 # dispatch_mode SSOT: 各ステップの実行モード
 # runner = chain-runner.sh が bash で直接実行
 # llm   = LLM Skill が実行し、chain-runner は llm-delegate/llm-complete で記録
