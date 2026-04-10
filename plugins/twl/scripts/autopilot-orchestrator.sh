@@ -1056,29 +1056,31 @@ _archive_deltaspec_changes_for_issue() {
   local changes_dir="$root/deltaspec/changes"
   if [[ ! -d "$changes_dir" ]]; then return 0; fi
 
+  # issue を引数で受け取ることで動的スコープへの依存を排除
   _do_archive() {
-    local yaml_path="$1"
+    local yaml_path="$1" _issue="$2"
     local change_dir change_id
     change_dir="$(dirname "$yaml_path")"
     change_id="$(basename "$change_dir")"
     found=true
     if twl spec archive --yes --skip-specs -- "$change_id"; then
-      echo "[orchestrator] Issue #${issue}: DeltaSpec archive 完了: ${change_id}"
+      echo "[orchestrator] Issue #${_issue}: DeltaSpec archive 完了: ${change_id}"
     else
-      echo "[orchestrator] Issue #${issue}: ⚠️ DeltaSpec archive 失敗: ${change_id}（Phase 完了は続行）" >&2
+      echo "[orchestrator] Issue #${_issue}: ⚠️ DeltaSpec archive 失敗: ${change_id}（Phase 完了は続行）" >&2
     fi
   }
 
   # プライマリ: .deltaspec.yaml の issue フィールドで対応 change を特定
+  # 複数の change が一致する場合は全て archive する（1 issue に複数 change がある正規ケース）
   local found=false
   while IFS= read -r yaml_path; do
-    _do_archive "$yaml_path"
+    _do_archive "$yaml_path" "$issue"
   done < <(grep -rl "^issue: ${issue}$" "$changes_dir" --include=".deltaspec.yaml" 2>/dev/null || true)
 
   # フォールバック1: name: issue-<N> パターンで検索（issue フィールドなしの change 対応）
   if [[ "$found" == "false" ]]; then
     while IFS= read -r yaml_path; do
-      _do_archive "$yaml_path"
+      _do_archive "$yaml_path" "$issue"
     done < <(grep -rl "^name: issue-${issue}$" "$changes_dir" --include=".deltaspec.yaml" 2>/dev/null || true)
   fi
 
@@ -1086,7 +1088,7 @@ _archive_deltaspec_changes_for_issue() {
   if [[ "$found" == "false" ]]; then
     local legacy_yaml="${changes_dir}/issue-${issue}/.deltaspec.yaml"
     if [[ -f "$legacy_yaml" ]]; then
-      _do_archive "$legacy_yaml"
+      _do_archive "$legacy_yaml" "$issue"
     fi
   fi
 

@@ -37,7 +37,7 @@ def cmd_new(name: str) -> int:
     deltaspec_yaml = change_dir / ".deltaspec.yaml"
     deltaspec_yaml.write_text(
         f"schema: spec-driven\ncreated: {date.today().isoformat()}\n"
-        f"name: {name}\nstatus: pending\n{issue_line}",
+        f"{issue_line}name: {name}\nstatus: pending\n",
         encoding="utf-8",
     )
 

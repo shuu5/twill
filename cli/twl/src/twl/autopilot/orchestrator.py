@@ -703,6 +703,7 @@ class PhaseOrchestrator:
                 print(f"[orchestrator] Issue #{issue}: ⚠️ DeltaSpec archive 失敗: {change_id}", file=sys.stderr)
 
         found = False
+        # 複数の change が一致する場合は全て archive する（1 issue に複数 change がある正規ケース）
         for yaml_path in changes_dir.rglob(".deltaspec.yaml"):
             content = yaml_path.read_text(encoding="utf-8")
             change_id = yaml_path.parent.name
