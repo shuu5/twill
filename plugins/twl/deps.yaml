@@ -691,7 +691,7 @@ refs:
     can_spawn: []
     description: "負荷テスト level の定量基準"
 
-  # co-observer intervention catalog (#310)
+  # su-observer intervention catalog (#310)
   intervention-catalog:
     type: reference
     path: refs/intervention-catalog.md
@@ -1611,7 +1611,7 @@ commands:
     can_spawn: []
     description: "過去の observation を集約しパターン抽出"
 
-  # === co-observer 介入コマンド (#310) ===
+  # === su-observer 介入コマンド (#310) ===
 
   intervene-auto:
     type: atomic
