@@ -748,6 +748,7 @@ inject_next_workflow() {
   local window_name="$2"
 
   # --- trace ログファイル ---
+  mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true  # SUMMARY_MODE 等での再利用を考慮して関数内でも保証
   local _trace_log="${AUTOPILOT_DIR}/trace/inject-$(date -u +%Y%m%d).log"
   local _trace_ts
   _trace_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -803,13 +804,18 @@ inject_next_workflow() {
   echo "[orchestrator] Issue #${issue}: inject_next_workflow — ${_skill_safe}" >&2
   local _send_err
   _send_err=$(tmux send-keys -t "$window_name" "$_skill_safe" Enter 2>&1) || {
+    _send_err="${_send_err//$'\n'/ }"  # ログインジェクション防止（改行除去）
     echo "[orchestrator] Issue #${issue}: WARNING: tmux send-keys 失敗 — ${_send_err}" >&2
-    echo "[${_trace_ts}] issue=${issue} skill=${_skill_safe} result=error reason=\"tmux send-keys failed: ${_send_err}\"" >> "$_trace_log" 2>/dev/null || true
+    local _err_ts
+    _err_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    echo "[${_err_ts}] issue=${issue} skill=${_skill_safe} result=error reason=\"tmux send-keys failed: ${_send_err}\"" >> "$_trace_log" 2>/dev/null || true
     return 1
   }
 
-  # --- trace ログ: inject 成功 ---
-  echo "[${_trace_ts}] issue=${issue} skill=${_skill_safe} result=success" >> "$_trace_log" 2>/dev/null || true
+  # --- trace ログ: inject 成功（タイムスタンプを inject 完了後に再取得） ---
+  local _success_ts
+  _success_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  echo "[${_success_ts}] issue=${issue} skill=${_skill_safe} result=success" >> "$_trace_log" 2>/dev/null || true
 
   # --- workflow_done クリア ---
   python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
