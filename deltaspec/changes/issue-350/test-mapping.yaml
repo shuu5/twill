@@ -1,0 +1,39 @@
+change_id: issue-350
+generated_at: "2026-04-10T00:00:00Z"
+test_framework: pytest
+scenarios:
+  - id: "test-file-rename"
+    name: "テストファイルのリネーム"
+    spec_file: "specs/test-supervisor-rename/spec.md"
+    spec_line: 7
+    requirement: "テストファイル名を supervisor に更新"
+    test_file: "cli/twl/tests/test_supervisor_type.py"
+    test_name: "test_supervisor_type.py が存在し test_observer_type.py は存在しない"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spawnable-by-assertion-launcher-exclude"
+    name: "spawnable_by アサーション（launcher 除去）"
+    spec_file: "specs/test-supervisor-rename/spec.md"
+    spec_line: 17
+    requirement: "テスト内 observer 参照を supervisor に更新"
+    test_file: "cli/twl/tests/test_supervisor_type.py"
+    test_name: "test_supervisor_spawnable_by_excludes_launcher (or equivalent)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pytest-all-pass"
+    name: "pytest 全件 PASS"
+    spec_file: "specs/test-supervisor-rename/spec.md"
+    spec_line: 21
+    requirement: "テスト内 observer 参照を supervisor に更新"
+    test_file: "cli/twl/tests/test_supervisor_type.py"
+    test_name: "pytest tests/test_supervisor_type.py (全件 PASS)"
+    type: unit
+    status: pending
+    last_run: null
+    failure_reason: null
