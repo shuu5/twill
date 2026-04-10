@@ -1,0 +1,120 @@
+change_id: issue-409
+generated_at: "2026-04-11T00:00:00Z"
+test_framework: bash-bats-compat
+scenarios:
+  - id: "plan-yaml-generation-smoke-test"
+    name: "plan.yaml 生成の smoke test"
+    spec_file: "specs/co-autopilot-smoke/spec.md"
+    spec_line: 7
+    requirement: "co-autopilot smoke test スクリプト"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-smoke.test.sh"
+    test_name: "plan.yaml 生成の smoke test: TMPDIR/.autopilot/plan.yaml が生成される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plan-yaml-generation-smoke-test-edge-structure"
+    name: "plan.yaml 生成の smoke test [edge: session_id + phases キーが含まれる]"
+    spec_file: "specs/co-autopilot-smoke/spec.md"
+    spec_line: 7
+    requirement: "co-autopilot smoke test スクリプト"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-smoke.test.sh"
+    test_name: "plan.yaml 生成の smoke test [edge: session_id + phases キーが含まれる]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plan-yaml-generation-skip-gh-unauthed"
+    name: "plan.yaml 生成スキップ（gh 未認証）"
+    spec_file: "specs/co-autopilot-smoke/spec.md"
+    spec_line: 11
+    requirement: "co-autopilot smoke test スクリプト"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-smoke.test.sh"
+    test_name: "plan.yaml 生成スキップ: gh 未認証のため plan.yaml 生成をスキップ"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "plan-yaml-generation-skip-edge-exit-code"
+    name: "plan.yaml 生成スキップ [edge: SKIP は exit code を非ゼロにしない]"
+    spec_file: "specs/co-autopilot-smoke/spec.md"
+    spec_line: 11
+    requirement: "co-autopilot smoke test スクリプト"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-smoke.test.sh"
+    test_name: "plan.yaml 生成スキップ [edge: SKIP は exit code を非ゼロにしない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-write-read-basic-operation"
+    name: "state write/read の基本動作確認"
+    spec_file: "specs/co-autopilot-smoke/spec.md"
+    spec_line: 15
+    requirement: "co-autopilot smoke test スクリプト"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-smoke.test.sh"
+    test_name: "state write/read: --init で status=running が作成され read で取得できる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-write-read-edge-field-update"
+    name: "state write/read [edge: current_step フィールド更新が read で取得できる]"
+    spec_file: "specs/co-autopilot-smoke/spec.md"
+    spec_line: 15
+    requirement: "co-autopilot smoke test スクリプト"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-smoke.test.sh"
+    test_name: "state write/read [edge: current_step フィールド更新が read で取得できる]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-module-absent-skip"
+    name: "state モジュール不在時のスキップ"
+    spec_file: "specs/co-autopilot-smoke/spec.md"
+    spec_line: 19
+    requirement: "co-autopilot smoke test スクリプト"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-smoke.test.sh"
+    test_name: "state モジュール不在時スキップ: PYTHONPATH 未設定のため state テストをスキップ"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "state-module-absent-skip-edge-exit-code"
+    name: "state モジュール不在時スキップ [edge: SKIP は exit code を非ゼロにしない]"
+    spec_file: "specs/co-autopilot-smoke/spec.md"
+    spec_line: 19
+    requirement: "co-autopilot smoke test スクリプト"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-smoke.test.sh"
+    test_name: "state モジュール不在時スキップ [edge: SKIP は exit code を非ゼロにしない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "test-result-summary-output-format"
+    name: "テスト結果サマリー出力"
+    spec_file: "specs/co-autopilot-smoke/spec.md"
+    spec_line: 27
+    requirement: "テスト形式の一貫性"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-smoke.test.sh"
+    test_name: "Results: X passed, Y failed, Z skipped 形式のサマリー出力 + FAIL 数が exit code"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
