@@ -26,8 +26,8 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # state-write.sh で last_compact_at を記録（失敗しても exit 0）
 # issue 番号を state から検出
 ISSUE_NUM=""
-# session.json から現在の issue を検索
-for state_file in "${AUTOPILOT_DIR}"/issue-*.json; do
+# issues/ サブディレクトリを検索（pre-compact-checkpoint.sh のパス形式に統一）
+for state_file in "${AUTOPILOT_DIR}"/issues/issue-*.json; do
   if [[ -f "$state_file" ]]; then
     STATUS=$(jq -r '.status // ""' "$state_file" 2>/dev/null || echo "")
     if [[ "$STATUS" == "running" ]]; then
@@ -41,6 +41,9 @@ if [[ -n "$ISSUE_NUM" ]]; then
   python3 -m twl.autopilot.state write \
     --type issue --issue "$ISSUE_NUM" --role worker \
     --set "last_compact_at=$TIMESTAMP" 2>/dev/null || true
+
+  # LLM のコンテキスト復元を誘導するメッセージを stdout に出力
+  echo "[compaction-recovery] .autopilot/issues/issue-${ISSUE_NUM}-context.md を Read して進行状態を復元してください"
 fi
 
 exit 0
