@@ -75,7 +75,11 @@ flowchart TD
     B --> C{Phase ループ}
     C --> D["Orchestrator: Worker 起動"]
     D --> E["Orchestrator: 状態ポーリング"]
-    E --> F{全 Worker 完了?}
+    E --> P{workflow_done あり?}
+    P -- Yes --> Q["inject 次 workflow\n(tmux send-keys)"]
+    Q --> R[workflow_done クリア]
+    R --> E
+    P -- No --> F{全 Worker 完了?}
     F -- No --> G{停滞/クラッシュ?}
     G -- 停滞 --> H[nudge]
     G -- クラッシュ --> I[status=failed]
@@ -160,10 +164,10 @@ flowchart TD
     pr_merge__all_pass_check --> pr_merge__merge_gate
     pr_merge__merge_gate --> pr_merge__auto_merge
 
-    setup__ac_extract --> test_ready__arch_ref
-    test_ready__post_change_apply --> pr_verify__prompt_compliance
-    pr_verify__ac_verify --> pr_fix__fix_phase
-    pr_fix__warning_fix --> pr_merge__e2e_screening
+    setup__ac_extract -->|"Pilot inject"| test_ready__arch_ref
+    test_ready__post_change_apply -->|"Pilot inject"| pr_verify__prompt_compliance
+    pr_verify__ac_verify -->|"Pilot inject"| pr_fix__fix_phase
+    pr_fix__warning_fix -->|"Pilot inject"| pr_merge__e2e_screening
 
     classDef script fill:#2e7d32,stroke:#1b5e20,color:#ffffff
     classDef llm fill:#1565c0,stroke:#0d47a1,color:#ffffff
@@ -224,11 +228,11 @@ Worker が DeltaSpec を使用すべきかどうかの判断基準:
 
 | 条件 | 動作 | 根拠 |
 |------|------|------|
-| `deltaspec/` 未初期化（プロジェクトに `deltaspec/` ディレクトリなし） | direct（DeltaSpec なし） | プロジェクト設定前 |
-| `quick` ラベル付き Issue かつ変更 <10行 | direct | コスト対効果 |
-| 上記以外 | propose → apply | 仕様駆動の原則 |
+| `quick` ラベル | direct | コスト対効果 |
+| `scope/direct` ラベル | direct | 明示的 opt-out |
+| 上記以外 | propose → apply | 仕様駆動（デフォルト） |
 
-**デフォルト動作**: 判断に迷った場合は `propose → apply` パスを選択する。`deltaspec/` が初期化済みであれば、DeltaSpec を経由することが仕様駆動サイクルの設計意図と整合する。
+**デフォルト動作**: 判断に迷った場合は `propose → apply` パスを選択する。`deltaspec/` の存在有無は判定条件に含まれない。DeltaSpec は常にデフォルトパスであり、`scope/direct` ラベルで明示的に opt-out できる（ADR-015）。
 
 ### Pilot / Worker 役割分担
 
