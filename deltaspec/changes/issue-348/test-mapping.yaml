@@ -1,0 +1,20 @@
+change: issue-348
+generated_at: 2026-04-10
+
+unit_tests:
+  - path: cli/twl/tests/test_supervisor_type.py
+    scenarios:
+      - "types.yaml supervisor 型定義"
+      - "types.yaml spawnable_by 更新"
+      - "can_supervise 維持"
+      - "_FALLBACK_TOKEN_THRESHOLDS 更新"
+      - "_FALLBACK_TYPE_RULES 更新"
+      - "known_order 更新"
+      - "valid_types 更新"
+      - "セクション判定更新"
+      - "v3_type_keys 更新"
+      - "グラフキー更新"
+      - "分類ロジック更新"
+      - "twl check PASS"
+
+e2e_tests: []

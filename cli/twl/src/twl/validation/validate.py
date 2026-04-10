@@ -92,7 +92,7 @@ def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) 
         # v3.0 type-name keys
         'atomic': 'commands', 'composite': 'commands',
         'controller': 'skills', 'workflow': 'skills', 'reference': 'skills',
-        'observer': 'skills',
+        'supervisor': 'skills',
         'specialist': 'agents',
         # Agent Teams 固有の calls キー
         'phase': 'commands', 'worker': 'agents',
@@ -264,7 +264,7 @@ def validate_v3_schema(deps: dict) -> Tuple[int, List[str]]:
         return ok_count, violations
 
     # 許可される v3.0 型名キー
-    v3_type_keys = {'atomic', 'composite', 'workflow', 'controller', 'observer', 'specialist', 'reference', 'script'}
+    v3_type_keys = {'atomic', 'composite', 'workflow', 'controller', 'supervisor', 'specialist', 'reference', 'script'}
     valid_dispatch_modes = {'llm', 'runner', 'trigger'}
 
     # Check: dispatch_mode フィールド (任意) の値検証

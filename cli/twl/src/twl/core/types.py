@@ -20,7 +20,7 @@ _FALLBACK_TOKEN_THRESHOLDS: Dict[str, Tuple[int, int]] = {
     'atomic': (1500, 2500),
     'composite': (1500, 2500),
     'specialist': (1800, 2500),
-    'observer': (2000, 3000),
+    'supervisor': (2000, 3000),
 }
 
 _FALLBACK_TYPE_RULES = {
@@ -31,7 +31,7 @@ _FALLBACK_TYPE_RULES = {
     'specialist':  {'section': 'agents',   'can_spawn': set(),                                  'spawnable_by': {'workflow', 'composite', 'controller'}},
     'reference':   {'section': 'skills',   'can_spawn': set(),                                  'spawnable_by': {'controller', 'atomic', 'agents.skills', 'all'}},
     'script':      {'section': 'scripts',  'can_spawn': {'script'},                              'spawnable_by': {'atomic', 'composite', 'script'}},
-    'observer':    {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference', 'script'}, 'spawnable_by': {'user', 'launcher'}},
+    'supervisor':  {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference', 'script'}, 'spawnable_by': {'user'}},
 }
 TYPE_ALIASES = {}
 
@@ -134,7 +134,7 @@ def print_rules():
     print(f"| {'Type':<12} | {'Section':<10} | {'Can Spawn':<45} | {'Spawnable By':<40} |")
     print(f"|{'-'*14}|{'-'*12}|{'-'*47}|{'-'*42}|")
 
-    known_order = ['controller', 'observer', 'workflow', 'atomic', 'composite', 'specialist', 'reference']
+    known_order = ['controller', 'supervisor', 'workflow', 'atomic', 'composite', 'specialist', 'reference']
     ordered_types = [t for t in known_order if t in rules] + sorted(set(rules.keys()) - set(known_order))
     for type_name in ordered_types:
         rule = rules[type_name]
@@ -181,7 +181,7 @@ def sync_check(ref_path: str):
         r'^\|\s*\*{0,2}(\w+)\*{0,2}\s*\|\s*(\w+)\s*\|\s*([^|]*)\s*\|\s*([^|]*)\s*\|',
         re.MULTILINE
     )
-    valid_types = set(rules.keys()) | {'controller', 'observer', 'workflow', 'atomic', 'composite', 'specialist', 'reference'}
+    valid_types = set(rules.keys()) | {'controller', 'supervisor', 'workflow', 'atomic', 'composite', 'specialist', 'reference'}
 
     def _parse_list(raw: str) -> set:
         if not raw or raw.strip('() ') in ('none', 'なし', '-', '—', ''):
