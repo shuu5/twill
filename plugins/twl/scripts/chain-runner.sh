@@ -172,17 +172,6 @@ detect_quick_label() {
   fi
 }
 
-detect_direct_label() {
-  local issue_num="${1:-}"
-  local labels
-  labels="$(fetch_labels "$issue_num")"
-  if echo "$labels" | grep -qxF "scope/direct"; then
-    echo "true"
-  else
-    echo "false"
-  fi
-}
-
 # --- quick-guard: quick Issue 判定（exit 1 = quick, exit 0 = 非 quick）---
 # state 優先 → detect_quick_label() fallback
 # ブランチから Issue 番号が抽出できない場合は exit 0（保守的）
@@ -276,7 +265,7 @@ step_init() {
   if [[ "$is_quick" == "true" || "$is_direct" == "true" ]]; then
     local reason
     [[ "$is_quick" == "true" ]] && reason="quick" || reason="scope/direct label"
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"direct","branch":$branch,"deltaspec":false,"is_quick":$is_quick}'
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" --argjson is_direct "$is_direct" '{"recommended_action":"direct","branch":$branch,"deltaspec":false,"is_quick":$is_quick,"is_direct":$is_direct}'
     ok "init" "recommended_action=direct ($reason, is_quick=$is_quick)"
     if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
       python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=direct" 2>/dev/null || true

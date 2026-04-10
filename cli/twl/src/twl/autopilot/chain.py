@@ -944,10 +944,6 @@ class ChainRunner:
         """Return 'true' if issue has quick label, else 'false'."""
         return "true" if "quick" in self._fetch_labels(issue_num) else "false"
 
-    def _detect_direct_label(self, issue_num: str) -> str:
-        """Return 'true' if issue has scope/direct label, else 'false'."""
-        return "true" if "scope/direct" in self._fetch_labels(issue_num) else "false"
-
     def _has_command(self, cmd: str) -> bool:
         try:
             subprocess.check_output(["which", cmd], stderr=subprocess.DEVNULL)
