@@ -692,20 +692,33 @@ class PhaseOrchestrator:
         if not changes_dir.is_dir():
             return
 
+        def _do_archive(change_id: str) -> None:
+            r = subprocess.run(
+                ["twl", "spec", "archive", "--yes", "--skip-specs", "--", change_id],
+                capture_output=True,
+            )
+            if r.returncode == 0:
+                print(f"[orchestrator] Issue #{issue}: DeltaSpec archive 完了: {change_id}")
+            else:
+                print(f"[orchestrator] Issue #{issue}: ⚠️ DeltaSpec archive 失敗: {change_id}", file=sys.stderr)
+
         found = False
+        # 複数の change が一致する場合は全て archive する（1 issue に複数 change がある正規ケース）
         for yaml_path in changes_dir.rglob(".deltaspec.yaml"):
             content = yaml_path.read_text(encoding="utf-8")
+            change_id = yaml_path.parent.name
+            # プライマリ: issue: フィールドで検索
             if f"\nissue: {issue}\n" in content or content.startswith(f"issue: {issue}\n"):
                 found = True
-                change_id = yaml_path.parent.name
-                r = subprocess.run(
-                    ["twl", "spec", "archive", "--yes", "--skip-specs", "--", change_id],
-                    capture_output=True,
-                )
-                if r.returncode == 0:
-                    print(f"[orchestrator] Issue #{issue}: DeltaSpec archive 完了: {change_id}")
-                else:
-                    print(f"[orchestrator] Issue #{issue}: ⚠️ DeltaSpec archive 失敗: {change_id}", file=sys.stderr)
+                _do_archive(change_id)
+            # フォールバック1: name: issue-<N> フィールドで検索（issue フィールドなしの change 対応）
+            elif f"\nname: issue-{issue}\n" in content or content.startswith(f"name: issue-{issue}\n"):
+                found = True
+                _do_archive(change_id)
+            # フォールバック2: ディレクトリ名パターンで検索（name フィールドもない旧形式の change 対応）
+            elif change_id == f"issue-{issue}":
+                found = True
+                _do_archive(change_id)
 
         if not found:
             print(f"[orchestrator] Issue #{issue}: DeltaSpec change が見つかりません", file=sys.stderr)
