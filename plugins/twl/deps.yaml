@@ -1636,7 +1636,20 @@ commands:
     can_spawn: []
     calls:
       - reference: memory-mcp-config
+      - atomic: externalize-state
     description: "知識外部化 + compaction 制御（Long-term Memory 保存 → Working Memory 退避 → /compact）"
+
+  # === externalize-state: 状態外部化 atomic コマンド (#367) ===
+
+  externalize-state:
+    type: atomic
+    path: commands/externalize-state.md
+    effort: low
+    spawnable_by: [user, supervisor]
+    can_spawn: []
+    calls:
+      - reference: externalization-schema
+    description: "SupervisorSession 状態を externalization-schema に従って外部ファイルへ書き出す"
 
   # === su-observer 介入コマンド (#310) ===
 
