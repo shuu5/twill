@@ -16,7 +16,7 @@ Claude Code twl plugin（chain-driven + autopilot-first）。TWiLL モノリポ 
 
 deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 
-### Controller は7つ
+### Controller は6つ
 
 | controller | 役割 |
 |---|---|
@@ -26,7 +26,12 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 | co-architect | アーキテクチャ設計 |
 | co-utility | スタンドアロンユーティリティ操作 |
 | co-self-improve | ライブセッション観察と能動的 self-improvement（out-of-process observation） |
-| co-observer | controller の動作を監視・介入するメタ認知レイヤー |
+
+### Supervisor は1つ
+
+| supervisor | 役割 |
+|---|---|
+| su-observer | controller の動作を監視・介入するメタ認知レイヤー（ADR-014） |
 
 ## Bare repo 構造検証（セッション開始時チェック）
 
