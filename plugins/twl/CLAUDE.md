@@ -31,7 +31,7 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 
 | supervisor | 役割 |
 |---|---|
-| su-observer | controller の動作を監視・介入するメタ認知レイヤー（ADR-014） |
+| su-observer | プロジェクト常駐のメタ認知・Wave 管理・知識外部化（ADR-014） |
 
 ## Bare repo 構造検証（セッション開始時チェック）
 
