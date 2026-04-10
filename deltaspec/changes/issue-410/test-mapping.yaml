@@ -1,0 +1,341 @@
+change_id: issue-410
+generated_at: "2026-04-10T00:00:00Z"
+test_framework: bash
+scenarios:
+  - id: "helper-functions-provided"
+    name: "ヘルパー関数の提供"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 7
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: assert_file_exists 関数が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "helper-assert-file-exists"
+    name: "assert_file_exists 関数が定義されている"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 8
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: assert_file_exists 関数が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "helper-assert-file-contains"
+    name: "assert_file_contains 関数が定義されている"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 9
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: assert_file_contains 関数が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "helper-assert-file-not-contains"
+    name: "assert_file_not_contains 関数が定義されている"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 9
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: assert_file_not_contains 関数が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "helper-run-test"
+    name: "run_test 関数が定義されている"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 9
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: run_test 関数が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "helper-run-test-skip"
+    name: "run_test_skip 関数が定義されている"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 9
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: run_test_skip 関数が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "helper-sourceable-no-syntax-error"
+    name: "bash -n で構文エラーがない (edge)"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 9
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh [edge: bash -n で構文エラーがない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "helper-functions-exported-after-source"
+    name: "source 後に全 5 関数がシェルに定義される (edge)"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 9
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh [edge: source 後に全 5 関数がシェルに定義される]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "counter-pass-init"
+    name: "PASS=0 の初期化が記述されている"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 12
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: PASS=0 の初期化が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "counter-fail-init"
+    name: "FAIL=0 の初期化が記述されている"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 13
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: FAIL=0 の初期化が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "counter-skip-init"
+    name: "SKIP=0 の初期化が記述されている"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 13
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: SKIP=0 の初期化が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "counter-errors-init"
+    name: "ERRORS=() の初期化が記述されている"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 13
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh: ERRORS=() の初期化が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "counters-initialized-after-source"
+    name: "source 後に PASS/FAIL/SKIP=0, ERRORS=() が確認できる (edge)"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 13
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh [edge: source 後に PASS/FAIL/SKIP=0, ERRORS=() が確認できる]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "counters-are-numeric"
+    name: "カウンターが算術演算可能な整数型 (edge)"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 13
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "test-common.sh [edge: カウンターが算術演算可能な整数型]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "print-summary-outputs-counts"
+    name: "print_summary: PASS/FAIL/SKIP 件数が出力される"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 16
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "print_summary: PASS/FAIL/SKIP 件数が出力される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "print-summary-outputs-error-names"
+    name: "print_summary: ERRORS に含まれる失敗テスト名が出力される"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 17
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "print_summary: ERRORS に含まれる失敗テスト名が出力される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "print-summary-exit-code-zero"
+    name: "print_summary: 全 PASS 時に exit code 0 を返す"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 17
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "print_summary: 全 PASS 時に exit code 0 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "print-summary-exit-code-nonzero"
+    name: "print_summary: FAIL=2 のとき exit code 2 を返す"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 17
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "print_summary: FAIL=2 のとき exit code 2 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "print-summary-no-errors-section-when-empty"
+    name: "ERRORS 空のとき Failed tests: セクションが出力されない (edge)"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 17
+    requirement: "test-common.sh 共通ヘルパーの提供"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "print_summary [edge: ERRORS 空のとき Failed tests: セクションが出力されない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "line-count-le-300"
+    name: "行数閾値の遵守: wc -l ≤ 300 行"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 25
+    requirement: "skillmd-pilot-fixes.test.sh の行数削減"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "skillmd-pilot-fixes.test.sh: wc -l ≤ 300 行"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "target-sources-common"
+    name: "skillmd-pilot-fixes.test.sh が test-common.sh を source している"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 25
+    requirement: "skillmd-pilot-fixes.test.sh の行数削減"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "skillmd-pilot-fixes.test.sh: test-common.sh を source している"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-duplicate-helpers-in-target"
+    name: "インライン assert_file_exists 定義が残っていない (edge)"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 25
+    requirement: "skillmd-pilot-fixes.test.sh の行数削減"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "skillmd-pilot-fixes.test.sh [edge: インライン assert_file_exists 定義が残っていない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-duplicate-counter-init-in-target"
+    name: "インラインカウンター初期化が残っていない (edge)"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 25
+    requirement: "skillmd-pilot-fixes.test.sh の行数削減"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "skillmd-pilot-fixes.test.sh [edge: インラインカウンター初期化が残っていない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "test-result-non-regression-syntax"
+    name: "テスト結果の非退行: bash -n を通過する"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 29
+    requirement: "skillmd-pilot-fixes.test.sh の行数削減"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "テスト結果の非退行: skillmd-pilot-fixes.test.sh が bash -n を通過する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "test-result-non-regression-19-cases"
+    name: "テスト結果の非退行: run_test 呼び出しが 19 件以上存在する"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 30
+    requirement: "skillmd-pilot-fixes.test.sh の行数削減"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "テスト結果の非退行: run_test 呼び出しが 19 件以上存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "test-result-non-regression-total-lines"
+    name: "合計行数が過剰に増加していない (edge)"
+    spec_file: "specs/test-common-extract/spec.md"
+    spec_line: 30
+    requirement: "skillmd-pilot-fixes.test.sh の行数削減"
+    test_file: "plugins/twl/tests/scenarios/test-common-extract.test.sh"
+    test_name: "テスト結果の非退行 [edge: 合計行数が元の 342 行から過剰に増加していない (≤420)]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
