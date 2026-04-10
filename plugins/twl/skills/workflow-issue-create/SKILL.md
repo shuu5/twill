@@ -24,6 +24,7 @@ LLM コンテキスト内フラグとして受け渡し:
 - **refined_issues**: 精緻化済み Issue リスト
 - **is_split_generated**: 各 Issue の split 由来フラグ
 - **is_quick_candidate**: 各 Issue の quick 候補フラグ
+- **is_scope_direct_candidate**: 各 Issue の scope/direct 候補フラグ
 - **cross_repo_split**: クロスリポ分割フラグ
 - **target_repos**: クロスリポ対象リポジトリリスト
 - **session_dir**: co-issue の SESSION_DIR（クリーンアップ用、例: `.controller-issue/1712649600_a3f2/`）
@@ -42,7 +43,7 @@ LLM コンテキスト内フラグとして受け渡し:
 
 ### Step 2: ユーザー確認（MUST）
 
-全候補を一覧表示する。quick 候補には `[quick]` マークを付与。ユーザーが承認するまで作成に進んではならない。
+全候補を一覧表示する。quick 候補には `[quick]` マークを付与。scope/direct 候補には `[scope/direct]` マークを付与。ユーザーが承認するまで作成に進んではならない。
 
 ### Step 3: creation routing
 
@@ -53,6 +54,7 @@ LLM コンテキスト内フラグとして受け渡し:
 ラベル付与ルール:
 - `REFINED_LABEL_OK=true` かつ `is_split_generated != true` → `--label refined`
 - quick 条件充足 → `--label quick`
+- scope/direct 条件充足（かつ quick でない） → `--label scope/direct`
 
 ### Step 4: Project Board 同期
 
