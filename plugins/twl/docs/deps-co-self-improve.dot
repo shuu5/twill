@@ -88,7 +88,6 @@ digraph Dependencies {
     skill_observation_pattern_catalog -> skill_load_test_baselines [style=invis, weight=10];
     cmd_observe_once -> cmd_problem_detect [style=invis, weight=10];
     cmd_problem_detect -> agent_observer_evaluator [style=invis, weight=10];
-    skill_observation_pattern_catalog -> skill_workflow_observe_loop [style=invis, weight=10];
     cmd_observe_and_detect -> cmd_observe_retrospective [style=invis, weight=10];
     cmd_observe_retrospective -> script_observe_wrapper [style=invis, weight=10];
     script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];
