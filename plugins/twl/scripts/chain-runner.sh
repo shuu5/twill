@@ -592,12 +592,20 @@ step_next_step() {
   is_quick="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
   [[ "$is_quick" == "true" ]] || is_quick="false"
 
+  # mode を state から取得（存在しない場合は空文字列）
+  local mode
+  mode="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field mode 2>/dev/null || echo "")"
+
   # current_step のインデックスを探す
   local found=false
   for step in "${CHAIN_STEPS[@]}"; do
     if [[ "$found" == "true" ]]; then
       # is_quick=true かつ QUICK_SKIP_STEPS に含まれるステップはスキップ
       if [[ "$is_quick" == "true" ]] && printf '%s\n' "${QUICK_SKIP_STEPS[@]}" | grep -qxF "$step"; then
+        continue
+      fi
+      # mode=direct かつ DIRECT_SKIP_STEPS に含まれるステップはスキップ
+      if [[ "$mode" == "direct" ]] && printf '%s\n' "${DIRECT_SKIP_STEPS[@]}" | grep -qxF "$step"; then
         continue
       fi
       if $output_json; then
@@ -724,7 +732,12 @@ step_chain_status() {
     --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "false")"
   [[ "$is_quick" == "true" ]] || is_quick="false"
 
-  echo "chain-status: Issue #${issue_num} (is_quick=${is_quick}, current=${current_step:-none})"
+  local mode
+  mode="$(python3 -m twl.autopilot.state read \
+    --autopilot-dir "$(resolve_autopilot_dir)" \
+    --type issue --issue "$issue_num" --field mode 2>/dev/null || echo "")"
+
+  echo "chain-status: Issue #${issue_num} (is_quick=${is_quick}, mode=${mode:-none}, current=${current_step:-none})"
   echo "---"
 
   local found_current=false
@@ -734,6 +747,11 @@ step_chain_status() {
 
     if [[ "$is_quick" == "true" ]] && printf '%s\n' "${QUICK_SKIP_STEPS[@]}" | grep -qxF "$step"; then
       echo "  ⊘ ${step} ${type_label} (skipped/quick)"
+      continue
+    fi
+
+    if [[ "$mode" == "direct" ]] && printf '%s\n' "${DIRECT_SKIP_STEPS[@]}" | grep -qxF "$step"; then
+      echo "  ⊘ ${step} ${type_label} (skipped/direct)"
       continue
     fi
 
