@@ -135,9 +135,9 @@ flowchart TD
 > **OB-3 適用範囲注記**: su-observer は介入権限を持つ Supervisor レイヤー（ADR-014）のため OB-3 適用外。介入ルールは SU-7 で定義（supervision.md）。  
 > **OB-5 適用範囲注記**: co-self-improve の observed session 上限。su-observer の supervised controller 上限は SU-4 で定義（supervision.md）（対象エンティティが異なる別概念）。
 
-### Observer Constraints (OBS-*)（co-observer 専用）
+### Observer Constraints (OBS-*)（廃止 / Superseded by SU-*）
 
-> **Superseded**: OBS-1〜OBS-5 は supervision.md の SU-1〜SU-7 に統合されました（ADR-014）。
+> **Superseded**: OBS-1〜OBS-5 は supervision.md の SU-* に置き換えられました（ADR-014）。OBS-1〜OBS-4 は SU-1〜SU-4 に対応し、OBS-5 は SU-7 に対応。SU-5・SU-6 は新規追加。
 
 | 制約 ID | 内容 | 適用範囲 |
 |---------|------|----------|
