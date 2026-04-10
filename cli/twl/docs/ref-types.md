@@ -5,7 +5,7 @@
 | 型 | section | can_spawn | spawnable_by |
 |----|---------|-----------|--------------|
 | **controller** | skills | workflow, composite, atomic, specialist, reference | user |
-| **observer** | skills | workflow, atomic, composite, specialist, reference, script | user, launcher |
+| **supervisor** | skills | workflow, atomic, composite, specialist, reference, script | user |
 | **workflow** | skills | composite, atomic, specialist | controller, user |
 | **composite** | commands | specialist | workflow, controller |
 | **atomic** | commands | reference | workflow, controller |
@@ -29,12 +29,12 @@
 - **spawnable_by**: user
 - **calls に spawn 先を記載**: `calls` に `- agent: {specialist名}` を追加（SVG エッジ生成に必要）
 
-### observer (skills/)
+### supervisor (skills/)
 - **責務**: セッション監視 + controller 管理。実行中の controller セッションを観察・監視し、問題検知・介入・フロー逸脱の報告を担う
 - **記載内容**: 監視ロジック（状態チェック / 介入条件 / エスカレーション）
 - **can_spawn**: workflow, atomic, composite, specialist, reference, script
-- **can_supervise**: controller（observer が controller を監視・管理できる）
-- **spawnable_by**: user, launcher
+- **can_supervise**: controller（supervisor が controller を監視・管理できる）
+- **spawnable_by**: user
 - **token_target**: warning 2,000 / critical 3,000
 
 ### workflow (skills/)
