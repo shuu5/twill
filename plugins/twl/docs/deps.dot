@@ -179,7 +179,7 @@ digraph Dependencies {
     cmd_llm_complete [label="llm-complete\n(12,600 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
     cmd_dispatch_info [label="dispatch-info\n(12,600 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
     cmd_chain_status [label="chain-status\n(12,600 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
-    cmd_su_compact [label="su-compact\n(993 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
+    cmd_su_compact [label="su-compact\n(968 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
     cmd_wave_collect [label="wave-collect\n(1,270 tok)", shape=box, style=filled, fillcolor="#ffcdd2"];
 
     // L3: Agents
@@ -469,6 +469,8 @@ digraph Dependencies {
     cmd_problem_detect -> skill_observation_pattern_catalog;
     cmd_observe_and_detect -> agent_observer_evaluator [style=dashed];
     cmd_su_compact -> skill_memory_mcp_config;
+    cmd_su_compact -> cmd_externalize_state;
+    cmd_externalize_state -> skill_externalization_schema;
     cmd_intervene_auto -> skill_intervention_catalog;
     cmd_intervene_confirm -> skill_intervention_catalog;
     cmd_intervene_escalate -> skill_intervention_catalog;
@@ -784,6 +786,7 @@ digraph Dependencies {
     script_observe_wrapper -> script_session_state_wrapper [style=invis, weight=10];
     script_session_state_wrapper -> script_session_cld_observe [style=invis, weight=10];
     script_session_cld_observe -> script_session_session_state [style=invis, weight=10];
+    skill_memory_mcp_config -> cmd_externalize_state [style=invis, weight=10];
     agent_spec_scaffold_tests -> agent_e2e_generate [style=invis, weight=10];
     agent_e2e_generate -> skill_ref_specialist_output_schema [style=invis, weight=10];
     script_autopilot_parser -> script_tech_stack_detect [style=invis, weight=10];

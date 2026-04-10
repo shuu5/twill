@@ -77,11 +77,10 @@ TIMESTAMP=$(date +"%Y-%m-%d %H:%M")
 <!-- その他の重要な情報 -->
 ```
 
-externalize-state コマンドが存在する場合（`plugins/twl/commands/externalize-state.md`）は追加で呼び出す:
-```bash
-# externalize-state が存在する場合のみ実行
-[[ -f "plugins/twl/commands/externalize-state.md" ]] && echo "⏭ externalize-state 呼出（存在する場合）"
-```
+`commands/externalize-state.md` を Read し、`--trigger <mode>` を引数として実行する:
+- `task` モード → `--trigger manual`
+- `wave` モード → `--trigger wave_complete`
+- `full` モード → `--trigger manual`
 
 ### Step 4: compaction 実行
 
