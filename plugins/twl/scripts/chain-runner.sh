@@ -1124,6 +1124,8 @@ main() {
     chain-status)        step_chain_status "$@" ;;
     prompt-compliance)   step_prompt_compliance "$@" ;;
     ts-preflight)        step_ts_preflight "$@" ;;
+    phase-review)        record_current_step "phase-review"; ok "phase-review" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
+    scope-judge)         record_current_step "scope-judge";  ok "scope-judge"  "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     pr-test)             step_pr_test "$@" ;;
     ac-verify)           step_ac_verify "$@" ;;
     all-pass-check)      step_all_pass_check "$@" ;;
@@ -1138,7 +1140,7 @@ main() {
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
       echo "         board-archive, ac-extract, arch-ref, change-id-resolve, next-step, prompt-compliance, ts-preflight," >&2
-      echo "         pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge, check," >&2
+      echo "         phase-review, scope-judge, pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge, check," >&2
       echo "         quick-guard, autopilot-detect, quick-detect, resolve-issue-num," >&2
       echo "         dispatch-info, llm-delegate, llm-complete, chain-status" >&2
       exit 1
