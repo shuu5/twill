@@ -28,7 +28,7 @@
 | su-observer | Supervisor 型の唯一のコンポーネント。main session そのものとして機能し、controller を spawn → observe する | Supervision |
 | SupervisorSession | su-observer のプロジェクト常駐セッション状態。Wave 管理・介入記録・記憶予算を追跡 | Supervision |
 | su-compact | 知識外部化 + compaction を実行するスキル/コマンド。自動（50%閾値）/手動/Wave完了時に発火 | Supervision |
-| Three-Layer Memory | 三層記憶モデル。Working Memory（context）+ Externalized Memory（doobidoo/ファイル）+ Compressed Memory（compaction後） | Supervision |
+| Three-Layer Memory | 三層記憶モデル。Long-term Memory（永続）+ Working Memory Externalization（一時退避）+ Compressed Memory（compaction後） | Supervision |
 | Wave | autopilot で大量 Issue を分割実行する単位。1 Wave = 1 co-autopilot セッション。Wave 間で su-compact を実行 | Supervision, Autopilot |
 | Observer | 別 session を能動的に観察する観察側 session。read-only で対象を覗き見る | Observation |
 | Observed | 観察される対象 session（autopilot/co-issue/co-architect 等） | Observation |
