@@ -1,3 +1,5 @@
+<!-- Note: 全タスクは Issue #348 PR (#392) の中で実施・マージ済み（origin/main で確認済み）。本 DeltaSpec は事後記録として作成。 -->
+
 ## 1. テストファイルのリネームと更新
 
 - [x] 1.1 `cli/twl/tests/test_observer_type.py` を `test_supervisor_type.py` にリネームする
