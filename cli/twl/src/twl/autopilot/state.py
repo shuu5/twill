@@ -31,7 +31,7 @@ _TRANSITIONS: dict[str, set[str]] = {
     "conflict": {"merge-ready", "failed"},
 }
 
-_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override"}
+_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override", "workflow_done"}
 
 
 def _autopilot_dir() -> Path:
@@ -242,6 +242,7 @@ class StateManager:
             "merged_at": None,
             "files_changed": [],
             "failure": None,
+            "workflow_done": None,
         }
         self._atomic_write(file, data)
         return f"OK: issue-{issue}.json を作成しました (status=running)"

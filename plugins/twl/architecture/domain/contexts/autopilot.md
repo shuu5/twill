@@ -38,6 +38,7 @@ per-issue の状態ファイル。
 | merged_at | null \| string (ISO 8601) | マージ完了時刻 |
 | files_changed | string[] | 変更されたファイルパス配列 |
 | failure | null \| { message, step, timestamp } | 失敗情報 |
+| workflow_done | null \| string | 完了したワークフロー名（例: `setup`, `test-ready`）。Orchestrator が次 workflow inject 検知に使用 |
 
 ### AutopilotPlan (plan.yaml)
 autopilot セッションの実行計画。
