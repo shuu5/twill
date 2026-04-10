@@ -20,6 +20,16 @@ workflow-setup の後に呼び出す。`CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-
 
 ## chain 実行指示（MUST — 全ステップ順に実行。途中停止禁止）
 
+### 前提: 前 workflow コンテキスト復元
+
+```bash
+CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"
+ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
+AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
+[[ -n "$ISSUE_NUM" && -f "$CONTEXT_FILE" ]] && echo "=== 前 workflow コンテキスト ===" && cat "$CONTEXT_FILE"
+```
+
 ### Quick Guard
 ```bash
 bash "$CR" quick-guard || { echo "quick Issue — test-ready スキップ"; exit 0; }
@@ -70,6 +80,38 @@ ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
 eval "$(bash "$CR" autopilot-detect)"
 ```
 
-- IS_AUTOPILOT=true → `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=test-ready"` を実行して停止
+- IS_AUTOPILOT=true → context.md 書き出し（下記スニペット）→ `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=test-ready"` を実行して停止
 - IS_AUTOPILOT=false → 「完了。次: /twl:workflow-pr-verify」と案内
+
+**context.md 書き出しスニペット（workflow_done=test-ready 直前）:**
+```bash
+ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
+if [[ -n "$ISSUE_NUM" ]]; then
+  AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+  mkdir -p "${AUTOPILOT_DIR}/issues"
+  CHANGE_ID_VAL=$(python3 -m twl.autopilot.state read --autopilot-dir "${AUTOPILOT_DIR}" --type issue --issue "${ISSUE_NUM}" --field change_id 2>/dev/null || echo "")
+  cat > "${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md" <<EOF
+# Workflow Context: Issue #${ISSUE_NUM}
+workflow: test-ready
+
+## completed_steps
+- change-id-resolve
+- test-scaffold
+- check
+- change-apply
+
+## change_id
+${CHANGE_ID_VAL}
+
+## pr_number
+
+
+## test_results
+
+
+## review_findings
+
+EOF
+fi
+```
 

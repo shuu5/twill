@@ -61,6 +61,16 @@ THEN
 
 **重要**: 以下の全ステップを上から順に実行すること。各ステップ完了後、**即座に**次のステップに進むこと。プロンプトで停止してはならない。
 
+### 前提: 前 workflow コンテキスト復元
+
+```bash
+CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"
+ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
+AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
+[[ -n "$ISSUE_NUM" && -f "$CONTEXT_FILE" ]] && echo "=== 前 workflow コンテキスト ===" && cat "$CONTEXT_FILE"
+```
+
 ### Step 6: e2e-screening（Visual 検証）【LLM 判断】
 `commands/e2e-screening.md` を Read → 実行。E2E なければスキップ。
 
@@ -101,8 +111,45 @@ ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
 eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
 ```
 
-- IS_AUTOPILOT=true → `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=pr-merge" --set "status=merge-ready"` を実行して停止
+- IS_AUTOPILOT=true → context.md 書き出し（下記スニペット）→ `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=pr-merge" --set "status=merge-ready"` を実行して停止
 - IS_AUTOPILOT=false → 「workflow-pr-merge 完了」と報告して停止
+
+**context.md 書き出しスニペット（workflow_done=pr-merge 直前）:**
+```bash
+ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
+if [[ -n "$ISSUE_NUM" ]]; then
+  AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+  mkdir -p "${AUTOPILOT_DIR}/issues"
+  CHANGE_ID_VAL=$(python3 -m twl.autopilot.state read --autopilot-dir "${AUTOPILOT_DIR}" --type issue --issue "${ISSUE_NUM}" --field change_id 2>/dev/null || echo "")
+  PR_NUMBER=$(gh pr list --head "$(git branch --show-current)" --json number -q '.[0].number' 2>/dev/null || echo "")
+  TEST_RESULTS=$(python3 -m twl.autopilot.checkpoint read --step pr-test --field status 2>/dev/null || echo "")
+  REVIEW_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field status 2>/dev/null || echo "")
+  cat > "${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md" <<EOF
+# Workflow Context: Issue #${ISSUE_NUM}
+workflow: pr-merge
+
+## completed_steps
+- e2e-screening
+- pr-cycle-report
+- pr-cycle-analysis
+- all-pass-check
+- merge-gate
+- auto-merge
+
+## change_id
+${CHANGE_ID_VAL}
+
+## pr_number
+${PR_NUMBER}
+
+## test_results
+${TEST_RESULTS}
+
+## review_findings
+${REVIEW_FINDINGS}
+EOF
+fi
+```
 
 ## compaction 復帰プロトコル
 
