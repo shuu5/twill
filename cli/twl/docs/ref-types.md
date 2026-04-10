@@ -8,8 +8,8 @@
 | **supervisor** | skills | workflow, atomic, composite, specialist, reference, script | user |
 | **workflow** | skills | composite, atomic, specialist | controller, user |
 | **composite** | commands | specialist | workflow, controller |
-| **atomic** | commands | reference | workflow, controller |
-| **specialist** | agents | (なし) | workflow, composite, controller |
+| **atomic** | commands | reference | workflow, controller, supervisor |
+| **specialist** | agents | (なし) | workflow, composite, controller, supervisor |
 | **reference** | skills | (なし) | all |
 
 ### 特殊 spawnable_by 値
