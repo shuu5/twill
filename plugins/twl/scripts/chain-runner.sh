@@ -155,11 +155,16 @@ record_current_step() {
 # =====================================================================
 
 # Issue の quick ラベルを検出する（Issue 番号が正の整数の場合のみ）
+fetch_labels() {
+  local issue_num="${1:-}"
+  [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]] || { echo ""; return 0; }
+  gh issue view "$issue_num" --json labels --jq '.labels[].name' 2>/dev/null || echo ""
+}
+
 detect_quick_label() {
   local issue_num="${1:-}"
-  [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]] || { echo "false"; return 0; }
   local labels
-  labels=$(gh issue view "$issue_num" --json labels --jq '.labels[].name' 2>/dev/null || echo "")
+  labels="$(fetch_labels "$issue_num")"
   if echo "$labels" | grep -qxF "quick"; then
     echo "true"
   else
@@ -169,9 +174,8 @@ detect_quick_label() {
 
 detect_direct_label() {
   local issue_num="${1:-}"
-  [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]] || { echo "false"; return 0; }
   local labels
-  labels=$(gh issue view "$issue_num" --json labels --jq '.labels[].name' 2>/dev/null || echo "")
+  labels="$(fetch_labels "$issue_num")"
   if echo "$labels" | grep -qxF "scope/direct"; then
     echo "true"
   else
@@ -248,14 +252,17 @@ step_init() {
   root="$(resolve_project_root)"
   local branch
   branch="$(git branch --show-current 2>/dev/null || echo "detached")"
+  local _labels
+  _labels="$(fetch_labels "$issue_num")"
   local is_quick
-  is_quick="$(detect_quick_label "$issue_num")"
+  is_quick="$(echo "$_labels" | grep -qxF "quick" && echo "true" || echo "false")"
   local is_direct
-  is_direct="$(detect_direct_label "$issue_num")"
+  is_direct="$(echo "$_labels" | grep -qxF "scope/direct" && echo "true" || echo "false")"
 
-  # is_quick を state に永続化（state ファイルが存在する場合のみ）
+  # is_quick と is_direct を state に永続化（state ファイルが存在する場合のみ）
   if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
     python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "is_quick=$is_quick" 2>/dev/null || true
+    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "is_direct=$is_direct" 2>/dev/null || true
   fi
 
   # ブランチ判定

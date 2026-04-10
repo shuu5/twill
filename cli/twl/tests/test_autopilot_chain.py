@@ -388,8 +388,7 @@ class TestStepInit:
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/some-branch"),
             patch.object(runner, "_project_root", return_value=tmp_path),
-            patch.object(runner, "_detect_quick_label", return_value="false"),
-            patch.object(runner, "_detect_direct_label", return_value="false"),
+            patch.object(runner, "_fetch_labels", return_value=[]),
             patch.object(runner, "_write_state_field"),
         ):
             result = runner.step_init("")
@@ -405,10 +404,10 @@ class TestStepInit:
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/some-branch"),
             patch.object(runner, "_project_root", return_value=tmp_path),
-            patch.object(runner, "_detect_quick_label", return_value="false"),
-            patch.object(runner, "_detect_direct_label", return_value="true"),
+            patch.object(runner, "_fetch_labels", return_value=["scope/direct"]),
             patch.object(runner, "_write_state_field"),
         ):
             result = runner.step_init("338")
         assert result["recommended_action"] == "direct"
         assert result.get("deltaspec") is False
+        assert result.get("is_direct") is True

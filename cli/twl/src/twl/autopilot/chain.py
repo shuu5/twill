@@ -224,12 +224,14 @@ class ChainRunner:
         self.record_step(issue_num, "init")
 
         branch = self._git_current_branch()
-        is_quick = self._detect_quick_label(issue_num) if issue_num else "false"
-        is_direct = self._detect_direct_label(issue_num) if issue_num else "false"
+        labels = self._fetch_labels(issue_num) if issue_num else []
+        is_quick = "true" if "quick" in labels else "false"
+        is_direct = "true" if "scope/direct" in labels else "false"
 
-        # Persist is_quick to state
+        # Persist is_quick and is_direct to state
         if issue_num and re.match(r"^\d+$", issue_num):
             self._write_state_field(issue_num, f"is_quick={is_quick}")
+            self._write_state_field(issue_num, f"is_direct={is_direct}")
 
         if branch in ("main", "master"):
             result = {
@@ -248,6 +250,7 @@ class ChainRunner:
                 "branch": branch,
                 "deltaspec": False,
                 "is_quick": is_quick == "true",
+                "is_direct": is_direct == "true",
             }
             self._ok("init", f"recommended_action=direct ({reason}, is_quick={is_quick})")
             if issue_num and re.match(r"^\d+$", issue_num):
@@ -921,37 +924,29 @@ class ChainRunner:
         except Exception:
             pass
 
-    def _detect_quick_label(self, issue_num: str) -> str:
-        """Return 'true' if issue has quick label, else 'false'."""
+    def _fetch_labels(self, issue_num: str) -> list[str]:
+        """Fetch issue label names via gh CLI. Returns empty list on failure."""
         if not issue_num or not re.match(r"^\d+$", issue_num):
-            return "false"
+            return []
         try:
             result = subprocess.run(
                 ["gh", "issue", "view", issue_num, "--json", "labels",
                  "--jq", ".labels[].name"],
                 capture_output=True, text=True, timeout=10,
             )
-            if result.returncode == 0 and "quick" in result.stdout.splitlines():
-                return "true"
+            if result.returncode == 0:
+                return result.stdout.splitlines()
         except Exception:
             pass
-        return "false"
+        return []
+
+    def _detect_quick_label(self, issue_num: str) -> str:
+        """Return 'true' if issue has quick label, else 'false'."""
+        return "true" if "quick" in self._fetch_labels(issue_num) else "false"
 
     def _detect_direct_label(self, issue_num: str) -> str:
         """Return 'true' if issue has scope/direct label, else 'false'."""
-        if not issue_num or not re.match(r"^\d+$", issue_num):
-            return "false"
-        try:
-            result = subprocess.run(
-                ["gh", "issue", "view", issue_num, "--json", "labels",
-                 "--jq", ".labels[].name"],
-                capture_output=True, text=True, timeout=10,
-            )
-            if result.returncode == 0 and "scope/direct" in result.stdout.splitlines():
-                return "true"
-        except Exception:
-            pass
-        return "false"
+        return "true" if "scope/direct" in self._fetch_labels(issue_num) else "false"
 
     def _has_command(self, cmd: str) -> bool:
         try:
