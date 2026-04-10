@@ -747,11 +747,18 @@ inject_next_workflow() {
   local issue="$1"
   local window_name="$2"
 
+  # --- trace ログファイル ---
+  mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true  # SUMMARY_MODE 等での再利用を考慮して関数内でも保証
+  local _trace_log="${AUTOPILOT_DIR}/trace/inject-$(date -u +%Y%m%d).log"
+  local _trace_ts
+  _trace_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
   # --- resolve_next_workflow CLI で次の workflow を決定 ---
   local next_skill next_skill_exit=0
   next_skill=$(python3 -m twl.autopilot.resolve_next_workflow --issue "$issue" 2>/dev/null) || next_skill_exit=$?
   if [[ "$next_skill_exit" -ne 0 || -z "$next_skill" ]]; then
     echo "[orchestrator] Issue #${issue}: WARNING: resolve_next_workflow 失敗 — inject スキップ" >&2
+    echo "[${_trace_ts}] issue=${issue} skill=RESOLVE_FAILED result=skip reason=\"resolve_next_workflow exit=${next_skill_exit}\"" >> "$_trace_log" 2>/dev/null || true
     return 1
   fi
 
@@ -762,12 +769,14 @@ inject_next_workflow() {
   if [[ "$_skill_safe" == "pr-merge" || "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
     # terminal workflow: inject せず merge-gate フローに委譲
     echo "[orchestrator] Issue #${issue}: pr-merge 検出 — inject スキップ、merge-gate フローに委譲" >&2
+    echo "[${_trace_ts}] issue=${issue} skill=pr-merge result=skip reason=\"terminal workflow, delegated to merge-gate\"" >> "$_trace_log" 2>/dev/null || true
     python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
       --set "workflow_done=null" 2>/dev/null || true
     return 0
   fi
   if [[ ! "$_skill_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
     echo "[orchestrator] Issue #${issue}: WARNING: 不正な workflow skill '${_skill_safe:0:200}' — inject スキップ" >&2
+    echo "[${_trace_ts}] issue=${issue} skill=INVALID result=skip reason=\"invalid skill name\"" >> "$_trace_log" 2>/dev/null || true
     return 1
   fi
 
@@ -787,12 +796,26 @@ inject_next_workflow() {
 
   if [[ "$prompt_found" -eq 0 ]]; then
     echo "[orchestrator] Issue #${issue}: WARNING: inject タイムアウト — ${POLL_INTERVAL:-10}秒後に再チェック" >&2
+    echo "[${_trace_ts}] issue=${issue} skill=${_skill_safe} result=timeout reason=\"prompt not found after 3 retries\"" >> "$_trace_log" 2>/dev/null || true
     return 1
   fi
 
   # --- inject 実行（バリデーション済みの _skill_safe を使用） ---
   echo "[orchestrator] Issue #${issue}: inject_next_workflow — ${_skill_safe}" >&2
-  tmux send-keys -t "$window_name" "$_skill_safe" Enter 2>/dev/null || true
+  local _send_err
+  _send_err=$(tmux send-keys -t "$window_name" "$_skill_safe" Enter 2>&1) || {
+    _send_err="${_send_err//$'\n'/ }"  # ログインジェクション防止（改行除去）
+    echo "[orchestrator] Issue #${issue}: WARNING: tmux send-keys 失敗 — ${_send_err}" >&2
+    local _err_ts
+    _err_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    echo "[${_err_ts}] issue=${issue} skill=${_skill_safe} result=error reason=\"tmux send-keys failed: ${_send_err}\"" >> "$_trace_log" 2>/dev/null || true
+    return 1
+  }
+
+  # --- trace ログ: inject 成功（タイムスタンプを inject 完了後に再取得） ---
+  local _success_ts
+  _success_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  echo "[${_success_ts}] issue=${issue} skill=${_skill_safe} result=success" >> "$_trace_log" 2>/dev/null || true
 
   # --- workflow_done クリア ---
   python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
@@ -1108,6 +1131,7 @@ fi
 
 # --- Phase 実行 ---
 mkdir -p "$AUTOPILOT_DIR/logs"
+mkdir -p "$AUTOPILOT_DIR/trace"
 
 # model 解決: CLI arg > plan.yaml > デフォルト（sonnet）
 if [[ -z "$WORKER_MODEL" && -f "$PLAN_FILE" ]]; then
@@ -1121,6 +1145,9 @@ if [[ -z "$WORKER_MODEL" ]]; then
 fi
 
 echo "[orchestrator] Phase ${PHASE} 開始" >&2
+# --- trace: PID と起動時刻を記録 ---
+_orch_started_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+echo "[${_orch_started_at}] orchestrator_pid=$$ phase=${PHASE} started_at=${_orch_started_at}" >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE}.log" 2>/dev/null || true
 
 # Step 1: Phase 内 Issue リスト取得
 get_phase_issues "$PHASE" "$PLAN_FILE"

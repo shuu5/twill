@@ -193,7 +193,7 @@ stateDiagram-v2
 
 ## Constraints
 
-### 不変条件（12件）
+### 不変条件（13件）
 
 | ID | 不変条件 | 概要 | DeltaSpec 参照 |
 |----|----------|------|----------------|
@@ -209,6 +209,7 @@ stateDiagram-v2
 | **J** | merge 前 base drift 検知 | merge-gate 実行前に origin/main に対する silent deletion を検知し、検出時は merge を停止する | merge-gate.md#scenario-merge前-base-drift検知 |
 | **K** | Pilot 実装禁止 | Pilot は Issue の実装（コード変更・PR 作成）を直接行ってはならない。実装は常に Worker 経由。Emergency Bypass 時も `mergegate merge --force` 経由のみ許可 | autopilot-lifecycle.md#scenario-不変条件-k-pilot実装禁止228 |
 | **L** | autopilot マージ実行責務 | autopilot 時のマージ実行は Orchestrator の `mergegate.py` 経由のみ。Worker chain の auto-merge ステップは `merge-ready` 宣言のみを行い、マージは実行しない | |
+| **M** | chain 遷移は orchestrator/手動 inject のみ | chain 遷移（workflow_done 検知後の次 workflow 起動）は orchestrator の `inject_next_workflow` または手動 skill inject（`/twl:workflow-<name>`）のみ許可。Pilot の直接 nudge による chain bypass は禁止。chain 停止時は orchestrator 再起動または手動 inject で chain を再開する（co-autopilot SKILL.md「chain 停止時の復旧手順」参照） | issue-438 |
 
 ### 並行性の制約
 
