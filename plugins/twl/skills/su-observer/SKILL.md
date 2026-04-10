@@ -70,11 +70,23 @@ spawnable_by:
 4. 新たな Issue 化が必要か AskUserQuestion で確認
 5. 承認時のみ Issue draft 生成（`commands/issue-draft-from-observation.md`）
 
-## Step 4: Wave 管理（後続 Issue で詳細化）
+## Step 4: Wave 管理 — co-autopilot spawn + 結果収集
 
-> **NOTE**: このステップは後続 Issue で詳細実装される。基本構造のみ定義。
-
-Wave 単位の co-autopilot 起動・完了検知・結果集約を担う。
+1. Issue 群の Wave 分割を計画（または既存の Wave 計画を継続）
+   - `.autopilot/plan.yaml` の phases を確認し、未完了の Wave を特定する
+2. Wave N の Issue リストを確定し、ユーザーに提示して承認を得る
+3. `Skill(twl:session:spawn)` で co-autopilot を起動:
+   ```
+   /session:spawn co-autopilot --issues <issue_list> --wave <N>
+   ```
+4. observe ループを開始（Step 5 の observe を定期実行）
+   - co-autopilot の進捗を監視し、問題を検知したら介入する
+5. Wave 完了を検知したら結果を収集:
+   - `commands/wave-collect.md` を Read → 実行（`WAVE_NUM=<N>` を環境変数で渡す）
+6. 状態を外部化:
+   - `commands/externalize-state.md` を Read → 実行（`--trigger wave_complete`）
+7. SU-6 制約: `Skill(twl:su-compact)` を呼び出して知識外部化 + compaction を実行する
+8. 次 Wave の Issue がある場合は Step 4-2 に戻る。全 Wave 完了時はサマリをユーザーに報告して Step 1 へ戻る
 
 ## Step 5: Long-term Memory 保存（後続 Issue で詳細化）
 
