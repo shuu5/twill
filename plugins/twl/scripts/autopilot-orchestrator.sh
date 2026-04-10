@@ -767,7 +767,7 @@ inject_next_workflow() {
     return 0
   fi
   if [[ ! "$_skill_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
-    echo "[orchestrator] Issue #${issue}: WARNING: 不正な workflow skill '${_skill_safe}' — inject スキップ" >&2
+    echo "[orchestrator] Issue #${issue}: WARNING: 不正な workflow skill '${_skill_safe:0:200}' — inject スキップ" >&2
     return 1
   fi
 
