@@ -451,8 +451,8 @@ class TestStepCheckMonorepo:
         root = tmp_path / "project"
         root.mkdir()
         self._setup_ci(root)
-        (root / "plugins" / "twl" / "tests").mkdir(parents=True)
-        (root / "plugins" / "twl" / "tests" / "spec.bats").touch()
+        (root / "plugins" / "tests").mkdir(parents=True)
+        (root / "plugins" / "tests" / "spec.bats").touch()
 
         runner = self._make_runner(tmp_path, autopilot_dir)
         with patch.object(runner, "_project_root", return_value=root):
