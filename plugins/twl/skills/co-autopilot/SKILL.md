@@ -67,7 +67,7 @@ TaskCreate で全体タスク「Autopilot: N Phases, M Issues」を登録。
 source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/python-env.sh"
 ```
 
-これにより `PYTHONPATH=cli/twl/src:$PYTHONPATH` が設定される。省略すると `python3 -m twl.autopilot.*` 呼び出し時に `ModuleNotFoundError` が発生する。
+これにより `cli/twl/src` の絶対パスが `PYTHONPATH` に追加される（python-env.sh が BASH_SOURCE から絶対パスを自動解決）。省略すると `python3 -m twl.autopilot.*` 呼び出し時に `ModuleNotFoundError` が発生する。
 
 `commands/autopilot-init.md` を Read → 実行。出力: SESSION_ID, PHASE_COUNT, SESSION_STATE_FILE。
 
