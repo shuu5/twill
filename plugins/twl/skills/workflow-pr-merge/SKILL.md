@@ -116,6 +116,7 @@ eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
 
 **context.md 書き出しスニペット（workflow_done=pr-merge 直前）:**
 ```bash
+CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"
 ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
 if [[ -n "$ISSUE_NUM" ]]; then
   AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
