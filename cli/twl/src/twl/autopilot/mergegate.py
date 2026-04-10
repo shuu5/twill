@@ -125,6 +125,58 @@ def _check_running_guard(autopilot_status: str) -> None:
         )
 
 
+_PHASE_REVIEW_SKIP_LABELS = frozenset({"scope/direct", "quick"})
+
+
+def _check_phase_review_guard(
+    autopilot_dir: Path,
+    issue_labels: list[str],
+    force: bool,
+) -> None:
+    """Reject merge when phase-review checkpoint is absent or has CRITICAL findings.
+
+    Skip logic:
+    - If the issue has a scope/direct or quick label, skip all checks.
+    - If --force is set and checkpoint is absent, emit a WARNING but continue.
+    - If checkpoint is absent (and not skipped), raise MergeGateError.
+    - If checkpoint has CRITICAL findings with confidence >= 80, raise MergeGateError.
+    """
+    # Label-based skip (scope/direct or quick)
+    if _PHASE_REVIEW_SKIP_LABELS.intersection(issue_labels):
+        return
+
+    checkpoint_file = autopilot_dir / "checkpoints" / "phase-review.json"
+
+    if not checkpoint_file.exists():
+        if force:
+            print(
+                "[merge-gate] WARNING: phase-review checkpoint が不在です"
+                "（--force により続行）",
+                file=sys.stderr,
+            )
+            return
+        raise MergeGateError(
+            "phase-review checkpoint が不在です。specialist review を実行してください"
+        )
+
+    # Read and check CRITICAL findings
+    try:
+        data = json.loads(checkpoint_file.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        raise MergeGateError(f"phase-review checkpoint の読み込みに失敗しました: {exc}") from exc
+
+    findings = data.get("findings", [])
+    blocking = [
+        f for f in findings
+        if f.get("severity") == "CRITICAL" and f.get("confidence", 0) >= 80
+    ]
+    if blocking:
+        details = "; ".join(f.get("message", "no message") for f in blocking)
+        raise MergeGateError(
+            f"phase-review で CRITICAL findings が検出されました（{len(blocking)} 件）: {details}"
+        )
+
+
 # ---------------------------------------------------------------------------
 # Board status update helper
 # ---------------------------------------------------------------------------
@@ -239,6 +291,14 @@ class MergeGate:
         if not self.force:
             _check_running_guard(autopilot_status)
 
+        # Pre-merge check: phase-review checkpoint guard (Issue #439).
+        issue_labels = self._get_issue_labels()
+        _check_phase_review_guard(
+            autopilot_dir=self.autopilot_dir,
+            issue_labels=issue_labels,
+            force=self.force,
+        )
+
         repo_mode = _detect_repo_mode()
         gh_repo_flag = self._gh_repo_flag()
 
@@ -338,6 +398,21 @@ class MergeGate:
         if self.repo_owner and self.repo_name:
             return ["-R", f"{self.repo_owner}/{self.repo_name}"]
         return []
+
+    def _get_issue_labels(self) -> list[str]:
+        """Return list of label names for this issue. Returns [] on error."""
+        gh_repo_flag = self._gh_repo_flag()
+        result = subprocess.run(
+            ["gh", "issue", "view", self.issue, *gh_repo_flag,
+             "--json", "labels", "-q", "[.labels[].name]"],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0 or not result.stdout.strip():
+            return []
+        try:
+            return json.loads(result.stdout.strip())
+        except (json.JSONDecodeError, TypeError):
+            return []
 
     def _gh_issue_state(self, gh_repo_flag: list[str]) -> str:
         """Return GitHub Issue state ('OPEN', 'CLOSED', or '' on error)."""
