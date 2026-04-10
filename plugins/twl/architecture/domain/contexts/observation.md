@@ -122,7 +122,7 @@ flowchart TD
 - test target は実 twill main の git 履歴を**絶対に汚染しない**。隔離 worktree + 独立ブランチで管理
 - observation Issue は本物の Issue とラベルで明確に区別する（`label: from-observation`）
 
-### OB-* Constraints（co-self-improve / co-observer 共通ベース）
+### OB-* Constraints（co-self-improve ベース）
 
 | 制約 ID | 内容 | 適用範囲 |
 |---------|------|----------|
@@ -132,10 +132,12 @@ flowchart TD
 | OB-4 | 検出結果をユーザー確認なしで自動起票してはならない（SHALL）。Issue draft はユーザー確認必須 | both |
 | OB-5 | 同時 3 observed session を超えて観察してはならない（SHALL）。context budget 維持 | **co-self-improve only** |
 
-> **OB-3 適用範囲注記**: co-observer は介入権限を持つメタ認知レイヤー（ADR-013）のため OB-3 適用外。介入ルールは OBS-1〜OBS-5 で定義。  
-> **OB-5 適用範囲注記**: co-self-improve の observed session 上限。co-observer の supervised controller 上限は OBS-4 で別定義（対象エンティティが異なる別概念）。
+> **OB-3 適用範囲注記**: su-observer は介入権限を持つ Supervisor レイヤー（ADR-014）のため OB-3 適用外。介入ルールは SU-7 で定義（supervision.md）。  
+> **OB-5 適用範囲注記**: co-self-improve の observed session 上限。su-observer の supervised controller 上限は SU-4 で定義（supervision.md）（対象エンティティが異なる別概念）。
 
 ### Observer Constraints (OBS-*)（co-observer 専用）
+
+> **Superseded**: OBS-1〜OBS-5 は supervision.md の SU-1〜SU-7 に統合されました（ADR-014）。
 
 | 制約 ID | 内容 | 適用範囲 |
 |---------|------|----------|
@@ -157,7 +159,6 @@ flowchart TD
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **controller** | co-self-improve | Live Observation 統括。テストプロジェクト管理も担う。OB-3 適用（observed session への inject 禁止） |
-| **controller** | co-observer | Observer 介入制御。OBS-1〜OBS-5 に従い 3 層プロトコルで controller session を supervise |
 | **workflow** | workflow-observe-loop | observe ループ + 問題検出 + Issue draft |
 | **atomic** | test-project-init | 隔離 worktree 作成 |
 | **atomic** | test-project-reset | テストプロジェクト クリーンアップ |
