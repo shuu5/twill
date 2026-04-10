@@ -1122,7 +1122,7 @@ main() {
     arch-ref)            step_arch_ref "$@" ;;
     change-propose)      record_current_step "change-propose"; ok "change-propose" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     change-apply)        record_current_step "change-apply"; ok "change-apply" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
-    post-change-apply)   record_current_step "post-change-apply"; ok "post-change-apply" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
+    post-change-apply)   record_current_step "post-change-apply"; ok "post-change-apply" "runner ステップ記録（workflow-test-ready が state を直接書き込み、chain-runner はステップ記録のみ）" ;;
     change-id-resolve)   step_change_id_resolve "$@" ;;
     test-scaffold)       record_current_step "test-scaffold"; ok "test-scaffold" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     next-step)           step_next_step "$@" ;;
