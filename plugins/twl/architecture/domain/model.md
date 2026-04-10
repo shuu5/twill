@@ -371,7 +371,7 @@ flowchart TD
 ```mermaid
 flowchart LR
     subgraph "GitHub Projects V2"
-        PB["twill-ecosystem (#3)"]
+        PB["twill-ecosystem (#6)"]
         PB -->|"linked"| R1["shuu5/twill"]
     end
 

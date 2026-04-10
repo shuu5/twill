@@ -17,7 +17,7 @@
 | Project Board | GitHub Projects V2 ボード。Issue ステータスの SSOT。autopilot の Issue 選択元 | Project Management |
 | TWiLL | Type-Woven, invariant-Led Layering。フレームワークの正式名称。CLI コマンド `twl` で操作 | 全体 |
 | twl | TWiLL の CLI コマンド短縮形 | 全体 |
-| twill-ecosystem | クロスリポジトリプロジェクト（#3）。TWiLL モノリポを統合管理 | Project Management |
+| twill-ecosystem | クロスリポジトリプロジェクト（#6）。TWiLL モノリポを統合管理 | Project Management |
 | DeltaSpec | DeltaSpec の変更仕様管理 | Issue Management |
 | ECC | 外部知識ソース（doobidoo memory）。自己改善の教師データとして活用 | Self-Improve |
 | Emergency Bypass | co-autopilot 障害時のみ許可される手動実装パス。retrospective 記録義務あり | Autopilot |
@@ -68,6 +68,7 @@
 | problem-detect | rule-based で capture から既知パターンを検出する atomic | Observation |
 | test-project-init/reset/scenario-load | テストプロジェクト隔離 worktree 管理 atomic 群 | Observation |
 | load-test baseline | 負荷テスト level（smoke/regression/load）の定量基準 reference | Observation |
+| Bug Reproduction Scenario | 既知 Bug の再現条件を意図的に誘発するテストシナリオ。test-scenario-catalog に `bug-` プレフィックスパターンと対で定義される | Observation |
 | prompt-compliance | refined_by ハッシュ整合性をチェックする chain step（pr-verify chain）。dispatch_mode=runner | PR Cycle |
 | pseudo-pilot | Pilot の手動ワークフロー支援スクリプト群（plugins/twl/scripts/pseudo-pilot/）。PR 待機・Worker 完了待機 | Autopilot |
 | workflow-prompt-audit | stale コンポーネントの refined_by 整合性を一括監査する workflow（#209） | PR Cycle |

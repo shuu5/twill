@@ -72,6 +72,7 @@ Observer 介入ログの単位。
 | level | `smoke` \| `regression` \| `load` | テストレベル |
 | issue_count | number | 投入する Issue 数 |
 | expected_duration | string | 期待完了時間 |
+| bug_target | number \| null | Bug 再現シナリオの場合、対象 Bug Issue 番号。null は汎用シナリオ |
 
 ## Key Workflows
 
@@ -153,6 +154,7 @@ flowchart TD
 - Issue draft はユーザー確認 MUST。自動起票禁止
 - 並列 observe 上限: 同時 3 observed session まで
 - **Self-Improve Context との関係**: workflow-self-improve は autopilot 後処理として動く受動側、co-self-improve はユーザートリガーで動く能動側。両者は ADR-011 で並存が明示されている
+- **Bug 再現シナリオ**: 既知 Bug の再現条件を test-scenario-catalog に定義し、対応する検出パターン（`bug-` プレフィックス）を observation-pattern-catalog に追加する。シナリオの `bug_target` と検出パターンの `related_issue` で Bug Issue 番号を紐付ける
 
 ## Component Mapping
 

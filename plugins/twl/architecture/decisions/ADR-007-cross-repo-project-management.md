@@ -15,7 +15,7 @@ plugins/twl は twill CLI に依存しており、機能追加やバグ修正が
 
 ### twill-ecosystem プロジェクト
 
-GitHub Projects V2 の `twill-ecosystem`（#3, owner: shuu5）をクロスリポジトリ統合管理に使用する。
+GitHub Projects V2 の `twill-ecosystem`（#6, owner: shuu5）をクロスリポジトリ統合管理に使用する。
 
 **リンク済みリポ**: twill
 
