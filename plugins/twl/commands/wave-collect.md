@@ -1,0 +1,173 @@
+---
+type: atomic
+tools: [Bash, Read]
+effort: low
+maxTurns: 10
+---
+# Wave 結果収集
+
+Wave 完了後に co-autopilot の実行結果を収集し、Wave サマリを生成する。
+
+## 引数
+
+| 引数 | 説明 | デフォルト |
+|------|------|----------|
+| `WAVE_NUM` | Wave 番号（plan.yaml の phase 番号） | 1 |
+
+## 実行ロジック（MUST）
+
+### Step 1: plan.yaml から Issue リスト取得
+
+```bash
+AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+PLAN_FILE="${AUTOPILOT_DIR}/plan.yaml"
+WAVE_NUM="${WAVE_NUM:-1}"
+
+if [[ ! -f "$PLAN_FILE" ]]; then
+  echo "[wave-collect] Error: plan.yaml が見つかりません: $PLAN_FILE"
+  exit 1
+fi
+
+# Phase N の Issue リストを取得
+ISSUES=$(python3 - <<'EOF'
+import yaml, sys, os
+
+wave_num = int(os.environ.get("WAVE_NUM", "1"))
+plan_path = os.environ.get("PLAN_FILE", ".autopilot/plan.yaml")
+
+with open(plan_path) as f:
+    plan = yaml.safe_load(f)
+
+phases = plan.get("phases", [])
+for phase_entry in phases:
+    if isinstance(phase_entry, dict):
+        phase_num = phase_entry.get("phase")
+        if phase_num == wave_num:
+            issues = [v for k, v in phase_entry.items() if k != "phase"]
+            print(" ".join(str(i) for i in issues))
+            sys.exit(0)
+
+print("")
+EOF
+)
+
+if [[ -z "$ISSUES" ]]; then
+  echo "[wave-collect] Warning: Wave ${WAVE_NUM} に対応する Phase が見つかりません"
+  exit 0
+fi
+
+echo "[wave-collect] Wave ${WAVE_NUM}: Issue リスト = ${ISSUES}"
+```
+
+### Step 2: 各 Issue の結果を収集
+
+```bash
+declare -a RESULTS
+TOTAL=0
+DONE_COUNT=0
+FAILED_COUNT=0
+SKIPPED_COUNT=0
+TOTAL_RETRIES=0
+INTERVENTION_COUNT=0
+
+for ISSUE in $ISSUES; do
+  ISSUE_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE}.json"
+  TOTAL=$((TOTAL + 1))
+
+  if [[ ! -f "$ISSUE_FILE" ]]; then
+    echo "[wave-collect] Warning: Issue #${ISSUE} の状態ファイルが見つかりません — スキップ"
+    SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+    RESULTS+=("| #${ISSUE} | unknown | — | 0 |")
+    continue
+  fi
+
+  STATUS=$(python3 -c "import json; d=json.load(open('${ISSUE_FILE}')); print(d.get('status','unknown'))")
+  PR=$(python3 -c "import json; d=json.load(open('${ISSUE_FILE}')); print(d.get('pr') or '')")
+  RETRY=$(python3 -c "import json; d=json.load(open('${ISSUE_FILE}')); print(d.get('retry_count', 0))")
+  FAILURE=$(python3 -c "import json; d=json.load(open('${ISSUE_FILE}')); f=d.get('failure'); print(f if f else '')")
+
+  case "$STATUS" in
+    done)
+      DONE_COUNT=$((DONE_COUNT + 1))
+      ;;
+    failed)
+      FAILED_COUNT=$((FAILED_COUNT + 1))
+      ;;
+    *)
+      SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+      ;;
+  esac
+
+  if [[ "$RETRY" -gt 0 ]]; then
+    INTERVENTION_COUNT=$((INTERVENTION_COUNT + 1))
+    TOTAL_RETRIES=$((TOTAL_RETRIES + RETRY))
+  fi
+
+  PR_DISPLAY="${PR:-—}"
+  FAILURE_NOTE=""
+  if [[ -n "$FAILURE" && "$STATUS" == "failed" ]]; then
+    FAILURE_NOTE=" (${FAILURE:0:50})"
+  fi
+
+  RESULTS+=("| #${ISSUE} | ${STATUS}${FAILURE_NOTE} | ${PR_DISPLAY} | ${RETRY} |")
+done
+```
+
+### Step 3: 統計計算と出力
+
+```bash
+OUTPUT_DIR="${AUTOPILOT_DIR}/../.supervisor"
+mkdir -p "$OUTPUT_DIR"
+OUTPUT_FILE="${OUTPUT_DIR}/wave-${WAVE_NUM}-summary.md"
+
+# 介入率計算
+if [[ "$TOTAL" -gt 0 ]]; then
+  INTERVENTION_RATE=$(python3 -c "print(f'{${INTERVENTION_COUNT}/${TOTAL}*100:.1f}%')")
+  AVG_RETRIES=$(python3 -c "print(f'{${TOTAL_RETRIES}/${TOTAL}:.2f}')" 2>/dev/null || echo "0.00")
+else
+  INTERVENTION_RATE="0.0%"
+  AVG_RETRIES="0.00"
+fi
+
+GENERATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+cat > "$OUTPUT_FILE" <<SUMMARY
+# Wave ${WAVE_NUM} サマリ
+
+生成日時: ${GENERATED_AT}
+
+## 概要統計
+
+| 項目 | 件数 |
+|------|------|
+| 対象 Issue 総数 | ${TOTAL} |
+| 完了 (done) | ${DONE_COUNT} |
+| 失敗 (failed) | ${FAILED_COUNT} |
+| 未完了/スキップ | ${SKIPPED_COUNT} |
+| 介入あり Issue 数 | ${INTERVENTION_COUNT} |
+| 介入率 | ${INTERVENTION_RATE} |
+| 平均介入回数 | ${AVG_RETRIES} |
+
+## Issue 一覧
+
+| Issue | ステータス | PR | 介入回数 |
+|-------|-----------|-----|---------|
+$(printf '%s\n' "${RESULTS[@]}")
+
+## 介入パターン統計
+
+- 介入 Issue 総数: ${INTERVENTION_COUNT} / ${TOTAL}
+- 介入率: ${INTERVENTION_RATE}
+- 総介入回数: ${TOTAL_RETRIES}
+- 平均介入回数: ${AVG_RETRIES}
+SUMMARY
+
+echo "[wave-collect] Wave ${WAVE_NUM} サマリを生成しました: ${OUTPUT_FILE}"
+echo "[wave-collect] 統計: total=${TOTAL}, done=${DONE_COUNT}, failed=${FAILED_COUNT}, 介入=${INTERVENTION_COUNT}/${TOTAL}"
+```
+
+## 禁止事項（MUST NOT）
+
+- Issue の状態を変更してはならない（読み取りのみ）
+- 個別 Issue のデータ取得失敗でワークフロー全体を停止してはならない
+- `.supervisor/` ディレクトリが存在しない場合は自動作成する（停止禁止）

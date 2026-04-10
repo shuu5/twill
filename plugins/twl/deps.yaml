@@ -2060,6 +2060,14 @@ commands:
     # 詳細: architecture/decisions/ADR-009-postprocess-type.md を参照。
     description: "Phase 後処理チェーン（collect → retrospective → patterns → cross-issue）"
 
+  wave-collect:
+    type: atomic
+    path: commands/wave-collect.md
+    spawnable_by: [supervisor]
+    can_spawn: []
+    calls: []
+    description: "Wave 完了後に co-autopilot 実行結果を収集し .supervisor/wave-{N}-summary.md を生成"
+
   autopilot-collect:
     type: atomic
     refined_by: "ref-prompt-guide@2c7a62f2"
