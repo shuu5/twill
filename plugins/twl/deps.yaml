@@ -699,6 +699,21 @@ refs:
     can_spawn: []
     description: "Observer 介入パターン定義（6 パターン / 3 層 Auto/Confirm/Escalate）"
 
+  # Memory MCP config + externalization schema (#363)
+  memory-mcp-config:
+    type: reference
+    path: refs/memory-mcp-config.md
+    spawnable_by: [all]
+    can_spawn: []
+    description: "Memory MCP pluggable 設定（doobidoo ツール名・デフォルトパラメータ）"
+
+  externalization-schema:
+    type: reference
+    path: refs/externalization-schema.md
+    spawnable_by: [all]
+    can_spawn: []
+    description: "外部化ファイルスキーマ定義（working-memory.md / wave-{N}-summary.md）"
+
 # コマンド（B-4 で拡充）
 commands:
   self-improve-review: # standalone: ユーザー直接起動
