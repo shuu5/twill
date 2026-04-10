@@ -30,6 +30,10 @@ workflow-pr-cycle を 3 分割した第3段階。E2E 検証、レポート、マ
 
 ## ドメインルール
 
+### 禁止事項（不変条件 C enforcement）
+
+Worker は `gh pr merge` を直接実行してはならない（不変条件 C）。マージは必ず `chain-runner.sh auto-merge` 経由で auto-merge.sh のガードを通すこと。`gh pr merge --squash` 等の直接呼び出しは ac-verify / merge-gate / auto-merge.sh の全ガードをバイパスするため厳禁。
+
 ### merge-gate エスカレーション条件
 
 merge-gate が REJECT を返した場合の処理（不変条件 E: リトライ最大 1 回）:

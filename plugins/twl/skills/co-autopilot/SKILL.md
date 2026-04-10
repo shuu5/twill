@@ -116,6 +116,8 @@ issue-{N}.json の status から自動判定:
 
 不変条件 A〜K の正典は `plugins/twl/architecture/domain/contexts/autopilot.md`（A=状態一意, B=Worktree 削除 Pilot 専任, C=Worker マージ禁止, D=fail skip 伝播, E=merge-gate リトライ最大1, F=merge 失敗時 rebase 禁止, G=クラッシュ検知, H=deps.yaml 変更排他, I=循環依存拒否, J=merge 前 base drift 検知, K=Pilot 実装禁止）。本文中の ID 参照のみが各 Step の制約根拠。
 
+不変条件 C enforcement 箇所: `plugins/twl/skills/workflow-pr-merge/SKILL.md` 禁止事項セクション + `plugins/twl/scripts/autopilot-launch.sh` 起動コンテキスト参照。
+
 ## Emergency Bypass
 
 co-autopilot 自体の障害時のみ手動パスを許可。bypass 使用時は retrospective で理由を記録。障害時は `commands/autopilot-phase-execute.md`・`commands/autopilot-poll.md`・`commands/autopilot-summary.md` を Read → 手動実行。
