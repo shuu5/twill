@@ -742,20 +742,6 @@ check_and_nudge() {
     return 0
   fi
 
-  # Layer 1 (PostToolUse hook) との競合防止:
-  # last_hook_nudge_at が NUDGE_TIMEOUT 以内なら tmux nudge をスキップ
-  local last_hook_nudge_at
-  last_hook_nudge_at=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field last_hook_nudge_at 2>/dev/null || true)
-  if [[ -n "$last_hook_nudge_at" ]]; then
-    local hook_epoch now_epoch elapsed
-    hook_epoch=$(date -u -d "$last_hook_nudge_at" +%s 2>/dev/null || echo "0")
-    now_epoch=$(date -u +%s)
-    elapsed=$(( now_epoch - hook_epoch ))
-    if [[ "$elapsed" -lt "$NUDGE_TIMEOUT" ]]; then
-      return 0
-    fi
-  fi
-
   # tmux capture-pane で最新出力を取得
   local pane_output
   pane_output=$(tmux capture-pane -t "$window_name" -p -S -5 2>/dev/null || true)
@@ -769,39 +755,12 @@ check_and_nudge() {
   local last_hash="${LAST_OUTPUT_HASH[$issue]:-}"
 
   if [[ "$current_hash" == "$last_hash" ]]; then
-    # --- 状態ベース判定（優先） ---
-    local state_nudge_sent=0
-    local current_step
-    current_step=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field current_step 2>/dev/null || true)
-
-    if [[ -n "$current_step" && "$current_step" =~ ^[a-z0-9-]+$ ]]; then
-      local current_wf="${CHAIN_STEP_WORKFLOW[$current_step]:-}"
-      local next_step
-      next_step=$(bash "$SCRIPTS_ROOT/chain-runner.sh" next-step "$issue" "$current_step" 2>/dev/null || true)
-      local next_wf=""
-      if [[ -n "$next_step" && "$next_step" != "done" && "$next_step" =~ ^[a-z0-9-]+$ ]]; then
-        next_wf="${CHAIN_STEP_WORKFLOW[$next_step]:-}"
-      fi
-
-      if [[ -n "$current_wf" && "$current_wf" != "$next_wf" && -n "${CHAIN_WORKFLOW_NEXT_SKILL[$current_wf]:-}" ]]; then
-        local next_skill="${CHAIN_WORKFLOW_NEXT_SKILL[$current_wf]}"
-        echo "[orchestrator] Issue #${issue}: 状態ベース nudge — current_step=${current_step} → /twl:${next_skill} (${count}/${MAX_NUDGE})" >&2
-        tmux send-keys -t "$window_name" "/twl:${next_skill} #${issue}" Enter 2>/dev/null || true
-        NUDGE_COUNTS[$issue]=$((count + 1))
-        LAST_OUTPUT_HASH[$issue]="$current_hash"
-        state_nudge_sent=1
-      fi
-    fi
-
-    # --- パターンマッチ（フォールバック） ---
-    if [[ "$state_nudge_sent" -eq 0 ]]; then
-      local next_cmd
-      if next_cmd="$(_nudge_command_for_pattern "$pane_output" "$issue" "$entry")" && [[ -n "$next_cmd" ]]; then
-        echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
-        tmux send-keys -t "$window_name" "$next_cmd" Enter 2>/dev/null || true
-        NUDGE_COUNTS[$issue]=$((count + 1))
-        LAST_OUTPUT_HASH[$issue]="$current_hash"
-      fi
+    local next_cmd
+    if next_cmd="$(_nudge_command_for_pattern "$pane_output" "$issue" "$entry")" && [[ -n "$next_cmd" ]]; then
+      echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
+      tmux send-keys -t "$window_name" "$next_cmd" Enter 2>/dev/null || true
+      NUDGE_COUNTS[$issue]=$((count + 1))
+      LAST_OUTPUT_HASH[$issue]="$current_hash"
     fi
   fi
 
