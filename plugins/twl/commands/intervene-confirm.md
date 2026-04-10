@@ -5,7 +5,7 @@ effort: medium
 ---
 # Layer 1 確認付き介入（intervene-confirm）
 
-Observer がユーザーの確認を得てから実行する Layer 1 介入。Worker 長時間 idle と Wave 再計画に対応する。
+Supervisor がユーザーの確認を得てから実行する Layer 1 介入。Worker 長時間 idle と Wave 再計画に対応する。
 
 ## 引数
 
@@ -52,7 +52,7 @@ cat "$STATE_FILE" | jq '{status, current_step, last_active: .updated_at}'
 > A: 現行 Wave を継続し次 Wave で対応
 > B: 現行 Wave を中断して再計画
 > C: 新規 Issue を既存 Phase に追加
-> D: 手動で対応（Observer は何もしない）」
+> D: 手動で対応（Supervisor は何もしない）」
 
 ### Step 3: 選択に応じた実行
 

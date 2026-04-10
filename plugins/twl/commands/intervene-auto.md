@@ -5,7 +5,7 @@ effort: low
 ---
 # Layer 0 自動介入（intervene-auto）
 
-Observer が自動実行する Layer 0 介入。non_terminal_chain_end 回復と Worker PR 未作成に対応する。
+Supervisor が自動実行する Layer 0 介入。non_terminal_chain_end 回復と Worker PR 未作成に対応する。
 
 ## 引数
 
