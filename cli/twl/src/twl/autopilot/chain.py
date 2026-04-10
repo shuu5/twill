@@ -703,10 +703,10 @@ class ChainRunner:
             if self._eval_workflow_condition(condition, is_autopilot, is_quick):
                 if cond_entry.get("stop", False):
                     return ""
-                goto = cond_entry.get("goto", "")
+                goto = cond_entry.get("goto") or None
                 break
 
-        if not goto:
+        if goto is None:
             return ""
 
         # Find the next node

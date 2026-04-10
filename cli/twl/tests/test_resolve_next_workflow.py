@@ -238,3 +238,12 @@ class TestResolveNextWorkflowCLI:
             capture_output=True, text=True,
         )
         assert result.returncode != 0
+
+    def test_unknown_workflow_outputs_empty_string(self) -> None:
+        """Unknown workflow ID exits 0 and prints empty string to stdout."""
+        result = subprocess.run(
+            [sys.executable, "-m", "twl.autopilot.chain", "resolve-next-workflow", "nonexistent-workflow"],
+            capture_output=True, text=True,
+        )
+        assert result.returncode == 0
+        assert result.stdout.strip() == ""
