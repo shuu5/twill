@@ -128,11 +128,16 @@ ${quick_tag}")
 
 Step 4 で spawn した **3 specialist 全てが結果を返すまで** このステップに進んではならない（MUST）。1〜2 個の結果が返っただけで先に進むことは禁止。3 specialist の返却値をそのまま呼び出し元に返す。パースや集約はこのコマンドでは行わない（issue-review-aggregate の責務）。
 
-全 specialist の結果返却後、hook 追跡用一時ファイルを削除する:
+全 specialist の結果返却後、hook 追跡用一時ファイルを削除する（CONTEXT_ID が利用可能な場合はピンポイントで、そうでなければ glob でクリーンアップ）:
 
 ```bash
-rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt \
-      /tmp/.specialist-spawned-${CONTEXT_ID}.txt
+if [[ -n "${CONTEXT_ID:-}" ]]; then
+  rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt \
+        /tmp/.specialist-spawned-${CONTEXT_ID}.txt
+else
+  rm -f /tmp/.specialist-manifest-spec-review-*.txt \
+        /tmp/.specialist-spawned-spec-review-*.txt
+fi
 ```
 
 ## 出力

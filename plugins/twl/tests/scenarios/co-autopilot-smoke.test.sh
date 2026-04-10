@@ -340,4 +340,4 @@ if [[ ${#ERRORS[@]} -gt 0 ]]; then
   done
 fi
 
-exit $FAIL
+exit $(( FAIL > 255 ? 255 : FAIL ))
