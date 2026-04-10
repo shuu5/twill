@@ -29,6 +29,16 @@ setup chain のオーケストレーター。chain 実行順序は deps.yaml に
 
 ## chain 実行指示（MUST — 全ステップを順に実行。途中停止禁止）
 
+### 前提: 前 workflow コンテキスト復元
+
+```bash
+CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"
+ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
+AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
+[[ -n "$ISSUE_NUM" && -f "$CONTEXT_FILE" ]] && echo "=== 前 workflow コンテキスト ===" && cat "$CONTEXT_FILE"
+```
+
 `CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"` として以下を順に実行:
 
 1. **init** [runner]: `bash "$CR" init "$ISSUE_NUM"` → JSON の `recommended_action` を記録
@@ -43,9 +53,44 @@ setup chain のオーケストレーター。chain 実行順序は deps.yaml に
    eval "$(bash "$CR" autopilot-detect)"
    eval "$(bash "$CR" quick-detect)"
    ```
-   - IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready **呼び出し禁止**。直接実装 → commit → push → PR 作成（`source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/pr-create-helper.sh" && pr_create_with_closes "$ISSUE_NUM" quick`、PR 本文に必ず `Closes #${ISSUE_NUM}` を機械的に挿入）→ `bash "$CR" llm-delegate "ac-verify" "$ISSUE_NUM"` → `commands/ac-verify.md` Read → 実行（checkpoint 永続化必須）→ `bash "$CR" llm-complete "ac-verify" "$ISSUE_NUM"` → `commands/merge-gate.md` Read → merge-gate 実行（merge-gate は ac-verify checkpoint を統合する）→ `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=setup"` を実行して停止
-   - IS_QUICK=false かつ IS_AUTOPILOT=true → `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=setup"` を実行して停止
+   - IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready **呼び出し禁止**。直接実装 → commit → push → PR 作成（`source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/pr-create-helper.sh" && pr_create_with_closes "$ISSUE_NUM" quick`、PR 本文に必ず `Closes #${ISSUE_NUM}` を機械的に挿入）→ `bash "$CR" llm-delegate "ac-verify" "$ISSUE_NUM"` → `commands/ac-verify.md` Read → 実行（checkpoint 永続化必須）→ `bash "$CR" llm-complete "ac-verify" "$ISSUE_NUM"` → `commands/merge-gate.md` Read → merge-gate 実行（merge-gate は ac-verify checkpoint を統合する）→ context.md 書き出し（下記スニペット）→ `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=setup"` を実行して停止
+   - IS_QUICK=false かつ IS_AUTOPILOT=true → context.md 書き出し（下記スニペット）→ `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=setup"` を実行して停止
    - IS_AUTOPILOT=false → 「setup chain 完了。次: `/twl:workflow-test-ready`」と案内
+
+**context.md 書き出しスニペット（workflow_done=setup 直前）:**
+```bash
+ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
+if [[ -n "$ISSUE_NUM" ]]; then
+  AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+  mkdir -p "${AUTOPILOT_DIR}/issues"
+  CHANGE_ID_VAL=$(python3 -m twl.autopilot.state read --autopilot-dir "${AUTOPILOT_DIR}" --type issue --issue "${ISSUE_NUM}" --field change_id 2>/dev/null || echo "")
+  cat > "${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md" <<EOF
+# Workflow Context: Issue #${ISSUE_NUM}
+workflow: setup
+
+## completed_steps
+- init
+- worktree-create
+- board-status-update
+- crg-auto-build
+- arch-ref
+- change-propose
+- ac-extract
+
+## change_id
+${CHANGE_ID_VAL}
+
+## pr_number
+
+
+## test_results
+
+
+## review_findings
+
+EOF
+fi
+```
 
 ## compaction 復帰プロトコル
 

@@ -1133,12 +1133,13 @@ main() {
     quick-guard)         step_quick_guard "$@" ;;
     autopilot-detect)    step_autopilot_detect "$@" ;;
     quick-detect)        step_quick_detect "$@" ;;
+    resolve-issue-num)   resolve_issue_num ;;
     *)
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
       echo "         board-archive, ac-extract, arch-ref, change-id-resolve, next-step, prompt-compliance, ts-preflight," >&2
       echo "         pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge, check," >&2
-      echo "         quick-guard, autopilot-detect, quick-detect," >&2
+      echo "         quick-guard, autopilot-detect, quick-detect, resolve-issue-num," >&2
       echo "         dispatch-info, llm-delegate, llm-complete, chain-status" >&2
       exit 1
       ;;
