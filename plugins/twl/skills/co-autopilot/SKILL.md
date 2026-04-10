@@ -85,19 +85,40 @@ co-autopilot は su-observer の存在を前提とせず動作する。su-observ
 
 ## Step 4: Phase ループ（orchestrator 委譲）
 
-`autopilot-orchestrator.sh` で Phase 実行を委譲。`--session-file` には `$AUTOPILOT_DIR` を使った絶対パスを指定すること（相対パス・セッション ID 直接渡しは不可）:
+`autopilot-orchestrator.sh` で Phase 実行を委譲。Pilot の Bash context 外で持続実行するため **nohup/disown** を使用すること（不変条件 M — Pilot timeout/cancel による chain 停止防止）。`--session-file` には `$AUTOPILOT_DIR` を使った絶対パスを指定すること（相対パス・セッション ID 直接渡しは不可）:
 
 ```bash
-bash autopilot-orchestrator.sh \
+mkdir -p "${AUTOPILOT_DIR}/trace"
+_ORCH_LOG="${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log"
+nohup bash autopilot-orchestrator.sh \
   --plan "${AUTOPILOT_DIR}/plan.yaml" \
   --phase "$PHASE_NUM" \
   --session-file "${AUTOPILOT_DIR}/session.json" \
   --project-dir "$PROJECT_DIR" \
   --autopilot-dir "$AUTOPILOT_DIR" \
-  ${REPOS_ARG:-}
+  ${REPOS_ARG:-} \
+  >> "$_ORCH_LOG" 2>&1 &
+disown
+_ORCH_PID=$!
+echo "[co-autopilot] orchestrator PID=${_ORCH_PID} 起動 (nohup) → ログ: ${_ORCH_LOG}" >&2
 ```
 
-orchestrator は JSON レポート（PHASE_COMPLETE）を返す。実装詳細（batch 分割・Worker 起動・ポーリング・merge-gate・skip 伝播 [不変条件 D]）は orchestrator が正典。Pilot LLM の責務は計画承認・retrospective・cross-issue 分析に限定。
+PHASE_COMPLETE 検知（orchestrator が trace ログに `PHASE_COMPLETE` を出力するまで待機）:
+
+```bash
+# PHASE_COMPLETE を検知するまで polling（最大 MAX_POLL 回 × POLL_INTERVAL 秒）
+_poll_count=0
+while [[ "$_poll_count" -lt "${MAX_POLL:-720}" ]]; do
+  if grep -q "PHASE_COMPLETE" "$_ORCH_LOG" 2>/dev/null; then
+    echo "[co-autopilot] PHASE_COMPLETE 検知" >&2
+    break
+  fi
+  sleep "${POLL_INTERVAL:-10}"
+  _poll_count=$((_poll_count + 1))
+done
+```
+
+orchestrator は JSON レポート（PHASE_COMPLETE）を trace ログに出力する。実装詳細（batch 分割・Worker 起動・ポーリング・merge-gate・skip 伝播 [不変条件 D]）は orchestrator が正典。Pilot LLM の責務は計画承認・retrospective・cross-issue 分析に限定。
 <!-- NOTE: Pilot 用 atomic (autopilot-pilot-precheck, autopilot-pilot-rebase, autopilot-multi-source-verdict) 経由であれば、PR diff stat / AC spot-check 等の能動評価は許容される。設計原則 P1 (ADR-010) 参照。 -->
 
 ### Step 4.5: Phase 完了サニティチェック（MUST）
@@ -134,9 +155,42 @@ issue-{N}.json の status から自動判定:
 
 ## 不変条件
 
-不変条件 A〜K の正典は `plugins/twl/architecture/domain/contexts/autopilot.md`（A=状態一意, B=Worktree 削除 Pilot 専任, C=Worker マージ禁止, D=fail skip 伝播, E=merge-gate リトライ最大1, F=merge 失敗時 rebase 禁止, G=クラッシュ検知, H=deps.yaml 変更排他, I=循環依存拒否, J=merge 前 base drift 検知, K=Pilot 実装禁止）。本文中の ID 参照のみが各 Step の制約根拠。
+不変条件 A〜M の正典は `plugins/twl/architecture/domain/contexts/autopilot.md`（A=状態一意, B=Worktree 削除 Pilot 専任, C=Worker マージ禁止, D=fail skip 伝播, E=merge-gate リトライ最大1, F=merge 失敗時 rebase 禁止, G=クラッシュ検知, H=deps.yaml 変更排他, I=循環依存拒否, J=merge 前 base drift 検知, K=Pilot 実装禁止, L=autopilot マージ実行責務, M=chain 遷移は orchestrator/手動 inject のみ）。本文中の ID 参照のみが各 Step の制約根拠。
 
 不変条件 C enforcement 箇所: `plugins/twl/skills/workflow-pr-merge/SKILL.md` 禁止事項セクション + `plugins/twl/scripts/autopilot-launch.sh` 起動コンテキスト参照。
+
+## chain 停止時の復旧手順（MUST）
+
+orchestrator が停止して chain 遷移が行われない場合、以下の正規手順のみ許可される（不変条件 M）:
+
+### 1. orchestrator 再起動
+```bash
+# trace ログで停止確認
+cat "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log" | tail -20
+
+# orchestrator を nohup で再起動（Step 4 のコマンドを再実行）
+mkdir -p "${AUTOPILOT_DIR}/trace"
+nohup bash autopilot-orchestrator.sh \
+  --plan "${AUTOPILOT_DIR}/plan.yaml" \
+  --phase "$PHASE_NUM" \
+  --session-file "${AUTOPILOT_DIR}/session.json" \
+  --project-dir "$PROJECT_DIR" \
+  --autopilot-dir "$AUTOPILOT_DIR" \
+  >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log" 2>&1 &
+disown
+```
+
+### 2. 手動 workflow inject
+orchestrator 再起動が困難な場合、Worker の tmux window に手動で次の workflow を inject する:
+```bash
+# Worker の現在 workflow_done 状態を確認
+python3 -m twl.autopilot.resolve_next_workflow --issue <ISSUE_NUM>
+
+# tmux で手動 inject（例: /twl:workflow-test-ready）
+tmux send-keys -t "<WORKER_WINDOW>" "/twl:workflow-test-ready" Enter
+```
+
+**禁止**: Pilot が Worker に直接 nudge して PR 作成 → マージを実行すること（不変条件 M）。chain を迂回した PR 作成は specialist review スキップを引き起こす。
 
 ## Emergency Bypass
 
@@ -168,5 +222,6 @@ python3 -m twl.autopilot.mergegate merge \
 - merge-gate 失敗時に rebase を試みてはならない（不変条件 F）
 - trivial change であっても co-autopilot を bypass してはならない（制約 AP-2）
 - Pilot は Worker の代わりに Issue を直接実装（`Agent(Implement Issue #N)` 等によるコード変更・PR 作成）してはならない（不変条件 K）。Worker 失敗時は根本原因分析 → Issue 化で対処する
+- **Worker chain 停止時に Pilot が直接 nudge して PR 作成 → マージを実行してはならない（不変条件 M）**。chain 停止時は「chain 停止時の復旧手順」に従い orchestrator 再起動 or 手動 workflow inject で chain を再開すること。specialist review をスキップしたマージは禁止
 
 Autopilot 制約の正典は `plugins/twl/architecture/domain/contexts/autopilot.md`
