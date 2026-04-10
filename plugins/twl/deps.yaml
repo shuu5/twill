@@ -267,7 +267,7 @@ skills:
     path: skills/co-self-improve/SKILL.md
     effort: high
     tools: [Agent(observer-evaluator)]
-    spawnable_by: [user]
+    spawnable_by: [user, su-observer]
     can_spawn: [workflow, atomic, specialist, reference]
     calls:
       - workflow: workflow-observe-loop  # 子 5 で実装

@@ -2,30 +2,30 @@
 name: twl:co-self-improve
 description: |
   テストシナリオ実行と self-improvement arm。
-  co-observer から委譲されるテスト実行モード（scenario-run）と、
+  su-observer から委譲されるテスト実行モード（scenario-run）と、
   テストプロジェクト管理、過去観察の retrospect を担う。
-  直接セッション監視は co-observer に移管済み（observe モード: deprecated）。
+  直接セッション監視は su-observer に移管済み（observe モード: deprecated）。
 
   Use when user: says co-self-improve/壁打ち/テストプロジェクト/load test/scenario,
   wants to run test scenarios on test-target worktree,
   wants to manage the test project,
   wants to retrospect past observations.
-  Observation/監視 → co-observer を使うこと。
+  Observation/監視 → su-observer を使うこと。
 type: controller
 effort: high
 tools:
 - Agent(observer-evaluator)
 spawnable_by:
 - user
-- co-observer
+- su-observer
 ---
 
 # co-self-improve
 
 テストシナリオ実行 arm。scenario-run / retrospect / test-project-manage の 3 モードに特化する。
 
-**位置づけ**: co-observer（上位）から委譲されるテスト実行モードとして機能する。
-セッション監視・介入は co-observer が担い、co-self-improve はシナリオ実行と知識蓄積に集中する。
+**位置づけ**: su-observer（上位）から委譲されるテスト実行モードとして機能する。
+セッション監視・介入は su-observer が担い、co-self-improve はシナリオ実行と知識蓄積に集中する。
 
 ## Step 0: モード判定
 
@@ -38,15 +38,15 @@ spawnable_by:
 | test-project-manage | init / reset / status / clean / cleanup | Step 4 |
 
 > **注意**: `observe / 観察 / 監視` キーワードは **deprecated**。
-> セッション監視は co-observer の supervise モードを使用してください。
+> セッション監視は su-observer の supervise モードを使用してください。
 
 引数なし or 曖昧な場合は AskUserQuestion で 3 モードから選択させる。
 
 ## [DEPRECATED] observe モード
 
-このモードは co-observer の supervise モードに移管されました。
+このモードは su-observer の supervise モードに移管されました。
 `observe / 観察 / 監視` のキーワードが入力された場合は、
-AskUserQuestion で co-observer への誘導を行う。
+AskUserQuestion で su-observer への誘導を行う。
 
 ## Step 1: scenario-run モード — シナリオ選択 + spawn
 
