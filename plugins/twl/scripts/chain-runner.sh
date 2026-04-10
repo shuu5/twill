@@ -1067,6 +1067,24 @@ step_auto_merge() {
   fi
 }
 
+# --- run-chain-generate: feature branch の twl バイナリ経由で chain generate を実行 ---
+# Issue #379: meta_generate.py 変更時に stale キャッシュで実行されるのを防ぐ。
+# インストール済み twl ではなく <repo_root>/cli/twl/twl を直接呼び出すことで、
+# twl wrapper が PYTHONPATH を feature branch の cli/twl/src に設定する。
+#
+# 使い方: run_chain_generate [--write] [--check] [--all] [chain_name]
+run_chain_generate() {
+  local root
+  root="$(resolve_project_root)"
+  local local_twl="$root/cli/twl/twl"
+  if [[ -x "$local_twl" ]]; then
+    "$local_twl" chain generate "$@"
+  else
+    # フォールバック: インストール済み twl を使用（PYTHONPATH が設定されていれば正常動作）
+    twl chain generate "$@"
+  fi
+}
+
 # --- check: 準備確認 ---
 step_check() {
   record_current_step "check"
