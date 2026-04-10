@@ -8,7 +8,7 @@ CLI usage:
 Steps: init, worktree-create, board-status-update, board-archive, ac-extract,
        arch-ref, change-id-resolve, next-step, ts-preflight, pr-test,
        ac-verify, all-pass-check, pr-cycle-report, check, quick-guard,
-       autopilot-detect, quick-detect
+       autopilot-detect, quick-detect, resolve-next-workflow
 """
 
 from __future__ import annotations
@@ -661,6 +661,132 @@ class ChainRunner:
             self._skip("pr-cycle-report", "PR コメント投稿失敗")
 
     # ------------------------------------------------------------------
+    # Step: resolve-next-workflow
+    # ------------------------------------------------------------------
+
+    def resolve_next_workflow(
+        self,
+        current_workflow: str,
+        is_autopilot: bool,
+        is_quick: bool,
+    ) -> str:
+        """Return next workflow skill name from deps.yaml meta_chains.
+
+        Reads plugins/twl/deps.yaml meta_chains.worker-lifecycle.flow and
+        evaluates conditions based on is_autopilot and is_quick.
+
+        Returns:
+            - Next workflow skill name (e.g. "workflow-test-ready")
+            - "quick-path" for the quick-path node (no skill field)
+            - "" for terminal nodes or stop conditions
+        """
+        flow = self._load_worker_lifecycle_flow()
+
+        # Find current node
+        current_node: dict[str, Any] | None = None
+        for node in flow:
+            if node.get("id") == current_workflow:
+                current_node = node
+                break
+
+        if current_node is None:
+            return ""
+
+        # Terminal node → stop
+        if current_node.get("terminal", False):
+            return ""
+
+        # Evaluate next conditions in order
+        goto: str | None = None
+        for cond_entry in current_node.get("next", []):
+            condition = cond_entry.get("condition", "")
+            if self._eval_workflow_condition(condition, is_autopilot, is_quick):
+                if cond_entry.get("stop", False):
+                    return ""
+                goto = cond_entry.get("goto", "")
+                break
+
+        if not goto:
+            return ""
+
+        # Find the next node
+        next_node: dict[str, Any] | None = None
+        for node in flow:
+            if node.get("id") == goto:
+                next_node = node
+                break
+
+        if next_node is None:
+            return ""
+
+        # "done" sentinel node (no skill, terminal marker) → stop
+        if goto == "done":
+            return ""
+
+        # Node with skill → return skill name (even if terminal)
+        if "skill" in next_node:
+            return str(next_node["skill"])
+
+        # Terminal node without skill → stop
+        if next_node.get("terminal", False):
+            return ""
+
+        # Node without skill and non-terminal (e.g. quick-path) → return node ID
+        return goto
+
+    def _load_worker_lifecycle_flow(self) -> list[dict[str, Any]]:
+        """Load meta_chains.worker-lifecycle.flow from deps.yaml."""
+        try:
+            import yaml  # type: ignore[import]
+        except ImportError:
+            return []
+
+        root = self._project_root()
+        deps_path = root / "plugins" / "twl" / "deps.yaml"
+        if not deps_path.is_file():
+            return []
+
+        try:
+            data = yaml.safe_load(deps_path.read_text(encoding="utf-8")) or {}
+        except Exception:
+            return []
+
+        return (
+            data.get("meta_chains", {})
+            .get("worker-lifecycle", {})
+            .get("flow", [])
+        )
+
+    def _eval_workflow_condition(
+        self, condition: str, is_autopilot: bool, is_quick: bool
+    ) -> bool:
+        """Evaluate a workflow condition string against runtime flags.
+
+        Supported tokens: autopilot, quick (prefix ! for negation).
+        Multiple tokens joined by && must all be true.
+        Empty condition → always matches.
+        """
+        condition = condition.strip()
+        if not condition:
+            return True
+
+        tokens = [t.strip() for t in condition.split("&&")]
+        for token in tokens:
+            negate = token.startswith("!")
+            name = token.lstrip("!").strip()
+            if name == "autopilot":
+                value = is_autopilot
+            elif name == "quick":
+                value = is_quick
+            else:
+                return False
+            if negate:
+                value = not value
+            if not value:
+                return False
+        return True
+
+    # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
 
@@ -803,7 +929,7 @@ def main(argv: list[str] | None = None) -> int:
         print("Steps: init, next-step, quick-guard, check, change-id-resolve,", file=sys.stderr)
         print("       all-pass-check, prompt-compliance, ts-preflight, pr-test, pr-cycle-report,", file=sys.stderr)
         print("       board-status-update, ac-extract,", file=sys.stderr)
-        print("       autopilot-detect, quick-detect", file=sys.stderr)
+        print("       autopilot-detect, quick-detect, resolve-next-workflow", file=sys.stderr)
         return 1
 
     step = args[0]
@@ -878,6 +1004,25 @@ def main(argv: list[str] | None = None) -> int:
         elif step == "ac-extract":
             snapshot_dir = rest[0] if rest else ""
             runner.step_ac_extract(snapshot_dir)
+            return 0
+
+        elif step == "resolve-next-workflow":
+            if not rest:
+                print("ERROR: resolve-next-workflow には workflow-id が必要です", file=sys.stderr)
+                return 1
+            workflow_id = rest[0]
+            # Read is_autopilot and is_quick from issue state
+            issue_num = runner._resolve_issue_num()
+            if issue_num:
+                autopilot_val = runner._read_state_field(issue_num, "status")
+                is_autopilot = autopilot_val == "running"
+                quick_val = runner._read_state_field(issue_num, "is_quick")
+                is_quick = quick_val == "true"
+            else:
+                is_autopilot = False
+                is_quick = False
+            result = runner.resolve_next_workflow(workflow_id, is_autopilot, is_quick)
+            print(result)
             return 0
 
         elif step in ("change-propose", "change-apply", "post-change-apply", "test-scaffold", "ac-verify"):
