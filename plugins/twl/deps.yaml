@@ -2353,6 +2353,21 @@ scripts:
     path: ../../cli/twl/src/twl/autopilot/chain.py
     description: "chain ステップ順序の共有定義（SSOT）— CHAIN_STEPS / QUICK_SKIP_STEPS / STEP_TO_WORKFLOW / WORKFLOW_NEXT_SKILL 定数は chain.py で管理。chain-steps.sh はミラー"
 
+  su-precompact:
+    type: script
+    path: scripts/su-precompact.sh
+    description: "PreCompact hook: .supervisor/ なければ exit 0、あれば working-memory.md を stdout に出力"
+
+  su-postcompact:
+    type: script
+    path: scripts/su-postcompact.sh
+    description: "PostCompact hook: working-memory.md を読み込んで stdout に出力（sharp 復帰）"
+
+  su-session-compact:
+    type: script
+    path: scripts/su-session-compact.sh
+    description: "SessionStart(compact) hook: プロジェクト状態の ambient hints を stdout に出力"
+
   compaction-resume:
     type: script
     dispatch_mode: trigger
