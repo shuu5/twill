@@ -19,7 +19,7 @@ entry_points:
   - skills/co-architect/SKILL.md
   - skills/co-utility/SKILL.md
   - skills/co-self-improve/SKILL.md
-  - skills/co-observer/SKILL.md
+  - skills/su-observer/SKILL.md
 
 # チェーン（B-4 で追加、B-5 で pr-cycle 追加）
 chains:
@@ -161,8 +161,6 @@ skills:
       - atomic: autopilot-cross-issue
       - atomic: autopilot-summary
         step: "5"
-      - controller: co-observer
-        note: "Step 3.5: --with-observer フラグ時に session:spawn で起動"
       - atomic: session-audit
         step: "5.5"
       - atomic: self-improve-review
@@ -286,12 +284,12 @@ skills:
       - reference: load-test-baselines  # 子 7 で実装
     description: "ライブセッション観察と能動的 self-improvement framework のエントリポイント controller"
 
-  co-observer:
-    type: observer
-    path: skills/co-observer/SKILL.md
+  su-observer:
+    type: supervisor
+    path: skills/su-observer/SKILL.md
     effort: high
     tools: [Agent(observer-evaluator)]
-    spawnable_by: [user, controller]
+    spawnable_by: [user]
     can_spawn: [workflow, atomic, specialist, reference]
     supervises: [co-autopilot, co-issue, co-architect, co-project, co-utility]
     calls:
@@ -303,8 +301,6 @@ skills:
       - atomic: intervene-escalate
       - reference: intervention-catalog
       - reference: observation-pattern-catalog
-      - workflow: workflow-observe-loop
-        note: "Step 1-pair: pair モード時に呼び出し"
     description: "メタ認知レイヤー: 全 controller の監視・介入。テストシナリオ実行は co-self-improve に委譲"
 
   workflow-setup:
