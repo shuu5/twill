@@ -21,6 +21,8 @@ CHAIN_STEPS=(
   post-change-apply
   prompt-compliance
   ts-preflight
+  phase-review
+  scope-judge
   pr-test
   ac-verify
   all-pass-check
@@ -64,6 +66,8 @@ declare -A CHAIN_STEP_DISPATCH=(
   [post-change-apply]=runner
   [prompt-compliance]=runner
   [ts-preflight]=runner
+  [phase-review]=llm
+  [scope-judge]=llm
   [pr-test]=runner
   [ac-verify]=llm
   [all-pass-check]=runner
@@ -85,6 +89,8 @@ declare -A CHAIN_STEP_WORKFLOW=(
   [post-change-apply]=test-ready
   [prompt-compliance]=pr-verify
   [ts-preflight]=pr-verify
+  [phase-review]=pr-verify
+  [scope-judge]=pr-verify
   [pr-test]=pr-verify
   [ac-verify]=pr-verify
   [all-pass-check]=pr-merge
@@ -109,5 +115,7 @@ declare -A CHAIN_STEP_COMMAND=(
   [test-scaffold]=""
   [change-apply]=""
   [post-change-apply]=""
+  [phase-review]=commands/phase-review.md
+  [scope-judge]=commands/scope-judge.md
   [ac-verify]=commands/ac-verify.md
 )
