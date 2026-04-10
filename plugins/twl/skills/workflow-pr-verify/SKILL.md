@@ -79,6 +79,8 @@ checkpoint を照合し、`python3 -m twl.autopilot.checkpoint write --step ac-v
 で結果を永続化すること。前提: workflow-setup の ac-extract が済んでおり
 `${SNAPSHOT_DIR}/01.5-ac-checklist.md` が存在すること（不在時は WARN で抜ける）。
 
+**Cross-PR AC 検証モード**: `implementation_pr` が state に設定されている場合（retroactive DeltaSpec）、AC 証跡は本 PR diff ではなく参照 PR（`implementation_pr`）のマージコミットを対象とする。この場合、`gh pr view <implementation_pr> --json mergeCommit` で得た SHA を起点に AC 達成を確認し、`verified_via_pr: <N>` を ac-verify checkpoint に記録する。本 PR の diff に実装コードがなくても PASS とする。
+
 ## 完了後の遷移（meta chain 定義から自動生成）
 
 ```bash
