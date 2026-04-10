@@ -433,14 +433,18 @@ class ChainRunner:
         else:
             print("DeltaSpec: N/A")
 
-        # Tests
-        tests_dir = root / "tests"
+        # Tests（monorepo 対応: root/tests/, root/*/tests/, root/*/*/tests/ を走査）
+        test_patterns = ("**/*.sh", "**/*.bats", "**/*.test.*", "**/*.R", "**/*.py")
         test_found = False
-        if tests_dir.is_dir():
-            for pattern in ("**/*.sh", "**/*.bats", "**/*.test.*", "**/*.R", "**/*.py"):
-                if any(tests_dir.glob(pattern)):
-                    test_found = True
-                    break
+        candidate_dirs = [root / "tests"] + list(root.glob("*/tests")) + list(root.glob("*/*/tests"))
+        for tests_dir in candidate_dirs:
+            if tests_dir.is_dir():
+                for pattern in test_patterns:
+                    if any(tests_dir.glob(pattern)):
+                        test_found = True
+                        break
+            if test_found:
+                break
         if test_found:
             print("Tests: PASS")
         else:

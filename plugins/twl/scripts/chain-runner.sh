@@ -1040,8 +1040,16 @@ step_check() {
     echo "DeltaSpec: N/A"
   fi
 
-  # テスト
-  if find "$root/tests/" \( -name "*.sh" -o -name "*.bats" -o -name "*.test.*" -o -name "*.R" -o -name "*.py" \) -print -quit 2>/dev/null | grep -q .; then
+  # テスト（monorepo 対応: $root/tests/, $root/*/tests/, $root/*/*/tests/ を走査）
+  local test_found=false
+  local _test_dir
+  for _test_dir in "$root/tests" "$root"/*/tests "$root"/*/*/tests; do
+    if find "$_test_dir" \( -name "*.sh" -o -name "*.bats" -o -name "*.test.*" -o -name "*.R" -o -name "*.py" \) -print -quit 2>/dev/null | grep -q .; then
+      test_found=true
+      break
+    fi
+  done
+  if $test_found; then
     echo "Tests: PASS"
   else
     echo "Tests: FAIL (テストファイルなし)"

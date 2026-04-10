@@ -411,3 +411,74 @@ class TestStepInit:
         assert result["recommended_action"] == "direct"
         assert result.get("deltaspec") is False
         assert result.get("is_direct") is True
+
+
+# ---------------------------------------------------------------------------
+# step_check — monorepo test directory detection (Issue #406)
+# ---------------------------------------------------------------------------
+
+
+class TestStepCheckMonorepo:
+    """step_check が monorepo 構造のテストディレクトリを正しく検出する。"""
+
+    def _make_runner(self, tmp_path: Path, autopilot_dir: Path) -> ChainRunner:
+        scripts_root = tmp_path / "scripts"
+        scripts_root.mkdir(exist_ok=True)
+        return ChainRunner(scripts_root=scripts_root, autopilot_dir=autopilot_dir)
+
+    def _setup_ci(self, root: Path) -> None:
+        """CI/CD と DeltaSpec を用意してチェック以外の FAIL を防ぐ。"""
+        (root / ".github" / "workflows").mkdir(parents=True, exist_ok=True)
+        (root / ".github" / "workflows" / "ci.yml").touch()
+        (root / "deltaspec" / "changes" / "some-change").mkdir(parents=True, exist_ok=True)
+        (root / "deltaspec" / "changes" / "some-change" / "proposal.md").touch()
+
+    def test_root_tests_dir_passes(self, tmp_path: Path, autopilot_dir: Path) -> None:
+        """AC-3: $root/tests/ にテストがあれば PASS（単一リポ退行なし）。"""
+        root = tmp_path / "project"
+        root.mkdir()
+        self._setup_ci(root)
+        (root / "tests").mkdir()
+        (root / "tests" / "foo.bats").touch()
+
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with patch.object(runner, "_project_root", return_value=root):
+            result = runner.step_check()
+        assert result is True
+
+    def test_component_tests_depth1_passes(self, tmp_path: Path, autopilot_dir: Path) -> None:
+        """AC-2: $root/tests/ 不在でも $root/*/tests/ にテストがあれば PASS。"""
+        root = tmp_path / "project"
+        root.mkdir()
+        self._setup_ci(root)
+        (root / "plugins" / "twl" / "tests").mkdir(parents=True)
+        (root / "plugins" / "twl" / "tests" / "spec.bats").touch()
+
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with patch.object(runner, "_project_root", return_value=root):
+            result = runner.step_check()
+        assert result is True
+
+    def test_component_tests_depth2_passes(self, tmp_path: Path, autopilot_dir: Path) -> None:
+        """AC-1: $root/*/*/tests/ にテストがあれば PASS。"""
+        root = tmp_path / "project"
+        root.mkdir()
+        self._setup_ci(root)
+        (root / "cli" / "twl" / "tests").mkdir(parents=True)
+        (root / "cli" / "twl" / "tests" / "test_chain.py").touch()
+
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with patch.object(runner, "_project_root", return_value=root):
+            result = runner.step_check()
+        assert result is True
+
+    def test_no_tests_fails(self, tmp_path: Path, autopilot_dir: Path) -> None:
+        """テストファイルが一切なければ FAIL。"""
+        root = tmp_path / "project"
+        root.mkdir()
+        self._setup_ci(root)
+
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with patch.object(runner, "_project_root", return_value=root):
+            result = runner.step_check()
+        assert result is False
