@@ -496,21 +496,30 @@ poll_single() {
           return 0
         fi
 
-        # chain 遷移停止検知 + nudge（パターンマッチ優先）
-        local nudge_matched=0
-        check_and_nudge "$issue" "$window_name" "$entry" && nudge_matched=1 || true
+        # workflow_done 検知 → inject（inject 成功時は check_and_nudge をスキップ）
+        local workflow_done inject_matched=0
+        workflow_done=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field workflow_done 2>/dev/null || echo "")
+        if [[ -n "$workflow_done" && "$workflow_done" != "null" ]]; then
+          inject_next_workflow "$issue" "$window_name" && inject_matched=1 || true
+        fi
 
-        # health-check（check_and_nudge でカバーできない stall を補完検知）
-        # POLL_INTERVAL=10s × HEALTH_CHECK_INTERVAL=6 = 60s 毎に実行
-        if [[ "$nudge_matched" -eq 0 ]]; then
-          local hc_counter="${HEALTH_CHECK_COUNTER[$issue]:-0}"
-          HEALTH_CHECK_COUNTER[$issue]=$((hc_counter + 1))
-          if (( HEALTH_CHECK_COUNTER[$issue] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
-            local health_stderr health_exit=0
-            health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
-            # API overload fallback 時は poll_count をリセット
-            [[ "$health_exit" -eq 3 ]] && poll_count=0
-            handle_health_check_fallback "$issue" "$window_name" "$entry" "$health_exit" "$health_stderr"
+        if [[ "$inject_matched" -eq 0 ]]; then
+          # chain 遷移停止検知 + nudge（パターンマッチ優先）
+          local nudge_matched=0
+          check_and_nudge "$issue" "$window_name" "$entry" && nudge_matched=1 || true
+
+          # health-check（check_and_nudge でカバーできない stall を補完検知）
+          # POLL_INTERVAL=10s × HEALTH_CHECK_INTERVAL=6 = 60s 毎に実行
+          if [[ "$nudge_matched" -eq 0 ]]; then
+            local hc_counter="${HEALTH_CHECK_COUNTER[$issue]:-0}"
+            HEALTH_CHECK_COUNTER[$issue]=$((hc_counter + 1))
+            if (( HEALTH_CHECK_COUNTER[$issue] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
+              local health_stderr health_exit=0
+              health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
+              # API overload fallback 時は poll_count をリセット
+              [[ "$health_exit" -eq 3 ]] && poll_count=0
+              handle_health_check_fallback "$issue" "$window_name" "$entry" "$health_exit" "$health_stderr"
+            fi
           fi
         fi
         ;;
@@ -729,6 +738,67 @@ _nudge_command_for_pattern() {
   else
     return 1
   fi
+}
+
+# inject_next_workflow: workflow_done を検知して次の workflow skill を tmux inject する
+# 引数: issue, window_name
+# 戻り値: 0=inject 成功 or pr-merge 委譲、1=失敗（タイムアウト / resolve 失敗）
+inject_next_workflow() {
+  local issue="$1"
+  local window_name="$2"
+
+  # --- resolve_next_workflow CLI で次の workflow を決定 ---
+  local next_skill next_skill_exit=0
+  next_skill=$(python3 -m twl.autopilot.resolve_next_workflow --issue "$issue" 2>/dev/null) || next_skill_exit=$?
+  if [[ "$next_skill_exit" -ne 0 || -z "$next_skill" ]]; then
+    echo "[orchestrator] Issue #${issue}: WARNING: resolve_next_workflow 失敗 — inject スキップ" >&2
+    return 1
+  fi
+
+  # --- terminal workflow (pr-merge) は inject しない ---
+  if [[ "$next_skill" == "pr-merge" || "$next_skill" == "/twl:workflow-pr-merge" ]]; then
+    echo "[orchestrator] Issue #${issue}: pr-merge 検出 — inject スキップ、merge-gate フローに委譲" >&2
+    python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
+      --set "workflow_done=null" 2>/dev/null || true
+    return 0
+  fi
+
+  # --- tmux pane 入力待ち確認（最大3回、2秒間隔） ---
+  local prompt_found=0
+  local pane_tail
+  for _i in 1 2 3; do
+    pane_tail=$(tmux capture-pane -t "$window_name" -p 2>/dev/null | tail -1 || true)
+    if [[ "$pane_tail" =~ (">"|"$")[[:space:]]*$ ]]; then
+      prompt_found=1
+      break
+    fi
+    sleep 2
+  done
+
+  if [[ "$prompt_found" -eq 0 ]]; then
+    echo "[orchestrator] Issue #${issue}: WARNING: inject タイムアウト — 10秒後に再チェック" >&2
+    return 1
+  fi
+
+  # --- inject 実行 ---
+  echo "[orchestrator] Issue #${issue}: inject_next_workflow — ${next_skill}" >&2
+  tmux send-keys -t "$window_name" "$next_skill" Enter 2>/dev/null || true
+
+  # --- workflow_done クリア ---
+  python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
+    --set "workflow_done=null" 2>/dev/null || true
+
+  # --- inject 履歴記録 ---
+  local injected_at
+  injected_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
+    --set "workflow_injected=${next_skill}" \
+    --set "injected_at=${injected_at}" 2>/dev/null || true
+
+  # --- NUDGE_COUNTS リセット ---
+  NUDGE_COUNTS[$issue]=0
+
+  return 0
 }
 
 check_and_nudge() {
