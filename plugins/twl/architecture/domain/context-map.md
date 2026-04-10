@@ -15,7 +15,7 @@
 | Supporting | Self-Improve | パターン検出、ECC照合、セッション監査 |
 | Supporting | Live Observation | Observer/Observed セッション分離による能動的 self-improvement とテストプロジェクト管理 |
 | Generic | TWiLL Integration | twl CLI連携、validate/audit/chain、CRG |
-| Cross-cutting | Observer | 全 controller のメタ認知監視・介入（ADR-013） |
+| Cross-cutting | Supervision | 全 controller のメタ認知監視・介入（ADR-013） |
 
 ## 依存関係図
 
@@ -39,7 +39,7 @@ graph TD
 
     subgraph "Cross-cutting"
         AS["Architecture Spec<br/>(DCI 注入源)"]
-        COBS["Observer<br/>(Meta-cognitive)"]
+        SOBS["Supervision<br/>(Meta-cognitive)"]
     end
 
     AP -->|"Customer-Supplier<br/>merge-gate 呼出"| PR
@@ -66,9 +66,9 @@ graph TD
     OBS -.->|"Read-only 観察"| IM
     SI -.->|"並存 (異なるレイヤー)"| OBS
 
-    COBS -->|"Customer-Supplier<br/>Autopilot状態取得<br/>+ 介入時 state-write 可"| AP
-    COBS -->|"Customer-Supplier<br/>Issue 起票要求"| IM
-    COBS -->|"Customer-Supplier<br/>co-self-improve テスト委譲"| OBS
+    SOBS -->|"Customer-Supplier<br/>Autopilot状態取得<br/>+ 介入時 state-write 可"| AP
+    SOBS -->|"Customer-Supplier<br/>Issue 起票要求"| IM
+    SOBS -->|"Customer-Supplier<br/>co-self-improve テスト委譲"| OBS
 
     AS -.->|"DCI 注入"| IM
     IM -.->|"drift detection<br/>(INFO)"| AS
@@ -95,9 +95,9 @@ graph TD
 | Live Observation | Autopilot | Read-only 観察（co-self-improve 限定） | tmux capture-pane による Worker 出力取得 |
 | Live Observation | Issue Mgmt | Read-only 観察 | テストプロジェクト Issue の状態参照 |
 | Self-Improve | Live Observation | 並存 | 受動 retrospective と能動 observation の補完関係（ADR-011） |
-| Observer | Autopilot | Customer-Supplier | Autopilot 状態取得（Downstream）、介入時 state-write 可（ADR-013） |
-| Observer | Issue Mgmt | Customer-Supplier | フロー逸脱検知時の Issue 起票要求（Upstream） |
-| Observer | Live Observation | Customer-Supplier | co-self-improve へのテスト委譲（Upstream、ADR-013） |
+| Supervision | Autopilot | Customer-Supplier | Autopilot 状態取得（Downstream）、介入時 state-write 可（ADR-013） |
+| Supervision | Issue Mgmt | Customer-Supplier | フロー逸脱検知時の Issue 起票要求（Upstream） |
+| Supervision | Live Observation | Customer-Supplier | co-self-improve へのテスト委譲（Upstream、ADR-013） |
 
 ## Architecture Spec の DCI フロー
 
@@ -121,7 +121,7 @@ graph LR
         CC["completeness-check"]
     end
 
-    subgraph "co-observer"
+    subgraph "su-observer"
         OJ["介入判断"]
         OA["フロー逸脱検知"]
     end
