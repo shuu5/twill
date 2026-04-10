@@ -1,7 +1,9 @@
 # ADR-013: Observer の First-Class 昇格 — メタ認知レイヤーの独立型化
 
+> **[SUPERSEDED]** This ADR has been superseded by [ADR-014](ADR-014-supervisor-redesign.md). ADR-013 で定義した observer 型は ADR-014 の supervisor 型に完全置換された。
+
 ## Status
-Accepted
+Superseded by ADR-014
 
 ## Context
 

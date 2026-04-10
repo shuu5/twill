@@ -1,7 +1,7 @@
 # ADR-014: Observer → Supervisor 再定義 — プロジェクト常駐メタ認知レイヤー
 
 ## Status
-Proposed
+Accepted
 
 ## Supersedes
 ADR-013 (Observer の First-Class 昇格)
