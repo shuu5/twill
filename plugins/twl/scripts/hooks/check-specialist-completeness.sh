@@ -78,7 +78,25 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
     <( [[ -f "$SPAWNED_FILE" ]] && LC_ALL=C sort "$SPAWNED_FILE" || true ))
 
   if [[ ${#MISSING[@]} -eq 0 ]]; then
-    # All specialists spawned for this context, noop
+    # All specialists spawned for this context
+    # spec-review- context の場合: セッション state の completed をインクリメント
+    if [[ "$CONTEXT" == spec-review-* ]]; then
+      HASH=$(printf '%s' "${CLAUDE_PROJECT_ROOT:-$PWD}" | cksum | awk '{print $1}')
+      SESSION_STATE="/tmp/.spec-review-session-${HASH}.json"
+      SESSION_LOCK="/tmp/.spec-review-session-${HASH}.lock"
+      if [[ -f "$SESSION_STATE" && ! -L "$SESSION_STATE" ]]; then
+        {
+          flock -w 5 8 || true
+          CURRENT=$(jq -r '.completed // 0' "$SESSION_STATE" 2>/dev/null || echo "0")
+          if [[ "$CURRENT" =~ ^[0-9]+$ ]]; then
+            jq ".completed = (.completed + 1)" "$SESSION_STATE" > "${SESSION_STATE}.tmp" \
+              && mv "${SESSION_STATE}.tmp" "$SESSION_STATE"
+          fi
+        } 8>"$SESSION_LOCK"
+      fi
+    fi
+    # Clean up manifest and spawned tracking files
+    rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"
     continue
   fi
 

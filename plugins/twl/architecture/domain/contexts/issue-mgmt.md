@@ -133,6 +133,7 @@ flowchart TD
 - **制約 IM-4**: 他セッションの `.controller-issue/<other-session-id>/` を削除してはならない（SHALL）。セッション間分離保証
 - **制約 IM-5**: specialist が実行中のまま後続ステップに進んではならない（SHALL）。全 specialist の結果が揃うまで待機必須
 - **制約 IM-6**: ユーザー確認なしで Issue をクローズ・統合してはならない（SHALL）
+- **制約 IM-7**: N Issue × 3 specialist の全完了は機械的に保証しなければならない（SHALL）。`spec-review-session-init.sh` によるセッション state + PreToolUse gate により、全 Issue の `issue-spec-review` 完了前に `issue-review-aggregate` への forward progression を機械的にブロックする
 
 ## Rules
 
