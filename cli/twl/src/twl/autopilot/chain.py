@@ -58,6 +58,12 @@ QUICK_SKIP_STEPS: frozenset[str] = frozenset([
     "prompt-compliance",
 ])
 
+DIRECT_SKIP_STEPS: frozenset[str] = frozenset([
+    "change-propose",
+    "change-id-resolve",
+    "change-apply",
+])
+
 # Workflow boundary metadata (SSOT — mirrors chain-steps.sh)
 STEP_TO_WORKFLOW: dict[str, str] = {
     "init": "setup",
@@ -110,7 +116,7 @@ class ChainRunner:
     # ------------------------------------------------------------------
 
     def next_step(self, issue_num: str, current_step: str) -> str:
-        """Return next step name given current step, respecting is_quick skips.
+        """Return next step name given current step, respecting is_quick/mode skips.
 
         Returns 'done' if all steps are complete.
         """
@@ -118,11 +124,14 @@ class ChainRunner:
             raise ChainError(f"issue_num は正の整数で指定してください: {issue_num!r}")
 
         is_quick = self._read_state_field(issue_num, "is_quick") == "true"
+        mode = self._read_state_field(issue_num, "mode")  # "direct" | "propose" | "apply" | ""
 
         found = False
         for step in CHAIN_STEPS:
             if found:
                 if is_quick and step in QUICK_SKIP_STEPS:
+                    continue
+                if mode == "direct" and step in DIRECT_SKIP_STEPS:
                     continue
                 return step
             if step == current_step:

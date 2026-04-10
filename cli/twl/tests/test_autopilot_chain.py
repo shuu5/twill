@@ -21,6 +21,7 @@ import pytest
 
 from twl.autopilot.chain import (
     CHAIN_STEPS,
+    DIRECT_SKIP_STEPS,
     QUICK_SKIP_STEPS,
     ChainError,
     ChainRunner,
@@ -81,6 +82,15 @@ class TestChainStepsDefinition:
 
     def test_quick_skip_steps_not_empty(self) -> None:
         assert len(QUICK_SKIP_STEPS) > 0
+
+    def test_direct_skip_steps_subset_of_chain_steps(self) -> None:
+        assert DIRECT_SKIP_STEPS.issubset(set(CHAIN_STEPS))
+
+    def test_direct_skip_steps_not_empty(self) -> None:
+        assert len(DIRECT_SKIP_STEPS) > 0
+
+    def test_direct_skip_steps_contains_expected(self) -> None:
+        assert {"change-propose", "change-id-resolve", "change-apply"}.issubset(DIRECT_SKIP_STEPS)
 
     def test_init_is_first_step(self) -> None:
         assert CHAIN_STEPS[0] == "init"
@@ -176,6 +186,67 @@ class TestNextStepQuick:
             current = next_s
         for step in QUICK_SKIP_STEPS:
             assert step in seen, f"Non-quick Issue should include {step}"
+
+
+# ===========================================================================
+# Direct mode step skipping
+# ===========================================================================
+
+
+class TestNextStepDirect:
+    def _make_direct_issue(self, state: StateManager, issue: str = "20") -> None:
+        _init_issue(state, issue)
+        state.write(type_="issue", role="worker", issue=issue, sets=["is_quick=false", "mode=direct"])
+
+    def _make_propose_issue(self, state: StateManager, issue: str = "21") -> None:
+        _init_issue(state, issue)
+        state.write(type_="issue", role="worker", issue=issue, sets=["is_quick=false", "mode=propose"])
+
+    def test_direct_skips_direct_skip_steps(
+        self, runner: ChainRunner, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        self._make_direct_issue(state, "20")
+        seen: list[str] = []
+        current = ""
+        for _ in range(len(CHAIN_STEPS) + 2):
+            next_s = runner.next_step("20", current)
+            if next_s == "done":
+                break
+            seen.append(next_s)
+            current = next_s
+        skipped_in_path = [s for s in seen if s in DIRECT_SKIP_STEPS]
+        assert not skipped_in_path, f"direct mode should skip: {skipped_in_path}"
+
+    def test_propose_includes_direct_skip_steps(
+        self, runner: ChainRunner, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        self._make_propose_issue(state, "21")
+        seen: list[str] = []
+        current = ""
+        for _ in range(len(CHAIN_STEPS) + 2):
+            next_s = runner.next_step("21", current)
+            if next_s == "done":
+                break
+            seen.append(next_s)
+            current = next_s
+        for step in DIRECT_SKIP_STEPS:
+            assert step in seen, f"propose mode should include {step}"
+
+    def test_mode_unset_does_not_apply_direct_skip(
+        self, runner: ChainRunner, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _init_issue(state, "22")
+        state.write(type_="issue", role="worker", issue="22", sets=["is_quick=false"])
+        seen: list[str] = []
+        current = ""
+        for _ in range(len(CHAIN_STEPS) + 2):
+            next_s = runner.next_step("22", current)
+            if next_s == "done":
+                break
+            seen.append(next_s)
+            current = next_s
+        for step in DIRECT_SKIP_STEPS:
+            assert step in seen, f"mode unset: DIRECT_SKIP_STEPS should not apply, {step} missing"
 
 
 # ===========================================================================
