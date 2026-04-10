@@ -7,7 +7,7 @@ chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開
 
 - TWiLL フレームワーク準拠（deps.yaml v3.0, types.yaml 型システム）
 - Claude Code プラグインシステム仕様に準拠
-- Controller は7つ（co-autopilot, co-issue, co-project, co-architect, co-utility, co-self-improve, co-observer）
+- Controller は6つ（co-autopilot, co-issue, co-project, co-architect, co-utility, co-self-improve）+ Supervisor は1つ（su-observer）
 - Bare repo + worktree 一律（branch モード廃止）
 - 状態管理は統一 JSON 2種（issue-{N}.json + session.json）
 - **Project Board 必須**（ADR-006）: 全プロジェクトで GitHub Projects V2 を使用。autopilot の Issue 選択元、ステータス同期先
@@ -22,7 +22,7 @@ chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開
 | Non-implementation | Issue 作成・設計・プロジェクト管理 | co-issue, co-project, co-architect |
 | Utility | スタンドアロンユーティリティ操作 | co-utility |
 | Observation | ライブセッション観察・問題検出・Issue 起票 | co-self-improve |
-| Meta-cognitive | controller の動作を監視・介入するメタレイヤー | co-observer |
+| Supervisor | controller の動作を監視・介入するメタレイヤー | su-observer |
 
 Non-implementation controller は co-autopilot を spawn しない。
 co-architect が「設計 + 実装」を要求された場合: 設計完了 → Issue 起票（co-issue 経由）→ co-autopilot で実装。
