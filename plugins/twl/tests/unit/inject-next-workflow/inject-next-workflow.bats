@@ -60,19 +60,25 @@ if [[ "$RESOLVE_EXIT" -ne 0 ]]; then
 fi
 next_skill="$NEXT_WORKFLOW"
 
-# --- terminal workflow (pr-merge) は inject しない ---
-if [[ "$next_skill" == "pr-merge" || "$next_skill" == "/twl:workflow-pr-merge" ]]; then
+# --- allow-list バリデーション（コマンドインジェクション防止） ---
+_skill_safe="${next_skill//$'\n'/}"  # 改行除去
+if [[ "$_skill_safe" == "pr-merge" || "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
   echo "[orchestrator] Issue #${issue}: pr-merge 検出 — inject スキップ、merge-gate フローに委譲" >&2
   echo "state_write workflow_done=null" >> "$STATE_FILE"
   exit 0
 fi
+if [[ ! "$_skill_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
+  echo "[orchestrator] WARNING: 不正な workflow skill '${_skill_safe}' — inject スキップ" >&2
+  exit 1
+fi
 
 # --- tmux pane 入力待ち確認（最大3回、2秒間隔） ---
+_prompt_re='[>$][[:space:]]*$'
 prompt_found=0
 for i in 1 2 3; do
   echo "tmux capture-pane -p -t $window_name" >> "$CALLS_LOG"
   pane_tail=$(echo "$PANE_OUTPUT" | tail -1)
-  if [[ "$pane_tail" =~ (">"|"$")[[:space:]]*$ ]]; then
+  if [[ "$pane_tail" =~ $_prompt_re ]]; then
     prompt_found=1
     break
   fi
@@ -84,15 +90,15 @@ if [[ "$prompt_found" -eq 0 ]]; then
   exit 1
 fi
 
-# --- inject 実行 ---
-echo "tmux send-keys -t $window_name $next_skill" >> "$CALLS_LOG"
-echo "[orchestrator] Issue #${issue}: inject_next_workflow — $next_skill" >&2
+# --- inject 実行（バリデーション済み _skill_safe を使用） ---
+echo "tmux send-keys -t $window_name $_skill_safe" >> "$CALLS_LOG"
+echo "[orchestrator] Issue #${issue}: inject_next_workflow — $_skill_safe" >&2
 
 # --- workflow_done クリア ---
 echo "state_write workflow_done=null" >> "$STATE_FILE"
 
 # --- inject 履歴記録 ---
-echo "state_write workflow_injected=$next_skill" >> "$STATE_FILE"
+echo "state_write workflow_injected=$_skill_safe" >> "$STATE_FILE"
 echo "state_write injected_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$STATE_FILE"
 
 # --- NUDGE_COUNTS リセット ---
@@ -295,4 +301,53 @@ teardown() {
 
   assert_success
   grep -q "resolve_next_workflow --issue 340" "$CALLS_LOG"
+}
+
+# ---------------------------------------------------------------------------
+# Security: allow-list バリデーション
+# ---------------------------------------------------------------------------
+
+@test "inject_next_workflow[security]: 不正な skill 名は inject されない" {
+  NEXT_WORKFLOW="malicious; rm -rf /" \
+  PANE_OUTPUT="> " \
+    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
+
+  assert_failure
+  ! grep -q "tmux send-keys" "$CALLS_LOG" 2>/dev/null
+}
+
+@test "inject_next_workflow[security]: 不正 skill に WARNING ログを出力する" {
+  NEXT_WORKFLOW="malicious; rm -rf /" \
+  PANE_OUTPUT="> " \
+    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
+
+  assert_failure
+  assert_output --partial "WARNING: 不正な workflow skill"
+}
+
+@test "inject_next_workflow[security]: /twl:workflow- プレフィックスなしは拒否" {
+  NEXT_WORKFLOW="workflow-pr-verify" \
+  PANE_OUTPUT="> " \
+    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
+
+  assert_failure
+  ! grep -q "tmux send-keys" "$CALLS_LOG" 2>/dev/null
+}
+
+@test "inject_next_workflow[security]: セミコロンを含む skill 名は拒否される" {
+  NEXT_WORKFLOW="/twl:workflow-pr-verify; rm -rf /" \
+  PANE_OUTPUT="> " \
+    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
+
+  assert_failure
+  ! grep -q "tmux send-keys" "$CALLS_LOG" 2>/dev/null
+}
+
+@test "inject_next_workflow[security]: 有効な /twl:workflow-<kebab> は許可される" {
+  NEXT_WORKFLOW="/twl:workflow-pr-fix" \
+  PANE_OUTPUT="> " \
+    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
+
+  assert_success
+  grep -q "tmux send-keys -t ap-#340 /twl:workflow-pr-fix" "$CALLS_LOG"
 }

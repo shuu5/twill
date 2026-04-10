@@ -742,7 +742,7 @@ _nudge_command_for_pattern() {
 
 # inject_next_workflow: workflow_done を検知して次の workflow skill を tmux inject する
 # 引数: issue, window_name
-# 戻り値: 0=inject 成功 or pr-merge 委譲、1=失敗（タイムアウト / resolve 失敗）
+# 戻り値: 0=inject 成功 or pr-merge 委譲、1=失敗（タイムアウト / resolve 失敗 / バリデーション失敗）
 inject_next_workflow() {
   local issue="$1"
   local window_name="$2"
@@ -755,20 +755,30 @@ inject_next_workflow() {
     return 1
   fi
 
-  # --- terminal workflow (pr-merge) は inject しない ---
-  if [[ "$next_skill" == "pr-merge" || "$next_skill" == "/twl:workflow-pr-merge" ]]; then
+  # --- allow-list バリデーション（コマンドインジェクション防止） ---
+  # 許可: /twl:workflow-<kebab> 形式、または pr-merge（terminal workflow として別処理）
+  local _skill_safe
+  _skill_safe="${next_skill//$'\n'/}"  # 改行除去（ログインジェクション防止）
+  if [[ "$_skill_safe" == "pr-merge" || "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
+    # terminal workflow: inject せず merge-gate フローに委譲
     echo "[orchestrator] Issue #${issue}: pr-merge 検出 — inject スキップ、merge-gate フローに委譲" >&2
     python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
       --set "workflow_done=null" 2>/dev/null || true
     return 0
   fi
+  if [[ ! "$_skill_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
+    echo "[orchestrator] Issue #${issue}: WARNING: 不正な workflow skill '${_skill_safe}' — inject スキップ" >&2
+    return 1
+  fi
 
   # --- tmux pane 入力待ち確認（最大3回、2秒間隔） ---
+  # 注: bash の [[ =~ ]] で > を文字クラス内に直接記述するとシンタックスエラーになるため変数経由で渡す
+  local _prompt_re='[>$][[:space:]]*$'
   local prompt_found=0
   local pane_tail
   for _i in 1 2 3; do
     pane_tail=$(tmux capture-pane -t "$window_name" -p 2>/dev/null | tail -1 || true)
-    if [[ "$pane_tail" =~ (">"|"$")[[:space:]]*$ ]]; then
+    if [[ "$pane_tail" =~ $_prompt_re ]]; then
       prompt_found=1
       break
     fi
@@ -776,13 +786,13 @@ inject_next_workflow() {
   done
 
   if [[ "$prompt_found" -eq 0 ]]; then
-    echo "[orchestrator] Issue #${issue}: WARNING: inject タイムアウト — 10秒後に再チェック" >&2
+    echo "[orchestrator] Issue #${issue}: WARNING: inject タイムアウト — ${POLL_INTERVAL:-10}秒後に再チェック" >&2
     return 1
   fi
 
-  # --- inject 実行 ---
-  echo "[orchestrator] Issue #${issue}: inject_next_workflow — ${next_skill}" >&2
-  tmux send-keys -t "$window_name" "$next_skill" Enter 2>/dev/null || true
+  # --- inject 実行（バリデーション済みの _skill_safe を使用） ---
+  echo "[orchestrator] Issue #${issue}: inject_next_workflow — ${_skill_safe}" >&2
+  tmux send-keys -t "$window_name" "$_skill_safe" Enter 2>/dev/null || true
 
   # --- workflow_done クリア ---
   python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
@@ -792,7 +802,7 @@ inject_next_workflow() {
   local injected_at
   injected_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
-    --set "workflow_injected=${next_skill}" \
+    --set "workflow_injected=${_skill_safe}" \
     --set "injected_at=${injected_at}" 2>/dev/null || true
 
   # --- NUDGE_COUNTS リセット ---
