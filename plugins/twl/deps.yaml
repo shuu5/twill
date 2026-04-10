@@ -85,9 +85,11 @@ meta_chains:
         chain: setup
         next:
           - condition: "quick && autopilot"
-            goto: quick-path
+            stop: true
+            workflow_done: "setup"
           - condition: "!quick && autopilot"
-            goto: test-ready
+            stop: true
+            workflow_done: "setup"
           - condition: "!autopilot"
             stop: true
             message: "setup chain 完了。次: /twl:workflow-test-ready"
@@ -106,7 +108,8 @@ meta_chains:
         skill: workflow-test-ready
         next:
           - condition: "autopilot"
-            goto: pr-verify
+            stop: true
+            workflow_done: "test-ready"
           - condition: "!autopilot"
             stop: true
             message: "完了。次: /twl:workflow-pr-verify"
@@ -115,7 +118,8 @@ meta_chains:
         skill: workflow-pr-verify
         next:
           - condition: "autopilot"
-            goto: pr-fix
+            stop: true
+            workflow_done: "pr-verify"
           - condition: "!autopilot"
             stop: true
             message: "workflow-pr-verify 完了。次のステップ: /twl:workflow-pr-fix を実行してください"
@@ -124,7 +128,8 @@ meta_chains:
         skill: workflow-pr-fix
         next:
           - condition: "autopilot"
-            goto: pr-merge
+            stop: true
+            workflow_done: "pr-fix"
           - condition: "!autopilot"
             stop: true
             message: "workflow-pr-fix 完了。次のステップ: /twl:workflow-pr-merge を実行してください"

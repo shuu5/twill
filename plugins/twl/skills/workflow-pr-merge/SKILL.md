@@ -92,6 +92,18 @@ merge-gate が PASS の場合のみ:
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" auto-merge
 ```
 
+## 完了後の遷移
+
+auto-merge 完了後:
+```bash
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
+ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
+eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
+```
+
+- IS_AUTOPILOT=true → `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=pr-merge" --set "status=merge-ready"` を実行して停止
+- IS_AUTOPILOT=false → 「workflow-pr-merge 完了」と報告して停止
+
 ## compaction 復帰プロトコル
 
 `refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `all-pass-check pr-cycle-report`
