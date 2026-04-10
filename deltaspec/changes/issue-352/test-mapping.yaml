@@ -1,0 +1,55 @@
+change_id: issue-352
+generated_at: "2026-04-10T00:00:00+00:00"
+test_framework: pytest
+scenarios:
+  - id: "context-classification-update"
+    name: "Context 分類の更新確認"
+    spec_file: "specs/context-map-supervision/spec.md"
+    spec_line: 7
+    requirement: "Context 分類テーブルの Supervision 更新"
+    test_file: "cli/twl/tests/scenarios/test_context_map_supervision.py"
+    test_name: "TestContextClassificationTable"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dependency-graph-node-update"
+    name: "依存関係図のノード確認"
+    spec_file: "specs/context-map-supervision/spec.md"
+    spec_line: 15
+    requirement: "依存関係図の Supervision ノード更新"
+    test_file: "cli/twl/tests/scenarios/test_context_map_supervision.py"
+    test_name: "TestDependencyGraphNodes"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dci-flow-subgraph-update"
+    name: "DCI フロー図のサブグラフ確認"
+    spec_file: "specs/context-map-supervision/spec.md"
+    spec_line: 23
+    requirement: "DCI フロー図の su-observer サブグラフ更新"
+    test_file: "cli/twl/tests/scenarios/test_context_map_supervision.py"
+    test_name: "TestDciFlowSubgraph"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "relationship-table-update"
+    name: "関係テーブルの更新確認"
+    spec_file: "specs/context-map-supervision/spec.md"
+    spec_line: 31
+    requirement: "関係の詳細テーブルの Supervision 更新"
+    test_file: "cli/twl/tests/scenarios/test_context_map_supervision.py"
+    test_name: "TestRelationshipTable"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
