@@ -37,7 +37,12 @@ DELTASPEC_EXISTS=$(test -d deltaspec && echo "true" || echo "false")
    ```bash
    twl spec new "issue-<N>"
    ```
-5. **Step 1 をスキップして Step 3 へ進む**
+5. `.deltaspec.yaml` に必須フィールドを補完:
+   ```bash
+   echo "name: issue-<N>" >> deltaspec/changes/issue-<N>/.deltaspec.yaml
+   echo "status: pending" >> deltaspec/changes/issue-<N>/.deltaspec.yaml
+   ```
+6. **Step 1 をスキップして Step 3 へ進む**
 
 **それ以外の場合**: Step 1 へ進む。
 
