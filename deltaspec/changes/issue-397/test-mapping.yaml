@@ -1,0 +1,263 @@
+change_id: issue-397
+generated_at: "2026-04-10T00:00:00Z"
+test_framework: pytest+bats
+
+# pytest tests: cli/twl/tests/scenarios/test_retroactive_deltaspec.py
+# bats tests:   plugins/twl/tests/bats/scripts/chain-runner-retroactive.bats
+#
+# Tests tagged [PENDING] will fail until the feature is implemented.
+# The implementation entry points are:
+#   - ChainRunner.step_init  (cli/twl/src/twl/autopilot/chain.py)
+#   - step_ac_verify         (plugins/twl/scripts/chain-runner.sh)
+#   - issue-<N>.json schema  (twl.autopilot.state / cli/twl/src/twl/autopilot/state.py)
+
+scenarios:
+  # ---------------------------------------------------------------------------
+  # Requirement: Retroactive DeltaSpec モード検出
+  # ---------------------------------------------------------------------------
+
+  - id: "retroactive-deltaspec-mode-detection-docs-only"
+    name: "実装コードなし・ドキュメントのみの差分"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 7
+    requirement: "Retroactive DeltaSpec モード検出"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestRetroactiveDeltaspecModeDetection::test_step_init_sets_deltaspec_mode_retroactive_when_diff_is_deltaspec_only"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "ChainRunner.step_init does not yet implement _git_diff_name_only or retroactive detection"
+
+  - id: "retroactive-deltaspec-mode-detection-docs-only-bats"
+    name: "実装コードなし・ドキュメントのみの差分 (shell)"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 7
+    requirement: "Retroactive DeltaSpec モード検出"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-retroactive.bats"
+    test_name: "[PENDING] init: DeltaSpec-only diff → deltaspec_mode=retroactive in state file"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "chain-runner.sh init step does not yet detect retroactive mode"
+
+  - id: "retroactive-deltaspec-mode-detection-normal-case"
+    name: "実装コードが含まれる通常ケース"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 11
+    requirement: "Retroactive DeltaSpec モード検出"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestRetroactiveDeltaspecModeDetection::test_step_init_does_not_set_retroactive_mode_when_impl_files_present"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "ChainRunner.step_init does not yet implement retroactive detection"
+
+  - id: "retroactive-detection-helper-unit"
+    name: "DeltaSpec-only diff 検出ロジック（ユニット）"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 7
+    requirement: "Retroactive DeltaSpec モード検出"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestRetroactiveDeltaspecModeDetection::test_deltaspec_only_diff_is_detected_as_retroactive"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: Implementation PR の追跡
+  # ---------------------------------------------------------------------------
+
+  - id: "implementation-pr-auto-detect-from-body"
+    name: "Issue body からの自動検出"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 22
+    requirement: "Implementation PR の追跡"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestImplementationPrTracking::test_step_init_persists_implementation_pr_when_tag_found"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "ChainRunner.step_init does not yet implement _fetch_issue_body or Implemented-in parsing"
+
+  - id: "implementation-pr-auto-detect-from-body-bats"
+    name: "Issue body からの自動検出 (shell)"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 22
+    requirement: "Implementation PR の追跡"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-retroactive.bats"
+    test_name: "[PENDING] init: Implemented-in tag in Issue body → implementation_pr saved to state"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "chain-runner.sh init does not yet parse Implemented-in tag"
+
+  - id: "implementation-pr-parser-unit"
+    name: "Implemented-in タグパーサー（ユニット）"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 22
+    requirement: "Implementation PR の追跡"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestImplementationPrTracking::test_extract_implementation_pr_from_issue_body"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: "implementation-pr-manual-prompt"
+    name: "自動検出できない場合の手動入力プロンプト"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 26
+    requirement: "Implementation PR の追跡"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestImplementationPrTracking::test_step_init_prompts_for_implementation_pr_when_tag_absent"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "ChainRunner.step_init does not yet prompt for implementation_pr"
+
+  - id: "implementation-pr-manual-prompt-bats"
+    name: "自動検出できない場合の手動入力プロンプト (shell)"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 26
+    requirement: "Implementation PR の追跡"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-retroactive.bats"
+    test_name: "[PENDING] init: no Implemented-in tag → stdout/stderr includes implementation_pr prompt"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "chain-runner.sh does not yet prompt for implementation_pr"
+
+  # ---------------------------------------------------------------------------
+  # Requirement: Cross-PR AC 検証
+  # ---------------------------------------------------------------------------
+
+  - id: "cross-pr-ac-verify-with-implementation-pr"
+    name: "implementation_pr が設定されている場合の AC 検証"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 35
+    requirement: "Cross-PR AC 検証"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestCrossPrAcVerification::test_step_ac_verify_reads_implementation_pr_from_state"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "step_ac_verify does not yet read implementation_pr and redirect to cross-PR merge commit"
+
+  - id: "cross-pr-ac-verify-with-implementation-pr-bats"
+    name: "implementation_pr が設定されている場合の AC 検証 (shell)"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 35
+    requirement: "Cross-PR AC 検証"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-retroactive.bats"
+    test_name: "[PENDING] ac-verify: implementation_pr=392 in state → gh pr view 392 --json mergeCommit called"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "chain-runner.sh ac-verify does not yet check implementation_pr"
+
+  - id: "cross-pr-ac-verify-normal-mode"
+    name: "implementation_pr が未設定の場合（通常モード）"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 39
+    requirement: "Cross-PR AC 検証"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestCrossPrAcVerification::test_ac_verify_uses_current_pr_when_implementation_pr_absent"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: "cross-pr-ac-verify-normal-mode-bats"
+    name: "implementation_pr が未設定の場合（通常モード）(shell)"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 39
+    requirement: "Cross-PR AC 検証"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-retroactive.bats"
+    test_name: "ac-verify: no implementation_pr in state → runs without cross-PR gh call"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  - id: "state-schema-implementation-pr"
+    name: "issue-<N>.json スキーマ: implementation_pr フィールド"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 35
+    requirement: "Cross-PR AC 検証"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestCrossPrAcVerification::test_state_schema_supports_implementation_pr_field"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: workflow-setup init の retroactive 対応 (MODIFIED)
+  # ---------------------------------------------------------------------------
+
+  - id: "workflow-setup-init-retroactive-action"
+    name: "retroactive モードでの init 結果"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 49
+    requirement: "workflow-setup init の retroactive 対応"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestWorkflowSetupRetroactiveInit::test_step_init_returns_retroactive_propose_when_retroactive_detected"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "ChainRunner.step_init does not yet return retroactive_propose"
+
+  - id: "workflow-setup-init-retroactive-action-bats"
+    name: "retroactive モードでの init 結果 (shell)"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 49
+    requirement: "workflow-setup init の retroactive 対応"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-retroactive.bats"
+    test_name: "[PENDING] init: retroactive mode detected → JSON output has recommended_action=retroactive_propose"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "chain-runner.sh init does not yet return retroactive_propose"
+
+  - id: "workflow-setup-init-retroactive-impl-pr-check"
+    name: "retroactive_propose が implementation_pr 確認ステップを含む"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 51
+    requirement: "workflow-setup init の retroactive 対応"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestWorkflowSetupRetroactiveInit::test_step_init_retroactive_propose_includes_implementation_pr_check_flag"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "ChainRunner.step_init does not yet include needs_implementation_pr in result"
+
+  - id: "workflow-setup-init-non-retroactive-guard"
+    name: "実装ファイルがある場合は retroactive_propose を返さない"
+    spec_file: "specs/retroactive-deltaspec/spec.md"
+    spec_line: 49
+    requirement: "workflow-setup init の retroactive 対応"
+    test_file: "cli/twl/tests/scenarios/test_retroactive_deltaspec.py"
+    test_name: "TestWorkflowSetupRetroactiveInit::test_step_init_retroactive_mode_not_triggered_on_non_main_branch_with_impl_files"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "ChainRunner.step_init does not yet implement retroactive detection"
