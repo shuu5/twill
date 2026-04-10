@@ -26,10 +26,10 @@ _FALLBACK_TOKEN_THRESHOLDS: Dict[str, Tuple[int, int]] = {
 _FALLBACK_TYPE_RULES = {
     'controller':  {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference'}, 'spawnable_by': {'user', 'launcher'}},
     'workflow':    {'section': 'skills',   'can_spawn': {'atomic', 'composite', 'specialist'},  'spawnable_by': {'controller', 'user'}},
-    'atomic':      {'section': 'commands', 'can_spawn': {'reference', 'script'},                  'spawnable_by': {'workflow', 'controller'}},
+    'atomic':      {'section': 'commands', 'can_spawn': {'reference', 'script'},                  'spawnable_by': {'workflow', 'controller', 'supervisor'}},
     'composite':   {'section': 'commands', 'can_spawn': {'specialist', 'script'},               'spawnable_by': {'workflow', 'controller'}},
-    'specialist':  {'section': 'agents',   'can_spawn': set(),                                  'spawnable_by': {'workflow', 'composite', 'controller'}},
-    'reference':   {'section': 'skills',   'can_spawn': set(),                                  'spawnable_by': {'controller', 'atomic', 'agents.skills', 'all'}},
+    'specialist':  {'section': 'agents',   'can_spawn': set(),                                  'spawnable_by': {'workflow', 'composite', 'controller', 'supervisor'}},
+    'reference':   {'section': 'skills',   'can_spawn': set(),                                  'spawnable_by': {'controller', 'atomic', 'supervisor', 'agents.skills', 'all'}},
     'script':      {'section': 'scripts',  'can_spawn': {'script'},                              'spawnable_by': {'atomic', 'composite', 'script'}},
     'supervisor':  {'section': 'skills',   'can_spawn': {'workflow', 'atomic', 'composite', 'specialist', 'reference', 'script'}, 'spawnable_by': {'user'}},
 }
