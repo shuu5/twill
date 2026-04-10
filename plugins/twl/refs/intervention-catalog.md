@@ -6,15 +6,15 @@ can_spawn: []
 
 # Intervention Catalog
 
-Observer の介入判断ルール定義。6 つの介入パターンを Auto/Confirm/Escalate の 3 層に分類する。
+Supervisor の介入判断ルール定義。6 つの介入パターンを Auto/Confirm/Escalate の 3 層に分類する。
 
 ## 3 層分類の判断基準
 
 | 層 | 判断基準 | 実行者 |
 |----|----------|--------|
-| **Layer 0: Auto** | Worker が明確な失敗状態（status=failed）かつ回復手順が確立されている | Observer が自動実行 |
+| **Layer 0: Auto** | Worker が明確な失敗状態（status=failed）かつ回復手順が確立されている | Supervisor が自動実行 |
 | **Layer 1: Confirm** | 状態が曖昧または複数の回復戦略が存在する | ユーザー確認後に実行 |
-| **Layer 2: Escalate** | Observer 自身では判断不能、または影響範囲が広い | ユーザーに委譲（実行しない） |
+| **Layer 2: Escalate** | Supervisor 自身では判断不能、または影響範囲が広い | ユーザーに委譲（実行しない） |
 
 **未知パターンのフォールバック**: カタログ外パターンは自動的に Layer 2 Escalate 扱いとし、カタログ拡張を self-improve Issue として提案する。
 
@@ -97,7 +97,7 @@ Observer の介入判断ルール定義。6 つの介入パターンを Auto/Con
   - conflict ファイルの一覧
   - 推奨 rebase コマンド: `git fetch origin && git rebase origin/main`
   - 影響する Worker の branch 名
-- **実行制約**: Observer は実行しない。ユーザーが手動で対処
+- **実行制約**: Supervisor は実行しない。ユーザーが手動で対処
 - **リスク評価**: 高（コンフリクト解消には意味的理解が必要、誤解消で main 整合性が破壊される可能性）
 - **事後**: ユーザーによる解消後に Worker を再起動するか確認
 
@@ -111,7 +111,7 @@ Observer の介入判断ルール定義。6 つの介入パターンを Auto/Con
   - 問題の詳細説明
   - 影響を受けるコンポーネント一覧
   - 推奨アクション（Issue 化、ADR 起草、一時凍結）
-- **実行制約**: Observer は実行しない。Issue 化を推奨
+- **実行制約**: Supervisor は実行しない。Issue 化を推奨
 - **リスク評価**: 高（影響範囲が広い。誤った修正は複数 Issue に影響する）
 
 ---
