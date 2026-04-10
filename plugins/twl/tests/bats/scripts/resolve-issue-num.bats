@@ -13,9 +13,6 @@
 # Requirement: chain-runner.sh の Issue 番号解決を resolve_issue_num に移行
 #   Scenario 6: chain-runner.sh が AUTOPILOT_DIR から Issue 番号を取得する
 #
-# Requirement: post-skill-chain-nudge.sh の Issue 番号解決を resolve_issue_num に移行
-#   Scenario 7: nudge フックが CWD に依存せず Issue 番号を取得する
-#
 # Requirement: refs/ref-dci.md の DCI 標準パターン更新
 #   Scenario 8: ref-dci.md のサンプルコードが新パターンを示す（静的検証）
 #
@@ -235,44 +232,6 @@ DRIVER_EOF
   # 実装後は assert_success、現状はスクリプト未存在のため pending 相当
   # NOTE: resolve-issue-num.sh 実装後にこのテストは完全に pass するようになる
   # 現時点では chain-runner.sh が resolve_issue_num を使用しているかの静的チェック
-}
-
-# ---------------------------------------------------------------------------
-# Requirement: post-skill-chain-nudge.sh の Issue 番号解決を resolve_issue_num に移行
-# ---------------------------------------------------------------------------
-
-# Scenario 7: nudge フックが CWD に依存せず Issue 番号を取得する
-@test "post-skill-chain-nudge.sh: AUTOPILOT_DIR から正しい Issue 番号を取得し CWD に依存しない" {
-  # resolve-issue-num.sh がサンドボックスに存在することを前提とする
-  # ここでは resolve-issue-num.sh を source する updated post-skill-chain-nudge.sh の動作を確認
-
-  # Worktree 外の CWD をシミュレート（/tmp などから実行）
-  local fake_cwd
-  fake_cwd="$(mktemp -d)"
-
-  create_issue_json 42 "running"
-  # current_step を設定してフックが chain-continuation を出力するようにする
-  # （state-write.sh への依存があるため、issue JSON に current_step を直接書き込む）
-  local issue_file="$SANDBOX/.autopilot/issues/issue-42.json"
-  jq '.current_step = "ts-preflight"' "$issue_file" > "${issue_file}.tmp" && mv "${issue_file}.tmp" "$issue_file"
-
-  # chain-runner.sh next-step stub（サンドボックス内のスクリプトを使う）
-  # next-step の依存関係をスタブ化
-  stub_command "gh" 'exit 0'
-
-  # nudge フックを外部 CWD から実行
-  run bash -c "
-    cd '$fake_cwd'
-    AUTOPILOT_DIR='$SANDBOX/.autopilot' \
-    SCRIPTS_ROOT='$SANDBOX/scripts' \
-    printf '{}' | bash '$SANDBOX/scripts/hooks/post-skill-chain-nudge.sh'
-  "
-
-  # exit 0 を保証（フックはワーカーを止めてはならない）
-  assert_success
-
-  # CWD に関係なく動作することを確認（エラーなし）
-  rm -rf "$fake_cwd"
 }
 
 # ---------------------------------------------------------------------------

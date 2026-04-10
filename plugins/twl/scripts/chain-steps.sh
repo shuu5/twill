@@ -5,7 +5,7 @@
 #   source "$(dirname "${BASH_SOURCE[0]}")/chain-steps.sh"
 #
 # workflow-setup → workflow-test-ready → workflow-pr-cycle の全ステップ順。
-# chain-runner.sh、compaction-resume.sh、post-skill-chain-nudge.sh がこのファイルを参照する。
+# chain-runner.sh、compaction-resume.sh がこのファイルを参照する。
 
 CHAIN_STEPS=(
   init
