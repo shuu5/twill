@@ -1626,6 +1626,18 @@ commands:
     can_spawn: []
     description: "過去の observation を集約しパターン抽出"
 
+  # === su-compact: 知識外部化 + compaction 制御 (#364) ===
+
+  su-compact:
+    type: atomic
+    path: commands/su-compact.md
+    effort: low
+    spawnable_by: [user, supervisor]
+    can_spawn: []
+    calls:
+      - reference: memory-mcp-config
+    description: "知識外部化 + compaction 制御（Long-term Memory 保存 → Working Memory 退避 → /compact）"
+
   # === su-observer 介入コマンド (#310) ===
 
   intervene-auto:
