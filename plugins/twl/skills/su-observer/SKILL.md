@@ -1,76 +1,45 @@
 ---
-name: twl:co-observer
+name: twl:su-observer
 description: |
-  Observer メタ認知コントローラー（ADR-013）。
-  autopilot セッションを監視し、3 層介入プロトコル（Auto/Confirm/Escalate）に従って
-  問題を検出・分類・対処する。co-self-improve へのテスト委譲も担う。
+  Supervisor メタ認知レイヤー（ADR-014）。
+  プロジェクトに常駐し、controller セッションを監視・介入する。
+  3 層介入プロトコル（Auto/Confirm/Escalate）に従って問題を検出・分類・対処する。
+  co-self-improve へのテスト委譲、Wave 管理、compaction 知識外部化も担う。
 
-  Use when user: says co-observer/observer/介入/intervention/監視,
-  wants to monitor a running autopilot session,
+  Use when user: says su-observer/supervisor/介入/intervention/監視/observer,
+  wants to monitor a running controller session,
   wants to intervene in a Worker's state,
+  wants to manage Wave planning or project-level coordination,
   wants to delegate test scenario execution to co-self-improve.
-type: observer
+type: supervisor
 effort: high
 tools:
 - Agent(observer-evaluator)
 spawnable_by:
 - user
-- controller
 ---
 
-# co-observer
+# su-observer
 
-メタ認知レイヤー。全 controller セッションを監視し、問題を検出したとき
+プロジェクト常駐のメタ認知レイヤー。全 controller セッションを監視し、問題を検出したとき
 `refs/intervention-catalog.md` の 3 層分類（Auto/Confirm/Escalate）に基づいて介入する。
 テストシナリオ実行は co-self-improve に委譲する。
 
 **監視対象**: co-autopilot（主）, co-issue, co-architect, co-project, co-utility
 
-## 引数（ペア起動時）
-
-co-autopilot から `session:spawn` で起動される場合、以下の引数が渡される:
-- `--target <window>`: 監視対象の tmux window 名
-- `--session-id <SID>`: autopilot セッション ID
-- `--autopilot-dir <DIR>`: autopilot 状態ディレクトリ
-- `--plan <path>`: plan.yaml のパス
-
-これらの引数が存在する場合は自動的に **pair** モードで起動する（Step 0 のモード判定をスキップ）。
+**起動場所**: bare repo の main ディレクトリ（ADR-014 Decision 2）
 
 ## Step 0: モード判定
 
-ユーザー入力 or 引数からモードを判定する。
+ユーザー入力からモードを判定する。
 
 | モード | 判定条件 | 動作 |
 |---|---|---|
-| pair | `--target` 引数あり（co-autopilot ペア起動） | Step 1-pair へ |
 | supervise | supervise / 監視 / watch / autopilot 起動 / session 名指定 | Step 1 へ |
 | delegate-test | test / テスト / scenario / シナリオ / 壁打ち | Step 2 へ |
 | retrospect | retrospect / 振り返り / 集約 / 過去の介入 | Step 3 へ |
 
 引数なし or 曖昧な場合は AskUserQuestion で 3 モードから選択させる。
-
-## Step 1-pair: pair モード — co-autopilot ペア監視
-
-co-autopilot から起動された場合の専用フロー。OB-2 制約（context budget）を維持するため、
-監視ループは `workflow-observe-loop` に委譲し、介入判断のみを本 controller が担う。
-
-1. 引数から `TARGET_WINDOW`, `SESSION_ID`, `AUTOPILOT_DIR`, `PLAN_PATH` を取得
-2. Skill(twl:workflow-observe-loop) を以下のパラメータで呼び出す:
-   ```
-   OBSERVED_WINDOW=$TARGET_WINDOW
-   INTERVAL=30
-   MAX_CYCLES=120  # 最大60分（autopilot 完了まで）
-   STOP_ON_DETECT=false
-   ```
-3. workflow-observe-loop から返された aggregated.json の `top_detections` を取得
-4. 各 detection について `refs/intervention-catalog.md` を参照し 3 層に振り分け:
-   - Layer 0 Auto → `commands/intervene-auto.md` を Read → 実行
-   - Layer 1 Confirm → `commands/intervene-confirm.md` を Read → 実行
-   - Layer 2 Escalate → `commands/intervene-escalate.md` を Read → 実行
-5. autopilot 完了判定: `$AUTOPILOT_DIR/session.json` の status が `done` または target window が exited → 正常終了
-6. crash-resume 対応: autopilot が resume した場合（status: `running` が再出現）、同一 TARGET_WINDOW で再アタッチ。window 消滅時は Escalate 層でユーザーに通知する
-
-OB-2 制約との整合: 各サイクルの raw capture は workflow-observe-loop 内で破棄し、集約 JSON のみを本 controller が参照する。これにより context budget の線形増加を防ぐ。
 
 ## Step 1: supervise モード — controller session 監視
 
@@ -101,9 +70,32 @@ OB-2 制約との整合: 各サイクルの raw capture は workflow-observe-loo
 4. 新たな Issue 化が必要か AskUserQuestion で確認
 5. 承認時のみ Issue draft 生成（`commands/issue-draft-from-observation.md`）
 
+## Step 4: Wave 管理（後続 Issue で詳細化）
+
+> **NOTE**: このステップは後続 Issue で詳細実装される。基本構造のみ定義。
+
+Wave 単位の co-autopilot 起動・完了検知・結果集約を担う。
+
+## Step 5: Long-term Memory 保存（後続 Issue で詳細化）
+
+> **NOTE**: このステップは後続 Issue で詳細実装される。基本構造のみ定義。
+
+ADR-014 Decision 3 の三層記憶モデルに基づく Memory MCP への永続化を担う。
+
+## Step 6: Compaction 知識外部化（後続 Issue で詳細化）
+
+> **NOTE**: このステップは後続 Issue で詳細実装される。基本構造のみ定義。
+
+ADR-014 Decision 4 の PreCompact/PostCompact/SessionStart(compact) hook 連携を担う。
+
+## Step 7: セッション終了
+
+1. 進行中の監視ループを停止
+2. 未処理の介入記録を集約・保存
+3. 終了をユーザーに通知
+
 ## 禁止事項（MUST NOT）
 
 - Issue の直接実装をしてはならない（制約 OBS-3）
-- observed session に inject / send-keys してはならない（制約 OB-3）
 - 検出結果をユーザー確認なしで自動 Issue 起票してはならない（制約 OB-4）
 - テストシナリオの実行を自身で行ってはならない（co-self-improve に委譲すること）
