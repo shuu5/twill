@@ -614,6 +614,8 @@ def handle_chain_subcommand(argv: list) -> None:
     parser.add_argument('--check', action='store_true', help='Check for drift in generated templates')
     parser.add_argument('--all', action='store_true', dest='all_chains',
                         help='Process all chains in deps.yaml')
+    parser.add_argument('--plugin-root', default=None,
+                        help='Use specified path as plugin root instead of auto-detecting from CWD')
 
     args = parser.parse_args(argv)
 
@@ -631,7 +633,13 @@ def handle_chain_subcommand(argv: list) -> None:
         print("Error: --check and --write are mutually exclusive", file=sys.stderr)
         sys.exit(1)
 
-    plugin_root = get_plugin_root()
+    if args.plugin_root is not None:
+        plugin_root = Path(args.plugin_root)
+        if not (plugin_root / 'deps.yaml').exists():
+            print(f"Error: deps.yaml not found in --plugin-root: {plugin_root}", file=sys.stderr)
+            sys.exit(1)
+    else:
+        plugin_root = get_plugin_root()
     deps = load_deps(plugin_root)
 
     # v3.0 バージョンチェック
