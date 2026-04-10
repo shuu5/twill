@@ -225,6 +225,7 @@ class ChainRunner:
 
         branch = self._git_current_branch()
         is_quick = self._detect_quick_label(issue_num) if issue_num else "false"
+        is_direct = self._detect_direct_label(issue_num) if issue_num else "false"
 
         # Persist is_quick to state
         if issue_num and re.match(r"^\d+$", issue_num):
@@ -239,17 +240,34 @@ class ChainRunner:
             self._ok("init", f"recommended_action=worktree (branch={branch}, is_quick={is_quick})")
             return result
 
-        root = self._project_root()
-        deltaspec_dir = root / "deltaspec"
-
-        if not deltaspec_dir.is_dir():
+        # quick or scope/direct label → direct
+        if is_quick == "true" or is_direct == "true":
+            reason = "quick" if is_quick == "true" else "scope/direct label"
             result = {
                 "recommended_action": "direct",
                 "branch": branch,
                 "deltaspec": False,
                 "is_quick": is_quick == "true",
             }
-            self._ok("init", f"recommended_action=direct (no deltaspec, is_quick={is_quick})")
+            self._ok("init", f"recommended_action=direct ({reason}, is_quick={is_quick})")
+            if issue_num and re.match(r"^\d+$", issue_num):
+                self._write_state_field(issue_num, "mode=direct")
+            return result
+
+        root = self._project_root()
+        deltaspec_dir = root / "deltaspec"
+
+        if not deltaspec_dir.is_dir():
+            result = {
+                "recommended_action": "propose",
+                "branch": branch,
+                "deltaspec": False,
+                "auto_init": True,
+                "is_quick": is_quick == "true",
+            }
+            self._ok("init", f"recommended_action=propose (no deltaspec, auto_init=true, is_quick={is_quick})")
+            if issue_num and re.match(r"^\d+$", issue_num):
+                self._write_state_field(issue_num, "mode=propose")
             return result
 
         changes_dir = deltaspec_dir / "changes"
@@ -262,6 +280,8 @@ class ChainRunner:
                 "is_quick": is_quick == "true",
             }
             self._ok("init", f"recommended_action=propose (no changes, is_quick={is_quick})")
+            if issue_num and re.match(r"^\d+$", issue_num):
+                self._write_state_field(issue_num, "mode=propose")
             return result
 
         latest_dirs = sorted(
@@ -278,6 +298,8 @@ class ChainRunner:
                 "is_quick": is_quick == "true",
             }
             self._ok("init", f"recommended_action=propose (no proposal, is_quick={is_quick})")
+            if issue_num and re.match(r"^\d+$", issue_num):
+                self._write_state_field(issue_num, "mode=propose")
             return result
 
         latest = latest_dirs[0]
@@ -295,6 +317,8 @@ class ChainRunner:
                     "is_quick": is_quick == "true",
                 }
                 self._ok("init", f"recommended_action=apply (change={latest.name}, approved, is_quick={is_quick})")
+                if issue_num and re.match(r"^\d+$", issue_num):
+                    self._write_state_field(issue_num, "mode=apply")
             else:
                 result = {
                     "recommended_action": "propose",
@@ -305,6 +329,8 @@ class ChainRunner:
                     "is_quick": is_quick == "true",
                 }
                 self._ok("init", f"recommended_action=propose (change={latest.name}, pending, is_quick={is_quick})")
+                if issue_num and re.match(r"^\d+$", issue_num):
+                    self._write_state_field(issue_num, "mode=propose")
         else:
             result = {
                 "recommended_action": "propose",
@@ -314,6 +340,8 @@ class ChainRunner:
                 "is_quick": is_quick == "true",
             }
             self._ok("init", f"recommended_action=propose (no proposal, is_quick={is_quick})")
+            if issue_num and re.match(r"^\d+$", issue_num):
+                self._write_state_field(issue_num, "mode=propose")
 
         return result
 
@@ -904,6 +932,22 @@ class ChainRunner:
                 capture_output=True, text=True, timeout=10,
             )
             if result.returncode == 0 and "quick" in result.stdout.splitlines():
+                return "true"
+        except Exception:
+            pass
+        return "false"
+
+    def _detect_direct_label(self, issue_num: str) -> str:
+        """Return 'true' if issue has scope/direct label, else 'false'."""
+        if not issue_num or not re.match(r"^\d+$", issue_num):
+            return "false"
+        try:
+            result = subprocess.run(
+                ["gh", "issue", "view", issue_num, "--json", "labels",
+                 "--jq", ".labels[].name"],
+                capture_output=True, text=True, timeout=10,
+            )
+            if result.returncode == 0 and "scope/direct" in result.stdout.splitlines():
                 return "true"
         except Exception:
             pass

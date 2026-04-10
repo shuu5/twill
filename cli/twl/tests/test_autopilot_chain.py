@@ -365,3 +365,50 @@ class TestChainCLI:
             capture_output=True, text=True,
         )
         assert result.returncode != 0
+
+
+# ===========================================================================
+# step_init
+# ===========================================================================
+
+
+class TestStepInit:
+    """Tests for ChainRunner.step_init() AC (#338)."""
+
+    def _make_runner(self, tmp_path: Path, autopilot_dir: Path) -> ChainRunner:
+        scripts_root = tmp_path / "scripts"
+        scripts_root.mkdir(exist_ok=True)
+        return ChainRunner(scripts_root=scripts_root, autopilot_dir=autopilot_dir)
+
+    def test_no_deltaspec_non_quick_non_direct_returns_propose_auto_init(
+        self, tmp_path: Path, autopilot_dir: Path
+    ) -> None:
+        """deltaspec/ なし + quick なし + direct なし → propose (auto_init=true)."""
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with (
+            patch.object(runner, "_git_current_branch", return_value="feat/some-branch"),
+            patch.object(runner, "_project_root", return_value=tmp_path),
+            patch.object(runner, "_detect_quick_label", return_value="false"),
+            patch.object(runner, "_detect_direct_label", return_value="false"),
+            patch.object(runner, "_write_state_field"),
+        ):
+            result = runner.step_init("")
+        assert result["recommended_action"] == "propose"
+        assert result.get("auto_init") is True
+        assert result.get("deltaspec") is False
+
+    def test_scope_direct_label_returns_direct(
+        self, tmp_path: Path, autopilot_dir: Path
+    ) -> None:
+        """scope/direct ラベルあり → direct."""
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with (
+            patch.object(runner, "_git_current_branch", return_value="feat/some-branch"),
+            patch.object(runner, "_project_root", return_value=tmp_path),
+            patch.object(runner, "_detect_quick_label", return_value="false"),
+            patch.object(runner, "_detect_direct_label", return_value="true"),
+            patch.object(runner, "_write_state_field"),
+        ):
+            result = runner.step_init("338")
+        assert result["recommended_action"] == "direct"
+        assert result.get("deltaspec") is False

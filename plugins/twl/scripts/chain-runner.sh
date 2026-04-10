@@ -167,6 +167,18 @@ detect_quick_label() {
   fi
 }
 
+detect_direct_label() {
+  local issue_num="${1:-}"
+  [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]] || { echo "false"; return 0; }
+  local labels
+  labels=$(gh issue view "$issue_num" --json labels --jq '.labels[].name' 2>/dev/null || echo "")
+  if echo "$labels" | grep -qxF "scope/direct"; then
+    echo "true"
+  else
+    echo "false"
+  fi
+}
+
 # --- quick-guard: quick Issue 判定（exit 1 = quick, exit 0 = 非 quick）---
 # state 優先 → detect_quick_label() fallback
 # ブランチから Issue 番号が抽出できない場合は exit 0（保守的）
@@ -238,6 +250,8 @@ step_init() {
   branch="$(git branch --show-current 2>/dev/null || echo "detached")"
   local is_quick
   is_quick="$(detect_quick_label "$issue_num")"
+  local is_direct
+  is_direct="$(detect_direct_label "$issue_num")"
 
   # is_quick を state に永続化（state ファイルが存在する場合のみ）
   if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
@@ -251,10 +265,25 @@ step_init() {
     return 0
   fi
 
+  # quick or scope/direct ラベル → direct
+  if [[ "$is_quick" == "true" || "$is_direct" == "true" ]]; then
+    local reason
+    [[ "$is_quick" == "true" ]] && reason="quick" || reason="scope/direct label"
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"direct","branch":$branch,"deltaspec":false,"is_quick":$is_quick}'
+    ok "init" "recommended_action=direct ($reason, is_quick=$is_quick)"
+    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=direct" 2>/dev/null || true
+    fi
+    return 0
+  fi
+
   # deltaspec 判定
   if [[ ! -d "$root/deltaspec" ]]; then
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"direct","branch":$branch,"deltaspec":false,"is_quick":$is_quick}'
-    ok "init" "recommended_action=direct (no deltaspec, is_quick=$is_quick)"
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":false,"auto_init":true,"is_quick":$is_quick}'
+    ok "init" "recommended_action=propose (no deltaspec, auto_init=true, is_quick=$is_quick)"
+    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
+    fi
     return 0
   fi
 
@@ -263,6 +292,9 @@ step_init() {
   if [[ ! -d "$changes_dir" ]] || [[ -z "$(ls -A "$changes_dir" 2>/dev/null)" ]]; then
     jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_exists":false,"is_quick":$is_quick}'
     ok "init" "recommended_action=propose (no changes, is_quick=$is_quick)"
+    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
+    fi
     return 0
   fi
 
@@ -277,13 +309,22 @@ step_init() {
     if [[ -f "$yaml" ]] && grep -q 'status:.*approved' "$yaml" 2>/dev/null; then
       jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"apply","branch":$branch,"deltaspec":true,"change_id":$cid,"proposal_status":"approved","is_quick":$is_quick}'
       ok "init" "recommended_action=apply (change=$latest_change, approved, is_quick=$is_quick)"
+      if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+        python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=apply" 2>/dev/null || true
+      fi
     else
       jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_id":$cid,"proposal_status":"pending","is_quick":$is_quick}'
       ok "init" "recommended_action=propose (change=$latest_change, pending, is_quick=$is_quick)"
+      if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+        python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
+      fi
     fi
   else
     jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_exists":true,"is_quick":$is_quick}'
     ok "init" "recommended_action=propose (no proposal, is_quick=$is_quick)"
+    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
+    fi
   fi
 }
 
