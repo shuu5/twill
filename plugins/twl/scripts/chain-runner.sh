@@ -294,6 +294,34 @@ step_init() {
     return 0
   fi
 
+  # retroactive 検出: diff に実装コード（*.py/*.sh/*.ts/*.js/*.go/*.rs）が含まれないか確認
+  local impl_diff
+  impl_diff="$(git diff origin/main...HEAD --name-only 2>/dev/null | grep -E '\.(py|sh|ts|js|go|rs|rb|java|kt|swift)$' | wc -l | tr -d ' ')"
+  local total_diff
+  total_diff="$(git diff origin/main...HEAD --name-only 2>/dev/null | wc -l | tr -d ' ')"
+  # 実装コードがゼロかつ何らかの差分がある場合 → retroactive
+  if [[ "$impl_diff" == "0" && "$total_diff" -gt "0" ]]; then
+    # Issue body から Implemented-in: #<N> タグを検出
+    local impl_pr=""
+    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+      impl_pr="$(gh issue view "$issue_num" --json body --jq '.body' 2>/dev/null \
+        | grep -oE 'Implemented-in: #[0-9]+' | head -1 | grep -oE '[0-9]+$' || echo "")"
+    fi
+    # state に deltaspec_mode=retroactive を永続化
+    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "deltaspec_mode=retroactive" 2>/dev/null || true
+      if [[ -n "$impl_pr" ]]; then
+        python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "implementation_pr=$impl_pr" 2>/dev/null || true
+      fi
+    fi
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" --arg impl_pr "$impl_pr" \
+      '{"recommended_action":"retroactive_propose","branch":$branch,"deltaspec":true,"deltaspec_mode":"retroactive","implementation_pr":($impl_pr | if . == "" then null else tonumber end),"needs_implementation_pr":($impl_pr == ""),"is_quick":$is_quick}'
+    local retro_note="retroactive=true"
+    [[ -n "$impl_pr" ]] && retro_note="retroactive=true, implementation_pr=#${impl_pr}" || retro_note="retroactive=true, implementation_pr=不明（手動入力要）"
+    ok "init" "recommended_action=retroactive_propose (${retro_note})"
+    return 0
+  fi
+
   # 最新 change の proposal 状態
   local latest_change
   latest_change="$(ls -td "$changes_dir"/*/ 2>/dev/null | head -1 | xargs -r basename)"

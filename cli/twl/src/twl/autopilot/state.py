@@ -243,6 +243,8 @@ class StateManager:
             "files_changed": [],
             "failure": None,
             "workflow_done": None,
+            "implementation_pr": None,
+            "deltaspec_mode": None,
         }
         self._atomic_write(file, data)
         return f"OK: issue-{issue}.json を作成しました (status=running)"
