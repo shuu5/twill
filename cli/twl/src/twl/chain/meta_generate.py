@@ -6,6 +6,9 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 
+_VALID_WORKFLOW_DONE_RE = re.compile(r'^[a-zA-Z0-9_-]+$')
+
+
 def _normalize_for_check(text: str) -> str:
     """比較用にテキストを正規化する（trailing whitespace 除去 + LF 統一）。"""
     lines = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
@@ -65,7 +68,7 @@ def meta_chain_generate(deps: dict, meta_chain_name: str, plugin_root: Path) -> 
 
             if stop:
                 if 'autopilot' in condition and '!' not in condition:
-                    if workflow_done:
+                    if workflow_done and _VALID_WORKFLOW_DONE_RE.match(workflow_done):
                         # ADR-014: workflow_done state write + 停止
                         state_cmd = (
                             f'python3 -m twl.autopilot.state write '

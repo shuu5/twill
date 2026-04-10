@@ -74,11 +74,3 @@ eval "$(bash "$CR" autopilot-detect)"
 
 `refs/ref-compaction-recovery.md` を Read し従うこと。fix ループは LLM ステップのため issue-{N}.json の状態を確認してから再実行。fix-phase 完了済みなら post-fix-verify → warning-fix から再開。
 
-## 完了後の遷移（meta chain 定義から自動生成）
-
-```bash
-eval "$(bash "$CR" autopilot-detect)"
-```
-
-- IS_AUTOPILOT=true → ユーザーへ案内して停止
-- IS_AUTOPILOT=false → 「workflow-pr-fix 完了。次のステップ: /twl:workflow-pr-merge を実行してください」と案内

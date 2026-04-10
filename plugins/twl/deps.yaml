@@ -93,16 +93,7 @@ meta_chains:
           - condition: "!autopilot"
             stop: true
             message: "setup chain 完了。次: /twl:workflow-test-ready"
-      - id: quick-path
-        chain: null
-        description: "quick Issue の短縮パス（直接実装→PR→merge-gate）"
-        inline_steps:
-          - "直接実装 → commit → push"
-          - "PR 作成（pr-create-helper）"
-          - "ac-verify"
-          - "merge-gate"
-        next:
-          - goto: done
+
       - id: test-ready
         chain: test-ready
         skill: workflow-test-ready
@@ -136,8 +127,6 @@ meta_chains:
       - id: pr-merge
         chain: pr-merge
         skill: workflow-pr-merge
-        terminal: true
-      - id: done
         terminal: true
 
 # スキル（controller x4 + workflow x2）

@@ -86,11 +86,3 @@ eval "$(bash "$CR" autopilot-detect)"
 
 - phase-review, scope-judge, ac-verify は LLM ステップのため状態を確認してから再実行すること
 
-## 完了後の遷移（meta chain 定義から自動生成）
-
-```bash
-eval "$(bash "$CR" autopilot-detect)"
-```
-
-- IS_AUTOPILOT=true → ユーザーへ案内して停止
-- IS_AUTOPILOT=false → 「workflow-pr-verify 完了。次のステップ: /twl:workflow-pr-fix を実行してください」と案内
