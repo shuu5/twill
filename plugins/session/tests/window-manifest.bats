@@ -169,3 +169,88 @@ teardown() {
     run bash "$MANIFEST_LIB" tombstone
     [[ "$status" -ne 0 ]]
 }
+
+# ---------------------------------------------------------------------------
+# Issue #323: HOME ディレクトリ外パスの拒否
+# ---------------------------------------------------------------------------
+
+@test "security: WINDOW_MANIFEST_FILE outside \$HOME rejects with error on source" {
+    # Scenario: $HOME 外パス設定時のエラー
+    # WHEN: WINDOW_MANIFEST_FILE=/tmp/evil.json を設定した状態でスクリプトを source する
+    # THEN: stderr に「WINDOW_MANIFEST_FILE must be under $HOME」を含むエラーを出力し、exit ステータス 1 を返す
+    run bash -c "
+        export HOME='$HOME'
+        export WINDOW_MANIFEST_FILE='/tmp/evil.json'
+        source '$MANIFEST_LIB'
+        echo 'should not reach here'
+    "
+    [[ "$status" -ne 0 ]]
+    [[ "$output" == *"WINDOW_MANIFEST_FILE must be under \$HOME"* ]]
+}
+
+@test "security: WINDOW_MANIFEST_FILE under \$HOME sources without error" {
+    # Scenario: $HOME 配下パス設定時の正常動作
+    # WHEN: WINDOW_MANIFEST_FILE=$HOME/.local/share/twl/custom.json を設定した状態でスクリプトを source する
+    # THEN: エラーなく正常に source される
+    local custom_path="$SANDBOX/custom.json"
+    run bash -c "
+        export HOME='$HOME'
+        export WINDOW_MANIFEST_FILE='$custom_path'
+        source '$MANIFEST_LIB'
+        echo 'sourced_ok'
+    "
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == *"sourced_ok"* ]]
+}
+
+# ---------------------------------------------------------------------------
+# Issue #323: シンボリックリンクファイルの拒否
+# ---------------------------------------------------------------------------
+
+@test "security: manifest_append_entry rejects symlink lockfile" {
+    # Scenario: symlink lockfile でのエントリ追加拒否
+    # WHEN: lockfile パスがシンボリックリンクの状態で manifest_append_entry() を呼び出す
+    # THEN: stderr に「lockfile is a symlink」を含むエラーを出力し、return 1 する
+    source "$MANIFEST_LIB"
+
+    # lockfile パスにシンボリックリンクを作成
+    local lockfile_path="${WINDOW_MANIFEST_FILE}.lock"
+    local symlink_target="$SANDBOX/symlink_target.lock"
+    touch "$symlink_target"
+    ln -s "$symlink_target" "$lockfile_path"
+
+    run bash -c "
+        export WINDOW_MANIFEST_FILE='$WINDOW_MANIFEST_FILE'
+        source '$MANIFEST_LIB'
+        manifest_append_entry 'wt-twill-feat-323-a1b2c3d4' 'main' 1 \
+            '/home/user/projects/twill' '/home/user/projects/twill' 'wt' 2>&1
+        echo \"exit:\$?\"
+    "
+    [[ "$output" == *"lockfile is a symlink"* ]]
+}
+
+@test "security: manifest_tombstone_entry rejects symlink lockfile" {
+    # Scenario: symlink lockfile でのトゥームストーン拒否
+    # WHEN: lockfile パスがシンボリックリンクの状態で manifest_tombstone_entry() を呼び出す
+    # THEN: stderr に「lockfile is a symlink」を含むエラーを出力し、return 1 する
+    source "$MANIFEST_LIB"
+
+    # まず正常にエントリを作成
+    manifest_append_entry "wt-twill-feat-323-a1b2c3d4" "main" 1 \
+        "/home/user/projects/twill" "/home/user/projects/twill" "wt"
+
+    # lockfile パスにシンボリックリンクを作成（既存lockfileを削除してシンボリックリンクに置換）
+    local lockfile_path="${WINDOW_MANIFEST_FILE}.lock"
+    rm -f "$lockfile_path"
+    local symlink_target="$SANDBOX/symlink_target2.lock"
+    touch "$symlink_target"
+    ln -s "$symlink_target" "$lockfile_path"
+
+    run bash -c "
+        export WINDOW_MANIFEST_FILE='$WINDOW_MANIFEST_FILE'
+        source '$MANIFEST_LIB'
+        manifest_tombstone_entry 'wt-twill-feat-323-a1b2c3d4' 2>&1
+        echo \"exit:\$?\"
+    "
+    [[ "$output" == *"lockfile is a symlink"* ]]
+}
