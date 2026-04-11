@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 # observation-references.bats - structural validation of co-self-improve data catalog references
 #
-# 9 test cases for #179 reference catalogs
+# 27 test cases for #179 reference catalogs (Case 5+6 added in #483)
 
 setup() {
   # Resolve REPO_ROOT to plugins/twl/
@@ -294,4 +294,5 @@ setup() {
   grep -q 'bug_target: null' "$file"
   grep -q 'issues_count: 3' "$file"
   grep -q 'expected_conflicts: 0' "$file"
+  grep -q 'expected_duration_max: 60' "$file"
 }

@@ -22,7 +22,7 @@ co-self-improve framework のテストプロジェクト (test-target/main workt
   expected_conflicts: <件数>
   expected_pr_count: <件数>
   observer_polling_interval: <秒>
-  bug_target: <Bug Issue 番号 | null>  # bug level 専用。汎用シナリオは null、bug 再現シナリオは対象 Bug Issue 番号
+  bug_target: <Bug Issue 番号 | null>  # bug level 専用（optional）。smoke/regression/load シナリオでは省略可。bug 再現シナリオは対象 Bug Issue 番号、複合シナリオは null
   issue_templates:
     - title: <タイトル>
       body: <body, multi-line>

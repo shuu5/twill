@@ -119,7 +119,7 @@ bug-phase-review-skip:
 bug-469-chain-end:
   regex: 'non_terminal_chain_end|chain.*end.*non.terminal|WorkflowTransitionError'
   severity: error
-  category: chain-transition-stall
+  category: non-terminal-chain-end
   description: "Worker 完了後の non_terminal_chain_end による workflow-pr-verify 遷移停止検出 (#469 関連)"
   related_issue: "469"
 
