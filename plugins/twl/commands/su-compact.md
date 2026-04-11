@@ -6,8 +6,10 @@ maxTurns: 15
 ---
 # su-compact（知識外部化 + compaction 制御）
 
-ユーザーが明示的に知識外部化 + compaction を実行するための統合コマンド。
-Long-term Memory を Memory MCP に保存し、Working Memory を `.supervisor/working-memory.md` に退避してから `/compact` を実行する。
+ユーザーが明示的に知識外部化を実行するための統合コマンド。
+Long-term Memory を Memory MCP に保存し、Working Memory を `.supervisor/working-memory.md` に退避した後、**ユーザーへ `/compact` 手動実行を提案**する。
+
+> **重要**: `/compact` は Claude Code の built-in CLI コマンドであり、skill/tool からの自動起動は不可能。本 skill は Step 3 まで自動実行し、Step 4 で **ユーザーへの指示出力のみ** 行う。
 
 ## 引数
 
@@ -82,22 +84,23 @@ TIMESTAMP=$(date +"%Y-%m-%d %H:%M")
 - `wave` モード → `--trigger wave_complete`
 - `full` モード → `--trigger manual`
 
-### Step 4: compaction 実行
+### Step 4: compaction 提案（ユーザー手動実行）
 
-保存完了をユーザーに確認する:
+保存完了をユーザーに報告し、`/compact` 手動実行を提案する:
 ```
 ✓ Long-term Memory 保存完了
 ✓ Working Memory 退避完了（.supervisor/working-memory.md）
->>> /compact を実行します
+>>> `/compact` を手動で実行してください（built-in CLI のため自動起動不可）
 ```
 
-`/compact` を実行する。
+**ユーザーが `/compact` を即実行しない場合**: skill は待機せず終了する。外部化だけで Wave 遷移を継続できるよう設計されている（SU-6a は externalize のみを MUST とする）。
 
 ## 禁止事項（MUST NOT）
 
 - Memory MCP エラーで全体を停止してはならない（警告のみ）
 - externalize-state が存在しない場合にエラーを出力してはならない
-- compaction 前の保存が未完了の状態で `/compact` を実行してはならない
+- `/compact` の自動実行を試みてはならない（built-in CLI のため skill/tool から起動不可）
+- 外部化が未完了の状態で処理を完了したと報告してはならない
 
 ## 参照
 

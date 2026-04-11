@@ -97,14 +97,15 @@ Issue 群の一括実装（Wave）を要求された場合:
 5. Wave 完了を検知したら:
    - `commands/wave-collect.md` を Read → 実行（`WAVE_NUM=<N>`）
    - `commands/externalize-state.md` を Read → 実行（`--trigger wave_complete`）
-   - SU-6 制約: `Skill(twl:su-compact)` を呼び出して知識外部化 + compaction を実行
-6. 次 Wave があれば 1 に戻る。全 Wave 完了時はサマリをユーザーに報告
+   - **SU-6a 制約 (MUST)**: Memory MCP への Wave 完了サマリ保存 + `.supervisor/working-memory.md` への退避を実行する（skill 自動実行可）
+   - **SU-6b 制約 (SHOULD)**: context 消費量 80% 以上、またはユーザー指示時に **compact をユーザーへ提案**する（`/compact` は built-in CLI のため skill から自動実行不可）
+6. 次 Wave があれば 1 に戻る（compact を待たずに進行可）。全 Wave 完了時はサマリをユーザーに報告
 
 ### compaction が必要な場合
 
-「compact」「外部化」「記憶整理」等の指示、または context 消費量 50% 到達（SU-5）:
+「compact」「外部化」「記憶整理」等の指示、または context 消費量 80% 到達（SU-5）:
 
-`Skill(twl:su-compact)` を呼び出して知識外部化 + compaction を実行する。
+`Skill(twl:su-compact)` を呼び出して知識外部化を実行し、最後にユーザーへ `/compact` 手動実行を提案する。`/compact` は Claude Code の built-in CLI コマンドであり、skill/tool から自動起動できない（ユーザー手動実行が必須）。
 
 | ユーザー指示 | 動作 |
 |---|---|
@@ -137,8 +138,9 @@ Issue 群の一括実装（Wave）を要求された場合:
 | SU-2 | Layer 2（Escalate）の介入はユーザー確認が MUST |
 | SU-3 | Supervisor 自身が Issue の直接実装を行ってはならない（SHALL） |
 | SU-4 | 同時に supervise できる controller session は 5 を超えてはならない（SHALL） |
-| SU-5 | context 消費量 50% 到達時に知識外部化を開始しなければならない（SHALL） |
-| SU-6 | Wave 完了時に結果収集と su-compact を実行しなければならない（SHALL） |
+| SU-5 | context 消費量 80% 到達時に知識外部化を開始しなければならない（SHALL） |
+| SU-6a | Wave 完了時に結果収集と externalize-state（Memory MCP 保存 + working-memory.md 退避）を実行しなければならない（SHALL） |
+| SU-6b | context 消費量が逼迫している、またはユーザー指示時に `/compact` 実行をユーザーへ提案しなければならない（SHOULD）。`/compact` は Claude Code の built-in CLI でありユーザー手動実行が必須のため、自動実行を要求してはならない |
 | SU-7 | observed session への inject/send-keys は介入プロトコルに従う場合に許可（MAY） |
 
 ## 禁止事項（MUST NOT）
@@ -148,6 +150,7 @@ Issue 群の一括実装（Wave）を要求された場合:
 - Skill tool による controller の直接呼出しをしてはならない（cld-spawn 経由で起動すること）
 - Layer 2 介入をユーザー確認なしで実行してはならない（SU-2）
 - 同時に 5 を超える controller session を supervise してはならない（SU-4）
-- context 50% 到達を無視してはならない（SU-5）
-- Wave 完了後の su-compact を省略してはならない（SU-6）
+- context 80% 到達を無視してはならない（SU-5）
+- Wave 完了後の externalize-state（Memory MCP 保存 + working-memory.md 退避）を省略してはならない（SU-6a）
+- `/compact` の自動実行を試みてはならない（built-in CLI のため skill/tool から起動不可、ユーザー手動実行が必須）
 - 検出結果をユーザー確認なしで自動 Issue 起票してはならない
