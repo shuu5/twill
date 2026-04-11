@@ -388,6 +388,12 @@ step_worktree_create() {
     return 0
   fi
   python3 -m twl.autopilot.worktree create "$@"
+  # AC-3: post-create refspec 自動設定（重複防止のため --replace-all を使用）
+  local new_branch
+  new_branch="$(git branch --show-current 2>/dev/null || echo "")"
+  if [[ -n "$new_branch" && "$new_branch" != "main" && "$new_branch" != "master" ]]; then
+    git config --replace-all remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*' 2>/dev/null || true
+  fi
   ok "worktree-create" "完了"
 }
 
