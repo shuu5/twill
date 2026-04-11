@@ -184,14 +184,20 @@ print(str(d.get('is_quick_candidate', False)).lower())
   {
     printf '#!/usr/bin/env bash\n'
     printf 'set -euo pipefail\n'
+    # EXIT trap: cld 失敗時も含め確実にテンポラリファイルを削除（WARNING #1 対応）
+    printf "trap 'rm -f %q %q' EXIT\n" "$prompt_file" "$wrapper_file"
     printf 'PROMPT_CONTENT="$(cat %q)"\n' "$prompt_file"
     printf '%q --model sonnet "$PROMPT_CONTENT" > %q 2>&1\n' "$CLD_PATH" "$result_file"
-    printf 'rm -f %q %q\n' "$prompt_file" "$wrapper_file"
   } > "$wrapper_file"
   chmod +x "$wrapper_file"
 
-  echo "[spec-review-orchestrator] Issue #${issue_num}: spawn (window=${wrapper_file##*/}, name=${window_name})" >&2
-  tmux new-window -d -n "$window_name" "bash $(printf '%q' "$wrapper_file")"
+  echo "[spec-review-orchestrator] Issue #${issue_num}: spawn (window=${window_name})" >&2
+  # tmux 起動失敗時はテンポラリファイルをクリーンアップ（WARNING #2 対応）
+  tmux new-window -d -n "$window_name" "bash $(printf '%q' "$wrapper_file")" || {
+    rm -f "$prompt_file" "$wrapper_file" 2>/dev/null || true
+    echo "[spec-review-orchestrator] Issue #${issue_num}: tmux spawn 失敗" >&2
+    return 1
+  }
 
   # remain-on-exit: ポーリング後の確認に使用
   tmux set-option -t "$window_name" remain-on-exit on 2>/dev/null || true
