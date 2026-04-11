@@ -561,10 +561,7 @@ SCRIPT_EOF
   [ -f "$bats_file" ]
 
   # test-project-init 呼び出し行に --mode local が存在するか確認
-  # (現時点では未実装のため skip)
-  # 実装後は以下を有効化:
-  # grep -q -- '--mode local' "$bats_file"
-  skip "co-self-improve-smoke.bats への --mode local 明示は実装待ち (Issue #479)"
+  grep -q -- '--mode local' "$bats_file"
 }
 
 @test "bats-mode-local: co-self-improve-regression.bats に --mode local が明示されている" {
@@ -572,5 +569,5 @@ SCRIPT_EOF
   bats_file="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/../../bats/e2e/co-self-improve-regression.bats"
   [ -f "$bats_file" ]
 
-  skip "co-self-improve-regression.bats への --mode local 明示は実装待ち (Issue #479)"
+  grep -q -- '--mode local' "$bats_file"
 }

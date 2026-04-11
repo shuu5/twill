@@ -42,6 +42,14 @@ if [[ "$MODE" == "real-issues" && -z "$REPO" ]]; then
   echo "Error: --mode real-issues requires --repo <owner>/<name>" >&2
   exit 1
 fi
+
+# --repo フォーマット検証（コマンドインジェクション防止）
+if [[ -n "$REPO" ]]; then
+  if ! [[ "$REPO" =~ ^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$ ]]; then
+    echo "Error: --repo の値が不正です。'<owner>/<name>' 形式で英数字・ハイフン・アンダースコア・ドットのみ使用できます。" >&2
+    exit 1
+  fi
+fi
 ```
 
 ### Step 1: プロジェクトルート解決
@@ -102,20 +110,20 @@ fi
 
 ```bash
 OWNER="${REPO%%/*}"
-REPO_NAME="${REPO##*/}"
 
-if ! gh repo create "$REPO" --private --no-readme 2>&1; then
-  EXIT_CODE=$?
-  # エラー種別判定
-  ERROR_MSG=$(gh repo create "$REPO" --private --no-readme 2>&1 || true)
-  if echo "$ERROR_MSG" | grep -qi "already exists\|name already"; then
+# 1回の実行で stderr をキャプチャしてエラー種別判定
+CREATE_ERR=$(gh repo create "$REPO" --private --no-readme 2>&1 1>/dev/null) && CREATE_OK=true || CREATE_OK=false
+
+if [[ "$CREATE_OK" != "true" ]]; then
+  # エラー種別判定（生メッセージは表示しない）
+  if echo "$CREATE_ERR" | grep -qi "already exists\|name already"; then
     echo "Error: リポ '$REPO' は既に存在します（名前衝突）。別の名前を指定してください。" >&2
-  elif echo "$ERROR_MSG" | grep -qi "rate limit\|too many requests"; then
+  elif echo "$CREATE_ERR" | grep -qi "rate limit\|too many requests"; then
     echo "Error: GitHub API rate limit に達しました。しばらく待ってから再試行してください。" >&2
-  elif echo "$ERROR_MSG" | grep -qi "permission\|forbidden\|unauthorized"; then
+  elif echo "$CREATE_ERR" | grep -qi "permission\|forbidden\|unauthorized"; then
     echo "Error: リポ '$REPO' を作成する権限がありません（owner: $OWNER）。" >&2
   else
-    echo "Error: リポ '$REPO' の作成に失敗しました。$ERROR_MSG" >&2
+    echo "Error: リポ '$REPO' の作成に失敗しました。詳細はシステムログを確認してください。" >&2
   fi
   exit 1
 fi
@@ -182,25 +190,23 @@ INIT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 WORKTREE_PATH="$BARE_ROOT/worktrees/test-target"
 
 if [[ "$MODE" == "real-issues" ]]; then
-  cat > "$WORKTREE_PATH/.test-target/config.json" <<EOF
-{
-  "mode": "real-issues",
-  "repo": "$REPO",
-  "initialized_at": "$INIT_TIME",
-  "worktree_path": "$WORKTREE_PATH",
-  "branch": "test-target/main"
-}
-EOF
+  # jq --arg でパラメータ化してJSONインジェクションを防止
+  jq -n \
+    --arg mode "real-issues" \
+    --arg repo "$REPO" \
+    --arg initialized_at "$INIT_TIME" \
+    --arg worktree_path "$WORKTREE_PATH" \
+    --arg branch "test-target/main" \
+    '{"mode": $mode, "repo": $repo, "initialized_at": $initialized_at, "worktree_path": $worktree_path, "branch": $branch}' \
+    > "$WORKTREE_PATH/.test-target/config.json"
 else
-  cat > "$WORKTREE_PATH/.test-target/config.json" <<EOF
-{
-  "mode": "local",
-  "repo": null,
-  "initialized_at": "$INIT_TIME",
-  "worktree_path": "$WORKTREE_PATH",
-  "branch": "test-target/main"
-}
-EOF
+  jq -n \
+    --arg mode "local" \
+    --arg initialized_at "$INIT_TIME" \
+    --arg worktree_path "$WORKTREE_PATH" \
+    --arg branch "test-target/main" \
+    '{"mode": $mode, "repo": null, "initialized_at": $initialized_at, "worktree_path": $worktree_path, "branch": $branch}' \
+    > "$WORKTREE_PATH/.test-target/config.json"
 fi
 
 cd "$WORKTREE_PATH"
