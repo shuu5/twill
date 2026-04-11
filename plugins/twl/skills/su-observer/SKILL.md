@@ -114,7 +114,7 @@ session-comm.sh   # inject/介入（plugins/session/scripts/session-comm.sh）
 
 1. 検出チャネル名（`[INPUT-WAIT]` / `[PILOT-IDLE]` / `[STAGNATE]` 等）を `refs/monitor-channel-catalog.md` の定義と突き合わせてパターンを特定する
 2. `refs/intervention-catalog.md` を Read → 3 層分類（Auto/Confirm/Escalate）を照合
-2. 層に応じた介入を実行:
+3. 層に応じた介入を実行:
    - Layer 0 Auto → `commands/intervene-auto.md` を Read → `session-comm.sh` で介入実行（SU-7）
    - Layer 1 Confirm → `commands/intervene-confirm.md` を Read → ユーザーに確認後実行
    - Layer 2 Escalate → `commands/intervene-escalate.md` を Read → SU-2: ユーザー確認必須

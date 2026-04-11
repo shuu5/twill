@@ -158,13 +158,18 @@ check_workers() {
     local prev_workers
     prev_workers=$(cat "$snapshot_file")
     
-    local new_workers
-    new_workers=$(comm -13 <(echo "$prev_workers") <(echo "$current_workers"))
-    local gone_workers
-    gone_workers=$(comm -23 <(echo "$prev_workers") <(echo "$current_workers"))
-    
-    [[ -n "$new_workers" ]] && echo "[WORKERS] 新規 worker: $new_workers"
-    [[ -n "$gone_workers" ]] && echo "[WORKERS] 消失 worker: $gone_workers"
+    # prev_workers が空の場合は新規 worker のみ報告（空行が comm に渡ることを防止）
+    if [[ -z "$prev_workers" ]]; then
+      [[ -n "$current_workers" ]] && echo "[WORKERS] 新規 worker: $current_workers"
+    else
+      local new_workers
+      new_workers=$(comm -13 <(printf '%s\n' "$prev_workers") <(printf '%s\n' "$current_workers"))
+      local gone_workers
+      gone_workers=$(comm -23 <(printf '%s\n' "$prev_workers") <(printf '%s\n' "$current_workers"))
+      
+      [[ -n "$new_workers" ]] && echo "[WORKERS] 新規 worker: $new_workers"
+      [[ -n "$gone_workers" ]] && echo "[WORKERS] 消失 worker: $gone_workers"
+    fi
   fi
   
   echo "$current_workers" > "$snapshot_file"

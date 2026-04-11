@@ -831,14 +831,21 @@ inject_next_workflow() {
   fi
 
   # --- tmux pane 入力待ち確認（最大3回、2秒間隔） ---
-  # 注: bash の [[ =~ ]] で > を文字クラス内に直接記述するとシンタックスエラーになるため変数経由で渡す
-  local _prompt_re='[>$][[:space:]]*$'
+  # #522: Claude Code は Unicode prompt `❯` を使い、最終行に status bar が来ることがある。
+  # bash regex の文字クラスに `>` を直接書くとシンタックスエラーになるため変数経由で渡す。
+  # 末尾 6 行を走査することで status bar 行を skip して prompt 行を発見する。
+  local _prompt_re='[>$❯][[:space:]]*$'
   local prompt_found=0
   local pane_tail
   for _i in 1 2 3; do
-    pane_tail=$(tmux capture-pane -t "$window_name" -p 2>/dev/null | tail -1 || true)
-    if [[ "$pane_tail" =~ $_prompt_re ]]; then
-      prompt_found=1
+    pane_tail=$(tmux capture-pane -t "$window_name" -p 2>/dev/null | tail -6 || true)
+    while IFS= read -r _line; do
+      if [[ "$_line" =~ $_prompt_re ]]; then
+        prompt_found=1
+        break
+      fi
+    done <<< "$pane_tail"
+    if [[ "$prompt_found" -eq 1 ]]; then
       break
     fi
     sleep 2
