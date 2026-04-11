@@ -134,39 +134,64 @@ spawn_session() {
   # 既存ウィンドウがあれば kill
   tmux kill-window -t "$window_name" 2>/dev/null || true
 
-  # Issue データ読み込み（JSON から各フィールド取得）
+  # Issue データ読み込み（環境変数経由で安全に渡す — インライン展開によるインジェクション防止）
   local issue_body scope_files related_issues is_quick
-  issue_body="$(python3 -c "import json,sys; d=json.load(open('$issue_file')); print(d.get('body',''))" 2>/dev/null || echo "")"
-  scope_files="$(python3 -c "import json,sys; d=json.load(open('$issue_file')); print('\n'.join(d.get('scope_files',[])))" 2>/dev/null || echo "")"
-  related_issues="$(python3 -c "import json,sys; d=json.load(open('$issue_file')); print('\n'.join(str(x) for x in d.get('related_issues',[])))" 2>/dev/null || echo "")"
-  is_quick="$(python3 -c "import json,sys; d=json.load(open('$issue_file')); print(str(d.get('is_quick_candidate',False)).lower())" 2>/dev/null || echo "false")"
+  issue_body="$(ISSUE_FILE="$issue_file" python3 -c "
+import json, os
+d = json.load(open(os.environ['ISSUE_FILE']))
+print(d.get('body', ''))
+" 2>/dev/null || echo "")"
+  scope_files="$(ISSUE_FILE="$issue_file" python3 -c "
+import json, os
+d = json.load(open(os.environ['ISSUE_FILE']))
+print('\n'.join(d.get('scope_files', [])))
+" 2>/dev/null || echo "")"
+  related_issues="$(ISSUE_FILE="$issue_file" python3 -c "
+import json, os
+d = json.load(open(os.environ['ISSUE_FILE']))
+print('\n'.join(str(x) for x in d.get('related_issues', [])))
+" 2>/dev/null || echo "")"
+  is_quick="$(ISSUE_FILE="$issue_file" python3 -c "
+import json, os
+d = json.load(open(os.environ['ISSUE_FILE']))
+print(str(d.get('is_quick_candidate', False)).lower())
+" 2>/dev/null || echo "false")"
 
-  # プロンプト組み立て: issue-spec-review を呼び出し結果をファイルに書き出すよう指示
-  local prompt
-  prompt="$(cat <<PROMPT
-Issue #${issue_num} の spec-review を実行してください。
+  # プロンプトをテンポラリファイルに書き出す
+  # - tmux に文字列として渡す際の POSIX sh 非互換問題を回避
+  # - printf '%q' の bash 固有エスケープ ($'...') が sh で誤動作するリスクを排除
+  local prompt_file
+  prompt_file="$(mktemp /tmp/.spec-review-prompt-XXXXXX.txt)"
+  # ISSUE_FILE 書き込み（変数値をそのまま書き出し、シェル展開なし）
+  printf '%s\n' "Issue #${issue_num} の spec-review を実行してください。" > "$prompt_file"
+  printf '\n' >> "$prompt_file"
+  printf '%s\n' "入力データ:" >> "$prompt_file"
+  printf '- issue_body: %s\n' "$issue_body" >> "$prompt_file"
+  printf '- scope_files: %s\n' "$scope_files" >> "$prompt_file"
+  printf '- related_issues: %s\n' "$related_issues" >> "$prompt_file"
+  printf '- is_quick_candidate: %s\n' "$is_quick" >> "$prompt_file"
+  printf '\n' >> "$prompt_file"
+  printf '%s\n' "/twl:issue-spec-review を実行し、全 specialist の結果が揃ったら以下のファイルに結果を書き出して完了してください:" >> "$prompt_file"
+  printf '%s\n' "$result_file" >> "$prompt_file"
+  printf '\n' >> "$prompt_file"
+  printf '%s\n' "書き出す内容: specialist_results の全文（JSON または Markdown 形式）" >> "$prompt_file"
 
-入力データ:
-- issue_body: $(printf '%s' "$issue_body")
-- scope_files: $(printf '%s' "$scope_files")
-- related_issues: $(printf '%s' "$related_issues")
-- is_quick_candidate: ${is_quick}
+  # ラッパースクリプトを作成して tmux に渡す
+  # - printf '%q' によるエスケープをファイルへの書き出しに使用（tmux 引数には使用しない）
+  # - tmux には "bash /path/to/wrapper.sh" のみ渡す（POSIX sh 非互換回避、CRITICAL #3 対応）
+  local wrapper_file
+  wrapper_file="$(mktemp /tmp/.spec-review-wrapper-XXXXXX.sh)"
+  {
+    printf '#!/usr/bin/env bash\n'
+    printf 'set -euo pipefail\n'
+    printf 'PROMPT_CONTENT="$(cat %q)"\n' "$prompt_file"
+    printf '%q --model sonnet "$PROMPT_CONTENT" > %q 2>&1\n' "$CLD_PATH" "$result_file"
+    printf 'rm -f %q %q\n' "$prompt_file" "$wrapper_file"
+  } > "$wrapper_file"
+  chmod +x "$wrapper_file"
 
-/twl:issue-spec-review を実行し、全 specialist の結果が揃ったら以下のファイルに結果を書き出して完了してください:
-${result_file}
-
-書き出す内容: specialist_results の全文（JSON または Markdown 形式）
-PROMPT
-)"
-
-  local QUOTED_CLD QUOTED_PROMPT
-  QUOTED_CLD="$(printf '%q' "$CLD_PATH")"
-  QUOTED_PROMPT="$(printf '%q' "$prompt")"
-
-  echo "[spec-review-orchestrator] Issue #${issue_num}: spawn (window=${window_name})" >&2
-  # shellcheck disable=SC2086
-  tmux new-window -d -n "$window_name" \
-    "env $QUOTED_CLD --model sonnet $QUOTED_PROMPT"
+  echo "[spec-review-orchestrator] Issue #${issue_num}: spawn (window=${wrapper_file##*/}, name=${window_name})" >&2
+  tmux new-window -d -n "$window_name" "bash $(printf '%q' "$wrapper_file")"
 
   # remain-on-exit: ポーリング後の確認に使用
   tmux set-option -t "$window_name" remain-on-exit on 2>/dev/null || true
