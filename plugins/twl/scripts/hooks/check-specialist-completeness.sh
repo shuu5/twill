@@ -84,14 +84,15 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
       HASH=$(printf '%s' "${CLAUDE_PROJECT_ROOT:-$PWD}" | cksum | awk '{print $1}')
       SESSION_STATE="/tmp/.spec-review-session-${HASH}.json"
       SESSION_LOCK="/tmp/.spec-review-session-${HASH}.lock"
-      if [[ -f "$SESSION_STATE" && ! -L "$SESSION_STATE" ]]; then
+      # SESSION_LOCK の symlink チェック（flock 前に実施 — symlink following 対策）
+      if [[ -L "$SESSION_LOCK" ]]; then
+        printf '⚠ spec-review session: SESSION_LOCK が symlink — インクリメントをスキップ [context: %s]\n' "$CONTEXT"
+      elif [[ -f "$SESSION_STATE" && ! -L "$SESSION_STATE" ]]; then
         # flock 失敗時はサイレントスキップではなく警告を出す（カウント消失防止）
         {
           if ! flock -w 5 8; then
             printf '⚠ spec-review session: flock 取得失敗（タイムアウト）— completed インクリメントをスキップ [context: %s]\n' "$CONTEXT"
           else
-            # .tmp ファイルが残留しないよう trap でクリーンアップ
-            # (サブシェル内なので trap はこの flock ブロックのみに影響)
             # SESSION_STATE の symlink 再チェック（flock 取得後）
             if [[ -L "$SESSION_STATE" ]]; then
               printf '⚠ spec-review session: STATE_FILE が symlink — インクリメントをスキップ [context: %s]\n' "$CONTEXT"
@@ -110,6 +111,8 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
             fi
           fi
         } 8>"$SESSION_LOCK"
+        # SESSION_LOCK クリーンアップ（flock 解放後）
+        rm -f "$SESSION_LOCK"
       fi
     fi
     # Clean up manifest and spawned tracking files

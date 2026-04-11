@@ -50,4 +50,7 @@ fi
   printf '{"total":%d,"completed":0,"issues":{}}\n' "$TOTAL" > "$STATE_FILE"
 } 9>"$LOCK_FILE"
 
+# LOCK_FILE クリーンアップ（flock 解放後）
+rm -f "$LOCK_FILE"
+
 echo "✓ spec-review session initialized: total=${TOTAL}, state=${STATE_FILE}"
