@@ -63,10 +63,30 @@ fi
 
 ```bash
 AC_VERIFY_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step ac-verify --field findings 2>/dev/null || echo "[]")
-COMBINED_FINDINGS=$(jq -s 'add' <(echo "$FINDINGS") <(echo "$AC_VERIFY_FINDINGS"))
+PHASE_REVIEW_STATUS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field status 2>/dev/null || echo "MISSING")
+PHASE_REVIEW_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field findings 2>/dev/null || echo "[]")
+COMBINED_FINDINGS=$(jq -s 'add' <(echo "$FINDINGS") <(echo "$AC_VERIFY_FINDINGS") <(echo "$PHASE_REVIEW_FINDINGS"))
 ```
 
 all-pass-check checkpoint も同形式で読み込む。ac-verify checkpoint 不在時は WARN を出して継続（autopilot 配下では異常ケース）。
+
+### phase-review checkpoint 必須チェック（MUST）
+
+phase-review checkpoint は merge-gate の必須ゲートである（defense-in-depth、Issue #439）。
+
+```bash
+ISSUE_NUM=$(source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo "")
+ISSUE_LABELS=$(gh issue view "$ISSUE_NUM" --json labels -q '[.labels[].name]' 2>/dev/null || echo "[]")
+SKIP_PHASE_REVIEW=false
+for label in $(echo "$ISSUE_LABELS" | jq -r '.[]'); do
+  [[ "$label" == "scope/direct" || "$label" == "quick" ]] && SKIP_PHASE_REVIEW=true && break
+done
+```
+
+- `SKIP_PHASE_REVIEW=false` かつ `PHASE_REVIEW_STATUS == "MISSING"` の場合:
+  - `--force` フラグなし → **REJECT**: 「phase-review checkpoint が不在です。specialist review を実行してください」
+  - `--force` フラグあり → **WARNING** ログ記録して継続: 「WARNING: phase-review checkpoint が不在です（--force により続行）」
+- `SKIP_PHASE_REVIEW=true` の場合: phase-review チェックをスキップ（`scope/direct` / `quick` ラベル付き Issue は軽微変更のため除外）
 
 ### severity フィルタ判定（機械的のみ）
 
@@ -75,6 +95,8 @@ BLOCKING = COMBINED_FINDINGS WHERE severity == "CRITICAL" AND confidence >= 80
 PASS  ⇔ BLOCKING == 0
 REJECT ⇔ BLOCKING >= 1
 ```
+
+phase-review の CRITICAL findings (confidence >= 80) も COMBINED_FINDINGS に含まれるため、自動統合される。
 
 ### PASS / REJECT 時の状態遷移
 
