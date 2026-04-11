@@ -1,0 +1,120 @@
+change_id: issue-469
+generated_at: "2026-04-11T00:00:00Z"
+test_framework: pytest
+scenarios:
+  - id: "resolve-next-workflow-module--test-ready"
+    name: "workflow_done=test-ready の場合に次 skill を返す"
+    spec_file: "specs/resolve-next-workflow-module/spec.md"
+    spec_line: 9
+    requirement: "resolve_next_workflow モジュール"
+    test_file: "cli/twl/tests/autopilot/test_nonterminal_chain_recovery.py"
+    test_name: "TestResolveNextWorkflowModule::test_workflow_done_test_ready_returns_pr_verify"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-next-workflow-module--null"
+    name: "workflow_done=null の場合に失敗する"
+    spec_file: "specs/resolve-next-workflow-module/spec.md"
+    spec_line: 13
+    requirement: "resolve_next_workflow モジュール"
+    test_file: "cli/twl/tests/autopilot/test_nonterminal_chain_recovery.py"
+    test_name: "TestResolveNextWorkflowModule::test_workflow_done_null_returns_nonzero_exit_empty_stdout"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-next-workflow-module--setup"
+    name: "workflow_done=setup の場合に次 skill を返す"
+    spec_file: "specs/resolve-next-workflow-module/spec.md"
+    spec_line: 17
+    requirement: "resolve_next_workflow モジュール"
+    test_file: "cli/twl/tests/autopilot/test_nonterminal_chain_recovery.py"
+    test_name: "TestResolveNextWorkflowModule::test_workflow_done_setup_returns_workflow_test_ready"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "orchestrator-completion-fallback--pattern-detect"
+    name: "実装完了パターン検知時に workflow_done を書き inject する"
+    spec_file: "specs/orchestrator-completion-fallback/spec.md"
+    spec_line: 7
+    requirement: "orchestrator 実装完了パターン検知 fallback"
+    test_file: "cli/twl/tests/autopilot/test_nonterminal_chain_recovery.py"
+    test_name: "TestNudgeCommandForPattern::test_completion_pattern_triggers_state_write_workflow_done_test_ready"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "orchestrator-completion-fallback--existing-pattern"
+    name: "既存パターンへの影響なし"
+    spec_file: "specs/orchestrator-completion-fallback/spec.md"
+    spec_line: 12
+    requirement: "orchestrator 実装完了パターン検知 fallback"
+    test_file: "cli/twl/tests/autopilot/test_nonterminal_chain_recovery.py"
+    test_name: "TestNudgeCommandForPattern::test_setup_chain_kanryo_pattern_is_unaffected"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "orchestrator-stagnate--resolve-failed-warn"
+    name: "連続 RESOLVE_FAILED で WARN を出力する"
+    spec_file: "specs/orchestrator-completion-fallback/spec.md"
+    spec_line: 19
+    requirement: "stagnate 閾値の環境変数一元化"
+    test_file: "cli/twl/tests/autopilot/test_nonterminal_chain_recovery.py"
+    test_name: "TestStagnateThreshold::test_stagnate_threshold_calculation"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "e2e-recovery--resolve-fail-null"
+    name: "workflow_done 未書き込み時の resolve 失敗確認"
+    spec_file: "specs/e2e-recovery-test/spec.md"
+    spec_line: 7
+    requirement: "orchestrator recovery E2E テスト"
+    test_file: "cli/twl/tests/autopilot/test_nonterminal_chain_recovery.py"
+    test_name: "TestOrchestratorRecoveryE2E::test_resolve_fails_when_workflow_done_not_written"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "e2e-recovery--resolve-success-after-write"
+    name: "workflow_done 書き込み後の resolve 成功確認"
+    spec_file: "specs/e2e-recovery-test/spec.md"
+    spec_line: 11
+    requirement: "orchestrator recovery E2E テスト"
+    test_file: "cli/twl/tests/autopilot/test_nonterminal_chain_recovery.py"
+    test_name: "TestOrchestratorRecoveryE2E::test_resolve_succeeds_after_workflow_done_written"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "e2e-recovery--nudge-pattern-detect"
+    name: "_nudge_command_for_pattern の実装完了パターン検知確認"
+    spec_file: "specs/e2e-recovery-test/spec.md"
+    spec_line: 15
+    requirement: "orchestrator recovery E2E テスト"
+    test_file: "cli/twl/tests/autopilot/test_nonterminal_chain_recovery.py"
+    test_name: "TestNudgeCommandForPattern::test_completion_pattern_triggers_state_write_workflow_done_test_ready"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
