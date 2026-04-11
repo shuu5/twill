@@ -1,0 +1,75 @@
+change_id: issue-444
+generated_at: "2026-04-11T00:00:00+00:00"
+test_framework: pytest
+notes: >
+  This change creates a pure documentation file
+  (plugins/twl/architecture/decisions/ADR-016-test-target-real-issues.md).
+  All tests are documentation-content checks (file existence + section/content
+  assertions). No implementation code is added; no unit tests for logic are
+  required.
+
+scenarios:
+  - id: adr-016-file-creation
+    name: "ADR-016 ファイル作成"
+    spec_file: "specs/adr-016/spec.md"
+    spec_line: 6
+    requirement: "ADR-016 ドキュメント作成"
+    test_file: "tests/scenarios/test_adr_016_test_target_real_issues.py"
+    test_name: "TestAdr016FileCreation"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: adr-016-comparison-table-content
+    name: "比較表の内容検証"
+    spec_file: "specs/adr-016/spec.md"
+    spec_line: 13
+    requirement: "3選択肢比較表の記載"
+    test_file: "tests/scenarios/test_adr_016_test_target_real_issues.py"
+    test_name: "TestAdr016ComparisonTableContent"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: adr-016-integration-flow-documented
+    name: "統合フロー記載"
+    spec_file: "specs/adr-016/spec.md"
+    spec_line: 20
+    requirement: "co-self-improve 統合フロー図"
+    test_file: "tests/scenarios/test_adr_016_test_target_real_issues.py"
+    test_name: "TestAdr016IntegrationFlowDocumented"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: adr-016-cleanup-design-documented
+    name: "クリーンアップ設計の記載"
+    spec_file: "specs/adr-016/spec.md"
+    spec_line: 27
+    requirement: "クリーンアップ設計の記載"
+    test_file: "tests/scenarios/test_adr_016_test_target_real_issues.py"
+    test_name: "TestAdr016CleanupDesignDocumented"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: adr-016-responsibility-decision-documented
+    name: "責務決定の記載"
+    spec_file: "specs/adr-016/spec.md"
+    spec_line: 34
+    requirement: "リポジトリ管理の責務決定"
+    test_file: "tests/scenarios/test_adr_016_test_target_real_issues.py"
+    test_name: "TestAdr016ResponsibilityDecisionDocumented"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
