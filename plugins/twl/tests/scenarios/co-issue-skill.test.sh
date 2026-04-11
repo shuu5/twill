@@ -455,6 +455,72 @@ sys.exit(0)
 run_test "deps.yaml co-issue can_spawn [edge: reference 含む（テンプレート参照）]" test_co_issue_can_spawn_reference
 
 # =============================================================================
+# Requirement: explore ループ構造の静的テストケース追加 (issue-489)
+# =============================================================================
+echo ""
+echo "--- Requirement: explore ループ構造の静的テストケース追加 ---"
+
+# Scenario: ケース 1 — 1 ループで Phase 2 へ進むゲート記述
+# WHEN: co-issue-skill.test.sh を実行する
+# THEN: SKILL.md に「1 ループで Phase 2 へ進む」ゲート選択肢の記述があることを grep で検証し PASS する
+
+test_loop_gate_phase2_option() {
+  assert_file_exists "$SKILL_MD" || return 1
+  assert_file_contains "$SKILL_MD" "loop-gate|Phase 2 へ進む|Phase 2 に進む"
+}
+
+if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
+  run_test "ケース 1: loop-gate に Phase 2 へ進む選択肢の記述" test_loop_gate_phase2_option
+else
+  run_test_skip "ケース 1: loop-gate に Phase 2 へ進む選択肢" "skills/co-issue/SKILL.md not yet created"
+fi
+
+# Scenario: ケース 2 — 追加探索再呼び出しループ記述
+# WHEN: co-issue-skill.test.sh を実行する
+# THEN: SKILL.md に「追加探索」選択時の再呼び出しループ記述があることを grep で検証し PASS する
+
+test_loop_gate_additional_explore() {
+  assert_file_exists "$SKILL_MD" || return 1
+  assert_file_contains "$SKILL_MD" "accumulated_concerns|追加探索|まだ探索"
+}
+
+if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
+  run_test "ケース 2: accumulated_concerns または追加探索ループの記述" test_loop_gate_additional_explore
+else
+  run_test_skip "ケース 2: accumulated_concerns または追加探索ループ" "skills/co-issue/SKILL.md not yet created"
+fi
+
+# Scenario: ケース 3 — 手動編集対応記述（edit-complete-gate 含む）
+# WHEN: co-issue-skill.test.sh を実行する
+# THEN: SKILL.md に edit-complete-gate の記述があることを grep で検証し PASS する
+
+test_edit_complete_gate() {
+  assert_file_exists "$SKILL_MD" || return 1
+  assert_file_contains "$SKILL_MD" "edit-complete-gate"
+}
+
+if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
+  run_test "ケース 3: edit-complete-gate の記述" test_edit_complete_gate
+else
+  run_test_skip "ケース 3: edit-complete-gate の記述" "skills/co-issue/SKILL.md not yet created"
+fi
+
+# Scenario: ケース 4 — Step 1.5 のループ外配置
+# WHEN: co-issue-skill.test.sh を実行する
+# THEN: SKILL.md に Step 1.5 が loop-gate の [A] 選択後（ループ外）に配置されていることを grep で検証し PASS する
+
+test_step_1_5_outside_loop() {
+  assert_file_exists "$SKILL_MD" || return 1
+  assert_file_contains "$SKILL_MD" "Step 1\.5"
+}
+
+if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
+  run_test "ケース 4: Step 1.5 の記述" test_step_1_5_outside_loop
+else
+  run_test_skip "ケース 4: Step 1.5 の記述" "skills/co-issue/SKILL.md not yet created"
+fi
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo ""
