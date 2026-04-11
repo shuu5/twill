@@ -1,0 +1,131 @@
+change_id: issue-482
+generated_at: "2026-04-12T00:00:00Z"
+test_framework: pytest
+scenarios:
+  # --------------------------------------------------------------------------
+  # Requirement: real-issues クリーンアップフラグ
+  # --------------------------------------------------------------------------
+
+  - id: "real-issues-flag-delete-all"
+    name: "real-issues フラグで全リソース削除"
+    spec_file: "specs/real-issues-cleanup/spec.md"
+    spec_line: 7
+    requirement: "real-issues クリーンアップフラグ"
+    test_file: "cli/twl/tests/scenarios/test_issue_482_real_issues_cleanup.py"
+    test_name: "TestRealIssuesFlagDeleteAll"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: >
+      test-project-reset.md に --real-issues フラグ、loaded-issues.json 参照、
+      PR close / Issue close / branch 削除のステップが未実装。
+      Issue #482 の実装完了後に passing に更新すること。
+
+  - id: "loaded-issues-json-not-found"
+    name: "loaded-issues.json が存在しない"
+    spec_file: "specs/real-issues-cleanup/spec.md"
+    spec_line: 13
+    requirement: "real-issues クリーンアップフラグ"
+    test_file: "cli/twl/tests/scenarios/test_issue_482_real_issues_cleanup.py"
+    test_name: "TestLoadedIssuesJsonNotFound"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: >
+      loaded-issues.json が存在しない場合のエラー処理（exit 1 または JSON error）
+      および実操作なしの明示が test-project-reset.md に未実装。
+
+  # --------------------------------------------------------------------------
+  # Requirement: older-than フィルタリング
+  # --------------------------------------------------------------------------
+
+  - id: "older-than-filter-delete-old-only"
+    name: "older-than で古いエントリのみ削除"
+    spec_file: "specs/real-issues-cleanup/spec.md"
+    spec_line: 21
+    requirement: "older-than フィルタリング"
+    test_file: "cli/twl/tests/scenarios/test_issue_482_real_issues_cleanup.py"
+    test_name: "TestOlderThanFilterDeleteOldOnly"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: >
+      --older-than オプション、loaded_at フィールド参照、d/w/m 単位サポート、
+      フィルタリングロジックが test-project-reset.md に未実装。
+
+  - id: "invalid-duration-spec"
+    name: "無効な duration 指定"
+    spec_file: "specs/real-issues-cleanup/spec.md"
+    spec_line: 27
+    requirement: "older-than フィルタリング"
+    test_file: "cli/twl/tests/scenarios/test_issue_482_real_issues_cleanup.py"
+    test_name: "TestInvalidDurationSpec"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: >
+      無効な duration 指定（例: 2x）のエラー処理が test-project-reset.md に未実装。
+
+  # --------------------------------------------------------------------------
+  # Requirement: ドライランモード
+  # --------------------------------------------------------------------------
+
+  - id: "dry-run-output-only"
+    name: "dry-run で削除予定リストのみ出力"
+    spec_file: "specs/real-issues-cleanup/spec.md"
+    spec_line: 35
+    requirement: "ドライランモード"
+    test_file: "cli/twl/tests/scenarios/test_issue_482_real_issues_cleanup.py"
+    test_name: "TestDryRunOutputOnly"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: >
+      --dry-run フラグ、削除予定リスト出力（PR#/Issue#/branch名）、
+      実操作なし（MUST NOT）が test-project-reset.md に未実装。
+
+  # --------------------------------------------------------------------------
+  # Requirement: local モードと real-issues の相互排他
+  # --------------------------------------------------------------------------
+
+  - id: "mutual-exclusion-local-and-real-issues"
+    name: "両フラグ同時指定時エラー"
+    spec_file: "specs/real-issues-cleanup/spec.md"
+    spec_line: 46
+    requirement: "local モードと real-issues の相互排他"
+    test_file: "cli/twl/tests/scenarios/test_issue_482_real_issues_cleanup.py"
+    test_name: "TestMutualExclusionLocalAndRealIssues"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: >
+      --mode local と --real-issues の相互排他定義、エラー出力、
+      いずれの操作も実行しない旨が test-project-reset.md に未実装。
+
+  # --------------------------------------------------------------------------
+  # Requirement: local モード分岐整理
+  # --------------------------------------------------------------------------
+
+  - id: "local-mode-preserves-existing-flow"
+    name: "local モードで既存動作を維持"
+    spec_file: "specs/real-issues-cleanup/spec.md"
+    spec_line: 55
+    requirement: "local モード分岐整理"
+    test_file: "cli/twl/tests/scenarios/test_issue_482_real_issues_cleanup.py"
+    test_name: "TestLocalModePreservesExistingFlow"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: >
+      Step 4/5 が local モード時のみ実行されること、
+      --real-issues 時に Step 4/5 を除外する記述、
+      デフォルト動作維持の明示が test-project-reset.md に必要。
+      既存の Step 4/5 自体は存在するため、test_step4_user_confirmation_exists
+      と test_step5_git_reset_hard_exists は passing になる可能性がある。
