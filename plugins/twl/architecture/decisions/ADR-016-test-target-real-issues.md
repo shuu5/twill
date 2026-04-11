@@ -72,17 +72,18 @@ co-self-improve SKILL.md の Step 1 に `--real-issues` 分岐を追加する:
 テスト完了後（成功・失敗問わず）、以下の順序でクリーンアップを実行する:
 
 ```
-1. feature branch 削除
-   - gh api DELETE /repos/{test-repo}/git/refs/heads/{branch}
-   - 対象: 専用テストリポの branch のみ
-
-2. PR クローズ（マージ済みは自動クローズ済み）
+1. PR クローズ（マージ済みは自動クローズ済み）
    - gh pr close <N> --repo <test-repo>
    - 未マージの場合のみ実行
 
-3. Issue クローズ（テスト結果ラベル付与）
+2. Issue クローズ（テスト結果ラベル付与）
    - gh issue close <N> --repo <test-repo>
    - ラベル: test-result:pass または test-result:fail
+
+3. feature branch 削除
+   - gh api DELETE /repos/{test-repo}/git/refs/heads/{branch}
+   - 対象: 専用テストリポの branch のみ
+   - PR クローズ後に実行すること（先に削除すると GitHub が PR を自動クローズして gh pr close が失敗する）
 
 4. テストリポ自体は保持（次回テストで再利用）
 ```

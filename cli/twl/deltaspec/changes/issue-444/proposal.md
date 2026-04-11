@@ -21,7 +21,7 @@ autopilot の full chain（setup → test-ready → pr-verify → pr-merge）は
 ### Modified Capabilities
 
 - co-self-improve scenario-run モード: `--real-issues` フラグ対応の分岐ロジック追加（設計のみ）
-- test-project-init または新規コマンド: テスト用リポジトリ作成・管理の責務拡張（設計のみ）
+- test-project-init（`--mode real-issues` フラグ追加）: テスト用リポジトリ作成・管理の責務拡張（設計のみ）
 
 ## Impact
 
