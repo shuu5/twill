@@ -14,8 +14,7 @@ ADR の内容（専用テストリポ採用、co-self-improve 統合フロー、
 - リポジトリ管理の責務帰属（`test-project-init --mode real-issues` 拡張）を決定する
 
 **Non-Goals:**
-- 実装コード（Issue C/D/E/F/G で対応）
-- シナリオ追加（Issue G で対応）
+- 実装コード（#479 test-project-init、#480 scenario-load、#481 co-self-improve 分岐、#482 クリーンアップ、#483 シナリオ で対応）
 - テストリポの実際の作成
 
 ## Decisions
