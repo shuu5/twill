@@ -1,0 +1,165 @@
+change_id: issue-472
+generated_at: "2026-04-11T00:00:00Z"
+test_framework: pytest
+scenarios:
+  # -----------------------------------------------------------------------
+  # Requirement: STAGNATION_THRESHOLD 環境変数オーバーライド
+  # Source: specs/pilot-phase-monitoring/spec.md
+  # -----------------------------------------------------------------------
+
+  - id: "stagnation-threshold-default-900"
+    name: "STAGNATION_THRESHOLD デフォルト値 900 秒"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 73
+    requirement: "STAGNATION_THRESHOLD 環境変数オーバーライド"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestStagnationThresholdConstant::test_default_value_is_900"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "stagnation-threshold-env-override-300"
+    name: "環境変数 DEV_AUTOPILOT_STAGNATION_THRESHOLD=300 で閾値オーバーライド"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 69
+    requirement: "STAGNATION_THRESHOLD 環境変数オーバーライド"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestStagnationThresholdConstant::test_env_var_overrides_threshold"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "stagnation-threshold-env-affects-check"
+    name: "環境変数オーバーライドが実際の stagnation 判定に反映される"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 69
+    requirement: "STAGNATION_THRESHOLD 環境変数オーバーライド"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestStagnationThresholdBehavior::test_env_override_affects_stagnation_check"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Requirement: orchestrator.py Worker Stagnation Detection (_poll_single)
+  # Source: specs/pilot-phase-monitoring/spec.md
+  # -----------------------------------------------------------------------
+
+  - id: "poll-single-stagnation-detected-sends-nudge"
+    name: "stagnation 検知 (_poll_single): nudge 送信と stagnation_nudge_count increment"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 53
+    requirement: "orchestrator.py Worker Stagnation Detection"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestPollSingleStagnation::test_stagnation_detected_sends_nudge"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "poll-single-no-stagnation-delegates-check-and-nudge"
+    name: "stagnation なし (_poll_single): _check_and_nudge に委譲"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 61
+    requirement: "orchestrator.py Worker Stagnation Detection"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestPollSingleStagnation::test_stagnation_not_detected_when_within_threshold"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "poll-single-updated-at-missing-no-crash"
+    name: "updated_at 欠如 (_poll_single): stagnation 扱いせず通常フロー継続"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 53
+    requirement: "orchestrator.py Worker Stagnation Detection"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestPollSingleStagnation::test_stagnation_with_missing_updated_at"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "poll-single-max-stagnation-nudge-exceeded-to-failed"
+    name: "MAX_STAGNATION_NUDGE 超過 -> status=failed 遷移"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 53
+    requirement: "orchestrator.py Worker Stagnation Detection"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestPollSingleStagnation::test_stagnation_nudge_count_exceeds_max_transitions_to_failed"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Requirement: orchestrator.py Worker Stagnation Detection (_poll_phase)
+  # Source: specs/pilot-phase-monitoring/spec.md
+  # -----------------------------------------------------------------------
+
+  - id: "poll-phase-stagnation-detected"
+    name: "stagnation 検知 (_poll_phase): 当該 Worker へ stall nudge 送信"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 57
+    requirement: "orchestrator.py Worker Stagnation Detection"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestPollPhaseStagnation::test_stagnation_detected_in_poll_phase"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "poll-phase-no-stagnation-delegates-check-and-nudge"
+    name: "stagnation なし (_poll_phase): _check_and_nudge に委譲"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 61
+    requirement: "orchestrator.py Worker Stagnation Detection"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestPollPhaseStagnation::test_no_stagnation_in_poll_phase"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Boundary tests — STAGNATION_THRESHOLD
+  # -----------------------------------------------------------------------
+
+  - id: "threshold-boundary-just-over"
+    name: "閾値ちょうど超過 (STAGNATION_THRESHOLD+1秒) -> stagnation 検知"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 53
+    requirement: "orchestrator.py Worker Stagnation Detection"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestStagnationThresholdBehavior::test_threshold_boundary_just_over"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "threshold-boundary-just-under"
+    name: "閾値ちょうど未満 (STAGNATION_THRESHOLD-1秒) -> stagnation なし"
+    spec_file: "specs/pilot-phase-monitoring/spec.md"
+    spec_line: 61
+    requirement: "orchestrator.py Worker Stagnation Detection"
+    test_file: "cli/twl/tests/test_orchestrator_stagnation.py"
+    test_name: "TestStagnationThresholdBehavior::test_threshold_boundary_just_under"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
