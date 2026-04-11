@@ -50,7 +50,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 HEALTH_CHECK="${SCRIPT_DIR}/../scripts/worktree-health-check.sh"
 
 if [[ -x "$HEALTH_CHECK" ]]; then
-  REFSPEC_RESULT=$(bash "$HEALTH_CHECK" --skip-remote-check 2>/dev/null || true)
+  REFSPEC_RESULT=$(bash "$HEALTH_CHECK" --skip-remote-check 2>&1 || true)
   if echo "$REFSPEC_RESULT" | grep -q "^WARN:"; then
     while IFS= read -r warn_line; do
       [[ "$warn_line" =~ ^WARN: ]] && \

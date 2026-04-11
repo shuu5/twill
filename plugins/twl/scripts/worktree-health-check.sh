@@ -64,13 +64,15 @@ _find_bare_root() {
     # worktree の .git ファイルが bare repo を指している場合
     if [[ -f "$current/.git" ]]; then
       local gitdir
-      gitdir=$(cat "$current/.git" | sed 's/gitdir: //')
-      # .bare/ 構造: gitdir は ../.bare または絶対パス
+      local gitdir
+      gitdir=$(sed 's/^gitdir: //' "$current/.git" | tr -d '[:space:]')
+      # .bare/ 構造: gitdir は絶対パスまたは $current 基準の相対パス
       local bare_candidate
       if [[ "$gitdir" = /* ]]; then
         bare_candidate="$gitdir"
       else
-        bare_candidate="$(dirname "$current")/$gitdir"
+        # 相対パスは .git ファイルが存在する $current を基準に解決する
+        bare_candidate="$(cd "$current" && realpath "$gitdir" 2>/dev/null || echo "")"
       fi
       # worktrees/ サブディレクトリを除いた bare root
       bare_candidate="${bare_candidate%/worktrees/*}"
@@ -110,7 +112,7 @@ _check_refspec() {
   fi
 
   if [[ "$FIX_MODE" -eq 1 ]]; then
-    git -C "$dir" config --replace-all remote.origin.fetch "$REQUIRED_REFSPEC" 2>/dev/null
+    git -C "$dir" config --replace-all remote.origin.fetch "$REQUIRED_REFSPEC" 2>/dev/null || true
     echo "FIXED: $dir — remote.origin.fetch set to $REQUIRED_REFSPEC"
     return 0
   else

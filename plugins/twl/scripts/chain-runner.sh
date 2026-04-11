@@ -387,12 +387,14 @@ step_worktree_create() {
     ok "worktree-create" "既に worktree 内（branch=$branch）— スキップ"
     return 0
   fi
-  python3 -m twl.autopilot.worktree create "$@"
   # AC-3: post-create refspec 自動設定（重複防止のため --replace-all を使用）
-  local new_branch
-  new_branch="$(git branch --show-current 2>/dev/null || echo "")"
-  if [[ -n "$new_branch" && "$new_branch" != "main" && "$new_branch" != "master" ]]; then
-    git config --replace-all remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*' 2>/dev/null || true
+  # twl.autopilot.worktree create は "パス: <path>" を stdout に出力するためキャプチャする
+  local create_output new_wt_path
+  create_output=$(python3 -m twl.autopilot.worktree create "$@")
+  echo "$create_output"
+  new_wt_path=$(echo "$create_output" | grep "^パス: " | sed 's/^パス: //')
+  if [[ -n "$new_wt_path" && -d "$new_wt_path" ]]; then
+    git -C "$new_wt_path" config --replace-all remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*' 2>/dev/null || true
   fi
   ok "worktree-create" "完了"
 }
