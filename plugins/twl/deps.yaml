@@ -1729,7 +1729,7 @@ commands:
     effort: medium
     spawnable_by: [controller, workflow]
     can_spawn: []
-    description: "test-target にテストシナリオの dummy Issue 群をローカル配置"
+    description: "test-target にテストシナリオの Issue を配置（--real-issues で専用リポに実 Issue 起票、デフォルトはローカル配置）"
 
   # === C-2a: その他（1個） ===
 
