@@ -143,6 +143,11 @@ def _check_phase_review_guard(
     """
     # Label-based skip (scope/direct or quick)
     if _PHASE_REVIEW_SKIP_LABELS.intersection(issue_labels):
+        print(
+            "[merge-gate] INFO: phase-review チェックをスキップしました"
+            f"（ラベル: {_PHASE_REVIEW_SKIP_LABELS.intersection(issue_labels)}）",
+            file=sys.stderr,
+        )
         return
 
     checkpoint_file = autopilot_dir / "checkpoints" / "phase-review.json"
@@ -166,12 +171,20 @@ def _check_phase_review_guard(
         raise MergeGateError(f"phase-review checkpoint の読み込みに失敗しました: {exc}") from exc
 
     findings = data.get("findings", [])
+    if not isinstance(findings, list):
+        findings = []
     blocking = [
         f for f in findings
-        if f.get("severity") == "CRITICAL" and f.get("confidence", 0) >= 80
+        if isinstance(f, dict)
+        and f.get("severity") == "CRITICAL"
+        and f.get("confidence", 0) >= 80
     ]
     if blocking:
-        details = "; ".join(f.get("message", "no message") for f in blocking)
+        _ASCII_PRINTABLE = re.compile(r"[^\x20-\x7e]")
+        details = "; ".join(
+            _ASCII_PRINTABLE.sub("?", f.get("message", "no message"))
+            for f in blocking
+        )
         raise MergeGateError(
             f"phase-review で CRITICAL findings が検出されました（{len(blocking)} 件）: {details}"
         )
