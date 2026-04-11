@@ -256,6 +256,8 @@ JSON
 # ---------------------------------------------------------------------------
 
 @test "autopilotdir: state write --init がカスタム AUTOPILOT_DIR/issues/issue-N.json を作成する" {
+  # state write は実際の python3 が必要なのでスタブを外す
+  rm -f "$STUB_BIN/python3"
   local custom_ap="$SANDBOX/custom-state-ap"
   export AUTOPILOT_DIR="$custom_ap"
   mkdir -p "$custom_ap/issues"
@@ -268,6 +270,8 @@ JSON
 }
 
 @test "autopilotdir: state write --init がデフォルト PROJECT_ROOT/.autopilot には書かない" {
+  # state write は実際の python3 が必要なのでスタブを外す
+  rm -f "$STUB_BIN/python3"
   local custom_ap="$SANDBOX/custom-state-ap2"
   export AUTOPILOT_DIR="$custom_ap"
   mkdir -p "$custom_ap/issues"
@@ -283,6 +287,8 @@ JSON
 }
 
 @test "autopilotdir: state write --set がカスタム AUTOPILOT_DIR のファイルを更新する" {
+  # state write は実際の python3 が必要なのでスタブを外す
+  rm -f "$STUB_BIN/python3"
   local custom_ap="$SANDBOX/custom-state-ap3"
   export AUTOPILOT_DIR="$custom_ap"
   mkdir -p "$custom_ap/issues"
@@ -309,6 +315,8 @@ JSON
 }
 
 @test "autopilotdir: 異なる issue 番号でも同じ AUTOPILOT_DIR に書かれる" {
+  # state write は実際の python3 が必要なのでスタブを外す
+  rm -f "$STUB_BIN/python3"
   local custom_ap="$SANDBOX/multi-issue-ap"
   export AUTOPILOT_DIR="$custom_ap"
   mkdir -p "$custom_ap/issues"

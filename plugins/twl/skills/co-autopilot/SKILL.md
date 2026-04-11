@@ -182,6 +182,23 @@ issue-{N}.json の status から自動判定:
 - `merge-ready` → 即 merge-gate 実行
 - `running` → crash-detect.sh でクラッシュ検知（不変条件 G）
 
+## state file 解決ルール
+
+`AUTOPILOT_DIR` は state file ディレクトリの SSOT（Single Source of Truth）。
+
+**デフォルト値**: `$PROJECT_ROOT/.autopilot/`（`autopilot-init.sh` L9 で確立: `AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"`）
+
+**override 方法**: 起動前に `export AUTOPILOT_DIR=/custom/path` を設定する。test-target worktree での隔離実行（`AUTOPILOT_DIR=/tmp/test-autopilot`）など、main worktree の `.autopilot/` を汚染しない実行に使用する。
+
+**Pilot→Worker env 継承経路**: `autopilot-launch.sh` が `--autopilot-dir DIR` を受け取り（L84）、`AUTOPILOT_ENV="AUTOPILOT_DIR=${QUOTED_AUTOPILOT_DIR}"`（L309）を構築して `env AUTOPILOT_DIR=... cld ...`（L365-366）として Worker プロセスに渡す。Worker は `AUTOPILOT_DIR` を直接 export された状態で起動するため、`state read/write` が同一ディレクトリを参照する。
+
+**SSOT から導出されるパス**（`autopilot-init.sh` L10-12）:
+```bash
+ISSUES_DIR="$AUTOPILOT_DIR/issues"
+ARCHIVE_DIR="$AUTOPILOT_DIR/archive"
+SESSION_FILE="$AUTOPILOT_DIR/session.json"
+```
+
 ## 不変条件
 
 不変条件 A〜M の正典は `plugins/twl/architecture/domain/contexts/autopilot.md`（A=状態一意, B=Worktree 削除 Pilot 専任, C=Worker マージ禁止, D=fail skip 伝播, E=merge-gate リトライ最大1, F=merge 失敗時 rebase 禁止, G=クラッシュ検知, H=deps.yaml 変更排他, I=循環依存拒否, J=merge 前 base drift 検知, K=Pilot 実装禁止, L=autopilot マージ実行責務, M=chain 遷移は orchestrator/手動 inject のみ）。本文中の ID 参照のみが各 Step の制約根拠。
