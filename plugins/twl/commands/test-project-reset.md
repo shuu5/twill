@@ -2,7 +2,6 @@
 type: atomic
 tools: [AskUserQuestion, Bash]
 effort: medium
-maxTurns: 10
 ---
 # test-target リセット
 
@@ -27,7 +26,7 @@ DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --mode) MODE_LOCAL=true; shift 2 ;;
+    --mode) [[ "$2" == "local" ]] && MODE_LOCAL=true; shift 2 ;;
     --real-issues) REAL_ISSUES=true; shift ;;
     --older-than) OLDER_THAN="$2"; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
@@ -55,9 +54,15 @@ if [[ -n "$OLDER_THAN" ]]; then
     echo "{\"error\": \"--older-than の形式が無効です: $OLDER_THAN （例: 30d, 2w, 1m）\"}"
     exit 1
   fi
-  CUTOFF_EPOCH=$(date -d "-${VALUE} ${UNIT/d/days}" +%s 2>/dev/null || \
-                 date -d "-${VALUE} ${UNIT/w/weeks}" +%s 2>/dev/null || \
-                 date -d "-${VALUE} month" +%s 2>/dev/null)
+  case "$UNIT" in
+    d) CUTOFF_EPOCH=$(date -d "-${VALUE} days" +%s 2>/dev/null) ;;
+    w) CUTOFF_EPOCH=$(date -d "-${VALUE} weeks" +%s 2>/dev/null) ;;
+    m) CUTOFF_EPOCH=$(date -d "-${VALUE} months" +%s 2>/dev/null) ;;
+  esac
+  if [[ -z "$CUTOFF_EPOCH" ]]; then
+    echo "{\"error\": \"--older-than の日付計算に失敗しました: $OLDER_THAN\"}"
+    exit 1
+  fi
 fi
 ```
 
@@ -84,6 +89,11 @@ TEST_TARGET="$BARE_ROOT/worktrees/test-target"
 CONFIG_JSON="$PROJECT_DIR/.test-target/config.json"
 [[ -f "$CONFIG_JSON" ]] || { echo '{"error": ".test-target/config.json が見つかりません"}'; exit 1; }
 REPO=$(jq -r '.repo' "$CONFIG_JSON")
+# REPO の形式を owner/repo に限定（インジェクション防止）
+if ! [[ "$REPO" =~ ^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$ ]]; then
+  echo "{\"error\": \"config.json の repo フィールドが不正です: $REPO （期待形式: owner/repo）\"}"
+  exit 1
+fi
 ```
 
 **Step 3-R-2: loaded-issues.json 読み込み**
@@ -127,6 +137,20 @@ echo "$ENTRIES" | jq -c '.' | while IFS= read -r entry; do
   issue_num=$(echo "$entry" | jq -r '.github_number')
   branch=$(echo "$entry" | jq -r '.branch')
 
+  # 入力値バリデーション（インジェクション防止）
+  if [[ -n "$pr_num" ]] && ! [[ "$pr_num" =~ ^[0-9]+$ ]]; then
+    echo "⚠️ pr_number が数値でないためスキップ: $pr_num"
+    continue
+  fi
+  if ! [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+    echo "⚠️ github_number が数値でないためスキップ: $issue_num"
+    continue
+  fi
+  if ! [[ "$branch" =~ ^[a-zA-Z0-9/_.-]+$ ]] || [[ "$branch" == -* ]]; then
+    echo "⚠️ branch 名が不正なためスキップ: $branch"
+    continue
+  fi
+
   # PR close（pr_number が存在する場合のみ）
   if [[ -n "$pr_num" ]]; then
     gh pr close "$pr_num" --repo "$REPO" 2>/dev/null \
@@ -139,8 +163,8 @@ echo "$ENTRIES" | jq -c '.' | while IFS= read -r entry; do
     && echo "✓ Issue#$issue_num close" \
     || echo "⚠️ Issue#$issue_num close 失敗（既に closed の可能性）"
 
-  # branch 削除
-  git push "$REPO" --delete "$branch" 2>/dev/null \
+  # branch 削除（gh api 経由で専用リポの remote branch を削除）
+  gh api "repos/${REPO}/git/refs/heads/${branch}" --method DELETE 2>/dev/null \
     && echo "✓ branch $branch 削除" \
     || echo "⚠️ branch $branch 削除失敗（既に削除済みの可能性）"
 done
