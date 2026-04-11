@@ -67,7 +67,7 @@ cld-observe-loop --pattern 'ap-*' --interval 180
 
 **state stagnate 検知手順（observe-once 実行後）:**
 
-observe-once の `stagnate_files` フィールドにファイルパスが含まれている場合、または `.autopilot/issues/issue-*.json` の `updated_at` が `AUTOPILOT_STAGNATE_SEC` 秒（デフォルト 600s）以上古い場合:
+observe-once の `stagnate_files` フィールドにファイルパスが含まれている場合（observe-once は stderr に `WARN: state stagnate detected: <path>` を出力する）、または `.autopilot/issues/issue-*.json` の `updated_at` が `AUTOPILOT_STAGNATE_SEC` 秒（デフォルト 600s）以上古い場合:
 
 1. `refs/intervention-catalog.md` の pattern-7 照合を実行する
 2. 検出条件（stagnate AND `>>> 実装完了:` シグナル）が揃えば Layer 0 Auto 介入
