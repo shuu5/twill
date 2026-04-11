@@ -11,8 +11,8 @@
 | session.json | per-autopilot-run のセッション状態。Phase 進捗、cross-issue 警告、パターン検出を管理 | Autopilot |
 | specialist | 並列実行される AI エージェント（共通出力スキーマ準拠）。haiku/sonnet で実行 | PR Cycle |
 | Phase | autopilot の実行単位。依存グラフでグルーピングされた Issue 群 | Autopilot |
-| Pilot | main/ worktree から実行する制御側。worktree 作成・削除・merge 実行・クリーンアップの専任者 | Autopilot |
-| Worker | Pilot が作成した worktree 内で cld セッションとして起動される実装側。merge 禁止・worktree 操作禁止 | Autopilot |
+| Pilot | 制御側 cld セッション。Worker セッションを spawn し、集約を行う。autopilot では main worktree 固定で worktree 作成・削除・merge 実行・クリーンアップを担当、co-issue v2 では session 単位で起動 | Autopilot, co-issue v2 |
+| Worker | Pilot が tmux 経由で spawn した独立 cld セッション。自律的に単一タスク（autopilot では 1 issue の実装、co-issue v2 では 1 issue の lifecycle）を完遂する。merge 禁止・worktree 操作禁止 | Autopilot, co-issue v2 |
 | Orchestrator | Pilot 内の Issue 実行ループ管理コンポーネント。launch → poll → merge-gate → health-check を統括 | Autopilot |
 | Project Board | GitHub Projects V2 ボード。Issue ステータスの SSOT。autopilot の Issue 選択元 | Project Management |
 | TWiLL | Type-Woven, invariant-Led Layering。フレームワークの正式名称。CLI コマンド `twl` で操作 | 全体 |
