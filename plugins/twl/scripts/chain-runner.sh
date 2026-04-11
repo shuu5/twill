@@ -297,22 +297,15 @@ step_init() {
   fi
 
   # deltaspec 判定: config.yaml の存在でのみ有効な deltaspec root と判断する
-  # walk-down fallback: root/deltaspec/config.yaml がない場合、repo 内を探索する
-  local deltaspec_root="$root"
-  if [[ ! -f "$root/deltaspec/config.yaml" ]]; then
-    local found_config
-    found_config="$(find "$root" -maxdepth 5 -name config.yaml -path '*/deltaspec/*' -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/__pycache__/*' 2>/dev/null | head -1)"
-    if [[ -n "$found_config" ]]; then
-      # deltaspec/config.yaml の親ディレクトリ（deltaspec/）の親が deltaspec_root
-      deltaspec_root="$(dirname "$(dirname "$found_config")")"
-    else
-      jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":false,"auto_init":true,"is_quick":$is_quick}'
-      ok "init" "recommended_action=propose (no deltaspec, auto_init=true, is_quick=$is_quick)"
-      if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-        python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
-      fi
-      return 0
+  # resolve_deltaspec_root に walk-down fallback ロジックを委譲（DRY 原則）
+  local deltaspec_root
+  if ! deltaspec_root="$(resolve_deltaspec_root "$root")"; then
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":false,"auto_init":true,"is_quick":$is_quick}'
+    ok "init" "recommended_action=propose (no deltaspec, auto_init=true, is_quick=$is_quick)"
+    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
     fi
+    return 0
   fi
 
   # changes 判定
@@ -836,11 +829,14 @@ step_change_id_resolve() {
   local root
   root="$(resolve_project_root)"
   local ds_root
-  ds_root="$(resolve_deltaspec_root "$root")" || true
+  if ! ds_root="$(resolve_deltaspec_root "$root")"; then
+    err "change-id-resolve" "deltaspec/config.yaml が見つからない（deltaspec root 未初期化）"
+    return 1
+  fi
   local changes_dir="$ds_root/deltaspec/changes"
 
   if [[ ! -d "$changes_dir" ]]; then
-    err "change-id-resolve" "deltaspec/changes/ が存在しない"
+    err "change-id-resolve" "deltaspec/changes/ が存在しない（deltaspec_root=$ds_root）"
     return 1
   fi
 

@@ -37,6 +37,7 @@ def cmd_new(name: str) -> int:
         deltaspec_dir = cwd / "deltaspec"
         deltaspec_dir.mkdir(parents=True, exist_ok=True)
         _init_deltaspec_config(deltaspec_dir)
+        print(f"Initialized deltaspec/ in {cwd}")
         root = cwd
 
     change_dir = get_changes_dir(root) / name

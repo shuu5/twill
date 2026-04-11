@@ -33,6 +33,7 @@ def _walk_down_find_deltaspec_roots(git_top: Path, max_depth: int = 3) -> list[P
             return
         if (current / "deltaspec" / "config.yaml").is_file():
             results.append(current)
+            return  # don't recurse into children of a matched root
         try:
             for child in sorted(current.iterdir()):
                 if child.is_dir() and child.name not in exclude:
