@@ -84,7 +84,7 @@ teardown() {
   local cmd
   cmd=$(_cmd_path "test-project-init")
 
-  run bash "$cmd" --auto-confirm
+  run bash "$cmd" --mode local --auto-confirm
   assert_success
 
   [ -d "$TMP_REPO/worktrees/test-target" ]
@@ -106,7 +106,7 @@ teardown() {
   init_cmd=$(_cmd_path "test-project-init")
   load_cmd=$(_cmd_path "test-project-scenario-load")
 
-  bash "$init_cmd" --auto-confirm
+  bash "$init_cmd" --mode local --auto-confirm
   run bash "$load_cmd" --scenario smoke-001 --auto-confirm
   assert_success
 
@@ -204,7 +204,7 @@ teardown() {
   draft_cmd=$(_cmd_path "issue-draft-from-observation")
 
   # Step 1: init
-  bash "$init_cmd" --auto-confirm
+  bash "$init_cmd" --mode local --auto-confirm
 
   # Step 2: load scenario
   bash "$load_cmd" --scenario smoke-001 --auto-confirm

@@ -91,7 +91,7 @@ teardown() {
   init_cmd=$(_cmd_path "test-project-init")
   load_cmd=$(_cmd_path "test-project-scenario-load")
 
-  bash "$init_cmd" --auto-confirm
+  bash "$init_cmd" --mode local --auto-confirm
   run bash "$load_cmd" --scenario regression-001 --auto-confirm
   assert_success
 
@@ -186,7 +186,7 @@ fi
 EXTRASTUB
 
   # Step 1: init + load regression-001 (3 issues)
-  bash "$init_cmd" --auto-confirm
+  bash "$init_cmd" --mode local --auto-confirm
   bash "$load_cmd" --scenario regression-001 --auto-confirm
 
   local issues_dir="$TMP_REPO/worktrees/test-target/.test-target/issues"

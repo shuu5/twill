@@ -62,6 +62,9 @@ Observer 介入ログの単位。
 | scenario | string | ロードされたシナリオ名 |
 | state | `initialized` \| `running` \| `completed` \| `failed` | プロジェクト状態 |
 | worktree_path | string | worktree のパス |
+| mode | `local` \| `real-issues` | 動作モード。`local` はローカル専用、`real-issues` は専用 GitHub リポと連携 |
+| repo | string \| null | 専用 GitHub リポ（`<owner>/<name>` 形式）。`mode == 'real-issues'` 時必須、それ以外は null |
+| loaded_issues_file | string \| null | ロード済み Issue データのパス（`.test-target/loaded-issues.json`）。#480 で生成 |
 
 ### LoadScenario
 負荷シナリオの定義。
