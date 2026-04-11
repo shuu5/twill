@@ -34,6 +34,8 @@ MAX_PARALLEL = int(os.environ.get("DEV_AUTOPILOT_MAX_PARALLEL", "4"))
 MAX_POLL = int(os.environ.get("DEV_AUTOPILOT_MAX_POLL", "360"))
 MAX_NUDGE = int(os.environ.get("DEV_AUTOPILOT_MAX_NUDGE", "3"))
 NUDGE_TIMEOUT = int(os.environ.get("DEV_AUTOPILOT_NUDGE_TIMEOUT", "30"))
+STAGNATION_THRESHOLD = int(os.environ.get("DEV_AUTOPILOT_STAGNATION_THRESHOLD", "900"))
+MAX_STAGNATION_NUDGE = int(os.environ.get("DEV_AUTOPILOT_MAX_STAGNATION_NUDGE", "3"))
 POLL_INTERVAL = 10
 
 _BRANCH_RE = re.compile(r"^[a-zA-Z0-9._/\-]+$")
@@ -180,6 +182,7 @@ class PhaseOrchestrator:
         self._nudge_counts: dict[str, int] = {}
         self._last_output_hash: dict[str, str] = {}
         self._health_check_counter: dict[str, int] = {}
+        self._stagnation_nudge_counts: dict[str, int] = {}
         # skipped_archives: fail-closed で archive を skip した Issue 番号（Issue #138）
         self._skipped_archives: list[int] = []
 
@@ -375,7 +378,24 @@ class PhaseOrchestrator:
                 if self._is_crashed(issue, wname):
                     print(f"[orchestrator] Issue #{issue}: ワーカークラッシュ検知", file=sys.stderr)
                     return
-                self._check_and_nudge(issue, wname, entry)
+                if self._check_stagnation(issue, repo_id):
+                    scount = self._stagnation_nudge_counts.get(issue, 0) + 1
+                    self._stagnation_nudge_counts[issue] = scount
+                    print(
+                        f"[orchestrator] Issue #{issue}: stagnation 検知 ({scount}/{MAX_STAGNATION_NUDGE})",
+                        file=sys.stderr,
+                    )
+                    if scount >= MAX_STAGNATION_NUDGE:
+                        print(f"[orchestrator] Issue #{issue}: stagnation 上限 — failed", file=sys.stderr)
+                        _write_state(issue, "pilot",
+                                     ["status=failed",
+                                      'failure={"message":"stagnation_timeout","step":"polling"}'],
+                                     self.autopilot_dir, repo_id)
+                        self._cleanup_worker(issue, entry)
+                        return
+                    self._check_and_nudge(issue, wname, entry)
+                else:
+                    self._check_and_nudge(issue, wname, entry)
 
             if poll_count >= MAX_POLL:
                 print(f"[orchestrator] Issue #{issue}: タイムアウト", file=sys.stderr)
@@ -417,6 +437,23 @@ class PhaseOrchestrator:
                             self._cleanup_worker(issue, entry)
                             cleaned_up.add(entry)
                         continue
+                    if self._check_stagnation(issue, repo_id):
+                        scount = self._stagnation_nudge_counts.get(issue, 0) + 1
+                        self._stagnation_nudge_counts[issue] = scount
+                        print(
+                            f"[orchestrator] Issue #{issue}: stagnation 検知 ({scount}/{MAX_STAGNATION_NUDGE})",
+                            file=sys.stderr,
+                        )
+                        if scount >= MAX_STAGNATION_NUDGE:
+                            print(f"[orchestrator] Issue #{issue}: stagnation 上限 — failed", file=sys.stderr)
+                            _write_state(issue, "pilot",
+                                         ["status=failed",
+                                          'failure={"message":"stagnation_timeout","step":"polling"}'],
+                                         self.autopilot_dir, repo_id)
+                            if entry not in cleaned_up:
+                                self._cleanup_worker(issue, entry)
+                                cleaned_up.add(entry)
+                            continue
                     self._check_and_nudge(issue, wname, entry)
                 else:
                     all_resolved = False
@@ -447,6 +484,22 @@ class PhaseOrchestrator:
             capture_output=True,
         )
         return r.returncode == 2
+
+    def _check_stagnation(self, issue: str, repo_id: str) -> bool:
+        """Return True if updated_at is older than STAGNATION_THRESHOLD seconds."""
+        updated_at_str = _read_state(issue, "updated_at", self.autopilot_dir, repo_id)
+        if not updated_at_str:
+            return False
+        try:
+            updated_at = datetime.fromisoformat(updated_at_str.replace("Z", "+00:00"))
+            # Compare as UTC-aware if possible, else naive
+            now = datetime.now(timezone.utc)
+            if updated_at.tzinfo is None:
+                updated_at = updated_at.replace(tzinfo=timezone.utc)
+            elapsed = (now - updated_at).total_seconds()
+            return elapsed >= STAGNATION_THRESHOLD
+        except (ValueError, TypeError):
+            return False
 
     def _check_and_nudge(self, issue: str, window_name: str, entry: str) -> bool:
         count = self._nudge_counts.get(issue, 0)
