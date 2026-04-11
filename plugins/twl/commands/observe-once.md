@@ -38,7 +38,7 @@ STATE=$(bash "$CLAUDE_PLUGIN_ROOT/scripts/session-state-wrapper.sh" state "<wind
 
 ### Step 3.5: state file mtime チェック（stagnate 検知）
 
-`AUTOPILOT_STAGNATE_SEC` 環境変数（デフォルト 600）を基準に、`.autopilot/issues/issue-*.json` の mtime をチェックする:
+`AUTOPILOT_STAGNATE_SEC` 環境変数（デフォルト 600）を基準に、`.autopilot/issues/issue-*.json` の mtime をチェックする。mtime は autopilot が `updated_at` フィールドを書き込む際に更新されるため、`updated_at` の stagnate と等価である:
 
 ```bash
 STAGNATE_SEC="${AUTOPILOT_STAGNATE_SEC:-600}"

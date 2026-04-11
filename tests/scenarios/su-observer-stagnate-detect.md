@@ -46,7 +46,7 @@ Type: unit (document-verification)
 ### Scenario: stagnate ファイル検出
 
 **WHEN** observe-once を実行し、`.autopilot/issues/issue-*.json` のいずれかの mtime が `AUTOPILOT_STAGNATE_SEC` 秒以上古い
-**THEN** JSON 出力の `stagnate_files` 配列に該当ファイルパスを含め、stdout に `WARN: state stagnate detected: <path>` を出力しなければならない（SHALL）
+**THEN** JSON 出力の `stagnate_files` 配列に該当ファイルパスを含め、stderr に `WARN: state stagnate detected: <path>` を出力しなければならない（SHALL）。JSON stdout と WARN stderr は分離する
 
 | # | テスト名 | 検証対象 | 検証方法 |
 |---|---------|---------|---------|

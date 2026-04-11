@@ -1,6 +1,6 @@
 ---
 type: reference
-spawnable_by: [controller, workflow, atomic]
+spawnable_by: [controller, workflow, atomic, supervisor]
 can_spawn: []
 ---
 
