@@ -589,18 +589,27 @@ poll_phase() {
             continue
           fi
 
-          # chain 遷移停止検知 + nudge（パターンマッチ優先）
-          local nudge_matched=0
-          check_and_nudge "$issue_num" "$window_name" "$entry" && nudge_matched=1 || true
+          # workflow_done 検知 → inject（inject 成功時は check_and_nudge をスキップ）
+          local workflow_done_val inject_matched=0
+          workflow_done_val=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field workflow_done 2>/dev/null || echo "")
+          if [[ -n "$workflow_done_val" && "$workflow_done_val" != "null" ]]; then
+            inject_next_workflow "$issue_num" "$window_name" && inject_matched=1 || true
+          fi
 
-          # health-check（check_and_nudge でカバーできない stall を補完検知）
-          if [[ "$nudge_matched" -eq 0 ]]; then
-            local hc_counter="${HEALTH_CHECK_COUNTER[$issue_num]:-0}"
-            HEALTH_CHECK_COUNTER[$issue_num]=$((hc_counter + 1))
-            if (( HEALTH_CHECK_COUNTER[$issue_num] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
-              local health_stderr health_exit=0
-              health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue_num" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
-              handle_health_check_fallback "$issue_num" "$window_name" "$entry" "$health_exit" "$health_stderr" "${_state_read_repo_args[@]}"
+          if [[ "$inject_matched" -eq 0 ]]; then
+            # chain 遷移停止検知 + nudge（パターンマッチ優先）
+            local nudge_matched=0
+            check_and_nudge "$issue_num" "$window_name" "$entry" && nudge_matched=1 || true
+
+            # health-check（check_and_nudge でカバーできない stall を補完検知）
+            if [[ "$nudge_matched" -eq 0 ]]; then
+              local hc_counter="${HEALTH_CHECK_COUNTER[$issue_num]:-0}"
+              HEALTH_CHECK_COUNTER[$issue_num]=$((hc_counter + 1))
+              if (( HEALTH_CHECK_COUNTER[$issue_num] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
+                local health_stderr health_exit=0
+                health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue_num" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
+                handle_health_check_fallback "$issue_num" "$window_name" "$entry" "$health_exit" "$health_stderr" "${_state_read_repo_args[@]}"
+              fi
             fi
           fi
           ;;
@@ -788,7 +797,7 @@ inject_next_workflow() {
   fi
   # inject 成功時は RESOLVE_FAIL カウントをリセット
   RESOLVE_FAIL_COUNT[$issue]=0
-  RESOLVE_FAIL_FIRST_TS[$issue]=0
+  RESOLVE_FAIL_FIRST_TS[$issue]=""
 
   # --- allow-list バリデーション（コマンドインジェクション防止） ---
   # 許可: /twl:workflow-<kebab> 形式、または pr-merge（terminal workflow として別処理）
