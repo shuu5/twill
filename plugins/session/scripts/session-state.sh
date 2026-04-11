@@ -148,6 +148,7 @@ detect_state() {
         return
     fi
     # approval UI / AskUserQuestion パターンを tail -5 全体に対してスキャン
+    local _iw_pattern
     for _iw_pattern in "${INPUT_WAITING_PATTERNS[@]}"; do
         if echo "$last_lines" | grep -qP "$_iw_pattern"; then
             echo "input-waiting"

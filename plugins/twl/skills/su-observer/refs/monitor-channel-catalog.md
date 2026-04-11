@@ -148,8 +148,11 @@ check_workers() {
   local pattern="${1:-ap-*}"
   local snapshot_file="${2:-.supervisor/worker-snapshot.txt}"
   
+  # glob パターンを安全な正規表現に変換（ReDoS 対策: 特殊文字をエスケープ後に * → .* 変換）
+  local safe_pattern
+  safe_pattern=$(printf '%s' "${pattern//\*/GLOB_STAR}" | sed 's/[.+?()[\]{}^$|\\]/\\&/g; s/GLOB_STAR/.*/g')
   local current_workers
-  current_workers=$(tmux list-windows -a -F '#{window_name}' 2>/dev/null | grep -E "^${pattern//\*/.*}$" | sort || true)
+  current_workers=$(tmux list-windows -a -F '#{window_name}' 2>/dev/null | grep -E "^${safe_pattern}$" | sort || true)
   
   if [[ -f "$snapshot_file" ]]; then
     local prev_workers
