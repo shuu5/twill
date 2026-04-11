@@ -24,8 +24,22 @@ spawnable_by:
 
 テストシナリオ実行 arm。scenario-run / retrospect / test-project-manage の 3 モードに特化する。
 
-**位置づけ**: su-observer（上位）から委譲されるテスト実行モードとして機能する。
+**位置づけ**: su-observer（上位）から `cld-spawn` で起動されるテスト実行コントローラー。
 セッション監視・介入は su-observer が担い、co-self-improve はシナリオ実行と知識蓄積に集中する。
+
+## su-observer からの spawn 受取手順
+
+su-observer が `cld-spawn` で本スキルを起動する際、spawn 時プロンプトに以下の情報が含まれる。
+起動後に必ずプロンプトを確認し、以降の動作に反映すること。
+
+| 項目 | 説明 | 例 |
+|------|------|----|
+| 対象 session | 観察対象の tmux window 名 | `worktrees/test-target` |
+| タスク内容 | 実行するシナリオ名または指示 | `scenario: smoke-test-issue-123` |
+| 観察モード | single / loop | `observe: single` |
+
+プロンプトに情報が含まれている場合は AskUserQuestion でモード確認をスキップし、直接 Step 1 / 3 / 4 に進む。
+情報が不完全な場合のみ AskUserQuestion で補完する。
 
 ## Step 0: モード判定
 
@@ -38,15 +52,9 @@ spawnable_by:
 | test-project-manage | init / reset / status / clean / cleanup | Step 4 |
 
 > **注意**: `observe / 観察 / 監視` キーワードは **deprecated**。
-> セッション監視は su-observer の supervise モードを使用してください。
+> セッション監視は su-observer を使用してください。
 
-引数なし or 曖昧な場合は AskUserQuestion で 3 モードから選択させる。
-
-## [DEPRECATED] observe モード
-
-このモードは su-observer の supervise モードに移管されました。
-`observe / 観察 / 監視` のキーワードが入力された場合は、
-AskUserQuestion で su-observer への誘導を行う。
+spawn 時プロンプトに情報が含まれない場合のみ AskUserQuestion で 3 モードから選択させる。
 
 ## Step 1: scenario-run モード — シナリオ選択 + spawn
 
