@@ -33,6 +33,8 @@ MAX_POLL="${DEV_AUTOPILOT_MAX_POLL:-720}"
 MAX_NUDGE="${DEV_AUTOPILOT_MAX_NUDGE:-3}"
 NUDGE_TIMEOUT="${DEV_AUTOPILOT_NUDGE_TIMEOUT:-30}"
 POLL_INTERVAL=10
+# stagnate 判定閾値（秒）: inject skip が連続してこの時間を超えたら WARN (#469, #472, #475 共通化）
+AUTOPILOT_STAGNATE_SEC="${AUTOPILOT_STAGNATE_SEC:-600}"
 
 # --- usage ---
 usage() {
@@ -587,18 +589,27 @@ poll_phase() {
             continue
           fi
 
-          # chain 遷移停止検知 + nudge（パターンマッチ優先）
-          local nudge_matched=0
-          check_and_nudge "$issue_num" "$window_name" "$entry" && nudge_matched=1 || true
+          # workflow_done 検知 → inject（inject 成功時は check_and_nudge をスキップ）
+          local workflow_done_val inject_matched=0
+          workflow_done_val=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field workflow_done 2>/dev/null || echo "")
+          if [[ -n "$workflow_done_val" && "$workflow_done_val" != "null" ]]; then
+            inject_next_workflow "$issue_num" "$window_name" && inject_matched=1 || true
+          fi
 
-          # health-check（check_and_nudge でカバーできない stall を補完検知）
-          if [[ "$nudge_matched" -eq 0 ]]; then
-            local hc_counter="${HEALTH_CHECK_COUNTER[$issue_num]:-0}"
-            HEALTH_CHECK_COUNTER[$issue_num]=$((hc_counter + 1))
-            if (( HEALTH_CHECK_COUNTER[$issue_num] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
-              local health_stderr health_exit=0
-              health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue_num" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
-              handle_health_check_fallback "$issue_num" "$window_name" "$entry" "$health_exit" "$health_stderr" "${_state_read_repo_args[@]}"
+          if [[ "$inject_matched" -eq 0 ]]; then
+            # chain 遷移停止検知 + nudge（パターンマッチ優先）
+            local nudge_matched=0
+            check_and_nudge "$issue_num" "$window_name" "$entry" && nudge_matched=1 || true
+
+            # health-check（check_and_nudge でカバーできない stall を補完検知）
+            if [[ "$nudge_matched" -eq 0 ]]; then
+              local hc_counter="${HEALTH_CHECK_COUNTER[$issue_num]:-0}"
+              HEALTH_CHECK_COUNTER[$issue_num]=$((hc_counter + 1))
+              if (( HEALTH_CHECK_COUNTER[$issue_num] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
+                local health_stderr health_exit=0
+                health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue_num" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
+                handle_health_check_fallback "$issue_num" "$window_name" "$entry" "$health_exit" "$health_stderr" "${_state_read_repo_args[@]}"
+              fi
             fi
           fi
           ;;
@@ -688,6 +699,8 @@ poll_phase() {
 declare -A NUDGE_COUNTS=()
 declare -A LAST_OUTPUT_HASH=()
 declare -A HEALTH_CHECK_COUNTER=()
+declare -A RESOLVE_FAIL_COUNT=()   # AC-3: RESOLVE_FAILED 連続カウント（issue ごと）
+declare -A RESOLVE_FAIL_FIRST_TS=() # AC-3: 連続開始タイムスタンプ（秒）
 
 # chain 停止パターン → 次コマンドマッピング
 # パターンが一致した場合: exit 0 + 次コマンドを stdout（空文字 = 空 Enter）
@@ -725,6 +738,20 @@ _nudge_command_for_pattern() {
     echo "/twl:workflow-test-ready #${issue}"
   elif echo "$pane_output" | grep -qP ">>> 提案完了"; then
     echo ""
+  elif echo "$pane_output" | grep -qP ">>> 実装完了: issue-\d+"; then
+    # AC-2 fallback: change-apply が workflow_done を書かずに終了した場合のリカバリ
+    # workflow_done が既に非 null/非 setup なら重複 inject を防ぐ（MAX_NUDGE 内での再実行対策）
+    local _wf_done
+    _wf_done=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" \
+      --field workflow_done 2>/dev/null || echo "")
+    if [[ -z "$_wf_done" || "$_wf_done" == "null" || "$_wf_done" == "setup" ]]; then
+      # Pilot role で workflow_done=test-ready を書き、inject_next_workflow が動作するようにする
+      python3 -m twl.autopilot.state write --type issue --issue "$issue" \
+        --role pilot --set "workflow_done=test-ready" 2>/dev/null || true
+      echo "/twl:workflow-pr-verify #${issue}"
+    else
+      return 1
+    fi
   elif echo "$pane_output" | grep -qP "テスト準備.*完了"; then
     echo "/twl:workflow-pr-verify #${issue}"
   elif echo "$pane_output" | grep -qP "workflow-pr-verify.*完了"; then
@@ -759,8 +786,26 @@ inject_next_workflow() {
   if [[ "$next_skill_exit" -ne 0 || -z "$next_skill" ]]; then
     echo "[orchestrator] Issue #${issue}: WARNING: resolve_next_workflow 失敗 — inject スキップ" >&2
     echo "[${_trace_ts}] issue=${issue} skill=RESOLVE_FAILED result=skip reason=\"resolve_next_workflow exit=${next_skill_exit}\"" >> "$_trace_log" 2>/dev/null || true
+
+    # --- AC-3: stagnate 検知（RESOLVE_FAILED 連続カウント） ---
+    local _fail_count="${RESOLVE_FAIL_COUNT[$issue]:-0}"
+    local _now
+    _now=$(date +%s 2>/dev/null || echo 0)
+    if [[ "$_fail_count" -eq 0 ]]; then
+      RESOLVE_FAIL_FIRST_TS[$issue]="$_now"
+    fi
+    RESOLVE_FAIL_COUNT[$issue]=$(( _fail_count + 1 ))
+    local _elapsed=$(( _now - ${RESOLVE_FAIL_FIRST_TS[$issue]:-_now} ))
+    if (( _elapsed >= AUTOPILOT_STAGNATE_SEC )); then
+      echo "[orchestrator] WARN: issue=${issue} stagnate detected (RESOLVE_FAILED ${RESOLVE_FAIL_COUNT[$issue]} 回, ${_elapsed}s >= AUTOPILOT_STAGNATE_SEC=${AUTOPILOT_STAGNATE_SEC})" >&2
+      echo "[${_trace_ts}] issue=${issue} skill=RESOLVE_FAILED result=stagnate elapsed=${_elapsed}s count=${RESOLVE_FAIL_COUNT[$issue]}" >> "$_trace_log" 2>/dev/null || true
+    fi
+
     return 1
   fi
+  # inject 成功時は RESOLVE_FAIL カウントをリセット
+  RESOLVE_FAIL_COUNT[$issue]=0
+  RESOLVE_FAIL_FIRST_TS[$issue]=""
 
   # --- allow-list バリデーション（コマンドインジェクション防止） ---
   # 許可: /twl:workflow-<kebab> 形式、または pr-merge（terminal workflow として別処理）
