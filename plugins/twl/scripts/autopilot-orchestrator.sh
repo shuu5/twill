@@ -86,6 +86,11 @@ done
 
 export AUTOPILOT_DIR
 
+# AUTOPILOT_DIR 未設定 warning
+if [[ -z "$AUTOPILOT_DIR" ]]; then
+  echo "WARN: AUTOPILOT_DIR が未設定です。state.py の fallback で自動解決を試みますが、bare sibling 構成では誤ったパスを参照する可能性があります。export AUTOPILOT_DIR=<.autopilot への絶対パス> を設定してください。" >&2
+fi
+
 # --- model 解決: CLI arg > plan.yaml > デフォルト（sonnet） ---
 # plan.yaml の model フィールドは Phase 実行モードで PLAN_FILE が確定後に読み込む
 # （SUMMARY_MODE では不要）
