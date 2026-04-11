@@ -17,6 +17,7 @@ Spec Management
 ## Constraints
 
 - deltaspec/ ディレクトリは cwd から上方探索で発見する（プロジェクトルートに依存しない）
+- config.yaml を持つ deltaspec/ のみ有効（config.yaml のない deltaspec/ はスキップ）。walk-up で見つからない場合は git toplevel からの walk-down（maxdepth=3）にフォールバック
 - スキーマは現在 "spec-driven" のみ。.deltaspec.yaml の schema フィールドで識別
 - Artifact 間の依存グラフ: proposal → design, specs（並列）→ tasks
 - archive 時に specs/ 内の delta headers（ADDED/MODIFIED/REMOVED）を main specs に統合

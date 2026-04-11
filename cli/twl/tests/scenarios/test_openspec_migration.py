@@ -212,6 +212,11 @@ class TestArchiveAllActiveChanges:
     def _setup_migrated_changes(self, tmp_path: Path, names: list[str]) -> Path:
         """Create active changes with .deltaspec.yaml (post-migration state)."""
         changes_dir = tmp_path / "deltaspec" / "changes"
+        # Ensure config.yaml exists for find_deltaspec_root()
+        config = tmp_path / "deltaspec" / "config.yaml"
+        changes_dir.mkdir(parents=True, exist_ok=True)
+        if not config.exists():
+            config.write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
         for name in names:
             change_dir = changes_dir / name
             change_dir.mkdir(parents=True, exist_ok=True)
@@ -293,6 +298,10 @@ class TestNoRemainingOpenspecFiles:
         """No .openspec.yaml remains after rename + archive of all active changes."""
         monkeypatch.chdir(tmp_path)
         changes_dir = tmp_path / "deltaspec" / "changes"
+        config = tmp_path / "deltaspec" / "config.yaml"
+        changes_dir.mkdir(parents=True, exist_ok=True)
+        if not config.exists():
+            config.write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
         active_names = ["chain-validate", "model-specialist-validate"]
         for name in active_names:
             _make_openspec_change(changes_dir, name)

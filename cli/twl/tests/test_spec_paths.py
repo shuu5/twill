@@ -17,13 +17,20 @@ from twl.spec.paths import (
 )
 
 
+def _make_deltaspec(path: Path) -> None:
+    """Create deltaspec/config.yaml under path."""
+    ds = path / "deltaspec"
+    ds.mkdir(parents=True, exist_ok=True)
+    (ds / "config.yaml").write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
+
+
 def test_find_deltaspec_root_in_project_root(tmp_path):
-    (tmp_path / "deltaspec").mkdir()
+    _make_deltaspec(tmp_path)
     assert find_deltaspec_root(tmp_path) == tmp_path
 
 
 def test_find_deltaspec_root_from_subdir(tmp_path):
-    (tmp_path / "deltaspec").mkdir()
+    _make_deltaspec(tmp_path)
     sub = tmp_path / "a" / "b"
     sub.mkdir(parents=True)
     assert find_deltaspec_root(sub) == tmp_path

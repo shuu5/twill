@@ -55,7 +55,16 @@ The system SHALL do bar.
 """
 
 
+def _ensure_config_yaml(tmp_path: Path) -> None:
+    ds = tmp_path / "deltaspec"
+    ds.mkdir(exist_ok=True)
+    config = ds / "config.yaml"
+    if not config.exists():
+        config.write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
+
+
 def make_change(tmp_path: Path, name: str, spec_content: str | None = None) -> Path:
+    _ensure_config_yaml(tmp_path)
     change_dir = tmp_path / "deltaspec" / "changes" / name
     change_dir.mkdir(parents=True)
     (change_dir / ".deltaspec.yaml").write_text("schema: spec-driven\ncreated: 2024-01-01\n")
@@ -68,6 +77,7 @@ def make_change(tmp_path: Path, name: str, spec_content: str | None = None) -> P
 
 def make_change_flat(tmp_path: Path, name: str, spec_content: str | None = None, cap_name: str = "cap-a") -> Path:
     """Create a change with flat spec format (cap-a.md instead of cap-a/spec.md)."""
+    _ensure_config_yaml(tmp_path)
     change_dir = tmp_path / "deltaspec" / "changes" / name
     change_dir.mkdir(parents=True)
     (change_dir / ".deltaspec.yaml").write_text("schema: spec-driven\ncreated: 2024-01-01\n")

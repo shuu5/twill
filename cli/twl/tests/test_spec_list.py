@@ -12,7 +12,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from twl.spec.list import cmd_list
 
 
+def _ensure_config_yaml(tmp_path: Path) -> None:
+    ds = tmp_path / "deltaspec"
+    ds.mkdir(exist_ok=True)
+    config = ds / "config.yaml"
+    if not config.exists():
+        config.write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
+
+
 def make_change(tmp_path: Path, name: str, tasks: str = "") -> Path:
+    _ensure_config_yaml(tmp_path)
     change_dir = tmp_path / "deltaspec" / "changes" / name
     change_dir.mkdir(parents=True)
     if tasks:
@@ -23,6 +32,7 @@ def make_change(tmp_path: Path, name: str, tasks: str = "") -> Path:
 def test_list_empty(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "deltaspec" / "changes").mkdir(parents=True)
+    _ensure_config_yaml(tmp_path)
     rc = cmd_list()
     assert rc == 0
     assert "No changes found." in capsys.readouterr().out

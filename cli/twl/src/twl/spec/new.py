@@ -11,6 +11,16 @@ _KEBAB_RE = re.compile(r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?$")
 _ISSUE_RE = re.compile(r"^issue-(\d+)$")
 
 
+def _init_deltaspec_config(deltaspec_dir: Path) -> None:
+    """Create deltaspec/config.yaml if deltaspec/ is being initialized."""
+    config_path = deltaspec_dir / "config.yaml"
+    if not config_path.exists():
+        config_path.write_text(
+            "schema: spec-driven\ncontext: {}\n",
+            encoding="utf-8",
+        )
+
+
 def cmd_new(name: str) -> int:
     if not _KEBAB_RE.match(name):
         print(
@@ -21,9 +31,13 @@ def cmd_new(name: str) -> int:
 
     try:
         root = find_deltaspec_root()
-    except DeltaspecNotFound as e:
-        print(f"Error: {e}", file=sys.stderr)
-        return 1
+    except DeltaspecNotFound:
+        # Auto-init: create deltaspec/config.yaml in cwd
+        cwd = Path.cwd()
+        deltaspec_dir = cwd / "deltaspec"
+        deltaspec_dir.mkdir(parents=True, exist_ok=True)
+        _init_deltaspec_config(deltaspec_dir)
+        root = cwd
 
     change_dir = get_changes_dir(root) / name
     if change_dir.exists():

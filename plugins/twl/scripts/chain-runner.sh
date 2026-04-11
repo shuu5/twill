@@ -55,6 +55,29 @@ resolve_project_root() {
   git rev-parse --show-toplevel 2>/dev/null || pwd
 }
 
+# config.yaml を持つ deltaspec root を返す（walk-down fallback 付き）
+# 引数: $1 = git/project root（省略時は resolve_project_root）
+# maxdepth=5: Python の max_depth=3 と等価（config.yaml は deltaspec/ 配下のため +2）
+resolve_deltaspec_root() {
+  local root="${1:-$(resolve_project_root)}"
+  if [[ -f "$root/deltaspec/config.yaml" ]]; then
+    echo "$root"
+    return 0
+  fi
+  # walk-down fallback: repo 内で deltaspec/config.yaml を探索（maxdepth=5 は Python max_depth=3 と等価）
+  local found_config
+  found_config="$(find "$root" -maxdepth 5 -name config.yaml -path '*/deltaspec/*' \
+    -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/__pycache__/*' \
+    2>/dev/null | head -1)"
+  if [[ -n "$found_config" ]]; then
+    dirname "$(dirname "$found_config")"
+    return 0
+  fi
+  # 見つからない場合は root を返す（呼び出し側で判定）
+  echo "$root"
+  return 1
+}
+
 # AUTOPILOT_DIR を解決（env var 優先、未設定時は main worktree から推定）
 resolve_autopilot_dir() {
   if [[ -n "${AUTOPILOT_DIR:-}" ]]; then
@@ -273,18 +296,27 @@ step_init() {
     return 0
   fi
 
-  # deltaspec 判定
-  if [[ ! -d "$root/deltaspec" ]]; then
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":false,"auto_init":true,"is_quick":$is_quick}'
-    ok "init" "recommended_action=propose (no deltaspec, auto_init=true, is_quick=$is_quick)"
-    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
+  # deltaspec 判定: config.yaml の存在でのみ有効な deltaspec root と判断する
+  # walk-down fallback: root/deltaspec/config.yaml がない場合、repo 内を探索する
+  local deltaspec_root="$root"
+  if [[ ! -f "$root/deltaspec/config.yaml" ]]; then
+    local found_config
+    found_config="$(find "$root" -maxdepth 5 -name config.yaml -path '*/deltaspec/*' -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/__pycache__/*' 2>/dev/null | head -1)"
+    if [[ -n "$found_config" ]]; then
+      # deltaspec/config.yaml の親ディレクトリ（deltaspec/）の親が deltaspec_root
+      deltaspec_root="$(dirname "$(dirname "$found_config")")"
+    else
+      jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":false,"auto_init":true,"is_quick":$is_quick}'
+      ok "init" "recommended_action=propose (no deltaspec, auto_init=true, is_quick=$is_quick)"
+      if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+        python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
+      fi
+      return 0
     fi
-    return 0
   fi
 
   # changes 判定
-  local changes_dir="$root/deltaspec/changes"
+  local changes_dir="$deltaspec_root/deltaspec/changes"
   if [[ ! -d "$changes_dir" ]] || [[ -z "$(ls -A "$changes_dir" 2>/dev/null)" ]]; then
     jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_exists":false,"is_quick":$is_quick}'
     ok "init" "recommended_action=propose (no changes, is_quick=$is_quick)"
@@ -803,7 +835,9 @@ step_change_id_resolve() {
   record_current_step "change-id-resolve"
   local root
   root="$(resolve_project_root)"
-  local changes_dir="$root/deltaspec/changes"
+  local ds_root
+  ds_root="$(resolve_deltaspec_root "$root")" || true
+  local changes_dir="$ds_root/deltaspec/changes"
 
   if [[ ! -d "$changes_dir" ]]; then
     err "change-id-resolve" "deltaspec/changes/ が存在しない"
@@ -1092,9 +1126,10 @@ step_check() {
   root="$(resolve_project_root)"
   local has_fail=false
 
-  # DeltaSpec
-  if [[ -d "$root/deltaspec" ]]; then
-    if ls "$root/deltaspec/changes/"*/proposal.md >/dev/null 2>&1; then
+  # DeltaSpec: config.yaml を持つ deltaspec root のみ有効
+  local ds_root
+  if ds_root="$(resolve_deltaspec_root "$root")"; then
+    if ls "$ds_root/deltaspec/changes/"*/proposal.md >/dev/null 2>&1; then
       echo "DeltaSpec: PASS"
     else
       echo "DeltaSpec: FAIL (proposal.md なし)"

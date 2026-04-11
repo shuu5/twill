@@ -50,11 +50,15 @@ The system SHALL do foo.
 
 
 def make_change(tmp_path: Path, name: str, spec_content: str | None = None) -> Path:
-    change_dir = tmp_path / "deltaspec" / "changes" / name
+    ds = tmp_path / "deltaspec"
+    change_dir = ds / "changes" / name
     specs_dir = change_dir / "specs" / "cap-a"
     specs_dir.mkdir(parents=True)
     if spec_content is not None:
         (specs_dir / "spec.md").write_text(spec_content)
+    config = ds / "config.yaml"
+    if not config.exists():
+        config.write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
     return change_dir
 
 
@@ -110,10 +114,20 @@ def test_validate_json_output(tmp_path, monkeypatch, capsys):
     assert data["items"][0]["valid"] is True
 
 
+def _make_deltaspec_root(tmp_path: Path) -> None:
+    """Create deltaspec/config.yaml marker in tmp_path."""
+    ds = tmp_path / "deltaspec"
+    ds.mkdir(exist_ok=True)
+    config = ds / "config.yaml"
+    if not config.exists():
+        config.write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
+
+
 def test_validate_no_specs_dir(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     # Change with no specs dir — passes vacuously
     (tmp_path / "deltaspec" / "changes" / "empty").mkdir(parents=True)
+    _make_deltaspec_root(tmp_path)
     rc = cmd_validate("empty")
     assert rc == 0
 
@@ -121,6 +135,7 @@ def test_validate_no_specs_dir(tmp_path, monkeypatch, capsys):
 def test_validate_missing_change(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "deltaspec" / "changes").mkdir(parents=True)
+    _make_deltaspec_root(tmp_path)
     # Missing change just warns, doesn't error out, but total=0
     rc = cmd_validate("ghost")
     assert rc == 0  # 0 failed out of 0
@@ -147,6 +162,9 @@ def _make_coverage_fixture(tmp_path: Path, invariant_ids: list[str], referenced_
 
     # Ensure deltaspec root marker exists
     (tmp_path / "deltaspec").mkdir(exist_ok=True)
+    config = tmp_path / "deltaspec" / "config.yaml"
+    if not config.exists():
+        config.write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
 
 
 def test_coverage_all_covered(tmp_path, monkeypatch, capsys):
