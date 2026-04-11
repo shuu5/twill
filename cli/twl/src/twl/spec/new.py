@@ -27,9 +27,10 @@ def _has_nested_deltaspec_in_remote() -> bool | None:
             capture_output=True,
             text=True,
             cwd=Path.cwd(),
+            timeout=10,
         )
-    except FileNotFoundError:
-        return None  # git not found
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return None  # git not found or timed out
 
     if result.returncode != 0:
         return None  # git ls-tree failed (offline, no origin, etc.)

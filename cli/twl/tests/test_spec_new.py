@@ -58,9 +58,11 @@ def test_accepts_numbers_and_hyphens(tmp_path, monkeypatch):
 
 
 def test_auto_init_without_deltaspec(tmp_path, monkeypatch):
-    # deltaspec/ が存在しない場合は auto-init して成功する
+    # deltaspec/ が存在せず origin/main にも nested root がない場合は auto-init して成功する
     monkeypatch.chdir(tmp_path)
-    rc = cmd_new("my-change")
+    # Explicitly mock git ls-tree to return no nested roots (safe to auto-init)
+    with patch("twl.spec.new.subprocess.run", return_value=_mock_git_ls_tree_with_nested(returncode=0, lines=["README.md"])):
+        rc = cmd_new("my-change")
     assert rc == 0
     assert (tmp_path / "deltaspec" / "config.yaml").exists()
     assert (tmp_path / "deltaspec" / "changes" / "my-change").is_dir()
