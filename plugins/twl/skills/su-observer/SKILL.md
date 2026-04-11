@@ -36,7 +36,8 @@ spawnable_by:
    - 存在しない → 新規 SupervisorSession 作成
 3. Project Board から現在の状態を取得（Todo/In Progress の Issue 一覧）
 4. `mcp__doobidoo__memory_search` でプロジェクトの直近記憶を検索（プロジェクト全体像の復元）
-5. `>>> su-observer 起動完了。指示をお待ちしています。` を表示
+5. `refs/monitor-channel-catalog.md` を Read して Monitor チャネル定義を把握（Wave 管理時のチャネル選択に使用）
+6. `>>> su-observer 起動完了。指示をお待ちしています。` を表示
 
 ## Step 1: 常駐ループ（ユーザー指示待ち）
 
@@ -103,14 +104,16 @@ session-comm.sh   # inject/介入（plugins/session/scripts/session-comm.sh）
 
 1. `session-state.sh` で supervised controller の状態を確認
 2. `cld-observe` で snapshot 取得
-3. `commands/problem-detect.md` を Read → 実行（rule-based 問題検出）
-4. 状態サマリをユーザーに報告
+3. Monitor tool が起動中であれば Monitor スニペット実行結果（[INPUT-WAIT] / [STAGNATE] 等のチャネル出力）も確認ソースとして参照する
+4. `commands/problem-detect.md` を Read → 実行（rule-based 問題検出）
+5. 状態サマリをユーザーに報告
 
 ### 問題を検出した場合
 
 `cld-observe` / `cld-observe-loop` 中に問題を検知した場合:
 
-1. `refs/intervention-catalog.md` を Read → 3 層分類（Auto/Confirm/Escalate）を照合
+1. 検出チャネル名（`[INPUT-WAIT]` / `[PILOT-IDLE]` / `[STAGNATE]` 等）を `refs/monitor-channel-catalog.md` の定義と突き合わせてパターンを特定する
+2. `refs/intervention-catalog.md` を Read → 3 層分類（Auto/Confirm/Escalate）を照合
 2. 層に応じた介入を実行:
    - Layer 0 Auto → `commands/intervene-auto.md` を Read → `session-comm.sh` で介入実行（SU-7）
    - Layer 1 Confirm → `commands/intervene-confirm.md` を Read → ユーザーに確認後実行
@@ -123,6 +126,7 @@ Issue 群の一括実装（Wave）を要求された場合:
 1. Issue 群の Wave 分割を計画（または `.autopilot/plan.yaml` から既存計画を継続）
 2. Wave N の Issue リストを確定し、ユーザーに提示して承認を得る
 3. `cld-spawn` で co-autopilot を起動（Wave N の Issue 群を spawn 時プロンプトに含める）
+3.5. `refs/monitor-channel-catalog.md` を参照し、Wave 種別に応じたチャネル（INPUT-WAIT / STAGNATE / WORKERS 等）を選択して Monitor tool を起動する
 4. `cld-observe-loop` で能動 observe ループを開始
 5. Wave 完了を検知したら:
    - `commands/wave-collect.md` を Read → 実行（`WAVE_NUM=<N>`）

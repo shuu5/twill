@@ -15,7 +15,19 @@ set -euo pipefail
 # パターン定義（Claude Code UI変更時はここを更新）
 # =============================================================================
 # プロンプト: 入力待ちを示す末尾パターン
-PROMPT_PATTERN='❯[[:space:]]*$'
+PROMPT_PATTERN='❯[[:space:]]'
+# approval UI / AskUserQuestion パターン（tail -5 全体スキャン対象）
+INPUT_WAITING_PATTERNS=(
+    'Enter to select'        # Claude Code 選択 UI
+    '↑/↓ to navigate'       # 選択 UI ナビゲーションヒント
+    '承認しますか'             # 日本語 AskUserQuestion
+    '確認しますか'             # 日本語 AskUserQuestion
+    'Do you want to'         # 英語 AskUserQuestion
+    '\[y/N\]'                # y/N プロンプト
+    '\[Y/n\]'                # Y/n プロンプト
+    'Type something'         # フリーテキスト入力
+    'Waiting for user input' # generic input-waiting
+)
 # エラー: capture-pane末尾に現れるエラーパターン
 ERROR_PATTERNS=(
     'Error:'
@@ -128,13 +140,20 @@ detect_state() {
     local last_lines
     last_lines=$(echo "$captured" | sed '/^[[:space:]]*$/d' | tail -5)
 
-    # input-waiting: プロンプトパターンが末尾にある
-    # Claude Code TUI �� capture-pane で UTF-8 バイト列を返すため、
-    # ❯ (U+276F) の直接マッチに加え、バイト列パターンとステータスバーでも検出
-    if echo "$last_lines" | tail -1 | grep -qP "$PROMPT_PATTERN"; then
+    # input-waiting: プロンプトパターンが last_lines のいずれかの行にある
+    # Claude Code TUI は capture-pane で UTF-8 バイト列を返すため、
+    # ❯ (U+276F) の直接マッチを tail -5 全体に対して適用する
+    if echo "$last_lines" | grep -qP "$PROMPT_PATTERN"; then
         echo "input-waiting"
         return
     fi
+    # approval UI / AskUserQuestion パターンを tail -5 全体に対してスキャン
+    for _iw_pattern in "${INPUT_WAITING_PATTERNS[@]}"; do
+        if echo "$last_lines" | grep -qP "$_iw_pattern"; then
+            echo "input-waiting"
+            return
+        fi
+    done
     # フォールバック: TUI のステータスバーパターンで input-waiting を検出
     # "bypass permissions" または "esc to interrupt" が末尾にあり、
     # かつ処理中インジケータ（Thinking, Working 等）がなければ input-waiting
@@ -275,8 +294,10 @@ cmd_wait() {
 }
 
 # =============================================================================
-# メインディスパッチ
+# メインディスパッチ（source 時はスキップ）
 # =============================================================================
+[[ "${BASH_SOURCE[0]}" != "${0}" ]] && return 0
+
 case "${1:-}" in
     state)
         shift

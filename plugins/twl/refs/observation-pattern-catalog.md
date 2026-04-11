@@ -143,6 +143,30 @@ bug-472-monitor-stall:
   category: monitor-stall
   description: "Pilot Monitor の PHASE_COMPLETE wait 無限 stall 検出 (#472 関連)"
   related_issue: "472"
+
+channel-input-wait:
+  regex: 'input-waiting|Enter to select|↑/↓ to navigate|承認しますか|確認しますか|\[y/N\]|\[Y/n\]|Do you want to|Waiting for user input'
+  severity: warning
+  category: input-waiting
+  intervention: Auto
+  description: "[INPUT-WAIT] approval UI / AskUserQuestion / y/N プロンプトで window が input-waiting 状態。session-comm.sh inject で即時介入可能 (#486 関連)"
+  related_issue: "486"
+
+channel-pilot-idle:
+  regex: 'Skedaddling|Frolicking|Background.*poll|idle.*5.*min|5 分.*停滞'
+  severity: warning
+  category: pilot-idle
+  intervention: Confirm
+  description: "[PILOT-IDLE] Pilot が Skedaddling/Frolicking/Background poll で 5 分以上停滞。wave 進行の遅延リスクあり (#486 関連)"
+  related_issue: "486"
+
+channel-stagnate:
+  regex: 'state.*stagnate|stagnate.*detect|mtime.*600|updated_at.*600|state file.*not updated'
+  severity: warning
+  category: state-stagnate
+  intervention: Confirm
+  description: "[STAGNATE] .supervisor/working-memory.md / .autopilot/waves/*.summary.md / .autopilot/checkpoints/*.json の mtime が 10 分以上更新されない (#486 関連)"
+  related_issue: "486"
 ```
 
 ## 拡張ガイド

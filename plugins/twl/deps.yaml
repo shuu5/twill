@@ -315,6 +315,7 @@ skills:
       - atomic: intervene-escalate
       - reference: intervention-catalog
       - reference: observation-pattern-catalog
+      - reference: monitor-channel-catalog
     description: "メタ認知レイヤー: 全 controller の監視・介入。テストシナリオ実行は co-self-improve に委譲"
 
   workflow-setup:
@@ -705,6 +706,14 @@ refs:
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
     description: "負荷テスト level の定量基準"
+
+  # su-observer Monitor チャネルカタログ (#486)
+  monitor-channel-catalog:
+    type: reference
+    path: skills/su-observer/refs/monitor-channel-catalog.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "Monitor 標準チャネル定義（INPUT-WAIT / PILOT-IDLE / STAGNATE / WORKERS / PHASE-DONE / NON-TERMINAL）bash スニペット付き"
 
   # su-observer intervention catalog (#310)
   intervention-catalog:
