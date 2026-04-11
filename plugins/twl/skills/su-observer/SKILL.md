@@ -43,6 +43,36 @@ spawnable_by:
 ユーザーの入力を文脈から解釈し、状況に応じて以下のアクションを選択して実行する。
 **モードテーブルによる強制ルーティングは行わない**。AskUserQuestion でモード選択させない。
 
+### supervise 1 iteration（co-autopilot 監視中の必須並行チャンネル）
+
+co-autopilot を supervise している間、1 iteration で以下の5チャンネルを並行実行しなければならない（SHALL）:
+
+| チャンネル | 目的 | 閾値/間隔 |
+|---|---|---|
+| Monitor tool (Pilot) | Pilot window の tail streaming | 随時 |
+| `cld-observe-loop --pattern 'ap-*' --interval 180` | Worker 群 polling | 3 分 |
+| `.autopilot/issues/issue-*.json` mtime 監視 | state stagnate 検知 | `AUTOPILOT_STAGNATE_SEC` デフォルト 600s |
+| `session-comm.sh capture` (ad-hoc) | 実体確認（on-demand） | 必要時 |
+| `gh pr list` (Pilot 向け) | state.pr と実体の差分検知 | Step 4 Wave 管理時 |
+
+**起動手順（co-autopilot spawn 後に必ず実行）:**
+
+```bash
+# 1. Monitor tool は Pilot window を対象に streaming 開始（並行）
+# 2. cld-observe-loop を Worker 群対象で起動（並行）
+cld-observe-loop --pattern 'ap-*' --interval 180
+```
+
+**Monitor tool と cld-observe-loop は必ず同時に起動すること**。どちらか一方のみの使用は禁止（SHALL）。Monitor tool が「静か＝正常」と誤判定するリスクを cld-observe-loop の Worker 直接 polling で補完する。
+
+**state stagnate 検知手順（observe-once 実行後）:**
+
+observe-once の `stagnate_files` フィールドにファイルパスが含まれている場合（observe-once は stderr に `WARN: state stagnate detected: <path>` を出力する）、または `.autopilot/issues/issue-*.json` の `updated_at` が `AUTOPILOT_STAGNATE_SEC` 秒（デフォルト 600s）以上古い場合:
+
+1. `refs/intervention-catalog.md` の pattern-7 照合を実行する
+2. 検出条件（stagnate AND `>>> 実装完了:` シグナル）が揃えば Layer 0 Auto 介入
+3. stagnate のみで完了シグナルなしの場合は pattern-4（Layer 1 Confirm）へフォールバック
+
 ### controller spawn が必要な場合
 
 ユーザーが実装・作成・設計・テスト等の実行を求めた場合、対象 controller を `cld-spawn` で起動する:

@@ -1596,7 +1596,7 @@ commands:
     type: atomic
     path: commands/observe-once.md
     effort: low
-    spawnable_by: [controller, workflow]
+    spawnable_by: [controller, workflow, supervisor]
     can_spawn: []
     calls:
       - script: observe-wrapper
