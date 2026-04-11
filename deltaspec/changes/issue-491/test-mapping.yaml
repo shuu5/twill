@@ -1,0 +1,327 @@
+change_id: issue-491
+generated_at: "2026-04-12T00:00:00Z"
+test_framework: bats
+scenarios:
+  # -------------------------------------------------------------------------
+  # Spec: workflow-issue-lifecycle
+  # -------------------------------------------------------------------------
+  - id: "workflow-issue-lifecycle--frontmatter"
+    name: "フロントマター検証"
+    spec_file: "specs/workflow-issue-lifecycle/spec.md"
+    spec_line: 7
+    requirement: "workflow-issue-lifecycle SKILL.md 新規作成"
+    test_file: "tests/bats/skills/workflow-issue-lifecycle.bats"
+    test_name: "workflow-issue-lifecycle: frontmatter に type: workflow が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "workflow-issue-lifecycle--n1-guard"
+    name: "N=1 guard 呼び出し"
+    spec_file: "specs/workflow-issue-lifecycle/spec.md"
+    spec_line: 15
+    requirement: "workflow-issue-lifecycle N=1 不変量"
+    test_file: "tests/bats/skills/workflow-issue-lifecycle.bats"
+    test_name: "workflow-issue-lifecycle: spec-review-session-init.sh を引数 1 で呼び出す記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "workflow-issue-lifecycle--per-issue-dir"
+    name: "per-issue dir 読み込み"
+    spec_file: "specs/workflow-issue-lifecycle/spec.md"
+    spec_line: 23
+    requirement: "workflow-issue-lifecycle 入力インターフェース"
+    test_file: "tests/bats/skills/workflow-issue-lifecycle.bats"
+    test_name: "workflow-issue-lifecycle: IN/draft.md 読み込みが文書化されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "workflow-issue-lifecycle--critical-reloop"
+    name: "CRITICAL findings による再レビューループ"
+    spec_file: "specs/workflow-issue-lifecycle/spec.md"
+    spec_line: 36
+    requirement: "workflow-issue-lifecycle round loop 全分岐実装"
+    test_file: "tests/bats/skills/workflow-issue-lifecycle.bats"
+    test_name: "workflow-issue-lifecycle: CRITICAL findings による fixing STATE が文書化されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "workflow-issue-lifecycle--circuit-broken"
+    name: "circuit_broken"
+    spec_file: "specs/workflow-issue-lifecycle/spec.md"
+    spec_line: 41
+    requirement: "workflow-issue-lifecycle round loop 全分岐実装"
+    test_file: "tests/bats/skills/workflow-issue-lifecycle.bats"
+    test_name: "workflow-issue-lifecycle: circuit_broken STATE が文書化されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "workflow-issue-lifecycle--file-io"
+    name: "ファイル経由 I/O"
+    spec_file: "specs/workflow-issue-lifecycle/spec.md"
+    spec_line: 47
+    requirement: "workflow-issue-lifecycle ファイル経由 handoff"
+    test_file: "tests/bats/skills/workflow-issue-lifecycle.bats"
+    test_name: "workflow-issue-lifecycle: OUT/report.json 出力が文書化されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -------------------------------------------------------------------------
+  # Spec: issue-lifecycle-orchestrator
+  # -------------------------------------------------------------------------
+  - id: "issue-lifecycle-orchestrator--exists"
+    name: "スクリプト存在確認"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 7
+    requirement: "issue-lifecycle-orchestrator.sh 新規作成"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: issue-lifecycle-orchestrator.sh が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--abs-path"
+    name: "絶対パス検証"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 15
+    requirement: "orchestrator 入力インターフェース"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: 相対パスは exit 1 で終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--traversal"
+    name: "パストラバーサル対策"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 19
+    requirement: "orchestrator 入力インターフェース"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: /abs/../path はパストラバーサルエラーで exit 1"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--window-naming"
+    name: "決定論的 window 名"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 27
+    requirement: "tmux window 決定論的命名"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: スクリプト内で coi-<sid8>-<index> パターンが使用されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--shell-injection"
+    name: "shell injection 対策"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 35
+    requirement: "printf '%q' クォート"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: printf '%q' がスクリプト内で使用されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--spawn-isolation"
+    name: "spawn 失敗の局所化"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 43
+    requirement: "|| continue による失敗局所化"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: || continue による失敗局所化がスクリプトに存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--done-skip"
+    name: "done 済みスキップ"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 51
+    requirement: "Resume 対応"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: OUT/report.json 存在チェックがスクリプトに存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--failed-reset"
+    name: "failed リセット"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 55
+    requirement: "Resume 対応"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: STATE=failed の検出がスクリプトに存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--normal-complete"
+    name: "正常完了"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 63
+    requirement: "完了検知ポーリング"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: 正常完了シミュレーション: 全 subdir に OUT/report.json があれば exit 0"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--timeout"
+    name: "タイムアウト"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 67
+    requirement: "完了検知ポーリング"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: タイムアウトシミュレーション: MAX_POLL=1 で未完了なら exit 1"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-lifecycle-orchestrator--cld-invocation"
+    name: "cld 起動方式確認"
+    spec_file: "specs/issue-lifecycle-orchestrator/spec.md"
+    spec_line: 75
+    requirement: "cld 位置引数起動"
+    test_file: "tests/bats/scripts/issue-lifecycle-orchestrator.bats"
+    test_name: "orchestrator: cld/claude の -p フラグが使われていない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -------------------------------------------------------------------------
+  # Spec: issue-create-repo
+  # -------------------------------------------------------------------------
+  - id: "issue-create-repo--backward-compat"
+    name: "--repo 未指定時の後方互換"
+    spec_file: "specs/issue-create-repo/spec.md"
+    spec_line: 7
+    requirement: "issue-create --repo オプション追加"
+    test_file: "tests/bats/commands/issue-create-repo.bats"
+    test_name: "issue-create: --repo 未指定時は既存動作を維持する記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-create-repo--cross-repo"
+    name: "--repo 指定時の cross-repo 起票"
+    spec_file: "specs/issue-create-repo/spec.md"
+    spec_line: 11
+    requirement: "issue-create --repo オプション追加"
+    test_file: "tests/bats/commands/issue-create-repo.bats"
+    test_name: "issue-create: cross-repo 起票時に -R フラグを使う記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-create-repo--body-file"
+    name: "body-file 経由渡し"
+    spec_file: "specs/issue-create-repo/spec.md"
+    spec_line: 18
+    requirement: "--repo 指定時の --body-file セキュリティパターン"
+    test_file: "tests/bats/commands/issue-create-repo.bats"
+    test_name: "issue-create: --repo 指定時のテンポラリファイル使用が文書化されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -------------------------------------------------------------------------
+  # Spec: deps-yaml-updates
+  # -------------------------------------------------------------------------
+  - id: "deps-yaml-491--issue-structure-workflow"
+    name: "issue-structure spawnable_by"
+    spec_file: "specs/deps-yaml-updates/spec.md"
+    spec_line: 12
+    requirement: "deps.yaml spawnable_by 拡張"
+    test_file: "tests/bats/structure/deps-yaml-issue-491.bats"
+    test_name: "deps-yaml-491: issue-structure spawnable_by に workflow が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-491--twl-check-pass"
+    name: "twl check PASS"
+    spec_file: "specs/deps-yaml-updates/spec.md"
+    spec_line: 16
+    requirement: "deps.yaml spawnable_by 拡張"
+    test_file: "tests/bats/structure/deps-yaml-issue-491.bats"
+    test_name: "deps-yaml-491: twl check が PASS する (Missing: 0)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-491--workflow-issue-lifecycle-entry"
+    name: "workflow-issue-lifecycle エントリ"
+    spec_file: "specs/deps-yaml-updates/spec.md"
+    spec_line: 23
+    requirement: "deps.yaml 新エントリ追加"
+    test_file: "tests/bats/structure/deps-yaml-issue-491.bats"
+    test_name: "deps-yaml-491: workflow-issue-lifecycle エントリが deps.yaml に存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-491--issue-lifecycle-orchestrator-entry"
+    name: "issue-lifecycle-orchestrator エントリ"
+    spec_file: "specs/deps-yaml-updates/spec.md"
+    spec_line: 29
+    requirement: "deps.yaml 新エントリ追加"
+    test_file: "tests/bats/structure/deps-yaml-issue-491.bats"
+    test_name: "deps-yaml-491: issue-lifecycle-orchestrator エントリが deps.yaml に存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
