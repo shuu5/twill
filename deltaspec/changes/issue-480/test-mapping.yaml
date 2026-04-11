@@ -1,0 +1,275 @@
+change_id: issue-480
+generated_at: "2026-04-12T00:00:00Z"
+test_framework: bats
+scenarios:
+  # ---------------------------------------------------------------------------
+  # Requirement: --real-issues フラグ対応
+  # ---------------------------------------------------------------------------
+  - id: "real-issues-smoke-001-issue-create"
+    name: "smoke-001 シナリオで実 Issue が起票される"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 8
+    requirement: "--real-issues フラグ対応"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "real-issues: smoke-001 シナリオで gh issue create が起票される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "real-issues-mode-local-error"
+    name: "--mode local で init した後に --real-issues を指定した場合にエラーになる"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 12
+    requirement: "--real-issues フラグ対応"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "real-issues: mode=local の config.json で --real-issues 実行時にエラー終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "real-issues-smoke-002-all-templates"
+    name: "smoke-002 で issue_templates 全件が起票される（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 8
+    requirement: "--real-issues フラグ対応"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "real-issues: smoke-002 で issue_templates 2件が全件起票される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "real-issues-nonexistent-scenario-error"
+    name: "存在しないシナリオ指定でエラー終了する（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 8
+    requirement: "--real-issues フラグ対応"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "real-issues: 存在しないシナリオ指定でエラー終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "real-issues-missing-config-error"
+    name: "config.json が存在しない場合はエラー終了する（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 8
+    requirement: "--real-issues フラグ対応"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "real-issues: config.json が存在しない場合はエラー終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: loaded-issues.json への記録
+  # ---------------------------------------------------------------------------
+  - id: "loaded-issues-file-created"
+    name: "起票後に loaded-issues.json が生成される"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 19
+    requirement: "loaded-issues.json への記録"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "loaded-issues: 起票後に loaded-issues.json が生成される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loaded-issues-schema-valid"
+    name: "loaded-issues.json の全必須フィールドが存在する"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 19
+    requirement: "loaded-issues.json への記録"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "loaded-issues: loaded-issues.json に全必須フィールドが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loaded-issues-scenario-repo-match"
+    name: "loaded-issues.json の scenario/repo フィールドが指定値と一致する"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 19
+    requirement: "loaded-issues.json への記録"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "loaded-issues: loaded-issues.json の scenario フィールドが指定値と一致する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loaded-issues-issues-array-structure"
+    name: "issues 配列の各要素に id/number/url が含まれる（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 19
+    requirement: "loaded-issues.json への記録"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "loaded-issues: issues 配列の各要素に id/number/url が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "loaded-issues-loaded-at-iso8601"
+    name: "loaded_at が ISO8601 形式の文字列である（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 19
+    requirement: "loaded-issues.json への記録"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "loaded-issues: loaded_at が ISO8601 形式の文字列である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: 二重起票ガード
+  # ---------------------------------------------------------------------------
+  - id: "dedup-guard-skip-same-scenario"
+    name: "既存の loaded-issues.json がある場合は skip する"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 31
+    requirement: "二重起票ガード"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "dedup-guard: 同一シナリオの loaded-issues.json が存在する場合は skip する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dedup-guard-force-recreate"
+    name: "--force フラグで強制再起票できる"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 35
+    requirement: "二重起票ガード"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "dedup-guard: --force フラグで既存 loaded-issues.json を上書き可能にする"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dedup-guard-no-file-proceed"
+    name: "loaded-issues.json が存在しない場合は proceed する（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 31
+    requirement: "二重起票ガード"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "dedup-guard: loaded-issues.json が存在しない場合は proceed する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dedup-guard-different-scenario-proceed"
+    name: "異なるシナリオの loaded-issues.json が存在する場合は proceed する（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 31
+    requirement: "二重起票ガード"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "dedup-guard: 異なるシナリオの loaded-issues.json が存在する場合は proceed する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "dedup-guard-skip-output-scenario-field"
+    name: "skip 時の出力に scenario フィールドが含まれる（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 31
+    requirement: "二重起票ガード"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "dedup-guard: skip 時の出力に scenario フィールドが含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: --local-only（未指定）の後退互換保証
+  # ---------------------------------------------------------------------------
+  - id: "backward-compat-local-md-generated"
+    name: "フラグ未指定時はローカル .md ファイルが生成される"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 44
+    requirement: "--local-only（未指定）の後退互換保証"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "backward-compat: --real-issues なしの場合はローカル .md ファイルが生成される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "backward-compat-no-loaded-issues-json"
+    name: "フラグ未指定時は loaded-issues.json が生成されない"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 44
+    requirement: "--local-only（未指定）の後退互換保証"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "backward-compat: --real-issues なしの場合は loaded-issues.json が生成されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "backward-compat-frontmatter-fields"
+    name: "生成された .md ファイルに frontmatter 必須フィールドが含まれる（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 44
+    requirement: "--local-only（未指定）の後退互換保証"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "backward-compat: 生成された .md ファイルに id/title/labels/status frontmatter が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "backward-compat-smoke-002-two-files"
+    name: "smoke-002 で 2 件の .md ファイルが生成される（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 44
+    requirement: "--local-only（未指定）の後退互換保証"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "backward-compat: smoke-002 で 2 件の .md ファイルが生成される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "backward-compat-stale-files-cleared"
+    name: "既存 .md ファイルがクリアされてから新規生成される（エッジケース）"
+    spec_file: "specs/real-issues-mode/spec.md"
+    spec_line: 44
+    requirement: "--local-only（未指定）の後退互換保証"
+    test_file: "plugins/twl/tests/unit/test-project-scenario-load-real-issues/test-project-scenario-load-real-issues.bats"
+    test_name: "backward-compat: 既存 .md ファイルがクリアされてから新規生成される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
