@@ -188,6 +188,8 @@ issue-{N}.json の status から自動判定:
 
 **デフォルト値**: `$PROJECT_ROOT/.autopilot/`（`autopilot-init.sh` L9 で確立: `AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"`）
 
+**MUST**: `AUTOPILOT_DIR` は orchestrator 起動前に必ず `export` すること。未設定のまま Pilot や Worker が `python3 -m twl.autopilot.state` を実行すると、bare sibling 構成（`twill/.autopilot/`）で main worktree 配下（`twill/main/.autopilot/`）を参照してしまい state file が見つからないエラーになる場合がある（Issue #470）。
+
 **override 方法**: 起動前に `export AUTOPILOT_DIR=/custom/path` を設定する。test-target worktree での隔離実行（`AUTOPILOT_DIR=/tmp/test-autopilot`）など、main worktree の `.autopilot/` を汚染しない実行に使用する。
 
 **Pilot→Worker env 継承経路**: `autopilot-launch.sh` が `--autopilot-dir DIR` を受け取り（L84）、`AUTOPILOT_ENV="AUTOPILOT_DIR=${QUOTED_AUTOPILOT_DIR}"`（L309）を構築して `env AUTOPILOT_DIR=... cld ...`（L365-366）として Worker プロセスに渡す。Worker は `AUTOPILOT_DIR` を直接 export された状態で起動するため、`state read/write` が同一ディレクトリを参照する。

@@ -31,7 +31,7 @@ _TRANSITIONS: dict[str, set[str]] = {
     "conflict": {"merge-ready", "failed"},
 }
 
-_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override", "workflow_done"}
+_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override", "workflow_done", "pr"}
 
 
 def _autopilot_dir() -> Path:
@@ -39,8 +39,11 @@ def _autopilot_dir() -> Path:
 
     Fallback uses ``git worktree list --porcelain`` to find the main
     worktree (the entry on ``branch refs/heads/main``) and appends
-    ``.autopilot``.  In bare-repo setups the first entry is the bare
-    root, so we skip it and look for the ``main`` branch entry.
+    ``.autopilot``.  In bare-repo setups the ``.autopilot`` directory
+    typically lives as a sibling of the main worktree (e.g.
+    ``twill/.autopilot/`` next to ``twill/main/``), so we check the
+    parent of the main worktree first before falling back to the
+    worktree-local path.
     """
     env = os.environ.get("AUTOPILOT_DIR", "")
     if env:
@@ -83,9 +86,16 @@ def _autopilot_dir() -> Path:
             if first_real_wt is None:
                 first_real_wt = wt_path
             if is_main_branch:
+                # Prefer bare sibling: <main_wt>/../.autopilot
+                bare_sibling = Path(wt_path).parent / ".autopilot"
+                if bare_sibling.exists():
+                    return bare_sibling
                 return Path(wt_path) / ".autopilot"
         # No main branch found — use first real worktree
         if first_real_wt:
+            bare_sibling = Path(first_real_wt).parent / ".autopilot"
+            if bare_sibling.exists():
+                return bare_sibling
             return Path(first_real_wt) / ".autopilot"
     except Exception:
         pass
@@ -198,7 +208,14 @@ class StateManager:
             return self._init_issue(file, issue)  # type: ignore[arg-type]
 
         if not file.is_file():
-            raise StateError(f"ファイルが存在しません: {file}")
+            bare_sibling_dir = self.autopilot_dir.parent.parent / ".autopilot"
+            bare_sibling = bare_sibling_dir / file.relative_to(self.autopilot_dir)
+            hint = (
+                f"\n  試したパス: {file}"
+                f"\n  bare sibling 候補: {bare_sibling}"
+                "\n  解決策: export AUTOPILOT_DIR=<.autopilot への絶対パス>"
+            )
+            raise StateError(f"ファイルが存在しません: {file}{hint}")
         if not sets:
             raise StateArgError("--set が指定されていません")
 
