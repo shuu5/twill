@@ -37,15 +37,38 @@ fi
 
 ## 処理ロジック (MUST)
 
+### Step 0: refspec 健全性チェック（AC-2）
+
+`worktree-health-check.sh` を呼び出して bare repo / 全 worktree の `remote.origin.fetch` refspec を検査する。
+欠落が検出された場合は `PRECHECK_WARNINGS` に追加して処理を**継続**する（abort MUST NOT）。
+
+```bash
+declare -a PRECHECK_WARNINGS=()
+declare -a PRECHECK_FAILS=()
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+HEALTH_CHECK="${SCRIPT_DIR}/../scripts/worktree-health-check.sh"
+
+if [[ -x "$HEALTH_CHECK" ]]; then
+  REFSPEC_RESULT=$(bash "$HEALTH_CHECK" --skip-remote-check 2>&1 || true)
+  if echo "$REFSPEC_RESULT" | grep -q "^WARN:"; then
+    while IFS= read -r warn_line; do
+      [[ "$warn_line" =~ ^WARN: ]] && \
+        PRECHECK_WARNINGS+=("refspec_check: $warn_line")
+    done <<< "$REFSPEC_RESULT"
+    echo "WARN: fetch refspec 欠落を検出 — 詳細: $REFSPEC_RESULT" >&2
+  fi
+else
+  PRECHECK_WARNINGS+=("refspec_check: worktree-health-check.sh not found — スキップ")
+fi
+```
+
 ### Step 1: done Issue リスト取得
 
 ```bash
 DONE_LIST=$(jq -r '.done[]' "$PHASE_RESULTS_JSON" 2>/dev/null || true)
 VERIFY_COUNT=0
 MAX_VERIFY=3
-
-declare -a PRECHECK_WARNINGS=()
-declare -a PRECHECK_FAILS=()
 ```
 
 ### Step 2: 各 done Issue を verify (最大 3 件)

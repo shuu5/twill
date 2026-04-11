@@ -35,11 +35,12 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 
 ## Bare repo 構造検証（セッション開始時チェック）
 
-以下の3条件を全て満たすこと:
+以下の4条件を全て満たすこと:
 
 1. `.bare/` が存在する（`.git/` ディレクトリではない）
 2. `main/.git` がファイル（ディレクトリではない）で `.bare` を指す
 3. CWD が `main/` 配下である（Pilot セッション）、または Pilot が作成した worktree 配下である（Worker セッション）
+4. `.bare/config` および全 worktree の `remote.origin.fetch` が `+refs/heads/*:refs/remotes/origin/*` を含む（欠落時は `worktree-health-check.sh --fix` で修復。欠落すると `git fetch origin` が `origin/main` を更新せず mergeability 判定が壊れる）
 
 ### セッション起動ルール
 
