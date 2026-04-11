@@ -105,14 +105,14 @@ setup() {
   hist_count=$(grep -c '^hist-' "$file" || true)
   [ "$hist_count" -ge 2 ]
 
-  # Count bug patterns (3+) added in issue-443
+  # Count bug patterns (7+) added in issue-443 + issue-483
   local bug_count
   bug_count=$(grep -c '^bug-' "$file" || true)
-  [ "$bug_count" -ge 3 ]
+  [ "$bug_count" -ge 7 ]
 
-  # Total 12+ (error 3 + warn 2 + info 2 + hist 2 + bug 3)
+  # Total 16+ (error 3 + warn 2 + info 2 + hist 2 + bug 7)
   local total=$((error_count + warn_count + info_count + hist_count + bug_count))
-  [ "$total" -ge 12 ]
+  [ "$total" -ge 16 ]
 }
 
 @test "observation-pattern-catalog: all regex patterns are valid for grep -E" {
@@ -200,4 +200,98 @@ setup() {
   local file="$REPO_ROOT/refs/load-test-baselines.md"
 
   grep -q '30 分以内' "$file"
+}
+
+# ---------------------------------------------------------------------------
+# Case 5: issue-483 bug-4xx パターン追加検証
+# ---------------------------------------------------------------------------
+
+@test "observation-pattern-catalog: bug-469 pattern exists with related_issue 469" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q 'bug-469-' "$file"
+  grep -q 'related_issue: "469"' "$file"
+}
+
+@test "observation-pattern-catalog: bug-470 pattern exists with related_issue 470" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q 'bug-470-' "$file"
+  grep -q 'related_issue: "470"' "$file"
+}
+
+@test "observation-pattern-catalog: bug-471 pattern exists with related_issue 471" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q 'bug-471-' "$file"
+  grep -q 'related_issue: "471"' "$file"
+}
+
+@test "observation-pattern-catalog: bug-472 pattern exists with related_issue 472" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q 'bug-472-' "$file"
+  grep -q 'related_issue: "472"' "$file"
+}
+
+@test "observation-pattern-catalog: bug_count is at least 7 after issue-483 additions" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  local bug_count
+  bug_count=$(grep -c '^bug-' "$file" || true)
+  [ "$bug_count" -ge 7 ]
+}
+
+# ---------------------------------------------------------------------------
+# Case 6: issue-483 test-scenario-catalog bug level + bug_target 検証
+# ---------------------------------------------------------------------------
+
+@test "test-scenario-catalog: schema defines bug_target field" {
+  local file="$REPO_ROOT/refs/test-scenario-catalog.md"
+
+  grep -q 'bug_target:' "$file"
+}
+
+@test "test-scenario-catalog: level enum includes bug value" {
+  local file="$REPO_ROOT/refs/test-scenario-catalog.md"
+
+  grep -qE 'level: smoke \| regression \| load \| bug' "$file"
+}
+
+@test "test-scenario-catalog: bug-469-chain-stall scenario defined with level bug and bug_target 469" {
+  local file="$REPO_ROOT/refs/test-scenario-catalog.md"
+
+  grep -q 'bug-469-chain-stall:' "$file"
+  grep -q 'level: bug' "$file"
+  grep -q 'bug_target: 469' "$file"
+}
+
+@test "test-scenario-catalog: bug-470-state-path scenario defined with bug_target 470" {
+  local file="$REPO_ROOT/refs/test-scenario-catalog.md"
+
+  grep -q 'bug-470-state-path:' "$file"
+  grep -q 'bug_target: 470' "$file"
+}
+
+@test "test-scenario-catalog: bug-471-refspec scenario defined with bug_target 471" {
+  local file="$REPO_ROOT/refs/test-scenario-catalog.md"
+
+  grep -q 'bug-471-refspec:' "$file"
+  grep -q 'bug_target: 471' "$file"
+}
+
+@test "test-scenario-catalog: bug-472-monitor-stall scenario defined with bug_target 472" {
+  local file="$REPO_ROOT/refs/test-scenario-catalog.md"
+
+  grep -q 'bug-472-monitor-stall:' "$file"
+  grep -q 'bug_target: 472' "$file"
+}
+
+@test "test-scenario-catalog: bug-combo-469-472 scenario has bug_target null and issues_count 3" {
+  local file="$REPO_ROOT/refs/test-scenario-catalog.md"
+
+  grep -q 'bug-combo-469-472:' "$file"
+  grep -q 'bug_target: null' "$file"
+  grep -q 'issues_count: 3' "$file"
+  grep -q 'expected_conflicts: 0' "$file"
 }

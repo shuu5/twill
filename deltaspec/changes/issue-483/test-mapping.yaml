@@ -1,0 +1,211 @@
+change_id: issue-483
+generated_at: "2026-04-12T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "bug-target-field-defined"
+    name: "bug_target フィールドがスキーマに定義される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 7
+    requirement: "test-scenario-catalog bug_target フィールド追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "test-scenario-catalog: schema defines bug_target field"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bug-469-chain-stall-has-bug-target"
+    name: "bug 再現シナリオが bug_target を持つ"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 11
+    requirement: "test-scenario-catalog bug_target フィールド追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "test-scenario-catalog: bug-469-chain-stall scenario defined with level bug and bug_target 469"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bug-combo-has-bug-target-null"
+    name: "combo シナリオが bug_target null を持つ"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 15
+    requirement: "test-scenario-catalog bug_target フィールド追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "test-scenario-catalog: bug-combo-469-472 scenario has bug_target null and issues_count 3"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "level-enum-includes-bug"
+    name: "level enum に bug が追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 23
+    requirement: "test-scenario-catalog bug level 追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "test-scenario-catalog: level enum includes bug value"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bug-469-chain-stall-scenario-added"
+    name: "bug-469-chain-stall シナリオが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 31
+    requirement: "5 バグ再現シナリオの追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "test-scenario-catalog: bug-469-chain-stall scenario defined with level bug and bug_target 469"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bug-470-state-path-scenario-added"
+    name: "bug-470-state-path シナリオが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 35
+    requirement: "5 バグ再現シナリオの追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "test-scenario-catalog: bug-470-state-path scenario defined with bug_target 470"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bug-471-refspec-scenario-added"
+    name: "bug-471-refspec シナリオが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 39
+    requirement: "5 バグ再現シナリオの追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "test-scenario-catalog: bug-471-refspec scenario defined with bug_target 471"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bug-472-monitor-stall-scenario-added"
+    name: "bug-472-monitor-stall シナリオが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 43
+    requirement: "5 バグ再現シナリオの追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "test-scenario-catalog: bug-472-monitor-stall scenario defined with bug_target 472"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bug-combo-469-472-scenario-added"
+    name: "bug-combo-469-472 シナリオが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 47
+    requirement: "5 バグ再現シナリオの追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "test-scenario-catalog: bug-combo-469-472 scenario has bug_target null and issues_count 3"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "obs-bug-469-pattern-added"
+    name: "bug-469 パターンが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 57
+    requirement: "observation-pattern-catalog bug-* パターン追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "observation-pattern-catalog: bug-469 pattern exists with related_issue 469"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "obs-bug-470-pattern-added"
+    name: "bug-470 パターンが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 62
+    requirement: "observation-pattern-catalog bug-* パターン追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "observation-pattern-catalog: bug-470 pattern exists with related_issue 470"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "obs-bug-471-pattern-added"
+    name: "bug-471 パターンが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 67
+    requirement: "observation-pattern-catalog bug-* パターン追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "observation-pattern-catalog: bug-471 pattern exists with related_issue 471"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "obs-bug-472-pattern-added"
+    name: "bug-472 パターンが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 72
+    requirement: "observation-pattern-catalog bug-* パターン追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "observation-pattern-catalog: bug-472 pattern exists with related_issue 472"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "obs-bug-count-ge-7"
+    name: "bug パターン合計数が 7 以上になる"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 73
+    requirement: "observation-pattern-catalog bug-* パターン追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "observation-pattern-catalog: bug_count is at least 7 after issue-483 additions"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bats-bug-469-verification-added"
+    name: "bats に bug-469 検証ケースが追加される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 81
+    requirement: "observation-references.bats 検証ケース追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "observation-pattern-catalog: bug-469 pattern exists with related_issue 469"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bats-bug-count-threshold-7"
+    name: "bats の bug_count 閾値が 7 に更新される"
+    spec_file: "specs/catalog-schema-extension/spec.md"
+    spec_line: 85
+    requirement: "observation-references.bats 検証ケース追加"
+    test_file: "plugins/twl/tests/bats/refs/observation-references.bats"
+    test_name: "observation-pattern-catalog: has at least 9 patterns across all categories"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
