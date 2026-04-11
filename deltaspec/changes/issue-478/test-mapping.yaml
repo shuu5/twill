@@ -1,0 +1,237 @@
+change_id: issue-478
+generated_at: "2026-04-11T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "autopilotdir-worker-cmd-propagation"
+    name: "カスタム AUTOPILOT_DIR が Worker 起動コマンドに渡される"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: --autopilot-dir 引数が tmux new-window コマンドに AUTOPILOT_DIR として伝搬される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-worker-cmd-alt-path"
+    name: "異なるカスタムパスが正しく伝搬される"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: 異なるカスタムパス (/tmp/my-ap) が正しく伝搬される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-env-format"
+    name: "AUTOPILOT_DIR が env ... cld 形式で渡される"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: AUTOPILOT_DIR が env ... cld 形式で tmux new-window に渡される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-nested-path"
+    name: "SANDBOX 内サブディレクトリでも正しく伝搬される"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: --autopilot-dir のパスが SANDBOX 内サブディレクトリでも正しく伝搬される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-init-default-fallback-output"
+    name: "デフォルト AUTOPILOT_DIR が PROJECT_ROOT/.autopilot にフォールバック（出力確認）"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 11
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: AUTOPILOT_DIR 未設定時 autopilot-init.sh が PROJECT_ROOT/.autopilot を作成しメッセージを出力する"
+    type: integration
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-init-default-issues-path-in-output"
+    name: "デフォルト時の出力に issues パスが含まれる"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 11
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: AUTOPILOT_DIR 未設定時 autopilot-init.sh の出力に issues パスが含まれる"
+    type: integration
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-init-no-alternate-path-creation"
+    name: "AUTOPILOT_DIR 未設定時 alternate ディレクトリが作成されない"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 11
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: AUTOPILOT_DIR 未設定時 .autopilot 外のパスにはディレクトリが作成されない"
+    type: integration
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-state-write-init-custom-path"
+    name: "AUTOPILOT_DIR カスタム設定時 state write --init が指定パスに書かれる"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 15
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: state write --init がカスタム AUTOPILOT_DIR/issues/issue-N.json を作成する"
+    type: integration
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-state-write-not-default-path"
+    name: "AUTOPILOT_DIR カスタム設定時 state ファイルがデフォルトパスに書かれない"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 17
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: state write --init がデフォルト PROJECT_ROOT/.autopilot には書かない"
+    type: integration
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-state-write-set-custom-path"
+    name: "state write --set がカスタム AUTOPILOT_DIR のファイルを更新する"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 15
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: state write --set がカスタム AUTOPILOT_DIR のファイルを更新する"
+    type: integration
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-multi-issue-same-custom-path"
+    name: "異なる issue 番号でも同じ AUTOPILOT_DIR に書かれる"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 15
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir: 異なる issue 番号でも同じ AUTOPILOT_DIR に書かれる"
+    type: integration
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-edge-missing-arg"
+    name: "--autopilot-dir 未指定時はエラー"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir edge: --autopilot-dir 未指定時は exit 1 でエラー"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-edge-relative-path"
+    name: "--autopilot-dir に相対パスを指定した場合はエラー"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir edge: --autopilot-dir に相対パスを指定した場合は exit 1 でエラー"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-edge-path-traversal-mid"
+    name: "--autopilot-dir にパストラバーサル (/../) を含む場合はエラー"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir edge: --autopilot-dir に パストラバーサル (/../) を含む場合は exit 1 でエラー"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-edge-path-traversal-end"
+    name: "--autopilot-dir に末尾 /.. を含む場合はエラー"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir edge: --autopilot-dir に末尾 /.. を含む場合は exit 1 でエラー"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-edge-trace-env-present"
+    name: "AUTOPILOT_DIR を含む tmux コマンドに TWL_CHAIN_TRACE も含まれる"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir edge: AUTOPILOT_DIR を含む tmux コマンドに TWL_CHAIN_TRACE も含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-edge-spaces-in-path"
+    name: "AUTOPILOT_DIR に空白を含む場合でも正しく渡される"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir edge: AUTOPILOT_DIR に空白を含む場合でも tmux コマンドに正しく渡される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilotdir-edge-separate-project-and-autopilot-dirs"
+    name: "--autopilot-dir は --project-dir と異なるパスでも受け付ける"
+    spec_file: "specs/autopilotdir-env-propagation/spec.md"
+    spec_line: 7
+    requirement: "AUTOPILOT_DIR env 伝搬の bats テスト"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-launch-autopilotdir.bats"
+    test_name: "autopilotdir edge: --autopilot-dir は --project-dir と異なるパスでも受け付ける"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
