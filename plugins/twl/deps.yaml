@@ -549,6 +549,21 @@ skills:
         step: "3"
     description: "プロンプトコンプライアンス監査ワークフロー（scan → review → apply）"
 
+  workflow-issue-lifecycle:
+    type: workflow
+    path: skills/workflow-issue-lifecycle/SKILL.md
+    effort: medium
+    spawnable_by: [controller, user]
+    can_spawn: [composite, atomic, specialist]
+    calls:
+      - atomic: issue-structure
+      - composite: issue-spec-review
+      - atomic: issue-review-aggregate
+      - atomic: issue-arch-drift
+      - atomic: issue-create
+      - script: spec-review-session-init
+    description: "co-issue v2 Worker runtime: 1 issue の lifecycle 全体（structure → spec-review → aggregate → fix loop → arch-drift → create）を自律実行"
+
   workflow-issue-refine:
     type: workflow
     path: skills/workflow-issue-refine/SKILL.md
@@ -1074,7 +1089,7 @@ commands:
     refined_by: "ref-prompt-guide@2c7a62f2"
     refined_at: "2026-04-07"
     path: commands/issue-structure.md
-    spawnable_by: [controller]
+    spawnable_by: [controller, workflow]
     can_spawn: []
     description: "Issue内容の構造化（タイプ判定+テンプレート+フィールド埋め）"
 
@@ -1083,7 +1098,7 @@ commands:
     refined_by: "ref-prompt-guide@2c7a62f2"
     refined_at: "2026-04-07"
     path: commands/issue-create.md
-    spawnable_by: [controller]
+    spawnable_by: [controller, workflow]
     can_spawn: []
     description: "GitHub Issue 作成"
 
@@ -1110,7 +1125,7 @@ commands:
     refined_by: "ref-prompt-guide@2c7a62f2"
     refined_at: "2026-04-07"
     path: commands/issue-spec-review.md
-    spawnable_by: [controller]
+    spawnable_by: [controller, workflow]
     can_spawn: [specialist, script]
     tools: [Agent(issue-critic, issue-feasibility, worker-codex-reviewer)]
     calls:
@@ -1126,7 +1141,7 @@ commands:
     refined_by: "ref-prompt-guide@2c7a62f2"
     refined_at: "2026-04-07"
     path: commands/issue-review-aggregate.md
-    spawnable_by: [controller]
+    spawnable_by: [controller, workflow]
     can_spawn: []
     description: "specialist レビュー結果の集約・ブロック判定"
 
@@ -1146,7 +1161,7 @@ commands:
     refined_by: "ref-prompt-guide@2c7a62f2"
     refined_at: "2026-04-07"
     path: commands/issue-arch-drift.md
-    spawnable_by: [controller]
+    spawnable_by: [controller, workflow]
     can_spawn: []
     description: "Architecture Drift Detection（3シグナル評価）"
 
@@ -2529,6 +2544,11 @@ scripts:
     calls:
       - script: spec-review-session-init
     description: "Bash ループで N Issue の spec-review を並列実行（tmux cld セッション spawn + ポーリング + 結果収集。MAX_PARALLEL 環境変数でバッチサイズ制御）"
+
+  issue-lifecycle-orchestrator:
+    type: script
+    path: scripts/issue-lifecycle-orchestrator.sh
+    description: "co-issue v2 Pilot が呼ぶバッチ orchestrator: N per-issue dir の workflow-issue-lifecycle を tmux cld で並列起動（spec-review-orchestrator.sh コードパターン流用。MAX_PARALLEL / flock / resume 対応。ADR-017 IM-7: N=1 初期化は各 Worker が個別に実施）"
 
   pre-tool-use-spec-review-gate:
     type: script
