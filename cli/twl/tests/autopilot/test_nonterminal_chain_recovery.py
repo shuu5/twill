@@ -448,6 +448,57 @@ class TestOrchestratorRecoveryE2E:
         assert result.returncode != 0
         assert result.stdout.strip() == ""
 
+    def test_resolve_stability_10_runs(
+        self, autopilot_dir: Path, issue_state_file: Path, state_manager: StateManager
+    ) -> None:
+        """AC-4: core recovery scenario must PASS 10 consecutive times for stability.
+
+        WHEN: workflow_done=null → resolve fails; write test-ready → resolve succeeds.
+        THEN: exit codes and stdout are correct across 10 independent runs.
+        """
+        for run in range(10):
+            # Reset workflow_done to null for each iteration
+            data = json.loads(issue_state_file.read_text())
+            data["workflow_done"] = None
+            issue_state_file.write_text(json.dumps(data))
+
+            # Verify: null → fail
+            result_null = subprocess.run(
+                [sys.executable, "-m", "twl.autopilot.resolve_next_workflow", "--issue", "469"],
+                capture_output=True,
+                text=True,
+                env={**os.environ, "AUTOPILOT_DIR": str(autopilot_dir)},
+            )
+            assert result_null.returncode != 0, (
+                f"Run {run}: expected non-zero exit when workflow_done=null"
+            )
+            assert result_null.stdout.strip() == "", (
+                f"Run {run}: expected empty stdout when workflow_done=null"
+            )
+
+            # Write workflow_done=test-ready via state manager
+            state_manager.write(
+                type_="issue",
+                role="pilot",
+                issue="469",
+                sets=["workflow_done=test-ready"],
+            )
+
+            # Verify: test-ready → /twl:workflow-pr-verify
+            result_ok = subprocess.run(
+                [sys.executable, "-m", "twl.autopilot.resolve_next_workflow", "--issue", "469"],
+                capture_output=True,
+                text=True,
+                env={**os.environ, "AUTOPILOT_DIR": str(autopilot_dir)},
+            )
+            assert result_ok.returncode == 0, (
+                f"Run {run}: expected exit 0 after workflow_done=test-ready. "
+                f"stderr={result_ok.stderr!r}"
+            )
+            assert result_ok.stdout.strip() == "/twl:workflow-pr-verify", (
+                f"Run {run}: expected '/twl:workflow-pr-verify', got {result_ok.stdout.strip()!r}"
+            )
+
 
 # ---------------------------------------------------------------------------
 # Requirement: orchestrator 実装完了パターン検知 fallback

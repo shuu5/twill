@@ -740,10 +740,18 @@ _nudge_command_for_pattern() {
     echo ""
   elif echo "$pane_output" | grep -qP ">>> 実装完了: issue-\d+"; then
     # AC-2 fallback: change-apply が workflow_done を書かずに終了した場合のリカバリ
-    # Pilot role で workflow_done=test-ready を書き、inject_next_workflow が動作するようにする
-    python3 -m twl.autopilot.state write --type issue --issue "$issue" \
-      --role pilot --set "workflow_done=test-ready" 2>/dev/null || true
-    echo "/twl:workflow-pr-verify #${issue}"
+    # workflow_done が既に非 null/非 setup なら重複 inject を防ぐ（MAX_NUDGE 内での再実行対策）
+    local _wf_done
+    _wf_done=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" \
+      --field workflow_done 2>/dev/null || echo "")
+    if [[ -z "$_wf_done" || "$_wf_done" == "null" || "$_wf_done" == "setup" ]]; then
+      # Pilot role で workflow_done=test-ready を書き、inject_next_workflow が動作するようにする
+      python3 -m twl.autopilot.state write --type issue --issue "$issue" \
+        --role pilot --set "workflow_done=test-ready" 2>/dev/null || true
+      echo "/twl:workflow-pr-verify #${issue}"
+    else
+      return 1
+    fi
   elif echo "$pane_output" | grep -qP "テスト準備.*完了"; then
     echo "/twl:workflow-pr-verify #${issue}"
   elif echo "$pane_output" | grep -qP "workflow-pr-verify.*完了"; then
