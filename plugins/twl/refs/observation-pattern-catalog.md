@@ -92,6 +92,31 @@ hist-ac-shrinking:
   related_issue: "167"
 ```
 
+## bug-reproduction patterns
+
+```yaml
+bug-deltaspec-archive:
+  regex: 'archive.*fail|fail.*archive|Error.*archive|deltaspec.*archive.*error'
+  severity: error
+  category: deltaspec-archive-failure
+  description: "deltaspec archive 失敗検出 (#436 関連)"
+  related_issue: "436"
+
+bug-chain-stall:
+  regex: 'chain.*stall|polling.*timeout|transition.*stop|chain.*stop'
+  severity: error
+  category: chain-transition-stall
+  description: "chain 遷移停止 / polling timeout 検出 (#438 関連)"
+  related_issue: "438"
+
+bug-phase-review-skip:
+  regex: 'phase.review.*skip|phase.review\.json.*not found|skip.*phase.review'
+  severity: warning
+  category: phase-review-skip
+  description: "phase-review スキップ / phase-review.json 不在検出 (#439 関連)"
+  related_issue: "439"
+```
+
 ## 拡張ガイド
 
 新しいパターンを追加する場合:
