@@ -80,7 +80,7 @@ Observer 介入ログの単位。
 
 ```mermaid
 flowchart TD
-    A[co-self-improve 起動] --> B[ObservationSession 作成]
+    A[su-observer: session:spawn で co-self-improve を起動] --> B[ObservationSession 作成]
     B --> C[observed target 選択]
     C --> D[capture: tmux 出力取得]
     D --> E[problem-detect: rule-based 検出]

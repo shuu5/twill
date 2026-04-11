@@ -68,7 +68,7 @@ graph TD
 
     SOBS -->|"Customer-Supplier<br/>Autopilot状態取得<br/>+ 介入時 state-write 可"| AP
     SOBS -->|"Customer-Supplier<br/>Issue 起票要求"| IM
-    SOBS -->|"Customer-Supplier<br/>co-self-improve テスト委譲"| OBS
+    SOBS -->|"Customer-Supplier<br/>session:spawn → observe"| OBS
 
     AS -.->|"DCI 注入"| IM
     IM -.->|"drift detection<br/>(INFO)"| AS
@@ -97,7 +97,7 @@ graph TD
 | Self-Improve | Live Observation | 並存 | 受動 retrospective と能動 observation の補完関係（ADR-011） |
 | Supervision | Autopilot | Customer-Supplier | Autopilot 状態取得（Downstream）、介入時 state-write 可（ADR-014） |
 | Supervision | Issue Mgmt | Customer-Supplier | フロー逸脱検知時の Issue 起票要求（Upstream） |
-| Supervision | Live Observation | Customer-Supplier | co-self-improve へのテスト委譲（Upstream、ADR-014） |
+| Supervision | Live Observation | Customer-Supplier | session:spawn で co-self-improve を起動し observe（ADR-014） |
 
 ## Architecture Spec の DCI フロー
 

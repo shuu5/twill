@@ -72,7 +72,7 @@ classDiagram
     }
     class Supervisor {
         name: su-*
-        type: observer
+        type: supervisor
         supervised: Controller[]
     }
     class InterventionRecord {
