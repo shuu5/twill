@@ -52,12 +52,6 @@ def _read_command() -> str:
     return COMMAND_MD.read_text(encoding="utf-8")
 
 
-def _extract_headings(content: str) -> list[str]:
-    return [
-        m.group(1).strip()
-        for m in re.finditer(r"^#{1,6}\s+(.+)$", content, re.MULTILINE)
-    ]
-
 
 # ---------------------------------------------------------------------------
 # Requirement: real-issues クリーンアップフラグ
