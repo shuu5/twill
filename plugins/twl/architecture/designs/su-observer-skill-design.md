@@ -3,7 +3,9 @@
 ## 概要
 
 プロジェクト常駐メタ認知レイヤー。main window の cld セッションそのものとして機能し、
-ユーザーの指示を受けて各 controller を spawn → observe する。
+ユーザーの指示を文脈から解釈して各 controller を spawn → observe する。
+
+モードテーブルによる強制ルーティングは行わない。LLM が文脈から自然に判断して適切なアクションを選択する。
 
 ## Frontmatter
 
@@ -37,89 +39,67 @@ spawnable_by:
 4. doobidoo でプロジェクトの直近記憶を検索（プロジェクト全体像の復元）
 5. `>>> su-observer 起動完了。指示をお待ちしています。` を表示
 
-## Step 1: 指示待ちループ（常駐）
+## Step 1: 常駐ループ（行動判断）
 
-ユーザー入力を解析し、以下のモードに振り分ける:
+ユーザーの入力を文脈から解釈し、以下のガイドラインに従って適切なアクションを選択・実行する。
 
-| モード | 判定条件 | 動作 |
+### 行動判断ガイドライン
+
+**ガイドライン: controller spawn**
+
+ユーザーが実装・作成・設計・テスト等の実行を求めた場合に適用する。
+controller の種別は文脈から判断し、`cld-spawn` で起動する。
+
+| 文脈の例 | 適切な controller | observe 方針 |
 |---|---|---|
-| autopilot | autopilot / 実装 / Wave / Issue 番号群 | Step 2 へ |
-| issue | issue / Issue作成 / 要望 | Step 3 へ |
-| architect | architect / 設計 / アーキテクチャ | Step 4 へ |
-| observe | observe / 監視 / チェック / 状態確認 | Step 5 へ |
-| compact | compact / 外部化 / 記憶固定 / 整理 | Step 6 へ |
-| delegate | その他の controller 名指定（co-utility, co-project 等） | Step 7 へ |
+| 「Issue ##を実装して」「Wave を走らせて」 | co-autopilot | `cld-observe-loop`（能動ループ） |
+| 「Issue を起票して」「要望を Issue にして」 | co-issue | `cld-observe`（単発）または指示待ち |
+| 「アーキテクチャを設計して」 | co-architect | `cld-observe`（単発）または指示待ち |
+| 「テストシナリオを実行して」「壁打ちして」 | co-self-improve | `cld-observe`（単発）または指示待ち |
+| その他の controller 指定 | co-project / co-utility | 指示待ち |
 
-## Step 2: autopilot モード — Wave 管理 + co-autopilot spawn
+**ガイドライン: 状態確認**
 
-1. Issue 群の Wave 分割を計画（または既存の Wave 計画を継続）
-2. Wave N の Issue リストを確定
-3. `session:spawn` で co-autopilot を起動:
-   ```
-   /session:spawn co-autopilot --issues <issue_list> --wave <N>
-   ```
-4. observe ループ開始（Step 5 の observe を定期実行）
-5. Wave 完了検知 → 結果収集（wave-collect atomic）
-6. su-compact 実行（Step 6）
-7. 次 Wave があれば Step 2-2 に戻る
-8. 全 Wave 完了 → サマリ報告
+「状況は？」「進捗は？」「問題ある？」等の問い合わせに対して `session-state.sh` と `cld-observe` を使って状態確認・報告する。
 
-## Step 3: issue モード — co-issue spawn
+**ガイドライン: 問題検出と介入**
 
-1. ユーザーの要望を整理
-2. `session:spawn` で co-issue を起動
-3. co-issue の完了を observe
-4. 結果をユーザーに報告
+`cld-observe` / `cld-observe-loop` 中に問題を検知した場合、`intervention-catalog` の 3 層分類に従う（SU-1）。
+Layer 2（Escalate）は必ずユーザー確認を得ること（SU-2）。
 
-## Step 4: architect モード — co-architect spawn
+**ガイドライン: Wave 管理**
 
-1. 設計テーマを確認
-2. `session:spawn` で co-architect を起動
-3. co-architect の完了を observe
-4. 結果をユーザーに報告
+Issue 群の一括実装（Wave）を要求された場合、Wave 計画 → co-autopilot spawn → observe ループ → wave-collect → su-compact のフローを実行する（SU-6）。
 
-## Step 5: observe モード — controller 状態確認
+**ガイドライン: compaction**
 
-1. `tmux list-windows` で全 window 一覧取得
-2. supervised controller の状態を確認（session-state.sh + capture）
-3. 問題検出:
-   - rule-based: `problem-detect` atomic
-   - LLM: `observer-evaluator` specialist（rule-based で検出なしの場合）
-4. 問題あり → `intervention-catalog` 参照 → Auto/Confirm/Escalate 実行
-5. 問題なし → 状態サマリをユーザーに報告
+「compact」指示または context 50% 到達時（SU-5）に `Skill(twl:su-compact)` を実行する。
 
-## Step 6: compact モード — 知識外部化 + compaction
+**ガイドライン: 過去記録確認**
 
-`su-compact` workflow を実行する。
+「振り返り」等の問い合わせに対して doobidoo で過去の介入結果を検索し、結果を報告する。
 
-### su-compact の概要
+### session plugin スクリプト
 
-1. **状況判定**: 現在のコンテキストを分析し外部化戦略を決定
-2. **外部化実行**:
-   - タスク途中 → `.supervisor/task-state.md` に構造化書き出し
-   - Wave 完了後 → doobidoo にサマリ保存 + `.supervisor/wave-{N}-summary.md`
-   - 設計議論後 → ADR / architecture ファイルへの反映確認
-   - 障害対応後 → `.supervisor/intervention-log.md` に追記
-3. **compaction 実行**: `/compact` を実行
-4. **PostCompact**: 外部化ファイルの再読み込みリスト表示
+```bash
+cld-spawn         # plugins/session/scripts/cld-spawn
+cld-observe       # plugins/session/scripts/cld-observe
+cld-observe-loop  # plugins/session/scripts/cld-observe-loop
+session-state.sh  # plugins/session/scripts/session-state.sh
+session-comm.sh   # plugins/session/scripts/session-comm.sh
+```
 
-### ユーザー指示のバリエーション
+## Step 2: セッション終了
 
-- `compact` → 自動判定で外部化 + compaction
-- `compact --wave` → Wave 完了サマリ外部化 + compaction
-- `compact --task` → タスク状態保存 + compaction
-- `compact --full` → 全知識の外部化 + compaction
-
-## Step 7: delegate モード — 任意 controller spawn
-
-1. 指定された controller を `session:spawn` で起動
-2. observe ループ開始
-3. 完了を報告
+1. observe ループを停止
+2. 未処理の介入記録を集約・保存
+3. 最終状態の外部化（`commands/externalize-state.md`）
+4. 終了をユーザーに通知
 
 ## context 自動監視
 
 su-observer は定期的に（または Stop hook で）context 消費量を確認する。
-50% 到達時に自動的に Step 6 を提案（SU-5 制約）。
+50% 到達時に自動的に Step 1 の「compaction」判断を実行（SU-5 制約）。
 
 ## PreCompact / PostCompact Hook 設計
 
@@ -156,6 +136,8 @@ fi
 ## 禁止事項（MUST NOT）
 
 - Issue の直接実装をしてはならない（SU-3）
+- AskUserQuestion でモード選択を強制してはならない（LLM が文脈から判断すること）
+- Skill tool による controller の直接呼出しをしてはならない（cld-spawn 経由で起動すること）
 - Layer 2 介入をユーザー確認なしで実行してはならない（SU-2）
 - 同時に 5 を超える controller session を supervise してはならない（SU-4）
 - context 50% 到達を無視してはならない（SU-5）

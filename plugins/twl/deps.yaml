@@ -291,7 +291,7 @@ skills:
     tools: [Agent(observer-evaluator)]
     spawnable_by: [user]
     can_spawn: [workflow, atomic, specialist, reference]
-    supervises: [co-autopilot, co-issue, co-architect, co-project, co-utility]
+    supervises: [co-autopilot, co-issue, co-architect, co-project, co-utility, co-self-improve]
     calls:
       - atomic: observe-once
       - atomic: problem-detect
