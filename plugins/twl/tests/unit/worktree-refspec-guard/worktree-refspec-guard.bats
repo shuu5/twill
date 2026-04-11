@@ -54,10 +54,6 @@ setup() {
   # ---- テスト対象スクリプトを SANDBOX に配置 ----
   mkdir -p "$SANDBOX/scripts"
   _write_health_check_script
-
-  # ---- git ls-remote スタブ（ネットワーク不要） ----
-  # デフォルト: local と remote が一致（stale なし）
-  stub_command "git_ls_remote_stub" 'echo "abc123\trefs/heads/main"'
 }
 
 teardown() {
