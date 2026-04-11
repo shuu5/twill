@@ -38,6 +38,14 @@ co-issue Phase 3（Per-Issue 精緻化ループ）のロジックを担当する
 
 ## Step 3b: specialist レビュー（MUST -- spawn 粒度・同期バリア厳守）
 
+**セッション初期化（MUST -- 最初に実行）**: `/twl:issue-spec-review` 呼び出し前に以下を実行する:
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/spec-review-session-init.sh" <N>
+```
+
+`<N>` はレビュー対象の Issue 数。これにより `issue-review-aggregate` の呼び出しが全 Issue レビュー完了まで機械的にブロックされる。
+
 `/twl:issue-spec-review` を **1 Issue につき 1 回** 呼び出す。複数 Issue をまとめて 1 回の呼び出しに渡してはならない（MUST NOT）。
 
 - **spawn 数の公式**: N Issues -> N 回の `/twl:issue-spec-review` 呼び出し -> 各呼び出しが内部で 3 specialist を spawn -> 合計 3N specialist

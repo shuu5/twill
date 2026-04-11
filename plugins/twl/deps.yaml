@@ -2493,6 +2493,16 @@ scripts:
     path: scripts/spec-review-manifest.sh
     description: "issue-spec-review 必須 specialist リスト出力（3 行 = 3 agent type）"
 
+  spec-review-session-init:
+    type: script
+    path: scripts/spec-review-session-init.sh
+    description: "spec-review セッション state ファイルを初期化（total 引数で Issue 数を設定、flock 競合制御付き）"
+
+  pre-tool-use-spec-review-gate:
+    type: script
+    path: scripts/hooks/pre-tool-use-spec-review-gate.sh
+    description: "PreToolUse gate: completed < total の間 issue-review-aggregate を deny する（Skill tool matcher）"
+
   pr-review-manifest:
     type: script
     path: scripts/pr-review-manifest.sh

@@ -78,7 +78,45 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
     <( [[ -f "$SPAWNED_FILE" ]] && LC_ALL=C sort "$SPAWNED_FILE" || true ))
 
   if [[ ${#MISSING[@]} -eq 0 ]]; then
-    # All specialists spawned for this context, noop
+    # All specialists spawned for this context
+    # spec-review- context の場合: セッション state の completed をインクリメント
+    if [[ "$CONTEXT" == spec-review-* ]]; then
+      HASH=$(printf '%s' "${CLAUDE_PROJECT_ROOT:-$PWD}" | cksum | awk '{print $1}')
+      SESSION_STATE="/tmp/.spec-review-session-${HASH}.json"
+      SESSION_LOCK="/tmp/.spec-review-session-${HASH}.lock"
+      # SESSION_LOCK の symlink チェック（flock 前に実施 — symlink following 対策）
+      if [[ -L "$SESSION_LOCK" ]]; then
+        printf '⚠ spec-review session: SESSION_LOCK が symlink — インクリメントをスキップ [context: %s]\n' "$CONTEXT"
+      elif [[ -f "$SESSION_STATE" && ! -L "$SESSION_STATE" ]]; then
+        # flock 失敗時はサイレントスキップではなく警告を出す（カウント消失防止）
+        {
+          if ! flock -w 5 8; then
+            printf '⚠ spec-review session: flock 取得失敗（タイムアウト）— completed インクリメントをスキップ [context: %s]\n' "$CONTEXT"
+          else
+            # SESSION_STATE の symlink 再チェック（flock 取得後）
+            if [[ -L "$SESSION_STATE" ]]; then
+              printf '⚠ spec-review session: STATE_FILE が symlink — インクリメントをスキップ [context: %s]\n' "$CONTEXT"
+            elif [[ ! -L "${SESSION_STATE}.tmp" ]]; then
+              CURRENT=$(jq -r '.completed // 0' "$SESSION_STATE" 2>/dev/null || echo "0")
+              if [[ "$CURRENT" =~ ^[0-9]+$ ]]; then
+                if jq ".completed = (.completed + 1)" "$SESSION_STATE" > "${SESSION_STATE}.tmp"; then
+                  mv "${SESSION_STATE}.tmp" "$SESSION_STATE"
+                else
+                  rm -f "${SESSION_STATE}.tmp"
+                  printf '⚠ spec-review session: jq 失敗 — completed インクリメントをスキップ [context: %s]\n' "$CONTEXT"
+                fi
+              fi
+            else
+              printf '⚠ spec-review session: .tmp ファイルが symlink — インクリメントをスキップ [context: %s]\n' "$CONTEXT"
+            fi
+          fi
+        } 8>"$SESSION_LOCK"
+        # SESSION_LOCK クリーンアップ（flock 解放後）
+        rm -f "$SESSION_LOCK"
+      fi
+    fi
+    # Clean up manifest and spawned tracking files
+    rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"
     continue
   fi
 
