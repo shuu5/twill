@@ -96,6 +96,11 @@ if [[ "$COMMIT_COUNT" -gt 0 ]]; then
   exit 1
 fi
 
+if [[ "$BRANCH_COUNT" -gt 1 ]]; then
+  echo "Error: リポ '$REPO' は空ではありません（ブランチ数: $BRANCH_COUNT）。ブランチが 1 以下の空リポを指定してください。" >&2
+  exit 1
+fi
+
 # push パーミッション確認
 PUSH_ACCESS=$(gh api "repos/$REPO" --jq '.permissions.push' 2>/dev/null || echo "false")
 if [[ "$PUSH_ACCESS" != "true" ]]; then

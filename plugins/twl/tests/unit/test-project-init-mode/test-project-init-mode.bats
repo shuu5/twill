@@ -162,12 +162,11 @@ if [[ "$MODE" == "real-issues" && -z "$REPO" ]]; then
   exit 1
 fi
 
-REPO_VAL="null"
 if [[ -n "$REPO" ]]; then
-  REPO_VAL="\"$REPO\""
+  jq -n --arg mode "$MODE" --arg repo "$REPO" '{"mode": $mode, "repo": $repo}'
+else
+  jq -n --arg mode "$MODE" '{"mode": $mode, "repo": null}'
 fi
-
-echo "{\"mode\":\"${MODE}\",\"repo\":${REPO_VAL}}"
 SCRIPT_EOF
   chmod +x "$SANDBOX/scripts/parse-mode.sh"
 }
@@ -216,6 +215,19 @@ fi
 
 if [[ "$commit_count" -gt 0 ]]; then
   echo '{"status":"error","reason":"リポが空ではありません"}'
+  exit 1
+fi
+
+# --- ブランチ数チェック (コミット数==0 かつ ブランチ数<=1 が空リポ条件) ---
+branch_count_file="$GH_STATE_DIR/${repo_safe}.branch-count"
+if [[ -f "$branch_count_file" ]]; then
+  branch_count=$(cat "$branch_count_file")
+else
+  branch_count=0
+fi
+
+if [[ "$branch_count" -gt 1 ]]; then
+  echo '{"status":"error","reason":"リポが空ではありません（ブランチ数超過）"}'
   exit 1
 fi
 
