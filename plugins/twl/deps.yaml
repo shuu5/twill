@@ -1715,7 +1715,8 @@ commands:
     refined_by: "ref-prompt-guide@2c7a62f2"
     refined_at: "2026-04-08"
     path: commands/test-project-reset.md
-    effort: low
+    effort: medium
+    tools: [AskUserQuestion, Bash]
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "test-target を初期状態に reset"
