@@ -146,7 +146,7 @@ echo "$ENTRIES" | jq -c '.' | while IFS= read -r entry; do
     echo "⚠️ github_number が数値でないためスキップ: $issue_num"
     continue
   fi
-  if ! [[ "$branch" =~ ^[a-zA-Z0-9/_.-]+$ ]] || [[ "$branch" == -* ]]; then
+  if [[ "$branch" == -* ]] || ! [[ "$branch" =~ ^[a-zA-Z0-9/_.\-]+$ ]]; then
     echo "⚠️ branch 名が不正なためスキップ: $branch"
     continue
   fi
