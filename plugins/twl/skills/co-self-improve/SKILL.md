@@ -58,11 +58,29 @@ spawn 時プロンプトに情報が含まれない場合のみ AskUserQuestion 
 
 ## Step 1: scenario-run モード — シナリオ選択 + spawn
 
+### Step 1a: フラグ解析（実行モード決定）
+
+引数から `--real-issues` / `--repo <owner>/<name>` / `--local` を解析し、実行モードを確定する。
+
+| 条件 | モード | 処理 |
+|------|--------|------|
+| `--real-issues` + `--repo <owner>/<name>` | **real-issues** | test-project-init に `--mode real-issues --repo <owner>/<name>` を委譲 |
+| `--real-issues` のみ（`--repo` なし） | — | AskUserQuestion で「専用テストリポのオーナー/リポ名を入力してください（例: shuu5/twill-test）」と質問し、取得後 real-issues モードへ |
+| `--local` 明示 or フラグなしで scenario 名のみ | **local** | test-project-init をフラグなしで呼び出す（従来動作） |
+| フラグなしかつモードが曖昧 | — | AskUserQuestion で「ローカルモードと real-issues モードのどちらで実行しますか？」と選択させる |
+
+### Step 1b: 実行
+
 1. `commands/test-project-init.md` を Read → 実行（test-target worktree が無ければ作成）
+   - **local モード**: フラグなし（`--mode local` はデフォルト）
+   - **real-issues モード**: `--mode real-issues --repo <owner>/<name>` を渡す
 2. `refs/test-scenario-catalog.md` を Read してシナリオ一覧表示
-3. ユーザーがシナリオ選択
+3. ユーザーがシナリオ選択（引数でシナリオ名が指定済みの場合はスキップ）
 4. `commands/test-project-scenario-load.md` を Read → 実行（シナリオの Issue 群を test-target にロード）
-5. `Skill(session:spawn)` で `--cd worktrees/test-target` を指定し observed session を起動
+   - **local モード**: `--scenario <name>` のみ
+   - **real-issues モード**: `--scenario <name> --real-issues` を渡す
+5. `Skill(session:spawn)` で `--cd worktrees/test-target` を指定し co-autopilot を起動
+   - spawn プロンプト: `/twl:co-autopilot`（test-target worktree で Issue を自律実行）
 6. spawn 後の window 名を取得し Step 2 へ
 
 ## Step 2: scenario 実行中の observation loop 起動
