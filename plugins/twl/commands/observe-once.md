@@ -36,6 +36,26 @@ CAPTURE=$(bash "$CLAUDE_PLUGIN_ROOT/scripts/observe-wrapper.sh" "<window>" --lin
 STATE=$(bash "$CLAUDE_PLUGIN_ROOT/scripts/session-state-wrapper.sh" state "<window>" 2>/dev/null || echo "unknown")
 ```
 
+### Step 3.5: state file mtime チェック（stagnate 検知）
+
+`AUTOPILOT_STAGNATE_SEC` 環境変数（デフォルト 600）を基準に、`.autopilot/issues/issue-*.json` の mtime をチェックする:
+
+```bash
+STAGNATE_SEC="${AUTOPILOT_STAGNATE_SEC:-600}"
+STAGNATE_MIN=$(( STAGNATE_SEC / 60 ))
+STAGNATE_FILES=$(find .autopilot/issues/ -name "issue-*.json" -mmin +${STAGNATE_MIN} 2>/dev/null || true)
+```
+
+stagnate が検出された場合は stderr に WARN を出力する:
+
+```bash
+while IFS= read -r f; do
+  [[ -n "$f" ]] && echo "WARN: state stagnate detected: $f (>${STAGNATE_SEC}s)" >&2
+done <<< "$STAGNATE_FILES"
+```
+
+`STAGNATE_FILES` は JSON 出力の `stagnate_files` フィールドに含める（空の場合は空配列 `[]`）。
+
 ### Step 4: JSON 出力
 
 以下の JSON を stdout に出力:
@@ -46,11 +66,12 @@ STATE=$(bash "$CLAUDE_PLUGIN_ROOT/scripts/session-state-wrapper.sh" state "<wind
   "timestamp": "<ISO8601>",
   "lines": <N>,
   "capture": "<capture content>",
-  "session_state": "<idle|input-waiting|processing|error|exited|unknown>"
+  "session_state": "<idle|input-waiting|processing|error|exited|unknown>",
+  "stagnate_files": ["<path>", ...]
 }
 ```
 
-timestamp は `date -u +%Y-%m-%dT%H:%M:%SZ` で取得。
+timestamp は `date -u +%Y-%m-%dT%H:%M:%SZ` で取得。`stagnate_files` は Step 3.5 で検出されたファイルパスの配列（未検出時は `[]`）。
 
 ## 禁止事項（MUST NOT）
 

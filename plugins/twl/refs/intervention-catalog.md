@@ -61,6 +61,19 @@ Supervisor の介入判断ルール定義。6 つの介入パターンを Auto/C
 - **リスク評価**: 低（PR 作成は非破壊的操作）
 - **事後**: InterventionRecord 記録 + PR URL を state に書き込み
 
+### パターン 7: Worker idle 検知（state stagnate + 完了シグナル）
+
+- **検出条件**: 以下の両方を満たす場合:
+  1. `.autopilot/issues/issue-*.json` の `updated_at` が `AUTOPILOT_STAGNATE_SEC`（デフォルト 600s）以上古い
+  2. 対象 Worker pane の tail に `>>> 実装完了:` を含む文字列が検出される
+- **修復手順**:
+  1. `session-comm.sh capture <window>` で Worker window の現在状態を確認
+  2. issue 番号を特定し、`/twl:workflow-pr-verify --spec issue-<N>` を対象 Worker window に inject
+- **前提条件**: tmux window が存在すること、`>>> 実装完了:` の issue 番号が特定できること
+- **リスク評価**: 低（Worker は実装完了済みであり、pr-verify の起動は非破壊的操作）
+- **事後**: InterventionRecord を `.observation/` に記録
+- **部分一致フォールバック**: state stagnate のみで `>>> 実装完了:` が確認できない場合は **パターン4（Layer 1 Confirm: Worker 長時間 idle）** として処理する
+
 ---
 
 ## Layer 1: Confirm
