@@ -36,31 +36,67 @@ co-issue Phase 3（Per-Issue 精緻化ループ）のロジックを担当する
 - tech-debt 棚卸し（該当時は `/twl:issue-tech-debt-absorb` も呼び出す）
 - クロスリポ分割時は parent + 子 Issue の構造化ルールに従う
 
-## Step 3b: specialist レビュー（MUST -- spawn 粒度・同期バリア厳守）
+## Step 3b: specialist レビュー（外部オーケストレーター経由）
 
-**セッション初期化（MUST -- 最初に実行）**: `/twl:issue-spec-review` 呼び出し前に以下を実行する:
+**Issue JSON 書き出し（MUST -- 最初に実行）**: 各 Issue データを一時ディレクトリに書き出す:
 
 ```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/spec-review-session-init.sh" <N>
+ISSUES_DIR="/tmp/spec-review-inputs-$$"
+OUTPUT_DIR="/tmp/spec-review-outputs-$$"
+mkdir -p "$ISSUES_DIR" "$OUTPUT_DIR"
+
+# 各 Issue を JSON ファイルに書き出す（1 ファイル = 1 Issue）
+for issue in "${unstructured_issues[@]}"; do
+  issue_num="${issue[number]}"
+  python3 -c "
+import json, sys
+data = {
+  'number': ${issue_num},
+  'body': '''${issue_body}''',
+  'scope_files': ${scope_files_json},
+  'related_issues': ${related_issues_json},
+  'is_quick_candidate': ${is_quick_candidate}
+}
+print(json.dumps(data))
+" > "${ISSUES_DIR}/issue-${issue_num}.json"
+done
 ```
 
-`<N>` はレビュー対象の Issue 数。これにより `issue-review-aggregate` の呼び出しが全 Issue レビュー完了まで機械的にブロックされる。
+**オーケストレーター呼び出し（MUST）**: LLM ループではなく Bash スクリプト経由で全 Issue を処理する:
 
-`/twl:issue-spec-review` を **1 Issue につき 1 回** 呼び出す。複数 Issue をまとめて 1 回の呼び出しに渡してはならない（MUST NOT）。
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/spec-review-orchestrator.sh" \
+  --issues-dir "$ISSUES_DIR" \
+  --output-dir "$OUTPUT_DIR"
+```
 
-- **spawn 数の公式**: N Issues -> N 回の `/twl:issue-spec-review` 呼び出し -> 各呼び出しが内部で 3 specialist を spawn -> 合計 3N specialist
-- **具体例**: 5 Issues なら `/twl:issue-spec-review` を 5 回呼び出し、15 specialist が起動される。3 回の呼び出しで済ませてはならない
-- **並列実行可**: N 回の Skill 呼び出しは並列で発行してよい
+- `MAX_PARALLEL` 環境変数でバッチサイズを制御（デフォルト: 3）
+- オーケストレーターが内部で `spec-review-session-init.sh` を呼び出す（LLM が直接呼ぶ不要）
+- 各 Issue に独立した tmux cld セッションが spawn され、`/twl:issue-spec-review` を実行する
 - **quick 候補もスキップ禁止**: `is_quick_candidate: true` の Issue も必ずレビューする
 
-**同期バリア（MUST）**: Step 3b の全 `/twl:issue-spec-review` 呼び出しが **完了を返すまで** Step 3c に進んではならない。specialist がまだ実行中の状態で aggregate や修正に着手することは禁止（MUST NOT）。全結果が揃ってから次に進む。
+**同期バリア（MUST）**: `spec-review-orchestrator.sh` が完了を返すまで Step 3c に進んではならない。オーケストレーターはポーリングで全セッション完了を検知してから返る。
 
 ## Step 3c: レビュー結果集約（全 Step 3b 完了後にのみ実行）
+
+**結果ファイル読み込み（MUST）**: `${OUTPUT_DIR}` から各 Issue の結果ファイルを読み込む:
+
+```bash
+for issue_file in "${ISSUES_DIR}"/issue-*.json; do
+  issue_num="$(basename "$issue_file" .json | grep -oP '\d+')"
+  result_file="${OUTPUT_DIR}/issue-${issue_num}-result.txt"
+  if [[ -f "$result_file" ]]; then
+    specialist_results["$issue_num"]="$(cat "$result_file")"
+  fi
+done
+```
+
+読み込んだ `specialist_results` を `/twl:issue-review-aggregate` に渡す:
 
 `/twl:issue-review-aggregate` を呼び出す。
 
 - CRITICAL なし -> Step 3.5 へ
-- CRITICAL あり -> ユーザー通知・修正後 Step 3b 再実行可
+- CRITICAL あり -> ユーザー通知・修正後 Step 3b 再実行可（`$ISSUES_DIR`, `$OUTPUT_DIR` を再利用）
 - split 承認 -> `is_split_generated: true` フラグ設定（Phase 4 まで保持）
 
 ## Step 3.5: Architecture Drift Detection（条件付き WARNING）
@@ -84,7 +120,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/spec-review-session-init.sh" <N>
 
 ## 禁止事項（MUST NOT）
 
-- **複数 Issue を 1 回の `/twl:issue-spec-review` に渡してはならない**（UX ルール。1 Issue = 1 呼び出し。5 Issues なら 5 回呼び出す）
-- **specialist が実行中のまま Step 3c 以降に進んではならない**（制約 IM-5。全 specialist の結果が揃うまで待機必須）
+- **LLM が直接 `/twl:issue-spec-review` を N 回呼び出してはならない**（外部オーケストレーター経由で機械的に処理する）
+- **specialist が実行中のまま Step 3c 以降に進んではならない**（制約 IM-5。`spec-review-orchestrator.sh` が全セッション完了を検知してから返る）
 
 Issue Management 制約の正典は `plugins/twl/architecture/domain/contexts/issue-mgmt.md`

@@ -543,6 +543,7 @@ skills:
     calls:
       - atomic: issue-structure
       - atomic: issue-tech-debt-absorb
+      - script: spec-review-orchestrator
       - composite: issue-spec-review
       - atomic: issue-review-aggregate
       - atomic: issue-arch-drift
@@ -2497,6 +2498,13 @@ scripts:
     type: script
     path: scripts/spec-review-session-init.sh
     description: "spec-review セッション state ファイルを初期化（total 引数で Issue 数を設定、flock 競合制御付き）"
+
+  spec-review-orchestrator:
+    type: script
+    path: scripts/spec-review-orchestrator.sh
+    calls:
+      - script: spec-review-session-init
+    description: "Bash ループで N Issue の spec-review を並列実行（tmux cld セッション spawn + ポーリング + 結果収集。MAX_PARALLEL 環境変数でバッチサイズ制御）"
 
   pre-tool-use-spec-review-gate:
     type: script
