@@ -125,7 +125,7 @@ orchestrator 起動後、Pilot は **ScheduleWakeup(300)** で 5 分間隔の wa
      --autopilot-dir "$AUTOPILOT_DIR" \
      --type issue --issue "<N>" --field updated_at
    ```
-   `updated_at` が現在時刻から 15 分（900 秒）以上古い Worker は **stagnation** とみなす。
+   `updated_at` が現在時刻から `AUTOPILOT_STAGNATE_SEC`（デフォルト 900 秒）以上古い Worker は **stagnation** とみなす。
 
 3. **Stagnation 検知時**: stall 状態の Worker を特定してログ出力し、次の ScheduleWakeup をスケジュールする前に `session-comm.sh inject-file` 経由で回復信号を送信する。
 

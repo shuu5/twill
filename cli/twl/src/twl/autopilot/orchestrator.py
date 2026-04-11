@@ -34,7 +34,7 @@ MAX_PARALLEL = int(os.environ.get("DEV_AUTOPILOT_MAX_PARALLEL", "4"))
 MAX_POLL = int(os.environ.get("DEV_AUTOPILOT_MAX_POLL", "360"))
 MAX_NUDGE = int(os.environ.get("DEV_AUTOPILOT_MAX_NUDGE", "3"))
 NUDGE_TIMEOUT = int(os.environ.get("DEV_AUTOPILOT_NUDGE_TIMEOUT", "30"))
-STAGNATION_THRESHOLD = int(os.environ.get("DEV_AUTOPILOT_STAGNATION_THRESHOLD", "900"))
+STAGNATION_THRESHOLD = int(os.environ.get("AUTOPILOT_STAGNATE_SEC", os.environ.get("DEV_AUTOPILOT_STAGNATION_THRESHOLD", "900")))
 MAX_STAGNATION_NUDGE = int(os.environ.get("DEV_AUTOPILOT_MAX_STAGNATION_NUDGE", "3"))
 POLL_INTERVAL = 10
 
@@ -392,6 +392,7 @@ class PhaseOrchestrator:
                                       'failure={"message":"stagnation_timeout","step":"polling"}'],
                                      self.autopilot_dir, repo_id)
                         self._cleanup_worker(issue, entry)
+                        self._emit_escalation_signals([issue], reason="stagnation_timeout")
                         return
                     self._check_and_nudge(issue, wname, entry)
                 else:
@@ -404,6 +405,7 @@ class PhaseOrchestrator:
                               'failure={"message":"poll_timeout","step":"polling"}'],
                              self.autopilot_dir, repo_id)
                 self._cleanup_worker(issue, entry)
+                self._emit_escalation_signals([issue], reason="poll_timeout")
                 return
 
     def _poll_phase(self, entries: list[str]) -> None:
@@ -427,15 +429,16 @@ class PhaseOrchestrator:
                     continue
                 elif status == "running":
                     all_resolved = False
+                    if entry in cleaned_up:
+                        continue
                     if self._is_crashed(issue, wname):
                         print(f"[orchestrator] Issue #{issue}: ワーカークラッシュ検知", file=sys.stderr)
                         _write_state(issue, "pilot",
                                      ["status=failed",
                                       'failure={"message":"worker_crashed","step":"polling"}'],
                                      self.autopilot_dir, repo_id)
-                        if entry not in cleaned_up:
-                            self._cleanup_worker(issue, entry)
-                            cleaned_up.add(entry)
+                        self._cleanup_worker(issue, entry)
+                        cleaned_up.add(entry)
                         continue
                     if self._check_stagnation(issue, repo_id):
                         scount = self._stagnation_nudge_counts.get(issue, 0) + 1
@@ -450,9 +453,9 @@ class PhaseOrchestrator:
                                          ["status=failed",
                                           'failure={"message":"stagnation_timeout","step":"polling"}'],
                                          self.autopilot_dir, repo_id)
-                            if entry not in cleaned_up:
-                                self._cleanup_worker(issue, entry)
-                                cleaned_up.add(entry)
+                            self._cleanup_worker(issue, entry)
+                            cleaned_up.add(entry)
+                            self._emit_escalation_signals([issue], reason="stagnation_timeout")
                             continue
                     self._check_and_nudge(issue, wname, entry)
                 else:
@@ -464,6 +467,7 @@ class PhaseOrchestrator:
             poll_count += 1
             if poll_count >= MAX_POLL:
                 print("[orchestrator] Phase: タイムアウト", file=sys.stderr)
+                stalled_issues = []
                 for entry in entries:
                     repo_id, issue = _parse_issue_entry(entry)
                     s = _read_state(issue, "status", self.autopilot_dir, repo_id)
@@ -473,6 +477,9 @@ class PhaseOrchestrator:
                                       'failure={"message":"poll_timeout","step":"polling"}'],
                                      self.autopilot_dir, repo_id)
                         self._cleanup_worker(issue, entry)
+                        stalled_issues.append(issue)
+                if stalled_issues:
+                    self._emit_escalation_signals(stalled_issues, reason="poll_timeout")
                 break
 
             time.sleep(POLL_INTERVAL)
@@ -484,6 +491,25 @@ class PhaseOrchestrator:
             capture_output=True,
         )
         return r.returncode == 2
+
+    def _emit_escalation_signals(self, issues: list[str], reason: str) -> None:
+        """Create /tmp/claude-notifications/stall-<issue>.json escalation signals (AC-2)."""
+        notif_dir = Path("/tmp/claude-notifications")
+        try:
+            notif_dir.mkdir(parents=True, exist_ok=True)
+            for issue in issues:
+                signal = {
+                    "type": "stall",
+                    "issue": issue,
+                    "reason": reason,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "autopilot_dir": self.autopilot_dir,
+                }
+                signal_path = notif_dir / f"stall-{issue}.json"
+                signal_path.write_text(json.dumps(signal, indent=2))
+                print(f"[orchestrator] escalation signal: {signal_path}", file=sys.stderr)
+        except OSError as e:
+            print(f"[orchestrator] escalation signal 作成失敗: {e}", file=sys.stderr)
 
     def _check_stagnation(self, issue: str, repo_id: str) -> bool:
         """Return True if updated_at is older than STAGNATION_THRESHOLD seconds."""

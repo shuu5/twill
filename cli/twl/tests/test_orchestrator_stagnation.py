@@ -6,7 +6,7 @@ Scenarios covered:
   - updated_at field missing from state (should be treated as no stagnation / skip)
   - stagnation detected in _poll_phase (multi-worker)
   - MAX_STAGNATION_NUDGE exceeded -> status=failed transition
-  - STAGNATION_THRESHOLD env var override (DEV_AUTOPILOT_STAGNATION_THRESHOLD)
+  - STAGNATION_THRESHOLD env var override (AUTOPILOT_STAGNATE_SEC)
   - STAGNATION_THRESHOLD default value (900 seconds)
 """
 
@@ -72,7 +72,7 @@ class TestStagnationThresholdConstant:
         """STAGNATION_THRESHOLD のデフォルト値が 900 であること."""
         # 環境変数が未設定の場合
         env_without = {k: v for k, v in os.environ.items()
-                       if k != "DEV_AUTOPILOT_STAGNATION_THRESHOLD"}
+                       if k != "AUTOPILOT_STAGNATE_SEC"}
         with patch.dict(os.environ, env_without, clear=True):
             # モジュールを再ロードしてデフォルト値を検証
             import importlib
@@ -81,7 +81,7 @@ class TestStagnationThresholdConstant:
 
     def test_env_var_overrides_threshold(self) -> None:
         """Scenario: 環境変数設定あり -> stagnation 判定閾値が 300 秒になること."""
-        with patch.dict(os.environ, {"DEV_AUTOPILOT_STAGNATION_THRESHOLD": "300"}):
+        with patch.dict(os.environ, {"AUTOPILOT_STAGNATE_SEC": "300"}):
             import importlib
             reloaded = importlib.reload(orchestrator_mod)
             assert reloaded.STAGNATION_THRESHOLD == 300
@@ -89,7 +89,7 @@ class TestStagnationThresholdConstant:
     def test_env_var_invalid_falls_back_or_raises(self) -> None:
         """不正な環境変数値の場合は ValueError / デフォルト値フォールバックのどちらか."""
         # 実装によって挙動が異なる可能性があるため、両パターンを許容
-        with patch.dict(os.environ, {"DEV_AUTOPILOT_STAGNATION_THRESHOLD": "not_a_number"}):
+        with patch.dict(os.environ, {"AUTOPILOT_STAGNATE_SEC": "not_a_number"}):
             try:
                 import importlib
                 reloaded = importlib.reload(orchestrator_mod)
@@ -282,8 +282,7 @@ class TestPollSingleStagnation:
             for (iss, role, sets) in written_states
             if iss == issue
         )
-        # 実装前はこの assert が失敗する (pending)
-        assert stagnation_failed or True  # placeholder: 実装後に assert stagnation_failed に変更
+        assert stagnation_failed, "MAX_STAGNATION_NUDGE 超過時に status=failed が書き込まれること"
 
 
 # ---------------------------------------------------------------------------
@@ -449,11 +448,11 @@ class TestStagnationThresholdBehavior:
         assert mock_nudge.called
 
     def test_env_override_affects_stagnation_check(self, tmp_path: Path) -> None:
-        """Scenario: 環境変数 DEV_AUTOPILOT_STAGNATION_THRESHOLD=300 設定時
+        """Scenario: 環境変数 AUTOPILOT_STAGNATE_SEC=300 設定時
         WHEN: orchestrator が起動
         THEN: 300 秒を閾値として判定される
         """
-        with patch.dict(os.environ, {"DEV_AUTOPILOT_STAGNATION_THRESHOLD": "300"}):
+        with patch.dict(os.environ, {"AUTOPILOT_STAGNATE_SEC": "300"}):
             import importlib
             reloaded = importlib.reload(orchestrator_mod)
             assert reloaded.STAGNATION_THRESHOLD == 300
