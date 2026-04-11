@@ -14,7 +14,7 @@ co-self-improve framework のテストプロジェクト (test-target/main workt
 
 ```yaml
 <scenario-id>:
-  level: smoke | regression | load
+  level: smoke | regression | load | bug
   description: <一行説明>
   issues_count: <数>
   expected_duration_min: <最小分>
@@ -22,6 +22,7 @@ co-self-improve framework のテストプロジェクト (test-target/main workt
   expected_conflicts: <件数>
   expected_pr_count: <件数>
   observer_polling_interval: <秒>
+  bug_target: <Bug Issue 番号 | null>  # bug level 専用（optional）。smoke/regression/load シナリオでは省略可。bug 再現シナリオは対象 Bug Issue 番号、複合シナリオは null
   issue_templates:
     - title: <タイトル>
       body: <body, multi-line>
@@ -322,4 +323,155 @@ regression-006:
 ```yaml
 # load-001: TBD (将来 Issue で実装)
 # load-002: TBD (将来 Issue で実装)
+```
+
+## bug level シナリオ (Wave 1-5 バグ再現, #483 追加)
+
+Wave 1-5 で発見された autopilot バグの再現シナリオ。`bug` level は特定の chain 遷移・stall パターンを検証し、`regression` level（並列実行 conflict 検証）と区別される。real-issues モードで各バグを再現確認できる。
+
+### bug-469-chain-stall: Worker 完了後の workflow-pr-verify 遷移停止
+
+```yaml
+bug-469-chain-stall:
+  level: bug
+  description: "Worker 実装完了後の non_terminal_chain_end による workflow-pr-verify 遷移停止再現 (#469)"
+  issues_count: 1
+  expected_duration_min: 3
+  expected_duration_max: 15
+  expected_conflicts: 0
+  expected_pr_count: 1
+  observer_polling_interval: 30
+  bug_target: 469
+  issue_templates:
+    - title: "[Test] bug-469: add simple function to test non_terminal_chain_end"
+      body: |
+        ## Goal
+        test-target plugin に `simple_func()` 関数を追加する。
+
+        ## AC
+        - [ ] `scripts/simple_func.sh` が新規作成される
+        - [ ] workflow-pr-verify に正常遷移する
+      labels: [test, scope/test-target, complexity-trivial]
+      complexity: trivial
+```
+
+### bug-470-state-path: Pilot state file パス誤認再現
+
+```yaml
+bug-470-state-path:
+  level: bug
+  description: "Pilot が Worker state file を誤ったパスで参照するバグ再現 (#470)"
+  issues_count: 1
+  expected_duration_min: 3
+  expected_duration_max: 15
+  expected_conflicts: 0
+  expected_pr_count: 1
+  observer_polling_interval: 30
+  bug_target: 470
+  issue_templates:
+    - title: "[Test] bug-470: trivial change to verify state file path resolution"
+      body: |
+        ## Goal
+        test-target plugin に README 更新を行い、Pilot が state を正しく追跡できるか検証する。
+
+        ## AC
+        - [ ] README.md に 1 行追加される
+        - [ ] Pilot の state file が正しいパスを参照する
+      labels: [test, scope/test-target, complexity-trivial]
+      complexity: trivial
+```
+
+### bug-471-refspec: remote.origin.fetch refspec 欠落再現
+
+```yaml
+bug-471-refspec:
+  level: bug
+  description: "bare repo worktree 作成時の remote.origin.fetch refspec 欠落による fetch 失敗再現 (#471)"
+  issues_count: 1
+  expected_duration_min: 3
+  expected_duration_max: 15
+  expected_conflicts: 0
+  expected_pr_count: 1
+  observer_polling_interval: 30
+  bug_target: 471
+  issue_templates:
+    - title: "[Test] bug-471: trivial change to verify refspec is set after worktree create"
+      body: |
+        ## Goal
+        worktree 作成後に remote.origin.fetch refspec が正しく設定されているか検証する。
+
+        ## AC
+        - [ ] `.bare/config` に `+refs/heads/*:refs/remotes/origin/*` が含まれる
+        - [ ] `git fetch origin` が origin/main を正しく更新する
+      labels: [test, scope/test-target, complexity-trivial]
+      complexity: trivial
+```
+
+### bug-472-monitor-stall: Pilot Monitor PHASE_COMPLETE wait 無限 stall 再現
+
+```yaml
+bug-472-monitor-stall:
+  level: bug
+  description: "Pilot Monitor が PHASE_COMPLETE を待機し続ける無限 stall 再現 (#472)"
+  issues_count: 1
+  expected_duration_min: 3
+  expected_duration_max: 20
+  expected_conflicts: 0
+  expected_pr_count: 1
+  observer_polling_interval: 30
+  bug_target: 472
+  issue_templates:
+    - title: "[Test] bug-472: trivial change to verify Monitor does not stall on PHASE_COMPLETE"
+      body: |
+        ## Goal
+        trivial な変更を通じて Pilot Monitor が PHASE_COMPLETE を受信後に正常終了することを検証する。
+
+        ## AC
+        - [ ] Monitor が PHASE_COMPLETE を受信後に停止する
+        - [ ] Pilot が次のフェーズに正常遷移する
+      labels: [test, scope/test-target, complexity-trivial]
+      complexity: trivial
+```
+
+### bug-combo-469-472: #469 + #472 複合 stall 再現
+
+```yaml
+bug-combo-469-472:
+  level: bug
+  description: "non_terminal_chain_end (#469) と Monitor stall (#472) の複合停止パターン再現 (#469/#472 参照)"
+  issues_count: 3
+  expected_duration_min: 5
+  expected_duration_max: 60
+  expected_conflicts: 0
+  expected_pr_count: 3
+  observer_polling_interval: 30
+  bug_target: null
+  issue_templates:
+    - title: "[Test] bug-combo-1: add function A"
+      body: |
+        ## Goal
+        test-target に function A を追加する。
+
+        ## AC
+        - [ ] `scripts/func_a.sh` が新規作成される
+      labels: [test, scope/test-target, complexity-trivial]
+      complexity: trivial
+    - title: "[Test] bug-combo-2: add function B"
+      body: |
+        ## Goal
+        test-target に function B を追加する。
+
+        ## AC
+        - [ ] `scripts/func_b.sh` が新規作成される
+      labels: [test, scope/test-target, complexity-trivial]
+      complexity: trivial
+    - title: "[Test] bug-combo-3: add function C"
+      body: |
+        ## Goal
+        test-target に function C を追加する。
+
+        ## AC
+        - [ ] `scripts/func_c.sh` が新規作成される
+      labels: [test, scope/test-target, complexity-trivial]
+      complexity: trivial
 ```
