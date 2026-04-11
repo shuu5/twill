@@ -256,6 +256,20 @@ step_quick_detect() {
 }
 
 # --- init: 開発状態判定 ---
+# Nested deltaspec config.yaml の存在チェック（#435 以降の rebase 確認）
+# 引数: $1 = project root
+_check_nested_deltaspec_configs() {
+  local root="$1"
+  local missing=()
+  for cfg in "plugins/twl/deltaspec/config.yaml" "cli/twl/deltaspec/config.yaml"; do
+    [[ ! -f "$root/$cfg" ]] && missing+=("$cfg")
+  done
+  if [[ ${#missing[@]} -gt 0 ]]; then
+    echo "[WARN] init: nested deltaspec config が見つかりません: ${missing[*]}" >&2
+    echo "[WARN] init: この branch は origin/main より古い可能性があります。'git rebase origin/main' を推奨します" >&2
+  fi
+}
+
 # Usage: step_init [issue_num]
 step_init() {
   record_current_step "init"
@@ -264,6 +278,10 @@ step_init() {
   root="$(resolve_project_root)"
   local branch
   branch="$(git branch --show-current 2>/dev/null || echo "detached")"
+
+  # Nested deltaspec config.yaml の存在チェック（#485: rebase ガード AC-3）
+  _check_nested_deltaspec_configs "$root"
+
   local _labels
   _labels="$(fetch_labels "$issue_num")"
   local is_quick

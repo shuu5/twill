@@ -85,8 +85,13 @@ def find_deltaspec_root(start: Path | None = None) -> Path:
 
             return max(candidates, key=_common_len)
 
+    git_top_str = str(git_top) if git_top is not None else "(no .git found)"
     raise DeltaspecNotFound(
-        "deltaspec/config.yaml not found. Run from a project with deltaspec/ initialized."
+        "deltaspec/config.yaml not found.\n"
+        f"  Walked up from: {current}\n"
+        f"  Searched git root: {git_top_str}\n"
+        "  Hint: feat branch が origin/main より古い場合は `git rebase origin/main` を実行してください。\n"
+        "  Run from a project with deltaspec/ initialized."
     )
 
 
