@@ -103,20 +103,49 @@ _ORCH_PID=$!
 echo "[co-autopilot] orchestrator PID=${_ORCH_PID} 起動 (nohup) → ログ: ${_ORCH_LOG}" >&2
 ```
 
-PHASE_COMPLETE 検知（orchestrator が trace ログに `PHASE_COMPLETE` を出力するまで待機）:
+PHASE_COMPLETE 検知（ScheduleWakeup ベースの能動確認ループ）:
 
-```bash
-# PHASE_COMPLETE を検知するまで polling（最大 MAX_POLL 回 × POLL_INTERVAL 秒）
-_poll_count=0
-while [[ "$_poll_count" -lt "${MAX_POLL:-720}" ]]; do
-  if grep -q "PHASE_COMPLETE" "$_ORCH_LOG" 2>/dev/null; then
-    echo "[co-autopilot] PHASE_COMPLETE 検知" >&2
-    break
-  fi
-  sleep "${POLL_INTERVAL:-10}"
-  _poll_count=$((_poll_count + 1))
-done
-```
+orchestrator 起動後、Pilot は **ScheduleWakeup(300)** で 5 分間隔の wake-up サイクルを使い PHASE_COMPLETE を能動的に確認する。bash while ループではなく ScheduleWakeup を必ず使用すること（Bash タイムアウト回避）。
+
+**wake-up 時の確認手順（MUST）:**
+
+1. **PHASE_COMPLETE 確認**:
+   ```bash
+   grep -c "PHASE_COMPLETE" "$_ORCH_LOG" 2>/dev/null
+   ```
+   出力が `1` 以上 → PHASE_COMPLETE 受信として Step 4.5 へ進む。
+
+2. **未完了の場合 — Worker 状態確認**:
+   全 Worker の state file を読んで `status` と `updated_at` を確認する:
+   ```bash
+   python3 -m twl.autopilot.state read \
+     --autopilot-dir "$AUTOPILOT_DIR" \
+     --type issue --issue "<N>" --field status
+   python3 -m twl.autopilot.state read \
+     --autopilot-dir "$AUTOPILOT_DIR" \
+     --type issue --issue "<N>" --field updated_at
+   ```
+   `updated_at` が現在時刻から `AUTOPILOT_STAGNATE_SEC`（デフォルト 900 秒）以上古い Worker は **stagnation** とみなす。
+
+3. **Stagnation 検知時**: stall 状態の Worker を特定してログ出力し、次の ScheduleWakeup をスケジュールする前に `session-comm.sh inject-file` 経由で回復信号を送信する。
+
+4. **次の wake-up をスケジュール（PHASE_COMPLETE 未検知の場合）**:
+   - 経過時間 < `MAX_WAIT_MINUTES`（30 分）: ScheduleWakeup(300) で再スケジュール
+   - 経過時間 ≥ `MAX_WAIT_MINUTES`: **状況精査モード**（下記）に入る
+
+**状況精査モード（タイムアウト後 MUST）:**
+
+30 分 (`MAX_WAIT_MINUTES`) を超過した場合、単純に再スケジュールせず以下を順番に確認する:
+
+1. 全 Worker の `status` を列挙（running / merge-ready / done / failed の件数）
+2. **全 Worker が terminal 状態**（merge-ready / done / failed のいずれか）の場合:
+   - PHASE_COMPLETE 相当として Step 4.5 へ進む（orchestrator からの signal を待たない）
+3. **stagnation Worker（`updated_at` が 15 分以上古い）が存在する**場合:
+   - `session-comm.sh inject-file` で詳細状況を送信して回復を試みる
+   - ScheduleWakeup(600) で 10 分の猶予をスケジュール
+4. **猶予後も stagnation が継続**する場合:
+   - 当該 Worker を failed として `python3 -m twl.autopilot.state write ... --set "status=failed"` で記録
+   - 残り Worker が全 terminal なら Step 4.5 へ進む
 
 orchestrator は JSON レポート（PHASE_COMPLETE）を trace ログに出力する。実装詳細（batch 分割・Worker 起動・ポーリング・merge-gate・skip 伝播 [不変条件 D]）は orchestrator が正典。Pilot LLM の責務は計画承認・retrospective・cross-issue 分析に限定。
 <!-- NOTE: Pilot 用 atomic (autopilot-pilot-precheck, autopilot-pilot-rebase, autopilot-multi-source-verdict) 経由であれば、PR diff stat / AC spot-check 等の能動評価は許容される。設計原則 P1 (ADR-010) 参照。 -->
