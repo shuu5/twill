@@ -131,9 +131,9 @@ flowchart TD
 - **制約 IM-2**: Issue 番号を推測してはならない（SHALL）。`gh` コマンド出力から正確に取得すること（co-issue / workflow-issue-create / workflow-tech-debt-triage 共通制約）
 - **制約 IM-3**: `.controller-issue/` ディレクトリを git にコミットしてはならない（SHALL）。`.gitignore` 対象（co-issue / workflow-issue-create 共通制約）
 - **制約 IM-4**: 他セッションの `.controller-issue/<other-session-id>/` を削除してはならない（SHALL）。セッション間分離保証
-- **制約 IM-5**: specialist が実行中のまま後続ステップに進んではならない（SHALL）。全 specialist の結果が揃うまで待機必須
+- **制約 IM-5**: （親 controller から spawn された場合の制約として）lifecycle workflow セッション**内部**で specialist が実行中のまま aggregate step に進んではならない（SHALL）。co-issue v2 では parent co-issue は specialist を直接 spawn しないため、本制約は Worker セッション内のローカル不変量として機能する（ADR-017）
 - **制約 IM-6**: ユーザー確認なしで Issue をクローズ・統合してはならない（SHALL）
-- **制約 IM-7**: N Issue × 3 specialist の全完了は機械的に保証しなければならない（SHALL）。`spec-review-session-init.sh` によるセッション state + PreToolUse gate により、全 Issue の `issue-spec-review` 完了前に `issue-review-aggregate` への forward progression を機械的にブロックする
+- **制約 IM-7**: (a) N workers の全 dispatch 完了を parent co-issue controller が保証 + (b) 各 lifecycle workflow セッション内部で N=1 × 3 specialist の完了を `spec-review-session-init.sh 1` + PreToolUse gate で保証、の 2 層構造で維持しなければならない（SHALL）。層 (b) により全 Issue の `issue-spec-review` 完了前に `issue-review-aggregate` への forward progression を機械的にブロックする（ADR-017）
 
 ## Rules
 

@@ -48,8 +48,8 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 - 必ず `main/` で起動する
 - `worktrees/` 配下で直接起動してはならない（worktree 削除で bash CWD 消失のリスク）
 
-**Worker（実装側、autopilot 経由で起動）:**
-- Pilot が事前作成した worktree ディレクトリで起動される（ADR-008 準拠）
+**Worker（実装側）:**
+- Pilot が事前作成した worktree ディレクトリで起動される（autopilot: ADR-008 準拠、co-issue v2: workflow-issue-lifecycle）
 - Worker は worktree 内で作業し、完了後に merge-ready を宣言する
 - Worker が自ら worktree を作成・削除してはならない（不変条件 B）
 
