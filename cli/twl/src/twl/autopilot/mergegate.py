@@ -40,6 +40,7 @@ _PR_RE = re.compile(r"^\d+$")
 _BRANCH_RE = re.compile(r"^[a-zA-Z0-9._/\-]+$")
 _OWNER_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
 _REPO_RE = re.compile(r"^[a-zA-Z0-9_.-]+$")
+_ASCII_PRINTABLE = re.compile(r"[^\x20-\x7e]")
 
 
 class MergeGateError(Exception):
@@ -142,10 +143,11 @@ def _check_phase_review_guard(
     - If checkpoint has CRITICAL findings with confidence >= 80, raise MergeGateError.
     """
     # Label-based skip (scope/direct or quick)
-    if _PHASE_REVIEW_SKIP_LABELS.intersection(issue_labels):
+    matched_labels = _PHASE_REVIEW_SKIP_LABELS.intersection(issue_labels)
+    if matched_labels:
         print(
             "[merge-gate] INFO: phase-review チェックをスキップしました"
-            f"（ラベル: {_PHASE_REVIEW_SKIP_LABELS.intersection(issue_labels)}）",
+            f"（ラベル: {', '.join(sorted(matched_labels))}）",
             file=sys.stderr,
         )
         return
@@ -180,9 +182,8 @@ def _check_phase_review_guard(
         and f.get("confidence", 0) >= 80
     ]
     if blocking:
-        _ASCII_PRINTABLE = re.compile(r"[^\x20-\x7e]")
         details = "; ".join(
-            _ASCII_PRINTABLE.sub("?", f.get("message", "no message"))
+            _ASCII_PRINTABLE.sub("?", str(f.get("message", "no message")))
             for f in blocking
         )
         raise MergeGateError(
