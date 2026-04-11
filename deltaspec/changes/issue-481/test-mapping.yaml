@@ -1,0 +1,103 @@
+change_id: issue-481
+generated_at: "2026-04-12T00:00:00Z"
+test_framework: bats
+scenarios:
+  # -------------------------------------------------------------------------
+  # Requirement: scenario-run モードの --real-issues フラグ受け入れ
+  # -------------------------------------------------------------------------
+  - id: "real-issues-flag-present"
+    name: "--real-issues フラグの存在確認"
+    spec_file: "specs/real-issues-routing/spec.md"
+    spec_line: 3
+    requirement: "scenario-run モードの --real-issues フラグ受け入れ"
+    test_file: "plugins/twl/tests/bats/skills/co-self-improve-real-issues.bats"
+    test_name: "co-self-improve: SKILL.md mentions --real-issues flag"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "repo-flag-present"
+    name: "--repo フラグの存在確認"
+    spec_file: "specs/real-issues-routing/spec.md"
+    spec_line: 3
+    requirement: "scenario-run モードの --real-issues フラグ受け入れ"
+    test_file: "plugins/twl/tests/bats/skills/co-self-improve-real-issues.bats"
+    test_name: "co-self-improve: SKILL.md mentions --repo flag for real-issues mode"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "init-mode-real-issues-delegation"
+    name: "test-project-init への --mode real-issues 委譲"
+    spec_file: "specs/real-issues-routing/spec.md"
+    spec_line: 6
+    requirement: "scenario-run モードの --real-issues フラグ受け入れ"
+    test_file: "plugins/twl/tests/bats/skills/co-self-improve-real-issues.bats"
+    test_name: "co-self-improve: SKILL.md Step 1 delegates --mode real-issues to test-project-init"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "scenario-load-real-issues-delegation"
+    name: "test-project-scenario-load への --real-issues 委譲"
+    spec_file: "specs/real-issues-routing/spec.md"
+    spec_line: 8
+    requirement: "scenario-run モードの --real-issues フラグ受け入れ"
+    test_file: "plugins/twl/tests/bats/skills/co-self-improve-real-issues.bats"
+    test_name: "co-self-improve: SKILL.md Step 1 delegates --real-issues to test-project-scenario-load"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "local-mode-preserved"
+    name: "local モードのデフォルト動作維持"
+    spec_file: "specs/real-issues-routing/spec.md"
+    spec_line: 13
+    requirement: "scenario-run モードの --real-issues フラグ受け入れ"
+    test_file: "plugins/twl/tests/bats/skills/co-self-improve-real-issues.bats"
+    test_name: "co-self-improve: SKILL.md retains local mode reference"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -------------------------------------------------------------------------
+  # Requirement: ambiguous 入力時の明示的モード選択
+  # -------------------------------------------------------------------------
+  - id: "ask-user-question-mode-select"
+    name: "AskUserQuestion によるモード選択"
+    spec_file: "specs/real-issues-routing/spec.md"
+    spec_line: 21
+    requirement: "ambiguous 入力時の明示的モード選択"
+    test_file: "plugins/twl/tests/bats/skills/co-self-improve-real-issues.bats"
+    test_name: "co-self-improve: SKILL.md contains AskUserQuestion for mode selection"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # -------------------------------------------------------------------------
+  # Requirement: co-autopilot の test-target worktree 起動
+  # -------------------------------------------------------------------------
+  - id: "co-autopilot-spawn"
+    name: "co-autopilot spawn 経路の明文化"
+    spec_file: "specs/real-issues-routing/spec.md"
+    spec_line: 35
+    requirement: "co-autopilot の test-target worktree 起動"
+    test_file: "plugins/twl/tests/bats/skills/co-self-improve-real-issues.bats"
+    test_name: "co-self-improve: SKILL.md Step 1 mentions co-autopilot spawn"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
