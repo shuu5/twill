@@ -115,6 +115,34 @@ bug-phase-review-skip:
   category: phase-review-skip
   description: "phase-review スキップ / phase-review.json 不在検出 (#439 関連)"
   related_issue: "439"
+
+bug-469-chain-end:
+  regex: 'non_terminal_chain_end|chain.*end.*non.terminal|WorkflowTransitionError'
+  severity: error
+  category: chain-transition-stall
+  description: "Worker 完了後の non_terminal_chain_end による workflow-pr-verify 遷移停止検出 (#469 関連)"
+  related_issue: "469"
+
+bug-470-state-path:
+  regex: 'state.*path.*not found|state file.*missing|autopilot.*state.*resolve.*fail'
+  severity: error
+  category: state-path-resolution
+  description: "Pilot state file パス誤認による state 参照失敗検出 (#470 関連)"
+  related_issue: "470"
+
+bug-471-refspec:
+  regex: 'refspec.*missing|remote\.origin\.fetch.*not set|fetch.*origin.*main.*fail'
+  severity: error
+  category: refspec-missing
+  description: "remote.origin.fetch refspec 欠落による git fetch 失敗検出 (#471 関連)"
+  related_issue: "471"
+
+bug-472-monitor-stall:
+  regex: 'PHASE_COMPLETE.*wait.*timeout|Monitor.*stall|Monitor.*hang|phase.*complete.*never'
+  severity: error
+  category: monitor-stall
+  description: "Pilot Monitor の PHASE_COMPLETE wait 無限 stall 検出 (#472 関連)"
+  related_issue: "472"
 ```
 
 ## 拡張ガイド
