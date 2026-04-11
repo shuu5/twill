@@ -105,14 +105,20 @@ Observer 介入ログの単位（ADR-013 から継承）。
 flowchart TD
     A[su-observer 起動] --> B[SupervisorSession 作成]
     B --> C{ユーザー指示待ち}
-    C -->|autopilot 指示| D[co-autopilot spawn]
-    C -->|issue 指示| E[co-issue spawn]
-    C -->|architect 指示| F[co-architect spawn]
+    C -->|autopilot 指示| D[co-autopilot session:spawn]
+    C -->|issue 指示| E[co-issue session:spawn]
+    C -->|architect 指示| F[co-architect session:spawn]
+    C -->|self-improve 指示| SI[co-self-improve session:spawn]
+    C -->|utility 指示| UT[co-utility session:spawn]
+    C -->|project 指示| PR[co-project session:spawn]
     C -->|compact 指示| G[su-compact 実行]
     C -->|observe 指示| H[observe-once 実行]
-    D --> I[observe ループ]
-    E --> I
-    F --> I
+    D --> I[observe ループ（能動）]
+    E --> I2[指示待ち]
+    F --> I2
+    SI --> I2
+    UT --> I2
+    PR --> I2
     I --> J{問題検出?}
     J -->|Yes| K[intervention-catalog 照合]
     K --> L[Auto/Confirm/Escalate]
@@ -124,6 +130,7 @@ flowchart TD
     P --> C
     O -->|No| C
     M -->|No| I
+    I2 --> C
     G --> C
     H --> C
 ```
@@ -223,8 +230,11 @@ su-observer と co-self-improve は異なるレイヤーで補完関係にある
 | 直接実装 | 禁止（SU-3） | 禁止（不変条件 K） |
 | compaction | su-compact で自律的に知識外部化 | chain-driven でテンプレート的に外部化 |
 
-**委譲関係**: su-observer はテストシナリオ実行を co-self-improve に委譲する（ADR-011 継続）。
+**委譲関係**: su-observer は session:spawn 経由で co-self-improve を起動し、テストシナリオ実行を委譲する（ADR-011 継続）。
 co-self-improve の観察結果は su-observer に報告され、su-observer が介入判断を行う。
+
+**spawn 後の observe 差異**: co-autopilot のみ能動 observe（observe ループで継続監視）の対象とする。
+co-issue / co-architect / co-self-improve / co-utility / co-project は session:spawn 後即指示待ち（I/O 待機）となり、完了報告を受け取るまで su-observer は別タスクを継続できる。
 
 **observation.md の OB-* 制約との関係**:
 - OB-1〜OB-5 は co-self-improve にのみ適用される
