@@ -1076,7 +1076,16 @@ _archive_deltaspec_changes_for_issue() {
     return 0
   fi
 
-  local changes_dir="$root/deltaspec/changes"
+  # config.yaml を持つ deltaspec root を探索（walk-down fallback 付き）
+  local ds_root="$root"
+  if [[ ! -f "$root/deltaspec/config.yaml" ]]; then
+    local found_cfg
+    found_cfg="$(find "$root" -maxdepth 5 -name config.yaml -path '*/deltaspec/*' \
+      -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/__pycache__/*' \
+      2>/dev/null | head -1)"
+    [[ -n "$found_cfg" ]] && ds_root="$(dirname "$(dirname "$found_cfg")")"
+  fi
+  local changes_dir="$ds_root/deltaspec/changes"
   if [[ ! -d "$changes_dir" ]]; then return 0; fi
 
   # issue を引数で受け取ることで動的スコープへの依存を排除
@@ -1086,10 +1095,15 @@ _archive_deltaspec_changes_for_issue() {
     change_dir="$(dirname "$yaml_path")"
     change_id="$(basename "$change_dir")"
     found=true
-    if twl spec archive --yes --skip-specs -- "$change_id"; then
-      echo "[orchestrator] Issue #${_issue}: DeltaSpec archive 完了: ${change_id}"
+    if twl spec archive --yes -- "$change_id"; then
+      echo "[orchestrator] Issue #${_issue}: DeltaSpec archive 完了（specs 統合済み）: ${change_id}"
     else
-      echo "[orchestrator] Issue #${_issue}: ⚠️ DeltaSpec archive 失敗: ${change_id}（Phase 完了は続行）" >&2
+      echo "[orchestrator] Issue #${_issue}: ⚠️ WARNING: specs 統合失敗。--skip-specs でリトライ: ${change_id}" >&2
+      if twl spec archive --yes --skip-specs -- "$change_id"; then
+        echo "[orchestrator] Issue #${_issue}: DeltaSpec archive 完了（specs 統合スキップ）: ${change_id}"
+      else
+        echo "[orchestrator] Issue #${_issue}: ⚠️ DeltaSpec archive 失敗: ${change_id}（Phase 完了は続行）" >&2
+      fi
     fi
   }
 

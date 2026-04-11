@@ -11,7 +11,9 @@ from twl.spec.new import cmd_new
 
 
 def make_project(tmp_path: Path) -> Path:
-    (tmp_path / "deltaspec" / "changes").mkdir(parents=True)
+    ds = tmp_path / "deltaspec"
+    (ds / "changes").mkdir(parents=True)
+    (ds / "config.yaml").write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
     return tmp_path
 
 
@@ -53,10 +55,13 @@ def test_accepts_numbers_and_hyphens(tmp_path, monkeypatch):
     assert rc == 0
 
 
-def test_error_without_deltaspec(tmp_path, monkeypatch):
+def test_auto_init_without_deltaspec(tmp_path, monkeypatch):
+    # deltaspec/ が存在しない場合は auto-init して成功する
     monkeypatch.chdir(tmp_path)
     rc = cmd_new("my-change")
-    assert rc == 1
+    assert rc == 0
+    assert (tmp_path / "deltaspec" / "config.yaml").exists()
+    assert (tmp_path / "deltaspec" / "changes" / "my-change").is_dir()
 
 
 def test_issue_name_adds_issue_field(tmp_path, monkeypatch):

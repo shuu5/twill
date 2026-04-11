@@ -198,10 +198,15 @@ if command -v twl >/dev/null 2>&1 && [[ -d deltaspec/changes ]]; then
     [[ -n "$FALLBACK_CHANGE" ]] && CHANGE_IDS+=("$FALLBACK_CHANGE")
   fi
   for CHANGE_ID in "${CHANGE_IDS[@]}"; do
-    if twl spec archive --yes --skip-specs -- "${CHANGE_ID}"; then
-      echo "[auto-merge] Issue #${ISSUE_NUM}: DeltaSpec archive 完了: ${CHANGE_ID}"
+    if twl spec archive --yes -- "${CHANGE_ID}"; then
+      echo "[auto-merge] Issue #${ISSUE_NUM}: DeltaSpec archive 完了（specs 統合済み）: ${CHANGE_ID}"
     else
-      echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ DeltaSpec archive 失敗: ${CHANGE_ID}（merge は成功済み）" >&2
+      echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ WARNING: specs 統合失敗。--skip-specs でリトライ: ${CHANGE_ID}" >&2
+      if twl spec archive --yes --skip-specs -- "${CHANGE_ID}"; then
+        echo "[auto-merge] Issue #${ISSUE_NUM}: DeltaSpec archive 完了（specs 統合スキップ）: ${CHANGE_ID}"
+      else
+        echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ DeltaSpec archive 失敗: ${CHANGE_ID}（merge は成功済み）" >&2
+      fi
     fi
   done
 fi

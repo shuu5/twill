@@ -11,7 +11,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from twl.spec.instructions import cmd_instructions
 
 
+def _ensure_config_yaml(tmp_path: Path) -> None:
+    ds = tmp_path / "deltaspec"
+    ds.mkdir(exist_ok=True)
+    config = ds / "config.yaml"
+    if not config.exists():
+        config.write_text("schema: spec-driven\ncontext: {}\n", encoding="utf-8")
+
+
 def make_change(tmp_path: Path, name: str, **artifacts) -> Path:
+    _ensure_config_yaml(tmp_path)
     change_dir = tmp_path / "deltaspec" / "changes" / name
     change_dir.mkdir(parents=True)
     (change_dir / ".deltaspec.yaml").write_text("schema: spec-driven\ncreated: 2024-01-01\n")
@@ -118,5 +127,6 @@ def test_instructions_unknown_artifact(tmp_path, monkeypatch):
 def test_instructions_missing_change(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     (tmp_path / "deltaspec" / "changes").mkdir(parents=True)
+    _ensure_config_yaml(tmp_path)
     rc = cmd_instructions("proposal", "ghost")
     assert rc == 1

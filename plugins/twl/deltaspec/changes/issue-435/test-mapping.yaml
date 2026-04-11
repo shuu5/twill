@@ -1,0 +1,396 @@
+change_id: issue-435
+generated_at: "2026-04-10T23:48:20Z"
+test_framework: pytest
+scenarios:
+  # -----------------------------------------------------------------------
+  # Requirement: config.yaml マーカーベース検出
+  # Source: specs/find-deltaspec-root/spec.md
+  # -----------------------------------------------------------------------
+
+  - id: "config-yaml-nashi-deltaspec-skip"
+    name: "config.yaml なし deltaspec/ のスキップ"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 7
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_skips_deltaspec_without_config_yaml"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "find_deltaspec_root() does not check for config.yaml — returns deltaspec/ without config.yaml"
+
+  - id: "config-yaml-nashi-deltaspec-skip-at-cwd"
+    name: "config.yaml なし deltaspec/ のスキップ（cwd 直下）"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 7
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_skips_deltaspec_without_config_yaml_at_cwd_level"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "find_deltaspec_root() does not check for config.yaml"
+
+  - id: "finds-valid-root-with-config-yaml"
+    name: "config.yaml あり deltaspec/ の基本検出"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 7
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_finds_valid_root_with_config_yaml"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "finds-valid-root-from-deep-subdir"
+    name: "深いサブディレクトリからの walk-up 検出"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 7
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_finds_valid_root_from_deep_subdir"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Scenario: walk-down fallback
+  # Source: specs/find-deltaspec-root/spec.md line 11
+  # -----------------------------------------------------------------------
+
+  - id: "walk-down-fallback"
+    name: "walk-down fallback"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 11
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_walk_down_fallback_finds_config_yaml"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "walk-down fallback not implemented — raises DeltaspecNotFound instead of scanning git toplevel"
+
+  - id: "walk-down-fallback-maxdepth-3"
+    name: "walk-down fallback maxdepth=3 制約"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 11
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_walk_down_fallback_respects_maxdepth_3"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "walk-down-fallback-depth-3-found"
+    name: "walk-down fallback depth=3 検出"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 11
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_walk_down_fallback_depth_3_is_found"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "walk-down fallback not implemented"
+
+  # -----------------------------------------------------------------------
+  # Scenario: 複数ヒット時の選択
+  # Source: specs/find-deltaspec-root/spec.md line 15
+  # -----------------------------------------------------------------------
+
+  - id: "multiple-hits-longest-common-path"
+    name: "複数ヒット時の選択（最長共通パス）"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 15
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_multiple_hits_selects_longest_common_path"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "multiple-hits-closest-to-cwd"
+    name: "複数ヒット時の選択（cwd 最近傍）"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 15
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_multiple_hits_selects_closest_to_cwd"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Scenario: 検出失敗
+  # Source: specs/find-deltaspec-root/spec.md line 19
+  # -----------------------------------------------------------------------
+
+  - id: "detection-failure-no-deltaspec"
+    name: "検出失敗（deltaspec/ なし）"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 19
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_raises_when_no_deltaspec_found"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "detection-failure-only-no-config-yaml"
+    name: "検出失敗（config.yaml なし deltaspec/ のみ）"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 19
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_raises_when_only_deltaspec_without_config_yaml"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "find_deltaspec_root() accepts deltaspec/ without config.yaml — should raise DeltaspecNotFound"
+
+  - id: "detection-failure-no-git"
+    name: "検出失敗（git なし走査）"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 19
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_raises_when_walk_up_exhausted_and_no_git"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "detection-failure-walk-down-no-config-yaml"
+    name: "検出失敗（walk-down で config.yaml なし）"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 19
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_raises_when_walk_down_finds_no_config_yaml"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Edge cases — find_deltaspec_root
+  # -----------------------------------------------------------------------
+
+  - id: "config-yaml-empty-valid"
+    name: "config.yaml 空ファイルは有効マーカー"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 7
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_config_yaml_empty_file_is_still_valid"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "config-yaml-symlink-valid"
+    name: "config.yaml シンボリックリンクは有効"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 7
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_config_yaml_symlink_is_valid"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "walk-up-stops-at-first-valid"
+    name: "walk-up は最初の有効 root で停止"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 7
+    requirement: "config.yaml マーカーベース検出"
+    test_file: "cli/twl/tests/scenarios/test_find_deltaspec_root.py"
+    test_name: "TestConfigYamlMarkerDetection::test_walk_up_stops_at_first_valid_root"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  # -----------------------------------------------------------------------
+  # Requirement: twl spec new の config.yaml 自動生成
+  # Source: specs/find-deltaspec-root/spec.md line 29
+  # -----------------------------------------------------------------------
+
+  - id: "spec-new-creates-config-yaml-when-deltaspec-missing"
+    name: "新規 deltaspec 作成時の config.yaml 生成"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 29
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_creates_config_yaml_when_deltaspec_missing"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "cmd_new() raises DeltaspecNotFound when deltaspec/ does not exist — auto-creation not implemented"
+
+  - id: "spec-new-config-yaml-has-schema-field"
+    name: "生成 config.yaml に schema フィールド"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 29
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_created_config_yaml_contains_schema_field"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "config.yaml not generated"
+
+  - id: "spec-new-config-yaml-has-context-field"
+    name: "生成 config.yaml に context フィールド"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 29
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_created_config_yaml_contains_context_field"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "config.yaml not generated"
+
+  - id: "spec-new-creates-change-dir-without-deltaspec"
+    name: "deltaspec/ なし時の change dir 作成"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 29
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_creates_change_directory_when_deltaspec_missing"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "cmd_new() returns rc=1 when deltaspec/ missing — auto-init not implemented"
+
+  - id: "spec-new-creates-deltaspec-yaml-in-change-dir"
+    name: "新規 deltaspec での .deltaspec.yaml 生成"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 29
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_creates_deltaspec_yaml_in_change_dir"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "change dir not created when deltaspec/ missing"
+
+  - id: "spec-new-no-overwrite-config-yaml"
+    name: "既存 deltaspec への config.yaml 非上書き"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 33
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_does_not_overwrite_existing_config_yaml"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "spec-new-creates-change-dir-when-config-exists"
+    name: "config.yaml 既存時の change dir 作成"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 33
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_creates_change_dir_when_config_yaml_exists"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "spec-new-legacy-project-no-side-effect"
+    name: "レガシー構成（config.yaml なし deltaspec/）での副作用なし"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 33
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_does_not_create_config_yaml_in_legacy_project"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "spec-new-config-yaml-valid-yaml"
+    name: "生成 config.yaml は valid YAML"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 29
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_config_yaml_is_valid_yaml"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "config.yaml not generated"
+
+  - id: "spec-new-multiple-calls-no-overwrite"
+    name: "複数回 cmd_new で config.yaml は初回生成を保持"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 33
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_multiple_new_calls_do_not_overwrite_config_yaml"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "first cmd_new fails (deltaspec/ missing), so no config.yaml to preserve"
+
+  - id: "spec-new-no-dup-config-yaml"
+    name: "config.yaml が複製されない"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 33
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_config_yaml_not_created_when_deltaspec_exists_with_config"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: null
+
+  - id: "spec-new-issue-name-includes-issue-field"
+    name: "issue 名での新規作成で issue フィールド付き .deltaspec.yaml"
+    spec_file: "specs/find-deltaspec-root/spec.md"
+    spec_line: 29
+    requirement: "twl spec new の config.yaml 自動生成"
+    test_file: "cli/twl/tests/scenarios/test_spec_new_config_yaml.py"
+    test_name: "TestSpecNewConfigYamlGeneration::test_issue_name_in_new_deltaspec_includes_issue_field"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-10T23:48:20Z"
+    failure_reason: "cmd_new() returns rc=1 when deltaspec/ missing"
