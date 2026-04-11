@@ -105,9 +105,14 @@ setup() {
   hist_count=$(grep -c '^hist-' "$file" || true)
   [ "$hist_count" -ge 2 ]
 
-  # Total 9+
-  local total=$((error_count + warn_count + info_count + hist_count))
-  [ "$total" -ge 9 ]
+  # Count bug patterns (3+) added in issue-443
+  local bug_count
+  bug_count=$(grep -c '^bug-' "$file" || true)
+  [ "$bug_count" -ge 3 ]
+
+  # Total 12+ (error 3 + warn 2 + info 2 + hist 2 + bug 3)
+  local total=$((error_count + warn_count + info_count + hist_count + bug_count))
+  [ "$total" -ge 12 ]
 }
 
 @test "observation-pattern-catalog: all regex patterns are valid for grep -E" {
@@ -137,6 +142,32 @@ setup() {
   # Ensure we actually checked some patterns
   [ "$pattern_count" -gt 0 ]
   [ "$fail_count" -eq 0 ]
+}
+
+@test "observation-pattern-catalog: bug-deltaspec-archive entry exists with required fields" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q 'bug-deltaspec-archive:' "$file"
+  grep -q 'category: deltaspec-archive-failure' "$file"
+  grep -q 'severity: error' "$file"
+  grep -q 'related_issue: "436"' "$file"
+}
+
+@test "observation-pattern-catalog: bug-chain-stall entry exists with required fields" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q 'bug-chain-stall:' "$file"
+  grep -q 'category: chain-transition-stall' "$file"
+  grep -q 'related_issue: "438"' "$file"
+}
+
+@test "observation-pattern-catalog: bug-phase-review-skip entry exists with required fields" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q 'bug-phase-review-skip:' "$file"
+  grep -q 'category: phase-review-skip' "$file"
+  grep -q 'severity: warning' "$file"
+  grep -q 'related_issue: "439"' "$file"
 }
 
 @test "observation-pattern-catalog: historical patterns reference #166 and #167" {
