@@ -9,5 +9,5 @@
 
 ## 2. 検証
 
-- [ ] 2.1 ADR-016 ファイルが `plugins/twl/architecture/decisions/` に存在することを確認する
-- [ ] 2.2 #477 の全受け入れ基準を満たしていることを確認する
+- [x] 2.1 ADR-016 ファイルが `plugins/twl/architecture/decisions/` に存在することを確認する
+- [x] 2.2 #477 の全受け入れ基準を満たしていることを確認する
