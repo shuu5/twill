@@ -1,0 +1,8 @@
+# co-issue session state (制約 IM-3 — issue-mgmt.md)
+.controller-issue/
+
+# supervisor session state
+.supervisor/
+
+# Claude Code local state
+.claude/scheduled_tasks.lock
