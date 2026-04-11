@@ -2548,9 +2548,7 @@ scripts:
   issue-lifecycle-orchestrator:
     type: script
     path: scripts/issue-lifecycle-orchestrator.sh
-    calls:
-      - script: spec-review-session-init
-    description: "co-issue v2 Pilot が呼ぶバッチ orchestrator: N per-issue dir の workflow-issue-lifecycle を tmux cld で並列起動（spec-review-orchestrator.sh コードパターン流用。MAX_PARALLEL / flock / resume 対応）"
+    description: "co-issue v2 Pilot が呼ぶバッチ orchestrator: N per-issue dir の workflow-issue-lifecycle を tmux cld で並列起動（spec-review-orchestrator.sh コードパターン流用。MAX_PARALLEL / flock / resume 対応。ADR-017 IM-7: N=1 初期化は各 Worker が個別に実施）"
 
   pre-tool-use-spec-review-gate:
     type: script

@@ -24,12 +24,21 @@ set -euo pipefail
 
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# lockfile クリーンアップ（spawn_session 内で作成した /tmp/.coi-window-*.lock）
+trap 'rm -f /tmp/.coi-window-*.lock 2>/dev/null || true' EXIT
+
 MAX_PARALLEL="${MAX_PARALLEL:-3}"
 if ! [[ "$MAX_PARALLEL" =~ ^[1-9][0-9]*$ ]]; then
   MAX_PARALLEL=3
 fi
 POLL_INTERVAL="${POLL_INTERVAL:-10}"
+if ! [[ "$POLL_INTERVAL" =~ ^[1-9][0-9]*$ ]]; then
+  POLL_INTERVAL=10
+fi
 MAX_POLL="${MAX_POLL:-360}"
+if ! [[ "$MAX_POLL" =~ ^[1-9][0-9]*$ ]]; then
+  MAX_POLL=360
+fi
 
 # --- 使い方 ---
 usage() {
@@ -104,8 +113,9 @@ fi
 
 echo "[issue-lifecycle-orchestrator] サブディレクトリ数: ${TOTAL}, MAX_PARALLEL: ${MAX_PARALLEL}"
 
-# --- セッション初期化（N=1 不変量：orchestrator 自身は 1 セッション） ---
-bash "${SCRIPTS_ROOT}/spec-review-session-init.sh" "$TOTAL"
+# ADR-017 IM-7: N=1 不変量は各 Worker（workflow-issue-lifecycle）が個別に
+# spec-review-session-init.sh 1 を呼び出すことで保証する。
+# orchestrator はセッション初期化を行わない（state file 競合防止）。
 
 # =============================================================================
 # sid 抽出ユーティリティ
@@ -121,7 +131,10 @@ extract_sid8() {
     # フォールバック: パス全体のハッシュ
     sid="$(printf '%s' "$dir" | md5sum | cut -c1-8)"
   fi
-  printf '%s' "${sid:0:8}"
+  # tmux 特殊文字（:, %, ., !）を除去してウィンドウ名を安全にする
+  local clean_sid="${sid:0:8}"
+  clean_sid="${clean_sid//[^a-zA-Z0-9_-]/x}"
+  printf '%s' "$clean_sid"
 }
 
 # サブディレクトリからインデックスを取得
@@ -236,7 +249,7 @@ wait_for_batch() {
       if [[ ! -f "$report_file" ]]; then
         local window_name
         window_name="$(window_name_for_subdir "$subdir")"
-        if ! tmux list-windows -F '#{window_name}' 2>/dev/null | grep -qF "$window_name"; then
+        if ! tmux list-windows -F '#{window_name}' 2>/dev/null | grep -qxF "$window_name"; then
           echo "[issue-lifecycle-orchestrator] ${subdir##*/}: ウィンドウ消失・report.json なし — タイムアウト扱い" >&2
           mkdir -p "${subdir}/OUT"
           printf '{"status":"timeout","error":"window_lost"}\n' > "$report_file"
