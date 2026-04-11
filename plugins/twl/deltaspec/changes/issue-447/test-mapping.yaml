@@ -1,0 +1,341 @@
+change_id: issue-447
+generated_at: "2026-04-11T00:00:00Z"
+test_framework: bash
+scenarios:
+  - id: "spec-review-orchestrator-script-execution"
+    name: "スクリプト実行"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 7
+    requirement: "spec-review-orchestrator スクリプトの存在"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-issues-dir-option"
+    name: "スクリプト実行 (--issues-dir オプション)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 7
+    requirement: "spec-review-orchestrator スクリプトの存在"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が --issues-dir オプションを受け付ける"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-output-dir-option"
+    name: "スクリプト実行 (--output-dir オプション)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 7
+    requirement: "spec-review-orchestrator スクリプトの存在"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が --output-dir オプションを受け付ける"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-issue-json-glob"
+    name: "スクリプト実行 (issue-*.json グロブ)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 9
+    requirement: "spec-review-orchestrator スクリプトの存在"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が issue-*.json をグロブで列挙する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-tmux-cld-session"
+    name: "スクリプト実行 (tmux cld セッション起動)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 9
+    requirement: "spec-review-orchestrator スクリプトの存在"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が tmux cld セッションを起動する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-n-issue-batch-loop"
+    name: "N Issue の並列処理 (バッチループ)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 15
+    requirement: "Issue ごとの独立セッション起動"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh がバッチループ制御を実装する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-parallel-counter"
+    name: "N Issue の並列処理 (並列数管理)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 17
+    requirement: "Issue ごとの独立セッション起動"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が並列数を管理する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-1-issue-processing"
+    name: "1 Issue の処理"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 19
+    requirement: "Issue ごとの独立セッション起動"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が 1 Issue でも正常動作するループ構造を持つ"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-max-parallel-default"
+    name: "デフォルト値"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 27
+    requirement: "MAX_PARALLEL 環境変数による制御"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh MAX_PARALLEL のデフォルト値が 3"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-max-parallel-custom"
+    name: "カスタム値"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 32
+    requirement: "MAX_PARALLEL 環境変数による制御"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が $MAX_PARALLEL を実際に参照する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-result-file-pattern"
+    name: "全セッション完了後の結果収集 (ファイルパターン)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 39
+    requirement: "結果ファイルへの書き出し"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が issue-{N}-result.txt パターンを使用する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-output-dir-write"
+    name: "全セッション完了後の結果収集 (OUTPUT_DIR 書き出し)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 41
+    requirement: "結果ファイルへの書き出し"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が OUTPUT_DIR に結果を書き出す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "spec-review-orchestrator-session-wait"
+    name: "全セッション完了後の結果収集 (完了待機)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 41
+    requirement: "結果ファイルへの書き出し"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "spec-review-orchestrator.sh が全セッション完了を待つ"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "workflow-issue-refine-step3b-orchestrator-call"
+    name: "複数 Issue の spec-review"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 49
+    requirement: "workflow-issue-refine Step 3b のオーケストレーター委譲"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "workflow-issue-refine SKILL.md Step 3b が spec-review-orchestrator.sh を参照する"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-11T00:00:00Z"
+    failure_reason: "SKILL.md に spec-review-orchestrator.sh の参照が未追加"
+
+  - id: "workflow-issue-refine-step3c-reads-results"
+    name: "結果の受け取り"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 53
+    requirement: "workflow-issue-refine Step 3b のオーケストレーター委譲"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "workflow-issue-refine SKILL.md Step 3c が output-dir から結果ファイルを読み込む記述"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-11T00:00:00Z"
+    failure_reason: "SKILL.md に output-dir から結果ファイルを読み込む記述が未追加"
+
+  - id: "deps-yaml-orchestrator-entry"
+    name: "deps.yaml 整合性 (エントリ存在)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 61
+    requirement: "deps.yaml への spec-review-orchestrator 登録"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "deps.yaml に spec-review-orchestrator エントリが存在する"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-11T00:00:00Z"
+    failure_reason: "deps.yaml に spec-review-orchestrator エントリが未登録"
+
+  - id: "deps-yaml-orchestrator-path"
+    name: "deps.yaml 整合性 (path)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 61
+    requirement: "deps.yaml への spec-review-orchestrator 登録"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "deps.yaml の spec-review-orchestrator が path を持つ"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-11T00:00:00Z"
+    failure_reason: "deps.yaml に spec-review-orchestrator.sh の path が未記載"
+
+  - id: "deps-yaml-orchestrator-scripts-section"
+    name: "deps.yaml 整合性 (scripts セクション)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 61
+    requirement: "deps.yaml への spec-review-orchestrator 登録"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "deps.yaml の spec-review-orchestrator が scripts セクションに登録されている"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-11T00:00:00Z"
+    failure_reason: "deps.yaml の scripts セクションに spec-review-orchestrator が未登録"
+
+  - id: "deps-yaml-workflow-calls-orchestrator"
+    name: "deps.yaml 整合性 (workflow-issue-refine calls)"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 61
+    requirement: "deps.yaml への spec-review-orchestrator 登録"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "deps.yaml workflow-issue-refine の calls に spec-review-orchestrator が含まれる"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-11T00:00:00Z"
+    failure_reason: "workflow-issue-refine の calls に spec-review-orchestrator が未追加"
+
+  - id: "edge-orchestrator-executable"
+    name: "[edge] 実行可能ビット"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 7
+    requirement: "spec-review-orchestrator スクリプトの存在"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "[edge] spec-review-orchestrator.sh が実行可能ビットを持つ"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-orchestrator-shebang"
+    name: "[edge] shebang bash"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 7
+    requirement: "spec-review-orchestrator スクリプトの存在"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "[edge] spec-review-orchestrator.sh の shebang が bash"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-orchestrator-missing-dir-error"
+    name: "[edge] 不正引数エラー終了"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 7
+    requirement: "spec-review-orchestrator スクリプトの存在"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "[edge] spec-review-orchestrator.sh が不正引数でエラー終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-orchestrator-max-parallel-guard"
+    name: "[edge] MAX_PARALLEL デフォルト値ガード"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 27
+    requirement: "MAX_PARALLEL 環境変数による制御"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "[edge] spec-review-orchestrator.sh MAX_PARALLEL にデフォルト値ガードがある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-orchestrator-empty-issues-dir"
+    name: "[edge] issue-*.json ゼロ件で正常終了"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 15
+    requirement: "Issue ごとの独立セッション起動"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "[edge] spec-review-orchestrator.sh が issue-*.json ゼロ件で正常終了できる構造"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-orchestrator-invokes-issue-spec-review"
+    name: "[edge] issue-spec-review コマンド呼び出し"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 9
+    requirement: "spec-review-orchestrator スクリプトの存在"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "[edge] spec-review-orchestrator.sh が issue-spec-review を呼び出す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-skill-no-direct-llm-loop"
+    name: "[edge] Step 3b に LLM 直接 N 回ループなし"
+    spec_file: "specs/spec-review-orchestrator/spec.md"
+    spec_line: 49
+    requirement: "workflow-issue-refine Step 3b のオーケストレーター委譲"
+    test_file: "tests/scenarios/spec-review-orchestrator.test.sh"
+    test_name: "[edge] workflow-issue-refine Step 3b に LLM 直接 N 回ループ記述がない"
+    type: unit
+    criteria: []
+    status: failing
+    last_run: "2026-04-11T00:00:00Z"
+    failure_reason: "SKILL.md の Step 3b に issue-spec-review N 回呼び出し記述が残存（orchestrator 委譲後は削除が必要）"
