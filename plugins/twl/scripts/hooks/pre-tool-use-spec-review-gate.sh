@@ -39,8 +39,14 @@ HASH=$(printf '%s' "${CLAUDE_PROJECT_ROOT:-$PWD}" | cksum | awk '{print $1}')
 STATE_FILE="/tmp/.spec-review-session-${HASH}.json"
 LOCK_FILE="/tmp/.spec-review-session-${HASH}.lock"
 
-# state ファイル不在 → フォールバック（通過）
-if [[ ! -f "$STATE_FILE" ]]; then
+# LOCK_FILE の symlink チェック（flock 前に実施 — TOCTOU 対策）
+if [[ -L "$LOCK_FILE" ]]; then
+  exit 0
+fi
+
+# state ファイルの事前チェック（symlink + 存在）
+# flock 取得前に -f と -L を同時検査して TOCTOU ウィンドウを最小化
+if [[ -L "$STATE_FILE" || ! -f "$STATE_FILE" ]]; then
   exit 0
 fi
 
@@ -48,16 +54,16 @@ fi
 {
   flock -w 5 9 || exit 0  # ロック取得失敗 → フォールバック（通過）
 
-  # Refuse symlinks
-  if [[ -L "$STATE_FILE" ]]; then
+  # flock 取得後に再チェック（TOCTOU ウィンドウを閉じる）
+  if [[ -L "$STATE_FILE" || ! -f "$STATE_FILE" ]]; then
     exit 0
   fi
 
   TOTAL=$(jq -r '.total // 0' "$STATE_FILE" 2>/dev/null || echo "0")
   COMPLETED=$(jq -r '.completed // 0' "$STATE_FILE" 2>/dev/null || echo "0")
 
-  # 数値バリデーション
-  if ! [[ "$TOTAL" =~ ^[0-9]+$ ]] || ! [[ "$COMPLETED" =~ ^[0-9]+$ ]]; then
+  # 数値バリデーション（TOTAL=0 はフォールバック通過）
+  if ! [[ "$TOTAL" =~ ^[0-9]+$ ]] || ! [[ "$COMPLETED" =~ ^[0-9]+$ ]] || [[ "$TOTAL" -eq 0 ]]; then
     exit 0
   fi
 
@@ -77,8 +83,11 @@ fi
   fi
 
   # completed >= total → 通過 + クリーンアップ
-  rm -f "$STATE_FILE" "$LOCK_FILE"
+  rm -f "$STATE_FILE"
 
 } 9>"$LOCK_FILE"
+
+# LOCK_FILE は flock ブロック外でクリーンアップ（flock 解放後）
+rm -f "$LOCK_FILE"
 
 exit 0
