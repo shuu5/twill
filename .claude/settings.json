@@ -1,5 +1,17 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'case \"${TOOL_INPUT_file_path:-}\" in *architecture/domain/model.md|*architecture/domain/context-map.md) echo \"architecture domain ファイルの変更は co-architect 経由で行ってください\" >&2; exit 2;; esac'",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
     "PreCompact": [
       {
         "matcher": "",
