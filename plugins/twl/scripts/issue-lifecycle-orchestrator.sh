@@ -217,7 +217,7 @@ spawn_session() {
   prompt_file="$(mktemp /tmp/.coi-prompt-XXXXXX.txt)"
 
   # policies.json 主要フィールドを抽出（jq がなければ空文字。全変数を空文字で初期化し set -u エラーを回避）
-  local policies_json="" max_rounds="" specialists="" depth="" quick_flag="" target_repo=""
+  local max_rounds="" specialists="" depth="" quick_flag="" target_repo=""
   if [[ -f "${subdir}/IN/policies.json" ]] && command -v jq >/dev/null 2>&1; then
     max_rounds="$(jq -r '.max_rounds // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
     specialists="$(jq -r '(.specialists // []) | join(",")' "${subdir}/IN/policies.json" 2>/dev/null || true)"
