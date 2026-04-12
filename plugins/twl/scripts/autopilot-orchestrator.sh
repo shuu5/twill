@@ -275,6 +275,7 @@ launch_worker() {
   if [[ -n "$ISSUE_REPO_PATH" ]]; then
     effective_project_dir="$ISSUE_REPO_PATH"
   fi
+  export TWILL_REPO_ROOT="${PROJECT_DIR}"
 
   local worktree_dir=""
   # 既存 worktree の確認（冪等性: branch が state に記録済みの場合）
@@ -321,11 +322,14 @@ launch_worker() {
     echo "[orchestrator] Issue #${ISSUE}: worktree 作成完了: $worktree_dir" >&2
   fi
 
-  # CRG graph DB symlink（main の DB を参照、#532）
-  # main worktree 自身は除外（自己参照 symlink 防止）
-  local _crg_main="${effective_project_dir}/main/.code-review-graph"
+  # CRG graph DB symlink（main の DB を参照、#532、#576）
+  # main worktree 自身は除外（自己参照 symlink 防止、TWILL_REPO_ROOT 文字列比較）
+  # TWILL_REPO_ROOT は常に twill モノリポルート（PROJECT_DIR）を指す。ISSUE_REPO_PATH とは独立
+  local _crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
+  local _normalized_wt="${worktree_dir%/}"
+  local _normalized_main="${TWILL_REPO_ROOT%/}/main"
   local _is_main=0
-  [[ "$(realpath "$worktree_dir" 2>/dev/null)" == "$(realpath "${effective_project_dir}/main" 2>/dev/null)" ]] && _is_main=1
+  [[ "$_normalized_wt" == "$_normalized_main" ]] && _is_main=1
   [[ -d "$_crg_main" && "$_is_main" -eq 0 && ! -e "$worktree_dir/.code-review-graph" ]] && ln -sf "$_crg_main" "$worktree_dir/.code-review-graph"
 
   local effective_model="${model_override:-${WORKER_MODEL:-sonnet}}"
