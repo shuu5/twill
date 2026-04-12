@@ -85,7 +85,7 @@ co-autopilot は su-observer の存在を前提とせず動作する。su-observ
 
 ## Step 4: Phase ループ（orchestrator 委譲）
 
-`autopilot-orchestrator.sh` で Phase 実行を委譲。Pilot の Bash context 外で持続実行するため **nohup/disown** を使用すること（不変条件 M — Pilot timeout/cancel による chain 停止防止）。`--session-file` には `$AUTOPILOT_DIR` を使った絶対パスを指定すること（相対パス・セッション ID 直接渡しは不可）:
+`autopilot-orchestrator.sh` で Phase 実行を委譲。Pilot の Bash context 外で持続実行するため **nohup/disown** を使用すること（不変条件 M — Pilot timeout/cancel による chain 停止防止）。`--session` には `$AUTOPILOT_DIR` を使った絶対パスを指定すること（相対パス・セッション ID 直接渡しは不可）:
 
 ```bash
 mkdir -p "${AUTOPILOT_DIR}/trace"
@@ -93,7 +93,7 @@ _ORCH_LOG="${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log"
 nohup bash autopilot-orchestrator.sh \
   --plan "${AUTOPILOT_DIR}/plan.yaml" \
   --phase "$PHASE_NUM" \
-  --session-file "${AUTOPILOT_DIR}/session.json" \
+  --session "${AUTOPILOT_DIR}/session.json" \
   --project-dir "$PROJECT_DIR" \
   --autopilot-dir "$AUTOPILOT_DIR" \
   ${REPOS_ARG:-} \
@@ -221,7 +221,7 @@ mkdir -p "${AUTOPILOT_DIR}/trace"
 nohup bash autopilot-orchestrator.sh \
   --plan "${AUTOPILOT_DIR}/plan.yaml" \
   --phase "$PHASE_NUM" \
-  --session-file "${AUTOPILOT_DIR}/session.json" \
+  --session "${AUTOPILOT_DIR}/session.json" \
   --project-dir "$PROJECT_DIR" \
   --autopilot-dir "$AUTOPILOT_DIR" \
   >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log" 2>&1 &
