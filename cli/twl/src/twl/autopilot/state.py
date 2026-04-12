@@ -31,7 +31,7 @@ _TRANSITIONS: dict[str, set[str]] = {
     "conflict": {"merge-ready", "failed"},
 }
 
-_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override", "pr", "workflow_injected", "injected_at", "input_waiting_detected", "input_waiting_at"}
+_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override", "pr", "workflow_injected", "injected_at", "input_waiting_detected", "input_waiting_at", "escalation_requested"}
 
 
 def _autopilot_dir() -> Path:
