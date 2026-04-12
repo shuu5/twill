@@ -206,30 +206,32 @@ spawn_session() {
   prompt_file="$(mktemp /tmp/.coi-prompt-XXXXXX.txt)"
   printf '%s\n' "/twl:workflow-issue-lifecycle $(printf '%q' "$subdir")" > "$prompt_file"
 
-  # ラッパースクリプトを作成して tmux に渡す
-  local wrapper_file
-  wrapper_file="$(mktemp /tmp/.coi-wrapper-XXXXXX.sh)"
-  {
-    printf '#!/usr/bin/env bash\n'
-    printf 'set -euo pipefail\n'
-    printf "trap 'rm -f %q %q' EXIT\n" "$prompt_file" "$wrapper_file"
-    printf 'PROMPT_CONTENT="$(cat %q)"\n' "$prompt_file"
-    printf '%q "$PROMPT_CONTENT" > %q 2>&1\n' "$CLD_PATH" "${subdir}/OUT/cld-output.txt"
-  } > "$wrapper_file"
-  chmod +x "$wrapper_file"
+  local SESSION_SCRIPTS
+  SESSION_SCRIPTS="${SCRIPTS_ROOT}/../../session/scripts"
 
   echo "[issue-lifecycle-orchestrator] ${subdir##*/}: spawn (window=${window_name})" >&2
 
-  # flock 解放（tmux spawn 後）
+  # flock 解放（cld-spawn 前）
   exec {lockfd}>&-
 
-  tmux new-window -d -n "$window_name" "bash $(printf '%q' "$wrapper_file")" || {
-    rm -f "$prompt_file" "$wrapper_file" 2>/dev/null || true
-    echo "[issue-lifecycle-orchestrator] ${subdir##*/}: tmux spawn 失敗" >&2
+  # cld-spawn: 対話モードで起動（one-shot モード stdout 問題を回避 — #541）
+  "${SESSION_SCRIPTS}/cld-spawn" --cd "$(pwd)" --window-name "${window_name}" || {
+    rm -f "$prompt_file" 2>/dev/null || true
+    echo "[issue-lifecycle-orchestrator] ${subdir##*/}: cld-spawn 失敗" >&2
     return 1
   }
 
   tmux set-option -t "$window_name" remain-on-exit on 2>/dev/null || true
+
+  # inject-file: プロンプトをセッションに安全に送達（wait-ready 後）
+  "${SESSION_SCRIPTS}/session-comm.sh" inject-file "${window_name}" "${prompt_file}" --wait 60 || {
+    rm -f "$prompt_file" 2>/dev/null || true
+    tmux kill-window -t "${window_name}" 2>/dev/null || true
+    echo "[issue-lifecycle-orchestrator] ${subdir##*/}: inject-file 失敗" >&2
+    return 1
+  }
+
+  rm -f "$prompt_file" 2>/dev/null || true
 }
 
 # =============================================================================
