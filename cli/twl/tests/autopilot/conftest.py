@@ -70,10 +70,13 @@ def _phase_review_json(
     critical_count = sum(
         1 for f in findings if f.get("severity") == "CRITICAL"
     )
+    warning_count = sum(
+        1 for f in findings if f.get("severity") == "WARNING"
+    )
     return {
         "step": "phase-review",
         "status": status,
-        "findings_summary": f"{critical_count} CRITICAL, 0 WARNING",
+        "findings_summary": f"{critical_count} CRITICAL, {warning_count} WARNING",
         "critical_count": critical_count,
         "findings": findings,
         "timestamp": "2026-04-11T00:00:00Z",

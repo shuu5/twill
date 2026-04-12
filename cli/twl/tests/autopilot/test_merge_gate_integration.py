@@ -6,6 +6,7 @@ Covers:
 
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -19,38 +20,30 @@ from twl.autopilot.mergegate import MergeGate, MergeGateError
 # ---------------------------------------------------------------------------
 
 
+def _base_patches(stack: contextlib.ExitStack) -> None:
+    """execute() の外部依存をすべてモックする。ExitStack 経由で使用する。"""
+    stack.enter_context(patch("os.getcwd", return_value="/home/user/projects/main"))
+    stack.enter_context(patch("twl.autopilot.mergegate._check_worker_window_guard"))
+    stack.enter_context(patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"))
+    stack.enter_context(patch("twl.autopilot.mergegate._state_write"))
+    stack.enter_context(patch("twl.autopilot.mergegate._board_update"))
+    stack.enter_context(patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"))
+    stack.enter_context(patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="")))
+
+
 class TestMergeGateExecuteIntegration:
     """execute() が _check_phase_review_guard を呼び出すことを確認する統合テスト。"""
-
-    def _patch_execute_base(self) -> list:
-        """execute() の外部依存をすべてモックするパッチリスト。"""
-        return [
-            patch("os.getcwd", return_value="/home/user/projects/main"),
-            patch("twl.autopilot.mergegate._check_worker_window_guard"),
-            patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"),
-            patch("twl.autopilot.mergegate._state_write"),
-            patch("twl.autopilot.mergegate._board_update"),
-            patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"),
-            patch.object(MergeGate, "_verify_and_close_issue", return_value=True),
-            patch(
-                "subprocess.run",
-                return_value=MagicMock(returncode=0, stdout=""),
-            ),
-        ]
 
     def test_execute_calls_phase_review_guard(
         self, gate: MergeGate
     ) -> None:
         """execute() は _check_phase_review_guard（またはメソッド相当）を呼び出す。"""
-        with patch("twl.autopilot.mergegate._check_phase_review_guard") as mock_guard, \
-             patch("os.getcwd", return_value="/home/user/projects/main"), \
-             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
-             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
-             patch("twl.autopilot.mergegate._state_write"), \
-             patch("twl.autopilot.mergegate._board_update"), \
-             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
-             patch.object(MergeGate, "_verify_and_close_issue", return_value=True), \
-             patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="")):
+        with contextlib.ExitStack() as stack:
+            _base_patches(stack)
+            stack.enter_context(patch.object(MergeGate, "_verify_and_close_issue", return_value=True))
+            mock_guard = stack.enter_context(
+                patch("twl.autopilot.mergegate._check_phase_review_guard")
+            )
             gate.execute()
             mock_guard.assert_called_once()
 
@@ -58,16 +51,10 @@ class TestMergeGateExecuteIntegration:
         self, gate: MergeGate, autopilot_dir: Path
     ) -> None:
         """phase-review checkpoint 不在時、execute() は MergeGateError を送出する。"""
-        # checkpoint を作成しない（不在状態）
         assert not (autopilot_dir / "checkpoints" / "phase-review.json").exists()
 
-        with patch("os.getcwd", return_value="/home/user/projects/main"), \
-             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
-             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
-             patch("twl.autopilot.mergegate._state_write"), \
-             patch("twl.autopilot.mergegate._board_update"), \
-             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
-             patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="")):
+        with contextlib.ExitStack() as stack:
+            _base_patches(stack)
             with pytest.raises((MergeGateError, SystemExit)):
                 gate.execute()
 
@@ -77,13 +64,7 @@ class TestMergeGateExecuteIntegration:
         """--force 時は checkpoint 不在でも execute() が続行する。"""
         assert not (autopilot_dir / "checkpoints" / "phase-review.json").exists()
 
-        with patch("os.getcwd", return_value="/home/user/projects/main"), \
-             patch("twl.autopilot.mergegate._check_worker_window_guard"), \
-             patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
-             patch("twl.autopilot.mergegate._state_write"), \
-             patch("twl.autopilot.mergegate._board_update"), \
-             patch("twl.autopilot.mergegate._detect_repo_mode", return_value="standard"), \
-             patch.object(MergeGate, "_verify_and_close_issue", return_value=True), \
-             patch("subprocess.run", return_value=MagicMock(returncode=0, stdout="")):
-            # Should not raise
+        with contextlib.ExitStack() as stack:
+            _base_patches(stack)
+            stack.enter_context(patch.object(MergeGate, "_verify_and_close_issue", return_value=True))
             gate_force.execute()
