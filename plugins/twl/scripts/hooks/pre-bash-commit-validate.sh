@@ -48,7 +48,9 @@ case "$CMD" in
 esac
 
 # --- Step 3: バイパスチェック ---
-if [[ "${TWL_SKIP_COMMIT_GATE:-}" == "1" ]]; then
+# 環境変数（ホストプロセスから継承）またはコマンド文字列内の変数代入を確認
+# 例: `TWL_SKIP_COMMIT_GATE=1 git commit` のようにコマンド文字列内に記述された場合も対応
+if [[ "${TWL_SKIP_COMMIT_GATE:-}" == "1" ]] || [[ "$CMD" == *"TWL_SKIP_COMMIT_GATE=1"* ]]; then
   exit 0
 fi
 
