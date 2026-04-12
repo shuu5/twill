@@ -2,7 +2,7 @@
 # cld-spawn - Start a new Claude Code session in a new tmux window
 #
 # Usage:
-#   cld-spawn [--cd DIR] [--window-name NAME] [--timeout N] [PROMPT]
+#   cld-spawn [--cd DIR] [--env-file PATH] [--window-name NAME] [--timeout N] [PROMPT]
 #
 # PROMPT は positional arg ではなく、起動後に wait-ready + inject-file で送達する。
 # これにより改行・特殊文字を含むプロンプトが安全に渡せる。
@@ -20,6 +20,7 @@ fi
 
 CWD="$(pwd)"
 CD_SPECIFIED=false
+ENV_FILE=""
 WINDOW_NAME=""
 FORCE_NEW=0
 WAIT_TIMEOUT=60
@@ -31,6 +32,11 @@ while [[ $# -gt 0 ]]; do
             [[ -z "${2:-}" ]] && { echo "Error: --cd にディレクトリを指定してください" >&2; exit 1; }
             CWD="$2"
             CD_SPECIFIED=true
+            shift 2
+            ;;
+        --env-file)
+            [[ -z "${2:-}" ]] && { echo "Error: --env-file にパスを指定してください" >&2; exit 1; }
+            ENV_FILE="$2"
             shift 2
             ;;
         --window-name)
@@ -56,6 +62,13 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# --env-file 未指定時は CLD_ENV_FILE 環境変数をデフォルトとして使用
+ENV_FILE="${ENV_FILE:-${CLD_ENV_FILE:-}}"
+# --env-file のチルダ展開（存在チェックは不要: 不在時は source が 2>/dev/null で無視）
+if [[ -n "$ENV_FILE" ]]; then
+    ENV_FILE="${ENV_FILE/#\~/$HOME}"
+fi
 
 # --cd 指定時のみチルダ展開・正規化・存在チェックを実行
 if $CD_SPECIFIED; then
@@ -87,6 +100,9 @@ chmod +x "$LAUNCHER"
 
 {
     echo '#!/bin/bash'
+    if [[ -n "$ENV_FILE" ]]; then
+        echo "source $(printf '%q' "$ENV_FILE") 2>/dev/null || true"
+    fi
     echo "cd $(printf '%q' "$CWD") || exit 1"
     # CLD_PATH: テスト時のスタブ差し替え用（本番では未設定 → $SCRIPT_DIR/cld）
     printf '%q\n' "${CLD_PATH:-$SCRIPT_DIR/cld}"
