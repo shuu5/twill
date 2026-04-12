@@ -722,6 +722,72 @@ declare -A HEALTH_CHECK_COUNTER=()
 declare -A RESOLVE_FAIL_COUNT=()    # AC-3: RESOLVE_FAILED 連続カウント（issue ごと）
 declare -A RESOLVE_FAIL_FIRST_TS=() # AC-3: 連続開始タイムスタンプ（秒）
 declare -A LAST_INJECTED_STEP=()    # ADR-018: inject 済み current_step（重複 inject 防止）
+declare -A INPUT_WAITING_SEEN_PATTERN=()  # デバウンス: key="<issue>:<pattern>", value=1回目検知済み
+
+# input-waiting 検知 + デバウンス + state 書き込み（Issue #510）
+# 引数: pane_output, issue, window_name
+# 返り値: 検知した pattern name (stdout)、未検知時は空
+detect_input_waiting() {
+  local pane_output="$1"
+  local issue="${2:-}"
+  local window_name="${3:-}"
+
+  # Menu UI パターン
+  local -a menu_patterns=(
+    "Enter to select:menu_enter_select"
+    "↑/↓ to navigate:menu_arrow_navigate"
+    "❯[[:space:]]*[0-9]+\\.:menu_prompt_number"
+  )
+  # Free-form text パターン
+  local -a freeform_patterns=(
+    "よろしいですか[？?]:freeform_yoroshii"
+    "続けますか\|進んでよいですか\|実行しますか:freeform_tsuzukemasu"
+    "\\[[Yy]/[Nn]\\]:freeform_yn_bracket"
+  )
+
+  local detected_name=""
+  for entry in "${menu_patterns[@]}" "${freeform_patterns[@]}"; do
+    local pat="${entry%%:*}"
+    local name="${entry#*:}"
+    if echo "$pane_output" | grep -qE "$pat" 2>/dev/null; then
+      detected_name="$name"
+      break
+    fi
+  done
+
+  if [[ -z "$detected_name" ]]; then
+    return 0
+  fi
+
+  # デバウンス: 同一 issue + 同一 pattern を 2 poll cycle で確定
+  local debounce_key="${issue}:${detected_name}"
+  if [[ -z "${INPUT_WAITING_SEEN_PATTERN[$debounce_key]+x}" ]]; then
+    # 1 回目: warn ログのみ、state 書き込みスキップ
+    echo "[orchestrator] Issue #${issue}: input-waiting 検知 (1回目) pattern=${detected_name} window=${window_name} — 次 cycle で確定" >&2
+    INPUT_WAITING_SEEN_PATTERN[$debounce_key]=1
+    echo "$detected_name"
+    return 0
+  fi
+
+  # 2 回目: state 書き込み確定
+  echo "[orchestrator] Issue #${issue}: input-waiting 確定 pattern=${detected_name} window=${window_name} — state 書き込み" >&2
+  local ts
+  ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
+    --set "input_waiting_detected=${detected_name}" \
+    --set "input_waiting_at=${ts}" 2>/dev/null || true
+
+  # Trace log
+  mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true
+  local trace_log="${AUTOPILOT_DIR}/trace/input-waiting-$(date +%Y%m%d).log"
+  echo "[${ts}] issue=${issue} pattern=${detected_name} window=${window_name}" >> "$trace_log" 2>/dev/null || true
+
+  # デバウンスキーをリセット（次回からまた 2 cycle 必要）
+  unset "INPUT_WAITING_SEEN_PATTERN[$debounce_key]"
+
+  echo "$detected_name"
+  return 0
+}
 
 # chain 停止パターン → 次コマンドマッピング
 # パターンが一致した場合: exit 0 + 次コマンドを stdout（空文字 = 空 Enter）
@@ -903,12 +969,15 @@ check_and_nudge() {
     return 0
   fi
 
-  # tmux capture-pane で最新出力を取得
+  # tmux capture-pane で最新出力を取得（-S -30 で末尾 30 行を取得: #510）
   local pane_output
-  pane_output=$(tmux capture-pane -t "$window_name" -p -S -5 2>/dev/null || true)
+  pane_output=$(tmux capture-pane -t "$window_name" -p -S -30 2>/dev/null || true)
   if [[ -z "$pane_output" ]]; then
     return 0
   fi
+
+  # input-waiting 検知（chain-stop 判定前に実行: #510）
+  detect_input_waiting "$pane_output" "$issue" "$window_name" > /dev/null || true
 
   # 出力のハッシュで変化を検知
   local current_hash
