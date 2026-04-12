@@ -1,0 +1,12 @@
+change: issue-488
+schema: spec-driven
+generated: 2026-04-12
+
+mappings:
+  - spec: specs/co-autopilot-spawnable-by/spec.md
+    tests:
+      - type: unit
+        file: cli/twl/tests/scenarios/test_issue_488_co_autopilot_spawnable_by.py
+        scenarios:
+          - "deps.yaml と SKILL.md の spawnable_by 一致"
+          - "twl check PASS"
