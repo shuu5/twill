@@ -258,67 +258,48 @@ class TestDeltaspecYamlNoDuplicates:
     # THEN: .deltaspec.yaml に name:, status:, issue: が各 1 回のみ存在する
     # ------------------------------------------------------------------
 
-    def test_name_field_appears_exactly_once(self, tmp_path: Path, monkeypatch) -> None:
-        """WHEN twl spec new 'issue-448' THEN .deltaspec.yaml に name: が 1 回のみ存在する。"""
+    @pytest.fixture()
+    def yaml_content_448(self, tmp_path: Path, monkeypatch) -> str:
+        """issue-448 で twl spec new を実行し .deltaspec.yaml の内容を返す共通フィクスチャ。"""
         monkeypatch.chdir(make_project(tmp_path))
         rc = cmd_new("issue-448")
         assert rc == 0
-
         yaml_path = tmp_path / "deltaspec" / "changes" / "issue-448" / ".deltaspec.yaml"
         assert yaml_path.exists(), ".deltaspec.yaml が作成されていません"
-        content = yaml_path.read_text(encoding="utf-8")
+        return yaml_path.read_text(encoding="utf-8")
 
-        name_lines = [line for line in content.splitlines() if line.startswith("name:")]
+    def test_name_field_appears_exactly_once(self, yaml_content_448: str) -> None:
+        """WHEN twl spec new 'issue-448' THEN .deltaspec.yaml に name: が 1 回のみ存在する。"""
+        name_lines = [line for line in yaml_content_448.splitlines() if line.startswith("name:")]
         assert len(name_lines) == 1, (
             f"name: フィールドが {len(name_lines)} 回存在します（期待: 1 回）\n"
-            f"内容:\n{content}"
+            f"内容:\n{yaml_content_448}"
         )
 
-    def test_status_field_appears_exactly_once(self, tmp_path: Path, monkeypatch) -> None:
+    def test_status_field_appears_exactly_once(self, yaml_content_448: str) -> None:
         """WHEN twl spec new 'issue-448' THEN .deltaspec.yaml に status: が 1 回のみ存在する。"""
-        monkeypatch.chdir(make_project(tmp_path))
-        rc = cmd_new("issue-448")
-        assert rc == 0
-
-        yaml_path = tmp_path / "deltaspec" / "changes" / "issue-448" / ".deltaspec.yaml"
-        content = yaml_path.read_text(encoding="utf-8")
-
-        status_lines = [line for line in content.splitlines() if line.startswith("status:")]
+        status_lines = [line for line in yaml_content_448.splitlines() if line.startswith("status:")]
         assert len(status_lines) == 1, (
             f"status: フィールドが {len(status_lines)} 回存在します（期待: 1 回）\n"
-            f"内容:\n{content}"
+            f"内容:\n{yaml_content_448}"
         )
 
-    def test_issue_field_appears_exactly_once(self, tmp_path: Path, monkeypatch) -> None:
+    def test_issue_field_appears_exactly_once(self, yaml_content_448: str) -> None:
         """WHEN twl spec new 'issue-448' THEN .deltaspec.yaml に issue: が 1 回のみ存在する。"""
-        monkeypatch.chdir(make_project(tmp_path))
-        rc = cmd_new("issue-448")
-        assert rc == 0
-
-        yaml_path = tmp_path / "deltaspec" / "changes" / "issue-448" / ".deltaspec.yaml"
-        content = yaml_path.read_text(encoding="utf-8")
-
-        issue_lines = [line for line in content.splitlines() if line.startswith("issue:")]
+        issue_lines = [line for line in yaml_content_448.splitlines() if line.startswith("issue:")]
         assert len(issue_lines) == 1, (
             f"issue: フィールドが {len(issue_lines)} 回存在します（期待: 1 回）\n"
-            f"内容:\n{content}"
+            f"内容:\n{yaml_content_448}"
         )
 
-    def test_all_three_fields_appear_exactly_once(self, tmp_path: Path, monkeypatch) -> None:
+    def test_all_three_fields_appear_exactly_once(self, yaml_content_448: str) -> None:
         """WHEN twl spec new 'issue-448' THEN name:, status:, issue: が各 1 回のみ存在する。"""
-        monkeypatch.chdir(make_project(tmp_path))
-        rc = cmd_new("issue-448")
-        assert rc == 0
-
-        yaml_path = tmp_path / "deltaspec" / "changes" / "issue-448" / ".deltaspec.yaml"
-        content = yaml_path.read_text(encoding="utf-8")
-        lines = content.splitlines()
-
+        lines = yaml_content_448.splitlines()
         for field in ("name:", "status:", "issue:"):
-            field_lines = [l for l in lines if l.startswith(field)]
+            field_lines = [line for line in lines if line.startswith(field)]
             assert len(field_lines) == 1, (
                 f"'{field}' フィールドが {len(field_lines)} 回存在します（期待: 1 回）\n"
-                f"内容:\n{content}"
+                f"内容:\n{yaml_content_448}"
             )
 
     def test_no_duplicates_after_spec_new_issue_1(self, tmp_path: Path, monkeypatch) -> None:
@@ -332,7 +313,7 @@ class TestDeltaspecYamlNoDuplicates:
         lines = content.splitlines()
 
         for field in ("name:", "status:", "issue:"):
-            count = sum(1 for l in lines if l.startswith(field))
+            count = sum(1 for line in lines if line.startswith(field))
             assert count == 1, (
                 f"'issue-1' の .deltaspec.yaml: '{field}' が {count} 回 (期待: 1 回)\n"
                 f"内容:\n{content}"
@@ -351,44 +332,26 @@ class TestDeltaspecYamlNoDuplicates:
         lines = content.splitlines()
 
         for field in ("name:", "status:", "issue:"):
-            count = sum(1 for l in lines if l.startswith(field))
+            count = sum(1 for line in lines if line.startswith(field))
             assert count == 1, (
                 f"'issue-9999' の .deltaspec.yaml: '{field}' が {count} 回 (期待: 1 回)\n"
                 f"内容:\n{content}"
             )
 
-    def test_name_value_matches_change_id(self, tmp_path: Path, monkeypatch) -> None:
+    def test_name_value_matches_change_id(self, yaml_content_448: str) -> None:
         """WHEN twl spec new 'issue-448' THEN name: の値が 'issue-448' である。"""
-        monkeypatch.chdir(make_project(tmp_path))
-        rc = cmd_new("issue-448")
-        assert rc == 0
-
-        yaml_path = tmp_path / "deltaspec" / "changes" / "issue-448" / ".deltaspec.yaml"
-        content = yaml_path.read_text(encoding="utf-8")
-        assert "name: issue-448" in content, (
-            f"name: フィールドの値が 'issue-448' ではありません\n内容:\n{content}"
+        assert "name: issue-448" in yaml_content_448, (
+            f"name: フィールドの値が 'issue-448' ではありません\n内容:\n{yaml_content_448}"
         )
 
-    def test_status_value_is_pending(self, tmp_path: Path, monkeypatch) -> None:
+    def test_status_value_is_pending(self, yaml_content_448: str) -> None:
         """WHEN twl spec new 'issue-448' THEN status: の値が 'pending' である。"""
-        monkeypatch.chdir(make_project(tmp_path))
-        rc = cmd_new("issue-448")
-        assert rc == 0
-
-        yaml_path = tmp_path / "deltaspec" / "changes" / "issue-448" / ".deltaspec.yaml"
-        content = yaml_path.read_text(encoding="utf-8")
-        assert "status: pending" in content, (
-            f"status: フィールドの値が 'pending' ではありません\n内容:\n{content}"
+        assert "status: pending" in yaml_content_448, (
+            f"status: フィールドの値が 'pending' ではありません\n内容:\n{yaml_content_448}"
         )
 
-    def test_issue_number_extracted_correctly(self, tmp_path: Path, monkeypatch) -> None:
+    def test_issue_number_extracted_correctly(self, yaml_content_448: str) -> None:
         """WHEN twl spec new 'issue-448' THEN issue: の値が 448 である。"""
-        monkeypatch.chdir(make_project(tmp_path))
-        rc = cmd_new("issue-448")
-        assert rc == 0
-
-        yaml_path = tmp_path / "deltaspec" / "changes" / "issue-448" / ".deltaspec.yaml"
-        content = yaml_path.read_text(encoding="utf-8")
-        assert "issue: 448" in content, (
-            f"issue: フィールドの値が 448 ではありません\n内容:\n{content}"
+        assert "issue: 448" in yaml_content_448, (
+            f"issue: フィールドの値が 448 ではありません\n内容:\n{yaml_content_448}"
         )
