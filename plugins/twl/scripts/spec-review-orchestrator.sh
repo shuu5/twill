@@ -193,6 +193,7 @@ print(str(d.get('is_quick_candidate', False)).lower())
   # inject-file: プロンプトをセッションに安全に送達（wait-ready 後）
   "${SESSION_SCRIPTS}/session-comm.sh" inject-file "${window_name}" "${prompt_file}" --wait 60 || {
     rm -f "$prompt_file" 2>/dev/null || true
+    tmux kill-window -t "${window_name}" 2>/dev/null || true
     echo "[spec-review-orchestrator] Issue #${issue_num}: inject-file 失敗" >&2
     return 1
   }
