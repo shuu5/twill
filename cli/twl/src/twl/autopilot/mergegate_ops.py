@@ -405,18 +405,7 @@ class MergeGateOperationsMixin:
         self._kill_worker_window()
 
     def _remove_worktree(self) -> None:
-        result = subprocess.run(
-            ["git", "worktree", "list", "--porcelain"],
-            capture_output=True, text=True,
-        )
-        worktree_path = ""
-        current_wt = ""
-        for line in result.stdout.splitlines():
-            if line.startswith("worktree "):
-                current_wt = line[len("worktree "):]
-            elif line == f"branch refs/heads/{self.branch}":  # type: ignore[attr-defined]
-                worktree_path = current_wt
-                break
+        worktree_path = self._find_worktree_path()
 
         if worktree_path:
             # Run teardown hook before removing the worktree
