@@ -121,6 +121,11 @@ done
 if [ ${#CHILD_REFS[@]} -eq 0 ]; then
   echo "⚠️ 子 Issue の作成が全件失敗しました。parent Issue のチェックリストは更新しません"
 else
+  # body + 全 comments を取得（content-reading ポリシー: gh-read-content.sh 経由）
+  PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  source "${PLUGIN_ROOT}/scripts/lib/gh-read-content.sh"
+  gh_read_issue_full "${PARENT_NUM}" > "${WORK_DIR}/parent-full-content.txt"
+  # テンプレート置換用には body のみ使用
   gh issue view "${PARENT_NUM}" --json body -q '.body' > "${WORK_DIR}/parent-body.txt"
 
   printf '' > "${WORK_DIR}/child-checklist.txt"

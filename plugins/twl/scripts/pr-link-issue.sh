@@ -17,6 +17,9 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/gh-read-content.sh"
+
 usage() {
   cat <<'EOF'
 Usage: bash pr-link-issue.sh <issue_num> <pr_num> [OPTIONS]
@@ -92,14 +95,16 @@ if ! [[ "$PR_NUM" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
-# --- 現在の PR body 取得 ---
-CURRENT_BODY="$(gh pr view "$PR_NUM" "${REPO_FLAG[@]}" --json body -q .body)"
+# --- 現在の PR body + comments 取得（制約チェック用: body + all comments）---
+PR_FULL_CONTENT="$(gh_read_pr_full "$PR_NUM" "${REPO_FLAG[@]+"${REPO_FLAG[@]}"}")"
+# --- 現在の PR body のみ取得（書き換え用）---
+PR_BODY_ONLY="$(gh pr view "$PR_NUM" "${REPO_FLAG[@]}" --json body -q .body 2>/dev/null || echo "")"
 
-# --- Closes #N 既存チェック ---
-if echo "$CURRENT_BODY" | grep -Eq "(Closes|Fixes|Resolves)[[:space:]]+#${ISSUE_NUM}\b"; then
+# --- Closes #N 既存チェック（body + comments 両方を確認）---
+if echo "$PR_FULL_CONTENT" | grep -Eq "(Closes|Fixes|Resolves)[[:space:]]+#${ISSUE_NUM}\b"; then
   echo "[pr-link-issue] PR #${PR_NUM} の本文に既に Closes #${ISSUE_NUM} が含まれています (no-op)"
 else
-  NEW_BODY="${CURRENT_BODY}
+  NEW_BODY="${PR_BODY_ONLY}
 
 Closes #${ISSUE_NUM}"
   gh pr edit "$PR_NUM" "${REPO_FLAG[@]}" --body "$NEW_BODY"

@@ -134,6 +134,7 @@ flowchart TD
 - **制約 IM-5**: （親 controller から spawn された場合の制約として）lifecycle workflow セッション**内部**で specialist が実行中のまま aggregate step に進んではならない（SHALL）。co-issue v2 では parent co-issue は specialist を直接 spawn しないため、本制約は Worker セッション内のローカル不変量として機能する（ADR-017）
 - **制約 IM-6**: ユーザー確認なしで Issue をクローズ・統合してはならない（SHALL）
 - **制約 IM-7**: (a) N workers の全 dispatch 完了を parent co-issue controller が保証 + (b) 各 lifecycle workflow セッション内部で N=1 × 3 specialist の完了を `spec-review-session-init.sh 1` + PreToolUse gate で保証、の 2 層構造で維持しなければならない（SHALL）。層 (b) により全 Issue の `issue-spec-review` 完了前に `issue-review-aggregate` への forward progression を機械的にブロックする（ADR-017）
+- **制約 IM-8**: Issue/PR の内容理解を目的とする `gh` 呼び出しは body + 全 comments を全件取得しなければならない（SHALL）。共通ヘルパー `gh_read_issue_full` / `gh_read_pr_full`（`scripts/lib/gh-read-content.sh`）経由を強制する。meta-only 読み込み（state/labels/number/id/mergeCommit/files/title）は対象外（Issue #499、`refs/ref-gh-read-policy.md` 参照）
 
 ## Rules
 

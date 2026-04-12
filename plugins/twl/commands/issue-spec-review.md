@@ -14,7 +14,7 @@ maxTurns: 30
 
 呼び出し元（co-issue controller）から以下を受け取る:
 
-- `issue_body`: 構造化済み Issue body（Step 3a 出力）
+- `issue_body`: 構造化済み Issue body + 全 comments（Step 3a で `gh_read_issue_full` により取得済み）
 - `scope_files`: 変更対象ファイルリスト
 - `related_issues`: 関連 Issue 参照
 - `deps_yaml_entries`: 関連 deps.yaml エントリ

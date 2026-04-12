@@ -32,14 +32,22 @@ fi
 5 種のソースを収集する:
 
 ```bash
-# ソース 1: PR メタ + body verdict
-PR_META=$(gh pr view "$PR_NUM" --json title,body,additions,deletions 2>/dev/null | head -c 1024 || echo "{}")
+# ソース 1: PR メタ + body + 全 comments（content-reading ポリシー: 切り詰めなし）
+PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${PLUGIN_ROOT}/scripts/lib/gh-read-content.sh"
+PR_TITLE=$(gh pr view "$PR_NUM" --json title,additions,deletions 2>/dev/null | jq -r '.title // ""' || echo "")
+PR_FULL=$(gh_read_pr_full "$PR_NUM" 2>/dev/null || echo "")
+PR_META="title: ${PR_TITLE}
+${PR_FULL}"
 
 # ソース 2: PR commit history
 COMMIT_LOG=$(git log --oneline origin/main..HEAD 2>/dev/null | head -100 || echo "")
 
-# ソース 3: Issue + 直近 5 comment
-ISSUE_DATA=$(gh issue view "$ISSUE_NUM" --json title,body,comments 2>/dev/null | jq '{title:.title, body:(.body[:1024]), comments:(.comments[-5:][:][:.body[:1024]])}' || echo "{}")
+# ソース 3: Issue body + 全 comments（content-reading ポリシー: 切り詰めなし）
+ISSUE_TITLE=$(gh issue view "$ISSUE_NUM" --json title 2>/dev/null | jq -r '.title // ""' || echo "")
+ISSUE_FULL=$(gh_read_issue_full "$ISSUE_NUM" 2>/dev/null || echo "")
+ISSUE_DATA="title: ${ISSUE_TITLE}
+${ISSUE_FULL}"
 
 # ソース 4: audit-history (doobidoo memory_search)
 # doobidoo MCP server 利用不可時のフォールバック: 空として扱い verdict: uncertain を返す
