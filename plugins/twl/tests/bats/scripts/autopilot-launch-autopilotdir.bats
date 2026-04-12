@@ -426,3 +426,39 @@ JSON
   tmux_cmd=$(_get_tmux_cmd)
   echo "$tmux_cmd" | tr -d '\\' | grep -qv "AUTOPILOT_DIR=${TEST_PROJECT_DIR}"
 }
+
+# ---------------------------------------------------------------------------
+# Scenario 4: autopilot-launch.sh 経由での AUTOPILOT_DIR state ファイル生成（E2E）
+#
+# NOTE: Scenario 3（autopilotdir-state-split.bats との重複回避注記参照）とは異なり、
+#       こちらは python3 -m twl.autopilot.state write を直接呼ばず、
+#       autopilot-launch.sh を起動して end-to-end で state ファイル生成を確認する。
+# ---------------------------------------------------------------------------
+
+# WHEN python3 スタブを除去し、AUTOPILOT_DIR=/tmp/<unique> を上書き export して
+#      autopilot-launch.sh を起動する
+# THEN AUTOPILOT_DIR/issues/issue-N.json が実ファイルとして生成される
+# THEN デフォルト PROJECT_ROOT/.autopilot/issues/issue-N.json は作成されない
+@test "autopilotdir e2e: autopilot-launch.sh 起動後に AUTOPILOT_DIR/issues/issue-N.json が生成される" {
+  # python3 スタブを除去して実 twl.autopilot.state モジュールを使用
+  rm -f "$STUB_BIN/python3"
+
+  # common_setup のデフォルト AUTOPILOT_DIR を上書き
+  local e2e_dir
+  e2e_dir="/tmp/twl-autopilotdir-e2e-$$"
+  mkdir -p "$e2e_dir/trace"
+  cat > "$e2e_dir/session.json" <<JSON
+{"session_id": "e2e-session-503", "started_at": "2026-04-12T00:00:00Z"}
+JSON
+  export AUTOPILOT_DIR="$e2e_dir"
+
+  _run_launch 55 "$e2e_dir"
+
+  assert_success
+  # autopilot-launch.sh が state write --init を呼び出し、指定 AUTOPILOT_DIR に書かれる
+  [ -f "$e2e_dir/issues/issue-55.json" ]
+  # デフォルト AUTOPILOT_DIR（SANDBOX/.autopilot）には書かれない
+  [ ! -f "$SANDBOX/.autopilot/issues/issue-55.json" ]
+
+  rm -rf "$e2e_dir"
+}
