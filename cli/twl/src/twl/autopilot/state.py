@@ -31,7 +31,7 @@ _TRANSITIONS: dict[str, set[str]] = {
     "conflict": {"merge-ready", "failed"},
 }
 
-_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override", "pr", "workflow_injected", "injected_at"}
+_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override", "pr", "workflow_injected", "injected_at", "input_waiting_detected", "input_waiting_at", "escalation_requested"}
 
 
 def _autopilot_dir() -> Path:
@@ -261,6 +261,8 @@ class StateManager:
             "failure": None,
             "implementation_pr": None,
             "deltaspec_mode": None,
+            "input_waiting_detected": None,
+            "input_waiting_at": None,
         }
         self._atomic_write(file, data)
         return f"OK: issue-{issue}.json を作成しました (status=running)"

@@ -127,6 +127,19 @@ orchestrator 起動後、Pilot は **ScheduleWakeup(300)** で 5 分間隔の wa
    ```
    `updated_at` が現在時刻から `AUTOPILOT_STAGNATE_SEC`（デフォルト 900 秒）以上古い Worker は **stagnation** とみなす。
 
+2.5. **Input-waiting 確認（MUST）**:
+   全 Worker の state file を読んで `input_waiting_detected` を確認する:
+   ```bash
+   python3 -m twl.autopilot.state read \
+     --autopilot-dir "$AUTOPILOT_DIR" \
+     --type issue --issue "<N>" --field input_waiting_detected
+   ```
+   値が非空なら以下を実行:
+   - `input_waiting_at` を読んで経過時間を計算する
+   - 経過時間 < 5 分: warn ログを残し、次の wake-up まで待機（自動復旧を期待）
+   - 経過時間 ≥ 5 分: `session-comm.sh inject-file` で状況確認メッセージを Worker に送信し、手動介入を促す
+   - 経過時間 ≥ 10 分: state に `escalation_requested=input_waiting_stall` を書き込み、su-observer の Monitor 介入を期待する
+
 3. **Stagnation 検知時**: stall 状態の Worker を特定してログ出力し、次の ScheduleWakeup をスケジュールする前に `session-comm.sh inject-file` 経由で回復信号を送信する。
 
 4. **次の wake-up をスケジュール（PHASE_COMPLETE 未検知の場合）**:
@@ -148,6 +161,27 @@ orchestrator 起動後、Pilot は **ScheduleWakeup(300)** で 5 分間隔の wa
    - 残り Worker が全 terminal なら Step 4.5 へ進む
 
 orchestrator は JSON レポート（PHASE_COMPLETE）を trace ログに出力する。実装詳細（batch 分割・Worker 起動・ポーリング・merge-gate・skip 伝播 [不変条件 D]）は orchestrator が正典。Pilot LLM の責務は計画承認・retrospective・cross-issue 分析に限定。
+
+### Silence heartbeat（MUST）
+
+Pilot は ScheduleWakeup ごとに全 Worker の `updated_at` を追跡する。**全 Worker の `updated_at` が 5 分以上無変化かつ PHASE_COMPLETE 未検知**の場合、以下を実行する:
+
+1. 全 Worker window に対して `tmux capture-pane -t <window> -p -S -30` を実行する
+2. 取得した pane_output に input-waiting パターンを手動検査する:
+   - Menu UI: `Enter to select`、`↑/↓ to navigate`、`❯ <数字>.`
+   - Free-form: `よろしいですか[？?]`、`続けますか`、`進んでよいですか`、`[y/N]`
+3. input-waiting を検知 → 当該 Worker の state file に書き込む（orchestrator が停止している可能性への補完）:
+   ```bash
+   python3 -m twl.autopilot.state write \
+     --autopilot-dir "$AUTOPILOT_DIR" \
+     --type issue --issue "<N>" --role pilot \
+     --set "input_waiting_detected=<pattern_name>" \
+     --set "input_waiting_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+   ```
+4. input-waiting 未検知でも沈黙が継続 → su-observer escalate（state に `escalation_requested=silence_stall` を書き込み、su-observer の Monitor 介入を期待する）
+
+**閾値 5 分の根拠**: `AUTOPILOT_STAGNATE_SEC`（デフォルト 900 秒）の約半分。input-waiting は stagnation より早く検知したいため。
+
 <!-- NOTE: Pilot 用 atomic (autopilot-pilot-precheck, autopilot-pilot-rebase, autopilot-multi-source-verdict) 経由であれば、PR diff stat / AC spot-check 等の能動評価は許容される。設計原則 P1 (ADR-010) 参照。 -->
 
 ### Step 4.5: Phase 完了サニティチェック（MUST）

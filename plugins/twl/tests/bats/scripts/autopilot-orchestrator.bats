@@ -783,3 +783,223 @@ STUB
   assert_success
   [ ! -f "$HEALTH_CHECK_CALLED" ]
 }
+
+# ===========================================================================
+# Requirement: detect_input_waiting 関数が input-waiting パターンを検知しなければならない
+# Spec: deltaspec/changes/issue-510/specs/input-waiting-detection/spec.md
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# セットアップ: detect-input-waiting.sh test double を SANDBOX にコピー
+# ---------------------------------------------------------------------------
+# 各テストは共通 setup() で生成された SANDBOX を使用し、
+# detect-input-waiting.sh を "$SANDBOX/scripts/detect-input-waiting.sh" として参照する。
+
+_setup_detect_script() {
+  local scripts_src
+  scripts_src="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  cp "$scripts_src/detect-input-waiting.sh" "$SANDBOX/scripts/detect-input-waiting.sh"
+  chmod +x "$SANDBOX/scripts/detect-input-waiting.sh"
+}
+
+# ===========================================================================
+# Menu UI パターン検知
+# Scenario: Menu UI パターンを検知する
+# WHEN pane_output に Menu UI キーワードを含む行があるとき
+# THEN detect_input_waiting は非空の pattern name を返す
+# ===========================================================================
+
+@test "input-waiting-detection: Menu UI - 'Enter to select' を検知する" {
+  _setup_detect_script
+
+  run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+    --pane-output "  Enter to select"
+
+  assert_success
+  [ -n "$output" ]
+  [[ "$output" == *"menu_enter_select"* ]]
+}
+
+@test "input-waiting-detection: Menu UI - '↑/↓ to navigate' を検知する" {
+  _setup_detect_script
+
+  run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+    --pane-output "↑/↓ to navigate, Enter to confirm"
+
+  assert_success
+  [ -n "$output" ]
+  [[ "$output" == *"menu_arrow_navigate"* ]]
+}
+
+@test "input-waiting-detection: Menu UI - '❯ 1.' を検知する" {
+  _setup_detect_script
+
+  run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+    --pane-output "❯ 1. オプション A"
+
+  assert_success
+  [ -n "$output" ]
+  [[ "$output" == *"menu_prompt_number"* ]]
+}
+
+# ===========================================================================
+# Free-form text パターン検知
+# Scenario: Free-form text パターンを検知する
+# WHEN pane_output に自然言語確認フレーズを含む行があるとき
+# THEN detect_input_waiting は非空の pattern name を返す
+# ===========================================================================
+
+@test "input-waiting-detection: Free-form - 'よろしいですか？' を検知する" {
+  _setup_detect_script
+
+  run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+    --pane-output "この変更でよろしいですか？"
+
+  assert_success
+  [ -n "$output" ]
+  [[ "$output" == *"freeform_yoroshii"* ]]
+}
+
+@test "input-waiting-detection: Free-form - '続けますか？' を検知する" {
+  _setup_detect_script
+
+  run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+    --pane-output "このまま続けますか？"
+
+  assert_success
+  [ -n "$output" ]
+  [[ "$output" == *"freeform_tsuzukemasu"* ]]
+}
+
+@test "input-waiting-detection: Free-form - '[y/N]' を検知する" {
+  _setup_detect_script
+
+  run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+    --pane-output "削除を実行しますか [y/N]:"
+
+  assert_success
+  [ -n "$output" ]
+  [[ "$output" == *"freeform_yn_bracket"* ]]
+}
+
+# ===========================================================================
+# Wave 7 #470 再現パターン
+# Scenario: Wave 7 #470 再現パターンを検知する
+# WHEN pane_output に「このまま実装に進んでよいですか？」を含むとき
+# THEN detect_input_waiting は free-form pattern name を返す
+# ===========================================================================
+
+@test "input-waiting-detection: Wave 7 再現 - 'このまま実装に進んでよいですか？' を検知する" {
+  _setup_detect_script
+
+  run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+    --pane-output "このまま実装に進んでよいですか？"
+
+  assert_success
+  [ -n "$output" ]
+  # "進んでよいですか" は freeform_tsuzukemasu パターンにマッチする
+  [[ "$output" == *"freeform_tsuzukemasu"* ]]
+}
+
+# ===========================================================================
+# デバウンス検証
+# Scenario: 1 回目検知では state 書き込みをスキップする
+# Scenario: 2 回目検知で state 書き込みを確定する
+# ===========================================================================
+
+@test "input-waiting-detection: デバウンス - 1 回目は state 未書き込み" {
+  _setup_detect_script
+
+  SEEN_FILE="$SANDBOX/seen-patterns.txt"
+  STATE_WRITE_LOG="$SANDBOX/state-write-debounce.txt"
+  touch "$SEEN_FILE"
+
+  # 1 回目実行: stdout は空、STATE_WRITE_LOG は作成されない
+  SEEN_FILE="$SEEN_FILE" STATE_WRITE_LOG="$STATE_WRITE_LOG" \
+    run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+      --pane-output "Enter to select" \
+      --issue 510
+
+  assert_success
+  # stdout は空（state write しない）
+  [ -z "$output" ]
+  # STATE_WRITE_LOG は書き込まれていない
+  [ ! -f "$STATE_WRITE_LOG" ]
+  # SEEN_FILE に記録されている
+  grep -q "510:menu_enter_select" "$SEEN_FILE"
+}
+
+@test "input-waiting-detection: デバウンス - 2 回目で state write 確定" {
+  _setup_detect_script
+
+  SEEN_FILE="$SANDBOX/seen-patterns-2nd.txt"
+  STATE_WRITE_LOG="$SANDBOX/state-write-debounce-2nd.txt"
+
+  # SEEN_FILE に既存エントリを事前登録（1 回目済み状態）
+  echo "510:menu_enter_select" > "$SEEN_FILE"
+
+  # 2 回目実行: stdout に pattern name、STATE_WRITE_LOG に記録
+  SEEN_FILE="$SEEN_FILE" STATE_WRITE_LOG="$STATE_WRITE_LOG" \
+    run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+      --pane-output "Enter to select" \
+      --issue 510
+
+  assert_success
+  # stdout に pattern name が返る
+  [ -n "$output" ]
+  [[ "$output" == *"menu_enter_select"* ]]
+  # STATE_WRITE_LOG に state write が記録されている
+  [ -f "$STATE_WRITE_LOG" ]
+  grep -q "input_waiting_detected=menu_enter_select" "$STATE_WRITE_LOG"
+}
+
+# ===========================================================================
+# False positive 非検知
+# Scenario: chain 進捗キーワードのみでは false trigger しない
+# WHEN pane_output が chain 進捗キーワードのみを含むとき
+# THEN detect_input_waiting は空文字を返す
+# ===========================================================================
+
+@test "input-waiting-detection: false positive - chain 進捗キーワードのみで false trigger しない" {
+  _setup_detect_script
+
+  # chain 進捗のみを含む出力（input-waiting パターンなし）
+  run bash "$SANDBOX/scripts/detect-input-waiting.sh" \
+    --pane-output "setup chain 完了
+>>> 提案完了
+Phase 3 running
+chain step 2/5 OK"
+
+  assert_success
+  # stdout は空（未検知）
+  [ -z "$output" ]
+}
+
+# ===========================================================================
+# state.py 後方互換
+# Scenario: 既存 state file（input_waiting_* キー無し）で state read が空文字を返す
+# WHEN input_waiting_detected キーが存在しない既存 state file に対して
+#      state read --field input_waiting_detected を実行するとき
+# THEN 空文字（エラーなし終了）を返す
+# ===========================================================================
+
+@test "input-waiting-detection: 後方互換 - 旧 state file で input_waiting_detected が空文字" {
+  local old_state_dir
+  old_state_dir="$(mktemp -d)"
+  mkdir -p "${old_state_dir}/issues"
+
+  # input_waiting_* キーを持たない旧フォーマットの state file を作成
+  cat > "${old_state_dir}/issues/issue-999.json" <<'JSON'
+{"issue": 999, "status": "running", "branch": "", "pr": null, "window": "", "started_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z", "current_step": "", "retry_count": 0, "fix_instructions": null, "merged_at": null, "files_changed": [], "failure": null, "implementation_pr": null}
+JSON
+
+  run python3 -m twl.autopilot.state read \
+    --autopilot-dir "${old_state_dir}" \
+    --type issue --issue 999 --field input_waiting_detected
+
+  assert_success
+  # 返り値は空文字（キー不在時の後方互換）
+  [ -z "$output" ]
+
+  rm -rf "${old_state_dir}"
+}
