@@ -243,7 +243,7 @@ if [[ "${CO_ISSUE_V2:-0}" == "1" ]]; then
 
 failure または circuit_broken が 1 件以上の場合、AskUserQuestion で以下を確認:
 
-- `[retry subset]` → `bash scripts/issue-lifecycle-orchestrator.sh --per-issue-dir ... --resume` で非 done のみ再実行
+- `[retry subset]` → `bash scripts/issue-lifecycle-orchestrator.sh --per-issue-dir ".controller-issue/<session-id>/per-issue/" --resume` で非 done のみ再実行
 - `[manual fix]` → 手動修正を依頼してユーザーに案内
 - `[accept partial]` → このまま完了
 
@@ -255,7 +255,7 @@ fi
 
 ## Soak Auto-logging（CO_ISSUE_V2=1 のみ）
 
-if [[ "${CO_ISSUE_V2:-0}" == "1" ]] && done_count >= 1; then
+if [[ "${CO_ISSUE_V2:-0}" == "1" ]] && [[ "${done_count:-0}" -ge 1 ]]; then
 
 #### Step 5-a: #493 クローズ確認
 
