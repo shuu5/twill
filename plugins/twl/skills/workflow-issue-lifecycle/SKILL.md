@@ -160,6 +160,18 @@ if round == policies.max_rounds and CRITICAL findings あり:
   exit 0
 ```
 
+### Step 4.5: refined ラベル判定
+
+round loop が正常完了した場合（STATE が `circuit_broken` でない場合）かつ `quick_flag=false` のとき、`labels_hint` に `"refined"` を追加する:
+
+```
+if STATE != circuit_broken and quick_flag == false:
+  policies.labels_hint ← policies.labels_hint + ["refined"]
+```
+
+- `quick_flag=true` の場合: スキップ（quick モードでは specialist レビューの depth が shallow に設定されるため、refined の品質保証基準を満たさない）
+- `STATE == circuit_broken` の場合: スキップ（round loop が正常完了していないため）
+
 ### Step 5: arch-drift
 
 `/twl:issue-arch-drift` を Skill tool で呼び出す:
