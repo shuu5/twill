@@ -3,12 +3,13 @@
 CLI usage:
     python3 -m twl.autopilot.resolve_next_workflow --issue <N>
 
-state ファイルの workflow_done フィールドを読み取り、
-chain.ChainRunner.resolve_next_workflow() に委譲して次の workflow skill 名を stdout に出力する。
+state ファイルの current_step フィールドを読み取り、
+TERMINAL_STEP_TO_NEXT_SKILL マッピングから次の workflow skill 名を決定する。
+重複 inject 防止のため workflow_injected フィールドも参照する（ADR-018）。
 
 Output:
     - 成功: /twl:workflow-<name> を stdout に出力、exit 0
-    - 失敗(workflow_done が null/空): stdout 空、exit 1
+    - 失敗(terminal step でない / 既に inject 済み): stdout 空、exit 1
 """
 
 from __future__ import annotations
@@ -36,16 +37,9 @@ def _read_state(issue_num: str, field: str, autopilot_dir: str) -> str:
         return ""
 
 
-def _resolve_next(issue_num: str, workflow_done: str, is_quick: bool) -> str:
-    """chain.ChainRunner.resolve_next_workflow に委譲して次 skill 名を返す。"""
-    from twl.autopilot.chain import ChainRunner
-    runner = ChainRunner()
-    return runner.resolve_next_workflow(workflow_done, is_autopilot=True, is_quick=is_quick)
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="orchestrator inject 用 next workflow resolver"
+        description="orchestrator inject 用 next workflow resolver (current_step ベース, ADR-018)"
     )
     parser.add_argument("--issue", required=True, help="Issue 番号")
     args = parser.parse_args(argv)
@@ -57,34 +51,45 @@ def main(argv: list[str] | None = None) -> int:
 
     autopilot_dir = os.environ.get("AUTOPILOT_DIR", "")
 
-    workflow_done = _read_state(issue_num, "workflow_done", autopilot_dir)
-    if not workflow_done or workflow_done == "null":
+    # current_step を読み取り、terminal step かどうかを判定 (ADR-018)
+    current_step = _read_state(issue_num, "current_step", autopilot_dir)
+    if not current_step or current_step == "null":
         print(
-            f"ERROR: issue-{issue_num} の workflow_done が未設定または null",
+            f"ERROR: issue-{issue_num} の current_step が未設定または null",
             file=sys.stderr,
         )
         return 1
 
+    from twl.autopilot.chain import TERMINAL_STEP_TO_NEXT_SKILL
+    next_skill_name = TERMINAL_STEP_TO_NEXT_SKILL.get(current_step, "")
+    if not next_skill_name:
+        # non-terminal step — inject 不要
+        print(
+            f"ERROR: current_step={current_step} は terminal step ではない（inject 不要）",
+            file=sys.stderr,
+        )
+        return 1
+
+    # is_quick チェック: quick issue は test-ready をスキップ
     is_quick_str = _read_state(issue_num, "is_quick", autopilot_dir)
     is_quick = is_quick_str.lower() == "true"
-
-    try:
-        next_skill = _resolve_next(issue_num, workflow_done, is_quick)
-    except Exception as e:
-        print(f"ERROR: resolve_next_workflow 失敗: {e}", file=sys.stderr)
-        return 1
-
-    if not next_skill or next_skill in ("", "quick-path"):
+    if is_quick and next_skill_name == "workflow-test-ready":
         print(
-            f"ERROR: workflow_done={workflow_done} の次 skill が見つからない（terminal または stop）",
+            f"ERROR: quick issue のため workflow-test-ready をスキップ",
             file=sys.stderr,
         )
         return 1
 
-    # skill 名が /twl: プレフィックスを持たない場合は付与する
-    if not next_skill.startswith("/twl:"):
-        next_skill = f"/twl:{next_skill}"
+    # 重複 inject 防止: workflow_injected に既に同じ skill が記録されていれば skip
+    workflow_injected = _read_state(issue_num, "workflow_injected", autopilot_dir)
+    if workflow_injected and f"/twl:{next_skill_name}" == workflow_injected:
+        print(
+            f"ERROR: /twl:{next_skill_name} は既に inject 済み (workflow_injected={workflow_injected})",
+            file=sys.stderr,
+        )
+        return 1
 
+    next_skill = f"/twl:{next_skill_name}"
     print(next_skill)
     return 0
 

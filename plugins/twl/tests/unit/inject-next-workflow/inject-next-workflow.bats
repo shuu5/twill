@@ -64,7 +64,6 @@ next_skill="$NEXT_WORKFLOW"
 _skill_safe="${next_skill//$'\n'/}"  # 改行除去
 if [[ "$_skill_safe" == "pr-merge" || "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
   echo "[orchestrator] Issue #${issue}: pr-merge 検出 — inject スキップ、merge-gate フローに委譲" >&2
-  echo "state_write workflow_done=null" >> "$STATE_FILE"
   exit 0
 fi
 if [[ ! "$_skill_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
@@ -93,9 +92,6 @@ fi
 # --- inject 実行（バリデーション済み _skill_safe を使用） ---
 echo "tmux send-keys -t $window_name $_skill_safe" >> "$CALLS_LOG"
 echo "[orchestrator] Issue #${issue}: inject_next_workflow — $_skill_safe" >&2
-
-# --- workflow_done クリア ---
-echo "state_write workflow_done=null" >> "$STATE_FILE"
 
 # --- inject 履歴記録 ---
 echo "state_write workflow_injected=$_skill_safe" >> "$STATE_FILE"
@@ -136,15 +132,6 @@ teardown() {
 
   assert_success
   assert_output --partial "[orchestrator] Issue #340: inject_next_workflow — /twl:workflow-pr-verify"
-}
-
-@test "inject_next_workflow: inject 成功後に workflow_done をクリアする" {
-  NEXT_WORKFLOW="/twl:workflow-pr-verify" \
-  PANE_OUTPUT="> " \
-    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
-
-  assert_success
-  grep -q "state_write workflow_done=null" "$STATE_FILE"
 }
 
 @test "inject_next_workflow: inject 成功後に workflow_injected を state に記録する" {
@@ -189,15 +176,6 @@ teardown() {
   ! grep -q "tmux send-keys" "$CALLS_LOG" 2>/dev/null
 }
 
-@test "inject_next_workflow[pr-merge]: workflow_done をクリアする" {
-  NEXT_WORKFLOW="pr-merge" \
-  PANE_OUTPUT="> " \
-    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
-
-  assert_success
-  grep -q "state_write workflow_done=null" "$STATE_FILE"
-}
-
 @test "inject_next_workflow[pr-merge]: merge-gate フロー委譲ログを出力する" {
   NEXT_WORKFLOW="pr-merge" \
   PANE_OUTPUT="> " \
@@ -237,15 +215,6 @@ teardown() {
 
   assert_failure
   ! grep -q "tmux send-keys" "$CALLS_LOG" 2>/dev/null
-}
-
-@test "inject_next_workflow[timeout]: プロンプト未検出時に workflow_done をクリアしない" {
-  NEXT_WORKFLOW="/twl:workflow-pr-verify" \
-  PANE_OUTPUT="Working..." \
-    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
-
-  assert_failure
-  ! grep -q "state_write workflow_done=null" "$STATE_FILE" 2>/dev/null
 }
 
 # ---------------------------------------------------------------------------

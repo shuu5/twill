@@ -78,3 +78,8 @@ Accepted
 ### Mitigations
 - read/write ヘルパーを script 型コンポーネントとして実装（再利用性確保）
 - Pilot/Worker のアクセス方向を不変条件で保証（テストで検証）
+
+
+## 関連 ADR
+
+- **[ADR-018: state schema SSOT](./ADR-018-state-schema-ssot.md)**: `status` フィールドを外部観察の唯一の正典に指定。`workflow_done` フィールドの廃止と inject トリガー機構の `current_step` ベース化。

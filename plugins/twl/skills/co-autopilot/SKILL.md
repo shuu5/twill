@@ -231,7 +231,7 @@ disown
 ### 2. 手動 workflow inject
 orchestrator 再起動が困難な場合、Worker の tmux window に手動で次の workflow を inject する:
 ```bash
-# Worker の現在 workflow_done 状態を確認
+# Worker の current_step から次 workflow を解決（ADR-018: current_step terminal 検知ベース）
 python3 -m twl.autopilot.resolve_next_workflow --issue <ISSUE_NUM>
 
 # tmux で手動 inject（例: /twl:workflow-test-ready）

@@ -27,18 +27,19 @@ per-issue の状態ファイル。
 | フィールド | 型 | 説明 |
 |---|---|---|
 | issue | number | GitHub Issue 番号 |
-| status | `running` \| `merge-ready` \| `done` \| `failed` | 現在の状態 |
+| status | `running` \| `merge-ready` \| `done` \| `failed` \| `conflict` | **SSOT**: 外部観察者（Monitor/su-observer）が参照する唯一の進捗フィールド |
 | branch | string | worktree のブランチ名 |
 | pr | null \| number | PR 番号 |
 | window | string | tmux ウィンドウ名（例: `ap-#42`） |
 | started_at | string (ISO 8601) | 開始時刻 |
-| current_step | string | chain の現在ステップ名 |
+| current_step | string | chain の現在ステップ名。Orchestrator が inject トリガー判定に使用（内部フィールド） |
 | retry_count | number (0-1) | merge-gate リトライ回数 |
 | fix_instructions | null \| string | fix-phase 用修正指示テキスト |
 | merged_at | null \| string (ISO 8601) | マージ完了時刻 |
 | files_changed | string[] | 変更されたファイルパス配列 |
 | failure | null \| { message, step, timestamp } | 失敗情報 |
-| workflow_done | null \| string | 完了したワークフロー名（例: `setup`, `test-ready`）。Orchestrator が次 workflow inject 検知に使用 |
+
+> **SSOT ルール（ADR-018）**: 外部観察者は `status` のみを参照する。`current_step` は orchestrator inject 機構の内部フィールド。Monitor は `jq -r '.status' issue-N.json` 単一クエリで進捗判定できる。
 
 ### AutopilotPlan (plan.yaml)
 autopilot セッションの実行計画。
@@ -75,9 +76,9 @@ flowchart TD
     B --> C{Phase ループ}
     C --> D["Orchestrator: Worker 起動"]
     D --> E["Orchestrator: 状態ポーリング"]
-    E --> P{workflow_done あり?}
+    E --> P{current_step が\nterminal?}
     P -- Yes --> Q["inject 次 workflow\n(tmux send-keys)"]
-    Q --> R[workflow_done クリア]
+    Q --> R[workflow_injected 記録]
     R --> E
     P -- No --> F{全 Worker 完了?}
     F -- No --> G{停滞/クラッシュ?}
@@ -180,15 +181,38 @@ Worker は Pilot が事前作成した worktree ディレクトリで cld セッ
 
 ### 状態遷移
 
+外部観察者は `status` フィールドを唯一の参照元として使用する（ADR-018）。
+
 ```mermaid
 stateDiagram-v2
     [*] --> running: Issue 割り当て
-    running --> merge_ready: 全ステップ完了
+    running --> merge_ready: 全ステップ完了（Worker が宣言）
     running --> failed: ステップ失敗 / crash
-    merge_ready --> done: merge-gate PASS
-    merge_ready --> failed: merge-gate REJECT
-    failed --> running: retry (retry_count < 1)
+    merge_ready --> done: merge-gate PASS（Pilot がマージ後に設定）
+    merge_ready --> failed: merge-gate REJECT 2回目（リトライ上限）
+    merge_ready --> conflict: deps.yaml コンフリクト検出
+    failed --> running: retry（retry_count < 1）
+    failed --> done: --force-done（緊急時のみ、override_reason 必須）
+    conflict --> merge_ready: Pilot リベース後（conflict_retry_count < 1）
+    conflict --> failed: conflict リトライ上限超過
     done --> [*]
+```
+
+**status 値の意味:**
+
+| status | 意味 | 書き込み責任者 |
+|--------|------|--------------|
+| `running` | Issue 実装中（Worker が chain を実行） | Worker（init 時）|
+| `merge-ready` | PR 準備完了（merge-gate 待ち） | Worker（workflow-pr-merge terminal）|
+| `done` | マージ完了 | Pilot（merge-gate 成功後）|
+| `failed` | 失敗（ステップエラー / crash / merge-gate REJECT） | Worker または Pilot |
+| `conflict` | deps.yaml コンフリクト検出（Pilot リベース待ち） | Pilot |
+
+**Monitor での判定方法:**
+```bash
+status=$(jq -r '.status // "null"' issue-N.json)
+# STAGNATE 抑制: merge-ready / done / conflict は正常待機または終端
+[[ "$status" == "merge-ready" || "$status" == "done" || "$status" == "conflict" ]] && skip_stagnate=1
 ```
 
 ## Constraints
@@ -209,7 +233,7 @@ stateDiagram-v2
 | **J** | merge 前 base drift 検知 | merge-gate 実行前に origin/main に対する silent deletion を検知し、検出時は merge を停止する | merge-gate.md#scenario-merge前-base-drift検知 |
 | **K** | Pilot 実装禁止 | Pilot は Issue の実装（コード変更・PR 作成）を直接行ってはならない。実装は常に Worker 経由。Emergency Bypass 時も `mergegate merge --force` 経由のみ許可 | autopilot-lifecycle.md#scenario-不変条件-k-pilot実装禁止228 |
 | **L** | autopilot マージ実行責務 | autopilot 時のマージ実行は Orchestrator の `mergegate.py` 経由のみ。Worker chain の auto-merge ステップは `merge-ready` 宣言のみを行い、マージは実行しない | |
-| **M** | chain 遷移は orchestrator/手動 inject のみ | chain 遷移（workflow_done 検知後の次 workflow 起動）は orchestrator の `inject_next_workflow` または手動 skill inject（`/twl:workflow-<name>`）のみ許可。Pilot の直接 nudge による chain bypass は禁止。chain 停止時は orchestrator 再起動または手動 inject で chain を再開する（co-autopilot SKILL.md「chain 停止時の復旧手順」参照） | issue-438 |
+| **M** | chain 遷移は orchestrator/手動 inject のみ | chain 遷移（`current_step` の terminal 検知後の次 workflow 起動）は orchestrator の `inject_next_workflow` または手動 skill inject（`/twl:workflow-<name>`）のみ許可。Pilot の直接 nudge による chain bypass は禁止。chain 停止時は orchestrator 再起動または手動 inject で chain を再開する（co-autopilot SKILL.md「chain 停止時の復旧手順」参照） | issue-438, ADR-018 |
 
 ### 並行性の制約
 

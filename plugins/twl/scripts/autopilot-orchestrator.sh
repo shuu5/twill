@@ -509,11 +509,16 @@ poll_single() {
           return 0
         fi
 
-        # workflow_done 検知 → inject（inject 成功時は check_and_nudge をスキップ）
-        local workflow_done inject_matched=0
-        workflow_done=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field workflow_done 2>/dev/null || echo "")
-        if [[ -n "$workflow_done" && "$workflow_done" != "null" ]]; then
-          inject_next_workflow "$issue" "$window_name" && inject_matched=1 || true
+        # current_step terminal 検知 → inject（ADR-018: workflow_done 廃止）
+        # inject 済みステップは LAST_INJECTED_STEP でローカルトラッキングして重複防止
+        local inject_matched=0
+        local _cur_step
+        _cur_step=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field current_step 2>/dev/null || echo "")
+        if [[ -n "$_cur_step" && "${LAST_INJECTED_STEP[$issue]:-}" != "$_cur_step" ]]; then
+          if inject_next_workflow "$issue" "$window_name"; then
+            LAST_INJECTED_STEP[$issue]="$_cur_step"
+            inject_matched=1
+          fi
         fi
 
         if [[ "$inject_matched" -eq 0 ]]; then
@@ -600,11 +605,15 @@ poll_phase() {
             continue
           fi
 
-          # workflow_done 検知 → inject（inject 成功時は check_and_nudge をスキップ）
-          local workflow_done_val inject_matched=0
-          workflow_done_val=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field workflow_done 2>/dev/null || echo "")
-          if [[ -n "$workflow_done_val" && "$workflow_done_val" != "null" ]]; then
-            inject_next_workflow "$issue_num" "$window_name" && inject_matched=1 || true
+          # current_step terminal 検知 → inject（ADR-018: workflow_done 廃止）
+          local inject_matched=0
+          local _cur_step_p
+          _cur_step_p=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field current_step 2>/dev/null || echo "")
+          if [[ -n "$_cur_step_p" && "${LAST_INJECTED_STEP[$issue_num]:-}" != "$_cur_step_p" ]]; then
+            if inject_next_workflow "$issue_num" "$window_name"; then
+              LAST_INJECTED_STEP[$issue_num]="$_cur_step_p"
+              inject_matched=1
+            fi
           fi
 
           if [[ "$inject_matched" -eq 0 ]]; then
@@ -710,8 +719,9 @@ poll_phase() {
 declare -A NUDGE_COUNTS=()
 declare -A LAST_OUTPUT_HASH=()
 declare -A HEALTH_CHECK_COUNTER=()
-declare -A RESOLVE_FAIL_COUNT=()   # AC-3: RESOLVE_FAILED 連続カウント（issue ごと）
+declare -A RESOLVE_FAIL_COUNT=()    # AC-3: RESOLVE_FAILED 連続カウント（issue ごと）
 declare -A RESOLVE_FAIL_FIRST_TS=() # AC-3: 連続開始タイムスタンプ（秒）
+declare -A LAST_INJECTED_STEP=()    # ADR-018: inject 済み current_step（重複 inject 防止）
 
 # chain 停止パターン → 次コマンドマッピング
 # パターンが一致した場合: exit 0 + 次コマンドを stdout（空文字 = 空 Enter）
@@ -750,19 +760,10 @@ _nudge_command_for_pattern() {
   elif echo "$pane_output" | grep -qP ">>> 提案完了"; then
     echo ""
   elif echo "$pane_output" | grep -qP ">>> 実装完了: issue-\d+"; then
-    # AC-2 fallback: change-apply が workflow_done を書かずに終了した場合のリカバリ
-    # workflow_done が既に非 null/非 setup なら重複 inject を防ぐ（MAX_NUDGE 内での再実行対策）
-    local _wf_done
-    _wf_done=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" \
-      --field workflow_done 2>/dev/null || echo "")
-    if [[ -z "$_wf_done" || "$_wf_done" == "null" || "$_wf_done" == "setup" ]]; then
-      # Pilot role で workflow_done=test-ready を書き、inject_next_workflow が動作するようにする
-      python3 -m twl.autopilot.state write --type issue --issue "$issue" \
-        --role pilot --set "workflow_done=test-ready" 2>/dev/null || true
-      echo "/twl:workflow-pr-verify #${issue}"
-    else
-      return 1
-    fi
+    # AC-2 fallback: change-apply 完了後の pr-verify inject（ADR-018: current_step ベース）
+    # post-change-apply が terminal step として設定されている場合は inject_next_workflow が自動処理するため
+    # ここではパターンマッチ fallback として直接 inject する
+    echo "/twl:workflow-pr-verify #${issue}"
   elif echo "$pane_output" | grep -qP "テスト準備.*完了"; then
     echo "/twl:workflow-pr-verify #${issue}"
   elif echo "$pane_output" | grep -qP "workflow-pr-verify.*完了"; then
@@ -778,7 +779,7 @@ _nudge_command_for_pattern() {
   fi
 }
 
-# inject_next_workflow: workflow_done を検知して次の workflow skill を tmux inject する
+# inject_next_workflow: current_step terminal 値を検知して次の workflow skill を tmux inject する（ADR-018）
 # 引数: issue, window_name
 # 戻り値: 0=inject 成功 or pr-merge 委譲、1=失敗（タイムアウト / resolve 失敗 / バリデーション失敗）
 inject_next_workflow() {
@@ -823,11 +824,9 @@ inject_next_workflow() {
   local _skill_safe
   _skill_safe="${next_skill//$'\n'/}"  # 改行除去（ログインジェクション防止）
   if [[ "$_skill_safe" == "pr-merge" || "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
-    # terminal workflow: inject せず merge-gate フローに委譲
+    # terminal workflow: inject せず merge-gate フローに委譲（ADR-018: workflow_done クリア不要）
     echo "[orchestrator] Issue #${issue}: pr-merge 検出 — inject スキップ、merge-gate フローに委譲" >&2
     echo "[${_trace_ts}] issue=${issue} skill=pr-merge result=skip reason=\"terminal workflow, delegated to merge-gate\"" >> "$_trace_log" 2>/dev/null || true
-    python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
-      --set "workflow_done=null" 2>/dev/null || true
     return 0
   fi
   if [[ ! "$_skill_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
@@ -880,11 +879,7 @@ inject_next_workflow() {
   _success_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   echo "[${_success_ts}] issue=${issue} skill=${_skill_safe} result=success" >> "$_trace_log" 2>/dev/null || true
 
-  # --- workflow_done クリア ---
-  python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
-    --set "workflow_done=null" 2>/dev/null || true
-
-  # --- inject 履歴記録 ---
+  # --- inject 履歴記録（ADR-018: workflow_done クリアを廃止、workflow_injected で追跡）---
   local injected_at
   injected_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \

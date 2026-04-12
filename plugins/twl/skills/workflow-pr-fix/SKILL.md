@@ -77,10 +77,10 @@ ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
 eval "$(bash "$CR" autopilot-detect)"
 ```
 
-- IS_AUTOPILOT=true → context.md 書き出し（下記スニペット）→ `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=pr-fix"` を実行して停止
+- IS_AUTOPILOT=true → context.md 書き出し（下記スニペット）→ 停止（orchestrator が `current_step=warning-fix` を terminal として検知し次 workflow を inject する）
 - IS_AUTOPILOT=false → 「workflow-pr-fix 完了。次のステップ: /twl:workflow-pr-merge を実行してください」と案内
 
-**context.md 書き出しスニペット（workflow_done=pr-fix 直前）:**
+**context.md 書き出しスニペット（停止直前）:**
 ```bash
 ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
 if [[ -n "$ISSUE_NUM" ]]; then
