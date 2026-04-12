@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-04-12, feature-flagged: CO_ISSUE_V2)
+Accepted (2026-04-12, cutover completed: #493)
 
 ## Context
 

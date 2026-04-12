@@ -123,13 +123,14 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Test 10: workflow-issue-refine SKILL.md が gh_read_issue_full を参照している
+# Test 10: workflow-issue-lifecycle SKILL.md が gh_read_issue_full を参照している
+# (旧 workflow-issue-refine は v2 cutover #493 で削除済み)
 # ---------------------------------------------------------------------------
-echo "Test 10: workflow-issue-refine SKILL.md が gh_read_issue_full を参照"
-if grep -q 'gh_read_issue_full' "${PROJECT_ROOT}/skills/workflow-issue-refine/SKILL.md" 2>/dev/null; then
-  pass "workflow-issue-refine SKILL.md が gh_read_issue_full を参照している"
+echo "Test 10: workflow-issue-lifecycle SKILL.md が gh_read_issue_full を参照"
+if grep -q 'gh_read_issue_full' "${PROJECT_ROOT}/skills/workflow-issue-lifecycle/SKILL.md" 2>/dev/null; then
+  pass "workflow-issue-lifecycle SKILL.md が gh_read_issue_full を参照している"
 else
-  fail "workflow-issue-refine SKILL.md が gh_read_issue_full を参照していない"
+  fail "workflow-issue-lifecycle SKILL.md が gh_read_issue_full を参照していない"
 fi
 
 # ---------------------------------------------------------------------------

@@ -72,7 +72,7 @@ Autopilot で複数 Issue を一括実装:
 | From | To |
 |------|-----|
 | twl:co-autopilot | autopilot-init, autopilot-launch, autopilot-poll, autopilot-phase-execute, autopilot-phase-sanity, autopilot-pilot-precheck, autopilot-pilot-rebase, autopilot-multi-source-verdict, autopilot-phase-postprocess, autopilot-collect, autopilot-retrospective, autopilot-patterns, autopilot-cross-issue, autopilot-summary, session-audit, self-improve-review, →twl:workflow-setup, →twl:workflow-test-ready, →twl:workflow-pr-verify, →twl:workflow-pr-fix, →twl:workflow-pr-merge, →twl:workflow-dead-cleanup, →twl:workflow-tech-debt-triage, →twl:workflow-self-improve |
-| twl:co-issue | explore, issue-glossary-check, →twl:workflow-issue-refine, →twl:workflow-issue-create, →twl:workflow-issue-lifecycle |
+| twl:co-issue | issue-glossary-check, →twl:workflow-issue-lifecycle |
 | twl:co-project | project-create, project-governance, project-board-configure, project-migrate, container-dependency-check, setup-crg, snapshot-analyze, snapshot-classify, snapshot-generate, →twl:workflow-plugin-create, →twl:workflow-plugin-diagnose, →twl:workflow-prompt-audit, label-sync, →twl:ref-types, →twl:ref-practices, →twl:ref-deps-format |
 | twl:co-architect | explore, architect-completeness-check, architect-decompose, architect-group-refine, architect-issue-create, evaluate-architecture, →twl:ref-architecture-spec, →twl:ref-architecture |
 | twl:co-utility | worktree-list, worktree-delete, twl-validate, services, ui-capture, schema-update |
@@ -91,8 +91,6 @@ Autopilot で複数 Issue を一括実装:
 | twl:workflow-plugin-diagnose | plugin-migrate-analyze, plugin-diagnose, ◆plugin-phase-diagnose, plugin-fix, plugin-verify, ◆plugin-phase-verify |
 | twl:workflow-prompt-audit | prompt-audit-scan, ◆prompt-audit-review, prompt-audit-apply |
 | twl:workflow-issue-lifecycle | issue-structure, ◆issue-spec-review, issue-review-aggregate, issue-arch-drift, issue-create |
-| twl:workflow-issue-refine | issue-structure, issue-tech-debt-absorb, ◆issue-spec-review, issue-review-aggregate, issue-arch-drift |
-| twl:workflow-issue-create | issue-create, issue-bulk-create, issue-cross-repo-create, project-board-sync |
 | post-fix-verify | ●worker-code-reviewer, ●worker-security-reviewer, ●worker-codex-reviewer |
 | all-pass-check | →twl:ref-dci |
 | issue-spec-review | ●issue-critic, ●issue-feasibility, ●worker-codex-reviewer |

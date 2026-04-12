@@ -16,8 +16,6 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(1,279 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_issue_create [label="twl:workflow-issue-create\n(993 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_glossary_criteria [label="twl:ref-glossary-criteria\n(873 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -50,7 +48,6 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_issue; }
-    { rank=same; skill_workflow_issue_refine; skill_workflow_issue_create; }
     { rank=same; skill_ref_glossary_criteria; }
     { rank=same; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_issue_cross_repo_create; cmd_project_board_sync; cmd_explore; }
     { rank=same; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; }
@@ -59,17 +56,6 @@ digraph Dependencies {
     // Edges
     skill_co_issue -> cmd_explore;
     skill_co_issue -> cmd_issue_glossary_check;
-    skill_co_issue -> skill_workflow_issue_refine;
-    skill_co_issue -> skill_workflow_issue_create;
-    skill_workflow_issue_refine -> cmd_issue_structure;
-    skill_workflow_issue_refine -> cmd_issue_tech_debt_absorb;
-    skill_workflow_issue_refine -> cmd_issue_spec_review;
-    skill_workflow_issue_refine -> cmd_issue_review_aggregate;
-    skill_workflow_issue_refine -> cmd_issue_arch_drift;
-    skill_workflow_issue_create -> cmd_issue_create;
-    skill_workflow_issue_create -> cmd_issue_bulk_create;
-    skill_workflow_issue_create -> cmd_issue_cross_repo_create;
-    skill_workflow_issue_create -> cmd_project_board_sync;
     cmd_issue_spec_review -> agent_issue_critic [style=dashed];
     cmd_issue_spec_review -> agent_issue_feasibility [style=dashed];
     cmd_issue_spec_review -> agent_worker_codex_reviewer [style=dashed];
@@ -79,8 +65,6 @@ digraph Dependencies {
 
     // Ordering constraints (invisible edges)
     cmd_explore -> cmd_issue_glossary_check [style=invis, weight=10];
-    cmd_issue_glossary_check -> skill_workflow_issue_refine [style=invis, weight=10];
-    skill_workflow_issue_refine -> skill_workflow_issue_create [style=invis, weight=10];
     cmd_issue_structure -> cmd_issue_tech_debt_absorb [style=invis, weight=10];
     cmd_issue_tech_debt_absorb -> cmd_issue_spec_review [style=invis, weight=10];
     cmd_issue_spec_review -> cmd_issue_review_aggregate [style=invis, weight=10];

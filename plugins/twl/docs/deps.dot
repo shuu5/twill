@@ -30,8 +30,6 @@ digraph Dependencies {
     skill_workflow_plugin_create [label="twl:workflow-plugin-create\n(558 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(693 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_prompt_audit [label="twl:workflow-prompt-audit\n(684 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(1,279 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_issue_create [label="twl:workflow-issue-create\n(993 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -274,7 +272,6 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_co_autopilot; skill_co_issue; skill_co_project; skill_co_architect; skill_co_utility; skill_co_self_improve; }
-    { rank=same; skill_workflow_setup; skill_workflow_test_ready; skill_workflow_pr_verify; skill_workflow_pr_fix; skill_workflow_pr_merge; skill_workflow_dead_cleanup; skill_workflow_tech_debt_triage; skill_workflow_self_improve; skill_workflow_observe_loop; skill_workflow_plugin_create; skill_workflow_plugin_diagnose; skill_workflow_prompt_audit; skill_workflow_issue_refine; skill_workflow_issue_create; }
     { rank=same; skill_ref_specialist_output_schema; skill_ref_specialist_few_shot; skill_ref_issue_template_bug; skill_ref_issue_template_feature; skill_ref_types; skill_ref_practices; skill_ref_deps_format; skill_ref_architecture; skill_ref_architecture_spec; skill_ref_project_model; skill_ref_issue_quality_criteria; skill_ref_investigation_budget; skill_ref_dci; skill_ref_glossary_criteria; skill_ref_compaction_recovery; skill_ref_prompt_guide; skill_self_improve_format; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; skill_test_scenario_catalog; skill_observation_pattern_catalog; skill_load_test_baselines; skill_intervention_catalog; skill_memory_mcp_config; skill_externalization_schema; }
     { rank=same; cmd_self_improve_review; cmd_init; cmd_worktree_create; cmd_worktree_list; cmd_project_board_status_update; cmd_crg_auto_build; cmd_change_propose; cmd_change_apply; cmd_ac_extract; cmd_prompt_compliance; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_post_fix_verify; cmd_warning_fix; cmd_pr_cycle_report; cmd_all_pass_check; cmd_ac_verify; cmd_issue_structure; cmd_issue_create; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_issue_cross_repo_create; cmd_project_board_sync; cmd_label_sync; cmd_project_create; cmd_project_board_configure; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_architect_completeness_check; cmd_architect_decompose; cmd_architect_group_refine; cmd_architect_issue_create; cmd_evaluate_architecture; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_prompt_audit_scan; cmd_prompt_audit_review; cmd_prompt_audit_apply; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; cmd_explore; cmd_check; cmd_dead_component_detect; cmd_dead_component_execute; cmd_triage_execute; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; cmd_observe_once; cmd_problem_detect; cmd_issue_draft_from_observation; cmd_observe_and_detect; cmd_observe_retrospective; cmd_intervene_auto; cmd_intervene_confirm; cmd_intervene_escalate; cmd_test_project_init; cmd_test_project_reset; cmd_test_project_scenario_load; cmd_twl_validate; cmd_services; cmd_ui_capture; cmd_e2e_plan; cmd_test_scaffold; cmd_worktree_delete; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; cmd_ac_deploy_trigger; cmd_test_phase; cmd_auto_merge; cmd_pr_cycle_analysis; cmd_schema_update; cmd_spec_diagnose; cmd_autopilot_init; cmd_autopilot_launch; cmd_autopilot_poll; cmd_autopilot_phase_execute; cmd_autopilot_phase_sanity; cmd_autopilot_pilot_precheck; cmd_autopilot_pilot_rebase; cmd_autopilot_multi_source_verdict; cmd_autopilot_phase_postprocess; cmd_autopilot_collect; cmd_autopilot_retrospective; cmd_autopilot_patterns; cmd_autopilot_cross_issue; cmd_autopilot_summary; cmd_session_audit; }
     { rank=same; cmd_arch_ref; cmd_change_id_resolve; cmd_post_change_apply; cmd_change_archive; cmd_llm_delegate; cmd_llm_complete; cmd_dispatch_info; cmd_chain_status; cmd_su_compact; cmd_wave_collect; }
@@ -311,8 +308,6 @@ digraph Dependencies {
     skill_co_autopilot -> script_autopilot_cleanup;
     skill_co_issue -> cmd_explore;
     skill_co_issue -> cmd_issue_glossary_check;
-    skill_co_issue -> skill_workflow_issue_refine;
-    skill_co_issue -> skill_workflow_issue_create;
     skill_co_project -> cmd_project_create;
     skill_co_project -> cmd_project_governance;
     skill_co_project -> cmd_project_board_configure;
@@ -423,15 +418,6 @@ digraph Dependencies {
     skill_workflow_prompt_audit -> cmd_prompt_audit_scan;
     skill_workflow_prompt_audit -> cmd_prompt_audit_review;
     skill_workflow_prompt_audit -> cmd_prompt_audit_apply;
-    skill_workflow_issue_refine -> cmd_issue_structure;
-    skill_workflow_issue_refine -> cmd_issue_tech_debt_absorb;
-    skill_workflow_issue_refine -> cmd_issue_spec_review;
-    skill_workflow_issue_refine -> cmd_issue_review_aggregate;
-    skill_workflow_issue_refine -> cmd_issue_arch_drift;
-    skill_workflow_issue_create -> cmd_issue_create;
-    skill_workflow_issue_create -> cmd_issue_bulk_create;
-    skill_workflow_issue_create -> cmd_issue_cross_repo_create;
-    skill_workflow_issue_create -> cmd_project_board_sync;
     cmd_worktree_create -> script_worktree_create;
     cmd_ac_extract -> script_autopilot_github;
     cmd_post_fix_verify -> agent_worker_code_reviewer [style=dashed];
@@ -661,8 +647,6 @@ digraph Dependencies {
     script_autopilot_orchestrator -> script_autopilot_plan [style=invis, weight=10];
     script_autopilot_plan -> script_autopilot_cleanup [style=invis, weight=10];
     cmd_explore -> cmd_issue_glossary_check [style=invis, weight=10];
-    cmd_issue_glossary_check -> skill_workflow_issue_refine [style=invis, weight=10];
-    skill_workflow_issue_refine -> skill_workflow_issue_create [style=invis, weight=10];
     cmd_project_create -> cmd_project_governance [style=invis, weight=10];
     cmd_project_governance -> cmd_project_board_configure [style=invis, weight=10];
     cmd_project_board_configure -> cmd_project_migrate [style=invis, weight=10];

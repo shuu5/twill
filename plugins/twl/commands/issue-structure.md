@@ -19,7 +19,7 @@ maxTurns: 10
 `要望テキスト` は以下のいずれかの形式で渡される:
 
 - **プレーンテキスト**: ユーザーが直接入力した要望
-- **body + comments 結合テキスト**: `workflow-issue-refine` から呼び出される場合、`gh_read_issue_full` の出力（body と全 comments を `## === Comments ===` セパレータで結合したもの）が入力となる。comments に記載された追加仕様・AC・制約も構造化対象とすること（MUST）。
+- **body + comments 結合テキスト**: `workflow-issue-lifecycle` から呼び出される場合、`gh_read_issue_full` の出力（body と全 comments を `## === Comments ===` セパレータで結合したもの）が入力となる。comments に記載された追加仕様・AC・制約も構造化対象とすること（MUST）。
 
 ## フロー（MUST）
 

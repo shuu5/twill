@@ -5,7 +5,6 @@
 # Coverage level: edge-cases
 # Verifies:
 #   - scripts/spec-review-orchestrator.sh の存在と実装
-#   - workflow-issue-refine/SKILL.md の Step 3b 委譲
 #   - deps.yaml への spec-review-orchestrator 登録
 # =============================================================================
 set -uo pipefail
@@ -92,7 +91,6 @@ run_test_skip() {
 }
 
 ORCHESTRATOR_SH="scripts/spec-review-orchestrator.sh"
-SKILL_MD="skills/workflow-issue-refine/SKILL.md"
 DEPS_YAML="deps.yaml"
 
 # =============================================================================
@@ -280,39 +278,6 @@ else
 fi
 
 # =============================================================================
-# Requirement: workflow-issue-refine Step 3b のオーケストレーター委譲
-# =============================================================================
-echo ""
-echo "--- Requirement: workflow-issue-refine Step 3b のオーケストレーター委譲 ---"
-
-# Scenario: 複数 Issue の spec-review (spec.md line 49)
-# WHEN: Step 3b が N Issue を処理する
-# THEN: spec-review-orchestrator.sh が呼び出され、LLM が直接 /twl:issue-spec-review を N 回呼ぶことはない
-
-test_skill_step3b_orchestrator_call() {
-  assert_file_contains "$SKILL_MD" "spec-review-orchestrator\.sh|spec-review-orchestrator"
-}
-
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "workflow-issue-refine SKILL.md Step 3b が spec-review-orchestrator.sh を参照する" test_skill_step3b_orchestrator_call
-else
-  run_test_skip "workflow-issue-refine SKILL.md Step 3b が spec-review-orchestrator.sh を参照する" "SKILL.md not found"
-fi
-
-# Scenario: 結果の受け取り (spec.md line 53)
-# WHEN: オーケストレーターが完了する
-# THEN: Step 3c は --output-dir から結果ファイルを読み込んで処理を継続する
-
-test_skill_step3c_reads_result_files() {
-  assert_file_contains "$SKILL_MD" "output.dir|result\.txt|結果ファイル.*読み込|read.*result"
-}
-
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "workflow-issue-refine SKILL.md Step 3c が output-dir から結果ファイルを読み込む記述" test_skill_step3c_reads_result_files
-else
-  run_test_skip "workflow-issue-refine SKILL.md Step 3c が output-dir から結果ファイルを読み込む記述" "SKILL.md not found"
-fi
-
 # =============================================================================
 # Requirement: deps.yaml への spec-review-orchestrator 登録
 # =============================================================================
@@ -377,39 +342,6 @@ if [[ -f "${PROJECT_ROOT}/${DEPS_YAML}" ]]; then
   run_test "deps.yaml の spec-review-orchestrator が scripts セクションに登録されている" test_deps_yaml_orchestrator_type_script
 else
   run_test_skip "deps.yaml の spec-review-orchestrator が scripts セクションに登録されている" "deps.yaml not found"
-fi
-
-test_deps_yaml_workflow_calls_orchestrator() {
-  # workflow-issue-refine の calls に spec-review-orchestrator が含まれること
-  python3 -c "
-import yaml, sys
-with open('${PROJECT_ROOT}/${DEPS_YAML}') as f:
-    data = yaml.safe_load(f)
-# workflows セクションを検索
-workflows = data.get('components', {}).get('workflows', {})
-wir = workflows.get('workflow-issue-refine', {})
-calls = wir.get('calls', [])
-# calls がリスト of dict の場合も考慮
-found = False
-for item in calls:
-    if isinstance(item, str) and 'spec-review-orchestrator' in item:
-        found = True
-        break
-    if isinstance(item, dict):
-        for v in item.values():
-            if isinstance(v, str) and 'spec-review-orchestrator' in v:
-                found = True
-                break
-if not found:
-    sys.exit(1)
-sys.exit(0)
-" 2>/dev/null
-}
-
-if [[ -f "${PROJECT_ROOT}/${DEPS_YAML}" ]]; then
-  run_test "deps.yaml workflow-issue-refine の calls に spec-review-orchestrator が含まれる" test_deps_yaml_workflow_calls_orchestrator
-else
-  run_test_skip "deps.yaml workflow-issue-refine の calls に spec-review-orchestrator が含まれる" "deps.yaml not found"
 fi
 
 # =============================================================================
@@ -489,19 +421,6 @@ else
 fi
 
 # Edge case: Step 3b に LLM 直接ループがないこと（N 回並列 Skill 呼び出し禁止）
-test_skill_step3b_no_direct_llm_loop() {
-  # orchestrator 委譲後は LLM が直接ループする記述がないこと
-  # （spec-review-orchestrator.sh に置き換えられている）
-  assert_file_not_contains "$SKILL_MD" "issue-spec-review.*N 回|N 回.*issue-spec-review" || return 1
-  return 0
-}
-
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "[edge] workflow-issue-refine Step 3b に LLM 直接 N 回ループ記述がない" test_skill_step3b_no_direct_llm_loop
-else
-  run_test_skip "[edge] workflow-issue-refine Step 3b に LLM 直接 N 回ループ記述がない" "SKILL.md not found"
-fi
-
 # =============================================================================
 # Summary
 # =============================================================================

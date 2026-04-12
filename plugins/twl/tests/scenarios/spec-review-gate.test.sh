@@ -7,7 +7,7 @@
 #      - spec-review-issue-NNN context で 3/3 完了 → session state completed++ される
 #      - phase-review-xxx context では session state は変更されない
 #   2. hooks.json への PreToolUse/Skill 登録
-#   3. workflow-issue-refine/SKILL.md の Step 3b に spec-review-session-init.sh 呼び出し
+#   3. workflow-issue-lifecycle/SKILL.md に spec-review-session-init.sh 呼び出し
 #   4. architecture/domain/contexts/issue-mgmt.md の Constraints に IM-7 が存在
 #   5. deps.yaml に spec-review-session-init, pre-tool-use-spec-review-gate が登録
 # =============================================================================
@@ -16,7 +16,7 @@ set -uo pipefail
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 HOOK_SCRIPT="${PROJECT_ROOT}/scripts/hooks/check-specialist-completeness.sh"
 HOOKS_JSON="${PROJECT_ROOT}/hooks/hooks.json"
-SKILL_MD="${PROJECT_ROOT}/skills/workflow-issue-refine/SKILL.md"
+SKILL_MD="${PROJECT_ROOT}/skills/workflow-issue-lifecycle/SKILL.md"
 ISSUE_MGMT_MD="${PROJECT_ROOT}/architecture/domain/contexts/issue-mgmt.md"
 DEPS_YAML="${PROJECT_ROOT}/deps.yaml"
 INIT_SCRIPT="${PROJECT_ROOT}/scripts/spec-review-session-init.sh"
@@ -184,9 +184,9 @@ test_hooks_json_pretooluse_skill_entry() {
 run_test "hooks.json の PreToolUse に Skill matcher + pre-tool-use-spec-review-gate.sh が登録されている" test_hooks_json_pretooluse_skill_entry
 
 # ---------------------------------------------------------------------------
-# Requirement: workflow-issue-refine/SKILL.md の Step 3b にセッション初期化ステップ
+# Requirement: workflow-issue-lifecycle/SKILL.md に spec-review-session-init.sh 呼び出し
 #
-# WHEN workflow-issue-refine/SKILL.md の Step 3b を参照する
+# WHEN workflow-issue-lifecycle/SKILL.md を参照する
 # THEN spec-review-session-init.sh の呼び出し手順が記載されている
 # ---------------------------------------------------------------------------
 test_skillmd_step3b_has_session_init() {
@@ -195,7 +195,7 @@ test_skillmd_step3b_has_session_init() {
   grep -q "spec-review-session-init" "$SKILL_MD" \
     || { echo "spec-review-session-init not found in SKILL.md" >&2; return 1; }
 }
-run_test "workflow-issue-refine/SKILL.md の Step 3b に spec-review-session-init.sh の呼び出しが記載されている" test_skillmd_step3b_has_session_init
+run_test "workflow-issue-lifecycle/SKILL.md に spec-review-session-init.sh の呼び出しが記載されている" test_skillmd_step3b_has_session_init
 
 # ---------------------------------------------------------------------------
 # Requirement: issue-mgmt.md の Constraints に IM-7 が存在

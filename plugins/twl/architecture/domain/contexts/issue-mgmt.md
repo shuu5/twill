@@ -114,7 +114,7 @@ flowchart TD
 
 ### Specialist 並列レビュー（Step 3b）
 
-**co-issue v2（ADR-017）**: 1 Issue = 1 tmux window = 1 独立 cld セッション。`issue-lifecycle-orchestrator.sh` が N 個の `workflow-issue-lifecycle` Worker を並列 spawn し、各 Worker 内で 3 specialist を実行する。MAX_PARALLEL=3。CO_ISSUE_V2 feature flag で有効化。
+**co-issue v2（ADR-017）**: 1 Issue = 1 tmux window = 1 独立 cld セッション。`issue-lifecycle-orchestrator.sh` が N 個の `workflow-issue-lifecycle` Worker を並列 spawn し、各 Worker 内で 3 specialist を実行する。MAX_PARALLEL=3。
 
 各 Worker 内の specialist:
 - **issue-critic**: 仮定・曖昧点・盲点・粒度・split・隠れた依存を検出
@@ -129,9 +129,9 @@ flowchart TD
 - tech-debt Issue は定期的にトリアージすること
 - project-board-sync は Issue 作成成功後に自動実行。失敗時は警告のみ
 - **プロンプトインジェクション対策**: Issue body を XML タグに注入する前にエスケープ必須（SHALL）
-- **制約 IM-1**: ユーザー確認なしで Issue を作成してはならない（SHALL）。co-issue / workflow-issue-create / co-architect 共通制約
-- **制約 IM-2**: Issue 番号を推測してはならない（SHALL）。`gh` コマンド出力から正確に取得すること（co-issue / workflow-issue-create / workflow-tech-debt-triage 共通制約）
-- **制約 IM-3**: `.controller-issue/` ディレクトリを git にコミットしてはならない（SHALL）。`.gitignore` 対象（co-issue / workflow-issue-create 共通制約）
+- **制約 IM-1**: ユーザー確認なしで Issue を作成してはならない（SHALL）。co-issue / workflow-issue-lifecycle / co-architect 共通制約
+- **制約 IM-2**: Issue 番号を推測してはならない（SHALL）。`gh` コマンド出力から正確に取得すること（co-issue / workflow-issue-lifecycle / workflow-tech-debt-triage 共通制約）
+- **制約 IM-3**: `.controller-issue/` ディレクトリを git にコミットしてはならない（SHALL）。`.gitignore` 対象（co-issue / workflow-issue-lifecycle 共通制約）
 - **制約 IM-4**: 他セッションの `.controller-issue/<other-session-id>/` を削除してはならない（SHALL）。セッション間分離保証
 - **制約 IM-5**: （親 controller から spawn された場合の制約として）lifecycle workflow セッション**内部**で specialist が実行中のまま aggregate step に進んではならない（SHALL）。co-issue v2 では parent co-issue は specialist を直接 spawn しないため、本制約は Worker セッション内のローカル不変量として機能する（ADR-017）
 - **制約 IM-6**: ユーザー確認なしで Issue をクローズ・統合してはならない（SHALL）
