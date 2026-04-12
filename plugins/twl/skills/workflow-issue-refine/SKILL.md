@@ -40,7 +40,7 @@ co-issue Phase 3（Per-Issue 精緻化ループ）のロジックを担当する
 
 > **責務分離ノート**: 本 Step の spawn 手順・同期バリアは LLM ガイダンスだが、
 > `Skill(issue-review-aggregate)` 呼出前の完了保証は
-> [`pre-tool-use-spec-review-gate.sh`](../../../scripts/hooks/pre-tool-use-spec-review-gate.sh)
+> [`pre-tool-use-spec-review-gate.sh`](../../scripts/hooks/pre-tool-use-spec-review-gate.sh)
 > により機械的に強制される。state ファイル（`/tmp/.spec-review-session-{hash}.json`）
 > は `spec-review-session-init.sh` で初期化されており、`completed < total` の状態で
 > aggregate 呼出が発生すると hook が deny する。
