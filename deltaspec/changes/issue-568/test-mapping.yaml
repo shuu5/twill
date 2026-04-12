@@ -1,0 +1,276 @@
+change_id: issue-568
+generated_at: "2026-04-13T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "git-commit-hook-fires"
+    name: "git commit 時に validate hook が起動する"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 6
+    requirement: "PreToolUse commit validate hook"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "git commit コマンドで twl --validate が呼び出される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "violations-gt-zero-exit-2"
+    name: "deps.yaml 型ルール違反ありの場合"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 13
+    requirement: "validate 失敗時のコミットブロック"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "violations > 0 のとき exit 2 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "violations-gt-zero-stderr"
+    name: "deps.yaml 型ルール違反ありの場合 — stderr 出力"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 13
+    requirement: "validate 失敗時のコミットブロック"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "violations > 0 のとき stderr に違反内容が出力される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "violations-exit-code-is-2-not-1"
+    name: "violations > 0 の場合、exit コードは必ず 2（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 13
+    requirement: "validate 失敗時のコミットブロック"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "violations > 0 のとき exit コードは 1 ではなく 2 である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "violations-zero-exit-0"
+    name: "deps.yaml に違反なしの場合"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 21
+    requirement: "validate 通過時のコミット許可"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "violations == 0 のとき exit 0 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "violations-zero-stdout-empty"
+    name: "violations == 0 のとき stdout は空（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 21
+    requirement: "validate 通過時のコミット許可"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "violations == 0 のとき stdout は空（ノイズを出さない）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "non-git-commit-skip-git-status"
+    name: "git commit 以外のコマンドはスキップ — git status"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 27
+    requirement: "git commit 以外のコマンドはスキップ"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "git status は git commit ではないので即 exit 0 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "non-git-commit-skip-git-push"
+    name: "git commit 以外のコマンドはスキップ — git push"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 27
+    requirement: "git commit 以外のコマンドはスキップ"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "git push は git commit ではないので即 exit 0 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "non-git-commit-twl-not-called"
+    name: "git commit 以外では twl を呼ばない（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 27
+    requirement: "git commit 以外のコマンドはスキップ"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "git commit 以外のコマンドでは twl を呼ばない（stdout/stderr 空）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-not-found-skip"
+    name: "deps.yaml が存在しない場合"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 34
+    requirement: "deps.yaml 不在時のスキップ"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "deps.yaml が存在しない場合は exit 0 でスキップする"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-not-found-twl-not-called"
+    name: "deps.yaml が存在しない場合は twl を呼ばない（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 34
+    requirement: "deps.yaml 不在時のスキップ"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "deps.yaml が存在しない場合は twl を呼ばない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skip-gate-bypass-exit-0"
+    name: "TWL_SKIP_COMMIT_GATE=1 設定時"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 41
+    requirement: "TWL_SKIP_COMMIT_GATE によるバイパス"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "TWL_SKIP_COMMIT_GATE=1 のとき exit 0 でスキップする"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skip-gate-bypass-twl-not-called"
+    name: "TWL_SKIP_COMMIT_GATE=1 のとき twl を呼ばない（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 41
+    requirement: "TWL_SKIP_COMMIT_GATE によるバイパス"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "TWL_SKIP_COMMIT_GATE=1 のとき twl を呼ばない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skip-gate-zero-not-bypassed"
+    name: "TWL_SKIP_COMMIT_GATE=0 はバイパスしない（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 41
+    requirement: "TWL_SKIP_COMMIT_GATE によるバイパス"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "TWL_SKIP_COMMIT_GATE=0 のときはスキップしない（通常の validate を実行）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "timeout-within-5000ms"
+    name: "通常の validate 実行時間"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 48
+    requirement: "タイムアウト制限"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "validate 実行が 5000ms 以内に完了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-scripts-entry-exists"
+    name: "deps.yaml へのスクリプト登録"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 57
+    requirement: "deps.yaml スクリプトエントリ"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "deps.yaml の scripts セクションに pre-bash-commit-validate エントリが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: "skipped until implementation is merged"
+
+  - id: "git-commit-options-hook-fires"
+    name: "git commit にオプションが付いた場合も hook が発火する（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 6
+    requirement: "PreToolUse commit validate hook"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "git commit -m オプション付きでも hook が発火し twl を呼ぶ"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "git-commit-amend-hook-fires"
+    name: "git commit --amend でも hook が発火する（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 6
+    requirement: "PreToolUse commit validate hook"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "git commit --amend でも hook が発火する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "tool-input-command-unset-noop"
+    name: "TOOL_INPUT_command 未設定は no-op（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 27
+    requirement: "git commit 以外のコマンドはスキップ"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "TOOL_INPUT_command 未設定の場合は exit 0 (no-op)"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "twl-not-found-graceful-skip"
+    name: "twl コマンドが存在しない場合は graceful skip（edge case）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 34
+    requirement: "deps.yaml 不在時のスキップ"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "twl コマンドが存在しない場合は exit 0 でスキップする（グレースフル）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "twl-validate-flag-passed"
+    name: "twl --validate フラグ付きで呼ばれる（統合確認）"
+    spec_file: "specs/pre-bash-commit-validate/spec.md"
+    spec_line: 6
+    requirement: "PreToolUse commit validate hook"
+    test_file: "plugins/twl/tests/bats/scripts/pre-bash-commit-validate.bats"
+    test_name: "git commit コマンドで twl --validate が --validate フラグ付きで呼び出される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
