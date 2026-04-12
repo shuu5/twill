@@ -322,8 +322,11 @@ launch_worker() {
   fi
 
   # CRG graph DB symlink（main の DB を参照、#532）
+  # main worktree 自身は除外（自己参照 symlink 防止）
   local _crg_main="${effective_project_dir}/main/.code-review-graph"
-  [[ -d "$_crg_main" && ! -e "$worktree_dir/.code-review-graph" ]] && ln -sf "$_crg_main" "$worktree_dir/.code-review-graph"
+  local _is_main=0
+  [[ "$(realpath "$worktree_dir" 2>/dev/null)" == "$(realpath "${effective_project_dir}/main" 2>/dev/null)" ]] && _is_main=1
+  [[ -d "$_crg_main" && "$_is_main" -eq 0 && ! -e "$worktree_dir/.code-review-graph" ]] && ln -sf "$_crg_main" "$worktree_dir/.code-review-graph"
 
   local effective_model="${model_override:-${WORKER_MODEL:-sonnet}}"
   local launch_args=(
