@@ -47,6 +47,7 @@ Usage: $(basename "$0") [OPTIONS]
 
   --per-issue-dir DIR  per-issue ディレクトリの絶対パス（必須）
                        .controller-issue/<sid>/per-issue/ に相当
+  --model MODEL        Worker セッションに使用するモデル（デフォルト: sonnet）
   -h, --help           このヘルプを表示
 
 Environment:
@@ -58,10 +59,12 @@ EOF
 
 # --- 引数パーサー ---
 PER_ISSUE_DIR=""
+WORKER_MODEL="sonnet"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --per-issue-dir) PER_ISSUE_DIR="$2"; shift 2 ;;
+    --model)         WORKER_MODEL="$2"; shift 2 ;;
     -h|--help)       usage; exit 0 ;;
     *) echo "Error: 不明なオプション: $1" >&2; exit 1 ;;
   esac
@@ -215,7 +218,7 @@ spawn_session() {
   exec {lockfd}>&-
 
   # cld-spawn: 対話モードで起動（one-shot モード stdout 問題を回避 — #541）
-  "${SESSION_SCRIPTS}/cld-spawn" --cd "$(pwd)" --window-name "${window_name}" --env-file ~/.secrets || {
+  "${SESSION_SCRIPTS}/cld-spawn" --cd "$(pwd)" --window-name "${window_name}" --env-file ~/.secrets --model "${WORKER_MODEL}" || {
     rm -f "$prompt_file" 2>/dev/null || true
     echo "[issue-lifecycle-orchestrator] ${subdir##*/}: cld-spawn 失敗" >&2
     return 1

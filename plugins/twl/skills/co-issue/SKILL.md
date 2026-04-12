@@ -201,7 +201,8 @@ Level リスト（Phase 2 で構築した DAG levels）を L0 から順に以下
    LEVEL_DIR=".controller-issue/<session-id>/per-issue-level-<level>/"
    # per-issue dirs を LEVEL_DIR 以下に symlink
    bash scripts/issue-lifecycle-orchestrator.sh \
-     --per-issue-dir "${LEVEL_DIR}"
+     --per-issue-dir "${LEVEL_DIR}" \
+     --model sonnet
    ```
 3. **完了待ち**: orchestrator が同期的に完了を待つ（MAX_PARALLEL=3）
 4. **level_report 取得**: current level の全 `OUT/report.json` を Read
@@ -239,7 +240,7 @@ Level リスト（Phase 2 で構築した DAG levels）を L0 から順に以下
 
 failure または circuit_broken が 1 件以上の場合、AskUserQuestion で以下を確認:
 
-- `[retry subset]` → `bash scripts/issue-lifecycle-orchestrator.sh --per-issue-dir ".controller-issue/<session-id>/per-issue/" --resume` で非 done のみ再実行
+- `[retry subset]` → `bash scripts/issue-lifecycle-orchestrator.sh --per-issue-dir ".controller-issue/<session-id>/per-issue/" --resume --model sonnet` で非 done のみ再実行
 - `[manual fix]` → 手動修正を依頼してユーザーに案内
 - `[accept partial]` → このまま完了
 
