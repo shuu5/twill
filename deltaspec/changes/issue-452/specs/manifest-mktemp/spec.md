@@ -6,11 +6,11 @@
 
 #### Scenario: manifest ファイル生成
 - **WHEN** `issue-spec-review.md` の Step 4 を実行する
-- **THEN** `mktemp /tmp/.specialist-manifest-XXXXXXXX.txt` でファイルが作成され、パーミッションが 600 に設定され、`MANIFEST_FILE` にそのパスが格納される
+- **THEN** `mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt` でファイルが作成され、パーミッションが 600 に設定され、`MANIFEST_FILE` にそのパスが格納される
 
 #### Scenario: CONTEXT_ID 導出
-- **WHEN** MANIFEST_FILE が `/tmp/.specialist-manifest-AbCd1234.txt` の場合
-- **THEN** `CONTEXT_ID` は `AbCd1234` として導出される（basename からプレフィックス除去）
+- **WHEN** MANIFEST_FILE が `/tmp/.specialist-manifest-spec-review-AbCd1234.txt` の場合
+- **THEN** `CONTEXT_ID` は `spec-review-AbCd1234` として導出される（basename からプレフィックス除去）
 
 ### Requirement: クリーンアップを MANIFEST_FILE パスで実行する
 
