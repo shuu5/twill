@@ -2350,6 +2350,23 @@ scripts:
     type: script
     path: ../../cli/twl/src/twl/autopilot/mergegate.py
     description: "merge-gate マージ実行 / リジェクト（Python: python3 -m twl.autopilot.mergegate）"
+    calls:
+      - script: autopilot-mergegate-guards
+      - script: autopilot-mergegate-ops
+
+  autopilot-mergegate-guards:
+    type: script
+    path: ../../cli/twl/src/twl/autopilot/mergegate_guards.py
+    consumed_by:
+      - script: autopilot-mergegate
+    description: "merge-gate guard 関数群（worktree/worker-window/running/phase-review チェック）"
+
+  autopilot-mergegate-ops:
+    type: script
+    path: ../../cli/twl/src/twl/autopilot/mergegate_ops.py
+    consumed_by:
+      - script: autopilot-mergegate
+    description: "MergeGateOperationsMixin — merge-gate 内部操作メソッド群（issue/PR/git/worktree 操作）"
 
   chain-runner:
     type: script
