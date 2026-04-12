@@ -1,0 +1,915 @@
+change_id: issue-492
+generated_at: "2026-04-12T00:00:00Z"
+test_framework: bash
+scenarios:
+  # =========================================================================
+  # co-issue-v2-feature-flag
+  # =========================================================================
+  - id: "feature-flag-environment-section-exists"
+    name: "Environment セクションが SKILL.md に存在する"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 7
+    requirement: "CO_ISSUE_V2 環境変数を SKILL.md に正典宣言する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "## Environment セクションが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-co-issue-v2-var-declared"
+    name: "CO_ISSUE_V2 変数が宣言されている"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 7
+    requirement: "CO_ISSUE_V2 環境変数を SKILL.md に正典宣言する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "CO_ISSUE_V2 変数が宣言されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-default-zero"
+    name: "CO_ISSUE_V2 の default=0 が明記されている"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 7
+    requirement: "CO_ISSUE_V2 環境変数を SKILL.md に正典宣言する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "CO_ISSUE_V2 の default=0 が明記されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-rollback-procedure"
+    name: "rollback 手順が記述されている"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 7
+    requirement: "CO_ISSUE_V2 環境変数を SKILL.md に正典宣言する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "rollback 手順が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-environment-before-phase"
+    name: "Environment セクションが Phase 定義より前に配置されている"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 7
+    requirement: "CO_ISSUE_V2 環境変数を SKILL.md に正典宣言する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Environment セクション [edge: Phase 定義より前に配置]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-v2-branch-exists"
+    name: "CO_ISSUE_V2==1 分岐記述が Phase 2 に存在する"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 21
+    requirement: "CO_ISSUE_V2=1 で新パスに切り替わる"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "CO_ISSUE_V2==1 分岐記述が Phase 2 に存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-dispatch-mentioned"
+    name: "issue-lifecycle-dispatch の呼び出しが記述されている"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 21
+    requirement: "CO_ISSUE_V2=1 で新パスに切り替わる"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "issue-lifecycle-dispatch の呼び出しが記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-aggregate-mentioned"
+    name: "aggregate パスが記述されている"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 21
+    requirement: "CO_ISSUE_V2=1 で新パスに切り替わる"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "aggregate パスが記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-v1-path-refine-preserved"
+    name: "v1 旧パス (workflow-issue-refine) が維持されている"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 26
+    requirement: "CO_ISSUE_V2=1 で新パスに切り替わる"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "v1 旧パス (workflow-issue-refine) が維持されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-v1-path-create-preserved"
+    name: "v1 旧パス (workflow-issue-create) が維持されている"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 26
+    requirement: "CO_ISSUE_V2=1 で新パスに切り替わる"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "v1 旧パス (workflow-issue-create) が維持されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "feature-flag-phase2-branch-at-start"
+    name: "Phase 2 冒頭での CO_ISSUE_V2 条件分岐が記述されている"
+    spec_file: "specs/co-issue-v2-feature-flag/spec.md"
+    spec_line: 21
+    requirement: "CO_ISSUE_V2=1 で新パスに切り替わる"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 2 v2 分岐 [edge: Phase 2 冒頭での CO_ISSUE_V2 条件分岐]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # co-issue-v2-phase2-dag
+  # =========================================================================
+  - id: "phase2-dag-level-split"
+    name: "DAG level 分割 (L0/L1) の記述が存在する"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 7
+    requirement: "Phase 2 (CO_ISSUE_V2=1) で依存 DAG を構築する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "DAG level 分割 (L0/L1) の記述が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-dag-topological-sort"
+    name: "topological sort または Kahn's algorithm の記述が存在する"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 7
+    requirement: "Phase 2 (CO_ISSUE_V2=1) で依存 DAG を構築する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "topological sort または Kahn's algorithm の記述が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-dag-parent-refs-resolved"
+    name: "parent_refs_resolved への URL 注入が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 7
+    requirement: "Phase 2 (CO_ISSUE_V2=1) で依存 DAG を構築する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "parent_refs_resolved への URL 注入が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-dag-circular-dependency"
+    name: "循環依存 (circular dependency) エラー記述が存在する"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 12
+    requirement: "Phase 2 (CO_ISSUE_V2=1) で依存 DAG を構築する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "循環依存 (circular dependency) エラー記述が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-dag-local-ref-regex"
+    name: "#<local-ref> regex パターンが記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 7
+    requirement: "Phase 2 (CO_ISSUE_V2=1) で依存 DAG を構築する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "DAG [edge: #<local-ref> regex パターンが記述されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-dag-code-block-exclusion"
+    name: "コードブロック内 #ref 除外の記述がある"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 7
+    requirement: "Phase 2 (CO_ISSUE_V2=1) で依存 DAG を構築する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "DAG [edge: コードブロック内 #ref 除外の記述]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-bundle-per-issue-dir"
+    name: "per-issue ディレクトリパスが記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 18
+    requirement: "per-issue input bundle を書き出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "per-issue ディレクトリパスが記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-bundle-in-dir"
+    name: "per-issue/IN ディレクトリが記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 18
+    requirement: "per-issue input bundle を書き出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "per-issue/IN ディレクトリが記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-bundle-draft-md"
+    name: "bundle ファイル: draft.md が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 18
+    requirement: "per-issue input bundle を書き出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "bundle ファイル: draft.md が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-bundle-policies-json"
+    name: "bundle ファイル: policies.json が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 18
+    requirement: "per-issue input bundle を書き出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "bundle ファイル: policies.json が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-bundle-deps-json"
+    name: "bundle ファイル: deps.json が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 18
+    requirement: "per-issue input bundle を書き出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "bundle ファイル: deps.json が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-bundle-arch-context"
+    name: "bundle に arch-context.md も書き出す記述がある"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 18
+    requirement: "per-issue input bundle を書き出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "bundle [edge: arch-context.md も書き出す]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-bundle-sid-based-path"
+    name: "per-issue の sid ベースパスが記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 18
+    requirement: "per-issue input bundle を書き出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "per-issue [edge: sid ベースのパス記述]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-policies-max-rounds-3"
+    name: "policies.json 通常パターン: max_rounds=3 が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 27
+    requirement: "policies.json を 3 パターンで生成する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "policies.json 通常パターン: max_rounds=3 が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-policies-quick-flag"
+    name: "policies.json: quick_flag が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 27
+    requirement: "policies.json を 3 パターンで生成する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "policies.json: quick_flag が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-policies-scope-direct-flag"
+    name: "policies.json: scope_direct_flag が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 27
+    requirement: "policies.json を 3 パターンで生成する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "policies.json: scope_direct_flag が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-policies-depth-normal"
+    name: "policies.json 通常パターン: depth=normal が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 27
+    requirement: "policies.json を 3 パターンで生成する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "policies.json 通常パターン: depth=normal が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-policies-quick-max-rounds-1"
+    name: "quick パターンは max_rounds=1 が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 27
+    requirement: "policies.json を 3 パターンで生成する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "policies.json [edge: quick パターンは max_rounds=1]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase2-ask-user-question-dispatch"
+    name: "Phase 2 完了後 AskUserQuestion [dispatch|adjust|cancel] が記述されている"
+    spec_file: "specs/co-issue-v2-phase2-dag/spec.md"
+    spec_line: 37
+    requirement: "Phase 2 完了後に AskUserQuestion で確認する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 2 完了後 [edge: AskUserQuestion dispatch|adjust|cancel]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # co-issue-v2-phase3-dispatch
+  # =========================================================================
+  - id: "phase3-dispatch-sh-called"
+    name: "Phase 3: issue-lifecycle-dispatch.sh の呼び出しが記述されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 7
+    requirement: "Phase 3 (CO_ISSUE_V2=1) で Level-based dispatch を実行する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 3: issue-lifecycle-dispatch.sh の呼び出しが記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-dispatch-max-parallel-3"
+    name: "Phase 3: --max-parallel 3 が指定されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 7
+    requirement: "Phase 3 (CO_ISSUE_V2=1) で Level-based dispatch を実行する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 3: --max-parallel 3 が指定されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-wait-sh-called"
+    name: "Phase 3: issue-lifecycle-wait.sh が記述されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 7
+    requirement: "Phase 3 (CO_ISSUE_V2=1) で Level-based dispatch を実行する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 3: issue-lifecycle-wait.sh が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-bash-background"
+    name: "Phase 3: Bash-bg (run_in_background) が記述されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 7
+    requirement: "Phase 3 (CO_ISSUE_V2=1) で Level-based dispatch を実行する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 3: Bash-bg (run_in_background) が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-sequential-level-dispatch"
+    name: "Phase 3: level 順次 dispatch が記述されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 12
+    requirement: "Phase 3 (CO_ISSUE_V2=1) で Level-based dispatch を実行する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 3: level 順次 dispatch が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-level-report"
+    name: "Phase 3: level_report 取得が記述されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 7
+    requirement: "Phase 3 (CO_ISSUE_V2=1) で Level-based dispatch を実行する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 3: level_report 取得が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-timeout-3600"
+    name: "Phase 3: --timeout 3600 が指定されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 7
+    requirement: "Phase 3 (CO_ISSUE_V2=1) で Level-based dispatch を実行する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 3 [edge: --timeout 3600 が指定されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-parent-url-out-report"
+    name: "parent URL 注入: OUT/report.json からの読み出しが記述されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 18
+    requirement: "Level 間で parent URL を注入する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "parent URL 注入: OUT/report.json からの読み出しが記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-parent-url-injection"
+    name: "parent URL 注入: parent_refs_resolved への注入が記述されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 18
+    requirement: "Level 間で parent URL を注入する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "parent URL 注入: parent_refs_resolved への注入が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-prev-level-url-read"
+    name: "prev level の report.json から URL を読み出す記述がある"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 22
+    requirement: "Level 間で parent URL を注入する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "parent URL 注入 [edge: prev level report からの URL 読み出し]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-circuit-broken-flag"
+    name: "circuit_broken フラグが記述されている"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 27
+    requirement: "failure 検知で circuit_broken する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "circuit_broken フラグが記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-circuit-broken-stops"
+    name: "circuit_broken 時 dispatch が停止する記述がある"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 30
+    requirement: "failure 検知で circuit_broken する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "circuit_broken 時 dispatch が停止する記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-non-dependent-failure-continues"
+    name: "依存しない failure は warning のみで継続する記述がある"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 34
+    requirement: "failure 検知で circuit_broken する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "依存しない failure は warning のみで継続する記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase3-circuit-broken-skips-remaining"
+    name: "circuit_broken 時 L1 以降がスキップされる記述がある"
+    spec_file: "specs/co-issue-v2-phase3-dispatch/spec.md"
+    spec_line: 30
+    requirement: "failure 検知で circuit_broken する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "circuit_broken [edge: L1 以降がスキップされる]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # co-issue-v2-phase4-aggregate
+  # =========================================================================
+  - id: "phase4-aggregate-report-json"
+    name: "Phase 4: per-issue/*/OUT/report.json を読み込む記述がある"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 7
+    requirement: "Phase 4 (CO_ISSUE_V2=1) で全 report.json を aggregate して提示する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 4: per-issue/*/OUT/report.json を読み込む記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-summary-table"
+    name: "Phase 4: summary table (done/warned/failed) が記述されている"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 7
+    requirement: "Phase 4 (CO_ISSUE_V2=1) で全 report.json を aggregate して提示する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 4: summary table (done/warned/failed) が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-classify-done-warned-failed"
+    name: "Phase 4: done/warned/failed/circuit_broken 分類が記述されている"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 7
+    requirement: "Phase 4 (CO_ISSUE_V2=1) で全 report.json を aggregate して提示する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 4: done/warned/failed/circuit_broken 分類が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-failure-ask-user-question"
+    name: "Phase 4: 一部 failure 時 AskUserQuestion [retry|manual|accept] が記述されている"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 13
+    requirement: "Phase 4 (CO_ISSUE_V2=1) で全 report.json を aggregate して提示する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 4: 一部 failure 時に AskUserQuestion [retry|manual|accept] が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-read-all-report-json"
+    name: "Phase 4: 全 report.json を Read する記述がある"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 7
+    requirement: "Phase 4 (CO_ISSUE_V2=1) で全 report.json を aggregate して提示する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 4 [edge: 全 report.json を Read する記述]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-retry-orchestrator-resume"
+    name: "retry: issue-lifecycle-orchestrator.sh --resume が記述されている"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 18
+    requirement: "retry 選択時に orchestrator の resume を呼び出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "retry: issue-lifecycle-orchestrator.sh --resume が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-retry-done-skipped"
+    name: "retry: done 済み issue はスキップされる記述がある"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 21
+    requirement: "retry 選択時に orchestrator の resume を呼び出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "retry: done 済み issue はスキップされる記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-retry-per-issue-dir-option"
+    name: "retry: --per-issue-dir オプションが記述されている"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 18
+    requirement: "retry 選択時に orchestrator の resume を呼び出す"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "retry [edge: --per-issue-dir オプションが記述されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-deps-yaml-workflow-lifecycle"
+    name: "deps.yaml co-issue.calls に workflow-issue-lifecycle が含まれる"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 27
+    requirement: "deps.yaml の co-issue controller に workflow-issue-lifecycle を追加する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "deps.yaml co-issue.calls に workflow-issue-lifecycle が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-deps-yaml-workflow-lifecycle-entry"
+    name: "deps.yaml: workflow-issue-lifecycle エントリが存在する"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 27
+    requirement: "deps.yaml の co-issue controller に workflow-issue-lifecycle を追加する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "deps.yaml: workflow-issue-lifecycle エントリが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-deps-yaml-calls-list"
+    name: "deps.yaml: co-issue.calls がリスト型"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 27
+    requirement: "deps.yaml の co-issue controller に workflow-issue-lifecycle を追加する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "deps.yaml [edge: co-issue.calls がリスト型]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase4-deps-yaml-workflow-lifecycle-type"
+    name: "deps.yaml: workflow-issue-lifecycle の type が workflow"
+    spec_file: "specs/co-issue-v2-phase4-aggregate/spec.md"
+    spec_line: 27
+    requirement: "deps.yaml の co-issue controller に workflow-issue-lifecycle を追加する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "deps.yaml [edge: workflow-issue-lifecycle の type が workflow]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # =========================================================================
+  # co-issue-v2-phase5-soak
+  # =========================================================================
+  - id: "phase5-exists"
+    name: "Phase 5 が SKILL.md に記述されている"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 7
+    requirement: "Phase 5 で soak run log を #493 に自動投稿する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5 が SKILL.md に記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase5-gh-issue-comment-493"
+    name: "Phase 5: gh issue comment 493 の呼び出しが記述されている"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 11
+    requirement: "Phase 5 で soak run log を #493 に自動投稿する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5: gh issue comment 493 の呼び出しが記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase5-run-log-format"
+    name: "Phase 5: run log フォーマット (v2 run / soak) が記述されている"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 11
+    requirement: "Phase 5 で soak run log を #493 に自動投稿する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5: run log フォーマット (v2 run / soak) が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase5-total-done-warned-failed"
+    name: "Phase 5: total/done/warned/failed カウンタが記述されている"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 11
+    requirement: "Phase 5 で soak run log を #493 に自動投稿する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5: total/done/warned/failed カウンタが記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase5-sid-timestamp-log-format"
+    name: "Phase 5: sid と timestamp を含む run log フォーマットが記述されている"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 11
+    requirement: "Phase 5 で soak run log を #493 に自動投稿する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5 [edge: sid と timestamp を含む run log フォーマット]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase5-failure-warning-only"
+    name: "Phase 5: comment 失敗時は warning のみで継続"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 17
+    requirement: "soak logging の失敗はユーザー session をブロックしない"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5: comment 失敗時は warning のみで継続"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase5-failure-nonblocking"
+    name: "Phase 5: comment 失敗はユーザー session をブロックしない"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 20
+    requirement: "soak logging の失敗はユーザー session をブロックしない"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5: comment 失敗はユーザー session をブロックしない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase5-check-issue-493-state"
+    name: "Phase 5: gh issue view 493 で状態確認が記述されている"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 26
+    requirement: "#493 が closed の場合は run log 投稿をスキップする"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5: gh issue view 493 で状態確認が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase5-skip-when-closed"
+    name: "Phase 5: #493 closed 時はスキップする記述がある"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 29
+    requirement: "#493 が closed の場合は run log 投稿をスキップする"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5: #493 closed 時はスキップする記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "phase5-only-with-v2-flag"
+    name: "Phase 5: CO_ISSUE_V2=1 の時のみ実行される記述がある"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 35
+    requirement: "CO_ISSUE_V2=0 パスは Phase 5 を実行しない"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "Phase 5: CO_ISSUE_V2=1 の時のみ実行される記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "smoke-test-exists"
+    name: "co-issue-v2-smoke.test.sh が存在する"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 48
+    requirement: "co-issue-v2-smoke.test.sh を新規追加する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "co-issue-v2-smoke.test.sh が存在する"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-12T00:00:00Z"
+    failure_reason: null
+
+  - id: "smoke-test-bash-shebang"
+    name: "co-issue-v2-smoke.test.sh が bash shebang を持つ"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 48
+    requirement: "co-issue-v2-smoke.test.sh を新規追加する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "co-issue-v2-smoke.test.sh が bash shebang を持つ"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-12T00:00:00Z"
+    failure_reason: null
+
+  - id: "smoke-test-co-issue-v2-env"
+    name: "co-issue-v2-smoke.test.sh が CO_ISSUE_V2 を参照する"
+    spec_file: "specs/co-issue-v2-phase5-soak/spec.md"
+    spec_line: 48
+    requirement: "co-issue-v2-smoke.test.sh を新規追加する"
+    test_file: "tests/scenarios/co-issue-v2-smoke.test.sh"
+    test_name: "co-issue-v2-smoke.test.sh が CO_ISSUE_V2 を参照する"
+    type: unit
+    criteria: []
+    status: passing
+    last_run: "2026-04-12T00:00:00Z"
+    failure_reason: null
