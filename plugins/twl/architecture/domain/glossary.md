@@ -72,4 +72,7 @@
 | prompt-compliance | refined_by ハッシュ整合性をチェックする chain step（pr-verify chain）。dispatch_mode=runner | PR Cycle |
 | pseudo-pilot | Pilot の手動ワークフロー支援スクリプト群（plugins/twl/scripts/pseudo-pilot/）。PR 待機・Worker 完了待機 | Autopilot |
 | workflow-prompt-audit | stale コンポーネントの refined_by 整合性を一括監査する workflow（#209） | PR Cycle |
+| workflow-issue-lifecycle | co-issue v2 の Worker workflow。1 Issue の lifecycle（structure → spec-review → aggregate → arch-drift → create）を独立 cld セッションで担当（ADR-017） | Issue Management |
+| issue-lifecycle-orchestrator | co-issue v2 の Pilot 側オーケストレーター。N 個の workflow-issue-lifecycle Worker を tmux 経由で並列 spawn し、完了検知・集約を行う。MAX_PARALLEL=3 | Issue Management |
+| conflict | IssueState の状態値。deps.yaml コンフリクト検出時に Pilot が設定。Pilot リベース後に merge-ready に復帰、リトライ上限超過で failed に遷移 | Autopilot |
 | cli_dispatch | cli.py から分離された実装ロジックモジュール（#265） | TWiLL Integration |

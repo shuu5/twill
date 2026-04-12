@@ -114,7 +114,9 @@ flowchart TD
 
 ### Specialist 並列レビュー（Step 3b）
 
-全 Issue × 3 specialist を一括並列 spawn:
+**co-issue v2（ADR-017）**: 1 Issue = 1 tmux window = 1 独立 cld セッション。`issue-lifecycle-orchestrator.sh` が N 個の `workflow-issue-lifecycle` Worker を並列 spawn し、各 Worker 内で 3 specialist を実行する。MAX_PARALLEL=3。CO_ISSUE_V2 feature flag で有効化。
+
+各 Worker 内の specialist:
 - **issue-critic**: 仮定・曖昧点・盲点・粒度・split・隠れた依存を検出
 - **issue-feasibility**: 実コード読みで実装可能性・影響範囲を検証
 - **worker-codex-reviewer**: 補完的レビュー（異なるモデル視点）
@@ -157,9 +159,11 @@ flowchart TD
 | **atomic** | ac-deploy-trigger | AC から deploy E2E 実行フラグ設定 |
 | **atomic** | project-board-sync | Issue → Project V2 自動追加 |
 | **atomic** | project-board-status-update | Board Status 更新 |
+| **workflow** | workflow-issue-lifecycle | co-issue v2 Worker: 1 Issue の lifecycle（structure → spec-review → aggregate → create）を独立セッションで実行（ADR-017） |
 | **specialist** | issue-critic | Issue の仮定・曖昧点・盲点検出 |
 | **specialist** | issue-feasibility | 実装可能性・影響範囲検証 |
 | **specialist** | worker-codex-reviewer | 補完的レビュー |
+| **script** | issue-lifecycle-orchestrator.sh | co-issue v2 Pilot 側: N Worker の並列 spawn・完了検知・集約（ADR-017） |
 | **reference** | ref-issue-template-bug | Bug Report テンプレート |
 | **reference** | ref-issue-template-feature | Feature Request テンプレート |
 | **reference** | ref-project-model | Issue 管理データモデル |
