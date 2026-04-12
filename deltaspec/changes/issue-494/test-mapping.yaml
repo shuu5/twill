@@ -1,0 +1,55 @@
+change_id: issue-494
+generated_at: "2026-04-12T06:41:00Z"
+test_framework: bats
+scenarios:
+  - id: "all-pass-check-pass-workflow-done"
+    name: "正常終了時に workflow_done が書かれる"
+    spec_file: "specs/chain-runner-workflow-done/spec.md"
+    spec_line: 7
+    requirement: "all-pass-check merge-ready 時に workflow_done=pr-merge を書き込む"
+    test_file: "plugins/twl/tests/unit/all-pass-check-workflow-done/all-pass-check-workflow-done.bats"
+    test_name: "all-pass-check[PASS]: status=merge-ready と workflow_done=pr-merge が書き込まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-fail-no-workflow-done"
+    name: "FAIL 時は status=failed のみが書かれる"
+    spec_file: "specs/chain-runner-workflow-done/spec.md"
+    spec_line: 19
+    requirement: "失敗時は workflow_done を書かない"
+    test_file: "plugins/twl/tests/unit/all-pass-check-workflow-done/all-pass-check-workflow-done.bats"
+    test_name: "all-pass-check[FAIL]: status=failed のみ書かれ workflow_done は書かれない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-pass-check-state-write-fail"
+    name: "state write 失敗時は exit 非ゼロで終了する"
+    spec_file: "specs/chain-runner-workflow-done/spec.md"
+    spec_line: 13
+    requirement: "all-pass-check merge-ready 時に workflow_done=pr-merge を書き込む"
+    test_file: "plugins/twl/tests/unit/all-pass-check-workflow-done/all-pass-check-workflow-done.bats"
+    test_name: "all-pass-check[state-write-fail]: state write 失敗時は exit 1 で終了する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "smoke-all-pass-check-workflow-done"
+    name: "smoke テストが workflow_done=pr-merge を検証する"
+    spec_file: "specs/chain-runner-workflow-done/spec.md"
+    spec_line: 30
+    requirement: "smoke テストで workflow_done=pr-merge の書き込みを確認する"
+    test_file: "plugins/twl/tests/unit/all-pass-check-workflow-done/all-pass-check-workflow-done.bats"
+    test_name: "smoke[all-pass-check]: PASS 後に state.workflow_done=pr-merge が確認できる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
