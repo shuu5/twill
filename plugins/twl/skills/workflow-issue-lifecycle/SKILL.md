@@ -172,6 +172,13 @@ if round == policies.max_rounds and CRITICAL findings あり:
 - labels: policies.labels_hint
 - `--repo policies.target_repo`（null の場合は省略）
 
+### Step 6.5: project-board-sync
+
+Step 6 の `/twl:issue-create` 出力 URL（`https://github.com/<owner>/<repo>/issues/<N>` 形式）から issue_number を抽出し、`/twl:project-board-sync <issue_number>` を Skill tool で呼び出す。
+
+- issue_number: issue_url の末尾パスセグメント（`/issues/(\d+)` でマッチ）
+- 失敗時は `OUT/report.json` の `warnings_acknowledged` リストに warning エントリを追加（非ブロッキング）。STATE は変更しない
+
 ### Step 7: 完了
 
 ```bash

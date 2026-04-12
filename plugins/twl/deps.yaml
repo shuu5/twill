@@ -560,8 +560,9 @@ skills:
       - atomic: issue-review-aggregate
       - atomic: issue-arch-drift
       - atomic: issue-create
+      - atomic: project-board-sync
       - script: spec-review-session-init
-    description: "co-issue v2 Worker runtime: 1 issue の lifecycle 全体（structure → spec-review → aggregate → fix loop → arch-drift → create）を自律実行"
+    description: "co-issue v2 Worker runtime: 1 issue の lifecycle 全体（structure → spec-review → aggregate → fix loop → arch-drift → create → project-board-sync）を自律実行"
 
 
 # リファレンス（B-6 で追加）
@@ -1149,7 +1150,7 @@ commands:
     refined_by: "ref-prompt-guide@2c7a62f2"
     refined_at: "2026-04-07"
     path: commands/project-board-sync.md
-    spawnable_by: [controller]
+    spawnable_by: [controller, workflow]
     can_spawn: []
     description: "Issue作成後に Project V2 へ自動追加+フィールドミラー"
 
