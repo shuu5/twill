@@ -918,6 +918,17 @@ check_and_nudge() {
   if [[ "$current_hash" == "$last_hash" ]]; then
     local next_cmd
     if next_cmd="$(_nudge_command_for_pattern "$pane_output" "$issue" "$entry")" && [[ -n "$next_cmd" ]]; then
+      # --- allow-list バリデーション（コマンドインジェクション防止）---
+      # inject_next_workflow と同等の検証を適用し defense-in-depth を確保する（Issue #496）
+      local _nudge_trace_log="${AUTOPILOT_DIR}/trace/inject-$(date -u +%Y%m%d).log"
+      local _nudge_ts
+      _nudge_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      if [[ ! "$next_cmd" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
+        echo "[orchestrator] Issue #${issue}: WARNING: check_and_nudge — 不正な next_cmd '${next_cmd:0:200}' — nudge スキップ" >&2
+        echo "[${_nudge_ts}] issue=${issue} next_cmd=INVALID result=skip reason=\"invalid next_cmd\"" >> "$_nudge_trace_log" 2>/dev/null || true
+        LAST_OUTPUT_HASH[$issue]="$current_hash"
+        return 0
+      fi
       echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
       tmux send-keys -t "$window_name" "$next_cmd" Enter 2>/dev/null || true
       NUDGE_COUNTS[$issue]=$((count + 1))
