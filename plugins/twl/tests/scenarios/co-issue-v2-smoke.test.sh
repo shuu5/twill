@@ -151,7 +151,7 @@ echo "--- Requirement: CO_ISSUE_V2=1 で新パスに切り替わる ---"
 
 # Scenario: flag==1 で新パスが実行される
 # WHEN: CO_ISSUE_V2=1 で co-issue を実行し要望を入力する
-# THEN: Phase 2 が DAG 構築・bundle 書き出しを実行し、Phase 3 が issue-lifecycle-dispatch.sh を
+# THEN: Phase 2 が DAG 構築・bundle 書き出しを実行し、Phase 3 が issue-lifecycle-orchestrator.sh を
 #       呼び出し、Phase 4 が aggregate を実行する
 
 test_flag_branch_exists_phase2() {
@@ -197,14 +197,14 @@ test_phase2_branch_at_start() {
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
   run_test "CO_ISSUE_V2==1 分岐記述が Phase 2 に存在する" test_flag_branch_exists_phase2
-  run_test "issue-lifecycle-dispatch の呼び出しが記述されている" test_new_path_dispatch_mentioned
+  run_test "issue-lifecycle-orchestrator の呼び出しが記述されている" test_new_path_dispatch_mentioned
   run_test "aggregate パスが記述されている" test_new_path_aggregate_mentioned
   run_test "v1 旧パス (workflow-issue-refine) が維持されている" test_old_path_preserved_workflow_refine
   run_test "v1 旧パス (workflow-issue-create) が維持されている" test_old_path_preserved_workflow_create
   run_test "Phase 2 v2 分岐 [edge: Phase 2 冒頭での CO_ISSUE_V2 条件分岐]" test_phase2_branch_at_start
 else
   run_test_skip "CO_ISSUE_V2==1 分岐記述が Phase 2 に存在する" "skills/co-issue/SKILL.md not found"
-  run_test_skip "issue-lifecycle-dispatch の呼び出しが記述されている" "skills/co-issue/SKILL.md not found"
+  run_test_skip "issue-lifecycle-orchestrator の呼び出しが記述されている" "skills/co-issue/SKILL.md not found"
   run_test_skip "aggregate パスが記述されている" "skills/co-issue/SKILL.md not found"
   run_test_skip "v1 旧パス (workflow-issue-refine) が維持されている" "skills/co-issue/SKILL.md not found"
   run_test_skip "v1 旧パス (workflow-issue-create) が維持されている" "skills/co-issue/SKILL.md not found"
