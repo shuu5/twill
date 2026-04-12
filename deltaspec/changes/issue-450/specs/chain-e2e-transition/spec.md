@@ -17,9 +17,13 @@
 - **WHEN** issue の state に `workflow_done=test-ready` が書かれた状態で `resolve_next_workflow` が呼ばれる
 - **THEN** 戻り値が `"/twl:workflow-pr-verify"` または `"workflow-pr-verify"` となる（inject-skip ではない）
 
-#### Scenario: pr-verify 完了後は terminal になる
-- **WHEN** issue の state に `workflow_done=pr-verify` が書かれた状態で `resolve_next_workflow` が呼ばれる
-- **THEN** 戻り値が空文字または terminal を示す値となる（次 workflow がない）
+#### Scenario: pr-verify 完了後は pr-fix が次 workflow となる（autopilot=true）
+- **WHEN** issue の state に `workflow_done=pr-verify` が書かれ autopilot=true で `resolve_next_workflow` が呼ばれる
+- **THEN** 戻り値が `"workflow-pr-fix"` となる（inject-skip ではない）
+
+#### Scenario: pr-verify 完了後 autopilot=false では停止する
+- **WHEN** issue の state に `workflow_done=pr-verify` が書かれ autopilot=false で `resolve_next_workflow` が呼ばれる
+- **THEN** 戻り値が空文字となる（次 workflow なし、stop 条件）
 
 #### Scenario: 3 Issue 以上の chain 遷移が成立する
 - **WHEN** 3 件の異なる Issue（状態がそれぞれ setup / test-ready / pr-verify）に対して chain 遷移が評価される

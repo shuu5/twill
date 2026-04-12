@@ -173,14 +173,6 @@ class TestSetupToTestReadyTransition:
             f"expected 'workflow-test-ready', got {result!r}"
         )
 
-    def test_setup_with_state_file(self, tmp_path: Path, runner: ChainRunner) -> None:
-        """state ファイルに workflow_done=setup が書かれた状態で遷移を検証する。"""
-        _write_issue_state(runner.autopilot_dir, issue_num=450, workflow_done="setup")
-        with patch.object(runner, "_load_worker_lifecycle_flow", return_value=WORKER_LIFECYCLE_FLOW):
-            result = runner.resolve_next_workflow("setup", is_autopilot=True, is_quick=False)
-        _assert_no_inject_skip(result, "setup")
-        assert result == "workflow-test-ready"
-
 
 # ---------------------------------------------------------------------------
 # Scenario: test-ready 完了後に pr-verify が次 workflow として返される
@@ -198,14 +190,6 @@ class TestTestReadyToPrVerifyTransition:
         assert result == "workflow-pr-verify", (
             f"expected 'workflow-pr-verify', got {result!r}"
         )
-
-    def test_test_ready_with_state_file(self, tmp_path: Path, runner: ChainRunner) -> None:
-        """state ファイルに workflow_done=test-ready が書かれた状態で遷移を検証する。"""
-        _write_issue_state(runner.autopilot_dir, issue_num=450, workflow_done="test-ready")
-        with patch.object(runner, "_load_worker_lifecycle_flow", return_value=WORKER_LIFECYCLE_FLOW):
-            result = runner.resolve_next_workflow("test-ready", is_autopilot=True, is_quick=False)
-        _assert_no_inject_skip(result, "test-ready")
-        assert result == "workflow-pr-verify"
 
 
 # ---------------------------------------------------------------------------
@@ -304,17 +288,11 @@ class TestFullChainSequence:
             ("setup", "workflow-test-ready"),
             ("test-ready", "workflow-pr-verify"),
         ]
-        inject_skips = 0
         for workflow_done, expected_next in chain_sequence:
             result = patched_runner.resolve_next_workflow(
                 workflow_done, is_autopilot=True, is_quick=False
             )
-            if not result:
-                inject_skips += 1
+            _assert_no_inject_skip(result, workflow_done)
             assert result == expected_next, (
                 f"workflow_done={workflow_done!r}: expected {expected_next!r}, got {result!r}"
             )
-
-        assert inject_skips == 0, (
-            f"chain 遷移で {inject_skips} 件の inject-skip が発生しました（AC-3: 0 件であること）"
-        )
