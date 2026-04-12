@@ -267,12 +267,8 @@ _run_hook_payload() {
 #      path と description が設定されている
 # ---------------------------------------------------------------------------
 @test "deps.yaml の scripts セクションに pre-bash-commit-validate エントリが存在する" {
-  local deps_yaml="$REPO_ROOT/../deps.yaml"
-  # Resolve actual deps.yaml from REPO_ROOT (plugins/twl/)
-  if [[ ! -f "$deps_yaml" ]]; then
-    deps_yaml="$REPO_ROOT/deps.yaml"
-  fi
-  skip "deps.yaml の実エントリ確認は実装後に有効化 (issue-568)"
+  local deps_yaml="$REPO_ROOT/deps.yaml"
+  [[ -f "$deps_yaml" ]] || { echo "deps.yaml not found at $deps_yaml" >&2; return 1; }
   grep -q "pre-bash-commit-validate" "$deps_yaml" || {
     echo "pre-bash-commit-validate not found in deps.yaml" >&2
     return 1
@@ -280,11 +276,21 @@ _run_hook_payload() {
 }
 
 @test "deps.yaml の pre-bash-commit-validate エントリに path が設定されている" {
-  skip "deps.yaml の実エントリ確認は実装後に有効化 (issue-568)"
+  local deps_yaml="$REPO_ROOT/deps.yaml"
+  [[ -f "$deps_yaml" ]] || { echo "deps.yaml not found at $deps_yaml" >&2; return 1; }
+  grep -A5 "pre-bash-commit-validate:" "$deps_yaml" | grep -q "path:" || {
+    echo "path field not found in pre-bash-commit-validate entry" >&2
+    return 1
+  }
 }
 
 @test "deps.yaml の pre-bash-commit-validate エントリに description が設定されている" {
-  skip "deps.yaml の実エントリ確認は実装後に有効化 (issue-568)"
+  local deps_yaml="$REPO_ROOT/deps.yaml"
+  [[ -f "$deps_yaml" ]] || { echo "deps.yaml not found at $deps_yaml" >&2; return 1; }
+  grep -A5 "pre-bash-commit-validate:" "$deps_yaml" | grep -q "description:" || {
+    echo "description field not found in pre-bash-commit-validate entry" >&2
+    return 1
+  }
 }
 
 # ---------------------------------------------------------------------------
