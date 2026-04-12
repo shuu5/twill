@@ -152,7 +152,7 @@ skills:
     path: skills/co-autopilot/SKILL.md
     effort: high
     tools: [Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests), session:spawn]
-    spawnable_by: [user]
+    spawnable_by: [user, su-observer]
     can_spawn: [composite, atomic, specialist, controller]
     calls:
       - atomic: autopilot-init
