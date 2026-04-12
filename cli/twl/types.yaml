@@ -5,8 +5,8 @@
 types:
   controller:
     section: skills
-    can_spawn: [workflow, atomic, composite, specialist, reference, script]
-    spawnable_by: [user, launcher]
+    can_spawn: [workflow, atomic, composite, specialist, reference, script, controller]
+    spawnable_by: [user, launcher, supervisor]
     token_target:
       warning: 1500
       critical: 2500
@@ -21,8 +21,8 @@ types:
 
   atomic:
     section: commands
-    can_spawn: [reference, script]
-    spawnable_by: [workflow, controller, supervisor]
+    can_spawn: [reference, script, atomic]
+    spawnable_by: [workflow, controller, supervisor, user, atomic]
     token_target:
       warning: 1500
       critical: 2500

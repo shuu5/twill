@@ -9,7 +9,7 @@
 
 CHAIN_STEPS=(
   init
-  board-status-update
+  project-board-status-update
   crg-auto-build
   arch-ref
   change-propose
@@ -54,7 +54,7 @@ DIRECT_SKIP_STEPS=(
 # llm   = LLM Skill が実行し、chain-runner は llm-delegate/llm-complete で記録
 declare -A CHAIN_STEP_DISPATCH=(
   [init]=runner
-  [board-status-update]=runner
+  [project-board-status-update]=trigger
   [crg-auto-build]=llm
   [arch-ref]=runner
   [change-propose]=llm
@@ -77,7 +77,7 @@ declare -A CHAIN_STEP_DISPATCH=(
 # ワークフロー境界メタデータ（SSOT は chain.py の STEP_TO_WORKFLOW — このファイルはミラー）
 declare -A CHAIN_STEP_WORKFLOW=(
   [init]=setup
-  [board-status-update]=setup
+  [project-board-status-update]=setup
   [crg-auto-build]=setup
   [arch-ref]=setup
   [change-propose]=setup

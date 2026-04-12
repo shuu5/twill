@@ -298,7 +298,7 @@ def validate_v3_schema(deps: dict) -> Tuple[int, List[str]]:
     for section in ('skills', 'commands', 'agents', 'scripts'):
         for comp_name, data in deps.get(section, {}).items():
             for i, call in enumerate(data.get('calls', [])):
-                call_keys = [k for k in call.keys() if k != 'step']
+                call_keys = [k for k in call.keys() if k not in ('step', 'plugin')]
                 for key in call_keys:
                     if key in v2_section_keys:
                         violations.append(

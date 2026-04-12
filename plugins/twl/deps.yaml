@@ -152,7 +152,7 @@ skills:
     path: skills/co-autopilot/SKILL.md
     effort: high
     tools: [Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests), session:spawn]
-    spawnable_by: [user, su-observer]
+    spawnable_by: [user, supervisor]
     can_spawn: [composite, atomic, specialist, controller]
     calls:
       - atomic: autopilot-init
@@ -280,7 +280,7 @@ skills:
     path: skills/co-self-improve/SKILL.md
     effort: high
     tools: [Agent(observer-evaluator)]
-    spawnable_by: [user, su-observer]
+    spawnable_by: [user, supervisor]
     can_spawn: [workflow, atomic, specialist, reference]
     calls:
       - workflow: workflow-observe-loop  # 子 5 で実装
