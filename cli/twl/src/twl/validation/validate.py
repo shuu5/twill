@@ -152,7 +152,7 @@ def validate_types(deps: dict, graph: Dict, plugin_root: Optional[Path] = None) 
 
             for call in data.get('calls', []):
                 for call_key, callee_value in call.items():
-                    if call_key == 'step' or not isinstance(callee_value, str):
+                    if call_key in ('step', 'plugin') or not isinstance(callee_value, str):
                         continue
                     xref = parse_cross_plugin_ref(callee_value)
                     if not xref:

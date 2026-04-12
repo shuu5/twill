@@ -2353,7 +2353,6 @@ scripts:
       - script: worker-terminal-guard
     commands:
       - init
-      - board-status-update
       - project-board-status-update
       - board-archive
       - ac-extract
