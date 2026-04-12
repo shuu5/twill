@@ -212,10 +212,37 @@ spawn_session() {
 
   mkdir -p "${subdir}/OUT"
 
-  # プロンプトをテンポラリファイルに書き出す
+  # プロンプトをテンポラリファイルに書き出す（自律実行指示 + policies.json 主要フィールドを注入）
   local prompt_file
   prompt_file="$(mktemp /tmp/.coi-prompt-XXXXXX.txt)"
-  printf '%s\n' "/twl:workflow-issue-lifecycle $(printf '%q' "$subdir")" > "$prompt_file"
+
+  # policies.json 主要フィールドを抽出（jq がなければ空文字。全変数を空文字で初期化し set -u エラーを回避）
+  local max_rounds="" specialists="" depth="" quick_flag="" target_repo=""
+  if [[ -f "${subdir}/IN/policies.json" ]] && command -v jq >/dev/null 2>&1; then
+    max_rounds="$(jq -r '.max_rounds // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+    specialists="$(jq -r '(.specialists // []) | join(",")' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+    depth="$(jq -r '.depth // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+    quick_flag="$(jq -r '.quick_flag // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+    target_repo="$(jq -r '.target_repo // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+  fi
+
+  # inject プロンプト生成（printf 方式: heredoc 終端子汚染リスクを回避）
+  printf '%s\n' \
+    "/twl:workflow-issue-lifecycle $(printf '%q' "$subdir")" \
+    "" \
+    "【自律実行指示】" \
+    "- 全 Step を中断なく自律的に完了すること" \
+    "- 途中で AskUserQuestion を使用しないこと" \
+    "- エラー発生時は OUT/report.json に status: failed を書き込んで exit すること" \
+    "- policies.json の設定に従い specialist review を実行すること" \
+    "" \
+    "【policies.json 主要フィールド】" \
+    "- max_rounds: ${max_rounds}" \
+    "- specialists: ${specialists}" \
+    "- depth: ${depth}" \
+    "- quick_flag: ${quick_flag}" \
+    "- target_repo: ${target_repo}" \
+    > "$prompt_file"
 
   local SESSION_SCRIPTS
   SESSION_SCRIPTS="${SCRIPTS_ROOT}/../../session/scripts"
