@@ -2263,6 +2263,11 @@ scripts:
       - script: health-report
     description: "Worker 論理的異常検知（chain停止・エラー出力・input-waiting長時間）+ health-report 生成"
 
+  pre-bash-commit-validate:
+    type: script
+    path: scripts/hooks/pre-bash-commit-validate.sh
+    description: "PreToolUse hook: git commit 実行前に twl --validate を走らせ、型ルール違反がある場合は exit 2 でコミットをブロックする commit gate（TWL_SKIP_COMMIT_GATE=1 でバイパス可能）"
+
   pre-tool-use-worktree-boundary:
     type: script
     path: scripts/hooks/pre-tool-use-worktree-boundary.sh
