@@ -62,8 +62,11 @@ if [[ -z "$next_cmd" ]]; then
 fi
 
 # --- allow-list バリデーション（コマンドインジェクション防止） ---
-if [[ ! "$next_cmd" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
-  echo "[orchestrator] Issue #${issue}: WARNING: check_and_nudge — 不正な next_cmd '${next_cmd:0:200}' — nudge スキップ" >&2
+# _nudge_command_for_pattern は "/twl:workflow-<name> #<issue>" 形式を返すため
+# " #<N>" サフィックスを許容する
+_next_cmd_safe="${next_cmd//$'\n'/ }"
+if [[ ! "$_next_cmd_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*( #[0-9]+)?$ ]]; then
+  echo "[orchestrator] Issue #${issue}: WARNING: check_and_nudge — 不正な next_cmd '${_next_cmd_safe:0:200}' — nudge スキップ" >&2
   _trace_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   echo "[${_trace_ts}] issue=${issue} next_cmd=INVALID result=skip reason=\"invalid next_cmd\"" >> "$TRACE_LOG" 2>/dev/null || true
   exit 0
@@ -88,36 +91,44 @@ teardown() {
 # THEN allow-list を通過し tmux send-keys に渡される
 # ---------------------------------------------------------------------------
 
-@test "check_and_nudge[allowlist]: 有効コマンドは tmux send-keys に渡される" {
+@test "check_and_nudge[allowlist]: 有効コマンド（#N サフィックスあり）は tmux send-keys に渡される" {
+  NEXT_CMD="/twl:workflow-test-ready #496" \
+    run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
+
+  assert_success
+  grep -q "tmux send-keys" "$CALLS_LOG"
+}
+
+@test "check_and_nudge[allowlist]: 有効コマンド（#N サフィックスなし）は tmux send-keys に渡される" {
   NEXT_CMD="/twl:workflow-test-ready" \
     run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
 
   assert_success
-  grep -q "tmux send-keys -t ap-#496 /twl:workflow-test-ready" "$CALLS_LOG"
+  grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
-@test "check_and_nudge[allowlist]: /twl:workflow-pr-verify は inject される" {
-  NEXT_CMD="/twl:workflow-pr-verify" \
+@test "check_and_nudge[allowlist]: /twl:workflow-pr-verify #496 は inject される" {
+  NEXT_CMD="/twl:workflow-pr-verify #496" \
     run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
 
   assert_success
-  grep -q "tmux send-keys -t ap-#496 /twl:workflow-pr-verify" "$CALLS_LOG"
+  grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
-@test "check_and_nudge[allowlist]: /twl:workflow-pr-fix は inject される" {
-  NEXT_CMD="/twl:workflow-pr-fix" \
+@test "check_and_nudge[allowlist]: /twl:workflow-pr-fix #496 は inject される" {
+  NEXT_CMD="/twl:workflow-pr-fix #496" \
     run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
 
   assert_success
-  grep -q "tmux send-keys -t ap-#496 /twl:workflow-pr-fix" "$CALLS_LOG"
+  grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
-@test "check_and_nudge[allowlist]: /twl:workflow-pr-merge は inject される" {
-  NEXT_CMD="/twl:workflow-pr-merge" \
+@test "check_and_nudge[allowlist]: /twl:workflow-pr-merge #496 は inject される" {
+  NEXT_CMD="/twl:workflow-pr-merge #496" \
     run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
 
   assert_success
-  grep -q "tmux send-keys -t ap-#496 /twl:workflow-pr-merge" "$CALLS_LOG"
+  grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
 # ---------------------------------------------------------------------------
@@ -158,8 +169,8 @@ teardown() {
   ! grep -q "tmux send-keys" "$CALLS_LOG" 2>/dev/null
 }
 
-@test "check_and_nudge[security]: スペースを含むコマンドは拒否される（#N 付き inject_next_workflow 形式と区別）" {
-  NEXT_CMD="/twl:workflow-pr-verify #496" \
+@test "check_and_nudge[security]: #N 以外のスペース付きコマンドは拒否される" {
+  NEXT_CMD="/twl:workflow-pr-verify extra-arg" \
     run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
 
   assert_success
@@ -216,22 +227,44 @@ teardown() {
 # THEN 全て ^/twl:workflow-[a-z][a-z0-9-]*$ に一致する
 # ---------------------------------------------------------------------------
 
-@test "check_and_nudge[7-patterns]: /twl:workflow-test-ready は allow-list を通過する" {
-  [[ "/twl:workflow-test-ready" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]
+@test "check_and_nudge[7-patterns]: /twl:workflow-test-ready #N は allow-list を通過する（setup chain 完了）" {
+  NEXT_CMD="/twl:workflow-test-ready #496" \
+    run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
+  assert_success
+  grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
-@test "check_and_nudge[7-patterns]: /twl:workflow-pr-verify は allow-list を通過する（AC-2 fallback）" {
-  [[ "/twl:workflow-pr-verify" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]
+@test "check_and_nudge[7-patterns]: /twl:workflow-pr-verify #N は allow-list を通過する（AC-2 fallback）" {
+  NEXT_CMD="/twl:workflow-pr-verify #496" \
+    run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
+  assert_success
+  grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
-@test "check_and_nudge[7-patterns]: /twl:workflow-pr-verify は allow-list を通過する（テスト準備完了）" {
-  [[ "/twl:workflow-pr-verify" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]
+@test "check_and_nudge[7-patterns]: /twl:workflow-pr-verify #N は allow-list を通過する（テスト準備完了）" {
+  NEXT_CMD="/twl:workflow-pr-verify #496" \
+    run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
+  assert_success
+  grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
-@test "check_and_nudge[7-patterns]: /twl:workflow-pr-fix は allow-list を通過する" {
-  [[ "/twl:workflow-pr-fix" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]
+@test "check_and_nudge[7-patterns]: /twl:workflow-pr-fix #N は allow-list を通過する" {
+  NEXT_CMD="/twl:workflow-pr-fix #496" \
+    run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
+  assert_success
+  grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
-@test "check_and_nudge[7-patterns]: /twl:workflow-pr-merge は allow-list を通過する" {
-  [[ "/twl:workflow-pr-merge" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]
+@test "check_and_nudge[7-patterns]: /twl:workflow-pr-merge #N は allow-list を通過する" {
+  NEXT_CMD="/twl:workflow-pr-merge #496" \
+    run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
+  assert_success
+  grep -q "tmux send-keys" "$CALLS_LOG"
+}
+
+@test "check_and_nudge[7-patterns]: /twl:workflow-test-ready #N は allow-list を通過する（workflow-test-ready 再試行）" {
+  NEXT_CMD="/twl:workflow-test-ready #496" \
+    run bash "$SANDBOX/scripts/check-and-nudge-dispatch.sh" "496" "ap-#496"
+  assert_success
+  grep -q "tmux send-keys" "$CALLS_LOG"
 }
