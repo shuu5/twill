@@ -1,0 +1,5 @@
+change: issue-573
+tests:
+  - spec: specs/env-file/spec.md
+    test: plugins/session/tests/cld-spawn-env-file.bats
+    type: unit
