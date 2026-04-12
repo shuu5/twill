@@ -216,44 +216,30 @@ test_agent_skip_outputs_pass_not_fail() {
 }
 run_test "graceful skip [edge: スキップ時は FAIL ではなく PASS を出力]" test_agent_skip_outputs_pass_not_fail
 
-# Scenario: CODEX_API_KEY 未設定時の graceful skip (spec line 15)
-# WHEN: CODEX_API_KEY 環境変数が未設定の状態で agent が起動される
+# Scenario: 認証未設定時の graceful skip (spec line 15)
+# WHEN: codex login status が "logged in" を返さない状態で agent が起動される
 # THEN: status: PASS, findings: [] を即座に出力して完了し、エラーメッセージを出力しない
 
-test_agent_api_key_check() {
+test_agent_auth_check() {
   assert_file_exists "$AGENT_FILE" || return 1
-  # Must check for at least one of the supported auth methods
-  assert_file_contains "$AGENT_FILE" "CODEX_API_KEY|OPENAI_API_KEY|config\.toml"
+  # codex login status による認証チェックが記述されている
+  assert_file_contains "$AGENT_FILE" "codex login status|codex.*logged.in|login.*status"
 }
-run_test "認証方法チェック - CODEX_API_KEY/OPENAI_API_KEY/config.toml のいずれかが記述されている" test_agent_api_key_check
+run_test "認証チェック - codex login status による認証確認が記述されている" test_agent_auth_check
 
-test_agent_api_key_skip_graceful() {
+test_agent_auth_skip_graceful() {
   assert_file_exists "$AGENT_FILE" || return 1
   # Auth check and skip/graceful behavior must be present together
-  assert_file_contains "$AGENT_FILE" "CODEX_API_KEY" || return 1
+  assert_file_contains "$AGENT_FILE" "codex.*login|logged" || return 1
   assert_file_contains "$AGENT_FILE" "skip|スキップ|graceful|未設定|unset"
 }
-run_test "認証未設定 - graceful skip 動作が記述されている" test_agent_api_key_skip_graceful
+run_test "認証未設定 - graceful skip 動作が記述されている" test_agent_auth_skip_graceful
 
-# Edge case: OPENAI_API_KEY も認証方法として記述されている
-test_agent_openai_api_key_check() {
-  assert_file_exists "$AGENT_FILE" || return 1
-  assert_file_contains "$AGENT_FILE" "OPENAI_API_KEY"
-}
-run_test "graceful skip [edge: OPENAI_API_KEY が認証方法として記述されている]" test_agent_openai_api_key_check
-
-# Edge case: ~/.codex/config.toml も認証方法として記述されている
-test_agent_config_toml_check() {
-  assert_file_exists "$AGENT_FILE" || return 1
-  assert_file_contains "$AGENT_FILE" "config\.toml"
-}
-run_test "graceful skip [edge: ~/.codex/config.toml が認証方法として記述されている]" test_agent_config_toml_check
-
-# Edge case: Both preconditions (codex installed AND any auth method) checked independently
+# Edge case: Both preconditions (codex installed AND auth) checked
 test_agent_both_preconditions_checked() {
   assert_file_exists "$AGENT_FILE" || return 1
   assert_file_contains "$AGENT_FILE" "command\s+-v\s+codex|which\s+codex|codex.*インストール|not.*install|未インストール" || return 1
-  assert_file_contains "$AGENT_FILE" "CODEX_API_KEY|OPENAI_API_KEY|config\.toml"
+  assert_file_contains "$AGENT_FILE" "codex login status|codex.*logged.in|login.*status"
 }
 run_test "graceful skip [edge: codex 未インストールと認証未設定の両方がチェックされる]" test_agent_both_preconditions_checked
 
