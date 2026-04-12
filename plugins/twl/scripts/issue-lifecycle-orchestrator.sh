@@ -74,6 +74,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 # --- バリデーション ---
+if [[ -z "$WORKER_MODEL" ]]; then
+  echo "Error: --model の値は空にできません" >&2
+  exit 1
+fi
+
 if [[ -z "$PER_ISSUE_DIR" ]]; then
   echo "Error: --per-issue-dir は必須です" >&2
   usage
