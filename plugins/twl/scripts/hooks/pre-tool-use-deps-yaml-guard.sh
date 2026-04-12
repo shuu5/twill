@@ -6,7 +6,9 @@
 # 不正な YAML を disk に書き込む前に exit 2 でブロックする。
 #
 # Write: tool_input.content を直接 YAML parse
-# Edit:  tool_input.old_string / new_string で simulated apply 後に YAML parse
+# Edit:  tool_input.file_content（ペイロード内の現在内容）を優先して取得し、
+#        なければ file_path のディスク内容にフォールバック。
+#        old_string/new_string で simulated apply 後に YAML parse。
 #
 # 検証コマンド: python3 -c "import sys,yaml; yaml.safe_load(sys.stdin)"
 # (~0.05s で実行、pyyaml が開発環境で必須依存として保証される)
@@ -67,22 +69,23 @@ elif [[ "$tool_name" == "Edit" ]]; then
     exit 0
   fi
 
-  # 対象ファイルが存在しない場合は no-op
-  if [[ ! -f "$file_path" ]]; then
-    exit 0
+  # ペイロード内の file_content を優先して取得（テスト・互換性対応）
+  # なければ file_path のディスク内容にフォールバック
+  current=$(echo "$payload" | jq -r '.tool_input.file_content // empty')
+  if [[ -z "$current" ]]; then
+    if [[ ! -f "$file_path" ]]; then
+      exit 0
+    fi
+    current=$(cat "$file_path")
   fi
 
-  current=$(cat "$file_path")
-
-  # old_string が存在しない場合（マッチしない）は no-op
-  # bash 文字列置換で simulated apply（set -f で glob 展開を防ぐ）
-  set -f
+  # old_string が存在しない場合は exit 2（apply 失敗 = YAML 未検証 = ブロック）
   if [[ "$current" != *"$old_string"* ]]; then
-    set +f
-    exit 0
+    echo "deps.yaml YAML guard: old_string not found in current content — ブロック" >&2
+    exit 2
   fi
+
   applied="${current//"$old_string"/"$new_string"}"
-  set +f
 
   validate_yaml "$applied" || exit 2
 fi
