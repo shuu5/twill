@@ -974,3 +974,32 @@ chain step 2/5 OK"
   # stdout は空（未検知）
   [ -z "$output" ]
 }
+
+# ===========================================================================
+# state.py 後方互換
+# Scenario: 既存 state file（input_waiting_* キー無し）で state read が空文字を返す
+# WHEN input_waiting_detected キーが存在しない既存 state file に対して
+#      state read --field input_waiting_detected を実行するとき
+# THEN 空文字（エラーなし終了）を返す
+# ===========================================================================
+
+@test "input-waiting-detection: 後方互換 - 旧 state file で input_waiting_detected が空文字" {
+  local old_state_dir
+  old_state_dir="$(mktemp -d)"
+  mkdir -p "${old_state_dir}/issues"
+
+  # input_waiting_* キーを持たない旧フォーマットの state file を作成
+  cat > "${old_state_dir}/issues/issue-999.json" <<'JSON'
+{"issue": 999, "status": "running", "branch": "", "pr": null, "window": "", "started_at": "2026-01-01T00:00:00Z", "updated_at": "2026-01-01T00:00:00Z", "current_step": "", "retry_count": 0, "fix_instructions": null, "merged_at": null, "files_changed": [], "failure": null, "implementation_pr": null}
+JSON
+
+  run python3 -m twl.autopilot.state read \
+    --autopilot-dir "${old_state_dir}" \
+    --type issue --issue 999 --field input_waiting_detected
+
+  assert_success
+  # 返り値は空文字（キー不在時の後方互換）
+  [ -z "$output" ]
+
+  rm -rf "${old_state_dir}"
+}
