@@ -37,13 +37,9 @@ DELTASPEC_EXISTS=$(test -f deltaspec/config.yaml && echo "true" || echo "false")
 4. change ディレクトリを作成:
    ```bash
    twl spec new "issue-<N>"
+   # twl spec new が自動補完する（issue 番号・name・status）
    ```
-5. `.deltaspec.yaml` に必須フィールドを補完:
-   ```bash
-   echo "name: issue-<N>" >> deltaspec/changes/issue-<N>/.deltaspec.yaml
-   echo "status: pending" >> deltaspec/changes/issue-<N>/.deltaspec.yaml
-   ```
-6. **Step 1 をスキップして Step 3 へ進む**
+5. **Step 1 をスキップして Step 3 へ進む**
 
 **それ以外の場合**: Step 1 へ進む。
 
