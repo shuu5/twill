@@ -313,7 +313,6 @@ while [[ "$BATCH_START" -lt "$TOTAL" ]]; do
   BATCH_START=$((BATCH_START + MAX_PARALLEL))
 
   for subdir in "${local_batch[@]}"; do
-    local window_name
     window_name="$(window_name_for_subdir "$subdir")"
     tmux kill-window -t "$window_name" 2>/dev/null || true
   done
