@@ -32,7 +32,7 @@ autopilot の state file における進捗判定は `status` フィールドの
 
 #### Scenario: orchestrator が workflow_done を参照しない
 - **WHEN** `autopilot-orchestrator.sh` が inject_next_workflow トリガーを判定するとき
-- **THEN** `workflow_done` フィールドではなく `status` の terminal 値（例: `merge-ready`）を検知してトリガーする
+- **THEN** `workflow_done` フィールドではなく `current_step` の terminal 値（例: `ac-extract`, `post-change-apply`, `ac-verify`, `warning-fix`）を検知してトリガーする（ADR-018: `TERMINAL_STEP_TO_NEXT_SKILL` マッピング）
 
 #### Scenario: state.py の PILOT_ISSUE_ALLOWED_KEYS に workflow_done が含まれない
 - **WHEN** Pilot が state file を更新しようとするとき
@@ -40,25 +40,25 @@ autopilot の state file における進捗判定は `status` フィールドの
 
 ## ADDED Requirements
 
-### Requirement: ADR-016 が新規作成されなければならない
+### Requirement: ADR-018 が新規作成されなければならない
 
-`plugins/twl/architecture/decisions/ADR-016-state-schema-ssot.md` を新規作成し、Option 1（status SSOT）採用の設計決定と根拠を記録しなければならない（SHALL）。
+`plugins/twl/architecture/decisions/ADR-018-state-schema-ssot.md` を新規作成し、Option 1（status SSOT）採用の設計決定と根拠を記録しなければならない（SHALL）。
 
-#### Scenario: ADR-016 が正典として参照できる
-- **WHEN** `ADR-016-state-schema-ssot.md` を参照したとき
+#### Scenario: ADR-018 が正典として参照できる
+- **WHEN** `ADR-018-state-schema-ssot.md` を参照したとき
 - **THEN** Option 1 採用の根拠、廃止フィールド一覧、代替トリガー機構の説明が含まれている
 
-#### Scenario: ADR-003 から ADR-016 へのリンクが存在する
+#### Scenario: ADR-003 から ADR-018 へのリンクが存在する
 - **WHEN** `ADR-003-unified-state-file.md` を参照したとき
-- **THEN** ADR-016 への参照リンクが存在する
+- **THEN** ADR-018 への参照リンクが存在する
 
-### Requirement: inject_next_workflow が status ベースのトリガーで機能しなければならない
+### Requirement: inject_next_workflow が current_step ベースのトリガーで機能しなければならない
 
-`autopilot-orchestrator.sh` の `inject_next_workflow` は `workflow_done` フィールドではなく `status` フィールドの terminal 値（`merge-ready`）遷移を検知してトリガーしなければならない（SHALL）。
+`autopilot-orchestrator.sh` の `inject_next_workflow` は `workflow_done` フィールドではなく `current_step` の terminal 値（`TERMINAL_STEP_TO_NEXT_SKILL` マッピング参照）を検知してトリガーしなければならない（SHALL）。LAST_INJECTED_STEP で重複 inject を防止する（ADR-018）。
 
-#### Scenario: status=merge-ready で次 workflow が inject される
-- **WHEN** issue の status が `running` から `merge-ready` に遷移したとき
-- **THEN** orchestrator が次のワークフロー（例: pr-merge）を tmux inject する
+#### Scenario: current_step terminal 値で次 workflow が inject される
+- **WHEN** issue の `current_step` が terminal 値（`ac-extract` / `post-change-apply` / `ac-verify` / `warning-fix`）になったとき
+- **THEN** orchestrator が TERMINAL_STEP_TO_NEXT_SKILL マッピングで次のワークフローを解決し tmux inject する
 
 #### Scenario: inject-next-workflow bats テストが更新済みで通過する
 - **WHEN** `plugins/twl/tests/unit/inject-next-workflow/*.bats` を実行したとき

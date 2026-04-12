@@ -779,7 +779,7 @@ _nudge_command_for_pattern() {
   fi
 }
 
-# inject_next_workflow: workflow_done を検知して次の workflow skill を tmux inject する
+# inject_next_workflow: current_step terminal 値を検知して次の workflow skill を tmux inject する（ADR-018）
 # 引数: issue, window_name
 # 戻り値: 0=inject 成功 or pr-merge 委譲、1=失敗（タイムアウト / resolve 失敗 / バリデーション失敗）
 inject_next_workflow() {

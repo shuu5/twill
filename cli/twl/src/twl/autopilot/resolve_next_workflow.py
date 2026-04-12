@@ -82,7 +82,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # 重複 inject 防止: workflow_injected に既に同じ skill が記録されていれば skip
     workflow_injected = _read_state(issue_num, "workflow_injected", autopilot_dir)
-    if workflow_injected and f"/twl:{next_skill_name}" in workflow_injected:
+    if workflow_injected and f"/twl:{next_skill_name}" == workflow_injected:
         print(
             f"ERROR: /twl:{next_skill_name} は既に inject 済み (workflow_injected={workflow_injected})",
             file=sys.stderr,
