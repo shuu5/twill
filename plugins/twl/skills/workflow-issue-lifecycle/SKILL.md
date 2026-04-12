@@ -171,6 +171,7 @@ if STATE != circuit_broken and quick_flag == false:
 
 - `quick_flag=true` の場合: スキップ（quick モードでは specialist レビューの depth が shallow に設定されるため、refined の品質保証基準を満たさない）
 - `STATE == circuit_broken` の場合: スキップ（round loop が正常完了していないため）
+- `STATE == failed` の場合: Step 4c の `exit 0` で制御フローが終了するため Step 4.5 に到達しない（条件式の対象外）
 
 ### Step 5: arch-drift
 

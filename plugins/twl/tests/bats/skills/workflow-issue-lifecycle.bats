@@ -340,8 +340,11 @@ _run_step45() {
   assert_output --partial "refined"
 }
 
-@test "workflow-issue-lifecycle Step4.5: quick_flag=false かつ STATE=reviewing でも refined が追加される" {
-  run _run_step45 "false" "reviewing" "enhancement"
+# NOTE: STATE=reviewing は実フローでは round loop 実行中であり Step 4.5 に到達しない。
+# _run_step45 ヘルパーは判定ロジックの単体テストであり、circuit_broken 以外の任意の
+# state 値でも refined が付与されることを確認するためのロジック境界テスト。
+@test "workflow-issue-lifecycle Step4.5: quick_flag=false かつ STATE が circuit_broken でなければ refined が付与される（ロジック境界検証）" {
+  run _run_step45 "false" "completed" "enhancement"
   assert_success
   assert_output --partial "refined"
 }
