@@ -140,15 +140,17 @@ fi
 # Test: Phase 1 - 問題探索（/twl:explore 呼び出し）
 test_phase1_explore() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "explore" || return 1
+  assert_file_contains "$SKILL_MD" "対話的問題探索" || return 1
   assert_file_contains "$SKILL_MD" "explore-summary" || return 1
+  assert_file_contains "$SKILL_MD" "Read/Grep/Glob" || return 1
+  assert_file_contains "$SKILL_MD" "ユーザーに直接提示" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Phase 1 - 問題探索（explore / explore-summary 記述）" test_phase1_explore
+  run_test "Phase 1 - 対話的問題探索（inline 探索 / explore-summary 記述）" test_phase1_explore
 else
-  run_test_skip "Phase 1 - 問題探索" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "Phase 1 - 対話的問題探索" "skills/co-issue/SKILL.md not yet created"
 fi
 
 # Test: Phase 2 - 分解判断（単一 vs 複数）
@@ -464,30 +466,30 @@ echo "--- Requirement: explore ループ構造の静的テストケース追加 
 # WHEN: co-issue-skill.test.sh を実行する
 # THEN: SKILL.md に「1 ループで Phase 2 へ進む」ゲート選択肢の記述があることを grep で検証し PASS する
 
-test_loop_gate_phase2_option() {
+test_summary_gate_phase2_option() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "loop-gate|Phase 2 へ進む|Phase 2 に進む"
+  assert_file_contains "$SKILL_MD" "summary-gate|Phase 2 へ進む|Phase 2 に進む"
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "ケース 1: loop-gate に Phase 2 へ進む選択肢の記述" test_loop_gate_phase2_option
+  run_test "ケース 1: summary-gate に Phase 2 へ進む選択肢の記述" test_summary_gate_phase2_option
 else
-  run_test_skip "ケース 1: loop-gate に Phase 2 へ進む選択肢" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "ケース 1: summary-gate に Phase 2 へ進む選択肢" "skills/co-issue/SKILL.md not yet created"
 fi
 
-# Scenario: ケース 2 — 追加探索再呼び出しループ記述
+# Scenario: ケース 2 — summary 修正ループ記述
 # WHEN: co-issue-skill.test.sh を実行する
-# THEN: SKILL.md に「追加探索」選択時の再呼び出しループ記述があることを grep で検証し PASS する
+# THEN: SKILL.md に summary 修正の再提示ループ記述があることを grep で検証し PASS する
 
-test_loop_gate_additional_explore() {
+test_summary_gate_modify() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "accumulated_concerns|追加探索|まだ探索"
+  assert_file_contains "$SKILL_MD" "summary を修正|修正して再提示|summary-gate に戻る"
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "ケース 2: accumulated_concerns または追加探索ループの記述" test_loop_gate_additional_explore
+  run_test "ケース 2: summary 修正ループの記述" test_summary_gate_modify
 else
-  run_test_skip "ケース 2: accumulated_concerns または追加探索ループ" "skills/co-issue/SKILL.md not yet created"
+  run_test_skip "ケース 2: summary 修正ループ" "skills/co-issue/SKILL.md not yet created"
 fi
 
 # Scenario: ケース 3 — 手動編集対応記述（edit-complete-gate 含む）

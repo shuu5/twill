@@ -48,7 +48,7 @@ tech-debt Issue のトリアージカテゴリ。
 
 ```mermaid
 flowchart TD
-    A["Phase 1: 探索<br/>(+ architecture context 注入)"] --> A2["Step 1.5: glossary 照合"]
+    A["Phase 1: 対話的問題探索<br/>(+ architecture context 注入)"] --> A2["Step 1.5: glossary 照合"]
     A2 --> B["Phase 2: 分解判断<br/>(+ クロスリポ検出)"]
     B --> C["Phase 3: 精緻化<br/>(構造化 + specialist レビュー)"]
     C --> C2["Step 3.5: architecture drift detection<br/>(INFO)"]
@@ -62,10 +62,10 @@ flowchart TD
 ```mermaid
 flowchart TD
     A{architecture/ 存在?} -- Yes --> B["Read: vision.md"]
-    A -- No --> E["通常の explore"]
+    A -- No --> E["通常の対話的探索"]
     B --> C["Read: context-map.md"]
     C --> D["Read: glossary.md"]
-    D --> F["ARCH_CONTEXT として explore に注入"]
+    D --> F["ARCH_CONTEXT として Phase 1 対話に注入"]
 ```
 
 Architecture Spec が co-issue に注入されることで:

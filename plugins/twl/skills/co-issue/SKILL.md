@@ -9,10 +9,12 @@ description: |
 type: controller
 effort: high
 tools:
-- Skill(workflow-issue-refine, workflow-issue-create, workflow-issue-lifecycle, issue-glossary-check, explore)
+- Skill(workflow-issue-refine, workflow-issue-create, workflow-issue-lifecycle, issue-glossary-check)
 - Bash
 - Read
 - Write
+- Grep
+- Glob
 spawnable_by:
 - user
 ---
@@ -42,41 +44,60 @@ glob `.controller-issue/*/explore-summary.md` でセッション一覧を検出:
 
 セッション ID ベースのディレクトリ分離により、既存の co-issue フローとの互換性を維持しながら並列実行が可能。
 
-## Phase 1: 問題探索（explore loop）
+## Phase 1: 対話的問題探索
 
-### Phase 1 初期化（初回イテレーションのみ）
+### Phase 1 初期化
 
 `architecture/` が存在する場合、vision.md・context-map.md・glossary.md を Read して `ARCH_CONTEXT` として保持（不在はスキップ）。scope/* 判明時は `architecture/domain/context-map.md` のノードラベルで該当コンポーネントの architecture ファイルを ARCH_CONTEXT に追加。
 
-`accumulated_concerns` を空文字列で初期化する。
+`mkdir -p .controller-issue/<session-id>`
 
-### Phase 1 ループ（最低 1 回実行）
+### Phase 1 対話ループ（ユーザーとの自然な会話として実行）
 
-以下をループする。**ゼロ探索で loop-gate を発火してはならない（MUST NOT）**。
+**Skill("explore") は呼び出さない。co-issue 自身がユーザーと対話しながら探索する。**
 
-1. **explore 呼び出し**: `/twl:explore` に以下を注入して呼び出す:
-   - 「問題空間の理解に集中」
-   - ARCH_CONTEXT（初回のみ / 2 回目以降は引き続き保持）
-   - `accumulated_concerns` が空でない場合: `Bash("printf '%s\n' \"$accumulated_concerns\" | bash \"${CLAUDE_PLUGIN_ROOT}/scripts/escape-issue-body.sh\"")` でエスケープし、結果を `<additional_concerns>...</additional_concerns>` XML タグに包んで渡す
+以下のスタンスで対話する（explore.md から継承）:
+- **好奇心を持ち、指示的にならない**: ユーザーの要望を深堀りする質問を自然にする
+- **忍耐強く結論を急がない**: 十分に議論してから summary へ
+- **実地的にコードベースを探索**: Read/Grep/Glob で実際のコードを確認し、推測で語らない
+- **可視化する**: ASCII 図でシステム構造・影響範囲を提示
+- **前提を疑う**: ユーザーの前提も自分の前提も検証する
 
-2. **explore-summary 書き出し**: 探索後 `.controller-issue/<session-id>/explore-summary.md` に書き出す（`mkdir -p .controller-issue/<session-id>`）。
+対話フロー:
+1. ユーザーの要望を確認（初回は co-issue 起動時の引数から）
+2. co-issue 自身が Read/Grep/Glob でコードベースを調査
+3. **調査結果をユーザーに直接提示して議論する**:
+   - 問題空間の明確化
+   - 前提への質問
+   - 影響範囲の可視化（ASCII 図）
+   - 代替アプローチの提案
+4. ユーザーの反応を受けてさらに深堀り（2-3 を繰り返し）
 
-3. **loop-gate（AskUserQuestion）**: 以下 3 択を提示する:
-   - `[A] この仕様で Phase 2 へ進む`
-   - `[B] まだ探索したい（具体的な懸念・追加質問を入力してください）`
-   - `[C] explore-summary.md を手動編集したい`
+**ゼロ探索で summary-gate を発火してはならない（MUST NOT）**。最低 1 往復のユーザー対話を行うこと。
 
-   **[A] 選択時**: ループを終了し Step 1.5 へ進む。
+### summary-gate（Phase 1 完了時に 1 回だけ）
 
-   **[B] 選択時**: ユーザーが入力した懸念テキストを `accumulated_concerns` に追記（改行区切り）し、ループを続行する（explore 呼び出しに戻る）。
+ユーザーとの対話が十分に行われた後、AI が explore-summary の内容を組み立てて **ユーザーに直接提示** する:
 
-   **[C] 選択時**:
-   - ユーザーに `.controller-issue/<session-id>/explore-summary.md` のパスを提示し、編集を依頼する。
-   - **edit-complete-gate（AskUserQuestion）** を提示する:
-     - `[A] 編集完了（summary を再読み込みして続行）`
-     - `[B] 編集をキャンセル（直前の summary で loop-gate に戻る）`
-   - `[A]` 選択時: `explore-summary.md` を Read し直し、loop-gate に戻る（ループを続行する）。
-   - `[B]` 選択時: 直前の `explore-summary.md` の内容を維持し、loop-gate に戻る。
+「以下の内容で explore-summary をまとめて Phase 2 に進みます:」
+（summary 内容をテキストで表示）
+
+AskUserQuestion で以下 3 択を提示:
+- `[A] この summary で Phase 2 へ進む`
+- `[B] summary を修正したい（具体的に指定してください）`
+- `[C] explore-summary.md を手動編集したい`
+
+**[A] 選択時**: `.controller-issue/<session-id>/explore-summary.md` に書き出し → Step 1.5 へ進む。
+
+**[B] 選択時**: AI が修正して再提示 → summary-gate に戻る。
+
+**[C] 選択時**:
+- `.controller-issue/<session-id>/explore-summary.md` に現在の内容を書き出し、パスをユーザーに提示。
+- **edit-complete-gate（AskUserQuestion）**:
+  - `[A] 編集完了（summary を再読み込みして続行）`
+  - `[B] 編集をキャンセル（直前の summary で summary-gate に戻る）`
+- `[A]` → Read し直し → summary-gate に戻る。
+- `[B]` → 直前の内容を維持 → summary-gate に戻る。
 
 ## Step 1.5: glossary 照合
 
