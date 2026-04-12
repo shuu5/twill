@@ -13,6 +13,8 @@ set -euo pipefail
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=./lib/python-env.sh
 source "${SCRIPTS_ROOT}/lib/python-env.sh"
+# shellcheck source=./lib/deltaspec-helpers.sh
+source "${SCRIPTS_ROOT}/lib/deltaspec-helpers.sh"
 # shellcheck source=chain-steps.sh
 source "${SCRIPTS_ROOT}/chain-steps.sh" 2>/dev/null || true
 
@@ -1133,15 +1135,9 @@ _archive_deltaspec_changes_for_issue() {
     return 0
   fi
 
-  # config.yaml を持つ deltaspec root を探索（walk-down fallback 付き）
-  local ds_root="$root"
-  if [[ ! -f "$root/deltaspec/config.yaml" ]]; then
-    local found_cfg
-    found_cfg="$(find "$root" -maxdepth 5 -name config.yaml -path '*/deltaspec/*' \
-      -not -path '*/.git/*' -not -path '*/node_modules/*' -not -path '*/__pycache__/*' \
-      2>/dev/null | head -1)"
-    [[ -n "$found_cfg" ]] && ds_root="$(dirname "$(dirname "$found_cfg")")"
-  fi
+  # config.yaml を持つ deltaspec root を探索（lib/deltaspec-helpers.sh の resolve_deltaspec_root に委譲）
+  local ds_root
+  ds_root="$(resolve_deltaspec_root "$root")" || true
   local changes_dir="$ds_root/deltaspec/changes"
   if [[ ! -d "$changes_dir" ]]; then return 0; fi
 
