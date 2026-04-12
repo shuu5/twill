@@ -1,0 +1,224 @@
+change_id: issue-448
+generated_at: "2026-04-12T00:00:00Z"
+test_framework: pytest
+scenarios:
+  - id: "echo-name-line-absent-in-step0"
+    name: "twl spec new 呼出後に echo 補完が存在しない (name)"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 7
+    requirement: "Step 0 auto_init フローの echo 補完削除"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestEchoCompletionRemoved::test_echo_name_line_absent_in_step0"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "echo-status-line-absent-in-step0"
+    name: "twl spec new 呼出後に echo 補完が存在しない (status)"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 7
+    requirement: "Step 0 auto_init フローの echo 補完削除"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestEchoCompletionRemoved::test_echo_status_line_absent_in_step0"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "neither-echo-name-nor-echo-status-present"
+    name: "twl spec new 呼出後に echo 補完が存在しない (name/status 両方)"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 7
+    requirement: "Step 0 auto_init フローの echo 補完削除"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestEchoCompletionRemoved::test_neither_echo_name_nor_echo_status_present"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "echo-append-pattern-not-present"
+    name: "echo >> .deltaspec.yaml パターンが Step 0 に存在しない (edge case)"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 7
+    requirement: "Step 0 auto_init フローの echo 補完削除"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestEchoCompletionRemoved::test_echo_append_pattern_not_present_for_deltaspec_yaml"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "auto-completion-comment-exists-after-spec-new"
+    name: "twl spec new の自動補完を説明するコメントが存在する"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 11
+    requirement: "Step 0 auto_init フローの echo 補完削除"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestAutoCompletionCommentPresent::test_auto_completion_comment_exists_after_spec_new"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "auto-completion-comment-mentions-name-or-status"
+    name: "自動補完コメントが name または status フィールドに言及する"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 11
+    requirement: "Step 0 auto_init フローの echo 補完削除"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestAutoCompletionCommentPresent::test_auto_completion_comment_mentions_name_or_status"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "step0-retains-spec-new-call"
+    name: "Step 0 に twl spec new 呼出が存在する (回帰)"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 11
+    requirement: "Step 0 auto_init フローの echo 補完削除"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestAutoCompletionCommentPresent::test_step0_retains_spec_new_call"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-manual-echo-replaced-by-new-code"
+    name: "echo 削除後に別の手動補完コードが追加されていない (edge case)"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 11
+    requirement: "Step 0 auto_init フローの echo 補完削除"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestAutoCompletionCommentPresent::test_no_manual_echo_replaced_by_comment_not_new_code"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "name-field-appears-exactly-once"
+    name: "issue-N 形式の change 作成後に .deltaspec.yaml の name: が重複なし"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 19
+    requirement: ".deltaspec.yaml への重複エントリ防止"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestDeltaspecYamlNoDuplicates::test_name_field_appears_exactly_once"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "status-field-appears-exactly-once"
+    name: "issue-N 形式の change 作成後に .deltaspec.yaml の status: が重複なし"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 19
+    requirement: ".deltaspec.yaml への重複エントリ防止"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestDeltaspecYamlNoDuplicates::test_status_field_appears_exactly_once"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-field-appears-exactly-once"
+    name: "issue-N 形式の change 作成後に .deltaspec.yaml の issue: が重複なし"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 19
+    requirement: ".deltaspec.yaml への重複エントリ防止"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestDeltaspecYamlNoDuplicates::test_issue_field_appears_exactly_once"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "all-three-fields-appear-exactly-once"
+    name: "issue-N 形式の change 作成後に name:, status:, issue: が各 1 回のみ存在する"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 19
+    requirement: ".deltaspec.yaml への重複エントリ防止"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestDeltaspecYamlNoDuplicates::test_all_three_fields_appear_exactly_once"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-duplicates-after-spec-new-issue-1"
+    name: "最小 issue 番号 (issue-1) でも .deltaspec.yaml に重複なし (edge case)"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 19
+    requirement: ".deltaspec.yaml への重複エントリ防止"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestDeltaspecYamlNoDuplicates::test_no_duplicates_after_spec_new_issue_1"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "no-duplicates-after-spec-new-large-issue-number"
+    name: "大きな issue 番号 (issue-9999) でも .deltaspec.yaml に重複なし (edge case)"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 19
+    requirement: ".deltaspec.yaml への重複エントリ防止"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestDeltaspecYamlNoDuplicates::test_no_duplicates_after_spec_new_large_issue_number"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "name-value-matches-change-id"
+    name: "twl spec new 後の name: 値が change-id と一致する"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 19
+    requirement: ".deltaspec.yaml への重複エントリ防止"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestDeltaspecYamlNoDuplicates::test_name_value_matches_change_id"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "status-value-is-pending"
+    name: "twl spec new 後の status: 値が pending である"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 19
+    requirement: ".deltaspec.yaml への重複エントリ防止"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestDeltaspecYamlNoDuplicates::test_status_value_is_pending"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-number-extracted-correctly"
+    name: "twl spec new 後の issue: 値が正確な番号である"
+    spec_file: "specs/remove-echo-redundancy/spec.md"
+    spec_line: 19
+    requirement: ".deltaspec.yaml への重複エントリ防止"
+    test_file: "cli/twl/tests/scenarios/test_issue_448_remove_echo_redundancy.py"
+    test_name: "TestDeltaspecYamlNoDuplicates::test_issue_number_extracted_correctly"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
