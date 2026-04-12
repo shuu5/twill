@@ -71,10 +71,12 @@ teardown() {
 }
 
 # Helper: invoke hook with TOOL_INPUT_command set
+# BATS_TEST_DIRNAME を明示的に渡して PLUGINS_TWL_DIR サンドボックスオーバーライドを有効化する
 _run_hook() {
   local cmd="${1:-}"
   TOOL_INPUT_command="$cmd" \
   PLUGINS_TWL_DIR="$SANDBOX/plugins/twl" \
+  BATS_TEST_DIRNAME="${BATS_TEST_DIRNAME}" \
     bash "$HOOK_SRC"
 }
 
@@ -83,6 +85,7 @@ _run_hook_payload() {
   local payload="$1"
   shift
   PLUGINS_TWL_DIR="$SANDBOX/plugins/twl" \
+  BATS_TEST_DIRNAME="${BATS_TEST_DIRNAME}" \
     bash "$HOOK_SRC" <<< "$payload"
 }
 
@@ -253,10 +256,16 @@ _run_hook_payload() {
 # Edge case 12: twl コマンドが存在しない場合 → exit 0 (graceful skip)
 # ---------------------------------------------------------------------------
 @test "twl コマンドが存在しない場合は exit 0 でスキップする（グレースフル）" {
-  # Do NOT stub twl; it should not exist in the minimal stub PATH
-  # Remove any stub that might exist
+  # Do NOT stub twl; remove any stub and shadow real twl with a "not found" stub
   rm -f "$STUB_BIN/twl"
-  run _run_hook "git commit -m 'no-twl'"
+  # PATH に存在しない dummy ディレクトリを先頭に追加して twl を隠す
+  # twl が $STUB_BIN にも dummy_no_twl_bin にも存在しないことで command -v twl が失敗する
+  local dummy_bin="$SANDBOX/dummy_no_twl_bin"
+  mkdir -p "$dummy_bin"
+  # 元の PATH から ~/.local/bin を除外して twl が見つからない環境を作る
+  local filtered_path
+  filtered_path=$(echo "$PATH" | tr ':' '\n' | grep -v 'local/bin' | tr '\n' ':' | sed 's/:$//')
+  PATH="$STUB_BIN:$filtered_path" run _run_hook "git commit -m 'no-twl'"
   [ "$status" -eq 0 ]
 }
 

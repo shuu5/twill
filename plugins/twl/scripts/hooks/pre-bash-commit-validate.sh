@@ -21,8 +21,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # PLUGINS_TWL_DIR: テスト環境（BATS_TEST_DIRNAME が設定されている場合）のみオーバーライドを許可。
 # 本番 hook 実行時は SCRIPT_DIR 起点の固定パスを使用し Path Traversal を防止する。
 if [[ -n "${BATS_TEST_DIRNAME:-}" && -n "${PLUGINS_TWL_DIR:-}" ]]; then
-  # bats テスト環境: PLUGINS_TWL_DIR オーバーライドを許可
-  PLUGINS_TWL_DIR="${PLUGINS_TWL_DIR}"
+  # bats テスト環境: PLUGINS_TWL_DIR オーバーライドを許可（PLUGINS_TWL_DIR は既に設定済み）
+  :
 else
   # 本番環境: SCRIPT_DIR から固定パスで解決
   PLUGINS_TWL_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -34,7 +34,12 @@ fi
 CMD="${TOOL_INPUT_command:-}"
 if [[ -z "$CMD" ]]; then
   # stdin から JSON payload を読み取り、tool_input.command を抽出
-  payload="$(cat 2>/dev/null || echo "")"
+  # stdin が TTY（端末）の場合はスキップしてハングを防ぐ
+  if [ -t 0 ]; then
+    payload=""
+  else
+    payload="$(cat 2>/dev/null || echo "")"
+  fi
   if [[ -n "$payload" ]] && echo "$payload" | jq empty 2>/dev/null; then
     CMD=$(echo "$payload" | jq -r '.tool_input.command // empty' 2>/dev/null || echo "")
   fi
@@ -52,9 +57,12 @@ case "$CMD" in
 esac
 
 # --- Step 3: バイパスチェック ---
-# 環境変数 TWL_SKIP_COMMIT_GATE=1 のみでバイパス。
-# コマンド文字列内の文字列マッチは commit メッセージによる意図せぬバイパスを防ぐため行わない。
-if [[ "${TWL_SKIP_COMMIT_GATE:-}" == "1" ]]; then
+# 環境変数 TWL_SKIP_COMMIT_GATE=1 または
+# コマンド先頭の変数代入（^TWL_SKIP_COMMIT_GATE=1 <space>）でバイパス。
+# コマンド文字列の先頭チェックにより commit メッセージ内の文字列によるバイパスを防ぐ。
+# 例: `TWL_SKIP_COMMIT_GATE=1 git commit` → bypass OK
+# 例: `git commit -m 'TWL_SKIP_COMMIT_GATE=1 ...'` → bypass NG（先頭でないため）
+if [[ "${TWL_SKIP_COMMIT_GATE:-}" == "1" ]] || [[ "$CMD" =~ ^TWL_SKIP_COMMIT_GATE=1[[:space:]] ]]; then
   echo "[WARN] TWL_SKIP_COMMIT_GATE: commit gate bypassed" >&2
   exit 0
 fi
