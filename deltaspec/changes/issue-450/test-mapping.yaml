@@ -1,0 +1,13 @@
+change_id: issue-450
+generated_at: 2026-04-12
+
+mappings:
+  - spec: specs/chain-e2e-transition/spec.md
+    test_file: cli/twl/tests/autopilot/test_chain_e2e_transition.py
+    type: integration
+    scenarios:
+      - "setup 完了後に test-ready が次 workflow として返される"
+      - "test-ready 完了後に pr-verify が次 workflow として返される"
+      - "pr-verify 完了後は terminal になる"
+      - "3 Issue 以上の chain 遷移が成立する"
+      - "resolve_next_workflow が空を返した場合のテスト失敗"
