@@ -186,8 +186,9 @@ flowchart TD
 | SU-2 | Layer 2（Escalate）の介入はユーザー確認が MUST | OBS-2 継承 |
 | SU-3 | Supervisor 自身が Issue の直接実装を行ってはならない（SHALL） | OBS-3 継承 |
 | SU-4 | 同時に supervise できる controller session は 5 を超えてはならない（SHALL） | OBS-4 拡張（3→5） |
-| SU-5 | context 消費量 50% 到達時に知識外部化を開始しなければならない（SHALL） | 新規 |
-| SU-6 | Wave 完了時に結果収集と su-compact を実行しなければならない（SHALL） | 新規 |
+| SU-5 | context 消費量 80% 到達時に知識外部化を開始しなければならない（SHALL） | 新規 |
+| SU-6a | Wave 完了時に結果収集と externalize-state を実行しなければならない（SHALL） | SU-6 分割（#498） |
+| SU-6b | context 逼迫時またはユーザー指示時に /compact をユーザーへ提案しなければならない（SHOULD） | built-in CLI のためユーザー手動実行 |
 | SU-7 | observed session への inject/send-keys は介入プロトコルに従う場合に許可（MAY） | OB-3 廃止に対応 |
 
 ### OB-* Constraints との関係

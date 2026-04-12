@@ -141,7 +141,7 @@ flowchart TD
 
 ### Observer Constraints (OBS-*)（廃止 / Superseded by SU-*）
 
-> **Superseded**: OBS-1〜OBS-5 は supervision.md の SU-* に置き換えられました（ADR-014）。OBS-1〜OBS-4 は SU-1〜SU-4 に対応し、OBS-5 は SU-7 に対応。SU-5・SU-6 は新規追加。
+> **Superseded**: OBS-1〜OBS-5 は supervision.md の SU-* に置き換えられました（ADR-014）。OBS-1〜OBS-4 は SU-1〜SU-4 に対応し、OBS-5 は SU-7 に対応。SU-5・SU-6a・SU-6b は新規追加（SU-6 は #498 で SU-6a/SU-6b に分割）。
 
 | 制約 ID | 内容 | 適用範囲 |
 |---------|------|----------|
