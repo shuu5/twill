@@ -216,34 +216,33 @@ spawn_session() {
   local prompt_file
   prompt_file="$(mktemp /tmp/.coi-prompt-XXXXXX.txt)"
 
-  # policies.json 主要フィールドを抽出（jq がなければ空文字）
-  local policies_json max_rounds specialists depth quick_flag target_repo
-  policies_json=""
+  # policies.json 主要フィールドを抽出（jq がなければ空文字。全変数を空文字で初期化し set -u エラーを回避）
+  local policies_json="" max_rounds="" specialists="" depth="" quick_flag="" target_repo=""
   if [[ -f "${subdir}/IN/policies.json" ]] && command -v jq >/dev/null 2>&1; then
-    policies_json="$(cat "${subdir}/IN/policies.json")"
-    max_rounds="$(echo "$policies_json" | jq -r '.max_rounds // empty' 2>/dev/null || true)"
-    specialists="$(echo "$policies_json" | jq -r '(.specialists // []) | join(",")' 2>/dev/null || true)"
-    depth="$(echo "$policies_json" | jq -r '.depth // empty' 2>/dev/null || true)"
-    quick_flag="$(echo "$policies_json" | jq -r '.quick_flag // empty' 2>/dev/null || true)"
-    target_repo="$(echo "$policies_json" | jq -r '.target_repo // empty' 2>/dev/null || true)"
+    max_rounds="$(jq -r '.max_rounds // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+    specialists="$(jq -r '(.specialists // []) | join(",")' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+    depth="$(jq -r '.depth // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+    quick_flag="$(jq -r '.quick_flag // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+    target_repo="$(jq -r '.target_repo // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
   fi
 
-  cat > "$prompt_file" <<INJECT_PROMPT
-/twl:workflow-issue-lifecycle $(printf '%q' "$subdir")
-
-【自律実行指示】
-- 全 Step を中断なく自律的に完了すること
-- 途中で AskUserQuestion を使用しないこと
-- エラー発生時は OUT/report.json に status: failed を書き込んで exit すること
-- policies.json の設定に従い specialist review を実行すること
-
-【policies.json 主要フィールド】
-- max_rounds: ${max_rounds}
-- specialists: ${specialists}
-- depth: ${depth}
-- quick_flag: ${quick_flag}
-- target_repo: ${target_repo}
-INJECT_PROMPT
+  # inject プロンプト生成（printf 方式: heredoc 終端子汚染リスクを回避）
+  printf '%s\n' \
+    "/twl:workflow-issue-lifecycle $(printf '%q' "$subdir")" \
+    "" \
+    "【自律実行指示】" \
+    "- 全 Step を中断なく自律的に完了すること" \
+    "- 途中で AskUserQuestion を使用しないこと" \
+    "- エラー発生時は OUT/report.json に status: failed を書き込んで exit すること" \
+    "- policies.json の設定に従い specialist review を実行すること" \
+    "" \
+    "【policies.json 主要フィールド】" \
+    "- max_rounds: ${max_rounds}" \
+    "- specialists: ${specialists}" \
+    "- depth: ${depth}" \
+    "- quick_flag: ${quick_flag}" \
+    "- target_repo: ${target_repo}" \
+    > "$prompt_file"
 
   local SESSION_SCRIPTS
   SESSION_SCRIPTS="${SCRIPTS_ROOT}/../../session/scripts"
