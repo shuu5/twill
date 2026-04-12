@@ -2,7 +2,7 @@
 # cld-spawn - Start a new Claude Code session in a new tmux window
 #
 # Usage:
-#   cld-spawn [--cd DIR] [--env-file PATH] [--window-name NAME] [--timeout N] [PROMPT]
+#   cld-spawn [--cd DIR] [--env-file PATH] [--window-name NAME] [--timeout N] [--model MODEL] [PROMPT]
 #
 # PROMPT は positional arg ではなく、起動後に wait-ready + inject-file で送達する。
 # これにより改行・特殊文字を含むプロンプトが安全に渡せる。
@@ -24,6 +24,7 @@ ENV_FILE=""
 WINDOW_NAME=""
 FORCE_NEW=0
 WAIT_TIMEOUT=60
+CLD_MODEL=""
 
 # Parse options
 while [[ $# -gt 0 ]]; do
@@ -55,6 +56,11 @@ while [[ $# -gt 0 ]]; do
                 echo "Error: --timeout には正の整数を指定してください" >&2
                 exit 1
             fi
+            shift 2
+            ;;
+        --model)
+            [[ -z "${2:-}" ]] && { echo "Error: --model にモデル名を指定してください" >&2; exit 1; }
+            CLD_MODEL="$2"
             shift 2
             ;;
         *)
@@ -105,7 +111,11 @@ chmod +x "$LAUNCHER"
     fi
     echo "cd $(printf '%q' "$CWD") || exit 1"
     # CLD_PATH: テスト時のスタブ差し替え用（本番では未設定 → $SCRIPT_DIR/cld）
-    printf '%q\n' "${CLD_PATH:-$SCRIPT_DIR/cld}"
+    if [[ -n "${CLD_MODEL:-}" ]]; then
+        printf '%q --model %q\n' "${CLD_PATH:-$SCRIPT_DIR/cld}" "${CLD_MODEL}"
+    else
+        printf '%q\n' "${CLD_PATH:-$SCRIPT_DIR/cld}"
+    fi
     # Keep window open on error for diagnosis
     cat <<'TRAP'
 EXIT_CODE=$?
