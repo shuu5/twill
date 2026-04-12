@@ -59,7 +59,7 @@ Wave 管理の状態。
 | working_pct | number | context window 消費率（0-100） |
 | externalized_count | number | 外部化されたメモリファイル数 |
 | last_compaction | string (ISO 8601) \| null | 最終 compaction 時刻 |
-| auto_compact_threshold | number | 自動 compaction 閾値（default: 50） |
+| auto_compact_threshold | number | 自動 compaction 閾値（default: 80） |
 
 ### ExternalizationRecord
 
@@ -126,7 +126,7 @@ flowchart TD
     J -->|No| M{controller 完了?}
     M -->|Yes| N[結果収集]
     N --> O{Wave 管理?}
-    O -->|Yes| P[Wave 完了処理 + su-compact]
+    O -->|Yes| P[Wave 完了処理 + externalize-state]
     P --> C
     O -->|No| C
     M -->|No| I
@@ -148,7 +148,7 @@ flowchart TD
     G --> D
     F -->|No| D
     E -->|Yes| H[結果収集]
-    H --> I[su-compact: 記憶固定化 + compaction]
+    H --> I[externalize-state: 記憶固定化]
     I --> J{次 Wave あり?}
     J -->|Yes| K[Wave N+1 計画]
     K --> B
@@ -159,7 +159,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A{トリガー} -->|自動: 50%到達| B[状況判定]
+    A{トリガー} -->|自動: 80%到達| B[状況判定]
     A -->|手動: /su-compact| B
     A -->|Wave完了| B
     B --> C{状況分類}

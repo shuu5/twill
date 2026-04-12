@@ -315,7 +315,7 @@ skills:
       - reference: intervention-catalog
       - reference: observation-pattern-catalog
       - reference: monitor-channel-catalog
-      - workflow: su-compact  # SU-6b: context 逼迫時またはユーザー指示時にユーザーへ提案（SHOULD）
+      - atomic: su-compact  # SU-6b: context 逼迫時またはユーザー指示時にユーザーへ提案（SHOULD）
     description: "メタ認知レイヤー: 全 controller の監視・介入。テストシナリオ実行は co-self-improve に委譲"
 
   workflow-setup:
