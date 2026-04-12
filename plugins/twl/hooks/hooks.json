@@ -40,6 +40,17 @@
             "timeout": 10000
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Edit(deps.yaml)|Write(deps.yaml)",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-tool-use-deps-yaml-guard.sh",
+            "timeout": 3000
+          }
+        ]
       }
     ],
     "PostToolUse": [
