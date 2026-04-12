@@ -206,7 +206,7 @@ flowchart TD
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **supervisor** | su-observer | プロジェクト常駐メタ認知。controller spawn + observe + 知識外部化 |
-| **workflow** | su-compact | 知識外部化 + compaction ワークフロー |
+| **atomic** | su-compact | 知識外部化 + compaction 制御（externalize-state 呼出し + /compact 提案） |
 | **atomic** | observe-once | 単一キャプチャの取得と解析（既存継承） |
 | **atomic** | problem-detect | rule-based で capture から既知パターンを検出（既存継承） |
 | **atomic** | wave-collect | Wave 完了時の結果収集 |

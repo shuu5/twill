@@ -27,7 +27,7 @@
 | Supervisor | プロジェクト常駐のメタ認知レイヤー。全 controller を監視・調整・知識外部化する上位層（ADR-014） | Supervision |
 | su-observer | Supervisor 型の唯一のコンポーネント（ADR-014 で observer 型から再定義）。main session そのものとして機能し、controller を spawn → observe する。Observer（read-only）とは異なり介入権限を持つ | Supervision |
 | SupervisorSession | su-observer のプロジェクト常駐セッション状態。Wave 管理・介入記録・記憶予算を追跡 | Supervision |
-| su-compact | 知識外部化 + compaction を実行するスキル/コマンド。自動（50%閾値）/手動/Wave完了時に発火 | Supervision |
+| su-compact | 知識外部化 + compaction を実行するスキル/コマンド。自動（80%閾値）/手動/Wave完了時に発火 | Supervision |
 | Three-Layer Memory | 三層記憶モデル。Long-term Memory（永続）+ Working Memory Externalization（一時退避）+ Compressed Memory（compaction後） | Supervision |
 | Wave | autopilot で大量 Issue を分割実行する単位。1 Wave = 1 co-autopilot セッション。Wave 間で su-compact を実行 | Supervision, Autopilot |
 | Observer | 別 session を能動的に観察する観察側 session。read-only で対象を覗き見る | Observation |
