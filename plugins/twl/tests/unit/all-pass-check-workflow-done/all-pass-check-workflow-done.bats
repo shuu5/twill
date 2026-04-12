@@ -126,8 +126,9 @@ teardown() {
 @test "smoke[all-pass-check]: PASS 後に state.workflow_done=pr-merge が確認できる" {
   create_issue_json 494 "running"
 
-  # 実行
-  bash "$CR" all-pass-check PASS
+  # 実行（run 経由でアサーション到達を保証）
+  run bash "$CR" all-pass-check PASS
+  assert_success
 
   # 直接 state ファイルを jq で確認（python モジュール不使用の二重確認）
   local state_file="$AUTOPILOT_DIR/issues/issue-494.json"
