@@ -98,7 +98,7 @@ fi
 # --- 現在の PR body + comments 取得（制約チェック用: body + all comments）---
 PR_FULL_CONTENT="$(gh_read_pr_full "$PR_NUM" "${REPO_FLAG[@]+"${REPO_FLAG[@]}"}")"
 # --- 現在の PR body のみ取得（書き換え用）---
-PR_BODY_ONLY="$(gh pr view "$PR_NUM" "${REPO_FLAG[@]}" --json body -q .body 2>/dev/null || echo "")"
+PR_BODY_ONLY="$(gh pr view "$PR_NUM" "${REPO_FLAG[@]+"${REPO_FLAG[@]}"}" --json body -q .body 2>/dev/null || echo "")"
 
 # --- Closes #N 既存チェック（body + comments 両方を確認）---
 if echo "$PR_FULL_CONTENT" | grep -Eq "(Closes|Fixes|Resolves)[[:space:]]+#${ISSUE_NUM}\b"; then
@@ -107,17 +107,17 @@ else
   NEW_BODY="${PR_BODY_ONLY}
 
 Closes #${ISSUE_NUM}"
-  gh pr edit "$PR_NUM" "${REPO_FLAG[@]}" --body "$NEW_BODY"
+  gh pr edit "$PR_NUM" "${REPO_FLAG[@]+"${REPO_FLAG[@]}"}" --body "$NEW_BODY"
   echo "[pr-link-issue] PR #${PR_NUM} の本文に Closes #${ISSUE_NUM} を追記しました"
 fi
 
 # --- --close-issue: gh issue close を直接実行 ---
 if [[ "$CLOSE_ISSUE" == "true" ]]; then
-  ISSUE_STATE="$(gh issue view "$ISSUE_NUM" "${REPO_FLAG[@]}" --json state -q .state 2>/dev/null || echo "")"
+  ISSUE_STATE="$(gh issue view "$ISSUE_NUM" "${REPO_FLAG[@]+"${REPO_FLAG[@]}"}" --json state -q .state 2>/dev/null || echo "")"
   if [[ "$ISSUE_STATE" == "CLOSED" ]]; then
     echo "[pr-link-issue] Issue #${ISSUE_NUM} は既に CLOSED です (no-op)"
   else
-    gh issue close "$ISSUE_NUM" "${REPO_FLAG[@]}"
+    gh issue close "$ISSUE_NUM" "${REPO_FLAG[@]+"${REPO_FLAG[@]}"}"
     echo "[pr-link-issue] Issue #${ISSUE_NUM} を CLOSED にしました（gh issue close 直接実行）"
   fi
 fi

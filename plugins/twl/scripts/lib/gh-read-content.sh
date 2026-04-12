@@ -28,8 +28,8 @@ gh_read_issue_full() {
   fi
 
   local body comments
-  body=$(gh issue view "$issue" "${repo_flag[@]}" --json body -q '.body' 2>/dev/null || echo "")
-  comments=$(gh issue view "$issue" "${repo_flag[@]}" --json comments -q '[.comments[].body] | join("\n\n---\n\n")' 2>/dev/null || echo "")
+  body=$(gh issue view "$issue" "${repo_flag[@]+"${repo_flag[@]}"}" --json body -q '.body' 2>/dev/null || echo "")
+  comments=$(gh issue view "$issue" "${repo_flag[@]+"${repo_flag[@]}"}" --json comments -q '[.comments[].body] | join("\n\n---\n\n")' 2>/dev/null || echo "")
 
   if [[ -z "$body" && -z "$comments" ]]; then
     echo "WARN: gh_read_issue_full: Issue #${issue} の body/comments 取得失敗" >&2
@@ -58,8 +58,8 @@ gh_read_pr_full() {
   fi
 
   local body comments
-  body=$(gh pr view "$pr" "${repo_flag[@]}" --json body -q '.body' 2>/dev/null || echo "")
-  comments=$(gh pr view "$pr" "${repo_flag[@]}" --json comments -q '[.comments[].body] | join("\n\n---\n\n")' 2>/dev/null || echo "")
+  body=$(gh pr view "$pr" "${repo_flag[@]+"${repo_flag[@]}"}" --json body -q '.body' 2>/dev/null || echo "")
+  comments=$(gh pr view "$pr" "${repo_flag[@]+"${repo_flag[@]}"}" --json comments -q '[.comments[].body] | join("\n\n---\n\n")' 2>/dev/null || echo "")
 
   if [[ -z "$body" && -z "$comments" ]]; then
     echo "WARN: gh_read_pr_full: PR #${pr} の body/comments 取得失敗" >&2
