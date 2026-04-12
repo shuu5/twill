@@ -59,7 +59,7 @@ echo "export TWILL_REPO_ROOT=${TWILL_REPO_ROOT}" >> "$CALLS_LOG"
 
 # --- _is_main 判定（文字列比較 + 末尾スラッシュ strip）---
 local_normalized_wt="${WORKTREE_DIR%/}"
-local_normalized_main="${TWILL_REPO_ROOT}/main"
+local_normalized_main="${TWILL_REPO_ROOT%/}/main"
 _is_main=0
 [[ "$local_normalized_wt" == "$local_normalized_main" ]] && _is_main=1
 echo "_is_main=${_is_main}" >> "$CALLS_LOG"
