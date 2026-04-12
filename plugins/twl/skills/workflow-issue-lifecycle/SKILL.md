@@ -220,10 +220,18 @@ printf 'done\n' > "$PER_ISSUE_DIR/STATE"
 | `failed` | 回復不能エラー |
 | `circuit_broken` | max_rounds 到達・CRITICAL 未解消 |
 
+## 自律実行制約（MUST）
+
+- このワークフローは orchestrator から spawn された Worker セッションで実行される
+- 全 Step を中断なく自律的に完了すること（MUST）
+- AskUserQuestion は使用しないこと（MUST NOT）— プロンプト制約として機能
+- エラー時は OUT/report.json に結果を書き込み exit すること
+
 ## ファイル経由 I/O 制約（MUST NOT）
 
 - `IN/` 以外のパスを参照してはならない（ファイル入力として）
 - env var 経由でデータを受け取ってはならない（パス指定は可）
+- inject プロンプト経由のデータ（policies.json 主要フィールドなど）は、Worker の初期コンテキスト提供として受け取ることができる。ただし `IN/` ファイルを正規の入力源として引き続き使用すること（プロンプト経由データは補助的なコンテキストであり、`IN/` ファイルの代替ではない）
 
 ## 禁止事項（MUST NOT）
 
