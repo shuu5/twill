@@ -46,7 +46,7 @@ setup() {
 #   ISSUE_REPO_PATH  - クロスリポジトリ時のリポパス（省略可）
 #   WORKTREE_DIR     - 対象 worktree パス
 #   CALLS_LOG        - 呼び出し記録ファイル
-set -uo pipefail
+set -euo pipefail
 
 PROJECT_DIR="${PROJECT_DIR:-}"
 ISSUE_REPO_PATH="${ISSUE_REPO_PATH:-}"
@@ -186,8 +186,8 @@ teardown() {
     run bash "$SANDBOX/scripts/crg-symlink-dispatch.sh"
 
   assert_success
-  [[ ! -e "$FAKE_REPO_ROOT/main/.code-review-graph" ]] || \
-    [[ -d "$FAKE_REPO_ROOT/main/.code-review-graph" ]]  # 既存ディレクトリは symlink ではない
+  # symlink が作成されていないことを厳密に検証（-L は symlink のみ真、-d は symlink 先まで辿る）
+  [[ ! -L "$FAKE_REPO_ROOT/main/.code-review-graph" ]]
 }
 
 @test "crg-reporoot[no-self-ref]: main worktree で _is_main=1 と判定される" {

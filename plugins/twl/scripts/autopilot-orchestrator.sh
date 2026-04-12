@@ -324,9 +324,10 @@ launch_worker() {
 
   # CRG graph DB symlink（main の DB を参照、#532、#576）
   # main worktree 自身は除外（自己参照 symlink 防止、TWILL_REPO_ROOT 文字列比較）
-  local _crg_main="${TWILL_REPO_ROOT}/main/.code-review-graph"
+  # TWILL_REPO_ROOT は常に twill モノリポルート（PROJECT_DIR）を指す。ISSUE_REPO_PATH とは独立
+  local _crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
   local _normalized_wt="${worktree_dir%/}"
-  local _normalized_main="${TWILL_REPO_ROOT}/main"
+  local _normalized_main="${TWILL_REPO_ROOT%/}/main"
   local _is_main=0
   [[ "$_normalized_wt" == "$_normalized_main" ]] && _is_main=1
   [[ -d "$_crg_main" && "$_is_main" -eq 0 && ! -e "$worktree_dir/.code-review-graph" ]] && ln -sf "$_crg_main" "$worktree_dir/.code-review-graph"
