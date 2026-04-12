@@ -51,7 +51,7 @@ cleanup_manifest() {
 # Scenario 1: manifest ファイル生成
 #
 # WHEN issue-spec-review.md の Step 4 を実行する
-# THEN mktemp /tmp/.specialist-manifest-XXXXXXXX.txt でファイルが作成され、
+# THEN mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt でファイルが作成され、
 #      パーミッションが 600 に設定され、MANIFEST_FILE にそのパスが格納される
 # ---------------------------------------------------------------------------
 test_mktemp_creates_manifest_with_correct_permissions() {
@@ -163,7 +163,7 @@ run_test "CONTEXT_ID 導出 (edge): 実際の mktemp パスから spec-review-XX
 test_normal_cleanup_with_context_id() {
   # テスト用ファイルを事前に作成
   local MANIFEST_FILE
-  MANIFEST_FILE=$(mktemp /tmp/.specialist-manifest-XXXXXXXX.txt)
+  MANIFEST_FILE=$(mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt)
   chmod 600 "$MANIFEST_FILE"
 
   local CONTEXT_ID
@@ -203,7 +203,7 @@ run_test "正常クリーンアップ: MANIFEST_FILE と spawned ファイルが
 test_cleanup_does_not_affect_other_contexts() {
   # コンテキスト A（クリーンアップ対象）
   local mf_a
-  mf_a=$(mktemp /tmp/.specialist-manifest-XXXXXXXX.txt)
+  mf_a=$(mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt)
   chmod 600 "$mf_a"
   local ctx_a
   ctx_a=$(basename "$mf_a" .txt)
@@ -213,7 +213,7 @@ test_cleanup_does_not_affect_other_contexts() {
 
   # コンテキスト B（クリーンアップ非対象）
   local mf_b
-  mf_b=$(mktemp /tmp/.specialist-manifest-XXXXXXXX.txt)
+  mf_b=$(mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt)
   chmod 600 "$mf_b"
   local ctx_b
   ctx_b=$(basename "$mf_b" .txt)
@@ -262,21 +262,21 @@ test_fallback_cleanup_without_manifest_file() {
 
   # テスト用ファイルを作成
   local mf1
-  mf1=$(mktemp /tmp/.specialist-manifest-XXXXXXXX.txt)
+  mf1=$(mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt)
   local mf2
-  mf2=$(mktemp /tmp/.specialist-manifest-XXXXXXXX.txt)
-  local sf1="/tmp/.specialist-spawned-fallback-test-1-$$.txt"
-  local sf2="/tmp/.specialist-spawned-fallback-test-2-$$.txt"
+  mf2=$(mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt)
+  local sf1="/tmp/.specialist-spawned-spec-review-fallback-test-1-$$.txt"
+  local sf2="/tmp/.specialist-spawned-spec-review-fallback-test-2-$$.txt"
   touch "$sf1" "$sf2"
 
-  # MANIFEST_FILE が未設定のフォールバック分岐
+  # MANIFEST_FILE が未設定のフォールバック分岐（実際のコードと同じ spec-review-* スコープ）
   local MANIFEST_FILE=""
   local CONTEXT_ID=""
   if [[ -n "${CONTEXT_ID:-}" ]]; then
     rm -f "$MANIFEST_FILE" "/tmp/.specialist-spawned-${CONTEXT_ID}.txt"
   else
-    rm -f /tmp/.specialist-manifest-*.txt \
-          /tmp/.specialist-spawned-*.txt
+    rm -f /tmp/.specialist-manifest-spec-review-*.txt \
+          /tmp/.specialist-spawned-spec-review-*.txt
   fi
 
   local result=0
@@ -438,21 +438,21 @@ test_parallel_launch_no_collision() {
   tmpdir=$(mktemp -d)
 
   (
-    f=$(mktemp /tmp/.specialist-manifest-XXXXXXXX.txt)
+    f=$(mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt)
     chmod 600 "$f"
     echo "$f" > "${tmpdir}/p1.txt"
   ) &
   local pid1=$!
 
   (
-    f=$(mktemp /tmp/.specialist-manifest-XXXXXXXX.txt)
+    f=$(mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt)
     chmod 600 "$f"
     echo "$f" > "${tmpdir}/p2.txt"
   ) &
   local pid2=$!
 
   (
-    f=$(mktemp /tmp/.specialist-manifest-XXXXXXXX.txt)
+    f=$(mktemp /tmp/.specialist-manifest-spec-review-XXXXXXXX.txt)
     chmod 600 "$f"
     echo "$f" > "${tmpdir}/p3.txt"
   ) &
