@@ -307,3 +307,107 @@ EOF
   grep -q 'findings_final' "$SKILL_MD" \
     || fail "findings_final field not documented in SKILL.md"
 }
+
+# ===========================================================================
+# Requirement: refined ラベル自動付与（Step 4.5）
+# Spec: deltaspec/changes/issue-574/specs/refined-label/spec.md
+# ===========================================================================
+
+# Step 4.5 の判定ロジックを Bash スニペットとして再現するヘルパー関数
+# （SKILL.md の Step 4.5 実装を inline で検証）
+_run_step45() {
+  local quick_flag="$1"
+  local state="$2"
+  local labels_hint_in="${3:-enhancement}"
+
+  # Step 4.5: refined ラベル付与判定ロジック
+  local labels_hint="$labels_hint_in"
+  if [[ "$quick_flag" != "true" && "$state" != "circuit_broken" ]]; then
+    labels_hint="${labels_hint},refined"
+  fi
+  echo "$labels_hint"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: 通常モードかつ round loop 正常完了時に refined を付与する
+# WHEN quick_flag=false かつ round loop が circuit_broken でない状態で正常完了した
+# THEN labels_hint に "refined" が追加される
+# ---------------------------------------------------------------------------
+
+@test "workflow-issue-lifecycle Step4.5: quick_flag=false かつ STATE!=circuit_broken のとき labels_hint に refined が追加される" {
+  run _run_step45 "false" "done" "enhancement"
+  assert_success
+  assert_output --partial "refined"
+}
+
+# NOTE: STATE=reviewing は実フローでは round loop 実行中であり Step 4.5 に到達しない。
+# _run_step45 ヘルパーは判定ロジックの単体テストであり、circuit_broken 以外の任意の
+# state 値でも refined が付与されることを確認するためのロジック境界テスト。
+@test "workflow-issue-lifecycle Step4.5: quick_flag=false かつ STATE が circuit_broken でなければ refined が付与される（ロジック境界検証）" {
+  run _run_step45 "false" "completed" "enhancement"
+  assert_success
+  assert_output --partial "refined"
+}
+
+@test "workflow-issue-lifecycle Step4.5: refined 付与後も既存ラベル（enhancement）が保持される" {
+  run _run_step45 "false" "done" "enhancement"
+  assert_success
+  assert_output --partial "enhancement"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: quick モードでは refined を付与しない
+# WHEN quick_flag=true の場合
+# THEN Step 4.5 はスキップされ、labels_hint に "refined" は追加されない
+# ---------------------------------------------------------------------------
+
+@test "workflow-issue-lifecycle Step4.5: quick_flag=true のとき labels_hint に refined が追加されない" {
+  run _run_step45 "true" "done" "enhancement"
+  assert_success
+  refute_output --partial "refined"
+}
+
+@test "workflow-issue-lifecycle Step4.5: quick_flag=true かつ STATE=circuit_broken でも refined が追加されない" {
+  run _run_step45 "true" "circuit_broken" "enhancement"
+  assert_success
+  refute_output --partial "refined"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: circuit_broken 状態では refined を付与しない
+# WHEN round loop が circuit_broken 状態で終了した
+# THEN Step 4.5 はスキップされ、labels_hint に "refined" は追加されない
+# ---------------------------------------------------------------------------
+
+@test "workflow-issue-lifecycle Step4.5: STATE=circuit_broken のとき labels_hint に refined が追加されない" {
+  run _run_step45 "false" "circuit_broken" "enhancement"
+  assert_success
+  refute_output --partial "refined"
+}
+
+@test "workflow-issue-lifecycle Step4.5: STATE=circuit_broken のとき既存ラベルは保持される" {
+  run _run_step45 "false" "circuit_broken" "enhancement"
+  assert_success
+  assert_output --partial "enhancement"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: SKILL.md に Step 4.5 が文書化されている
+# WHEN SKILL.md を読む
+# THEN Step 4.5 / quick_flag / refined の記述が存在する
+# ---------------------------------------------------------------------------
+
+@test "workflow-issue-lifecycle: SKILL.md に Step 4.5 が文書化されている" {
+  grep -qE 'Step 4\.5|step.*4\.5' "$SKILL_MD" \
+    || fail "Step 4.5 not documented in SKILL.md"
+}
+
+@test "workflow-issue-lifecycle: SKILL.md に quick_flag が文書化されている" {
+  grep -q 'quick_flag' "$SKILL_MD" \
+    || fail "quick_flag not documented in SKILL.md"
+}
+
+@test "workflow-issue-lifecycle: SKILL.md に refined ラベル付与が文書化されている" {
+  grep -q 'refined' "$SKILL_MD" \
+    || fail "refined label not documented in SKILL.md"
+}
