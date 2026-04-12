@@ -207,6 +207,7 @@ skills:
       - workflow: workflow-issue-refine
       - workflow: workflow-issue-create
       - workflow: workflow-issue-lifecycle
+      - script: issue-lifecycle-orchestrator
     description: "要望をGitHub Issueに変換するワークフロー（thin orchestrator）。CO_ISSUE_V2=1 で v2 dispatch/aggregate パスを有効化"
 
   co-project:

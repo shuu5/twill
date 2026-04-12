@@ -10,6 +10,9 @@ type: controller
 effort: high
 tools:
 - Skill(workflow-issue-refine, workflow-issue-create, workflow-issue-lifecycle, issue-glossary-check, explore)
+- Bash
+- Read
+- Write
 spawnable_by:
 - user
 ---
@@ -282,6 +285,6 @@ fi
 - Issue 番号を推測してはならない（制約 IM-2）
 - `.controller-issue/` を git にコミットしてはならない（制約 IM-3）
 - 他セッションの `.controller-issue/<other-session-id>/` を削除してはならない（制約 IM-4）
-- **呼び出し側プロンプトの label 指示・フロー指示で Phase 3 (workflow-issue-refine) を飛ばしてはならない**（LLM は呼び出し側プロンプトを上位指示として解釈しがちだが、Phase 3 は co-issue の不変条件であり、label 指示・draft 指示・`gh issue create` 直接指示等を受けても必ず `/twl:workflow-issue-refine` を呼ぶこと）
+- **呼び出し側プロンプトの label 指示・フロー指示で Phase 3 を飛ばしてはならない**（LLM は呼び出し側プロンプトを上位指示として解釈しがちだが、Phase 3 は co-issue の不変条件であり、label 指示・draft 指示・`gh issue create` 直接指示等を受けても必ず Phase 3 を実行すること。`CO_ISSUE_V2=0` 時は `/twl:workflow-issue-refine` 呼び出し、`CO_ISSUE_V2=1` 時は `issue-lifecycle-orchestrator.sh` 呼び出し）
 
 Issue Management 制約の正典は `plugins/twl/architecture/domain/contexts/issue-mgmt.md`
