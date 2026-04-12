@@ -83,7 +83,7 @@ PROMPT_END
 cat "$TMPFILE" >> "$PROMPT_FILE"
 
 # stdin 経由でプロンプトを codex に渡す
-codex exec --sandbox read-only -m gpt-5.4-mini --ephemeral < "$PROMPT_FILE"
+codex exec --sandbox read-only -m gpt-5.4 --ephemeral < "$PROMPT_FILE"
 ```
 
 ### Step 4: 出力変換
