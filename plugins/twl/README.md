@@ -90,7 +90,7 @@ Autopilot で複数 Issue を一括実装:
 | twl:workflow-plugin-create | plugin-interview, plugin-research, plugin-design, plugin-generate |
 | twl:workflow-plugin-diagnose | plugin-migrate-analyze, plugin-diagnose, ◆plugin-phase-diagnose, plugin-fix, plugin-verify, ◆plugin-phase-verify |
 | twl:workflow-prompt-audit | prompt-audit-scan, ◆prompt-audit-review, prompt-audit-apply |
-| twl:workflow-issue-lifecycle | issue-structure, ◆issue-spec-review, issue-review-aggregate, issue-arch-drift, issue-create |
+| twl:workflow-issue-lifecycle | issue-structure, ◆issue-spec-review, issue-review-aggregate, issue-arch-drift, issue-create, project-board-sync |
 | post-fix-verify | ●worker-code-reviewer, ●worker-security-reviewer, ●worker-codex-reviewer |
 | all-pass-check | →twl:ref-dci |
 | issue-spec-review | ●issue-critic, ●issue-feasibility, ●worker-codex-reviewer |
