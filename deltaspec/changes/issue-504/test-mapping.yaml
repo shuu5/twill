@@ -1,0 +1,4 @@
+change: issue-504
+schema: spec-driven
+skip_reason: "No implementation code — change is a GitHub API call only (gh pr comment). No unit/E2E tests applicable."
+tests: []
