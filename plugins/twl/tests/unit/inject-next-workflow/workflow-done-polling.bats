@@ -152,13 +152,14 @@ teardown() {
 # THEN inject_next_workflow() を呼ばず check_and_nudge() を呼ぶ
 # ---------------------------------------------------------------------------
 
-@test "polling[non-terminal]: ts-preflight は terminal でないため inject を呼ばない" {
+@test "polling[non-terminal]: ts-preflight では inject が失敗するため check_and_nudge を呼ぶ" {
   CURRENT_STEP_VALUE="ts-preflight" \
   LAST_INJECTED_STEP="" \
+  INJECT_EXIT=1 \
     run bash "$SANDBOX/scripts/polling-branch.sh"
 
-  # polling-branch.sh は current_step が変化した場合のみ inject を試みる
-  # resolve_next_workflow が non-terminal で exit 1 → inject 失敗 → check_and_nudge へ
+  # inject_next_workflow 自体は呼ばれるが resolve_next_workflow が non-terminal で exit 1
+  # → inject 失敗（INJECT_EXIT=1）→ inject_matched=0 → check_and_nudge へ
   assert_success
   grep -q "check_and_nudge called" "$CALLS_LOG"
 }
