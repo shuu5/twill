@@ -67,6 +67,18 @@ teardown() {
     --autopilot-dir "$AUTOPILOT_DIR" \
     --type issue --issue 494 --field workflow_done 2>/dev/null)
   [ "$workflow_done" = "pr-merge" ]
+
+  # _cr_pr / _cr_branch: gh/git が利用不可の sandbox では空文字で書き込まれる（設計上の期待値）
+  local pr_val branch_val
+  pr_val=$(python3 -m twl.autopilot.state read \
+    --autopilot-dir "$AUTOPILOT_DIR" \
+    --type issue --issue 494 --field pr 2>/dev/null || echo "")
+  branch_val=$(python3 -m twl.autopilot.state read \
+    --autopilot-dir "$AUTOPILOT_DIR" \
+    --type issue --issue 494 --field branch 2>/dev/null || echo "")
+  # pr / branch は空文字または null が期待値（sandbox 環境では gh/git コマンドが利用不可）
+  [[ -z "$pr_val" || "$pr_val" == "null" ]]
+  [[ -z "$branch_val" || "$branch_val" == "null" ]]
 }
 
 # ---------------------------------------------------------------------------
