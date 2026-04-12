@@ -1,0 +1,81 @@
+change_id: issue-460
+generated_at: "2026-04-12T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "resolve-deltaspec-root-direct"
+    name: "直下に deltaspec/config.yaml がある場合"
+    spec_file: "specs/deltaspec-dry-fix/spec.md"
+    spec_line: 8
+    requirement: "deltaspec-helpers ライブラリの新設"
+    test_file: "plugins/twl/tests/unit/deltaspec-dry-fix/deltaspec-helpers.bats"
+    test_name: "resolve_deltaspec_root[direct]: 直下に config.yaml があれば root を出力して成功する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-deltaspec-root-walkdown"
+    name: "walk-down fallback で deltaspec/config.yaml が見つかる場合"
+    spec_file: "specs/deltaspec-dry-fix/spec.md"
+    spec_line: 12
+    requirement: "deltaspec-helpers ライブラリの新設"
+    test_file: "plugins/twl/tests/unit/deltaspec-dry-fix/deltaspec-helpers.bats"
+    test_name: "resolve_deltaspec_root[walkdown]: ネスト 1 階層で config.yaml が見つかれば deltaspec root を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-deltaspec-root-notfound"
+    name: "deltaspec/config.yaml が見つからない場合"
+    spec_file: "specs/deltaspec-dry-fix/spec.md"
+    spec_line: 16
+    requirement: "deltaspec-helpers ライブラリの新設"
+    test_file: "plugins/twl/tests/unit/deltaspec-dry-fix/deltaspec-helpers.bats"
+    test_name: "resolve_deltaspec_root[notfound]: config.yaml がなければ return 1 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "chain-runner-sources-deltaspec-helpers"
+    name: "chain-runner.sh が deltaspec-helpers.sh を source する"
+    spec_file: "specs/deltaspec-dry-fix/spec.md"
+    spec_line: 27
+    requirement: "chain-runner.sh の resolve_deltaspec_root 共有化"
+    test_file: "plugins/twl/tests/unit/deltaspec-dry-fix/deltaspec-helpers.bats"
+    test_name: "chain-runner[source]: lib/deltaspec-helpers.sh を source している"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "archive-uses-resolve-deltaspec-root"
+    name: "_archive_deltaspec_changes_for_issue が resolve_deltaspec_root を使う"
+    spec_file: "specs/deltaspec-dry-fix/spec.md"
+    spec_line: 36
+    requirement: "autopilot-orchestrator.sh のインライン find 除去"
+    test_file: "plugins/twl/tests/unit/deltaspec-dry-fix/deltaspec-helpers.bats"
+    test_name: "autopilot-orchestrator[archive]: _archive_deltaspec_changes_for_issue が resolve_deltaspec_root を呼んでいる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "shellcheck-both-scripts"
+    name: "shellcheck が両スクリプトを通過する"
+    spec_file: "specs/deltaspec-dry-fix/spec.md"
+    spec_line: 40
+    requirement: "autopilot-orchestrator.sh のインライン find 除去"
+    test_file: "plugins/twl/tests/unit/deltaspec-dry-fix/deltaspec-helpers.bats"
+    test_name: "shellcheck[chain-runner]: shellcheck がエラーなしで通過する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
