@@ -2,11 +2,15 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Date
 
 2026-04-10
+
+## Related
+
+- ADR-018 (state schema SSOT): `workflow_done` フィールドを廃止し、inject トリガーを `current_step` terminal 値検知に変更。本 ADR の Decision 1-2 の `workflow_done` 関連記述は ADR-018 で supersede された
 
 ## Context
 

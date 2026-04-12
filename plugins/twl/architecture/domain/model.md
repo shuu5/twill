@@ -27,7 +27,7 @@ classDiagram
     }
     class IssueState {
         issue: number
-        status: running|merge-ready|done|failed
+        status: running|merge-ready|done|failed|conflict
         branch: string
         pr: number|null
         window: string
@@ -180,11 +180,15 @@ graph TD
 ```mermaid
 stateDiagram-v2
     [*] --> running : Issue割り当て
-    running --> merge_ready : 全ステップ完了
+    running --> merge_ready : 全ステップ完了（Worker が宣言）
     running --> failed : crash/timeout/ステップ失敗
-    merge_ready --> done : merge-gate PASS
-    merge_ready --> failed : merge-gate REJECT
-    failed --> running : retry (retry_count < 1)
+    merge_ready --> done : merge-gate PASS（Pilot がマージ後に設定）
+    merge_ready --> failed : merge-gate REJECT 2回目（リトライ上限）
+    merge_ready --> conflict : deps.yaml コンフリクト検出
+    failed --> running : retry（retry_count < 1）
+    failed --> done : --force-done（緊急時のみ、override_reason 必須）
+    conflict --> merge_ready : Pilot リベース後（conflict_retry_count < 1）
+    conflict --> failed : conflict リトライ上限超過
     done --> [*]
 ```
 
@@ -196,13 +200,20 @@ stateDiagram-v2
 | running | 全ステップ完了 | merge-ready | merge-gate に進む |
 | running | ステップ失敗 / crash | failed | 不変条件 G: クラッシュは必ず検知 |
 | merge-ready | merge-gate PASS | done | 終端状態 |
-| merge-ready | merge-gate REJECT | failed | review findings あり |
+| merge-ready | merge-gate REJECT 2回目 | failed | リトライ上限（不変条件 E） |
+| merge-ready | deps.yaml コンフリクト検出 | conflict | Pilot がリベースを試行 |
+| conflict | Pilot リベース成功 | merge-ready | conflict_retry_count < 1 |
+| conflict | conflict リトライ上限超過 | failed | 回復不可 |
 | failed | retry 判定 | running | retry_count < 1（不変条件 E） |
 | failed | retry 上限到達 | failed (確定) | retry_count >= 1、Pilot に報告 |
+| failed | --force-done | done | 緊急時のみ（override_reason 必須） |
 
 - `done` は完全終端状態（逆行不可）
 - `failed (確定)` からの復帰は Pilot による手動介入のみ
 - merge 失敗時に rebase は試みない（停止のみ、不変条件 F）
+- `conflict` は deps.yaml 変更 Issue の並列実行時に発生しうる（不変条件 H）
+
+> **SSOT ルール（ADR-018）**: 外部観察者は `status` のみを参照する。`current_step` は orchestrator inject 機構の内部フィールド
 
 ### 統一状態ファイルスキーマ
 
