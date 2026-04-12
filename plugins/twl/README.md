@@ -77,7 +77,7 @@ Autopilot で複数 Issue を一括実装:
 | twl:co-architect | explore, architect-completeness-check, architect-decompose, architect-group-refine, architect-issue-create, evaluate-architecture, →twl:ref-architecture-spec, →twl:ref-architecture |
 | twl:co-utility | worktree-list, worktree-delete, twl-validate, services, ui-capture, schema-update |
 | twl:co-self-improve | →twl:workflow-observe-loop, test-project-init, test-project-reset, test-project-scenario-load, observe-once, problem-detect, issue-draft-from-observation, observe-retrospective, ●observer-evaluator, →twl:test-scenario-catalog, →twl:observation-pattern-catalog, →twl:load-test-baselines |
-| twl:su-observer | observe-once, problem-detect, ●observer-evaluator, intervene-auto, intervene-confirm, intervene-escalate, →twl:intervention-catalog, →twl:observation-pattern-catalog, →twl:monitor-channel-catalog |
+| twl:su-observer | observe-once, problem-detect, ●observer-evaluator, intervene-auto, intervene-confirm, intervene-escalate, →twl:intervention-catalog, →twl:observation-pattern-catalog, →twl:monitor-channel-catalog, su-compact |
 | twl:workflow-setup | init, worktree-create, project-board-status-update, crg-auto-build, change-propose, ac-extract |
 | twl:workflow-test-ready | ◆test-scaffold, change-apply, check, e2e-plan |
 | twl:workflow-pr-verify | ac-deploy-trigger, prompt-compliance, ts-preflight, ◆phase-review, scope-judge, pr-test, ac-verify, ◆test-phase |

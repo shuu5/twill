@@ -69,11 +69,11 @@ Layer 2（Escalate）は必ずユーザー確認を得ること（SU-2）。
 
 **ガイドライン: Wave 管理**
 
-Issue 群の一括実装（Wave）を要求された場合、Wave 計画 → co-autopilot spawn → observe ループ → wave-collect → su-compact のフローを実行する（SU-6）。
+Issue 群の一括実装（Wave）を要求された場合、Wave 計画 → co-autopilot spawn → observe ループ → wave-collect → externalize-state のフローを実行する（SU-6a）。context 逼迫時またはユーザー指示時に /compact をユーザーへ提案する（SU-6b）。
 
 **ガイドライン: compaction**
 
-「compact」指示または context 50% 到達時（SU-5）に `Skill(twl:su-compact)` を実行する。
+「compact」指示または context 80% 到達時（SU-5）に `Skill(twl:su-compact)` を実行する。
 
 **ガイドライン: 過去記録確認**
 
@@ -99,7 +99,7 @@ session-comm.sh   # plugins/session/scripts/session-comm.sh
 ## context 自動監視
 
 su-observer は定期的に（または Stop hook で）context 消費量を確認する。
-50% 到達時に自動的に Step 1 の「compaction」判断を実行（SU-5 制約）。
+80% 到達時に自動的に Step 1 の「compaction」判断を実行（SU-5 制約）。
 
 ## PreCompact / PostCompact Hook 設計
 
@@ -140,8 +140,9 @@ fi
 - Skill tool による controller の直接呼出しをしてはならない（cld-spawn 経由で起動すること）
 - Layer 2 介入をユーザー確認なしで実行してはならない（SU-2）
 - 同時に 5 を超える controller session を supervise してはならない（SU-4）
-- context 50% 到達を無視してはならない（SU-5）
-- Wave 完了後の su-compact を省略してはならない（SU-6）
+- context 80% 到達を無視してはならない（SU-5）
+- Wave 完了後の externalize-state を省略してはならない（SU-6a）
+- context 逼迫時またはユーザー指示なしに /compact を自動実行してはならない（SU-6b）
 
 ## .supervisor/ ディレクトリ構造
 

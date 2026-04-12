@@ -59,7 +59,7 @@ Wave 管理の状態。
 | working_pct | number | context window 消費率（0-100） |
 | externalized_count | number | 外部化されたメモリファイル数 |
 | last_compaction | string (ISO 8601) \| null | 最終 compaction 時刻 |
-| auto_compact_threshold | number | 自動 compaction 閾値（default: 50） |
+| auto_compact_threshold | number | 自動 compaction 閾値（default: 80） |
 
 ### ExternalizationRecord
 
@@ -126,7 +126,7 @@ flowchart TD
     J -->|No| M{controller 完了?}
     M -->|Yes| N[結果収集]
     N --> O{Wave 管理?}
-    O -->|Yes| P[Wave 完了処理 + su-compact]
+    O -->|Yes| P[Wave 完了処理 + externalize-state]
     P --> C
     O -->|No| C
     M -->|No| I
@@ -148,7 +148,7 @@ flowchart TD
     G --> D
     F -->|No| D
     E -->|Yes| H[結果収集]
-    H --> I[su-compact: 記憶固定化 + compaction]
+    H --> I[externalize-state: 記憶固定化]
     I --> J{次 Wave あり?}
     J -->|Yes| K[Wave N+1 計画]
     K --> B
@@ -159,7 +159,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A{トリガー} -->|自動: 50%到達| B[状況判定]
+    A{トリガー} -->|自動: 80%到達| B[状況判定]
     A -->|手動: /su-compact| B
     A -->|Wave完了| B
     B --> C{状況分類}
@@ -186,8 +186,9 @@ flowchart TD
 | SU-2 | Layer 2（Escalate）の介入はユーザー確認が MUST | OBS-2 継承 |
 | SU-3 | Supervisor 自身が Issue の直接実装を行ってはならない（SHALL） | OBS-3 継承 |
 | SU-4 | 同時に supervise できる controller session は 5 を超えてはならない（SHALL） | OBS-4 拡張（3→5） |
-| SU-5 | context 消費量 50% 到達時に知識外部化を開始しなければならない（SHALL） | 新規 |
-| SU-6 | Wave 完了時に結果収集と su-compact を実行しなければならない（SHALL） | 新規 |
+| SU-5 | context 消費量 80% 到達時に知識外部化を開始しなければならない（SHALL） | 新規 |
+| SU-6a | Wave 完了時に結果収集と externalize-state を実行しなければならない（SHALL） | SU-6 分割（#498） |
+| SU-6b | context 逼迫時またはユーザー指示時に /compact をユーザーへ提案しなければならない（SHOULD） | built-in CLI のためユーザー手動実行 |
 | SU-7 | observed session への inject/send-keys は介入プロトコルに従う場合に許可（MAY） | OB-3 廃止に対応 |
 
 ### OB-* Constraints との関係
@@ -205,7 +206,7 @@ flowchart TD
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **supervisor** | su-observer | プロジェクト常駐メタ認知。controller spawn + observe + 知識外部化 |
-| **workflow** | su-compact | 知識外部化 + compaction ワークフロー |
+| **atomic** | su-compact | 知識外部化 + compaction 制御（externalize-state 呼出し + /compact 提案） |
 | **atomic** | observe-once | 単一キャプチャの取得と解析（既存継承） |
 | **atomic** | problem-detect | rule-based で capture から既知パターンを検出（既存継承） |
 | **atomic** | wave-collect | Wave 完了時の結果収集 |
