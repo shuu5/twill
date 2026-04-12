@@ -321,6 +321,10 @@ launch_worker() {
     echo "[orchestrator] Issue #${ISSUE}: worktree 作成完了: $worktree_dir" >&2
   fi
 
+  # CRG graph DB symlink（main の DB を参照、#532）
+  local _crg_main="${effective_project_dir}/main/.code-review-graph"
+  [[ -d "$_crg_main" && ! -e "$worktree_dir/.code-review-graph" ]] && ln -sf "$_crg_main" "$worktree_dir/.code-review-graph"
+
   local effective_model="${model_override:-${WORKER_MODEL:-sonnet}}"
   local launch_args=(
     --issue "$ISSUE"

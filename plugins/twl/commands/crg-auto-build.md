@@ -15,6 +15,7 @@ CRG 導入済みプロジェクトで graph.db が不在の場合、自動でフ
 - .mcp.json が存在しない → 何も出力せず正常終了
 - .mcp.json に code-review-graph エントリがない → 何も出力せず正常終了
 - .code-review-graph/graph.db が存在する → 何も出力せず正常終了
+- .code-review-graph がシンボリックリンク → 何も出力せず正常終了（worktree は main の DB を参照、#532）
 
 ### Step 2: フルビルド実行
 
