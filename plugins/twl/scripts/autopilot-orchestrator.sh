@@ -741,7 +741,7 @@ detect_input_waiting() {
   # Free-form text パターン
   local -a freeform_patterns=(
     "よろしいですか[？?]:freeform_yoroshii"
-    "続けますか\|進んでよいですか\|実行しますか:freeform_tsuzukemasu"
+    "続けますか|進んでよいですか|実行しますか:freeform_tsuzukemasu"
     "\\[[Yy]/[Nn]\\]:freeform_yn_bracket"
   )
 
@@ -779,7 +779,7 @@ detect_input_waiting() {
 
   # Trace log
   mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true
-  local trace_log="${AUTOPILOT_DIR}/trace/input-waiting-$(date +%Y%m%d).log"
+  local trace_log="${AUTOPILOT_DIR}/trace/input-waiting-$(date -u +%Y%m%d).log"
   echo "[${ts}] issue=${issue} pattern=${detected_name} window=${window_name}" >> "$trace_log" 2>/dev/null || true
 
   # デバウンスキーをリセット（次回からまた 2 cycle 必要）
