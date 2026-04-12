@@ -48,6 +48,8 @@ Usage: $(basename "$0") [OPTIONS]
   --per-issue-dir DIR  per-issue ディレクトリの絶対パス（必須）
                        .controller-issue/<sid>/per-issue/ に相当
   --model MODEL        Worker セッションに使用するモデル（デフォルト: sonnet）
+  --resume             Resume モード（done 済みをスキップ、failed をリセット）
+                       ※ resume 動作は spawn_session 内で常時有効なため実質 no-op
   -h, --help           このヘルプを表示
 
 Environment:
@@ -65,6 +67,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --per-issue-dir) PER_ISSUE_DIR="$2"; shift 2 ;;
     --model)         WORKER_MODEL="$2"; shift 2 ;;
+    --resume)        shift ;;  # spawn_session 内で常時 resume 動作 — フラグは受け取るが追加処理不要
     -h|--help)       usage; exit 0 ;;
     *) echo "Error: 不明なオプション: $1" >&2; exit 1 ;;
   esac
