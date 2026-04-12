@@ -143,6 +143,7 @@ class TestExecute:
         patches = [
             patch("os.getcwd", return_value="/home/user/projects/repo/main"),
             patch("twl.autopilot.mergegate._check_worker_window_guard"),
+            patch("twl.autopilot.mergegate._check_phase_review_guard"),
             patch("twl.autopilot.mergegate._state_read", return_value=autopilot_status),
             patch("twl.autopilot.mergegate._state_write"),
             patch("twl.autopilot.mergegate._board_update"),
@@ -160,37 +161,39 @@ class TestExecute:
     def test_successful_merge_calls_state_write_done(self, gate, autopilot_dir):
         with patch("os.getcwd", return_value="/home/user/projects/main"):
             with patch("twl.autopilot.mergegate._check_worker_window_guard"):
-                with patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"):
-                    with patch("twl.autopilot.mergegate._state_write") as mock_sw:
-                        with patch("twl.autopilot.mergegate._board_update"):
-                            with patch("twl.autopilot.mergegate._detect_repo_mode",
-                                       return_value="standard"):
-                                with patch("subprocess.run",
-                                           return_value=MagicMock(returncode=0, stdout="")):
-                                    gate.execute()
-                                    # Should write status=done
-                                    calls_kwargs = [
-                                        {k: v for k, v in call_args.kwargs.items()}
-                                        for call_args in mock_sw.call_args_list
-                                    ]
-                                    statuses = [kw.get("status") for kw in calls_kwargs]
-                                    assert "done" in statuses
+                with patch("twl.autopilot.mergegate._check_phase_review_guard"):
+                    with patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"):
+                        with patch("twl.autopilot.mergegate._state_write") as mock_sw:
+                            with patch("twl.autopilot.mergegate._board_update"):
+                                with patch("twl.autopilot.mergegate._detect_repo_mode",
+                                           return_value="standard"):
+                                    with patch("subprocess.run",
+                                               return_value=MagicMock(returncode=0, stdout="")):
+                                        gate.execute()
+                                        # Should write status=done
+                                        calls_kwargs = [
+                                            {k: v for k, v in call_args.kwargs.items()}
+                                            for call_args in mock_sw.call_args_list
+                                        ]
+                                        statuses = [kw.get("status") for kw in calls_kwargs]
+                                        assert "done" in statuses
 
     def test_merge_failure_exits_with_1(self, gate):
         with patch("os.getcwd", return_value="/home/user/projects/main"):
             with patch("twl.autopilot.mergegate._check_worker_window_guard"):
-                with patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"):
-                    with patch("twl.autopilot.mergegate._state_write"):
-                        with patch("twl.autopilot.mergegate._detect_repo_mode",
-                                   return_value="standard"):
-                            def fake_run(cmd, **kwargs):
-                                if "gh" in cmd and "merge" in cmd:
-                                    return MagicMock(returncode=1, stderr="merge error")
-                                return MagicMock(returncode=0, stdout="")
-                            with patch("subprocess.run", side_effect=fake_run):
-                                with pytest.raises(SystemExit) as exc_info:
-                                    gate.execute()
-                                assert exc_info.value.code == 1
+                with patch("twl.autopilot.mergegate._check_phase_review_guard"):
+                    with patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"):
+                        with patch("twl.autopilot.mergegate._state_write"):
+                            with patch("twl.autopilot.mergegate._detect_repo_mode",
+                                       return_value="standard"):
+                                def fake_run(cmd, **kwargs):
+                                    if "gh" in cmd and "merge" in cmd:
+                                        return MagicMock(returncode=1, stderr="merge error")
+                                    return MagicMock(returncode=0, stdout="")
+                                with patch("subprocess.run", side_effect=fake_run):
+                                    with pytest.raises(SystemExit) as exc_info:
+                                        gate.execute()
+                                    assert exc_info.value.code == 1
 
     def test_running_status_raises_error(self, gate):
         with patch("os.getcwd", return_value="/home/user/projects/main"):
@@ -206,15 +209,16 @@ class TestExecute:
 
         with patch("os.getcwd", return_value="/home/user/projects/main"):
             with patch("twl.autopilot.mergegate._check_worker_window_guard"):
-                with patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"):
-                    with patch("twl.autopilot.mergegate._state_write"):
-                        with patch("twl.autopilot.mergegate._board_update"):
-                            with patch("twl.autopilot.mergegate._detect_repo_mode",
-                                       return_value="standard"):
-                                with patch("subprocess.run",
-                                           return_value=MagicMock(returncode=0, stdout="")):
-                                    # Should not raise
-                                    gate.execute()
+                with patch("twl.autopilot.mergegate._check_phase_review_guard"):
+                    with patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"):
+                        with patch("twl.autopilot.mergegate._state_write"):
+                            with patch("twl.autopilot.mergegate._board_update"):
+                                with patch("twl.autopilot.mergegate._detect_repo_mode",
+                                           return_value="standard"):
+                                    with patch("subprocess.run",
+                                               return_value=MagicMock(returncode=0, stdout="")):
+                                        # Should not raise
+                                        gate.execute()
 
 
 # ---------------------------------------------------------------------------
@@ -355,6 +359,7 @@ class TestExecuteWithIssueVerify:
     def test_merge_ok_and_issue_closed_writes_done(self, gate):
         with patch("os.getcwd", return_value="/home/user/projects/main"), \
              patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._check_phase_review_guard"), \
              patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
              patch("twl.autopilot.mergegate._state_write") as mock_sw, \
              patch("twl.autopilot.mergegate._board_update") as mock_board, \
@@ -370,6 +375,7 @@ class TestExecuteWithIssueVerify:
     def test_merge_ok_but_issue_close_fails_writes_failed_and_exit2(self, gate):
         with patch("os.getcwd", return_value="/home/user/projects/main"), \
              patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._check_phase_review_guard"), \
              patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
              patch("twl.autopilot.mergegate._state_write") as mock_sw, \
              patch("twl.autopilot.mergegate._board_update") as mock_board, \
@@ -396,6 +402,7 @@ class TestExecuteWithIssueVerify:
         """Regression: execute must call _verify_and_close_issue after successful merge."""
         with patch("os.getcwd", return_value="/home/user/projects/main"), \
              patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._check_phase_review_guard"), \
              patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
              patch("twl.autopilot.mergegate._state_write"), \
              patch("twl.autopilot.mergegate._board_update"), \
@@ -534,6 +541,7 @@ class TestEnsureClosesLink:
 
         with patch("os.getcwd", return_value="/home/u/repo/main"), \
              patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._check_phase_review_guard"), \
              patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
              patch("twl.autopilot.mergegate._state_write"), \
              patch("twl.autopilot.mergegate._board_update"), \
@@ -608,6 +616,7 @@ class TestCheckBaseDrift:
 
         with patch("os.getcwd", return_value="/home/user/projects/main"), \
              patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._check_phase_review_guard"), \
              patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
              patch("twl.autopilot.mergegate._state_write"), \
              patch("twl.autopilot.mergegate._board_update"), \
@@ -678,6 +687,7 @@ class TestCheckBaseDrift:
 
         with patch("os.getcwd", return_value="/home/u/repo/main"), \
              patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._check_phase_review_guard"), \
              patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
              patch("twl.autopilot.mergegate._state_write"), \
              patch("twl.autopilot.mergegate._board_update"), \
@@ -809,6 +819,7 @@ class TestForceFlag:
 
         with patch("os.getcwd", return_value="/home/user/projects/main"), \
              patch("twl.autopilot.mergegate._check_worker_window_guard"), \
+             patch("twl.autopilot.mergegate._check_phase_review_guard"), \
              patch("twl.autopilot.mergegate._state_read", return_value="merge-ready"), \
              patch("twl.autopilot.mergegate._state_write"), \
              patch("twl.autopilot.mergegate._board_update"), \
