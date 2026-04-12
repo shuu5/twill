@@ -2273,6 +2273,11 @@ scripts:
     path: scripts/hooks/pre-tool-use-host-safety.sh
     description: "PreToolUse hook: Bash tool でホスト環境を破壊しうるコマンド（pip install, apt install, --break-system-packages）を deny（AUTOPILOT_DIR 設定時のみ）"
 
+  pre-tool-use-deps-yaml-guard:
+    type: script
+    path: scripts/hooks/pre-tool-use-deps-yaml-guard.sh
+    description: "PreToolUse hook: Write/Edit で deps.yaml を変更する前に YAML syntax を検証し、不正な YAML を disk に書き込む前に exit 2 でブロックする"
+
   tech-stack-detect:
     type: script
     path: scripts/tech-stack-detect.sh
