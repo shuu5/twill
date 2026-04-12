@@ -80,9 +80,6 @@ PR_NUMBER="$(python3 -m twl.autopilot.state read \
 MODE="$(python3 -m twl.autopilot.state read \
   --type issue --issue "$ISSUE_NUM" --field mode \
   2>/dev/null || echo "")"
-WORKFLOW_DONE="$(python3 -m twl.autopilot.state read \
-  --type issue --issue "$ISSUE_NUM" --field workflow_done \
-  2>/dev/null || echo "")"
 COMPACT_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")"
 
 {
@@ -92,7 +89,6 @@ COMPACT_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")"
   [[ -n "$CHANGE_ID" ]] && echo "change_id: ${CHANGE_ID}"
   [[ -n "$PR_NUMBER" ]] && echo "pr_number: ${PR_NUMBER}"
   [[ -n "$MODE" ]] && echo "mode: ${MODE}"
-  [[ -n "$WORKFLOW_DONE" ]] && echo "workflow_done: ${WORKFLOW_DONE}"
 } >> "$CONTEXT_FILE" 2>/dev/null || true
 
 exit 0

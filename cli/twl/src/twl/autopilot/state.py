@@ -31,7 +31,7 @@ _TRANSITIONS: dict[str, set[str]] = {
     "conflict": {"merge-ready", "failed"},
 }
 
-_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override", "workflow_done", "pr"}
+_PILOT_ISSUE_ALLOWED_KEYS = {"status", "merged_at", "failure", "manual_override", "pr", "workflow_injected", "injected_at"}
 
 
 def _autopilot_dir() -> Path:
@@ -259,7 +259,6 @@ class StateManager:
             "merged_at": None,
             "files_changed": [],
             "failure": None,
-            "workflow_done": None,
             "implementation_pr": None,
             "deltaspec_mode": None,
         }

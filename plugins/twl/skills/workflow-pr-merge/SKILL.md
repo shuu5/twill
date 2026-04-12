@@ -115,10 +115,10 @@ ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
 eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" autopilot-detect)"
 ```
 
-- IS_AUTOPILOT=true → context.md 書き出し（下記スニペット）→ `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "workflow_done=pr-merge" --set "status=merge-ready"` を実行して停止
+- IS_AUTOPILOT=true → context.md 書き出し（下記スニペット）→ `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "status=merge-ready"` を実行して停止
 - IS_AUTOPILOT=false → 「workflow-pr-merge 完了」と報告して停止
 
-**context.md 書き出しスニペット（workflow_done=pr-merge 直前）:**
+**context.md 書き出しスニペット（status=merge-ready 直前）:**
 ```bash
 CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"
 ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")

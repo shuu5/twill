@@ -99,6 +99,16 @@ WORKFLOW_NEXT_SKILL: dict[str, str] = {
     "pr-merge": "",
 }
 
+# Maps terminal current_step values to the next workflow skill (ADR-018).
+# Replaces workflow_done-based inject detection.
+# "warning-fix" is the pr-fix terminal step (not in CHAIN_STEPS; dynamically set by chain-runner).
+TERMINAL_STEP_TO_NEXT_SKILL: dict[str, str] = {
+    "ac-extract": "workflow-test-ready",
+    "post-change-apply": "workflow-pr-verify",
+    "ac-verify": "workflow-pr-fix",
+    "warning-fix": "workflow-pr-merge",
+}
+
 
 class ChainError(Exception):
     """Raised for chain step errors."""

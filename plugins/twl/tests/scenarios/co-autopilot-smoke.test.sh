@@ -230,8 +230,7 @@ test_state_write_read_field_update() {
   "fix_instructions": null,
   "merged_at": null,
   "files_changed": [],
-  "failure": null,
-  "workflow_done": null
+  "failure": null
 }
 JSON
   python3 -m twl.autopilot.state write \

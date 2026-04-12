@@ -74,7 +74,6 @@ fi
 _skill_safe="${next_skill//$'\n'/}"  # 改行除去
 if [[ "$_skill_safe" == "pr-merge" || "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
   echo "[orchestrator] Issue #${issue}: pr-merge 検出 — inject スキップ、merge-gate フローに委譲" >&2
-  echo "state_write workflow_done=null" >> "$STATE_FILE"
   exit 0
 fi
 if [[ ! "$_skill_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
@@ -103,9 +102,6 @@ fi
 # --- inject 実行 ---
 echo "tmux send-keys -t $window_name $_skill_safe" >> "$CALLS_LOG"
 echo "[orchestrator] Issue #${issue}: inject_next_workflow — $_skill_safe" >&2
-
-# --- workflow_done クリア ---
-echo "state_write workflow_done=null" >> "$STATE_FILE"
 
 # --- inject 履歴記録 ---
 injected_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -167,15 +163,6 @@ teardown() {
 
   assert_success
   ! grep -q "tmux send-keys" "$CALLS_LOG" 2>/dev/null
-}
-
-@test "inject_next_workflow[full-pr-merge-path]: /twl:workflow-pr-merge 時に workflow_done をクリアする" {
-  NEXT_WORKFLOW="/twl:workflow-pr-merge" \
-  PANE_OUTPUT="> " \
-    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
-
-  assert_success
-  grep -q "state_write workflow_done=null" "$STATE_FILE"
 }
 
 @test "inject_next_workflow[full-pr-merge-path]: merge-gate 委譲ログを出力する" {
@@ -333,23 +320,6 @@ teardown() {
   assert_success
   # ISO8601 パターン: 2024-01-01T00:00:00Z
   grep -qE "state_write injected_at=[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z" "$STATE_FILE"
-}
-
-# ---------------------------------------------------------------------------
-# Edge case: workflow_done クリアの順序（inject 成功時と pr-merge 時の両方で必須）
-# ---------------------------------------------------------------------------
-
-@test "inject_next_workflow[order]: inject 成功時に workflow_done クリアが workflow_injected より先に記録される" {
-  NEXT_WORKFLOW="/twl:workflow-pr-verify" \
-  PANE_OUTPUT="> " \
-    run bash "$SANDBOX/scripts/inject-next-workflow-dispatch.sh" "340" "ap-#340"
-
-  assert_success
-  local line_clear line_injected
-  line_clear=$(grep -n "state_write workflow_done=null" "$STATE_FILE" | head -1 | cut -d: -f1)
-  line_injected=$(grep -n "state_write workflow_injected=" "$STATE_FILE" | head -1 | cut -d: -f1)
-  [[ -n "$line_clear" && -n "$line_injected" ]]
-  [[ "$line_clear" -lt "$line_injected" ]]
 }
 
 # ---------------------------------------------------------------------------
