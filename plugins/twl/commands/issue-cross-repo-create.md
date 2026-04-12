@@ -121,7 +121,12 @@ done
 if [ ${#CHILD_REFS[@]} -eq 0 ]; then
   echo "⚠️ 子 Issue の作成が全件失敗しました。parent Issue のチェックリストは更新しません"
 else
-  gh issue view "${PARENT_NUM}" --json body -q '.body' > "${WORK_DIR}/parent-body.txt"
+  # body + 全 comments を取得（content-reading ポリシー: gh-read-content.sh 経由）
+  PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+  source "${PLUGIN_ROOT}/scripts/lib/gh-read-content.sh"
+  gh_read_issue_full "${PARENT_NUM}" > "${WORK_DIR}/parent-full-content.txt"
+  # テンプレート置換用: full content から body 部分のみ抽出（## === Comments === セパレータより前）
+  sed '/^## === Comments ===$/,$d' "${WORK_DIR}/parent-full-content.txt" > "${WORK_DIR}/parent-body.txt"
 
   printf '' > "${WORK_DIR}/child-checklist.txt"
   for REF in "${CHILD_REFS[@]}"; do

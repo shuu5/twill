@@ -19,6 +19,8 @@ source "${SCRIPT_DIR}/chain-steps.sh"
 source "${SCRIPT_DIR}/lib/python-env.sh"
 # shellcheck source=./lib/deltaspec-helpers.sh
 source "${SCRIPT_DIR}/lib/deltaspec-helpers.sh"
+# shellcheck source=./lib/gh-read-content.sh
+source "${SCRIPT_DIR}/lib/gh-read-content.sh"
 # shellcheck source=./resolve-issue-num.sh
 source "${SCRIPT_DIR}/resolve-issue-num.sh"
 
@@ -327,7 +329,7 @@ step_init() {
     # Issue body から Implemented-in: #<N> タグを検出
     local impl_pr=""
     if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-      impl_pr="$(gh issue view "$issue_num" --json body --jq '.body' 2>/dev/null \
+      impl_pr="$(gh_read_issue_full "$issue_num" 2>/dev/null \
         | grep -oE 'Implemented-in: #[0-9]+' | head -1 | grep -oE '[0-9]+$' || echo "")"
     fi
     # state に deltaspec_mode=retroactive を永続化
@@ -584,11 +586,9 @@ step_arch_ref() {
     return 1
   fi
 
-  # Issue body + comments から arch-ref タグを検索
-  local body comments combined
-  body=$(gh issue view "$issue_num" --json body --jq '.body' 2>/dev/null || echo "")
-  comments=$(gh api "repos/{owner}/{repo}/issues/${issue_num}/comments" --jq '.[].body' 2>/dev/null || echo "")
-  combined="${body}${comments}"
+  # Issue body + comments から arch-ref タグを検索（content-reading ポリシー: gh_read_issue_full 経由）
+  local combined
+  combined=$(gh_read_issue_full "$issue_num" 2>/dev/null || echo "")
 
   if ! echo "$combined" | grep -q '<!-- arch-ref-start -->'; then
     skip "arch-ref" "タグなし — スキップ"

@@ -32,6 +32,11 @@ co-issue Phase 3（Per-Issue 精緻化ループ）のロジックを担当する
 
 各 Issue に `/twl:issue-structure` を呼び出してテンプレート適用。
 
+- **Issue body + comments の取得（MUST）**: `scripts/lib/gh-read-content.sh` の `gh_read_issue_full` を使用して body と全 comments を一括取得し、specialist に渡す。comments 取りこぼし禁止。
+  ```bash
+  source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/gh-read-content.sh"
+  ISSUE_FULL_CONTENT=$(gh_read_issue_full "${issue_num}" 2>/dev/null || echo "")
+  ```
 - 推奨ラベル抽出
 - tech-debt 棚卸し（該当時は `/twl:issue-tech-debt-absorb` も呼び出す）
 - クロスリポ分割時は parent + 子 Issue の構造化ルールに従う
@@ -56,13 +61,15 @@ OUTPUT_DIR="/tmp/spec-review-outputs-$$"
 mkdir -p "$ISSUES_DIR" "$OUTPUT_DIR"
 
 # 各 Issue を JSON ファイルに書き出す（1 ファイル = 1 Issue）
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/gh-read-content.sh"
 for issue in "${unstructured_issues[@]}"; do
   issue_num="${issue[number]}"
+  issue_full_content=$(gh_read_issue_full "${issue_num}" 2>/dev/null || echo "")
   python3 -c "
 import json, sys
 data = {
   'number': ${issue_num},
-  'body': '''${issue_body}''',
+  'body': '''${issue_full_content}''',
   'scope_files': ${scope_files_json},
   'related_issues': ${related_issues_json},
   'is_quick_candidate': ${is_quick_candidate}

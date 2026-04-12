@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ac-checklist-gen.sh — Issue body の AC を checkbox 化し副作用キーワードを [!] でマーク
+# ac-checklist-gen.sh — Issue body + comments の AC を checkbox 化し副作用キーワードを [!] でマーク
 #
 # Usage: ac-checklist-gen.sh <issue-number>
 # Output: stdout（Pilot がコピペ or リダイレクトで利用）
@@ -7,7 +7,9 @@ set -euo pipefail
 
 ISSUE_NUM="${1:?Issue number required}"
 
-BODY=$(gh issue view "$ISSUE_NUM" --json body -q .body)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/gh-read-content.sh"
+BODY=$(gh_read_issue_full "$ISSUE_NUM")
 
 # 副作用キーワードパターン（日本語・英語両対応、部分一致）
 SIDE_EFFECT_PATTERN='Issue にコメント|gh issue comment|comment.*[Ii]ssue|gh label|ラベル追加|--add-label|README|ドキュメント更新|docs?/|architecture/'

@@ -13,6 +13,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=./lib/python-env.sh
 source "${SCRIPT_DIR}/lib/python-env.sh"
+# shellcheck source=./lib/gh-read-content.sh
+source "${SCRIPT_DIR}/lib/gh-read-content.sh"
 
 # --- 引数解析 ---
 MODE=""
@@ -179,21 +181,19 @@ issue_touches_deps_yaml() {
     local repo_id="${4:-_default}"
     local r_flag
     r_flag=$(gh_repo_flag "$repo_id")
-    if [[ -z "$body" ]]; then
-        # shellcheck disable=SC2086
-        body=$(gh issue view "$issue" $r_flag --json body -q '.body' 2>/dev/null || true)
-    fi
-    if [[ -z "$comments" ]]; then
-        local api_path
+    local full_content=""
+    if [[ -z "$body" && -z "$comments" ]]; then
+        # gh_read_issue_full で body + 全 comments を一括取得（content-reading ポリシー）
         if [[ "$repo_id" != "_default" && "$CROSS_REPO" == "true" ]]; then
-            api_path="repos/${REPO_OWNERS[$repo_id]}/${REPO_NAMES[$repo_id]}/issues/${issue}/comments"
+            full_content=$(gh_read_issue_full "$issue" --repo "${REPO_OWNERS[$repo_id]}/${REPO_NAMES[$repo_id]}" 2>/dev/null || true)
         else
-            api_path="repos/{owner}/{repo}/issues/${issue}/comments"
+            full_content=$(gh_read_issue_full "$issue" 2>/dev/null || true)
         fi
-        comments=$(gh api "$api_path" --jq '[.[].body] | join("\n")' 2>/dev/null || true)
+    else
+        full_content=$(printf '%s\n%s\n' "$body" "$comments")
     fi
-    [[ -z "$body" && -z "$comments" ]] && return 1
-    printf '%s\n%s\n' "$body" "$comments" | grep -qi 'deps\.yaml' && return 0
+    [[ -z "$full_content" ]] && return 1
+    printf '%s\n' "$full_content" | grep -qi 'deps\.yaml' && return 0
     return 1
 }
 
@@ -406,28 +406,21 @@ parse_issues() {
         local r_flag
         r_flag=$(gh_repo_flag "$repo_id")
 
-        local body
-        # shellcheck disable=SC2086
-        body=$(gh issue view "$number" $r_flag --json body -q '.body' 2>/dev/null || true)
-        [[ -z "$body" ]] && continue
-
-        local comments api_path
+        # gh_read_issue_full で body + 全 comments を一括取得（content-reading ポリシー）
+        local full_content
         if [[ "$repo_id" != "_default" && "$CROSS_REPO" == "true" ]]; then
-            api_path="repos/${REPO_OWNERS[$repo_id]}/${REPO_NAMES[$repo_id]}/issues/${number}/comments"
+            full_content=$(gh_read_issue_full "$number" --repo "${REPO_OWNERS[$repo_id]}/${REPO_NAMES[$repo_id]}" 2>/dev/null || true)
         else
-            api_path="repos/{owner}/{repo}/issues/${number}/comments"
+            full_content=$(gh_read_issue_full "$number" 2>/dev/null || true)
         fi
-        comments=$(gh api "$api_path" --jq '[.[].body] | join("\n")' 2>/dev/null || true)
+        [[ -z "$full_content" ]] && continue
 
-        # deps.yaml 変更判定
-        if issue_touches_deps_yaml "$number" "$body" "$comments" "$repo_id"; then
+        # deps.yaml 変更判定（full_content を直接渡す: body + comments 既に結合済み）
+        if issue_touches_deps_yaml "$number" "$full_content" "" "$repo_id"; then
             DEPS_YAML_ISSUES+=("$uid")
         fi
 
-        local search_text="$body"
-        if [[ -n "$comments" ]]; then
-            search_text="${search_text}"$'\n'"${comments}"
-        fi
+        local search_text="$full_content"
 
         local deps_for_issue=""
         # 依存キーワード検出: #N 形式（同リポジトリ内）

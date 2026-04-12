@@ -1,0 +1,250 @@
+change_id: issue-499
+generated_at: "2026-04-12T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "gh-read-content-issue-full-normal"
+    name: "正常取得"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 12
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full: body テキストが stdout に含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-issue-full-separator"
+    name: "正常取得 — セパレータ"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 12
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full: セパレータ '## === Comments ===' が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-issue-full-comments"
+    name: "正常取得 — 全コメント"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 12
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full: 全 comments テキストが stdout に含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-issue-full-order"
+    name: "正常取得 — 出力順序"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 12
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full: body がセパレータより前に出力される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-cross-repo-flag"
+    name: "cross-repo 取得 — --repo フラグ渡し"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 16
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full: --repo フラグが gh 呼び出しに渡される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-cross-repo-body"
+    name: "cross-repo 取得 — body 取得"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 16
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full[cross-repo]: 指定リポジトリの body が返る"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-cross-repo-comments"
+    name: "cross-repo 取得 — comments 取得"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 16
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full[cross-repo]: 指定リポジトリの comments が返る"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-error-fallback-body-stdout"
+    name: "エラー時フォールバック — body 失敗時 stdout 空"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 20
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full[error]: body 取得失敗時に stdout は空文字列になる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-error-fallback-body-stderr"
+    name: "エラー時フォールバック — body 失敗時 stderr 警告"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 20
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full[error]: body 取得失敗時に stderr に警告を出力する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-error-fallback-comments-stdout"
+    name: "エラー時フォールバック — comments 失敗時 stdout 空"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 20
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full[error]: comments 取得失敗時に stdout は空文字列になる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-error-fallback-comments-stderr"
+    name: "エラー時フォールバック — comments 失敗時 stderr 警告"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 20
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full[error]: comments 取得失敗時に stderr に警告を出力する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-pr-full-normal"
+    name: "gh_read_pr_full 正常取得"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 50
+    requirement: "B-1 gap 修正 — pr-link-issue.sh L96"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_pr_full: PR body が stdout に含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-pr-full-separator"
+    name: "gh_read_pr_full — セパレータ"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 50
+    requirement: "B-1 gap 修正 — pr-link-issue.sh L96"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_pr_full: セパレータ '## === Comments ===' が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-pr-full-comments"
+    name: "gh_read_pr_full — 全コメント"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 50
+    requirement: "B-1 gap 修正 — pr-link-issue.sh L96"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_pr_full: 全 PR comments テキストが stdout に含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-pr-cross-repo"
+    name: "gh_read_pr_full cross-repo"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 50
+    requirement: "B-1 gap 修正 — pr-link-issue.sh L96"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_pr_full[cross-repo]: --repo フラグが gh 呼び出しに渡される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-pr-error-fallback-body"
+    name: "gh_read_pr_full エラー時フォールバック — body 失敗"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 50
+    requirement: "B-1 gap 修正 — pr-link-issue.sh L96"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_pr_full[error]: body 取得失敗時に stdout は空文字列になる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-pr-error-fallback-comments"
+    name: "gh_read_pr_full エラー時フォールバック — comments 失敗"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 50
+    requirement: "B-1 gap 修正 — pr-link-issue.sh L96"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_pr_full[error]: comments 取得失敗時に stdout は空文字列になる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-no-truncation-issue"
+    name: "切り詰めなし — Issue body"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 7
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_issue_full[no-truncation]: 長い body が切り詰められずに stdout に返る"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "gh-read-content-no-truncation-pr"
+    name: "切り詰めなし — PR body"
+    spec_file: "specs/gh-read-content/spec.md"
+    spec_line: 7
+    requirement: "gh-read-content ヘルパー新設"
+    test_file: "plugins/twl/tests/bats/scripts/gh-read-content.bats"
+    test_name: "gh_read_pr_full[no-truncation]: 長い PR body が切り詰められずに stdout に返る"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

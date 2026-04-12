@@ -2518,6 +2518,11 @@ scripts:
     path: scripts/escape-issue-body.sh
     description: "Issue body の HTML エスケープ（& → &amp;、< → &lt;、> → &gt;）"
 
+  gh-read-content:
+    type: script
+    path: scripts/lib/gh-read-content.sh
+    description: "Issue/PR body + 全 comments 取得ヘルパー（gh_read_issue_full / gh_read_pr_full 関数: content-reading は body + comments 必須ポリシーを実装）"
+
   pr-create-helper:
     type: script
     path: scripts/lib/pr-create-helper.sh

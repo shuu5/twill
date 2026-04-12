@@ -74,6 +74,8 @@ MAX_VERIFY=3
 ### Step 2: 各 done Issue を verify (最大 3 件)
 
 ```bash
+PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${PLUGIN_ROOT}/scripts/lib/gh-read-content.sh"
 while IFS= read -r issue; do
   [ -z "$issue" ] && continue
   VERIFY_COUNT=$((VERIFY_COUNT + 1))
@@ -100,13 +102,13 @@ while IFS= read -r issue; do
     echo "WARN: PR #${PR} (Issue #${issue}): ${DELETIONS} deletions, ${DELETED_FILES} deleted files — silent deletion の可能性" >&2
   fi
 
-  # 2.3 AC spot-check: Issue body から AC リスト抽出
-  ISSUE_BODY=$(gh issue view "$issue" --json body -q .body 2>/dev/null || echo "")
+  # 2.3 AC spot-check: Issue body + 全 comments から AC リスト抽出（content-reading ポリシー）
+  ISSUE_FULL=$(gh_read_issue_full "$issue" 2>/dev/null || echo "")
   AC_KEYWORDS=("Issue にコメント" "ラベル追加" "README 更新" "architecture/" "docs/")
   AC_MATCHES=()
 
   for kw in "${AC_KEYWORDS[@]}"; do
-    if echo "$ISSUE_BODY" | grep -qF "$kw"; then
+    if echo "$ISSUE_FULL" | grep -qF "$kw"; then
       AC_MATCHES+=("$kw")
     fi
   done
@@ -117,8 +119,8 @@ while IFS= read -r issue; do
     AC_CHECK_COUNT=$((AC_CHECK_COUNT + 1))
     [ "$AC_CHECK_COUNT" -gt 3 ] && break
 
-    COMMENTS=$(gh issue view "$issue" --json comments -q '.comments[].body' 2>/dev/null || echo "")
-    if [ -z "$COMMENTS" ] && [[ "$ac" == "Issue にコメント" ]]; then
+    # ISSUE_FULL には body + comments が含まれているため再利用
+    if ! echo "$ISSUE_FULL" | grep -q "## === Comments ===" 2>/dev/null && [[ "$ac" == "Issue にコメント" ]]; then
       PRECHECK_FAILS+=("issue=${issue} reason=ac-unmet ac='${ac}' detail=no-comments-found")
       echo "FAIL: Issue #${issue}: AC「${ac}」の痕跡が Issue comments に見つからない" >&2
     fi

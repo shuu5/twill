@@ -39,9 +39,11 @@ COMPLETED=$(jq -r '.completed_issues | to_entries[] | select(.value.files) | .ke
 ### Step 2: 後続 Issue の body 取得
 
 ```bash
+PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${PLUGIN_ROOT}/scripts/lib/gh-read-content.sh"
 for ISSUE in $NEXT_PHASE_ISSUES; do
-  BODY=$(gh issue view "$ISSUE" --json body -q '.body')
-  COMMENTS=$(gh api "repos/{owner}/{repo}/issues/${ISSUE}/comments" --jq '[.[].body] | join("\n---\n")' 2>/dev/null || true)
+  # content-reading ポリシー: body + 全 comments を一括取得
+  BODY=$(gh_read_issue_full "$ISSUE" 2>/dev/null || echo "")
 done
 ```
 
