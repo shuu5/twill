@@ -32,8 +32,19 @@ spawnable_by:
 
 1. bare repo 構造を検証（main/ で起動されていることを確認）
 2. `.supervisor/session.json` の存在確認:
-   - 存在 + status=active → 前回セッションの復帰。PostCompact 相当の外部化ファイル読み込み
-   - 存在しない → 新規 SupervisorSession 作成
+   - 存在 + status=active → 前回セッションの復帰。PostCompact 相当の外部化ファイル読み込み。既存 `claude_session_id` を検証し変更があれば更新:
+     ```bash
+     PROJECT_HASH=$(pwd | sed 's|/|-|g; s|^-||')
+     NEW_SESSION_ID=$(ls -t ~/.claude/projects/${PROJECT_HASH}/*.jsonl 2>/dev/null | head -1 | xargs -r basename 2>/dev/null | sed 's|\.jsonl$||')
+     # session.json の claude_session_id と比較し、差異があれば上書き
+     ```
+   - 存在しない → 新規 SupervisorSession 作成。Claude Code session ID を取得して `claude_session_id` に保存:
+     ```bash
+     PROJECT_HASH=$(pwd | sed 's|/|-|g; s|^-||')
+     CLAUDE_SESSION_ID_VAL=$(ls -t ~/.claude/projects/${PROJECT_HASH}/*.jsonl 2>/dev/null | head -1 | xargs -r basename 2>/dev/null | sed 's|\.jsonl$||')
+     # session.json に claude_session_id フィールドを含めて書き込む
+     # 例: {"session_id": "<uuid>", "claude_session_id": "<CLAUDE_SESSION_ID_VAL>", "status": "active", ...}
+     ```
 3. Project Board から現在の状態を取得（Todo/In Progress の Issue 一覧）
 4. `mcp__doobidoo__memory_search` でプロジェクトの直近記憶を検索（プロジェクト全体像の復元）
 5. `refs/monitor-channel-catalog.md` を Read して Monitor チャネル定義を把握（Wave 管理時のチャネル選択に使用）

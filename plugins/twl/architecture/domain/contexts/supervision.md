@@ -20,6 +20,7 @@ su-observer のプロジェクト常駐セッション。
 | main_dir | string | bare repo の main ディレクトリパス |
 | status | `active` \| `compacting` \| `paused` \| `ended` | セッション状態 |
 | started_at | string (ISO 8601) | 開始時刻 |
+| claude_session_id | string \| null | Claude Code セッション ID（resume 用）。JSONL ファイル名から取得 |
 | supervised_controllers | SupervisedController[] | 監視中の controller リスト |
 | current_wave | WaveState \| null | 現在の Wave 状態（autopilot 実行時） |
 | memory_budget | MemoryBudget | 三層記憶の消費量追跡 |

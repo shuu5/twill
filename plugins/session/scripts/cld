@@ -7,6 +7,95 @@ if ! command -v claude &>/dev/null; then
     exit 1
 fi
 
+# --observer フラグ事前検出（exec claude の前に intercept）
+OBSERVER_MODE=false
+PASS_ARGS=()
+for arg in "$@"; do
+    if [[ "$arg" == "--observer" ]]; then
+        OBSERVER_MODE=true
+    else
+        PASS_ARGS+=("$arg")
+    fi
+done
+
+if [[ "$OBSERVER_MODE" == "true" ]]; then
+    # プロジェクトルート検出（bare repo 構造 or git toplevel）
+    PROJECT_ROOT=""
+    if git rev-parse --show-toplevel &>/dev/null 2>&1; then
+        GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+        # bare repo 構造: worktree 内の場合は bare repo root を探す
+        if [[ -f "${GIT_ROOT}/.git" ]]; then
+            # .git がファイル（worktree）→ bare repo root を参照
+            GIT_COMMON=$(git rev-parse --git-common-dir 2>/dev/null || echo "")
+            if [[ -n "$GIT_COMMON" && -d "${GIT_COMMON%/.bare*}" ]]; then
+                BARE_ROOT="${GIT_COMMON%/.bare*}"
+                PROJECT_ROOT="${BARE_ROOT}/main"
+            else
+                PROJECT_ROOT="$GIT_ROOT"
+            fi
+        else
+            PROJECT_ROOT="$GIT_ROOT"
+        fi
+    fi
+
+    SESSION_JSON=""
+    if [[ -n "$PROJECT_ROOT" ]]; then
+        SESSION_JSON="${PROJECT_ROOT}/.supervisor/session.json"
+    fi
+
+    # session.json 存在確認
+    if [[ -z "$SESSION_JSON" || ! -f "$SESSION_JSON" ]]; then
+        echo "No active observer session. Start one with: cld → /su-observer" >&2
+        exit 1
+    fi
+
+    # claude_session_id 読み取り
+    CLAUDE_SESSION_ID_VAL=$(python3 -c "
+import json, sys
+try:
+    data = json.load(open('${SESSION_JSON}'))
+    sid = data.get('claude_session_id', None)
+    print(sid if sid else '')
+except Exception:
+    print('')
+" 2>/dev/null || echo "")
+
+    if [[ -z "$CLAUDE_SESSION_ID_VAL" || "$CLAUDE_SESSION_ID_VAL" == "null" ]]; then
+        echo "Observer session found but no Claude session ID recorded" >&2
+        exit 1
+    fi
+
+    # tmux window 有効性確認（session-state.sh が PATH 上にある場合）
+    if command -v session-state.sh &>/dev/null; then
+        WINDOW_LIST=$(session-state.sh list --json 2>/dev/null || echo "[]")
+        OBSERVER_WINDOW=$(python3 -c "
+import json, sys
+try:
+    windows = json.loads('''${WINDOW_LIST}''')
+    for w in windows:
+        if w.get('window', '') == 'observer':
+            print(w.get('window', ''))
+            break
+except Exception:
+    pass
+" 2>/dev/null || echo "")
+
+        if [[ -z "$OBSERVER_WINDOW" ]]; then
+            echo "Observer window not found. Session may have ended" >&2
+            exit 1
+        fi
+
+        OBSERVER_STATE=$(session-state.sh state observer 2>/dev/null || echo "exited")
+        if [[ "$OBSERVER_STATE" == "exited" ]]; then
+            echo "Observer session has ended. Start a new one with: cld → /su-observer" >&2
+            exit 1
+        fi
+    fi
+
+    # 有効な session ID で resume
+    exec claude --resume "$CLAUDE_SESSION_ID_VAL" "${PASS_ARGS[@]}"
+fi
+
 PLUGINS_BASE="$HOME/.claude/plugins"
 PLUGIN_ARGS=()
 
@@ -25,4 +114,4 @@ done < <(env | grep '^DEV_')
 
 exec systemd-run --user --scope -p MemoryMax=12G \
     "${ENV_ARGS[@]}" \
-    claude --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" "$@"
+    claude --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" "${PASS_ARGS[@]}"
