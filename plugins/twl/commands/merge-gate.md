@@ -83,6 +83,15 @@ python3 -m twl.autopilot.checkpoint write --step merge-gate --status "$STATUS" -
 
 AI による自由形式変換は禁止。
 
+### PR コメント投稿（specialist findings 永続化）
+
+checkpoint 書き込み後、specialist findings を PR コメントとして投稿する。
+findings が 0 件でも投稿（証跡として「No findings」を記録）。
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-comment-findings
+```
+
 ### Cross-PR AC 検証（retroactive DeltaSpec 対応）
 
 ```bash

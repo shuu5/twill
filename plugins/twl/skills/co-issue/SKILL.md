@@ -27,7 +27,7 @@ spawnable_by:
 
 `$ARGUMENTS` を解析し、`refine #N [#M ...]` パターンを検出する。
 
-- **`refine #N` パターン検出時**: `refine_mode=true` に設定。各 `#N` の Issue データを `gh issue view N --repo <repo> --json number,body,title,labels` で取得し保持する。複数の `#N` が指定された場合は全件取得する
+- **`refine #N` パターン検出時**: `refine_mode=true` に設定。各 `#N` の Issue データを `gh_read_issue_full` (body+comments) + `gh issue view N --repo <repo> --json number,title,labels` (meta) で取得し保持する。複数の `#N` が指定された場合は全件取得する
 - **パターン不一致時**: `refine_mode=false`（通常の新規 Issue 作成モード）
 
 ```

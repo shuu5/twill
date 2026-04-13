@@ -134,9 +134,19 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Test 11: ref-gh-read-policy.md が存在する
+# Test 11: co-issue SKILL.md が gh_read_issue_full を参照している
 # ---------------------------------------------------------------------------
-echo "Test 11: refs/ref-gh-read-policy.md の存在確認"
+echo "Test 11: co-issue SKILL.md が gh_read_issue_full を���照"
+if grep -q 'gh_read_issue_full' "${PROJECT_ROOT}/skills/co-issue/SKILL.md" 2>/dev/null; then
+  pass "co-issue SKILL.md が gh_read_issue_full を参照している"
+else
+  fail "co-issue SKILL.md が gh_read_issue_full を���照していない"
+fi
+
+# ---------------------------------------------------------------------------
+# Test 12: ref-gh-read-policy.md が存在する
+# ---------------------------------------------------------------------------
+echo "Test 12: refs/ref-gh-read-policy.md の存在確認"
 if [[ -f "${PROJECT_ROOT}/refs/ref-gh-read-policy.md" ]]; then
   pass "ref-gh-read-policy.md が存在する"
 else
@@ -144,9 +154,9 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Test 12: issue-mgmt.md に IM-8 が追記されている
+# Test 13: issue-mgmt.md に IM-8 が追記されている
 # ---------------------------------------------------------------------------
-echo "Test 12: issue-mgmt.md に IM-8 が追記されている"
+echo "Test 13: issue-mgmt.md に IM-8 が追記されている"
 if grep -q 'IM-8' "${PROJECT_ROOT}/architecture/domain/contexts/issue-mgmt.md" 2>/dev/null; then
   pass "issue-mgmt.md に IM-8 が存在する"
 else

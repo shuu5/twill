@@ -1082,6 +1082,140 @@ step_pr_cycle_report() {
   ok "pr-cycle-report" "PR #$pr_num にレポート投稿"
 }
 
+# --- pr-comment-findings: specialist findings を PR コメントとして投稿 ---
+# merge-gate 実行後に呼び出し、COMBINED_FINDINGS を Markdown テーブルで永続化する。
+# 引数: なし（checkpoint から自動取得）
+step_pr_comment_findings() {
+  record_current_step "pr-comment-findings"
+  ensure_pythonpath || return 1
+
+  local pr_num
+  pr_num=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
+  if [[ -z "$pr_num" ]] || ! [[ "$pr_num" =~ ^[0-9]+$ ]]; then
+    skip "pr-comment-findings" "PR 番号なし — スキップ"
+    return 0
+  fi
+
+  local autopilot_dir
+  autopilot_dir="$(resolve_autopilot_dir)"
+
+  # checkpoint から findings 取得（merge-gate, ac-verify, phase-review を統合）
+  local mg_findings ac_findings pr_findings combined_findings
+  mg_findings=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step merge-gate --field findings 2>/dev/null || echo "[]")
+  ac_findings=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step ac-verify --field findings 2>/dev/null || echo "[]")
+  pr_findings=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step phase-review --field findings 2>/dev/null || echo "[]")
+  combined_findings=$(jq -s 'add // []' <(echo "$mg_findings") <(echo "$ac_findings") <(echo "$pr_findings") 2>/dev/null || echo "[]")
+
+  local mg_status
+  mg_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step merge-gate --field status 2>/dev/null || echo "UNKNOWN")
+
+  # findings テーブル構築
+  local findings_count
+  findings_count=$(echo "$combined_findings" | jq 'length' 2>/dev/null || echo "0")
+
+  local critical_count warning_count info_count
+  critical_count=$(echo "$combined_findings" | jq '[.[] | select(.severity == "CRITICAL")] | length' 2>/dev/null || echo "0")
+  warning_count=$(echo "$combined_findings" | jq '[.[] | select(.severity == "WARNING")] | length' 2>/dev/null || echo "0")
+  info_count=$(echo "$combined_findings" | jq '[.[] | select(.severity == "INFO")] | length' 2>/dev/null || echo "0")
+
+  local body
+  body="## Specialist Review Findings"$'\n\n'
+
+  if [[ "$findings_count" -gt 0 ]]; then
+    body+="| Severity | Category | File | Message |"$'\n'
+    body+="|----------|----------|------|---------|"$'\n'
+    body+=$(echo "$combined_findings" | jq -r '.[] | "| \(.severity) | \(.category) | \(.file // "-"):\(.line // "-") | \(.message[:120]) |"' 2>/dev/null || echo "| - | - | - | parse error |")
+    body+=$'\n\n'
+  else
+    body+="_No findings._"$'\n\n'
+  fi
+
+  body+="**Decision**: ${mg_status} (${critical_count} CRITICAL, ${warning_count} WARNING, ${info_count} INFO)"
+
+  gh pr comment "$pr_num" --body "$body" 2>/dev/null || {
+    skip "pr-comment-findings" "PR コメント投稿失敗"
+    return 0
+  }
+
+  ok "pr-comment-findings" "PR #${pr_num} に findings コメント投稿 (${findings_count} findings)"
+}
+
+# --- pr-comment-fix-summary: fix サマリを PR コメントとして投稿 ---
+# workflow-pr-fix 完了後に呼び出し。stdin から fix サマリを受け取る。
+# 引数: なし
+step_pr_comment_fix_summary() {
+  record_current_step "pr-comment-fix-summary"
+
+  local pr_num
+  pr_num=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
+  if [[ -z "$pr_num" ]] || ! [[ "$pr_num" =~ ^[0-9]+$ ]]; then
+    skip "pr-comment-fix-summary" "PR 番号なし — スキップ"
+    return 0
+  fi
+
+  local summary=""
+  if [[ ! -t 0 ]]; then
+    summary=$(cat)
+  fi
+
+  if [[ -z "$summary" ]]; then
+    summary="_No fixes applied (no CRITICAL/WARNING findings required fixing)._"
+  fi
+
+  local body="## Fix Summary"$'\n\n'"${summary}"
+
+  gh pr comment "$pr_num" --body "$body" 2>/dev/null || {
+    skip "pr-comment-fix-summary" "PR コメント投稿失敗"
+    return 0
+  }
+
+  ok "pr-comment-fix-summary" "PR #${pr_num} に fix サマリ投稿"
+}
+
+# --- pr-comment-final: 最終判定を PR コメントとして投稿 ---
+# workflow-pr-merge 完了直前に呼び出し。全 checkpoint を読み取り最終判定を投稿。
+# 引数: MERGED|REJECTED|FAILED
+step_pr_comment_final() {
+  record_current_step "pr-comment-final"
+  ensure_pythonpath || return 1
+
+  local final_result="${1:-UNKNOWN}"
+  local pr_num
+  pr_num=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
+  if [[ -z "$pr_num" ]] || ! [[ "$pr_num" =~ ^[0-9]+$ ]]; then
+    skip "pr-comment-final" "PR 番号なし — スキップ"
+    return 0
+  fi
+
+  local autopilot_dir
+  autopilot_dir="$(resolve_autopilot_dir)"
+
+  local ac_status pr_test_status e2e_status mg_status
+  ac_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step ac-verify --field status 2>/dev/null || echo "N/A")
+  pr_test_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step pr-test --field status 2>/dev/null || echo "N/A")
+  e2e_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step e2e-screening --field status 2>/dev/null || echo "N/A")
+  mg_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step merge-gate --field status 2>/dev/null || echo "N/A")
+
+  local body="## Merge Gate Final"$'\n\n'
+  body+="- ac-verify: ${ac_status}"$'\n'
+  body+="- pr-test: ${pr_test_status}"$'\n'
+  body+="- e2e-screening: ${e2e_status}"$'\n'
+  body+="- merge-gate: ${mg_status}"$'\n\n'
+
+  case "$final_result" in
+    MERGED)  body+="**Result**: Merged via squash merge." ;;
+    REJECTED) body+="**Result**: REJECTED — manual intervention required." ;;
+    *)       body+="**Result**: ${final_result}" ;;
+  esac
+
+  gh pr comment "$pr_num" --body "$body" 2>/dev/null || {
+    skip "pr-comment-final" "PR コメント投稿失敗"
+    return 0
+  }
+
+  ok "pr-comment-final" "PR #${pr_num} に最終判定投稿 (${final_result})"
+}
+
 # --- auto-merge: スカッシュマージ実行（scripts/auto-merge.sh ラッパー） ---
 step_auto_merge() {
   record_current_step "auto-merge"
@@ -1238,6 +1372,9 @@ main() {
     all-pass-check)      step_all_pass_check "$@" ;;
     pr-cycle-report)     step_pr_cycle_report "$@" ;;
     auto-merge)          step_auto_merge "$@" ;;
+    pr-comment-findings) step_pr_comment_findings "$@" ;;
+    pr-comment-fix-summary) step_pr_comment_fix_summary "$@" ;;
+    pr-comment-final)    step_pr_comment_final "$@" ;;
     check)               step_check "$@" ;;
     quick-guard)         step_quick_guard "$@" ;;
     autopilot-detect)    step_autopilot_detect "$@" ;;
@@ -1247,7 +1384,8 @@ main() {
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
       echo "         board-archive, ac-extract, arch-ref, change-id-resolve, next-step, prompt-compliance, ts-preflight," >&2
-      echo "         phase-review, scope-judge, pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge, check," >&2
+      echo "         phase-review, scope-judge, pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge," >&2
+      echo "         pr-comment-findings, pr-comment-fix-summary, pr-comment-final, check," >&2
       echo "         quick-guard, autopilot-detect, quick-detect, resolve-issue-num," >&2
       echo "         dispatch-info, llm-delegate, llm-complete, chain-status" >&2
       exit 1
