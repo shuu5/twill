@@ -20,7 +20,7 @@ specialist が検出した問題。
 | file | string | 対象ファイルパス |
 | line | number | 対象行番号 |
 | message | string | 問題の説明 |
-| category | `vulnerability` \| `bug` \| `coding-convention` \| `structure` \| `principles` | 分類 |
+| category | `vulnerability` \| `bug` \| `coding-convention` \| `structure` \| `principles` \| `architecture-quality` | 分類 |
 
 ### MergeGateDecision
 merge-gate の判定結果。
@@ -42,7 +42,7 @@ merge-gate の判定結果。
     "file": "src/module.ts",
     "line": 42,
     "message": "...",
-    "category": "vulnerability|bug|coding-convention|structure|principles"
+    "category": "vulnerability|bug|coding-convention|structure|principles|architecture-quality"
   }]
 }
 ```
@@ -138,6 +138,7 @@ flowchart TD
 | deps.yaml 変更あり | worker-structure（twl audit/check 統合）+ worker-principles |
 | コード変更あり | worker-code-reviewer + worker-security-reviewer |
 | Tech-stack 該当あり | conditional specialist（Tech-stack 検出ロジックで決定） |
+| architecture/*.md 変更あり | worker-arch-doc-reviewer（architecture docs 品質レビュー） |
 
 全 specialist は並列 Task spawn。worktree 分離により逐次実行不要。
 
@@ -203,6 +204,7 @@ flowchart TD
 | **specialist** | worker-security-reviewer | セキュリティ脆弱性検出 |
 | **specialist** | worker-structure | twl audit/check 統合 |
 | **specialist** | worker-principles | 5原則 + controller 品質検証 |
+| **specialist** | worker-arch-doc-reviewer | architecture docs 変更自体の品質レビュー |
 | **specialist** | worker-architecture | アーキテクチャパターン検証 |
 | **script** | tech-stack-detect | 変更ファイルから tech-stack を判定 |
 | **script** | specialist-output-parse | specialist 出力の機械的パース |

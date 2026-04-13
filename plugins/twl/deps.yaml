@@ -2820,6 +2820,15 @@ agents:
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Rコード（.R, .Rmd, .qmd）のレビュー"
 
+  worker-arch-doc-reviewer:
+    type: specialist
+    path: agents/worker-arch-doc-reviewer.md
+    model: sonnet
+    spawnable_by: [workflow, composite]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "architecture docs 変更自体の品質レビュー（ADR 論理性・glossary 一貫性・model 完全性）"
+
   worker-architecture:
     type: specialist
     refined_by: "ref-prompt-guide@2c7a62f2"
