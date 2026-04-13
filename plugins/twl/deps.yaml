@@ -250,7 +250,7 @@ skills:
     effort: high
     tools: [Agent(worker-architecture, worker-structure)]
     spawnable_by: [user]
-    can_spawn: [atomic, reference]
+    can_spawn: [atomic, reference, workflow]
     calls:
       - atomic: explore
       - atomic: architect-completeness-check
@@ -258,7 +258,8 @@ skills:
       - atomic: evaluate-architecture
       - reference: ref-architecture-spec
       - reference: ref-architecture
-    description: "対話的アーキテクチャ構築ワークフロー"
+      - workflow: workflow-arch-review
+    description: "対話的アーキテクチャ構築ワークフロー（branch/PR + review フロー付き）"
 
   co-utility:
     type: controller
