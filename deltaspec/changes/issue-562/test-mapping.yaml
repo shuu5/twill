@@ -1,0 +1,68 @@
+change_id: issue-562
+generated_at: "2026-04-13T00:00:00Z"
+test_framework: bats-style-bash
+scenarios:
+  - id: "architect-decompose-not-in-deps-yaml"
+    name: "deps.yaml から architect-decompose エントリ削除"
+    spec_file: "specs/remove-orphan-commands/spec.md"
+    spec_line: 7
+    requirement: "architect-decompose コンポーネントの廃止"
+    test_file: "plugins/twl/tests/scenarios/remove-orphan-commands.test.sh"
+    test_name: "deps.yaml に architect-decompose キーが存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "architect-decompose-command-file-deleted"
+    name: "コマンドファイルの削除 (architect-decompose)"
+    spec_file: "specs/remove-orphan-commands/spec.md"
+    spec_line: 11
+    requirement: "architect-decompose コンポーネントの廃止"
+    test_file: "plugins/twl/tests/scenarios/remove-orphan-commands.test.sh"
+    test_name: "commands/architect-decompose.md が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "twl-check-no-orphans"
+    name: "twl check が orphan を検出しない"
+    spec_file: "specs/remove-orphan-commands/spec.md"
+    spec_line: 17
+    requirement: "architect-decompose コンポーネントの廃止"
+    test_file: "plugins/twl/tests/scenarios/remove-orphan-commands.test.sh"
+    test_name: "twl check: critical violations=0"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "architect-issue-create-not-in-deps-yaml"
+    name: "deps.yaml から architect-issue-create エントリ削除"
+    spec_file: "specs/remove-orphan-commands/spec.md"
+    spec_line: 24
+    requirement: "architect-issue-create コンポーネントの廃止"
+    test_file: "plugins/twl/tests/scenarios/remove-orphan-commands.test.sh"
+    test_name: "deps.yaml に architect-issue-create キーが存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "architect-issue-create-command-file-deleted"
+    name: "コマンドファイルの削除 (architect-issue-create)"
+    spec_file: "specs/remove-orphan-commands/spec.md"
+    spec_line: 28
+    requirement: "architect-issue-create コンポーネントの廃止"
+    test_file: "plugins/twl/tests/scenarios/remove-orphan-commands.test.sh"
+    test_name: "commands/architect-issue-create.md が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

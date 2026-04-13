@@ -1279,15 +1279,6 @@ commands:
     can_spawn: []
     description: "アーキテクチャ完全性チェック"
 
-  architect-decompose:
-    type: atomic
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: commands/architect-decompose.md
-    spawnable_by: [controller]
-    can_spawn: []
-    description: "contexts/ + phases/ → Issue候補リスト分解 + 整合性チェック"
-
   architect-group-refine:
     type: atomic
     refined_by: "ref-prompt-guide@2c7a62f2"
@@ -1296,15 +1287,6 @@ commands:
     spawnable_by: [controller]
     can_spawn: []
     description: "スケルトンIssueグループの一括精緻化"
-
-  architect-issue-create:
-    type: atomic
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: commands/architect-issue-create.md
-    spawnable_by: [controller]
-    can_spawn: []
-    description: "Issue候補リストから GitHub Issue 一括作成"
 
   evaluate-architecture:
     type: atomic

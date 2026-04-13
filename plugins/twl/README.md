@@ -91,6 +91,7 @@ Autopilot で複数 Issue を一括実装:
 | twl:workflow-plugin-diagnose | plugin-migrate-analyze, plugin-diagnose, ◆plugin-phase-diagnose, plugin-fix, plugin-verify, ◆plugin-phase-verify |
 | twl:workflow-prompt-audit | prompt-audit-scan, ◆prompt-audit-review, prompt-audit-apply |
 | twl:workflow-issue-lifecycle | issue-structure, ◆issue-spec-review, issue-review-aggregate, issue-arch-drift, issue-create, project-board-sync |
+| twl:workflow-arch-review | ◆arch-phase-review, arch-fix-phase, ◆merge-gate, auto-merge |
 | post-fix-verify | ●worker-code-reviewer, ●worker-security-reviewer, ●worker-codex-reviewer |
 | all-pass-check | →twl:ref-dci |
 | issue-spec-review | ●issue-critic, ●issue-feasibility, ●worker-codex-reviewer |
@@ -106,6 +107,7 @@ Autopilot で複数 Issue を一括実装:
 | intervene-escalate | →twl:intervention-catalog |
 | test-scaffold | ●spec-scaffold-tests, ●e2e-generate, →twl:ref-specialist-output-schema |
 | phase-review | ●worker-structure, ●worker-principles, ●worker-code-reviewer, ●worker-security-reviewer, ●worker-nextjs-reviewer, ●worker-fastapi-reviewer, ●worker-supabase-migration-checker, ●worker-r-reviewer, ●worker-e2e-reviewer, ●worker-hono-reviewer, ●worker-rls-reviewer, ●worker-spec-reviewer, ●worker-llm-output-reviewer, ●worker-llm-eval-runner, ●worker-data-validator, ●worker-env-validator, ●worker-codex-reviewer, ●worker-issue-pr-alignment, →twl:ref-specialist-output-schema, →twl:baseline-coding-style, →twl:baseline-security-checklist, →twl:baseline-input-validation |
+| arch-phase-review | ●worker-arch-doc-reviewer, ●worker-architecture, ●worker-structure, ●worker-principles, →twl:ref-specialist-output-schema |
 | merge-gate | ●worker-structure, ●worker-principles, ●worker-code-reviewer, ●worker-security-reviewer, ●worker-nextjs-reviewer, ●worker-fastapi-reviewer, ●worker-supabase-migration-checker, ●worker-r-reviewer, ●worker-e2e-reviewer, ●worker-hono-reviewer, ●worker-rls-reviewer, ●worker-spec-reviewer, ●worker-llm-output-reviewer, ●worker-llm-eval-runner, ●worker-data-validator, ●worker-env-validator, ●worker-codex-reviewer, ●worker-architecture, ●worker-issue-pr-alignment, →twl:ref-specialist-output-schema, →twl:ref-dci, →twl:baseline-coding-style, →twl:baseline-security-checklist, →twl:baseline-input-validation |
 | test-phase | ●e2e-quality, →twl:ref-specialist-output-schema |
 | autopilot-phase-execute | →twl:ref-dci |
