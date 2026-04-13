@@ -9,3 +9,6 @@
 
 # code-review-graph local cache
 .code-review-graph/
+
+# autopilot audit session data
+.audit/

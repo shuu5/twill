@@ -115,6 +115,11 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
         rm -f "$SESSION_LOCK"
       fi
     fi
+    # audit コピー: 削除前に audit dir へ保全（TWL_AUDIT 有効時）
+    if [[ "${TWL_AUDIT:-}" == "1" && -n "${TWL_AUDIT_DIR:-}" ]]; then
+      mkdir -p "${TWL_AUDIT_DIR}/specialists"
+      cp "$MANIFEST_FILE" "$SPAWNED_FILE" "${TWL_AUDIT_DIR}/specialists/" 2>/dev/null || true
+    fi
     # Clean up manifest and spawned tracking files
     rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"
     continue

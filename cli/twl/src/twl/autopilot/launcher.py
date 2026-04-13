@@ -182,6 +182,16 @@ class WorkerLauncher:
         if repo_owner and repo_name:
             env_flags += ["-e", f"REPO_OWNER={repo_owner}", "-e", f"REPO_NAME={repo_name}"]
 
+        # audit 環境変数の伝搬（resolve_audit_dir で絶対パスを解決して渡す）
+        if os.environ.get("TWL_AUDIT") == "1":
+            try:
+                from twl.autopilot.audit import resolve_audit_dir
+                audit_dir_path = resolve_audit_dir()
+                if audit_dir_path is not None:
+                    env_flags += ["-e", "TWL_AUDIT=1", "-e", f"TWL_AUDIT_DIR={audit_dir_path}"]
+            except Exception:
+                pass
+
         cld_args = [cld_path, "--model", model]
         if context:
             cld_args += ["--append-system-prompt", context]

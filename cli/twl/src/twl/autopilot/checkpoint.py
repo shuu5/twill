@@ -103,6 +103,21 @@ class CheckpointManager:
             "timestamp": _now_utc(),
         }
         file = self.checkpoint_dir / f"{step}.json"
+
+        # audit 保全: 上書き前に既存ファイルをタイムスタンプ付きでコピー
+        try:
+            from twl.autopilot.audit import is_audit_active, resolve_audit_dir
+            if is_audit_active() and file.is_file():
+                audit_dir = resolve_audit_dir()
+                if audit_dir is not None:
+                    import shutil
+                    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+                    checkpoints_audit = audit_dir / "checkpoints"
+                    checkpoints_audit.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(file, checkpoints_audit / f"{step}-{ts}.json")
+        except Exception:
+            pass
+
         _atomic_write(file, data)
         return f"checkpoint written: {file} ({status}, {findings_summary})"
 
