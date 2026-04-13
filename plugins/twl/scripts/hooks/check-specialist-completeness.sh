@@ -120,9 +120,14 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
     continue
   fi
 
+  TOTAL=${#MANIFEST_LIST[@]}
+  SPAWNED=$((TOTAL - ${#MISSING[@]}))
+  printf '⚠ specialist spawn 未完了: %d/%d 完了 [context: %s]\n' "$SPAWNED" "$TOTAL" "$CONTEXT"
+  printf '  未 spawn specialist:\n'
   for m in "${MISSING[@]}"; do
-    printf '⚠ specialist spawn 未完了: %s が未 spawn です [context: %s]\n' "$m" "$CONTEXT"
+    printf '    - %s → Task(subagent_type="twl:twl:%s") で spawn すること\n' "$m" "$m"
   done
+  printf '  結果集約に進む前に全 specialist を spawn してください。\n'
 done
 
 exit 0
