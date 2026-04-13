@@ -95,6 +95,50 @@ echo "unknown_status=$STATUS_VALUE"
 exit 1
 STAGNATE_EOF
   chmod +x "$SANDBOX/scripts/stagnate-check.sh"
+
+  # cross-repo-polling.sh: entry（repo_id:issue_num）形式のキーで LAST_INJECTED_STEP を管理する
+  # poll_phase() のクロスリポ衝突防止ロジックを再現（Issue #548）
+  # Env:
+  #   ENTRY_A              - 1つ目の entry（例: repo-a:123）
+  #   ENTRY_B              - 2つ目の entry（例: repo-b:123）
+  #   STEP_A               - entry_a の current_step 値
+  #   STEP_B               - entry_b の current_step 値
+  #   CALLS_LOG            - 呼び出し記録ファイル
+  cat > "$SANDBOX/scripts/cross-repo-polling.sh" << 'CROSSREPO_EOF'
+#!/usr/bin/env bash
+# cross-repo-polling.sh
+# poll_phase() の entry キーによる LAST_INJECTED_STEP 管理を再現（Issue #548）
+set -uo pipefail
+
+ENTRY_A="${ENTRY_A:-repo-a:123}"
+ENTRY_B="${ENTRY_B:-repo-b:123}"
+STEP_A="${STEP_A:-ac-extract}"
+STEP_B="${STEP_B:-ac-extract}"
+CALLS_LOG="${CALLS_LOG:-/dev/null}"
+
+declare -A LAST_INJECTED_STEP=()
+
+# --- simulate poll for entry_a ---
+_cur_step_a="$STEP_A"
+if [[ -n "$_cur_step_a" && "${LAST_INJECTED_STEP[$ENTRY_A]:-}" != "$_cur_step_a" ]]; then
+  LAST_INJECTED_STEP[$ENTRY_A]="$_cur_step_a"
+  echo "inject_called entry=${ENTRY_A} step=${_cur_step_a}" >> "$CALLS_LOG"
+fi
+
+# --- simulate poll for entry_b ---
+_cur_step_b="$STEP_B"
+if [[ -n "$_cur_step_b" && "${LAST_INJECTED_STEP[$ENTRY_B]:-}" != "$_cur_step_b" ]]; then
+  LAST_INJECTED_STEP[$ENTRY_B]="$_cur_step_b"
+  echo "inject_called entry=${ENTRY_B} step=${_cur_step_b}" >> "$CALLS_LOG"
+fi
+
+# --- output stored values for verification ---
+echo "last_injected_a=${LAST_INJECTED_STEP[$ENTRY_A]:-}"
+echo "last_injected_b=${LAST_INJECTED_STEP[$ENTRY_B]:-}"
+
+exit 0
+CROSSREPO_EOF
+  chmod +x "$SANDBOX/scripts/cross-repo-polling.sh"
 }
 
 teardown() {
@@ -286,5 +330,50 @@ teardown() {
   assert_success
   local count
   count=$(grep -c "state_read current_step" "$CALLS_LOG" 2>/dev/null || echo 0)
+  [[ "$count" -eq 1 ]]
+}
+
+# ---------------------------------------------------------------------------
+# Issue #548: クロスリポ同番号 Issue のキー衝突回避
+# WHEN entry=repo-a:123 と entry=repo-b:123 が同時に running
+# THEN LAST_INJECTED_STEP は entry キーで独立管理されるため衝突しない
+# ---------------------------------------------------------------------------
+
+@test "polling[cross-repo]: 同番号 Issue でも entry キーが異なれば独立して inject される" {
+  ENTRY_A="repo-a:123" \
+  ENTRY_B="repo-b:123" \
+  STEP_A="ac-extract" \
+  STEP_B="ac-extract" \
+    run bash "$SANDBOX/scripts/cross-repo-polling.sh"
+
+  assert_success
+  # 両 entry で inject が呼ばれること
+  grep -q "inject_called entry=repo-a:123 step=ac-extract" "$CALLS_LOG"
+  grep -q "inject_called entry=repo-b:123 step=ac-extract" "$CALLS_LOG"
+}
+
+@test "polling[cross-repo]: repo-a:123 の LAST_INJECTED_STEP 更新が repo-b:123 に影響しない" {
+  ENTRY_A="repo-a:123" \
+  ENTRY_B="repo-b:123" \
+  STEP_A="ac-extract" \
+  STEP_B="post-change-apply" \
+    run bash "$SANDBOX/scripts/cross-repo-polling.sh"
+
+  assert_success
+  assert_output --partial "last_injected_a=ac-extract"
+  assert_output --partial "last_injected_b=post-change-apply"
+}
+
+@test "polling[cross-repo]: 同一 entry の重複 inject は entry キーで防止される" {
+  ENTRY_A="repo-a:123" \
+  ENTRY_B="repo-a:123" \
+  STEP_A="ac-extract" \
+  STEP_B="ac-extract" \
+    run bash "$SANDBOX/scripts/cross-repo-polling.sh"
+
+  assert_success
+  # 同一 entry は1回しか inject されない（2回目は LAST_INJECTED_STEP が一致するためスキップ）
+  local count
+  count=$(grep -c "inject_called entry=repo-a:123" "$CALLS_LOG" 2>/dev/null || echo 0)
   [[ "$count" -eq 1 ]]
 }

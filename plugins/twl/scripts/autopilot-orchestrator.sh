@@ -444,10 +444,10 @@ handle_health_check_fallback() {
         echo "[orchestrator] Issue #${issue}: fallback Worker 起動失敗" >&2
     fi
   elif [[ "$health_exit" -eq 1 && -z "$health_stderr" ]]; then
-    if [[ "${NUDGE_COUNTS[$issue]:-0}" -lt "$MAX_NUDGE" ]]; then
+    if [[ "${NUDGE_COUNTS[$entry]:-0}" -lt "$MAX_NUDGE" ]]; then
       echo "[orchestrator] Issue #${issue}: health-check stall 検知 — 汎用 nudge" >&2
       tmux send-keys -t "$window_name" "" Enter 2>/dev/null || true
-      NUDGE_COUNTS[$issue]=$(( ${NUDGE_COUNTS[$issue]:-0} + 1 ))
+      NUDGE_COUNTS[$entry]=$(( ${NUDGE_COUNTS[$entry]:-0} + 1 ))
     else
       echo "[orchestrator] Issue #${issue}: health-check stall + nudge 上限到達 — failed" >&2
       python3 -m twl.autopilot.state write --type issue "${state_repo_args[@]}" --issue "$issue" --role pilot \
@@ -521,9 +521,9 @@ poll_single() {
         local inject_matched=0
         local _cur_step
         _cur_step=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field current_step 2>/dev/null || echo "")
-        if [[ -n "$_cur_step" && "${LAST_INJECTED_STEP[$issue]:-}" != "$_cur_step" ]]; then
-          if inject_next_workflow "$issue" "$window_name"; then
-            LAST_INJECTED_STEP[$issue]="$_cur_step"
+        if [[ -n "$_cur_step" && "${LAST_INJECTED_STEP[$entry]:-}" != "$_cur_step" ]]; then
+          if inject_next_workflow "$issue" "$window_name" "$entry"; then
+            LAST_INJECTED_STEP[$entry]="$_cur_step"
             inject_matched=1
           fi
         fi
@@ -536,9 +536,9 @@ poll_single() {
           # health-check（check_and_nudge でカバーできない stall を補完検知）
           # POLL_INTERVAL=10s × HEALTH_CHECK_INTERVAL=6 = 60s 毎に実行
           if [[ "$nudge_matched" -eq 0 ]]; then
-            local hc_counter="${HEALTH_CHECK_COUNTER[$issue]:-0}"
-            HEALTH_CHECK_COUNTER[$issue]=$((hc_counter + 1))
-            if (( HEALTH_CHECK_COUNTER[$issue] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
+            local hc_counter="${HEALTH_CHECK_COUNTER[$entry]:-0}"
+            HEALTH_CHECK_COUNTER[$entry]=$((hc_counter + 1))
+            if (( HEALTH_CHECK_COUNTER[$entry] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
               local health_stderr health_exit=0
               health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
               # API overload fallback 時は poll_count をリセット
@@ -616,9 +616,9 @@ poll_phase() {
           local inject_matched=0
           local _cur_step_p
           _cur_step_p=$(python3 -m twl.autopilot.state read --type issue "${_state_read_repo_args[@]}" --issue "$issue_num" --field current_step 2>/dev/null || echo "")
-          if [[ -n "$_cur_step_p" && "${LAST_INJECTED_STEP[$issue_num]:-}" != "$_cur_step_p" ]]; then
-            if inject_next_workflow "$issue_num" "$window_name"; then
-              LAST_INJECTED_STEP[$issue_num]="$_cur_step_p"
+          if [[ -n "$_cur_step_p" && "${LAST_INJECTED_STEP[$entry]:-}" != "$_cur_step_p" ]]; then
+            if inject_next_workflow "$issue_num" "$window_name" "$entry"; then
+              LAST_INJECTED_STEP[$entry]="$_cur_step_p"
               inject_matched=1
             fi
           fi
@@ -630,9 +630,9 @@ poll_phase() {
 
             # health-check（check_and_nudge でカバーできない stall を補完検知）
             if [[ "$nudge_matched" -eq 0 ]]; then
-              local hc_counter="${HEALTH_CHECK_COUNTER[$issue_num]:-0}"
-              HEALTH_CHECK_COUNTER[$issue_num]=$((hc_counter + 1))
-              if (( HEALTH_CHECK_COUNTER[$issue_num] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
+              local hc_counter="${HEALTH_CHECK_COUNTER[$entry]:-0}"
+              HEALTH_CHECK_COUNTER[$entry]=$((hc_counter + 1))
+              if (( HEALTH_CHECK_COUNTER[$entry] % ${HEALTH_CHECK_INTERVAL:-6} == 0 )); then
                 local health_stderr health_exit=0
                 health_stderr=$(bash "$SCRIPTS_ROOT/health-check.sh" --issue "$issue_num" --window "$window_name" 2>&1 1>/dev/null) || health_exit=$?
                 handle_health_check_fallback "$issue_num" "$window_name" "$entry" "$health_exit" "$health_stderr" "${_state_read_repo_args[@]}"
@@ -853,11 +853,12 @@ _nudge_command_for_pattern() {
 }
 
 # inject_next_workflow: current_step terminal 値を検知して次の workflow skill を tmux inject する（ADR-018）
-# 引数: issue, window_name
+# 引数: issue, window_name, entry（省略時は _default:${issue}）
 # 戻り値: 0=inject 成功 or pr-merge 委譲、1=失敗（タイムアウト / resolve 失敗 / バリデーション失敗）
 inject_next_workflow() {
   local issue="$1"
   local window_name="$2"
+  local entry="${3:-_default:${issue}}"
 
   # --- trace ログファイル ---
   mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true  # SUMMARY_MODE 等での再利用を考慮して関数内でも保証
@@ -873,24 +874,24 @@ inject_next_workflow() {
     echo "[${_trace_ts}] issue=${issue} skill=RESOLVE_FAILED result=skip reason=\"resolve_next_workflow exit=${next_skill_exit}\"" >> "$_trace_log" 2>/dev/null || true
 
     # --- AC-3: stagnate 検知（RESOLVE_FAILED 連続カウント） ---
-    local _fail_count="${RESOLVE_FAIL_COUNT[$issue]:-0}"
+    local _fail_count="${RESOLVE_FAIL_COUNT[$entry]:-0}"
     local _now
     _now=$(date +%s 2>/dev/null || echo 0)
     if [[ "$_fail_count" -eq 0 ]]; then
-      RESOLVE_FAIL_FIRST_TS[$issue]="$_now"
+      RESOLVE_FAIL_FIRST_TS[$entry]="$_now"
     fi
-    RESOLVE_FAIL_COUNT[$issue]=$(( _fail_count + 1 ))
-    local _elapsed=$(( _now - ${RESOLVE_FAIL_FIRST_TS[$issue]:-_now} ))
+    RESOLVE_FAIL_COUNT[$entry]=$(( _fail_count + 1 ))
+    local _elapsed=$(( _now - ${RESOLVE_FAIL_FIRST_TS[$entry]:-_now} ))
     if (( _elapsed >= AUTOPILOT_STAGNATE_SEC )); then
-      echo "[orchestrator] WARN: issue=${issue} stagnate detected (RESOLVE_FAILED ${RESOLVE_FAIL_COUNT[$issue]} 回, ${_elapsed}s >= AUTOPILOT_STAGNATE_SEC=${AUTOPILOT_STAGNATE_SEC})" >&2
-      echo "[${_trace_ts}] issue=${issue} skill=RESOLVE_FAILED result=stagnate elapsed=${_elapsed}s count=${RESOLVE_FAIL_COUNT[$issue]}" >> "$_trace_log" 2>/dev/null || true
+      echo "[orchestrator] WARN: issue=${issue} stagnate detected (RESOLVE_FAILED ${RESOLVE_FAIL_COUNT[$entry]} 回, ${_elapsed}s >= AUTOPILOT_STAGNATE_SEC=${AUTOPILOT_STAGNATE_SEC})" >&2
+      echo "[${_trace_ts}] issue=${issue} skill=RESOLVE_FAILED result=stagnate elapsed=${_elapsed}s count=${RESOLVE_FAIL_COUNT[$entry]}" >> "$_trace_log" 2>/dev/null || true
     fi
 
     return 1
   fi
   # inject 成功時は RESOLVE_FAIL カウントをリセット
-  RESOLVE_FAIL_COUNT[$issue]=0
-  RESOLVE_FAIL_FIRST_TS[$issue]=""
+  RESOLVE_FAIL_COUNT[$entry]=0
+  RESOLVE_FAIL_FIRST_TS[$entry]=""
 
   # --- allow-list バリデーション（コマンドインジェクション防止） ---
   # 許可: /twl:workflow-<kebab> 形式、または pr-merge（terminal workflow として別処理）
@@ -960,7 +961,7 @@ inject_next_workflow() {
     --set "injected_at=${injected_at}" 2>/dev/null || true
 
   # --- NUDGE_COUNTS リセット ---
-  NUDGE_COUNTS[$issue]=0
+  NUDGE_COUNTS[$entry]=0
 
   return 0
 }
@@ -971,7 +972,7 @@ check_and_nudge() {
   local entry="${3:-_default:${issue}}"
 
   # nudge 上限チェック
-  local count="${NUDGE_COUNTS[$issue]:-0}"
+  local count="${NUDGE_COUNTS[$entry]:-0}"
   if [[ "$count" -ge "$MAX_NUDGE" ]]; then
     return 0
   fi
@@ -989,7 +990,7 @@ check_and_nudge() {
   # 出力のハッシュで変化を検知
   local current_hash
   current_hash=$(echo "$pane_output" | md5sum | cut -d' ' -f1)
-  local last_hash="${LAST_OUTPUT_HASH[$issue]:-}"
+  local last_hash="${LAST_OUTPUT_HASH[$entry]:-}"
 
   if [[ "$current_hash" == "$last_hash" ]]; then
     local next_cmd
@@ -1006,17 +1007,17 @@ check_and_nudge() {
       if [[ ! "$_next_cmd_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*( #[0-9]+)?$ ]]; then
         echo "[orchestrator] Issue #${issue}: WARNING: check_and_nudge — 不正な next_cmd '${_next_cmd_safe:0:200}' — nudge スキップ" >&2
         echo "[${_nudge_ts}] issue=${issue} next_cmd=INVALID result=skip reason=\"invalid next_cmd\"" >> "$_nudge_trace_log" 2>/dev/null || true
-        LAST_OUTPUT_HASH[$issue]="$current_hash"
+        LAST_OUTPUT_HASH[$entry]="$current_hash"
         return 0
       fi
       echo "[orchestrator] Issue #${issue}: chain 遷移停止検知 — nudge 送信 (${count}/${MAX_NUDGE})" >&2
       tmux send-keys -t "$window_name" "$next_cmd" Enter 2>/dev/null || true
-      NUDGE_COUNTS[$issue]=$((count + 1))
-      LAST_OUTPUT_HASH[$issue]="$current_hash"
+      NUDGE_COUNTS[$entry]=$((count + 1))
+      LAST_OUTPUT_HASH[$entry]="$current_hash"
     fi
   fi
 
-  LAST_OUTPUT_HASH[$issue]="$current_hash"
+  LAST_OUTPUT_HASH[$entry]="$current_hash"
   return 0
 }
 
@@ -1335,7 +1336,6 @@ fi
 TOTAL=${#ACTIVE_ENTRIES[@]}
 for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
   BATCH=("${ACTIVE_ENTRIES[@]:$BATCH_START:$MAX_PARALLEL}")
-  BATCH_ISSUES=()
 
   # Worker 起動
   BATCH_LAUNCHED_ENTRIES=()
@@ -1353,7 +1353,6 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
       echo "[orchestrator] Issue #${local_issue}: Worker 起動失敗（スキップ）" >&2
       continue
     }
-    BATCH_ISSUES+=("$local_issue")
     BATCH_LAUNCHED_ENTRIES+=("$entry")
   done
 
@@ -1385,14 +1384,9 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
   done
 
   # merge-ready の Issue に対して merge-gate を順次実行
-  # issue → entry マッピング構築（クロスリポ cleanup_worker 呼び出し用）
-  declare -A _batch_issue_to_entry=()
-  for _e in "${BATCH_LAUNCHED_ENTRIES[@]}"; do
-    _batch_issue_to_entry["${_e#*:}"]="$_e"
-  done
-
-  for issue in "${BATCH_ISSUES[@]}"; do
-    _entry="${_batch_issue_to_entry[$issue]:-_default:${issue}}"
+  # entry（repo_id:issue_num）形式で直接イテレートしてクロスリポ衝突を回避
+  for _entry in "${BATCH_LAUNCHED_ENTRIES[@]}"; do
+    issue="${_entry#*:}"
     _repo_id="${_entry%%:*}"
     _repo_args=()
     [[ "$_repo_id" != "_default" ]] && _repo_args=(--repo "$_repo_id")
@@ -1415,7 +1409,6 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
       fi
     fi
   done
-  unset _batch_issue_to_entry
 done
 
 # Step 4: 当該 Phase の Done アイテムのみを選択的にアーカイブ
