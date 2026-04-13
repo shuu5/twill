@@ -22,6 +22,7 @@
 | ECC | 外部知識ソース（doobidoo memory）。自己改善の教師データとして活用 | Self-Improve |
 | Emergency Bypass | co-autopilot 障害時のみ許可される手動実装パス。retrospective 記録義務あり | Autopilot |
 | Architecture Spec | 設計意図の前方参照。co-issue/co-architect が DCI で参照する living document | 全体 |
+| Spec Implementation | Architecture spec（`architecture/` 配下のドキュメント）の変更・PR 作成を担う controller カテゴリ。co-architect のみ該当。Implementation（コード変更）とは区別される（ADR-019） | 全体 |
 | DCI | Dynamic Context Injection。実行時にファイルを Read してコンテキストに注入するパターン | 全体 |
 | CRG | Code Review Graph。MCP 経由でコード依存関係を可視化・分析するツール | TWiLL Integration |
 | Supervisor | プロジェクト常駐のメタ認知レイヤー。全 controller を監視・調整・知識外部化する上位層（ADR-014） | Supervision |
