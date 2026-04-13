@@ -1830,6 +1830,7 @@ commands:
       - specialist: worker-data-validator
       - specialist: worker-env-validator
       - specialist: worker-codex-reviewer
+      - specialist: worker-arch-doc-reviewer
       - specialist: worker-issue-pr-alignment
       - reference: ref-specialist-output-schema
       - reference: baseline-coding-style
@@ -1906,6 +1907,7 @@ commands:
       - specialist: worker-env-validator
       - specialist: worker-codex-reviewer
       - specialist: worker-architecture
+      - specialist: worker-arch-doc-reviewer
       - specialist: worker-issue-pr-alignment
       - reference: ref-specialist-output-schema
       - reference: ref-dci
@@ -2826,7 +2828,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite]
     can_spawn: []
-    skills: [ref-specialist-output-schema]
+    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "architecture docs 変更自体の品質レビュー（ADR 論理性・glossary 一貫性・model 完全性）"
 
   worker-architecture:
