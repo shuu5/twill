@@ -27,7 +27,7 @@
           "message": { "type": "string" },
           "category": {
             "type": "string",
-            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "ac-alignment", "ac-alignment-unknown", "architecture-drift", "chain-integrity-drift"]
+            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "ac-alignment", "ac-alignment-unknown", "architecture-drift", "chain-integrity-drift", "architecture-quality"]
           },
           "finding_target": { "type": "string", "enum": ["issue_description", "codebase_state"] }
         }
@@ -73,6 +73,7 @@ findings の severity から機械的に導出（AI 裁量禁止）:
 | `ac-alignment-unknown` | issue-pr-alignment（判断不能 AC、INFO のみ） |
 | `architecture-drift` | worker-architecture |
 | `chain-integrity-drift` | worker-workflow-integrity |
+| `architecture-quality` | worker-arch-doc-reviewer |
 
 **co-issue specialist 用**（merge-gate specialist は使用禁止）:
 
