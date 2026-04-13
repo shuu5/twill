@@ -109,7 +109,7 @@ graph TD
         CA["co-autopilot<br/>(Implementation)"]
         CI["co-issue<br/>(Non-implementation)"]
         CP["co-project<br/>(Non-implementation)"]
-        CR["co-architect<br/>(Non-implementation)"]
+        CR["co-architect<br/>(Spec Implementation)"]
         CU["co-utility<br/>(Utility)"]
         CS["co-self-improve<br/>(Observation)"]
         SO["su-observer<br/>(Meta-cognitive)"]
