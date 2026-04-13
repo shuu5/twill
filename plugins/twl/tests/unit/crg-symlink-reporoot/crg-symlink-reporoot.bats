@@ -323,3 +323,130 @@ teardown() {
   # grep で realpath && _is_main の組み合わせを検索（存在しないことを検証）
   ! grep -A5 "_is_main=0" "$orchestrator" | grep -q "realpath"
 }
+
+# ===========================================================================
+# Edge cases: --coverage=edge-cases
+# Static analysis of actual autopilot-orchestrator.sh implementation
+# ===========================================================================
+
+@test "crg-reporoot[static]: TWILL_REPO_ROOT は launch_worker() 内で export される" {
+  local orchestrator="$REPO_ROOT/scripts/autopilot-orchestrator.sh"
+  [[ -f "$orchestrator" ]] || skip "autopilot-orchestrator.sh が REPO_ROOT/scripts に見つからない"
+
+  # export TWILL_REPO_ROOT= の行が launch_worker 関数ブロック内に存在する
+  # launch_worker() の開始行番号を取得し、次の関数定義行までの範囲で検索
+  local lw_start lw_end
+  lw_start=$(grep -n "^launch_worker()" "$orchestrator" | head -1 | cut -d: -f1)
+  lw_end=$(awk "NR > $lw_start && /^[a-z_]*[a-z_]\(\)/ { print NR; exit }" "$orchestrator")
+  [[ -n "$lw_start" ]]
+  local found
+  found=$(sed -n "${lw_start},${lw_end}p" "$orchestrator" | grep -c 'export TWILL_REPO_ROOT=')
+  [ "$found" -ge 1 ]
+}
+
+@test "crg-reporoot[static]: TWILL_REPO_ROOT は PROJECT_DIR から設定される" {
+  local orchestrator="$REPO_ROOT/scripts/autopilot-orchestrator.sh"
+  [[ -f "$orchestrator" ]] || skip "autopilot-orchestrator.sh が REPO_ROOT/scripts に見つからない"
+
+  # export TWILL_REPO_ROOT="${PROJECT_DIR}" のパターンが存在する
+  grep -q 'export TWILL_REPO_ROOT.*PROJECT_DIR' "$orchestrator"
+}
+
+@test "crg-reporoot[static]: CRG symlink 作成は TWILL_REPO_ROOT ベース（effective_project_dir を直接使っていない）" {
+  local orchestrator="$REPO_ROOT/scripts/autopilot-orchestrator.sh"
+  [[ -f "$orchestrator" ]] || skip "autopilot-orchestrator.sh が REPO_ROOT/scripts に見つからない"
+
+  # _crg_main は TWILL_REPO_ROOT を使って構成されている
+  grep -q '_crg_main.*TWILL_REPO_ROOT' "$orchestrator"
+
+  # _crg_main が effective_project_dir を直接参照していない
+  ! grep '_crg_main.*effective_project_dir' "$orchestrator"
+}
+
+@test "crg-reporoot[static]: _is_main 判定は文字列比較で行われる（== 演算子使用）" {
+  local orchestrator="$REPO_ROOT/scripts/autopilot-orchestrator.sh"
+  [[ -f "$orchestrator" ]] || skip "autopilot-orchestrator.sh が REPO_ROOT/scripts に見つからない"
+
+  # 文字列比較 == で _is_main を設定している行が存在する
+  grep -q '_normalized_wt.*==.*_normalized_main\|_normalized_main.*==.*_normalized_wt' "$orchestrator"
+}
+
+@test "crg-reporoot[static]: _normalized_main は TWILL_REPO_ROOT/main から構成される" {
+  local orchestrator="$REPO_ROOT/scripts/autopilot-orchestrator.sh"
+  [[ -f "$orchestrator" ]] || skip "autopilot-orchestrator.sh が REPO_ROOT/scripts に見つからない"
+
+  # _normalized_main が TWILL_REPO_ROOT を使って設定されている
+  grep -q '_normalized_main.*TWILL_REPO_ROOT.*main' "$orchestrator"
+}
+
+@test "crg-reporoot[static]: 末尾スラッシュ strip（%/ パターン）が使用されている" {
+  local orchestrator="$REPO_ROOT/scripts/autopilot-orchestrator.sh"
+  [[ -f "$orchestrator" ]] || skip "autopilot-orchestrator.sh が REPO_ROOT/scripts に見つからない"
+
+  # worktree_dir%/ または TWILL_REPO_ROOT%/ パターンが CRG ブロックに存在する
+  local crg_block
+  crg_block=$(grep -A10 '_crg_main=' "$orchestrator" | head -20)
+  echo "$crg_block" | grep -q '%/'
+}
+
+# ---------------------------------------------------------------------------
+# Edge case: TWILL_REPO_ROOT が末尾スラッシュ付きの場合でも正しく動作する
+# ---------------------------------------------------------------------------
+
+@test "crg-reporoot[edge]: TWILL_REPO_ROOT が末尾スラッシュ付きでも symlink ターゲットが正しい" {
+  # PROJECT_DIR に末尾スラッシュを付与してテスト
+  PROJECT_DIR="${FAKE_REPO_ROOT}/" \
+  WORKTREE_DIR="$FAKE_REPO_ROOT/worktrees/feat/576-test" \
+    run bash "$SANDBOX/scripts/crg-symlink-dispatch.sh"
+
+  assert_success
+  # symlink ターゲットを確認（末尾スラッシュが適切に処理される）
+  if [[ -L "$FAKE_REPO_ROOT/worktrees/feat/576-test/.code-review-graph" ]]; then
+    local target
+    target=$(readlink "$FAKE_REPO_ROOT/worktrees/feat/576-test/.code-review-graph")
+    # ターゲットパスに "//" が含まれていないことを確認
+    [[ "$target" != *"//"* ]]
+  fi
+}
+
+@test "crg-reporoot[edge]: WORKTREE_DIR が末尾スラッシュ付きの main パスでも自己参照防止が機能する" {
+  PROJECT_DIR="$FAKE_REPO_ROOT" \
+  WORKTREE_DIR="${FAKE_REPO_ROOT}/main/" \
+    run bash "$SANDBOX/scripts/crg-symlink-dispatch.sh"
+
+  assert_success
+  grep -q "_is_main=1" "$CALLS_LOG"
+  [[ ! -L "$FAKE_REPO_ROOT/main/.code-review-graph" ]]
+}
+
+@test "crg-reporoot[edge]: PROJECT_DIR が空の場合 TWILL_REPO_ROOT も空になる" {
+  PROJECT_DIR="" \
+  WORKTREE_DIR="$FAKE_REPO_ROOT/worktrees/feat/576-test" \
+    run bash "$SANDBOX/scripts/crg-symlink-dispatch.sh"
+
+  # 空の PROJECT_DIR でも crash しない（symlink 作成はスキップされる）
+  assert_success
+  local val
+  val=$(grep "export TWILL_REPO_ROOT=" "$CALLS_LOG" | head -1 | sed 's/export TWILL_REPO_ROOT=//')
+  [[ -z "$val" ]]
+}
+
+@test "crg-reporoot[edge]: main-suffix パス（例: /path/to/twill/main-backup）は main 判定されない" {
+  mkdir -p "$FAKE_REPO_ROOT/main-backup"
+  PROJECT_DIR="$FAKE_REPO_ROOT" \
+  WORKTREE_DIR="$FAKE_REPO_ROOT/main-backup" \
+    run bash "$SANDBOX/scripts/crg-symlink-dispatch.sh"
+
+  assert_success
+  grep -q "_is_main=0" "$CALLS_LOG"
+}
+
+@test "crg-reporoot[edge]: main-prefix パス（例: /path/to/mainline/worktrees/...）は main 判定されない" {
+  mkdir -p "$FAKE_REPO_ROOT/worktrees/mainline-feature"
+  PROJECT_DIR="$FAKE_REPO_ROOT" \
+  WORKTREE_DIR="$FAKE_REPO_ROOT/worktrees/mainline-feature" \
+    run bash "$SANDBOX/scripts/crg-symlink-dispatch.sh"
+
+  assert_success
+  grep -q "_is_main=0" "$CALLS_LOG"
+}

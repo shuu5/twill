@@ -1,0 +1,391 @@
+change_id: issue-576
+generated_at: "2026-04-13T00:00:00Z"
+test_framework: bats
+scenarios:
+  # ===========================================================================
+  # Requirement: TWILL_REPO_ROOT export
+  # ===========================================================================
+
+  - id: "twill-repo-root-export-basic"
+    name: "worktree 作成時に TWILL_REPO_ROOT が設定される"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 7
+    requirement: "TWILL_REPO_ROOT export"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[export]: TWILL_REPO_ROOT が PROJECT_DIR で export される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "twill-repo-root-export-not-empty"
+    name: "TWILL_REPO_ROOT が空でない"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 7
+    requirement: "TWILL_REPO_ROOT export"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[export]: TWILL_REPO_ROOT が空でない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "twill-repo-root-export-cross-repo"
+    name: "ISSUE_REPO_PATH 設定時も TWILL_REPO_ROOT は twill モノリポルートを指す"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 11
+    requirement: "TWILL_REPO_ROOT export"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[cross-repo]: ISSUE_REPO_PATH 設定時も TWILL_REPO_ROOT は PROJECT_DIR を指す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # Requirement: CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更
+  # ===========================================================================
+
+  - id: "crg-symlink-feature-worktree-created"
+    name: "feature worktree への CRG symlink 作成"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 21
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[symlink]: feature worktree に CRG symlink が作成される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crg-symlink-target-is-reporoot-main"
+    name: "CRG symlink が TWILL_REPO_ROOT/main/.code-review-graph を指す"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 21
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[symlink]: CRG symlink が TWILL_REPO_ROOT/main/.code-review-graph を指す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crg-symlink-calls-log-recorded"
+    name: "calls.log に symlink_created が記録される"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 21
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[symlink]: calls.log に symlink_created が記録される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crg-symlink-no-self-ref-main"
+    name: "main worktree への自己参照 symlink を作成しない"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 25
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[no-self-ref]: main worktree に CRG symlink が作成されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crg-symlink-no-self-ref-is-main-flag"
+    name: "main worktree で _is_main=1 と判定される"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 25
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[no-self-ref]: main worktree で _is_main=1 と判定される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "crg-symlink-no-self-ref-skipped-logged"
+    name: "main worktree で symlink_skipped が記録される"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 25
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[no-self-ref]: main worktree で symlink_skipped が記録される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # Requirement: _is_main 判定を文字列比較に変更
+  # ===========================================================================
+
+  - id: "is-main-trailing-slash"
+    name: "main worktree の正確な判定（末尾スラッシュ付き）"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 33
+    requirement: "_is_main 判定を文字列比較に変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[is-main]: 末尾スラッシュ付きの main パスも _is_main=1 と判定される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "is-main-no-symlink-created"
+    name: "main パスで CRG symlink が作成されない"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 33
+    requirement: "_is_main 判定を文字列比較に変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[is-main]: main パスで CRG symlink が作成されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "is-main-feature-worktree-not-main"
+    name: "feature worktree は main と判定されない"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 37
+    requirement: "_is_main 判定を文字列比較に変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[not-main]: feature worktree で _is_main=0 と判定される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "is-main-other-branch-not-main"
+    name: "別ブランチ worktree でも _is_main=0 と判定される"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 37
+    requirement: "_is_main 判定を文字列比較に変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[not-main]: 別ブランチ worktree でも _is_main=0 と判定される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "is-main-main-like-branch-not-main"
+    name: "main-like 名のブランチ（例: main-backup）は main と判定されない"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 37
+    requirement: "_is_main 判定を文字列比較に変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[not-main]: main-like 名のブランチ（例: main-backup）は main と判定されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # Requirement: realpath ベースのガード削除
+  # ===========================================================================
+
+  - id: "no-realpath-guard"
+    name: "realpath ガードが存在しない"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 47
+    requirement: "realpath ベースのガード削除"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[no-realpath]: autopilot-orchestrator.sh の CRG ブロックに realpath 判定が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # Edge cases (--coverage=edge-cases) — Static analysis of actual implementation
+  # ===========================================================================
+
+  - id: "static-twill-repo-root-in-launch-worker"
+    name: "TWILL_REPO_ROOT は launch_worker() 内で export される（静的検証）"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 7
+    requirement: "TWILL_REPO_ROOT export"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[static]: TWILL_REPO_ROOT は launch_worker() 内で export される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "static-twill-repo-root-from-project-dir"
+    name: "TWILL_REPO_ROOT は PROJECT_DIR から設定される（静的検証）"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 7
+    requirement: "TWILL_REPO_ROOT export"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[static]: TWILL_REPO_ROOT は PROJECT_DIR から設定される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "static-crg-uses-reporoot-not-effective-dir"
+    name: "CRG symlink 作成は TWILL_REPO_ROOT ベース（effective_project_dir を直接使っていない）"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 21
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[static]: CRG symlink 作成は TWILL_REPO_ROOT ベース（effective_project_dir を直接使っていない）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "static-is-main-uses-string-comparison"
+    name: "_is_main 判定は文字列比較で行われる（== 演算子使用）"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 33
+    requirement: "_is_main 判定を文字列比較に変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[static]: _is_main 判定は文字列比較で行われる（== 演算子使用）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "static-normalized-main-uses-reporoot"
+    name: "_normalized_main は TWILL_REPO_ROOT/main から構成される"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 33
+    requirement: "_is_main 判定を文字列比較に変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[static]: _normalized_main は TWILL_REPO_ROOT/main から構成される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "static-trailing-slash-strip-pattern"
+    name: "末尾スラッシュ strip（%/ パターン）が使用されている"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 25
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[static]: 末尾スラッシュ strip（%/ パターン）が使用されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-reporoot-trailing-slash"
+    name: "TWILL_REPO_ROOT が末尾スラッシュ付きでも symlink ターゲットが正しい"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 21
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[edge]: TWILL_REPO_ROOT が末尾スラッシュ付きでも symlink ターゲットが正しい"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-worktree-dir-trailing-slash-self-ref"
+    name: "WORKTREE_DIR が末尾スラッシュ付きの main パスでも自己参照防止が機能する"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 25
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[edge]: WORKTREE_DIR が末尾スラッシュ付きの main パスでも自己参照防止が機能する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-empty-project-dir"
+    name: "PROJECT_DIR が空の場合 TWILL_REPO_ROOT も空になる"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 7
+    requirement: "TWILL_REPO_ROOT export"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[edge]: PROJECT_DIR が空の場合 TWILL_REPO_ROOT も空になる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-main-suffix-not-main"
+    name: "main-suffix パス（例: /path/to/twill/main-backup）は main 判定されない"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 37
+    requirement: "_is_main 判定を文字列比較に変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[edge]: main-suffix パス（例: /path/to/twill/main-backup）は main 判定されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-main-prefix-not-main"
+    name: "main-prefix パス（例: /path/to/mainline/worktrees/...）は main 判定されない"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 37
+    requirement: "_is_main 判定を文字列比較に変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[edge]: main-prefix パス（例: /path/to/mainline/worktrees/...）は main 判定されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ===========================================================================
+  # Existing edge cases (冪等性・条件ガード)
+  # ===========================================================================
+
+  - id: "edge-idempotent-existing-crg"
+    name: "既存 .code-review-graph がある場合 symlink を上書きしない（冪等性）"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 21
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[edge]: 既存 .code-review-graph がある場合 symlink を上書きしない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "edge-no-crg-db-no-symlink"
+    name: "CRG DB が存在しない場合 symlink を作成しない"
+    spec_file: "specs/crg-symlink-reporoot/spec.md"
+    spec_line: 21
+    requirement: "CRG symlink 参照先を TWILL_REPO_ROOT ベースに変更"
+    test_file: "plugins/twl/tests/unit/crg-symlink-reporoot/crg-symlink-reporoot.bats"
+    test_name: "crg-reporoot[edge]: CRG DB が存在しない場合 symlink を作成しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
