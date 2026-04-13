@@ -13,7 +13,7 @@ disable-model-invocation: true
 ```yaml
 <pattern-id>:
   regex: <正規表現>
-  severity: critical | high | medium | low | info
+  severity: error | warning | info
   category: <カテゴリ名>
   description: <説明>
   related_issue: <関連 Issue 番号、optional>

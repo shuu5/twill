@@ -11,7 +11,7 @@ observe-once と problem-detect を順次実行し、統合 JSON を出力する
 ## 引数
 
 - `--window <name>` (必須): tmux ウィンドウ名
-- `--evaluator-on` (optional): severity >= medium 時に observer-evaluator specialist を spawn
+- `--evaluator-on` (optional): severity が error または warning 時に observer-evaluator specialist を spawn
 
 ## 処理フロー (MUST)
 
@@ -34,7 +34,7 @@ CAPTURE_FILE=$(mktemp /tmp/observe-XXXXXX.json)
 
 ### Step 3: evaluator 判定
 
-`--evaluator-on` が指定されており、detection に severity `critical` or `warning` が含まれる場合:
+`--evaluator-on` が指定されており、detection に severity `error` or `warning` が含まれる場合:
 
 ```
 Agent(subagent_type="twl:observer-evaluator", prompt="<detection-json>")
