@@ -126,10 +126,12 @@ fi
 # phase-review / merge-gate モード: architecture/ 配下の .md 変更 → worker-arch-doc-reviewer
 if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
   for f in "${FILES[@]}"; do
-    if [[ "$f" == */architecture/*.md || "$f" == */architecture/**/*.md ]]; then
-      SPECIALISTS["worker-arch-doc-reviewer"]=1
-      break
-    fi
+    case "$f" in
+      */architecture/*.md|*/architecture/*/*.md|*/architecture/*/*/*.md)
+        SPECIALISTS["worker-arch-doc-reviewer"]=1
+        break
+        ;;
+    esac
   done
 fi
 
