@@ -169,7 +169,7 @@ graph TD
 **Spawning ルール**:
 - co-autopilot は Implementation workflow を orchestrate できる（レビュー・テスト）
 - co-self-improve は Observation workflow を orchestrate できる（ADR-011: ライブ観察ループ）
-- co-issue は specialist を spawn できる（issue-critic, issue-feasibility, worker-codex-reviewer）
+- co-issue は workflow-issue-lifecycle Worker を spawn する。specialist の実行は各 Worker セッション内に閉じる（ADR-017）
 - co-project は composite + atomic（構成変更の最小単位で操作）
 - co-architect は atomic + reference のみ（設計情報の参照・評価）
 - su-observer は全 controller を supervise できる（ADR-013: Observer 型）。spawn 関係は controller と同等（workflow, atomic, composite, specialist, reference）
