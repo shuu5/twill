@@ -33,7 +33,9 @@ SPECIALISTS=$(git diff HEAD~1 --name-only | bash "${CLAUDE_PLUGIN_ROOT}/scripts/
 MANIFEST_FILE=$(mktemp /tmp/.specialist-manifest-post-fix-verify-XXXXXXXX.txt)
 chmod 600 "$MANIFEST_FILE"
 CONTEXT_ID=$(basename "$MANIFEST_FILE" .txt | sed 's/^\.specialist-manifest-//')
+SPAWNED_FILE="/tmp/.specialist-spawned-${CONTEXT_ID}.txt"
 echo "$SPECIALISTS" > "$MANIFEST_FILE"
+trap 'rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"' EXIT
 ```
 
 ### Step 3: specialist 並列 spawn
@@ -55,7 +57,6 @@ echo "$SPECIALISTS" > "$MANIFEST_FILE"
 
 ```bash
 PARSED=$(echo "$SPECIALIST_OUTPUT" | python3 -m twl.autopilot.parser)
-SPAWNED_FILE="/tmp/.specialist-spawned-${CONTEXT_ID}.txt"
 rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"
 ```
 
