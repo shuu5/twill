@@ -122,7 +122,7 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
       _PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
       _ACTIVE_FILE="${_PROJECT_ROOT}/.audit/.active"
       if [[ -n "${_PROJECT_ROOT}" && -f "${_ACTIVE_FILE}" ]]; then
-        _AUDIT_DIR_REL="$(python3 -c "import json,sys; d=json.load(open('${_ACTIVE_FILE}')); print(d.get('audit_dir',''))" 2>/dev/null || echo "")"
+        _AUDIT_DIR_REL="$(AUDIT_ACTIVE_FILE="${_ACTIVE_FILE}" python3 -c "import json,os; f=os.environ.get('AUDIT_ACTIVE_FILE',''); d=json.load(open(f)) if f else {}; print(d.get('audit_dir',''))" 2>/dev/null || echo "")"
         if [[ -n "${_AUDIT_DIR_REL}" ]]; then
           # audit_dir は絶対パスまたは相対パスの両方に対応
           if [[ "${_AUDIT_DIR_REL}" == /* ]]; then

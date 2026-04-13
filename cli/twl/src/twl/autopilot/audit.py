@@ -96,8 +96,11 @@ def resolve_audit_dir(project_root: Path | None = None) -> Path | None:
             if audit_dir:
                 root = _resolve_root(project_root)
                 resolved = root / audit_dir
-                # Ensure resolved path stays within project root
                 resolved = resolved.resolve()
+                # Enforce path containment: audit_dir must stay within project root
+                root_resolved = root.resolve()
+                if not resolved.is_relative_to(root_resolved):
+                    raise ValueError(f"audit_dir is outside project root: {resolved}")
                 return resolved
     except Exception:
         pass
@@ -135,6 +138,7 @@ def audit_off(project_root: Path | None = None) -> dict:
 
     data = json.loads(active.read_text(encoding="utf-8"))
     run_id = data["run_id"]
+    _validate_run_id(run_id)
     root = _resolve_root(project_root)
     audit_dir = root / ".audit" / run_id
 
