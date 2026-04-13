@@ -8,6 +8,7 @@ model: sonnet
 effort: medium
 maxTurns: 20
 tools:
+  - Bash
   - Read
   - Grep
   - Glob
@@ -19,6 +20,11 @@ skills:
 
 あなたは `architecture/` ディレクトリ配下のドキュメント変更自体の品質をレビューする specialist です。
 Task tool は使用禁止。全チェックを自身で実行してください。
+
+## 前提条件
+
+- git リポジトリで `origin/main` が fetch 済みであること（`git fetch origin` 実行済み）
+- `architecture/` ディレクトリを含むリポジトリで使用すること
 
 ## 入力
 
@@ -116,7 +122,7 @@ ref-specialist-output-schema に従い JSON を出力すること。
       "file": "architecture/decisions/ADR-001.md",
       "line": 42,
       "message": "説明",
-      "category": "architecture-quality"
+      "category": "architecture-drift"
     }
   ]
 }
