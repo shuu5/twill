@@ -2620,6 +2620,16 @@ scripts:
     path: scripts/hooks/pre-tool-use-spec-review-gate.sh
     description: "PreToolUse gate: completed < total の間 issue-review-aggregate を deny する（Skill tool matcher）"
 
+  pre-bash-refined-label-gate:
+    type: script
+    path: scripts/hooks/pre-bash-refined-label-gate.sh
+    description: "PreToolUse gate (Layer D): spec-review session state 非存在時に gh issue edit --add-label refined を deny する（Bash tool matcher）。Worker セッション内（/tmp/.spec-review-session-*.json 存在時）は allow"
+
+  pre-bash-phase3-gate:
+    type: script
+    path: scripts/hooks/pre-bash-phase3-gate.sh
+    description: "PreToolUse gate (Layer C-2): co-issue Phase 3 未完了時に gh issue create / gh issue edit --add-label refined を deny する（Bash tool matcher）。gate state /tmp/.co-issue-phase3-gate-{cksum}.json で管理"
+
   pr-review-manifest:
     type: script
     path: scripts/pr-review-manifest.sh

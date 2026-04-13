@@ -10,6 +10,26 @@
             "timeout": 3000
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/hooks/pre-bash-commit-validate.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/hooks/pre-bash-refined-label-gate.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh",
+            "timeout": 5000
+          }
+        ]
       }
     ],
     "PreCompact": [
@@ -44,18 +64,6 @@
             "type": "command",
             "command": "bash plugins/twl/scripts/su-session-compact.sh",
             "timeout": 10000
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/pre-bash-commit-validate.sh",
-            "timeout": 5000
           }
         ]
       }
