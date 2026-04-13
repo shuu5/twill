@@ -20,7 +20,7 @@ specialist が検出した問題。
 | file | string | 対象ファイルパス |
 | line | number | 対象行番号 |
 | message | string | 問題の説明 |
-| category | `vulnerability` \| `bug` \| `coding-convention` \| `structure` \| `principles` | 分類 |
+| category | `vulnerability` \| `bug` \| `coding-convention` \| `structure` \| `principles` \| `architecture-quality` | 分類 |
 
 ### MergeGateDecision
 merge-gate の判定結果。
@@ -42,7 +42,7 @@ merge-gate の判定結果。
     "file": "src/module.ts",
     "line": 42,
     "message": "...",
-    "category": "vulnerability|bug|coding-convention|structure|principles"
+    "category": "vulnerability|bug|coding-convention|structure|principles|architecture-quality"
   }]
 }
 ```

@@ -123,6 +123,16 @@ if [[ "$MODE" == "merge-gate" ]]; then
   fi
 fi
 
+# phase-review / merge-gate モード: architecture/ 配下の .md 変更 → worker-arch-doc-reviewer
+if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
+  for f in "${FILES[@]}"; do
+    if [[ "$f" == */architecture/*.md || "$f" == */architecture/**/*.md ]]; then
+      SPECIALISTS["worker-arch-doc-reviewer"]=1
+      break
+    fi
+  done
+fi
+
 # merge-gate モードのみ: chain 関連ファイル (deps.yaml / SKILL.md / chain-runner.sh) 変更
 # → worker-workflow-integrity を追加 (Layer 3: chain-integrity-drift 検出)
 # architecture/*.md 単独変更は worker-architecture が担当するため、ここでは起動しない
