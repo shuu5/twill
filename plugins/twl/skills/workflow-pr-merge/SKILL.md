@@ -106,6 +106,17 @@ merge-gate が PASS の場合のみ:
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" auto-merge
 ```
 
+### Step 8.7: pr-comment-final（最終判定 PR コメント）【機械的 → runner】
+auto-merge 完了後（または merge-gate REJECT 時）に最終判定を PR コメントとして投稿:
+```bash
+# merge-gate PASS → auto-merge 成功時
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-comment-final MERGED
+```
+merge-gate REJECT 時:
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-comment-final REJECTED
+```
+
 ## 完了後の遷移
 
 auto-merge 完了後:
