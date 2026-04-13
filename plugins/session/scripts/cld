@@ -7,6 +7,96 @@ if ! command -v claude &>/dev/null; then
     exit 1
 fi
 
+# --observer フラグ事前検出（exec claude の前に intercept）
+OBSERVER_MODE=false
+PASS_ARGS=()
+for arg in "$@"; do
+    if [[ "$arg" == "--observer" ]]; then
+        OBSERVER_MODE=true
+    else
+        PASS_ARGS+=("$arg")
+    fi
+done
+
+if [[ "$OBSERVER_MODE" == "true" ]]; then
+    # プロジェクトルート検出（bare repo 構造 or git toplevel）
+    PROJECT_ROOT=""
+    if git rev-parse --show-toplevel &>/dev/null; then
+        GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+        # bare repo 構造: worktree 内の場合は bare repo root を探す
+        if [[ -f "${GIT_ROOT}/.git" ]]; then
+            # .git がファイル（worktree）→ bare repo root の main/ を参照
+            GIT_COMMON=$(git rev-parse --git-common-dir 2>/dev/null || echo "")
+            # GIT_COMMON は typically <bare-root>/.bare を指す
+            # /.bare サフィックスを正確に除去して <bare-root>/main を構築
+            if [[ -n "$GIT_COMMON" && "${GIT_COMMON%/.bare}" != "$GIT_COMMON" ]]; then
+                BARE_ROOT="${GIT_COMMON%/.bare}"
+                if [[ -d "${BARE_ROOT}/main" ]]; then
+                    PROJECT_ROOT="${BARE_ROOT}/main"
+                fi
+            fi
+            # fallback: git toplevel 自体を使用
+            if [[ -z "$PROJECT_ROOT" ]]; then
+                PROJECT_ROOT="$GIT_ROOT"
+            fi
+        else
+            PROJECT_ROOT="$GIT_ROOT"
+        fi
+    fi
+
+    SESSION_JSON=""
+    if [[ -n "$PROJECT_ROOT" ]]; then
+        SESSION_JSON="${PROJECT_ROOT}/.supervisor/session.json"
+    fi
+
+    # session.json 存在確認
+    if [[ -z "$SESSION_JSON" || ! -f "$SESSION_JSON" ]]; then
+        echo "No active observer session. Start one with: cld → /su-observer" >&2
+        exit 1
+    fi
+
+    # claude_session_id と observer_window を読み取り（環境変数経由で Python に渡す）
+    SESSION_DATA=$(SESSION_JSON_PATH="$SESSION_JSON" python3 -c "
+import os, json
+try:
+    with open(os.environ['SESSION_JSON_PATH']) as f:
+        data = json.load(f)
+    sid = data.get('claude_session_id') or ''
+    win = data.get('observer_window') or ''
+    print(sid)
+    print(win)
+except Exception:
+    print('')
+    print('')
+" 2>/dev/null || printf '\n')
+
+    CLAUDE_SESSION_ID_VAL=$(echo "$SESSION_DATA" | head -1)
+    OBSERVER_WINDOW_NAME=$(echo "$SESSION_DATA" | tail -1)
+
+    if [[ -z "$CLAUDE_SESSION_ID_VAL" ]]; then
+        echo "Observer session found but no Claude session ID recorded" >&2
+        exit 1
+    fi
+
+    # tmux ウィンドウ有効性確認（observer_window が記録されており session-state.sh が利用可能な場合）
+    if [[ -n "$OBSERVER_WINDOW_NAME" ]] && command -v session-state.sh &>/dev/null; then
+        OBSERVER_STATE=$(session-state.sh state "$OBSERVER_WINDOW_NAME" 2>/dev/null || echo "exited")
+        case "$OBSERVER_STATE" in
+            "exited")
+                echo "Observer session has ended. Start a new one with: cld → /su-observer" >&2
+                exit 1
+                ;;
+            "")
+                echo "Observer window not found. Session may have ended" >&2
+                exit 1
+                ;;
+        esac
+    fi
+
+    # 有効な session ID で resume
+    exec claude --resume "$CLAUDE_SESSION_ID_VAL" "${PASS_ARGS[@]+"${PASS_ARGS[@]}"}"
+fi
+
 PLUGINS_BASE="$HOME/.claude/plugins"
 PLUGIN_ARGS=()
 
@@ -25,4 +115,4 @@ done < <(env | grep '^DEV_')
 
 exec systemd-run --user --scope -p MemoryMax=12G \
     "${ENV_ARGS[@]}" \
-    claude --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" "$@"
+    claude --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" "${PASS_ARGS[@]+"${PASS_ARGS[@]}"}"

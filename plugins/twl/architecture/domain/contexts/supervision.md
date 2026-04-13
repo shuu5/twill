@@ -20,6 +20,8 @@ su-observer のプロジェクト常駐セッション。
 | main_dir | string | bare repo の main ディレクトリパス |
 | status | `active` \| `compacting` \| `paused` \| `ended` | セッション状態 |
 | started_at | string (ISO 8601) | 開始時刻 |
+| claude_session_id | string \| null | Claude Code セッション ID（`cld --observer` での resume 用）。null = 未取得。JSONL ファイル名から取得（AC-0 で確定）。compaction 後は su-postcompact.sh が更新する（SHALL） |
+| observer_window | string \| null | su-observer が起動している tmux ウィンドウ名。`cld --observer` のウィンドウ有効性確認に使用。null = 未記録 |
 | supervised_controllers | SupervisedController[] | 監視中の controller リスト |
 | current_wave | WaveState \| null | 現在の Wave 状態（autopilot 実行時） |
 | memory_budget | MemoryBudget | 三層記憶の消費量追跡 |

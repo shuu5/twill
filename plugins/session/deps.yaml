@@ -46,7 +46,7 @@ scripts:
   cld:
     type: script
     path: scripts/cld
-    description: "Claude Code ランチャー（plugin 自動検出 + systemd-run）"
+    description: "Claude Code ランチャー（plugin 自動検出 + systemd-run）。--observer フラグ: .supervisor/session.json の claude_session_id で claude --resume を実行"
 
   cld-spawn:
     type: script
