@@ -26,9 +26,9 @@ if ! SPECIALISTS=$(git diff --name-only origin/main 2>/dev/null | bash "${CLAUDE
   SPECIALISTS=$(git diff --name-only FETCH_HEAD | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode arch-review)
 fi
 
-# hook 用一時ファイル作成
-CONTEXT_ID="arch-phase-review-$(git branch --show-current | tr '/' '-')"
-echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
+# hook 用一時ファイル作成（mktemp でランダム名 — symlink attack 防止）
+MANIFEST_FILE=$(mktemp /tmp/.specialist-manifest-XXXXXX.txt)
+echo "$SPECIALISTS" > "$MANIFEST_FILE"
 ```
 
 specialist 選択ルール（arch-review モード）:
@@ -36,7 +36,14 @@ specialist 選択ルール（arch-review モード）:
 - **常時必須**: worker-architecture（architecture/ 配下変更は常に対象）
 - **条件付き**: worker-structure + worker-principles（deps.yaml 変更あり）
 
-マニフェスト出力が空（0行）の場合は自動 PASS。
+マニフェスト出力が空（0行）の場合は自動 PASS:
+```bash
+if [[ -z "$SPECIALISTS" ]]; then
+  python3 -m twl.autopilot.checkpoint write --step arch-phase-review --status "PASS" --findings "[]"
+  echo "✓ arch-phase-review: PASS (specialist なし — 自動 PASS)"
+  exit 0
+fi
+```
 
 ### 並列 specialist 実行
 
@@ -52,7 +59,7 @@ specialist 選択ルール（arch-review モード）:
 ### 結果収集後に一時ファイル削除
 
 ```bash
-rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt /tmp/.specialist-spawned-${CONTEXT_ID}.txt
+rm -f "$MANIFEST_FILE"
 ```
 
 ### 結果集約
