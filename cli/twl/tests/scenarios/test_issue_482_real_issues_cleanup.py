@@ -428,10 +428,10 @@ class TestMutualExclusionLocalAndRealIssues:
         )
 
     def test_error_output_on_mutual_exclusion(self) -> None:
-        """相互排他違反時に --mode local / --real-issues 固有のエラー文言が定義されている。"""
+        """相互排他違反時に固有のエラー文言（同時に指定不可）が定義されている。"""
         content = _read_command()
         assert re.search(
-            r"--mode local.{0,50}--real.issues|--real.issues.{0,50}--mode local",
+            r"同時に指定できません|cannot.{0,30}together|mutually.exclusive",
             content,
             re.IGNORECASE,
         ), (
