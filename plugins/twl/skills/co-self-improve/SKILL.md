@@ -83,6 +83,25 @@ spawn 時プロンプトに情報が含まれない場合のみ AskUserQuestion 
    - spawn プロンプト: `/twl:co-autopilot`（test-target worktree で Issue を自律実行）
 6. spawn 後の window 名を取得し Step 2 へ
 
+### Bug Reproduction Scenario の実行
+
+bug level シナリオは既知の bug を意図的に再現するテストシナリオです。`--real-issues` モードと組み合わせて実行します:
+
+- `bug-469-chain-stall`: chain step 停滞の再現
+- `bug-470-state-path`: 状態パス異常の再現
+- `bug-471-refspec`: refspec 設定ミスの再現
+- `bug-472-monitor-stall`: monitor-channel 停滞の再現
+- `bug-combo-469-472`: 上記 bug の複合再現
+
+実行例:
+```
+/twl:co-self-improve scenario-run bug-469-chain-stall --real-issues --repo <owner>/<name>
+```
+
+注意:
+- bug level シナリオは `--real-issues` モード **必須**（local モードでは再現条件を満たさない）
+- 専用リポを事前に用意すること（test-project-init 参照）
+
 ## Step 2: scenario 実行中の observation loop 起動
 
 `Skill(twl:workflow-observe-loop)` を呼び出し、対象 window を引数で渡す。
