@@ -31,6 +31,7 @@
 #  13. タブ文字を含む不正 YAML (Write) -> exit 2
 
 load '../helpers/common'
+load '../helpers/git-fixture'
 
 HOOK_SRC=""
 
@@ -357,4 +358,83 @@ $(printf '\t')bad_tab_indent: here"
     '{tool_name:"Write", tool_input:{file_path:"deps.yaml", content:$content}}')
   run _run_hook "$payload"
   [ "$status" -eq 2 ]
+}
+
+# ---------------------------------------------------------------------------
+# Path traversal guard: Edit ブランチのディスク読み込み時パス検証
+# file_content を省略することで disk fallback パスを使用
+# ---------------------------------------------------------------------------
+
+@test "Edit: リポ内の正常パス（deps.yaml）はディスク読み込み時に通過する" {
+  # 一時 git リポジトリを作成し、deps.yaml を配置
+  local tmp_repo
+  tmp_repo=$(init_temp_repo)
+  local valid_yaml='name: test-plugin
+version: "1.0"'
+  echo "$valid_yaml" > "$tmp_repo/deps.yaml"
+  (cd "$tmp_repo" && git add deps.yaml && git commit -m "add deps.yaml" -q)
+
+  # file_content を省略してディスク読み込みパスを使用
+  local payload
+  payload=$(jq -nc \
+    --arg fp "$tmp_repo/deps.yaml" \
+    --arg os 'version: "1.0"' \
+    --arg ns 'version: "2.0"' \
+    '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$os, new_string:$ns}}')
+  run _run_hook "$payload"
+  cleanup_temp_repo "$tmp_repo"
+  [ "$status" -eq 0 ]
+}
+
+@test "Edit: トラバーサルパス（../../deps.yaml）はディスク読み込み時に exit 1 で拒否" {
+  # 一時 git リポジトリを作成（リポ外への相対トラバーサルを検証）
+  local tmp_repo
+  tmp_repo=$(init_temp_repo)
+
+  # tmp_repo の 2 階層上 (例: /tmp) は git リポジトリではないため拒否される
+  local traversal_path="$tmp_repo/../../deps.yaml"
+
+  local payload
+  payload=$(jq -nc \
+    --arg fp "$traversal_path" \
+    --arg os "old" \
+    --arg ns "new" \
+    '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$os, new_string:$ns}}')
+  run _run_hook "$payload"
+  cleanup_temp_repo "$tmp_repo"
+  [ "$status" -eq 1 ]
+}
+
+@test "Edit: リポ外パス（/tmp/deps.yaml）はディスク読み込み時に exit 1 で拒否" {
+  local tmp_file
+  tmp_file=$(mktemp --suffix=deps.yaml --tmpdir)
+  # basename が deps.yaml になるようにリネームして作成
+  local tmp_dir
+  tmp_dir=$(dirname "$tmp_file")
+  local target_file="$tmp_dir/deps.yaml"
+  echo "key: value" > "$target_file"
+
+  local payload
+  payload=$(jq -nc \
+    --arg fp "$target_file" \
+    --arg os "key: value" \
+    --arg ns "key: new_value" \
+    '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$os, new_string:$ns}}')
+  run _run_hook "$payload"
+  rm -f "$tmp_file" "$target_file"
+  [ "$status" -eq 1 ]
+}
+
+@test "Edit: 存在しないリポ外パスはディスク読み込み時に exit 1 で拒否" {
+  # git リポジトリが存在しないパスを指定
+  local nonexistent_path="/tmp/no_git_repo_dir_$$_$(date +%s)/deps.yaml"
+
+  local payload
+  payload=$(jq -nc \
+    --arg fp "$nonexistent_path" \
+    --arg os "old" \
+    --arg ns "new" \
+    '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$os, new_string:$ns}}')
+  run _run_hook "$payload"
+  [ "$status" -eq 1 ]
 }

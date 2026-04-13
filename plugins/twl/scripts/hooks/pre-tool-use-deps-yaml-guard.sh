@@ -73,10 +73,28 @@ elif [[ "$tool_name" == "Edit" ]]; then
   # なければ file_path のディスク内容にフォールバック
   current=$(echo "$payload" | jq -r '.tool_input.file_content // empty')
   if [[ -z "$current" ]]; then
-    if [[ ! -f "$file_path" ]]; then
+    # path traversal 防御: realpath 正規化 + リポジトリルート配下確認
+    # python3 を使用して realpath 不在環境（macOS BSD 等）にも対応
+    canonical_path=$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$file_path" 2>/dev/null) || {
+      echo "ERROR: file_path を解決できません: $file_path" >&2
+      exit 1
+    }
+    repo_root=$(git -C "$(dirname "$canonical_path")" rev-parse --show-toplevel 2>/dev/null) || {
+      echo "ERROR: git リポジトリが見つかりません: $canonical_path" >&2
+      exit 1
+    }
+    case "$canonical_path" in
+      "$repo_root"/*)
+        ;;
+      *)
+        echo "ERROR: リポジトリ外のパスは guard 対象外: $canonical_path (root: $repo_root)" >&2
+        exit 1
+        ;;
+    esac
+    if [[ ! -f "$canonical_path" ]]; then
       exit 0
     fi
-    current=$(cat "$file_path")
+    current=$(cat "$canonical_path")
   fi
 
   # old_string が存在しない場合は exit 2（apply 失敗 = YAML 未検証 = ブロック）
