@@ -166,6 +166,7 @@ detect_state() {
     fi
 
     # error: エラーパターンが末尾に存在（プロンプトが不在の場合のみ）
+    local pattern
     for pattern in "${ERROR_PATTERNS[@]}"; do
         if echo "$last_lines" | grep -qF "$pattern"; then
             echo "error"
