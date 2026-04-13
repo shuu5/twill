@@ -149,6 +149,7 @@ check_workers() {
   local snapshot_file="${2:-.supervisor/worker-snapshot.txt}"
   
   # glob パターンを安全な正規表現に変換（ReDoS 対策: 特殊文字をエスケープ後に * → .* 変換）
+  # ReDoS 対策（Issue #525）: $1 を未検証のまま grep -E に渡さないようエスケープする
   local safe_pattern
   safe_pattern=$(printf '%s' "${pattern//\*/GLOB_STAR}" | sed 's/[.+?()[\]{}^$|\\]/\\&/g; s/GLOB_STAR/.*/g')
   local current_workers
