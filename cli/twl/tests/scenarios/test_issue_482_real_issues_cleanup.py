@@ -171,13 +171,14 @@ class TestLoadedIssuesJsonNotFound:
         )
 
     def test_error_exit_on_missing_json(self) -> None:
-        """ファイルが存在しない場合に exit 1 またはエラー出力が定義されている。"""
+        """ファイルが存在しない場合に loaded-issues.json 固有のエラー文言が定義されている。"""
         content = _read_command()
-        # exit 1 か エラー JSON か
-        has_exit = bool(re.search(r"exit\s+1", content))
-        has_error_json = bool(re.search(r'"error"', content))
-        assert has_exit or has_error_json, (
-            "test-project-reset.md にエラー終了（exit 1 または JSON error）が定義されていない。"
+        assert re.search(
+            r"loaded.issues\.json.{0,30}(見つかりません|not found|存在しない)",
+            content,
+            re.IGNORECASE,
+        ), (
+            "test-project-reset.md に loaded-issues.json 不在時の固有エラー文言が定義されていない。"
         )
 
     def test_no_real_operations_on_missing_json(self) -> None:
@@ -303,13 +304,14 @@ class TestInvalidDurationSpec:
         )
 
     def test_exit_on_invalid_duration(self) -> None:
-        """無効な duration 指定時に終了する記述がある。"""
+        """無効な duration 指定時に --older-than 固有のエラー文言が定義されている。"""
         content = _read_command()
-        # exit 1 + 無効unit周辺に記述があるか、またはエラーJSON
-        has_exit = bool(re.search(r"exit\s+1", content))
-        has_error_json = bool(re.search(r'"error"', content))
-        assert has_exit or has_error_json, (
-            "test-project-reset.md にエラー終了（exit 1 または JSON error）が定義されていない。"
+        assert re.search(
+            r"--older.than.{0,30}(形式が無効|invalid|無効です)",
+            content,
+            re.IGNORECASE,
+        ), (
+            "test-project-reset.md に --older-than 無効時の固有エラー文言が定義されていない。"
         )
 
 
@@ -426,12 +428,14 @@ class TestMutualExclusionLocalAndRealIssues:
         )
 
     def test_error_output_on_mutual_exclusion(self) -> None:
-        """相互排他違反時にエラーが出力される定義がある。"""
+        """相互排他違反時に固有のエラー文言（同時に指定不可）が定義されている。"""
         content = _read_command()
-        has_exit = bool(re.search(r"exit\s+1", content))
-        has_error_json = bool(re.search(r'"error"', content))
-        assert has_exit or has_error_json, (
-            "test-project-reset.md に相互排他違反時のエラー出力定義がない。"
+        assert re.search(
+            r"同時に指定できません|cannot.{0,30}together|mutually.exclusive",
+            content,
+            re.IGNORECASE,
+        ), (
+            "test-project-reset.md に --mode local と --real-issues の相互排他固有エラー文言が定義されていない。"
         )
 
     def test_no_operations_on_mutual_exclusion(self) -> None:
