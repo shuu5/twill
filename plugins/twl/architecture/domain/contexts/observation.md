@@ -34,7 +34,7 @@ observed session の参照。
 | フィールド | 型 | 説明 |
 |---|---|---|
 | id | string | 検出一意識別子 |
-| severity | `critical` \| `warning` \| `info` | 深刻度 |
+| severity | `error` \| `warning` \| `info` | 深刻度 |
 | category | string | 問題カテゴリ（例: chain_stall, test_failure, pattern_match） |
 | source | `rule-based` \| `llm-evaluated` | 検出手段 |
 | capture_excerpt | string | 問題を示す出力の抜粋 |

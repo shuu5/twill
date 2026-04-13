@@ -59,7 +59,7 @@ capture 内容を行ごとにスキャンし、各パターンで grep マッチ
   "detections": [
     {
       "pattern": "MergeGateError:",
-      "severity": "critical",
+      "severity": "error",
       "category": "merge-gate-failure",
       "line": "MergeGateError: base drift detected: ...",
       "line_number": 17

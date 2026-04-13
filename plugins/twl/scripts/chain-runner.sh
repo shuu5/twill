@@ -924,7 +924,7 @@ step_prompt_compliance() {
 
   local stale_count error_count
   stale_count=$(echo "$result" | jq '[.items[] | select(.severity == "warning")] | length' 2>/dev/null || echo 0)
-  error_count=$(echo "$result" | jq '[.items[] | select(.severity == "critical")] | length' 2>/dev/null || echo 0)
+  error_count=$(echo "$result" | jq '[.items[] | select(.severity == "error")] | length' 2>/dev/null || echo 0)
 
   if [[ "$error_count" -gt 0 ]]; then
     skip "prompt-compliance" "FAIL (refined_by フォーマット不正: ${error_count} 件)"

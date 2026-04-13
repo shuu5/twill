@@ -34,7 +34,7 @@ CAPTURE_FILE=$(mktemp /tmp/observe-XXXXXX.json)
 
 ### Step 3: evaluator 判定
 
-`--evaluator-on` が指定されており、detection に severity `critical` or `warning` が含まれる場合:
+`--evaluator-on` が指定されており、detection に severity `error` or `warning` が含まれる場合:
 
 ```
 Agent(subagent_type="twl:observer-evaluator", prompt="<detection-json>")

@@ -35,7 +35,7 @@ limit: <N>
 
 1. **共通パターン** (>= 2 セッションで出現): `common_patterns` に分類
 2. **新規パターン** (今回初出): `new_patterns` に分類
-3. **Issue 起票候補**: severity=critical かつ共通パターンを `issue_draft_candidates` に分類
+3. **Issue 起票候補**: severity=error かつ共通パターンを `issue_draft_candidates` に分類
 
 ### Step 4: JSON 出力
 
@@ -52,14 +52,14 @@ limit: <N>
   "new_patterns": [
     {
       "pattern": "silent.*deletion",
-      "severity": "critical",
+      "severity": "error",
       "first_seen": "<timestamp>"
     }
   ],
   "issue_draft_candidates": [
     {
       "pattern": "MergeGateError:",
-      "severity": "critical",
+      "severity": "error",
       "reason": "3 セッションで繰り返し検出"
     }
   ]
