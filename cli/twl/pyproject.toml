@@ -22,3 +22,10 @@ twl = "twl.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.mypy]
+strict = false
+
+[[tool.mypy.overrides]]
+module = "twl.autopilot.mergegate_ops"
+disallow_untyped_defs = true
