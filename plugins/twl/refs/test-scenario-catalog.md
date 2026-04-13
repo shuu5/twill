@@ -329,6 +329,8 @@ regression-006:
 
 Wave 1-5 で発見された autopilot バグの再現シナリオ。`bug` level は特定の chain 遷移・stall パターンを検証し、`regression` level（並列実行 conflict 検証）と区別される。real-issues モードで各バグを再現確認できる。
 
+詳細な実行手順は `skills/co-self-improve/SKILL.md` の「Bug Reproduction Scenario の実行」を参照。
+
 ### bug-469-chain-stall: Worker 完了後の workflow-pr-verify 遷移停止
 
 ```yaml
