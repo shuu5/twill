@@ -28,9 +28,51 @@ echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
 
 マニフェスト各行を Task spawn 対象とする（手動追加・削除は MUST NOT）。出力 0 行は自動 PASS。結果収集後 `/tmp/.specialist-{manifest,spawned}-${CONTEXT_ID}.txt` を削除。
 
-### 並列 specialist 実行 → 結果集約
+### 並列 specialist 実行（MUST: 全 specialist 一括 spawn）
 
-各 specialist を `Task(subagent_type="twl:<name>", prompt="PR diff を入力としてレビューを実行")` で並列起動。出力は ref-specialist-output-schema 準拠。
+マニフェストファイルを読み、**全行の specialist を 1 回のメッセージで同時に Task spawn すること**。
+部分的な spawn は禁止。spawn 漏れは merge 判定の信頼性を毀損する。
+
+```bash
+# マニフェスト読み込み
+MANIFEST_FILE="/tmp/.specialist-manifest-${CONTEXT_ID}.txt"
+mapfile -t SPECIALIST_LIST < <(grep -v '^#' "$MANIFEST_FILE" | grep -v '^[[:space:]]*$')
+echo "spawn 対象 specialist (${#SPECIALIST_LIST[@]} 件):"
+printf '  - %s\n' "${SPECIALIST_LIST[@]}"
+```
+
+上記で出力された全 specialist を以下の形式で **1 回のメッセージ内に全て並列で** Task spawn する:
+
+```
+Task(subagent_type="twl:<name>", prompt="PR diff を入力としてレビューを実行")
+```
+
+出力は ref-specialist-output-schema 準拠。
+
+### spawn 完了確認（MUST: 結果集約の前提条件）
+
+全 specialist の Task が完了した後、結果集約に進む **前に** 以下を実行:
+
+```bash
+MANIFEST_FILE="/tmp/.specialist-manifest-${CONTEXT_ID}.txt"
+SPAWNED_FILE="/tmp/.specialist-spawned-${CONTEXT_ID}.txt"
+if [[ -f "$MANIFEST_FILE" ]]; then
+  MISSING=$(comm -23 \
+    <(grep -v '^#' "$MANIFEST_FILE" | grep -v '^[[:space:]]*$' | sed 's|^twl:twl:||' | sort -u) \
+    <(sort -u "$SPAWNED_FILE" 2>/dev/null || true))
+  if [[ -n "$MISSING" ]]; then
+    echo "ERROR: 以下の specialist が未 spawn:"
+    echo "$MISSING"
+    echo "未 spawn の specialist を追加 spawn してから結果集約に進むこと"
+    exit 1
+  fi
+  echo "✓ 全 specialist spawn 完了確認済み"
+fi
+```
+
+このチェックが ERROR を返した場合、**未 spawn の specialist を追加 spawn** してから再度チェックを実行する。PASS するまで結果集約に進んではならない。
+
+### 結果集約
 
 ```bash
 PARSED=$(echo "$OUTPUT" | python3 -m twl.autopilot.parser)
