@@ -323,6 +323,8 @@ skills:
       - reference: observation-pattern-catalog
       - reference: monitor-channel-catalog
       - atomic: su-compact  # SU-6b: context 逼迫時またはユーザー指示時にユーザーへ提案（SHOULD）
+      - atomic: wave-collect        # SU-6a: Wave 完了時の結果収集
+      - atomic: externalize-state   # SU-6a: Wave 完了時の外部化
     description: "メタ認知レイヤー: 全 controller の監視・介入。テストシナリオ実行は co-self-improve に委譲"
 
   workflow-setup:
@@ -1664,7 +1666,6 @@ commands:
     can_spawn: []
     calls:
       - reference: memory-mcp-config
-      - atomic: externalize-state
     description: "知識外部化 + compaction 制御（Long-term Memory 保存 → Working Memory 退避 → /compact）"
 
   # === externalize-state: 状態外部化 atomic コマンド (#367) ===
