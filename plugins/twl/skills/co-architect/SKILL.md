@@ -48,7 +48,8 @@ TaskCreate 「Architecture: Worktree 作成 + 対話的探索」(status: in_prog
 
 ```bash
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-bash plugins/twl/scripts/worktree-create.sh "arch/${TIMESTAMP}"
+BRANCH="docs/arch-${TIMESTAMP}"
+python3 -m twl.autopilot.worktree create "${BRANCH}"
 ```
 
 作成した worktree ディレクトリに移動し、以下の探索を実施する。
@@ -92,7 +93,8 @@ TaskUpdate → completed
 - [B] → Step 2 に戻り explore を再開
 - [C] → worktree を削除して終了:
   ```bash
-  bash plugins/twl/scripts/worktree-delete.sh "arch/${TIMESTAMP}"
+  bash plugins/twl/scripts/worktree-delete.sh "${BRANCH}"
+  git push origin --delete "${BRANCH}" 2>/dev/null || true
   ```
 
 ## Step 5: PR 作成
@@ -102,13 +104,16 @@ TaskCreate 「Architecture: PR 作成」(status: in_progress)
 worktree 上で commit + PR を作成する:
 
 ```bash
-# worktree 内で実行
+# worktree 内で実行（BRANCH 変数は Step 2 で設定済み）
 git add -A
-git commit -m "docs(architecture): <変更内容の簡潔な説明>"
-git push origin "arch/${TIMESTAMP}"
-PR_NUMBER=$(gh pr create --base main --title "Architecture: <変更内容>" \
+# コミットメッセージ: architecture/ 変更ファイルを確認して具体的な内容を記述
+git commit -m "docs(architecture): <変更した context/decision/model 名を記述>"
+git push origin "${BRANCH}"
+PR_NUMBER=$(gh pr create --base main --head "${BRANCH}" \
+  --title "docs(architecture): <変更内容の概要>" \
   --body "Architecture docs の更新。co-architect による自動作成。" \
   --json number -q '.number')
+echo "${PR_NUMBER}" > /tmp/co-architect-pr-number.txt
 echo "PR #${PR_NUMBER} を作成しました"
 ```
 
@@ -119,7 +124,13 @@ TaskUpdate → completed
 TaskCreate 「Architecture: レビュー実行」(status: in_progress)
 
 `/twl:workflow-arch-review` を Skill tool で実行する。
-PR 番号を引数として渡す: `Skill("twl:workflow-arch-review", args="#${PR_NUMBER}")`
+PR 番号を取得してから引数として渡す:
+
+```bash
+PR_NUMBER=$(cat /tmp/co-architect-pr-number.txt 2>/dev/null || echo "")
+```
+
+`Skill("twl:workflow-arch-review", args="#${PR_NUMBER}")`
 
 workflow-arch-review は以下を実行する:
 - arch-phase-review（worker-arch-doc-reviewer + worker-architecture による並列レビュー）
@@ -134,9 +145,10 @@ TaskUpdate → completed
 merge-gate が PASS してマージ完了した場合:
 
 ```bash
-# worktree 削除 + remote branch 削除
-bash plugins/twl/scripts/worktree-delete.sh "arch/${TIMESTAMP}"
-git push origin --delete "arch/${TIMESTAMP}" 2>/dev/null || true
+# worktree 削除 + remote branch 削除（BRANCH は Step 2 で設定）
+bash plugins/twl/scripts/worktree-delete.sh "${BRANCH}"
+git push origin --delete "${BRANCH}" 2>/dev/null || true
+rm -f /tmp/co-architect-pr-number.txt
 ```
 
 merge-gate が REJECT した場合:
