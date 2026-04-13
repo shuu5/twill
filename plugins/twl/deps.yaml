@@ -247,9 +247,7 @@ skills:
     calls:
       - atomic: explore
       - atomic: architect-completeness-check
-      - atomic: architect-decompose
       - atomic: architect-group-refine
-      - atomic: architect-issue-create
       - atomic: evaluate-architecture
       - reference: ref-architecture-spec
       - reference: ref-architecture
