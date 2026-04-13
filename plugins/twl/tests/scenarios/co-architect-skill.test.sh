@@ -104,25 +104,22 @@ else
   run_test_skip "SKILL.md が stub ではない" "skills/co-architect/SKILL.md not yet created"
 fi
 
-# Test: Step 0-8 構成が存在する
+# Test: Step 0-3 構成が存在する（Issue #560: Step 4-8 は co-issue に委譲済み）
 test_step_structure() {
   assert_file_exists "$SKILL_MD" || return 1
   assert_file_contains "$SKILL_MD" "Step\s*0" || return 1
   assert_file_contains "$SKILL_MD" "Step\s*1" || return 1
   assert_file_contains "$SKILL_MD" "Step\s*2" || return 1
   assert_file_contains "$SKILL_MD" "Step\s*3" || return 1
-  assert_file_contains "$SKILL_MD" "Step\s*4" || return 1
-  assert_file_contains "$SKILL_MD" "Step\s*5" || return 1
-  assert_file_contains "$SKILL_MD" "Step\s*6" || return 1
-  assert_file_contains "$SKILL_MD" "Step\s*7" || return 1
-  assert_file_contains "$SKILL_MD" "Step\s*8" || return 1
+  # Step 4-8 は削除済み（co-issue に委譲）
+  assert_file_not_contains "$SKILL_MD" "^##\s*Step\s*[4-8]:" || return 1
   return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Step 0-8 構成が存在する" test_step_structure
+  run_test "Step 0-3 構成が存在する（Step 4-8 は委譲済み）" test_step_structure
 else
-  run_test_skip "Step 0-8 構成が存在する" "skills/co-architect/SKILL.md not yet created"
+  run_test_skip "Step 0-3 構成が存在する" "skills/co-architect/SKILL.md not yet created"
 fi
 
 # Edge case: Step 9 以上が存在しない（0-8 のみ）
@@ -207,76 +204,33 @@ else
   run_test_skip "Step 3 - 完全性チェック" "skills/co-architect/SKILL.md not yet created"
 fi
 
-# Test: Step 4 - Phase 計画
-test_step4_phase_plan() {
+# Test: Step 4-8 が削除されている（Issue #560: co-issue に委譲済み）
+test_steps4to8_removed() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "phases/|Phase.*計画|phase.*plan"
+  assert_file_not_contains "$SKILL_MD" "architect-decompose" || return 1
+  assert_file_not_contains "$SKILL_MD" "architect-issue-create" || return 1
+  assert_file_not_contains "$SKILL_MD" "project-board-sync" || return 1
+  return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Step 4 - Phase 計画（phases/ への書き込み）" test_step4_phase_plan
+  run_test "Step 4-8 削除済み（architect-decompose/issue-create/board-sync 不在）" test_steps4to8_removed
 else
-  run_test_skip "Step 4 - Phase 計画" "skills/co-architect/SKILL.md not yet created"
+  run_test_skip "Step 4-8 削除済み" "skills/co-architect/SKILL.md not yet created"
 fi
 
-# Test: Step 5 - Issue 分解
-test_step5_decompose() {
+# Test: co-issue / co-autopilot への案内が存在する
+test_co_issue_guidance() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "architect-decompose|Issue.*分解|decompose"
+  assert_file_contains "$SKILL_MD" "co-issue" || return 1
+  assert_file_contains "$SKILL_MD" "co-autopilot" || return 1
+  return 0
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Step 5 - Issue 分解（architect-decompose）" test_step5_decompose
+  run_test "co-issue / co-autopilot への案内が存在する" test_co_issue_guidance
 else
-  run_test_skip "Step 5 - Issue 分解" "skills/co-architect/SKILL.md not yet created"
-fi
-
-# Test: Step 6 - 整合性チェック（6項目）
-test_step6_consistency() {
-  assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "整合性|consistency|チェック.*6|6.*項目"
-}
-
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Step 6 - 整合性チェックの記述" test_step6_consistency
-else
-  run_test_skip "Step 6 - 整合性チェック" "skills/co-architect/SKILL.md not yet created"
-fi
-
-# Test: Step 7 - ユーザー確認
-test_step7_user_confirmation() {
-  assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "ユーザー確認|最終承認|AskUserQuestion|confirm"
-}
-
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Step 7 - ユーザー確認 / 最終承認の記述" test_step7_user_confirmation
-else
-  run_test_skip "Step 7 - ユーザー確認" "skills/co-architect/SKILL.md not yet created"
-fi
-
-# Test: Step 8 - 一括 Issue 作成
-test_step8_issue_create() {
-  assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "architect-issue-create|一括.*Issue.*作成|issue.*create"
-}
-
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Step 8 - 一括 Issue 作成（architect-issue-create）" test_step8_issue_create
-else
-  run_test_skip "Step 8 - 一括 Issue 作成" "skills/co-architect/SKILL.md not yet created"
-fi
-
-# Edge case: Step 8 で project-board-sync への言及
-test_step8_board_sync() {
-  assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "project-board-sync|board.sync"
-}
-
-if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Step 8 [edge: project-board-sync への言及]" test_step8_board_sync
-else
-  run_test_skip "Step 8 [edge: project-board-sync]" "skills/co-architect/SKILL.md not yet created"
+  run_test_skip "co-issue / co-autopilot 案内" "skills/co-architect/SKILL.md not yet created"
 fi
 
 # Scenario: --group モードによるスケルトン Issue 精緻化 (line 23)
