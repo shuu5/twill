@@ -2885,6 +2885,8 @@ agents:
 
   worker-arch-doc-reviewer:
     type: specialist
+    refined_by: "ref-prompt-guide@43b4e53e"
+    refined_at: "2026-04-13"
     path: agents/worker-arch-doc-reviewer.md
     model: sonnet
     spawnable_by: [workflow, composite]
