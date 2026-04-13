@@ -122,7 +122,7 @@ ref-specialist-output-schema に従い JSON を出力すること。
       "file": "architecture/decisions/ADR-001.md",
       "line": 42,
       "message": "説明",
-      "category": "architecture-quality"
+      "category": "architecture-drift"
     }
   ]
 }
