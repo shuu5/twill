@@ -9,12 +9,19 @@ SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
 SESSION_JSON="${SUPERVISOR_DIR}/session.json"
 if [[ -f "$SESSION_JSON" ]]; then
     PROJECT_HASH=$(pwd | sed 's|/|-|g; s|^-||')
-    NEW_SESSION_ID=$(ls -t ~/.claude/projects/${PROJECT_HASH}/*.jsonl 2>/dev/null | head -1 | xargs -r basename 2>/dev/null | sed 's|\.jsonl$||' || echo "")
+    # ls -t で最新 JSONL ファイルから session ID を取得
+    NEW_SESSION_ID=""
+    if compgen -G "${HOME}/.claude/projects/${PROJECT_HASH}/*.jsonl" > /dev/null 2>&1; then
+        NEW_SESSION_ID=$(ls -t "${HOME}/.claude/projects/${PROJECT_HASH}/"*.jsonl 2>/dev/null \
+            | head -1 | xargs -r basename 2>/dev/null | sed 's|\.jsonl$||' || echo "")
+    fi
     if [[ -n "$NEW_SESSION_ID" ]]; then
-        python3 - <<PYEOF
-import json
-path = "${SESSION_JSON}"
-new_id = "${NEW_SESSION_ID}"
+        # 変数を環境変数経由で渡す（heredoc への文字列展開 injection を防止）
+        # ヒアドキュメントのデリミタをシングルクォートで囲みシェル展開を無効化
+        SESSION_JSON_PATH="$SESSION_JSON" NEW_SESSION_ID_VAL="$NEW_SESSION_ID" python3 - <<'PYEOF'
+import json, os
+path = os.environ["SESSION_JSON_PATH"]
+new_id = os.environ["NEW_SESSION_ID_VAL"]
 try:
     with open(path) as f:
         data = json.load(f)

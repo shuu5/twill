@@ -21,16 +21,22 @@ done
 if [[ "$OBSERVER_MODE" == "true" ]]; then
     # プロジェクトルート検出（bare repo 構造 or git toplevel）
     PROJECT_ROOT=""
-    if git rev-parse --show-toplevel &>/dev/null 2>&1; then
+    if git rev-parse --show-toplevel &>/dev/null; then
         GIT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
         # bare repo 構造: worktree 内の場合は bare repo root を探す
         if [[ -f "${GIT_ROOT}/.git" ]]; then
-            # .git がファイル（worktree）→ bare repo root を参照
+            # .git がファイル（worktree）→ bare repo root の main/ を参照
             GIT_COMMON=$(git rev-parse --git-common-dir 2>/dev/null || echo "")
-            if [[ -n "$GIT_COMMON" && -d "${GIT_COMMON%/.bare*}" ]]; then
-                BARE_ROOT="${GIT_COMMON%/.bare*}"
-                PROJECT_ROOT="${BARE_ROOT}/main"
-            else
+            # GIT_COMMON は typically <bare-root>/.bare を指す
+            # <bare-root>/.bare → <bare-root>/main を構築
+            if [[ -n "$GIT_COMMON" ]]; then
+                BARE_ROOT="${GIT_COMMON%/.bare}"
+                if [[ "$BARE_ROOT" != "$GIT_COMMON" && -d "${BARE_ROOT}/main" ]]; then
+                    PROJECT_ROOT="${BARE_ROOT}/main"
+                fi
+            fi
+            # fallback: git toplevel 自体を使用
+            if [[ -z "$PROJECT_ROOT" ]]; then
                 PROJECT_ROOT="$GIT_ROOT"
             fi
         else
@@ -49,51 +55,25 @@ if [[ "$OBSERVER_MODE" == "true" ]]; then
         exit 1
     fi
 
-    # claude_session_id 読み取り
-    CLAUDE_SESSION_ID_VAL=$(python3 -c "
-import json, sys
+    # claude_session_id 読み取り（環境変数経由で Python に渡す — injection 防止）
+    CLAUDE_SESSION_ID_VAL=$(SESSION_JSON_PATH="$SESSION_JSON" python3 -c "
+import os, json
 try:
-    data = json.load(open('${SESSION_JSON}'))
-    sid = data.get('claude_session_id', None)
-    print(sid if sid else '')
+    with open(os.environ['SESSION_JSON_PATH']) as f:
+        data = json.load(f)
+    sid = data.get('claude_session_id') or ''
+    print(sid)
 except Exception:
     print('')
 " 2>/dev/null || echo "")
 
-    if [[ -z "$CLAUDE_SESSION_ID_VAL" || "$CLAUDE_SESSION_ID_VAL" == "null" ]]; then
+    if [[ -z "$CLAUDE_SESSION_ID_VAL" ]]; then
         echo "Observer session found but no Claude session ID recorded" >&2
         exit 1
     fi
 
-    # tmux window 有効性確認（session-state.sh が PATH 上にある場合）
-    if command -v session-state.sh &>/dev/null; then
-        WINDOW_LIST=$(session-state.sh list --json 2>/dev/null || echo "[]")
-        OBSERVER_WINDOW=$(python3 -c "
-import json, sys
-try:
-    windows = json.loads('''${WINDOW_LIST}''')
-    for w in windows:
-        if w.get('window', '') == 'observer':
-            print(w.get('window', ''))
-            break
-except Exception:
-    pass
-" 2>/dev/null || echo "")
-
-        if [[ -z "$OBSERVER_WINDOW" ]]; then
-            echo "Observer window not found. Session may have ended" >&2
-            exit 1
-        fi
-
-        OBSERVER_STATE=$(session-state.sh state observer 2>/dev/null || echo "exited")
-        if [[ "$OBSERVER_STATE" == "exited" ]]; then
-            echo "Observer session has ended. Start a new one with: cld → /su-observer" >&2
-            exit 1
-        fi
-    fi
-
-    # 有効な session ID で resume
-    exec claude --resume "$CLAUDE_SESSION_ID_VAL" "${PASS_ARGS[@]}"
+    # 有効な session ID で resume（ウィンドウ有効性確認は claude --resume に委ねる）
+    exec claude --resume "$CLAUDE_SESSION_ID_VAL" "${PASS_ARGS[@]+"${PASS_ARGS[@]}"}"
 fi
 
 PLUGINS_BASE="$HOME/.claude/plugins"
@@ -114,4 +94,4 @@ done < <(env | grep '^DEV_')
 
 exec systemd-run --user --scope -p MemoryMax=12G \
     "${ENV_ARGS[@]}" \
-    claude --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" "${PASS_ARGS[@]}"
+    claude --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" "${PASS_ARGS[@]+"${PASS_ARGS[@]}"}"
