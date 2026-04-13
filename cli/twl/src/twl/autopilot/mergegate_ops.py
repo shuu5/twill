@@ -13,9 +13,32 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import Protocol
 
 from twl.autopilot.mergegate_guards import MergeGateError, _state_write
 from twl.autopilot.worktree import WorktreeManager
+
+
+class _MergeGateHost(Protocol):
+    """Protocol declaring the MergeGate host attributes required by MergeGateOperationsMixin."""
+
+    issue: str
+    pr_number: str
+    branch: str
+    finding_summary: str
+    fix_instructions: str
+    repo_owner: str
+    repo_name: str
+    autopilot_dir: Path
+    scripts_root: Path
+    force: bool
+
+    def _gh_repo_flag(self) -> list[str]: ...
+    def _gh_issue_state(self, gh_repo_flag: list[str]) -> str: ...
+    def _find_worktree_path(self) -> str: ...
+    def _remove_worktree(self) -> None: ...
+    def _delete_remote_branch(self) -> None: ...
+    def _kill_worker_window(self) -> None: ...
 
 
 class MergeGateOperationsMixin:
@@ -30,11 +53,11 @@ class MergeGateOperationsMixin:
     # GitHub helpers
     # ------------------------------------------------------------------
 
-    def _get_issue_labels(self) -> list[str]:
+    def _get_issue_labels(self: _MergeGateHost) -> list[str]:
         """Return list of label names for this issue. Returns [] on error."""
-        gh_repo_flag = self._gh_repo_flag()  # type: ignore[attr-defined]
+        gh_repo_flag = self._gh_repo_flag()
         result = subprocess.run(
-            ["gh", "issue", "view", self.issue, *gh_repo_flag,  # type: ignore[attr-defined]
+            ["gh", "issue", "view", self.issue, *gh_repo_flag,
              "--json", "labels", "-q", "[.labels[].name]"],
             capture_output=True, text=True,
         )
@@ -45,10 +68,10 @@ class MergeGateOperationsMixin:
         except (json.JSONDecodeError, TypeError):
             return []
 
-    def _gh_issue_state(self, gh_repo_flag: list[str]) -> str:
+    def _gh_issue_state(self: _MergeGateHost, gh_repo_flag: list[str]) -> str:
         """Return GitHub Issue state ('OPEN', 'CLOSED', or '' on error)."""
         result = subprocess.run(
-            ["gh", "issue", "view", self.issue, *gh_repo_flag,  # type: ignore[attr-defined]
+            ["gh", "issue", "view", self.issue, *gh_repo_flag,
              "--json", "state", "-q", ".state"],
             capture_output=True, text=True,
         )
@@ -56,7 +79,7 @@ class MergeGateOperationsMixin:
             return ""
         return result.stdout.strip()
 
-    def _verify_and_close_issue(self, gh_repo_flag: list[str]) -> bool:
+    def _verify_and_close_issue(self: _MergeGateHost, gh_repo_flag: list[str]) -> bool:
         """Verify Issue is CLOSED on GitHub. Try to close if not.
 
         Returns True if Issue is CLOSED (or successfully closed, or state
@@ -69,7 +92,7 @@ class MergeGateOperationsMixin:
         if state == "":
             # 取得失敗時は warning + True（既存挙動・gh 不在環境互換）
             print(
-                f"[merge-gate] Issue #{self.issue}: "  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: "
                 f"⚠️ Issue 状態取得失敗 — close 確認をスキップ",
                 file=sys.stderr,
             )
@@ -77,16 +100,16 @@ class MergeGateOperationsMixin:
 
         # OPEN — 明示的 close を試行
         print(
-            f"[merge-gate] Issue #{self.issue}: "  # type: ignore[attr-defined]
+            f"[merge-gate] Issue #{self.issue}: "
             f"PR merge 後も Issue が OPEN — 明示的 close を試行"
         )
         result = subprocess.run(
-            ["gh", "issue", "close", self.issue, *gh_repo_flag],  # type: ignore[attr-defined]
+            ["gh", "issue", "close", self.issue, *gh_repo_flag],
             capture_output=True, text=True,
         )
         if result.returncode != 0:
             print(
-                f"[merge-gate] Issue #{self.issue}: "  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: "
                 f"⚠️ gh issue close 失敗: {result.stderr.strip()}",
                 file=sys.stderr,
             )
@@ -96,7 +119,7 @@ class MergeGateOperationsMixin:
         state_after = self._gh_issue_state(gh_repo_flag)
         return state_after == "CLOSED"
 
-    def _ensure_closes_link(self, gh_repo_flag: list[str]) -> None:
+    def _ensure_closes_link(self: _MergeGateHost, gh_repo_flag: list[str]) -> None:
         """Ensure PR body contains Closes #N before merge.
 
         Issue #136 — GitHub の auto-close は PR 本文 (body) に
@@ -107,7 +130,7 @@ class MergeGateOperationsMixin:
         本文取得失敗時は既存挙動を維持するためスキップ（warning も出さない）。
         """
         result = subprocess.run(
-            ["gh", "pr", "view", self.pr_number, *gh_repo_flag,  # type: ignore[attr-defined]
+            ["gh", "pr", "view", self.pr_number, *gh_repo_flag,
              "--json", "body", "-q", ".body"],
             capture_output=True, text=True,
         )
@@ -115,25 +138,25 @@ class MergeGateOperationsMixin:
             return  # 取得失敗時は既存挙動維持
         body = result.stdout.rstrip("\n")
         closes_pattern = re.compile(
-            rf"\b(Closes|Fixes|Resolves)\s+#{re.escape(self.issue)}\b",  # type: ignore[attr-defined]
+            rf"\b(Closes|Fixes|Resolves)\s+#{re.escape(self.issue)}\b",
             re.IGNORECASE,
         )
         if closes_pattern.search(body):
             return  # 既に存在
-        new_body = f"{body}\n\nCloses #{self.issue}\n"  # type: ignore[attr-defined]
+        new_body = f"{body}\n\nCloses #{self.issue}\n"
         edit_result = subprocess.run(
-            ["gh", "pr", "edit", self.pr_number, *gh_repo_flag,  # type: ignore[attr-defined]
+            ["gh", "pr", "edit", self.pr_number, *gh_repo_flag,
              "--body", new_body],
             capture_output=True, text=True,
         )
         if edit_result.returncode == 0:
             print(
-                f"[merge-gate] Issue #{self.issue}: "  # type: ignore[attr-defined]
-                f"PR #{self.pr_number} 本文に Closes #{self.issue} を機械的に追記"  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: "
+                f"PR #{self.pr_number} 本文に Closes #{self.issue} を機械的に追記"
             )
         else:
             print(
-                f"[merge-gate] Issue #{self.issue}: "  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: "
                 f"⚠️ PR 本文への Closes 追記失敗（merge は継続）: "
                 f"{edit_result.stderr.strip()}",
                 file=sys.stderr,
@@ -143,11 +166,11 @@ class MergeGateOperationsMixin:
     # Pre-merge checks
     # ------------------------------------------------------------------
 
-    def _check_base_drift(self) -> None:
+    def _check_base_drift(self: _MergeGateHost) -> None:
         """Detect silent file deletions caused by worker base staleness."""
         if os.environ.get("MERGE_GATE_SKIP_DRIFT_CHECK") == "1":
             print(
-                f"[merge-gate] Issue #{self.issue}: ⚠️ "  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: ⚠️ "
                 f"MERGE_GATE_SKIP_DRIFT_CHECK=1 で base drift 検知をスキップ",
                 file=sys.stderr,
             )
@@ -203,7 +226,7 @@ class MergeGateOperationsMixin:
                 f"{paths_str}"
             )
 
-    def _find_worktree_path(self) -> str:
+    def _find_worktree_path(self: _MergeGateHost) -> str:
         """Return the local worktree path for self.branch, or empty string if not found."""
         result = subprocess.run(
             ["git", "worktree", "list", "--porcelain"],
@@ -213,11 +236,11 @@ class MergeGateOperationsMixin:
         for line in result.stdout.splitlines():
             if line.startswith("worktree "):
                 current_wt = line[len("worktree "):]
-            elif line == f"branch refs/heads/{self.branch}":  # type: ignore[attr-defined]
+            elif line == f"branch refs/heads/{self.branch}":
                 return current_wt
         return ""
 
-    def _check_deps_yaml_conflict_and_rebase(self) -> None:
+    def _check_deps_yaml_conflict_and_rebase(self: _MergeGateHost) -> None:
         """Detect deps.yaml conflict pre-merge and auto-rebase if needed. Issue #229.
 
         Uses git merge-tree to detect if merging self.branch into origin/main would
@@ -234,7 +257,7 @@ class MergeGateOperationsMixin:
         # Use git merge-tree to detect conflicts (git >= 2.38 write-tree mode)
         mt_result = subprocess.run(
             ["git", "merge-tree", "--write-tree", "--no-messages",
-             "origin/main", self.branch],  # type: ignore[attr-defined]
+             "origin/main", self.branch],
             capture_output=True, text=True,
         )
         # Exit code 0 = clean merge, 1 = conflicts
@@ -248,14 +271,14 @@ class MergeGateOperationsMixin:
             return
 
         print(
-            f"[merge-gate] Issue #{self.issue}: deps.yaml コンフリクト検出 - 自動 rebase を試行",  # type: ignore[attr-defined]
+            f"[merge-gate] Issue #{self.issue}: deps.yaml コンフリクト検出 - 自動 rebase を試行",
             file=sys.stderr,
         )
 
         worktree_path = self._find_worktree_path()
         if not worktree_path:
             print(
-                f"[merge-gate] Issue #{self.issue}: ⚠️ worktree が見つかりません - rebase をスキップ",  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: ⚠️ worktree が見つかりません - rebase をスキップ",
                 file=sys.stderr,
             )
             return
@@ -276,11 +299,11 @@ class MergeGateOperationsMixin:
                 "reason": "deps_yaml_rebase_failed",
                 "details": rebase_result.stderr[:500],
                 "step": "merge-gate-pre-rebase",
-                "pr": f"#{self.pr_number}",  # type: ignore[attr-defined]
+                "pr": f"#{self.pr_number}",
             })
-            _state_write(self.issue, "pilot", status="conflict", failure=failure)  # type: ignore[attr-defined]
+            _state_write(self.issue, "pilot", status="conflict", failure=failure)
             print(
-                f"[merge-gate] Issue #{self.issue}: rebase 失敗 - status=conflict に遷移。"  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: rebase 失敗 - status=conflict に遷移。"
                 f"手動で rebase → push 後に status=merge-ready に戻してリトライ可能",
                 file=sys.stderr,
             )
@@ -296,17 +319,17 @@ class MergeGateOperationsMixin:
                 "reason": "deps_yaml_rebase_push_failed",
                 "details": push_result.stderr[:500],
                 "step": "merge-gate-pre-rebase",
-                "pr": f"#{self.pr_number}",  # type: ignore[attr-defined]
+                "pr": f"#{self.pr_number}",
             })
-            _state_write(self.issue, "pilot", status="conflict", failure=failure)  # type: ignore[attr-defined]
+            _state_write(self.issue, "pilot", status="conflict", failure=failure)
             print(
-                f"[merge-gate] Issue #{self.issue}: rebase 後 push 失敗 - status=conflict に遷移",  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: rebase 後 push 失敗 - status=conflict に遷移",
                 file=sys.stderr,
             )
             sys.exit(1)
 
         # Re-validate after rebase
-        twl_path = self.scripts_root.parent / "twl" / "twl"  # type: ignore[attr-defined]
+        twl_path = self.scripts_root.parent / "twl" / "twl"
         if twl_path.exists():
             check_result = subprocess.run(
                 [str(twl_path), "--check"],
@@ -318,27 +341,27 @@ class MergeGateOperationsMixin:
                     "reason": "deps_yaml_rebase_check_failed",
                     "details": check_result.stdout[:500],
                     "step": "merge-gate-pre-rebase",
-                    "pr": f"#{self.pr_number}",  # type: ignore[attr-defined]
+                    "pr": f"#{self.pr_number}",
                 })
-                _state_write(self.issue, "pilot", status="conflict", failure=failure)  # type: ignore[attr-defined]
+                _state_write(self.issue, "pilot", status="conflict", failure=failure)
                 print(
-                    f"[merge-gate] Issue #{self.issue}: rebase 後 twl --check 失敗 - status=conflict に遷移",  # type: ignore[attr-defined]
+                    f"[merge-gate] Issue #{self.issue}: rebase 後 twl --check 失敗 - status=conflict に遷移",
                     file=sys.stderr,
                 )
                 sys.exit(1)
 
         print(
-            f"[merge-gate] Issue #{self.issue}: deps.yaml 自動 rebase 成功 - merge を続行",  # type: ignore[attr-defined]
+            f"[merge-gate] Issue #{self.issue}: deps.yaml 自動 rebase 成功 - merge を続行",
         )
 
     # ------------------------------------------------------------------
     # Merge execution and cleanup
     # ------------------------------------------------------------------
 
-    def _run_merge(self, gh_repo_flag: list[str]) -> bool:
+    def _run_merge(self: _MergeGateHost, gh_repo_flag: list[str]) -> bool:
         """Execute gh pr merge --squash. Returns True on success."""
         result = subprocess.run(
-            ["gh", "pr", "merge", self.pr_number, *gh_repo_flag, "--squash"],  # type: ignore[attr-defined]
+            ["gh", "pr", "merge", self.pr_number, *gh_repo_flag, "--squash"],
             capture_output=True,
             text=True,
         )
@@ -362,11 +385,11 @@ class MergeGateOperationsMixin:
                 "reason": "merge_conflict",
                 "details": raw_err,
                 "step": "merge-gate",
-                "pr": f"#{self.pr_number}",  # type: ignore[attr-defined]
+                "pr": f"#{self.pr_number}",
             })
-            _state_write(self.issue, "pilot", status="conflict", failure=failure)  # type: ignore[attr-defined]
+            _state_write(self.issue, "pilot", status="conflict", failure=failure)
             print(
-                f"[merge-gate] Issue #{self.issue}: コンフリクト検出 - "  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: コンフリクト検出 - "
                 f"Pilot がリベース→push 後に status=merge-ready に戻してリトライ可能",
                 file=sys.stderr,
             )
@@ -375,21 +398,21 @@ class MergeGateOperationsMixin:
                 "reason": "merge_failed",
                 "details": raw_err,
                 "step": "merge-gate",
-                "pr": f"#{self.pr_number}",  # type: ignore[attr-defined]
+                "pr": f"#{self.pr_number}",
             })
-            _state_write(self.issue, "pilot", status="failed", failure=failure)  # type: ignore[attr-defined]
+            _state_write(self.issue, "pilot", status="failed", failure=failure)
             print(
-                f"[merge-gate] Issue #{self.issue}: マージ失敗 - {raw_err}",  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: マージ失敗 - {raw_err}",
                 file=sys.stderr,
             )
         return False
 
-    def _post_merge_cleanup(self, repo_mode: str, autopilot_status: str) -> None:
+    def _post_merge_cleanup(self: _MergeGateHost, repo_mode: str, autopilot_status: str) -> None:
         """Clean up worktree/branch after successful merge (non-autopilot path only)."""
-        issue_json = self.autopilot_dir / "issues" / f"issue-{self.issue}.json"  # type: ignore[attr-defined]
+        issue_json = self.autopilot_dir / "issues" / f"issue-{self.issue}.json"
         if issue_json.exists():
             print(
-                f"[merge-gate] Issue #{self.issue}: "  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: "
                 f"autopilot 検出 — クリーンアップを Pilot へ委譲"
             )
             return
@@ -400,11 +423,11 @@ class MergeGateOperationsMixin:
             self._delete_remote_branch()
         else:
             self._delete_remote_branch()
-            subprocess.run(["git", "branch", "-D", self.branch], check=False)  # type: ignore[attr-defined]
+            subprocess.run(["git", "branch", "-D", self.branch], check=False)
 
         self._kill_worker_window()
 
-    def _remove_worktree(self) -> None:
+    def _remove_worktree(self: _MergeGateHost) -> None:
         worktree_path = self._find_worktree_path()
 
         if worktree_path:
@@ -416,31 +439,31 @@ class MergeGateOperationsMixin:
                 capture_output=True,
             )
             if r.returncode == 0:
-                print(f"[merge-gate] Issue #{self.issue}: worktree 削除成功: {worktree_path}")  # type: ignore[attr-defined]
+                print(f"[merge-gate] Issue #{self.issue}: worktree 削除成功: {worktree_path}")
             else:
                 print(
-                    f"[merge-gate] Issue #{self.issue}: "  # type: ignore[attr-defined]
+                    f"[merge-gate] Issue #{self.issue}: "
                     f"⚠️ worktree 削除失敗（マージは成功）: {worktree_path}",
                     file=sys.stderr,
                 )
 
-    def _delete_remote_branch(self) -> None:
+    def _delete_remote_branch(self: _MergeGateHost) -> None:
         r = subprocess.run(
-            ["git", "push", "origin", "--delete", self.branch],  # type: ignore[attr-defined]
+            ["git", "push", "origin", "--delete", self.branch],
             capture_output=True,
         )
         if r.returncode == 0:
-            print(f"[merge-gate] Issue #{self.issue}: リモートブランチ削除成功: {self.branch}")  # type: ignore[attr-defined]
+            print(f"[merge-gate] Issue #{self.issue}: リモートブランチ削除成功: {self.branch}")
         else:
             print(
-                f"[merge-gate] Issue #{self.issue}: "  # type: ignore[attr-defined]
-                f"⚠️ リモートブランチ削除失敗（マージは成功）: {self.branch}",  # type: ignore[attr-defined]
+                f"[merge-gate] Issue #{self.issue}: "
+                f"⚠️ リモートブランチ削除失敗（マージは成功）: {self.branch}",
                 file=sys.stderr,
             )
 
-    def _kill_worker_window(self) -> None:
+    def _kill_worker_window(self: _MergeGateHost) -> None:
         subprocess.run(
-            ["tmux", "kill-window", "-t", f"ap-#{self.issue}"],  # type: ignore[attr-defined]
+            ["tmux", "kill-window", "-t", f"ap-#{self.issue}"],
             capture_output=True,
         )
 
