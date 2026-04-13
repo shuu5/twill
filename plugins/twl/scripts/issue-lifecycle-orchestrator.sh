@@ -253,7 +253,8 @@ spawn_session() {
   exec {lockfd}>&-
 
   # cld-spawn: 対話モードで起動（one-shot モード stdout 問題を回避 — #541）
-  "${SESSION_SCRIPTS}/cld-spawn" --cd "$(pwd)" --window-name "${window_name}" --env-file ~/.secrets --model "${WORKER_MODEL}" || {
+  # env-file は CLD_ENV_FILE 環境変数のフォールバックに委譲（cld-spawn が自動検出）
+  "${SESSION_SCRIPTS}/cld-spawn" --cd "$(pwd)" --window-name "${window_name}" --model "${WORKER_MODEL}" || {
     rm -f "$prompt_file" 2>/dev/null || true
     echo "[issue-lifecycle-orchestrator] ${subdir##*/}: cld-spawn 失敗" >&2
     return 1

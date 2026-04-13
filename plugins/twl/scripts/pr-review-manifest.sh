@@ -47,6 +47,13 @@ case "$MODE" in
     ;;
 esac
 
+# --- codex 利用可能チェック（auth.json ベース）---
+# codex login status は auth.json/keyring を確認する（env var は見ない）。
+# 各環境で事前に `codex login --with-api-key` を実行しておくこと。
+codex_available() {
+  command -v codex &>/dev/null && codex login status 2>&1 | grep -qi "logged in"
+}
+
 # --- stdin からファイルリストを読み込み ---
 FILES=()
 while IFS= read -r line; do
@@ -85,8 +92,8 @@ if [[ "$MODE" == "post-fix-verify" ]]; then
   SPECIALISTS["worker-code-reviewer"]=1
   SPECIALISTS["worker-security-reviewer"]=1
 
-  # codex 環境チェック
-  if command -v codex &>/dev/null && [[ -n "${CODEX_API_KEY:-}" || -n "${OPENAI_API_KEY:-}" || -f ~/.codex/config.toml ]]; then
+  # codex 環境チェック（auth.json ベース）
+  if codex_available; then
     SPECIALISTS["worker-codex-reviewer"]=1
   fi
 
@@ -135,8 +142,8 @@ if [[ ${#FILES[@]} -gt 0 ]]; then
   fi
 fi
 
-# codex 環境チェック
-if command -v codex &>/dev/null && [[ -n "${CODEX_API_KEY:-}" || -n "${OPENAI_API_KEY:-}" || -f ~/.codex/config.toml ]]; then
+# codex 環境チェック（auth.json ベース）
+if codex_available; then
   SPECIALISTS["worker-codex-reviewer"]=1
 fi
 

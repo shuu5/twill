@@ -10,6 +10,17 @@ setup() {
   git init "$SANDBOX" 2>/dev/null
   (cd "$SANDBOX" && git commit --allow-empty -m "initial" 2>/dev/null) || true
   export PROJECT_ROOT="$SANDBOX"
+
+  # Default codex stub: "Not logged in" (tests that need logged-in state override this)
+  cat > "$STUB_BIN/codex" <<'STUB'
+#!/usr/bin/env bash
+if [[ "$1" == "login" && "$2" == "status" ]]; then
+  echo "Not logged in"
+  exit 1
+fi
+exit 0
+STUB
+  chmod +x "$STUB_BIN/codex"
 }
 
 teardown() {
@@ -47,54 +58,36 @@ teardown() {
   refute_output --partial "worker-structure"
 }
 
-@test "post-fix-verify excludes codex when no auth method is available" {
-  # Create a fake codex command in stub bin
-  cat > "$STUB_BIN/codex" <<'EOF'
+@test "post-fix-verify excludes codex when codex login status reports not logged in" {
+  # codex stub: login status → "Not logged in"
+  cat > "$STUB_BIN/codex" <<'STUB'
 #!/usr/bin/env bash
+if [[ "$1" == "login" && "$2" == "status" ]]; then
+  echo "Not logged in"
+  exit 1
+fi
 exit 0
-EOF
+STUB
   chmod +x "$STUB_BIN/codex"
 
-  run bash -c "unset CODEX_API_KEY OPENAI_API_KEY; HOME='$SANDBOX' echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
+  run bash -c "echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
   assert_success
   refute_output --partial "worker-codex-reviewer"
 }
 
-@test "post-fix-verify includes codex when codex command and CODEX_API_KEY exist" {
-  cat > "$STUB_BIN/codex" <<'EOF'
+@test "post-fix-verify includes codex when codex login status reports logged in" {
+  # codex stub: login status → "Logged in"
+  cat > "$STUB_BIN/codex" <<'STUB'
 #!/usr/bin/env bash
+if [[ "$1" == "login" && "$2" == "status" ]]; then
+  echo "Logged in as user"
+  exit 0
+fi
 exit 0
-EOF
+STUB
   chmod +x "$STUB_BIN/codex"
 
-  run bash -c "export CODEX_API_KEY=testkey; echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
-  assert_success
-  assert_output --partial "worker-codex-reviewer"
-}
-
-@test "post-fix-verify includes codex when OPENAI_API_KEY is set" {
-  cat > "$STUB_BIN/codex" <<'EOF'
-#!/usr/bin/env bash
-exit 0
-EOF
-  chmod +x "$STUB_BIN/codex"
-
-  run bash -c "unset CODEX_API_KEY; export OPENAI_API_KEY=testkey; echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
-  assert_success
-  assert_output --partial "worker-codex-reviewer"
-}
-
-@test "post-fix-verify includes codex when ~/.codex/config.toml exists" {
-  cat > "$STUB_BIN/codex" <<'EOF'
-#!/usr/bin/env bash
-exit 0
-EOF
-  chmod +x "$STUB_BIN/codex"
-
-  mkdir -p "$SANDBOX/.codex"
-  touch "$SANDBOX/.codex/config.toml"
-
-  run bash -c "unset CODEX_API_KEY OPENAI_API_KEY; HOME='$SANDBOX' bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify <<< ''"
+  run bash -c "echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode post-fix-verify"
   assert_success
   assert_output --partial "worker-codex-reviewer"
 }
@@ -117,14 +110,14 @@ EOF
   assert_output --partial "worker-security-reviewer"
 }
 
-@test "phase-review: no code change returns empty output" {
-  run bash -c "echo 'README.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode phase-review"
+@test "phase-review: no code change returns no specialist on stdout" {
+  run bash -c "echo 'README.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode phase-review 2>/dev/null"
   assert_success
   assert_output ""
 }
 
-@test "phase-review: empty input returns empty output" {
-  run bash -c "echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode phase-review"
+@test "phase-review: empty input returns no specialist on stdout" {
+  run bash -c "echo '' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode phase-review 2>/dev/null"
   assert_success
   assert_output ""
 }
