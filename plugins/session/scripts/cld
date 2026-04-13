@@ -68,7 +68,7 @@ try:
 except Exception:
     print('')
     print('')
-" 2>/dev/null || printf '\n')
+" 2>/dev/null || printf '\n\n')
 
     CLAUDE_SESSION_ID_VAL=$(echo "$SESSION_DATA" | head -1)
     OBSERVER_WINDOW_NAME=$(echo "$SESSION_DATA" | tail -1)
