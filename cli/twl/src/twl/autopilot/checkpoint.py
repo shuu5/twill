@@ -3,9 +3,9 @@
 Replaces: checkpoint-write.sh, checkpoint-read.sh
 
 CLI usage:
-    python3 -m twl.autopilot.checkpoint write --step <step> --status <PASS|WARN|FAIL> [--findings <json>] [--autopilot-dir <dir>]
-    python3 -m twl.autopilot.checkpoint read  --step <step> --field <field> [--autopilot-dir <dir>]
-    python3 -m twl.autopilot.checkpoint read  --step <step> --critical-findings [--autopilot-dir <dir>]
+    python3 -m twl.autopilot.checkpoint write --step <step> --status <PASS|WARN|FAIL> [--findings <json>]
+    python3 -m twl.autopilot.checkpoint read  --step <step> --field <field>
+    python3 -m twl.autopilot.checkpoint read  --step <step> --critical-findings
 """
 
 from __future__ import annotations
@@ -166,14 +166,14 @@ class CheckpointManager:
 # ---------------------------------------------------------------------------
 
 def _parse_write_args(argv: list[str]) -> dict[str, Any]:
-    args: dict[str, Any] = {"step": None, "status": None, "findings": None, "autopilot_dir": None}
+    args: dict[str, Any] = {"step": None, "status": None, "findings": None}
     i = 0
     while i < len(argv):
         a = argv[i]
         if a in ("-h", "--help"):
             print(
                 "Usage: python3 -m twl.autopilot.checkpoint write "
-                "--step <step> --status <PASS|WARN|FAIL> [--findings <json_array>] [--autopilot-dir <dir>]"
+                "--step <step> --status <PASS|WARN|FAIL> [--findings <json_array>]"
             )
             sys.exit(0)
         elif a == "--step" and i + 1 < len(argv):
@@ -182,8 +182,6 @@ def _parse_write_args(argv: list[str]) -> dict[str, Any]:
             args["status"] = argv[i + 1]; i += 2
         elif a == "--findings" and i + 1 < len(argv):
             args["findings"] = argv[i + 1]; i += 2
-        elif a == "--autopilot-dir" and i + 1 < len(argv):
-            args["autopilot_dir"] = argv[i + 1]; i += 2
         else:
             print(f"ERROR: Unknown argument: {a}", file=sys.stderr)
             sys.exit(2)
@@ -197,14 +195,14 @@ def _parse_write_args(argv: list[str]) -> dict[str, Any]:
 
 
 def _parse_read_args(argv: list[str]) -> dict[str, Any]:
-    args: dict[str, Any] = {"step": None, "field": None, "critical_findings": False, "autopilot_dir": None}
+    args: dict[str, Any] = {"step": None, "field": None, "critical_findings": False}
     i = 0
     while i < len(argv):
         a = argv[i]
         if a in ("-h", "--help"):
             print(
                 "Usage: python3 -m twl.autopilot.checkpoint read "
-                "--step <step> (--field <field> | --critical-findings) [--autopilot-dir <dir>]"
+                "--step <step> (--field <field> | --critical-findings)"
             )
             sys.exit(0)
         elif a == "--step" and i + 1 < len(argv):
@@ -213,8 +211,6 @@ def _parse_read_args(argv: list[str]) -> dict[str, Any]:
             args["field"] = argv[i + 1]; i += 2
         elif a == "--critical-findings":
             args["critical_findings"] = True; i += 1
-        elif a == "--autopilot-dir" and i + 1 < len(argv):
-            args["autopilot_dir"] = argv[i + 1]; i += 2
         else:
             print(f"ERROR: Unknown argument: {a}", file=sys.stderr)
             sys.exit(2)
@@ -234,12 +230,11 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     subcmd, rest = args[0], args[1:]
+    mgr = CheckpointManager()
 
     try:
         if subcmd == "write":
             parsed = _parse_write_args(rest)
-            checkpoint_dir = Path(parsed["autopilot_dir"]) / "checkpoints" if parsed["autopilot_dir"] else None
-            mgr = CheckpointManager(checkpoint_dir=checkpoint_dir)
             findings: list[Any] | None = None
             if parsed["findings"] is not None:
                 findings = json.loads(parsed["findings"])
@@ -256,8 +251,6 @@ def main(argv: list[str] | None = None) -> int:
 
         elif subcmd == "read":
             parsed = _parse_read_args(rest)
-            checkpoint_dir = Path(parsed["autopilot_dir"]) / "checkpoints" if parsed["autopilot_dir"] else None
-            mgr = CheckpointManager(checkpoint_dir=checkpoint_dir)
             result = mgr.read(
                 step=parsed["step"],
                 field=parsed["field"],
