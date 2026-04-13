@@ -75,6 +75,13 @@ chains:
       - merge-gate
       - auto-merge
 
+  arch-review:
+    type: "B"
+    description: "Architecture docs 専用 PR レビュー（arch-phase-review → arch-fix-phase → merge-gate → auto-merge）"
+    steps:
+      - arch-phase-review
+      - arch-fix-phase
+
 # メタ chain（ワークフロー間遷移 SSOT）
 meta_chains:
   worker-lifecycle:
@@ -564,6 +571,21 @@ skills:
       - atomic: project-board-sync
       - script: spec-review-session-init
     description: "co-issue v2 Worker runtime: 1 issue の lifecycle 全体（structure → spec-review → aggregate → fix loop → arch-drift → create → project-board-sync）を自律実行"
+
+  workflow-arch-review:
+    type: workflow
+    path: skills/workflow-arch-review/SKILL.md
+    effort: medium
+    spawnable_by: [controller, user]
+    can_spawn: [composite, atomic]
+    calls:
+      - composite: arch-phase-review
+        step: "1"
+      - atomic: arch-fix-phase
+        step: "2"
+      - composite: merge-gate
+      - atomic: auto-merge
+    description: "Architecture docs 専用 PR レビュー workflow（arch-phase-review → arch-fix-phase → merge-gate → auto-merge）"
 
 
 # リファレンス（B-6 で追加）
@@ -1836,6 +1858,42 @@ commands:
       - reference: baseline-security-checklist
       - reference: baseline-input-validation
     description: "並列 specialist レビュー（動的レビュアー構築）"
+
+  arch-phase-review:
+    type: composite
+    path: commands/arch-phase-review.md
+    spawnable_by: [workflow]
+    can_spawn: [specialist, script]
+    chain: "arch-review"
+    step_in:
+      parent: workflow-arch-review
+      step: "1"
+    dispatch_mode: llm
+    calls:
+      - script: pr-review-manifest
+      - script: autopilot-parser
+      - script: checkpoint-write
+      - specialist: worker-arch-doc-reviewer
+      - specialist: worker-architecture
+      - specialist: worker-structure
+      - specialist: worker-principles
+      - reference: ref-specialist-output-schema
+    description: "Architecture docs 専用並列 specialist レビュー（arch-doc-reviewer + architecture 常時、deps.yaml 変更時 + structure/principles）"
+
+  arch-fix-phase:
+    type: atomic
+    path: commands/arch-fix-phase.md
+    spawnable_by: [workflow]
+    can_spawn: []
+    chain: "arch-review"
+    step_in:
+      parent: workflow-arch-review
+      step: "2"
+    dispatch_mode: llm
+    calls:
+      - script: checkpoint-read
+      - script: checkpoint-write
+    description: "Architecture docs 修正ループ（CRITICAL/WARNING findings を最大 1 ラウンドで修正）"
 
   fix-phase:
     type: composite
