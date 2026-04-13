@@ -117,7 +117,7 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
     fi
     # audit コピー: 削除前に audit dir へ保全（TWL_AUDIT=1 OR .audit/.active 存在時）
     _AUDIT_DIR_RESOLVED="${TWL_AUDIT_DIR:-}"
-    if [[ "${TWL_AUDIT:-}" != "1" || -z "${_AUDIT_DIR_RESOLVED}" ]]; then
+    if [[ -z "${_AUDIT_DIR_RESOLVED}" ]]; then
       # .audit/.active ファイルから audit_dir を解決
       _PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
       _ACTIVE_FILE="${_PROJECT_ROOT}/.audit/.active"
