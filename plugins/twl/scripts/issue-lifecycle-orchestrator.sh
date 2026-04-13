@@ -108,14 +108,21 @@ if [[ -z "$CLD_PATH" ]]; then
 fi
 
 # --- per-issue subdir 収集（IN/draft.md が存在するディレクトリ） ---
+# symlink も追跡するため -L オプション付き find を使用
 mapfile -t SUBDIRS < <(
-  find "$PER_ISSUE_DIR" -mindepth 1 -maxdepth 1 -type d | sort | while read -r d; do
+  find -L "$PER_ISSUE_DIR" -mindepth 1 -maxdepth 1 -type d | sort | while read -r d; do
     if [[ -f "$d/IN/draft.md" ]]; then
       echo "$d"
     fi
   done
 )
 TOTAL="${#SUBDIRS[@]}"
+
+# サブディレクトリに見つからない場合、渡されたディレクトリ自体が Issue dir かチェック
+if [[ "$TOTAL" -eq 0 ]] && [[ -f "${PER_ISSUE_DIR}/IN/draft.md" ]]; then
+  SUBDIRS=("$PER_ISSUE_DIR")
+  TOTAL=1
+fi
 
 if [[ "$TOTAL" -eq 0 ]]; then
   echo "Error: --per-issue-dir に IN/draft.md を含むサブディレクトリが見つかりません: $PER_ISSUE_DIR" >&2
