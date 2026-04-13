@@ -32,6 +32,11 @@ def _load_plugin_context():
 
 
 def main():
+    # audit サブコマンド（autopilot 実行履歴の永続化）
+    if len(sys.argv) >= 2 and sys.argv[1] == 'audit':
+        from twl.autopilot.audit import main as audit_main
+        sys.exit(audit_main(sys.argv[2:]))
+
     # audit-history サブコマンドの前処理（Phase 3 / Layer 1 経験的監査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'audit-history':
         from twl.autopilot.audit_history import main as audit_history_main

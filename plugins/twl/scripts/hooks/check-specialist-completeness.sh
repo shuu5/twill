@@ -115,6 +115,28 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
         rm -f "$SESSION_LOCK"
       fi
     fi
+    # audit コピー: 削除前に audit dir へ保全（TWL_AUDIT=1 OR .audit/.active 存在時）
+    _AUDIT_DIR_RESOLVED="${TWL_AUDIT_DIR:-}"
+    if [[ -z "${_AUDIT_DIR_RESOLVED}" ]]; then
+      # .audit/.active ファイルから audit_dir を解決
+      _PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
+      _ACTIVE_FILE="${_PROJECT_ROOT}/.audit/.active"
+      if [[ -n "${_PROJECT_ROOT}" && -f "${_ACTIVE_FILE}" ]]; then
+        _AUDIT_DIR_REL="$(AUDIT_ACTIVE_FILE="${_ACTIVE_FILE}" python3 -c "import json,os; f=os.environ.get('AUDIT_ACTIVE_FILE',''); d=json.load(open(f)) if f else {}; print(d.get('audit_dir',''))" 2>/dev/null || echo "")"
+        if [[ -n "${_AUDIT_DIR_REL}" ]]; then
+          # audit_dir は絶対パスまたは相対パスの両方に対応
+          if [[ "${_AUDIT_DIR_REL}" == /* ]]; then
+            _AUDIT_DIR_RESOLVED="${_AUDIT_DIR_REL}"
+          else
+            _AUDIT_DIR_RESOLVED="${_PROJECT_ROOT}/${_AUDIT_DIR_REL}"
+          fi
+        fi
+      fi
+    fi
+    if [[ -n "${_AUDIT_DIR_RESOLVED}" ]]; then
+      mkdir -p "${_AUDIT_DIR_RESOLVED}/specialists"
+      cp "$MANIFEST_FILE" "$SPAWNED_FILE" "${_AUDIT_DIR_RESOLVED}/specialists/" 2>/dev/null || true
+    fi
     # Clean up manifest and spawned tracking files
     rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"
     continue

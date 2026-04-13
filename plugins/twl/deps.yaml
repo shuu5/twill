@@ -2639,6 +2639,11 @@ scripts:
       - script: resolve-issue-num
     description: "PR review 系 specialist 選択の動的マニフェスト（phase-review / merge-gate / post-fix-verify）。phase-review/merge-gate モードで Issue 番号が解決可能な場合 worker-issue-pr-alignment を出力に含める。merge-gate モードで chain 関連ファイル (deps.yaml/SKILL.md/chain-runner.sh) 変更時は worker-workflow-integrity を追加"
 
+  audit:
+    type: script
+    path: ../../cli/twl/src/twl/autopilot/audit.py
+    description: "autopilot 実行履歴の永続化（twl audit on/off/status + is_audit_active/resolve_audit_dir ヘルパー）"
+
   checkpoint-write:
     type: script
     path: ../../cli/twl/src/twl/autopilot/checkpoint.py

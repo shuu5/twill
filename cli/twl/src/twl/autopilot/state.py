@@ -220,6 +220,7 @@ class StateManager:
             raise StateArgError("--set が指定されていません")
 
         data = json.loads(file.read_text(encoding="utf-8"))
+        old_data = dict(data)
 
         for kv in sets:
             key, _, raw_value = kv.partition("=")
@@ -232,6 +233,34 @@ class StateManager:
 
         if type_ == "issue":
             data["updated_at"] = _now_utc()
+
+        # audit state-log 追記
+        try:
+            from twl.autopilot.audit import is_audit_active, resolve_audit_dir
+            if is_audit_active():
+                audit_dir = resolve_audit_dir()
+                if audit_dir is not None:
+                    import datetime as _dt
+                    ts = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    state_log = audit_dir / "state-log.jsonl"
+                    state_log.parent.mkdir(parents=True, exist_ok=True)
+                    for kv in (sets or []):
+                        key, _, raw_value = kv.partition("=")
+                        old_val = str(old_data.get(key, ""))
+                        new_val = str(data.get(key, raw_value))
+                        if old_val != new_val:
+                            record = json.dumps({
+                                "ts": ts,
+                                "issue": int(issue) if issue and str(issue).isdigit() else issue,
+                                "field": key,
+                                "old": old_val,
+                                "new": new_val,
+                                "role": role,
+                            }, ensure_ascii=False)
+                            with open(state_log, "a", encoding="utf-8") as f:
+                                f.write(record + "\n")
+        except Exception:
+            pass
 
         self._atomic_write(file, data)
         return f"OK: {file} を更新しました"
