@@ -12,6 +12,7 @@ _setup_dirs() {
   GH_MOCK_DIR="$SANDBOX/gh-bin"
   mkdir -p "$GH_STATE_DIR" "$GH_MOCK_DIR"
   export GH_STATE_DIR
+  export GH_MOCK_DIR
 }
 
 _setup_gh_mock() {
@@ -68,7 +69,7 @@ case "${1:-}" in
     ;;
   api)
     # gh api repos/<owner>/<repo>/collaborators/<user>/permission
-    path="${3:-}"
+    path="${2:-}"
     repo_safe="${path//\//_}"
     perm_file="$GH_STATE_DIR/${repo_safe}.permission"
     if [ -f "$perm_file" ]; then
@@ -162,9 +163,6 @@ if [[ -z "$REPO" ]]; then
   echo '{"status":"error","reason":"repo argument required"}'
   exit 1
 fi
-
-OWNER="${REPO%%/*}"
-NAME="${REPO##*/}"
 
 # --- リポ存在チェック ---
 repo_check=$(gh repo view "$REPO" --json name -q .name 2>/dev/null || echo "")
