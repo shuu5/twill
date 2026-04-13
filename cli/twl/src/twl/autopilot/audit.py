@@ -15,11 +15,15 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import random
 import string
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+# run_id は英数字・ハイフン・アンダースコアのみ許可（path traversal 防止）
+_VALID_RUN_ID_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
 
 
 # ---------------------------------------------------------------------------
@@ -38,8 +42,13 @@ def _project_root() -> Path:
     return Path(result.stdout.strip())
 
 
-def _active_file() -> Path:
-    return _project_root() / ".audit" / ".active"
+def _resolve_root(project_root: Path | None) -> Path:
+    """Return project_root if provided, otherwise resolve via git."""
+    return project_root if project_root is not None else _project_root()
+
+
+def _active_file(project_root: Path | None = None) -> Path:
+    return _resolve_root(project_root) / ".audit" / ".active"
 
 
 def _now_utc() -> str:
@@ -52,43 +61,57 @@ def _gen_run_id() -> str:
     return f"{ts}_{suffix}"
 
 
+def _validate_run_id(run_id: str) -> None:
+    """Raise ValueError if run_id contains path-traversal characters."""
+    if not _VALID_RUN_ID_RE.match(run_id):
+        raise ValueError(
+            f"Invalid run_id {run_id!r}: only alphanumeric characters, hyphens, and underscores are allowed"
+        )
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
-def is_audit_active() -> bool:
+def is_audit_active(project_root: Path | None = None) -> bool:
     """Return True if audit is active (TWL_AUDIT=1 env OR .audit/.active exists)."""
     if os.environ.get("TWL_AUDIT") == "1":
         return True
     try:
-        return _active_file().is_file()
+        return _active_file(project_root).is_file()
     except Exception:
         return False
 
 
-def resolve_audit_dir() -> Path | None:
+def resolve_audit_dir(project_root: Path | None = None) -> Path | None:
     """Resolve audit directory: TWL_AUDIT_DIR env → .audit/.active → None."""
     env = os.environ.get("TWL_AUDIT_DIR")
     if env:
         return Path(env)
     try:
-        active = _active_file()
+        active = _active_file(project_root)
         if active.is_file():
             data = json.loads(active.read_text(encoding="utf-8"))
             audit_dir = data.get("audit_dir")
             if audit_dir:
-                return _project_root() / audit_dir
+                root = _resolve_root(project_root)
+                resolved = root / audit_dir
+                # Ensure resolved path stays within project root
+                resolved = resolved.resolve()
+                return resolved
     except Exception:
         pass
     return None
 
 
-def audit_on(run_id: str | None = None) -> dict:
+def audit_on(run_id: str | None = None, project_root: Path | None = None) -> dict:
     """Start an audit session. Create .audit/<run-id>/ and .audit/.active."""
     if run_id is None:
         run_id = _gen_run_id()
 
-    root = _project_root()
+    _validate_run_id(run_id)
+
+    root = _resolve_root(project_root)
     audit_dir = root / ".audit" / run_id
     audit_dir.mkdir(parents=True, exist_ok=True)
 
@@ -104,34 +127,32 @@ def audit_on(run_id: str | None = None) -> dict:
     return active_data
 
 
-def audit_off() -> dict:
+def audit_off(project_root: Path | None = None) -> dict:
     """Stop an audit session. Remove .audit/.active and write index.json."""
-    active = _active_file()
+    active = _active_file(project_root)
     if not active.is_file():
         raise RuntimeError("audit is not active")
 
     data = json.loads(active.read_text(encoding="utf-8"))
     run_id = data["run_id"]
-    root = _project_root()
+    root = _resolve_root(project_root)
     audit_dir = root / ".audit" / run_id
 
     ended_at = _now_utc()
 
-    # Collect files
-    files: dict = {}
+    # Collect files as a flat list of relative paths
+    files: list[str] = []
     specialists_dir = audit_dir / "specialists"
     if specialists_dir.is_dir():
-        files["specialists"] = [
-            str(p.relative_to(audit_dir)) for p in sorted(specialists_dir.iterdir())
-        ]
+        for p in sorted(specialists_dir.iterdir()):
+            files.append(str(p.relative_to(audit_dir)))
     checkpoints_dir = audit_dir / "checkpoints"
     if checkpoints_dir.is_dir():
-        files["checkpoints"] = [
-            str(p.relative_to(audit_dir)) for p in sorted(checkpoints_dir.iterdir())
-        ]
+        for p in sorted(checkpoints_dir.iterdir()):
+            files.append(str(p.relative_to(audit_dir)))
     state_log = audit_dir / "state-log.jsonl"
     if state_log.is_file():
-        files["state_log"] = "state-log.jsonl"
+        files.append("state-log.jsonl")
 
     index = {
         "run_id": run_id,
@@ -146,9 +167,9 @@ def audit_off() -> dict:
     return index
 
 
-def audit_status() -> dict:
+def audit_status(project_root: Path | None = None) -> dict:
     """Return current audit status as dict."""
-    active = _active_file()
+    active = _active_file(project_root)
     if not active.is_file() and os.environ.get("TWL_AUDIT") != "1":
         return {"active": False}
 
@@ -165,7 +186,7 @@ def audit_status() -> dict:
             pass
 
     # TWL_AUDIT=1 but no .active file
-    audit_dir = resolve_audit_dir()
+    audit_dir = resolve_audit_dir(project_root)
     return {
         "active": True,
         "run_id": None,
@@ -192,7 +213,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv if argv is not None else sys.argv[1:])
 
     if args.cmd == "on":
-        result = audit_on(args.run_id)
+        try:
+            result = audit_on(args.run_id)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
         print(f"audit started: run_id={result['run_id']}, dir={result['audit_dir']}")
         return 0
 
