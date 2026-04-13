@@ -19,7 +19,7 @@ maxTurns: 60
 
 # co-architect
 
-対話的アーキテクチャ構築 → 完全性チェック → Issue 候補分解。Non-implementation controller（chain-driven 不要）。
+対話的アーキテクチャ構築 → 完全性チェック。Issue 化は co-issue に委譲。Non-implementation controller（chain-driven 不要）。
 
 ## Step 0: --group 分岐
 
