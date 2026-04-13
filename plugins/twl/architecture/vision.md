@@ -19,12 +19,13 @@ chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開
 | カテゴリ | 定義 | 該当 Controller |
 |----------|------|-----------------|
 | Implementation | コード変更・PR 作成を伴う操作 | co-autopilot のみ |
-| Non-implementation | Issue 作成・設計・プロジェクト管理 | co-issue, co-project, co-architect |
+| Spec Implementation | Architecture spec 変更・PR 作成 | co-architect |
+| Non-implementation | Issue 作成・設計・プロジェクト管理 | co-issue, co-project |
 | Utility | スタンドアロンユーティリティ操作 | co-utility |
 | Observation | ライブセッション観察・問題検出・Issue 起票 | co-self-improve |
 | Supervisor | controller の動作を監視・介入するメタレイヤー | su-observer |
 
-Non-implementation controller は co-autopilot を spawn しない。
+Non-implementation controller と Spec Implementation controller は co-autopilot を spawn しない。
 co-architect が「設計 + 実装」を要求された場合: 設計完了 → Issue 起票（co-issue 経由）→ co-autopilot で実装。
 
 ### 機械 / LLM の境界
