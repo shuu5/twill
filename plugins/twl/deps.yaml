@@ -77,7 +77,7 @@ chains:
 
   arch-review:
     type: "B"
-    description: "Architecture docs 専用 PR レビュー（arch-phase-review → arch-fix-phase → merge-gate → auto-merge）"
+    description: "Architecture docs 専用 PR レビュー（arch-phase-review → arch-fix-phase、その後 merge-gate → auto-merge を再利用）"
     steps:
       - arch-phase-review
       - arch-fix-phase

@@ -53,7 +53,7 @@ ts-preflight・pr-test・e2e など、コード専用ステップを含まない
 ### 前提: 前 workflow コンテキスト復元
 
 ```bash
-CR="/home/shuu5/.claude/plugins/twl/scripts/chain-runner.sh"
+CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"
 ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
 AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
 CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
