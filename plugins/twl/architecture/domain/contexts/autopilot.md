@@ -313,7 +313,8 @@ co-autopilot 障害時のみ手動パスを許可する。
 | カテゴリ | 定義 | 該当 Controller |
 |---|---|---|
 | Implementation | コード変更・PR 作成を伴う操作 | co-autopilot のみ |
-| Non-implementation | Issue 作成・設計・プロジェクト管理 | co-issue, co-project, co-architect |
+| Non-implementation | Issue 作成・設計・プロジェクト管理 | co-issue, co-project |
+| Spec Implementation | アーキテクチャドキュメント・ADR の直接 Write・コミット・PR 作成 | co-architect |
 
 ## Component Mapping
 

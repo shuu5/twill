@@ -4,7 +4,7 @@
 **Date**: 2026-04-13  
 **Issue**: #557  
 **Supersedes**: —  
-**Related**: ADR-001 (autopilot-first), ADR-002 (controller consolidation)
+**Related**: ADR-001 (autopilot-first), ADR-002 (controller consolidation), ADR-014 (supervisor redesign — co-architect was previously classified as Non-implementation)
 
 ---
 
