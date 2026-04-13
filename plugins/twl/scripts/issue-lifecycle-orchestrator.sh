@@ -233,9 +233,15 @@ spawn_session() {
     target_repo="$(jq -r '.target_repo // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
   fi
 
+  # IN/existing-issue.json の有無で dispatch 先を決定
+  local workflow_skill="workflow-issue-lifecycle"
+  if [[ -f "${subdir}/IN/existing-issue.json" ]]; then
+    workflow_skill="workflow-issue-refine"
+  fi
+
   # inject プロンプト生成（printf 方式: heredoc 終端子汚染リスクを回避）
   printf '%s\n' \
-    "/twl:workflow-issue-lifecycle $(printf '%q' "$subdir")" \
+    "/twl:${workflow_skill} $(printf '%q' "$subdir")" \
     "" \
     "【自律実行指示】" \
     "- 全 Step を中断なく自律的に完了すること" \
