@@ -30,8 +30,12 @@ git diff HEAD~1              # 差分内容
 
 ```bash
 SPECIALISTS=$(git diff HEAD~1 --name-only | bash "${CLAUDE_PLUGIN_ROOT}/scripts/pr-review-manifest.sh" --mode post-fix-verify)
-CONTEXT_ID="post-fix-verify-$(git branch --show-current | tr '/' '-')"
-echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
+MANIFEST_FILE=$(mktemp /tmp/.specialist-manifest-post-fix-verify-XXXXXXXX.txt)
+chmod 600 "$MANIFEST_FILE"
+CONTEXT_ID=$(basename "$MANIFEST_FILE" .txt | sed 's/^\.specialist-manifest-//')
+SPAWNED_FILE="/tmp/.specialist-spawned-${CONTEXT_ID}.txt"
+echo "$SPECIALISTS" > "$MANIFEST_FILE"
+trap 'rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"' EXIT
 ```
 
 ### Step 3: specialist 並列 spawn
@@ -53,7 +57,7 @@ echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
 
 ```bash
 PARSED=$(echo "$SPECIALIST_OUTPUT" | python3 -m twl.autopilot.parser)
-rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt /tmp/.specialist-spawned-${CONTEXT_ID}.txt
+rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"
 ```
 
 AI による自由形式の変換は禁止。パーサーの構造化データのみを使用する。

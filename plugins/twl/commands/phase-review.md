@@ -25,8 +25,12 @@ if ! SPECIALISTS=$(git diff --name-only origin/main 2>/dev/null | bash "${CLAUDE
 fi
 
 # hook 用一時ファイル作成
-CONTEXT_ID="phase-review-$(git branch --show-current | tr '/' '-')"
-echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
+MANIFEST_FILE=$(mktemp /tmp/.specialist-manifest-phase-review-XXXXXXXX.txt)
+chmod 600 "$MANIFEST_FILE"
+CONTEXT_ID=$(basename "$MANIFEST_FILE" .txt | sed 's/^\.specialist-manifest-//')
+SPAWNED_FILE="/tmp/.specialist-spawned-${CONTEXT_ID}.txt"
+echo "$SPECIALISTS" > "$MANIFEST_FILE"
+trap 'rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"' EXIT
 ```
 
 **Step 2: マニフェスト出力の全件を並列 Task spawn**
@@ -40,7 +44,7 @@ echo "$SPECIALISTS" > /tmp/.specialist-manifest-${CONTEXT_ID}.txt
 **Step 3: 結果収集後に一時ファイル削除**
 
 ```bash
-rm -f /tmp/.specialist-manifest-${CONTEXT_ID}.txt /tmp/.specialist-spawned-${CONTEXT_ID}.txt
+rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"
 ```
 
 ### 並列 specialist 実行
