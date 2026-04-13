@@ -1096,18 +1096,18 @@ step_pr_comment_findings() {
     return 0
   fi
 
-  local autopilot_dir
-  autopilot_dir="$(resolve_autopilot_dir)"
-
   # checkpoint から findings 取得（merge-gate, ac-verify, phase-review を統合）
+  # 注: --autopilot-dir は使わず、checkpoint.py のデフォルト解決（git rev-parse）に任せる。
+  # merge-gate.md 等の write もデフォルト解決を使うため、同一 worktree 内で read/write が一致する。
+  # 各 Worker は独自の worktree を持つため並列安全。
   local mg_findings ac_findings pr_findings combined_findings
-  mg_findings=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step merge-gate --field findings 2>/dev/null || echo "[]")
-  ac_findings=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step ac-verify --field findings 2>/dev/null || echo "[]")
-  pr_findings=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step phase-review --field findings 2>/dev/null || echo "[]")
+  mg_findings=$(python3 -m twl.autopilot.checkpoint read --step merge-gate --field findings 2>/dev/null || echo "[]")
+  ac_findings=$(python3 -m twl.autopilot.checkpoint read --step ac-verify --field findings 2>/dev/null || echo "[]")
+  pr_findings=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field findings 2>/dev/null || echo "[]")
   combined_findings=$(jq -s 'add // []' <(echo "$mg_findings") <(echo "$ac_findings") <(echo "$pr_findings") 2>/dev/null || echo "[]")
 
   local mg_status
-  mg_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step merge-gate --field status 2>/dev/null || echo "UNKNOWN")
+  mg_status=$(python3 -m twl.autopilot.checkpoint read --step merge-gate --field status 2>/dev/null || echo "UNKNOWN")
 
   # findings テーブル構築
   local findings_count
@@ -1187,14 +1187,12 @@ step_pr_comment_final() {
     return 0
   fi
 
-  local autopilot_dir
-  autopilot_dir="$(resolve_autopilot_dir)"
-
+  # checkpoint.py のデフォルト解決に任せる（write と同一 worktree 内で一致させる）
   local ac_status pr_test_status e2e_status mg_status
-  ac_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step ac-verify --field status 2>/dev/null || echo "N/A")
-  pr_test_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step pr-test --field status 2>/dev/null || echo "N/A")
-  e2e_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step e2e-screening --field status 2>/dev/null || echo "N/A")
-  mg_status=$(python3 -m twl.autopilot.checkpoint read --autopilot-dir "$autopilot_dir" --step merge-gate --field status 2>/dev/null || echo "N/A")
+  ac_status=$(python3 -m twl.autopilot.checkpoint read --step ac-verify --field status 2>/dev/null || echo "N/A")
+  pr_test_status=$(python3 -m twl.autopilot.checkpoint read --step pr-test --field status 2>/dev/null || echo "N/A")
+  e2e_status=$(python3 -m twl.autopilot.checkpoint read --step e2e-screening --field status 2>/dev/null || echo "N/A")
+  mg_status=$(python3 -m twl.autopilot.checkpoint read --step merge-gate --field status 2>/dev/null || echo "N/A")
 
   local body="## Merge Gate Final"$'\n\n'
   body+="- ac-verify: ${ac_status}"$'\n'
