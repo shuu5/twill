@@ -119,7 +119,7 @@ def audit_on(run_id: str | None = None, project_root: Path | None = None) -> dic
     active_data = {
         "run_id": run_id,
         "started_at": started_at,
-        "audit_dir": f".audit/{run_id}",
+        "audit_dir": str(audit_dir),
     }
     active_file = root / ".audit" / ".active"
     active_file.write_text(json.dumps(active_data, ensure_ascii=False) + "\n", encoding="utf-8")

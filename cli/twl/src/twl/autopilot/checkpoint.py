@@ -114,7 +114,13 @@ class CheckpointManager:
                     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
                     checkpoints_audit = audit_dir / "checkpoints"
                     checkpoints_audit.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(file, checkpoints_audit / f"{step}-{ts}.json")
+                    dest = checkpoints_audit / f"{step}-{ts}.json"
+                    if dest.exists():
+                        counter = 2
+                        while (checkpoints_audit / f"{step}-{ts}-{counter}.json").exists():
+                            counter += 1
+                        dest = checkpoints_audit / f"{step}-{ts}-{counter}.json"
+                    shutil.copy2(file, dest)
         except Exception:
             pass
 

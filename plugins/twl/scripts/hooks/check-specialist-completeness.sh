@@ -124,7 +124,12 @@ for MANIFEST_FILE in "${MANIFEST_FILES[@]}"; do
       if [[ -n "${_PROJECT_ROOT}" && -f "${_ACTIVE_FILE}" ]]; then
         _AUDIT_DIR_REL="$(python3 -c "import json,sys; d=json.load(open('${_ACTIVE_FILE}')); print(d.get('audit_dir',''))" 2>/dev/null || echo "")"
         if [[ -n "${_AUDIT_DIR_REL}" ]]; then
-          _AUDIT_DIR_RESOLVED="${_PROJECT_ROOT}/${_AUDIT_DIR_REL}"
+          # audit_dir は絶対パスまたは相対パスの両方に対応
+          if [[ "${_AUDIT_DIR_REL}" == /* ]]; then
+            _AUDIT_DIR_RESOLVED="${_AUDIT_DIR_REL}"
+          else
+            _AUDIT_DIR_RESOLVED="${_PROJECT_ROOT}/${_AUDIT_DIR_REL}"
+          fi
         fi
       fi
     fi
