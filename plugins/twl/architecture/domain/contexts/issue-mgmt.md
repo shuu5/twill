@@ -160,6 +160,7 @@ flowchart TD
 | **atomic** | project-board-sync | Issue → Project V2 自動追加 |
 | **atomic** | project-board-status-update | Board Status 更新 |
 | **workflow** | workflow-issue-lifecycle | co-issue v2 Worker: 1 Issue の lifecycle（structure → spec-review → aggregate → create）を独立セッションで実行（ADR-017） |
+| **workflow** | workflow-issue-refine | 既存 Issue の refine（精緻化）: specialist review → body 更新 → refined ラベル付与。orchestrator が `existing-issue.json` の有無で dispatch 先を切り替え |
 | **specialist** | issue-critic | Issue の仮定・曖昧点・盲点検出 |
 | **specialist** | issue-feasibility | 実装可能性・影響範囲検証 |
 | **specialist** | worker-codex-reviewer | 補完的レビュー |

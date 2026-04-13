@@ -205,12 +205,13 @@ skills:
     refined_at: "2026-04-07"
     path: skills/co-issue/SKILL.md
     effort: high
-    tools: [Skill(workflow-issue-lifecycle, issue-glossary-check), Read, Grep, Glob]
+    tools: [Skill(workflow-issue-lifecycle, workflow-issue-refine, issue-glossary-check), Read, Grep, Glob]
     spawnable_by: [user]
     can_spawn: [composite, atomic, specialist, reference, workflow]
     calls:
       - atomic: issue-glossary-check
       - workflow: workflow-issue-lifecycle
+      - workflow: workflow-issue-refine
       - script: issue-lifecycle-orchestrator
     description: "要望をGitHub Issueに変換するワークフロー（thin orchestrator）。DAG 依存解決 + level dispatch + aggregate"
 
@@ -570,6 +571,19 @@ skills:
       - atomic: project-board-sync
       - script: spec-review-session-init
     description: "co-issue v2 Worker runtime: 1 issue の lifecycle 全体（structure → spec-review → aggregate → fix loop → arch-drift → create → project-board-sync）を自律実行"
+
+  workflow-issue-refine:
+    type: workflow
+    path: skills/workflow-issue-refine/SKILL.md
+    effort: medium
+    spawnable_by: [controller, user]
+    can_spawn: [composite, atomic, specialist]
+    calls:
+      - composite: issue-spec-review
+      - atomic: issue-review-aggregate
+      - atomic: issue-arch-drift
+      - script: spec-review-session-init
+    description: "既存 Issue の refine（精緻化）: specialist review → body 更新 → refined ラベル付与"
 
   workflow-arch-review:
     type: workflow

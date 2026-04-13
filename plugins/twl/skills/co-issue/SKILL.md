@@ -9,7 +9,7 @@ description: |
 type: controller
 effort: high
 tools:
-- Skill(workflow-issue-lifecycle, issue-glossary-check)
+- Skill(workflow-issue-lifecycle, workflow-issue-refine, issue-glossary-check)
 - Bash
 - Read
 - Write
@@ -22,6 +22,20 @@ spawnable_by:
 # co-issue
 
 要望→Issue 変換の thin orchestrator。Phase 1-2 を inline で実行し、Phase 3-4 は workflow に委譲する。
+
+## Step 0: モード判定（起動時）
+
+`$ARGUMENTS` を解析し、`refine #N [#M ...]` パターンを検出する。
+
+- **`refine #N` パターン検出時**: `refine_mode=true` に設定。各 `#N` の Issue データを `gh issue view N --repo <repo> --json number,body,title,labels` で取得し保持する。複数の `#N` が指定された場合は全件取得する
+- **パターン不一致時**: `refine_mode=false`（通常の新規 Issue 作成モード）
+
+```
+例: /twl:co-issue refine #513 → refine_mode=true, targets=[{number:513, ...}]
+例: /twl:co-issue バグを直したい → refine_mode=false
+```
+
+Step 0 はモード判定のみ。以降のフローは `refine_mode` フラグに基づいて分岐する。
 
 ## セッション ID 生成（起動時）
 
@@ -38,6 +52,20 @@ glob `.controller-issue/*/explore-summary.md` でセッション一覧を検出:
 セッション ID ベースのディレクトリ分離により、既存の co-issue フローとの互換性を維持しながら並列実行が可能。
 
 ## Phase 1: 対話的問題探索
+
+### Phase 1 refine モード分岐
+
+`refine_mode=true` の場合、通常の Phase 1 対話ループの代わりに以下を実行する:
+
+1. **既存 Issue body の読み込み**: Step 0 で取得した各 Issue の body・labels・title を確認
+2. **改善点の探索**: コードベース（Read/Grep/Glob）と architecture context を参照し、既存 Issue body の改善点を特定:
+   - テンプレート準拠性の確認（必須セクションの欠落、AC の機械検証可能性）
+   - 技術的正確性の確認（コードベースの現状との乖離）
+   - スコープの適切性（過大・過小の検出）
+3. **draft.md の生成**: 改善後の body を Issue テンプレート準拠フォーマットで生成（Step 3 省略の補完として、issue-structure 相当の構造化を Phase 1 で実施）
+4. **summary-gate**: 通常モードと同様にユーザーに確認を取る（explore-summary.md の代わりに改善内容のサマリーを提示）
+
+`refine_mode=false` の場合は以下の通常フローを実行する。
 
 ### Phase 1 初期化
 
@@ -114,6 +142,10 @@ AskUserQuestion で以下 3 択を提示:
 
 #### Step 2a-2: DAG 構築
 
+**refine モード分岐（MUST）**: `refine_mode=true` の場合、Step 2a-2 全体をスキップする。理由: `#N` は GitHub Issue 番号であり、draft index の 1-3 桁 regex `(?<![A-Za-z0-9/])#(\d{1,3})(?![0-9])` と衝突するため。refine モードでは DAG 構築は不要（既存 Issue を個別に更新するため依存関係の解決が不要）。
+
+`refine_mode=false`（通常モード）の場合、以下を実行する:
+
 各 draft 本文（scope / 依存関係 / related セクション）を対象に以下を実行。**コードブロック内は除外**する:
 
 1. **ローカル ref 抽出**: regex `(?<![A-Za-z0-9/])#(\d{1,3})(?![0-9])` にマッチする `#N` を検出（N は 1-based draft index）
@@ -136,7 +168,23 @@ AskUserQuestion で以下 3 択を提示:
 
 #### Step 2a-3: Per-Issue Input Bundle 書き出し
 
-各 draft に対して以下のディレクトリ構造を作成:
+**refine モードの場合**: 各対象 Issue に対して以下のディレクトリ構造を作成:
+
+```
+.controller-issue/<session-id>/per-issue/<index>/
+  IN/
+    draft.md              # 改善後の draft 本文（Phase 1 で生成）
+    existing-issue.json   # { "number": N, "current_body": "...", "repo": "owner/repo" }
+    arch-context.md       # ARCH_CONTEXT（不在の場合は空ファイル）
+    policies.json         # ポリシー設定（通常モードと同一スキーマ）
+  STATE                   # "pending" で初期化
+```
+
+`existing-issue.json` を生成: Step 0 で取得した Issue データから `{ "number": N, "current_body": "<current body>", "repo": "<owner/repo>" }` を書き出す。
+`policies.json` は通常モードと同一スキーマを使用する（refine 固有フィールドは `existing-issue.json` に分離）。
+`deps.json` は生成しない（DAG 構築をスキップしたため）。
+
+**通常モードの場合**: 各 draft に対して以下のディレクトリ構造を作成:
 
 ```
 .controller-issue/<session-id>/per-issue/<index>/
