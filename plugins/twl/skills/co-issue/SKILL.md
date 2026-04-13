@@ -59,9 +59,9 @@ glob `.controller-issue/*/explore-summary.md` でセッション一覧を検出:
 
 1. **既存 Issue body の読み込み**: Step 0 で取得した各 Issue の body・labels・title を確認
 2. **改善点の探索**: コードベース（Read/Grep/Glob）と architecture context を参照し、既存 Issue body の改善点を特定:
-   - テンプレート準拠性の確認（必須セクションの欠落、AC の機械検証可能性）
-   - 技術的正確性の確認（コードベースの現状との乖離）
-   - スコープの適切性（過大・過小の検出）
+   - テンプレート準拠性: 必須セクション（## 概要 / ## AC / ## スコープ / ## 技術メモ）の有無、AC が `[ ]` チェックリスト形式で機械検証可能か
+   - 技術的正確性: Issue body が参照するファイルパス・関数名・型名が現在のコードベースに存在するか（Grep/Glob で検証）
+   - スコープの適切性: 1 PR で完結可能な粒度か（目安: 変更ファイル数 10 以下）、逆に複数 Issue に分割すべきか
 3. **draft.md の生成**: 改善後の body を Issue テンプレート準拠フォーマットで生成（Step 3 省略の補完として、issue-structure 相当の構造化を Phase 1 で実施）
 4. **summary-gate**: 通常モードと同様にユーザーに確認を取る（explore-summary.md の代わりに改善内容のサマリーを提示）
 
@@ -142,7 +142,7 @@ AskUserQuestion で以下 3 択を提示:
 
 #### Step 2a-2: DAG 構築
 
-**refine モード分岐（MUST）**: `refine_mode=true` の場合、Step 2a-2 全体をスキップする。理由: `#N` は GitHub Issue 番号であり、draft index の 1-3 桁 regex `(?<![A-Za-z0-9/])#(\d{1,3})(?![0-9])` と衝突するため。refine モードでは DAG 構築は不要（既存 Issue を個別に更新するため依存関係の解決が不要）。
+**refine モード分岐（MUST）**: `refine_mode=true` の場合、Step 2a-2 全体をスキップする。理由: 既存 Issue を個別に更新するため依存関係の解決が不要。また `#N` が GitHub Issue 番号と draft index regex `(?<![A-Za-z0-9/])#(\d{1,3})(?![0-9])` で衝突するため、DAG 構築自体が誤動作する。
 
 `refine_mode=false`（通常モード）の場合、以下を実行する:
 

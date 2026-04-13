@@ -82,7 +82,7 @@ if [[ -z "$PER_ISSUE_DIR" || "$PER_ISSUE_DIR" != /* ]]; then
   echo "ERROR: per-issue dir は絶対パスで指定してください" >&2
   exit 1
 fi
-if [[ "$PER_ISSUE_DIR" =~ /\.\./ || "$PER_ISSUE_DIR" =~ /\.\.$ ]]; then
+if [[ "$PER_ISSUE_DIR" =~ \.\.(/|$) ]]; then
   echo "ERROR: パストラバーサルは使用できません" >&2
   exit 1
 fi
@@ -113,10 +113,10 @@ cp "$PER_ISSUE_DIR/IN/draft.md" "$PER_ISSUE_DIR/rounds/0/body.md"
 
 ### Step 4: round loop
 
-`round=0` から `policies.max_rounds` まで以下を繰り返す:
+`round=0` で初期化し、ループ先頭で `round += 1` してから実行する（実効範囲: round=1 〜 max_rounds）:
 
 ```
-round = round + 1
+round = round + 1   # round=1 から開始（rounds/0 は Step 3 で生成済み）
 STATE ← reviewing
 ```
 
@@ -175,9 +175,14 @@ if round == policies.max_rounds and CRITICAL findings あり:
 
 round loop が正常完了した場合（STATE が `circuit_broken` でない場合）かつ `quick_flag=false` のとき、`labels_hint` に `"refined"` を追加する:
 
-```
-if STATE != circuit_broken and quick_flag == false:
-  policies.labels_hint ← policies.labels_hint + ["refined"]
+```bash
+if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]] && \
+   [[ "$(jq -r '.quick_flag' "$PER_ISSUE_DIR/IN/policies.json")" != "true" ]]; then
+  # policies.json に "refined" ラベルを追加して永続化（Step 6' が jq で読み取るため）
+  jq '.labels_hint += ["refined"] | .labels_hint |= unique' \
+    "$PER_ISSUE_DIR/IN/policies.json" > "$PER_ISSUE_DIR/IN/policies.json.tmp" \
+    && mv "$PER_ISSUE_DIR/IN/policies.json.tmp" "$PER_ISSUE_DIR/IN/policies.json"
+fi
 ```
 
 - `quick_flag=true` の場合: スキップ（quick モードでは specialist レビューの depth が shallow に設定されるため、refined の品質保証基準を満たさない）
@@ -198,6 +203,10 @@ if STATE != circuit_broken and quick_flag == false:
 ISSUE_NUMBER=$(jq -r '.number' "$PER_ISSUE_DIR/IN/existing-issue.json")
 ISSUE_REPO=$(jq -r '.repo' "$PER_ISSUE_DIR/IN/existing-issue.json")
 
+# 入力値検証
+[[ "$ISSUE_NUMBER" =~ ^[0-9]+$ ]] || { echo "ERROR: invalid issue number: $ISSUE_NUMBER" >&2; exit 1; }
+[[ "$ISSUE_REPO" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || { echo "ERROR: invalid repo format: $ISSUE_REPO" >&2; exit 1; }
+
 # 最終 body ファイルを特定（最後の body-fixed.md、なければ rounds/0/body.md）
 FINAL_BODY="$PER_ISSUE_DIR/rounds/0/body.md"
 for f in "$PER_ISSUE_DIR"/rounds/*/body-fixed.md; do
@@ -208,9 +217,10 @@ done
 gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --body-file "$FINAL_BODY"
 
 # labels_hint のラベルを付与（既存ラベル・title は変更しない）
-for label in $(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json"); do
-  gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label "$label"
-done
+# Step 4.5 で追加された "refined" ラベルも含む
+while IFS= read -r label; do
+  [[ -n "$label" ]] && gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label "$label"
+done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 ```
 
 **制約**: 既存ラベル・title は変更しない（body のみ更新 + ラベル追加）。
