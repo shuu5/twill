@@ -188,6 +188,37 @@ teardown() {
   echo "$output" | jq -e '.recommended_labels | contains(["from-observation"])' > /dev/null
 }
 
+# Scenario: --real-issues --repo routes to test-project-init --mode real-issues --repo
+# WHEN test-project-init is called with --mode real-issues --repo owner/name
+# THEN command accepts the flags and output references the target repo (no actual GH API access)
+@test "co-self-improve smoke: --real-issues --repo で test-project-init 経由 scenario-load まで到達する" {
+  _require_cmd "test-project-init"
+  local init_cmd
+  init_cmd=$(_cmd_path "test-project-init")
+
+  # Stub gh to avoid actual GH API access
+  stub_command "gh" 'echo "mock gh: $*" >&2; exit 0'
+
+  # Invoke test-project-init in real-issues mode with dry-run to skip worktree creation
+  run bash "$init_cmd" --mode real-issues --repo "shuu5/twill-test" --dry-run
+  assert_success
+
+  # Output must reference the target repo, confirming --repo flag was parsed and delegated
+  echo "$output" | grep -q "shuu5/twill-test"
+}
+
+# Scenario: co-autopilot spawn targets worktrees/test-target
+# WHEN co-self-improve triggers co-autopilot spawn (Step 1b)
+# THEN SKILL.md spawn instruction specifies --cd worktrees/test-target
+@test "co-self-improve smoke: co-autopilot spawn 指示が正しい worktree を向く" {
+  _require_cmd "co-autopilot"
+
+  # Verify SKILL.md Step 1b spawn instruction targets the test-target worktree
+  local skill_file="$REPO_ROOT/skills/co-self-improve/SKILL.md"
+  [ -f "$skill_file" ]
+  grep -q 'worktrees/test-target' "$skill_file"
+}
+
 # Scenario: full chain - init → scenario-load → observe → detect → draft
 # WHEN the full co-self-improve pipeline is run end-to-end with stubs
 # THEN each step succeeds and the final draft has at least 1 detection
