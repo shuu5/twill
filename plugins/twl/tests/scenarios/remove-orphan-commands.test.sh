@@ -33,22 +33,6 @@ assert_file_not_exists() {
   [[ ! -f "${PROJECT_ROOT}/${file}" ]]
 }
 
-assert_file_contains() {
-  local file="$1"
-  local pattern="$2"
-  [[ -f "${PROJECT_ROOT}/${file}" ]] && grep -qP -- "$pattern" "${PROJECT_ROOT}/${file}"
-}
-
-assert_file_not_contains() {
-  local file="$1"
-  local pattern="$2"
-  [[ -f "${PROJECT_ROOT}/${file}" ]] || return 1
-  if grep -qP -- "$pattern" "${PROJECT_ROOT}/${file}"; then
-    return 1
-  fi
-  return 0
-}
-
 yaml_get() {
   local file="$1"
   local expr="$2"
