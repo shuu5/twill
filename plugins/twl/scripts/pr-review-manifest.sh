@@ -40,9 +40,9 @@ if [[ -z "$MODE" ]]; then
 fi
 
 case "$MODE" in
-  phase-review|merge-gate|post-fix-verify) ;;
+  phase-review|merge-gate|post-fix-verify|arch-review) ;;
   *)
-    echo "Invalid mode: $MODE (must be phase-review, merge-gate, or post-fix-verify)" >&2
+    echo "Invalid mode: $MODE (must be phase-review, merge-gate, post-fix-verify, or arch-review)" >&2
     exit 1
     ;;
 esac
@@ -55,6 +55,30 @@ done
 
 # --- 重複排除用の連想配列 ---
 declare -A SPECIALISTS
+
+# --- arch-review モード: architecture docs 専用 specialist ---
+if [[ "$MODE" == "arch-review" ]]; then
+  # 常時必須: architecture docs 変更あり（常に）→ worker-arch-doc-reviewer
+  SPECIALISTS["worker-arch-doc-reviewer"]=1
+  # 常時必須: architecture/ 配下変更あり（常に）→ worker-architecture
+  SPECIALISTS["worker-architecture"]=1
+
+  # 条件付き: deps.yaml 変更あり → worker-structure + worker-principles
+  for f in "${FILES[@]}"; do
+    case "$f" in
+      *deps.yaml)
+        SPECIALISTS["worker-structure"]=1
+        SPECIALISTS["worker-principles"]=1
+        break
+        ;;
+    esac
+  done
+
+  for specialist in "${!SPECIALISTS[@]}"; do
+    echo "$specialist"
+  done | sort -u
+  exit 0
+fi
 
 # --- post-fix-verify モード: code-reviewer + security-reviewer + codex のみ ---
 if [[ "$MODE" == "post-fix-verify" ]]; then
