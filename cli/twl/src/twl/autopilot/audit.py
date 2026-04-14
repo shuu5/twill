@@ -87,7 +87,12 @@ def resolve_audit_dir(project_root: Path | None = None) -> Path | None:
     """Resolve audit directory: TWL_AUDIT_DIR env → .audit/.active → None."""
     env = os.environ.get("TWL_AUDIT_DIR")
     if env:
-        return Path(env)
+        root = _resolve_root(project_root)
+        resolved = Path(env).resolve()
+        root_resolved = root.resolve()
+        if not resolved.is_relative_to(root_resolved):
+            raise ValueError(f"TWL_AUDIT_DIR is outside project root: {resolved}")
+        return resolved
     try:
         active = _active_file(project_root)
         if active.is_file():
@@ -102,6 +107,8 @@ def resolve_audit_dir(project_root: Path | None = None) -> Path | None:
                 if not resolved.is_relative_to(root_resolved):
                     raise ValueError(f"audit_dir is outside project root: {resolved}")
                 return resolved
+    except ValueError:
+        raise
     except Exception:
         pass
     return None
