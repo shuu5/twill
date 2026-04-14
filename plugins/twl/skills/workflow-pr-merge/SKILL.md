@@ -88,8 +88,12 @@ echo "$REPORT" | bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-cycle-r
 `commands/pr-cycle-analysis.md` を Read → 実行。
 
 ### Step 7.5: all-pass-check（全パス判定）【機械的 → runner】
+
+**前提条件チェック（#668 防御）:** all-pass-check 実行前に `pr` フィールドが state に記録されているか確認する。未記録の場合は `chain-runner.sh record-pr` を先に実行して PR 番号を確保すること。
+
 全ステップの結果が PASS であれば:
 ```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" record-pr  # pr 未記録時の防御
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" all-pass-check PASS
 ```
 FAIL があれば:

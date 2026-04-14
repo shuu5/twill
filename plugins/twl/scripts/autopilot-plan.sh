@@ -37,19 +37,25 @@ while [[ $# -gt 0 ]]; do
             MODE="board"; shift ;;
         --project-dir) PROJECT_DIR="$2"; shift 2 ;;
         --repo-mode)   REPO_MODE="$2"; shift 2 ;;
+        # 後方互換: --repo-mode 省略時のデフォルト値は下で設定
         --repos)       REPOS_JSON="$2"; shift 2 ;;
         --model)       PLAN_MODEL="$2"; shift 2 ;;
         *) echo "Error: 不明な引数: $1" >&2; exit 1 ;;
     esac
 done
 
+# --repo-mode デフォルト: worktree（#669 — Pilot が毎回初回失敗するパターンを解消）
+if [[ -z "$REPO_MODE" ]]; then
+    REPO_MODE="worktree"
+fi
+
 if [[ "$MODE" == "board" ]]; then
-    if [[ -z "$PROJECT_DIR" || -z "$REPO_MODE" ]]; then
-        echo "Usage: $0 --board --project-dir DIR --repo-mode MODE" >&2
+    if [[ -z "$PROJECT_DIR" ]]; then
+        echo "Usage: $0 --board --project-dir DIR [--repo-mode MODE]" >&2
         exit 1
     fi
-elif [[ -z "$MODE" || -z "$INPUT" || -z "$PROJECT_DIR" || -z "$REPO_MODE" ]]; then
-    echo "Usage: $0 --explicit|--issues|--board INPUT --project-dir DIR --repo-mode MODE [--repos JSON]" >&2
+elif [[ -z "$MODE" || -z "$INPUT" || -z "$PROJECT_DIR" ]]; then
+    echo "Usage: $0 --explicit|--issues|--board INPUT --project-dir DIR [--repo-mode MODE]" >&2
     exit 1
 fi
 
