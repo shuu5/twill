@@ -247,37 +247,30 @@ _generate_fallback_report() {
   local findings_file="${subdir}/OUT/findings.yaml"
 
   if [[ -f "$aggregate_file" ]]; then
-    # aggregate.yaml → report.json 変換
-    python3 -c "
-import yaml, json, sys
-with open('${aggregate_file}') as f:
+    # aggregate.yaml → report.json 変換（環境変数経由でパスを渡す — CWE-78 対策）
+    _FB_INPUT="$aggregate_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="aggregate" \
+      python3 -c '
+import yaml, json, os, sys
+with open(os.environ["_FB_INPUT"]) as f:
     data = yaml.safe_load(f) or {}
-report = {
-    'status': 'done',
-    'fallback': True,
-    'reason': '${reason}',
-    'findings_count': len(data.get('findings', [])),
-    'aggregate': data
-}
-with open('${report_file}', 'w') as f:
+report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
+          "findings_count": len(data.get("findings", [])), os.environ["_FB_KEY"]: data}
+with open(os.environ["_FB_OUTPUT"], "w") as f:
     json.dump(report, f, ensure_ascii=False, indent=2)
-" 2>/dev/null && return 0
+' 2>/dev/null && return 0
   fi
 
   if [[ -f "$findings_file" ]]; then
-    python3 -c "
-import yaml, json, sys
-with open('${findings_file}') as f:
+    _FB_INPUT="$findings_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="findings" \
+      python3 -c '
+import yaml, json, os, sys
+with open(os.environ["_FB_INPUT"]) as f:
     data = yaml.safe_load(f) or {}
-report = {
-    'status': 'done',
-    'fallback': True,
-    'reason': '${reason}',
-    'findings': data
-}
-with open('${report_file}', 'w') as f:
+report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
+          os.environ["_FB_KEY"]: data}
+with open(os.environ["_FB_OUTPUT"], "w") as f:
     json.dump(report, f, ensure_ascii=False, indent=2)
-" 2>/dev/null && return 0
+' 2>/dev/null && return 0
   fi
 
   # 中間ファイルもない場合は最小限のフォールバック

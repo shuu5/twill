@@ -1193,7 +1193,7 @@ step_pr_comment_fix_summary() {
       body+="### Fixed"$'\n\n'
       body+="| Finding | Detail |"$'\n'
       body+="|---------|--------|"$'\n'
-      body+=$(echo "$fixed_items" | jq -r '.[] | "| \(.finding[:100]) | \(.detail[:100]) |"' 2>/dev/null)
+      body+=$(echo "$fixed_items" | jq -r '.[] | "| \((.finding // "-")[:100]) | \((.detail // "-")[:100]) |"' 2>/dev/null)
       body+=$'\n\n'
     fi
 
@@ -1201,7 +1201,7 @@ step_pr_comment_fix_summary() {
       body+="### Deferred (tech-debt candidates)"$'\n\n'
       body+="| Finding | Reason | Tech-Debt |"$'\n'
       body+="|---------|--------|-----------|"$'\n'
-      body+=$(echo "$deferred_items" | jq -r '.[] | "| \(.finding[:100]) | \(.detail[:100]) | \(if .tech_debt then "候補" else "-" end) |"' 2>/dev/null)
+      body+=$(echo "$deferred_items" | jq -r '.[] | "| \((.finding // "-")[:100]) | \((.detail // "-")[:100]) | \(if .tech_debt then "候補" else "-" end) |"' 2>/dev/null)
       body+=$'\n\n'
     fi
 
@@ -1209,7 +1209,7 @@ step_pr_comment_fix_summary() {
       body+="### Acknowledged (no action needed)"$'\n\n'
       body+="| Finding | Reason |"$'\n'
       body+="|---------|--------|"$'\n'
-      body+=$(echo "$ack_items" | jq -r '.[] | "| \(.finding[:100]) | \(.detail[:100]) |"' 2>/dev/null)
+      body+=$(echo "$ack_items" | jq -r '.[] | "| \((.finding // "-")[:100]) | \((.detail // "-")[:100]) |"' 2>/dev/null)
       body+=$'\n\n'
     fi
   elif [[ -n "$raw_input" ]]; then
