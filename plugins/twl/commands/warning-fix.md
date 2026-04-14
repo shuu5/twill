@@ -39,9 +39,11 @@ severity=INFO は対象外
 修正できなかった WARNING は tech-debt Issue として起票:
 
 ```
-gh issue create --title "tech-debt: ${finding.message}" \
-  --label "tech-debt"
+ISSUE_URL=$(gh issue create --title "tech-debt: ${finding.message}" \
+  --label "tech-debt")
 ```
+
+作成成功時: 出力 URL（`https://github.com/<owner>/<repo>/issues/<N>` 形式）から issue_number を抽出し、`/twl:project-board-sync <issue_number>` を Skill tool で呼び出す（Board Status を "Todo" に設定。失敗は非ブロッキング）。
 
 ### 制約
 

@@ -72,6 +72,7 @@ FAIL コンポーネントがある場合:
    ラベル: tech-debt
    本文: findings の内容
    ```
+   作成成功時: 出力 URL（`https://github.com/<owner>/<repo>/issues/<N>` 形式）から issue_number を抽出し、`/twl:project-board-sync <issue_number>` を Skill tool で呼び出す（Board Status を "Todo" に設定。失敗は非ブロッキング）。
 
 ## 完了出力
 
