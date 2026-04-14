@@ -235,6 +235,55 @@ _build_worker_prompt() {
     > "$_bwp_prompt_file"
 }
 
+# report.json フォールバック生成 (#647)
+# specialist が report.json を書かずに完了した場合に、
+# findings.yaml / aggregate.yaml から report.json を構築する
+_generate_fallback_report() {
+  local subdir="$1" reason="$2"
+  local report_file="${subdir}/OUT/report.json"
+
+  # findings.yaml / aggregate.yaml がある場合はそこから構築
+  local aggregate_file="${subdir}/OUT/aggregate.yaml"
+  local findings_file="${subdir}/OUT/findings.yaml"
+
+  if [[ -f "$aggregate_file" ]]; then
+    # aggregate.yaml → report.json 変換
+    python3 -c "
+import yaml, json, sys
+with open('${aggregate_file}') as f:
+    data = yaml.safe_load(f) or {}
+report = {
+    'status': 'done',
+    'fallback': True,
+    'reason': '${reason}',
+    'findings_count': len(data.get('findings', [])),
+    'aggregate': data
+}
+with open('${report_file}', 'w') as f:
+    json.dump(report, f, ensure_ascii=False, indent=2)
+" 2>/dev/null && return 0
+  fi
+
+  if [[ -f "$findings_file" ]]; then
+    python3 -c "
+import yaml, json, sys
+with open('${findings_file}') as f:
+    data = yaml.safe_load(f) or {}
+report = {
+    'status': 'done',
+    'fallback': True,
+    'reason': '${reason}',
+    'findings': data
+}
+with open('${report_file}', 'w') as f:
+    json.dump(report, f, ensure_ascii=False, indent=2)
+" 2>/dev/null && return 0
+  fi
+
+  # 中間ファイルもない場合は最小限のフォールバック
+  printf '{"status":"done","fallback":true,"reason":"%s","error":"no_intermediate_files"}\n' "$reason" > "$report_file"
+}
+
 # cld-spawn でウィンドウを起動し inject-file でプロンプトを送達する
 # 引数: subdir window_name prompt_file
 _spawn_tmux_window_with_prompt() {
@@ -331,9 +380,16 @@ wait_for_batch() {
         local window_name
         window_name="$(window_name_for_subdir "$subdir")"
         if ! tmux list-windows -F '#{window_name}' 2>/dev/null | grep -qxF "$window_name"; then
-          echo "[issue-lifecycle-orchestrator] ${subdir##*/}: ウィンドウ消失・report.json なし — タイムアウト扱い" >&2
+          # Window 消失 → fallback report.json 生成 (#647)
+          echo "[issue-lifecycle-orchestrator] ${subdir##*/}: ウィンドウ消失・report.json なし — フォールバック生成" >&2
           mkdir -p "${subdir}/OUT"
-          printf '{"status":"timeout","error":"window_lost"}\n' > "$report_file"
+          _generate_fallback_report "$subdir" "window_lost"
+        elif "${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" check "$window_name" input-waiting 2>/dev/null; then
+          # Window 存在 + input-waiting → specialist 完了済みだが report.json 未書き出し (#647)
+          echo "[issue-lifecycle-orchestrator] ${subdir##*/}: input-waiting + report.json なし — フォールバック生成" >&2
+          mkdir -p "${subdir}/OUT"
+          _generate_fallback_report "$subdir" "input_waiting_no_report"
+          tmux kill-window -t "$window_name" 2>/dev/null || true
         else
           all_done=false
         fi
