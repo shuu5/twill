@@ -77,7 +77,7 @@ Autopilot で複数 Issue を一括実装:
 | twl:co-architect | explore, architect-completeness-check, architect-group-refine, evaluate-architecture, →twl:ref-architecture-spec, →twl:ref-architecture, →twl:workflow-arch-review |
 | twl:co-utility | worktree-list, worktree-delete, twl-validate, services, ui-capture, schema-update |
 | twl:co-self-improve | →twl:workflow-observe-loop, test-project-init, test-project-reset, test-project-scenario-load, observe-once, problem-detect, issue-draft-from-observation, observe-retrospective, ●observer-evaluator, →twl:test-scenario-catalog, →twl:observation-pattern-catalog, →twl:load-test-baselines |
-| twl:su-observer | observe-once, problem-detect, ●observer-evaluator, intervene-auto, intervene-confirm, intervene-escalate, →twl:intervention-catalog, →twl:observation-pattern-catalog, →twl:monitor-channel-catalog, su-compact |
+| twl:su-observer | observe-once, problem-detect, ●observer-evaluator, intervene-auto, intervene-confirm, intervene-escalate, →twl:intervention-catalog, →twl:observation-pattern-catalog, →twl:monitor-channel-catalog, su-compact, wave-collect, externalize-state |
 | twl:workflow-setup | init, worktree-create, project-board-status-update, crg-auto-build, change-propose, ac-extract |
 | twl:workflow-test-ready | ◆test-scaffold, change-apply, check, e2e-plan |
 | twl:workflow-pr-verify | ac-deploy-trigger, prompt-compliance, ts-preflight, ◆phase-review, scope-judge, pr-test, ac-verify, ◆test-phase |
@@ -101,15 +101,15 @@ Autopilot で複数 Issue を一括実装:
 | plugin-phase-verify | ●worker-structure, ●worker-principles, ●worker-architecture, →twl:ref-specialist-output-schema, →twl:ref-architecture |
 | problem-detect | →twl:observation-pattern-catalog |
 | observe-and-detect | ●observer-evaluator |
-| su-compact | →twl:memory-mcp-config, externalize-state |
+| su-compact | →twl:memory-mcp-config |
 | externalize-state | →twl:externalization-schema |
 | intervene-auto | →twl:intervention-catalog |
 | intervene-confirm | →twl:intervention-catalog |
 | intervene-escalate | →twl:intervention-catalog |
 | test-scaffold | ●spec-scaffold-tests, ●e2e-generate, →twl:ref-specialist-output-schema |
-| phase-review | ●worker-structure, ●worker-principles, ●worker-code-reviewer, ●worker-security-reviewer, ●worker-nextjs-reviewer, ●worker-fastapi-reviewer, ●worker-supabase-migration-checker, ●worker-r-reviewer, ●worker-e2e-reviewer, ●worker-hono-reviewer, ●worker-rls-reviewer, ●worker-spec-reviewer, ●worker-llm-output-reviewer, ●worker-llm-eval-runner, ●worker-data-validator, ●worker-env-validator, ●worker-codex-reviewer, ●worker-issue-pr-alignment, →twl:ref-specialist-output-schema, →twl:baseline-coding-style, →twl:baseline-security-checklist, →twl:baseline-input-validation |
+| phase-review | ●worker-structure, ●worker-principles, ●worker-code-reviewer, ●worker-security-reviewer, ●worker-nextjs-reviewer, ●worker-fastapi-reviewer, ●worker-supabase-migration-checker, ●worker-r-reviewer, ●worker-e2e-reviewer, ●worker-hono-reviewer, ●worker-rls-reviewer, ●worker-spec-reviewer, ●worker-llm-output-reviewer, ●worker-llm-eval-runner, ●worker-data-validator, ●worker-env-validator, ●worker-codex-reviewer, ●worker-issue-pr-alignment, →twl:ref-specialist-output-schema, →twl:baseline-coding-style, →twl:baseline-security-checklist, →twl:baseline-input-validation, →twl:baseline-bash |
 | arch-phase-review | ●worker-arch-doc-reviewer, ●worker-architecture, ●worker-structure, ●worker-principles, →twl:ref-specialist-output-schema |
-| merge-gate | ●worker-structure, ●worker-principles, ●worker-code-reviewer, ●worker-security-reviewer, ●worker-nextjs-reviewer, ●worker-fastapi-reviewer, ●worker-supabase-migration-checker, ●worker-r-reviewer, ●worker-e2e-reviewer, ●worker-hono-reviewer, ●worker-rls-reviewer, ●worker-spec-reviewer, ●worker-llm-output-reviewer, ●worker-llm-eval-runner, ●worker-data-validator, ●worker-env-validator, ●worker-codex-reviewer, ●worker-architecture, ●worker-issue-pr-alignment, →twl:ref-specialist-output-schema, →twl:ref-dci, →twl:baseline-coding-style, →twl:baseline-security-checklist, →twl:baseline-input-validation |
+| merge-gate | ●worker-structure, ●worker-principles, ●worker-code-reviewer, ●worker-security-reviewer, ●worker-nextjs-reviewer, ●worker-fastapi-reviewer, ●worker-supabase-migration-checker, ●worker-r-reviewer, ●worker-e2e-reviewer, ●worker-hono-reviewer, ●worker-rls-reviewer, ●worker-spec-reviewer, ●worker-llm-output-reviewer, ●worker-llm-eval-runner, ●worker-data-validator, ●worker-env-validator, ●worker-codex-reviewer, ●worker-architecture, ●worker-issue-pr-alignment, →twl:ref-specialist-output-schema, →twl:ref-dci, →twl:baseline-coding-style, →twl:baseline-security-checklist, →twl:baseline-input-validation, →twl:baseline-bash |
 | test-phase | ●e2e-quality, →twl:ref-specialist-output-schema |
 | autopilot-phase-execute | →twl:ref-dci |
 | ⟶worker-structure | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |

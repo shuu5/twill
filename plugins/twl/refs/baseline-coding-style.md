@@ -155,27 +155,7 @@ function calculateTotal(items: CartItem[]): number {
 
 ## Bash: 環境変数パース
 
-`env | grep` でキー=値を読み込む全ての Bash スクリプトに適用。
-
-### BAD: IFS='=' による分割（値内の = が切り捨てられる）
-
-```bash
-# BAD: 値に = を含む場合に切り捨て（DEV_URL=https://host?a=b → val="https://host?a" で b が消失）
-while IFS='=' read -r key val; do
-    ENV_ARGS+=(--setenv="${key}=${val}")
-done < <(env | grep '^DEV_')
-```
-
-### GOOD: パラメータ展開で正確にパース
-
-```bash
-# GOOD: IFS= で行全体を読み、パラメータ展開で最初の = を基準に分割
-while IFS= read -r line; do
-    key="${line%%=*}"   # 最初の = より前
-    val="${line#*=}"    # 最初の = より後ろ全部
-    ENV_ARGS+=(--setenv="${key}=${val}")
-done < <(env | grep '^DEV_')
-```
+→ `baseline-bash.md` の `## 4. 環境変数パースの IFS 問題` を参照
 
 ## 品質チェックリスト
 
