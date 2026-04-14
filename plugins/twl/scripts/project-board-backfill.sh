@@ -84,7 +84,7 @@ fi
 
 # ── Step 2.5: 既存 Board アイテムの Issue 番号リスト取得（冪等性確保） ─
 EXISTING_ISSUE_NUMS=()
-EXISTING_ITEMS_JSON=$(gh project item-list "$PROJECT_NUM" --owner "$OWNER" --format json --limit 500 2>/dev/null) || true
+EXISTING_ITEMS_JSON=$(gh project item-list "$PROJECT_NUM" --owner "$OWNER" --format json --limit 500 2>/dev/null) || true  # 全件取得が必要なため 500（意図的）
 if [ -n "$EXISTING_ITEMS_JSON" ]; then
   while IFS= read -r num; do
     [[ -n "$num" ]] && EXISTING_ISSUE_NUMS+=("$num")

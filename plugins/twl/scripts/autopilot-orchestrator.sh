@@ -1127,14 +1127,12 @@ generate_phase_report() {
   done
 
   # JSON レポート出力
-  # skipped_archives: archive_done_issues が fail-closed で skip した Issue 番号（滞留検知用、Issue #138）
   jq -n \
     --arg signal "PHASE_COMPLETE" \
     --argjson phase "$phase" \
     --argjson done "$(printf '%s\n' "${done_issues[@]+"${done_issues[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0) | tonumber)')" \
     --argjson failed "$(printf '%s\n' "${failed_issues[@]+"${failed_issues[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0) | tonumber)')" \
     --argjson skipped "$(printf '%s\n' "${skipped_issues[@]+"${skipped_issues[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0) | tonumber)')" \
-    --argjson skipped_archives "$(printf '%s\n' "${SKIPPED_ARCHIVES[@]+"${SKIPPED_ARCHIVES[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0) | tonumber)')" \
     --argjson changed_files "$(printf '%s\n' "${changed_files[@]+"${changed_files[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0))')" \
     '{
       signal: $signal,
@@ -1144,7 +1142,6 @@ generate_phase_report() {
         failed: $failed,
         skipped: $skipped
       },
-      skipped_archives: $skipped_archives,
       changed_files: $changed_files
     }'
 }
@@ -1199,109 +1196,6 @@ generate_summary() {
     }'
 }
 
-# Phase 内の Done Issue のみを選択的にアーカイブする
-# 他 Phase・手動 Issue はアーカイブ対象外（仕様: specs/phase-selective-archive）
-# 引数: issue 番号リスト（スペース区切り）
-#
-# fail-closed: ローカル status=done かつ GitHub Issue state=CLOSED の両方を満たす場合のみ archive
-# 空文字 (取得失敗) も "CLOSED でない" として skip 扱い（Issue #138）
-# skip された Issue は SKIPPED_ARCHIVES グローバル配列に追加される（滞留検知用）
-SKIPPED_ARCHIVES=()
-archive_done_issues() {
-  local issue
-  for issue in "$@"; do
-    local status
-    status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status 2>/dev/null || echo "")
-    if [[ "$status" != "done" ]]; then
-      continue
-    fi
-
-    # NEW: GitHub Issue state 二重チェック (fail-closed)
-    local gh_state
-    gh_state=$(gh issue view "$issue" --json state -q .state 2>/dev/null || echo "")
-    if [[ "$gh_state" != "CLOSED" ]]; then
-      if [[ -z "$gh_state" ]]; then
-        echo "[orchestrator] Issue #${issue}: ⚠️ GitHub state 取得失敗 — fail-closed で archive をスキップ" >&2
-      else
-        echo "[orchestrator] Issue #${issue}: ⚠️ ローカル state=done だが GitHub state=${gh_state} — archive をスキップ" >&2
-      fi
-      echo "[orchestrator] Issue #${issue}: 手動 close または autopilot state 修正が必要です" >&2
-      SKIPPED_ARCHIVES+=("$issue")
-      continue
-    fi
-
-    if ! bash "$SCRIPTS_ROOT/chain-runner.sh" board-archive "$issue" 2>/dev/null; then
-      echo "[orchestrator] Issue #${issue}: ⚠️ Board アーカイブに失敗しました（Phase 完了は続行）" >&2
-    fi
-    # DeltaSpec change archive
-    _archive_deltaspec_changes_for_issue "$issue"
-  done
-}
-
-# Issue に紐づく deltaspec change を deltaspec archive で処理する
-_archive_deltaspec_changes_for_issue() {
-  local issue="$1"
-  local root
-  root="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
-  if [[ -z "$root" ]]; then return 0; fi
-
-  if ! command -v twl >/dev/null 2>&1; then
-    echo "[orchestrator] Issue #${issue}: ⚠️ twl CLI が見つかりません — DeltaSpec archive をスキップ" >&2
-    return 0
-  fi
-
-  # config.yaml を持つ deltaspec root を探索（lib/deltaspec-helpers.sh の resolve_deltaspec_root に委譲）
-  local ds_root
-  ds_root="$(resolve_deltaspec_root "$root")" || true
-  local changes_dir="$ds_root/deltaspec/changes"
-  if [[ ! -d "$changes_dir" ]]; then return 0; fi
-
-  # issue を引数で受け取ることで動的スコープへの依存を排除
-  _do_archive() {
-    local yaml_path="$1" _issue="$2"
-    local change_dir change_id
-    change_dir="$(dirname "$yaml_path")"
-    change_id="$(basename "$change_dir")"
-    found=true
-    if twl spec archive --yes -- "$change_id"; then
-      echo "[orchestrator] Issue #${_issue}: DeltaSpec archive 完了（specs 統合済み）: ${change_id}"
-    else
-      echo "[orchestrator] Issue #${_issue}: ⚠️ WARNING: specs 統合失敗。--skip-specs でリトライ: ${change_id}" >&2
-      if twl spec archive --yes --skip-specs -- "$change_id"; then
-        echo "[orchestrator] Issue #${_issue}: DeltaSpec archive 完了（specs 統合スキップ）: ${change_id}"
-      else
-        echo "[orchestrator] Issue #${_issue}: ⚠️ DeltaSpec archive 失敗: ${change_id}（Phase 完了は続行）" >&2
-      fi
-    fi
-  }
-
-  # プライマリ: .deltaspec.yaml の issue フィールドで対応 change を特定
-  # 複数の change が一致する場合は全て archive する（1 issue に複数 change がある正規ケース）
-  local found=false
-  while IFS= read -r yaml_path; do
-    _do_archive "$yaml_path" "$issue"
-  done < <(grep -rl "^issue: ${issue}$" "$changes_dir" --include=".deltaspec.yaml" 2>/dev/null || true)
-
-  # フォールバック1: name: issue-<N> パターンで検索（issue フィールドなしの change 対応）
-  if [[ "$found" == "false" ]]; then
-    while IFS= read -r yaml_path; do
-      _do_archive "$yaml_path" "$issue"
-    done < <(grep -rl "^name: issue-${issue}$" "$changes_dir" --include=".deltaspec.yaml" 2>/dev/null || true)
-  fi
-
-  # フォールバック2: ディレクトリ名パターンで検索（name フィールドもない旧形式の change 対応）
-  if [[ "$found" == "false" ]]; then
-    local legacy_yaml="${changes_dir}/issue-${issue}/.deltaspec.yaml"
-    if [[ -f "$legacy_yaml" ]]; then
-      _do_archive "$legacy_yaml" "$issue"
-    fi
-  fi
-
-  if [[ "$found" == "false" ]]; then
-    echo "[orchestrator] Issue #${issue}: DeltaSpec change が見つかりません（issue フィールド未設定または存在しない）" >&2
-  fi
-}
-
 # =============================================================================
 # メイン実行
 # =============================================================================
@@ -1350,8 +1244,6 @@ if [[ ${#ACTIVE_ISSUES[@]} -eq 0 ]]; then
   for entry in "${ISSUES_WITH_REPO[@]}"; do
     ALL_ISSUE_NUMS+=("${entry#*:}")
   done
-  # 先に archive を実行（SKIPPED_ARCHIVES をレポートに含めるため）
-  archive_done_issues "${ALL_ISSUE_NUMS[@]}"
   generate_phase_report "$PHASE" "${ALL_ISSUE_NUMS[@]}"
   exit 0
 fi
@@ -1435,15 +1327,11 @@ for ((BATCH_START=0; BATCH_START < TOTAL; BATCH_START += MAX_PARALLEL)); do
   done
 done
 
-# Step 4: 当該 Phase の Done アイテムのみを選択的にアーカイブ
-# fail-closed で skip された Issue は SKIPPED_ARCHIVES に集約される
+# Step 4: Phase 完了レポート
 ALL_ISSUE_NUMS=()
 for entry in "${ISSUES_WITH_REPO[@]}"; do
   ALL_ISSUE_NUMS+=("${entry#*:}")
 done
-archive_done_issues "${ALL_ISSUE_NUMS[@]}"
-
-# Step 5: Phase 完了レポート（skipped_archives を含む）
 generate_phase_report "$PHASE" "${ALL_ISSUE_NUMS[@]}"
 
 echo "[orchestrator] Phase ${PHASE} 完了" >&2

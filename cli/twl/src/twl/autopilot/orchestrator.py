@@ -183,8 +183,6 @@ class PhaseOrchestrator:
         self._last_output_hash: dict[str, str] = {}
         self._health_check_counter: dict[str, int] = {}
         self._stagnation_nudge_counts: dict[str, int] = {}
-        # skipped_archives: fail-closed で archive を skip した Issue 番号（Issue #138）
-        self._skipped_archives: list[int] = []
 
     def run(self) -> dict[str, Any]:
         """Execute phase. Returns phase report dict."""
@@ -204,8 +202,6 @@ class PhaseOrchestrator:
         if not active_entries:
             print(f"[orchestrator] Phase {self.phase}: 全 Issue が skip/done", file=sys.stderr)
             all_nums = [_parse_issue_entry(e)[1] for e in all_entries]
-            # 先に archive を実行して skipped_archives を集約してからレポート生成（Issue #138）
-            self._archive_done_issues(all_nums)
             report = self._generate_phase_report(all_nums)
             return report
 
@@ -215,11 +211,8 @@ class PhaseOrchestrator:
             batch = active_entries[batch_start:batch_start + MAX_PARALLEL]
             self._run_batch(batch)
 
-        # Step 4: Archive (先に archive して skipped_archives を集約)
+        # Step 4: Generate report
         all_nums = [_parse_issue_entry(e)[1] for e in all_entries]
-        self._archive_done_issues(all_nums)
-
-        # Step 5: Generate report (skipped_archives を含む)
         report = self._generate_phase_report(all_nums)
         return report
 
@@ -693,114 +686,8 @@ class PhaseOrchestrator:
                 "failed": failed,
                 "skipped": skipped,
             },
-            "skipped_archives": list(self._skipped_archives),
             "changed_files": changed_files,
         }
-
-    def _gh_issue_state(self, issue: str) -> str:
-        """Return GitHub Issue state ('OPEN' / 'CLOSED' / '' on failure).
-
-        fail-closed helper: 呼び出し側は空文字 (取得失敗) を "CLOSED でない" として扱う。
-        Issue #138: archive_done_issues の二重チェックで使用。
-        """
-        try:
-            r = subprocess.run(
-                ["gh", "issue", "view", issue, "--json", "state", "-q", ".state"],
-                capture_output=True, text=True, timeout=30,
-            )
-            if r.returncode != 0:
-                return ""
-            return r.stdout.strip()
-        except Exception:
-            return ""
-
-    def _archive_done_issues(self, issue_nums: list[str]) -> None:
-        """Fail-closed archive: local status=done かつ GitHub state=CLOSED のみ archive.
-
-        Issue #138: 空文字 (取得失敗) / OPEN は skip し、_skipped_archives に追加する。
-        """
-        for issue in issue_nums:
-            status = _read_state(issue, "status", self.autopilot_dir)
-            if status != "done":
-                continue
-
-            # NEW: GitHub Issue state 二重チェック (fail-closed)
-            gh_state = self._gh_issue_state(issue)
-            if gh_state != "CLOSED":
-                if not gh_state:
-                    print(
-                        f"[orchestrator] Issue #{issue}: ⚠️ GitHub state 取得失敗 — fail-closed で archive をスキップ",
-                        file=sys.stderr,
-                    )
-                else:
-                    print(
-                        f"[orchestrator] Issue #{issue}: ⚠️ ローカル state=done だが GitHub state={gh_state} — archive をスキップ",
-                        file=sys.stderr,
-                    )
-                print(
-                    f"[orchestrator] Issue #{issue}: 手動 close または autopilot state 修正が必要です",
-                    file=sys.stderr,
-                )
-                try:
-                    self._skipped_archives.append(int(issue))
-                except ValueError:
-                    pass
-                continue
-
-            subprocess.run(
-                ["bash", str(self.scripts_root / "chain-runner.sh"),
-                 "board-archive", issue],
-                capture_output=True,
-            )
-            self._archive_deltaspec_changes(issue)
-
-    def _archive_deltaspec_changes(self, issue: str) -> None:
-        try:
-            root = subprocess.check_output(
-                ["git", "rev-parse", "--show-toplevel"],
-                stderr=subprocess.DEVNULL, text=True,
-            ).strip()
-        except Exception:
-            return
-
-        if not shutil.which("twl"):
-            print(f"[orchestrator] Issue #{issue}: ⚠️ twl CLI が見つかりません", file=sys.stderr)
-            return
-
-        changes_dir = Path(root) / "deltaspec" / "changes"
-        if not changes_dir.is_dir():
-            return
-
-        def _do_archive(change_id: str) -> None:
-            r = subprocess.run(
-                ["twl", "spec", "archive", "--yes", "--", change_id],
-                capture_output=True,
-            )
-            if r.returncode == 0:
-                print(f"[orchestrator] Issue #{issue}: DeltaSpec archive 完了: {change_id}")
-            else:
-                print(f"[orchestrator] Issue #{issue}: ⚠️ DeltaSpec archive 失敗: {change_id}", file=sys.stderr)
-
-        found = False
-        # 複数の change が一致する場合は全て archive する（1 issue に複数 change がある正規ケース）
-        for yaml_path in changes_dir.rglob(".deltaspec.yaml"):
-            content = yaml_path.read_text(encoding="utf-8")
-            change_id = yaml_path.parent.name
-            # プライマリ: issue: フィールドで検索
-            if f"\nissue: {issue}\n" in content or content.startswith(f"issue: {issue}\n"):
-                found = True
-                _do_archive(change_id)
-            # フォールバック1: name: issue-<N> フィールドで検索（issue フィールドなしの change 対応）
-            elif f"\nname: issue-{issue}\n" in content or content.startswith(f"name: issue-{issue}\n"):
-                found = True
-                _do_archive(change_id)
-            # フォールバック2: ディレクトリ名パターンで検索（name フィールドもない旧形式の change 対応）
-            elif change_id == f"issue-{issue}":
-                found = True
-                _do_archive(change_id)
-
-        if not found:
-            print(f"[orchestrator] Issue #{issue}: DeltaSpec change が見つかりません", file=sys.stderr)
 
     def _detect_scripts_root(self) -> Path:
         try:
