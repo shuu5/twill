@@ -1,0 +1,18 @@
+{
+  "session_id": "b63102d7",
+  "plan_path": "/home/shuu5/projects/local-projects/twill/.autopilot/plan.yaml",
+  "current_phase": 1,
+  "phase_count": 1,
+  "started_at": "2026-04-14T01:16:12Z",
+  "cross_issue_warnings": [],
+  "phase_insights": [],
+  "patterns": {},
+  "self_improve_issues": [],
+  "retrospectives": [
+    {
+      "phase": 1,
+      "results": "done=1/1 (652), failed=0, skipped=0",
+      "insights": "Emergency Bypass: orchestrator inject timeout によりスタック。Worker は正常完了したが state 更新に不整合。Pilot が手動 merge-gate merge --force で完了。"
+    }
+  ]
+}

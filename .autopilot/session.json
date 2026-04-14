@@ -1,0 +1,37 @@
+{
+  "session_id": "b9e0fcd5",
+  "plan_path": "/home/shuu5/projects/local-projects/twill/main/.autopilot/plan.yaml",
+  "current_phase": 1,
+  "phase_count": 1,
+  "started_at": "2026-04-14T09:28:38Z",
+  "cross_issue_warnings": [],
+  "phase_insights": [],
+  "patterns": {},
+  "self_improve_issues": [],
+  "completed_issues": {
+    "513": {
+      "pr": 679,
+      "files": [
+        "deltaspec/changes/issue-513/.deltaspec.yaml",
+        "deltaspec/changes/issue-513/design.md",
+        "deltaspec/changes/issue-513/proposal.md",
+        "deltaspec/changes/issue-513/specs/bash-baseline/spec.md",
+        "deltaspec/changes/issue-513/tasks.md",
+        "deltaspec/changes/issue-513/test-mapping.yaml",
+        "plugins/twl/README.md",
+        "plugins/twl/agents/worker-code-reviewer.md",
+        "plugins/twl/deps.yaml",
+        "plugins/twl/refs/baseline-bash.md",
+        "plugins/twl/refs/baseline-coding-style.md",
+        "plugins/twl/tests/bats/refs/baseline-bash.bats"
+      ]
+    }
+  },
+  "retrospectives": [
+    {
+      "phase": 1,
+      "results": "done=[513], failed=[], skipped=[]",
+      "insights": ""
+    }
+  ]
+}

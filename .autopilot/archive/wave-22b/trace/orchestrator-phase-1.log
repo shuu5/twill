@@ -1,0 +1,32 @@
+[orchestrator] Phase 1 開始
+[2026-04-14T01:17:21Z] orchestrator_pid=3404958 phase=1 started_at=2026-04-14T01:17:21Z
+[orchestrator] Issue #652: Worker 起動
+[orchestrator] Issue #652: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/fix/652-autopilot-launchsh-cldenvfile-worker-64
+OK: issue-652.json を作成しました (status=running)
+Worker 起動完了: Issue #652 (window=ap-twill-fix-652-autopilot-launch-f1e06c2e, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/fix/652-autopilot-launchsh-cldenvfile-worker-64)
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #652: WARNING: inject タイムアウト — 10秒後に再チェック

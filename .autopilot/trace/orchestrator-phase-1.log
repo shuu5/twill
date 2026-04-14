@@ -1,0 +1,362 @@
+[orchestrator] Phase 1 開始
+[2026-04-14T04:35:03Z] orchestrator_pid=3813460 phase=1 started_at=2026-04-14T04:35:03Z
+[orchestrator] Issue #643: Worker 起動
+[orchestrator] Issue #643: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/643-tech-debt-resolveauditdir-twlauditdir
+[orchestrator] CRG: 壊れた symlink を削除: /home/shuu5/projects/local-projects/twill/worktrees/feat/643-tech-debt-resolveauditdir-twlauditdir/.code-review-graph
+OK: issue-643.json を作成しました (status=running)
+Worker 起動完了: Issue #643 (window=ap-twill-feat-643-tech-debt-resol-d97fdd85, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/643-tech-debt-resolveauditdir-twlauditdir)
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #643: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #643: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #643: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #643: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #643: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #643: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #643: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #643: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #643: merge-ready
+[orchestrator] Issue #643: PR 番号またはブランチが取得できません — mergegate.py の実行をスキップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [],
+    "failed": [],
+    "skipped": [
+      643
+    ]
+  },
+  "skipped_archives": [],
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了
+[orchestrator] Phase 1 開始
+[2026-04-14T07:22:10Z] orchestrator_pid=4064014 phase=1 started_at=2026-04-14T07:22:10Z
+[orchestrator] Issue #673: Worker 起動
+[orchestrator] Issue #673: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/673-wave-32-e2e-quick-path-terminal-step
+[orchestrator] CRG: 壊れた symlink を削除: /home/shuu5/projects/local-projects/twill/worktrees/feat/673-wave-32-e2e-quick-path-terminal-step/.code-review-graph
+OK: issue-673.json を作成しました (status=running)
+Worker 起動完了: Issue #673 (window=ap-twill-feat-673-wave-32-e2e-qui-a0548991, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/673-wave-32-e2e-quick-path-terminal-step)
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #673: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #673: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #673: merge-ready
+[orchestrator] Issue #673: merge-gate 実行 (PR #675)
+[merge-gate] INFO: phase-review チェックをスキップしました（ラベル: quick）
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-673.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #673: PR #675 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #673: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #673: PR merge 後も Issue が OPEN — 明示的 close を試行
+[merge-gate] Issue #673: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #673: merge 成功
+[orchestrator] cleanup: Issue #673 — window/branch クリーンアップ
+[orchestrator] Issue #673: ⚠️ worktree削除失敗（クリーンアップは続行）
+✓ board-archive: Board アイテムをアーカイブしました (#673)
+[orchestrator] Issue #673: DeltaSpec change が見つかりません（issue フィールド未設定または存在しない）
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      673
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "skipped_archives": [],
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了
+[orchestrator] Phase 1 開始
+[2026-04-14T07:47:50Z] orchestrator_pid=4143598 phase=1 started_at=2026-04-14T07:47:50Z
+[orchestrator] Issue #676: Worker 起動
+[orchestrator] Issue #676: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/676-wave-32-4-terminal-guard
+OK: issue-676.json を作成しました (status=running)
+Worker 起動完了: Issue #676 (window=ap-twill-feat-676-wave-32-4-termi-3912fb64, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/676-wave-32-4-terminal-guard)
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #676: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #676: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #676: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #676: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Phase 1 開始
+[2026-04-14T09:28:48Z] orchestrator_pid=88990 phase=1 started_at=2026-04-14T09:28:48Z
+[orchestrator] Issue #513: Worker 起動
+[orchestrator] Issue #513: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/513-self-improve-worker-code-reviewer-bash
+OK: issue-513.json を作成しました (status=running)
+Worker 起動完了: Issue #513 (window=ap-twill-feat-513-self-improve-wo-9385e470, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/513-self-improve-worker-code-reviewer-bash)
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: pr-merge 検出 — inject スキップ、merge-gate フローに委譲
+[orchestrator] Issue #513: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: WARNING: resolve_next_workflow 失敗 — inject スキップ
+[orchestrator] Issue #513: merge-ready
+[orchestrator] Issue #513: merge-gate 実行 (PR #679)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-513.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #513: PR #679 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #513: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #513: PR merge 後も Issue が OPEN — 明示的 close を試行
+[merge-gate] Issue #513: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #513: merge 成功
+[orchestrator] cleanup: Issue #513 — window/branch クリーンアップ
+[orchestrator] Issue #513: ⚠️ worktree削除失敗（クリーンアップは続行）
+✓ board-archive: Board アイテムをアーカイブしました (#513)
+[orchestrator] Issue #513: DeltaSpec change が見つかりません（issue フィールド未設定または存在しない）
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      513
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "skipped_archives": [],
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了
