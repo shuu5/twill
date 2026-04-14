@@ -1118,19 +1118,31 @@ step_pr_comment_findings() {
   warning_count=$(echo "$combined_findings" | jq '[.[] | select(.severity == "WARNING")] | length' 2>/dev/null || echo "0")
   info_count=$(echo "$combined_findings" | jq '[.[] | select(.severity == "INFO")] | length' 2>/dev/null || echo "0")
 
+  # --- findings テンプレート (#655) ---
+  # severity 別にグループ化。Reviewer/File:Line/Finding/Confidence カラム。
   local body
   body="## Specialist Review Findings"$'\n\n'
+  body+="**Summary**: ${critical_count} CRITICAL / ${warning_count} WARNING / ${info_count} INFO (total ${findings_count})"$'\n\n'
 
   if [[ "$findings_count" -gt 0 ]]; then
-    body+="| Severity | Category | File | Message |"$'\n'
-    body+="|----------|----------|------|---------|"$'\n'
-    body+=$(echo "$combined_findings" | jq -r '.[] | "| \(.severity) | \(.category) | \(.file // "-"):\(.line // "-") | \(.message[:120]) |"' 2>/dev/null || echo "| - | - | - | parse error |")
-    body+=$'\n\n'
+    local sev
+    for sev in CRITICAL WARNING INFO; do
+      local sev_findings sev_count
+      sev_findings=$(echo "$combined_findings" | jq -c "[.[] | select(.severity == \"$sev\")]" 2>/dev/null || echo "[]")
+      sev_count=$(echo "$sev_findings" | jq 'length' 2>/dev/null || echo "0")
+      if [[ "$sev_count" -gt 0 ]]; then
+        body+="### ${sev} (${sev_count})"$'\n\n'
+        body+="| Reviewer | File:Line | Finding | Conf |"$'\n'
+        body+="|----------|-----------|---------|------|"$'\n'
+        body+=$(echo "$sev_findings" | jq -r '.[] | "| \(.source // "-") | \(.file // "-"):\(.line // "-") | \(.message[:150]) | \(.confidence // "-") |"' 2>/dev/null || echo "| - | - | parse error | - |")
+        body+=$'\n\n'
+      fi
+    done
   else
-    body+="_No findings._"$'\n\n'
+    body+="全 specialist が findings なしで完了。"$'\n\n'
   fi
 
-  body+="**Decision**: ${mg_status} (${critical_count} CRITICAL, ${warning_count} WARNING, ${info_count} INFO)"
+  body+="**Decision**: ${mg_status}"
 
   gh pr comment "$pr_num" --body "$body" 2>/dev/null || {
     skip "pr-comment-findings" "PR コメント投稿失敗"
@@ -1153,16 +1165,59 @@ step_pr_comment_fix_summary() {
     return 0
   fi
 
-  local summary=""
+  # --- fix report テンプレート (#655) ---
+  # stdin から JSON 配列を読み取り、Fixed/Deferred/Acknowledged に分類。
+  # JSON 形式: [{"finding":"...","action":"fixed|deferred|acknowledged","detail":"...","tech_debt":true|false}]
+  local raw_input=""
   if [[ ! -t 0 ]]; then
-    summary=$(cat)
+    raw_input=$(cat)
   fi
 
-  if [[ -z "$summary" ]]; then
-    summary="_No fixes applied (no CRITICAL/WARNING findings required fixing)._"
-  fi
+  local body="## Fix Report"$'\n\n'
 
-  local body="## Fix Summary"$'\n\n'"${summary}"
+  # JSON parse を試行。失敗時は raw テキストとして扱う
+  if echo "$raw_input" | jq empty 2>/dev/null && [[ -n "$raw_input" ]]; then
+    local fixed_items deferred_items ack_items
+    fixed_items=$(echo "$raw_input" | jq -c '[.[] | select(.action == "fixed")]' 2>/dev/null || echo "[]")
+    deferred_items=$(echo "$raw_input" | jq -c '[.[] | select(.action == "deferred")]' 2>/dev/null || echo "[]")
+    ack_items=$(echo "$raw_input" | jq -c '[.[] | select(.action == "acknowledged")]' 2>/dev/null || echo "[]")
+
+    local fc dc ac
+    fc=$(echo "$fixed_items" | jq 'length' 2>/dev/null || echo "0")
+    dc=$(echo "$deferred_items" | jq 'length' 2>/dev/null || echo "0")
+    ac=$(echo "$ack_items" | jq 'length' 2>/dev/null || echo "0")
+
+    body+="**Summary**: ${fc} fixed / ${dc} deferred / ${ac} acknowledged"$'\n\n'
+
+    if [[ "$fc" -gt 0 ]]; then
+      body+="### Fixed"$'\n\n'
+      body+="| Finding | Detail |"$'\n'
+      body+="|---------|--------|"$'\n'
+      body+=$(echo "$fixed_items" | jq -r '.[] | "| \((.finding // "-")[:100]) | \((.detail // "-")[:100]) |"' 2>/dev/null)
+      body+=$'\n\n'
+    fi
+
+    if [[ "$dc" -gt 0 ]]; then
+      body+="### Deferred (tech-debt candidates)"$'\n\n'
+      body+="| Finding | Reason | Tech-Debt |"$'\n'
+      body+="|---------|--------|-----------|"$'\n'
+      body+=$(echo "$deferred_items" | jq -r '.[] | "| \((.finding // "-")[:100]) | \((.detail // "-")[:100]) | \(if .tech_debt then "候補" else "-" end) |"' 2>/dev/null)
+      body+=$'\n\n'
+    fi
+
+    if [[ "$ac" -gt 0 ]]; then
+      body+="### Acknowledged (no action needed)"$'\n\n'
+      body+="| Finding | Reason |"$'\n'
+      body+="|---------|--------|"$'\n'
+      body+=$(echo "$ack_items" | jq -r '.[] | "| \((.finding // "-")[:100]) | \((.detail // "-")[:100]) |"' 2>/dev/null)
+      body+=$'\n\n'
+    fi
+  elif [[ -n "$raw_input" ]]; then
+    # 非 JSON: raw テキストをそのまま使用（後方互換）
+    body+="${raw_input}"$'\n\n'
+  else
+    body+="No findings required fixing."$'\n\n'
+  fi
 
   gh pr comment "$pr_num" --body "$body" 2>/dev/null || {
     skip "pr-comment-fix-summary" "PR コメント投稿失敗"
