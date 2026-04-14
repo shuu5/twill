@@ -458,7 +458,7 @@ teardown() {
 @test "crg-reporoot[#674]: orchestrator.sh が main/.code-review-graph の symlink を削除する" {
   # main の .code-review-graph を broken symlink にする
   rm -rf "$FAKE_REPO_ROOT/main/.code-review-graph"
-  ln -sf "$FAKE_REPO_ROOT/main/.code-review-graph" "$FAKE_REPO_ROOT/main/.code-review-graph"
+  ln -s "/nonexistent/.code-review-graph" "$FAKE_REPO_ROOT/main/.code-review-graph"
 
   # orchestrator.sh の #674 ガード部分を抽出した test double
   cat > "$SANDBOX/scripts/crg-main-guard-674.sh" << 'GUARD_EOF'
@@ -466,11 +466,11 @@ teardown() {
 set -euo pipefail
 TWILL_REPO_ROOT="${TWILL_REPO_ROOT:-}"
 CALLS_LOG="${CALLS_LOG:-/dev/null}"
-_crg_main_path="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
-if [[ -L "$_crg_main_path" ]]; then
-  rm -f "$_crg_main_path" 2>/dev/null || true
-  echo "main_crg_symlink_removed=true path=$_crg_main_path" >> "$CALLS_LOG"
-  echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main_path" >&2
+_crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
+if [[ -L "$_crg_main" ]]; then
+  rm -f "$_crg_main" 2>/dev/null || true
+  echo "main_crg_symlink_removed=true path=$_crg_main" >> "$CALLS_LOG"
+  echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main" >&2
 else
   echo "main_crg_ok=true" >> "$CALLS_LOG"
 fi
@@ -489,18 +489,18 @@ GUARD_EOF
 
 @test "crg-reporoot[#674]: orchestrator.sh が main/.code-review-graph symlink 削除時に stderr に警告を出力する" {
   rm -rf "$FAKE_REPO_ROOT/main/.code-review-graph"
-  ln -sf "$FAKE_REPO_ROOT/main/.code-review-graph" "$FAKE_REPO_ROOT/main/.code-review-graph"
+  ln -s "/nonexistent/.code-review-graph" "$FAKE_REPO_ROOT/main/.code-review-graph"
 
   cat > "$SANDBOX/scripts/crg-main-guard-674.sh" << 'GUARD_EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 TWILL_REPO_ROOT="${TWILL_REPO_ROOT:-}"
 CALLS_LOG="${CALLS_LOG:-/dev/null}"
-_crg_main_path="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
-if [[ -L "$_crg_main_path" ]]; then
-  rm -f "$_crg_main_path" 2>/dev/null || true
-  echo "main_crg_symlink_removed=true path=$_crg_main_path" >> "$CALLS_LOG"
-  echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main_path" >&2
+_crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
+if [[ -L "$_crg_main" ]]; then
+  rm -f "$_crg_main" 2>/dev/null || true
+  echo "main_crg_symlink_removed=true path=$_crg_main" >> "$CALLS_LOG"
+  echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main" >&2
 else
   echo "main_crg_ok=true" >> "$CALLS_LOG"
 fi
@@ -524,11 +524,11 @@ GUARD_EOF
 set -euo pipefail
 TWILL_REPO_ROOT="${TWILL_REPO_ROOT:-}"
 CALLS_LOG="${CALLS_LOG:-/dev/null}"
-_crg_main_path="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
-if [[ -L "$_crg_main_path" ]]; then
-  rm -f "$_crg_main_path" 2>/dev/null || true
-  echo "main_crg_symlink_removed=true path=$_crg_main_path" >> "$CALLS_LOG"
-  echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main_path" >&2
+_crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
+if [[ -L "$_crg_main" ]]; then
+  rm -f "$_crg_main" 2>/dev/null || true
+  echo "main_crg_symlink_removed=true path=$_crg_main" >> "$CALLS_LOG"
+  echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main" >&2
 else
   echo "main_crg_ok=true" >> "$CALLS_LOG"
 fi
