@@ -322,15 +322,31 @@ launch_worker() {
     echo "[orchestrator] Issue #${ISSUE}: worktree 作成完了: $worktree_dir" >&2
   fi
 
-  # CRG graph DB symlink（main の DB を参照、#532、#576）
-  # main worktree 自身は除外（自己参照 symlink 防止、TWILL_REPO_ROOT 文字列比較）
-  # TWILL_REPO_ROOT は常に twill モノリポルート（PROJECT_DIR）を指す。ISSUE_REPO_PATH とは独立
+  # CRG graph DB symlink（main の DB を参照、#532、#576、#605）
+  # main worktree 自身は除外（自己参照 symlink 防止）
+  # realpath で正規化して比較（文字列比較だけでは symlink/相対パスで失敗する — #605）
   local _crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
-  local _normalized_wt="${worktree_dir%/}"
-  local _normalized_main="${TWILL_REPO_ROOT%/}/main"
-  local _is_main=0
-  [[ "$_normalized_wt" == "$_normalized_main" ]] && _is_main=1
-  [[ -d "$_crg_main" && "$_is_main" -eq 0 && ! -e "$worktree_dir/.code-review-graph" ]] && ln -sf "$_crg_main" "$worktree_dir/.code-review-graph"
+  local _crg_target="${worktree_dir%/}/.code-review-graph"
+  local _real_wt _real_main
+  _real_wt=$(realpath -m "$worktree_dir" 2>/dev/null || echo "$worktree_dir")
+  _real_main=$(realpath -m "${TWILL_REPO_ROOT%/}/main" 2>/dev/null || echo "${TWILL_REPO_ROOT%/}/main")
+  if [[ "$_real_wt" != "$_real_main" ]]; then
+    # 壊れた symlink の自己回復: -L (symlink exists) but ! -d (not a valid dir)
+    if [[ -L "$_crg_target" && ! -d "$_crg_target" ]]; then
+      rm -f "$_crg_target" 2>/dev/null || true
+      echo "[orchestrator] CRG: 壊れた symlink を削除: $_crg_target" >&2
+    fi
+    # ソースが実ディレクトリで、ターゲットが未存在の場合のみ作成
+    if [[ -d "$_crg_main" && ! -e "$_crg_target" ]]; then
+      # 自己参照チェック: realpath で source == target なら作成しない
+      local _real_src _real_tgt
+      _real_src=$(realpath -m "$_crg_main" 2>/dev/null || echo "$_crg_main")
+      _real_tgt=$(realpath -m "$_crg_target" 2>/dev/null || echo "$_crg_target")
+      if [[ "$_real_src" != "$_real_tgt" ]]; then
+        ln -sf "$_crg_main" "$_crg_target"
+      fi
+    fi
+  fi
 
   local effective_model="${model_override:-${WORKER_MODEL:-sonnet}}"
   local launch_args=(
