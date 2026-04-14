@@ -13,6 +13,25 @@ chain Step 8（composite）。chain ライフサイクルは deps.yaml を参照
 
 ## ドメインルール
 
+### PR 存在確認（MUST — 最初に実行）
+
+merge-gate は PR が存在しない状態で実行してはならない（Issue #649）。動的レビュアー構築より先に実行すること。
+
+```bash
+PR_NUM=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
+if [[ -z "$PR_NUM" || "$PR_NUM" == "none" ]]; then
+  echo "REJECT: PR が存在しません。PR を作成してから merge-gate を実行してください" >&2
+  python3 -m twl.autopilot.checkpoint write \
+    --step merge-gate \
+    --status REJECT \
+    --findings '[{"severity":"CRITICAL","category":"chain-integrity-drift","message":"PR が存在しない状態で merge-gate が実行されました。PR を作成してから再実行してください","confidence":100}]'
+  exit 1
+fi
+```
+
+PR が存在しない場合、merge-gate は即座に REJECT を返し以降の処理を行わない。
+Supervisor / Pilot が PR を作成（`intervene-auto --pattern pr-create`）してから merge-gate を再実行すること。
+
 ### 動的レビュアー構築
 
 ```bash

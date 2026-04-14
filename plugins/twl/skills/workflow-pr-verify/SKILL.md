@@ -44,6 +44,22 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 [[ -n "$ISSUE_NUM" && -f "$CONTEXT_FILE" ]] && echo "=== 前 workflow コンテキスト ===" && cat "$CONTEXT_FILE"
 ```
 
+### 前提: PR 存在確認（MUST — 全ステップより先に実行）
+
+workflow-pr-verify は PR が存在する状態で実行しなければならない（Issue #649）。
+
+```bash
+PR_NUM=$(gh pr list --head "$(git branch --show-current)" --json number -q '.[0].number' 2>/dev/null || echo "")
+if [[ -z "$PR_NUM" ]]; then
+  echo "ERROR: PR が存在しません。PR を作成してから workflow-pr-verify を実行してください" >&2
+  echo "  git push origin HEAD が完了していることを確認し、gh pr create を実行してください" >&2
+  exit 1
+fi
+echo "✓ PR #${PR_NUM} 確認済み"
+```
+
+PR が存在しない場合はここで停止する。PR 作成後に改めて workflow-pr-verify を実行すること。
+
 ### Step 0.5: prompt-compliance（refined_by ハッシュ整合性）【機械的 → runner】
 ```bash
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" prompt-compliance
