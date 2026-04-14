@@ -28,6 +28,11 @@
             "type": "command",
             "command": "bash plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/hooks/pre-bash-merge-guard.sh",
+            "timeout": 3000
           }
         ]
       }
