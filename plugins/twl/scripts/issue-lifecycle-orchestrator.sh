@@ -241,6 +241,9 @@ _spawn_tmux_window_with_prompt() {
   local subdir="$1" window_name="$2" prompt_file="$3"
   local SESSION_SCRIPTS="${SCRIPTS_ROOT}/../../session/scripts"
   echo "[issue-lifecycle-orchestrator] ${subdir##*/}: spawn (window=${window_name})" >&2
+  # TWL_AUDIT / TWL_AUDIT_DIR を export して cld-spawn 子プロセスに継承させる (Wave 23)
+  # cld-spawn は CLD_ENV_FILE を自動 source するが、TWL_AUDIT は ~/.cld-env に含まれないため明示的に export
+  [[ "${TWL_AUDIT:-}" == "1" ]] && export TWL_AUDIT TWL_AUDIT_DIR
   # cld-spawn: 対話モードで起動（one-shot モード stdout 問題を回避 — #541）
   # env-file は CLD_ENV_FILE 環境変数のフォールバックに委譲（cld-spawn が自動検出）
   "${SESSION_SCRIPTS}/cld-spawn" --cd "$(pwd)" --window-name "${window_name}" --model "${WORKER_MODEL}" || {
