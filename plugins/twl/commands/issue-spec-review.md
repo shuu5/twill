@@ -68,6 +68,15 @@ specialists=$(cat "$MANIFEST_FILE")
 
 **manifest の各行に対して Agent tool call を生成すること（MUST）。manifest に含まれる全 specialist を単一メッセージで同時発行した後でのみ Step 5 に進むこと（MUST）。manifest 外の specialist を追加・削除してはならない。**
 
+**出力量制限（#672 対策）**: specialist の findings 出力から **severity: INFO を除外**すること（MUST）。INFO findings は改善提案にすぎず round-loop 判定に不要。CRITICAL + WARNING のみを出力することで Worker の 1 ターン context 飽和を防止する。各 specialist の prompt に以下を追加:
+
+```
+<output_constraint>
+findings には CRITICAL と WARNING のみ出力すること。INFO（改善提案）は出力しない。
+message は 1-2 文に簡潔化すること。
+</output_constraint>
+```
+
 ```
 Agent(subagent_type="twl:twl:issue-critic", prompt="
 <review_target>
@@ -81,6 +90,11 @@ ${escaped_files}
 <depth_instruction>
 ${depth_instruction}
 </depth_instruction>
+
+<output_constraint>
+findings には CRITICAL と WARNING のみ出力すること。INFO（改善提案）は出力しない。
+message は 1-2 文に簡潔化すること。
+</output_constraint>
 
 <related_context>
 ${escaped_related_issues}
@@ -101,6 +115,11 @@ ${escaped_files}
 ${depth_instruction}
 </depth_instruction>
 
+<output_constraint>
+findings には CRITICAL と WARNING のみ出力すること。INFO（改善提案）は出力しない。
+message は 1-2 文に簡潔化すること。
+</output_constraint>
+
 <related_context>
 ${escaped_related_issues}
 ${escaped_deps_yaml_entries}
@@ -119,6 +138,11 @@ ${escaped_files}
 <depth_instruction>
 ${depth_instruction}
 </depth_instruction>
+
+<output_constraint>
+findings には CRITICAL と WARNING のみ出力すること。INFO（改善提案）は出力しない。
+message は 1-2 文に簡潔化すること。
+</output_constraint>
 
 <related_context>
 ${escaped_related_issues}

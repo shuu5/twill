@@ -378,11 +378,32 @@ wait_for_batch() {
           mkdir -p "${subdir}/OUT"
           _generate_fallback_report "$subdir" "window_lost"
         elif "${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" check "$window_name" input-waiting 2>/dev/null; then
-          # Window 存在 + input-waiting → specialist 完了済みだが report.json 未書き出し (#647)
-          echo "[issue-lifecycle-orchestrator] ${subdir##*/}: input-waiting + report.json なし — フォールバック生成" >&2
-          mkdir -p "${subdir}/OUT"
-          _generate_fallback_report "$subdir" "input_waiting_no_report"
-          tmux kill-window -t "$window_name" 2>/dev/null || true
+          # Window 存在 + input-waiting → STATE ファイルを確認して判断 (#672)
+          local state_file="${subdir}/STATE"
+          local current_state=""
+          [[ -f "$state_file" ]] && current_state=$(cat "$state_file" 2>/dev/null | tr -d '[:space:]')
+          local inject_count_file="${subdir}/.inject_count"
+          local inject_count=0
+          [[ -f "$inject_count_file" ]] && inject_count=$(cat "$inject_count_file" 2>/dev/null | tr -d '[:space:]')
+
+          if [[ ("$current_state" == "fixing" || "$current_state" == "reviewing") && "$inject_count" -lt 3 ]]; then
+            # STATE=fixing/reviewing → Worker が中断状態。auto-inject で継続を促す (#672)
+            inject_count=$((inject_count + 1))
+            echo "$inject_count" > "$inject_count_file"
+            echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=$current_state + input-waiting — auto-inject ($inject_count/3)" >&2
+            "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" \
+              "Step 5-7 を継続してください。findings に基づく修正(fixing) → Issue body 更新(gh issue edit) → refined ラベル付与 → STATE=done → OUT/report.json 書き込みを完了すること。" \
+              2>/dev/null || true
+            all_done=false
+          else
+            # STATE=done / unknown / inject 3回失敗 → fallback (#647)
+            local reason="input_waiting_no_report"
+            [[ "$inject_count" -ge 3 ]] && reason="inject_exhausted_${inject_count}"
+            echo "[issue-lifecycle-orchestrator] ${subdir##*/}: input-waiting (STATE=$current_state, inject=$inject_count) — フォールバック生成" >&2
+            mkdir -p "${subdir}/OUT"
+            _generate_fallback_report "$subdir" "$reason"
+            tmux kill-window -t "$window_name" 2>/dev/null || true
+          fi
         else
           all_done=false
         fi
