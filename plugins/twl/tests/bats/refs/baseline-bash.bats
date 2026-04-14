@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 # baseline-bash.bats - structural validation of baseline-bash.md and its integration
 #
-# 8 test cases for #513 (character class ハイフン / for-loop local / set -u 初期化 / IFS)
+# 9 test cases for #513 (character class ハイフン / for-loop local / set -u 初期化 / IFS)
 
 setup() {
   local helpers_dir="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)"

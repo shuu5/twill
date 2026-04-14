@@ -695,7 +695,7 @@ refs:
     path: refs/self-improve-format.md
     description: "self-improve Issue 共通フォーマット定義"
 
-  # C-3: Baseline (3)
+  # C-3: Baseline (4)
   baseline-coding-style:
     type: reference
     path: refs/baseline-coding-style.md
