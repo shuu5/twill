@@ -49,7 +49,7 @@ echo "$SPECIALISTS" > "$MANIFEST_FILE"
 trap 'rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"' EXIT
 ```
 
-マニフェスト各行を Task spawn 対象とする（手動追加・削除は MUST NOT）。出力 0 行は自動 PASS。結果収集後 `rm -f "$MANIFEST_FILE"` 等で削除（trap でも可）。
+マニフェスト各行を Task spawn 対象とする（手動追加・削除は MUST NOT）。**quick ラベルが付与されていても specialist マニフェスト生成・spawn を省略してはならない（MUST NOT）**。quick が影響するのは DeltaSpec のスキップと phase-review checkpoint チェックのスキップのみであり、specialist review の実行には影響しない。`pr-review-manifest.sh` は merge-gate モードで最低限 `worker-code-reviewer` と `worker-security-reviewer` を必ず出力するため、マニフェスト 0 行は自動 PASS としない。結果収集後 `rm -f "$MANIFEST_FILE"` 等で削除（trap でも可）。
 
 ### 並列 specialist 実行（MUST: 全 specialist 一括 spawn）
 

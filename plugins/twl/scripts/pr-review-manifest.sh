@@ -154,6 +154,13 @@ if [[ "$MODE" == "merge-gate" ]]; then
   fi
 fi
 
+# merge-gate モード: 最低限必須 specialist（quick ラベル含む全ケースで保証）
+# quick ラベルでも specialist review は省略不可（Issue #657）
+if [[ "$MODE" == "merge-gate" ]]; then
+  SPECIALISTS["worker-code-reviewer"]=1
+  SPECIALISTS["worker-security-reviewer"]=1
+fi
+
 # phase-review / merge-gate モード: architecture/ 配下の .md 変更 → worker-arch-doc-reviewer
 if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
   for f in "${FILES[@]}"; do
