@@ -377,7 +377,7 @@ wait_for_batch() {
           echo "[issue-lifecycle-orchestrator] ${subdir##*/}: ウィンドウ消失・report.json なし — フォールバック生成" >&2
           mkdir -p "${subdir}/OUT"
           _generate_fallback_report "$subdir" "window_lost"
-        elif "${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" check "$window_name" input-waiting 2>/dev/null; then
+        elif [[ "$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)" == "input-waiting" ]]; then
           # Window 存在 + input-waiting → STATE ファイルを確認して判断 (#672)
           local state_file="${subdir}/STATE"
           local current_state=""
