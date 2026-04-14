@@ -1083,18 +1083,20 @@ step_pr_cycle_report() {
 }
 
 # --- pr-comment-findings: specialist findings を PR コメントとして投稿 ---
-# merge-gate 実行後に呼び出し、COMBINED_FINDINGS を Markdown テーブルで永続化する。
+# merge-gate 実行後に呼び出し、COMBINED_FINDINGS を標準テンプレートで永続化する（Issue #655）。
 # 引数: なし（checkpoint から自動取得）
 step_pr_comment_findings() {
   record_current_step "pr-comment-findings"
   ensure_pythonpath || return 1
 
-  local pr_num
+  local pr_num issue_num
   pr_num=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
   if [[ -z "$pr_num" ]] || ! [[ "$pr_num" =~ ^[0-9]+$ ]]; then
     skip "pr-comment-findings" "PR 番号なし — スキップ"
     return 0
   fi
+
+  issue_num="$(resolve_issue_num 2>/dev/null || echo "")"
 
   # checkpoint から findings 取得（merge-gate, ac-verify, phase-review を統合）
   # 注: --autopilot-dir は使わず、checkpoint.py のデフォルト解決（git rev-parse）に任せる。
@@ -1109,39 +1111,73 @@ step_pr_comment_findings() {
   local mg_status
   mg_status=$(python3 -m twl.autopilot.checkpoint read --step merge-gate --field status 2>/dev/null || echo "UNKNOWN")
 
-  # findings テーブル構築
-  local findings_count
-  findings_count=$(echo "$combined_findings" | jq 'length' 2>/dev/null || echo "0")
-
   local critical_count warning_count info_count
   critical_count=$(echo "$combined_findings" | jq '[.[] | select(.severity == "CRITICAL")] | length' 2>/dev/null || echo "0")
   warning_count=$(echo "$combined_findings" | jq '[.[] | select(.severity == "WARNING")] | length' 2>/dev/null || echo "0")
   info_count=$(echo "$combined_findings" | jq '[.[] | select(.severity == "INFO")] | length' 2>/dev/null || echo "0")
 
-  local body
-  body="## Specialist Review Findings"$'\n\n'
-
-  if [[ "$findings_count" -gt 0 ]]; then
-    body+="| Severity | Category | File | Message |"$'\n'
-    body+="|----------|----------|------|---------|"$'\n'
-    body+=$(echo "$combined_findings" | jq -r '.[] | "| \(.severity) | \(.category) | \(.file // "-"):\(.line // "-") | \(.message[:120]) |"' 2>/dev/null || echo "| - | - | - | parse error |")
-    body+=$'\n\n'
+  # Gate Decision
+  local gate_decision
+  if [[ "$mg_status" == "PASS" ]]; then
+    gate_decision="**APPROVE**"
   else
-    body+="_No findings._"$'\n\n'
+    gate_decision="**REJECT**"
   fi
 
-  body+="**Decision**: ${mg_status} (${critical_count} CRITICAL, ${warning_count} WARNING, ${info_count} INFO)"
+  # Issue reference for header
+  local issue_ref=""
+  [[ -n "$issue_num" ]] && issue_ref=" (Issue #${issue_num})"
+
+  # 標準テンプレートでボディ構築（Issue #655）
+  local body
+  body="## Merge-Gate Specialist Review — PR #${pr_num}${issue_ref}"$'\n\n'
+  body+="### Gate Decision: ${gate_decision}"$'\n\n'
+
+  # CRITICAL section
+  body+="### CRITICAL (修正必須)"$'\n'
+  if [[ "$critical_count" -gt 0 ]]; then
+    body+="| # | Category | File:Line | Finding | Conf | Fix Commit |"$'\n'
+    body+="|---|----------|-----------|---------|------|------------|"$'\n'
+    body+=$(echo "$combined_findings" | jq -r '[.[] | select(.severity == "CRITICAL")] | to_entries | .[] | "| \(.key + 1) | \(.value.category) | \(.value.file // "-"):\(.value.line // "-") | \(.value.message[:100]) | \(.value.confidence) | — |"' 2>/dev/null || echo "| - | - | - | parse error | - | - |")
+    body+=$'\n'
+  else
+    body+="_なし_"$'\n'
+  fi
+  body+=$'\n'
+
+  # WARNING section
+  body+="### WARNING (tech-debt 候補)"$'\n'
+  if [[ "$warning_count" -gt 0 ]]; then
+    body+="| # | Category | File:Line | Finding | Conf | Disposition |"$'\n'
+    body+="|---|----------|-----------|---------|------|-------------|"$'\n'
+    body+=$(echo "$combined_findings" | jq -r '[.[] | select(.severity == "WARNING")] | to_entries | .[] | "| \(.key + 1) | \(.value.category) | \(.value.file // "-"):\(.value.line // "-") | \(.value.message[:100]) | \(.value.confidence) | pending |"' 2>/dev/null || echo "| - | - | - | parse error | - | - |")
+    body+=$'\n'
+  else
+    body+="_なし_"$'\n'
+  fi
+  body+=$'\n'
+
+  # INFO section
+  body+="### INFO"$'\n'
+  if [[ "$info_count" -gt 0 ]]; then
+    body+="| # | Category | Finding | Conf |"$'\n'
+    body+="|---|----------|---------|------|"$'\n'
+    body+=$(echo "$combined_findings" | jq -r '[.[] | select(.severity == "INFO")] | to_entries | .[] | "| \(.key + 1) | \(.value.category) | \(.value.message[:100]) | \(.value.confidence) |"' 2>/dev/null || echo "| - | - | parse error | - |")
+    body+=$'\n'
+  else
+    body+="_なし_"$'\n'
+  fi
 
   gh pr comment "$pr_num" --body "$body" 2>/dev/null || {
     skip "pr-comment-findings" "PR コメント投稿失敗"
     return 0
   }
 
-  ok "pr-comment-findings" "PR #${pr_num} に findings コメント投稿 (${findings_count} findings)"
+  ok "pr-comment-findings" "PR #${pr_num} に findings コメント投稿 (${critical_count} CRITICAL, ${warning_count} WARNING, ${info_count} INFO)"
 }
 
-# --- pr-comment-fix-summary: fix サマリを PR コメントとして投稿 ---
-# workflow-pr-fix 完了後に呼び出し。stdin から fix サマリを受け取る。
+# --- pr-comment-fix-summary: Fix Report を PR コメントとして投稿 ---
+# workflow-pr-fix 完了後に呼び出し。stdin から構造化 Fix Report を受け取る（Issue #655）。
 # 引数: なし
 step_pr_comment_fix_summary() {
   record_current_step "pr-comment-fix-summary"
@@ -1159,17 +1195,110 @@ step_pr_comment_fix_summary() {
   fi
 
   if [[ -z "$summary" ]]; then
-    summary="_No fixes applied (no CRITICAL/WARNING findings required fixing)._"
+    summary="### Fixed (CRITICAL)
+_なし_
+
+### Deferred (WARNING → tech-debt)
+_なし_
+
+### Acknowledged (INFO)
+_なし_"
   fi
 
-  local body="## Fix Summary"$'\n\n'"${summary}"
+  local body="## Fix Report — PR #${pr_num}"$'\n\n'"${summary}"
 
   gh pr comment "$pr_num" --body "$body" 2>/dev/null || {
     skip "pr-comment-fix-summary" "PR コメント投稿失敗"
     return 0
   }
 
-  ok "pr-comment-fix-summary" "PR #${pr_num} に fix サマリ投稿"
+  ok "pr-comment-fix-summary" "PR #${pr_num} に fix report 投稿"
+}
+
+# --- tech-debt-issues: WARNING findings を tech-debt Issue として自動起票 ---
+# merge-gate/phase-review の WARNING findings を読み取り gh issue create で起票する（Issue #655）。
+# 出力: JSON 配列 [{"index":N, "message":"...", "issue_num":NNN}, ...] (stdout)
+# 引数: なし（checkpoint から自動取得）
+step_tech_debt_issues() {
+  record_current_step "tech-debt-issues"
+  ensure_pythonpath || return 1
+
+  local pr_num issue_num
+  pr_num=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
+  issue_num="$(resolve_issue_num 2>/dev/null || echo "")"
+
+  # checkpoint から WARNING findings 取得
+  local mg_findings ac_findings pr_findings warning_findings
+  mg_findings=$(python3 -m twl.autopilot.checkpoint read --step merge-gate --field findings 2>/dev/null || echo "[]")
+  ac_findings=$(python3 -m twl.autopilot.checkpoint read --step ac-verify --field findings 2>/dev/null || echo "[]")
+  pr_findings=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field findings 2>/dev/null || echo "[]")
+  warning_findings=$(jq -s '[add // [] | .[] | select(.severity == "WARNING")]' \
+    <(echo "$mg_findings") <(echo "$ac_findings") <(echo "$pr_findings") 2>/dev/null || echo "[]")
+
+  local warning_count
+  warning_count=$(echo "$warning_findings" | jq 'length' 2>/dev/null || echo "0")
+
+  if [[ "$warning_count" -eq 0 ]]; then
+    echo "[]"
+    ok "tech-debt-issues" "WARNING findings なし — スキップ"
+    return 0
+  fi
+
+  # PR/Issue 参照文字列を構築
+  local pr_ref=""
+  [[ -n "$pr_num" ]] && pr_ref="PR #${pr_num}"
+  [[ -n "$issue_num" ]] && pr_ref="${pr_ref:+${pr_ref}, }Issue #${issue_num}"
+  [[ -n "$pr_ref" ]] && pr_ref=" (${pr_ref})"
+
+  local results=()
+  local idx=0
+  while IFS= read -r finding; do
+    idx=$((idx + 1))
+    local msg cat file line conf
+    msg=$(echo "$finding" | jq -r '.message' 2>/dev/null || echo "")
+    cat=$(echo "$finding" | jq -r '.category' 2>/dev/null || echo "unknown")
+    file=$(echo "$finding" | jq -r '.file // "-"' 2>/dev/null || echo "-")
+    line=$(echo "$finding" | jq -r '.line // "-"' 2>/dev/null || echo "-")
+    conf=$(echo "$finding" | jq -r '.confidence' 2>/dev/null || echo "-")
+
+    local title="[tech-debt] ${msg:0:80}"
+    local issue_body
+    issue_body="## Tech-debt Finding${pr_ref}
+
+**Category**: ${cat}
+**File**: ${file}:${line}
+**Confidence**: ${conf}
+
+### Finding
+${msg}
+
+### Source
+Detected by merge-gate specialist review. Deferred for future resolution.
+"
+
+    local created_num
+    created_num=$(gh issue create \
+      --title "$title" \
+      --body "$issue_body" \
+      --label "tech-debt" 2>/dev/null | grep -oE '[0-9]+$' || echo "")
+
+    if [[ -n "$created_num" ]]; then
+      results+=("{\"index\":${idx},\"message\":$(printf '%s' "$msg" | jq -Rs .),\"issue_num\":${created_num}}")
+      echo "  ✓ #${created_num}: ${msg:0:60}..." >&2
+    else
+      echo "  ⚠️ Issue 作成失敗: ${msg:0:60}..." >&2
+    fi
+  done < <(echo "$warning_findings" | jq -c '.[]' 2>/dev/null)
+
+  # JSON 配列として stdout に出力（LLM が Fix Report に組み込む）
+  if [[ ${#results[@]} -eq 0 ]]; then
+    echo "[]"
+  else
+    printf '[%s]' "$(IFS=,; echo "${results[*]}")"
+    echo
+  fi
+
+  ok "tech-debt-issues" "${#results[@]}/${warning_count} WARNING findings → tech-debt Issue 起票"
 }
 
 # --- pr-comment-final: 最終判定を PR コメントとして投稿 ---
@@ -1372,6 +1501,7 @@ main() {
     auto-merge)          step_auto_merge "$@" ;;
     pr-comment-findings) step_pr_comment_findings "$@" ;;
     pr-comment-fix-summary) step_pr_comment_fix_summary "$@" ;;
+    tech-debt-issues)   step_tech_debt_issues "$@" ;;
     pr-comment-final)    step_pr_comment_final "$@" ;;
     check)               step_check "$@" ;;
     quick-guard)         step_quick_guard "$@" ;;
@@ -1383,7 +1513,7 @@ main() {
       echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
       echo "         board-archive, ac-extract, arch-ref, change-id-resolve, next-step, prompt-compliance, ts-preflight," >&2
       echo "         phase-review, scope-judge, pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge," >&2
-      echo "         pr-comment-findings, pr-comment-fix-summary, pr-comment-final, check," >&2
+      echo "         pr-comment-findings, pr-comment-fix-summary, tech-debt-issues, pr-comment-final, check," >&2
       echo "         quick-guard, autopilot-detect, quick-detect, resolve-issue-num," >&2
       echo "         dispatch-info, llm-delegate, llm-complete, chain-status" >&2
       exit 1

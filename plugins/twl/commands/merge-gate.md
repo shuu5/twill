@@ -108,6 +108,21 @@ AI による自由形式変換は禁止。
 checkpoint 書き込み後、specialist findings を PR コメントとして投稿する。
 findings が 0 件でも投稿（証跡として「No findings」を記録）。
 
+投稿形式は以下の標準テンプレートに固定されている（Issue #655）:
+
+```
+## Merge-Gate Specialist Review — PR #NNN (Issue #NNN)
+### Gate Decision: **APPROVE** / **REJECT**
+### CRITICAL (修正必須)
+| # | Category | File:Line | Finding | Conf | Fix Commit |
+### WARNING (tech-debt 候補)
+| # | Category | File:Line | Finding | Conf | Disposition |
+### INFO
+| # | Category | Finding | Conf |
+```
+
+テンプレートの実装は `chain-runner.sh` の `step_pr_comment_findings` で管理する。
+
 ```bash
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-comment-findings
 ```
