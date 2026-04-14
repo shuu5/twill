@@ -24,7 +24,7 @@ if [[ -z "$PR_NUM" || "$PR_NUM" == "none" ]]; then
   python3 -m twl.autopilot.checkpoint write \
     --step merge-gate \
     --status REJECT \
-    --findings '[{"severity":"CRITICAL","category":"process","message":"PR が存在しない状態で merge-gate が実行されました。PR を作成してから再実行してください","confidence":100}]'
+    --findings '[{"severity":"CRITICAL","category":"chain-integrity-drift","message":"PR が存在しない状態で merge-gate が実行されました。PR を作成してから再実行してください","confidence":100}]'
   exit 1
 fi
 ```
