@@ -53,11 +53,10 @@ bash "$CR" ac-extract >/dev/null 2>&1 || true
 
 # 完了後の遷移
 if $QUICK; then
-  # Quick path (Issue #134): workflow-test-ready をスキップし、直接実装→
-  # ac-verify→merge-gate を実行する。ac-verify は chain-runner marker、
-  # merge-gate は LLM ステップ。
+  # Quick path: workflow-test-ready をスキップし、直接実装→ ac-verify を実行。
+  # ac-verify 完了後に停止し、orchestrator が workflow-pr-fix を inject する。
+  # merge-gate は workflow-pr-merge の責務（ADR-018 準拠、#671 修正）。
   bash "$CR" ac-verify >/dev/null 2>&1 || true
-  dry_run_emit_step merge-gate
 fi
 
 echo "[dry-run] workflow-setup completed (quick=$QUICK)"
