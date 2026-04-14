@@ -28,7 +28,7 @@ nohup bash autopilot-orchestrator.sh \
   --session "${AUTOPILOT_DIR}/session.json" \
   --project-dir "$PROJECT_DIR" \
   --autopilot-dir "$AUTOPILOT_DIR" \
-  ${REPOS_ARG:-} \
+  ${REPOS_ARG:+"$REPOS_ARG"} \
   >> "$_ORCH_LOG" 2>&1 &
 disown
 _ORCH_PID=$!

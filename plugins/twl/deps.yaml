@@ -2119,6 +2119,11 @@ commands:
     path: commands/autopilot-pilot-wakeup-loop.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: autopilot-orchestrator
+      - script: session-comm
+      - script: state-read
+      - script: state-write
     step_in:
       parent: co-autopilot
       step: "4"
