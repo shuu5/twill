@@ -135,6 +135,14 @@ session-comm.sh   # inject/介入（plugins/session/scripts/session-comm.sh）
 
 Issue 群の一括実装（Wave）を要求された場合:
 
+0. **CRG ヘルスチェック（MUST — Wave 開始前に毎回実行）**:
+   ```bash
+   _crg_path="${TWILL_REPO_ROOT}/main/.code-review-graph"
+   if [[ -L "$_crg_path" ]]; then
+     echo "⚠️ [CRG health] main/.code-review-graph がシンボリックリンクです。自己参照の可能性があります。rm -f '$_crg_path' で修復してください。" >&2
+   fi
+   ```
+   symlink が検出された場合はユーザーに報告し、修復を確認してから Wave を開始する。
 1. Issue 群の Wave 分割を計画（または `.autopilot/plan.yaml` から既存計画を継続）
 2. Wave N の Issue リストを確定し、ユーザーに提示して承認を得る
 3. `cld-spawn` で co-autopilot を起動（Wave N の Issue 群を spawn 時プロンプトに含める）

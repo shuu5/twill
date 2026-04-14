@@ -30,6 +30,8 @@ MCP ツール `build_or_update_graph_tool(full_rebuild=True)` を呼び出す。
 
 - CRG 未導入プロジェクトでエラーを出力してはならない
 - ビルド失敗でワークフロー全体を停止してはならない
+- `ln` コマンドを実行してはならない（symlink 作成禁止 — #674）
+- `.code-review-graph` ディレクトリ・ファイルを手動で作成・削除・移動・symlink 操作してはならない（#674）
 
 ## チェックポイント（MUST）
 

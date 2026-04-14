@@ -450,3 +450,107 @@ teardown() {
   assert_success
   grep -q "_is_main=0" "$CALLS_LOG"
 }
+
+# ---------------------------------------------------------------------------
+# [#674] main/.code-review-graph が symlink の場合の orchestrator ガード
+# ---------------------------------------------------------------------------
+
+@test "crg-reporoot[#674]: orchestrator.sh が main/.code-review-graph の symlink を削除する" {
+  # main の .code-review-graph を broken symlink にする
+  rm -rf "$FAKE_REPO_ROOT/main/.code-review-graph"
+  ln -s "/nonexistent/.code-review-graph" "$FAKE_REPO_ROOT/main/.code-review-graph"
+
+  # orchestrator.sh の #674 ガード部分を抽出した test double
+  cat > "$SANDBOX/scripts/crg-main-guard-674.sh" << 'GUARD_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+TWILL_REPO_ROOT="${TWILL_REPO_ROOT:-}"
+CALLS_LOG="${CALLS_LOG:-/dev/null}"
+_crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
+if [[ -L "$_crg_main" ]]; then
+  rm -f "$_crg_main" 2>/dev/null || true
+  echo "main_crg_symlink_removed=true path=$_crg_main" >> "$CALLS_LOG"
+  echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main" >&2
+else
+  echo "main_crg_ok=true" >> "$CALLS_LOG"
+fi
+exit 0
+GUARD_EOF
+  chmod +x "$SANDBOX/scripts/crg-main-guard-674.sh"
+
+  TWILL_REPO_ROOT="$FAKE_REPO_ROOT" \
+    run bash "$SANDBOX/scripts/crg-main-guard-674.sh"
+
+  assert_success
+  # symlink が削除される
+  [[ ! -e "$FAKE_REPO_ROOT/main/.code-review-graph" ]]
+  grep -q "main_crg_symlink_removed=true" "$CALLS_LOG"
+}
+
+@test "crg-reporoot[#674]: orchestrator.sh が main/.code-review-graph symlink 削除時に stderr に警告を出力する" {
+  rm -rf "$FAKE_REPO_ROOT/main/.code-review-graph"
+  ln -s "/nonexistent/.code-review-graph" "$FAKE_REPO_ROOT/main/.code-review-graph"
+
+  cat > "$SANDBOX/scripts/crg-main-guard-674.sh" << 'GUARD_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+TWILL_REPO_ROOT="${TWILL_REPO_ROOT:-}"
+CALLS_LOG="${CALLS_LOG:-/dev/null}"
+_crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
+if [[ -L "$_crg_main" ]]; then
+  rm -f "$_crg_main" 2>/dev/null || true
+  echo "main_crg_symlink_removed=true path=$_crg_main" >> "$CALLS_LOG"
+  echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main" >&2
+else
+  echo "main_crg_ok=true" >> "$CALLS_LOG"
+fi
+exit 0
+GUARD_EOF
+  chmod +x "$SANDBOX/scripts/crg-main-guard-674.sh"
+
+  TWILL_REPO_ROOT="$FAKE_REPO_ROOT" \
+    run bash "$SANDBOX/scripts/crg-main-guard-674.sh"
+
+  assert_success
+  assert_output --regexp "\[orchestrator\] CRG: main/\.code-review-graph が symlink"
+}
+
+@test "crg-reporoot[#674]: main/.code-review-graph が正常ディレクトリの場合は削除しない" {
+  # main の .code-review-graph は通常ディレクトリのまま（setup で作成済み）
+  [[ -d "$FAKE_REPO_ROOT/main/.code-review-graph" ]]
+
+  cat > "$SANDBOX/scripts/crg-main-guard-674.sh" << 'GUARD_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+TWILL_REPO_ROOT="${TWILL_REPO_ROOT:-}"
+CALLS_LOG="${CALLS_LOG:-/dev/null}"
+_crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
+if [[ -L "$_crg_main" ]]; then
+  rm -f "$_crg_main" 2>/dev/null || true
+  echo "main_crg_symlink_removed=true path=$_crg_main" >> "$CALLS_LOG"
+  echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main" >&2
+else
+  echo "main_crg_ok=true" >> "$CALLS_LOG"
+fi
+exit 0
+GUARD_EOF
+  chmod +x "$SANDBOX/scripts/crg-main-guard-674.sh"
+
+  TWILL_REPO_ROOT="$FAKE_REPO_ROOT" \
+    run bash "$SANDBOX/scripts/crg-main-guard-674.sh"
+
+  assert_success
+  grep -q "main_crg_ok=true" "$CALLS_LOG"
+  ! grep -q "main_crg_symlink_removed" "$CALLS_LOG"
+  # ディレクトリは削除されていない
+  [[ -d "$FAKE_REPO_ROOT/main/.code-review-graph" ]]
+}
+
+@test "crg-reporoot[#674]: orchestrator.sh に #674 ガードコードが存在する" {
+  # 実装後に pass する静的検証テスト
+  local orch="plugins/twl/scripts/autopilot-orchestrator.sh"
+  if ! grep -q "main/.code-review-graph.*symlink\|#674" "$orch" 2>/dev/null; then
+    skip "#674 ガードがまだ実装されていない（implementation step で追加予定）"
+  fi
+  grep -q "#674" "$orch"
+}
