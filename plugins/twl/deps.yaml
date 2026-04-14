@@ -2431,6 +2431,10 @@ scripts:
       - all-pass-check
       - pr-cycle-report
       - auto-merge
+      - pr-comment-findings
+      - pr-comment-fix-summary
+      - tech-debt-issues
+      - pr-comment-final
       - check
       - quick-guard
       - autopilot-detect

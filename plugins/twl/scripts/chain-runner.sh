@@ -1133,36 +1133,36 @@ step_pr_comment_findings() {
   body="## Merge-Gate Specialist Review — PR #${pr_num}${issue_ref}"$'\n\n'
   body+="### Gate Decision: ${gate_decision}"$'\n\n'
 
-  # CRITICAL section
+  # CRITICAL section（message の | をエスケープしてテーブル破損を防止）
   body+="### CRITICAL (修正必須)"$'\n'
   if [[ "$critical_count" -gt 0 ]]; then
     body+="| # | Category | File:Line | Finding | Conf | Fix Commit |"$'\n'
     body+="|---|----------|-----------|---------|------|------------|"$'\n'
-    body+=$(echo "$combined_findings" | jq -r '[.[] | select(.severity == "CRITICAL")] | to_entries | .[] | "| \(.key + 1) | \(.value.category) | \(.value.file // "-"):\(.value.line // "-") | \(.value.message[:100]) | \(.value.confidence) | — |"' 2>/dev/null || echo "| - | - | - | parse error | - | - |")
+    body+=$(echo "$combined_findings" | jq -r '[.[] | select(.severity == "CRITICAL")] | to_entries | .[] | "| \(.key + 1) | \(.value.category) | \(.value.file // "-"):\(.value.line // "-") | \(.value.message[:100] | gsub("[|]"; "&#124;")) | \(.value.confidence) | — |"' 2>/dev/null || echo "| - | - | - | parse error | - | - |")
     body+=$'\n'
   else
     body+="_なし_"$'\n'
   fi
   body+=$'\n'
 
-  # WARNING section
+  # WARNING section（message の | をエスケープしてテーブル破損を防止）
   body+="### WARNING (tech-debt 候補)"$'\n'
   if [[ "$warning_count" -gt 0 ]]; then
     body+="| # | Category | File:Line | Finding | Conf | Disposition |"$'\n'
     body+="|---|----------|-----------|---------|------|-------------|"$'\n'
-    body+=$(echo "$combined_findings" | jq -r '[.[] | select(.severity == "WARNING")] | to_entries | .[] | "| \(.key + 1) | \(.value.category) | \(.value.file // "-"):\(.value.line // "-") | \(.value.message[:100]) | \(.value.confidence) | pending |"' 2>/dev/null || echo "| - | - | - | parse error | - | - |")
+    body+=$(echo "$combined_findings" | jq -r '[.[] | select(.severity == "WARNING")] | to_entries | .[] | "| \(.key + 1) | \(.value.category) | \(.value.file // "-"):\(.value.line // "-") | \(.value.message[:100] | gsub("[|]"; "&#124;")) | \(.value.confidence) | pending |"' 2>/dev/null || echo "| - | - | - | parse error | - | - |")
     body+=$'\n'
   else
     body+="_なし_"$'\n'
   fi
   body+=$'\n'
 
-  # INFO section
+  # INFO section（message の | をエスケープしてテーブル破損を防止）
   body+="### INFO"$'\n'
   if [[ "$info_count" -gt 0 ]]; then
     body+="| # | Category | Finding | Conf |"$'\n'
     body+="|---|----------|---------|------|"$'\n'
-    body+=$(echo "$combined_findings" | jq -r '[.[] | select(.severity == "INFO")] | to_entries | .[] | "| \(.key + 1) | \(.value.category) | \(.value.message[:100]) | \(.value.confidence) |"' 2>/dev/null || echo "| - | - | parse error | - |")
+    body+=$(echo "$combined_findings" | jq -r '[.[] | select(.severity == "INFO")] | to_entries | .[] | "| \(.key + 1) | \(.value.category) | \(.value.message[:100] | gsub("[|]"; "&#124;")) | \(.value.confidence) |"' 2>/dev/null || echo "| - | - | parse error | - |")
     body+=$'\n'
   else
     body+="_なし_"$'\n'
@@ -1240,7 +1240,7 @@ step_tech_debt_issues() {
 
   if [[ "$warning_count" -eq 0 ]]; then
     echo "[]"
-    ok "tech-debt-issues" "WARNING findings なし — スキップ"
+    ok "tech-debt-issues" "WARNING findings なし — スキップ" >&2
     return 0
   fi
 
@@ -1254,9 +1254,9 @@ step_tech_debt_issues() {
   local idx=0
   while IFS= read -r finding; do
     idx=$((idx + 1))
-    local msg cat file line conf
+    local msg category file line conf
     msg=$(echo "$finding" | jq -r '.message' 2>/dev/null || echo "")
-    cat=$(echo "$finding" | jq -r '.category' 2>/dev/null || echo "unknown")
+    category=$(echo "$finding" | jq -r '.category' 2>/dev/null || echo "unknown")
     file=$(echo "$finding" | jq -r '.file // "-"' 2>/dev/null || echo "-")
     line=$(echo "$finding" | jq -r '.line // "-"' 2>/dev/null || echo "-")
     conf=$(echo "$finding" | jq -r '.confidence' 2>/dev/null || echo "-")
@@ -1265,7 +1265,7 @@ step_tech_debt_issues() {
     local issue_body
     issue_body="## Tech-debt Finding${pr_ref}
 
-**Category**: ${cat}
+**Category**: ${category}
 **File**: ${file}:${line}
 **Confidence**: ${conf}
 
@@ -1298,7 +1298,7 @@ Detected by merge-gate specialist review. Deferred for future resolution.
     echo
   fi
 
-  ok "tech-debt-issues" "${#results[@]}/${warning_count} WARNING findings → tech-debt Issue 起票"
+  ok "tech-debt-issues" "${#results[@]}/${warning_count} WARNING findings → tech-debt Issue 起票" >&2
 }
 
 # --- pr-comment-final: 最終判定を PR コメントとして投稿 ---
