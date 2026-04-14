@@ -32,6 +32,11 @@ def _load_plugin_context():
 
 
 def main():
+    # hello サブコマンド
+    if len(sys.argv) >= 2 and sys.argv[1] == 'hello':
+        print("Hello from TWiLL")
+        sys.exit(0)
+
     # audit サブコマンド（autopilot 実行履歴の永続化）
     if len(sys.argv) >= 2 and sys.argv[1] == 'audit':
         from twl.autopilot.audit import main as audit_main
