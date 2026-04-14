@@ -318,3 +318,57 @@ GHSTUB_FAIL_BODY
   ! grep -q "project item-edit" "$GH_LOG"
   ! grep -q "project item-archive" "$GH_LOG"
 }
+
+# ---------------------------------------------------------------------------
+# Scenario: 自動起票 Issue は Done に遷移しない
+#
+# WHEN merge-gate-execute.sh が primary issue (#193) の merge を実行する
+# THEN primary issue (#193) のみ Board Status が Done に更新され、
+#      自動起票 Issue (#200) は Done に遷移しない
+# ---------------------------------------------------------------------------
+
+@test "merge-gate-execute: 自動起票 Issue は primary issue merge で Done に遷移しない" {
+  create_issue_json 193 "merge-ready"
+  create_issue_json 200 "running"  # 自動起票 Issue（In Progress 放置を模擬）
+  export ISSUE=193 PR_NUMBER=42 BRANCH="feat/193-test"
+
+  local item_calls_log="$SANDBOX/item-add-calls.log"
+
+  cat > "$STUB_BIN/gh" <<GHSTUB_HEAD
+#!/usr/bin/env bash
+echo "\$*" >> "${GH_LOG}"
+GHSTUB_HEAD
+  cat >> "$STUB_BIN/gh" <<GHSTUB_BODY
+case "\$*" in
+  *"pr merge"*)
+    exit 0 ;;
+  *"issue view"*)
+    echo "CLOSED" ;;
+  *"project list"*)
+    echo '{"projects": [{"number": 5, "title": "loom-plugin-dev board"}]}' ;;
+  *"repo view"*"--json nameWithOwner"*)
+    echo '{"nameWithOwner": "shuu5/loom-plugin-dev", "owner": {"login": "shuu5"}}' ;;
+  *"api graphql"*)
+    echo '{"data": {"user": {"projectV2": {"id": "PVT_abc", "title": "loom-plugin-dev board", "repositories": {"nodes": [{"nameWithOwner": "shuu5/loom-plugin-dev"}]}}}}}' ;;
+  *"project item-add"*)
+    echo "\$*" >> "${item_calls_log}"
+    echo '{"id": "PVTI_item193"}' ;;
+  *"project field-list"*)
+    echo '{"fields": [{"id": "FIELD_STATUS", "name": "Status", "options": [{"id": "OPT_TODO", "name": "Todo"}, {"id": "OPT_DONE", "name": "Done"}]}]}' ;;
+  *"project item-edit"*)
+    echo '{}' ;;
+  *)
+    echo '{}' ;;
+esac
+GHSTUB_BODY
+  chmod +x "$STUB_BIN/gh"
+
+  run bash "$SANDBOX/scripts/merge-gate-execute.sh"
+
+  assert_success
+
+  # primary issue #193 の URL で item-add が呼ばれた
+  grep -q "issues/193" "$item_calls_log"
+  # 自動起票 Issue #200 の URL で item-add は呼ばれない（Done 遷移対象外）
+  ! grep -q "issues/200" "$item_calls_log"
+}

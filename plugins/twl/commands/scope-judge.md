@@ -29,10 +29,12 @@
 スコープ外かつ `severity in [CRITICAL, WARNING]` の finding について:
 
 ```
-gh issue create --title "tech-debt: ${finding.message}" \
+ISSUE_URL=$(gh issue create --title "tech-debt: ${finding.message}" \
   --body "## 検出元\nPR #${PR_NUM} のレビューで検出\n\n## 詳細\n${finding}" \
-  --label "tech-debt"
+  --label "tech-debt")
 ```
+
+作成成功時: 出力 URL（`https://github.com/<owner>/<repo>/issues/<N>` 形式）から issue_number を抽出し、`/twl:project-board-sync <issue_number>` を Skill tool で呼び出す（Board Status を "Todo" に設定。失敗は非ブロッキング）。
 
 ### Step 3: 結果報告
 
