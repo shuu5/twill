@@ -339,6 +339,13 @@ else
   PYTHONPATH_ENV=""
 fi
 
+# --- CLD_ENV_FILE 環境変数構築 (#652) ---
+# cld-spawn のデフォルトは autopilot Worker には効かないため、autopilot-launch.sh でも伝搬する
+CLD_ENV_FILE_ENV=""
+if [[ -n "${CLD_ENV_FILE:-}" ]]; then
+  CLD_ENV_FILE_ENV="CLD_ENV_FILE=$(printf '%q' "$CLD_ENV_FILE")"
+fi
+
 # --- コンテキスト引数構築 (Task 1.9) ---
 CONTEXT_ARGS=""
 if [[ -n "$CONTEXT" ]]; then
@@ -363,7 +370,7 @@ QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
 tmux new-window -d -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
-  "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} ${PYTHONPATH_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
+  "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} ${PYTHONPATH_ENV} ${CLD_ENV_FILE_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
 
 # --- クラッシュ検知フック設定 (Task 1.10) ---
 tmux set-option -t "$WINDOW_NAME" remain-on-exit on
