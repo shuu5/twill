@@ -14,9 +14,9 @@ FORCE="${1:-}"
 ISSUE_NUM=$(source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo "")
 ISSUE_LABELS=$(gh issue view "$ISSUE_NUM" --json labels -q '[.labels[].name]' 2>/dev/null || echo "[]")
 SKIP_PHASE_REVIEW=false
-for label in $(echo "$ISSUE_LABELS" | jq -r '.[]'); do
+while IFS= read -r label; do
   [[ "$label" == "scope/direct" || "$label" == "quick" ]] && SKIP_PHASE_REVIEW=true && break
-done
+done < <(echo "$ISSUE_LABELS" | jq -r '.[]')
 
 PHASE_REVIEW_STATUS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field status 2>/dev/null || echo "MISSING")
 

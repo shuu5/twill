@@ -8,10 +8,10 @@
 
 set -euo pipefail
 
-if [[ -f "$MANIFEST_FILE" ]]; then
+if [[ -n "${MANIFEST_FILE:-}" && -f "${MANIFEST_FILE:-}" ]]; then
   MISSING=$(comm -23 \
     <(grep -v '^#' "$MANIFEST_FILE" | grep -v '^[[:space:]]*$' | sed 's|^twl:twl:||' | sort -u) \
-    <(sort -u "$SPAWNED_FILE" 2>/dev/null || true))
+    <(sort -u "${SPAWNED_FILE:-/dev/null}" 2>/dev/null || true))
   if [[ -n "$MISSING" ]]; then
     echo "ERROR: 以下の specialist が未 spawn:"
     echo "$MISSING"

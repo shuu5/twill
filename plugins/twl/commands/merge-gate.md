@@ -95,7 +95,7 @@ all-pass-check checkpoint も同形式で読み込む。ac-verify checkpoint 不
 phase-review checkpoint は merge-gate の必須ゲートである（defense-in-depth、Issue #439）。
 
 ```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/merge-gate-check-phase-review.sh"
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/merge-gate-check-phase-review.sh" ${MERGE_GATE_FORCE:-}
 ```
 
 - `scope/direct` / `quick` ラベル付き Issue は phase-review チェックをスキップ（軽微変更のため除外）

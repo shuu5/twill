@@ -14,7 +14,7 @@ if ! SPECIALISTS=$(git diff --name-only origin/main 2>/dev/null | bash "${CLAUDE
 fi
 MANIFEST_FILE=$(mktemp /tmp/.specialist-manifest-merge-gate-XXXXXXXX.txt)
 chmod 600 "$MANIFEST_FILE"
-CONTEXT_ID=$(basename "$MANIFEST_FILE" .txt | sed 's/^\.specialist-manifest-//')
-SPAWNED_FILE="/tmp/.specialist-spawned-${CONTEXT_ID}.txt"
+SPAWNED_FILE=$(mktemp /tmp/.specialist-spawned-XXXXXXXX.txt)
+chmod 600 "$SPAWNED_FILE"
 echo "$SPECIALISTS" > "$MANIFEST_FILE"
 trap 'rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"' EXIT
