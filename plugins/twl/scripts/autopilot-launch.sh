@@ -352,7 +352,7 @@ if [[ -f "$_CLD_ENV_FILE" ]]; then
   CLD_ENV_FILE_ENV="CLD_ENV_FILE=$(printf '%q' "$_CLD_ENV_FILE")"
 fi
 if [[ -n "${CLAUDE_CODE_EFFORT_LEVEL:-}" ]]; then
-  EFFORT_ENV="CLAUDE_CODE_EFFORT_LEVEL=${CLAUDE_CODE_EFFORT_LEVEL}"
+  EFFORT_ENV="CLAUDE_CODE_EFFORT_LEVEL=$(printf '%q' "${CLAUDE_CODE_EFFORT_LEVEL}")"
 fi
 
 # --- TWL_AUDIT 環境変数構築 (Wave 23) ---
