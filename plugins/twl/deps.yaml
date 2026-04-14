@@ -711,6 +711,11 @@ refs:
     path: refs/baseline-input-validation.md
     description: "入力検証パターン（Zod/Pydantic）"
 
+  baseline-bash:
+    type: reference
+    path: refs/baseline-bash.md
+    description: "Bash スクリプト品質基準（character class, 変数スコープ, set -u 初期化）"
+
   # co-self-improve data catalogs (#179)
   test-scenario-catalog:
     type: reference
@@ -1855,6 +1860,7 @@ commands:
       - reference: baseline-coding-style
       - reference: baseline-security-checklist
       - reference: baseline-input-validation
+      - reference: baseline-bash
     description: "並列 specialist レビュー（動的レビュアー構築）"
 
   arch-phase-review:
@@ -1968,6 +1974,7 @@ commands:
       - reference: baseline-coding-style
       - reference: baseline-security-checklist
       - reference: baseline-input-validation
+      - reference: baseline-bash
     dispatch_mode: llm
     description: "マージ判定（動的レビュー → severity フィルタ → PASS/REJECT）"
 
