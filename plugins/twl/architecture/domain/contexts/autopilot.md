@@ -316,6 +316,63 @@ co-autopilot 障害時のみ手動パスを許可する。
 | Non-implementation | Issue 作成・設計・プロジェクト管理 | co-issue, co-project |
 | Spec Implementation | アーキテクチャドキュメント・ADR の直接 Write・コミット・PR 作成 | co-architect |
 
+## State Management
+
+### AUTOPILOT_DIR — state file ディレクトリの SSOT
+
+`AUTOPILOT_DIR` は state file ディレクトリの Single Source of Truth（SSOT）。
+
+**デフォルト値**: `$PROJECT_ROOT/.autopilot/`（`autopilot-init.sh` L9 で確立: `AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"`）
+
+**MUST**: `AUTOPILOT_DIR` は orchestrator 起動前に必ず `export` すること。未設定のまま Pilot や Worker が `python3 -m twl.autopilot.state` を実行すると、bare sibling 構成（`twill/.autopilot/`）で main worktree 配下（`twill/main/.autopilot/`）を参照してしまい state file が見つからないエラーになる場合がある（Issue #470）。
+
+**override 方法**: 起動前に `export AUTOPILOT_DIR=/custom/path` を設定する。test-target worktree での隔離実行（`AUTOPILOT_DIR=/tmp/test-autopilot`）など、main worktree の `.autopilot/` を汚染しない実行に使用する。
+
+**Pilot→Worker env 継承経路**: `autopilot-launch.sh` が `--autopilot-dir DIR` を受け取り（L84）、`AUTOPILOT_ENV="AUTOPILOT_DIR=${QUOTED_AUTOPILOT_DIR}"`（L309）を構築して `env AUTOPILOT_DIR=... cld ...`（L365-366）として Worker プロセスに渡す。Worker は `AUTOPILOT_DIR` を直接 export された状態で起動するため、`state read/write` が同一ディレクトリを参照する。
+
+**SSOT から導出されるパス**（`autopilot-init.sh` L10-12）:
+```bash
+ISSUES_DIR="$AUTOPILOT_DIR/issues"
+ARCHIVE_DIR="$AUTOPILOT_DIR/archive"
+SESSION_FILE="$AUTOPILOT_DIR/session.json"
+```
+
+## Recovery Procedures
+
+orchestrator が停止して chain 遷移が行われない場合、以下の正規手順のみ許可される（不変条件 M）:
+
+### 1. orchestrator 再起動
+
+```bash
+# trace ログで停止確認
+tail -20 "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log"
+
+# orchestrator を nohup で再起動
+mkdir -p "${AUTOPILOT_DIR}/trace"
+nohup bash autopilot-orchestrator.sh \
+  --plan "${AUTOPILOT_DIR}/plan.yaml" \
+  --phase "$PHASE_NUM" \
+  --session "${AUTOPILOT_DIR}/session.json" \
+  --project-dir "$PROJECT_DIR" \
+  --autopilot-dir "$AUTOPILOT_DIR" \
+  >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log" 2>&1 &
+disown
+```
+
+### 2. 手動 workflow inject
+
+orchestrator 再起動が困難な場合、Worker の tmux window に手動で次の workflow を inject する:
+
+```bash
+# Worker の current_step から次 workflow を解決（ADR-018: current_step terminal 検知ベース）
+python3 -m twl.autopilot.resolve_next_workflow --issue <ISSUE_NUM>
+
+# tmux で手動 inject（例: /twl:workflow-test-ready）
+tmux send-keys -t "<WORKER_WINDOW>" "/twl:workflow-test-ready" Enter
+```
+
+**禁止**: Pilot が Worker に直接 nudge して PR 作成 → マージを実行すること（不変条件 M）。chain を迂回した PR 作成は specialist review スキップを引き起こす。
+
 ## Component Mapping
 
 | 種別 | コンポーネント | 役割 |
@@ -326,6 +383,7 @@ co-autopilot 障害時のみ手動パスを許可する。
 | **workflow** | workflow-pr-verify | PR 検証（preflight → review → scope → test） |
 | **workflow** | workflow-pr-fix | PR 修正（fix → post-fix-verify → warning-fix） |
 | **workflow** | workflow-pr-merge | PRマージ（e2e → report → analysis → check → merge） |
+| **atomic** | autopilot-pilot-wakeup-loop | Phase ループ: orchestrator 起動・PHASE_COMPLETE 検知・stagnation 検知・Silence heartbeat |
 | **atomic** | autopilot-init | セッション初期化 |
 | **atomic** | autopilot-launch | Worker tmux window 起動 |
 | **atomic** | autopilot-poll | 状態ポーリング（Orchestrator の核） |

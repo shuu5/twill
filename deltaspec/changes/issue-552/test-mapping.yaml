@@ -1,0 +1,328 @@
+change_id: issue-552
+generated_at: "2026-04-15T00:00:00Z"
+test_framework: bash-scenario
+scenarios:
+  - id: "skill-md-body-line-count-under-200"
+    name: "行数制限の達成"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 38
+    requirement: "co-autopilot SKILL.md 本文行数の削減"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "SKILL.md 本文行数が 200 未満である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-md-has-valid-frontmatter"
+    name: "行数制限の達成 [edge: frontmatter 検出]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 38
+    requirement: "co-autopilot SKILL.md 本文行数の削減"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "SKILL.md [edge: frontmatter が --- で正しく囲まれている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-md-no-inline-loop-impl"
+    name: "行数制限の達成 [edge: インライン実装削除]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 38
+    requirement: "co-autopilot SKILL.md 本文行数の削減"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "SKILL.md [edge: nohup/ScheduleWakeup インライン実装が削除されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "step4-delegates-to-wakeup-loop"
+    name: "Step 4 委譲"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 46
+    requirement: "Step 4 の atomic 委譲形式への書き換え"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "Step 4 が autopilot-pilot-wakeup-loop atomic へ委譲している"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "step4-read-and-execute-form"
+    name: "Step 4 委譲 [edge: Read → 実行 形式]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 46
+    requirement: "Step 4 の atomic 委譲形式への書き換え"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "Step 4 [edge: Read → 実行 形式が記述されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "step45-atomic-delegation"
+    name: "Step 4.5 形式"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 54
+    requirement: "Step 4.5 の atomic 委譲形式への統一"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "Step 4.5 に autopilot-phase-sanity と autopilot-pilot-precheck の委譲が記述されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "step45-no-narrative-impl"
+    name: "Step 4.5 形式 [edge: narrative 削除]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 54
+    requirement: "Step 4.5 の atomic 委譲形式への統一"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "Step 4.5 [edge: 委譲形式のみで narrative インライン実装が残っていない]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "wakeup-loop-phase-complete-detection"
+    name: "PHASE_COMPLETE 検知"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 8
+    requirement: "autopilot-pilot-wakeup-loop atomic の新規作成"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot-pilot-wakeup-loop に PHASE_COMPLETE 検知ロジックが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "wakeup-loop-stagnation-detection"
+    name: "stagnation 検知"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 12
+    requirement: "autopilot-pilot-wakeup-loop atomic の新規作成"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot-pilot-wakeup-loop に stagnation 検知と session-comm.sh inject-file が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "wakeup-loop-stagnate-sec-default"
+    name: "stagnation 検知 [edge: デフォルト 900 秒]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 12
+    requirement: "autopilot-pilot-wakeup-loop atomic の新規作成"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot-pilot-wakeup-loop [edge: AUTOPILOT_STAGNATE_SEC デフォルト 900 秒が明記されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "wakeup-loop-silence-heartbeat"
+    name: "Silence heartbeat"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 16
+    requirement: "autopilot-pilot-wakeup-loop atomic の新規作成"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot-pilot-wakeup-loop に Silence heartbeat（tmux capture-pane + input_waiting_detected）が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "wakeup-loop-silence-threshold-5min"
+    name: "Silence heartbeat [edge: 5 分閾値]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 16
+    requirement: "autopilot-pilot-wakeup-loop atomic の新規作成"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot-pilot-wakeup-loop [edge: Silence heartbeat 5 分（300 秒）閾値が明記されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "wakeup-loop-max-wait-mode"
+    name: "状況精査モード"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 20
+    requirement: "autopilot-pilot-wakeup-loop atomic の新規作成"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot-pilot-wakeup-loop に 状況精査モード（MAX_WAIT_MINUTES 30 分）が定義されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "wakeup-loop-terminal-state-check"
+    name: "状況精査モード [edge: terminal 状態判定]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 20
+    requirement: "autopilot-pilot-wakeup-loop atomic の新規作成"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot-pilot-wakeup-loop [edge: terminal 状態 Worker の判定ロジックが記述されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-wakeup-loop-registered"
+    name: "deps.yaml 整合性"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 28
+    requirement: "deps.yaml への autopilot-pilot-wakeup-loop 登録"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "deps.yaml に autopilot-pilot-wakeup-loop が atomics として登録されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-wakeup-loop-spawnable-by-controller"
+    name: "deps.yaml 整合性 [edge: spawnable_by controller]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 28
+    requirement: "deps.yaml への autopilot-pilot-wakeup-loop 登録"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "deps.yaml autopilot-pilot-wakeup-loop [edge: spawnable_by に controller が含まれている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-co-autopilot-calls-wakeup-loop"
+    name: "deps.yaml 整合性 [edge: co-autopilot.calls 追記]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 28
+    requirement: "deps.yaml への autopilot-pilot-wakeup-loop 登録"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "deps.yaml co-autopilot.calls に autopilot-pilot-wakeup-loop [edge: atomic エントリが追加されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-valid"
+    name: "deps.yaml 整合性 [edge: 有効な YAML]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 28
+    requirement: "deps.yaml への autopilot-pilot-wakeup-loop 登録"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "deps.yaml [edge: 有効な YAML として解析できる]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-md-recovery-procedures"
+    name: "復旧手順の外部化"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 62
+    requirement: "autopilot.md への documentation 移動"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot.md に Recovery Procedures セクションが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-md-orchestrator-restart"
+    name: "復旧手順の外部化 [edge: orchestrator 再起動]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 62
+    requirement: "autopilot.md への documentation 移動"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot.md [edge: orchestrator 再起動手順が記載されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "autopilot-md-manual-inject"
+    name: "復旧手順の外部化 [edge: 手動 inject]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 62
+    requirement: "autopilot.md への documentation 移動"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "autopilot.md [edge: 手動 workflow inject 手順が記載されている]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-md-link-to-autopilot-md"
+    name: "SKILL.md のリンク残置"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 67
+    requirement: "autopilot.md への documentation 移動"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "SKILL.md に autopilot.md へのリンクが存在する（移動済みセクションの参照）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "twl-check-passes"
+    name: "ツールチェーン通過"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 74
+    requirement: "twl ツールチェーン全通過"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "twl --check がエラーなく通過する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "wakeup-loop-file-exists"
+    name: "ツールチェーン通過 [edge: ファイル存在]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 74
+    requirement: "twl ツールチェーン全通過"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "twl --check [edge: commands/autopilot-pilot-wakeup-loop.md がファイルとして存在する]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "deps-yaml-wakeup-loop-path-matches"
+    name: "ツールチェーン通過 [edge: deps.yaml path 整合性]"
+    spec_file: "specs/co-autopilot-refactor.md"
+    spec_line: 74
+    requirement: "twl ツールチェーン全通過"
+    test_file: "plugins/twl/tests/scenarios/co-autopilot-refactor.test.sh"
+    test_name: "deps.yaml autopilot-pilot-wakeup-loop [edge: path フィールドが実ファイルと一致する]"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

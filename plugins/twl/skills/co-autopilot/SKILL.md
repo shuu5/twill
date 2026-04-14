@@ -87,125 +87,19 @@ co-autopilot は su-observer の存在を前提とせず動作する。su-observ
 
 ## Step 4: Phase ループ（orchestrator 委譲）
 
-`autopilot-orchestrator.sh` で Phase 実行を委譲。Pilot の Bash context 外で持続実行するため **nohup/disown** を使用すること（不変条件 M — Pilot timeout/cancel による chain 停止防止）。`--session` には `$AUTOPILOT_DIR` を使った絶対パスを指定すること（相対パス・セッション ID 直接渡しは不可）:
-
-```bash
-mkdir -p "${AUTOPILOT_DIR}/trace"
-_ORCH_LOG="${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log"
-nohup bash autopilot-orchestrator.sh \
-  --plan "${AUTOPILOT_DIR}/plan.yaml" \
-  --phase "$PHASE_NUM" \
-  --session "${AUTOPILOT_DIR}/session.json" \
-  --project-dir "$PROJECT_DIR" \
-  --autopilot-dir "$AUTOPILOT_DIR" \
-  ${REPOS_ARG:-} \
-  >> "$_ORCH_LOG" 2>&1 &
-disown
-_ORCH_PID=$!
-echo "[co-autopilot] orchestrator PID=${_ORCH_PID} 起動 (nohup) → ログ: ${_ORCH_LOG}" >&2
-```
-
-PHASE_COMPLETE 検知（ScheduleWakeup ベースの能動確認ループ）:
-
-orchestrator 起動後、Pilot は **ScheduleWakeup(300)** で 5 分間隔の wake-up サイクルを使い PHASE_COMPLETE を能動的に確認する。bash while ループではなく ScheduleWakeup を必ず使用すること（Bash タイムアウト回避）。
-
-**wake-up 時の確認手順（MUST）:**
-
-1. **PHASE_COMPLETE 確認**:
-   ```bash
-   grep -c "PHASE_COMPLETE" "$_ORCH_LOG" 2>/dev/null
-   ```
-   出力が `1` 以上 → PHASE_COMPLETE 受信として Step 4.5 へ進む。
-
-2. **未完了の場合 — Worker 状態確認**:
-   全 Worker の state file を読んで `status` と `updated_at` を確認する:
-   ```bash
-   python3 -m twl.autopilot.state read \
-     --autopilot-dir "$AUTOPILOT_DIR" \
-     --type issue --issue "<N>" --field status
-   python3 -m twl.autopilot.state read \
-     --autopilot-dir "$AUTOPILOT_DIR" \
-     --type issue --issue "<N>" --field updated_at
-   ```
-   `updated_at` が現在時刻から `AUTOPILOT_STAGNATE_SEC`（デフォルト 900 秒）以上古い Worker は **stagnation** とみなす。
-
-2.5. **Input-waiting 確認（MUST）**:
-   全 Worker の state file を読んで `input_waiting_detected` を確認する:
-   ```bash
-   python3 -m twl.autopilot.state read \
-     --autopilot-dir "$AUTOPILOT_DIR" \
-     --type issue --issue "<N>" --field input_waiting_detected
-   ```
-   値が非空なら以下を実行:
-   - `input_waiting_at` を読んで経過時間を計算する
-   - 経過時間 < 5 分: warn ログを残し、次の wake-up まで待機（自動復旧を期待）
-   - 経過時間 ≥ 5 分: `session-comm.sh inject-file` で状況確認メッセージを Worker に送信し、手動介入を促す
-   - 経過時間 ≥ 10 分: state に `escalation_requested=input_waiting_stall` を書き込み、su-observer の Monitor 介入を期待する
-
-3. **Stagnation 検知時**: stall 状態の Worker を特定してログ出力し、次の ScheduleWakeup をスケジュールする前に `session-comm.sh inject-file` 経由で回復信号を送信する。
-
-4. **次の wake-up をスケジュール（PHASE_COMPLETE 未検知の場合）**:
-   - 経過時間 < `MAX_WAIT_MINUTES`（30 分）: ScheduleWakeup(300) で再スケジュール
-   - 経過時間 ≥ `MAX_WAIT_MINUTES`: **状況精査モード**（下記）に入る
-
-**状況精査モード（タイムアウト後 MUST）:**
-
-30 分 (`MAX_WAIT_MINUTES`) を超過した場合、単純に再スケジュールせず以下を順番に確認する:
-
-1. 全 Worker の `status` を列挙（running / merge-ready / done / failed の件数）
-2. **全 Worker が terminal 状態**（merge-ready / done / failed のいずれか）の場合:
-   - PHASE_COMPLETE 相当として Step 4.5 へ進む（orchestrator からの signal を待たない）
-3. **stagnation Worker（`updated_at` が 15 分以上古い）が存在する**場合:
-   - `session-comm.sh inject-file` で詳細状況を送信して回復を試みる
-   - ScheduleWakeup(600) で 10 分の猶予をスケジュール
-4. **猶予後も stagnation が継続**する場合:
-   - 当該 Worker を failed として `python3 -m twl.autopilot.state write ... --set "status=failed"` で記録
-   - 残り Worker が全 terminal なら Step 4.5 へ進む
-
-orchestrator は JSON レポート（PHASE_COMPLETE）を trace ログに出力する。実装詳細（batch 分割・Worker 起動・ポーリング・merge-gate・skip 伝播 [不変条件 D]）は orchestrator が正典。Pilot LLM の責務は計画承認・retrospective・cross-issue 分析に限定。
-
-### Silence heartbeat（MUST）
-
-Pilot は ScheduleWakeup ごとに全 Worker の `updated_at` を追跡する。**全 Worker の `updated_at` が 5 分以上無変化かつ PHASE_COMPLETE 未検知**の場合、以下を実行する:
-
-1. 全 Worker window に対して `tmux capture-pane -t <window> -p -S -30` を実行する
-2. 取得した pane_output に input-waiting パターンを手動検査する:
-   - Menu UI: `Enter to select`、`↑/↓ to navigate`、`❯ <数字>.`
-   - Free-form: `よろしいですか[？?]`、`続けますか`、`進んでよいですか`、`[y/N]`
-3. input-waiting を検知 → 当該 Worker の state file に書き込む（orchestrator が停止している可能性への補完）:
-   ```bash
-   python3 -m twl.autopilot.state write \
-     --autopilot-dir "$AUTOPILOT_DIR" \
-     --type issue --issue "<N>" --role pilot \
-     --set "input_waiting_detected=<pattern_name>" \
-     --set "input_waiting_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-   ```
-4. input-waiting 未検知でも沈黙が継続 → su-observer escalate（state に `escalation_requested=silence_stall` を書き込み、su-observer の Monitor 介入を期待する）
-
-**閾値 5 分の根拠**: `AUTOPILOT_STAGNATE_SEC`（デフォルト 900 秒）の約半分。input-waiting は stagnation より早く検知したいため。
-
-<!-- NOTE: Pilot 用 atomic (autopilot-pilot-precheck, autopilot-pilot-rebase, autopilot-multi-source-verdict) 経由であれば、PR diff stat / AC spot-check 等の能動評価は許容される。設計原則 P1 (ADR-010) 参照。 -->
+`commands/autopilot-pilot-wakeup-loop.md` を Read → 実行（orchestrator 起動・PHASE_COMPLETE 検知・stagnation 検知・Silence heartbeat を atomic に委譲）。PHASE_COMPLETE 受信後 Step 4.5 へ進む。
 
 ### Step 4.5: Phase 完了サニティチェック（MUST）
 
-PHASE_COMPLETE 受信後、以下の順序で実行する（各 atomic の処理詳細は各 .md を正典とする）:
+PHASE_COMPLETE 受信後、以下を順次実行する:
 
-1. `commands/autopilot-phase-sanity.md` を Read → 実行（Issue close 状態 verify）
-2. `commands/autopilot-pilot-precheck.md` を Read → 実行（PR diff stat 削除確認 + AC spot-check）
-3. precheck が WARN (high-deletion) を出した場合 → `commands/autopilot-pilot-rebase.md` を Read → 実行（Pilot 介入 rebase）
-4. precheck / rebase の結果から再 verify が必要な場合 → `commands/autopilot-multi-source-verdict.md` を Read → 実行（multi-source 統合判断）
-5. `commands/autopilot-phase-postprocess.md` を Read → 実行（retrospective / cross-issue / self-improve ECC 照合）
+1. `commands/autopilot-phase-sanity.md` を Read → 実行
+2. `commands/autopilot-pilot-precheck.md` を Read → 実行（`PILOT_ACTIVE_REVIEW_DISABLE=1` 時はスキップ）
+3. precheck が WARN (high-deletion) 時 → `commands/autopilot-pilot-rebase.md` を Read → 実行
+4. 再 verify 必要時 → `commands/autopilot-multi-source-verdict.md` を Read → 実行
+5. `commands/autopilot-phase-postprocess.md` を Read → 実行
 
-`PILOT_ACTIVE_REVIEW_DISABLE=1` の場合、手順 2-4 はスキップされる（各 atomic 内で opt-out 処理）。
-
-TaskUpdate Phase P → completed。
-
-audit_snapshot でセッション状態を保全（audit 非アクティブ時は no-op）:
-```bash
-python3 -m twl.autopilot.audit snapshot \
-  --source-dir "$AUTOPILOT_DIR" \
-  --label "co-autopilot/${SESSION_ID}" 2>/dev/null || true
-```
+TaskUpdate Phase P → completed。`python3 -m twl.autopilot.audit snapshot ...` で状態保全（audit 非アクティブ時は no-op）。
 
 ## Step 5: 完了サマリー（orchestrator 委譲）
 
@@ -227,61 +121,15 @@ issue-{N}.json の status から自動判定:
 
 ## state file 解決ルール
 
-`AUTOPILOT_DIR` は state file ディレクトリの SSOT（Single Source of Truth）。
-
-**デフォルト値**: `$PROJECT_ROOT/.autopilot/`（`autopilot-init.sh` L9 で確立: `AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"`）
-
-**MUST**: `AUTOPILOT_DIR` は orchestrator 起動前に必ず `export` すること。未設定のまま Pilot や Worker が `python3 -m twl.autopilot.state` を実行すると、bare sibling 構成（`twill/.autopilot/`）で main worktree 配下（`twill/main/.autopilot/`）を参照してしまい state file が見つからないエラーになる場合がある（Issue #470）。
-
-**override 方法**: 起動前に `export AUTOPILOT_DIR=/custom/path` を設定する。test-target worktree での隔離実行（`AUTOPILOT_DIR=/tmp/test-autopilot`）など、main worktree の `.autopilot/` を汚染しない実行に使用する。
-
-**Pilot→Worker env 継承経路**: `autopilot-launch.sh` が `--autopilot-dir DIR` を受け取り（L84）、`AUTOPILOT_ENV="AUTOPILOT_DIR=${QUOTED_AUTOPILOT_DIR}"`（L309）を構築して `env AUTOPILOT_DIR=... cld ...`（L365-366）として Worker プロセスに渡す。Worker は `AUTOPILOT_DIR` を直接 export された状態で起動するため、`state read/write` が同一ディレクトリを参照する。
-
-**SSOT から導出されるパス**（`autopilot-init.sh` L10-12）:
-```bash
-ISSUES_DIR="$AUTOPILOT_DIR/issues"
-ARCHIVE_DIR="$AUTOPILOT_DIR/archive"
-SESSION_FILE="$AUTOPILOT_DIR/session.json"
-```
+→ [`architecture/domain/contexts/autopilot.md` — State Management セクション](../architecture/domain/contexts/autopilot.md#state-management) を参照。
 
 ## 不変条件
 
-不変条件 A〜M の正典は `plugins/twl/architecture/domain/contexts/autopilot.md`（A=状態一意, B=Worktree 削除 Pilot 専任, C=Worker マージ禁止, D=fail skip 伝播, E=merge-gate リトライ最大1, F=merge 失敗時 rebase 禁止, G=クラッシュ検知, H=deps.yaml 変更排他, I=循環依存拒否, J=merge 前 base drift 検知, K=Pilot 実装禁止, L=autopilot マージ実行責務, M=chain 遷移は orchestrator/手動 inject のみ）。本文中の ID 参照のみが各 Step の制約根拠。
+→ [`architecture/domain/contexts/autopilot.md` — Constraints セクション](../architecture/domain/contexts/autopilot.md#constraints) を参照（不変条件 A〜M の正典）。本文中の ID 参照が各 Step の制約根拠。
 
-不変条件 C enforcement 箇所: `plugins/twl/skills/workflow-pr-merge/SKILL.md` 禁止事項セクション + `plugins/twl/scripts/autopilot-launch.sh` 起動コンテキスト参照。
+## chain 停止時の復旧手順
 
-## chain 停止時の復旧手順（MUST）
-
-orchestrator が停止して chain 遷移が行われない場合、以下の正規手順のみ許可される（不変条件 M）:
-
-### 1. orchestrator 再起動
-```bash
-# trace ログで停止確認
-cat "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log" | tail -20
-
-# orchestrator を nohup で再起動（Step 4 のコマンドを再実行）
-mkdir -p "${AUTOPILOT_DIR}/trace"
-nohup bash autopilot-orchestrator.sh \
-  --plan "${AUTOPILOT_DIR}/plan.yaml" \
-  --phase "$PHASE_NUM" \
-  --session "${AUTOPILOT_DIR}/session.json" \
-  --project-dir "$PROJECT_DIR" \
-  --autopilot-dir "$AUTOPILOT_DIR" \
-  >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log" 2>&1 &
-disown
-```
-
-### 2. 手動 workflow inject
-orchestrator 再起動が困難な場合、Worker の tmux window に手動で次の workflow を inject する:
-```bash
-# Worker の current_step から次 workflow を解決（ADR-018: current_step terminal 検知ベース）
-python3 -m twl.autopilot.resolve_next_workflow --issue <ISSUE_NUM>
-
-# tmux で手動 inject（例: /twl:workflow-test-ready）
-tmux send-keys -t "<WORKER_WINDOW>" "/twl:workflow-test-ready" Enter
-```
-
-**禁止**: Pilot が Worker に直接 nudge して PR 作成 → マージを実行すること（不変条件 M）。chain を迂回した PR 作成は specialist review スキップを引き起こす。
+→ [`architecture/domain/contexts/autopilot.md` — Recovery Procedures セクション](../architecture/domain/contexts/autopilot.md#recovery-procedures) を参照（不変条件 M）。
 
 ## Emergency Bypass
 

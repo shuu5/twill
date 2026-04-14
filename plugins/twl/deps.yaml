@@ -167,8 +167,10 @@ skills:
       - atomic: autopilot-launch
       - atomic: autopilot-poll
       - atomic: autopilot-phase-execute
-      - atomic: autopilot-phase-sanity
+      - atomic: autopilot-pilot-wakeup-loop
         step: "4"
+      - atomic: autopilot-phase-sanity
+        step: "4.5"
       - atomic: autopilot-pilot-precheck
         step: "4.51"
       - atomic: autopilot-pilot-rebase
@@ -2112,6 +2114,21 @@ commands:
       - reference: ref-dci
     description: "Phase Issue ループ実行（launch → poll → merge-gate → health-check）"
 
+  autopilot-pilot-wakeup-loop:
+    type: atomic
+    path: commands/autopilot-pilot-wakeup-loop.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: autopilot-orchestrator
+      - script: session-comm
+      - script: state-read
+      - script: state-write
+    step_in:
+      parent: co-autopilot
+      step: "4"
+    description: "Phase ループ: orchestrator 起動・PHASE_COMPLETE 検知・stagnation 検知・Silence heartbeat（ScheduleWakeup ベース）"
+
   autopilot-phase-sanity:
     type: atomic
     refined_by: "ref-prompt-guide@2c7a62f2"
@@ -2121,7 +2138,7 @@ commands:
     can_spawn: []
     step_in:
       parent: co-autopilot
-      step: "4"
+      step: "4.5"
     description: "Phase 完了後の Issue close 状態サニティチェック (Pilot 側 layered defense)"
 
   autopilot-pilot-precheck:
