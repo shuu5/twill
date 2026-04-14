@@ -12,7 +12,7 @@ def _has_specs(change_dir: Path) -> bool:
     specs_dir = change_dir / "specs"
     if not specs_dir.is_dir():
         return False
-    return any(specs_dir.glob("*/spec.md"))
+    return any(specs_dir.glob("*/spec.md")) or any(specs_dir.glob("*.md"))
 
 
 def _build_status(change_dir: Path) -> dict:

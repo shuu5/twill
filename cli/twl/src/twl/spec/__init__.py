@@ -17,6 +17,7 @@ def main(argv: list[str] | None = None) -> None:
     # new
     p_new = sub.add_parser("new", help="Create a new change directory")
     p_new.add_argument("name", help="Change name (kebab-case)")
+    p_new.add_argument("--scope", help="Component scope for spec integration (e.g., plugins-twl, cli-twl)")
 
     # status
     p_status = sub.add_parser("status", help="Show artifact completion status")
@@ -55,7 +56,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.subcmd == "new":
         from .new import cmd_new
-        sys.exit(cmd_new(args.name))
+        sys.exit(cmd_new(args.name, scope=args.scope))
     elif args.subcmd == "status":
         from .status import cmd_status
         sys.exit(cmd_status(args.name, json_mode=args.json))

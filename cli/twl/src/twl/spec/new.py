@@ -54,7 +54,7 @@ def _init_deltaspec_config(deltaspec_dir: Path) -> None:
         )
 
 
-def cmd_new(name: str) -> int:
+def cmd_new(name: str, scope: str | None = None) -> int:
     if not _KEBAB_RE.match(name):
         print(
             f"Error: Change name must be kebab-case (lowercase letters, numbers, hyphens): {name}",
@@ -103,12 +103,13 @@ def cmd_new(name: str) -> int:
 
     m = _ISSUE_RE.match(name)
     issue_line = f"issue: {m.group(1)}\n" if m else ""
+    scope_line = f"scope: {scope}\n" if scope else ""
 
     change_dir.mkdir(parents=True)
     deltaspec_yaml = change_dir / ".deltaspec.yaml"
     deltaspec_yaml.write_text(
         f"schema: spec-driven\ncreated: {date.today().isoformat()}\n"
-        f"{issue_line}name: {name}\nstatus: pending\n",
+        f"{issue_line}{scope_line}name: {name}\nstatus: pending\n",
         encoding="utf-8",
     )
 

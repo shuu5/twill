@@ -773,7 +773,7 @@ class PhaseOrchestrator:
 
         def _do_archive(change_id: str) -> None:
             r = subprocess.run(
-                ["twl", "spec", "archive", "--yes", "--skip-specs", "--", change_id],
+                ["twl", "spec", "archive", "--yes", "--", change_id],
                 capture_output=True,
             )
             if r.returncode == 0:
