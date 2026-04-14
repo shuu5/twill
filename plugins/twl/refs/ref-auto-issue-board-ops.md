@@ -20,6 +20,7 @@ Board Status が **"Todo"** で追加されるべきである。
 | scope-judge（Deferred Issue） | `gh issue create` + `/twl:project-board-sync` | **Todo** |
 | warning-fix（未修正 WARNING） | `gh issue create` + `/twl:project-board-sync` | **Todo** |
 | prompt-audit-apply（FAIL Issue） | `gh issue create` + `/twl:project-board-sync` | **Todo** |
+| co-self-improve（from-observation） | `gh issue create` + `/twl:project-board-sync` | **Todo** |
 | workflow-issue-lifecycle | `issue-create` + `project-board-sync` (Step 6.5) | **Todo** |
 
 ## 既存の In Progress 放置 Issue を検出する手順

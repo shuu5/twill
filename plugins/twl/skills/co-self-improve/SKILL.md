@@ -131,7 +131,7 @@ workflow が完了（検出 0 件 or ユーザー停止 or タイムアウト）
 2. AskUserQuestion で「Issue draft 生成しますか?」（全件 / 一部 / なし）
 3. 承認時のみ `commands/issue-draft-from-observation.md` を呼ぶ
 4. draft をユーザーに見せて最終確認（MUST）
-5. 承認時のみ `gh issue create` で起票（label: `from-observation`, `ctx/observation` 必須）
+5. 承認時のみ `gh issue create` で起票（label: `from-observation`, `ctx/observation` 必須）。起票成功時: 出力 URL から issue_number を抽出し、`/twl:project-board-sync <issue_number>` を Skill tool で呼び出す（Board Status を "Todo" に設定。失敗は非ブロッキング）。
 
 ## 禁止事項（MUST NOT）
 
