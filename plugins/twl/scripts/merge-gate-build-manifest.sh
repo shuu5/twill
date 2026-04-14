@@ -5,10 +5,10 @@
 # このスクリプトは source で読み込むこと（変数を親シェルへ export するため）。
 #
 # 【注意】set -euo pipefail は意図的に省略。source スクリプトに set -e を付けると
-# 親シェルのエラーハンドリング設定を上書きするため（tech-debt #685）。
+# 親シェルのエラーハンドリング設定を上書きするため（tech-debt #689）。
 #
 # 【注意】trap EXIT は source コンテキストでは親シェルの EXIT に設定される（設計上意図的）。
-# 親シェル（merge-gate）終了時に一時ファイルをクリーンアップするため（tech-debt #686）。
+# 親シェル（merge-gate）終了時に一時ファイルをクリーンアップするため（tech-debt #690）。
 #
 # 呼び出し: source "${CLAUDE_PLUGIN_ROOT}/scripts/merge-gate-build-manifest.sh"
 
