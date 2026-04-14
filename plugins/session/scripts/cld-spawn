@@ -69,8 +69,8 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# --env-file 未指定時は CLD_ENV_FILE 環境変数をデフォルトとして使用
-ENV_FILE="${ENV_FILE:-${CLD_ENV_FILE:-}}"
+# --env-file 未指定時は CLD_ENV_FILE 環境変数、次に ~/.cld-env をデフォルトとして使用
+ENV_FILE="${ENV_FILE:-${CLD_ENV_FILE:-$HOME/.cld-env}}"
 # --env-file のチルダ展開（存在チェックは不要: 不在時は source が 2>/dev/null で無視）
 if [[ -n "$ENV_FILE" ]]; then
     ENV_FILE="${ENV_FILE/#\~/$HOME}"

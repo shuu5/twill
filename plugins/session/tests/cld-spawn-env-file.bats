@@ -188,19 +188,20 @@ _run_spawn() {
 # ---------------------------------------------------------------------------
 # Scenario 5: --env-file も CLD_ENV_FILE も未設定の場合
 # WHEN: --env-file 引数も CLD_ENV_FILE 環境変数も未指定で cld-spawn を実行する
-# THEN: 既存動作に変更なく、ランチャースクリプトに source 行が追加されない
+# THEN: ~/.cld-env をデフォルトとして LAUNCHER に source 行が追加される
 # ---------------------------------------------------------------------------
-@test "env-file: --env-file も CLD_ENV_FILE も未設定なら LAUNCHER に source 行が含まれない" {
+@test "env-file: --env-file も CLD_ENV_FILE も未設定なら ~/.cld-env をデフォルトとして LAUNCHER に source 行が含まれる" {
     unset CLD_ENV_FILE 2>/dev/null || true
     _run_spawn
     [[ "$status" -eq 0 ]]
     [[ -n "$LAUNCHER_CONTENT" ]]
-    # env file 用の source 行が LAUNCHER に含まれていない
-    # （通常の bash や cld の実行行は含まれうるが、ファイルのsourceは含まれない）
+    # ~/.cld-env をデフォルトとして source 行が LAUNCHER に含まれる
+    # （存在しない場合は 2>/dev/null で無視される）
     local env_source_lines
     env_source_lines=$(printf '%s\n' "$LAUNCHER_CONTENT" \
         | grep -E '^(source |[[:space:]]*\. )' \
         | grep -v '^#!/' \
         || true)
-    [[ -z "$env_source_lines" ]]
+    [[ -n "$env_source_lines" ]]
+    echo "$env_source_lines" | grep -q '\.cld-env'
 }
