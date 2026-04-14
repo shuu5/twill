@@ -1423,6 +1423,31 @@ main() {
   fi
   shift
 
+  # ============================================================
+  # Quick mode terminal guard (#671)
+  # ac-verify が terminal step (quick mode)。以降の merge 系ステップは
+  # workflow-pr-merge の責務。Worker が走り抜けても機械的に拒否する。
+  # ============================================================
+  local _post_ac_verify_steps="all-pass-check|auto-merge|pr-cycle-report|pr-comment-findings|pr-comment-fix-summary|pr-comment-final"
+  if [[ "$step" =~ ^($_post_ac_verify_steps)$ ]]; then
+    local _issue_num _is_quick _current_step
+    _issue_num="$(resolve_issue_num 2>/dev/null || echo "")"
+    if [[ -n "$_issue_num" ]]; then
+      _is_quick=$(python3 -m twl.autopilot.state read \
+        --autopilot-dir "$(resolve_autopilot_dir 2>/dev/null || echo ".autopilot")" \
+        --type issue --issue "$_issue_num" --field is_quick 2>/dev/null || echo "")
+      _current_step=$(python3 -m twl.autopilot.state read \
+        --autopilot-dir "$(resolve_autopilot_dir 2>/dev/null || echo ".autopilot")" \
+        --type issue --issue "$_issue_num" --field current_step 2>/dev/null || echo "")
+      if [[ "$_is_quick" == "true" && "$_current_step" == "ac-verify" ]]; then
+        echo "[chain-runner] GUARD: quick mode terminal step (ac-verify) を超えるステップ '$step' を拒否 (#671)" >&2
+        echo "[chain-runner] merge 系ステップは workflow-pr-merge が担当します。ここで停止してください。" >&2
+        trace_event "$step" "quick-terminal-guard-blocked"
+        return 0
+      fi
+    fi
+  fi
+
   trace_event "$step" "start"
 
   local _main_rc=0
