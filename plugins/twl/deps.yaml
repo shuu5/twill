@@ -2138,7 +2138,7 @@ commands:
     can_spawn: []
     step_in:
       parent: co-autopilot
-      step: "4"
+      step: "4.5"
     description: "Phase 完了後の Issue close 状態サニティチェック (Pilot 側 layered defense)"
 
   autopilot-pilot-precheck:
