@@ -223,8 +223,14 @@ _build_worker_prompt() {
     "【自律実行指示】" \
     "- 全 Step を中断なく自律的に完了すること" \
     "- 途中で AskUserQuestion を使用しないこと" \
+    "- /twl:issue-spec-review 完了後も停止せず、直ちに次のステップ（issue-review-aggregate）を実行すること" \
     "- エラー発生時は OUT/report.json に status: failed を書き込んで exit すること" \
     "- policies.json の設定に従い specialist review を実行すること" \
+    "" \
+    "【完了条件（MUST）】" \
+    "- 全ステップ完了後、または失敗時を問わず、必ず以下の絶対パスに report.json を書き込んでから停止すること" \
+    "- ${subdir}/OUT/report.json" \
+    "- このファイルを書き込まずに ❯ プロンプトを表示して停止することは禁止" \
     "" \
     "【policies.json 主要フィールド】" \
     "- max_rounds: ${max_rounds}" \
@@ -362,6 +368,9 @@ spawn_session() {
 wait_for_batch() {
   local -a batch_subdirs=("$@")
   local poll_count=0
+  local SESSION_SCRIPTS="${SCRIPTS_ROOT}/../../session/scripts"
+  # アイドル連続カウント（キー: window_name）
+  declare -A _wfb_idle_counts
 
   while true; do
     local all_done=true
@@ -377,14 +386,27 @@ wait_for_batch() {
           echo "[issue-lifecycle-orchestrator] ${subdir##*/}: ウィンドウ消失・report.json なし — フォールバック生成" >&2
           mkdir -p "${subdir}/OUT"
           _generate_fallback_report "$subdir" "window_lost"
-        elif "${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" check "$window_name" input-waiting 2>/dev/null; then
-          # Window 存在 + input-waiting → specialist 完了済みだが report.json 未書き出し (#647)
-          echo "[issue-lifecycle-orchestrator] ${subdir##*/}: input-waiting + report.json なし — フォールバック生成" >&2
-          mkdir -p "${subdir}/OUT"
-          _generate_fallback_report "$subdir" "input_waiting_no_report"
-          tmux kill-window -t "$window_name" 2>/dev/null || true
         else
-          all_done=false
+          # ウィンドウ生存中: session-state.sh state で input-waiting 検出 (#647)
+          local _wfb_session_state="processing"
+          if [[ -f "${SESSION_SCRIPTS}/session-state.sh" ]]; then
+            _wfb_session_state=$("${SESSION_SCRIPTS}/session-state.sh" state "$window_name" 2>/dev/null || echo "processing")
+          fi
+          if [[ "$_wfb_session_state" == "input-waiting" ]]; then
+            _wfb_idle_counts["$window_name"]=$(( ${_wfb_idle_counts["$window_name"]:-0} + 1 ))
+            if [[ "${_wfb_idle_counts["$window_name"]}" -ge 3 ]]; then
+              # 3ポーリング連続アイドル（≥30秒）→ specialist 完了済みだが report.json 未書き出しと判断
+              echo "[issue-lifecycle-orchestrator] ${subdir##*/}: input-waiting 検出 (${_wfb_idle_counts["$window_name"]}回連続) — fallback report.json 生成" >&2
+              mkdir -p "${subdir}/OUT"
+              _generate_fallback_report "$subdir" "input_waiting_no_report"
+              tmux kill-window -t "$window_name" 2>/dev/null || true
+            else
+              all_done=false
+            fi
+          else
+            _wfb_idle_counts["$window_name"]=0
+            all_done=false
+          fi
         fi
       fi
     done

@@ -132,6 +132,8 @@ mkdir -p "$PER_ISSUE_DIR/rounds/${round}"
 - `depth`: policies.depth（デフォルト: normal）
 - 結果を `rounds/<round>/findings.yaml` に書き込む
 
+**MUST**: Skill 返却後は findings テーブルをテキストのみで表示して `❯` 停止してはならない。Write ツールで `rounds/<round>/findings.yaml` を書き込み直ちに Step 4b に進むこと。
+
 #### 4b: aggregate
 
 `/twl:issue-review-aggregate` を Skill tool で呼び出す:
@@ -272,5 +274,6 @@ printf 'done\n' > "$PER_ISSUE_DIR/STATE"
 - N=1 ガード呼び出しを省略してはならない
 - STATE ファイルへの書き込みを省略してはならない
 - OUT/report.json の書き込みを省略してはならない（正常・異常どちらの終了でも必須）
+- `/twl:issue-spec-review` Skill 返却後にテキスト応答のみで `❯` 停止してはならない（Step 4b に直進すること）
 - 既存 Issue の title を変更してはならない
 - 既存 Issue のラベルを削除してはならない（追加のみ許可）
