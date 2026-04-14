@@ -199,6 +199,39 @@ def audit_status(project_root: Path | None = None) -> dict:
     }
 
 
+def audit_snapshot(
+    source_dir: Path | str,
+    label: str,
+    project_root: Path | None = None,
+) -> Path | None:
+    """Copy source_dir to .audit/<run-id>/<label>/ for persistence.
+
+    Returns the destination path, or None if audit is not active (no-op).
+    D1 compliant: audit.py does not know the internal structure of source_dir.
+    """
+    if not is_audit_active(project_root):
+        return None
+
+    audit_dir = resolve_audit_dir(project_root)
+    if audit_dir is None:
+        return None
+
+    source = Path(source_dir)
+    if not source.is_dir():
+        return None
+
+    # Validate label (same rules as run_id)
+    if not _VALID_RUN_ID_RE.match(label.replace("/", "_")):
+        raise ValueError(f"Invalid label {label!r}: use alphanumeric, hyphens, underscores, or slashes")
+
+    dest = audit_dir / label
+    dest.mkdir(parents=True, exist_ok=True)
+
+    import shutil
+    shutil.copytree(source, dest, dirs_exist_ok=True)
+    return dest
+
+
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
@@ -213,6 +246,10 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser("off", help="Stop audit session and write index.json")
     sub.add_parser("status", help="Show current audit status")
+
+    snap_p = sub.add_parser("snapshot", help="Copy directory to audit for persistence")
+    snap_p.add_argument("--source-dir", dest="source_dir", required=True, help="Directory to snapshot")
+    snap_p.add_argument("--label", required=True, help="Label for the snapshot (e.g. co-issue/1)")
 
     args = parser.parse_args(argv if argv is not None else sys.argv[1:])
 
@@ -245,6 +282,18 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print("active: false")
         return 0
+
+    if args.cmd == "snapshot":
+        try:
+            dest = audit_snapshot(args.source_dir, args.label)
+            if dest:
+                print(f"snapshot saved: {dest}")
+            else:
+                print("audit not active — snapshot skipped")
+            return 0
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
 
     parser.print_help()
     return 1
