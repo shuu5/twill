@@ -8,6 +8,8 @@
 
 set -euo pipefail
 
+: "${CLAUDE_PLUGIN_ROOT:?CLAUDE_PLUGIN_ROOT is not set. Run via chain-runner.sh or set the variable.}"
+
 ISSUE_NUM=$(source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true; resolve_issue_num 2>/dev/null || echo "")
 IMPL_PR=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE_NUM" --field implementation_pr 2>/dev/null || echo "")
 if [[ -n "$IMPL_PR" && "$IMPL_PR" != "null" ]]; then
