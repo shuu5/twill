@@ -137,31 +137,58 @@ def test_archive_missing_change(tmp_path, monkeypatch):
     assert rc == 1
 
 
-def test_archive_modified_appends_to_existing(tmp_path, monkeypatch, capsys):
+def test_archive_modified_replaces_matching_requirement(tmp_path, monkeypatch, capsys):
+    """MODIFIED replaces a matching requirement block (OpenSpec semantics)."""
     monkeypatch.chdir(tmp_path)
-    # Create existing spec first
     existing_dir = tmp_path / "deltaspec" / "specs" / "cap-a"
     existing_dir.mkdir(parents=True)
-    (existing_dir / "spec.md").write_text("## Requirements\n\n### Requirement: Existing\nOld content.\n")
+    # Target has Requirement: Foo — MODIFIED also has Requirement: Foo → replacement
+    (existing_dir / "spec.md").write_text("## Requirements\n\n### Requirement: Foo\nOld content.\n")
     make_change(tmp_path, "mychange", _SPEC_WITH_MODIFIED)
     rc = cmd_archive("mychange", yes=True)
     assert rc == 0
     content = (existing_dir / "spec.md").read_text()
-    assert "Old content." in content
-    assert "The system SHALL do foo updated." in content
+    assert "Old content." not in content  # old Foo replaced
+    assert "The system SHALL do foo updated." in content  # new Foo present
 
 
-def test_archive_added_and_modified_both_reflected(tmp_path, monkeypatch, capsys):
+def test_archive_modified_nonexistent_requirement_errors(tmp_path, monkeypatch, capsys):
+    """MODIFIED with non-matching requirement name → error (OpenSpec semantics)."""
+    monkeypatch.chdir(tmp_path)
+    existing_dir = tmp_path / "deltaspec" / "specs" / "cap-a"
+    existing_dir.mkdir(parents=True)
+    (existing_dir / "spec.md").write_text("## Requirements\n\n### Requirement: Existing\nOld content.\n")
+    make_change(tmp_path, "mychange", _SPEC_WITH_MODIFIED)  # has Requirement: Foo, not Existing
+    rc = cmd_archive("mychange", yes=True)
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "not found in target spec" in captured.err
+
+
+def test_archive_added_and_modified_on_nonexistent_target_errors(tmp_path, monkeypatch, capsys):
+    """ADDED + MODIFIED on non-existent target → error (OpenSpec: MODIFIED requires existing)."""
     monkeypatch.chdir(tmp_path)
     make_change(tmp_path, "mychange", _SPEC_WITH_ADDED_AND_MODIFIED)
     rc = cmd_archive("mychange", yes=True)
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "only ADDED requirements are allowed for new specs" in captured.err
+    # No file created (atomicity)
+    assert not (tmp_path / "deltaspec" / "specs" / "cap-a.md").exists()
+
+
+def test_archive_added_only_on_new_target_succeeds(tmp_path, monkeypatch, capsys):
+    """ADDED only on non-existent target → creates file with ADDED block only."""
+    monkeypatch.chdir(tmp_path)
+    make_change(tmp_path, "mychange", _SPEC_WITH_ADDED)
+    rc = cmd_archive("mychange", yes=True)
     assert rc == 0
-    # New specs default to flat format since #247
     target = tmp_path / "deltaspec" / "specs" / "cap-a.md"
     assert target.exists()
     content = target.read_text()
+    assert "## Requirements" in content
+    assert "## ADDED" not in content  # header replaced
     assert "The system SHALL do foo." in content
-    assert "The system SHALL do bar." in content
 
 
 def test_archive_cancel(tmp_path, monkeypatch, capsys):
@@ -203,28 +230,29 @@ def test_archive_flat_added_appends_to_existing_flat_spec(tmp_path, monkeypatch,
     assert "SHALL do foo" in content
 
 
-def test_archive_flat_modified_applies_to_existing_flat_spec(tmp_path, monkeypatch, capsys):
-    """Flat change spec with MODIFIED appends to existing flat baseline spec."""
+def test_archive_flat_modified_replaces_matching_requirement(tmp_path, monkeypatch, capsys):
+    """Flat MODIFIED replaces matching requirement (OpenSpec semantics)."""
     monkeypatch.chdir(tmp_path)
     existing = tmp_path / "deltaspec" / "specs" / "cap-a.md"
     existing.parent.mkdir(parents=True)
-    existing.write_text("## Requirements\n\n### Requirement: Old\nOld SHALL exist.\n")
+    # Target has Requirement: Bar — MODIFIED also has Requirement: Bar → replacement
+    existing.write_text("## Requirements\n\n### Requirement: Bar\nOld bar SHALL exist.\n")
     make_change_flat(tmp_path, "mychange", _SPEC_WITH_MODIFIED_BAR)
     rc = cmd_archive("mychange", yes=True)
     assert rc == 0
     content = existing.read_text()
-    assert "Old SHALL exist." in content  # existing content preserved (#248)
-    assert "The system SHALL do bar." in content  # modified content appended
+    assert "Old bar SHALL exist." not in content  # old Bar replaced
+    assert "The system SHALL do bar." in content  # new Bar present
 
 
-def test_archive_flat_modified_warns_when_no_baseline(tmp_path, monkeypatch, capsys):
-    """Flat change spec with MODIFIED warns when no baseline spec exists."""
+def test_archive_flat_modified_errors_when_no_baseline(tmp_path, monkeypatch, capsys):
+    """Flat MODIFIED on non-existent target → error (OpenSpec semantics)."""
     monkeypatch.chdir(tmp_path)
     make_change_flat(tmp_path, "mychange", _SPEC_WITH_MODIFIED)
     rc = cmd_archive("mychange", yes=True)
-    assert rc == 0
+    assert rc == 1
     captured = capsys.readouterr()
-    assert "skipped" in captured.err
+    assert "only ADDED requirements are allowed for new specs" in captured.err
 
 
 def test_archive_flat_removed_deletes_flat_spec(tmp_path, monkeypatch, capsys):
