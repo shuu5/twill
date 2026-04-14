@@ -192,13 +192,15 @@ Step 6 の `/twl:issue-create` 出力 URL（`https://github.com/<owner>/<repo>/i
 - issue_number: issue_url の末尾パスセグメント（`/issues/(\d+)` でマッチ）
 - 失敗時は `OUT/report.json` の `warnings_acknowledged` リストに warning エントリを追加（非ブロッキング）。STATE は変更しない
 
-### Step 7: 完了
+### Step 7: 完了（MUST — 最終ステップ）
+
+**report.json 書き込みは最終ステップとして必須。書き込み完了まで終了してはならない（MUST）。**
 
 ```bash
 printf 'done\n' > "$PER_ISSUE_DIR/STATE"
 ```
 
-`OUT/report.json` に以下を書き込む:
+`OUT/report.json` に以下を書き込む（**省略不可**）:
 ```json
 {
   "status": "done",
@@ -207,6 +209,13 @@ printf 'done\n' > "$PER_ISSUE_DIR/STATE"
   "findings_final": <最終 aggregate.yaml の内容>,
   "warnings_acknowledged": <WARNING findings のリスト>
 }
+```
+
+report.json 書き込み後、audit snapshot を実行する（audit 非アクティブ時は no-op）:
+```bash
+python3 -m twl.autopilot.audit snapshot \
+  --source-dir "$PER_ISSUE_DIR" \
+  --label "co-issue/$(basename "$PER_ISSUE_DIR")" 2>/dev/null || true
 ```
 
 ## STATE 遷移

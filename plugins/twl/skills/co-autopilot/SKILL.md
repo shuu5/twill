@@ -70,6 +70,8 @@ source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/python-env.sh"
 
 `commands/autopilot-init.md` を Read → 実行。出力: SESSION_ID, PHASE_COUNT, SESSION_STATE_FILE。
 
+**AUTOPILOT_DIR 一致確認（MUST）:** `autopilot-init` 実行前に、`AUTOPILOT_DIR` が `plan.yaml` と同じディレクトリを指していることを確認する。bare repo レイアウトでは `autopilot-plan.sh` が `.bare/` を検出して `main/.autopilot/` に plan.yaml を配置するため、Pilot も同じパスを使用すること。不一致はパストラバーサルエラーの原因になる (#660)。
+
 ## Step 3.5: su-observer からの監視受入
 
 co-autopilot は su-observer から spawn・監視される設計になっている（ADR-014 Decision 2）。
@@ -197,6 +199,13 @@ PHASE_COMPLETE 受信後、以下の順序で実行する（各 atomic の処理
 `PILOT_ACTIVE_REVIEW_DISABLE=1` の場合、手順 2-4 はスキップされる（各 atomic 内で opt-out 処理）。
 
 TaskUpdate Phase P → completed。
+
+audit_snapshot でセッション状態を保全（audit 非アクティブ時は no-op）:
+```bash
+python3 -m twl.autopilot.audit snapshot \
+  --source-dir "$AUTOPILOT_DIR" \
+  --label "co-autopilot/${SESSION_ID}" 2>/dev/null || true
+```
 
 ## Step 5: 完了サマリー（orchestrator 委譲）
 
