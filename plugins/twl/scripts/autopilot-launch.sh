@@ -339,11 +339,31 @@ else
   PYTHONPATH_ENV=""
 fi
 
-# --- CLD_ENV_FILE 環境変数構築 (#652) ---
-# cld-spawn のデフォルトは autopilot Worker には効かないため、autopilot-launch.sh でも伝搬する
+# --- CLD_ENV_FILE source + 環境変数構築 (#652, Wave 23 修正) ---
+# autopilot-launch.sh は tmux new-window + cld を直接起動するため、cld-spawn の
+# CLD_ENV_FILE 自動 source が効かない。ここで明示的に source し、中の変数
+# （CLAUDE_CODE_EFFORT_LEVEL 等）を env string に含める。
 CLD_ENV_FILE_ENV=""
-if [[ -n "${CLD_ENV_FILE:-}" ]]; then
-  CLD_ENV_FILE_ENV="CLD_ENV_FILE=$(printf '%q' "$CLD_ENV_FILE")"
+EFFORT_ENV=""
+_CLD_ENV_FILE="${CLD_ENV_FILE:-$HOME/.cld-env}"
+if [[ -f "$_CLD_ENV_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$_CLD_ENV_FILE"
+  CLD_ENV_FILE_ENV="CLD_ENV_FILE=$(printf '%q' "$_CLD_ENV_FILE")"
+fi
+if [[ -n "${CLAUDE_CODE_EFFORT_LEVEL:-}" ]]; then
+  EFFORT_ENV="CLAUDE_CODE_EFFORT_LEVEL=$(printf '%q' "${CLAUDE_CODE_EFFORT_LEVEL}")"
+fi
+
+# --- TWL_AUDIT 環境変数構築 (Wave 23) ---
+# audit hook（checkpoint コピー、state-log、specialist manifest コピー）が
+# Worker 内で動作するために TWL_AUDIT / TWL_AUDIT_DIR を伝搬する
+AUDIT_ENV=""
+if [[ "${TWL_AUDIT:-}" == "1" ]]; then
+  AUDIT_ENV="TWL_AUDIT=1"
+  if [[ -n "${TWL_AUDIT_DIR:-}" ]]; then
+    AUDIT_ENV="${AUDIT_ENV} TWL_AUDIT_DIR=$(printf '%q' "$TWL_AUDIT_DIR")"
+  fi
 fi
 
 # --- コンテキスト引数構築 (Task 1.9) ---
@@ -370,7 +390,7 @@ QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
 tmux new-window -d -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
-  "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} ${PYTHONPATH_ENV} ${CLD_ENV_FILE_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
+  "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} ${PYTHONPATH_ENV} ${CLD_ENV_FILE_ENV} ${EFFORT_ENV} ${AUDIT_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
 
 # --- クラッシュ検知フック設定 (Task 1.10) ---
 tmux set-option -t "$WINDOW_NAME" remain-on-exit on
