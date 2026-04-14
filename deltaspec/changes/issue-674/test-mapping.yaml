@@ -1,0 +1,118 @@
+change_id: issue-674
+generated_at: "2026-04-15T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "crg-auto-build-must-not-ln"
+    name: "LLM ステップで symlink 禁止ルールが明記されている"
+    spec_file: "specs/crg-symlink-guard.md"
+    spec_line: 7
+    requirement: "crg-auto-build LLM symlink 操作禁止"
+    test_file: "plugins/twl/tests/unit/crg-symlink-guard/crg-symlink-guard.bats"
+    test_name: "crg-auto-build[must-not]: MUST NOT セクションに ln コマンド禁止ルールが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: |
+      FUTURE STATE: crg-auto-build.md の MUST NOT セクションに ln 禁止ルールを
+      追加する実装が未完了。implementation step（Decision 1）で
+      plugins/twl/commands/crg-auto-build.md を修正後に PASS する想定。
+    notes:
+      - "implementation step で crg-auto-build.md に MUST NOT ルールを追加後にアクティブ化"
+      - "対応テスト: crg-auto-build[must-not]: MUST NOT セクションに ln コマンド禁止ルールが存在する"
+      - "対応テスト: crg-auto-build[must-not]: .code-review-graph の手動操作禁止ルールが存在する"
+
+  - id: "crg-auto-build-symlink-skip"
+    name: "LLM が壊れた symlink を検出した場合"
+    spec_file: "specs/crg-symlink-guard.md"
+    spec_line: 11
+    requirement: "crg-auto-build LLM symlink 操作禁止"
+    test_file: "plugins/twl/tests/unit/crg-symlink-guard/crg-symlink-guard.bats"
+    test_name: "crg-auto-build[symlink-skip]: Step 1 に .code-review-graph symlink 検出時スキップの記述がある"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: |
+      FUTURE STATE: crg-auto-build.md の MUST NOT セクション追加が前提。
+      既存の symlink スキップ記述（#532）は存在するが、LLM への明示禁止ルールは
+      実装ステップで追加される。静的解析テストは既存コンテンツを検証するため
+      部分的に PASS 可能。
+    notes:
+      - "crg-auto-build[symlink-skip]: Step 1 に symlink スキップ記述は既存コンテンツで PASS 可能"
+      - "crg-auto-build[symlink-skip]: symlink 検出時の終了理由 (#532) は既存コンテンツで PASS 可能"
+      - "MUST NOT セクションの ln 禁止テストは実装後にアクティブ化"
+
+  - id: "orchestrator-main-crg-symlink-delete"
+    name: "main worktree の .code-review-graph が symlink の場合"
+    spec_file: "specs/crg-symlink-guard.md"
+    spec_line: 19
+    requirement: "orchestrator main worktree CRG 自己参照防止チェック"
+    test_file: "plugins/twl/tests/unit/crg-symlink-guard/crg-symlink-guard.bats"
+    test_name: "crg-main-guard[symlink]: main CRG が symlink の場合に削除される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: |
+      test double (crg-main-symlink-check.sh) は期待する振る舞いを定義済み。
+      autopilot-orchestrator.sh への実装（Decision 2: CRG セクション冒頭への
+      main CRG symlink ガード追加）が完了すれば、static analysis テストも PASS する。
+      test double テスト自体は実装とは独立して実行可能（setup で生成される）。
+    notes:
+      - "test double テスト: crg-main-guard[symlink] は実装前から実行可能"
+      - "static テスト: crg-main-guard[static] は orchestrator.sh 実装後に PASS"
+      - "対象: plugins/twl/scripts/autopilot-orchestrator.sh L325 付近への追加"
+
+  - id: "orchestrator-main-crg-dir-noop"
+    name: "main worktree の .code-review-graph が正常ディレクトリの場合"
+    spec_file: "specs/crg-symlink-guard.md"
+    spec_line: 23
+    requirement: "orchestrator main worktree CRG 自己参照防止チェック"
+    test_file: "plugins/twl/tests/unit/crg-symlink-guard/crg-symlink-guard.bats"
+    test_name: "crg-main-guard[dir]: main CRG が正常ディレクトリの場合に削除されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+    notes:
+      - "test double テスト: crg-main-guard[dir] は実装前から実行可能"
+      - "正常ケースの冪等性検証"
+
+  - id: "su-observer-crg-health-symlink-warn"
+    name: "Wave 開始時に main CRG が symlink の場合"
+    spec_file: "specs/crg-symlink-guard.md"
+    spec_line: 33
+    requirement: "su-observer Wave 開始時 CRG ヘルスチェック"
+    test_file: "plugins/twl/tests/unit/crg-symlink-guard/crg-symlink-guard.bats"
+    test_name: "su-observer-crg-health[symlink]: main CRG が symlink の場合に警告を出力する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: |
+      FUTURE STATE: su-observer SKILL.md への CRG ヘルスチェック追加（Decision 3）が未完了。
+      test double (su-observer-crg-health.sh) で期待する振る舞いを定義済み。
+      test double テスト自体は実装とは独立して実行可能。
+      SKILL.md への実装後に static analysis テストも PASS する。
+    notes:
+      - "test double テスト: su-observer-crg-health[symlink] は実装前から実行可能"
+      - "static テスト: su-observer-crg-health[static] は SKILL.md 実装後に PASS"
+      - "対象: plugins/twl/skills/su-observer/SKILL.md への Wave 開始フック追加"
+
+  - id: "su-observer-crg-health-dir-silent"
+    name: "Wave 開始時に main CRG が正常ディレクトリの場合"
+    spec_file: "specs/crg-symlink-guard.md"
+    spec_line: 38
+    requirement: "su-observer Wave 開始時 CRG ヘルスチェック"
+    test_file: "plugins/twl/tests/unit/crg-symlink-guard/crg-symlink-guard.bats"
+    test_name: "su-observer-crg-health[dir]: main CRG が正常ディレクトリの場合に警告を出力しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+    notes:
+      - "test double テスト: su-observer-crg-health[dir] は実装前から実行可能"
+      - "サイレント正常終了の検証（stdout が空であること）"
