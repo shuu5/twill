@@ -1943,6 +1943,12 @@ commands:
       parent: workflow-pr-merge
       step: "8"
     calls:
+      - script: merge-gate-check-pr
+      - script: merge-gate-build-manifest
+      - script: merge-gate-check-spawn
+      - script: merge-gate-cross-pr-ac
+      - script: merge-gate-checkpoint-merge
+      - script: merge-gate-check-phase-review
       - script: autopilot-parser
       - script: tech-stack-detect
       - script: state-write
@@ -2683,6 +2689,46 @@ scripts:
     spawnable_by: [composite, atomic, workflow]
     can_spawn: []
     description: "observer-evaluator の出力 JSON を validation (引用 MUST 検証 + confidence クランプ)"
+
+  merge-gate-check-pr:
+    type: script
+    path: scripts/merge-gate-check-pr.sh
+    description: "PR 存在確認（merge-gate）: PR が存在しない場合は REJECT checkpoint を書き込んで exit 1"
+
+  merge-gate-build-manifest:
+    type: script
+    path: scripts/merge-gate-build-manifest.sh
+    calls:
+      - script: pr-review-manifest
+    description: "動的レビュアー構築（merge-gate）: MANIFEST_FILE / CONTEXT_ID / SPAWNED_FILE を設定する（source で読み込む）"
+
+  merge-gate-check-spawn:
+    type: script
+    path: scripts/merge-gate-check-spawn.sh
+    description: "spawn 完了確認（merge-gate）: 未 spawn specialist がある場合 ERROR + exit 1"
+
+  merge-gate-cross-pr-ac:
+    type: script
+    path: scripts/merge-gate-cross-pr-ac.sh
+    calls:
+      - script: resolve-issue-num
+      - script: checkpoint-write
+    description: "Cross-PR AC 検証（merge-gate）: implementation_pr のマージコミットを checkpoint に記録"
+
+  merge-gate-checkpoint-merge:
+    type: script
+    path: scripts/merge-gate-checkpoint-merge.sh
+    calls:
+      - script: checkpoint-read
+    description: "checkpoint 統合（merge-gate）: specialist / ac-verify / phase-review findings を jq で統合して stdout 出力"
+
+  merge-gate-check-phase-review:
+    type: script
+    path: scripts/merge-gate-check-phase-review.sh
+    calls:
+      - script: resolve-issue-num
+      - script: checkpoint-read
+    description: "phase-review 必須チェック（merge-gate）: phase-review 不在時は REJECT。scope/direct / quick ラベルはスキップ"
 
 # エージェント（C-3 で追加）
 agents:
