@@ -107,6 +107,8 @@ def resolve_audit_dir(project_root: Path | None = None) -> Path | None:
                 if not resolved.is_relative_to(root_resolved):
                     raise ValueError(f"audit_dir is outside project root: {resolved}")
                 return resolved
+    except ValueError:
+        raise
     except Exception:
         pass
     return None

@@ -150,12 +150,22 @@ class TestResolveAuditDir:
     def test_env_var_twl_audit_dir_returned(
         self, monkeypatch: pytest.MonkeyPatch, project_dir: Path
     ) -> None:
-        """WHEN TWL_AUDIT_DIR=/abs/path THEN resolve_audit_dir() が Path を返す"""
+        """WHEN TWL_AUDIT_DIR=<project 内パス> THEN resolve_audit_dir() が resolved Path を返す"""
         audit = _import_audit()
-        expected = "/abs/path/to/audit"
-        monkeypatch.setenv("TWL_AUDIT_DIR", expected)
+        expected = project_dir / "audit-session"
+        expected.mkdir()
+        monkeypatch.setenv("TWL_AUDIT_DIR", str(expected))
         result = audit.resolve_audit_dir(project_root=project_dir)
-        assert result == Path(expected)
+        assert result == expected.resolve()
+
+    def test_env_var_outside_project_raises(
+        self, monkeypatch: pytest.MonkeyPatch, project_dir: Path
+    ) -> None:
+        """WHEN TWL_AUDIT_DIR が project root 外 THEN ValueError を raise する"""
+        audit = _import_audit()
+        monkeypatch.setenv("TWL_AUDIT_DIR", "/tmp/evil-path")
+        with pytest.raises(ValueError, match="TWL_AUDIT_DIR is outside project root"):
+            audit.resolve_audit_dir(project_root=project_dir)
 
     def test_active_file_audit_dir_returned(
         self, monkeypatch: pytest.MonkeyPatch, project_dir: Path
@@ -184,11 +194,12 @@ class TestResolveAuditDir:
     ) -> None:
         """Edge case: TWL_AUDIT_DIR が .active より優先される"""
         audit = _import_audit()
-        env_path = "/env/path/audit"
-        monkeypatch.setenv("TWL_AUDIT_DIR", env_path)
+        env_dir = project_dir / "env-audit"
+        env_dir.mkdir()
+        monkeypatch.setenv("TWL_AUDIT_DIR", str(env_dir))
         _write_active(project_dir, run_id="other-run")
         result = audit.resolve_audit_dir(project_root=project_dir)
-        assert result == Path(env_path)
+        assert result == env_dir.resolve()
 
     def test_active_file_relative_audit_dir_resolved_to_absolute(
         self, monkeypatch: pytest.MonkeyPatch, project_dir: Path
