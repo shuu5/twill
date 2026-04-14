@@ -322,9 +322,18 @@ launch_worker() {
     echo "[orchestrator] Issue #${ISSUE}: worktree 作成完了: $worktree_dir" >&2
   fi
 
-  # CRG graph DB symlink（main の DB を参照、#532、#576、#605）
+  # CRG graph DB symlink（main の DB を参照、#532、#576、#605、#674）
   # main worktree 自身は除外（自己参照 symlink 防止）
   # realpath で正規化して比較（文字列比較だけでは symlink/相対パスで失敗する — #605）
+
+  # [#674] main/.code-review-graph が symlink になっていた場合は即座に削除（自己参照根絶）
+  # このチェックは worktree 判定より前に実行し、LLM が誤って symlink を作成した場合も修復する
+  local _crg_main_path="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
+  if [[ -L "$_crg_main_path" ]]; then
+    rm -f "$_crg_main_path" 2>/dev/null || true
+    echo "[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): $_crg_main_path" >&2
+  fi
+
   local _crg_main="${TWILL_REPO_ROOT%/}/main/.code-review-graph"
   local _crg_target="${worktree_dir%/}/.code-review-graph"
   local _real_wt _real_main
