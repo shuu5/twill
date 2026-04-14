@@ -992,6 +992,35 @@ step_ac_verify() {
 }
 
 # --- all-pass-check: 全パス判定 ---
+# --- record-pr: PR 作成直後に pr フィールドを state に書き込む (#668) ---
+# all-pass-check への一点集中を解消し、PR 番号を確実に記録する。
+# Worker が gh pr create 直後に呼ぶ。all-pass-check がスキップされても pr が記録される。
+step_record_pr() {
+  local issue_num
+  issue_num="$(resolve_issue_num)"
+  [[ -z "$issue_num" ]] && { ok "record-pr" "non-autopilot — スキップ"; return 0; }
+
+  ensure_pythonpath || { err "record-pr" "PYTHONPATH 設定不可"; return 1; }
+
+  local _pr_num _branch
+  _pr_num=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
+  _branch=$(git branch --show-current 2>/dev/null || echo "")
+
+  if [[ -z "$_pr_num" ]] || ! [[ "$_pr_num" =~ ^[0-9]+$ ]]; then
+    skip "record-pr" "PR 番号取得不可 — スキップ"
+    return 0
+  fi
+
+  if ! python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" \
+    --type issue --issue "$issue_num" --role worker \
+    --set "pr=$_pr_num" --set "branch=$_branch" >&2; then
+    err "record-pr" "state write 失敗"
+    return 1
+  fi
+
+  ok "record-pr" "PR #${_pr_num} を state に記録 (branch=${_branch})"
+}
+
 step_all_pass_check() {
   record_current_step "all-pass-check"
   # 引数: step_results を JSON 形式で受け取る（stdin or 引数）
@@ -1423,6 +1452,7 @@ main() {
     pr-test)             step_pr_test "$@" ;;
     ac-verify)           step_ac_verify "$@" ;;
     all-pass-check)      step_all_pass_check "$@" ;;
+    record-pr)           step_record_pr "$@" ;;
     pr-cycle-report)     step_pr_cycle_report "$@" ;;
     auto-merge)          step_auto_merge "$@" ;;
     pr-comment-findings) step_pr_comment_findings "$@" ;;
