@@ -4,14 +4,6 @@
 # per-issue dir 配下の各 subdir に対して /twl:workflow-issue-lifecycle を
 # tmux cld セッションで並列起動する。
 #
-# spec-review-orchestrator.sh のコードパターンを流用:
-#   - tmux new-window + cld セッション並列起動
-#   - MAX_PARALLEL バッチ制御
-#   - ポーリング完了検知（OUT/report.json の存在確認）
-#   - flock による window 名衝突回避
-#   - || continue による失敗局所化
-#   - Resume 対応（done スキップ / failed リセット）
-#
 # Usage:
 #   bash issue-lifecycle-orchestrator.sh --per-issue-dir <abs-path>
 #
@@ -131,9 +123,7 @@ fi
 
 echo "[issue-lifecycle-orchestrator] サブディレクトリ数: ${TOTAL}, MAX_PARALLEL: ${MAX_PARALLEL}"
 
-# ADR-017 IM-7: N=1 不変量は各 Worker（workflow-issue-lifecycle）が個別に
-# spec-review-session-init.sh 1 を呼び出すことで保証する。
-# orchestrator はセッション初期化を行わない（state file 競合防止）。
+# ADR-017 IM-7: N=1 不変量 — 各 Worker が spec-review-session-init.sh 1 を呼び出す（state file 競合防止）
 
 # =============================================================================
 # sid 抽出ユーティリティ
@@ -289,9 +279,7 @@ _spawn_tmux_window_with_prompt() {
   local subdir="$1" window_name="$2" prompt_file="$3"
   local SESSION_SCRIPTS="${SCRIPTS_ROOT}/../../session/scripts"
   echo "[issue-lifecycle-orchestrator] ${subdir##*/}: spawn (window=${window_name})" >&2
-  # TWL_AUDIT / TWL_AUDIT_DIR を export して cld-spawn 子プロセスに継承させる (Wave 23)
-  # cld-spawn は CLD_ENV_FILE を自動 source するが、TWL_AUDIT は ~/.cld-env に含まれないため明示的に export
-  # export はシェルグローバルに波及するが、orchestrator プロセス内で一貫して有効にする意図
+  # TWL_AUDIT を export して cld-spawn に継承（~/.cld-env 非掲載のため明示 export）— Wave 23
   if [[ "${TWL_AUDIT:-}" == "1" ]]; then
     export TWL_AUDIT
     [[ -n "${TWL_AUDIT_DIR:-}" ]] && export TWL_AUDIT_DIR
