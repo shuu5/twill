@@ -445,6 +445,15 @@ while [[ "$BATCH_START" -lt "$TOTAL" ]]; do
     tmux kill-window -t "$window_name" 2>/dev/null || true
   done
 
+  # audit_snapshot fallback: Worker が snapshot を書かなかった場合に orchestrator 側で保全
+  for subdir in "${local_batch[@]}"; do
+    if [[ "${TWL_AUDIT:-}" == "1" ]]; then
+      local _snap_label="co-issue/$(basename "$subdir")"
+      python3 -m twl.autopilot.audit snapshot \
+        --source-dir "$subdir" --label "$_snap_label" 2>/dev/null || true
+    fi
+  done
+
   echo "[issue-lifecycle-orchestrator] バッチ完了: ${COMPLETED}/${TOTAL} subdirs 処理済み"
 done
 

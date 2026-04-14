@@ -85,7 +85,13 @@ if [[ -n "$REPOS_JSON" ]]; then
 fi
 
 SESSION_ID=$(uuidgen | cut -c1-8)
-AUTOPILOT_DIR="${PROJECT_DIR}/.autopilot"
+# bare repo レイアウト検出: .bare/ が存在する場合、state ファイルは main worktree に配置 (#660)
+# PROJECT_DIR 自体は bare repo root のまま維持（orchestrator の worktree 作成パスに必要）
+if [[ -d "${PROJECT_DIR}/.bare" ]]; then
+  AUTOPILOT_DIR="${PROJECT_DIR}/main/.autopilot"
+else
+  AUTOPILOT_DIR="${PROJECT_DIR}/.autopilot"
+fi
 mkdir -p "$AUTOPILOT_DIR"
 PLAN_FILE="${AUTOPILOT_DIR}/plan.yaml"
 
