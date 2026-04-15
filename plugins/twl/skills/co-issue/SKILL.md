@@ -49,7 +49,20 @@ SESSION_DIR=`.controller-issue/<session-id>/`
 
 ### refine モードの場合
 
-`refine_mode=true` の場合、explore-summary チェックをスキップして Phase 2 refine フローへ直接進む。
+`refine_mode=true` の場合、explore-summary チェック**失敗での停止**はスキップする。ただし explore-summary が存在する場合は読み込んで補助情報として活用する:
+
+```bash
+# explore-summary があれば読み込み（refine では必須ではないが、あれば活用）
+for _n in <targets の各 Issue 番号>; do
+  if twl explore-link check "$_n" 2>/dev/null; then
+    mkdir -p ".controller-issue/${SESSION_ID}"
+    twl explore-link read "$_n" >> ".controller-issue/${SESSION_ID}/explore-summary.md"
+    echo "--- (Issue #${_n} explore-summary end) ---" >> ".controller-issue/${SESSION_ID}/explore-summary.md"
+  fi
+done
+```
+
+以降の Phase 2 で `.controller-issue/<session-id>/explore-summary.md` が存在すれば、改善点の特定に活用する。
 
 1. **既存 Issue body の読み込み**: Step 0 で取得した各 Issue の body・labels・title を確認
 2. **改善点の探索**: コードベース（Read/Grep/Glob）と architecture context を参照し、既存 Issue body の改善点を特定:
