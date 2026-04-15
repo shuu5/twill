@@ -49,6 +49,30 @@ done
 # session-state.sh が "Enter to select" / "承認しますか" / "[y/N]" を input-waiting と返す
 ```
 
+**hook ベース検知（プライマリ — #570）:**
+
+`.supervisor/events/input-wait-*` が存在する場合、即時 `[INPUT-WAIT]` として報告する:
+
+```bash
+# INPUT-WAIT: input-wait ファイル存在プライマリ検知
+EVENTS_DIR=".supervisor/events"
+IW_FOUND=false
+
+for iw_file in "${EVENTS_DIR}"/input-wait-* 2>/dev/null; do
+  if [[ -f "$iw_file" ]]; then
+    IW_FOUND=true
+    IW_SESSION=$(jq -r '.session_id // empty' "$iw_file" 2>/dev/null || echo "")
+    echo "[INPUT-WAIT] input-wait イベント検出: session=${IW_SESSION}（hook プライマリ）"
+  fi
+done
+
+# input-wait ファイル不在 → 既存 session-state.sh polling にフォールバック
+if [[ "$IW_FOUND" == "false" ]]; then
+  # 既存の session-state.sh state <window> polling を実行する
+  :
+fi
+```
+
 ---
 
 ## [PILOT-IDLE] — Pilot 停滞検知
@@ -132,6 +156,33 @@ check_stagnate() {
 }
 ```
 
+**hook ベース検知（プライマリ — #570）:**
+
+`.supervisor/events/heartbeat-*` が存在する場合、mtime を確認する。heartbeat ファイルが不在の場合のみ既存 polling にフォールバックする:
+
+```bash
+# STAGNATE: heartbeat mtime プライマリ検知
+STAGNATE_THRESHOLD="${AUTOPILOT_STAGNATE_SEC:-600}"
+NOW=$(date +%s)
+EVENTS_DIR=".supervisor/events"
+HB_FOUND=false
+
+for hb_file in "${EVENTS_DIR}"/heartbeat-* 2>/dev/null; do
+  [[ -f "$hb_file" ]] || continue
+  HB_FOUND=true
+  HB_MTIME=$(stat -c %Y "$hb_file" 2>/dev/null || echo "0")
+  HB_AGE=$(( NOW - HB_MTIME ))
+  if [[ $HB_AGE -gt $STAGNATE_THRESHOLD ]]; then
+    echo "[STAGNATE] heartbeat ${hb_file##*/} が ${HB_AGE}秒間更新されていません（hook プライマリ）"
+  fi
+done
+
+# heartbeat ファイル不在 → 既存 polling にフォールバック
+if [[ "$HB_FOUND" == "false" ]]; then
+  check_stagnate ".autopilot"  # 既存の check_stagnate 関数を呼び出す
+fi
+```
+
 ---
 
 ## [WORKERS] — worker window 出現・消失検知
@@ -176,6 +227,25 @@ check_workers() {
   echo "$current_workers" > "$snapshot_file"
 }
 ```
+
+**hook ベース補完（session-end — #570）:**
+
+`.supervisor/events/session-end-*` が存在する場合、Worker 消失の補完情報として追記する（読み出し後に個別削除）:
+
+```bash
+# WORKERS: session-end 補完検知（常時 polling と併用）
+EVENTS_DIR=".supervisor/events"
+
+for se_file in "${EVENTS_DIR}"/session-end-* 2>/dev/null; do
+  if [[ -f "$se_file" ]]; then
+    SE_SESSION=$(jq -r '.session_id // empty' "$se_file" 2>/dev/null || echo "")
+    echo "[WORKERS] session-end 検出: session=${SE_SESSION}（補完）"
+    rm -f "$se_file" 2>/dev/null || true  # 読み出し後に個別削除（SHALL）
+  fi
+done
+```
+
+**注意**: WORKERS チャンネルは `tmux list-windows` / `session-state.sh list --json` が常時プライマリ。session-end は消失確認の補完情報として使用する。
 
 ---
 
@@ -240,6 +310,36 @@ check_non_terminal() {
   fi
   return 0
 }
+```
+
+**hook ベース検知（プライマリ — #570）:**
+
+`.supervisor/events/skill-step-*` が存在する場合、JSON の `skill` フィールドから skill 完了パターンを確認する。skill-step ファイルが不在の場合のみ既存 polling にフォールバックする:
+
+```bash
+# NON-TERMINAL: skill-step 内容解析プライマリ検知
+NON_TERMINAL_THRESHOLD=120  # 2分
+NOW=$(date +%s)
+EVENTS_DIR=".supervisor/events"
+SS_FOUND=false
+
+for ss_file in "${EVENTS_DIR}"/skill-step-* 2>/dev/null; do
+  [[ -f "$ss_file" ]] || continue
+  SS_FOUND=true
+  SKILL_NAME=$(jq -r '.skill // empty' "$ss_file" 2>/dev/null || echo "")
+  SS_TIMESTAMP=$(jq -r '.timestamp // 0' "$ss_file" 2>/dev/null || echo "0")
+  if [[ -n "$SKILL_NAME" ]]; then
+    SS_AGE=$(( NOW - SS_TIMESTAMP ))
+    if [[ $SS_AGE -gt $NON_TERMINAL_THRESHOLD ]]; then
+      echo "[NON-TERMINAL] skill=${SKILL_NAME} が ${SS_AGE}秒前に実行されましたが chain が遷移していません（hook プライマリ）"
+    fi
+  fi
+done
+
+# skill-step ファイル不在 → 既存 session-comm.sh capture + grep にフォールバック
+if [[ "$SS_FOUND" == "false" ]]; then
+  check_non_terminal "$pilot_win"  # 既存の check_non_terminal 関数を呼び出す
+fi
 ```
 
 ---
