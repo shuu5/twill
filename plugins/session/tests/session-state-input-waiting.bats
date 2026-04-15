@@ -157,3 +157,35 @@ Enter to select · ↑/↓ to navigate"
     [[ "$status" -eq 0 ]]
     [[ "$output" == "input-waiting" ]]
 }
+
+# ---------------------------------------------------------------------------
+# Issue #708: "esc to interrupt" / "bypass permissions" の誤検知・検出テスト
+# ---------------------------------------------------------------------------
+@test "detect_state: esc to interrupt のみ表示 → processing (false positive 再現)" {
+    run_detect_state_with_capture \
+"esc to interrupt"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "processing" ]]
+}
+
+@test "detect_state: bypass permissions のみ表示 → input-waiting" {
+    run_detect_state_with_capture \
+"bypass permissions"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "input-waiting" ]]
+}
+
+@test "detect_state: esc to interrupt + Thinking 表示 → processing" {
+    run_detect_state_with_capture \
+"Thinking...
+esc to interrupt"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "processing" ]]
+}
+
+@test "detect_state: bypass permissions + esc to interrupt 同時表示 → input-waiting (bypass 優先)" {
+    run_detect_state_with_capture \
+"bypass permissions · esc to interrupt"
+    [[ "$status" -eq 0 ]]
+    [[ "$output" == "input-waiting" ]]
+}

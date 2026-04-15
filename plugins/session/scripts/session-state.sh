@@ -155,14 +155,16 @@ detect_state() {
             return
         fi
     done
-    # フォールバック: TUI のステータスバーパターンで input-waiting を検出
-    # "bypass permissions" または "esc to interrupt" が末尾にあり、
-    # かつ処理中インジケータ（Thinking, Working 等）がなければ input-waiting
-    if echo "$last_lines" | grep -q "bypass permissions\|esc to interrupt"; then
-        if ! echo "$captured" | grep -qP "Thinking|Working|Fiddle-faddling|Cooked for|Worked for"; then
-            echo "input-waiting"
-            return
-        fi
+    # フォールバック: TUI のステータスバーパターンで状態を検出
+    # "bypass permissions" → 権限承認プロンプト（genuinely input-waiting）
+    if echo "$last_lines" | grep -q "bypass permissions"; then
+        echo "input-waiting"
+        return
+    fi
+    # "esc to interrupt" → LLM 実行中（processing の証拠）
+    if echo "$last_lines" | grep -q "esc to interrupt"; then
+        echo "processing"
+        return
     fi
 
     # error: エラーパターンが末尾に存在（プロンプトが不在の場合のみ）
