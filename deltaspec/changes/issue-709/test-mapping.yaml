@@ -1,0 +1,283 @@
+change_id: issue-709
+generated_at: "2026-04-15T14:38:01Z"
+test_framework: bash
+scenarios:
+  # ==========================================================================
+  # Requirement: input-waiting debounce
+  # ==========================================================================
+
+  - id: "transient-false-positive-排除"
+    name: "transient false positive を排除する"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 6
+    requirement: "input-waiting debounce"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "debounce: sleep 5 が wait_for_batch() に実装されている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "transient-false-positive-排除-recheck"
+    name: "transient false positive を排除する（再確認呼び出し）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 6
+    requirement: "input-waiting debounce"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "debounce: wait_for_batch() に session-state.sh の再確認呼び出しが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "transient-false-positive-排除-order"
+    name: "transient false positive を排除する（sleep 順序）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 6
+    requirement: "input-waiting debounce"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "debounce: sleep 5 が inject_count インクリメントより前に存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "真の-input-waiting-受理"
+    name: "真の input-waiting を受理する"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 10
+    requirement: "input-waiting debounce"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "debounce: 再確認が input-waiting でも inject フロー継続パスが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # Requirement: inject 上限緩和
+  # ==========================================================================
+
+  - id: "inject-5回未満-継続"
+    name: "inject 5 回未満で継続する"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 17
+    requirement: "inject 上限緩和"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject 上限: inject_count -lt 5 の条件が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject-5回未満-継続-no-old-limit"
+    name: "inject 5 回未満で継続する（旧上限 -lt 3 不在）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 17
+    requirement: "inject 上限緩和"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject 上限 [edge]: inject_count -lt 3 （旧上限）が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject-5回到達-fallback"
+    name: "inject 5 回到達で fallback に移行する"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 21
+    requirement: "inject 上限緩和"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject exhausted: fallback report 生成呼び出しが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject-5回到達-log-5"
+    name: "inject 5 回到達（ログメッセージ上限値 /5）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 21
+    requirement: "inject 上限緩和"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject exhausted [edge]: ログメッセージの上限値が /5 になっている"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject-5回到達-log-no-3"
+    name: "inject 5 回到達（ログメッセージに旧上限 /3 不在）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 21
+    requirement: "inject 上限緩和"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject exhausted [edge]: ログメッセージに旧上限 /3 が含まれない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # Requirement: inject 間の progressive delay
+  # ==========================================================================
+
+  - id: "inject後-progressive-delay"
+    name: "inject 後に progressive delay が適用される"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 28
+    requirement: "inject 間の progressive delay"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "progressive delay: sleep $((5 * inject_count)) が wait_for_batch() に存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject後-progressive-delay-order"
+    name: "inject 後に progressive delay が適用される（sleep 順序）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 28
+    requirement: "inject 間の progressive delay"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "progressive delay: sleep が session-comm.sh inject 呼び出しの後に存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject後-progressive-delay-updated-count"
+    name: "inject 後に progressive delay が適用される（インクリメント後に sleep）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 28
+    requirement: "inject 間の progressive delay"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "progressive delay [edge]: inject_count インクリメント後に sleep が実行される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # Requirement: inject 直前の状態再確認
+  # ==========================================================================
+
+  - id: "inject直前-状態変化-スキップ"
+    name: "inject 直前に状態が変化していれば注入しない"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 35
+    requirement: "inject 直前の状態再確認"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject 前再確認: session-state.sh が session-comm.sh inject より前に呼ばれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject直前-状態変化-continue"
+    name: "inject 直前に状態が変化していれば注入しない（continue でスキップ）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 35
+    requirement: "inject 直前の状態再確認"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject 前再確認: continue でスキップするパスが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject直前-input-waiting-注入"
+    name: "inject 直前も input-waiting なら注入する"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 39
+    requirement: "inject 直前の状態再確認"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject 直前再確認: session-comm.sh inject 呼び出しが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject直前-独立チェック"
+    name: "inject 直前の状態再確認は debounce と独立している"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 39
+    requirement: "inject 直前の状態再確認"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject 直前再確認 [edge]: session-state.sh 呼び出しが 2 回以上存在する（debounce と直前確認）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ==========================================================================
+  # Requirement: inject メッセージ簡素化
+  # ==========================================================================
+
+  - id: "inject-メッセージ簡潔"
+    name: "inject メッセージが簡潔である"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 46
+    requirement: "inject メッセージ簡素化"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject メッセージ: \"処理を続行してください。\" が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject-メッセージ-分岐削除"
+    name: "inject メッセージが簡潔である（existing-issue.json 分岐削除）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 46
+    requirement: "inject メッセージ簡素化"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject メッセージ [edge]: existing-issue.json による分岐が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject-メッセージ-旧メッセージ不在"
+    name: "inject メッセージが簡潔である（旧詳細メッセージ不在）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 46
+    requirement: "inject メッセージ簡素化"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject メッセージ [edge]: 旧メッセージ（4b: issue-review-aggregate）が存在しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject-メッセージ-単一代入"
+    name: "inject メッセージが簡潔である（inject_msg 代入が 1 行のみ）"
+    spec_file: "specs/inject-resilience.md"
+    spec_line: 46
+    requirement: "inject メッセージ簡素化"
+    test_file: "plugins/twl/tests/scenarios/inject-resilience.test.sh"
+    test_name: "inject メッセージ [edge]: inject_msg の代入が 1 行のみ（分岐なし）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

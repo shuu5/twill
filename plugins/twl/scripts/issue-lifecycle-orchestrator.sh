@@ -378,13 +378,22 @@ wait_for_batch() {
           mkdir -p "${subdir}/OUT"
           _generate_fallback_report "$subdir" "window_lost"
         elif [[ "$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)" == "input-waiting" ]]; then
-          # Window 存在 + input-waiting → STATE ファイルを確認して判断 (#672)
+          # Window 存在 + input-waiting → debounce で transient false positive を排除 (#709)
+          sleep 5
+          local _recheck
+          _recheck=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
+          if [[ "$_recheck" != "input-waiting" ]]; then
+            all_done=false
+            continue
+          fi
+          # STATE ファイルを確認して判断 (#672)
           local state_file="${subdir}/STATE"
           local current_state=""
           [[ -f "$state_file" ]] && current_state=$(cat "$state_file" 2>/dev/null | tr -d '[:space:]')
           local inject_count_file="${subdir}/.inject_count"
           local inject_count=0
           [[ -f "$inject_count_file" ]] && inject_count=$(cat "$inject_count_file" 2>/dev/null | tr -d '[:space:]')
+          [[ "$inject_count" =~ ^[0-9]+$ ]] || inject_count=0
 
           if [[ "$current_state" == "done" || "$current_state" == "failed" || "$current_state" == "circuit_broken" ]]; then
             # terminal state → fallback 生成 + kill (#697)
@@ -393,24 +402,26 @@ wait_for_batch() {
             mkdir -p "${subdir}/OUT"
             _generate_fallback_report "$subdir" "$reason"
             tmux kill-window -t "$window_name" 2>/dev/null || true
-          elif [[ "$inject_count" -lt 3 ]]; then
-            # non-terminal + input-waiting → auto-inject で継続を促す (#672, #697)
+          elif [[ "$inject_count" -lt 5 ]]; then
+            # inject 直前再確認 — 状態が変化していれば inject をスキップ (#709)
+            local _pre_inject_state
+            _pre_inject_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
+            if [[ "$_pre_inject_state" != "input-waiting" ]]; then
+              all_done=false
+              continue
+            fi
+            # non-terminal + input-waiting → auto-inject で継続を促す (#672, #697, #709)
             inject_count=$((inject_count + 1))
             echo "$inject_count" > "$inject_count_file"
-            # workflow 別に inject メッセージを分岐 (#697)
-            local inject_msg
-            if [[ -f "${subdir}/IN/existing-issue.json" ]]; then
-              inject_msg="直ちに次の Step を継続してください。4b: issue-review-aggregate Skill 呼び出し → 4c/4d: findings 判定 → body 修正(STATE=fixing) → Step 4.5: refined ラベル判定 → Step 5: arch-drift → Step 6': gh issue edit（body更新 + labels_hint 一括ラベル付与）→ Step 7: STATE=done + OUT/report.json 書き込み。"
-            else
-              inject_msg="直ちに次の Step を継続してください。4b: issue-review-aggregate Skill 呼び出し → 4c/4d: findings 判定 → body 修正(STATE=fixing) → Step 4.5: refined ラベル判定 → Step 5: arch-drift → Step 6: gh issue create → Step 6.5: project-board-sync → Step 7: STATE=done + OUT/report.json 書き込み。"
-            fi
-            echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=$current_state + input-waiting — auto-inject ($inject_count/3)" >&2
+            local inject_msg="処理を続行してください。"
+            echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=$current_state + input-waiting — auto-inject ($inject_count/5)" >&2
             "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" \
               "$inject_msg" \
               2>/dev/null || true
+            sleep $((5 * inject_count))
             all_done=false
           else
-            # inject 3 回失敗 → fallback (#647)
+            # inject 5 回失敗 → fallback (#647, #709)
             local reason="inject_exhausted_${inject_count}"
             echo "[issue-lifecycle-orchestrator] ${subdir##*/}: inject exhausted (STATE=$current_state, inject=$inject_count) — フォールバック生成" >&2
             mkdir -p "${subdir}/OUT"
