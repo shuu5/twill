@@ -13,6 +13,7 @@ Wave 開始時に本カタログから Wave 種別に応じたチャネルを選
 | WORKERS | worker window 出現・消失 | 即時 | Auto |
 | PHASE-DONE | PHASE_COMPLETE 検知 | 即時 | Auto |
 | NON-TERMINAL | `>>> 実装完了:` 後の chain 不遷移 | 2分 | Confirm |
+| BUDGET-LOW | 5h rolling budget 残量 | 残り 15 分（設定可） | Auto |
 
 ---
 
@@ -344,11 +345,93 @@ fi
 
 ---
 
+## [BUDGET-LOW] — 5h rolling budget 残量検知
+
+**検知対象**: Claude Code の tmux status line から `budget: <残量>` をパースし、閾値以下になった場合に停止シーケンスを自動実行する
+
+**閾値**: 残り 15 分（`.supervisor/budget-config.json` の `threshold_minutes` フィールドで override 可能。デフォルト 15）
+
+**検知方法**: `tmux capture-pane -t "$PILOT_WINDOW" -p -S -1` で status line をキャプチャし正規表現でパース。取得不能の場合は `session-comm.sh capture` にフォールバック。それでも取得不能な場合は検知をスキップし stderr に警告。
+
+**介入層**: Layer 0 Auto（SU-1 に従う）
+
+**bash スニペット:**
+
+```bash
+# BUDGET-LOW: status line から budget 残量をパース
+BUDGET_THRESHOLD_MIN=15  # デフォルト閾値（分）
+
+get_budget_minutes() {
+  local pilot_win="${1:-}"
+  local raw
+  # status line から取得
+  raw=$(tmux capture-pane -t "$pilot_win" -p -S -1 2>/dev/null \
+    | grep -oP '(?:budget|Budget):\s*\K[0-9]+[hm]' | tail -1 || echo "")
+  # フォールバック: full pane から取得
+  if [[ -z "$raw" ]]; then
+    raw=$(plugins/session/scripts/session-comm.sh capture "$pilot_win" 2>/dev/null \
+      | grep -oP '(?:budget|Budget):\s*\K[0-9]+[hm]' | tail -1 || echo "")
+  fi
+  if [[ -z "$raw" ]]; then
+    echo "[BUDGET-LOW] WARN: budget 情報を取得できません。" >&2
+    echo "-1"
+    return 0
+  fi
+  if [[ "$raw" =~ ^([0-9]+)h$ ]]; then
+    echo $(( ${BASH_REMATCH[1]} * 60 ))
+  elif [[ "$raw" =~ ^([0-9]+)m$ ]]; then
+    echo "${BASH_REMATCH[1]}"
+  else
+    echo "-1"
+  fi
+}
+
+check_budget_low() {
+  local pilot_win="${1:-}"
+  local threshold="${BUDGET_THRESHOLD_MIN}"
+  local budget_min
+  budget_min=$(get_budget_minutes "$pilot_win")
+  if [[ "$budget_min" -ge 0 && "$budget_min" -le "$threshold" ]]; then
+    echo "[BUDGET-LOW] 5h budget 残り ${budget_min}分（閾値: ${threshold}分）。安全停止シーケンスを開始します。"
+    return 1
+  fi
+  return 0
+}
+```
+
+**停止シーケンス（BUDGET-LOW 検知時）:**
+
+1. orchestrator 停止: `.autopilot/orchestrator.pid` または `ps aux | grep autopilot-orchestrator` で PID 取得 → `kill <PID>`（Worker inject ループを止める）
+2. 全 `ap-*` window に `tmux send-keys -t "<window>" Escape` を送信（kill 禁止 — 不変条件）
+3. `.supervisor/budget-pause.json` に停止状態を記録:
+   ```json
+   {
+     "status": "paused",
+     "paused_at": "<ISO 8601>",
+     "estimated_recovery": "<停止時刻 + 90分>",
+     "cron_id": "<CronCreate で設定したID>",
+     "paused_workers": ["ap-569", "ap-570"],
+     "orchestrator_pid": 12345
+   }
+   ```
+4. CronCreate で回復時刻（保守的推定: 停止時刻 + 90 分）に su-observer の再起動をスケジュール
+
+**再開シーケンス（Step 0 の budget-pause.json 復帰パスで実行）:**
+
+1. 各 `paused_workers` の `session-state.sh state <window>` → `idle` or `input-waiting` 確認
+2. Pilot window 状態確認
+3. orchestrator の再起動（`session-comm.sh inject` で orchestrator 起動コマンド送信）
+4. 各 Worker に `session-comm.sh inject` で再開指示送信
+5. 全 Worker が `processing` 状態に遷移したことを確認
+6. `budget-pause.json` の `status` を `resumed` に更新
+
+---
+
 ## Wave 種別ごとのチャネル選択ガイド
 
 | Wave 種別 | 推奨チャネル |
 |---|---|
-| co-autopilot 実行中（全般） | INPUT-WAIT + STAGNATE + WORKERS |
+| co-autopilot 実行中（全般） | INPUT-WAIT + STAGNATE + WORKERS + BUDGET-LOW |
 | Phase 実行中（Worker 並列） | INPUT-WAIT + WORKERS + PHASE-DONE |
-| 長時間 Pilot 処理 | PILOT-IDLE + NON-TERMINAL |
+| 長時間 Pilot 処理 | PILOT-IDLE + NON-TERMINAL + BUDGET-LOW |
 | デバッグ・問題調査 | INPUT-WAIT + STAGNATE（最小セット） |
