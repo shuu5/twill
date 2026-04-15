@@ -393,6 +393,7 @@ wait_for_batch() {
           local inject_count_file="${subdir}/.inject_count"
           local inject_count=0
           [[ -f "$inject_count_file" ]] && inject_count=$(cat "$inject_count_file" 2>/dev/null | tr -d '[:space:]')
+          [[ "$inject_count" =~ ^[0-9]+$ ]] || inject_count=0
 
           if [[ "$current_state" == "done" || "$current_state" == "failed" || "$current_state" == "circuit_broken" ]]; then
             # terminal state → fallback 生成 + kill (#697)
@@ -406,6 +407,7 @@ wait_for_batch() {
             local _pre_inject_state
             _pre_inject_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
             if [[ "$_pre_inject_state" != "input-waiting" ]]; then
+              all_done=false
               continue
             fi
             # non-terminal + input-waiting → auto-inject で継続を促す (#672, #697, #709)
