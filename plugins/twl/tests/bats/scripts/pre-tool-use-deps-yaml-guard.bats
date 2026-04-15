@@ -29,6 +29,10 @@
 #  11. Edit で new_string 適用後に YAML コロン欠落エラー -> exit 2
 #  12. 深くネストされた有効 YAML (Write) -> exit 0
 #  13. タブ文字を含む不正 YAML (Write) -> exit 2
+#  14. Edit (disk): 有効 YAML 変更がディスク読み込み経由で exit 0
+#  15. Edit (disk): 不正 YAML 変更がディスク読み込み経由で exit 2
+#  16. Edit (disk): old_string がディスク上に見つからない場合 exit 2
+#  17. Edit (disk): 不正 YAML 時に stderr にエラー出力
 
 load '../helpers/common'
 load '../helpers/git-fixture'
@@ -437,4 +441,104 @@ version: "1.0"'
     '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$os, new_string:$ns}}')
   run _run_hook "$payload"
   [ "$status" -eq 1 ]
+}
+
+# ---------------------------------------------------------------------------
+# Disk-based YAML 検証テスト: file_content 省略時のディスクフォールバック
+#
+# Claude Code の実ペイロードには file_content が含まれないため、
+# ディスクからファイルを読み込んで YAML 検証を行うパスをテストする。
+# exit 0 の no-op パスに頼らず、実際の YAML 検証を通過することを確認。
+# ---------------------------------------------------------------------------
+
+# Scenario 14: Edit (disk) で有効な YAML 変更
+# WHEN ディスク上の deps.yaml を読み込み、old_string/new_string 適用後も有効 YAML
+# THEN exit 0 で正常通過する
+@test "Edit (disk): 有効 YAML 変更はディスク読み込み経由で exit 0" {
+  local tmp_repo
+  tmp_repo=$(init_temp_repo)
+  local valid_yaml='name: test-plugin
+version: "1.0"
+dependencies:
+  - dep-a'
+  echo "$valid_yaml" > "$tmp_repo/deps.yaml"
+  (cd "$tmp_repo" && git add deps.yaml && git commit -m "add deps.yaml" -q)
+
+  local payload
+  payload=$(jq -nc \
+    --arg fp "$tmp_repo/deps.yaml" \
+    --arg os 'version: "1.0"' \
+    --arg ns 'version: "2.0"' \
+    '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$os, new_string:$ns}}')
+  run _run_hook "$payload"
+  cleanup_temp_repo "$tmp_repo"
+  [ "$status" -eq 0 ]
+}
+
+# Scenario 15: Edit (disk) で不正な YAML 変更
+# WHEN ディスク上の deps.yaml を読み込み、old_string/new_string 適用後に不正 YAML
+# THEN exit 2 で終了する
+@test "Edit (disk): 不正 YAML 変更はディスク読み込み経由で exit 2" {
+  local tmp_repo
+  tmp_repo=$(init_temp_repo)
+  local valid_yaml='name: test-plugin
+version: "1.0"'
+  echo "$valid_yaml" > "$tmp_repo/deps.yaml"
+  (cd "$tmp_repo" && git add deps.yaml && git commit -m "add deps.yaml" -q)
+
+  local payload
+  payload=$(jq -nc \
+    --arg fp "$tmp_repo/deps.yaml" \
+    --arg os 'version: "1.0"' \
+    --arg ns 'version: [broken' \
+    '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$os, new_string:$ns}}')
+  run _run_hook "$payload"
+  cleanup_temp_repo "$tmp_repo"
+  [ "$status" -eq 2 ]
+}
+
+# Scenario 16: Edit (disk) で old_string が見つからない
+# WHEN ディスク上の deps.yaml に old_string が存在しない
+# THEN exit 2 で終了する（apply 失敗 = ブロック）
+@test "Edit (disk): old_string がディスク上に見つからない場合は exit 2" {
+  local tmp_repo
+  tmp_repo=$(init_temp_repo)
+  echo 'key: value' > "$tmp_repo/deps.yaml"
+  (cd "$tmp_repo" && git add deps.yaml && git commit -m "add deps.yaml" -q)
+
+  local payload
+  payload=$(jq -nc \
+    --arg fp "$tmp_repo/deps.yaml" \
+    --arg os 'nonexistent_string' \
+    --arg ns 'replacement' \
+    '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$os, new_string:$ns}}')
+  run _run_hook "$payload"
+  cleanup_temp_repo "$tmp_repo"
+  [ "$status" -eq 2 ]
+}
+
+# Scenario 17: Edit (disk) で不正 YAML 時の stderr 出力
+# WHEN ディスク読み込み後に不正 YAML が生成される
+# THEN exit 2 かつ stderr にエラーメッセージが出力される
+@test "Edit (disk): ディスク読み込み後の不正 YAML は stderr にエラーを出力する" {
+  local tmp_repo
+  tmp_repo=$(init_temp_repo)
+  echo 'key: value' > "$tmp_repo/deps.yaml"
+  (cd "$tmp_repo" && git add deps.yaml && git commit -m "add deps.yaml" -q)
+
+  local payload stderr_file
+  payload=$(jq -nc \
+    --arg fp "$tmp_repo/deps.yaml" \
+    --arg os 'key: value' \
+    --arg ns 'key: {broken' \
+    '{tool_name:"Edit", tool_input:{file_path:$fp, old_string:$os, new_string:$ns}}')
+  stderr_file=$(mktemp)
+  local exit_code=0
+  printf '%s' "$payload" | bash "$HOOK_SRC" 2>"$stderr_file" || exit_code=$?
+  local stderr_output
+  stderr_output=$(cat "$stderr_file")
+  rm -f "$stderr_file"
+  cleanup_temp_repo "$tmp_repo"
+  [ "$exit_code" -eq 2 ]
+  [[ -n "$stderr_output" ]]
 }
