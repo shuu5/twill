@@ -97,7 +97,8 @@ fi
 if [[ -z "$BUDGET_RAW" ]]; then
   echo "[BUDGET-LOW] WARN: budget 情報を取得できません。スキップします。" >&2
 else
-  # 分換算（例: "15m" → 15、"1h" → 60、"90m" → 90）
+  # 分換算（例: "15m" → 15、"1h" → 60）。不一致フォーマットは BUDGET_MIN=-1（スキップ）
+  BUDGET_MIN=-1
   if [[ "$BUDGET_RAW" =~ ^([0-9]+)h$ ]]; then
     BUDGET_MIN=$(( ${BASH_REMATCH[1]} * 60 ))
   elif [[ "$BUDGET_RAW" =~ ^([0-9]+)m$ ]]; then
@@ -110,15 +111,18 @@ import json, sys
 try:
   cfg = json.load(open('.supervisor/budget-config.json'))
   print(cfg.get('threshold_minutes', 15))
-except:
+except Exception as e:
+  sys.stderr.write(str(e) + '\n')
   print(15)
 " 2>/dev/null || echo "15")
 
-  if [[ $BUDGET_MIN -le $BUDGET_THRESHOLD ]]; then
+  if [[ $BUDGET_MIN -ge 0 && $BUDGET_MIN -le $BUDGET_THRESHOLD ]]; then
     echo "[BUDGET-LOW] 5h budget 残り ${BUDGET_MIN}分。安全停止シーケンスを開始します。"
-    # 1. orchestrator 停止
-    ORCH_PID=$(cat .autopilot/orchestrator.pid 2>/dev/null || ps aux | grep -E 'autopilot-orchestrator' | grep -v grep | awk '{print $2}' | head -1 || echo "")
-    [[ -n "$ORCH_PID" ]] && kill "$ORCH_PID" 2>/dev/null && echo "[BUDGET-LOW] orchestrator (PID $ORCH_PID) を停止しました。"
+    # 1. orchestrator 停止（PID 数値バリデーション必須: kill 0 はプロセスグループ全体を対象とするため禁止）
+    ORCH_PID=$(cat .autopilot/orchestrator.pid 2>/dev/null || pgrep -f 'autopilot-orchestrator' | head -1 || echo "")
+    if [[ "$ORCH_PID" =~ ^[1-9][0-9]*$ ]]; then
+      kill -0 "$ORCH_PID" 2>/dev/null && kill "$ORCH_PID" 2>/dev/null && echo "[BUDGET-LOW] orchestrator (PID $ORCH_PID) を停止しました。"
+    fi
     # 2. 全 ap-* window に Escape を送信（kill 禁止 — Escape のみ使用。不変条件）
     PAUSED_WORKERS=()
     for win in $(tmux list-windows -a -F '#{window_name}' 2>/dev/null | grep -E '^ap-'); do
@@ -126,16 +130,21 @@ except:
       PAUSED_WORKERS+=("$win")
       echo "[BUDGET-LOW] Escape を送信: $win"
     done
-    # 3. 停止状態を budget-pause.json に記録
+    # 3. 停止状態を budget-pause.json に記録（シェル変数は環境変数経由で python に渡す）
     mkdir -p .supervisor
+    WORKERS_JSON=$(printf '%s\n' "${PAUSED_WORKERS[@]:-}" | python3 -c 'import sys,json; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')
+    ORCH_PID_SAFE="${ORCH_PID:-}"
     python3 -c "
-import json, datetime, os
+import json, datetime, os, sys
+workers = json.loads(os.environ.get('WORKERS_JSON', '[]'))
+orch_pid_str = os.environ.get('ORCH_PID_SAFE', '')
+orch_pid = int(orch_pid_str) if orch_pid_str.isdigit() else None
 data = {
   'status': 'paused',
   'paused_at': datetime.datetime.utcnow().isoformat() + 'Z',
   'estimated_recovery': (datetime.datetime.utcnow() + datetime.timedelta(minutes=90)).isoformat() + 'Z',
-  'paused_workers': $(printf '%s\n' "${PAUSED_WORKERS[@]:-}" | python3 -c 'import sys,json; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')  ,
-  'orchestrator_pid': int('${ORCH_PID:-0}') if '${ORCH_PID:-}' else None
+  'paused_workers': workers,
+  'orchestrator_pid': orch_pid
 }
 json.dump(data, open('.supervisor/budget-pause.json', 'w'), indent=2)
 " 2>/dev/null
