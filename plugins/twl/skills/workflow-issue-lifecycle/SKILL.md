@@ -121,11 +121,15 @@ mkdir -p "$PER_ISSUE_DIR/rounds/${round}"
 - `depth`: policies.depth（デフォルト: normal）
 - 結果を `rounds/<round>/findings.yaml` に書き込む
 
+**4a 完了後、中断せず直ちに 4b を実行すること（MUST — AskUserQuestion 禁止）。**
+
 #### 4b: aggregate
 
 `/twl:issue-review-aggregate` を Skill tool で呼び出す:
 - 入力: findings.yaml の内容
 - 結果を `rounds/<round>/aggregate.yaml` に書き込む
+
+**4b 完了後、中断せず直ちに 4c を実行すること（MUST）。**
 
 #### 4c: codex gate
 
