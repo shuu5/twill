@@ -2663,6 +2663,31 @@ scripts:
     path: scripts/hooks/pre-bash-phase3-gate.sh
     description: "PreToolUse gate (Layer C-2): co-issue Phase 3 未完了時に gh issue create / gh issue edit --add-label refined を deny する（Bash tool matcher）。gate state /tmp/.co-issue-phase3-gate-{cksum}.json で管理"
 
+  supervisor-heartbeat:
+    type: script
+    path: scripts/hooks/supervisor-heartbeat.sh
+    description: "PostToolUse hook (Write|Edit): AUTOPILOT_DIR 設定時に heartbeat イベントファイルを .supervisor/events/heartbeat-<session_id> にアトミック書き出し（#569 Event Emission インフラ）"
+
+  supervisor-input-wait:
+    type: script
+    path: scripts/hooks/supervisor-input-wait.sh
+    description: "PreToolUse hook (AskUserQuestion): AUTOPILOT_DIR 設定時に input-wait イベントファイルを .supervisor/events/input-wait-<session_id> にアトミック書き出し（#569 Event Emission インフラ）"
+
+  supervisor-input-clear:
+    type: script
+    path: scripts/hooks/supervisor-input-clear.sh
+    description: "PostToolUse hook (AskUserQuestion): AUTOPILOT_DIR 設定時に input-wait イベントファイルを削除（#569 Event Emission インフラ）"
+
+  supervisor-skill-step:
+    type: script
+    path: scripts/hooks/supervisor-skill-step.sh
+    description: "PostToolUse hook (Skill): AUTOPILOT_DIR 設定時に skill-step イベントファイルを .supervisor/events/skill-step-<session_id> にアトミック書き出し（#569 Event Emission インフラ）"
+
+  supervisor-session-end:
+    type: script
+    path: scripts/hooks/supervisor-session-end.sh
+    description: "Stop hook: AUTOPILOT_DIR 設定時に session-end イベントファイルを .supervisor/events/session-end-<session_id> にアトミック書き出し（#569 Event Emission インフラ）"
+
   pr-review-manifest:
     type: script
     path: scripts/pr-review-manifest.sh

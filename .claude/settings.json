@@ -12,6 +12,16 @@
         ]
       },
       {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/hooks/supervisor-input-wait.sh",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
@@ -32,6 +42,38 @@
           {
             "type": "command",
             "command": "bash plugins/twl/scripts/hooks/pre-bash-merge-guard.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/hooks/supervisor-heartbeat.sh",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/hooks/supervisor-input-clear.sh",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/hooks/supervisor-skill-step.sh",
             "timeout": 3000
           }
         ]
@@ -69,6 +111,18 @@
             "type": "command",
             "command": "bash plugins/twl/scripts/su-session-compact.sh",
             "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/hooks/supervisor-session-end.sh",
+            "timeout": 3000
           }
         ]
       }
