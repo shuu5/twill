@@ -329,7 +329,7 @@ skills:
       - atomic: externalize-state   # SU-6a: Wave 完了時の外部化
     dependencies:
       - plugin: session  # cld --observer: session.json の claude_session_id 読み取りに session plugin の session-state.sh を使用
-    description: "メタ認知レイヤー: 全 controller の監視・介入。テストシナリオ実行は co-self-improve に委譲"
+    description: "メタ認知レイヤー: 全 controller の監視・介入。hook プライマリ / polling フォールバックの Hybrid 検知（#570）。テストシナリオ実行は co-self-improve に委譲"
 
   workflow-setup:
     type: workflow
@@ -746,7 +746,7 @@ refs:
     path: skills/su-observer/refs/monitor-channel-catalog.md
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
-    description: "Monitor 標準チャネル定義（INPUT-WAIT / PILOT-IDLE / STAGNATE / WORKERS / PHASE-DONE / NON-TERMINAL）bash スニペット付き"
+    description: "Monitor 標準チャネル定義（INPUT-WAIT / PILOT-IDLE / STAGNATE / WORKERS / PHASE-DONE / NON-TERMINAL）bash スニペット付き。STAGNATE/INPUT-WAIT/NON-TERMINAL/WORKERS に hook ベース検知セクション追加（#570）"
 
   # su-observer intervention catalog (#310)
   intervention-catalog:
