@@ -740,13 +740,13 @@ refs:
     can_spawn: []
     description: "負荷テスト level の定量基準"
 
-  # su-observer Monitor チャネルカタログ (#486)
+  # su-observer Monitor チャネルカタログ (#486, #599)
   monitor-channel-catalog:
     type: reference
     path: skills/su-observer/refs/monitor-channel-catalog.md
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
-    description: "Monitor 標準チャネル定義（INPUT-WAIT / PILOT-IDLE / STAGNATE / WORKERS / PHASE-DONE / NON-TERMINAL）bash スニペット付き。STAGNATE/INPUT-WAIT/NON-TERMINAL/WORKERS に hook ベース検知セクション追加（#570）"
+    description: "Monitor 標準チャネル定義（INPUT-WAIT / PILOT-IDLE / STAGNATE / WORKERS / PHASE-DONE / NON-TERMINAL / BUDGET-LOW）bash スニペット付き。STAGNATE/INPUT-WAIT/NON-TERMINAL/WORKERS に hook ベース検知セクション追加（#570）"
 
   # su-observer intervention catalog (#310)
   intervention-catalog:
