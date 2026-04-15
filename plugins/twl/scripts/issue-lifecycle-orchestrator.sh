@@ -400,9 +400,9 @@ wait_for_batch() {
             # workflow 別に inject メッセージを分岐 (#697)
             local inject_msg
             if [[ -f "${subdir}/IN/existing-issue.json" ]]; then
-              inject_msg="直ちに次の Step を継続してください。4b: issue-review-aggregate Skill 呼び出し → 4c/4d: findings 判定 → body 修正(STATE=fixing) → Step 5: arch-drift → Step 6': gh issue edit → refined ラベル付与 → Step 7: STATE=done + OUT/report.json 書き込み。"
+              inject_msg="直ちに次の Step を継続してください。4b: issue-review-aggregate Skill 呼び出し → 4c/4d: findings 判定 → body 修正(STATE=fixing) → Step 4.5: refined ラベル判定 → Step 5: arch-drift → Step 6': gh issue edit（body更新 + labels_hint 一括ラベル付与）→ Step 7: STATE=done + OUT/report.json 書き込み。"
             else
-              inject_msg="直ちに次の Step を継続してください。4b: issue-review-aggregate Skill 呼び出し → 4c/4d: findings 判定 → body 修正(STATE=fixing) → Step 5: arch-drift → Step 6: gh issue create → Step 6.5: project-board-sync → Step 7: STATE=done + OUT/report.json 書き込み。"
+              inject_msg="直ちに次の Step を継続してください。4b: issue-review-aggregate Skill 呼び出し → 4c/4d: findings 判定 → body 修正(STATE=fixing) → Step 4.5: refined ラベル判定 → Step 5: arch-drift → Step 6: gh issue create → Step 6.5: project-board-sync → Step 7: STATE=done + OUT/report.json 書き込み。"
             fi
             echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=$current_state + input-waiting — auto-inject ($inject_count/3)" >&2
             "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" \
