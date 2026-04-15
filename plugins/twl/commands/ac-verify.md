@@ -33,6 +33,7 @@ PR diff・テスト結果・レビュー結果を Issue の受け入れ基準（
 ### Step 0: 入力収集
 
 ```bash
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/python-env.sh" 2>/dev/null || true
 SNAPSHOT_DIR="${SNAPSHOT_DIR:-.dev-session}"
 AC_FILE="${SNAPSHOT_DIR}/01.5-ac-checklist.md"
 
