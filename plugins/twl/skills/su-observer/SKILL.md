@@ -114,45 +114,106 @@ session-comm.sh   # inject/介入（plugins/session/scripts/session-comm.sh）
 
 co-issue・co-architect は **対話的コントローラー** であり、Phase 進行中に AskUserQuestion でユーザー入力を求める。observer が spawn した場合、**observer 自身がユーザーの代理（proxy）として対話に参加しなければならない**（SHALL）。spawn 後に「指示待ち」に戻ってはならない。
 
-**proxy 対話ループ:**
+#### pipe-pane セットアップ（spawn 直後に実行 — MUST）
+
+cld-spawn 実行直後に pipe-pane でセッション出力をファイルに永続化する:
+```bash
+tmux pipe-pane -t <window> -o "cat >> /tmp/<controller>-<session-id>.log"
+```
+pipe-pane は capture-pane の scrollback 制限を補完する。Claude Code の応答テキストは tmux scrollback に残りにくいため、pipe-pane log が AskUserQuestion 読み取りの主要手段となる。
+
+#### spawn プロンプトの文脈包含（MUST）
+
+cld-spawn のプロンプトにはユーザーの全文脈を含めること:
+- ユーザーの元の指示と要求の背景
+- 関連する過去の決定事項
+- observer が判断に使う基準
+- 具体的な deep-dive ポイント（ある場合）
+
+#### proxy 対話ループ
 
 ```
-1. cld-spawn で controller を起動（ユーザーの要求を spawn プロンプトに含める）
-2. 以下を繰り返す:
+1. cld-spawn で controller を起動（上記の文脈をプロンプトに含める）
+2. spawn 直後に pipe-pane セットアップ
+3. 以下を繰り返す:
    a. session-state.sh state <window> で input-waiting を検知するまで 15-30 秒間隔でポーリング
-   b. input-waiting 検知 → tmux capture-pane -t <window> -p -S -300 で出力をキャプチャ
-   c. キャプチャ内容から AskUserQuestion の選択肢（[A]/[B]/[C]、[dispatch]/[adjust] 等）を読む
-   d. ユーザーの元の指示と文脈に基づいて応答を判断
-   e. session-comm.sh inject <window> "<response>" で応答を送信
-3. controller が全 Phase を完了して最終結果を出力 → ループ終了
-4. キャプチャで最終結果を読み取り、ユーザーに報告
+   b. input-waiting 検知 → pipe-pane log を ANSI strip して質問内容を読む:
+      cat /tmp/<log>.log | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' | grep -iE "Enter.?to.?select|Esc.?to.?cancel"
+      質問内容が見つかったら、その周辺を読んで選択肢を把握する
+   c. 質問内容を読めた → ユーザーの文脈と要求に基づいて応答を判断
+   d. session-comm.sh inject <window> "<response>" で応答を送信
+4. controller が全 Phase を完了して最終結果を出力 → ループ終了
+5. キャプチャで最終結果を読み取り、ユーザーに報告
 ```
 
-**キャプチャのコツ:**
-- Claude Code の応答テキストは tmux scrollback に残りにくい。`-S -300` 以上のバッファで取得する
-- AskUserQuestion のパターン（`[A]`, `[B]`, `[dispatch]` 等の選択肢テキスト）を grep で検索
-- 応答テキストが完全に見えない場合でも、`Effecting...` 後に `input-waiting` になった時点で Phase が進んだと推定できる
+#### キャプチャ内容を読まない inject の禁止（MUST NOT）
 
-**inject 時の注意:**
-- `session-state.sh state` で `input-waiting` を確認してから inject すること（MUST）
-- `processing` 状態で inject するとキューに入り、Escape が対話フローを破壊する
-- inject 内容は AskUserQuestion の選択肢に対応する簡潔な回答にする（例: `A`、`dispatch`）
+input-waiting を検知しても、質問内容を読まずに inject してはならない。
+質問内容が読めない場合の段階的フォールバック:
+1. pipe-pane log を ANSI strip して検索
+2. `tmux capture-pane -t <window> -p -S -500` で scrollback 拡大
+3. それでも読めない → ユーザーにエスカレート（SU-2 相当）
 
-**co-issue refine の proxy 対話例:**
+「Phase が進んだだろう」という推測で inject することは禁止。
+
+#### AskUserQuestion の UI パターン
+
+Claude Code の AskUserQuestion は番号付きメニュー形式でレンダリングされる:
 ```
-observer → cld-spawn co-issue "refine #695 ..."
-  → co-issue: Phase 1 探索・分析 → summary-gate で [A]/[B]/[C] 選択肢を表示
-  → observer: capture で質問を読む → 内容に問題なければ "A" を inject
-  → co-issue: Phase 2 → dispatch 確認で [dispatch]/[adjust]/[cancel] を表示
-  → observer: capture で確認 → "dispatch" を inject
-  → co-issue: Phase 3 specialist レビュー実行 → Phase 4 結果表示
-  → observer: capture で最終結果を読む → ユーザーに報告
+❯ 1. 選択肢A
+   説明テキスト
+  2. 選択肢B
+   説明テキスト
+Enter to select · ↑/↓ to navigate · Esc to cancel
+```
+inject する応答は **番号**（"1", "2"）またはメニュー項目のテキスト。`[A]/[B]/[C]` 形式ではない。
+
+#### explore フェーズの批判的深堀り（MUST）
+
+co-issue の Phase 1（explore）で observer は批判的な深堀りを行わなければならない:
+- summary-gate の前に**最低 1 往復**の explore 対話を実施
+- 深堀り内容: 設計の前提を疑う、代替案の提示、影響範囲の確認、コードベース検証
+- co-issue が explore 質問を出したら、具体的な回答を inject（「A」で済ませない）
+
+co-issue の「ゼロ探索で summary-gate 発火禁止（MUST NOT）」制約と対応する observer 側のガード。
+
+#### specialist review 必須ガード（MUST）
+
+co-issue の Phase 3（specialist review）は**絶対にスキップしてはならない**:
+- **3 specialist 全て必須**: issue-critic, issue-feasibility, worker-codex-reviewer
+- refine モードでも新規作成モードでもフローは同一。省略不可
+- **refined ラベル = レビュー済み**。specialist review なしで refined を付与してはならない
+
+orchestrator フォールバック時（Worker inject 失敗等）のリカバリ手順:
+1. **retry**: orchestrator `--resume` で再実行
+2. **手動 specialist spawn**: observer 自身が 3 agent を並列 spawn（Agent tool で直接実行）
+3. **ユーザーにエスカレート**: 上記 2 つが失敗した場合
+
+**「accept partial」で specialist review をバイパスすることは禁止（MUST NOT）。**
+
+#### co-issue refine の proxy 対話例
+
+```
+observer → pipe-pane セットアップ
+  → cld-spawn co-issue "refine #695 ... [ユーザーの全文脈]"
+  → co-issue: Phase 1 探索・分析
+  → observer: pipe-pane log で explore 質問を読む → 批判的な具体回答を inject
+  → co-issue: さらに探索（1 往復以上）
+  → co-issue: summary-gate で番号メニューを表示
+  → observer: pipe-pane log で選択肢を読む → "1" を inject
+  → co-issue: Phase 2 → dispatch 確認
+  → observer: pipe-pane log で確認 → "1" (dispatch) を inject
+  → co-issue: Phase 3 specialist review（3 specialist 全実行）
+  → co-issue: Phase 4 結果表示
+  → observer: pipe-pane log で最終結果を読む → ユーザーに報告
 ```
 
-**observer 独自判断での応答（SHOULD）:**
-- summary-gate [B] 修正: observer がコードベース調査に基づき修正点を具体的に inject
-- dispatch [adjust]: 依存関係に問題を発見した場合に調整を inject
-- 判断に迷う場合はユーザーにエスカレート（SU-2 相当）
+#### observer 独自判断での応答
+
+- summary-gate 修正: observer がコードベース調査に基づき具体的な修正点を inject
+- dispatch 調整: 依存関係に問題を発見した場合に調整を inject
+- specialist review フォールバック: retry → 手動 spawn の判断を自律実行
+- 判断に迷う場合のみユーザーにエスカレート（SU-2 相当）
 
 ### 既存セッションの状態確認が必要な場合
 
