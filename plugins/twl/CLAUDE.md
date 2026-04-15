@@ -16,12 +16,13 @@ Claude Code twl plugin（chain-driven + autopilot-first）。TWiLL モノリポ 
 
 deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 
-### Controller は6つ
+### Controller は7つ
 
 | controller | 役割 |
 |---|---|
 | co-autopilot | Issue 実装の実行（単一 Issue も autopilot 経由） |
-| co-issue | Issue 作成（要望→Issue 変換） |
+| co-issue | Issue 作成（explore-summary → Issue 変換） |
+| co-explore | 問題探索（explore-summary 出力 + Issue リンク） |
 | co-project | プロジェクト管理（create / migrate / snapshot） |
 | co-architect | アーキテクチャ設計 |
 | co-utility | スタンドアロンユーティリティ操作 |

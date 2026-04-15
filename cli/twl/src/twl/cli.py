@@ -20,6 +20,7 @@ from twl.cli_dispatch import (
     handle_target,
     handle_reverse,
     handle_viz,
+    handle_explore_link,
 )
 
 
@@ -52,6 +53,10 @@ def main():
         from twl.spec import main as spec_main
         spec_main(sys.argv[2:])
         sys.exit(0)
+
+    # explore-link サブコマンド
+    if len(sys.argv) >= 2 and sys.argv[1] == 'explore-link':
+        sys.exit(handle_explore_link(sys.argv[2:]))
 
     # check サブコマンドの前処理
     if len(sys.argv) >= 2 and sys.argv[1] == 'check':

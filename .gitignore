@@ -1,3 +1,6 @@
+# co-explore session state
+.explore/
+
 # co-issue session state (制約 IM-3 — issue-mgmt.md)
 .controller-issue/
 

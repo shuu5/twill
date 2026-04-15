@@ -457,3 +457,66 @@ def handle_viz(args, graph, deps, plugin_root, plugin_name, show_tokens):
         print_mermaid(graph, deps, plugin_name)
     else:
         print_graphviz(graph, deps, plugin_name, show_tokens)
+
+
+def handle_explore_link(argv):
+    """explore-link subcommand: check/set/read explore-summary for an issue."""
+    import shutil
+    import subprocess
+
+    if len(argv) < 2:
+        print("Usage: twl explore-link {check|set|read} <N> [<path>]", file=sys.stderr)
+        return 1
+
+    action = argv[0]
+    try:
+        issue_number = int(argv[1])
+    except ValueError:
+        print(f"Error: '{argv[1]}' is not a valid issue number", file=sys.stderr)
+        return 1
+
+    explore_dir = Path(f".explore/{issue_number}")
+    summary_path = explore_dir / "summary.md"
+
+    if action == "check":
+        if summary_path.exists():
+            print(f".explore/{issue_number}/summary.md exists")
+            return 0
+        else:
+            print(f".explore/{issue_number}/summary.md not found", file=sys.stderr)
+            return 1
+
+    elif action == "read":
+        if not summary_path.exists():
+            print(f"Error: .explore/{issue_number}/summary.md not found", file=sys.stderr)
+            return 1
+        print(summary_path.read_text(), end="")
+        return 0
+
+    elif action == "set":
+        if len(argv) < 3:
+            print("Usage: twl explore-link set <N> <path>", file=sys.stderr)
+            return 1
+        source_path = Path(argv[2])
+        if not source_path.exists():
+            print(f"Error: '{source_path}' not found", file=sys.stderr)
+            return 1
+        explore_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(str(source_path), str(summary_path))
+        print(f"Copied {source_path} -> {summary_path}")
+
+        # gh issue comment
+        try:
+            subprocess.run(
+                ["gh", "issue", "comment", str(issue_number),
+                 "--body", f"explore-summary linked: `{summary_path}`"],
+                check=True, capture_output=True, text=True,
+            )
+            print(f"Commented on Issue #{issue_number}")
+        except (subprocess.CalledProcessError, FileNotFoundError) as e:
+            print(f"Warning: failed to comment on Issue #{issue_number}: {e}", file=sys.stderr)
+        return 0
+
+    else:
+        print(f"Error: unknown action '{action}'. Use check/set/read.", file=sys.stderr)
+        return 1
