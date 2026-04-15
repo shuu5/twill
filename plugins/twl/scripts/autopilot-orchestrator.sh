@@ -894,8 +894,14 @@ inject_next_workflow() {
   local next_skill next_skill_exit=0
   next_skill=$(python3 -m twl.autopilot.resolve_next_workflow --issue "$issue" 2>/dev/null) || next_skill_exit=$?
   if [[ "$next_skill_exit" -ne 0 || -z "$next_skill" ]]; then
-    echo "[orchestrator] Issue #${issue}: WARNING: resolve_next_workflow 失敗 — inject スキップ" >&2
-    echo "[${_trace_ts}] issue=${issue} skill=RESOLVE_FAILED result=skip reason=\"resolve_next_workflow exit=${next_skill_exit}\"" >> "$_trace_log" 2>/dev/null || true
+    if [[ "$next_skill_exit" -eq 1 ]]; then
+      # NOT_READY: non-terminal step（ポーリング中の正常状態）→ TRACE のみ（#707）
+      echo "[${_trace_ts}] issue=${issue} category=RESOLVE_NOT_READY exit=${next_skill_exit} result=skip" >> "$_trace_log" 2>/dev/null || true
+    else
+      # ERROR: 予期せぬ失敗 → WARNING + TRACE（#707）
+      echo "[orchestrator] Issue #${issue}: WARNING: resolve_next_workflow 予期せぬエラー (exit=${next_skill_exit}) — inject スキップ" >&2
+      echo "[${_trace_ts}] issue=${issue} category=RESOLVE_ERROR exit=${next_skill_exit} result=skip" >> "$_trace_log" 2>/dev/null || true
+    fi
 
     # --- AC-3: stagnate 検知（RESOLVE_FAILED 連続カウント） ---
     local _fail_count="${RESOLVE_FAIL_COUNT[$entry]:-0}"
@@ -933,30 +939,43 @@ inject_next_workflow() {
     return 1
   fi
 
-  # --- tmux pane 入力待ち確認（最大3回、2秒間隔） ---
-  # #522: Claude Code は Unicode prompt `❯` を使い、最終行に status bar が来ることがある。
-  # bash regex の文字クラスに `>` を直接書くとシンタックスエラーになるため変数経由で渡す。
-  # 末尾 6 行を走査することで status bar 行を skip して prompt 行を発見する。
-  local _prompt_re='[>$❯][[:space:]]*$'
+  # --- session-state.sh ベースの input-waiting 検出（最大3回、exponential backoff） ---
+  # #707: tmux capture-pane + regex から session-state.sh state に置換。
+  # false positive/negative を排除し、exponential backoff で long-running processing に対応。
+  # USE_SESSION_STATE=false 時は tmux フォールバックを維持（session-state.sh 非存在環境向け、設計上意図的）。
   local prompt_found=0
-  local pane_tail
-  for _i in 1 2 3; do
-    pane_tail=$(tmux capture-pane -t "$window_name" -p 2>/dev/null | tail -6 || true)
-    while IFS= read -r _line; do
-      if [[ "$_line" =~ $_prompt_re ]]; then
+  if [[ "${USE_SESSION_STATE:-false}" == "true" ]]; then
+    local _state
+    for _i in 1 2 3; do
+      _state=$("$SESSION_STATE_CMD" state "$window_name" 2>/dev/null) || _state="unknown"
+      if [[ "$_state" == "input-waiting" ]]; then
         prompt_found=1
         break
       fi
-    done <<< "$pane_tail"
-    if [[ "$prompt_found" -eq 1 ]]; then
-      break
-    fi
-    sleep 2
-  done
+      sleep $(( 2 ** _i ))  # 2s, 4s, 8s
+    done
+  else
+    # session-state.sh 非利用時フォールバック: tmux capture-pane + regex
+    local _prompt_re='[>$❯][[:space:]]*$'
+    local pane_tail
+    for _i in 1 2 3; do
+      pane_tail=$(tmux capture-pane -t "$window_name" -p 2>/dev/null | tail -6 || true)
+      while IFS= read -r _line; do
+        if [[ "$_line" =~ $_prompt_re ]]; then
+          prompt_found=1
+          break
+        fi
+      done <<< "$pane_tail"
+      if [[ "$prompt_found" -eq 1 ]]; then
+        break
+      fi
+      sleep $(( 2 ** _i ))  # 2s, 4s, 8s
+    done
+  fi
 
   if [[ "$prompt_found" -eq 0 ]]; then
     echo "[orchestrator] Issue #${issue}: WARNING: inject タイムアウト — ${POLL_INTERVAL:-10}秒後に再チェック" >&2
-    echo "[${_trace_ts}] issue=${issue} skill=${_skill_safe} result=timeout reason=\"prompt not found after 3 retries\"" >> "$_trace_log" 2>/dev/null || true
+    echo "[${_trace_ts}] issue=${issue} category=INJECT_TIMEOUT skill=${_skill_safe} result=timeout reason=\"input-waiting not detected after 3 retries\"" >> "$_trace_log" 2>/dev/null || true
     return 1
   fi
 
@@ -975,7 +994,7 @@ inject_next_workflow() {
   # --- trace ログ: inject 成功（タイムスタンプを inject 完了後に再取得） ---
   local _success_ts
   _success_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  echo "[${_success_ts}] issue=${issue} skill=${_skill_safe} result=success" >> "$_trace_log" 2>/dev/null || true
+  echo "[${_success_ts}] issue=${issue} category=INJECT_SUCCESS skill=${_skill_safe} result=success" >> "$_trace_log" 2>/dev/null || true
 
   # --- inject 履歴記録（ADR-018: workflow_done クリアを廃止、workflow_injected で追跡）---
   local injected_at

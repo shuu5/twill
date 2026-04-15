@@ -1,0 +1,133 @@
+change_id: issue-707
+generated_at: "2026-04-15T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "resolve-not-ready"
+    name: "non-terminal step での resolve 失敗"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 7
+    requirement: "resolve ログレベル分離"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[RESOLVE_NOT_READY]: exit=1 時に WARNING を出力しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-not-ready-trace"
+    name: "trace ログに RESOLVE_NOT_READY カテゴリが記録される"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 45
+    requirement: "trace ログカテゴリ記録"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[trace-RESOLVE_NOT_READY]: trace ログファイルに RESOLVE_NOT_READY エントリが追記される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "resolve-error"
+    name: "予期せぬ resolve エラー"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 12
+    requirement: "resolve ログレベル分離"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[RESOLVE_ERROR]: exit=2 時に WARNING ログを出力する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "input-waiting-detection"
+    name: "Worker が terminal step で input-waiting 状態"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 19
+    requirement: "session-state.sh ベースの input-waiting 検出"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[input-waiting]: input-waiting 検出時に inject を実行する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject-success-trace"
+    name: "trace ログに INJECT_SUCCESS カテゴリが記録される"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 49
+    requirement: "trace ログカテゴリ記録"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[trace-INJECT_SUCCESS]: trace ログファイルに INJECT_SUCCESS エントリが追記される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "processing-backoff"
+    name: "Worker がまだ processing 中"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 23
+    requirement: "session-state.sh ベースの input-waiting 検出"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[processing]: processing が3回続く場合に trace ログに category=INJECT_TIMEOUT を記録する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "exponential-backoff-2s"
+    name: "1回目のリトライで input-waiting 検出"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 31
+    requirement: "prompt 検出 exponential backoff"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[exponential-backoff]: 1回目のスリープが 2 秒である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "exponential-backoff-4s"
+    name: "exponential backoff: 2s, 4s, 8s"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 29
+    requirement: "prompt 検出 exponential backoff"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[exponential-backoff]: 2回目のスリープが 4 秒である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "exponential-backoff-8s"
+    name: "3回全てのリトライで input-waiting が検出されない"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 35
+    requirement: "prompt 検出 exponential backoff"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[exponential-backoff]: 3回目のスリープが 8 秒である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "inject-timeout-trace"
+    name: "trace ログに INJECT_TIMEOUT カテゴリが記録される"
+    spec_file: "specs/orchestrator-inject.md"
+    spec_line: 53
+    requirement: "trace ログカテゴリ記録"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/inject-next-workflow-issue-707.bats"
+    test_name: "issue-707[trace-INJECT_TIMEOUT]: trace ログファイルに INJECT_TIMEOUT エントリが追記される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
