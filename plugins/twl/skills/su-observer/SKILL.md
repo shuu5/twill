@@ -102,13 +102,57 @@ session-comm.sh   # inject/介入（plugins/session/scripts/session-comm.sh）
 **起動パターン（文脈判断で選択）:**
 
 - Issue 実装 → `cld-spawn` で co-autopilot を起動 → `cld-observe-loop` で能動 observe
-- Issue 作成 → `cld-spawn` で co-issue を起動 → `cld-observe`（単発）または指示待ち
-- アーキテクチャ設計 → `cld-spawn` で co-architect を起動 → `cld-observe`（単発）
+- Issue 作成/議論 → `cld-spawn` で co-issue を起動 → **proxy 対話ループ**（下記参照）
+- アーキテクチャ設計 → `cld-spawn` で co-architect を起動 → **proxy 対話ループ**（下記参照）
 - プロジェクト管理 → `cld-spawn` で co-project を起動 → 指示待ち
 - テスト実行 → `cld-spawn` で co-self-improve を起動（spawn 時プロンプトに対象・タスク・観察モードを含める）→ `cld-observe`（単発）
 - その他 controller → `cld-spawn` で co-utility を起動 → 指示待ち
 
-**重要**: co-autopilot のみ `cld-observe-loop` による能動 observe を行う。他 controller は `cld-observe`（単発）で状況確認するか、指示待ちに戻る。
+**重要**: co-autopilot は `cld-observe-loop` で能動 observe。co-issue / co-architect は **proxy 対話ループ** で対話に参加。他 controller は `cld-observe`（単発）または指示待ち。
+
+### 対話型コントローラーとの proxy 対話（co-issue / co-architect）
+
+co-issue・co-architect は **対話的コントローラー** であり、Phase 進行中に AskUserQuestion でユーザー入力を求める。observer が spawn した場合、**observer 自身がユーザーの代理（proxy）として対話に参加しなければならない**（SHALL）。spawn 後に「指示待ち」に戻ってはならない。
+
+**proxy 対話ループ:**
+
+```
+1. cld-spawn で controller を起動（ユーザーの要求を spawn プロンプトに含める）
+2. 以下を繰り返す:
+   a. session-state.sh state <window> で input-waiting を検知するまで 15-30 秒間隔でポーリング
+   b. input-waiting 検知 → tmux capture-pane -t <window> -p -S -300 で出力をキャプチャ
+   c. キャプチャ内容から AskUserQuestion の選択肢（[A]/[B]/[C]、[dispatch]/[adjust] 等）を読む
+   d. ユーザーの元の指示と文脈に基づいて応答を判断
+   e. session-comm.sh inject <window> "<response>" で応答を送信
+3. controller が全 Phase を完了して最終結果を出力 → ループ終了
+4. キャプチャで最終結果を読み取り、ユーザーに報告
+```
+
+**キャプチャのコツ:**
+- Claude Code の応答テキストは tmux scrollback に残りにくい。`-S -300` 以上のバッファで取得する
+- AskUserQuestion のパターン（`[A]`, `[B]`, `[dispatch]` 等の選択肢テキスト）を grep で検索
+- 応答テキストが完全に見えない場合でも、`Effecting...` 後に `input-waiting` になった時点で Phase が進んだと推定できる
+
+**inject 時の注意:**
+- `session-state.sh state` で `input-waiting` を確認してから inject すること（MUST）
+- `processing` 状態で inject するとキューに入り、Escape が対話フローを破壊する
+- inject 内容は AskUserQuestion の選択肢に対応する簡潔な回答にする（例: `A`、`dispatch`）
+
+**co-issue refine の proxy 対話例:**
+```
+observer → cld-spawn co-issue "refine #695 ..."
+  → co-issue: Phase 1 探索・分析 → summary-gate で [A]/[B]/[C] 選択肢を表示
+  → observer: capture で質問を読む → 内容に問題なければ "A" を inject
+  → co-issue: Phase 2 → dispatch 確認で [dispatch]/[adjust]/[cancel] を表示
+  → observer: capture で確認 → "dispatch" を inject
+  → co-issue: Phase 3 specialist レビュー実行 → Phase 4 結果表示
+  → observer: capture で最終結果を読む → ユーザーに報告
+```
+
+**observer 独自判断での応答（SHOULD）:**
+- summary-gate [B] 修正: observer がコードベース調査に基づき修正点を具体的に inject
+- dispatch [adjust]: 依存関係に問題を発見した場合に調整を inject
+- 判断に迷う場合はユーザーにエスカレート（SU-2 相当）
 
 ### 既存セッションの状態確認が必要な場合
 
