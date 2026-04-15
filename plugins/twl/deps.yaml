@@ -15,6 +15,7 @@ plugin: twl
 entry_points:
   - skills/co-autopilot/SKILL.md
   - skills/co-issue/SKILL.md
+  - skills/co-explore/SKILL.md
   - skills/co-project/SKILL.md
   - skills/co-architect/SKILL.md
   - skills/co-utility/SKILL.md
@@ -215,7 +216,7 @@ skills:
       - workflow: workflow-issue-lifecycle
       - workflow: workflow-issue-refine
       - script: issue-lifecycle-orchestrator
-    description: "要望をGitHub Issueに変換するワークフロー（thin orchestrator）。DAG 依存解決 + level dispatch + aggregate"
+    description: "要望をGitHub Issueに変換するワークフロー（thin orchestrator）。explore-summary 入力必須。DAG 依存解決 + level dispatch + aggregate"
 
   co-project:
     type: controller
@@ -245,6 +246,15 @@ skills:
       - reference: ref-deps-format
     description: "プロジェクト管理（create / migrate / snapshot / plugin-create / plugin-diagnose / prompt-audit）"
 
+  co-explore:
+    type: controller
+    path: skills/co-explore/SKILL.md
+    effort: medium
+    tools: []
+    spawnable_by: [user]
+    can_spawn: []
+    description: "問題探索の独立コントローラー。explore-summary を .explore/<N>/summary.md に保存し Issue リンクで co-issue / co-architect に接続"
+
   co-architect:
     type: controller
     refined_by: "ref-prompt-guide@2c7a62f2"
@@ -255,14 +265,13 @@ skills:
     spawnable_by: [user]
     can_spawn: [atomic, reference, workflow]
     calls:
-      - atomic: explore
       - atomic: architect-completeness-check
       - atomic: architect-group-refine
       - atomic: evaluate-architecture
       - reference: ref-architecture-spec
       - reference: ref-architecture
       - workflow: workflow-arch-review
-    description: "対話的アーキテクチャ構築ワークフロー（branch/PR + review フロー付き）"
+    description: "対話的アーキテクチャ構築ワークフロー（explore-summary 入力、branch/PR + review フロー付き）"
 
   co-utility:
     type: controller
@@ -313,7 +322,7 @@ skills:
     tools: [Agent(observer-evaluator)]
     spawnable_by: [user]
     can_spawn: [workflow, atomic, specialist, reference]
-    supervises: [co-autopilot, co-issue, co-architect, co-project, co-utility, co-self-improve]
+    supervises: [co-autopilot, co-issue, co-explore, co-architect, co-project, co-utility, co-self-improve]
     calls:
       - atomic: observe-once
       - atomic: problem-detect

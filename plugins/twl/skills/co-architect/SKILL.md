@@ -2,7 +2,7 @@
 name: twl:co-architect
 description: |
   対話的アーキテクチャ構築ワークフロー。
-  explore を活用し architecture/ に設計意図を段階的にキャプチャ。
+  explore-summary リンク付き Issue を入力として architecture/ に設計意図を段階的にキャプチャ。
   branch 上で作業し PR 経由でレビュー・マージするフローを含む。
   完全性チェックまで実行し、Issue 化は co-issue に委譲。
 
@@ -20,7 +20,7 @@ maxTurns: 60
 
 # co-architect
 
-対話的アーキテクチャ構築 → branch/PR + workflow-arch-review 経由マージ。Issue 化は co-issue に委譲。Non-implementation controller（chain-driven 不要）。
+対話的アーキテクチャ構築 → branch/PR + workflow-arch-review 経由マージ。Issue 化は co-issue に委譲。explore-summary リンク付き Issue を入力として開始。Non-implementation controller（chain-driven 不要）。
 
 ## Step 0: --group 分岐
 
@@ -40,9 +40,9 @@ TaskCreate 「Architecture: コンテキスト収集」(status: in_progress)
 
 TaskUpdate → completed
 
-## Step 2: Worktree 作成 + 対話的アーキテクチャ探索
+## Step 2: Worktree 作成 + explore-summary 読み込み + アーキテクチャ探索
 
-TaskCreate 「Architecture: Worktree 作成 + 対話的探索」(status: in_progress)
+TaskCreate 「Architecture: Worktree 作成 + 探索」(status: in_progress)
 
 **Worktree 作成:**
 
@@ -52,20 +52,23 @@ BRANCH="docs/arch-${TIMESTAMP}"
 python3 -m twl.autopilot.worktree create "${BRANCH}"
 ```
 
-作成した worktree ディレクトリに移動し、以下の探索を実施する。
+作成した worktree ディレクトリに移動する。
 
-**対話的探索（worktree 上）:**
+**explore-summary 読み込み:**
 
-`/twl:explore` を Skill tool で呼び出す。以下をコンテキストとして注入:
+入力 Issue に explore-summary がリンクされている場合、`twl explore-link read <N>` で読み込み、探索の出発点として活用する。リンクがない場合は Issue body から直接コンテキストを取得する。
 
-> アーキテクチャ探索モード: DDD の Bounded Context、ユビキタス言語、Context Map を使い設計を構造化。
-> 確定した設計事項は architecture/ の対応ファイルに Write:
-> - ビジョン → `architecture/vision.md`
-> - ドメインモデル → `architecture/domain/model.md`
-> - 用語定義 → `architecture/domain/glossary.md`
-> - Bounded Context → `architecture/domain/contexts/<name>.md`
-> - 設計判断 → `architecture/decisions/<NNNN>-<title>.md`
-> - API 境界 → `architecture/contracts/<name>.md`
+**対話的アーキテクチャ探索（worktree 上）:**
+
+explore-summary（または Issue body）を基に、ユーザーと対話しながらアーキテクチャ設計を構造化する。DDD の Bounded Context、ユビキタス言語、Context Map を使い設計を構造化。
+
+確定した設計事項は architecture/ の対応ファイルに Write:
+- ビジョン → `architecture/vision.md`
+- ドメインモデル → `architecture/domain/model.md`
+- 用語定義 → `architecture/domain/glossary.md`
+- Bounded Context → `architecture/domain/contexts/<name>.md`
+- 設計判断 → `architecture/decisions/<NNNN>-<title>.md`
+- API 境界 → `architecture/contracts/<name>.md`
 
 TaskUpdate → completed
 
