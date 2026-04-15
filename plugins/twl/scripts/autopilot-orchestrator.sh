@@ -942,6 +942,7 @@ inject_next_workflow() {
   # --- session-state.sh ベースの input-waiting 検出（最大3回、exponential backoff） ---
   # #707: tmux capture-pane + regex から session-state.sh state に置換。
   # false positive/negative を排除し、exponential backoff で long-running processing に対応。
+  # USE_SESSION_STATE=false 時は tmux フォールバックを維持（session-state.sh 非存在環境向け、設計上意図的）。
   local prompt_found=0
   if [[ "${USE_SESSION_STATE:-false}" == "true" ]]; then
     local _state
