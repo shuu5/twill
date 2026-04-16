@@ -153,8 +153,8 @@ while IFS= read -r line; do
     wt_path="${BASH_REMATCH[1]}"
   elif [[ "$line" =~ ^branch\ refs/heads/(.+)$ ]]; then
     wt_branch="${BASH_REMATCH[1]}"
-    # autopilot が作成した worktree のみ対象（feat/ プレフィックス）
-    if [[ "$wt_branch" =~ ^feat/ && -n "${wt_path:-}" ]]; then
+    # autopilot が作成した worktree のみ対象（全 6 プレフィックス対象: _ALLOWED_PREFIXES 参照 worktree.py:31）
+    if [[ "$wt_branch" =~ ^(feat|fix|refactor|docs|test|chore)/ && -n "${wt_path:-}" ]]; then
       # アーカイブ済み state file の branch と照合
       # active_branches に含まれていない = 孤立 worktree
       if [[ -z "${active_branches[$wt_branch]+_}" ]]; then
@@ -171,18 +171,29 @@ while IFS= read -r line; do
           done
         fi
 
-        if $is_archived; then
-          if $DRY_RUN; then
-            echo "[dry-run] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
+        # active にも archive にも存在しない（真の孤立）、または archive 済み → 削除
+        # （元コードの `if $is_archived` 条件反転バグを修正: 真の孤立を含む全ケースを対象）
+        if $DRY_RUN; then
+          if $is_archived; then
+            echo "[dry-run] 孤立 worktree 削除: $wt_path (branch=$wt_branch, archived)" >&2
           else
-            if bash "$SCRIPTS_ROOT/worktree-delete.sh" "$wt_branch" 2>/dev/null; then
-              echo "[cleanup] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
-            else
-              echo "[cleanup] ⚠️ worktree 削除失敗: $wt_branch（続行）" >&2
-            fi
+            echo "[dry-run] 孤立 worktree 削除: $wt_path (branch=$wt_branch, 真の孤立: state file なし)" >&2
           fi
-          ORPHAN_COUNT=$((ORPHAN_COUNT + 1))
+        else
+          if bash "$SCRIPTS_ROOT/worktree-delete.sh" "$wt_branch" 2>/dev/null; then
+            echo "[cleanup] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
+            # リモートブランチも削除（パストラバーサル防止ガード: cleanup_worker() L427 相当）
+            if [[ -n "$wt_branch" && "$wt_branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
+              git push origin --delete "$wt_branch" 2>/dev/null || \
+                echo "[cleanup] ⚠️ リモートブランチ削除失敗: $wt_branch（続行）" >&2
+            else
+              echo "[cleanup] ⚠️ ブランチ名に不正な文字: $wt_branch — リモート削除スキップ" >&2
+            fi
+          else
+            echo "[cleanup] ⚠️ worktree 削除失敗: $wt_branch（続行）" >&2
+          fi
         fi
+        ORPHAN_COUNT=$((ORPHAN_COUNT + 1))
       fi
     fi
     wt_path=""
