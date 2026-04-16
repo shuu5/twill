@@ -1211,6 +1211,77 @@ generate_summary() {
 }
 
 # =============================================================================
+# 起動時クリーンアップ（startup cleanup）
+# merged 済みローカルブランチの prune + git fetch --prune
+# 7 日超の孤立ブランチのみ自動削除、7 日以内は WARNING のみ
+# =============================================================================
+
+startup_cleanup() {
+  local threshold_days="${AUTOPILOT_STARTUP_CLEANUP_DAYS:-7}"
+  local now_epoch threshold_epoch
+  now_epoch=$(date +%s)
+  threshold_epoch=$(( now_epoch - threshold_days * 86400 ))
+
+  echo "[orchestrator] startup cleanup 開始（threshold=${threshold_days}日）" >&2
+
+  # git fetch --prune: リモート削除済みブランチのローカル tracking ref を削除
+  git fetch --prune 2>/dev/null || echo "[orchestrator] ⚠️ git fetch --prune 失敗（続行）" >&2
+
+  # autopilot 対象プレフィックスパターン（_ALLOWED_PREFIXES: worktree.py:31 と同期）
+  local prefixes_pattern="^(feat|fix|refactor|docs|test|chore)/"
+
+  # origin/main にマージ済みのローカルブランチを検出
+  local -a merged_branches=()
+  while IFS= read -r _raw_branch; do
+    local _branch="${_raw_branch#"  "}"  # 先頭空白除去
+    [[ "$_branch" =~ $prefixes_pattern ]] || continue
+    # ブランチ名バリデーション（コマンドインジェクション防止）
+    [[ "$_branch" =~ ^[a-zA-Z0-9._/\-]+$ ]] || continue
+    merged_branches+=("$_branch")
+  done < <(git branch --merged origin/main 2>/dev/null | grep -v '^\* ' | grep -v '^  main$' || true)
+
+  if [[ ${#merged_branches[@]} -eq 0 ]]; then
+    echo "[orchestrator] startup cleanup: merged 済みブランチなし" >&2
+    return 0
+  fi
+
+  # active な issue state から branch 一覧を取得（active ブランチは削除しない）
+  declare -A _sc_active_branches
+  if [[ -d "$AUTOPILOT_DIR/issues" ]]; then
+    for _sc_sf in "$AUTOPILOT_DIR/issues"/issue-*.json; do
+      [[ -f "$_sc_sf" ]] || continue
+      _sc_b=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('branch',''))" "$_sc_sf" 2>/dev/null || echo "")
+      [[ -n "$_sc_b" ]] && _sc_active_branches["$_sc_b"]=1
+    done
+  fi
+
+  local deleted_count=0 warned_count=0
+
+  for _sc_branch in "${merged_branches[@]}"; do
+    # active な issue のブランチは削除しない
+    [[ -n "${_sc_active_branches[$_sc_branch]+_}" ]] && continue
+
+    # ブランチの最終コミット日時で経過時間を判定
+    local _sc_branch_epoch
+    _sc_branch_epoch=$(git log -1 --format="%ct" "$_sc_branch" 2>/dev/null || echo "0")
+
+    if [[ "${_sc_branch_epoch:-0}" -lt "$threshold_epoch" ]]; then
+      # 7日超: 自動削除
+      echo "[orchestrator] startup cleanup: merged ブランチ削除 (${threshold_days}日超): $_sc_branch" >&2
+      git branch -d "$_sc_branch" 2>/dev/null || \
+        echo "[orchestrator] ⚠️ startup cleanup: ブランチ削除失敗: $_sc_branch（続行）" >&2
+      deleted_count=$((deleted_count + 1))
+    else
+      # 7日以内: WARNING のみ（--force が必要）
+      echo "[orchestrator] startup cleanup: WARNING: merged ブランチ残存 (${threshold_days}日以内): $_sc_branch" >&2
+      warned_count=$((warned_count + 1))
+    fi
+  done
+
+  echo "[orchestrator] startup cleanup 完了: 削除=${deleted_count}件, 警告=${warned_count}件" >&2
+}
+
+# =============================================================================
 # メイン実行
 # =============================================================================
 
@@ -1238,6 +1309,9 @@ echo "[orchestrator] Phase ${PHASE} 開始" >&2
 # --- trace: PID と起動時刻を記録 ---
 _orch_started_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 echo "[${_orch_started_at}] orchestrator_pid=$$ phase=${PHASE} started_at=${_orch_started_at}" >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE}.log" 2>/dev/null || true
+
+# --- 起動時クリーンアップ: merged ブランチ prune + git fetch --prune ---
+startup_cleanup || echo "[orchestrator] ⚠️ startup cleanup 失敗（続行）" >&2
 
 # Step 1: Phase 内 Issue リスト取得
 get_phase_issues "$PHASE" "$PLAN_FILE"
