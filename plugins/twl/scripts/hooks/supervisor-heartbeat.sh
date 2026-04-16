@@ -6,19 +6,14 @@ set -uo pipefail
 # stdin を消費
 INPUT=$(cat 2>/dev/null || echo "")
 
-# AUTOPILOT_DIR 未設定 or 空 → 通常セッション、何もしない
-if [[ -z "${AUTOPILOT_DIR:-}" ]]; then
-  exit 0
-fi
-
-# AUTOPILOT_DIR が実在するディレクトリでなければ無視
-if [[ ! -d "${AUTOPILOT_DIR}" ]]; then
+# git リポジトリ内でなければ何もしない（git 外セッションは静かに終了）
+GIT_COMMON_DIR=$(git rev-parse --git-common-dir 2>/dev/null)
+if [[ -z "$GIT_COMMON_DIR" ]]; then
   exit 0
 fi
 
 # イベントディレクトリ（main/.supervisor/events/）
-# AUTOPILOT_DIR = main/.autopilot なので ../ が main/ を指す
-EVENTS_DIR="${AUTOPILOT_DIR}/../.supervisor/events"
+EVENTS_DIR="${GIT_COMMON_DIR}/../main/.supervisor/events"
 mkdir -p "$EVENTS_DIR" 2>/dev/null || exit 0
 
 # session_id 取得: stdin JSON → CLAUDE_SESSION_ID 環境変数 → PID フォールバック
@@ -36,12 +31,25 @@ if [[ -z "$CWD" ]]; then
   CWD="${PWD:-}"
 fi
 
+# JSON エスケープ（ダブルクォート・バックスラッシュ・改行等を処理）
+json_escape_simple() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\t'/\\t}"
+  s="${s//$'\r'/\\r}"
+  printf '%s' "$s"
+}
+
+CWD_ESC=$(json_escape_simple "$CWD")
+
 # アトミック書き込み（一時ファイル → mv）
 TMP_FILE="${EVENTS_DIR}/heartbeat-${SESSION_ID}.tmp.$$"
 TARGET_FILE="${EVENTS_DIR}/heartbeat-${SESSION_ID}"
 
 printf '{"session_id":"%s","timestamp":%s,"cwd":"%s"}\n' \
-  "$SESSION_ID" "$TIMESTAMP" "$CWD" > "$TMP_FILE" 2>/dev/null || { rm -f "$TMP_FILE" 2>/dev/null; exit 0; }
+  "$SESSION_ID" "$TIMESTAMP" "$CWD_ESC" > "$TMP_FILE" 2>/dev/null || { rm -f "$TMP_FILE" 2>/dev/null; exit 0; }
 mv "$TMP_FILE" "$TARGET_FILE" 2>/dev/null || { rm -f "$TMP_FILE" 2>/dev/null; exit 0; }
 
 exit 0

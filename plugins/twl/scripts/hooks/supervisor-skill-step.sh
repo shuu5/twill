@@ -7,18 +7,14 @@ set -uo pipefail
 # stdin を消費
 INPUT=$(cat 2>/dev/null || echo "")
 
-# AUTOPILOT_DIR 未設定 or 空 → 通常セッション、何もしない
-if [[ -z "${AUTOPILOT_DIR:-}" ]]; then
-  exit 0
-fi
-
-# AUTOPILOT_DIR が実在するディレクトリでなければ無視
-if [[ ! -d "${AUTOPILOT_DIR}" ]]; then
+# git リポジトリ内でなければ何もしない（git 外セッションは静かに終了）
+GIT_COMMON_DIR=$(git rev-parse --git-common-dir 2>/dev/null)
+if [[ -z "$GIT_COMMON_DIR" ]]; then
   exit 0
 fi
 
 # イベントディレクトリ（main/.supervisor/events/）
-EVENTS_DIR="${AUTOPILOT_DIR}/../.supervisor/events"
+EVENTS_DIR="${GIT_COMMON_DIR}/../main/.supervisor/events"
 mkdir -p "$EVENTS_DIR" 2>/dev/null || exit 0
 
 # session_id 取得
