@@ -939,21 +939,16 @@ inject_next_workflow() {
     return 1
   fi
 
-  # --- session-state.sh ベースの input-waiting 検出（最大3回、exponential backoff） ---
+  # --- session-state.sh ベースの input-waiting 検出 ---
   # #707: tmux capture-pane + regex から session-state.sh state に置換。
-  # false positive/negative を排除し、exponential backoff で long-running processing に対応。
+  # #722: exponential backoff ループを session-state.sh wait --timeout 30 に置換。
+  # 1秒間隔ポーリングで短い input-waiting ウィンドウ（1-3秒）を確実に検出する。
   # USE_SESSION_STATE=false 時は tmux フォールバックを維持（session-state.sh 非存在環境向け、設計上意図的）。
   local prompt_found=0
   if [[ "${USE_SESSION_STATE:-false}" == "true" ]]; then
-    local _state
-    for _i in 1 2 3; do
-      _state=$("$SESSION_STATE_CMD" state "$window_name" 2>/dev/null) || _state="unknown"
-      if [[ "$_state" == "input-waiting" ]]; then
-        prompt_found=1
-        break
-      fi
-      sleep $(( 2 ** _i ))  # 2s, 4s, 8s
-    done
+    if "$SESSION_STATE_CMD" wait "$window_name" input-waiting --timeout 30 2>/dev/null; then
+      prompt_found=1
+    fi
   else
     # session-state.sh 非利用時フォールバック: tmux capture-pane + regex
     local _prompt_re='[>$❯][[:space:]]*$'
@@ -975,7 +970,7 @@ inject_next_workflow() {
 
   if [[ "$prompt_found" -eq 0 ]]; then
     echo "[orchestrator] Issue #${issue}: WARNING: inject タイムアウト — ${POLL_INTERVAL:-10}秒後に再チェック" >&2
-    echo "[${_trace_ts}] issue=${issue} category=INJECT_TIMEOUT skill=${_skill_safe} result=timeout reason=\"input-waiting not detected after 3 retries\"" >> "$_trace_log" 2>/dev/null || true
+    echo "[${_trace_ts}] issue=${issue} category=INJECT_TIMEOUT skill=${_skill_safe} result=timeout reason=\"input-waiting not detected within 30s\"" >> "$_trace_log" 2>/dev/null || true
     return 1
   fi
 

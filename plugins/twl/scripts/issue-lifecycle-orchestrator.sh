@@ -377,15 +377,9 @@ wait_for_batch() {
           echo "[issue-lifecycle-orchestrator] ${subdir##*/}: ウィンドウ消失・report.json なし — フォールバック生成" >&2
           mkdir -p "${subdir}/OUT"
           _generate_fallback_report "$subdir" "window_lost"
-        elif [[ "$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)" == "input-waiting" ]]; then
-          # Window 存在 + input-waiting → debounce で transient false positive を排除 (#709)
-          sleep 5
-          local _recheck
-          _recheck=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
-          if [[ "$_recheck" != "input-waiting" ]]; then
-            all_done=false
-            continue
-          fi
+        elif "${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" wait "$window_name" input-waiting --timeout 10 2>/dev/null; then
+          # Window 存在 + input-waiting → #722: debounce を wait --timeout 10 に統合
+          # (旧: スナップショット + sleep 5 + recheck で transient false positive を排除 #709)
           # STATE ファイルを確認して判断 (#672)
           local state_file="${subdir}/STATE"
           local current_state=""
