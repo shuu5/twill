@@ -141,14 +141,20 @@ test_heartbeat_no_autopilot_dir() {
 }
 
 test_heartbeat_creates_event_file() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"test-sess-01","cwd":"/tmp/test"}'
   run_hook_with_autopilot "supervisor-heartbeat.sh" "$session_json"
-  local event_file="${EVENTS_DIR_TEST}/heartbeat-test-sess-01"
-  [[ -f "$event_file" ]] || return 1
-  # JSON フォーマット検証
-  jq -e '.session_id == "test-sess-01"' "$event_file" > /dev/null 2>&1 || return 1
-  jq -e '.timestamp | type == "number"' "$event_file" > /dev/null 2>&1 || return 1
-  jq -e 'has("cwd")' "$event_file" > /dev/null 2>&1 || return 1
+  local event_file="${GIT_EVENTS_DIR}/heartbeat-test-sess-01"
+  local result=0
+  [[ -f "$event_file" ]] || result=1
+  if [[ $result -eq 0 ]]; then
+    # JSON フォーマット検証
+    jq -e '.session_id == "test-sess-01"' "$event_file" > /dev/null 2>&1 || result=1
+    jq -e '.timestamp | type == "number"' "$event_file" > /dev/null 2>&1 || result=1
+    jq -e 'has("cwd")' "$event_file" > /dev/null 2>&1 || result=1
+  fi
+  cleanup_git_event_file "heartbeat-test-sess-01"
+  return $result
 }
 
 test_heartbeat_exit_zero_on_failure() {
@@ -199,13 +205,19 @@ test_input_wait_no_autopilot_dir() {
 }
 
 test_input_wait_creates_event_file() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"wait-sess-01"}'
   run_hook_with_autopilot "supervisor-input-wait.sh" "$session_json"
-  local event_file="${EVENTS_DIR_TEST}/input-wait-wait-sess-01"
-  [[ -f "$event_file" ]] || return 1
-  jq -e '.session_id == "wait-sess-01"' "$event_file" > /dev/null 2>&1 || return 1
-  jq -e '.event == "input-wait"' "$event_file" > /dev/null 2>&1 || return 1
-  jq -e '.timestamp | type == "number"' "$event_file" > /dev/null 2>&1 || return 1
+  local event_file="${GIT_EVENTS_DIR}/input-wait-wait-sess-01"
+  local result=0
+  [[ -f "$event_file" ]] || result=1
+  if [[ $result -eq 0 ]]; then
+    jq -e '.session_id == "wait-sess-01"' "$event_file" > /dev/null 2>&1 || result=1
+    jq -e '.event == "input-wait"' "$event_file" > /dev/null 2>&1 || result=1
+    jq -e '.timestamp | type == "number"' "$event_file" > /dev/null 2>&1 || result=1
+  fi
+  cleanup_git_event_file "input-wait-wait-sess-01"
+  return $result
 }
 
 test_input_wait_no_stdout() {
@@ -219,14 +231,19 @@ test_input_wait_no_stdout() {
 # =============================================================================
 
 test_input_clear_removes_file() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_id="clear-sess-01"
-  local event_file="${EVENTS_DIR_TEST}/input-wait-${session_id}"
-  # ファイルを先に作成
+  # hook は GIT_EVENTS_DIR に書くので、ファイルも GIT_EVENTS_DIR に作成する
+  mkdir -p "$GIT_EVENTS_DIR"
+  local event_file="${GIT_EVENTS_DIR}/input-wait-${session_id}"
   echo '{"event":"input-wait"}' > "$event_file"
   [[ -f "$event_file" ]] || return 1
   local session_json="{\"session_id\":\"${session_id}\"}"
   run_hook_with_autopilot "supervisor-input-clear.sh" "$session_json"
-  [[ ! -f "$event_file" ]] || return 1
+  local result=0
+  [[ ! -f "$event_file" ]] || result=1
+  cleanup_git_event_file "input-wait-${session_id}"
+  return $result
 }
 
 test_input_clear_no_file_ok() {
@@ -291,14 +308,20 @@ test_skill_step_no_autopilot_dir() {
 }
 
 test_skill_step_creates_event_file() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"skill-sess-01","tool_input":{"skill":"workflow-setup","args":"#123"}}'
   run_hook_with_autopilot "supervisor-skill-step.sh" "$session_json"
-  local event_file="${EVENTS_DIR_TEST}/skill-step-skill-sess-01"
-  [[ -f "$event_file" ]] || return 1
-  jq -e '.session_id == "skill-sess-01"' "$event_file" > /dev/null 2>&1 || return 1
-  jq -e '.timestamp | type == "number"' "$event_file" > /dev/null 2>&1 || return 1
-  jq -e 'has("skill")' "$event_file" > /dev/null 2>&1 || return 1
-  jq -e 'has("tool_input")' "$event_file" > /dev/null 2>&1 || return 1
+  local event_file="${GIT_EVENTS_DIR}/skill-step-skill-sess-01"
+  local result=0
+  [[ -f "$event_file" ]] || result=1
+  if [[ $result -eq 0 ]]; then
+    jq -e '.session_id == "skill-sess-01"' "$event_file" > /dev/null 2>&1 || result=1
+    jq -e '.timestamp | type == "number"' "$event_file" > /dev/null 2>&1 || result=1
+    jq -e 'has("skill")' "$event_file" > /dev/null 2>&1 || result=1
+    jq -e 'has("tool_input")' "$event_file" > /dev/null 2>&1 || result=1
+  fi
+  cleanup_git_event_file "skill-step-skill-sess-01"
+  return $result
 }
 
 test_skill_step_no_stdout() {
@@ -337,13 +360,19 @@ test_session_end_no_autopilot_dir() {
 }
 
 test_session_end_creates_event_file() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"end-sess-01"}'
   run_hook_with_autopilot "supervisor-session-end.sh" "$session_json"
-  local event_file="${EVENTS_DIR_TEST}/session-end-end-sess-01"
-  [[ -f "$event_file" ]] || return 1
-  jq -e '.session_id == "end-sess-01"' "$event_file" > /dev/null 2>&1 || return 1
-  jq -e '.event == "session-end"' "$event_file" > /dev/null 2>&1 || return 1
-  jq -e '.timestamp | type == "number"' "$event_file" > /dev/null 2>&1 || return 1
+  local event_file="${GIT_EVENTS_DIR}/session-end-end-sess-01"
+  local result=0
+  [[ -f "$event_file" ]] || result=1
+  if [[ $result -eq 0 ]]; then
+    jq -e '.session_id == "end-sess-01"' "$event_file" > /dev/null 2>&1 || result=1
+    jq -e '.event == "session-end"' "$event_file" > /dev/null 2>&1 || result=1
+    jq -e '.timestamp | type == "number"' "$event_file" > /dev/null 2>&1 || result=1
+  fi
+  cleanup_git_event_file "session-end-end-sess-01"
+  return $result
 }
 
 test_session_end_no_stdout() {
