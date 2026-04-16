@@ -273,11 +273,36 @@ fi
 
 #### Step 4c: failure 対話
 
-failure または circuit_broken が 1 件以上の場合、AskUserQuestion で以下を確認:
+failure または circuit_broken が 1 件以上の場合、まず `report.json` の `reason` フィールドで失敗原因を判定する:
 
-- `[retry subset]` → `bash scripts/issue-lifecycle-orchestrator.sh --per-issue-dir ".controller-issue/<session-id>/per-issue/" --resume --model sonnet` で非 done のみ再実行
-- `[manual fix]` → 手動修正を依頼してユーザーに案内
-- `[accept partial]` → このまま完了
+**inject_exhausted 起因の場合（[D] 自動適用）:**
+
+`reason` が `inject_exhausted_*` にマッチする場合、[D] を自動実行する（ユーザー確認不要）。
+
+**[D] direct specialist spawn — 実行手順（MUST）:**
+
+1. **policies.json バリデーション**: 各非 done issue の `per-issue/<index>/IN/policies.json` について以下を検証する。バリデーション失敗時は `[A] retry` に切り替える:
+   - `specialists` キーが存在すること（必須）
+   - 値が文字列配列（`string[]`）であること
+   - 重複がないこと
+   - 各要素が既知の specialist 名（`"worker-codex-reviewer"`, `"issue-critic"`, `"issue-feasibility"`）に含まれること
+
+2. **全 specialist を並列 spawn**: `policies.json` の `specialists` 配列を読み込み、全 specialist を Agent tool で単一メッセージで並列 spawn する（省略・スキップ禁止）
+
+3. **完了待ちとタイムアウト**: 全 specialist の完了を待つ（タイムアウト: specialist あたり 300 秒）。タイムアウトした specialist は `timed_out` として記録する
+
+4. **completeness guard（MUST）**: 完了した specialist 名の集合（actual）と `policies.json["specialists"]` の集合（expected）を名前ベースで比較する:
+   - `missing = expected - actual` が空でない場合: 不足 specialist を 1 回リトライ spawn する
+   - リトライ後も不足の場合: `status: "failed"` として記録し、不足 specialist 名をユーザーに報告する
+   - **禁止**: `len(findings) >= len(specialists)` 等の findings 数による代替判定（findings=0 は正常実行と実行漏れを区別できないため）
+
+5. **findings 統合**: 完了した specialist の findings を `rounds/<round>/findings.yaml` に統合し、aggregate（Step 4b）フローを継続する
+
+**inject_exhausted 以外の failure の場合（AskUserQuestion）:**
+
+- `[A] retry subset` → `bash scripts/issue-lifecycle-orchestrator.sh --per-issue-dir ".controller-issue/<session-id>/per-issue/" --resume --model sonnet` で非 done のみ再実行
+- `[B] manual fix` → 手動修正を依頼してユーザーに案内
+- `[C] accept partial` → このまま完了（**ユーザーの明示的承認を確認してから実行すること**。デフォルト選択禁止）
 
 ## 終了時クリーンアップ（Phase 4 完了後）
 
