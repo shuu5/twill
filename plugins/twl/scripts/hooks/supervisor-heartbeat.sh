@@ -31,12 +31,25 @@ if [[ -z "$CWD" ]]; then
   CWD="${PWD:-}"
 fi
 
+# JSON エスケープ（ダブルクォート・バックスラッシュ・改行等を処理）
+json_escape_simple() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\t'/\\t}"
+  s="${s//$'\r'/\\r}"
+  printf '%s' "$s"
+}
+
+CWD_ESC=$(json_escape_simple "$CWD")
+
 # アトミック書き込み（一時ファイル → mv）
 TMP_FILE="${EVENTS_DIR}/heartbeat-${SESSION_ID}.tmp.$$"
 TARGET_FILE="${EVENTS_DIR}/heartbeat-${SESSION_ID}"
 
 printf '{"session_id":"%s","timestamp":%s,"cwd":"%s"}\n' \
-  "$SESSION_ID" "$TIMESTAMP" "$CWD" > "$TMP_FILE" 2>/dev/null || { rm -f "$TMP_FILE" 2>/dev/null; exit 0; }
+  "$SESSION_ID" "$TIMESTAMP" "$CWD_ESC" > "$TMP_FILE" 2>/dev/null || { rm -f "$TMP_FILE" 2>/dev/null; exit 0; }
 mv "$TMP_FILE" "$TARGET_FILE" 2>/dev/null || { rm -f "$TMP_FILE" 2>/dev/null; exit 0; }
 
 exit 0
