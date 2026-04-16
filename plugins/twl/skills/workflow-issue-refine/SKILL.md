@@ -132,6 +132,11 @@ mkdir -p "$PER_ISSUE_DIR/rounds/${round}"
 - `depth`: policies.depth（デフォルト: normal）
 - 結果を `rounds/<round>/findings.yaml` に書き込む
 
+**completeness guard（MUST）**: `issue-spec-review` の返却値 `specialist_results` のキー集合と `policies.specialists` 配列の集合を名前ベースで比較する:
+- `missing = Set(policies.specialists) - Set(specialist_results.keys())` が空でない場合: 不足 specialist を 1 回再実行する
+- 再実行後も不足の場合: STATE ← failed → `OUT/report.json` に `{"status":"failed","reason":"specialist_missing","missing":[...]}` を書き込んで exit 0
+- **禁止**: findings 数による completeness 判定（findings=0 は正常実行と実行漏れを区別できないため）
+
 **4a 完了後、中断せず直ちに 4b を実行すること（MUST — AskUserQuestion 禁止）。**
 
 #### 4b: aggregate
