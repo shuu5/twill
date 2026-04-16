@@ -45,6 +45,12 @@ spawnable_by:
      OBSERVER_WINDOW_NAME=$(tmux display-message -p '#W' 2>/dev/null || echo "")
      # session.json に claude_session_id + observer_window フィールドを含めて書き込む
      # 例: {"session_id": "<uuid>", "claude_session_id": "<CLAUDE_SESSION_ID_VAL>", "observer_window": "<OBSERVER_WINDOW_NAME>", "status": "active", ...}
+     # audit on（新規セッション。CLAUDE_SESSION_ID_VAL を run-id として使用）
+     if [[ -n "$CLAUDE_SESSION_ID_VAL" ]]; then
+       twl audit on --run-id "$CLAUDE_SESSION_ID_VAL"
+     else
+       twl audit on
+     fi
      ```
 2.5. `.supervisor/budget-pause.json` の存在確認:
    - 存在かつ `status: "paused"` → budget 回復シーケンスを実行してから常駐ループへ:
@@ -360,6 +366,7 @@ Issue 群の一括実装（Wave）を要求された場合:
 5. Wave 完了を検知したら:
    - `commands/wave-collect.md` を Read → 実行（`WAVE_NUM=<N>`）
    - `commands/externalize-state.md` を Read → 実行（`--trigger wave_complete`）
+   - **audit snapshot（SHOULD）**: `twl audit snapshot --source-dir "${AUTOPILOT_DIR:-.autopilot}" --label "wave/${WAVE_NUM}"` を実行する（audit 非アクティブ時は自動 no-op）
    - **イベントファイル一括クリーンアップ（MUST）**: externalize-state 実行後に `.supervisor/events/` 配下の全ファイルを削除する:
      ```bash
      rm -f .supervisor/events/* 2>/dev/null || true
