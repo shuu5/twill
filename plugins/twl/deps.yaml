@@ -2697,6 +2697,11 @@ scripts:
     path: scripts/hooks/supervisor-session-end.sh
     description: "Stop hook: AUTOPILOT_DIR 設定時に session-end イベントファイルを .supervisor/events/session-end-<session_id> にアトミック書き出し（#569 Event Emission インフラ）"
 
+  explore-summary-link:
+    type: script
+    path: scripts/hooks/explore-summary-link.sh
+    description: "PostToolUse hook (Write|Edit): .explore/<N>/summary.md への書き込みを検知し gh issue comment で explore-summary リンクを自動追加。冪等チェック付き（#726）"
+
   pr-review-manifest:
     type: script
     path: scripts/pr-review-manifest.sh

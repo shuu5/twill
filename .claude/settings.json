@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/supervisor-input-wait.sh",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/supervisor-input-wait.sh\"",
             "timeout": 3000
           }
         ]
@@ -26,22 +26,22 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/pre-bash-commit-validate.sh",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-commit-validate.sh\"",
             "timeout": 5000
           },
           {
             "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/pre-bash-refined-label-gate.sh",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-refined-label-gate.sh\"",
             "timeout": 5000
           },
           {
             "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh\"",
             "timeout": 5000
           },
           {
             "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/pre-bash-merge-guard.sh",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-merge-guard.sh\"",
             "timeout": 3000
           }
         ]
@@ -53,8 +53,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/supervisor-heartbeat.sh",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/supervisor-heartbeat.sh\"",
             "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/explore-summary-link.sh\"",
+            "timeout": 5000
           }
         ]
       },
@@ -63,7 +68,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/supervisor-input-clear.sh",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/supervisor-input-clear.sh\"",
             "timeout": 3000
           }
         ]
@@ -73,7 +78,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/supervisor-skill-step.sh",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/supervisor-skill-step.sh\"",
             "timeout": 3000
           }
         ]
@@ -121,7 +126,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash plugins/twl/scripts/hooks/supervisor-session-end.sh",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/supervisor-session-end.sh\"",
             "timeout": 3000
           }
         ]

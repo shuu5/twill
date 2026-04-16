@@ -502,8 +502,11 @@ def handle_explore_link(argv):
             print(f"Error: '{source_path}' not found", file=sys.stderr)
             return 1
         explore_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(str(source_path), str(summary_path))
-        print(f"Copied {source_path} -> {summary_path}")
+        if source_path.resolve() != summary_path.resolve():
+            shutil.copy2(str(source_path), str(summary_path))
+            print(f"Copied {source_path} -> {summary_path}")
+        else:
+            print(f"Source and destination are the same file, skipping copy: {source_path}")
 
         # gh issue comment
         try:
