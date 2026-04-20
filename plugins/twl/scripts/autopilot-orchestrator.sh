@@ -420,7 +420,7 @@ cleanup_worker() {
   if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9_/\-]+$ ]]; then
     # Step 2: worktree削除（ローカルブランチ込み）— bare repo（worktreeモード）のみ実行
     if [[ "$repo_mode" == "worktree" ]]; then
-      local _wt_del_out _wt_ok=false
+      local _wt_del_out="" _wt_ok=false _wt_r
       for _wt_r in 1 2; do
         if _wt_del_out=$(bash "$SCRIPTS_ROOT/worktree-delete.sh" "$branch" 2>&1); then
           _wt_ok=true; break

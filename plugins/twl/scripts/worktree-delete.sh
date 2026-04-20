@@ -50,7 +50,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# bare repo のルートを特定（SCRIPT_DIR ではなく CWD の .git を参照）
+# bare repo のルートを特定（CWD の .git を優先、不在時は git rev-parse fallback）
 bare_root=""
 if [[ -f "$cwd/.git" ]]; then
   gitdir=$(sed 's/^gitdir: //' "$cwd/.git")
@@ -68,6 +68,19 @@ if [[ -f "$cwd/.git" ]]; then
     bare_root="${gitdir%/.bare}/"
   else
     bare_root=$(echo "$gitdir" | sed 's|/\.bare/.*|/|')
+  fi
+else
+  # fallback: git rev-parse --git-common-dir で bare root を検索
+  fb_gitdir=$(git rev-parse --git-common-dir 2>/dev/null || echo "")
+  if [[ -n "$fb_gitdir" && ! "$fb_gitdir" =~ \.\. ]]; then
+    if [[ "$fb_gitdir" =~ /\.bare$ ]]; then
+      bare_root="${fb_gitdir%/.bare}/"
+    elif [[ "$fb_gitdir" =~ /\.bare/ ]]; then
+      bare_root=$(echo "$fb_gitdir" | sed 's|/\.bare/.*|/|')
+    fi
+  fi
+  if [[ -n "$bare_root" ]]; then
+    echo "WARN: cwd/.git 不在のため git rev-parse fallback で bare_root を解決: $bare_root" >&2
   fi
 fi
 
