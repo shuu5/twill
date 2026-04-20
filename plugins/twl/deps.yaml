@@ -856,6 +856,7 @@ commands:
       parent: workflow-setup
       step: "2.4"
     dispatch_mode: llm
+    timeout_sec: 600
     description: "CRG グラフ自動ビルド"
 
   change-propose:
