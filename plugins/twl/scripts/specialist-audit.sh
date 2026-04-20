@@ -85,18 +85,28 @@ if [[ -z "$ISSUE_NUM" && -z "$JSONL_PATH" ]]; then
   exit 1
 fi
 
+# --- ISSUE_NUM 数値検証（CRITICAL: コマンドインジェクション防止）---
+if [[ -n "$ISSUE_NUM" && ! "$ISSUE_NUM" =~ ^[0-9]+$ ]]; then
+  echo "ERROR: --issue は数値のみ指定可能です: ${ISSUE_NUM}" >&2
+  exit 1
+fi
+
 # --- JSONL パス解決（--issue の場合）---
 resolve_jsonl() {
   local issue="$1"
 
   # 99文字切り捨て対応: グロブで前方一致検索（worktrees/fix と worktrees/feat の両方）
+  # ISSUE_NUM は呼び出し前に数値検証済みのため安全にグロブ展開可能
   local proj_dir=""
+  local -a glob_matches=()
   for pattern in \
     "$HOME/.claude/projects/-home-shuu5-projects-local-projects-twill-worktrees-*-${issue}-*" \
     "$HOME/.claude/projects/-home-shuu5-projects-local-projects-twill-worktrees-*${issue}*"; do
-    local found
-    found=$(ls -td $pattern 2>/dev/null | head -1 || echo "")
-    if [[ -n "$found" ]]; then
+    glob_matches=("$pattern")  # nullglob 未設定時はリテラルが残る
+    # ls で実在確認（グロブが展開されたかチェック）
+    local found=""
+    found=$(ls -td "$pattern" 2>/dev/null | head -1 || echo "")
+    if [[ -n "$found" && -d "$found" ]]; then
       proj_dir="$found"
       break
     fi
@@ -137,12 +147,21 @@ resolve_jsonl() {
 # --- JSONL 解決 ---
 if [[ -n "$ISSUE_NUM" ]]; then
   resolved_jsonl=""
-  if ! resolved_jsonl=$(resolve_jsonl "$ISSUE_NUM" 2>&1); then
-    warn_msg=$(echo "$resolved_jsonl" | grep -v '^WARN:' || echo "unknown error")
-    out_json="{\"status\":\"WARN\",\"reason\":\"jsonl_resolution_failed\",\"issue\":${ISSUE_NUM},\"detail\":\"${warn_msg}\"}"
+  _resolve_err=""
+  # stderr と stdout を分離（2>&1 で混入させない）
+  resolved_jsonl=$(resolve_jsonl "$ISSUE_NUM" 2>/tmp/_specialist_audit_err_$$) || {
+    _resolve_err=$(cat /tmp/_specialist_audit_err_$$ 2>/dev/null || echo "unknown error")
+    rm -f /tmp/_specialist_audit_err_$$
+    if command -v jq &>/dev/null; then
+      out_json=$(jq -n --argjson issue "$ISSUE_NUM" --arg detail "$_resolve_err" \
+        '{"status":"WARN","reason":"jsonl_resolution_failed","issue":$issue,"detail":$detail}')
+    else
+      out_json="{\"status\":\"WARN\",\"reason\":\"jsonl_resolution_failed\",\"issue\":${ISSUE_NUM}}"
+    fi
     echo "$out_json"
     exit 0
-  fi
+  }
+  rm -f /tmp/_specialist_audit_err_$$
   JSONL_PATH="$resolved_jsonl"
 fi
 
@@ -252,6 +271,10 @@ fi
 # --- audit ログ保存 ---
 TIMESTAMP_NS=$(date +%s%N 2>/dev/null || date +%s 2>/dev/null || echo "0")
 RUN_ID="${AUDIT_RUN_ID:-$(date +%Y%m%d-%H%M%S 2>/dev/null || echo "unknown")}"
+# CRITICAL: AUDIT_RUN_ID のパストラバーサル防止（英数字・ハイフン・アンダースコアのみ許可）
+if [[ ! "$RUN_ID" =~ ^[A-Za-z0-9_-]+$ ]]; then
+  RUN_ID="$(date +%Y%m%d-%H%M%S 2>/dev/null || echo "fallback")"
+fi
 AUDIT_DIR=".audit/${RUN_ID}"
 mkdir -p "$AUDIT_DIR"
 AUDIT_FILE="${AUDIT_DIR}/specialist-audit-${ISSUE_NUM:-unknown}-${TIMESTAMP_NS}-$$.json"

@@ -50,13 +50,16 @@ if [[ -f "$_audit_script" ]]; then
   fi
 
   # --manifest-file を渡して pr-review-manifest.sh の二重呼び出しを回避
-  _manifest_arg=""
-  [[ -n "${MANIFEST_FILE:-}" && -f "${MANIFEST_FILE:-}" ]] && _manifest_arg="--manifest-file ${MANIFEST_FILE}"
+  # 配列で引数を構築してワードスプリットを防止
+  _manifest_args=()
+  [[ -n "${MANIFEST_FILE:-}" && -f "${MANIFEST_FILE:-}" ]] && _manifest_args=(--manifest-file "${MANIFEST_FILE}")
+  _quick_args=()
+  [[ "$_quick_flag" == "--quick" ]] && _quick_args=(--quick)
 
   _audit_exit=0
   if [[ -n "$_issue_num" ]]; then
     bash "$_audit_script" --issue "$_issue_num" --mode merge-gate \
-      ${_manifest_arg} ${_quick_flag} 2>/dev/null || _audit_exit=$?
+      "${_manifest_args[@]+"${_manifest_args[@]}"}" "${_quick_args[@]+"${_quick_args[@]}"}" 2>/dev/null || _audit_exit=$?
   else
     echo "WARN: specialist-audit: Issue 番号が解決できないためスキップ" >&2
   fi
