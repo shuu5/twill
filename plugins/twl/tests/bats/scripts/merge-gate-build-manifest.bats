@@ -38,24 +38,19 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "スクリプトが MANIFEST_FILE 変数を出力する" {
-  stub_command "git" '
-    case "$*" in
-      *"diff"*)
-        echo "src/main.ts" ;;
-      *"fetch"*)
-        exit 0 ;;
-      *)
-        exit 0 ;;
-    esac
-  '
-  stub_command "bash" '
-    case "$*" in
-      *"pr-review-manifest.sh"*)
-        echo "twl:worker-code-reviewer" ;;
-      *)
-        bash "$@" ;;
-    esac
-  '
+  cat > "$STUB_BIN/git" << 'GITEOF'
+#!/bin/sh
+case "$1" in
+  diff) echo "src/main.ts"; exit 0 ;;
+  *) exit 0 ;;
+esac
+GITEOF
+  chmod +x "$STUB_BIN/git"
+  cat > "$SANDBOX/scripts/pr-review-manifest.sh" << 'PREOF'
+#!/bin/sh
+echo "twl:worker-code-reviewer"
+PREOF
+  chmod +x "$SANDBOX/scripts/pr-review-manifest.sh"
 
   run bash "$SANDBOX/scripts/merge-gate-build-manifest.sh"
 
@@ -63,51 +58,20 @@ teardown() {
   assert_output --partial "MANIFEST_FILE="
 }
 
-@test "スクリプトが CONTEXT_ID 変数を出力する" {
-  stub_command "git" '
-    case "$*" in
-      *"diff"*)
-        echo "src/main.ts" ;;
-      *"fetch"*)
-        exit 0 ;;
-      *)
-        exit 0 ;;
-    esac
-  '
-  stub_command "bash" '
-    case "$*" in
-      *"pr-review-manifest.sh"*)
-        echo "twl:worker-code-reviewer" ;;
-      *)
-        bash "$@" ;;
-    esac
-  '
-
-  run bash "$SANDBOX/scripts/merge-gate-build-manifest.sh"
-
-  assert_success
-  assert_output --partial "CONTEXT_ID="
-}
-
 @test "スクリプトが SPAWNED_FILE 変数を出力する" {
-  stub_command "git" '
-    case "$*" in
-      *"diff"*)
-        echo "src/main.ts" ;;
-      *"fetch"*)
-        exit 0 ;;
-      *)
-        exit 0 ;;
-    esac
-  '
-  stub_command "bash" '
-    case "$*" in
-      *"pr-review-manifest.sh"*)
-        echo "twl:worker-code-reviewer" ;;
-      *)
-        bash "$@" ;;
-    esac
-  '
+  cat > "$STUB_BIN/git" << 'GITEOF'
+#!/bin/sh
+case "$1" in
+  diff) echo "src/main.ts"; exit 0 ;;
+  *) exit 0 ;;
+esac
+GITEOF
+  chmod +x "$STUB_BIN/git"
+  cat > "$SANDBOX/scripts/pr-review-manifest.sh" << 'PREOF'
+#!/bin/sh
+echo "twl:worker-code-reviewer"
+PREOF
+  chmod +x "$SANDBOX/scripts/pr-review-manifest.sh"
 
   run bash "$SANDBOX/scripts/merge-gate-build-manifest.sh"
 
@@ -144,9 +108,10 @@ teardown() {
     "$SANDBOX/scripts/merge-gate-build-manifest.sh"
 }
 
-@test "[edge] trap で MANIFEST_FILE と SPAWNED_FILE を削除する" {
-  grep -qP '(trap.*rm|trap.*MANIFEST_FILE|trap.*SPAWNED_FILE)' \
+@test "[edge] スクリプト内に trap が設定されない（呼び出し側で設定）" {
+  run grep -P '^[^#]*(trap.*rm|trap.*MANIFEST_FILE|trap.*SPAWNED_FILE)' \
     "$SANDBOX/scripts/merge-gate-build-manifest.sh"
+  assert_failure
 }
 
 # ---------------------------------------------------------------------------
