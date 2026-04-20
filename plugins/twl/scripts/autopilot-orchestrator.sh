@@ -753,6 +753,7 @@ declare -A HEALTH_CHECK_COUNTER=()
 declare -A RESOLVE_FAIL_COUNT=()    # AC-3: RESOLVE_FAILED 連続カウント（issue ごと）
 declare -A RESOLVE_FAIL_FIRST_TS=() # AC-3: 連続開始タイムスタンプ（秒）
 declare -A LAST_INJECTED_STEP=()    # ADR-018: inject 済み current_step（重複 inject 防止）
+declare -A INJECT_TIMEOUT_COUNT=()  # AC-2 #744: pr-merge 限定 inject timeout 連続カウント
 declare -A INPUT_WAITING_SEEN_PATTERN=()  # デバウンス: key="<issue>:<pattern>", value=1回目検知済み
 
 # input-waiting 検知 + デバウンス + state 書き込み（Issue #510）
@@ -878,7 +879,7 @@ _nudge_command_for_pattern() {
 
 # inject_next_workflow: current_step terminal 値を検知して次の workflow skill を tmux inject する（ADR-018）
 # 引数: issue, window_name, entry（省略時は _default:${issue}）
-# 戻り値: 0=inject 成功 or pr-merge 委譲、1=失敗（タイムアウト / resolve 失敗 / バリデーション失敗）
+# 戻り値: 0=inject 成功、1=失敗（タイムアウト / resolve 失敗 / バリデーション失敗）、2=force-exit（status=failed 書き込み済み）
 inject_next_workflow() {
   local issue="$1"
   local window_name="$2"
@@ -924,19 +925,22 @@ inject_next_workflow() {
   RESOLVE_FAIL_FIRST_TS[$entry]=""
 
   # --- allow-list バリデーション（コマンドインジェクション防止） ---
-  # 許可: /twl:workflow-<kebab> 形式、または pr-merge（terminal workflow として別処理）
+  # 許可: /twl:workflow-<kebab> 形式（/twl:workflow-pr-merge を含む。#744: pr-merge skip 分岐を削除）
   local _skill_safe
   _skill_safe="${next_skill//$'\n'/}"  # 改行除去（ログインジェクション防止）
-  if [[ "$_skill_safe" == "pr-merge" || "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
-    # terminal workflow: inject せず merge-gate フローに委譲（ADR-018: workflow_done クリア不要）
-    echo "[orchestrator] Issue #${issue}: pr-merge 検出 — inject スキップ、merge-gate フローに委譲" >&2
-    echo "[${_trace_ts}] issue=${issue} skill=pr-merge result=skip reason=\"terminal workflow, delegated to merge-gate\"" >> "$_trace_log" 2>/dev/null || true
-    return 0
-  fi
   if [[ ! "$_skill_safe" =~ ^/twl:workflow-[a-z][a-z0-9-]*$ ]]; then
     echo "[orchestrator] Issue #${issue}: WARNING: 不正な workflow skill '${_skill_safe:0:200}' — inject スキップ" >&2
     echo "[${_trace_ts}] issue=${issue} skill=INVALID result=skip reason=\"invalid skill name\"" >> "$_trace_log" 2>/dev/null || true
     return 1
+  fi
+  # AC-4 #744: pr-merge inject 時に status を確認し、merge-ready 未成立なら WARNING
+  if [[ "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
+    local _pr_merge_status
+    _pr_merge_status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+    if [[ "$_pr_merge_status" != "merge-ready" ]]; then
+      echo "[orchestrator] Issue #${issue}: WARNING: pr-merge inject — status=${_pr_merge_status} (not merge-ready). Worker chain が all-pass-check 未到達の可能性" >&2
+      echo "[${_trace_ts}] issue=${issue} category=INJECT_PR_MERGE_WARN skill=${_skill_safe} status=${_pr_merge_status} result=warn reason=\"status not merge-ready, injecting workflow-pr-merge\"" >> "$_trace_log" 2>/dev/null || true
+    fi
   fi
 
   # --- session-state.sh ベースの input-waiting 検出 ---
@@ -971,6 +975,20 @@ inject_next_workflow() {
   if [[ "$prompt_found" -eq 0 ]]; then
     echo "[orchestrator] Issue #${issue}: WARNING: inject タイムアウト — ${POLL_INTERVAL:-10}秒後に再チェック" >&2
     echo "[${_trace_ts}] issue=${issue} category=INJECT_TIMEOUT skill=${_skill_safe} result=timeout reason=\"input-waiting not detected within 30s\"" >> "$_trace_log" 2>/dev/null || true
+    # AC-2 #744: pr-merge 限定 timeout カウンタ — 上限超過で force-exit
+    if [[ "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
+      INJECT_TIMEOUT_COUNT[$entry]=$(( ${INJECT_TIMEOUT_COUNT[$entry]:-0} + 1 ))
+      local _inject_max="${DEV_AUTOPILOT_INJECT_TIMEOUT_MAX:-5}"
+      if (( INJECT_TIMEOUT_COUNT[$entry] > _inject_max )); then
+        echo "[orchestrator] Issue #${issue}: CRITICAL: pr-merge inject timeout 上限超過 (${INJECT_TIMEOUT_COUNT[$entry]} > ${_inject_max}) — status=failed で force-exit" >&2
+        echo "[${_trace_ts}] issue=${issue} category=INJECT_EXHAUSTED skill=${_skill_safe} count=${INJECT_TIMEOUT_COUNT[$entry]} max=${_inject_max} result=force_exit" >> "$_trace_log" 2>/dev/null || true
+        python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
+          --set "status=failed" \
+          --set 'failure={"reason":"inject_exhausted_pr_merge","step":"inject_next_workflow"}' 2>/dev/null || true
+        cleanup_worker "$issue" "$entry"
+        return 2  # force-exit: 呼び出し元は LAST_INJECTED_STEP を更新しない（status=failed 書き込み済み）
+      fi
+    fi
     return 1
   fi
 
@@ -989,7 +1007,19 @@ inject_next_workflow() {
   # --- trace ログ: inject 成功（タイムスタンプを inject 完了後に再取得） ---
   local _success_ts
   _success_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  echo "[${_success_ts}] issue=${issue} category=INJECT_SUCCESS skill=${_skill_safe} result=success" >> "$_trace_log" 2>/dev/null || true
+  # AC-4 #744: status / current_step / pr / branch を trace log に追記（改行除去でログインジェクション防止）
+  local _inj_status _inj_step _inj_pr _inj_branch
+  _inj_status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status 2>/dev/null || echo "")
+  _inj_step=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field current_step 2>/dev/null || echo "")
+  _inj_pr=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field pr 2>/dev/null || echo "")
+  _inj_branch=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
+  _inj_status="${_inj_status//$'\n'/ }"
+  _inj_step="${_inj_step//$'\n'/ }"
+  _inj_pr="${_inj_pr//$'\n'/ }"
+  _inj_branch="${_inj_branch//$'\n'/ }"
+  echo "[${_success_ts}] issue=${issue} category=INJECT_SUCCESS skill=${_skill_safe} result=success status=${_inj_status} current_step=${_inj_step} pr=${_inj_pr} branch=${_inj_branch}" >> "$_trace_log" 2>/dev/null || true
+  # AC-2 #744: inject 成功時に pr-merge timeout カウンタをリセット
+  INJECT_TIMEOUT_COUNT[$entry]=0
 
   # --- inject 履歴記録（ADR-018: workflow_done クリアを廃止、workflow_injected で追跡）---
   local injected_at

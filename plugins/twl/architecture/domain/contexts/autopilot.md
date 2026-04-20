@@ -203,7 +203,7 @@ stateDiagram-v2
 | status | 意味 | 書き込み責任者 |
 |--------|------|--------------|
 | `running` | Issue 実装中（Worker が chain を実行） | Worker（init 時）|
-| `merge-ready` | PR 準備完了（merge-gate 待ち） | Worker（workflow-pr-merge terminal）|
+| `merge-ready` | PR 準備完了（merge-gate 待ち） | Worker（chain-runner.sh `step_all_pass_check`）|
 | `done` | マージ完了 | Pilot（merge-gate 成功後）|
 | `failed` | 失敗（ステップエラー / crash / merge-gate REJECT） | Worker または Pilot |
 | `conflict` | deps.yaml コンフリクト検出（Pilot リベース待ち） | Pilot |
@@ -214,6 +214,10 @@ status=$(jq -r '.status // "null"' issue-N.json)
 # STAGNATE 抑制: merge-ready / done / conflict は正常待機または終端
 [[ "$status" == "merge-ready" || "$status" == "done" || "$status" == "conflict" ]] && skip_stagnate=1
 ```
+
+> **再発防止メモ（#744 修正済み）**: `inject_next_workflow()` が `pr-merge` を resolve した場合、inject をスキップして `merge-gate` に委譲する分岐が存在していたが、`status=merge-ready` が成立していない状態（Worker chain が `warning-fix` terminal で停止中）ではこのスキップが deadlock を引き起こしていた（#744）。この分岐は削除済み。`/twl:workflow-pr-merge` は通常の inject 経路（allow-list regex `^/twl:workflow-[a-z][a-z0-9-]*$`）を通じて inject される。`merge-ready` の書き込みは `chain-runner.sh` の `step_all_pass_check` PASS 分岐が行い、その後 orchestrator が `run_merge_gate` を起動する設計は変わらない。
+>
+> **ADR-018 相互参照**: `workflow_done` フィールドの廃止は ADR-018 で決定されたが、`chain-runner.sh:step_all_pass_check` の `workflow_done=pr-merge` 書き込みは本ドキュメント更新時点で未移行のまま残存している。orchestrator 側コメント（旧 L931「workflow_done クリア不要」）は ADR-018 後の状態を前提としているが、chain-runner 側は未移行。この不整合は #744 スコープ外として別途 Issue 化する。
 
 ## Constraints
 

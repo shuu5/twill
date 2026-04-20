@@ -1,0 +1,42 @@
+change_id: issue-744
+generated_at: "2026-04-20T00:00:00Z"
+test_framework: bats
+scenarios:
+  - id: "pr-merge-inject-success"
+    name: "(a) warning-fix 完了後に /twl:workflow-pr-merge が inject される"
+    spec_file: "specs/orchestrator-pr-merge-guard.md"
+    spec_line: 42
+    requirement: "BATS テスト — pr-merge inject 経路の自動検証"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/pr-merge-skip-guard.bats"
+    test_name: "issue-744[(a)]: pr-merge inject — tmux send-keys に /twl:workflow-pr-merge が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pr-merge-no-duplicate-inject"
+    name: "(b) status=merge-ready かつ LAST_INJECTED_STEP 更新済みの場合は重複 inject されない"
+    spec_file: "specs/orchestrator-pr-merge-guard.md"
+    spec_line: 47
+    requirement: "BATS テスト — pr-merge inject 経路の自動検証"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/pr-merge-skip-guard.bats"
+    test_name: "issue-744[(b)]: 重複 inject 防止 — LAST_INJECTED_STEP=current_step なら inject_next_workflow を呼ばない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pr-merge-inject-timeout-force-exit"
+    name: "(c) timeout 上限超過で status=failed と cleanup_worker が呼ばれる"
+    spec_file: "specs/orchestrator-pr-merge-guard.md"
+    spec_line: 52
+    requirement: "inject_next_workflow の連続 timeout 上限"
+    test_file: "plugins/twl/tests/unit/inject-next-workflow/pr-merge-skip-guard.bats"
+    test_name: "issue-744[(c)]: timeout 上限超過 — state に status=failed が書かれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
