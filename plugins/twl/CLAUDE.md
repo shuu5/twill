@@ -60,6 +60,10 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 コンポーネント編集 → deps.yaml 更新 → twl check → twl update-readme
 ```
 
+## specialist-audit JSON 出力契約
+
+`specialist-audit.sh` はデフォルトで JSON を stdout に出力し、`su-observer/SKILL.md` の Wave 完了ステップは `grep -q '"status":"FAIL"'` でこの出力を判定する。`--summary` フラグは非推奨（`2bd9130` で SKILL.md から除去済み）。将来 `--summary` 形式に戻した場合、この grep 契約が破綻するため、変更時は `plugins/twl/tests/bats/scripts/su-observer-specialist-audit-grep.bats` の全 PASS を確認すること。
+
 ## Project Board
 
 - Project: `twill-ecosystem` (#6)、Owner: `shuu5`

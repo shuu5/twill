@@ -1,0 +1,179 @@
+change_id: issue-745
+generated_at: "2026-04-20T00:00:00Z"
+test_framework: bats
+scenarios:
+
+  # ---- deps-yaml-ssot.md ------------------------------------------------
+
+  - id: "specialist-audit-entry-exists"
+    name: "specialist-audit エントリが存在する"
+    spec_file: "specs/deps-yaml-ssot.md"
+    spec_line: 7
+    requirement: "specialist-audit スクリプト登録"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit.bats"
+    test_name: "specialist-audit.sh が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "merge-gate-check-spawn-calls-specialist-audit"
+    name: "merge-gate-check-spawn が specialist-audit を calls に持つ"
+    spec_file: "specs/deps-yaml-ssot.md"
+    spec_line: 15
+    requirement: "merge-gate-check-spawn への calls 追加"
+    test_file: "plugins/twl/tests/bats/scripts/merge-gate-check-spawn.bats"
+    test_name: "merge-gate-check-spawn calls specialist-audit"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "twl-check-no-specialist-audit-warning"
+    name: "twl check が specialist-audit 関連警告なしで通過"
+    spec_file: "specs/deps-yaml-ssot.md"
+    spec_line: 25
+    requirement: "twl check 通過"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit.bats"
+    test_name: "specialist-audit.sh が bash 構文チェック pass"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "readme-reflects-specialist-audit"
+    name: "README に specialist-audit が反映される"
+    spec_file: "specs/deps-yaml-ssot.md"
+    spec_line: 33
+    requirement: "README.md 反映"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit.bats"
+    test_name: "README に specialist-audit が反映される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---- bats-specialist-audit.md -----------------------------------------
+
+  - id: "specialist-audit-pass-case"
+    name: "PASS ケース（expected ⊆ actual）"
+    spec_file: "specs/bats-specialist-audit.md"
+    spec_line: 7
+    requirement: "specialist-audit BATS テスト追加"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit.bats"
+    test_name: "PASS ケース: expected が actual の部分集合の場合 .status が PASS になる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-audit-fail-warn-only"
+    name: "FAIL ケース（warn-only モード）"
+    spec_file: "specs/bats-specialist-audit.md"
+    spec_line: 12
+    requirement: "specialist-audit BATS テスト追加"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit.bats"
+    test_name: "warn-only: missing 非空 + --warn-only で .status が FAIL になる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-audit-fail-strict"
+    name: "FAIL ケース（strict モード）"
+    spec_file: "specs/bats-specialist-audit.md"
+    spec_line: 18
+    requirement: "specialist-audit BATS テスト追加"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit.bats"
+    test_name: "strict モード: missing 非空 + SPECIALIST_AUDIT_MODE=strict で exit 1 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-audit-quick-mode"
+    name: "quick モード"
+    spec_file: "specs/bats-specialist-audit.md"
+    spec_line: 23
+    requirement: "specialist-audit BATS テスト追加"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit.bats"
+    test_name: "quick モード: missing 非空 + --quick で exit 0 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "specialist-audit-json-contract"
+    name: "JSON 出力構造契約"
+    spec_file: "specs/bats-specialist-audit.md"
+    spec_line: 28
+    requirement: "specialist-audit BATS テスト追加"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit.bats"
+    test_name: "JSON 構造契約: 出力が jq でパース可能である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "grep-contract-fail-in-jsonl"
+    name: "FAIL 含有 JSONL に grep が反応する"
+    spec_file: "specs/bats-specialist-audit.md"
+    spec_line: 32
+    requirement: "grep 契約ロック BATS テスト追加"
+    test_file: "plugins/twl/tests/bats/scripts/su-observer-specialist-audit-grep.bats"
+    test_name: "grep 契約: FAIL 含有ログに grep -q '\"status\":\"FAIL\"' が exit 0 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "grep-contract-pass-only-jsonl"
+    name: "PASS のみ JSONL に grep が反応しない"
+    spec_file: "specs/bats-specialist-audit.md"
+    spec_line: 37
+    requirement: "grep 契約ロック BATS テスト追加"
+    test_file: "plugins/twl/tests/bats/scripts/su-observer-specialist-audit-grep.bats"
+    test_name: "grep 契約: PASS のみのログに grep -q '\"status\":\"FAIL\"' が exit 1 を返す"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-md-no-summary-in-exec-code"
+    name: "--summary が実行コードとして使われていない"
+    spec_file: "specs/bats-specialist-audit.md"
+    spec_line: 44
+    requirement: "SKILL.md 回帰防止（--summary 非使用維持）"
+    test_file: "plugins/twl/tests/bats/scripts/su-observer-specialist-audit-grep.bats"
+    test_name: "SKILL.md 回帰防止: su-observer/SKILL.md の for issue_json ブロックに --summary が実行コードとして含まれていない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---- documentation.md -------------------------------------------------
+
+  - id: "grep-contract-documented"
+    name: "grep 契約が文書化されている"
+    spec_file: "specs/documentation.md"
+    spec_line: 7
+    requirement: "specialist-audit JSON 契約ドキュメント"
+    test_file: "plugins/twl/tests/bats/scripts/su-observer-specialist-audit-grep.bats"
+    test_name: "SKILL.md 回帰防止: grep パターンが '\"status\":\"FAIL\"' を使用している"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null

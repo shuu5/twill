@@ -2761,7 +2761,14 @@ scripts:
   merge-gate-check-spawn:
     type: script
     path: scripts/merge-gate-check-spawn.sh
+    calls:
+      - script: specialist-audit
     description: "spawn 完了確認（merge-gate）: 未 spawn specialist がある場合 ERROR + exit 1"
+
+  specialist-audit:
+    type: script
+    path: scripts/specialist-audit.sh
+    description: "specialist completeness 監査（su-observer/merge-gate）: JSONL の specialist 実行数と expected 数を照合し JSON 形式で結果を出力"
 
   merge-gate-cross-pr-ac:
     type: script

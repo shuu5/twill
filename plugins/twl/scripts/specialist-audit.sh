@@ -241,7 +241,10 @@ if [[ ${#MISSING[@]} -eq 0 ]]; then
   STATUS="PASS"
   EXIT_CODE=0
 else
-  if [[ "$WARN_ONLY" == "true" || "$QUICK" == "true" || "$AUDIT_MODE" == "warn" ]]; then
+  if [[ "$WARN_ONLY" == "true" ]]; then
+    STATUS="FAIL"
+    EXIT_CODE=0
+  elif [[ "$QUICK" == "true" || "$AUDIT_MODE" == "warn" ]]; then
     STATUS="WARN"
     EXIT_CODE=0
   else
@@ -253,12 +256,24 @@ fi
 # --- JSON 生成 ---
 issue_field="${ISSUE_NUM:-null}"
 
-expected_json=$(printf '%s\n' "${EXPECTED_SPECIALISTS[@]+"${EXPECTED_SPECIALISTS[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
-actual_json=$(printf '%s\n' "${ACTUAL_SPECIALISTS[@]+"${ACTUAL_SPECIALISTS[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
-missing_json=$(printf '%s\n' "${MISSING[@]+"${MISSING[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
-extra_json=$(printf '%s\n' "${EXTRA[@]+"${EXTRA[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
+expected_json='[]'
+if [[ ${#EXPECTED_SPECIALISTS[@]} -gt 0 ]]; then
+  expected_json=$(printf '%s\n' "${EXPECTED_SPECIALISTS[@]}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
+fi
+actual_json='[]'
+if [[ ${#ACTUAL_SPECIALISTS[@]} -gt 0 ]]; then
+  actual_json=$(printf '%s\n' "${ACTUAL_SPECIALISTS[@]}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
+fi
+missing_json='[]'
+if [[ ${#MISSING[@]} -gt 0 ]]; then
+  missing_json=$(printf '%s\n' "${MISSING[@]}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
+fi
+extra_json='[]'
+if [[ ${#EXTRA[@]} -gt 0 ]]; then
+  extra_json=$(printf '%s\n' "${EXTRA[@]}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
+fi
 
-RESULT_JSON=$(jq -n \
+RESULT_JSON=$(jq -cn \
   --arg status "$STATUS" \
   --argjson issue "$issue_field" \
   --arg jsonl "$JSONL_PATH" \
