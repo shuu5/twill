@@ -374,6 +374,8 @@ wait_for_batch() {
 
   while true; do
     local all_done=true
+    local current_ts
+    current_ts=$(date +%s)
 
     for subdir in "${batch_subdirs[@]}"; do
       local report_file="${subdir}/OUT/report.json"
@@ -386,53 +388,86 @@ wait_for_batch() {
           echo "[issue-lifecycle-orchestrator] ${subdir##*/}: ウィンドウ消失・report.json なし — フォールバック生成" >&2
           mkdir -p "${subdir}/OUT"
           _generate_fallback_report "$subdir" "window_lost"
-        elif "${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" wait "$window_name" input-waiting --timeout 10 2>/dev/null; then
-          # Window 存在 + input-waiting → #722: debounce を wait --timeout 10 に統合
-          # (旧: スナップショット + sleep 5 + recheck で transient false positive を排除 #709)
-          # STATE ファイルを確認して判断 (#672)
-          local state_file="${subdir}/STATE"
-          local current_state=""
-          [[ -f "$state_file" ]] && current_state=$(cat "$state_file" 2>/dev/null | tr -d '[:space:]')
+        else
           local inject_count_file="${subdir}/.inject_count"
           local inject_count=0
           [[ -f "$inject_count_file" ]] && inject_count=$(cat "$inject_count_file" 2>/dev/null | tr -d '[:space:]')
           [[ "$inject_count" =~ ^[0-9]+$ ]] || inject_count=0
 
-          if [[ "$current_state" == "done" || "$current_state" == "failed" || "$current_state" == "circuit_broken" ]]; then
-            # terminal state → fallback 生成 + kill (#697)
-            local reason="input_waiting_terminal_${current_state}"
-            echo "[issue-lifecycle-orchestrator] ${subdir##*/}: input-waiting (STATE=$current_state terminal) — フォールバック生成" >&2
-            mkdir -p "${subdir}/OUT"
-            _generate_fallback_report "$subdir" "$reason"
-            tmux kill-window -t "$window_name" 2>/dev/null || true
-          elif [[ "$inject_count" -lt 5 ]]; then
-            # inject 直前再確認 — 状態が変化していれば inject をスキップ (#709)
-            local _pre_inject_state
-            _pre_inject_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
-            if [[ "$_pre_inject_state" != "input-waiting" ]]; then
+          # inject 後の progressive delay をタイムスタンプで非ブロッキング skip (#717)
+          local last_inject_ts_file="${subdir}/.last_inject_ts"
+          if [[ -f "$last_inject_ts_file" ]]; then
+            local last_inject_ts
+            last_inject_ts=$(cat "$last_inject_ts_file" 2>/dev/null | tr -d '[:space:]')
+            local inject_delay=$((5 * inject_count))
+            if [[ "$last_inject_ts" =~ ^[0-9]+$ ]] && \
+               [[ $((current_ts - last_inject_ts)) -lt $inject_delay ]]; then
               all_done=false
               continue
             fi
-            # non-terminal + input-waiting → auto-inject で継続を促す (#672, #697, #709)
-            inject_count=$((inject_count + 1))
-            echo "$inject_count" > "$inject_count_file"
-            local inject_msg="処理を続行してください。"
-            echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=$current_state + input-waiting — auto-inject ($inject_count/5)" >&2
-            "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" \
-              "$inject_msg" \
-              2>/dev/null || true
-            sleep $((5 * inject_count))
-            all_done=false
-          else
-            # inject 5 回失敗 → fallback (#647, #709)
-            local reason="inject_exhausted_${inject_count}"
-            echo "[issue-lifecycle-orchestrator] ${subdir##*/}: inject exhausted (STATE=$current_state, inject=$inject_count) — フォールバック生成" >&2
-            mkdir -p "${subdir}/OUT"
-            _generate_fallback_report "$subdir" "$reason"
-            tmux kill-window -t "$window_name" 2>/dev/null || true
           fi
-        else
-          all_done=false
+
+          # 非ブロッキング状態チェック — 旧: serial な wait --timeout 10 を置換 (#717)
+          local pane_state
+          pane_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
+          local debounce_ts_file="${subdir}/.debounce_ts"
+
+          if [[ "$pane_state" == "input-waiting" ]]; then
+            # タイムスタンプ debounce — transient false positive 排除 (#722, #717)
+            local debounce_ts=""
+            [[ -f "$debounce_ts_file" ]] && debounce_ts=$(cat "$debounce_ts_file" 2>/dev/null | tr -d '[:space:]')
+            if ! [[ "$debounce_ts" =~ ^[0-9]+$ ]]; then
+              echo "$current_ts" > "$debounce_ts_file"
+              all_done=false
+              continue
+            fi
+            if [[ $((current_ts - debounce_ts)) -lt 10 ]]; then
+              all_done=false
+              continue
+            fi
+            # debounce 通過: STATE ファイルを確認して判断 (#672)
+            local state_file="${subdir}/STATE"
+            local current_state=""
+            [[ -f "$state_file" ]] && current_state=$(cat "$state_file" 2>/dev/null | tr -d '[:space:]')
+
+            if [[ "$current_state" == "done" || "$current_state" == "failed" || "$current_state" == "circuit_broken" ]]; then
+              # terminal state → fallback 生成 + kill (#697)
+              local reason="input_waiting_terminal_${current_state}"
+              echo "[issue-lifecycle-orchestrator] ${subdir##*/}: input-waiting (STATE=$current_state terminal) — フォールバック生成" >&2
+              mkdir -p "${subdir}/OUT"
+              _generate_fallback_report "$subdir" "$reason"
+              tmux kill-window -t "$window_name" 2>/dev/null || true
+            elif [[ "$inject_count" -lt 5 ]]; then
+              # inject 直前再確認 — 状態が変化していれば inject をスキップ (#709)
+              local _pre_inject_state
+              _pre_inject_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
+              if [[ "$_pre_inject_state" != "input-waiting" ]]; then
+                all_done=false
+                continue
+              fi
+              # non-terminal + input-waiting → auto-inject で継続を促す (#672, #697, #709)
+              inject_count=$((inject_count + 1))
+              echo "$inject_count" > "$inject_count_file"
+              echo "$current_ts" > "$last_inject_ts_file"
+              rm -f "$debounce_ts_file"
+              local inject_msg="処理を続行してください。"
+              echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=$current_state + input-waiting — auto-inject ($inject_count/5)" >&2
+              "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" \
+                "$inject_msg" \
+                2>/dev/null || true
+              all_done=false
+            else
+              # inject 5 回失敗 → fallback (#647, #709)
+              local reason="inject_exhausted_${inject_count}"
+              echo "[issue-lifecycle-orchestrator] ${subdir##*/}: inject exhausted (STATE=$current_state, inject=$inject_count) — フォールバック生成" >&2
+              mkdir -p "${subdir}/OUT"
+              _generate_fallback_report "$subdir" "$reason"
+              tmux kill-window -t "$window_name" 2>/dev/null || true
+            fi
+          else
+            rm -f "$debounce_ts_file"
+            all_done=false
+          fi
         fi
       fi
     done
