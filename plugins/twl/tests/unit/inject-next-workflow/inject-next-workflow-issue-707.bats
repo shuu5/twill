@@ -400,7 +400,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 # Scenario: 1回目のリトライで input-waiting 検出
 # WHEN 1回目の session-state チェックで input-waiting が返る
-# THEN inject が実行される（2s 待機後）
+# THEN inject が実行される（待機なし: check-then-sleep パターンのため初回検出時は sleep 不要）
 # ---------------------------------------------------------------------------
 
 @test "issue-707[exponential-backoff]: 1回目リトライで input-waiting 検出時に inject を実行する" {
