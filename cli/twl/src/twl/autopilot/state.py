@@ -10,6 +10,7 @@ CLI usage:
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import re
@@ -19,7 +20,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-_VALID_KEY_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 _VALID_SET_KEY_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)*$")
 _VALID_FIELD_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_.]*$")
 _VALID_REPO_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
@@ -221,7 +221,7 @@ class StateManager:
             raise StateArgError("--set が指定されていません")
 
         data = json.loads(file.read_text(encoding="utf-8"))
-        old_data = dict(data)
+        old_data = copy.deepcopy(data)
 
         for kv in sets:
             key, _, raw_value = kv.partition("=")
