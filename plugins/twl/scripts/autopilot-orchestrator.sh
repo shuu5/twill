@@ -291,6 +291,8 @@ launch_worker() {
       worktree_dir="$candidate_dir"
       echo "[orchestrator] Issue #${ISSUE}: 既存 worktree を使用: $worktree_dir" >&2
     fi
+  elif [[ -n "$existing_branch" ]]; then
+    echo "[orchestrator] Issue #${ISSUE}: ⚠️ 不正なブランチ名を拒否: $existing_branch" >&2
   fi
 
   # 既存 worktree が見つからない場合は Python モジュールで作成

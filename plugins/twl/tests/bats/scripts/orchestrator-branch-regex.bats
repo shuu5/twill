@@ -103,3 +103,74 @@ teardown() {
   run bash -c '[[ -n "" && "" =~ ^[a-zA-Z0-9_/\-]+$ ]] && echo ok || echo rejected'
   assert_output "rejected"
 }
+
+# ---------------------------------------------------------------------------
+# AC-4: integration — state file injection で candidate_dir が作られずエラーログ出力
+# orchestrator-cleanup-sequence.bats の pattern 準拠（test double + JSON mock）
+# ---------------------------------------------------------------------------
+
+_create_existing_branch_double() {
+  local project_dir="$1"
+  cat > "$SANDBOX/scripts/existing-branch-double.sh" <<DOUBLE_EOF
+#!/usr/bin/env bash
+# existing-branch-double.sh
+# autopilot-orchestrator.sh の L288 ブランチバリデーション ロジックを抽出したテストダブル
+set -uo pipefail
+
+ISSUE="\${1:-999}"
+effective_project_dir="${project_dir}"
+
+existing_branch=\$(python3 -m twl.autopilot.state read --autopilot-dir "$SANDBOX/.autopilot" --type issue --issue "\$ISSUE" --field branch 2>/dev/null || echo "")
+
+# ブランチ名バリデーション: `.` 除外の統一 regex (L288 と同一ロジック)
+if [[ -n "\$existing_branch" && "\$existing_branch" =~ ^[a-zA-Z0-9_/\\-]+\$ ]]; then
+  local candidate_dir="\$effective_project_dir/worktrees/\$existing_branch"
+  if [[ -d "\$candidate_dir" ]]; then
+    echo "[orchestrator] Issue #\${ISSUE}: 既存 worktree を使用: \$candidate_dir" >&2
+    echo "USED:\$candidate_dir"
+  fi
+elif [[ -n "\$existing_branch" ]]; then
+  echo "[orchestrator] Issue #\${ISSUE}: ⚠️ 不正なブランチ名を拒否: \$existing_branch" >&2
+  echo "REJECTED:\$existing_branch"
+fi
+DOUBLE_EOF
+  chmod +x "$SANDBOX/scripts/existing-branch-double.sh"
+}
+
+@test "AC-4: state file injection ../../../etc/passwd — candidate_dir 未作成 + エラーログ出力" {
+  # Setup: JSON mock state file with malicious branch name
+  local issue_json="$SANDBOX/.autopilot/issues/issue-999.json"
+  cat > "$issue_json" <<'EOF'
+{"branch": "../../../etc/passwd", "status": "in_progress", "role": "worker"}
+EOF
+
+  # Worktree dir must not exist for the injection target
+  local target="$SANDBOX/worktrees/../../../etc/passwd"
+  [[ -d "$target" ]] && fail "target dir must not exist pre-test"
+
+  _create_existing_branch_double "$SANDBOX"
+
+  run bash "$SANDBOX/scripts/existing-branch-double.sh" "999"
+
+  # candidate_dir must not be used
+  refute_output --partial "USED:"
+  # Error log must be output
+  assert_output --partial "REJECTED:../../../etc/passwd"
+}
+
+@test "AC-4: valid branch — candidate_dir 構築試行（エラーログなし）" {
+  # Setup: JSON mock with valid branch name (dir not present → no USED output)
+  local issue_json="$SANDBOX/.autopilot/issues/issue-998.json"
+  cat > "$issue_json" <<'EOF'
+{"branch": "feat/998-valid", "status": "in_progress", "role": "worker"}
+EOF
+
+  _create_existing_branch_double "$SANDBOX"
+
+  run bash "$SANDBOX/scripts/existing-branch-double.sh" "998"
+
+  # No rejection error
+  refute_output --partial "REJECTED:"
+  # No worktree dir → no USED output either
+  refute_output --partial "USED:"
+}
