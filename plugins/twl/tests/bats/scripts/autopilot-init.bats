@@ -218,7 +218,7 @@ JSON
   [ ! -f "$SANDBOX/.autopilot/session.json" ]
 }
 
-@test "issues field absent + --force: treats as done, deletes and continues" {
+@test "issues field absent + --force: blocks with exit 1 (fail-closed, not treated as done)" {
   mkdir -p "$SANDBOX/.autopilot"
   local started_at
   started_at=$(date -u -d '20 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
@@ -231,11 +231,12 @@ JSON
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 
-  assert_success
-  [ ! -f "$SANDBOX/.autopilot/session.json" ]
+  assert_failure
+  [ "$status" -eq 1 ]
+  [ -f "$SANDBOX/.autopilot/session.json" ]
 }
 
-@test "no --force + under 24h: blocks with exit 1 (existing behavior unchanged)" {
+@test "running issue + no --force + under 24h: blocks with exit 1" {
   mkdir -p "$SANDBOX/.autopilot"
   local started_at
   started_at=$(date -u -d '20 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
@@ -244,7 +245,7 @@ JSON
   "session_id": "active999",
   "started_at": "$started_at",
   "issues": [
-    {"issue": 1, "status": "done"}
+    {"issue": 1, "status": "running"}
   ]
 }
 JSON

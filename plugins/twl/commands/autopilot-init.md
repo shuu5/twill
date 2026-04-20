@@ -29,7 +29,7 @@ AUTOPILOT_DIR=$AUTOPILOT_DIR bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-init.
 - 成功時: .autopilot/, .autopilot/issues/, .autopilot/archive/ が作成される
 - 排他制御: 既存セッション検出時はエラー終了（24h 以内）
 - stale セッション（24h 超）: `--force` で強制削除可
-- 完了済みセッション（全 issue done）: `--force` で即座に削除可
+- 完了済みセッション（全 issue done）: `--force` 不要で自動削除（Wave 遷移ブロック防止）
 
 ### Step 3: Phase 数取得
 
