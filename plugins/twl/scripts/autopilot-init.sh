@@ -7,6 +7,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # AUTOPILOT_DIR 環境変数によるオーバーライドをサポート（テスト用）
 AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"
+if [[ "$AUTOPILOT_DIR" == *".."* ]]; then
+  echo "ERROR: AUTOPILOT_DIR にパストラバーサル文字 '..' が含まれています: $AUTOPILOT_DIR" >&2
+  exit 1
+fi
 ISSUES_DIR="$AUTOPILOT_DIR/issues"
 ARCHIVE_DIR="$AUTOPILOT_DIR/archive"
 SESSION_FILE="$AUTOPILOT_DIR/session.json"
