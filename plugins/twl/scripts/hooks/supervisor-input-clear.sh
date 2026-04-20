@@ -27,6 +27,16 @@ if [[ -z "$SESSION_ID" ]]; then
   SESSION_ID="${CLAUDE_SESSION_ID:-$$}"
 fi
 
+_SESSION_ID_RAW="$SESSION_ID"
+SESSION_ID=$(printf '%s' "$SESSION_ID" | tr -cd 'A-Za-z0-9_-')
+if [[ -z "$SESSION_ID" ]]; then
+  SESSION_ID="$$"
+fi
+if [[ "$SESSION_ID" != "$_SESSION_ID_RAW" ]]; then
+  printf '[supervisor-hook][warn] SESSION_ID sanitized (hook=%s pid=%s)\n' \
+    "$(basename "$0")" "$$" >&2
+fi
+
 # input-wait ファイルを削除（存在しなければ何もしない）
 TARGET_FILE="${EVENTS_DIR}/input-wait-${SESSION_ID}"
 rm -f "$TARGET_FILE" 2>/dev/null || true

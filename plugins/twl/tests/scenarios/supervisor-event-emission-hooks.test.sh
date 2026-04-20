@@ -17,6 +17,7 @@ SANDBOX=""
 AUTOPILOT_DIR_TEST=""
 EVENTS_DIR_TEST=""
 SUPERVISOR_DIR_TEST=""
+HOOK_STDERR=""
 
 # git-common-dir ベースの変数（skip 判定と AC-3 用）
 GIT_COMMON_DIR=""
@@ -112,6 +113,20 @@ run_hook_in_git_repo_no_autopilot() {
   local hook_script="$1"
   local input_json="${2:-{}}"
   printf '%s' "$input_json" | env -u AUTOPILOT_DIR bash "${HOOKS_DIR}/${hook_script}" 2>/dev/null
+}
+
+# stderr を変数 HOOK_STDERR にキャプチャして hook を実行（AC-5/6/7 用）
+# TWL_SUPERVISOR_EVENTS_DIR は setup_sandbox で export 済みのため自動伝搬
+run_hook_capture_stderr() {
+  local hook_script="$1"
+  local input_json="${2:-{}}"
+  local _tmpfile
+  _tmpfile=$(mktemp)
+  printf '%s' "$input_json" | bash "${HOOKS_DIR}/${hook_script}" >/dev/null 2>"$_tmpfile"
+  local _rc=${PIPESTATUS[1]}
+  HOOK_STDERR=$(cat "$_tmpfile")
+  rm -f "$_tmpfile"
+  return $_rc
 }
 
 # non-bare git リポジトリ（.git/ のみ、main/ 不在）から hook を実行
@@ -385,6 +400,140 @@ test_session_end_no_stdout() {
 }
 
 # =============================================================================
+# AC-5/AC-6/AC-7: SESSION_ID path-traversal サニタイズテスト
+# =============================================================================
+
+# AC-5: heartbeat - SESSION_ID=../evil でファイル名が sanitize され EVENTS_DIR 外への書き込みなし
+test_heartbeat_path_traversal() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  local session_json='{"session_id":"../evil"}'
+  run_hook_capture_stderr "supervisor-heartbeat.sh" "$session_json"
+  local result=0
+  # (a) EVENTS_DIR の外にファイルが生成されない（../evil → ${EVENTS_DIR}/../evil）
+  [[ ! -f "${TWL_SUPERVISOR_EVENTS_DIR}/../evil" ]] || result=1
+  # (b) サニタイズ後の名前でファイルが生成される（../が除去されて evil のみ残る）
+  [[ -f "${TWL_SUPERVISOR_EVENTS_DIR}/heartbeat-evil" ]] || result=1
+  # (c) stderr 警告が出力される
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' || result=1
+  return $result
+}
+
+# AC-5: input-wait - SESSION_ID=../evil でファイル名が sanitize され EVENTS_DIR 外への書き込みなし
+test_input_wait_path_traversal() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  local session_json='{"session_id":"../evil"}'
+  run_hook_capture_stderr "supervisor-input-wait.sh" "$session_json"
+  local result=0
+  [[ ! -f "${TWL_SUPERVISOR_EVENTS_DIR}/../evil" ]] || result=1
+  [[ -f "${TWL_SUPERVISOR_EVENTS_DIR}/input-wait-evil" ]] || result=1
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' || result=1
+  return $result
+}
+
+# AC-5: skill-step - SESSION_ID=../evil でファイル名が sanitize され EVENTS_DIR 外への書き込みなし
+test_skill_step_path_traversal() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  local session_json='{"session_id":"../evil","tool_input":{"skill":"test"}}'
+  run_hook_capture_stderr "supervisor-skill-step.sh" "$session_json"
+  local result=0
+  [[ ! -f "${TWL_SUPERVISOR_EVENTS_DIR}/../evil" ]] || result=1
+  [[ -f "${TWL_SUPERVISOR_EVENTS_DIR}/skill-step-evil" ]] || result=1
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' || result=1
+  return $result
+}
+
+# AC-5: session-end - SESSION_ID=../evil でファイル名が sanitize され EVENTS_DIR 外への書き込みなし
+test_session_end_path_traversal() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  local session_json='{"session_id":"../evil"}'
+  run_hook_capture_stderr "supervisor-session-end.sh" "$session_json"
+  local result=0
+  [[ ! -f "${TWL_SUPERVISOR_EVENTS_DIR}/../evil" ]] || result=1
+  [[ -f "${TWL_SUPERVISOR_EVENTS_DIR}/session-end-evil" ]] || result=1
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' || result=1
+  return $result
+}
+
+# AC-6: input-clear - SESSION_ID=../secret で canary ファイルが削除されない
+test_input_clear_path_traversal() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  # canary を EVENTS_DIR の親（traverse 先）に配置
+  local canary="${TWL_SUPERVISOR_EVENTS_DIR}/../secret"
+  touch "$canary" 2>/dev/null || { echo "  SKIP: cannot create canary" >&2; return 0; }
+  local session_json='{"session_id":"../secret"}'
+  run_hook_capture_stderr "supervisor-input-clear.sh" "$session_json"
+  local result=0
+  # canary が残存している（rm が EVENTS_DIR 外に到達しなかった）
+  [[ -f "$canary" ]] || result=1
+  # stderr 警告が出力される
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' || result=1
+  rm -f "$canary" 2>/dev/null
+  return $result
+}
+
+# AC-7: heartbeat - UUID v4 SESSION_ID はサニタイズで変化せず、stderr 警告なし
+test_heartbeat_uuid_no_warn() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  local uuid="3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+  local session_json="{\"session_id\":\"${uuid}\"}"
+  run_hook_capture_stderr "supervisor-heartbeat.sh" "$session_json"
+  local result=0
+  [[ -f "${TWL_SUPERVISOR_EVENTS_DIR}/heartbeat-${uuid}" ]] || result=1
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' && result=1
+  return $result
+}
+
+# AC-7: input-wait - UUID v4 はサニタイズで変化せず、stderr 警告なし
+test_input_wait_uuid_no_warn() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  local uuid="3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+  local session_json="{\"session_id\":\"${uuid}\"}"
+  run_hook_capture_stderr "supervisor-input-wait.sh" "$session_json"
+  local result=0
+  [[ -f "${TWL_SUPERVISOR_EVENTS_DIR}/input-wait-${uuid}" ]] || result=1
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' && result=1
+  return $result
+}
+
+# AC-7: skill-step - UUID v4 はサニタイズで変化せず、stderr 警告なし
+test_skill_step_uuid_no_warn() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  local uuid="3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+  local session_json="{\"session_id\":\"${uuid}\",\"tool_input\":{\"skill\":\"test\"}}"
+  run_hook_capture_stderr "supervisor-skill-step.sh" "$session_json"
+  local result=0
+  [[ -f "${TWL_SUPERVISOR_EVENTS_DIR}/skill-step-${uuid}" ]] || result=1
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' && result=1
+  return $result
+}
+
+# AC-7: session-end - UUID v4 はサニタイズで変化せず、stderr 警告なし
+test_session_end_uuid_no_warn() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  local uuid="3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+  local session_json="{\"session_id\":\"${uuid}\"}"
+  run_hook_capture_stderr "supervisor-session-end.sh" "$session_json"
+  local result=0
+  [[ -f "${TWL_SUPERVISOR_EVENTS_DIR}/session-end-${uuid}" ]] || result=1
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' && result=1
+  return $result
+}
+
+# AC-7: input-clear - UUID v4 では rm が正しいファイルを削除し、stderr 警告なし
+test_input_clear_uuid_no_warn() {
+  [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
+  local uuid="3f2504e0-4f89-41d3-9a0c-0305e82c3301"
+  local event_file="${TWL_SUPERVISOR_EVENTS_DIR}/input-wait-${uuid}"
+  echo '{"event":"input-wait"}' > "$event_file"
+  local session_json="{\"session_id\":\"${uuid}\"}"
+  run_hook_capture_stderr "supervisor-input-clear.sh" "$session_json"
+  local result=0
+  [[ ! -f "$event_file" ]] || result=1
+  printf '%s' "$HOOK_STDERR" | grep -q '\[supervisor-hook\]\[warn\] SESSION_ID sanitized' && result=1
+  return $result
+}
+
+# =============================================================================
 # non-bare 検出テスト（AC-1/AC-2a/AC-2b: bare repo 構造ガード）
 # サンドボックス: git init のみ（.git/ 構造）、main/ ディレクトリなし
 # =============================================================================
@@ -487,6 +636,22 @@ run_test "session-end: AUTOPILOT_DIR 未設定 + git 内でイベントファイ
 run_test "session-end: git 外セッションで exit 0（静的終了）" test_session_end_no_autopilot_dir
 run_test "session-end: イベントファイル生成と JSON フォーマット（sandbox）" test_session_end_creates_event_file
 run_test "session-end: stdout に何も出力しない" test_session_end_no_stdout
+
+# AC-5: path-traversal write hooks（../evil）
+run_test "heartbeat: SESSION_ID=../evil でサニタイズ・EVENTS_DIR 外書き込みなし（AC-5）" test_heartbeat_path_traversal
+run_test "input-wait: SESSION_ID=../evil でサニタイズ・EVENTS_DIR 外書き込みなし（AC-5）" test_input_wait_path_traversal
+run_test "skill-step: SESSION_ID=../evil でサニタイズ・EVENTS_DIR 外書き込みなし（AC-5）" test_skill_step_path_traversal
+run_test "session-end: SESSION_ID=../evil でサニタイズ・EVENTS_DIR 外書き込みなし（AC-5）" test_session_end_path_traversal
+
+# AC-6: path-traversal rm hook（../secret canary 保護）
+run_test "input-clear: SESSION_ID=../secret で canary ファイル保護・stderr 警告（AC-6）" test_input_clear_path_traversal
+
+# AC-7: UUID v4 非破壊・stderr 警告なし
+run_test "heartbeat: UUID v4 SESSION_ID でサニタイズなし・警告出力なし（AC-7）" test_heartbeat_uuid_no_warn
+run_test "input-wait: UUID v4 SESSION_ID でサニタイズなし・警告出力なし（AC-7）" test_input_wait_uuid_no_warn
+run_test "skill-step: UUID v4 SESSION_ID でサニタイズなし・警告出力なし（AC-7）" test_skill_step_uuid_no_warn
+run_test "session-end: UUID v4 SESSION_ID でサニタイズなし・警告出力なし（AC-7）" test_session_end_uuid_no_warn
+run_test "input-clear: UUID v4 SESSION_ID でサニタイズなし・警告出力なし（AC-7）" test_input_clear_uuid_no_warn
 
 # non-bare 検出（AC-1/AC-2a: bare repo 構造ガード）
 run_test "heartbeat: non-bare リポジトリで exit 0（no-op）" test_heartbeat_non_bare_exit_zero
