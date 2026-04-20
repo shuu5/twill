@@ -59,6 +59,57 @@ Environment:
 EOF
 }
 
+# report.json フォールバック生成 (#647)
+# specialist が report.json を書かずに完了した場合に、
+# findings.yaml / aggregate.yaml から report.json を構築する
+_generate_fallback_report() {
+  local subdir="$1" reason="$2"
+  local report_file="${subdir}/OUT/report.json"
+
+  # findings.yaml / aggregate.yaml がある場合はそこから構築
+  local aggregate_file="${subdir}/OUT/aggregate.yaml"
+  local findings_file="${subdir}/OUT/findings.yaml"
+
+  if [[ -f "$aggregate_file" ]]; then
+    # aggregate.yaml → report.json 変換（環境変数経由でパスを渡す — CWE-78 対策）
+    _FB_INPUT="$aggregate_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="aggregate" \
+      python3 -c '
+import yaml, json, os, sys
+with open(os.environ["_FB_INPUT"]) as f:
+    data = yaml.safe_load(f) or {}
+report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
+          "findings_count": len(data.get("findings", [])), os.environ["_FB_KEY"]: data}
+with open(os.environ["_FB_OUTPUT"], "w") as f:
+    json.dump(report, f, ensure_ascii=False, indent=2)
+' 2>/dev/null && return 0
+  fi
+
+  if [[ -f "$findings_file" ]]; then
+    _FB_INPUT="$findings_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="findings" \
+      python3 -c '
+import yaml, json, os, sys
+with open(os.environ["_FB_INPUT"]) as f:
+    data = yaml.safe_load(f) or {}
+report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
+          os.environ["_FB_KEY"]: data}
+with open(os.environ["_FB_OUTPUT"], "w") as f:
+    json.dump(report, f, ensure_ascii=False, indent=2)
+' 2>/dev/null && return 0
+  fi
+
+  # 中間ファイルもない場合は最小限のフォールバック
+  _FB_OUTPUT="$report_file" _FB_REASON="$reason" python3 -c '
+import json, os
+report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
+          "error": "no_intermediate_files"}
+with open(os.environ["_FB_OUTPUT"], "w") as f:
+    json.dump(report, f, ensure_ascii=False, indent=2)
+'
+}
+
+# source 経由でのテスト用に、直接実行時のみメインロジックを実行する
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then return 0; fi
+
 # --- 引数パーサー ---
 PER_ISSUE_DIR=""
 WORKER_MODEL="sonnet"
@@ -233,48 +284,6 @@ _build_worker_prompt() {
     "- quick_flag: ${quick_flag}" \
     "- target_repo: ${target_repo}" \
     > "$_bwp_prompt_file"
-}
-
-# report.json フォールバック生成 (#647)
-# specialist が report.json を書かずに完了した場合に、
-# findings.yaml / aggregate.yaml から report.json を構築する
-_generate_fallback_report() {
-  local subdir="$1" reason="$2"
-  local report_file="${subdir}/OUT/report.json"
-
-  # findings.yaml / aggregate.yaml がある場合はそこから構築
-  local aggregate_file="${subdir}/OUT/aggregate.yaml"
-  local findings_file="${subdir}/OUT/findings.yaml"
-
-  if [[ -f "$aggregate_file" ]]; then
-    # aggregate.yaml → report.json 変換（環境変数経由でパスを渡す — CWE-78 対策）
-    _FB_INPUT="$aggregate_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="aggregate" \
-      python3 -c '
-import yaml, json, os, sys
-with open(os.environ["_FB_INPUT"]) as f:
-    data = yaml.safe_load(f) or {}
-report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
-          "findings_count": len(data.get("findings", [])), os.environ["_FB_KEY"]: data}
-with open(os.environ["_FB_OUTPUT"], "w") as f:
-    json.dump(report, f, ensure_ascii=False, indent=2)
-' 2>/dev/null && return 0
-  fi
-
-  if [[ -f "$findings_file" ]]; then
-    _FB_INPUT="$findings_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="findings" \
-      python3 -c '
-import yaml, json, os, sys
-with open(os.environ["_FB_INPUT"]) as f:
-    data = yaml.safe_load(f) or {}
-report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
-          os.environ["_FB_KEY"]: data}
-with open(os.environ["_FB_OUTPUT"], "w") as f:
-    json.dump(report, f, ensure_ascii=False, indent=2)
-' 2>/dev/null && return 0
-  fi
-
-  # 中間ファイルもない場合は最小限のフォールバック
-  printf '{"status":"done","fallback":true,"reason":"%s","error":"no_intermediate_files"}\n' "$reason" > "$report_file"
 }
 
 # cld-spawn でウィンドウを起動し inject-file でプロンプトを送達する
