@@ -31,7 +31,7 @@ create_mock_manifest() {
   mkdir -p "$(dirname "$path")"
   > "$path"
   for sp in "$@"; do
-    printf '%s\n' "$sp" >> "$path"
+    printf 'worker-%s\n' "$sp" >> "$path"
   done
 }
 
@@ -141,7 +141,7 @@ teardown() {
   create_mock_jsonl "$jsonl" "code-reviewer"
   create_mock_manifest "$manifest" "code-reviewer" "security-reviewer"
 
-  run bash "$SANDBOX/scripts/specialist-audit.sh" \
+  run --separate-stderr bash "$SANDBOX/scripts/specialist-audit.sh" \
     --jsonl "$jsonl" \
     --manifest-file "$manifest" \
     --warn-only
@@ -157,13 +157,13 @@ teardown() {
   create_mock_jsonl "$jsonl" "code-reviewer"
   create_mock_manifest "$manifest" "code-reviewer" "security-reviewer"
 
-  run bash "$SANDBOX/scripts/specialist-audit.sh" \
+  run --separate-stderr bash "$SANDBOX/scripts/specialist-audit.sh" \
     --jsonl "$jsonl" \
     --manifest-file "$manifest" \
     --warn-only
 
   assert_success
-  echo "$output" | jq -e '.missing | map(select(. == "security-reviewer")) | length == 1' > /dev/null
+  echo "$output" | jq -e '.missing | map(select(. == "worker-security-reviewer")) | length == 1' > /dev/null
 }
 
 # ---------------------------------------------------------------------------
@@ -195,7 +195,7 @@ teardown() {
   create_mock_manifest "$manifest" "code-reviewer" "security-reviewer"
 
   SPECIALIST_AUDIT_MODE=strict \
-  run bash "$SANDBOX/scripts/specialist-audit.sh" \
+  run --separate-stderr bash "$SANDBOX/scripts/specialist-audit.sh" \
     --jsonl "$jsonl" \
     --manifest-file "$manifest"
 
@@ -390,7 +390,7 @@ teardown() {
   create_mock_jsonl "$jsonl" "code-reviewer"
 
   SKIP_SPECIALIST_AUDIT=1 \
-  run bash "$SANDBOX/scripts/specialist-audit.sh" \
+  run --separate-stderr bash "$SANDBOX/scripts/specialist-audit.sh" \
     --jsonl "$jsonl"
 
   assert_success
@@ -410,6 +410,7 @@ teardown() {
   local manifest="$SANDBOX/manifest.txt"
 
   # JSONL に subagent_type なし（header 行のみ）
+  mkdir -p "$(dirname "$jsonl")"
   printf '{"type":"message","content":"Issue #999 test"}\n' > "$jsonl"
   # manifest も空
   > "$manifest"
@@ -434,5 +435,5 @@ teardown() {
     --manifest-file "$manifest"
 
   assert_success
-  echo "$output" | jq -e '.extra | map(select(. == "extra-specialist")) | length == 1' > /dev/null
+  echo "$output" | jq -e '.extra | map(select(. == "worker-extra-specialist")) | length == 1' > /dev/null
 }
