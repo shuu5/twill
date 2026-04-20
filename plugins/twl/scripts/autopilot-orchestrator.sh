@@ -25,6 +25,7 @@ if [[ -n "$SESSION_STATE_CMD" && "$SESSION_STATE_CMD" == /* && "$SESSION_STATE_C
 else
   USE_SESSION_STATE=false
 fi
+echo "[orchestrator] USE_SESSION_STATE=${USE_SESSION_STATE}" >&2
 
 # --- 定数 ---
 MAX_PARALLEL="${DEV_AUTOPILOT_MAX_PARALLEL:-4}"

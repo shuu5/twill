@@ -420,6 +420,41 @@ tmux send-keys -t "<WORKER_WINDOW>" "/twl:workflow-test-ready" Enter
 |----|----------|------|-------------|
 | **P1** | Pilot 能動評価の atomic 経由限定 | Pilot による PR diff / Issue body 能動評価は autopilot-pilot-* atomic を経由した場合のみ推奨。SKILL.md への直接記述による責務拡大は避ける | ADR-010 参照 + コードレビュー時の人手チェック |
 
+## Operational Notes
+
+### SESSION_STATE_CMD 解決経路の不変条件（#752）
+
+`autopilot-orchestrator.sh`・`crash-detect.sh`・`health-check.sh` の 3 スクリプトは、
+同一の SESSION_STATE_CMD 解決経路を共有する。
+
+- **デフォルト**: `${SCRIPTS_ROOT}/session-state-wrapper.sh`（スクリプトと同ディレクトリの wrapper）
+- **wrapper の実体**: `plugins/session/scripts/session-state.sh`（session プラグイン）
+- **環境変数上書き可**: `export SESSION_STATE_CMD=/custom/path` で任意パスに変更可能
+- **不変条件**: `$HOME/ubuntu-note-system/...` のような外部ハードコードパスをデフォルトに使ってはならない。fresh clone / CI 環境で存在せず `USE_SESSION_STATE=false` へ silent fallback するため（regression guard: `plugins/twl/tests/bats/scripts/autopilot-session-state-cmd.bats` AC-6）
+
+### detect_input_waiting() 2 回検知デバウンスの設計意図（AC-3 / #752）
+
+`autopilot-orchestrator.sh` の `detect_input_waiting()` は `INPUT_WAITING_SEEN_PATTERN` により
+1 回目の検知では state を書き込まず、2 回目で確定する仕様になっている。
+
+- **意図**: 一時的な TUI 表示ゆらぎ（approve/reject ダイアログ等の一過性の input-waiting）を
+  誤検知しないための debounce。
+- **inject トリガーとの関係**: `detect_input_waiting()` は `check_and_nudge()` 内（state 書き込み専用）で
+  呼ばれる。`inject_next_workflow()` は `current_step` terminal 検知ルートから独立した
+  input-waiting 検出ロジックを持つため、debounce は inject トリガーの直接原因ではない。
+  状態の可観測性（state.json）を 1 サイクル遅延させるだけで、inject 自体は影響を受けない。
+
+### Detection Layer Regression ポストモーテム（#707 / #722 / #752）
+
+| Issue | PR | 内容 |
+|-------|-----|------|
+| #707 | #716 | orchestrator resolve ログ分離 + session-state.sh inject 検出（初期実装） |
+| #722 | #733 | inject が input-waiting を見逃す問題修正（`USE_SESSION_STATE=true` ブランチの backoff 改善） |
+| #752 | #760 | SESSION_STATE_CMD デフォルトパス (`$HOME/ubuntu-note-system/...`) が fresh clone 環境で不在 → 全 3 スクリプトで `USE_SESSION_STATE=false` に silent fallback。wrapper 参照に変更して解決 |
+
+**再発防止**: `autopilot-session-state-cmd.bats` の AC-6 tests が `ubuntu-note-system` ハードコードの
+再導入を CI で検知する。
+
 ## Dependencies
 
 - **Downstream -> PR Cycle**: merge-gate を呼び出してマージ判定。Contract: contracts/autopilot-pr-cycle.md
