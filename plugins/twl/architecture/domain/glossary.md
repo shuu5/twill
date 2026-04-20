@@ -25,6 +25,7 @@
 | Spec Implementation | Architecture spec（`architecture/` 配下のドキュメント）の変更・PR 作成を担う controller カテゴリ。co-architect のみ該当。Implementation（コード変更）とは区別される（ADR-019） | 全体 |
 | DCI | Dynamic Context Injection。実行時にファイルを Read してコンテキストに注入するパターン | 全体 |
 | CRG | Code Review Graph。MCP 経由でコード依存関係を可視化・分析するツール | TWiLL Integration |
+| graceful degradation | 対応外環境（non-bare git リポ等）で機能を完全に停止せず、no-op（exit 0）で安全に終了する設計パターン。supervisor hook がその実装例（SU-8） | Supervision |
 | Supervisor | プロジェクト常駐のメタ認知レイヤー。全 controller を監視・調整・知識外部化する上位層（ADR-014） | Supervision |
 | su-observer | Supervisor 型の唯一のコンポーネント（ADR-014 で observer 型から再定義）。main session そのものとして機能し、controller を spawn → observe する。Observer（read-only）とは異なり介入権限を持つ | Supervision |
 | SupervisorSession | su-observer のプロジェクト常駐セッション状態。Wave 管理・介入記録・記憶予算を追跡 | Supervision |
