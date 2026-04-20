@@ -879,7 +879,7 @@ _nudge_command_for_pattern() {
 
 # inject_next_workflow: current_step terminal 値を検知して次の workflow skill を tmux inject する（ADR-018）
 # 引数: issue, window_name, entry（省略時は _default:${issue}）
-# 戻り値: 0=inject 成功 or pr-merge 委譲、1=失敗（タイムアウト / resolve 失敗 / バリデーション失敗）
+# 戻り値: 0=inject 成功、1=失敗（タイムアウト / resolve 失敗 / バリデーション失敗）、2=force-exit（status=failed 書き込み済み）
 inject_next_workflow() {
   local issue="$1"
   local window_name="$2"
@@ -984,9 +984,9 @@ inject_next_workflow() {
         echo "[${_trace_ts}] issue=${issue} category=INJECT_EXHAUSTED skill=${_skill_safe} count=${INJECT_TIMEOUT_COUNT[$entry]} max=${_inject_max} result=force_exit" >> "$_trace_log" 2>/dev/null || true
         python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
           --set "status=failed" \
-          --set "failure.reason=inject_exhausted_pr_merge" 2>/dev/null || true
+          --set 'failure={"reason":"inject_exhausted_pr_merge","step":"inject_next_workflow"}' 2>/dev/null || true
         cleanup_worker "$issue" "$entry"
-        return 0
+        return 2  # force-exit: 呼び出し元は LAST_INJECTED_STEP を更新しない（status=failed 書き込み済み）
       fi
     fi
     return 1
@@ -1007,12 +1007,16 @@ inject_next_workflow() {
   # --- trace ログ: inject 成功（タイムスタンプを inject 完了後に再取得） ---
   local _success_ts
   _success_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  # AC-4 #744: status / current_step / pr / branch を trace log に追記
+  # AC-4 #744: status / current_step / pr / branch を trace log に追記（改行除去でログインジェクション防止）
   local _inj_status _inj_step _inj_pr _inj_branch
   _inj_status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status 2>/dev/null || echo "")
   _inj_step=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field current_step 2>/dev/null || echo "")
   _inj_pr=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field pr 2>/dev/null || echo "")
   _inj_branch=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
+  _inj_status="${_inj_status//$'\n'/ }"
+  _inj_step="${_inj_step//$'\n'/ }"
+  _inj_pr="${_inj_pr//$'\n'/ }"
+  _inj_branch="${_inj_branch//$'\n'/ }"
   echo "[${_success_ts}] issue=${issue} category=INJECT_SUCCESS skill=${_skill_safe} result=success status=${_inj_status} current_step=${_inj_step} pr=${_inj_pr} branch=${_inj_branch}" >> "$_trace_log" 2>/dev/null || true
   # AC-2 #744: inject 成功時に pr-merge timeout カウンタをリセット
   INJECT_TIMEOUT_COUNT[$entry]=0
