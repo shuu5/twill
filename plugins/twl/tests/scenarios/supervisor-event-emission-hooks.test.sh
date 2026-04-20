@@ -88,31 +88,12 @@ run_test() {
 
 # --- ヘルパー ---
 
-# sandbox の TWL_SUPERVISOR_EVENTS_DIR を引き継いで hook を実行
+# supervisor-* hook は AUTOPILOT_DIR を参照しない（git rev-parse --git-common-dir で events_dir を解決）
 # TWL_SUPERVISOR_EVENTS_DIR は setup_sandbox で export 済みのため自動伝搬
-run_hook_with_autopilot() {
-  local hook_script="$1"
-  local input_json="${2-}"
-  [[ -z "$input_json" ]] && input_json="{}"
-  printf '%s' "$input_json" | bash "${HOOKS_DIR}/${hook_script}" 2>/dev/null
-}
-
-# AUTOPILOT_DIR なしで hook を実行（非 git 環境エミュレート用）
-# AUTOPILOT_DIR を明示的に unset して実行（TWL_SUPERVISOR_EVENTS_DIR は setup_sandbox で export 済み）
-run_hook_without_autopilot() {
-  local hook_script="$1"
-  local input_json="${2-}"
-  [[ -z "$input_json" ]] && input_json="{}"
-  printf '%s' "$input_json" | env -u AUTOPILOT_DIR bash "${HOOKS_DIR}/${hook_script}" 2>/dev/null
-}
-
-# AUTOPILOT_DIR 未設定で、実際の git repo 内（現在の worktree）から hook を実行
-# TWL_SUPERVISOR_EVENTS_DIR は setup_sandbox で export 済みのため sandbox に書き込む
-# AUTOPILOT_DIR を明示的に unset して実行（親セッションの環境変数を引き継がない）
-run_hook_in_git_repo_no_autopilot() {
+run_hook() {
   local hook_script="$1"
   local input_json="${2:-{}}"
-  printf '%s' "$input_json" | env -u AUTOPILOT_DIR bash "${HOOKS_DIR}/${hook_script}" 2>/dev/null
+  printf '%s' "$input_json" | bash "${HOOKS_DIR}/${hook_script}" 2>/dev/null
 }
 
 # stderr を変数 HOOK_STDERR にキャプチャして hook を実行（AC-5/6/7 用）
@@ -153,7 +134,7 @@ run_hook_in_non_bare() {
 test_heartbeat_no_autopilot_in_git_repo() {
   [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"test-no-ap-heartbeat"}'
-  run_hook_in_git_repo_no_autopilot "supervisor-heartbeat.sh" "$session_json"
+  run_hook "supervisor-heartbeat.sh" "$session_json"
   local event_file="${TWL_SUPERVISOR_EVENTS_DIR}/heartbeat-test-no-ap-heartbeat"
   local result=0
   [[ -f "$event_file" ]] || result=1
@@ -175,7 +156,7 @@ test_heartbeat_no_autopilot_dir() {
 test_heartbeat_creates_event_file() {
   [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"test-sess-01","cwd":"/tmp/test"}'
-  run_hook_with_autopilot "supervisor-heartbeat.sh" "$session_json"
+  run_hook "supervisor-heartbeat.sh" "$session_json"
   local event_file="${TWL_SUPERVISOR_EVENTS_DIR}/heartbeat-test-sess-01"
   local result=0
   [[ -f "$event_file" ]] || result=1
@@ -200,7 +181,7 @@ test_heartbeat_exit_zero_on_failure() {
 test_heartbeat_no_stdout() {
   local session_json='{"session_id":"test-stdout","cwd":"/tmp"}'
   local output
-  output=$(run_hook_with_autopilot "supervisor-heartbeat.sh" "$session_json")
+  output=$(run_hook "supervisor-heartbeat.sh" "$session_json")
   [[ -z "$output" ]] || return 1
 }
 
@@ -212,7 +193,7 @@ test_heartbeat_no_stdout() {
 test_input_wait_no_autopilot_in_git_repo() {
   [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"test-no-ap-input-wait"}'
-  run_hook_in_git_repo_no_autopilot "supervisor-input-wait.sh" "$session_json"
+  run_hook "supervisor-input-wait.sh" "$session_json"
   local event_file="${TWL_SUPERVISOR_EVENTS_DIR}/input-wait-test-no-ap-input-wait"
   local result=0
   [[ -f "$event_file" ]] || result=1
@@ -235,7 +216,7 @@ test_input_wait_no_autopilot_dir() {
 test_input_wait_creates_event_file() {
   [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"wait-sess-01"}'
-  run_hook_with_autopilot "supervisor-input-wait.sh" "$session_json"
+  run_hook "supervisor-input-wait.sh" "$session_json"
   local event_file="${TWL_SUPERVISOR_EVENTS_DIR}/input-wait-wait-sess-01"
   local result=0
   [[ -f "$event_file" ]] || result=1
@@ -249,7 +230,7 @@ test_input_wait_creates_event_file() {
 
 test_input_wait_no_stdout() {
   local output
-  output=$(run_hook_with_autopilot "supervisor-input-wait.sh" '{"session_id":"sw"}')
+  output=$(run_hook "supervisor-input-wait.sh" '{"session_id":"sw"}')
   [[ -z "$output" ]] || return 1
 }
 
@@ -265,7 +246,7 @@ test_input_clear_removes_file() {
   echo '{"event":"input-wait"}' > "$event_file"
   [[ -f "$event_file" ]] || return 1
   local session_json="{\"session_id\":\"${session_id}\"}"
-  run_hook_with_autopilot "supervisor-input-clear.sh" "$session_json"
+  run_hook "supervisor-input-clear.sh" "$session_json"
   local result=0
   [[ ! -f "$event_file" ]] || result=1
   return $result
@@ -273,7 +254,7 @@ test_input_clear_removes_file() {
 
 test_input_clear_no_file_ok() {
   # ファイルが存在しなくても exit 0
-  run_hook_with_autopilot "supervisor-input-clear.sh" '{"session_id":"nonexistent"}'
+  run_hook "supervisor-input-clear.sh" '{"session_id":"nonexistent"}'
   [[ $? -eq 0 ]] || return 1
 }
 
@@ -285,7 +266,7 @@ test_input_clear_no_autopilot_in_git_repo() {
   printf '{"event":"input-wait","session_id":"%s"}\n' "$session_id" > "${TWL_SUPERVISOR_EVENTS_DIR}/input-wait-${session_id}"
   [[ -f "${TWL_SUPERVISOR_EVENTS_DIR}/input-wait-${session_id}" ]] || return 1
   local session_json="{\"session_id\":\"${session_id}\"}"
-  run_hook_in_git_repo_no_autopilot "supervisor-input-clear.sh" "$session_json"
+  run_hook "supervisor-input-clear.sh" "$session_json"
   local result=0
   # ファイルが削除されていることを確認
   [[ ! -f "${TWL_SUPERVISOR_EVENTS_DIR}/input-wait-${session_id}" ]] || result=1
@@ -308,7 +289,7 @@ test_input_clear_no_autopilot_dir() {
 test_skill_step_no_autopilot_in_git_repo() {
   [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"test-no-ap-skill-step","tool_input":{"skill":"workflow-setup","args":"#725"}}'
-  run_hook_in_git_repo_no_autopilot "supervisor-skill-step.sh" "$session_json"
+  run_hook "supervisor-skill-step.sh" "$session_json"
   local event_file="${TWL_SUPERVISOR_EVENTS_DIR}/skill-step-test-no-ap-skill-step"
   local result=0
   [[ -f "$event_file" ]] || result=1
@@ -331,7 +312,7 @@ test_skill_step_no_autopilot_dir() {
 test_skill_step_creates_event_file() {
   [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"skill-sess-01","tool_input":{"skill":"workflow-setup","args":"#123"}}'
-  run_hook_with_autopilot "supervisor-skill-step.sh" "$session_json"
+  run_hook "supervisor-skill-step.sh" "$session_json"
   local event_file="${TWL_SUPERVISOR_EVENTS_DIR}/skill-step-skill-sess-01"
   local result=0
   [[ -f "$event_file" ]] || result=1
@@ -346,7 +327,7 @@ test_skill_step_creates_event_file() {
 
 test_skill_step_no_stdout() {
   local output
-  output=$(run_hook_with_autopilot "supervisor-skill-step.sh" '{"session_id":"ss"}')
+  output=$(run_hook "supervisor-skill-step.sh" '{"session_id":"ss"}')
   [[ -z "$output" ]] || return 1
 }
 
@@ -358,7 +339,7 @@ test_skill_step_no_stdout() {
 test_session_end_no_autopilot_in_git_repo() {
   [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"test-no-ap-session-end"}'
-  run_hook_in_git_repo_no_autopilot "supervisor-session-end.sh" "$session_json"
+  run_hook "supervisor-session-end.sh" "$session_json"
   local event_file="${TWL_SUPERVISOR_EVENTS_DIR}/session-end-test-no-ap-session-end"
   local result=0
   [[ -f "$event_file" ]] || result=1
@@ -381,7 +362,7 @@ test_session_end_no_autopilot_dir() {
 test_session_end_creates_event_file() {
   [[ -n "$GIT_EVENTS_DIR" ]] || { echo "  SKIP: not in git repo" >&2; return 0; }
   local session_json='{"session_id":"end-sess-01"}'
-  run_hook_with_autopilot "supervisor-session-end.sh" "$session_json"
+  run_hook "supervisor-session-end.sh" "$session_json"
   local event_file="${TWL_SUPERVISOR_EVENTS_DIR}/session-end-end-sess-01"
   local result=0
   [[ -f "$event_file" ]] || result=1
@@ -395,7 +376,7 @@ test_session_end_creates_event_file() {
 
 test_session_end_no_stdout() {
   local output
-  output=$(run_hook_with_autopilot "supervisor-session-end.sh" '{"session_id":"se"}')
+  output=$(run_hook "supervisor-session-end.sh" '{"session_id":"se"}')
   [[ -z "$output" ]] || return 1
 }
 
@@ -607,14 +588,14 @@ test_sigint_no_residual_files() {
 echo "=== supervisor-event-emission-hooks tests ==="
 
 # heartbeat
-run_test "heartbeat: AUTOPILOT_DIR 未設定 + git 内でイベントファイル生成（sandbox）" test_heartbeat_no_autopilot_in_git_repo
+run_test "heartbeat: git_common_dir 解決でイベントファイル生成（sandbox）" test_heartbeat_no_autopilot_in_git_repo
 run_test "heartbeat: git 外セッションで exit 0（静的終了）" test_heartbeat_no_autopilot_dir
 run_test "heartbeat: イベントファイル生成と JSON フォーマット（sandbox）" test_heartbeat_creates_event_file
 run_test "heartbeat: 書き込み失敗でも exit 0" test_heartbeat_exit_zero_on_failure
 run_test "heartbeat: stdout に何も出力しない" test_heartbeat_no_stdout
 
 # input-wait
-run_test "input-wait: AUTOPILOT_DIR 未設定 + git 内でイベントファイル生成（sandbox）" test_input_wait_no_autopilot_in_git_repo
+run_test "input-wait: git_common_dir 解決でイベントファイル生成（sandbox）" test_input_wait_no_autopilot_in_git_repo
 run_test "input-wait: git 外セッションで exit 0（静的終了）" test_input_wait_no_autopilot_dir
 run_test "input-wait: イベントファイル生成と JSON フォーマット（sandbox）" test_input_wait_creates_event_file
 run_test "input-wait: stdout に何も出力しない" test_input_wait_no_stdout
@@ -622,17 +603,17 @@ run_test "input-wait: stdout に何も出力しない" test_input_wait_no_stdout
 # input-clear
 run_test "input-clear: input-wait ファイルを削除（sandbox）" test_input_clear_removes_file
 run_test "input-clear: ファイル不在でも exit 0" test_input_clear_no_file_ok
-run_test "input-clear: AUTOPILOT_DIR 未設定 + git 内で sandbox の input-wait ファイルを削除" test_input_clear_no_autopilot_in_git_repo
+run_test "input-clear: git_common_dir 解決で sandbox の input-wait ファイルを削除" test_input_clear_no_autopilot_in_git_repo
 run_test "input-clear: git 外セッションで exit 0（静的終了）" test_input_clear_no_autopilot_dir
 
 # skill-step
-run_test "skill-step: AUTOPILOT_DIR 未設定 + git 内でイベントファイル生成（sandbox）" test_skill_step_no_autopilot_in_git_repo
+run_test "skill-step: git_common_dir 解決でイベントファイル生成（sandbox）" test_skill_step_no_autopilot_in_git_repo
 run_test "skill-step: git 外セッションで exit 0（静的終了）" test_skill_step_no_autopilot_dir
 run_test "skill-step: イベントファイル生成と JSON フォーマット（sandbox）" test_skill_step_creates_event_file
 run_test "skill-step: stdout に何も出力しない" test_skill_step_no_stdout
 
 # session-end
-run_test "session-end: AUTOPILOT_DIR 未設定 + git 内でイベントファイル生成（sandbox）" test_session_end_no_autopilot_in_git_repo
+run_test "session-end: git_common_dir 解決でイベントファイル生成（sandbox）" test_session_end_no_autopilot_in_git_repo
 run_test "session-end: git 外セッションで exit 0（静的終了）" test_session_end_no_autopilot_dir
 run_test "session-end: イベントファイル生成と JSON フォーマット（sandbox）" test_session_end_creates_event_file
 run_test "session-end: stdout に何も出力しない" test_session_end_no_stdout
