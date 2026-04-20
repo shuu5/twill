@@ -336,6 +336,7 @@ skills:
       - atomic: su-compact  # SU-6b: context 逼迫時またはユーザー指示時にユーザーへ提案（SHOULD）
       - atomic: wave-collect        # SU-6a: Wave 完了時の結果収集
       - atomic: externalize-state   # SU-6a: Wave 完了時の外部化
+      - script: specialist-audit
     dependencies:
       - plugin: session  # cld --observer: session.json の claude_session_id 読み取りに session plugin の session-state.sh を使用
     description: "メタ認知レイヤー: 全 controller の監視・介入。hook プライマリ / polling フォールバックの Hybrid 検知（#570）。テストシナリオ実行は co-self-improve に委譲"
