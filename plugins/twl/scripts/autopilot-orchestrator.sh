@@ -284,8 +284,8 @@ launch_worker() {
   [[ "$ISSUE_REPO_ID" != "_default" ]] && _repo_args=(--repo "$ISSUE_REPO_ID")
   local existing_branch
   existing_branch=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$ISSUE" --field branch 2>/dev/null || echo "")
-  # ブランチ名バリデーション（パストラバーサル防止、cleanup_worker と同一パターン）
-  if [[ -n "$existing_branch" && "$existing_branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
+  # ブランチ名バリデーション: `.` 除外の統一 regex（L288/L418/L1270 + autopilot-cleanup.sh L186 + orchestrator-cleanup-sequence.bats test double）
+  if [[ -n "$existing_branch" && "$existing_branch" =~ ^[a-zA-Z0-9_/\-]+$ ]]; then
     local candidate_dir="$effective_project_dir/worktrees/$existing_branch"
     if [[ -d "$candidate_dir" ]]; then
       worktree_dir="$candidate_dir"
@@ -414,8 +414,8 @@ cleanup_worker() {
 
   local branch
   branch=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field branch 2>/dev/null || echo "")
-  # ブランチ名バリデーション（コマンドインジェクション防止）
-  if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
+  # ブランチ名バリデーション（コマンドインジェクション防止、パストラバーサル防止: L288 と同一 `.` 除外 regex）
+  if [[ -n "$branch" && "$branch" =~ ^[a-zA-Z0-9_/\-]+$ ]]; then
     # Step 2: worktree削除（ローカルブランチ込み）— bare repo（worktreeモード）のみ実行
     if [[ "$repo_mode" == "worktree" ]]; then
       bash "$SCRIPTS_ROOT/worktree-delete.sh" "$branch" 2>/dev/null || \
@@ -1266,8 +1266,8 @@ startup_cleanup() {
   while IFS= read -r _raw_branch; do
     local _branch="${_raw_branch#"  "}"  # 先頭空白除去
     [[ "$_branch" =~ $prefixes_pattern ]] || continue
-    # ブランチ名バリデーション（コマンドインジェクション防止）
-    [[ "$_branch" =~ ^[a-zA-Z0-9._/\-]+$ ]] || continue
+    # ブランチ名バリデーション（コマンドインジェクション防止、パストラバーサル防止: L288 と同一 `.` 除外 regex）
+    [[ "$_branch" =~ ^[a-zA-Z0-9_/\-]+$ ]] || continue
     merged_branches+=("$_branch")
   done < <(git branch --merged origin/main 2>/dev/null | grep -v '^\* ' | grep -v '^  main$' || true)
 
