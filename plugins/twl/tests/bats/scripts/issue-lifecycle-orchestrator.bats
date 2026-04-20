@@ -363,3 +363,119 @@ with newline'
 
   rm -rf "$subdir"
 }
+
+# ===========================================================================
+# Requirement: wait_for_batch 並列化 (#717)
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Scenario: serial blocking 解消
+# WHEN wait_for_batch() の実装を確認する
+# THEN session-state.sh wait --timeout による直列ブロッキングが除去されている
+# ---------------------------------------------------------------------------
+
+@test "orchestrator: wait_for_batch が session-state.sh wait --timeout を呼ばない (serial 排除)" {
+  local wait_for_batch_region
+  wait_for_batch_region=$(awk '/^wait_for_batch\(\)/,/^\}/' "$SCRIPT_SRC")
+  echo "$wait_for_batch_region" | grep -qE 'session-state\.sh wait.*--timeout' \
+    && fail "wait_for_batch() still uses blocking 'session-state.sh wait --timeout' — serial bottleneck not fixed" \
+    || true
+}
+
+@test "orchestrator: wait_for_batch が .debounce_ts タイムスタンプ debounce を使用する" {
+  local wait_for_batch_region
+  wait_for_batch_region=$(awk '/^wait_for_batch\(\)/,/^\}/' "$SCRIPT_SRC")
+  echo "$wait_for_batch_region" | grep -q '\.debounce_ts' \
+    || fail "wait_for_batch() does not use .debounce_ts timestamp — per-subdir debounce not implemented"
+}
+
+@test "orchestrator: wait_for_batch が .last_inject_ts タイムスタンプで progressive delay を非ブロッキング化する" {
+  local wait_for_batch_region
+  wait_for_batch_region=$(awk '/^wait_for_batch\(\)/,/^\}/' "$SCRIPT_SRC")
+  echo "$wait_for_batch_region" | grep -q '\.last_inject_ts' \
+    || fail "wait_for_batch() does not use .last_inject_ts timestamp — progressive delay still serial"
+}
+
+@test "orchestrator: wait_for_batch 内に sleep \$((5 * inject_count)) が存在しない" {
+  local wait_for_batch_region
+  wait_for_batch_region=$(awk '/^wait_for_batch\(\)/,/^\}/' "$SCRIPT_SRC")
+  echo "$wait_for_batch_region" | grep -qE 'sleep \$\(\(5 \* inject_count\)\)' \
+    && fail "wait_for_batch() still has 'sleep \$((5 * inject_count))' — progressive delay not fixed" \
+    || true
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: MAX_PARALLEL=3 で 1 subdir が input-waiting でも他 2 subdir の完了を検知する
+# WHEN 3 subdirs 中 2 つが done 済み、1 つが input-waiting (.debounce_ts 設定済み)
+# THEN 他 2 subdir の report.json 完了が POLL_INTERVAL 以内に検知され serialize しない
+# ---------------------------------------------------------------------------
+
+@test "orchestrator: MAX_PARALLEL=3 で 1 subdir が debounce 中でも他 2 subdir 完了を serialize しない" {
+  # Create temp mirror structure to inject mock session-state.sh
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+
+  local orch_scripts="${tmpdir}/plugins/twl/scripts"
+  local sess_scripts="${tmpdir}/plugins/session/scripts"
+  mkdir -p "$orch_scripts" "$sess_scripts"
+
+  # Copy orchestrator to temp location (SCRIPTS_ROOT resolves to orch_scripts)
+  cp "$SCRIPT_SRC" "${orch_scripts}/issue-lifecycle-orchestrator.sh"
+
+  # Mock session-state.sh: 'wait' blocks 3s (simulates old serial cost), 'state' is instant
+  cat > "${sess_scripts}/session-state.sh" << 'MOCKEOF'
+#!/usr/bin/env bash
+if [[ "${1:-}" == "wait" ]]; then
+  sleep 3
+  exit 1
+fi
+echo "input-waiting"
+exit 0
+MOCKEOF
+  chmod +x "${sess_scripts}/session-state.sh"
+
+  # Mock session-comm.sh (inject call)
+  printf '#!/usr/bin/env bash\nexit 0\n' > "${sess_scripts}/session-comm.sh"
+  chmod +x "${sess_scripts}/session-comm.sh"
+
+  # Per-issue dir: 2 done, 1 in debounce window (no report.json)
+  local per_issue_dir="${tmpdir}/per-issue"
+  mkdir -p "${per_issue_dir}/0/OUT" "${per_issue_dir}/1/OUT" "${per_issue_dir}/2"
+  echo '{"status":"done"}' > "${per_issue_dir}/0/OUT/report.json"
+  echo '{"status":"done"}' > "${per_issue_dir}/1/OUT/report.json"
+  # Subdir 2: .debounce_ts set to now — within 10s window, skips state call
+  echo "$(date +%s)" > "${per_issue_dir}/2/.debounce_ts"
+
+  # Compute SID8 the same way the script does (basename of dirname of per_issue_dir)
+  local sid8
+  sid8="$(basename "$tmpdir" | cut -c1-8 | tr -c 'a-zA-Z0-9_-' 'x')"
+
+  # Stub tmux to show window exists for all subdirs
+  stub_command "tmux" "
+    case \"\$1\" in
+      list-windows)
+        printf 'coi-${sid8}-0\ncoi-${sid8}-1\ncoi-${sid8}-2\n'
+        ;;
+      kill-window) exit 0 ;;
+      *) exit 0 ;;
+    esac
+  "
+
+  local start_ms end_ms elapsed_ms
+  start_ms="$(date +%s%3N)"
+
+  # Run with MAX_POLL=1, POLL_INTERVAL=0
+  MAX_PARALLEL=3 POLL_INTERVAL=0 MAX_POLL=1 \
+    run bash "${orch_scripts}/issue-lifecycle-orchestrator.sh" \
+    --per-issue-dir "$per_issue_dir"
+
+  end_ms="$(date +%s%3N)"
+  elapsed_ms=$((end_ms - start_ms))
+
+  rm -rf "$tmpdir"
+
+  # New code: .debounce_ts skip prevents blocking on subdir 2 → < 1000ms
+  # Old code: session-state.sh wait --timeout 10 for subdir 2 → 3000ms+ (via mock sleep 3)
+  [ "$elapsed_ms" -lt 1000 ] \
+    || fail "wait_for_batch blocked for ${elapsed_ms}ms (expected < 1000ms). Per-subdir timestamp skip not working."
+}
