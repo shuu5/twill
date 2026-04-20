@@ -367,6 +367,28 @@ Issue 群の一括実装（Wave）を要求された場合:
    - `commands/wave-collect.md` を Read → 実行（`WAVE_NUM=<N>`）
    - `commands/externalize-state.md` を Read → 実行（`--trigger wave_complete`）
    - **audit snapshot（SHOULD）**: `twl audit snapshot --source-dir "${AUTOPILOT_DIR:-.autopilot}" --label "wave/${WAVE_NUM}"` を実行する（audit 非アクティブ時は自動 no-op）
+   - **specialist completeness 監査（SHOULD）**: audit snapshot 直後に Wave 内の全 Issue を一括監査する。bootstrapping 期間中（`SPECIALIST_AUDIT_MODE=warn`）は常に exit 0 のため merge を阻害しない。結果を `.audit/wave-${WAVE_NUM}/specialist-audit.log` に追記し、FAIL 行があれば次 Wave の手動調査対象としてログに記録する。
+     ```bash
+     # Wave 内の全 Issue について specialist completeness を監査
+     # JSON 出力でログに記録し、"status":"FAIL" を検出可能にする（--summary を使わない）
+     _audit_log=".audit/wave-${WAVE_NUM}/specialist-audit.log"
+     mkdir -p ".audit/wave-${WAVE_NUM}"
+     for issue_json in "${AUTOPILOT_DIR:-.autopilot}"/issues/issue-*.json; do
+       [[ -f "$issue_json" ]] || continue
+       _issue_num=$(basename "$issue_json" | sed 's/issue-\([0-9]*\)\.json/\1/')
+       # quick ラベル判定
+       _is_quick=$(python3 -m twl.autopilot.state read --type issue --issue "$_issue_num" --field is_quick 2>/dev/null || echo "false")
+       _qflag=(); [[ "$_is_quick" == "true" ]] && _qflag=(--quick)
+       # --warn-only で merge を阻害しない。JSON 出力でログに記録（--summary を使わず FAIL 検出可能にする）
+       bash "${CLAUDE_PLUGIN_ROOT:-plugins/twl}/scripts/specialist-audit.sh" \
+         --issue "$_issue_num" --warn-only "${_qflag[@]+"${_qflag[@]}"}" \
+         >> "$_audit_log" 2>&1 || true
+     done
+     # FAIL 行の検出（--warn-only で exit 0 だが JSON の "status":"FAIL" で識別）
+     if grep -q '"status":"FAIL"' "$_audit_log" 2>/dev/null; then
+       echo "WARN: specialist-audit に FAIL あり — ${_audit_log} を確認してください" >&2
+     fi
+     ```
    - **イベントファイル一括クリーンアップ（MUST）**: externalize-state 実行後に `.supervisor/events/` 配下の全ファイルを削除する:
      ```bash
      rm -f .supervisor/events/* 2>/dev/null || true
