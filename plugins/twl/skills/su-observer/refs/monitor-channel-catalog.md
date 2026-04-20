@@ -13,7 +13,8 @@ Wave 開始時に本カタログから Wave 種別に応じたチャネルを選
 | WORKERS | worker window 出現・消失 | 即時 | Auto |
 | PHASE-DONE | PHASE_COMPLETE 検知 | 即時 | Auto |
 | NON-TERMINAL | `>>> 実装完了:` 後の chain 不遷移 | 2分 | Confirm |
-| BUDGET-LOW | 5h rolling budget 残量 | 残り 15 分（設定可） | Auto |
+| BUDGET-LOW | 5h rolling budget 残量 | 残り 15 分 or 90% 消費（設定可） | Auto |
+| BUDGET-ALERT | Monitor watcher が検知した budget threshold 超過 | threshold_percent (default 90%) | Auto |
 
 ---
 
@@ -347,9 +348,9 @@ fi
 
 ## [BUDGET-LOW] — 5h rolling budget 残量検知
 
-**検知対象**: Claude Code の tmux status line から `budget: <残量>` をパースし、閾値以下になった場合に停止シーケンスを自動実行する
+**検知対象**: Claude Code の tmux status line から実フォーマット `5h:XX%(YYm)`（例: `5h:10%(4h21m)`）をパースし、閾値以下になった場合に停止シーケンスを自動実行する
 
-**閾値**: 残り 15 分（`.supervisor/budget-config.json` の `threshold_minutes` フィールドで override 可能。デフォルト 15）
+**閾値**: 残り `threshold_minutes`（default 15）分 または `threshold_percent`（default 90）% 消費（`.supervisor/budget-config.json` で override 可能）
 
 **検知方法**: `tmux capture-pane -t "$PILOT_WINDOW" -p -S -1` で status line をキャプチャし正規表現でパース。取得不能の場合は `session-comm.sh capture` にフォールバック。それでも取得不能な場合は検知をスキップし stderr に警告。
 
@@ -358,41 +359,52 @@ fi
 **bash スニペット:**
 
 ```bash
-# BUDGET-LOW: status line から budget 残量をパース
+# BUDGET-LOW: status line から budget 残量をパース（実フォーマット: 5h:XX%(YYm)、例: 5h:10%(4h21m)）
 BUDGET_THRESHOLD_MIN=15  # デフォルト閾値（分）
+BUDGET_THRESHOLD_PCT=90  # デフォルト閾値（%消費）
 
-get_budget_minutes() {
+get_budget_info() {
   local pilot_win="${1:-}"
-  local raw
-  # status line から取得
+  local pct raw
+  # status line から取得（実フォーマット: 5h:XX%(YYm)）
+  pct=$(tmux capture-pane -t "$pilot_win" -p -S -1 2>/dev/null \
+    | grep -oP '5h:\K[0-9]+(?=%)' | tail -1 || echo "")
   raw=$(tmux capture-pane -t "$pilot_win" -p -S -1 2>/dev/null \
-    | grep -oP '(?:budget|Budget):\s*\K[0-9]+[hm]' | tail -1 || echo "")
+    | grep -oP '5h:[0-9]+%\(\K[^\)]+' | tail -1 || echo "")
   # フォールバック: full pane から取得
-  if [[ -z "$raw" ]]; then
+  if [[ -z "$pct" && -z "$raw" ]]; then
+    pct=$(plugins/session/scripts/session-comm.sh capture "$pilot_win" 2>/dev/null \
+      | grep -oP '5h:\K[0-9]+(?=%)' | tail -1 || echo "")
     raw=$(plugins/session/scripts/session-comm.sh capture "$pilot_win" 2>/dev/null \
-      | grep -oP '(?:budget|Budget):\s*\K[0-9]+[hm]' | tail -1 || echo "")
+      | grep -oP '5h:[0-9]+%\(\K[^\)]+' | tail -1 || echo "")
   fi
-  if [[ -z "$raw" ]]; then
+  if [[ -z "$pct" && -z "$raw" ]]; then
     echo "[BUDGET-LOW] WARN: budget 情報を取得できません。" >&2
-    echo "-1"
+    echo "pct=-1 min=-1"
     return 0
   fi
-  if [[ "$raw" =~ ^([0-9]+)h$ ]]; then
-    echo $(( ${BASH_REMATCH[1]} * 60 ))
+  local minutes=-1
+  if [[ "$raw" =~ ^([0-9]+)h([0-9]+)m$ ]]; then
+    minutes=$(( ${BASH_REMATCH[1]} * 60 + ${BASH_REMATCH[2]} ))
+  elif [[ "$raw" =~ ^([0-9]+)h$ ]]; then
+    minutes=$(( ${BASH_REMATCH[1]} * 60 ))
   elif [[ "$raw" =~ ^([0-9]+)m$ ]]; then
-    echo "${BASH_REMATCH[1]}"
-  else
-    echo "-1"
+    minutes=${BASH_REMATCH[1]}
   fi
+  echo "pct=${pct:-0} min=${minutes}"
 }
 
 check_budget_low() {
   local pilot_win="${1:-}"
-  local threshold="${BUDGET_THRESHOLD_MIN}"
-  local budget_min
-  budget_min=$(get_budget_minutes "$pilot_win")
-  if [[ "$budget_min" -ge 0 && "$budget_min" -le "$threshold" ]]; then
-    echo "[BUDGET-LOW] 5h budget 残り ${budget_min}分（閾値: ${threshold}分）。安全停止シーケンスを開始します。"
+  local threshold_min="${BUDGET_THRESHOLD_MIN}"
+  local threshold_pct="${BUDGET_THRESHOLD_PCT}"
+  local info pct minutes alert=false
+  info=$(get_budget_info "$pilot_win")
+  eval "$info"
+  if [[ "$min" -ge 0 && "$min" -le "$threshold_min" ]]; then alert=true; fi
+  if [[ "$pct" =~ ^[0-9]+$ && "$pct" -ge "$threshold_pct" ]]; then alert=true; fi
+  if [[ "$alert" == "true" ]]; then
+    echo "[BUDGET-LOW] 5h budget 残り ${min}分 (${pct}% 消費)（閾値: ${threshold_min}分 or ${threshold_pct}%）。安全停止シーケンスを開始します。"
     return 1
   fi
   return 0
