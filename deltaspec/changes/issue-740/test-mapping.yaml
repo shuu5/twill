@@ -1,0 +1,7 @@
+change: issue-740
+schema: spec-driven
+mappings:
+  - spec: specs/specialist-completeness.md
+    tests:
+      - type: unit
+        path: tests/unit/specialist-audit.bats
