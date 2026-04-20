@@ -100,6 +100,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/merge-gate-check-phase-review.sh" ${MERGE_GA
 
 - `scope/direct` / `quick` ラベル付き Issue は phase-review チェックをスキップ（軽微変更のため除外）
 - phase-review 不在かつ `--force` フラグあり: WARNING ログ記録して継続
+- `--force` を有効にするには `MERGE_GATE_FORCE=--force` 環境変数を設定する（緊急回避用。通常は使用しない）
 
 ### severity フィルタ判定（機械的のみ）
 
