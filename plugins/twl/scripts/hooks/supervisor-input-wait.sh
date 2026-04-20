@@ -15,8 +15,8 @@ if [[ ! -d "${GIT_COMMON_DIR}/../main" ]]; then
   exit 0
 fi
 
-# イベントディレクトリ（main/.supervisor/events/）
-EVENTS_DIR="${GIT_COMMON_DIR}/../main/.supervisor/events"
+# TEST-ONLY: TWL_SUPERVISOR_EVENTS_DIR は test sandbox 専用。production で set しないこと
+EVENTS_DIR="${TWL_SUPERVISOR_EVENTS_DIR:-${GIT_COMMON_DIR}/../main/.supervisor/events}"
 mkdir -p "$EVENTS_DIR" 2>/dev/null || exit 0
 
 # session_id 取得
