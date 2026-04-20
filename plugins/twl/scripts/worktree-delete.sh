@@ -50,10 +50,10 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# bare repo のルートを特定
+# bare repo のルートを特定（SCRIPT_DIR ではなく CWD の .git を参照）
 bare_root=""
-if [[ -f "$PROJECT_ROOT/.git" ]]; then
-  gitdir=$(sed 's/^gitdir: //' "$PROJECT_ROOT/.git")
+if [[ -f "$cwd/.git" ]]; then
+  gitdir=$(sed 's/^gitdir: //' "$cwd/.git")
   if [[ "$gitdir" != /* ]]; then
     echo "ERROR: gitdir は絶対パスである必要があります" >&2
     exit 1
