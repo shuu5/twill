@@ -1,0 +1,382 @@
+change_id: issue-732
+generated_at: "2026-04-20T00:00:00Z"
+test_framework: bats
+scenarios:
+  # ---------------------------------------------------------------------------
+  # Requirement: autopilot-init.sh 完了済みセッション自動削除
+  # ---------------------------------------------------------------------------
+
+  - id: "session-auto-cleanup-ac1-done-no-force"
+    name: "完了済み session.json が存在する場合の自動削除"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 7
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1]: 全 issue done + --force なし → session.json が削除される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1-issues-file-cleanup"
+    name: "完了済みセッション自動削除 - issues ファイルも削除"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 7
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1]: 全 issue done + --force なし → issues/issue-*.json が削除される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1-init-continues"
+    name: "完了済みセッション自動削除後に初期化続行"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 7
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1]: 完了済みセッション自動削除後に .autopilot/ 初期化が続行する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1-edge-single-done"
+    name: "単一 issue done → 自動削除（edge case）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 7
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1][edge]: single issue done + --force なし → 自動削除"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Scenario: issues フィールドが空の session.json は完了済みとみなさない（AC 1 境界条件）
+  # ---------------------------------------------------------------------------
+
+  - id: "session-auto-cleanup-ac1b-empty-issues-exit1"
+    name: "issues=[] の session.json は完了済みとみなさない"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 13
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1b]: issues=[] の session.json → 完了済みとみなさず exit 1 で停止"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1b-empty-issues-no-delete"
+    name: "issues=[] では session.json が削除されない"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 13
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1b][edge]: issues=[] では session.json が削除されない（誤発火防止）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1b-empty-issues-force-exit1"
+    name: "issues=[] + --force でも exit 1（running 扱い）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 13
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1b][edge]: issues=[] + --force でも自動削除は実行されない（running 扱い）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Scenario: running issue が存在する場合は停止（AC 1）
+  # ---------------------------------------------------------------------------
+
+  - id: "session-auto-cleanup-ac1c-running-exit1"
+    name: "running issue あり → exit 1 で停止"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 19
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1c]: running issue あり + --force なし → exit 1 で停止"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1c-running-no-delete"
+    name: "running issue あり → session.json は削除されない"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 19
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1c]: running issue あり → session.json は削除されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1c-edge-multi-running"
+    name: "複数 running + --force なし → exit 1（edge case）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 19
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1c][edge]: 複数 running + --force なし → exit 1（非 stale 期間内）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Scenario: 24h 経過 + --force なし の未完了セッション → exit 2（既存挙動維持）
+  # ---------------------------------------------------------------------------
+
+  - id: "session-auto-cleanup-ac1d-stale-running-exit2"
+    name: "24h+ stale + running issue + --force なし → exit 2"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 23
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1d]: 24h+ stale + running issue + --force なし → exit 2"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1d-stale-warn-output"
+    name: "24h+ stale → stale 警告を出力する"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 23
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1d]: 24h+ stale → stderr に stale 警告を出力する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1d-edge-stale-force"
+    name: "24h+ stale + --force → 削除して続行（既存 stale force 挙動）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 23
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1d][edge]: 24h+ stale + --force → session.json 削除で続行（既存 stale force 挙動）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac1d-edge-boundary-23h"
+    name: "23h + running → exit 1（stale 境界未満）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 23
+    requirement: "autopilot-init.sh 完了済みセッション自動削除"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac1d][edge]: 23h59m + running → exit 1（stale 境界未満）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: orchestrator ログ per-session 分離
+  # ---------------------------------------------------------------------------
+
+  - id: "session-auto-cleanup-ac2-session-id-log"
+    name: "session_id 付きログファイルが生成される"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 35
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac2]: session_id 付きログファイルが生成される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac2-log-name-contains-id"
+    name: "ログファイル名に session_id が含まれる"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 35
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac2]: ログファイル名に session_id が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac2-two-waves-separate-files"
+    name: "2 連続 Wave で別 session_id → 別ファイル"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 35
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac2]: 2 連続 Wave で session_id が異なる別ファイルが生成される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac2-log-content-session-id"
+    name: "ログ内容に session_id が記録される"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 35
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac2]: ログ内に session_id が記録される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac2-edge-no-cross-contamination"
+    name: "Wave 間でログファイルが混在しない（edge case）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 35
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac2][edge]: Wave 間でログファイルが混在しない（別 session_id は別ファイル）"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Scenario: session.json 不在時に WARN 出力（AC 3）
+  # ---------------------------------------------------------------------------
+
+  - id: "session-auto-cleanup-ac3-warn-no-session"
+    name: "session.json 不在時に WARN を stderr に出力する"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 40
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac3]: session.json 不在時に WARN を stderr に出力する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac3-unknown-log"
+    name: "session.json 不在時は unknown.log を生成する"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 40
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac3]: session.json 不在時は orchestrator-phase-${N}-unknown.log を生成する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac3-continue-on-missing"
+    name: "session.json 不在でも続行（exit 0）する"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 40
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac3]: session.json 不在でも続行（exit 0）する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac3-edge-empty-file"
+    name: "session.json が空ファイルの場合も WARN + unknown.log（edge case）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 40
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac3][edge]: session.json が空ファイルの場合も WARN + unknown.log"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac3-edge-null-session-id"
+    name: "session_id が null の場合も WARN + unknown.log（edge case）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 40
+    requirement: "orchestrator ログ per-session 分離"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac3][edge]: session_id フィールドが null の場合も WARN + unknown.log"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: AC 2 再修正防止マーカー
+  # ---------------------------------------------------------------------------
+
+  - id: "session-auto-cleanup-ac4-hotfix-comments"
+    name: "HOTFIX #732 コメントが 2 箇所に存在する"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 52
+    requirement: "AC 2 再修正防止マーカー"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac4]: autopilot-pilot-wakeup-loop.md に HOTFIX #732 コメントが 2 箇所存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac4-edge-html-comment"
+    name: "HOTFIX #732 の 1 件目が HTML コメント形式（edge case）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 52
+    requirement: "AC 2 再修正防止マーカー"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac4][edge]: HOTFIX #732 の 1 件目が HTML コメント形式である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "session-auto-cleanup-ac4-edge-blockquote"
+    name: "HOTFIX #732 の 2 件目が blockquote 形式（edge case）"
+    spec_file: "specs/session-auto-cleanup.md"
+    spec_line: 52
+    requirement: "AC 2 再修正防止マーカー"
+    test_file: "plugins/twl/tests/unit/session-auto-cleanup/session-auto-cleanup.bats"
+    test_name: "session-auto-cleanup[ac4][edge]: HOTFIX #732 の 2 件目が blockquote 形式である"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
