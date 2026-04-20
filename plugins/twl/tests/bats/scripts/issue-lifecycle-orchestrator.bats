@@ -332,3 +332,34 @@ teardown() {
   [[ "$shebang" == "#!/usr/bin/env bash" || "$shebang" == "#!/bin/bash" ]] \
     || fail "Expected bash shebang, got: $shebang"
 }
+
+# ===========================================================================
+# _generate_fallback_report: JSON エスケープ検証
+# ===========================================================================
+
+@test "_generate_fallback_report: reason に \" と \\ と改行を含んでも valid JSON を生成する" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  # script を source して _generate_fallback_report だけ使う
+  # set -euo pipefail が有効なので SCRIPTS_ROOT だけ設定してから source
+  export SCRIPTS_ROOT="$SANDBOX/scripts"
+  source "$SCRIPT_SRC"
+
+  local bad_reason
+  bad_reason='bad"value\\here
+with newline'
+
+  _generate_fallback_report "$subdir" "$bad_reason"
+
+  # 出力ファイルが存在すること
+  [[ -f "$subdir/OUT/report.json" ]] \
+    || fail "report.json was not created"
+
+  # python3 で parse 可能なこと（JSON として valid であること）
+  python3 -c "import json; json.load(open('$subdir/OUT/report.json'))" \
+    || fail "report.json is not valid JSON"
+
+  rm -rf "$subdir"
+}
