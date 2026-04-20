@@ -180,7 +180,14 @@ while IFS= read -r line; do
             echo "[dry-run] 孤立 worktree 削除: $wt_path (branch=$wt_branch, 真の孤立: state file なし)" >&2
           fi
         else
-          if bash "$SCRIPTS_ROOT/worktree-delete.sh" "$wt_branch" 2>/dev/null; then
+          _wt_del_out="" _wt_ok=false
+          for _wt_r in 1 2; do
+            if _wt_del_out=$(bash "$SCRIPTS_ROOT/worktree-delete.sh" "$wt_branch" 2>&1); then
+              _wt_ok=true; break
+            fi
+            [[ $_wt_r -lt 2 ]] && sleep 2
+          done
+          if $_wt_ok; then
             echo "[cleanup] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
             # リモートブランチも削除（パストラバーサル防止: L288 と同一の `.` 除外 regex を使用）
             if [[ -n "$wt_branch" && "$wt_branch" =~ ^[a-zA-Z0-9_/\-]+$ ]]; then
@@ -190,7 +197,7 @@ while IFS= read -r line; do
               echo "[cleanup] ⚠️ ブランチ名に不正な文字: $wt_branch — リモート削除スキップ" >&2
             fi
           else
-            echo "[cleanup] ⚠️ worktree 削除失敗: $wt_branch（続行）" >&2
+            echo "[cleanup] ⚠️ worktree 削除失敗: $wt_branch（続行）: ${_wt_del_out}" >&2
           fi
         fi
         ORPHAN_COUNT=$((ORPHAN_COUNT + 1))
