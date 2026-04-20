@@ -120,10 +120,9 @@ BUDGET_RAW=$(tmux capture-pane -t "$PILOT_WINDOW" -p -S -1 2>/dev/null \
 
 # フォールバック: status line から budget 情報を取得できない場合は full pane を検索（session-comm.sh capture による budget フォールバック）
 if [[ -z "$BUDGET_RAW" && -z "$BUDGET_PCT" ]]; then
-  BUDGET_PCT=$(plugins/session/scripts/session-comm.sh capture "$PILOT_WINDOW" 2>/dev/null \
-    | grep -oP '5h:\K[0-9]+(?=%)' | tail -1 || echo "")
-  BUDGET_RAW=$(plugins/session/scripts/session-comm.sh capture "$PILOT_WINDOW" 2>/dev/null \
-    | grep -oP '5h:[0-9]+%\(\K[^\)]+' | tail -1 || echo "")
+  _FALLBACK_PANE=$(plugins/session/scripts/session-comm.sh capture "$PILOT_WINDOW" 2>/dev/null || echo "")
+  BUDGET_PCT=$(echo "$_FALLBACK_PANE" | grep -oP '5h:\K[0-9]+(?=%)' | tail -1 || echo "")
+  BUDGET_RAW=$(echo "$_FALLBACK_PANE" | grep -oP '5h:[0-9]+%\(\K[^\)]+' | tail -1 || echo "")
 fi
 
 # 取得不能の場合は検知をスキップし警告
@@ -161,6 +160,8 @@ except Exception as e:
 " 2>/dev/null || echo "90")
 
   # 閾値判定（分 OR パーセント — どちらかが超過したら発動）
+  [[ ! "$BUDGET_THRESHOLD" =~ ^[0-9]+$ ]] && BUDGET_THRESHOLD=15
+  [[ ! "$BUDGET_PCT_THRESHOLD" =~ ^[0-9]+$ ]] && BUDGET_PCT_THRESHOLD=90
   BUDGET_ALERT=false
   if [[ $BUDGET_MIN -ge 0 && $BUDGET_MIN -le $BUDGET_THRESHOLD ]]; then
     BUDGET_ALERT=true
