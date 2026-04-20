@@ -199,7 +199,8 @@ teardown() {
     --jsonl "$jsonl" \
     --manifest-file "$manifest"
 
-  # exit 1 だが JSON は出力される
+  # exit 1 かつ JSON に status=FAIL が含まれる
+  assert_failure
   echo "$output" | jq -e '.status == "FAIL"' > /dev/null
 }
 
@@ -355,7 +356,7 @@ teardown() {
 
   assert_success
   # PASS の場合は "status":"FAIL" が含まれてはならない
-  run bash -c "echo '$output' | grep -q '\"status\":\"FAIL\"'"
+  run grep -q '"status":"FAIL"' <<< "$output"
   assert_failure
 }
 
