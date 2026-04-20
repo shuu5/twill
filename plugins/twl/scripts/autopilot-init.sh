@@ -78,12 +78,6 @@ if [[ -f "$SESSION_FILE" ]]; then
       echo "INFO: 完了済みセッション (${hours}h経過) を自動削除します: $session_id" >&2
       rm -f "$SESSION_FILE"
       rm -f "$ISSUES_DIR"/issue-*.json 2>/dev/null || true
-    elif [[ "$force" == "true" ]] && is_session_completed "$SESSION_FILE"; then
-      # 完了済みセッション: --force で経過時間に関係なく即座に削除（後方互換）
-      echo "WARN: 完了済みセッション (${hours}h経過) を強制削除します: $session_id" >&2
-      rm -f "$SESSION_FILE"
-      # 旧セッションの issue ファイルもクリーンアップ
-      rm -f "$ISSUES_DIR"/issue-*.json 2>/dev/null || true
     elif (( hours >= 24 )); then
       if [[ "$force" == "true" ]]; then
         echo "WARN: stale セッション (${hours}h経過) を強制削除します: $session_id" >&2
