@@ -158,12 +158,9 @@ EOF
     mkdir -p "${PROJECT_DIR}/worker${i}/.code-review-graph"
   done
 
-  local outputs=()
   for i in 1 2 3 4; do
-    outputs+=("$(_run_crg_build_logic "${PROJECT_DIR}/worker${i}" 124)")
-  done
-
-  for i in 0 1 2 3; do
-    [[ "${outputs[$i]}" == *"⚠️"* ]] || [[ "${outputs[$i]}" == *"✓"* ]]
+    run _run_crg_build_logic "${PROJECT_DIR}/worker${i}" 124
+    assert_success
+    assert_output --partial "⚠️ CRG グラフビルドに失敗しました（timeout 600s）"
   done
 }
