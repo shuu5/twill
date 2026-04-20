@@ -427,6 +427,61 @@ check_budget_low() {
 
 ---
 
+---
+
+## `cld-observe-any` 標準スニペット（推奨実装）
+
+既存の Monitor tool + cld-observe-loop と**補完関係**にある。置換ではなく併用する。
+
+### 基本起動（Worker 群監視）
+
+```bash
+# Monitor tool と cld-observe-any を必ず同時起動（SKILL.md L172 ポリシー踏襲）
+plugins/session/scripts/cld-observe-any \
+  --pattern 'ap-.*' \
+  --interval 180 \
+  --stagnate-sec 600 \
+  --budget-threshold 15 \
+  --event-dir .supervisor/events \
+  --notify-dir /tmp/claude-notifications
+```
+
+### Pilot/co-issue 等の対話型セッション監視
+
+```bash
+# 特定 window を多指標 AND 条件で監視
+plugins/session/scripts/cld-observe-any \
+  --window "$PILOT_WINDOW" \
+  --interval 30 \
+  --complete-regex "PHASE_COMPLETE" \
+  --complete-require-cmd-echo "gh issue edit [0-9]+ --add-label refined" \
+  --stagnate-sec 300
+```
+
+### 単発チェック（--once）
+
+```bash
+# 現在状態を一回評価して exit（inline 判定に使用）
+result=$(plugins/session/scripts/cld-observe-any \
+  --window "$WIN" --once 2>/dev/null)
+echo "event: $result"
+```
+
+### イベント種別と対応アクション
+
+| イベント | 説明 | 対応 |
+|---|---|---|
+| `[PANE-DEAD]` | pane 終了 | Worker 消失確認 → 後処理 |
+| `[ERROR-STATE]` | Traceback/command not found | ログ確認 → 自動修復または Escalate |
+| `[BUDGET-LOW]` | budget 残量 ≤ 閾値 | 停止シーケンス（BUDGET-LOW 定義参照） |
+| `[PHASE-COMPLETE]` | フェーズ完了フレーズ検知 | 次 Wave 移行 |
+| `[REVIEW-READY]` | Submit answers 表示 | inject で submit |
+| `[MENU-READY]` | Enter to select 表示 | inject + Tab + Enter |
+| `[FREEFORM-READY]` | [y/N]/Press up 表示 | inject で応答 |
+| `[STAGNATE-N]` | log age ≥ N 秒 | STAGNATE 介入フロー |
+
+---
+
 ## Wave 種別ごとのチャネル選択ガイド
 
 | Wave 種別 | 推奨チャネル |
