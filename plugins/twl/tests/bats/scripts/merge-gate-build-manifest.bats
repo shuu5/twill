@@ -148,3 +148,41 @@ teardown() {
   grep -qP '(trap.*rm|trap.*MANIFEST_FILE|trap.*SPAWNED_FILE)' \
     "$SANDBOX/scripts/merge-gate-build-manifest.sh"
 }
+
+# ---------------------------------------------------------------------------
+# Error-check: mktemp failure / source pattern (tech-debt #689)
+# ---------------------------------------------------------------------------
+
+@test "[error-check] mktemp 失敗時に source が非 0 を返す" {
+  stub_command "git" '
+    case "$*" in
+      *"diff"*)
+        echo "src/main.ts" ;;
+      *)
+        exit 0 ;;
+    esac
+  '
+
+  # mktemp をシェル関数でオーバーライド（BATS set -e を || で回避して終了コードを検証）
+  local rc=0
+  (
+    mktemp() { return 1; }
+    source "$SANDBOX/scripts/merge-gate-build-manifest.sh" 2>/dev/null
+  ) || rc=$?
+  [[ $rc -ne 0 ]]
+}
+
+@test "[error-check] 正常系で MANIFEST_FILE と SPAWNED_FILE が設定される" {
+  stub_command "git" '
+    case "$*" in
+      *"diff"*)
+        echo "src/main.ts" ;;
+      *)
+        exit 0 ;;
+    esac
+  '
+
+  source "$SANDBOX/scripts/merge-gate-build-manifest.sh" 2>/dev/null
+  [[ -n "${MANIFEST_FILE:-}" ]]
+  [[ -n "${SPAWNED_FILE:-}" ]]
+}
