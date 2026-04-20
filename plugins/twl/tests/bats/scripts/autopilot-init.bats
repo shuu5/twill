@@ -260,6 +260,20 @@ JSON
 # Requirement: autopilot-init.md の eval 除去 (eval-removal)
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Requirement: AUTOPILOT_DIR パストラバーサル検証 (#747)
+# ---------------------------------------------------------------------------
+
+@test "autopilot-init rejects AUTOPILOT_DIR containing '..'" {
+  export AUTOPILOT_DIR="/tmp/../etc"
+
+  run bash "$SANDBOX/scripts/autopilot-init.sh"
+
+  assert_failure
+  assert_output --partial "ERROR"
+  assert_output --partial ".."
+}
+
 @test "autopilot-init.md does not use eval for autopilot-init.sh execution" {
   local md_file="$REPO_ROOT/commands/autopilot-init.md"
 
