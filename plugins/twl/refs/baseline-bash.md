@@ -118,3 +118,48 @@ while IFS= read -r line; do
     ENV_ARGS+=(--setenv="${key}=${val}")
 done < <(env | grep '^DEV_')
 ```
+
+## 5. source スクリプトの set -e 制約
+
+`source` で読み込まれるスクリプトに `set -e` / `set -euo pipefail` を付けると、スクリプトが現在のシェル環境で実行されるため、シェルオプションが親シェルに継承される。親シェルが非厳格モード（`set +e`）で動作している場合、`source` 先の `set -e` が親シェル全体を暗黙的に厳格化し、以降のコマンドで意図しない終了を引き起こす。
+
+### BAD: source 想定スクリプトに set -euo pipefail を付ける
+
+```bash
+# BAD: source 呼び出し専用スクリプトに set -euo pipefail — 親シェルを暗黙的に厳格化する
+set -euo pipefail
+
+setup_env() {
+  local tmpdir
+  tmpdir=$(mktemp -d)
+  git fetch origin
+  echo "$tmpdir"
+}
+```
+
+### GOOD: set -euo pipefail を省略し、個別コマンドにエラーチェックを付ける
+
+```bash
+# GOOD: set -euo pipefail を省略し、個別コマンドに明示的なエラーチェックを付ける
+# （親シェルのエラーハンドリング設定を汚染しない）
+
+setup_env() {
+  local tmpdir
+  tmpdir=$(mktemp -d) || return 1
+  git fetch origin || return 1
+  echo "$tmpdir"
+}
+```
+
+### GOOD: サブシェルで厳格モードを局所化する
+
+```bash
+# GOOD: サブシェル内で set -e を使い、親シェルの設定を汚染しない
+run_strict() (
+  set -euo pipefail
+  git fetch origin
+  git merge --ff-only origin/main
+)
+```
+
+> **補足**: `source` されたスクリプト内では `exit N` ではなく `return N` を使うこと。`exit N` は親シェルごと終了させるため、意図しないセッション終了を引き起こす。
