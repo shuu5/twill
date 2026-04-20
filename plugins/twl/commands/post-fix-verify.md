@@ -70,6 +70,14 @@ IF 新規 WARNING finding あり → WARN（続行可）
 IF 新規 CRITICAL finding あり → FAIL（再 fix 必要）
 ```
 
+結果判定後に即座に checkpoint を書き出す（merge-gate が post-fix-verify 結果を参照するために必須）:
+
+```bash
+STATUS=$(echo "$PARSED" | jq -r '.status')
+FINDINGS=$(echo "$PARSED" | jq -c '.findings')
+python3 -m twl.autopilot.checkpoint write --step post-fix-verify --status "$STATUS" --findings "$FINDINGS"
+```
+
 ## チェックポイント（MUST）
 
 `/twl:warning-fix` を Skill tool で自動実行。

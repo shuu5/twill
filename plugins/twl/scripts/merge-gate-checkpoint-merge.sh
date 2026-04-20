@@ -10,5 +10,10 @@ set -euo pipefail
 
 FINDINGS="${1:-[]}"
 AC_VERIFY_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step ac-verify --field findings 2>/dev/null || echo "[]")
-PHASE_REVIEW_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field findings 2>/dev/null || echo "[]")
-jq -s 'add' <(echo "$FINDINGS") <(echo "$AC_VERIFY_FINDINGS") <(echo "$PHASE_REVIEW_FINDINGS")
+POST_FIX_VERIFY_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step post-fix-verify --field findings 2>/dev/null || echo "")
+if [[ -n "$POST_FIX_VERIFY_FINDINGS" ]]; then
+  jq -s 'add' <(echo "$FINDINGS") <(echo "$AC_VERIFY_FINDINGS") <(echo "$POST_FIX_VERIFY_FINDINGS")
+else
+  PHASE_REVIEW_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field findings 2>/dev/null || echo "[]")
+  jq -s 'add' <(echo "$FINDINGS") <(echo "$AC_VERIFY_FINDINGS") <(echo "$PHASE_REVIEW_FINDINGS")
+fi

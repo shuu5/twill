@@ -153,6 +153,7 @@ flowchart TD
 - **merge-gate リトライ制限**: merge-gate リジェクト後のリトライは最大1回（不変条件 E）。2回目リジェクト = 確定失敗。Pilot に報告し、手動介入を要求
 - **rebase 禁止**: merge 失敗時に rebase は試みない（停止のみ、不変条件 F）
 - **Tech-stack 検出**: 変更ファイルの拡張子・パスから specialist を選択。script 型コンポーネントで実装
+- **checkpoint 優先順位**: post-fix-verify > phase-review。post-fix-verify.json 存在時は phase-review findings を shadow する（merge-gate-checkpoint-merge.sh）
 
 ## Rules
 

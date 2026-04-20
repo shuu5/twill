@@ -177,6 +177,92 @@ teardown() {
     "$SANDBOX/scripts/merge-gate-checkpoint-merge.sh"
 }
 
+# ---------------------------------------------------------------------------
+# #748: post-fix-verify precedence over phase-review
+# ---------------------------------------------------------------------------
+
+@test "[#748] phase-review CRITICAL あり + post-fix-verify 不在 → phase-review findings が COMBINED に含まれる（回帰保護）" {
+  stub_command "python3" '
+    case "$*" in
+      *"checkpoint"*"read"*"ac-verify"*)
+        echo "[]" ;;
+      *"checkpoint"*"read"*"post-fix-verify"*)
+        exit 1 ;;
+      *"checkpoint"*"read"*"phase-review"*)
+        echo '"'"'[{"severity":"CRITICAL","message":"stale-phase-review-critical","confidence":90}]'"'"' ;;
+      *)
+        exit 0 ;;
+    esac
+  '
+
+  run bash "$SANDBOX/scripts/merge-gate-checkpoint-merge.sh" "[]"
+
+  assert_success
+  assert_output --partial "stale-phase-review-critical"
+}
+
+@test "[#748] phase-review CRITICAL あり + post-fix-verify PASS → phase-review CRITICAL が COMBINED から除外される" {
+  stub_command "python3" '
+    case "$*" in
+      *"checkpoint"*"read"*"ac-verify"*)
+        echo "[]" ;;
+      *"checkpoint"*"read"*"post-fix-verify"*)
+        echo "[]" ;;
+      *"checkpoint"*"read"*"phase-review"*)
+        echo '"'"'[{"severity":"CRITICAL","message":"stale-phase-review-critical","confidence":90}]'"'"' ;;
+      *)
+        exit 0 ;;
+    esac
+  '
+
+  run bash "$SANDBOX/scripts/merge-gate-checkpoint-merge.sh" "[]"
+
+  assert_success
+  refute_output --partial "stale-phase-review-critical"
+}
+
+@test "[#748] phase-review CRITICAL あり + post-fix-verify WARN → phase-review CRITICAL が除外され post-fix-verify WARNING が含まれる（最頻ケース）" {
+  stub_command "python3" '
+    case "$*" in
+      *"checkpoint"*"read"*"ac-verify"*)
+        echo "[]" ;;
+      *"checkpoint"*"read"*"post-fix-verify"*)
+        echo '"'"'[{"severity":"WARNING","message":"post-fix-verify-warning","confidence":75}]'"'"' ;;
+      *"checkpoint"*"read"*"phase-review"*)
+        echo '"'"'[{"severity":"CRITICAL","message":"stale-phase-review-critical","confidence":90}]'"'"' ;;
+      *)
+        exit 0 ;;
+    esac
+  '
+
+  run bash "$SANDBOX/scripts/merge-gate-checkpoint-merge.sh" "[]"
+
+  assert_success
+  assert_output --partial "post-fix-verify-warning"
+  refute_output --partial "stale-phase-review-critical"
+}
+
+@test "[#748] phase-review CRITICAL あり + post-fix-verify FAIL → post-fix-verify findings が採用され CRITICAL が残る" {
+  stub_command "python3" '
+    case "$*" in
+      *"checkpoint"*"read"*"ac-verify"*)
+        echo "[]" ;;
+      *"checkpoint"*"read"*"post-fix-verify"*)
+        echo '"'"'[{"severity":"CRITICAL","message":"post-fix-verify-critical","confidence":85}]'"'"' ;;
+      *"checkpoint"*"read"*"phase-review"*)
+        echo '"'"'[{"severity":"CRITICAL","message":"stale-phase-review-critical","confidence":90}]'"'"' ;;
+      *)
+        exit 0 ;;
+    esac
+  '
+
+  run bash "$SANDBOX/scripts/merge-gate-checkpoint-merge.sh" "[]"
+
+  assert_success
+  assert_output --partial "post-fix-verify-critical"
+  refute_output --partial "stale-phase-review-critical"
+}
+
 @test "[edge] スクリプトが stdout に結果を出力する（stderr ではない）" {
   stub_command "python3" '
     case "$*" in
