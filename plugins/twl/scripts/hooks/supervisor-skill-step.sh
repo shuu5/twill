@@ -7,9 +7,12 @@ set -uo pipefail
 # stdin を消費
 INPUT=$(cat 2>/dev/null || echo "")
 
-# git リポジトリ内でなければ何もしない（git 外セッションは静かに終了）
+# bare repo 構造（main/ 存在）でなければ no-op
 GIT_COMMON_DIR=$(git rev-parse --git-common-dir 2>/dev/null)
 if [[ -z "$GIT_COMMON_DIR" ]]; then
+  exit 0
+fi
+if [[ ! -d "${GIT_COMMON_DIR}/../main" ]]; then
   exit 0
 fi
 

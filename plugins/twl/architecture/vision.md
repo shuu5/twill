@@ -13,6 +13,7 @@ chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開
 - **Project Board 必須**（ADR-006）: 全プロジェクトで GitHub Projects V2 を使用。autopilot の Issue 選択元、ステータス同期先
 - **クロスリポジトリ対応**（ADR-007）: twill-ecosystem プロジェクトで複数リポを統合管理
 - Emergency Bypass: co-autopilot 障害時のみ手動パス許可（retrospective 記録義務あり）
+- supervisor hook の EVENTS_DIR 解決は bare repo 構造（`.bare/` + `main/`）を前提とし、non-bare では graceful degradation（no-op）
 
 ### Controller 操作カテゴリ
 

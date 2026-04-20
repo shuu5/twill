@@ -192,6 +192,7 @@ flowchart TD
 | SU-6a | Wave 完了時に結果収集と externalize-state を実行しなければならない（SHALL） | SU-6 分割（#498） |
 | SU-6b | context 逼迫時またはユーザー指示時に /compact をユーザーへ提案しなければならない（SHOULD） | built-in CLI のためユーザー手動実行 |
 | SU-7 | observed session への inject/send-keys は介入プロトコルに従う場合に許可（MAY） | OB-3 廃止に対応 |
+| SU-8 | supervisor hook は bare repo 構造（main/ がディレクトリとして存在すること）を前提とし、non-bare 検出時は no-op で exit 0 する（SHALL） | #728 |
 
 ### OB-* Constraints との関係
 

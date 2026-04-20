@@ -110,6 +110,22 @@ run_hook_in_git_repo_no_autopilot() {
   printf '%s' "$input_json" | env -u AUTOPILOT_DIR bash "${HOOKS_DIR}/${hook_script}" 2>/dev/null
 }
 
+# non-bare git リポジトリ（.git/ のみ、main/ 不在）から hook を実行
+# AC-1/AC-2a/AC-2b 用: git init サンドボックスで bare repo 構造ガードを検証
+run_hook_in_non_bare() {
+  local hook_script="$1"
+  local input_json="${2:-{}}"
+  local non_bare_dir
+  non_bare_dir=$(mktemp -d)
+  (
+    cd "$non_bare_dir" && git init -q 2>/dev/null &&
+    printf '%s' "$input_json" | env -u AUTOPILOT_DIR bash "${HOOKS_DIR}/${hook_script}" 2>/dev/null
+  )
+  local rc=$?
+  rm -rf "$non_bare_dir" 2>/dev/null
+  return $rc
+}
+
 # =============================================================================
 # supervisor-heartbeat.sh テスト
 # =============================================================================
@@ -380,6 +396,53 @@ test_session_end_no_stdout() {
 }
 
 # =============================================================================
+# non-bare 検出テスト（AC-1/AC-2a/AC-2b: bare repo 構造ガード）
+# サンドボックス: git init のみ（.git/ 構造）、main/ ディレクトリなし
+# =============================================================================
+
+test_heartbeat_non_bare_exit_zero() {
+  run_hook_in_non_bare "supervisor-heartbeat.sh" '{"session_id":"nb-heartbeat"}'
+  [[ $? -eq 0 ]] || return 1
+}
+
+test_input_wait_non_bare_exit_zero() {
+  run_hook_in_non_bare "supervisor-input-wait.sh" '{"session_id":"nb-input-wait"}'
+  [[ $? -eq 0 ]] || return 1
+}
+
+test_input_clear_non_bare_exit_zero() {
+  run_hook_in_non_bare "supervisor-input-clear.sh" '{"session_id":"nb-input-clear"}'
+  [[ $? -eq 0 ]] || return 1
+}
+
+test_skill_step_non_bare_exit_zero() {
+  run_hook_in_non_bare "supervisor-skill-step.sh" '{"session_id":"nb-skill-step","tool_input":{"skill":"test"}}'
+  [[ $? -eq 0 ]] || return 1
+}
+
+test_session_end_non_bare_exit_zero() {
+  run_hook_in_non_bare "supervisor-session-end.sh" '{"session_id":"nb-session-end"}'
+  [[ $? -eq 0 ]] || return 1
+}
+
+# AC-2b: non-bare 環境で .supervisor/events/ への書き込みが発生しないことを明示検証
+test_heartbeat_non_bare_no_events_written() {
+  local non_bare_dir
+  non_bare_dir=$(mktemp -d)
+  local result=0
+  (
+    cd "$non_bare_dir" && git init -q 2>/dev/null &&
+    printf '{"session_id":"nb-ac2b"}' | env -u AUTOPILOT_DIR bash "${HOOKS_DIR}/supervisor-heartbeat.sh" 2>/dev/null
+  )
+  # .supervisor/ ディレクトリが作成されていないことを確認
+  [[ ! -d "${non_bare_dir}/.supervisor" ]] || result=1
+  # main/.supervisor/events/ も作成されていないことを確認
+  [[ ! -d "${non_bare_dir}/main/.supervisor/events" ]] || result=1
+  rm -rf "$non_bare_dir" 2>/dev/null
+  return $result
+}
+
+# =============================================================================
 # 実行
 # =============================================================================
 
@@ -415,6 +478,14 @@ run_test "session-end: AUTOPILOT_DIR 未設定 + git 内でイベントファイ
 run_test "session-end: git 外セッションで exit 0（静的終了）" test_session_end_no_autopilot_dir
 run_test "session-end: イベントファイル生成と JSON フォーマット（AUTOPILOT_DIR あり）" test_session_end_creates_event_file
 run_test "session-end: stdout に何も出力しない" test_session_end_no_stdout
+
+# non-bare 検出（AC-1/AC-2a: bare repo 構造ガード）
+run_test "heartbeat: non-bare リポジトリで exit 0（no-op）" test_heartbeat_non_bare_exit_zero
+run_test "input-wait: non-bare リポジトリで exit 0（no-op）" test_input_wait_non_bare_exit_zero
+run_test "input-clear: non-bare リポジトリで exit 0（no-op）" test_input_clear_non_bare_exit_zero
+run_test "skill-step: non-bare リポジトリで exit 0（no-op）" test_skill_step_non_bare_exit_zero
+run_test "session-end: non-bare リポジトリで exit 0（no-op）" test_session_end_non_bare_exit_zero
+run_test "heartbeat: non-bare で .supervisor/events/ への書き込みなし（AC-2b）" test_heartbeat_non_bare_no_events_written
 
 echo ""
 echo "Results: ${PASS} passed, ${FAIL} failed"
