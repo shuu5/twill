@@ -182,8 +182,8 @@ while IFS= read -r line; do
         else
           if bash "$SCRIPTS_ROOT/worktree-delete.sh" "$wt_branch" 2>/dev/null; then
             echo "[cleanup] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
-            # リモートブランチも削除（パストラバーサル防止ガード: cleanup_worker() L427 相当）
-            if [[ -n "$wt_branch" && "$wt_branch" =~ ^[a-zA-Z0-9._/\-]+$ ]]; then
+            # リモートブランチも削除（パストラバーサル防止: L288 と同一の `.` 除外 regex を使用）
+            if [[ -n "$wt_branch" && "$wt_branch" =~ ^[a-zA-Z0-9_/\-]+$ ]]; then
               git push origin --delete "$wt_branch" 2>/dev/null || \
                 echo "[cleanup] ⚠️ リモートブランチ削除失敗: $wt_branch（続行）" >&2
             else
