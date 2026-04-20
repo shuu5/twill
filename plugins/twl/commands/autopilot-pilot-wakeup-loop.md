@@ -23,7 +23,7 @@ Pilot の Bash context 外で持続実行するため **nohup/disown** を使用
 mkdir -p "${AUTOPILOT_DIR}/trace"
 _ORCH_LOG="${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log"
 cd "${PROJECT_DIR}/main" 2>/dev/null || cd "${PROJECT_DIR}" || true
-nohup bash autopilot-orchestrator.sh \
+nohup bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-orchestrator.sh" \
   --plan "${AUTOPILOT_DIR}/plan.yaml" \
   --phase "$PHASE_NUM" \
   --session "${AUTOPILOT_DIR}/session.json" \
