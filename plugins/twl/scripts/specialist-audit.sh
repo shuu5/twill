@@ -30,6 +30,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+if ! command -v jq &>/dev/null; then
+  echo "ERROR: jq が必要です (apt install jq)" >&2
+  exit 1
+fi
+
 # --- デフォルト値 ---
 ISSUE_NUM=""
 JSONL_PATH=""
@@ -245,32 +250,26 @@ else
   fi
 fi
 
-# --- JSON 生成（jq が利用可能な場合は使用、なければ手動構築）---
+# --- JSON 生成 ---
 issue_field="${ISSUE_NUM:-null}"
 
-if command -v jq &>/dev/null; then
-  expected_json=$(printf '%s\n' "${EXPECTED_SPECIALISTS[@]+"${EXPECTED_SPECIALISTS[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
-  actual_json=$(printf '%s\n' "${ACTUAL_SPECIALISTS[@]+"${ACTUAL_SPECIALISTS[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
-  missing_json=$(printf '%s\n' "${MISSING[@]+"${MISSING[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
-  extra_json=$(printf '%s\n' "${EXTRA[@]+"${EXTRA[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
+expected_json=$(printf '%s\n' "${EXPECTED_SPECIALISTS[@]+"${EXPECTED_SPECIALISTS[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
+actual_json=$(printf '%s\n' "${ACTUAL_SPECIALISTS[@]+"${ACTUAL_SPECIALISTS[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
+missing_json=$(printf '%s\n' "${MISSING[@]+"${MISSING[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
+extra_json=$(printf '%s\n' "${EXTRA[@]+"${EXTRA[@]}"}" | jq -R . | jq -s . 2>/dev/null || echo '[]')
 
-  RESULT_JSON=$(jq -n \
-    --arg status "$STATUS" \
-    --argjson issue "$issue_field" \
-    --arg jsonl "$JSONL_PATH" \
-    --arg mode "$MODE" \
-    --argjson expected "$expected_json" \
-    --argjson actual "$actual_json" \
-    --argjson missing "$missing_json" \
-    --argjson extra "$extra_json" \
-    --arg timestamp "$TIMESTAMP" \
-    --arg audit_mode "$AUDIT_MODE" \
-    '{status:$status,issue:$issue,jsonl:$jsonl,mode:$mode,expected:$expected,actual:$actual,missing:$missing,extra:$extra,timestamp:$timestamp,audit_mode:$audit_mode}' \
-    2>/dev/null || echo "{\"status\":\"${STATUS}\",\"error\":\"jq_failed\"}")
-else
-  # jq 非利用時のフォールバック（簡易 JSON）
-  RESULT_JSON="{\"status\":\"${STATUS}\",\"issue\":${issue_field},\"mode\":\"${MODE}\",\"timestamp\":\"${TIMESTAMP}\",\"audit_mode\":\"${AUDIT_MODE}\"}"
-fi
+RESULT_JSON=$(jq -n \
+  --arg status "$STATUS" \
+  --argjson issue "$issue_field" \
+  --arg jsonl "$JSONL_PATH" \
+  --arg mode "$MODE" \
+  --argjson expected "$expected_json" \
+  --argjson actual "$actual_json" \
+  --argjson missing "$missing_json" \
+  --argjson extra "$extra_json" \
+  --arg timestamp "$TIMESTAMP" \
+  --arg audit_mode "$AUDIT_MODE" \
+  '{status:$status,issue:$issue,jsonl:$jsonl,mode:$mode,expected:$expected,actual:$actual,missing:$missing,extra:$extra,timestamp:$timestamp,audit_mode:$audit_mode}')
 
 # --- audit ログ保存 ---
 TIMESTAMP_NS=$(date +%s%N 2>/dev/null || date +%s 2>/dev/null || echo "0")
