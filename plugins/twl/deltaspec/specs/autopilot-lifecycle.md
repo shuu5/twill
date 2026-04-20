@@ -125,6 +125,14 @@ co-autopilot のライフサイクル全体を定義するシナリオ。Autopil
 - **AND** Worker が worktree を削除しようとした場合、worktree-delete.sh が拒否する
 - **AND** Worker はマージを実行せず merge-ready を宣言するのみ（不変条件 C）
 
+## Scenario: orchestrator auto-inject（current_step terminal 検知）
+
+- **WHEN** issue-{N}.json の `current_step` が terminal step になる
+- **THEN** orchestrator の `inject_next_workflow` が `resolve_next_workflow.py` を呼び出し次の workflow skill を tmux inject する（ADR-018）
+- **AND** terminal step と inject 先の対応: `ac-extract → workflow-test-ready`、`post-change-apply → workflow-pr-verify`、`ac-verify → workflow-pr-fix`、`warning-fix → workflow-pr-merge`
+- **AND** `LAST_INJECTED_STEP` により同一 step への重複 inject が防止される
+- **AND** non-terminal step では inject を行わずポーリングを継続する
+
 ## Scenario: Worker chain 実行（setup → test-ready 遷移）
 
 - **WHEN** Worker が workflow-setup chain を実行する
