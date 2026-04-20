@@ -226,7 +226,7 @@ class StateManager:
         for kv in sets:
             key, _, raw_value = kv.partition("=")
             if not _VALID_SET_KEY_RE.match(key):
-                raise StateArgError(f"不正なフィールド名: {key}（英数字とアンダースコアのみ許可）")
+                raise StateArgError(f"不正なフィールド名: {key}（英数字、アンダースコア、ドット区切りパスのみ許可）")
 
             if key == "status" and type_ == "issue":
                 data = self._transition(data, raw_value, force_done=force_done, override_reason=override_reason)
@@ -247,8 +247,10 @@ class StateManager:
                     state_log.parent.mkdir(parents=True, exist_ok=True)
                     for kv in (sets or []):
                         key, _, raw_value = kv.partition("=")
-                        old_val = str(old_data.get(key, ""))
-                        new_val = str(data.get(key, raw_value))
+                        old_raw = _get_nested(old_data, key)
+                        old_val = str(old_raw) if old_raw is not None else ""
+                        new_raw = _get_nested(data, key)
+                        new_val = str(new_raw) if new_raw is not None else raw_value
                         if old_val != new_val:
                             record = json.dumps({
                                 "ts": ts,
