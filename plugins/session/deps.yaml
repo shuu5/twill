@@ -63,10 +63,15 @@ scripts:
     path: scripts/cld-fork
     description: "セッション fork 起動（--continue --fork-session）"
 
+  cld-observe-any:
+    type: script
+    path: scripts/cld-observe-any
+    description: "汎用 session-watch ツール（多指標 AND 条件: LLM indicator/log mtime/pane state/budget でイベント発火）"
+
   cld-observe-loop:
     type: script
     path: scripts/cld-observe-loop
-    description: "定期監視ループ（複数ウィンドウを指定間隔でポーリング、通知ファイル監視付き）"
+    description: "定期監視ループ（cld-observe-any の thin wrapper。--pattern 'ap-*' デフォルト、既存 API を維持）"
 
   claude-session-save:
     type: script
@@ -98,3 +103,8 @@ tests:
     type: test
     path: tests/window-manifest.bats
     description: "window-manifest.sh の bats unit tests（atomic write / tombstone / schema_version 検証）"
+
+  cld-observe-any-test:
+    type: test
+    path: tests/cld-observe-any.bats
+    description: "cld-observe-any の bats unit tests（多指標 AND 判定: LLM indicator false positive / MENU-READY / PANE-DEAD / BUDGET-LOW / PHASE-COMPLETE cmd-echo / event-dir スキーマ確認）"
