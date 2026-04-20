@@ -180,6 +180,40 @@ class TestStateWriteFields:
         with pytest.raises(StateArgError, match="--set"):
             state.write(type_="issue", role="worker", issue="1", sets=[])
 
+    def test_set_dot_path_creates_nested(self, state: StateManager, autopilot_dir: Path) -> None:
+        _init_issue(state, "1")
+        state.write(type_="issue", role="worker", issue="1",
+                    sets=["completed_issues.2.pr=11"])
+        data = _load_issue(autopilot_dir, "1")
+        assert data["completed_issues"]["2"]["pr"] == 11
+
+    def test_set_dot_path_updates_existing_nested(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        file = autopilot_dir / "issues" / "issue-1.json"
+        file.write_text(json.dumps({
+            "issue": 1, "status": "running",
+            "completed_issues": {"2": {"pr": 10, "status": "done"}},
+        }))
+        state.write(type_="issue", role="worker", issue="1",
+                    sets=["completed_issues.2.pr=99"])
+        data = _load_issue(autopilot_dir, "1")
+        assert data["completed_issues"]["2"]["pr"] == 99
+        assert data["completed_issues"]["2"]["status"] == "done"
+
+    def test_set_dot_path_string_value(self, state: StateManager, autopilot_dir: Path) -> None:
+        _init_issue(state, "1")
+        state.write(type_="issue", role="worker", issue="1",
+                    sets=["completed_issues.2.branch=fix/my-branch"])
+        data = _load_issue(autopilot_dir, "1")
+        assert data["completed_issues"]["2"]["branch"] == "fix/my-branch"
+
+    def test_set_dot_path_invalid_rejected(self, state: StateManager) -> None:
+        _init_issue(state, "1")
+        with pytest.raises(StateArgError, match="不正なフィールド名"):
+            state.write(type_="issue", role="worker", issue="1",
+                        sets=["completed_issues..pr=bad"])
+
 
 # ===========================================================================
 # StateManager — transition validation

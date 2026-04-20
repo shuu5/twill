@@ -10,6 +10,7 @@ CLI usage:
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import re
@@ -19,7 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-_VALID_KEY_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+_VALID_SET_KEY_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)*$")
 _VALID_FIELD_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_.]*$")
 _VALID_REPO_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
 
@@ -220,12 +221,12 @@ class StateManager:
             raise StateArgError("--set が指定されていません")
 
         data = json.loads(file.read_text(encoding="utf-8"))
-        old_data = dict(data)
+        old_data = copy.deepcopy(data)
 
         for kv in sets:
             key, _, raw_value = kv.partition("=")
-            if not _VALID_KEY_RE.match(key):
-                raise StateArgError(f"不正なフィールド名: {key}（英数字とアンダースコアのみ許可）")
+            if not _VALID_SET_KEY_RE.match(key):
+                raise StateArgError(f"不正なフィールド名: {key}（英数字、アンダースコア、ドット区切りパスのみ許可）")
 
             if key == "status" and type_ == "issue":
                 data = self._transition(data, raw_value, force_done=force_done, override_reason=override_reason)
@@ -246,8 +247,10 @@ class StateManager:
                     state_log.parent.mkdir(parents=True, exist_ok=True)
                     for kv in (sets or []):
                         key, _, raw_value = kv.partition("=")
-                        old_val = str(old_data.get(key, ""))
-                        new_val = str(data.get(key, raw_value))
+                        old_raw = _get_nested(old_data, key)
+                        old_val = str(old_raw) if old_raw is not None else ""
+                        new_raw = _get_nested(data, key)
+                        new_val = str(new_raw) if new_raw is not None else raw_value
                         if old_val != new_val:
                             record = json.dumps({
                                 "ts": ts,
@@ -344,11 +347,24 @@ class StateManager:
 
     def _set_field(self, data: dict[str, Any], key: str, raw: str) -> dict[str, Any]:
         data = dict(data)
-        # Try JSON parse first (arrays, objects, null, numbers, booleans)
+        if "." not in key:
+            try:
+                data[key] = json.loads(raw)
+            except (json.JSONDecodeError, ValueError):
+                data[key] = raw
+            return data
+        # Dot-path: navigate into nested dicts, creating missing intermediate dicts
+        parts = key.split(".")
+        cur = data
+        for part in parts[:-1]:
+            if not isinstance(cur.get(part), dict):
+                cur[part] = {}
+            cur = cur[part]
+        last = parts[-1]
         try:
-            data[key] = json.loads(raw)
+            cur[last] = json.loads(raw)
         except (json.JSONDecodeError, ValueError):
-            data[key] = raw
+            cur[last] = raw
         return data
 
     def _atomic_write(self, file: Path, data: dict[str, Any]) -> None:
