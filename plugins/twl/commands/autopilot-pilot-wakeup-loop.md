@@ -29,6 +29,9 @@ mkdir -p "${AUTOPILOT_DIR}/trace"
 SESSION_ID=$(jq -r '.session_id // "unknown"' "${AUTOPILOT_DIR}/session.json" 2>/dev/null || echo "unknown")
 if [[ "$SESSION_ID" == "unknown" ]]; then
   echo "WARN: session.json が不在またはパース失敗。Wave ログ分離が無効になります" >&2
+elif [[ ! "$SESSION_ID" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+  echo "WARN: SESSION_ID に不正な文字が含まれています。unknown にフォールバックします: $SESSION_ID" >&2
+  SESSION_ID="unknown"
 fi
 _ORCH_LOG="${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}-${SESSION_ID}.log"
 cd "${PROJECT_DIR}/main" 2>/dev/null || cd "${PROJECT_DIR}" || true
