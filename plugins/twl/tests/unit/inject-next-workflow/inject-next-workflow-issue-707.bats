@@ -123,11 +123,6 @@ backoff_waits=(2 4 8)
 inject_done=0
 
 for _i in 0 1 2; do
-  wait_sec="${backoff_waits[$_i]}"
-  echo "sleep $wait_sec" >> "$SLEEP_LOG"
-  # 実際の sleep は短縮（テスト高速化）
-  # sleep 0.001
-
   current_state=$(get_next_state)
   echo "session-state state $window_name -> $current_state" >> "$CALLS_LOG"
 
@@ -135,6 +130,11 @@ for _i in 0 1 2; do
     inject_done=1
     break
   fi
+
+  wait_sec="${backoff_waits[$_i]}"
+  echo "sleep $wait_sec" >> "$SLEEP_LOG"
+  # 実際の sleep は短縮（テスト高速化）
+  # sleep 0.001
 done
 
 # --- タイムアウト判定 ---
@@ -400,7 +400,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 # Scenario: 1回目のリトライで input-waiting 検出
 # WHEN 1回目の session-state チェックで input-waiting が返る
-# THEN inject が実行される（2s 待機後）
+# THEN inject が実行される（待機なし: check-then-sleep パターンのため初回検出時は sleep 不要）
 # ---------------------------------------------------------------------------
 
 @test "issue-707[exponential-backoff]: 1回目リトライで input-waiting 検出時に inject を実行する" {
@@ -413,7 +413,7 @@ teardown() {
   grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
-@test "issue-707[exponential-backoff]: 1回目で検出した場合にスリープが 1 回のみ記録される" {
+@test "issue-707[exponential-backoff]: 1回目で検出した場合はスリープが記録されない" {
   RESOLVE_EXIT=0 \
   NEXT_WORKFLOW="/twl:workflow-pr-verify" \
   SESSION_STATE="input-waiting" \
@@ -422,13 +422,13 @@ teardown() {
   assert_success
   local sleep_count
   sleep_count=$(wc -l < "$SLEEP_LOG" 2>/dev/null || echo 0)
-  [[ "$sleep_count" -eq 1 ]]
+  [[ "$sleep_count" -eq 0 ]]
 }
 
-@test "issue-707[exponential-backoff]: 1回目で検出した場合の最初のスリープが 2 秒である" {
+@test "issue-707[exponential-backoff]: 2回目で検出した場合の最初のスリープが 2 秒である" {
   RESOLVE_EXIT=0 \
   NEXT_WORKFLOW="/twl:workflow-pr-verify" \
-  SESSION_STATE="input-waiting" \
+  SESSION_STATE="processing,input-waiting" \
     run bash "$SANDBOX/scripts/inject-707-dispatch.sh" "707" "ap-#707"
 
   assert_success
@@ -451,7 +451,7 @@ teardown() {
   grep -q "tmux send-keys" "$CALLS_LOG"
 }
 
-@test "issue-707[exponential-backoff]: 2回目で検出した場合にスリープが 2 回記録される（2s, 4s）" {
+@test "issue-707[exponential-backoff]: 2回目で検出した場合にスリープが 1 回記録される（2s）" {
   RESOLVE_EXIT=0 \
   NEXT_WORKFLOW="/twl:workflow-pr-verify" \
   SESSION_STATE="processing,input-waiting" \
@@ -460,7 +460,7 @@ teardown() {
   assert_success
   local sleep_count
   sleep_count=$(wc -l < "$SLEEP_LOG" 2>/dev/null || echo 0)
-  [[ "$sleep_count" -eq 2 ]]
+  [[ "$sleep_count" -eq 1 ]]
 }
 
 # ---------------------------------------------------------------------------
