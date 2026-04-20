@@ -18,19 +18,13 @@ if ! command -v jq &>/dev/null; then
 fi
 
 # セッション完了判定: 全 issue が done なら true を返す
-# issues フィールドが不在または空の場合も完了済みとして扱う
+# issues フィールドが不在または空の場合は未完了扱い（新 Wave 開始直後の race condition 防止）
 is_session_completed() {
   local session_file="$1"
   local has_issues
   has_issues=$(jq 'has("issues") and (.issues | length > 0)' "$session_file" 2>/dev/null) || return 1
-  if [[ -z "$has_issues" ]]; then
-    # jq が空出力（ファイル破損等）→ 未完了扱い（fail-closed）
-    return 1
-  fi
-  if [[ "$has_issues" != "true" ]]; then
-    # issues フィールドなし or 空 → 完了済みとみなす
-    return 0
-  fi
+  # issues フィールドなし or 空配列 → 未完了扱い（fail-closed）
+  [[ "$has_issues" != "true" ]] && return 1
   local all_done
   all_done=$(jq '[.issues[].status] | all(. == "done")' "$session_file" 2>/dev/null) || return 1
   [[ "$all_done" == "true" ]]
@@ -79,8 +73,13 @@ if [[ -f "$SESSION_FILE" ]]; then
     elapsed=$(( now_epoch - started_epoch ))
     hours=$(( elapsed / 3600 ))
 
-    if [[ "$force" == "true" ]] && is_session_completed "$SESSION_FILE"; then
-      # 完了済みセッション: --force で経過時間に関係なく即座に削除
+    if is_session_completed "$SESSION_FILE"; then
+      # 完了済みセッション: --force なしで自動削除（Wave 遷移ブロック防止）
+      echo "INFO: 完了済みセッション (${hours}h経過) を自動削除します: $session_id" >&2
+      rm -f "$SESSION_FILE"
+      rm -f "$ISSUES_DIR"/issue-*.json 2>/dev/null || true
+    elif [[ "$force" == "true" ]] && is_session_completed "$SESSION_FILE"; then
+      # 完了済みセッション: --force で経過時間に関係なく即座に削除（後方互換）
       echo "WARN: 完了済みセッション (${hours}h経過) を強制削除します: $session_id" >&2
       rm -f "$SESSION_FILE"
       # 旧セッションの issue ファイルもクリーンアップ

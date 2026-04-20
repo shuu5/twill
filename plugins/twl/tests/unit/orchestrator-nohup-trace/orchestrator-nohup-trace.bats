@@ -131,13 +131,15 @@ DISPATCH_EOF
 # Usage: <phase_num>
 # Env:
 #   TRACE_LOG_DIR - トレースログ出力先ディレクトリ
+#   SESSION_ID    - session_id（デフォルト: test-session）— Wave 間ログ分離のため
 set -uo pipefail
 
 phase_num="${1:-1}"
 TRACE_LOG_DIR="${TRACE_LOG_DIR:-/tmp/autopilot-trace}"
+SESSION_ID="${SESSION_ID:-test-session}"
 mkdir -p "$TRACE_LOG_DIR"
 
-ORCHESTRATOR_LOG="${TRACE_LOG_DIR}/orchestrator-phase-${phase_num}.log"
+ORCHESTRATOR_LOG="${TRACE_LOG_DIR}/orchestrator-phase-${phase_num}-${SESSION_ID}.log"
 started_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # $$ は本スクリプト自身の PID（orchestrator プロセスを代理）
 echo "orchestrator_pid=$$ started_at=${started_at} phase=${phase_num}" >> "$ORCHESTRATOR_LOG"
@@ -161,42 +163,50 @@ teardown() {
 # THEN orchestrator の PID と起動時刻が .autopilot/trace/orchestrator-phase-{N}.log に記録される
 # ---------------------------------------------------------------------------
 
-@test "orchestrator[pid-trace]: orchestrator-phase-1.log が作成される" {
+@test "orchestrator[pid-trace]: orchestrator-phase-1-*.log が作成される" {
   run bash "$SANDBOX/scripts/orchestrator-pid-logger.sh" "1"
 
   assert_success
-  [[ -f "${TRACE_LOG_DIR}/orchestrator-phase-1.log" ]]
+  local log_file
+  log_file=$(ls "${TRACE_LOG_DIR}/orchestrator-phase-1"-*.log 2>/dev/null | head -1)
+  [[ -f "$log_file" ]]
 }
 
 @test "orchestrator[pid-trace]: orchestrator_pid がログに記録される" {
   run bash "$SANDBOX/scripts/orchestrator-pid-logger.sh" "1"
 
   assert_success
-  grep -q "orchestrator_pid=" "${TRACE_LOG_DIR}/orchestrator-phase-1.log"
+  local log_file
+  log_file=$(ls "${TRACE_LOG_DIR}/orchestrator-phase-1"-*.log 2>/dev/null | head -1)
+  grep -q "orchestrator_pid=" "$log_file"
 }
 
 @test "orchestrator[pid-trace]: started_at が ISO8601 形式でログに記録される" {
   run bash "$SANDBOX/scripts/orchestrator-pid-logger.sh" "1"
 
   assert_success
-  grep -qE "started_at=[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z" \
-    "${TRACE_LOG_DIR}/orchestrator-phase-1.log"
+  local log_file
+  log_file=$(ls "${TRACE_LOG_DIR}/orchestrator-phase-1"-*.log 2>/dev/null | head -1)
+  grep -qE "started_at=[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z" "$log_file"
 }
 
 @test "orchestrator[pid-trace]: phase 番号がログに記録される" {
   run bash "$SANDBOX/scripts/orchestrator-pid-logger.sh" "3"
 
   assert_success
-  [[ -f "${TRACE_LOG_DIR}/orchestrator-phase-3.log" ]]
-  grep -q "phase=3" "${TRACE_LOG_DIR}/orchestrator-phase-3.log"
+  local log_file
+  log_file=$(ls "${TRACE_LOG_DIR}/orchestrator-phase-3"-*.log 2>/dev/null | head -1)
+  [[ -f "$log_file" ]]
+  grep -q "phase=3" "$log_file"
 }
 
 @test "orchestrator[pid-trace]: PID は正の整数である" {
   run bash "$SANDBOX/scripts/orchestrator-pid-logger.sh" "1"
 
   assert_success
-  local pid
-  pid=$(grep -oP 'orchestrator_pid=\K[0-9]+' "${TRACE_LOG_DIR}/orchestrator-phase-1.log")
+  local log_file pid
+  log_file=$(ls "${TRACE_LOG_DIR}/orchestrator-phase-1"-*.log 2>/dev/null | head -1)
+  pid=$(grep -oP 'orchestrator_pid=\K[0-9]+' "$log_file")
   [[ -n "$pid" && "$pid" -gt 0 ]]
 }
 
@@ -213,8 +223,8 @@ teardown() {
   bash "$SANDBOX/scripts/orchestrator-pid-logger.sh" "1"
   bash "$SANDBOX/scripts/orchestrator-pid-logger.sh" "2"
 
-  [[ -f "${TRACE_LOG_DIR}/orchestrator-phase-1.log" ]]
-  [[ -f "${TRACE_LOG_DIR}/orchestrator-phase-2.log" ]]
+  [[ -n "$(ls "${TRACE_LOG_DIR}/orchestrator-phase-1"-*.log 2>/dev/null)" ]]
+  [[ -n "$(ls "${TRACE_LOG_DIR}/orchestrator-phase-2"-*.log 2>/dev/null)" ]]
 }
 
 # Edge case: ログファイルは追記形式（既存エントリが上書きされない）
@@ -222,8 +232,9 @@ teardown() {
   bash "$SANDBOX/scripts/orchestrator-pid-logger.sh" "1"
   bash "$SANDBOX/scripts/orchestrator-pid-logger.sh" "1"
 
-  local count
-  count=$(grep -c "orchestrator_pid=" "${TRACE_LOG_DIR}/orchestrator-phase-1.log")
+  local log_file count
+  log_file=$(ls "${TRACE_LOG_DIR}/orchestrator-phase-1"-*.log 2>/dev/null | head -1)
+  count=$(grep -c "orchestrator_pid=" "$log_file")
   [[ "$count" -ge 2 ]]
 }
 
