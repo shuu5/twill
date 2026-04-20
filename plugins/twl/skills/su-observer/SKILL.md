@@ -170,7 +170,7 @@ except Exception as e:
   fi
 
   if [[ "$BUDGET_ALERT" == "true" ]]; then
-    echo "[BUDGET-LOW] 5h budget 残り ${BUDGET_MIN}分 (${BUDGET_PCT:-?}% 消費)。安全停止シーケンスを開始します。"
+    echo "[BUDGET-LOW] 5h budget 残り ${BUDGET_MIN:-?}分 (${BUDGET_PCT:-?}% 消費)。安全停止シーケンスを開始します。"
     # 1. orchestrator 停止（PID 数値バリデーション必須: kill 0 はプロセスグループ全体を対象とするため禁止）
     ORCH_PID=$(cat .autopilot/orchestrator.pid 2>/dev/null || pgrep -f 'autopilot-orchestrator' | head -1 || echo "")
     if [[ "$ORCH_PID" =~ ^[1-9][0-9]*$ ]]; then
