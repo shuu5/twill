@@ -29,6 +29,16 @@ if [[ -z "$SESSION_ID" ]]; then
   SESSION_ID="${CLAUDE_SESSION_ID:-$$}"
 fi
 
+_SESSION_ID_RAW="$SESSION_ID"
+SESSION_ID=$(printf '%s' "$SESSION_ID" | tr -cd 'A-Za-z0-9_-')
+if [[ -z "$SESSION_ID" ]]; then
+  SESSION_ID="$$"
+fi
+if [[ "$SESSION_ID" != "$_SESSION_ID_RAW" ]]; then
+  printf '[supervisor-hook][warn] SESSION_ID sanitized (hook=%s pid=%s)\n' \
+    "$(basename "$0")" "$$" >&2
+fi
+
 TIMESTAMP=$(date +%s 2>/dev/null || echo "0")
 
 # skill 名と tool_input 取得（tool_input は最大 500 文字）

@@ -193,6 +193,7 @@ flowchart TD
 | SU-6b | context 逼迫時またはユーザー指示時に /compact をユーザーへ提案しなければならない（SHOULD） | built-in CLI のためユーザー手動実行 |
 | SU-7 | observed session への inject/send-keys は介入プロトコルに従う場合に許可（MAY） | OB-3 廃止に対応 |
 | SU-8 | supervisor hook は bare repo 構造（main/ がディレクトリとして存在すること）を前提とし、non-bare 検出時は no-op で exit 0 する（SHALL） | #728 |
+| SU-9 | supervisor hook は filename に埋め込む前に SESSION_ID を allow-list サニタイズ（[A-Za-z0-9_-]）しなければならず、サニタイズ前後で差分があれば stderr に警告を出力しなければならない（SHALL） | #729 |
 
 ### OB-* Constraints との関係
 
