@@ -86,6 +86,27 @@ resolve_autopilot_dir() {
   echo "${main_wt:-.}/.autopilot"
 }
 
+# Issue 番号に対応する change_id を厳密に解決する
+# Usage: resolve_change_id_for_issue <issue_num> <changes_dir>
+# - issue_num 非空: changes_dir/issue-<issue_num>/ が存在すれば "issue-<issue_num>" を echo (exit 0)
+#                   存在しなければ空文字を echo (exit 0)
+# - issue_num 空:   ls -td | head -1 による mtime-latest fallback
+resolve_change_id_for_issue() {
+  local issue_num="${1:-}"
+  local changes_dir="${2:-}"
+  if [[ -n "$issue_num" ]]; then
+    local candidate="$changes_dir/issue-${issue_num}"
+    if [[ -d "$candidate" ]]; then
+      echo "issue-${issue_num}"
+    else
+      echo ""
+    fi
+    return 0
+  fi
+  # legacy fallback (issue_num 未設定時のみ)
+  ls -td "$changes_dir"/*/ 2>/dev/null | head -1 | xargs -r basename
+}
+
 # =====================================================================
 # Trace Event (Phase 3 / Layer 1 経験的監査)
 # =====================================================================
@@ -345,9 +366,18 @@ step_init() {
     return 0
   fi
 
-  # 最新 change の proposal 状態
+  # Issue 番号に対応する change を厳密に解決（mtime-latest anti-pattern を排除）
   local latest_change
-  latest_change="$(ls -td "$changes_dir"/*/ 2>/dev/null | head -1 | xargs -r basename)"
+  latest_change="$(resolve_change_id_for_issue "$issue_num" "$changes_dir")"
+
+  # ISSUE_NUM があり issue-<N>/ 不在の場合 → propose (新規作成経路)
+  if [[ -n "$issue_num" && "$issue_num" =~ ^[0-9]+$ && -z "$latest_change" ]]; then
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":false,"is_quick":$is_quick}'
+    ok "init" "recommended_action=propose (issue-${issue_num}/ not found, is_quick=$is_quick)"
+    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
+    return 0
+  fi
+
   local proposal="$changes_dir/$latest_change/proposal.md"
 
   if [[ -f "$proposal" ]]; then
@@ -844,12 +874,21 @@ step_change_id_resolve() {
     return 1
   fi
 
+  local issue_num="${ISSUE_NUM:-}"
   local latest
-  latest=$(ls -td "$changes_dir"/*/ 2>/dev/null | head -1 | xargs -r basename)
+  latest="$(resolve_change_id_for_issue "$issue_num" "$changes_dir")"
 
   if [[ -z "$latest" ]]; then
-    err "change-id-resolve" "changes/ が空"
-    return 1
+    if [[ -n "$issue_num" && "${CHANGE_ID_FALLBACK_LATEST:-0}" != "1" ]]; then
+      err "change-id-resolve" "issue-${issue_num}/ が存在しない"
+      return 1
+    fi
+    # legacy fallback: CHANGE_ID_FALLBACK_LATEST=1 opt-in、または ISSUE_NUM 未設定
+    latest=$(ls -td "$changes_dir"/*/ 2>/dev/null | head -1 | xargs -r basename)
+    if [[ -z "$latest" ]]; then
+      err "change-id-resolve" "changes/ が空"
+      return 1
+    fi
   fi
 
   echo "$latest"
