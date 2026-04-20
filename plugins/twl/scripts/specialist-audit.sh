@@ -97,15 +97,14 @@ resolve_jsonl() {
 
   # 99文字切り捨て対応: グロブで前方一致検索（worktrees/fix と worktrees/feat の両方）
   # ISSUE_NUM は呼び出し前に数値検証済みのため安全にグロブ展開可能
+  # ls -td の引数はクォートなしでシェルのグロブ展開を有効化する（クォートするとリテラル扱い）
   local proj_dir=""
-  local -a glob_matches=()
   for pattern in \
     "$HOME/.claude/projects/-home-shuu5-projects-local-projects-twill-worktrees-*-${issue}-*" \
     "$HOME/.claude/projects/-home-shuu5-projects-local-projects-twill-worktrees-*${issue}*"; do
-    glob_matches=("$pattern")  # nullglob 未設定時はリテラルが残る
-    # ls で実在確認（グロブが展開されたかチェック）
     local found=""
-    found=$(ls -td "$pattern" 2>/dev/null | head -1 || echo "")
+    # shellcheck disable=SC2086  # クォートなし展開でグロブを有効化（ISSUE_NUM は数値検証済み）
+    found=$(ls -td $pattern 2>/dev/null | head -1 || echo "")
     if [[ -n "$found" && -d "$found" ]]; then
       proj_dir="$found"
       break
@@ -146,12 +145,16 @@ resolve_jsonl() {
 
 # --- JSONL 解決 ---
 if [[ -n "$ISSUE_NUM" ]]; then
+  _err_file="/tmp/_specialist_audit_err_$$"
+  # EXIT 時に一時ファイルを確実にクリーンアップ
+  trap 'rm -f "$_err_file"' EXIT
   resolved_jsonl=""
   _resolve_err=""
   # stderr と stdout を分離（2>&1 で混入させない）
-  resolved_jsonl=$(resolve_jsonl "$ISSUE_NUM" 2>/tmp/_specialist_audit_err_$$) || {
-    _resolve_err=$(cat /tmp/_specialist_audit_err_$$ 2>/dev/null || echo "unknown error")
-    rm -f /tmp/_specialist_audit_err_$$
+  resolved_jsonl=$(resolve_jsonl "$ISSUE_NUM" 2>"$_err_file") || {
+    _resolve_err=$(cat "$_err_file" 2>/dev/null || echo "unknown error")
+    rm -f "$_err_file"
+    trap - EXIT
     if command -v jq &>/dev/null; then
       out_json=$(jq -n --argjson issue "$ISSUE_NUM" --arg detail "$_resolve_err" \
         '{"status":"WARN","reason":"jsonl_resolution_failed","issue":$issue,"detail":$detail}')
@@ -161,7 +164,8 @@ if [[ -n "$ISSUE_NUM" ]]; then
     echo "$out_json"
     exit 0
   }
-  rm -f /tmp/_specialist_audit_err_$$
+  rm -f "$_err_file"
+  trap - EXIT
   JSONL_PATH="$resolved_jsonl"
 fi
 
