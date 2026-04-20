@@ -68,6 +68,8 @@ Autopilot で複数 Issue を一括実装:
 
 ## Architecture
 
+Notable scripts: `specialist-audit` (specialist completeness 監査 — merge-gate および su-observer から呼び出し、JSONL の specialist 実行数を期待集合と照合し JSON 形式で結果を出力)
+
 <!-- DEPS-GRAPH-START -->
 | From | To |
 |------|-----|
