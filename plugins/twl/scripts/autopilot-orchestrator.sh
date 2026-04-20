@@ -19,12 +19,13 @@ source "${SCRIPTS_ROOT}/lib/deltaspec-helpers.sh"
 source "${SCRIPTS_ROOT}/chain-steps.sh" 2>/dev/null || true
 
 # --- session-state.sh 検出 ---
-SESSION_STATE_CMD="${SESSION_STATE_CMD-$HOME/ubuntu-note-system/scripts/session-state.sh}"
+SESSION_STATE_CMD="${SESSION_STATE_CMD-${SCRIPTS_ROOT}/session-state-wrapper.sh}"
 if [[ -n "$SESSION_STATE_CMD" && "$SESSION_STATE_CMD" == /* && "$SESSION_STATE_CMD" != *..* && -x "$SESSION_STATE_CMD" ]]; then
   USE_SESSION_STATE=true
 else
   USE_SESSION_STATE=false
 fi
+echo "[orchestrator] USE_SESSION_STATE=${USE_SESSION_STATE}" >&2
 
 # --- 定数 ---
 MAX_PARALLEL="${DEV_AUTOPILOT_MAX_PARALLEL:-4}"

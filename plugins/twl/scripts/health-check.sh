@@ -16,7 +16,7 @@ CHAIN_STALL_MIN="${DEV_HEALTH_CHAIN_STALL_MIN:-10}"
 INPUT_WAIT_MIN="${DEV_HEALTH_INPUT_WAIT_MIN:-5}"
 
 # session-state.sh の解決
-SESSION_STATE_CMD="${SESSION_STATE_CMD-$HOME/ubuntu-note-system/scripts/session-state.sh}"
+SESSION_STATE_CMD="${SESSION_STATE_CMD-${SCRIPT_DIR}/session-state-wrapper.sh}"
 if [[ -n "$SESSION_STATE_CMD" && "$SESSION_STATE_CMD" == /* && "$SESSION_STATE_CMD" != *..* && -x "$SESSION_STATE_CMD" ]]; then
   USE_SESSION_STATE=true
 else

@@ -11,7 +11,7 @@ AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"
 source "${SCRIPT_DIR}/lib/python-env.sh"
 
 # session-state.sh の解決（環境変数で上書き可能）
-SESSION_STATE_CMD="${SESSION_STATE_CMD-$HOME/ubuntu-note-system/scripts/session-state.sh}"
+SESSION_STATE_CMD="${SESSION_STATE_CMD-${SCRIPT_DIR}/session-state-wrapper.sh}"
 # パス安全性検証: 相対パス・空文字列・.. を含むパスを拒否
 if [[ -n "$SESSION_STATE_CMD" && "$SESSION_STATE_CMD" == /* && "$SESSION_STATE_CMD" != *..* && -x "$SESSION_STATE_CMD" ]]; then
   USE_SESSION_STATE=true
