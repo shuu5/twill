@@ -1306,9 +1306,11 @@ if [[ -z "$WORKER_MODEL" ]]; then
 fi
 
 echo "[orchestrator] Phase ${PHASE} 開始" >&2
-# --- trace: PID と起動時刻を記録 ---
+# --- trace: PID と起動時刻を記録（ログ名に session_id を付与して Wave 間分離） ---
 _orch_started_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-echo "[${_orch_started_at}] orchestrator_pid=$$ phase=${PHASE} started_at=${_orch_started_at}" >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE}.log" 2>/dev/null || true
+_orch_session_id=$(jq -r '.session_id // "unknown"' "${SESSION_FILE}" 2>/dev/null || echo "unknown")
+[[ "$_orch_session_id" =~ ^[a-zA-Z0-9_-]+$ ]] || _orch_session_id="unknown"
+echo "[${_orch_started_at}] orchestrator_pid=$$ phase=${PHASE} started_at=${_orch_started_at}" >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE}-${_orch_session_id}.log" 2>/dev/null || true
 
 # --- 起動時クリーンアップ: merged ブランチ prune + git fetch --prune ---
 startup_cleanup || echo "[orchestrator] ⚠️ startup cleanup 失敗（続行）" >&2

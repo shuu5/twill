@@ -344,18 +344,19 @@ orchestrator が停止して chain 遷移が行われない場合、以下の正
 ### 1. orchestrator 再起動
 
 ```bash
-# trace ログで停止確認
-tail -20 "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log"
+# trace ログで停止確認（session_id 付き命名規則: orchestrator-phase-${N}-${SESSION_ID}.log）
+tail -20 "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}"-*.log 2>/dev/null | tail -20
 
 # orchestrator を nohup で再起動
 mkdir -p "${AUTOPILOT_DIR}/trace"
-nohup bash autopilot-orchestrator.sh \
+SESSION_ID=$(jq -r '.session_id // "unknown"' "${AUTOPILOT_DIR}/session.json" 2>/dev/null || echo "unknown")
+nohup bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-orchestrator.sh" \
   --plan "${AUTOPILOT_DIR}/plan.yaml" \
   --phase "$PHASE_NUM" \
   --session "${AUTOPILOT_DIR}/session.json" \
   --project-dir "$PROJECT_DIR" \
   --autopilot-dir "$AUTOPILOT_DIR" \
-  >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}.log" 2>&1 &
+  >> "${AUTOPILOT_DIR}/trace/orchestrator-phase-${PHASE_NUM}-${SESSION_ID}.log" 2>&1 &
 disown
 ```
 
