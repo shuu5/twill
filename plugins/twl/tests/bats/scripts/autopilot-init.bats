@@ -135,19 +135,17 @@ JSON
 # ---------------------------------------------------------------------------
 
 @test "all issues done + --force + under 24h: deletes session and continues init" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '20 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "done1234",
-  "started_at": "$started_at",
-  "issues": [
-    {"issue": 1, "status": "done"},
-    {"issue": 2, "status": "done"}
-  ]
+  "started_at": "$started_at"
 }
 JSON
+  echo '{"issue": 1, "status": "done"}' > "$SANDBOX/.autopilot/issues/issue-1.json"
+  echo '{"issue": 2, "status": "done"}' > "$SANDBOX/.autopilot/issues/issue-2.json"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 
@@ -156,19 +154,17 @@ JSON
 }
 
 @test "all issues done + --force + over 24h: deletes session and continues init" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '30 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "done5678",
-  "started_at": "$started_at",
-  "issues": [
-    {"issue": 1, "status": "done"},
-    {"issue": 2, "status": "done"}
-  ]
+  "started_at": "$started_at"
 }
 JSON
+  echo '{"issue": 1, "status": "done"}' > "$SANDBOX/.autopilot/issues/issue-1.json"
+  echo '{"issue": 2, "status": "done"}' > "$SANDBOX/.autopilot/issues/issue-2.json"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 
@@ -177,19 +173,17 @@ JSON
 }
 
 @test "running issue + --force + under 24h: blocks with exit 1" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '20 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "run1234",
-  "started_at": "$started_at",
-  "issues": [
-    {"issue": 1, "status": "running"},
-    {"issue": 2, "status": "done"}
-  ]
+  "started_at": "$started_at"
 }
 JSON
+  echo '{"issue": 1, "status": "running"}' > "$SANDBOX/.autopilot/issues/issue-1.json"
+  echo '{"issue": 2, "status": "done"}' > "$SANDBOX/.autopilot/issues/issue-2.json"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 
@@ -198,19 +192,17 @@ JSON
 }
 
 @test "running issue + --force + over 24h: treats as stale, deletes and continues" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '30 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "run5678",
-  "started_at": "$started_at",
-  "issues": [
-    {"issue": 1, "status": "running"},
-    {"issue": 2, "status": "done"}
-  ]
+  "started_at": "$started_at"
 }
 JSON
+  echo '{"issue": 1, "status": "running"}' > "$SANDBOX/.autopilot/issues/issue-1.json"
+  echo '{"issue": 2, "status": "done"}' > "$SANDBOX/.autopilot/issues/issue-2.json"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 

@@ -17,17 +17,24 @@ if ! command -v jq &>/dev/null; then
   exit 1
 fi
 
-# セッション完了判定: 全 issue が done なら true を返す
-# issues フィールドが不在または空の場合は未完了扱い（新 Wave 開始直後の race condition 防止）
+# セッション完了判定: ISSUES_DIR 内の全 issue-*.json が terminal 状態なら true を返す
+# session.json.issues フィールドは実 SessionState スキーマに存在しないため per-issue ファイルを確認する
+# issue ファイルが存在しない場合は未完了扱い（fail-closed）
 is_session_completed() {
-  local session_file="$1"
-  local has_issues
-  has_issues=$(jq 'has("issues") and (.issues | length > 0)' "$session_file" 2>/dev/null) || return 1
-  # issues フィールドなし or 空配列 → 未完了扱い（fail-closed）
-  [[ "$has_issues" != "true" ]] && return 1
-  local all_done
-  all_done=$(jq '[.issues[].status] | all(. == "done")' "$session_file" 2>/dev/null) || return 1
-  [[ "$all_done" == "true" ]]
+  local -a issue_files
+  mapfile -t issue_files < <(ls "$ISSUES_DIR"/issue-*.json 2>/dev/null)
+  # issue ファイルなし = 未開始 or クリーンアップ済み → 未完了扱い（fail-closed）
+  [[ ${#issue_files[@]} -eq 0 ]] && return 1
+  local f status
+  for f in "${issue_files[@]}"; do
+    [[ -f "$f" ]] || continue
+    status=$(jq -r '.status // "unknown"' "$f" 2>/dev/null) || return 1
+    case "$status" in
+      merge-ready|done|failed) ;;
+      *) return 1 ;;
+    esac
+  done
+  return 0
 }
 
 usage() {
