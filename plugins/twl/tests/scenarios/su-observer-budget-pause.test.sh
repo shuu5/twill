@@ -361,12 +361,13 @@ run_test "monitor-channel-catalog.md [edge: budget-config.json による閾値 o
 echo ""
 echo "--- Requirement: status line budget パース ---"
 
-# Test: SKILL.md または monitor-catalog に正規表現ベースのパーサーが定義されている
+# Test: SKILL.md に実 status line フォーマット（5h:XX%(YYm)）対応の正規表現ベースのパーサーが定義されている
 test_regex_based_parser() {
   assert_file_exists "$SU_OBSERVER_SKILL" || return 1
-  assert_file_contains "$SU_OBSERVER_SKILL" 'grep -oP.*budget|grep.*budget.*oP|grep.*oP.*budget'
+  # 実フォーマット: 5h:XX%(YYm) に対応した regex が定義されている
+  assert_file_contains "$SU_OBSERVER_SKILL" "grep -oP '5h:"
 }
-run_test "SKILL.md に正規表現ベースの budget パーサーが定義されている" test_regex_based_parser
+run_test "SKILL.md に実 status line フォーマット（5h:XX%）対応の正規表現ベースの budget パーサーが定義されている" test_regex_based_parser
 
 # Test: SKILL.md に時間単位（h / m）の変換処理が定義されている
 test_time_unit_conversion() {
