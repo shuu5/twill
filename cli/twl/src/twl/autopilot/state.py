@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 _VALID_KEY_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+_VALID_SET_KEY_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z0-9_]+)*$")
 _VALID_FIELD_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_.]*$")
 _VALID_REPO_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
 
@@ -224,7 +225,7 @@ class StateManager:
 
         for kv in sets:
             key, _, raw_value = kv.partition("=")
-            if not _VALID_KEY_RE.match(key):
+            if not _VALID_SET_KEY_RE.match(key):
                 raise StateArgError(f"不正なフィールド名: {key}（英数字とアンダースコアのみ許可）")
 
             if key == "status" and type_ == "issue":
@@ -344,11 +345,24 @@ class StateManager:
 
     def _set_field(self, data: dict[str, Any], key: str, raw: str) -> dict[str, Any]:
         data = dict(data)
-        # Try JSON parse first (arrays, objects, null, numbers, booleans)
+        if "." not in key:
+            try:
+                data[key] = json.loads(raw)
+            except (json.JSONDecodeError, ValueError):
+                data[key] = raw
+            return data
+        # Dot-path: navigate into nested dicts, creating missing intermediate dicts
+        parts = key.split(".")
+        cur = data
+        for part in parts[:-1]:
+            if not isinstance(cur.get(part), dict):
+                cur[part] = {}
+            cur = cur[part]
+        last = parts[-1]
         try:
-            data[key] = json.loads(raw)
+            cur[last] = json.loads(raw)
         except (json.JSONDecodeError, ValueError):
-            data[key] = raw
+            cur[last] = raw
         return data
 
     def _atomic_write(self, file: Path, data: dict[str, Any]) -> None:
