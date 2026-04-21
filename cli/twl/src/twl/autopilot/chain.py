@@ -109,6 +109,164 @@ TERMINAL_STEP_TO_NEXT_SKILL: dict[str, str] = {
     "warning-fix": "workflow-pr-merge",
 }
 
+# ---------------------------------------------------------------------------
+# Computed-artifact metadata (SSOT for twl chain export)
+# ---------------------------------------------------------------------------
+
+# Dispatch mode per step: runner=bash direct, llm=LLM skill, trigger=external
+CHAIN_STEP_DISPATCH: dict[str, str] = {
+    "init": "runner",
+    "board-status-update": "trigger",
+    "crg-auto-build": "llm",
+    "arch-ref": "runner",
+    "change-propose": "llm",
+    "ac-extract": "runner",
+    "change-id-resolve": "runner",
+    "test-scaffold": "llm",
+    "check": "runner",
+    "change-apply": "llm",
+    "post-change-apply": "runner",
+    "prompt-compliance": "runner",
+    "ts-preflight": "runner",
+    "phase-review": "llm",
+    "scope-judge": "llm",
+    "pr-test": "runner",
+    "ac-verify": "llm",
+    "all-pass-check": "runner",
+    "pr-cycle-report": "runner",
+}
+
+# Command path for LLM steps (empty string = Skill で実行)
+CHAIN_STEP_COMMAND: dict[str, str] = {
+    "crg-auto-build": "commands/crg-auto-build.md",
+    "change-propose": "commands/change-propose.md",
+    "test-scaffold": "",
+    "change-apply": "",
+    "phase-review": "commands/phase-review.md",
+    "scope-judge": "commands/scope-judge.md",
+    "ac-verify": "commands/ac-verify.md",
+}
+
+# Chain metadata per workflow (type + description)
+CHAIN_METADATA: dict[str, dict[str, str]] = {
+    "setup": {
+        "type": "A",
+        "description": "開発準備ワークフロー（worktree作成 → DeltaSpec → テスト準備）",
+    },
+    "test-ready": {
+        "type": "B",
+        "description": "テスト生成と準備確認（DeltaSpec → テスト → 実装）",
+    },
+    "pr-verify": {
+        "type": "B",
+        "description": "PR検証（preflight → review → scope → test → ac-verify）",
+    },
+    "pr-merge": {
+        "type": "B",
+        "description": "PRマージ（e2e → report → analysis → check → merge）",
+    },
+}
+
+
+def export_deps_chains() -> dict:
+    """Build deps.yaml.chains section from chain.py SSOT data.
+
+    Groups CHAIN_STEPS by their workflow (STEP_TO_WORKFLOW) and attaches
+    type/description metadata from CHAIN_METADATA.
+
+    Returns:
+        dict mapping workflow-name → {type, description, steps}
+    """
+    workflow_steps: dict[str, list[str]] = {}
+    for step in CHAIN_STEPS:
+        workflow = STEP_TO_WORKFLOW.get(step, "")
+        if workflow:
+            workflow_steps.setdefault(workflow, []).append(step)
+
+    chains: dict[str, dict] = {}
+    for workflow, steps in workflow_steps.items():
+        meta = CHAIN_METADATA.get(workflow, {})
+        chains[workflow] = {
+            "type": meta.get("type", "B"),
+            "description": meta.get("description", ""),
+            "steps": steps,
+        }
+    return chains
+
+
+def export_chain_steps_sh() -> str:
+    """Build chain-steps.sh bash content from chain.py SSOT data.
+
+    Returns a complete shell script string ready to be written to
+    plugins/twl/scripts/chain-steps.sh.
+    """
+    lines: list[str] = [
+        "#!/usr/bin/env bash",
+        "# chain-steps.sh — chain ステップ順序の共有定義（chain.py から生成）",
+        "# このファイルは `twl chain export --shell` で再生成される。直接編集しないこと。",
+        "#",
+        "# このファイルを source して CHAIN_STEPS 配列を取得する:",
+        '#   source "$(dirname "${BASH_SOURCE[0]}")/chain-steps.sh"',
+        "#",
+        "# workflow-setup → workflow-test-ready → workflow-pr-cycle の全ステップ順。",
+        "",
+        "CHAIN_STEPS=(",
+    ]
+    for step in CHAIN_STEPS:
+        lines.append(f"  {step}")
+    lines.append(")")
+    lines.append("")
+
+    lines.append("# quick Issue でスキップするステップの一覧（SSOT）")
+    lines.append("QUICK_SKIP_STEPS=(")
+    for step in CHAIN_STEPS:
+        if step in QUICK_SKIP_STEPS:
+            lines.append(f"  {step}")
+    lines.append(")")
+    lines.append("")
+
+    lines.append("# direct モード（DeltaSpec なし）でスキップするステップの一覧（SSOT）")
+    lines.append("DIRECT_SKIP_STEPS=(")
+    for step in CHAIN_STEPS:
+        if step in DIRECT_SKIP_STEPS:
+            lines.append(f"  {step}")
+    lines.append(")")
+    lines.append("")
+
+    lines.append("# dispatch_mode SSOT: 各ステップの実行モード")
+    lines.append("# runner = chain-runner.sh が bash で直接実行")
+    lines.append("# llm   = LLM Skill が実行し、chain-runner は llm-delegate/llm-complete で記録")
+    lines.append("declare -A CHAIN_STEP_DISPATCH=(")
+    for step in CHAIN_STEPS:
+        dispatch = CHAIN_STEP_DISPATCH.get(step, "runner")
+        lines.append(f"  [{step}]={dispatch}")
+    lines.append(")")
+    lines.append("")
+
+    lines.append("# ワークフロー境界メタデータ（SSOT は chain.py の STEP_TO_WORKFLOW）")
+    lines.append("declare -A CHAIN_STEP_WORKFLOW=(")
+    for step in CHAIN_STEPS:
+        workflow = STEP_TO_WORKFLOW.get(step, "")
+        lines.append(f"  [{step}]={workflow}")
+    lines.append(")")
+    lines.append("")
+
+    lines.append("# ワークフロー完了後の次 skill（SSOT は chain.py の WORKFLOW_NEXT_SKILL）")
+    lines.append("declare -A CHAIN_WORKFLOW_NEXT_SKILL=(")
+    for workflow, skill in WORKFLOW_NEXT_SKILL.items():
+        lines.append(f'  [{workflow}]="{skill}"')
+    lines.append(")")
+    lines.append("")
+
+    lines.append("# LLM ステップのコマンドパス（空 = Skill で実行）")
+    lines.append("declare -A CHAIN_STEP_COMMAND=(")
+    for step, cmd in CHAIN_STEP_COMMAND.items():
+        lines.append(f'  [{step}]="{cmd}"')
+    lines.append(")")
+    lines.append("")
+
+    return "\n".join(lines)
+
 
 class ChainError(Exception):
     """Raised for chain step errors."""
