@@ -138,3 +138,17 @@ def next_step(self, issue_num: str, current_step: str) -> str:
   → 緩和策: change-propose コマンドの品質ガイドラインを明文化
 - DIRECT_SKIP_STEPS と QUICK_SKIP_STEPS の2つのスキップセットの管理コスト
   → 緩和策: chain-steps.sh と chain.py で SSOT を維持し、twl chain generate --check でドリフト検出
+
+## Alternatives
+
+### 案1: deltaspec/ 不在時は direct を維持（現状維持）
+
+`step_init()` の既存ロジックを変更せず、DeltaSpec は明示的な `twl spec init` 後にのみ使用する。
+
+- 却下理由: 初めてのプロジェクトで DeltaSpec が永遠に使われない構造的欠陥が継続する（本 ADR の Context に記述した根本原因を解決しない）。
+
+### 案2: 環境変数によるオプトイン
+
+`TWL_ENABLE_DELTASPEC=1` が設定された場合のみ `propose` を返す。
+
+- 却下理由: デフォルトが無効のままでは同じ問題が継続する。`scope/direct` ラベルによる opt-out がより明示的かつ Issue 単位で制御可能。
