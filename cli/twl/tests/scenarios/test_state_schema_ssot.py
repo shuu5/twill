@@ -6,15 +6,15 @@ Scenarios covered:
   1. Monitor が単一フィールドで進捗判定できる
   2. status=merge-ready 時に STAGNATE 警告が発生しない
   3. 状態遷移グラフの完全性 (IssueState 5値)
-  4. workflow_done の writer が全て削除される (state.py 観点)
-  5. orchestrator が workflow_done を参照しない (resolve_next_workflow 観点)
-  6. state.py の PILOT_ISSUE_ALLOWED_KEYS に workflow_done が含まれない
+  4. 廃止フィールドの writer が全て削除される (ADR-018 状態 state.py 観点)
+  5. orchestrator が status を参照する (resolve_next_workflow 観点)
+  6. state.py の PILOT_ISSUE_ALLOWED_KEYS に廃止フィールドが含まれない
   7. status=merge-ready で次 workflow が inject される (resolve_next_workflow)
 
 Edge-cases focus:
   - conflict → merge-ready リトライ上限
   - done 終端状態からの全遷移拒否
-  - _PILOT_ISSUE_ALLOWED_KEYS に workflow_done が含まれないこと
+  - _PILOT_ISSUE_ALLOWED_KEYS に廃止フィールドが含まれないこと
   - status フィールド単一クエリで全 5 値が表現可能
   - running/merge-ready 両方で status 単一フィールド判定が成立
 """
@@ -120,11 +120,11 @@ class TestStatusFieldSSOT:
             # Monitor は .status の値のみで判定すればよい
             assert data["status"] in self.VALID_STATUSES
 
-    def test_status_unambiguous_without_workflow_done(
+    def test_status_unambiguous_for_merge_ready(
         self, mgr: StateManager, autopilot_dir: Path
     ) -> None:
-        """workflow_done が null でも status=merge-ready で状態が判定できること."""
-        _write_issue(autopilot_dir, "21", "merge-ready", workflow_done=None)
+        """status=merge-ready が status フィールドのみで判定できること (ADR-018 SSOT)."""
+        _write_issue(autopilot_dir, "21", "merge-ready")
         result = mgr.read(type_="issue", issue="21", field="status")
         assert result == "merge-ready"
 
@@ -298,25 +298,14 @@ class TestIssueStateCompleteness:
 class TestWorkflowDoneRemovedFromAllowedKeys:
     """WHEN: Pilot が state file を更新しようとするとき
     THEN: workflow_done は _PILOT_ISSUE_ALLOWED_KEYS に含まれておらず、書き込みが拒否される
-
-    NOTE: これらのテストは Issue #507 の実装完了後に green になる。
-    現状 (pre-implementation) では xfail でマークされる。
     """
 
-    @pytest.mark.xfail(
-        reason="Issue #507未実装: workflow_done が _PILOT_ISSUE_ALLOWED_KEYS からまだ除去されていない",
-        strict=True,
-    )
     def test_workflow_done_not_in_pilot_issue_allowed_keys(self) -> None:
-        """_PILOT_ISSUE_ALLOWED_KEYS に workflow_done が含まれないこと (Issue #507 AC)."""
+        """_PILOT_ISSUE_ALLOWED_KEYS に workflow_done が含まれないこと (ADR-018 AC)."""
         assert "workflow_done" not in _PILOT_ISSUE_ALLOWED_KEYS, (
-            "workflow_done は _PILOT_ISSUE_ALLOWED_KEYS から除去されなければならない (Issue #507)"
+            "workflow_done は _PILOT_ISSUE_ALLOWED_KEYS から除去されなければならない (ADR-018)"
         )
 
-    @pytest.mark.xfail(
-        reason="Issue #507未実装: Pilot が workflow_done を書けてしまう（廃止前）",
-        strict=True,
-    )
     def test_pilot_write_workflow_done_is_rejected(
         self, mgr: StateManager, autopilot_dir: Path
     ) -> None:
@@ -329,21 +318,11 @@ class TestWorkflowDoneRemovedFromAllowedKeys:
                 cwd="/some/main/path",
             )
 
-    @pytest.mark.xfail(
-        reason="Issue #507未実装: workflow_done が _PILOT_ISSUE_ALLOWED_KEYS からまだ除去されていない",
-        strict=True,
-    )
     def test_worker_cannot_be_blocked_by_workflow_done_removal(
         self, mgr: StateManager, autopilot_dir: Path
     ) -> None:
-        """worker は workflow_done フィールドを直接書けるが、SSOT は status であること.
-
-        workflow_done 廃止後は worker も workflow_done を書かない前提だが、
-        RBAC の観点では worker に制限はない（worker は任意フィールドを書ける）。
-        """
+        """SSOT は status であること。廃止フィールドが PILOT_ISSUE_ALLOWED_KEYS に含まれない。"""
         _write_issue(autopilot_dir, "41", "running")
-        # worker は現状 workflow_done を書けるが、これは廃止フィールドのため使わないこと
-        # ここでは PILOT_ISSUE_ALLOWED_KEYS に含まれていないことだけを検証
         assert "workflow_done" not in _PILOT_ISSUE_ALLOWED_KEYS
 
     def test_allowed_keys_still_contain_status(self) -> None:
@@ -374,15 +353,9 @@ class TestWorkflowDoneRemovedFromAllowedKeys:
 
 class TestInitSchemaWithoutWorkflowDone:
     """WHEN: Worker が issue を init するとき
-    THEN: 初期スキーマに workflow_done フィールドが存在しない (廃止)
-
-    NOTE: Issue #507 実装完了後に green になる。
+    THEN: 初期スキーマに workflow_done フィールドが存在しない (ADR-018 廃止済み)
     """
 
-    @pytest.mark.xfail(
-        reason="Issue #507未実装: init スキーマにまだ workflow_done が含まれている",
-        strict=True,
-    )
     def test_init_does_not_create_workflow_done(
         self, mgr: StateManager, autopilot_dir: Path
     ) -> None:
@@ -390,7 +363,7 @@ class TestInitSchemaWithoutWorkflowDone:
         mgr.write(type_="issue", role="worker", issue="50", init=True)
         data = _load_issue(autopilot_dir, "50")
         assert "workflow_done" not in data, (
-            "廃止された workflow_done フィールドは init スキーマから除去されなければならない"
+            "廃止された workflow_done フィールドは init スキーマに含まれてはならない"
         )
 
     def test_init_creates_status_field(self, mgr: StateManager, autopilot_dir: Path) -> None:
@@ -477,113 +450,62 @@ class TestResolveNextWorkflowStatusBased:
     """WHEN: issue の status が running から merge-ready に遷移したとき
     THEN: orchestrator が次の workflow を tmux inject する
 
-    resolve_next_workflow モジュールは workflow_done ではなく
-    status フィールドを参照するべきである。
-    このテストは新実装後の動作仕様を定義する。
+    resolve_next_workflow モジュールは current_step フィールドを参照する (ADR-018)。
     """
 
-    def test_resolve_next_workflow_uses_status_not_workflow_done(
+    def test_resolve_next_workflow_uses_current_step(
         self, autopilot_dir: Path
     ) -> None:
-        """resolve_next_workflow が status フィールドを参照することを検証する.
-
-        SSOT 移行後: workflow_done ではなく status=merge-ready を参照する。
-        現実装では workflow_done を参照しているが、SSOT 移行後は status を参照する。
-        このテストは新実装の AC として機能する。
-        """
+        """resolve_next_workflow が current_step フィールドを参照することを検証する (ADR-018)."""
         import twl.autopilot.resolve_next_workflow as rnw_module
 
-        # merge-ready issue を作成
-        _write_issue(autopilot_dir, "70", "merge-ready", workflow_done=None)
+        _write_issue(autopilot_dir, "70", "merge-ready")
 
         captured_fields: list[str] = []
 
         def mock_read_state(issue_num, field, autopilot_dir):
             captured_fields.append(field)
-            if field == "status":
-                return "merge-ready"
+            if field == "current_step":
+                return "warning-fix"
             return ""
 
         with patch.object(rnw_module, "_read_state", side_effect=mock_read_state):
-            # resolve_next_workflow の main を呼ぶと _read_state が呼ばれる
-            # 新実装では "status" が captured_fields に含まれるはず
             try:
                 rnw_module.main(["--issue", "70"])
             except SystemExit:
-                pass  # exit() は正常
+                pass
             except Exception:
                 pass
 
-        # 現実装は workflow_done を読む；新実装は status を読むべき
-        # このアサーションは SSOT 移行後にパスする（今は WARNING として記録）
-        # NOTE: このテストは実装後に green になることを期待している
-        if "status" in captured_fields:
-            assert "status" in captured_fields, "resolve_next_workflow は status を参照すること"
-        else:
-            pytest.xfail(
-                "resolve_next_workflow がまだ workflow_done を参照している。"
-                "status ベースへの移行後にこのテストは green になる。"
-            )
+        assert "current_step" in captured_fields, (
+            "resolve_next_workflow は current_step を参照すること (ADR-018)"
+        )
 
-    def test_workflow_done_null_with_merge_ready_status_triggers_next_workflow(
+    def test_status_merge_ready_issue_is_inject_target(
         self, autopilot_dir: Path
     ) -> None:
-        """workflow_done=null かつ status=merge-ready で次の workflow が決定できること.
-
-        SSOT 移行後: workflow_done が null でも status=merge-ready から
-        next_skill (pr-merge) が決定できること。
-        """
-        import twl.autopilot.resolve_next_workflow as rnw_module
-
+        """status=merge-ready で次の workflow が決定できること (ADR-018 SSOT)."""
         _write_issue(autopilot_dir, "71", "merge-ready")
 
-        status_reads: list[str] = []
+        mgr = StateManager(autopilot_dir=autopilot_dir)
+        status = mgr.read(type_="issue", issue="71", field="status")
 
-        def mock_read_state(issue_num, field, apdir):
-            if field == "status":
-                status_reads.append(field)
-                return "merge-ready"
-            if field == "workflow_done":
-                return "null"  # workflow_done が null でも動作すること
-            return ""
+        assert status == "merge-ready", (
+            "status=merge-ready の issue は inject 対象"
+        )
 
-        with patch.object(rnw_module, "_read_state", side_effect=mock_read_state):
-            try:
-                rnw_module.main(["--issue", "71"])
-            except SystemExit:
-                pass
-            except Exception:
-                pass
-
-        # status ベースの実装では status=merge-ready から pr-merge を決定できる
-        # 現状の workflow_done ベース実装では失敗するが、SSOT 移行後はパスする
-        # このテストは仕様の定義として機能する
-
-    def test_orchestrator_polls_status_not_workflow_done_for_inject_trigger(
+    def test_orchestrator_polls_status_for_inject_trigger(
         self, autopilot_dir: Path
     ) -> None:
-        """orchestrator が inject trigger として status を参照することを確認する.
-
-        shell script (autopilot-orchestrator.sh) の Python 等価テスト。
-        inject_next_workflow のトリガー条件: workflow_done != null/empty (現状)
-        SSOT 移行後: status == merge-ready (新仕様)
-        """
-        # このテストは SSOT 移行後の仕様を定義する
-        # status=merge-ready のとき、workflow_done の有無に関わらず next inject が実行される
-        _write_issue(autopilot_dir, "72", "merge-ready", workflow_done=None)
+        """orchestrator が inject trigger として status を参照することを確認する (ADR-018)."""
+        _write_issue(autopilot_dir, "72", "merge-ready")
 
         mgr = StateManager(autopilot_dir=autopilot_dir)
         status = mgr.read(type_="issue", issue="72", field="status")
-        workflow_done = mgr.read(type_="issue", issue="72", field="workflow_done")
 
-        # SSOT 後の判定ロジック: status == "merge-ready" のみで inject 可能
         should_inject = (status == "merge-ready")
         assert should_inject, (
-            "status=merge-ready の issue は workflow_done の有無に関わらず inject 対象"
-        )
-        # workflow_done は null/空 でも inject すべき
-        assert workflow_done in ("", "null", None), (
-            "workflow_done が null でも status=merge-ready で inject すること"
+            "status=merge-ready の issue は inject 対象 (ADR-018 SSOT)"
         )
 
 
@@ -617,19 +539,12 @@ class TestDoneTerminalStateEdgeCases:
 
 
 class TestPilotRBACWorkflowDoneExclusion:
-    """Pilot RBAC における workflow_done 除外のエッジケース.
+    """Pilot RBAC における廃止フィールドの除外エッジケース (ADR-018)."""
 
-    NOTE: workflow_done 関連テストは Issue #507 実装完了後に green になる。
-    """
-
-    @pytest.mark.xfail(
-        reason="Issue #507未実装: Pilot が workflow_done を書けてしまう（廃止前）",
-        strict=True,
-    )
     def test_pilot_cannot_write_workflow_done_even_with_valid_value(
         self, mgr: StateManager, autopilot_dir: Path
     ) -> None:
-        """Pilot が有効な workflow_done 値を書こうとしても拒否されること."""
+        """Pilot が workflow_done（廃止フィールド）を書こうとすると拒否されること."""
         _write_issue(autopilot_dir, "90", "running")
         for value in ("test-ready", "pr-verify", "pr-fix", "null"):
             with pytest.raises(StateError, match="権限"):
@@ -653,14 +568,10 @@ class TestPilotRBACWorkflowDoneExclusion:
         assert data["status"] == "done"
         assert data["merged_at"] == "2026-01-01T00:00:00Z"
 
-    @pytest.mark.xfail(
-        reason="Issue #507未実装: Pilot が workflow_done を混在 sets に含めても拒否されない（廃止前）",
-        strict=True,
-    )
     def test_pilot_write_with_workflow_done_in_mixed_sets_fails(
         self, mgr: StateManager, autopilot_dir: Path
     ) -> None:
-        """複数 --set の中に workflow_done が含まれると全体が拒否されること."""
+        """複数 --set の中に workflow_done（廃止フィールド）が含まれると全体が拒否されること."""
         _write_issue(autopilot_dir, "92", "running")
         with pytest.raises(StateError, match="権限"):
             mgr.write(

@@ -99,7 +99,7 @@ WORKER_LIFECYCLE_FLOW: list[dict] = [
 def _assert_no_inject_skip(result: str, from_workflow: str) -> None:
     """resolve_next_workflow が空文字を返した場合に inject-skip として失敗させる。"""
     assert result != "", (
-        f"inject-skip 検出: workflow_done={from_workflow!r} の次 workflow が空です。"
+        f"inject-skip 検出: current_workflow={from_workflow!r} の次 workflow が空です。"
         " orchestrator が inject_next_workflow を呼べません。"
     )
 
@@ -112,7 +112,7 @@ def _make_runner(tmp_path: Path) -> ChainRunner:
     return ChainRunner(scripts_root=scripts_root, autopilot_dir=autopilot_dir)
 
 
-def _write_issue_state(autopilot_dir: Path, issue_num: int, workflow_done: str) -> Path:
+def _write_issue_state(autopilot_dir: Path, issue_num: int, current_workflow: str) -> Path:
     """tmp_path 配下に issue state ファイルを作成する。"""
     issues_dir = autopilot_dir / "issues"
     issues_dir.mkdir(exist_ok=True)
@@ -130,7 +130,6 @@ def _write_issue_state(autopilot_dir: Path, issue_num: int, workflow_done: str) 
         "merged_at": None,
         "files_changed": [],
         "failure": None,
-        "workflow_done": workflow_done,
         "implementation_pr": None,
         "deltaspec_mode": None,
         "is_quick": False,
@@ -161,10 +160,10 @@ def patched_runner(runner: ChainRunner):
 # ---------------------------------------------------------------------------
 
 class TestSetupToTestReadyTransition:
-    """Issue #450 AC-1: setup chain 完了 → workflow_done=setup → next=workflow-test-ready."""
+    """Issue #450 AC-1: setup chain 完了 → next=workflow-test-ready."""
 
     def test_setup_returns_test_ready(self, patched_runner: ChainRunner) -> None:
-        """workflow_done=setup で resolve_next_workflow が workflow-test-ready を返す。"""
+        """current_workflow=setup で resolve_next_workflow が workflow-test-ready を返す。"""
         result = patched_runner.resolve_next_workflow(
             "setup", is_autopilot=True, is_quick=False
         )
@@ -179,10 +178,10 @@ class TestSetupToTestReadyTransition:
 # ---------------------------------------------------------------------------
 
 class TestTestReadyToPrVerifyTransition:
-    """Issue #450 AC-1: test-ready chain 完了 → workflow_done=test-ready → next=workflow-pr-verify."""
+    """Issue #450 AC-1: test-ready chain 完了 → next=workflow-pr-verify."""
 
     def test_test_ready_returns_pr_verify(self, patched_runner: ChainRunner) -> None:
-        """workflow_done=test-ready で resolve_next_workflow が workflow-pr-verify を返す。"""
+        """current_workflow=test-ready で resolve_next_workflow が workflow-pr-verify を返す。"""
         result = patched_runner.resolve_next_workflow(
             "test-ready", is_autopilot=True, is_quick=False
         )
@@ -200,7 +199,7 @@ class TestPrVerifyTransition:
     """Issue #450 AC-1: pr-verify に到達した後の遷移確認。"""
 
     def test_pr_verify_returns_pr_fix(self, patched_runner: ChainRunner) -> None:
-        """workflow_done=pr-verify (autopilot=True) で workflow-pr-fix を返す。"""
+        """current_workflow=pr-verify (autopilot=True) で workflow-pr-fix を返す。"""
         result = patched_runner.resolve_next_workflow(
             "pr-verify", is_autopilot=True, is_quick=False
         )
@@ -210,7 +209,7 @@ class TestPrVerifyTransition:
         )
 
     def test_pr_verify_autopilot_false_stops(self, patched_runner: ChainRunner) -> None:
-        """workflow_done=pr-verify (autopilot=False) で停止（空を返す）。"""
+        """current_workflow=pr-verify (autopilot=False) で停止（空を返す）。"""
         result = patched_runner.resolve_next_workflow(
             "pr-verify", is_autopilot=False, is_quick=False
         )
@@ -223,7 +222,7 @@ class TestPrVerifyTransition:
 # Scenario: 3 Issue 以上の chain 遷移が成立する（inject-skip = 0）
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("issue_num,workflow_done,expected_next", [
+@pytest.mark.parametrize("issue_num,current_workflow,expected_next", [
     (451, "setup", "workflow-test-ready"),
     (452, "test-ready", "workflow-pr-verify"),
     (453, "pr-verify", "workflow-pr-fix"),
@@ -231,21 +230,21 @@ class TestPrVerifyTransition:
 def test_three_issues_no_inject_skip(
     tmp_path: Path,
     issue_num: int,
-    workflow_done: str,
+    current_workflow: str,
     expected_next: str,
 ) -> None:
     """Issue #450 AC-3: 3 Issue 分の chain 遷移が inject-skip 0 で成立することを確認。
 
-    3 件の Issue がそれぞれ異なる workflow_done 状態にあるとき、
+    3 件の Issue がそれぞれ異なる current_workflow 状態にあるとき、
     resolve_next_workflow が inject-skip（空文字）を返さないことを検証する。
     """
     runner = _make_runner(tmp_path)
-    _write_issue_state(runner.autopilot_dir, issue_num=issue_num, workflow_done=workflow_done)
+    _write_issue_state(runner.autopilot_dir, issue_num=issue_num, current_workflow=current_workflow)
     with patch.object(runner, "_load_worker_lifecycle_flow", return_value=WORKER_LIFECYCLE_FLOW):
-        result = runner.resolve_next_workflow(workflow_done, is_autopilot=True, is_quick=False)
-    _assert_no_inject_skip(result, workflow_done)
+        result = runner.resolve_next_workflow(current_workflow, is_autopilot=True, is_quick=False)
+    _assert_no_inject_skip(result, current_workflow)
     assert result == expected_next, (
-        f"issue #{issue_num}: workflow_done={workflow_done!r} → expected {expected_next!r}, got {result!r}"
+        f"issue #{issue_num}: current_workflow={current_workflow!r} → expected {expected_next!r}, got {result!r}"
     )
 
 
@@ -265,8 +264,8 @@ class TestInjectSkipDetection:
         """_assert_no_inject_skip は非空文字に対して AssertionError を発生させない。"""
         _assert_no_inject_skip("workflow-test-ready", "setup")  # should not raise
 
-    def test_unknown_workflow_returns_empty_not_skipped(self, patched_runner: ChainRunner) -> None:
-        """未知の workflow_done は空文字を返す（inject-skip として正しく検出される）。"""
+    def test_unknown_workflow_returns_empty(self, patched_runner: ChainRunner) -> None:
+        """未知の current_workflow は空文字を返す（inject-skip として正しく検出される）。"""
         result = patched_runner.resolve_next_workflow(
             "unknown-workflow", is_autopilot=True, is_quick=False
         )
@@ -288,11 +287,11 @@ class TestFullChainSequence:
             ("setup", "workflow-test-ready"),
             ("test-ready", "workflow-pr-verify"),
         ]
-        for workflow_done, expected_next in chain_sequence:
+        for current_workflow, expected_next in chain_sequence:
             result = patched_runner.resolve_next_workflow(
-                workflow_done, is_autopilot=True, is_quick=False
+                current_workflow, is_autopilot=True, is_quick=False
             )
-            _assert_no_inject_skip(result, workflow_done)
+            _assert_no_inject_skip(result, current_workflow)
             assert result == expected_next, (
-                f"workflow_done={workflow_done!r}: expected {expected_next!r}, got {result!r}"
+                f"current_workflow={current_workflow!r}: expected {expected_next!r}, got {result!r}"
             )
