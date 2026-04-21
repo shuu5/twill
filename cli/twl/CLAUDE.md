@@ -32,7 +32,6 @@ cli/twl/
 │   ├── spec/            # twl spec（変更仕様管理、旧 deltaspec）
 │   └── autopilot/       # 状態管理・オーケストレーション・merge-gate・プロジェクト管理
 ├── architecture/        # アーキテクチャ仕様
-├── docs/                # フレームワークドキュメント（ref-*.md）
 ├── tests/               # pytest テスト
 │   └── scenarios/       # シナリオテスト
 └── deltaspec/           # 変更仕様
