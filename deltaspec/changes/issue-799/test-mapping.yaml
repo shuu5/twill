@@ -1,0 +1,209 @@
+change_id: issue-799
+generated_at: "2026-04-21T00:00:00Z"
+test_framework: bats
+scenarios:
+  # ---------------------------------------------------------------------------
+  # Requirement: spawn-controller.sh prompt size guard
+  # Source: specs/spawn-controller-size-guard.md
+  # ---------------------------------------------------------------------------
+  - id: "size-guard-30-lines-no-warn"
+    name: "30 行以下の prompt は警告なし"
+    spec_file: "specs/spawn-controller-size-guard.md"
+    spec_line: 7
+    requirement: "spawn-controller.sh prompt size guard"
+    test_file: "tests/bats/scripts/spawn-controller-prompt-size.bats"
+    test_name: "size-guard: 30 行以下の prompt は stderr に WARN が出力されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "size-guard-31-lines-warn"
+    name: "31 行以上の prompt は警告を出力"
+    spec_file: "specs/spawn-controller-size-guard.md"
+    spec_line: 11
+    requirement: "spawn-controller.sh prompt size guard"
+    test_file: "tests/bats/scripts/spawn-controller-prompt-size.bats"
+    test_name: "size-guard: 31 行の prompt は WARN が stderr に出力される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "size-guard-force-large-suppress"
+    name: "--force-large フラグで警告を suppress"
+    spec_file: "specs/spawn-controller-size-guard.md"
+    spec_line: 15
+    requirement: "spawn-controller.sh prompt size guard"
+    test_file: "tests/bats/scripts/spawn-controller-prompt-size.bats"
+    test_name: "force-large: --force-large で 31 行超の WARN が suppress される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "size-guard-force-large-strip"
+    name: "--force-large は cld-spawn 引数から strip される"
+    spec_file: "specs/spawn-controller-size-guard.md"
+    spec_line: 19
+    requirement: "spawn-controller.sh prompt size guard"
+    test_file: "tests/bats/scripts/spawn-controller-prompt-size.bats"
+    test_name: "force-large-strip: --force-large が cld-spawn への引数から除去される"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "size-guard-empty-prompt-no-warn"
+    name: "空の prompt は警告なし"
+    spec_file: "specs/spawn-controller-size-guard.md"
+    spec_line: 23
+    requirement: "spawn-controller.sh prompt size guard"
+    test_file: "tests/bats/scripts/spawn-controller-prompt-size.bats"
+    test_name: "size-guard: 空の prompt ファイル（0 行）は WARN が出力されない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: --force-large フラグの安全実装
+  # Source: specs/spawn-controller-size-guard.md
+  # ---------------------------------------------------------------------------
+  - id: "set-u-safe-empty-array"
+    name: "set -u 環境での空配列安全性"
+    spec_file: "specs/spawn-controller-size-guard.md"
+    spec_line: 31
+    requirement: "--force-large フラグの安全実装"
+    test_file: "tests/bats/scripts/spawn-controller-prompt-size.bats"
+    test_name: "set-u-safety: --force-large のみの引数で unbound variable エラーが発生しない"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: pitfalls-catalog §10 spawn prompt 最小化原則
+  # Source: specs/pitfalls-catalog.md
+  # ---------------------------------------------------------------------------
+  - id: "pitfalls-s10-must-not-7-items"
+    name: "§10 MUST NOT 表に必須 7 項目が存在する"
+    spec_file: "specs/pitfalls-catalog.md"
+    spec_line: 7
+    requirement: "pitfalls-catalog §10 spawn prompt 最小化原則"
+    test_file: "tests/bats/scripts/spawn-controller-docs.bats"
+    test_name: "pitfalls §10 MUST NOT: Issue body/labels/title が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pitfalls-s10-must-5-items"
+    name: "§10 MUST 5 項目が存在する"
+    spec_file: "specs/pitfalls-catalog.md"
+    spec_line: 11
+    requirement: "pitfalls-catalog §10 spawn prompt 最小化原則"
+    test_file: "tests/bats/scripts/spawn-controller-docs.bats"
+    test_name: "pitfalls §10 MUST: spawn 元識別が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pitfalls-s10-force-large-exception"
+    name: "--force-large 例外が記述される"
+    spec_file: "specs/pitfalls-catalog.md"
+    spec_line: 15
+    requirement: "pitfalls-catalog §10 spawn prompt 最小化原則"
+    test_file: "tests/bats/scripts/spawn-controller-docs.bats"
+    test_name: "pitfalls §10: --force-large 例外が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "pitfalls-s10-boundary-supplement"
+    name: "境界補足が記述される"
+    spec_file: "specs/pitfalls-catalog.md"
+    spec_line: 19
+    requirement: "pitfalls-catalog §10 spawn prompt 最小化原則"
+    test_file: "tests/bats/scripts/spawn-controller-docs.bats"
+    test_name: "pitfalls §10: observer 自己取得情報の転記禁止補足が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: pitfalls-catalog §3.5 の改訂
+  # Source: specs/pitfalls-catalog.md
+  # ---------------------------------------------------------------------------
+  - id: "pitfalls-s35-s10-reference"
+    name: "§3.5 に §10 への参照が含まれる"
+    spec_file: "specs/pitfalls-catalog.md"
+    spec_line: 29
+    requirement: "pitfalls-catalog §3.5 の改訂"
+    test_file: "tests/bats/scripts/spawn-controller-docs.bats"
+    test_name: "pitfalls §3.5: §10 への参照が存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: SKILL.md spawn prompt MUST NOT サブ節追加
+  # Source: specs/skill-md.md
+  # ---------------------------------------------------------------------------
+  - id: "skill-md-must-not-subsection"
+    name: "MUST NOT サブ節が存在する"
+    spec_file: "specs/skill-md.md"
+    spec_line: 7
+    requirement: "SKILL.md spawn prompt MUST NOT サブ節追加"
+    test_file: "tests/bats/scripts/spawn-controller-docs.bats"
+    test_name: "SKILL.md: MUST NOT サブ節ヘッダーが存在する"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  # ---------------------------------------------------------------------------
+  # Requirement: SKILL.md 最小 prompt 例の追加
+  # Source: specs/skill-md.md
+  # ---------------------------------------------------------------------------
+  - id: "skill-md-min-prompt-must-5-items"
+    name: "最小 prompt 例が MUST 5 項目を含む"
+    spec_file: "specs/skill-md.md"
+    spec_line: 14
+    requirement: "SKILL.md 最小 prompt 例の追加"
+    test_file: "tests/bats/scripts/spawn-controller-docs.bats"
+    test_name: "SKILL.md 最小 prompt 例: spawn 元識別が含まれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "skill-md-min-prompt-10-lines"
+    name: "最小 prompt 例が 5-10 行に収まる"
+    spec_file: "specs/skill-md.md"
+    spec_line: 18
+    requirement: "SKILL.md 最小 prompt 例の追加"
+    test_file: "tests/bats/scripts/spawn-controller-docs.bats"
+    test_name: "SKILL.md 最小 prompt 例: 例示テンプレが 10 行以内に収まる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
