@@ -55,7 +55,7 @@ su-observer が繰り返し踏み続ける落とし穴の集積。起動時に S
 | 3.2 | Phase 3 specialist review を「効率化」名目でスキップ | **MUST**: 3 specialist 全実行（issue-critic / issue-feasibility / worker-codex-reviewer）。refined ラベルは review 済みの印 |
 | 3.3 | critic / feasibility agent が tool_uses 25-30 で打ち切られ最終 report なし | codex-reviewer 優先（1 tool call で完走）。critic/feasibility は「3 ファイルだけ Read」等 tool_uses 上限を minimize する指示で spawn |
 | 3.4 | co-issue / co-architect spawn 後「指示待ち」に戻ってしまう | **proxy 対話ループ必須** — observer がユーザー代理で対話継続（SKILL.md「対話型コントローラーとの proxy 対話」セクション） |
-| 3.5 | spawn プロンプトにユーザー文脈が不足、controller が迷子 | 元指示・背景・決定事項・判断基準・deep-dive ポイントを全て prompt に包含（SKILL.md「spawn プロンプトの文脈包含」セクション） |
+| 3.5 | spawn プロンプトにユーザー文脈が不足、controller が迷子 | **observer 固有文脈のみ**を包含（§10 参照、自律取得可能情報は MUST NOT）（SKILL.md「spawn プロンプトの文脈包含」セクション） |
 | 3.6 | co-autopilot は能動 observe（cld-observe-loop）、co-issue / co-architect は proxy 対話 — 混同すると監視漏れ | controller ごとの観察モードを明示判別（SKILL.md「controller spawn が必要な場合」→「起動パターン」） |
 
 ---
@@ -181,3 +181,34 @@ rm -f .supervisor/events/* 2>/dev/null || true
 - 新規 pitfall を doobidoo `observer-pitfall` で保存したら、後日（次 Wave 完了時など）このカタログに 1 行追記
 - 古いエントリで陳腐化したものは削除せず「解決済（<commit hash>）」と注記して残す（履歴保持）
 - 追加は最大 200 行。超過したら古いエントリを別 `refs/pitfalls-archive.md` へ移動
+
+---
+
+## 10. spawn prompt 最小化原則（MUST NOT / MUST）
+
+### MUST NOT: skill 自律取得可能情報を prompt に転記
+
+| 情報 | skill 内取得手段 |
+|---|---|
+| Issue body / labels / title | `gh issue view N --json ...` |
+| Issue comments | `gh issue view N --comments` |
+| explore summary | `twl explore-link read N` |
+| architecture 文書 | `Read plugins/twl/architecture/vision.md 等` |
+| SKILL.md の Phase 手順 | skill 自身が内包 |
+| past memory（生データ） | `mcp__doobidoo__memory_search` |
+| bare repo / worktree 構造 | skill が auto-detect |
+
+**境界補足（observer own-read vs skill auto-fetch）**: observer が自分で `gh issue view` / `Read` / `memory_search` を事前実行して得た情報であっても、spawn 先 skill が同じ操作で取得できる場合は転記禁止（skill の自律性を優先）。observer が得た情報に独自の解釈・判断・優先順位付けを加えた場合のみ、その「解釈」部分は MUST 項目 4「observer 独自 deep-dive 観点」として prompt に含めてよい。
+
+### MUST: observer 固有文脈のみ（典型 5-15 行）
+
+1. **spawn 元識別**: `su-observer から spawn（window: ..., session: ...）`
+2. **Issue 番号 / 事前成果物のパスのみ**: `.explore/N/summary.md にリンク済`
+3. **proxy 対話期待**: `AskUserQuestion は observer が pipe-pane log で代理応答`
+4. **observer 独自 deep-dive 観点**: skill の標準 Phase で気づけない追加観点（memory/過去経験を observer が解釈した結果を含む）
+5. **Wave 文脈 / 並列タスク境界**
+6. **Phase skip 根拠**（事前レビュー済等、稀）
+
+### 例外: --force-large
+
+`spawn-controller.sh` に `--force-large` option を渡し、prompt 冒頭に `REASON:` 行で正当化することで 30 行超の prompt を許容できる。
