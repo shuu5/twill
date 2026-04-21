@@ -274,6 +274,7 @@ class ChainRunner:
         root = self._project_root()
         deltaspec_dir = root / "deltaspec"
 
+        # ADR-015: deltaspec/ 不在時は propose+auto_init を返す。change-propose が自動初期化を担当する
         if not deltaspec_dir.is_dir():
             result = {
                 "recommended_action": "propose",
