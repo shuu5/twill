@@ -21,7 +21,7 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 
 - **定義**: Worktree の作成・削除は Pilot が行わなければならない（SHALL）。Worker は使用のみ。
 - **根拠**: [ADR-008: Worktree Lifecycle Pilot Ownership](../architecture/decisions/ADR-008-worktree-lifecycle-pilot-ownership.md) / [DeltaSpec: Worktree ライフサイクル安全性](../deltaspec/specs/autopilot-lifecycle.md#scenario-worktreeライフサイクル安全性)
-- **検証方法**: [`invariant-B: worktree-delete rejects worker role`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-B: Worker chain does not include worktree-create`](../tests/bats/invariants/autopilot-invariants.bats)
+- **検証方法**: [`invariant-B: worktree-delete rejects worker role`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-B: Worker chain (chain-steps.sh) does not include worktree-create`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
   - `plugins/twl/scripts/worktree-delete.sh`
   - `plugins/twl/scripts/chain-runner.sh`
@@ -110,7 +110,7 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 
 - **定義**: merge-gate 実行前に origin/main に対する silent deletion を検知し、検出時は merge を停止しなければならない（SHALL）。
 - **根拠**: [DeltaSpec: merge 前 base drift 検知](../deltaspec/specs/merge-gate.md#scenario-merge前-base-drift検知)
-- **検証方法**: [`invariant-J: silent file deletion is detected as base drift`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-J: intentional deletion is not flagged`](../tests/bats/invariants/autopilot-invariants.bats)
+- **検証方法**: [`invariant-J: silent file deletion (no commit) is detected as base drift`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-J: intentional deletion (has commit) is not flagged`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
   - `plugins/twl/scripts/merge-gate-checkpoint-merge.sh`
 
@@ -120,7 +120,7 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 
 - **定義**: Pilot は Issue の実装（コード変更・PR 作成）を直接行ってはならない（SHALL）。実装は常に Worker 経由。Emergency Bypass 時も `mergegate merge --force` 経由のみ許可。
 - **根拠**: [DeltaSpec: 不変条件 K — Pilot 実装禁止](../deltaspec/specs/autopilot-lifecycle.md#scenario-不変条件-k-pilot実装禁止228)
-- **検証方法**: [`invariant-K: autopilot.md defines invariant K`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-K: pilot cannot write implementation-only field`](../tests/bats/invariants/autopilot-invariants.bats)
+- **検証方法**: [`invariant-K: ref-invariants.md defines invariant K (Pilot 実装禁止)`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-K: pilot cannot write implementation-only field`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
   - `plugins/twl/skills/co-autopilot/SKILL.md`
   - `cli/twl/src/twl/autopilot/mergegate.py`

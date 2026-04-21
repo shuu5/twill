@@ -336,6 +336,7 @@ skills:
       - script: specialist-audit
       - script: spawn-controller      # Phase A: controller spawn 専用 wrapper (L285 MUST)
       - reference: pitfalls-catalog   # Phase A: 起動時 Step 0 Read MUST
+      - reference: ref-invariants     # 不変条件 A-M 正典参照（境界説明）
     dependencies:
       - plugin: session  # cld --observer: session.json の claude_session_id 読み取りに session plugin の session-state.sh を使用
     description: "メタ認知レイヤー: 全 controller の監視・介入。hook プライマリ / polling フォールバックの Hybrid 検知（#570）。テストシナリオ実行は co-self-improve に委譲"
