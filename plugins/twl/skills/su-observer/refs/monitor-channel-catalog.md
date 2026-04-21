@@ -440,8 +440,6 @@ check_budget_low() {
 
 ---
 
----
-
 ## [PERMISSION-PROMPT] — Worker permission prompt 検知
 
 **検知対象**: Worker window に Claude Code の permission prompt（`1. Yes, proceed` / `2. No, and tell Claude what to do differently` / `3. Yes, and allow always` / `Interrupted by user`）が出現した場合

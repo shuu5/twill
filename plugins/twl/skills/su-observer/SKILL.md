@@ -83,7 +83,7 @@ spawnable_by:
 
 ### supervise 1 iteration（co-autopilot 監視中の必須並行チャンネル）
 
-co-autopilot を supervise している間、1 iteration で以下の5チャンネルを並行実行しなければならない（SHALL）:
+co-autopilot を supervise している間、1 iteration で以下のチャンネルを並行実行しなければならない（SHALL）:
 
 | チャンネル | 目的 | 閾値/間隔 |
 |---|---|---|
