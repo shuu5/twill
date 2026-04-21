@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_self_improve [label="twl:co-self-improve\n(1,381 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_self_improve [label="twl:co-self-improve\n(2,239 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -19,19 +19,19 @@ digraph Dependencies {
     skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,964 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_test_scenario_catalog [label="twl:test-scenario-catalog\n(1,714 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(725 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_test_scenario_catalog [label="twl:test-scenario-catalog\n(4,599 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(1,526 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_load_test_baselines [label="twl:load-test-baselines\n(670 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
-    cmd_observe_once [label="observe-once\n(436 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_problem_detect [label="problem-detect\n(678 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_issue_draft_from_observation [label="issue-draft-from-observation\n(591 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_observe_and_detect [label="observe-and-detect\n(460 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_observe_retrospective [label="observe-retrospective\n(521 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_test_project_init [label="test-project-init\n(847 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_test_project_reset [label="test-project-reset\n(443 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_test_project_scenario_load [label="test-project-scenario-load\n(861 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_observe_once [label="observe-once\n(727 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_problem_detect [label="problem-detect\n(762 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_issue_draft_from_observation [label="issue-draft-from-observation\n(589 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_observe_and_detect [label="observe-and-detect\n(464 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_observe_retrospective [label="observe-retrospective\n(519 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_test_project_init [label="test-project-init\n(2,292 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_test_project_reset [label="test-project-reset\n(2,067 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_test_project_scenario_load [label="test-project-scenario-load\n(1,885 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 

@@ -1,0 +1,37 @@
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="co-explore";
+    labelloc=t;
+    fontsize=14;
+
+    // L0: Controller Skills
+    skill_co_explore [label="twl:co-explore\n(1,440 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+
+    // Reference Skills
+
+    // L1: Direct Commands
+
+    // L2: Sub Commands
+
+    // L3: Agents
+
+    // L3.5: Scripts
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_co_explore; }
+
+    // Edges
+
+}

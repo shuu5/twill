@@ -6,12 +6,11 @@ digraph Dependencies {
     fontname="Helvetica";
     node [fontname="Helvetica", fontsize=10];
     edge [fontname="Helvetica", fontsize=9];
-    label="co-architect";
+    label="workflow-arch-review";
     labelloc=t;
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_architect [label="twl:co-architect\n(1,875 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -20,8 +19,6 @@ digraph Dependencies {
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_architecture [label="twl:ref-architecture\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_architecture_spec [label="twl:ref-architecture-spec\n(1,180 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_dci [label="twl:ref-dci\n(1,206 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,376 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(1,815 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -29,9 +26,6 @@ digraph Dependencies {
     skill_baseline_bash [label="twl:baseline-bash\n(1,590 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
-    cmd_architect_completeness_check [label="architect-completeness-check\n(672 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_architect_group_refine [label="architect-group-refine\n(1,102 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_evaluate_architecture [label="evaluate-architecture\n(825 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_arch_phase_review [label="arch-phase-review\n(830 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_arch_fix_phase [label="arch-fix-phase\n(704 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_merge_gate [label="merge-gate\n(1,652 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
@@ -85,20 +79,13 @@ digraph Dependencies {
     // L4: External
 
     // Layer constraints
-    { rank=same; skill_co_architect; }
     { rank=same; skill_workflow_arch_review; }
-    { rank=same; skill_ref_specialist_output_schema; skill_ref_architecture; skill_ref_architecture_spec; skill_ref_dci; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; skill_baseline_bash; }
-    { rank=same; cmd_architect_completeness_check; cmd_architect_group_refine; cmd_evaluate_architecture; cmd_arch_phase_review; cmd_arch_fix_phase; cmd_merge_gate; cmd_auto_merge; }
+    { rank=same; skill_ref_specialist_output_schema; skill_ref_dci; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; skill_baseline_bash; }
+    { rank=same; cmd_arch_phase_review; cmd_arch_fix_phase; cmd_merge_gate; cmd_auto_merge; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_spec_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_arch_doc_reviewer; agent_worker_architecture; agent_worker_issue_pr_alignment; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; }
     { rank=same; script_state_write; script_worktree_delete; script_tech_stack_detect; script_autopilot_parser; script_autopilot_mergegate; script_autopilot_mergegate_guards; script_autopilot_mergegate_ops; script_auto_merge; script_resolve_issue_num; script_pr_review_manifest; script_checkpoint_write; script_checkpoint_read; script_merge_gate_check_pr; script_merge_gate_build_manifest; script_merge_gate_check_spawn; script_specialist_audit; script_merge_gate_cross_pr_ac; script_merge_gate_checkpoint_merge; script_merge_gate_check_phase_review; }
 
     // Edges
-    skill_co_architect -> cmd_architect_completeness_check;
-    skill_co_architect -> cmd_architect_group_refine;
-    skill_co_architect -> cmd_evaluate_architecture;
-    skill_co_architect -> skill_ref_architecture_spec;
-    skill_co_architect -> skill_ref_architecture;
-    skill_co_architect -> skill_workflow_arch_review;
     skill_workflow_arch_review -> cmd_arch_phase_review;
     skill_workflow_arch_review -> cmd_arch_fix_phase;
     skill_workflow_arch_review -> cmd_merge_gate;
@@ -169,17 +156,11 @@ digraph Dependencies {
     agent_worker_r_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_arch_doc_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_architecture -> skill_ref_specialist_output_schema [style=dotted];
-    agent_worker_architecture -> skill_ref_architecture [style=dotted];
     agent_worker_issue_pr_alignment -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_llm_output_reviewer -> skill_ref_specialist_output_schema [style=dotted];
     agent_worker_llm_eval_runner -> skill_ref_specialist_output_schema [style=dotted];
 
     // Ordering constraints (invisible edges)
-    cmd_architect_completeness_check -> cmd_architect_group_refine [style=invis, weight=10];
-    cmd_architect_group_refine -> cmd_evaluate_architecture [style=invis, weight=10];
-    cmd_evaluate_architecture -> skill_ref_architecture_spec [style=invis, weight=10];
-    skill_ref_architecture_spec -> skill_ref_architecture [style=invis, weight=10];
-    skill_ref_architecture -> skill_workflow_arch_review [style=invis, weight=10];
     cmd_merge_gate -> cmd_auto_merge [style=invis, weight=10];
     cmd_arch_phase_review -> cmd_arch_fix_phase [style=invis, weight=10];
     cmd_arch_fix_phase -> cmd_merge_gate [style=invis, weight=10];
@@ -194,11 +175,9 @@ digraph Dependencies {
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
     agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
-    skill_ref_specialist_output_schema -> skill_ref_architecture [style=invis, weight=10];
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
     agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
-    skill_ref_specialist_output_schema -> skill_ref_architecture [style=invis, weight=10];
     script_autopilot_parser -> script_tech_stack_detect [style=invis, weight=10];
     script_tech_stack_detect -> script_checkpoint_write [style=invis, weight=10];
     script_checkpoint_write -> agent_worker_structure [style=invis, weight=10];

@@ -22,7 +22,7 @@
 <title>cmd_observe_and_detect</title>
 <polygon fill="#bbdefb" stroke="black" points="382.48,-198.49 270.48,-198.49 270.48,-162.49 382.48,-162.49 382.48,-198.49"/>
 <text text-anchor="middle" x="326.48" y="-183.49" font-family="Helvetica,sans-Serif" font-size="10.00">observe&#45;and&#45;detect</text>
-<text text-anchor="middle" x="326.48" y="-172.49" font-family="Helvetica,sans-Serif" font-size="10.00">(460 tok)</text>
+<text text-anchor="middle" x="326.48" y="-172.49" font-family="Helvetica,sans-Serif" font-size="10.00">(464 tok)</text>
 </g>
 <!-- skill_workflow_observe_loop&#45;&gt;cmd_observe_and_detect -->
 <g id="edge1" class="edge">
@@ -35,7 +35,7 @@
 <title>cmd_observe_retrospective</title>
 <polygon fill="#e3f2fd" stroke="black" points="388.48,-140.49 264.48,-140.49 264.48,-104.49 388.48,-104.49 388.48,-140.49"/>
 <text text-anchor="middle" x="326.48" y="-125.49" font-family="Helvetica,sans-Serif" font-size="10.00">observe&#45;retrospective</text>
-<text text-anchor="middle" x="326.48" y="-114.49" font-family="Helvetica,sans-Serif" font-size="10.00">(521 tok)</text>
+<text text-anchor="middle" x="326.48" y="-114.49" font-family="Helvetica,sans-Serif" font-size="10.00">(519 tok)</text>
 </g>
 <!-- skill_workflow_observe_loop&#45;&gt;cmd_observe_retrospective -->
 <g id="edge2" class="edge">

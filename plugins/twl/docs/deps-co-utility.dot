@@ -32,7 +32,7 @@ digraph Dependencies {
     // L3: Agents
 
     // L3.5: Scripts
-    script_worktree_delete [label="worktree-delete\n(998 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_delete [label="worktree-delete\n(1,153 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 

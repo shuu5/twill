@@ -105,7 +105,7 @@
 <title>script_worktree_delete</title>
 <polygon fill="#ff9800" stroke="black" points="476.51,-250 437.69,-274.49 360.06,-274.49 321.24,-250 360.06,-225.51 437.69,-225.51 476.51,-250"/>
 <text text-anchor="middle" x="398.88" y="-253" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;delete</text>
-<text text-anchor="middle" x="398.88" y="-242" font-family="Helvetica,sans-Serif" font-size="10.00">(998 tok)</text>
+<text text-anchor="middle" x="398.88" y="-242" font-family="Helvetica,sans-Serif" font-size="10.00">(1,153 tok)</text>
 </g>
 <!-- cmd_worktree_delete&#45;&gt;script_worktree_delete -->
 <g id="edge7" class="edge">

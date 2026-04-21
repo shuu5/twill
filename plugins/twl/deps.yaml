@@ -758,6 +758,14 @@ refs:
     can_spawn: []
     description: "Monitor 標準チャネル定義（INPUT-WAIT / PILOT-IDLE / STAGNATE / WORKERS / PHASE-DONE / NON-TERMINAL / BUDGET-LOW）bash スニペット付き。STAGNATE/INPUT-WAIT/NON-TERMINAL/WORKERS に hook ベース検知セクション追加（#570）"
 
+  # su-observer Pitfalls Catalog (Phase A 2026-04-21)
+  pitfalls-catalog:
+    type: reference
+    path: skills/su-observer/refs/pitfalls-catalog.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "su-observer pitfalls catalog: cld-spawn / inject / explore / monitor / memory / recovery の失敗パターンと教訓集 + Memory Principles（doobidoo = cross-machine SSoT）+ externalize-state inline 手順。起動時 Step 0 で Read 必須"
+
   # su-observer intervention catalog (#310)
   intervention-catalog:
     type: reference
@@ -2794,6 +2802,12 @@ scripts:
       - script: resolve-issue-num
       - script: checkpoint-read
     description: "phase-review 必須チェック（merge-gate）: phase-review 不在時は REJECT。scope/direct / quick ラベルはスキップ"
+
+  # su-observer controller spawn wrapper (Phase A 2026-04-21)
+  spawn-controller:
+    type: script
+    path: skills/su-observer/scripts/spawn-controller.sh
+    description: "su-observer 用 controller 起動 wrapper: /twl:<skill> invocation 自動 prepend + invalid flag (--help 等) ガード + window 名自動一意化。cld-spawn 直接呼び出しを代替し pitfalls-catalog §1 の失敗を防ぐ"
 
 # エージェント（C-3 で追加）
 agents:

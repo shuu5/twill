@@ -22,7 +22,7 @@ digraph Dependencies {
     // L1: Direct Commands
     cmd_prompt_audit_scan [label="prompt-audit-scan\n(334 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_prompt_audit_review [label="prompt-audit-review\n(458 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_prompt_audit_apply [label="prompt-audit-apply\n(632 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_prompt_audit_apply [label="prompt-audit-apply\n(710 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
