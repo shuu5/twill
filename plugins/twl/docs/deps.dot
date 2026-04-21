@@ -8,7 +8,7 @@ digraph Dependencies {
     edge [fontname="Helvetica", fontsize=9];
 
     // L0: Controller Skills
-    skill_co_autopilot [label="twl:co-autopilot\n(2,781 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="twl:co-autopilot\n(3,382 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_issue [label="twl:co-issue\n(5,448 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_project [label="twl:co-project\n(1,625 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_explore [label="twl:co-explore\n(1,440 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
@@ -61,7 +61,7 @@ digraph Dependencies {
     skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(1,526 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_load_test_baselines [label="twl:load-test-baselines\n(670 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_monitor_channel_catalog [label="twl:monitor-channel-catalog\n(4,996 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_pitfalls_catalog [label="twl:pitfalls-catalog\n(3,974 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_pitfalls_catalog [label="twl:pitfalls-catalog\n(4,884 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_intervention_catalog [label="twl:intervention-catalog\n(1,991 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_memory_mcp_config [label="twl:memory-mcp-config\n(389 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_externalization_schema [label="twl:externalization-schema\n(726 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -202,7 +202,7 @@ digraph Dependencies {
     agent_worker_spec_reviewer [label="worker-spec-reviewer\n(1,095 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_issue_critic [label="issue-critic\n(1,268 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_issue_feasibility [label="issue-feasibility\n(1,175 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,437 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,587 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_code_reviewer [label="worker-code-reviewer\n(1,002 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_security_reviewer [label="worker-security-reviewer\n(866 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_nextjs_reviewer [label="worker-nextjs-reviewer\n(642 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
@@ -302,7 +302,7 @@ digraph Dependencies {
     script_merge_gate_cross_pr_ac [label="merge-gate-cross-pr-ac\n(345 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_checkpoint_merge [label="merge-gate-checkpoint-merge\n(276 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_check_phase_review [label="merge-gate-check-phase-review\n(424 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_spawn_controller [label="spawn-controller\n(1,057 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_spawn_controller [label="spawn-controller\n(1,287 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 

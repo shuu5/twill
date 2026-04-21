@@ -472,7 +472,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="801.86" cy="-2408" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="801.86" y="-2411" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="801.86" y="-2400" font-family="Helvetica,sans-Serif" font-size="10.00">(1,437 tok)</text>
+<text text-anchor="middle" x="801.86" y="-2400" font-family="Helvetica,sans-Serif" font-size="10.00">(1,587 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge50" class="edge">

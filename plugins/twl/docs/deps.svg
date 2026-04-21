@@ -19,7 +19,7 @@
 <title>skill_co_autopilot</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="80" cy="-8569.8" rx="65.52" ry="21.43"/>
 <text text-anchor="middle" x="80" y="-8572.8" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;autopilot</text>
-<text text-anchor="middle" x="80" y="-8561.8" font-family="Helvetica,sans-Serif" font-size="10.00">(2,781 tok)</text>
+<text text-anchor="middle" x="80" y="-8561.8" font-family="Helvetica,sans-Serif" font-size="10.00">(3,382 tok)</text>
 </g>
 <!-- skill_workflow_setup -->
 <g id="node8" class="node">
@@ -2099,7 +2099,7 @@
 <polyline fill="none" stroke="black" points="1969.67,-9558.8 1969.67,-9552.8 "/>
 <polyline fill="none" stroke="black" points="1975.67,-9552.8 1969.67,-9552.8 "/>
 <text text-anchor="middle" x="1921.67" y="-9543.8" font-family="Helvetica,sans-Serif" font-size="10.00">twl:pitfalls&#45;catalog</text>
-<text text-anchor="middle" x="1921.67" y="-9532.8" font-family="Helvetica,sans-Serif" font-size="10.00">(3,974 tok)</text>
+<text text-anchor="middle" x="1921.67" y="-9532.8" font-family="Helvetica,sans-Serif" font-size="10.00">(4,884 tok)</text>
 </g>
 <!-- skill_intervention_catalog -->
 <g id="node49" class="node">
@@ -2174,7 +2174,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1640.4" cy="-4874.8" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="1640.4" y="-4877.8" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="1640.4" y="-4866.8" font-family="Helvetica,sans-Serif" font-size="10.00">(1,437 tok)</text>
+<text text-anchor="middle" x="1640.4" y="-4866.8" font-family="Helvetica,sans-Serif" font-size="10.00">(1,587 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge167" class="edge">
@@ -4514,7 +4514,7 @@
 <title>script_spawn_controller</title>
 <polygon fill="#ff9800" stroke="black" points="1149.55,-9540.8 1109.53,-9565.29 1029.5,-9565.29 989.48,-9540.8 1029.5,-9516.31 1109.53,-9516.31 1149.55,-9540.8"/>
 <text text-anchor="middle" x="1069.51" y="-9543.8" font-family="Helvetica,sans-Serif" font-size="10.00">spawn&#45;controller</text>
-<text text-anchor="middle" x="1069.51" y="-9532.8" font-family="Helvetica,sans-Serif" font-size="10.00">(1,057 tok)</text>
+<text text-anchor="middle" x="1069.51" y="-9532.8" font-family="Helvetica,sans-Serif" font-size="10.00">(1,287 tok)</text>
 </g>
 <!-- script_specialist_audit&#45;&gt;script_spawn_controller -->
 <!-- script_merge_gate_cross_pr_ac&#45;&gt;script_merge_gate_checkpoint_merge -->
