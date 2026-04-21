@@ -412,6 +412,110 @@ class TestStepInit:
         assert result.get("deltaspec") is False
         assert result.get("is_direct") is True
 
+    # ------------------------------------------------------------------
+    # Issue #784: step_init auto_init パス — issue_num あり
+    # ------------------------------------------------------------------
+
+    def test_issue_num_no_deltaspec_writes_mode_propose(
+        self, tmp_path: Path, autopilot_dir: Path
+    ) -> None:
+        """issue_num='784' + deltaspec/ 不在 → _write_state_field が mode=propose で呼ばれる (ADR-015)."""
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with (
+            patch.object(runner, "_git_current_branch", return_value="feat/784-adr-015"),
+            patch.object(runner, "_project_root", return_value=tmp_path),
+            patch.object(runner, "_fetch_labels", return_value=[]),
+            patch.object(runner, "_write_state_field") as mock_write,
+        ):
+            result = runner.step_init("784")
+
+        assert result["recommended_action"] == "propose"
+        assert result.get("auto_init") is True
+        assert result.get("deltaspec") is False
+        assert result.get("is_quick") is False
+
+        # _write_state_field の呼び出し列を検証
+        call_kvs = [call.args[1] for call in mock_write.call_args_list]
+        assert "mode=propose" in call_kvs, (
+            f"_write_state_field に mode=propose が渡されていない。実際の呼び出し: {call_kvs}"
+        )
+
+    def test_issue_num_no_deltaspec_writes_state_in_order(
+        self, tmp_path: Path, autopilot_dir: Path
+    ) -> None:
+        """issue_num あり + deltaspec/ 不在 → is_quick/is_direct を先に書いてから mode=propose を書く."""
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with (
+            patch.object(runner, "_git_current_branch", return_value="feat/784-adr-015"),
+            patch.object(runner, "_project_root", return_value=tmp_path),
+            patch.object(runner, "_fetch_labels", return_value=[]),
+            patch.object(runner, "_write_state_field") as mock_write,
+        ):
+            runner.step_init("784")
+
+        call_kvs = [call.args[1] for call in mock_write.call_args_list]
+        # is_quick と is_direct はラベル判定直後（mode=propose より前）に書かれる
+        assert "is_quick=false" in call_kvs
+        assert "is_direct=false" in call_kvs
+        idx_mode = call_kvs.index("mode=propose")
+        idx_quick = call_kvs.index("is_quick=false")
+        assert idx_quick < idx_mode, "is_quick は mode=propose より前に書かれなければならない"
+
+    def test_issue_num_no_deltaspec_issue_num_passed_to_write(
+        self, tmp_path: Path, autopilot_dir: Path
+    ) -> None:
+        """_write_state_field の第1引数 (issue_num) が '784' であることを確認する."""
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with (
+            patch.object(runner, "_git_current_branch", return_value="feat/784-adr-015"),
+            patch.object(runner, "_project_root", return_value=tmp_path),
+            patch.object(runner, "_fetch_labels", return_value=[]),
+            patch.object(runner, "_write_state_field") as mock_write,
+        ):
+            runner.step_init("784")
+
+        # mode=propose 呼び出し時の issue_num を確認
+        mode_calls = [c for c in mock_write.call_args_list if c.args[1] == "mode=propose"]
+        assert len(mode_calls) == 1, "mode=propose の書き込みはちょうど1回であること"
+        assert mode_calls[0].args[0] == "784", (
+            f"issue_num が '784' でない: {mode_calls[0].args[0]!r}"
+        )
+
+    def test_empty_issue_num_no_deltaspec_no_write_state(
+        self, tmp_path: Path, autopilot_dir: Path
+    ) -> None:
+        """issue_num='' のとき _write_state_field は呼ばれない（既存テストのエッジケース補完）."""
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with (
+            patch.object(runner, "_git_current_branch", return_value="feat/some-branch"),
+            patch.object(runner, "_project_root", return_value=tmp_path),
+            patch.object(runner, "_fetch_labels", return_value=[]),
+            patch.object(runner, "_write_state_field") as mock_write,
+        ):
+            result = runner.step_init("")
+
+        assert result["recommended_action"] == "propose"
+        # issue_num が空なので state 書き込みは行われない
+        mode_calls = [c for c in mock_write.call_args_list if c.args[1] == "mode=propose"]
+        assert len(mode_calls) == 0, "issue_num='' では mode=propose を書いてはならない"
+
+    def test_non_numeric_issue_num_no_deltaspec_no_write_mode(
+        self, tmp_path: Path, autopilot_dir: Path
+    ) -> None:
+        """issue_num が数字でない場合（例: 'abc'）は mode=propose を書かない."""
+        runner = self._make_runner(tmp_path, autopilot_dir)
+        with (
+            patch.object(runner, "_git_current_branch", return_value="feat/abc-test"),
+            patch.object(runner, "_project_root", return_value=tmp_path),
+            patch.object(runner, "_fetch_labels", return_value=[]),
+            patch.object(runner, "_write_state_field") as mock_write,
+        ):
+            result = runner.step_init("abc")
+
+        assert result["recommended_action"] == "propose"
+        mode_calls = [c for c in mock_write.call_args_list if "mode=" in c.args[1]]
+        assert len(mode_calls) == 0, "非数値 issue_num では mode 書き込み不可"
+
 
 # ---------------------------------------------------------------------------
 # step_check — monorepo test directory detection (Issue #406)

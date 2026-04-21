@@ -1,0 +1,133 @@
+change_id: issue-784
+generated_at: "2026-04-21T00:00:00Z"
+test_framework: pytest+bats
+scenarios:
+  - id: "issue-num-auto-init-writes-mode-propose"
+    name: "issue_num あり auto_init テスト"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 37
+    requirement: "step_init auto_init の pytest テスト補完"
+    test_file: "cli/twl/tests/test_autopilot_chain.py"
+    test_name: "TestStepInit::test_issue_num_no_deltaspec_writes_mode_propose"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-num-auto-init-writes-state-in-order"
+    name: "issue_num あり auto_init テスト（state 書き込み順）"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 37
+    requirement: "step_init auto_init の pytest テスト補完"
+    test_file: "cli/twl/tests/test_autopilot_chain.py"
+    test_name: "TestStepInit::test_issue_num_no_deltaspec_writes_state_in_order"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "issue-num-auto-init-issue-num-passed-to-write"
+    name: "issue_num あり auto_init テスト（issue_num 引き渡し確認）"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 37
+    requirement: "step_init auto_init の pytest テスト補完"
+    test_file: "cli/twl/tests/test_autopilot_chain.py"
+    test_name: "TestStepInit::test_issue_num_no_deltaspec_issue_num_passed_to_write"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "empty-issue-num-no-deltaspec-no-write-state"
+    name: "issue_num='' のとき state 書き込みなし"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 37
+    requirement: "step_init auto_init の pytest テスト補完"
+    test_file: "cli/twl/tests/test_autopilot_chain.py"
+    test_name: "TestStepInit::test_empty_issue_num_no_deltaspec_no_write_state"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "non-numeric-issue-num-no-deltaspec-no-write-mode"
+    name: "非数値 issue_num では mode 書き込みなし"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 37
+    requirement: "step_init auto_init の pytest テスト補完"
+    test_file: "cli/twl/tests/test_autopilot_chain.py"
+    test_name: "TestStepInit::test_non_numeric_issue_num_no_deltaspec_no_write_mode"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bats-test-file-exists"
+    name: "bats テストファイル作成"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 45
+    requirement: "change-propose Step 0 の bats テスト追加"
+    test_file: "plugins/twl/tests/bats/commands/change-propose-auto-init.bats"
+    test_name: "change-propose-auto-init: test file exists at expected path"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bats-auto-init-condition-mode-propose-false"
+    name: "auto_init 条件検証: MODE=propose + DELTASPEC_EXISTS=false"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 49
+    requirement: "change-propose Step 0 の bats テスト追加"
+    test_file: "plugins/twl/tests/bats/commands/change-propose-auto-init.bats"
+    test_name: "step0: MODE=propose + DELTASPEC_EXISTS=false → AUTO_INIT=true"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bats-auto-init-twl-spec-new-called"
+    name: "auto_init パスで twl spec new が呼ばれる"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 49
+    requirement: "change-propose Step 0 の bats テスト追加"
+    test_file: "plugins/twl/tests/bats/commands/change-propose-auto-init.bats"
+    test_name: "step0: MODE=propose + DELTASPEC_EXISTS=false → twl spec new が呼ばれる"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bats-deltaspec-exists-config-yaml-present"
+    name: "deltaspec/config.yaml 存在時 → DELTASPEC_EXISTS=true"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 49
+    requirement: "change-propose Step 0 の bats テスト追加"
+    test_file: "plugins/twl/tests/bats/commands/change-propose-auto-init.bats"
+    test_name: "deltaspec-exists-check: config.yaml 存在時 → DELTASPEC_EXISTS=true"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
+
+  - id: "bats-deltaspec-exists-config-yaml-absent"
+    name: "deltaspec/config.yaml 不在時 → DELTASPEC_EXISTS=false"
+    spec_file: "specs/adr-015-acceptance.md"
+    spec_line: 49
+    requirement: "change-propose Step 0 の bats テスト追加"
+    test_file: "plugins/twl/tests/bats/commands/change-propose-auto-init.bats"
+    test_name: "deltaspec-exists-check: config.yaml 不在時 → DELTASPEC_EXISTS=false"
+    type: unit
+    criteria: []
+    status: pending
+    last_run: null
+    failure_reason: null
