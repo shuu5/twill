@@ -79,12 +79,17 @@ def main():
             from twl.chain.viz import handle_chain_viz_subcommand
             handle_chain_viz_subcommand(sys.argv[3:])
             sys.exit(0)
+        elif len(sys.argv) >= 3 and sys.argv[2] == 'export':
+            from twl.chain.export import handle_chain_export_subcommand
+            sys.exit(handle_chain_export_subcommand(sys.argv[3:]))
         else:
             print(f"Error: unknown chain subcommand '{sys.argv[2] if len(sys.argv) >= 3 else ''}'", file=sys.stderr)
             print("Usage: twl chain generate <chain-name> [--write]", file=sys.stderr)
             print("       twl chain viz <chain-name>", file=sys.stderr)
             print("       twl chain viz --all [--update-readme]", file=sys.stderr)
             print("       twl chain viz --update-arch", file=sys.stderr)
+            print("       twl chain export --yaml [--write]", file=sys.stderr)
+            print("       twl chain export --shell [--write]", file=sys.stderr)
             sys.exit(1)
 
     parser = argparse.ArgumentParser(description='Analyze plugin dependencies')
