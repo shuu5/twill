@@ -331,11 +331,14 @@ skills:
       - reference: observation-pattern-catalog
       - reference: monitor-channel-catalog
       - atomic: su-compact  # SU-6b: context 逼迫時またはユーザー指示時にユーザーへ提案（SHOULD）
-      - atomic: wave-collect        # SU-6a: Wave 完了時の結果収集
+      - atomic: wave-collect        # SU-6a: Wave 完了時の結果収集（specialist-audit を内包）
       - atomic: externalize-state   # SU-6a: Wave 完了時の外部化
-      - script: specialist-audit
       - script: spawn-controller      # Phase A: controller spawn 専用 wrapper (L285 MUST)
+      - script: budget-detect         # #814 Phase 1: BUDGET-LOW 検知・停止シーケンス
+      - script: budget-monitor-watcher  # #814 Phase 1: budget 専用 Monitor watcher ループ
+      - script: session-init          # #814 Phase 1: SupervisorSession 初期化
       - reference: pitfalls-catalog   # Phase A: 起動時 Step 0 Read MUST
+      - reference: proxy-dialog-playbook  # #814 Phase 2: proxy 対話完全手順
       - reference: ref-invariants     # 不変条件 A-M 正典参照（境界説明）
     dependencies:
       - plugin: session  # cld --observer: session.json の claude_session_id 読み取りに session plugin の session-state.sh を使用
@@ -769,7 +772,15 @@ refs:
     path: skills/su-observer/refs/pitfalls-catalog.md
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
-    description: "su-observer pitfalls catalog: cld-spawn / inject / explore / monitor / memory / recovery の失敗パターンと教訓集 + Memory Principles（doobidoo = cross-machine SSoT）+ externalize-state inline 手順。起動時 Step 0 で Read 必須"
+    description: "su-observer pitfalls catalog: cld-spawn / inject / explore / monitor / memory / recovery の失敗パターンと教訓集 + Memory Principles（doobidoo = cross-machine SSoT）+ externalize-state inline 手順 + Worker auto mode 確認 A/B。起動時 Step 0 で Read 必須"
+
+  # su-observer Proxy Dialog Playbook (#814 Phase 2 2026-04-22)
+  proxy-dialog-playbook:
+    type: reference
+    path: skills/su-observer/refs/proxy-dialog-playbook.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "su-observer proxy 対話完全手順: pipe-pane セットアップ / spawn prompt 最小化 / proxy ループ / multiSelect UI / specialist review ガード / 応答例。co-issue / co-architect spawn 時に Read する"
 
   # su-observer intervention catalog (#310)
   intervention-catalog:
@@ -2818,6 +2829,22 @@ scripts:
     type: script
     path: skills/su-observer/scripts/spawn-controller.sh
     description: "su-observer 用 controller 起動 wrapper: /twl:<skill> invocation 自動 prepend + invalid flag (--help 等) ガード + window 名自動一意化。cld-spawn 直接呼び出しを代替し pitfalls-catalog §1 の失敗を防ぐ"
+
+  # su-observer budget/session scripts (#814 Phase 1 2026-04-22)
+  budget-detect:
+    type: script
+    path: skills/su-observer/scripts/budget-detect.sh
+    description: "su-observer BUDGET-LOW 検知・安全停止シーケンス: tmux status line から 5h rolling budget 残量をパース → 閾値超過時に orchestrator 停止 + Escape 送信 + budget-pause.json 記録。環境変数: PILOT_WINDOW（必須）"
+
+  budget-monitor-watcher:
+    type: script
+    path: skills/su-observer/scripts/budget-monitor-watcher.sh
+    description: "su-observer budget 専用 Monitor watcher: 60s ループで threshold_percent を監視し [BUDGET-ALERT] を stdout に出力。Monitor tool と並行起動する。環境変数: PILOT_WINDOW（必須）"
+
+  session-init:
+    type: script
+    path: skills/su-observer/scripts/session-init.sh
+    description: "su-observer SupervisorSession 初期化: .supervisor/session.json 生成（session_id / claude_session_id / observer_window）+ twl audit on。新規セッション開始時に SKILL.md Step 0 から呼び出す"
 
 # エージェント（C-3 で追加）
 agents:

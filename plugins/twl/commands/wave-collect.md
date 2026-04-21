@@ -166,6 +166,31 @@ echo "[wave-collect] Wave ${WAVE_NUM} サマリを生成しました: ${OUTPUT_F
 echo "[wave-collect] 統計: total=${TOTAL}, done=${DONE_COUNT}, failed=${FAILED_COUNT}, 介入=${INTERVENTION_COUNT}/${TOTAL}"
 ```
 
+### Step 4: specialist completeness 監査（SHOULD）
+
+Wave 内の全 Issue を一括監査する。`SPECIALIST_AUDIT_MODE=warn`（bootstrapping 期間中）は常に exit 0 のため merge を阻害しない。結果を `.audit/wave-${WAVE_NUM}/specialist-audit.log` に追記し、FAIL 行があれば次 Wave の手動調査対象としてログに記録する。
+
+```bash
+# Wave 内の全 Issue について specialist completeness を監査
+_audit_log=".audit/wave-${WAVE_NUM}/specialist-audit.log"
+mkdir -p ".audit/wave-${WAVE_NUM}"
+for issue_json in "${AUTOPILOT_DIR:-.autopilot}"/issues/issue-*.json; do
+  [[ -f "$issue_json" ]] || continue
+  _issue_num=$(basename "$issue_json" | sed 's/issue-\([0-9]*\)\.json/\1/')
+  _is_quick=$(python3 -m twl.autopilot.state read --type issue --issue "$_issue_num" --field is_quick 2>/dev/null || echo "false")
+  _qflag=(); [[ "$_is_quick" == "true" ]] && _qflag=(--quick)
+  # --warn-only で merge を阻害しない。JSON 出力でログに記録（FAIL 検出可能）
+  bash "${CLAUDE_PLUGIN_ROOT:-plugins/twl}/scripts/specialist-audit.sh" \
+    --issue "$_issue_num" --warn-only "${_qflag[@]+"${_qflag[@]}"}" \
+    >> "$_audit_log" 2>&1 || true
+done
+# FAIL 行の検出（--warn-only で exit 0 だが JSON の "status":"FAIL" で識別）
+if grep -q '"status":"FAIL"' "$_audit_log" 2>/dev/null; then
+  echo "WARN: specialist-audit に FAIL あり — ${_audit_log} を確認してください" >&2
+fi
+echo "[wave-collect] specialist-audit 完了: ${_audit_log}"
+```
+
 ## 禁止事項（MUST NOT）
 
 - Issue の状態を変更してはならない（読み取りのみ）
