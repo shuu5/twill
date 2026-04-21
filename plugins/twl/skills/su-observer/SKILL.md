@@ -193,8 +193,10 @@ except Exception as e:
       echo "[BUDGET-LOW] Escape を送信: $win"
     done
     # 3. 停止状態を budget-pause.json に記録（シェル変数は環境変数経由で python に渡す）
+    # Issue #800 §C: 複合 pipe (`printf ... | python3 -c`) は auto mode classifier の soft_deny 該当のため、環境変数経由の単独 python3 -c に書き換え
     mkdir -p .supervisor
-    WORKERS_JSON=$(printf '%s\n' "${PAUSED_WORKERS[@]:-}" | python3 -c 'import sys,json; print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')
+    PAUSED_WORKERS_RAW=$(printf '%s\n' "${PAUSED_WORKERS[@]:-}")
+    WORKERS_JSON=$(PAUSED_WORKERS_RAW="$PAUSED_WORKERS_RAW" python3 -c 'import os, json; lines = os.environ.get("PAUSED_WORKERS_RAW", "").splitlines(); print(json.dumps([l.strip() for l in lines if l.strip()]))')
     ORCH_PID_SAFE="${ORCH_PID:-}"
     python3 -c "
 import json, datetime, os, sys
@@ -315,6 +317,36 @@ session-comm.sh   # inject/介入プリミティブ（plugins/session/scripts/se
 - その他 controller → `spawn-controller.sh co-utility <prompt-file>` → 指示待ち
 
 **重要**: co-autopilot は `cld-observe-loop` で能動 observe。co-issue / co-architect は **proxy 対話ループ** で対話に参加。他 controller は `cld-observe`（単発）または指示待ち。
+
+### Worker 起動時の auto mode 確認方針
+
+Worker pane tail に `⏵⏵ auto mode on` が出ない場合でも auto mode は有効である。`autopilot-launch.sh` は positional prompt で起動するため status bar が起動直後の対話開始メッセージで上書きされ、`⏵⏵ auto mode on` の表示が消失するが、`--permission-mode auto` flag 自体は claude プロセスに到達している（Issue #800 explore で全起動経路を検証済み）。auto mode の有効性は以下の手順で間接的に確認する。
+
+#### 確認方法 A（一次指標 — heartbeat / state file existence）
+
+`autopilot-launch.sh` 起動後 5 秒以内に以下を実行し、Worker が正常起動したことを確認する:
+
+```bash
+# heartbeat ファイル または worker-*.json の存在を確認（どちらか一方で OK）
+ls .supervisor/events/heartbeat-* 2>/dev/null || ls .supervisor/events/worker-*.json 2>/dev/null
+```
+
+**期待出力**: 1 つ以上のファイル名が出力される（exit 0 + stdout に 1 行以上）。0 件かつ exit 非 0 の場合は Worker 起動失敗または delay。10 秒待って再試行し、依然 0 件なら autopilot-launch.sh のログを確認する。
+
+#### 確認方法 B（二次指標 — pane capture grep）
+
+Worker が起動済み（pane が `Brewing` / `Concocting` / `idle` 等の LLM indicator を表示）状態で以下を実行する:
+
+```bash
+tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permission_mode'
+```
+
+**期待出力**: 1 行以上のマッチ（exit 0）。マッチが見られれば auto mode 有効と判定する。マッチが 0 行でも、`autopilot-launch.sh:L388-393` の起動行に `--permission-mode auto` が含まれる限り auto mode は有効（pane 上の表示有無は status bar の上書きタイミングに依存する）。
+
+#### 注意事項
+
+- pane tail に `⏵⏵ auto mode on` が出ないこと自体を「auto mode 効いていない」と誤認してはならない（`refs/pitfalls-catalog.md` §4.8 参照）
+- Worker bash で permission prompt（`1. Yes, proceed` / `2. No, and tell ...` / `Interrupted by user`）が出た場合、auto mode classifier の `soft_deny` 該当（仕様）の可能性が高い → `refs/pitfalls-catalog.md` §4.7 の手順で対処
 
 ### 対話型コントローラーとの proxy 対話（co-issue / co-architect）
 

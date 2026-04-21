@@ -15,7 +15,7 @@
 <title>skill_co_autopilot</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="65.76" cy="-1517.96" rx="65.52" ry="21.43"/>
 <text text-anchor="middle" x="65.76" y="-1520.96" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;autopilot</text>
-<text text-anchor="middle" x="65.76" y="-1509.96" font-family="Helvetica,sans-Serif" font-size="10.00">(2,781 tok)</text>
+<text text-anchor="middle" x="65.76" y="-1509.96" font-family="Helvetica,sans-Serif" font-size="10.00">(3,382 tok)</text>
 </g>
 <!-- skill_workflow_setup -->
 <g id="node2" class="node">
@@ -1013,7 +1013,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="1378.02" cy="-3263.96" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="1378.02" y="-3266.96" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="1378.02" y="-3255.96" font-family="Helvetica,sans-Serif" font-size="10.00">(1,437 tok)</text>
+<text text-anchor="middle" x="1378.02" y="-3255.96" font-family="Helvetica,sans-Serif" font-size="10.00">(1,587 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge76" class="edge">
