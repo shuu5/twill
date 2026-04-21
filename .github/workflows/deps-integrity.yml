@@ -1,0 +1,29 @@
+name: Chain Deps Integrity
+
+on:
+  push:
+    paths:
+      - 'cli/twl/src/twl/autopilot/chain.py'
+      - 'plugins/twl/scripts/chain-steps.sh'
+      - 'plugins/twl/deps.yaml'
+  pull_request:
+    paths:
+      - 'cli/twl/src/twl/autopilot/chain.py'
+      - 'plugins/twl/scripts/chain-steps.sh'
+      - 'plugins/twl/deps.yaml'
+
+permissions: {}
+
+jobs:
+  deps-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install twl
+        run: pip install -e cli/twl
+      - name: Check deps integrity
+        working-directory: plugins/twl
+        run: twl check --deps-integrity

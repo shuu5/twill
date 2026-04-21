@@ -62,6 +62,8 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == 'check':
         sub_parser = argparse.ArgumentParser(description='Check file existence and chain validation')
         sub_parser.add_argument('--format', choices=['json'], help='Output format')
+        sub_parser.add_argument('--deps-integrity', action='store_true',
+                                help='Hash-verify chain.py ↔ deps.yaml ↔ chain-steps.sh (blocks on drift)')
         sub_args = sub_parser.parse_args(sys.argv[2:])
         plugin_root, deps, graph, plugin_name = _load_plugin_context()
         sys.exit(handle_check(sub_args, graph, deps, plugin_root, plugin_name))
