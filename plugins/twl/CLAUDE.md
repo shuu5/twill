@@ -12,9 +12,11 @@ Claude Code twl plugin（chain-driven + autopilot-first）。TWiLL モノリポ 
 
 ## プラグイン構成
 
-### deps.yaml = SSOT（Single Source of Truth）
+### プラグイン構成の SSoT
 
-deps.yaml v3.0 がプラグイン構成の唯一の情報源。
+deps.yaml v3.0 がプラグイン構成（コンポーネント定義）の唯一の情報源。
+
+**chain.py = chain / workflow 遷移の SSoT。deps.yaml.chains と chain-steps.sh は `twl chain export` の computed artifact**
 
 ### Controller は7つ
 
@@ -58,7 +60,10 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 
 ```
 コンポーネント編集 → deps.yaml 更新 → twl check → twl update-readme
+chain 定義変更  → chain.py 編集   → twl check --deps-integrity → chain-steps.sh 同期確認
 ```
+
+commit 前に `twl check --deps-integrity` を実行し、chain.py CHAIN_STEPS と deps.yaml.chains・chain-steps.sh の整合性を確認する（MUST）。
 
 ## specialist-audit JSON 出力契約
 
