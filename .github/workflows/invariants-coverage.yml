@@ -1,0 +1,21 @@
+name: Invariants Bats Coverage
+
+on:
+  push:
+    paths:
+      - 'plugins/twl/refs/ref-invariants.md'
+      - 'plugins/twl/tests/bats/invariants/autopilot-invariants.bats'
+  pull_request:
+    paths:
+      - 'plugins/twl/refs/ref-invariants.md'
+      - 'plugins/twl/tests/bats/invariants/autopilot-invariants.bats'
+
+permissions: {}
+
+jobs:
+  invariants-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check invariants bats coverage
+        run: bash plugins/twl/scripts/generate-invariants-bats.sh --check

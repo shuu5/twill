@@ -335,7 +335,7 @@ sys.exit(0)
 # THEN: "#789 で bats テスト生成予定" と注記されている
 # ===========================================================================
 
-@test "ref-invariants: invariant-L 検証方法フィールドに '#789 で bats テスト生成予定' が含まれる" {
+@test "ref-invariants: invariant-L 検証方法フィールドに bats テストリンクが含まれる" {
   python3 -c "
 import sys, re
 with open('$REF_FILE') as f:
@@ -344,13 +344,13 @@ m = re.search(r'## 不変条件 L:.*?(?=^## |\Z)', content, re.DOTALL | re.MULTI
 if not m:
     print('Section L not found'); sys.exit(1)
 section = m.group(0)
-if '#789' not in section or 'bats' not in section:
-    print('#789 で bats テスト生成予定 not found in section L'); sys.exit(1)
+if 'invariant-L' not in section or 'autopilot-invariants.bats' not in section:
+    print('bats test link not found in section L'); sys.exit(1)
 sys.exit(0)
 "
 }
 
-@test "ref-invariants: invariant-M 検証方法フィールドに '#789 で bats テスト生成予定' が含まれる" {
+@test "ref-invariants: invariant-M 検証方法フィールドに bats テストリンクが含まれる" {
   python3 -c "
 import sys, re
 with open('$REF_FILE') as f:
@@ -359,8 +359,8 @@ m = re.search(r'## 不変条件 M:.*?(?=^## |\Z)', content, re.DOTALL | re.MULTI
 if not m:
     print('Section M not found'); sys.exit(1)
 section = m.group(0)
-if '#789' not in section or 'bats' not in section:
-    print('#789 で bats テスト生成予定 not found in section M'); sys.exit(1)
+if 'invariant-M' not in section or 'autopilot-invariants.bats' not in section:
+    print('bats test link not found in section M'); sys.exit(1)
 sys.exit(0)
 "
 }

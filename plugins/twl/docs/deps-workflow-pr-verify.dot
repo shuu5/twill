@@ -62,11 +62,11 @@ digraph Dependencies {
     script_state_write [label="state-write\n(5,746 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(2,496 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_runner [label="chain-runner\n(10,423 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(10,458 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_steps [label="chain-steps\n(10,423 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(10,458 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_compaction_resume [label="compaction-resume\n(1,031 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_write [label="checkpoint-write\n(2,864 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

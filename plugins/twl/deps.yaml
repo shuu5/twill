@@ -2536,6 +2536,11 @@ scripts:
     path: scripts/auto-merge.sh
     description: "autopilot-first auto-merge（4 Layer ガード付き、Worker マージ禁止の機械的担保）"
 
+  generate-invariants-bats:
+    type: script
+    path: scripts/generate-invariants-bats.sh
+    description: "ref-invariants.md から bats テスト網羅性を確認・補完（--check: CI 用確認、--generate: スタブ追記）"
+
   chain-steps:
     type: script
     path: ../../cli/twl/src/twl/autopilot/chain.py
