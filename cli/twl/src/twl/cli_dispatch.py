@@ -59,6 +59,8 @@ def handle_tokens(args, graph):
 
 
 def handle_check(args, graph, deps, plugin_root, plugin_name):
+    from twl.chain.integrity import check_deps_integrity
+
     results, check_xref_warnings = check_files(graph, plugin_root)
 
     ok_count = sum(1 for r in results if r[0] == 'ok')
@@ -73,12 +75,22 @@ def handle_check(args, graph, deps, plugin_root, plugin_name):
         cv_criticals_check, cv_warnings_check, cv_infos_check = chain_validate(deps, plugin_root)
         chain_items = deep_validate_to_items(cv_criticals_check, cv_warnings_check, cv_infos_check)
 
-    exit_code = 1 if (missing_count > 0 or cv_criticals_check) else 0
+    # deps-integrity: always run; blocking only when --deps-integrity is specified
+    di_errors, di_warnings = check_deps_integrity(plugin_root)
+    deps_integrity_flag = getattr(args, 'deps_integrity', False)
+    integrity_blocks = deps_integrity_flag and bool(di_errors)
+
+    exit_code = 1 if (missing_count > 0 or cv_criticals_check or integrity_blocks) else 0
 
     if args.format == 'json':
         items = check_results_to_items(results)
         items.extend(violations_to_items(check_xref_warnings, "warning"))
         items.extend(chain_items)
+        severity = "critical" if integrity_blocks else "warning"
+        for e in di_errors:
+            items.append({"type": "deps-integrity", "severity": severity, "message": e})
+        for w in di_warnings:
+            items.append({"type": "deps-integrity", "severity": "warning", "message": w})
         envelope = build_envelope("check", get_deps_version(deps), plugin_name, items, exit_code)
         output_json(envelope)
         return exit_code
@@ -113,6 +125,16 @@ def handle_check(args, graph, deps, plugin_root, plugin_name):
             print("Warning:")
             for w in cv_warnings_check:
                 print(f"  - {w}")
+
+    if di_errors or di_warnings:
+        print()
+        print("=== Deps Integrity Results ===")
+        if di_errors:
+            label = "Error" if deps_integrity_flag else "Warning"
+            for e in di_errors:
+                print(f"  [{label}] {e}")
+        for w in di_warnings:
+            print(f"  [Info] {w}")
 
     return exit_code
 
