@@ -127,5 +127,5 @@ Context セクションに要点は埋め込み済み。以下は補助参照:
 - memory hash `c187d16a`, `74be0cdd`: specialist sloth インシデント記録
 - memory hash `1e7f4c21`, `df6a1416`: 追加背景
 - `plugins/twl/refs/ref-types.md` L13, L138: `co-` prefix は controller 専用（変更不要）
-- ADR-014: `ADR-014-pilot-driven-workflow-loop.md`（Pilot/Worker 役割の原典）
+- ADR-021: `ADR-021-pilot-driven-workflow-loop.md`（Pilot/Worker 役割の原典）
 - ADR-016: `ADR-016-test-target-real-issues.md`（直前の ADR、2026-04-11 merge）

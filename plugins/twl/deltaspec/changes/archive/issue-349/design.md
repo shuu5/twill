@@ -20,4 +20,4 @@ ADR（Architecture Decision Record）は Markdown ファイルで管理されて
 
 ## Risks / Trade-offs
 
-- ADR-014 番号重複（`ADR-014-pilot-driven-workflow-loop.md` が別途存在）は本 Issue のスコープ外。変更対象ファイルのパスで明確に区別する
+- ADR-014 番号重複は Issue #787 で解消済み。`ADR-014-pilot-driven-workflow-loop.md` は `ADR-021-pilot-driven-workflow-loop.md` にリナンバーされた

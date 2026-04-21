@@ -4,7 +4,7 @@
 **Date**: 2026-04-21
 **Issue**: #790
 **Supersedes**: —
-**Related**: ADR-0007 (chain SSOT 2 レイヤー責務分離)、ADR-018 (state schema SSoT)、ADR-014 (pilot-driven workflow loop)
+**Related**: ADR-0007 (chain SSOT 2 レイヤー責務分離)、ADR-018 (state schema SSoT)、ADR-021 (pilot-driven workflow loop)
 
 ---
 
