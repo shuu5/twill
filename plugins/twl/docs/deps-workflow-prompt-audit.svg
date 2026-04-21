@@ -48,7 +48,7 @@
 <title>cmd_prompt_audit_apply</title>
 <polygon fill="#e3f2fd" stroke="black" points="378.48,-36 267.48,-36 267.48,0 378.48,0 378.48,-36"/>
 <text text-anchor="middle" x="322.98" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00">prompt&#45;audit&#45;apply</text>
-<text text-anchor="middle" x="322.98" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(632 tok)</text>
+<text text-anchor="middle" x="322.98" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(710 tok)</text>
 </g>
 <!-- skill_workflow_prompt_audit&#45;&gt;cmd_prompt_audit_apply -->
 <g id="edge3" class="edge">

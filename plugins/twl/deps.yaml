@@ -317,11 +317,13 @@ skills:
 
   su-observer:
     type: supervisor
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-21"
     path: skills/su-observer/SKILL.md
     effort: high
     tools: [Agent(observer-evaluator)]
     spawnable_by: [user]
-    can_spawn: [workflow, atomic, specialist, reference]
+    can_spawn: [workflow, atomic, specialist, reference, script]
     supervises: [co-autopilot, co-issue, co-explore, co-architect, co-project, co-utility, co-self-improve]
     calls:
       - atomic: observe-once
@@ -337,6 +339,8 @@ skills:
       - atomic: wave-collect        # SU-6a: Wave 完了時の結果収集
       - atomic: externalize-state   # SU-6a: Wave 完了時の外部化
       - script: specialist-audit
+      - script: spawn-controller      # Phase A: controller spawn 専用 wrapper (L285 MUST)
+      - reference: pitfalls-catalog   # Phase A: 起動時 Step 0 Read MUST
     dependencies:
       - plugin: session  # cld --observer: session.json の claude_session_id 読み取りに session plugin の session-state.sh を使用
     description: "メタ認知レイヤー: 全 controller の監視・介入。hook プライマリ / polling フォールバックの Hybrid 検知（#570）。テストシナリオ実行は co-self-improve に委譲"
@@ -757,6 +761,14 @@ refs:
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
     description: "Monitor 標準チャネル定義（INPUT-WAIT / PILOT-IDLE / STAGNATE / WORKERS / PHASE-DONE / NON-TERMINAL / BUDGET-LOW）bash スニペット付き。STAGNATE/INPUT-WAIT/NON-TERMINAL/WORKERS に hook ベース検知セクション追加（#570）"
+
+  # su-observer Pitfalls Catalog (Phase A 2026-04-21)
+  pitfalls-catalog:
+    type: reference
+    path: skills/su-observer/refs/pitfalls-catalog.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "su-observer pitfalls catalog: cld-spawn / inject / explore / monitor / memory / recovery の失敗パターンと教訓集 + Memory Principles（doobidoo = cross-machine SSoT）+ externalize-state inline 手順。起動時 Step 0 で Read 必須"
 
   # su-observer intervention catalog (#310)
   intervention-catalog:
@@ -2794,6 +2806,12 @@ scripts:
       - script: resolve-issue-num
       - script: checkpoint-read
     description: "phase-review 必須チェック（merge-gate）: phase-review 不在時は REJECT。scope/direct / quick ラベルはスキップ"
+
+  # su-observer controller spawn wrapper (Phase A 2026-04-21)
+  spawn-controller:
+    type: script
+    path: skills/su-observer/scripts/spawn-controller.sh
+    description: "su-observer 用 controller 起動 wrapper: /twl:<skill> invocation 自動 prepend + invalid flag (--help 等) ガード + window 名自動一意化。cld-spawn 直接呼び出しを代替し pitfalls-catalog §1 の失敗を防ぐ"
 
 # エージェント（C-3 で追加）
 agents:

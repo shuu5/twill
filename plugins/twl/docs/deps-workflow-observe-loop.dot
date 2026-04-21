@@ -20,8 +20,8 @@ digraph Dependencies {
     // Reference Skills
 
     // L1: Direct Commands
-    cmd_observe_and_detect [label="observe-and-detect\n(460 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_observe_retrospective [label="observe-retrospective\n(521 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_observe_and_detect [label="observe-and-detect\n(464 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_observe_retrospective [label="observe-retrospective\n(519 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 

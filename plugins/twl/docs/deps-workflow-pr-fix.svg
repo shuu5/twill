@@ -15,14 +15,14 @@
 <title>skill_workflow_pr_fix</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="76.37" cy="-169.49" rx="76.24" ry="21.43"/>
 <text text-anchor="middle" x="76.37" y="-172.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;fix</text>
-<text text-anchor="middle" x="76.37" y="-161.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,228 tok)</text>
+<text text-anchor="middle" x="76.37" y="-161.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,482 tok)</text>
 </g>
 <!-- cmd_post_fix_verify -->
 <g id="node2" class="node">
 <title>cmd_post_fix_verify</title>
 <polygon fill="#bbdefb" stroke="black" points="296.24,-216.49 212.24,-216.49 212.24,-180.49 296.24,-180.49 296.24,-216.49"/>
 <text text-anchor="middle" x="254.24" y="-201.49" font-family="Helvetica,sans-Serif" font-size="10.00">post&#45;fix&#45;verify</text>
-<text text-anchor="middle" x="254.24" y="-190.49" font-family="Helvetica,sans-Serif" font-size="10.00">(628 tok)</text>
+<text text-anchor="middle" x="254.24" y="-190.49" font-family="Helvetica,sans-Serif" font-size="10.00">(756 tok)</text>
 </g>
 <!-- skill_workflow_pr_fix&#45;&gt;cmd_post_fix_verify -->
 <g id="edge2" class="edge">
@@ -35,7 +35,7 @@
 <title>cmd_warning_fix</title>
 <polygon fill="#e3f2fd" stroke="black" points="289.74,-158.49 218.74,-158.49 218.74,-122.49 289.74,-122.49 289.74,-158.49"/>
 <text text-anchor="middle" x="254.24" y="-143.49" font-family="Helvetica,sans-Serif" font-size="10.00">warning&#45;fix</text>
-<text text-anchor="middle" x="254.24" y="-132.49" font-family="Helvetica,sans-Serif" font-size="10.00">(380 tok)</text>
+<text text-anchor="middle" x="254.24" y="-132.49" font-family="Helvetica,sans-Serif" font-size="10.00">(461 tok)</text>
 </g>
 <!-- skill_workflow_pr_fix&#45;&gt;cmd_warning_fix -->
 <g id="edge3" class="edge">
@@ -75,7 +75,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="454.02" cy="-166.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="454.02" y="-169.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="454.02" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,441 tok)</text>
+<text text-anchor="middle" x="454.02" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,437 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge7" class="edge">
@@ -88,7 +88,7 @@
 <title>agent_worker_code_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="454.02" cy="-294.49" rx="86.95" ry="21.43"/>
 <text text-anchor="middle" x="454.02" y="-297.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;code&#45;reviewer</text>
-<text text-anchor="middle" x="454.02" y="-286.49" font-family="Helvetica,sans-Serif" font-size="10.00">(964 tok)</text>
+<text text-anchor="middle" x="454.02" y="-286.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,002 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;agent_worker_code_reviewer -->
 <g id="edge5" class="edge">
@@ -127,7 +127,7 @@
 <title>script_pr_review_manifest</title>
 <polygon fill="#ff9800" stroke="black" points="789.76,-166.49 744.94,-190.98 655.31,-190.98 610.5,-166.49 655.31,-142.01 744.94,-142.01 789.76,-166.49"/>
 <text text-anchor="middle" x="700.13" y="-169.49" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;review&#45;manifest</text>
-<text text-anchor="middle" x="700.13" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,423 tok)</text>
+<text text-anchor="middle" x="700.13" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,864 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;script_pr_review_manifest -->
 <g id="edge8" class="edge">
@@ -142,7 +142,7 @@
 <title>script_checkpoint_read</title>
 <polygon fill="#ff9800" stroke="black" points="777.76,-349.49 738.94,-373.98 661.31,-373.98 622.49,-349.49 661.31,-325.01 738.94,-325.01 777.76,-349.49"/>
 <text text-anchor="middle" x="700.13" y="-352.49" font-family="Helvetica,sans-Serif" font-size="10.00">checkpoint&#45;read</text>
-<text text-anchor="middle" x="700.13" y="-341.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,418 tok)</text>
+<text text-anchor="middle" x="700.13" y="-341.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,864 tok)</text>
 </g>
 <!-- cmd_fix_phase&#45;&gt;script_checkpoint_read -->
 <g id="edge10" class="edge">
@@ -171,6 +171,7 @@
 <text text-anchor="middle" x="700.13" y="-423.49" font-family="Helvetica,sans-Serif" font-size="10.00">resolve&#45;issue&#45;num</text>
 <text text-anchor="middle" x="700.13" y="-412.49" font-family="Helvetica,sans-Serif" font-size="10.00">(716 tok)</text>
 </g>
+<!-- script_pr_review_manifest&#45;&gt;script_autopilot_parser -->
 <!-- script_pr_review_manifest&#45;&gt;script_autopilot_parser -->
 </g>
 </svg>

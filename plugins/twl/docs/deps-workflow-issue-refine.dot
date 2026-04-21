@@ -6,30 +6,23 @@ digraph Dependencies {
     fontname="Helvetica";
     node [fontname="Helvetica", fontsize=10];
     edge [fontname="Helvetica", fontsize=9];
-    label="co-issue";
+    label="workflow-issue-refine";
     labelloc=t;
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="twl:co-issue\n(5,448 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_issue_lifecycle [label="twl:workflow-issue-lifecycle\n(2,506 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
     skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(3,057 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_ref_glossary_criteria [label="twl:ref-glossary-criteria\n(873 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
-    cmd_issue_structure [label="issue-structure\n(1,406 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_issue_create [label="issue-create\n(1,192 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_spec_review [label="issue-spec-review\n(1,870 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_issue_review_aggregate [label="issue-review-aggregate\n(1,157 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_issue_glossary_check [label="issue-glossary-check\n(899 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_arch_drift [label="issue-arch-drift\n(1,079 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_board_sync [label="project-board-sync\n(1,184 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -42,30 +35,16 @@ digraph Dependencies {
     script_escape_issue_body [label="escape-issue-body\n(63 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_spec_review_manifest [label="spec-review-manifest\n(169 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_spec_review_session_init [label="spec-review-session-init\n(501 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_issue_lifecycle_orchestrator [label="issue-lifecycle-orchestrator\n(6,178 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
-    { rank=same; skill_co_issue; }
-    { rank=same; skill_workflow_issue_lifecycle; skill_workflow_issue_refine; }
-    { rank=same; skill_ref_glossary_criteria; }
-    { rank=same; cmd_issue_structure; cmd_issue_create; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_project_board_sync; }
+    { rank=same; skill_workflow_issue_refine; }
+    { rank=same; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_arch_drift; }
     { rank=same; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; }
-    { rank=same; script_escape_issue_body; script_spec_review_manifest; script_spec_review_session_init; script_issue_lifecycle_orchestrator; }
+    { rank=same; script_escape_issue_body; script_spec_review_manifest; script_spec_review_session_init; }
 
     // Edges
-    skill_co_issue -> cmd_issue_glossary_check;
-    skill_co_issue -> skill_workflow_issue_lifecycle;
-    skill_co_issue -> skill_workflow_issue_refine;
-    skill_co_issue -> script_issue_lifecycle_orchestrator;
-    skill_workflow_issue_lifecycle -> cmd_issue_structure;
-    skill_workflow_issue_lifecycle -> cmd_issue_spec_review;
-    skill_workflow_issue_lifecycle -> cmd_issue_review_aggregate;
-    skill_workflow_issue_lifecycle -> cmd_issue_arch_drift;
-    skill_workflow_issue_lifecycle -> cmd_issue_create;
-    skill_workflow_issue_lifecycle -> cmd_project_board_sync;
-    skill_workflow_issue_lifecycle -> script_spec_review_session_init;
     skill_workflow_issue_refine -> cmd_issue_spec_review;
     skill_workflow_issue_refine -> cmd_issue_review_aggregate;
     skill_workflow_issue_refine -> cmd_issue_arch_drift;
@@ -75,18 +54,10 @@ digraph Dependencies {
     cmd_issue_spec_review -> agent_worker_codex_reviewer [style=dashed];
     cmd_issue_spec_review -> script_escape_issue_body;
     cmd_issue_spec_review -> script_spec_review_manifest;
-    cmd_issue_glossary_check -> skill_ref_glossary_criteria;
 
     // Ordering constraints (invisible edges)
-    cmd_issue_glossary_check -> skill_workflow_issue_lifecycle [style=invis, weight=10];
-    skill_workflow_issue_lifecycle -> skill_workflow_issue_refine [style=invis, weight=10];
-    skill_workflow_issue_refine -> script_issue_lifecycle_orchestrator [style=invis, weight=10];
-    cmd_issue_structure -> cmd_issue_spec_review [style=invis, weight=10];
     cmd_issue_spec_review -> cmd_issue_review_aggregate [style=invis, weight=10];
     cmd_issue_review_aggregate -> cmd_issue_arch_drift [style=invis, weight=10];
-    cmd_issue_arch_drift -> cmd_issue_create [style=invis, weight=10];
-    cmd_issue_create -> cmd_project_board_sync [style=invis, weight=10];
-    cmd_project_board_sync -> script_spec_review_session_init [style=invis, weight=10];
     cmd_issue_spec_review -> cmd_issue_review_aggregate [style=invis, weight=10];
     cmd_issue_review_aggregate -> cmd_issue_arch_drift [style=invis, weight=10];
     cmd_issue_arch_drift -> script_spec_review_session_init [style=invis, weight=10];

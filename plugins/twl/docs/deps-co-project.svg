@@ -395,7 +395,7 @@
 <title>cmd_prompt_audit_apply</title>
 <polygon fill="#e3f2fd" stroke="black" points="595.57,-286.18 484.57,-286.18 484.57,-250.18 595.57,-250.18 595.57,-286.18"/>
 <text text-anchor="middle" x="540.07" y="-271.18" font-family="Helvetica,sans-Serif" font-size="10.00">prompt&#45;audit&#45;apply</text>
-<text text-anchor="middle" x="540.07" y="-260.18" font-family="Helvetica,sans-Serif" font-size="10.00">(632 tok)</text>
+<text text-anchor="middle" x="540.07" y="-260.18" font-family="Helvetica,sans-Serif" font-size="10.00">(710 tok)</text>
 </g>
 <!-- skill_workflow_prompt_audit&#45;&gt;cmd_prompt_audit_apply -->
 <g id="edge29" class="edge">
@@ -406,20 +406,20 @@
 <!-- skill_ref_specialist_output_schema -->
 <g id="node5" class="node">
 <title>skill_ref_specialist_output_schema</title>
-<polygon fill="#e1f5fe" stroke="black" points="1062.46,-982.18 893.46,-982.18 893.46,-946.18 1068.46,-946.18 1068.46,-976.18 1062.46,-982.18"/>
-<polyline fill="none" stroke="black" points="1062.46,-982.18 1062.46,-976.18 "/>
-<polyline fill="none" stroke="black" points="1068.46,-976.18 1062.46,-976.18 "/>
-<text text-anchor="middle" x="980.96" y="-967.18" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;specialist&#45;output&#45;schema</text>
-<text text-anchor="middle" x="980.96" y="-956.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,283 tok)</text>
+<polygon fill="#e1f5fe" stroke="black" points="1062.46,-1183.18 893.46,-1183.18 893.46,-1147.18 1068.46,-1147.18 1068.46,-1177.18 1062.46,-1183.18"/>
+<polyline fill="none" stroke="black" points="1062.46,-1183.18 1062.46,-1177.18 "/>
+<polyline fill="none" stroke="black" points="1068.46,-1177.18 1062.46,-1177.18 "/>
+<text text-anchor="middle" x="980.96" y="-1168.18" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;specialist&#45;output&#45;schema</text>
+<text text-anchor="middle" x="980.96" y="-1157.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,283 tok)</text>
 </g>
 <!-- skill_ref_architecture -->
 <g id="node9" class="node">
 <title>skill_ref_architecture</title>
-<polygon fill="#e1f5fe" stroke="black" points="1029.96,-924.18 925.96,-924.18 925.96,-888.18 1035.96,-888.18 1035.96,-918.18 1029.96,-924.18"/>
-<polyline fill="none" stroke="black" points="1029.96,-924.18 1029.96,-918.18 "/>
-<polyline fill="none" stroke="black" points="1035.96,-918.18 1029.96,-918.18 "/>
-<text text-anchor="middle" x="980.96" y="-909.18" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;architecture</text>
-<text text-anchor="middle" x="980.96" y="-898.18" font-family="Helvetica,sans-Serif" font-size="10.00">(2,234 tok)</text>
+<polygon fill="#e1f5fe" stroke="black" points="1029.96,-1125.18 925.96,-1125.18 925.96,-1089.18 1035.96,-1089.18 1035.96,-1119.18 1029.96,-1125.18"/>
+<polyline fill="none" stroke="black" points="1029.96,-1125.18 1029.96,-1119.18 "/>
+<polyline fill="none" stroke="black" points="1035.96,-1119.18 1029.96,-1119.18 "/>
+<text text-anchor="middle" x="980.96" y="-1110.18" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;architecture</text>
+<text text-anchor="middle" x="980.96" y="-1099.18" font-family="Helvetica,sans-Serif" font-size="10.00">(2,234 tok)</text>
 </g>
 <!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_architecture -->
 <!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_architecture -->
@@ -447,91 +447,92 @@
 <!-- cmd_plugin_phase_diagnose&#45;&gt;skill_ref_specialist_output_schema -->
 <g id="edge33" class="edge">
 <title>cmd_plugin_phase_diagnose&#45;&gt;skill_ref_specialist_output_schema</title>
-<path fill="none" stroke="black" d="M604.18,-1156.23C626.95,-1161.89 652.97,-1167.38 677.07,-1170.18 747,-1178.29 773,-1202.66 835.46,-1170.18 908.4,-1132.25 952.19,-1038.76 970.27,-991.9"/>
-<polygon fill="black" stroke="black" points="973.61,-992.97 973.83,-982.37 967.05,-990.51 973.61,-992.97"/>
+<path fill="none" stroke="black" d="M592.61,-1156.33C601.51,-1159.75 610.61,-1163.44 619.07,-1167.18 645.61,-1178.92 648.87,-1190.32 677.07,-1197.18 755.79,-1216.33 848.78,-1201.09 910.76,-1185.77"/>
+<polygon fill="black" stroke="black" points="911.99,-1189.07 920.82,-1183.22 910.26,-1182.29 911.99,-1189.07"/>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;skill_ref_architecture -->
 <g id="edge34" class="edge">
 <title>cmd_plugin_phase_diagnose&#45;&gt;skill_ref_architecture</title>
-<path fill="none" stroke="black" d="M604.26,-1120.66C609.7,-1117.45 614.76,-1113.66 619.07,-1109.18 676.44,-1049.5 612.18,-983.58 677.07,-932.18 712.75,-903.91 837.88,-901.93 915.7,-903.65"/>
-<polygon fill="black" stroke="black" points="915.81,-907.15 925.89,-903.9 915.98,-900.16 915.81,-907.15"/>
+<path fill="none" stroke="black" d="M602.63,-1120.18C608.52,-1117.05 614.13,-1113.41 619.07,-1109.18 659.24,-1074.72 631.43,-1031.98 677.07,-1005.18 737.77,-969.53 768.36,-983.88 835.46,-1005.18 882.88,-1020.23 928.15,-1057.08 955,-1082.11"/>
+<polygon fill="black" stroke="black" points="952.74,-1084.79 962.4,-1089.15 957.57,-1079.72 952.74,-1084.79"/>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;cmd_plugin_fix -->
 <!-- agent_worker_structure -->
 <g id="node33" class="node">
 <title>agent_worker_structure</title>
-<ellipse fill="#ede7f6" stroke="black" cx="756.26" cy="-1138.18" rx="68.68" ry="21.43"/>
-<text text-anchor="middle" x="756.26" y="-1141.18" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;structure</text>
-<text text-anchor="middle" x="756.26" y="-1130.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,244 tok)</text>
+<ellipse fill="#ede7f6" stroke="black" cx="756.26" cy="-1101.18" rx="68.68" ry="21.43"/>
+<text text-anchor="middle" x="756.26" y="-1104.18" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;structure</text>
+<text text-anchor="middle" x="756.26" y="-1093.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,244 tok)</text>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;agent_worker_structure -->
 <g id="edge30" class="edge">
 <title>cmd_plugin_phase_diagnose&#45;&gt;agent_worker_structure</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M604.18,-1138.18C627.07,-1138.18 653.2,-1138.18 677.23,-1138.18"/>
-<polygon fill="black" stroke="black" points="677.38,-1141.68 687.38,-1138.18 677.38,-1134.68 677.38,-1141.68"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M604.18,-1127.28C629.89,-1122.83 659.7,-1117.69 686.01,-1113.14"/>
+<polygon fill="black" stroke="black" points="686.65,-1116.58 695.91,-1111.43 685.46,-1109.68 686.65,-1116.58"/>
 </g>
 <!-- agent_worker_principles -->
 <g id="node34" class="node">
 <title>agent_worker_principles</title>
-<ellipse fill="#ede7f6" stroke="black" cx="756.26" cy="-1074.18" rx="71.34" ry="21.43"/>
-<text text-anchor="middle" x="756.26" y="-1077.18" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;principles</text>
-<text text-anchor="middle" x="756.26" y="-1066.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,154 tok)</text>
+<ellipse fill="#ede7f6" stroke="black" cx="756.26" cy="-1037.18" rx="71.34" ry="21.43"/>
+<text text-anchor="middle" x="756.26" y="-1040.18" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;principles</text>
+<text text-anchor="middle" x="756.26" y="-1029.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,154 tok)</text>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;agent_worker_principles -->
 <g id="edge31" class="edge">
 <title>cmd_plugin_phase_diagnose&#45;&gt;agent_worker_principles</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M601.59,-1120.09C631.04,-1111.29 666.33,-1100.75 695.66,-1091.99"/>
-<polygon fill="black" stroke="black" points="696.79,-1095.3 705.37,-1089.09 694.78,-1088.6 696.79,-1095.3"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M595.12,-1120.08C603.29,-1116.77 611.51,-1113.11 619.07,-1109.18 646.85,-1094.72 649.53,-1084.08 677.07,-1069.18 684.58,-1065.11 692.72,-1061.24 700.81,-1057.69"/>
+<polygon fill="black" stroke="black" points="702.42,-1060.8 710.25,-1053.67 699.68,-1054.36 702.42,-1060.8"/>
 </g>
 <!-- agent_worker_architecture -->
 <g id="node35" class="node">
 <title>agent_worker_architecture</title>
-<ellipse fill="#ede7f6" stroke="black" cx="756.26" cy="-964.18" rx="79.39" ry="21.43"/>
-<text text-anchor="middle" x="756.26" y="-967.18" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
-<text text-anchor="middle" x="756.26" y="-956.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,695 tok)</text>
+<ellipse fill="#ede7f6" stroke="black" cx="756.26" cy="-1165.18" rx="79.39" ry="21.43"/>
+<text text-anchor="middle" x="756.26" y="-1168.18" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
+<text text-anchor="middle" x="756.26" y="-1157.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,695 tok)</text>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;agent_worker_architecture -->
 <g id="edge32" class="edge">
 <title>cmd_plugin_phase_diagnose&#45;&gt;agent_worker_architecture</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M599.78,-1120.06C606.54,-1116.91 613.13,-1113.3 619.07,-1109.18 651.43,-1086.72 650.22,-1070.99 677.07,-1042.18 692.99,-1025.09 711.45,-1006.61 726.44,-991.93"/>
-<polygon fill="black" stroke="black" points="729.22,-994.11 733.93,-984.63 724.33,-989.1 729.22,-994.11"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M604.18,-1146.13C626.1,-1148.9 651.01,-1152.04 674.19,-1154.96"/>
+<polygon fill="black" stroke="black" points="673.99,-1158.46 684.35,-1156.24 674.87,-1151.52 673.99,-1158.46"/>
 </g>
 <!-- cmd_plugin_phase_verify&#45;&gt;skill_ref_specialist_output_schema -->
 <g id="edge38" class="edge">
 <title>cmd_plugin_phase_verify&#45;&gt;skill_ref_specialist_output_schema</title>
-<path fill="none" stroke="black" d="M595.15,-979.93C619.89,-986.35 649.72,-993 677.07,-996.18 747,-1004.29 765.48,-1003.83 835.46,-996.18 857.61,-993.75 881.33,-989.3 903.03,-984.47"/>
-<polygon fill="black" stroke="black" points="903.87,-987.87 912.84,-982.23 902.31,-981.04 903.87,-987.87"/>
+<path fill="none" stroke="black" d="M595.27,-957.02C659.21,-951.61 765.63,-952.51 835.46,-1005.18 886.3,-1043.52 846.38,-1093.3 893.46,-1136.18 895.46,-1138 897.57,-1139.7 899.78,-1141.3"/>
+<polygon fill="black" stroke="black" points="898.39,-1144.57 908.72,-1146.96 902.14,-1138.65 898.39,-1144.57"/>
 </g>
 <!-- cmd_plugin_phase_verify&#45;&gt;skill_ref_architecture -->
 <g id="edge39" class="edge">
 <title>cmd_plugin_phase_verify&#45;&gt;skill_ref_architecture</title>
-<path fill="none" stroke="black" d="M595.24,-946.31C603.39,-942.97 611.58,-939.24 619.07,-935.18 647.28,-919.88 646.6,-902.24 677.07,-892.18 756.14,-866.06 853.15,-877.57 915.73,-890.17"/>
-<polygon fill="black" stroke="black" points="915.35,-893.67 925.86,-892.28 916.78,-886.82 915.35,-893.67"/>
+<path fill="none" stroke="black" d="M589.97,-946.17C621.65,-934.86 660.06,-921.92 677.07,-919.18 746.57,-907.98 772.31,-888.07 835.46,-919.18 903.81,-952.85 948.86,-1036.1 968.57,-1079.64"/>
+<polygon fill="black" stroke="black" points="965.48,-1081.31 972.72,-1089.05 971.89,-1078.49 965.48,-1081.31"/>
 </g>
 <!-- cmd_plugin_phase_verify&#45;&gt;agent_worker_structure -->
 <g id="edge35" class="edge">
 <title>cmd_plugin_phase_verify&#45;&gt;agent_worker_structure</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M595.21,-978.28C603.82,-982.15 612.16,-987.04 619.07,-993.18 661.27,-1030.67 635.48,-1068.01 677.07,-1106.18 682.57,-1111.22 688.97,-1115.53 695.7,-1119.19"/>
-<polygon fill="black" stroke="black" points="694.5,-1122.5 705.02,-1123.78 697.6,-1116.22 694.5,-1122.5"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M595.16,-979.71C603.58,-983.4 611.87,-987.85 619.07,-993.18 653.21,-1018.47 643.34,-1043.34 677.07,-1069.18 683.37,-1074.01 690.51,-1078.22 697.84,-1081.87"/>
+<polygon fill="black" stroke="black" points="696.64,-1085.18 707.19,-1086.2 699.58,-1078.82 696.64,-1085.18"/>
 </g>
 <!-- cmd_plugin_phase_verify&#45;&gt;agent_worker_principles -->
 <g id="edge36" class="edge">
 <title>cmd_plugin_phase_verify&#45;&gt;agent_worker_principles</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M595.24,-982.05C603.39,-985.38 611.58,-989.11 619.07,-993.18 647.28,-1008.48 649.63,-1019.54 677.07,-1036.18 686.36,-1041.81 696.6,-1047.28 706.53,-1052.23"/>
-<polygon fill="black" stroke="black" points="705.01,-1055.38 715.53,-1056.62 708.08,-1049.09 705.01,-1055.38"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M594.02,-982.22C625.9,-993.09 666.48,-1006.92 698.95,-1017.98"/>
+<polygon fill="black" stroke="black" points="698.15,-1021.41 708.75,-1021.32 700.41,-1014.78 698.15,-1021.41"/>
 </g>
 <!-- cmd_plugin_phase_verify&#45;&gt;agent_worker_architecture -->
 <g id="edge37" class="edge">
 <title>cmd_plugin_phase_verify&#45;&gt;agent_worker_architecture</title>
-<path fill="none" stroke="black" stroke-dasharray="5,2" d="M595.12,-964.18C616.81,-964.18 642.38,-964.18 666.64,-964.18"/>
-<polygon fill="black" stroke="black" points="666.95,-967.68 676.95,-964.18 666.95,-960.68 666.95,-967.68"/>
+<path fill="none" stroke="black" stroke-dasharray="5,2" d="M595.24,-977.64C603.95,-981.58 612.31,-986.66 619.07,-993.18 667.56,-1039.92 629.34,-1085.66 677.07,-1133.18 681.57,-1137.66 686.79,-1141.54 692.35,-1144.9"/>
+<polygon fill="black" stroke="black" points="690.86,-1148.07 701.32,-1149.75 694.19,-1141.91 690.86,-1148.07"/>
 </g>
 <!-- agent_worker_structure&#45;&gt;skill_ref_specialist_output_schema -->
 <g id="edge40" class="edge">
 <title>agent_worker_structure&#45;&gt;skill_ref_specialist_output_schema</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M803.43,-1122.75C814.35,-1118.18 825.66,-1112.63 835.46,-1106.18 885.34,-1073.32 932.63,-1021.56 958.82,-990.45"/>
-<polygon fill="black" stroke="black" points="961.62,-992.55 965.32,-982.63 956.23,-988.08 961.62,-992.55"/>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M807.24,-1115.54C836.64,-1123.99 874.35,-1134.83 907.03,-1144.22"/>
+<polygon fill="black" stroke="black" points="906.41,-1147.68 916.99,-1147.08 908.35,-1140.95 906.41,-1147.68"/>
 </g>
+<!-- agent_worker_structure&#45;&gt;agent_worker_principles -->
 <!-- agent_worker_structure&#45;&gt;agent_worker_principles -->
 <!-- agent_worker_structure&#45;&gt;agent_worker_principles -->
 <!-- agent_worker_structure&#45;&gt;agent_worker_principles -->
@@ -539,24 +540,26 @@
 <!-- agent_worker_principles&#45;&gt;skill_ref_specialist_output_schema -->
 <g id="edge41" class="edge">
 <title>agent_worker_principles&#45;&gt;skill_ref_specialist_output_schema</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M794.69,-1056.08C807.62,-1049.81 822.19,-1042.71 835.46,-1036.18 868.79,-1019.78 906.33,-1001.06 934.8,-986.82"/>
-<polygon fill="black" stroke="black" points="936.71,-989.78 944.08,-982.18 933.57,-983.52 936.71,-989.78"/>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M818.54,-1047.98C824.47,-1051 830.22,-1054.41 835.46,-1058.18 867.45,-1081.15 860.74,-1103.25 893.46,-1125.18 905.21,-1133.05 919.29,-1138.96 932.65,-1143.79"/>
+<polygon fill="black" stroke="black" points="931.61,-1147.13 942.2,-1147.12 933.91,-1140.52 931.61,-1147.13"/>
 </g>
+<!-- agent_worker_principles&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_principles&#45;&gt;agent_worker_architecture -->
 <!-- agent_worker_principles&#45;&gt;agent_worker_architecture -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <g id="edge42" class="edge">
 <title>agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M814.04,-949.58C835.12,-947.98 859.68,-947.39 883.33,-947.81"/>
-<polygon fill="black" stroke="black" points="883.32,-951.31 893.4,-948.05 883.48,-944.31 883.32,-951.31"/>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M814.04,-1150.58C835.12,-1148.98 859.68,-1148.39 883.33,-1148.81"/>
+<polygon fill="black" stroke="black" points="883.32,-1152.31 893.4,-1149.05 883.48,-1145.31 883.32,-1152.31"/>
 </g>
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_architecture -->
 <g id="edge43" class="edge">
 <title>agent_worker_architecture&#45;&gt;skill_ref_architecture</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M813.75,-949.47C844.93,-941.35 883.76,-931.23 916.05,-922.82"/>
-<polygon fill="black" stroke="black" points="917.05,-926.18 925.84,-920.27 915.28,-919.41 917.05,-926.18"/>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M813.75,-1150.47C844.93,-1142.35 883.76,-1132.23 916.05,-1123.82"/>
+<polygon fill="black" stroke="black" points="917.05,-1127.18 925.84,-1121.27 915.28,-1120.41 917.05,-1127.18"/>
 </g>
+<!-- agent_worker_architecture&#45;&gt;agent_worker_structure -->
 </g>
 </svg>
