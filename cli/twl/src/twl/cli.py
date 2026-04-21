@@ -54,6 +54,11 @@ def main():
         spec_main(sys.argv[2:])
         sys.exit(0)
 
+    # config サブコマンド（project-links.yaml ローダー）
+    if len(sys.argv) >= 2 and sys.argv[1] == 'config':
+        from twl.config import main as config_main
+        sys.exit(config_main(sys.argv[2:]))
+
     # explore-link サブコマンド
     if len(sys.argv) >= 2 and sys.argv[1] == 'explore-link':
         sys.exit(handle_explore_link(sys.argv[2:]))

@@ -65,7 +65,7 @@ e2e tests では以下の外部依存をすべて stub します:
 依存子 Issue が未 merge のため。対象 Issue のマージ状況を確認:
 
 ```bash
-gh project item-list 6 --owner shuu5 --format json --limit 200 \
+gh project item-list "$(twl config get project-board.number)" --owner "$(twl config get project-board.owner)" --format json --limit 200 \
   | jq -r '.items[] | select(.status != "Done") | "\(.content.number) [\(.status)] \(.content.title)"' \
   | grep -E "子 [3-7]"
 ```

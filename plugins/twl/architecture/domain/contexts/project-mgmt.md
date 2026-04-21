@@ -82,7 +82,7 @@ OWNER="${REPO%%/*}"
 
 ```mermaid
 flowchart LR
-    subgraph "twill-ecosystem (#6)"
+    subgraph "twill-ecosystem (project-links.yaml参照)"
         TWILL["shuu5/twill"]
     end
 

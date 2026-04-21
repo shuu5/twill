@@ -28,8 +28,8 @@ Board Status が **"Todo"** で追加されるべきである。
 以下のコマンドで Board 上の "In Progress" Issue を一覧表示し、自動起票ラベル（`tech-debt`, `self-improve` 等）が付いているものを確認する。
 
 ```bash
-# Board の In Progress アイテムを取得（プロジェクト番号とオーナーは CLAUDE.md を参照）
-gh project item-list 6 --owner shuu5 --format json --limit 200 \
+# Board の In Progress アイテムを取得（プロジェクト番号とオーナーは project-links.yaml 参照）
+gh project item-list "$(twl config get project-board.number)" --owner "$(twl config get project-board.owner)" --format json --limit 200 \
   | jq -r '.items[] | select(.status == "In Progress") | "\(.content.number) \(.content.title)"'
 
 # In Progress + tech-debt ラベルを持つ Issue を確認
