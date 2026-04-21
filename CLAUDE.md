@@ -17,4 +17,4 @@ TWiLL (Type-Woven, invariant-Led Layering) モノリポ。
 
 ## Project Board
 
-- Project: `twill-ecosystem` (#6)、Owner: `shuu5`
+- Project: `twill-ecosystem`、Owner: `shuu5`（番号・URL は `project-links.yaml` 参照 → `twl config get project-board.number`）
