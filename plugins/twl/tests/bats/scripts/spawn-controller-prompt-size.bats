@@ -87,6 +87,7 @@ teardown() {
 make_prompt_file() {
   local lines="$1"
   local path="$2"
+  local i
   for i in $(seq 1 "$lines"); do
     echo "line $i of the prompt"
   done > "$path"

@@ -126,7 +126,7 @@ for arg in "$@"; do
   [[ "$arg" == "--force-large" ]] && continue
   NEW_ARGS+=("$arg")
 done
-set -- "${NEW_ARGS[@]+${NEW_ARGS[@]}}"
+set -- "${NEW_ARGS[@]+"${NEW_ARGS[@]}"}"
 
 FINAL_PROMPT="/twl:${SKILL_NORMALIZED}
 ${PROMPT_BODY}"
