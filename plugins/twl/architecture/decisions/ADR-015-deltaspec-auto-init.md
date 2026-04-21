@@ -4,6 +4,10 @@
 
 Accepted
 
+## Review
+
+- 2026-04-21: Issue #784 の phase-review プロセス（worker-arch-doc-reviewer / worker-code-reviewer / worker-issue-pr-alignment / worker-security-reviewer）で Accept 判断基準4軸を検証し、全て PASS を確認した。これが co-architect レビュー合意 (plan Q2=B 準拠) に相当する。
+
 ## Date
 
 2026-04-10
