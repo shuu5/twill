@@ -234,3 +234,67 @@ rm -f .supervisor/events/* 2>/dev/null || true
 ### 例外: --force-large
 
 `spawn-controller.sh` に `--force-large` option を渡し、prompt 冒頭に `REASON:` 行で正当化することで 30 行超の prompt を許容できる。
+
+---
+
+## 11. Observer idle 中の session disconnect 対策（MUST）
+
+### 事象（2026-04-22 ipatho1 実例、doobidoo hash 5fc20a83）
+
+co-architect 3 並列 spawn 後、observer が Monitor tool event 待ちで 24 分 idle → その後 6 時間 session 完全停止（tmux pane 残存、Claude Code process 消失）。同時刻で 3 Claude session が同時停止（account レベル共通因子疑い）。
+
+### 根本要因
+
+1. **Monitor heartbeat 欠如**: Monitor tool doc は「silence is not success」明記するが heartbeat 機構は built-in されていない。検知条件不成立中は stdout emit なし → observer 完全 idle
+2. **observer 自身の alive 確認手段なし**: session-state.sh は input-waiting 検知のみ。observer 自身の process 生存は別途確認要
+3. **3 session 同時停止**: account 共通（network / auth / idle timeout）の可能性
+
+### 対策
+
+**11.1 Monitor heartbeat パターン（MUST）**
+
+全 Monitor コマンドに 5 分毎 heartbeat emit を組み込む:
+
+```bash
+HEARTBEAT_INTERVAL=300  # 5 min
+LAST_HB=0
+while true; do
+  NOW=$(date +%s)
+  # 既存検知ロジック
+  ...
+  # heartbeat emit
+  if (( NOW - LAST_HB >= HEARTBEAT_INTERVAL )); then
+    echo "[HEARTBEAT] $(date -u +%FT%T) monitor alive"
+    LAST_HB=$NOW
+  fi
+  sleep 30
+done
+```
+
+**11.2 Idle 前の externalize-state 自動実行（SHOULD）**
+
+長時間待機（30 分以上の event 待ち）が予想される場面では spawn 前に:
+- `.supervisor/working-memory.md` を更新
+- doobidoo に task_state memory 保存
+- session 停止しても resume 可能な状態を確保
+
+**11.3 並列 spawn の段階化（SHOULD）**
+
+co-architect / co-issue の 3 並列 spawn より 1 つずつ serial 処理の方が session disconnect リスク小。2026-04-22 事例では 3 並列後の 24 分 idle で停止。直列なら各 10-15 分で完了し idle 期間短縮。
+
+**11.4 ScheduleWakeup / Cron の活用（MAY）**
+
+1h 以上の待機が確実な場合、ScheduleWakeup で 30-40 分後に自動 wakeup。Claude Code の idle disconnect リスクを回避。
+
+### 検知
+
+JSONL 調査で停止時刻確定:
+
+```bash
+JSONL="~/.claude/projects/<project-hash>/<session-id>.jsonl"
+# 最終 assistant response
+grep '"role":"assistant"' "$JSONL" | tail -1 | jq -r '.timestamp'
+# silent gap 長さ
+FINAL_TS=$(grep -oE '"timestamp":"[^"]+"' "$JSONL" | sort -u | tail -1)
+# resume までの gap = 現時刻 - FINAL_TS
+```
