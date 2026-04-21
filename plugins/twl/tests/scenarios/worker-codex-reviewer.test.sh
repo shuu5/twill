@@ -595,6 +595,34 @@ sys.exit(0)
 run_test "deps.yaml [edge: 既存 specialist (issue-critic/issue-feasibility) が calls から消えていない]" test_deps_yaml_co_issue_existing_calls_preserved
 
 # =============================================================================
+# Requirement: model 指定 env override と probe 統合 (Issue #798)
+# =============================================================================
+echo ""
+echo "--- Requirement: model 指定 env override と probe 統合 ---"
+
+# AC #2: env override assertion
+test_model_env_override_expression() {
+  assert_file_exists "$AGENT_FILE" || return 1
+  grep -qE 'codex exec.*-m "\$\{TWILL_CODEX_REVIEW_MODEL:-[a-z0-9.,-]+\}"' "${PROJECT_ROOT}/${AGENT_FILE}"
+}
+run_test "model env override - codex exec に \${TWILL_CODEX_REVIEW_MODEL:-...} 展開が存在する" test_model_env_override_expression
+
+# AC #3: probe 統合 assertion
+test_model_probe_in_step1() {
+  assert_file_exists "$AGENT_FILE" || return 1
+  assert_file_contains "$AGENT_FILE" "PROBE_OUT|probe.*fallback|fallback.*probe|CODEX_OK"
+}
+run_test "probe 統合 - Step 1 に fallback/ERROR 検出ロジック (CODEX_OK/PROBE_OUT) が存在する" test_model_probe_in_step1
+
+test_probe_graceful_skip_on_fallback() {
+  assert_file_exists "$AGENT_FILE" || return 1
+  # probe failure must lead to graceful skip (same PASS pattern)
+  assert_file_contains "$AGENT_FILE" "fallback" || return 1
+  assert_file_contains "$AGENT_FILE" "CODEX_OK=0|CODEX_OK.*0|graceful skip|スキップ"
+}
+run_test "probe 統合 - fallback 検出時に graceful skip する記述が存在する" test_probe_graceful_skip_on_fallback
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo ""
