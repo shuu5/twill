@@ -103,6 +103,31 @@ done
 
 # /twl:<skill> を prompt 先頭に prepend
 PROMPT_BODY="$(cat "$PROMPT_FILE")"
+
+# size guard: §10 spawn prompt 最小化原則（MUST NOT）
+PROMPT_LINE_COUNT=$(printf '%s\n' "$PROMPT_BODY" | wc -l)
+FORCE_LARGE=false
+for arg in "$@"; do
+  [[ "$arg" == "--force-large" ]] && FORCE_LARGE=true
+done
+
+if [[ "$FORCE_LARGE" == "false" && $PROMPT_LINE_COUNT -gt 30 ]]; then
+  cat >&2 <<WARN
+WARN: prompt size ${PROMPT_LINE_COUNT} lines exceeds recommended 30 lines.
+§10 spawn prompt 最小化原則: skill 自律取得可能な情報を prompt に転記しないこと。
+詳細: plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §10
+suppress する場合: --force-large + prompt 冒頭に REASON: 行
+WARN
+fi
+
+# --force-large を cld-spawn に渡さない（set -u 安全な ${arr[@]+...} 形式）
+NEW_ARGS=()
+for arg in "$@"; do
+  [[ "$arg" == "--force-large" ]] && continue
+  NEW_ARGS+=("$arg")
+done
+set -- "${NEW_ARGS[@]+${NEW_ARGS[@]}}"
+
 FINAL_PROMPT="/twl:${SKILL_NORMALIZED}
 ${PROMPT_BODY}"
 

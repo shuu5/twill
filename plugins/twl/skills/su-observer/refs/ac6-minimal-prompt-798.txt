@@ -1,0 +1,10 @@
+su-observer から spawn（AC6 非回帰検証: #799 最小 prompt 動作確認）
+
+Issue: #798（tech-debt: worker-codex-reviewer の model 指定修正）
+探索成果物: .explore/798/summary.md にリンク済（co-explore 実施済）
+AskUserQuestion は observer が pipe-pane log で代理応答します。
+
+observer 独自観点: specialist review 完了済み（#798 refined ラベル確認済）。
+model 名の変更が既存 bats・co-issue AC に与える影響を特に確認してほしい。
+
+Wave 19 単独タスク（#799 実装と並列なし）
