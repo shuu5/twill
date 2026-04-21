@@ -39,7 +39,7 @@ digraph Dependencies {
     cmd_worktree_create [label="worktree-create\n(464 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_status_update [label="project-board-status-update\n(1,221 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_crg_auto_build [label="crg-auto-build\n(537 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_change_propose [label="change-propose\n(2,135 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_change_propose [label="change-propose\n(2,189 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_change_apply [label="change-apply\n(1,223 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ac_extract [label="ac-extract\n(384 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_prompt_compliance [label="prompt-compliance\n(220 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -133,13 +133,13 @@ digraph Dependencies {
     script_autopilot_mergegate [label="autopilot-mergegate\n(2,921 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_mergegate_guards [label="autopilot-mergegate-guards\n(1,658 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_mergegate_ops [label="autopilot-mergegate-ops\n(5,179 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_runner [label="chain-runner\n(10,423 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(10,458 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_session_audit [label="session-audit\n(4,023 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_auto_merge [label="auto-merge\n(3,246 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_steps [label="chain-steps\n(10,423 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(10,458 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_compaction_resume [label="compaction-resume\n(1,031 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_health_report [label="health-report\n(804 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

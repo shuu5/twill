@@ -100,7 +100,7 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 
 - **定義**: plan.yaml 生成時に循環依存を検出した場合、拒否しなければならない（SHALL）。
 - **根拠**: [DeltaSpec: 循環依存拒否](../deltaspec/specs/autopilot-lifecycle.md#scenario-循環依存拒否)
-- **検証方法**: [`invariant-I: direct circular dependency rejected`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-I: indirect circular dependency rejected`](../tests/bats/invariants/autopilot-invariants.bats)
+- **検証方法**: [`invariant-I: direct circular dependency (A->B->A) rejected`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-I: indirect circular dependency (A->B->C->A) rejected`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
   - `plugins/twl/scripts/autopilot-plan.sh`
 
@@ -132,7 +132,7 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 
 - **定義**: autopilot 時のマージ実行は Orchestrator の `mergegate.py` 経由のみでなければならない（SHALL）。Worker chain の auto-merge ステップは `merge-ready` 宣言のみを行い、マージは実行しない。
 - **根拠**: ADR なし — 慣習的制約
-- **検証方法**: #789 で bats テスト生成予定
+- **検証方法**: [`invariant-L: ref-invariants.md defines invariant L (autopilot マージ実行責務)`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-L: auto-merge.sh sets merge-ready without merging in autopilot mode`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
   - `cli/twl/src/twl/autopilot/mergegate.py`
   - `plugins/twl/scripts/auto-merge.sh`
@@ -143,7 +143,7 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 
 - **定義**: chain 遷移（`current_step` の terminal 検知後の次 workflow 起動）は orchestrator の `inject_next_workflow` または手動 skill inject（`/twl:workflow-<name>`）のみ許可しなければならない（SHALL）。Pilot の直接 nudge による chain bypass は禁止。
 - **根拠**: [ADR-018: autopilot state schema SSOT](../architecture/decisions/ADR-018-state-schema-ssot.md) / issue-438
-- **検証方法**: #789 で bats テスト生成予定
+- **検証方法**: [`invariant-M: ref-invariants.md defines invariant M (chain 遷移制限)`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-M: co-autopilot SKILL.md prohibits direct Pilot nudge (不変条件 M)`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-M: inject-next-workflow.sh validates workflow skill name against allow-list`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
   - `cli/twl/src/twl/autopilot/orchestrator.py`
   - `plugins/twl/scripts/chain-runner.sh`

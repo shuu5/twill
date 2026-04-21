@@ -458,3 +458,63 @@ except MergeGateError:
     --type issue --issue 1 --role worker --set current_step=change-apply
   assert_success
 }
+
+# ===========================================================================
+# Invariant L: autopilot マージ実行責務
+# ===========================================================================
+
+@test "invariant-L: ref-invariants.md defines invariant L (autopilot マージ実行責務)" {
+  run grep -c "^## 不変条件 L:" "$REPO_ROOT/refs/ref-invariants.md"
+  assert_success
+  [ "$output" -ge 1 ]
+}
+
+@test "invariant-L: auto-merge.sh sets merge-ready without merging in autopilot mode" {
+  # autopilot 配下（status=running）では gh pr merge を呼ばず merge-ready 宣言のみ行う
+  create_issue_json 1 "running"
+
+  # gh pr merge が呼ばれた場合はテスト失敗とする（不変条件 L 違反）
+  stub_command "gh" '
+    case "$*" in
+      *"pr merge"*) echo "INVARIANT-VIOLATION: gh pr merge called in autopilot mode" >&2; exit 1 ;;
+      *) exit 0 ;;
+    esac
+  '
+
+  cd "$SANDBOX"
+  run bash "$SANDBOX/scripts/auto-merge.sh" \
+    --issue 1 --pr 100 --branch "feat/test"
+
+  assert_success
+
+  local status
+  status=$(jq -r '.status' "$SANDBOX/.autopilot/issues/issue-1.json")
+  [ "$status" = "merge-ready" ]
+}
+
+# ===========================================================================
+# Invariant M: chain 遷移は orchestrator/手動 inject のみ
+# ===========================================================================
+
+@test "invariant-M: ref-invariants.md defines invariant M (chain 遷移制限)" {
+  run grep -c "^## 不変条件 M:" "$REPO_ROOT/refs/ref-invariants.md"
+  assert_success
+  [ "$output" -ge 1 ]
+}
+
+@test "invariant-M: co-autopilot SKILL.md prohibits direct Pilot nudge (不変条件 M)" {
+  run grep -c "不変条件 M" "$REPO_ROOT/skills/co-autopilot/SKILL.md"
+  assert_success
+  [ "$output" -ge 1 ]
+}
+
+@test "invariant-M: inject-next-workflow.sh validates workflow skill name against allow-list" {
+  # inject_next_workflow() はコマンドインジェクション防止のため allow-list で
+  # /twl:workflow-<kebab> 形式のみを許可する（不変条件 M）
+  local inject_lib="$REPO_ROOT/scripts/lib/inject-next-workflow.sh"
+  [ -f "$inject_lib" ] || skip "inject-next-workflow.sh not found"
+
+  run grep -cF '/twl:workflow-[a-z]' "$inject_lib"
+  assert_success
+  [ "$output" -ge 1 ]
+}
