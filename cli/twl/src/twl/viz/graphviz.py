@@ -32,19 +32,23 @@ def generate_entry_points_table(deps: dict, plugin_name: str) -> str:
         return ""
 
     # パスからスキル名を抽出して skills セクションと照合
+    # 期待フォーマット: "<category>/<skill-name>/<FILE>.md"（例: "skills/co-autopilot/SKILL.md"）
     skills = deps.get("skills", {})
     by_type: Dict[str, List[tuple]] = {}
     for path in entry_point_paths:
-        # "skills/co-autopilot/SKILL.md" -> "co-autopilot"
         parts = str(path).split("/")
-        if len(parts) >= 2:
-            skill_name = parts[1] if parts[0] in ("skills", "refs") else parts[0]
+        if len(parts) >= 3 and parts[0] in ("skills", "refs"):
+            skill_name = parts[1]
+        elif len(parts) == 1:
+            skill_name = parts[0].replace(".md", "")
         else:
-            skill_name = parts[0].replace(".md", "").replace("SKILL", "")
+            # 非標準パスはスキル辞書から直接検索
+            stem = parts[-1].replace(".md", "")
+            skill_name = parts[1] if len(parts) >= 2 and parts[1] in skills else stem
 
         skill_data = skills.get(skill_name, {})
         skill_type = skill_data.get("type", "controller")
-        description = skill_data.get("description", "")
+        description = skill_data.get("description", "").replace("|", "\\|")
 
         by_type.setdefault(skill_type, []).append((skill_name, description))
 
@@ -59,8 +63,8 @@ def generate_entry_points_table(deps: dict, plugin_name: str) -> str:
         lines.append("")
         lines.append(f"| {col} | 説明 |")
         lines.append("|---|---|")
-        for skill_name, description in entries:
-            lines.append(f"| {skill_name} | {description} |")
+        for name, description in entries:
+            lines.append(f"| {name} | {description} |")
         lines.append("")
 
     # 未知タイプも出力
@@ -72,8 +76,8 @@ def generate_entry_points_table(deps: dict, plugin_name: str) -> str:
         lines.append("")
         lines.append(f"| Name | 説明 |")
         lines.append("|---|---|")
-        for skill_name, description in entries:
-            lines.append(f"| {skill_name} | {description} |")
+        for name, description in entries:
+            lines.append(f"| {name} | {description} |")
         lines.append("")
 
     return "\n".join(lines)
@@ -949,7 +953,7 @@ def update_readme(plugin_root: Path, graph: Dict, deps: dict, plugin_name: str, 
         original = readme_path.read_text(encoding='utf-8')
         ep_start_idx = original.find(README_ENTRY_POINTS_START)
         ep_end_idx = original.find(README_ENTRY_POINTS_END)
-        if ep_start_idx == -1 or ep_end_idx == -1:
+        if ep_start_idx == -1 or ep_end_idx == -1 or ep_start_idx >= ep_end_idx:
             print("✓ README.md has no ENTRY-POINTS markers, skipping check")
             return True
         entry_points_content = generate_entry_points_table(deps, plugin_name)
