@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## Requirements
 
 ### Requirement: autopilot-init.sh 完了済みセッション自動削除
 
@@ -23,8 +23,6 @@
 
 - **WHEN** `autopilot-init.sh` を `--force` なしで実行し、session.json が 24h 以上経過かつ未完了（running issue あり）
 - **THEN** exit 2 で stale 警告を出力する（既存挙動と同一）
-
-## ADDED Requirements
 
 ### Requirement: orchestrator ログ per-session 分離
 
