@@ -618,6 +618,8 @@ Issue 群の一括実装（Wave）を要求された場合:
 
 ## SU-* 制約（MUST）
 
+> **境界**: SU-1〜SU-7 は Supervisor（su-observer）固有の application-level 制約であり、autopilot システムの不変条件 A-M とは独立した体系。不変条件 A-M の定義は [`refs/ref-invariants.md`](../../refs/ref-invariants.md) を参照。
+
 | 制約 ID | 内容 |
 |---------|------|
 | SU-1 | 介入は 3 層プロトコル（Auto/Confirm/Escalate）に従わなければならない（SHALL） |

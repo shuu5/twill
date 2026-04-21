@@ -223,21 +223,7 @@ status=$(jq -r '.status // "null"' issue-N.json)
 
 ### 不変条件（13件）
 
-| ID | 不変条件 | 概要 | DeltaSpec 参照 |
-|----|----------|------|----------------|
-| **A** | 状態の一意性 | issue-{N}.json の `status` は常に定義された遷移パスのみ許可 | |
-| **B** | Worktree ライフサイクル Pilot 専任（作成・削除ともに Pilot） | Worktree の作成・削除は Pilot が行う。Worker は使用のみ（ADR-008） | autopilot-lifecycle.md#scenario-worktreeライフサイクル安全性 |
-| **C** | Worker マージ禁止 | Worker は `merge-ready` を宣言するのみ。マージは Pilot が実行 | autopilot-lifecycle.md#scenario-worktreeライフサイクル安全性 |
-| **D** | 依存先 fail 時の skip 伝播 | Phase N で fail した Issue に依存する Issue は自動 skip | autopilot-lifecycle.md#scenario-phase内-issue失敗時のskip伝播 |
-| **E** | merge-gate リトライ制限 | リトライは最大1回。2回目リジェクト = 確定失敗 | autopilot-lifecycle.md#scenario-retry制限, merge-gate.md#scenario-merge-gate-reject2回目確定失敗-リトライ最大1回制限 |
-| **F** | squash merge API 失敗時 rebase 禁止 | `gh pr merge --squash` API 呼び出し失敗後は rebase 禁止。停止のみ。merge 前のコンフリクト事前検知とは別概念 | merge-gate.md#scenario-merge失敗時の対応 |
-| **G** | クラッシュ検知保証 | Worker の crash/timeout は必ず検知される | autopilot-lifecycle.md#scenario-worker-crash検知 |
-| **H** | deps.yaml コンフリクト時自動 rebase | deps.yaml 変更 Issue は並列実行を許可。merge-gate がコンフリクト検出時に自動 rebase を試行し、失敗時は conflict 状態に遷移。リトライ上限は 1 回（不変条件 E と整合）。不変条件 F（squash merge API 失敗後 rebase 禁止）とは別概念 | |
-| **I** | 循環依存拒否 | plan.yaml 生成時に循環依存を検出した場合、拒否 | autopilot-lifecycle.md#scenario-循環依存拒否 |
-| **J** | merge 前 base drift 検知 | merge-gate 実行前に origin/main に対する silent deletion を検知し、検出時は merge を停止する | merge-gate.md#scenario-merge前-base-drift検知 |
-| **K** | Pilot 実装禁止 | Pilot は Issue の実装（コード変更・PR 作成）を直接行ってはならない。実装は常に Worker 経由。Emergency Bypass 時も `mergegate merge --force` 経由のみ許可 | autopilot-lifecycle.md#scenario-不変条件-k-pilot実装禁止228 |
-| **L** | autopilot マージ実行責務 | autopilot 時のマージ実行は Orchestrator の `mergegate.py` 経由のみ。Worker chain の auto-merge ステップは `merge-ready` 宣言のみを行い、マージは実行しない | |
-| **M** | chain 遷移は orchestrator/手動 inject のみ | chain 遷移（`current_step` の terminal 検知後の次 workflow 起動）は orchestrator の `inject_next_workflow` または手動 skill inject（`/twl:workflow-<name>`）のみ許可。Pilot の直接 nudge による chain bypass は禁止。chain 停止時は orchestrator 再起動または手動 inject で chain を再開する（co-autopilot SKILL.md「chain 停止時の復旧手順」参照） | issue-438, ADR-018 |
+不変条件 A-M の正典定義は [`refs/ref-invariants.md`](../../refs/ref-invariants.md) を参照。
 
 ### 並行性の制約
 

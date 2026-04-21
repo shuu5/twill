@@ -354,8 +354,8 @@ for t in sorted(types):
 
 # (J のテストは merge-gate 内部で実装済み — ここでは不変条件テーブルとの整合性のみ確認)
 
-@test "invariant-J: autopilot.md defines invariant J" {
-  run grep -c "|\s*\*\*J\*\*" "$REPO_ROOT/architecture/domain/contexts/autopilot.md"
+@test "invariant-J: ref-invariants.md defines invariant J" {
+  run grep -c "^## 不変条件 J:" "$REPO_ROOT/refs/ref-invariants.md"
   assert_success
   [ "$output" -ge 1 ]
 }
@@ -416,8 +416,8 @@ except MergeGateError:
 # Invariant K: Pilot implementation prohibition
 # ===========================================================================
 
-@test "invariant-K: autopilot.md defines invariant K (Pilot 実装禁止)" {
-  run grep -c "|\s*\*\*K\*\*" "$REPO_ROOT/architecture/domain/contexts/autopilot.md"
+@test "invariant-K: ref-invariants.md defines invariant K (Pilot 実装禁止)" {
+  run grep -c "^## 不変条件 K:" "$REPO_ROOT/refs/ref-invariants.md"
   assert_success
   [ "$output" -ge 1 ]
 }

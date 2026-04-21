@@ -52,7 +52,7 @@ deps.yaml v3.0 がプラグイン構成の唯一の情報源。
 **Worker（実装側）:**
 - Pilot が事前作成した worktree ディレクトリで起動される（autopilot: ADR-008 準拠、co-issue v2: workflow-issue-lifecycle）
 - Worker は worktree 内で作業し、完了後に merge-ready を宣言する
-- Worker が自ら worktree を作成・削除してはならない（不変条件 B）
+- Worker が自ら worktree を作成・削除してはならない（[不変条件 B](refs/ref-invariants.md#不変条件-b-worktree-ライフサイクル-pilot-専任)）
 
 ## 編集フロー（必須）
 
