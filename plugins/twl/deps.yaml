@@ -690,6 +690,11 @@ refs:
     path: refs/ref-glossary-criteria.md
     description: "glossary 用語登録判断基準（3軸基準 + 判定ロジック + 具体例）"
 
+  ref-invariants:
+    type: reference
+    path: refs/ref-invariants.md
+    description: "不変条件 A-M の正典定義（定義・根拠・検証方法・影響範囲）"
+
   ref-compaction-recovery:
     type: reference
     path: refs/ref-compaction-recovery.md

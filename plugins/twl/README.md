@@ -37,9 +37,9 @@ Claude Code twl plugin（chain-driven + autopilot-first）。claude-plugin-dev �
 | Skills | 12 | controller 5 + workflow 7 |
 | Commands | 92 | atomic 83 + composite 9 |
 | Agents | 29 | specialist 29 |
-| Refs | 18 | reference 18 |
+| Refs | 19 | reference 19（ref-invariants 含む） |
 | Scripts | 28 | script 28 |
-| **合計** | **179** | |
+| **合計** | **180** | |
 
 ## 使い方
 
