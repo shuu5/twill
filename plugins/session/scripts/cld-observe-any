@@ -384,6 +384,12 @@ evaluate_window() {
         return
     fi
 
+    # [PERMISSION-PROMPT]: thinking 中でも即時 emit（prompt は自動解消しないため thinking guard 前に配置）
+    if echo "$tail15" | grep -qE '^([1-9]\. (Yes, proceed|Yes, and allow|No, and tell)|Interrupted by user)'; then
+        emit_event "PERMISSION-PROMPT" "$win" "$thinking" "$log_age" "$state" "$budget_min"
+        return
+    fi
+
     # 以下: thinking がある場合は絶対 emit しない
     if [[ -n "$thinking" ]]; then
         return
