@@ -518,6 +518,20 @@ echo "event: $result"
 
 ---
 
+## Hybrid 検知ポリシー（イベントファイルプライマリ — MUST）
+
+各チャネルで `.supervisor/events/` 配下のイベントファイルを**プライマリ**として確認し、不在の場合のみ polling にフォールバックする:
+
+| チャネル | プライマリ（イベントファイル） | フォールバック（polling） |
+|---|---|---|
+| **STAGNATE** | `.supervisor/events/heartbeat-*` mtime が `AUTOPILOT_STAGNATE_SEC`（デフォルト 600s）以上古ければ `[STAGNATE]` | `.autopilot/issues/issue-*.json` / `.supervisor/working-memory.md` / `.autopilot/checkpoints/*.json` の mtime |
+| **INPUT-WAIT** | `.supervisor/events/input-wait-*` が存在する場合、即時 `[INPUT-WAIT]` | `session-state.sh state <window>` が `input-waiting` を返す場合 |
+| **NON-TERMINAL** | `.supervisor/events/skill-step-*` の `skill` フィールドのタイムスタンプが 2 分超で chain 未遷移 → `[NON-TERMINAL]` | `session-comm.sh capture` + `>>> 実装完了:` grep |
+| **WORKERS** | `.supervisor/events/session-end-*` が存在する場合、`[WORKERS]` に追記。**読み出し後に個別削除（SHALL）**: `rm -f .supervisor/events/session-end-<session_id>` | — |
+| **PILOT-IDLE / PHASE-DONE** | イベントファイル対象外 | 既存 polling のまま |
+
+---
+
 ## Wave 種別ごとのチャネル選択ガイド
 
 | Wave 種別 | 推奨チャネル |
