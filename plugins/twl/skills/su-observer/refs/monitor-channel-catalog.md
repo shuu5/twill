@@ -15,6 +15,7 @@ Wave 開始時に本カタログから Wave 種別に応じたチャネルを選
 | NON-TERMINAL | `>>> 実装完了:` 後の chain 不遷移 | 2分 | Confirm |
 | BUDGET-LOW | 5h rolling budget 残量 | 残り 15 分 or 90% 消費（設定可） | Auto |
 | BUDGET-ALERT | Monitor watcher が検知した budget threshold 超過 | threshold_percent (default 90%) | Auto |
+| PERMISSION-PROMPT | Worker window の permission prompt 出現（`1. Yes, proceed` 等） | 即時（thinking 中でも emit） | Confirm |
 
 ---
 
@@ -439,6 +440,28 @@ check_budget_low() {
 
 ---
 
+## [PERMISSION-PROMPT] — Worker permission prompt 検知
+
+**検知対象**: Worker window に Claude Code の permission prompt（`1. Yes, proceed` / `2. No, and tell Claude what to do differently` / `3. Yes, and allow always` / `Interrupted by user`）が出現した場合
+
+**閾値**: 即時（permission prompt は自動解消しないため、thinking 中でも emit する）
+
+**検知方法**: `cld-observe-any` の `[PERMISSION-PROMPT]` event（`BUDGET-LOW` emit ブロック直後・thinking guard より前に配置）
+
+**regex**: `^([1-9]\. (Yes, proceed|Yes, and allow|No, and tell)|Interrupted by user)`
+
+**observer が PERMISSION-PROMPT event を受信した際の振る舞い:**
+
+1. ログ出力: `[PERMISSION-PROMPT] window=<win> に permission prompt 検出`
+2. `tmux capture-pane -t <win> -p -S -50` で prompt 前後の文脈を取得
+3. auto mode classifier の `soft_deny` 該当ルール（`Code from External` / `Memory Poisoning` / `Irreversible Local Destruction` 等）と突き合わせ、prompt 原因を特定する
+4. ユーザー通知: `pitfalls-catalog.md §4.7` の手順に従い、安全確認後にユーザーへ確認を求める
+5. **自動拒否 inject は本チャネルのスコープ外**（安全確認なしの自動承認・拒否禁止。別 Issue で自動応答を検討）
+
+**注意**: false positive 防止のため、`^[1-9]\.` + 具体語（`Yes, proceed|Yes, and allow|No, and tell`）による行頭マッチが必須。`Interrupted by user` は別 alternation として処理する（行頭英字のため `[1-9]\.` prefixなし）。
+
+**参照**: `pitfalls-catalog.md §4.7`（permission prompt pitfall 対処手順）
+
 ---
 
 ## `cld-observe-any` 標準スニペット（推奨実装）
@@ -486,6 +509,7 @@ echo "event: $result"
 | `[PANE-DEAD]` | pane 終了 | Worker 消失確認 → 後処理 |
 | `[ERROR-STATE]` | Traceback/command not found | ログ確認 → 自動修復または Escalate |
 | `[BUDGET-LOW]` | budget 残量 ≤ 閾値 | 停止シーケンス（BUDGET-LOW 定義参照） |
+| `[PERMISSION-PROMPT]` | permission prompt 出現 | 文脈確認 → ユーザー通知（自動 inject 禁止） |
 | `[PHASE-COMPLETE]` | フェーズ完了フレーズ検知 | 次 Wave 移行 |
 | `[REVIEW-READY]` | Submit answers 表示 | inject で submit |
 | `[MENU-READY]` | Enter to select 表示 | inject + Tab + Enter |

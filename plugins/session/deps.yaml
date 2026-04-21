@@ -107,4 +107,4 @@ tests:
   cld-observe-any-test:
     type: test
     path: tests/cld-observe-any.bats
-    description: "cld-observe-any の bats unit tests（多指標 AND 判定: LLM indicator false positive / MENU-READY / PANE-DEAD / BUDGET-LOW / PHASE-COMPLETE cmd-echo / event-dir スキーマ確認）"
+    description: "cld-observe-any の bats unit tests（多指標 AND 判定: LLM indicator false positive / MENU-READY / PANE-DEAD / BUDGET-LOW / PHASE-COMPLETE cmd-echo / event-dir スキーマ確認 / PERMISSION-PROMPT 4 ケース）"

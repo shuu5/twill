@@ -474,3 +474,154 @@ MOCKEOF
     # PANE-DEAD が含まれること
     echo "$output" | grep -q "PANE-DEAD"
 }
+
+# ---------------------------------------------------------------------------
+# Scenario 10: PERMISSION-PROMPT 正規 fixture → emit される（ケース 1）
+#   "1. Yes, proceed" / "2. No, and tell ..." / "3. Yes, and allow ..." / "Interrupted by user"
+#   の各行頭パターンで PERMISSION-PROMPT が emit されること
+# ---------------------------------------------------------------------------
+@test "PERMISSION-PROMPT: 正規 prompt fixture で emit される（Yes, proceed / Yes, and allow / No, and tell / Interrupted）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+win="ap-perm-win-1"
+
+capture="Do you want to proceed?
+1. Yes, proceed
+2. No, and tell Claude what to do differently
+3. Yes, and allow always"
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once 2>/dev/null
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    echo "$output" | grep -q "PERMISSION-PROMPT"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 11: PERMISSION-PROMPT false positive 防止（ケース 2）
+#   数字で始まる neutral text（"4. Quality assurance" 等）では emit されないこと
+# ---------------------------------------------------------------------------
+@test "PERMISSION-PROMPT: 数字始まりの neutral text では emit されない（false positive 防止）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+win="ap-perm-win-2"
+
+capture="Here is the plan:
+4. Quality assurance approach
+5. Test automation details
+8. Project structure overview"
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once 2>/dev/null
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    # neutral text なので PERMISSION-PROMPT emit なし
+    ! echo "$output" | grep -q "PERMISSION-PROMPT"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 12: BUDGET-LOW と PERMISSION-PROMPT の優先順位（ケース 3）
+#   BUDGET-LOW 条件を満たす場合は BUDGET-LOW が先に emit される（逆転しないこと）
+# ---------------------------------------------------------------------------
+@test "PERMISSION-PROMPT vs BUDGET-LOW: BUDGET-LOW が優先 emit される（順序維持）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+win="ap-perm-win-3"
+
+# status line: budget 10m（閾値 15m を下回る）
+# capture: permission prompt あり
+capture="1. Yes, proceed
+2. No, and tell Claude what to do differently"
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then
+                echo "● claude  budget: 10m  esc to interrupt"
+            else
+                printf '%s\n' "$capture"
+            fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once \
+    --budget-threshold 15 2>/dev/null
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    # BUDGET-LOW が emit されること（PERMISSION-PROMPT ではなく）
+    echo "$output" | grep -q "BUDGET-LOW"
+    ! echo "$output" | grep -q "PERMISSION-PROMPT"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 13: thinking 状態でも PERMISSION-PROMPT が emit される（ケース 4）
+#   capture に LLM_INDICATORS（Brewing for 9m 19s）を含む fixture で
+#   thinking guard 到達前に PERMISSION-PROMPT が return すること
+# ---------------------------------------------------------------------------
+@test "PERMISSION-PROMPT: thinking 状態（Brewing）でも emit される（thinking guard より前に return）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+win="ap-perm-win-4"
+
+# capture: thinking indicator あり + permission prompt あり
+capture="Brewing for 9m 19s · max effort
+1. Yes, proceed
+2. No, and tell Claude what to do differently"
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once 2>/dev/null
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    # thinking 中でも PERMISSION-PROMPT は emit される
+    echo "$output" | grep -q "PERMISSION-PROMPT"
+}
