@@ -71,9 +71,9 @@ spawnable_by:
    - `mcp__doobidoo__memory_search` (tags="observer-wave", time_expr="last 7 days", limit=3) — 直近 Wave サマリ
    - `mcp__doobidoo__memory_search` (tags="observer-intervention", limit=3) — 介入記録
    - `mcp__doobidoo__memory_search` (query="<プロジェクト名> 直近セッション", limit=3) — 全体像の一般検索
-4.5. **auto-memory は補助** (`~/.claude/projects/<slug>/memory/MEMORY.md`) — **ホストローカル**のため cross-machine 知見は信用しない。同ホストの project continuity 補助としてのみ Read する
+4.5. **auto-memory は補助** (`~/.claude/projects/<slug>/memory/MEMORY.md`) — **ホストローカル**のため cross-machine 知見は信用しない（**MUST NOT**: cross-machine で共有すべき知見の source として使用してはならない）。同ホストの project continuity 補助としてのみ Read する
 5. **`refs/pitfalls-catalog.md` を Read（MUST）** — 既知の落とし穴と Memory Principles、Phase A 暫定の inline 手順を把握
-6. `refs/monitor-channel-catalog.md` を Read して Monitor チャネル定義を把握（Wave 管理時のチャネル選択に使用）
+6. **`refs/monitor-channel-catalog.md` を Read（SHOULD、Wave 管理時は MUST）** — Monitor チャネル定義を把握（Wave 管理時のチャネル選択に使用）
 7. `>>> su-observer 起動完了。指示をお待ちしています。` を表示
 
 ## Step 1: 常駐ループ（ユーザー指示待ち）
@@ -305,12 +305,14 @@ session-comm.sh   # inject/介入プリミティブ（plugins/session/scripts/se
 
 **起動パターン（文脈判断で選択）:**
 
-- Issue 実装 → `cld-spawn` で co-autopilot を起動 → `cld-observe-loop` で能動 observe
-- Issue 作成/議論 → `cld-spawn` で co-issue を起動 → **proxy 対話ループ**（下記参照）
-- アーキテクチャ設計 → `cld-spawn` で co-architect を起動 → **proxy 対話ループ**（下記参照）
-- プロジェクト管理 → `cld-spawn` で co-project を起動 → 指示待ち
-- テスト実行 → `cld-spawn` で co-self-improve を起動（spawn 時プロンプトに対象・タスク・観察モードを含める）→ `cld-observe`（単発）
-- その他 controller → `cld-spawn` で co-utility を起動 → 指示待ち
+すべての spawn は `spawn-controller.sh` 経由（L285 の MUST に準拠、以下の例示は同 wrapper を前提とする）:
+
+- Issue 実装 → `spawn-controller.sh co-autopilot <prompt-file>` → `cld-observe-loop` で能動 observe
+- Issue 作成/議論 → `spawn-controller.sh co-issue <prompt-file>` → **proxy 対話ループ**（下記参照）
+- アーキテクチャ設計 → `spawn-controller.sh co-architect <prompt-file>` → **proxy 対話ループ**（下記参照）
+- プロジェクト管理 → `spawn-controller.sh co-project <prompt-file>` → 指示待ち
+- テスト実行 → `spawn-controller.sh co-self-improve <prompt-file>`（prompt-file に対象・タスク・観察モードを含める）→ `cld-observe`（単発）
+- その他 controller → `spawn-controller.sh co-utility <prompt-file>` → 指示待ち
 
 **重要**: co-autopilot は `cld-observe-loop` で能動 observe。co-issue / co-architect は **proxy 対話ループ** で対話に参加。他 controller は `cld-observe`（単発）または指示待ち。
 

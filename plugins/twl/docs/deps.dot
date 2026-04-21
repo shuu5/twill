@@ -61,7 +61,7 @@ digraph Dependencies {
     skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(1,526 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_load_test_baselines [label="twl:load-test-baselines\n(670 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_monitor_channel_catalog [label="twl:monitor-channel-catalog\n(4,996 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_pitfalls_catalog [label="twl:pitfalls-catalog\n(3,598 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_pitfalls_catalog [label="twl:pitfalls-catalog\n(3,974 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_intervention_catalog [label="twl:intervention-catalog\n(1,991 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_memory_mcp_config [label="twl:memory-mcp-config\n(389 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_externalization_schema [label="twl:externalization-schema\n(726 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -302,7 +302,7 @@ digraph Dependencies {
     script_merge_gate_cross_pr_ac [label="merge-gate-cross-pr-ac\n(345 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_checkpoint_merge [label="merge-gate-checkpoint-merge\n(276 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_check_phase_review [label="merge-gate-check-phase-review\n(424 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_spawn_controller [label="spawn-controller\n(1,018 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_spawn_controller [label="spawn-controller\n(1,057 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
@@ -401,6 +401,8 @@ digraph Dependencies {
     skill_su_observer -> cmd_wave_collect;
     skill_su_observer -> cmd_externalize_state;
     skill_su_observer -> script_specialist_audit;
+    skill_su_observer -> script_spawn_controller;
+    skill_su_observer -> skill_pitfalls_catalog;
     skill_workflow_setup -> cmd_init;
     skill_workflow_setup -> cmd_worktree_create;
     skill_workflow_setup -> cmd_project_board_status_update;
@@ -778,6 +780,8 @@ digraph Dependencies {
     cmd_su_compact -> cmd_wave_collect [style=invis, weight=10];
     cmd_wave_collect -> cmd_externalize_state [style=invis, weight=10];
     cmd_externalize_state -> script_specialist_audit [style=invis, weight=10];
+    script_specialist_audit -> script_spawn_controller [style=invis, weight=10];
+    script_spawn_controller -> skill_pitfalls_catalog [style=invis, weight=10];
     cmd_init -> cmd_worktree_create [style=invis, weight=10];
     cmd_worktree_create -> cmd_project_board_status_update [style=invis, weight=10];
     cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];

@@ -121,4 +121,5 @@ if [[ "$HAS_WINDOW_NAME" == "false" ]]; then
 fi
 
 # cld-spawn 呼び出し（extra args を first, prompt を last に配置する必要あり — cld-spawn の option parse は先に終わり、残りが PROMPT になる）
-exec "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]}" "$@" "$FINAL_PROMPT"
+# 空配列ガード: set -u 環境で "${arr[@]}" が unbound を起こすため ${arr[@]+...} 形式で保護
+exec "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]+"${WINDOW_NAME_ARG[@]}"}" "$@" "$FINAL_PROMPT"

@@ -317,11 +317,13 @@ skills:
 
   su-observer:
     type: supervisor
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-04-21"
     path: skills/su-observer/SKILL.md
     effort: high
     tools: [Agent(observer-evaluator)]
     spawnable_by: [user]
-    can_spawn: [workflow, atomic, specialist, reference]
+    can_spawn: [workflow, atomic, specialist, reference, script]
     supervises: [co-autopilot, co-issue, co-explore, co-architect, co-project, co-utility, co-self-improve]
     calls:
       - atomic: observe-once
@@ -337,6 +339,8 @@ skills:
       - atomic: wave-collect        # SU-6a: Wave 完了時の結果収集
       - atomic: externalize-state   # SU-6a: Wave 完了時の外部化
       - script: specialist-audit
+      - script: spawn-controller      # Phase A: controller spawn 専用 wrapper (L285 MUST)
+      - reference: pitfalls-catalog   # Phase A: 起動時 Step 0 Read MUST
     dependencies:
       - plugin: session  # cld --observer: session.json の claude_session_id 読み取りに session plugin の session-state.sh を使用
     description: "メタ認知レイヤー: 全 controller の監視・介入。hook プライマリ / polling フォールバックの Hybrid 検知（#570）。テストシナリオ実行は co-self-improve に委譲"

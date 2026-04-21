@@ -54,9 +54,9 @@ su-observer が繰り返し踏み続ける落とし穴の集積。起動時に S
 | 3.1 | co-issue を explore-summary なしで起動 → 品質劣化、Phase 0.5 で停止 | 必ず co-explore 先行。observer が proxy 対話で最低 1 往復探索 |
 | 3.2 | Phase 3 specialist review を「効率化」名目でスキップ | **MUST**: 3 specialist 全実行（issue-critic / issue-feasibility / worker-codex-reviewer）。refined ラベルは review 済みの印 |
 | 3.3 | critic / feasibility agent が tool_uses 25-30 で打ち切られ最終 report なし | codex-reviewer 優先（1 tool call で完走）。critic/feasibility は「3 ファイルだけ Read」等 tool_uses 上限を minimize する指示で spawn |
-| 3.4 | co-issue / co-architect spawn 後「指示待ち」に戻ってしまう | **proxy 対話ループ必須（SKILL.md L299）** — observer がユーザー代理で対話継続 |
-| 3.5 | spawn プロンプトにユーザー文脈が不足、controller が迷子 | 元指示・背景・決定事項・判断基準・deep-dive ポイントを全て prompt に包含（SKILL.md L309-316） |
-| 3.6 | co-autopilot は能動 observe（cld-observe-loop）、co-issue / co-architect は proxy 対話 — 混同すると監視漏れ | controller ごとの観察モードを明示判別（SKILL.md L288-295） |
+| 3.4 | co-issue / co-architect spawn 後「指示待ち」に戻ってしまう | **proxy 対話ループ必須** — observer がユーザー代理で対話継続（SKILL.md「対話型コントローラーとの proxy 対話」セクション） |
+| 3.5 | spawn プロンプトにユーザー文脈が不足、controller が迷子 | 元指示・背景・決定事項・判断基準・deep-dive ポイントを全て prompt に包含（SKILL.md「spawn プロンプトの文脈包含」セクション） |
+| 3.6 | co-autopilot は能動 observe（cld-observe-loop）、co-issue / co-architect は proxy 対話 — 混同すると監視漏れ | controller ごとの観察モードを明示判別（SKILL.md「controller spawn が必要な場合」→「起動パターン」） |
 
 ---
 
@@ -99,27 +99,34 @@ su-observer が繰り返し踏み続ける落とし穴の集積。起動時に S
 
 ---
 
-## 7. SKILL.md 引用資産の所在（骨抜き回避）
+## 7. SKILL.md 引用資産の所在（Phase A 時点で確認済み実在）
 
-SKILL.md は以下を参照するが、**Phase A 時点で一部未実装**（Phase B で作成予定）:
-
-| 参照 | 実在 | 代替 |
+| 参照 | 実在 | 所在 |
 |------|:-:|------|
-| `refs/monitor-channel-catalog.md` | 〇 | — |
-| `refs/intervention-catalog.md` | ×（Phase B） | SKILL.md L269-272 / L440-449 のインライン定義を参照 |
-| `refs/observation-pattern-catalog.md` | ×（Phase B） | doobidoo `observer-pitfall` / `observer-lesson` タグ検索で代替 |
-| `refs/pitfalls-catalog.md` | **〇（本ファイル）** | — |
-| `commands/intervene-auto.md` | ×（Phase B） | SKILL.md L447 のインライン `session-comm.sh` 手順 |
-| `commands/intervene-confirm.md` | ×（Phase B） | 同上、ユーザー確認込み |
-| `commands/intervene-escalate.md` | ×（Phase B） | SU-2 に従う（ユーザー確認必須） |
-| `commands/wave-collect.md` | ×（Phase B） | SKILL.md L468-500 の Wave 完了インライン手順 |
-| `commands/externalize-state.md` | ×（Phase B） | 下記「externalize inline」を実行 |
-| `commands/problem-detect.md` | ×（Phase B） | 本カタログと monitor-channel-catalog から手動照合 |
-| `scripts/spawn-controller.sh` | **〇（Phase A 新規）** | — |
+| `refs/monitor-channel-catalog.md` | 〇 | `skills/su-observer/refs/monitor-channel-catalog.md`（skill-local） |
+| `refs/intervention-catalog.md` | 〇 | `plugins/twl/refs/intervention-catalog.md`（plugin-shared, 147 行、3 層 Auto/Confirm/Escalate 定義済） |
+| `refs/observation-pattern-catalog.md` | 〇 | `plugins/twl/refs/observation-pattern-catalog.md`（plugin-shared, 183 行、observation パターン定義済） |
+| `refs/pitfalls-catalog.md` | **〇（本ファイル、Phase A 新規）** | `skills/su-observer/refs/pitfalls-catalog.md`（skill-local） |
+| `commands/intervene-auto.md` | 〇 | `plugins/twl/commands/intervene-auto.md`（100 行） |
+| `commands/intervene-confirm.md` | 〇 | `plugins/twl/commands/intervene-confirm.md` |
+| `commands/intervene-escalate.md` | 〇 | `plugins/twl/commands/intervene-escalate.md` |
+| `commands/wave-collect.md` | 〇 | `plugins/twl/commands/wave-collect.md`（173 行） |
+| `commands/externalize-state.md` | 〇 | `plugins/twl/commands/externalize-state.md`（151 行、tag 規約含む） |
+| `commands/problem-detect.md` | 〇 | `plugins/twl/commands/problem-detect.md` |
+| `scripts/spawn-controller.sh` | **〇（Phase A 新規）** | `skills/su-observer/scripts/spawn-controller.sh` |
+
+**Phase A 時点で主要資産は全て実在する**（先の Phase A 実装時に「commands/ と refs/ 不在」と誤認したのは探索パスのミス。実際は `plugins/twl/` ルートの `commands/` / `refs/` に全て存在していた）。Phase B では以下の深化を予定:
+
+- 既存 catalog の内容を最新 Wave 知見で refine（observation-pattern-catalog.md に新パターン追記、intervention-catalog.md の 3 層定義の更新）
+- **自動学習サイクル**: externalize-state.md → doobidoo `observer-pitfall` 保存 → 次セッション Step 0 の tag 限定検索で自動注入（機械化）
+- spawn-controller.sh / pitfalls-catalog.md の bats テスト追加
+- deps.yaml type violation（su-observer -> script edge）の恒久解消（Phase A は can_spawn に script を追加して暫定対応）
 
 ---
 
-## 8. externalize-state inline 手順（commands/externalize-state.md 代替、Phase A 暫定）
+## 8. externalize-state inline 手順（クイックリファレンス）
+
+**正式手順**: `plugins/twl/commands/externalize-state.md`（151 行、tag 規約含む）を参照。本 §8 は同コマンドの最低限サマリ。詳細は正式ファイルを優先。
 
 Wave 完了 / セッション終了 / compaction 時に実行:
 

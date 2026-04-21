@@ -52,8 +52,9 @@ types:
   script:
     section: scripts
     can_spawn: [script]
-    spawnable_by: [atomic, composite, script, controller, workflow]
+    spawnable_by: [atomic, composite, script, controller, workflow, supervisor]
     # token_target なし（意図的除外）
+    # supervisor を spawnable_by に追加（Phase A 2026-04-21）: su-observer が specialist-audit や spawn-controller 等の補助スクリプトを直接呼び出すため
 
   supervisor:
     section: skills
