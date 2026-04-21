@@ -1,4 +1,4 @@
-# ADR-014: Pilot 駆動ワークフローループ
+# ADR-021: Pilot 駆動ワークフローループ
 
 ## Status
 
@@ -7,6 +7,10 @@ Accepted
 ## Date
 
 2026-04-10
+
+## Note
+
+> **[RENUMBERED]** This ADR was originally assigned ADR-014 in error (conflicting with ADR-014-supervisor-redesign.md). Renumbered to ADR-021 per Issue #787.
 
 ## Related
 

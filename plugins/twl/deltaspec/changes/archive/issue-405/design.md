@@ -1,6 +1,6 @@
 ## Context
 
-ADR-014 で Orchestrator が mergegate.py 経由でマージを実行する設計が定義されているが、autopilot.md の不変条件にはこの責務分担が明記されていない。また autopilot-orchestrator.sh の fallback パス（line 868 付近）に「auto-merge.sh にフォールバック」というコメントがあるが、実際のコードは `return 1` するだけで auto-merge.sh を呼び出していない。
+ADR-021 で Orchestrator が mergegate.py 経由でマージを実行する設計が定義されているが、autopilot.md の不変条件にはこの責務分担が明記されていない。また autopilot-orchestrator.sh の fallback パス（line 868 付近）に「auto-merge.sh にフォールバック」というコメントがあるが、実際のコードは `return 1` するだけで auto-merge.sh を呼び出していない。
 
 ## Goals / Non-Goals
 

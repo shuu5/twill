@@ -4,7 +4,7 @@
 **Date**: 2026-04-12  
 **Issue**: #507  
 **Supersedes**: —  
-**Related**: ADR-003 (unified state file)、ADR-014 (pilot-driven workflow loop)
+**Related**: ADR-003 (unified state file)、ADR-021 (pilot-driven workflow loop)
 
 ---
 

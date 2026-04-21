@@ -1,6 +1,6 @@
 ## Why
 
-ADR-014 の Pilot 駆動ループでは、Worker が workflow 完了時に `workflow_done` を state に書き込み、Orchestrator がこれを検知して次の workflow skill を tmux inject する必要がある。現状の Orchestrator は `workflow_done` を検知せず、次の workflow への遷移が自動化されていない。
+ADR-021 の Pilot 駆動ループでは、Worker が workflow 完了時に `workflow_done` を state に書き込み、Orchestrator がこれを検知して次の workflow skill を tmux inject する必要がある。現状の Orchestrator は `workflow_done` を検知せず、次の workflow への遷移が自動化されていない。
 
 ## What Changes
 
