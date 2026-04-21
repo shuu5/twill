@@ -691,15 +691,15 @@ else
   run_test_skip "cld スクリプト: 全引数パススルー維持" "cld スクリプトが見つからない"
 fi
 
-# Test: --observer フラグは --dangerously-skip-permissions 等の既存フラグと共存できる
+# Test: --observer フラグは permission-mode 等の既存フラグと共存できる
 test_cld_observer_coexists_with_existing_flags() {
   [[ -n "$CLD_SCRIPT" && -f "$CLD_SCRIPT" ]] || return 1
-  # dangerously-skip-permissions が残っている
-  assert_file_contains "$CLD_SCRIPT" "dangerously-skip-permissions"
+  # permission-mode auto が残っている（2026-04 移行後）
+  assert_file_contains "$CLD_SCRIPT" "permission-mode auto"
 }
 
 if [[ -n "$CLD_SCRIPT" && -f "$CLD_SCRIPT" ]]; then
-  run_test "cld スクリプト: --dangerously-skip-permissions 等の既存フラグが維持されている" test_cld_observer_coexists_with_existing_flags
+  run_test "cld スクリプト: --permission-mode auto 等の既存フラグが維持されている" test_cld_observer_coexists_with_existing_flags
 else
   run_test_skip "cld スクリプト: 既存フラグ共存確認" "cld スクリプトが見つからない"
 fi

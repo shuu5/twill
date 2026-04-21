@@ -115,4 +115,4 @@ done < <(env | grep '^DEV_')
 
 exec systemd-run --user --scope -p MemoryMax=12G \
     "${ENV_ARGS[@]}" \
-    claude --dangerously-skip-permissions "${PLUGIN_ARGS[@]}" "${PASS_ARGS[@]+"${PASS_ARGS[@]}"}"
+    claude --permission-mode auto "${PLUGIN_ARGS[@]}" "${PASS_ARGS[@]+"${PASS_ARGS[@]}"}"
