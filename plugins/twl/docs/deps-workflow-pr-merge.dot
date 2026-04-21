@@ -65,12 +65,12 @@ digraph Dependencies {
     script_autopilot_mergegate [label="autopilot-mergegate\n(2,921 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_mergegate_guards [label="autopilot-mergegate-guards\n(1,658 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_mergegate_ops [label="autopilot-mergegate-ops\n(5,179 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_runner [label="chain-runner\n(10,458 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(11,940 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_auto_merge [label="auto-merge\n(3,246 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_steps [label="chain-steps\n(10,458 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(11,940 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_compaction_resume [label="compaction-resume\n(1,031 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_pr_review_manifest [label="pr-review-manifest\n(1,864 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
