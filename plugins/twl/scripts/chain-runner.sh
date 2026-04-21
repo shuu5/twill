@@ -1091,7 +1091,7 @@ step_all_pass_check() {
     local _cr_branch _cr_pr
     _cr_branch=$(git branch --show-current 2>/dev/null || echo "")
     _cr_pr=$(gh pr view --json number -q '.number' 2>/dev/null || echo "")
-    if ! python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "status=merge-ready" --set "workflow_done=pr-merge" --set "pr=$_cr_pr" --set "branch=$_cr_branch" >&2; then
+    if ! python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "status=merge-ready" --set "pr=$_cr_pr" --set "branch=$_cr_branch" >&2; then
       err "all-pass-check" "state write merge-ready 失敗"
       return 1
     fi

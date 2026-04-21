@@ -128,7 +128,6 @@ class TestPilotPrWriteAllowed:
                     "merged_at": None,
                     "files_changed": [],
                     "failure": None,
-                    "workflow_done": None,
                     "implementation_pr": None,
                     "deltaspec_mode": None,
                     "is_quick": False,

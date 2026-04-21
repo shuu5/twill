@@ -1,15 +1,14 @@
 #!/usr/bin/env bats
 # all-pass-check-workflow-done.bats
-# Requirement: step_all_pass_check() — merge-ready 時に workflow_done=pr-merge を書き込む
-# Spec: deltaspec/changes/issue-494/specs/chain-runner-workflow-done/spec.md
+# Requirement: step_all_pass_check() — merge-ready 時に status=merge-ready を書き込む
 # Coverage: --type=unit --coverage=edge-cases
 #
 # step_all_pass_check() は chain-runner.sh の終端ステップ。
-# overall_result=PASS で merge-ready と同時に workflow_done=pr-merge を書き込む。
+# overall_result=PASS で status=merge-ready を書き込む（ADR-018: workflow_done 廃止済み）。
 #
 # テスト対象: plugins/twl/scripts/chain-runner.sh
-#   - bash "$CR" all-pass-check PASS → status=merge-ready かつ workflow_done=pr-merge
-#   - bash "$CR" all-pass-check FAIL → status=failed のみ (workflow_done なし)
+#   - bash "$CR" all-pass-check PASS → status=merge-ready
+#   - bash "$CR" all-pass-check FAIL → status=failed
 #   - state write 失敗 (read-only dir) → exit 1
 #
 # 環境変数:
@@ -41,12 +40,12 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# Scenario: 正常終了時に workflow_done が書かれる
+# Scenario: 正常終了時に status=merge-ready が書かれる
 # WHEN step_all_pass_check() が overall_result=PASS で実行される
-# THEN state に status=merge-ready と workflow_done=pr-merge が両方書き込まれ exit 0
+# THEN state に status=merge-ready が書き込まれ exit 0
 # ---------------------------------------------------------------------------
 
-@test "all-pass-check[PASS]: status=merge-ready と workflow_done=pr-merge が書き込まれる" {
+@test "all-pass-check[PASS]: status=merge-ready が書き込まれる" {
   # issue state を running で初期化
   create_issue_json 494 "running"
 
@@ -60,34 +59,15 @@ teardown() {
     --autopilot-dir "$AUTOPILOT_DIR" \
     --type issue --issue 494 --field status 2>/dev/null)
   [ "$status" = "merge-ready" ]
-
-  # state から workflow_done を読む（本 Issue の主眼）
-  local workflow_done
-  workflow_done=$(python3 -m twl.autopilot.state read \
-    --autopilot-dir "$AUTOPILOT_DIR" \
-    --type issue --issue 494 --field workflow_done 2>/dev/null)
-  [ "$workflow_done" = "pr-merge" ]
-
-  # _cr_pr / _cr_branch: gh/git が利用不可の sandbox では空文字で書き込まれる（設計上の期待値）
-  local pr_val branch_val
-  pr_val=$(python3 -m twl.autopilot.state read \
-    --autopilot-dir "$AUTOPILOT_DIR" \
-    --type issue --issue 494 --field pr 2>/dev/null || echo "")
-  branch_val=$(python3 -m twl.autopilot.state read \
-    --autopilot-dir "$AUTOPILOT_DIR" \
-    --type issue --issue 494 --field branch 2>/dev/null || echo "")
-  # pr / branch は空文字または null が期待値（sandbox 環境では gh/git コマンドが利用不可）
-  [[ -z "$pr_val" || "$pr_val" == "null" ]]
-  [[ -z "$branch_val" || "$branch_val" == "null" ]]
 }
 
 # ---------------------------------------------------------------------------
-# Scenario: FAIL 時は status=failed のみが書かれる
+# Scenario: FAIL 時は status=failed が書かれる
 # WHEN step_all_pass_check() が overall_result=FAIL で実行される
-# THEN state に status=failed が書き込まれ workflow_done は書かれず exit 1
+# THEN state に status=failed が書き込まれ exit 1
 # ---------------------------------------------------------------------------
 
-@test "all-pass-check[FAIL]: status=failed のみ書かれ workflow_done は書かれない" {
+@test "all-pass-check[FAIL]: status=failed が書かれる" {
   create_issue_json 494 "running"
 
   run bash "$CR" all-pass-check FAIL
@@ -100,13 +80,6 @@ teardown() {
     --autopilot-dir "$AUTOPILOT_DIR" \
     --type issue --issue 494 --field status 2>/dev/null)
   [ "$status" = "failed" ]
-
-  # workflow_done は書かれていない（空文字 or null）
-  local workflow_done
-  workflow_done=$(python3 -m twl.autopilot.state read \
-    --autopilot-dir "$AUTOPILOT_DIR" \
-    --type issue --issue 494 --field workflow_done 2>/dev/null || echo "")
-  [ -z "$workflow_done" ] || [ "$workflow_done" = "null" ]
 }
 
 # ---------------------------------------------------------------------------
@@ -130,12 +103,12 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# Scenario: smoke — PASS 後に workflow_done=pr-merge を state から読み出せる
+# Scenario: smoke — PASS 後に status=merge-ready を state から読み出せる
 # WHEN all-pass-check PASS を実行する smoke テストが走る
-# THEN テスト完了後に state から workflow_done を読み取ると pr-merge が返る
+# THEN テスト完了後に state から status を読み取ると merge-ready が返る
 # ---------------------------------------------------------------------------
 
-@test "smoke[all-pass-check]: PASS 後に state.workflow_done=pr-merge が確認できる" {
+@test "smoke[all-pass-check]: PASS 後に state.status=merge-ready が確認できる" {
   create_issue_json 494 "running"
 
   # 実行（run 経由でアサーション到達を保証）
@@ -146,7 +119,7 @@ teardown() {
   local state_file="$AUTOPILOT_DIR/issues/issue-494.json"
   [ -f "$state_file" ]
 
-  local wf_done
-  wf_done=$(jq -r '.workflow_done // empty' "$state_file")
-  [ "$wf_done" = "pr-merge" ]
+  local status_val
+  status_val=$(jq -r '.status // empty' "$state_file")
+  [ "$status_val" = "merge-ready" ]
 }

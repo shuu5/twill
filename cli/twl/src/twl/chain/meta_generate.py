@@ -6,8 +6,6 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 
-_VALID_WORKFLOW_DONE_RE = re.compile(r'^[a-zA-Z0-9_-]+$')
-
 
 def _normalize_for_check(text: str) -> str:
     """比較用にテキストを正規化する（trailing whitespace 除去 + LF 統一）。"""
@@ -64,22 +62,10 @@ def meta_chain_generate(deps: dict, meta_chain_name: str, plugin_root: Path) -> 
             goto = entry.get('goto')
             stop = entry.get('stop', False)
             message = entry.get('message', '')
-            workflow_done = entry.get('workflow_done', '')
 
             if stop:
                 if 'autopilot' in condition and '!' not in condition:
-                    if workflow_done and _VALID_WORKFLOW_DONE_RE.match(workflow_done):
-                        # ADR-014: workflow_done state write + 停止
-                        state_cmd = (
-                            f'python3 -m twl.autopilot.state write '
-                            f'--autopilot-dir "${{AUTOPILOT_DIR:-}}" '
-                            f'--type issue --issue "$ISSUE_NUM" '
-                            f'--role worker --set "workflow_done={workflow_done}"'
-                        )
-                        transition_lines.append(
-                            f'- IS_AUTOPILOT=true → `{state_cmd}` を実行して停止'
-                        )
-                    elif message:
+                    if message:
                         transition_lines.append(f"- IS_AUTOPILOT=true → 「{message}」と案内")
                     else:
                         transition_lines.append("- IS_AUTOPILOT=true → ユーザーへ案内して停止")
