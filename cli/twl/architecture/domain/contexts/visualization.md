@@ -28,6 +28,7 @@ Visualization
 | `twl --mermaid` | Mermaid 形式で出力 |
 | `twl --tree` | ASCII ツリー形式で出力 |
 | `twl --rich` | Rich ライブラリによるカラーツリー出力 |
-| `twl --update-readme` | SVG を生成し README.md に埋め込み |
+| `twl --update-readme` | SVG と Entry Points テーブルを生成し README.md に埋め込み |
+| `twl --check-readme` | README.md の Entry Points テーブルが最新か検証（ドリフト検出時 exit 1） |
 | `twl --target <name>` | 指定コンポーネントの依存を追跡表示 |
 | `twl --reverse <name>` | 指定コンポーネントの逆依存を表示 |
