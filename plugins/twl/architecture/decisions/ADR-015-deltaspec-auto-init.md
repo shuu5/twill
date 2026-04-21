@@ -118,7 +118,7 @@ def next_step(self, issue_num: str, current_step: str) -> str:
 | `scope/direct` ラベル | direct | 明示的 opt-out |
 | 上記以外 | propose → apply | 仕様駆動（デフォルト） |
 
-`deltaspec/` の存在有無は判定条件から**削除**。
+`deltaspec/` の存在有無チェックは**維持**するが、不在時の返却値を `direct` から `propose + auto_init=True` に変更する（機能的同値: 不在 → propose）。
 
 ## Consequences
 
