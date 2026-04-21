@@ -10,6 +10,77 @@ README_MARKER_START = "<!-- DEPS-GRAPH-START -->"
 README_MARKER_END = "<!-- DEPS-GRAPH-END -->"
 README_SUBGRAPH_START = "<!-- DEPS-SUBGRAPHS-START -->"
 README_SUBGRAPH_END = "<!-- DEPS-SUBGRAPHS-END -->"
+README_ENTRY_POINTS_START = "<!-- ENTRY-POINTS-START -->"
+README_ENTRY_POINTS_END = "<!-- ENTRY-POINTS-END -->"
+
+_TYPE_HEADING = {
+    "controller": "Controllers",
+    "supervisor": "Supervisors",
+    "workflow": "Workflows",
+}
+_TYPE_COL = {
+    "controller": "Controller",
+    "supervisor": "Supervisor",
+    "workflow": "Workflow",
+}
+
+
+def generate_entry_points_table(deps: dict, plugin_name: str) -> str:
+    """deps.yaml の entry_points から Entry Points テーブルを生成"""
+    entry_point_paths = deps.get("entry_points", [])
+    if not entry_point_paths:
+        return ""
+
+    # パスからスキル名を抽出して skills セクションと照合
+    # 期待フォーマット: "<category>/<skill-name>/<FILE>.md"（例: "skills/co-autopilot/SKILL.md"）
+    skills = deps.get("skills", {})
+    by_type: Dict[str, List[tuple]] = {}
+    for path in entry_point_paths:
+        parts = str(path).split("/")
+        if len(parts) >= 3 and parts[0] in ("skills", "refs"):
+            skill_name = parts[1]
+        elif len(parts) == 1:
+            skill_name = parts[0].replace(".md", "")
+        else:
+            # 非標準パスはスキル辞書から直接検索
+            stem = parts[-1].replace(".md", "")
+            skill_name = parts[1] if len(parts) >= 2 and parts[1] in skills else stem
+
+        skill_data = skills.get(skill_name, {})
+        skill_type = skill_data.get("type", "controller")
+        description = skill_data.get("description", "").replace("|", "\\|")
+
+        by_type.setdefault(skill_type, []).append((skill_name, description))
+
+    lines = []
+    for type_key in ("controller", "supervisor", "workflow"):
+        entries = by_type.get(type_key)
+        if not entries:
+            continue
+        heading = _TYPE_HEADING.get(type_key, type_key.capitalize() + "s")
+        col = _TYPE_COL.get(type_key, type_key.capitalize())
+        lines.append(f"### {heading}")
+        lines.append("")
+        lines.append(f"| {col} | 説明 |")
+        lines.append("|---|---|")
+        for name, description in entries:
+            lines.append(f"| {name} | {description} |")
+        lines.append("")
+
+    # 未知タイプも出力
+    for type_key, entries in by_type.items():
+        if type_key in ("controller", "supervisor", "workflow"):
+            continue
+        heading = type_key.capitalize() + "s"
+        lines.append(f"### {heading}")
+        lines.append("")
+        lines.append(f"| Name | 説明 |")
+        lines.append("|---|---|")
+        for name, description in entries:
+            lines.append(f"| {name} | {description} |")
+        lines.append("")
+
+    return "\n".join(lines)
 
 
 def generate_graphviz(graph: Dict, deps: dict, plugin_name: str, show_tokens: bool = True) -> str:
@@ -866,14 +937,37 @@ def generate_subgraph_svgs(plugin_root: Path, graph: Dict, deps: dict, plugin_na
     return results
 
 
-def update_readme(plugin_root: Path, graph: Dict, deps: dict, plugin_name: str, show_tokens: bool = True) -> bool:
-    """README.mdの依存グラフセクション + サブグラフセクションを更新"""
+def update_readme(plugin_root: Path, graph: Dict, deps: dict, plugin_name: str, show_tokens: bool = True, check_only: bool = False) -> bool:
+    """README.mdの依存グラフセクション + サブグラフセクション + Entry Points テーブルを更新
+
+    check_only=True の場合はファイルを書き込まず Entry Points ドリフトの有無を返す。
+    """
     from twl.viz.mermaid import generate_text_table
 
     readme_path = plugin_root / "README.md"
     if not readme_path.exists():
         print(f"Error: {readme_path} not found", file=sys.stderr)
         return False
+
+    if check_only:
+        original = readme_path.read_text(encoding='utf-8')
+        ep_start_idx = original.find(README_ENTRY_POINTS_START)
+        ep_end_idx = original.find(README_ENTRY_POINTS_END)
+        if ep_start_idx == -1 or ep_end_idx == -1 or ep_start_idx >= ep_end_idx:
+            print("✓ README.md has no ENTRY-POINTS markers, skipping check")
+            return True
+        entry_points_content = generate_entry_points_table(deps, plugin_name)
+        expected = (
+            original[:ep_start_idx + len(README_ENTRY_POINTS_START)] +
+            "\n" + entry_points_content +
+            original[ep_end_idx:]
+        )
+        if original != expected:
+            print("README.md drift detected: entry points table is out of sync", file=sys.stderr)
+            print("Run 'twl --update-readme' to regenerate.", file=sys.stderr)
+            return False
+        print("✓ README.md entry points are up to date")
+        return True
 
     # 全体 SVG 生成
     svg_path = generate_svg(plugin_root, graph, deps, plugin_name, show_tokens)
@@ -951,6 +1045,18 @@ def update_readme(plugin_root: Path, graph: Dict, deps: dict, plugin_name: str, 
             )
             content = content[:insert_pos] + insert_block + content[insert_pos:]
             print(f"Inserted DEPS-SUBGRAPHS markers into README.md")
+
+    # === Entry Points テーブル更新 ===
+    ep_start_idx = content.find(README_ENTRY_POINTS_START)
+    ep_end_idx = content.find(README_ENTRY_POINTS_END)
+
+    if ep_start_idx != -1 and ep_end_idx != -1 and ep_start_idx < ep_end_idx:
+        entry_points_content = generate_entry_points_table(deps, plugin_name)
+        content = (
+            content[:ep_start_idx + len(README_ENTRY_POINTS_START)] +
+            "\n" + entry_points_content +
+            content[ep_end_idx:]
+        )
 
     readme_path.write_text(content, encoding='utf-8')
     print(f"Updated: {readme_path}")

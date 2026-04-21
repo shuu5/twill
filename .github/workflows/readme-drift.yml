@@ -1,0 +1,29 @@
+name: README Entry Points Drift Check
+
+on:
+  push:
+    paths:
+      - 'plugins/twl/deps.yaml'
+      - 'plugins/twl/README.md'
+      - 'cli/twl/src/twl/viz/graphviz.py'
+  pull_request:
+    paths:
+      - 'plugins/twl/deps.yaml'
+      - 'plugins/twl/README.md'
+      - 'cli/twl/src/twl/viz/graphviz.py'
+
+permissions: {}
+
+jobs:
+  readme-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install twl
+        run: pip install -e cli/twl
+      - name: Check README entry points drift
+        working-directory: plugins/twl
+        run: twl --check-readme

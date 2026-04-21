@@ -104,7 +104,8 @@ def main():
     parser.add_argument('--check', action='store_true', help='Check file existence')
     parser.add_argument('--validate', action='store_true', help='Validate type rules (can_spawn/spawnable_by)')
     parser.add_argument('--list', action='store_true', help='List all nodes')
-    parser.add_argument('--update-readme', action='store_true', help='Update README.md with SVG graph')
+    parser.add_argument('--update-readme', action='store_true', help='Update README.md with SVG graph and Entry Points table')
+    parser.add_argument('--check-readme', action='store_true', help='Check if README.md is up to date (exit 1 if drift detected)')
     parser.add_argument('--orphans', action='store_true', help='Find orphan nodes (unused/isolated)')
     parser.add_argument('--tokens', action='store_true', help='Show token counts for all nodes')
     parser.add_argument('--no-tokens', action='store_true', help='Hide token counts in graph output')
@@ -144,7 +145,7 @@ def main():
         comp_name, new_type = args.promote
         sys.exit(0 if promote_component(plugin_root, deps, comp_name, new_type, args.dry_run) else 1)
 
-    if not any([args.tree, args.rich, args.mermaid, args.graphviz, args.target, args.reverse, args.check, args.validate, args.list, args.update_readme, args.orphans, args.tokens, args.deep_validate, args.audit, args.complexity]):
+    if not any([args.tree, args.rich, args.mermaid, args.graphviz, args.target, args.reverse, args.check, args.validate, args.list, args.update_readme, args.check_readme, args.orphans, args.tokens, args.deep_validate, args.audit, args.complexity]):
         args.graphviz = True
 
     show_tokens = not args.no_tokens
@@ -159,6 +160,10 @@ def main():
         success = update_readme(plugin_root, graph, deps, plugin_name, show_tokens)
         if not success:
             sys.exit(1)
+
+    if args.check_readme:
+        success = update_readme(plugin_root, graph, deps, plugin_name, show_tokens, check_only=True)
+        sys.exit(0 if success else 1)
 
     if args.check:
         sys.exit(handle_check(args, graph, deps, plugin_root, plugin_name))
