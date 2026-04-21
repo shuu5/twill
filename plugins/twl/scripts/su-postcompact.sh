@@ -8,7 +8,7 @@ SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
 # =============================================================================
 SESSION_JSON="${SUPERVISOR_DIR}/session.json"
 if [[ -f "$SESSION_JSON" ]]; then
-    PROJECT_HASH=$(pwd | sed 's|/|-|g; s|^-||')
+    PROJECT_HASH=$(pwd | sed 's|/|-|g')
     # ls -t で最新 JSONL ファイルから session ID を取得
     NEW_SESSION_ID=""
     if compgen -G "${HOME}/.claude/projects/${PROJECT_HASH}/*.jsonl" > /dev/null 2>&1; then

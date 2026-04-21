@@ -34,13 +34,13 @@ spawnable_by:
 2. `.supervisor/session.json` の存在確認:
    - 存在 + status=active → 前回セッションの復帰。PostCompact 相当の外部化ファイル読み込み。既存 `claude_session_id` を検証し変更があれば更新:
      ```bash
-     PROJECT_HASH=$(pwd | sed 's|/|-|g; s|^-||')
+     PROJECT_HASH=$(pwd | sed 's|/|-|g')
      NEW_SESSION_ID=$(ls -t ~/.claude/projects/${PROJECT_HASH}/*.jsonl 2>/dev/null | head -1 | xargs -r basename 2>/dev/null | sed 's|\.jsonl$||')
      # session.json の claude_session_id と比較し、差異があれば上書き
      ```
    - 存在しない → 新規 SupervisorSession 作成。Claude Code session ID と tmux ウィンドウ名を取得して保存:
      ```bash
-     PROJECT_HASH=$(pwd | sed 's|/|-|g; s|^-||')
+     PROJECT_HASH=$(pwd | sed 's|/|-|g')
      CLAUDE_SESSION_ID_VAL=$(ls -t ~/.claude/projects/${PROJECT_HASH}/*.jsonl 2>/dev/null | head -1 | xargs -r basename 2>/dev/null | sed 's|\.jsonl$||' || echo "")
      OBSERVER_WINDOW_NAME=$(tmux display-message -p '#W' 2>/dev/null || echo "")
      # session.json に claude_session_id + observer_window フィールドを含めて書き込む
