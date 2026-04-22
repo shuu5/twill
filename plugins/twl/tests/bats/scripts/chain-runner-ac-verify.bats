@@ -247,3 +247,100 @@ teardown() {
   [ "$count" = "3" ]
   [ "$state" = "running" ]
 }
+
+# ---------------------------------------------------------------------------
+# #890 / #891 実 e2e fix: LLM step は実際には llm-delegate 経由で呼ばれる
+# step_llm_delegate にも heartbeat + ac_verify_call_count safety net を追加した
+# ことを検証 (step_ac_verify は direct dispatch 時のみ使われる dead code だった)
+# ---------------------------------------------------------------------------
+
+@test "llm-delegate ac-verify[#890+#891]: last_heartbeat_at が fresh 化され call_count=1" {
+  local file="$SANDBOX/.autopilot/issues/issue-134.json"
+  mkdir -p "$(dirname "$file")"
+  jq -n '{
+    issue: 134, status: "running", branch: "feat/134-ac-verify",
+    pr: null, window: "", started_at: "2026-04-07T00:00:00Z",
+    updated_at: "2026-04-07T00:00:00Z",
+    last_heartbeat_at: "2026-04-07T00:00:00Z",
+    current_step: "pr-test", retry_count: 0, ac_verify_call_count: 0,
+    fix_instructions: null, merged_at: null, files_changed: [], failure: null
+  }' > "$file"
+
+  run bash "$SANDBOX/scripts/chain-runner.sh" llm-delegate ac-verify 134
+  assert_success
+
+  local hb count step
+  hb="$(jq -r '.last_heartbeat_at' "$file")"
+  count="$(jq -r '.ac_verify_call_count' "$file")"
+  step="$(jq -r '.current_step' "$file")"
+  [[ "$hb" == "$(date -u +%Y-%m-%d)"* ]] || { echo "FAIL: hb=$hb not fresh"; false; }
+  [ "$count" = "1" ]
+  [ "$step" = "ac-verify" ]
+}
+
+@test "llm-delegate ac-verify[#891]: 3 回目 (max+1 超過) で failed + ac_verify_llm_timeout" {
+  local file="$SANDBOX/.autopilot/issues/issue-134.json"
+  mkdir -p "$(dirname "$file")"
+  jq -n '{
+    issue: 134, status: "running", branch: "feat/134-ac-verify",
+    pr: null, window: "", started_at: "2026-04-07T00:00:00Z",
+    updated_at: "2026-04-07T00:00:00Z",
+    last_heartbeat_at: "2026-04-07T00:00:00Z",
+    current_step: "pr-test", retry_count: 0, ac_verify_call_count: 2,
+    fix_instructions: null, merged_at: null, files_changed: [], failure: null
+  }' > "$file"
+
+  run bash "$SANDBOX/scripts/chain-runner.sh" llm-delegate ac-verify 134
+  [ "$status" -ne 0 ]
+
+  local count state reason
+  count="$(jq -r '.ac_verify_call_count' "$file")"
+  state="$(jq -r '.status' "$file")"
+  reason="$(jq -r '.failure.reason' "$file")"
+  [ "$count" = "3" ]
+  [ "$state" = "failed" ]
+  [ "$reason" = "ac_verify_llm_timeout" ]
+}
+
+@test "llm-delegate 非 ac-verify step[#890]: call_count 据置で heartbeat のみ fresh" {
+  local file="$SANDBOX/.autopilot/issues/issue-134.json"
+  mkdir -p "$(dirname "$file")"
+  jq -n '{
+    issue: 134, status: "running", branch: "feat/134-ac-verify",
+    pr: null, window: "", started_at: "2026-04-07T00:00:00Z",
+    updated_at: "2026-04-07T00:00:00Z",
+    last_heartbeat_at: "2026-04-07T00:00:00Z",
+    current_step: "pr-test", retry_count: 0, ac_verify_call_count: 0,
+    fix_instructions: null, merged_at: null, files_changed: [], failure: null
+  }' > "$file"
+
+  run bash "$SANDBOX/scripts/chain-runner.sh" llm-delegate pr-cycle-report 134
+
+  local hb count
+  hb="$(jq -r '.last_heartbeat_at' "$file")"
+  count="$(jq -r '.ac_verify_call_count' "$file")"
+  [[ "$hb" == "$(date -u +%Y-%m-%d)"* ]] || { echo "FAIL: hb=$hb not fresh"; false; }
+  [ "$count" = "0" ]
+}
+
+@test "llm-complete[#890]: heartbeat が fresh 化される" {
+  local file="$SANDBOX/.autopilot/issues/issue-134.json"
+  mkdir -p "$(dirname "$file")"
+  jq -n '{
+    issue: 134, status: "running", branch: "feat/134-ac-verify",
+    pr: null, window: "", started_at: "2026-04-07T00:00:00Z",
+    updated_at: "2026-04-07T00:00:00Z",
+    last_heartbeat_at: "2026-04-07T00:00:00Z",
+    current_step: "ac-verify", retry_count: 0, ac_verify_call_count: 1,
+    fix_instructions: null, merged_at: null, files_changed: [], failure: null
+  }' > "$file"
+
+  run bash "$SANDBOX/scripts/chain-runner.sh" llm-complete ac-verify 134
+  assert_success
+
+  local hb completed
+  hb="$(jq -r '.last_heartbeat_at' "$file")"
+  completed="$(jq -r '.llm_completed_at' "$file")"
+  [[ "$hb" == "$(date -u +%Y-%m-%d)"* ]] || { echo "FAIL: hb=$hb not fresh"; false; }
+  [[ -n "$completed" && "$completed" != "null" ]]
+}
