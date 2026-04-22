@@ -15,6 +15,15 @@ PR diff・テスト結果・レビュー結果を Issue の受け入れ基準（
 
 本コマンドは LLM 判断ステップ（chain-runner.sh の `step_ac_verify` がマーカーとして位置を記録する）。
 
+### Timeout 方針（#891、MUST）
+
+**ac-verify は 3 分以内に結論を出すこと**。以下のガードレールを守る:
+
+- 各 AC 項目の判定は対応する test 結果 / diff キーワード照合で即決する (LLM 深読み禁止)
+- 判定に時間がかかる AC (e.g., 複雑な UI/副作用) は **手動確認要 (severity=WARNING)** にマークして先に進む。全 AC を完璧判定しようとして stall しない
+- 調査が 3 分で収束しない場合、未完了 AC を `manual_verification_required` finding として列挙して checkpoint を書く。merge-gate が WARNING を確認できれば OK
+- `chain-runner.sh::step_ac_verify` が retry 上限 (2 回) を超えた呼出を機械的に fail する safety net を持つ (#891 MVP)
+
 ## 入力
 
 - AC チェックリスト: `${SNAPSHOT_DIR}/01.5-ac-checklist.md`（ac-extract の出力。`SNAPSHOT_DIR` 未設定時は `.dev-session/`）

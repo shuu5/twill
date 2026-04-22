@@ -155,3 +155,95 @@ teardown() {
   assert_success
   assert_output "OK"
 }
+
+# ---------------------------------------------------------------------------
+# #891: ac-verify LLM timeout retry safety net
+# - 1 回目呼出: ac_verify_call_count 0 → 1、正常に ok 返却
+# - 2 回目呼出: 1 → 2 (retry 許容範囲)、正常に ok 返却
+# - 3 回目呼出: 2 → 3 (max+1 超過)、status=failed + failure.reason=ac_verify_llm_timeout
+# ---------------------------------------------------------------------------
+
+@test "ac-verify[#891]: 初回呼出は ac_verify_call_count を 1 に更新して ok" {
+  local file="$SANDBOX/.autopilot/issues/issue-134.json"
+  mkdir -p "$(dirname "$file")"
+  jq -n '{
+    issue: 134, status: "running", branch: "feat/134-ac-verify",
+    pr: null, window: "", started_at: "2026-04-07T00:00:00Z",
+    current_step: "pr-test", retry_count: 0, ac_verify_call_count: 0,
+    fix_instructions: null, merged_at: null, files_changed: [], failure: null
+  }' > "$file"
+
+  run bash "$SANDBOX/scripts/chain-runner.sh" ac-verify
+  assert_success
+  echo "$output" | grep -q "call_count=1"
+
+  local count status
+  count="$(jq -r '.ac_verify_call_count' "$file")"
+  status="$(jq -r '.status' "$file")"
+  [ "$count" = "1" ]
+  [ "$status" = "running" ]
+}
+
+@test "ac-verify[#891]: 2 回目呼出は call_count=2 で retry 許容範囲 (ok)" {
+  local file="$SANDBOX/.autopilot/issues/issue-134.json"
+  mkdir -p "$(dirname "$file")"
+  jq -n '{
+    issue: 134, status: "running", branch: "feat/134-ac-verify",
+    pr: null, window: "", started_at: "2026-04-07T00:00:00Z",
+    current_step: "pr-test", retry_count: 0, ac_verify_call_count: 1,
+    fix_instructions: null, merged_at: null, files_changed: [], failure: null
+  }' > "$file"
+
+  run bash "$SANDBOX/scripts/chain-runner.sh" ac-verify
+  assert_success
+
+  local count status
+  count="$(jq -r '.ac_verify_call_count' "$file")"
+  status="$(jq -r '.status' "$file")"
+  [ "$count" = "2" ]
+  [ "$status" = "running" ]
+}
+
+@test "ac-verify[#891]: 3 回目呼出 (max+1 超過) で status=failed + ac_verify_llm_timeout" {
+  local file="$SANDBOX/.autopilot/issues/issue-134.json"
+  mkdir -p "$(dirname "$file")"
+  jq -n '{
+    issue: 134, status: "running", branch: "feat/134-ac-verify",
+    pr: null, window: "", started_at: "2026-04-07T00:00:00Z",
+    current_step: "pr-test", retry_count: 0, ac_verify_call_count: 2,
+    fix_instructions: null, merged_at: null, files_changed: [], failure: null
+  }' > "$file"
+
+  run bash "$SANDBOX/scripts/chain-runner.sh" ac-verify
+  # exit 2 (force-exit): err 関数が非 0 exit を返す
+  [ "$status" -ne 0 ]
+
+  local count state reason
+  count="$(jq -r '.ac_verify_call_count' "$file")"
+  state="$(jq -r '.status' "$file")"
+  reason="$(jq -r '.failure.reason' "$file")"
+  [ "$count" = "3" ]
+  [ "$state" = "failed" ]
+  [ "$reason" = "ac_verify_llm_timeout" ]
+}
+
+@test "ac-verify[#891]: DEV_AUTOPILOT_AC_VERIFY_MAX_RETRY=2 で上限拡張される" {
+  local file="$SANDBOX/.autopilot/issues/issue-134.json"
+  mkdir -p "$(dirname "$file")"
+  jq -n '{
+    issue: 134, status: "running", branch: "feat/134-ac-verify",
+    pr: null, window: "", started_at: "2026-04-07T00:00:00Z",
+    current_step: "pr-test", retry_count: 0, ac_verify_call_count: 2,
+    fix_instructions: null, merged_at: null, files_changed: [], failure: null
+  }' > "$file"
+
+  DEV_AUTOPILOT_AC_VERIFY_MAX_RETRY=2 run bash "$SANDBOX/scripts/chain-runner.sh" ac-verify
+  # max=2 → max+1=3、call_count=3 は上限内 → ok
+  assert_success
+
+  local count state
+  count="$(jq -r '.ac_verify_call_count' "$file")"
+  state="$(jq -r '.status' "$file")"
+  [ "$count" = "3" ]
+  [ "$state" = "running" ]
+}
