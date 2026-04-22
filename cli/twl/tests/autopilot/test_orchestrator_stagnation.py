@@ -459,3 +459,68 @@ class TestStagnationThresholdBehavior:
 
         # 元に戻す
         importlib.reload(orchestrator_mod)
+
+
+class TestStepAwareThreshold:
+    """C6 MVP (#888): PR workflow step に対する短縮 threshold 検証."""
+
+    def test_pr_workflow_step_uses_short_threshold(self, tmp_path: Path) -> None:
+        """ac-verify で elapsed=400s → short threshold (300s) で stagnation 検知."""
+        orch = _make_orchestrator(tmp_path)
+        stale_at = _iso_ago(400)  # > PR_STEP(300s), < default(900s)
+
+        def mock_read_state(iss, field, autopilot_dir, repo_id=""):
+            if field == "updated_at":
+                return stale_at
+            if field == "current_step":
+                return "ac-verify"
+            return ""
+
+        with patch("twl.autopilot.orchestrator._read_state", side_effect=mock_read_state):
+            assert orch._check_stagnation("501", "_default") is True
+
+    def test_non_pr_step_uses_default_threshold(self, tmp_path: Path) -> None:
+        """init で elapsed=400s → default threshold (900s) 未満、stagnation 非検知."""
+        orch = _make_orchestrator(tmp_path)
+        stale_at = _iso_ago(400)
+
+        def mock_read_state(iss, field, autopilot_dir, repo_id=""):
+            if field == "updated_at":
+                return stale_at
+            if field == "current_step":
+                return "init"
+            return ""
+
+        with patch("twl.autopilot.orchestrator._read_state", side_effect=mock_read_state):
+            assert orch._check_stagnation("502", "_default") is False
+
+    def test_pr_step_short_threshold_not_exceeded(self, tmp_path: Path) -> None:
+        """ac-verify で elapsed=200s → short threshold (300s) 未満、stagnation 非検知."""
+        orch = _make_orchestrator(tmp_path)
+        fresh_at = _iso_ago(200)
+
+        def mock_read_state(iss, field, autopilot_dir, repo_id=""):
+            if field == "updated_at":
+                return fresh_at
+            if field == "current_step":
+                return "ac-verify"
+            return ""
+
+        with patch("twl.autopilot.orchestrator._read_state", side_effect=mock_read_state):
+            assert orch._check_stagnation("503", "_default") is False
+
+    def test_pr_workflow_step_env_override(self) -> None:
+        """DEV_AUTOPILOT_STAGNATION_SEC_PR_STEP=60 で PR step の閾値が 60s に変更."""
+        with patch.dict(os.environ, {"DEV_AUTOPILOT_STAGNATION_SEC_PR_STEP": "60"}):
+            reloaded = importlib.reload(orchestrator_mod)
+            assert reloaded.STAGNATION_THRESHOLD_PR_STEP == 60
+        # 元に戻す
+        importlib.reload(orchestrator_mod)
+
+    def test_pr_workflow_steps_includes_ac_verify(self) -> None:
+        """PR_WORKFLOW_STEPS に主要な LLM 判断 step が含まれる."""
+        assert "ac-verify" in orchestrator_mod.PR_WORKFLOW_STEPS
+        assert "pr-cycle-report" in orchestrator_mod.PR_WORKFLOW_STEPS
+        assert "merge-gate" in orchestrator_mod.PR_WORKFLOW_STEPS
+        assert "init" not in orchestrator_mod.PR_WORKFLOW_STEPS
+        assert "worktree-create" not in orchestrator_mod.PR_WORKFLOW_STEPS
