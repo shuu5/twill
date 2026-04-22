@@ -91,6 +91,27 @@ su-observer が `supervise` モードで起動すると、co-autopilot の tmux 
 1. **co-autopilot 単独起動**（後方互換）: ユーザーが直接 `co-autopilot` を起動し、su-observer は別途起動して監視にアタッチする
 2. **su-observer spawn 起動**: su-observer がユーザー指示に基づき co-autopilot セッションを spawn する（ADR-014 Decision 2 の正規フロー）
 
+### spawn-controller.sh 経由 chain 連携起動（`--with-chain`）
+
+su-observer が `spawn-controller.sh` 経由で co-autopilot を起動する場合、2 種類のモードを使い分ける:
+
+| モード | コマンド例 | window 名 | state file | chain |
+|--------|-----------|-----------|------------|-------|
+| **standalone**（デフォルト） | `spawn-controller.sh co-autopilot /tmp/prompt.txt` | `wt-co-autopilot-<HHMMSS>` | 未生成 | 不回転 |
+| **chain 連携**（`--with-chain`） | `spawn-controller.sh co-autopilot /tmp/ctx.txt --with-chain --issue N` | `ap-#N` | `issue-N.json` 生成 | 回転 |
+
+chain 連携モード（`--with-chain`）では `spawn-controller.sh` が `autopilot-launch.sh` に委譲する。`autopilot-launch.sh` が state file 初期化・worktree 作成・orchestrator 起動・crash-detect hook 設定を担う。
+
+```bash
+# chain 連携起動例（su-observer からの典型的な呼び出し）
+spawn-controller.sh co-autopilot /tmp/issue-835-ctx.txt --with-chain --issue 835
+
+# --project-dir / --autopilot-dir は省略時に bare repo 構造から自動解決される
+# 明示指定も可能:
+spawn-controller.sh co-autopilot /tmp/ctx.txt --with-chain --issue 835 \
+  --project-dir /path/to/project --autopilot-dir /path/to/.autopilot
+```
+
 co-autopilot は su-observer の存在を前提とせず動作する。su-observer との連携は state ファイル（`$AUTOPILOT_DIR/session.json`, `issue-{N}.json`）と tmux window 名を通じて疎結合に行われる。
 
 ### 起動経路比較（#836 文書化）
