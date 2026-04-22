@@ -204,6 +204,31 @@ rm -f .supervisor/events/* 2>/dev/null || true
 - 古いエントリで陳腐化したものは削除せず「解決済（<commit hash>）」と注記して残す（履歴保持）
 - 追加は最大 200 行。超過したら古いエントリを別 `refs/pitfalls-archive.md` へ移動
 
+### 自動追記形式（session-end-pitfall-append.sh）
+
+`scripts/hooks/session-end-pitfall-append.sh` が session 終了時に、observer が doobidoo `observer-pitfall` タグで保存した新規エントリをカタログ末尾に自動追記する。
+
+**呼び出し例（observer が doobidoo search 結果を pipe）:**
+
+```bash
+# observer が doobidoo 検索し content を 1 行ずつ pipe する
+echo "pitfall description" | \
+  scripts/hooks/session-end-pitfall-append.sh --hash <doobidoo_hash> --session <session_id>
+
+# dry-run: diff のみ生成（カタログ未更新）
+echo "pitfall description" | \
+  scripts/hooks/session-end-pitfall-append.sh --dry-run
+```
+
+**自動追記エントリ形式:**
+
+```markdown
+<!-- auto-append: date=<YYYY-MM-DD> hash=<doobidoo_hash> session=<session_id> -->
+- [auto] <pitfall content>
+```
+
+commit は行わず `.supervisor/pending-pitfall-append.diff` として保存。observer が diff を確認して手動 commit/discard を判断する（SU-3 遵守）。
+
 ---
 
 ## 10. spawn prompt 最小化原則（MUST NOT / MUST）
