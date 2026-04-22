@@ -788,7 +788,7 @@ refs:
     path: refs/intervention-catalog.md
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
-    description: "Observer 介入パターン定義（6 パターン / 3 層 Auto/Confirm/Escalate）"
+    description: "Observer 介入パターン定義（13 パターン / 3 層 Auto/Confirm/Escalate、Wave 1-5 実績反映）"
 
   # Memory MCP config + externalization schema (#363)
   memory-mcp-config:
@@ -1734,7 +1734,7 @@ commands:
     can_spawn: []
     calls:
       - reference: intervention-catalog
-    description: "Layer 0 自動介入（non_terminal_chain_end 回復、Worker PR 未作成）"
+    description: "Layer 0 自動介入（non_terminal_chain_end 回復、Worker PR 未作成、Pilot auto-merge stall、confirmation プロンプト解消、tmux Enter 送信）"
 
   intervene-confirm:
     type: atomic
@@ -1744,7 +1744,7 @@ commands:
     can_spawn: []
     calls:
       - reference: intervention-catalog
-    description: "Layer 1 確認付き介入（Worker 長時間 idle、Wave 再計画）"
+    description: "Layer 1 確認付き介入（Worker 長時間 idle、Wave 再計画、merge-gate --force、spec-review bypass）"
 
   intervene-escalate:
     type: atomic
@@ -1754,7 +1754,7 @@ commands:
     can_spawn: []
     calls:
       - reference: intervention-catalog
-    description: "Layer 2 エスカレーション（コンフリクト解決、根本的設計課題）"
+    description: "Layer 2 エスカレーション（コンフリクト解決、根本的設計課題、permission deny 2 回以上）"
 
   # === C-2a: Test-project系（3個） ===
 

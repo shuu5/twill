@@ -6,15 +6,15 @@ can_spawn: []
 
 # Intervention Catalog
 
-Supervisor の介入判断ルール定義。6 つの介入パターンを Auto/Confirm/Escalate の 3 層に分類する。
+Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介入パターンを Auto/Confirm/Escalate の 3 層に分類する。
 
 ## 3 層分類の判断基準
 
-| 層 | 判断基準 | 実行者 |
-|----|----------|--------|
-| **Layer 0: Auto** | Worker が明確な失敗状態（status=failed）かつ回復手順が確立されている | Supervisor が自動実行 |
-| **Layer 1: Confirm** | 状態が曖昧または複数の回復戦略が存在する | ユーザー確認後に実行 |
-| **Layer 2: Escalate** | Supervisor 自身では判断不能、または影響範囲が広い | ユーザーに委譲（実行しない） |
+| 層 | 判断基準 | confidence | reversibility | blast-radius | 実行者 |
+|----|----------|-----------|---------------|--------------|--------|
+| **Layer 0: Auto** | 回復手順が確立済みで結果が予測可能 | 高（過去実績あり） | 高（元に戻せる） | 低（単一 Issue/PR 範囲） | Supervisor が自動実行 |
+| **Layer 1: Confirm** | 手順は既知だが副作用・意図確認が必要 | 中（状況依存） | 中（一部不可逆） | 中（複数コンポーネント影響可） | ユーザーに報告後に実行 |
+| **Layer 2: Escalate** | 意味的判断・設計判断が必要 | 低（不確実性高） | 低（破壊的操作含む） | 高（main・複数 Worker 影響） | ユーザーに委譲（実行しない） |
 
 **未知パターンのフォールバック**: カタログ外パターンは自動的に Layer 2 Escalate 扱いとし、カタログ拡張を self-improve Issue として提案する。
 
@@ -74,6 +74,39 @@ Supervisor の介入判断ルール定義。6 つの介入パターンを Auto/C
 - **事後**: InterventionRecord を `.observation/` に記録
 - **部分一致フォールバック**: state stagnate のみで `>>> 実装完了:` が確認できない場合は **パターン4（Layer 1 Confirm: Worker 長時間 idle）** として処理する
 
+### パターン 8: Pilot auto-merge stall → 手動 squash-merge（Wave 1-5 実績）
+
+- **Wave 実績**: Wave 1-5 で Pilot auto-merge stall 率 92%（9 PR 連続）。observer が手動 squash-merge を代行した実績に基づき Auto 層に追加
+- **検出条件**: PR が "merge-ready" 状態で 10 分以上マージされない、かつ `gh pr view <N> --json mergeStateStatus` が `CLEAN` であること
+- **修復手順**:
+  1. `gh pr view <N> --json mergeStateStatus,mergeable` でマージ可能状態を確認
+  2. `gh pr merge <N> --squash --auto` を実行
+- **前提条件**: PR が CLEAN 状態かつ全 CI チェック通過済みであること
+- **リスク評価**: 低（squash-merge は merge-gate 通過済み前提、reversible = git revert 可）
+- **事後**: InterventionRecord を `.observation/` に記録
+
+### パターン 9: session-comm.sh inject による confirmation プロンプト解消（yes/Enter 自動応答）
+
+- **Wave 実績**: Worker の confirmation プロンプト（`[y/N]` 等）待機でセッションが停止するケースに対応
+- **検出条件**: Worker pane の tail に `[y/N]` / `[Y/n]` / `Enter to continue` 等のインタラクティブプロンプトが検出される
+- **修復手順**:
+  1. `session-comm.sh capture <window>` でプロンプト内容を確認
+  2. プロンプトが既定の yes/Enter 応答で安全と判断できる場合: `session-comm.sh inject <window> "y"` または `session-comm.sh inject <window> ""` を実行
+- **前提条件**: プロンプトが Worker の通常フロー（ツールインストール、軽微な確認）であること。認証・権限昇格プロンプトは Layer 2 Escalate
+- **リスク評価**: 低（自動応答の内容が明確な場合のみ適用）
+- **事後**: InterventionRecord を `.observation/` に記録
+
+### パターン 10: tmux send-keys Enter によるキュー送信
+
+- **Wave 実績**: Worker が Enter 待機状態でフローが止まるケースに対応
+- **検出条件**: Worker pane が Enter 入力待ちで停止しており、`session-comm.sh capture` でアイドル状態を確認
+- **修復手順**:
+  1. `session-comm.sh capture <window>` で現在の pane 状態確認
+  2. `tmux send-keys -t <target-pane> "" Enter` を実行
+- **前提条件**: pane が正規のワークフロー内で Enter 待機していること（エラー画面・対話型エディタは対象外）
+- **リスク評価**: 低（Enter 送信のみ。破壊的操作なし）
+- **事後**: InterventionRecord を `.observation/` に記録
+
 ---
 
 ## Layer 1: Confirm
@@ -98,6 +131,30 @@ Supervisor の介入判断ルール定義。6 つの介入パターンを Auto/C
   - C. 新規 Issue を既存 Phase に追加
 - **リスク評価**: 中（進行中の Worker への影響を考慮する必要がある）
 - **事後**: 承認された計画変更を autopilot state に反映 + 記録
+
+### パターン 11: merge-gate merge --force（ユーザーに報告後実行）
+
+- **Wave 実績**: mergegate の force 実行は Wave 1-5 で Confirm 層として安定運用済み
+- **検出条件**: merge-gate が non-blocking 状態（品質警告はあるが blocking エラーなし）で長時間停止、または operator がアンブロックを要求
+- **ユーザーへの報告内容**:
+  - merge-gate の非 blocking 警告一覧
+  - `autopilot-mergegate merge --force` を実行する旨
+- **修復手順**: ユーザー承認後 `autopilot-mergegate merge --force` を実行
+- **前提条件**: blocking エラーがないこと（blocking エラーがある場合は Layer 2 Escalate）
+- **リスク評価**: 中（警告を無視してマージするため、意図確認が必要）
+- **事後**: InterventionRecord を `.observation/` に記録
+
+### パターン 12: spec-review-session-init.sh pre-seed 経由 bypass（ユーザーに報告後実行）
+
+- **Wave 実績**: Layer D refined-label-gate 6 連続 permission 拒否の回避手段として `spec-review-session-init.sh` pre-seed が使用された実績
+- **検出条件**: Layer D の refined-label-gate で Claude Code classifier permission deny が発生し、pre-seed bypass が有効であることが確認できる場合
+- **ユーザーへの報告内容**:
+  - permission deny の内容
+  - `spec-review-session-init.sh` 経由での bypass を行う旨
+- **修復手順**: ユーザー承認後 `spec-review-session-init.sh` を pre-seed オプションで実行
+- **前提条件**: bypass が承認された操作範囲内であること
+- **リスク評価**: 中（classifier の判断を override するため意図確認必須）
+- **事後**: InterventionRecord を `.observation/` に記録。bypass 経緯を doobidoo に `observer-lesson` タグで保存
 
 ---
 
@@ -126,6 +183,19 @@ Supervisor の介入判断ルール定義。6 つの介入パターンを Auto/C
   - 推奨アクション（Issue 化、ADR 起草、一時凍結）
 - **実行制約**: Supervisor は実行しない。Issue 化を推奨
 - **リスク評価**: 高（影響範囲が広い。誤った修正は複数 Issue に影響する）
+
+### パターン 13: Claude Code classifier permission deny 2 回以上 → 即時 STOP（W5 連携）
+
+- **Wave 実績**: Wave 5 で Layer D refined-label-gate が 6 連続 permission 拒否。classifier の判断を無視した継続が問題を拡大させた教訓
+- **検出条件**: 同一セッション内で Claude Code classifier（`[PERMISSION-PROMPT]` イベント / `cld-observe-any`）が **同一カテゴリの操作を 2 回以上拒否**した場合
+- **即時 STOP ルール**: 2 回目の deny を検出した時点で **全自律介入を即時停止**し、AskUserQuestion で状況を報告する
+- **AskUserQuestion 報告内容**:
+  - 拒否された操作の内容（1 回目・2 回目）
+  - 拒否カテゴリ（例: file-write, bash-exec, etc.）
+  - 推奨アクション（permission 設定確認、bypass 手順確認、Issue 化）
+- **実行制約**: 2 回目以降は Supervisor も実行しない。ユーザーが permission 設定を確認・調整するまで停止
+- **リスク評価**: 高（classifier の繰り返し拒否は設計上の問題を示唆する可能性がある）
+- **事後**: InterventionRecord を `.observation/` に記録。経緯を doobidoo に `observer-intervention` タグで保存
 
 ---
 
