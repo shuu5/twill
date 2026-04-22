@@ -66,13 +66,16 @@ inject_next_workflow() {
     echo "[${_trace_ts}] issue=${issue} skill=INVALID result=skip reason=\"invalid skill name\"" >> "$_trace_log" 2>/dev/null || true
     return 1
   fi
-  # AC-4 #744: pr-merge inject 時に status を確認し、merge-ready 未成立なら WARNING
+  # AC-4 (#744, #874): workflow-pr-merge は merge-ready 状態を「作成する」skill のため、
+  # inject 時点で status != "merge-ready" は正常動作 (AC-4 設計意図通り)。
+  # 以前は WARNING レベルで記録していたが、Phase C #871 audit で Pilot stall 原因と誤診断
+  # されていたことが判明 (#874: red-herring 解消、DEBUG 降格)。
   if [[ "$_skill_safe" == "/twl:workflow-pr-merge" ]]; then
     local _pr_merge_status
     _pr_merge_status=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field status 2>/dev/null || echo "")
     if [[ "$_pr_merge_status" != "merge-ready" ]]; then
-      echo "[orchestrator] Issue #${issue}: WARNING: pr-merge inject — status=${_pr_merge_status} (not merge-ready). Worker chain が all-pass-check 未到達の可能性" >&2
-      echo "[${_trace_ts}] issue=${issue} category=INJECT_PR_MERGE_WARN skill=${_skill_safe} status=${_pr_merge_status} result=warn reason=\"status not merge-ready, injecting workflow-pr-merge\"" >> "$_trace_log" 2>/dev/null || true
+      echo "[AUTOPILOT_DEBUG] [orchestrator] Issue #${issue}: pr-merge inject — status=${_pr_merge_status} (AC-4 通り、merge-ready 未成立は仕様)" >&2
+      echo "[${_trace_ts}] issue=${issue} category=INJECT_PR_MERGE_DEBUG skill=${_skill_safe} status=${_pr_merge_status} result=debug reason=\"status not merge-ready, AC-4 expected behavior\"" >> "$_trace_log" 2>/dev/null || true
     fi
   fi
 
