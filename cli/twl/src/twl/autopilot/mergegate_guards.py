@@ -101,7 +101,7 @@ def _board_update(issue: str, scripts_root: Path, status: str = "Done") -> None:
     runner = scripts_root / "chain-runner.sh"
     if runner.exists():
         subprocess.run(
-            ["bash", str(runner), "board-status-update", issue, status],
+            ["bash", str(runner), "project-board-status-update", issue, status],
             check=False,
         )
 
