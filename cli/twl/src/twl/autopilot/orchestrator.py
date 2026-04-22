@@ -419,6 +419,21 @@ class PhaseOrchestrator:
                         cleaned_up.add(entry)
                     continue
                 elif status == "merge-ready":
+                    # #873: merge-ready 検出時は即時 merge-gate 実行で race 解消
+                    # (従来は _run_batch L268-282 の後処理まで待たされ、最大 POLL_INTERVAL 分の
+                    # 滞留が発生していた。C3 stall の 24% を解消)
+                    if entry not in cleaned_up:
+                        self._run_merge_gate(entry)
+                        status_after = _read_state(issue, "status", self.autopilot_dir, repo_id)
+                        if status_after == "done":
+                            self._cleanup_worker(issue, entry)
+                            cleaned_up.add(entry)
+                        elif status_after == "failed":
+                            retry = _read_state(issue, "retry_count", self.autopilot_dir, repo_id)
+                            failure_reason = _read_state(issue, "failure.reason", self.autopilot_dir, repo_id)
+                            if int(retry or "0") >= 1 or failure_reason == "merge_gate_rejected_final":
+                                self._cleanup_worker(issue, entry)
+                                cleaned_up.add(entry)
                     continue
                 elif status == "running":
                     all_resolved = False
