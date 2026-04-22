@@ -296,3 +296,28 @@ setup() {
   grep -q 'expected_conflicts: 0' "$file"
   grep -q 'expected_duration_max: 60' "$file"
 }
+
+# ---------------------------------------------------------------------------
+# Case 7: issue-840 classifier bypass context 累積パターン追加検証
+# ---------------------------------------------------------------------------
+
+@test "observation-pattern-catalog: hist-classifier-bypass-context pattern exists with related_issue 840" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q 'hist-classifier-bypass-context:' "$file"
+  grep -q 'category: classifier-bypass-context' "$file"
+  grep -q 'related_issue: "840"' "$file"
+}
+
+@test "observation-pattern-catalog: hist-classifier-bypass-context cross-references W5-1 and W5-2" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q 'W5-1' "$file"
+  grep -q 'W5-2' "$file"
+}
+
+@test "observation-pattern-catalog: hist-classifier-bypass-context mentions 6-consecutive-deny example" {
+  local file="$REPO_ROOT/refs/observation-pattern-catalog.md"
+
+  grep -q '6 連続拒否' "$file"
+}
