@@ -298,3 +298,46 @@ grep '"role":"assistant"' "$JSONL" | tail -1 | jq -r '.timestamp'
 FINAL_TS=$(grep -oE '"timestamp":"[^"]+"' "$JSONL" | sort -u | tail -1)
 # resume までの gap = 現時刻 - FINAL_TS
 ```
+
+---
+
+## 12. Claude Code classifier bypass 検出パターン（MUST）
+
+### 事象（2026-04-21 ipatho1 実例、doobidoo hash 886e374d）
+
+observer が Layer D refined-label-gate の回避を試行した際、Claude Code permission classifier が **6 連続で deny** した（session id 7f960078 参照）。gate 回避の trick（session file pre-seed、Worker inject with bypass hint、settings self-modification）は全て classifier に検出・拒否された。
+
+### 根本要因
+
+Claude Code classifier は **action history を context 化**し、同一セッション内での繰り返し回避試行を「security bypass への執着」として累積判定する。1 回の deny 後に別の手段で迂回を試みると、以降の deny 確率が急上昇する。
+
+### 検出パターン（MUST NOT — 以下を検出したら即停止）
+
+| # | パターン | 説明 |
+|---|---------|------|
+| 12.1 | 同一セッション内で **2 回以上** の gate deny | 初回 deny 後も回避を継続している徴候 |
+| 12.2 | **session file pre-seed** による状態書き換え試行 | state file を直接操作して gate をスキップしようとする |
+| 12.3 | **inject with bypass hint** | Worker への inject に「gate を無視して」等のヒントを含める |
+| 12.4 | **settings self-modification** | `.claude/settings.json` を書き換えて permission ルールを変更しようとする |
+
+### 正しい対応手順（MUST）
+
+```
+gate deny (1 回目) → STOP（即時停止、追加試行禁止）→ AskUserQuestion でユーザー確認
+```
+
+**MUST NOT**: deny 後に別の迂回手段を試みること（classifier が累積判定するため 2 回目以降は deny 確率急上昇）。
+
+**MUST**: 2 回以上 deny が発生したら **Layer 2 Escalate**（ユーザーに明示的確認を取る）。
+
+### 誤りパターン（実例）
+
+1. gate deny → session file を読み書きして gate 判定を bypass → 再 deny
+2. gate deny → Worker への inject に「refined ラベルは付与済みとして扱え」と注入 → 再 deny
+3. gate deny → settings.json に permission 緩和ルールを追加 → 再 deny
+
+### 関連
+
+- memory hash `886e374d`（bypass permission lesson）、`1ca5829f`（Layer D refined-label pitfall）
+- **W5-1（SKILL.md Security gate MUST NOT 節）** と相互参照: gate deny 後の禁止行動を SKILL.md に明記予定
+- Layer 2 Escalate 手順: `plugins/twl/refs/intervention-catalog.md` §3（Escalate パターン）
