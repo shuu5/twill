@@ -337,6 +337,7 @@ skills:
       - script: budget-detect         # #814 Phase 1: BUDGET-LOW 検知・停止シーケンス
       - script: budget-monitor-watcher  # #814 Phase 1: budget 専用 Monitor watcher ループ
       - script: session-init          # #814 Phase 1: SupervisorSession 初期化
+      - script: step0-memory-ambient  # #830 Wave B: Step 0 ambient-hints.md TTL チェック・書き込み
       - reference: pitfalls-catalog   # Phase A: 起動時 Step 0 Read MUST
       - reference: proxy-dialog-playbook  # #814 Phase 2: proxy 対話完全手順
       - reference: ref-invariants     # 不変条件 A-M 正典参照（境界説明）
@@ -2851,6 +2852,12 @@ scripts:
     type: script
     path: skills/su-observer/scripts/session-init.sh
     description: "su-observer SupervisorSession 初期化: .supervisor/session.json 生成（session_id / claude_session_id / observer_window）+ twl audit on。新規セッション開始時に SKILL.md Step 0 から呼び出す"
+
+  # su-observer Step 0 ambient-hints TTL キャッシュ (#830 Wave B W2)
+  step0-memory-ambient:
+    type: script
+    path: skills/su-observer/scripts/step0-memory-ambient.sh
+    description: "su-observer Step 0 ambient-hints.md TTL チェック（24h）と書き込み: --check で FRESH(exit 0)/STALE(exit 1) を返す。--write で stdin を .supervisor/ambient-hints.md に保存（TTL リセット）。STALE 時は LLM が mcp__doobidoo__memory_search を実行して --write で保存する"
 
 # エージェント（C-3 で追加）
 agents:
