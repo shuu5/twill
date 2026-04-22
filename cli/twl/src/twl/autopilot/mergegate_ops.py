@@ -359,7 +359,38 @@ class MergeGateOperationsMixin:
     # ------------------------------------------------------------------
 
     def _run_merge(self: _MergeGateHost, gh_repo_flag: list[str]) -> bool:
-        """Execute gh pr merge --squash. Returns True on success."""
+        """Execute gh pr merge --squash. Returns True on success.
+
+        #872: DEV_AUTOPILOT_MERGEABILITY_PRECHECK=true 時、gh pr view で
+        mergeStateStatus を事前確認し、BLOCKED/UNSTABLE/BEHIND の場合は
+        failure.reason=branch_protection_* で即時 fail-fast (C4 対策)。
+        """
+        if os.environ.get("DEV_AUTOPILOT_MERGEABILITY_PRECHECK", "false").lower() == "true":
+            precheck = subprocess.run(
+                ["gh", "pr", "view", self.pr_number, *gh_repo_flag, "--json", "mergeStateStatus"],
+                capture_output=True,
+                text=True,
+            )
+            if precheck.returncode == 0:
+                try:
+                    state = json.loads(precheck.stdout).get("mergeStateStatus", "")
+                    if state in ("UNSTABLE", "BLOCKED", "BEHIND"):
+                        failure = json.dumps({
+                            "reason": f"branch_protection_{state.lower()}",
+                            "details": f"gh pr view mergeStateStatus={state}",
+                            "step": "merge-gate-precheck",
+                            "pr": f"#{self.pr_number}",
+                        })
+                        _state_write(self.issue, "pilot", status="failed", failure=failure)
+                        print(
+                            f"[merge-gate] Issue #{self.issue}: branch protection block "
+                            f"(mergeStateStatus={state}) - Pilot 介入が必要",
+                            file=sys.stderr,
+                        )
+                        return False
+                except (json.JSONDecodeError, ValueError):
+                    pass  # precheck parse 失敗時は従来の merge flow に fallback
+
         result = subprocess.run(
             ["gh", "pr", "merge", self.pr_number, *gh_repo_flag, "--squash"],
             capture_output=True,

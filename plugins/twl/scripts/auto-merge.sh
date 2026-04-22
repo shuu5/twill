@@ -179,6 +179,18 @@ fi
 # ============================================================
 echo "[auto-merge] Issue #${ISSUE_NUM}: PR #${PR_NUMBER} の squash merge を実行..."
 
+# #872: DEV_AUTOPILOT_MERGEABILITY_PRECHECK=true 時、mergeStateStatus 事前確認で
+# branch protection block を fail-fast (C4 対策)。
+if [[ "${DEV_AUTOPILOT_MERGEABILITY_PRECHECK:-false}" == "true" ]]; then
+  MERGE_STATE=$(gh pr view "$PR_NUMBER" --json mergeStateStatus --jq '.mergeStateStatus' 2>/dev/null || echo "")
+  case "$MERGE_STATE" in
+    BLOCKED|UNSTABLE|BEHIND)
+      echo "[auto-merge] ⚠️ branch protection block: mergeStateStatus=$MERGE_STATE (Pilot 介入が必要)" >&2
+      exit 1
+      ;;
+  esac
+fi
+
 MERGE_ERROR_LOG=$(mktemp /tmp/auto-merge-error-XXXXXX.log)
 trap 'rm -f "${MERGE_ERROR_LOG:-}"' EXIT
 if ! gh pr merge "$PR_NUMBER" --squash 2>"$MERGE_ERROR_LOG"; then
