@@ -162,6 +162,10 @@ err() {
 # Compaction Recovery: current_step を issue-{N}.json に記録
 # 引数: step_id（記録するステップ名）
 # issue_num はブランチ名から自動抽出。取得できない場合はサイレントスキップ
+#
+# #890: last_heartbeat_at も同時更新することで、updated_at が他書込経路で
+# 更新されたとしても "実際に chain step 境界を通過した" タイムスタンプを
+# orchestrator stagnation 判定が正確に読めるようにする。
 record_current_step() {
   local step_id="${1:-}"
   [[ -z "$step_id" ]] && return 0
@@ -172,8 +176,12 @@ record_current_step() {
   [[ -z "$issue_num" ]] && return 0
   # PYTHONPATH 検証（Issue #227）
   ensure_pythonpath || return 0
-  # record current_step via Python state module
-  python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "current_step=${step_id}" 2>/dev/null || true
+  local now_utc
+  now_utc="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  # record current_step + last_heartbeat_at via Python state module (#890)
+  python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker \
+    --set "current_step=${step_id}" \
+    --set "last_heartbeat_at=${now_utc}" 2>/dev/null || true
 }
 
 # =====================================================================

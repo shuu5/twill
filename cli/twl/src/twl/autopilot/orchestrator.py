@@ -536,21 +536,29 @@ class PhaseOrchestrator:
             print(f"[orchestrator] escalation signal 作成失敗: {e}", file=sys.stderr)
 
     def _check_stagnation(self, issue: str, repo_id: str) -> bool:
-        """Return True if updated_at is older than threshold seconds.
+        """Return True if heartbeat is older than threshold seconds.
+
+        #890: last_heartbeat_at を優先参照し、欠損時のみ updated_at に fallback する。
+        - last_heartbeat_at は chain-runner::record_current_step でのみ更新される pure heartbeat。
+        - updated_at は state.py が任意 write で自動更新するため、軽微な副作用 write で
+          "実際には chain が進んでいない" 状態でも fresh になりうる (誤検知 回避)。
+        - 既存 state file に last_heartbeat_at 欠損時は updated_at にフォールバックして回帰ゼロ。
 
         C6 MVP (#888): PR workflow step (ac-verify 等) の LLM 内部 stall 対策として、
         current_step が PR_WORKFLOW_STEPS に含まれる場合は短縮 threshold を適用する。
         """
-        updated_at_str = _read_state(issue, "updated_at", self.autopilot_dir, repo_id)
-        if not updated_at_str:
+        heartbeat_str = _read_state(issue, "last_heartbeat_at", self.autopilot_dir, repo_id)
+        timestamp_str = heartbeat_str or _read_state(
+            issue, "updated_at", self.autopilot_dir, repo_id
+        )
+        if not timestamp_str:
             return False
         try:
-            updated_at = datetime.fromisoformat(updated_at_str.replace("Z", "+00:00"))
-            # Compare as UTC-aware if possible, else naive
+            ts = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
             now = datetime.now(timezone.utc)
-            if updated_at.tzinfo is None:
-                updated_at = updated_at.replace(tzinfo=timezone.utc)
-            elapsed = (now - updated_at).total_seconds()
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            elapsed = (now - ts).total_seconds()
 
             # C6 MVP: step-aware threshold
             current_step = _read_state(issue, "current_step", self.autopilot_dir, repo_id)
