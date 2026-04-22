@@ -2127,6 +2127,9 @@ commands:
       - script: session-create
     description: "セッション初期化（autopilot-init.sh + session-create.sh ラッパー）"
 
+  # [起動経路 A] autopilot-launch: Pilot が Issue 単位で Worker を起動する経路。
+  # window 名 ap-<N>、issue-<N>.json 生成、/twl:workflow-setup #N を inject して chain を回転させる。
+  # spawn-controller.sh co-autopilot（起動経路 B）とは役割が異なる（#836）。
   autopilot-launch:
     type: atomic
     refined_by: "ref-prompt-guide@2c7a62f2"
@@ -2845,6 +2848,9 @@ scripts:
     description: "phase-review 必須チェック（merge-gate）: phase-review 不在時は REJECT。scope/direct / quick ラベルはスキップ"
 
   # su-observer controller spawn wrapper (Phase A 2026-04-21)
+  # [起動経路 B] spawn-controller.sh co-autopilot: su-observer が Pilot セッション全体を spawn する経路。
+  # window 名 wt-co-autopilot-<HHMMSS>、issue-<N>.json は Pilot が生成（未生成のままでは chain 不回転）。
+  # Issue 単位 Worker 起動（起動経路 A）と混同禁止（#836、pitfalls-catalog §13 参照）。
   spawn-controller:
     type: script
     path: skills/su-observer/scripts/spawn-controller.sh
