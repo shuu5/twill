@@ -1,0 +1,39 @@
+name: Catalog Integrity
+
+on:
+  push:
+    paths:
+      - 'plugins/twl/refs/*.md'
+      - 'plugins/twl/skills/su-observer/refs/*.md'
+      - 'plugins/twl/deps.yaml'
+      - 'plugins/twl/tests/bats/catalog-integrity.bats'
+      - 'plugins/twl/scripts/check-catalog-integrity.sh'
+  pull_request:
+    paths:
+      - 'plugins/twl/refs/*.md'
+      - 'plugins/twl/skills/su-observer/refs/*.md'
+      - 'plugins/twl/deps.yaml'
+      - 'plugins/twl/tests/bats/catalog-integrity.bats'
+      - 'plugins/twl/scripts/check-catalog-integrity.sh'
+
+permissions: {}
+
+jobs:
+  catalog-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Install bats
+        run: |
+          git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+          /tmp/bats-core/install.sh /usr/local
+          git clone --depth 1 https://github.com/bats-core/bats-support.git plugins/twl/tests/lib/bats-support
+          git clone --depth 1 https://github.com/bats-core/bats-assert.git plugins/twl/tests/lib/bats-assert
+      - name: Run catalog integrity checks
+        working-directory: plugins/twl
+        run: bats tests/bats/catalog-integrity.bats
