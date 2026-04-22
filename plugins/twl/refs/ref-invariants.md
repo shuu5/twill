@@ -131,11 +131,13 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 ## 不変条件 L: autopilot マージ実行責務
 
 - **定義**: autopilot 時のマージ実行は Orchestrator の `mergegate.py` 経由のみでなければならない（SHALL）。Worker chain の auto-merge ステップは `merge-ready` 宣言のみを行い、マージは実行しない。
+- **適用範囲**: Worker chain および Orchestrator の autopilot 実行パス。**Supervisor (su-observer) による観察介入 (intervention-catalog.md Layer 0/1) は対象外**。stall 回復のための手動 squash merge 等は Supervisor の監視責務に基づく例外として許可される (#848)。
 - **根拠**: ADR なし — 慣習的制約
 - **検証方法**: [`invariant-L: ref-invariants.md defines invariant L (autopilot マージ実行責務)`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-L: auto-merge.sh sets merge-ready without merging in autopilot mode`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
   - `cli/twl/src/twl/autopilot/mergegate.py`
   - `plugins/twl/scripts/auto-merge.sh`
+  - `plugins/twl/refs/intervention-catalog.md` (Supervisor 観察介入の例外定義)
 
 ---
 

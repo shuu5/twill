@@ -74,15 +74,16 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 - **事後**: InterventionRecord を `.observation/` に記録
 - **部分一致フォールバック**: state stagnate のみで `>>> 実装完了:` が確認できない場合は **パターン4（Layer 1 Confirm: Worker 長時間 idle）** として処理する
 
-### パターン 8: Pilot auto-merge stall → 手動 squash-merge（Wave 1-5 実績）
+### パターン 8: Pilot auto-merge stall → 手動 squash-merge（Wave 1-5 + Phase B 実績）
 
-- **Wave 実績**: Wave 1-5 で Pilot auto-merge stall 率 92%（9 PR 連続）。observer が手動 squash-merge を代行した実績に基づき Auto 層に追加
+- **Wave 実績**: Wave 1-5 で Pilot auto-merge stall 率 92%、Phase B で 100% (0/19 自律 merge)。observer が手動 squash-merge を代行した実績に基づき Auto 層に追加。Phase C W2 audit (#871) で C3 (merge-ready race) + C4 (branch protection UNSTABLE) が真主因と確定
 - **検出条件**: PR が "merge-ready" 状態で 10 分以上マージされない、かつ `gh pr view <N> --json mergeStateStatus` が `CLEAN` であること
 - **修復手順**:
   1. `gh pr view <N> --json mergeStateStatus,mergeable` でマージ可能状態を確認
-  2. `gh pr merge <N> --squash --auto` を実行
+  2. `gh pr merge <N> --squash --auto` を実行（UNSTABLE の場合は `--admin --squash`）
 - **前提条件**: PR が CLEAN 状態かつ全 CI チェック通過済みであること
 - **リスク評価**: 低（squash-merge は merge-gate 通過済み前提、reversible = git revert 可）
+- **不変条件 L 整合性**: Supervisor による観察介入は不変条件 L の適用対象外（#848 で ref-invariants.md に明示）。本操作は Supervisor 監視責務に基づく例外として許可される
 - **事後**: InterventionRecord を `.observation/` に記録
 
 ### パターン 9: session-comm.sh inject による confirmation プロンプト解消（yes/Enter 自動応答）
