@@ -138,3 +138,39 @@ teardown() {
   total=$(jq -r '.total' "$EXPECTED_STATE_FILE")
   [ "$total" = "4" ]
 }
+
+# ---------------------------------------------------------------------------
+# Cleanup: co-issue 終了時クリーンアップ（AC #832 §1）
+# WHEN spec-review session state ファイルが存在する状態でクリーンアップ snippet を実行する
+# THEN state ファイルが削除される
+# ---------------------------------------------------------------------------
+@test "cleanup: spec-review session state ファイルが削除される" {
+  # 初期化してファイルを作成
+  run bash "$SCRIPT_SRC" 1
+  [ "$status" -eq 0 ]
+  [ -f "$EXPECTED_STATE_FILE" ]
+
+  # co-issue SKILL.md の cleanup snippet と同等の処理
+  SPEC_REVIEW_HASH=$(printf '%s' "${CLAUDE_PROJECT_ROOT:-$PWD}" | cksum | awk '{print $1}')
+  SPEC_REVIEW_STATE_FILE="/tmp/.spec-review-session-${SPEC_REVIEW_HASH}.json"
+  rm -f "$SPEC_REVIEW_STATE_FILE"
+
+  [ ! -f "$EXPECTED_STATE_FILE" ]
+}
+
+# ---------------------------------------------------------------------------
+# Cleanup: ファイルが存在しない場合も cleanup が冪等である
+# WHEN spec-review session state ファイルが存在しない状態でクリーンアップ snippet を実行する
+# THEN エラーなく終了する
+# ---------------------------------------------------------------------------
+@test "cleanup: state ファイルが存在しなくても冪等に終了する" {
+  [ ! -f "$EXPECTED_STATE_FILE" ]
+
+  # rm -f は対象ファイルが存在しなくても exit 0
+  run bash -c '
+    SPEC_REVIEW_HASH=$(printf "%s" "${CLAUDE_PROJECT_ROOT:-$PWD}" | cksum | awk "{print \$1}")
+    SPEC_REVIEW_STATE_FILE="/tmp/.spec-review-session-${SPEC_REVIEW_HASH}.json"
+    rm -f "$SPEC_REVIEW_STATE_FILE"
+  '
+  [ "$status" -eq 0 ]
+}
