@@ -114,6 +114,35 @@ scripts/spawn-controller.sh <skill> <prompt-file> [cld-spawn opts...]
 
 使用可能な session plugin スクリプト: `cld-observe`, `cld-observe-loop`, `cld-observe-any`, `session-state.sh`（A5 補助のみ、単独使用禁止）, `session-comm.sh`
 
+### spawn プロンプトの文脈包含
+
+spawn prompt は **observer 固有の文脈のみ** を含む（典型 5-15 行、`refs/pitfalls-catalog.md §10` 参照）。
+
+#### MUST NOT: skill 自律取得可能情報の転記
+
+以下は skill が自律取得できるため prompt に転記してはならない（MUST NOT）:
+
+- Issue body / labels / title（`gh issue view N --json ...`）
+- Issue comments（`gh issue view N --comments`）
+- explore summary（`twl explore-link read N`）
+- architecture 文書（`Read plugins/twl/architecture/vision.md` 等）
+- SKILL.md Phase 手順（skill 自身が内包）
+- past memory 生データ（`mcp__doobidoo__memory_search`）
+- bare repo / worktree 構造（skill が auto-detect）
+
+#### MUST: observer 固有文脈のみ（典型 5-15 行）
+
+最小 prompt 例（テンプレート）:
+```text
+su-observer から spawn（spawn 元識別: window: <win>, session: <id>）
+Issue 番号 #<N>: .explore/<N>/summary.md にリンク済
+AskUserQuestion は observer が pipe-pane log で代理応答
+observer 独自 deep-dive 観点: <観察から得た解釈・優先度付け>
+Wave 文脈 / 並列タスク境界: Wave <N>、並列 <M> Issue 中 <K> 番目
+```
+
+**例外**: `--force-large` を spawn-controller.sh に渡し、prompt 冒頭に `REASON:` 行で正当化することで 30 行超を許容できる。
+
 ### Worker 起動時の auto mode 確認方針
 
 Worker pane に `⏵⏵ auto mode on` が出ない場合でも auto mode は有効である（`refs/pitfalls-catalog.md` §4.7-4.8 参照）。確認方法 A（heartbeat ファイル存在確認）/ 確認方法 B（pane capture grep）の詳細は同 §4.7-4.8 を参照。
