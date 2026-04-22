@@ -1,4 +1,12 @@
-"""deps-integrity: hash-compare chain.py (SSoT) vs chain-steps.sh and deps.yaml.chains."""
+"""deps-integrity: hash-compare chain.py (SSoT) vs chain-steps.sh and deps.yaml.chains.
+
+SSoT 境界 (ADR-022):
+- chain.py CHAIN_STEPS は chain-runner.sh dispatch 対象 step の SSoT (完全一致検証)
+- chain-steps.sh は chain.py の bash mirror (完全一致検証)
+- deps.yaml.chains は workflow skill 内 orchestrate step を含む拡張 metadata
+  (step の chain 所属・順序は workflow skill 概念順として別 SSoT。
+  chain.py CHAIN_STEPS が deps.yaml 全 chain flatten の step 集合に包含されることのみ検証)
+"""
 
 from __future__ import annotations
 
@@ -164,24 +172,24 @@ def check_deps_integrity(plugin_root: Path) -> tuple[list[str], list[str]]:
         return errors, warnings
 
     actual_chains = deps.get("chains", {})
-    expected = _expected_chains(py_step_to_workflow, py_chain_steps)
 
-    for chain_name, exp_steps in expected.items():
-        actual = actual_chains.get(chain_name)
-        if actual is None:
-            errors.append(
-                f"[deps-integrity] deps.yaml.chains.{chain_name}: missing\n"
-                f"  expected steps: {exp_steps}\n"
-                f"  {fix_hint}"
-            )
-            continue
-        act_steps = actual.get("steps", []) if isinstance(actual, dict) else list(actual)
-        if _hash_list(exp_steps) != _hash_list(act_steps):
-            errors.append(
-                f"[deps-integrity] deps.yaml.chains.{chain_name}.steps mismatch\n"
-                f"  expected: {exp_steps}\n"
-                f"  actual:   {act_steps}\n"
-                f"  {fix_hint}"
-            )
+    # ADR-022: chain.py CHAIN_STEPS (runner dispatch 対象 step の SSoT) が
+    # deps.yaml.chains 全 chain flatten の step 集合に包含されているか検証する。
+    # deps.yaml.chains の step 所属・順序は workflow skill 概念順として別 SSoT。
+    actual_all_steps: set[str] = set()
+    for chain_data in actual_chains.values():
+        steps = chain_data.get("steps", []) if isinstance(chain_data, dict) else list(chain_data)
+        actual_all_steps.update(steps)
+
+    expected_set = set(py_step_to_workflow.keys()) & set(py_chain_steps)
+    missing = sorted(expected_set - actual_all_steps)
+    if missing:
+        errors.append(
+            f"[deps-integrity] deps.yaml.chains missing chain.py SSoT step(s)\n"
+            f"  expected (chain.py CHAIN_STEPS ∩ STEP_TO_WORKFLOW): {sorted(expected_set)}\n"
+            f"  actual (union of deps.yaml.chains.*.steps):       {sorted(actual_all_steps)}\n"
+            f"  missing from actual:                               {missing}\n"
+            f"  {fix_hint}"
+        )
 
     return errors, warnings

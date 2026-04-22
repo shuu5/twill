@@ -1,10 +1,11 @@
 # ADR-020: chain SSoT refinement — chain.py を真の SSoT 化する具体手順
 
-**Status**: Proposed
+**Status**: Proposed (D-2, D-5 は Superseded by ADR-022)
 **Date**: 2026-04-21
 **Issue**: #790
 **Supersedes**: —
-**Related**: ADR-0007 (chain SSOT 2 レイヤー責務分離)、ADR-018 (state schema SSoT)、ADR-021 (pilot-driven workflow loop)
+**Partially Superseded by**: ADR-022 (D-2 CHAIN_META 導入、D-5 差分ゼロ検証のみ)
+**Related**: ADR-0007 (chain SSOT 2 レイヤー責務分離)、ADR-018 (state schema SSoT)、ADR-021 (pilot-driven workflow loop)、ADR-022 (chain SSoT 境界明確化)
 
 ---
 

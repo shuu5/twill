@@ -16,7 +16,10 @@ Claude Code twl plugin（chain-driven + autopilot-first）。TWiLL モノリポ 
 
 deps.yaml v3.0 がプラグイン構成（コンポーネント定義）の唯一の情報源。
 
-**chain.py = chain / workflow 遷移の SSoT。deps.yaml.chains と chain-steps.sh は `twl chain export` の computed artifact**
+**chain SSoT 境界 (ADR-022)**:
+- chain.py `CHAIN_STEPS` = chain-runner.sh dispatch 対象 step (runner step) の SSoT
+- chain-steps.sh = chain.py の bash mirror (`twl chain export` computed artifact)
+- deps.yaml.chains = workflow skill 内 orchestrate step を含む拡張 metadata (独立 SSoT)
 
 ### Controller は7つ
 
