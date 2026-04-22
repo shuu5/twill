@@ -214,6 +214,17 @@ hist-inject-wait-timeout:
   detection_condition: "cld-spawn 直後 (~60s 以内) に inject-file --wait を実行した場合"
   action: "待機時間を 120s 以上に設定するか、cld-spawn 後 90s 待ってから inject を試みる"
   memory_hash: "15ab26c5"
+
+hist-classifier-bypass-context:
+  regex: 'bypass.*intent|classifier.*bypass|deny.*bypass|Layer D.*deny'
+  severity: warning
+  category: classifier-bypass-context
+  description: "[BYPASS-CONTEXT] Classifier の bypass 意図検出はセッション内 action history で累積判定される。類似操作の deny 後にアプローチを変えた再試行も deny される（実測: 6 連続拒否、2026-04-21）。W5-1 (Security gate MUST NOT), W5-2 (2-deny STOP rule) と三位一体。observer は deny を「意図の二次検証」として受容し即 STOP すること"
+  observation_signal: "同一セッション内で類似操作が複数回 deny され、trick を変えても deny が継続する（gh issue edit → deny、spec-review-session-init + gh issue edit → deny、計 6 連続拒否）"
+  detection_condition: "bypass 意図を持つ操作（label 追加・settings.json 変更提案等）が deny され、直後に手法を変えた類似操作も deny された場合。deny 回数に関係なく累積検出される"
+  action: "deny を受容し即 STOP。W5-2 (2-deny STOP rule) に従い 2 回目 deny の時点で作業停止しユーザーに報告。bypass 試行を重ねるほど検出感度が上がるため早期停止が最善策"
+  related_issue: "840"
+  memory_hash: "886e374d"
 ```
 
 ## 拡張ガイド
