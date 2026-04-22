@@ -35,8 +35,24 @@ MAX_POLL = int(os.environ.get("DEV_AUTOPILOT_MAX_POLL", "360"))
 MAX_NUDGE = int(os.environ.get("DEV_AUTOPILOT_MAX_NUDGE", "3"))
 NUDGE_TIMEOUT = int(os.environ.get("DEV_AUTOPILOT_NUDGE_TIMEOUT", "30"))
 STAGNATION_THRESHOLD = int(os.environ.get("AUTOPILOT_STAGNATE_SEC", os.environ.get("DEV_AUTOPILOT_STAGNATION_THRESHOLD", "900")))
+STAGNATION_THRESHOLD_PR_STEP = int(os.environ.get("DEV_AUTOPILOT_STAGNATION_SEC_PR_STEP", "300"))
 MAX_STAGNATION_NUDGE = int(os.environ.get("DEV_AUTOPILOT_MAX_STAGNATION_NUDGE", "3"))
 POLL_INTERVAL = 10
+
+# C6 MVP (#888): step-aware stagnation threshold
+# PR workflow (pr-verify / pr-fix / pr-merge) 内の step は LLM 内部 stall が発生しやすく、
+# 短縮 threshold を適用する。ADR-022 に基づき workflow skill 内 orchestrate step も含む。
+PR_WORKFLOW_STEPS = frozenset({
+    # pr-verify (STEP_TO_WORKFLOW)
+    "prompt-compliance", "ts-preflight", "phase-review",
+    "scope-judge", "pr-test", "ac-verify",
+    # pr-merge (STEP_TO_WORKFLOW)
+    "all-pass-check", "pr-cycle-report",
+    # workflow skill 内 orchestrate (ADR-022 deps.yaml SSoT, chain.py CHAIN_STEPS 外)
+    "e2e-screening", "pr-cycle-analysis", "merge-gate", "auto-merge",
+    # pr-fix (workflow skill 内 dynamic orchestrate)
+    "fix-phase", "post-fix-verify", "warning-fix",
+})
 
 _BRANCH_RE = re.compile(r"^[a-zA-Z0-9._/\-]+$")
 
@@ -520,7 +536,11 @@ class PhaseOrchestrator:
             print(f"[orchestrator] escalation signal 作成失敗: {e}", file=sys.stderr)
 
     def _check_stagnation(self, issue: str, repo_id: str) -> bool:
-        """Return True if updated_at is older than STAGNATION_THRESHOLD seconds."""
+        """Return True if updated_at is older than threshold seconds.
+
+        C6 MVP (#888): PR workflow step (ac-verify 等) の LLM 内部 stall 対策として、
+        current_step が PR_WORKFLOW_STEPS に含まれる場合は短縮 threshold を適用する。
+        """
         updated_at_str = _read_state(issue, "updated_at", self.autopilot_dir, repo_id)
         if not updated_at_str:
             return False
@@ -531,7 +551,15 @@ class PhaseOrchestrator:
             if updated_at.tzinfo is None:
                 updated_at = updated_at.replace(tzinfo=timezone.utc)
             elapsed = (now - updated_at).total_seconds()
-            return elapsed >= STAGNATION_THRESHOLD
+
+            # C6 MVP: step-aware threshold
+            current_step = _read_state(issue, "current_step", self.autopilot_dir, repo_id)
+            threshold = (
+                STAGNATION_THRESHOLD_PR_STEP
+                if current_step in PR_WORKFLOW_STEPS
+                else STAGNATION_THRESHOLD
+            )
+            return elapsed >= threshold
         except (ValueError, TypeError):
             return False
 
