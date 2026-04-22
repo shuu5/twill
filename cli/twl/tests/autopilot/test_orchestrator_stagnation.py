@@ -524,3 +524,91 @@ class TestStepAwareThreshold:
         assert "merge-gate" in orchestrator_mod.PR_WORKFLOW_STEPS
         assert "init" not in orchestrator_mod.PR_WORKFLOW_STEPS
         assert "worktree-create" not in orchestrator_mod.PR_WORKFLOW_STEPS
+
+
+# ---------------------------------------------------------------------------
+# #875 C3: merge-ready race 解消 (#873 fix) の unit test
+# orchestrator._poll_phase で status=merge-ready 検知時、即時 _run_merge_gate を
+# 呼び出して POLL_INTERVAL 分の滞留を回避する動作を validate する。
+# ---------------------------------------------------------------------------
+
+
+class TestMergeReadyRaceResolution:
+    """C3 (merge-ready race 解消, #873 fix). _poll_phase branch validation."""
+
+    def test_merge_ready_triggers_immediate_merge_gate(self, tmp_path: Path) -> None:
+        """status=merge-ready の issue を _poll_phase で検出したら即時 _run_merge_gate が呼ばれる."""
+        orch = _make_orchestrator(tmp_path)
+        entry = "_default:700"
+
+        with patch.object(orch, "_run_merge_gate") as mock_gate, \
+             patch.object(orch, "_cleanup_worker") as mock_cleanup, \
+             patch("twl.autopilot.orchestrator._read_state") as mock_read:
+            # 最初の read: status=merge-ready で分岐 L437 へ入る
+            # _run_merge_gate 実行後の read: status=done で cleanup_worker へ進む
+            mock_read.side_effect = ["merge-ready", "done"]
+
+            orch._poll_phase([entry])
+
+            mock_gate.assert_called_once_with(entry)
+            mock_cleanup.assert_called_once_with("700", entry)
+
+    def test_merge_ready_then_failed_final_triggers_cleanup(self, tmp_path: Path) -> None:
+        """merge_gate_rejected_final は retry_count=0 でも即 cleanup (#229 + #873 合流)."""
+        orch = _make_orchestrator(tmp_path)
+        entry = "_default:701"
+
+        with patch.object(orch, "_run_merge_gate") as mock_gate, \
+             patch.object(orch, "_cleanup_worker") as mock_cleanup, \
+             patch("twl.autopilot.orchestrator._read_state") as mock_read:
+            mock_read.side_effect = [
+                "merge-ready",         # 初回 status 読み (L429)
+                "failed",              # _run_merge_gate 後の status_after
+                "0",                   # retry_count
+                "merge_gate_rejected_final",  # failure.reason
+            ]
+            orch._poll_phase([entry])
+
+            mock_gate.assert_called_once_with(entry)
+            mock_cleanup.assert_called_once_with("701", entry)
+
+    def test_merge_ready_transient_failure_skips_cleanup(self, tmp_path: Path) -> None:
+        """retry_count=0 + reason != merge_gate_rejected_final なら cleanup せず継続."""
+        orch = _make_orchestrator(tmp_path)
+        entry = "_default:702"
+
+        with patch.object(orch, "_run_merge_gate") as mock_gate, \
+             patch.object(orch, "_cleanup_worker") as mock_cleanup, \
+             patch("twl.autopilot.orchestrator._read_state") as mock_read:
+            mock_read.side_effect = [
+                "merge-ready",     # 初回 status 読み
+                "failed",          # _run_merge_gate 後
+                "0",               # retry_count
+                "merge_conflict",  # failure.reason (transient)
+            ]
+            orch._poll_phase([entry])
+
+            mock_gate.assert_called_once_with(entry)
+            # transient な失敗では cleanup しない
+            mock_cleanup.assert_not_called()
+
+    def test_merge_ready_race_fix_does_not_wait_poll_interval(self, tmp_path: Path) -> None:
+        """#873 fix 確認: _run_merge_gate が POLL_INTERVAL sleep なしに即実行される."""
+        orch = _make_orchestrator(tmp_path)
+        entry = "_default:703"
+
+        gate_called_times: list[float] = []
+
+        def record_time(_entry: str) -> None:
+            gate_called_times.append(time.monotonic())
+
+        start = time.monotonic()
+        with patch.object(orch, "_run_merge_gate", side_effect=record_time), \
+             patch.object(orch, "_cleanup_worker"), \
+             patch("twl.autopilot.orchestrator._read_state") as mock_read:
+            mock_read.side_effect = ["merge-ready", "done"]
+            orch._poll_phase([entry])
+
+        assert gate_called_times, "_run_merge_gate was not called"
+        # fix 後は 1 秒未満で呼ばれる（POLL_INTERVAL=10-30s の待ちがない）
+        assert gate_called_times[0] - start < 1.0
