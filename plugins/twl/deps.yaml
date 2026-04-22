@@ -1722,7 +1722,8 @@ commands:
     can_spawn: []
     calls:
       - reference: externalization-schema
-    description: "SupervisorSession 状態を externalization-schema に従って外部ファイルへ書き出す"
+      - script: externalize-state-exit-gate
+    description: "SupervisorSession 状態を externalization-schema に従って外部ファイルへ書き出す（Step 4 exit gate で pitfall_declaration を機械検証）"
 
   # === su-observer 介入コマンド (#310) ===
 
@@ -2646,6 +2647,11 @@ scripts:
     description: Pseudo-Pilot 用 worker input-waiting polling helper
     calls:
       - script: session:session-state
+
+  externalize-state-exit-gate:
+    type: script
+    path: scripts/externalize-state-exit-gate.sh
+    description: "externalize-state Step 4 exit gate — session.json の pitfall_declaration 記録を機械検証（exit 0=OK, 1=未記録WARN, 2=不在）"
 
   ac-checklist-gen:
     type: script

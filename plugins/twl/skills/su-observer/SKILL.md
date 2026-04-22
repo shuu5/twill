@@ -161,7 +161,7 @@ Issue 群の一括実装（Wave）を要求された場合:
    - `commands/externalize-state.md` を Read → 実行（`--trigger wave_complete`）
    - audit snapshot: `twl audit snapshot --source-dir "${AUTOPILOT_DIR:-.autopilot}" --label "wave/${WAVE_NUM}"`
    - イベントクリーンアップ: `rm -f .supervisor/events/* 2>/dev/null || true`
-   - **SU-6a（MUST）**: doobidoo に `observer-wave` / `observer-pitfall` / `observer-lesson` / `observer-intervention` タグで保存（詳細: `refs/pitfalls-catalog.md` §8）
+   - **SU-6a（MUST）**: doobidoo に `observer-wave` / `observer-pitfall` / `observer-lesson` / `observer-intervention` タグで保存（詳細: `refs/pitfalls-catalog.md` §8）。`commands/externalize-state.md` Step 4 Exit Gate で `pitfall_declaration` を宣言し、`scripts/externalize-state-exit-gate.sh` で exit 0 を確認すること（未宣言は WARN）
    - **SU-6b（SHOULD）**: context 消費量 80% 以上で `/compact` をユーザーへ提案
 6. 次 Wave があれば 1 に戻る。全 Wave 完了時はサマリを報告
 
