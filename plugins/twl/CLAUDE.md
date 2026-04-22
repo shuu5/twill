@@ -68,6 +68,16 @@ chain 定義変更  → chain.py 編集   → twl check --deps-integrity → cha
 
 commit 前に `twl check --deps-integrity` を実行し、chain.py CHAIN_STEPS と deps.yaml.chains・chain-steps.sh の整合性を確認する（MUST）。
 
+### Pre-commit hook セットアップ (optional)
+
+deps-integrity drift をローカル commit 時点で検知するため、以下 1 回実行で pre-commit hook を設置できる:
+
+```bash
+bash plugins/twl/scripts/install-git-hooks.sh
+```
+
+hook は `chain.py` / `chain-steps.sh` / `deps.yaml` のいずれかが staged のとき `twl check --deps-integrity` を実行し、errors 検出時に commit を abort する。`git commit --no-verify` で bypass 可能（user 裁量）。
+
 ## specialist-audit JSON 出力契約
 
 `specialist-audit.sh` はデフォルトで JSON を stdout に出力し、`su-observer/SKILL.md` の Wave 完了ステップは `grep -q '"status":"FAIL"'` でこの出力を判定する。`--summary` フラグは非推奨（`2bd9130` で SKILL.md から除去済み）。将来 `--summary` 形式に戻した場合、この grep 契約が破綻するため、変更時は `plugins/twl/tests/bats/scripts/su-observer-specialist-audit-grep.bats` の全 PASS を確認すること。
