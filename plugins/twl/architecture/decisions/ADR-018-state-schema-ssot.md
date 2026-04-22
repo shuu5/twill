@@ -92,3 +92,29 @@ status=$(jq -r '.status' issue-N.json)
 ## Migration
 
 既存の running session は `workflow_done` が null になるが、`current_step` の terminal 値検知で inject が継続して機能する。既存 session への影響は最小限。
+
+---
+
+## Amendment (2026-04-22、Issue #890): `last_heartbeat_at` field 追加
+
+### 背景
+
+Phase D #888 で step-aware stagnation threshold (300s) を導入した後、`_check_stagnation` は `updated_at` を heartbeat 代替として使用していた。しかし:
+
+- `updated_at` は `state.py::StateManager.write` が任意 write 時に自動更新する。軽微な副作用 write (例: `input_waiting_detected` 更新) でも fresh になる
+- LLM 判断 step 内で chain 境界を通過していないのに、別経路で state write が発生すると、実質 stall でも `updated_at` が fresh で誤 no-stagnate
+- 逆に worker が生存していても `updated_at` が長時間 stale なら誤 stagnate
+
+### 新 field: `last_heartbeat_at`
+
+| フィールド | 役割 | Writer |
+|---|---|---|
+| `last_heartbeat_at` | chain step 境界を通過した pure heartbeat (ISO8601 UTC) | `chain-runner.sh::record_current_step` のみ |
+
+- `StateManager._init_issue` で `last_heartbeat_at: now` 初期化
+- `chain-runner.sh::record_current_step` が `current_step` と同時に `last_heartbeat_at` を更新
+- `orchestrator.py::_check_stagnation` が `last_heartbeat_at` 優先参照、欠損時のみ `updated_at` に fallback (backward compat)
+
+### ADR-018 との位置づけ
+
+本 Amendment は ADR-018 Decision の原則（`status` = 外部観察 SSoT）を変更しない。`last_heartbeat_at` は orchestrator 内部判定の補助 field であり、Monitor/su-observer の外部観察には公開しない。既存廃止フィールド方針 (`workflow_done`) は維持する。

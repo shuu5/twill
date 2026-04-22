@@ -612,3 +612,110 @@ class TestMergeReadyRaceResolution:
         assert gate_called_times, "_run_merge_gate was not called"
         # fix 後は 1 秒未満で呼ばれる（POLL_INTERVAL=10-30s の待ちがない）
         assert gate_called_times[0] - start < 1.0
+
+
+# ---------------------------------------------------------------------------
+# #890: last_heartbeat_at field を使った stagnation 判定
+# - 存在する場合は last_heartbeat_at を優先
+# - 欠損時は updated_at に fallback (既存 state file backward compat)
+# - 両方欠損なら False
+# ---------------------------------------------------------------------------
+
+
+class TestLastHeartbeatAt:
+    """#890 last_heartbeat_at schema 拡張の動作検証."""
+
+    def test_heartbeat_fresh_takes_priority_over_stale_updated_at(self, tmp_path: Path) -> None:
+        """last_heartbeat_at が fresh なら updated_at が古くても stagnation=False."""
+        orch = _make_orchestrator(tmp_path)
+
+        def fake_read(issue: str, field: str, *_args, **_kwargs) -> str | None:
+            return {
+                "last_heartbeat_at": _iso_ago(100),   # fresh
+                "updated_at": _iso_ago(10000),        # stale
+                "current_step": "ac-verify",
+            }.get(field)
+
+        with patch("twl.autopilot.orchestrator._read_state", side_effect=fake_read):
+            assert orch._check_stagnation("800", "_default") is False
+
+    def test_heartbeat_stale_triggers_stagnation_despite_fresh_updated_at(
+        self, tmp_path: Path
+    ) -> None:
+        """last_heartbeat_at が stale なら updated_at が fresh でも stagnation=True.
+
+        誤検知回避の鍵: state.py が任意 write で updated_at を自動更新しても、
+        chain 境界を通過していなければ last_heartbeat_at は古いまま。
+        """
+        orch = _make_orchestrator(tmp_path)
+
+        def fake_read(issue: str, field: str, *_args, **_kwargs) -> str | None:
+            return {
+                "last_heartbeat_at": _iso_ago(400),   # stale (>300s PR step threshold)
+                "updated_at": _iso_ago(10),           # fresh (side effect)
+                "current_step": "ac-verify",
+            }.get(field)
+
+        with patch("twl.autopilot.orchestrator._read_state", side_effect=fake_read):
+            assert orch._check_stagnation("801", "_default") is True
+
+    def test_missing_heartbeat_falls_back_to_updated_at(self, tmp_path: Path) -> None:
+        """last_heartbeat_at 欠損時は updated_at にフォールバック (backward compat)."""
+        orch = _make_orchestrator(tmp_path)
+
+        def fake_read(issue: str, field: str, *_args, **_kwargs) -> str | None:
+            return {
+                "last_heartbeat_at": None,            # 欠損
+                "updated_at": _iso_ago(400),          # stale
+                "current_step": "ac-verify",
+            }.get(field)
+
+        with patch("twl.autopilot.orchestrator._read_state", side_effect=fake_read):
+            assert orch._check_stagnation("802", "_default") is True
+
+    def test_both_missing_returns_false(self, tmp_path: Path) -> None:
+        """last_heartbeat_at と updated_at どちらも欠損なら stagnation=False (安全側)."""
+        orch = _make_orchestrator(tmp_path)
+
+        def fake_read(issue: str, field: str, *_args, **_kwargs) -> str | None:
+            return None
+
+        with patch("twl.autopilot.orchestrator._read_state", side_effect=fake_read):
+            assert orch._check_stagnation("803", "_default") is False
+
+    def test_missing_heartbeat_fresh_updated_at_no_stagnation(self, tmp_path: Path) -> None:
+        """既存 (heartbeat 欠損) state file の正常運用を回帰確認."""
+        orch = _make_orchestrator(tmp_path)
+
+        def fake_read(issue: str, field: str, *_args, **_kwargs) -> str | None:
+            return {
+                "last_heartbeat_at": None,
+                "updated_at": _iso_ago(10),           # fresh
+                "current_step": "ac-verify",
+            }.get(field)
+
+        with patch("twl.autopilot.orchestrator._read_state", side_effect=fake_read):
+            assert orch._check_stagnation("804", "_default") is False
+
+    def test_init_issue_writes_last_heartbeat_at(self, tmp_path: Path) -> None:
+        """state._init_issue が last_heartbeat_at を初期書込することを確認."""
+        from twl.autopilot.state import StateManager
+
+        autopilot_dir = tmp_path / ".autopilot"
+        (autopilot_dir / "issues").mkdir(parents=True)
+
+        mgr = StateManager(autopilot_dir=autopilot_dir)
+        mgr.write(
+            type_="issue",
+            issue="805",
+            role="worker",
+            sets=[],
+            init=True,
+        )
+
+        state_file = autopilot_dir / "issues" / "issue-805.json"
+        data = json.loads(state_file.read_text())
+        assert "last_heartbeat_at" in data
+        assert data["last_heartbeat_at"] is not None
+        # ISO-8601 UTC format
+        datetime.fromisoformat(data["last_heartbeat_at"].replace("Z", "+00:00"))
