@@ -768,15 +768,44 @@ step_llm_delegate() {
   if [[ "$dispatch_mode" != "llm" ]]; then
     echo "WARN: ${step_name} の dispatch_mode は '${dispatch_mode}'（llm ではありません）" >&2
   fi
-  local ts
+  local ts ts_utc
   ts=$(date -Iseconds 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
+  ts_utc=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  # #890 + #891 (実 e2e で発覚): LLM step は step_<name> ではなく llm-delegate 経由で
+  # 実行されるため、last_heartbeat_at 更新 (#890) と ac_verify_call_count インクリメント
+  # (#891) を step_llm_delegate にも実装する必要がある。
   if [[ -n "$issue_num" ]]; then
+    # 基本 write: current_step + llm_delegated_at + last_heartbeat_at (#890 fix)
     python3 -m twl.autopilot.state write \
       --autopilot-dir "$(resolve_autopilot_dir)" \
       --type issue --issue "$issue_num" --role worker \
       --set "current_step=${step_name}" \
       --set "llm_delegated_at=${ts}" \
+      --set "last_heartbeat_at=${ts_utc}" \
       2>/dev/null || true
+
+    # #891 fix: ac-verify LLM delegate 時に call_count safety net を発火
+    if [[ "$step_name" == "ac-verify" ]]; then
+      local _max_retry="${DEV_AUTOPILOT_AC_VERIFY_MAX_RETRY:-1}"
+      local _call_count
+      _call_count=$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field ac_verify_call_count 2>/dev/null || echo "0")
+      [[ -z "$_call_count" || ! "$_call_count" =~ ^[0-9]+$ ]] && _call_count=0
+      local _new_count=$((_call_count + 1))
+      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker \
+        --set "ac_verify_call_count=${_new_count}" 2>/dev/null || true
+
+      if (( _new_count > _max_retry + 1 )); then
+        echo "[chain-runner] ac-verify call_count=${_new_count} > max=$((_max_retry + 1)) — ac_verify_llm_timeout で failed に確定 (Issue #$issue_num)" >&2
+        local _failure
+        _failure=$(printf '{"reason":"ac_verify_llm_timeout","retry_count":%d,"step":"ac-verify"}' "$((_new_count - 1))")
+        python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker \
+          --set "status=failed" \
+          --set "failure=${_failure}" 2>/dev/null || true
+        err "llm-delegate" "ac-verify LLM timeout retry 上限超過 (call_count=${_new_count}) — failed 確定"
+        return 2
+      fi
+    fi
   else
     record_current_step "$step_name"
   fi
@@ -794,13 +823,16 @@ step_llm_complete() {
     return 1
   fi
   [[ "$step_name" =~ ^[a-z0-9-]+$ ]] || { echo "ERROR: invalid step name" >&2; return 1; }
-  local ts
+  local ts ts_utc
   ts=$(date -Iseconds 2>/dev/null || date -u +"%Y-%m-%dT%H:%M:%SZ")
+  ts_utc=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
   if [[ -n "$issue_num" ]]; then
+    # #890 fix: LLM step 完了時も chain 境界通過として heartbeat を更新する
     python3 -m twl.autopilot.state write \
       --autopilot-dir "$(resolve_autopilot_dir)" \
       --type issue --issue "$issue_num" --role worker \
       --set "llm_completed_at=${ts}" \
+      --set "last_heartbeat_at=${ts_utc}" \
       2>/dev/null || true
   fi
   ok "llm-complete" "${step_name} 完了"
