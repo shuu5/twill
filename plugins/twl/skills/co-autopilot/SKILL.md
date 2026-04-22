@@ -93,6 +93,20 @@ su-observer が `supervise` モードで起動すると、co-autopilot の tmux 
 
 co-autopilot は su-observer の存在を前提とせず動作する。su-observer との連携は state ファイル（`$AUTOPILOT_DIR/session.json`, `issue-{N}.json`）と tmux window 名を通じて疎結合に行われる。
 
+### 起動経路比較（#836 文書化）
+
+co-autopilot 起動には 2 経路が存在する。混同すると chain が不回転になる（`pitfalls-catalog §13` 参照）。
+
+| 項目 | 経路 A: `autopilot-launch.sh`（Worker 起動） | 経路 B: `spawn-controller.sh co-autopilot`（Pilot spawn） |
+|------|---------------------------------------------|----------------------------------------------------------|
+| **呼び出し元** | co-autopilot Pilot（`autopilot-launch.md`） | su-observer |
+| **window 名** | `ap-<N>`（Issue 番号ベース） | `wt-co-autopilot-<HHMMSS>` |
+| **state file** | `issue-<N>.json` 生成（`--init`） | Pilot が内部で生成（経路 A を経由） |
+| **起動対象** | Worker セッション（Issue 1 件） | Pilot セッション全体（co-autopilot SKILL） |
+| **chain** | 回転（`/twl:workflow-setup #N` を inject） | co-autopilot Step 1-5 が回転 |
+| **使用場面** | Issue 単位 Worker 起動（co-autopilot 内部） | observer から Issue 群を一括実装する場合 |
+| **注意** | 直接呼び出し禁止（co-autopilot 内部専用） | state file は Pilot 経由（経路 A）で生成される |
+
 ### Worker auto mode 確認方針（observer 観察用 — Issue #800）
 
 Pilot が `autopilot-launch.sh` で起動する Worker は `--permission-mode auto` 付きで cld 経由起動される。Worker pane tail に `⏵⏵ auto mode on` が出ない場合でも auto mode は有効である（positional prompt 即送信で status bar が上書きされる仕様。Issue #800 explore で全起動経路を検証済み）。observer / Pilot は以下の手順で間接的に確認する。

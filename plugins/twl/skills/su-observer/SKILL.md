@@ -116,6 +116,12 @@ scripts/spawn-controller.sh <skill> <prompt-file> [cld-spawn opts...]
 - テスト実行 → `spawn-controller.sh co-self-improve <prompt>` → `cld-observe`（単発）
 - その他 → `spawn-controller.sh co-utility <prompt>` → 指示待ち
 
+**co-autopilot 起動時の推奨経路（#836 — MUST）:**
+`spawn-controller.sh co-autopilot` は **Pilot セッション全体**を spawn する（経路 B）。
+Issue 単位の Worker 起動（経路 A: `autopilot-launch.sh`、window `ap-<N>`、`issue-<N>.json` 生成）は
+Pilot が内部で実行する。observer が `autopilot-launch.sh` を直接呼んで Worker を起動してはならない。
+2 経路の詳細は `co-autopilot SKILL.md §Step 3.5 起動経路比較` および `refs/pitfalls-catalog.md §13` を参照。
+
 使用可能な session plugin スクリプト: `cld-observe`, `cld-observe-loop`, `cld-observe-any`, `session-state.sh`（A5 補助のみ、単独使用禁止）, `session-comm.sh`
 
 ### spawn プロンプトの文脈包含

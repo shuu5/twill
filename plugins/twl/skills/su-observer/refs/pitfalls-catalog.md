@@ -366,3 +366,28 @@ gate deny (1 回目) → STOP（即時停止、追加試行禁止）→ AskUserQ
 - memory hash `886e374d`（bypass permission lesson）、`1ca5829f`（Layer D refined-label pitfall）
 - **W5-1（SKILL.md Security gate MUST NOT 節）** と相互参照: gate deny 後の禁止行動を SKILL.md に明記予定
 - Layer 2 Escalate 手順: `plugins/twl/refs/intervention-catalog.md` §3（Escalate パターン）
+
+---
+
+## 13. 起動経路の混同（autopilot-launch.sh vs spawn-controller.sh co-autopilot）（#836 文書化）
+
+2 種類の起動経路が存在するが、混同すると chain 不回転・state file 未生成・window 名誤判定を引き起こす。
+
+| 経路 | window 名 | state file | orchestrator | chain |
+|------|-----------|------------|--------------|-------|
+| **A: `autopilot-launch.sh`** | `ap-<N>` | `issue-<N>.json` 生成 | Pilot が管理 | 回転（`/twl:workflow-setup #N` inject） |
+| **B: `spawn-controller.sh co-autopilot`** | `wt-co-autopilot-<HHMMSS>` | Pilot 経由で生成 | co-autopilot が Pilot として動作 | co-autopilot Step 1-5 が回転 |
+
+| # | Pitfall | 観察パターン（chain 不回転の症状） | 対策 |
+|---|---------|----------------------------------|------|
+| 13.1 | `spawn-controller.sh co-autopilot` で Issue 単位 Worker を直接起動しようとする | window 名が `wt-co-autopilot-*`（`ap-*` でない）、`issue-N.json` が生成されない、Worker が `/twl:workflow-setup` を実行せずに idle | **Issue 単位 Worker 起動は `autopilot-launch.sh` の責務**。observer は `spawn-controller.sh co-autopilot` で Pilot を spawn し、Worker 起動は Pilot に委譲する |
+| 13.2 | Pilot が `autopilot-launch.sh` の代わりに `cld-spawn` を直接呼んで Worker を起動する | Worker の `AUTOPILOT_DIR` / `WORKER_ISSUE_NUM_ENV` が未設定、クラッシュ検知フック非設定、state file missing | `autopilot-launch.sh` 経由必須（環境変数・クラッシュ検知フック・window-manifest を担当） |
+| 13.3 | su-observer が Worker window（`ap-*`）に `spawn-controller.sh` を呼んで Pilot を二重起動する | 同一セッションに `ap-*` と `wt-co-autopilot-*` が混在、Pilot 二重起動 | observer が spawn するのは Pilot（`wt-co-autopilot-*`）のみ。Worker（`ap-*`）への介入は `session-comm.sh inject` 経由 |
+| 13.4 | `spawn-controller.sh co-autopilot` で起動した Pilot が `issue-N.json` を生成しないまま停滞（chain 不回転の典型） | `.autopilot/issues/issue-N.json` が存在しない、tmux window は存在するが `ap-*` window がない | Pilot が Step 3 `autopilot-init` → Step 4 `autopilot-launch.sh` を実行していることを確認する。state file 未生成なら Pilot session の chain ログを確認し、stuck 箇所を特定して inject で再開 |
+
+**正しい経路選択:**
+- observer がユーザー指示で Issue 群を実装させる場合 → `spawn-controller.sh co-autopilot`（経路 B）
+- Pilot が個別 Issue の Worker を起動する場合 → `autopilot-launch.sh`（経路 A、`autopilot-launch.md` 経由）
+- observer が Worker に直接介入する場合 → `session-comm.sh inject`（`spawn-controller.sh` 経由でない）
+
+詳細: `co-autopilot SKILL.md §Step 3.5 起動経路比較`
