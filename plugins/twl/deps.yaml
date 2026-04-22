@@ -206,12 +206,18 @@ skills:
     tools: [Skill(workflow-issue-lifecycle, workflow-issue-refine, issue-glossary-check), Read, Grep, Glob]
     spawnable_by: [user]
     can_spawn: [composite, atomic, specialist, reference, workflow]
+    # ADR-0010: co-issue は thin orchestrator。refine フェーズ（Issue 精緻化）は
+    # workflow-issue-refine に完全委譲する。co-issue 自身は refine ロジックを持たない。
+    # refined-label 付与権限は workflow-issue-refine が保持する（Layer D gate 参照）。
+    delegates_to:
+      - workflow: workflow-issue-refine
+        role: refine   # Issue 精緻化フェーズの実装を担当
     calls:
       - atomic: issue-glossary-check
       - workflow: workflow-issue-lifecycle
       - workflow: workflow-issue-refine
       - script: issue-lifecycle-orchestrator
-    description: "要望をGitHub Issueに変換するワークフロー（thin orchestrator）。explore-summary 入力必須。DAG 依存解決 + level dispatch + aggregate"
+    description: "要望をGitHub Issueに変換するワークフロー（thin orchestrator）。refine フェーズは workflow-issue-refine に完全委譲（ADR-0010）。explore-summary 入力必須。DAG 依存解決 + level dispatch + aggregate"
 
   co-project:
     type: controller
@@ -598,12 +604,19 @@ skills:
     effort: medium
     spawnable_by: [controller, user]
     can_spawn: [composite, atomic, specialist]
+    # ADR-0010: workflow-issue-refine は独立 workflow として設計されており、
+    # co-issue（thin orchestrator）と user の両方から直接呼び出し可能。
+    # refined-label 付与権限（Layer D gate）はこの workflow が保持する。
+    # co-issue が delegates_to で参照する正規の refine 実装。
+    delegated_by:
+      - controller: co-issue
+        role: refine   # co-issue の refine フェーズを担当
     calls:
       - composite: issue-spec-review
       - atomic: issue-review-aggregate
       - atomic: issue-arch-drift
       - script: spec-review-session-init
-    description: "既存 Issue の refine（精緻化）: specialist review → body 更新 → refined ラベル付与"
+    description: "既存 Issue の refine（精緻化）独立 workflow: specialist review → body 更新 → refined ラベル付与。co-issue thin orchestrator の委譲先（ADR-0010）かつ user 直接起動可"
 
   workflow-arch-review:
     type: workflow
