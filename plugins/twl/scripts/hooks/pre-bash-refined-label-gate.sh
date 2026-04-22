@@ -42,7 +42,9 @@ fi
 
 # spec-review session state ファイルの存在確認
 # /tmp/.spec-review-session-*.json が存在すれば Worker セッション内の正規付与
-SPEC_SESSION_FILES=(/tmp/.spec-review-session-*.json)
+# SESSION_TMP_DIR: テスト時にオーバーライド可能
+_SESSION_TMP_DIR="${SESSION_TMP_DIR:-/tmp}"
+SPEC_SESSION_FILES=("${_SESSION_TMP_DIR}"/.spec-review-session-*.json)
 if [[ -e "${SPEC_SESSION_FILES[0]}" ]]; then
   # Worker セッション内の正規付与 → allow
   exit 0
