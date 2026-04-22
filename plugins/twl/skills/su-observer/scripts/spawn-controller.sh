@@ -3,6 +3,7 @@
 #
 # Usage:
 #   spawn-controller.sh <skill-name> <prompt-file> [cld-spawn extra args...]
+#   spawn-controller.sh co-autopilot <prompt-file> --with-chain --issue N [--project-dir DIR] [--autopilot-dir DIR]
 #
 #   <skill-name>: co-explore / co-issue / co-architect / co-autopilot /
 #                 co-project / co-utility / co-self-improve
@@ -16,6 +17,12 @@
 #      （cld-spawn は *) break で positional 扱いし prompt に混入する）
 #   4. --window-name 未指定時は wt-<skill>-<HHMMSS> を自動設定
 #   5. cld-spawn を exec
+#
+# chain 連携モード（co-autopilot のみ）:
+#   --with-chain  autopilot-launch.sh に委譲し state 初期化 + chain を起動する
+#   --issue N     chain 連携時必須。Issue 番号
+#   --project-dir DIR  省略時は bare repo 親ディレクトリを自動解決
+#   --autopilot-dir DIR  省略時は project-dir から自動解決
 #
 # 背景: 本 wrapper は pitfalls-catalog.md 1.1-1.4 の失敗を防ぐ:
 #   - --help 注入ミス
@@ -41,6 +48,7 @@ VALID_SKILLS=(co-explore co-issue co-architect co-autopilot co-project co-utilit
 usage() {
   cat >&2 <<EOF
 Usage: $(basename "$0") <skill-name> <prompt-file> [cld-spawn extra args...]
+       $(basename "$0") co-autopilot <prompt-file> --with-chain --issue N [--project-dir DIR] [--autopilot-dir DIR]
 
 Valid skills: ${VALID_SKILLS[*]}
 (Accepts with or without "twl:" prefix)
@@ -48,6 +56,7 @@ Valid skills: ${VALID_SKILLS[*]}
 Example:
   $(basename "$0") co-explore /tmp/my-prompt.txt
   $(basename "$0") co-issue /tmp/issue-prompt.txt --timeout 90
+  $(basename "$0") co-autopilot /tmp/ctx.txt --with-chain --issue 835
 EOF
   exit 2
 }
@@ -81,6 +90,62 @@ fi
 if [[ ! -f "$PROMPT_FILE" ]]; then
   echo "Error: prompt file not found: $PROMPT_FILE" >&2
   exit 2
+fi
+
+# --with-chain: co-autopilot chain 連携モード（autopilot-launch.sh に委譲）
+WITH_CHAIN=false
+CHAIN_ISSUE=""
+CHAIN_PROJECT_DIR=""
+CHAIN_AUTOPILOT_DIR=""
+PASS_THROUGH_ARGS=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --with-chain)    WITH_CHAIN=true; shift ;;
+    --issue)         CHAIN_ISSUE="$2"; shift 2 ;;
+    --project-dir)   CHAIN_PROJECT_DIR="$2"; shift 2 ;;
+    --autopilot-dir) CHAIN_AUTOPILOT_DIR="$2"; shift 2 ;;
+    *)               PASS_THROUGH_ARGS+=("$1"); shift ;;
+  esac
+done
+set -- "${PASS_THROUGH_ARGS[@]+"${PASS_THROUGH_ARGS[@]}"}"
+
+if [[ "$WITH_CHAIN" == "true" ]]; then
+  if [[ "$SKILL_NORMALIZED" != "co-autopilot" ]]; then
+    echo "Error: --with-chain は co-autopilot のみで有効です。" >&2
+    exit 2
+  fi
+  if [[ -z "$CHAIN_ISSUE" ]]; then
+    echo "Error: --with-chain には --issue N が必須です。" >&2
+    exit 2
+  fi
+
+  # autopilot-launch.sh パス解決（AUTOPILOT_LAUNCH_SH 環境変数でテスト時に上書き可能）
+  AUTOPILOT_LAUNCH_SH="${AUTOPILOT_LAUNCH_SH:-$TWILL_ROOT/plugins/twl/scripts/autopilot-launch.sh}"
+  if [[ ! -x "$AUTOPILOT_LAUNCH_SH" ]]; then
+    echo "Error: autopilot-launch.sh not executable at $AUTOPILOT_LAUNCH_SH" >&2
+    exit 2
+  fi
+
+  # プロジェクト・autopilot ディレクトリ自動解決
+  [[ -z "$CHAIN_PROJECT_DIR" ]] && CHAIN_PROJECT_DIR="$TWILL_ROOT"
+  if [[ -z "$CHAIN_AUTOPILOT_DIR" ]]; then
+    if [[ -d "$CHAIN_PROJECT_DIR/.bare" ]]; then
+      CHAIN_AUTOPILOT_DIR="$CHAIN_PROJECT_DIR/main/.autopilot"
+    else
+      CHAIN_AUTOPILOT_DIR="$CHAIN_PROJECT_DIR/.autopilot"
+    fi
+  fi
+
+  # prompt-file の内容を --context として注入
+  CHAIN_CONTEXT="$(cat "$PROMPT_FILE" 2>/dev/null || true)"
+  CONTEXT_ARG=()
+  [[ -n "$CHAIN_CONTEXT" ]] && CONTEXT_ARG=(--context "$CHAIN_CONTEXT")
+
+  exec bash "$AUTOPILOT_LAUNCH_SH" \
+    --issue "$CHAIN_ISSUE" \
+    --project-dir "$CHAIN_PROJECT_DIR" \
+    --autopilot-dir "$CHAIN_AUTOPILOT_DIR" \
+    "${CONTEXT_ARG[@]+"${CONTEXT_ARG[@]}"}"
 fi
 
 # 残り引数に invalid flag が含まれていないか検査
