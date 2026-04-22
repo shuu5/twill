@@ -216,7 +216,7 @@ flowchart TD
 | **atomic** | wave-collect | Wave 完了時の結果収集 |
 | **atomic** | externalize-state | 状態の外部ファイル書き出し |
 | **specialist** | observer-evaluator | LLM 判定で微妙な問題を検出（既存継承） |
-| **reference** | intervention-catalog | 6 介入パターンの 3 層分類（既存継承） |
+| **reference** | intervention-catalog | 13 介入パターンの 3 層分類（Wave 1-5 実績反映）|
 | **reference** | externalization-schema | 外部化ファイルのスキーマ定義 |
 | **script** | su-precompact | PreCompact hook で実行される外部化スクリプト |
 | **script** | su-postcompact | PostCompact hook で実行される復元スクリプト |

@@ -85,7 +85,7 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 - **リスク評価**: 低（squash-merge は merge-gate 通過済み前提、reversible = git revert 可）
 - **事後**: InterventionRecord を `.observation/` に記録
 
-### パターン 9: session-comm.sh inject による数字応答（confirmation プロンプト解消）
+### パターン 9: session-comm.sh inject による confirmation プロンプト解消（yes/Enter 自動応答）
 
 - **Wave 実績**: Worker の confirmation プロンプト（`[y/N]` 等）待機でセッションが停止するケースに対応
 - **検出条件**: Worker pane の tail に `[y/N]` / `[Y/n]` / `Enter to continue` 等のインタラクティブプロンプトが検出される
