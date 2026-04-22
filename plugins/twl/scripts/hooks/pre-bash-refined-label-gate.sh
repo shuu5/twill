@@ -8,9 +8,6 @@
 #   - マッチした場合:
 #     - /tmp/.spec-review-session-*.json が存在する → allow（Worker セッション内の正規付与）
 #     - 存在しない → deny（workflow-issue-lifecycle 経由でのみ付与可能）
-#
-# 補足: Issue #612（workflow-issue-refine）完了前は deny メッセージに
-#   「workflow-issue-refine（準備中）」と補記する。
 
 set -uo pipefail
 
@@ -52,7 +49,11 @@ if [[ -e "${SPEC_SESSION_FILES[0]}" ]]; then
 fi
 
 # session state なし → deny
-REASON="refined ラベルは workflow-issue-lifecycle / workflow-issue-refine（準備中）経由でのみ付与できます。直接 gh issue edit で付与することは禁止されています（Layer D enforcement）。"
+REASON="refined ラベルは workflow-issue-lifecycle / workflow-issue-refine 経由でのみ付与できます。直接 gh issue edit で付与することは禁止されています（Layer D enforcement）。
+
+以下の手順で再試行してください:
+  1. /twl:workflow-issue-refine を使用してください（実装済: plugins/twl/skills/workflow-issue-refine/SKILL.md）
+  2. または代替経路: /twl:co-issue refine モード（co-issue refine, Phase B W3-1 で session-init 組込予定）"
 jq -nc \
   --arg reason "$REASON" \
   '{
