@@ -288,6 +288,7 @@ class StateManager:
             "last_heartbeat_at": now,  # #890: chain-runner が record_current_step 時に更新する heartbeat 専用 field
             "current_step": "",
             "retry_count": 0,
+            "ac_verify_call_count": 0,  # #891: step_ac_verify 呼出回数 (max retry safety net)
             "fix_instructions": None,
             "merged_at": None,
             "files_changed": [],

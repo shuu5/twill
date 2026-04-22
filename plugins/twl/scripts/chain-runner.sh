@@ -1031,7 +1031,33 @@ step_ac_verify() {
     skip "ac-verify" "Issue 番号なし — スキップ"
     return 0
   fi
-  echo "[chain-runner] ac-verify は LLM ステップです。" >&2
+
+  # #891: ac-verify call count で retry safety net。orchestrator が stagnation 検知で
+  # ac-verify を再 inject するのは許容（retry 1 回まで）。max+1 を超えた呼出で
+  # LLM stall が回復不能と判断し、status=failed, failure.reason=ac_verify_llm_timeout に確定。
+  ensure_pythonpath || true
+  local _max_retry="${DEV_AUTOPILOT_AC_VERIFY_MAX_RETRY:-1}"  # retry 上限（default 1 = 最大 2 回呼出）
+  local _call_count
+  _call_count=$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field ac_verify_call_count 2>/dev/null || echo "0")
+  [[ -z "$_call_count" || ! "$_call_count" =~ ^[0-9]+$ ]] && _call_count=0
+  local _new_count=$((_call_count + 1))
+  python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker \
+    --set "ac_verify_call_count=${_new_count}" 2>/dev/null || true
+
+  if (( _new_count > _max_retry + 1 )); then
+    echo "[chain-runner] ac-verify call_count=${_new_count} > max=$((_max_retry + 1)) — ac_verify_llm_timeout で failed に確定 (Issue #$issue_num)" >&2
+    local _failure
+    _failure=$(printf '{"reason":"ac_verify_llm_timeout","retry_count":%d,"step":"ac-verify"}' "$((_new_count - 1))")
+    # worker role で書込（step_ac_verify は worktree 内で実行されるため、
+    # role=pilot だと不変条件 C で拒否される）
+    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker \
+      --set "status=failed" \
+      --set "failure=${_failure}" 2>/dev/null || true
+    err "ac-verify" "LLM timeout retry 上限超過 (call_count=${_new_count}) — failed 確定"
+    return 2  # force-exit: 呼び出し元は通常の LLM step 遷移を行わない
+  fi
+
+  echo "[chain-runner] ac-verify は LLM ステップです。(call_count=${_new_count}/$((_max_retry + 1)))" >&2
   echo "[chain-runner] commands/ac-verify.md を Read して実行してください。" >&2
   echo "[chain-runner] 入力: AC checklist + PR diff + pr-test checkpoint" >&2
   echo "[chain-runner] 出力: .autopilot/checkpoints/ac-verify.json (merge-gate が読む)" >&2
