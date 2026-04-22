@@ -157,18 +157,49 @@ class TestCheckDepsIntegrity:
         assert any("DIRECT_SKIP_STEPS mismatch" in e for e in errors)
 
     def test_deps_yaml_chain_drift_detected(self, plugin_dir):
+        """chain.py CHAIN_STEPS に含まれる step が deps.yaml 全 chain から欠落すると error。"""
         import yaml
         deps = {
             "version": "3.0",
             "chains": {
                 "setup": {"steps": ["init"]},
-                "test-ready": {"steps": ["wrong-step"]},  # drift
+                "test-ready": {"steps": ["wrong-step"]},  # "check" が全 chain から missing
                 "pr-merge": {"steps": ["done"]},
             },
         }
         (plugin_dir / "deps.yaml").write_text(yaml.dump(deps))
         errors, _ = check_deps_integrity(plugin_dir)
-        assert any("test-ready" in e and "mismatch" in e for e in errors)
+        assert any("missing" in e and "check" in e for e in errors)
+
+    def test_deps_yaml_extra_step_allowed(self, plugin_dir):
+        """ADR-022: deps.yaml に chain.py にない step (workflow skill 内 orchestrate) は許容。"""
+        import yaml
+        deps = {
+            "version": "3.0",
+            "chains": {
+                "setup": {"steps": ["init", "extra-workflow-step"]},  # extra 許容
+                "test-ready": {"steps": ["check", "another-extra"]},  # extra 許容
+                "pr-merge": {"steps": ["done", "merge-gate", "auto-merge"]},  # extra 許容
+            },
+        }
+        (plugin_dir / "deps.yaml").write_text(yaml.dump(deps))
+        errors, _ = check_deps_integrity(plugin_dir)
+        assert errors == [], f"Extra steps should be allowed: {errors}"
+
+    def test_deps_yaml_chain_reassignment_allowed(self, plugin_dir):
+        """ADR-022: step が別 chain に移動しても、全 chain flatten で包含されれば OK。"""
+        import yaml
+        deps = {
+            "version": "3.0",
+            "chains": {
+                "setup": {"steps": ["init", "check"]},  # "check" を setup に移動
+                "test-ready": {"steps": []},            # test-ready は空でも
+                "pr-merge": {"steps": ["done"]},
+            },
+        }
+        (plugin_dir / "deps.yaml").write_text(yaml.dump(deps))
+        errors, _ = check_deps_integrity(plugin_dir)
+        assert errors == [], f"Chain reassignment should be allowed: {errors}"
 
     def test_missing_chain_py_returns_warning(self, plugin_dir):
         import shutil
