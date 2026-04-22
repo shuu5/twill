@@ -256,11 +256,11 @@ class TestNextStepDirect:
 
 class TestValidateTransition:
     def test_forward_transition_ok(self, runner: ChainRunner) -> None:
-        runner.validate_transition("1", "init", "board-status-update")
+        runner.validate_transition("1", "init", "project-board-status-update")
 
     def test_backward_transition_raises(self, runner: ChainRunner) -> None:
         with pytest.raises(ChainError, match="不正な遷移"):
-            runner.validate_transition("1", "board-status-update", "init")
+            runner.validate_transition("1", "project-board-status-update", "init")
 
     def test_same_step_transition_raises(self, runner: ChainRunner) -> None:
         with pytest.raises(ChainError):

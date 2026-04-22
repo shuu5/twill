@@ -5,7 +5,7 @@ Replaces: chain-runner.sh, chain-steps.sh
 CLI usage:
     python3 -m twl.autopilot.chain <step-name> [args...]
 
-Steps: init, worktree-create, board-status-update, board-archive, ac-extract,
+Steps: init, worktree-create, project-board-status-update, board-archive, ac-extract,
        arch-ref, change-id-resolve, next-step, ts-preflight, pr-test,
        ac-verify, all-pass-check, pr-cycle-report, check, quick-guard,
        autopilot-detect, quick-detect, resolve-next-workflow
@@ -23,12 +23,13 @@ from pathlib import Path
 from typing import Any
 
 # ---------------------------------------------------------------------------
-# Step definitions (SSOT — mirrors chain-steps.sh)
+# Step definitions (SSOT for chain definitions).
+# deps.yaml.chains and chain-steps.sh are generated via 'twl chain export'.
 # ---------------------------------------------------------------------------
 
 CHAIN_STEPS: list[str] = [
     "init",
-    "board-status-update",
+    "project-board-status-update",
     "crg-auto-build",
     "arch-ref",
     "change-propose",
@@ -69,7 +70,7 @@ DIRECT_SKIP_STEPS: frozenset[str] = frozenset([
 # Workflow boundary metadata (SSOT — mirrors chain-steps.sh)
 STEP_TO_WORKFLOW: dict[str, str] = {
     "init": "setup",
-    "board-status-update": "setup",
+    "project-board-status-update": "setup",
     "crg-auto-build": "setup",
     "arch-ref": "setup",
     "change-propose": "setup",
@@ -116,7 +117,7 @@ TERMINAL_STEP_TO_NEXT_SKILL: dict[str, str] = {
 # Dispatch mode per step: runner=bash direct, llm=LLM skill, trigger=external
 CHAIN_STEP_DISPATCH: dict[str, str] = {
     "init": "runner",
-    "board-status-update": "trigger",
+    "project-board-status-update": "trigger",
     "crg-auto-build": "llm",
     "arch-ref": "runner",
     "change-propose": "llm",
@@ -522,26 +523,26 @@ class ChainRunner:
         return result
 
     # ------------------------------------------------------------------
-    # Step: board-status-update
+    # Step: project-board-status-update
     # ------------------------------------------------------------------
 
     def step_board_status_update(
         self, issue_num: str, target_status: str = "In Progress"
     ) -> None:
         """Update Project Board status for an issue."""
-        self.record_step(issue_num, "board-status-update")
+        self.record_step(issue_num, "project-board-status-update")
 
         if not issue_num or not re.match(r"^\d+$", issue_num):
             return
 
         # Delegate to bash for gh CLI interactions (avoid duplicating complex gh logic)
         result = subprocess.run(
-            ["bash", str(self.scripts_root / "chain-runner.sh"), "board-status-update", issue_num, target_status],
+            ["bash", str(self.scripts_root / "chain-runner.sh"), "project-board-status-update", issue_num, target_status],
             env={**os.environ, "AUTOPILOT_DIR": str(self.autopilot_dir)},
             capture_output=False,
         )
         if result.returncode != 0:
-            self._skip("board-status-update", "更新失敗")
+            self._skip("project-board-status-update", "更新失敗")
 
     # ------------------------------------------------------------------
     # Step: ac-extract
@@ -1149,7 +1150,7 @@ def main(argv: list[str] | None = None) -> int:
         print("Usage: python3 -m twl.autopilot.chain <step-name> [args...]", file=sys.stderr)
         print("Steps: init, next-step, quick-guard, check, change-id-resolve,", file=sys.stderr)
         print("       all-pass-check, prompt-compliance, ts-preflight, pr-test, pr-cycle-report,", file=sys.stderr)
-        print("       board-status-update, ac-extract,", file=sys.stderr)
+        print("       project-board-status-update, ac-extract,", file=sys.stderr)
         print("       autopilot-detect, quick-detect, resolve-next-workflow", file=sys.stderr)
         return 1
 
@@ -1216,7 +1217,7 @@ def main(argv: list[str] | None = None) -> int:
             runner.step_pr_cycle_report(pr_num, report)
             return 0
 
-        elif step == "board-status-update":
+        elif step == "project-board-status-update":
             issue_num = rest[0] if rest else ""
             target = rest[1] if len(rest) > 1 else "In Progress"
             runner.step_board_status_update(issue_num, target)
