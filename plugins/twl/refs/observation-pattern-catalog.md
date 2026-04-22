@@ -169,6 +169,53 @@ channel-stagnate:
   related_issue: "486"
 ```
 
+## 観察パターン (Phase B W1 追記)
+
+Phase A ～ Wave 5 で蓄積された observer-pitfall / observer-lesson を自然言語観察セクションとして記録。
+su-observer SKILL.md「過去の介入記録確認」ステップ (L.182) の catalog Read 時に自動参照される。
+
+```yaml
+hist-interrupted-detect:
+  regex: 'Interrupted by user|Monitor.*interrupt.*soft_deny|interrupt.*classifier.*collide'
+  severity: warning
+  category: interrupted-detection
+  description: "[INTERRUPTED-DETECT] Monitor tool の 'Interrupted by user' が auto mode classifier soft_deny と衝突した際の盲点。pane 状態を session-state.sh で確認し手動介入の要否を判定すること"
+  observation_signal: "Monitor tool 出力に 'Interrupted by user' が出現"
+  detection_condition: "auto mode 動作中に Monitor が soft_deny と衝突した場合"
+  action: "session-state.sh で pane 状態確認 → input-waiting なら inject、それ以外は監視継続"
+  memory_hash: "cda6473c"
+
+hist-auto-yes-43-45:
+  regex: 'input-waiting.*inject|auto.*inject.*"1"|inject.*1.*success'
+  severity: info
+  category: auto-yes-success
+  description: "[AUTO-YES] input-waiting 検知 → auto inject '1' の実運用パターン。Phase A Wave 2 で 45 回連続成功。channel-input-wait パターンと組み合わせた正常動作確認済みフロー"
+  observation_signal: "channel-input-wait 検知 → inject '1' → 承認完了"
+  detection_condition: "AskUserQuestion / y/N プロンプトで input-waiting 状態、かつ auto mode が有効"
+  action: "session-comm.sh inject-file で '1' を送信。成功率 100% (45/45) の実績あり"
+  memory_hash: "Phase A Wave 2"
+
+hist-inject-buffer-collide:
+  regex: 'inject-file.*concurrent|paste.*buffer.*corrupt|buffer.*collide|tmux.*buffer.*fail'
+  severity: error
+  category: inject-buffer-collision
+  description: "[BUFFER-COLLIDE] inject-file を 2 セッション同時実行すると tmux paste buffer が破損する。inject 間隔は serial 15s 以上を MUST 化すること"
+  observation_signal: "inject 後に対象 pane でコマンドが二重実行 / 文字化け / 無応答が発生"
+  detection_condition: "2 以上の セッションが 15s 未満の間隔で inject-file を呼び出した場合"
+  action: "inject を直列化し 15s 以上の間隔を確保。並列 inject は禁止"
+  memory_hash: "06fd9a74"
+
+hist-inject-wait-timeout:
+  regex: 'spawn.*controller.*timeout|inject.*wait.*timeout|processing.*input-waiting.*60s|cld-spawn.*state.*transition.*fail'
+  severity: warning
+  category: inject-wait-timeout
+  description: "[INJECT-TIMEOUT] spawn-controller.sh 経由 cld-spawn 直後に session-state.sh が processing → input-waiting 遷移を 60s 以内に検出できない既知問題。workaround: 待機時間を 120s に延長するか polling 間隔を調整する"
+  observation_signal: "inject-file --wait 実行後 60s でタイムアウトエラー / pane が processing のまま停滞"
+  detection_condition: "cld-spawn 直後 (~60s 以内) に inject-file --wait を実行した場合"
+  action: "待機時間を 120s 以上に設定するか、cld-spawn 後 90s 待ってから inject を試みる"
+  memory_hash: "15ab26c5"
+```
+
 ## 拡張ガイド
 
 新しいパターンを追加する場合:
