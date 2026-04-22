@@ -38,8 +38,12 @@ spawnable_by:
    - 存在かつ `status: "paused"` → 各 Worker 状態確認 → orchestrator 再起動 → Worker 再開指示送信 → `status: "resumed"` に更新 → `>>> budget 回復: 全セッション再開完了` を表示
    - それ以外 → スキップ
 3. Project Board から現在の状態を取得（Todo/In Progress の Issue 一覧）
-4. **Memory MCP 知見の起動時取得（MUST）**: 以下の tag 限定検索を個別実行（各 `limit=5`、`quality_boost=0.5`）:
-   - `mcp__doobidoo__memory_search` (tags="observer-pitfall") / (tags="observer-lesson") / (tags="observer-wave", time_expr="last 7 days", limit=3) / (tags="observer-intervention", limit=3) / (query="<プロジェクト名> 直近セッション", limit=3)
+4. **Memory MCP 知見の起動時取得（MUST）**: `scripts/step0-memory-ambient.sh` を実行:
+   - exit 0 (FRESH) → `.supervisor/ambient-hints.md` を **Read（MUST）**（TTL 有効、1 Read のみ）
+   - exit 1 (STALE/MISSING) → 以下の tag 限定検索を実行し、結果上位 3 件の要約を `scripts/step0-memory-ambient.sh --write` 経由で `.supervisor/ambient-hints.md` に保存後 Read（MUST）:
+     - `mcp__doobidoo__memory_search` (tags="observer-pitfall", limit=5, quality_boost=0.5)
+     - `mcp__doobidoo__memory_search` (tags="observer-lesson", limit=5, quality_boost=0.5)
+     - `mcp__doobidoo__memory_search` (tags="observer-wave", time_expr="last 7 days", limit=3, quality_boost=0.5)
 4.5. auto-memory は**補助**（ホストローカル） — cross-machine 知見の source として使用してはならない（MUST NOT）
 5. **`refs/pitfalls-catalog.md` を Read（MUST）** — 既知の落とし穴・Memory Principles・Worker auto mode 確認方法を把握
 6. **`refs/monitor-channel-catalog.md` を Read（SHOULD、Wave 管理時は MUST）** — Monitor チャネル定義と Hybrid 検知ポリシーを把握
