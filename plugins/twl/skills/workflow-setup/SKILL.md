@@ -1,7 +1,7 @@
 ---
 name: twl:workflow-setup
 description: |
-  開発準備ワークフロー（worktree作成 → DeltaSpec → テスト準備）。
+  開発準備ワークフロー（worktree作成 → テスト準備）。
   setup chain のオーケストレーター。
 
   Use when user: says 開発準備/setup/ワークフロー開始,
@@ -23,8 +23,6 @@ setup chain のオーケストレーター。chain 実行順序は deps.yaml に
 
 - **引数**: `$ARGUMENTS` の `#N` → `ISSUE_NUM`。worktree-create にそのまま渡す
 - **arch-ref 取得** (Step 2.5): Issue 起点のみ。body/comments の `<!-- arch-ref-start -->` タグ間の `architecture/` パスを Read（最大5件、`..` 拒否、不在は警告のみ）
-- **DeltaSpec 分岐** (Step 3): init の `recommended_action` に基づく。`propose` → change-propose 実行（ARCH_CONTEXT 注入）、`apply` → 実装案内、`direct` → 直接案内、`retroactive_propose` → 下記 retroactive パターンに従う。言語: 構造キー英語、説明日本語
-- **Retroactive DeltaSpec パターン** (Step 3 補足): `recommended_action=retroactive_propose` の場合、実装は別 PR でマージ済みとして DeltaSpec のみを追加する。`needs_implementation_pr=true` なら `implementation_pr` をユーザーに確認してから change-propose を実行する。`implementation_pr` は `--set implementation_pr=<N>` で state に永続化する
 - **Board Status** (Step 2.3): ISSUE_NUM 存在時のみ。なければ無言スキップ
 - **軽微変更**: 10行未満は直接実装可。slug 生成は `worktree-create.sh` に委譲
 
@@ -47,10 +45,8 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 3. **board-status-update** [runner]: ISSUE_NUM ありのみ: `bash "$CR" board-status-update "$ISSUE_NUM"`
 4. **crg-auto-build** [llm]: `bash "$CR" llm-delegate "crg-auto-build" "$ISSUE_NUM"` → `commands/crg-auto-build.md` Read → 実行 → `bash "$CR" llm-complete "crg-auto-build" "$ISSUE_NUM"`
 5. **arch-ref** [runner]: `bash "$CR" arch-ref "$ISSUE_NUM"` → 出力パス Read → ARCH_CONTEXT 保持
-6. **change-propose** [llm]: `bash "$CR" llm-delegate "change-propose" "$ISSUE_NUM"` → ドメインルールの DeltaSpec 分岐に従い `commands/change-propose.md` Read → 実行 → `bash "$CR" llm-complete "change-propose" "$ISSUE_NUM"`
-   - `recommended_action=retroactive_propose` かつ `needs_implementation_pr=true` の場合: ユーザーへ「このブランチは実装コードの差分がなく、retroactive DeltaSpec として処理します。実装が行われた PR 番号を教えてください（例: 392）」と確認し、取得後に `python3 -m twl.autopilot.state write ... --set "implementation_pr=<N>"` で保存してから change-propose を継続する
-7. **ac-extract** [runner]: `bash "$CR" ac-extract`
-8. **workflow-test-ready 遷移**:
+6. **ac-extract** [runner]: `bash "$CR" ac-extract`
+7. **workflow-test-ready 遷移**:
    ```bash
    eval "$(bash "$CR" autopilot-detect)"
    eval "$(bash "$CR" quick-detect)"
@@ -65,7 +61,6 @@ ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
 if [[ -n "$ISSUE_NUM" ]]; then
   AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
   mkdir -p "${AUTOPILOT_DIR}/issues"
-  CHANGE_ID_VAL=$(python3 -m twl.autopilot.state read --autopilot-dir "${AUTOPILOT_DIR}" --type issue --issue "${ISSUE_NUM}" --field change_id 2>/dev/null || echo "")
   cat > "${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md" <<EOF
 # Workflow Context: Issue #${ISSUE_NUM}
 workflow: setup
@@ -76,11 +71,7 @@ workflow: setup
 - board-status-update
 - crg-auto-build
 - arch-ref
-- change-propose
 - ac-extract
-
-## change_id
-${CHANGE_ID_VAL}
 
 ## pr_number
 
@@ -96,7 +87,7 @@ fi
 
 ## compaction 復帰プロトコル
 
-`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `init board-status-update crg-auto-build arch-ref change-propose ac-extract`
+`refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `init board-status-update crg-auto-build arch-ref ac-extract`
 
 compaction 復帰時: `bash "$CR" chain-status "$ISSUE_NUM"` で現在状態を確認し、`current_step` から再開する。llm-delegate 記録済みステップは llm-complete 未実行の場合は再実行する。
 

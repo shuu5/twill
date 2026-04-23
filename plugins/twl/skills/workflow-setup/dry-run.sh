@@ -45,10 +45,7 @@ dry_run_emit_step crg-auto-build
 # Step 2.5: arch-ref（mechanical, 引数なし→skip）
 bash "$CR" arch-ref "" >/dev/null 2>&1 || true
 
-# Step 3: change-propose（chain-runner marker）
-bash "$CR" change-propose >/dev/null 2>&1 || true
-
-# Step 3.5: ac-extract（mechanical, issue 番号なし→skip）
+# Step 3: ac-extract（mechanical, issue 番号なし→skip）
 bash "$CR" ac-extract >/dev/null 2>&1 || true
 
 # 完了後の遷移
