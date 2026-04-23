@@ -2,7 +2,15 @@
 
 twill autopilot システムの不変条件 A-M（13 件）の正典定義。各条件の定義・根拠・検証方法・影響範囲を一本化する。
 
-更新日: 2026-04-21
+更新日: 2026-04-23
+
+## 本ドキュメントの SSoT 位置付け
+
+本ドキュメントは不変条件 A-M の **SSoT（Single Source of Truth）** であり、各 invariant の定義・意味は本ドキュメント自身で自己完結する。
+
+- **「根拠」欄の役割**: 設計判断の出典 ADR または導入された背景を示す。ADR が invariant の詳細仕様を個別定義しない場合でも、invariant の実装整合性は **検証方法欄の bats test** と **影響範囲欄の実装ファイル** で維持される。
+- **ADR-023 継承について**: 不変条件 D/E/F/G/I/J/K は旧 DeltaSpec spec scenario が根拠文書として機能していたが、Phase Z (#901) で DeltaSpec 廃止に伴い [ADR-023](../architecture/decisions/ADR-023-tdd-direct-flow.md) に継承された。ADR-023 は chain 構造変更の ADR であり individual invariant の詳細仕様は持たないが、invariant の意味定義は本ドキュメント自身が SSoT として保持し、検証は bats test (`../tests/bats/invariants/autopilot-invariants.bats`) が担保する。
+- **不変条件 B の 2 根拠保持**: 不変条件 B のみ ADR-008 + ADR-023 の 2 根拠を明示しているのは、ADR-008 が Worktree ライフサイクル単独の独立 ADR として成立しているため。他の invariant (D/E/F/G/I/J/K) は対応する独立 ADR が存在しないため、ADR-023 を継承先として単一参照する。
 
 ---
 
