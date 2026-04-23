@@ -251,6 +251,17 @@ fi
 if [[ "$REPO_MODE" == "worktree" ]]; then
   WORKTREE_PATH=$(git worktree list --porcelain | awk -v target="branch refs/heads/${BRANCH}" '/^worktree / { wt=substr($0, 10) } $0 == target { print wt; exit }')
   if [[ -n "$WORKTREE_PATH" ]]; then
+    # #898: Worker window 生存確認 + kill (worktree 削除前の cwd 消失事故防止)
+    # 不変条件 B の defensive 実装: 呼び手 (_cleanup_worker) が Worker window kill を
+    # skip していた場合でも、auto-merge.sh 自身が safety net として機能する。
+    WORKER_WINDOW=$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$ISSUE_NUM" --field window 2>/dev/null || echo "")
+    if [[ -n "$WORKER_WINDOW" ]] && tmux list-windows -a -F '#{window_name}' 2>/dev/null | grep -qxF "$WORKER_WINDOW"; then
+      echo "[auto-merge] Issue #${ISSUE_NUM}: Worker window (${WORKER_WINDOW}) 生存確認 — worktree 削除前に kill"
+      if ! tmux kill-window -t "$WORKER_WINDOW" 2>/dev/null; then
+        echo "[auto-merge] Issue #${ISSUE_NUM}: ERROR: Worker window kill 失敗 — worktree 削除中止 (unsafe state)" >&2
+        exit 1
+      fi
+    fi
     if git worktree remove --force "$WORKTREE_PATH" 2>/dev/null; then
       echo "[auto-merge] Issue #${ISSUE_NUM}: worktree 削除成功: ${WORKTREE_PATH}"
     else
