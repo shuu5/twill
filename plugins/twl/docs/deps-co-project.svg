@@ -119,7 +119,7 @@
 <title>cmd_project_create</title>
 <polygon fill="#e3f2fd" stroke="black" points="582.57,-924.18 497.57,-924.18 497.57,-888.18 582.57,-888.18 582.57,-924.18"/>
 <text text-anchor="middle" x="540.07" y="-909.18" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;create</text>
-<text text-anchor="middle" x="540.07" y="-898.18" font-family="Helvetica,sans-Serif" font-size="10.00">(461 tok)</text>
+<text text-anchor="middle" x="540.07" y="-898.18" font-family="Helvetica,sans-Serif" font-size="10.00">(455 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;cmd_project_create -->
 <g id="edge1" class="edge">
@@ -132,7 +132,7 @@
 <title>cmd_project_board_configure</title>
 <polygon fill="#e3f2fd" stroke="black" points="605.57,-808.18 474.57,-808.18 474.57,-772.18 605.57,-772.18 605.57,-808.18"/>
 <text text-anchor="middle" x="540.07" y="-793.18" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;board&#45;configure</text>
-<text text-anchor="middle" x="540.07" y="-782.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,185 tok)</text>
+<text text-anchor="middle" x="540.07" y="-782.18" font-family="Helvetica,sans-Serif" font-size="10.00">(1,213 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;cmd_project_board_configure -->
 <g id="edge3" class="edge">
@@ -158,7 +158,7 @@
 <title>cmd_project_migrate</title>
 <polygon fill="#e3f2fd" stroke="black" points="586.07,-750.18 494.07,-750.18 494.07,-714.18 586.07,-714.18 586.07,-750.18"/>
 <text text-anchor="middle" x="540.07" y="-735.18" font-family="Helvetica,sans-Serif" font-size="10.00">project&#45;migrate</text>
-<text text-anchor="middle" x="540.07" y="-724.18" font-family="Helvetica,sans-Serif" font-size="10.00">(485 tok)</text>
+<text text-anchor="middle" x="540.07" y="-724.18" font-family="Helvetica,sans-Serif" font-size="10.00">(463 tok)</text>
 </g>
 <!-- skill_co_project&#45;&gt;cmd_project_migrate -->
 <g id="edge4" class="edge">

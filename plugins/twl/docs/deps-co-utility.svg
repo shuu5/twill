@@ -87,7 +87,7 @@
 <title>cmd_schema_update</title>
 <polygon fill="#e3f2fd" stroke="black" points="261.81,-36 169.81,-36 169.81,0 261.81,0 261.81,-36"/>
 <text text-anchor="middle" x="215.81" y="-21" font-family="Helvetica,sans-Serif" font-size="10.00">schema&#45;update</text>
-<text text-anchor="middle" x="215.81" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(498 tok)</text>
+<text text-anchor="middle" x="215.81" y="-10" font-family="Helvetica,sans-Serif" font-size="10.00">(497 tok)</text>
 </g>
 <!-- skill_co_utility&#45;&gt;cmd_schema_update -->
 <g id="edge6" class="edge">

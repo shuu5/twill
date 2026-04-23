@@ -20,7 +20,7 @@ digraph Dependencies {
 
     // Reference Skills
     skill_test_scenario_catalog [label="twl:test-scenario-catalog\n(4,599 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(1,526 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(2,823 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_load_test_baselines [label="twl:load-test-baselines\n(670 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands

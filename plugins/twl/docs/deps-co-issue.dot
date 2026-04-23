@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="twl:co-issue\n(5,448 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(5,681 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 

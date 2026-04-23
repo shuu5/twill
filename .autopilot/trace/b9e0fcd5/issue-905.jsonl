@@ -20,3 +20,17 @@
 {"step":"phase-review","phase":"end","ts":"2026-04-23T15:15:42+09:00","exit_code":0,"pid":2186872}
 {"step":"scope-judge","phase":"start","ts":"2026-04-23T15:15:42+09:00","exit_code":null,"pid":2186891}
 {"step":"scope-judge","phase":"end","ts":"2026-04-23T15:15:42+09:00","exit_code":0,"pid":2186891}
+{"step":"record-pr","phase":"start","ts":"2026-04-23T15:18:27+09:00","exit_code":null,"pid":2202469}
+{"step":"record-pr","phase":"end","ts":"2026-04-23T15:18:28+09:00","exit_code":0,"pid":2202469}
+{"step":"llm-delegate","phase":"start","ts":"2026-04-23T15:18:30+09:00","exit_code":null,"pid":2203088}
+{"step":"llm-delegate","phase":"end","ts":"2026-04-23T15:18:31+09:00","exit_code":0,"pid":2203088}
+{"step":"llm-complete","phase":"start","ts":"2026-04-23T15:19:30+09:00","exit_code":null,"pid":2208959}
+{"step":"llm-complete","phase":"end","ts":"2026-04-23T15:19:30+09:00","exit_code":0,"pid":2208959}
+{"step":"llm-delegate","phase":"start","ts":"2026-04-23T15:19:41+09:00","exit_code":null,"pid":2209994}
+{"step":"llm-delegate","phase":"end","ts":"2026-04-23T15:19:41+09:00","exit_code":0,"pid":2209994}
+{"step":"pr-comment-findings","phase":"start","ts":"2026-04-23T15:22:32+09:00","exit_code":null,"pid":2236881}
+{"step":"pr-comment-findings","phase":"end","ts":"2026-04-23T15:22:34+09:00","exit_code":0,"pid":2236881}
+{"step":"llm-complete","phase":"start","ts":"2026-04-23T15:22:48+09:00","exit_code":null,"pid":2238529}
+{"step":"llm-complete","phase":"end","ts":"2026-04-23T15:22:48+09:00","exit_code":0,"pid":2238529}
+{"step":"auto-merge","phase":"start","ts":"2026-04-23T15:22:59+09:00","exit_code":null,"pid":2239789}
+{"step":"auto-merge","phase":"end","ts":"2026-04-23T15:22:59+09:00","exit_code":1,"pid":2239789}
