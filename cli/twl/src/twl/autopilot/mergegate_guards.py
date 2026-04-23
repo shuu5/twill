@@ -118,13 +118,6 @@ def _detect_repo_mode() -> str:
     return "standard" if git_dir == ".git" else "worktree"
 
 
-# ---------------------------------------------------------------------------
-# Phase-review guard constants
-# ---------------------------------------------------------------------------
-
-_PHASE_REVIEW_SKIP_LABELS = frozenset({"scope/direct", "quick"})
-
-
 def _check_phase_review_guard(
     autopilot_dir: Path,
     issue_labels: list[str],
@@ -132,22 +125,10 @@ def _check_phase_review_guard(
 ) -> None:
     """Reject merge when phase-review checkpoint is absent or has CRITICAL findings.
 
-    Skip logic:
-    - If the issue has a scope/direct or quick label, skip all checks.
     - If --force is set and checkpoint is absent, emit a WARNING but continue.
-    - If checkpoint is absent (and not skipped), raise MergeGateError.
+    - If checkpoint is absent, raise MergeGateError.
     - If checkpoint has CRITICAL findings with confidence >= 80, raise MergeGateError.
     """
-    # Label-based skip (scope/direct or quick)
-    matched_labels = _PHASE_REVIEW_SKIP_LABELS.intersection(issue_labels)
-    if matched_labels:
-        print(
-            "[merge-gate] INFO: phase-review チェックをスキップしました"
-            f"（ラベル: {', '.join(sorted(matched_labels))}）",
-            file=sys.stderr,
-        )
-        return
-
     checkpoint_file = autopilot_dir / "checkpoints" / "phase-review.json"
 
     if not checkpoint_file.exists():

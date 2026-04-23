@@ -74,7 +74,7 @@ class TestFilesSplitCreated:
     Scenario: test_phase_review_checkpoint.py が作成される
     WHEN: 分割作業が完了する
     THEN: test_phase_review_checkpoint.py が存在し、
-          TestPhaseReviewCheckpointPresence と TestPhaseReviewCheckpointSkipLabels を含む
+          TestPhaseReviewCheckpointPresence を含む
 
     Scenario: test_phase_review_guard.py が作成される
     WHEN: 分割作業が完了する
@@ -104,18 +104,6 @@ class TestFilesSplitCreated:
         classes = _class_names_in_file(target)
         assert "TestPhaseReviewCheckpointPresence" in classes, (
             f"Class TestPhaseReviewCheckpointPresence not found in {target.name}. "
-            f"Found classes: {classes}"
-        )
-
-    def test_phase_review_checkpoint_contains_skip_labels_class(self) -> None:
-        """test_phase_review_checkpoint.py に TestPhaseReviewCheckpointSkipLabels が含まれる。"""
-        target = _AUTOPILOT_TEST_DIR / "test_phase_review_checkpoint.py"
-        if not target.exists():
-            pytest.skip(f"File not yet created: {target.name}")
-
-        classes = _class_names_in_file(target)
-        assert "TestPhaseReviewCheckpointSkipLabels" in classes, (
-            f"Class TestPhaseReviewCheckpointSkipLabels not found in {target.name}. "
             f"Found classes: {classes}"
         )
 

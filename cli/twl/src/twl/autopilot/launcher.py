@@ -141,17 +141,6 @@ class WorkerLauncher:
             env={**os.environ, "AUTOPILOT_DIR": autopilot_dir},
         )
 
-        # Detect quick label
-        is_quick = self._detect_quick_label(issue, repo_owner, repo_name)
-
-        if is_quick:
-            quick_instruction = (
-                "[quick Issue] このIssueにはquickラベルが付いています。"
-                "workflow-test-readyは実行してはいけません。"
-                "直接実装→commit→push→gh pr create --fill --label quick→merge-gateのみを実行してください。"
-            )
-            context = f"{context}\n\n{quick_instruction}" if context else quick_instruction
-
         # Determine launch directory
         effective_project_dir = repo_path if repo_path else project_dir
 
@@ -261,22 +250,6 @@ class WorkerLauncher:
                     return line.split()[0]
 
         return ""
-
-    def _detect_quick_label(self, issue: str, repo_owner: str, repo_name: str) -> bool:
-        flags: list[str] = []
-        if repo_owner and repo_name:
-            flags = ["--repo", f"{repo_owner}/{repo_name}"]
-        try:
-            result = subprocess.run(
-                ["gh", "issue", "view", issue] + flags +
-                ["--json", "labels", "--jq", ".labels[].name"],
-                capture_output=True, text=True, timeout=10,
-            )
-            if result.returncode == 0:
-                return "quick" in result.stdout.splitlines()
-        except Exception:
-            pass
-        return False
 
     def _detect_scripts_root(self) -> Path:
         try:

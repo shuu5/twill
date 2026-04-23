@@ -620,12 +620,6 @@ class PhaseOrchestrator:
 
     def _nudge_command_for_pattern(self, pane_output: str, issue: str, entry: str) -> str | None:
         """Return nudge command for detected stop pattern, or None if no pattern matches."""
-        is_quick = _read_state(issue, "is_quick", self.autopilot_dir) == "true"
-
-        if is_quick:
-            if re.search(r"setup chain 完了|workflow-test-ready.*で次に進めます", pane_output):
-                return None
-
         if re.search(r"setup chain 完了", pane_output):
             return f"/twl:workflow-test-ready #{issue}"
         elif re.search(r">>> 提案完了", pane_output):

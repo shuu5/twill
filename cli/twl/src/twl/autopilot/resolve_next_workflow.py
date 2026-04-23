@@ -70,16 +70,6 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
-    # is_quick チェック: quick issue は test-ready をスキップ
-    is_quick_str = _read_state(issue_num, "is_quick", autopilot_dir)
-    is_quick = is_quick_str.lower() == "true"
-    if is_quick and next_skill_name == "workflow-test-ready":
-        print(
-            f"ERROR: quick issue のため workflow-test-ready をスキップ",
-            file=sys.stderr,
-        )
-        return 1
-
     # 重複 inject 防止: workflow_injected に既に同じ skill が記録されていれば skip
     workflow_injected = _read_state(issue_num, "workflow_injected", autopilot_dir)
     if workflow_injected and f"/twl:{next_skill_name}" == workflow_injected:
