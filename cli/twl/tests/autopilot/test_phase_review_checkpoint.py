@@ -1,10 +1,8 @@
-"""Tests for phase-review checkpoint existence and skip-label handling.
+"""Tests for phase-review checkpoint existence handling.
 
 Covers:
   Requirement: phase-review checkpoint 存在チェック
     - phase-review checkpoint が不在の場合は REJECT
-    - scope/direct ラベル付き Issue は phase-review チェックをスキップ
-    - quick ラベル付き Issue は phase-review チェックをスキップ
 """
 
 from __future__ import annotations
@@ -83,89 +81,6 @@ class TestPhaseReviewCheckpointPresence:
             )
 
 
-# ---------------------------------------------------------------------------
-# Requirement: phase-review checkpoint 存在チェック（スキップ条件）
-# ---------------------------------------------------------------------------
-
-
-class TestPhaseReviewCheckpointSkipLabels:
-    """
-    Scenario: scope/direct ラベル付き Issue は phase-review チェックをスキップ
-    WHEN: Issue に scope/direct ラベルが付与されており、
-          phase-review.json が不在の状態で merge-gate が実行される
-    THEN: merge-gate は phase-review チェックをスキップし、
-          他のチェックの結果で判定を続行する
-
-    Scenario: quick ラベル付き Issue は phase-review チェックをスキップ
-    WHEN: Issue に quick ラベルが付与されており、
-          phase-review.json が不在の状態で merge-gate が実行される
-    THEN: merge-gate は phase-review チェックをスキップし、
-          他のチェックの結果で判定を続行する
-    """
-
-    def test_scope_direct_label_skips_check_when_checkpoint_missing(
-        self, autopilot_dir: Path
-    ) -> None:
-        """scope/direct ラベルがある場合、checkpoint 不在でも例外を送出しない。"""
-        assert not (autopilot_dir / "checkpoints" / "phase-review.json").exists()
-
-        # Should not raise
-        _check_phase_review_guard(
-            autopilot_dir=autopilot_dir,
-            issue_labels=["scope/direct"],
-            force=False,
-        )
-
-    def test_quick_label_skips_check_when_checkpoint_missing(
-        self, autopilot_dir: Path
-    ) -> None:
-        """quick ラベルがある場合、checkpoint 不在でも例外を送出しない。"""
-        assert not (autopilot_dir / "checkpoints" / "phase-review.json").exists()
-
-        # Should not raise
-        _check_phase_review_guard(
-            autopilot_dir=autopilot_dir,
-            issue_labels=["quick"],
-            force=False,
-        )
-
-    def test_scope_direct_label_also_skips_critical_findings_check(
-        self, autopilot_dir: Path
-    ) -> None:
-        """scope/direct ラベルがある場合、CRITICAL findings があっても例外を送出しない。"""
-        findings = [
-            {"severity": "CRITICAL", "confidence": 90, "message": "critical issue"},
-        ]
-        _write_phase_review(
-            autopilot_dir,
-            _phase_review_json(findings=findings, status="FAIL"),
-        )
-
-        # Should not raise — label-based skip applies to all phase-review checks
-        _check_phase_review_guard(
-            autopilot_dir=autopilot_dir,
-            issue_labels=["scope/direct"],
-            force=False,
-        )
-
-    def test_quick_label_also_skips_critical_findings_check(
-        self, autopilot_dir: Path
-    ) -> None:
-        """quick ラベルがある場合、CRITICAL findings があっても例外を送出しない。"""
-        findings = [
-            {"severity": "CRITICAL", "confidence": 95, "message": "critical issue"},
-        ]
-        _write_phase_review(
-            autopilot_dir,
-            _phase_review_json(findings=findings, status="FAIL"),
-        )
-
-        _check_phase_review_guard(
-            autopilot_dir=autopilot_dir,
-            issue_labels=["quick"],
-            force=False,
-        )
-
     def test_unrelated_label_does_not_skip_check(self, autopilot_dir: Path) -> None:
         """関係のないラベルは phase-review チェックをスキップしない。"""
         assert not (autopilot_dir / "checkpoints" / "phase-review.json").exists()
@@ -177,15 +92,3 @@ class TestPhaseReviewCheckpointSkipLabels:
                 force=False,
             )
 
-    def test_multiple_labels_including_quick_skips_check(
-        self, autopilot_dir: Path
-    ) -> None:
-        """複数ラベル中に quick が含まれる場合もスキップ。"""
-        assert not (autopilot_dir / "checkpoints" / "phase-review.json").exists()
-
-        # Should not raise
-        _check_phase_review_guard(
-            autopilot_dir=autopilot_dir,
-            issue_labels=["bug", "quick", "enhancement"],
-            force=False,
-        )

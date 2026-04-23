@@ -95,8 +95,7 @@ class TestLauncherAuditEnvPropagation:
         launcher = WorkerLauncher(scripts_root=tmp_path / "scripts")
 
         with patch("twl.autopilot.launcher.subprocess.run", side_effect=fake_run), \
-             patch("twl.autopilot.launcher.shutil.which", return_value="/usr/bin/cld"), \
-             patch("twl.autopilot.launcher.WorkerLauncher._detect_quick_label", return_value=False):
+             patch("twl.autopilot.launcher.shutil.which", return_value="/usr/bin/cld"):
             try:
                 launcher.launch(
                     issue="1",
@@ -157,8 +156,7 @@ class TestLauncherAuditEnvPropagation:
         launcher = WorkerLauncher(scripts_root=tmp_path / "scripts")
 
         with patch("twl.autopilot.launcher.subprocess.run", side_effect=fake_run), \
-             patch("twl.autopilot.launcher.shutil.which", return_value="/usr/bin/cld"), \
-             patch("twl.autopilot.launcher.WorkerLauncher._detect_quick_label", return_value=False):
+             patch("twl.autopilot.launcher.shutil.which", return_value="/usr/bin/cld"):
             try:
                 launcher.launch(
                     issue="1",
@@ -216,8 +214,7 @@ class TestLauncherAuditEnvPropagation:
         launcher = WorkerLauncher(scripts_root=tmp_path / "scripts")
 
         with patch("twl.autopilot.launcher.subprocess.run", side_effect=fake_run), \
-             patch("twl.autopilot.launcher.shutil.which", return_value="/usr/bin/cld"), \
-             patch("twl.autopilot.launcher.WorkerLauncher._detect_quick_label", return_value=False):
+             patch("twl.autopilot.launcher.shutil.which", return_value="/usr/bin/cld"):
             try:
                 launcher.launch(
                     issue="2",
