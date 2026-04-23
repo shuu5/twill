@@ -221,6 +221,27 @@ fi
 if [[ "$REPO_MODE" == "worktree" ]]; then
   WORKTREE_PATH=$(git worktree list --porcelain | awk -v target="branch refs/heads/${BRANCH}" '/^worktree / { wt=substr($0, 10) } $0 == target { print wt; exit }')
   if [[ -n "$WORKTREE_PATH" ]]; then
+    # #924: main worktree 保護 guard（Phase Z Wave B 事故の再発防止）
+    # sanity check 1: ブランチ名が main なら削除禁止
+    if [[ "$BRANCH" == "main" ]]; then
+      echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ GUARD: branch=main の worktree 削除をスキップ (#924)" >&2
+      WORKTREE_PATH=""
+    else
+      # sanity check 2: 削除対象パスが primary worktree（bare でない最初のエントリ）と一致したら削除禁止
+      # main branch が feat branch にチェックアウト済みの場合も保護できる（#924 事故の直接原因）。
+      PRIMARY_WORKTREE_PATH=$(git worktree list --porcelain | awk '
+        /^worktree /{ wt=substr($0,10) }
+        /^HEAD 0{40}$/{ wt="" }
+        /^bare$/{ wt="" }
+        /^branch /{ if(wt!="") { print wt; exit } }
+      ')
+      if [[ -n "$PRIMARY_WORKTREE_PATH" && "$WORKTREE_PATH" == "$PRIMARY_WORKTREE_PATH" ]]; then
+        echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ GUARD: 削除対象が main worktree (${WORKTREE_PATH}) と一致 — 削除をスキップ (#924)" >&2
+        WORKTREE_PATH=""
+      fi
+    fi
+  fi
+  if [[ -n "$WORKTREE_PATH" ]]; then
     # #898: Worker window 生存確認 + kill (worktree 削除前の cwd 消失事故防止)
     # 不変条件 B の defensive 実装: 呼び手 (_cleanup_worker) が Worker window kill を
     # skip していた場合でも、auto-merge.sh 自身が safety net として機能する。
