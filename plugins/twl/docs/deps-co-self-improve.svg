@@ -37,7 +37,7 @@
 <polyline fill="none" stroke="black" points="1105.08,-245.25 1105.08,-239.25 "/>
 <polyline fill="none" stroke="black" points="1111.08,-239.25 1105.08,-239.25 "/>
 <text text-anchor="middle" x="1042.08" y="-230.25" font-family="Helvetica,sans-Serif" font-size="10.00">twl:test&#45;scenario&#45;catalog</text>
-<text text-anchor="middle" x="1042.08" y="-219.25" font-family="Helvetica,sans-Serif" font-size="10.00">(4,599 tok)</text>
+<text text-anchor="middle" x="1042.08" y="-219.25" font-family="Helvetica,sans-Serif" font-size="10.00">(4,173 tok)</text>
 </g>
 <!-- skill_co_self_improve&#45;&gt;skill_test_scenario_catalog -->
 <g id="edge10" class="edge">
@@ -52,7 +52,7 @@
 <polyline fill="none" stroke="black" points="1121.58,-187.25 1121.58,-181.25 "/>
 <polyline fill="none" stroke="black" points="1127.58,-181.25 1121.58,-181.25 "/>
 <text text-anchor="middle" x="1042.08" y="-172.25" font-family="Helvetica,sans-Serif" font-size="10.00">twl:observation&#45;pattern&#45;catalog</text>
-<text text-anchor="middle" x="1042.08" y="-161.25" font-family="Helvetica,sans-Serif" font-size="10.00">(2,823 tok)</text>
+<text text-anchor="middle" x="1042.08" y="-161.25" font-family="Helvetica,sans-Serif" font-size="10.00">(2,760 tok)</text>
 </g>
 <!-- skill_co_self_improve&#45;&gt;skill_observation_pattern_catalog -->
 <g id="edge11" class="edge">

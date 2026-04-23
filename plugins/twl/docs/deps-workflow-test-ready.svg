@@ -15,7 +15,7 @@
 <title>skill_workflow_test_ready</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="94.05" cy="-153.49" rx="94.09" ry="21.43"/>
 <text text-anchor="middle" x="94.05" y="-156.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;test&#45;ready</text>
-<text text-anchor="middle" x="94.05" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(745 tok)</text>
+<text text-anchor="middle" x="94.05" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,027 tok)</text>
 </g>
 <!-- cmd_check -->
 <g id="node3" class="node">
@@ -48,7 +48,7 @@
 <title>cmd_test_scaffold</title>
 <polygon fill="#bbdefb" stroke="black" points="323.09,-275.49 246.09,-275.49 246.09,-239.49 323.09,-239.49 323.09,-275.49"/>
 <text text-anchor="middle" x="284.59" y="-260.49" font-family="Helvetica,sans-Serif" font-size="10.00">test&#45;scaffold</text>
-<text text-anchor="middle" x="284.59" y="-249.49" font-family="Helvetica,sans-Serif" font-size="10.00">(684 tok)</text>
+<text text-anchor="middle" x="284.59" y="-249.49" font-family="Helvetica,sans-Serif" font-size="10.00">(569 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_test_scaffold -->
 <g id="edge1" class="edge">
@@ -61,7 +61,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="547.84,-95.49 515.91,-119.98 452.03,-119.98 420.09,-95.49 452.03,-71.01 515.91,-71.01 547.84,-95.49"/>
 <text text-anchor="middle" x="483.97" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="483.97" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(10,470 tok)</text>
+<text text-anchor="middle" x="483.97" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;script_chain_runner -->
 <g id="edge4" class="edge">
@@ -74,7 +74,7 @@
 <title>script_compaction_resume</title>
 <polygon fill="#ff9800" stroke="black" points="577.13,-24.49 530.55,-48.98 437.39,-48.98 390.81,-24.49 437.39,-0.01 530.55,-0.01 577.13,-24.49"/>
 <text text-anchor="middle" x="483.97" y="-27.49" font-family="Helvetica,sans-Serif" font-size="10.00">compaction&#45;resume</text>
-<text text-anchor="middle" x="483.97" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,030 tok)</text>
+<text text-anchor="middle" x="483.97" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(927 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;script_compaction_resume -->
 <g id="edge5" class="edge">
@@ -166,9 +166,9 @@
 <!-- script_chain_steps -->
 <g id="node13" class="node">
 <title>script_chain_steps</title>
-<polygon fill="#ff9800" stroke="black" points="546.08,-697.49 515.02,-721.98 452.92,-721.98 421.86,-697.49 452.92,-673.01 515.02,-673.01 546.08,-697.49"/>
+<polygon fill="#ff9800" stroke="black" points="543.68,-697.49 513.82,-721.98 454.11,-721.98 424.26,-697.49 454.11,-673.01 513.82,-673.01 543.68,-697.49"/>
 <text text-anchor="middle" x="483.97" y="-700.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="483.97" y="-689.49" font-family="Helvetica,sans-Serif" font-size="10.00">(10,470 tok)</text>
+<text text-anchor="middle" x="483.97" y="-689.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node15" class="node">

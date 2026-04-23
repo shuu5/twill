@@ -15,7 +15,7 @@
 <title>skill_workflow_issue_refine</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="98.99" cy="-71.68" rx="98.99" ry="21.43"/>
 <text text-anchor="middle" x="98.99" y="-74.68" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;issue&#45;refine</text>
-<text text-anchor="middle" x="98.99" y="-63.68" font-family="Helvetica,sans-Serif" font-size="10.00">(3,057 tok)</text>
+<text text-anchor="middle" x="98.99" y="-63.68" font-family="Helvetica,sans-Serif" font-size="10.00">(2,968 tok)</text>
 </g>
 <!-- cmd_issue_spec_review -->
 <g id="node2" class="node">
@@ -102,7 +102,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="537.21" cy="-189.68" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="537.21" y="-192.68" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="537.21" y="-181.68" font-family="Helvetica,sans-Serif" font-size="10.00">(1,587 tok)</text>
+<text text-anchor="middle" x="537.21" y="-181.68" font-family="Helvetica,sans-Serif" font-size="10.00">(1,827 tok)</text>
 </g>
 <!-- cmd_issue_spec_review&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge7" class="edge">

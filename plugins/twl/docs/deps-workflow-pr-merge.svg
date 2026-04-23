@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_merge</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="90.51" cy="-834.49" rx="90.52" ry="21.43"/>
 <text text-anchor="middle" x="90.51" y="-837.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;merge</text>
-<text text-anchor="middle" x="90.51" y="-826.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,167 tok)</text>
+<text text-anchor="middle" x="90.51" y="-826.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,118 tok)</text>
 </g>
 <!-- cmd_pr_cycle_report -->
 <g id="node8" class="node">
@@ -100,7 +100,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="604.6,-379.49 572.66,-403.98 508.79,-403.98 476.85,-379.49 508.79,-355.01 572.66,-355.01 604.6,-379.49"/>
 <text text-anchor="middle" x="540.72" y="-382.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="540.72" y="-371.49" font-family="Helvetica,sans-Serif" font-size="10.00">(10,470 tok)</text>
+<text text-anchor="middle" x="540.72" y="-371.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;script_chain_runner -->
 <g id="edge7" class="edge">
@@ -113,7 +113,7 @@
 <title>script_compaction_resume</title>
 <polygon fill="#ff9800" stroke="black" points="633.88,-24.49 587.3,-48.98 494.14,-48.98 447.56,-24.49 494.14,-0.01 587.3,-0.01 633.88,-24.49"/>
 <text text-anchor="middle" x="540.72" y="-27.49" font-family="Helvetica,sans-Serif" font-size="10.00">compaction&#45;resume</text>
-<text text-anchor="middle" x="540.72" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,030 tok)</text>
+<text text-anchor="middle" x="540.72" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(927 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;script_compaction_resume -->
 <g id="edge8" class="edge">
@@ -137,7 +137,7 @@
 <polyline fill="none" stroke="black" points="1188.46,-922.49 1188.46,-916.49 "/>
 <polyline fill="none" stroke="black" points="1194.46,-916.49 1188.46,-916.49 "/>
 <text text-anchor="middle" x="1159.46" y="-907.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;dci</text>
-<text text-anchor="middle" x="1159.46" y="-896.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,206 tok)</text>
+<text text-anchor="middle" x="1159.46" y="-896.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,159 tok)</text>
 </g>
 <!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_dci -->
 <!-- skill_baseline_coding_style -->
@@ -359,7 +359,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="878.19" cy="-1456.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="878.19" y="-1459.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="878.19" y="-1448.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,587 tok)</text>
+<text text-anchor="middle" x="878.19" y="-1448.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,827 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge40" class="edge">
@@ -605,7 +605,7 @@
 <title>script_merge_gate_check_spawn</title>
 <polygon fill="#ff9800" stroke="black" points="655.97,-2049.49 598.35,-2073.98 483.1,-2073.98 425.47,-2049.49 483.1,-2025.01 598.35,-2025.01 655.97,-2049.49"/>
 <text text-anchor="middle" x="540.72" y="-2052.49" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate&#45;check&#45;spawn</text>
-<text text-anchor="middle" x="540.72" y="-2041.49" font-family="Helvetica,sans-Serif" font-size="10.00">(845 tok)</text>
+<text text-anchor="middle" x="540.72" y="-2041.49" font-family="Helvetica,sans-Serif" font-size="10.00">(705 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;script_merge_gate_check_spawn -->
 <g id="edge15" class="edge">
@@ -631,7 +631,7 @@
 <title>script_merge_gate_check_phase_review</title>
 <polygon fill="#ff9800" stroke="black" points="684.63,-1907.49 612.68,-1931.98 468.77,-1931.98 396.82,-1907.49 468.77,-1883.01 612.68,-1883.01 684.63,-1907.49"/>
 <text text-anchor="middle" x="540.72" y="-1910.49" font-family="Helvetica,sans-Serif" font-size="10.00">merge&#45;gate&#45;check&#45;phase&#45;review</text>
-<text text-anchor="middle" x="540.72" y="-1899.49" font-family="Helvetica,sans-Serif" font-size="10.00">(424 tok)</text>
+<text text-anchor="middle" x="540.72" y="-1899.49" font-family="Helvetica,sans-Serif" font-size="10.00">(251 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;script_merge_gate_check_phase_review -->
 <g id="edge17" class="edge">
@@ -645,7 +645,7 @@
 <title>script_auto_merge</title>
 <polygon fill="#ff9800" stroke="black" points="601.06,-95.49 570.89,-119.98 510.55,-119.98 480.38,-95.49 510.55,-71.01 570.89,-71.01 601.06,-95.49"/>
 <text text-anchor="middle" x="540.72" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">auto&#45;merge</text>
-<text text-anchor="middle" x="540.72" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,213 tok)</text>
+<text text-anchor="middle" x="540.72" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,232 tok)</text>
 </g>
 <!-- cmd_auto_merge&#45;&gt;script_auto_merge -->
 <g id="edge49" class="edge">
@@ -841,7 +841,7 @@
 <title>script_autopilot_mergegate_guards</title>
 <polygon fill="#ff9800" stroke="black" points="666.7,-2378.49 603.71,-2402.98 477.73,-2402.98 414.74,-2378.49 477.73,-2354.01 603.71,-2354.01 666.7,-2378.49"/>
 <text text-anchor="middle" x="540.72" y="-2381.49" font-family="Helvetica,sans-Serif" font-size="10.00">autopilot&#45;mergegate&#45;guards</text>
-<text text-anchor="middle" x="540.72" y="-2370.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,660 tok)</text>
+<text text-anchor="middle" x="540.72" y="-2370.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,473 tok)</text>
 </g>
 <!-- script_autopilot_mergegate_ops -->
 <g id="node39" class="node">
@@ -879,9 +879,9 @@
 <!-- script_chain_steps -->
 <g id="node45" class="node">
 <title>script_chain_steps</title>
-<polygon fill="#ff9800" stroke="black" points="602.83,-2733.49 571.78,-2757.98 509.67,-2757.98 478.62,-2733.49 509.67,-2709.01 571.78,-2709.01 602.83,-2733.49"/>
+<polygon fill="#ff9800" stroke="black" points="600.43,-2733.49 570.58,-2757.98 510.87,-2757.98 481.01,-2733.49 510.87,-2709.01 570.58,-2709.01 600.43,-2733.49"/>
 <text text-anchor="middle" x="540.72" y="-2736.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="540.72" y="-2725.49" font-family="Helvetica,sans-Serif" font-size="10.00">(10,470 tok)</text>
+<text text-anchor="middle" x="540.72" y="-2725.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node47" class="node">
@@ -906,7 +906,7 @@
 <title>script_specialist_audit</title>
 <polygon fill="#ff9800" stroke="black" points="615.96,-2875.49 578.34,-2899.98 503.1,-2899.98 465.49,-2875.49 503.1,-2851.01 578.34,-2851.01 615.96,-2875.49"/>
 <text text-anchor="middle" x="540.72" y="-2878.49" font-family="Helvetica,sans-Serif" font-size="10.00">specialist&#45;audit</text>
-<text text-anchor="middle" x="540.72" y="-2867.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,817 tok)</text>
+<text text-anchor="middle" x="540.72" y="-2867.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,771 tok)</text>
 </g>
 <!-- script_merge_gate_checkpoint_merge&#45;&gt;script_merge_gate_check_phase_review -->
 <!-- script_merge_gate_check_phase_review&#45;&gt;script_autopilot_parser -->
