@@ -115,9 +115,8 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 | 6.2 | `non_terminal_chain_end`（Worker PR 作成後 idle）を failed 扱いで放置 | state を pilot 権限で `status=merge-ready` 書換 → `workflow-pr-verify` / `workflow-pr-fix` / `workflow-pr-merge` を順次手動 inject |
 | 6.3 | Worker の `branch` フィールド空のまま merge → auto-merge.sh が PR 見つけられない | Pilot の Emergency Bypass `mergegate merge --force --issue N --pr P --branch B` で main から強制 merge |
 | 6.4 | worktree 配下から merge 実行 → 不変条件 B/C 違反 | merge は必ず main/ から実行（SKILL.md: Pilot は main/ 起動必須） |
-| 6.5 | `deltaspec/changes/issue-*` orphan が残存 → Worker が別 Issue と混同 | Wave 開始前に `deltaspec/changes/` クリーン確認、必要なら `deltaspec/archive/` へ退避 |
-| 6.6 | Layer 2 Escalate を自動実行 → 無断重大変更 | **MUST**: Layer 2 はユーザー確認必須（SU-2）。confidence 低い介入は Layer 1/2 扱い |
-| 6.7 | Budget 枯渇時に orchestrator kill せず Worker 残留 → 復帰時に state 破綻 | `[BUDGET-LOW]` シーケンス: orchestrator PID kill → 全 ap-* window に Escape（kill 禁止）→ budget-pause.json 記録 → CronCreate で自動再開 |
+| 6.5 | Layer 2 Escalate を自動実行 → 無断重大変更 | **MUST**: Layer 2 はユーザー確認必須（SU-2）。confidence 低い介入は Layer 1/2 扱い |
+| 6.6 | Budget 枯渇時に orchestrator kill せず Worker 残留 → 復帰時に state 破綻 | `[BUDGET-LOW]` シーケンス: orchestrator PID kill → 全 ap-* window に Escape（kill 禁止）→ budget-pause.json 記録 → CronCreate で自動再開 |
 
 ---
 
