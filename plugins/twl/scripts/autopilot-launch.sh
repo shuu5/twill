@@ -366,6 +366,45 @@ if [[ "${TWL_AUDIT:-}" == "1" ]]; then
   fi
 fi
 
+# --- #897-A: cross-repo audit 自動 bootstrap ---
+# Worker の LAUNCH_DIR が observer main と異なる project（例: twill-sandbox）の場合、
+# Worker 側で audit が非 active のままだと state write / checkpoint が監査対象外となる。
+# parent (observer) の run_id を引き継いで自動 bootstrap する。
+#
+# 挙動:
+#   1. LAUNCH_DIR で `twl audit status` をチェック
+#   2. active なら何もしない（既存セッション継続）
+#   3. 非 active なら PARENT_RUN を解決して `audit on --run-id auto-<parent>-<issue>` 実行
+#
+# PARENT_RUN 解決順:
+#   a. env TWL_AUDIT_PARENT_RUN
+#   b. parent (SCRIPTS_ROOT) の .audit/.active から run_id
+#   c. fallback: "parent" 固定文字列
+WORKER_AUDIT_DIR=""
+if [[ -n "$_TWL_SRC" ]]; then
+  WORKER_AUDIT_STATUS_OUTPUT=$(cd "$LAUNCH_DIR" && PYTHONPATH="$_TWL_SRC" python3 -m twl.autopilot.audit status 2>/dev/null || echo "active: false")
+  WORKER_AUDIT_ACTIVE=$(echo "$WORKER_AUDIT_STATUS_OUTPUT" | awk -F': ' '/^active:/ {print $2; exit}')
+  if [[ "$WORKER_AUDIT_ACTIVE" == "true" ]]; then
+    WORKER_AUDIT_DIR=$(echo "$WORKER_AUDIT_STATUS_OUTPUT" | awk -F': ' '/^audit_dir:/ {print $2; exit}')
+  else
+    PARENT_RUN="${TWL_AUDIT_PARENT_RUN:-}"
+    if [[ -z "$PARENT_RUN" ]]; then
+      _PARENT_TOPLEVEL=$(git -C "$SCRIPTS_ROOT" rev-parse --show-toplevel 2>/dev/null || echo "")
+      if [[ -n "$_PARENT_TOPLEVEL" ]]; then
+        _PARENT_STATUS=$(cd "$_PARENT_TOPLEVEL" && PYTHONPATH="$_TWL_SRC" python3 -m twl.autopilot.audit status 2>/dev/null || echo "")
+        PARENT_RUN=$(echo "$_PARENT_STATUS" | awk -F': ' '/^run_id:/ {print $2; exit}')
+      fi
+    fi
+    # sanitize run_id (alphanumeric + hyphen + underscore only)
+    AUTO_RUN_ID=$(printf 'auto-%s-issue-%s' "${PARENT_RUN:-parent}" "$ISSUE" | tr -c '[:alnum:]_-' '_')
+    if (cd "$LAUNCH_DIR" && PYTHONPATH="$_TWL_SRC" python3 -m twl.autopilot.audit on --run-id "$AUTO_RUN_ID" >/dev/null 2>&1); then
+      echo "[autopilot-launch] audit bootstrap: run_id=$AUTO_RUN_ID (parent=${PARENT_RUN:-none}) in $LAUNCH_DIR"
+      WORKER_AUDIT_STATUS_OUTPUT=$(cd "$LAUNCH_DIR" && PYTHONPATH="$_TWL_SRC" python3 -m twl.autopilot.audit status 2>/dev/null || echo "")
+      WORKER_AUDIT_DIR=$(echo "$WORKER_AUDIT_STATUS_OUTPUT" | awk -F': ' '/^audit_dir:/ {print $2; exit}')
+    fi
+  fi
+fi
+
 # --- コンテキスト引数構築 (Task 1.9) ---
 CONTEXT_ARGS=""
 if [[ -n "$CONTEXT" ]]; then
@@ -391,6 +430,20 @@ QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
 tmux new-window -d -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
   "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} ${PYTHONPATH_ENV} ${CLD_ENV_FILE_ENV} ${EFFORT_ENV} ${AUDIT_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
+
+# --- #897-B: pipe-pane で Worker 会話履歴を audit dir に永続化 ---
+# tmux scrollback のみでは window kill で消失するため、pipe-pane で
+# pane 出力を audit dir 配下の panes/<window>.log にファイル追記する。
+# audit が非 active のまま bootstrap 失敗した場合は skip（regression 防止）。
+if [[ -n "$WORKER_AUDIT_DIR" ]] && [[ -d "$WORKER_AUDIT_DIR" ]]; then
+  WORKER_PANE_LOG_DIR="${WORKER_AUDIT_DIR}/panes"
+  mkdir -p "$WORKER_PANE_LOG_DIR" 2>/dev/null || true
+  WORKER_PANE_LOG="${WORKER_PANE_LOG_DIR}/${WINDOW_NAME}.log"
+  QUOTED_PANE_LOG=$(printf '%q' "$WORKER_PANE_LOG")
+  if tmux pipe-pane -t "$WINDOW_NAME" -o "cat >> $QUOTED_PANE_LOG" 2>/dev/null; then
+    echo "[autopilot-launch] pipe-pane 永続化: $WORKER_PANE_LOG"
+  fi
+fi
 
 # --- クラッシュ検知フック設定 (Task 1.10) ---
 tmux set-option -t "$WINDOW_NAME" remain-on-exit on

@@ -1415,10 +1415,34 @@ step_auto_merge() {
   fi
   if "$auto_merge_script" "$@"; then
     ok "auto-merge" "auto-merge.sh 完了"
+    # #897-C: auto-merge 成功時に audit snapshot を自動取得
+    # .autopilot/ 配下の checkpoints/issues/trace を audit dir に永続化し、
+    # 後続の worktree 削除で消失する中間成果物を保全する。
+    _audit_snapshot_autopilot
   else
     local rc=$?
     err "auto-merge" "auto-merge.sh 失敗 (exit=$rc)"
     return $rc
+  fi
+}
+
+# #897-C: audit snapshot hook
+# auto-merge 完了時に .autopilot/ を audit dir 配下にコピー
+# audit が非 active な場合は silent no-op（regression 防止）
+_audit_snapshot_autopilot() {
+  local autopilot_dir issue_num label
+  autopilot_dir="$(resolve_autopilot_dir 2>/dev/null || echo "")"
+  issue_num="$(resolve_issue_num 2>/dev/null || echo "")"
+  if [[ -z "$autopilot_dir" ]] || [[ ! -d "$autopilot_dir" ]]; then
+    return 0
+  fi
+  if [[ -z "$issue_num" ]]; then
+    label="autopilot-merged"
+  else
+    label="issue-${issue_num}"
+  fi
+  if python3 -m twl.autopilot.audit snapshot --source-dir "$autopilot_dir" --label "$label" >/dev/null 2>&1; then
+    echo "[chain-runner] audit snapshot: label=$label (source=$autopilot_dir)"
   fi
 }
 
