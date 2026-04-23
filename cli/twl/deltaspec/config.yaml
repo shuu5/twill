@@ -1,6 +1,0 @@
-schema: spec-driven
-
-context: |
-  twl は Claude Code プラグインの構造定義・検証・可視化 CLI。
-  Python 単一ファイル (twl-engine.py) で実装。
-  deps.yaml が SSOT、types.yaml が型ルール SSOT。
