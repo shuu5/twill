@@ -148,7 +148,6 @@ ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
 if [[ -n "$ISSUE_NUM" ]]; then
   AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
   mkdir -p "${AUTOPILOT_DIR}/issues"
-  CHANGE_ID_VAL=$(python3 -m twl.autopilot.state read --autopilot-dir "${AUTOPILOT_DIR}" --type issue --issue "${ISSUE_NUM}" --field change_id 2>/dev/null || echo "")
   PR_NUMBER=$(gh pr list --head "$(git branch --show-current)" --json number -q '.[0].number' 2>/dev/null || echo "")
   TEST_RESULTS=$(python3 -m twl.autopilot.checkpoint read --step pr-test --field status 2>/dev/null || echo "")
   REVIEW_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field status 2>/dev/null || echo "")
@@ -163,9 +162,6 @@ workflow: pr-merge
 - all-pass-check
 - merge-gate
 - auto-merge
-
-## change_id
-${CHANGE_ID_VAL}
 
 ## pr_number
 ${PR_NUMBER}
