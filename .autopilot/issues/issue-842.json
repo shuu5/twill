@@ -1,0 +1,29 @@
+{
+  "issue": 842,
+  "status": "failed",
+  "branch": "feat/842-feature-catalog-bats-depsyamlmust",
+  "pr": 865,
+  "window": "",
+  "started_at": "2026-04-22T02:07:02Z",
+  "updated_at": "2026-04-22T04:11:09Z",
+  "current_step": "ac-verify",
+  "retry_count": 0,
+  "fix_instructions": null,
+  "merged_at": null,
+  "files_changed": [],
+  "failure": {
+    "message": "poll_timeout",
+    "step": "polling"
+  },
+  "implementation_pr": null,
+  "deltaspec_mode": null,
+  "input_waiting_detected": "menu_enter_select",
+  "input_waiting_at": "2026-04-22T03:59:34Z",
+  "is_quick": true,
+  "is_direct": false,
+  "mode": "direct",
+  "llm_delegated_at": "2026-04-22T11:18:40+09:00",
+  "llm_completed_at": "2026-04-22T11:19:13+09:00",
+  "workflow_injected": "/twl:workflow-pr-fix",
+  "injected_at": "2026-04-22T02:18:44Z"
+}

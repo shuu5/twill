@@ -6,7 +6,7 @@ CLI usage:
     python3 -m twl.autopilot.chain <step-name> [args...]
 
 Steps: init, worktree-create, project-board-status-update, board-archive, ac-extract,
-       arch-ref, change-id-resolve, next-step, ts-preflight, pr-test,
+       arch-ref, next-step, ts-preflight, pr-test,
        ac-verify, all-pass-check, pr-cycle-report, check, quick-guard,
        autopilot-detect, quick-detect, resolve-next-workflow
 """
@@ -32,13 +32,9 @@ CHAIN_STEPS: list[str] = [
     "project-board-status-update",
     "crg-auto-build",
     "arch-ref",
-    "change-propose",
     "ac-extract",
-    "change-id-resolve",
     "test-scaffold",
     "check",
-    "change-apply",
-    "post-change-apply",
     "prompt-compliance",
     "ts-preflight",
     "phase-review",
@@ -52,20 +48,13 @@ CHAIN_STEPS: list[str] = [
 QUICK_SKIP_STEPS: frozenset[str] = frozenset([
     "crg-auto-build",
     "arch-ref",
-    "change-propose",
     "ac-extract",
-    "change-id-resolve",
     "test-scaffold",
     "check",
-    "change-apply",
     "prompt-compliance",
 ])
 
-DIRECT_SKIP_STEPS: frozenset[str] = frozenset([
-    "change-propose",
-    "change-id-resolve",
-    "change-apply",
-])
+DIRECT_SKIP_STEPS: frozenset[str] = frozenset()
 
 # Workflow boundary metadata (SSOT — mirrors chain-steps.sh)
 STEP_TO_WORKFLOW: dict[str, str] = {
@@ -73,13 +62,9 @@ STEP_TO_WORKFLOW: dict[str, str] = {
     "project-board-status-update": "setup",
     "crg-auto-build": "setup",
     "arch-ref": "setup",
-    "change-propose": "setup",
     "ac-extract": "setup",
-    "change-id-resolve": "test-ready",
     "test-scaffold": "test-ready",
     "check": "test-ready",
-    "change-apply": "test-ready",
-    "post-change-apply": "test-ready",
     "prompt-compliance": "pr-verify",
     "ts-preflight": "pr-verify",
     "phase-review": "pr-verify",
@@ -105,7 +90,7 @@ WORKFLOW_NEXT_SKILL: dict[str, str] = {
 # "warning-fix" is the pr-fix terminal step (not in CHAIN_STEPS; dynamically set by chain-runner).
 TERMINAL_STEP_TO_NEXT_SKILL: dict[str, str] = {
     "ac-extract": "workflow-test-ready",
-    "post-change-apply": "workflow-pr-verify",
+    "check": "workflow-pr-verify",
     "ac-verify": "workflow-pr-fix",
     "warning-fix": "workflow-pr-merge",
 }
@@ -120,13 +105,9 @@ CHAIN_STEP_DISPATCH: dict[str, str] = {
     "project-board-status-update": "trigger",
     "crg-auto-build": "llm",
     "arch-ref": "runner",
-    "change-propose": "llm",
     "ac-extract": "runner",
-    "change-id-resolve": "runner",
     "test-scaffold": "llm",
     "check": "runner",
-    "change-apply": "llm",
-    "post-change-apply": "runner",
     "prompt-compliance": "runner",
     "ts-preflight": "runner",
     "phase-review": "llm",
@@ -140,9 +121,7 @@ CHAIN_STEP_DISPATCH: dict[str, str] = {
 # Command path for LLM steps (empty string = Skill で実行)
 CHAIN_STEP_COMMAND: dict[str, str] = {
     "crg-auto-build": "commands/crg-auto-build.md",
-    "change-propose": "commands/change-propose.md",
     "test-scaffold": "",
-    "change-apply": "",
     "phase-review": "commands/phase-review.md",
     "scope-judge": "commands/scope-judge.md",
     "ac-verify": "commands/ac-verify.md",
@@ -152,11 +131,11 @@ CHAIN_STEP_COMMAND: dict[str, str] = {
 CHAIN_METADATA: dict[str, dict[str, str]] = {
     "setup": {
         "type": "A",
-        "description": "開発準備ワークフロー（worktree作成 → DeltaSpec → テスト準備）",
+        "description": "開発準備ワークフロー（worktree作成 → AC 抽出 → テスト準備）",
     },
     "test-ready": {
         "type": "B",
-        "description": "テスト生成と準備確認（DeltaSpec → テスト → 実装）",
+        "description": "テスト生成と準備確認（test-scaffold → check）",
     },
     "pr-verify": {
         "type": "B",
@@ -226,7 +205,7 @@ def export_chain_steps_sh() -> str:
     lines.append(")")
     lines.append("")
 
-    lines.append("# direct モード（DeltaSpec なし）でスキップするステップの一覧（SSOT）")
+    lines.append("# direct モード（scope/direct ラベル）でスキップするステップの一覧（SSOT）")
     lines.append("DIRECT_SKIP_STEPS=(")
     for step in CHAIN_STEPS:
         if step in DIRECT_SKIP_STEPS:
@@ -421,7 +400,6 @@ class ChainRunner:
             result = {
                 "recommended_action": "direct",
                 "branch": branch,
-                "deltaspec": False,
                 "is_quick": is_quick == "true",
                 "is_direct": is_direct == "true",
             }
@@ -430,96 +408,12 @@ class ChainRunner:
                 self._write_state_field(issue_num, "mode=direct")
             return result
 
-        root = self._project_root()
-        deltaspec_dir = root / "deltaspec"
-
-        # ADR-015: deltaspec/ 不在時は propose+auto_init を返す。change-propose が自動初期化を担当する
-        if not deltaspec_dir.is_dir():
-            result = {
-                "recommended_action": "propose",
-                "branch": branch,
-                "deltaspec": False,
-                "auto_init": True,
-                "is_quick": is_quick == "true",
-            }
-            self._ok("init", f"recommended_action=propose (no deltaspec, auto_init=true, is_quick={is_quick})")
-            if issue_num and re.match(r"^\d+$", issue_num):
-                self._write_state_field(issue_num, "mode=propose")
-            return result
-
-        changes_dir = deltaspec_dir / "changes"
-        if not changes_dir.is_dir() or not any(changes_dir.iterdir()):
-            result = {
-                "recommended_action": "propose",
-                "branch": branch,
-                "deltaspec": True,
-                "change_exists": False,
-                "is_quick": is_quick == "true",
-            }
-            self._ok("init", f"recommended_action=propose (no changes, is_quick={is_quick})")
-            if issue_num and re.match(r"^\d+$", issue_num):
-                self._write_state_field(issue_num, "mode=propose")
-            return result
-
-        latest_dirs = sorted(
-            [d for d in changes_dir.iterdir() if d.is_dir()],
-            key=lambda d: d.stat().st_mtime,
-            reverse=True,
-        )
-        if not latest_dirs:
-            result = {
-                "recommended_action": "propose",
-                "branch": branch,
-                "deltaspec": True,
-                "change_exists": True,
-                "is_quick": is_quick == "true",
-            }
-            self._ok("init", f"recommended_action=propose (no proposal, is_quick={is_quick})")
-            if issue_num and re.match(r"^\d+$", issue_num):
-                self._write_state_field(issue_num, "mode=propose")
-            return result
-
-        latest = latest_dirs[0]
-        proposal = latest / "proposal.md"
-
-        if proposal.is_file():
-            yaml_file = latest / ".deltaspec.yaml"
-            if yaml_file.is_file() and "status: approved" in yaml_file.read_text():
-                result = {
-                    "recommended_action": "apply",
-                    "branch": branch,
-                    "deltaspec": True,
-                    "change_id": latest.name,
-                    "proposal_status": "approved",
-                    "is_quick": is_quick == "true",
-                }
-                self._ok("init", f"recommended_action=apply (change={latest.name}, approved, is_quick={is_quick})")
-                if issue_num and re.match(r"^\d+$", issue_num):
-                    self._write_state_field(issue_num, "mode=apply")
-            else:
-                result = {
-                    "recommended_action": "propose",
-                    "branch": branch,
-                    "deltaspec": True,
-                    "change_id": latest.name,
-                    "proposal_status": "pending",
-                    "is_quick": is_quick == "true",
-                }
-                self._ok("init", f"recommended_action=propose (change={latest.name}, pending, is_quick={is_quick})")
-                if issue_num and re.match(r"^\d+$", issue_num):
-                    self._write_state_field(issue_num, "mode=propose")
-        else:
-            result = {
-                "recommended_action": "propose",
-                "branch": branch,
-                "deltaspec": True,
-                "change_exists": True,
-                "is_quick": is_quick == "true",
-            }
-            self._ok("init", f"recommended_action=propose (no proposal, is_quick={is_quick})")
-            if issue_num and re.match(r"^\d+$", issue_num):
-                self._write_state_field(issue_num, "mode=propose")
-
+        result = {
+            "recommended_action": "implement",
+            "branch": branch,
+            "is_quick": is_quick == "true",
+        }
+        self._ok("init", f"recommended_action=implement (branch={branch}, is_quick={is_quick})")
         return result
 
     # ------------------------------------------------------------------
@@ -595,18 +489,6 @@ class ChainRunner:
         root = self._project_root()
         has_fail = False
 
-        # DeltaSpec
-        deltaspec_dir = root / "deltaspec"
-        if deltaspec_dir.is_dir():
-            proposals = list((deltaspec_dir / "changes").glob("*/proposal.md")) if (deltaspec_dir / "changes").is_dir() else []
-            if proposals:
-                print("DeltaSpec: PASS")
-            else:
-                print("DeltaSpec: FAIL (proposal.md なし)")
-                has_fail = True
-        else:
-            print("DeltaSpec: N/A")
-
         # Tests（monorepo 対応: root/tests/, root/*/tests/, root/*/*/tests/ を走査）
         test_patterns = ("**/*.sh", "**/*.bats", "**/*.test.*", "**/*.R", "**/*.py")
         test_found = False
@@ -646,34 +528,6 @@ class ChainRunner:
         else:
             self._ok("check", "準備完了")
             return True
-
-    # ------------------------------------------------------------------
-    # Step: change-id-resolve
-    # ------------------------------------------------------------------
-
-    def step_change_id_resolve(self) -> str:
-        """Resolve the latest DeltaSpec change ID."""
-        self.record_step("", "change-id-resolve")
-        root = self._project_root()
-        changes_dir = root / "deltaspec" / "changes"
-
-        if not changes_dir.is_dir():
-            self._err("change-id-resolve", "deltaspec/changes/ が存在しない")
-            raise ChainError("deltaspec/changes/ が存在しない")
-
-        dirs = sorted(
-            [d for d in changes_dir.iterdir() if d.is_dir()],
-            key=lambda d: d.stat().st_mtime,
-            reverse=True,
-        )
-        if not dirs:
-            self._err("change-id-resolve", "changes/ が空")
-            raise ChainError("changes/ が空")
-
-        latest = dirs[0].name
-        print(latest)
-        self._ok("change-id-resolve", latest)
-        return latest
 
     # ------------------------------------------------------------------
     # Step: prompt-compliance
@@ -1148,7 +1002,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args:
         print("Usage: python3 -m twl.autopilot.chain <step-name> [args...]", file=sys.stderr)
-        print("Steps: init, next-step, quick-guard, check, change-id-resolve,", file=sys.stderr)
+        print("Steps: init, next-step, quick-guard, check,", file=sys.stderr)
         print("       all-pass-check, prompt-compliance, ts-preflight, pr-test, pr-cycle-report,", file=sys.stderr)
         print("       project-board-status-update, ac-extract,", file=sys.stderr)
         print("       autopilot-detect, quick-detect, resolve-next-workflow", file=sys.stderr)
@@ -1189,10 +1043,6 @@ def main(argv: list[str] | None = None) -> int:
         elif step == "check":
             ok = runner.step_check()
             return 0 if ok else 1
-
-        elif step == "change-id-resolve":
-            runner.step_change_id_resolve()
-            return 0
 
         elif step == "all-pass-check":
             overall = rest[0] if rest else "PASS"
@@ -1247,7 +1097,7 @@ def main(argv: list[str] | None = None) -> int:
             print(result)
             return 0
 
-        elif step in ("change-propose", "change-apply", "post-change-apply", "test-scaffold", "ac-verify"):
+        elif step in ("test-scaffold", "ac-verify"):
             # LLM-executed steps: just record step
             issue_num = runner._resolve_issue_num()
             if issue_num:

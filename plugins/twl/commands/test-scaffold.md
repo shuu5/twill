@@ -12,7 +12,7 @@ Scenario 種別に応じて specialist を適切に呼び出し。
 ## 使用方法
 
 ```
-/twl:test-scaffold <change-id> [--type=<type>] [--coverage=<level>] [--e2e-mode=<mode>]
+/twl:test-scaffold [--type=<type>] [--coverage=<level>] [--e2e-mode=<mode>]
 ```
 
 | オプション | 値 | デフォルト |
@@ -25,7 +25,7 @@ Scenario 種別に応じて specialist を適切に呼び出し。
 
 ### 1. Scenario 解析
 
-`deltaspec/changes/<change-id>/specs/` を確認し、Scenario を分類:
+`tests/` 配下の Scenario ファイルを確認し分類:
 
 | キーワード | 分類 |
 |-----------|------|
@@ -39,11 +39,7 @@ Scenario 種別に応じて specialist を適切に呼び出し。
 
 ### 2. Unit/Integration テスト生成
 
-Unit/Integration Scenario が検出された場合、Task tool で specialist を起動:
-
-```
-Task(subagent_type="twl:twl:spec-scaffold-tests", prompt="<change-id>...")
-```
+Unit/Integration Scenario が検出された場合、AC に基づいてテストを直接生成する。
 
 ### 3. E2E テスト生成
 
@@ -58,23 +54,19 @@ E2E Scenario が検出された場合:
 | `auto` | playwright.config.ts の webServer 設定で自動判定 |
 
 ```
-Task(subagent_type="twl:twl:e2e-generate", prompt="<change-id> --e2e-mode=<mock|deploy>...")
+Task(subagent_type="twl:twl:e2e-generate", prompt="--e2e-mode=<mock|deploy>...")
 ```
-
-### 4. test-mapping.yaml 統合
-
-両方の結果を統合してマッピングファイル更新。
 
 ## specialist 呼び出し（MUST）
 
 specialist は **Task tool** で呼び出す。Skill tool は使用不可。
 
-**specialist 未実装時の fallback**: `twl:twl:spec-scaffold-tests` または `twl:twl:e2e-generate` の subagent_type が利用不可の場合、`general-purpose` Agent として同等のプロンプトを渡して実行する。
+**specialist 未実装時の fallback**: `twl:twl:e2e-generate` の subagent_type が利用不可の場合、`general-purpose` Agent として同等のプロンプトを渡して実行する。
 
 ## 禁止事項（MUST NOT）
 
 - Skill tool で specialist を呼び出してはならない
-- 両方の specialist を並列呼び出ししてはならない（順次実行）
+- E2E と Unit/Integration specialist を並列呼び出ししてはならない（順次実行）
 
 ## 後方互換（MUST）
 

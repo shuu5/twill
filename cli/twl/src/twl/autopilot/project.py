@@ -72,19 +72,11 @@ def _resolve_project_root(project_type: str, explicit_root: str | None) -> Path:
 
 
 def _cleanup_deprecated_local(project_dir: Path) -> None:
-    """Remove project-local opsx commands and deltaspec skills (deprecated)."""
+    """Remove project-local opsx commands (deprecated)."""
     opsx_dir = project_dir / ".claude" / "commands" / "opsx"
     if opsx_dir.is_dir():
         shutil.rmtree(opsx_dir)
         print("   ✓ プロジェクトローカル opsx コマンドを削除（グローバルに委譲）")
-
-    found = False
-    for skill_dir in (project_dir / ".claude" / "skills").glob("deltaspec-*/"):
-        if skill_dir.is_dir():
-            shutil.rmtree(skill_dir)
-            found = True
-    if found:
-        print("   ✓ プロジェクトローカル deltaspec スキルを削除（グローバルに委譲）")
 
 
 # ---------------------------------------------------------------------------
@@ -263,16 +255,8 @@ class ProjectManager:
             (main_dir / "src").mkdir(parents=True, exist_ok=True)
             (main_dir / "tests").mkdir(parents=True, exist_ok=True)
 
-        # 7. DeltaSpec init
-        print("7. DeltaSpecを初期化...")
-        r = _run(["which", "twl"])
-        if r.returncode == 0:
-            (main_dir / "deltaspec" / "specs").mkdir(parents=True, exist_ok=True)
-            (main_dir / "deltaspec" / "changes").mkdir(parents=True, exist_ok=True)
-            print("   DeltaSpec initialized")
-            _cleanup_deprecated_local(main_dir)
-        else:
-            print("   警告: twl CLIが見つかりません")
+        # 7. deprecated local cleanup
+        _cleanup_deprecated_local(main_dir)
 
         # 7.5. .claude symlink at bare repo root
         print("7.5. bare repo rootに.claude symlinkを作成...")
@@ -523,7 +507,6 @@ class ProjectManager:
 
         # 1. Analyse current state
         print("1. 現状分析...")
-        deltaspec_version = self._detect_deltaspec_version(cwd)
         resolved_type = project_type or self._detect_project_type(cwd)
 
         if not (cwd / "CLAUDE.md").exists():
@@ -537,10 +520,6 @@ class ProjectManager:
         print("2. 移行プラン...")
         print("")
         changes: list[str] = []
-
-        if deltaspec_version in ("v0.x", "partial", "none"):
-            action = "移行（project.md削除、config.yaml生成）" if deltaspec_version == "v0.x" else "初期化（config.yaml生成）"
-            changes.append(f"DeltaSpec {deltaspec_version} → {action}")
 
         if (cwd / "CLAUDE.md").exists():
             changes.append("CLAUDE.md 更新（テンプレートとマージ）")
@@ -561,43 +540,17 @@ class ProjectManager:
             print("実際に適用するには --dry-run を外して実行してください")
             return
 
-        # 3. Confirm (non-interactive in Python: auto-apply)
+        # 3. Apply
         print("4. 変更を適用...")
-
-        # DeltaSpec
-        if deltaspec_version != "v1.x":
-            self._apply_deltaspec(cwd)
 
         # CLAUDE.md
         self._apply_claude_md(cwd, resolved_type, project_name)
-
-        # Check archived specs
-        archive_dir = cwd / "deltaspec" / "archive"
-        if archive_dir.is_dir():
-            archived = list(archive_dir.rglob("spec.md"))
-            if archived:
-                print(f"      {len(archived)}個のアーカイブ済みspecを検出")
-                print("      注: アーカイブされたspecsは完了済み機能のため移行しません。")
 
         print("")
         print("=== 移行完了 ===")
         print("")
         print("次のステップ:")
         print("  git add -A && git commit -m 'chore: migrate to latest template'")
-
-    def _detect_deltaspec_version(self, project_dir: Path) -> str:
-        if (project_dir / "deltaspec" / "config.yaml").exists():
-            print("   DeltaSpec: v1.x (config.yaml)")
-            return "v1.x"
-        elif (project_dir / "deltaspec" / "project.md").exists():
-            print("   DeltaSpec: v0.x (project.md) → 移行が必要")
-            return "v0.x"
-        elif (project_dir / "deltaspec").is_dir():
-            print("   DeltaSpec: 部分的 → 再初期化が必要")
-            return "partial"
-        else:
-            print("   DeltaSpec: なし → 新規初期化")
-            return "none"
 
     def _detect_project_type(self, project_dir: Path) -> str:
         if (project_dir / "renv.lock").exists() or (project_dir / "R").is_dir():
@@ -629,17 +582,6 @@ class ProjectManager:
             "プロジェクトタイプを自動検出できません\n"
             "--type オプションで指定してください: --type rnaseq, --type webapp-llm, または --type webapp-hono"
         )
-
-    def _apply_deltaspec(self, project_dir: Path) -> None:
-        r = _run(["which", "twl"])
-        if r.returncode == 0:
-            print("   DeltaSpec 初期化...")
-            (project_dir / "deltaspec" / "specs").mkdir(parents=True, exist_ok=True)
-            (project_dir / "deltaspec" / "changes").mkdir(parents=True, exist_ok=True)
-            print("      DeltaSpec 初期化完了")
-            _cleanup_deprecated_local(project_dir)
-        else:
-            print("      警告: twl CLIが見つかりません")
 
     def _apply_claude_md(self, project_dir: Path, project_type: str, project_name: str) -> None:
         template_claude = self.templates_base / project_type / "CLAUDE.md"

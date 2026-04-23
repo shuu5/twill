@@ -23,28 +23,26 @@ entry_points:
   - skills/su-observer/SKILL.md
 
 # チェーン（B-4 で追加、B-5 で pr-cycle 追加）
+# チェーン（chain.py から生成 — twl chain export --yaml で再生成）
+# チェーン（chain.py から生成 — twl chain export --yaml で再生成）
+# チェーン（chain.py から生成 — twl chain export --yaml で再生成）
 chains:
   setup:
     type: "A"
-    description: "開発準備ワークフロー（worktree作成 → DeltaSpec → テスト準備）"
+    description: "開発準備ワークフロー（worktree作成 → AC 抽出 → テスト準備）"
     steps:
       - init
-      - worktree-create
       - project-board-status-update
       - crg-auto-build
-      - change-propose
+      - arch-ref
       - ac-extract
 
   test-ready:
     type: "B"
-    description: "テスト生成と準備確認（DeltaSpec → テスト → 実装）"
+    description: "テスト生成と準備確認（test-scaffold → check）"
     steps:
-      - arch-ref
-      - change-id-resolve
       - test-scaffold
       - check
-      - change-apply
-      - post-change-apply
 
   pr-verify:
     type: "B"
@@ -57,33 +55,13 @@ chains:
       - pr-test
       - ac-verify
 
-  pr-fix:
-    type: "B"
-    description: "PR修正（fix → post-fix-verify → warning-fix）"
-    steps:
-      - fix-phase
-      - post-fix-verify
-      - warning-fix
-
   pr-merge:
     type: "B"
     description: "PRマージ（e2e → report → analysis → check → merge）"
     steps:
-      - e2e-screening
-      - pr-cycle-report
-      - pr-cycle-analysis
       - all-pass-check
-      - merge-gate
-      - auto-merge
+      - pr-cycle-report
 
-  arch-review:
-    type: "B"
-    description: "Architecture docs 専用 PR レビュー（arch-phase-review → arch-fix-phase、その後 merge-gate → auto-merge を再利用）"
-    steps:
-      - arch-phase-review
-      - arch-fix-phase
-
-# メタ chain（ワークフロー間遷移 SSOT）
 meta_chains:
   worker-lifecycle:
     type: "meta"
@@ -130,7 +108,6 @@ meta_chains:
             stop: true
             message: "workflow-pr-verify 完了。次のステップ: /twl:workflow-pr-fix を実行してください"
       - id: pr-fix
-        chain: pr-fix
         skill: workflow-pr-fix
         next:
           - condition: "autopilot"
@@ -154,7 +131,7 @@ skills:
     refined_at: "2026-04-07"
     path: skills/co-autopilot/SKILL.md
     effort: high
-    tools: [Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests), session:spawn]
+    tools: [Agent(worker-*, e2e-*, autofix-loop), session:spawn]
     spawnable_by: [user, supervisor]
     can_spawn: [composite, atomic, specialist, controller]
     calls:
@@ -368,8 +345,6 @@ skills:
         step: "2.3"
       - atomic: crg-auto-build
         step: "2.4"
-      - atomic: change-propose
-        step: "3"
       - atomic: ac-extract
         step: "3.5"
       - script: chain-runner
@@ -387,8 +362,6 @@ skills:
     calls:
       - composite: test-scaffold
         step: "1"
-      - atomic: change-apply
-        step: "2"
       - atomic: check
       - atomic: e2e-plan
       - script: chain-runner
@@ -437,7 +410,6 @@ skills:
         step: "4.5"
       - atomic: warning-fix
         step: "5"
-      - atomic: spec-diagnose
     description: "PR修正ワークフロー（fix → post-fix-verify → warning-fix）"
 
   workflow-pr-merge:
@@ -851,7 +823,6 @@ commands:
     path: commands/worktree-create.md
     spawnable_by: [controller, workflow]
     can_spawn: []
-    chain: "setup"
     step_in:
       parent: workflow-setup
       step: "2"
@@ -898,70 +869,14 @@ commands:
     timeout_sec: 600
     description: "CRG グラフ自動ビルド"
 
-  change-propose:
-    type: atomic
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: commands/change-propose.md
-    spawnable_by: [controller, workflow]
-    can_spawn: []
-    chain: "setup"
-    step_in:
-      parent: workflow-setup
-      step: "3"
-    dispatch_mode: llm
-    description: "DeltaSpec 提案（change-propose）"
-
-  change-apply:
-    type: atomic
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: commands/change-apply.md
-    spawnable_by: [controller, workflow]
-    can_spawn: []
-    chain: "test-ready"
-    step_in:
-      parent: workflow-test-ready
-      step: "2"
-    dispatch_mode: llm
-    description: "DeltaSpec 実装（change-apply）"
-
   arch-ref:
     type: atomic
     path: scripts/chain-runner.sh
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "test-ready"
+    chain: "setup"
     dispatch_mode: runner
     description: "architecture/ コンテキスト抽出（chain-runner ステップ）"
-
-  change-id-resolve:
-    type: atomic
-    path: scripts/chain-runner.sh
-    spawnable_by: [workflow]
-    can_spawn: []
-    chain: "test-ready"
-    dispatch_mode: runner
-    description: "deltaspec change-id 解決（chain-runner ステップ）"
-
-  post-change-apply:
-    type: atomic
-    path: scripts/chain-runner.sh
-    spawnable_by: [workflow]
-    can_spawn: []
-    chain: "test-ready"
-    dispatch_mode: runner
-    description: "change-apply 後のステップ記録（chain-runner ステップ）"
-
-  change-archive: # standalone: 手動アーカイブ用（auto-merge.sh が自動アーカイブを担う）
-    type: atomic
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: commands/change-archive.md
-    spawnable_by: [controller, workflow]
-    can_spawn: []
-    dispatch_mode: llm
-    description: "DeltaSpec アーカイブ（手動実行用 standalone slash command）"
 
   ac-extract:
     type: atomic
@@ -1072,7 +987,6 @@ commands:
     path: commands/post-fix-verify.md
     spawnable_by: [workflow]
     can_spawn: [specialist, script]
-    chain: "pr-fix"
     step_in:
       parent: workflow-pr-fix
       step: "4.5"
@@ -1092,7 +1006,6 @@ commands:
     path: commands/warning-fix.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-fix"
     step_in:
       parent: workflow-pr-fix
       step: "5"
@@ -1268,7 +1181,7 @@ commands:
     path: commands/project-create.md
     spawnable_by: [controller]
     can_spawn: []
-    description: "プロジェクト新規作成（bare repo + worktree + テンプレート + DeltaSpec）"
+    description: "プロジェクト新規作成（bare repo + worktree + テンプレート）"
 
   project-board-configure:
     type: atomic
@@ -1547,7 +1460,7 @@ commands:
       - reference: ref-architecture
     description: "並列検証フェーズ（specialist x3 並列 spawn + 統合処理）"
 
-  # === C-2a: DeltaSpec/汎用系（5個） ===
+  # === C-2a: 汎用系（5個） ===
 
   explore: # standalone: ユーザー直接起動
     type: atomic
@@ -1857,7 +1770,6 @@ commands:
       parent: workflow-test-ready
       step: "1"
     calls:
-      - specialist: spec-scaffold-tests
       - specialist: e2e-generate
       - reference: ref-specialist-output-schema
     dispatch_mode: llm
@@ -1901,7 +1813,6 @@ commands:
       - specialist: worker-e2e-reviewer
       - specialist: worker-hono-reviewer
       - specialist: worker-rls-reviewer
-      - specialist: worker-spec-reviewer
       - specialist: worker-llm-output-reviewer
       - specialist: worker-llm-eval-runner
       - specialist: worker-data-validator
@@ -1920,7 +1831,6 @@ commands:
     path: commands/arch-phase-review.md
     spawnable_by: [workflow]
     can_spawn: [specialist, script]
-    chain: "arch-review"
     step_in:
       parent: workflow-arch-review
       step: "1"
@@ -1941,7 +1851,6 @@ commands:
     path: commands/arch-fix-phase.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "arch-review"
     step_in:
       parent: workflow-arch-review
       step: "2"
@@ -1958,7 +1867,6 @@ commands:
     path: commands/fix-phase.md
     spawnable_by: [workflow]
     can_spawn: [script]
-    chain: "pr-fix"
     step_in:
       parent: workflow-pr-fix
       step: "4"
@@ -1974,7 +1882,6 @@ commands:
     path: commands/e2e-screening.md
     spawnable_by: [workflow]
     can_spawn: [script]
-    chain: "pr-merge"
     step_in:
       parent: workflow-pr-merge
       step: "6"
@@ -1990,7 +1897,6 @@ commands:
     path: commands/merge-gate.md
     spawnable_by: [workflow]
     can_spawn: [specialist, script]
-    chain: "pr-merge"
     step_in:
       parent: workflow-pr-merge
       step: "8"
@@ -1998,7 +1904,6 @@ commands:
       - script: merge-gate-check-pr
       - script: merge-gate-build-manifest
       - script: merge-gate-check-spawn
-      - script: merge-gate-cross-pr-ac
       - script: merge-gate-checkpoint-merge
       - script: merge-gate-check-phase-review
       - script: autopilot-parser
@@ -2019,7 +1924,6 @@ commands:
       - specialist: worker-e2e-reviewer
       - specialist: worker-hono-reviewer
       - specialist: worker-rls-reviewer
-      - specialist: worker-spec-reviewer
       - specialist: worker-llm-output-reviewer
       - specialist: worker-llm-eval-runner
       - specialist: worker-data-validator
@@ -2068,7 +1972,6 @@ commands:
     path: commands/auto-merge.md
     spawnable_by: [workflow]
     can_spawn: [script]
-    chain: "pr-merge"
     step_in:
       parent: workflow-pr-merge
       step: "8.5"
@@ -2084,7 +1987,6 @@ commands:
     path: commands/pr-cycle-analysis.md
     spawnable_by: [workflow]
     can_spawn: []
-    chain: "pr-merge"
     step_in:
       parent: workflow-pr-merge
       step: "7.3"
@@ -2099,16 +2001,6 @@ commands:
     spawnable_by: [controller, workflow]
     can_spawn: []
     description: "Zod スキーマ更新 + OpenAPI 再生成 + 検証（webapp-hono 専用）"
-
-  spec-diagnose: # standalone: 低頻度ユーティリティ
-    type: atomic
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: commands/spec-diagnose.md
-    spawnable_by: [workflow]
-    can_spawn: []
-    dispatch_mode: llm
-    description: "テスト失敗の原因診断（仕様誤り vs 実装誤り判定）"
 
   # === C-2d: Autopilot / Controller-autopilot 系（11個） ===
 
@@ -2507,7 +2399,6 @@ scripts:
       - board-archive
       - ac-extract
       - arch-ref
-      - change-id-resolve
       - next-step
       - ts-preflight
       - pr-test
@@ -2824,13 +2715,6 @@ scripts:
     path: scripts/specialist-audit.sh
     description: "specialist completeness 監査（su-observer/merge-gate）: JSONL の specialist 実行数と expected 数を照合し JSON 形式で結果を出力"
 
-  merge-gate-cross-pr-ac:
-    type: script
-    path: scripts/merge-gate-cross-pr-ac.sh
-    calls:
-      - script: resolve-issue-num
-      - script: checkpoint-write
-    description: "Cross-PR AC 検証（merge-gate）: implementation_pr のマージコミットを checkpoint に記録"
 
   merge-gate-checkpoint-merge:
     type: script
@@ -2979,17 +2863,6 @@ agents:
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Playwright E2Eテストのレビュー"
-
-  worker-spec-reviewer:
-    type: specialist
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: agents/worker-spec-reviewer.md
-    model: haiku
-    spawnable_by: [workflow, composite, controller]
-    can_spawn: []
-    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "DeltaSpec Scenarioの品質レビュー"
 
   # Issue レビュー系（sonnet）
   issue-critic:
@@ -3208,18 +3081,7 @@ agents:
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "自動修正ループ（spec-diagnose は workflow-pr-fix 経由で呼出）"
-
-  spec-scaffold-tests:
-    type: specialist
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: agents/spec-scaffold-tests.md
-    model: sonnet
-    spawnable_by: [workflow, composite, controller]
-    can_spawn: []
-    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "DeltaSpec ScenarioからBDDテスト自動生成"
+    description: "自動修正ループ（workflow-pr-fix 経由で呼出）"
 
   e2e-generate:
     type: specialist

@@ -1,0 +1,514 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-04-22T02:06:56Z] orchestrator_pid=2653327 phase=1 started_at=2026-04-22T02:06:56Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #841: Worker 起動
+[orchestrator] Issue #841: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/841-feature-spawn-controllersh-bats-4
+OK: issue-841.json を作成しました (status=running)
+Worker 起動完了: Issue #841 (window=ap-twill-feat-841-feature-spawn-c-12f15df1, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/841-feature-spawn-controllersh-bats-4)
+[orchestrator] Issue #842: Worker 起動
+[orchestrator] Issue #842: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/842-feature-catalog-bats-depsyamlmust
+OK: issue-842.json を作成しました (status=running)
+Worker 起動完了: Issue #842 (window=ap-twill-feat-842-feature-catalog-b406456e, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/842-feature-catalog-bats-depsyamlmust)
+[orchestrator] Issue #843: Worker 起動
+[orchestrator] Issue #843: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/843-feature-layer-d-refined-label-gate-bat
+OK: issue-843.json を作成しました (status=running)
+Worker 起動完了: Issue #843 (window=ap-twill-feat-843-feature-layer-d-e29cc135, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/843-feature-layer-d-refined-label-gate-bat)
+[orchestrator] Issue #841: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-841.json を更新しました
+[orchestrator] Issue #843: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-843.json を更新しました
+[orchestrator] Issue #841: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #841: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-841.json を更新しました
+[orchestrator] Issue #843: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #843: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-843.json を更新しました
+[orchestrator] WARN: issue=842 stagnate detected (RESOLVE_FAILED 55 回, 609s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=842 stagnate detected (RESOLVE_FAILED 56 回, 620s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=842 stagnate detected (RESOLVE_FAILED 57 回, 632s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=842 stagnate detected (RESOLVE_FAILED 58 回, 643s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=842 stagnate detected (RESOLVE_FAILED 59 回, 654s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=842 stagnate detected (RESOLVE_FAILED 60 回, 665s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #842: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-842.json を更新しました
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Issue #842: input-waiting 検知 (1回目) pattern=menu_enter_select window= — 次 cycle で確定
+[orchestrator] Issue #842: input-waiting 確定 pattern=menu_enter_select window= — state 書き込み
+[orchestrator] Phase: タイムアウト — 未完了 Issue を failed に変換
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-842.json を更新しました
+[orchestrator] cleanup: Issue #842 — window/branch クリーンアップ
+[orchestrator] Issue #841: merge-gate 実行 (PR #863)
+[merge-gate] INFO: phase-review チェックをスキップしました（ラベル: quick）
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-841.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #841: PR #863 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #841: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #841: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #841: merge 成功
+[orchestrator] cleanup: Issue #841 — window/branch クリーンアップ
+[orchestrator] Issue #843: merge-gate 実行 (PR #864)
+[merge-gate] INFO: phase-review チェックをスキップしました（ラベル: quick）
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-843.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #843: PR #864 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #843: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #843: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #843: merge 成功
+[orchestrator] cleanup: Issue #843 — window/branch クリーンアップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      841,
+      843
+    ],
+    "failed": [
+      842
+    ],
+    "skipped": []
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

@@ -1,0 +1,111 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-04-21T22:20:25Z] orchestrator_pid=1248269 phase=1 started_at=2026-04-21T22:20:25Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #805: Worker 起動
+[orchestrator] Issue #805: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/805-tech-debt-issue-800-cd-worker-bash-cla
+OK: issue-805.json を作成しました (status=running)
+Worker 起動完了: Issue #805 (window=ap-twill-feat-805-tech-debt-issue-371a5adf, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/805-tech-debt-issue-800-cd-worker-bash-cla)
+[orchestrator] Issue #812: Worker 起動
+[orchestrator] Issue #812: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/812-tech-debt-twl-spec-apply-ac
+OK: issue-812.json を作成しました (status=running)
+Worker 起動完了: Issue #812 (window=ap-twill-feat-812-tech-debt-twl-s-d891f1fd, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/812-tech-debt-twl-spec-apply-ac)
+[orchestrator] Issue #814: Worker 起動
+[orchestrator] Issue #814: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/814-tech-debt-su-observer-skillmd-controll
+OK: issue-814.json を作成しました (status=running)
+Worker 起動完了: Issue #814 (window=ap-twill-feat-814-tech-debt-su-ob-65b2cfdc, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/814-tech-debt-su-observer-skillmd-controll)
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] Issue #805: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-805.json を更新しました
+[orchestrator] Issue #805: input-waiting 検知 (1回目) pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — 次 cycle で確定
+[orchestrator] Issue #805: input-waiting 確定 pattern=menu_enter_select window=ap-twill-feat-805-tech-debt-issue-371a5adf — state 書き込み
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 55 回, 609s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 56 回, 620s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 57 回, 632s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 58 回, 643s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 59 回, 654s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 60 回, 665s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 61 回, 676s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 62 回, 687s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 63 回, 698s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 64 回, 710s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 65 回, 721s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 66 回, 732s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 67 回, 743s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 68 回, 754s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 69 回, 765s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 70 回, 776s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 71 回, 788s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 72 回, 799s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 73 回, 810s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 74 回, 821s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 75 回, 832s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 76 回, 843s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 77 回, 854s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 78 回, 865s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 79 回, 876s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 80 回, 887s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 81 回, 898s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 82 回, 909s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 83 回, 920s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 84 回, 931s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 85 回, 942s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 86 回, 953s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 87 回, 964s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 88 回, 976s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 89 回, 987s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 90 回, 998s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 91 回, 1009s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 92 回, 1020s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 93 回, 1031s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 94 回, 1042s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 95 回, 1053s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=814 stagnate detected (RESOLVE_FAILED 96 回, 1064s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #814: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-814.json を更新しました
+[orchestrator] Issue #814: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #814: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-814.json を更新しました
+[orchestrator] cleanup: Issue #805 — window/branch クリーンアップ
+[orchestrator] cleanup: Issue #812 — window/branch クリーンアップ
+[orchestrator] Issue #814: merge-gate 実行 (PR #824)
+[merge-gate] INFO: phase-review チェックをスキップしました（ラベル: quick）
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-814.json を更新しました
+[merge-gate] Issue #814: コンフリクト検出 - Pilot がリベース→push 後に status=merge-ready に戻してリトライ可能
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #814: PR #824 のマージを実行... (REPO_MODE=worktree)
+[orchestrator] Issue #814: merge 失敗 (exit=1)
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      805,
+      812
+    ],
+    "failed": [],
+    "skipped": [
+      814
+    ]
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

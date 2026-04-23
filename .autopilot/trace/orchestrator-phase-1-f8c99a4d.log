@@ -1,0 +1,62 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-04-22T01:20:10Z] orchestrator_pid=2140635 phase=1 started_at=2026-04-22T01:20:10Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #832: Worker 起動
+[orchestrator] Issue #832: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/832-feature-co-issue-refine-spec-review-se
+OK: issue-832.json を作成しました (status=running)
+Worker 起動完了: Issue #832 (window=ap-twill-feat-832-feature-co-issu-11f29ee1, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/832-feature-co-issue-refine-spec-review-se)
+[orchestrator] Issue #833: Worker 起動
+[orchestrator] Issue #833: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/833-tech-debt-pre-bash-refined-label-gates
+OK: issue-833.json を作成しました (status=running)
+Worker 起動完了: Issue #833 (window=ap-twill-feat-833-tech-debt-pre-b-1b18d910, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/833-tech-debt-pre-bash-refined-label-gates)
+[orchestrator] Issue #834: Worker 起動
+[orchestrator] Issue #834: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/834-feature-co-issue-workflow-issue-refine
+OK: issue-834.json を作成しました (status=running)
+Worker 起動完了: Issue #834 (window=ap-twill-feat-834-feature-co-issu-ea8dfd3e, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/834-feature-co-issue-workflow-issue-refine)
+[orchestrator] Issue #832: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-832.json を更新しました
+[orchestrator] Issue #834: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-834.json を更新しました
+[orchestrator] Issue #832: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #832: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-832.json を更新しました
+[orchestrator] Issue #834: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #834: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-834.json を更新しました
+[orchestrator] Issue #832: merge-gate 実行 (PR #855)
+[merge-gate] INFO: phase-review チェックをスキップしました（ラベル: quick）
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-832.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #832: PR #855 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #832: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #832: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #832: merge 成功
+[orchestrator] cleanup: Issue #832 — window/branch クリーンアップ
+[orchestrator] Issue #833: merge-gate 実行 (PR #854)
+[merge-gate] INFO: phase-review チェックをスキップしました（ラベル: quick）
+[merge-gate] Issue #833: ⚠️ リモートブランチ削除失敗（マージは成功）: feat/833-tech-debt-pre-bash-refined-label-gates
+ERROR: ファイルが存在しません: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-833.json
+  試したパス: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-833.json
+  bare sibling 候補: /home/shuu5/projects/local-projects/twill/.autopilot/issues/issue-833.json
+  解決策: export AUTOPILOT_DIR=<.autopilot への絶対パス>
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #833: PR #854 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #833: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #833: merge 成功
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [],
+    "failed": [],
+    "skipped": [
+      832,
+      833,
+      834
+    ]
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

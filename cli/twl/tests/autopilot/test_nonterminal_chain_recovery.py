@@ -94,8 +94,8 @@ def chain_runner(scripts_root: Path, autopilot_dir: Path) -> ChainRunner:
 
 class TestResolveNextWorkflowModule:
     """
-    Scenario: current_step=post-change-apply の場合に次 skill を返す
-    WHEN: issue-469.json の current_step が "post-change-apply" で is_quick=false の状態で
+    Scenario: current_step=check の場合に次 skill を返す
+    WHEN: issue-469.json の current_step が "check" で is_quick=false の状態で
           python3 -m twl.autopilot.resolve_next_workflow --issue 469 を実行する
     THEN: stdout に /twl:workflow-pr-verify が出力され exit 0 で終了する
 
@@ -113,11 +113,11 @@ class TestResolveNextWorkflowModule:
     def test_current_step_post_change_apply_returns_pr_verify(
         self, autopilot_dir: Path, issue_state_file: Path
     ) -> None:
-        """WHEN current_step=post-change-apply, is_quick=false
+        """WHEN current_step=check, is_quick=false
         THEN stdout=/twl:workflow-pr-verify, exit=0."""
-        # Arrange: write current_step=post-change-apply into state file (ADR-018)
+        # Arrange: write current_step=check into state file (ADR-018)
         data = json.loads(issue_state_file.read_text())
-        data["current_step"] = "post-change-apply"
+        data["current_step"] = "check"
         data["is_quick"] = False
         issue_state_file.write_text(json.dumps(data))
 
@@ -236,7 +236,7 @@ class TestResolveNextWorkflowModule:
     ) -> None:
         """stdout contains exactly the skill command with optional trailing newline only."""
         data = json.loads(issue_state_file.read_text())
-        data["current_step"] = "post-change-apply"
+        data["current_step"] = "check"
         issue_state_file.write_text(json.dumps(data))
 
         result = subprocess.run(
@@ -341,7 +341,7 @@ class TestOrchestratorRecoveryE2E:
     THEN: exit 非ゼロで終了し、stdout が空であることを確認できる
 
     Scenario: current_step 書き込み後の resolve 成功確認
-    WHEN: Worker が current_step=post-change-apply を書き込んだ後に
+    WHEN: Worker が current_step=check を書き込んだ後に
           resolve_next_workflow --issue 469 を呼ぶ
     THEN: exit 0 で /twl:workflow-pr-verify が stdout に出力される
     """
@@ -375,21 +375,21 @@ class TestOrchestratorRecoveryE2E:
         self, autopilot_dir: Path, issue_state_file: Path, state_manager: StateManager
     ) -> None:
         """
-        WHEN: Worker writes current_step=post-change-apply → then resolve_next_workflow
+        WHEN: Worker writes current_step=check → then resolve_next_workflow
         THEN: exit 0, stdout=/twl:workflow-pr-verify.
         """
-        # Step 1: Worker writes current_step=post-change-apply (ADR-018: current_step SSOT)
+        # Step 1: Worker writes current_step=check (ADR-018: current_step SSOT)
         state_manager.write(
             type_="issue",
             role="worker",
             issue="469",
-            sets=["current_step=post-change-apply"],
+            sets=["current_step=check"],
         )
 
         # Verify write succeeded
         updated = json.loads(issue_state_file.read_text())
-        assert updated.get("current_step") == "post-change-apply", (
-            "State write must persist current_step=post-change-apply"
+        assert updated.get("current_step") == "check", (
+            "State write must persist current_step=check"
         )
 
         # Step 2: Invoke resolve_next_workflow CLI
@@ -401,7 +401,7 @@ class TestOrchestratorRecoveryE2E:
         )
 
         assert result.returncode == 0, (
-            f"Expected exit 0 after current_step=post-change-apply write. "
+            f"Expected exit 0 after current_step=check write. "
             f"returncode={result.returncode}, stderr={result.stderr!r}"
         )
         assert result.stdout.strip() == "/twl:workflow-pr-verify", (
@@ -418,7 +418,7 @@ class TestOrchestratorRecoveryE2E:
                 type_="issue",
                 role="pilot",
                 issue="469",
-                sets=["current_step=post-change-apply"],
+                sets=["current_step=check"],
             )
 
     def test_current_step_reset_to_empty_re_fails_resolve(
@@ -427,7 +427,7 @@ class TestOrchestratorRecoveryE2E:
         """After setting current_step then resetting to empty, resolve_next_workflow must fail."""
         # Step 1: set to terminal step
         state_manager.write(
-            type_="issue", role="worker", issue="469", sets=["current_step=post-change-apply"]
+            type_="issue", role="worker", issue="469", sets=["current_step=check"]
         )
         # Step 2: reset to empty
         data = json.loads(issue_state_file.read_text())
@@ -451,7 +451,7 @@ class TestOrchestratorRecoveryE2E:
     ) -> None:
         """AC-4: core recovery scenario must PASS 10 consecutive times for stability.
 
-        WHEN: current_step="" → resolve fails; write post-change-apply → resolve succeeds.
+        WHEN: current_step="" → resolve fails; write check → resolve succeeds.
         THEN: exit codes and stdout are correct across 10 independent runs.
         """
         for run in range(10):
@@ -474,15 +474,15 @@ class TestOrchestratorRecoveryE2E:
                 f"Run {run}: expected empty stdout when current_step is empty"
             )
 
-            # Write current_step=post-change-apply via Worker
+            # Write current_step=check via Worker
             state_manager.write(
                 type_="issue",
                 role="worker",
                 issue="469",
-                sets=["current_step=post-change-apply"],
+                sets=["current_step=check"],
             )
 
-            # Verify: post-change-apply → /twl:workflow-pr-verify
+            # Verify: check → /twl:workflow-pr-verify
             result_ok = subprocess.run(
                 [sys.executable, "-m", "twl.autopilot.resolve_next_workflow", "--issue", "469"],
                 capture_output=True,
@@ -490,7 +490,7 @@ class TestOrchestratorRecoveryE2E:
                 env={**os.environ, "AUTOPILOT_DIR": str(autopilot_dir)},
             )
             assert result_ok.returncode == 0, (
-                f"Run {run}: expected exit 0 after current_step=post-change-apply. "
+                f"Run {run}: expected exit 0 after current_step=check. "
                 f"stderr={result_ok.stderr!r}"
             )
             assert result_ok.stdout.strip() == "/twl:workflow-pr-verify", (
@@ -516,7 +516,7 @@ class TestNudgeCommandForPattern:
     """
     Scenario: 実装完了パターン検知時に current_step を書き inject する (ADR-018)
     WHEN: Worker pane 出力が静止し、最終出力に '>>> 実装完了: issue-469' が含まれる
-    THEN: Worker が state write --role worker --set current_step=post-change-apply を実行し、
+    THEN: Worker が state write --role worker --set current_step=check を実行し、
           その後 tmux に /twl:workflow-pr-verify #469 を inject する
 
     Scenario: 既存パターンへの影響なし
@@ -533,7 +533,7 @@ class TestNudgeCommandForPattern:
         """Simulate Worker state write when '>>> 実装完了: issue-469' is detected.
 
         The bash _nudge_command_for_pattern function must call:
-            state write --type issue --issue 469 --role worker --set current_step=post-change-apply
+            state write --type issue --issue 469 --role worker --set current_step=check
         before injecting the skill command.  This test verifies the state layer
         accepts such a write and persists the value correctly.
         """
@@ -542,12 +542,12 @@ class TestNudgeCommandForPattern:
             type_="issue",
             role="worker",
             issue="469",
-            sets=["current_step=post-change-apply"],
+            sets=["current_step=check"],
         )
 
         data = json.loads(issue_state_file.read_text())
-        assert data.get("current_step") == "post-change-apply", (
-            "After completion-pattern detection, current_step must be 'post-change-apply'"
+        assert data.get("current_step") == "check", (
+            "After completion-pattern detection, current_step must be 'check'"
         )
 
     def test_completion_pattern_expected_inject_command(self) -> None:
@@ -718,7 +718,7 @@ class TestResolveNextWorkflowEdgeCases:
         import re
 
         data = json.loads(issue_state_file.read_text())
-        data["current_step"] = "post-change-apply"
+        data["current_step"] = "check"
         issue_state_file.write_text(json.dumps(data))
 
         result = subprocess.run(
@@ -738,9 +738,9 @@ class TestResolveNextWorkflowEdgeCases:
     def test_is_quick_false_post_change_apply_gives_pr_verify_not_quick_path(
         self, autopilot_dir: Path, issue_state_file: Path
     ) -> None:
-        """is_quick=false must not route to quick-path; post-change-apply must give pr-verify."""
+        """is_quick=false must not route to quick-path; check must give pr-verify."""
         data = json.loads(issue_state_file.read_text())
-        data["current_step"] = "post-change-apply"
+        data["current_step"] = "check"
         data["is_quick"] = False
         issue_state_file.write_text(json.dumps(data))
 

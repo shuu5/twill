@@ -74,7 +74,7 @@ class TestChainStepsDefinition:
         assert len(CHAIN_STEPS) == len(set(CHAIN_STEPS))
 
     def test_chain_steps_contains_key_steps(self) -> None:
-        essential = {"init", "check", "change-apply", "all-pass-check", "pr-cycle-report"}
+        essential = {"init", "check", "all-pass-check", "pr-cycle-report"}
         assert essential.issubset(set(CHAIN_STEPS))
 
     def test_quick_skip_steps_subset_of_chain_steps(self) -> None:
@@ -85,12 +85,6 @@ class TestChainStepsDefinition:
 
     def test_direct_skip_steps_subset_of_chain_steps(self) -> None:
         assert DIRECT_SKIP_STEPS.issubset(set(CHAIN_STEPS))
-
-    def test_direct_skip_steps_not_empty(self) -> None:
-        assert len(DIRECT_SKIP_STEPS) > 0
-
-    def test_direct_skip_steps_contains_expected(self) -> None:
-        assert {"change-propose", "change-id-resolve", "change-apply"}.issubset(DIRECT_SKIP_STEPS)
 
     def test_init_is_first_step(self) -> None:
         assert CHAIN_STEPS[0] == "init"
@@ -380,10 +374,10 @@ class TestStepInit:
         scripts_root.mkdir(exist_ok=True)
         return ChainRunner(scripts_root=scripts_root, autopilot_dir=autopilot_dir)
 
-    def test_no_deltaspec_non_quick_non_direct_returns_propose_auto_init(
+    def test_non_quick_non_direct_on_feature_branch_returns_implement(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """deltaspec/ なし + quick なし + direct なし → propose (auto_init=true)."""
+        """quick なし + direct なし → implement."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/some-branch"),
@@ -392,9 +386,7 @@ class TestStepInit:
             patch.object(runner, "_write_state_field"),
         ):
             result = runner.step_init("")
-        assert result["recommended_action"] == "propose"
-        assert result.get("auto_init") is True
-        assert result.get("deltaspec") is False
+        assert result["recommended_action"] == "implement"
 
     def test_scope_direct_label_returns_direct(
         self, tmp_path: Path, autopilot_dir: Path
@@ -409,44 +401,39 @@ class TestStepInit:
         ):
             result = runner.step_init("338")
         assert result["recommended_action"] == "direct"
-        assert result.get("deltaspec") is False
         assert result.get("is_direct") is True
 
     # ------------------------------------------------------------------
     # Issue #784: step_init auto_init パス — issue_num あり
     # ------------------------------------------------------------------
 
-    def test_issue_num_no_deltaspec_writes_mode_propose(
+    def test_issue_num_writes_is_quick_and_is_direct(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """issue_num='784' + deltaspec/ 不在 → _write_state_field が mode=propose で呼ばれる (ADR-015)."""
+        """issue_num='784' → _write_state_field が is_quick/is_direct を書く."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
-            patch.object(runner, "_git_current_branch", return_value="feat/784-adr-015"),
+            patch.object(runner, "_git_current_branch", return_value="feat/784-branch"),
             patch.object(runner, "_project_root", return_value=tmp_path),
             patch.object(runner, "_fetch_labels", return_value=[]),
             patch.object(runner, "_write_state_field") as mock_write,
         ):
             result = runner.step_init("784")
 
-        assert result["recommended_action"] == "propose"
-        assert result.get("auto_init") is True
-        assert result.get("deltaspec") is False
+        assert result["recommended_action"] == "implement"
         assert result.get("is_quick") is False
 
-        # _write_state_field の呼び出し列を検証
         call_kvs = [call.args[1] for call in mock_write.call_args_list]
-        assert "mode=propose" in call_kvs, (
-            f"_write_state_field に mode=propose が渡されていない。実際の呼び出し: {call_kvs}"
-        )
+        assert "is_quick=false" in call_kvs
+        assert "is_direct=false" in call_kvs
 
-    def test_issue_num_no_deltaspec_writes_state_in_order(
+    def test_issue_num_writes_state_before_result(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """issue_num あり + deltaspec/ 不在 → is_quick/is_direct を先に書いてから mode=propose を書く."""
+        """issue_num あり → is_quick/is_direct が state に書かれる."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
-            patch.object(runner, "_git_current_branch", return_value="feat/784-adr-015"),
+            patch.object(runner, "_git_current_branch", return_value="feat/784-branch"),
             patch.object(runner, "_project_root", return_value=tmp_path),
             patch.object(runner, "_fetch_labels", return_value=[]),
             patch.object(runner, "_write_state_field") as mock_write,
@@ -454,37 +441,29 @@ class TestStepInit:
             runner.step_init("784")
 
         call_kvs = [call.args[1] for call in mock_write.call_args_list]
-        # is_quick と is_direct はラベル判定直後（mode=propose より前）に書かれる
         assert "is_quick=false" in call_kvs
         assert "is_direct=false" in call_kvs
-        idx_mode = call_kvs.index("mode=propose")
-        idx_quick = call_kvs.index("is_quick=false")
-        assert idx_quick < idx_mode, "is_quick は mode=propose より前に書かれなければならない"
 
-    def test_issue_num_no_deltaspec_issue_num_passed_to_write(
+    def test_issue_num_passed_to_write_state_field(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
         """_write_state_field の第1引数 (issue_num) が '784' であることを確認する."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
-            patch.object(runner, "_git_current_branch", return_value="feat/784-adr-015"),
+            patch.object(runner, "_git_current_branch", return_value="feat/784-branch"),
             patch.object(runner, "_project_root", return_value=tmp_path),
             patch.object(runner, "_fetch_labels", return_value=[]),
             patch.object(runner, "_write_state_field") as mock_write,
         ):
             runner.step_init("784")
 
-        # mode=propose 呼び出し時の issue_num を確認
-        mode_calls = [c for c in mock_write.call_args_list if c.args[1] == "mode=propose"]
-        assert len(mode_calls) == 1, "mode=propose の書き込みはちょうど1回であること"
-        assert mode_calls[0].args[0] == "784", (
-            f"issue_num が '784' でない: {mode_calls[0].args[0]!r}"
-        )
+        for call in mock_write.call_args_list:
+            assert call.args[0] == "784", f"issue_num が '784' でない: {call.args[0]!r}"
 
-    def test_empty_issue_num_no_deltaspec_no_write_state(
+    def test_empty_issue_num_no_is_quick_write(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """issue_num='' のとき _write_state_field は呼ばれない（既存テストのエッジケース補完）."""
+        """issue_num='' のとき is_quick/is_direct を state に書かない."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/some-branch"),
@@ -494,15 +473,14 @@ class TestStepInit:
         ):
             result = runner.step_init("")
 
-        assert result["recommended_action"] == "propose"
-        # issue_num が空なので state 書き込みは行われない
-        mode_calls = [c for c in mock_write.call_args_list if c.args[1] == "mode=propose"]
-        assert len(mode_calls) == 0, "issue_num='' では mode=propose を書いてはならない"
+        assert result["recommended_action"] == "implement"
+        call_kvs = [call.args[1] for call in mock_write.call_args_list]
+        assert "is_quick=false" not in call_kvs, "issue_num='' では is_quick 書き込み不可"
 
-    def test_non_numeric_issue_num_no_deltaspec_no_write_mode(
+    def test_non_numeric_issue_num_no_is_quick_write(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """issue_num が数字でない場合（例: 'abc'）は mode=propose を書かない."""
+        """issue_num が数字でない場合は is_quick/is_direct を state に書かない."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/abc-test"),
@@ -512,9 +490,9 @@ class TestStepInit:
         ):
             result = runner.step_init("abc")
 
-        assert result["recommended_action"] == "propose"
-        mode_calls = [c for c in mock_write.call_args_list if "mode=" in c.args[1]]
-        assert len(mode_calls) == 0, "非数値 issue_num では mode 書き込み不可"
+        assert result["recommended_action"] == "implement"
+        call_kvs = [call.args[1] for call in mock_write.call_args_list]
+        assert "is_quick=false" not in call_kvs, "非数値 issue_num では is_quick 書き込み不可"
 
 
 # ---------------------------------------------------------------------------

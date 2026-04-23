@@ -16,7 +16,7 @@ bash "$SCRIPT_DIR/auto-merge.sh" --issue "$ISSUE_NUM" --pr "$PR_NUMBER" --branch
 - Layer 1: IS_AUTOPILOT 判定（state-read.sh）
 - Layer 4: フォールバック（issue-{N}.json 直接存在確認）
 - autopilot 配下: merge-ready 宣言のみ（merge 禁止）
-- 非 autopilot: squash merge + DeltaSpec archive + worktree 削除
+- 非 autopilot: squash merge + worktree 削除
 
 ## 禁止事項（MUST NOT）
 

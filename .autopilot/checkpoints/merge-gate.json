@@ -6,11 +6,11 @@
   "findings": [
     {
       "severity": "WARNING",
-      "category": "bug",
-      "confidence": 70,
-      "message": "AC『plugins/twl/refs/ref-wave-32-retest.md が存在する』はdiff-only判定。対応するテストなし",
-      "evidence": "git diff origin/main に plugins/twl/refs/ref-wave-32-retest.md (5 insertions) が確認できる"
+      "category": "architecture-drift",
+      "confidence": 60,
+      "message": "orchestrator という用語が pitfalls-catalog.md §13 で使用されているが glossary.md の MUST 用語テーブルに未登録",
+      "evidence": "glossary.md MUST 用語テーブルに orchestrator の定義なし。domain/contexts/autopilot.md では慣用されているため実質的問題なし"
     }
   ],
-  "timestamp": "2026-04-14T07:51:58Z"
+  "timestamp": "2026-04-22T01:48:53Z"
 }

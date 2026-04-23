@@ -203,38 +203,8 @@ rm -f "$MERGE_ERROR_LOG"
 
 echo "[auto-merge] Issue #${ISSUE_NUM}: merge 成功"
 
-# ============================================================
-# 非 autopilot: DeltaSpec archive（存在時のみ）
-# ============================================================
 if ! git checkout main 2>/dev/null || ! git pull origin main 2>/dev/null; then
   echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ git checkout main / pull 失敗（merge は成功済み）" >&2
-fi
-
-if command -v twl >/dev/null 2>&1 && [[ -d deltaspec/changes ]]; then
-  # Issue 番号に紐づく change を特定（.deltaspec.yaml の issue フィールドを参照）
-  CHANGE_IDS=()
-  if [[ -n "${ISSUE_NUM:-}" ]]; then
-    while IFS= read -r yaml_path; do
-      CHANGE_IDS+=("$(basename "$(dirname "$yaml_path")")")
-    done < <(grep -rl "^issue: ${ISSUE_NUM}$" deltaspec/changes --include=".deltaspec.yaml" 2>/dev/null || true)
-  fi
-  # 対応 change なし → 従来の head -1 フォールバック
-  if [[ ${#CHANGE_IDS[@]} -eq 0 ]]; then
-    FALLBACK_CHANGE=$(ls deltaspec/changes/ 2>/dev/null | grep -v archive | head -1 || true)
-    [[ -n "$FALLBACK_CHANGE" ]] && CHANGE_IDS+=("$FALLBACK_CHANGE")
-  fi
-  for CHANGE_ID in "${CHANGE_IDS[@]}"; do
-    if twl spec archive --yes -- "${CHANGE_ID}"; then
-      echo "[auto-merge] Issue #${ISSUE_NUM}: DeltaSpec archive 完了（specs 統合済み）: ${CHANGE_ID}"
-    else
-      echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ WARNING: specs 統合失敗。--skip-specs でリトライ: ${CHANGE_ID}" >&2
-      if twl spec archive --yes --skip-specs -- "${CHANGE_ID}"; then
-        echo "[auto-merge] Issue #${ISSUE_NUM}: DeltaSpec archive 完了（specs 統合スキップ）: ${CHANGE_ID}"
-      else
-        echo "[auto-merge] Issue #${ISSUE_NUM}: ⚠️ DeltaSpec archive 失敗: ${CHANGE_ID}（merge は成功済み）" >&2
-      fi
-    fi
-  done
 fi
 
 # ============================================================

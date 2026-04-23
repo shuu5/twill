@@ -1,0 +1,29 @@
+{
+  "issue": 794,
+  "status": "failed",
+  "branch": "feat/794-project-linksyaml-board-6",
+  "pr": 820,
+  "window": "",
+  "started_at": "2026-04-21T14:14:36Z",
+  "updated_at": "2026-04-21T16:20:27Z",
+  "current_step": "ac-verify",
+  "retry_count": 0,
+  "fix_instructions": null,
+  "merged_at": null,
+  "files_changed": [],
+  "failure": {
+    "message": "poll_timeout",
+    "step": "polling"
+  },
+  "implementation_pr": null,
+  "deltaspec_mode": null,
+  "input_waiting_detected": "menu_enter_select",
+  "input_waiting_at": "2026-04-21T16:20:15Z",
+  "is_quick": true,
+  "is_direct": false,
+  "mode": "direct",
+  "llm_delegated_at": "2026-04-21T23:22:46+09:00",
+  "llm_completed_at": "2026-04-21T23:23:30+09:00",
+  "workflow_injected": "/twl:workflow-pr-fix",
+  "injected_at": "2026-04-21T14:22:49Z"
+}

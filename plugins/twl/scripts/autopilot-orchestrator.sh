@@ -13,8 +13,6 @@ set -euo pipefail
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=./lib/python-env.sh
 source "${SCRIPTS_ROOT}/lib/python-env.sh"
-# shellcheck source=./lib/deltaspec-helpers.sh
-source "${SCRIPTS_ROOT}/lib/deltaspec-helpers.sh"
 # shellcheck source=chain-steps.sh
 source "${SCRIPTS_ROOT}/chain-steps.sh" 2>/dev/null || true
 
@@ -867,9 +865,7 @@ _nudge_command_for_pattern() {
   elif echo "$pane_output" | grep -qP ">>> 提案完了"; then
     echo ""
   elif echo "$pane_output" | grep -qP ">>> 実装完了: issue-\d+"; then
-    # AC-2 fallback: change-apply 完了後の pr-verify inject（ADR-018: current_step ベース）
-    # post-change-apply が terminal step として設定されている場合は inject_next_workflow が自動処理するため
-    # ここではパターンマッチ fallback として直接 inject する
+    # AC-2 fallback: check 完了後の pr-verify inject（ADR-018: current_step ベース）
     echo "/twl:workflow-pr-verify #${issue}"
   elif echo "$pane_output" | grep -qP "テスト準備.*完了"; then
     echo "/twl:workflow-pr-verify #${issue}"

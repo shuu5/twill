@@ -1,0 +1,32 @@
+{
+  "issue": 814,
+  "status": "done",
+  "branch": "feat/814-tech-debt-su-observer-skillmd-controll",
+  "pr": 824,
+  "window": "",
+  "started_at": "2026-04-21T22:20:35Z",
+  "updated_at": "2026-04-21T22:49:41Z",
+  "current_step": "all-pass-check",
+  "retry_count": 0,
+  "fix_instructions": null,
+  "merged_at": "2026-04-21T22:49:41Z",
+  "files_changed": [],
+  "failure": {
+    "reason": "merge_conflict",
+    "details": "X Pull request shuu5/twill#824 is not mergeable: the merge commit cannot be cleanly created.\nTo have the pull request merged after all the requirements have been met, add the `--auto` flag.\nRun the following to resolve the merge conflicts locally:\n  gh pr checkout 824 && git fetch origin main && git merge origin/main\n",
+    "step": "merge-gate",
+    "pr": "#824"
+  },
+  "implementation_pr": null,
+  "deltaspec_mode": null,
+  "input_waiting_detected": null,
+  "input_waiting_at": null,
+  "is_quick": true,
+  "is_direct": false,
+  "mode": "direct",
+  "llm_delegated_at": "2026-04-22T07:38:52+09:00",
+  "llm_completed_at": "2026-04-22T07:39:50+09:00",
+  "workflow_injected": "/twl:workflow-pr-merge",
+  "injected_at": "2026-04-21T22:41:17Z",
+  "conflict_retry_count": 1
+}

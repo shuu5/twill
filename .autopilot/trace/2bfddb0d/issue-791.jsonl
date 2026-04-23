@@ -1,0 +1,4 @@
+{"step":"auto-merge","phase":"start","ts":"2026-04-21T23:02:29+09:00","exit_code":null,"pid":59088}
+{"step":"auto-merge","phase":"end","ts":"2026-04-21T23:02:29+09:00","exit_code":1,"pid":59088}
+{"step":"auto-merge","phase":"start","ts":"2026-04-21T23:02:34+09:00","exit_code":null,"pid":59779}
+{"step":"auto-merge","phase":"end","ts":"2026-04-21T23:02:36+09:00","exit_code":0,"pid":59779}

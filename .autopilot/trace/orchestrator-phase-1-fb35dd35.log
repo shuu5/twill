@@ -1,0 +1,102 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-04-21T06:37:45Z] orchestrator_pid=1664305 phase=1 started_at=2026-04-21T06:37:45Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #799: Worker 起動
+[orchestrator] Issue #799: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/799-tech-debt-su-observer-spawn-prompt-ski
+[orchestrator] CRG: main/.code-review-graph が symlink — 削除して修復しました (#674): /home/shuu5/projects/local-projects/twill/main/.code-review-graph
+[orchestrator] CRG: 壊れた symlink を削除: /home/shuu5/projects/local-projects/twill/worktrees/feat/799-tech-debt-su-observer-spawn-prompt-ski/.code-review-graph
+OK: issue-799.json を作成しました (status=running)
+Worker 起動完了: Issue #799 (window=ap-twill-feat-799-tech-debt-su-ob-37c9559d, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/799-tech-debt-su-observer-spawn-prompt-ski)
+[orchestrator] Issue #799: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-799.json を更新しました
+[orchestrator] Issue #799: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #799: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 57 回, 610s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 58 回, 621s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 59 回, 632s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 60 回, 643s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 61 回, 654s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 62 回, 665s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 63 回, 676s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 64 回, 687s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 65 回, 697s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 66 回, 708s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 67 回, 719s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 68 回, 730s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 69 回, 740s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 70 回, 751s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 71 回, 761s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 72 回, 772s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 73 回, 783s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 74 回, 793s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 75 回, 804s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 76 回, 814s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 77 回, 825s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 78 回, 836s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 79 回, 847s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 80 回, 858s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 81 回, 869s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 82 回, 880s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 83 回, 891s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 84 回, 901s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 85 回, 912s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 86 回, 923s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 87 回, 934s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 88 回, 945s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 89 回, 956s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 90 回, 966s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 91 回, 977s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 92 回, 988s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 93 回, 998s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 94 回, 1009s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 95 回, 1020s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 96 回, 1031s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 97 回, 1041s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 98 回, 1052s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 99 回, 1063s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 100 回, 1074s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 101 回, 1084s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 102 回, 1095s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 103 回, 1106s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 104 回, 1117s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 105 回, 1128s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=799 stagnate detected (RESOLVE_FAILED 106 回, 1139s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #799: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-799.json を更新しました
+[orchestrator] Issue #799: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #799: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-799.json を更新しました
+[orchestrator] Issue #799: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #799: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #799: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #799: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #799: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #799: WARNING: inject タイムアウト — 10秒後に再チェック
+[orchestrator] Issue #799: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #799: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #799: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-799.json を更新しました
+[orchestrator] Issue #799: merge-ready
+[orchestrator] Issue #799: merge-gate 実行 (PR #802)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-799.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #799: PR #802 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #799: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #799: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #799: merge 成功
+[orchestrator] cleanup: Issue #799 — window/branch クリーンアップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      799
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

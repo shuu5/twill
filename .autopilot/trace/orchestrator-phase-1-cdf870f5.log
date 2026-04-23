@@ -1,0 +1,29 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-04-22T01:36:59Z] orchestrator_pid=2307964 phase=1 started_at=2026-04-22T01:36:59Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #835: Worker 起動
+[orchestrator] Issue #835: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/835-feature-spawn-controllersh-co-autopilo
+OK: issue-835.json を作成しました (status=running)
+Worker 起動完了: Issue #835 (window=ap-twill-feat-835-feature-spawn-c-809d9f28, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/835-feature-spawn-controllersh-co-autopilo)
+[orchestrator] Issue #836: Worker 起動
+[orchestrator] Issue #836: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/836-tech-debt-autopilot-launchsh-cld-spawn
+OK: issue-836.json を作成しました (status=running)
+Worker 起動完了: Issue #836 (window=ap-twill-feat-836-tech-debt-autop-e6e39e72, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/836-tech-debt-autopilot-launchsh-cld-spawn)
+[orchestrator] Issue #837: Worker 起動
+[orchestrator] Issue #837: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/837-feature-co-autopilot-pr-chain-resume-r
+OK: issue-837.json を作成しました (status=running)
+Worker 起動完了: Issue #837 (window=ap-twill-feat-837-feature-co-auto-9e6660c1, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/837-feature-co-autopilot-pr-chain-resume-r)
+[orchestrator] Issue #836: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-836.json を更新しました
+[orchestrator] Issue #837: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-837.json を更新しました
+[orchestrator] Issue #836: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #836: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-836.json を更新しました
+[orchestrator] Issue #835: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-835.json を更新しました
+[orchestrator] Issue #837: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #837: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-837.json を更新しました
