@@ -96,7 +96,24 @@ cat "$TMPFILE" >> "$PROMPT_FILE"
 codex exec --sandbox read-only -m "${TWILL_CODEX_REVIEW_MODEL:-gpt-5.1-codex}" --ephemeral < "$PROMPT_FILE"
 ```
 
-### Step 4: 出力変換
+### Step 4: AC coverage 検証
+
+PR レビューモード（`<target_files>` に diff が含まれる場合）のみ実行する。
+
+`${SNAPSHOT_DIR}/01.5-ac-checklist.md` が存在すれば Read して AC 一覧を取得し、diff との 1:1 対応を確認する:
+
+```bash
+AC_FILE=$(find . -path "*/.autopilot/snapshots/*/01.5-ac-checklist.md" 2>/dev/null | head -1)
+[[ -f "$AC_FILE" ]] && cat "$AC_FILE" || echo "AC_FILE_NOT_FOUND"
+```
+
+各 AC 項目について:
+- **対応実装が diff に存在しない** → finding: severity=WARNING, category=`structure`, message="AC未カバー: <AC項目>"
+- **対応テストが diff に存在しない** → finding: severity=CRITICAL, category=`structure`, message="テスト欠如: <AC項目>"
+
+AC ファイルが不在の場合はこの Step をスキップする（WARN ログのみ）。
+
+### Step 5: 出力変換
 
 codex の自由形式テキスト出力を specialist 共通スキーマに変換する:
 
