@@ -1,7 +1,9 @@
 ## Vision
 
 chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開発ワークフロープラグイン。
-「機械的にできることは機械に任せる」原則を徹底し、Issue → 実装 → PR → マージの全サイクルを自律化する。
+「機械的にできることは機械に任せる」原則を徹底し、`Issue → TDD 直行 flow (RED → GREEN → REFACTOR) → PR → マージ` の全サイクルを自律化する。
+
+Acceptance Criteria (AC) を起点とした TDD 直行 flow を採用する (ADR-023)。co-autopilot は AC ベースで RED test を生成し、Worker が実装 + GREEN 確認 + REFACTOR を経て merge-gate に到達する。proposal/specs 経由の spec-driven 中間層（DeltaSpec）は採用しない — ADR-015 で試行したが運用で価値が確認されず、ADR-023 で除去が決定された。
 
 ## Constraints
 
@@ -19,8 +21,8 @@ chain-driven + autopilot-first アーキテクチャに基づく Claude Code 開
 
 | カテゴリ | 定義 | 該当 Controller |
 |----------|------|-----------------|
-| Implementation | コード変更・PR 作成を伴う操作 | co-autopilot のみ |
-| Spec Implementation | Architecture spec 変更・PR 作成 | co-architect |
+| Implementation | AC-based TDD 直行 flow (RED → GREEN → REFACTOR) によるコード変更・PR 作成 (ADR-023) | co-autopilot のみ |
+| Spec Implementation | Architecture spec 変更・PR 作成 (ADR-019 で定義、DeltaSpec と直交し Phase Z 後も KEEP) | co-architect |
 | Non-implementation | Issue 作成・設計・プロジェクト管理 | co-issue, co-project |
 | Utility | スタンドアロンユーティリティ操作 | co-utility |
 | Observation | ライブセッション観察・問題検出・Issue 起票 | co-self-improve |
