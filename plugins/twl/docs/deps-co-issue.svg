@@ -15,14 +15,14 @@
 <title>skill_co_issue</title>
 <ellipse fill="#c8e6c9" stroke="black" cx="53.03" cy="-43.95" rx="53.07" ry="21.43"/>
 <text text-anchor="middle" x="53.03" y="-46.95" font-family="Helvetica,sans-Serif" font-size="10.00">twl:co&#45;issue</text>
-<text text-anchor="middle" x="53.03" y="-35.95" font-family="Helvetica,sans-Serif" font-size="10.00">(5,681 tok)</text>
+<text text-anchor="middle" x="53.03" y="-35.95" font-family="Helvetica,sans-Serif" font-size="10.00">(5,408 tok)</text>
 </g>
 <!-- skill_workflow_issue_lifecycle -->
 <g id="node2" class="node">
 <title>skill_workflow_issue_lifecycle</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="272.25" cy="-135.95" rx="108.38" ry="21.43"/>
 <text text-anchor="middle" x="272.25" y="-138.95" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;issue&#45;lifecycle</text>
-<text text-anchor="middle" x="272.25" y="-127.95" font-family="Helvetica,sans-Serif" font-size="10.00">(2,506 tok)</text>
+<text text-anchor="middle" x="272.25" y="-127.95" font-family="Helvetica,sans-Serif" font-size="10.00">(2,432 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;skill_workflow_issue_lifecycle -->
 <g id="edge2" class="edge">
@@ -35,7 +35,7 @@
 <title>skill_workflow_issue_refine</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="272.25" cy="-71.95" rx="98.99" ry="21.43"/>
 <text text-anchor="middle" x="272.25" y="-74.95" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;issue&#45;refine</text>
-<text text-anchor="middle" x="272.25" y="-63.95" font-family="Helvetica,sans-Serif" font-size="10.00">(3,057 tok)</text>
+<text text-anchor="middle" x="272.25" y="-63.95" font-family="Helvetica,sans-Serif" font-size="10.00">(2,968 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;skill_workflow_issue_refine -->
 <g id="edge3" class="edge">
@@ -61,7 +61,7 @@
 <title>script_issue_lifecycle_orchestrator</title>
 <polygon fill="#ff9800" stroke="black" points="1113.8,-37.95 1052.57,-62.44 930.12,-62.44 868.9,-37.95 930.12,-13.46 1052.57,-13.46 1113.8,-37.95"/>
 <text text-anchor="middle" x="991.35" y="-40.95" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;lifecycle&#45;orchestrator</text>
-<text text-anchor="middle" x="991.35" y="-29.95" font-family="Helvetica,sans-Serif" font-size="10.00">(6,178 tok)</text>
+<text text-anchor="middle" x="991.35" y="-29.95" font-family="Helvetica,sans-Serif" font-size="10.00">(6,184 tok)</text>
 </g>
 <!-- skill_co_issue&#45;&gt;script_issue_lifecycle_orchestrator -->
 <g id="edge4" class="edge">
@@ -230,7 +230,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="719.66" cy="-340.95" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="719.66" y="-343.95" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="719.66" y="-332.95" font-family="Helvetica,sans-Serif" font-size="10.00">(1,587 tok)</text>
+<text text-anchor="middle" x="719.66" y="-332.95" font-family="Helvetica,sans-Serif" font-size="10.00">(1,827 tok)</text>
 </g>
 <!-- cmd_issue_spec_review&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge18" class="edge">

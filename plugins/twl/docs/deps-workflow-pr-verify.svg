@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_verify</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="86.97" cy="-519.49" rx="86.95" ry="21.43"/>
 <text text-anchor="middle" x="86.97" y="-522.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;verify</text>
-<text text-anchor="middle" x="86.97" y="-511.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,773 tok)</text>
+<text text-anchor="middle" x="86.97" y="-511.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,579 tok)</text>
 </g>
 <!-- cmd_prompt_compliance -->
 <g id="node7" class="node">
@@ -126,7 +126,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="568.7,-328.49 536.76,-352.98 472.89,-352.98 440.95,-328.49 472.89,-304.01 536.76,-304.01 568.7,-328.49"/>
 <text text-anchor="middle" x="504.83" y="-331.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="504.83" y="-320.49" font-family="Helvetica,sans-Serif" font-size="10.00">(10,470 tok)</text>
+<text text-anchor="middle" x="504.83" y="-320.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;script_chain_runner -->
 <g id="edge9" class="edge">
@@ -139,7 +139,7 @@
 <title>script_compaction_resume</title>
 <polygon fill="#ff9800" stroke="black" points="597.99,-24.49 551.41,-48.98 458.25,-48.98 411.67,-24.49 458.25,-0.01 551.41,-0.01 597.99,-24.49"/>
 <text text-anchor="middle" x="504.83" y="-27.49" font-family="Helvetica,sans-Serif" font-size="10.00">compaction&#45;resume</text>
-<text text-anchor="middle" x="504.83" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,030 tok)</text>
+<text text-anchor="middle" x="504.83" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(927 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;script_compaction_resume -->
 <g id="edge10" class="edge">
@@ -363,7 +363,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="801.47" cy="-463.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="801.47" y="-466.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="801.47" y="-455.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,587 tok)</text>
+<text text-anchor="middle" x="801.47" y="-455.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,827 tok)</text>
 </g>
 <!-- cmd_phase_review&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge32" class="edge">
@@ -742,9 +742,9 @@
 <!-- script_chain_steps -->
 <g id="node41" class="node">
 <title>script_chain_steps</title>
-<polygon fill="#ff9800" stroke="black" points="566.93,-1907.49 535.88,-1931.98 473.77,-1931.98 442.72,-1907.49 473.77,-1883.01 535.88,-1883.01 566.93,-1907.49"/>
+<polygon fill="#ff9800" stroke="black" points="564.54,-1907.49 534.68,-1931.98 474.97,-1931.98 445.12,-1907.49 474.97,-1883.01 534.68,-1883.01 564.54,-1907.49"/>
 <text text-anchor="middle" x="504.83" y="-1910.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="504.83" y="-1899.49" font-family="Helvetica,sans-Serif" font-size="10.00">(10,470 tok)</text>
+<text text-anchor="middle" x="504.83" y="-1899.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node43" class="node">

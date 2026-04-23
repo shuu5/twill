@@ -15,7 +15,7 @@
 <title>skill_workflow_setup</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="77.78" cy="-153.49" rx="77.56" ry="21.43"/>
 <text text-anchor="middle" x="77.78" y="-156.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;setup</text>
-<text text-anchor="middle" x="77.78" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,780 tok)</text>
+<text text-anchor="middle" x="77.78" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,322 tok)</text>
 </g>
 <!-- cmd_init -->
 <g id="node2" class="node">
@@ -87,7 +87,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="591.32,-95.49 559.38,-119.98 495.51,-119.98 463.57,-95.49 495.51,-71.01 559.38,-71.01 591.32,-95.49"/>
 <text text-anchor="middle" x="527.44" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="527.44" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(10,470 tok)</text>
+<text text-anchor="middle" x="527.44" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;script_chain_runner -->
 <g id="edge6" class="edge">
@@ -100,7 +100,7 @@
 <title>script_compaction_resume</title>
 <polygon fill="#ff9800" stroke="black" points="620.6,-24.49 574.02,-48.98 480.86,-48.98 434.28,-24.49 480.86,-0.01 574.02,-0.01 620.6,-24.49"/>
 <text text-anchor="middle" x="527.44" y="-27.49" font-family="Helvetica,sans-Serif" font-size="10.00">compaction&#45;resume</text>
-<text text-anchor="middle" x="527.44" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,030 tok)</text>
+<text text-anchor="middle" x="527.44" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(927 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;script_compaction_resume -->
 <g id="edge7" class="edge">
@@ -171,9 +171,9 @@
 <!-- script_chain_steps -->
 <g id="node13" class="node">
 <title>script_chain_steps</title>
-<polygon fill="#ff9800" stroke="black" points="589.55,-553.49 558.5,-577.98 496.39,-577.98 465.33,-553.49 496.39,-529.01 558.5,-529.01 589.55,-553.49"/>
+<polygon fill="#ff9800" stroke="black" points="587.15,-553.49 557.3,-577.98 497.59,-577.98 467.73,-553.49 497.59,-529.01 557.3,-529.01 587.15,-553.49"/>
 <text text-anchor="middle" x="527.44" y="-556.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="527.44" y="-545.49" font-family="Helvetica,sans-Serif" font-size="10.00">(10,470 tok)</text>
+<text text-anchor="middle" x="527.44" y="-545.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node15" class="node">

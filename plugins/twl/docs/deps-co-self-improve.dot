@@ -19,8 +19,8 @@ digraph Dependencies {
     skill_workflow_observe_loop [label="twl:workflow-observe-loop\n(1,964 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_test_scenario_catalog [label="twl:test-scenario-catalog\n(4,599 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(2,823 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_test_scenario_catalog [label="twl:test-scenario-catalog\n(4,173 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(2,760 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_load_test_baselines [label="twl:load-test-baselines\n(670 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands

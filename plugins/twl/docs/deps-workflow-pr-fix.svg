@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_fix</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="76.37" cy="-198.49" rx="76.24" ry="21.43"/>
 <text text-anchor="middle" x="76.37" y="-201.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;fix</text>
-<text text-anchor="middle" x="76.37" y="-190.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,482 tok)</text>
+<text text-anchor="middle" x="76.37" y="-190.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,433 tok)</text>
 </g>
 <!-- cmd_post_fix_verify -->
 <g id="node2" class="node">
@@ -62,7 +62,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="451.02" cy="-166.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="451.02" y="-169.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="451.02" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,587 tok)</text>
+<text text-anchor="middle" x="451.02" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,827 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge6" class="edge">
