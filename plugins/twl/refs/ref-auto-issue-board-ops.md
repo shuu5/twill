@@ -10,7 +10,7 @@ autopilot Worker が実装中に自動起票した Issue（tech-debt / self-impr
 Board Status が **"Todo"** で追加されるべきである。
 これらの Issue は実装が完了していないため、In Progress にしてはならない。
 
-仕様制約（`deltaspec/specs/issue-lifecycle.md`）:
+注意:
 > `chain-runner.sh board-status-update` を直接呼ばない（デフォルトが In Progress のため）
 
 ## 自動起票フローの正しい Board Status
@@ -58,5 +58,4 @@ bash "$CR" board-status-update <ISSUE_NUM> "Todo"
 | `commands/scope-judge.md` | Deferred Issue 作成後 `project-board-sync` を呼ぶ |
 | `commands/warning-fix.md` | 未修正 WARNING Issue 作成後 `project-board-sync` を呼ぶ |
 | `commands/prompt-audit-apply.md` | FAIL Issue 作成後 `project-board-sync` を呼ぶ |
-| `deltaspec/specs/issue-lifecycle.md:93` | 自動起票時の仕様制約 |
 | `tests/bats/scripts/board-merge-done-transition.bats` | Done 遷移テスト（自動起票 Issue は Done に遷移しない） |

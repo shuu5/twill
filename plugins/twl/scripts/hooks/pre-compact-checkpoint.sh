@@ -71,9 +71,6 @@ CONTEXT_FILE="${CONTEXT_DIR}/issue-${ISSUE_NUM}-context.md"
 mkdir -p "$CONTEXT_DIR" 2>/dev/null || true
 
 # state から重要変数を取得
-CHANGE_ID="$(python3 -m twl.autopilot.state read \
-  --type issue --issue "$ISSUE_NUM" --field change_id \
-  2>/dev/null || echo "")"
 PR_NUMBER="$(python3 -m twl.autopilot.state read \
   --type issue --issue "$ISSUE_NUM" --field pr_number \
   2>/dev/null || echo "")"
@@ -86,7 +83,6 @@ COMPACT_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")"
   echo ""
   echo "## compaction_checkpoint (${COMPACT_AT})"
   echo "current_step: ${CURRENT_STEP}"
-  [[ -n "$CHANGE_ID" ]] && echo "change_id: ${CHANGE_ID}"
   [[ -n "$PR_NUMBER" ]] && echo "pr_number: ${PR_NUMBER}"
   [[ -n "$MODE" ]] && echo "mode: ${MODE}"
 } >> "$CONTEXT_FILE" 2>/dev/null || true

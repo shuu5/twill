@@ -300,20 +300,15 @@ flowchart TD
 
     subgraph setup["setup chain"]
         setup__init["init"]:::script
-        setup__worktree_create["worktree-create"]:::script
         setup__project_board_status_update["project-board-status-update"]:::script
         setup__crg_auto_build["crg-auto-build"]:::llm
-        setup__change_propose["change-propose"]:::llm
+        setup__arch_ref["arch-ref"]:::script
         setup__ac_extract["ac-extract"]:::script
     end
 
     subgraph test_ready["test-ready chain"]
-        test_ready__arch_ref["arch-ref"]
-        test_ready__change_id_resolve["change-id-resolve"]
         test_ready__test_scaffold["test-scaffold"]:::llm
-        test_ready__check["check"]
-        test_ready__change_apply["change-apply"]:::llm
-        test_ready__post_change_apply["post-change-apply"]
+        test_ready__check["check"]:::script
     end
 
     subgraph pr_verify["pr-verify chain"]
@@ -340,16 +335,11 @@ flowchart TD
         pr_merge__auto_merge["auto-merge"]:::script
     end
 
-    setup__init --> setup__worktree_create
-    setup__worktree_create --> setup__project_board_status_update
+    setup__init --> setup__project_board_status_update
     setup__project_board_status_update --> setup__crg_auto_build
-    setup__crg_auto_build --> setup__change_propose
-    setup__change_propose --> setup__ac_extract
-    test_ready__arch_ref --> test_ready__change_id_resolve
-    test_ready__change_id_resolve --> test_ready__test_scaffold
+    setup__crg_auto_build --> setup__arch_ref
+    setup__arch_ref --> setup__ac_extract
     test_ready__test_scaffold --> test_ready__check
-    test_ready__check --> test_ready__change_apply
-    test_ready__change_apply --> test_ready__post_change_apply
     pr_verify__prompt_compliance --> pr_verify__ts_preflight
     pr_verify__ts_preflight --> pr_verify__phase_review
     pr_verify__phase_review --> pr_verify__scope_judge
@@ -363,8 +353,8 @@ flowchart TD
     pr_merge__all_pass_check --> pr_merge__merge_gate
     pr_merge__merge_gate --> pr_merge__auto_merge
 
-    setup__ac_extract --> test_ready__arch_ref
-    test_ready__post_change_apply --> pr_verify__prompt_compliance
+    setup__ac_extract --> test_ready__test_scaffold
+    test_ready__check --> pr_verify__prompt_compliance
     pr_verify__ac_verify --> pr_fix__fix_phase
     pr_fix__warning_fix --> pr_merge__e2e_screening
 

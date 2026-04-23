@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 # Architecture Spec 仕様
 
-プロジェクトレベルの設計意図（前方参照）を管理するディレクトリ構造。DeltaSpec（後方参照）とは独立した概念。
+プロジェクトレベルの設計意図（前方参照）を管理するディレクトリ構造。
 
 ## ディレクトリ構造
 
@@ -158,12 +158,3 @@ architecture/
 ```
 
 Status 値: `planned` | `in-progress` | `done`
-
-## DeltaSpec との関係
-
-| 側面 | Architecture Spec | DeltaSpec |
-|------|------------------|---------|
-| 方向 | 前方参照（設計意図） | 後方参照（実装仕様） |
-| 粒度 | プロジェクトレベル | 変更レベル |
-| 独立性 | DeltaSpec から独立 | Architecture Spec から独立 |
-| 相互参照 | DeltaSpec change の「根拠」として参照可能 | Architecture Spec の Context を参照可能 |
