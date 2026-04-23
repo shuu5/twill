@@ -1,9 +1,0 @@
-schema: spec-driven
-
-context: |
-  twill モノリポのプロジェクトレベル DeltaSpec。
-  plugins/twl/ — 開発ワークフロープラグイン（autopilot, chain-runner, worktree 管理など）
-  plugins/session/ — セッション管理プラグイン
-  cli/twl/ — TWiLL CLI エンジン（twl コマンド）
-  test-fixtures/ — テスト用フィクスチャ
-  bare repo 構造: .bare/ + worktrees/ + main/
