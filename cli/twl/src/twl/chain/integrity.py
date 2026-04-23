@@ -26,7 +26,7 @@ def _hash_set(items: set[str] | frozenset[str]) -> str:
 
 
 def _load_chain_py_constants(plugin_root: Path) -> Optional[dict]:
-    """Parse CHAIN_STEPS, QUICK_SKIP_STEPS, DIRECT_SKIP_STEPS, STEP_TO_WORKFLOW from chain.py via AST."""
+    """Parse CHAIN_STEPS, DIRECT_SKIP_STEPS, STEP_TO_WORKFLOW from chain.py via AST."""
     candidates = [
         plugin_root.parent.parent / "cli" / "twl" / "src" / "twl" / "autopilot" / "chain.py",
         plugin_root.parent / "cli" / "twl" / "src" / "twl" / "autopilot" / "chain.py",
@@ -57,7 +57,7 @@ def _load_chain_py_constants(plugin_root: Path) -> Optional[dict]:
                 e.value for e in value.elts
                 if isinstance(e, ast.Constant) and isinstance(e.value, str)
             ]
-        elif name in ("QUICK_SKIP_STEPS", "DIRECT_SKIP_STEPS") and value is not None:
+        elif name == "DIRECT_SKIP_STEPS" and value is not None:
             elts = None
             if isinstance(value, (ast.List, ast.Set)):
                 elts = value.elts
@@ -114,7 +114,6 @@ def check_deps_integrity(plugin_root: Path) -> tuple[list[str], list[str]]:
         return errors, warnings
 
     py_chain_steps: list[str] = constants.get("CHAIN_STEPS", [])
-    py_quick_skip: frozenset[str] = constants.get("QUICK_SKIP_STEPS", frozenset())
     py_direct_skip: frozenset[str] = constants.get("DIRECT_SKIP_STEPS", frozenset())
     py_step_to_workflow: dict[str, str] = constants.get("STEP_TO_WORKFLOW", {})
 
@@ -133,17 +132,6 @@ def check_deps_integrity(plugin_root: Path) -> tuple[list[str], list[str]]:
                 f"[deps-integrity] CHAIN_STEPS mismatch: chain.py vs chain-steps.sh\n"
                 f"  chain.py:       {py_chain_steps}\n"
                 f"  chain-steps.sh: {sh_chain_steps}\n"
-                f"  {fix_hint}"
-            )
-
-        sh_quick = _parse_bash_array(content, "QUICK_SKIP_STEPS")
-        if sh_quick is None:
-            warnings.append("[deps-integrity] QUICK_SKIP_STEPS not found in chain-steps.sh")
-        elif _hash_set(py_quick_skip) != _hash_set(set(sh_quick)):
-            errors.append(
-                f"[deps-integrity] QUICK_SKIP_STEPS mismatch: chain.py vs chain-steps.sh\n"
-                f"  chain.py:       {sorted(py_quick_skip)}\n"
-                f"  chain-steps.sh: {sorted(sh_quick)}\n"
                 f"  {fix_hint}"
             )
 

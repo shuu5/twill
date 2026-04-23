@@ -105,10 +105,6 @@ class TestExportChainStepsSh:
             assert f"  {step}\n" in result or f"  {step}" in result, \
                 f"Step '{step}' not found in chain-steps.sh output"
 
-    def test_contains_quick_skip_steps(self) -> None:
-        result = export_chain_steps_sh()
-        assert "QUICK_SKIP_STEPS=(" in result
-
     def test_contains_direct_skip_steps(self) -> None:
         result = export_chain_steps_sh()
         assert "DIRECT_SKIP_STEPS=(" in result

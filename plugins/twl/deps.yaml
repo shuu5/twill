@@ -26,6 +26,7 @@ entry_points:
 # チェーン（chain.py から生成 — twl chain export --yaml で再生成）
 # チェーン（chain.py から生成 — twl chain export --yaml で再生成）
 # チェーン（chain.py から生成 — twl chain export --yaml で再生成）
+# チェーン（chain.py から生成 — twl chain export --yaml で再生成）
 chains:
   setup:
     type: "A"
@@ -70,24 +71,11 @@ meta_chains:
       - id: setup
         chain: setup
         next:
-          - condition: "quick && autopilot"
-            goto: quick-path
-          - condition: "!quick && autopilot"
+          - condition: "autopilot"
             goto: test-ready
           - condition: "!autopilot"
             stop: true
             message: "setup chain 完了。次: /twl:workflow-test-ready"
-
-      - id: quick-path
-        chain: null
-        description: "quick Issue の短縮パス"
-        inline_steps:
-          - "直接実装 → commit → push"
-          - "PR 作成"
-          - "ac-verify"
-          - "merge-gate"
-        next:
-          - goto: done
 
       - id: test-ready
         chain: test-ready
@@ -2406,9 +2394,7 @@ scripts:
       - pr-cycle-report
       - auto-merge
       - check
-      - quick-guard
       - autopilot-detect
-      - quick-detect
     description: "機械的 chain ステップを実行（Python: python3 -m twl.autopilot.chain; ChainRunner クラス）"
 
   worker-terminal-guard:
@@ -2464,7 +2450,7 @@ scripts:
   chain-steps:
     type: script
     path: ../../cli/twl/src/twl/autopilot/chain.py
-    description: "chain ステップ順序の共有定義（SSOT）— CHAIN_STEPS / QUICK_SKIP_STEPS / STEP_TO_WORKFLOW / WORKFLOW_NEXT_SKILL 定数は chain.py で管理。chain-steps.sh はミラー"
+    description: "chain ステップ順序の共有定義（SSOT）— CHAIN_STEPS / STEP_TO_WORKFLOW / WORKFLOW_NEXT_SKILL 定数は chain.py で管理。chain-steps.sh はミラー"
 
   su-precompact:
     type: script

@@ -25,18 +25,10 @@ WORKER_LIFECYCLE_FLOW: list[dict] = [
         "id": "setup",
         "chain": "setup",
         "next": [
-            {"condition": "quick && autopilot", "goto": "quick-path"},
-            {"condition": "!quick && autopilot", "goto": "test-ready"},
+            {"condition": "autopilot", "goto": "test-ready"},
             {"condition": "!autopilot", "stop": True,
              "message": "setup chain 完了。次: /twl:workflow-test-ready"},
         ],
-    },
-    {
-        "id": "quick-path",
-        "chain": None,
-        "description": "quick Issue の短縮パス",
-        "inline_steps": ["直接実装 → commit → push", "PR 作成", "ac-verify", "merge-gate"],
-        "next": [{"goto": "done"}],
     },
     {
         "id": "test-ready",
@@ -99,22 +91,16 @@ def patched_runner(runner: ChainRunner):
 
 
 # ===========================================================================
-# AC: setup → "workflow-test-ready" (autopilot=True, quick=False)
+# AC: setup → "workflow-test-ready"
 # ===========================================================================
 
 class TestSetupTransitions:
-    def test_setup_autopilot_true_quick_false(self, patched_runner: ChainRunner) -> None:
-        result = patched_runner.resolve_next_workflow("setup", is_autopilot=True, is_quick=False)
+    def test_setup_autopilot_true(self, patched_runner: ChainRunner) -> None:
+        result = patched_runner.resolve_next_workflow("setup", is_autopilot=True)
         assert result == "workflow-test-ready"
 
-    def test_setup_autopilot_true_quick_true(self, patched_runner: ChainRunner) -> None:
-        # AC: setup + quick=true + autopilot=true → "quick-path"
-        result = patched_runner.resolve_next_workflow("setup", is_autopilot=True, is_quick=True)
-        assert result == "quick-path"
-
     def test_setup_autopilot_false(self, patched_runner: ChainRunner) -> None:
-        # AC: setup + autopilot=false → "" (stop 条件)
-        result = patched_runner.resolve_next_workflow("setup", is_autopilot=False, is_quick=False)
+        result = patched_runner.resolve_next_workflow("setup", is_autopilot=False)
         assert result == ""
 
 
@@ -124,11 +110,11 @@ class TestSetupTransitions:
 
 class TestPrVerifyTransition:
     def test_pr_verify_autopilot_true(self, patched_runner: ChainRunner) -> None:
-        result = patched_runner.resolve_next_workflow("pr-verify", is_autopilot=True, is_quick=False)
+        result = patched_runner.resolve_next_workflow("pr-verify", is_autopilot=True)
         assert result == "workflow-pr-fix"
 
     def test_pr_verify_autopilot_false(self, patched_runner: ChainRunner) -> None:
-        result = patched_runner.resolve_next_workflow("pr-verify", is_autopilot=False, is_quick=False)
+        result = patched_runner.resolve_next_workflow("pr-verify", is_autopilot=False)
         assert result == ""
 
 
@@ -138,11 +124,11 @@ class TestPrVerifyTransition:
 
 class TestPrFixTransition:
     def test_pr_fix_autopilot_true(self, patched_runner: ChainRunner) -> None:
-        result = patched_runner.resolve_next_workflow("pr-fix", is_autopilot=True, is_quick=False)
+        result = patched_runner.resolve_next_workflow("pr-fix", is_autopilot=True)
         assert result == "workflow-pr-merge"
 
     def test_pr_fix_autopilot_false(self, patched_runner: ChainRunner) -> None:
-        result = patched_runner.resolve_next_workflow("pr-fix", is_autopilot=False, is_quick=False)
+        result = patched_runner.resolve_next_workflow("pr-fix", is_autopilot=False)
         assert result == ""
 
 
@@ -152,14 +138,13 @@ class TestPrFixTransition:
 
 class TestPrMergeTransition:
     def test_pr_merge_returns_empty(self, patched_runner: ChainRunner) -> None:
-        result = patched_runner.resolve_next_workflow("pr-merge", is_autopilot=True, is_quick=False)
+        result = patched_runner.resolve_next_workflow("pr-merge", is_autopilot=True)
         assert result == ""
 
     def test_pr_merge_any_flags_returns_empty(self, patched_runner: ChainRunner) -> None:
         for autopilot in (True, False):
-            for quick in (True, False):
-                result = patched_runner.resolve_next_workflow("pr-merge", autopilot, quick)
-                assert result == "", f"pr-merge should return '' (autopilot={autopilot}, quick={quick})"
+            result = patched_runner.resolve_next_workflow("pr-merge", autopilot)
+            assert result == "", f"pr-merge should return '' (autopilot={autopilot})"
 
 
 # ===========================================================================
@@ -168,16 +153,16 @@ class TestPrMergeTransition:
 
 class TestEdgeCases:
     def test_unknown_workflow_returns_empty(self, patched_runner: ChainRunner) -> None:
-        result = patched_runner.resolve_next_workflow("nonexistent", is_autopilot=True, is_quick=False)
+        result = patched_runner.resolve_next_workflow("nonexistent", is_autopilot=True)
         assert result == ""
 
     def test_done_node_returns_empty(self, patched_runner: ChainRunner) -> None:
-        result = patched_runner.resolve_next_workflow("done", is_autopilot=True, is_quick=False)
+        result = patched_runner.resolve_next_workflow("done", is_autopilot=True)
         assert result == ""
 
     def test_return_type_is_str(self, patched_runner: ChainRunner) -> None:
         for workflow in ("setup", "pr-verify", "pr-fix", "pr-merge", "done", "nonexistent"):
-            result = patched_runner.resolve_next_workflow(workflow, is_autopilot=True, is_quick=False)
+            result = patched_runner.resolve_next_workflow(workflow, is_autopilot=True)
             assert isinstance(result, str), f"Expected str for {workflow}, got {type(result)}"
 
 
@@ -187,37 +172,19 @@ class TestEdgeCases:
 
 class TestEvalWorkflowCondition:
     def test_empty_condition_always_true(self, runner: ChainRunner) -> None:
-        assert runner._eval_workflow_condition("", True, True) is True
-        assert runner._eval_workflow_condition("", False, False) is True
+        assert runner._eval_workflow_condition("", True) is True
+        assert runner._eval_workflow_condition("", False) is True
 
     def test_autopilot_true(self, runner: ChainRunner) -> None:
-        assert runner._eval_workflow_condition("autopilot", True, False) is True
-        assert runner._eval_workflow_condition("autopilot", False, False) is False
+        assert runner._eval_workflow_condition("autopilot", True) is True
+        assert runner._eval_workflow_condition("autopilot", False) is False
 
     def test_not_autopilot(self, runner: ChainRunner) -> None:
-        assert runner._eval_workflow_condition("!autopilot", False, False) is True
-        assert runner._eval_workflow_condition("!autopilot", True, False) is False
-
-    def test_quick_flag(self, runner: ChainRunner) -> None:
-        assert runner._eval_workflow_condition("quick", True, True) is True
-        assert runner._eval_workflow_condition("quick", True, False) is False
-
-    def test_not_quick(self, runner: ChainRunner) -> None:
-        assert runner._eval_workflow_condition("!quick", True, False) is True
-        assert runner._eval_workflow_condition("!quick", True, True) is False
-
-    def test_compound_quick_and_autopilot(self, runner: ChainRunner) -> None:
-        assert runner._eval_workflow_condition("quick && autopilot", True, True) is True
-        assert runner._eval_workflow_condition("quick && autopilot", True, False) is False
-        assert runner._eval_workflow_condition("quick && autopilot", False, True) is False
-
-    def test_compound_not_quick_and_autopilot(self, runner: ChainRunner) -> None:
-        assert runner._eval_workflow_condition("!quick && autopilot", True, False) is True
-        assert runner._eval_workflow_condition("!quick && autopilot", True, True) is False
-        assert runner._eval_workflow_condition("!quick && autopilot", False, False) is False
+        assert runner._eval_workflow_condition("!autopilot", False) is True
+        assert runner._eval_workflow_condition("!autopilot", True) is False
 
     def test_unknown_token_returns_false(self, runner: ChainRunner) -> None:
-        assert runner._eval_workflow_condition("unknown", True, True) is False
+        assert runner._eval_workflow_condition("unknown", True) is False
 
 
 # ===========================================================================

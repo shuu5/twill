@@ -42,10 +42,6 @@ class TestParseBashArray:
         result = _parse_bash_array(content, "CHAIN_STEPS")
         assert result == ["init", "check"]
 
-    def test_quick_skip(self):
-        content = "QUICK_SKIP_STEPS=(\n  crg-auto-build\n  arch-ref\n)"
-        result = _parse_bash_array(content, "QUICK_SKIP_STEPS")
-        assert result == ["crg-auto-build", "arch-ref"]
 
 
 class TestExpectedChains:
@@ -78,7 +74,6 @@ class TestCheckDepsIntegrity:
         cli_path.mkdir(parents=True)
         (cli_path / "chain.py").write_text(textwrap.dedent("""\
             CHAIN_STEPS: list[str] = ["init", "check", "done"]
-            QUICK_SKIP_STEPS: frozenset[str] = frozenset(["check"])
             DIRECT_SKIP_STEPS: frozenset[str] = frozenset(["done"])
             STEP_TO_WORKFLOW: dict[str, str] = {
                 "init": "setup",
@@ -95,9 +90,6 @@ class TestCheckDepsIntegrity:
               init
               check
               done
-            )
-            QUICK_SKIP_STEPS=(
-              check
             )
             DIRECT_SKIP_STEPS=(
               done
@@ -132,22 +124,12 @@ class TestCheckDepsIntegrity:
               extra-step
               done
             )
-            QUICK_SKIP_STEPS=(
-              check
-            )
             DIRECT_SKIP_STEPS=(
               done
             )
         """))
         errors, _ = check_deps_integrity(plugin_dir)
         assert any("CHAIN_STEPS mismatch" in e for e in errors)
-
-    def test_quick_skip_drift_detected(self, plugin_dir):
-        sh = plugin_dir / "scripts" / "chain-steps.sh"
-        original = sh.read_text()
-        sh.write_text(original.replace("QUICK_SKIP_STEPS=(\n  check\n)", "QUICK_SKIP_STEPS=(\n  init\n)"))
-        errors, _ = check_deps_integrity(plugin_dir)
-        assert any("QUICK_SKIP_STEPS mismatch" in e for e in errors)
 
     def test_direct_skip_drift_detected(self, plugin_dir):
         sh = plugin_dir / "scripts" / "chain-steps.sh"

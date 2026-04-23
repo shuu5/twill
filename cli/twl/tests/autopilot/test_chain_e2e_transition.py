@@ -36,18 +36,10 @@ WORKER_LIFECYCLE_FLOW: list[dict] = [
         "id": "setup",
         "chain": "setup",
         "next": [
-            {"condition": "quick && autopilot", "goto": "quick-path"},
-            {"condition": "!quick && autopilot", "goto": "test-ready"},
+            {"condition": "autopilot", "goto": "test-ready"},
             {"condition": "!autopilot", "stop": True,
              "message": "setup chain 完了。次: /twl:workflow-test-ready"},
         ],
-    },
-    {
-        "id": "quick-path",
-        "chain": None,
-        "description": "quick Issue の短縮パス",
-        "inline_steps": ["直接実装 → commit → push", "PR 作成", "ac-verify", "merge-gate"],
-        "next": [{"goto": "done"}],
     },
     {
         "id": "test-ready",
@@ -132,7 +124,6 @@ def _write_issue_state(autopilot_dir: Path, issue_num: int, current_workflow: st
         "failure": None,
         "implementation_pr": None,
         "deltaspec_mode": None,
-        "is_quick": False,
     }
     f = issues_dir / f"issue-{issue_num}.json"
     f.write_text(json.dumps(data, ensure_ascii=False, indent=2))
@@ -165,7 +156,7 @@ class TestSetupToTestReadyTransition:
     def test_setup_returns_test_ready(self, patched_runner: ChainRunner) -> None:
         """current_workflow=setup で resolve_next_workflow が workflow-test-ready を返す。"""
         result = patched_runner.resolve_next_workflow(
-            "setup", is_autopilot=True, is_quick=False
+            "setup", is_autopilot=True
         )
         _assert_no_inject_skip(result, "setup")
         assert result == "workflow-test-ready", (
@@ -183,7 +174,7 @@ class TestTestReadyToPrVerifyTransition:
     def test_test_ready_returns_pr_verify(self, patched_runner: ChainRunner) -> None:
         """current_workflow=test-ready で resolve_next_workflow が workflow-pr-verify を返す。"""
         result = patched_runner.resolve_next_workflow(
-            "test-ready", is_autopilot=True, is_quick=False
+            "test-ready", is_autopilot=True
         )
         _assert_no_inject_skip(result, "test-ready")
         assert result == "workflow-pr-verify", (
@@ -201,7 +192,7 @@ class TestPrVerifyTransition:
     def test_pr_verify_returns_pr_fix(self, patched_runner: ChainRunner) -> None:
         """current_workflow=pr-verify (autopilot=True) で workflow-pr-fix を返す。"""
         result = patched_runner.resolve_next_workflow(
-            "pr-verify", is_autopilot=True, is_quick=False
+            "pr-verify", is_autopilot=True
         )
         # pr-verify → pr-fix (not terminal in autopilot mode)
         assert result == "workflow-pr-fix", (
@@ -211,7 +202,7 @@ class TestPrVerifyTransition:
     def test_pr_verify_autopilot_false_stops(self, patched_runner: ChainRunner) -> None:
         """current_workflow=pr-verify (autopilot=False) で停止（空を返す）。"""
         result = patched_runner.resolve_next_workflow(
-            "pr-verify", is_autopilot=False, is_quick=False
+            "pr-verify", is_autopilot=False
         )
         assert result == "", (
             f"autopilot=False の pr-verify は停止すべきだが {result!r} を返した"
@@ -241,7 +232,7 @@ def test_three_issues_no_inject_skip(
     runner = _make_runner(tmp_path)
     _write_issue_state(runner.autopilot_dir, issue_num=issue_num, current_workflow=current_workflow)
     with patch.object(runner, "_load_worker_lifecycle_flow", return_value=WORKER_LIFECYCLE_FLOW):
-        result = runner.resolve_next_workflow(current_workflow, is_autopilot=True, is_quick=False)
+        result = runner.resolve_next_workflow(current_workflow, is_autopilot=True)
     _assert_no_inject_skip(result, current_workflow)
     assert result == expected_next, (
         f"issue #{issue_num}: current_workflow={current_workflow!r} → expected {expected_next!r}, got {result!r}"
@@ -267,7 +258,7 @@ class TestInjectSkipDetection:
     def test_unknown_workflow_returns_empty(self, patched_runner: ChainRunner) -> None:
         """未知の current_workflow は空文字を返す（inject-skip として正しく検出される）。"""
         result = patched_runner.resolve_next_workflow(
-            "unknown-workflow", is_autopilot=True, is_quick=False
+            "unknown-workflow", is_autopilot=True
         )
         assert result == "", (
             f"未知の workflow に対して空文字を期待したが {result!r} を返した"
@@ -289,7 +280,7 @@ class TestFullChainSequence:
         ]
         for current_workflow, expected_next in chain_sequence:
             result = patched_runner.resolve_next_workflow(
-                current_workflow, is_autopilot=True, is_quick=False
+                current_workflow, is_autopilot=True
             )
             _assert_no_inject_skip(result, current_workflow)
             assert result == expected_next, (

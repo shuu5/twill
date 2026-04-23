@@ -305,7 +305,7 @@ class TestWorkflowChainMapping:
             return_value=_minimal_flow(),
         ):
             result = chain_runner.resolve_next_workflow(
-                "test-ready", is_autopilot=True, is_quick=False
+                "test-ready", is_autopilot=True
             )
         # The method returns skill name (without /twl: prefix)
         assert result == "workflow-pr-verify", (
@@ -322,7 +322,7 @@ class TestWorkflowChainMapping:
             return_value=_minimal_flow(),
         ):
             result = chain_runner.resolve_next_workflow(
-                "", is_autopilot=True, is_quick=False
+                "", is_autopilot=True
             )
         assert result == ""
 
