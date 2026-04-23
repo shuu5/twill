@@ -5,7 +5,7 @@
 **Issue**: #903
 **Epic**: #901 (twill Phase Z — DeltaSpec 完全除去 + quick ラベル廃止 + TDD 直行フロー再構成)
 **Supersedes**: [ADR-015](ADR-015-deltaspec-auto-init.md) (DeltaSpec 自動初期化と direct モード分離)
-**Related**: ADR-0007 (chain SSOT 2 レイヤー責務分離)、ADR-018 (state schema SSoT)、ADR-019 (spec implementation category — DeltaSpec と直交、KEEP)、ADR-020 (chain SSoT refinement)、ADR-022 (chain SSoT 境界明確化)
+**Related**: ADR-007 (chain SSOT 2 レイヤー責務分離)、ADR-018 (state schema SSoT)、ADR-019 (spec implementation category — DeltaSpec と直交、KEEP)、ADR-020 (chain SSoT refinement)、ADR-022 (chain SSoT 境界明確化)
 
 ---
 
@@ -40,7 +40,7 @@ ADR-015 で DeltaSpec (`/deltaspec/` + chain step 5 つ: `change-propose` / `cha
 - **削除対象**: `cli/twl/src/twl/spec/` 全 7 ファイル、`plugins/twl/scripts/deltaspec-helpers.sh`、`chain-runner.sh` の spec handler、`/deltaspec/` (2.8MB) + `/plugins/twl/deltaspec/` (1.8MB) ディレクトリ。
 - **chain step 削減**: chain.py `CHAIN_STEPS` を **19 step → 14 step** に短縮 (DeltaSpec 5 step `change-propose` / `change-id-resolve` / `change-apply` / `post-change-apply` / `test-scaffold` を除去)。
 - **auto-merge 挙動の変更**: `auto-merge.sh` 内の DeltaSpec archive block を削除。merge は squash merge + cleanup のみ実行する。
-- **state 互換性**: `state.py` から `deltaspec_mode` / `change_id` / `is_quick` フィールドを削除。`_read_state_field` の unknown field silent drop により既存 `issue-*.json` の後方互換を確保。
+- **state 互換性**: `state.py` から `deltaspec_mode` / `change_id` / `is_quick` フィールドを削除。`state.py:read()` の unknown field `silent empty-string 返却` (`_get_nested` が None を検出すると空文字列を返す挙動、L174-176) により既存 `issue-*.json` の後方互換を確保。
 
 ### D-2: test-scaffold を AC-based `ac-scaffold-tests` に reshape
 
@@ -74,7 +74,9 @@ ADR-015 で DeltaSpec (`/deltaspec/` + chain step 5 つ: `change-propose` / `cha
 | Wave F | #Z19-#Z20 | 物理削除 + state migration |
 | Wave G | #Z21-#Z23 | Documentation + sandbox e2e + final integrity |
 
-big-bang 戦略（feature flag なし）を採用する。feature flag 維持コストが SSoT triangle に対して高く、state.py `_read_state_field` の unknown field silent drop で既存状態ファイル互換性を確保できる。
+**Wave C は意図的に欠番**: Epic #901 本文の Wave 設計で Wave C は割り当てられておらず、Wave A → B の後は Wave D (SKILL + workflow) に進む。将来の Phase で Wave C を割当したい場合は本表に追記する。
+
+big-bang 戦略（feature flag なし）を採用する。feature flag 維持コストが SSoT triangle に対して高く、state.py `read()` の unknown field `silent empty-string 返却` で既存状態ファイル互換性を確保できる。
 
 ## Consequences
 
@@ -98,6 +100,26 @@ big-bang 戦略（feature flag なし）を採用する。feature flag 維持コ
 1. 新規 ADR を起票し、DeltaSpec 再導入の新設計を Proposed 状態で提示する
 2. 本 ADR を Partially Superseded マークし、D-N の範囲で revert 対象を限定する
 3. `git history` から Wave B-F の削除 commit を `git revert` ではなく **再実装** として扱う (削除前の chain.py / chain-steps.sh / deps.yaml を参考コードとして扱う)
+
+## Alternatives
+
+### 案1: DeltaSpec を proposal-only mode に縮退 + test-scaffold 維持
+
+`change-propose` のみを有効化し、`change-apply` / `change-id-resolve` / `post-change-apply` を deprecated マークするが、`test-scaffold` は DeltaSpec specs/ 入力を維持したまま存続させる案。
+
+- **却下理由**: DeltaSpec specs/ 入力のまま `test-scaffold` を維持する場合、`/deltaspec/` ディレクトリと `chain.py` の DeltaSpec 依存が残存する。C-2 の SSoT triangle 同期コストが削減されず、根本課題を解決しない。proposal-only でも Worker の認知負荷（proposal 生成）が残る。
+
+### 案2: feature flag (`TWL_DELTASPEC_ENABLED=0`) による段階的無効化
+
+既存 `TWL_CHAIN_SSOT_MODE` と類似の env flag を導入し、default を disable にすることで DeltaSpec を「事実上の無効化」状態に置く案。chain.py / state.py は既存のまま残存させる。
+
+- **却下理由**: feature flag 自体の保守コストが恒常化し、C-2 の SSoT triangle 同期対象が減らない。dead code として残存する DeltaSpec コード 2.8MB + 1.8MB (総 4.6MB) の git-managed ファイルが Worker / Pilot / Observer の認知負荷を継続的に発生させる。Wave B の atomic 削除による SSoT 整理の方が大域的に低コスト。
+
+### 案3 (採用): DeltaSpec 完全除去 + TDD 直行 flow
+
+本 ADR の Decision D-1..D-5。chain / state / deps / scripts / SKILL の 5 層から DeltaSpec を atomic に除去し、AC ベースの RED/GREEN/REFACTOR 誘導で品質担保を再設計する。
+
+- **選択根拠**: (a) C-1 の「propose 自発使用 0 件」という運用実績は DeltaSpec の潜在価値を示さず、段階的無効化ではなく big-bang 除去の方が保守コストに対して合理的、(b) C-4 で AC-based TDD が DeltaSpec proposal/apply と等価の品質担保を提供可能と見込まれる、(c) Wave B の atomic 削除で pre-commit hook pass を確保でき、feature flag なしでも migration risk を最小化できる。
 
 ## Non-goal
 
