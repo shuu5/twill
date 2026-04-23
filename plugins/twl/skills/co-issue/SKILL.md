@@ -95,11 +95,6 @@ twl explore-link check <N>
 
 **Step 2a: クロスリポ検出** — GitHub Project のリンク済みリポから対象リポを動的取得。2+ リポ検出時は AskUserQuestion で [A] リポ単位分割 / [B] 単一 Issue を確認。
 
-**Step 2b: quick 判定** — 変更ファイル 1-2 個 AND ~20行以下 AND patch レベル → `is_quick_candidate: true`。
-
-**Step 2b-2: scope/direct 判定** — quick 候補でない場合のみ評価。変更ファイル ≤3 AND 新規ロジック追加なし AND テスト不要な変更（explore-summary の内容から LLM が推定）→ `is_scope_direct_candidate: true`。対象の場合は `scope/direct` ラベルを推奨ラベルリストに追加し、Phase 4 に渡す。
-
-**quick と scope/direct の関係（MUST）**: quick ラベルは scope/direct を暗黙に含む（quick → direct は step_init で処理済み）。scope/direct は quick ではないが DeltaSpec をスキップしたい場合に使用する。両ラベルを同時に付与してはならない（MUST NOT）。
 
 **Step 2c: 分解確認** — 複数の場合は AskUserQuestion で [A] この分解で進める / [B] 調整 / [C] 単一のまま。
 
@@ -162,9 +157,9 @@ twl explore-link check <N>
 ```
 
 **policies.json 生成**（draft ごとに判定）:
-- quick (`is_quick_candidate=true`): `{"max_rounds":1,"specialists":["worker-codex-reviewer"],"depth":"shallow","quick_flag":true,"scope_direct_flag":false,"labels_hint":["quick"],"target_repo":"...","parent_refs_resolved":{}}`
-- scope-direct (`is_scope_direct_candidate=true`): `{"max_rounds":1,"specialists":["worker-codex-reviewer"],"depth":"shallow","quick_flag":false,"scope_direct_flag":true,"labels_hint":["scope/direct"],"target_repo":"...","parent_refs_resolved":{}}`
-- 通常: `{"max_rounds":3,"specialists":["worker-codex-reviewer","issue-critic","issue-feasibility"],"depth":"normal","quick_flag":false,"scope_direct_flag":false,"labels_hint":["enhancement"],"target_repo":"...","parent_refs_resolved":{}}`
+- quick (`is_quick_candidate=true`): `{"max_rounds":1,"specialists":["worker-codex-reviewer"],"depth":"shallow","labels_hint":["quick"],"target_repo":"...","parent_refs_resolved":{}}`
+- scope-direct (`is_scope_direct_candidate=true`): `{"max_rounds":1,"specialists":["worker-codex-reviewer"],"depth":"shallow","labels_hint":["scope/direct"],"target_repo":"...","parent_refs_resolved":{}}`
+- 通常: `{"max_rounds":3,"specialists":["worker-codex-reviewer","issue-critic","issue-feasibility"],"depth":"normal","labels_hint":["enhancement"],"target_repo":"...","parent_refs_resolved":{}}`
 
 **deps.json 生成**: `{"depends_on": [<依存 draft index リスト>], "level": <levelインデックス>}`
 

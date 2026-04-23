@@ -11,7 +11,7 @@ description: |
 type: controller
 effort: high
 tools:
-- Agent(worker-*, e2e-*, autofix-loop, spec-scaffold-tests)
+- Agent(worker-*, e2e-*, autofix-loop, ac-scaffold-tests)
 - session:spawn
 spawnable_by:
 - user

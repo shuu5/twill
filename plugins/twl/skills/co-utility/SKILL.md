@@ -8,8 +8,7 @@ description: |
   says worktree一覧/worktree削除/検証/validate,
   says サービス起動/services/スクショ/UI capture,
   says schema更新/spec診断/e2e計画,
-  says self-improve/セルフレビュー,
-  says DeltaSpec propose/apply/archive.
+  says self-improve/セルフレビュー.
 type: controller
 effort: low
 tools: []

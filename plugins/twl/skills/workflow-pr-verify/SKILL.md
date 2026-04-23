@@ -95,7 +95,6 @@ checkpoint を照合し、`python3 -m twl.autopilot.checkpoint write --step ac-v
 で結果を永続化すること。前提: workflow-setup の ac-extract が済んでおり
 `${SNAPSHOT_DIR}/01.5-ac-checklist.md` が存在すること（不在時は WARN で抜ける）。
 
-**Cross-PR AC 検証モード**: `implementation_pr` が state に設定されている場合（retroactive DeltaSpec）、AC 証跡は本 PR diff ではなく参照 PR（`implementation_pr`）のマージコミットを対象とする。この場合、`gh pr view <implementation_pr> --json mergeCommit` で得た SHA を起点に AC 達成を確認し、`verified_via_pr: <N>` を ac-verify checkpoint に記録する。本 PR の diff に実装コードがなくても PASS とする。
 
 ## 完了後の遷移（meta chain 定義から自動生成）
 
@@ -114,7 +113,6 @@ ISSUE_NUM=$(bash "$CR" resolve-issue-num 2>/dev/null || echo "")
 if [[ -n "$ISSUE_NUM" ]]; then
   AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
   mkdir -p "${AUTOPILOT_DIR}/issues"
-  CHANGE_ID_VAL=$(python3 -m twl.autopilot.state read --autopilot-dir "${AUTOPILOT_DIR}" --type issue --issue "${ISSUE_NUM}" --field change_id 2>/dev/null || echo "")
   PR_NUMBER=$(gh pr list --head "$(git branch --show-current)" --json number -q '.[0].number' 2>/dev/null || echo "")
   TEST_RESULTS=$(python3 -m twl.autopilot.checkpoint read --step pr-test --field status 2>/dev/null || echo "")
   REVIEW_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field status 2>/dev/null || echo "")
@@ -129,9 +127,6 @@ workflow: pr-verify
 - scope-judge
 - pr-test
 - ac-verify
-
-## change_id
-${CHANGE_ID_VAL}
 
 ## pr_number
 ${PR_NUMBER}
