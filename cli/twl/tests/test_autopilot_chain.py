@@ -2,10 +2,8 @@
 
 Covers:
   - Normal step transitions (happy path)
-  - quick Issue step skipping
   - Crash recovery / invalid transition rejection
   - CHAIN_STEPS ordering and completeness
-  - QUICK_SKIP_STEPS coverage
 """
 
 from __future__ import annotations
@@ -22,7 +20,6 @@ import pytest
 from twl.autopilot.chain import (
     CHAIN_STEPS,
     DIRECT_SKIP_STEPS,
-    QUICK_SKIP_STEPS,
     ChainError,
     ChainRunner,
 )
@@ -77,12 +74,6 @@ class TestChainStepsDefinition:
         essential = {"init", "check", "all-pass-check", "pr-cycle-report"}
         assert essential.issubset(set(CHAIN_STEPS))
 
-    def test_quick_skip_steps_subset_of_chain_steps(self) -> None:
-        assert QUICK_SKIP_STEPS.issubset(set(CHAIN_STEPS))
-
-    def test_quick_skip_steps_not_empty(self) -> None:
-        assert len(QUICK_SKIP_STEPS) > 0
-
     def test_direct_skip_steps_subset_of_chain_steps(self) -> None:
         assert DIRECT_SKIP_STEPS.issubset(set(CHAIN_STEPS))
 
@@ -112,7 +103,7 @@ class TestNextStepNormal:
         assert result == expected
 
     def test_step_sequence_all(self, runner: ChainRunner, state: StateManager) -> None:
-        """Verify the full sequence of non-quick steps."""
+        """Verify the full sequence of steps."""
         _init_issue(state, "2")
         for i, step in enumerate(CHAIN_STEPS[:-1]):
             next_s = runner.next_step("2", step)
@@ -130,59 +121,6 @@ class TestNextStepNormal:
 
 
 # ===========================================================================
-# Quick Issue skipping
-# ===========================================================================
-
-
-class TestNextStepQuick:
-    def _make_quick_issue(self, state: StateManager, autopilot_dir: Path, issue: str = "10") -> None:
-        _init_issue(state, issue)
-        state.write(type_="issue", role="worker", issue=issue, sets=["is_quick=true"])
-
-    def test_quick_skips_quick_skip_steps(
-        self, runner: ChainRunner, state: StateManager, autopilot_dir: Path
-    ) -> None:
-        self._make_quick_issue(state, autopilot_dir, "10")
-        # After init, quick issues skip QUICK_SKIP_STEPS
-        current = "init"
-        result = runner.next_step("10", current)
-        # Should skip any QUICK_SKIP_STEPS
-        assert result not in QUICK_SKIP_STEPS
-
-    def test_quick_full_sequence_no_skipped_steps(
-        self, runner: ChainRunner, state: StateManager, autopilot_dir: Path
-    ) -> None:
-        self._make_quick_issue(state, autopilot_dir, "11")
-        seen_steps: list[str] = []
-        current = ""
-        for _ in range(len(CHAIN_STEPS) + 2):
-            next_s = runner.next_step("11", current)
-            if next_s == "done":
-                break
-            seen_steps.append(next_s)
-            current = next_s
-        # None of the seen steps should be in QUICK_SKIP_STEPS
-        skipped_in_path = [s for s in seen_steps if s in QUICK_SKIP_STEPS]
-        assert not skipped_in_path, f"Quick Issue should skip: {skipped_in_path}"
-
-    def test_non_quick_includes_all_steps(
-        self, runner: ChainRunner, state: StateManager, autopilot_dir: Path
-    ) -> None:
-        _init_issue(state, "12")
-        state.write(type_="issue", role="worker", issue="12", sets=["is_quick=false"])
-        seen: list[str] = []
-        current = ""
-        for _ in range(len(CHAIN_STEPS) + 2):
-            next_s = runner.next_step("12", current)
-            if next_s == "done":
-                break
-            seen.append(next_s)
-            current = next_s
-        for step in QUICK_SKIP_STEPS:
-            assert step in seen, f"Non-quick Issue should include {step}"
-
-
-# ===========================================================================
 # Direct mode step skipping
 # ===========================================================================
 
@@ -190,11 +128,11 @@ class TestNextStepQuick:
 class TestNextStepDirect:
     def _make_direct_issue(self, state: StateManager, issue: str = "20") -> None:
         _init_issue(state, issue)
-        state.write(type_="issue", role="worker", issue=issue, sets=["is_quick=false", "mode=direct"])
+        state.write(type_="issue", role="worker", issue=issue, sets=["mode=direct"])
 
     def _make_propose_issue(self, state: StateManager, issue: str = "21") -> None:
         _init_issue(state, issue)
-        state.write(type_="issue", role="worker", issue=issue, sets=["is_quick=false", "mode=propose"])
+        state.write(type_="issue", role="worker", issue=issue, sets=["mode=propose"])
 
     def test_direct_skips_direct_skip_steps(
         self, runner: ChainRunner, state: StateManager, autopilot_dir: Path
@@ -230,7 +168,6 @@ class TestNextStepDirect:
         self, runner: ChainRunner, state: StateManager, autopilot_dir: Path
     ) -> None:
         _init_issue(state, "22")
-        state.write(type_="issue", role="worker", issue="22", sets=["is_quick=false"])
         seen: list[str] = []
         current = ""
         for _ in range(len(CHAIN_STEPS) + 2):
@@ -317,9 +254,7 @@ class TestNextStepValidation:
     def test_zero_issue_num_raises(self, runner: ChainRunner) -> None:
         # "0" is technically a digit but issue numbers are positive
         # Currently the validator checks ^\d+$ so "0" passes — document actual behavior
-        # If it reads empty state, returns first step
         result = runner.next_step("0", "init")
-        # Should return next step (is_quick defaults to false when state not found)
         assert result in CHAIN_STEPS
 
 
@@ -374,10 +309,10 @@ class TestStepInit:
         scripts_root.mkdir(exist_ok=True)
         return ChainRunner(scripts_root=scripts_root, autopilot_dir=autopilot_dir)
 
-    def test_non_quick_non_direct_on_feature_branch_returns_implement(
+    def test_non_direct_on_feature_branch_returns_implement(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """quick なし + direct なし → implement."""
+        """direct なし → implement."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/some-branch"),
@@ -407,10 +342,10 @@ class TestStepInit:
     # Issue #784: step_init auto_init パス — issue_num あり
     # ------------------------------------------------------------------
 
-    def test_issue_num_writes_is_quick_and_is_direct(
+    def test_issue_num_writes_is_direct(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """issue_num='784' → _write_state_field が is_quick/is_direct を書く."""
+        """issue_num='784' → _write_state_field が is_direct を書く."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/784-branch"),
@@ -421,16 +356,14 @@ class TestStepInit:
             result = runner.step_init("784")
 
         assert result["recommended_action"] == "implement"
-        assert result.get("is_quick") is False
 
         call_kvs = [call.args[1] for call in mock_write.call_args_list]
-        assert "is_quick=false" in call_kvs
         assert "is_direct=false" in call_kvs
 
     def test_issue_num_writes_state_before_result(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """issue_num あり → is_quick/is_direct が state に書かれる."""
+        """issue_num あり → is_direct が state に書かれる."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/784-branch"),
@@ -441,7 +374,6 @@ class TestStepInit:
             runner.step_init("784")
 
         call_kvs = [call.args[1] for call in mock_write.call_args_list]
-        assert "is_quick=false" in call_kvs
         assert "is_direct=false" in call_kvs
 
     def test_issue_num_passed_to_write_state_field(
@@ -460,10 +392,10 @@ class TestStepInit:
         for call in mock_write.call_args_list:
             assert call.args[0] == "784", f"issue_num が '784' でない: {call.args[0]!r}"
 
-    def test_empty_issue_num_no_is_quick_write(
+    def test_empty_issue_num_no_is_direct_write(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """issue_num='' のとき is_quick/is_direct を state に書かない."""
+        """issue_num='' のとき is_direct を state に書かない."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/some-branch"),
@@ -475,12 +407,12 @@ class TestStepInit:
 
         assert result["recommended_action"] == "implement"
         call_kvs = [call.args[1] for call in mock_write.call_args_list]
-        assert "is_quick=false" not in call_kvs, "issue_num='' では is_quick 書き込み不可"
+        assert "is_direct=false" not in call_kvs, "issue_num='' では is_direct 書き込み不可"
 
-    def test_non_numeric_issue_num_no_is_quick_write(
+    def test_non_numeric_issue_num_no_is_direct_write(
         self, tmp_path: Path, autopilot_dir: Path
     ) -> None:
-        """issue_num が数字でない場合は is_quick/is_direct を state に書かない."""
+        """issue_num が数字でない場合は is_direct を state に書かない."""
         runner = self._make_runner(tmp_path, autopilot_dir)
         with (
             patch.object(runner, "_git_current_branch", return_value="feat/abc-test"),
@@ -492,7 +424,7 @@ class TestStepInit:
 
         assert result["recommended_action"] == "implement"
         call_kvs = [call.args[1] for call in mock_write.call_args_list]
-        assert "is_quick=false" not in call_kvs, "非数値 issue_num では is_quick 書き込み不可"
+        assert "is_direct=false" not in call_kvs, "非数値 issue_num では is_direct 書き込み不可"
 
 
 # ---------------------------------------------------------------------------

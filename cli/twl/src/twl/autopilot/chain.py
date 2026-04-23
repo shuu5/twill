@@ -7,8 +7,8 @@ CLI usage:
 
 Steps: init, worktree-create, project-board-status-update, board-archive, ac-extract,
        arch-ref, next-step, ts-preflight, pr-test,
-       ac-verify, all-pass-check, pr-cycle-report, check, quick-guard,
-       autopilot-detect, quick-detect, resolve-next-workflow
+       ac-verify, all-pass-check, pr-cycle-report, check,
+       autopilot-detect, resolve-next-workflow
 """
 
 from __future__ import annotations
@@ -44,15 +44,6 @@ CHAIN_STEPS: list[str] = [
     "all-pass-check",
     "pr-cycle-report",
 ]
-
-QUICK_SKIP_STEPS: frozenset[str] = frozenset([
-    "crg-auto-build",
-    "arch-ref",
-    "ac-extract",
-    "test-scaffold",
-    "check",
-    "prompt-compliance",
-])
 
 DIRECT_SKIP_STEPS: frozenset[str] = frozenset()
 
@@ -197,14 +188,6 @@ def export_chain_steps_sh() -> str:
     lines.append(")")
     lines.append("")
 
-    lines.append("# quick Issue でスキップするステップの一覧（SSOT）")
-    lines.append("QUICK_SKIP_STEPS=(")
-    for step in CHAIN_STEPS:
-        if step in QUICK_SKIP_STEPS:
-            lines.append(f"  {step}")
-    lines.append(")")
-    lines.append("")
-
     lines.append("# direct モード（scope/direct ラベル）でスキップするステップの一覧（SSOT）")
     lines.append("DIRECT_SKIP_STEPS=(")
     for step in CHAIN_STEPS:
@@ -268,21 +251,18 @@ class ChainRunner:
     # ------------------------------------------------------------------
 
     def next_step(self, issue_num: str, current_step: str) -> str:
-        """Return next step name given current step, respecting is_quick/mode skips.
+        """Return next step name given current step, respecting mode skips.
 
         Returns 'done' if all steps are complete.
         """
         if not issue_num or not re.match(r"^\d+$", issue_num):
             raise ChainError(f"issue_num は正の整数で指定してください: {issue_num!r}")
 
-        is_quick = self._read_state_field(issue_num, "is_quick") == "true"
         mode = self._read_state_field(issue_num, "mode")  # "direct" | "propose" | "apply" | ""
 
         found = False
         for step in CHAIN_STEPS:
             if found:
-                if is_quick and step in QUICK_SKIP_STEPS:
-                    continue
                 if mode == "direct" and step in DIRECT_SKIP_STEPS:
                     continue
                 return step
@@ -336,38 +316,6 @@ class ChainRunner:
         print(f"IS_AUTOPILOT={value}")
 
     # ------------------------------------------------------------------
-    # Step: quick-detect
-    # ------------------------------------------------------------------
-
-    def step_quick_detect(self) -> None:
-        """Print eval-able IS_QUICK=true/false to stdout."""
-        issue_num = self._resolve_issue_num()
-        if not issue_num:
-            print("IS_QUICK=false")
-            return
-        is_quick = self._read_state_field(issue_num, "is_quick")
-        if not is_quick:
-            is_quick = self._detect_quick_label(issue_num)
-        value = "true" if is_quick == "true" else "false"
-        print(f"IS_QUICK={value}")
-
-    # ------------------------------------------------------------------
-    # Step: quick-guard
-    # ------------------------------------------------------------------
-
-    def step_quick_guard(self) -> int:
-        """Return 0 if non-quick, 1 if quick Issue."""
-        issue_num = self._resolve_issue_num()
-        if not issue_num:
-            return 0
-
-        is_quick = self._read_state_field(issue_num, "is_quick")
-        if not is_quick:
-            is_quick = self._detect_quick_label(issue_num)
-
-        return 1 if is_quick == "true" else 0
-
-    # ------------------------------------------------------------------
     # Step: init
     # ------------------------------------------------------------------
 
@@ -377,33 +325,26 @@ class ChainRunner:
 
         branch = self._git_current_branch()
         labels = self._fetch_labels(issue_num) if issue_num else []
-        is_quick = "true" if "quick" in labels else "false"
         is_direct = "true" if "scope/direct" in labels else "false"
 
-        # Persist is_quick and is_direct to state
         if issue_num and re.match(r"^\d+$", issue_num):
-            self._write_state_field(issue_num, f"is_quick={is_quick}")
             self._write_state_field(issue_num, f"is_direct={is_direct}")
 
         if branch in ("main", "master"):
             result = {
                 "recommended_action": "worktree",
                 "branch": branch,
-                "is_quick": is_quick == "true",
             }
-            self._ok("init", f"recommended_action=worktree (branch={branch}, is_quick={is_quick})")
+            self._ok("init", f"recommended_action=worktree (branch={branch})")
             return result
 
-        # quick or scope/direct label → direct
-        if is_quick == "true" or is_direct == "true":
-            reason = "quick" if is_quick == "true" else "scope/direct label"
+        if is_direct == "true":
             result = {
                 "recommended_action": "direct",
                 "branch": branch,
-                "is_quick": is_quick == "true",
                 "is_direct": is_direct == "true",
             }
-            self._ok("init", f"recommended_action=direct ({reason}, is_quick={is_quick})")
+            self._ok("init", "recommended_action=direct (scope/direct label)")
             if issue_num and re.match(r"^\d+$", issue_num):
                 self._write_state_field(issue_num, "mode=direct")
             return result
@@ -411,9 +352,8 @@ class ChainRunner:
         result = {
             "recommended_action": "implement",
             "branch": branch,
-            "is_quick": is_quick == "true",
         }
-        self._ok("init", f"recommended_action=implement (branch={branch}, is_quick={is_quick})")
+        self._ok("init", f"recommended_action=implement (branch={branch})")
         return result
 
     # ------------------------------------------------------------------
@@ -740,16 +680,14 @@ class ChainRunner:
         self,
         current_workflow: str,
         is_autopilot: bool,
-        is_quick: bool,
     ) -> str:
         """Return next workflow skill name from deps.yaml meta_chains.
 
         Reads plugins/twl/deps.yaml meta_chains.worker-lifecycle.flow and
-        evaluates conditions based on is_autopilot and is_quick.
+        evaluates conditions based on is_autopilot.
 
         Returns:
             - Next workflow skill name (e.g. "workflow-test-ready")
-            - "quick-path" for the quick-path node (no skill field)
             - "" for terminal nodes or stop conditions
         """
         flow = self._load_worker_lifecycle_flow()
@@ -772,7 +710,7 @@ class ChainRunner:
         goto: str | None = None
         for cond_entry in current_node.get("next", []):
             condition = cond_entry.get("condition", "")
-            if self._eval_workflow_condition(condition, is_autopilot, is_quick):
+            if self._eval_workflow_condition(condition, is_autopilot):
                 if cond_entry.get("stop", False):
                     return ""
                 goto = cond_entry.get("goto") or None
@@ -803,7 +741,6 @@ class ChainRunner:
         if next_node.get("terminal", False):
             return ""
 
-        # Node without skill and non-terminal (e.g. quick-path) → return node ID
         return goto
 
     def _load_worker_lifecycle_flow(self) -> list[dict[str, Any]]:
@@ -830,11 +767,11 @@ class ChainRunner:
         )
 
     def _eval_workflow_condition(
-        self, condition: str, is_autopilot: bool, is_quick: bool
+        self, condition: str, is_autopilot: bool
     ) -> bool:
         """Evaluate a workflow condition string against runtime flags.
 
-        Supported tokens: autopilot, quick (prefix ! for negation).
+        Supported tokens: autopilot (prefix ! for negation).
         Multiple tokens joined by && must all be true.
         Empty condition → always matches.
         """
@@ -848,8 +785,6 @@ class ChainRunner:
             name = token.lstrip("!").strip()
             if name == "autopilot":
                 value = is_autopilot
-            elif name == "quick":
-                value = is_quick
             else:
                 return False
             if negate:
@@ -972,10 +907,6 @@ class ChainRunner:
             pass
         return []
 
-    def _detect_quick_label(self, issue_num: str) -> str:
-        """Return 'true' if issue has quick label, else 'false'."""
-        return "true" if "quick" in self._fetch_labels(issue_num) else "false"
-
     def _has_command(self, cmd: str) -> bool:
         try:
             subprocess.check_output(["which", cmd], stderr=subprocess.DEVNULL)
@@ -1002,10 +933,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args:
         print("Usage: python3 -m twl.autopilot.chain <step-name> [args...]", file=sys.stderr)
-        print("Steps: init, next-step, quick-guard, check,", file=sys.stderr)
+        print("Steps: init, next-step, check,", file=sys.stderr)
         print("       all-pass-check, prompt-compliance, ts-preflight, pr-test, pr-cycle-report,", file=sys.stderr)
         print("       project-board-status-update, ac-extract,", file=sys.stderr)
-        print("       autopilot-detect, quick-detect, resolve-next-workflow", file=sys.stderr)
+        print("       autopilot-detect, resolve-next-workflow", file=sys.stderr)
         return 1
 
     step = args[0]
@@ -1025,14 +956,6 @@ def main(argv: list[str] | None = None) -> int:
         elif step == "autopilot-detect":
             runner.step_autopilot_detect()
             return 0
-
-        elif step == "quick-detect":
-            runner.step_quick_detect()
-            return 0
-
-        elif step == "quick-guard":
-            code = runner.step_quick_guard()
-            return code  # 0=非quick, 1=quick
 
         elif step == "init":
             issue_num = rest[0] if rest else ""
@@ -1083,17 +1006,13 @@ def main(argv: list[str] | None = None) -> int:
                 print("ERROR: resolve-next-workflow には workflow-id が必要です", file=sys.stderr)
                 return 1
             workflow_id = rest[0]
-            # Read is_autopilot and is_quick from issue state
             issue_num = runner._resolve_issue_num()
             if issue_num:
                 autopilot_val = runner._read_state_field(issue_num, "status")
                 is_autopilot = autopilot_val == "running"
-                quick_val = runner._read_state_field(issue_num, "is_quick")
-                is_quick = quick_val == "true"
             else:
                 is_autopilot = False
-                is_quick = False
-            result = runner.resolve_next_workflow(workflow_id, is_autopilot, is_quick)
+            result = runner.resolve_next_workflow(workflow_id, is_autopilot)
             print(result)
             return 0
 

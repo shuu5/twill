@@ -90,12 +90,12 @@ class TestChainVizSingle:
         self._tmpdir_obj = tempfile.TemporaryDirectory()
         self.tmpdir = Path(self._tmpdir_obj.name)
         self.plugin_dir = make_viz_fixture(self.tmpdir)
-
-    def teardown_method(self):
-        self._tmpdir_obj.cleanup()
         deps_path = self.plugin_dir / "deps.yaml"
         with open(deps_path, encoding="utf-8") as f:
             self.deps = yaml.safe_load(f)
+
+    def teardown_method(self):
+        self._tmpdir_obj.cleanup()
 
     def test_single_chain_returns_mermaid_fenced(self):
         from twl.chain.viz import chain_viz_single
@@ -128,23 +128,19 @@ class TestChainVizSingle:
         # llm → llm class
         assert ":::llm" in output
 
-    def test_quick_bypass_dashed_arrow(self):
+    def test_classdefs_present_no_quick(self):
         from twl.chain.viz import chain_viz_single
         output = chain_viz_single(self.deps, "setup")
-        # crg-auto-build, change-propose, ac-extract are in QUICK_SKIP_STEPS
-        # init is not → should have bypass from init to next non-skip step
-        # But all steps after init are quick_skip, so no target exists
-        # Let's just verify the classdefs exist
         assert "classDef script" in output
         assert "classDef llm" in output
 
     def test_classdefs_present(self):
         from twl.chain.viz import chain_viz_single
         output = chain_viz_single(self.deps, "setup")
-        assert "classDef script fill:#c8e6c9" in output
-        assert "classDef llm fill:#bbdefb" in output
-        assert "classDef composite fill:#e1bee7" in output
-        assert "classDef marker fill:#eeeeee" in output
+        assert "classDef script fill:#2e7d32" in output
+        assert "classDef llm fill:#1565c0" in output
+        assert "classDef composite fill:#7b1fa2" in output
+        assert "classDef marker fill:#616161" in output
 
     def test_unknown_chain_returns_error_comment(self):
         from twl.chain.viz import chain_viz_single
@@ -163,12 +159,12 @@ class TestChainVizAll:
         self._tmpdir_obj = tempfile.TemporaryDirectory()
         self.tmpdir = Path(self._tmpdir_obj.name)
         self.plugin_dir = make_viz_fixture(self.tmpdir)
-
-    def teardown_method(self):
-        self._tmpdir_obj.cleanup()
         deps_path = self.plugin_dir / "deps.yaml"
         with open(deps_path, encoding="utf-8") as f:
             self.deps = yaml.safe_load(f)
+
+    def teardown_method(self):
+        self._tmpdir_obj.cleanup()
 
     def test_all_chains_returns_mermaid(self):
         from twl.chain.viz import chain_viz_all
@@ -193,50 +189,6 @@ class TestChainVizAll:
         assert "No chains" in output
 
 
-class TestQuickBypass:
-    def test_quick_bypass_inserted_when_skip_steps_in_middle(self):
-        from twl.chain.viz import chain_viz_single
-        # Create deps where init (non-skip) → crg-auto-build (skip) → final-step (non-skip)
-        deps = {
-            "version": "3.0",
-            "plugin": "test",
-            "chains": {
-                "mychain": {
-                    "steps": ["init", "crg-auto-build", "final-step"],
-                },
-            },
-            "commands": {
-                "init": {"type": "atomic", "dispatch_mode": "runner", "path": "x.md"},
-                "crg-auto-build": {"type": "atomic", "dispatch_mode": "runner", "path": "x.md"},
-                "final-step": {"type": "atomic", "dispatch_mode": "runner", "path": "x.md"},
-            },
-            "skills": {},
-            "agents": {},
-        }
-        output = chain_viz_single(deps, "mychain")
-        # Should have a quick bypass arrow (dashed)
-        assert "-." in output and "quick" in output
-
-    def test_no_quick_bypass_when_no_skip_steps(self):
-        from twl.chain.viz import chain_viz_single
-        deps = {
-            "version": "3.0",
-            "plugin": "test",
-            "chains": {
-                "mychain": {
-                    "steps": ["step-a", "step-b"],
-                },
-            },
-            "commands": {
-                "step-a": {"type": "atomic", "dispatch_mode": "runner", "path": "x.md"},
-                "step-b": {"type": "atomic", "dispatch_mode": "runner", "path": "x.md"},
-            },
-            "skills": {},
-            "agents": {},
-        }
-        output = chain_viz_single(deps, "mychain")
-        # No quick bypass since no quick_skip steps
-        assert "quick" not in output
 
 
 class TestUpdateReadme:

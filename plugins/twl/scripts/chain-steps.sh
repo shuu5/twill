@@ -25,16 +25,6 @@ CHAIN_STEPS=(
   pr-cycle-report
 )
 
-# quick Issue でスキップするステップの一覧（SSOT）
-QUICK_SKIP_STEPS=(
-  crg-auto-build
-  arch-ref
-  ac-extract
-  test-scaffold
-  check
-  prompt-compliance
-)
-
 # direct モード（scope/direct ラベル）でスキップするステップの一覧（SSOT）
 DIRECT_SKIP_STEPS=(
 )

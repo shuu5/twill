@@ -34,25 +34,6 @@ def _safe_mermaid_label(text: str) -> str:
     """Escape text for use inside Mermaid node labels (quoted form)."""
     return text.replace('"', "'").replace("[", "&#91;").replace("]", "&#93;")
 
-# QUICK_SKIP_STEPS は autopilot.chain からインポート（循環回避のためローカル定義も保持）
-_QUICK_SKIP_STEPS_FALLBACK: frozenset = frozenset([
-    "crg-auto-build",
-    "arch-ref",
-    "ac-extract",
-    "test-scaffold",
-    "check",
-    "prompt-compliance",
-])
-
-
-def _get_quick_skip_steps() -> frozenset:
-    try:
-        from twl.autopilot.chain import QUICK_SKIP_STEPS
-        return QUICK_SKIP_STEPS
-    except ImportError:
-        return _QUICK_SKIP_STEPS_FALLBACK
-
-
 def _safe_node_id(chain_name: str, step_name: str) -> str:
     """Mermaid ノード ID をサニタイズ"""
     chain_safe = re.sub(r'[^a-zA-Z0-9]', '_', chain_name)
@@ -91,7 +72,6 @@ def chain_viz_single(deps: dict, chain_name: str) -> str:
         steps = []
 
     all_components = _build_all_components(deps)
-    quick_skip = _get_quick_skip_steps()
 
     lines: List[str] = []
     lines.append("```mermaid")
@@ -122,46 +102,11 @@ def chain_viz_single(deps: dict, chain_name: str) -> str:
         dst_id = _safe_node_id(chain_name, valid_steps[i + 1])
         lines.append(f"    {src_id} --> {dst_id}")
 
-    # quick バイパス（破線）: quick_skip ステップを迂回する矢印
-    # 先頭の非スキップ → 連続スキップ後の非スキップ への破線
-    _append_quick_bypasses(lines, chain_name, valid_steps, quick_skip)
-
     lines.append("")
     _append_classdefs(lines)
     lines.append("```")
 
     return "\n".join(lines)
-
-
-def _append_quick_bypasses(
-    lines: List[str],
-    chain_name: str,
-    steps: List[str],
-    quick_skip: frozenset,
-) -> None:
-    """quick バイパス（破線）矢印を追加する。
-
-    連続する quick_skip ステップ群の直前→直後ノードへ破線を引く。
-    """
-    if not steps:
-        return
-
-    i = 0
-    while i < len(steps):
-        if steps[i] not in quick_skip:
-            # steps[i] が非スキップ。この直後に quick_skip が始まるか確認
-            j = i + 1
-            while j < len(steps) and steps[j] in quick_skip:
-                j += 1
-            # i+1 から j-1 が全て quick_skip、j が次の非スキップ
-            if j > i + 1 and j < len(steps):
-                # バイパス矢印: steps[i] → steps[j]
-                src_id = _safe_node_id(chain_name, steps[i])
-                dst_id = _safe_node_id(chain_name, steps[j])
-                lines.append(f"    {src_id} -. quick .-> {dst_id}")
-            i = j
-        else:
-            i += 1
 
 
 def chain_viz_all(deps: dict) -> str:
@@ -171,7 +116,6 @@ def chain_viz_all(deps: dict) -> str:
         return "# No chains found\n"
 
     all_components = _build_all_components(deps)
-    quick_skip = _get_quick_skip_steps()
 
     lines: List[str] = []
     lines.append("```mermaid")
@@ -217,8 +161,6 @@ def chain_viz_all(deps: dict) -> str:
             src_id = _safe_node_id(chain_name, valid_steps[i])
             dst_id = _safe_node_id(chain_name, valid_steps[i + 1])
             lines.append(f"    {src_id} --> {dst_id}")
-
-        _append_quick_bypasses(lines, chain_name, valid_steps, quick_skip)
 
     lines.append("")
 
