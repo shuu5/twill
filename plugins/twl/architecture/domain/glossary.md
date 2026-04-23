@@ -18,7 +18,10 @@
 | TWiLL | Type-Woven, invariant-Led Layering。フレームワークの正式名称。CLI コマンド `twl` で操作 | 全体 |
 | twl | TWiLL の CLI コマンド短縮形 | 全体 |
 | twill-ecosystem | クロスリポジトリプロジェクト（#6）。TWiLL モノリポを統合管理 | Project Management |
-| DeltaSpec | DeltaSpec の変更仕様管理 | Issue Management |
+| TDD 直行 flow | Acceptance Criteria を起点に RED test → 実装 → GREEN 確認 → REFACTOR を順に進める co-autopilot の標準フロー（ADR-023）。proposal/specs 中間層を経由しない | Autopilot |
+| Acceptance Criteria | Issue body の `## AC` / `## Acceptance Criteria` 節で列挙される受入条件。TDD 直行 flow の起点であり、`ac-scaffold-tests` が AC 1 件につき 1 RED test を生成する (ADR-023) | Autopilot, Issue Management |
+| ac-scaffold-tests | AC を入力に RED test を生成する agent (ADR-023 D-2)。旧 `spec-scaffold-tests` (DeltaSpec specs を入力とする構成) を reshape したもの | Autopilot |
+| RED / GREEN / REFACTOR | TDD 直行 flow の 3 段階。RED: `pytest --collect-only` で test が fail することを確認、GREEN: 実装で test PASS、REFACTOR: 既存テストを maintain しつつコード整理 (ADR-023 D-3) | Autopilot |
 | ECC | 外部知識ソース（doobidoo memory）。自己改善の教師データとして活用 | Self-Improve |
 | Emergency Bypass | co-autopilot 障害時のみ許可される手動実装パス。retrospective 記録義務あり | Autopilot |
 | Architecture Spec | 設計意図の前方参照。co-issue/co-architect が DCI で参照する living document | 全体 |
