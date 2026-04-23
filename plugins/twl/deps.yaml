@@ -2715,7 +2715,7 @@ scripts:
     calls:
       - script: resolve-issue-num
       - script: checkpoint-read
-    description: "phase-review 必須チェック（merge-gate）: phase-review 不在時は REJECT。scope/direct / quick ラベルはスキップ"
+    description: "phase-review 必須チェック（merge-gate）: phase-review 不在時は REJECT"
 
   # su-observer controller spawn wrapper (Phase A 2026-04-21)
   # [起動経路 B] spawn-controller.sh co-autopilot: su-observer が Pilot セッション全体を spawn する経路。
