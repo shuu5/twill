@@ -102,20 +102,15 @@ flowchart TD
 
     subgraph setup["setup chain"]
         setup__init["init"]:::script
-        setup__worktree_create["worktree-create"]:::script
         setup__project_board_status_update["project-board-status-update"]:::script
         setup__crg_auto_build["crg-auto-build"]:::llm
-        setup__change_propose["change-propose"]:::llm
+        setup__arch_ref["arch-ref"]:::script
         setup__ac_extract["ac-extract"]:::script
     end
 
     subgraph test_ready["test-ready chain"]
-        test_ready__arch_ref["arch-ref"]
-        test_ready__change_id_resolve["change-id-resolve"]
         test_ready__test_scaffold["test-scaffold"]:::llm
-        test_ready__check["check"]
-        test_ready__change_apply["change-apply"]:::llm
-        test_ready__post_change_apply["post-change-apply"]
+        test_ready__check["check"]:::script
     end
 
     subgraph pr_verify["pr-verify chain"]
@@ -142,16 +137,11 @@ flowchart TD
         pr_merge__auto_merge["auto-merge"]:::script
     end
 
-    setup__init --> setup__worktree_create
-    setup__worktree_create --> setup__project_board_status_update
+    setup__init --> setup__project_board_status_update
     setup__project_board_status_update --> setup__crg_auto_build
-    setup__crg_auto_build --> setup__change_propose
-    setup__change_propose --> setup__ac_extract
-    test_ready__arch_ref --> test_ready__change_id_resolve
-    test_ready__change_id_resolve --> test_ready__test_scaffold
+    setup__crg_auto_build --> setup__arch_ref
+    setup__arch_ref --> setup__ac_extract
     test_ready__test_scaffold --> test_ready__check
-    test_ready__check --> test_ready__change_apply
-    test_ready__change_apply --> test_ready__post_change_apply
     pr_verify__prompt_compliance --> pr_verify__ts_preflight
     pr_verify__ts_preflight --> pr_verify__phase_review
     pr_verify__phase_review --> pr_verify__scope_judge
@@ -165,8 +155,8 @@ flowchart TD
     pr_merge__all_pass_check --> pr_merge__merge_gate
     pr_merge__merge_gate --> pr_merge__auto_merge
 
-    setup__ac_extract -->|"Pilot inject"| test_ready__arch_ref
-    test_ready__post_change_apply -->|"Pilot inject"| pr_verify__prompt_compliance
+    setup__ac_extract -->|"Pilot inject"| test_ready__test_scaffold
+    test_ready__check -->|"Pilot inject"| pr_verify__prompt_compliance
     pr_verify__ac_verify -->|"Pilot inject"| pr_fix__fix_phase
     pr_fix__warning_fix -->|"Pilot inject"| pr_merge__e2e_screening
 
@@ -237,18 +227,6 @@ status=$(jq -r '.status // "null"' issue-N.json)
 - **制約 AP-2**: Emergency Bypass 条件を除き、trivial change であっても co-autopilot を bypass してはならない（SHALL）
 
 ## Rules
-
-### DeltaSpec 適用ポリシー
-
-Worker が DeltaSpec を使用すべきかどうかの判断基準:
-
-| 条件 | 動作 | 根拠 |
-|------|------|------|
-| `quick` ラベル | direct | コスト対効果 |
-| `scope/direct` ラベル | direct | 明示的 opt-out |
-| 上記以外 | propose → apply | 仕様駆動（デフォルト） |
-
-**デフォルト動作**: 判断に迷った場合は `propose → apply` パスを選択する。`deltaspec/` の存在有無は判定条件に含まれない。DeltaSpec は常にデフォルトパスであり、`scope/direct` ラベルで明示的に opt-out できる（ADR-015）。
 
 ### Pilot / Worker 役割分担
 
@@ -369,7 +347,7 @@ tmux send-keys -t "<WORKER_WINDOW>" "/twl:workflow-test-ready" Enter
 | 種別 | コンポーネント | 役割 |
 |------|--------------|------|
 | **controller** | co-autopilot | Issue 群の自律実装オーケストレーター |
-| **workflow** | workflow-setup | DeltaSpec 提案 + テスト準備（worktree は Pilot が事前作成済み） |
+| **workflow** | workflow-setup | 開発準備（AC 抽出・arch-ref まで）（worktree は Pilot が事前作成済み） |
 | **workflow** | workflow-test-ready | テスト生成 + 準備確認 |
 | **workflow** | workflow-pr-verify | PR 検証（preflight → review → scope → test） |
 | **workflow** | workflow-pr-fix | PR 修正（fix → post-fix-verify → warning-fix） |

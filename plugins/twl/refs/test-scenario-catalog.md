@@ -200,7 +200,7 @@ regression-002:
 ```yaml
 regression-003:
   level: regression
-  description: "DeltaSpec + medium complexity Issue で setup→test-ready→pr-verify→pr-merge の full-chain 遷移を検証"
+  description: "medium complexity Issue で setup→test-ready→pr-verify→pr-merge の full-chain 遷移を検証"
   issues_count: 1
   expected_duration_min: 15
   expected_duration_max: 35
@@ -208,54 +208,22 @@ regression-003:
   expected_pr_count: 1
   observer_polling_interval: 15
   issue_templates:
-    - title: "[Test] add greet() function with DeltaSpec"
+    - title: "[Test] add greet() function"
       body: |
         ## Goal
-        test-target plugin に `greet(name)` 関数を追加する。DeltaSpec を使用して実装すること。
+        test-target plugin に `greet(name)` 関数を追加する。
 
         ## AC
         - [ ] `scripts/greet.sh` が新規作成され `echo "Hello, $1"` を実行する
-        - [ ] `deltaspec/changes/` に DeltaSpec change が存在する
         - [ ] chmod +x が設定されている
       labels: [test, scope/test-target, complexity-medium]
       complexity: medium
 ```
 
-### regression-004: Bug #436 再現（issue: フィールド欠落）
+### regression-004: Bug #438 再現（Orchestrator polling timeout）
 
 ```yaml
 regression-004:
-  level: regression
-  description: "twl spec new が .deltaspec.yaml に issue: フィールドを生成しない Bug #436 の再現シナリオ"
-  issues_count: 1
-  expected_duration_min: 10
-  expected_duration_max: 20
-  expected_conflicts: 0
-  expected_pr_count: 1
-  observer_polling_interval: 15
-  issue_templates:
-    - title: "[Test] add farewell() function with DeltaSpec (Bug436 repro)"
-      body: |
-        ## Goal
-        test-target plugin に `farewell(name)` 関数を追加する。DeltaSpec を使用して実装すること。
-
-        ## Bug 再現条件
-        この Issue は Bug #436 の再現用シナリオ。autopilot が `twl spec new` を呼び出した後、
-        生成される `.deltaspec.yaml` に `issue:` フィールドが存在するかを検証する。
-        `issue:` フィールドが欠落した場合、orchestrator の `grep "^issue:"` が 0 件ヒットし
-        archive フェーズで失敗する。
-
-        ## AC
-        - [ ] `scripts/farewell.sh` が新規作成され `echo "Goodbye, $1"` を実行する
-        - [ ] `deltaspec/changes/*.yaml` に `issue:` フィールドが存在する（Bug #436 修正検証）
-      labels: [test, scope/test-target, complexity-medium]
-      complexity: medium
-```
-
-### regression-005: Bug #438 再現（Orchestrator polling timeout）
-
-```yaml
-regression-005:
   level: regression
   description: "Orchestrator polling loop が Bash timeout 120秒で停止し inject_next_workflow() が呼ばれない Bug #438 の再現シナリオ"
   issues_count: 1
@@ -272,8 +240,8 @@ regression-005:
         時間がかかる処理を含む（複数ファイルの生成とループ処理）。
 
         ## Bug 再現条件
-        この Issue は Bug #438 の再現用シナリオ。workflow-setup フェーズで change-propose が
-        120 秒以上かかる処理を含む場合、Orchestrator の polling loop が Bash timeout で停止し、
+        この Issue は Bug #438 の再現用シナリオ。workflow-setup フェーズで長時間かかる処理を
+        含む場合、Orchestrator の polling loop が Bash timeout で停止し、
         `inject_next_workflow()` が呼ばれず chain 遷移が停止することを検証する。
 
         ## AC
@@ -284,10 +252,10 @@ regression-005:
       complexity: medium
 ```
 
-### regression-006: Bug #439 再現（merge-gate phase-review チェック欠落）
+### regression-005: Bug #439 再現（merge-gate phase-review チェック欠落）
 
 ```yaml
-regression-006:
+regression-005:
   level: regression
   description: "merge-gate が phase-review.json の存在を検査しない Bug #439 の再現シナリオ"
   issues_count: 1

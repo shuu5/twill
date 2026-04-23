@@ -95,13 +95,6 @@ hist-ac-shrinking:
 ## bug-reproduction patterns
 
 ```yaml
-bug-deltaspec-archive:
-  regex: 'archive.*fail|fail.*archive|Error.*archive|deltaspec.*archive.*error'
-  severity: error
-  category: deltaspec-archive-failure
-  description: "deltaspec archive 失敗検出 (#436 関連)"
-  related_issue: "436"
-
 bug-chain-stall:
   regex: 'chain.*stall|polling.*timeout|transition.*stop|chain.*stop'
   severity: error
