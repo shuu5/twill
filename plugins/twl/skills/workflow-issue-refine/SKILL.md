@@ -182,11 +182,10 @@ if round == policies.max_rounds and CRITICAL findings あり:
 
 ### Step 4.5: refined ラベル判定
 
-round loop が正常完了した場合（STATE が `circuit_broken` でない場合）かつ `quick_flag=false` のとき、`labels_hint` に `"refined"` を追加する:
+round loop が正常完了した場合（STATE が `circuit_broken` でない場合）、`labels_hint` に `"refined"` を追加する:
 
 ```bash
-if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]] && \
-   [[ "$(jq -r '.quick_flag' "$PER_ISSUE_DIR/IN/policies.json")" != "true" ]]; then
+if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]]; then
   # policies.json に "refined" ラベルを追加して永続化（Step 6' が jq で読み取るため）
   jq '.labels_hint += ["refined"] | .labels_hint |= unique' \
     "$PER_ISSUE_DIR/IN/policies.json" > "$PER_ISSUE_DIR/IN/policies.json.tmp" \
@@ -194,7 +193,6 @@ if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]] && \
 fi
 ```
 
-- `quick_flag=true` の場合: スキップ（quick モードでは specialist レビューの depth が shallow に設定されるため、refined の品質保証基準を満たさない）
 - `STATE == circuit_broken` の場合: スキップ（round loop が正常完了していないため）
 - `STATE == failed` の場合: Step 4c の `exit 0` で制御フローが終了するため Step 4.5 に到達しない（条件式の対象外）
 
