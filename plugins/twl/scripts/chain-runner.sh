@@ -17,8 +17,6 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "${SCRIPT_DIR}/chain-steps.sh"
 # shellcheck source=./lib/python-env.sh
 source "${SCRIPT_DIR}/lib/python-env.sh"
-# shellcheck source=./lib/deltaspec-helpers.sh
-source "${SCRIPT_DIR}/lib/deltaspec-helpers.sh"
 # shellcheck source=./lib/gh-read-content.sh
 source "${SCRIPT_DIR}/lib/gh-read-content.sh"
 # shellcheck source=./resolve-issue-num.sh
@@ -84,27 +82,6 @@ resolve_autopilot_dir() {
     ')
   fi
   echo "${main_wt:-.}/.autopilot"
-}
-
-# Issue 番号に対応する change_id を厳密に解決する
-# Usage: resolve_change_id_for_issue <issue_num> <changes_dir>
-# - issue_num 非空: changes_dir/issue-<issue_num>/ が存在すれば "issue-<issue_num>" を echo (exit 0)
-#                   存在しなければ空文字を echo (exit 0)
-# - issue_num 空:   ls -td | head -1 による mtime-latest fallback
-resolve_change_id_for_issue() {
-  local issue_num="${1:-}"
-  local changes_dir="${2:-}"
-  if [[ -n "$issue_num" ]]; then
-    local candidate="$changes_dir/issue-${issue_num}"
-    if [[ -d "$candidate" ]]; then
-      echo "issue-${issue_num}"
-    else
-      echo ""
-    fi
-    return 0
-  fi
-  # legacy fallback (issue_num 未設定時のみ)
-  ls -td "$changes_dir"/*/ 2>/dev/null | head -1 | xargs -r basename
 }
 
 # =====================================================================
@@ -267,29 +244,13 @@ step_quick_detect() {
 }
 
 # --- init: 開発状態判定 ---
-# Nested deltaspec config.yaml の存在チェック（#435 以降の rebase 確認）
-# 引数: $1 = project root
-_check_nested_deltaspec_configs() {
-  local root="$1"
-  local found
-  found="$(find "$root" -maxdepth 4 -type f -name 'config.yaml' -path '*/deltaspec/*' -not -path '*/.git/*' 2>/dev/null)"
-  if [[ -z "$found" ]]; then
-    echo "[WARN] init: nested deltaspec config が見つかりません" >&2
-    echo "[WARN] init: この branch は origin/main より古い可能性があります。'git rebase origin/main' を推奨します" >&2
-  fi
-}
 
 # Usage: step_init [issue_num]
 step_init() {
   record_current_step "init"
   local issue_num="${1:-}"
-  local root
-  root="$(resolve_project_root)"
   local branch
   branch="$(git branch --show-current 2>/dev/null || echo "detached")"
-
-  # Nested deltaspec config.yaml の存在チェック（#485: rebase ガード AC-3）
-  _check_nested_deltaspec_configs "$root"
 
   local _labels
   _labels="$(fetch_labels "$issue_num")"
@@ -315,7 +276,7 @@ step_init() {
   if [[ "$is_quick" == "true" || "$is_direct" == "true" ]]; then
     local reason
     [[ "$is_quick" == "true" ]] && reason="quick" || reason="scope/direct label"
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" --argjson is_direct "$is_direct" '{"recommended_action":"direct","branch":$branch,"deltaspec":false,"is_quick":$is_quick,"is_direct":$is_direct}'
+    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" --argjson is_direct "$is_direct" '{"recommended_action":"direct","branch":$branch,"is_quick":$is_quick,"is_direct":$is_direct}'
     ok "init" "recommended_action=direct ($reason, is_quick=$is_quick)"
     if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
       python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=direct" 2>/dev/null || true
@@ -323,94 +284,8 @@ step_init() {
     return 0
   fi
 
-  # deltaspec 判定: config.yaml の存在でのみ有効な deltaspec root と判断する
-  # resolve_deltaspec_root に walk-down fallback ロジックを委譲（DRY 原則）
-  local deltaspec_root
-  if ! deltaspec_root="$(resolve_deltaspec_root "$root")"; then
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":false,"auto_init":true,"is_quick":$is_quick}'
-    ok "init" "recommended_action=propose (no deltaspec, auto_init=true, is_quick=$is_quick)"
-    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
-    fi
-    return 0
-  fi
-
-  # changes 判定
-  local changes_dir="$deltaspec_root/deltaspec/changes"
-  if [[ ! -d "$changes_dir" ]] || [[ -z "$(ls -A "$changes_dir" 2>/dev/null)" ]]; then
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_exists":false,"is_quick":$is_quick}'
-    ok "init" "recommended_action=propose (no changes, is_quick=$is_quick)"
-    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
-    fi
-    return 0
-  fi
-
-  # retroactive 検出: diff に実装コード（*.py/*.sh/*.ts/*.js/*.go/*.rs）が含まれないか確認
-  local impl_diff
-  impl_diff="$(git diff origin/main...HEAD --name-only 2>/dev/null | grep -E '\.(py|sh|ts|js|go|rs|rb|java|kt|swift)$' | wc -l | tr -d ' ')"
-  local total_diff
-  total_diff="$(git diff origin/main...HEAD --name-only 2>/dev/null | wc -l | tr -d ' ')"
-  # 実装コードがゼロかつ何らかの差分がある場合 → retroactive
-  if [[ "$impl_diff" == "0" && "$total_diff" -gt "0" ]]; then
-    # Issue body から Implemented-in: #<N> タグを検出
-    local impl_pr=""
-    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-      impl_pr="$(gh_read_issue_full "$issue_num" 2>/dev/null \
-        | grep -oE 'Implemented-in: #[0-9]+' | head -1 | grep -oE '[0-9]+$' || echo "")"
-    fi
-    # state に deltaspec_mode=retroactive を永続化
-    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "deltaspec_mode=retroactive" 2>/dev/null || true
-      if [[ -n "$impl_pr" ]]; then
-        python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "implementation_pr=$impl_pr" 2>/dev/null || true
-      fi
-    fi
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" --arg impl_pr "$impl_pr" \
-      '{"recommended_action":"retroactive_propose","branch":$branch,"deltaspec":true,"deltaspec_mode":"retroactive","implementation_pr":($impl_pr | if . == "" then null else tonumber end),"needs_implementation_pr":($impl_pr == ""),"is_quick":$is_quick}'
-    local retro_note="retroactive=true"
-    [[ -n "$impl_pr" ]] && retro_note="retroactive=true, implementation_pr=#${impl_pr}" || retro_note="retroactive=true, implementation_pr=不明（手動入力要）"
-    ok "init" "recommended_action=retroactive_propose (${retro_note})"
-    return 0
-  fi
-
-  # Issue 番号に対応する change を厳密に解決（mtime-latest anti-pattern を排除）
-  local latest_change
-  latest_change="$(resolve_change_id_for_issue "$issue_num" "$changes_dir")"
-
-  # ISSUE_NUM があり issue-<N>/ 不在の場合 → propose (新規作成経路)
-  if [[ -n "$issue_num" && "$issue_num" =~ ^[0-9]+$ && -z "$latest_change" ]]; then
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":false,"is_quick":$is_quick}'
-    ok "init" "recommended_action=propose (issue-${issue_num}/ not found, is_quick=$is_quick)"
-    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
-    return 0
-  fi
-
-  local proposal="$changes_dir/$latest_change/proposal.md"
-
-  if [[ -f "$proposal" ]]; then
-    # approved 判定: .deltaspec.yaml の status を確認
-    local yaml="$changes_dir/$latest_change/.deltaspec.yaml"
-    if [[ -f "$yaml" ]] && grep -q 'status:.*approved' "$yaml" 2>/dev/null; then
-      jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"apply","branch":$branch,"deltaspec":true,"change_id":$cid,"proposal_status":"approved","is_quick":$is_quick}'
-      ok "init" "recommended_action=apply (change=$latest_change, approved, is_quick=$is_quick)"
-      if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-        python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=apply" 2>/dev/null || true
-      fi
-    else
-      jq -n --arg branch "$branch" --arg cid "$latest_change" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_id":$cid,"proposal_status":"pending","is_quick":$is_quick}'
-      ok "init" "recommended_action=propose (change=$latest_change, pending, is_quick=$is_quick)"
-      if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-        python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
-      fi
-    fi
-  else
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"propose","branch":$branch,"deltaspec":true,"change_exists":true,"is_quick":$is_quick}'
-    ok "init" "recommended_action=propose (no proposal, is_quick=$is_quick)"
-    if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-      python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=propose" 2>/dev/null || true
-    fi
-  fi
+  jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"implement","branch":$branch,"is_quick":$is_quick}'
+  ok "init" "recommended_action=implement (branch=$branch, is_quick=$is_quick)"
 }
 
 # --- worktree-create: Python モジュールラッパー ---
@@ -895,44 +770,6 @@ step_chain_status() {
 
     echo "  ✓ ${step} ${type_label} (done)"
   done
-}
-
-# --- change-id-resolve: deltaspec change-id 解決 ---
-step_change_id_resolve() {
-  record_current_step "change-id-resolve"
-  local root
-  root="$(resolve_project_root)"
-  local ds_root
-  if ! ds_root="$(resolve_deltaspec_root "$root")"; then
-    err "change-id-resolve" "deltaspec/config.yaml が見つからない（deltaspec root 未初期化）"
-    return 1
-  fi
-  local changes_dir="$ds_root/deltaspec/changes"
-
-  if [[ ! -d "$changes_dir" ]]; then
-    err "change-id-resolve" "deltaspec/changes/ が存在しない（deltaspec_root=$ds_root）"
-    return 1
-  fi
-
-  local issue_num="${ISSUE_NUM:-}"
-  local latest
-  latest="$(resolve_change_id_for_issue "$issue_num" "$changes_dir")"
-
-  if [[ -z "$latest" ]]; then
-    if [[ -n "$issue_num" && "${CHANGE_ID_FALLBACK_LATEST:-0}" != "1" ]]; then
-      err "change-id-resolve" "issue-${issue_num}/ が存在しない"
-      return 1
-    fi
-    # legacy fallback: CHANGE_ID_FALLBACK_LATEST=1 opt-in、または ISSUE_NUM 未設定
-    latest=$(ls -td "$changes_dir"/*/ 2>/dev/null | head -1 | xargs -r basename)
-    if [[ -z "$latest" ]]; then
-      err "change-id-resolve" "changes/ が空"
-      return 1
-    fi
-  fi
-
-  echo "$latest"
-  ok "change-id-resolve" "$latest"
 }
 
 # --- ts-preflight: TypeScript 機械的検証 ---
@@ -1471,19 +1308,6 @@ step_check() {
   root="$(resolve_project_root)"
   local has_fail=false
 
-  # DeltaSpec: config.yaml を持つ deltaspec root のみ有効
-  local ds_root
-  if ds_root="$(resolve_deltaspec_root "$root")"; then
-    if ls "$ds_root/deltaspec/changes/"*/proposal.md >/dev/null 2>&1; then
-      echo "DeltaSpec: PASS"
-    else
-      echo "DeltaSpec: FAIL (proposal.md なし)"
-      has_fail=true
-    fi
-  else
-    echo "DeltaSpec: N/A"
-  fi
-
   # テスト（monorepo 対応: $root/tests/, $root/*/tests/, $root/*/*/tests/ を走査）
   local test_found=false
   local _test_dir
@@ -1546,7 +1370,7 @@ main() {
   if [[ -z "$step" ]]; then
     echo "Usage: chain-runner.sh [--trace <path>] <step-name> [args...]" >&2
     echo "Steps: init, worktree-create, board-status-update, project-board-status-update, board-archive," >&2
-    echo "       ac-extract, arch-ref, change-id-resolve, next-step, ts-preflight, pr-test, ac-verify," >&2
+    echo "       ac-extract, arch-ref, next-step, ts-preflight, pr-test, ac-verify," >&2
     echo "       all-pass-check, pr-cycle-report, auto-merge, check" >&2
     exit 1
   fi
@@ -1589,10 +1413,6 @@ main() {
     board-archive)       step_board_archive "$@" ;;
     ac-extract)          step_ac_extract "$@" ;;
     arch-ref)            step_arch_ref "$@" ;;
-    change-propose)      record_current_step "change-propose"; ok "change-propose" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
-    change-apply)        record_current_step "change-apply"; ok "change-apply" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
-    post-change-apply)   record_current_step "post-change-apply"; ok "post-change-apply" "runner ステップ記録（workflow-test-ready が state を直接書き込み、chain-runner はステップ記録のみ）" ;;
-    change-id-resolve)   step_change_id_resolve "$@" ;;
     test-scaffold)       record_current_step "test-scaffold"; ok "test-scaffold" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     next-step)           step_next_step "$@" ;;
     dispatch-info)       step_dispatch_info "$@" ;;
@@ -1620,7 +1440,7 @@ main() {
     *)
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
-      echo "         board-archive, ac-extract, arch-ref, change-id-resolve, next-step, prompt-compliance, ts-preflight," >&2
+      echo "         board-archive, ac-extract, arch-ref, next-step, prompt-compliance, ts-preflight," >&2
       echo "         phase-review, scope-judge, pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge," >&2
       echo "         pr-comment-findings, pr-comment-fix-summary, pr-comment-final, check," >&2
       echo "         quick-guard, autopilot-detect, quick-detect, resolve-issue-num," >&2

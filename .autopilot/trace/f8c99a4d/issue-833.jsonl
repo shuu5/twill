@@ -1,0 +1,15 @@
+{"step":"init","phase":"start","ts":"2026-04-22T10:20:35+09:00","exit_code":null,"pid":2146405}
+{"step":"init","phase":"end","ts":"2026-04-22T10:20:35+09:00","exit_code":0,"pid":2146405}
+{"step":"autopilot-detect","phase":"start","ts":"2026-04-22T10:20:50+09:00","exit_code":null,"pid":2149936}
+{"step":"autopilot-detect","phase":"end","ts":"2026-04-22T10:20:50+09:00","exit_code":0,"pid":2149936}
+{"step":"quick-detect","phase":"start","ts":"2026-04-22T10:20:50+09:00","exit_code":null,"pid":2149955}
+{"step":"quick-detect","phase":"end","ts":"2026-04-22T10:20:50+09:00","exit_code":0,"pid":2149955}
+{"step":"board-status-update","phase":"start","ts":"2026-04-22T10:21:00+09:00","exit_code":null,"pid":2152610}
+{"step":"board-status-update","phase":"end","ts":"2026-04-22T10:21:09+09:00","exit_code":0,"pid":2152610}
+{"step":"record-pr","phase":"start","ts":"2026-04-22T10:22:29+09:00","exit_code":null,"pid":2169958}
+{"step":"record-pr","phase":"end","ts":"2026-04-22T10:22:29+09:00","exit_code":0,"pid":2169958}
+{"step":"merge-gate","phase":"start","ts":"2026-04-22T10:22:34+09:00","exit_code":null,"pid":2170883}
+{"step":"pr-comment-findings","phase":"start","ts":"2026-04-22T10:28:42+09:00","exit_code":null,"pid":2242079}
+{"step":"pr-comment-findings","phase":"end","ts":"2026-04-22T10:28:44+09:00","exit_code":0,"pid":2242079}
+{"step":"resolve-issue-num","phase":"start","ts":"2026-04-22T10:29:57+09:00","exit_code":null,"pid":2257128}
+{"step":"resolve-issue-num","phase":"end","ts":"2026-04-22T10:29:57+09:00","exit_code":0,"pid":2257128}

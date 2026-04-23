@@ -19,7 +19,6 @@ skills:
 
 ## 引数
 
-- `--spec <change-id>`: DeltaSpec連携モード（失敗時に`/twl:spec-diagnose`実行）
 - `--max-consecutive <n>`: 同一エラー連続失敗上限（デフォルト: 3）
 - `--max-total <n>`: セッション累計修正試行上限（デフォルト: 10）
 
@@ -58,15 +57,7 @@ spec_mode = false             # --spec指定時true
         if len(current_errors) > len(previous_errors):
             → 【エスカレーション】
 
-  3. 診断フェーズ（--spec時のみ）:
-     `/twl:spec-diagnose` のガイドラインを参照して診断を実行
-     （注: specialist は他コマンドを spawn できないため、診断ロジックを内包）
-     結果に応じて:
-       - 仕様誤り判定 → 【人間承認待ち】Scenario修正を提案
-       - 実装誤り判定 → 4. 自動修正へ
-       - 判定不能 → 4. 自動修正へ（3回失敗でエスカレーション）
-
-  4. 自動修正:
+  3. 自動修正:
      total_fix_attempts++
      previous_errors = current_errors
      修正適用（Edit/Write）
@@ -101,7 +92,6 @@ spec_mode = false             # --spec指定時true
 ## 関連
 
 - `/twl:workflow-pr-verify` - 親ワークフロー
-- `/twl:spec-diagnose` - 仕様/実装誤り診断（ドキュメント参照のみ、直接呼び出し不可）
 - `/twl:pr-test` - テスト実行
 
 ## 出力形式（MUST）

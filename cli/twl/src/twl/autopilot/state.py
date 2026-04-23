@@ -294,7 +294,6 @@ class StateManager:
             "files_changed": [],
             "failure": None,
             "implementation_pr": None,
-            "deltaspec_mode": None,
             "input_waiting_detected": None,
             "input_waiting_at": None,
         }

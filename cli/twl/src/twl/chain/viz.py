@@ -38,12 +38,10 @@ def _safe_mermaid_label(text: str) -> str:
 _QUICK_SKIP_STEPS_FALLBACK: frozenset = frozenset([
     "crg-auto-build",
     "arch-ref",
-    "change-propose",
     "ac-extract",
-    "change-id-resolve",
     "test-scaffold",
     "check",
-    "change-apply",
+    "prompt-compliance",
 ])
 
 

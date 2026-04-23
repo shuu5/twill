@@ -1,0 +1,29 @@
+{
+  "issue": 793,
+  "status": "failed",
+  "branch": "feat/793-clitwldocsref-md-4-pluginstwlrefs",
+  "pr": 819,
+  "window": "",
+  "started_at": "2026-04-21T14:14:32Z",
+  "updated_at": "2026-04-21T16:20:25Z",
+  "current_step": "ac-verify",
+  "retry_count": 0,
+  "fix_instructions": null,
+  "merged_at": null,
+  "files_changed": [],
+  "failure": {
+    "message": "poll_timeout",
+    "step": "polling"
+  },
+  "implementation_pr": null,
+  "deltaspec_mode": null,
+  "input_waiting_detected": "menu_enter_select",
+  "input_waiting_at": "2026-04-21T16:20:14Z",
+  "is_quick": true,
+  "is_direct": false,
+  "mode": "direct",
+  "llm_delegated_at": "2026-04-21T23:20:47+09:00",
+  "llm_completed_at": "2026-04-21T23:21:22+09:00",
+  "workflow_injected": "/twl:workflow-pr-fix",
+  "injected_at": "2026-04-21T14:20:55Z"
+}

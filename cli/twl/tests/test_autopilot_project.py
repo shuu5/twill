@@ -276,45 +276,23 @@ class TestMigrate:
         with pytest.raises(ProjectError, match="プロジェクトルート"):
             mgr.migrate(project_dir=empty)
 
-    def test_detects_v1_deltaspec(self, tmp_path: Path) -> None:
+    def test_migrate_applies_claude_md_on_feature_branch(self, tmp_path: Path) -> None:
         project = self._make_project(tmp_path)
-        (project / "deltaspec").mkdir()
-        (project / "deltaspec" / "config.yaml").write_text("")
 
         changes: list[str] = []
 
         def fake_detect(_self: ProjectManager, _dir: Path) -> str:
             return "rnaseq"
 
-        original_apply = ProjectManager._apply_claude_md
-
         def capture_apply(self_, pdir, ptype, pname):  # type: ignore[no-untyped-def]
             changes.append("claude_md")
 
         with patch.object(ProjectManager, "_detect_project_type", fake_detect), \
-             patch.object(ProjectManager, "_apply_claude_md", capture_apply), \
-             patch.object(ProjectManager, "_apply_deltaspec") as mock_delta:
+             patch.object(ProjectManager, "_apply_claude_md", capture_apply):
             mgr = ProjectManager()
             mgr.migrate(project_dir=project)
 
-        # v1.x → no deltaspec migration needed
-        mock_delta.assert_not_called()
-
-    def test_applies_deltaspec_for_v0(self, tmp_path: Path) -> None:
-        project = self._make_project(tmp_path)
-        (project / "deltaspec").mkdir()
-        (project / "deltaspec" / "project.md").write_text("")  # v0.x marker
-
-        def fake_detect(_self: ProjectManager, _dir: Path) -> str:
-            return "webapp-llm"
-
-        with patch.object(ProjectManager, "_detect_project_type", fake_detect), \
-             patch.object(ProjectManager, "_apply_claude_md"), \
-             patch.object(ProjectManager, "_apply_deltaspec") as mock_delta:
-            mgr = ProjectManager()
-            mgr.migrate(project_dir=project)
-
-        mock_delta.assert_called_once()
+        assert "claude_md" in changes
 
     def test_claude_md_backup_created_on_update(self, tmp_path: Path) -> None:
         project = self._make_project(tmp_path, has_claude_md=True)
@@ -325,8 +303,7 @@ class TestMigrate:
         def fake_detect(_self: ProjectManager, _dir: Path) -> str:
             return "webapp-llm"
 
-        with patch.object(ProjectManager, "_detect_project_type", fake_detect), \
-             patch.object(ProjectManager, "_apply_deltaspec"):
+        with patch.object(ProjectManager, "_detect_project_type", fake_detect):
             mgr = ProjectManager(templates_base=templates)
             mgr.migrate(project_dir=project)
 

@@ -1,24 +1,20 @@
 #!/usr/bin/env bash
-# chain-steps.sh - chain ステップ順序の共有定義（SSOT）
+# chain-steps.sh — chain ステップ順序の共有定義（chain.py から生成）
+# このファイルは `twl chain export --shell` で再生成される。直接編集しないこと。
 #
 # このファイルを source して CHAIN_STEPS 配列を取得する:
 #   source "$(dirname "${BASH_SOURCE[0]}")/chain-steps.sh"
 #
 # workflow-setup → workflow-test-ready → workflow-pr-cycle の全ステップ順。
-# chain-runner.sh、compaction-resume.sh がこのファイルを参照する。
 
 CHAIN_STEPS=(
   init
   project-board-status-update
   crg-auto-build
   arch-ref
-  change-propose
   ac-extract
-  change-id-resolve
   test-scaffold
   check
-  change-apply
-  post-change-apply
   prompt-compliance
   ts-preflight
   phase-review
@@ -33,20 +29,14 @@ CHAIN_STEPS=(
 QUICK_SKIP_STEPS=(
   crg-auto-build
   arch-ref
-  change-propose
   ac-extract
-  change-id-resolve
   test-scaffold
   check
-  change-apply
   prompt-compliance
 )
 
-# direct モード（DeltaSpec なし）でスキップするステップの一覧（SSOT）
+# direct モード（scope/direct ラベル）でスキップするステップの一覧（SSOT）
 DIRECT_SKIP_STEPS=(
-  change-propose
-  change-id-resolve
-  change-apply
 )
 
 # dispatch_mode SSOT: 各ステップの実行モード
@@ -57,13 +47,9 @@ declare -A CHAIN_STEP_DISPATCH=(
   [project-board-status-update]=trigger
   [crg-auto-build]=llm
   [arch-ref]=runner
-  [change-propose]=llm
   [ac-extract]=runner
-  [change-id-resolve]=runner
   [test-scaffold]=llm
   [check]=runner
-  [change-apply]=llm
-  [post-change-apply]=runner
   [prompt-compliance]=runner
   [ts-preflight]=runner
   [phase-review]=llm
@@ -74,19 +60,15 @@ declare -A CHAIN_STEP_DISPATCH=(
   [pr-cycle-report]=runner
 )
 
-# ワークフロー境界メタデータ（SSOT は chain.py の STEP_TO_WORKFLOW — このファイルはミラー）
+# ワークフロー境界メタデータ（SSOT は chain.py の STEP_TO_WORKFLOW）
 declare -A CHAIN_STEP_WORKFLOW=(
   [init]=setup
   [project-board-status-update]=setup
   [crg-auto-build]=setup
   [arch-ref]=setup
-  [change-propose]=setup
   [ac-extract]=setup
-  [change-id-resolve]=test-ready
   [test-scaffold]=test-ready
   [check]=test-ready
-  [change-apply]=test-ready
-  [post-change-apply]=test-ready
   [prompt-compliance]=pr-verify
   [ts-preflight]=pr-verify
   [phase-review]=pr-verify
@@ -97,25 +79,20 @@ declare -A CHAIN_STEP_WORKFLOW=(
   [pr-cycle-report]=pr-merge
 )
 
-# ワークフロー完了後の次 skill（SSOT は chain.py の WORKFLOW_NEXT_SKILL — このファイルはミラー）
-# NOTE: [pr-fix] は現在 CHAIN_STEP_WORKFLOW にステップが未登録（repair loop は動的）。
-#       将来 pr-fix chain ステップ追加時に CHAIN_STEP_WORKFLOW へのエントリも追加すること。
+# ワークフロー完了後の次 skill（SSOT は chain.py の WORKFLOW_NEXT_SKILL）
 declare -A CHAIN_WORKFLOW_NEXT_SKILL=(
-  [setup]=workflow-test-ready
-  [test-ready]=workflow-pr-verify
-  [pr-verify]=workflow-pr-fix
-  [pr-fix]=workflow-pr-merge
+  [setup]="workflow-test-ready"
+  [test-ready]="workflow-pr-verify"
+  [pr-verify]="workflow-pr-fix"
+  [pr-fix]="workflow-pr-merge"
   [pr-merge]=""
 )
 
 # LLM ステップのコマンドパス（空 = Skill で実行）
 declare -A CHAIN_STEP_COMMAND=(
-  [crg-auto-build]=commands/crg-auto-build.md
-  [change-propose]=commands/change-propose.md
+  [crg-auto-build]="commands/crg-auto-build.md"
   [test-scaffold]=""
-  [change-apply]=""
-  [post-change-apply]=""
-  [phase-review]=commands/phase-review.md
-  [scope-judge]=commands/scope-judge.md
-  [ac-verify]=commands/ac-verify.md
+  [phase-review]="commands/phase-review.md"
+  [scope-judge]="commands/scope-judge.md"
+  [ac-verify]="commands/ac-verify.md"
 )

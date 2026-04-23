@@ -23,7 +23,6 @@ digraph Dependencies {
     cmd_post_fix_verify [label="post-fix-verify\n(756 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_warning_fix [label="warning-fix\n(461 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_fix_phase [label="fix-phase\n(552 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_spec_diagnose [label="spec-diagnose\n(651 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 
@@ -34,7 +33,7 @@ digraph Dependencies {
 
     // L3.5: Scripts
     script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_parser [label="autopilot-parser\n(2,496 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_parser [label="autopilot-parser\n(2,484 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_pr_review_manifest [label="pr-review-manifest\n(1,864 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_read [label="checkpoint-read\n(2,864 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -43,7 +42,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_pr_fix; }
-    { rank=same; cmd_post_fix_verify; cmd_warning_fix; cmd_fix_phase; cmd_spec_diagnose; }
+    { rank=same; cmd_post_fix_verify; cmd_warning_fix; cmd_fix_phase; }
     { rank=same; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; }
     { rank=same; script_tech_stack_detect; script_autopilot_parser; script_resolve_issue_num; script_pr_review_manifest; script_checkpoint_read; }
 
@@ -51,7 +50,6 @@ digraph Dependencies {
     skill_workflow_pr_fix -> cmd_fix_phase;
     skill_workflow_pr_fix -> cmd_post_fix_verify;
     skill_workflow_pr_fix -> cmd_warning_fix;
-    skill_workflow_pr_fix -> cmd_spec_diagnose;
     cmd_post_fix_verify -> agent_worker_code_reviewer [style=dashed];
     cmd_post_fix_verify -> agent_worker_security_reviewer [style=dashed];
     cmd_post_fix_verify -> agent_worker_codex_reviewer [style=dashed];
@@ -62,7 +60,6 @@ digraph Dependencies {
     // Ordering constraints (invisible edges)
     cmd_fix_phase -> cmd_post_fix_verify [style=invis, weight=10];
     cmd_post_fix_verify -> cmd_warning_fix [style=invis, weight=10];
-    cmd_warning_fix -> cmd_spec_diagnose [style=invis, weight=10];
     agent_worker_code_reviewer -> agent_worker_security_reviewer [style=invis, weight=10];
     agent_worker_security_reviewer -> agent_worker_codex_reviewer [style=invis, weight=10];
     agent_worker_codex_reviewer -> script_pr_review_manifest [style=invis, weight=10];

@@ -1,16 +1,49 @@
 {
   "step": "merge-gate",
-  "status": "PASS",
-  "findings_summary": "0 CRITICAL, 1 WARNING",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 4 WARNING",
   "critical_count": 0,
   "findings": [
     {
       "severity": "WARNING",
-      "category": "bug",
-      "confidence": 70,
-      "message": "AC『plugins/twl/refs/ref-wave-32-retest.md が存在する』はdiff-only判定。対応するテストなし",
-      "evidence": "git diff origin/main に plugins/twl/refs/ref-wave-32-retest.md (5 insertions) が確認できる"
+      "confidence": 92,
+      "file": "cli/twl/tests/test_autopilot_chain.py",
+      "line": 511,
+      "message": "_setup_ci still creates deltaspec/changes/ directories which are dead scaffolding after Phase Z removal. step_check() no longer validates DeltaSpec state.",
+      "category": "dead-code"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 90,
+      "file": "cli/twl/tests/test_autopilot_chain.py",
+      "line": 214,
+      "message": "test_propose_includes_direct_skip_steps and test_mode_unset_does_not_apply_direct_skip iterate over DIRECT_SKIP_STEPS which is now frozenset(). Tests pass vacuously.",
+      "category": "vacuous-test"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 85,
+      "file": "cli/twl/tests/test_autopilot_project.py",
+      "line": 163,
+      "message": "test_deltaspec_dirs_not_created_when_deltaspec_absent is stale after Phase Z removal - that code path was removed.",
+      "category": "stale-test"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 80,
+      "file": "plugins/twl/deps.yaml",
+      "line": 32,
+      "message": "setup chain description still mentions worktree-create which was removed from chain steps.",
+      "category": "stale-description"
+    },
+    {
+      "severity": "INFO",
+      "confidence": 82,
+      "file": "cli/twl/src/twl/autopilot/chain.py",
+      "line": 57,
+      "message": "DIRECT_SKIP_STEPS = frozenset() is intentional but undocumented. Could confuse future readers.",
+      "category": "readability"
     }
   ],
-  "timestamp": "2026-04-14T07:51:58Z"
+  "timestamp": "2026-04-23T06:22:29Z"
 }

@@ -31,7 +31,6 @@ python3 -m twl.autopilot.project migrate $ARGUMENTS
 
 現在のプロジェクト構造を分析:
 
-- **DeltaSpec構造**: config.yaml? project.md?
 - **CLAUDE.md**: テンプレートバージョン推定
 - **ディレクトリ構造**: タイプ推定
 
@@ -39,7 +38,6 @@ python3 -m twl.autopilot.project migrate $ARGUMENTS
 
 移行内容を表示:
 
-- DeltaSpec移行（v0.x → v1.x）
 - CLAUDE.md差分
 - 不足ファイル
 

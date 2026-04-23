@@ -154,12 +154,12 @@ EOF
 # Group 3: Section number continuity (## N. format)
 # ===========================================================================
 
-@test "catalog-integrity: pitfalls-catalog has 13 consecutive sections §0-12" {
+@test "catalog-integrity: pitfalls-catalog has 14 consecutive sections §0-13" {
   local pitfalls="${REPO_ROOT}/skills/su-observer/refs/pitfalls-catalog.md"
   [ -f "${pitfalls}" ]
   run bash "${SCRIPT}" --repo-root "${REPO_ROOT}" --check-sections "${pitfalls}"
   [ "${status}" -eq 0 ]
-  [[ "${output}" == *"sections:"*"pitfalls-catalog.md"*"13 sections §0-12"* ]]
+  [[ "${output}" == *"sections:"*"pitfalls-catalog.md"*"14 sections §0-13"* ]]
 }
 
 @test "catalog-integrity: --check-sections passes for all current ref files" {

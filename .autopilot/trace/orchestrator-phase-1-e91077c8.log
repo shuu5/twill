@@ -1,0 +1,79 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-04-22T00:58:05Z] orchestrator_pid=1900308 phase=1 started_at=2026-04-22T00:58:05Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #829: Worker 起動
+[orchestrator] Issue #829: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/829-feature-externalize-statemd-exit-gate
+OK: issue-829.json を作成しました (status=running)
+Worker 起動完了: Issue #829 (window=ap-twill-feat-829-feature-externa-f9b3a4a4, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/829-feature-externalize-statemd-exit-gate)
+[orchestrator] Issue #830: Worker 起動
+[orchestrator] Issue #830: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/830-feature-step-0-doobidoo-tag-ambient-hi
+OK: issue-830.json を作成しました (status=running)
+Worker 起動完了: Issue #830 (window=ap-twill-feat-830-feature-step-0-i0-46687229, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/830-feature-step-0-doobidoo-tag-ambient-hi)
+[orchestrator] Issue #831: Worker 起動
+[orchestrator] Issue #831: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/831-feature-session-end-hook-pitfall-pitfa
+OK: issue-831.json を作成しました (status=running)
+Worker 起動完了: Issue #831 (window=ap-twill-feat-831-feature-session-fdcc23e9, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/831-feature-session-end-hook-pitfall-pitfa)
+[orchestrator] Issue #830: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-830.json を更新しました
+[orchestrator] Issue #829: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-829.json を更新しました
+[orchestrator] WARN: issue=831 stagnate detected (RESOLVE_FAILED 54 回, 600s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=831 stagnate detected (RESOLVE_FAILED 55 回, 612s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=831 stagnate detected (RESOLVE_FAILED 56 回, 623s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=831 stagnate detected (RESOLVE_FAILED 57 回, 634s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=831 stagnate detected (RESOLVE_FAILED 58 回, 645s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=831 stagnate detected (RESOLVE_FAILED 59 回, 657s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=831 stagnate detected (RESOLVE_FAILED 60 回, 668s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #831: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-831.json を更新しました
+[orchestrator] Issue #831: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #831: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-831.json を更新しました
+[orchestrator] Issue #830: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #830: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-830.json を更新しました
+[orchestrator] Issue #829: chain 遷移停止検知 — nudge 送信 (0/3)
+[orchestrator] Issue #829: merge-gate 実行 (PR #850)
+[merge-gate] INFO: phase-review チェックをスキップしました（ラベル: quick）
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-829.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #829: PR #850 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #829: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #829: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #829: merge 成功
+[orchestrator] cleanup: Issue #829 — window/branch クリーンアップ
+[orchestrator] Issue #830: merge-gate 実行 (PR #852)
+[merge-gate] INFO: phase-review チェックをスキップしました（ラベル: quick）
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-830.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #830: PR #852 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #830: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #830: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #830: merge 成功
+[orchestrator] cleanup: Issue #830 — window/branch クリーンアップ
+[orchestrator] Issue #831: merge-gate 実行 (PR #851)
+[merge-gate] INFO: phase-review チェックをスキップしました（ラベル: quick）
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-831.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #831: PR #851 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #831: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #831: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #831: merge 成功
+[orchestrator] cleanup: Issue #831 — window/branch クリーンアップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      829,
+      830,
+      831
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

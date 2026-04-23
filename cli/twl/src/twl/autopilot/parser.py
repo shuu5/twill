@@ -230,7 +230,6 @@ _STEP_CATEGORIES: dict[str, str] = {
     "ts-preflight": "typecheck-failure",
     "merge-gate": "merge-gate-failure",
     "all-pass-check": "quality-failure",
-    "change-apply": "implementation-failure",
     "check": "check-failure",
 }
 

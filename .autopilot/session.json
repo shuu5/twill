@@ -1,37 +1,35 @@
 {
-  "session_id": "b9e0fcd5",
+  "session_id": "a8063111",
   "plan_path": "/home/shuu5/projects/local-projects/twill/main/.autopilot/plan.yaml",
   "current_phase": 1,
   "phase_count": 1,
-  "started_at": "2026-04-14T09:28:38Z",
+  "started_at": "2026-04-22T02:06:40Z",
   "cross_issue_warnings": [],
   "phase_insights": [],
   "patterns": {},
   "self_improve_issues": [],
-  "completed_issues": {
-    "513": {
-      "pr": 679,
-      "files": [
-        "deltaspec/changes/issue-513/.deltaspec.yaml",
-        "deltaspec/changes/issue-513/design.md",
-        "deltaspec/changes/issue-513/proposal.md",
-        "deltaspec/changes/issue-513/specs/bash-baseline/spec.md",
-        "deltaspec/changes/issue-513/tasks.md",
-        "deltaspec/changes/issue-513/test-mapping.yaml",
-        "plugins/twl/README.md",
-        "plugins/twl/agents/worker-code-reviewer.md",
-        "plugins/twl/deps.yaml",
-        "plugins/twl/refs/baseline-bash.md",
-        "plugins/twl/refs/baseline-coding-style.md",
-        "plugins/twl/tests/bats/refs/baseline-bash.bats"
-      ]
-    }
-  },
-  "retrospectives": [
+  "externalization_log": [
     {
-      "phase": 1,
-      "results": "done=[513], failed=[], skipped=[]",
-      "insights": ""
+      "externalized_at": "2026-04-23T00:50:28Z",
+      "trigger": "wave_complete",
+      "output_path": ".autopilot/wave-unknown-summary.md",
+      "mode": "wave",
+      "context": "Phase D 後継 bug fix 完遂 (Priority 1: #898 PR #899, Priority 2: #897 PR #900)。全 open bug fix clear。",
+      "memory_hashes": {
+        "wave_complete": "0a359d1ebea1f9f7fbb68cb7cb0213f2ff27743224854f54b2d2e3760790a861",
+        "lesson_bats_pattern": "9fb94072486616887f86314c4fc7b8f0055ed65cac19b7aae751ffcfd2dafc3c"
+      },
+      "new_pitfall_hashes": [
+        "9fb94072486616887f86314c4fc7b8f0055ed65cac19b7aae751ffcfd2dafc3c"
+      ],
+      "pitfall_declaration": "1-item-lesson-bats-pattern"
+    },
+    {
+      "externalized_at": "2026-04-23T03:11:29Z",
+      "trigger": "wave_complete",
+      "output_path": ".autopilot/wave-z-summary.md",
+      "new_pitfall_hashes": [],
+      "pitfall_declaration": "none"
     }
   ]
 }

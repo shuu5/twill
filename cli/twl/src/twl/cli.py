@@ -48,12 +48,6 @@ def main():
         from twl.autopilot.audit_history import main as audit_history_main
         sys.exit(audit_history_main(sys.argv[2:]))
 
-    # spec サブコマンドの前処理
-    if len(sys.argv) >= 2 and sys.argv[1] == 'spec':
-        from twl.spec import main as spec_main
-        spec_main(sys.argv[2:])
-        sys.exit(0)
-
     # config サブコマンド（project-links.yaml ローダー）
     if len(sys.argv) >= 2 and sys.argv[1] == 'config':
         from twl.config import main as config_main

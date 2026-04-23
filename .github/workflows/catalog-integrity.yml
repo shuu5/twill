@@ -31,8 +31,10 @@ jobs:
       - name: Install bats
         run: |
           git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
-          /tmp/bats-core/install.sh /usr/local
+          sudo /tmp/bats-core/install.sh /usr/local
+          rm -rf plugins/twl/tests/lib/bats-support
           git clone --depth 1 https://github.com/bats-core/bats-support.git plugins/twl/tests/lib/bats-support
+          rm -rf plugins/twl/tests/lib/bats-assert
           git clone --depth 1 https://github.com/bats-core/bats-assert.git plugins/twl/tests/lib/bats-assert
       - name: Run catalog integrity checks
         working-directory: plugins/twl

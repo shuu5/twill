@@ -25,7 +25,7 @@ digraph Dependencies {
     cmd_services [label="services\n(967 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_ui_capture [label="ui-capture\n(637 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_worktree_delete [label="worktree-delete\n(408 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_schema_update [label="schema-update\n(498 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_schema_update [label="schema-update\n(497 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
 

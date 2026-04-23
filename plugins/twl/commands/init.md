@@ -14,10 +14,6 @@ maxTurns: 10
 |-----------|-----|------|
 | repo_mode | `worktree` | リポジトリ形式（bare repo + worktree 固定） |
 | branch | `main` / `feat/xxx` / `detached` | 現在のブランチ |
-| deltaspec | `true` / `false` | deltaspec/ が存在するか |
-| change_exists | `true` / `false` | changes/ 内にディレクトリがあるか |
-| change_id | `xxx` / `null` | 最新の change ID |
-| proposal_status | `approved` / `pending` / `none` | proposal.md の状態 |
 | recommended_action | 下記参照 | 推奨される次のアクション |
 | environment | 下記参照 | 環境情報 |
 
@@ -26,9 +22,8 @@ maxTurns: 10
 | 値 | 意味 |
 |----|------|
 | `worktree` | main ブランチなので worktree 作成が必要 |
-| `propose` | DeltaSpec 使用プロジェクトで変更提案が必要 |
-| `apply` | 承認済み proposal あり → 実装開始可能 |
-| `direct` | 軽微変更 or DeltaSpec 未使用 → 直接実装 |
+| `implement` | feature ブランチ → 直接実装 |
+| `direct` | 軽微変更 or quick ラベル → 直接実装 |
 
 ### environment の構造
 
@@ -46,10 +41,9 @@ environment:
 ## 判定フロー（MUST）
 
 1. **ブランチ確認**: `main` / `master` → `recommended_action: worktree`、feature ブランチ → 次へ
-2. **deltaspec/ 確認**: なし → `direct`、changes/ 空 → 変更規模判定、proposal.md あり → ステップ 3 へ
-3. **proposal 状態**: `status: approved` あり → `apply`、なし → `pending`
-4. **環境判定**: コンテナ・パッケージマネージャを検出
-5. **変更規模判定**: 10 行未満 → `direct`、それ以外 → `propose`
+2. **ラベル確認**: `quick` / `scope/direct` → `direct`
+3. **環境判定**: コンテナ・パッケージマネージャを検出
+4. それ以外 → `implement`
 
 ## 禁止事項（MUST NOT）
 

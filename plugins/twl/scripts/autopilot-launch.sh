@@ -265,7 +265,7 @@ fi
 
 # --- Pre-create worktree for Worker (ADR-008: Pilot owns worktree lifecycle) ---
 # bare repo かつ --worktree-dir 未指定時、Pilot が worktree を事前作成して Worker をそこで起動する。
-# Worker の CWD が worktree になるため、deltaspec 等が main/ に書き込む汚染を防止する。
+# Worker の CWD が worktree になるため、main/ への書き込み汚染を防止する。
 if [[ -z "$WORKTREE_DIR" ]] && [[ -d "$EFFECTIVE_PROJECT_DIR/.bare" ]]; then
   WT_OUTPUT=$(cd "$EFFECTIVE_PROJECT_DIR/main" && python3 -m twl.autopilot.worktree create "#${ISSUE}" 2>&1)
   WT_EXIT=$?

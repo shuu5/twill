@@ -28,7 +28,7 @@ eval "$(bash "${CLAUDE_PLUGIN_ROOT}/scripts/merge-gate-build-manifest.sh")"
 trap 'rm -f "$MANIFEST_FILE" "$SPAWNED_FILE"' EXIT
 ```
 
-マニフェスト各行を Task spawn 対象とする（手動追加・削除は MUST NOT）。**quick ラベルが付与されていても specialist マニフェスト生成・spawn を省略してはならない（MUST NOT）**。quick が影響するのは DeltaSpec のスキップと phase-review checkpoint チェックのスキップのみであり、specialist review の実行には影響しない。`pr-review-manifest.sh` は merge-gate モードで最低限 `worker-code-reviewer` と `worker-security-reviewer` を必ず出力するため、マニフェスト 0 行は自動 PASS としない。クリーンアップは eval 直後に設定した親シェル側 trap で行う。
+マニフェスト各行を Task spawn 対象とする（手動追加・削除は MUST NOT）。**quick ラベルが付与されていても specialist マニフェスト生成・spawn を省略してはならない（MUST NOT）**。quick が影響するのは phase-review checkpoint チェックのスキップのみであり、specialist review の実行には影響しない。`pr-review-manifest.sh` は merge-gate モードで最低限 `worker-code-reviewer` と `worker-security-reviewer` を必ず出力するため、マニフェスト 0 行は自動 PASS としない。クリーンアップは eval 直後に設定した親シェル側 trap で行う。
 
 ### 並列 specialist 実行（MUST: 全 specialist 一括 spawn）
 
@@ -74,14 +74,6 @@ findings が 0 件でも投稿（証跡として「No findings」を記録）。
 ```bash
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-comment-findings
 ```
-
-### Cross-PR AC 検証（retroactive DeltaSpec 対応）
-
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/merge-gate-cross-pr-ac.sh"
-```
-
-`implementation_pr` が設定されている場合、AC 検証の証跡は本 PR diff ではなく参照 PR のマージコミットを根拠とする。merge-gate レポートに `verified_via_pr` フィールドを記録する。
 
 ### checkpoint 統合（MUST）
 

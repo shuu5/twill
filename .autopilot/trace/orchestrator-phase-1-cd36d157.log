@@ -1,0 +1,63 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-04-22T01:56:56Z] orchestrator_pid=2545008 phase=1 started_at=2026-04-22T01:56:56Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #838: Worker 起動
+[orchestrator] Issue #838: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/838-feature-su-observer-skillmd-security-g
+OK: issue-838.json を作成しました (status=running)
+Worker 起動完了: Issue #838 (window=ap-twill-feat-838-feature-su-obse-f2ba2a46, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/838-feature-su-observer-skillmd-security-g)
+[orchestrator] Issue #839: Worker 起動
+[orchestrator] Issue #839: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/839-feature-intervention-catalogmd-permiss
+OK: issue-839.json を作成しました (status=running)
+Worker 起動完了: Issue #839 (window=ap-twill-feat-839-feature-interve-3669de0d, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/839-feature-intervention-catalogmd-permiss)
+[orchestrator] Issue #840: Worker 起動
+[orchestrator] Issue #840: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/840-feature-observation-pattern-catalogmd
+OK: issue-840.json を作成しました (status=running)
+Worker 起動完了: Issue #840 (window=ap-twill-feat-840-feature-observa-f7932192, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/840-feature-observation-pattern-catalogmd)
+[orchestrator] Issue #839: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-839.json を更新しました
+[orchestrator] Issue #840: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-840.json を更新しました
+[orchestrator] Issue #839: WARNING: pr-merge inject — status=running (not merge-ready). Worker chain が all-pass-check 未到達の可能性
+[orchestrator] Issue #839: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-839.json を更新しました
+[orchestrator] Issue #838: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-838.json を更新しました
+[orchestrator] Phase: タイムアウト — 未完了 Issue を failed に変換
+[orchestrator] WARNING: Issue #838 has non-terminal status= after poll. Triggering cleanup.
+[orchestrator] cleanup: Issue #838 — window/branch クリーンアップ
+[orchestrator] WARNING: cleanup_worker for Issue #838 with non-terminal status=. Force-failing.
+ERROR: ファイルが存在しません: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-838.json
+  試したパス: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-838.json
+  bare sibling 候補: /home/shuu5/projects/local-projects/twill/.autopilot/issues/issue-838.json
+  解決策: export AUTOPILOT_DIR=<.autopilot への絶対パス>
+[orchestrator] WARNING: Issue #839 has non-terminal status= after poll. Triggering cleanup.
+[orchestrator] cleanup: Issue #839 — window/branch クリーンアップ
+[orchestrator] WARNING: cleanup_worker for Issue #839 with non-terminal status=. Force-failing.
+ERROR: ファイルが存在しません: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-839.json
+  試したパス: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-839.json
+  bare sibling 候補: /home/shuu5/projects/local-projects/twill/.autopilot/issues/issue-839.json
+  解決策: export AUTOPILOT_DIR=<.autopilot への絶対パス>
+[orchestrator] WARNING: Issue #840 has non-terminal status= after poll. Triggering cleanup.
+[orchestrator] cleanup: Issue #840 — window/branch クリーンアップ
+[orchestrator] WARNING: cleanup_worker for Issue #840 with non-terminal status=. Force-failing.
+ERROR: ファイルが存在しません: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-840.json
+  試したパス: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-840.json
+  bare sibling 候補: /home/shuu5/projects/local-projects/twill/.autopilot/issues/issue-840.json
+  解決策: export AUTOPILOT_DIR=<.autopilot への絶対パス>
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [],
+    "failed": [],
+    "skipped": [
+      838,
+      839,
+      840
+    ]
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

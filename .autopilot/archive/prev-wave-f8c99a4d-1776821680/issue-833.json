@@ -1,0 +1,22 @@
+{
+  "issue": 833,
+  "status": "merge-ready",
+  "branch": "feat/833-tech-debt-pre-bash-refined-label-gates",
+  "pr": 854,
+  "window": "",
+  "started_at": "2026-04-22T01:20:20Z",
+  "updated_at": "2026-04-22T01:29:43Z",
+  "current_step": "merge-gate",
+  "retry_count": 0,
+  "fix_instructions": null,
+  "merged_at": null,
+  "files_changed": [],
+  "failure": null,
+  "implementation_pr": null,
+  "deltaspec_mode": null,
+  "input_waiting_detected": null,
+  "input_waiting_at": null,
+  "is_quick": true,
+  "is_direct": false,
+  "mode": "direct"
+}
