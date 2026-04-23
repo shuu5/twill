@@ -10,14 +10,10 @@
 #     THEN --append-system-prompt に「gh pr merge の直接実行は禁止。マージ権限は Pilot のみ（不変条件 C）」
 #          というテキストが含まれている
 #
-#   Scenario 4: quick ラベルと同時に適用される
-#     WHEN quick ラベル付き Issue で Worker を起動する
-#     THEN merge 禁止コンテキストと quick 指示の両方がシステムプロンプトに注入される
-#
 # Edge cases:
 #   - --context オプションで既存コンテキストがある場合でも merge 禁止が追加される
 #   - merge 禁止テキストが --append-system-prompt として cld に渡される
-#   - quick ラベルなしの通常 Issue でも merge 禁止が注入される（全 Issue 常時注入）
+#   - 全 Issue で merge 禁止が常時注入される
 #
 # 注記:
 #   autopilot-launch.sh は printf '%q' でコンテキスト文字列をシェルエスケープして
@@ -212,110 +208,6 @@ _tmux_cmd_contains() {
 
   assert_success
   _tmux_cmd_contains "gh pr merge"
-}
-
-# ---------------------------------------------------------------------------
-# Scenario 4: quick ラベルと同時に適用される
-# ---------------------------------------------------------------------------
-
-# WHEN quick ラベル付き Issue で Worker を起動する
-# THEN merge 禁止コンテキストと quick 指示の両方がシステムプロンプトに注入される
-@test "merge-context+quick: quick ラベルあり Issue で merge 禁止コンテキストが注入される" {
-  # quick ラベルを返す gh スタブ
-  stub_command "gh" '
-    case "$*" in
-      *"issue view"*"--json labels"*"--jq"*)
-        echo "quick" ;;
-      *)
-        echo "{}" ;;
-    esac
-  '
-
-  _run_launch 42
-
-  assert_success
-  _tmux_cmd_contains "gh pr merge"
-}
-
-@test "merge-context+quick: quick ラベルあり Issue で quick 指示が注入される" {
-  # quick ラベルを返す gh スタブ
-  stub_command "gh" '
-    case "$*" in
-      *"issue view"*"--json labels"*"--jq"*)
-        echo "quick" ;;
-      *)
-        echo "{}" ;;
-    esac
-  '
-
-  _run_launch 42
-
-  assert_success
-  # quick 指示（workflow-test-ready の言及）が含まれること
-  _tmux_cmd_contains "workflow-test-ready"
-}
-
-@test "merge-context+quick: quick ラベルあり Issue で merge 禁止と quick 指示の両方が注入される" {
-  # quick ラベルを返す gh スタブ
-  stub_command "gh" '
-    case "$*" in
-      *"issue view"*"--json labels"*"--jq"*)
-        echo "quick" ;;
-      *)
-        echo "{}" ;;
-    esac
-  '
-
-  _run_launch 42
-
-  assert_success
-
-  # merge 禁止と quick 指示の両方が --append-system-prompt に含まれること
-  _tmux_cmd_contains "gh pr merge"
-  _tmux_cmd_contains "不変条件 C"
-  _tmux_cmd_contains "workflow-test-ready"
-}
-
-# Edge case: quick ラベルなしの通常 Issue でも merge 禁止が注入される
-@test "merge-context+quick: quick ラベルなしでも merge 禁止コンテキストは注入される" {
-  # quick ラベルなし（デフォルト: 空出力）
-  stub_command "gh" '
-    case "$*" in
-      *"issue view"*"--json labels"*"--jq"*)
-        echo "" ;;
-      *)
-        echo "{}" ;;
-    esac
-  '
-
-  _run_launch 42
-
-  assert_success
-  _tmux_cmd_contains "gh pr merge"
-}
-
-# Edge case: quick ラベルなし → quick 指示は注入されない（merge 禁止のみ）
-@test "merge-context+quick: quick ラベルなし → --append-system-prompt に quick 指示は含まれない" {
-  # quick ラベルなし（空返却）
-  stub_command "gh" '
-    case "$*" in
-      *"issue view"*"--json labels"*"--jq"*)
-        echo "" ;;
-      *)
-        echo "{}" ;;
-    esac
-  '
-
-  _run_launch 42
-
-  assert_success
-  local tmux_cmd
-  tmux_cmd=$(_get_tmux_cmd)
-
-  # merge 禁止は含まれる
-  _tmux_cmd_contains "gh pr merge"
-  # quick 指示（workflow-test-readyは実行してはいけません）は含まれない
-  ! echo "$tmux_cmd" | tr -d '\\' | grep -qF "workflow-test-readyは実行してはいけません"
 }
 
 # ---------------------------------------------------------------------------

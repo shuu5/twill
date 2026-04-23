@@ -13,7 +13,6 @@
 #   --jsonl <path>          JSONL パスを直接指定（--issue と排他）
 #   --mode <phase>          pr-review-manifest.sh に渡すモード (default: merge-gate)
 #   --manifest-file <path>  既存 MANIFEST_FILE を再利用（pr-review-manifest.sh 二重呼び出しを回避）
-#   --quick                 FAIL を WARN に降格（quick ラベル用）
 #   --warn-only             常に exit 0（bootstrapping 期間用）
 #   --json                  JSON 形式で出力（default）
 #   --summary               サマリのみ出力
@@ -24,7 +23,7 @@
 #
 # Exit codes:
 #   0 = PASS / WARN
-#   1 = FAIL (missing 非空 かつ strict モード かつ --quick なし かつ --warn-only なし)
+#   1 = FAIL (missing 非空 かつ strict モード かつ --warn-only なし)
 
 set -euo pipefail
 
@@ -40,7 +39,6 @@ ISSUE_NUM=""
 JSONL_PATH=""
 MODE="merge-gate"
 MANIFEST_FILE_ARG=""
-QUICK=false
 WARN_ONLY=false
 OUTPUT_FORMAT="json"
 AUDIT_MODE="${SPECIALIST_AUDIT_MODE:-warn}"
@@ -56,8 +54,6 @@ while [[ $# -gt 0 ]]; do
       MODE="$2"; shift 2 ;;
     --manifest-file)
       MANIFEST_FILE_ARG="$2"; shift 2 ;;
-    --quick)
-      QUICK=true; shift ;;
     --warn-only)
       WARN_ONLY=true; shift ;;
     --json)
@@ -244,7 +240,7 @@ else
   if [[ "$WARN_ONLY" == "true" ]]; then
     STATUS="FAIL"
     EXIT_CODE=0
-  elif [[ "$QUICK" == "true" || "$AUDIT_MODE" == "warn" ]]; then
+  elif [[ "$AUDIT_MODE" == "warn" ]]; then
     STATUS="WARN"
     EXIT_CODE=0
   else

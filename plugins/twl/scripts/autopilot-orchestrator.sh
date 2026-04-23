@@ -836,30 +836,6 @@ _nudge_command_for_pattern() {
   local issue="$2"
   local entry="${3:-_default:${issue}}"
 
-  # quick Issue の場合は test-ready 系 nudge をスキップ
-  local is_quick=""
-  is_quick=$(python3 -m twl.autopilot.state read --type issue --issue "$issue" --field is_quick 2>/dev/null || true)
-  if [[ -z "$is_quick" ]]; then
-    # fallback: gh API で quick ラベルを直接確認
-    # クロスリポ対応: entry から ISSUE_REPO_OWNER/ISSUE_REPO_NAME を解決し --repo フラグを付与
-    resolve_issue_repo_context "$entry"
-    local -a gh_flags=()
-    if [[ -n "$ISSUE_REPO_OWNER" && -n "$ISSUE_REPO_NAME" ]]; then
-      gh_flags+=(--repo "$ISSUE_REPO_OWNER/$ISSUE_REPO_NAME")
-    fi
-    if gh issue view "$issue" "${gh_flags[@]}" --json labels --jq '.labels[].name' 2>/dev/null | grep -qxF "quick"; then
-      is_quick="true"
-    else
-      is_quick="false"
-    fi
-  fi
-
-  if [[ "$is_quick" == "true" ]]; then
-    if echo "$pane_output" | grep -qP "setup chain 完了|workflow-test-ready.*で次に進めます"; then
-      return 1
-    fi
-  fi
-
   if echo "$pane_output" | grep -qP "setup chain 完了"; then
     echo "/twl:workflow-test-ready #${issue}"
   elif echo "$pane_output" | grep -qP ">>> 提案完了"; then

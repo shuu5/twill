@@ -238,29 +238,29 @@ window_name_for_subdir() {
 # =============================================================================
 
 # subdir の IN/policies.json から主要フィールドを抽出する
-# 引数: subdir ref_max_rounds ref_specialists ref_depth ref_quick_flag ref_target_repo
+# 引数: subdir ref_max_rounds ref_specialists ref_depth ref_policy_qflag ref_target_repo
 # ref_* は nameref で書き込む変数名
 _extract_policies_fields() {
   local subdir="$1"
   local -n _pf_max_rounds="$2"
   local -n _pf_specialists="$3"
   local -n _pf_depth="$4"
-  local -n _pf_quick_flag="$5"
+  local -n _pf_policy_qflag="$5"
   local -n _pf_target_repo="$6"
-  _pf_max_rounds="" ; _pf_specialists="" ; _pf_depth="" ; _pf_quick_flag="" ; _pf_target_repo=""
+  _pf_max_rounds="" ; _pf_specialists="" ; _pf_depth="" ; _pf_policy_qflag="" ; _pf_target_repo=""
   if [[ -f "${subdir}/IN/policies.json" ]] && command -v jq >/dev/null 2>&1; then
     _pf_max_rounds="$(jq -r '.max_rounds // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
     _pf_specialists="$(jq -r '(.specialists // []) | join(",")' "${subdir}/IN/policies.json" 2>/dev/null || true)"
     _pf_depth="$(jq -r '.depth // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
-    _pf_quick_flag="$(jq -r '.quick_flag // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
+    _pf_policy_qflag="$(jq -r '.quick_flag // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
     _pf_target_repo="$(jq -r '.target_repo // empty' "${subdir}/IN/policies.json" 2>/dev/null || true)"
   fi
 }
 
 # プロンプトテンポラリファイルを生成して ref_prompt_file に書き込む
-# 引数: subdir max_rounds specialists depth quick_flag target_repo ref_prompt_file
+# 引数: subdir max_rounds specialists depth policy_qflag target_repo ref_prompt_file
 _build_worker_prompt() {
-  local subdir="$1" max_rounds="$2" specialists="$3" depth="$4" quick_flag="$5" target_repo="$6"
+  local subdir="$1" max_rounds="$2" specialists="$3" depth="$4" policy_qflag="$5" target_repo="$6"
   local -n _bwp_prompt_file="$7"
   local workflow_skill="workflow-issue-lifecycle"
   if [[ -f "${subdir}/IN/existing-issue.json" ]]; then
@@ -281,7 +281,7 @@ _build_worker_prompt() {
     "- max_rounds: ${max_rounds}" \
     "- specialists: ${specialists}" \
     "- depth: ${depth}" \
-    "- quick_flag: ${quick_flag}" \
+    "- policy_qflag: ${policy_qflag}" \
     "- target_repo: ${target_repo}" \
     > "$_bwp_prompt_file"
 }
@@ -352,11 +352,11 @@ spawn_session() {
   tmux kill-window -t "$window_name" 2>/dev/null || true
   mkdir -p "${subdir}/OUT"
 
-  local max_rounds="" specialists="" depth="" quick_flag="" target_repo=""
-  _extract_policies_fields "$subdir" max_rounds specialists depth quick_flag target_repo
+  local max_rounds="" specialists="" depth="" policy_qflag="" target_repo=""
+  _extract_policies_fields "$subdir" max_rounds specialists depth policy_qflag target_repo
 
   local prompt_file=""
-  _build_worker_prompt "$subdir" "$max_rounds" "$specialists" "$depth" "$quick_flag" "$target_repo" prompt_file
+  _build_worker_prompt "$subdir" "$max_rounds" "$specialists" "$depth" "$policy_qflag" "$target_repo" prompt_file
 
   # flock 解放（cld-spawn 前）
   exec {lockfd}>&-
