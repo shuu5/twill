@@ -3,7 +3,7 @@
 #
 # workflow-setup の chain step 順序を回帰テストとして凍結する。
 # - 通常 path: init → board-status-update → crg-auto-build → arch-ref →
-#              change-propose → ac-extract
+#              ac-extract
 # - quick path: init → board-status-update → ac-extract → ac-verify
 #   （quick の場合 SKILL.md は workflow-test-ready をスキップし
 #   ac-verify まで実行して停止。merge-gate は workflow-pr-merge が担当。
@@ -22,7 +22,7 @@ teardown() {
   teardown_workflow_scenario_env
 }
 
-@test "workflow-setup: 通常 path で init → board-status-update → crg-auto-build → arch-ref → change-propose → ac-extract の順で実行" {
+@test "workflow-setup: 通常 path で init → board-status-update → crg-auto-build → arch-ref → ac-extract の順で実行" {
   run bash "$PLUGIN_ROOT/skills/workflow-setup/dry-run.sh"
   [ "$status" -eq 0 ]
 
@@ -32,7 +32,6 @@ teardown() {
     board-status-update \
     crg-auto-build \
     arch-ref \
-    change-propose \
     ac-extract
   [ "$status" -eq 0 ]
 }

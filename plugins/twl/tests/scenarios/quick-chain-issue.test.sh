@@ -100,12 +100,6 @@ test_workflow_setup_has_next_step_branch() {
 }
 run_test "workflow-setup SKILL.md が next-step コマンドを使って quick 分岐を機械化している" test_workflow_setup_has_next_step_branch
 
-# Scenario: workflow-setup SKILL.md に change-propose の条件実行の記述がある
-test_workflow_setup_skips_opsx() {
-  assert_file_exists "skills/workflow-setup/SKILL.md" || return 1
-  assert_file_contains "skills/workflow-setup/SKILL.md" "NEXT=change-propose|change-propose.*の場合のみ" || return 1
-}
-run_test "workflow-setup SKILL.md に change-propose の条件実行の記述がある" test_workflow_setup_skips_opsx
 
 # Scenario: workflow-setup SKILL.md に ac-extract の条件実行の記述がある
 test_workflow_setup_skips_ac_extract() {
