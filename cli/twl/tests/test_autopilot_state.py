@@ -594,3 +594,141 @@ class TestStateCLI:
             assert data["override_reason"] == "Emergency bypass merge completed"
         finally:
             os.environ.pop("AUTOPILOT_DIR", None)
+
+
+# ===========================================================================
+# Backward compatibility — old schema (passive migration)
+# ===========================================================================
+
+
+def _create_old_schema_issue(autopilot_dir: Path, issue: str, **extra) -> None:
+    """Create issue JSON with legacy fields that existed before Wave-F cleanup."""
+    data = {
+        "issue": int(issue),
+        "status": "running",
+        "branch": f"feat/{issue}-test",
+        "pr": None,
+        "window": "",
+        "started_at": "2026-04-22T02:06:59Z",
+        "updated_at": "2026-04-22T04:11:14Z",
+        "last_heartbeat_at": "2026-04-22T04:11:14Z",
+        "current_step": "ac-verify",
+        "retry_count": 0,
+        "ac_verify_call_count": 1,
+        "fix_instructions": None,
+        "merged_at": None,
+        "files_changed": [],
+        "failure": None,
+        "implementation_pr": None,
+        "input_waiting_detected": None,
+        "input_waiting_at": None,
+        # Legacy fields removed in Wave-F
+        "is_quick": True,
+        "is_direct": False,
+        "deltaspec_mode": None,
+        "mode": "direct",
+        "change_id": None,
+        "llm_delegated_at": "2026-04-22T11:12:12+09:00",
+        "llm_completed_at": "2026-04-22T11:13:19+09:00",
+    }
+    data.update(extra)
+    file = autopilot_dir / "issues" / f"issue-{issue}.json"
+    file.write_text(json.dumps(data, indent=2))
+
+
+class TestBackwardCompatMigration:
+    """Verify read/write on old-schema JSON (is_quick/is_direct/deltaspec_mode/change_id) does not crash."""
+
+    def test_read_old_schema_full_json(self, state: StateManager, autopilot_dir: Path) -> None:
+        _create_old_schema_issue(autopilot_dir, "841")
+        result = state.read(type_="issue", issue="841")
+        data = json.loads(result)
+        assert data["status"] == "running"
+        assert data["is_quick"] is True
+        assert data["is_direct"] is False
+        assert data["deltaspec_mode"] is None
+
+    def test_read_old_schema_known_field(self, state: StateManager, autopilot_dir: Path) -> None:
+        _create_old_schema_issue(autopilot_dir, "842")
+        assert state.read(type_="issue", issue="842", field="current_step") == "ac-verify"
+
+    def test_read_old_schema_legacy_field_is_quick(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_old_schema_issue(autopilot_dir, "843")
+        assert state.read(type_="issue", issue="843", field="is_quick") == "true"
+
+    def test_read_old_schema_legacy_field_is_direct(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_old_schema_issue(autopilot_dir, "843")
+        assert state.read(type_="issue", issue="843", field="is_direct") == "false"
+
+    def test_read_old_schema_deltaspec_mode_null(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_old_schema_issue(autopilot_dir, "905")
+        # deltaspec_mode=null → _get_nested returns None → empty string
+        assert state.read(type_="issue", issue="905", field="deltaspec_mode") == ""
+
+    def test_read_old_schema_change_id_null(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_old_schema_issue(autopilot_dir, "906")
+        assert state.read(type_="issue", issue="906", field="change_id") == ""
+
+    def test_read_old_schema_mode_field(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_old_schema_issue(autopilot_dir, "907")
+        assert state.read(type_="issue", issue="907", field="mode") == "direct"
+
+    def test_write_to_old_schema_preserves_legacy_fields(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_old_schema_issue(autopilot_dir, "910")
+        state.write(type_="issue", role="worker", issue="910",
+                    sets=["current_step=done"])
+        data = _load_issue(autopilot_dir, "910")
+        assert data["current_step"] == "done"
+        # Legacy fields should still be present (not destroyed)
+        assert "is_quick" in data
+        assert data["is_quick"] is True
+        assert "is_direct" in data
+        assert "deltaspec_mode" in data
+
+    def test_write_status_transition_on_old_schema(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_old_schema_issue(autopilot_dir, "912")
+        state.write(type_="issue", role="worker", issue="912",
+                    sets=["status=merge-ready"])
+        data = _load_issue(autopilot_dir, "912")
+        assert data["status"] == "merge-ready"
+        assert "is_quick" in data
+
+    def test_read_does_not_crash_on_pr_number_field(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        """pr_number was an older variant of pr; reading it should not crash."""
+        _create_old_schema_issue(autopilot_dir, "915", pr_number=935)
+        result = state.read(type_="issue", issue="915")
+        data = json.loads(result)
+        assert data["pr_number"] == 935
+
+    def test_read_unknown_new_field_returns_empty(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_old_schema_issue(autopilot_dir, "913")
+        # A field that never existed returns empty string
+        assert state.read(type_="issue", issue="913", field="nonexistent_v99") == ""
+
+    def test_write_does_not_add_unknown_field_unless_explicitly_set(
+        self, state: StateManager, autopilot_dir: Path
+    ) -> None:
+        _create_old_schema_issue(autopilot_dir, "914")
+        state.write(type_="issue", role="worker", issue="914",
+                    sets=["current_step=board-status-update"])
+        data = _load_issue(autopilot_dir, "914")
+        # new field "nonexistent_v99" should NOT appear (was never set)
+        assert "nonexistent_v99" not in data
