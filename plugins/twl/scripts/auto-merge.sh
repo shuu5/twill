@@ -106,20 +106,6 @@ if [[ "$cwd" == */worktrees/* ]]; then
 fi
 
 # ============================================================
-# Layer 2.5: Quick mode terminal guard (#671)
-# quick mode で current_step=ac-verify の場合、Worker が走り抜けて
-# auto-merge を呼んでも拒否する。merge は workflow-pr-merge が担当。
-# ============================================================
-IS_QUICK=$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$ISSUE_NUM" --field is_quick 2>/dev/null || echo "")
-CURRENT_STEP=$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$ISSUE_NUM" --field current_step 2>/dev/null || echo "")
-if [[ "$IS_QUICK" == "true" && "$CURRENT_STEP" == "ac-verify" ]]; then
-  echo "[auto-merge] GUARD: quick mode terminal step (ac-verify) — auto-merge を拒否 (#671)" >&2
-  echo "[auto-merge] merge は workflow-pr-merge が担当します。" >&2
-  python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready --set "pr=$PR_NUMBER" --set "branch=$BRANCH" 2>/dev/null || true
-  exit 0
-fi
-
-# ============================================================
 # Layer 3: tmux window ガード（autopilot Worker window からの merge を拒否）
 # ============================================================
 CURRENT_WINDOW=$(tmux display-message -p '#W' 2>/dev/null || echo "")

@@ -135,7 +135,7 @@ spawn_session() {
   tmux kill-window -t "$window_name" 2>/dev/null || true
 
   # Issue データ読み込み（環境変数経由で安全に渡す — インライン展開によるインジェクション防止）
-  local issue_body scope_files related_issues is_quick
+  local issue_body scope_files related_issues spec_quick_cand
   issue_body="$(ISSUE_FILE="$issue_file" python3 -c "
 import json, os
 d = json.load(open(os.environ['ISSUE_FILE']))
@@ -151,7 +151,7 @@ import json, os
 d = json.load(open(os.environ['ISSUE_FILE']))
 print('\n'.join(str(x) for x in d.get('related_issues', [])))
 " 2>/dev/null || echo "")"
-  is_quick="$(ISSUE_FILE="$issue_file" python3 -c "
+  spec_quick_cand="$(ISSUE_FILE="$issue_file" python3 -c "
 import json, os
 d = json.load(open(os.environ['ISSUE_FILE']))
 print(str(d.get('is_quick_candidate', False)).lower())
@@ -169,7 +169,7 @@ print(str(d.get('is_quick_candidate', False)).lower())
   printf '- issue_body: %s\n' "$issue_body" >> "$prompt_file"
   printf '- scope_files: %s\n' "$scope_files" >> "$prompt_file"
   printf '- related_issues: %s\n' "$related_issues" >> "$prompt_file"
-  printf '- is_quick_candidate: %s\n' "$is_quick" >> "$prompt_file"
+  printf '- spec_quick_cand: %s\n' "$spec_quick_cand" >> "$prompt_file"
   printf '\n' >> "$prompt_file"
   printf '%s\n' "/twl:issue-spec-review を実行し、全 specialist の結果が揃ったら以下のファイルに結果を書き出して完了してください:" >> "$prompt_file"
   printf '%s\n' "$result_file" >> "$prompt_file"

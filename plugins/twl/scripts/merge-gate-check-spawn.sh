@@ -40,26 +40,15 @@ if [[ -f "$_audit_script" ]]; then
     fi
   fi
 
-  # quick ラベル判定（IS_QUICK 環境変数または .autopilot/issues/issue-N.json 参照）
-  _quick_flag=""
-  if [[ "${IS_QUICK:-false}" == "true" ]]; then
-    _quick_flag="--quick"
-  elif [[ -n "$_issue_num" ]]; then
-    _is_quick=$(python3 -m twl.autopilot.state read --type issue --issue "$_issue_num" --field is_quick 2>/dev/null || echo "false")
-    [[ "$_is_quick" == "true" ]] && _quick_flag="--quick"
-  fi
-
   # --manifest-file を渡して pr-review-manifest.sh の二重呼び出しを回避
   # 配列で引数を構築してワードスプリットを防止
   _manifest_args=()
   [[ -n "${MANIFEST_FILE:-}" && -f "${MANIFEST_FILE:-}" ]] && _manifest_args=(--manifest-file "${MANIFEST_FILE}")
-  _quick_args=()
-  [[ "$_quick_flag" == "--quick" ]] && _quick_args=(--quick)
 
   _audit_exit=0
   if [[ -n "$_issue_num" ]]; then
     bash "$_audit_script" --issue "$_issue_num" --mode merge-gate \
-      "${_manifest_args[@]+"${_manifest_args[@]}"}" "${_quick_args[@]+"${_quick_args[@]}"}" 2>/dev/null || _audit_exit=$?
+      "${_manifest_args[@]+"${_manifest_args[@]}"}" 2>/dev/null || _audit_exit=$?
   else
     echo "WARN: specialist-audit: Issue 番号が解決できないためスキップ" >&2
   fi

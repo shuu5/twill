@@ -165,45 +165,11 @@ record_current_step() {
 # Step 実装
 # =====================================================================
 
-# Issue の quick ラベルを検出する（Issue 番号が正の整数の場合のみ）
+# Issue の labels を取得する（Issue 番号が正の整数の場合のみ）
 fetch_labels() {
   local issue_num="${1:-}"
   [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]] || { echo ""; return 0; }
   gh issue view "$issue_num" --json labels --jq '.labels[].name' 2>/dev/null || echo ""
-}
-
-detect_quick_label() {
-  local issue_num="${1:-}"
-  local labels
-  labels="$(fetch_labels "$issue_num")"
-  if echo "$labels" | grep -qxF "quick"; then
-    echo "true"
-  else
-    echo "false"
-  fi
-}
-
-# --- quick-guard: quick Issue 判定（exit 1 = quick, exit 0 = 非 quick）---
-# state 優先 → detect_quick_label() fallback
-# ブランチから Issue 番号が抽出できない場合は exit 0（保守的）
-step_quick_guard() {
-  local issue_num
-  issue_num="$(resolve_issue_num)"
-  if [[ -z "$issue_num" ]]; then
-    return 0
-  fi
-
-  local is_quick
-  is_quick="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
-
-  if [[ -z "$is_quick" ]]; then
-    is_quick="$(detect_quick_label "$issue_num")"
-  fi
-
-  if [[ "$is_quick" == "true" ]]; then
-    return 1
-  fi
-  return 0
 }
 
 # --- autopilot-detect: autopilot 状態を eval 可能な key=value 形式で出力 ---
@@ -223,26 +189,6 @@ step_autopilot_detect() {
   fi
 }
 
-# --- quick-detect: quick Issue 状態を eval 可能な key=value 形式で出力 ---
-step_quick_detect() {
-  local issue_num
-  issue_num="$(resolve_issue_num)"
-  if [[ -z "$issue_num" ]]; then
-    echo "IS_QUICK=false"
-    return 0
-  fi
-  local is_quick
-  is_quick="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
-  if [[ -z "$is_quick" ]]; then
-    is_quick="$(detect_quick_label "$issue_num")"
-  fi
-  if [[ "$is_quick" == "true" ]]; then
-    echo "IS_QUICK=true"
-  else
-    echo "IS_QUICK=false"
-  fi
-}
-
 # --- init: 開発状態判定 ---
 
 # Usage: step_init [issue_num]
@@ -254,38 +200,33 @@ step_init() {
 
   local _labels
   _labels="$(fetch_labels "$issue_num")"
-  local is_quick
-  is_quick="$(echo "$_labels" | grep -qxF "quick" && echo "true" || echo "false")"
   local is_direct
   is_direct="$(echo "$_labels" | grep -qxF "scope/direct" && echo "true" || echo "false")"
 
-  # is_quick と is_direct を state に永続化（state ファイルが存在する場合のみ）
+  # is_direct を state に永続化（state ファイルが存在する場合のみ）
   if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
-    python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "is_quick=$is_quick" 2>/dev/null || true
     python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "is_direct=$is_direct" 2>/dev/null || true
   fi
 
   # ブランチ判定
   if [[ "$branch" == "main" || "$branch" == "master" ]]; then
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"worktree","branch":$branch,"is_quick":$is_quick}'
-    ok "init" "recommended_action=worktree (branch=$branch, is_quick=$is_quick)"
+    jq -n --arg branch "$branch" '{"recommended_action":"worktree","branch":$branch}'
+    ok "init" "recommended_action=worktree (branch=$branch)"
     return 0
   fi
 
-  # quick or scope/direct ラベル → direct
-  if [[ "$is_quick" == "true" || "$is_direct" == "true" ]]; then
-    local reason
-    [[ "$is_quick" == "true" ]] && reason="quick" || reason="scope/direct label"
-    jq -n --arg branch "$branch" --argjson is_quick "$is_quick" --argjson is_direct "$is_direct" '{"recommended_action":"direct","branch":$branch,"is_quick":$is_quick,"is_direct":$is_direct}'
-    ok "init" "recommended_action=direct ($reason, is_quick=$is_quick)"
+  # scope/direct ラベル → direct
+  if [[ "$is_direct" == "true" ]]; then
+    jq -n --arg branch "$branch" --argjson is_direct "$is_direct" '{"recommended_action":"direct","branch":$branch,"is_direct":$is_direct}'
+    ok "init" "recommended_action=direct (scope/direct label)"
     if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
       python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --role worker --set "mode=direct" 2>/dev/null || true
     fi
     return 0
   fi
 
-  jq -n --arg branch "$branch" --argjson is_quick "$is_quick" '{"recommended_action":"implement","branch":$branch,"is_quick":$is_quick}'
-  ok "init" "recommended_action=implement (branch=$branch, is_quick=$is_quick)"
+  jq -n --arg branch "$branch" '{"recommended_action":"implement","branch":$branch}'
+  ok "init" "recommended_action=implement (branch=$branch)"
 }
 
 # --- worktree-create: Python モジュールラッパー ---
@@ -540,7 +481,7 @@ step_arch_ref() {
   fi
 }
 
-# --- next-step: is_quick と current_step から次ステップ名を返す ---
+# --- next-step: current_step から次ステップ名を返す ---
 # Usage: step_next_step <issue_num> <current_step> [--json]
 # stdout に次ステップ名を出力（全完了時は "done"）
 # --json フラグ: {"step":"<name>","type":"<runner|llm>","command":"<path>"} 形式で出力
@@ -557,10 +498,10 @@ step_next_step() {
     return 1
   fi
 
-  # is_quick を state から取得（存在しない場合は false）
-  local is_quick
-  is_quick="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "")"
-  [[ "$is_quick" == "true" ]] || is_quick="false"
+  # current_step が引数未指定の場合は state から取得
+  if [[ -z "$current_step" ]]; then
+    current_step="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field current_step 2>/dev/null || echo "")"
+  fi
 
   # mode を state から取得（存在しない場合は空文字列）
   local mode
@@ -570,10 +511,6 @@ step_next_step() {
   local found=false
   for step in "${CHAIN_STEPS[@]}"; do
     if [[ "$found" == "true" ]]; then
-      # is_quick=true かつ QUICK_SKIP_STEPS に含まれるステップはスキップ
-      if [[ "$is_quick" == "true" ]] && printf '%s\n' "${QUICK_SKIP_STEPS[@]}" | grep -qxF "$step"; then
-        continue
-      fi
       # mode=direct かつ DIRECT_SKIP_STEPS に含まれるステップはスキップ
       if [[ "$mode" == "direct" ]] && printf '%s\n' "${DIRECT_SKIP_STEPS[@]}" | grep -qxF "$step"; then
         continue
@@ -728,29 +665,18 @@ step_chain_status() {
     --autopilot-dir "$(resolve_autopilot_dir)" \
     --type issue --issue "$issue_num" --field current_step 2>/dev/null || echo "")"
 
-  local is_quick
-  is_quick="$(python3 -m twl.autopilot.state read \
-    --autopilot-dir "$(resolve_autopilot_dir)" \
-    --type issue --issue "$issue_num" --field is_quick 2>/dev/null || echo "false")"
-  [[ "$is_quick" == "true" ]] || is_quick="false"
-
   local mode
   mode="$(python3 -m twl.autopilot.state read \
     --autopilot-dir "$(resolve_autopilot_dir)" \
     --type issue --issue "$issue_num" --field mode 2>/dev/null || echo "")"
 
-  echo "chain-status: Issue #${issue_num} (is_quick=${is_quick}, mode=${mode:-none}, current=${current_step:-none})"
+  echo "chain-status: Issue #${issue_num} (mode=${mode:-none}, current=${current_step:-none})"
   echo "---"
 
   local found_current=false
   for step in "${CHAIN_STEPS[@]}"; do
     local dispatch_mode="${CHAIN_STEP_DISPATCH[$step]:-runner}"
     local type_label="[${dispatch_mode}]"
-
-    if [[ "$is_quick" == "true" ]] && printf '%s\n' "${QUICK_SKIP_STEPS[@]}" | grep -qxF "$step"; then
-      echo "  ⊘ ${step} ${type_label} (skipped/quick)"
-      continue
-    fi
 
     if [[ "$mode" == "direct" ]] && printf '%s\n' "${DIRECT_SKIP_STEPS[@]}" | grep -qxF "$step"; then
       echo "  ⊘ ${step} ${type_label} (skipped/direct)"
@@ -1371,35 +1297,10 @@ main() {
     echo "Usage: chain-runner.sh [--trace <path>] <step-name> [args...]" >&2
     echo "Steps: init, worktree-create, board-status-update, project-board-status-update, board-archive," >&2
     echo "       ac-extract, arch-ref, next-step, ts-preflight, pr-test, ac-verify," >&2
-    echo "       all-pass-check, pr-cycle-report, auto-merge, check" >&2
+    echo "       all-pass-check, pr-cycle-report, auto-merge, check, autopilot-detect" >&2
     exit 1
   fi
   shift
-
-  # ============================================================
-  # Quick mode terminal guard (#671)
-  # ac-verify が terminal step (quick mode)。以降の merge 系ステップは
-  # workflow-pr-merge の責務。Worker が走り抜けても機械的に拒否する。
-  # ============================================================
-  local _post_ac_verify_steps="all-pass-check|auto-merge|pr-cycle-report|pr-comment-findings|pr-comment-fix-summary|pr-comment-final"
-  if [[ "$step" =~ ^($_post_ac_verify_steps)$ ]]; then
-    local _issue_num _is_quick _current_step
-    _issue_num="$(resolve_issue_num 2>/dev/null || echo "")"
-    if [[ -n "$_issue_num" ]]; then
-      _is_quick=$(python3 -m twl.autopilot.state read \
-        --autopilot-dir "$(resolve_autopilot_dir 2>/dev/null || echo ".autopilot")" \
-        --type issue --issue "$_issue_num" --field is_quick 2>/dev/null || echo "")
-      _current_step=$(python3 -m twl.autopilot.state read \
-        --autopilot-dir "$(resolve_autopilot_dir 2>/dev/null || echo ".autopilot")" \
-        --type issue --issue "$_issue_num" --field current_step 2>/dev/null || echo "")
-      if [[ "$_is_quick" == "true" && "$_current_step" == "ac-verify" ]]; then
-        echo "[chain-runner] GUARD: quick mode terminal step (ac-verify) を超えるステップ '$step' を拒否 (#671)" >&2
-        echo "[chain-runner] merge 系ステップは workflow-pr-merge が担当します。ここで停止してください。" >&2
-        trace_event "$step" "quick-terminal-guard-blocked"
-        return 0
-      fi
-    fi
-  fi
 
   trace_event "$step" "start"
 
@@ -1433,9 +1334,7 @@ main() {
     pr-comment-fix-summary) step_pr_comment_fix_summary "$@" ;;
     pr-comment-final)    step_pr_comment_final "$@" ;;
     check)               step_check "$@" ;;
-    quick-guard)         step_quick_guard "$@" ;;
     autopilot-detect)    step_autopilot_detect "$@" ;;
-    quick-detect)        step_quick_detect "$@" ;;
     resolve-issue-num)   resolve_issue_num ;;
     *)
       echo "ERROR: 未知のステップ: $step" >&2
@@ -1443,7 +1342,7 @@ main() {
       echo "         board-archive, ac-extract, arch-ref, next-step, prompt-compliance, ts-preflight," >&2
       echo "         phase-review, scope-judge, pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge," >&2
       echo "         pr-comment-findings, pr-comment-fix-summary, pr-comment-final, check," >&2
-      echo "         quick-guard, autopilot-detect, quick-detect, resolve-issue-num," >&2
+      echo "         autopilot-detect, resolve-issue-num," >&2
       echo "         dispatch-info, llm-delegate, llm-complete, chain-status" >&2
       exit 1
       ;;
