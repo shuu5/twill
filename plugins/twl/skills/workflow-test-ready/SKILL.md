@@ -18,6 +18,19 @@ maxTurns: 30
 
 workflow-setup の後に呼び出す。`CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"` として使用。
 
+## Worker TDD mental model（MUST READ）
+
+この workflow は TDD の RED フェーズを確立する。Worker はこのモデルを理解した上で実装に進むこと。
+
+- **RED**: AC から生成したテストが fail する状態は **正常**。これが実装の起点。
+- **GREEN**: Worker が実装し、全テストを PASS させる。
+- **REFACTOR**: PASS 維持のまま品質を向上させる（optional）。
+
+**禁止事項（MUST NOT）**:
+- テストの削除
+- assertion を弱める（pass しやすいよう条件を緩める）
+- 全テストが PASS している状態で実装を飛ばして進む
+
 ## chain 実行指示（MUST — 全ステップ順に実行。途中停止禁止）
 
 ### 前提: 前 workflow コンテキスト復元
@@ -30,17 +43,23 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 [[ -n "$ISSUE_NUM" && -f "$CONTEXT_FILE" ]] && echo "=== 前 workflow コンテキスト ===" && cat "$CONTEXT_FILE"
 ```
 
-### Quick Guard
+### Step 1: test-scaffold（AC-based）
+
+`bash "$CR" llm-delegate "test-scaffold" "$ISSUE_NUM"` を実行し、`commands/test-scaffold.md` を Read → 実行。
+
+AC-based test scaffold の入力:
+- `${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT}/.dev-session}/01.5-ac-checklist.md`（不在は WARN のみ）
+- Issue body の `## AC` / `## Acceptance Criteria` 節
+
+出力: test ファイル（pytest/vitest/testthat）+ `ac-test-mapping.yaml`（AC 項目 → test path マッピング）
+
+test-scaffold 完了後、test-first guard を実行:
 ```bash
-bash "$CR" quick-guard || { echo "quick Issue — test-ready スキップ"; exit 0; }
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/tdd-red-guard.sh"
 ```
-quick なら終了。非 quick → Step 1 へ。
+guard 失敗（テスト未生成 or 全 PASS）の場合は停止して報告。re-scaffold または実装のやり直しが必要。
 
-### Step 1: テスト生成（LLM 判断）
-実装コードが存在し、テストが未作成のとき:
-- a. `/twl:test-scaffold --type=unit --coverage=edge-cases`
-
-条件不成立 or テスト対象コードなし → スキップ理由を報告。**テスト生成の独断スキップ禁止。**
+`bash "$CR" llm-complete "test-scaffold" "$ISSUE_NUM"` を呼ぶ。
 
 ### Step 2: check 実行
 `bash "$CR" check` → CRITICAL FAIL あれば報告して停止、なければ遷移へ。

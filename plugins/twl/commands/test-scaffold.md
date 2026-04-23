@@ -1,75 +1,63 @@
 ---
 type: composite
-tools: [Bash, Agent, Skill, Task, Read]
+tools: [Bash, Agent, Read]
 effort: medium
-maxTurns: 30
+maxTurns: 20
 ---
-# テスト生成（統合）
+# テスト生成（AC-based）
 
-テスト生成を統合管理する composite コマンド。
-Scenario 種別に応じて specialist を適切に呼び出し。
+AC チェックリストを入力に、TDD RED フェーズ用テストを生成する。
 
-## 使用方法
+## 入力
 
-```
-/twl:test-scaffold [--type=<type>] [--coverage=<level>] [--e2e-mode=<mode>]
-```
-
-| オプション | 値 | デフォルト |
-|-----------|-----|----------|
-| `--type` | `unit`, `e2e`, `llm-eval`, `all` | `all` |
-| `--coverage` | `happy-path`, `edge-cases` | type 依存 |
-| `--e2e-mode` | `mock`, `deploy`, `auto` | `auto` |
+1. `${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT}/.dev-session}/01.5-ac-checklist.md` — ac-extract が生成した AC 一覧
+2. Issue body の `## AC` / `## Acceptance Criteria` 節（01.5-ac-checklist.md 不在時のフォールバック）
+3. 実装対象ファイル（Issue body / context から特定）
 
 ## 実行フロー
 
-### 1. Scenario 解析
+### Step 1: AC 読み込み
 
-`tests/` 配下の Scenario ファイルを確認し分類:
-
-| キーワード | 分類 |
-|-----------|------|
-| `LLM_CRITERIA:` ブロックを含む | LLM-eval テスト |
-| `E2E` `Playwright` `browser` | E2E テスト |
-| `GIVEN the application is running` | E2E テスト |
-| `WHEN user clicks` `WHEN user navigates` | E2E テスト |
-| それ以外 | Unit/Integration テスト |
-
-**優先順位**: `LLM_CRITERIA:` 検出が最優先。
-
-### 2. Unit/Integration テスト生成
-
-Unit/Integration Scenario が検出された場合、AC に基づいてテストを直接生成する。
-
-### 3. E2E テスト生成
-
-E2E Scenario が検出された場合:
-
-#### E2E モード判定
-
-| 指定値 | 動作 |
-|--------|------|
-| `mock` | モックモード（`page.route()` + `route.fulfill()`） |
-| `deploy` | デプロイモード（実バックエンド通信、5層検証） |
-| `auto` | playwright.config.ts の webServer 設定で自動判定 |
-
-```
-Task(subagent_type="twl:twl:e2e-generate", prompt="--e2e-mode=<mock|deploy>...")
+```bash
+SNAPSHOT_DIR="${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT}/.dev-session}"
+AC_FILE="${SNAPSHOT_DIR}/01.5-ac-checklist.md"
+if [[ -f "$AC_FILE" ]]; then
+  cat "$AC_FILE"
+else
+  echo "WARN: AC チェックリスト未検出 ($AC_FILE) — Issue body から AC を直接読む"
+fi
 ```
 
-## specialist 呼び出し（MUST）
+### Step 2: ac-scaffold-tests agent 呼び出し
 
-specialist は **Task tool** で呼び出す。Skill tool は使用不可。
+`agents/ac-scaffold-tests.md` を Read して、AC リストを入力に agent を実行する。
 
-**specialist 未実装時の fallback**: `twl:twl:e2e-generate` の subagent_type が利用不可の場合、`general-purpose` Agent として同等のプロンプトを渡して実行する。
+Agent への引き渡し情報:
+- AC 項目リスト（01.5-ac-checklist.md または Issue body から抽出）
+- 実装対象ファイルパス
+- テストフレームワーク（既存テストから自動推定: pytest/vitest/testthat）
+
+### Step 3: 出力確認
+
+agent 実行後、以下が生成されていることを確認:
+- test ファイル（1 AC 項目 = 1 RED test が原則）
+- `ac-test-mapping.yaml`（AC 番号 → test file path + test name のマッピング）
+
+`ac-test-mapping.yaml` の形式:
+```yaml
+mappings:
+  - ac_index: 1
+    ac_text: "..."
+    test_file: "tests/test_foo.py"
+    test_name: "test_ac1_..."
+  - ac_index: 2
+    ac_text: "..."
+    test_file: "tests/test_foo.py"
+    test_name: "test_ac2_..."
+```
 
 ## 禁止事項（MUST NOT）
 
-- Skill tool で specialist を呼び出してはならない
-- E2E と Unit/Integration specialist を並列呼び出ししてはならない（順次実行）
-
-## 後方互換（MUST）
-
-`--e2e-mode=integration` 指定時:
-1. 警告表示: `--e2e-mode=integration は非推奨。deploy モードとして実行します`
-2. `--e2e-mode=deploy` に変換して実行
+- deltaspec/changes/ を参照してはならない
+- テスト生成をスキップしてはならない（対象コードなし以外の独断スキップ禁止）
+- 既存テストを削除・弱化してはならない
