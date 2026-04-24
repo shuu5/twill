@@ -30,8 +30,12 @@ def test_ac2_status_proposed_and_five_layers(adr_text: str):
     # AC: Status=Proposed かつ Decision セクションに 5 レイヤーの多層防御を明記する
     assert "**Status**: Proposed" in adr_text or "Status**: Proposed" in adr_text, \
         "Status が Proposed でない"
+    decision_match = re.search(r"## Decision\n(.*?)(?=\n## |\Z)", adr_text, re.DOTALL)
+    assert decision_match, "Decision セクションが見当たらない"
+    decision_text = decision_match.group(1)
     for i in range(1, 6):
-        assert str(i) in adr_text, f"Decision セクションにレイヤー {i} が見当たらない"
+        assert re.search(rf"^{i}\.", decision_text, re.MULTILINE), \
+            f"Decision セクションにレイヤー {i} の番号付きリスト項目が見当たらない"
 
 
 def test_ac3_context_mentions_adr001_and_919(adr_text: str):
@@ -43,8 +47,7 @@ def test_ac3_context_mentions_adr001_and_919(adr_text: str):
 def test_ac4_consequences_chain_and_emergency(adr_text: str):
     # AC: Consequences にテスト時も chain 正規 flow を強制する旨、Emergency bypass は ADR-001 の例外条項に従う旨を記載する
     assert "chain" in adr_text.lower(), "Consequences に chain 正規 flow の記述がない"
-    assert "Emergency" in adr_text or "emergency" in adr_text.lower(), \
-        "Consequences に Emergency bypass の記述がない"
+    assert "emergency" in adr_text.lower(), "Consequences に Emergency bypass の記述がない"
     assert "ADR-001" in adr_text, "Consequences に ADR-001 の例外条項への言及がない"
 
 
