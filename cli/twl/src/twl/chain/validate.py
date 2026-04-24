@@ -602,8 +602,8 @@ def handle_chain_validate_subcommand(argv: list[str]) -> int:
     if args.integrity:
         from twl.chain.integrity import check_deps_integrity
         di_errors, di_warnings = check_deps_integrity(plugin_root)
-        criticals.extend(f"[deps-integrity] {e}" for e in di_errors)
-        warnings.extend(f"[deps-integrity] {w}" for w in di_warnings)
+        criticals = criticals + [f"[deps-integrity] {e}" for e in di_errors]
+        warnings = warnings + [f"[deps-integrity] {w}" for w in di_warnings]
 
     if args.format == 'json':
         print(json.dumps({
