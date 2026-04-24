@@ -225,6 +225,13 @@ step_init() {
     return 0
   fi
 
+  # AC2: export SNAPSHOT_DIR per-issue（step_init で確定: SSOT）
+  if [[ -n "$issue_num" ]] && [[ "$issue_num" =~ ^[0-9]+$ ]]; then
+    local root
+    root="$(resolve_project_root)"
+    export SNAPSHOT_DIR="$root/.dev-session/issue-${issue_num}"
+  fi
+
   jq -n --arg branch "$branch" '{"recommended_action":"implement","branch":$branch}'
   ok "init" "recommended_action=implement (branch=$branch)"
 }
@@ -397,7 +404,7 @@ step_ac_extract() {
   if [[ -z "$snapshot_dir" ]]; then
     local root
     root="$(resolve_project_root)"
-    snapshot_dir="$root/.dev-session"
+    snapshot_dir="$root/.dev-session/issue-${issue_num}"
   fi
   mkdir -p "$snapshot_dir"
 

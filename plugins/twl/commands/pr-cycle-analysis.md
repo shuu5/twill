@@ -34,9 +34,7 @@ PR-cycle 完了後のセッションスナップショットを分析し、dev p
 ### Step 1: スナップショット取得
 
 ```bash
-if [ -z "${SNAPSHOT_DIR}" ]; then
-  SNAPSHOT_DIR=$(find /tmp -maxdepth 1 -name 'dev-pr-cycle-*' -type d -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2)
-fi
+SNAPSHOT_DIR="${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${ISSUE_NUM:-unknown}}"
 ```
 
 ### Step 2: 4 カテゴリ分析

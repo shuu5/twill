@@ -45,6 +45,38 @@ for test_file in "${SCRIPT_DIR}"/scenarios/*.test.sh; do
   fi
 done
 
+# ---------------------------------------------------------------------------
+# bats tests: plugins/twl/tests/bats/scripts/*.bats
+# ---------------------------------------------------------------------------
+BATS_DIR="${SCRIPT_DIR}/bats/scripts"
+if [[ -d "$BATS_DIR" ]] && command -v bats &>/dev/null; then
+  echo ""
+  echo ">>> Running: bats scripts"
+  echo "---------------------------------------------"
+
+  set +e
+  bats_output=$(bats "$BATS_DIR" 2>&1)
+  bats_exit=$?
+  set -e
+
+  echo "$bats_output"
+
+  bats_pass=$(echo "$bats_output" | grep -oP '^\d+(?= tests passed)' | head -1 || echo "0")
+  bats_fail=$(echo "$bats_output" | grep -c '^not ok ' || echo "0")
+  bats_ok=$(echo "$bats_output" | grep -c '^ok ' || echo "0")
+  if [[ -z "$bats_pass" ]]; then
+    bats_pass="$bats_ok"
+  fi
+  TOTAL_PASS=$((TOTAL_PASS + bats_pass))
+  TOTAL_FAIL=$((TOTAL_FAIL + bats_fail))
+
+  if [[ $bats_exit -ne 0 ]]; then
+    EXIT_CODE=1
+  fi
+elif [[ -d "$BATS_DIR" ]]; then
+  echo "WARN: bats not found in PATH — skipping bats tests in $BATS_DIR" >&2
+fi
+
 echo ""
 echo "============================================="
 echo "TOTAL: ${TOTAL_PASS} passed, ${TOTAL_FAIL} failed, ${TOTAL_SKIP} skipped"

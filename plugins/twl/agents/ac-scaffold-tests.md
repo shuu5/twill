@@ -17,7 +17,7 @@ AC チェックリストを入力に、TDD RED フェーズ用テストスタブ
 
 ## 入力（MUST READ）
 
-1. 渡された AC テキストまたは `${SNAPSHOT_DIR}/01.5-ac-checklist.md`
+1. 渡された AC テキストまたは `${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${ISSUE_NUM:-unknown}}/01.5-ac-checklist.md`
 2. 実装対象ファイル（Glob/Grep で特定）
 3. 既存テストファイル（テストフレームワーク推定に使用）
 

@@ -19,7 +19,7 @@ AC チェックリストを入力に、TDD RED フェーズ用テストを生成
 ### Step 1: AC 読み込み
 
 ```bash
-SNAPSHOT_DIR="${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT}/.dev-session}"
+SNAPSHOT_DIR="${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${ISSUE_NUM:-unknown}}"
 AC_FILE="${SNAPSHOT_DIR}/01.5-ac-checklist.md"
 if [[ -f "$AC_FILE" ]]; then
   cat "$AC_FILE"

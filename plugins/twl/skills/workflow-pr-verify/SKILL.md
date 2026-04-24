@@ -93,7 +93,7 @@ chain-runner はマーカー（current_step 記録）のみ実行する。続け
 `commands/ac-verify.md` を Read → 実行ロジックに従い AC checklist と PR diff・pr-test
 checkpoint を照合し、`python3 -m twl.autopilot.checkpoint write --step ac-verify ...`
 で結果を永続化すること。前提: workflow-setup の ac-extract が済んでおり
-`${SNAPSHOT_DIR}/01.5-ac-checklist.md` が存在すること（不在時は WARN で抜ける）。
+`${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${ISSUE_NUM:-unknown}}/01.5-ac-checklist.md` が存在すること（不在時は WARN で抜ける）。
 
 
 ## 完了後の遷移（meta chain 定義から自動生成）

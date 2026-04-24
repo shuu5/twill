@@ -33,7 +33,7 @@ Task(subagent_type="twl:e2e-quality", prompt="E2E品質ゲート判定: ...")
 
 ### Step 1.5: deploy E2E フラグ確認
 
-SNAPSHOT_DIR から `01.6-deploy-e2e-flag` を読み取り、deploy E2E の必要性を判定:
+`${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${ISSUE_NUM:-unknown}}` から `01.6-deploy-e2e-flag` を読み取り、deploy E2E の必要性を判定:
 
 - `DEPLOY_E2E_REQUIRED=true`: deploy E2E を追加実行
 - `DEPLOY_E2E_REQUIRED=false` またはファイルなし: 従来どおり
