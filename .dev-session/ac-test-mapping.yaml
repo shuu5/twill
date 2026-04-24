@@ -1,0 +1,65 @@
+mappings:
+  - ac_index: 1
+    ac_text: "S1: spawn-controller.sh co-autopilot <p> --with-chain --issue N 実行時、stderr に WARN: 接頭辞を持つメッセージが出力され、exit code は 0 を維持"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S1: --with-chain --issue N は exit code 0 を維持する"
+
+  - ac_index: 2
+    ac_text: "S1: WARN message に (a) skill bypass キーワードを含む"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S1: WARN メッセージに 'skill bypass' キーワードが含まれる"
+
+  - ac_index: 3
+    ac_text: "S1: WARN message に (b) 正規運用例 spawn-controller.sh co-autopilot <prompt>（option 無し）を含む"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S1: WARN メッセージに正規運用例 'spawn-controller.sh co-autopilot' が含まれる"
+
+  - ac_index: 4
+    ac_text: "S1: WARN message に (c) pitfalls-catalog.md §13.5 参照リンクを含む"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S1: WARN メッセージに 'pitfalls-catalog.md §13.5' 参照リンクが含まれる"
+
+  - ac_index: 5
+    ac_text: "S2: pitfalls-catalog.md §13.5 行が追加され、observer が --with-chain --issue N で Issue 毎に Worker を直接 spawn pitfall が明記されている"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S2: pitfalls-catalog.md に §13.5 セクションが存在する"
+
+  - ac_index: 6
+    ac_text: "S2: §13.5 に 1 Issue = 1 Pilot 錯覚 pitfall（--with-chain --issue N 誤用）が明記されている"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S2: §13.5 に 'skill bypass' または '--with-chain' 誤用 pitfall が明記されている"
+
+  - ac_index: 7
+    ac_text: "S2: §13 冒頭の経路 table に A': spawn-controller.sh --with-chain（skill bypass 副作用）行が追加されている"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S2: §13 経路 table に A': --with-chain 行が追加されている"
+
+  - ac_index: 8
+    ac_text: "S3: ADR-026-spawn-syntax-discipline.md が新規作成されている"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S3: ADR-026-spawn-syntax-discipline.md が存在する"
+
+  - ac_index: 9
+    ac_text: "S3: ADR-026 の Context に 14 PR skip incident (#923/#925-#937) を記載"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S3: ADR-026 の Context に 14 PR skip incident が記載されている"
+
+  - ac_index: 10
+    ac_text: "S3: ADR-026 の Decision に WARN で誤用防止、後方互換のため exit code 不変を記載"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S3: ADR-026 の Decision に WARN 誤用防止と exit code 不変が記載されている"
+
+  - ac_index: 11
+    ac_text: "S3: ADR-026 の Consequences に rename/deprecate は Phase AB 以降で再評価（本 Issue scope 外）を記載"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S3: ADR-026 の Consequences に rename/deprecate は Phase AB 以降が記載されている"
+
+  - ac_index: 12
+    ac_text: "S4: su-observer/SKILL.md L105-125 節に「1 Pilot = 複数 Issue が正規運用」MUST が追加されている"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S4: SKILL.md に '1 Pilot = 複数 Issue が正規運用' MUST が追加されている"
+
+  - ac_index: 13
+    ac_text: "S4: su-observer/SKILL.md L105-125 節に「--with-chain --issue N 単独使用禁止」MUST が追加されている"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-with-chain-warn.bats"
+    test_name: "S4: SKILL.md に '--with-chain --issue N 単独使用禁止' MUST が追加されている"
