@@ -42,8 +42,8 @@ su-observer が繰り返し踏み続ける落とし穴の集積。起動時に S
 |---|---------|------|
 | 2.1 | inject 後に Claude Code が "Press up to edit queued messages" 状態で未送信停滞 | inject 後 5-10 秒で `tmux capture-pane -t <win> -p -S -3 \| grep -q "Press up"` → 残留なら `tmux send-keys -t <win> Enter` |
 | 2.2 | `session-comm.sh inject -l` は literal 送信のため Tab/Enter 特殊キーを解釈しない | multiSelect UI では数字 inject 後に `tmux send-keys -t <win> Tab` / `Enter` を明示送信 |
-| 2.3 | 質問内容を読まずに inject してしまう（「Phase 進んだろう」推測注入） | **キャプチャで質問を読めないなら inject 禁止（MUST NOT）**。pipe-pane log → capture-pane -S -500 → Layer 2 ユーザーエスカレート の段階的 fallback |
-| 2.4 | AskUserQuestion の回答形式は `[A]/[B]/[C]` ではなく **番号（"1", "2"）またはメニュー項目テキスト** | pipe-pane log を ANSI strip して `Enter.?to.?select` の周辺を読み、番号 inject |
+| 2.3 | 質問内容を読まずに inject してしまう（「Phase 進んだろう」推測注入） | **キャプチャで質問を読めないなら inject 禁止（MUST NOT）**。pipe-pane log → capture-pane -S -500 → Layer 2 ユーザーエスカレート の段階的 fallback。**variant: AskUserQuestion（数字選択 UI）に generic 文字列を inject → no-op（§2.4）** — 観測した pane 内容に番号付きメニューが含まれる場合は「処理を続行してください。」等の文字列を inject してはならない |
+| 2.4 | AskUserQuestion の回答形式は `[A]/[B]/[C]` ではなく **番号（"1", "2"）またはメニュー項目テキスト** | pipe-pane log を ANSI strip して `Enter.?to.?select` の周辺を読み、番号 inject。**orchestrator 実装側の責務**: `tmux capture-pane -p -S -50` で pane 末尾を取得 → 選択肢テキストを parse → deny-pattern `(?i)(delete\|remove\|reset\|destroy\|drop\|wipe\|purge\|truncate\|force\|kill\|terminate)` に該当しない最小番号を inject。parse 失敗または全選択肢が deny-pattern の場合は `reason=unclassified_askuserquestion` で failed 化（inject を試みない） |
 
 ---
 

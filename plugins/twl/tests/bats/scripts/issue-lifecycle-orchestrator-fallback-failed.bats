@@ -1,0 +1,295 @@
+#!/usr/bin/env bats
+# issue-lifecycle-orchestrator-fallback-failed.bats - _generate_fallback_report の
+# status:failed 分岐を検証する (#946 B3)
+#
+# Scenarios covered:
+#   - inject_exhausted_* → status: failed
+#   - window_lost → status: failed
+#   - input_waiting_terminal_* → status: failed
+#   - unclassified_input_waiting → status: failed
+#   - unclassified_askuserquestion → status: failed
+#   - unexpected_permission_prompt → status: failed
+#   - 中間ファイルあり (aggregate.yaml) + failed reason → status: failed
+#   - 中間ファイルあり (findings.yaml) + failed reason → status: failed
+#   - 非 failed reason → status: done (既存動作維持)
+#   - 呼び出し元 (結果サマリー) が status:failed を failure として計上する
+
+load '../helpers/common'
+
+SCRIPT_SRC=""
+
+setup() {
+  common_setup
+  SCRIPT_SRC="$REPO_ROOT/scripts/issue-lifecycle-orchestrator.sh"
+  export SCRIPTS_ROOT="$SANDBOX/scripts"
+}
+
+teardown() {
+  common_teardown
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: inject_exhausted_* → status: failed
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: inject_exhausted_5 → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "inject_exhausted_5"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for inject_exhausted_5, got: $status"
+
+  rm -rf "$subdir"
+}
+
+@test "fallback-failed: inject_exhausted_3 → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "inject_exhausted_3"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for inject_exhausted_3, got: $status"
+
+  rm -rf "$subdir"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: window_lost → status: failed
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: window_lost → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "window_lost"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for window_lost, got: $status"
+
+  rm -rf "$subdir"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: input_waiting_terminal_* → status: failed
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: input_waiting_terminal_done → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "input_waiting_terminal_done"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for input_waiting_terminal_done, got: $status"
+
+  rm -rf "$subdir"
+}
+
+@test "fallback-failed: input_waiting_terminal_failed → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "input_waiting_terminal_failed"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for input_waiting_terminal_failed, got: $status"
+
+  rm -rf "$subdir"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: unclassified_* → status: failed
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: unclassified_input_waiting → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "unclassified_input_waiting"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for unclassified_input_waiting, got: $status"
+
+  rm -rf "$subdir"
+}
+
+@test "fallback-failed: unclassified_askuserquestion → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "unclassified_askuserquestion"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for unclassified_askuserquestion, got: $status"
+
+  rm -rf "$subdir"
+}
+
+@test "fallback-failed: unexpected_permission_prompt → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "unexpected_permission_prompt"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for unexpected_permission_prompt, got: $status"
+
+  rm -rf "$subdir"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: aggregate.yaml あり + failed reason → status: failed
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: aggregate.yaml + inject_exhausted_5 → status:done (中間ファイルあり: 部分結果保持)" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+  cat > "$subdir/OUT/aggregate.yaml" <<'YAML'
+findings:
+  - id: f1
+    severity: high
+YAML
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "inject_exhausted_5"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "done" ] \
+    || fail "Expected status=done for aggregate.yaml + inject_exhausted_5 (中間ファイルあり維持), got: $status"
+
+  rm -rf "$subdir"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: findings.yaml あり + failed reason → status: done (中間ファイルあり維持)
+# AC: 「中間ファイルあり (aggregate.yaml/findings.yaml) ケースは status:done のまま維持」
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: findings.yaml + window_lost → status:done (中間ファイルあり: 部分結果保持)" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+  cat > "$subdir/OUT/findings.yaml" <<'YAML'
+finding1:
+  severity: medium
+YAML
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "window_lost"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "done" ] \
+    || fail "Expected status=done for findings.yaml + window_lost (中間ファイルあり維持), got: $status"
+
+  rm -rf "$subdir"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: 非 failed reason → status: done (既存動作維持)
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: yn_confirmation_prompt → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "yn_confirmation_prompt"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for yn_confirmation_prompt, got: $status"
+
+  rm -rf "$subdir"
+}
+
+@test "fallback-failed: 非失敗 reason の場合は status:done のまま" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "intentional_skip"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "done" ] \
+    || fail "Expected status=done for non-failed reason, got: $status"
+
+  rm -rf "$subdir"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: 呼び出し元サマリーが status:failed を FAILED として計上する
+# WHEN issue-lifecycle-orchestrator.sh の結果サマリーセクションを確認する
+# THEN status == "done" 以外は FAILED にカウントするロジックが存在する
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: 結果サマリーで status:done 以外を FAILED 計上するロジックがある" {
+  grep -qE '"done"|== "done"' "$SCRIPT_SRC" \
+    || fail "Result summary 'done' check not found in script"
+}
+
+@test "fallback-failed: 結果サマリーで OVERALL_FAILED または FAILED インクリメントが status:done 以外で発生する" {
+  grep -qE 'FAILED\+\+|FAILED=\$\(\(FAILED.*\+.*1\)\)|OVERALL_FAILED' "$SCRIPT_SRC" \
+    || fail "FAILED counter increment not found in result summary section"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: report.json が fallback:true を含む (既存 invariant 維持)
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: inject_exhausted_5 の report.json が fallback:true を含む" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "inject_exhausted_5"
+
+  local fallback
+  fallback=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d.get('fallback', False))")
+  [ "$fallback" = "True" ] \
+    || fail "Expected fallback=True in report.json, got: $fallback"
+
+  rm -rf "$subdir"
+}

@@ -20,7 +20,13 @@ if ! [[ "$MAX_PARALLEL" =~ ^[1-9][0-9]*$ ]]; then
   MAX_PARALLEL=3
 fi
 POLL_INTERVAL="${POLL_INTERVAL:-10}"
+if ! [[ "$POLL_INTERVAL" =~ ^[1-9][0-9]*$ ]]; then
+  POLL_INTERVAL=10
+fi
 MAX_POLL="${MAX_POLL:-360}"
+if ! [[ "$MAX_POLL" =~ ^[1-9][0-9]*$ ]]; then
+  MAX_POLL=360
+fi
 
 # --- 使い方 ---
 usage() {
@@ -29,6 +35,7 @@ Usage: $(basename "$0") [OPTIONS]
 
   --issues-dir DIR    入力: issue-*.json ファイルが存在するディレクトリ（必須）
   --output-dir DIR    出力: issue-*-result.txt を書き出すディレクトリ（必須）
+  --model MODEL       Worker セッションに使用するモデル（デフォルト: sonnet）
   -h, --help          このヘルプを表示
 
 Environment:
@@ -40,11 +47,13 @@ EOF
 # --- 引数パーサー ---
 ISSUES_DIR=""
 OUTPUT_DIR=""
+WORKER_MODEL="sonnet"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --issues-dir) ISSUES_DIR="$2"; shift 2 ;;
     --output-dir) OUTPUT_DIR="$2"; shift 2 ;;
+    --model)      WORKER_MODEL="$2"; shift 2 ;;
     -h|--help)    usage; exit 0 ;;
     *) echo "Error: 不明なオプション: $1" >&2; exit 1 ;;
   esac
@@ -181,7 +190,7 @@ print(str(d.get('is_quick_candidate', False)).lower())
 
   echo "[spec-review-orchestrator] Issue #${issue_num}: spawn (window=${window_name})" >&2
   # cld-spawn: 対話モードで起動（one-shot モード stdout 問題を回避 — #541）
-  "${SESSION_SCRIPTS}/cld-spawn" --cd "$(pwd)" --window-name "${window_name}" || {
+  "${SESSION_SCRIPTS}/cld-spawn" --cd "$(pwd)" --window-name "${window_name}" --model "${WORKER_MODEL}" || {
     rm -f "$prompt_file" 2>/dev/null || true
     echo "[spec-review-orchestrator] Issue #${issue_num}: cld-spawn 失敗" >&2
     return 1
