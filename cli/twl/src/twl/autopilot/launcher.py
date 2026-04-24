@@ -46,7 +46,7 @@ def _record_failure(
         sys.executable, "-m", "twl.autopilot.state",
         "write", "--type", "issue", "--issue", issue,
         "--role", "pilot",
-        "--set", f"status=failed",
+        "--set", "status=failed",
         "--set", f"failure={failure_json}",
     ]
     if repo_id:

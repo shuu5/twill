@@ -193,6 +193,8 @@ class TestGenerateBranchName:
 
     def test_real_issue_17(self) -> None:
         title = "[Feature] src/twl/autopilot/project — プロジェクト/worktree 管理の Python 化"
+        # AC11 (#943): Phase 1 では "refined" label を labels fixture に含める（Phase B で除去予定）
+        # Status gate は Status field で判定し、label は補助的 fallback としてのみ使用する
         with patch("subprocess.run", return_value=_make_gh_result(
             title, ["enhancement", "refined", "ctx/autopilot", "scope/plugins-twl"]
         )):

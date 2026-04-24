@@ -3,11 +3,14 @@
 #
 # 動作:
 #   - tool_name が "Bash" のときのみ発火
-#   - tool_input.command に "gh project item-edit.*47fc9ee4" (In Progress option ID) または
-#     "autopilot-launch.sh.*--bypass-status-gate" パターンがマッチしない → 通過（exit 0）
+#   - tool_input.command に "gh project item-edit.*47fc9ee4" (In Progress option ID)
+#     パターンがマッチしない → 通過（exit 0）
 #   - マッチした場合:
 #     - /tmp/.spec-review-session-*.json が存在する → allow（Worker セッション内の正規操作）
 #     - 存在しない → deny（Status=Refined 経由のみ In Progress 遷移可能）
+#
+# 注: --bypass-status-gate フラグは autopilot-launch.sh / launcher.py 内部で制御する。
+#     hook では bypass フラグパターンをチェックしない（コメント誤マッチのリスクを避けるため）。
 
 set -uo pipefail
 
@@ -37,11 +40,6 @@ if printf '%s' "$CMD" | grep -qE 'gh project item-edit' && \
   MATCHED=1
 fi
 
-# Pattern 2: --bypass-status-gate フラグを付けた autopilot-launch.sh / launcher.py 実行
-if printf '%s' "$CMD" | grep -qE '(autopilot-launch\.sh|launcher\.py).*--bypass-status-gate'; then
-  MATCHED=1
-fi
-
 if [[ "$MATCHED" -eq 0 ]]; then
   exit 0
 fi
@@ -60,7 +58,7 @@ REASON="Status=In Progress への直接遷移は禁止されています（Layer
 Issue は Status=Refined を経由してから In Progress に遷移する必要があります。
 
 【正規の手順】:
-  1. /twl:workflow-issue-refine でSpecialist review を完了してください（issue-critic / issue-feasibility / worker-codex-reviewer）
+  1. /twl:workflow-issue-refine で Specialist review を完了してください（issue-critic / issue-feasibility / worker-codex-reviewer）
   2. Review 完了後、Status が自動的に Refined に設定されます
   3. その後、co-autopilot が Status=Refined の Issue を In Progress に遷移させます
 

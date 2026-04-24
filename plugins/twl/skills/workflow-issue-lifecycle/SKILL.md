@@ -181,12 +181,17 @@ if STATE != circuit_broken:
 `/twl:issue-arch-drift` を Skill tool で呼び出す:
 - 入力: 最終 body（最後の body-fixed.md または rounds/0/body.md）
 
-### Step 6: issue 作成
+### Step 6: issue 作成 + Status 書き込み（dual-write: label 先 → Status 後）
 
 `/twl:issue-create` を Skill tool で呼び出す:
 - タイトルと本文は最終 body から抽出
-- labels: policies.labels_hint
+- labels: policies.labels_hint（Step 4.5 で追加された "refined" ラベルを含む）
 - `--repo policies.target_repo`（null の場合は省略）
+
+issue 作成後、labels_hint に "refined" が含まれていれば Status=Todo を初期値として Board に登録する（project-board-sync で対応）。
+dual-write は workflow-issue-refine パターンに準じ、label 付与後に Status=Refined へ移行する（specialist review 済みの場合）。
+
+責任境界: #943 gate は Status=Refined の有無のみ確認。phase-review の内容は #940 の責務。
 
 ### Step 6.5: project-board-sync
 
