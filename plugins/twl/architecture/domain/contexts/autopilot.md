@@ -231,7 +231,7 @@ status=$(jq -r '.status // "null"' issue-N.json)
 ### Pilot / Worker 役割分担
 
 **Pilot (CWD = main/)**:
-- Issue 選択（**Project Board クエリ: Status=Todo**）
+- Issue 選択（**Project Board クエリ: Status=Todo または Status=Refined**）。Phase B 以降は Status=Refined の Issue のみを選択予定（Phase 1 はクエリ据え置き、launcher gate で enforce）
 - Worktree 事前作成 + Worker 起動（worktree ディレクトリで cld セッション開始）
 - Orchestrator による Worker 監視（ポーリング + health-check + crash-detect）
 - merge-gate 実行（PR レビュー・テスト・判定）

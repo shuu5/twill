@@ -85,7 +85,7 @@ graph TD
 | Issue Mgmt | PR Cycle | Customer-Supplier | ac-extract による AC 抽出 |
 | Self-Improve | Issue Mgmt | Customer-Supplier | self-improve Issue 起票 |
 | Project Mgmt | Issue Mgmt | Conformist | Board ステータス更新 |
-| Project Mgmt | Autopilot | Customer-Supplier | Board クエリ（Status=Todo の Issue 選択） |
+| Project Mgmt | Autopilot | Customer-Supplier | Board クエリ（Status=Refined の Issue を選択、ADR-024 gate enforce）、Status=In Progress への遷移は Status pre-check 経由のみ |
 | Project Mgmt | Autopilot | Shared Kernel | bare repo + worktree 構造 |
 | TWiLL Integration | 全 Context | Open Host Service | validate/audit/chain 結果 |
 | Architecture Spec | Issue Mgmt | DCI | vision.md, context-map.md, glossary.md を Read |

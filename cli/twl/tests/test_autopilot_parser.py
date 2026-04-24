@@ -275,3 +275,59 @@ class TestAcAlignmentProcessing:
         result = parse_specialist_output(text)
         assert result.status == "FAIL"
         assert result.findings[0]["severity"] == "CRITICAL"
+
+
+# ---------------------------------------------------------------------------
+# AC11: refined label → Status field 分離テスト（#943 RED フェーズ）
+# PR_LABELS から refined を除去し、Status field で管理する
+# ---------------------------------------------------------------------------
+
+
+class TestRefinedStatusFieldSeparation:
+    """AC11: refined は PR_LABELS ではなく Status field で管理される。"""
+
+    def _make_finding(self, **overrides):
+        base = {
+            "severity": "CRITICAL",
+            "confidence": 80,
+            "file": "Issue body",
+            "line": 1,
+            "message": "AC が未達成",
+            "category": "ac-alignment",
+        }
+        base.update(overrides)
+        return base
+
+    def test_ac11_alignment_override_without_refined_label(self, monkeypatch):
+        # AC11: PR_LABELS から refined を除去しても alignment-override は機能すること
+        # RED: alignment-override ロジックが refined label の有無に依存しないことを確認
+        # 実装後: PR_LABELS="enhancement,alignment-override" で refined なしでも override が効く
+        monkeypatch.setenv("PR_LABELS", "enhancement,alignment-override")
+        msg = "「Issue 引用」 / 「diff 引用」"
+        findings = [
+            self._make_finding(message=msg),
+        ]
+        text = "status: FAIL\n```json\n" + json.dumps(findings) + "\n```"
+        result = parse_specialist_output(text)
+        # alignment-override が有効 → alignment findings が除去される
+        # RED: 現状の実装が PR_LABELS に refined を要求していれば、ここで alignment finding が残る
+        # 実装後: PR_LABELS に refined がなくても alignment-override が機能する
+        assert result.status != "FAIL" or not any(
+            f.get("category") == "ac-alignment" for f in result.findings
+        ), (
+            "RED: #943 実装後は alignment-override が refined label なしでも機能すること。"
+            "現状: refined が PR_LABELS に必要な場合がある"
+        )
+
+    def test_ac11_refined_in_pr_labels_is_no_longer_required_for_gate(self, monkeypatch):
+        # AC11: PR_LABELS に refined が含まれることは Status gate の判定に使わない
+        # RED: Status field ベースのチェックが実装されていないことを明示
+        # 実装後: refined label は PR_LABELS ではなく Board Status field で管理される
+        monkeypatch.setenv("PR_LABELS", "enhancement,refined")
+        # 従来は PR_LABELS に "refined" を入れていたが、#943 後は labels から除去
+        # このテストは PR_LABELS に refined を含む旧パターンが deprecated であることを記録する
+        # 実装後: PR_LABELS の refined は無視され Status=Refined のみで判定される
+        pytest.fail(
+            "RED: AC11 - #943 実装後は PR_LABELS の 'refined' は Status gate 判定に使用しない。"
+            "Status field ベースの gate 実装後にこのテストを GREEN 化すること。"
+        )
