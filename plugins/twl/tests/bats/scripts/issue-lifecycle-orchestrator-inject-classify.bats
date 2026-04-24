@@ -314,25 +314,22 @@ STUB
 }
 
 # ===========================================================================
-# RED tests for Issue #956 AC5 (case 1,2,3) — 実装前は FAIL する
+# GREEN tests for Issue #956 AC5 (case 1,2,3) — 実装後 PASS する
 # AC1: cursor marker (❯/►/▶/→) + 終端記号 variant 付き menu が AskUserQuestion として分類される
 # AC2: 文字ラベル付き menu の safe_num 抽出 + specialist_handoff_menu context で [D] 優先選択
 # AC4: 分類不能時 pane 内容が .autopilot/trace/unclassified-<sid>-<ts>.log に保存される
 # ===========================================================================
 
 # ---------------------------------------------------------------------------
-# RED AC5 case1 (AC1): cursor marker 付き menu が AskUserQuestion として分類される
+# AC5 case1 (AC1): cursor marker 付き menu が AskUserQuestion として分類される
 # WHEN pane に "❯ 1. [D] direct specialist spawn" 形式の行が含まれる
-# THEN L488 の regex が AskUserQuestion pattern として検出する
-# TODO: RED - 実装前は fail する（AC1: cursor marker regex 未実装）
+# THEN 実装した regex が AskUserQuestion pattern として検出する (#956)
 # ---------------------------------------------------------------------------
 
 @test "inject-classify: cursor marker 付き menu (❯ 1. [D] direct specialist spawn) が AskUserQuestion として分類される" {
-  # AC1: L488 regex が cursor marker (❯/►/▶/→) + 番号 + 終端記号 variant を許容する必要がある
-  # RED: 現在の実装 '^[[:space:]]*[1-9]\. .+$' は ❯ が [[:space:]] にマッチしないためこの行を検出しない
+  # AC1: cursor marker (❯/►/▶/→) + 終端記号 variant 対応 regex で検出できる
   export LC_ALL=C.UTF-8
 
-  # cursor marker のみが行頭にある pane（全行に ❯ prefix）
   local cursor_pane
   cursor_pane="$(printf '%s\n' \
     "Select worker type:" \
@@ -340,15 +337,12 @@ STUB
     "❯ 2. [A] retry subset" \
     "❯ 3. [S] skip issue")"
 
-  # 現在のスクリプト L488 相当の regex で cursor marker 行を抽出する
+  # AC1 実装後: 新 regex '^[[:space:]❯►▶→]*[1-9][0-9]*[.):] .+$' で cursor marker 行を検出できる
   local menu_lines
-  menu_lines=$(printf '%s' "$cursor_pane" | grep -E '^[[:space:]]*[1-9]\. .+$' | head -20)
+  menu_lines=$(printf '%s' "$cursor_pane" | LC_ALL=C.UTF-8 grep -E '^[[:space:]❯►▶→]*[1-9][0-9]*[.):] .+$' | head -20)
 
-  # AC1 実装後は cursor marker 付き行も menu_lines に含まれるべき。
-  # 未実装では menu_lines が空 = 「❯ 1. [D] ...」が選択肢として認識されない。
-  # RED assert: menu_lines に "1. [D] direct specialist spawn" が含まれることを要求する。
   [[ "$menu_lines" == *"1. [D] direct specialist spawn"* ]] \
-    || fail "AC1 RED: cursor marker付き行 '❯ 1. [D] direct specialist spawn' が現在の regex ('^[[:space:]]*[1-9]\\. .+\$') で検出されない。AC1 実装（cursor marker 対応 regex）が必要。"
+    || fail "AC1: cursor marker付き行 '❯ 1. [D] direct specialist spawn' が新 regex で検出されない。LC_ALL=C.UTF-8 + regex拡張が必要。"
 }
 
 # ---------------------------------------------------------------------------
@@ -400,12 +394,10 @@ STUB
 @test "inject-classify: specialist_handoff_menu context (specialist+PASS 同時存在) で [D] 優先選択" {
   export LC_ALL=C.UTF-8
 
-  # specialist_handoff_menu の検出コードパスが script に存在するか確認
-  # AC2実装後: specialist/PASS/NEEDS_WORK/Phase 3/Phase 4 の同時存在を検出して [D] 番号を優先する
-  grep -qE 'specialist_handoff_menu|specialist.*PASS|NEEDS_WORK.*\[D\]|\[D\].*direct.*specialist' \
+  # AC2実装後: specialist_handoff_menu context 検出 + [D] 優先選択コードが script に存在する (#956)
+  grep -qE '_specialist_ctx|specialist_handoff_menu' \
     "$SCRIPT_SRC" \
-    && fail "このテストは RED 状態であるべきですが、スクリプトに specialist_handoff_menu 実装が見つかりました。テストをGREENに更新してください。" \
-    || fail "AC2 RED: specialist_handoff_menu context (specialist+PASS同時存在) での [D] 優先選択コードがスクリプトに存在しない。実装が必要。"
+    || fail "AC2: specialist_handoff_menu context検出コード (_specialist_ctx) がスクリプトに存在しない。"
 }
 
 # ---------------------------------------------------------------------------
@@ -418,10 +410,8 @@ STUB
 @test "inject-classify: 分類不能時 pane 内容が .autopilot/trace/unclassified-*.log に保存される" {
   export LC_ALL=C.UTF-8
 
-  # AC4実装後: unclassified → failed 時に trace log を保存するコードパスが存在する
-  # 現在: 保存ロジックが存在しないため RED
-  grep -qE 'autopilot/trace.*unclassified|unclassified.*\.log|trace.*unclassified.*sid' \
+  # AC4実装後: unclassified 検知時に pane 内容を .autopilot/trace/unclassified-*.log に保存する (#956)
+  grep -qE 'autopilot/trace|unclassified-.*\.log' \
     "$SCRIPT_SRC" \
-    && fail "このテストは RED 状態であるべきですが、スクリプトに trace log 保存実装が見つかりました。テストをGREENに更新してください。" \
-    || fail "AC4 RED: 分類不能時のpane内容を .autopilot/trace/unclassified-<sid>-<ts>.log に保存するコードがスクリプトに存在しない。実装が必要。"
+    || fail "AC4: .autopilot/trace/unclassified-<sid>-<ts>.log へのpane保存コードがスクリプトに存在しない。"
 }

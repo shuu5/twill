@@ -312,21 +312,17 @@ YAML
 @test "fallback-failed: unclassified 初検知は pending debounce（即 failed 化しない）" {
   export LC_ALL=C.UTF-8
 
-  # AC3実装後: .unclassified_debounce_ts ファイルを使って初回検知は pending 継続する
-  # 現在: unclassified → 即 failed 化するため RED
+  # AC3実装後: .unclassified_debounce_ts を使った初回検知 pending 継続コードが存在する (#956)
   grep -qE 'unclassified_debounce_ts|\.unclassified_debounce' \
     "$SCRIPT_SRC" \
-    && fail "このテストは RED 状態であるべきですが、スクリプトに unclassified_debounce_ts 実装が見つかりました。テストをGREENに更新してください。" \
-    || fail "AC3 RED: .unclassified_debounce_ts を使った debounce 処理がスクリプトに存在しない。実装が必要。"
+    || fail "AC3: .unclassified_debounce_ts を使った debounce 処理がスクリプトに存在しない。"
 }
 
 @test "fallback-failed: unclassified 連続 2 回検知 (>10s) で reason=unclassified_input_waiting_confirmed で failed 化" {
   export LC_ALL=C.UTF-8
 
-  # AC3実装後: 2回目の unclassified 検知（10s経過後）で unclassified_input_waiting_confirmed reason で failed
-  # 現在: unclassified_input_waiting_confirmed reason が存在しないため RED
+  # AC3実装後: unclassified_input_waiting_confirmed reason で failed 化するコードが存在する (#956)
   grep -qE 'unclassified_input_waiting_confirmed' \
     "$SCRIPT_SRC" \
-    && fail "このテストは RED 状態であるべきですが、スクリプトに unclassified_input_waiting_confirmed 実装が見つかりました。テストをGREENに更新してください。" \
-    || fail "AC3 RED: unclassified_input_waiting_confirmed reason がスクリプトに存在しない。実装が必要。"
+    || fail "AC3: unclassified_input_waiting_confirmed reason がスクリプトに存在しない。"
 }
