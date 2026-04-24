@@ -472,7 +472,7 @@ wait_for_batch() {
                 _capture_retry=$((_capture_retry + 1))
               done
               # Pattern 1: permission prompt (unexpected — cld uses --dangerously-skip-permissions)
-              if printf '%s' "$_pane" | grep -qE '^[1-9]\. (Yes, proceed|Yes, and allow|No, and tell)'; then
+              if printf '%s' "$_pane" | grep -qE '^[[:space:]]*[1-9]\. (Yes, proceed|Yes, and allow|No, and tell)'; then
                 echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unexpected permission prompt — failed" >&2
                 mkdir -p "${subdir}/OUT"
                 _generate_fallback_report "$subdir" "unexpected_permission_prompt"
@@ -485,7 +485,7 @@ wait_for_batch() {
                 if [[ -n "$_menu_lines" ]]; then
                   while IFS= read -r _menu_line; do
                     local _mn _mt
-                    _mn=$(printf '%s' "$_menu_line" | grep -oE '[1-9]' | head -1)
+                    _mn=$(printf '%s' "$_menu_line" | grep -oE '^[[:space:]]*[1-9][0-9]*' | tr -d ' \t')
                     _mt=$(printf '%s' "$_menu_line" | sed 's/^[[:space:]]*[0-9]\+\. *//')
                     if [[ -n "$_mn" ]] && ! printf '%s' "$_mt" | grep -iqE '(delete|remove|reset|destroy|drop|wipe|purge|truncate|force|kill|terminate)'; then
                       [[ -z "$_safe_num" ]] && _safe_num="$_mn"
