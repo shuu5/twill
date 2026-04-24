@@ -54,7 +54,23 @@ ensure_pythonpath() {
 
 # worktree のプロジェクトルートを解決
 resolve_project_root() {
-  git rev-parse --show-toplevel 2>/dev/null || pwd
+  local root
+  # tier 1: 現 CWD から rev-parse
+  root=$(git rev-parse --show-toplevel 2>/dev/null) || root=""
+  if [[ -n "$root" ]]; then
+    echo "$root"
+    return 0
+  fi
+  # tier 2: script 位置から rev-parse（Worker CWD が git 管理外でも救済）
+  local script_root
+  script_root=$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || script_root=""
+  if [[ -n "$script_root" ]]; then
+    echo "$script_root"
+    return 0
+  fi
+  # tier 3: fallback 失敗 → stderr + return 1（pwd 誤採用を構造的に不可能化）
+  echo "[chain-runner] FATAL: resolve_project_root failed (cwd=$(pwd), script=${BASH_SOURCE[0]})" >&2
+  return 1
 }
 
 
@@ -1343,6 +1359,7 @@ main() {
     check)               step_check "$@" ;;
     autopilot-detect)    step_autopilot_detect "$@" ;;
     resolve-issue-num)   resolve_issue_num ;;
+    resolve-project-root) resolve_project_root ;;
     *)
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
@@ -1350,7 +1367,8 @@ main() {
       echo "         phase-review, scope-judge, pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge," >&2
       echo "         pr-comment-findings, pr-comment-fix-summary, pr-comment-final, check," >&2
       echo "         autopilot-detect, resolve-issue-num," >&2
-      echo "         dispatch-info, llm-delegate, llm-complete, chain-status" >&2
+      echo "         dispatch-info, llm-delegate, llm-complete, chain-status," >&2
+      echo "         resolve-project-root" >&2
       exit 1
       ;;
   esac
