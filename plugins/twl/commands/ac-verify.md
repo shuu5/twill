@@ -43,7 +43,7 @@ PR diff・テスト結果・レビュー結果を Issue の受け入れ基準（
 
 ```bash
 source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/python-env.sh" 2>/dev/null || true
-SNAPSHOT_DIR="${SNAPSHOT_DIR:-.dev-session}"
+SNAPSHOT_DIR="${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${ISSUE_NUM:-unknown}}"
 AC_FILE="${SNAPSHOT_DIR}/01.5-ac-checklist.md"
 
 if [[ ! -f "$AC_FILE" ]]; then

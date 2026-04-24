@@ -103,7 +103,8 @@ PR レビューモード（`<target_files>` に diff が含まれる場合）の
 `${SNAPSHOT_DIR}/01.5-ac-checklist.md` が存在すれば Read して AC 一覧を取得し、diff との 1:1 対応を確認する:
 
 ```bash
-AC_FILE=$(find . -path "*/.autopilot/snapshots/*/01.5-ac-checklist.md" 2>/dev/null | head -1)
+AC_FILE=$(find . -path "*/.autopilot/snapshots/*/01.5-ac-checklist.md" \
+  -o -path "*/.dev-session/issue-*/01.5-ac-checklist.md" 2>/dev/null | head -1)
 [[ -f "$AC_FILE" ]] && cat "$AC_FILE" || echo "AC_FILE_NOT_FOUND"
 ```
 

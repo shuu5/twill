@@ -48,7 +48,7 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 `bash "$CR" llm-delegate "test-scaffold" "$ISSUE_NUM"` を実行し、`commands/test-scaffold.md` を Read → 実行。
 
 AC-based test scaffold の入力:
-- `${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT}/.dev-session}/01.5-ac-checklist.md`（不在は WARN のみ）
+- `${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${ISSUE_NUM:-unknown}}/01.5-ac-checklist.md`（不在は WARN のみ）
 - Issue body の `## AC` / `## Acceptance Criteria` 節
 
 出力: test ファイル（pytest/vitest/testthat）+ `ac-test-mapping.yaml`（AC 項目 → test path マッピング）

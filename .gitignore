@@ -15,3 +15,4 @@
 
 # autopilot audit session data
 .audit/
+.dev-session/

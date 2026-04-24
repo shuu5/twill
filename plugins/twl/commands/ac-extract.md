@@ -32,6 +32,7 @@ maxTurns: 10
 | AC 抽出成功 | 番号付き AC リストを保存 |
 
 ```bash
+SNAPSHOT_DIR="${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${ISSUE_NUM:-unknown}}"
 if [ -n "${ISSUE_NUM}" ]; then
     AC_OUTPUT=$(python3 -m twl.autopilot.github extract-ac "${ISSUE_NUM}" 2>/dev/null) && {
         printf '%s\n\n%s\n' "## 受け入れ基準（Issue #${ISSUE_NUM}）" "${AC_OUTPUT}" > "${SNAPSHOT_DIR}/01.5-ac-checklist.md"
