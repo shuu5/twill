@@ -110,6 +110,12 @@ done
 set -- "${PASS_THROUGH_ARGS[@]+"${PASS_THROUGH_ARGS[@]}"}"
 
 if [[ "$WITH_CHAIN" == "true" ]]; then
+  cat >&2 <<'WARN'
+WARN: --with-chain --issue は skill bypass 経路です（Pilot 不在で Worker 直接起動）。
+  正規運用: spawn-controller.sh co-autopilot <prompt>（オプション無し）で Pilot を 1 つ spawn し、
+            Pilot が複数 Issue の deps graph 計画と Worker 起動を担当する。
+  詳細: plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §13.5
+WARN
   if [[ "$SKILL_NORMALIZED" != "co-autopilot" ]]; then
     echo "Error: --with-chain は co-autopilot のみで有効です。" >&2
     exit 2

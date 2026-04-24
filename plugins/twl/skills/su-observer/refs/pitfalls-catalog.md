@@ -376,6 +376,7 @@ gate deny (1 回目) → STOP（即時停止、追加試行禁止）→ AskUserQ
 | 経路 | window 名 | state file | orchestrator | chain |
 |------|-----------|------------|--------------|-------|
 | **A: `autopilot-launch.sh`** | `ap-<N>` | `issue-<N>.json` 生成 | Pilot が管理 | 回転（`/twl:workflow-setup #N` inject） |
+| **A': `spawn-controller.sh --with-chain`** | `ap-<N>` | `issue-<N>.json` 生成 | **Pilot 不在**（skill bypass 副作用） | **Step 1-5 全 skip**（deps graph / Wave 計画 / specialist-audit 機会喪失） |
 | **B: `spawn-controller.sh co-autopilot`** | `wt-co-autopilot-<HHMMSS>` | Pilot 経由で生成 | co-autopilot が Pilot として動作 | co-autopilot Step 1-5 が回転 |
 
 | # | Pitfall | 観察パターン（chain 不回転の症状） | 対策 |
@@ -384,6 +385,7 @@ gate deny (1 回目) → STOP（即時停止、追加試行禁止）→ AskUserQ
 | 13.2 | Pilot が `autopilot-launch.sh` の代わりに `cld-spawn` を直接呼んで Worker を起動する | Worker の `AUTOPILOT_DIR` / `WORKER_ISSUE_NUM_ENV` が未設定、クラッシュ検知フック非設定、state file missing | `autopilot-launch.sh` 経由必須（環境変数・クラッシュ検知フック・window-manifest を担当） |
 | 13.3 | su-observer が Worker window（`ap-*`）に `spawn-controller.sh` を呼んで Pilot を二重起動する | 同一セッションに `ap-*` と `wt-co-autopilot-*` が混在、Pilot 二重起動 | observer が spawn するのは Pilot（`wt-co-autopilot-*`）のみ。Worker（`ap-*`）への介入は `session-comm.sh inject` 経由 |
 | 13.4 | `spawn-controller.sh co-autopilot` で起動した Pilot が `issue-N.json` を生成しないまま停滞（chain 不回転の典型） | `.autopilot/issues/issue-N.json` が存在しない、tmux window は存在するが `ap-*` window がない | Pilot が Step 3 `autopilot-init` → Step 4 `autopilot-launch.sh` を実行していることを確認する。state file 未生成なら Pilot session の chain ログを確認し、stuck 箇所を特定して inject で再開 |
+| 13.5 | observer が `spawn-controller.sh co-autopilot --with-chain --issue N` を Issue 毎に叩き、Worker を直接 spawn する（「1 Issue = 1 Pilot」錯覚） | `--with-chain` は `autopilot-launch.sh` に直接委譲する skill bypass 経路。Pilot が spawn されないため co-autopilot Step 1-5（deps graph / Wave 計画 / specialist-audit）が全 skip される。Phase Z で 14 PR (#923/#925-#937) が specialist review を経由せずに merge された根本原因 | **正規運用は 1 Pilot = 複数 Issue**。observer は `spawn-controller.sh co-autopilot <prompt>`（`--with-chain` なし）で Pilot を 1 つ spawn し、Pilot が deps graph に基づく Wave 計画と Worker 起動を担当する。`--with-chain --issue N` は autopilot-launch.sh 直接呼出しとほぼ等価であり、observer が使う経路ではない |
 
 **正しい経路選択:**
 - observer がユーザー指示で Issue 群を実装させる場合 → `spawn-controller.sh co-autopilot`（経路 B）

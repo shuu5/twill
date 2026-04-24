@@ -127,6 +127,12 @@ Issue 単位の Worker 起動（経路 A: `autopilot-launch.sh`、window `ap-<N>
 Pilot が内部で実行する。observer が `autopilot-launch.sh` を直接呼んで Worker を起動してはならない。
 2 経路の詳細は `co-autopilot SKILL.md §Step 3.5 起動経路比較` および `refs/pitfalls-catalog.md §13` を参照。
 
+**正規運用は「1 Pilot = 複数 Issue」（ADR-026 — MUST）:**
+- **MUST**: `spawn-controller.sh co-autopilot <prompt>`（`--with-chain` なし）で Pilot を 1 つ spawn する。Pilot が deps graph に基づく Wave 計画と複数 Issue の Worker 起動を担当する。
+- **MUST NOT（禁止）**: `spawn-controller.sh co-autopilot <prompt> --with-chain --issue N` を Issue ごとに叩いてはならない。`--with-chain --issue N` 単独使用禁止 — skill bypass 経路（Pilot 不在・Step 1-5 全 skip）であり、observer が直接使う経路ではない（`refs/pitfalls-catalog.md §13.5`、ADR-026）。
+- **MUST NOT**: `working-memory.md` 等の前 session コマンドを鵜呑みでコピーしてはならない。毎回新規に skill 選択判断を行うこと。
+- **MUST NOT**: 「co-autopilot と名前が付いているから skill を使っている」と判断してはならない。`--with-chain` 付与で skill bypass が発動する。
+
 使用可能な session plugin スクリプト: `cld-observe`, `cld-observe-loop`, `cld-observe-any`, `session-state.sh`（A5 補助のみ、単独使用禁止）, `session-comm.sh`
 
 ### spawn プロンプトの文脈包含
