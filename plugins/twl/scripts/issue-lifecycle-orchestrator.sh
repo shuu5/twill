@@ -70,14 +70,25 @@ _generate_fallback_report() {
   local aggregate_file="${subdir}/OUT/aggregate.yaml"
   local findings_file="${subdir}/OUT/findings.yaml"
 
+  # B3: reason に基づき status を決定 (#946)
+  local _fb_status
+  case "$reason" in
+    inject_exhausted_*|input_waiting_terminal_*|\
+    unclassified_input_waiting|unclassified_askuserquestion|\
+    unexpected_permission_prompt|window_lost)
+      _fb_status="failed" ;;
+    *)
+      _fb_status="done" ;;
+  esac
+
   if [[ -f "$aggregate_file" ]]; then
     # aggregate.yaml → report.json 変換（環境変数経由でパスを渡す — CWE-78 対策）
-    _FB_INPUT="$aggregate_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="aggregate" \
+    _FB_INPUT="$aggregate_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="aggregate" _FB_STATUS="$_fb_status" \
       python3 -c '
 import yaml, json, os, sys
 with open(os.environ["_FB_INPUT"]) as f:
     data = yaml.safe_load(f) or {}
-report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
+report = {"status": os.environ["_FB_STATUS"], "fallback": True, "reason": os.environ["_FB_REASON"],
           "findings_count": len(data.get("findings", [])), os.environ["_FB_KEY"]: data}
 with open(os.environ["_FB_OUTPUT"], "w") as f:
     json.dump(report, f, ensure_ascii=False, indent=2)
@@ -85,12 +96,12 @@ with open(os.environ["_FB_OUTPUT"], "w") as f:
   fi
 
   if [[ -f "$findings_file" ]]; then
-    _FB_INPUT="$findings_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="findings" \
+    _FB_INPUT="$findings_file" _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_KEY="findings" _FB_STATUS="$_fb_status" \
       python3 -c '
 import yaml, json, os, sys
 with open(os.environ["_FB_INPUT"]) as f:
     data = yaml.safe_load(f) or {}
-report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
+report = {"status": os.environ["_FB_STATUS"], "fallback": True, "reason": os.environ["_FB_REASON"],
           os.environ["_FB_KEY"]: data}
 with open(os.environ["_FB_OUTPUT"], "w") as f:
     json.dump(report, f, ensure_ascii=False, indent=2)
@@ -98,9 +109,9 @@ with open(os.environ["_FB_OUTPUT"], "w") as f:
   fi
 
   # 中間ファイルもない場合は最小限のフォールバック
-  _FB_OUTPUT="$report_file" _FB_REASON="$reason" python3 -c '
+  _FB_OUTPUT="$report_file" _FB_REASON="$reason" _FB_STATUS="$_fb_status" python3 -c '
 import json, os
-report = {"status": "done", "fallback": True, "reason": os.environ["_FB_REASON"],
+report = {"status": os.environ["_FB_STATUS"], "fallback": True, "reason": os.environ["_FB_REASON"],
           "error": "no_intermediate_files"}
 with open(os.environ["_FB_OUTPUT"], "w") as f:
     json.dump(report, f, ensure_ascii=False, indent=2)
@@ -445,17 +456,79 @@ wait_for_batch() {
                 all_done=false
                 continue
               fi
-              # non-terminal + input-waiting → auto-inject で継続を促す (#672, #697, #709)
-              inject_count=$((inject_count + 1))
-              echo "$inject_count" > "$inject_count_file"
-              echo "$current_ts" > "$last_inject_ts_file"
-              rm -f "$debounce_ts_file"
-              local inject_msg="処理を続行してください。"
-              echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=$current_state + input-waiting — auto-inject ($inject_count/5)" >&2
-              "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" \
-                "$inject_msg" \
-                2>/dev/null || true
-              all_done=false
+              # pane capture + ANSI 除去 + 応答分類 (#946 B2)
+              local _pane _pane_raw _capture_retry=0
+              while [[ $_capture_retry -lt 3 ]]; do
+                _pane_raw=$(tmux capture-pane -t "$window_name" -p -S -50 2>/dev/null || true)
+                _pane=$(printf '%s' "$_pane_raw" | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b][^\x07]*\x07//g')
+                local _last_ne
+                _last_ne=$(printf '%s' "$_pane" | grep -v '^[[:space:]]*$' | tail -1 | tr -d '[:space:]')
+                if [[ -n "$_last_ne" ]] && ! printf '%s' "$_last_ne" | grep -qE '^[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏|/\\-]+$'; then
+                  break
+                fi
+                sleep 0.5
+                _capture_retry=$((_capture_retry + 1))
+              done
+              # Pattern 1: permission prompt (unexpected — cld uses --dangerously-skip-permissions)
+              if printf '%s' "$_pane" | grep -qE '^[1-9]\. (Yes, proceed|Yes, and allow|No, and tell)'; then
+                echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unexpected permission prompt — failed" >&2
+                mkdir -p "${subdir}/OUT"
+                _generate_fallback_report "$subdir" "unexpected_permission_prompt"
+                tmux kill-window -t "$window_name" 2>/dev/null || true
+              # Pattern 2: AskUserQuestion — numbered menu
+              elif printf '%s' "$_pane" | grep -qE '承認しますか|確認しますか|Do you want to' || \
+                   printf '%s' "$_pane" | grep -qE '^[[:space:]]*[1-9]\. .+$'; then
+                local _menu_lines _safe_num=""
+                _menu_lines=$(printf '%s' "$_pane" | grep -E '^[[:space:]]*[1-9]\. .+$' | head -20)
+                if [[ -n "$_menu_lines" ]]; then
+                  while IFS= read -r _menu_line; do
+                    local _mn _mt
+                    _mn=$(printf '%s' "$_menu_line" | grep -oE '[1-9]' | head -1)
+                    _mt=$(printf '%s' "$_menu_line" | sed 's/^[[:space:]]*[0-9]\+\. *//')
+                    if [[ -n "$_mn" ]] && ! printf '%s' "$_mt" | grep -iqE '(delete|remove|reset|destroy|drop|wipe|purge|truncate|force|kill|terminate)'; then
+                      [[ -z "$_safe_num" ]] && _safe_num="$_mn"
+                    fi
+                  done <<< "$_menu_lines"
+                fi
+                if [[ -n "$_safe_num" ]]; then
+                  inject_count=$((inject_count + 1))
+                  echo "$inject_count" > "$inject_count_file"
+                  echo "$current_ts" > "$last_inject_ts_file"
+                  rm -f "$debounce_ts_file"
+                  echo "[issue-lifecycle-orchestrator] ${subdir##*/}: AskUserQuestion → inject '$_safe_num' ($inject_count/5)" >&2
+                  "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" "$_safe_num" 2>/dev/null || true
+                  all_done=false
+                else
+                  echo "[issue-lifecycle-orchestrator] ${subdir##*/}: AskUserQuestion parse failed — failed" >&2
+                  mkdir -p "${subdir}/OUT"
+                  _generate_fallback_report "$subdir" "unclassified_askuserquestion"
+                  tmux kill-window -t "$window_name" 2>/dev/null || true
+                fi
+              # Pattern 3: y/N confirmation → escalate (safe default)
+              elif printf '%s' "$_pane" | grep -qE '\[y/N\]|\[Y/n\]'; then
+                echo "[issue-lifecycle-orchestrator] ${subdir##*/}: y/N prompt — failed (escalate)" >&2
+                mkdir -p "${subdir}/OUT"
+                _generate_fallback_report "$subdir" "unclassified_input_waiting"
+                tmux kill-window -t "$window_name" 2>/dev/null || true
+              # Pattern 4: generic "Waiting for user input"
+              elif printf '%s' "$_pane" | grep -q 'Waiting for user input'; then
+                inject_count=$((inject_count + 1))
+                echo "$inject_count" > "$inject_count_file"
+                echo "$current_ts" > "$last_inject_ts_file"
+                rm -f "$debounce_ts_file"
+                local inject_msg="処理を続行してください。"
+                echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=$current_state + input-waiting — auto-inject ($inject_count/5)" >&2
+                "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" \
+                  "$inject_msg" \
+                  2>/dev/null || true
+                all_done=false
+              else
+                # unclassified → failed
+                echo "[issue-lifecycle-orchestrator] ${subdir##*/}: input-waiting unclassified — failed" >&2
+                mkdir -p "${subdir}/OUT"
+                _generate_fallback_report "$subdir" "unclassified_input_waiting"
+                tmux kill-window -t "$window_name" 2>/dev/null || true
+              fi
             else
               # inject 5 回失敗 → fallback (#647, #709)
               local reason="inject_exhausted_${inject_count}"
