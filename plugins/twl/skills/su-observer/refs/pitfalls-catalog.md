@@ -95,6 +95,41 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 ```
 1 行以上のマッチ（exit 0）で auto mode 有効と判定。マッチが 0 行でも `autopilot-launch.sh` の起動行に `--permission-mode auto` が含まれる限り auto mode は有効（pane 上の表示有無は status bar の上書きタイミングに依存）。
 
+#### §4.10 「止まっている」5 状態多指標検知マトリクス（Issue #948 follow-up / Phase AA Wave AA.3 知見）
+
+`session-state.sh state` 単独判定を禁止し、Pilot / Worker window 双方に対して以下 5 状態のいずれかに分類する。**A1〜A6 の多指標 AND 判定**（SKILL.md §supervise 1 iteration 参照）を各状態の判定条件に適用する:
+
+- **A1**: `tmux capture-pane -p -S -60` の内容ハッシュ（stable / dynamic）
+- **A2**: LLM thinking indicator（`Thinking/Brewing/Concocting/Sautéing/Steeping/Simmering/Marinating/Newspapering/Tomfoolering/Flummoxing/Proofing/Befuddling/Generating/Waddling/Thundering/Lollygagging` + **現在進行形のみ**。`Sautéed for N`/`Worked for N`/`Baked for N` 等の **過去形 + "for N"** は IDLE 扱い — v18 past tense filter、Phase AA Wave AA.2 実装済）
+- **A3**: pipe-pane log mtime（active / stale）
+- **A4**: `pane_dead`（tmux 窓健全性）
+- **A5**: `session-state.sh`（補助のみ、単独使用禁止）
+- **A6**: `[BUDGET-LOW]` tmux status line の budget 残量
+
+| # | 状態 | A1 | A2 | A3 | A5 | 判定条件 | 期待アクション |
+|---|---|---|---|---|---|---|---|
+| S-1 | **IDLE** | stable | **なし**（または過去形 + for N） | stale 可 | processing/waiting | 所有権なしの非活動（完了済 Pilot/Worker の rest 状態） | 放置可。Wave 管理なら PR/commit 存在確認で完了を確定 |
+| S-2 | **THINKING** | dynamic | **現在進行形あり** | active | processing | LLM 活動中 | **`[PHASE-COMPLETE]/[REVIEW-READY]/[MENU-READY]/[FREEFORM-READY]/[STAGNATE]` 絶対 emit 禁止**（§4.3）。観察継続 |
+| S-3 | **MENU-READY** | stable | なし | stale 可 | input-waiting | 番号付き menu（`^[[:space:]❯►▶→]*[1-9][0-9]*[.):][[:space:]].+$`）または `[y/N]`/`Do you want to proceed\?`/`Enter to select` が pane 末尾に可視 | §2.4/§2.5 の deny-pattern 回避 + 最小番号 inject、specialist_handoff_menu なら `[D]` 最優先 |
+| S-4 | **REVIEW-READY** | stable | なし | active→stale 遷移 | ended/ready | `>>> 実装完了:`/`PASS`/`NEEDS_WORK`/`Phase N 完了` 等の signal。controller 別の正確な regex は `refs/pilot-completion-signals.md` 参照 | Wave 管理なら `commands/wave-collect.md` 起動。intervention-catalog pattern-7 参照 |
+| S-5 | **STAGNATE** | stable ≥ 3 連続 | なし | > 600s stale (`AUTOPILOT_STAGNATE_SEC` デフォルト) | processing (false positive) | 上記 S-1〜S-4 のいずれでもない真の stuck | `intervention-catalog.md` pattern-4（Layer 1 Confirm）→ 介入。Pilot なら phase-review 手動 inject、Worker なら `session-comm.sh inject` で軽い promt |
+
+**運用 MUST**:
+
+1. **observer は状態分類を実行する前に A2 を先に評価する**。A2 に現在進行形 indicator があれば S-2 THINKING 確定、他の判定を scratch する（§4.3 LLM-active-override）
+2. **S-1 と S-5 の区別は A3 mtime + A1 連続ハッシュ一致回数**。mtime stale のみでは断定せず、連続 3 回の hash 一致 AND PR/commit 不在で STAGNATE 判定
+3. **Pilot 内部 chain 完遂（Worker spawn なし）の場合は S-4 signal が Worker window 由来にならない**。`refs/pilot-completion-signals.md` の controller 別 signal 表を参照し、Pilot window `wt-co-*` に対しても S-4 検知を実装する（Issue #948 対策）
+4. **Monitor tool の filter は 5 状態全てを emit 可能にする**。S-2 のみ emit してしまうと silent→事後確認の落とし穴（§4.1, hash `fdfc9102`）を再発する
+5. **past tense filter**: 動詞過去形 + `for [0-9]+[ms]` は **完了済** の表示。`Sautéed for 1m 30s` を S-2 扱いすると phase 境界で自動 inject が発火せず stall する（Phase AA Wave AA.2 Pilot stall 事例、Monitor v18 で修正済）
+
+**関連参照**:
+- `refs/monitor-channel-catalog.md` — チャネル定義（`[PHASE-COMPLETE]/[REVIEW-READY]/[MENU-READY]/[FREEFORM-READY]/[STAGNATE]/[BUDGET-LOW]/[PERMISSION-PROMPT]/[WINDOW-GONE]`）
+- `refs/pilot-completion-signals.md` — controller 別 S-4 signal 一覧
+- `refs/intervention-catalog.md` — 状態 × パターン × 3 層介入
+- §2.5 — S-3 specialist_handoff_menu variant（cursor marker 対応）
+- §4.3 — A2 LLM indicator による emit 抑制
+- §4.5 — Heartbeat（5 min silence 自動 capture）で S-1 と S-5 の誤分類を防ぐ
+
 ---
 
 ## 5. Memory MCP（doobidoo）運用
