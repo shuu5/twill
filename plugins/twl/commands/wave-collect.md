@@ -177,11 +177,9 @@ mkdir -p ".audit/wave-${WAVE_NUM}"
 for issue_json in "${AUTOPILOT_DIR:-.autopilot}"/issues/issue-*.json; do
   [[ -f "$issue_json" ]] || continue
   _issue_num=$(basename "$issue_json" | sed 's/issue-\([0-9]*\)\.json/\1/')
-  _is_quick=$(python3 -m twl.autopilot.state read --type issue --issue "$_issue_num" --field is_quick 2>/dev/null || echo "false")
-  _qflag=(); [[ "$_is_quick" == "true" ]] && _qflag=(--quick)
   # --warn-only で merge を阻害しない。JSON 出力でログに記録（FAIL 検出可能）
   bash "${CLAUDE_PLUGIN_ROOT:-plugins/twl}/scripts/specialist-audit.sh" \
-    --issue "$_issue_num" --warn-only "${_qflag[@]+"${_qflag[@]}"}" \
+    --issue "$_issue_num" --warn-only \
     >> "$_audit_log" 2>&1 || true
 done
 # FAIL 行の検出（--warn-only で exit 0 だが JSON の "status":"FAIL" で識別）

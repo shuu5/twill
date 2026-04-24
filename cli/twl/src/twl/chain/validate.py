@@ -478,7 +478,7 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
     # dispatch_mode=runner のステップのみチェック（llm/trigger は chain-runner.sh 不要）
     runner_steps = _load_chain_runner_steps(plugin_root)
     if runner_steps and chain_py_steps:
-        orchestration_only = {'next-step', 'autopilot-detect', 'quick-detect', 'quick-guard'}
+        orchestration_only = {'next-step', 'autopilot-detect'}
         # runner-dispatched steps in deps.yaml
         runner_dispatched: Set[str] = {
             name for name, (_, data) in all_components.items()

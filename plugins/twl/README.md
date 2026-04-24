@@ -50,15 +50,14 @@ Issue 起点の開発フロー:
 # 1. 開発準備（worktree 作成）
 /twl:workflow-setup #<issue-number>
 
-# 2. 実装（tasks.md に沿って実装）
-/twl:change-apply <change-id>
+# 2. 実装・テスト（TDD サイクル）
+/twl:workflow-test-ready
 
-# 3. PR サイクル（レビュー + テスト + 修正）
-/twl:workflow-pr-cycle
+# 3. PR 検証
+/twl:workflow-pr-verify
 
-# 4. アーカイブ + worktree 削除
-/twl:change-archive
-/twl:worktree-delete
+# 4. PR マージ
+/twl:workflow-pr-merge
 ```
 
 Autopilot で複数 Issue を一括実装:
