@@ -246,7 +246,7 @@ _check_refined_status() {
   fi
   if [[ -z "$status" ]]; then
     # Issue が Board 未登録 → cross-repo fallback: refined label を確認
-    local has_label=0   # L234 と同関数スコープだが bash 仕様上再宣言は無害（対称性維持）
+    local has_label=0   # 同一関数スコープで明示的に 0 で初期化（前ブロックの値を引き継がないよう保証）
     if gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null | grep -Fxq 'refined'; then
       has_label=1
     fi

@@ -33,7 +33,7 @@ _run_status_gate() {
   func_def=$(sed -n '/^_check_refined_status()/,/^}/p' "$SCRIPT")
 
   run bash -c "
-set -uo pipefail
+set -euo pipefail
 export PATH='${STUB_BIN}:/usr/bin:/bin'
 export _STATUS_GATE_LOG='${SANDBOX}/gate.log'
 
