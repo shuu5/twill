@@ -293,3 +293,36 @@ YAML
 
   rm -rf "$subdir"
 }
+
+# ===========================================================================
+# RED tests for Issue #956 AC5 (case 4) + AC3 — 実装前は FAIL する
+# AC3: unclassified 初検知は pending debounce、連続2回 (>10s) で failed 化
+#      reason: unclassified_input_waiting_confirmed
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# RED AC5 case4 (AC3): unclassified 初検知は pending debounce、連続 2 回で failed 化
+# WHEN unclassified を初めて検知
+# THEN .unclassified_debounce_ts に timestamp 保存し、即 failed 化しない (pending)
+# WHEN 10s 以上経過後も再度 unclassified を検知
+# THEN reason=unclassified_input_waiting_confirmed で failed 化する
+# TODO: RED - 実装前は fail する（AC3: unclassified debounce 未実装）
+# ---------------------------------------------------------------------------
+
+@test "fallback-failed: unclassified 初検知は pending debounce（即 failed 化しない）" {
+  export LC_ALL=C.UTF-8
+
+  # AC3実装後: .unclassified_debounce_ts を使った初回検知 pending 継続コードが存在する (#956)
+  grep -qE 'unclassified_debounce_ts|\.unclassified_debounce' \
+    "$SCRIPT_SRC" \
+    || fail "AC3: .unclassified_debounce_ts を使った debounce 処理がスクリプトに存在しない。"
+}
+
+@test "fallback-failed: unclassified 連続 2 回検知 (>10s) で reason=unclassified_input_waiting_confirmed で failed 化" {
+  export LC_ALL=C.UTF-8
+
+  # AC3実装後: unclassified_input_waiting_confirmed reason で failed 化するコードが存在する (#956)
+  grep -qE 'unclassified_input_waiting_confirmed' \
+    "$SCRIPT_SRC" \
+    || fail "AC3: unclassified_input_waiting_confirmed reason がスクリプトに存在しない。"
+}

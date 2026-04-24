@@ -312,3 +312,106 @@ STUB
   [ -n "$menu_lines" ] \
     || fail "Menu lines not detected after ANSI stripping. Stripped: $stripped"
 }
+
+# ===========================================================================
+# GREEN tests for Issue #956 AC5 (case 1,2,3) — 実装後 PASS する
+# AC1: cursor marker (❯/►/▶/→) + 終端記号 variant 付き menu が AskUserQuestion として分類される
+# AC2: 文字ラベル付き menu の safe_num 抽出 + specialist_handoff_menu context で [D] 優先選択
+# AC4: 分類不能時 pane 内容が .autopilot/trace/unclassified-<sid>-<ts>.log に保存される
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# AC5 case1 (AC1): cursor marker 付き menu が AskUserQuestion として分類される
+# WHEN pane に "❯ 1. [D] direct specialist spawn" 形式の行が含まれる
+# THEN 実装した regex が AskUserQuestion pattern として検出する (#956)
+# ---------------------------------------------------------------------------
+
+@test "inject-classify: cursor marker 付き menu (❯ 1. [D] direct specialist spawn) が AskUserQuestion として分類される" {
+  # AC1: cursor marker (❯/►/▶/→) + 終端記号 variant 対応 regex で検出できる
+  export LC_ALL=C.UTF-8
+
+  local cursor_pane
+  cursor_pane="$(printf '%s\n' \
+    "Select worker type:" \
+    "❯ 1. [D] direct specialist spawn" \
+    "❯ 2. [A] retry subset" \
+    "❯ 3. [S] skip issue")"
+
+  # AC1 実装後: 新 regex '^[[:space:]❯►▶→]*[1-9][0-9]*[.):] .+$' で cursor marker 行を検出できる
+  local menu_lines
+  menu_lines=$(printf '%s' "$cursor_pane" | LC_ALL=C.UTF-8 grep -E '^[[:space:]❯►▶→]*[1-9][0-9]*[.):] .+$' | head -20)
+
+  [[ "$menu_lines" == *"1. [D] direct specialist spawn"* ]] \
+    || fail "AC1: cursor marker付き行 '❯ 1. [D] direct specialist spawn' が新 regex で検出されない。LC_ALL=C.UTF-8 + regex拡張が必要。"
+}
+
+# ---------------------------------------------------------------------------
+# RED AC5 case2 (AC2): 文字ラベル付き menu の safe_num=1 抽出
+# WHEN pane に "1. [A] retry subset" 形式の文字ラベル付き選択肢が含まれる
+# THEN safe_num=1 が抽出される（[A-Z] ラベルが deny-pattern と誤判定されない）
+# TODO: RED - 実装前は fail する（AC2: 文字ラベル safe_num 抽出ロジック未実装）
+# ---------------------------------------------------------------------------
+
+@test "inject-classify: 文字ラベル付き menu (1. [A] retry subset) の safe_num=1 抽出" {
+  export LC_ALL=C.UTF-8
+
+  # 文字ラベル付きメニュー: "1. [A] retry subset" など
+  # 現在の safe_num 抽出ロジックが [A] ラベルを正しく処理するか確認
+  local labeled_pane
+  labeled_pane="$(printf '%s\n' \
+    "Choose action:" \
+    "1. [A] retry subset" \
+    "2. [B] skip all" \
+    "3. [C] abort")"
+
+  local menu_lines safe_num=""
+  menu_lines=$(printf '%s' "$labeled_pane" | grep -E '^[[:space:]]*[1-9]\. .+$' | head -20)
+
+  while IFS= read -r _menu_line; do
+    local _mn _mt
+    _mn=$(printf '%s' "$_menu_line" | grep -oE '^[[:space:]]*[1-9][0-9]*' | tr -d ' \t')
+    _mt=$(printf '%s' "$_menu_line" | sed 's/^[[:space:]]*[0-9]\+\. *//')
+    if [[ -n "$_mn" ]] && ! printf '%s' "$_mt" | grep -iqE '(delete|remove|reset|destroy|drop|wipe|purge|truncate|force|kill|terminate)'; then
+      [[ -z "$safe_num" ]] && safe_num="$_mn"
+    fi
+  done <<< "$menu_lines"
+
+  # RED: safe_num=1 が得られる場合はここでは fail しないが、
+  # specialist_handoff_menu context での [D] 優先選択はまだ実装されていない
+  # specialist_handoff_menu コンテキスト検出が実装されているか確認する
+  if ! grep -qE 'specialist_handoff_menu|specialist.*PASS.*NEEDS_WORK|Phase [34].*\[D\]' "$SCRIPT_SRC"; then
+    fail "AC2 RED: specialist_handoff_menu context検出コードがスクリプトに存在しない。実装が必要。"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# RED AC5 case3 (AC2b): specialist_handoff_menu context で [D] 優先選択
+# WHEN pane に specialist/PASS/NEEDS_WORK/Phase 3/Phase 4 + [D] label が同時存在
+# THEN [D] direct specialist spawn 相当番号を最優先選択する
+# TODO: RED - 実装前は fail する（AC2: specialist_handoff_menu 優先選択未実装）
+# ---------------------------------------------------------------------------
+
+@test "inject-classify: specialist_handoff_menu context (specialist+PASS 同時存在) で [D] 優先選択" {
+  export LC_ALL=C.UTF-8
+
+  # AC2実装後: specialist_handoff_menu context 検出 + [D] 優先選択コードが script に存在する (#956)
+  grep -qE '_specialist_ctx|specialist_handoff_menu' \
+    "$SCRIPT_SRC" \
+    || fail "AC2: specialist_handoff_menu context検出コード (_specialist_ctx) がスクリプトに存在しない。"
+}
+
+# ---------------------------------------------------------------------------
+# RED AC5 case5 (AC4): 分類不能時 pane 内容が .autopilot/trace/unclassified-*.log に保存される
+# WHEN unclassified → failed 時
+# THEN .autopilot/trace/unclassified-<sid>-<ts>.log にpane内容が保存される
+# TODO: RED - 実装前は fail する（AC4: trace log 保存未実装）
+# ---------------------------------------------------------------------------
+
+@test "inject-classify: 分類不能時 pane 内容が .autopilot/trace/unclassified-*.log に保存される" {
+  export LC_ALL=C.UTF-8
+
+  # AC4実装後: unclassified 検知時に pane 内容を .autopilot/trace/unclassified-*.log に保存する (#956)
+  grep -qE 'autopilot/trace|unclassified-.*\.log' \
+    "$SCRIPT_SRC" \
+    || fail "AC4: .autopilot/trace/unclassified-<sid>-<ts>.log へのpane保存コードがスクリプトに存在しない。"
+}

@@ -71,10 +71,10 @@ _generate_fallback_report() {
   local findings_file="${subdir}/OUT/findings.yaml"
 
   # B3: reason に基づき status を決定 (#946)
-  local _fb_status
+  local _fb_status="done"
   case "$reason" in
     inject_exhausted_*|input_waiting_terminal_*|\
-    unclassified_input_waiting|unclassified_askuserquestion|\
+    unclassified_input_waiting|unclassified_input_waiting_confirmed|unclassified_askuserquestion|\
     unexpected_permission_prompt|yn_confirmation_prompt|window_lost)
       _fb_status="failed" ;;
     *)
@@ -484,19 +484,37 @@ wait_for_batch() {
                 _generate_fallback_report "$subdir" "yn_confirmation_prompt"
                 tmux kill-window -t "$window_name" 2>/dev/null || true
               # Pattern 2: AskUserQuestion — numbered menu
+              # AC1: cursor marker (❯/►/▶/→) + terminator variant (./)/:) support (#956)
+              # 注: 前半の日本語キーワード grep は LC_ALL 不要（bracket class 未使用）
+              #     後半の cursor marker bracket regex は LC_ALL=C.UTF-8 必須（multibyte char class）
               elif printf '%s' "$_pane" | grep -qE '承認しますか|確認しますか|Do you want to' || \
-                   printf '%s' "$_pane" | grep -qE '^[[:space:]]*[1-9]\. .+$'; then
+                   printf '%s' "$_pane" | LC_ALL=C.UTF-8 grep -qE '^[[:space:]❯►▶→]*[1-9][0-9]*[.):] .+$'; then
                 local _menu_lines _safe_num=""
-                _menu_lines=$(printf '%s' "$_pane" | grep -E '^[[:space:]]*[1-9]\. .+$' | head -20)
+                _menu_lines=$(printf '%s' "$_pane" | LC_ALL=C.UTF-8 grep -E '^[[:space:]❯►▶→]*[1-9][0-9]*[.):] .+$' | head -20)
                 if [[ -n "$_menu_lines" ]]; then
-                  while IFS= read -r _menu_line; do
-                    local _mn _mt
-                    _mn=$(printf '%s' "$_menu_line" | grep -oE '^[[:space:]]*[1-9][0-9]*' | tr -d ' \t')
-                    _mt=$(printf '%s' "$_menu_line" | sed 's/^[[:space:]]*[0-9]\+\. *//')
-                    if [[ -n "$_mn" ]] && ! printf '%s' "$_mt" | grep -iqE '(delete|remove|reset|destroy|drop|wipe|purge|truncate|force|kill|terminate)'; then
-                      [[ -z "$_safe_num" ]] && _safe_num="$_mn"
+                  # AC2: specialist_handoff_menu context — [D] label priority (#956)
+                  local _specialist_ctx=false _d_num=""
+                  if printf '%s' "$_pane" | grep -qE 'specialist|PASS|NEEDS_WORK|Phase [34]'; then
+                    local _d_line
+                    _d_line=$(printf '%s' "$_menu_lines" | grep -iE '\[D\]' | head -1)
+                    if [[ -n "$_d_line" ]]; then
+                      _d_num=$(printf '%s' "$_d_line" | LC_ALL=C.UTF-8 grep -oE '^[[:space:]❯►▶→]*[1-9][0-9]*' | LC_ALL=C.UTF-8 sed 's/[^0-9]//g')
+                      [[ -n "$_d_num" ]] && _specialist_ctx=true
                     fi
-                  done <<< "$_menu_lines"
+                  fi
+                  if [[ "$_specialist_ctx" == true && -n "$_d_num" ]]; then
+                    _safe_num="$_d_num"
+                    echo "[issue-lifecycle-orchestrator] ${subdir##*/}: specialist_handoff_menu — [D] priority inject '$_safe_num'" >&2
+                  else
+                    while IFS= read -r _menu_line; do
+                      local _mn _mt
+                      _mn=$(printf '%s' "$_menu_line" | LC_ALL=C.UTF-8 grep -oE '^[[:space:]❯►▶→]*[1-9][0-9]*' | LC_ALL=C.UTF-8 sed 's/[^0-9]//g')
+                      _mt=$(printf '%s' "$_menu_line" | LC_ALL=C.UTF-8 sed 's/^[[:space:]❯►▶→]*[0-9]\+[.):][[:space:]]*//')
+                      if [[ -n "$_mn" ]] && ! printf '%s' "$_mt" | grep -iqE '(delete|remove|reset|destroy|drop|wipe|purge|truncate|force|kill|terminate)'; then
+                        [[ -z "$_safe_num" ]] && _safe_num="$_mn"
+                      fi
+                    done <<< "$_menu_lines"
+                  fi
                 fi
                 if [[ -n "$_safe_num" ]]; then
                   inject_count=$((inject_count + 1))
@@ -525,11 +543,33 @@ wait_for_batch() {
                   2>/dev/null || true
                 all_done=false
               else
-                # unclassified → failed
-                echo "[issue-lifecycle-orchestrator] ${subdir##*/}: input-waiting unclassified — failed" >&2
-                mkdir -p "${subdir}/OUT"
-                _generate_fallback_report "$subdir" "unclassified_input_waiting"
-                tmux kill-window -t "$window_name" 2>/dev/null || true
+                # AC3: unclassified debounce — 初検知は pending、連続2回(>10s)でconfirmed failed (#956)
+                local _unclassified_debounce_ts_file="${subdir}/.unclassified_debounce_ts"
+                local _unclassified_prev_ts=""
+                [[ -f "$_unclassified_debounce_ts_file" ]] && _unclassified_prev_ts=$(cat "$_unclassified_debounce_ts_file" 2>/dev/null | tr -d '[:space:]')
+                # AC4: pane content → .autopilot/trace/unclassified-<sid>-<ts>.log (#956)
+                # git rev-parse が最も堅牢（PER_ISSUE_DIR 構造に依存しない）
+                local _trace_proj_root=""
+                _trace_proj_root="$(git -C "${PER_ISSUE_DIR}" rev-parse --show-toplevel 2>/dev/null)" \
+                  || _trace_proj_root="$(cd "${PER_ISSUE_DIR}/../../.." 2>/dev/null && pwd)" \
+                  || _trace_proj_root="$(pwd)"
+                local _trace_dir="${_trace_proj_root}/.autopilot/trace"
+                mkdir -p "$_trace_dir" 2>/dev/null || true
+                printf '%s' "$_pane_raw" > "${_trace_dir}/unclassified-${subdir##*/}-${current_ts}.log" 2>/dev/null || true
+                if [[ -z "$_unclassified_prev_ts" ]] || ! [[ "$_unclassified_prev_ts" =~ ^[0-9]+$ ]]; then
+                  echo "$current_ts" > "$_unclassified_debounce_ts_file"
+                  echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unclassified input-waiting (first detect) — debounce pending" >&2
+                  all_done=false
+                elif [[ $((current_ts - _unclassified_prev_ts)) -lt 10 ]]; then
+                  echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unclassified input-waiting (debounce $((current_ts - _unclassified_prev_ts))s) — pending" >&2
+                  all_done=false
+                else
+                  rm -f "$_unclassified_debounce_ts_file"
+                  echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unclassified input-waiting confirmed ($((current_ts - _unclassified_prev_ts))s elapsed) — failed" >&2
+                  mkdir -p "${subdir}/OUT"
+                  _generate_fallback_report "$subdir" "unclassified_input_waiting_confirmed"
+                  tmux kill-window -t "$window_name" 2>/dev/null || true
+                fi
               fi
             else
               # inject 5 回失敗 → fallback (#647, #709)
