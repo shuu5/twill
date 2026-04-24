@@ -71,7 +71,7 @@ _generate_fallback_report() {
   local findings_file="${subdir}/OUT/findings.yaml"
 
   # B3: reason に基づき status を決定 (#946)
-  local _fb_status
+  local _fb_status="done"
   case "$reason" in
     inject_exhausted_*|input_waiting_terminal_*|\
     unclassified_input_waiting|unclassified_input_waiting_confirmed|unclassified_askuserquestion|\
@@ -485,8 +485,10 @@ wait_for_batch() {
                 tmux kill-window -t "$window_name" 2>/dev/null || true
               # Pattern 2: AskUserQuestion — numbered menu
               # AC1: cursor marker (❯/►/▶/→) + terminator variant (./)/:) support (#956)
+              # 注: 前半の日本語キーワード grep は LC_ALL 不要（bracket class 未使用）
+              #     後半の cursor marker bracket regex は LC_ALL=C.UTF-8 必須（multibyte char class）
               elif printf '%s' "$_pane" | grep -qE '承認しますか|確認しますか|Do you want to' || \
-                   LC_ALL=C.UTF-8 printf '%s' "$_pane" | grep -qE '^[[:space:]❯►▶→]*[1-9][0-9]*[.):] .+$'; then
+                   printf '%s' "$_pane" | LC_ALL=C.UTF-8 grep -qE '^[[:space:]❯►▶→]*[1-9][0-9]*[.):] .+$'; then
                 local _menu_lines _safe_num=""
                 _menu_lines=$(printf '%s' "$_pane" | LC_ALL=C.UTF-8 grep -E '^[[:space:]❯►▶→]*[1-9][0-9]*[.):] .+$' | head -20)
                 if [[ -n "$_menu_lines" ]]; then
@@ -546,8 +548,11 @@ wait_for_batch() {
                 local _unclassified_prev_ts=""
                 [[ -f "$_unclassified_debounce_ts_file" ]] && _unclassified_prev_ts=$(cat "$_unclassified_debounce_ts_file" 2>/dev/null | tr -d '[:space:]')
                 # AC4: pane content → .autopilot/trace/unclassified-<sid>-<ts>.log (#956)
-                local _trace_proj_root
-                _trace_proj_root="$(cd "${PER_ISSUE_DIR}/../../.." 2>/dev/null && pwd)" || _trace_proj_root="$(pwd)"
+                # git rev-parse が最も堅牢（PER_ISSUE_DIR 構造に依存しない）
+                local _trace_proj_root=""
+                _trace_proj_root="$(git -C "${PER_ISSUE_DIR}" rev-parse --show-toplevel 2>/dev/null)" \
+                  || _trace_proj_root="$(cd "${PER_ISSUE_DIR}/../../.." 2>/dev/null && pwd)" \
+                  || _trace_proj_root="$(pwd)"
                 local _trace_dir="${_trace_proj_root}/.autopilot/trace"
                 mkdir -p "$_trace_dir" 2>/dev/null || true
                 printf '%s' "$_pane_raw" > "${_trace_dir}/unclassified-${subdir##*/}-${current_ts}.log" 2>/dev/null || true
