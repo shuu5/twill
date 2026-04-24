@@ -10,7 +10,7 @@
 #   source "$(dirname "$0")/lib/observer-window-check.sh"
 #   _check_window_alive "wt-co-explore-114550" && echo "alive" || echo "gone"
 
-set -euo pipefail
+# NOTE: set -euo pipefail は意図的に省略（source 専用ライブラリ。strict mode は親シェルに継承される）
 
 # _check_window_alive: tmux window が実在するか確認する
 #

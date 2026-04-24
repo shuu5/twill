@@ -738,7 +738,15 @@ refs:
     path: skills/su-observer/refs/monitor-channel-catalog.md
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
-    description: "Monitor 標準チャネル定義（INPUT-WAIT / PILOT-IDLE / STAGNATE / WORKERS / PHASE-DONE / NON-TERMINAL / BUDGET-LOW）bash スニペット付き。STAGNATE/INPUT-WAIT/NON-TERMINAL/WORKERS に hook ベース検知セクション追加（#570）"
+    description: "Monitor 標準チャネル定義（INPUT-WAIT / PILOT-IDLE / STAGNATE / WORKERS / PHASE-DONE / NON-TERMINAL / BUDGET-LOW / PILOT-PHASE-COMPLETE / PILOT-ISSUE-MERGED / PILOT-WAVE-COLLECTED）bash スニペット付き。has-session 誤用修正（#948）"
+
+  # su-observer Pilot 完了 signal 定義 (#948 Phase AA 2026-04-24)
+  pilot-completion-signals:
+    type: reference
+    path: skills/su-observer/refs/pilot-completion-signals.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "Pilot が emit する完了 signal 一覧: controller 別表（orchestrator / auto-merge / merge-gate / wave-collect 等）+ Monitor filter regex snippet（PILOT-PHASE-COMPLETE / PILOT-ISSUE-MERGED / PILOT-WAVE-COLLECTED）+ PR merge 正しい query。Monitor filter 設定前に必ず参照する（#948）"
 
   # su-observer Pitfalls Catalog (Phase A 2026-04-21)
   pitfalls-catalog:
@@ -2525,6 +2533,12 @@ scripts:
     path: scripts/lib/gh-read-content.sh
     description: "Issue/PR body + 全 comments 取得ヘルパー（gh_read_issue_full / gh_read_pr_full 関数: content-reading は body + comments 必須ポリシーを実装）"
 
+  # observer window 存在確認共通ライブラリ (#948 Phase AA 2026-04-24)
+  observer-window-check:
+    type: script
+    path: scripts/lib/observer-window-check.sh
+    description: "tmux window 存在確認ライブラリ（source 専用）: _check_window_alive()（list-windows ベース）/ _get_window_session()。has-session -t 誤用（window 名を session specifier に渡すと常に false）の正しい代替実装（#948, R6）"
+
   pr-create-helper:
     type: script
     path: scripts/lib/pr-create-helper.sh
@@ -2736,6 +2750,12 @@ scripts:
     type: script
     path: skills/su-observer/scripts/budget-monitor-watcher.sh
     description: "su-observer budget 専用 Monitor watcher: 60s ループで threshold_percent を監視し [BUDGET-ALERT] を stdout に出力。Monitor tool と並行起動する。環境変数: PILOT_WINDOW（必須）"
+
+  # su-observer heartbeat watcher (#948 Phase AA 2026-04-24)
+  heartbeat-watcher:
+    type: script
+    path: skills/su-observer/scripts/heartbeat-watcher.sh
+    description: "su-observer heartbeat 監視: 5 分 silence 検出時に tmux capture-pane を自動実行し .supervisor/captures/ に保存。budget-monitor-watcher.sh と責務分離。co-autopilot spawn 直後に必ず起動（MUST）。環境変数: PILOT_WINDOW（必須）、SILENCE_THRESHOLD_SEC（default 300）"
 
   session-init:
     type: script

@@ -30,17 +30,22 @@ if [[ -z "$PILOT_WINDOW" ]]; then
   exit 1
 fi
 
+# PILOT_WINDOW をファイルパスに使うため英数字・ハイフン・アンダースコアのみ許可
+if [[ ! "$PILOT_WINDOW" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+  echo "[heartbeat-watcher] ERROR: PILOT_WINDOW に無効な文字が含まれています: ${PILOT_WINDOW}" >&2
+  exit 1
+fi
+
 mkdir -p "$CAPTURE_OUTPUT_DIR"
 
 _get_heartbeat_age() {
-  local now
+  local now hb_file mtime
   now=$(date +%s)
   local latest_mtime=0
   local latest_file=""
 
   for hb_file in "${EVENTS_DIR}"/heartbeat-*; do
     [[ -f "$hb_file" ]] || continue
-    local mtime
     mtime=$(stat -c %Y "$hb_file" 2>/dev/null || echo "0")
     if [[ "$mtime" -gt "$latest_mtime" ]]; then
       latest_mtime=$mtime
@@ -72,6 +77,7 @@ echo "[heartbeat-watcher] 起動: PILOT_WINDOW=${PILOT_WINDOW} threshold=${SILEN
 
 while true; do
   age=$(_get_heartbeat_age)
+  age="${age:-0}"  # empty guard (_get_heartbeat_age が空文字を返した場合の安全策)
 
   if [[ "$age" -eq -1 ]]; then
     echo "[heartbeat-watcher] WARN: heartbeat ファイルが存在しません（${EVENTS_DIR}/heartbeat-*）" >&2

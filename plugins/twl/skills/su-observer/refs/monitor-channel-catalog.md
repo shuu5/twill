@@ -474,9 +474,10 @@ check_budget_low() {
 ### 基本起動（Worker 群監視）
 
 ```bash
-# Monitor tool と cld-observe-any を必ず同時起動（SKILL.md L172 ポリシー踏襲）
+# Monitor tool と cld-observe-any を必ず同時起動（SKILL.md §supervise ポリシー踏襲）
+# pattern '(ap-|wt-co-).*' で Worker window と Pilot window の両方を対象にする（Issue #948 修正）
 plugins/session/scripts/cld-observe-any \
-  --pattern 'ap-.*' \
+  --pattern '(ap-|wt-co-).*' \
   --interval 180 \
   --stagnate-sec 600 \
   --budget-threshold 15 \
