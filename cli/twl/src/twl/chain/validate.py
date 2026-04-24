@@ -576,3 +576,47 @@ def chain_validate(deps: dict, plugin_root: Path) -> Tuple[List[str], List[str],
                 ok_count += 1
 
     return criticals, warnings, infos
+
+
+def handle_chain_validate_subcommand(argv: list[str]) -> int:
+    """CLI wrapper for chain_validate()."""
+    import argparse
+    import json
+
+    from twl.core.plugin import get_plugin_root, load_deps
+
+    parser = argparse.ArgumentParser(
+        prog='twl chain validate',
+        description='Validate chain/step semantic integrity',
+    )
+    parser.add_argument('--format', choices=['json'], help='Output format')
+    parser.add_argument('--integrity', action='store_true',
+                        help='Also run deps-integrity hash check')
+    args = parser.parse_args(argv)
+
+    plugin_root = get_plugin_root()
+    deps = load_deps(plugin_root)
+
+    criticals, warnings, infos = chain_validate(deps, plugin_root)
+
+    if args.integrity:
+        from twl.chain.integrity import check_deps_integrity
+        di_errors, di_warnings = check_deps_integrity(plugin_root)
+        criticals.extend(f"[deps-integrity] {e}" for e in di_errors)
+        warnings.extend(f"[deps-integrity] {w}" for w in di_warnings)
+
+    if args.format == 'json':
+        print(json.dumps({
+            'criticals': criticals,
+            'warnings': warnings,
+            'infos': infos,
+        }))
+    else:
+        for msg in criticals:
+            print(f"CRITICAL {msg}")
+        for msg in warnings:
+            print(f"WARNING {msg}")
+        for msg in infos:
+            print(f"INFO {msg}")
+
+    return 1 if criticals else 0

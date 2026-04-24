@@ -1007,6 +1007,149 @@ class TestChainStepSync:
         assert "dispatch_mode mismatch" not in result.stdout
 
 
+# ===========================================================================
+# AC#939: twl chain validate CLI エントリポイント
+# RED フェーズ: 以下のテストは twl chain validate サブコマンドが未実装の間は FAIL する
+# ===========================================================================
+
+import json as _json
+
+
+class TestChainValidateCLI(_ChainTestBase):
+    """twl chain validate CLI エントリポイントの RED テスト群 (Issue #939 AC1-AC3)"""
+
+    # --- AC1: twl chain validate が chain_validate() を呼び exit 0 を返す ---
+
+    def test_ac1_chain_validate_exit0_on_valid_deps(self):
+        """AC1: twl chain validate CLI エントリが存在し、valid な deps.yaml では exit 0 を返す。
+
+        RED: cli.py に 'chain validate' 分岐がない間は
+        "unknown chain subcommand 'validate'" エラーで exit 1 になる。
+        """
+        result = run_engine(self.plugin_dir, "chain", "validate")
+        assert result.returncode == 0, (
+            f"twl chain validate should exit 0 on valid deps (AC1).\n"
+            f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+
+    def test_ac1_chain_validate_exit1_on_critical(self):
+        """AC1: CRITICAL がある deps.yaml では twl chain validate が exit 1 を返す。
+
+        RED: 実装前はそもそも 'validate' サブコマンドが存在しないため
+        別の理由で exit 1 になるが、実装後は chain-bidir CRITICAL が原因の exit 1 になる。
+        """
+        def mutator(deps):
+            del deps["commands"]["ac-extract"]["chain"]
+        self._modify_deps(mutator)
+
+        result = run_engine(self.plugin_dir, "chain", "validate")
+        # exit 1 自体は現在も起きるが、chain-bidir メッセージがない
+        assert result.returncode != 0, (
+            "twl chain validate should exit 1 when CRITICAL exists (AC1)"
+        )
+        assert "[chain-bidir]" in result.stdout, (
+            f"Expected [chain-bidir] in stdout (AC1).\nstdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+
+    # --- AC2: --integrity flag で check_deps_integrity() も併走させる ---
+
+    def test_ac2_integrity_flag_runs_alongside_chain_validate(self):
+        """AC2: --integrity flag を渡すと check_deps_integrity() が chain_validate() と並走する。
+
+        RED: --integrity フラグが未実装の間はオプション解析エラーまたは無視される。
+        実装後は deps-integrity 関連の出力または正常 exit が期待される。
+        """
+        result = run_engine(self.plugin_dir, "chain", "validate", "--integrity")
+        assert result.returncode == 0, (
+            f"twl chain validate --integrity should exit 0 on valid deps (AC2).\n"
+            f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+
+    def test_ac2_integrity_flag_does_not_subsume_chain_validate(self):
+        """AC2: --integrity は chain_validate() の結果を置き換えず、両者が並存する。
+
+        RED: 実装前は --integrity フラグ自体が存在しないため unknown option エラーになる。
+        実装後は chain-bidir CRITICAL が存在すると exit 1 かつ両方の結果が出力される。
+        """
+        def mutator(deps):
+            del deps["commands"]["ac-extract"]["chain"]
+        self._modify_deps(mutator)
+
+        result = run_engine(self.plugin_dir, "chain", "validate", "--integrity")
+        assert result.returncode != 0, (
+            "twl chain validate --integrity should exit 1 when chain CRITICAL exists (AC2)"
+        )
+        assert "[chain-bidir]" in result.stdout, (
+            f"chain_validate() result should still appear with --integrity (AC2).\n"
+            f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+
+    # --- AC3: --format json で JSON 出力対応 ---
+
+    def test_ac3_format_json_produces_valid_json(self):
+        """AC3: --format json を渡すと stdout が parse 可能な JSON になる。
+
+        RED: --format json フラグが未実装の間は JSON でない出力またはエラーになる。
+        """
+        result = run_engine(self.plugin_dir, "chain", "validate", "--format", "json")
+        assert result.returncode == 0, (
+            f"twl chain validate --format json should exit 0 on valid deps (AC3).\n"
+            f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+        try:
+            data = _json.loads(result.stdout)
+        except _json.JSONDecodeError as e:
+            raise AssertionError(
+                f"stdout is not valid JSON (AC3): {e}\nstdout: {result.stdout!r}"
+            )
+        return data  # 次のテストで再利用しない（独立テスト）
+
+    def test_ac3_format_json_schema_has_required_keys(self):
+        """AC3: JSON 出力に criticals/warnings/infos キーが含まれる。
+
+        RED: --format json 未実装の間はキーが存在しない。
+        実装後は {"criticals": [...], "warnings": [...], "infos": [...]} 形式の JSON になる。
+        """
+        result = run_engine(self.plugin_dir, "chain", "validate", "--format", "json")
+        assert result.returncode == 0, (
+            f"twl chain validate --format json should exit 0 on valid deps (AC3).\n"
+            f"stdout: {result.stdout}\nstderr: {result.stderr}"
+        )
+        try:
+            data = _json.loads(result.stdout)
+        except _json.JSONDecodeError as e:
+            raise AssertionError(
+                f"stdout is not valid JSON (AC3): {e}\nstdout: {result.stdout!r}"
+            )
+        assert "criticals" in data, f"JSON missing 'criticals' key (AC3): {data}"
+        assert "warnings" in data, f"JSON missing 'warnings' key (AC3): {data}"
+        assert "infos" in data, f"JSON missing 'infos' key (AC3): {data}"
+
+    def test_ac3_format_json_criticals_populated_on_error(self):
+        """AC3: CRITICAL がある場合、JSON の criticals 配列にメッセージが入る。
+
+        RED: --format json 未実装の間は JSON キーが存在しない。
+        """
+        def mutator(deps):
+            del deps["commands"]["ac-extract"]["chain"]
+        self._modify_deps(mutator)
+
+        result = run_engine(self.plugin_dir, "chain", "validate", "--format", "json")
+        assert result.returncode != 0, (
+            "twl chain validate --format json should exit 1 when CRITICAL exists (AC3)"
+        )
+        try:
+            data = _json.loads(result.stdout)
+        except _json.JSONDecodeError as e:
+            raise AssertionError(
+                f"stdout is not valid JSON (AC3): {e}\nstdout: {result.stdout!r}"
+            )
+        assert "criticals" in data, f"JSON missing 'criticals' key (AC3): {data}"
+        assert len(data["criticals"]) > 0, (
+            f"criticals should be non-empty when CRITICAL exists (AC3): {data}"
+        )
+
+
 if __name__ == "__main__":
     import traceback
 
@@ -1019,6 +1162,7 @@ if __name__ == "__main__":
         TestTwlCheckIntegration,
         TestChainValidateEdgeCases,
         TestChainStepSync,
+        TestChainValidateCLI,
     ]
     passed = 0
     failed = 0
