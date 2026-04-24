@@ -429,3 +429,24 @@ gate deny (1 回目) → STOP（即時停止、追加試行禁止）→ AskUserQ
 - observer が Worker に直接介入する場合 → `session-comm.sh inject`（`spawn-controller.sh` 経由でない）
 
 詳細: `co-autopilot SKILL.md §Step 3.5 起動経路比較`
+
+---
+
+## 14. git 管理外実行時の pwd フォールバック禁止（#966 文書化）
+
+`chain-runner.sh` の `resolve_project_root()` が `git rev-parse --show-toplevel 2>/dev/null || pwd` を実装していた時期に、Worker の CWD が git 管理外になると `pwd` が project root として誤採用され user-global 書き込みが発生した（Wave AA.3 Phase 1、doobidoo `b81b1962`）。
+
+**症状**: Worker が `~/.claude/plugins/twl/.dev-session/issue-N/` に書き込もうとして permission prompt が発火する。本来の書き込み先は `<worktree>/.dev-session/issue-N/`。
+
+| # | Pitfall | 観察パターン | 対策 |
+|---|---------|------------|------|
+| 14.1 | `resolve_project_root()` が `\|\| pwd` で CWD を誤 root として採用する | Worker の permission prompt が `~/.claude/plugins/twl/.dev-session/issue-N` への mkdir を要求。CWD が `/tmp` や非 git パスになっている | **`\|\| pwd` は禁止**。ADR-027 の 3 段 fallback（tier 1: CWD rev-parse → tier 2: script-path rev-parse → tier 3: `return 1`）を使うこと |
+| 14.2 | Worker CWD が git 管理外になる経路 | `bash -c "cd /tmp && ..."` などで呼び出された chain-runner.sh が tier 1 失敗後に `pwd` = `/tmp` を採用する | tier 2 (script-path fallback) が `BASH_SOURCE[0]` のディレクトリから git rev-parse を試みる。script が worktree 内 symlink 経由で常駐している前提で救済可能 |
+| 14.3 | script 自体が worktree 外に配置される異常状態（tier 2 も fail） | script が `/tmp` にコピーされた状態で実行される | tier 3 が `[chain-runner] FATAL: resolve_project_root failed (cwd=..., script=...)` を stderr に出力し `return 1` で abort。誤 root への書き込みは構造的に不可能 |
+
+**正しい設計原則**:
+- `resolve_project_root()` で `pwd` を fallback として使ってはならない（ADR-027）
+- 他の `resolve_*` 関数（例: `resolve_autopilot_dir()`）でも同様の `|| pwd` fallback は禁止
+- 残骸 cleanup: `~/.claude/plugins/twl/.dev-session/` に孤児ファイルが残る場合は `plugins/twl/commands/cleanup-orphan-snapshots.md` の手順を参照
+
+**参照**: ADR-027, Issue #966, Issue #938 (per-issue namespace), doobidoo `b81b1962`
