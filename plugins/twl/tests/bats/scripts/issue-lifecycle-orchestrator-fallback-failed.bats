@@ -176,7 +176,7 @@ teardown() {
 # Scenario: aggregate.yaml あり + failed reason → status: failed
 # ---------------------------------------------------------------------------
 
-@test "fallback-failed: aggregate.yaml + inject_exhausted_5 → status:failed" {
+@test "fallback-failed: aggregate.yaml + inject_exhausted_5 → status:done (中間ファイルあり: 部分結果保持)" {
   local subdir
   subdir="$(mktemp -d)"
   mkdir -p "$subdir/OUT"
@@ -191,17 +191,18 @@ YAML
 
   local status
   status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
-  [ "$status" = "failed" ] \
-    || fail "Expected status=failed for aggregate.yaml + inject_exhausted_5, got: $status"
+  [ "$status" = "done" ] \
+    || fail "Expected status=done for aggregate.yaml + inject_exhausted_5 (中間ファイルあり維持), got: $status"
 
   rm -rf "$subdir"
 }
 
 # ---------------------------------------------------------------------------
-# Scenario: findings.yaml あり + failed reason → status: failed
+# Scenario: findings.yaml あり + failed reason → status: done (中間ファイルあり維持)
+# AC: 「中間ファイルあり (aggregate.yaml/findings.yaml) ケースは status:done のまま維持」
 # ---------------------------------------------------------------------------
 
-@test "fallback-failed: findings.yaml + window_lost → status:failed" {
+@test "fallback-failed: findings.yaml + window_lost → status:done (中間ファイルあり: 部分結果保持)" {
   local subdir
   subdir="$(mktemp -d)"
   mkdir -p "$subdir/OUT"
@@ -215,8 +216,8 @@ YAML
 
   local status
   status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
-  [ "$status" = "failed" ] \
-    || fail "Expected status=failed for findings.yaml + window_lost, got: $status"
+  [ "$status" = "done" ] \
+    || fail "Expected status=done for findings.yaml + window_lost (中間ファイルあり維持), got: $status"
 
   rm -rf "$subdir"
 }
