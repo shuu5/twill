@@ -18,7 +18,7 @@ which is a sensitive file.
 
 期待される書き込み先は `<worktree>/.dev-session/issue-955/` だが、Worker の CWD が git 管理外のパスになった場合、`|| pwd` フォールバックがその CWD を root として採用し、user-global 領域へ誤書き込みする危険があった。doobidoo hash `b81b1962` に詳細を記録済み。
 
-`resolve_project_root()` は chain-runner.sh 内の 7 つの呼出点（L231/L406/L475/L712/L794/L1227/L1241）で使われており、誤 root 採用による副作用は `.dev-session/` 書き込みから `cd "$root"` によるディレクトリ変更まで幅広い。
+`resolve_project_root()` は chain-runner.sh 内の 7 つの呼出点（L247/L422/L491/L728/L810/L1243/L1257、修正後の行番号）で使われており、誤 root 採用による副作用は `.dev-session/` 書き込みから `cd "$root"` によるディレクトリ変更まで幅広い。
 
 ## Decision
 
@@ -74,6 +74,7 @@ resolve_project_root() {
 ## References
 
 - Issue #966: `resolve_project_root()` の pwd フォールバック撤廃
+- `cli/twl/src/twl/autopilot/project.py` の `_resolve_project_root(project_type, explicit_root)` は別の Python 関数（プロジェクト作成時のディレクトリ解決のみを担う）。bash の `resolve_project_root()` とは無関係。
 - Issue #938: per-issue namespace（`.dev-session/issue-N/`）実装（直接の動機）
 - doobidoo `b81b1962`: Wave AA.3 Phase 1 permission prompt 発火記録
 - `plugins/twl/skills/su-observer/refs/pitfalls-catalog.md` §14
