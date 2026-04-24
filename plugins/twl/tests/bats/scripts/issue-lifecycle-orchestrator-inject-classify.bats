@@ -238,12 +238,12 @@ STUB
     || fail "[y/N]/[Y/n] pattern detection not found in script"
 }
 
-@test "inject-classify: [y/N] パターンに対して escalate (unclassified_input_waiting) が呼ばれる" {
-  # Check the script has a path from [y/N] detection to unclassified_input_waiting
+@test "inject-classify: [y/N] パターンに対して escalate (yn_confirmation_prompt) が呼ばれる" {
+  # Check the script has a path from [y/N] detection to yn_confirmation_prompt
   local yn_section
   yn_section=$(grep -A5 '\[y/N\]\|Y/n' "$SCRIPT_SRC" | head -20)
-  echo "$yn_section" | grep -q 'unclassified_input_waiting' \
-    || fail "Expected unclassified_input_waiting after [y/N] detection, not found in script context"
+  echo "$yn_section" | grep -q 'yn_confirmation_prompt' \
+    || fail "Expected yn_confirmation_prompt after [y/N] detection, not found in script context"
 }
 
 # ---------------------------------------------------------------------------

@@ -226,6 +226,22 @@ YAML
 # Scenario: 非 failed reason → status: done (既存動作維持)
 # ---------------------------------------------------------------------------
 
+@test "fallback-failed: yn_confirmation_prompt → report.json が status:failed になる" {
+  local subdir
+  subdir="$(mktemp -d)"
+  mkdir -p "$subdir/OUT"
+
+  source "$SCRIPT_SRC"
+  _generate_fallback_report "$subdir" "yn_confirmation_prompt"
+
+  local status
+  status=$(python3 -c "import json; d=json.load(open('$subdir/OUT/report.json')); print(d['status'])")
+  [ "$status" = "failed" ] \
+    || fail "Expected status=failed for yn_confirmation_prompt, got: $status"
+
+  rm -rf "$subdir"
+}
+
 @test "fallback-failed: 非失敗 reason の場合は status:done のまま" {
   local subdir
   subdir="$(mktemp -d)"

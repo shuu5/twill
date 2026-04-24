@@ -75,7 +75,7 @@ _generate_fallback_report() {
   case "$reason" in
     inject_exhausted_*|input_waiting_terminal_*|\
     unclassified_input_waiting|unclassified_askuserquestion|\
-    unexpected_permission_prompt|window_lost)
+    unexpected_permission_prompt|yn_confirmation_prompt|window_lost)
       _fb_status="failed" ;;
     *)
       _fb_status="done" ;;
@@ -462,7 +462,7 @@ wait_for_batch() {
               local _pane _pane_raw _capture_retry=0
               while [[ $_capture_retry -lt 3 ]]; do
                 _pane_raw=$(tmux capture-pane -t "$window_name" -p -S -50 2>/dev/null || true)
-                _pane=$(printf '%s' "$_pane_raw" | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b][^\x07]*\x07//g')
+                _pane=$(printf '%s' "$_pane_raw" | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b][^\x07]*\x07//g; s/\x1b][^\x1b]*\x1b\\//g')
                 local _last_ne
                 _last_ne=$(printf '%s' "$_pane" | grep -v '^[[:space:]]*$' | tail -1 | tr -d '[:space:]')
                 if [[ -n "$_last_ne" ]] && ! printf '%s' "$_last_ne" | grep -qE '^[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏|/\\-]+$'; then
@@ -476,6 +476,12 @@ wait_for_batch() {
                 echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unexpected permission prompt — failed" >&2
                 mkdir -p "${subdir}/OUT"
                 _generate_fallback_report "$subdir" "unexpected_permission_prompt"
+                tmux kill-window -t "$window_name" 2>/dev/null || true
+              # Pattern 3: y/N confirmation → escalate (before AskUserQuestion to avoid misclassification)
+              elif printf '%s' "$_pane" | grep -qE '\[y/N\]|\[Y/n\]'; then
+                echo "[issue-lifecycle-orchestrator] ${subdir##*/}: y/N prompt — failed (escalate)" >&2
+                mkdir -p "${subdir}/OUT"
+                _generate_fallback_report "$subdir" "yn_confirmation_prompt"
                 tmux kill-window -t "$window_name" 2>/dev/null || true
               # Pattern 2: AskUserQuestion — numbered menu
               elif printf '%s' "$_pane" | grep -qE '承認しますか|確認しますか|Do you want to' || \
@@ -506,12 +512,6 @@ wait_for_batch() {
                   _generate_fallback_report "$subdir" "unclassified_askuserquestion"
                   tmux kill-window -t "$window_name" 2>/dev/null || true
                 fi
-              # Pattern 3: y/N confirmation → escalate (safe default)
-              elif printf '%s' "$_pane" | grep -qE '\[y/N\]|\[Y/n\]'; then
-                echo "[issue-lifecycle-orchestrator] ${subdir##*/}: y/N prompt — failed (escalate)" >&2
-                mkdir -p "${subdir}/OUT"
-                _generate_fallback_report "$subdir" "unclassified_input_waiting"
-                tmux kill-window -t "$window_name" 2>/dev/null || true
               # Pattern 4: generic "Waiting for user input"
               elif printf '%s' "$_pane" | grep -q 'Waiting for user input'; then
                 inject_count=$((inject_count + 1))

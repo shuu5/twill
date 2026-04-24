@@ -20,7 +20,13 @@ if ! [[ "$MAX_PARALLEL" =~ ^[1-9][0-9]*$ ]]; then
   MAX_PARALLEL=3
 fi
 POLL_INTERVAL="${POLL_INTERVAL:-10}"
+if ! [[ "$POLL_INTERVAL" =~ ^[1-9][0-9]*$ ]]; then
+  POLL_INTERVAL=10
+fi
 MAX_POLL="${MAX_POLL:-360}"
+if ! [[ "$MAX_POLL" =~ ^[1-9][0-9]*$ ]]; then
+  MAX_POLL=360
+fi
 
 # --- 使い方 ---
 usage() {
