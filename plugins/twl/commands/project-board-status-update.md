@@ -6,13 +6,14 @@ maxTurns: 30
 ---
 # Project Board Status 更新
 
-Issue の Project Board Status を "In Progress" に更新する。
+Issue の Project Board Status を `{target_status}` に更新する。
 
 ## 引数
 
 | 引数 | 必須 | 説明 |
 |------|------|------|
 | ISSUE_NUM | Yes | Issue 番号（正の整数） |
+| target_status | No | 設定する Status 値（デフォルト: `In Progress`、例: `Refined`） |
 
 ## 処理フロー（MUST）
 
@@ -119,18 +120,21 @@ ITEM_ID=$(gh project item-add "$PROJECT_NUM" --owner "$OWNER" \
   --url "https://github.com/$REPO/issues/$ISSUE_NUM" --format json | jq -r '.id')
 ```
 
-### Step 4: Status を "In Progress" に更新
+### Step 4: Status を `{target_status}` に更新
 
-Status フィールドの "In Progress" オプション ID を取得し、`gh project item-edit` で更新。
+Status フィールドの `{target_status}` オプション ID を取得し、`gh project item-edit` で更新。
 
 ```bash
+TARGET_STATUS="${target_status:-In Progress}"
 FIELDS=$(gh project field-list "$PROJECT_NUM" --owner "$OWNER" --format json)
-# Status フィールドから "In Progress" オプション ID を取得
+# Status フィールドから {target_status} オプション ID を取得
+# STATUS_OPTION_ID=$(echo "$FIELDS" | jq -r --arg s "$TARGET_STATUS" \
+#   '.fields[] | select(.name=="Status") | .options[]? | select(.name==$s) | .id')
 # gh project item-edit --id "$ITEM_ID" --project-id "$PROJECT_ID" \
-#   --field-id "$STATUS_FIELD_ID" --single-select-option-id "$IN_PROGRESS_OPTION_ID"
+#   --field-id "$STATUS_FIELD_ID" --single-select-option-id "$STATUS_OPTION_ID"
 ```
 
-成功時: `"✓ Project Board Status → In Progress (#$ISSUE_NUM)"`
+成功時: `"✓ Project Board Status → {target_status} (#$ISSUE_NUM)"`
 
 ## エラーハンドリング
 

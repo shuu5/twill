@@ -19,6 +19,8 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
@@ -65,6 +67,113 @@ def _validate_absolute_path(name: str, value: str, issue: str, autopilot_dir: st
         raise LaunchError(f"--{name} にパストラバーサルは使用できません: {value}")
 
 
+_STATUS_GATE_LOG = os.environ.get(
+    "STATUS_GATE_LOG",
+    str(Path(tempfile.gettempdir()) / "refined-status-gate.log"),
+)
+_ALLOWED_STATUSES = {"Refined", "In Progress", "Done"}
+
+
+def _log_gate_event(event: str) -> None:
+    try:
+        from datetime import datetime, timezone
+        ts = datetime.now(timezone.utc).isoformat()
+        with open(_STATUS_GATE_LOG, "a") as f:
+            f.write(f"[{ts}] {event}\n")
+    except Exception:
+        pass
+
+
+def _check_refined_status(issue: str, bypass: bool = False) -> None:
+    """Check that Issue has Status=Refined (or allowed) before launching Worker.
+
+    Uses gh issue view --json projectItems to fetch project Board status.
+    Retry 3 times with exponential backoff on API failure.
+    Falls back to refined label check for cross-repo / Board-unregistered issues.
+
+    Raises LaunchError on deny.
+    """
+    if bypass:
+        _log_gate_event(f"BYPASS issue=#{issue}")
+        return
+
+    max_attempts = 3
+    delays = [1, 2, 4]
+    project_items_raw = ""
+    last_returncode = 0
+
+    for attempt in range(max_attempts):
+        result = subprocess.run(
+            ["gh", "issue", "view", issue, "--json", "projectItems"],
+            capture_output=True, text=True,
+        )
+        last_returncode = result.returncode
+        if result.returncode == 0 and result.stdout.strip():
+            project_items_raw = result.stdout
+            break
+        if attempt < max_attempts - 1:
+            time.sleep(delays[attempt])
+
+    def _label_fallback(issue_num: str) -> bool:
+        r = subprocess.run(
+            ["gh", "issue", "view", issue_num, "--json", "labels"],
+            capture_output=True, text=True,
+        )
+        if r.returncode != 0:
+            return False
+        try:
+            data = json.loads(r.stdout)
+            return any(
+                lb.get("name") == "refined"
+                for lb in data.get("labels", [])
+            )
+        except (json.JSONDecodeError, AttributeError):
+            return False
+
+    if not project_items_raw:
+        # API 障害（auth scope 不足等）→ label fallback 試行
+        if _label_fallback(issue):
+            _log_gate_event(f"ALLOW_LABEL_FALLBACK issue=#{issue}")
+            return
+        _log_gate_event(f"DENY_API_FAILURE issue=#{issue}")
+        raise LaunchError(
+            f"Issue #{issue}: GitHub API 障害により Status を取得できませんでした (3 回リトライ後)。\n"
+            "  対処: gh auth refresh -s project を実行してから再試行してください。"
+        )
+
+    try:
+        data = json.loads(project_items_raw)
+        nodes = data.get("projectItems", {}).get("nodes", [])
+    except (json.JSONDecodeError, AttributeError):
+        nodes = []
+
+    if not nodes:
+        # Board 未登録 → label fallback 試行（cross-repo Issue 対応）
+        if _label_fallback(issue):
+            _log_gate_event(f"ALLOW_LABEL_FALLBACK issue=#{issue}")
+            return
+        _log_gate_event(f"DENY_NOT_ON_BOARD issue=#{issue}")
+        raise LaunchError(
+            f"Issue #{issue} は Project Board に登録されていません。\n"
+            "  対処: Board に Issue を add してから再試行してください。"
+        )
+
+    # nodes の最初のエントリから status を取得
+    status_obj = nodes[0].get("status") if nodes else None
+    status = status_obj.get("name", "") if isinstance(status_obj, dict) else (status_obj or "")
+
+    if status in _ALLOWED_STATUSES:
+        _log_gate_event(f"ALLOW status={status} issue=#{issue}")
+        return
+
+    _log_gate_event(f"DENY status={status} issue=#{issue}")
+    raise LaunchError(
+        f"Issue #{issue} の Status={status} です。Refined への遷移が必要です。\n"
+        f"  現在: {status} → 必要: Refined\n"
+        "  対処: /twl:workflow-issue-refine を実行して Specialist review を完了してください。"
+    )
+
+
 class WorkerLauncher:
     """Launch autopilot Worker processes in tmux windows."""
 
@@ -85,6 +194,7 @@ class WorkerLauncher:
         repo_name: str = "",
         repo_path: str = "",
         worktree_dir: str = "",
+        bypass_status_gate: bool = False,
     ) -> str:
         """Launch Worker. Returns OK message."""
         # Validate issue
@@ -121,6 +231,13 @@ class WorkerLauncher:
             if not Path(worktree_dir).is_dir():
                 _record_failure(issue, "worktree_dir_not_found", "launch_worker", autopilot_dir, repo_id)
                 raise LaunchError(f"--worktree-dir が見つかりません: {worktree_dir}")
+
+        # Status pre-check (AC5/6/7): fail-closed, cross-repo fallback, observability
+        try:
+            _check_refined_status(issue, bypass=bypass_status_gate)
+        except LaunchError:
+            _record_failure(issue, "status_gate_deny", "status_pre_check", autopilot_dir, repo_id)
+            raise
 
         # Check cld
         cld_path = shutil.which("cld")
@@ -283,12 +400,14 @@ def _parse_args(argv: list[str]) -> dict[str, Any]:
         "repo_name": "",
         "repo_path": "",
         "worktree_dir": "",
+        "bypass_status_gate": False,
     }
     value_opts = {
         "--issue": "issue", "--project-dir": "project_dir", "--autopilot-dir": "autopilot_dir",
         "--model": "model", "--context": "context", "--repo-owner": "repo_owner",
         "--repo-name": "repo_name", "--repo-path": "repo_path", "--worktree-dir": "worktree_dir",
     }
+    flag_opts = {"--bypass-status-gate": "bypass_status_gate"}
     i = 0
     while i < len(argv):
         a = argv[i]
@@ -301,6 +420,9 @@ def _parse_args(argv: list[str]) -> dict[str, Any]:
                 sys.exit(1)
             args[value_opts[a]] = argv[i + 1]
             i += 2
+        elif a in flag_opts:
+            args[flag_opts[a]] = True
+            i += 1
         else:
             print(f"Error: 不明なオプション: {a}", file=sys.stderr)
             sys.exit(1)
@@ -327,6 +449,7 @@ def main(argv: list[str] | None = None) -> int:
             repo_name=parsed["repo_name"],
             repo_path=parsed["repo_path"],
             worktree_dir=parsed["worktree_dir"],
+            bypass_status_gate=parsed["bypass_status_gate"],
         )
         print(msg)
         return 0

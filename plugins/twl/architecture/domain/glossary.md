@@ -81,3 +81,4 @@
 | issue-lifecycle-orchestrator | co-issue v2 の Pilot 側オーケストレーター。N 個の workflow-issue-lifecycle Worker を tmux 経由で並列 spawn し、完了検知・集約を行う。MAX_PARALLEL=3 | Issue Management |
 | conflict | IssueState の状態値。deps.yaml コンフリクト検出時に Pilot が設定。Pilot リベース後に merge-ready に復帰、リトライ上限超過で failed に遷移 | Autopilot |
 | cli_dispatch | cli.py から分離された実装ロジックモジュール（#265） | TWiLL Integration |
+| Refined Status | Issue lifecycle の review 完了 marker。3 specialist review（issue-critic / issue-feasibility / worker-codex-reviewer）が完了した Issue に付与される Project Board Status field の値（先頭大文字 `Refined`、ADR-024）。従来の `refined` label（小文字）を補完し、Phase B 以降は Status のみで管理する。 | Issue Management, Autopilot |

@@ -201,7 +201,7 @@ fi
 `/twl:issue-arch-drift` を Skill tool で呼び出す:
 - 入力: 最終 body（最後の body-fixed.md または rounds/0/body.md）
 
-### Step 6': body 更新 + ラベル付与
+### Step 6': body 更新 + ラベル付与 + Status 書き込み（dual-write: label 先 → Status 後）
 
 `existing-issue.json` から `number` と `repo` を取得し、既存 Issue の body を更新する。
 
@@ -225,12 +225,22 @@ gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --body-file "$FINAL_BODY"
 
 # labels_hint のラベルを付与（既存ラベル・title は変更しない）
 # Step 4.5 で追加された "refined" ラベルも含む
+# dual-write 順序: label 先（ここまで）→ Status 後（下記）
+# 理由: Status を先に書くと autopilot が label 付与前に early spawn する race の可能性がある
 while IFS= read -r label; do
   [[ -n "$label" ]] && gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label "$label"
 done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
+
+# Status を Refined に更新（dual-write: label 書き込み完了後に実行）
+# 責任境界: #943 gate は Status=Refined の有無のみ確認、phase-review の内容は検証しない（#940 の責務）
+if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]]; then
+  bash "${SCRIPTS_ROOT:-$(dirname "$0")/../../scripts}/chain-runner.sh" \
+    board-status-update "$ISSUE_NUMBER" "Refined" 2>/dev/null || \
+    echo "⚠️  Status=Refined への Board 更新失敗（label は付与済み）"
+fi
 ```
 
-**制約**: 既存ラベル・title は変更しない（body のみ更新 + ラベル追加）。
+**制約**: 既存ラベル・title は変更しない（body のみ更新 + ラベル追加）。dual-write は label 先・Status 後の順序を厳守。Status 書き込み失敗時は label 付与済み状態で継続（ワークフロー停止しない）。
 
 ### Step 7: 完了
 

@@ -88,10 +88,12 @@ while [[ $# -gt 0 ]]; do
     --repo-name) REPO_NAME="$2"; shift 2 ;;
     --repo-path) REPO_PATH="$2"; shift 2 ;;
     --worktree-dir) WORKTREE_DIR="$2"; shift 2 ;;
+    --bypass-status-gate) BYPASS_STATUS_GATE=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Error: 不明なオプション: $1" >&2; exit 1 ;;
   esac
 done
+BYPASS_STATUS_GATE="${BYPASS_STATUS_GATE:-0}"
 
 # --- 入力バリデーション (Task 1.4) ---
 
@@ -196,6 +198,80 @@ if [[ -n "$WORKTREE_DIR" ]]; then
   if [[ ! -d "$WORKTREE_DIR" ]]; then
     echo "Error: --worktree-dir が見つかりません: $WORKTREE_DIR" >&2
     record_failure "worktree_dir_not_found" "launch_worker"
+    exit 1
+  fi
+fi
+
+# --- Status pre-check (AC5/6/7: fail-closed, cross-repo fallback, observability) ---
+_STATUS_GATE_LOG="${STATUS_GATE_LOG:-/tmp/refined-status-gate.log}"
+_check_refined_status() {
+  local issue_num="$1"
+  local bypass="${2:-0}"
+  if [[ "$bypass" -eq 1 ]]; then
+    echo "[$(date -Iseconds)] BYPASS issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+    return 0
+  fi
+  # Project Board から Status を取得（retry 3回 with exponential backoff）
+  local status="" attempt=0 max_attempts=3 delay=1
+  local project_num owner board_items
+  owner=$(gh repo view --json owner -q '.owner.login' 2>/dev/null || echo "")
+  project_num=$(python3 -m twl.config get project-board.number 2>/dev/null || echo "6")
+  while [[ $attempt -lt $max_attempts ]]; do
+    board_items=$(gh project item-list "$project_num" --owner "$owner" --format json --limit 200 2>/dev/null || echo "")
+    if [[ -n "$board_items" ]]; then
+      status=$(echo "$board_items" | jq -r --argjson n "$issue_num" \
+        '.items[] | select(.content.number==$n and .content.type=="Issue") | .status // empty' 2>/dev/null | head -1)
+      break
+    fi
+    attempt=$((attempt + 1))
+    if [[ $attempt -lt $max_attempts ]]; then
+      sleep "$delay"
+      delay=$((delay * 2))
+    fi
+  done
+  if [[ -z "$status" && -z "$board_items" ]]; then
+    # Board 取得失敗 → cross-repo fallback: refined label を確認
+    local has_label
+    has_label=$(gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null | grep -c '^refined$' || echo "0")
+    if [[ "$has_label" -gt 0 ]]; then
+      echo "[$(date -Iseconds)] ALLOW_LABEL_FALLBACK issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+      return 0
+    fi
+    echo "[$(date -Iseconds)] DENY_API_FAILURE issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+    echo "Error: GitHub API 障害により Status を取得できませんでした (3 回リトライ後)。" >&2
+    echo "  対処: gh auth refresh -s project を実行してから再試行してください。" >&2
+    return 1
+  fi
+  if [[ -z "$status" ]]; then
+    # Issue が Board 未登録 → cross-repo fallback: refined label を確認
+    local has_label
+    has_label=$(gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null | grep -c '^refined$' || echo "0")
+    if [[ "$has_label" -gt 0 ]]; then
+      echo "[$(date -Iseconds)] ALLOW_LABEL_FALLBACK issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+      return 0
+    fi
+    echo "[$(date -Iseconds)] DENY_NOT_ON_BOARD issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+    echo "Error: Issue #${issue_num} は Project Board に登録されていません。" >&2
+    echo "  対処: Board に Issue を add してから再試行してください。" >&2
+    return 1
+  fi
+  case "$status" in
+    "Refined"|"In Progress"|"Done")
+      echo "[$(date -Iseconds)] ALLOW status=${status} issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+      return 0
+      ;;
+    *)
+      echo "[$(date -Iseconds)] DENY status=${status} issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+      echo "Error: Issue #${issue_num} の Status=${status} です。Refined への遷移が必要です。" >&2
+      echo "  現在: ${status} → 必要: Refined" >&2
+      echo "  対処: /twl:workflow-issue-refine を実行して Specialist review を完了してください。" >&2
+      return 1
+      ;;
+  esac
+}
+if [[ -n "${ISSUE:-}" && "${ISSUE}" =~ ^[1-9][0-9]*$ ]]; then
+  if ! _check_refined_status "$ISSUE" "$BYPASS_STATUS_GATE"; then
+    record_failure "status_gate_deny" "status_pre_check"
     exit 1
   fi
 fi
