@@ -62,6 +62,9 @@ resolve_project_root() {
     return 0
   fi
   # tier 2: script 位置から rev-parse（Worker CWD が git 管理外でも救済）
+  # cd 失敗時は 2>/dev/null で抑制し || script_root="" に収束 → tier 3 へ。
+  # BASH_SOURCE[0] 未設定時（非 bash 実行等）は dirname が "." を返して cd が CWD に留まり
+  # git rev-parse が tier 1 と同結果を返す。CWD 非 git なら失敗 → tier 3 へ（安全）。
   local script_root
   script_root=$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null) || script_root=""
   if [[ -n "$script_root" ]]; then
