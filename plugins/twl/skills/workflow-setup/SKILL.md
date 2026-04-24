@@ -49,10 +49,8 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 7. **workflow-test-ready 遷移**:
    ```bash
    eval "$(bash "$CR" autopilot-detect)"
-   eval "$(bash "$CR" quick-detect)"
    ```
-   - IS_QUICK=true かつ IS_AUTOPILOT=true → workflow-test-ready **呼び出し禁止**。直接実装 → commit → push → PR 作成（`source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/pr-create-helper.sh" && pr_create_with_closes "$ISSUE_NUM" quick`、PR 本文に必ず `Closes #${ISSUE_NUM}` を機械的に挿入）→ **PR 作成直後に `bash "$CR" record-pr` を必ず呼ぶこと（MUST — #668: PR 番号を state に即座に記録）** → `bash "$CR" llm-delegate "ac-verify" "$ISSUE_NUM"` → `commands/ac-verify.md` Read → 実行（checkpoint 永続化必須）→ `bash "$CR" llm-complete "ac-verify" "$ISSUE_NUM"` → context.md 書き出し（下記スニペット）→ `python3 -m twl.autopilot.state write --autopilot-dir "${AUTOPILOT_DIR:-}" --type issue --issue "$ISSUE_NUM" --role worker --set "current_step=ac-verify"` を実行して停止（ADR-018: orchestrator が current_step=ac-verify を terminal として検知し workflow-pr-fix を inject する。merge-gate は workflow-pr-merge が担当）
-   - IS_QUICK=false かつ IS_AUTOPILOT=true → context.md 書き出し（下記スニペット）→ 停止（orchestrator が `current_step=ac-extract` を terminal として検知し次 workflow を inject する）
+   - IS_AUTOPILOT=true → context.md 書き出し（下記スニペット）→ 停止（orchestrator が `current_step=ac-extract` を terminal として検知し次 workflow を inject する）
    - IS_AUTOPILOT=false → 「setup chain 完了。次: `/twl:workflow-test-ready`」と案内
 
 **context.md 書き出しスニペット（停止直前）:**
