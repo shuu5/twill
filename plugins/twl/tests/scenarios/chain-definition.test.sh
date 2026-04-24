@@ -264,8 +264,7 @@ test_twl_chain_validate() {
     return 1
   fi
   local output
-  # twl chain validate は wrapper 未対応のため twl validate で chain 検証
-  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl chain validate 2>&1)
   # Check no chain-bidir or chain-type errors related to setup chain
   if echo "$output" | grep -qP "\[chain-bidir\]|\[chain-type\]|\[step-order\]"; then
     echo "$output" | grep -P "\[chain" >&2
@@ -286,7 +285,7 @@ test_twl_chain_validate_no_warnings() {
     return 1
   fi
   local output
-  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl chain validate 2>&1)
   if echo "$output" | grep -qP "\[chain.*WARNING\].*setup|setup.*\[chain.*WARNING\]"; then
     return 1
   fi
