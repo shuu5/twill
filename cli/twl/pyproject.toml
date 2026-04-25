@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "twl"
 version = "0.1.0"
 description = "TWiLL CLI - plugin structure analysis, validation, and visualization"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "pyyaml",
 ]
@@ -15,6 +15,9 @@ dependencies = [
 full = [
     "tiktoken",
     "rich",
+]
+mcp = [
+    "fastmcp>=3.0",
 ]
 
 [project.scripts]
