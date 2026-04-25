@@ -212,6 +212,19 @@ init_session_file() {
 }
 
 # ---------------------------------------------------------------------------
+# Test 3b: SESSION_FILE がシンボリックリンクの場合 exit 1 で中断する (security)
+# ---------------------------------------------------------------------------
+
+@test "session-atomic-write.sh は SESSION_FILE がシンボリックリンクなら exit 1 で中断する" {
+  init_session_file
+  local link_file="$SANDBOX/.autopilot/session_link.json"
+  ln -s "$SESSION_FILE" "$link_file"
+  run bash "$HELPER_SCRIPT" "$link_file" '.foo = 1'
+  assert_failure
+  assert_output --partial "シンボリックリンク"
+}
+
+# ---------------------------------------------------------------------------
 # Test 4 (AC1 schema check): self_improve_issues 要素型の schema drift 確認
 #
 # canonical schema (autopilot.md): self_improve_issues は number[]

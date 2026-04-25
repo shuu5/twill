@@ -25,7 +25,18 @@ if [[ ! -f "$SESSION_FILE" ]]; then
   exit 0
 fi
 
+# symlink attack 対策 (spec-review-session-init.sh と同一パターン)
+if [[ -L "$SESSION_FILE" ]]; then
+  echo "ERROR: SESSION_FILE はシンボリックリンクです — 中断します: $SESSION_FILE" >&2
+  exit 1
+fi
+
 LOCK_FILE="${SESSION_FILE}.lock"
+
+if [[ -L "$LOCK_FILE" ]]; then
+  echo "ERROR: LOCK_FILE はシンボリックリンクです — 中断します: $LOCK_FILE" >&2
+  exit 1
+fi
 
 (
   flock -x -w 10 9 || { echo "ERROR: flock タイムアウト (10s): $SESSION_FILE" >&2; exit 1; }

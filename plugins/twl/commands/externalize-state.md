@@ -146,19 +146,14 @@ fi
    SESSION_FILE="${AUTOPILOT_DIR}/session.json"
    PITFALL_HASHES='["hash1","hash2"]'  # 0件の場合は '[]'
    PITFALL_DECL="2-items"              # 0件の場合は "none"
-   python3 - <<PYEOF
-   import json
-   with open("$SESSION_FILE", "r") as f:
-       data = json.load(f)
-   log = data.get("externalization_log", [])
-   if log:
-       import ast
-       log[-1]["new_pitfall_hashes"] = json.loads('$PITFALL_HASHES')
-       log[-1]["pitfall_declaration"] = "$PITFALL_DECL"
-   with open("$SESSION_FILE", "w") as f:
-       json.dump(data, f, indent=2, ensure_ascii=False)
-   print("✓ pitfall_declaration 記録完了")
-   PYEOF
+   bash "${AUTOPILOT_DIR}/../plugins/twl/scripts/session-atomic-write.sh" \
+     "$SESSION_FILE" \
+     --argjson hashes "$PITFALL_HASHES" --arg decl "$PITFALL_DECL" \
+     'if (.externalization_log | length) > 0 then
+        .externalization_log[-1].new_pitfall_hashes = $hashes |
+        .externalization_log[-1].pitfall_declaration = $decl
+      else . end'
+   echo "✓ pitfall_declaration 記録完了"
    ```
 4. Exit Gate チェックスクリプトで検証:
    ```bash
