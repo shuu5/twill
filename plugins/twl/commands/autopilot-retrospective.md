@@ -124,10 +124,10 @@ mcp__doobidoo__memory_store({
 ### Step 5: session.json に追記
 
 ```bash
-tmp=$(mktemp)
-jq --arg phase "$P" --arg results "$RESULTS" --arg insights "$INSIGHTS" \
-  '.retrospectives += [{"phase": ($phase | tonumber), "results": $results, "insights": $insights}]' \
-  "$SESSION_STATE_FILE" > "$tmp" && mv "$tmp" "$SESSION_STATE_FILE"
+bash "$(dirname "$SESSION_STATE_FILE")/../plugins/twl/scripts/session-atomic-write.sh" \
+  "$SESSION_STATE_FILE" \
+  --arg phase "$P" --arg results "$RESULTS" --arg insights "$INSIGHTS" \
+  '.retrospectives += [{"phase": ($phase | tonumber), "results": $results, "insights": $insights}]'
 ```
 
 ## 禁止事項（MUST NOT）

@@ -80,6 +80,11 @@ Accepted
 - Pilot/Worker のアクセス方向を不変条件で保証（テストで検証）
 
 
+## Amendments
+
+- **ADR-026 cross-reference**: session.json への atomic RMW governance は [ADR-028-atomic-rmw-strategy.md](./ADR-028-atomic-rmw-strategy.md) を参照。4 経路 (retrospective / postprocess / patterns / externalize-state) の write authority matrix と flock(8) 保護戦略を定義する。
+
 ## 関連 ADR
 
 - **[ADR-018: state schema SSOT](./ADR-018-state-schema-ssot.md)**: `status` フィールドを外部観察の唯一の正典に指定。`workflow_done` フィールドの廃止と inject トリガー機構の `current_step` ベース化。
+- **[ADR-028: atomic RMW strategy](./ADR-028-atomic-rmw-strategy.md)**: session.json の 4 RMW 経路を flock(8) で保護する戦略。

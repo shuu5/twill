@@ -65,10 +65,10 @@ IF パターンの confidence >= 80 AND count >= 2:
     --body-file "/tmp/self-improve-pattern-${SESSION_ID}.md"
 
   # session.json に記録
-  tmp=$(mktemp)
-  jq --arg url "$ISSUE_URL" --arg title "$SAFE_TITLE" \
-    '.self_improve_issues += [{"url": $url, "title": $title}]' \
-    "$SESSION_STATE_FILE" > "$tmp" && mv "$tmp" "$SESSION_STATE_FILE"
+  bash "$(dirname "$SESSION_STATE_FILE")/../plugins/twl/scripts/session-atomic-write.sh" \
+    "$SESSION_STATE_FILE" \
+    --arg url "$ISSUE_URL" --arg title "$SAFE_TITLE" \
+    '.self_improve_issues += [{"url": $url, "title": $title}]'
 ELSE:
   # doobidoo キャッシュにのみ記録
 ```
