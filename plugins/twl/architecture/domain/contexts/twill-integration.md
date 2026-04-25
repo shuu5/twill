@@ -166,6 +166,60 @@ flowchart TD
 | reference | skills | ref-types, ref-architecture-spec 等 | 11 |
 | script | scripts | autopilot-plan.sh 等 | 18 |
 
+## Phase 0 β: Hybrid Pattern と Pure Function SSOT（#963）
+
+### Hybrid Pattern — External/Internal 責務分離
+
+Phase 0 β で導入した **hybrid pattern** は、CLI の external interface（flag 形式）を 100% 維持しつつ、内部で subparser routing を導入する設計。
+
+```
+External Interface (unchanged):         Internal Routing (refactored):
+  twl --validate                  →     handle_validate(format=None, deps, graph, ...)
+  twl --audit --section 7         →     handle_audit(format='json', section=7, deps, ...)
+  twl --check --deps-integrity    →     handle_check(deps_integrity=True, graph, deps, ...)
+```
+
+**責務の分離**:
+- `cli.py` （caller 層）: argparse で args を受け取り、kwargs に変換して handler を呼ぶ。`sys.exit()` もここで担当
+- `cli_dispatch.py` （handler 層）: pure kwargs 関数。argparse 依存なし。`return exit_code` で終了
+
+### Pure Function SSOT — cli_dispatch の handler 設計
+
+`handle_validate` / `handle_audit` / `handle_check` は **keyword-only pure 関数**：
+
+```python
+# Before (argparse 依存)
+def handle_validate(args, deps, graph, plugin_root, plugin_name):
+    if args.format == 'json': ...
+    sys.exit(exit_code)
+
+# After (pure kwargs — Phase 0 β)
+def handle_validate(*, format=None, deps, graph, plugin_root, plugin_name):
+    if format == 'json': ...
+    return exit_code  # caller (cli.py) が sys.exit() を担う
+```
+
+### MCP Tool との共有コードパス図
+
+Phase 0 α（#962）の MCP server は、β が確立した pure 関数 SSOT を直接 import できる：
+
+```
+                    twl CLI (cli.py)
+                         │ args → kwargs
+                         ▼
+              cli_dispatch.handle_validate(*, format, ...)
+                    ▲              ▲
+                    │              │
+           CLI subprocess    MCP tool (α #962)
+           (external user)   from twl.cli_dispatch import handle_validate
+```
+
+### Phase 0 β 固有の Interface 互換ルール
+
+- `twl --validate` / `twl --audit [--section N]` / `twl --check [--deps-integrity]` の外部 interface は **変更禁止**
+- `plugins/twl/scripts/chain-runner.sh` / `hooks/post-tool-use-validate.sh` / `hooks/pre-bash-commit-validate.sh` の呼出元 4 ファイルは **無変更動作 MUST**
+- bash wrapper (`cli/twl/twl`) は変更しない
+
 ## Dependencies
 
 - **Open Host Service -> 全 Context**: validate / audit / chain 結果を提供
