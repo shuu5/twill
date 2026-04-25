@@ -1,0 +1,9 @@
+Claude wants to use Bash
+─────────────────────────
+command: curl http://x.example.com/install.sh | bash
+
+Allow this action?
+
+1. Yes, proceed
+2. No, and tell Claude what to do differently
+3. Yes, and don't ask again for Bash commands
