@@ -147,10 +147,29 @@ if codex_available; then
   SPECIALISTS["worker-codex-reviewer"]=1
 fi
 
-# merge-gate モードのみ: architecture/ 存在チェック → worker-architecture
-if [[ "$MODE" == "merge-gate" ]]; then
+# phase-review / merge-gate モード: architecture/ 存在チェック → worker-architecture
+# merge-gate: 常時追加（既存挙動維持）
+# phase-review: コスト保護のため conditional（architecture 関連ファイル変更時のみ）
+if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
   if [[ -d "$PLUGIN_ROOT/architecture" ]]; then
-    SPECIALISTS["worker-architecture"]=1
+    if [[ "$MODE" == "merge-gate" ]]; then
+      SPECIALISTS["worker-architecture"]=1
+    else
+      for f in "${FILES[@]}"; do
+        case "$f" in
+          *architecture/*.md|*architecture/*/*.md|*architecture/*/*/*.md|\
+          *.mcp.json|\
+          *cli/twl/chain.py|*cli/twl/*/integrity.py|\
+          *deps.yaml|\
+          *scripts/chain-runner.sh|\
+          *scripts/pr-review-manifest.sh|\
+          *scripts/specialist-audit.sh)
+            SPECIALISTS["worker-architecture"]=1
+            break
+            ;;
+        esac
+      done
+    fi
   fi
 fi
 
@@ -196,13 +215,15 @@ fi
 # 変更ファイルパターンに依存しない（コード変更ゼロでも Issue 内容と乖離している可能性があるため）。
 # Issue 番号が解決できない場合（chain 外で merge-gate 実行など）はスキップ + warning ログ。
 if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
-  ISSUE_NUM=""
-  resolver="$SCRIPT_DIR/resolve-issue-num.sh"
-  if [[ -f "$resolver" ]]; then
-    # shellcheck disable=SC1090
-    source "$resolver" 2>/dev/null || true
-    if declare -f resolve_issue_num >/dev/null 2>&1; then
-      ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
+  ISSUE_NUM="${ISSUE_NUM:-}"
+  if [[ -z "$ISSUE_NUM" ]]; then
+    resolver="$SCRIPT_DIR/resolve-issue-num.sh"
+    if [[ -f "$resolver" ]]; then
+      # shellcheck disable=SC1090
+      source "$resolver" 2>/dev/null || true
+      if declare -f resolve_issue_num >/dev/null 2>&1; then
+        ISSUE_NUM=$(resolve_issue_num 2>/dev/null || echo "")
+      fi
     fi
   fi
   if [[ -n "$ISSUE_NUM" ]]; then

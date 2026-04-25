@@ -58,6 +58,14 @@ chain 正規 flow における phase-review の必須保証を以下 5 レイヤ
 - 5 レイヤーのいずれかが機能不全の場合は残レイヤーが safety net として機能する
 - 本 ADR の適用範囲は co-autopilot 経由の全 Issue 実装フローとする
 
+## Known Gaps
+
+**Known Gap 1 (解消済み)**: phase-review mode での `worker-architecture` 欠落（mode mismatch）は #971 修正 A で解消済み (`pr-review-manifest.sh:150-174` を phase-review / merge-gate 統合 + conditional trigger に変更)。
+
+**Known Gap 2 (追跡中)**: composite step LLM bypass — `commands/phase-review.md` が composite step のため、LLM が Read のみで Task spawn せず次 step に進めば検出されない（#963 actual=[]）。本 ADR では未カバー。修正 C (chain-runner.sh + chain.py での `subagent_type=*` 出現必須化、ADR-025 Layer 1 拡張) を別 Issue として追跡予定。この弱点は Layer 1 (CHAIN_STEPS 固定) が dispatch 保証のみで実行内容を検証しないことに起因する。
+
+**Known Gap 3 (追跡中)**: `SPECIALIST_AUDIT_MODE=warn` の長期化 — `specialist-audit.sh` のデフォルトが `warn` のため、FAIL を exit 0 で素通りしている。修正 A/G (#971) が main に入った後、false-positive 0 件を 2 週間確認してから warn → fail 昇格（修正 E）を別 Issue で実施予定。
+
 ## References
 
 - #940 (本 ADR 起票 Issue)
