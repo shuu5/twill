@@ -65,7 +65,14 @@ def main():
                                 help='Hash-verify chain.py ↔ deps.yaml ↔ chain-steps.sh (blocks on drift)')
         sub_args = sub_parser.parse_args(sys.argv[2:])
         plugin_root, deps, graph, plugin_name = _load_plugin_context()
-        sys.exit(handle_check(sub_args, graph, deps, plugin_root, plugin_name))
+        sys.exit(handle_check(
+            format=sub_args.format,
+            deps_integrity=sub_args.deps_integrity,
+            graph=graph,
+            deps=deps,
+            plugin_root=plugin_root,
+            plugin_name=plugin_name,
+        ))
 
     # refine サブコマンド
     if len(sys.argv) >= 2 and sys.argv[1] == 'refine':
@@ -105,6 +112,8 @@ def main():
     parser.add_argument('--target', help='Show dependencies for target')
     parser.add_argument('--reverse', help='Show reverse dependencies for target')
     parser.add_argument('--check', action='store_true', help='Check file existence')
+    parser.add_argument('--deps-integrity', action='store_true',
+                        help='Hash-verify chain.py ↔ deps.yaml ↔ chain-steps.sh (use with --check)')
     parser.add_argument('--validate', action='store_true', help='Validate type rules (can_spawn/spawnable_by)')
     parser.add_argument('--list', action='store_true', help='List all nodes')
     parser.add_argument('--update-readme', action='store_true', help='Update README.md with SVG graph and Entry Points table')
@@ -169,10 +178,23 @@ def main():
         sys.exit(0 if success else 1)
 
     if args.check:
-        sys.exit(handle_check(args, graph, deps, plugin_root, plugin_name))
+        sys.exit(handle_check(
+            format=args.format,
+            deps_integrity=args.deps_integrity,
+            graph=graph,
+            deps=deps,
+            plugin_root=plugin_root,
+            plugin_name=plugin_name,
+        ))
 
     if args.validate:
-        handle_validate(args, deps, graph, plugin_root, plugin_name)
+        sys.exit(handle_validate(
+            format=args.format,
+            deps=deps,
+            graph=graph,
+            plugin_root=plugin_root,
+            plugin_name=plugin_name,
+        ))
 
     if args.orphans:
         handle_orphans(args, graph, deps)
@@ -180,7 +202,13 @@ def main():
     if args.deep_validate:
         handle_deep_validate(args, deps, graph, plugin_root, plugin_name)
     elif args.audit:
-        handle_audit(args, deps, plugin_root, plugin_name)
+        sys.exit(handle_audit(
+            format=args.format,
+            section=args.section,
+            deps=deps,
+            plugin_root=plugin_root,
+            plugin_name=plugin_name,
+        ))
     elif args.list:
         handle_list(args, graph)
     elif args.target:

@@ -58,7 +58,7 @@ def handle_tokens(args, graph):
     print(f"=== Total: {total_tokens:,} tokens ===")
 
 
-def handle_check(args, graph, deps, plugin_root, plugin_name):
+def handle_check(*, format=None, deps_integrity=False, graph, deps, plugin_root, plugin_name):
     from twl.chain.integrity import check_deps_integrity
 
     results, check_xref_warnings = check_files(graph, plugin_root)
@@ -75,14 +75,13 @@ def handle_check(args, graph, deps, plugin_root, plugin_name):
         cv_criticals_check, cv_warnings_check, cv_infos_check = chain_validate(deps, plugin_root)
         chain_items = deep_validate_to_items(cv_criticals_check, cv_warnings_check, cv_infos_check)
 
-    # deps-integrity: always run; blocking only when --deps-integrity is specified
+    # deps-integrity: always run; blocking only when deps_integrity=True is specified
     di_errors, di_warnings = check_deps_integrity(plugin_root)
-    deps_integrity_flag = getattr(args, 'deps_integrity', False)
-    integrity_blocks = deps_integrity_flag and bool(di_errors)
+    integrity_blocks = deps_integrity and bool(di_errors)
 
     exit_code = 1 if (missing_count > 0 or cv_criticals_check or integrity_blocks) else 0
 
-    if args.format == 'json':
+    if format == 'json':
         items = check_results_to_items(results)
         items.extend(violations_to_items(check_xref_warnings, "warning"))
         items.extend(chain_items)
@@ -130,7 +129,7 @@ def handle_check(args, graph, deps, plugin_root, plugin_name):
         print()
         print("=== Deps Integrity Results ===")
         if di_errors:
-            label = "Error" if deps_integrity_flag else "Warning"
+            label = "Error" if deps_integrity else "Warning"
             for e in di_errors:
                 print(f"  [{label}] {e}")
         for w in di_warnings:
@@ -139,7 +138,7 @@ def handle_check(args, graph, deps, plugin_root, plugin_name):
     return exit_code
 
 
-def handle_validate(args, deps, graph, plugin_root, plugin_name):
+def handle_validate(*, format=None, deps, graph, plugin_root, plugin_name):
     ok_count, violations, xref_warnings = validate_types(deps, graph, plugin_root)
     body_ok, body_violations = validate_body_refs(deps, plugin_root)
     ok_count += body_ok
@@ -153,12 +152,12 @@ def handle_validate(args, deps, graph, plugin_root, plugin_name):
 
     exit_code = 1 if violations else 0
 
-    if args.format == 'json':
+    if format == 'json':
         items = violations_to_items(violations)
         items.extend(violations_to_items(xref_warnings, "warning"))
         envelope = build_envelope("validate", get_deps_version(deps), plugin_name, items, exit_code)
         output_json(envelope)
-        sys.exit(exit_code)
+        return exit_code
 
     print(f"=== Type Validation Results ===")
     print(f"OK: {ok_count}, Violations: {len(violations)}")
@@ -174,9 +173,10 @@ def handle_validate(args, deps, graph, plugin_root, plugin_name):
         print("Violations:")
         for v in violations:
             print(f"  - {v}")
-        sys.exit(1)
+        return 1
     else:
         print("All type constraints satisfied.")
+    return 0
 
 
 def handle_orphans(args, graph, deps):
@@ -275,8 +275,8 @@ def handle_deep_validate(args, deps, graph, plugin_root, plugin_name):
         sys.exit(1)
 
 
-def handle_audit(args, deps, plugin_root, plugin_name):
-    section_filter = getattr(args, 'section', None)
+def handle_audit(*, format=None, section=None, deps, plugin_root, plugin_name):
+    section_filter = section
     section_name_map = {
         1: 'controller_size',
         2: 'inline_implementation',
@@ -290,7 +290,7 @@ def handle_audit(args, deps, plugin_root, plugin_name):
         10: 'cross_layer_consistency',
     }
 
-    if args.format == 'json':
+    if format == 'json':
         items = audit_collect(deps, plugin_root)
         if section_filter is not None:
             target_section = section_name_map.get(section_filter)
@@ -299,7 +299,7 @@ def handle_audit(args, deps, plugin_root, plugin_name):
         exit_code = 1 if any(i['severity'] == 'critical' for i in items) else 0
         envelope = build_envelope("audit", get_deps_version(deps), plugin_name, items, exit_code)
         output_json(envelope)
-        sys.exit(exit_code)
+        return exit_code
 
     if section_filter == 9:
         from twl.validation.audit import audit_chain_integrity
@@ -332,9 +332,7 @@ def handle_audit(args, deps, plugin_root, plugin_name):
         print(f"| CRITICAL | {criticals} |")
         print(f"| WARNING  | {warnings} |")
         print(f"| OK       | {oks} |")
-        if criticals > 0:
-            sys.exit(1)
-        return
+        return 1 if criticals > 0 else 0
 
     if section_filter == 10:
         from twl.validation.audit import audit_cross_layer_consistency, _detect_monorepo_root
@@ -381,15 +379,12 @@ def handle_audit(args, deps, plugin_root, plugin_name):
         print(f"| CRITICAL | {criticals} |")
         print(f"| WARNING  | {warnings} |")
         print(f"| OK       | {oks} |")
-        if criticals > 0:
-            sys.exit(1)
-        return
+        return 1 if criticals > 0 else 0
 
     print("=== TWiLL Compliance Audit ===")
     print()
     audit_criticals, audit_warnings, audit_oks = audit_report(deps, plugin_root)
-    if audit_criticals > 0:
-        sys.exit(1)
+    return 1 if audit_criticals > 0 else 0
 
 
 def handle_list(args, graph):
