@@ -25,16 +25,19 @@ teardown() {
 # ===========================================================================
 
 @test "C-1 fixture: specialist-audit-963 JSON exists in main repo .audit dir" {
+  [[ -d "$MAIN_REPO_ROOT/.audit" ]] || skip "MAIN_REPO_ROOT .audit dir not available (CI environment)"
   run ls -la "${MAIN_REPO_ROOT}/.audit/20260425-110509/specialist-audit-963-1777082709849176995-2292910.json"
   assert_success
 }
 
 @test "C-1 fixture: specialist-audit-962 JSON exists in main repo .audit dir" {
+  [[ -d "$MAIN_REPO_ROOT/.audit" ]] || skip "MAIN_REPO_ROOT .audit dir not available (CI environment)"
   run ls -la "${MAIN_REPO_ROOT}/.audit/20260425-110510/specialist-audit-962-1777082710046179863-2293028.json"
   assert_success
 }
 
 @test "C-1 fixture: specialist-audit-964 JSON exists in main repo .audit dir" {
+  [[ -d "$MAIN_REPO_ROOT/.audit" ]] || skip "MAIN_REPO_ROOT .audit dir not available (CI environment)"
   run ls -la "${MAIN_REPO_ROOT}/.audit/20260425-140944/specialist-audit-964-1777093784086158351-2892684.json"
   assert_success
 }
