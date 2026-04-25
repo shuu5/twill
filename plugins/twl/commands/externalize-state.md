@@ -158,7 +158,7 @@ fi
 4. Exit Gate チェックスクリプトで検証:
    ```bash
    bash "${AUTOPILOT_DIR}/../plugins/twl/scripts/externalize-state-exit-gate.sh" \
-     "$(basename $AUTOPILOT_DIR)" "$SESSION_FILE"
+     "$(basename "$AUTOPILOT_DIR")" "$SESSION_FILE"
    # exit 0 → OK, exit 1 → WARN（宣言漏れ）, exit 2 → session.json 不在
    ```
 
