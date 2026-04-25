@@ -201,4 +201,4 @@ class TestAC6RegexAccuracy:
         result = match_prompt(pane)
         # no-match 経路では inject_requires_force=True であること
         assert result.result == "no-match"
-        assert getattr(result, "inject_requires_force", True) is True
+        assert result.inject_requires_force is True

@@ -5,6 +5,7 @@
 #
 # Coverage (RED phase — 未実装のため多くのテストが fail):
 #   AC1: cld-observe-any emit_event に prompt_context / options フィールドが追加されている
+#   AC2: intervene-auto.md に --pattern permission-ui-response が追加されている
 #   AC3: soft-deny-rules.md が新設され schema_version/必須ルールを含む
 #   AC5: monitor-channel-catalog / pitfalls-catalog / intervention-catalog / observation-pattern-catalog 更新
 

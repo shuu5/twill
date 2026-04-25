@@ -13,6 +13,14 @@
 
 load '../helpers/common'
 
+# API contract: soft_deny_match は2つのインターフェースを持つ
+#   1. CLI モード: stdin 経由でペイン内容を受け取り JSON を stdout に出力
+#      例: python3 -m twl.intervention.soft_deny_match < fixture.txt
+#   2. Python API: match_prompt(pane: str) -> MatchResult を直接呼ぶ
+#      例: from twl.intervention.soft_deny_match import match_prompt; match_prompt(text)
+# bats テストは CLI モード (stdin) を使用し、pytest は Python API を使用する。
+# 両インターフェースは同一ロジックを呼び出すこと (MUST)。
+
 FIXTURE=""
 CLI_SRC=""
 
