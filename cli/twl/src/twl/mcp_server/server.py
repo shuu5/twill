@@ -9,6 +9,9 @@ Or with uv:
 """
 from twl.mcp_server.tools import mcp
 
+# Note: mcp is None only when fastmcp is not installed.
+# `fastmcp run` itself requires fastmcp, so mcp is always a FastMCP instance
+# when invoked via `fastmcp run`. The guard below covers direct `python server.py` only.
 if __name__ == "__main__":
     if mcp is None:
         raise RuntimeError("fastmcp is not installed. Run: pip install -e '.[mcp]'")

@@ -7,12 +7,21 @@ import json
 from pathlib import Path
 
 
-def _load_plugin_ctx(plugin_root: str):
+def _load_plugin_ctx(plugin_root: str) -> "tuple[Path, dict, dict, str]":
     from twl.core.plugin import load_deps, build_graph, get_plugin_name
-    p = Path(plugin_root)
-    deps = load_deps(p)
-    graph = build_graph(deps, p)
-    plugin_name = get_plugin_name(deps, p)
+    # Resolve to absolute path to prevent path traversal
+    p = Path(plugin_root).expanduser().resolve()
+    if not p.is_dir():
+        raise ValueError(f"plugin_root '{plugin_root}' is not a directory")
+    try:
+        deps = load_deps(p)
+        graph = build_graph(deps, p)
+        plugin_name = get_plugin_name(deps, p)
+    except SystemExit as exc:
+        raise ValueError(
+            f"Failed to load plugin context from '{plugin_root}': "
+            "deps.yaml not found or invalid"
+        ) from exc
     return p, deps, graph, plugin_name
 
 
