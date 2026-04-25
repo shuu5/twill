@@ -147,7 +147,7 @@ class TestACGamma2McpEntryFormat:
             f"args に '--extra' が含まれない: {args} (AC-γ2 未実装)"
         )
         extra_idx = args.index("--extra")
-        assert args[extra_idx + 1] == "mcp" if extra_idx + 1 < len(args) else False, (
+        assert extra_idx + 1 < len(args) and args[extra_idx + 1] == "mcp", (
             f"--extra の次が 'mcp' でない: {args} (AC-γ2 未実装)"
         )
 
@@ -390,7 +390,8 @@ class TestACGamma6DeployStrategy:
         # AC: .mcp.json が per-repo MCP 設定の SSOT であることが明記されていること
         # RED: 記述なしのため FAIL
         content = self._get_content()
-        assert "SSOT" in content or "single source of truth" in content.lower() or "単一.*真実" in content, (
+        import re as _re
+        assert "SSOT" in content or "single source of truth" in content.lower() or _re.search(r"単一.*真実", content), (
             "twill-integration.md に .mcp.json SSOT 明記がない (AC-γ6 未実装)"
         )
 
