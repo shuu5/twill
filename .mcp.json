@@ -3,6 +3,19 @@
     "code-review-graph": {
       "command": "uvx",
       "args": ["code-review-graph", "serve"]
+    },
+    "twl": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/home/shuu5/projects/local-projects/twill/main/cli/twl",
+        "--extra", "mcp",
+        "fastmcp", "run",
+        "src/twl/mcp_server/server.py"
+      ],
+      "env": {}
     }
   }
 }
