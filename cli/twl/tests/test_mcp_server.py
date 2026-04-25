@@ -193,14 +193,42 @@ class TestACAlpha5CoreLogicIntact:
         envelope = twl_validate_handler(plugin_root=plugin_root)
 
         # 必須フィールドが存在すること
-        assert "items" in envelope, (
-            "twl_validate envelope に 'items' フィールドがない (AC-α5 未実装)"
+        assert "items" in envelope, "twl_validate envelope に 'items' フィールドがない"
+        assert "exit_code" in envelope, "twl_validate envelope に 'exit_code' フィールドがない"
+        assert "summary" in envelope, "twl_validate envelope に 'summary' フィールドがない"
+
+        # AC-α5 完全一致: collector 4 stage を直接呼び出した結果と比較
+        from twl.validation.validate import validate_types, validate_body_refs, validate_v3_schema
+        from twl.chain.validate import chain_validate
+        from twl.core.plugin import load_deps, build_graph, get_plugin_name, get_deps_version
+        from twl.core.output import build_envelope, violations_to_items
+        from pathlib import Path as _Path
+
+        p = _Path(plugin_root).expanduser().resolve()
+        deps = load_deps(p)
+        graph = build_graph(deps, p)
+        plugin_name = get_plugin_name(deps, p)
+        _ok, violations, xref_warnings = validate_types(deps, graph, p)
+        _ok2, body_violations = validate_body_refs(deps, p)
+        violations.extend(body_violations)
+        _ok3, v3_violations = validate_v3_schema(deps)
+        violations.extend(v3_violations)
+        cv_criticals, cv_warnings, _cv_infos = chain_validate(deps, p)
+        violations.extend(cv_criticals)
+        violations.extend(cv_warnings)
+        exit_code = 1 if violations else 0
+        items = violations_to_items(violations)
+        items.extend(violations_to_items(xref_warnings, "warning"))
+        direct_envelope = build_envelope("validate", get_deps_version(deps), plugin_name, items, exit_code)
+
+        assert envelope["items"] == direct_envelope["items"], (
+            "twl_validate_handler の items が collector 直接呼び出しと一致しない"
         )
-        assert "exit_code" in envelope, (
-            "twl_validate envelope に 'exit_code' フィールドがない (AC-α5 未実装)"
+        assert envelope["exit_code"] == direct_envelope["exit_code"], (
+            "twl_validate_handler の exit_code が collector 直接呼び出しと一致しない"
         )
-        assert "summary" in envelope, (
-            "twl_validate envelope に 'summary' フィールドがない (AC-α5 未実装)"
+        assert envelope["summary"] == direct_envelope["summary"], (
+            "twl_validate_handler の summary が collector 直接呼び出しと一致しない"
         )
 
     def test_ac5_existing_pytest_suite_unbroken(self):

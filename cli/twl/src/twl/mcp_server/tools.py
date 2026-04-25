@@ -17,10 +17,9 @@ def _load_plugin_ctx(plugin_root: str) -> "tuple[Path, dict, dict, str]":
         deps = load_deps(p)
         graph = build_graph(deps, p)
         plugin_name = get_plugin_name(deps, p)
-    except SystemExit as exc:
+    except (SystemExit, Exception) as exc:
         raise ValueError(
-            f"Failed to load plugin context from '{plugin_root}': "
-            "deps.yaml not found or invalid"
+            f"Failed to load plugin context from '{plugin_root}': {exc}"
         ) from exc
     return p, deps, graph, plugin_name
 
