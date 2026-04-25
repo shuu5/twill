@@ -147,30 +147,27 @@ if codex_available; then
   SPECIALISTS["worker-codex-reviewer"]=1
 fi
 
-# phase-review / merge-gate モード: architecture/ 存在チェック → worker-architecture
-# merge-gate: 常時追加（既存挙動維持）
-# phase-review: コスト保護のため conditional（architecture 関連ファイル変更時のみ）
-if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
-  if [[ -d "$PLUGIN_ROOT/architecture" ]]; then
-    if [[ "$MODE" == "merge-gate" ]]; then
-      SPECIALISTS["worker-architecture"]=1
-    else
-      for f in "${FILES[@]}"; do
-        case "$f" in
-          *architecture/*.md|*architecture/*/*.md|*architecture/*/*/*.md|\
-          *.mcp.json|\
-          *cli/twl/chain.py|*cli/twl/*/integrity.py|\
-          *deps.yaml|\
-          *scripts/chain-runner.sh|\
-          *scripts/pr-review-manifest.sh|\
-          *scripts/specialist-audit.sh)
-            SPECIALISTS["worker-architecture"]=1
-            break
-            ;;
-        esac
-      done
-    fi
-  fi
+# merge-gate: architecture/ 存在時は常時 worker-architecture を追加（既存挙動維持）
+if [[ "$MODE" == "merge-gate" && -d "$PLUGIN_ROOT/architecture" ]]; then
+  SPECIALISTS["worker-architecture"]=1
+fi
+
+# phase-review: architecture 関連ファイル変更時のみ worker-architecture を追加（コスト保護）
+if [[ "$MODE" == "phase-review" && -d "$PLUGIN_ROOT/architecture" ]]; then
+  for f in "${FILES[@]}"; do
+    case "$f" in
+      *architecture/*.md|*architecture/*/*.md|*architecture/*/*/*.md|\
+      *.mcp.json|\
+      *cli/twl/chain.py|*cli/twl/*/integrity.py|\
+      *deps.yaml|\
+      *scripts/chain-runner.sh|\
+      *scripts/pr-review-manifest.sh|\
+      *scripts/specialist-audit.sh)
+        SPECIALISTS["worker-architecture"]=1
+        break
+        ;;
+    esac
+  done
 fi
 
 # merge-gate モード: 最低限必須 specialist（quick ラベル含む全ケースで保証）
