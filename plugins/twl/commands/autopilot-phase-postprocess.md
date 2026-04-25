@@ -72,10 +72,10 @@ POSTPROCESS_DURATION_SEC=$((POSTPROCESS_END_TIME - POSTPROCESS_START_TIME))
 session.json の `.retrospectives` 配列から当該 Phase のエントリを検索し、`postprocess_duration_sec` を追記する（エントリが存在しない場合はスキップ）:
 
 ```bash
-jq --argjson phase "$P" --argjson dur "$POSTPROCESS_DURATION_SEC" \
-  '.retrospectives = [.retrospectives[] | if .phase == $phase then . + {postprocess_duration_sec: $dur} else . end]' \
-  "$SESSION_STATE_FILE" > "${SESSION_STATE_FILE}.tmp" \
-  && mv "${SESSION_STATE_FILE}.tmp" "$SESSION_STATE_FILE"
+bash "$(dirname "$SESSION_STATE_FILE")/../plugins/twl/scripts/session-atomic-write.sh" \
+  "$SESSION_STATE_FILE" \
+  --argjson phase "$P" --argjson dur "$POSTPROCESS_DURATION_SEC" \
+  '.retrospectives = [.retrospectives[] | if .phase == $phase then . + {postprocess_duration_sec: $dur} else . end]'
 ```
 
 ## 禁止事項（MUST NOT）

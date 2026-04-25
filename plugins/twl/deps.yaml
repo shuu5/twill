@@ -1646,6 +1646,7 @@ commands:
     calls:
       - reference: externalization-schema
       - script: externalize-state-exit-gate
+      - script: session-atomic-write
     description: "SupervisorSession 状態を externalization-schema に従って外部ファイルへ書き出す（Step 4 exit gate で pitfall_declaration を機械検証）"
 
   # === su-observer 介入コマンド (#310) ===
@@ -2131,6 +2132,8 @@ commands:
     path: commands/autopilot-phase-postprocess.md
     spawnable_by: [controller]
     can_spawn: []
+    calls:
+      - script: session-atomic-write
     # 型判断（Issue #67）: atomic 維持（選択肢B）。
     # 内部で collect/retrospective/patterns/cross-issue を Read→実行するが、
     # 呼び出し元コンテキストの変数（$P, $SESSION_STATE_FILE 等）に強く依存しており
@@ -2168,6 +2171,7 @@ commands:
     can_spawn: []
     calls:
       - script: state-read
+      - script: session-atomic-write
     description: "Phase 振り返り分析（パターン検出 + PHASE_INSIGHTS 生成）"
 
   autopilot-patterns:
@@ -2179,6 +2183,7 @@ commands:
     can_spawn: []
     calls:
       - script: state-read
+      - script: session-atomic-write
     description: "繰り返しパターン検出 + self-improve Issue 起票"
 
   autopilot-cross-issue:
@@ -2555,6 +2560,11 @@ scripts:
     description: Pseudo-Pilot 用 worker input-waiting polling helper
     calls:
       - script: session:session-state
+
+  session-atomic-write:
+    type: script
+    path: scripts/session-atomic-write.sh
+    description: "session.json atomic RMW helper — flock(8) advisory lock で jq+mv compound RMW を保護 (ADR-028)"
 
   externalize-state-exit-gate:
     type: script
