@@ -114,12 +114,22 @@ scripts/spawn-controller.sh <skill> <prompt-file> [cld-spawn opts...]
 ```
 
 起動パターン（文脈判断で選択、spawn-controller.sh 経由）:
-- Issue 実装 → `spawn-controller.sh co-autopilot <prompt>` → `cld-observe-loop` で能動 observe
-- Issue 作成/議論 → `spawn-controller.sh co-issue <prompt>` → **proxy 対話ループ**
-- アーキテクチャ設計 → `spawn-controller.sh co-architect <prompt>` → **proxy 対話ループ**
-- プロジェクト管理 → `spawn-controller.sh co-project <prompt>` → 指示待ち
-- テスト実行 → `spawn-controller.sh co-self-improve <prompt>` → `cld-observe`（単発）
-- その他 → `spawn-controller.sh co-utility <prompt>` → 指示待ち
+
+| controller | 用途 | 並列度（同時 spawn 可能数） | 観察モード |
+|---|---|---|---|
+| **co-autopilot** | Issue 実装 | **MUST 1 のみ** — 複数 Issue は **1 prompt に列挙**、Pilot が orchestrator 経由で複数 Worker (ap-*) を並列起動する | `cld-observe-loop` で能動 observe |
+| **co-explore** | 問題探索 | 複数 spawn 可（各 `.explore/<N>/summary.md` 独立） | proxy 対話 or 自律完了待ち |
+| **co-issue** | Issue 作成/refine | 複数 spawn 可（各 `.controller-issue/<sid>/` 独立） | **proxy 対話ループ** |
+| **co-architect** | architecture 設計 | 複数 spawn 可だが proxy 負荷重く 1 つずつ推奨 | **proxy 対話ループ** |
+| co-project | プロジェクト管理 | 1 推奨 | 指示待ち |
+| co-self-improve | テスト実行 | 複数可 | `cld-observe`（単発） |
+| co-utility | スタンドアロン | 複数可 | 指示待ち |
+
+**並列度の核心 — 4 回目を絶対に出さない（user 指摘 2026-04-25 hash 8dbcc66f）:**
+- 「複数 Issue を並列で実行したい」 → **1 Pilot に複数 Issue を列挙して渡す**（Pilot が複数 Worker を並列起動）
+- **co-autopilot Pilot を 2 つ spawn してはならない**（`.autopilot/session.json` 競合 = autopilot single-instance 違反）
+- 並列単位の階層: co-autopilot Pilot = 常に 1 / orchestrator Worker = MAX_PARALLEL=4 / Issue = 複数同時実行可
+- 依存 Issue 群（β → α 等のマージ依存）は 1 Pilot 内 plan の Phase 分割または Wave 分割で順序付ける
 
 **co-autopilot 起動時の推奨経路（#836 — MUST）:**
 `spawn-controller.sh co-autopilot` は **Pilot セッション全体**を spawn する（経路 B）。
