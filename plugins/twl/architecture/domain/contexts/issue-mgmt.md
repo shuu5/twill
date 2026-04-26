@@ -161,7 +161,7 @@ flowchart TD
 | **atomic** | project-board-status-update | Board Status 更新 |
 | **workflow** | workflow-issue-lifecycle | co-issue v2 Worker: 1 Issue の lifecycle（structure → spec-review → aggregate → create）を独立セッションで実行（ADR-017） |
 | **workflow** | workflow-issue-refine | 既存 Issue の refine（精緻化）: specialist review → body 更新 → dual-write（label 先 → Status=Refined 後、ADR-024）。orchestrator が `existing-issue.json` の有無で dispatch 先を切り替え |
-| **path** | co-issue manual fix [B] path | orchestrator 失敗時の fallback path。Issue body 更新後、workflow-issue-refine と同一 dual-write 義務 MUST（ADR-024 準拠: label 先 → Status=Refined 後）。Emergency Bypass 準拠扱い（glossary.md L26）。ADR-024 Phase B 移行後は Status=Refined のみに縮約予定 |
+| **script** | co-issue manual fix [B] path | orchestrator 失敗時の fallback path。Issue body 更新後、workflow-issue-refine と同一 dual-write 義務 MUST（ADR-024 準拠: label 先 → Status=Refined 後）。Emergency Bypass 準拠扱い（glossary.md L26）。ADR-024 Phase B 移行後は Status=Refined のみに縮約予定 |
 | **specialist** | issue-critic | Issue の仮定・曖昧点・盲点検出 |
 | **specialist** | issue-feasibility | 実装可能性・影響範囲検証 |
 | **specialist** | worker-codex-reviewer | 補完的レビュー |
