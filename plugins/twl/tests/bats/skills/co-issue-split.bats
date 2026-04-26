@@ -191,8 +191,11 @@ teardown() {
 
   # co-issue refs ノードが SVG/DOT に含まれていることを確認（twl --update-readme で生成）
   local check_file
-  check_file="${dot_file:-$svg_file}"
-  [ -f "$dot_file" ] && check_file="$dot_file"
+  if [ -f "$dot_file" ]; then
+    check_file="$dot_file"
+  else
+    check_file="$svg_file"
+  fi
 
   grep -qE 'co-issue-step0\.5-modes|co-issue-phase2-bundles|co-issue-phase3-dispatch|co-issue-phase4-aggregate|co-issue-cleanup' "$check_file"
 }
