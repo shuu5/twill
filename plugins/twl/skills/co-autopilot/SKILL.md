@@ -63,7 +63,11 @@ Worker auto mode 確認方針は `refs/co-autopilot-worker-auto-mode.md` を Rea
 
 ## Step 4: Phase ループ（orchestrator 委譲）
 
-`commands/autopilot-pilot-wakeup-loop.md` を Read → 実行（orchestrator 起動・PHASE_COMPLETE 検知・stagnation 検知・Silence heartbeat を atomic に委譲）。PHASE_COMPLETE 受信後 Step 4.5 へ進む。
+1. `commands/autopilot-pilot-wakeup-bootstrap.md` を Read → 実行（orchestrator 起動）
+2. `commands/autopilot-pilot-wakeup-poll.md` を Read → 実行（PHASE_COMPLETE 検知・stagnation 検知・状況精査モード）
+3. Silence heartbeat 条件成立時（全 Worker updated_at が 5 分以上無変化）: `commands/autopilot-pilot-wakeup-heartbeat.md` を Read → 実行
+
+PHASE_COMPLETE 受信後 Step 4.5 へ進む。
 
 ### Step 4.5: Phase 完了サニティチェック（MUST）
 

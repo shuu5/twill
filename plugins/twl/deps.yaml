@@ -128,8 +128,12 @@ skills:
       - atomic: autopilot-launch
       - atomic: autopilot-poll
       - atomic: autopilot-phase-execute
-      - atomic: autopilot-pilot-wakeup-loop
+      - atomic: autopilot-pilot-wakeup-bootstrap
         step: "4"
+      - atomic: autopilot-pilot-wakeup-poll
+        step: "4.1"
+      - atomic: autopilot-pilot-wakeup-heartbeat
+        step: "4.2"
       - atomic: autopilot-phase-sanity
         step: "4.5"
       - atomic: autopilot-pilot-precheck
@@ -2168,20 +2172,45 @@ commands:
       - reference: ref-dci
     description: "Phase Issue ループ実行（launch → poll → merge-gate → health-check）"
 
-  autopilot-pilot-wakeup-loop:
+  autopilot-pilot-wakeup-bootstrap:
     type: atomic
-    path: commands/autopilot-pilot-wakeup-loop.md
+    path: commands/autopilot-pilot-wakeup-bootstrap.md
     spawnable_by: [controller]
     can_spawn: []
     calls:
       - script: autopilot-orchestrator
+    step_in:
+      parent: co-autopilot
+      step: "4"
+    description: "orchestrator 起動 one-shot: nohup/disown + HOTFIX #732 絶対パス保持"
+
+  autopilot-pilot-wakeup-poll:
+    type: atomic
+    path: commands/autopilot-pilot-wakeup-poll.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
       - script: session-comm
       - script: state-read
       - script: state-write
     step_in:
       parent: co-autopilot
-      step: "4"
-    description: "Phase ループ: orchestrator 起動・PHASE_COMPLETE 検知・stagnation 検知・Silence heartbeat（ScheduleWakeup ベース）"
+      step: "4.1"
+    description: "PHASE_COMPLETE 検知ループ: ScheduleWakeup(300)・stagnation 検知・状況精査モード（MAX_WAIT_MINUTES 30 分）"
+
+  autopilot-pilot-wakeup-heartbeat:
+    type: atomic
+    path: commands/autopilot-pilot-wakeup-heartbeat.md
+    spawnable_by: [controller]
+    can_spawn: []
+    calls:
+      - script: session-comm
+      - script: state-read
+      - script: state-write
+    step_in:
+      parent: co-autopilot
+      step: "4.2"
+    description: "Silence heartbeat: 全 Worker 5 分沈黙検知・input-waiting パターン検査・su-observer escalate"
 
   autopilot-phase-sanity:
     type: atomic

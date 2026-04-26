@@ -352,7 +352,9 @@ tmux send-keys -t "<WORKER_WINDOW>" "/twl:workflow-test-ready" Enter
 | **workflow** | workflow-pr-verify | PR 検証（preflight → review → scope → test） |
 | **workflow** | workflow-pr-fix | PR 修正（fix → post-fix-verify → warning-fix） |
 | **workflow** | workflow-pr-merge | PRマージ（e2e → report → analysis → check → merge） |
-| **atomic** | autopilot-pilot-wakeup-loop | Phase ループ: orchestrator 起動・PHASE_COMPLETE 検知・stagnation 検知・Silence heartbeat |
+| **atomic** | autopilot-pilot-wakeup-bootstrap | orchestrator 起動 one-shot: nohup/disown + HOTFIX #732 絶対パス保持 |
+| **atomic** | autopilot-pilot-wakeup-poll | PHASE_COMPLETE 検知ループ: ScheduleWakeup(300)・stagnation 検知・状況精査モード |
+| **atomic** | autopilot-pilot-wakeup-heartbeat | Silence heartbeat: 5 分沈黙検知・input-waiting パターン検査・su-observer escalate |
 | **atomic** | autopilot-init | セッション初期化 |
 | **atomic** | autopilot-launch | Worker tmux window 起動 |
 | **atomic** | autopilot-poll | 状態ポーリング（Orchestrator の核） |

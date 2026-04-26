@@ -83,7 +83,10 @@ run_test_skip() {
 }
 
 SKILL_MD="skills/co-autopilot/SKILL.md"
-WAKEUP_CMD="commands/autopilot-pilot-wakeup-loop.md"
+WAKEUP_CMD="commands/autopilot-pilot-wakeup-poll.md"
+WAKEUP_BOOTSTRAP="commands/autopilot-pilot-wakeup-bootstrap.md"
+WAKEUP_POLL="commands/autopilot-pilot-wakeup-poll.md"
+WAKEUP_HEARTBEAT="commands/autopilot-pilot-wakeup-heartbeat.md"
 DEPS_YAML="deps.yaml"
 AUTOPILOT_MD="architecture/domain/contexts/autopilot.md"
 
@@ -185,19 +188,20 @@ echo "--- Requirement: Step 4 の atomic 委譲形式への書き換え ---"
 
 test_step4_delegates_to_wakeup_loop() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "autopilot-pilot-wakeup-loop"
+  # split 後: bootstrap/poll/heartbeat の 3 sub-atomic に委譲
+  assert_file_contains "$SKILL_MD" "autopilot-pilot-wakeup-bootstrap"
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
-  run_test "Step 4 が autopilot-pilot-wakeup-loop atomic へ委譲している" test_step4_delegates_to_wakeup_loop
+  run_test "Step 4 が wakeup sub-atomic (bootstrap/poll/heartbeat) へ委譲している" test_step4_delegates_to_wakeup_loop
 else
-  run_test_skip "Step 4 が autopilot-pilot-wakeup-loop atomic へ委譲している" "skills/co-autopilot/SKILL.md not yet modified"
+  run_test_skip "Step 4 が wakeup sub-atomic (bootstrap/poll/heartbeat) へ委譲している" "skills/co-autopilot/SKILL.md not yet modified"
 fi
 
 # Edge case: Step 4 に Read → 実行 形式が記述されている
 test_step4_read_and_execute_form() {
   assert_file_exists "$SKILL_MD" || return 1
-  assert_file_contains "$SKILL_MD" "Read.*autopilot-pilot-wakeup-loop|autopilot-pilot-wakeup-loop.*Read"
+  assert_file_contains "$SKILL_MD" "Read.*autopilot-pilot-wakeup-bootstrap|autopilot-pilot-wakeup-bootstrap.*Read"
 }
 
 if [[ -f "${PROJECT_ROOT}/${SKILL_MD}" ]]; then
@@ -245,142 +249,128 @@ else
 fi
 
 # =============================================================================
-# Requirement: autopilot-pilot-wakeup-loop atomic の新規作成
+# Requirement: wakeup sub-atomic (bootstrap/poll/heartbeat) の作成
 # =============================================================================
 echo ""
-echo "--- Requirement: autopilot-pilot-wakeup-loop atomic の新規作成 ---"
+echo "--- Requirement: wakeup sub-atomic (bootstrap/poll/heartbeat) の新規作成 ---"
 
-# Scenario: PHASE_COMPLETE 検知 (spec line 8)
-# WHEN: orchestrator が PHASE_COMPLETE シグナルをトレースログに出力した時
-# THEN: atomic が検知し Step 4.5 へ制御を返すこと
-
+# Scenario: PHASE_COMPLETE 検知 → poll atomic に存在すること
 test_wakeup_loop_phase_complete_detection() {
-  assert_file_exists "$WAKEUP_CMD" || return 1
-  assert_file_contains "$WAKEUP_CMD" "PHASE_COMPLETE"
+  assert_file_exists "$WAKEUP_POLL" || return 1
+  assert_file_contains "$WAKEUP_POLL" "PHASE_COMPLETE"
 }
 
-if [[ -f "${PROJECT_ROOT}/${WAKEUP_CMD}" ]]; then
-  run_test "autopilot-pilot-wakeup-loop に PHASE_COMPLETE 検知ロジックが存在する" test_wakeup_loop_phase_complete_detection
+if [[ -f "${PROJECT_ROOT}/${WAKEUP_POLL}" ]]; then
+  run_test "autopilot-pilot-wakeup-poll に PHASE_COMPLETE 検知ロジックが存在する" test_wakeup_loop_phase_complete_detection
 else
-  run_test_skip "autopilot-pilot-wakeup-loop に PHASE_COMPLETE 検知ロジックが存在する" "commands/autopilot-pilot-wakeup-loop.md not yet created"
+  run_test_skip "autopilot-pilot-wakeup-poll に PHASE_COMPLETE 検知ロジックが存在する" "commands/autopilot-pilot-wakeup-poll.md not yet created"
 fi
 
-# Scenario: stagnation 検知 (spec line 12)
-# WHEN: Worker の updated_at が AUTOPILOT_STAGNATE_SEC（デフォルト 900 秒）以上古い時
-# THEN: atomic が stall Worker を特定し session-comm.sh inject-file 経由で回復信号を送信すること
-
+# Scenario: stagnation 検知 → poll atomic に存在すること
 test_wakeup_loop_stagnation_detection() {
-  assert_file_exists "$WAKEUP_CMD" || return 1
-  assert_file_contains "$WAKEUP_CMD" "AUTOPILOT_STAGNATE_SEC" || return 1
-  assert_file_contains "$WAKEUP_CMD" "session-comm\.sh.*inject-file|inject-file.*session-comm\.sh" || return 1
+  assert_file_exists "$WAKEUP_POLL" || return 1
+  assert_file_contains "$WAKEUP_POLL" "AUTOPILOT_STAGNATE_SEC" || return 1
+  assert_file_contains "$WAKEUP_POLL" "session-comm\.sh.*inject-file|inject-file.*session-comm\.sh" || return 1
   return 0
 }
 
-if [[ -f "${PROJECT_ROOT}/${WAKEUP_CMD}" ]]; then
-  run_test "autopilot-pilot-wakeup-loop に stagnation 検知と session-comm.sh inject-file が定義されている" test_wakeup_loop_stagnation_detection
+if [[ -f "${PROJECT_ROOT}/${WAKEUP_POLL}" ]]; then
+  run_test "autopilot-pilot-wakeup-poll に stagnation 検知と session-comm.sh inject-file が定義されている" test_wakeup_loop_stagnation_detection
 else
-  run_test_skip "autopilot-pilot-wakeup-loop に stagnation 検知と session-comm.sh inject-file が定義されている" "commands/autopilot-pilot-wakeup-loop.md not yet created"
+  run_test_skip "autopilot-pilot-wakeup-poll に stagnation 検知と session-comm.sh inject-file が定義されている" "commands/autopilot-pilot-wakeup-poll.md not yet created"
 fi
 
-# Edge case: AUTOPILOT_STAGNATE_SEC のデフォルト値 900 秒が明記されている
+# Edge case: AUTOPILOT_STAGNATE_SEC デフォルト 900 秒 → poll atomic
 test_wakeup_loop_stagnate_sec_default() {
-  assert_file_exists "$WAKEUP_CMD" || return 1
-  assert_file_contains "$WAKEUP_CMD" "900"
+  assert_file_exists "$WAKEUP_POLL" || return 1
+  assert_file_contains "$WAKEUP_POLL" "900"
 }
 
-if [[ -f "${PROJECT_ROOT}/${WAKEUP_CMD}" ]]; then
-  run_test "autopilot-pilot-wakeup-loop [edge: AUTOPILOT_STAGNATE_SEC デフォルト 900 秒が明記されている]" test_wakeup_loop_stagnate_sec_default
+if [[ -f "${PROJECT_ROOT}/${WAKEUP_POLL}" ]]; then
+  run_test "autopilot-pilot-wakeup-poll [edge: AUTOPILOT_STAGNATE_SEC デフォルト 900 秒が明記されている]" test_wakeup_loop_stagnate_sec_default
 else
-  run_test_skip "autopilot-pilot-wakeup-loop [edge: AUTOPILOT_STAGNATE_SEC デフォルト 900 秒が明記されている]" "commands/autopilot-pilot-wakeup-loop.md not yet created"
+  run_test_skip "autopilot-pilot-wakeup-poll [edge: AUTOPILOT_STAGNATE_SEC デフォルト 900 秒が明記されている]" "commands/autopilot-pilot-wakeup-poll.md not yet created"
 fi
 
-# Scenario: Silence heartbeat (spec line 16)
-# WHEN: 全 Worker の updated_at が 5 分以上無変化かつ PHASE_COMPLETE 未検知の時
-# THEN: atomic が tmux capture-pane で input-waiting パターンを検査し、検知時は state file に input_waiting_detected を記録すること
-
+# Scenario: Silence heartbeat → heartbeat atomic に存在すること
 test_wakeup_loop_silence_heartbeat() {
-  assert_file_exists "$WAKEUP_CMD" || return 1
-  assert_file_contains "$WAKEUP_CMD" "tmux.*capture-pane|capture-pane.*tmux" || return 1
-  assert_file_contains "$WAKEUP_CMD" "input.waiting" || return 1
+  assert_file_exists "$WAKEUP_HEARTBEAT" || return 1
+  assert_file_contains "$WAKEUP_HEARTBEAT" "tmux.*capture-pane|capture-pane.*tmux" || return 1
+  assert_file_contains "$WAKEUP_HEARTBEAT" "input.waiting" || return 1
   return 0
 }
 
-if [[ -f "${PROJECT_ROOT}/${WAKEUP_CMD}" ]]; then
-  run_test "autopilot-pilot-wakeup-loop に Silence heartbeat（tmux capture-pane + input_waiting_detected）が定義されている" test_wakeup_loop_silence_heartbeat
+if [[ -f "${PROJECT_ROOT}/${WAKEUP_HEARTBEAT}" ]]; then
+  run_test "autopilot-pilot-wakeup-heartbeat に Silence heartbeat（tmux capture-pane + input_waiting_detected）が定義されている" test_wakeup_loop_silence_heartbeat
 else
-  run_test_skip "autopilot-pilot-wakeup-loop に Silence heartbeat（tmux capture-pane + input_waiting_detected）が定義されている" "commands/autopilot-pilot-wakeup-loop.md not yet created"
+  run_test_skip "autopilot-pilot-wakeup-heartbeat に Silence heartbeat（tmux capture-pane + input_waiting_detected）が定義されている" "commands/autopilot-pilot-wakeup-heartbeat.md not yet created"
 fi
 
-# Edge case: 5 分（300 秒）閾値が明記されている
+# Edge case: 5 分（300 秒）閾値 → heartbeat atomic
 test_wakeup_loop_silence_threshold_5min() {
-  assert_file_exists "$WAKEUP_CMD" || return 1
-  assert_file_contains "$WAKEUP_CMD" "300|5.*分|5.min"
+  assert_file_exists "$WAKEUP_HEARTBEAT" || return 1
+  assert_file_contains "$WAKEUP_HEARTBEAT" "300|5.*分|5.min"
 }
 
-if [[ -f "${PROJECT_ROOT}/${WAKEUP_CMD}" ]]; then
-  run_test "autopilot-pilot-wakeup-loop [edge: Silence heartbeat 5 分（300 秒）閾値が明記されている]" test_wakeup_loop_silence_threshold_5min
+if [[ -f "${PROJECT_ROOT}/${WAKEUP_HEARTBEAT}" ]]; then
+  run_test "autopilot-pilot-wakeup-heartbeat [edge: Silence heartbeat 5 分（300 秒）閾値が明記されている]" test_wakeup_loop_silence_threshold_5min
 else
-  run_test_skip "autopilot-pilot-wakeup-loop [edge: Silence heartbeat 5 分（300 秒）閾値が明記されている]" "commands/autopilot-pilot-wakeup-loop.md not yet created"
+  run_test_skip "autopilot-pilot-wakeup-heartbeat [edge: Silence heartbeat 5 分（300 秒）閾値が明記されている]" "commands/autopilot-pilot-wakeup-heartbeat.md not yet created"
 fi
 
-# Scenario: 状況精査モード (spec line 20)
-# WHEN: MAX_WAIT_MINUTES（30 分）を超過した時
-# THEN: atomic が全 Worker の状態を精査し、全 Worker が terminal 状態なら Step 4.5 へ進み、stagnation Worker が存在すれば回復を試みること
-
+# Scenario: 状況精査モード → poll atomic に存在すること
 test_wakeup_loop_max_wait_mode() {
-  assert_file_exists "$WAKEUP_CMD" || return 1
-  assert_file_contains "$WAKEUP_CMD" "MAX_WAIT_MINUTES|max.wait" || return 1
-  assert_file_contains "$WAKEUP_CMD" "30" || return 1
+  assert_file_exists "$WAKEUP_POLL" || return 1
+  assert_file_contains "$WAKEUP_POLL" "MAX_WAIT_MINUTES|max.wait" || return 1
+  assert_file_contains "$WAKEUP_POLL" "30" || return 1
   return 0
 }
 
-if [[ -f "${PROJECT_ROOT}/${WAKEUP_CMD}" ]]; then
-  run_test "autopilot-pilot-wakeup-loop に 状況精査モード（MAX_WAIT_MINUTES 30 分）が定義されている" test_wakeup_loop_max_wait_mode
+if [[ -f "${PROJECT_ROOT}/${WAKEUP_POLL}" ]]; then
+  run_test "autopilot-pilot-wakeup-poll に 状況精査モード（MAX_WAIT_MINUTES 30 分）が定義されている" test_wakeup_loop_max_wait_mode
 else
-  run_test_skip "autopilot-pilot-wakeup-loop に 状況精査モード（MAX_WAIT_MINUTES 30 分）が定義されている" "commands/autopilot-pilot-wakeup-loop.md not yet created"
+  run_test_skip "autopilot-pilot-wakeup-poll に 状況精査モード（MAX_WAIT_MINUTES 30 分）が定義されている" "commands/autopilot-pilot-wakeup-poll.md not yet created"
 fi
 
-# Edge case: terminal 状態 Worker の判定ロジックが記述されている
+# Edge case: terminal 状態 Worker の判定ロジック → poll atomic
 test_wakeup_loop_terminal_state_check() {
-  assert_file_exists "$WAKEUP_CMD" || return 1
-  assert_file_contains "$WAKEUP_CMD" "terminal|終了.*状態|complete.*status|status.*complete"
+  assert_file_exists "$WAKEUP_POLL" || return 1
+  assert_file_contains "$WAKEUP_POLL" "terminal|終了.*状態|complete.*status|status.*complete"
 }
 
-if [[ -f "${PROJECT_ROOT}/${WAKEUP_CMD}" ]]; then
-  run_test "autopilot-pilot-wakeup-loop [edge: terminal 状態 Worker の判定ロジックが記述されている]" test_wakeup_loop_terminal_state_check
+if [[ -f "${PROJECT_ROOT}/${WAKEUP_POLL}" ]]; then
+  run_test "autopilot-pilot-wakeup-poll [edge: terminal 状態 Worker の判定ロジックが記述されている]" test_wakeup_loop_terminal_state_check
 else
-  run_test_skip "autopilot-pilot-wakeup-loop [edge: terminal 状態 Worker の判定ロジックが記述されている]" "commands/autopilot-pilot-wakeup-loop.md not yet created"
+  run_test_skip "autopilot-pilot-wakeup-poll [edge: terminal 状態 Worker の判定ロジックが記述されている]" "commands/autopilot-pilot-wakeup-poll.md not yet created"
 fi
 
 # =============================================================================
-# Requirement: deps.yaml への autopilot-pilot-wakeup-loop 登録
+# Requirement: deps.yaml への wakeup sub-atomic 登録
 # =============================================================================
 echo ""
-echo "--- Requirement: deps.yaml への autopilot-pilot-wakeup-loop 登録 ---"
+echo "--- Requirement: deps.yaml への wakeup sub-atomic 登録 ---"
 
-# Scenario: deps.yaml 整合性 (spec line 28)
-# WHEN: twl --check を実行した時
-# THEN: autopilot-pilot-wakeup-loop が登録済みでバリデーションが通ること
-
+# Scenario: deps.yaml に 3 sub-atomic が登録されていること
 test_deps_yaml_wakeup_loop_registered() {
   assert_file_exists "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "
 atomics = data.get('atomics', {})
-if 'autopilot-pilot-wakeup-loop' not in atomics:
-    print('autopilot-pilot-wakeup-loop not found in atomics', file=sys.stderr)
-    sys.exit(1)
+for name in ['autopilot-pilot-wakeup-bootstrap', 'autopilot-pilot-wakeup-poll', 'autopilot-pilot-wakeup-heartbeat']:
+    if name not in atomics:
+        print(f'{name} not found in atomics', file=sys.stderr)
+        sys.exit(1)
 sys.exit(0)
 "
 }
 
-run_test "deps.yaml に autopilot-pilot-wakeup-loop が atomics として登録されている" test_deps_yaml_wakeup_loop_registered
+run_test "deps.yaml に wakeup 3 sub-atomic が atomics として登録されている" test_deps_yaml_wakeup_loop_registered
 
-# Edge case: spawnable_by に controller が含まれている
+# Edge case: spawnable_by に controller が含まれている（bootstrap で代表チェック）
 test_deps_yaml_wakeup_loop_spawnable_by_controller() {
   assert_file_exists "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "
 atomics = data.get('atomics', {})
-entry = atomics.get('autopilot-pilot-wakeup-loop', {})
+entry = atomics.get('autopilot-pilot-wakeup-bootstrap', {})
 sb = entry.get('spawnable_by', [])
 if 'controller' not in sb:
     print(f'spawnable_by={sb}, expected controller to be included', file=sys.stderr)
@@ -389,25 +379,25 @@ sys.exit(0)
 "
 }
 
-run_test "deps.yaml autopilot-pilot-wakeup-loop [edge: spawnable_by に controller が含まれている]" test_deps_yaml_wakeup_loop_spawnable_by_controller
+run_test "deps.yaml autopilot-pilot-wakeup-bootstrap [edge: spawnable_by に controller が含まれている]" test_deps_yaml_wakeup_loop_spawnable_by_controller
 
-# Edge case: co-autopilot の calls に autopilot-pilot-wakeup-loop が追加されている
+# Edge case: co-autopilot の calls に新 sub-atomic が追加されている
 test_deps_yaml_co_autopilot_calls_wakeup_loop() {
   assert_file_exists "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "
 skills = data.get('skills', {})
 ca = skills.get('co-autopilot', {})
 calls = ca.get('calls', [])
-# calls entries are dicts with 'atomic' key
 call_atomics = [c.get('atomic') for c in calls if isinstance(c, dict)]
-if 'autopilot-pilot-wakeup-loop' not in call_atomics:
-    print(f'autopilot-pilot-wakeup-loop not in co-autopilot.calls: {call_atomics}', file=sys.stderr)
-    sys.exit(1)
+for name in ['autopilot-pilot-wakeup-bootstrap', 'autopilot-pilot-wakeup-poll', 'autopilot-pilot-wakeup-heartbeat']:
+    if name not in call_atomics:
+        print(f'{name} not in co-autopilot.calls: {call_atomics}', file=sys.stderr)
+        sys.exit(1)
 sys.exit(0)
 "
 }
 
-run_test "deps.yaml co-autopilot.calls に autopilot-pilot-wakeup-loop [edge: atomic エントリが追加されている]" test_deps_yaml_co_autopilot_calls_wakeup_loop
+run_test "deps.yaml co-autopilot.calls に wakeup 3 sub-atomic が追加されている" test_deps_yaml_co_autopilot_calls_wakeup_loop
 
 # Edge case: deps.yaml が有効な YAML である
 test_deps_yaml_valid() {
@@ -502,26 +492,27 @@ test_wakeup_loop_file_exists() {
 
 run_test "twl --check [edge: commands/autopilot-pilot-wakeup-loop.md がファイルとして存在する]" test_wakeup_loop_file_exists
 
-# Edge case: deps.yaml の path フィールドが実ファイルと一致する
+# Edge case: deps.yaml の path フィールドが実ファイルと一致する（3 sub-atomic 全件）
 test_deps_yaml_wakeup_loop_path_matches() {
   assert_file_exists "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "
 import os
 atomics = data.get('atomics', {})
-entry = atomics.get('autopilot-pilot-wakeup-loop', {})
-path = entry.get('path', '')
-if not path:
-    print('No path defined for autopilot-pilot-wakeup-loop', file=sys.stderr)
-    sys.exit(1)
-full_path = os.path.join('${PROJECT_ROOT}', path)
-if not os.path.isfile(full_path):
-    print(f'File not found: {full_path}', file=sys.stderr)
-    sys.exit(1)
+for name in ['autopilot-pilot-wakeup-bootstrap', 'autopilot-pilot-wakeup-poll', 'autopilot-pilot-wakeup-heartbeat']:
+    entry = atomics.get(name, {})
+    path = entry.get('path', '')
+    if not path:
+        print(f'No path defined for {name}', file=sys.stderr)
+        sys.exit(1)
+    full_path = os.path.join('${PROJECT_ROOT}', path)
+    if not os.path.isfile(full_path):
+        print(f'File not found: {full_path}', file=sys.stderr)
+        sys.exit(1)
 sys.exit(0)
 "
 }
 
-run_test "deps.yaml autopilot-pilot-wakeup-loop [edge: path フィールドが実ファイルと一致する]" test_deps_yaml_wakeup_loop_path_matches
+run_test "deps.yaml wakeup 3 sub-atomic [edge: path フィールドが実ファイルと一致する]" test_deps_yaml_wakeup_loop_path_matches
 
 # =============================================================================
 # Summary
