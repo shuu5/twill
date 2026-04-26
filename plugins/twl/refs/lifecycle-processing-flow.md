@@ -37,7 +37,7 @@ if [[ -z "$PER_ISSUE_DIR" || "$PER_ISSUE_DIR" != /* ]]; then
   echo "ERROR: per-issue dir は絶対パスで指定してください" >&2
   exit 1
 fi
-if [[ "$PER_ISSUE_DIR" =~ /\.\./ || "$PER_ISSUE_DIR" =~ /\.\.$ ]]; then
+if [[ "$PER_ISSUE_DIR" =~ \.\.(/|$) ]]; then
   echo "ERROR: パストラバーサルは使用できません" >&2
   exit 1
 fi
@@ -70,10 +70,10 @@ mkdir -p "$PER_ISSUE_DIR/rounds/0"
 
 ### Step 4: round loop
 
-`round=0` から `policies.max_rounds` まで以下を繰り返す:
+`round=0` で初期化し、ループ先頭で `round += 1` してから実行する（実効範囲: round=1 〜 max_rounds）:
 
 ```
-round = round + 1
+round = round + 1   # round=1 から開始
 STATE ← reviewing
 ```
 

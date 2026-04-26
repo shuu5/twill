@@ -219,9 +219,9 @@ printf 'done\n' > "$PER_ISSUE_DIR/STATE"
   "status": "done",
   "issue_number": "<既存 Issue 番号>",
   "issue_repo": "<リポジトリ>",
-  "rounds": "<実行したラウンド数>",
-  "findings_final": "<最終 aggregate.yaml の内容>",
-  "warnings_acknowledged": "<WARNING findings のリスト>"
+  "rounds": <実行したラウンド数>,
+  "findings_final": <最終 aggregate.yaml の内容>,
+  "warnings_acknowledged": <WARNING findings のリスト>
 }
 ```
 

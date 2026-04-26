@@ -51,3 +51,7 @@ maxTurns: 60
 | `done` | 正常完了 |
 | `failed` | 回復不能エラー |
 | `circuit_broken` | max_rounds 到達・CRITICAL 未解消 |
+
+## compaction 復帰プロトコル
+
+`refs/ref-compaction-recovery.md` を Read し従うこと。再開時は `refs/refine-processing-flow.md` を Read してステップを確認し、中断箇所から再実行すること。

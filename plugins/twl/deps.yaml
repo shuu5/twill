@@ -424,6 +424,8 @@ skills:
         step: "8.5"
       - script: chain-runner
       - script: compaction-resume
+      - reference: pr-merge-domain-rules
+      - reference: pr-merge-chain-steps
     description: "PRマージワークフロー（e2e → report → analysis → check → merge; archive は auto-merge.sh 内で実行）"
 
   workflow-dead-cleanup:
@@ -557,6 +559,7 @@ skills:
       - atomic: issue-create
       - atomic: project-board-sync
       - script: spec-review-session-init
+      - reference: lifecycle-processing-flow
     description: "co-issue v2 Worker runtime: 1 issue の lifecycle 全体（structure → spec-review → aggregate → fix loop → arch-drift → create → project-board-sync）を自律実行"
 
   workflow-issue-refine:
@@ -577,6 +580,7 @@ skills:
       - atomic: issue-review-aggregate
       - atomic: issue-arch-drift
       - script: spec-review-session-init
+      - reference: refine-processing-flow
     description: "既存 Issue の refine（精緻化）独立 workflow: specialist review → body 更新 → refined ラベル付与。co-issue thin orchestrator の委譲先（ADR-0010）かつ user 直接起動可"
 
   workflow-arch-review:
