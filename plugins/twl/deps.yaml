@@ -182,6 +182,7 @@ skills:
       - workflow: workflow-issue-lifecycle
       - workflow: workflow-issue-refine
       - script: issue-lifecycle-orchestrator
+      - script: co-issue-manual-fix-b
     description: "要望をGitHub Issueに変換するワークフロー（thin orchestrator）。refine フェーズは workflow-issue-refine に完全委譲（ADR-0010）。explore-summary 入力必須。DAG 依存解決 + level dispatch + aggregate"
 
   co-project:
@@ -2621,6 +2622,13 @@ scripts:
     type: script
     path: scripts/hooks/pre-bash-refined-label-gate.sh
     description: "PreToolUse gate (Layer D): spec-review session state 非存在時に gh issue edit --add-label refined を deny する（Bash tool matcher）。Worker セッション内（/tmp/.spec-review-session-*.json 存在時）は allow"
+
+  co-issue-manual-fix-b:
+    type: script
+    path: scripts/co-issue-manual-fix-b.sh
+    calls:
+      - script: chain-runner
+    description: "co-issue manual fix [B] path の dual-write executor（ADR-024 準拠: label 先 → Status=Refined 後）。orchestrator 失敗時の Emergency Bypass fallback（glossary.md L26）。ISSUE_NUMBER/ISSUE_REPO の入力検証付き"
 
   pre-bash-phase3-gate:
     type: script
