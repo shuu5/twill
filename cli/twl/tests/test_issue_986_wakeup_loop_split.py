@@ -94,9 +94,8 @@ def test_ac5_hotfix_732_invariant_preserved_in_bootstrap():
 
 def test_ac6_twl_check_deps_integrity_ok():
     # AC: `twl --check --deps-integrity` errors=0
-    # RED: 新ファイル未存在のため deps-integrity エラーが出る
     result = subprocess.run(
-        ["python", "-m", "twl", "--check", "--deps-integrity"],
+        ["python3", "-m", "twl", "--check", "--deps-integrity"],
         cwd=PLUGINS_TWL,
         capture_output=True,
         text=True,
@@ -105,16 +104,15 @@ def test_ac6_twl_check_deps_integrity_ok():
     assert result.returncode == 0, (
         f"twl --check --deps-integrity 失敗:\n{result.stdout}\n{result.stderr}"
     )
-    assert "errors=0" in result.stdout or "error" not in result.stdout.lower(), (
+    assert "Missing: 0" in result.stdout or "error" not in result.stdout.lower(), (
         f"deps-integrity エラーあり:\n{result.stdout}"
     )
 
 
 def test_ac7_twl_check_no_dangling_reference():
     # AC: `twl --check` コンポーネント存在検証 PASS（旧 atomic への dangling reference なし）
-    # RED: 旧ファイルが残存または新ファイル未作成のため fail
     result = subprocess.run(
-        ["python", "-m", "twl", "--check"],
+        ["python3", "-m", "twl", "--check"],
         cwd=PLUGINS_TWL,
         capture_output=True,
         text=True,

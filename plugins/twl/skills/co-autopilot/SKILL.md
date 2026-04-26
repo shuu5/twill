@@ -160,7 +160,11 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 
 ## Step 4: Phase ループ（orchestrator 委譲）
 
-`commands/autopilot-pilot-wakeup-loop.md` を Read → 実行（orchestrator 起動・PHASE_COMPLETE 検知・stagnation 検知・Silence heartbeat を atomic に委譲）。PHASE_COMPLETE 受信後 Step 4.5 へ進む。
+1. `commands/autopilot-pilot-wakeup-bootstrap.md` を Read → 実行（orchestrator 起動）
+2. `commands/autopilot-pilot-wakeup-poll.md` を Read → 実行（PHASE_COMPLETE 検知・stagnation 検知・状況精査モード）
+3. Silence heartbeat 条件成立時: `commands/autopilot-pilot-wakeup-heartbeat.md` を Read → 実行（poll から呼び出し）
+
+PHASE_COMPLETE 受信後 Step 4.5 へ進む。
 
 ### Step 4.5: Phase 完了サニティチェック（MUST）
 
