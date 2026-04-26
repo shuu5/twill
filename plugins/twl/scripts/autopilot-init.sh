@@ -22,16 +22,23 @@ if ! command -v jq &>/dev/null; then
 fi
 
 # セッション完了判定: 全 issue が done なら true を返す
-# issues フィールドが不在または空の場合は未完了扱い（新 Wave 開始直後の race condition 防止）
+# issues/ dir 不在または空の場合は未完了扱い（新 Wave 開始直後の race condition 防止 #732）
+# SSoT を session.json.issues[] から per-issue file（issues/issue-*.json）に移行（#978）
 is_session_completed() {
-  local session_file="$1"
-  local has_issues
-  has_issues=$(jq 'has("issues") and (.issues | length > 0)' "$session_file" 2>/dev/null) || return 1
-  # issues フィールドなし or 空配列 → 未完了扱い（fail-closed）
-  [[ "$has_issues" != "true" ]] && return 1
-  local all_done
-  all_done=$(jq '[.issues[].status] | all(. == "done")' "$session_file" 2>/dev/null) || return 1
-  [[ "$all_done" == "true" ]]
+  local autopilot_dir="$1"
+  local issues_dir="$autopilot_dir/issues"
+  [[ -d "$issues_dir" ]] || return 1   # dir 不在 → 未完了（fail-closed 維持）
+  shopt -s nullglob
+  local files=("$issues_dir"/issue-*.json)
+  shopt -u nullglob                    # スコープ漏れ防止
+  ((${#files[@]} > 0)) || return 1     # 空 dir → 未完了（#732 race protection）
+  local f
+  for f in "${files[@]}"; do
+    local status
+    status=$(jq -r '.status // "unknown"' "$f" 2>/dev/null) || true
+    [[ "$status" == "done" ]] || return 1
+  done
+  return 0
 }
 
 usage() {
@@ -77,7 +84,7 @@ if [[ -f "$SESSION_FILE" ]]; then
     elapsed=$(( now_epoch - started_epoch ))
     hours=$(( elapsed / 3600 ))
 
-    if is_session_completed "$SESSION_FILE"; then
+    if is_session_completed "$AUTOPILOT_DIR"; then
       # 完了済みセッション: --force なしで自動削除（Wave 遷移ブロック防止）
       echo "INFO: 完了済みセッション (${hours}h経過) を自動削除します: $session_id" >&2
       rm -f "$SESSION_FILE"
