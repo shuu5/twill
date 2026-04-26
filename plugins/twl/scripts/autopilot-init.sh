@@ -35,7 +35,7 @@ is_session_completed() {
   local f
   for f in "${files[@]}"; do
     local status
-    status=$(jq -r '.status // "unknown"' "$f" 2>/dev/null)
+    status=$(jq -r '.status // "unknown"' "$f" 2>/dev/null) || true
     [[ "$status" == "done" ]] || return 1
   done
   return 0

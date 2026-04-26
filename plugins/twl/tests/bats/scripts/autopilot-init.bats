@@ -175,19 +175,18 @@ JSON
 }
 
 @test "running issue + --force + under 24h: blocks with exit 1" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '20 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "run1234",
-  "started_at": "$started_at",
-  "issues": [
-    {"issue": 1, "status": "running"},
-    {"issue": 2, "status": "done"}
-  ]
+  "started_at": "$started_at"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 1 "running"
+  create_issue_json 2 "done"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 
@@ -196,19 +195,18 @@ JSON
 }
 
 @test "running issue + --force + over 24h: treats as stale, deletes and continues" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '30 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "run5678",
-  "started_at": "$started_at",
-  "issues": [
-    {"issue": 1, "status": "running"},
-    {"issue": 2, "status": "done"}
-  ]
+  "started_at": "$started_at"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 1 "running"
+  create_issue_json 2 "done"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 
@@ -247,12 +245,11 @@ JSON
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "active999",
-  "started_at": "$started_at",
-  "issues": [
-    {"issue": 1, "status": "running"}
-  ]
+  "started_at": "$started_at"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 1 "running"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh"
 

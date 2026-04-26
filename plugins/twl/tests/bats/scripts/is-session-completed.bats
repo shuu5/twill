@@ -1,9 +1,6 @@
 #!/usr/bin/env bats
 # is-session-completed.bats
-# AC2: is_session_completed() の 5 ケース + AC1 シグネチャ確認
-#
-# RED フェーズ: 現行実装（session.json の issues[] を参照）では FAIL する。
-# 新実装（per-issue file .autopilot/issues/issue-*.json を参照）に切り替えると PASS する。
+# AC1+AC2: is_session_completed() のシグネチャ確認と 5 ケース
 #
 # 新仕様:
 #   is_session_completed <autopilot_dir>
@@ -13,9 +10,7 @@
 #   - 一部が status=running/failed/merge-ready/conflict → false
 #   - 全 issue が status=merge-ready → false (Pilot クラッシュ後 safety-net)
 #
-# AC1 検証:
-#   - bash -n autopilot-init.sh が syntax pass すること
-#   - is_session_completed の引数が autopilot_dir であること（ABI 変更後）
+# テスト方式: autopilot-init.sh を SANDBOX で実行して挙動を end-to-end で検証
 
 load '../helpers/common'
 
@@ -32,24 +27,6 @@ setup() {
 
 teardown() {
   common_teardown
-}
-
-# ---------------------------------------------------------------------------
-# Helper: is_session_completed を autopilot-init.sh から source して呼び出す
-# ---------------------------------------------------------------------------
-
-_call_is_session_completed() {
-  # autopilot-init.sh をそのまま source すると set -euo pipefail + 副作用があるため、
-  # 関数部分だけを抽出して bash -c で実行する
-  local autopilot_dir="$1"
-  bash -c "
-    source_file() {
-      # is_session_completed 関数定義だけを抽出
-      sed -n '/^is_session_completed()/,/^}/p' '$SCRIPT'
-    }
-    eval \"\$(source_file)\"
-    is_session_completed '$autopilot_dir'
-  "
 }
 
 # ===========================================================================

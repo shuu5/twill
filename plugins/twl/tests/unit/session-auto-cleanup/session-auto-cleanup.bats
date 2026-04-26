@@ -242,19 +242,18 @@ JSON
 # ---------------------------------------------------------------------------
 
 @test "session-auto-cleanup[ac1c]: running issue あり + --force なし → exit 1 で停止" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '3 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "running-001",
-  "started_at": "${started_at}",
-  "issues": [
-    {"issue": 20, "status": "running"},
-    {"issue": 21, "status": "done"}
-  ]
+  "started_at": "${started_at}"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 20 "running"
+  create_issue_json 21 "done"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh"
 
@@ -263,18 +262,17 @@ JSON
 }
 
 @test "session-auto-cleanup[ac1c]: running issue あり → session.json は削除されない" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '3 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "running-002",
-  "started_at": "${started_at}",
-  "issues": [
-    {"issue": 30, "status": "running"}
-  ]
+  "started_at": "${started_at}"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 30 "running"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh"
 
@@ -283,20 +281,19 @@ JSON
 }
 
 @test "session-auto-cleanup[ac1c][edge]: 複数 running + --force なし → exit 1（非 stale 期間内）" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '5 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "running-multi",
-  "started_at": "${started_at}",
-  "issues": [
-    {"issue": 40, "status": "running"},
-    {"issue": 41, "status": "running"},
-    {"issue": 42, "status": "done"}
-  ]
+  "started_at": "${started_at}"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 40 "running"
+  create_issue_json 41 "running"
+  create_issue_json 42 "done"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh"
 
@@ -311,19 +308,18 @@ JSON
 # ---------------------------------------------------------------------------
 
 @test "session-auto-cleanup[ac1d]: 24h+ stale + running issue + --force なし → exit 2" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local old_date
   old_date=$(date -u -d '30 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "stale-running-001",
-  "started_at": "${old_date}",
-  "issues": [
-    {"issue": 50, "status": "running"},
-    {"issue": 51, "status": "done"}
-  ]
+  "started_at": "${old_date}"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 50 "running"
+  create_issue_json 51 "done"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh"
 
@@ -332,18 +328,17 @@ JSON
 }
 
 @test "session-auto-cleanup[ac1d]: 24h+ stale → stderr に stale 警告を出力する" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local old_date
   old_date=$(date -u -d '26 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "stale-running-002",
-  "started_at": "${old_date}",
-  "issues": [
-    {"issue": 60, "status": "running"}
-  ]
+  "started_at": "${old_date}"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 60 "running"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh"
 
@@ -353,18 +348,17 @@ JSON
 }
 
 @test "session-auto-cleanup[ac1d][edge]: 24h+ stale + --force → session.json 削除で続行（既存 stale force 挙動）" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local old_date
   old_date=$(date -u -d '48 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "stale-force-001",
-  "started_at": "${old_date}",
-  "issues": [
-    {"issue": 70, "status": "running"}
-  ]
+  "started_at": "${old_date}"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 70 "running"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 
@@ -374,19 +368,18 @@ JSON
 
 # Edge case: ちょうど 24h 境界（23h59m は exit 1、24h0m は exit 2）
 @test "session-auto-cleanup[ac1d][edge]: 23h59m + running → exit 1（stale 境界未満）" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   # 24h - 5min = 23h55m (確実に境界内)
   local started_at
   started_at=$(date -u -d '23 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "boundary-under",
-  "started_at": "${started_at}",
-  "issues": [
-    {"issue": 80, "status": "running"}
-  ]
+  "started_at": "${started_at}"
 }
 JSON
+  # 新仕様: per-issue file で running を表現（#978）
+  create_issue_json 80 "running"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh"
 
