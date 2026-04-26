@@ -18,8 +18,6 @@ digraph Dependencies {
     skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(693 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_architecture [label="twl:ref-architecture\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(476 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -42,7 +40,6 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_plugin_diagnose; }
-    { rank=same; skill_ref_specialist_output_schema; skill_ref_architecture; }
     { rank=same; cmd_plugin_migrate_analyze; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_architecture; }
 
