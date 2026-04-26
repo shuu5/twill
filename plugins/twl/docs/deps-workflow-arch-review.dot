@@ -41,7 +41,7 @@ digraph Dependencies {
     agent_worker_supabase_migration_checker [label="worker-supabase-migration-checker\n(1,338 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_data_validator [label="worker-data-validator\n(698 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_e2e_reviewer [label="worker-e2e-reviewer\n(1,226 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,827 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,841 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_code_reviewer [label="worker-code-reviewer\n(1,002 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_security_reviewer [label="worker-security-reviewer\n(866 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_nextjs_reviewer [label="worker-nextjs-reviewer\n(642 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
@@ -50,7 +50,7 @@ digraph Dependencies {
     agent_worker_r_reviewer [label="worker-r-reviewer\n(717 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_arch_doc_reviewer [label="worker-arch-doc-reviewer\n(1,457 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_architecture [label="worker-architecture\n(1,695 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_issue_pr_alignment [label="worker-issue-pr-alignment\n(2,021 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_issue_pr_alignment [label="worker-issue-pr-alignment\n(2,038 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_output_reviewer [label="worker-llm-output-reviewer\n(1,162 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_eval_runner [label="worker-llm-eval-runner\n(1,174 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
@@ -64,7 +64,7 @@ digraph Dependencies {
     script_autopilot_mergegate_ops [label="autopilot-mergegate-ops\n(5,604 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_auto_merge [label="auto-merge\n(3,232 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_pr_review_manifest [label="pr-review-manifest\n(1,864 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_pr_review_manifest [label="pr-review-manifest\n(2,034 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_write [label="checkpoint-write\n(2,864 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_checkpoint_read [label="checkpoint-read\n(2,864 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_check_pr [label="merge-gate-check-pr\n(246 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

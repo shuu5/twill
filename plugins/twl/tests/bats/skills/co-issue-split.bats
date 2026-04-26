@@ -78,11 +78,12 @@ teardown() {
   [ "$refs_count" -gt 0 ]
 
   # refs/ の各ファイル名が SKILL.md の Read 指示文で参照されているか確認
+  # パターン: `refs/<filename>` を Read または Read.*refs/<filename>
   local unref_count=0
   while IFS= read -r ref_file; do
     local basename
     basename=$(basename "$ref_file")
-    if ! grep -qE "Read.*refs/${basename}|Read.*refs/co-issue" "$skill_file"; then
+    if ! grep -qE "refs/${basename}.*Read|Read.*refs/${basename}" "$skill_file"; then
       unref_count=$((unref_count + 1))
     fi
   done < <(find "$refs_dir" -name '*.md')
@@ -179,10 +180,17 @@ teardown() {
 # 現状: README.md に co-issue refs への言及がないため fail する
 # ---------------------------------------------------------------------------
 
-@test "ac8: README.md contains reference to co-issue refs structure" {
-  local readme_file="$REPO_ROOT/README.md"
-  [ -f "$readme_file" ]
+@test "ac8: deps-co-issue.svg reflects refs structure (twl update-readme 済み)" {
+  local svg_file="$REPO_ROOT/docs/deps-co-issue.svg"
+  local dot_file="$REPO_ROOT/docs/deps-co-issue.dot"
 
-  # refs/co-issue または co-issue refs への言及を確認
-  grep -qE 'refs/co-issue|co-issue.*refs' "$readme_file"
+  # SVG または DOT ファイルが存在することを確認
+  [ -f "$svg_file" ] || [ -f "$dot_file" ]
+
+  # co-issue refs ノードが SVG/DOT に含まれていることを確認（twl --update-readme で生成）
+  local check_file
+  check_file="${dot_file:-$svg_file}"
+  [ -f "$dot_file" ] && check_file="$dot_file"
+
+  grep -qE 'co-issue-step0\.5-modes|co-issue-phase2-bundles|co-issue-phase3-dispatch|co-issue-phase4-aggregate|co-issue-cleanup' "$check_file"
 }

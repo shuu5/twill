@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_verify</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="86.97" cy="-519.49" rx="86.95" ry="21.43"/>
 <text text-anchor="middle" x="86.97" y="-522.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;verify</text>
-<text text-anchor="middle" x="86.97" y="-511.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,579 tok)</text>
+<text text-anchor="middle" x="86.97" y="-511.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,596 tok)</text>
 </g>
 <!-- cmd_prompt_compliance -->
 <g id="node7" class="node">
@@ -74,7 +74,7 @@
 <title>cmd_ac_verify</title>
 <polygon fill="#e3f2fd" stroke="black" points="322.95,-404.49 252.95,-404.49 252.95,-368.49 322.95,-368.49 322.95,-404.49"/>
 <text text-anchor="middle" x="287.95" y="-389.49" font-family="Helvetica,sans-Serif" font-size="10.00">ac&#45;verify</text>
-<text text-anchor="middle" x="287.95" y="-378.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,133 tok)</text>
+<text text-anchor="middle" x="287.95" y="-378.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,146 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;cmd_ac_verify -->
 <g id="edge7" class="edge">
@@ -113,7 +113,7 @@
 <title>cmd_test_phase</title>
 <polygon fill="#bbdefb" stroke="black" points="321.95,-346.49 253.95,-346.49 253.95,-310.49 321.95,-310.49 321.95,-346.49"/>
 <text text-anchor="middle" x="287.95" y="-331.49" font-family="Helvetica,sans-Serif" font-size="10.00">test&#45;phase</text>
-<text text-anchor="middle" x="287.95" y="-320.49" font-family="Helvetica,sans-Serif" font-size="10.00">(631 tok)</text>
+<text text-anchor="middle" x="287.95" y="-320.49" font-family="Helvetica,sans-Serif" font-size="10.00">(649 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;cmd_test_phase -->
 <g id="edge8" class="edge">
@@ -363,7 +363,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="801.47" cy="-463.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="801.47" y="-466.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="801.47" y="-455.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,827 tok)</text>
+<text text-anchor="middle" x="801.47" y="-455.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,841 tok)</text>
 </g>
 <!-- cmd_phase_review&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge32" class="edge">
@@ -454,7 +454,7 @@
 <title>agent_worker_issue_pr_alignment</title>
 <ellipse fill="#ede7f6" stroke="black" cx="801.47" cy="-399.49" rx="103.48" ry="21.43"/>
 <text text-anchor="middle" x="801.47" y="-402.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;issue&#45;pr&#45;alignment</text>
-<text text-anchor="middle" x="801.47" y="-391.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,021 tok)</text>
+<text text-anchor="middle" x="801.47" y="-391.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,038 tok)</text>
 </g>
 <!-- cmd_phase_review&#45;&gt;agent_worker_issue_pr_alignment -->
 <g id="edge33" class="edge">

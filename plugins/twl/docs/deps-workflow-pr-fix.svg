@@ -62,7 +62,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="451.02" cy="-166.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="451.02" y="-169.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="451.02" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,827 tok)</text>
+<text text-anchor="middle" x="451.02" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,841 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge6" class="edge">
@@ -114,7 +114,7 @@
 <title>script_pr_review_manifest</title>
 <polygon fill="#ff9800" stroke="black" points="786.76,-166.49 741.94,-190.98 652.31,-190.98 607.5,-166.49 652.31,-142.01 741.94,-142.01 786.76,-166.49"/>
 <text text-anchor="middle" x="697.13" y="-169.49" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;review&#45;manifest</text>
-<text text-anchor="middle" x="697.13" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,864 tok)</text>
+<text text-anchor="middle" x="697.13" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,034 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;script_pr_review_manifest -->
 <g id="edge7" class="edge">

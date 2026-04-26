@@ -298,7 +298,7 @@
 <title>script_pr_review_manifest</title>
 <polygon fill="#ff9800" stroke="black" points="1228.96,-2480 1184.14,-2504.49 1094.52,-2504.49 1049.7,-2480 1094.52,-2455.51 1184.14,-2455.51 1228.96,-2480"/>
 <text text-anchor="middle" x="1139.33" y="-2483" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;review&#45;manifest</text>
-<text text-anchor="middle" x="1139.33" y="-2472" font-family="Helvetica,sans-Serif" font-size="10.00">(1,864 tok)</text>
+<text text-anchor="middle" x="1139.33" y="-2472" font-family="Helvetica,sans-Serif" font-size="10.00">(2,034 tok)</text>
 </g>
 <!-- cmd_arch_phase_review&#45;&gt;script_pr_review_manifest -->
 <g id="edge11" class="edge">
@@ -459,7 +459,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="801.86" cy="-2287" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="801.86" y="-2290" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="801.86" y="-2279" font-family="Helvetica,sans-Serif" font-size="10.00">(1,827 tok)</text>
+<text text-anchor="middle" x="801.86" y="-2279" font-family="Helvetica,sans-Serif" font-size="10.00">(1,841 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge48" class="edge">
@@ -556,7 +556,7 @@
 <title>agent_worker_issue_pr_alignment</title>
 <ellipse fill="#ede7f6" stroke="black" cx="801.86" cy="-1185" rx="103.48" ry="21.43"/>
 <text text-anchor="middle" x="801.86" y="-1188" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;issue&#45;pr&#45;alignment</text>
-<text text-anchor="middle" x="801.86" y="-1177" font-family="Helvetica,sans-Serif" font-size="10.00">(2,021 tok)</text>
+<text text-anchor="middle" x="801.86" y="-1177" font-family="Helvetica,sans-Serif" font-size="10.00">(2,038 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_issue_pr_alignment -->
 <g id="edge50" class="edge">
