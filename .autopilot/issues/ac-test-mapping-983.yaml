@@ -1,0 +1,40 @@
+mappings:
+  - ac_index: 1
+    ac_text: "controller_size <= 200 lines: wc -l plugins/twl/skills/co-issue/SKILL.md の frontmatter 除外行数が 200 以下"
+    test_file: "plugins/twl/tests/bats/skills/co-issue-split.bats"
+    test_name: "ac1: co-issue SKILL.md body (frontmatter-excluded) is at most 200 lines"
+
+  - ac_index: 2
+    ac_text: "token_bloat <= 1500 tok: wc -w plugins/twl/skills/co-issue/SKILL.md で語数が 1500 以下"
+    test_file: "plugins/twl/tests/bats/skills/co-issue-split.bats"
+    test_name: "ac2: co-issue SKILL.md word count is at most 1500 (requires refs/ split to be complete)"
+
+  - ac_index: 3
+    ac_text: "refs/ の全 .md が SKILL.md の Read 指示文から 1:1 参照（差集合空）"
+    test_file: "plugins/twl/tests/bats/skills/co-issue-split.bats"
+    test_name: "ac3: all refs/*.md files are referenced by Read instructions in SKILL.md"
+
+  - ac_index: 4
+    ac_text: "逆方向 dead reference なし: grep -oE 'refs/co-issue-[a-z0-9-]+\\.md' SKILL.md 列挙がすべて refs/ に実在"
+    test_file: "plugins/twl/tests/bats/skills/co-issue-split.bats"
+    test_name: "ac4: all refs referenced in SKILL.md actually exist in refs/"
+
+  - ac_index: 5
+    ac_text: "ref 間 cross-reference 禁止: grep -lE 'refs/co-issue-[a-z0-9-]+\\.md' refs/*.md が空"
+    test_file: "plugins/twl/tests/bats/skills/co-issue-split.bats"
+    test_name: "ac5: no cross-references between ref files"
+
+  - ac_index: 6
+    ac_text: "各 ref <= 200 lines: refs/ 配下の各ファイルが 200 行以下"
+    test_file: "plugins/twl/tests/bats/skills/co-issue-split.bats"
+    test_name: "ac6: each file in refs/ is at most 200 lines"
+
+  - ac_index: 7
+    ac_text: "deps.yaml に 5 件の reference エントリ: co-issue コンポーネントの calls セクションに 5 件の reference タイプエントリ"
+    test_file: "plugins/twl/tests/bats/skills/co-issue-split.bats"
+    test_name: "ac7: deps.yaml co-issue calls section has exactly 5 reference type entries"
+
+  - ac_index: 8
+    ac_text: "README.md に refs/ 構造反映: plugins/twl/README.md に co-issue refs ファイルへの言及"
+    test_file: "plugins/twl/tests/bats/skills/co-issue-split.bats"
+    test_name: "ac8: README.md contains reference to co-issue refs structure"
