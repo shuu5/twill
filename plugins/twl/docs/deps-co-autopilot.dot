@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_autopilot [label="twl:co-autopilot\n(4,077 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="twl:co-autopilot\n(1,462 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -26,12 +26,6 @@ digraph Dependencies {
     skill_workflow_self_improve [label="twl:workflow-self-improve\n(917 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_dci [label="twl:ref-dci\n(1,159 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,376 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(1,815 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_baseline_input_validation [label="twl:baseline-input-validation\n(1,408 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_baseline_bash [label="twl:baseline-bash\n(1,590 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_self_improve_review [label="self-improve-review\n(1,167 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -156,7 +150,6 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_co_autopilot; }
     { rank=same; skill_workflow_setup; skill_workflow_test_ready; skill_workflow_pr_verify; skill_workflow_pr_fix; skill_workflow_pr_merge; skill_workflow_dead_cleanup; skill_workflow_tech_debt_triage; skill_workflow_self_improve; }
-    { rank=same; skill_ref_specialist_output_schema; skill_ref_dci; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; skill_baseline_bash; }
     { rank=same; cmd_self_improve_review; cmd_init; cmd_worktree_create; cmd_project_board_status_update; cmd_crg_auto_build; cmd_ac_extract; cmd_prompt_compliance; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_post_fix_verify; cmd_warning_fix; cmd_pr_cycle_report; cmd_all_pass_check; cmd_ac_verify; cmd_check; cmd_dead_component_detect; cmd_dead_component_execute; cmd_triage_execute; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; cmd_e2e_plan; cmd_test_scaffold; cmd_phase_review; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; cmd_ac_deploy_trigger; cmd_test_phase; cmd_auto_merge; cmd_pr_cycle_analysis; cmd_autopilot_init; cmd_autopilot_launch; cmd_autopilot_poll; cmd_autopilot_phase_execute; cmd_autopilot_pilot_wakeup_loop; cmd_autopilot_phase_sanity; cmd_autopilot_pilot_precheck; cmd_autopilot_pilot_rebase; cmd_autopilot_multi_source_verdict; cmd_autopilot_phase_postprocess; cmd_autopilot_collect; cmd_autopilot_retrospective; cmd_autopilot_patterns; cmd_autopilot_cross_issue; cmd_autopilot_summary; cmd_session_audit; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_architecture; agent_worker_issue_pr_alignment; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; agent_e2e_quality; agent_e2e_generate; }
     { rank=same; script_state_read; script_state_write; script_autopilot_init; script_autopilot_launch; script_session_create; script_session_archive; script_session_add_warning; script_worktree_delete; script_crash_detect; script_health_check; script_tech_stack_detect; script_autopilot_parser; script_autopilot_plan; script_autopilot_cleanup; script_autopilot_should_skip; script_autopilot_orchestrator; script_autopilot_mergegate; script_autopilot_mergegate_guards; script_autopilot_mergegate_ops; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_session_audit; script_auto_merge; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_health_report; script_autopilot_plan_board; script_ecc_monitor; script_session_atomic_write; script_pr_review_manifest; script_checkpoint_write; script_checkpoint_read; script_merge_gate_check_pr; script_merge_gate_build_manifest; script_merge_gate_check_spawn; script_specialist_audit; script_merge_gate_checkpoint_merge; script_merge_gate_check_phase_review; }
@@ -190,6 +183,11 @@ digraph Dependencies {
     skill_co_autopilot -> script_autopilot_orchestrator;
     skill_co_autopilot -> script_autopilot_plan;
     skill_co_autopilot -> script_autopilot_cleanup;
+    skill_co_autopilot -> skill_co_autopilot_su_observer_integration;
+    skill_co_autopilot -> skill_co_autopilot_worker_auto_mode;
+    skill_co_autopilot -> skill_co_autopilot_phase_sanity;
+    skill_co_autopilot -> skill_co_autopilot_emergency_bypass;
+    skill_co_autopilot -> skill_co_autopilot_session_init;
     skill_workflow_setup -> cmd_init;
     skill_workflow_setup -> cmd_worktree_create;
     skill_workflow_setup -> cmd_project_board_status_update;
@@ -390,6 +388,11 @@ digraph Dependencies {
     skill_workflow_self_improve -> script_autopilot_orchestrator [style=invis, weight=10];
     script_autopilot_orchestrator -> script_autopilot_plan [style=invis, weight=10];
     script_autopilot_plan -> script_autopilot_cleanup [style=invis, weight=10];
+    script_autopilot_cleanup -> skill_co_autopilot_su_observer_integration [style=invis, weight=10];
+    skill_co_autopilot_su_observer_integration -> skill_co_autopilot_worker_auto_mode [style=invis, weight=10];
+    skill_co_autopilot_worker_auto_mode -> skill_co_autopilot_phase_sanity [style=invis, weight=10];
+    skill_co_autopilot_phase_sanity -> skill_co_autopilot_emergency_bypass [style=invis, weight=10];
+    skill_co_autopilot_emergency_bypass -> skill_co_autopilot_session_init [style=invis, weight=10];
     cmd_init -> cmd_worktree_create [style=invis, weight=10];
     cmd_worktree_create -> cmd_project_board_status_update [style=invis, weight=10];
     cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];

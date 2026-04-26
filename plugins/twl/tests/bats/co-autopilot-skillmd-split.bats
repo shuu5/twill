@@ -222,17 +222,32 @@ except Exception:
 # AC6: twl update-readme 後 README.md に refs/ 構造が反映される
 # ===========================================================================
 
-@test "ac6: README.md contains co-autopilot refs/ section after update-readme" {
-  # update-readme を dry-run 相当で実行（実際の README を確認）
-  run bash -c "cd '${REPO_ROOT}' && twl update-readme --dry-run 2>&1 || twl update-readme 2>&1"
-  # README に refs/ ファイル名が含まれるか確認
+@test "ac6: README.md reflects new co-autopilot refs structure (ref count updated)" {
+  # twl --update-readme が正常終了すること
+  run bash -c "cd '${REPO_ROOT}' && twl --update-readme 2>&1"
+  [ "${status}" -eq 0 ]
+
+  # README に co-autopilot が含まれること
   run grep -c "co-autopilot" "${README}"
   [ "${status}" -eq 0 ]
   [ "${output}" -ge 1 ]
 
-  # refs/ が実装済みであれば、refs/ 配下のファイルが README に含まれることを確認
+  # refs/ が実装済みであれば、README の ref 数が増加していること（19 → 24 以上）
   if [ -d "${REFS_DIR}" ] && [ "$(ls "${REFS_DIR}"/*.md 2>/dev/null | wc -l)" -gt 0 ]; then
-    run grep -l "refs/" "${README}"
+    run python3 - "${README}" <<'EOF'
+import sys, re
+readme = open(sys.argv[1]).read()
+# "Refs | N | ..." 行から ref 数を抽出
+m = re.search(r'\|\s*Refs\s*\|\s*(\d+)\s*\|', readme)
+if not m:
+    print("FAIL: README に Refs 行が見つからない")
+    sys.exit(1)
+count = int(m.group(1))
+if count <= 19:
+    print(f"FAIL: ref count {count} ≤ 19 (新規 refs が未反映)")
+    sys.exit(1)
+print(f"OK: ref count = {count}")
+EOF
     [ "${status}" -eq 0 ]
   fi
 }

@@ -160,6 +160,11 @@ skills:
       - script: autopilot-plan
       - script: autopilot-cleanup
         step: "5.6"
+      - reference: co-autopilot-su-observer-integration   # Step 3.5: su-observer 起動パターン・chain 連携
+      - reference: co-autopilot-worker-auto-mode           # Step 3.5: Worker auto mode 確認方針
+      - reference: co-autopilot-phase-sanity               # Step 4.5: Phase 完了サニティチェック
+      - reference: co-autopilot-emergency-bypass           # Emergency Bypass マージ手順
+      - reference: co-autopilot-session-init               # Step 3/5: セッション初期化・終了
     description: "依存グラフに基づくIssue群一括自律実装オーケストレーター"
 
   co-issue:
@@ -638,6 +643,32 @@ skills:
 
 # リファレンス（B-6 で追加）
 refs:
+  # co-autopilot refs (Issue #982: SKILL.md split)
+  co-autopilot-su-observer-integration:
+    type: reference
+    path: skills/co-autopilot/refs/co-autopilot-su-observer-integration.md
+    description: "su-observer 監視受入・spawn-controller chain 連携起動・起動経路比較（#836 文書化）"
+
+  co-autopilot-worker-auto-mode:
+    type: reference
+    path: skills/co-autopilot/refs/co-autopilot-worker-auto-mode.md
+    description: "Worker auto mode 確認方針（heartbeat/pane-capture 確認手順 A/B、Issue #800 探索結果）"
+
+  co-autopilot-phase-sanity:
+    type: reference
+    path: skills/co-autopilot/refs/co-autopilot-phase-sanity.md
+    description: "Step 4.5 Phase 完了サニティチェック詳細手順（precheck/rebase/postprocess 連鎖）"
+
+  co-autopilot-emergency-bypass:
+    type: reference
+    path: skills/co-autopilot/refs/co-autopilot-emergency-bypass.md
+    description: "Emergency Bypass マージ手順（mergegate merge --force 必須、gh pr merge 直呼禁止）"
+
+  co-autopilot-session-init:
+    type: reference
+    path: skills/co-autopilot/refs/co-autopilot-session-init.md
+    description: "セッション初期化・終了手順（PYTHONPATH 設定・audit on/off・cleanup）"
+
   ref-specialist-output-schema:
     type: reference
     path: refs/ref-specialist-output-schema.md
