@@ -135,19 +135,18 @@ JSON
 # ---------------------------------------------------------------------------
 
 @test "all issues done + --force + under 24h: deletes session and continues init" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '20 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "done1234",
-  "started_at": "$started_at",
-  "issues": [
-    {"issue": 1, "status": "done"},
-    {"issue": 2, "status": "done"}
-  ]
+  "started_at": "$started_at"
 }
 JSON
+  # 新仕様: per-issue file で status=done を表現（#978）
+  create_issue_json 1 "done"
+  create_issue_json 2 "done"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 
@@ -156,19 +155,18 @@ JSON
 }
 
 @test "all issues done + --force + over 24h: deletes session and continues init" {
-  mkdir -p "$SANDBOX/.autopilot"
+  mkdir -p "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '30 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
   "session_id": "done5678",
-  "started_at": "$started_at",
-  "issues": [
-    {"issue": 1, "status": "done"},
-    {"issue": 2, "status": "done"}
-  ]
+  "started_at": "$started_at"
 }
 JSON
+  # 新仕様: per-issue file で status=done を表現（#978）
+  create_issue_json 1 "done"
+  create_issue_json 2 "done"
 
   run bash "$SANDBOX/scripts/autopilot-init.sh" --force
 
@@ -218,13 +216,19 @@ JSON
   [ ! -f "$SANDBOX/.autopilot/session.json" ]
 }
 
-@test "issues field absent + --force: blocks with exit 1 (fail-closed, not treated as done)" {
+@test "issues/ dir absent + --force: blocks with exit 1 (fail-closed, not treated as done)" {
+  # AC3 update: 旧仕様「issues field absent」→ 新仕様「issues/ dir 不在」
+  # #732 race condition 意図継承: issues/ dir が存在しない場合は完了とみなさない（fail-closed）
+  # 新実装では is_session_completed が autopilot_dir を受け取り issues/ dir の有無を確認する
+  # RED: 現行実装は session_file の issues フィールドを見るため、この assert が FAIL する場合がある
   mkdir -p "$SANDBOX/.autopilot"
+  # issues/ ディレクトリを意図的に作成しない（存在しない状態）
+  rm -rf "$SANDBOX/.autopilot/issues"
   local started_at
   started_at=$(date -u -d '20 hours ago' +"%Y-%m-%dT%H:%M:%SZ")
   cat > "$SANDBOX/.autopilot/session.json" <<JSON
 {
-  "session_id": "noissues",
+  "session_id": "no-issues-dir",
   "started_at": "$started_at"
 }
 JSON
