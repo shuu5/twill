@@ -8,8 +8,8 @@ digraph Dependencies {
     edge [fontname="Helvetica", fontsize=9];
 
     // L0: Controller Skills
-    skill_co_autopilot [label="twl:co-autopilot\n(1,462 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-    skill_co_issue [label="twl:co-issue\n(1,354 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_autopilot [label="twl:co-autopilot\n(4,077 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(5,635 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_project [label="twl:co-project\n(1,625 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_explore [label="twl:co-explore\n(1,440 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
     skill_co_architect [label="twl:co-architect\n(1,875 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
@@ -41,6 +41,42 @@ digraph Dependencies {
     skill_co_issue_phase3_dispatch [label="twl:co-issue-phase3-dispatch\n(673 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_co_issue_phase4_aggregate [label="twl:co-issue-phase4-aggregate\n(1,397 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_co_issue_cleanup [label="twl:co-issue-cleanup\n(327 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_specialist_few_shot [label="twl:ref-specialist-few-shot\n(1,762 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_issue_template_bug [label="twl:ref-issue-template-bug\n(136 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_issue_template_feature [label="twl:ref-issue-template-feature\n(120 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_types [label="twl:ref-types\n(2,144 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_practices [label="twl:ref-practices\n(6,471 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_deps_format [label="twl:ref-deps-format\n(2,028 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_architecture [label="twl:ref-architecture\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_architecture_spec [label="twl:ref-architecture-spec\n(1,034 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_project_model [label="twl:ref-project-model\n(2,320 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_issue_quality_criteria [label="twl:ref-issue-quality-criteria\n(1,002 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_investigation_budget [label="twl:ref-investigation-budget\n(275 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_dci [label="twl:ref-dci\n(1,159 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_glossary_criteria [label="twl:ref-glossary-criteria\n(873 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_invariants [label="twl:ref-invariants\n(3,083 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_compaction_recovery [label="twl:ref-compaction-recovery\n(263 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_prompt_guide [label="twl:ref-prompt-guide\n(3,384 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_self_improve_format [label="twl:self-improve-format\n(1,365 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,376 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(1,815 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_input_validation [label="twl:baseline-input-validation\n(1,408 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_bash [label="twl:baseline-bash\n(1,590 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_test_scenario_catalog [label="twl:test-scenario-catalog\n(4,173 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(2,760 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_load_test_baselines [label="twl:load-test-baselines\n(670 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_su_observer_supervise_channels [label="twl:su-observer-supervise-channels\n(1,063 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_su_observer_controller_spawn_playbook [label="twl:su-observer-controller-spawn-playbook\n(1,586 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_su_observer_wave_management [label="twl:su-observer-wave-management\n(1,129 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_su_observer_security_gate [label="twl:su-observer-security-gate\n(652 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_monitor_channel_catalog [label="twl:monitor-channel-catalog\n(7,301 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_pilot_completion_signals [label="twl:pilot-completion-signals\n(1,158 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_pitfalls_catalog [label="twl:pitfalls-catalog\n(11,003 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_proxy_dialog_playbook [label="twl:proxy-dialog-playbook\n(2,165 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_intervention_catalog [label="twl:intervention-catalog\n(3,900 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_memory_mcp_config [label="twl:memory-mcp-config\n(389 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_externalization_schema [label="twl:externalization-schema\n(726 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_self_improve_review [label="self-improve-review\n(1,167 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -286,7 +322,7 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_co_autopilot; skill_co_issue; skill_co_project; skill_co_explore; skill_co_architect; skill_co_utility; skill_co_self_improve; }
     { rank=same; skill_workflow_setup; skill_workflow_test_ready; skill_workflow_pr_verify; skill_workflow_pr_fix; skill_workflow_pr_merge; skill_workflow_dead_cleanup; skill_workflow_tech_debt_triage; skill_workflow_self_improve; skill_workflow_observe_loop; skill_workflow_plugin_create; skill_workflow_plugin_diagnose; skill_workflow_prompt_audit; skill_workflow_issue_lifecycle; skill_workflow_issue_refine; skill_workflow_arch_review; }
-    { rank=same; skill_co_issue_step0_5_modes; skill_co_issue_phase2_bundles; skill_co_issue_phase3_dispatch; skill_co_issue_phase4_aggregate; skill_co_issue_cleanup; }
+    { rank=same; skill_ref_specialist_output_schema; skill_ref_specialist_few_shot; skill_ref_issue_template_bug; skill_ref_issue_template_feature; skill_ref_types; skill_ref_practices; skill_ref_deps_format; skill_ref_architecture; skill_ref_architecture_spec; skill_ref_project_model; skill_ref_issue_quality_criteria; skill_ref_investigation_budget; skill_ref_dci; skill_ref_glossary_criteria; skill_ref_invariants; skill_ref_compaction_recovery; skill_ref_prompt_guide; skill_self_improve_format; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; skill_baseline_bash; skill_test_scenario_catalog; skill_observation_pattern_catalog; skill_load_test_baselines; skill_su_observer_supervise_channels; skill_su_observer_controller_spawn_playbook; skill_su_observer_wave_management; skill_su_observer_security_gate; skill_monitor_channel_catalog; skill_pilot_completion_signals; skill_pitfalls_catalog; skill_proxy_dialog_playbook; skill_intervention_catalog; skill_memory_mcp_config; skill_externalization_schema; }
     { rank=same; cmd_self_improve_review; cmd_init; cmd_worktree_create; cmd_worktree_list; cmd_project_board_status_update; cmd_crg_auto_build; cmd_ac_extract; cmd_prompt_compliance; cmd_ts_preflight; cmd_scope_judge; cmd_pr_test; cmd_post_fix_verify; cmd_warning_fix; cmd_pr_cycle_report; cmd_all_pass_check; cmd_ac_verify; cmd_issue_structure; cmd_issue_create; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_project_board_sync; cmd_label_sync; cmd_project_create; cmd_project_board_configure; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_architect_completeness_check; cmd_architect_group_refine; cmd_evaluate_architecture; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_prompt_audit_scan; cmd_prompt_audit_review; cmd_prompt_audit_apply; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; cmd_check; cmd_dead_component_detect; cmd_dead_component_execute; cmd_triage_execute; cmd_self_improve_collect; cmd_self_improve_propose; cmd_self_improve_close; cmd_ecc_monitor; cmd_observe_once; cmd_problem_detect; cmd_issue_draft_from_observation; cmd_observe_and_detect; cmd_observe_retrospective; cmd_su_compact; cmd_externalize_state; cmd_intervene_auto; cmd_intervene_confirm; cmd_intervene_escalate; cmd_test_project_init; cmd_test_project_reset; cmd_test_project_scenario_load; cmd_twl_validate; cmd_services; cmd_ui_capture; cmd_e2e_plan; cmd_test_scaffold; cmd_worktree_delete; cmd_phase_review; cmd_arch_phase_review; cmd_arch_fix_phase; cmd_fix_phase; cmd_e2e_screening; cmd_merge_gate; cmd_ac_deploy_trigger; cmd_test_phase; cmd_auto_merge; cmd_pr_cycle_analysis; cmd_schema_update; cmd_autopilot_init; cmd_autopilot_launch; cmd_autopilot_poll; cmd_autopilot_phase_execute; cmd_autopilot_pilot_wakeup_loop; cmd_autopilot_phase_sanity; cmd_autopilot_pilot_precheck; cmd_autopilot_pilot_rebase; cmd_autopilot_multi_source_verdict; cmd_autopilot_phase_postprocess; cmd_wave_collect; cmd_autopilot_collect; cmd_autopilot_retrospective; cmd_autopilot_patterns; cmd_autopilot_cross_issue; cmd_autopilot_summary; cmd_session_audit; }
     { rank=same; cmd_arch_ref; cmd_llm_delegate; cmd_llm_complete; cmd_dispatch_info; cmd_chain_status; cmd_issue_bulk_create; cmd_issue_tech_debt_absorb; cmd_issue_cross_repo_create; cmd_explore; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_template_validator; agent_context_checker; agent_worker_e2e_reviewer; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_nextjs_reviewer; agent_worker_fastapi_reviewer; agent_worker_hono_reviewer; agent_worker_r_reviewer; agent_worker_arch_doc_reviewer; agent_worker_architecture; agent_worker_issue_pr_alignment; agent_worker_workflow_integrity; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; agent_worker_prompt_reviewer; agent_docs_researcher; agent_e2e_quality; agent_autofix_loop; agent_e2e_generate; agent_e2e_heal; agent_e2e_visual_heal; agent_observer_evaluator; }
@@ -331,11 +367,6 @@ digraph Dependencies {
     skill_co_issue -> skill_workflow_issue_refine;
     skill_co_issue -> script_issue_lifecycle_orchestrator;
     skill_co_issue -> script_co_issue_manual_fix_b;
-    skill_co_issue -> skill_co_issue_step0_5_modes;
-    skill_co_issue -> skill_co_issue_phase2_bundles;
-    skill_co_issue -> skill_co_issue_phase3_dispatch;
-    skill_co_issue -> skill_co_issue_phase4_aggregate;
-    skill_co_issue -> skill_co_issue_cleanup;
     skill_co_project -> cmd_project_create;
     skill_co_project -> cmd_project_governance;
     skill_co_project -> cmd_project_board_configure;
@@ -396,6 +427,10 @@ digraph Dependencies {
     skill_su_observer -> skill_pitfalls_catalog;
     skill_su_observer -> skill_proxy_dialog_playbook;
     skill_su_observer -> skill_ref_invariants;
+    skill_su_observer -> skill_su_observer_supervise_channels;
+    skill_su_observer -> skill_su_observer_controller_spawn_playbook;
+    skill_su_observer -> skill_su_observer_wave_management;
+    skill_su_observer -> skill_su_observer_security_gate;
     skill_workflow_setup -> cmd_init;
     skill_workflow_setup -> cmd_worktree_create;
     skill_workflow_setup -> cmd_project_board_status_update;
@@ -725,11 +760,6 @@ digraph Dependencies {
     skill_workflow_issue_lifecycle -> skill_workflow_issue_refine [style=invis, weight=10];
     skill_workflow_issue_refine -> script_issue_lifecycle_orchestrator [style=invis, weight=10];
     script_issue_lifecycle_orchestrator -> script_co_issue_manual_fix_b [style=invis, weight=10];
-    script_co_issue_manual_fix_b -> skill_co_issue_step0_5_modes [style=invis, weight=10];
-    skill_co_issue_step0_5_modes -> skill_co_issue_phase2_bundles [style=invis, weight=10];
-    skill_co_issue_phase2_bundles -> skill_co_issue_phase3_dispatch [style=invis, weight=10];
-    skill_co_issue_phase3_dispatch -> skill_co_issue_phase4_aggregate [style=invis, weight=10];
-    skill_co_issue_phase4_aggregate -> skill_co_issue_cleanup [style=invis, weight=10];
     cmd_project_create -> cmd_project_governance [style=invis, weight=10];
     cmd_project_governance -> cmd_project_board_configure [style=invis, weight=10];
     cmd_project_board_configure -> cmd_project_migrate [style=invis, weight=10];
@@ -785,6 +815,10 @@ digraph Dependencies {
     script_step0_memory_ambient -> skill_pitfalls_catalog [style=invis, weight=10];
     skill_pitfalls_catalog -> skill_proxy_dialog_playbook [style=invis, weight=10];
     skill_proxy_dialog_playbook -> skill_ref_invariants [style=invis, weight=10];
+    skill_ref_invariants -> skill_su_observer_supervise_channels [style=invis, weight=10];
+    skill_su_observer_supervise_channels -> skill_su_observer_controller_spawn_playbook [style=invis, weight=10];
+    skill_su_observer_controller_spawn_playbook -> skill_su_observer_wave_management [style=invis, weight=10];
+    skill_su_observer_wave_management -> skill_su_observer_security_gate [style=invis, weight=10];
     cmd_init -> cmd_worktree_create [style=invis, weight=10];
     cmd_worktree_create -> cmd_project_board_status_update [style=invis, weight=10];
     cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];

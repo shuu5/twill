@@ -359,6 +359,10 @@ skills:
       - reference: pitfalls-catalog   # Phase A: 起動時 Step 0 Read MUST
       - reference: proxy-dialog-playbook  # #814 Phase 2: proxy 対話完全手順
       - reference: ref-invariants     # 不変条件 A-M 正典参照（境界説明）
+      - reference: su-observer-supervise-channels      # #984: supervise 必須並行チャンネル詳細
+      - reference: su-observer-controller-spawn-playbook  # #984: controller spawn パターン・並列度・spawn prompt 規約
+      - reference: su-observer-wave-management         # #984: Wave 管理・問題検出・過去介入記録確認
+      - reference: su-observer-security-gate           # #984: Security gate Layer A-D 定義・bypass 禁止
     dependencies:
       - plugin: session  # cld --observer: session.json の claude_session_id 読み取りに session plugin の session-state.sh を使用
     description: "メタ認知レイヤー: 全 controller の監視・介入。hook プライマリ / polling フォールバックの Hybrid 検知（#570）。テストシナリオ実行は co-self-improve に委譲"
@@ -804,6 +808,35 @@ refs:
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
     description: "負荷テスト level の定量基準"
+
+  # su-observer split refs (#984: SKILL.md token_bloat 解消)
+  su-observer-supervise-channels:
+    type: reference
+    path: skills/su-observer/refs/su-observer-supervise-channels.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "supervise 1 iteration 必須並行チャンネル定義・多指標 AND 条件・[BUDGET-LOW] 検知シーケンス・起動手順・Hybrid 検知ポリシー（#984 split）"
+
+  su-observer-controller-spawn-playbook:
+    type: reference
+    path: skills/su-observer/refs/su-observer-controller-spawn-playbook.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "controller 起動パターン table・並列度制約（ADR-026）・co-autopilot 推奨経路・spawn プロンプト規約（MUST NOT 転記禁止）・Worker auto mode 確認・proxy 対話手順（#984 split）"
+
+  su-observer-wave-management:
+    type: reference
+    path: skills/su-observer/refs/su-observer-wave-management.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "既存セッション状態確認・問題検出フロー（パターン特定→介入層選択）・Wave ライフサイクル 0-6（CRG ヘルスチェック含む）・過去介入記録確認（#984 split）"
+
+  su-observer-security-gate:
+    type: reference
+    path: skills/su-observer/refs/su-observer-security-gate.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "Security gate Layer A-D ゲート定義・bypass 禁止手法（session file pre-seed / bypass hint / settings self-modification）・permission 拒否対応プロトコル（#984 split）"
 
   # su-observer Monitor チャネルカタログ (#486, #599)
   monitor-channel-catalog:
