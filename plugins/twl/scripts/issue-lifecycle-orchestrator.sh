@@ -39,6 +39,19 @@ MAX_POLL="${MAX_POLL:-360}"
 if ! [[ "$MAX_POLL" =~ ^[1-9][0-9]*$ ]]; then
   MAX_POLL=360
 fi
+# AC0 p99 実測ベース: cld 初期化 20-30s 観測 → 30s + margin (#987)
+DEBOUNCE_TRANSIENT_SEC="${DEBOUNCE_TRANSIENT_SEC:-30}"
+if ! [[ "$DEBOUNCE_TRANSIENT_SEC" =~ ^[0-9]+$ ]]; then
+  DEBOUNCE_TRANSIENT_SEC=30
+fi
+DEBOUNCE_UNCLASSIFIED_CONFIRM_SEC="${DEBOUNCE_UNCLASSIFIED_CONFIRM_SEC:-30}"
+if ! [[ "$DEBOUNCE_UNCLASSIFIED_CONFIRM_SEC" =~ ^[0-9]+$ ]]; then
+  DEBOUNCE_UNCLASSIFIED_CONFIRM_SEC=30
+fi
+STARTUP_GRACE_PERIOD="${STARTUP_GRACE_PERIOD:-15}"
+if ! [[ "$STARTUP_GRACE_PERIOD" =~ ^[0-9]+$ ]]; then
+  STARTUP_GRACE_PERIOD=15
+fi
 
 # --- 使い方 ---
 usage() {
@@ -65,6 +78,7 @@ EOF
 _generate_fallback_report() {
   local subdir="$1" reason="$2"
   local report_file="${subdir}/OUT/report.json"
+  rm -f "${subdir}/.spawn_ts" 2>/dev/null || true  # AC2: grace period orphan 防止 (#987)
 
   # findings.yaml / aggregate.yaml がある場合はそこから構築
   local aggregate_file="${subdir}/OUT/aggregate.yaml"
@@ -375,6 +389,10 @@ spawn_session() {
   exec {lockfd}>&-
 
   _spawn_tmux_window_with_prompt "$subdir" "$window_name" "$prompt_file"
+  # AC2: grace period 用 .spawn_ts atomic 書き込み (#987)
+  local _st
+  _st=$(date +%s)
+  printf '%s' "$_st" > "${subdir}/.spawn_ts.tmp" && mv "${subdir}/.spawn_ts.tmp" "${subdir}/.spawn_ts"
 }
 
 # =============================================================================
@@ -420,6 +438,18 @@ wait_for_batch() {
             fi
           fi
 
+          # AC2: grace period — spawn 直後 STARTUP_GRACE_PERIOD 秒間は debounce を全 skip (#987)
+          if [[ "$STARTUP_GRACE_PERIOD" -gt 0 ]]; then
+            local _spawn_ts_val=""
+            [[ -f "${subdir}/.spawn_ts" ]] && _spawn_ts_val=$(cat "${subdir}/.spawn_ts" 2>/dev/null | tr -d '[:space:]')
+            if [[ "$_spawn_ts_val" =~ ^[0-9]+$ ]] && \
+               [[ $(( current_ts - _spawn_ts_val )) -lt $STARTUP_GRACE_PERIOD ]]; then
+              rm -f "${subdir}/.debounce_ts" "${subdir}/.unclassified_debounce_ts" 2>/dev/null || true
+              all_done=false
+              continue
+            fi
+          fi
+
           # 非ブロッキング状態チェック — 旧: serial な wait --timeout 10 を置換 (#717)
           local pane_state
           pane_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
@@ -434,7 +464,7 @@ wait_for_batch() {
               all_done=false
               continue
             fi
-            if [[ $((current_ts - debounce_ts)) -lt 10 ]]; then
+            if [[ $((current_ts - debounce_ts)) -lt $DEBOUNCE_TRANSIENT_SEC ]]; then
               all_done=false
               continue
             fi
@@ -560,7 +590,7 @@ wait_for_batch() {
                   echo "$current_ts" > "$_unclassified_debounce_ts_file"
                   echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unclassified input-waiting (first detect) — debounce pending" >&2
                   all_done=false
-                elif [[ $((current_ts - _unclassified_prev_ts)) -lt 10 ]]; then
+                elif [[ $((current_ts - _unclassified_prev_ts)) -lt $DEBOUNCE_UNCLASSIFIED_CONFIRM_SEC ]]; then
                   echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unclassified input-waiting (debounce $((current_ts - _unclassified_prev_ts))s) — pending" >&2
                   all_done=false
                 else
@@ -599,6 +629,7 @@ wait_for_batch() {
         if [[ ! -f "$report_file" ]]; then
           mkdir -p "${subdir}/OUT"
           printf '{"status":"timeout","error":"poll_limit_reached"}\n' > "$report_file"
+          rm -f "${subdir}/.spawn_ts" 2>/dev/null || true  # AC2: grace period orphan 防止 (#987)
           local window_name
           window_name="$(window_name_for_subdir "$subdir")"
           tmux kill-window -t "$window_name" 2>/dev/null || true
