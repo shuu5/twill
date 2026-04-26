@@ -11,15 +11,20 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="twl:co-issue\n(5,408 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(1,354 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_issue_lifecycle [label="twl:workflow-issue-lifecycle\n(2,432 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(2,968 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_issue_lifecycle [label="twl:workflow-issue-lifecycle\n(2,595 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(3,235 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
+    skill_co_issue_step0_5_modes [label="twl:co-issue-step0.5-modes\n(734 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_co_issue_phase2_bundles [label="twl:co-issue-phase2-bundles\n(1,280 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_co_issue_phase3_dispatch [label="twl:co-issue-phase3-dispatch\n(673 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_co_issue_phase4_aggregate [label="twl:co-issue-phase4-aggregate\n(1,397 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_co_issue_cleanup [label="twl:co-issue-cleanup\n(327 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_glossary_criteria [label="twl:ref-glossary-criteria\n(873 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
@@ -36,29 +41,44 @@ digraph Dependencies {
     // L3: Agents
     agent_issue_critic [label="issue-critic\n(1,268 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_issue_feasibility [label="issue-feasibility\n(1,175 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,827 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,841 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
+    script_state_read [label="state-read\n(5,796 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_state_write [label="state-write\n(5,796 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_escape_issue_body [label="escape-issue-body\n(63 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_spec_review_manifest [label="spec-review-manifest\n(169 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_spec_review_session_init [label="spec-review-session-init\n(501 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_issue_lifecycle_orchestrator [label="issue-lifecycle-orchestrator\n(6,184 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_issue_lifecycle_orchestrator [label="issue-lifecycle-orchestrator\n(8,667 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_co_issue_manual_fix_b [label="co-issue-manual-fix-b\n(462 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
     // Layer constraints
     { rank=same; skill_co_issue; }
     { rank=same; skill_workflow_issue_lifecycle; skill_workflow_issue_refine; }
-    { rank=same; skill_ref_glossary_criteria; }
+    { rank=same; skill_co_issue_step0_5_modes; skill_co_issue_phase2_bundles; skill_co_issue_phase3_dispatch; skill_co_issue_phase4_aggregate; skill_co_issue_cleanup; skill_ref_glossary_criteria; }
     { rank=same; cmd_issue_structure; cmd_issue_create; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_glossary_check; cmd_issue_arch_drift; cmd_project_board_sync; }
     { rank=same; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; }
-    { rank=same; script_escape_issue_body; script_spec_review_manifest; script_spec_review_session_init; script_issue_lifecycle_orchestrator; }
+    { rank=same; script_state_read; script_state_write; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_chain_steps; script_resolve_issue_num; script_escape_issue_body; script_spec_review_manifest; script_spec_review_session_init; script_issue_lifecycle_orchestrator; script_co_issue_manual_fix_b; }
 
     // Edges
     skill_co_issue -> cmd_issue_glossary_check;
     skill_co_issue -> skill_workflow_issue_lifecycle;
     skill_co_issue -> skill_workflow_issue_refine;
     skill_co_issue -> script_issue_lifecycle_orchestrator;
+    skill_co_issue -> script_co_issue_manual_fix_b;
+    skill_co_issue -> skill_co_issue_step0_5_modes;
+    skill_co_issue -> skill_co_issue_phase2_bundles;
+    skill_co_issue -> skill_co_issue_phase3_dispatch;
+    skill_co_issue -> skill_co_issue_phase4_aggregate;
+    skill_co_issue -> skill_co_issue_cleanup;
     skill_workflow_issue_lifecycle -> cmd_issue_structure;
     skill_workflow_issue_lifecycle -> cmd_issue_spec_review;
     skill_workflow_issue_lifecycle -> cmd_issue_review_aggregate;
@@ -81,6 +101,12 @@ digraph Dependencies {
     cmd_issue_glossary_check -> skill_workflow_issue_lifecycle [style=invis, weight=10];
     skill_workflow_issue_lifecycle -> skill_workflow_issue_refine [style=invis, weight=10];
     skill_workflow_issue_refine -> script_issue_lifecycle_orchestrator [style=invis, weight=10];
+    script_issue_lifecycle_orchestrator -> script_co_issue_manual_fix_b [style=invis, weight=10];
+    script_co_issue_manual_fix_b -> skill_co_issue_step0_5_modes [style=invis, weight=10];
+    skill_co_issue_step0_5_modes -> skill_co_issue_phase2_bundles [style=invis, weight=10];
+    skill_co_issue_phase2_bundles -> skill_co_issue_phase3_dispatch [style=invis, weight=10];
+    skill_co_issue_phase3_dispatch -> skill_co_issue_phase4_aggregate [style=invis, weight=10];
+    skill_co_issue_phase4_aggregate -> skill_co_issue_cleanup [style=invis, weight=10];
     cmd_issue_structure -> cmd_issue_spec_review [style=invis, weight=10];
     cmd_issue_spec_review -> cmd_issue_review_aggregate [style=invis, weight=10];
     cmd_issue_review_aggregate -> cmd_issue_arch_drift [style=invis, weight=10];
@@ -94,5 +120,9 @@ digraph Dependencies {
     agent_issue_feasibility -> agent_worker_codex_reviewer [style=invis, weight=10];
     agent_worker_codex_reviewer -> script_escape_issue_body [style=invis, weight=10];
     script_escape_issue_body -> script_spec_review_manifest [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
 
 }

@@ -38,9 +38,9 @@ Claude Code twl plugin（chain-driven + autopilot-first）。claude-plugin-dev �
 | Skills | 12 | controller 5 + workflow 7 |
 | Commands | 92 | atomic 83 + composite 9 |
 | Agents | 29 | specialist 29 |
-| Refs | 19 | reference 19（ref-invariants 含む） |
+| Refs | 24 | reference 24（ref-invariants 含む、co-issue refs 5 件 #983 追加） |
 | Scripts | 28 | script 28 |
-| **合計** | **180** | |
+| **合計** | **185** | |
 
 ## 使い方
 
@@ -85,6 +85,8 @@ Notable scripts: `specialist-audit` (specialist completeness 監査 — merge-ga
 <summary>co-issue</summary>
 
 ![co-issue](./docs/deps-co-issue.svg)
+
+**refs/ (#983)**: `refs/co-issue-step0.5-modes.md` · `refs/co-issue-phase2-bundles.md` · `refs/co-issue-phase3-dispatch.md` · `refs/co-issue-phase4-aggregate.md` · `refs/co-issue-cleanup.md`
 </details>
 
 <details>

@@ -183,7 +183,48 @@ skills:
       - workflow: workflow-issue-refine
       - script: issue-lifecycle-orchestrator
       - script: co-issue-manual-fix-b
+      - reference: co-issue-step0.5-modes
+      - reference: co-issue-phase2-bundles
+      - reference: co-issue-phase3-dispatch
+      - reference: co-issue-phase4-aggregate
+      - reference: co-issue-cleanup
     description: "要望をGitHub Issueに変換するワークフロー（thin orchestrator）。refine フェーズは workflow-issue-refine に完全委譲（ADR-0010）。explore-summary 入力必須。DAG 依存解決 + level dispatch + aggregate"
+
+  # co-issue refs (#983 SKILL.md split)
+  co-issue-step0.5-modes:
+    type: reference
+    path: skills/co-issue/refs/co-issue-step0.5-modes.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "co-issue Step 0.5 explore-summary 必須チェック詳細（refine モード分岐 + 通常モード分岐 + 改善点探索手順）"
+
+  co-issue-phase2-bundles:
+    type: reference
+    path: skills/co-issue/refs/co-issue-phase2-bundles.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "co-issue Phase 2 DAG 構築 + Per-Issue Input Bundle 書き出し詳細（Kahn's algorithm + Step 2a-2〜2a-5）"
+
+  co-issue-phase3-dispatch:
+    type: reference
+    path: skills/co-issue/refs/co-issue-phase3-dispatch.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "co-issue Phase 3 Level-based dispatch 詳細（gate state 書き込み + orchestrator 呼び出し + failure 検知 + gate 解除）"
+
+  co-issue-phase4-aggregate:
+    type: reference
+    path: skills/co-issue/refs/co-issue-phase4-aggregate.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "co-issue Phase 4 集約詳細（report.json 分類 + summary table + failure 対話 + [D] direct specialist spawn 手順）"
+
+  co-issue-cleanup:
+    type: reference
+    path: skills/co-issue/refs/co-issue-cleanup.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "co-issue 終了時クリーンアップ詳細（Phase 3 gate state + spec-review session state file 削除）"
 
   co-project:
     type: controller

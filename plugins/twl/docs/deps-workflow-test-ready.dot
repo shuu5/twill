@@ -15,7 +15,7 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_test_ready [label="twl:workflow-test-ready\n(1,027 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_test_ready [label="twl:workflow-test-ready\n(1,034 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
     skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
@@ -23,7 +23,7 @@ digraph Dependencies {
     // L1: Direct Commands
     cmd_check [label="check\n(842 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_e2e_plan [label="e2e-plan\n(456 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_test_scaffold [label="test-scaffold\n(569 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_test_scaffold [label="test-scaffold\n(577 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands
 

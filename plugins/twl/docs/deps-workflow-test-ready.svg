@@ -15,7 +15,7 @@
 <title>skill_workflow_test_ready</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="94.05" cy="-153.49" rx="94.09" ry="21.43"/>
 <text text-anchor="middle" x="94.05" y="-156.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;test&#45;ready</text>
-<text text-anchor="middle" x="94.05" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,027 tok)</text>
+<text text-anchor="middle" x="94.05" y="-145.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,034 tok)</text>
 </g>
 <!-- cmd_check -->
 <g id="node3" class="node">
@@ -48,7 +48,7 @@
 <title>cmd_test_scaffold</title>
 <polygon fill="#bbdefb" stroke="black" points="323.09,-275.49 246.09,-275.49 246.09,-239.49 323.09,-239.49 323.09,-275.49"/>
 <text text-anchor="middle" x="284.59" y="-260.49" font-family="Helvetica,sans-Serif" font-size="10.00">test&#45;scaffold</text>
-<text text-anchor="middle" x="284.59" y="-249.49" font-family="Helvetica,sans-Serif" font-size="10.00">(569 tok)</text>
+<text text-anchor="middle" x="284.59" y="-249.49" font-family="Helvetica,sans-Serif" font-size="10.00">(577 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;cmd_test_scaffold -->
 <g id="edge1" class="edge">

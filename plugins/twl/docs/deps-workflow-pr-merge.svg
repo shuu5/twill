@@ -87,7 +87,7 @@
 <title>cmd_pr_cycle_analysis</title>
 <polygon fill="#e3f2fd" stroke="black" points="339.02,-939.49 239.02,-939.49 239.02,-903.49 339.02,-903.49 339.02,-939.49"/>
 <text text-anchor="middle" x="289.02" y="-924.49" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;cycle&#45;analysis</text>
-<text text-anchor="middle" x="289.02" y="-913.49" font-family="Helvetica,sans-Serif" font-size="10.00">(990 tok)</text>
+<text text-anchor="middle" x="289.02" y="-913.49" font-family="Helvetica,sans-Serif" font-size="10.00">(971 tok)</text>
 </g>
 <!-- skill_workflow_pr_merge&#45;&gt;cmd_pr_cycle_analysis -->
 <g id="edge3" class="edge">
@@ -359,7 +359,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="878.19" cy="-1456.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="878.19" y="-1459.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="878.19" y="-1448.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,827 tok)</text>
+<text text-anchor="middle" x="878.19" y="-1448.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,841 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge40" class="edge">
@@ -463,7 +463,7 @@
 <title>agent_worker_issue_pr_alignment</title>
 <ellipse fill="#ede7f6" stroke="black" cx="878.19" cy="-770.49" rx="103.48" ry="21.43"/>
 <text text-anchor="middle" x="878.19" y="-773.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;issue&#45;pr&#45;alignment</text>
-<text text-anchor="middle" x="878.19" y="-762.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,021 tok)</text>
+<text text-anchor="middle" x="878.19" y="-762.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,038 tok)</text>
 </g>
 <!-- cmd_merge_gate&#45;&gt;agent_worker_issue_pr_alignment -->
 <g id="edge42" class="edge">
@@ -729,7 +729,7 @@
 <title>script_pr_review_manifest</title>
 <polygon fill="#ff9800" stroke="black" points="630.35,-1415.49 585.54,-1439.98 495.91,-1439.98 451.09,-1415.49 495.91,-1391.01 585.54,-1391.01 630.35,-1415.49"/>
 <text text-anchor="middle" x="540.72" y="-1418.49" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;review&#45;manifest</text>
-<text text-anchor="middle" x="540.72" y="-1407.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,864 tok)</text>
+<text text-anchor="middle" x="540.72" y="-1407.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,034 tok)</text>
 </g>
 <!-- agent_worker_codex_reviewer&#45;&gt;script_pr_review_manifest -->
 <!-- agent_worker_code_reviewer&#45;&gt;skill_ref_specialist_output_schema -->
