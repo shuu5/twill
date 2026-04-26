@@ -11,7 +11,7 @@
 1. チャネル名を `refs/monitor-channel-catalog.md` の定義と突き合わせてパターン特定
 2. `plugins/twl/refs/intervention-catalog.md` を Read → 3 層分類（Auto/Confirm/Escalate）を照合
    - **permission deny 検出時**: 同一カテゴリで 2 回以上発生した場合はパターン 13（Layer 2 Escalate）として即時 STOP + AskUserQuestion（閾値 2 回。1 回目は自動リトライ可）
-   - **chain 停止 / 手動 PR 作成停止**: `refs/ref-chain-resume.md` を Read → 診断手順（Case A/B/C）に従い復旧
+   - **chain 停止 / 手動 PR 作成停止**: `plugins/twl/refs/ref-chain-resume.md` を Read → 診断手順（Case A/B/C）に従い復旧
 3. 層に応じた介入を実行:
    - Layer 0 Auto → `commands/intervene-auto.md` を Read → 実行（SU-7）
    - Layer 1 Confirm → `commands/intervene-confirm.md` を Read → ユーザー確認後実行
@@ -51,6 +51,6 @@ _crg_path="${TWILL_REPO_ROOT}/main/.code-review-graph"
 ## 過去の介入記録確認が必要な場合
 
 1. `mcp__doobidoo__memory_search`（キーワード: observation, intervention, detect）
-2. `refs/observation-pattern-catalog.md` を Read → パターンと照合
+2. `plugins/twl/refs/observation-pattern-catalog.md` を Read → パターンと照合
 3. 集約結果をユーザーに提示
 4. 新たな Issue 化が必要か確認し、承認時のみ Issue draft 生成

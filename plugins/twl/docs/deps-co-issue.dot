@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="twl:co-issue\n(5,635 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(1,354 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -73,6 +73,11 @@ digraph Dependencies {
     skill_co_issue -> skill_workflow_issue_refine;
     skill_co_issue -> script_issue_lifecycle_orchestrator;
     skill_co_issue -> script_co_issue_manual_fix_b;
+    skill_co_issue -> skill_co_issue_step0_5_modes;
+    skill_co_issue -> skill_co_issue_phase2_bundles;
+    skill_co_issue -> skill_co_issue_phase3_dispatch;
+    skill_co_issue -> skill_co_issue_phase4_aggregate;
+    skill_co_issue -> skill_co_issue_cleanup;
     skill_workflow_issue_lifecycle -> cmd_issue_structure;
     skill_workflow_issue_lifecycle -> cmd_issue_spec_review;
     skill_workflow_issue_lifecycle -> cmd_issue_review_aggregate;
@@ -96,6 +101,11 @@ digraph Dependencies {
     skill_workflow_issue_lifecycle -> skill_workflow_issue_refine [style=invis, weight=10];
     skill_workflow_issue_refine -> script_issue_lifecycle_orchestrator [style=invis, weight=10];
     script_issue_lifecycle_orchestrator -> script_co_issue_manual_fix_b [style=invis, weight=10];
+    script_co_issue_manual_fix_b -> skill_co_issue_step0_5_modes [style=invis, weight=10];
+    skill_co_issue_step0_5_modes -> skill_co_issue_phase2_bundles [style=invis, weight=10];
+    skill_co_issue_phase2_bundles -> skill_co_issue_phase3_dispatch [style=invis, weight=10];
+    skill_co_issue_phase3_dispatch -> skill_co_issue_phase4_aggregate [style=invis, weight=10];
+    skill_co_issue_phase4_aggregate -> skill_co_issue_cleanup [style=invis, weight=10];
     cmd_issue_structure -> cmd_issue_spec_review [style=invis, weight=10];
     cmd_issue_spec_review -> cmd_issue_review_aggregate [style=invis, weight=10];
     cmd_issue_review_aggregate -> cmd_issue_arch_drift [style=invis, weight=10];
