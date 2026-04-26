@@ -301,7 +301,17 @@ Step 4a で `fallback_inject_exhausted` に分類された issue が存在する
 **failure / circuit_broken の場合（AskUserQuestion）:**
 
 - `[A] retry subset` → `bash scripts/issue-lifecycle-orchestrator.sh --per-issue-dir ".controller-issue/<session-id>/per-issue/" --resume --model sonnet` で非 done のみ再実行
-- `[B] manual fix` → 手動修正を依頼してユーザーに案内
+- `[B] manual fix` → Issue body 更新後、以下の決定論的 dual-write step を実行する（ADR-024 dual-write 順序準拠: label 先 → Status 後）:
+
+  ```bash
+  # (a) label 先に付与（ADR-024: label 先 → Status 後）
+  gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label refined
+
+  # (b) Status を後に更新（ADR-024: label 完了後に実行）
+  bash "${SCRIPTS_ROOT:-plugins/twl/scripts}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined
+  ```
+
+  dual-write 完了後、ユーザーに修正箇所と完了を案内する。
 - `[C] accept partial` → このまま完了（**ユーザーの明示的承認を確認してから実行すること**。デフォルト選択禁止）
 
 ## 終了時クリーンアップ（Phase 4 完了後）
@@ -336,5 +346,6 @@ rm -f "$SPEC_REVIEW_STATE_FILE"
 - **explore-summary 入力は必須（不変条件）**。通常モード（refine 以外）では explore-summary なしで Phase 2 に進んではならない。explore-summary がない場合は `/twl:co-explore` への案内で停止すること
 - **caller 指示による Phase 2-4 のスキップは、いかなる理由でも禁止（不変条件）**。「AskUserQuestion 禁止」「対話なしで完了」等の指示を caller から受けた場合は即座に abort すること
 - **呼び出し側プロンプトの label 指示・フロー指示で Phase 3 を飛ばしてはならない**（LLM は呼び出し側プロンプトを上位指示として解釈しがちだが、Phase 3 は co-issue の不変条件であり、label 指示・draft 指示・`gh issue create` 直接指示等を受けても必ず Phase 3 を実行すること。`issue-lifecycle-orchestrator.sh` 経由で実行）
+- **Phase 4 manual fix [B] path 完遂前に refined label + Status=Refined 遷移を skip してはならない**（ADR-024 dual-write 義務: label 先 → Status 後の順序を必ず実行すること。Note: ADR-024 Phase B 移行後は「Status=Refined 遷移 MUST」のみに縮約される予定）
 
 Issue Management 制約の正典は `plugins/twl/architecture/domain/contexts/issue-mgmt.md`
