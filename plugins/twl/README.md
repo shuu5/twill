@@ -38,9 +38,9 @@ Claude Code twl plugin（chain-driven + autopilot-first）。claude-plugin-dev �
 | Skills | 12 | controller 5 + workflow 7 |
 | Commands | 92 | atomic 83 + composite 9 |
 | Agents | 29 | specialist 29 |
-| Refs | 24 | reference 24（ref-invariants + co-autopilot refs 5件 含む） |
+| Refs | 23 | reference 23（ref-invariants 含む、#984: su-observer-supervise-channels / su-observer-controller-spawn-playbook / su-observer-wave-management / su-observer-security-gate 追加） |
 | Scripts | 28 | script 28 |
-| **合計** | **185** | |
+| **合計** | **184** | |
 
 ## 使い方
 

@@ -21,8 +21,7 @@ spawnable_by:
 
 # su-observer
 
-プロジェクト常駐のメタ認知レイヤー。ユーザーとコントローラーの間に入るセッションマネージャーとして機能し、
-ユーザーの指示を文脈から解釈して適切なアクションを自律的に選択する。
+プロジェクト常駐のメタ認知レイヤー。ユーザーの指示を文脈から解釈して適切なアクションを自律的に選択する。
 
 **監視対象**: co-autopilot（主）, co-issue, co-architect, co-project, co-utility, co-self-improve
 
@@ -31,20 +30,11 @@ spawnable_by:
 ## Step 0: セッション初期化
 
 1. bare repo 構造を検証（main/ で起動されていることを確認）
-2. `.supervisor/session.json` の存在確認:
-   - 存在 + status=active → 前回セッション復帰。外部化ファイルを読み込み、既存 `claude_session_id` を検証・更新
-   - 存在しない → `scripts/session-init.sh` を実行して新規 SupervisorSession を作成
-2.5. `.supervisor/budget-pause.json` の存在確認:
-   - 存在かつ `status: "paused"` → 各 Worker 状態確認 → orchestrator 再起動 → Worker 再開指示送信 → `status: "resumed"` に更新 → `>>> budget 回復: 全セッション再開完了` を表示
-   - それ以外 → スキップ
-3. Project Board から現在の状態を取得（Todo/In Progress の Issue 一覧）
-4. **Memory MCP 知見の起動時取得（MUST）**: `scripts/step0-memory-ambient.sh` を実行:
-   - exit 0 (FRESH) → `.supervisor/ambient-hints.md` を **Read（MUST）**（TTL 有効、1 Read のみ）
-   - exit 1 (STALE/MISSING) → 以下の tag 限定検索を実行し、結果上位 3 件の要約を `scripts/step0-memory-ambient.sh --write` 経由で `.supervisor/ambient-hints.md` に保存後 Read（MUST）:
-     - `mcp__doobidoo__memory_search` (tags="observer-pitfall", limit=5, quality_boost=0.5)
-     - `mcp__doobidoo__memory_search` (tags="observer-lesson", limit=5, quality_boost=0.5)
-     - `mcp__doobidoo__memory_search` (tags="observer-wave", time_expr="last 7 days", limit=3, quality_boost=0.5)
-4.5. auto-memory は**補助**（ホストローカル） — cross-machine 知見の source として使用してはならない（MUST NOT）
+2. `.supervisor/session.json` 確認: 存在 + active → 復帰・`claude_session_id` 更新; なし → `scripts/session-init.sh` 新規作成
+2.5. `.supervisor/budget-pause.json` 確認: `status: "paused"` → Worker 状態確認 → orchestrator 再起動 → `status: "resumed"` 更新 → `>>> budget 回復: 全セッション再開完了`
+3. Project Board から Todo/In Progress の Issue 一覧を取得
+4. **Memory MCP（MUST）**: `scripts/step0-memory-ambient.sh` → exit 0: `.supervisor/ambient-hints.md` Read; exit 1: `observer-pitfall`/`observer-lesson`/`observer-wave` タグで memory_search → `--write` 保存 → Read
+4.5. auto-memory はホストローカル補助のみ — cross-machine 知見 source として使用してはならない（MUST NOT）
 5. **`refs/pitfalls-catalog.md` を Read（MUST）** — 既知の落とし穴・Memory Principles・Worker auto mode 確認方法を把握
 6. **`refs/monitor-channel-catalog.md` を Read（SHOULD、Wave 管理時は MUST）** — Monitor チャネル定義と Hybrid 検知ポリシーを把握
 7. `>>> su-observer 起動完了。指示をお待ちしています。` を表示
@@ -56,184 +46,20 @@ spawnable_by:
 
 ### supervise 1 iteration（co-autopilot 監視中の必須並行チャンネル）
 
-co-autopilot を supervise している間、1 iteration で以下のチャンネルを並行実行しなければならない（SHALL）:
-
-| チャンネル | 目的 | Worker spawn あり | Pilot-only chain | 閾値/間隔 |
-|---|---|---|---|---|
-| Monitor tool (Pilot) | Pilot window の tail streaming | MUST | MUST + **PILOT-PHASE-COMPLETE** filter | 随時 |
-| `cld-observe-any --pattern '(ap-|wt-co-).*' --interval 180` | Worker 群 + Pilot window polling | MUST | MUST（`wt-co-*` 必須） | 3 分 |
-| `.supervisor/events/` イベントファイル + mtime 監視 | hook プライマリ / polling フォールバック | MUST | MUST | `AUTOPILOT_STAGNATE_SEC` デフォルト 600s |
-| `heartbeat-watcher.sh` | 5 分 silence → 自動 capture-pane | SHOULD | **MUST**（Pilot-only では唯一の能動検知手段） | 5 分 |
-| `session-comm.sh capture` (ad-hoc) | 実体確認 | 必要時 | 必要時 | 必要時 |
-| `gh pr list` (Pilot 向け) | state.pr と実体の差分検知 | Wave 管理時 | Wave 管理時（`in:body #N` syntax 使用） | Wave 管理時 |
-| `[BUDGET-LOW]` tmux status line budget 残量パース | budget 枯渇前の安全停止 | MUST | MUST | 残り 15 分 or 90% 消費 |
-| `[PERMISSION-PROMPT]` cld-observe-any 検知 | Worker permission prompt stuck 検出（`refs/pitfalls-catalog.md §4.7` 起点） | MUST | MUST | 即時 |
-
-**`cld-observe-any` 使用例（Monitor tool と必ず同時起動）:**
-```bash
-# pattern '(ap-|wt-co-).*' で Worker window と Pilot window の両方を対象にする（Issue #948 修正）
-plugins/session/scripts/cld-observe-any \
-  --pattern '(ap-|wt-co-).*' --interval 180 --stagnate-sec 600 \
-  --budget-threshold 15 --event-dir .supervisor/events \
-  --notify-dir /tmp/claude-notifications
-```
-
-**MUST: `session-state.sh state` の単独使用を禁止する**。セッション状態は以下の多指標 AND 条件で判定する:
-- A1: `tmux capture-pane -p -S -60`、A2: LLM indicator（Thinking/Brewing 等）、A3: pipe-pane log mtime、A4: pane_dead、A5: `session-state.sh`（補助のみ）、A6: status line budget 残量
-
-**A2 LLM indicator が存在する場合、[PHASE-COMPLETE]/[REVIEW-READY]/[MENU-READY]/[FREEFORM-READY]/[STAGNATE] は絶対に emit しない。**
-
-**[BUDGET-LOW] 検知・停止シーケンス:** `PILOT_WINDOW=<win> scripts/budget-detect.sh` を実行する（exit 1 = BUDGET-LOW 発動）。
-詳細ロジックは `refs/monitor-channel-catalog.md` の `[BUDGET-LOW]` セクションを参照。
-
-**Monitor budget watcher（Monitor channel 起動と並行実行）:** `PILOT_WINDOW=<win> scripts/budget-monitor-watcher.sh` をバックグラウンドで起動する。Monitor tool が `[BUDGET-ALERT]` を受信した場合、`scripts/budget-detect.sh` を即座に実行しなければならない（SHALL）。
-
-**起動手順（co-autopilot spawn 後に必ず実行）:**
-```bash
-PILOT_WINDOW=<win> scripts/budget-monitor-watcher.sh &
-# heartbeat-watcher.sh: 5 分 silence → 自動 capture-pane（Issue #948, R4）
-PILOT_WINDOW=<win> scripts/heartbeat-watcher.sh &  # scripts/ は skills/su-observer/scripts/
-cld-observe-loop --pattern '(ap-|wt-co-).*' --interval 180
-```
-Monitor tool + cld-observe-any は必ず同時起動すること（SHALL）。どちらか一方のみの使用は禁止。
-heartbeat-watcher.sh は co-autopilot spawn 直後に budget-monitor-watcher.sh と同時に起動すること（MUST）。
-
-**Hybrid 検知ポリシー:** 各チャネルで `.supervisor/events/` 配下のイベントファイルをプライマリとして確認し、不在時のみ polling にフォールバックする。詳細は `refs/monitor-channel-catalog.md` の「Hybrid 検知ポリシー」セクションを参照。
-
-**state stagnate 検知（observe-once 実行後）:** stagnate 検知 + `>>> 実装完了:` シグナル → `refs/intervention-catalog.md` の pattern-7 照合 → Layer 0 Auto 介入。stagnate のみで完了シグナルなし → pattern-4（Layer 1 Confirm）。
+**`refs/su-observer-supervise-channels.md` を Read** して実行。
 
 ### controller spawn が必要な場合
 
-ユーザーが実装・作成・設計・テスト等の実行を求めた場合、対象 controller を起動する。
+ユーザーが実装・作成・設計・テスト等の実行を求めた場合、**`refs/su-observer-controller-spawn-playbook.md` を Read** して実行。対話型 controller（co-issue / co-architect）の proxy 対話は **`refs/proxy-dialog-playbook.md` を Read** して実行。
 
-**MUST**: `cld-spawn` の直接呼び出しは禁止。必ず `scripts/spawn-controller.sh` 経由で起動すること（`refs/pitfalls-catalog.md` §1 参照）。
+### 既存セッション状態確認・問題検出・Wave 管理・過去介入記録確認が必要な場合
 
-```bash
-# Usage:
-scripts/spawn-controller.sh <skill> <prompt-file> [cld-spawn opts...]
-```
-
-起動パターン（文脈判断で選択、spawn-controller.sh 経由）:
-
-| controller | 用途 | 並列度（同時 spawn 可能数） | 観察モード |
-|---|---|---|---|
-| **co-autopilot** | Issue 実装 | **MUST 1 のみ** — 複数 Issue は **1 prompt に列挙**、Pilot が orchestrator 経由で複数 Worker (ap-*) を並列起動する | `cld-observe-loop` で能動 observe |
-| **co-explore** | 問題探索 | 複数 spawn 可（各 `.explore/<N>/summary.md` 独立） | proxy 対話 or 自律完了待ち |
-| **co-issue** | Issue 作成/refine | 複数 spawn 可（各 `.controller-issue/<sid>/` 独立） | **proxy 対話ループ** |
-| **co-architect** | architecture 設計 | 複数 spawn 可だが proxy 負荷重く 1 つずつ推奨 | **proxy 対話ループ** |
-| co-project | プロジェクト管理 | 1 推奨 | 指示待ち |
-| co-self-improve | テスト実行 | 複数可 | `cld-observe`（単発） |
-| co-utility | スタンドアロン | 複数可 | 指示待ち |
-
-**並列度の核心 — 4 回目を絶対に出さない（user 指摘 2026-04-25 hash 8dbcc66f）:**
-- 「複数 Issue を並列で実行したい」 → **1 Pilot に複数 Issue を列挙して渡す**（Pilot が複数 Worker を並列起動）
-- **co-autopilot Pilot を 2 つ spawn してはならない**（`.autopilot/session.json` 競合 = autopilot single-instance 違反）
-- 並列単位の階層: co-autopilot Pilot = 常に 1 / orchestrator Worker = MAX_PARALLEL=4 / Issue = 複数同時実行可
-- 依存 Issue 群（β → α 等のマージ依存）は 1 Pilot 内 plan の Phase 分割または Wave 分割で順序付ける
-
-**co-autopilot 起動時の推奨経路（#836 — MUST）:**
-`spawn-controller.sh co-autopilot` は **Pilot セッション全体**を spawn する（経路 B）。
-Issue 単位の Worker 起動（経路 A: `autopilot-launch.sh`、window `ap-<N>`、`issue-<N>.json` 生成）は
-Pilot が内部で実行する。observer が `autopilot-launch.sh` を直接呼んで Worker を起動してはならない。
-2 経路の詳細は `co-autopilot SKILL.md §Step 3.5 起動経路比較` および `refs/pitfalls-catalog.md §13` を参照。
-
-**正規運用は「1 Pilot = 複数 Issue」（ADR-026 — MUST）:**
-- **MUST**: `spawn-controller.sh co-autopilot <prompt>`（`--with-chain` なし）で Pilot を 1 つ spawn する。Pilot が deps graph に基づく Wave 計画と複数 Issue の Worker 起動を担当する。
-- **MUST NOT（禁止）**: `spawn-controller.sh co-autopilot <prompt> --with-chain --issue N` を Issue ごとに叩いてはならない。`--with-chain --issue N` 単独使用禁止 — skill bypass 経路（Pilot 不在・Step 1-5 全 skip）であり、observer が直接使う経路ではない（`refs/pitfalls-catalog.md §13.5`、ADR-026）。
-- **MUST NOT**: `working-memory.md` 等の前 session コマンドを鵜呑みでコピーしてはならない。毎回新規に skill 選択判断を行うこと。
-- **MUST NOT**: 「co-autopilot と名前が付いているから skill を使っている」と判断してはならない。`--with-chain` 付与で skill bypass が発動する。
-
-使用可能な session plugin スクリプト: `cld-observe`, `cld-observe-loop`, `cld-observe-any`, `session-state.sh`（A5 補助のみ、単独使用禁止）, `session-comm.sh`
-
-### spawn プロンプトの文脈包含
-
-spawn prompt は **observer 固有の文脈のみ** を含む（典型 5-15 行、`refs/pitfalls-catalog.md §10` 参照）。
-
-#### MUST NOT: skill 自律取得可能情報の転記
-
-以下は skill が自律取得できるため prompt に転記してはならない（MUST NOT）:
-
-- Issue body / labels / title（`gh issue view N --json ...`）
-- Issue comments（`gh issue view N --comments`）
-- explore summary（`twl explore-link read N`）
-- architecture 文書（`Read plugins/twl/architecture/vision.md` 等）
-- SKILL.md Phase 手順（skill 自身が内包）
-- past memory 生データ（`mcp__doobidoo__memory_search`）
-- bare repo / worktree 構造（skill が auto-detect）
-
-#### MUST: observer 固有文脈のみ（典型 5-15 行）
-
-最小 prompt 例（テンプレート）:
-```text
-su-observer から spawn（spawn 元識別: window: <win>, session: <id>）
-Issue 番号 #<N>: .explore/<N>/summary.md にリンク済
-AskUserQuestion は observer が pipe-pane log で代理応答
-observer 独自 deep-dive 観点: <観察から得た解釈・優先度付け>
-Wave 文脈 / 並列タスク境界: Wave <N>、並列 <M> Issue 中 <K> 番目
-```
-
-**例外**: `--force-large` を spawn-controller.sh に渡し、prompt 冒頭に `REASON:` 行で正当化することで 30 行超を許容できる。
-
-### Worker 起動時の auto mode 確認方針
-
-Worker pane に `⏵⏵ auto mode on` が出ない場合でも auto mode は有効である（`refs/pitfalls-catalog.md` §4.7-4.8 参照）。確認方法 A（heartbeat ファイル存在確認）/ 確認方法 B（pane capture grep）の詳細は同 §4.7-4.8 を参照。
-
-### 対話型コントローラーとの proxy 対話（co-issue / co-architect）
-
-co-issue・co-architect は対話的コントローラーであり、observer が spawn した場合は observer 自身がユーザーの代理として対話に参加しなければならない（SHALL）。詳細手順は `refs/proxy-dialog-playbook.md` を Read して実行する。
-
-**proxy 対話の要点:**
-- spawn 直後に `tmux pipe-pane -t <window> -o "cat >> /tmp/<ctrl>-<sess>.log"` でセットアップ
-- input-waiting 検知 → pipe-pane log を ANSI strip して質問を読む → `session-comm.sh inject` で応答
-- co-issue の specialist review（issue-critic / issue-feasibility / worker-codex-reviewer）は絶対にスキップしてはならない（SHALL）
-
-### 既存セッションの状態確認が必要な場合
-
-1. `session-state.sh` で状態確認、`cld-observe` で snapshot 取得
-2. `commands/problem-detect.md` を Read → 実行（rule-based 問題検出）
-3. 状態サマリをユーザーに報告
-
-### 問題を検出した場合
-
-1. チャネル名を `refs/monitor-channel-catalog.md` の定義と突き合わせてパターン特定
-2. `refs/intervention-catalog.md` を Read → 3 層分類（Auto/Confirm/Escalate）を照合
-   - **permission deny 検出時**: 同一カテゴリで 2 回以上発生した場合はパターン 13（Layer 2 Escalate）として即時 STOP + AskUserQuestion（閾値 2 回。1 回目は自動リトライ可）
-   - **chain 停止 / 手動 PR 作成停止**: `refs/ref-chain-resume.md` を Read → 診断手順（Case A/B/C）に従い復旧
-3. 層に応じた介入を実行:
-   - Layer 0 Auto → `commands/intervene-auto.md` を Read → 実行（SU-7）
-   - Layer 1 Confirm → `commands/intervene-confirm.md` を Read → ユーザー確認後実行
-   - Layer 2 Escalate → `commands/intervene-escalate.md` を Read → SU-2 ユーザー確認必須
-
-### Wave 管理が必要な場合
-
-Issue 群の一括実装（Wave）を要求された場合:
-
-0. **CRG ヘルスチェック（MUST — Wave 開始前に毎回実行）**:
-   ```bash
-   _crg_path="${TWILL_REPO_ROOT}/main/.code-review-graph"
-   [[ -L "$_crg_path" ]] && echo "⚠️ [CRG health] symlink 検出。rm -f '$_crg_path' で修復してください。" >&2
-   ```
-1. Wave 分割を計画（または `.autopilot/plan.yaml` から継続）
-2. Wave N の Issue リストを確定・ユーザー承認を得る
-3. `spawn-controller.sh co-autopilot <prompt>` で起動
-3.5. `refs/monitor-channel-catalog.md` を参照しチャネル選択・Monitor tool 起動
-4. `cld-observe-loop` で能動 observe ループ開始
-5. Wave 完了を検知したら:
-   - `commands/wave-collect.md` を Read → 実行（`WAVE_NUM=<N>`、specialist completeness 監査を含む）
-   - `commands/externalize-state.md` を Read → 実行（`--trigger wave_complete`）
-   - audit snapshot: `twl audit snapshot --source-dir "${AUTOPILOT_DIR:-.autopilot}" --label "wave/${WAVE_NUM}"`
-   - イベントクリーンアップ: `rm -f .supervisor/events/* 2>/dev/null || true`
-   - **SU-6a（MUST）**: doobidoo に `observer-wave` / `observer-pitfall` / `observer-lesson` / `observer-intervention` タグで保存（詳細: `refs/pitfalls-catalog.md` §8）。`commands/externalize-state.md` Step 4 Exit Gate で `pitfall_declaration` を宣言し、`scripts/externalize-state-exit-gate.sh` で exit 0 を確認すること（未宣言は WARN）
-   - **SU-6b（SHOULD）**: context 消費量 80% 以上で `/compact` をユーザーへ提案
-   - **Phase B 起票トリガー判定（AC13）**: 以下のいずれかを満たした場合、Phase B Issue を自動起票する（ユーザー確認を得てから）:
-     - (a) `gh project item-list 6 --owner shuu5 --format json | jq '[.items[] | select(.status=="Done" and .content.type=="Issue")]'` で Status=Refined 経由 Done が累計 5 件以上（注: Refined を経由したことは PR history / checkpoint から確認）
-     - (b) #943 merge から 2 Wave 経過（Wave 単位 = su-observer の Wave カウント）
-     - (c) observer が明示的に approval を判断した場合（観察期間中の不具合発見等）
-6. 次 Wave があれば 1 に戻る。全 Wave 完了時はサマリを報告
+**`refs/su-observer-wave-management.md` を Read** して実行。
+問題検出時の介入: **`plugins/twl/refs/intervention-catalog.md` を Read** して 3 層分類（Auto/Confirm/Escalate）を照合（1-hop 直接参照）。
 
 ### compaction が必要な場合
 
-`Skill(twl:su-compact)` を呼び出して知識外部化を実行し、`/compact` 手動実行をユーザーへ提案する（`/compact` は built-in CLI のためユーザー手動実行が必須）。
+`Skill(twl:su-compact)` を呼び出して知識外部化し、`/compact` 手動実行をユーザーへ提案する（`/compact` は built-in CLI のためユーザー手動実行が必須）。
 
 | ユーザー指示 | 動作 |
 |---|---|
@@ -242,16 +68,9 @@ Issue 群の一括実装（Wave）を要求された場合:
 | `compact --task` | タスク状態保存 + compaction |
 | `compact --full` | 全知識の外部化 + compaction |
 
-### 過去の介入記録確認が必要な場合
-
-1. `mcp__doobidoo__memory_search`（キーワード: observation, intervention, detect）
-2. `refs/observation-pattern-catalog.md` を Read → パターンと照合
-3. 集約結果をユーザーに提示
-4. 新たな Issue 化が必要か確認し、承認時のみ Issue draft 生成
-
 ## Step 2: セッション終了
 
-1. 進行中の observe ループ（`cld-observe-loop` プロセス）を停止
+1. 進行中の observe ループを停止
 2. 未処理の介入記録を集約・保存
 3. `commands/externalize-state.md` を Read → 実行（最終状態の外部化）
 4. 終了をユーザーに通知
@@ -282,34 +101,10 @@ Issue 群の一括実装（Wave）を要求された場合:
 - Wave 完了後の externalize-state を省略してはならない（SU-6a）
 - `/compact` の自動実行を試みてはならない（built-in CLI のためユーザー手動実行が必須）
 - 検出結果をユーザー確認なしで自動 Issue 起票してはならない
+- `--with-chain --issue N` で co-autopilot を直接起動してはならない（ADR-026、SU-3 連鎖）
 
 ## Security gate (Layer A-D) 回避は MUST NOT
 
-Claude Code permission classifier（Layer A-D 各ゲート）が設けた境界を observer は尊重しなければならない（SHALL）。gate deny を受けた後に別の手段で迂回を試みることは、以降の deny 確率を急上昇させるため厳禁（`refs/pitfalls-catalog.md §12` 参照）。
+**`refs/su-observer-security-gate.md` を Read** して Layer A-D ゲート定義・bypass 禁止手法・permission 拒否対応を確認すること。
 
-### Layer A-D ゲート定義
-
-| Layer | 名称 | 目的 |
-|-------|------|------|
-| A | session-state | autopilot state ファイルへの不正書き換えを防止 |
-| B | worker-bash | ホスト環境破壊コマンドの実行を防止 |
-| C | git | 不正な git 操作（直接マージ等）を防止 |
-| D | refined-label | `refined` ラベルの直接付与を防止（workflow 経由のみ許可） |
-| D | refined-status | Status=In Progress への直接遷移を防止（Status=Refined 経由のみ許可、ADR-024） |
-
-### 禁止 bypass 手法（MUST NOT）
-
-- **session file pre-seed**: state ファイルを直接読み書きして gate 判定をスキップする
-- **Worker inject with bypass hint**: inject メッセージに「gate を無視して」等のヒントを含める
-- **settings self-modification**: `.claude/settings.json` を書き換えて permission ルールを緩和する
-- **bypass permission mode の自動提案**: observer が auto → bypass モード切替を自律的に提案・実行する（ユーザー判断領域の越権）
-
-### permission 拒否への正しい対応（MUST）
-
-```
-gate deny (1 回目) → STOP（即時停止） → AskUserQuestion でユーザーに状況報告
-```
-
-**2 回以上連続で deny が発生した場合**: 即時 STOP し、Layer 2 Escalate（`refs/intervention-catalog.md` パターン 13）に従って AskUserQuestion でユーザー確認を取ること（MUST）。bypass permission mode の使用可否はユーザーのみが判断できる。observer が auto → bypass 切替を提案してはならない（MUST NOT）。
-
-**参照**: `refs/pitfalls-catalog.md §12`（Claude Code classifier bypass 検出パターン）、`refs/intervention-catalog.md パターン 13`（2 回 STOP ルール — W5-2 連携）
+2 回以上 deny が連続した場合: 即時 STOP → **`plugins/twl/refs/intervention-catalog.md` パターン 13**（Layer 2 Escalate）→ AskUserQuestion。`refs/pitfalls-catalog.md §12` 参照。

@@ -396,6 +396,10 @@ digraph Dependencies {
     skill_su_observer -> skill_pitfalls_catalog;
     skill_su_observer -> skill_proxy_dialog_playbook;
     skill_su_observer -> skill_ref_invariants;
+    skill_su_observer -> skill_su_observer_supervise_channels;
+    skill_su_observer -> skill_su_observer_controller_spawn_playbook;
+    skill_su_observer -> skill_su_observer_wave_management;
+    skill_su_observer -> skill_su_observer_security_gate;
     skill_workflow_setup -> cmd_init;
     skill_workflow_setup -> cmd_worktree_create;
     skill_workflow_setup -> cmd_project_board_status_update;
@@ -785,6 +789,10 @@ digraph Dependencies {
     script_step0_memory_ambient -> skill_pitfalls_catalog [style=invis, weight=10];
     skill_pitfalls_catalog -> skill_proxy_dialog_playbook [style=invis, weight=10];
     skill_proxy_dialog_playbook -> skill_ref_invariants [style=invis, weight=10];
+    skill_ref_invariants -> skill_su_observer_supervise_channels [style=invis, weight=10];
+    skill_su_observer_supervise_channels -> skill_su_observer_controller_spawn_playbook [style=invis, weight=10];
+    skill_su_observer_controller_spawn_playbook -> skill_su_observer_wave_management [style=invis, weight=10];
+    skill_su_observer_wave_management -> skill_su_observer_security_gate [style=invis, weight=10];
     cmd_init -> cmd_worktree_create [style=invis, weight=10];
     cmd_worktree_create -> cmd_project_board_status_update [style=invis, weight=10];
     cmd_project_board_status_update -> cmd_crg_auto_build [style=invis, weight=10];
