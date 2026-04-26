@@ -162,7 +162,7 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 
 1. `commands/autopilot-pilot-wakeup-bootstrap.md` を Read → 実行（orchestrator 起動）
 2. `commands/autopilot-pilot-wakeup-poll.md` を Read → 実行（PHASE_COMPLETE 検知・stagnation 検知・状況精査モード）
-3. Silence heartbeat 条件成立時: `commands/autopilot-pilot-wakeup-heartbeat.md` を Read → 実行（poll から呼び出し）
+3. Silence heartbeat 条件成立時（全 Worker updated_at が 5 分以上無変化）: `commands/autopilot-pilot-wakeup-heartbeat.md` を Read → 実行
 
 PHASE_COMPLETE 受信後 Step 4.5 へ進む。
 

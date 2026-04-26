@@ -43,8 +43,8 @@ nohup bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-orchestrator.sh" \
   --autopilot-dir "$AUTOPILOT_DIR" \
   ${REPOS_ARG:+"$REPOS_ARG"} \
   >> "$_ORCH_LOG" 2>&1 &
-disown
 _ORCH_PID=$!
+disown
 echo "[autopilot-pilot-wakeup-bootstrap] orchestrator PID=${_ORCH_PID} 起動 (nohup) → ログ: ${_ORCH_LOG}" >&2
 ```
 

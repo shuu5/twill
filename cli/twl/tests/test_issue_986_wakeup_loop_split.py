@@ -60,7 +60,7 @@ def test_ac3_deps_yaml_has_new_sub_atomics():
         assert name in content, f"deps.yaml に {name} が未登録"
 
     # 呼出元 (co-autopilot) の requires が旧 loop から新 sub-atomics に切り替わっている
-    assert "autopilot-pilot-wakeup-loop" not in content or OLD_LOOP.exists() is False, (
+    assert "autopilot-pilot-wakeup-loop" not in content, (
         "deps.yaml に旧 autopilot-pilot-wakeup-loop への参照が残っている"
     )
 
