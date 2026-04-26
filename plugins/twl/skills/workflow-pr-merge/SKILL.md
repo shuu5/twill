@@ -30,44 +30,7 @@ workflow-pr-cycle を 3 分割した第3段階。E2E 検証、レポート、マ
 
 ## ドメインルール
 
-### 禁止事項（不変条件 C enforcement）
-
-Worker は `gh pr merge` を直接実行してはならない（不変条件 C）。マージは必ず `chain-runner.sh auto-merge` 経由で auto-merge.sh のガードを通すこと。`gh pr merge --squash` 等の直接呼び出しは ac-verify / merge-gate / auto-merge.sh の全ガードをバイパスするため厳禁。
-
-### merge-gate エスカレーション条件
-
-merge-gate が REJECT を返した場合の処理（不変条件 E: リトライ最大 1 回）:
-
-```
-IF retry_count == 0
-THEN
-  1. issue-{N}.json の status を failed → running に遷移
-  2. fix_instructions に CRITICAL findings を記録
-  3. fix-phase → pr-test → post-fix-verify → merge-gate を再実行
-  4. retry_count を 1 に更新
-ELIF retry_count >= 1
-THEN
-  1. issue-{N}.json の status を failed に確定
-  2. Pilot に手動介入を要求
-  3. ワークフローを停止
-```
-
-### merge 失敗時の対応（不変条件 F）
-
-```
-IF squash merge が失敗（コンフリクト等）
-THEN
-  停止のみ。自動 rebase は行わない。
-  Pilot に手動介入を要求。
-```
-
-### Step-aware stagnation 防止（C6 MVP、#888）
-
-orchestrator の stagnation 検知は PR workflow step（ac-verify / pr-cycle-report / merge-gate / e2e-screening / pr-cycle-analysis / auto-merge / all-pass-check / fix-phase / post-fix-verify / warning-fix / prompt-compliance / ts-preflight / phase-review / scope-judge / pr-test）で **300 秒**（5 分）の短縮 threshold を適用する（default 900 秒）。
-
-- **機械的 step**（pr-cycle-report / all-pass-check / auto-merge）は `chain-runner.sh <step>` 呼出で `record_current_step` が自動的に `updated_at` を更新（heartbeat 役割）
-- **LLM 判断 step**（e2e-screening / pr-cycle-analysis / merge-gate）は 5 分以内に結論を出すこと。詳細調査が必要な場合は stagnation timeout で自動 failed 化するのを待たず、Pilot に手動介入を escalate する
-- env override: `DEV_AUTOPILOT_STAGNATION_SEC_PR_STEP=600` 等で threshold を調整可能
+`refs/pr-merge-domain-rules.md` を Read して実行前に参照すること（禁止事項・merge-gate エスカレーション条件・stagnation 防止ルールを含む）。
 
 ## chain 実行指示（MUST — 全ステップを順に実行せよ。途中で停止するな）
 
@@ -83,51 +46,7 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 [[ -n "$ISSUE_NUM" && -f "$CONTEXT_FILE" ]] && echo "=== 前 workflow コンテキスト ===" && cat "$CONTEXT_FILE"
 ```
 
-### Step 6: e2e-screening（Visual 検証）【LLM 判断】
-`commands/e2e-screening.md` を Read → 実行。E2E なければスキップ。
-
-### Step 7: pr-cycle-report（結果レポート）【機械的 → runner】
-各ステップの結果を Markdown レポートとして構築し、runner に渡す:
-```bash
-echo "$REPORT" | bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-cycle-report
-```
-
-### Step 7.3: pr-cycle-analysis（パターン分析）【LLM 判断】
-`commands/pr-cycle-analysis.md` を Read → 実行。
-
-### Step 7.5: all-pass-check（全パス判定）【機械的 → runner】
-
-**前提条件チェック（#668 防御）:** all-pass-check 実行前に `pr` フィールドが state に記録されているか確認する。未記録の場合は `chain-runner.sh record-pr` を先に実行して PR 番号を確保すること。
-
-全ステップの結果が PASS であれば:
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" record-pr  # pr 未記録時の防御
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" all-pass-check PASS
-```
-FAIL があれば:
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" all-pass-check FAIL
-```
-
-### Step 8: merge-gate（マージ判定）【LLM 判断】
-`commands/merge-gate.md` を Read → 実行。上記「ドメインルール」の merge-gate エスカレーション条件に従う。
-
-### Step 8.5: auto-merge（自動マージ）【機械的 → runner】
-merge-gate が PASS の場合のみ:
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" auto-merge
-```
-
-### Step 8.7: pr-comment-final（最終判定 PR コメント）【機械的 → runner】
-auto-merge 完了後（または merge-gate REJECT 時）に最終判定を PR コメントとして投稿:
-```bash
-# merge-gate PASS → auto-merge 成功時
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-comment-final MERGED
-```
-merge-gate REJECT 時:
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" pr-comment-final REJECTED
-```
+各 Step の詳細実行手順は `refs/pr-merge-chain-steps.md` を Read して参照すること（Step 6〜Step 8.7）。
 
 ## 完了後の遷移
 

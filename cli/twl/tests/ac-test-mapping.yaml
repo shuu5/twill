@@ -1,0 +1,46 @@
+mappings:
+  - ac_index: 1
+    ac_text: "3 workflow とも mcp__twl__twl_audit で workflow_token_bloat <= 1200 tok 達成"
+    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+    test_names:
+      - "TestAc1TokenBloat::test_ac1_lifecycle_token_bloat_le_1200"
+      - "TestAc1TokenBloat::test_ac1_refine_token_bloat_le_1200"
+      - "TestAc1TokenBloat::test_ac1_pr_merge_token_bloat_le_1200"
+
+  - ac_index: 2
+    ac_text: "twl check --deps-integrity PASS (chain.py / chain-steps.sh / deps.yaml.chains の整合維持)"
+    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+    test_names:
+      - "TestAc2DepsIntegrity::test_ac2_deps_integrity_passes"
+
+  - ac_index: 3
+    ac_text: "twl check PASS (deps.yaml v3.0 構造整合)"
+    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+    test_names:
+      - "TestAc3TwlCheck::test_ac3_twl_check_passes"
+
+  - ac_index: 4
+    ac_text: "各 workflow の動作変更なし (smoke test 3 件: lifecycle / refine / pr-merge を最小入力で実行し STATE 遷移が完了することを確認)"
+    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+    test_names:
+      - "TestAc4SmokeTests::test_ac4_lifecycle_smoke_state_transition"
+      - "TestAc4SmokeTests::test_ac4_refine_smoke_state_transition"
+      - "TestAc4SmokeTests::test_ac4_pr_merge_smoke_state_transition"
+
+  - ac_index: 5
+    ac_text: "split 先 (refs/ 配下の各 .md) が SKILL.md から正規 Read 経路で参照されることを確認 (grep で SKILL.md -> refs/ への参照を検証)"
+    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+    test_names:
+      - "TestAc5RefsReferences::test_ac5_lifecycle_skill_references_refs"
+      - "TestAc5RefsReferences::test_ac5_refine_skill_references_refs"
+      - "TestAc5RefsReferences::test_ac5_pr_merge_skill_references_refs"
+      - "TestAc5RefsReferences::test_ac5_refs_files_exist_for_each_workflow"
+
+  - ac_index: 6
+    ac_text: "specialist review 3 種 PASS — worker-architecture を必須として含む (chain SSoT 境界 / refs 切り出し境界の妥当性確認) + worker-codex-reviewer + issue-critic または issue-feasibility"
+    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+    test_names:
+      - "TestAc6SpecialistReview::test_ac6_worker_architecture_review_completed"
+      - "TestAc6SpecialistReview::test_ac6_worker_codex_reviewer_completed"
+      - "TestAc6SpecialistReview::test_ac6_issue_critic_or_feasibility_completed"
+    note: "specialist review は PR レビューフローで実施。テストはプレースホルダー。"

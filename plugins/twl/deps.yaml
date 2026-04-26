@@ -478,6 +478,8 @@ skills:
         step: "8.5"
       - script: chain-runner
       - script: compaction-resume
+      - reference: pr-merge-domain-rules
+      - reference: pr-merge-chain-steps
     description: "PRマージワークフロー（e2e → report → analysis → check → merge; archive は auto-merge.sh 内で実行）"
 
   workflow-dead-cleanup:
@@ -611,6 +613,7 @@ skills:
       - atomic: issue-create
       - atomic: project-board-sync
       - script: spec-review-session-init
+      - reference: lifecycle-processing-flow
     description: "co-issue v2 Worker runtime: 1 issue の lifecycle 全体（structure → spec-review → aggregate → fix loop → arch-drift → create → project-board-sync）を自律実行"
 
   workflow-issue-refine:
@@ -631,6 +634,7 @@ skills:
       - atomic: issue-review-aggregate
       - atomic: issue-arch-drift
       - script: spec-review-session-init
+      - reference: refine-processing-flow
     description: "既存 Issue の refine（精緻化）独立 workflow: specialist review → body 更新 → refined ラベル付与。co-issue thin orchestrator の委譲先（ADR-0010）かつ user 直接起動可"
 
   workflow-arch-review:
@@ -758,6 +762,26 @@ refs:
     type: reference
     path: refs/ref-compaction-recovery.md
     description: "compaction 復帰プロトコル共通リファレンス"
+
+  lifecycle-processing-flow:
+    type: reference
+    path: refs/lifecycle-processing-flow.md
+    description: "workflow-issue-lifecycle 処理フロー詳細（Step 0-7・スキーマ・制約）"
+
+  refine-processing-flow:
+    type: reference
+    path: refs/refine-processing-flow.md
+    description: "workflow-issue-refine 処理フロー詳細（Step 0-7・スキーマ・制約）"
+
+  pr-merge-domain-rules:
+    type: reference
+    path: refs/pr-merge-domain-rules.md
+    description: "workflow-pr-merge ドメインルール（禁止事項・merge-gate エスカレーション・stagnation 防止）"
+
+  pr-merge-chain-steps:
+    type: reference
+    path: refs/pr-merge-chain-steps.md
+    description: "workflow-pr-merge chain 実行指示詳細（Step 6-8.7）"
 
   ref-prompt-guide:
     type: reference
