@@ -85,6 +85,8 @@ Notable scripts: `specialist-audit` (specialist completeness 監査 — merge-ga
 <summary>co-issue</summary>
 
 ![co-issue](./docs/deps-co-issue.svg)
+
+**refs/ (#983)**: `refs/co-issue-step0.5-modes.md` · `refs/co-issue-phase2-bundles.md` · `refs/co-issue-phase3-dispatch.md` · `refs/co-issue-phase4-aggregate.md` · `refs/co-issue-cleanup.md`
 </details>
 
 <details>

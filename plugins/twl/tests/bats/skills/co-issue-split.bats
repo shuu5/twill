@@ -109,7 +109,8 @@ teardown() {
     if [ ! -f "$refs_dir/$ref_name" ]; then
       dead_count=$((dead_count + 1))
     fi
-  done < <(grep -oE 'refs/co-issue-[a-z0-9-]+\.md' "$skill_file" | sed 's|refs/||' | sort -u)
+  # ドット文字も許可（co-issue-step0.5-modes.md のような名前に対応）
+  done < <(grep -oE 'refs/co-issue-[a-z0-9.-]+\.md' "$skill_file" | sed 's|refs/||' | sort -u)
 
   [ "$dead_count" -eq 0 ]
 }
@@ -126,8 +127,9 @@ teardown() {
   [ -d "$refs_dir" ]
 
   # refs/ 内の .md ファイルが他の refs/co-issue-*.md を参照していないことを確認
+  # ドット文字も許可（co-issue-step0.5-modes.md のような名前に対応）
   local cross_ref_count
-  cross_ref_count=$(grep -rlE 'refs/co-issue-[a-z0-9-]+\.md' "$refs_dir"/*.md 2>/dev/null | wc -l)
+  cross_ref_count=$(grep -rlE 'refs/co-issue-[a-z0-9.-]+\.md' "$refs_dir"/*.md 2>/dev/null | wc -l)
 
   [ "$cross_ref_count" -eq 0 ]
 }
