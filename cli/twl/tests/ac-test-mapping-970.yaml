@@ -1,0 +1,54 @@
+mappings:
+  - ac_index: 1
+    ac_text: "cli/twl/src/twl/mcp_server/README.md が存在する（test -f PASS）"
+    test_file: "cli/twl/tests/test_issue_970_mcp_readme.py"
+    test_names:
+      - "TestAC1FileExists::test_ac1_readme_file_exists"
+      - "TestAC1FileExists::test_ac1_readme_is_file"
+
+  - ac_index: 2
+    ac_text: "README に 5 セクション見出しが存在する: ## 概要 / ## インストール / ## 起動 / ## 提供ツール / ## plugin_root 引数（または同等英訳）。grep で 5 件以上 hit"
+    test_file: "cli/twl/tests/test_issue_970_mcp_readme.py"
+    test_names:
+      - "TestAC2FiveSections::test_ac2_five_sections_exist"
+      - "TestAC2FiveSections::test_ac2_section_gaiyou"
+      - "TestAC2FiveSections::test_ac2_section_install"
+      - "TestAC2FiveSections::test_ac2_section_startup"
+      - "TestAC2FiveSections::test_ac2_section_tools"
+      - "TestAC2FiveSections::test_ac2_section_plugin_root"
+
+  - ac_index: 3
+    ac_text: "README に `pip install -e '.[mcp]'` が含まれる"
+    test_file: "cli/twl/tests/test_issue_970_mcp_readme.py"
+    test_names:
+      - "TestAC3InstallCommand::test_ac3_pip_install_mcp_present"
+
+  - ac_index: 4
+    ac_text: "README に twl_validate / twl_audit / twl_check の 3 tool 名が全て出現する"
+    test_file: "cli/twl/tests/test_issue_970_mcp_readme.py"
+    test_names:
+      - "TestAC4ThreeToolNames::test_ac4_twl_validate_present"
+      - "TestAC4ThreeToolNames::test_ac4_twl_audit_present"
+      - "TestAC4ThreeToolNames::test_ac4_twl_check_present"
+      - "TestAC4ThreeToolNames::test_ac4_all_three_tools_present"
+
+  - ac_index: 5
+    ac_text: "README に plugin_root 引数の説明が 2 件以上出現する"
+    test_file: "cli/twl/tests/test_issue_970_mcp_readme.py"
+    test_names:
+      - "TestAC5PluginRootDescription::test_ac5_plugin_root_appears_twice_or_more"
+
+  - ac_index: 6
+    ac_text: "README に #945 と #962 への参照が含まれる"
+    test_file: "cli/twl/tests/test_issue_970_mcp_readme.py"
+    test_names:
+      - "TestAC6IssueLinks::test_ac6_issue_945_reference_present"
+      - "TestAC6IssueLinks::test_ac6_issue_962_reference_present"
+      - "TestAC6IssueLinks::test_ac6_both_issue_references_present"
+
+  - ac_index: 7
+    ac_text: "cd cli/twl && pytest tests/ が PASS（既存テスト非破壊）"
+    test_file: "cli/twl/tests/test_issue_970_mcp_readme.py"
+    test_names:
+      - "TestAC7ExistingTestsUnbroken::test_ac7_existing_tests_not_broken_by_readme"
+    note: "自己循環回避のため --ignore=tests/test_issue_970_mcp_readme.py を付与して実行"
