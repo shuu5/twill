@@ -100,6 +100,7 @@ is_in_dependency_chain() {
   [[ -n "$dependers" ]] || return 1
 
   # 後続 issue の状態を確認: いずれか未完了なら archive スキップ
+  local depender
   for depender in $dependers; do
     local dep_file="$AUTOPILOT_DIR/issues/issue-${depender}.json"
     if [[ -f "$dep_file" ]]; then
