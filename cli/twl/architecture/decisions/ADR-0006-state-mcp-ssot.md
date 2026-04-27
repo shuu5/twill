@@ -79,6 +79,16 @@ def twl_state_write_handler(
 - `cwd` 省略時は `os.getcwd()` fallback（CLI 経路と同一挙動）
 - bats 互換性: CLI 経路は引き続き `os.getcwd()` を内部参照（変更不要）
 
+#### 適用範囲（明示）
+
+**`autopilot_dir` / `cwd` の明示引数化は MCP handler 専用設計**である。CLI 層 `main(argv)` は既存どおり以下の挙動を維持する:
+
+- `_parse_*_args(argv)` は `--cwd` / `--autopilot-dir` オプションを **持たない**
+- `mgr.write()` 呼び出し時に `cwd` を渡さない（`_check_pilot_identity(cwd=None)` → `os.getcwd()` fallback）
+- `_autopilot_dir()` の既存 git worktree fallback ロジックがそのまま機能する
+
+これにより bats 経路（CLI subprocess）と MCP 経路（in-process handler）の両方で `_check_pilot_identity` の挙動が整合する: CLI は process cwd を参照、MCP は明示引数 or process cwd（fallback）を参照。
+
 ### 4. SSoT 検証（AC7 satisfaction）
 
 3 経路 pytest parametric test を新設（`cli/twl/tests/test_state_dispatch_parity.py` 想定）:
@@ -98,11 +108,23 @@ def twl_state_write_handler(
 
 ### 5. ADR-028（plugin 層 flock(2)）との整合
 
-ADR-028（`plugins/twl/architecture/decisions/ADR-028-atomic-rmw-strategy.md`）で確立した session.json `flock(8)` advisory lock は、本 ADR の MCP 経路においても以下の理由で互換性を保つ:
+ADR-028（`plugins/twl/architecture/decisions/ADR-028-atomic-rmw-strategy.md`）で確立した session.json `flock(8)` advisory lock との整合は **将来の B-1 実装時に確立される**。本 ADR の MCP 化単体では新規 race を導入しないが、Python 経路の `fcntl.flock()` 適用は B-1 と本 ADR が同時実装される段階で発効する。
+
+#### 現状（Phase 1 開始時点）の事実
+
+- `state.py` の `_atomic_write` は `tempfile.mkstemp` + `os.replace` による **atomic rename のみ**であり、現時点で `fcntl.flock()` は呼ばれていない（verified at L371-378）
+- ADR-028 の write authority matrix における Python 経路（`session_id` / `cross_issue_warnings[]` 等の `_atomic_write` 経路）は「B-1 委譲」として現状未保護
+- 本 ADR の MCP wrapper も同じ `_atomic_write` を経由するため、**MCP 化単体では Python 経路 race の状況は現状維持**（悪化しない）
+
+#### B-1 実装時の整合戦略（forward-looking）
+
+ADR-028 「B-1 統合時の Python wrapper interface」が実装される段階で `_atomic_write` に `fcntl.flock(LOCK_EX)` が追加される。この追加は本 ADR の MCP wrapper にも自動で適用される（同一コードパスを経由するため）。発効後は以下が syscall 層で成立する:
 
 - bash `flock(8)` と Python `fcntl.flock()` は同一 `flock(2)` syscall を用いる advisory lock であり、**プロセス境界をまたいで相互排他可能**
 - MCP server 経由の write は in-process Python から `_atomic_write` + `fcntl.flock(LOCK_EX)` を呼ぶため、外部 bash `flock(8)` 保護されている caller（autopilot-retrospective.md 等）との競合時も lost-update を発生させない
 - ADR-028 「B-1 統合時の Python wrapper interface」と本 ADR の MCP wrapper は **同一 syscall 層で交差** する設計
+
+本 ADR は B-1 と独立に merge 可能だが、上記 syscall 層の整合は B-1 実装後に有効となる点を明示する。
 
 ## Consequences
 
@@ -125,6 +147,11 @@ ADR-028（`plugins/twl/architecture/decisions/ADR-028-atomic-rmw-strategy.md`）
 - **state 以外の autopilot module の MCP 化**: `worktree.py` / `cross_repo.py` 等は別 Phase で評価
 - **`_check_pilot_identity` の cwd 引数 deprecation**: 将来的に identity を環境変数や config に外出しする選択肢
 - **logging.basicConfig stderr 強制化**: stdio safety の保険として server 起動時に追加検討（Phase 0 で採用済み、本 ADR では state 系で再確認）
+- **architecture 三層整合性の追従更新**（本 PR で defer、別 Issue 化候補）:
+  - `architecture/domain/model.md` の classDiagram に MCP channel と `+state_read()` / `+state_write()` を追記
+  - `architecture/domain/context-map.md` の mermaid 図に `AI_SESSION` ノードを外部アクターとして描画
+  - `architecture/domain/glossary.md` に "AI session"・"OHS Hybrid Path"・"Bounded Context (AI session)" を用語定義として追加
+  - これらは PR scope 拡大を避けるため本 ADR では deferred。Wave M Step 3 (co-issue) で別 Issue として起票候補
 
 ## Related
 
