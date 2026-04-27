@@ -50,5 +50,5 @@ mappings:
     ac_text: "cd cli/twl && pytest tests/ が PASS（既存テスト非破壊）"
     test_file: "cli/twl/tests/test_issue_970_mcp_readme.py"
     test_names:
-      - "TestAC7ExistingTestsUnbroken::test_ac7_existing_tests_pass"
+      - "TestAC7ExistingTestsUnbroken::test_ac7_existing_tests_not_broken_by_readme"
     note: "自己循環回避のため --ignore=tests/test_issue_970_mcp_readme.py を付与して実行"

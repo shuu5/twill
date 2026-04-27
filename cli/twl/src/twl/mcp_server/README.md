@@ -27,7 +27,7 @@ uv run --directory cli/twl --extra mcp fastmcp run src/twl/mcp_server/server.py
 
 ## 起動
 
-pip install 経由でインストール後:
+pip install 経由でインストール後、`cli/twl/` ディレクトリから実行してください:
 
 ```bash
 fastmcp run src/twl/mcp_server/server.py
@@ -54,8 +54,9 @@ TWiLL コンプライアンス 10 セクションの audit を実行します。
 
 ## plugin_root 引数
 
-`plugin_root` はプラグインディレクトリへの**絶対パス**を指定してください。
-ツール内部で `Path(plugin_root).expanduser().resolve()` によって正規化されます。
+`plugin_root` はプラグインディレクトリへのパスを指定してください。
+ツール内部で `Path(plugin_root).expanduser().resolve()` によって絶対パスに正規化されるため、
+`~` 始まりのホームディレクトリ相対パスも使用できます。
 
 ```
 plugin_root 例:
