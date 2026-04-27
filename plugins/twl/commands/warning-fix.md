@@ -19,6 +19,17 @@ maxTurns: 10
 
 ## 実行ロジック（MUST）
 
+### Step 0: current_step を記録（MUST — skip path を含む全 path で必須）
+
+```bash
+CR="${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh"
+bash "$CR" record-current-step warning-fix
+```
+
+この呼出は WARNING findings の有無にかかわらず **必ず最初に実行する**。
+これにより skip 判定（findings 0 件）で早期 return した場合も
+`state.current_step=warning-fix` および `state.last_heartbeat_at` が更新される（Issue #996）。
+
 ### Step 1: WARNING findings の選別
 
 ```

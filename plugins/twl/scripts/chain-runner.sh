@@ -1350,6 +1350,7 @@ main() {
     ts-preflight)        step_ts_preflight "$@" ;;
     phase-review)        record_current_step "phase-review"; ok "phase-review" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     scope-judge)         record_current_step "scope-judge";  ok "scope-judge"  "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
+    record-current-step) step_name="${1:?record-current-step requires step name}"; shift || true; record_current_step "$step_name"; ok "record-current-step" "current_step=${step_name} を記録" ;;
     pr-test)             step_pr_test "$@" ;;
     ac-verify)           step_ac_verify "$@" ;;
     all-pass-check)      step_all_pass_check "$@" ;;
