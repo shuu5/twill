@@ -254,6 +254,18 @@ _summary_file() {
   assert_failure
 }
 
+@test "ac3: 完遂率 is N/A when denominator is zero (all intentional skips)" {
+  # fixture: total=2, state_file_missing=2, done=0 → denominator=0 → N/A
+  _create_plan_yaml 83 84
+
+  # Both issues: state_file_missing (no JSON)
+
+  _run_wave_collect
+
+  run grep -E "完遂率.*N/A" "$(_summary_file)"
+  assert_success
+}
+
 # ---------------------------------------------------------------------------
 # AC4: 3 fixture シナリオ検証
 # ---------------------------------------------------------------------------
