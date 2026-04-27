@@ -1,0 +1,37 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/refs/baseline-bash.md に ## 6. 複数 regex パターンの ^ アンカー一貫性 セクションが追加されている"
+    test_file: "tests/bats/baseline-bash-section6.bats"
+    test_name: "baseline-bash-section6: AC1 section '## 6. 複数 regex パターンの ^ アンカー一貫性' exists"
+  - ac_index: 2
+    ac_text: "BAD 例として PR #949 で問題となった Pattern 1 strict / Pattern 2 leading-space の不整合パターンを引用"
+    test_file: "tests/bats/baseline-bash-section6.bats"
+    test_name: "baseline-bash-section6: AC2 BAD example mentions strict Pattern1 '^[1-9]\\.' and leading-space Pattern2"
+  - ac_index: 3a
+    ac_text: "GOOD 例として全パターンを ^[[:space:]]* 統一の形が存在する"
+    test_file: "tests/bats/baseline-bash-section6.bats"
+    test_name: "baseline-bash-section6: AC3 GOOD example 'all patterns use ^[[:space:]]*' form is present"
+  - ac_index: 3b
+    ac_text: "GOOD 例として全パターンを strict ^ 統一の形が存在する"
+    test_file: "tests/bats/baseline-bash-section6.bats"
+    test_name: "baseline-bash-section6: AC3 GOOD example 'all patterns use strict ^' form is present"
+  - ac_index: 4
+    ac_text: "レビュー観点（同一 input source に対する複数 regex の ^ 直後 character class 比較）が一文で明示されている"
+    test_file: "tests/bats/baseline-bash-section6.bats"
+    test_name: "baseline-bash-section6: AC4 review observation mentions comparing ^ character class for same input source"
+  - ac_index: 5
+    ac_text: "PR #949 もしくは Issue #946 への commit reference（e3d2f80 等）が Why 注記として記載されている"
+    test_file: "tests/bats/baseline-bash-section6.bats"
+    test_name: "baseline-bash-section6: AC5 Why note references PR #949 or commit e3d2f80 or Issue #946"
+  - ac_index: 6
+    ac_text: "twl check --deps-integrity が PASS する"
+    test_file: "tests/bats/baseline-bash-section6.bats"
+    test_name: "baseline-bash-section6: AC6 twl check --deps-integrity passes"
+  - ac_index: 7a
+    ac_text: "plugins/twl/agents/worker-code-reviewer.md 本体は変更されていない"
+    test_file: "tests/bats/baseline-bash-section6.bats"
+    test_name: "baseline-bash-section6: AC7 worker-code-reviewer.md has no uncommitted changes"
+  - ac_index: 7b
+    ac_text: "plugins/twl/agents/worker-codex-reviewer.md 本体は変更されていない"
+    test_file: "tests/bats/baseline-bash-section6.bats"
+    test_name: "baseline-bash-section6: AC7 worker-codex-reviewer.md has no uncommitted changes"

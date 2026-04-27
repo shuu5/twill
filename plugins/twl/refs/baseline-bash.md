@@ -163,3 +163,47 @@ run_strict() (
 ```
 
 > **補足**: `source` されたスクリプト内では `exit N` ではなく `return N` を使うこと。`exit N` は親シェルごと終了させるため、意図しないセッション終了を引き起こす。
+
+## 6. 複数 regex パターンの ^ アンカー一貫性
+
+同一 input source（tmux pane capture 出力など）に対して複数の `grep -E` / `=~` パターンを並走させる場合、各パターンの `^` 直後の character class（leading-space 許容 or strict）を統一しなければならない。形式が混在すると、あるパターンにはマッチするが別のパターンにはマッチしないという誤分類バグが生じる。
+
+**Why** (PR #949 / Issue #946 / `e3d2f80`): `issue-lifecycle-orchestrator.sh` の F4 修正で、同一 pane 出力に対する Pattern 1 (`^[1-9]\.`) が strict 形式、Pattern 2 (`^[[:space:]]*[1-9][0-9]*[.):])`) が leading-space 許容形式になっており、インデント付き出力で Pattern 1 が不一致 → Pattern 2 が誤分類するバグが発生した。
+
+### BAD: 同一 input への複数 pattern で ^ 直後の形式が異なる
+
+```bash
+# BAD: Pattern 1 は strict（先頭スペースを許容しない）
+if [[ "$pane_output" =~ ^[1-9]\.\ (Yes,\ proceed|No,\ go\ back) ]]; then
+  # → インデント付き出力では不一致
+
+# BAD: Pattern 2 は leading-space 許容（同一 source なのに形式が違う）
+elif [[ "$pane_output" =~ ^[[:space:]]*[1-9][0-9]*[.):] ]]; then
+  # → スペース付きでもマッチするため、Pattern 1 を抜けたものを誤捕捉する
+fi
+```
+
+### GOOD: 全パターンを `^[[:space:]]*` 形式で統一（leading-space 許容）
+
+```bash
+# GOOD: 両パターンともに leading-space を許容することで一貫性を保つ
+if [[ "$pane_output" =~ ^[[:space:]]*[1-9]\.\ (Yes,\ proceed|No,\ go\ back) ]]; then
+  : # 正常分岐
+elif [[ "$pane_output" =~ ^[[:space:]]*[1-9][0-9]*[.):] ]]; then
+  : # menu 検出分岐
+fi
+```
+
+### GOOD: 全パターンを strict `^` 形式で統一（leading-space を事前除去）
+
+```bash
+# GOOD: input を trim してから strict パターンを適用する
+trimmed="${pane_output#"${pane_output%%[![:space:]]*}"}"  # 先頭スペース除去
+if [[ "$trimmed" =~ ^[1-9]\.\ (Yes,\ proceed|No,\ go\ back) ]]; then
+  : # 正常分岐
+elif [[ "$trimmed" =~ ^[1-9][0-9]*[.):] ]]; then
+  : # menu 検出分岐
+fi
+```
+
+**レビュー観点**: 同一 input source に対する複数 `grep -E` / `=~` パターンの `^` 直後の character class（`[[:space:]]*` の有無）を比較し、形式が混在している場合は flag する。
