@@ -84,8 +84,7 @@ PYEOF
 
 # _create_plan_yaml <issues_space_separated>
 # Writes a plan.yaml with a single Phase 1 containing given issues.
-# Uses integer-key format (e.g. "10: null") which is valid YAML for PyYAML.
-# The implementation must extract issue numbers from KEYS (not values).
+# Uses the standard autopilot-plan.sh format ("    - N") parsed by awk in wave-collect.
 _create_plan_yaml() {
   local issues=($@)
   {
@@ -95,7 +94,7 @@ _create_plan_yaml() {
     echo "phases:"
     echo "  - phase: 1"
     for iss in "${issues[@]}"; do
-      echo "    ${iss}: null"
+      echo "    - $iss"
     done
     echo "dependencies:"
   } > "$SANDBOX/.autopilot/plan.yaml"

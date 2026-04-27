@@ -82,3 +82,8 @@
 | conflict | IssueState の状態値。deps.yaml コンフリクト検出時に Pilot が設定。Pilot リベース後に merge-ready に復帰、リトライ上限超過で failed に遷移 | Autopilot |
 | cli_dispatch | cli.py から分離された実装ロジックモジュール（#265） | TWiLL Integration |
 | Refined Status | Issue lifecycle の review 完了 marker。3 specialist review（issue-critic / issue-feasibility / worker-codex-reviewer）が完了した Issue に付与される Project Board Status field の値（先頭大文字 `Refined`、ADR-024）。従来の `refined` label（小文字）を補完し、Phase B 以降は Status のみで管理する。 | Issue Management, Autopilot |
+| skipped | Wave 集計における Issue 状態。state_file_missing / dependency_failed / status_other の 3 カテゴリで細分類され、wave-collect の echo 統計と skip 内訳セクションに反映される。 | Autopilot |
+| intentional skip | state_file_missing または dependency_failed に分類されるスキップ。完遂率の分母から除外される意図的なスキップ（observer や Pilot の判断に基づく）。status_other は分母に残る。 | Autopilot |
+| state_file_missing | issue-N.json 不在で skip されたケース。worktree 未作成や Refined 未達で投入除外された Issue が該当。intentional skip 扱いで完遂率分母から除外。 | Autopilot |
+| dependency_failed | 依存先 Issue の失敗伝播により skip されたケース。autopilot-should-skip.sh が判定する。intentional skip 扱いで完遂率分母から除外。 | Autopilot |
+| status_other | status が done / failed 以外（in_progress / ready_for_pr / unknown 等）で skip されたケース。機械判定 enum。完遂率分母に残る（停滞を可視化）。 | Autopilot |

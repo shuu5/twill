@@ -57,7 +57,7 @@ lifecycle: temporary
 
 Wave 完了時に書き出し、Long-term Memory（Memory MCP）にも保存する。
 
-**配置パス**: `.autopilot/wave-{N}-summary.md`（N は Wave 番号）
+**配置パス**: `.supervisor/wave-{N}-summary.md`（N は Wave 番号）
 
 ### フロントマター
 
@@ -84,6 +84,14 @@ lifecycle: persistent
 
 | Issue | PR | 結果 | 介入 |
 |---|---|---|---|
+
+## skip 内訳
+
+| 理由 | 件数 | 該当 Issue |
+|------|------|-----------|
+| state_file_missing | 0 | - |
+| dependency_failed | 0 | - |
+| status_other | 0 | - |
 
 ### 知見
 
