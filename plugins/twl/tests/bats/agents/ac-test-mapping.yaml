@@ -1,0 +1,32 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/agents/worker-code-reviewer.md の「## レビュー観点」セクションに新サブセクション「### 4. AC 整合性 (existing-behavior-preserve)」を追加する"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "worker-code-reviewer has subsection '### 4. AC 整合性 (existing-behavior-preserve)' under レビュー観点"
+    status: RED
+
+  - ac_index: 2
+    ac_text: "新サブセクション内にキーワード検出リスト・整合性チェック3ステップ・False-positive除外規則をMUSTとして明記する"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "worker-code-reviewer AC 整合性 subsection documents required keywords and 3-step check"
+    status: RED
+
+  - ac_index: 3
+    ac_text: "信頼度スコアリング部に「existing-behavior-preserve 違反は CRITICAL (confidence >= 90) で報告」を明記する"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "worker-code-reviewer confidence scoring documents existing-behavior-preserve as CRITICAL confidence>=90"
+    status: RED
+
+  - ac_index: 4
+    ac_text: "本変更による既存テスト（plugins/twl/tests/bats/agents/worker-code-reviewer*.bats が存在すれば）を全 GREEN に維持する。新規テストは本 Issue では追加義務なし"
+    test_file: null
+    test_name: null
+    status: NO_TEST_REQUIRED
+    note: "prompt 改修であり挙動は LLM 側のため bats では完全検証不能。既存テスト維持のみ要求"
+
+  - ac_index: 5
+    ac_text: "dogfood 検証（手動）"
+    test_file: null
+    test_name: null
+    status: MANUAL_ONLY
+    note: "bats テスト対象外。手動検証"
