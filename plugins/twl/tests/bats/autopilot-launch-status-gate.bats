@@ -1,17 +1,20 @@
 #!/usr/bin/env bats
 # autopilot-launch-status-gate.bats
 #
-# Issue #955: autopilot-launch.sh の _check_refined_status 関数内の
-#             label fallback path (L234-238 と L247-252) で
-#             `pipefail` + `grep -c || echo "0"` により
-#             rate limit 時に has_label="0\n0" となり bash syntax error が発生するバグ
+# Issue #955 (S1): _check_refined_status の label fallback path で pipefail + grep -c || echo "0" が
+#                  rate limit 時に has_label="0\n0" となり bash syntax error になるバグを修正
+# Issue #960 (S2): S1 修正後の `if gh ... | grep -Fxq` パターンが pipefail 下で SIGPIPE false-negative
+#                  を引き起こすリスクを capture 形式（labels=$(gh ...) || true）に書き換えて修正
 #
-# AC1: L235/L248 pipeline を Option A 形式 `if gh ... | grep -Fxq 'refined'; then has_label=1; fi` に置換
-# AC2: rate limit 再現テスト — has_label が単一値に固定され syntax error が発生しないこと
-# AC3: 既存テストとの regression なし（テスト追加のみ）
-# AC4: ログメッセージ整合性 — ALLOW_LABEL_FALLBACK / DENY_API_FAILURE / DENY_NOT_ON_BOARD
-# AC5: bash -n が syntax error なく通過する
-# AC6: AC2 のテストが Board 取得失敗 path と Board 未登録 path を独立にカバーする
+# S1 AC1: L235/L248 pipeline を `if gh ... | grep -Fxq 'refined'; then has_label=1; fi` に置換
+# S1 AC2: rate limit 再現テスト — has_label が単一値に固定され syntax error が発生しないこと
+# S1 AC3: 既存テストとの regression なし（テスト追加のみ）
+# S1 AC4: ログメッセージ整合性 — ALLOW_LABEL_FALLBACK / DENY_API_FAILURE / DENY_NOT_ON_BOARD
+# S1 AC5: bash -n が syntax error なく通過する
+# S1 AC6: AC2 のテストが Board 取得失敗 path と Board 未登録 path を独立にカバーする
+# S2 AC1: capture 形式への置換確認（pipe 形式が除去済みか）
+# S2 AC2: SIGPIPE シミュレート（exit 141）下で refined label あり → ALLOW_LABEL_FALLBACK
+# S2 AC6: shellcheck 回帰防止
 
 load 'helpers/common'
 
