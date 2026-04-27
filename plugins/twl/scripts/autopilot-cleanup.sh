@@ -123,6 +123,29 @@ is_in_dependency_chain() {
   return 1  # 全後続 issue 完了済み → archive 可能
 }
 
+# セッション完了判定: Phase 1 実行前に全 issue が done か確認（done archive 後は判定不能）
+# is_session_completed=true のみ session.json を archive する (#978 整合)
+_is_all_issues_done() {
+  local issues_dir="$1/issues"
+  [[ -d "$issues_dir" ]] || return 1
+  shopt -s nullglob
+  local files=("$issues_dir"/issue-*.json)
+  shopt -u nullglob
+  ((${#files[@]} > 0)) || return 1
+  local f
+  for f in "${files[@]}"; do
+    local status=""
+    status=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('status','unknown'))" "$f" 2>/dev/null || echo "unknown")
+    [[ "$status" == "done" ]] || return 1
+  done
+  return 0
+}
+
+SESSION_COMPLETED=false
+if _is_all_issues_done "$AUTOPILOT_DIR"; then
+  SESSION_COMPLETED=true
+fi
+
 echo "[cleanup] セッション $SESSION_ID のクリーンアップを開始（TTL=${TTL}s, dry-run=$DRY_RUN）" >&2
 
 # ── Phase 1: state file アーカイブ ──
@@ -256,6 +279,19 @@ while IFS= read -r line; do
     wt_branch=""
   fi
 done < <(git worktree list --porcelain 2>/dev/null || true)
+
+# ── Phase 3: session.json archive (is_session_completed=true の場合のみ) ──
+if [[ "$SESSION_COMPLETED" == "true" && -f "$AUTOPILOT_DIR/session.json" ]]; then
+  if $DRY_RUN; then
+    echo "[dry-run] session.json archive: $AUTOPILOT_DIR/session.json → $ARCHIVE_DIR/" >&2
+  else
+    mkdir -p "$ARCHIVE_DIR"
+    mv "$AUTOPILOT_DIR/session.json" "$ARCHIVE_DIR/"
+    echo "[cleanup] session.json archive: $SESSION_ID → $ARCHIVE_DIR/" >&2
+  fi
+elif [[ -f "$AUTOPILOT_DIR/session.json" ]]; then
+  echo "WARN: session.json を archive せず保持 (in-progress issues あり, is_session_completed=false)" >&2
+fi
 
 # ── 結果サマリー ──
 echo "[cleanup] 完了: アーカイブ=${ARCHIVED_COUNT}件, 孤立worktree削除=${ORPHAN_COUNT}件" >&2
