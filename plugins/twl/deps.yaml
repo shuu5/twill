@@ -1001,7 +1001,7 @@ commands:
 
   arch-ref:
     type: atomic
-    path: scripts/chain-runner.sh
+    path: scripts/chain/arch-ref.sh
     spawnable_by: [workflow]
     can_spawn: []
     chain: "setup"
@@ -1026,7 +1026,7 @@ commands:
 
   llm-delegate:
     type: atomic
-    path: scripts/chain-runner.sh
+    path: scripts/chain/llm-delegate.sh
     spawnable_by: [workflow]
     can_spawn: []
     dispatch_mode: runner
@@ -1034,7 +1034,7 @@ commands:
 
   llm-complete:
     type: atomic
-    path: scripts/chain-runner.sh
+    path: scripts/chain/llm-complete.sh
     spawnable_by: [workflow]
     can_spawn: []
     dispatch_mode: runner
@@ -1042,7 +1042,7 @@ commands:
 
   dispatch-info:
     type: atomic
-    path: scripts/chain-runner.sh
+    path: scripts/chain/dispatch-info.sh
     spawnable_by: [workflow]
     can_spawn: []
     dispatch_mode: runner
@@ -1050,7 +1050,7 @@ commands:
 
   chain-status:
     type: atomic
-    path: scripts/chain-runner.sh
+    path: scripts/chain/chain-status.sh
     spawnable_by: [workflow, controller]
     can_spawn: []
     dispatch_mode: runner
