@@ -119,6 +119,125 @@ cd cli/twl && uv run --extra mcp twl --validate
 - Phase 1 で plugins/twl 側に fallback ロジックを追加する
 - 必要な検証項目: (1) MCP 接続状態の検知方法、(2) CLI への自動切り替えトリガー、(3) fallback 時のユーザー通知
 
+## Phase 1: state MCP 化 (#945 Epic)
+
+### 概要
+
+`twl.autopilot.state` の MCP server 経由公開。Epic #945 の AC6/AC7/AC8 で設計範囲を定義する。
+
+- **AC6**: bats PASS 100% 維持で `twl.autopilot.state` を MCP 化
+- **AC7**: CLI と MCP の SSoT 検証（integration test or shared coverage）
+- **AC8**: AI 失敗率 50% 以上削減を統計的に実証（binomial proportion test, α=0.05, N≥20/操作）
+
+### state MCP 化方針（Phase 0 Hybrid Path 継承）
+
+Phase 0 α (#962) / β (#963) で確立した core パターンを Phase 1 でも適用する:
+
+1. **`_handler` suffix で pure Python 関数を定義** — `fastmcp` なしで pytest 可能
+2. **MCP tool は handler を `json.dumps(...)` で str 化して返す**
+3. **`try/except ImportError` で fastmcp optional 依存を gate** — `mcp = None` 時は pure 関数のみ exposed
+4. **明示引数化**（Phase 0 `plugin_root` → Phase 1 `autopilot_dir`）で CWD 推論を排除
+5. **`tools.py` 1 ファイルに集約** — `cli/twl/src/twl/mcp_server/tools.py` に append
+
+### 既存 state.py 構造との整合（relevant fact）
+
+`StateManager` class は **既に pure (kwargs-based)**。Phase 0 β #963 で行った "handler を pure kwargs 化 + `sys.exit()` 除去" 相当の作業は **不要** である。
+
+このため Phase 1 α 実装は **MCP wrapper の minimal scope** で済む:
+
+- `state.py` の `_parse_*_args(argv)` / `main(argv)` は **touch しない**（CLI 経路保全）
+- `tools.py` に `twl_state_read_handler` / `twl_state_write_handler` を追加
+- `StateError` / `StateArgError` を `{ok, error, error_type, exit_code}` envelope に wrap
+
+### autopilot_dir resolution 設計
+
+#### 問題
+
+`state.py` 内 `_autopilot_dir()` の git worktree fallback ロジックは、MCP server 起動時の cwd と AI session の作業ディレクトリが異なるため、意図通り動作しない可能性がある（server プロセスは起動時の cwd で fix される）。
+
+#### 解決方針
+
+MCP tool に **`autopilot_dir: str | None = None` を明示引数化** し、AI session 側で正しい絶対パスを渡せるようにする:
+
+```python
+def twl_state_read_handler(
+    type_: str,
+    issue: str | None = None,
+    repo: str | None = None,
+    field: str | None = None,
+    autopilot_dir: str | None = None,
+) -> dict:
+    from twl.autopilot.state import StateManager
+    from pathlib import Path
+    ap_dir = Path(autopilot_dir).expanduser().resolve() if autopilot_dir else None
+    return StateManager(autopilot_dir=ap_dir).read(...)
+```
+
+省略時は `_autopilot_dir()` の既存 fallback ロジックに委ねる（CLI 経路と同一挙動）。
+
+### RBAC enforcement の cwd 引数設計
+
+#### 問題
+
+`_check_pilot_identity`（state.py）は `os.getcwd()` を参照して role authentication を行うが、MCP server context では cwd が不定。bats 経路（CLI）では `os.getcwd()` が AI session の cwd を反映するため整合する。
+
+#### 解決方針
+
+MCP tool に **write 時のみ `cwd: str | None = None` を明示引数化** し、`_check_pilot_identity(cwd=cwd)` に伝播する:
+
+```python
+def twl_state_write_handler(
+    type_: str,
+    role: str,
+    ...,
+    autopilot_dir: str | None = None,
+    cwd: str | None = None,    # ← RBAC enforcement のため明示
+) -> dict:
+    # StateManager.write 経由で _check_pilot_identity(cwd=cwd) に伝播
+```
+
+`cwd` 省略時は `os.getcwd()` fallback（CLI 経路と同一挙動）。bats 互換性は維持される（CLI 経路の `os.getcwd()` 参照は変更しない）。
+
+### bats 経路と MCP 経路の SSoT 担保
+
+#### 検証戦略
+
+3 経路で同一 input に対する出力一致を検証する pytest parametric test を新設（`cli/twl/tests/test_state_dispatch_parity.py` 想定）:
+
+| 経路 | 呼び出し | 検証目的 |
+|---|---|---|
+| 1 | `subprocess.run(['python3', '-m', 'twl.autopilot.state', 'read', ...])` | bats 経路と同等（CLI exit code / stdout） |
+| 2 | `twl_state_read_handler(...)` | MCP handler（in-process） |
+| 3 | `StateManager(...).read(...)` | Python 直接呼び出し（lowest layer） |
+
+正規化規則:
+
+- read 経路: 値の str 比較
+- write 経路: `{ok, exit_code, error_type}` 三組比較
+- 経路 1（subprocess）は stdout/stderr を分離して比較
+
+最低 6 比較ケース（issue read with field / full JSON / session read / init / status transition / RBAC violation）。
+
+#### bats 互換性（regression risk = 0）
+
+`state.py` の `main()` / `_parse_*_args()` は **未変更**。bats は CLI 経路を呼び続けるため、構造的に regression risk は 0 となる（MCP 化が独立的拡張であることが保証されている）。
+
+### Phase 0 OHS 二重チャネル拡張
+
+「OHS パターン拡張」セクションは Phase 0 のスナップショット。Phase 1 完了後の二重チャネル状態は以下のとおり拡張される:
+
+| チャネル | コマンド | 用途 | Phase |
+|---|---|---|---|
+| CLI | `twl validate/audit/check` | 直接実行・CI・degradation path | 0 |
+| CLI | `python3 -m twl.autopilot.state read/write` | bats / shell hook | 既存 |
+| MCP | `twl_validate / twl_audit / twl_check` | AI session（Phase 0） | 0 |
+| MCP | `twl_state_read / twl_state_write` | AI session（Phase 1） | 1 |
+
+### 関連 ADR
+
+- **ADR-0006 (cli/twl)**: state MCP 化 SSoT pattern — 本 Phase の中心 ADR
+- **ADR-028 (plugins/twl)**: session.json `flock(2)` atomic strategy — MCP 経路の Python `fcntl.flock()` と bash `flock(8)` は同一 `flock(2)` syscall で相互排他されるため、MCP 化後も lost-update リスクは増加しない
+
 ## 依存関係
 
 - `fastmcp>=3.0` (optional, `mcp` extra — `pyproject.toml` の `[project.optional-dependencies]`)
