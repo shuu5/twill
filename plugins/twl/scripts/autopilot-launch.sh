@@ -231,8 +231,10 @@ _check_refined_status() {
   done
   if [[ -z "$status" && -z "$board_items" ]]; then
     # Board 取得失敗 → cross-repo fallback: refined label を確認
-    local has_label=0
-    if gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null | grep -Fxq 'refined'; then
+    # Option 1: 事前 capture → 文字列検索（pipefail 下の SIGPIPE false-negative を回避 #960）
+    local labels has_label=0
+    labels=$(gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null || true)
+    if printf '%s\n' "$labels" | grep -Fxq 'refined'; then
       has_label=1
     fi
     if [[ "$has_label" -eq 1 ]]; then
@@ -246,8 +248,11 @@ _check_refined_status() {
   fi
   if [[ -z "$status" ]]; then
     # Issue が Board 未登録 → cross-repo fallback: refined label を確認
-    local has_label=0   # 同一関数スコープで明示的に 0 で初期化（前ブロックの値を引き継がないよう保証）
-    if gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null | grep -Fxq 'refined'; then
+    # Option 1: 事前 capture → 文字列検索（pipefail 下の SIGPIPE false-negative を回避 #960）
+    # 同一関数スコープで明示的に 0 で初期化（前ブロックの値を引き継がないよう保証）
+    local labels has_label=0
+    labels=$(gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null || true)
+    if printf '%s\n' "$labels" | grep -Fxq 'refined'; then
       has_label=1
     fi
     if [[ "$has_label" -eq 1 ]]; then
