@@ -813,7 +813,7 @@ refs:
   baseline-bash:
     type: reference
     path: refs/baseline-bash.md
-    description: "Bash スクリプト品質基準（character class, 変数スコープ, set -u 初期化）"
+    description: "Bash スクリプト品質基準（character class, 変数スコープ, set -u 初期化, ^ アンカー一貫性）"
 
   # co-self-improve data catalogs (#179)
   test-scenario-catalog:
