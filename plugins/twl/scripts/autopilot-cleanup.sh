@@ -134,7 +134,7 @@ _is_all_issues_done() {
   ((${#files[@]} > 0)) || return 1
   local f
   for f in "${files[@]}"; do
-    local status
+    local status=""
     status=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('status','unknown'))" "$f" 2>/dev/null || echo "unknown")
     [[ "$status" == "done" ]] || return 1
   done
