@@ -78,6 +78,51 @@ NOW_EPOCH=$(date +%s)
 ARCHIVED_COUNT=0
 ORPHAN_COUNT=0
 
+# ── 依存チェーン判定 ──
+# is_in_dependency_chain <issue_num>
+# Returns 0 if issue_num is still needed by a pending dependent (skip archive)
+# Returns 1 if no dependency chain or all dependents are done (archive OK)
+is_in_dependency_chain() {
+  local issue_num="$1"
+  local plan_file="$AUTOPILOT_DIR/plan.yaml"
+
+  [[ -f "$plan_file" ]] || return 1
+
+  # plan.yaml の dependencies: セクションから issue_num を参照している後続 issue を取得
+  local dependers
+  dependers=$(awk -v target="$issue_num" '
+    /^dependencies:/ { in_deps=1; next }
+    in_deps && /^[^ ]/ { in_deps=0 }
+    in_deps && /^  [0-9]+:/ { key=$0; gsub(/^[[:space:]]+|:[[:space:]]*$/, "", key) }
+    in_deps && /^  - / { dep=$0; gsub(/^[[:space:]]*- /, "", dep); if (dep==target && key!="") print key }
+  ' "$plan_file" 2>/dev/null || true)
+
+  [[ -n "$dependers" ]] || return 1
+
+  # 後続 issue の状態を確認: いずれか未完了なら archive スキップ
+  local depender
+  for depender in $dependers; do
+    local dep_file="$AUTOPILOT_DIR/issues/issue-${depender}.json"
+    if [[ -f "$dep_file" ]]; then
+      local dep_status
+      dep_status=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('status','unknown'))" "$dep_file" 2>/dev/null || echo "unknown")
+      if [[ "$dep_status" != "done" ]]; then
+        return 0  # 後続 issue が未完了 → archive スキップ
+      fi
+    else
+      # issues/ に存在しない → archive ディレクトリを確認
+      local archived
+      archived=$(find "$AUTOPILOT_DIR/archive" -name "issue-${depender}.json" 2>/dev/null | head -1)
+      if [[ -z "$archived" ]]; then
+        return 0  # archive にも存在しない → 後続 issue が未起動 → archive スキップ
+      fi
+      # archive に存在 → 後続 issue 完了済み → 次の depender をチェック
+    fi
+  done
+
+  return 1  # 全後続 issue 完了済み → archive 可能
+}
+
 echo "[cleanup] セッション $SESSION_ID のクリーンアップを開始（TTL=${TTL}s, dry-run=$DRY_RUN）" >&2
 
 # ── Phase 1: state file アーカイブ ──
@@ -89,15 +134,19 @@ for issue_file in "$AUTOPILOT_DIR/issues"/issue-*.json; do
 
   case "$status" in
     done)
-      # done → 即座にアーカイブ
-      if $DRY_RUN; then
-        echo "[dry-run] アーカイブ: issue-${issue_num}.json (status=done)" >&2
+      # done → 依存チェーン確認後にアーカイブ
+      if is_in_dependency_chain "$issue_num"; then
+        echo "[cleanup] スキップ: issue-${issue_num}.json (status=done, dependency-pending)" >&2
       else
-        mkdir -p "$ARCHIVE_DIR"
-        mv "$issue_file" "$ARCHIVE_DIR/"
-        echo "[cleanup] アーカイブ: issue-${issue_num}.json (status=done) → $ARCHIVE_DIR/" >&2
+        if $DRY_RUN; then
+          echo "[dry-run] アーカイブ: issue-${issue_num}.json (status=done)" >&2
+        else
+          mkdir -p "$ARCHIVE_DIR"
+          mv "$issue_file" "$ARCHIVE_DIR/"
+          echo "[cleanup] アーカイブ: issue-${issue_num}.json (status=done) → $ARCHIVE_DIR/" >&2
+        fi
+        ARCHIVED_COUNT=$((ARCHIVED_COUNT + 1))
       fi
-      ARCHIVED_COUNT=$((ARCHIVED_COUNT + 1))
       ;;
     failed)
       # failed → TTL 超過時のみアーカイブ
