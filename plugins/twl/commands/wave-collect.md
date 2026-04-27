@@ -28,28 +28,12 @@ if [[ ! -f "$PLAN_FILE" ]]; then
   exit 1
 fi
 
-# Phase N の Issue リストを取得
-ISSUES=$(python3 - <<'EOF'
-import yaml, sys, os
-
-wave_num = int(os.environ.get("WAVE_NUM", "1"))
-plan_path = os.environ.get("PLAN_FILE", ".autopilot/plan.yaml")
-
-with open(plan_path) as f:
-    plan = yaml.safe_load(f)
-
-phases = plan.get("phases", [])
-for phase_entry in phases:
-    if isinstance(phase_entry, dict):
-        phase_num = phase_entry.get("phase")
-        if phase_num == wave_num:
-            issues = [v for k, v in phase_entry.items() if k != "phase"]
-            print(" ".join(str(i) for i in issues))
-            sys.exit(0)
-
-print("")
-EOF
-)
+# Phase N の Issue リストを取得（shell 解析 — PyYAML が対応しない plan.yaml 形式に対応）
+ISSUES=$(awk -v wave="$WAVE_NUM" '
+  $0 == "  - phase: " wave { found=1; next }
+  found && /^  - phase: / { exit }
+  found && /^    - [0-9]/ { gsub(/[^0-9]/, ""); print }
+' "$PLAN_FILE" | tr '\n' ' ' | sed 's/ *$//')
 
 if [[ -z "$ISSUES" ]]; then
   echo "[wave-collect] Warning: Wave ${WAVE_NUM} に対応する Phase が見つかりません"
@@ -69,6 +53,13 @@ FAILED_COUNT=0
 SKIPPED_COUNT=0
 TOTAL_RETRIES=0
 INTERVENTION_COUNT=0
+# skip 理由カウンタ（3 カテゴリ enum、ADR-014 機械判定）
+SKIP_STATE_FILE_MISSING=0
+SKIP_DEPENDENCY_FAILED=0
+SKIP_STATUS_OTHER=0
+SKIP_STATE_FILE_MISSING_ISSUES=""
+SKIP_DEPENDENCY_FAILED_ISSUES=""
+SKIP_STATUS_OTHER_ISSUES=""
 
 for ISSUE in $ISSUES; do
   ISSUE_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE}.json"
@@ -77,6 +68,8 @@ for ISSUE in $ISSUES; do
   if [[ ! -f "$ISSUE_FILE" ]]; then
     echo "[wave-collect] Warning: Issue #${ISSUE} の状態ファイルが見つかりません — スキップ"
     SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+    SKIP_STATE_FILE_MISSING=$((SKIP_STATE_FILE_MISSING + 1))
+    SKIP_STATE_FILE_MISSING_ISSUES="${SKIP_STATE_FILE_MISSING_ISSUES:+${SKIP_STATE_FILE_MISSING_ISSUES} }#${ISSUE}"
     RESULTS+=("| #${ISSUE} | unknown | — | 0 |")
     continue
   fi
@@ -92,9 +85,20 @@ for ISSUE in $ISSUES; do
       ;;
     failed)
       FAILED_COUNT=$((FAILED_COUNT + 1))
+      if [[ "$FAILURE" == "dependency_failed" ]]; then
+        SKIP_DEPENDENCY_FAILED=$((SKIP_DEPENDENCY_FAILED + 1))
+        SKIP_DEPENDENCY_FAILED_ISSUES="${SKIP_DEPENDENCY_FAILED_ISSUES:+${SKIP_DEPENDENCY_FAILED_ISSUES} }#${ISSUE}"
+      fi
       ;;
     *)
       SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+      if [[ "$FAILURE" == "dependency_failed" ]]; then
+        SKIP_DEPENDENCY_FAILED=$((SKIP_DEPENDENCY_FAILED + 1))
+        SKIP_DEPENDENCY_FAILED_ISSUES="${SKIP_DEPENDENCY_FAILED_ISSUES:+${SKIP_DEPENDENCY_FAILED_ISSUES} }#${ISSUE}"
+      else
+        SKIP_STATUS_OTHER=$((SKIP_STATUS_OTHER + 1))
+        SKIP_STATUS_OTHER_ISSUES="${SKIP_STATUS_OTHER_ISSUES:+${SKIP_STATUS_OTHER_ISSUES} }#${ISSUE}"
+      fi
       ;;
   esac
 
@@ -129,7 +133,21 @@ else
   AVG_RETRIES="0.00"
 fi
 
+# 完遂率計算（分母から state_file_missing と dependency_failed を除外）
+COMPLETION_RATE_DENOM=$((TOTAL - SKIP_STATE_FILE_MISSING - SKIP_DEPENDENCY_FAILED))
+if [[ "$COMPLETION_RATE_DENOM" -gt 0 ]]; then
+  COMPLETION_RATE=$(python3 -c "print(f'{${DONE_COUNT}/${COMPLETION_RATE_DENOM}*100:.1f}%')")
+else
+  COMPLETION_RATE="N/A"
+fi
+
 GENERATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# skip 内訳テーブル行を生成
+SKIP_TABLE_ROWS=""
+SKIP_TABLE_ROWS+="| state_file_missing | ${SKIP_STATE_FILE_MISSING} | ${SKIP_STATE_FILE_MISSING_ISSUES:--} |"$'\n'
+SKIP_TABLE_ROWS+="| dependency_failed | ${SKIP_DEPENDENCY_FAILED} | ${SKIP_DEPENDENCY_FAILED_ISSUES:--} |"$'\n'
+SKIP_TABLE_ROWS+="| status_other | ${SKIP_STATUS_OTHER} | ${SKIP_STATUS_OTHER_ISSUES:--} |"
 
 cat > "$OUTPUT_FILE" <<SUMMARY
 # Wave ${WAVE_NUM} サマリ
@@ -144,6 +162,7 @@ cat > "$OUTPUT_FILE" <<SUMMARY
 | 完了 (done) | ${DONE_COUNT} |
 | 失敗 (failed) | ${FAILED_COUNT} |
 | 未完了/スキップ | ${SKIPPED_COUNT} |
+| 完遂率 | ${COMPLETION_RATE} |
 | 介入あり Issue 数 | ${INTERVENTION_COUNT} |
 | 介入率 | ${INTERVENTION_RATE} |
 | 平均介入回数 | ${AVG_RETRIES} |
@@ -160,10 +179,16 @@ $(printf '%s\n' "${RESULTS[@]}")
 - 介入率: ${INTERVENTION_RATE}
 - 総介入回数: ${TOTAL_RETRIES}
 - 平均介入回数: ${AVG_RETRIES}
+
+## skip 内訳
+
+| 理由 | 件数 | 該当 Issue |
+|------|------|-----------|
+${SKIP_TABLE_ROWS}
 SUMMARY
 
 echo "[wave-collect] Wave ${WAVE_NUM} サマリを生成しました: ${OUTPUT_FILE}"
-echo "[wave-collect] 統計: total=${TOTAL}, done=${DONE_COUNT}, failed=${FAILED_COUNT}, 介入=${INTERVENTION_COUNT}/${TOTAL}"
+echo "[wave-collect] 統計: total=${TOTAL}, done=${DONE_COUNT}, failed=${FAILED_COUNT}, skipped=${SKIPPED_COUNT}, 介入=${INTERVENTION_COUNT}/${TOTAL}"
 ```
 
 ### Step 4: specialist completeness 監査（SHOULD）
