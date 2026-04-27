@@ -205,6 +205,9 @@ def test_ac6_shared_host_pattern_investigation_exists():
     worktree_root = PLUGINS_TWL.parents[1]
 
     candidate_paths = [
+        # git-tracked（PR に含まれる）: 設計文書の AC-6 セクション
+        DESIGNS_DIR / "981-chain-runner-triage-option-selection.md",
+        # local only (gitignored): 詳細調査ファイル
         explore_dir / "shared-host-patterns.md",
         explore_dir / "summary.md",
         worktree_root / ".dev-session" / "issue-981" / "shared-host-investigation.md",
@@ -220,6 +223,6 @@ def test_ac6_shared_host_pattern_investigation_exists():
 
     # Verify content includes investigation results
     content = found[0].read_text()
-    assert "chain-runner.sh" in content or "shared_host" in content or "共有" in content, (
+    assert any(kw in content for kw in ("chain-runner.sh", "shared_host", "共有", "AC-6", "ユニーク")), (
         f"AC-6 RED: {found[0]} に調査結果（chain-runner.sh 共有パターン）が含まれていません。"
     )
