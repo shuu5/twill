@@ -74,13 +74,19 @@ class TestAc1AdrKpiQuantification:
         )
 
     def test_ac1b_known_gap3_contains_grep_pattern(self, adr_025_text: str):
-        # AC-1(b): KPI 計測 input 経路 (grep パターン) が ADR-025 に明記されている
-        # RED: 現在の ADR-025 に grep パターン記述なし
-        assert 'grep' in adr_025_text, (
-            'ADR-025 に grep パターンの記述がない (KPI 計測 input 経路の明示が必要)'
+        # AC-1(b): KPI 計測 input 経路 (grep パターン) が Known Gap 3 セクションに明記されている
+        # RED: 現在の ADR-025 Known Gap 3 に grep パターン記述なし
+        # NOTE: Known Gap 3 セクション内に限定して検索（ADR-025 全体では他箇所にも grep が出現しうる）
+        gap3_match = re.search(
+            r"Known Gap 3.*?(?=Known Gap \d|##|\Z)", adr_025_text, re.DOTALL
         )
-        assert '"status":"FAIL"' in adr_025_text or '"status":"WARN"' in adr_025_text, (
-            'ADR-025 に audit ログ grep パターン ("status":"FAIL"/"WARN") の記述がない'
+        assert gap3_match, "Known Gap 3 が ADR-025 に見当たらない"
+        gap3_text = gap3_match.group(0)
+        assert "grep" in gap3_text, (
+            'ADR-025 Known Gap 3 に grep パターンの記述がない (KPI 計測 input 経路の明示が必要)'
+        )
+        assert '"status":"FAIL"' in gap3_text or '"status":"WARN"' in gap3_text, (
+            'ADR-025 Known Gap 3 に audit ログ grep パターン ("status":"FAIL"/"WARN") の記述がない'
         )
 
     def test_ac1b_wave_c_excluded_from_measurement(self, adr_025_text: str):
@@ -167,8 +173,9 @@ class TestAc3RollbackDoc:
         assert "specialist-audit.sh" in rollback_doc_text, (
             "rollback 文書に specialist-audit.sh への言及がない"
         )
-        assert ":44" in rollback_doc_text or "line 44" in rollback_doc_text.lower(), (
-            "rollback 文書に specialist-audit.sh:44 (Level 1 SSoT) の明示がない"
+        # 行番号ではなく変数名で SSoT を検証（行番号は実装変更で移動しうる）
+        assert "SPECIALIST_AUDIT_MODE" in rollback_doc_text, (
+            "rollback 文書に SPECIALIST_AUDIT_MODE 変数名 (Level 1 SSoT の識別子) の明示がない"
         )
 
     def test_ac3_rollback_procedure_documented(self, rollback_doc_text: str):
@@ -226,14 +233,15 @@ class TestAc4ObservationChannel:
     def test_ac4b_auto_comment_mechanism_exists(self):
         # AC-4(b): audit FAIL → 自動 Issue comment 機構が実装済み
         # RED: 現在 auto-merge.sh / specialist-audit.sh に自動コメント機能なし
+        # Issue AC-4(b): "auto-merge.sh または specialist-audit.sh で実装"
         audit_sh_text = SPECIALIST_AUDIT_SH.read_text()
         auto_merge_text = AUTO_MERGE_SH.read_text()
         has_auto_comment = bool(
-            re.search(r"gh\s+issue\s+comment|issue.*comment.*audit", audit_sh_text)
-            or re.search(r"gh\s+issue\s+comment|issue.*comment.*audit", auto_merge_text)
+            re.search(r"gh\s+issue\s+comment", audit_sh_text, re.IGNORECASE)
+            or re.search(r"gh\s+issue\s+comment", auto_merge_text, re.IGNORECASE)
         )
         assert has_auto_comment, (
-            "audit FAIL → 自動 Issue comment 機構が "
+            "audit FAIL → 自動 Issue comment 機構 (gh issue comment) が "
             "specialist-audit.sh または auto-merge.sh に存在しない"
         )
 
