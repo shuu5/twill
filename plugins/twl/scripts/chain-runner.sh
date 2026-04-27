@@ -1323,7 +1323,8 @@ main() {
     echo "Usage: chain-runner.sh [--trace <path>] <step-name> [args...]" >&2
     echo "Steps: init, worktree-create, board-status-update, project-board-status-update, board-archive," >&2
     echo "       ac-extract, arch-ref, next-step, ts-preflight, pr-test, ac-verify," >&2
-    echo "       all-pass-check, pr-cycle-report, auto-merge, check, autopilot-detect" >&2
+    echo "       all-pass-check, pr-cycle-report, auto-merge, check, autopilot-detect," >&2
+    echo "       record-current-step <step>" >&2
     exit 1
   fi
   shift
@@ -1350,6 +1351,7 @@ main() {
     ts-preflight)        step_ts_preflight "$@" ;;
     phase-review)        record_current_step "phase-review"; ok "phase-review" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     scope-judge)         record_current_step "scope-judge";  ok "scope-judge"  "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
+    record-current-step) [[ -z "${1:-}" ]] && { echo "ERROR: record-current-step requires step name" >&2; exit 1; }; record_current_step "$1"; ok "record-current-step" "current_step=$1 を記録" ;;
     pr-test)             step_pr_test "$@" ;;
     ac-verify)           step_ac_verify "$@" ;;
     all-pass-check)      step_all_pass_check "$@" ;;
@@ -1367,9 +1369,9 @@ main() {
       echo "ERROR: 未知のステップ: $step" >&2
       echo "利用可能: init, worktree-create, board-status-update, project-board-status-update," >&2
       echo "         board-archive, ac-extract, arch-ref, next-step, prompt-compliance, ts-preflight," >&2
-      echo "         phase-review, scope-judge, pr-test, ac-verify, all-pass-check, pr-cycle-report, auto-merge," >&2
-      echo "         pr-comment-findings, pr-comment-fix-summary, pr-comment-final, check," >&2
-      echo "         autopilot-detect, resolve-issue-num," >&2
+      echo "         phase-review, scope-judge, record-current-step <step>, pr-test, ac-verify, all-pass-check," >&2
+      echo "         pr-cycle-report, auto-merge, pr-comment-findings, pr-comment-fix-summary," >&2
+      echo "         pr-comment-final, check, autopilot-detect, resolve-issue-num," >&2
       echo "         dispatch-info, llm-delegate, llm-complete, chain-status," >&2
       echo "         resolve-project-root" >&2
       exit 1
