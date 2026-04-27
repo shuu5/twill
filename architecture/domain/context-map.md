@@ -41,8 +41,11 @@ flowchart TD
 
 | From | To | 関係 | 備考 |
 |------|-----|------|------|
-| plugins/twl | cli/twl | Open Host Service | PostToolUse hook, chain generate 等で呼び出し |
+| plugins/twl | cli/twl | Open Host Service (CLI channel) | PostToolUse hook, chain generate 等で `twl` CLI を実行 |
+| AI session | cli/twl | Open Host Service (MCP channel) | `.mcp.json` 経由の `twl_validate/audit/check` (Phase 0)、`twl_state_read/write` (Phase 1) |
 | plugins/twl | plugins/session | Spawns | co-autopilot が tmux セッション管理に利用 |
 | plugins/twl | test-fixtures | Test Data | テスト用の固定データ |
+
+**OHS 二重チャネル化**: cli/twl は CLI（subprocess 経由）と MCP（stdio FastMCP server 経由）の 2 チャネルで同一機能を提供する。AI session は MCP を、shell hook / bats は CLI を選択する。SSoT 担保（CLI/MCP 出力一致）は cli/twl 層 ADR-0006（state）および Phase 0 α (#962) / β (#963) PR で確立。
 
 **禁止方向**: cli/ → plugins/（CLI はプラグインを知らない）
