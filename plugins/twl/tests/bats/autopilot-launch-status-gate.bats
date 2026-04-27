@@ -462,3 +462,172 @@ GHSTUB
   # RED: 現在の実装は syntax error で abort する
   assert_success
 }
+
+# ===========================================================================
+# Issue #960 RED テスト (S2: SIGPIPE false-negative 修正)
+# AC1 / AC2 / AC6 を対象とする
+# RED: 現在の実装（pipe 形式）では fail するテスト
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# AC1_S2: 静的チェック — capture 形式になっているか（pipe 形式が除去済みか）
+# RED: 現在の実装は gh issue view ... | grep -Fxq パターンが L235/L250 に存在するため fail
+# ---------------------------------------------------------------------------
+
+@test "ac1_s2: 実装が capture 形式になっている（pipe 形式が除去済み）" {
+  # 現在の実装: if gh issue view "$issue_num" --json labels -q '...' 2>/dev/null | grep -Fxq 'refined'
+  # 実装後:     labels=$(gh issue view ... || true); if printf '%s\n' "$labels" | grep -Fxq 'refined'
+  #
+  # RED: 現在の L235/L250 には pipe 形式が存在するため、このテストは fail する
+  run grep -n "gh issue view.*--json labels.*| grep\|gh issue view.*labels.*grep" "$SCRIPT"
+  [ "${#lines[@]}" -eq 0 ] || {
+    echo "FAIL: gh+labels の pipe 形式が残っている箇所:"
+    for line in "${lines[@]}"; do
+      echo "  $line"
+    done
+    return 1
+  }
+}
+
+# ---------------------------------------------------------------------------
+# AC2_S2: SIGPIPE シミュレート — Board 取得失敗 path
+# gh が exit 141 を返し refined ラベルあり → ALLOW_LABEL_FALLBACK で exit 0 であること
+#
+# RED: 現在の実装では pipefail 下で if-condition 内の pipeline が exit 141 を受け取ると
+#      grep が refined を発見しても false-negative（false branch）に落ちる。
+#      そのため ALLOW_LABEL_FALLBACK に到達できず exit 1 になる。
+# ---------------------------------------------------------------------------
+
+@test "ac2_s2: Board取得失敗path — gh が exit 141(SIGPIPE) かつ refined あり → ALLOW_LABEL_FALLBACK で exit 0" {
+  # stub: gh issue view --json labels が refined を出力した後 exit 141 で終了
+  cat > "$STUB_BIN/gh" <<'GHSTUB'
+#!/usr/bin/env bash
+case "$*" in
+  *"repo view"*)
+    echo "shuu5" ;;
+  *"project item-list"*)
+    echo "GraphQL: rate limit exceeded" >&2
+    exit 1 ;;
+  *"issue view"*"--json labels"*)
+    # SIGPIPE シミュレート: refined ラベルを出力してから exit 141
+    printf 'bug\nrefined\n'
+    exit 141 ;;
+  *)
+    exit 1 ;;
+esac
+GHSTUB
+  chmod +x "$STUB_BIN/gh"
+
+  stub_command "python3" 'echo "6"'
+
+  _run_status_gate "960" "0"
+
+  # RED: 現在の実装では false-negative で exit 1 (DENY) になる
+  # PASS 条件（実装後）: ALLOW_LABEL_FALLBACK で exit 0
+  assert_success
+}
+
+@test "ac2_s2: Board取得失敗path — gh が exit 141(SIGPIPE) かつ refined あり → gate.log に ALLOW_LABEL_FALLBACK が記録される" {
+  cat > "$STUB_BIN/gh" <<'GHSTUB'
+#!/usr/bin/env bash
+case "$*" in
+  *"repo view"*)
+    echo "shuu5" ;;
+  *"project item-list"*)
+    echo "rate limit exceeded" >&2
+    exit 1 ;;
+  *"issue view"*"--json labels"*)
+    printf 'bug\nrefined\n'
+    exit 141 ;;
+  *)
+    exit 1 ;;
+esac
+GHSTUB
+  chmod +x "$STUB_BIN/gh"
+
+  stub_command "python3" 'echo "6"'
+
+  _run_status_gate "960" "0"
+
+  # RED: 現在の実装では ALLOW_LABEL_FALLBACK に到達しないため gate.log に記録されない
+  # PASS 条件（実装後）: gate.log に ALLOW_LABEL_FALLBACK が記録される
+  run grep -F "ALLOW_LABEL_FALLBACK issue=#960" "$SANDBOX/gate.log"
+  assert_success
+}
+
+# ---------------------------------------------------------------------------
+# AC2_S2: SIGPIPE シミュレート — Board 未登録 path
+# gh が exit 141 を返し refined ラベルあり → ALLOW_LABEL_FALLBACK で exit 0 であること
+#
+# RED: Board 未登録 path（L250）でも同じ false-negative が発生する
+# ---------------------------------------------------------------------------
+
+@test "ac2_s2: Board未登録path — gh が exit 141(SIGPIPE) かつ refined あり → ALLOW_LABEL_FALLBACK で exit 0" {
+  cat > "$STUB_BIN/gh" <<'GHSTUB'
+#!/usr/bin/env bash
+case "$*" in
+  *"repo view"*)
+    echo "shuu5" ;;
+  *"project item-list"*)
+    # Board 取得成功だが issue が未登録
+    echo '{"items": []}'
+    exit 0 ;;
+  *"issue view"*"--json labels"*)
+    # SIGPIPE シミュレート: refined ラベルを出力してから exit 141
+    printf 'bug\nrefined\n'
+    exit 141 ;;
+  *)
+    exit 1 ;;
+esac
+GHSTUB
+  chmod +x "$STUB_BIN/gh"
+
+  stub_command "python3" 'echo "6"'
+
+  _run_status_gate "960" "0"
+
+  # RED: 現在の実装では L250 でも false-negative で exit 1 (DENY) になる
+  # PASS 条件（実装後）: ALLOW_LABEL_FALLBACK で exit 0
+  assert_success
+}
+
+@test "ac2_s2: Board未登録path — gh が exit 141(SIGPIPE) かつ refined あり → gate.log に ALLOW_LABEL_FALLBACK が記録される" {
+  cat > "$STUB_BIN/gh" <<'GHSTUB'
+#!/usr/bin/env bash
+case "$*" in
+  *"repo view"*)
+    echo "shuu5" ;;
+  *"project item-list"*)
+    echo '{"items": []}'
+    exit 0 ;;
+  *"issue view"*"--json labels"*)
+    printf 'bug\nrefined\n'
+    exit 141 ;;
+  *)
+    exit 1 ;;
+esac
+GHSTUB
+  chmod +x "$STUB_BIN/gh"
+
+  stub_command "python3" 'echo "6"'
+
+  _run_status_gate "960" "0"
+
+  # RED: 現在の実装では ALLOW_LABEL_FALLBACK に到達しないため gate.log に記録されない
+  run grep -F "ALLOW_LABEL_FALLBACK issue=#960" "$SANDBOX/gate.log"
+  assert_success
+}
+
+# ---------------------------------------------------------------------------
+# AC6_S2: shellcheck が新規 warning を出さない
+# RED: 現在の実装に shellcheck が警告を出す場合は fail、出さない場合も実装後の回帰防止
+#      shellcheck が未インストールの場合は skip
+# ---------------------------------------------------------------------------
+
+@test "ac6_s2: shellcheck が新規 warning を出さない" {
+  if ! command -v shellcheck > /dev/null 2>&1; then
+    skip "shellcheck not installed"
+  fi
+  run shellcheck "$SCRIPT"
+  assert_success
+}
