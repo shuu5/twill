@@ -124,6 +124,10 @@ WARN
     echo "Error: --with-chain には --issue N が必須です。" >&2
     exit 2
   fi
+  if [[ ! "$CHAIN_ISSUE" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Error: --issue の値は正整数である必要があります: ${CHAIN_ISSUE}" >&2
+    exit 2
+  fi
 
   # autopilot-launch.sh パス解決（AUTOPILOT_LAUNCH_SH 環境変数でテスト時に上書き可能）
   AUTOPILOT_LAUNCH_SH="${AUTOPILOT_LAUNCH_SH:-$TWILL_ROOT/plugins/twl/scripts/autopilot-launch.sh}"
@@ -140,6 +144,19 @@ WARN
     else
       CHAIN_AUTOPILOT_DIR="$CHAIN_PROJECT_DIR/.autopilot"
     fi
+  fi
+
+  # wave-N-task-ids.json / wave-N-watcher-pids.json を初期化（#1052）
+  # wave-collect の自動停止ロジックが参照するファイルをここで作成する
+  _supervisor_dir="$(dirname "$CHAIN_AUTOPILOT_DIR")/.supervisor"
+  mkdir -p "$_supervisor_dir" 2>/dev/null || true
+  _task_ids_file="${_supervisor_dir}/wave-${CHAIN_ISSUE}-task-ids.json"
+  _watcher_pids_file="${_supervisor_dir}/wave-${CHAIN_ISSUE}-watcher-pids.json"
+  if [[ ! -f "$_task_ids_file" ]]; then
+    printf '{"wave":%s,"monitor_task_ids":[]}\n' "$CHAIN_ISSUE" > "$_task_ids_file" 2>/dev/null || true
+  fi
+  if [[ ! -f "$_watcher_pids_file" ]]; then
+    printf '{"wave":%s,"watcher_pids":[]}\n' "$CHAIN_ISSUE" > "$_watcher_pids_file" 2>/dev/null || true
   fi
 
   # prompt-file の内容を --context として注入

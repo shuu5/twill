@@ -24,6 +24,11 @@ SILENCE_THRESHOLD_SEC="${SILENCE_THRESHOLD_SEC:-300}"
 EVENTS_DIR="${EVENTS_DIR:-.supervisor/events}"
 CAPTURE_OUTPUT_DIR="${CAPTURE_OUTPUT_DIR:-.supervisor/captures}"
 POLL_INTERVAL_SEC="${POLL_INTERVAL_SEC:-60}"
+AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+# stagnate-suppress-check.sh パス解決 (#1052)
+_SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+STAGNATE_SUPPRESS_CHECK="${STAGNATE_SUPPRESS_CHECK:-${_SCRIPT_DIR}/../../../scripts/stagnate-suppress-check.sh}"
 
 if [[ -z "$PILOT_WINDOW" ]]; then
   echo "[heartbeat-watcher] ERROR: PILOT_WINDOW が未設定" >&2
@@ -75,6 +80,12 @@ _do_capture() {
 
 echo "[heartbeat-watcher] 起動: PILOT_WINDOW=${PILOT_WINDOW} threshold=${SILENCE_THRESHOLD_SEC}s"
 
+# 自己 PID を watcher-pid-heartbeat に記録 — context-budget-monitor.sh が参照して kill する (#1052)
+_HEARTBEAT_PID_FILE="${SUPERVISOR_DIR}/watcher-pid-heartbeat"
+mkdir -p "$SUPERVISOR_DIR" 2>/dev/null || true
+echo $$ > "$_HEARTBEAT_PID_FILE" 2>/dev/null || true
+trap 'rm -f "$_HEARTBEAT_PID_FILE" 2>/dev/null || true' EXIT
+
 while true; do
   age=$(_get_heartbeat_age)
   age="${age:-0}"  # empty guard (_get_heartbeat_age が空文字を返した場合の安全策)
@@ -82,8 +93,20 @@ while true; do
   if [[ "$age" -eq -1 ]]; then
     echo "[heartbeat-watcher] WARN: heartbeat ファイルが存在しません（${EVENTS_DIR}/heartbeat-*）" >&2
   elif [[ "$age" -ge "$SILENCE_THRESHOLD_SEC" ]]; then
-    echo "[heartbeat-watcher] SILENCE: heartbeat が ${age}秒間更新されていません（閾値: ${SILENCE_THRESHOLD_SEC}s）"
-    _do_capture || true
+    # STAGNATE suppress 条件チェック (#1052)
+    # [PHASE-COMPLETE] / 実装完了 / session completed/archived / session-end ファイルで suppress
+    _latest_capture=$(ls -t "${CAPTURE_OUTPUT_DIR}/capture-${PILOT_WINDOW}-"*.log 2>/dev/null | head -1 || echo "")
+    _session_json="${AUTOPILOT_DIR}/session.json"
+    if [[ -x "$STAGNATE_SUPPRESS_CHECK" ]] && \
+       bash "$STAGNATE_SUPPRESS_CHECK" \
+         ${_latest_capture:+--capture-file "$_latest_capture"} \
+         --session-json "$_session_json" \
+         --events-dir "$EVENTS_DIR" 2>/dev/null; then
+      echo "[heartbeat-watcher] STAGNATE suppress: 完了条件を検出、emit スキップ"
+    else
+      echo "[heartbeat-watcher] SILENCE: heartbeat が ${age}秒間更新されていません（閾値: ${SILENCE_THRESHOLD_SEC}s）"
+      _do_capture || true
+    fi
   fi
 
   sleep "$POLL_INTERVAL_SEC"

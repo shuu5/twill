@@ -1,6 +1,6 @@
 ---
 type: atomic
-tools: [Bash, Read]
+tools: [Bash, Read, TaskStop]
 effort: low
 maxTurns: 10
 ---
@@ -216,6 +216,60 @@ if grep -q '"status":"FAIL"' "$_audit_log" 2>/dev/null; then
   echo "WARN: specialist-audit に FAIL あり — ${_audit_log} を確認してください" >&2
 fi
 echo "[wave-collect] specialist-audit 完了: ${_audit_log}"
+```
+
+### Step 5: watcher/Monitor 自動停止（#1052）
+
+Wave 完遂後に紐付き Monitor task と watcher プロセスを停止する。
+
+```bash
+# wave-collect Step 5: watcher/Monitor 自動停止
+TASK_IDS_FILE="${OUTPUT_DIR}/wave-${WAVE_NUM}-task-ids.json"
+WATCHER_PIDS_FILE="${OUTPUT_DIR}/wave-${WAVE_NUM}-watcher-pids.json"
+
+if [[ -f "$TASK_IDS_FILE" ]]; then
+  mapfile -t _monitor_task_ids < <(python3 -c "import json; d=json.load(open('${TASK_IDS_FILE}')); [print(t) for t in d.get('monitor_task_ids', [])]" 2>/dev/null || true)
+  for _task_id in "${_monitor_task_ids[@]+"${_monitor_task_ids[@]}"}"; do
+    [[ -n "$_task_id" ]] || continue
+    echo "[wave-collect] TaskStop: Monitor task 停止 ${_task_id}"
+  done
+  echo "[wave-collect] Monitor task 停止完了 (task-ids: ${TASK_IDS_FILE})"
+else
+  echo "[wave-collect] wave-${WAVE_NUM}-task-ids.json 不在 — TaskStop スキップ"
+fi
+```
+
+**[LLM 実行指示]** 上記 bash ブロックで `echo "[wave-collect] TaskStop: Monitor task 停止 ${_task_id}"` が出力された task_id が存在する場合、**各 task_id について TaskStop ツールを呼び出して停止すること**（bash echo は意図ログのみ。実際の停止には TaskStop ツール呼び出しが必要）。
+
+```bash
+if [[ -f "$WATCHER_PIDS_FILE" ]]; then
+  mapfile -t _watcher_pids < <(python3 -c "import json; d=json.load(open('${WATCHER_PIDS_FILE}')); [print(p) for p in d.get('watcher_pids', [])]" 2>/dev/null || true)
+  for _pid in "${_watcher_pids[@]+"${_watcher_pids[@]}"}"; do
+    [[ -n "$_pid" ]] || continue
+    [[ "$_pid" =~ ^[0-9]+$ ]] || continue
+    if kill -0 "$_pid" 2>/dev/null; then
+      echo "[wave-collect] kill -TERM PID=${_pid}"
+      kill -TERM "$_pid" 2>/dev/null || true
+    else
+      echo "[wave-collect] PID=${_pid} は既に停止済み"
+    fi
+  done
+  echo "[wave-collect] watcher PID kill -TERM 完了 (watcher-pids: ${WATCHER_PIDS_FILE})"
+else
+  echo "[wave-collect] wave-${WAVE_NUM}-watcher-pids.json 不在 — kill スキップ"
+fi
+```
+
+### Step 6: events/ クリーンアップ（#1052）
+
+Wave 残骸の events ファイルを削除してトークン膨張を防ぐ。
+
+```bash
+# wave-collect Step 6: events/ クリーンアップ (rm -f .supervisor/events/*)
+if [[ -d "${OUTPUT_DIR}/events" ]]; then
+  rm -f "${OUTPUT_DIR}/events/"* 2>/dev/null || true
+  echo "[wave-collect] events/ クリーンアップ完了"
+fi
 ```
 
 ## 禁止事項（MUST NOT）
