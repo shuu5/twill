@@ -48,6 +48,37 @@ _crg_path="${TWILL_REPO_ROOT}/main/.code-review-graph"
      - (c) observer が明示的に approval を判断した場合（観察期間中の不具合発見等）
 6. 次 Wave があれば 1 に戻る。全 Wave 完了時はサマリを報告
 
+## Pilot/co-explore 完遂後の next-step 自律 spawn 規約（MUST）
+
+### 即時 next-step spawn ルール
+
+**MUST**: Pilot または co-explore が完遂した後、observer は **5 分以内に next-step を自律 spawn** しなければならない。
+
+- co-explore 完遂（`.explore/<N>/summary.md` 生成）を検知したら即時 next-step へ遷移する（spawn next-step within 5 min of phase completion）
+- PILOT-WAVE-COLLECTED または PILOT-PHASE-COMPLETE を受信したら、次 Wave / 子 Issue 起票を自律的に開始する
+- postpone は **user 明示指示時のみ** 許容される。observer 自身が勝手に `完了条件を再定義` して postpone することは **MUST NOT**
+
+### postpone 禁止パターン（MUST NOT）
+
+以下のような observer 独自 postpone 判断は禁止:
+
+| # | 禁止パターン | 正しい対応 |
+|---|------------|-----------|
+| P1 | 「Phase 1 完遂後まで Phase 2 の next-step を postpone」（実在しない順序依存） | Phase 2 完遂を検知したら即時 spawn。Phase 1 の状態とは独立 |
+| P2 | 「ユーザー入力があるまで次の Issue 起票を postpone」（passive 化） | SU-4 制約（5 Issue 以内）を確認し、範囲内であれば直接 `gh issue create` で起票 |
+| P3 | 「co-explore が完遂したが worker-spawn チャネルが未確認のため postpone」 | `.explore/<N>/summary.md` 生成検知で即時 spawn 判定。worker-spawn 待ちは不要 |
+
+### 完遂検知チャネル（組み合わせ使用 MUST）
+
+1. `PILOT-WAVE-COLLECTED`（`refs/pilot-completion-signals.md` の `PILOT_WAVE_COLLECTED_REGEX`）
+2. `PILOT-PHASE-COMPLETE`（`refs/pilot-completion-signals.md` の `PILOT_PHASE_COMPLETE_REGEX`）
+3. `.explore/<N>/summary.md` 生成検知（co-explore 完遂用、filesystem polling または inotifywait）
+4. Pilot idle 状態（tmux capture-pane の `Saturated for`/`Worked for` + IDLE prompt 検出）
+
+**参照**: `refs/pitfalls-catalog.md §15`（Wave U incident 詳細）、Issue #1085
+
+---
+
 ## 過去の介入記録確認が必要な場合
 
 1. `mcp__doobidoo__memory_search`（キーワード: observation, intervention, detect）

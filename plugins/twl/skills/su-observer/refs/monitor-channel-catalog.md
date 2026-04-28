@@ -631,6 +631,53 @@ description='[PILOT-WAVE-COLLECTED] Wave 収集が完了しました。次 Wave 
 
 ---
 
+## [CO-EXPLORE-COMPLETE] — co-explore 完遂検知（Layer 0 Auto）
+
+> **追加背景（Issue #1085）**: co-explore 完遂後の next-step postpone 判断 error（Wave U incident 1）。
+> co-explore Worker は tmux pane に completion signal を emit しない構造のため、
+> `.explore/<N>/summary.md` 生成を filesystem で直接検知するチャネルを新設する。
+
+**検知対象**: `.explore/<N>/summary.md` の新規ファイル生成（co-explore 完遂の physical artifact）
+
+**閾値**: 即時（ファイル生成検知後、5 分以内に next-step spawn）
+
+**介入層**: Layer 0 Auto（SU-7 に従う）
+
+**bash スニペット（Monitor tool 向け）:**
+
+```bash
+# CO-EXPLORE-COMPLETE: .explore/<N>/summary.md 生成を検知（co-explore 完遂用）
+# Layer 0 Auto: 検知後 5 分以内に next-step を自律 spawn する
+check_co_explore_complete() {
+  local explore_dir="${1:-.explore}"
+  local marker_file="${2:-.supervisor/co-explore-last-check}"
+  local now
+  now=$(date +%s)
+
+  # .explore/<N>/summary.md の存在確認（マーカーより新しいファイルを検索）
+  local found
+  if [[ -f "$marker_file" ]]; then
+    found=$(find "${explore_dir}" -name "summary.md" -newer "$marker_file" 2>/dev/null | head -1)
+  else
+    found=$(find "${explore_dir}" -name "summary.md" 2>/dev/null | head -1)
+  fi
+
+  if [[ -n "$found" ]]; then
+    echo "[CO-EXPLORE-COMPLETE] co-explore 完遂を検知: ${found}"
+    echo "[CO-EXPLORE-COMPLETE] next-step を 5 分以内に自律 spawn すること（Layer 0 Auto）"
+    echo "$now" > "$marker_file"
+    return 1
+  fi
+
+  echo "$now" > "$marker_file"
+  return 0
+}
+```
+
+**Signal 詳細**: `refs/pilot-completion-signals.md` の「CO-EXPLORE-COMPLETE」セクションを参照。
+
+---
+
 ## window 存在確認の正しい方法（has-session 誤用禁止）
 
 > **重要（Issue #948, R6）**: `tmux has-session -t <window-name>` は window 存在確認として機能しない。

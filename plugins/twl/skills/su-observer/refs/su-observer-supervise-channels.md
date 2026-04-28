@@ -57,6 +57,67 @@ heartbeat-watcher.sh は co-autopilot spawn 直後に budget-monitor-watcher.sh 
 
 各チャネルで `.supervisor/events/` 配下のイベントファイルをプライマリとして確認し、不在時のみ polling にフォールバックする。詳細は `refs/monitor-channel-catalog.md` の「Hybrid 検知ポリシー」セクションを参照。
 
+## Heartbeat self-update 除外規約（MUST — Issue #1085）
+
+### 問題
+
+observer 自身の heartbeat 更新が heartbeat-watcher の silence 検知を reset してしまい、Pilot の真の idle/完遂 を能動 polling せずに fail-silent となる（Wave U Incident 3）。
+
+### 規約
+
+**MUST**: heartbeat-watcher.sh は observer 自身の heartbeat 更新を silence 検知の reset 対象外とすること。
+
+- heartbeat ファイルの writer pid と watcher pid を区別し、observer self-update による reset を除外する
+- Pilot の silence は **Pilot 側の heartbeat mtime または capture-pane の IDLE prompt** で独立して判定する
+- observer 自身の heartbeat 更新は `observer self` フラグを付与し、watcher が識別できるようにする
+
+```bash
+# heartbeat self-update 除外: observer 自身の更新は silence reset 対象外
+# heartbeat ファイルに writer_pid を JSON で記録し、watcher が observer 自身の更新を除外する
+write_heartbeat() {
+  local hb_file="${1:-.supervisor/events/heartbeat-observer}"
+  echo "{\"ts\": $(date +%s), \"writer\": \"observer\", \"writer_pid\": $$}" > "$hb_file"
+}
+
+# watcher 側: writer=observer のファイルは Pilot silence 判定に使用しない
+is_pilot_heartbeat() {
+  local hb_file="$1"
+  local writer
+  writer=$(jq -r '.writer // "pilot"' "$hb_file" 2>/dev/null || echo "pilot")
+  [[ "$writer" != "observer" ]]
+}
+```
+
+### 能動 capture polling（Monitor task）規約（MUST — Issue #1085）
+
+**MUST**: Pilot 監視時に **能動 capture polling（Monitor task）を起動** し、heartbeat-watcher の受動検知を補完すること。
+
+- Monitor task は Pilot window の `tmux capture-pane` を能動的に polling し、IDLE prompt（`Saturated for`/`Worked for` + `>` プロンプト）を検出する
+- heartbeat-watcher だけに依存してはならない（heartbeat が止まらなくても Pilot が実際には IDLE の場合がある）
+- Monitor task は co-autopilot spawn 後に budget-monitor-watcher.sh と同時に起動すること
+
+```bash
+# 能動 capture polling (Monitor task): Pilot IDLE 判定
+# heartbeat-watcher と必ず同時起動（MUST）
+PILOT_WINDOW="${PILOT_WINDOW:-}"
+while true; do
+  if [[ -n "$PILOT_WINDOW" ]]; then
+    pane_content=$(tmux capture-pane -t "$PILOT_WINDOW" -p -S -10 2>/dev/null || echo "")
+    # IDLE prompt 検出: 過去形 + for N + > prompt
+    if echo "$pane_content" | grep -qE '(Saturated|Worked|Sautéed|Baked) for [0-9]+[ms]'; then
+      if echo "$pane_content" | grep -qE '^\s*>'; then
+        echo "[PILOT-IDLE-CAPTURE] Pilot が IDLE 状態です（能動 capture polling 検知）"
+      fi
+    fi
+  fi
+  sleep 30
+done
+```
+
+**参照**: `refs/pitfalls-catalog.md §15`（Wave U Incident 3 詳細）
+
+---
+
 ## state stagnate 検知（observe-once 実行後）
 
 stagnate 検知 + `>>> 実装完了:` シグナル → `plugins/twl/refs/intervention-catalog.md` の pattern-7 照合 → Layer 0 Auto 介入。
