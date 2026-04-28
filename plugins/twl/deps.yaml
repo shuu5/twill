@@ -2932,6 +2932,20 @@ scripts:
     type: script
     path: skills/su-observer/scripts/heartbeat-watcher.sh
     description: "su-observer heartbeat 監視: 5 分 silence 検出時に tmux capture-pane を自動実行し .supervisor/captures/ に保存。budget-monitor-watcher.sh と責務分離。co-autopilot spawn 直後に必ず起動（MUST）。環境変数: PILOT_WINDOW（必須）、SILENCE_THRESHOLD_SEC（default 300）"
+    calls:
+      - script: stagnate-suppress-check
+
+  # observer STAGNATE emit 抑止条件チェック (#1052)
+  stagnate-suppress-check:
+    type: script
+    path: scripts/stagnate-suppress-check.sh
+    description: "STAGNATE-600 emit 抑止条件チェック: A) capture に [PHASE-COMPLETE]/実装完了 B) session.json status=completed/archived C) events-dir に session-end* の3条件のいずれかで suppress(exit 0)。heartbeat-watcher.sh が呼び出す。"
+
+  # observer context 80% 自動停止提案 (#1052)
+  context-budget-monitor:
+    type: script
+    path: scripts/context-budget-monitor.sh
+    description: "observer context 消費量監視: BUDGET_THRESHOLD=80% 到達時に watcher-pid-* ファイルの watcher プロセスを kill -TERM し compaction を提案。--usage-pct N / --events-dir / --check-only オプション対応。SU-5 規約の自動 trigger 実装。"
 
   session-init:
     type: script
