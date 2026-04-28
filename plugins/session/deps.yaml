@@ -113,3 +113,8 @@ tests:
     type: test
     path: tests/session-comm-script-dir-validate.bats
     description: "session-comm.sh SCRIPT_DIR 上書きリスク対策の検証（#1048: _TEST_MODE+SESSION_COMM_SCRIPT_DIR の二段検証 / session-state.sh 存在確認）"
+
+  session-comm-usage-typo-1066-test:
+    type: test
+    path: tests/session-comm-usage-typo-1066.bats
+    description: "session-comm.sh ファイルヘッダ usage の inject-file 行に --wait SECONDS 重複がないことを検証（#1066）"
