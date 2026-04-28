@@ -4,7 +4,15 @@
 # 該当する conditional specialist を stdout に出力する。
 #
 # Usage: git diff --name-only origin/main | bash scripts/tech-stack-detect.sh
-# Output: specialist 名を改行区切りで出力（該当なしの場合は空）
+# Output: "worker-code-reviewer language=<name>" 形式を改行区切りで出力（該当なしの場合は空）
+#         後方互換性のため specialist 名のみの行も並列出力する
+#
+# language hint 形式（Issue #1081）:
+#   worker-code-reviewer language=fastapi
+#   worker-code-reviewer language=hono
+#   worker-code-reviewer language=nextjs
+#   worker-code-reviewer language=r
+# caller は prompt 先頭に "language=<name>:" を付与して Task を起動すること
 
 set -euo pipefail
 
@@ -17,8 +25,8 @@ while IFS= read -r line; do
   [[ -n "$line" ]] && FILES+=("$line")
 done
 
-# 重複排除用の連想配列
-declare -A SPECIALISTS
+# 重複排除用の連想配列（language hint → 1）
+declare -A LANGUAGE_HINTS
 
 # --- 判定ルール ---
 
@@ -31,7 +39,7 @@ for f in "${FILES[@]}"; do
 done
 if $has_tsx; then
   if ls "$PROJECT_ROOT"/next.config.* >/dev/null 2>&1; then
-    SPECIALISTS["worker-nextjs-reviewer"]=1
+    LANGUAGE_HINTS["nextjs"]=1
   fi
 fi
 
@@ -44,33 +52,41 @@ for f in "${FILES[@]}"; do
 done
 if $has_py; then
   if grep -rql "from fastapi\|import fastapi" "$PROJECT_ROOT"/*.py "$PROJECT_ROOT"/**/*.py 2>/dev/null; then
-    SPECIALISTS["worker-fastapi-reviewer"]=1
+    LANGUAGE_HINTS["fastapi"]=1
   fi
 fi
 
-# Supabase migration: supabase/migrations/ 配下の変更
+# Supabase migration: supabase/migrations/ 配下の変更（language hint 対象外）
+declare -A EXTRA_SPECIALISTS
 for f in "${FILES[@]}"; do
   case "$f" in
-    supabase/migrations/*) SPECIALISTS["worker-supabase-migration-checker"]=1; break ;;
+    supabase/migrations/*) EXTRA_SPECIALISTS["worker-supabase-migration-checker"]=1; break ;;
   esac
 done
 
 # R: .R/.Rmd/.qmd ファイル
 for f in "${FILES[@]}"; do
   case "$f" in
-    *.R|*.Rmd|*.qmd) SPECIALISTS["worker-r-reviewer"]=1; break ;;
+    *.R|*.Rmd|*.qmd) LANGUAGE_HINTS["r"]=1; break ;;
   esac
 done
 
-# E2E テスト: e2e/ 配下の .spec.ts/.test.ts
+# E2E テスト: e2e/ 配下の .spec.ts/.test.ts（language hint 対象外）
 for f in "${FILES[@]}"; do
   case "$f" in
     e2e/*.spec.ts|e2e/*.test.ts|tests/e2e/*.spec.ts|tests/e2e/*.test.ts)
-      SPECIALISTS["worker-e2e-reviewer"]=1; break ;;
+      EXTRA_SPECIALISTS["worker-e2e-reviewer"]=1; break ;;
   esac
 done
 
 # --- 結果出力 ---
-for specialist in "${!SPECIALISTS[@]}"; do
+
+# language hint 行: "worker-code-reviewer language=<name>"
+for lang in "${!LANGUAGE_HINTS[@]}"; do
+  echo "worker-code-reviewer language=${lang}"
+done
+
+# language hint 対象外 specialist（supabase, e2e 等）
+for specialist in "${!EXTRA_SPECIALISTS[@]}"; do
   echo "$specialist"
 done
