@@ -2627,7 +2627,7 @@ scripts:
   su-precompact:
     type: script
     path: scripts/su-precompact.sh
-    description: "PreCompact hook: .supervisor/ なければ exit 0、あれば working-memory.md を stdout に出力"
+    description: "PreCompact hook: .supervisor/ なければ exit 0、session.json から状態を取り出して working-memory.md を atomic write で更新し stdout に出力"
 
   su-postcompact:
     type: script

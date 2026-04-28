@@ -43,6 +43,7 @@ echo "### 復帰手順（必須）"
 echo "1. 以下の Working Memory を読み、処理中タスクと次のステップを把握する"
 echo "2. project_session_state.md (auto memory) を確認して全体状態を復元する"
 echo "3. mcp__doobidoo__memory_search で関連記憶を取得する（query: 直近のタスク内容）"
+echo "4. **Long-term Memory 保存**: Skill(twl:su-compact) を実行して doobidoo への知識外部化を行うこと（SU-6a 準拠）"
 echo ""
 
 if [ -f "$SUPERVISOR_DIR/working-memory.md" ]; then
