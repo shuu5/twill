@@ -1,6 +1,6 @@
 ---
 type: atomic
-tools: [Bash, Read]
+tools: [Bash, Read, TaskStop]
 effort: low
 maxTurns: 10
 ---
@@ -237,7 +237,11 @@ if [[ -f "$TASK_IDS_FILE" ]]; then
 else
   echo "[wave-collect] wave-${WAVE_NUM}-task-ids.json 不在 — TaskStop スキップ"
 fi
+```
 
+**[LLM 実行指示]** 上記 bash ブロックで `echo "[wave-collect] TaskStop: Monitor task 停止 ${_task_id}"` が出力された task_id が存在する場合、**各 task_id について TaskStop ツールを呼び出して停止すること**（bash echo は意図ログのみ。実際の停止には TaskStop ツール呼び出しが必要）。
+
+```bash
 if [[ -f "$WATCHER_PIDS_FILE" ]]; then
   mapfile -t _watcher_pids < <(python3 -c "import json; d=json.load(open('${WATCHER_PIDS_FILE}')); [print(p) for p in d.get('watcher_pids', [])]" 2>/dev/null || true)
   for _pid in "${_watcher_pids[@]+"${_watcher_pids[@]}"}"; do

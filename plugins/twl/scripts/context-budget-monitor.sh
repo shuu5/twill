@@ -58,6 +58,8 @@ if [[ "$USAGE_PCT" -ge "$BUDGET_THRESHOLD" ]]; then
       for _pid_file in "${EVENTS_DIR}"/watcher-pid-*; do
         [[ -f "$_pid_file" ]] || continue
         _pid=$(cat "$_pid_file" 2>/dev/null || echo "")
+        # 数値バリデーション — 非数値 PID は無視してコマンドインジェクションを防ぐ
+        [[ "$_pid" =~ ^[0-9]+$ ]] || continue
         if [[ -n "$_pid" ]] && kill -0 "$_pid" 2>/dev/null; then
           echo "[context-budget-monitor] watcher stop: kill -TERM PID=${_pid}"
           kill -TERM "$_pid" 2>/dev/null || true

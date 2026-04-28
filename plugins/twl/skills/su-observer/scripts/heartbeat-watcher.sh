@@ -80,6 +80,11 @@ _do_capture() {
 
 echo "[heartbeat-watcher] 起動: PILOT_WINDOW=${PILOT_WINDOW} threshold=${SILENCE_THRESHOLD_SEC}s"
 
+# 自己 PID を watcher-pid-heartbeat に記録 — context-budget-monitor.sh が参照して kill する (#1052)
+_HEARTBEAT_PID_FILE="${SUPERVISOR_DIR}/watcher-pid-heartbeat"
+echo $$ > "$_HEARTBEAT_PID_FILE" 2>/dev/null || true
+trap 'rm -f "$_HEARTBEAT_PID_FILE" 2>/dev/null || true' EXIT
+
 while true; do
   age=$(_get_heartbeat_age)
   age="${age:-0}"  # empty guard (_get_heartbeat_age が空文字を返した場合の安全策)
@@ -95,7 +100,7 @@ while true; do
        bash "$STAGNATE_SUPPRESS_CHECK" \
          ${_latest_capture:+--capture-file "$_latest_capture"} \
          --session-json "$_session_json" \
-         --events-dir "$SUPERVISOR_DIR" 2>/dev/null; then
+         --events-dir "$EVENTS_DIR" 2>/dev/null; then
       echo "[heartbeat-watcher] STAGNATE suppress: 完了条件を検出、emit スキップ"
     else
       echo "[heartbeat-watcher] SILENCE: heartbeat が ${age}秒間更新されていません（閾値: ${SILENCE_THRESHOLD_SEC}s）"

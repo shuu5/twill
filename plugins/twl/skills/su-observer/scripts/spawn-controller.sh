@@ -124,6 +124,10 @@ WARN
     echo "Error: --with-chain には --issue N が必須です。" >&2
     exit 2
   fi
+  if [[ ! "$CHAIN_ISSUE" =~ ^[0-9]+$ ]]; then
+    echo "Error: --issue の値は正整数である必要があります: ${CHAIN_ISSUE}" >&2
+    exit 2
+  fi
 
   # autopilot-launch.sh パス解決（AUTOPILOT_LAUNCH_SH 環境変数でテスト時に上書き可能）
   AUTOPILOT_LAUNCH_SH="${AUTOPILOT_LAUNCH_SH:-$TWILL_ROOT/plugins/twl/scripts/autopilot-launch.sh}"
