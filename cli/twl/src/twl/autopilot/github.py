@@ -5,6 +5,7 @@ Replaces: parse-issue-ac.sh, merge-gate-issues.sh, create-harness-issue.sh,
 
 CLI usage:
     python3 -m twl.autopilot.github extract-ac <issue-number> [owner/repo]
+    python3 -m twl.autopilot.github extract-parent-epic <issue-number> [owner/repo]
     python3 -m twl.autopilot.github resolve-project [owner]
     python3 -m twl.autopilot.github pr-findings <pr-number> [owner/repo]
 """
@@ -150,6 +151,48 @@ def _extract_ac_section(body: str) -> str:
             section_lines.append(line)
 
     return "\n".join(section_lines)
+
+
+# ---------------------------------------------------------------------------
+# Parent Epic extraction (Issue #1026 ADR-024 AC1)
+# ---------------------------------------------------------------------------
+
+# `Parent: #N` 規約は plugins/twl/commands/issue-create.md L51 で SSoT 定義済み。
+# 子 Issue body 内の `^[\s]*Parent:\s*#(\d+)` を抽出する。
+_PARENT_EPIC_RE = re.compile(r"(?:^|\n)\s*Parent:\s*#(\d+)", re.MULTILINE)
+
+
+def extract_parent_epic(issue_num: str, repo: str | None = None) -> int | None:
+    """Extract parent Epic issue number from a child Issue's body.
+
+    Parses the SSoT regulated `Parent: #N` line (issue-create.md L51).
+    Returns the parent number as int when found, None when not present.
+
+    Args:
+        issue_num: Child Issue number (integer string).
+        repo: Optional ``owner/repo`` string for cross-repo access.
+
+    Returns:
+        Parent Epic number as int, or None if no Parent line found in body.
+
+    Raises:
+        GitHubError: On invalid issue_num/repo or gh API failure.
+    """
+    _validate_issue_num(issue_num)
+    if repo:
+        _validate_repo(repo)
+
+    repo_flag = ["-R", repo] if repo else []
+
+    issue_data = _gh_json("issue", "view", issue_num, *repo_flag, "--json", "body,number")
+    body: str = issue_data.get("body") or ""
+    if not body:
+        return None
+
+    match = _PARENT_EPIC_RE.search(body)
+    if match is None:
+        return None
+    return int(match.group(1))
 
 
 # ---------------------------------------------------------------------------
@@ -413,7 +456,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args:
         print("Usage: python3 -m twl.autopilot.github <command> [args...]", file=sys.stderr)
-        print("Commands: extract-ac, resolve-project, pr-findings", file=sys.stderr)
+        print("Commands: extract-ac, extract-parent-epic, resolve-project, pr-findings", file=sys.stderr)
         return 1
 
     command = args[0]
@@ -429,6 +472,20 @@ def main(argv: list[str] | None = None) -> int:
             acs = extract_issue_ac(issue_num, repo)
             for i, ac in enumerate(acs, 1):
                 print(f"{i}. {ac}")
+            return 0
+
+        elif command == "extract-parent-epic":
+            # Issue #1026 ADR-024 AC1: 子 Issue body の `Parent: #N` から親 Epic 番号を抽出
+            # exit 0 = 親 Epic 番号 stdout 出力 / exit 2 = 親なし (caller が skip 判断) / exit 1 = エラー
+            if not rest:
+                print("Usage: extract-parent-epic <issue-number> [owner/repo]", file=sys.stderr)
+                return 1
+            issue_num = rest[0]
+            repo = rest[1] if len(rest) > 1 else None
+            parent = extract_parent_epic(issue_num, repo)
+            if parent is None:
+                return 2
+            print(str(parent))
             return 0
 
         elif command == "resolve-project":

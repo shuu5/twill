@@ -2598,7 +2598,7 @@ scripts:
   autopilot-github:
     type: script
     path: ../../cli/twl/src/twl/autopilot/github.py
-    description: "GitHub API ラッパー（Issue AC抽出・PR findings・Project解決・Issue作成）（Python: python3 -m twl.autopilot.github）"
+    description: "GitHub API ラッパー（Issue AC抽出・親 Epic抽出・PR findings・Project解決・Issue作成）（Python: python3 -m twl.autopilot.github）"
 
   session-audit:
     type: script
