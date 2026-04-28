@@ -63,11 +63,14 @@ class TestAC2IssueCommitIdentificationStepExists:
             " #12 が #120 にマッチする partial-match バグが残る"
         )
 
-    def test_ac2_issue_num_variable_used_in_diff_command(self):
+    def test_ac2_issue_num_variable_present(self):
         content = WORKER_ALIGNMENT_MD.read_text()
         assert "ISSUE_NUM" in content, (
             "diff コマンドが Issue 番号変数 ISSUE_NUM を参照する記述がない"
         )
+
+    def test_ac2_issue_commits_variable_present(self):
+        content = WORKER_ALIGNMENT_MD.read_text()
         assert "ISSUE_COMMITS" in content, (
             "diff コマンドが ISSUE_COMMITS 変数を使用する記述がない"
         )
