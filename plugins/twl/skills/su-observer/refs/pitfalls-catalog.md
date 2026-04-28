@@ -366,6 +366,8 @@ FINAL_TS=$(grep -oE '"timestamp":"[^"]+"' "$JSONL" | sort -u | tail -1)
 
 ## 12. Claude Code classifier bypass 検出パターン（MUST）
 
+> §12 ★HUMAN GATE escalation 判断 trigger: gate deny 連続検出 → 即停止 → ユーザーへの escalation 必須（Layer 2 Escalate）
+
 ### 事象（2026-04-21 ipatho1 実例、doobidoo hash 886e374d）
 
 observer が Layer D refined-label-gate の回避を試行した際、Claude Code permission classifier が **6 連続で deny** した（session id 7f960078 参照）。gate 回避の trick（session file pre-seed、Worker inject with bypass hint、settings self-modification）は全て classifier に検出・拒否された。

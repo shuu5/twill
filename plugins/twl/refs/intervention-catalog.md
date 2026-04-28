@@ -112,6 +112,8 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 
 ## Layer 1: Confirm
 
+> ★HUMAN GATE: Layer 1 (Confirm) 以上の介入はユーザーへの確認が必須（Layer 0 Auto との境界）
+
 ### パターン 4: Worker 長時間 idle
 
 - **検出条件**: `status=running` だが `last_active` が 15 分以上前、かつ tmux pane への出力がない
@@ -160,6 +162,8 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 ---
 
 ## Layer 2: Escalate
+
+> ★HUMAN GATE: Layer 2 (Escalate) はユーザーへの委譲必須 — 実行しない（判断・設計決定をユーザーに委ねる）
 
 ### パターン 3: コンフリクト解決 rebase
 

@@ -85,6 +85,8 @@ TaskUpdate → completed
 
 ## Step 4: ユーザー確認
 
+> ★HUMAN GATE: AskUserQuestion でユーザー承認必須 — この先の操作はユーザー選択に依存
+
 **AskUserQuestion tool** で以下を提示:
 
 > Architecture spec の探索が完了しました。次のアクションを選択してください:

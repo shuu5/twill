@@ -98,5 +98,5 @@ fi
 
 `refs/ref-compaction-recovery.md` を Read し従うこと。ステップリスト: `all-pass-check pr-cycle-report`
 
-- merge-gate エスカレーションは LLM ステップのため状態を確認してから再実行すること
+- ★HUMAN GATE: merge-gate エスカレーションは LLM ステップのため状態を確認してから再実行すること（ユーザー判断必須）
 - all-pass-check スキップ時は PR の CI 結果を直接確認すること

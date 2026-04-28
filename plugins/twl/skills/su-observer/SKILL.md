@@ -107,4 +107,4 @@ spawnable_by:
 
 **`refs/su-observer-security-gate.md` を Read** して Layer A-D ゲート定義・bypass 禁止手法・permission 拒否対応を確認すること。
 
-2 回以上 deny が連続した場合: 即時 STOP → **`plugins/twl/refs/intervention-catalog.md` パターン 13**（Layer 2 Escalate）→ AskUserQuestion。`refs/pitfalls-catalog.md §12` 参照。
+★HUMAN GATE: 2 回以上 deny が連続した場合: 即時 STOP → **`plugins/twl/refs/intervention-catalog.md` パターン 13**（Layer 2 Escalate）→ AskUserQuestion。`refs/pitfalls-catalog.md §12` 参照。
