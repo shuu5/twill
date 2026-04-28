@@ -229,7 +229,12 @@ _setup_observer_panes() {
   if [[ -z "$observer_window" ]]; then
     local session_file="$supervisor_dir/session.json"
     if [[ -f "$session_file" ]]; then
-      observer_window=$(python3 -c "import json; d=json.load(open('$session_file')); print(d.get('observer_window', ''))" 2>/dev/null || echo "")
+      observer_window=$(python3 - "$session_file" <<'PYEOF' 2>/dev/null || echo ""
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(d.get('observer_window', ''))
+PYEOF
+)
     fi
   fi
 
@@ -275,7 +280,8 @@ _setup_observer_panes() {
 # 空配列ガード: set -u 環境で "${arr[@]}" が unbound を起こすため ${arr[@]+...} 形式で保護
 # co-autopilot（非 --with-chain）は exec を避けて pane setup を後続実行する
 if [[ "$SKILL_NORMALIZED" == "co-autopilot" && "$WITH_CHAIN" == "false" ]]; then
-  "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]+"${WINDOW_NAME_ARG[@]}"}" "$@" "$FINAL_PROMPT"
+  # cld-spawn は prompt inject 後すぐに 0 終了する。|| true で set -e を抑制し pane setup を必ず実行する
+  "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]+"${WINDOW_NAME_ARG[@]}"}" "$@" "$FINAL_PROMPT" || true
   _setup_observer_panes
 else
   exec "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]+"${WINDOW_NAME_ARG[@]}"}" "$@" "$FINAL_PROMPT"
