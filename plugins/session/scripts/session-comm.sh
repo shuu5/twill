@@ -5,7 +5,7 @@
 # Usage:
 #   session-comm.sh capture <window> [--lines N] [--raw]
 #   session-comm.sh inject <window> <text> [--force] [--no-enter]
-#   session-comm.sh inject-file <window> <file> [--force] [--no-enter] [--wait SECONDS] [--wait SECONDS]
+#   session-comm.sh inject-file <window> <file> [--force] [--no-enter] [--wait SECONDS]
 #   session-comm.sh wait-ready <window> [--timeout N]
 #
 # Dependencies: session-state.sh (#277)
