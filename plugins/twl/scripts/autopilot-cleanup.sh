@@ -93,7 +93,7 @@ is_in_dependency_chain() {
   dependers=$(awk -v target="$issue_num" '
     /^dependencies:/ { in_deps=1; next }
     in_deps && /^[^ ]/ { in_deps=0 }
-    in_deps && /^  [0-9]+:/ { key=$0; gsub(/^[[:space:]]+|:[[:space:]]*$/, "", key) }
+    in_deps && /^  [[:alnum:]_#-]+:/ { key=$0; gsub(/^[[:space:]]+|:[[:space:]]*$/, "", key) }
     in_deps && /^  - / { dep=$0; gsub(/^[[:space:]]*- /, "", dep); if (dep==target && key!="") print key }
   ' "$plan_file" 2>/dev/null || true)
 
