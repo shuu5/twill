@@ -13,13 +13,15 @@
 
 ## category 列挙値
 
-| category | severity | 説明 | merge-gate 動作 |
-|---|---|---|---|
-| `ac_missing` | WARNING | AC が未達成のまま PR が作成されている | **REJECT**（exit 1） |
-| `coverage_low` | WARNING | テストカバレッジが基準を下回っている | 通過（警告のみ） |
-| `style` | WARNING | コーディングスタイル違反 | 通過（警告のみ） |
-| `chain-integrity-drift` | CRITICAL | chain 定義と実装の乖離 | **REJECT**（exit 1） |
-| `optional` | WARNING | 任意の改善提案 | 通過（警告のみ） |
+| category | severity | 説明 | merge-gate 動作 | 担当スクリプト |
+|---|---|---|---|---|
+| `ac_missing` | WARNING | AC が未達成のまま PR が作成されている | **REJECT**（exit 1） | `merge-gate-check-phase-review.sh` |
+| `coverage_low` | WARNING | テストカバレッジが基準を下回っている | 通過（警告のみ） | — |
+| `style` | WARNING | コーディングスタイル違反 | 通過（警告のみ） | — |
+| `chain-integrity-drift` | CRITICAL | chain 定義と実装の乖離 | **REJECT**（exit 1） | `merge-gate-check-pr.sh` |
+| `optional` | WARNING | 任意の改善提案 | 通過（警告のみ） | — |
+
+> **注**: `merge-gate 動作` 列は merge-gate 全体での最終動作を示す。`merge-gate-check-phase-review.sh` が直接 REJECT するのは `ac_missing` のみ。`chain-integrity-drift` は `merge-gate-check-pr.sh` が担当する。
 
 ## merge-gate ブロックルール（Issue #1025）
 
