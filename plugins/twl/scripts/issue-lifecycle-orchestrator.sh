@@ -16,9 +16,12 @@
 #   bash issue-lifecycle-orchestrator.sh --per-issue-dir <abs-path>
 #
 # Environment:
-#   MAX_PARALLEL   バッチあたり最大並列セッション数（デフォルト: 3）
-#   POLL_INTERVAL  ポーリング間隔（秒、デフォルト: 10）
-#   MAX_POLL       最大ポーリング回数（デフォルト: 360）
+#   MAX_PARALLEL             バッチあたり最大並列セッション数（デフォルト: 3）
+#   POLL_INTERVAL            ポーリング間隔（秒、デフォルト: 10）
+#   MAX_POLL                 最大ポーリング回数（デフォルト: 360）
+#   DEBOUNCE_TRANSIENT_SEC   input-waiting debounce 閾値（デフォルト: 120s）
+#                            Sonnet 4.6 max effort thinking time（実測 1m21s+）を許容するため 120s に延長（Wave U incident #1087）
+#                            CI 等の高速モードでは DEBOUNCE_TRANSIENT_SEC=10 等で短縮可能
 
 set -euo pipefail
 
@@ -39,10 +42,10 @@ MAX_POLL="${MAX_POLL:-360}"
 if ! [[ "$MAX_POLL" =~ ^[1-9][0-9]*$ ]]; then
   MAX_POLL=360
 fi
-# AC0 p99 実測ベース: cld 初期化 20-30s 観測 → 30s + margin (#987)
-DEBOUNCE_TRANSIENT_SEC="${DEBOUNCE_TRANSIENT_SEC:-30}"
+# AC0 p99 実測ベース: Sonnet 4.6 max effort thinking time の余裕分含む（Wave U incident, #1087）→ 120s + margin
+DEBOUNCE_TRANSIENT_SEC="${DEBOUNCE_TRANSIENT_SEC:-120}"
 if ! [[ "$DEBOUNCE_TRANSIENT_SEC" =~ ^[0-9]+$ ]]; then
-  DEBOUNCE_TRANSIENT_SEC=30
+  DEBOUNCE_TRANSIENT_SEC=120
 fi
 DEBOUNCE_UNCLASSIFIED_CONFIRM_SEC="${DEBOUNCE_UNCLASSIFIED_CONFIRM_SEC:-30}"
 if ! [[ "$DEBOUNCE_UNCLASSIFIED_CONFIRM_SEC" =~ ^[0-9]+$ ]]; then
@@ -52,6 +55,34 @@ STARTUP_GRACE_PERIOD="${STARTUP_GRACE_PERIOD:-15}"
 if ! [[ "$STARTUP_GRACE_PERIOD" =~ ^[0-9]+$ ]]; then
   STARTUP_GRACE_PERIOD=15
 fi
+
+# AC3: LLM thinking indicator 検出 (SSOT: cld-observe-any, #1087)
+# LLM_INDICATORS 配列を cld-observe-any から動的に読み込み、detect_thinking() で再利用
+_COA_SCRIPT="${SCRIPTS_ROOT}/../../session/scripts/cld-observe-any"
+LLM_INDICATORS=()
+if [[ -f "$_COA_SCRIPT" ]]; then
+  eval "$(awk '/^LLM_INDICATORS=\(/{p=1} p{print} /^\)$/{if(p){p=0; exit}}' "$_COA_SCRIPT" 2>/dev/null)" 2>/dev/null || true
+fi
+
+# detect_thinking: pane テキストから LLM thinking indicator を検出
+# AC4(d): past tense "word for Nm Ns" または "word for Ns" 完了形は IDLE 扱い（thinking としてカウントしない）
+detect_thinking() {
+  local _tail="$1"
+  # past tense filter: e.g. "Sautéed for 1m 30s" → IDLE
+  if echo "$_tail" | grep -qE '[A-Z][a-z]+(ed|in'"'"'|ing)[[:space:]]+for[[:space:]]+[0-9]+[ms][[:space:]][0-9]+[ms]' || \
+     echo "$_tail" | grep -qE '[A-Z][a-z]+(ed|in'"'"'|ing)[[:space:]]+for[[:space:]]+[0-9]+[ms]$'; then
+    echo ""
+    return
+  fi
+  local _w
+  for _w in "${LLM_INDICATORS[@]:-}"; do
+    if echo "$_tail" | grep -qiE "$_w"; then
+      echo "$_w"
+      return
+    fi
+  done
+  echo ""
+}
 
 # --- 使い方 ---
 usage() {
@@ -461,6 +492,18 @@ wait_for_batch() {
             [[ -f "$debounce_ts_file" ]] && debounce_ts=$(cat "$debounce_ts_file" 2>/dev/null | tr -d '[:space:]')
             if ! [[ "$debounce_ts" =~ ^[0-9]+$ ]]; then
               echo "$current_ts" > "$debounce_ts_file"
+              all_done=false
+              continue
+            fi
+            # AC3: thinking indicator 検出 → debounce reset (#1087)
+            # LLM が thinking 中であれば kill せず debounce timer をリセットして待機継続
+            local _pane_raw_th _pane_th _thinking_indicator
+            _pane_raw_th=$(tmux capture-pane -t "$window_name" -p -S -15 2>/dev/null || true)
+            _pane_th=$(printf '%s' "$_pane_raw_th" | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b][^\x07]*\x07//g; s/\x1b][^\x1b]*\x1b\\//g')
+            _thinking_indicator=$(detect_thinking "$_pane_th")
+            if [[ -n "$_thinking_indicator" ]]; then
+              echo "[issue-lifecycle-orchestrator] ${subdir##*/}: LLM thinking detected ('${_thinking_indicator}') — debounce reset" >&2
+              rm -f "$debounce_ts_file"
               all_done=false
               continue
             fi

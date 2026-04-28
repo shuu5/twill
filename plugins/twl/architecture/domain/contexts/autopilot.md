@@ -410,13 +410,25 @@ tmux send-keys -t "<WORKER_WINDOW>" "/twl:workflow-test-ready" Enter
   input-waiting 検出ロジックを持つため、debounce は inject トリガーの直接原因ではない。
   状態の可観測性（state.json）を 1 サイクル遅延させるだけで、inject 自体は影響を受けない。
 
-### Detection Layer Regression ポストモーテム（#707 / #722 / #752）
+### co-issue v2 Orchestrator の DEBOUNCE_TRANSIENT_SEC 設計（#1087）
+
+`issue-lifecycle-orchestrator.sh` の `DEBOUNCE_TRANSIENT_SEC` は `input-waiting` 状態の transient false-positive を排除するタイムスタンプ debounce 閾値。
+
+- **デフォルト値**: 120s（Wave U incident #1087 で 30s から延長）
+  - Sonnet 4.6 max effort の thinking time が実測 1m21s+ であり、旧 30s では thinking 中の Worker を `unclassified_input_waiting_confirmed` として誤 kill していた
+  - `DEBOUNCE_TRANSIENT_SEC=30` のまま 5 Wave 連続（U-4/U-6/U-7/U-8/U-9）で同じ false positive kill が発生した systemic 問題の修正
+- **thinking indicator 検出によるリセット（AC3）**: pane に LLM thinking indicator（`Marinating…`, `Brewing…` 等）が検出された場合、`.debounce_ts` を削除してタイマーをリセット。`cld-observe-any` の `LLM_INDICATORS` 配列と `detect_thinking()` 関数を SSOT 共有
+- **past tense filter（AC4d）**: `Sautéed for 1m 30s` などの完了形 + "for N" パターンは thinking indicator とみなさず IDLE 扱い（cld-observe-any v18 準拠）
+- **環境変数 override**: `DEBOUNCE_TRANSIENT_SEC=10` で CI 等の高速モードでの短縮が可能
+
+### Detection Layer Regression ポストモーテム（#707 / #722 / #752 / #1087）
 
 | Issue | PR | 内容 |
 |-------|-----|------|
 | #707 | #716 | orchestrator resolve ログ分離 + session-state.sh inject 検出（初期実装） |
 | #722 | #733 | inject が input-waiting を見逃す問題修正（`USE_SESSION_STATE=true` ブランチの backoff 改善） |
 | #752 | #760 | SESSION_STATE_CMD デフォルトパス (`$HOME/ubuntu-note-system/...`) が fresh clone 環境で不在 → 全 3 スクリプトで `USE_SESSION_STATE=false` に silent fallback。wrapper 参照に変更して解決 |
+| #1087 | TBD | co-issue v2 orchestrator の `DEBOUNCE_TRANSIENT_SEC` 30s → 120s 延長 + thinking indicator 検出によるリセット（Sonnet 4.6 max effort thinking time 対応） |
 
 **再発防止**: `autopilot-session-state-cmd.bats` の AC-6 tests が `ubuntu-note-system` ハードコードの
 再導入を CI で検知する。

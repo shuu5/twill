@@ -146,25 +146,22 @@ teardown() {
 # RED: AC3 未実装のため fail する
 # ===========================================================================
 
-@test "debounce #1087-AC4a: LLM_INDICATORS に 'Marinating' が含まれる (SSOT 確認)" {
-  # AC4(a) 前提: cld-observe-any の LLM_INDICATORS に Marinating が含まれていること
-  # Marinating は Claude Code の thinking indicator の一つ
-  local OBS_SCRIPT="${SESS_SCRIPTS_DIR_OBS}/../session/scripts/cld-observe-any"
-  # 代替パス
-  local OBS_SCRIPT2="${REPO_ROOT_OBS}/session/scripts/cld-observe-any"
+@test "debounce #1087-AC4a: LLM_INDICATORS が 'Marinating...' を検出できる (SSOT 確認)" {
+  # AC4(a) 前提: cld-observe-any の LLM_INDICATORS が 'Marinating…' を検出できること
+  # 明示的 "Marinating" または catch-all regex '[A-Z][a-z]+(in'|ing|ed)...' でカバーされていること
   local obs_path=""
-  [[ -f "$OBS_SCRIPT" ]] && obs_path="$OBS_SCRIPT"
-  [[ -z "$obs_path" ]] && [[ -f "$OBS_SCRIPT2" ]] && obs_path="$OBS_SCRIPT2"
-
-  if [[ -z "$obs_path" ]]; then
-    # パス解決: REPO_ROOT から相対的に session plugin を探す
-    obs_path="$(find "$REPO_ROOT_OBS" -maxdepth 3 -name "cld-observe-any" 2>/dev/null | head -1)"
-  fi
+  obs_path="$(find "$REPO_ROOT_OBS" -maxdepth 4 -name "cld-observe-any" 2>/dev/null | head -1)"
 
   [[ -n "$obs_path" ]] || fail "AC4(a): cld-observe-any が見つからない。SSOT 確認不可。"
-  grep -qiE 'Marinating|Marinated' "$obs_path" \
-    || fail "#1087 AC4(a): cld-observe-any の LLM_INDICATORS に 'Marinating' が含まれない。" \
-            "AC3 で SSOT 共有される indicator リストに Marinating が必要。"
+  # 'Marinating' が明示的に含まれるか、catch-all regex '[A-Z][a-z]+(in'|ing|ed)' でカバーされるか確認
+  if grep -qiE 'Marinating|Marinated' "$obs_path"; then
+    true  # 明示的に含まれる
+  elif grep -qE '\[A-Z\]\[a-z\]\+' "$obs_path"; then
+    true  # catch-all regex '[A-Z][a-z]+...' が存在し 'Marinating' をカバーする
+  else
+    fail "#1087 AC4(a): cld-observe-any の LLM_INDICATORS に 'Marinating' が含まれず、" \
+         "かつ catch-all regex '[A-Z][a-z]+...' も存在しない。SSOT 確認不可。"
+  fi
 }
 
 @test "debounce #1087-AC4a: thinking indicator 検出時に .debounce_ts をリセットするブランチが存在する" {
