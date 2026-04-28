@@ -204,6 +204,24 @@ fi
 
 # --- Status pre-check (AC5/6/7: fail-closed, cross-repo fallback, observability) ---
 _STATUS_GATE_LOG="${STATUS_GATE_LOG:-/tmp/refined-status-gate.log}"
+_check_label_fallback() {
+  local issue_num="$1"
+  local deny_log_token="$2"
+  local deny_msg="$3"
+  # Option 1: 事前 capture → 文字列検索（pipefail 下の SIGPIPE false-negative を回避 #960）
+  local labels has_label=0
+  labels=$(gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null || true)
+  if printf '%s\n' "$labels" | grep -Fxq 'refined'; then
+    has_label=1
+  fi
+  if [[ "$has_label" -eq 1 ]]; then
+    echo "[$(date -Iseconds)] ALLOW_LABEL_FALLBACK issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+    return 0
+  fi
+  echo "[$(date -Iseconds)] ${deny_log_token} issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+  echo "$deny_msg" >&2
+  return 1
+}
 _check_refined_status() {
   local issue_num="$1"
   local bypass="${2:-0}"
@@ -231,38 +249,17 @@ _check_refined_status() {
   done
   if [[ -z "$status" && -z "$board_items" ]]; then
     # Board 取得失敗 → cross-repo fallback: refined label を確認
-    # Option 1: 事前 capture → 文字列検索（pipefail 下の SIGPIPE false-negative を回避 #960）
-    local labels has_label=0
-    labels=$(gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null || true)
-    if printf '%s\n' "$labels" | grep -Fxq 'refined'; then
-      has_label=1
-    fi
-    if [[ "$has_label" -eq 1 ]]; then
-      echo "[$(date -Iseconds)] ALLOW_LABEL_FALLBACK issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
-      return 0
-    fi
-    echo "[$(date -Iseconds)] DENY_API_FAILURE issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
-    echo "Error: GitHub API 障害により Status を取得できませんでした (3 回リトライ後)。" >&2
-    echo "  対処: gh auth refresh -s project を実行してから再試行してください。" >&2
-    return 1
+    _check_label_fallback "$issue_num" "DENY_API_FAILURE" \
+      "Error: GitHub API 障害により Status を取得できませんでした (3 回リトライ後)。
+  対処: gh auth refresh -s project を実行してから再試行してください。"
+    return $?
   fi
   if [[ -z "$status" ]]; then
     # Issue が Board 未登録 → cross-repo fallback: refined label を確認
-    # Option 1: 事前 capture → 文字列検索（pipefail 下の SIGPIPE false-negative を回避 #960）
-    # 同一関数スコープで明示的に 0 で初期化（前ブロックの値を引き継がないよう保証）
-    local labels has_label=0
-    labels=$(gh issue view "$issue_num" --json labels -q '.labels[].name' 2>/dev/null || true)
-    if printf '%s\n' "$labels" | grep -Fxq 'refined'; then
-      has_label=1
-    fi
-    if [[ "$has_label" -eq 1 ]]; then
-      echo "[$(date -Iseconds)] ALLOW_LABEL_FALLBACK issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
-      return 0
-    fi
-    echo "[$(date -Iseconds)] DENY_NOT_ON_BOARD issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
-    echo "Error: Issue #${issue_num} は Project Board に登録されていません。" >&2
-    echo "  対処: Board に Issue を add してから再試行してください。" >&2
-    return 1
+    _check_label_fallback "$issue_num" "DENY_NOT_ON_BOARD" \
+      "Error: Issue #${issue_num} は Project Board に登録されていません。
+  対処: Board に Issue を add してから再試行してください。"
+    return $?
   fi
   case "$status" in
     "Refined"|"In Progress"|"Done")

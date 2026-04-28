@@ -32,13 +32,17 @@ _run_status_gate() {
   local bypass="${2:-0}"
 
   # 関数定義を動的抽出（行番号ハードコード回避）
-  local func_def
+  # _check_label_fallback も抽出する（#1004: _check_refined_status から呼び出されるため）
+  local fallback_def func_def
+  fallback_def=$(sed -n '/^_check_label_fallback()/,/^}/p' "$SCRIPT")
   func_def=$(sed -n '/^_check_refined_status()/,/^}/p' "$SCRIPT")
 
   run bash -c "
 set -euo pipefail
 export PATH='${STUB_BIN}:/usr/bin:/bin'
 export _STATUS_GATE_LOG='${SANDBOX}/gate.log'
+
+${fallback_def}
 
 ${func_def}
 
