@@ -81,14 +81,11 @@ run_test_skip() {
   ((SKIP++))
 }
 
-# --- 27 specialist 一覧 ---
+# --- 23 specialist 一覧 ---
+# Issue #1081: worker-{fastapi,hono,nextjs,r}-reviewer を worker-code-reviewer に統合
 ALL_SPECIALISTS=(
   worker-code-reviewer
   worker-security-reviewer
-  worker-nextjs-reviewer
-  worker-fastapi-reviewer
-  worker-hono-reviewer
-  worker-r-reviewer
   worker-architecture
   worker-structure
   worker-principles

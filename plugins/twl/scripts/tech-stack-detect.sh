@@ -5,13 +5,13 @@
 #
 # Usage: git diff --name-only origin/main | bash scripts/tech-stack-detect.sh
 # Output: "worker-code-reviewer language=<name>" 形式を改行区切りで出力（該当なしの場合は空）
-#         後方互換性のため specialist 名のみの行も並列出力する
+#         language hint 非対象 specialist（supabase-migration-checker, e2e-reviewer）はそのまま出力
 #
 # language hint 形式（Issue #1081）:
-#   worker-code-reviewer language=fastapi
-#   worker-code-reviewer language=hono
-#   worker-code-reviewer language=nextjs
-#   worker-code-reviewer language=r
+#   worker-code-reviewer language=fastapi  (FastAPI + .py + fastapi import)
+#   worker-code-reviewer language=nextjs   (.tsx/.jsx + next.config.*)
+#   worker-code-reviewer language=r        (.R/.Rmd/.qmd)
+#   ※ Hono 検出は未実装（Issue #1081: hono は現状 tech-stack-detect.sh 未対応）
 # caller は prompt 先頭に "language=<name>:" を付与して Task を起動すること
 
 set -euo pipefail
