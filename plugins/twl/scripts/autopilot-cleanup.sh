@@ -93,7 +93,7 @@ is_in_dependency_chain() {
   dependers=$(awk -v target="$issue_num" '
     /^dependencies:/ { in_deps=1; next }
     in_deps && /^[^ ]/ { in_deps=0 }
-    in_deps && /^  [0-9]+:/ { key=$0; gsub(/^[[:space:]]+|:[[:space:]]*$/, "", key) }
+    in_deps && /^  [[:alnum:]_#-]+:/ { key=$0; gsub(/^[[:space:]]+|:[[:space:]]*$/, "", key) }
     in_deps && /^  - / { dep=$0; gsub(/^[[:space:]]*- /, "", dep); if (dep==target && key!="") print key }
   ' "$plan_file" 2>/dev/null || true)
 
@@ -152,7 +152,7 @@ echo "[cleanup] セッション $SESSION_ID のクリーンアップを開始（
 for issue_file in "$AUTOPILOT_DIR/issues"/issue-*.json; do
   [[ -f "$issue_file" ]] || continue
 
-  issue_num=$(basename "$issue_file" | grep -oP '\d+')
+  issue_num=$(basename "$issue_file" .json); issue_num="${issue_num#issue-}"
   status=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('status','unknown'))" "$issue_file" 2>/dev/null || echo "unknown")
 
   case "$status" in
