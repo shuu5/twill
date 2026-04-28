@@ -12,10 +12,6 @@ AC5: 実証結果を doobidoo memory に記録
 AC6: PR merge 完遂
 """
 
-import csv
-import json
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
@@ -33,8 +29,8 @@ SIGNIFICANCE_SCRIPT = CLI_TWL_DIR / "tests" / "scripts" / "ac8_significance_test
 AC8_DATA_DIR = CLI_TWL_DIR / "tests" / "scripts" / "ac8_data"
 AC8_GOLDFILES_DIR = CLI_TWL_DIR / "tests" / "scripts" / "ac8_goldfiles"
 
-# AC1 で必要な 6 操作の定義
-REQUIRED_OPERATIONS = [
+# GREEN フェーズ実装ガイド: 以下の定数を各テストメソッドの検証ロジックで使用する
+REQUIRED_OPERATIONS = [  # AC1: 6 操作 (test_ac1_six_operations_documented で使用)
     "issue_init",
     "read_field",
     "status_transition",
@@ -43,8 +39,7 @@ REQUIRED_OPERATIONS = [
     "sets_nested_key",
 ]
 
-# AC2 で必要な環境フィンガープリントフィールド
-REQUIRED_FINGERPRINT_FIELDS = [
+REQUIRED_FINGERPRINT_FIELDS = [  # AC2: environment fingerprint (test_ac2_environment_fingerprint_fields_present で使用)
     "host",
     "git_HEAD",
     "python_version",
@@ -54,16 +49,14 @@ REQUIRED_FINGERPRINT_FIELDS = [
     "timestamp",
 ]
 
-# AC3 で必要な 4 失敗パターン
-FAILURE_PATTERN_KEYS = [
+FAILURE_PATTERN_KEYS = [  # AC3: 4 失敗パターン (test_ac3_pattern* で使用)
     "pythonpath_not_set",
     "subcommand_name_error",
     "enum_notation_error",
     "missing_required_option",
 ]
 
-# AC4 の CSV 必須カラム
-REQUIRED_CSV_COLUMNS = [
+REQUIRED_CSV_COLUMNS = [  # AC4: CSV 必須カラム (test_ac4_script_accepts_csv_input で使用)
     "operation",
     "route",
     "trial_index",
