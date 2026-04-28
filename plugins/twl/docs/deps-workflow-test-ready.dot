@@ -18,6 +18,7 @@ digraph Dependencies {
     skill_workflow_test_ready [label="twl:workflow-test-ready\n(1,034 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_check [label="check\n(842 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -35,7 +36,7 @@ digraph Dependencies {
     script_chain_runner [label="chain-runner\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_github [label="autopilot-github\n(6,371 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_steps [label="chain-steps\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_compaction_resume [label="compaction-resume\n(927 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -44,6 +45,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_test_ready; }
+    { rank=same; skill_ref_specialist_output_schema; }
     { rank=same; cmd_check; cmd_e2e_plan; cmd_test_scaffold; }
     { rank=same; agent_e2e_generate; }
     { rank=same; script_state_read; script_state_write; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_chain_steps; script_compaction_resume; script_resolve_issue_num; }
@@ -67,6 +69,7 @@ digraph Dependencies {
     script_chain_runner -> script_compaction_resume [style=invis, weight=10];
     script_chain_runner -> script_compaction_resume [style=invis, weight=10];
     agent_e2e_generate -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
     script_state_read -> script_state_write [style=invis, weight=10];
     script_state_read -> script_state_write [style=invis, weight=10];
     script_state_read -> script_state_write [style=invis, weight=10];

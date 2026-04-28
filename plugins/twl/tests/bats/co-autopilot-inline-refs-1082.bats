@@ -33,10 +33,10 @@ setup() {
 # AC1: 4 refs の内容が SKILL.md に inline 化されている
 # ===========================================================================
 
-@test "ac1: phase-sanity の内容が SKILL.md に inline 化されている（### Phase で存在）" {
+@test "ac1: phase-sanity の内容が SKILL.md に inline 化されている（commands/autopilot-phase-sanity.md を直接参照）" {
   [ -f "${SKILL_MD}" ]
-  # inline 後は SKILL.md に Phase 完了サニティチェックの内容が直接含まれるはず
-  run grep -E "### (Phase 完了サニティチェック|Phase Sanity)" "${SKILL_MD}"
+  # inline 後は SKILL.md が commands/autopilot-phase-sanity.md を直接参照するはず
+  run grep "commands/autopilot-phase-sanity.md" "${SKILL_MD}"
   if [ "${status}" -ne 0 ]; then
     echo "FAIL: SKILL.md に phase-sanity inline 内容が見当たらない（AC1 未実装）"
     return 1
@@ -192,7 +192,7 @@ EOF
   [ "${status}" -eq 0 ]
 }
 
-@test "ac3: SKILL.md の # 見出しが1つのみ（トップレベル）" {
+@test "ac3: SKILL.md の # 見出しが1つのみ（トップレベル、コードブロック除外）" {
   [ -f "${SKILL_MD}" ]
   run python3 - "${SKILL_MD}" <<'EOF'
 import sys, re
@@ -208,7 +208,16 @@ if lines and lines[0].strip() == '---':
             break
 
 body_lines = lines[body_start:]
-h1_lines = [l for l in body_lines if re.match(r'^# [^#]', l)]
+# コードブロック内の行を除外してから H1 を探す
+in_code = False
+h1_lines = []
+for line in body_lines:
+    if line.startswith('```'):
+        in_code = not in_code
+        continue
+    if not in_code and re.match(r'^# [^#]', line):
+        h1_lines.append(line)
+
 if len(h1_lines) != 1:
     print(f"FAIL: # 見出しが 1 つでない: {h1_lines}")
     sys.exit(1)

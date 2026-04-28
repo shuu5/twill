@@ -212,17 +212,21 @@ EOF
 @test "invariant-F: merge-gate-execute uses --squash flag" {
   # merge-gate-execute は Python 化済み（cli/twl/src/twl/autopilot/mergegate.py）
   # REPO_ROOT = plugins/twl, worktree root = REPO_ROOT/../../
-  local mergegate_py
-  mergegate_py="$(cd "$REPO_ROOT/../.." && pwd)/cli/twl/src/twl/autopilot/mergegate.py"
-  [ -f "$mergegate_py" ] || skip "mergegate.py not found"
+  local autopilot_dir
+  autopilot_dir="$(cd "$REPO_ROOT/../.." && pwd)/cli/twl/src/twl/autopilot"
+  local mergegate_ops_py="${autopilot_dir}/mergegate_ops.py"
+  # mergegate_ops.py に squash ロジックが移動済み (#1082 pre-existing fix)
+  local check_file="${mergegate_ops_py}"
+  [ -f "$check_file" ] || check_file="${autopilot_dir}/mergegate.py"
+  [ -f "$check_file" ] || skip "mergegate implementation not found"
 
   # squash フラグを使用していることを確認
-  run grep -c -- '"--squash"' "$mergegate_py"
+  run grep -c -- '"--squash"' "$check_file"
   assert_success
   [ "$output" -ge 1 ]
 
   # --rebase フラグは使用していないことを確認（deps.yaml 競合時の rebase は対象外）
-  run grep -c -- '"--rebase"' "$mergegate_py"
+  run grep -c -- '"--rebase"' "$check_file"
   [ "$output" = "0" ]
 }
 
@@ -257,7 +261,7 @@ EOF
   local deps_file="$REPO_ROOT/deps.yaml"
   [ -f "$deps_file" ] || skip "deps.yaml not found"
 
-  local valid_types="controller workflow composite atomic specialist reference script"
+  local valid_types="controller workflow composite atomic specialist reference script supervisor"
 
   # Extract types from component sections only (exclude chain types A/B)
   local types

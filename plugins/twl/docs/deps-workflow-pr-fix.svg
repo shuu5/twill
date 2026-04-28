@@ -35,7 +35,7 @@
 <title>cmd_warning_fix</title>
 <polygon fill="#e3f2fd" stroke="black" points="288.24,-158.49 217.24,-158.49 217.24,-122.49 288.24,-122.49 288.24,-158.49"/>
 <text text-anchor="middle" x="252.74" y="-143.49" font-family="Helvetica,sans-Serif" font-size="10.00">warning&#45;fix</text>
-<text text-anchor="middle" x="252.74" y="-132.49" font-family="Helvetica,sans-Serif" font-size="10.00">(461 tok)</text>
+<text text-anchor="middle" x="252.74" y="-132.49" font-family="Helvetica,sans-Serif" font-size="10.00">(597 tok)</text>
 </g>
 <!-- skill_workflow_pr_fix&#45;&gt;cmd_warning_fix -->
 <g id="edge3" class="edge">
@@ -75,7 +75,7 @@
 <title>agent_worker_code_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="451.02" cy="-294.49" rx="86.95" ry="21.43"/>
 <text text-anchor="middle" x="451.02" y="-297.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;code&#45;reviewer</text>
-<text text-anchor="middle" x="451.02" y="-286.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,002 tok)</text>
+<text text-anchor="middle" x="451.02" y="-286.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,503 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;agent_worker_code_reviewer -->
 <g id="edge4" class="edge">
@@ -146,7 +146,7 @@
 <title>script_tech_stack_detect</title>
 <polygon fill="#ff9800" stroke="black" points="780.19,-24.49 738.66,-48.98 655.59,-48.98 614.06,-24.49 655.59,-0.01 738.66,-0.01 780.19,-24.49"/>
 <text text-anchor="middle" x="697.13" y="-27.49" font-family="Helvetica,sans-Serif" font-size="10.00">tech&#45;stack&#45;detect</text>
-<text text-anchor="middle" x="697.13" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(539 tok)</text>
+<text text-anchor="middle" x="697.13" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(773 tok)</text>
 </g>
 <!-- script_autopilot_parser&#45;&gt;script_tech_stack_detect -->
 <!-- script_autopilot_parser&#45;&gt;script_tech_stack_detect -->
