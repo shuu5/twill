@@ -183,3 +183,59 @@ issue_1066:
       test_file: "plugins/session/tests/session-comm-usage-typo-1066.bats"
       test_name: "session-comm-usage-typo[structural][RED]: ファイルヘッダ inject-file 行に --wait が重複しない"
       status: GREEN
+
+# --- Issue #1087 ---
+issue_1087:
+  issue: 1087
+  framework: bats
+  test_file: "plugins/twl/tests/bats/scripts/issue-lifecycle-orchestrator-debounce.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "DEBOUNCE_TRANSIENT_SEC の default を 120s に延長。対象: plugins/twl/scripts/issue-lifecycle-orchestrator.sh line 43, 45。AC0 コメント (line 42) も更新する"
+      test_names:
+        - "debounce #1087-AC1: DEBOUNCE_TRANSIENT_SEC default が 120 に延長されている"
+        - "debounce #1087-AC1: DEBOUNCE_TRANSIENT_SEC フォールバック代入値が 120 であること"
+        - "debounce #1087-AC1: AC0 ヘッダーコメントが Sonnet thinking time (120s) を反映している"
+      status: RED
+      red_mechanism: "現在は DEBOUNCE_TRANSIENT_SEC:-30 および DEBOUNCE_TRANSIENT_SEC=30 のため 120 検索で fail"
+
+    - ac_index: 2
+      ac_text: "環境変数 override（DEBOUNCE_TRANSIENT_SEC=N）は維持し、CI 等の高速モードで短縮可能に保つ。既存実装 (line 43-46) を改変しない"
+      test_names:
+        - "debounce #1087-AC2: DEBOUNCE_TRANSIENT_SEC は環境変数 override 形式で宣言されている"
+        - "debounce #1087-AC2: 不正値チェック後のフォールバック代入が正規表現で確認できる"
+      status: GREEN_PRESERVED
+      note: "AC2 は既存実装を壊さないことの確認テスト。現在の実装が override 形式を持つため GREEN。実装後も GREEN を維持すること。"
+
+    - ac_index: 3
+      ac_text: "thinking indicator 認識を debounce reset として追加。pane に LLM thinking 表示があれば .debounce_ts を削除し再開する。plugins/session/scripts/cld-observe-any の LLM_INDICATORS 配列と detect_thinking() 関数を再利用（SSOT 共有）"
+      test_names:
+        - "debounce #1087-AC3: orchestrator が cld-observe-any を source して LLM_INDICATORS を共有する"
+        - "debounce #1087-AC3: orchestrator の debounce ループで detect_thinking() が呼ばれる"
+        - "debounce #1087-AC3: thinking indicator 検出時に .debounce_ts を削除するコードが存在する"
+      status: RED
+      red_mechanism: "orchestrator に cld-observe-any の source/参照・detect_thinking 呼び出しが存在しない"
+
+    - ac_index: 4
+      ac_text: "bats テスト検証: (a) thinking indicator 中の debounce reset, (b) 実 idle 120s 経過 kill, (c) DEBOUNCE_TRANSIENT_SEC=10 override, (d) past tense filter"
+      test_names:
+        - "debounce #1087-AC4a: LLM_INDICATORS に 'Marinating' が含まれる (SSOT 確認)"
+        - "debounce #1087-AC4a: thinking indicator 検出時に .debounce_ts をリセットするブランチが存在する"
+        - "debounce #1087-AC4b: 実 idle 120s 経過 kill — DEBOUNCE_TRANSIENT_SEC が debounce 比較に使用されている"
+        - "debounce #1087-AC4b: 実 idle の kill は DEBOUNCE_TRANSIENT_SEC=120 を前提とする (default check)"
+        - "debounce #1087-AC4c: DEBOUNCE_TRANSIENT_SEC=10 override が機能する構造を確認"
+        - "debounce #1087-AC4d: past tense filter が orchestrator に存在する"
+        - "debounce #1087-AC4d: cld-observe-any の LLM_INDICATORS で Saut.*ed が現在進行形として扱われている"
+      status: MIXED
+      note: |
+        RED: AC4(a) Marinating SSOT確認, AC4(a) debounce reset ブランチ, AC4(b) 120s default, AC4(d) past tense filter
+        GREEN: AC4(b) 比較構造確認(既存実装), AC4(c) override 構造確認(既存実装), AC4(d) cld-observe-any Saut確認(既存実装)
+
+    - ac_index: 5
+      ac_text: "関連 doc 更新: plugins/twl/architecture/domain/contexts/autopilot.md, plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §A2, plugins/twl/scripts/issue-lifecycle-orchestrator.sh ヘッダー comment"
+      test_names:
+        - "debounce #1087-AC5: autopilot.md が DEBOUNCE_TRANSIENT_SEC 120s を反映している"
+        - "debounce #1087-AC5: pitfalls-catalog.md §A2 が debounce 延長を記述している"
+        - "debounce #1087-AC5: orchestrator.sh ヘッダーコメントが 120s debounce を記述している"
+      status: RED
+      red_mechanism: "各ドキュメントに DEBOUNCE_TRANSIENT_SEC=120s / 120 / Sonnet thinking time の記述が未追加"

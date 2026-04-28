@@ -101,6 +101,8 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 
 - **A1**: `tmux capture-pane -p -S -60` の内容ハッシュ（stable / dynamic）
 - **A2**: LLM thinking indicator（`Thinking/Brewing/Concocting/Sautéing/Steeping/Simmering/Marinating/Newspapering/Tomfoolering/Flummoxing/Proofing/Befuddling/Generating/Waddling/Thundering/Lollygagging` + **現在進行形のみ**。`Sautéed for N`/`Worked for N`/`Baked for N` 等の **過去形 + "for N"** は IDLE 扱い — v18 past tense filter、Phase AA Wave AA.2 実装済）
+  - **SSOT**: `plugins/session/scripts/cld-observe-any` の `LLM_INDICATORS` 配列 + `detect_thinking()` 関数が A2 判定の唯一の信頼源。`issue-lifecycle-orchestrator.sh` は `LLM_INDICATORS` を動的に読み込み（#1087 SSOT 共有）
+  - **debounce 延長（#1087）**: `issue-lifecycle-orchestrator.sh` の `DEBOUNCE_TRANSIENT_SEC` は 120s（Sonnet 4.6 max effort thinking time 対応）。thinking indicator 検出時は `.debounce_ts` をリセットして Worker kill を防止
 - **A3**: pipe-pane log mtime（active / stale）
 - **A4**: `pane_dead`（tmux 窓健全性）
 - **A5**: `session-state.sh`（補助のみ、単独使用禁止）
