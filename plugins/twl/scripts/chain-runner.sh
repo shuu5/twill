@@ -116,6 +116,20 @@ trace_event() {
   case "$trace_file" in
     *..*) return 0 ;;
   esac
+  # 絶対パス検証（issue-1015）: /tmp・TMPDIR・AUTOPILOT_DIR 配下のみ許可
+  if [[ "$trace_file" = /* ]]; then
+    local _ok=0
+    [[ "$trace_file" == /tmp/* ]] && _ok=1
+    if [[ "$_ok" -eq 0 && -n "${TMPDIR:-}" ]]; then
+      [[ "$trace_file" == "${TMPDIR}/"* ]] && _ok=1
+    fi
+    if [[ "$_ok" -eq 0 && -n "${AUTOPILOT_DIR:-}" ]]; then
+      local _ap="${AUTOPILOT_DIR%/}"
+      [[ "$_ap" != /* ]] && _ap="${PWD}/${_ap}"
+      [[ "$trace_file" == "${_ap}/"* ]] && _ok=1
+    fi
+    [[ "$_ok" -eq 0 ]] && return 0
+  fi
   # 親ディレクトリ作成（失敗してもサイレント）
   mkdir -p "$(dirname "$trace_file")" 2>/dev/null || return 0
   local ts
