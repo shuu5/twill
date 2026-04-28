@@ -22,7 +22,7 @@ except Exception as e:
     print(f"(session.json parse error: {e})", file=sys.stderr)
     print("")
 PYEOF
-)
+) || SESSION_STATE="(session.json 読み取り失敗)"
     {
         echo "# Working Memory — PreCompact Snapshot"
         echo "timestamp: $(date -Iseconds)"
