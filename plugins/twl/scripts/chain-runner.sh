@@ -354,6 +354,87 @@ step_worktree_create() {
   ok "worktree-create" "完了"
 }
 
+# --- _transition_parent_epic_if_refined: 親 Epic auto-transition (Issue #1026 ADR-024 AC1+AC2) ---
+# 子 Issue が "In Progress" に遷移した時、親 Epic が "Refined" なら "In Progress" に遷移する。
+# Idempotent: 親 Epic が既に "In Progress" / "Done" / 他の場合は no-op。
+# 失敗時は全エラーを skip 扱いで suppress（既存 step_board_status_update と同じ防御戦略）。
+#
+# Args:
+#   $1=child_issue_num: 子 Issue 番号
+#   $2=project_num:     gh project 番号
+#   $3=project_id:      gh project ID（item-edit 用）
+#   $4=owner:           project owner
+#   $5=repo_full:       親 Epic 追加用の owner/repo_name 形式
+#   $6=fields_json:     既に取得済みの gh project field-list JSON（再利用）
+_transition_parent_epic_if_refined() {
+  local child_issue_num="$1"
+  local project_num="$2"
+  local project_id="$3"
+  local owner="$4"
+  local repo_full="$5"
+  local fields_json="$6"
+
+  # Step 1: 親 Epic 番号を取得（Python parser で `Parent: #N` 抽出）
+  # H1 (Quality Review): local 宣言と代入を分離して bash の $? が local 自体で
+  # 上書きされる bug を回避
+  ensure_pythonpath || return 0
+  local parent_num exit_code
+  parent_num=$(python3 -m twl.autopilot.github extract-parent-epic "$child_issue_num" 2>/dev/null)
+  exit_code=$?
+  # exit 2 = parent なし、exit 1 = エラー → どちらも skip
+  if [[ "$exit_code" -ne 0 ]] || [[ -z "$parent_num" ]]; then
+    return 0
+  fi
+
+  # Step 2: 親 Epic を Project に追加（既存ならエラーにならない、空 id 返却の可能性あり）
+  gh project item-add "$project_num" --owner "$owner" \
+    --url "https://github.com/${repo_full}/issues/${parent_num}" --format json 2>/dev/null \
+    >/dev/null || true
+  # ↑ 戻り値の id は使わない。fallback を兼ねた item-list を信頼する
+
+  # Step 3: item-list を 1 回だけ呼んで items_json をキャッシュし、parent_item_id と
+  # parent_status を同一 JSON から抽出する（H4: API call 重複削減）
+  # H2: jq filter で .content.number の型不一致を吸収（API が string/number 両方返す可能性に対応）
+  local items_json parent_item_id parent_status
+  items_json=$(gh project item-list "$project_num" --owner "$owner" --format json --limit 200 2>/dev/null) || return 0
+  parent_item_id=$(echo "$items_json" | jq -r --arg n "$parent_num" \
+    '.items[] | select((.content.number | tostring) == $n and .content.type == "Issue") | .id' \
+    | head -n1)
+  parent_status=$(echo "$items_json" | jq -r --arg n "$parent_num" \
+    '.items[] | select((.content.number | tostring) == $n and .content.type == "Issue") | .status' \
+    | head -n1)
+
+  # H3: cross-repo / 親 Epic が project に存在しない場合の observability — skip ログを残す
+  if [[ -z "$parent_item_id" || "$parent_item_id" == "null" ]]; then
+    skip "epic-auto-transition" "親 Epic #${parent_num} が Project に見つからない (cross-repo の可能性)"
+    return 0
+  fi
+
+  # Step 4: Idempotent gating — Refined のみ遷移、それ以外は no-op
+  if [[ "$parent_status" != "Refined" ]]; then
+    skip "epic-auto-transition" "親 Epic #${parent_num} は ${parent_status:-unknown} — Refined でないため no-op (idempotent)"
+    return 0
+  fi
+
+  # Step 5: Status field / In Progress option の ID を fields_json から抽出
+  local status_field_id in_progress_option_id
+  status_field_id=$(echo "$fields_json" | jq -r '.fields[] | select(.name == "Status") | .id')
+  in_progress_option_id=$(echo "$fields_json" | jq -r '.fields[] | select(.name == "Status") | .options[] | select(.name == "In Progress") | .id')
+  if [[ -z "$status_field_id" || -z "$in_progress_option_id" ]]; then
+    skip "epic-auto-transition" "Status field / In Progress option ID 取得失敗"
+    return 0
+  fi
+
+  # Step 6: 親 Epic を In Progress に遷移
+  gh project item-edit --id "$parent_item_id" --project-id "$project_id" \
+    --field-id "$status_field_id" --single-select-option-id "$in_progress_option_id" 2>/dev/null || {
+    skip "epic-auto-transition" "親 Epic #${parent_num} の Status 更新失敗"
+    return 0
+  }
+
+  ok "epic-auto-transition" "親 Epic #${parent_num}: Refined → In Progress (子 #${child_issue_num} 起因)"
+}
+
 # --- board-status-update: Project Board Status 更新 ---
 step_board_status_update() {
   record_current_step "board-status-update"
@@ -418,6 +499,12 @@ step_board_status_update() {
   }
 
   ok "board-status-update" "Project Board Status → $target_status (#$issue_num)"
+
+  # Issue #1026 ADR-024 AC1+AC2: 子 Issue が "In Progress" に遷移した時、
+  # 親 Epic が "Refined" なら "In Progress" に自動遷移する
+  if [[ "$target_status" == "In Progress" ]]; then
+    _transition_parent_epic_if_refined "$issue_num" "$final_num" "$final_id" "$owner" "$repo" "$fields"
+  fi
 }
 
 # --- board-archive: Project Board アイテムをアーカイブ ---
