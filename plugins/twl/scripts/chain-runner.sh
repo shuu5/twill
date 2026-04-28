@@ -175,6 +175,18 @@ trace_event() {
         _home_trust_resolved=$(_resolve_path "${HOME%/}") || _home_trust_resolved="${HOME%/}"
         [[ "$_ap_resolved" == "${_home_trust_resolved}/"* ]] && _autopilot_trusted=1
       fi
+      # H2 (#1042 follow-up): AUTOPILOT_DIR 構造検証
+      # 攻撃者が AUTOPILOT_DIR=$HOME/twl-evil 等を設定して書き込み許可を拡張する攻撃を
+      # 防ぐため、basename が ".autopilot" のディレクトリのみ信頼する。
+      # resolve_autopilot_dir() の挙動（env var 優先、未設定時は ${main_wt}/.autopilot）と
+      # 整合する正規パターンに限定する。
+      if [[ "$_autopilot_trusted" -eq 1 ]]; then
+        local _ap_basename
+        _ap_basename=$(basename "$_ap_resolved")
+        if [[ "$_ap_basename" != ".autopilot" ]]; then
+          _autopilot_trusted=0
+        fi
+      fi
       if [[ "$_autopilot_trusted" -eq 1 ]]; then
         [[ "$trace_file" == "${_ap_resolved}/"* ]] && _ok=1
       fi
