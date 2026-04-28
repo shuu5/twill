@@ -36,7 +36,7 @@ digraph Dependencies {
     script_chain_runner [label="chain-runner\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_github [label="autopilot-github\n(3,666 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_github [label="autopilot-github\n(6,371 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_chain_steps [label="chain-steps\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_compaction_resume [label="compaction-resume\n(927 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
@@ -69,6 +69,7 @@ digraph Dependencies {
     script_chain_runner -> script_compaction_resume [style=invis, weight=10];
     script_chain_runner -> script_compaction_resume [style=invis, weight=10];
     script_chain_runner -> script_compaction_resume [style=invis, weight=10];
+    script_state_read -> script_state_write [style=invis, weight=10];
     script_state_read -> script_state_write [style=invis, weight=10];
     script_state_read -> script_state_write [style=invis, weight=10];
     script_state_read -> script_state_write [style=invis, weight=10];

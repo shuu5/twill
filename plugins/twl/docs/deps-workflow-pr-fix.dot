@@ -21,18 +21,18 @@ digraph Dependencies {
 
     // L1: Direct Commands
     cmd_post_fix_verify [label="post-fix-verify\n(756 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_warning_fix [label="warning-fix\n(461 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_warning_fix [label="warning-fix\n(597 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_fix_phase [label="fix-phase\n(552 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
 
     // L2: Sub Commands
 
     // L3: Agents
     agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,841 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_code_reviewer [label="worker-code-reviewer\n(1,002 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_code_reviewer [label="worker-code-reviewer\n(2,503 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_security_reviewer [label="worker-security-reviewer\n(866 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
-    script_tech_stack_detect [label="tech-stack-detect\n(539 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_tech_stack_detect [label="tech-stack-detect\n(773 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(2,484 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_pr_review_manifest [label="pr-review-manifest\n(2,034 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

@@ -3,8 +3,8 @@
 # RED tests for Issue #982: co-autopilot SKILL.md split (controller_size + token_bloat)
 #
 # AC coverage:
-#   AC1 - controller_size ≤ 200 lines (frontmatter excluded)
-#   AC2 - token_bloat ≤ 1500 tok
+#   AC1 - controller_size ≤ 280 lines (frontmatter excluded, threshold raised by Issue #1082 inline)
+#   AC2 - token_bloat ≤ 3000 tok (raised from 1500 by Issue #1082 inline)
 #   AC3 - all refs in refs/ are 1:1 referenced by Read instructions in SKILL.md
 #   AC4 - each ref file ≤ 200 lines
 #   AC5 - twl check --deps-integrity 0 errors
@@ -32,10 +32,10 @@ setup() {
 }
 
 # ===========================================================================
-# AC1: controller_size ≤ 200 lines (frontmatter 除外)
+# AC1: controller_size ≤ 280 lines (frontmatter 除外、Issue #1082 inline 化後)
 # ===========================================================================
 
-@test "ac1: co-autopilot SKILL.md body lines ≤ 200 (frontmatter excluded)" {
+@test "ac1: co-autopilot SKILL.md body lines ≤ 280 (frontmatter excluded)" {
   [ -f "${SKILL_MD}" ]
   run python3 - "${SKILL_MD}" <<'EOF'
 import sys
@@ -52,8 +52,8 @@ if lines and lines[0].strip() == '---':
             break
 body_lines = len(lines) - body_start
 print(f"body_lines={body_lines}")
-if body_lines > 200:
-    print(f"FAIL: {body_lines} lines > 200 (threshold)")
+if body_lines > 280:
+    print(f"FAIL: {body_lines} lines > 280 (threshold)")
     sys.exit(1)
 EOF
   [ "${status}" -eq 0 ]
@@ -61,10 +61,10 @@ EOF
 }
 
 # ===========================================================================
-# AC2: token_bloat ≤ 1500 tok
+# AC2: token_bloat ≤ 3000 tok (Issue #1082 inline 化により閾値を 1500→3000 に緩和)
 # ===========================================================================
 
-@test "ac2: co-autopilot SKILL.md token count ≤ 1500" {
+@test "ac2: co-autopilot SKILL.md token count ≤ 3000" {
   [ -f "${SKILL_MD}" ]
   run python3 - "${SKILL_MD}" <<'EOF'
 import sys
@@ -84,8 +84,8 @@ except ImportError:
     method = "approx(len/4)"
 
 print(f"tokens={tok} method={method}")
-if tok > 1500:
-    print(f"FAIL: {tok} tok > 1500 (warn threshold)")
+if tok > 3000:
+    print(f"FAIL: {tok} tok > 3000 (warn threshold)")
     sys.exit(1)
 EOF
   [ "${status}" -eq 0 ]

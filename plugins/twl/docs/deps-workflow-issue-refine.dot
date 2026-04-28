@@ -15,9 +15,10 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(3,235 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(578 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
+    skill_refine_processing_flow [label="twl:refine-processing-flow\n(2,840 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_issue_spec_review [label="issue-spec-review\n(1,870 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
@@ -40,6 +41,7 @@ digraph Dependencies {
 
     // Layer constraints
     { rank=same; skill_workflow_issue_refine; }
+    { rank=same; skill_refine_processing_flow; }
     { rank=same; cmd_issue_spec_review; cmd_issue_review_aggregate; cmd_issue_arch_drift; }
     { rank=same; agent_issue_critic; agent_issue_feasibility; agent_worker_codex_reviewer; }
     { rank=same; script_escape_issue_body; script_spec_review_manifest; script_spec_review_session_init; }
@@ -49,6 +51,7 @@ digraph Dependencies {
     skill_workflow_issue_refine -> cmd_issue_review_aggregate;
     skill_workflow_issue_refine -> cmd_issue_arch_drift;
     skill_workflow_issue_refine -> script_spec_review_session_init;
+    skill_workflow_issue_refine -> skill_refine_processing_flow;
     cmd_issue_spec_review -> agent_issue_critic [style=dashed];
     cmd_issue_spec_review -> agent_issue_feasibility [style=dashed];
     cmd_issue_spec_review -> agent_worker_codex_reviewer [style=dashed];
@@ -61,6 +64,7 @@ digraph Dependencies {
     cmd_issue_spec_review -> cmd_issue_review_aggregate [style=invis, weight=10];
     cmd_issue_review_aggregate -> cmd_issue_arch_drift [style=invis, weight=10];
     cmd_issue_arch_drift -> script_spec_review_session_init [style=invis, weight=10];
+    script_spec_review_session_init -> skill_refine_processing_flow [style=invis, weight=10];
     agent_issue_critic -> agent_issue_feasibility [style=invis, weight=10];
     agent_issue_feasibility -> agent_worker_codex_reviewer [style=invis, weight=10];
     agent_worker_codex_reviewer -> script_escape_issue_body [style=invis, weight=10];
