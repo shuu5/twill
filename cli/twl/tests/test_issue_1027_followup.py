@@ -16,8 +16,6 @@ AC5: PR merged + #945 Epic AC8 が真に達成
 
 from pathlib import Path
 
-import pytest
-
 # パス定義
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 CLI_TWL_DIR = REPO_ROOT / "cli" / "twl"
