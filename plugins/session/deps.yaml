@@ -108,3 +108,8 @@ tests:
     type: test
     path: tests/cld-observe-any.bats
     description: "cld-observe-any の bats unit tests（多指標 AND 判定: LLM indicator false positive / MENU-READY / PANE-DEAD / BUDGET-LOW / PHASE-COMPLETE cmd-echo / event-dir スキーマ確認 / PERMISSION-PROMPT 4 ケース）"
+
+  session-comm-script-dir-validate-test:
+    type: test
+    path: tests/session-comm-script-dir-validate.bats
+    description: "session-comm.sh SCRIPT_DIR 上書きリスク対策の検証（#1048: _TEST_MODE+SESSION_COMM_SCRIPT_DIR の二段検証 / session-state.sh 存在確認）"
