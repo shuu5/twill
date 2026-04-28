@@ -118,15 +118,26 @@ trace_event() {
   esac
   # 絶対パス検証（issue-1015）: /tmp・TMPDIR・AUTOPILOT_DIR 配下のみ許可
   if [[ "$trace_file" = /* ]]; then
+    # symlink TOCTOU 対策（issue-1041）: realpath で symlink を解決してから検証
+    # 解決失敗時（realpath 利用不可など）は安全側に倒して書き込み拒否
+    local resolved_trace
+    resolved_trace=$(realpath --canonicalize-missing "$trace_file" 2>/dev/null) || return 0
+    trace_file="$resolved_trace"
     local _ok=0
     [[ "$trace_file" == /tmp/* ]] && _ok=1
     if [[ "$_ok" -eq 0 && -n "${TMPDIR:-}" ]]; then
-      [[ "$trace_file" == "${TMPDIR%/}/"* ]] && _ok=1
+      # TMPDIR 自体が symlink である可能性に備えて resolve（macOS 互換性等）
+      local _tmp_resolved
+      _tmp_resolved=$(realpath --canonicalize-missing "${TMPDIR%/}" 2>/dev/null) || _tmp_resolved="${TMPDIR%/}"
+      [[ "$trace_file" == "${_tmp_resolved}/"* ]] && _ok=1
     fi
     if [[ "$_ok" -eq 0 && -n "${AUTOPILOT_DIR:-}" ]]; then
       local _ap="${AUTOPILOT_DIR%/}"
       [[ "$_ap" != /* ]] && _ap="${PWD}/${_ap}"
-      [[ "$trace_file" == "${_ap}/"* ]] && _ok=1
+      # AUTOPILOT_DIR 自体が symlink を含む可能性に備えて resolve
+      local _ap_resolved
+      _ap_resolved=$(realpath --canonicalize-missing "$_ap" 2>/dev/null) || _ap_resolved="$_ap"
+      [[ "$trace_file" == "${_ap_resolved}/"* ]] && _ok=1
     fi
     [[ "$_ok" -eq 0 ]] && return 0
   fi
