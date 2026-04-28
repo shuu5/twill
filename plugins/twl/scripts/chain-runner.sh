@@ -121,7 +121,7 @@ trace_event() {
     local _ok=0
     [[ "$trace_file" == /tmp/* ]] && _ok=1
     if [[ "$_ok" -eq 0 && -n "${TMPDIR:-}" ]]; then
-      [[ "$trace_file" == "${TMPDIR}/"* ]] && _ok=1
+      [[ "$trace_file" == "${TMPDIR%/}/"* ]] && _ok=1
     fi
     if [[ "$_ok" -eq 0 && -n "${AUTOPILOT_DIR:-}" ]]; then
       local _ap="${AUTOPILOT_DIR%/}"

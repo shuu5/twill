@@ -126,6 +126,30 @@ teardown() {
 }
 
 # ===========================================================================
+# AC4b: TMPDIR 配下の絶対パスは許可される（回帰テスト — TMPDIR trailing slash 正規化）
+# WHEN TMPDIR が設定されており、TWL_CHAIN_TRACE がその配下の絶対パスを指す
+# THEN trace_event() はそのパスにファイルを作成する（TMPDIR%/ 正規化の回帰防止）
+# ===========================================================================
+
+@test "trace-tmpdir[regression]: TMPDIR 配下の絶対パスは trace ファイルが作成される" {
+  local tmpdir_base="${TMPDIR:-/tmp}"
+  local trace_path="${tmpdir_base%/}/twl-test-trace-1015-tmpdir-$$"
+  rm -f "$trace_path" 2>/dev/null || true
+
+  run env TMPDIR="${tmpdir_base}" bash "$CR" --trace "$trace_path" resolve-issue-num
+
+  local file_created=0
+  [[ -f "$trace_path" ]] && file_created=1
+  rm -f "$trace_path" 2>/dev/null || true
+
+  assert_success
+  [[ "$file_created" -eq 1 ]] || {
+    echo "FAIL: TMPDIR 配下の絶対パスに trace ファイルが作成されなかった: $trace_path" >&2
+    return 1
+  }
+}
+
+# ===========================================================================
 # AC5: AUTOPILOT_DIR 配下の絶対パスは許可される（回帰テスト）
 # WHEN AUTOPILOT_DIR が設定されており、TWL_CHAIN_TRACE がその配下の絶対パスを指す
 # THEN trace_event() はそのパスにファイルを作成する（autopilot-launch.sh との互換性）
