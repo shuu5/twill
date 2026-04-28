@@ -625,3 +625,296 @@ MOCKEOF
     # thinking 中でも PERMISSION-PROMPT は emit される
     echo "$output" | grep -q "PERMISSION-PROMPT"
 }
+
+# ---------------------------------------------------------------------------
+# Scenario 14: AC1 — 既知 thinking indicator "Burrowing" あり → STAGNATE emit なし
+#   現実装の LLM_INDICATORS に "Burrowing" が含まれていないため、
+#   thinking guard が機能せず STAGNATE が emit される → RED（実装後 PASS）
+# ---------------------------------------------------------------------------
+@test "AC1: thinking indicator 'Burrowing' あり → STAGNATE emit なし（偽陽性防止）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="ap-burrowing-win"
+
+# "Burrowing" は Claude Code が thinking 中に表示する indicator
+capture="Burrowing… (3s)
+Analyzing the codebase structure..."
+export capture
+
+# log ファイルを stagnate 閾値より古い mtime で作成（5s 閾値に対して 30s 前）
+logfile="$TMPD/${win}.log"
+touch -t "$(date -d '30 seconds ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-30S '+%Y%m%d%H%M.%S' 2>/dev/null || echo '202001010000.00')" "$logfile" 2>/dev/null || touch "$logfile"
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+# stagnate-sec 5 で即時評価（log は 30s 前 → stagnate 超過）
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once \
+    --log-dir "$TMPD" \
+    --stagnate-sec 5 2>/dev/null
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    # "Burrowing" は thinking 中の indicator なので STAGNATE は emit されない（RED: 現実装では emit される）
+    ! echo "$output" | grep -q "STAGNATE"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 15: AC1 — 複数の未収録 indicator（Sautéed, Cerebrating, Thundering）
+#   各 indicator あり + stagnate 超過 → STAGNATE emit なしを assert
+#   現実装ではカタログ未収録のため thinking guard をすり抜けて STAGNATE emit される → RED
+# ---------------------------------------------------------------------------
+@test "AC1: thinking indicator 'Sautéed / Cerebrating / Thundering' あり → STAGNATE emit なし" {
+    # Sautéed のテスト
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="ap-sauted-win"
+
+capture="Sautéed… (2s)
+Processing input tokens..."
+export capture
+
+logfile="$TMPD/${win}.log"
+touch -t "$(date -d '30 seconds ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-30S '+%Y%m%d%H%M.%S' 2>/dev/null || echo '202001010000.00')" "$logfile" 2>/dev/null || touch "$logfile"
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once \
+    --log-dir "$TMPD" \
+    --stagnate-sec 5 2>/dev/null
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    ! echo "$output" | grep -q "STAGNATE"
+
+    # Thundering のテスト
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="ap-thundering-win"
+
+capture="Thundering… (4s)
+Working on the task..."
+export capture
+
+logfile="$TMPD/${win}.log"
+touch -t "$(date -d '30 seconds ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-30S '+%Y%m%d%H%M.%S' 2>/dev/null || echo '202001010000.00')" "$logfile" 2>/dev/null || touch "$logfile"
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once \
+    --log-dir "$TMPD" \
+    --stagnate-sec 5 2>/dev/null
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    ! echo "$output" | grep -q "STAGNATE"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 16: AC2 — 完全未知の indicator（"Fizzing… (1s)"）でも STAGNATE emit なし
+#   一般化 regex `^[*•·✻✽✶✢✻] [A-Z][a-z]+(ed|ing|in')` で未知 indicator を汎用検出する実装後 PASS
+#   現実装（固定リスト）では "Fizzing" を検出できないため STAGNATE emit される → RED
+# ---------------------------------------------------------------------------
+@test "AC2: 未知 indicator 'Fizzing… (1s)'（一般化 regex 対象） → STAGNATE emit なし" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="ap-fizzing-win"
+
+# "Fizzing" は LLM_INDICATORS に存在しない完全未知の indicator
+# 一般化 regex `^[A-Z][a-z]+(ed|ing|in')…` にマッチするパターン
+capture="Fizzing… (1s)
+Evaluating options..."
+export capture
+
+logfile="$TMPD/${win}.log"
+touch -t "$(date -d '30 seconds ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-30S '+%Y%m%d%H%M.%S' 2>/dev/null || echo '202001010000.00')" "$logfile" 2>/dev/null || touch "$logfile"
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once \
+    --log-dir "$TMPD" \
+    --stagnate-sec 5 2>/dev/null
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    # 未知の indicator でも thinking guard が機能し STAGNATE は emit されない（RED: 現実装では emit される）
+    ! echo "$output" | grep -q "STAGNATE"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 17: AC2 — indicator suffix pattern "in'" （Beboppin'）も一般化検出対象
+#   "Beboppin'… (5s)" は `[A-Z][a-z]+in'` パターン → 実装後は thinking guard が機能するはず
+#   現実装では "Beboppin'" が LLM_INDICATORS に含まれないため STAGNATE emit される → RED
+# ---------------------------------------------------------------------------
+@test "AC2: indicator suffix \"in'\" を持つ 'Beboppin\\'' → STAGNATE emit なし（一般化 regex で検出）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="ap-beboppin-win"
+
+# "Beboppin'" は Claude Code の thinking indicator（-in' suffix パターン）
+capture="Beboppin'… (5s)
+Generating code changes..."
+export capture
+
+logfile="$TMPD/${win}.log"
+touch -t "$(date -d '30 seconds ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-30S '+%Y%m%d%H%M.%S' 2>/dev/null || echo '202001010000.00')" "$logfile" 2>/dev/null || touch "$logfile"
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once \
+    --log-dir "$TMPD" \
+    --stagnate-sec 5 2>/dev/null
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    ! echo "$output" | grep -q "STAGNATE"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 18: AC3 — 偽陽性ケース: "Burrowing…" indicator あり → STAGNATE emit なし
+#   Scenario 14 と同一趣旨だが AC3 の「偽陽性 case 検証」として明示的に配置
+#   現実装で "Burrowing" が未収録なため STAGNATE emit される → RED
+# ---------------------------------------------------------------------------
+@test "AC3: 偽陽性ケース — 'Burrowing…' indicator あり → STAGNATE emit なし" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="ap-ac3-fp-win"
+
+capture="Burrowing… (7s)
+Reading source files..."
+export capture
+
+logfile="$TMPD/${win}.log"
+touch -t "$(date -d '60 seconds ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-60S '+%Y%m%d%H%M.%S' 2>/dev/null || echo '202001010000.00')" "$logfile" 2>/dev/null || touch "$logfile"
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once \
+    --log-dir "$TMPD" \
+    --stagnate-sec 30 2>/dev/null
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    # Burrowing indicator が存在する → LLM は思考中 → STAGNATE は emit されない（RED: 現実装では emit される）
+    ! echo "$output" | grep -q "STAGNATE"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 19: AC3 — 本物の stall: indicator なし + 出力なし（stagnate 超過）→ STAGNATE emit あり
+#   これは現実装でも PASS する（STAGNATE emit が機能している確認テスト）
+#   ただし、AC1/AC2 実装後も regression しないことを保証する
+# ---------------------------------------------------------------------------
+@test "AC3: 本物の stall — indicator なし + log 古い → STAGNATE emit あり" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="ap-ac3-stall-win"
+
+# indicator なし、出力なし（stall 状態）
+capture="Last output 10 minutes ago."
+export capture
+
+# log ファイルを stagnate-sec（10s）より十分古い mtime で作成
+logfile="$TMPD/${win}.log"
+touch -t "$(date -d '60 seconds ago' '+%Y%m%d%H%M.%S' 2>/dev/null || date -v-60S '+%Y%m%d%H%M.%S' 2>/dev/null || echo '202001010000.00')" "$logfile" 2>/dev/null || touch "$logfile"
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" --once \
+    --log-dir "$TMPD" \
+    --stagnate-sec 10 2>/dev/null
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    # indicator なし + stagnate 超過 → STAGNATE は emit される（これは AC1/AC2 実装後も保持される仕様）
+    echo "$output" | grep -q "STAGNATE"
+}

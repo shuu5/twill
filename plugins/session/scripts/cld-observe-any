@@ -10,6 +10,8 @@ else
 fi
 
 # LLM 思考 indicator 定数リスト（Claude Code UI 変更時はここを更新）
+# AC1: Claude Code 4.x 追加 indicator
+# AC2: 一般化 regex "[A-Z][a-z]+(in'|ing|ed)(…| for [0-9]| \([0-9])" で未知 indicator をカバー
 LLM_INDICATORS=(
     "Thinking"
     "Brewing"
@@ -26,6 +28,19 @@ LLM_INDICATORS=(
     "Running .* agents"
     "[0-9]+ tool uses"
     "thinking with max effort"
+    "Saut.*ed"
+    "Burrowing"
+    "Cerebrating"
+    "Spinning"
+    "Beboppin"
+    "Thundering"
+    "Baked"
+    "Cooked"
+    "Crunched"
+    "Churned"
+    "Skedaddling"
+    "Orchestrating"
+    "[A-Z][a-z]+(in'|ing|ed)(…| for [0-9]| \\([0-9])"
 )
 
 # --- デフォルト値 ---
