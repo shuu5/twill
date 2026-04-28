@@ -400,27 +400,30 @@ EOF
   [ "${status}" -eq 0 ]
 }
 
-@test "ac6: audit.py の co-autopilot 例外は controller_size セクションに位置する" {
+@test "ac6: audit.py の co-autopilot 例外は controller_size で参照される" {
   [ -f "${AUDIT_PY}" ]
   run python3 - "${AUDIT_PY}" <<'EOF'
 import sys, re
 from pathlib import Path
 
 code = Path(sys.argv[1]).read_text(encoding='utf-8')
-# controller_size セクション内（Section 1）に co-autopilot 例外があること
-section1_match = re.search(
-    r'Section 1.*?Section 2',
-    code,
-    re.DOTALL
-)
+# _CONTROLLER_SIZE_OVERRIDES がモジュールレベルまたは Section 1 に定義され
+# co-autopilot: 280 を含むこと、かつ Section 1 でその変数が参照されること
+has_override_dict = bool(re.search(r"_CONTROLLER_SIZE_OVERRIDES\s*[=:].*\{[^}]*'co-autopilot'\s*:\s*280", code, re.DOTALL) or
+                         re.search(r"_CONTROLLER_SIZE_OVERRIDES\s*=\s*\{[^}]*'co-autopilot'\s*:\s*280", code, re.DOTALL))
+section1_match = re.search(r'Section 1.*?Section 2', code, re.DOTALL)
 if not section1_match:
     print("FAIL: audit.py に Section 1 (controller_size) が見当たらない")
     sys.exit(1)
 section1 = section1_match.group(0)
-if 'co-autopilot' not in section1 or '280' not in section1:
-    print("FAIL: Section 1 に co-autopilot 例外ロジック（280）が存在しない")
+has_reference_in_section1 = '_CONTROLLER_SIZE_OVERRIDES' in section1
+if not has_override_dict:
+    print("FAIL: _CONTROLLER_SIZE_OVERRIDES に co-autopilot: 280 が定義されていない")
     sys.exit(1)
-print("OK: Section 1 に co-autopilot exception found")
+if not has_reference_in_section1:
+    print("FAIL: Section 1 で _CONTROLLER_SIZE_OVERRIDES が参照されていない")
+    sys.exit(1)
+print("OK: _CONTROLLER_SIZE_OVERRIDES defined with co-autopilot:280 and referenced in Section 1")
 EOF
   [ "${status}" -eq 0 ]
 }

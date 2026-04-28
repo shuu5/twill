@@ -15,6 +15,12 @@ REQUIRED_OUTPUT_KEYWORDS = {
     "confidence": {"confidence"},              # 必須
 }
 
+# controller_size: コンポーネント別の critical 行数閾値（デフォルト 200）
+# Issue #1082: co-autopilot は inline 化により 231 行になるため 280 に緩和
+_CONTROLLER_SIZE_OVERRIDES: Dict[str, int] = {
+    'co-autopilot': 280,
+}
+
 
 def _count_inline_bash_lines(file_path: Path) -> Tuple[int, int]:
     """bash/shell/sh コードブロックの行数と非空本文行数を返す
@@ -474,10 +480,6 @@ def audit_collect(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] =
             }
 
     # Section 1: Controller Size
-    # co-autopilot: threshold raised to 280 (Issue #1082 inline 化により 251 行になるため)
-    _CONTROLLER_SIZE_OVERRIDES = {
-        'co-autopilot': 280,
-    }
     for name, comp in sorted(all_components.items()):
         resolved = resolve_type(comp['type'])
         if resolved != 'controller':
@@ -828,7 +830,8 @@ def audit_report(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = 
             continue
         path = plugin_root / comp['path']
         lines = _count_body_lines(path)
-        if lines > 200:
+        critical_threshold = _CONTROLLER_SIZE_OVERRIDES.get(name, 200)
+        if lines > critical_threshold:
             severity = 'CRITICAL'
         elif lines > 120:
             severity = 'WARNING'
