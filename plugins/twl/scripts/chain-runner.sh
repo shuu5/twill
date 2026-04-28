@@ -135,10 +135,12 @@ trace_event() {
   local step="$1" phase="$2" exit_code="${3:-}"
   [[ -z "${TWL_CHAIN_TRACE:-}" ]] && return 0
   local trace_file="$TWL_CHAIN_TRACE"
-  # パストラバーサル拒否（相対パスのみ意味あり、絶対パスは下記 _resolve_path で正規化される）
-  case "$trace_file" in
-    *..*) return 0 ;;
-  esac
+  # 相対パスの traversal 拒否（絶対パスは下記 _resolve_path で正規化される）
+  if [[ "$trace_file" != /* ]]; then
+    case "$trace_file" in
+      *..*) return 0 ;;
+    esac
+  fi
   # 絶対パス検証（issue-1015）: /tmp・TMPDIR・AUTOPILOT_DIR 配下のみ許可
   if [[ "$trace_file" = /* ]]; then
     # symlink TOCTOU 対策（issue-1041, macOS 互換: H1 follow-up）:
