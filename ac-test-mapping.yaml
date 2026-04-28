@@ -122,3 +122,69 @@ issue_1015:
       test_name: "trace-traversal[regression]: パストラバーサル（*..*）は引き続きブロックされる"
       status: GREEN
       note: "回帰テスト。既存の case *..*) 節の動作を維持"
+
+# --- Issue #1022 ---
+issue_1022:
+  issue: 1022
+  framework: bats
+  mappings:
+    - ac_index: 1
+      ac_text: "budget-detect.sh で 2 軸独立判定を実装 (consumption-based + cycle-based). 軸1(token-based): budget_remaining_min = cycle_total_min x (100 - pct%) / 100 <= threshold_remaining_min (default 15). 軸2(cycle-based): cycle_reset_min <= threshold_cycle_min (default 30). 発火条件: 軸1 OR 軸2"
+      test_file: "plugins/twl/tests/unit/budget-detect-dual-axis/budget-detect-dual-axis.bats"
+      test_names:
+        - "ac1: budget-detect.sh に threshold_remaining_min 変数が存在する"
+        - "ac1: budget-detect.sh に threshold_cycle_min 変数が存在する"
+        - "ac1: budget-detect.sh が cycle_total_min x (100 - pct) / 100 の計算を行う"
+        - "ac1: budget-detect.sh の判定条件が軸1 OR 軸2 の形式になっている"
+        - "ac1: calc_remaining_min ヘルパー - 5h cycle で 9% 消費のとき残量 273 分"
+        - "ac1: calc_remaining_min ヘルパー - 5h cycle で 88% 消費のとき残量 36 分"
+        - "ac1: should_alert_dual_axis ヘルパー - 軸2のみ満たすとき alert=true"
+        - "ac1: should_alert_dual_axis ヘルパー - 両軸とも閾値超のとき alert=false"
+      status: RED
+      red_mechanism: >
+        budget-detect.sh に threshold_remaining_min / threshold_cycle_min が存在せず
+        cycle_total_min x (100 - pct) / 100 の計算式もない。
+        現実装は (YYm) を消費残量として直接分換算しているため 4 テストが fail する。
+        ヘルパー関数テスト (calc_remaining_min, should_alert_dual_axis) は GREEN (基準値確認用)。
+
+    - ac_index: 2
+      ac_text: "monitor-channel-catalog.md [BUDGET-LOW] セクションで (YYm) の意味を明記 (cycle reset wall-clock であって残量ではない)"
+      test_file: "plugins/twl/tests/unit/budget-detect-dual-axis/budget-detect-dual-axis.bats"
+      test_names:
+        - "ac2: monitor-channel-catalog.md の [BUDGET-LOW] セクションに cycle reset wall-clock の説明がある"
+        - "ac2: monitor-channel-catalog.md の [BUDGET-LOW] セクションで (YYm) が消費残量ではないことを区別している"
+      status: RED
+      red_mechanism: >
+        monitor-channel-catalog.md に 'cycle reset' および 'wall-clock' の記述がなく
+        (YYm) の意味が明記されていないため grep がマッチせず fail する。
+
+    - ac_index: 3
+      ac_text: "SKILL.md 該当箇所も訂正 (「残量 15 分」と「reset まで 15 分」を区別)"
+      test_file: "plugins/twl/tests/unit/budget-detect-dual-axis/budget-detect-dual-axis.bats"
+      test_names:
+        - "ac3: SKILL.md に 2 軸判定の説明がある"
+        - "ac3: SKILL.md で cycle reset までの時間と消費残量を区別している"
+      status: RED
+      red_mechanism: >
+        SKILL.md に '2 軸' および 'threshold_cycle' の記述がなく
+        cycle reset と消費残量の区別が明記されていないため fail する。
+
+    - ac_index: 4
+      ac_text: "bats で偽陽性ケース (5h:9%(0h10m) → alert なし) と見逃しケース (5h:88%(2h00m) → alert OK) を検証"
+      test_file: "plugins/twl/tests/unit/budget-detect-dual-axis/budget-detect-dual-axis.bats"
+      test_names:
+        - "ac4: 偽陽性ケース - 5h:9%(0h10m) はアラートなし"
+        - "ac4: 見逃しケース - 5h:88%(2h00m) はアラートあり"
+      status: RED
+      red_mechanism: >
+        偽陽性テストは現実装の誤動作（BUDGET_MIN=10 <= 15 で誤アラート）を記録する。
+        見逃しテストは fail "AC4..." で明示的に RED を維持する。
+        実装完了後に assertion を書き換えることで PASS になる。
+
+    - ac_index: 5
+      ac_text: "PR merged + main HEAD 更新 (process AC - テスト対象外)"
+      test_file: "plugins/twl/tests/unit/budget-detect-dual-axis/budget-detect-dual-axis.bats"
+      test_names:
+        - "ac5: PR merged + main HEAD 更新（プロセス AC - skip）"
+      status: SKIP
+      note: "プロセス AC のため skip"
