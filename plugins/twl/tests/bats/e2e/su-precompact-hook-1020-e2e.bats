@@ -58,18 +58,19 @@ teardown() {
   local test_session_id="e2e-session-1020"
   local test_task="Issue #1020 PreCompact write 実装の検証"
 
-  cat > "${supervisor_dir}/session.json" <<SESSIONEOF
-{
-  "session_id": "${test_session_id}",
-  "claude_session_id": "e2e-claude-session-id",
-  "observer_window": "e2e-observer",
-  "status": "active",
-  "current_task": "${test_task}",
-  "started_at": "2026-04-28T00:00:00Z",
-  "wave": "Wave-Q",
-  "current_issue": 1020
-}
-SESSIONEOF
+  jq -n \
+    --arg sid "$test_session_id" \
+    --arg task "$test_task" \
+    '{
+      session_id: $sid,
+      claude_session_id: "e2e-claude-session-id",
+      observer_window: "e2e-observer",
+      status: "active",
+      current_task: $task,
+      started_at: "2026-04-28T00:00:00Z",
+      wave: "Wave-Q",
+      current_issue: 1020
+    }' > "${supervisor_dir}/session.json"
 
   # 既存の working-memory.md がある場合のシナリオ（前回のコンテンツ）
   cat > "${supervisor_dir}/working-memory.md" <<'WMEOF'
