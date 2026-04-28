@@ -1,0 +1,105 @@
+mappings:
+  - ac_index: 1
+    ac_text: "並列で 10 並列送信しても全メッセージが正しい順で届く"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac1: flock による排他制御が実装されている"
+    status: RED
+    note: "flock 未実装のため FAIL"
+
+  - ac_index: 1
+    ac_text: "並列で 10 並列送信しても全メッセージが正しい順で届く"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac1: send-keys が flock スコープ内にある"
+    status: RED
+    note: "flock 未実装のため FAIL"
+
+  - ac_index: 1
+    ac_text: "並列で 10 並列送信しても全メッセージが正しい順で届く"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac1: inject が flock を使用した排他送信を行う"
+    status: RED
+    note: "flock 未実装のため FAIL"
+
+  - ac_index: 2
+    ac_text: "受信側が input-waiting でない場合、送信は 5 秒待機後に retry"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac2: inject に retry ロジックが実装されている"
+    status: RED
+    note: "retry ロジック未実装のため FAIL"
+
+  - ac_index: 2
+    ac_text: "受信側が input-waiting でない場合、送信は 5 秒待機後に retry"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac2: retry 前に 5 秒待機が実装されている"
+    status: RED
+    note: "sleep 5 未実装のため FAIL"
+
+  - ac_index: 2
+    ac_text: "受信側が input-waiting でない場合、送信は 5 秒待機後に retry"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac2: non-input-waiting 時に session-state.sh state が 2 回以上呼ばれる（retry 確認）"
+    status: RED
+    note: "retry 未実装: state は 1 回しか呼ばれず即 exit 2 するため FAIL"
+
+  - ac_index: 2
+    ac_text: "受信側が input-waiting でない場合、送信は 5 秒待機後に retry"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac2: 2 回目の状態確認で input-waiting になれば inject が exit 0 で成功する"
+    status: RED
+    note: "retry 未実装: 初回 processing で即 exit 2 するため FAIL"
+
+  - ac_index: 3
+    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac3: cmd_inject 関数が定義されている"
+    status: GREEN
+    note: "既存実装のため PASS（baseline）"
+
+  - ac_index: 3
+    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac3: cmd_inject_file 関数が定義されている"
+    status: GREEN
+    note: "既存実装のため PASS（baseline）"
+
+  - ac_index: 3
+    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac3: inject が --force オプションをサポートしている"
+    status: GREEN
+    note: "既存実装のため PASS（baseline）"
+
+  - ac_index: 3
+    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac3: inject が --no-enter オプションをサポートしている"
+    status: GREEN
+    note: "既存実装のため PASS（baseline）"
+
+  - ac_index: 3
+    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac3: inject-file が --wait オプションをサポートしている"
+    status: GREEN
+    note: "既存実装のため PASS（baseline）"
+
+  - ac_index: 3
+    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac3: inject が non-input-waiting かつ --force なしで exit 2 を返す（既存 API 維持）"
+    status: GREEN
+    note: "既存動作の確認テスト。実装後もタイムアウト時は exit 2 を維持すること"
+
+  - ac_index: 3
+    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac3: メインディスパッチに inject-file が登録されている"
+    status: GREEN
+    note: "既存実装のため PASS（baseline）"
+
+  - ac_index: 3
+    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
+    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
+    test_name: "ac3: メインディスパッチに inject が登録されている"
+    status: GREEN
+    note: "既存実装のため PASS（baseline）"
