@@ -152,7 +152,7 @@ echo "[cleanup] セッション $SESSION_ID のクリーンアップを開始（
 for issue_file in "$AUTOPILOT_DIR/issues"/issue-*.json; do
   [[ -f "$issue_file" ]] || continue
 
-  issue_num=$(basename "$issue_file" | grep -oP '\d+')
+  issue_num=$(basename "$issue_file" .json); issue_num="${issue_num#issue-}"
   status=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('status','unknown'))" "$issue_file" 2>/dev/null || echo "unknown")
 
   case "$status" in
