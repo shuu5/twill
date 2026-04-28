@@ -86,3 +86,39 @@ issue_999:
       test_file: "plugins/twl/tests/unit/cleanup-session-json-archive/cleanup-session-json-archive.bats"
       test_name: "ac6-negative: in-progress Wave の cleanup → session.json は archive されない"
       status: GREEN
+
+# --- Issue #1015 ---
+issue_1015:
+  issue: 1015
+  framework: bats
+  mappings:
+    - ac_index: 1
+      ac_text: "TWL_CHAIN_TRACE に絶対パス（/ 始まり）を設定した場合、trace_event() はファイルを作成しない"
+      test_file: "plugins/twl/tests/unit/chain-runner-trace-abspath/chain-runner-trace-abspath.bats"
+      test_name: "trace-abspath[security][RED]: 絶対パスの場合、trace ファイルが作成されない"
+      status: RED
+      red_mechanism: "現行実装は *..*) パターンのみブロック。絶対パスは通過し mkdir -p + append が実行される"
+    - ac_index: 1a
+      ac_text: "TWL_CHAIN_TRACE に絶対パス＋サブディレクトリを設定した場合も拒否される"
+      test_file: "plugins/twl/tests/unit/chain-runner-trace-abspath/chain-runner-trace-abspath.bats"
+      test_name: "trace-abspath[security][RED]: 絶対パス＋サブディレクトリの場合も trace ファイルが作成されない"
+      status: RED
+      red_mechanism: "同上。mkdir -p でサブディレクトリごと作成されファイルが書き込まれる"
+    - ac_index: 1b
+      ac_text: "TWL_CHAIN_TRACE 環境変数で絶対パスを渡した場合も同様に拒否される"
+      test_file: "plugins/twl/tests/unit/chain-runner-trace-abspath/chain-runner-trace-abspath.bats"
+      test_name: "trace-abspath[env-var][RED]: TWL_CHAIN_TRACE 環境変数で絶対パスを渡した場合も拒否される"
+      status: RED
+      red_mechanism: "同上。--trace フラグ経由か環境変数経由かで挙動に差はない"
+    - ac_index: 2
+      ac_text: "TWL_CHAIN_TRACE に相対パスを設定した場合、trace_event() はファイルを作成する（既存動作を維持）"
+      test_file: "plugins/twl/tests/unit/chain-runner-trace-abspath/chain-runner-trace-abspath.bats"
+      test_name: "trace-relpath[regression]: 相対パスの場合、trace ファイルが作成される"
+      status: GREEN
+      note: "回帰テスト。修正前後ともに PASS であること"
+    - ac_index: 3
+      ac_text: "TWL_CHAIN_TRACE に *..*（パストラバーサル）を含む場合、trace_event() はファイルを作成しない（既存動作）"
+      test_file: "plugins/twl/tests/unit/chain-runner-trace-abspath/chain-runner-trace-abspath.bats"
+      test_name: "trace-traversal[regression]: パストラバーサル（*..*）は引き続きブロックされる"
+      status: GREEN
+      note: "回帰テスト。既存の case *..*) 節の動作を維持"
