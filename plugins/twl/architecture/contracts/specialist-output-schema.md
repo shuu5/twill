@@ -51,8 +51,13 @@ ADR-004 の実装仕様。全 specialist が準拠する出力形式を定義す
           },
           "category": {
             "type": "string",
-            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "architecture-violation"],
+            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "architecture-violation", "architecture-drift", "chain-integrity-drift", "ambiguity", "assumption", "scope", "feasibility", "ac-alignment", "ac-alignment-unknown"],
             "description": "finding の分類"
+          },
+          "finding_target": {
+            "type": "string",
+            "enum": ["issue_description", "codebase_state"],
+            "description": "co-issue specialist は MUST。省略時デフォルト: codebase_state"
           }
         }
       }
@@ -104,6 +109,14 @@ status の自動導出ルール:
 | `structure` | worker-structure |
 | `principles` | worker-principles |
 | `architecture-violation` | worker-architecture（pr_diff モード） |
+| `architecture-drift` | worker-architecture（plugin_path モード） |
+| `chain-integrity-drift` | worker-workflow-integrity |
+| `ambiguity` | issue-critic |
+| `assumption` | issue-critic |
+| `scope` | issue-critic |
+| `feasibility` | issue-feasibility |
+| `ac-alignment` | issue-pr-alignment（意味的整合性） |
+| `ac-alignment-unknown` | issue-pr-alignment（判断不能 AC、INFO のみ） |
 
 ## Few-shot 例
 
