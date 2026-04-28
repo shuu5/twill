@@ -221,31 +221,51 @@ cmd_inject() {
     local target
     target=$(resolve_target "$window_name") || exit 1
 
-    # 状態チェック（stdout=状態文字列、stderr=エラー情報を分離）
+    # 状態チェック + retry（AC2: non-input-waiting 時は 5 秒後に retry）
+    local max_retry_count=1
+    local retry_count=0
     local state
-    if ! state=$("$SCRIPT_DIR/session-state.sh" state "$window_name" 2>/dev/null); then
-        echo "Warning: session-state.sh failed for '$window_name'" >&2
-        state="unknown"
-    fi
+    while true; do
+        if ! state=$("$SCRIPT_DIR/session-state.sh" state "$window_name" 2>/dev/null); then
+            echo "Warning: session-state.sh failed for '$window_name'" >&2
+            state="unknown"
+        fi
 
-    if [[ "$state" != "input-waiting" ]]; then
+        if [[ "$state" == "input-waiting" ]]; then
+            break
+        fi
+
         if $force; then
             echo "Warning: target '$window_name' is in state '$state' (not input-waiting), sending anyway" >&2
-        else
+            break
+        fi
+
+        if [[ "$retry_count" -ge "$max_retry_count" ]]; then
             echo "Error: target '$window_name' is in state '$state' (expected: input-waiting)" >&2
             exit 2
         fi
-    fi
 
-    # send-keys で送信（-l: literal モード、キー名解釈を抑制）
-    tmux send-keys -t "$target" -l "$text" || {
-        echo "Error: failed to send keys to '$window_name'" >&2
-        exit 1
-    }
+        sleep "${SESSION_COMM_RETRY_DELAY:-5}"  # AC2: 5 秒待機後に retry
+        ((retry_count++)) || true
+    done
 
-    if ! $no_enter; then
-        tmux send-keys -t "$target" Enter
-    fi
+    # flock で排他制御（AC1: 同一 pane への並列送信を直列化）
+    local lock_file="${SESSION_COMM_LOCK_DIR:-/tmp}/session-comm-${target//[^a-zA-Z0-9]/-}.lock"
+    {
+        flock -w 30 9 || {
+            echo "Error: failed to acquire send lock for '$window_name'" >&2
+            exit 1
+        }
+        # send-keys で送信（-l: literal モード、キー名解釈を抑制）
+        tmux send-keys -t "$target" -l "$text" || {
+            echo "Error: failed to send keys to '$window_name'" >&2
+            exit 1
+        }
+
+        if ! $no_enter; then
+            tmux send-keys -t "$target" Enter
+        fi
+    } 9>"$lock_file"
 }
 
 # =============================================================================
