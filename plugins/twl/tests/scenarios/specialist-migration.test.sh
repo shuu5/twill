@@ -94,14 +94,11 @@ run_test_skip() {
 
 DEPS_YAML="deps.yaml"
 
-# --- 29 specialist 一覧（pr-test は既存 atomic command と重複のため除外） ---
+# --- 25 specialist 一覧（pr-test は既存 atomic command と重複のため除外） ---
+# Issue #1081: worker-{fastapi,hono,nextjs,r}-reviewer を worker-code-reviewer に統合
 ALL_SPECIALISTS=(
   worker-code-reviewer
   worker-security-reviewer
-  worker-nextjs-reviewer
-  worker-fastapi-reviewer
-  worker-hono-reviewer
-  worker-r-reviewer
   worker-architecture
   worker-structure
   worker-principles
@@ -143,10 +140,6 @@ HAIKU_SPECIALISTS=(
 SONNET_SPECIALISTS=(
   worker-code-reviewer
   worker-security-reviewer
-  worker-nextjs-reviewer
-  worker-fastapi-reviewer
-  worker-hono-reviewer
-  worker-r-reviewer
   worker-architecture
   worker-llm-output-reviewer
   worker-llm-eval-runner

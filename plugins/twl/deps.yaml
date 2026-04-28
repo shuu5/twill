@@ -1937,12 +1937,8 @@ commands:
       - specialist: worker-principles
       - specialist: worker-code-reviewer
       - specialist: worker-security-reviewer
-      - specialist: worker-nextjs-reviewer
-      - specialist: worker-fastapi-reviewer
       - specialist: worker-supabase-migration-checker
-      - specialist: worker-r-reviewer
       - specialist: worker-e2e-reviewer
-      - specialist: worker-hono-reviewer
       - specialist: worker-rls-reviewer
       - specialist: worker-llm-output-reviewer
       - specialist: worker-llm-eval-runner
@@ -2048,12 +2044,8 @@ commands:
       - specialist: worker-principles
       - specialist: worker-code-reviewer
       - specialist: worker-security-reviewer
-      - specialist: worker-nextjs-reviewer
-      - specialist: worker-fastapi-reviewer
       - specialist: worker-supabase-migration-checker
-      - specialist: worker-r-reviewer
       - specialist: worker-e2e-reviewer
-      - specialist: worker-hono-reviewer
       - specialist: worker-rls-reviewer
       - specialist: worker-llm-output-reviewer
       - specialist: worker-llm-eval-runner
@@ -3116,50 +3108,6 @@ agents:
     can_spawn: []
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "セキュリティ脆弱性検出"
-
-  worker-nextjs-reviewer:
-    type: specialist
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: agents/worker-nextjs-reviewer.md
-    model: sonnet
-    spawnable_by: [workflow, composite, controller]
-    can_spawn: []
-    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "Next.js 15 + React 19 コードレビュー"
-
-  worker-fastapi-reviewer:
-    type: specialist
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: agents/worker-fastapi-reviewer.md
-    model: sonnet
-    spawnable_by: [workflow, composite, controller]
-    can_spawn: []
-    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "FastAPI + Pydantic v2 コードレビュー"
-
-  worker-hono-reviewer:
-    type: specialist
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: agents/worker-hono-reviewer.md
-    model: sonnet
-    spawnable_by: [workflow, composite, controller]
-    can_spawn: []
-    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "Hono + Zod + monorepo整合性レビュー"
-
-  worker-r-reviewer:
-    type: specialist
-    refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
-    path: agents/worker-r-reviewer.md
-    model: sonnet
-    spawnable_by: [workflow, composite, controller]
-    can_spawn: []
-    skills: [ref-specialist-output-schema, ref-specialist-few-shot]
-    description: "Rコード（.R, .Rmd, .qmd）のレビュー"
 
   worker-arch-doc-reviewer:
     type: specialist
