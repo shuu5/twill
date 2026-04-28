@@ -1,0 +1,144 @@
+mappings:
+  # AC1: wave-collect 後の watcher/Monitor 自動停止
+  - ac_index: 1
+    ac_text: "wave-collect.md の最後で task-ids.json に記録された Monitor task ID を TaskStop で停止する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac1: wave-collect.md に watcher/Monitor 自動停止ブロックが存在する"
+
+  - ac_index: 1
+    ac_text: "wave-collect.md の最後で watcher-pids.json に記録された PID を kill -TERM で停止する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac1: wave-collect.md に watcher-pids.json kill -TERM ロジックが存在する"
+
+  - ac_index: 1
+    ac_text: "wave-N-task-ids.json が存在するとき wave-collect が Monitor task 停止ログを出力する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac1: wave-N-task-ids.json が存在するとき wave-collect が Monitor task 停止ログを出力する"
+
+  - ac_index: 1
+    ac_text: "wave-N-watcher-pids.json が存在するとき wave-collect が watcher PID kill ログを出力する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac1: wave-N-watcher-pids.json が存在するとき wave-collect が watcher PID kill ログを出力する"
+
+  - ac_index: 1
+    ac_text: "task-ids.json が存在しない場合でも wave-collect が graceful に動作する（exit 1 禁止）"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac1[edge]: wave-N-task-ids.json が存在しない場合でも wave-collect が異常終了しない"
+
+  - ac_index: 1
+    ac_text: "spawn-controller.sh が起動時に Monitor task ID を wave-N-task-ids.json に記録する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac1: spawn-controller.sh が Monitor task ID を wave-N-task-ids.json に記録するロジックを含む"
+
+  - ac_index: 1
+    ac_text: "spawn-controller.sh が起動時に watcher PID を wave-N-watcher-pids.json に記録する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac1: spawn-controller.sh が watcher PID を wave-N-watcher-pids.json に記録するロジックを含む"
+
+  # AC2: STAGNATE-600 suppress 条件の追加
+  - ac_index: 2
+    ac_text: "stagnate-suppress-check.sh が新規作成されている"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac2: stagnate-suppress-check.sh が存在する"
+
+  - ac_index: 2
+    ac_text: "stagnate-suppress-check.sh が実行可能パーミッションを持つ"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac2: stagnate-suppress-check.sh が実行可能パーミッションを持つ"
+
+  - ac_index: 2
+    ac_text: "Pilot pane の最終 capture に [PHASE-COMPLETE] が含まれる場合 STAGNATE emit を抑止"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac2: Pilot pane capture に [PHASE-COMPLETE] が含まれる場合 STAGNATE を suppress する"
+
+  - ac_index: 2
+    ac_text: "Pilot pane の最終 capture に '>>> 実装完了:' が含まれる場合 STAGNATE emit を抑止"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac2: Pilot pane capture に '>>> 実装完了:' が含まれる場合 STAGNATE を suppress する"
+
+  - ac_index: 2
+    ac_text: ".autopilot/session.json の status が completed の場合 STAGNATE emit を抑止"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac2: session.json status=completed の場合 STAGNATE を suppress する"
+
+  - ac_index: 2
+    ac_text: ".autopilot/session.json の status が archived の場合 STAGNATE emit を抑止"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac2: session.json status=archived の場合 STAGNATE を suppress する"
+
+  - ac_index: 2
+    ac_text: "session-end ファイルが存在する場合 STAGNATE emit を抑止"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac2: session-end ファイルが存在する場合 STAGNATE を suppress する"
+
+  - ac_index: 2
+    ac_text: "suppress 条件が何も満たされない場合は STAGNATE を emit する（suppress しない）"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac2[edge]: suppress 条件が揃わない場合 stagnate-suppress-check.sh が非ゼロを返す"
+
+  - ac_index: 2
+    ac_text: "heartbeat-watcher.sh が suppress 条件を確認してから STAGNATE emit する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac2: heartbeat-watcher.sh に STAGNATE suppress 条件チェックの参照が含まれる"
+
+  # AC3: events/ クリーンアップを wave-collect で実施
+  - ac_index: 3
+    ac_text: "wave-collect.md の最後で rm -f .supervisor/events/* を実行する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac3: wave-collect.md に events/ クリーンアップブロックが存在する"
+
+  - ac_index: 3
+    ac_text: "wave-collect 完了後に .supervisor/events/ のファイルが全て削除される"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac3: wave-collect 完了後に .supervisor/events/ のファイルが削除される"
+
+  - ac_index: 3
+    ac_text: ".supervisor/events/ が空の場合でも wave-collect が正常完了する（glob 展開失敗の安全確認）"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac3[edge]: .supervisor/events/ が空の場合 wave-collect が正常完了する"
+
+  - ac_index: 3
+    ac_text: "events/ ディレクトリ自体を削除せずファイルのみ削除する（rmdir 誤実行防止）"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac3[edge]: wave-collect は events/ ディレクトリ自体を削除せずファイルのみ削除する"
+
+  # AC4: context 80% 到達時の自動 stop 提案
+  - ac_index: 4
+    ac_text: "context-budget-monitor.sh が新規作成されている"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac4: context-budget-monitor.sh が存在する"
+
+  - ac_index: 4
+    ac_text: "context-budget-monitor.sh が実行可能パーミッションを持つ"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac4: context-budget-monitor.sh が実行可能パーミッションを持つ"
+
+  - ac_index: 4
+    ac_text: "observer の自己 context 消費量が 80% 到達時に停止提案フラグ（非ゼロ exit）を立てる"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac4: context 使用率が 80% 以上のとき context-budget-monitor.sh が非ゼロを返す"
+
+  - ac_index: 4
+    ac_text: "context 使用率が 80% 未満の場合は通常継続（exit 0）"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac4: context 使用率が 80% 未満のとき context-budget-monitor.sh が 0 を返す"
+
+  - ac_index: 4
+    ac_text: "context-budget-monitor.sh が 80% 閾値定数を含む"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac4: context-budget-monitor.sh が 80% 閾値定数を含む"
+
+  - ac_index: 4
+    ac_text: "ccusage または同等 API 経由で context 消費量を取得する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac4: context-budget-monitor.sh が ccusage または同等 API を呼び出すロジックを含む"
+
+  - ac_index: 4
+    ac_text: "80% ちょうどは閾値到達扱い（>= 80 の境界条件）"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac4[edge]: context 使用率がちょうど 80% のとき context-budget-monitor.sh が非ゼロを返す"
+
+  - ac_index: 4
+    ac_text: "80% 到達時に全 watcher/Monitor task を一時停止するログを出力する"
+    test_file: "plugins/twl/tests/unit/wave-watcher-lifecycle/wave-watcher-lifecycle.bats"
+    test_name: "ac4[edge]: context-budget-monitor.sh が 80% 到達時に watcher 停止ログを出力する"
