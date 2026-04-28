@@ -25,11 +25,11 @@ fi
 
 # Issue #1025: findings の category=ac_missing WARNING で merge をブロック
 _resolve_checkpoint_file() {
-  local dir
+  local dir=""
   if [[ -n "${AUTOPILOT_DIR:-}" ]]; then
     dir="${AUTOPILOT_DIR}/checkpoints"
   else
-    local root
+    local root=""
     root=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
     dir="${root:+${root}/.autopilot/checkpoints}"
     dir="${dir:-.autopilot/checkpoints}"
@@ -37,11 +37,14 @@ _resolve_checkpoint_file() {
   echo "${dir}/phase-review.json"
 }
 
-if command -v jq >/dev/null 2>&1; then
+if ! command -v jq >/dev/null 2>&1; then
+  echo "WARNING: jq が未インストールです。category=ac_missing チェックをスキップします" >&2
+else
   CHECKPOINT_FILE=$(_resolve_checkpoint_file)
   if [[ -f "$CHECKPOINT_FILE" ]]; then
-    AC_MISSING_COUNT=$(jq '[.findings[] | select(.severity == "WARNING" and .category == "ac_missing")] | length' "$CHECKPOINT_FILE" 2>/dev/null || echo "0")
-    if [[ "$AC_MISSING_COUNT" -gt 0 ]]; then
+    AC_MISSING_COUNT=$(jq '[.findings[]? | select(.severity == "WARNING" and .category == "ac_missing")] | length' "$CHECKPOINT_FILE" 2>/dev/null || echo "0")
+    AC_MISSING_COUNT="${AC_MISSING_COUNT:-0}"
+    if [[ "$AC_MISSING_COUNT" =~ ^[0-9]+$ ]] && [[ "$AC_MISSING_COUNT" -gt 0 ]]; then
       echo "REJECT: phase-review findings に category=ac_missing の WARNING が ${AC_MISSING_COUNT} 件存在します。AC を達成してから merge してください" >&2
       exit 1
     fi
