@@ -1,0 +1,113 @@
+mappings:
+  - ac_index: 1
+    ac_text: "常時参照 4 refs (phase-sanity/session-init/su-observer-integration/worker-auto-mode) の内容を SKILL.md に inline 化する"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac1: phase-sanity の内容が SKILL.md に inline 化されている（### Phase で存在）"
+  - ac_index: 1
+    ac_text: "AC1 session-init inline"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac1: session-init の内容が SKILL.md に inline 化されている（### Step 3 セッション開始時 で存在）"
+  - ac_index: 1
+    ac_text: "AC1 su-observer-integration inline"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac1: su-observer-integration の内容が SKILL.md に inline 化されている（### su-observer で存在）"
+  - ac_index: 1
+    ac_text: "AC1 worker-auto-mode inline"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac1: worker-auto-mode の内容が SKILL.md に inline 化されている（### Worker auto mode で存在）"
+  - ac_index: 1
+    ac_text: "AC1 Read 参照除去"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac1: SKILL.md に 4 refs への Read 参照が残っていない（inline 済みのため不要）"
+  - ac_index: 2
+    ac_text: "emergency-bypass.md のみ refs/ に残存させる"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac2: refs/ に emergency-bypass.md が存在する"
+  - ac_index: 2
+    ac_text: "AC2 phase-sanity 削除"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac2: refs/ に phase-sanity.md が存在しない（inline 済みで削除）"
+  - ac_index: 2
+    ac_text: "AC2 session-init 削除"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac2: refs/ に session-init.md が存在しない（inline 済みで削除）"
+  - ac_index: 2
+    ac_text: "AC2 su-observer-integration 削除"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac2: refs/ に su-observer-integration.md が存在しない（inline 済みで削除）"
+  - ac_index: 2
+    ac_text: "AC2 worker-auto-mode 削除"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac2: refs/ に worker-auto-mode.md が存在しない（inline 済みで削除）"
+  - ac_index: 2
+    ac_text: "AC2 refs/ emergency-bypass のみ"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac2: refs/ の .md ファイルは emergency-bypass.md 1 件のみ"
+  - ac_index: 2
+    ac_text: "AC2 emergency-bypass Read 参照維持"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac2: SKILL.md の Emergency Bypass 節から emergency-bypass.md への Read 参照が残存する"
+  - ac_index: 3
+    ac_text: "SKILL.md の節構造を整理する（TOC・見出し階層統一）"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac3: SKILL.md の先頭付近（30 行以内）に TOC または概要が存在する"
+  - ac_index: 3
+    ac_text: "AC3 # 見出し統一"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac3: SKILL.md の # 見出しが1つのみ（トップレベル）"
+  - ac_index: 3
+    ac_text: "AC3 ## 見出し存在"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac3: SKILL.md の ## 見出しが主要 Step に限定されている（## Step N 形式）"
+  - ac_index: 4
+    ac_text: "deps.yaml を更新: 4 件の reference エントリ除去"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac4: deps.yaml の co-autopilot.calls から phase-sanity reference が除去されている"
+  - ac_index: 4
+    ac_text: "AC4 session-init reference 除去"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac4: deps.yaml の co-autopilot.calls から session-init reference が除去されている"
+  - ac_index: 4
+    ac_text: "AC4 su-observer-integration reference 除去"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac4: deps.yaml の co-autopilot.calls から su-observer-integration reference が除去されている"
+  - ac_index: 4
+    ac_text: "AC4 worker-auto-mode reference 除去"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac4: deps.yaml の co-autopilot.calls から worker-auto-mode reference が除去されている"
+  - ac_index: 4
+    ac_text: "AC4 component 定義 4 件除去"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac4: deps.yaml の refs セクションから co-autopilot-phase-sanity component 定義が除去されている"
+  - ac_index: 4
+    ac_text: "AC4 deps-integrity 0 errors"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac4: twl check --deps-integrity が 0 errors で通る"
+  - ac_index: 5
+    ac_text: "co-autopilot-skillmd-split.bats の AC1 閾値を 280 行に緩和"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac5: co-autopilot-skillmd-split.bats の body_lines 閾値が 280 に更新されている"
+  - ac_index: 5
+    ac_text: "AC5 旧閾値 200 除去"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac5: co-autopilot-skillmd-split.bats に旧閾値 200 が残っていない"
+  - ac_index: 5
+    ac_text: "AC5 SKILL.md 280 行以内"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac5: SKILL.md の body lines が 280 以内に収まる"
+  - ac_index: 6
+    ac_text: "audit.py の co-autopilot 例外 280 行まで warning 以下"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac6: audit.py に co-autopilot の例外ロジックが存在する"
+  - ac_index: 6
+    ac_text: "AC6 Section 1 に例外ロジック"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac6: audit.py の co-autopilot 例外は controller_size セクションに位置する"
+  - ac_index: 7
+    ac_text: "chain 動作の回帰確認 — autopilot-phase-sanity.bats PASS"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac7: autopilot-phase-sanity.bats が PASS（chain 動作回帰なし）"
+  - ac_index: 7
+    ac_text: "chain 動作の回帰確認 — autopilot-invariants.bats PASS"
+    test_file: "tests/bats/co-autopilot-inline-refs-1082.bats"
+    test_name: "ac7: autopilot-invariants.bats が PASS（不変条件回帰なし）"
