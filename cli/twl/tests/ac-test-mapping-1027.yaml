@@ -1,0 +1,60 @@
+mappings:
+  # AC1: 上記 4 file 全て実装 + test PASS
+  - ac_index: 1
+    ac_text: "上記 4 file 全て実装 + test PASS (phase1-ai-failure-rate-protocol.md / ac8_goldfiles/ 12件 / ac8_significance_test.py / ac8_data/<timestamp>.csv)"
+    test_file: "cli/twl/tests/test_issue_1027_followup.py"
+    test_names:
+      - "TestAC1FourFilesImplemented::test_ac1_protocol_doc_exists"
+      - "TestAC1FourFilesImplemented::test_ac1_goldfiles_dir_exists"
+      - "TestAC1FourFilesImplemented::test_ac1_goldfiles_all_12_present"
+      - "TestAC1FourFilesImplemented::test_ac1_significance_script_exists"
+      - "TestAC1FourFilesImplemented::test_ac1_data_csv_exists"
+    red_reason: "4 ファイル全て未作成のため全件 NotImplementedError で FAIL"
+
+  # AC2: 240 trial 実測完了
+  - ac_index: 2
+    ac_text: "240 trial 実測完了 (cold-start session × 6 op × 2 route × 20 trials)"
+    test_file: "cli/twl/tests/test_issue_1027_followup.py"
+    test_names:
+      - "TestAC2TrialsMeasured::test_ac2_csv_row_count_ge_240"
+      - "TestAC2TrialsMeasured::test_ac2_csv_has_required_columns"
+      - "TestAC2TrialsMeasured::test_ac2_all_six_operations_measured"
+      - "TestAC2TrialsMeasured::test_ac2_both_routes_measured"
+      - "TestAC2TrialsMeasured::test_ac2_trials_per_op_route_ge_20"
+      - "TestAC2TrialsMeasured::test_ac2_cold_start_session_recorded"
+    red_reason: "実測 CSV 未作成・実測未完了のため全件 NotImplementedError で FAIL"
+
+  # AC3: binomial test で MCP 失敗率 < CLI 失敗率 × 0.5 を検定
+  - ac_index: 3
+    ac_text: "binomial test で MCP 失敗率 < CLI 失敗率 × 0.5 を検定 (one-sided α=0.05)"
+    test_file: "cli/twl/tests/test_issue_1027_followup.py"
+    test_names:
+      - "TestAC3BinomialTestResult::test_ac3_significance_script_runnable"
+      - "TestAC3BinomialTestResult::test_ac3_script_outputs_json"
+      - "TestAC3BinomialTestResult::test_ac3_mcp_failure_rate_less_than_half_cli"
+      - "TestAC3BinomialTestResult::test_ac3_one_sided_alpha_005_applied"
+      - "TestAC3BinomialTestResult::test_ac3_p_value_below_threshold"
+    red_reason: "ac8_significance_test.py 未作成・実測未完了のため全件 NotImplementedError で FAIL"
+
+  # AC4: doobidoo memory に達成判定 + raw data hash 保存
+  - ac_index: 4
+    ac_text: "doobidoo memory に達成判定 + raw data hash 保存 (tags: [phase1, ac8])"
+    test_file: "cli/twl/tests/test_issue_1027_followup.py"
+    test_names:
+      - "TestAC4DoobidooMemoryRecord::test_ac4_doobidoo_memory_has_phase1_ac8_entry"
+      - "TestAC4DoobidooMemoryRecord::test_ac4_doobidoo_memory_has_judgment_entry"
+      - "TestAC4DoobidooMemoryRecord::test_ac4_doobidoo_memory_has_raw_data_hash"
+      - "TestAC4DoobidooMemoryRecord::test_ac4_significance_script_records_to_doobidoo"
+    red_reason: "実測・doobidoo memory 記録が未完了のため全件 NotImplementedError で FAIL"
+
+  # AC5: PR merged + #945 Epic AC8 が真に達成
+  - ac_index: 5
+    ac_text: "PR merged + #945 Epic AC8 が真に達成 (AC1-AC4 全達成 composite check)"
+    test_file: "cli/twl/tests/test_issue_1027_followup.py"
+    test_names:
+      - "TestAC5PRMergedEpicAC8Achieved::test_ac5_all_four_files_in_repo"
+      - "TestAC5PRMergedEpicAC8Achieved::test_ac5_240_trials_verified"
+      - "TestAC5PRMergedEpicAC8Achieved::test_ac5_statistical_test_passed"
+      - "TestAC5PRMergedEpicAC8Achieved::test_ac5_doobidoo_memory_complete"
+      - "TestAC5PRMergedEpicAC8Achieved::test_ac5_epic_945_ac8_truly_achieved"
+    red_reason: "AC1-AC4 未達成・PR 未マージのため全件 NotImplementedError で FAIL"
