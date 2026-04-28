@@ -84,14 +84,17 @@ teardown() {
 }
 
 # ===========================================================================
-# AC3: AUTOPILOT_DIR=$HOME 配下のサブディレクトリは引き続き許可される（regression）
-# WHEN AUTOPILOT_DIR=$HOME/twl-test-1042-trusted, TWL_CHAIN_TRACE=$HOME/twl-test-1042-trusted/trace
+# AC3: AUTOPILOT_DIR=$HOME 配下の .autopilot ディレクトリは引き続き許可される（regression）
+# WHEN AUTOPILOT_DIR=$HOME/<sub>/.autopilot, TWL_CHAIN_TRACE=$HOME/<sub>/.autopilot/trace
 # THEN trace_event() は trace ファイルを作成する
+# NOTE: H2 (#1042 follow-up) で basename が ".autopilot" のディレクトリのみ信頼するよう
+#       構造検証が追加された。本テストは新セキュリティモデルでの regression を確認する。
 # ===========================================================================
 
-@test "autopilot-dir-validate[regression]: AUTOPILOT_DIR=\$HOME 配下サブディレクトリでは書き込みが許可される" {
+@test "autopilot-dir-validate[regression]: AUTOPILOT_DIR=\$HOME 配下の .autopilot dir では書き込みが許可される" {
   local _home="${HOME:-/root}"
-  local trusted_autopilot="${_home}/twl-test-1042-trusted-autopilot-$$"
+  local trusted_parent="${_home}/twl-test-1042-trusted-$$"
+  local trusted_autopilot="${trusted_parent}/.autopilot"
   local trace_path="${trusted_autopilot}/trace.jsonl"
   mkdir -p "$trusted_autopilot"
   rm -f "$trace_path" 2>/dev/null || true
@@ -100,11 +103,11 @@ teardown() {
 
   local file_created=0
   [[ -f "$trace_path" ]] && file_created=1
-  rm -rf "$trusted_autopilot" 2>/dev/null || true
+  rm -rf "$trusted_parent" 2>/dev/null || true
 
   assert_success
   [[ "$file_created" -eq 1 ]] || {
-    echo "FAIL: AUTOPILOT_DIR=\$HOME 配下サブディレクトリで trace ファイルが作成されなかった: $trace_path" >&2
+    echo "FAIL: AUTOPILOT_DIR=\$HOME/<sub>/.autopilot で trace ファイルが作成されなかった: $trace_path" >&2
     return 1
   }
 }
