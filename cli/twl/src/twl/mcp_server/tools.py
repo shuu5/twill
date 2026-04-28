@@ -216,3 +216,40 @@ except ImportError:
     def twl_check(plugin_root: str) -> str:  # type: ignore[misc]
         """Check file existence and chain integrity (fastmcp not installed)."""
         return json.dumps(twl_check_handler(plugin_root=plugin_root), ensure_ascii=False)
+
+    def twl_state_read(  # type: ignore[misc]
+        type_: str,
+        issue: str | None = None,
+        repo: str | None = None,
+        field: str | None = None,
+        autopilot_dir: str | None = None,
+    ) -> str:
+        """Read autopilot state (fastmcp not installed)."""
+        return json.dumps(
+            twl_state_read_handler(
+                type_=type_, issue=issue, repo=repo, field=field, autopilot_dir=autopilot_dir,
+            ),
+            ensure_ascii=False,
+        )
+
+    def twl_state_write(  # type: ignore[misc]
+        type_: str,
+        role: str,
+        issue: str | None = None,
+        repo: str | None = None,
+        sets: list[str] | None = None,
+        init: bool = False,
+        autopilot_dir: str | None = None,
+        cwd: str | None = None,
+        force_done: bool = False,
+        override_reason: str | None = None,
+    ) -> str:
+        """Write autopilot state (fastmcp not installed)."""
+        return json.dumps(
+            twl_state_write_handler(
+                type_=type_, role=role, issue=issue, repo=repo, sets=sets,
+                init=init, autopilot_dir=autopilot_dir, cwd=cwd,
+                force_done=force_done, override_reason=override_reason,
+            ),
+            ensure_ascii=False,
+        )

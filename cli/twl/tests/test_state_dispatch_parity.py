@@ -323,13 +323,10 @@ def test_ac3_read_3path_parity(label, read_kwargs, parity_autopilot_dir: Path):
 
 
 def test_ac3_case_d_issue_init_parity(parity_autopilot_dir: Path, tmp_path: Path):
-    """AC3 (d): issue init — 3 経路で同一ファイルが生成される。
-    RED: MCP handler 未実装 → ImportError。
-    """
+    """AC3 (d): issue init — 3 経路で同一ファイルが生成される。"""
     from twl.mcp_server.tools import twl_state_write_handler
     from twl.autopilot.state import StateManager
 
-    # 別 autopilot_dir で 3 経路それぞれ実行して比較
     # 経路 2: MCP handler
     ap_mcp = tmp_path / "ap_mcp"
     ap_mcp.mkdir()
@@ -350,17 +347,28 @@ def test_ac3_case_d_issue_init_parity(parity_autopilot_dir: Path, tmp_path: Path
     sm = StateManager(autopilot_dir=ap_direct)
     sm.write(type_="issue", role="worker", issue="99", init=True)
 
+    # 経路 1: CLI subprocess
+    ap_cli = tmp_path / "ap_cli"
+    ap_cli.mkdir()
+    (ap_cli / "issues").mkdir()
+    cli_proc = _run_cli_state(
+        ["write", "--type", "issue", "--role", "worker", "--issue", "99", "--init"],
+        ap_cli,
+    )
+    assert cli_proc.returncode == 0, f"CLI init failed: {cli_proc.stderr}"
+
     # ファイル内容の比較 (status と issue 番号が同一か)
     mcp_data = json.loads((ap_mcp / "issues" / "issue-99.json").read_text())
     direct_data = json.loads((ap_direct / "issues" / "issue-99.json").read_text())
+    cli_data = json.loads((ap_cli / "issues" / "issue-99.json").read_text())
     assert mcp_data["status"] == direct_data["status"]
     assert mcp_data["issue"] == direct_data["issue"]
+    assert cli_data["status"] == direct_data["status"]
+    assert cli_data["issue"] == direct_data["issue"]
 
 
 def test_ac3_case_e_status_transition_parity(parity_autopilot_dir: Path, tmp_path: Path):
-    """AC3 (e): status transition — 3 経路で同一遷移結果。
-    RED: MCP handler 未実装 → ImportError。
-    """
+    """AC3 (e): status transition — 3 経路で同一遷移結果。"""
     from twl.mcp_server.tools import twl_state_write_handler
     from twl.autopilot.state import StateManager
 
@@ -389,41 +397,72 @@ def test_ac3_case_e_status_transition_parity(parity_autopilot_dir: Path, tmp_pat
     sm.write(type_="issue", role="worker", issue="5", sets=["status=merge-ready"])
     direct_status = json.loads((ap_direct / "issues" / "issue-5.json").read_text())["status"]
 
+    # 経路 1: CLI subprocess
+    ap_cli = tmp_path / "ap_cli"
+    ap_cli.mkdir()
+    (ap_cli / "issues").mkdir()
+    _run_cli_state(["write", "--type", "issue", "--role", "worker", "--issue", "5", "--init"], ap_cli)
+    cli_proc = _run_cli_state(
+        ["write", "--type", "issue", "--role", "worker", "--issue", "5", "--set", "status=merge-ready"],
+        ap_cli,
+    )
+    assert cli_proc.returncode == 0, f"CLI transition failed: {cli_proc.stderr}"
+    cli_status = json.loads((ap_cli / "issues" / "issue-5.json").read_text())["status"]
+
     assert mcp_status == direct_status, (
         f"status transition parity fail: MCP={mcp_status!r} vs direct={direct_status!r}"
+    )
+    assert cli_status == direct_status, (
+        f"status transition parity fail: CLI={cli_status!r} vs direct={direct_status!r}"
     )
 
 
 def test_ac3_case_f_rbac_violation_parity(parity_autopilot_dir: Path, tmp_path: Path):
-    """AC3 (f): RBAC 違反 — 3 経路全てでエラーが発生する。
-    RED: MCP handler 未実装 → ImportError。
+    """AC3 (f): RBAC 違反 — worker が session.json への不正書き込みを試みてエラー。
+    cwd を worktrees 配下に明示渡しして pilot identity 検証が発動することを確認。
+    ADR-0006 §3: cwd 明示渡しにより os.getcwd() fallback を排除して再現性を確保。
     """
     from twl.mcp_server.tools import twl_state_write_handler
-    from twl.autopilot.state import StateManager, StateArgError
+    from twl.autopilot.state import StateManager, StateArgError, StateError
 
-    # 経路 2: MCP handler — pilot が init を試みる (StateArgError)
+    # fake worktree cwd: pilot identity check 用 (ADR-0006 §3)
+    ng_cwd = str(tmp_path / "worktrees" / "ng-branch")
+
+    # 経路 2: MCP handler — worker が session.json に sets を試みる (RBAC 違反)
     ap_mcp = tmp_path / "ap_mcp"
     ap_mcp.mkdir()
     (ap_mcp / "issues").mkdir()
     mcp_result = twl_state_write_handler(
-        type_="issue",
-        role="pilot",  # pilot は init 禁止
-        issue="77",
-        init=True,
+        type_="session",
+        role="worker",  # worker は session write 禁止
+        sets=["status=active"],
         autopilot_dir=str(ap_mcp),
+        cwd=ng_cwd,  # ADR-0006 §3: cwd 明示渡し
     )
     assert mcp_result.get("ok") is False, "RBAC 違反で MCP handler が ok=True を返した"
     assert mcp_result.get("error_type") in ("arg_error", "state_error"), (
         f"error_type が予期しない値: {mcp_result}"
     )
 
-    # 経路 3: Python 直接
+    # 経路 3: Python 直接 — 同じ RBAC 違反
     ap_direct = tmp_path / "ap_direct"
     ap_direct.mkdir()
     (ap_direct / "issues").mkdir()
     sm = StateManager(autopilot_dir=ap_direct)
-    with pytest.raises((StateArgError, Exception)):
-        sm.write(type_="issue", role="pilot", issue="77", init=True)
+    with pytest.raises((StateArgError, StateError)):
+        sm.write(type_="session", role="worker", sets=["status=active"], cwd=ng_cwd)
+
+    # 経路 1: CLI subprocess — cwd= 引数で worktree パスを制御
+    ap_cli = tmp_path / "ap_cli"
+    ap_cli.mkdir()
+    (ap_cli / "issues").mkdir()
+    cli_proc = _run_cli_state(
+        ["write", "--type", "session", "--role", "worker", "--set", "status=active"],
+        ap_cli,
+    )
+    # CLI 側は subprocess の cwd が worktree 外なので RBAC check は通過する場合があるが
+    # worker role の session write は StateArgError で失敗するはず
+    assert cli_proc.returncode != 0, "CLI RBAC 違反が成功してしまった"
 
 
 # ===========================================================================
