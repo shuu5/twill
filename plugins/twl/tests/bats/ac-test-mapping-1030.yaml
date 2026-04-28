@@ -1,0 +1,49 @@
+mappings:
+  - ac_index: 1
+    ac_text: "spawn-controller.sh co-autopilot 後に observer window が 4 pane (左 1 + 右 3) layout になる"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac1: _setup_observer_panes が tmux split-window を 3 回実行して 4 pane layout を作る"
+  - ac_index: 1b
+    ac_text: "spawn-controller.sh co-autopilot 後に observer window が 4 pane (左 1 + 右 3) layout になる (list-panes 確認)"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac1: _setup_observer_panes 実行後 tmux list-panes で 4 pane が確認できる"
+  - ac_index: 2
+    ac_text: "pane-base-index = 0 / 1 双方の環境で正しく動作 (auto-detect)"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac2: pane-base-index=0 環境で _setup_observer_panes が正常完了する"
+  - ac_index: 2b
+    ac_text: "pane-base-index = 0 / 1 双方の環境で正しく動作 (auto-detect) — pane-base-index=1 path"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac2: pane-base-index=1 環境で _setup_observer_panes が正常完了する"
+  - ac_index: 2c
+    ac_text: "pane-base-index auto-detect のため tmux show-options -gv pane-base-index が呼ばれる"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac2: pane-base-index auto-detect のため tmux show-options -gv pane-base-index が呼ばれる"
+  - ac_index: 3
+    ac_text: "orphan watcher process が pkill -f で事前 cleanup される"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac3: _setup_observer_panes 実行前に pkill -f で orphan watcher が cleanup される"
+  - ac_index: 3b
+    ac_text: "orphan watcher process が pkill -f で事前 cleanup される (引数検証)"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac3: pkill -f の引数に watcher スクリプト名が含まれる"
+  - ac_index: 4
+    ac_text: "tmux split-window -h の方向 (左右 vs 上下) を環境ごとに検証 (pane-base-index 非一致で fallback 誤動作する経緯あり)"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac4: pane-base-index=0 環境で split-window -h（左右分割）が最初に呼ばれる"
+  - ac_index: 4b
+    ac_text: "tmux split-window -h の方向 (左右 vs 上下) を環境ごとに検証 — pane-base-index=1 fallback なし"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac4: pane-base-index=1 環境でも split-window -h の方向が正しい（fallback 誤動作なし）"
+  - ac_index: 4c
+    ac_text: "pane-base-index=0 と pane-base-index=1 で split-window 呼び出し回数が同一（3回）"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "ac4: pane-base-index=0 と pane-base-index=1 で split-window 呼び出し回数が同一（3回）"
+  - ac_index: 5
+    ac_text: "bats で 4 pane layout 検証 (AC1と同等 - テストファイル自体が検証)"
+    test_file: "plugins/twl/tests/bats/spawn-controller-pane-split.bats"
+    test_name: "（テストファイル spawn-controller-pane-split.bats 自体が AC5 を体現）"
+  - ac_index: 6
+    ac_text: "PR merged + main HEAD 更新（process AC）"
+    test_file: ""
+    test_name: "（プロセスAC — batsテスト不要）"

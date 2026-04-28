@@ -216,6 +216,67 @@ if [[ "$HAS_WINDOW_NAME" == "false" ]]; then
   WINDOW_NAME_ARG=(--window-name "wt-${SKILL_NORMALIZED}-$(date +%H%M%S)")
 fi
 
+# _setup_observer_panes: observer window を 4 pane layout に分割し watcher を起動する
+# 呼び出し: _setup_observer_panes <observer_window> [fallback_pane_base]
+#   observer_window: 対象の tmux window 名（未指定時は .supervisor/session.json から取得）
+#   fallback_pane_base: pane-base-index 取得失敗時のフォールバック値（default: 0）
+# レイアウト: 左 50% (observer) | 右上 1/3 (heartbeat) / 右中 1/3 (budget) / 右下 1/3 (cldobs)
+_setup_observer_panes() {
+  local observer_window="${1:-}"
+  local fallback_pane_base="${2:-0}"
+  local supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
+
+  if [[ -z "$observer_window" ]]; then
+    local session_file="$supervisor_dir/session.json"
+    if [[ -f "$session_file" ]]; then
+      observer_window=$(python3 -c "import json; d=json.load(open('$session_file')); print(d.get('observer_window', ''))" 2>/dev/null || echo "")
+    fi
+  fi
+
+  if [[ -z "$observer_window" ]]; then
+    echo "[spawn-controller] WARN: observer_window が未検出 — pane split をスキップ" >&2
+    return 0
+  fi
+
+  # orphan watcher cleanup
+  pkill -f "heartbeat-watcher.sh" 2>/dev/null || true
+  pkill -f "budget-monitor-watcher.sh" 2>/dev/null || true
+  pkill -f "cld-observe-any" 2>/dev/null || true
+
+  # pane-base-index auto-detect（環境差異を吸収）
+  local base
+  base=$(tmux show-options -gv pane-base-index 2>/dev/null || echo "$fallback_pane_base")
+
+  local cwd
+  cwd="$(pwd)"
+  local heartbeat_script="$SCRIPT_DIR/heartbeat-watcher.sh"
+  local budget_script="$SCRIPT_DIR/budget-monitor-watcher.sh"
+  local cld_observe_any="$TWILL_ROOT/plugins/session/scripts/cld-observe-any"
+
+  # Step 1: horizontal split (左右) — 右カラムに heartbeat-watcher を起動
+  tmux split-window -h -d -l 50% -t "${observer_window}:1.${base}" -c "$cwd" "bash '$heartbeat_script'" || \
+    tmux split-window -h -d -l 50% -t "${observer_window}" -c "$cwd" "bash '$heartbeat_script'"
+
+  # Step 2: vertical split — 右カラムを上下分割して budget-monitor を起動
+  tmux split-window -v -d -l 67% -t "${observer_window}:1.$((base+1))" -c "$cwd" "bash '$budget_script'" || \
+    tmux split-window -v -d -t "${observer_window}:1.$((base+1))" -c "$cwd" "bash '$budget_script'"
+
+  # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動
+  tmux split-window -v -d -l 50% -t "${observer_window}:1.$((base+2))" -c "$cwd" "bash '$cld_observe_any'" || \
+    tmux split-window -v -d -t "${observer_window}:1.$((base+2))" -c "$cwd" "bash '$cld_observe_any'"
+
+  # pane 数を確認してログ出力
+  local pane_count
+  pane_count=$(tmux list-panes -t "$observer_window" 2>/dev/null | wc -l || echo "?")
+  echo "[spawn-controller] ✓ observer window ${observer_window}: ${pane_count} pane layout を設定 (pane-base-index=${base})"
+}
+
 # cld-spawn 呼び出し（extra args を first, prompt を last に配置する必要あり — cld-spawn の option parse は先に終わり、残りが PROMPT になる）
 # 空配列ガード: set -u 環境で "${arr[@]}" が unbound を起こすため ${arr[@]+...} 形式で保護
-exec "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]+"${WINDOW_NAME_ARG[@]}"}" "$@" "$FINAL_PROMPT"
+# co-autopilot（非 --with-chain）は exec を避けて pane setup を後続実行する
+if [[ "$SKILL_NORMALIZED" == "co-autopilot" && "$WITH_CHAIN" == "false" ]]; then
+  "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]+"${WINDOW_NAME_ARG[@]}"}" "$@" "$FINAL_PROMPT"
+  _setup_observer_panes
+else
+  exec "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]+"${WINDOW_NAME_ARG[@]}"}" "$@" "$FINAL_PROMPT"
+fi
