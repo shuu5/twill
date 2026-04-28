@@ -172,3 +172,14 @@ issue_1029:
       scenario: null
       status: SKIPPED
       note: "機械検証対象外のため、テスト生成をスキップ。"
+
+# --- Issue #1066 ---
+issue_1066:
+  issue: 1066
+  framework: bats
+  mappings:
+    - ac_index: 1
+      ac_text: "session-comm.sh ファイルヘッダ usage の inject-file 行から重複した [--wait SECONDS] を削除する"
+      test_file: "plugins/session/tests/session-comm-usage-typo-1066.bats"
+      test_name: "session-comm-usage-typo[structural][RED]: ファイルヘッダ inject-file 行に --wait が重複しない"
+      status: GREEN
