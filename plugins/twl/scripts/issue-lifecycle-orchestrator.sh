@@ -68,14 +68,15 @@ fi
 # AC4(d): past tense "word for Nm Ns" または "word for Ns" 完了形は IDLE 扱い（thinking としてカウントしない）
 detect_thinking() {
   local _tail="$1"
-  # past tense filter: e.g. "Sautéed for 1m 30s" → IDLE
-  if echo "$_tail" | grep -qE '[A-Z][a-z]+(ed|in'"'"'|ing)[[:space:]]+for[[:space:]]+[0-9]+[ms][[:space:]][0-9]+[ms]' || \
-     echo "$_tail" | grep -qE '[A-Z][a-z]+(ed|in'"'"'|ing)[[:space:]]+for[[:space:]]+[0-9]+[ms]$'; then
+  # past tense filter: e.g. "Sautéed for 1m 30s" → IDLE (ed/in' のみ; ing は present progressive なので対象外 #1087)
+  if echo "$_tail" | grep -qE '[A-Z][[:alpha:]]+(ed|in'"'"')[[:space:]]+for[[:space:]]+[0-9]+[ms][[:space:]][0-9]+[ms]' || \
+     echo "$_tail" | grep -qE '[A-Z][[:alpha:]]+(ed|in'"'"')[[:space:]]+for[[:space:]]+[0-9]+[ms]$'; then
     echo ""
     return
   fi
   local _w
-  for _w in "${LLM_INDICATORS[@]:-}"; do
+  [[ ${#LLM_INDICATORS[@]} -eq 0 ]] && echo "" && return
+  for _w in "${LLM_INDICATORS[@]}"; do
     if echo "$_tail" | grep -qiE "$_w"; then
       echo "$_w"
       return
