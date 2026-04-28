@@ -1,0 +1,37 @@
+mappings:
+  - ac_index: 1
+    ac_text: "su-precompact.sh が working-memory.md の auto 更新 (session.json から状態取り出し → ensure write) を実装する"
+    test_file: "plugins/twl/tests/bats/su-precompact-hook-1020.bats"
+    test_names:
+      - "ac1: su-precompact.sh が working-memory.md を write する（static grep）"
+      - "ac1: su-precompact.sh が session.json から状態を取り出す（static grep）"
+      - "ac1: su-precompact.sh が bash -n を通過する（syntax check）"
+
+  - ac_index: 2
+    ac_text: "su-postcompact.sh stdout に「Skill(twl:su-compact) を実行して Long-term Memory 保存」を明示誘導"
+    test_file: "plugins/twl/tests/bats/su-precompact-hook-1020.bats"
+    test_names:
+      - "ac2: su-postcompact.sh に 'Skill(twl:su-compact)' を明示する行が存在する（static grep）"
+      - "ac2: su-postcompact.sh 実行時に stdout に 'Skill(twl:su-compact)' が含まれる"
+
+  - ac_index: 3
+    ac_text: "su-observer/SKILL.md SU-5 セクションに context 残量検知手段が明示される (案 C 範囲、別 Issue 切り出しも可)"
+    test_file: "plugins/twl/tests/bats/su-precompact-hook-1020.bats"
+    test_names:
+      - "ac3: SKILL.md の SU-5 行に context 残量検知手段が記述されている（grep チェック）"
+
+  - ac_index: 4
+    ac_text: "bats 経路で auto_precompact trigger が動作確認 (working-memory.md 更新検証)"
+    test_file: "plugins/twl/tests/bats/su-precompact-hook-1020.bats"
+    test_names:
+      - "ac4: su-precompact.sh 実行後に working-memory.md が更新される（tempdir）"
+      - "ac4: su-precompact.sh 実行後の working-memory.md に session.json の情報が含まれる"
+      - "ac4: su-precompact.sh — .supervisor ディレクトリが存在しない場合は正常 exit 0"
+
+  - ac_index: 5
+    ac_text: "PR merged + main HEAD 更新 + working-memory.md auto-update が e2e で動作"
+    test_file: "plugins/twl/tests/bats/e2e/su-precompact-hook-1020-e2e.bats"
+    test_names:
+      - "ac5(e2e): PreCompact hook 実行後に working-memory.md が session 状態を反映して更新される"
+      - "ac5(e2e): PreCompact hook — session.json が存在しない場合でも working-memory.md を保持/生成する"
+      - "ac5(e2e): PreCompact hook 実行後に su-postcompact.sh が Skill(twl:su-compact) 誘導を出力する"
