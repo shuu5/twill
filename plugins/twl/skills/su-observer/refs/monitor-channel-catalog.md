@@ -13,7 +13,7 @@ Wave 開始時に本カタログから Wave 種別に応じたチャネルを選
 | WORKERS | worker window 出現・消失 | 即時 | Auto |
 | PHASE-DONE | PHASE_COMPLETE 検知 | 即時 | Auto |
 | NON-TERMINAL | `>>> 実装完了:` 後の chain 不遷移 | 2分 | Confirm |
-| BUDGET-LOW | 5h rolling budget 残量 | 残り 15 分 or 90% 消費（設定可） | Auto |
+| BUDGET-LOW | 5h rolling budget 残量 | token残量 40分以下 or cycle reset まで 5分以下（設定可） | Auto |
 | BUDGET-ALERT | Monitor watcher が検知した budget threshold 超過 | threshold_percent (default 90%) | Auto |
 | PERMISSION-PROMPT | Worker window の permission prompt 出現（`1. Yes, proceed` 等） | 即時（thinking 中でも emit） | Confirm |
 | **PILOT-PHASE-COMPLETE** | Pilot 内部 chain の Phase/Issue 完了 signal | 即時 | Auto |
@@ -352,9 +352,22 @@ fi
 
 ## [BUDGET-LOW] — 5h rolling budget 残量検知
 
-**検知対象**: Claude Code の tmux status line から実フォーマット `5h:XX%(YYm)`（例: `5h:10%(4h21m)`）をパースし、閾値以下になった場合に停止シーケンスを自動実行する
+**検知対象**: Claude Code の tmux status line から実フォーマット `5h:XX%(YYm)`（例: `5h:10%(4h21m)`）をパースし、2 軸独立判定で閾値以下になった場合に停止シーケンスを自動実行する
 
-**閾値**: 残り `threshold_minutes`（default 15）分 または `threshold_percent`（default 90）% 消費（`.supervisor/budget-config.json` で override 可能）
+**フォーマット `5h:XX%(YYm)` の意味（重要）**:
+- `5h` — 5 時間単位の rolling budget cycle
+- `XX%` — **消費 token 比率**（使用した量、0〜100%）
+- `(YYm)` — **次の cycle reset までの wall-clock remaining**（cycle 残り時間）
+- ⚠️ `(YYm)` は token 残量ではない。`XX%` と独立した別軸（#1022）
+
+**2 軸独立判定（OR 発火）**:
+- **軸1 (consumption-based)**: token 残量 = `300 × (100 - XX%) / 100` ≤ `threshold_remaining_minutes`（default 40分）
+- **軸2 (cycle-based)**: cycle reset wall-clock `(YYm)` ≤ `threshold_cycle_minutes`（default 5分）
+- 設定: `.supervisor/budget-config.json` で `threshold_remaining_minutes` / `threshold_cycle_minutes` を override 可能
+
+**閾値デフォルト**:
+- `threshold_remaining_minutes` = 40（token 残量 40分以下で発火）
+- `threshold_cycle_minutes` = 5（cycle reset まで 5分以下で発火）
 
 **検知方法**: `tmux capture-pane -t "$PILOT_WINDOW" -p -S -1` で status line をキャプチャし正規表現でパース。取得不能の場合は `session-comm.sh capture` にフォールバック。それでも取得不能な場合は検知をスキップし stderr に警告。
 
@@ -363,9 +376,12 @@ fi
 **bash スニペット:**
 
 ```bash
-# BUDGET-LOW: status line から budget 残量をパース（実フォーマット: 5h:XX%(YYm)、例: 5h:10%(4h21m)）
-BUDGET_THRESHOLD_MIN=15  # デフォルト閾値（分）
-BUDGET_THRESHOLD_PCT=90  # デフォルト閾値（%消費）
+# BUDGET-LOW: status line から 2 軸 budget 判定（実フォーマット: 5h:XX%(YYm)）
+# 軸1 (consumption-based): token残量 = 300 × (100 - pct%) / 100 ≤ threshold_remaining_minutes
+# 軸2 (cycle-based): (YYm) = cycle reset wall-clock ≤ threshold_cycle_minutes
+# ※ (YYm) は cycle reset wall-clock であり token 残量ではない（#1022）
+BUDGET_THRESHOLD_REMAINING=40  # 軸1 デフォルト閾値（token 残量 分）
+BUDGET_THRESHOLD_CYCLE=5       # 軸2 デフォルト閾値（cycle reset wall-clock 分）
 
 get_budget_info() {
   local pilot_win="${1:-}"
@@ -384,31 +400,43 @@ get_budget_info() {
   fi
   if [[ -z "$pct" && -z "$raw" ]]; then
     echo "[BUDGET-LOW] WARN: budget 情報を取得できません。" >&2
-    echo "pct=-1 min=-1"
+    echo "pct=-1 cycle_min=-1 remaining_min=-1"
     return 0
   fi
-  local minutes=-1
+  local cycle_min=-1
   if [[ "$raw" =~ ^([0-9]+)h([0-9]+)m$ ]]; then
-    minutes=$(( ${BASH_REMATCH[1]} * 60 + ${BASH_REMATCH[2]} ))
+    cycle_min=$(( ${BASH_REMATCH[1]} * 60 + ${BASH_REMATCH[2]} ))
   elif [[ "$raw" =~ ^([0-9]+)h$ ]]; then
-    minutes=$(( ${BASH_REMATCH[1]} * 60 ))
+    cycle_min=$(( ${BASH_REMATCH[1]} * 60 ))
   elif [[ "$raw" =~ ^([0-9]+)m$ ]]; then
-    minutes=${BASH_REMATCH[1]}
+    cycle_min=${BASH_REMATCH[1]}
   fi
-  echo "pct=${pct:-0} min=${minutes}"
+  local remaining_min=-1
+  if [[ "${pct:-}" =~ ^[0-9]+$ ]]; then
+    remaining_min=$(( 300 * (100 - pct) / 100 ))
+  fi
+  echo "pct=${pct:-0} cycle_min=${cycle_min} remaining_min=${remaining_min}"
 }
 
 check_budget_low() {
   local pilot_win="${1:-}"
-  local threshold_min="${BUDGET_THRESHOLD_MIN}"
-  local threshold_pct="${BUDGET_THRESHOLD_PCT}"
-  local info pct minutes alert=false
+  local threshold_remaining="${BUDGET_THRESHOLD_REMAINING}"
+  local threshold_cycle="${BUDGET_THRESHOLD_CYCLE}"
+  local info pct cycle_min remaining_min alert=false
   info=$(get_budget_info "$pilot_win")
-  eval "$info"
-  if [[ "$min" -ge 0 && "$min" -le "$threshold_min" ]]; then alert=true; fi
-  if [[ "$pct" =~ ^[0-9]+$ && "$pct" -ge "$threshold_pct" ]]; then alert=true; fi
+  # eval を避け、パラメータ展開で個別抽出する（インジェクション回避）
+  pct="${info#*pct=}"; pct="${pct%% *}"
+  cycle_min="${info#*cycle_min=}"; cycle_min="${cycle_min%% *}"
+  remaining_min="${info#*remaining_min=}"; remaining_min="${remaining_min%% *}"
+  [[ "$pct" =~ ^-?[0-9]+$ ]] || pct=-1
+  [[ "$cycle_min" =~ ^-?[0-9]+$ ]] || cycle_min=-1
+  [[ "$remaining_min" =~ ^-?[0-9]+$ ]] || remaining_min=-1
+  # 軸1 (consumption-based): token 残量 ≤ threshold_remaining_minutes
+  if [[ "$remaining_min" -ge 0 && "$remaining_min" -le "$threshold_remaining" ]]; then alert=true; fi
+  # 軸2 (cycle-based): cycle reset wall-clock ≤ threshold_cycle_minutes
+  if [[ "$cycle_min" -ge 0 && "$cycle_min" -le "$threshold_cycle" ]]; then alert=true; fi
   if [[ "$alert" == "true" ]]; then
-    echo "[BUDGET-LOW] 5h budget 残り ${min}分 (${pct}% 消費)（閾値: ${threshold_min}分 or ${threshold_pct}%）。安全停止シーケンスを開始します。"
+    echo "[BUDGET-LOW] 5h budget: token残量 ${remaining_min}分 (${pct}% 消費), cycle reset まで ${cycle_min}分。安全停止シーケンスを開始します。"
     return 1
   fi
   return 0

@@ -17,10 +17,10 @@ if [[ -z "$PILOT_WINDOW" ]]; then
 fi
 
 # status line から budget 残量を抽出（実フォーマット: 5h:XX%(YYm)）
-BUDGET_PCT=$(tmux capture-pane -t "$PILOT_WINDOW" -p -S -1 2>/dev/null \
-  | grep -oP '5h:\K[0-9]+(?=%)' | tail -1 || echo "")
-BUDGET_RAW=$(tmux capture-pane -t "$PILOT_WINDOW" -p -S -1 2>/dev/null \
-  | grep -oP '5h:[0-9]+%\(\K[^\)]+' | tail -1 || echo "")
+_PANE=$(tmux capture-pane -t "$PILOT_WINDOW" -p -S -1 2>/dev/null || echo "")
+BUDGET_PCT=$(echo "$_PANE" | grep -oP '5h:\K[0-9]+(?=%)' | tail -1 || echo "")
+BUDGET_RAW=$(echo "$_PANE" | grep -oP '5h:[0-9]+%\(\K[^\)]+' | tail -1 || echo "")
+unset _PANE
 
 # フォールバック: session-comm.sh capture による full pane 取得
 if [[ -z "$BUDGET_RAW" && -z "$BUDGET_PCT" ]]; then
@@ -45,31 +45,41 @@ elif [[ "$BUDGET_RAW" =~ ^([0-9]+)m$ ]]; then
 fi
 
 # 閾値読み込み（.supervisor/budget-config.json または デフォルト値）
-BUDGET_THRESHOLD=$(python3 -c "
-import json, sys
+# 軸1 (consumption-based): 5h budget の token 残量 = 300 × (100 - pct%) / 100 が閾値以下
+# 軸2 (cycle-based): (YYm) = cycle reset までの wall-clock が閾値以下
+# ※ (YYm) は cycle reset wall-clock であり token 残量ではない（#1022）
+_THRESHOLDS=$(python3 -c "
+import json
 try:
-  cfg = json.load(open('.supervisor/budget-config.json'))
-  print(cfg.get('threshold_minutes', 15))
-except:
-  print(15)
-" 2>/dev/null || echo "15")
-BUDGET_PCT_THRESHOLD=$(python3 -c "
-import json, sys
-try:
-  cfg = json.load(open('.supervisor/budget-config.json'))
-  print(cfg.get('threshold_percent', 90))
-except:
-  print(90)
-" 2>/dev/null || echo "90")
+  with open('.supervisor/budget-config.json') as f:
+    cfg = json.load(f)
+  print(cfg.get('threshold_remaining_minutes', 40), cfg.get('threshold_cycle_minutes', 5))
+except Exception:
+  print(40, 5)
+" 2>/dev/null || echo "40 5")
+BUDGET_THRESHOLD_REMAINING="${_THRESHOLDS%% *}"
+BUDGET_THRESHOLD_CYCLE="${_THRESHOLDS##* }"
+unset _THRESHOLDS
 
-[[ ! "$BUDGET_THRESHOLD" =~ ^[0-9]+$ ]] && BUDGET_THRESHOLD=15
-[[ ! "$BUDGET_PCT_THRESHOLD" =~ ^[0-9]+$ ]] && BUDGET_PCT_THRESHOLD=90
+[[ ! "$BUDGET_THRESHOLD_REMAINING" =~ ^[0-9]+$ ]] && BUDGET_THRESHOLD_REMAINING=40
+[[ ! "$BUDGET_THRESHOLD_CYCLE" =~ ^[0-9]+$ ]] && BUDGET_THRESHOLD_CYCLE=5
+
+# 軸1: token 残量計算 = 300分 × (100 - 消費%) / 100
+BUDGET_REMAINING_MIN=-1
+if [[ -n "$BUDGET_PCT" && "$BUDGET_PCT" =~ ^[0-9]+$ ]]; then
+  BUDGET_REMAINING_MIN=$(( 300 * (100 - BUDGET_PCT) / 100 ))
+fi
+
+# 軸2: cycle reset wall-clock (BUDGET_RAW = YYm の値)
+BUDGET_CYCLE_MIN=$BUDGET_MIN
 
 BUDGET_ALERT=false
-if [[ $BUDGET_MIN -ge 0 && $BUDGET_MIN -le $BUDGET_THRESHOLD ]]; then
+# 軸1 (consumption-based): token 残量 ≤ threshold_remaining_minutes
+if [[ $BUDGET_REMAINING_MIN -ge 0 && $BUDGET_REMAINING_MIN -le $BUDGET_THRESHOLD_REMAINING ]]; then
   BUDGET_ALERT=true
 fi
-if [[ -n "$BUDGET_PCT" && "$BUDGET_PCT" =~ ^[0-9]+$ && $BUDGET_PCT -ge $BUDGET_PCT_THRESHOLD ]]; then
+# 軸2 (cycle-based): cycle reset wall-clock ≤ threshold_cycle_minutes
+if [[ $BUDGET_CYCLE_MIN -ge 0 && $BUDGET_CYCLE_MIN -le $BUDGET_THRESHOLD_CYCLE ]]; then
   BUDGET_ALERT=true
 fi
 
@@ -77,7 +87,7 @@ if [[ "$BUDGET_ALERT" != "true" ]]; then
   exit 0
 fi
 
-echo "[BUDGET-LOW] 5h budget 残り ${BUDGET_MIN:-?}分 (${BUDGET_PCT:-?}% 消費)。安全停止シーケンスを開始します。"
+echo "[BUDGET-LOW] 5h budget: token残量 ${BUDGET_REMAINING_MIN:-?}分 (${BUDGET_PCT:-?}% 消費), cycle reset まで ${BUDGET_CYCLE_MIN:-?}分。安全停止シーケンスを開始します。"
 
 # 1. orchestrator 停止（PID 数値バリデーション必須: kill 0 はプロセスグループ全体を対象とするため禁止）
 ORCH_PID=$(cat "${AUTOPILOT_DIR}/orchestrator.pid" 2>/dev/null || pgrep -f 'autopilot-orchestrator' | head -1 || echo "")
