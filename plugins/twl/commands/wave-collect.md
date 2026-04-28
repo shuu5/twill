@@ -218,6 +218,55 @@ fi
 echo "[wave-collect] specialist-audit 完了: ${_audit_log}"
 ```
 
+### Step 5: watcher/Monitor 自動停止（#1052）
+
+Wave 完遂後に紐付き Monitor task と watcher プロセスを停止する。
+
+```bash
+# wave-collect Step 5: watcher/Monitor 自動停止
+TASK_IDS_FILE="${OUTPUT_DIR}/wave-${WAVE_NUM}-task-ids.json"
+WATCHER_PIDS_FILE="${OUTPUT_DIR}/wave-${WAVE_NUM}-watcher-pids.json"
+
+if [[ -f "$TASK_IDS_FILE" ]]; then
+  mapfile -t _monitor_task_ids < <(python3 -c "import json; d=json.load(open('${TASK_IDS_FILE}')); [print(t) for t in d.get('monitor_task_ids', [])]" 2>/dev/null || true)
+  for _task_id in "${_monitor_task_ids[@]+"${_monitor_task_ids[@]}"}"; do
+    [[ -n "$_task_id" ]] || continue
+    echo "[wave-collect] TaskStop: Monitor task 停止 ${_task_id}"
+  done
+  echo "[wave-collect] Monitor task 停止完了 (task-ids: ${TASK_IDS_FILE})"
+else
+  echo "[wave-collect] wave-${WAVE_NUM}-task-ids.json 不在 — TaskStop スキップ"
+fi
+
+if [[ -f "$WATCHER_PIDS_FILE" ]]; then
+  mapfile -t _watcher_pids < <(python3 -c "import json; d=json.load(open('${WATCHER_PIDS_FILE}')); [print(p) for p in d.get('watcher_pids', [])]" 2>/dev/null || true)
+  for _pid in "${_watcher_pids[@]+"${_watcher_pids[@]}"}"; do
+    [[ -n "$_pid" ]] || continue
+    if kill -0 "$_pid" 2>/dev/null; then
+      echo "[wave-collect] kill -TERM PID=${_pid}"
+      kill -TERM "$_pid" 2>/dev/null || true
+    else
+      echo "[wave-collect] PID=${_pid} は既に停止済み"
+    fi
+  done
+  echo "[wave-collect] watcher PID kill -TERM 完了 (watcher-pids: ${WATCHER_PIDS_FILE})"
+else
+  echo "[wave-collect] wave-${WAVE_NUM}-watcher-pids.json 不在 — kill スキップ"
+fi
+```
+
+### Step 6: events/ クリーンアップ（#1052）
+
+Wave 残骸の events ファイルを削除してトークン膨張を防ぐ。
+
+```bash
+# wave-collect Step 6: events/ クリーンアップ (rm -f .supervisor/events/*)
+if [[ -d "${OUTPUT_DIR}/events" ]]; then
+  rm -f "${OUTPUT_DIR}/events/"* 2>/dev/null || true
+  echo "[wave-collect] events/ クリーンアップ完了"
+fi
+```
+
 ## 禁止事項（MUST NOT）
 
 - Issue の状態を変更してはならない（読み取りのみ）

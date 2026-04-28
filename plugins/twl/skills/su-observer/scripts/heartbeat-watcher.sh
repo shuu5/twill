@@ -24,6 +24,11 @@ SILENCE_THRESHOLD_SEC="${SILENCE_THRESHOLD_SEC:-300}"
 EVENTS_DIR="${EVENTS_DIR:-.supervisor/events}"
 CAPTURE_OUTPUT_DIR="${CAPTURE_OUTPUT_DIR:-.supervisor/captures}"
 POLL_INTERVAL_SEC="${POLL_INTERVAL_SEC:-60}"
+AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
+SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+# stagnate-suppress-check.sh パス解決 (#1052)
+_SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+STAGNATE_SUPPRESS_CHECK="${STAGNATE_SUPPRESS_CHECK:-${_SCRIPT_DIR}/../../../scripts/stagnate-suppress-check.sh}"
 
 if [[ -z "$PILOT_WINDOW" ]]; then
   echo "[heartbeat-watcher] ERROR: PILOT_WINDOW が未設定" >&2
@@ -82,8 +87,20 @@ while true; do
   if [[ "$age" -eq -1 ]]; then
     echo "[heartbeat-watcher] WARN: heartbeat ファイルが存在しません（${EVENTS_DIR}/heartbeat-*）" >&2
   elif [[ "$age" -ge "$SILENCE_THRESHOLD_SEC" ]]; then
-    echo "[heartbeat-watcher] SILENCE: heartbeat が ${age}秒間更新されていません（閾値: ${SILENCE_THRESHOLD_SEC}s）"
-    _do_capture || true
+    # STAGNATE suppress 条件チェック (#1052)
+    # [PHASE-COMPLETE] / 実装完了 / session completed/archived / session-end ファイルで suppress
+    _latest_capture=$(ls -t "${CAPTURE_OUTPUT_DIR}/capture-${PILOT_WINDOW}-"*.log 2>/dev/null | head -1 || echo "")
+    _session_json="${AUTOPILOT_DIR}/session.json"
+    if [[ -x "$STAGNATE_SUPPRESS_CHECK" ]] && \
+       bash "$STAGNATE_SUPPRESS_CHECK" \
+         ${_latest_capture:+--capture-file "$_latest_capture"} \
+         --session-json "$_session_json" \
+         --events-dir "$SUPERVISOR_DIR" 2>/dev/null; then
+      echo "[heartbeat-watcher] STAGNATE suppress: 完了条件を検出、emit スキップ"
+    else
+      echo "[heartbeat-watcher] SILENCE: heartbeat が ${age}秒間更新されていません（閾値: ${SILENCE_THRESHOLD_SEC}s）"
+      _do_capture || true
+    fi
   fi
 
   sleep "$POLL_INTERVAL_SEC"
