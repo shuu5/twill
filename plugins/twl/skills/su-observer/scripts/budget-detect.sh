@@ -17,10 +17,10 @@ if [[ -z "$PILOT_WINDOW" ]]; then
 fi
 
 # status line から budget 残量を抽出（実フォーマット: 5h:XX%(YYm)）
-BUDGET_PCT=$(tmux capture-pane -t "$PILOT_WINDOW" -p -S -1 2>/dev/null \
-  | grep -oP '5h:\K[0-9]+(?=%)' | tail -1 || echo "")
-BUDGET_RAW=$(tmux capture-pane -t "$PILOT_WINDOW" -p -S -1 2>/dev/null \
-  | grep -oP '5h:[0-9]+%\(\K[^\)]+' | tail -1 || echo "")
+_PANE=$(tmux capture-pane -t "$PILOT_WINDOW" -p -S -1 2>/dev/null || echo "")
+BUDGET_PCT=$(echo "$_PANE" | grep -oP '5h:\K[0-9]+(?=%)' | tail -1 || echo "")
+BUDGET_RAW=$(echo "$_PANE" | grep -oP '5h:[0-9]+%\(\K[^\)]+' | tail -1 || echo "")
+unset _PANE
 
 # フォールバック: session-comm.sh capture による full pane 取得
 if [[ -z "$BUDGET_RAW" && -z "$BUDGET_PCT" ]]; then
