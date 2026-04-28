@@ -84,6 +84,64 @@ def twl_check_handler(plugin_root: str) -> dict:
     return build_envelope("check", get_deps_version(deps), plugin_name, items, exit_code)
 
 
+# Phase 1: State read/write handlers (ADR-0006 §1 Hybrid Path 5 原則)
+
+
+def twl_state_read_handler(
+    type_: str,
+    issue: str | None = None,
+    repo: str | None = None,
+    field: str | None = None,
+    autopilot_dir: str | None = None,
+) -> dict:
+    """Read autopilot state JSON or single field. Pure Python (in-process testable)."""
+    from twl.autopilot.state import StateManager, StateError, StateArgError
+    ap_dir = Path(autopilot_dir).expanduser().resolve() if autopilot_dir else None
+    try:
+        result = StateManager(autopilot_dir=ap_dir).read(
+            type_=type_, issue=issue, repo=repo, field=field,
+        )
+        return {"ok": True, "result": result, "exit_code": 0}
+    except StateArgError as e:
+        return {"ok": False, "error": str(e), "error_type": "arg_error", "exit_code": 2}
+    except StateError as e:
+        return {"ok": False, "error": str(e), "error_type": "state_error", "exit_code": 1}
+
+
+def twl_state_write_handler(
+    type_: str,
+    role: str,
+    issue: str | None = None,
+    repo: str | None = None,
+    sets: list[str] | None = None,
+    init: bool = False,
+    autopilot_dir: str | None = None,
+    cwd: str | None = None,
+    force_done: bool = False,
+    override_reason: str | None = None,
+) -> dict:
+    """Write autopilot state. Returns {ok, message/error, error_type, exit_code}."""
+    from twl.autopilot.state import StateManager, StateError, StateArgError
+    ap_dir = Path(autopilot_dir).expanduser().resolve() if autopilot_dir else None
+    try:
+        message = StateManager(autopilot_dir=ap_dir).write(
+            type_=type_,
+            role=role,
+            issue=issue,
+            repo=repo,
+            sets=sets,
+            init=init,
+            cwd=cwd,
+            force_done=force_done,
+            override_reason=override_reason,
+        )
+        return {"ok": True, "message": message, "exit_code": 0}
+    except StateArgError as e:
+        return {"ok": False, "error": str(e), "error_type": "arg_error", "exit_code": 2}
+    except StateError as e:
+        return {"ok": False, "error": str(e), "error_type": "state_error", "exit_code": 1}
+
+
 # MCP tool registration — requires fastmcp (optional dep)
 try:
     from fastmcp import FastMCP as _FastMCP
@@ -105,6 +163,45 @@ try:
         """Check file existence and chain integrity for a plugin."""
         return json.dumps(twl_check_handler(plugin_root=plugin_root), ensure_ascii=False)
 
+    @mcp.tool()
+    def twl_state_read(
+        type_: str,
+        issue: str | None = None,
+        repo: str | None = None,
+        field: str | None = None,
+        autopilot_dir: str | None = None,
+    ) -> str:
+        """Read autopilot state JSON or single field."""
+        return json.dumps(
+            twl_state_read_handler(
+                type_=type_, issue=issue, repo=repo, field=field, autopilot_dir=autopilot_dir,
+            ),
+            ensure_ascii=False,
+        )
+
+    @mcp.tool()
+    def twl_state_write(
+        type_: str,
+        role: str,
+        issue: str | None = None,
+        repo: str | None = None,
+        sets: list[str] | None = None,
+        init: bool = False,
+        autopilot_dir: str | None = None,
+        cwd: str | None = None,
+        force_done: bool = False,
+        override_reason: str | None = None,
+    ) -> str:
+        """Write autopilot state."""
+        return json.dumps(
+            twl_state_write_handler(
+                type_=type_, role=role, issue=issue, repo=repo, sets=sets,
+                init=init, autopilot_dir=autopilot_dir, cwd=cwd,
+                force_done=force_done, override_reason=override_reason,
+            ),
+            ensure_ascii=False,
+        )
+
 except ImportError:
     mcp = None  # type: ignore[assignment]
 
@@ -119,3 +216,40 @@ except ImportError:
     def twl_check(plugin_root: str) -> str:  # type: ignore[misc]
         """Check file existence and chain integrity (fastmcp not installed)."""
         return json.dumps(twl_check_handler(plugin_root=plugin_root), ensure_ascii=False)
+
+    def twl_state_read(  # type: ignore[misc]
+        type_: str,
+        issue: str | None = None,
+        repo: str | None = None,
+        field: str | None = None,
+        autopilot_dir: str | None = None,
+    ) -> str:
+        """Read autopilot state (fastmcp not installed)."""
+        return json.dumps(
+            twl_state_read_handler(
+                type_=type_, issue=issue, repo=repo, field=field, autopilot_dir=autopilot_dir,
+            ),
+            ensure_ascii=False,
+        )
+
+    def twl_state_write(  # type: ignore[misc]
+        type_: str,
+        role: str,
+        issue: str | None = None,
+        repo: str | None = None,
+        sets: list[str] | None = None,
+        init: bool = False,
+        autopilot_dir: str | None = None,
+        cwd: str | None = None,
+        force_done: bool = False,
+        override_reason: str | None = None,
+    ) -> str:
+        """Write autopilot state (fastmcp not installed)."""
+        return json.dumps(
+            twl_state_write_handler(
+                type_=type_, role=role, issue=issue, repo=repo, sets=sets,
+                init=init, autopilot_dir=autopilot_dir, cwd=cwd,
+                force_done=force_done, override_reason=override_reason,
+            ),
+            ensure_ascii=False,
+        )
