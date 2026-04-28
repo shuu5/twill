@@ -15,6 +15,11 @@ ADR-004 の実装仕様。全 specialist が準拠する出力形式を定義す
       "enum": ["PASS", "WARN", "FAIL"],
       "description": "PASS: CRITICAL/WARNING なし, WARN: WARNING はあるが CRITICAL なし, FAIL: CRITICAL が1件以上"
     },
+    "files_to_inspect": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Pilot が深堀すべき相対パスのリスト（5-10 件目安）。探索系 specialist のみ使用。省略時は空配列扱い。"
+    },
     "findings": {
       "type": "array",
       "items": {
@@ -109,6 +114,30 @@ status: PASS
 
 findings: []
 ```
+
+### files_to_inspect 併記ケース（探索系 specialist）
+
+```json
+{
+  "status": "WARN",
+  "files_to_inspect": [
+    "plugins/twl/skills/co-autopilot/SKILL.md",
+    "plugins/twl/scripts/chain-runner.sh"
+  ],
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 75,
+      "file": "plugins/twl/skills/co-autopilot/SKILL.md",
+      "line": 42,
+      "message": "...",
+      "category": "architecture-drift"
+    }
+  ]
+}
+```
+
+`files_to_inspect` は optional。reviewer 系 specialist は省略すること。
 
 ### FAIL ケース
 

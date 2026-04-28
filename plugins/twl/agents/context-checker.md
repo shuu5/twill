@@ -133,4 +133,23 @@ tech-debt のタイトルから抽出したキーワードを `tests/` 内で固
 
 ref-specialist-output-schema + ref-specialist-few-shot に従い JSON を出力すること。
 findings 配列に severity / confidence / file / line / message / category を含める。
-status は PASS / WARN / FAIL。findings 0件時: `{"status": "PASS", "findings": []}`
+status は PASS / WARN / FAIL。`files_to_inspect` は optional（相対パス配列、5-10 件目安）。
+
+findings 0件時:
+```json
+{"status": "PASS", "findings": []}
+```
+
+`files_to_inspect` 併記例:
+```json
+{
+  "status": "WARN",
+  "files_to_inspect": [
+    "plugins/twl/skills/co-autopilot/SKILL.md",
+    "plugins/twl/scripts/chain-runner.sh"
+  ],
+  "findings": [
+    {"severity": "WARNING", "confidence": 70, "file": "...", "line": 1, "message": "...", "category": "architecture-drift"}
+  ]
+}
+```

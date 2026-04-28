@@ -14,6 +14,11 @@
       "type": "string",
       "enum": ["PASS", "WARN", "FAIL"]
     },
+    "files_to_inspect": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Pilot が深堀すべき相対パスのリスト（5-10 件目安）。探索系 specialist のみ使用。省略時は空配列扱い。"
+    },
     "findings": {
       "type": "array",
       "items": {
