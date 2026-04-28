@@ -51,7 +51,7 @@ for f in "${FILES[@]}"; do
   esac
 done
 if $has_py; then
-  if grep -rql "from fastapi\|import fastapi" "$PROJECT_ROOT"/*.py "$PROJECT_ROOT"/**/*.py 2>/dev/null; then
+  if grep -rql --include="*.py" "from fastapi\|import fastapi" "$PROJECT_ROOT" 2>/dev/null; then
     LANGUAGE_HINTS["fastapi"]=1
   fi
 fi

@@ -12,11 +12,11 @@ tools: [Read, Grep, Glob]
 skills:
 - ref-specialist-output-schema
 languages:
-  - fastapi
-  - hono
-  - nextjs
-  - r
-  - generic
+- fastapi
+- hono
+- nextjs
+- r
+- generic
 ---
 
 # Code Reviewer Specialist
