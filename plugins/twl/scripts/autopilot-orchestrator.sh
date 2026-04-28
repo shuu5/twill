@@ -999,8 +999,9 @@ generate_phase_report() {
     fi
   done
 
-  # JSON レポート出力
-  jq -n \
+  # JSON レポート生成（変数に格納してから stdout + ファイル両方に出力）
+  local _report_json
+  _report_json=$(jq -n \
     --arg signal "PHASE_COMPLETE" \
     --argjson phase "$phase" \
     --argjson done "$(printf '%s\n' "${done_issues[@]+"${done_issues[@]}"}" | jq -R -s 'split("\n") | map(select(length > 0) | tonumber)')" \
@@ -1016,7 +1017,35 @@ generate_phase_report() {
         skipped: $skipped
       },
       changed_files: $changed_files
-    }'
+    }')
+
+  # stdout 出力（既存動作維持）
+  printf '%s\n' "$_report_json"
+
+  # phase-N-results.json に atomic 書き込み（issue-1028）
+  # AUTOPILOT_DIR が未設定の場合は file 書き込みをスキップ（test や stub 環境への配慮）
+  if [[ -n "${AUTOPILOT_DIR:-}" && -d "${AUTOPILOT_DIR:-}" ]]; then
+    local _results_file="${AUTOPILOT_DIR}/phase-${phase}-results.json"
+    # AC2: 既存 phase-N-results.json が古い場合 (>5 分前) は自動 archive
+    if [[ -f "$_results_file" ]]; then
+      local _file_mtime _now _file_age
+      _file_mtime=$(stat -c '%Y' "$_results_file" 2>/dev/null || echo 0)
+      _now=$(date +%s 2>/dev/null || echo 0)
+      _file_age=$(( _now - _file_mtime ))
+      if (( _file_age > 300 )); then
+        local _archive_ts _archive_dir
+        _archive_ts=$(date -u +%Y%m%dT%H%M%S)
+        _archive_dir="${AUTOPILOT_DIR}/archive/stale-phase-${phase}-${_archive_ts}"
+        mkdir -p "$_archive_dir" 2>/dev/null && \
+          mv "$_results_file" "$_archive_dir/" 2>/dev/null || true
+      fi
+    fi
+    # AC1: atomic write (tmp file → rename)
+    local _tmp_file="${_results_file}.tmp.$$"
+    if printf '%s\n' "$_report_json" > "$_tmp_file" 2>/dev/null; then
+      mv -f "$_tmp_file" "$_results_file" 2>/dev/null || rm -f "$_tmp_file" 2>/dev/null
+    fi
+  fi
 }
 
 # =============================================================================
