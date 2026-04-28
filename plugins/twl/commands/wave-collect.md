@@ -124,7 +124,8 @@ OUTPUT_DIR="${AUTOPILOT_DIR}/../.supervisor"
 mkdir -p "$OUTPUT_DIR"
 OUTPUT_FILE="${OUTPUT_DIR}/wave-${WAVE_NUM}-summary.md"
 
-# 介入率計算
+# 介入率計算（分母 = TOTAL：全 Issue を対象とする介入頻度）
+# ガード条件は分母変数（TOTAL）で 0 除算を防ぐ
 if [[ "$TOTAL" -gt 0 ]]; then
   INTERVENTION_RATE=$(python3 -c "print(f'{${INTERVENTION_COUNT}/${TOTAL}*100:.1f}%')")
   AVG_RETRIES=$(python3 -c "print(f'{${TOTAL_RETRIES}/${TOTAL}:.2f}')" 2>/dev/null || echo "0.00")
@@ -133,7 +134,10 @@ else
   AVG_RETRIES="0.00"
 fi
 
-# 完遂率計算（分母から state_file_missing と dependency_failed を除外）
+# 完遂率計算（分母 = TOTAL - SKIP_STATE_FILE_MISSING - SKIP_DEPENDENCY_FAILED：
+# state_file_missing と dependency_failed は完遂率の母数から除外）
+# ガード条件は分母変数（COMPLETION_RATE_DENOM）で 0 除算を防ぐ
+# 介入率と分母が異なるため、それぞれ独立した分母変数でガードする（意図的に非対称）
 COMPLETION_RATE_DENOM=$((TOTAL - SKIP_STATE_FILE_MISSING - SKIP_DEPENDENCY_FAILED))
 if [[ "$COMPLETION_RATE_DENOM" -gt 0 ]]; then
   COMPLETION_RATE=$(python3 -c "print(f'{${DONE_COUNT}/${COMPLETION_RATE_DENOM}*100:.1f}%')")
