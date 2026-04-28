@@ -4,7 +4,7 @@
 Tests H0: p_mcp >= 0.5 * p_cli  (one-sided, alpha=0.05 with Bonferroni correction).
 
 Usage:
-    python3 ac8_significance_test.py --csv <path> [--output-json] [--alpha 0.05]
+    python3 ac8_significance_test.py --csv <path> [--alpha 0.05]
 """
 
 from __future__ import annotations
@@ -118,8 +118,8 @@ def approach_a_ztest(p_mcp: float, p_cli: float, n_mcp: int, n_cli: int) -> dict
     if n_mcp == 0 or n_cli == 0:
         return {"z": float("nan"), "p_value": float("nan"), "significant": False}
 
-    var_mcp = p_mcp * (1 - p_mcp) / n_mcp if n_mcp > 0 else 0
-    var_cli = p_cli * (1 - p_cli) / n_cli if n_cli > 0 else 0
+    var_mcp = p_mcp * (1 - p_mcp) / n_mcp
+    var_cli = p_cli * (1 - p_cli) / n_cli
     se = math.sqrt(var_mcp + 0.25 * var_cli)
 
     if se == 0:
@@ -142,6 +142,9 @@ def approach_b_bootstrap(
     """Bootstrap ratio test: proportion ratio p_mcp / p_cli, one-sided 95% CI."""
     if n_mcp == 0 or n_cli == 0:
         return {"ci_upper": float("nan"), "significant": False}
+    # Both zero failures: ratio is undefined (0/0); treat as insufficient evidence
+    if failures_mcp == 0 and failures_cli == 0:
+        return {"ci_upper": 0.0, "significant": False}
 
     rng = random.Random(42)
     mcp_data = [1] * failures_mcp + [0] * (n_mcp - failures_mcp)
