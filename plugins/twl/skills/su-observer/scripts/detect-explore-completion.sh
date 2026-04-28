@@ -11,6 +11,7 @@
 #   SPAWN_NEXT_STEP: <phase> が complete の場合 exit 0 + "SPAWN_NEXT_STEP" を出力
 #   nothing: complete でない場合 exit 1
 
+# NOTE: bash 直接実行専用。source 呼び出し禁止（set -euo pipefail が親シェルに継承される）
 set -euo pipefail
 
 WAVE_DIR=""

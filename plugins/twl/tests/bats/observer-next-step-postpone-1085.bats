@@ -56,16 +56,13 @@ teardown() {
 @test "ac1: pitfalls-catalog §15 contains cross-reference to §11" {
   # AC: §15 が §11「Observer idle 中の session disconnect 対策」へのクロスリファレンスを含む
   # RED: 実装前はクロスリファレンスが存在しないため fail
-  run grep -n "§11" "${PITFALLS_CATALOG}"
-  [ "${status}" -eq 0 ]
-  # §15 節の範囲内に §11 参照があることを確認（§15 以降のコンテンツ内）
+  # §15 節のスコープ内（§15 の見出し行以降）で §11 参照が存在することを確認
   local section15_line
   section15_line="$(grep -n "^## 15\." "${PITFALLS_CATALOG}" | cut -d: -f1)"
-  local ref11_line
-  ref11_line="$(grep -n "§11" "${PITFALLS_CATALOG}" | tail -1 | cut -d: -f1)"
   [ -n "${section15_line}" ]
-  [ -n "${ref11_line}" ]
-  [ "${ref11_line}" -gt "${section15_line}" ]
+  # §15 スコープ内に §11 参照が存在するか（awk で節内限定検索）
+  run awk -v start="${section15_line}" 'NR > start && /§11/ {found=1; exit} END {exit !found}' "${PITFALLS_CATALOG}"
+  [ "${status}" -eq 0 ]
 }
 
 @test "ac1: pitfalls-catalog §15 mentions next-step postpone error pattern" {
@@ -167,7 +164,7 @@ teardown() {
   # スクリプトを実行し、next-step spawn 判定を得る
   run bash "${detect_script}" --wave-dir "${mock_wave_dir}" --phase "test-phase2"
   [ "${status}" -eq 0 ]
-  [[ "${output}" == *"SPAWN_NEXT_STEP"* ]] || [[ "${output}" == *"next-step"* ]]
+  [[ "${output}" == *"SPAWN_NEXT_STEP"* ]]
 }
 
 @test "ac5: observer next-step spawn decision triggers within 5 minutes of phase completion" {
