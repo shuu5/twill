@@ -133,3 +133,71 @@ STUB
         return 1
     }
 }
+
+# ===========================================================================
+# M2 (#1048 follow-up): TOCTOU race window 縮小のための realpath 解決
+# SESSION_COMM_SCRIPT_DIR が symlink を経由する場合でも、実 path に解決して
+# SCRIPT_DIR に固定することで check と use の間の race window を縮小する。
+# ===========================================================================
+
+@test "session-comm-script-dir[M2 structural]: realpath fallback chain (realpath / greadlink / python3) が含まれる" {
+    grep -F 'command -v realpath' "$SCRIPT" || {
+        echo "FAIL: SCRIPT_DIR 設定ブロックに realpath fallback が含まれていない" >&2
+        return 1
+    }
+    grep -F 'command -v greadlink' "$SCRIPT" || {
+        echo "FAIL: SCRIPT_DIR 設定ブロックに greadlink fallback が含まれていない" >&2
+        return 1
+    }
+    grep -F 'os.path.realpath' "$SCRIPT" || {
+        echo "FAIL: SCRIPT_DIR 設定ブロックに python3 os.path.realpath fallback が含まれていない" >&2
+        return 1
+    }
+}
+
+@test "session-comm-script-dir[M2 functional]: SESSION_COMM_SCRIPT_DIR が symlink でも SCRIPT_DIR は実 path になる" {
+    local real_dir="$SANDBOX/real_scripts"
+    local symlink_dir="$SANDBOX/symlink_scripts"
+    mkdir -p "$real_dir"
+    cat > "$real_dir/session-state.sh" <<'STUB'
+#!/bin/bash
+echo "real-mock"
+STUB
+    chmod +x "$real_dir/session-state.sh"
+    ln -s "$real_dir" "$symlink_dir"
+
+    # session-comm.sh の SCRIPT_DIR 設定ブロックを subshell で再実行（前回 #1048 と同じ pattern）
+    local result
+    result=$(SCRIPT_PATH="$SCRIPT" TM=1 CD="$symlink_dir" bash -c '
+        BASH_SOURCE=("$SCRIPT_PATH")
+        _TEST_MODE="$TM"
+        SESSION_COMM_SCRIPT_DIR="$CD"
+        if [[ -n "${_TEST_MODE:-}" ]] && [[ -n "${SESSION_COMM_SCRIPT_DIR:-}" ]] \
+            && [[ -d "$SESSION_COMM_SCRIPT_DIR" ]] \
+            && [[ -f "$SESSION_COMM_SCRIPT_DIR/session-state.sh" ]]; then
+            _resolved_state=""
+            if command -v realpath >/dev/null 2>&1; then
+              _resolved_state=$(realpath "$SESSION_COMM_SCRIPT_DIR/session-state.sh" 2>/dev/null || true)
+            fi
+            if [[ -z "$_resolved_state" ]] && command -v greadlink >/dev/null 2>&1; then
+              _resolved_state=$(greadlink -f "$SESSION_COMM_SCRIPT_DIR/session-state.sh" 2>/dev/null || true)
+            fi
+            if [[ -z "$_resolved_state" ]] && command -v python3 >/dev/null 2>&1; then
+              _resolved_state=$(python3 -c "import os, sys; print(os.path.realpath(sys.argv[1]))" "$SESSION_COMM_SCRIPT_DIR/session-state.sh" 2>/dev/null || true)
+            fi
+            if [[ -n "$_resolved_state" && -f "$_resolved_state" ]]; then
+              SCRIPT_DIR=$(dirname "$_resolved_state")
+            else
+              SCRIPT_DIR="$SESSION_COMM_SCRIPT_DIR"
+            fi
+        else
+            SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        fi
+        echo "$SCRIPT_DIR"
+    ')
+
+    [[ "$result" == "$real_dir" ]] || {
+        echo "FAIL: SESSION_COMM_SCRIPT_DIR が symlink ($symlink_dir) の場合、SCRIPT_DIR が実 path ($real_dir) ではなく $result になった" >&2
+        return 1
+    }
+}

@@ -15,10 +15,27 @@ set -euo pipefail
 # テスト時のみ SESSION_COMM_SCRIPT_DIR を許可（_TEST_MODE ガード必須）
 # Issue #1048: 信頼境界として「実在ディレクトリ」かつ「session-state.sh を含む」
 # ことを追加検証し、攻撃者による任意パス上書きを拒否する
+# M2 (#1048 follow-up): realpath で symlink を解決して実 path に固定し、
+# check と use の間に symlink 差し替えされる TOCTOU race window を縮小する
 if [[ -n "${_TEST_MODE:-}" ]] && [[ -n "${SESSION_COMM_SCRIPT_DIR:-}" ]] \
     && [[ -d "$SESSION_COMM_SCRIPT_DIR" ]] \
     && [[ -f "$SESSION_COMM_SCRIPT_DIR/session-state.sh" ]]; then
-    SCRIPT_DIR="$SESSION_COMM_SCRIPT_DIR"
+    _resolved_state=""
+    if command -v realpath >/dev/null 2>&1; then
+      _resolved_state=$(realpath "$SESSION_COMM_SCRIPT_DIR/session-state.sh" 2>/dev/null || true)
+    fi
+    if [[ -z "$_resolved_state" ]] && command -v greadlink >/dev/null 2>&1; then
+      _resolved_state=$(greadlink -f "$SESSION_COMM_SCRIPT_DIR/session-state.sh" 2>/dev/null || true)
+    fi
+    if [[ -z "$_resolved_state" ]] && command -v python3 >/dev/null 2>&1; then
+      _resolved_state=$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$SESSION_COMM_SCRIPT_DIR/session-state.sh" 2>/dev/null || true)
+    fi
+    if [[ -n "$_resolved_state" && -f "$_resolved_state" ]]; then
+      SCRIPT_DIR=$(dirname "$_resolved_state")
+    else
+      SCRIPT_DIR="$SESSION_COMM_SCRIPT_DIR"
+    fi
+    unset _resolved_state
 else
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 fi
