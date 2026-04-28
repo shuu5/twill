@@ -97,7 +97,7 @@ teardown() {
   mkdir -p "$supervisor_dir"
   echo "test working memory content" > "${supervisor_dir}/working-memory.md"
 
-  run bash "$POSTCOMPACT_SCRIPT"
+  run env SUPERVISOR_DIR="${supervisor_dir}" bash "$POSTCOMPACT_SCRIPT"
 
   echo "--- stdout ---"
   echo "$output"

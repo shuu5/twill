@@ -85,7 +85,7 @@ spawnable_by:
 | SU-2 | Layer 2（Escalate）の介入はユーザー確認が MUST |
 | SU-3 | Supervisor 自身が Issue の直接実装を行ってはならない（SHALL） |
 | SU-4 | 同時に supervise できる controller session は 5 を超えてはならない（SHALL） |
-| SU-5 | context 消費量 80% 到達時に知識外部化を開始しなければならない（SHALL） |
+| SU-5 | context 消費量 80% 到達時に知識外部化を開始しなければならない（SHALL）。検知手段: Claude Code の PreCompact hook（`su-precompact.sh`）が自動発火するため、hook stdout の `[PRE-COMPACT]` マーカーを観測すること。また status line の `[BUDGET-LOW]` シグナルも補助的に使用可。能動的な context 残量取得手段は現時点では未確立（#1020 追跡）。 |
 | SU-6a | Wave 完了時に結果収集と externalize-state を実行しなければならない（SHALL） |
 | SU-6b | context 逼迫時またはユーザー指示時に `/compact` をユーザーへ提案しなければならない（SHOULD） |
 | SU-7 | observed session への inject/send-keys は介入プロトコルに従う場合に許可（MAY） |
