@@ -1,0 +1,78 @@
+mappings:
+  # AC1: 測定プロトコル文書化 (N=240 設計)
+  - ac_index: 1
+    ac_text: "新規ファイル plugins/twl/architecture/phases/phase1-ai-failure-rate-protocol.md を作成し、N=240 根拠 (20/操作 × 6 操作 × 2 経路)、power analysis、対象 6 操作、goldfile 定義、CLI/MCP 経路定義、前提 verify を文書化する"
+    test_file: "cli/twl/tests/test_issue_1019_ac8_binomial.py"
+    test_names:
+      - "TestAC1ProtocolDocument::test_ac1_protocol_doc_exists"
+      - "TestAC1ProtocolDocument::test_ac1_n240_justification_present"
+      - "TestAC1ProtocolDocument::test_ac1_power_analysis_mentioned"
+      - "TestAC1ProtocolDocument::test_ac1_six_operations_documented"
+      - "TestAC1ProtocolDocument::test_ac1_cli_route_defined"
+      - "TestAC1ProtocolDocument::test_ac1_mcp_route_defined"
+      - "TestAC1ProtocolDocument::test_ac1_goldfile_definition_present"
+      - "TestAC1ProtocolDocument::test_ac1_prerequisite_verify_documented"
+    red_reason: "phase1-ai-failure-rate-protocol.md が未作成のため全件 NotImplementedError で FAIL"
+
+  # AC2: 測定環境ガードレール (cold-start + prompt 標準化 + 両経路強制)
+  - ac_index: 2
+    ac_text: "cold-start session 必須、prompt 標準化、forced subset 設計 (CLI 5 + MCP 5 per 操作、forced 30+30+free 120=240)、environment fingerprint 7 フィールド記録を文書化・実測データ CSV として残す"
+    test_file: "cli/twl/tests/test_issue_1019_ac8_binomial.py"
+    test_names:
+      - "TestAC2MeasurementGuardrails::test_ac2_cold_start_requirement_documented"
+      - "TestAC2MeasurementGuardrails::test_ac2_prompt_standardization_documented"
+      - "TestAC2MeasurementGuardrails::test_ac2_forced_subset_design_documented"
+      - "TestAC2MeasurementGuardrails::test_ac2_trial_total_matches_240"
+      - "TestAC2MeasurementGuardrails::test_ac2_environment_fingerprint_fields_present"
+      - "TestAC2MeasurementGuardrails::test_ac2_data_csv_exists"
+    red_reason: "プロトコル文書・実測 CSV が未作成のため全件 NotImplementedError で FAIL"
+
+  # AC3: 4 失敗パターン分類 + state での具体化
+  - ac_index: 3
+    ac_text: "分類ルーブリック (pattern 1: PYTHONPATH 未設定 / pattern 2: subcommand 名間違い / pattern 3: enum 表記ゆれ / pattern 4: 必須オプション漏れ) + MECE 保証 + 分子定義 (pattern 1-4 のみ) + 分類器実装"
+    test_file: "cli/twl/tests/test_issue_1019_ac8_binomial.py"
+    test_names:
+      - "TestAC3FailurePatternClassification::test_ac3_pattern1_pythonpath_not_set"
+      - "TestAC3FailurePatternClassification::test_ac3_pattern2_subcommand_name_error"
+      - "TestAC3FailurePatternClassification::test_ac3_pattern3_enum_notation_error"
+      - "TestAC3FailurePatternClassification::test_ac3_pattern4_missing_required_option"
+      - "TestAC3FailurePatternClassification::test_ac3_mece_guarantee_pattern5_out_of_scope"
+      - "TestAC3FailurePatternClassification::test_ac3_numerator_definition_excludes_pattern5"
+    red_reason: "失敗パターン分類器が未実装のため全件 NotImplementedError で FAIL"
+
+  # AC4: 統計判定 (one-sided proportion test, α=0.05)
+  - ac_index: 4
+    ac_text: "アプローチ A: 線形結合 z-test (H0: p_mcp - 0.5×p_cli >= 0、delta method SE)、アプローチ B: bootstrap 比率比検定 (B>=10000)、Bonferroni 補正 (α/6=0.0083)、overall 判定 (全達成/部分達成/未達成)、goldfiles 12 件 (6 操作 × 2 経路) を実装・作成する"
+    test_file: "cli/twl/tests/test_issue_1019_ac8_binomial.py"
+    test_names:
+      - "TestAC4StatisticalTest::test_ac4_significance_script_exists"
+      - "TestAC4StatisticalTest::test_ac4_script_accepts_csv_input"
+      - "TestAC4StatisticalTest::test_ac4_script_outputs_json"
+      - "TestAC4StatisticalTest::test_ac4_approach_a_linear_combination_ztest"
+      - "TestAC4StatisticalTest::test_ac4_approach_b_bootstrap_ratio_test"
+      - "TestAC4StatisticalTest::test_ac4_bonferroni_correction_applied"
+      - "TestAC4StatisticalTest::test_ac4_overall_judgment_categories"
+      - "TestAC4StatisticalTest::test_ac4_goldfiles_exist_for_all_operations_and_routes"
+    red_reason: "ac8_significance_test.py および goldfiles が未作成のため全件 NotImplementedError で FAIL"
+
+  # AC5: 実証結果を doobidoo memory に記録
+  - ac_index: 5
+    ac_text: "各試行の raw data を mcp__doobidoo__memory_store で記録 (tags: [phase1, ac8, ai-failure-rate, <route>, <operation>])。集計後サマリーを別 hash で記録"
+    test_file: "cli/twl/tests/test_issue_1019_ac8_binomial.py"
+    test_names:
+      - "TestAC5DoobidooMemoryRecord::test_ac5_raw_trial_data_recorded"
+      - "TestAC5DoobidooMemoryRecord::test_ac5_tags_include_required_fields"
+      - "TestAC5DoobidooMemoryRecord::test_ac5_summary_hash_recorded"
+    red_reason: "実測・doobidoo memory 記録が未完了のため全件 NotImplementedError で FAIL"
+
+  # AC6: PR merge 完遂
+  - ac_index: 6
+    ac_text: "測定プロトコル文書・検定スクリプト・実測 CSV・goldfiles を含む PR が main にマージ。merge-gate specialist 全件 pass。doobidoo memory に AC8 達成判定結果が記録"
+    test_file: "cli/twl/tests/test_issue_1019_ac8_binomial.py"
+    test_names:
+      - "TestAC6PRMergeComplete::test_ac6_protocol_doc_in_repo"
+      - "TestAC6PRMergeComplete::test_ac6_significance_script_in_repo"
+      - "TestAC6PRMergeComplete::test_ac6_measured_csv_in_repo"
+      - "TestAC6PRMergeComplete::test_ac6_goldfiles_in_repo"
+      - "TestAC6PRMergeComplete::test_ac6_doobidoo_memory_ac8_judgment_recorded"
+    red_reason: "PR 未マージ・実測未完了のため全件 NotImplementedError で FAIL"
