@@ -48,22 +48,18 @@ fi
 # 軸1 (consumption-based): 5h budget の token 残量 = 300 × (100 - pct%) / 100 が閾値以下
 # 軸2 (cycle-based): (YYm) = cycle reset までの wall-clock が閾値以下
 # ※ (YYm) は cycle reset wall-clock であり token 残量ではない（#1022）
-BUDGET_THRESHOLD_REMAINING=$(python3 -c "
-import json, sys
+_THRESHOLDS=$(python3 -c "
+import json
 try:
-  cfg = json.load(open('.supervisor/budget-config.json'))
-  print(cfg.get('threshold_remaining_minutes', 40))
-except:
-  print(40)
-" 2>/dev/null || echo "40")
-BUDGET_THRESHOLD_CYCLE=$(python3 -c "
-import json, sys
-try:
-  cfg = json.load(open('.supervisor/budget-config.json'))
-  print(cfg.get('threshold_cycle_minutes', 5))
-except:
-  print(5)
-" 2>/dev/null || echo "5")
+  with open('.supervisor/budget-config.json') as f:
+    cfg = json.load(f)
+  print(cfg.get('threshold_remaining_minutes', 40), cfg.get('threshold_cycle_minutes', 5))
+except Exception:
+  print(40, 5)
+" 2>/dev/null || echo "40 5")
+BUDGET_THRESHOLD_REMAINING="${_THRESHOLDS%% *}"
+BUDGET_THRESHOLD_CYCLE="${_THRESHOLDS##* }"
+unset _THRESHOLDS
 
 [[ ! "$BUDGET_THRESHOLD_REMAINING" =~ ^[0-9]+$ ]] && BUDGET_THRESHOLD_REMAINING=40
 [[ ! "$BUDGET_THRESHOLD_CYCLE" =~ ^[0-9]+$ ]] && BUDGET_THRESHOLD_CYCLE=5

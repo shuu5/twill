@@ -424,7 +424,13 @@ check_budget_low() {
   local threshold_cycle="${BUDGET_THRESHOLD_CYCLE}"
   local info pct cycle_min remaining_min alert=false
   info=$(get_budget_info "$pilot_win")
-  eval "$info"
+  # eval を避け、パラメータ展開で個別抽出する（インジェクション回避）
+  pct="${info#*pct=}"; pct="${pct%% *}"
+  cycle_min="${info#*cycle_min=}"; cycle_min="${cycle_min%% *}"
+  remaining_min="${info#*remaining_min=}"; remaining_min="${remaining_min%% *}"
+  [[ "$pct" =~ ^-?[0-9]+$ ]] || pct=-1
+  [[ "$cycle_min" =~ ^-?[0-9]+$ ]] || cycle_min=-1
+  [[ "$remaining_min" =~ ^-?[0-9]+$ ]] || remaining_min=-1
   # 軸1 (consumption-based): token 残量 ≤ threshold_remaining_minutes
   if [[ "$remaining_min" -ge 0 && "$remaining_min" -le "$threshold_remaining" ]]; then alert=true; fi
   # 軸2 (cycle-based): cycle reset wall-clock ≤ threshold_cycle_minutes

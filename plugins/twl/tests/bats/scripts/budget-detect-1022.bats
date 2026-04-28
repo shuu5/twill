@@ -102,13 +102,10 @@ teardown() {
 # フォーマット解釈:
 #   pct = 9 (消費率)
 #   cycle_raw = 0h10m → cycle_reset_min = 10分
-#   cycle_total_min = cycle_reset_min / (pct / 100) = 10 / 0.09 ≈ 111分
-#   remaining_min = cycle_total_min × (100 - 9) / 100 ≈ 101分
 #
-# 実際の計算（整数演算）:
-#   cycle_reset_min = 10
-#   budget_remaining_min = (10 * (100 - 9)) / 9 = (10 * 91) / 9 = 910 / 9 = 101分 (>40)
-#   cycle_reset_min = 10 (>5)
+# 実装の計算式（budget-detect.sh: BUDGET_REMAINING_MIN = 300 * (100 - pct) / 100）:
+#   budget_remaining_min = 300 * (100 - 9) / 100 = 300 * 91 / 100 = 273分 (>40)
+#   cycle_reset_min = 10分 (>5)
 #   → 両軸不発 → alert なし
 #
 # RED 理由: 現在の実装は BUDGET_MIN (= cycle_reset_min = 10) と BUDGET_THRESHOLD (= 15) を比較し、
