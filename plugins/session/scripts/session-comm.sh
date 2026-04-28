@@ -13,7 +13,11 @@
 set -euo pipefail
 
 # テスト時のみ SESSION_COMM_SCRIPT_DIR を許可（_TEST_MODE ガード必須）
-if [[ -n "${_TEST_MODE:-}" ]] && [[ -n "${SESSION_COMM_SCRIPT_DIR:-}" ]]; then
+# Issue #1048: 信頼境界として「実在ディレクトリ」かつ「session-state.sh を含む」
+# ことを追加検証し、攻撃者による任意パス上書きを拒否する
+if [[ -n "${_TEST_MODE:-}" ]] && [[ -n "${SESSION_COMM_SCRIPT_DIR:-}" ]] \
+    && [[ -d "$SESSION_COMM_SCRIPT_DIR" ]] \
+    && [[ -f "$SESSION_COMM_SCRIPT_DIR/session-state.sh" ]]; then
     SCRIPT_DIR="$SESSION_COMM_SCRIPT_DIR"
 else
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
