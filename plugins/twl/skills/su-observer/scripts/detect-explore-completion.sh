@@ -24,6 +24,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ -n "$PHASE" && ! "$PHASE" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+  echo "ERROR: invalid --phase value: ${PHASE}" >&2
+  exit 1
+fi
+
 if [[ -z "$WAVE_DIR" ]]; then
   echo "ERROR: --wave-dir is required" >&2
   exit 1
