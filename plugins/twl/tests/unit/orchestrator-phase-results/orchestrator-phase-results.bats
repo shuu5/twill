@@ -19,9 +19,30 @@ setup() {
   export ORCHESTRATOR_SH
 
   # generate_phase_report を bats プロセスに source（関数定義のみ抽出して eval）
-  # autopilot-orchestrator.sh は top-level に main 処理があるため source できない
+  # autopilot-orchestrator.sh は top-level に main 処理（exit を含む）があるため
+  # ファイル全体を source できない。
+  #
+  # M6 (Quality Review follow-up): 旧版は `awk '/^fn\(\) \{/,/^\}$/'` で関数末尾を
+  # 単純に `^}$` で判定していたが、関数内に行頭 `}` が出現すると誤切断する脆弱性が
+  # あった。本実装では brace-counting awk で開閉を厳密に追跡し、ネスト brace に対応する。
   local fn_def
-  fn_def=$(awk '/^generate_phase_report\(\) \{/,/^\}$/' "$ORCHESTRATOR_SH")
+  fn_def=$(awk '
+    BEGIN { capturing = 0; depth = 0 }
+    /^generate_phase_report\(\) \{/ {
+      capturing = 1
+      depth = 1
+      print
+      next
+    }
+    capturing {
+      print
+      line = $0
+      open_count = gsub(/\{/, "&", line)
+      close_count = gsub(/\}/, "&", line)
+      depth += open_count - close_count
+      if (depth == 0) exit
+    }
+  ' "$ORCHESTRATOR_SH")
   eval "$fn_def"
 }
 
@@ -237,6 +258,80 @@ STUB
   }
   grep -F '"signal": "PHASE_COMPLETE"' "$results_file" || {
     echo "FAIL: cp fallback で書き込まれた phase-6-results.json の内容が壊れている" >&2
+    return 1
+  }
+}
+
+# ===========================================================================
+# M6 (Quality Review follow-up): brace-counting awk による関数抽出のロバストネス
+# 旧 awk (`/^fn\(\) \{/,/^\}$/`) は関数内に行頭 `}` が出現すると誤切断する
+# 脆弱性があった。本テストは brace-counting awk が以下のケースで誤切断しないことを確認:
+#   - 文字列内の {} (jq JSON テンプレート等)
+#   - ${} 変数展開の brace
+#   - 本体末尾の `}` を正しく終端として認識
+# ===========================================================================
+
+@test "phase-results[M6 robust-extraction]: brace-counting awk が文字列内 {} を含む関数を正しく抽出する" {
+  local fixture="$SANDBOX/test-orch-fixture.sh"
+  cat > "$fixture" <<'FIXTURE'
+#!/usr/bin/env bash
+# Top-level guard
+echo "should NOT be captured top"
+
+generate_phase_report() {
+  local _data='{"key": "value"}'
+  local _ap="${AUTOPILOT_DIR%/}"
+  if [[ -n "$_data" ]]; then
+    echo "${_data}"
+  fi
+  echo "function end marker"
+}
+
+other_function() {
+  echo "should NOT be captured other"
+}
+FIXTURE
+
+  local fn_def
+  fn_def=$(awk '
+    BEGIN { capturing = 0; depth = 0 }
+    /^generate_phase_report\(\) \{/ {
+      capturing = 1
+      depth = 1
+      print
+      next
+    }
+    capturing {
+      print
+      line = $0
+      open_count = gsub(/\{/, "&", line)
+      close_count = gsub(/\}/, "&", line)
+      depth += open_count - close_count
+      if (depth == 0) exit
+    }
+  ' "$fixture")
+
+  echo "$fn_def" | grep -q 'function end marker' || {
+    echo "FAIL: brace-counting awk が関数本体末尾 (function end marker) まで抽出できていない" >&2
+    echo "Extracted:" >&2
+    echo "$fn_def" >&2
+    return 1
+  }
+  if echo "$fn_def" | grep -q 'should NOT be captured'; then
+    echo "FAIL: brace-counting awk が関数外 (other_function) を誤って含めた" >&2
+    return 1
+  fi
+}
+
+@test "phase-results[M6 setup-uses-brace-counting]: bats setup の関数抽出が brace-counting 版である" {
+  # この bats ファイル自身に brace-counting awk が含まれることを確認
+  # 旧 `awk '/^fn\(\) \{/,/^\}$/'` パターンが setup 内に残っていないことを保証
+  grep -F 'gsub(/\{/' "$BATS_TEST_FILENAME" || {
+    echo "FAIL: bats setup が brace-counting awk を使用していない（旧パターンが残存）" >&2
+    return 1
+  }
+  grep -F 'open_count - close_count' "$BATS_TEST_FILENAME" || {
+    echo "FAIL: bats setup の brace counting ロジックが含まれていない" >&2
     return 1
   }
 }
