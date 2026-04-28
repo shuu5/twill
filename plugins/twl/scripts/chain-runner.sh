@@ -106,29 +106,52 @@ resolve_autopilot_dir() {
 # =====================================================================
 # Trace Event (Phase 3 / Layer 1 経験的監査)
 # =====================================================================
+# _resolve_path: 互換性のあるパス解決ヘルパー（issue-1041/1042 follow-up）
+# GNU realpath は --canonicalize-missing をサポートするが BSD realpath (macOS)
+# は非互換。下記 4 段 fallback で symlink 解決を試みる:
+#   Tier 1: GNU realpath --canonicalize-missing (Linux)
+#   Tier 2: greadlink -f (macOS coreutils via homebrew)
+#   Tier 3: python3 os.path.realpath (POSIX 互換)
+#   Tier 4: 失敗時は return 1（呼び出し元で安全側拒否）
+# stdout に解決済みパスを出力。成功は return 0、失敗は return 1。
+_resolve_path() {
+  local p="$1"
+  local resolved
+  if resolved=$(realpath --canonicalize-missing "$p" 2>/dev/null) && [[ -n "$resolved" ]]; then
+    echo "$resolved"; return 0
+  fi
+  if resolved=$(greadlink -f "$p" 2>/dev/null) && [[ -n "$resolved" ]]; then
+    echo "$resolved"; return 0
+  fi
+  if resolved=$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$p" 2>/dev/null) && [[ -n "$resolved" ]]; then
+    echo "$resolved"; return 0
+  fi
+  return 1
+}
+
 # TWL_CHAIN_TRACE 環境変数が設定されている場合、step の start/end を
 # JSON Lines 形式で append する。設定がなければノーオペ（後方互換）。
 trace_event() {
   local step="$1" phase="$2" exit_code="${3:-}"
   [[ -z "${TWL_CHAIN_TRACE:-}" ]] && return 0
   local trace_file="$TWL_CHAIN_TRACE"
-  # パストラバーサル拒否
+  # パストラバーサル拒否（相対パスのみ意味あり、絶対パスは下記 _resolve_path で正規化される）
   case "$trace_file" in
     *..*) return 0 ;;
   esac
   # 絶対パス検証（issue-1015）: /tmp・TMPDIR・AUTOPILOT_DIR 配下のみ許可
   if [[ "$trace_file" = /* ]]; then
-    # symlink TOCTOU 対策（issue-1041）: realpath で symlink を解決してから検証
-    # 解決失敗時（realpath 利用不可など）は安全側に倒して書き込み拒否
+    # symlink TOCTOU 対策（issue-1041, macOS 互換: H1 follow-up）:
+    # _resolve_path で symlink を解決してから検証。解決失敗時は安全側に倒して書き込み拒否
     local resolved_trace
-    resolved_trace=$(realpath --canonicalize-missing "$trace_file" 2>/dev/null) || return 0
+    resolved_trace=$(_resolve_path "$trace_file") || return 0
     trace_file="$resolved_trace"
     local _ok=0
     [[ "$trace_file" == /tmp/* ]] && _ok=1
     if [[ "$_ok" -eq 0 && -n "${TMPDIR:-}" ]]; then
       # TMPDIR 自体が symlink である可能性に備えて resolve（macOS 互換性等）
       local _tmp_resolved
-      _tmp_resolved=$(realpath --canonicalize-missing "${TMPDIR%/}" 2>/dev/null) || _tmp_resolved="${TMPDIR%/}"
+      _tmp_resolved=$(_resolve_path "${TMPDIR%/}") || _tmp_resolved="${TMPDIR%/}"
       [[ "$trace_file" == "${_tmp_resolved}/"* ]] && _ok=1
     fi
     if [[ "$_ok" -eq 0 && -n "${AUTOPILOT_DIR:-}" ]]; then
@@ -136,7 +159,7 @@ trace_event() {
       [[ "$_ap" != /* ]] && _ap="${PWD}/${_ap}"
       # AUTOPILOT_DIR 自体が symlink を含む可能性に備えて resolve
       local _ap_resolved
-      _ap_resolved=$(realpath --canonicalize-missing "$_ap" 2>/dev/null) || _ap_resolved="$_ap"
+      _ap_resolved=$(_resolve_path "$_ap") || _ap_resolved="$_ap"
       # AUTOPILOT_DIR 信頼性検証（issue-1042）: 攻撃者が AUTOPILOT_DIR=/etc 等を設定して
       # ホワイトリストを拡張する攻撃を防ぐため、信頼できる親ディレクトリ
       # (/tmp・TMPDIR・$HOME) 配下の場合のみ AUTOPILOT_DIR ホワイトリストを適用する
@@ -144,12 +167,12 @@ trace_event() {
       [[ "$_ap_resolved" == /tmp/* ]] && _autopilot_trusted=1
       if [[ "$_autopilot_trusted" -eq 0 && -n "${TMPDIR:-}" ]]; then
         local _tmp_trust_resolved
-        _tmp_trust_resolved=$(realpath --canonicalize-missing "${TMPDIR%/}" 2>/dev/null) || _tmp_trust_resolved="${TMPDIR%/}"
+        _tmp_trust_resolved=$(_resolve_path "${TMPDIR%/}") || _tmp_trust_resolved="${TMPDIR%/}"
         [[ "$_ap_resolved" == "${_tmp_trust_resolved}/"* ]] && _autopilot_trusted=1
       fi
       if [[ "$_autopilot_trusted" -eq 0 && -n "${HOME:-}" ]]; then
         local _home_trust_resolved
-        _home_trust_resolved=$(realpath --canonicalize-missing "${HOME%/}" 2>/dev/null) || _home_trust_resolved="${HOME%/}"
+        _home_trust_resolved=$(_resolve_path "${HOME%/}") || _home_trust_resolved="${HOME%/}"
         [[ "$_ap_resolved" == "${_home_trust_resolved}/"* ]] && _autopilot_trusted=1
       fi
       if [[ "$_autopilot_trusted" -eq 1 ]]; then
