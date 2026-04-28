@@ -122,3 +122,53 @@ issue_1015:
       test_name: "trace-traversal[regression]: パストラバーサル（*..*）は引き続きブロックされる"
       status: GREEN
       note: "回帰テスト。既存の case *..*) 節の動作を維持"
+
+# --- Issue #1029 ---
+issue_1029:
+  issue: 1029
+  framework: bats
+  test_file: "plugins/session/tests/cld-observe-any.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "既知 thinking indicator 10+ 件を catalog に追加（Sautéed, Burrowing, Cerebrating, Spinning, Beboppin', Thundering, Baked, Cooked, Crunched, Churned 等）"
+      test_name: "AC1: thinking indicator 'Burrowing' あり → STAGNATE emit なし（偽陽性防止）"
+      scenario: 14
+      status: GREEN
+
+    - ac_index: 1
+      ac_text: "既知 thinking indicator 10+ 件を catalog に追加（Sautéed, Burrowing, Cerebrating, Spinning, Beboppin', Thundering, Baked, Cooked, Crunched, Churned 等）"
+      test_name: "AC1: thinking indicator 'Sautéed / Cerebrating / Thundering' あり → STAGNATE emit なし"
+      scenario: 15
+      status: GREEN
+
+    - ac_index: 2
+      ac_text: "一般化 regex を実装し新 indicator にロバスト（`^[*•·✻✽✶✢✻] [A-Z][a-z]+(ed|ing|in')…?` 相当の一般化パターン）"
+      test_name: "AC2: 未知 indicator 'Fizzing… (1s)'（一般化 regex 対象） → STAGNATE emit なし"
+      scenario: 16
+      status: GREEN
+
+    - ac_index: 2
+      ac_text: "一般化 regex を実装し新 indicator にロバスト（`^[*•·✻✽✶✢✻] [A-Z][a-z]+(ed|ing|in')…?` 相当の一般化パターン）"
+      test_name: "AC2: indicator suffix \"in'\" を持つ 'Beboppin'' → STAGNATE emit なし（一般化 regex で検出）"
+      scenario: 17
+      status: GREEN
+
+    - ac_index: 3
+      ac_text: "bats で偽陽性 case（Burrowing… 等 thinking indicator あり）→ STAGNATE emit なし、本物の stall（出力なし 10 分）→ STAGNATE emit ありを検証"
+      test_name: "AC3: 偽陽性ケース — 'Burrowing…' indicator あり → STAGNATE emit なし"
+      scenario: 18
+      status: GREEN
+
+    - ac_index: 3
+      ac_text: "bats で偽陽性 case（Burrowing… 等 thinking indicator あり）→ STAGNATE emit なし、本物の stall（出力なし 10 分）→ STAGNATE emit ありを検証"
+      test_name: "AC3: 本物の stall — indicator なし + log 古い → STAGNATE emit あり"
+      scenario: 19
+      status: GREEN
+      note: "現実装で PASS する仕様確認テスト。AC1/AC2 実装後も regression しないことを保証する。"
+
+    - ac_index: 4
+      ac_text: "PR merged + main HEAD 更新（機械検証対象外）"
+      test_name: null
+      scenario: null
+      status: SKIPPED
+      note: "機械検証対象外のため、テスト生成をスキップ。"
