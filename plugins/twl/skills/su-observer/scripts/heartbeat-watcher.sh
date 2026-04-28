@@ -82,6 +82,7 @@ echo "[heartbeat-watcher] 起動: PILOT_WINDOW=${PILOT_WINDOW} threshold=${SILEN
 
 # 自己 PID を watcher-pid-heartbeat に記録 — context-budget-monitor.sh が参照して kill する (#1052)
 _HEARTBEAT_PID_FILE="${SUPERVISOR_DIR}/watcher-pid-heartbeat"
+mkdir -p "$SUPERVISOR_DIR" 2>/dev/null || true
 echo $$ > "$_HEARTBEAT_PID_FILE" 2>/dev/null || true
 trap 'rm -f "$_HEARTBEAT_PID_FILE" 2>/dev/null || true' EXIT
 

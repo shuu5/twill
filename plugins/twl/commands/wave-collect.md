@@ -246,6 +246,7 @@ if [[ -f "$WATCHER_PIDS_FILE" ]]; then
   mapfile -t _watcher_pids < <(python3 -c "import json; d=json.load(open('${WATCHER_PIDS_FILE}')); [print(p) for p in d.get('watcher_pids', [])]" 2>/dev/null || true)
   for _pid in "${_watcher_pids[@]+"${_watcher_pids[@]}"}"; do
     [[ -n "$_pid" ]] || continue
+    [[ "$_pid" =~ ^[0-9]+$ ]] || continue
     if kill -0 "$_pid" 2>/dev/null; then
       echo "[wave-collect] kill -TERM PID=${_pid}"
       kill -TERM "$_pid" 2>/dev/null || true

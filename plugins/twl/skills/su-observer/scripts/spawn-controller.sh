@@ -124,7 +124,7 @@ WARN
     echo "Error: --with-chain には --issue N が必須です。" >&2
     exit 2
   fi
-  if [[ ! "$CHAIN_ISSUE" =~ ^[0-9]+$ ]]; then
+  if [[ ! "$CHAIN_ISSUE" =~ ^[1-9][0-9]*$ ]]; then
     echo "Error: --issue の値は正整数である必要があります: ${CHAIN_ISSUE}" >&2
     exit 2
   fi
