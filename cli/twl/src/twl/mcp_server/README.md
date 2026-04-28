@@ -66,3 +66,73 @@ plugin_root 例:
 
 1 つの MCP サーバープロセスから複数プラグイン (`plugins/twl` / `plugins/session` など) を
 同時に扱えます（multi-plugin 対応設計）。
+
+## Phase 1: Autopilot State ツール (ADR-0006)
+
+Phase 1 で `twl_state_read` / `twl_state_write` を追加しました。
+autopilot の issue/session JSON を MCP ツール経由で読み書きできます。
+
+- **Issue**: [#1018](https://github.com/shuu5/twill/issues/1018) — Phase 1 α
+- **ADR**: [ADR-0006](../architecture/decisions/ADR-0006-state-mcp-ssot.md) — Hybrid Path 5 原則
+
+### `twl_state_read(...) -> str`
+
+autopilot state JSON またはフィールド値を返します。
+
+引数:
+
+| 引数 | 型 | 必須 | 説明 |
+|------|-----|------|------|
+| `type_` | `str` | ✓ | `"issue"` or `"session"` |
+| `issue` | `str \| None` | — | Issue 番号 (`type_="issue"` 時必須) |
+| `repo` | `str \| None` | — | リポジトリ名（cross-repo 用） |
+| `field` | `str \| None` | — | 取得フィールド（省略時: 全 JSON） |
+| `autopilot_dir` | `str \| None` | — | `.autopilot` ディレクトリパス（省略時: 環境変数 / git worktree から解決） |
+
+戻り値 envelope:
+
+```json
+{"ok": true, "result": "<value_or_json>", "exit_code": 0}
+{"ok": false, "error": "<msg>", "error_type": "state_error", "exit_code": 1}
+{"ok": false, "error": "<msg>", "error_type": "arg_error", "exit_code": 2}
+```
+
+### `twl_state_write(...) -> str`
+
+autopilot state JSON を書き込みます。
+
+引数:
+
+| 引数 | 型 | 必須 | 説明 |
+|------|-----|------|------|
+| `type_` | `str` | ✓ | `"issue"` or `"session"` |
+| `role` | `str` | ✓ | `"worker"` or `"pilot"` (RBAC 制御) |
+| `issue` | `str \| None` | — | Issue 番号 |
+| `repo` | `str \| None` | — | リポジトリ名 |
+| `sets` | `list[str] \| None` | — | `["key=value", ...]` 形式の更新フィールド |
+| `init` | `bool` | — | `true` で issue-N.json を新規作成 |
+| `autopilot_dir` | `str \| None` | — | `.autopilot` ディレクトリパス |
+| `cwd` | `str \| None` | — | 作業ディレクトリ（RBAC enforcement 用） |
+| `force_done` | `bool` | — | `true` で `done` への強制遷移を許可 |
+| `override_reason` | `str \| None` | — | 強制遷移の理由 |
+
+戻り値 envelope:
+
+```json
+{"ok": true, "message": "OK: <path> を更新しました", "exit_code": 0}
+{"ok": false, "error": "<msg>", "error_type": "state_error", "exit_code": 1}
+{"ok": false, "error": "<msg>", "error_type": "arg_error", "exit_code": 2}
+```
+
+### In-process テスト (Hybrid Path 5 原則)
+
+MCP tool wrapper を使わず、handler 関数を直接 pytest で呼び出せます:
+
+```python
+from twl.mcp_server.tools import twl_state_read_handler, twl_state_write_handler
+
+result = twl_state_read_handler(type_="issue", issue="1", field="status",
+                                autopilot_dir="/path/to/.autopilot")
+assert result["ok"] is True
+assert result["result"] == "running"
+```

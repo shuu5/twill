@@ -305,11 +305,11 @@ def test_ac3_read_3path_parity(label, read_kwargs, parity_autopilot_dir: Path):
     direct_value = sm.read(**read_kwargs)
 
     # 経路 1: subprocess (CLI)
-    cli_args = ["read", f"--type={read_kwargs['type_']}"]
+    cli_args = ["read", "--type", read_kwargs["type_"]]
     if read_kwargs.get("issue"):
-        cli_args.append(f"--issue={read_kwargs['issue']}")
+        cli_args.extend(["--issue", read_kwargs["issue"]])
     if read_kwargs.get("field"):
-        cli_args.append(f"--field={read_kwargs['field']}")
+        cli_args.extend(["--field", read_kwargs["field"]])
     cli_proc = _run_cli_state(cli_args, ap_dir)
     cli_value = cli_proc.stdout.strip()
 
