@@ -182,3 +182,61 @@ EOF
   fi
   grep -F '"signal": "PHASE_COMPLETE"' "$results_file" || return 1
 }
+
+# ===========================================================================
+# M3 (#1028 follow-up): cross-device mv EXDEV fallback
+# AUTOPILOT_DIR が cross-device symlink の場合 mv -f が EXDEV で失敗する。
+# cp フォールバックが実装されていることを structural に確認する。
+# ===========================================================================
+
+@test "phase-results[M3 structural]: phase-N-results.json 書き込みに cp fallback が含まれる" {
+  awk '/^generate_phase_report\(\) \{/,/^\}$/' "$ORCHESTRATOR_SH" | grep -F 'cp "$_tmp_file"' || {
+    echo "FAIL: generate_phase_report() に cp fallback (EXDEV 対策) が含まれていない" >&2
+    return 1
+  }
+}
+
+# ===========================================================================
+# M4 (#1028 follow-up): stat -c '%Y' / -f '%m' GNU/BSD fallback
+# macOS (BSD stat) では -c '%Y' が利用不可。GNU/BSD 互換の fallback が
+# 実装されていることを structural に確認する。
+# ===========================================================================
+
+@test "phase-results[M4 structural]: stat に GNU (-c %Y) と BSD (-f %m) の fallback chain が含まれる" {
+  awk '/^generate_phase_report\(\) \{/,/^\}$/' "$ORCHESTRATOR_SH" | grep -F "stat -c '%Y'" || {
+    echo "FAIL: generate_phase_report() に GNU stat (-c %Y) が含まれていない" >&2
+    return 1
+  }
+  awk '/^generate_phase_report\(\) \{/,/^\}$/' "$ORCHESTRATOR_SH" | grep -F "stat -f '%m'" || {
+    echo "FAIL: generate_phase_report() に BSD stat (-f %m) fallback が含まれていない" >&2
+    return 1
+  }
+}
+
+# ===========================================================================
+# M3 functional: mv stub fail で cp fallback が動作することを確認
+# ===========================================================================
+
+@test "phase-results[M3 functional]: mv が失敗しても cp fallback で phase-N-results.json が作成される" {
+  _stub_state_read "9001:done"
+
+  # generate_phase_report 内の mv を fail させる stub
+  # ただし archive ロジックでも mv を使用するため、fresh ファイル状態に限定
+  cat > "$STUB_BIN/mv" <<'STUB'
+#!/usr/bin/env bash
+exit 1
+STUB
+  chmod +x "$STUB_BIN/mv"
+
+  generate_phase_report 6 9001 > /dev/null
+
+  local results_file="$AUTOPILOT_DIR/phase-6-results.json"
+  [[ -f "$results_file" ]] || {
+    echo "FAIL: mv 失敗時に cp fallback で phase-6-results.json が作成されなかった" >&2
+    return 1
+  }
+  grep -F '"signal": "PHASE_COMPLETE"' "$results_file" || {
+    echo "FAIL: cp fallback で書き込まれた phase-6-results.json の内容が壊れている" >&2
+    return 1
+  }
+}
