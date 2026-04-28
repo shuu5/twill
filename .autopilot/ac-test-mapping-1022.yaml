@@ -1,0 +1,36 @@
+mappings:
+  - ac_index: 1
+    ac_text: "budget-detect.sh で 2 軸独立判定を実装 (consumption-based + cycle-based): 軸1 (consumption): budget_remaining_min = cycle_total_min × (100 - pct%) / 100 ≤ BUDGET_THRESHOLD_REMAINING (default: 40分); 軸2 (cycle): cycle_reset_min ≤ BUDGET_THRESHOLD_CYCLE (default: 5分); 発火条件: 軸1 OR 軸2"
+    test_file: "plugins/twl/tests/bats/scripts/budget-detect-1022.bats"
+    test_names:
+      - "ac1: budget-detect.sh に BUDGET_THRESHOLD_REMAINING 変数が存在する（static grep）"
+      - "ac1: budget-detect.sh に BUDGET_THRESHOLD_CYCLE 変数が存在する（static grep）"
+      - "ac1: budget-detect.sh に consumption-based 残量計算 (remaining_min) が存在する（static grep）"
+      - "ac1: budget-detect.sh が bash -n を通過する（syntax check）"
+      - "ac4-extra: budget-detect.sh が BUDGET_THRESHOLD_CYCLE を cycle 軸判定に使用する（static grep）"
+      - "ac4-extra: budget-detect.sh の判定ロジックに 2 軸分の条件分岐が存在する（static grep）"
+
+  - ac_index: 2
+    ac_text: "monitor-channel-catalog.md [BUDGET-LOW] セクションで (YYm) の意味を明記 (cycle reset wall-clock であって残量ではない)"
+    test_file: "plugins/twl/tests/bats/scripts/budget-detect-docs-1022.bats"
+    test_names:
+      - "ac2: monitor-channel-catalog.md [BUDGET-LOW] セクションに 'cycle reset' の言及が存在する"
+      - "ac2: monitor-channel-catalog.md [BUDGET-LOW] セクションに 'wall-clock' または '残量ではない' の言及が存在する"
+      - "ac2: monitor-channel-catalog.md [BUDGET-LOW] セクションに '(YYm)' の注記が存在する"
+
+  - ac_index: 3
+    ac_text: "SKILL.md 該当箇所を訂正 (「残量 15 分」と「reset まで 15 分」を区別)"
+    test_file: "plugins/twl/tests/bats/scripts/budget-detect-docs-1022.bats"
+    test_names:
+      - "ac3: SKILL.md に 'consumption-based' または '消費ベース' の記述が存在する"
+      - "ac3: SKILL.md に 'cycle-based' または 'cycle reset' と閾値の区別が存在する"
+      - "ac3: SKILL.md が '残量 15 分' ではなく 2 軸判定の正しい説明を含む"
+      - "ac3: SKILL.md に '(YYm) は cycle reset まで の時刻' または同等の訂正注記が存在する"
+
+  - ac_index: 4
+    ac_text: "bats で 3 ケースを検証: (1) 5h:9%(0h10m): remaining=273分(>40), cycle=10分(>5) → alert なし; (2) 5h:88%(2h00m): remaining=36分(≤40), cycle=120分(>5) → alert OK (軸1); (3) 5h:50%(0h03m): remaining=150分(>40), cycle=3分(≤5) → alert OK (軸2)"
+    test_file: "plugins/twl/tests/bats/scripts/budget-detect-1022.bats"
+    test_names:
+      - "ac4-case1: 5h:9%(0h10m) — 両軸不発で alert なし (exit 0)"
+      - "ac4-case2: 5h:88%(2h00m) — 軸1 consumption で alert あり (exit 1)"
+      - "ac4-case3: 5h:50%(0h03m) — 軸2 cycle で alert あり (exit 1)"
