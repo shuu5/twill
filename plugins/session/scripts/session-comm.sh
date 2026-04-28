@@ -250,7 +250,14 @@ cmd_inject() {
     done
 
     # flock で排他制御（AC1: 同一 pane への並列送信を直列化）
-    local lock_file="${SESSION_COMM_LOCK_DIR:-/tmp}/session-comm-${target//[^a-zA-Z0-9]/-}.lock"
+    local lock_dir="${SESSION_COMM_LOCK_DIR:-/tmp}"
+    if [[ -n "${SESSION_COMM_LOCK_DIR:-}" ]]; then
+        if [[ "${SESSION_COMM_LOCK_DIR}" != /* ]] || [[ "${SESSION_COMM_LOCK_DIR}" =~ \.\. ]]; then
+            echo "Warning: SESSION_COMM_LOCK_DIR '${SESSION_COMM_LOCK_DIR}' is invalid (must be absolute path without '..'), using /tmp" >&2
+            lock_dir="/tmp"
+        fi
+    fi
+    local lock_file="${lock_dir}/session-comm-${target//[^a-zA-Z0-9]/-}.lock"
     {
         flock -w 30 9 || {
             echo "Error: failed to acquire send lock for '$window_name'" >&2
