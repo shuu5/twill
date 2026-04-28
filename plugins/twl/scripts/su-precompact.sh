@@ -50,7 +50,7 @@ else
             echo "timestamp: $(date -Iseconds)"
             echo ""
             echo "(session.json なし — 状態復元に project_session_state.md と doobidoo を使用すること)"
-        } > "${SUPERVISOR_DIR}/working-memory.md"
+        } > "${SUPERVISOR_DIR}/working-memory.md.tmp" && mv "${SUPERVISOR_DIR}/working-memory.md.tmp" "${SUPERVISOR_DIR}/working-memory.md"
     fi
 fi
 
