@@ -52,14 +52,24 @@ class TestAC2IssueCommitIdentificationStepExists:
 
     def test_ac2_git_log_grep_or_equivalent_described(self):
         content = WORKER_ALIGNMENT_MD.read_text()
-        assert "git log --grep" in content, (
+        assert "git log" in content and "--grep" in content, (
             "git log --grep または相当コマンドの記述が実行ロジックに存在しない"
+        )
+
+    def test_ac2_grep_uses_boundary_pattern(self):
+        content = WORKER_ALIGNMENT_MD.read_text()
+        assert "--extended-regexp" in content or "--perl-regexp" in content, (
+            "git log --grep が境界パターン（--extended-regexp/--perl-regexp）を使用していない。"
+            " #12 が #120 にマッチする partial-match バグが残る"
         )
 
     def test_ac2_issue_num_variable_used_in_diff_command(self):
         content = WORKER_ALIGNMENT_MD.read_text()
-        assert "ISSUE_NUM" in content and "ISSUE_COMMITS" in content, (
-            "diff コマンドが Issue 番号変数 (ISSUE_NUM/ISSUE_COMMITS) を参照する記述がない"
+        assert "ISSUE_NUM" in content, (
+            "diff コマンドが Issue 番号変数 ISSUE_NUM を参照する記述がない"
+        )
+        assert "ISSUE_COMMITS" in content, (
+            "diff コマンドが ISSUE_COMMITS 変数を使用する記述がない"
         )
 
 
