@@ -452,3 +452,43 @@ gate deny (1 回目) → STOP（即時停止、追加試行禁止）→ AskUserQ
 - 残骸 cleanup: `~/.claude/plugins/twl/.dev-session/` に孤児ファイルが残る場合は `plugins/twl/commands/cleanup-orphan-snapshots.md` の手順を参照
 
 **参照**: ADR-027, Issue #966, Issue #938 (per-issue namespace), doobidoo `b81b1962`
+
+---
+
+## 15. Pilot/co-explore 完遂後の next-step postpone 判断 error（#1085 文書化）
+
+**事象（Wave U、2026-04-29 実例）**: co-explore Phase 2 が `.explore/1023/summary.md`（4 子 Issue 計画確定）で完遂した後、observer が「Phase 1 完遂後まで postpone」と勝手に判断し、next-step（子 Issue 起票）を自律 spawn しなかった。ユーザー指摘で発覚。
+
+### 根本要因
+
+observer が「重要 event 待機」モードに入り **passive 化** し、co-explore 完遂を completion event として能動的に捕捉しなかった。heartbeat-watcher 等の受動的チャネルにのみ依存し、次の依存関係を勝手に発明した:
+
+- `Pilot polling 完了` ではなく `ユーザー入力` を next-step trigger にした
+- 「Phase 1 完遂後」など実在しない順序依存を発明した
+- observer 自身の heartbeat 更新が silence 検知を reset してしまう構造的盲点を見落とした（Incident 3）
+
+### 検出パターン（MUST）
+
+| # | 症状 | 対策 |
+|---|------|------|
+| 15.1 | co-explore が `.explore/<N>/summary.md` を生成しても next-step を spawn しない | `.explore/<N>/summary.md` の生成を能動 polling（inotifywait または filesystem check）で検知し、即時 next-step 自律 spawn へ遷移する（§11 クロスリファレンス参照） |
+| 15.2 | 実在しない Phase 依存を理由に postpone | postpone は **user 明示指示時のみ**。observer 自身の判断による postpone は **MUST NOT** |
+| 15.3 | heartbeat self-update が silence 検知 reset を誤発 | heartbeat ファイルの writer pid と watcher pid を区別。observer 自身の heartbeat 更新は silence reset 対象外とする（`refs/su-observer-supervise-channels.md` 参照） |
+| 15.4 | Pilot idle 状態（`Saturated for`/`Worked for` + IDLE prompt）を検知せず | `pilot-completion-signals.md` の PILOT-PHASE-COMPLETE チャネルに加え、co-explore 完遂用 `.explore/<N>/summary.md` 検知を必ず組み合わせる |
+
+### 正しい next-step spawn 手順（MUST）
+
+```
+co-explore 完遂（.explore/<N>/summary.md 生成）を検知
+→ 5 分以内に next-step（子 Issue 起票 / Wave 計画更新）を自律 spawn する
+→ postpone が必要な場合のみ user に明示確認を取る（AskUserQuestion 必須）
+```
+
+**MUST NOT**: SU-4 制約（1 session 5 Issue 以内）を確認する前に postpone 判断を下すこと。SU-4 内であれば直接 `gh issue create` で起票可能。
+
+### §11 とのクロスリファレンス
+
+- §11「Observer idle 中の session disconnect 対策」: Monitor heartbeat 欠如が observer 自身の passive 化を招く根本要因の一つ。§11.1 の heartbeat emit ガードと本節の能動 completion 捕捉を組み合わせること。
+- co-explore 完遂 → next-step spawn の 5 分タイムアウト規約は `refs/su-observer-wave-management.md` に定義。
+
+**参照**: Issue #1085, Wave U incident 1+3, doobidoo `observer-pitfall` tag
