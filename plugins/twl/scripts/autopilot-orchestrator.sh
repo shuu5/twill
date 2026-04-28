@@ -1029,7 +1029,11 @@ generate_phase_report() {
     # AC2: 既存 phase-N-results.json が古い場合 (>5 分前) は自動 archive
     if [[ -f "$_results_file" ]]; then
       local _file_mtime _now _file_age
-      _file_mtime=$(stat -c '%Y' "$_results_file" 2>/dev/null || echo 0)
+      # M4 (#1028 follow-up): GNU stat (-c '%Y') / BSD stat (-f '%m') 互換
+      # macOS では GNU stat が利用不可なため fallback で対応
+      _file_mtime=$(stat -c '%Y' "$_results_file" 2>/dev/null \
+        || stat -f '%m' "$_results_file" 2>/dev/null \
+        || echo 0)
       _now=$(date +%s 2>/dev/null || echo 0)
       _file_age=$(( _now - _file_mtime ))
       if (( _file_age > 300 )); then
@@ -1041,9 +1045,16 @@ generate_phase_report() {
       fi
     fi
     # AC1: atomic write (tmp file → rename)
+    # M3 (#1028 follow-up): mv が EXDEV (cross-device, AUTOPILOT_DIR が cross-device
+    # symlink の場合) で失敗するケースに cp + rm fallback で対応
     local _tmp_file="${_results_file}.tmp.$$"
     if printf '%s\n' "$_report_json" > "$_tmp_file" 2>/dev/null; then
-      mv -f "$_tmp_file" "$_results_file" 2>/dev/null || rm -f "$_tmp_file" 2>/dev/null
+      if ! mv -f "$_tmp_file" "$_results_file" 2>/dev/null; then
+        # mv 失敗（EXDEV など）→ cp で書き込み試行
+        cp "$_tmp_file" "$_results_file" 2>/dev/null || true
+      fi
+      # tmp file の cleanup（mv 成功時は既に削除済み、cp fallback 時はここで削除）
+      rm -f "$_tmp_file" 2>/dev/null || true
     fi
   fi
 }
