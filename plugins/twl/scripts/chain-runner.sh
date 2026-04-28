@@ -435,6 +435,38 @@ _transition_parent_epic_if_refined() {
   ok "epic-auto-transition" "親 Epic #${parent_num}: Refined → In Progress (子 #${child_issue_num} 起因)"
 }
 
+# --- _update_parent_epic_ac_checklist: 親 Epic AC checkbox auto-update (Issue #1070) ---
+# 子 Issue が "Done" に遷移した時、子 body の `Closes-AC: #EPIC:ACN` 全行に対し
+# 親 Epic body の `- [ ] **AC{N}**` を `- [x]` に flip する。
+# Idempotent: 既に [x] の場合は no-op (gh API write skip)。
+# 失敗時は全エラーを skip 扱いで suppress（既存 step_board_status_update と同じ防御戦略）。
+#
+# Args:
+#   $1=child_issue_num: 子 Issue 番号
+#   $2=repo_full:       owner/repo (cross-repo Epic 用、空なら現在 repo)
+_update_parent_epic_ac_checklist() {
+  local child_issue_num="$1"
+  local repo_full="${2:-}"
+
+  ensure_pythonpath || return 0
+  local exit_code
+  python3 -m twl.autopilot.github update-epic-ac-checklist \
+    "$child_issue_num" ${repo_full:+"$repo_full"} 2>/dev/null
+  exit_code=$?
+  case "$exit_code" in
+    0)
+      ok "epic-ac-checklist" "Epic AC チェックボックス更新 (子 #${child_issue_num})"
+      ;;
+    2)
+      skip "epic-ac-checklist" "Closes-AC なし or 全 AC 更新済み — no-op (子 #${child_issue_num})"
+      ;;
+    *)
+      skip "epic-ac-checklist" "Epic AC 更新失敗 — suppress (子 #${child_issue_num}, exit=${exit_code})"
+      ;;
+  esac
+  return 0
+}
+
 # --- board-status-update: Project Board Status 更新 ---
 step_board_status_update() {
   record_current_step "board-status-update"
@@ -504,6 +536,12 @@ step_board_status_update() {
   # 親 Epic が "Refined" なら "In Progress" に自動遷移する
   if [[ "$target_status" == "In Progress" ]]; then
     _transition_parent_epic_if_refined "$issue_num" "$final_num" "$final_id" "$owner" "$repo" "$fields"
+  fi
+
+  # Issue #1070: 子 Issue が "Done" に遷移した時、子の Closes-AC: #EPIC:ACN
+  # 全行について 親 Epic body の `- [ ] **AC{N}**` を `- [x]` に flip する
+  if [[ "$target_status" == "Done" ]]; then
+    _update_parent_epic_ac_checklist "$issue_num" "$repo"
   fi
 }
 

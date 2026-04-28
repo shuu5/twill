@@ -86,6 +86,8 @@ Status gate は fail-closed を採用:
 - `plugins/twl/scripts/project-board-refined-migrate.sh` (新規、migration script)
 - `plugins/twl/skills/workflow-issue-refine/SKILL.md` (Step 6' に dual-write 追加)
 - `plugins/twl/commands/project-board-status-update.md` (target_status パラメータ化)
+- **#1026 (AC1+AC2) merged**: `cli/twl/src/twl/autopilot/github.py` `extract_parent_epic` + `plugins/twl/scripts/chain-runner.sh` `_transition_parent_epic_if_refined` (子 In Progress 遷移時に親 Epic Refined→In Progress を auto-fire)
+- **#1070 (AC checklist auto-update) merged**: `cli/twl/src/twl/autopilot/github.py` `extract_closes_ac` / `flip_epic_ac_checkbox` / `update_epic_ac_checklist` + `plugins/twl/scripts/chain-runner.sh` `_update_parent_epic_ac_checklist` (子 Done 遷移時に親 Epic body の `- [ ] **AC{N}**` を `Closes-AC: #EPIC:ACN` 規約に従って auto-flip)
 
 ## Phase B（別 Issue 起票予定）
 
@@ -95,3 +97,5 @@ Status gate は fail-closed を採用:
 - (c) su-observer による明示的 approval
 
 Phase B 内容: `pre-bash-refined-label-gate.sh` deprecate / 削除、label write 削除（Status のみ）、cache 導入。
+
+**Auto-update layer 完成 (Phase 1 範囲)**: 子 Issue → 親 Epic の Status auto-transition (#1026 AC1+AC2) と AC checklist auto-flip (#1070) の両方が autopilot 経路 (chain-runner.sh `step_board_status_update`) に組み込まれた。新規 Issue は `--parent #N` + `--closes-ac #EPIC:ACN` (issue-create.md) を指定することで dual-write 規約を full enforce できる。
