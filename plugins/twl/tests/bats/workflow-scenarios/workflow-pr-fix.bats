@@ -60,7 +60,7 @@ _init_issue_state() {
   # RED: chain-runner.sh に record-current-step case が未定義のため exit 1
   local issue_num=9101
   local autopilot_dir="$WORKFLOW_SANDBOX/.autopilot"
-  git checkout -q -b "feat/${issue_num}-stub-warning-fix-skip" 2>/dev/null || true
+  git checkout -q -B "feat/${issue_num}-stub-warning-fix-skip" 2>/dev/null || true
   export AUTOPILOT_DIR="$autopilot_dir"
   _init_issue_state "$issue_num" "$autopilot_dir"
 
@@ -77,7 +77,7 @@ _init_issue_state() {
   # RED: record-current-step case 未定義のため state 更新されない
   local issue_num=9102
   local autopilot_dir="$WORKFLOW_SANDBOX/.autopilot"
-  git checkout -q -b "feat/${issue_num}-stub-warning-fix-hb" 2>/dev/null || true
+  git checkout -q -B "feat/${issue_num}-stub-warning-fix-hb" 2>/dev/null || true
   export AUTOPILOT_DIR="$autopilot_dir"
   _init_issue_state "$issue_num" "$autopilot_dir"
 
@@ -95,7 +95,7 @@ _init_issue_state() {
   # ここでは state を手動設定して resolve_next_workflow 単体を検証する。
   local issue_num=9103
   local autopilot_dir="$WORKFLOW_SANDBOX/.autopilot"
-  git checkout -q -b "feat/${issue_num}-stub-resolve-nw" 2>/dev/null || true
+  git checkout -q -B "feat/${issue_num}-stub-resolve-nw" 2>/dev/null || true
   export AUTOPILOT_DIR="$autopilot_dir"
   mkdir -p "$autopilot_dir/issues"
   python3 -m twl.autopilot.state write \
@@ -116,7 +116,7 @@ _init_issue_state() {
   # 実際の orchestrator では RESOLVE_FAILED カウンターが増加する
   local issue_num=9104
   local autopilot_dir="$WORKFLOW_SANDBOX/.autopilot"
-  git checkout -q -b "feat/${issue_num}-stub-resolve-fail" 2>/dev/null || true
+  git checkout -q -B "feat/${issue_num}-stub-resolve-fail" 2>/dev/null || true
   export AUTOPILOT_DIR="$autopilot_dir"
   _init_issue_state "$issue_num" "$autopilot_dir"
 
@@ -142,7 +142,7 @@ _init_issue_state() {
   # RED: record-current-step case 未定義のため両フィールドとも更新されない
   local issue_num=9105
   local autopilot_dir="$WORKFLOW_SANDBOX/.autopilot"
-  git checkout -q -b "feat/${issue_num}-stub-ac5-skip" 2>/dev/null || true
+  git checkout -q -B "feat/${issue_num}-stub-ac5-skip" 2>/dev/null || true
   export AUTOPILOT_DIR="$autopilot_dir"
   _init_issue_state "$issue_num" "$autopilot_dir"
 
@@ -164,7 +164,7 @@ _init_issue_state() {
   # RED: record-current-step case 未定義のため state 更新されない
   local issue_num=9106
   local autopilot_dir="$WORKFLOW_SANDBOX/.autopilot"
-  git checkout -q -b "feat/${issue_num}-stub-ac5-nonskip" 2>/dev/null || true
+  git checkout -q -B "feat/${issue_num}-stub-ac5-nonskip" 2>/dev/null || true
   export AUTOPILOT_DIR="$autopilot_dir"
   _init_issue_state "$issue_num" "$autopilot_dir"
 
@@ -186,7 +186,7 @@ _init_issue_state() {
   # → inject_next_workflow が RESOLVE_FAIL_COUNT[$entry] を increment する経路を直接検証
   local issue_num=9201
   local autopilot_dir="$WORKFLOW_SANDBOX/.autopilot"
-  git checkout -q -b "feat/${issue_num}-stub-fail-count-incr" 2>/dev/null || true
+  git checkout -q -B "feat/${issue_num}-stub-fail-count-incr" 2>/dev/null || true
   export AUTOPILOT_DIR="$autopilot_dir"
   _init_issue_state "$issue_num" "$autopilot_dir"  # current_step=post-fix-verify
 
@@ -237,7 +237,7 @@ _init_issue_state() {
   # → inject_next_workflow が RESOLVE_FAIL_COUNT[$entry] = 0 にリセットする経路を直接検証
   local issue_num=9202
   local autopilot_dir="$WORKFLOW_SANDBOX/.autopilot"
-  git checkout -q -b "feat/${issue_num}-stub-fail-count-reset" 2>/dev/null || true
+  git checkout -q -B "feat/${issue_num}-stub-fail-count-reset" 2>/dev/null || true
   export AUTOPILOT_DIR="$autopilot_dir"
 
   # current_step=warning-fix で初期化（resolve_next_workflow が /twl:workflow-pr-merge を返す）
