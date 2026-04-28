@@ -6,6 +6,8 @@ Replaces: parse-issue-ac.sh, merge-gate-issues.sh, create-harness-issue.sh,
 CLI usage:
     python3 -m twl.autopilot.github extract-ac <issue-number> [owner/repo]
     python3 -m twl.autopilot.github extract-parent-epic <issue-number> [owner/repo]
+    python3 -m twl.autopilot.github extract-closes-ac <issue-number> [owner/repo]
+    python3 -m twl.autopilot.github update-epic-ac-checklist <issue-number> [owner/repo]
     python3 -m twl.autopilot.github resolve-project [owner]
     python3 -m twl.autopilot.github pr-findings <pr-number> [owner/repo]
 """
@@ -198,6 +200,188 @@ def extract_parent_epic(issue_num: str, repo: str | None = None) -> int | None:
     if match is None:
         return None
     return int(match.group(1))
+
+
+# ---------------------------------------------------------------------------
+# Closes-AC extraction + Epic AC checkbox auto-update (Issue #1070)
+# ---------------------------------------------------------------------------
+
+# `Closes-AC: #EPIC:ACN` 規約 (Issue #1070 AC1)。子 Issue body から複数行抽出。
+# Note: Code blocks (``` ... ``` / ~~~ ... ~~~) are stripped before regex match
+# to avoid false-matches on documentation examples (R2-H1 review fix).
+_CLOSES_AC_RE = re.compile(
+    r"(?:^|\n)\s*Closes-AC:\s*#(\d+):AC(\d+)", re.MULTILINE
+)
+_FENCED_CODE_BLOCK_RE = re.compile(
+    r"^(```|~~~).*?^(```|~~~)\s*$", re.MULTILINE | re.DOTALL
+)
+
+
+def _strip_fenced_code_blocks(text: str) -> str:
+    """Remove fenced code blocks (``` or ~~~) from markdown text.
+
+    Used to prevent false-matches when scanning for Closes-AC references —
+    a child Issue body may contain documentation examples inside code fences
+    that should NOT trigger Epic AC flips.
+    """
+    return _FENCED_CODE_BLOCK_RE.sub("", text)
+
+
+def _validate_positive_int(value: int, label: str) -> None:
+    if not isinstance(value, int) or value <= 0:
+        raise GitHubError(f"{label}は正の整数である必要があります: {value!r}")
+
+
+def _patch_checkbox_in_text(body: str, ac_num: int) -> tuple[str, bool]:
+    """Pure: flip ``- [ ] **AC{ac_num}**`` to ``- [x] **AC{ac_num}**``.
+
+    Strict format match: only ``- [ ] **AC{N}**`` lines are matched.
+    Bare ``- [ ] AC1`` (no bold) is intentionally NOT matched to minimize
+    false-positive flips on prose mentions.
+
+    Args:
+        body: Epic body markdown text.
+        ac_num: AC number to flip (1-based).
+
+    Returns:
+        Tuple of (patched_body, was_changed). ``was_changed`` is True iff
+        at least one ``- [ ]`` was flipped to ``- [x]`` for this AC.
+        Idempotent: already-checked boxes return (body, False).
+    """
+    pattern = re.compile(
+        rf"^(\s*-\s*)\[ \](\s*\*\*AC{ac_num}\*\*)", re.MULTILINE
+    )
+    new_body, count = pattern.subn(r"\1[x]\2", body)
+    return new_body, count > 0
+
+
+def extract_closes_ac(
+    issue_num: str, repo: str | None = None
+) -> list[tuple[int, int]]:
+    """Extract ``Closes-AC: #EPIC:ACN`` references from a child Issue body.
+
+    Returns the list of ``(epic_num, ac_num)`` tuples in document order.
+    Returns ``[]`` if no ``Closes-AC`` lines exist (NOT an error — the
+    convention is optional and will only apply forward-going).
+
+    Args:
+        issue_num: Child Issue number (integer string).
+        repo: Optional ``owner/repo`` string for cross-repo access.
+
+    Returns:
+        List of ``(epic_num, ac_num)`` tuples.
+
+    Raises:
+        GitHubError: On invalid issue_num/repo or gh API failure.
+    """
+    _validate_issue_num(issue_num)
+    if repo:
+        _validate_repo(repo)
+
+    repo_flag = ["-R", repo] if repo else []
+
+    issue_data = _gh_json("issue", "view", issue_num, *repo_flag, "--json", "body,number")
+    body: str = issue_data.get("body") or ""
+    if not body:
+        return []
+
+    # Strip fenced code blocks so doc examples like ```Closes-AC: #N:AC1``` are
+    # not mistaken for actual references (R2-H1 review fix).
+    sanitized = _strip_fenced_code_blocks(body)
+
+    return [
+        (int(epic), int(ac))
+        for epic, ac in _CLOSES_AC_RE.findall(sanitized)
+    ]
+
+
+def flip_epic_ac_checkbox(
+    epic_num: int, ac_num: int, repo: str | None = None
+) -> bool:
+    """Fetch Epic body, flip ``- [ ] **AC{ac_num}**`` checkbox, and persist via gh.
+
+    Args:
+        epic_num: Parent Epic Issue number.
+        ac_num: AC number to flip.
+        repo: Optional ``owner/repo`` string for cross-repo Epic access.
+
+    Returns:
+        ``True`` if an unchecked checkbox was flipped (gh issue edit was called).
+        ``False`` if already checked (idempotent skip — no API write) or if no
+        matching ``- [ ] **AC{N}**`` line exists in the Epic body (format deviation).
+
+    Raises:
+        GitHubError: On invalid input or gh API failure.
+
+    Note:
+        TOCTOU: this performs fetch → patch → edit without ``If-Match`` semantics.
+        If a parallel writer mutates the Epic body between fetch and edit, the
+        flip wins last-write. Acceptable for the autopilot single-Wave model;
+        concurrent flips on the same Epic are rare and self-converging
+        (re-running the hook is idempotent). Bulk-merge race is a known
+        limitation tracked separately.
+    """
+    _validate_positive_int(epic_num, "Epic番号")
+    _validate_positive_int(ac_num, "AC番号")
+    if repo:
+        _validate_repo(repo)
+
+    repo_flag = ["-R", repo] if repo else []
+
+    issue_data = _gh_json(
+        "issue", "view", str(epic_num), *repo_flag, "--json", "body,number"
+    )
+    body: str = issue_data.get("body") or ""
+
+    new_body, changed = _patch_checkbox_in_text(body, ac_num)
+    if not changed:
+        # Idempotent: skip the write (saves a gh API rate-hit)
+        return False
+
+    _gh("issue", "edit", str(epic_num), *repo_flag, "--body", new_body)
+    return True
+
+
+def update_epic_ac_checklist(
+    child_issue_num: str, repo: str | None = None
+) -> bool:
+    """Orchestrator: parse ``Closes-AC`` from child, flip each Epic AC checkbox.
+
+    For each ``(epic_num, ac_num)`` reference in the child Issue body, attempts
+    to flip the corresponding Epic body checkbox. Errors per-Epic are
+    suppressed (logged via stderr) so a transient failure on one Epic does
+    not block updates for others — this matches the AC1+AC2 chain-runner.sh
+    skip-on-error strategy.
+
+    Args:
+        child_issue_num: Child Issue number (integer string).
+        repo: Optional ``owner/repo`` string.
+
+    Returns:
+        ``True`` if at least one checkbox was flipped (newly checked).
+        ``False`` if no ``Closes-AC`` references found, or all flips were
+        idempotent (already checked).
+
+    Raises:
+        GitHubError: On invalid child_issue_num/repo or initial body fetch failure.
+    """
+    refs = extract_closes_ac(child_issue_num, repo)
+    if not refs:
+        return False
+
+    any_flipped = False
+    for epic_num, ac_num in refs:
+        try:
+            if flip_epic_ac_checkbox(epic_num, ac_num, repo):
+                any_flipped = True
+        except GitHubError as exc:
+            # Suppress per-Epic failure; mirrors chain-runner.sh skip-on-error.
+            print(
+                f"[update-epic-ac-checklist] WARN: Epic #{epic_num} AC{ac_num}"
+                f" 更新失敗 (継続): {exc}",
+                file=sys.stderr,
+            )
+    return any_flipped
 
 
 # ---------------------------------------------------------------------------
@@ -461,7 +645,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args:
         print("Usage: python3 -m twl.autopilot.github <command> [args...]", file=sys.stderr)
-        print("Commands: extract-ac, extract-parent-epic, resolve-project, pr-findings", file=sys.stderr)
+        print(
+            "Commands: extract-ac, extract-parent-epic, extract-closes-ac, "
+            "update-epic-ac-checklist, resolve-project, pr-findings",
+            file=sys.stderr,
+        )
         return 1
 
     command = args[0]
@@ -491,6 +679,35 @@ def main(argv: list[str] | None = None) -> int:
             if parent is None:
                 return 2
             print(str(parent))
+            return 0
+
+        elif command == "extract-closes-ac":
+            # Issue #1070 AC2: 子 Issue body の `Closes-AC: #EPIC:ACN` 全行を抽出
+            # exit 0 = 1 件以上見つかった (各 line stdout) / exit 2 = 0 件 / exit 1 = エラー
+            if not rest:
+                print("Usage: extract-closes-ac <issue-number> [owner/repo]", file=sys.stderr)
+                return 1
+            issue_num = rest[0]
+            repo = rest[1] if len(rest) > 1 else None
+            refs = extract_closes_ac(issue_num, repo)
+            if not refs:
+                return 2
+            for epic, ac in refs:
+                print(f"{epic}:{ac}")
+            return 0
+
+        elif command == "update-epic-ac-checklist":
+            # Issue #1070 AC3: 子 Issue の Closes-AC 全件で親 Epic body の
+            # `- [ ] **AC{N}**` を `- [x]` に flip し gh issue edit で persist。
+            # exit 0 = 1 件以上 flip 実行 / exit 2 = no-op (idempotent or no refs) / exit 1 = エラー
+            if not rest:
+                print("Usage: update-epic-ac-checklist <issue-number> [owner/repo]", file=sys.stderr)
+                return 1
+            issue_num = rest[0]
+            repo = rest[1] if len(rest) > 1 else None
+            flipped = update_epic_ac_checklist(issue_num, repo)
+            if not flipped:
+                return 2
             return 0
 
         elif command == "resolve-project":

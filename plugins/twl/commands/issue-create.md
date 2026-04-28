@@ -13,6 +13,7 @@ GitHub Issueを作成するatomicコマンド。
 ```
 /twl:issue-create "タイトル" "本文"
 /twl:issue-create "タイトル" "本文" --label enhancement --related #45 --parent #123
+/twl:issue-create "タイトル" "本文" --parent #945 --closes-ac #945:AC8
 ```
 
 ## 引数
@@ -24,6 +25,7 @@ GitHub Issueを作成するatomicコマンド。
 | --label | No | ラベル（複数指定可） |
 | --related #N | No | 関連Issue（本文末尾に `Related: #N` 追記） |
 | --parent #N | No | 親Issue（本文末尾に `Parent: #N` 追記） |
+| --closes-ac #EPIC:ACN | No | 親 Epic AC 紐付け（本文末尾に `Closes-AC: #EPIC:ACN` 追記、複数指定可）。Issue close 時に親 Epic body の `- [ ] **AC{N}**` を `- [x]` に auto-flip (Issue #1070) |
 | --repo owner/repo | No | 作成先リポジトリ（未指定時は現在のリポ） |
 
 ---
@@ -38,6 +40,7 @@ GitHub Issueを作成するatomicコマンド。
 - labels: --label に続く値（複数可）
 - related: --related に続く #N 値（複数可）
 - parent: --parent に続く #N 値
+- closes_ac: --closes-ac に続く #EPIC:ACN 値（複数可、Issue #1070）
 - repo: --repo に続く owner/repo 値（未指定時は空）
 
 タイトルと本文が両方指定されていることを確認。不足時は使用方法を表示。
@@ -49,7 +52,13 @@ IF --related が指定されている
 THEN 本文末尾に "\n\n---\nRelated: #N1, #N2" を追加
 IF --parent が指定されている
 THEN 本文末尾に "Parent: #N" を追加（Related と同じセクション内）
+IF --closes-ac が指定されている
+THEN 各 #EPIC:ACN について "Closes-AC: #EPIC:ACN" を行ごとに追加（Related/Parent と同セクション、複数 AC は複数行）
 ```
+
+`Closes-AC:` 規約 (Issue #1070) は Issue close 時に親 Epic body の `- [ ] **AC{N}**`
+を `- [x]` に auto-flip するための機械抽出 marker。`Parent: #N` と並列に配置する。
+複数 AC を満たす Issue は複数行で記述する (例: `Closes-AC: #945:AC6` + `Closes-AC: #945:AC7`)。
 
 ### 2.5 Format Guard（MUST）
 
