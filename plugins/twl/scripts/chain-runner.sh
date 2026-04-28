@@ -137,7 +137,24 @@ trace_event() {
       # AUTOPILOT_DIR 自体が symlink を含む可能性に備えて resolve
       local _ap_resolved
       _ap_resolved=$(realpath --canonicalize-missing "$_ap" 2>/dev/null) || _ap_resolved="$_ap"
-      [[ "$trace_file" == "${_ap_resolved}/"* ]] && _ok=1
+      # AUTOPILOT_DIR 信頼性検証（issue-1042）: 攻撃者が AUTOPILOT_DIR=/etc 等を設定して
+      # ホワイトリストを拡張する攻撃を防ぐため、信頼できる親ディレクトリ
+      # (/tmp・TMPDIR・$HOME) 配下の場合のみ AUTOPILOT_DIR ホワイトリストを適用する
+      local _autopilot_trusted=0
+      [[ "$_ap_resolved" == /tmp/* ]] && _autopilot_trusted=1
+      if [[ "$_autopilot_trusted" -eq 0 && -n "${TMPDIR:-}" ]]; then
+        local _tmp_trust_resolved
+        _tmp_trust_resolved=$(realpath --canonicalize-missing "${TMPDIR%/}" 2>/dev/null) || _tmp_trust_resolved="${TMPDIR%/}"
+        [[ "$_ap_resolved" == "${_tmp_trust_resolved}/"* ]] && _autopilot_trusted=1
+      fi
+      if [[ "$_autopilot_trusted" -eq 0 && -n "${HOME:-}" ]]; then
+        local _home_trust_resolved
+        _home_trust_resolved=$(realpath --canonicalize-missing "${HOME%/}" 2>/dev/null) || _home_trust_resolved="${HOME%/}"
+        [[ "$_ap_resolved" == "${_home_trust_resolved}/"* ]] && _autopilot_trusted=1
+      fi
+      if [[ "$_autopilot_trusted" -eq 1 ]]; then
+        [[ "$trace_file" == "${_ap_resolved}/"* ]] && _ok=1
+      fi
     fi
     [[ "$_ok" -eq 0 ]] && return 0
   fi
