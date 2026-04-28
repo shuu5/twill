@@ -1,0 +1,41 @@
+mappings:
+  - ac_index: 1
+    ac_text: "PR #1024 と同型の AC 未達成 case を bats fixture で再現"
+    test_file: "plugins/twl/tests/bats/issue-1025-specialist-warning-gate.bats"
+    test_name: "ac1: category=ac_missing の WARNING が findings に存在するフィクスチャ作成"
+  - ac_index: 1b
+    ac_text: "PR #1024 と同型の AC 未達成 case を bats fixture で再現 (schema確認)"
+    test_file: "plugins/twl/tests/bats/issue-1025-specialist-warning-gate.bats"
+    test_name: "ac1: phase-review.json の findings[].category フィールドが ac_missing を持つこと"
+  - ac_index: 2
+    ac_text: "上記 case で merge-gate が block を発火することを test"
+    test_file: "plugins/twl/tests/bats/issue-1025-specialist-warning-gate.bats"
+    test_name: "ac2: category=ac_missing の WARNING がある場合 merge-gate が exit 1 (REJECT) を返す"
+  - ac_index: 2b
+    ac_text: "上記 case で merge-gate が REJECT メッセージを出力すること"
+    test_file: "plugins/twl/tests/bats/issue-1025-specialist-warning-gate.bats"
+    test_name: "ac2: category=ac_missing の WARNING がある場合 stderr に REJECT メッセージが出力される"
+  - ac_index: 2c
+    ac_text: "findings が空の正常系はブロックされないこと"
+    test_file: "plugins/twl/tests/bats/issue-1025-specialist-warning-gate.bats"
+    test_name: "ac2: findings が空の場合（正常系）は merge-gate が exit 0 を返す"
+  - ac_index: 2d
+    ac_text: "ac_missing 以外の WARNING category はブロック対象外"
+    test_file: "plugins/twl/tests/bats/issue-1025-specialist-warning-gate.bats"
+    test_name: "ac2: severity=WARNING かつ category != ac_missing の場合はブロックしない"
+  - ac_index: 3
+    ac_text: "phase-review.json の warning category schema を文書化"
+    test_file: "plugins/twl/tests/bats/issue-1025-specialist-warning-gate.bats"
+    test_name: "ac3: phase-review findings schema 文書ファイルが存在する"
+  - ac_index: 3b
+    ac_text: "schema 文書が ac_missing category を列挙していること"
+    test_file: "plugins/twl/tests/bats/issue-1025-specialist-warning-gate.bats"
+    test_name: "ac3: schema 文書が category=ac_missing を列挙していること"
+  - ac_index: 3c
+    ac_text: "phase-review.json findings エントリが必須フィールドを持つこと"
+    test_file: "plugins/twl/tests/bats/issue-1025-specialist-warning-gate.bats"
+    test_name: "ac3: phase-review.json findings エントリが severity/category/message/confidence の必須フィールドを持つ"
+  - ac_index: 4
+    ac_text: "PR merged + main HEAD 更新（process AC）"
+    test_file: ""
+    test_name: "（プロセスAC — batsテスト不要）"
