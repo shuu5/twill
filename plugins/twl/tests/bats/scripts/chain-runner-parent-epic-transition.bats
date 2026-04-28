@@ -91,13 +91,36 @@ JSON
     exit 0
     ;;
   "project item-list"*)
+    # M3 (Quality Review follow-up): 実 API を反映し複数 items を返す。
+    # parent (#100) 以外に other Issue (#9001)、PR (#500)、Draft、別 Issue (#200) を含める。
+    # jq filter が type=Issue + number=100 で正しく親 Epic のみ選別することを検証。
     cat <<JSON_EOF
 {
   "items": [
     {
+      "id": "PVTI_other_issue",
+      "content": {"number": 9001, "type": "Issue"},
+      "status": "In Progress"
+    },
+    {
+      "id": "PVTI_some_pr",
+      "content": {"number": 500, "type": "PullRequest"},
+      "status": "In Progress"
+    },
+    {
+      "id": "PVTI_draft_item",
+      "content": {"type": "DraftIssue"},
+      "status": "Backlog"
+    },
+    {
       "id": "PVTI_mock_item_id",
       "content": {"number": 100, "type": "Issue"},
       "status": "${parent_status}"
+    },
+    {
+      "id": "PVTI_unrelated_issue",
+      "content": {"number": 200, "type": "Issue"},
+      "status": "Done"
     }
   ]
 }

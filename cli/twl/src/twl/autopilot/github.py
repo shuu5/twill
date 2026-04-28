@@ -168,6 +168,11 @@ def extract_parent_epic(issue_num: str, repo: str | None = None) -> int | None:
     Parses the SSoT regulated `Parent: #N` line (issue-create.md L51).
     Returns the parent number as int when found, None when not present.
 
+    **Multiple Parent lines**: Returns the **first match** if multiple `Parent:`
+    lines exist. This is consistent with `re.search` semantics. Callers should
+    treat duplicate `Parent:` lines as a body-format error and rely on the
+    first line as authoritative.
+
     Args:
         issue_num: Child Issue number (integer string).
         repo: Optional ``owner/repo`` string for cross-repo access.
