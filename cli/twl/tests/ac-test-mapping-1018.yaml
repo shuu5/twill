@@ -1,0 +1,58 @@
+mappings:
+  # AC1: state MCP handler + tool 実装 (ADR-0006 §1 5 原則準拠)
+  - ac_index: 1
+    ac_text: "tools.py に twl_state_read_handler / twl_state_write_handler を append。Hybrid Path 5 原則準拠。戻り値 envelope {ok, result/message/error, exit_code}。smoke test で import 可能かつ最低 1 ケース呼び出し可能。"
+    test_file: "cli/twl/tests/test_state_dispatch_parity.py"
+    test_names:
+      - "test_ac1_state_read_handler_importable"
+      - "test_ac1_state_write_handler_importable"
+      - "test_ac1_state_read_handler_returns_dict"
+      - "test_ac1_state_read_handler_envelope_ok_true"
+      - "test_ac1_state_read_handler_envelope_state_error"
+      - "test_ac1_state_read_handler_envelope_arg_error"
+      - "test_ac1_state_write_handler_returns_dict"
+      - "test_ac1_principle1_handler_suffix"
+      - "test_ac1_principle3_fastmcp_gate"
+      - "test_ac1_principle4_explicit_autopilot_dir_arg"
+    red_reason: "twl_state_read_handler / twl_state_write_handler が tools.py に存在しないため ImportError で fail"
+
+  # AC2: bats CLI 経路 PASS 100% + state.py 無変更
+  - ac_index: 2
+    ac_text: "既存 bats 4 file / 37 tests が CLI 経路で全件 PASS。git diff で state.py が変更されていないこと。"
+    test_file: "cli/twl/tests/test_state_dispatch_parity.py"
+    test_names:
+      - "test_ac2_state_py_not_modified"
+    red_reason: "state.py を誤変更した場合に fail するガード。bats は別途 bats コマンドで実行。"
+    note: "bats テストは pytest 外で実行する。state.py 無変更は pytest で検証。"
+
+  # AC3: SSoT 検証 pytest parametric (3 経路, 最低 6 ケース)
+  - ac_index: 3
+    ac_text: "経路1=subprocess CLI / 経路2=MCP in-process handler / 経路3=Python 直接。ケース: (a)issue read with field, (b)issue read no-field, (c)session read with field, (d)issue init, (e)status transition, (f)RBAC 違反。"
+    test_file: "cli/twl/tests/test_state_dispatch_parity.py"
+    test_names:
+      - "test_ac3_read_3path_parity[a_issue_read_with_field]"
+      - "test_ac3_read_3path_parity[b_issue_read_no_field]"
+      - "test_ac3_read_3path_parity[c_session_read_with_field]"
+      - "test_ac3_case_d_issue_init_parity"
+      - "test_ac3_case_e_status_transition_parity"
+      - "test_ac3_case_f_rbac_violation_parity"
+    red_reason: "twl_state_read_handler / twl_state_write_handler 未実装 → ImportError で全ケース fail"
+
+  # AC4: ADR-0006 Decision §1~§4 の機械検証カバー
+  - ac_index: 4
+    ac_text: "§1 Hybrid Path 5 原則が実装済みか。§2 state.py 未変更原則。§3 autopilot_dir / cwd 明示引数化。§4 SSoT 検証 3 経路 parametric。"
+    test_file: "cli/twl/tests/test_state_dispatch_parity.py"
+    test_names:
+      - "test_ac4_sec1_hybrid_path_5_principles_in_tools"
+      - "test_ac4_sec2_state_py_unchanged"
+      - "test_ac4_sec3_explicit_args_read_handler"
+      - "test_ac4_sec3_explicit_args_write_handler"
+      - "test_ac4_sec4_ssot_parity_3path_exists"
+    red_reason: "§1/§3 は handler 未実装 → ImportError。§2/§4_exists はファイル存在チェックで GREEN の可能性あり。"
+
+  # AC5: PR merge 完遂 (unit test 不要 — skip)
+  - ac_index: 5
+    ac_text: "PR merge 完遂。unit test 不要 — skip。"
+    test_file: null
+    test_names: []
+    red_reason: "skip"
