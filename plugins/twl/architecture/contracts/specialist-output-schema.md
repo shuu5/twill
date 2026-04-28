@@ -15,6 +15,11 @@ ADR-004 の実装仕様。全 specialist が準拠する出力形式を定義す
       "enum": ["PASS", "WARN", "FAIL"],
       "description": "PASS: CRITICAL/WARNING なし, WARN: WARNING はあるが CRITICAL なし, FAIL: CRITICAL が1件以上"
     },
+    "files_to_inspect": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Pilot が深堀すべき相対パスのリスト（5-10 件目安）。探索系 specialist のみ使用。省略時は空配列扱い。"
+    },
     "findings": {
       "type": "array",
       "items": {
@@ -46,8 +51,13 @@ ADR-004 の実装仕様。全 specialist が準拠する出力形式を定義す
           },
           "category": {
             "type": "string",
-            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "architecture-violation"],
+            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "architecture-violation", "architecture-drift", "chain-integrity-drift", "ambiguity", "assumption", "scope", "feasibility", "ac-alignment", "ac-alignment-unknown"],
             "description": "finding の分類"
+          },
+          "finding_target": {
+            "type": "string",
+            "enum": ["issue_description", "codebase_state"],
+            "description": "co-issue specialist は MUST。省略時デフォルト: codebase_state"
           }
         }
       }
@@ -99,6 +109,14 @@ status の自動導出ルール:
 | `structure` | worker-structure |
 | `principles` | worker-principles |
 | `architecture-violation` | worker-architecture（pr_diff モード） |
+| `architecture-drift` | worker-architecture（plugin_path モード） |
+| `chain-integrity-drift` | worker-workflow-integrity |
+| `ambiguity` | issue-critic |
+| `assumption` | issue-critic |
+| `scope` | issue-critic |
+| `feasibility` | issue-feasibility |
+| `ac-alignment` | issue-pr-alignment（意味的整合性） |
+| `ac-alignment-unknown` | issue-pr-alignment（判断不能 AC、INFO のみ） |
 
 ## Few-shot 例
 
@@ -109,6 +127,30 @@ status: PASS
 
 findings: []
 ```
+
+### files_to_inspect 併記ケース（探索系 specialist）
+
+```json
+{
+  "status": "WARN",
+  "files_to_inspect": [
+    "plugins/twl/skills/co-autopilot/SKILL.md",
+    "plugins/twl/scripts/chain-runner.sh"
+  ],
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 75,
+      "file": "plugins/twl/skills/co-autopilot/SKILL.md",
+      "line": 42,
+      "message": "...",
+      "category": "architecture-drift"
+    }
+  ]
+}
+```
+
+`files_to_inspect` は optional。reviewer 系 specialist は省略すること。
 
 ### FAIL ケース
 

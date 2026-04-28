@@ -109,3 +109,100 @@ Some review text
   assert_success
   echo "$output" | jq -e '.findings[0].confidence == 50' > /dev/null
 }
+
+# ---------------------------------------------------------------------------
+# AC1: 探索系 agent に files_to_inspect フィールドが記述されているか (RED)
+# ---------------------------------------------------------------------------
+
+@test "ac1: worker-architecture.md contains files_to_inspect in output section" {
+  # AC: worker-architecture.md の出力形式節に files_to_inspect が記述されている
+  # RED: 実装前は fail する
+  run grep -q 'files_to_inspect' "$REPO_ROOT/agents/worker-architecture.md"
+  assert_success
+}
+
+@test "ac1: worker-workflow-integrity.md contains files_to_inspect in output section" {
+  # AC: worker-workflow-integrity.md の出力形式節に files_to_inspect が記述されている
+  # RED: 実装前は fail する
+  run grep -q 'files_to_inspect' "$REPO_ROOT/agents/worker-workflow-integrity.md"
+  assert_success
+}
+
+@test "ac1: context-checker.md contains files_to_inspect in output section" {
+  # AC: context-checker.md の出力形式節に files_to_inspect が記述されている
+  # RED: 実装前は fail する
+  run grep -q 'files_to_inspect' "$REPO_ROOT/agents/context-checker.md"
+  assert_success
+}
+
+# ---------------------------------------------------------------------------
+# AC2: 出力形式例が files_to_inspect を含む JSON 形式で記述されているか (RED)
+# ---------------------------------------------------------------------------
+
+@test "ac2: worker-architecture.md output example includes files_to_inspect key" {
+  # AC: 出力形式は {"status": "PASS|WARN|FAIL", "files_to_inspect": [...], "findings": [...]}
+  # RED: 実装前は fail する（現状の出力例には files_to_inspect がない）
+  run grep -q '"files_to_inspect"' "$REPO_ROOT/agents/worker-architecture.md"
+  assert_success
+}
+
+@test "ac2: worker-workflow-integrity.md output example includes files_to_inspect key" {
+  # AC: 出力形式は {"status": "PASS|WARN|FAIL", "files_to_inspect": [...], "findings": [...]}
+  # RED: 実装前は fail する（現状の出力例には files_to_inspect がない）
+  run grep -q '"files_to_inspect"' "$REPO_ROOT/agents/worker-workflow-integrity.md"
+  assert_success
+}
+
+@test "ac2: context-checker.md output example includes files_to_inspect key" {
+  # AC: 出力形式は {"status": "PASS|WARN|FAIL", "files_to_inspect": [...], "findings": [...]}
+  # RED: 実装前は fail する（現状の出力例には files_to_inspect がない）
+  run grep -q '"files_to_inspect"' "$REPO_ROOT/agents/context-checker.md"
+  assert_success
+}
+
+# ---------------------------------------------------------------------------
+# AC3: Schema SSOT 2 箇所に files_to_inspect が optional として記載されているか (RED)
+# ---------------------------------------------------------------------------
+
+@test "ac3: ref-specialist-output-schema.md contains files_to_inspect field" {
+  # AC: refs/ref-specialist-output-schema.md に files_to_inspect が optional field として追加される
+  # RED: 実装前は fail する
+  run grep -q 'files_to_inspect' "$REPO_ROOT/refs/ref-specialist-output-schema.md"
+  assert_success
+}
+
+@test "ac3: architecture/contracts/specialist-output-schema.md contains files_to_inspect field" {
+  # AC: architecture/contracts/specialist-output-schema.md に files_to_inspect が optional field として追加される
+  # RED: 実装前は fail する
+  run grep -q 'files_to_inspect' "$REPO_ROOT/architecture/contracts/specialist-output-schema.md"
+  assert_success
+}
+
+@test "ac3: ref-specialist-output-schema.md does not list files_to_inspect in required array" {
+  # AC: files_to_inspect は required には含めない（optional）
+  # RED: 実装後に "required" ブロック内に files_to_inspect が存在しないことを確認
+  # 実装前は files_to_inspect 自体が存在しないため grep -q が fail -> assert_failure で RED
+  # 実装後は files_to_inspect が追加されるが required に含まれていないことを検証
+  run bash -c "
+    file='$REPO_ROOT/refs/ref-specialist-output-schema.md'
+    # files_to_inspect が存在することを確認
+    grep -q 'files_to_inspect' \"\$file\" || exit 1
+    # required 配列に files_to_inspect が含まれていないことを確認
+    # required は [\"status\", \"findings\"] のみであること
+    python3 -c \"
+import re, sys
+content = open('\$file').read()
+# JSON ブロックを抽出
+m = re.search(r'\\\`\\\`\\\`json(.*?)\\\`\\\`\\\`', content, re.DOTALL)
+if not m:
+    sys.exit(1)
+import json
+schema = json.loads(m.group(1))
+required = schema.get('required', [])
+if 'files_to_inspect' in required:
+    sys.exit(1)
+sys.exit(0)
+\"
+  "
+  assert_success
+}

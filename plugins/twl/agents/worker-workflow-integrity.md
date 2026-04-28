@@ -117,6 +117,10 @@ status: WARN
 ```json
 {
   "status": "WARN",
+  "files_to_inspect": [
+    "skills/workflow-pr-verify/SKILL.md",
+    "architecture/domain/contexts/pr-cycle.md"
+  ],
   "findings": [
     {
       "severity": "WARNING",
@@ -131,6 +135,7 @@ status: WARN
 ```
 
 - `findings` が空の場合: `{"status": "PASS", "findings": []}`
+- `files_to_inspect` は optional（省略可）。Pilot が深堀すべき相対パス 5-10 件を返す
 - status は findings から自動導出 (WARNING あり → WARN、それ以外 → PASS)
 
 ## 制約
