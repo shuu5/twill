@@ -7,7 +7,9 @@ Handler functions (_handler suffix) are pure Python for in-process testing.
 import concurrent.futures
 import json
 import os
+import re
 from pathlib import Path
+from typing import Any, TypedDict
 
 
 def _load_plugin_ctx(plugin_root: str) -> "tuple[Path, dict, dict, str]":
@@ -87,6 +89,68 @@ def twl_check_handler(plugin_root: str) -> dict:
     return build_envelope("check", get_deps_version(deps), plugin_name, items, exit_code)
 
 
+# Phase γ Wave 2-B: Session aggregate view TypedDict (AC3-11)
+
+class SessionAggregateView(TypedDict, total=False):
+    """Aggregate view of autopilot session for observer/supervisor consumption.
+
+    Required keys (ok=True path always present):
+      session, active_issues, current_phase, phase_count, cross_issue_warnings,
+      pending_checkpoints, wave_summaries_count, resolved_session_id, autopilot_dir,
+      is_archived
+    Error keys (ok=False path):
+      ok, error, error_type, exit_code
+    """
+    # --- ok=True keys ---
+    session: dict[str, Any]
+    active_issues: list[dict[str, Any]]
+    current_phase: int
+    phase_count: int
+    cross_issue_warnings: list[dict[str, Any]]
+    pending_checkpoints: list[dict[str, Any]]
+    wave_summaries_count: int
+    resolved_session_id: str
+    autopilot_dir: str
+    is_archived: bool
+    # --- ok=False keys ---
+    ok: bool
+    error: str
+    error_type: str
+    exit_code: int
+
+
+# SESSION_STATE_SCRIPT path resolution — env var override for testing
+_DEFAULT_SCRIPT = (
+    Path(__file__).resolve().parent.parent.parent.parent.parent
+    / "plugins" / "session" / "scripts" / "session-state.sh"
+)
+# SESSION_STATE_SCRIPT env var で実行時上書き可能。テスト時は monkeypatch で設定。
+
+_VALID_SESSION_ID_RE = re.compile(r"^[a-zA-Z0-9]+\Z")
+_VALID_WINDOW_NAME_RE = re.compile(r"^[A-Za-z0-9_./:@-]+\Z")
+_REQUIRED_CHECKPOINT_FIELDS = frozenset(
+    {"step", "status", "findings_summary", "critical_count", "findings", "timestamp"}
+)
+
+
+def _resolve_autopilot_dir(autopilot_dir: str | None) -> Path:
+    """Resolve autopilot_dir from arg or AUTOPILOT_DIR env var or git root."""
+    if autopilot_dir:
+        return Path(autopilot_dir).expanduser().resolve()
+    env = os.environ.get("AUTOPILOT_DIR", "")
+    if env:
+        return Path(env).expanduser().resolve()
+    try:
+        import subprocess  # noqa: PLC0415
+        root = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"],
+            stderr=subprocess.DEVNULL, text=True,
+        ).strip()
+        return Path(root) / ".autopilot"
+    except Exception:
+        return Path.cwd() / ".autopilot"
+
+
 # Phase 1: State read/write handlers (ADR-0006 §1 Hybrid Path 5 原則)
 
 
@@ -146,6 +210,284 @@ def twl_state_write_handler(
 
 
 # ---------------------------------------------------------------------------
+# Phase γ Wave 2-B: Session aggregate handlers (AC3-11, Issue #1113)
+# ---------------------------------------------------------------------------
+
+
+def twl_get_session_state_handler(
+    session_id: str | None = None,
+    autopilot_dir: str | None = None,
+) -> dict:
+    """Return aggregate view of autopilot session (active or archived) for observer/supervisor.
+
+    If session_id is None, reads the active session.json from autopilot_dir.
+    If session_id is given, reads from autopilot_dir/archive/<session_id>/session.json.
+    """
+    ap_dir = _resolve_autopilot_dir(autopilot_dir)
+
+    if session_id is None:
+        # active session path
+        session_path = ap_dir / "session.json"
+        is_archived = False
+        resolved_session_id = ""
+    else:
+        # validate session_id against regex
+        if not _VALID_SESSION_ID_RE.match(session_id):
+            return {
+                "ok": False,
+                "error": f"invalid session_id: '{session_id}'",
+                "error_type": "invalid_session_id",
+                "exit_code": 2,
+            }
+        archive_base = ap_dir / "archive" / session_id
+        # path traversal check
+        try:
+            archive_base.resolve().relative_to(ap_dir.resolve())
+        except ValueError:
+            return {
+                "ok": False,
+                "error": f"path traversal detected for session_id: '{session_id}'",
+                "error_type": "invalid_session_id",
+                "exit_code": 2,
+            }
+        session_path = archive_base / "session.json"
+        if not session_path.exists():
+            return {
+                "ok": False,
+                "error": f"archive session not found: {session_path}",
+                "error_type": "archive_not_found",
+                "exit_code": 2,
+            }
+        is_archived = True
+        resolved_session_id = session_id
+
+    # read session.json
+    try:
+        session_data = json.loads(session_path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {
+            "ok": False,
+            "error": f"session.json not found: {session_path}",
+            "error_type": "session_not_found",
+            "exit_code": 1,
+        }
+    except json.JSONDecodeError as e:
+        return {
+            "ok": False,
+            "error": f"session.json parse error: {e}",
+            "error_type": "json_error",
+            "exit_code": 1,
+        }
+
+    if not resolved_session_id:
+        resolved_session_id = session_data.get("session_id", "")
+
+    # aggregate: active_issues (status != "done")
+    active_issues: list[dict] = []
+    issues_dir = ap_dir / "issues"
+    if issues_dir.is_dir():
+        for issue_file in sorted(issues_dir.glob("issue-*.json")):
+            try:
+                issue_data = json.loads(issue_file.read_text(encoding="utf-8"))
+                if issue_data.get("status") != "done":
+                    active_issues.append(issue_data)
+            except (json.JSONDecodeError, OSError):
+                pass
+
+    # aggregate: pending_checkpoints (status == "FAIL")
+    pending_checkpoints: list[dict] = []
+    checkpoints_dir = ap_dir / "checkpoints"
+    if checkpoints_dir.is_dir():
+        for cp_file in sorted(checkpoints_dir.glob("*.json")):
+            try:
+                cp_data = json.loads(cp_file.read_text(encoding="utf-8"))
+                if cp_data.get("status") == "FAIL":
+                    pending_checkpoints.append(cp_data)
+            except (json.JSONDecodeError, OSError):
+                pass
+
+    # aggregate: wave_summaries_count
+    waves_dir = ap_dir / "waves"
+    wave_summaries_count = len(list(waves_dir.glob("*.summary.md"))) if waves_dir.is_dir() else 0
+
+    return {
+        "ok": True,
+        "session": session_data,
+        "active_issues": active_issues,
+        "current_phase": session_data.get("current_phase", 0),
+        "phase_count": session_data.get("phase_count", 0),
+        "cross_issue_warnings": session_data.get("cross_issue_warnings", []),
+        "pending_checkpoints": pending_checkpoints,
+        "wave_summaries_count": wave_summaries_count,
+        "resolved_session_id": resolved_session_id,
+        "autopilot_dir": str(ap_dir),
+        "is_archived": is_archived,
+    }
+
+
+def twl_get_pane_state_handler(
+    window_name: str,
+    timeout_sec: int = 30,
+) -> dict:
+    """Return tmux pane/window state. window_name: tmux window name or session:index form."""
+    import subprocess  # noqa: PLC0415
+
+    # validate window_name — raise ValueError for security (shell injection prevention)
+    if not _VALID_WINDOW_NAME_RE.match(window_name):
+        raise ValueError(
+            f"invalid window_name: '{window_name}' "
+            "(only alphanumeric, underscore, dot, colon, slash, at, hyphen allowed)"
+        )
+
+    # resolve script path
+    script_path_str = os.environ.get("SESSION_STATE_SCRIPT", "")
+    if script_path_str:
+        script_path = Path(script_path_str)
+    else:
+        script_path = _DEFAULT_SCRIPT
+
+    if not script_path.exists():
+        return {
+            "ok": False,
+            "error": f"session-state.sh not found: {script_path}",
+            "error_type": "script_not_found",
+            "exit_code": 2,
+        }
+
+    valid_states = {"exited", "idle", "processing", "input-waiting", "error"}
+
+    try:
+        result = subprocess.run(
+            [str(script_path), window_name],
+            capture_output=True,
+            text=True,
+            timeout=timeout_sec,
+        )
+    except subprocess.TimeoutExpired:
+        return {
+            "ok": False,
+            "error": "timeout",
+            "error_type": "timeout",
+            "exit_code": 124,
+        }
+    except (OSError, FileNotFoundError) as e:
+        return {
+            "ok": False,
+            "error": str(e),
+            "error_type": "script_not_found",
+            "exit_code": 2,
+        }
+
+    if result.returncode != 0:
+        return {
+            "ok": False,
+            "error": result.stderr.strip() or f"exit code {result.returncode}",
+            "error_type": "shell_error",
+            "exit_code": result.returncode,
+        }
+
+    state = result.stdout.strip()
+    if state not in valid_states:
+        return {
+            "ok": False,
+            "error": f"unknown state: '{state}'",
+            "error_type": "unknown_state",
+            "exit_code": 3,
+        }
+
+    return {
+        "ok": True,
+        "state": state,
+        "exit_code": 0,
+    }
+
+
+def twl_audit_session_handler(
+    autopilot_dir: str | None = None,
+) -> dict:
+    """Audit autopilot session.json for structural integrity (R1-R4 rules). Idempotent."""
+    ap_dir = _resolve_autopilot_dir(autopilot_dir)
+    items: list[dict] = []
+
+    # read session.json
+    session_path = ap_dir / "session.json"
+    session_data: dict = {}
+    if session_path.exists():
+        try:
+            session_data = json.loads(session_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            items.append({
+                "severity": "critical",
+                "code": "R0",
+                "message": f"session.json parse error: {e}",
+            })
+    else:
+        items.append({
+            "severity": "warning",
+            "code": "R0",
+            "message": f"session.json not found: {session_path}",
+        })
+
+    if session_data:
+        # R1: session_id must match ^[a-zA-Z0-9]+\Z
+        session_id = session_data.get("session_id", "")
+        if not session_id or not _VALID_SESSION_ID_RE.match(session_id):
+            items.append({
+                "severity": "critical",
+                "code": "R1",
+                "message": f"session_id invalid (must be alphanumeric): '{session_id}'",
+            })
+
+        # R2: plan_path must exist
+        plan_path_str = session_data.get("plan_path", "")
+        if plan_path_str and not Path(plan_path_str).exists():
+            items.append({
+                "severity": "warning",
+                "code": "R2",
+                "message": f"plan_path does not exist: '{plan_path_str}'",
+            })
+
+    # R3: checkpoint files must have required fields
+    checkpoints_dir = ap_dir / "checkpoints"
+    if checkpoints_dir.is_dir():
+        for cp_file in sorted(checkpoints_dir.glob("*.json")):
+            try:
+                cp_data = json.loads(cp_file.read_text(encoding="utf-8"))
+                missing_fields = _REQUIRED_CHECKPOINT_FIELDS - set(cp_data.keys())
+                if missing_fields:
+                    items.append({
+                        "severity": "warning",
+                        "code": "R3",
+                        "message": f"checkpoint '{cp_file.name}' missing fields: {sorted(missing_fields)}",
+                    })
+            except json.JSONDecodeError as e:
+                items.append({
+                    "severity": "warning",
+                    "code": "R3",
+                    "message": f"checkpoint '{cp_file.name}' parse error: {e}",
+                })
+
+    # R4: wave summaries — info only (N.summary.md files)
+    waves_dir = ap_dir / "waves"
+    if waves_dir.is_dir():
+        wave_count = len(list(waves_dir.glob("*.summary.md")))
+        if wave_count > 0:
+            items.append({
+                "severity": "info",
+                "code": "R4",
+                "message": f"{wave_count} wave summary file(s) found",
+            })
+
+    has_critical = any(i.get("severity") == "critical" for i in items)
+    exit_code = 1 if has_critical else 0
+
+    return {
+        "items": items,
+        "exit_code": exit_code,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Phase 2: Autopilot handlers (ADR-029 Decision 2, Hybrid Path 5 原則)
 # ---------------------------------------------------------------------------
 
@@ -153,7 +495,6 @@ def twl_state_write_handler(
 
 def _resolve_issue_from_labels(labels: list[dict]) -> str | None:
     """Extract issue number from PR labels (autopilot label convention: 'issue-N')."""
-    import re
     for lbl in labels:
         name = lbl.get("name", "")
         m = re.search(r"issue-(\d+)", name)
@@ -657,6 +998,21 @@ try:
         """autopilot.worktree: pure validate_branch_name() (read-only, raises WorktreeArgError)."""
         return json.dumps(twl_worktree_validate_branch_name_handler(branch=branch), ensure_ascii=False)
 
+    @mcp.tool()
+    def twl_get_session_state(session_id: str | None = None, autopilot_dir: str | None = None) -> str:
+        """Return aggregate view of autopilot session (active or archived) for observer/supervisor."""
+        return json.dumps(twl_get_session_state_handler(session_id=session_id, autopilot_dir=autopilot_dir), ensure_ascii=False)
+
+    @mcp.tool()
+    def twl_get_pane_state(window_name: str, timeout_sec: int = 30) -> str:
+        """Return tmux pane/window state. window_name: tmux window name or session:index form."""
+        return json.dumps(twl_get_pane_state_handler(window_name=window_name, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    @mcp.tool()
+    def twl_audit_session(autopilot_dir: str | None = None) -> str:
+        """Audit autopilot session.json for structural integrity (R1-R4 rules). Idempotent."""
+        return json.dumps(twl_audit_session_handler(autopilot_dir=autopilot_dir), ensure_ascii=False)
+
 except ImportError:
     mcp = None  # type: ignore[assignment]
 
@@ -756,3 +1112,15 @@ except ImportError:
     def twl_worktree_validate_branch_name(branch: str) -> str:  # type: ignore[misc]
         """autopilot.worktree: pure validate_branch_name() (read-only, raises WorktreeArgError)."""
         return json.dumps(twl_worktree_validate_branch_name_handler(branch=branch), ensure_ascii=False)
+
+    def twl_get_session_state(session_id: str | None = None, autopilot_dir: str | None = None) -> str:  # type: ignore[misc]
+        """Return aggregate view of autopilot session (active or archived) for observer/supervisor."""
+        return json.dumps(twl_get_session_state_handler(session_id=session_id, autopilot_dir=autopilot_dir), ensure_ascii=False)
+
+    def twl_get_pane_state(window_name: str, timeout_sec: int = 30) -> str:  # type: ignore[misc]
+        """Return tmux pane/window state. window_name: tmux window name or session:index form."""
+        return json.dumps(twl_get_pane_state_handler(window_name=window_name, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    def twl_audit_session(autopilot_dir: str | None = None) -> str:  # type: ignore[misc]
+        """Audit autopilot session.json for structural integrity (R1-R4 rules). Idempotent."""
+        return json.dumps(twl_audit_session_handler(autopilot_dir=autopilot_dir), ensure_ascii=False)
