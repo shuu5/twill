@@ -468,7 +468,7 @@ declare -A IDLE_COMPLETED_TS
 
 # _check_idle_completed() の SSOT を source する
 # BASH_SOURCE[0] = plugins/session/scripts/cld-observe-any → ../twl/ = plugins/twl/
-_IDLE_CHECK_LIB="$(dirname "${BASH_SOURCE[0]}")/../twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+_IDLE_CHECK_LIB="$(dirname "${BASH_SOURCE[0]}")/../../twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
 if [[ -f "$_IDLE_CHECK_LIB" ]]; then
     # shellcheck source=/dev/null
     source "$_IDLE_CHECK_LIB"
@@ -527,6 +527,20 @@ while true; do
                 fi
                 # 60s ごとに継続 emit（observer が kill するまで繰り返す）
                 IDLE_COMPLETED_TS[$WIN]=$NOW
+                # opt-in auto-kill（IDLE_COMPLETED_AUTO_KILL=1 時のみ）
+                if [[ "${IDLE_COMPLETED_AUTO_KILL:-0}" == "1" ]]; then
+                    SAFE_WIN="${WIN//[^a-zA-Z0-9_-]/_}"
+                    if tmux kill-window -t "$WIN" 2>/dev/null; then
+                        echo "[IDLE-COMPLETED] $WIN: auto-killed (IDLE_COMPLETED_AUTO_KILL=1)"
+                        if [[ -n "$EVENT_DIR" ]]; then
+                            echo "{\"channel\":\"IDLE-COMPLETED-KILLED\",\"window\":\"${WIN}\",\"elapsed_sec\":$((NOW - FIRST_SEEN)),\"ts\":${NOW}}" \
+                                > "${EVENT_DIR}/idle-completed-killed-${SAFE_WIN}-$(date -u +%Y%m%dT%H%M%SZ).json"
+                        fi
+                        unset 'IDLE_COMPLETED_TS[$WIN]'
+                    else
+                        echo "[IDLE-COMPLETED] $WIN: auto-kill failed (window already gone or permission denied)" >&2
+                    fi
+                fi
             else
                 # completion phrase 初回検出 → first_seen_ts 記録
                 # C3: detect_thinking() で LLM indicator 不在確認（Thinking 中は false trigger を防ぐ）

@@ -918,3 +918,331 @@ MOCKEOF
     # indicator なし + stagnate 超過 → STAGNATE は emit される（これは AC1/AC2 実装後も保持される仕様）
     echo "$output" | grep -q "STAGNATE"
 }
+
+# ---------------------------------------------------------------------------
+# Issue #1132: IDLE_COMPLETED_AUTO_KILL 機能 — AC-9 の 5 ケース
+#
+# テスト戦略:
+#   - IDLE-COMPLETED emit を発生させるには --max-cycles 2 + --interval 1 が必要
+#     Cycle 1: phrase 検出 → IDLE_COMPLETED_TS[$WIN]=$NOW を記録
+#     Cycle 2: FIRST_SEEN>0 かつ DEBOUNCE=0 → _check_idle_completed true → emit/kill 分岐
+#   - IDLE_COMPLETED_PHRASE_REGEX は readonly のため override 不可。
+#     既存 regex に含まれる "nothing pending" をキャプチャテキストに使用する。
+#   - kill stub 呼び出し検証: CALL_LOG ファイルへの記録で確認する
+#   - RED テスト（ケース3・4）: IDLE_COMPLETED_AUTO_KILL 実装前は fail する。
+#     auto-kill 実装後に GREEN になることを期待する。
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Scenario 20: AC-9 ケース1 — IDLE_COMPLETED_AUTO_KILL 未設定 → alert のみ、kill なし
+#   AC-6 regression: 既存 alert 動作を変更しない baseline テスト
+#   このテストは現実装でも PASS する（自動 kill 機能がないため）
+# ---------------------------------------------------------------------------
+@test "AC-9/1: IDLE_COMPLETED_AUTO_KILL 未設定 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 baseline）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+CALL_LOG="$TMPD/tmux-calls.log"
+win="ap-ac9-case1-win"
+
+# IDLE_COMPLETED_PHRASE_REGEX にマッチするキャプチャ（"nothing pending" は regex SSOT に含まれる）
+capture="All tasks are done.
+nothing pending
+System is idle."
+export capture
+
+tmux() {
+    echo "$1 $*" >> "$CALL_LOG"
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window) return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+# IDLE_COMPLETED_AUTO_KILL を未設定にする（unset で明示的に削除）
+unset IDLE_COMPLETED_AUTO_KILL
+
+IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 2 --interval 1 2>/dev/null
+
+# kill-window が呼ばれていないことを確認
+if grep -q "kill-window" "$CALL_LOG" 2>/dev/null; then
+    echo "FAIL: kill-window が呼ばれた（IDLE_COMPLETED_AUTO_KILL 未設定なのに）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+echo "PASS: kill-window 呼び出しなし"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    echo "$output" | grep -q "PASS: kill-window 呼び出しなし"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 21: AC-9 ケース2 — IDLE_COMPLETED_AUTO_KILL=0 → alert のみ、kill なし
+#   AC-6: 明示的に無効化した場合も既存動作を維持する baseline テスト
+#   このテストは現実装でも PASS する（自動 kill 機能がないため）
+# ---------------------------------------------------------------------------
+@test "AC-9/2: IDLE_COMPLETED_AUTO_KILL=0 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 explicit disable）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+CALL_LOG="$TMPD/tmux-calls.log"
+win="ap-ac9-case2-win"
+
+capture="All tasks are done.
+nothing pending
+System is idle."
+export capture
+
+tmux() {
+    echo "$1 $*" >> "$CALL_LOG"
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window) return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+IDLE_COMPLETED_AUTO_KILL=0 \
+IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 2 --interval 1 2>/dev/null
+
+if grep -q "kill-window" "$CALL_LOG" 2>/dev/null; then
+    echo "FAIL: kill-window が呼ばれた（IDLE_COMPLETED_AUTO_KILL=0 なのに）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+echo "PASS: kill-window 呼び出しなし"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    echo "$output" | grep -q "PASS: kill-window 呼び出しなし"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 22: AC-9 ケース3 — IDLE_COMPLETED_AUTO_KILL=1 + kill-window stub 成功
+#   RED: auto-kill 未実装のため現状は fail する。実装後に GREEN になる。
+#   検証内容:
+#     - kill-window が 1 回呼び出される（AC-2）
+#     - stdout に "[IDLE-COMPLETED] <win>: auto-killed" ログが出る（AC-2）
+#     - idle-completed-killed-*.json が EVENT_DIR に生成される（AC-5）
+# ---------------------------------------------------------------------------
+@test "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+EVENT_DIR_PATH="$TMPD/events"
+mkdir -p "$EVENT_DIR_PATH"
+win="ap-ac9-case3-win"
+export win
+
+capture="All tasks are done.
+nothing pending
+System is idle."
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            # stub: 成功（exit 0）
+            return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+output_text=$(IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --event-dir "$EVENT_DIR_PATH" \
+    --max-cycles 2 --interval 1 2>/dev/null)
+
+# 検証1: stdout に auto-killed ログが出たか（AC-2）
+if ! echo "$output_text" | grep -q "auto-killed"; then
+    echo "FAIL: stdout に auto-killed ログがない（output=$output_text）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+
+# 検証2: idle-completed-killed-*.json が生成されたか（AC-5）
+killed_json=$(find "$EVENT_DIR_PATH" -name "idle-completed-killed-*.json" 2>/dev/null | head -1)
+if [[ -z "$killed_json" ]]; then
+    echo "FAIL: idle-completed-killed-*.json が生成されなかった"
+    rm -rf "$TMPD"
+    exit 1
+fi
+
+echo "PASS: kill 1回・auto-killed log・killed JSON 生成"
+rm -rf "$TMPD"
+MOCKEOF
+
+    # RED: auto-kill 実装前は失敗する
+    # 実装後は [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:" に変わる
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 23: AC-9 ケース4 — IDLE_COMPLETED_AUTO_KILL=1 + kill-window stub 失敗
+#   RED: auto-kill 未実装のため現状は fail する。実装後に GREEN になる。
+#   検証内容:
+#     - メインループが継続する（exit 0）（AC-3）
+#     - stderr に "auto-kill failed" ログが出る（AC-2/AC-3）
+#     - idle-completed-killed-*.json は生成されない（AC-5 fail 時非生成）
+# ---------------------------------------------------------------------------
+@test "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+EVENT_DIR_PATH="$TMPD/events"
+mkdir -p "$EVENT_DIR_PATH"
+win="ap-ac9-case4-win"
+export win
+
+capture="All tasks are done.
+nothing pending
+System is idle."
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            # stub: 失敗（exit 1）
+            return 1;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+# stderr を別ファイルに保存して確認
+STDERR_FILE="$TMPD/stderr.txt"
+IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --event-dir "$EVENT_DIR_PATH" \
+    --max-cycles 2 --interval 1 >/dev/null 2>"$STDERR_FILE"
+exit_code=$?
+stderr_text=$(cat "$STDERR_FILE" 2>/dev/null || echo "")
+
+# 検証1: exit 0（メインループ継続、graceful）（AC-3）
+if [[ "$exit_code" -ne 0 ]]; then
+    echo "FAIL: exit code $exit_code（期待: 0）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+
+# 検証2: stderr に auto-kill failed ログが出たか（AC-2/AC-3）
+if ! echo "$stderr_text" | grep -q "auto-kill failed"; then
+    echo "FAIL: stderr に auto-kill failed ログがない（stderr=$stderr_text）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+
+# 検証3: idle-completed-killed-*.json は生成されていないか（AC-5 kill 失敗時非生成）
+killed_json=$(find "$EVENT_DIR_PATH" -name "idle-completed-killed-*.json" 2>/dev/null | head -1)
+if [[ -n "$killed_json" ]]; then
+    echo "FAIL: kill 失敗なのに idle-completed-killed-*.json が生成された"
+    rm -rf "$TMPD"
+    exit 1
+fi
+
+echo "PASS: exit 0・failed log・killed JSON 非生成"
+rm -rf "$TMPD"
+MOCKEOF
+
+    # RED: auto-kill 実装前は失敗する
+    # 実装後は [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:" に変わる
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 24: AC-9 ケース5 — LLM-active indicator（"Thinking..."）存在時
+#   AC-7: _check_idle_completed C3 条件により emit/kill 両方発生しない
+#   このテストは現実装でも PASS する（LLM indicator guard は既存実装済み）
+# ---------------------------------------------------------------------------
+@test "AC-9/5: LLM-active indicator 存在時 → IDLE_COMPLETED_AUTO_KILL=1 でも emit/kill 両方発生しない（AC-7 baseline）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+CALL_LOG="$TMPD/tmux-calls.log"
+win="ap-ac9-case5-win"
+
+# "nothing pending" は IDLE_COMPLETED_PHRASE_REGEX にマッチするが、
+# "Thinking..." は LLM indicator（C3 条件）として _check_idle_completed を false にする
+capture="All tasks are done.
+nothing pending
+Thinking... (5s)
+Analyzing next steps."
+export capture
+
+tmux() {
+    echo "$1 $*" >> "$CALL_LOG"
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+output_text=$(IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 2 --interval 1 2>/dev/null)
+
+# 検証1: IDLE-COMPLETED は emit されていないか（C3 guard による）
+if echo "$output_text" | grep -q "IDLE-COMPLETED"; then
+    echo "FAIL: LLM indicator 存在時に IDLE-COMPLETED が emit された"
+    rm -rf "$TMPD"
+    exit 1
+fi
+
+# 検証2: kill-window は呼ばれていないか
+if grep -q "kill-window" "$CALL_LOG" 2>/dev/null; then
+    echo "FAIL: LLM indicator 存在時に kill-window が呼ばれた"
+    rm -rf "$TMPD"
+    exit 1
+fi
+
+echo "PASS: emit なし・kill-window 呼び出しなし"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]]
+    echo "$output" | grep -q "PASS: emit なし・kill-window 呼び出しなし"
+}

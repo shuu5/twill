@@ -1,105 +1,129 @@
+# ac-test-mapping.yaml — Issue #1132: feat(observer): IDLE_COMPLETED auto-kill
+# 生成: AC Scaffold Tests Agent
+# 対象テストファイル: plugins/session/tests/cld-observe-any.bats (Scenario 20-24)
+
 mappings:
   - ac_index: 1
-    ac_text: "並列で 10 並列送信しても全メッセージが正しい順で届く"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac1: flock による排他制御が実装されている"
-    status: GREEN
-    note: "flock 未実装のため FAIL"
+    ac_text: "IDLE_COMPLETED_AUTO_KILL 環境変数を参照し、未設定または 0 の場合は kill しない。1 の場合のみ自動 kill。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/1: IDLE_COMPLETED_AUTO_KILL 未設定 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 baseline）"
+    status: RED
+    note: "Scenario 20。opt-in env var の負例（未設定）。現実装でも PASS する baseline。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
   - ac_index: 1
-    ac_text: "並列で 10 並列送信しても全メッセージが正しい順で届く"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac1: send-keys が flock スコープ内にある"
-    status: GREEN
-    note: "flock 未実装のため FAIL"
-
-  - ac_index: 1
-    ac_text: "並列で 10 並列送信しても全メッセージが正しい順で届く"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac1: inject が flock を使用した排他送信を行う"
-    status: GREEN
-    note: "flock 未実装のため FAIL"
+    ac_text: "IDLE_COMPLETED_AUTO_KILL 環境変数を参照し、未設定または 0 の場合は kill しない。1 の場合のみ自動 kill。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/2: IDLE_COMPLETED_AUTO_KILL=0 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 explicit disable）"
+    status: RED
+    note: "Scenario 21。opt-in env var の負例（明示 0）。現実装でも PASS する baseline。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
   - ac_index: 2
-    ac_text: "受信側が input-waiting でない場合、送信は 5 秒待機後に retry"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac2: inject に retry ロジックが実装されている"
-    status: GREEN
-    note: "retry ロジック未実装のため FAIL"
+    ac_text: "IDLE_COMPLETED_TS[$WIN]=$NOW 直後で tmux kill-window -t $WIN を発行。成功時は stdout に [IDLE-COMPLETED] <WIN>: auto-killed (IDLE_COMPLETED_AUTO_KILL=1) log。失敗時は stderr に [IDLE-COMPLETED] <WIN>: auto-kill failed (...) log。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）"
+    status: RED
+    note: "Scenario 22。auto-kill 未実装のため現状 fail。実装後 GREEN になる。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
   - ac_index: 2
-    ac_text: "受信側が input-waiting でない場合、送信は 5 秒待機後に retry"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac2: retry 前に 5 秒待機が実装されている"
-    status: GREEN
-    note: "sleep 5 未実装のため FAIL"
-
-  - ac_index: 2
-    ac_text: "受信側が input-waiting でない場合、送信は 5 秒待機後に retry"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac2: non-input-waiting 時に session-state.sh state が 2 回以上呼ばれる（retry 確認）"
-    status: GREEN
-    note: "retry 未実装: state は 1 回しか呼ばれず即 exit 2 するため FAIL"
-
-  - ac_index: 2
-    ac_text: "受信側が input-waiting でない場合、送信は 5 秒待機後に retry"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac2: 2 回目の状態確認で input-waiting になれば inject が exit 0 で成功する"
-    status: GREEN
-    note: "retry 未実装: 初回 processing で即 exit 2 するため FAIL"
+    ac_text: "IDLE_COMPLETED_TS[$WIN]=$NOW 直後で tmux kill-window -t $WIN を発行。成功時は stdout に [IDLE-COMPLETED] <WIN>: auto-killed (IDLE_COMPLETED_AUTO_KILL=1) log。失敗時は stderr に [IDLE-COMPLETED] <WIN>: auto-kill failed (...) log。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）"
+    status: RED
+    note: "Scenario 23。auto-kill 未実装のため現状 fail。実装後 GREEN になる。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
   - ac_index: 3
-    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac3: cmd_inject 関数が定義されている"
-    status: GREEN
-    note: "既存実装のため PASS（baseline）"
+    ac_text: "tmux kill-window exit 非 0 の場合、stderr に失敗 log を出力してメインループ継続。2>/dev/null で tmux stderr を抑制。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）"
+    status: RED
+    note: "Scenario 23 で AC-3 も検証（exit 0 確認）。auto-kill 未実装のため現状 fail。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
-  - ac_index: 3
-    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac3: cmd_inject_file 関数が定義されている"
-    status: GREEN
-    note: "既存実装のため PASS（baseline）"
+  - ac_index: 4
+    ac_text: "kill 成功時に unset 'IDLE_COMPLETED_TS[$WIN]'。kill 失敗時は cleanup しない（IDLE_COMPLETED_TS[$WIN] は $NOW を保持）。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）"
+    status: RED
+    note: "Scenario 22 で AC-4 も検証（state cleanup は killed JSON 非重複生成で間接確認）。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
-  - ac_index: 3
-    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac3: inject が --force オプションをサポートしている"
-    status: GREEN
-    note: "既存実装のため PASS（baseline）"
+  - ac_index: 5
+    ac_text: "EVENT_DIR 設定時、kill 成功後に idle-completed-killed-<safe_win>-<ts>.json を書き出し。フィールド: {channel:IDLE-COMPLETED-KILLED, window:<WIN>, elapsed_sec:<秒>, ts:<unix>}。kill 失敗時は生成しない。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）"
+    status: RED
+    note: "Scenario 22 で idle-completed-killed-*.json 生成を検証。auto-kill 未実装のため現状 fail。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
-  - ac_index: 3
-    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac3: inject が --no-enter オプションをサポートしている"
-    status: GREEN
-    note: "既存実装のため PASS（baseline）"
+  - ac_index: 5
+    ac_text: "EVENT_DIR 設定時、kill 成功後に idle-completed-killed-<safe_win>-<ts>.json を書き出し。フィールド: {channel:IDLE-COMPLETED-KILLED, window:<WIN>, elapsed_sec:<秒>, ts:<unix>}。kill 失敗時は生成しない。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）"
+    status: RED
+    note: "Scenario 23 で kill 失敗時の JSON 非生成を検証。auto-kill 未実装のため現状 fail。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
-  - ac_index: 3
-    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac3: inject-file が --wait オプションをサポートしている"
-    status: GREEN
-    note: "既存実装のため PASS（baseline）"
+  - ac_index: 6
+    ac_text: "IDLE_COMPLETED_AUTO_KILL=0 または未設定の場合、既存 alert 動作を変更しない。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/1: IDLE_COMPLETED_AUTO_KILL 未設定 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 baseline）"
+    status: RED
+    note: "Scenario 20。AC-6 は現実装でも PASS する baseline regression テスト。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
-  - ac_index: 3
-    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac3: inject が non-input-waiting かつ --force なしで exit 2 を返す（既存 API 維持）"
-    status: GREEN
-    note: "既存動作の確認テスト。実装後もタイムアウト時は exit 2 を維持すること"
+  - ac_index: 6
+    ac_text: "IDLE_COMPLETED_AUTO_KILL=0 または未設定の場合、既存 alert 動作を変更しない。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/2: IDLE_COMPLETED_AUTO_KILL=0 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 explicit disable）"
+    status: RED
+    note: "Scenario 21。AC-6 明示 0 ケース。現実装でも PASS する baseline regression テスト。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
 
-  - ac_index: 3
-    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac3: メインディスパッチに inject-file が登録されている"
-    status: GREEN
-    note: "既存実装のため PASS（baseline）"
+  - ac_index: 7
+    ac_text: "_check_idle_completed() C3 条件（LLM indicator 存在）で false return の場合は emit/kill 両方発生しない。コード変更なし、bats 検証のみ。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC-9/5: LLM-active indicator 存在時 → IDLE_COMPLETED_AUTO_KILL=1 でも emit/kill 両方発生しない（AC-7 baseline）"
+    status: RED
+    note: "Scenario 24。AC-7 は現実装でも PASS する baseline。LLM indicator guard（C3）の検証。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
 
-  - ac_index: 3
-    ac_text: "既存の caller（autopilot-orchestrator, inject-next-workflow, su-observer 介入経路）の API 互換維持"
-    test_file: "plugins/session/tests/session-comm-robustness.test.sh"
-    test_name: "ac3: メインディスパッチに inject が登録されている"
-    status: GREEN
-    note: "既存実装のため PASS（baseline）"
+  - ac_index: 8
+    ac_text: "window pattern 制約維持。スコープ外、テスト不要。"
+    test_file: ""
+    test_name: ""
+    status: SKIP
+    note: "AC-8 はスコープ外。テスト不要。"
+    impl_files: []
+
+  - ac_index: 9
+    ac_text: "bats fixture 5 ケースを実装: ケース1-5 (Scenario 20-24)"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "Scenario 20-24（5 テスト）"
+    status: RED
+    note: "AC-9 自体はテスト生成完了。Scenario 20/21/24 は baseline（現状 PASS 可能）。Scenario 22/23 は実装後 GREEN。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: 10
+    ac_text: "ドキュメント更新。bats テスト不要。"
+    test_file: ""
+    test_name: ""
+    status: SKIP
+    note: "AC-10 はドキュメント更新のみ。テスト不要。"
+    impl_files: []
