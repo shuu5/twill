@@ -19,7 +19,8 @@ OBSERVER_WINDOW_NAME=$(tmux display-message -p '#W' 2>/dev/null || echo "")
 OBSERVER_MODE=""
 if [[ -r "/proc/$PPID/cmdline" ]]; then
   OBSERVER_MODE=$(tr '\0' ' ' < "/proc/$PPID/cmdline" \
-    | grep -oP '(?:--permission-mode\s+)\K\S+' || echo "")
+    | grep -oP '(?:--permission-mode )\K\S+' || echo "")
+  [[ -z "$OBSERVER_MODE" ]] && echo "[session-init] WARN: --permission-mode が $PPID の cmdline に見つかりません（mode は空文字で記録）" >&2 || true
 fi
 
 # session.json に書き込む
