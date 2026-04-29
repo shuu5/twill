@@ -72,7 +72,7 @@ setup() {
 
 @test "baseline-bash-section7: AC2 BAD block contains '**/*.py' pattern" {
   [ -f "${BASELINE}" ]
-  grep -qE '\*\*/\*\.py' "${BASELINE}"
+  grep -qF '**/*.py' "${BASELINE}"
 }
 
 @test "baseline-bash-section7: AC2 GOOD block '--include' heading exists" {
@@ -181,4 +181,13 @@ setup() {
 @test "baseline-bash-section7: AC5 frontmatter disable-model-invocation unchanged" {
   [ -f "${BASELINE}" ]
   grep -qF 'disable-model-invocation: true' "${BASELINE}"
+}
+
+# ===========================================================================
+# AC6: twl check --deps-integrity が PASS する（baseline-bash.md は ref 型）
+# ===========================================================================
+
+@test "baseline-bash-section7: AC6 twl check --deps-integrity passes" {
+  run bash -c "cd '${REPO_ROOT}' && twl check --deps-integrity"
+  [ "${status}" -eq 0 ]
 }
