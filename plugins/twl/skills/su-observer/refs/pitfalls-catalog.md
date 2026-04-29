@@ -243,7 +243,7 @@ rm -f .supervisor/events/* 2>/dev/null || true
 # Step 3 inline: working-memory.md 退避（step 5）
 mkdir -p .supervisor
 cat > .supervisor/working-memory.md <<EOF
-# Working Memory（退避: $(date -u +%FT%TZ)）
+# Working Memory（退避: $(date +"%Y-%m-%d %H:%M")）
 ...
 EOF
 
