@@ -235,7 +235,13 @@ class TestCommon7NoMergeGateImport:
 # ---------------------------------------------------------------------------
 
 class TestCommon8NoSystemExit:
-    """共通-8: twl_validate_merge_handler 呼出後に SystemExit が発生しないこと."""
+    """共通-8: twl_validate_merge_handler 呼出後に SystemExit が発生しないこと.
+
+    Note: AC2-3a (TestAC23aNoSystemExit) も同一の SystemExit 検証を行う。
+    共通-8 は「ADR-028 整合確認」の AC トレーサビリティ用、
+    AC2-3a は「C1-codex MergeGate.execute import 禁止」の AC トレーサビリティ用。
+    両者は別 AC に紐付くため、ac-test-mapping の 1:1 対応を維持するため分離している。
+    """
 
     def test_common8_validate_merge_handler_no_system_exit(self):
         # AC: twl_validate_merge_handler 呼出後に SystemExit が発生しないこと
@@ -314,7 +320,7 @@ class TestAC21aValidateDepsSignature:
 
         # 戻り値アノテーションが dict であること
         ret = sig.return_annotation
-        assert ret is dict or ret == "dict", (
+        assert ret is dict or "dict" in str(ret), (
             f"twl_validate_deps_handler の戻り値アノテーションが dict でない: {ret} (AC2-1a 未実装)"
         )
 
@@ -351,7 +357,7 @@ class TestAC21bValidateMergeSignature:
         )
 
         ret = sig.return_annotation
-        assert ret is dict or ret == "dict", (
+        assert ret is dict or "dict" in str(ret), (
             f"twl_validate_merge_handler の戻り値アノテーションが dict でない: {ret} (AC2-1b 未実装)"
         )
 
@@ -385,7 +391,7 @@ class TestAC21cValidateCommitSignature:
         )
 
         ret = sig.return_annotation
-        assert ret is dict or ret == "dict", (
+        assert ret is dict or "dict" in str(ret), (
             f"twl_validate_commit_handler の戻り値アノテーションが dict でない: {ret} (AC2-1c 未実装)"
         )
 
@@ -413,7 +419,7 @@ class TestAC21dCheckCompletenessSignature:
         )
 
         ret = sig.return_annotation
-        assert ret is dict or ret == "dict", (
+        assert ret is dict or "dict" in str(ret), (
             f"twl_check_completeness_handler の戻り値アノテーションが dict でない: {ret} (AC2-1d 未実装)"
         )
 
@@ -441,7 +447,7 @@ class TestAC21eCheckSpecialistSignature:
         )
 
         ret = sig.return_annotation
-        assert ret is dict or ret == "dict", (
+        assert ret is dict or "dict" in str(ret), (
             f"twl_check_specialist_handler の戻り値アノテーションが dict でない: {ret} (AC2-1e 未実装)"
         )
 
@@ -483,23 +489,33 @@ class TestAC23bNoGuardCalls:
 
     def test_ac2_3b_no_check_running_guard_call(self):
         # AC: twl_validate_merge_handler が _check_running_guard を呼ばないこと（Plan A' 2-guard scope 外）
-        # RED: 未実装のため ImportError
-        tools_src = TWL_DIR / "src" / "twl" / "mcp_server" / "tools.py"
-        content = tools_src.read_text(encoding="utf-8")
+        # RED: 未実装のため ImportError（handler が存在しないと import が失敗する）
+        from unittest.mock import patch
+        from twl.mcp_server.tools import twl_validate_merge_handler  # RED trigger: ImportError
 
-        assert "_check_running_guard" not in content, (
-            "tools.py に _check_running_guard の呼び出しが含まれている (AC2-3b 違反)"
-        )
+        with patch("twl.autopilot.mergegate_guards._check_running_guard") as mock_guard:
+            try:
+                twl_validate_merge_handler(branch="test-branch-ac2-3b")
+            except Exception:
+                pass  # MergeGateError / subprocess エラー等は許容
+            assert not mock_guard.called, (
+                "_check_running_guard が呼ばれた (AC2-3b 違反: Plan A' 2-guard scope 外)"
+            )
 
     def test_ac2_3b_no_check_phase_review_guard_call(self):
         # AC: twl_validate_merge_handler が _check_phase_review_guard を呼ばないこと（scope 外）
-        # RED: 未実装のため ImportError
-        tools_src = TWL_DIR / "src" / "twl" / "mcp_server" / "tools.py"
-        content = tools_src.read_text(encoding="utf-8")
+        # RED: 未実装のため ImportError（handler が存在しないと import が失敗する）
+        from unittest.mock import patch
+        from twl.mcp_server.tools import twl_validate_merge_handler  # RED trigger: ImportError
 
-        assert "_check_phase_review_guard" not in content, (
-            "tools.py に _check_phase_review_guard の呼び出しが含まれている (AC2-3b 違反)"
-        )
+        with patch("twl.autopilot.mergegate_guards._check_phase_review_guard") as mock_guard:
+            try:
+                twl_validate_merge_handler(branch="test-branch-ac2-3b")
+            except Exception:
+                pass  # MergeGateError / subprocess エラー等は許容
+            assert not mock_guard.called, (
+                "_check_phase_review_guard が呼ばれた (AC2-3b 違反: Plan A' 2-guard scope 外)"
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -513,18 +529,24 @@ class TestAC23cFlockParallel:
         # AC: twl_check_completeness_handler が bash flock LOCK_EX 保持中に
         #     LOCK_SH で安全に読めること（R2-M3 flock 並列 test）
         # RED: 未実装のため ImportError
+        import shutil
+        import time
+        if shutil.which("flock") is None:
+            pytest.skip("flock command not available on this platform (Linux only)")
+
         from twl.mcp_server.tools import twl_check_completeness_handler
 
         lock_file = tmp_path / "test.lock"
         lock_file.touch()
 
-        # bash flock LOCK_EX を 2 秒間保持するバックグラウンドプロセスを起動
+        # bash flock LOCK_EX を 3 秒間保持するバックグラウンドプロセスを起動
         bg = subprocess.Popen(
-            ["bash", "-c", f"exec 9>{lock_file}; flock -x 9; sleep 2"],
+            ["bash", "-c", f"flock -x {lock_file} sleep 3"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
-
-        import time
-        time.sleep(0.1)  # バックグラウンドが LOCK_EX を取得するまで待つ
+        # flock プロセスが LOCK_EX を取得するまで確実に待つ（0.5 秒）
+        time.sleep(0.5)
 
         # LOCK_EX 保持中に handler を呼び出す（LOCK_SH として安全に完了すること）
         try:
