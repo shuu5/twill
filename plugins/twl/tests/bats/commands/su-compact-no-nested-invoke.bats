@@ -18,28 +18,28 @@ teardown() {
 # 現状: Line 82 に記述が存在するため FAIL（RED フェーズ正常）
 # ---------------------------------------------------------------------------
 
-@test "ac1: su-compact.md に externalize-state.md を Read する記述がないこと" {
+@test "ac1: su-compact.md に externalize-state.md を Read する execute 形式がないこと" {
   local cmd_md="$REPO_ROOT/commands/su-compact.md"
 
   # ファイルが存在すること
   [ -f "$cmd_md" ]
 
-  # "commands/externalize-state.md" を Read する形式の記述がないこと
-  # RED: 現状 Line 82 に "commands/externalize-state.md を Read し" が存在するため FAIL
-  run bash -c "grep -n 'externalize-state.md' '$cmd_md' | grep -i 'Read'"
+  # Issue #1120 AC-6 で指定されたパターン: "Read し" + "externalize-state" の行が存在しないこと
+  # 注釈・設計意図セクション内での参照（MUST NOT 等）は許容（Issue #1120 仕様）
+  run bash -c "grep -F 'Read し' '$cmd_md' | grep -F 'externalize-state'"
 
-  # マッチが 0 件（exit 1）であることを期待 → 現状 exit 0 のため FAIL
+  # マッチが 0 件（exit 1）であることを期待
   assert_failure
 }
 
-@test "ac1: su-compact.md に externalize-state.md を実行する記述がないこと" {
+@test "ac1: su-compact.md に externalize-state.md を引数として実行する記述がないこと" {
   local cmd_md="$REPO_ROOT/commands/su-compact.md"
 
   [ -f "$cmd_md" ]
 
-  # "を引数として実行する" のパターンが externalize-state.md と同じコンテキストにないこと
-  # RED: 現状 "を引数として実行する:" が存在するため FAIL
-  run bash -c "grep -n 'externalize-state.md' '$cmd_md' | grep -E 'を引数として実行|実行する'"
+  # "externalize-state.md を Read し、...を引数として実行する" 形式がないこと
+  # 注釈・禁止事項セクションでの文言は許容
+  run bash -c "grep -F 'externalize-state.md' '$cmd_md' | grep -F 'を引数として実行する'"
 
   assert_failure
 }
@@ -131,33 +131,28 @@ teardown() {
 # RED: 現状 Line 82 に記述が存在するため FAIL
 # ---------------------------------------------------------------------------
 
-@test "ac6: su-compact.md 本文に externalize-state.md の Read + 実行形式の記述がないこと" {
+@test "ac6: su-compact.md 本文に externalize-state.md の Read + execute 形式の記述がないこと" {
   local cmd_md="$REPO_ROOT/commands/su-compact.md"
 
   [ -f "$cmd_md" ]
 
-  # su-compact.md の本文中に externalize-state.md を Read + 実行する形式の記述がないこと
-  # 対象パターン: "externalize-state.md を Read し" または "externalize-state.md.*Read"
-  # RED: 現状 Line 82 "commands/externalize-state.md を Read し、--trigger ... を引数として実行する"
-  #      が存在するため FAIL（assert_failure が通らない）
-  run bash -c "
-    grep -E 'externalize-state\.md.*Read|Read.*externalize-state\.md' '$cmd_md'
-  "
+  # Issue #1120 指定パターン: "Read し" + "externalize-state" の行が存在しないこと
+  # 注釈・MUST NOT セクションでの参照は許容（Issue #1120 仕様）
+  run bash -c "grep -F 'Read し' '$cmd_md' | grep -F 'externalize-state'"
 
-  # Read + 実行形式の記述がマッチしないこと（exit 1）を期待 → 現状 exit 0 のため FAIL
   assert_failure
 }
 
-@test "ac6: su-compact.md Step 3 に externalize-state.md への参照がないこと" {
+@test "ac6: su-compact.md Step 3 に externalize-state.md の execute 命令がないこと" {
   local cmd_md="$REPO_ROOT/commands/su-compact.md"
 
   [ -f "$cmd_md" ]
 
-  # Step 3 セクション内に externalize-state.md の Read + 実行記述がないこと
-  # RED: 現状 Step 3 に "commands/externalize-state.md を Read し" が存在するため FAIL
+  # Step 3 セクション内に "externalize-state.md を Read し" の execute 命令がないこと
+  # 注釈・説明文内での参照（「nested invoke は行わない」等）は許容
   run bash -c "
     sed -n '/### Step 3:/,/### Step 4:/p' '$cmd_md' \
-      | grep -q 'externalize-state.md'
+      | grep -F 'Read し' | grep -F 'externalize-state'
   "
 
   assert_failure
