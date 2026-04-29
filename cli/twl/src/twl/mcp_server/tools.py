@@ -200,7 +200,9 @@ def twl_mergegate_run_handler(
             return {"ok": True, "message": "merge completed", "exit_code": 0}
         except SystemExit as e:
             code = int(e.code) if e.code is not None else 0
-            return {"ok": code == 0, "error": f"merge_gate exit code {code}", "error_type": f"merge_exit_{code}", "exit_code": code}
+            if code == 0:
+                return {"ok": True, "message": "merge completed (exit 0)", "exit_code": 0}
+            return {"ok": False, "error": f"merge_gate exit code {code}", "error_type": f"merge_exit_{code}", "exit_code": code}
         except MergeGateError as e:
             return {"ok": False, "error": str(e), "error_type": "merge_gate_error", "exit_code": 1}
 

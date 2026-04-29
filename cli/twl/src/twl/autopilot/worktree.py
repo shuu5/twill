@@ -456,8 +456,9 @@ class WorktreeManager:
             WorktreeArgError: On invalid branch name.
             WorktreeError: On deletion failure.
         """
-        if not branch_name or ".." in branch_name or branch_name.startswith("/"):
+        if not branch_name:
             raise WorktreeArgError(f"不正なブランチ名: {branch_name!r}")
+        validate_branch_name(branch_name)
 
         git_common_dir, project_dir = _resolve_git_common_dir(self.repo_path)
         worktree_path = project_dir / "worktrees" / branch_name
@@ -466,7 +467,7 @@ class WorktreeManager:
             raise WorktreeError(f"worktree が存在しません: {worktree_path}")
 
         # Run teardown hook before removal
-        run_teardown_hook(worktree_path)
+        WorktreeManager.run_teardown_hook(worktree_path)
 
         # git worktree remove --force
         result = subprocess.run(

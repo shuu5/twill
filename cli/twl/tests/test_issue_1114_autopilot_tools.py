@@ -663,7 +663,7 @@ class TestAC45InvariantBCwdCheck:
         from twl.mcp_server.tools import twl_worktree_create_handler
 
         with patch("os.getcwd", return_value="/tmp/proj/worktrees/feat-test"):
-            with patch("pathlib.Path.resolve", return_value=Path("/tmp/proj/worktrees/feat-test")):
+            with patch("os.path.realpath", return_value="/tmp/proj/worktrees/feat-test"):
                 result = twl_worktree_create_handler(
                     branch="feat/999-test",
                     timeout_sec=60,
@@ -684,7 +684,7 @@ class TestAC45InvariantBCwdCheck:
         from twl.mcp_server.tools import twl_worktree_delete_handler
 
         with patch("os.getcwd", return_value="/tmp/proj/worktrees/feat-test"):
-            with patch("pathlib.Path.resolve", return_value=Path("/tmp/proj/worktrees/feat-test")):
+            with patch("os.path.realpath", return_value="/tmp/proj/worktrees/feat-test"):
                 result = twl_worktree_delete_handler(
                     branch="feat/999-test",
                     timeout_sec=60,
@@ -705,7 +705,7 @@ class TestAC45InvariantBCwdCheck:
         from twl.mcp_server.tools import twl_worktree_create_handler
 
         with patch("os.getcwd", return_value="/tmp/proj/main"):
-            with patch("pathlib.Path.resolve", return_value=Path("/tmp/proj/main")):
+            with patch("os.path.realpath", return_value="/tmp/proj/main"):
                 # 通常実行パスで WorktreeManager.create が呼ばれる想定
                 # 実際の git コマンドは mock して create 自体はエラーになってよい
                 with patch(
