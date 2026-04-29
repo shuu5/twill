@@ -499,6 +499,7 @@ class TestAC42OrchestratorHandlers:
             session_file="/tmp/session.json",
             project_dir="/tmp/proj",
             autopilot_dir="/tmp/.autopilot",
+            cwd="/tmp/main",
             timeout_sec=60,
         )
         assert isinstance(result, dict), "handler が dict を返さない (AC4-2 未実装)"
@@ -532,6 +533,7 @@ class TestAC42OrchestratorHandlers:
                     session_file="/tmp/session.json",
                     project_dir="/tmp/proj",
                     autopilot_dir="/tmp/.autopilot",
+                    cwd="/tmp/main",
                     timeout_sec=60,
                 )
         finally:
@@ -755,14 +757,14 @@ class TestAC46CriticalAssertions:
         assert isinstance(result, dict), (
             f"twl_worktree_list_handler が dict を返さない: {type(result)} (AC4-6 未実装)"
         )
-        assert "worktrees" in result or "items" in result or "ok" in result, (
-            f"dict に worktrees/items/ok キーがない: {list(result.keys())} (AC4-6 未実装)"
+        assert "ok" in result, (
+            f"dict に ok キーがない: {list(result.keys())} (AC4-6 未実装)"
         )
-        # ok=True の場合 worktrees フィールドが list[dict] であること
+        # ok=True の場合 "result" フィールドが list[dict] であること
         if result.get("ok"):
-            worktrees = result.get("worktrees") or result.get("items") or []
-            assert isinstance(worktrees, list), (
-                f"worktrees が list でない: {type(worktrees)} (AC4-6 未実装)"
+            entries = result.get("result", [])
+            assert isinstance(entries, list), (
+                f"result フィールドが list でない: {type(entries)} (AC4-6 未実装)"
             )
 
     def test_ac46_twl_worktree_validate_branch_name_handler_catches_worktree_arg_error(self):

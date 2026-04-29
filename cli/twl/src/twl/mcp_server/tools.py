@@ -256,6 +256,8 @@ def twl_mergegate_reject_handler(
             return {"ok": True, "message": "rejected", "exit_code": 0}
         except SystemExit as e:
             code = int(e.code) if e.code is not None else 0
+            if code == 0:
+                return {"ok": True, "message": "rejected (exit 0)", "exit_code": 0}
             return {"ok": False, "error": f"merge_gate exit code {code}", "error_type": f"merge_exit_{code}", "exit_code": code}
         except MergeGateError as e:
             return {"ok": False, "error": str(e), "error_type": "merge_gate_error", "exit_code": 1}
@@ -310,6 +312,8 @@ def twl_mergegate_reject_final_handler(
             return {"ok": True, "message": "final rejection completed", "exit_code": 0}
         except SystemExit as e:
             code = int(e.code) if e.code is not None else 0
+            if code == 0:
+                return {"ok": True, "message": "reject_final completed (exit 0)", "exit_code": 0}
             return {"ok": False, "error": f"merge_gate exit code {code}", "error_type": f"merge_exit_{code}", "exit_code": code}
         except MergeGateError as e:
             return {"ok": False, "error": str(e), "error_type": "merge_gate_error", "exit_code": 1}
@@ -333,9 +337,13 @@ def twl_orchestrator_phase_review_handler(
     project_dir: str,
     autopilot_dir: str,
     repos_json: str = "",
+    cwd: str | None = None,
     timeout_sec: int = 1800,
 ) -> dict:
-    """autopilot.orchestrator: invoke PhaseOrchestrator.run() with handler-level timeout wrap (1800s wall-clock guard for tmux + state.py subprocess). Note: set MCP_CLIENT_TIMEOUT>=1860s. plan_file existence check + tmux FileNotFoundError catch."""
+    """autopilot.orchestrator: invoke PhaseOrchestrator.run() with CWD-based 不変条件 B role check + handler-level timeout wrap (1800s wall-clock guard for tmux + state.py subprocess). Note: set MCP_CLIENT_TIMEOUT>=1860s. plan_file existence check + tmux FileNotFoundError catch."""
+    violation = _check_invariant_b(cwd)
+    if violation:
+        return violation
     if not Path(plan_file).is_file():
         return {"ok": False, "error": "plan_file not found", "error_type": "arg_error", "exit_code": 2}
 
@@ -389,6 +397,8 @@ def twl_orchestrator_summary_handler(
         summary = generate_summary(autopilot_dir=autopilot_dir)
         return {"ok": True, "result": summary, "exit_code": 0}
     except OrchestratorError as e:
+        return {"ok": False, "error": str(e), "error_type": "orchestrator_error", "exit_code": 1}
+    except Exception as e:
         return {"ok": False, "error": str(e), "error_type": "orchestrator_error", "exit_code": 1}
 
 
@@ -472,6 +482,8 @@ def twl_worktree_delete_handler(
         except WorktreeArgError as e:
             return {"ok": False, "error": str(e), "error_type": "arg_error", "exit_code": 2}
         except WorktreeError as e:
+            return {"ok": False, "error": str(e), "error_type": "worktree_error", "exit_code": 1}
+        except Exception as e:
             return {"ok": False, "error": str(e), "error_type": "worktree_error", "exit_code": 1}
 
     if timeout_sec is None:
@@ -613,9 +625,9 @@ try:
         return json.dumps(twl_mergegate_reject_final_handler(pr_number=pr_number, reason=reason, autopilot_dir=autopilot_dir, cwd=cwd, timeout_sec=timeout_sec), ensure_ascii=False)
 
     @mcp.tool()
-    def twl_orchestrator_phase_review(phase: int, plan_file: str, session_file: str, project_dir: str, autopilot_dir: str, repos_json: str = "", timeout_sec: int = 1800) -> str:
+    def twl_orchestrator_phase_review(phase: int, plan_file: str, session_file: str, project_dir: str, autopilot_dir: str, repos_json: str = "", cwd: str | None = None, timeout_sec: int = 1800) -> str:
         """autopilot.orchestrator: invoke PhaseOrchestrator.run() with handler-level timeout wrap (1800s wall-clock guard for tmux + state.py subprocess). Note: set MCP_CLIENT_TIMEOUT>=1860s. plan_file existence check + tmux FileNotFoundError catch."""
-        return json.dumps(twl_orchestrator_phase_review_handler(phase=phase, plan_file=plan_file, session_file=session_file, project_dir=project_dir, autopilot_dir=autopilot_dir, repos_json=repos_json, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(twl_orchestrator_phase_review_handler(phase=phase, plan_file=plan_file, session_file=session_file, project_dir=project_dir, autopilot_dir=autopilot_dir, repos_json=repos_json, cwd=cwd, timeout_sec=timeout_sec), ensure_ascii=False)
 
     @mcp.tool()
     def twl_orchestrator_get_phase_issues(phase: int, plan_file: str) -> str:
@@ -721,9 +733,9 @@ except ImportError:
         """autopilot.mergegate: invoke MergeGate.reject_final() with SystemExit catch + timeout wrap (300s)."""
         return json.dumps(twl_mergegate_reject_final_handler(pr_number=pr_number, reason=reason, autopilot_dir=autopilot_dir, cwd=cwd, timeout_sec=timeout_sec), ensure_ascii=False)
 
-    def twl_orchestrator_phase_review(phase: int, plan_file: str, session_file: str, project_dir: str, autopilot_dir: str, repos_json: str = "", timeout_sec: int = 1800) -> str:  # type: ignore[misc]
+    def twl_orchestrator_phase_review(phase: int, plan_file: str, session_file: str, project_dir: str, autopilot_dir: str, repos_json: str = "", cwd: str | None = None, timeout_sec: int = 1800) -> str:  # type: ignore[misc]
         """autopilot.orchestrator: invoke PhaseOrchestrator.run() with handler-level timeout wrap (1800s wall-clock guard for tmux + state.py subprocess). Note: set MCP_CLIENT_TIMEOUT>=1860s. plan_file existence check + tmux FileNotFoundError catch."""
-        return json.dumps(twl_orchestrator_phase_review_handler(phase=phase, plan_file=plan_file, session_file=session_file, project_dir=project_dir, autopilot_dir=autopilot_dir, repos_json=repos_json, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(twl_orchestrator_phase_review_handler(phase=phase, plan_file=plan_file, session_file=session_file, project_dir=project_dir, autopilot_dir=autopilot_dir, repos_json=repos_json, cwd=cwd, timeout_sec=timeout_sec), ensure_ascii=False)
 
     def twl_orchestrator_get_phase_issues(phase: int, plan_file: str) -> str:  # type: ignore[misc]
         """autopilot.orchestrator: pure get_phase_issues() (read-only, no subprocess). plan_file existence check."""
