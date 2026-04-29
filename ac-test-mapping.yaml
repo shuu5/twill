@@ -287,3 +287,75 @@ issue_1089:
       note: |
         RED: ac1 / ac1b は実装前 fail（Hono 検出ロジック未実装）
         GREEN: ac5-negative は実装前後ともに PASS（import なしでは非検出）
+
+# --- Issue #1118 ---
+issue_1118:
+  issue: 1118
+  framework: pytest
+  test_file: "cli/twl/tests/test_issue_1118_workflow_can_spawn.py"
+  mappings:
+    - ac_index: 1
+      ac_text: "cli/twl/types.yaml の workflow.can_spawn に reference を追加 ([atomic, composite, specialist, script] → [atomic, composite, specialist, reference, script])"
+      test_name: "test_ac1_types_yaml_workflow_can_spawn_includes_reference"
+      status: RED
+      red_mechanism: "現在 types.yaml の workflow.can_spawn = [atomic, composite, specialist, script] で reference が欠落"
+
+    - ac_index: 1
+      ac_text: "workflow.can_spawn の順序が [atomic, composite, specialist, reference, script] であること"
+      test_name: "test_ac1_types_yaml_workflow_can_spawn_order"
+      status: RED
+      red_mechanism: "reference 欠落のため順序不一致で assert が fail"
+
+    - ac_index: 1
+      ac_text: "types.py の _FALLBACK_TYPE_RULES['workflow']['can_spawn'] に 'reference' が含まれること"
+      test_name: "test_ac1_fallback_type_rules_workflow_includes_reference"
+      status: RED
+      red_mechanism: "_FALLBACK_TYPE_RULES['workflow']['can_spawn'] = {'atomic', 'composite', 'specialist'} で reference も script も欠落"
+
+    - ac_index: 2
+      ac_text: "plugins/twl/ で twl --validate を実行すると Violations: 0 になること"
+      test_name: "test_ac2_validate_violations_zero"
+      status: RED
+      red_mechanism: "現在 4 violations が検出されている（workflow が reference を spawn できないとして違反）"
+
+    - ac_index: 2
+      ac_text: "twl --validate で他カテゴリの新規違反が発生していないこと"
+      test_name: "test_ac2_validate_no_new_violations_in_other_categories"
+      status: RED
+      red_mechanism: "violations > 0 のため Violations: 0 チェックが fail"
+
+    - ac_index: 3
+      ac_text: "test_v3_schema.py / test_promote.py / test_supervisor_type.py が引き続き pass すること"
+      test_name: "test_ac3_existing_pytest_suite_passes"
+      status: RED
+      red_mechanism: "types.yaml が不整合のため load_type_rules() が旧 can_spawn を返し間接的に fail するケースがある"
+
+    - ac_index: 4
+      ac_text: "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md に §16 セクションが存在すること"
+      test_name: "test_ac4_pitfalls_catalog_has_section_16"
+      status: RED
+      red_mechanism: "現在最後のセクションは §15。§16 が存在しないため regex match が fail"
+
+    - ac_index: 7
+      ac_text: "workflow-pr-merge の deps.yaml can_spawn が types.yaml 変更後と矛盾しないこと"
+      test_name: "test_ac7_workflow_pr_merge_can_spawn_consistent_with_types"
+      status: RED
+      red_mechanism: "types.yaml が reference を許可していないため整合性検証で fail"
+
+    - ac_index: 7
+      ac_text: "workflow-issue-lifecycle の deps.yaml can_spawn が types.yaml 変更後と矛盾しないこと"
+      test_name: "test_ac7_workflow_issue_lifecycle_can_spawn_consistent_with_types"
+      status: RED
+      red_mechanism: "types.yaml が reference を許可していないため整合性検証で fail"
+
+    - ac_index: 7
+      ac_text: "workflow-issue-refine の deps.yaml can_spawn が types.yaml 変更後と矛盾しないこと"
+      test_name: "test_ac7_workflow_issue_refine_can_spawn_consistent_with_types"
+      status: RED
+      red_mechanism: "types.yaml が reference を許可していないため整合性検証で fail"
+
+    - ac_index: 7
+      ac_text: "workflow-pr-merge が calls で reference を呼ぶなら can_spawn に reference が必要"
+      test_name: "test_ac7_workflow_pr_merge_can_spawn_includes_reference_when_calls_reference"
+      status: RED
+      red_mechanism: "workflow-pr-merge.can_spawn = [composite, atomic, script] で reference が calls にあるにもかかわらず can_spawn に reference がない"
