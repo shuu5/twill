@@ -332,12 +332,14 @@ def twl_get_pane_state_handler(
     """Return tmux pane/window state. window_name: tmux window name or session:index form."""
     import subprocess  # noqa: PLC0415
 
-    # validate window_name — raise ValueError for security (shell injection prevention)
+    # validate window_name — return error dict (defense in depth, no subprocess injection)
     if not _VALID_WINDOW_NAME_RE.match(window_name):
-        raise ValueError(
-            f"invalid window_name: '{window_name}' "
-            "(only alphanumeric, underscore, dot, colon, slash, at, hyphen allowed)"
-        )
+        return {
+            "ok": False,
+            "error": f"Invalid window_name '{window_name}': must match [A-Za-z0-9_./:@-]+",
+            "error_type": "invalid_window_name",
+            "exit_code": 2,
+        }
 
     # SESSION_STATE_SCRIPT: env var が設定されていれば優先（テスト用上書き対応）
     script_path = Path(os.environ.get("SESSION_STATE_SCRIPT", str(_DEFAULT_SCRIPT)))

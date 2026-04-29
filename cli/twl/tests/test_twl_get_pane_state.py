@@ -188,10 +188,13 @@ class TestAC31InputValidation:
     """AC3-1 (設計確定事項): window_name の不正文字を defense in depth で ArgError reject。"""
 
     def test_ac1_invalid_window_name_rejected(self):
-        # AC: window_name に ';' '$()' 等が含まれる場合は ArgError/ValueError
-        # RED: 実装前は subprocess 直撃 or assert FAIL
-        with pytest.raises((ValueError, Exception)):
-            _handler()(window_name="test; rm -rf /", timeout_sec=5)
+        # AC: window_name に ';' '$()' 等が含まれる場合は error envelope（dict）を返す
+        # 実装: raise ValueError → return {"ok": False, "error_type": "invalid_window_name"} に変更
+        result = _handler()(window_name="test; rm -rf /", timeout_sec=5)
+        assert result.get("ok") is False, f"invalid window_name が ok=True: {result}"
+        assert result.get("error_type") == "invalid_window_name", (
+            f"error_type が invalid_window_name でない: {result.get('error_type')}"
+        )
 
     def test_ac1_valid_window_name_accepted(self, dummy_script: Path):
         # AC: 英数字/アンダースコア/ハイフン/ドット/コロン/スラッシュは許可
