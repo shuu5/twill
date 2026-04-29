@@ -1124,3 +1124,10 @@ except ImportError:
 
 # Communication tools (tools_comm.py) — outside the try/except gate to avoid double-gate (AC5-8 Option A)
 from .tools_comm import *  # noqa: E402, F401, F403
+# Mount comm FastMCP instance onto main mcp so comm tools are exposed via the MCP server
+try:
+    from .tools_comm import _mcp_comm as _comm_mcp  # noqa: F401
+    if mcp is not None and _comm_mcp is not None:
+        mcp.mount(_comm_mcp)
+except (ImportError, AttributeError, NameError):
+    pass
