@@ -1,0 +1,164 @@
+#!/usr/bin/env bats
+# su-compact-no-nested-invoke.bats
+# Issue #1120: su-compact.md から externalize-state.md への nested invoke を削除する
+# RED phase: 実装前は FAIL することを確認するテスト
+
+load '../helpers/common'
+
+setup() {
+  common_setup
+}
+
+teardown() {
+  common_teardown
+}
+
+# ---------------------------------------------------------------------------
+# AC-1: su-compact.md に externalize-state.md への Read + 実行記述がないこと
+# 現状: Line 82 に記述が存在するため FAIL（RED フェーズ正常）
+# ---------------------------------------------------------------------------
+
+@test "ac1: su-compact.md に externalize-state.md を Read する記述がないこと" {
+  local cmd_md="$REPO_ROOT/commands/su-compact.md"
+
+  # ファイルが存在すること
+  [ -f "$cmd_md" ]
+
+  # "commands/externalize-state.md" を Read する形式の記述がないこと
+  # RED: 現状 Line 82 に "commands/externalize-state.md を Read し" が存在するため FAIL
+  run bash -c "grep -n 'externalize-state.md' '$cmd_md' | grep -i 'Read'"
+
+  # マッチが 0 件（exit 1）であることを期待 → 現状 exit 0 のため FAIL
+  assert_failure
+}
+
+@test "ac1: su-compact.md に externalize-state.md を実行する記述がないこと" {
+  local cmd_md="$REPO_ROOT/commands/su-compact.md"
+
+  [ -f "$cmd_md" ]
+
+  # "を引数として実行する" のパターンが externalize-state.md と同じコンテキストにないこと
+  # RED: 現状 "を引数として実行する:" が存在するため FAIL
+  run bash -c "grep -n 'externalize-state.md' '$cmd_md' | grep -E 'を引数として実行|実行する'"
+
+  assert_failure
+}
+
+@test "ac1: Issue 番号誤記 'Issue #NN1119' が存在しないこと" {
+  local cmd_md="$REPO_ROOT/commands/su-compact.md"
+
+  [ -f "$cmd_md" ]
+
+  # 'Issue #NN1119' という placeholder 誤記がないこと
+  # RED: 実装前にこの誤記が存在していれば FAIL
+  run bash -c "grep -q 'Issue #NN1119' '$cmd_md'"
+
+  assert_failure
+}
+
+# ---------------------------------------------------------------------------
+# AC-2: externalize-state.md 自体が変更されていないこと
+# 現状でも変更なし → PASS する可能性があるが TDD 記録として残す
+# ---------------------------------------------------------------------------
+
+@test "ac2: externalize-state.md が変更されていないこと（git diff が空）" {
+  local ext_md="$REPO_ROOT/commands/externalize-state.md"
+
+  [ -f "$ext_md" ]
+
+  # worktree root から git diff で確認
+  local worktree_root
+  worktree_root="$(cd "$REPO_ROOT" && git rev-parse --show-toplevel 2>/dev/null)"
+
+  run bash -c "cd '$worktree_root' && git diff HEAD -- plugins/twl/commands/externalize-state.md"
+
+  # diff が空であること（exit 0 かつ stdout 空）
+  assert_success
+  assert_output ""
+}
+
+# ---------------------------------------------------------------------------
+# AC-4: MUST NOT セクションに nested invoke 禁止文言が追記されていること
+# RED: 現状 MUST NOT セクションに該当文言が存在しないため FAIL
+# ---------------------------------------------------------------------------
+
+@test "ac4: MUST NOT セクションに nested invoke 禁止文言が追記されていること" {
+  local cmd_md="$REPO_ROOT/commands/su-compact.md"
+
+  [ -f "$cmd_md" ]
+
+  # MUST NOT セクションに "nested invoke" 禁止の文言があること
+  # RED: 現状 MUST NOT セクションにこの文言が存在しないため FAIL
+  run bash -c "grep -q 'nested invoke' '$cmd_md'"
+
+  assert_success
+}
+
+@test "ac4: MUST NOT セクションに Issue #1120 の参照が含まれること" {
+  local cmd_md="$REPO_ROOT/commands/su-compact.md"
+
+  [ -f "$cmd_md" ]
+
+  # MUST NOT セクションに "Issue #1120" の参照があること
+  # RED: 現状この参照が存在しないため FAIL
+  run bash -c "grep -q 'Issue #1120' '$cmd_md'"
+
+  assert_success
+}
+
+# ---------------------------------------------------------------------------
+# AC-5: pitfalls-catalog.md §8 末尾に su-compact inline 実装サブセクションが追加されていること
+# RED: 現状 §8 に su-compact に関するサブセクションが存在しないため FAIL
+# ---------------------------------------------------------------------------
+
+@test "ac5: pitfalls-catalog.md に su-compact inline 実装サブセクションが存在すること" {
+  local catalog_md="$REPO_ROOT/skills/su-observer/refs/pitfalls-catalog.md"
+
+  [ -f "$catalog_md" ]
+
+  # §8 内に su-compact に関するサブセクション（### レベル）が存在すること
+  # RED: 現状 §8 に su-compact 関連の記述がないため FAIL
+  run bash -c "
+    sed -n '/^## 8\./,/^## 9\./p' '$catalog_md' | grep -q 'su-compact'
+  "
+
+  assert_success
+}
+
+# ---------------------------------------------------------------------------
+# AC-6: su-compact.md 本文中に externalize-state.md を Read + 実行する形式の記述がないこと
+# これが最重要テスト（Issue body に明示）
+# RED: 現状 Line 82 に記述が存在するため FAIL
+# ---------------------------------------------------------------------------
+
+@test "ac6: su-compact.md 本文に externalize-state.md の Read + 実行形式の記述がないこと" {
+  local cmd_md="$REPO_ROOT/commands/su-compact.md"
+
+  [ -f "$cmd_md" ]
+
+  # su-compact.md の本文中に externalize-state.md を Read + 実行する形式の記述がないこと
+  # 対象パターン: "externalize-state.md を Read し" または "externalize-state.md.*Read"
+  # RED: 現状 Line 82 "commands/externalize-state.md を Read し、--trigger ... を引数として実行する"
+  #      が存在するため FAIL（assert_failure が通らない）
+  run bash -c "
+    grep -E 'externalize-state\.md.*Read|Read.*externalize-state\.md' '$cmd_md'
+  "
+
+  # Read + 実行形式の記述がマッチしないこと（exit 1）を期待 → 現状 exit 0 のため FAIL
+  assert_failure
+}
+
+@test "ac6: su-compact.md Step 3 に externalize-state.md への参照がないこと" {
+  local cmd_md="$REPO_ROOT/commands/su-compact.md"
+
+  [ -f "$cmd_md" ]
+
+  # Step 3 セクション内に externalize-state.md の Read + 実行記述がないこと
+  # RED: 現状 Step 3 に "commands/externalize-state.md を Read し" が存在するため FAIL
+  run bash -c "
+    sed -n '/### Step 3:/,/### Step 4:/p' '$cmd_md' \
+      | grep -q 'externalize-state.md'
+  "
+
+  assert_failure
+}
