@@ -1,0 +1,200 @@
+mappings:
+  - ac_index: 1
+    ac_text: "refs/monitor-channel-catalog.md に [IDLE-COMPLETED] channel を新設し、completion phrase regex を固定化する"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1: monitor-channel-catalog.md has [IDLE-COMPLETED] channel entry"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+  - ac_index: "1b"
+    ac_text: "[IDLE-COMPLETED] セクションに completion phrase regex が SSOT として記載される"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1: monitor-channel-catalog.md [IDLE-COMPLETED] section has completion phrase regex"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+  - ac_index: "1c"
+    ac_text: "チャネル一覧テーブルに [IDLE-COMPLETED] 行が存在する"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1: monitor-channel-catalog.md channel table row has [IDLE-COMPLETED]"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+  - ac_index: 2
+    ac_text: "検知 debounce はデフォルト 60s。IDLE_COMPLETED_DEBOUNCE_SEC env var で override 可能"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac2: observer-idle-check.sh has default debounce of 60 seconds"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "2b"
+    ac_text: "IDLE_COMPLETED_DEBOUNCE_SEC env var で debounce 秒数を override できる"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac2: observer-idle-check.sh respects IDLE_COMPLETED_DEBOUNCE_SEC env var"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "2c"
+    ac_text: "_check_idle_completed の第4引数 debounce_sec が実際に参照される"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac2: _check_idle_completed uses debounce_sec parameter from argument"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: 3
+    ac_text: "refs/pitfalls-catalog.md §4.10 の 5 状態判定マトリクスに「S-1 IDLE 確定 (cleanup target)」行追加"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac3: pitfalls-catalog.md §4.10 matrix has S-1 IDLE cleanup target row"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: "3b"
+    ac_text: "§4.10 S-1 IDLE 行が [IDLE-COMPLETED] channel を参照する"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac3: pitfalls-catalog.md §4.10 S-1 IDLE row references [IDLE-COMPLETED]"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 4
+    ac_text: "monitor-channel-catalog.md に Monitor tool snippet を追加 (多指標 AND 判定 bash regex)"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac4: monitor-channel-catalog.md [IDLE-COMPLETED] section has Monitor tool snippet"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+  - ac_index: "4b"
+    ac_text: "snippet が IDLE_COMPLETED_TS（debounce 管理用の連想配列）を使用している"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac4: monitor-channel-catalog.md [IDLE-COMPLETED] snippet contains IDLE_COMPLETED_TS variable"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+  - ac_index: "4c"
+    ac_text: "bash regex が completion phrase（nothing pending, Status=Refined 等）をカバーする"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac4: monitor-channel-catalog.md [IDLE-COMPLETED] snippet uses bash regex for completion phrases"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+  - ac_index: 5
+    ac_text: "cld-observe-any に [IDLE-COMPLETED] event 追加。declare -A IDLE_COMPLETED_TS をメインループスコープで宣言"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac5: cld-observe-any has [IDLE-COMPLETED] event emit"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+  - ac_index: "5b"
+    ac_text: "declare -A IDLE_COMPLETED_TS がメインループスコープ（関数外）で宣言される"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac5: cld-observe-any declares IDLE_COMPLETED_TS as associative array"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+  - ac_index: "5c"
+    ac_text: "IDLE_COMPLETED_TS の declare が関数定義の外側（メインスコープ）にある"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac5: cld-observe-any IDLE_COMPLETED_TS declaration is in main scope"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+  - ac_index: 6
+    ac_text: "su-observer-supervise-channels.md に [IDLE-COMPLETED] 行追加"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac6: su-observer-supervise-channels.md has [IDLE-COMPLETED] row"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/su-observer-supervise-channels.md"
+  - ac_index: "6b"
+    ac_text: "[IDLE-COMPLETED] 行が debounce 秒数または閾値情報を含む"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac6: su-observer-supervise-channels.md [IDLE-COMPLETED] row has debounce or threshold info"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/su-observer-supervise-channels.md"
+  - ac_index: 7
+    ac_text: "自動 kill オプション (IDLE_COMPLETED_AUTO_KILL=1) の follow-up Issue link 確認"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac7: (process AC) IDLE_COMPLETED_AUTO_KILL follow-up Issue is referenced"
+    impl_files: []
+    # impl_files: プロセス AC (Issue link 確認)。機械的なファイル特定は不可
+  - ac_index: 8
+    ac_text: "_check_idle_completed() を plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh に新規作成。シグネチャ: _check_idle_completed pane_content first_seen_ts now_ts [debounce_sec=60]"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8: scripts/lib/observer-idle-check.sh exists"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "8b"
+    ac_text: "observer-idle-check.sh が実行可能である"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8: observer-idle-check.sh is executable"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "8c"
+    ac_text: "_check_idle_completed 関数が定義されている"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8: observer-idle-check.sh defines _check_idle_completed function"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "8d"
+    ac_text: "第1〜3引数として pane_content, first_seen_ts, now_ts を受け取る"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8: _check_idle_completed signature accepts pane_content first_seen_ts now_ts"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "8e"
+    ac_text: "completion phrase が存在し debounce 経過後に return 0（idle 確定）"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8: _check_idle_completed returns 0 (idle) when completion phrase present and debounce passed"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "8f"
+    ac_text: "debounce 未経過の場合は non-0 を返す（idle 未確定）"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8: _check_idle_completed returns non-0 when debounce not yet passed"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "8g"
+    ac_text: "completion phrase がない場合は non-0 を返す（idle でない）"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8: _check_idle_completed returns non-0 when no completion phrase in pane_content"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "8h"
+    ac_text: "第4引数 debounce_sec=30 を渡すと 30s で idle 確定になる"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8: _check_idle_completed respects custom debounce_sec as 4th argument"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: 9
+    ac_text: "対象 window pattern を (ap-|wt-|coi-).* に拡張"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac9: monitor-channel-catalog.md [IDLE-COMPLETED] references (ap-|wt-|coi-) pattern"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+  - ac_index: "9b"
+    ac_text: "cld-observe-any または supervise-channels.md が coi- を含む pattern を使用する"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac9: su-observer-supervise-channels.md or cld-observe-any uses (ap-|wt-|coi-) pattern"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/twl/skills/su-observer/refs/su-observer-supervise-channels.md"
+  - ac_index: 10
+    ac_text: "regression fixture 1: 'nothing pending' → idle (wt-twill-main-49606687 #1111)"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac10: fixture1 - 'nothing pending' is recognized as idle (wt-twill-main-49606687 #1111)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "10b"
+    ac_text: "regression fixture 2: 'Status=Refined' → idle (refine #1113)"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac10: fixture2 - 'Status=Refined' is recognized as idle (refine #1113)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "10c"
+    ac_text: "regression fixture 3: 'refined ラベル付与' → idle (refine #1114)"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac10: fixture3 - 'refined ラベル付与' is recognized as idle (refine #1114)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "10d"
+    ac_text: "regression fixture 4: '次のステップ:' → idle (wt-co-explore-153758 #1105)"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac10: fixture4 - '次のステップ:' is recognized as idle (wt-co-explore-153758 #1105)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "10e"
+    ac_text: "regression fixture 5: 'merge-gate 成功' → idle (refine #1118)"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac10: fixture5 - 'merge-gate 成功' is recognized as idle (refine #1118)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "10f"
+    ac_text: "ネガティブコントロール: LLM 思考中 (Thinking...) は idle と判定しない"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac10: fixture-negative - active LLM indicator is NOT recognized as idle"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"

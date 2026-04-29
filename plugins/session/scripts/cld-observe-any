@@ -462,6 +462,18 @@ evaluate_window() {
 
 CYCLE=0
 
+# [IDLE-COMPLETED] 状態管理 — メインループスコープで宣言 (AC-5, Issue #1117)
+# evaluate_window() は stateless 設計を維持するため、連想配列はここで管理する
+declare -A IDLE_COMPLETED_TS
+
+# _check_idle_completed() の SSOT を source する
+# BASH_SOURCE[0] = plugins/session/scripts/cld-observe-any → ../twl/ = plugins/twl/
+_IDLE_CHECK_LIB="$(dirname "${BASH_SOURCE[0]}")/../twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+if [[ -f "$_IDLE_CHECK_LIB" ]]; then
+    # shellcheck source=/dev/null
+    source "$_IDLE_CHECK_LIB"
+fi
+
 # --once モード: 現在状態を評価して exit
 if [[ "$ONCE" == "true" ]]; then
     TARGET_WINS=()
@@ -496,6 +508,38 @@ while true; do
     for win in "${TARGET_WINS[@]}"; do
         evaluate_window "$win"
     done
+
+    # [IDLE-COMPLETED] 判定 — evaluate_window() 外のメインループ内に配置 (AC-5)
+    # stateless _check_idle_completed() に IDLE_COMPLETED_TS を渡す
+    if declare -f _check_idle_completed &>/dev/null; then
+        NOW=$(date +%s)
+        for WIN in "${TARGET_WINS[@]}"; do
+            # ANSI strip を strip_ansi() に統一 (evaluate_window() と同じ CSI 全除去)
+            PANE_CONTENT=$(tmux capture-pane -t "$WIN" -p -S -60 2>/dev/null | strip_ansi || true)
+            FIRST_SEEN="${IDLE_COMPLETED_TS[$WIN]:-0}"
+
+            if _check_idle_completed "$PANE_CONTENT" "$FIRST_SEEN" "$NOW" "${IDLE_COMPLETED_DEBOUNCE_SEC:-60}"; then
+                # emit_event() に統一: --format json 時の出力形式を他チャネルと揃える
+                emit_event "IDLE-COMPLETED" "$WIN" "" "$(( NOW - FIRST_SEEN ))" "idle-confirmed" "-1"
+                if [[ -n "$EVENT_DIR" ]]; then
+                    echo "{\"channel\":\"IDLE-COMPLETED\",\"window\":\"${WIN}\",\"elapsed_sec\":$((NOW - FIRST_SEEN)),\"ts\":${NOW}}" \
+                        > "${EVENT_DIR}/idle-completed-${WIN//[^a-zA-Z0-9_-]/_}.json"
+                fi
+                # 60s ごとに継続 emit（observer が kill するまで繰り返す）
+                IDLE_COMPLETED_TS[$WIN]=$NOW
+            else
+                # completion phrase 初回検出 → first_seen_ts 記録
+                # C3: detect_thinking() で LLM indicator 不在確認（Thinking 中は false trigger を防ぐ）
+                # local は関数外で使用不可 (bash baseline §2) — 単純代入を使う
+                _idle_thinking=$(detect_thinking "$(echo "$PANE_CONTENT" | tail -15)" 2>/dev/null || echo "")
+                if [[ "${IDLE_COMPLETED_TS[$WIN]:-0}" -eq 0 ]] && \
+                   [[ -z "$_idle_thinking" ]] && \
+                   echo "$PANE_CONTENT" | grep -qE "${IDLE_COMPLETED_PHRASE_REGEX:-nothing pending}"; then
+                    IDLE_COMPLETED_TS[$WIN]=$NOW
+                fi
+            fi
+        done
+    fi
 
     if [[ "$MAX_CYCLES" -gt 0 && "$CYCLE" -ge "$MAX_CYCLES" ]]; then
         break

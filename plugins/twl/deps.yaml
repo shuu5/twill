@@ -356,6 +356,7 @@ skills:
       - script: budget-monitor-watcher  # #814 Phase 1: budget 専用 Monitor watcher ループ
       - script: session-init          # #814 Phase 1: SupervisorSession 初期化
       - script: step0-memory-ambient  # #830 Wave B: Step 0 ambient-hints.md TTL チェック・書き込み
+      - script: observer-idle-check   # #1117: _check_idle_completed() stateless 関数 (IDLE-COMPLETED 検知)
       - reference: pitfalls-catalog   # Phase A: 起動時 Step 0 Read MUST
       - reference: proxy-dialog-playbook  # #814 Phase 2: proxy 対話完全手順
       - reference: ref-invariants     # 不変条件 A-M 正典参照（境界説明）

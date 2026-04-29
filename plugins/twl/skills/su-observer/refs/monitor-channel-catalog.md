@@ -19,6 +19,7 @@ Wave 開始時に本カタログから Wave 種別に応じたチャネルを選
 | **PILOT-PHASE-COMPLETE** | Pilot 内部 chain の Phase/Issue 完了 signal | 即時 | Auto |
 | **PILOT-ISSUE-MERGED** | Pilot が merge-gate で Issue merge を完了した signal | 即時 | Auto |
 | **PILOT-WAVE-COLLECTED** | Pilot が wave-collect を完了した signal | 即時 | Auto |
+| [IDLE-COMPLETED] | completion phrase 確認済み controller の idle 確定 (cleanup-trigger) | 60s debounce | Confirm |
 
 ---
 
@@ -728,6 +729,67 @@ _check_window_alive "wt-co-explore-114550" "twill-ipatho1" && echo "alive" || ec
 
 ---
 
+## [IDLE-COMPLETED] — completion 後 idle 確定 (cleanup-trigger) (Issue #1117)
+
+**検知対象**: completion phrase 確認後、60s 以上 idle 継続した controller/Worker window
+
+**閾値**: debounce 60s（`IDLE_COMPLETED_DEBOUNCE_SEC` env var で override 可能）
+
+**介入層**: Confirm（Layer 1）— observer が kill 候補として判断し、`tmux kill-window` を実行
+
+**対象 window pattern**: `(ap-|wt-|coi-).*`（co-issue orchestrator が `coi-` を spawn することを確認 — #1117）
+
+**completion phrase regex (SSOT — AC-1)**:
+
+行単位（`grep -qE`）で機能する。`次のステップ:` は A2 (LLM idle) + A3 (log mtime stale) + A4 (no menu) の他条件 AND によって false positive を抑制する前提:
+
+```
+(refined ラベル付与|Status=Refined|nothing pending|recap: Goal|>>> 実装完了|Phase 4 完了|merge-gate.*成功|spec-review marker cleanup|explore-summary saved|\.explore/[0-9]+/summary\.md|次のステップ:)
+```
+
+**実装の分離**:
+- `_check_idle_completed()` → `skills/su-observer/scripts/lib/observer-idle-check.sh` (stateless 純粋関数)
+- `IDLE_COMPLETED_TS[$WIN]` 連想配列 → `cld-observe-any` メインループスコープで管理
+- `evaluate_window()` は stateless 設計を維持（連想配列を内部に持たない）
+
+**既存 channel との関係**:
+- `[PHASE-DONE]` / `[PILOT-PHASE-COMPLETE]` 等は completion phrase 1 回 emit（一過性）
+- `[IDLE-COMPLETED]` は debounce 経た idling 確定状態を **60s ごとに継続 emit**（observer が kill するまで繰り返す）
+- S-1 IDLE の「放置可」→「cleanup-trigger」への格上げ条件（単なる IDLE とは区別）
+
+**pitfalls-catalog.md §4.10 との関係**:
+- S-1 IDLE（一時的、継続観察）
+- S-1 IDLE + completion phrase 60s 安定 = cleanup 対象 → `[IDLE-COMPLETED]` 発火
+
+**Monitor tool snippet (多指標 AND 判定):**
+
+```bash
+# 前提: cld-observe-any メインループスコープに declare -A IDLE_COMPLETED_TS を宣言
+# この snippet は evaluate_window() 外のメインループ内に配置
+
+source "skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+for WIN in "${TARGET_WINS[@]}"; do
+    # A1: pane content 取得
+    PANE_CONTENT=$(tmux capture-pane -t "$WIN" -p -S -60 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g')
+    NOW=$(date +%s)
+    FIRST_SEEN="${IDLE_COMPLETED_TS[$WIN]:-0}"
+
+    if _check_idle_completed "$PANE_CONTENT" "$FIRST_SEEN" "$NOW" "${IDLE_COMPLETED_DEBOUNCE_SEC:-60}"; then
+        echo "[IDLE-COMPLETED] $WIN: completion confirmed, kill candidate"
+        IDLE_COMPLETED_TS[$WIN]=$NOW  # 60s ごとに継続 emit
+    else
+        [[ "${IDLE_COMPLETED_TS[$WIN]:-0}" -eq 0 ]] && \
+            echo "$PANE_CONTENT" | grep -qE "$IDLE_COMPLETED_PHRASE_REGEX" && \
+            IDLE_COMPLETED_TS[$WIN]=$NOW
+    fi
+done
+```
+
+**自動 kill オプション (`IDLE_COMPLETED_AUTO_KILL=1`) は別 Issue に切出済み。本 Issue は alert (Confirm) のみ。**
+
+---
+
 ## Wave 種別ごとのチャネル選択ガイド
 
 | Wave 種別 | 推奨チャネル |
@@ -737,4 +799,5 @@ _check_window_alive "wt-co-explore-114550" "twill-ipatho1" && echo "alive" || ec
 | 長時間 Pilot 処理（Pilot-only chain） | PILOT-IDLE + NON-TERMINAL + **PILOT-PHASE-COMPLETE** + BUDGET-LOW |
 | Issue merge 監視 | **PILOT-ISSUE-MERGED** + STAGNATE |
 | Wave 完了監視 | **PILOT-WAVE-COLLECTED** + STAGNATE |
+| 並列 controller 運用（refine/explore 群） | **IDLE-COMPLETED** + INPUT-WAIT + WORKERS |
 | デバッグ・問題調査 | INPUT-WAIT + STAGNATE（最小セット） |
