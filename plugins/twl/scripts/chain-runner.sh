@@ -1102,9 +1102,14 @@ step_ac_verify() {
 
   if [[ -n "$_mapping_file" && -x "$_coverage_script" ]]; then
     echo "[chain-runner] ac-impl-coverage-check: mapping=$_mapping_file" >&2
-    local _coverage_output _coverage_exit
-    _coverage_output=$(git diff --name-only origin/main 2>/dev/null | bash "$_coverage_script" --mapping "$_mapping_file" 2>/dev/null || echo "[]")
+    local _coverage_output _coverage_exit _coverage_tmpfile
+    _coverage_tmpfile=$(mktemp)
+    git diff --name-only origin/main 2>/dev/null \
+      | bash "$_coverage_script" --mapping "$_mapping_file" > "$_coverage_tmpfile" 2>&1
     _coverage_exit=${PIPESTATUS[1]:-0}
+    _coverage_output=$(cat "$_coverage_tmpfile")
+    rm -f "$_coverage_tmpfile"
+    [[ -z "$_coverage_output" || "$_coverage_output" == "null" ]] && _coverage_output="[]"
 
     if [[ "$_coverage_exit" -eq 1 ]]; then
       # CRITICAL あり: checkpoint に書き込み、LLM delegate で重複判定を防ぐ

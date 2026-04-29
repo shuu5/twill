@@ -10,7 +10,7 @@
 #   1: CRITICAL 1件以上
 #   2: WARNING のみ (INFO 含む可)
 
-set -uo pipefail
+set -euo pipefail
 
 MAPPING_FILE=""
 while [[ $# -gt 0 ]]; do
