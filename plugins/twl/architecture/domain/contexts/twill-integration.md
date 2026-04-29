@@ -220,6 +220,41 @@ Phase 0 α（#962）の MCP server は、β が確立した pure 関数 SSOT を
 - `plugins/twl/scripts/chain-runner.sh` / `hooks/post-tool-use-validate.sh` / `hooks/pre-bash-commit-validate.sh` の呼出元 4 ファイルは **無変更動作 MUST**
 - bash wrapper (`cli/twl/twl`) は変更しない
 
+## Phase 2: MCP Tool 拡充 (統合 epic #1101 / ADR-029)
+
+Phase 2 は既存 Phase 0/1 の 5 MCP tool に加え、`cli/twl/src/twl/autopilot/` 配下 15 モジュールを順次 MCP 化する計画。詳細設計は `plugins/twl/docs/mcp-tools-inventory.md` を参照。
+
+### Component Mapping (Phase 2 完了後に更新)
+
+<!-- Phase 2 完了後に子 Issue 2-5 の実装結果を転記する。現時点は stub。-->
+
+| tools_*.py ファイル | 含む tool 群 | 追加子 Issue | 状態 |
+|---|---|---|---|
+| `tools.py` (既存) | twl_validate / twl_audit / twl_check / twl_state_read / twl_state_write | Phase 0/1 | ✅ 実装済 |
+| `tools_validation.py` | twl_validate_deps / twl_validate_merge / twl_validate_commit / twl_check_completeness / twl_check_specialist | 子 2 | 🔲 未実装 |
+| `tools_state.py` | twl_get_session_state / twl_get_pane_state / twl_audit_session | 子 3 | 🔲 未実装 |
+| `tools_autopilot.py` | mergegate 系 3 / orchestrator 系 4 / worktree 系 5 + 残 12 module | 子 4 + 子 4-2/4-3 | 🔲 未実装 |
+| `tools_comm.py` | twl_send_msg / twl_recv_msg / twl_notify_supervisor | 子 5 | 🔲 未実装 |
+
+### Key Workflows (Phase 2 完了後に更新)
+
+<!-- 以下のフロー例は子 Issue 2-5 実装完了後に具体化する。現時点は設計指針として記載。-->
+
+代表的な MCP tool call flow (完了後の最終形):
+
+- **chain dispatch**: `twl_chain_next_step` → `twl_chain_record_step` → next step
+- **merge-gate**: `twl_mergegate_run` → 内部 guard 検証 → gh PR merge → state transition
+- **worktree create**: `twl_worktree_create` → branch validation → `git worktree add` → state init
+
+### Responsibility (Phase 2 スコープ)
+
+Phase 2 完了時の MCP tool 群が Open Host Service として提供する責務範囲:
+
+- **検証系 (子 2)**: deps.yaml / merge / commit 前の自動検証を MCP tool 経由で提供
+- **状態系 (子 3)**: session.json / pane 状態の read-heavy アクセスを observer 用に提供
+- **autopilot 系 (子 4)**: mergegate / orchestrator / worktree 操作を MCP tool 化し、AI session からの直接制御を可能に
+- **通信系 (子 5)**: sibling / supervisor 間のメッセージング基盤 (mailbox MCP hub)
+
 ## Dependencies
 
 - **Open Host Service -> 全 Context**: validate / audit / chain 結果を提供
