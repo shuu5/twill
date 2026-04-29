@@ -458,7 +458,7 @@ skills:
     path: skills/workflow-pr-merge/SKILL.md
     effort: medium
     spawnable_by: [controller]
-    can_spawn: [composite, atomic, script]
+    can_spawn: [composite, atomic, reference, script]
     calls:
       - composite: e2e-screening
         step: "6"
@@ -600,7 +600,7 @@ skills:
     path: skills/workflow-issue-lifecycle/SKILL.md
     effort: medium
     spawnable_by: [controller, user]
-    can_spawn: [composite, atomic, specialist]
+    can_spawn: [composite, atomic, specialist, reference]
     calls:
       - atomic: issue-structure
       - composite: issue-spec-review
@@ -617,7 +617,7 @@ skills:
     path: skills/workflow-issue-refine/SKILL.md
     effort: medium
     spawnable_by: [controller, user]
-    can_spawn: [composite, atomic, specialist]
+    can_spawn: [composite, atomic, specialist, reference]
     # ADR-0010: workflow-issue-refine は独立 workflow として設計されており、
     # co-issue（thin orchestrator）と user の両方から直接呼び出し可能。
     # refined-label 付与権限（Layer D gate）はこの workflow が保持する。

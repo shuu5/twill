@@ -13,7 +13,7 @@ types:
 
   workflow:
     section: skills
-    can_spawn: [atomic, composite, specialist, script]
+    can_spawn: [atomic, composite, specialist, reference, script]
     spawnable_by: [controller, user]
     token_target:
       warning: 1200

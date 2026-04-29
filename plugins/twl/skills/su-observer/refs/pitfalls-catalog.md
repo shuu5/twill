@@ -496,3 +496,29 @@ co-explore 完遂（.explore/<N>/summary.md 生成）を検知
 - co-explore 完遂 → next-step spawn の 5 分タイムアウト規約は `refs/su-observer-wave-management.md` に定義。
 
 **参照**: Issue #1085, Wave U incident 1+3, doobidoo `observer-pitfall` tag
+
+---
+
+## 16. Step 0 MUST refs Read 省略 incident（2026-04-29 ipatho2）
+
+**事象**: observer が workflow 実行前の Step 0 MUST（`refs/refine-processing-flow.md` Read）を省略し、processing flow の全ステップを把握しないまま実装を進めた。
+
+### 根本要因
+
+refs ファイルが `~/.claude/plugins/twl/refs/` ではなく `main/plugins/twl/skills/workflow-issue-refine/refs/` 等 **worktree 配下の実ファイルパス** に配置されているため、Read 先を `claude/` 配下と誤解し、「ファイル不在」として Step 0 を実質スキップした。
+
+### 既知の落とし穴（MUST 確認）
+
+| # | 誤解 | 正しい動作 |
+|---|------|-----------|
+| 16.1 | `claude/plugins/twl/refs/*.md` を Read しようとする | refs は **worktree の `plugins/twl/` 配下**に存在。`main/plugins/twl/skills/<workflow-name>/refs/` が正規パス |
+| 16.2 | `refs/` ファイルが見つからないとスキップする | SKILL.md の Step 0 は **MUST**。不在の場合はパスを確認し直す（絶対パスで再 Read） |
+| 16.3 | Step 0 を "init 処理" と混同して後回しにする | Step 0 は最初の実装ステップより**前**に完了させる（MUST 順守） |
+
+### 対策（MUST）
+
+1. workflow SKILL.md に `Step 0: Read refs/xxx.md` が記載されていれば、**必ず絶対パスで Read** する
+2. 絶対パス解決: `$(git rev-parse --show-toplevel)/plugins/twl/skills/<workflow>/refs/<file>.md`
+3. Read 失敗時はパスを変えて再試行し、スキップしない
+
+**参照**: Issue #1118, doobidoo hash `e73fc1fe`, `observer-pitfall` tag
