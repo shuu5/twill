@@ -2666,6 +2666,11 @@ scripts:
     description: "Issue/PR body + 全 comments 取得ヘルパー（gh_read_issue_full / gh_read_pr_full 関数: content-reading は body + comments 必須ポリシーを実装）"
 
   # observer window 存在確認共通ライブラリ (#948 Phase AA 2026-04-24)
+  observer-parallel-check:
+    type: script
+    path: scripts/lib/observer-parallel-check.sh
+    description: "観察的並列 spawn 可否判定ライブラリ（source 専用）: _check_parallel_spawn_eligibility() で 3 必須条件 + 3 precondition を AND 評価（§11.3 update, Issue #1116）。exit 0=≤4並列OK / exit 1=≤2並列degrade / exit 2=spawn禁止。env var injection で全条件 override 可"
+
   observer-window-check:
     type: script
     path: scripts/lib/observer-window-check.sh
