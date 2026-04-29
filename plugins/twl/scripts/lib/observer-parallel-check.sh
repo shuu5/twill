@@ -47,17 +47,16 @@ check_controller_heartbeat_alive() {
   local max_age=300  # 5分
 
   local found_alive=false
+  local writer='' mtime=0
   if [[ -d "$events_dir" ]]; then
     while IFS= read -r -d '' hb_file; do
       # observer 自身の heartbeat は除外（writer=observer）
-      local writer
       writer=$(jq -r '.writer // "pilot"' "$hb_file" 2>/dev/null || echo "pilot")
       if [[ "$writer" == "observer" ]]; then
         continue
       fi
 
       # mtime チェック: snapshot_ts から max_age 秒以内に更新されていれば alive
-      local mtime
       mtime=$(stat -c '%Y' "$hb_file" 2>/dev/null || echo "0")
       if (( snapshot_ts - mtime <= max_age )); then
         found_alive=true
@@ -173,17 +172,15 @@ check_monitor_cld_observe_alive() {
 # ---------------------------------------------------------------------------
 get_controller_states() {
   local snapshot_ts="${1:-$(date +%s)}"
-  local cld_observe_any="${CLD_OBSERVE_ANY:-$(dirname "$0")/../../../../plugins/session/scripts/cld-observe-any}"
-
   local states=()
+  local state=''
   while IFS= read -r window_name; do
     [[ -z "$window_name" ]] && continue
     if [[ ! "$window_name" =~ ^(ap-|wt-co-) ]]; then
       continue
     fi
 
-    # session-state.sh で状態取得
-    local state
+    # session-state.sh で状態取得（SESSION_STATE_SH env var で override 可）
     state=$(bash "${SESSION_STATE_SH:-scripts/session-state.sh}" state "$window_name" 2>/dev/null || echo "S-0")
     states+=("$state")
   done < <(tmux list-windows -a -F '#{window_name}' 2>/dev/null || echo "")
@@ -326,6 +323,7 @@ _check_parallel_spawn_eligibility() {
 
   # precondition5: 全 eligible controller が S-2/S-3/S-4 のいずれか
   if [[ -n "$controller_states" ]]; then
+    local state=''
     for state in $controller_states; do
       if [[ "$state" != "S-2" && "$state" != "S-3" && "$state" != "S-4" && \
             "$state" != "S-2 THINKING" && "$state" != "S-3 MENU-READY" && "$state" != "S-4 REVIEW-READY" ]]; then

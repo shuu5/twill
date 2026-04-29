@@ -52,7 +52,7 @@ elif [[ -f "$_PARALLEL_CHECK_LIB" ]]; then
   # shellcheck source=/dev/null
   source "$_PARALLEL_CHECK_LIB"
   _PARALLEL_CHECK_EXIT=0
-  _check_parallel_spawn_eligibility 2>&1 >&2 || _PARALLEL_CHECK_EXIT=$?
+  _check_parallel_spawn_eligibility || _PARALLEL_CHECK_EXIT=$?
   if [[ "$_PARALLEL_CHECK_EXIT" -eq 2 ]]; then
     echo "[spawn-controller] ERROR: 並列 spawn 禁止（必須条件欠落）— spawn を abort します" >&2
     exit 2
