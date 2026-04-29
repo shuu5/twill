@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+PROJECT_ROOT="${CLAUDE_PROJECT_ROOT:-$(pwd)}"
+SUP_REAL="$(realpath -m "${SUPERVISOR_DIR}")"
+PROJECT_REAL="$(realpath "$PROJECT_ROOT")"
+case "$SUP_REAL" in
+  "$PROJECT_REAL"/*|"$PROJECT_REAL") : ;;
+  *) echo "SUPERVISOR_DIR outside project root: $SUP_REAL" >&2; exit 1 ;;
+esac
 [ -d "$SUPERVISOR_DIR" ] || exit 0
 
 # session.json から現在状態を取り出して working-memory.md を更新する
@@ -8,6 +15,12 @@ SESSION_JSON="${SUPERVISOR_DIR}/session.json"
 if [[ -f "$SESSION_JSON" ]]; then
     SESSION_STATE=$(SESSION_JSON_PATH="$SESSION_JSON" python3 - <<'PYEOF'
 import json, os, sys
+from pathlib import Path
+project_root = Path(os.environ.get("CLAUDE_PROJECT_ROOT", os.getcwd())).resolve()
+sup_dir = Path(os.environ.get("SUPERVISOR_DIR", ".supervisor")).resolve()
+if not sup_dir.is_relative_to(project_root):
+    print(f"SUPERVISOR_DIR outside project root: {sup_dir}", file=sys.stderr)
+    sys.exit(1)
 path = os.environ.get("SESSION_JSON_PATH", "")
 try:
     with open(path) as f:

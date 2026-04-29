@@ -174,9 +174,9 @@ teardown() {
 
 @test "ac4: SUPERVISOR_DIR 未指定時に .supervisor が存在しなければ exit 0（graceful degradation）" {
   # PASS 条件: .supervisor なしで exit 0（既存動作）
+  # スクリプトは project root (SANDBOX) から実行する（本番 hook の実行コンテキストを再現）
   # AC3 のパス検証通過後に [ -d "$SUPERVISOR_DIR" ] || exit 0 が実行される
-  run env CLAUDE_PROJECT_ROOT="$SANDBOX" \
-    bash "$SANDBOX/scripts/su-precompact.sh"
+  run bash -c "cd '$SANDBOX' && env CLAUDE_PROJECT_ROOT='$SANDBOX' bash '$SANDBOX/scripts/su-precompact.sh'"
 
   assert_success
 }
