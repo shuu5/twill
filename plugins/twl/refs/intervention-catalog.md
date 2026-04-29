@@ -111,6 +111,7 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 ---
 
 ## Layer 1: Confirm
+★HUMAN GATE — 以下のパターンはすべてユーザーの確認・判断が必要（Layer 0 Auto との境界）
 
 ### パターン 4: Worker 長時間 idle
 
@@ -160,6 +161,7 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 ---
 
 ## Layer 2: Escalate
+★HUMAN GATE — 以下のパターンはすべてユーザーの明示的承認・手動介入が必要（自動化不可）
 
 ### パターン 3: コンフリクト解決 rebase
 

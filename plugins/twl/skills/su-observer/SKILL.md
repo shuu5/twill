@@ -41,6 +41,8 @@ spawnable_by:
 
 ## Step 1: 常駐ループ（ユーザー指示待ち）
 
+★HUMAN GATE — Layer 1 Confirm / Layer 2 Escalate 介入が必要な場合、AskUserQuestion を起動する前にユーザー確認を取ること（`intervention-catalog.md` 参照）
+
 ユーザーの入力を文脈から解釈し、状況に応じてアクションを選択して実行する。
 **モードテーブルによる強制ルーティングは行わない**。AskUserQuestion でモード選択させない。
 

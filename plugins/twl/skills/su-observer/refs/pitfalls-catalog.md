@@ -302,6 +302,8 @@ commit は行わず `.supervisor/pending-pitfall-append.diff` として保存。
 
 ## 11. Observer idle 中の session disconnect 対策（MUST）
 
+★HUMAN GATE — §11.3/§11.4 の段階化・ScheduleWakeup 判断はユーザー escalation が必要（session disconnect 回避の承認）
+
 ### 事象（2026-04-22 ipatho1 実例、doobidoo hash 5fc20a83）
 
 co-architect 3 並列 spawn 後、observer が Monitor tool event 待ちで 24 分 idle → その後 6 時間 session 完全停止（tmux pane 残存、Claude Code process 消失）。同時刻で 3 Claude session が同時停止（account レベル共通因子疑い）。
@@ -365,6 +367,8 @@ FINAL_TS=$(grep -oE '"timestamp":"[^"]+"' "$JSONL" | sort -u | tail -1)
 ---
 
 ## 12. Claude Code classifier bypass 検出パターン（MUST）
+
+★HUMAN GATE — §12 の正しい対応手順で AskUserQuestion 実行前は必ずユーザー確認（classifier deny 2 回以上 → Layer 2 Escalate）
 
 ### 事象（2026-04-21 ipatho1 実例、doobidoo hash 886e374d）
 
