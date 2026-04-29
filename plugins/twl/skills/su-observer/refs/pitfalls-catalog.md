@@ -158,11 +158,33 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 | # | Pitfall | 対策 |
 |---|---------|------|
 | 6.1 | orchestrator inject 失敗（`inject_exhausted`）時に何もせず放置 | observer が Agent tool で specialist を直接並列 spawn（co-issue fallback [D] パターン） |
-| 6.2 | `non_terminal_chain_end`（Worker PR 作成後 idle）を failed 扱いで放置 | state を pilot 権限で `status=merge-ready` 書換 → `workflow-pr-verify` / `workflow-pr-fix` / `workflow-pr-merge` を順次手動 inject |
+| 6.2 | `non_terminal_chain_end`（Worker PR 作成後 idle）を failed 扱いで放置 | **[OBSOLETE: §17 参照]** AC-1/AC-2 (#1128) で Pilot 自動化済み。orchestrator unavailable 時は `pilot-fallback-monitor.sh` が自動 inject。observer 介入は最終 fallback のみ（§17 参照） |
 | 6.3 | Worker の `branch` フィールド空のまま merge → auto-merge.sh が PR 見つけられない | Pilot の Emergency Bypass `mergegate merge --force --issue N --pr P --branch B` で main から強制 merge |
 | 6.4 | worktree 配下から merge 実行 → 不変条件 B/C 違反 | merge は必ず main/ から実行（SKILL.md: Pilot は main/ 起動必須） |
 | 6.5 | Layer 2 Escalate を自動実行 → 無断重大変更 | **MUST**: Layer 2 はユーザー確認必須（SU-2）。confidence 低い介入は Layer 1/2 扱い |
 | 6.6 | Budget 枯渇時に orchestrator kill せず Worker 残留 → 復帰時に state 破綻 | `[BUDGET-LOW]` シーケンス: orchestrator PID kill → 全 ap-* window に Escape（kill 禁止）→ budget-pause.json 記録 → CronCreate で自動再開 |
+
+### §6.6 代替案検討: orchestrator alive のまま Worker Escape option
+
+**問題の背景（#1128）**: 現状シーケンスは orchestrator を kill した後の復旧 path が欠落しており、BUDGET-LOW pause/resume のたびに observer 手動介入が必須になる（本 session で 4 回再発）。
+
+**代替案: orchestrator alive のまま Worker のみ Escape**
+
+| 項目 | 現状（orchestrator kill） | 代替案（orchestrator alive） |
+|------|--------------------------|-------------------------------|
+| budget 節約効果 | orchestrator 停止で token 消費ゼロ | orchestrator が idle 状態で微量消費継続 |
+| 復旧 path | kill 後の inject 機構が欠落（Bug A/C） | orchestrator が resume 後に自動 inject 継続 |
+| Worker 安全性 | Escape のみ（kill 禁止）→ 安全 | 同上 |
+| 実装コスト | Bug A/C 修正（#1128）が必要 | orchestrator resume 機構の修正が必要（Bug B） |
+
+**採用判断: 非採用（現状維持 + Bug A/C 修正）**
+
+根拠:
+1. orchestrator alive 維持は budget 節約効果が低い（idle でも token 消費が続く）
+2. orchestrator resume 機構（Bug B）は root cause が異なり、別 Issue で対処すべき
+3. Bug A/C（#1128）の修正により現状シーケンスで復旧 path が整備されるため、alternative 不要
+
+**参照**: Issue #1128, 2026-04-29 ipatho2 session
 
 ---
 
@@ -606,3 +628,49 @@ refs ファイルが `~/.claude/plugins/twl/refs/` ではなく `main/plugins/tw
 3. Read 失敗時はパスを変えて再試行し、スキップしない
 
 **参照**: Issue #1118, doobidoo hash `e73fc1fe`, `observer-pitfall` tag
+
+---
+
+## 17. BUDGET-LOW recovery で orchestrator killed 後の Pilot 自動復旧不全（#1128 文書化）
+
+**事象（2026-04-29 ipatho2 session 26c380eb）**: `[BUDGET-LOW]` シーケンスで orchestrator PID を kill した後、budget cycle reset で resume する際に Pilot 内部 monitor が Worker chain advancement の自動 inject を実行しなかった。Wave B 4 Worker（#1111/#1113/#1114/#1105）すべてで同一パターンが発生し、observer が §6.2 復旧手順で手動 inject して復旧した（4 回再発）。
+
+あわせて、orchestrator EXIT trap が異常終了で発火したため PR merged 後の Worker window cleanup が走らず、最大 2h41min の残存が発生した。
+
+### 根本要因
+
+1. **Bug A**: orchestrator unavailable 時の Pilot fallback inject logic 欠落。Worker pane が terminal state で idle になっても Pilot は next workflow を inject しない。
+2. **Bug C**: orchestrator kill による EXIT trap 不完全で Worker window が残存。
+
+### 対策（Issue #1128 で自動化済み）
+
+`plugins/twl/scripts/pilot-fallback-monitor.sh` を導入（AC-1/AC-3 by #1128）:
+
+```bash
+# orchestrator unavailable 時に Pilot が起動（BUDGET-LOW recovery 後など）
+bash plugins/twl/scripts/pilot-fallback-monitor.sh &
+
+# 停止: orchestrator 復活を検知して自動停止、またはシグナルで手動停止
+```
+
+**動作**:
+- orchestrator alive 時は即終了（不変条件 M 準拠）
+- 各 Worker の `resolve_next_workflow` で next workflow を決定 → `session-comm.sh inject` で inject
+- PR MERGED 状態の Worker window を `tmux kill-window` で即時 cleanup（SLA: 30s 以内）
+
+### observer 介入が必要な場合（最終 fallback）
+
+`pilot-fallback-monitor.sh` が起動できない / 動作しない場合のみ §6.2 の手順を使用:
+
+```bash
+# Worker の current_step から next workflow を解決
+python3 -m twl.autopilot.resolve_next_workflow --issue <ISSUE_NUM>
+
+# session-comm.sh で inject
+bash plugins/session/scripts/session-comm.sh inject <WORKER_WINDOW> "/twl:workflow-pr-fix"
+
+# PR merged 後の window cleanup
+tmux kill-window -t <WORKER_WINDOW>
+```
+
+**参照**: Issue #1128, 2026-04-29 ipatho2 session 26c380eb, `wt-co-autopilot-164142` pane

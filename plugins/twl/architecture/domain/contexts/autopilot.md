@@ -328,15 +328,37 @@ nohup bash "${CLAUDE_PLUGIN_ROOT}/scripts/autopilot-orchestrator.sh" \
 disown
 ```
 
-### 2. 手動 workflow inject
+### 2. Pilot 自動 inject（orchestrator unavailable 時のみ許可）
 
-orchestrator 再起動が困難な場合、Worker の tmux window に手動で次の workflow を inject する:
+**[#1128 追加]** orchestrator unavailable 時（BUDGET-LOW kill 後等）に限り、Pilot が `pilot-fallback-monitor.sh` を介して Worker chain advancement を自動 inject することを許可する（不変条件 M の明文化）:
+
+```bash
+# orchestrator unavailable を確認してから起動
+bash plugins/twl/scripts/pilot-fallback-monitor.sh &
+# orchestrator 復活を検知して自動停止する
+```
+
+**許容範囲**:
+- `session-comm.sh inject <window> "/twl:workflow-X"` による **chain 復旧** inject のみ
+- `X` は `resolve_next_workflow --issue N` で決定（allow-list: `/twl:workflow-[a-z][a-z0-9-]*`）
+- PR MERGED 後の Worker window `tmux kill-window`（SLA: 30s 以内）
+
+**引き続き禁止（不変条件 M）**:
+- Pilot が Worker に直接 nudge して PR 作成 → マージを実行すること
+- chain を迂回した PR 作成（specialist review スキップ）
+
+### 3. 手動 workflow inject（Pilot 自動化の最終 fallback）
+
+`pilot-fallback-monitor.sh` が動作しない場合のみ、observer または Pilot が手動で inject する:
 
 ```bash
 # Worker の current_step から次 workflow を解決（ADR-018: current_step terminal 検知ベース）
 python3 -m twl.autopilot.resolve_next_workflow --issue <ISSUE_NUM>
 
-# tmux で手動 inject（例: /twl:workflow-test-ready）
+# session-comm.sh で inject（推奨）
+bash plugins/session/scripts/session-comm.sh inject "<WORKER_WINDOW>" "/twl:workflow-test-ready"
+
+# tmux 直接 inject（session-comm.sh 不使用時のみ）
 tmux send-keys -t "<WORKER_WINDOW>" "/twl:workflow-test-ready" Enter
 ```
 
