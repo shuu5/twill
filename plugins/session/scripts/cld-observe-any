@@ -530,7 +530,10 @@ while true; do
                 # opt-in auto-kill（IDLE_COMPLETED_AUTO_KILL=1 時のみ）
                 if [[ "${IDLE_COMPLETED_AUTO_KILL:-0}" == "1" ]]; then
                     SAFE_WIN="${WIN//[^a-zA-Z0-9_-]/_}"
-                    if tmux kill-window -t "$WIN" 2>/dev/null; then
+                    # evaluate_window() と同じ方法で session:index に解決し ambiguous target を回避
+                    KILL_TARGET=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
+                        | awk -v n="$WIN" '$2 == n { print $1; exit }')
+                    if [[ -n "$KILL_TARGET" ]] && tmux kill-window -t "$KILL_TARGET" 2>/dev/null; then
                         echo "[IDLE-COMPLETED] $WIN: auto-killed (IDLE_COMPLETED_AUTO_KILL=1)"
                         if [[ -n "$EVENT_DIR" ]]; then
                             echo "{\"channel\":\"IDLE-COMPLETED-KILLED\",\"window\":\"${WIN}\",\"elapsed_sec\":$((NOW - FIRST_SEEN)),\"ts\":${NOW}}" \

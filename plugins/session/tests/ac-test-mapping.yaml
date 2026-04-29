@@ -7,7 +7,7 @@ mappings:
     ac_text: "IDLE_COMPLETED_AUTO_KILL 環境変数を参照し、未設定または 0 の場合は kill しない。1 の場合のみ自動 kill。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/1: IDLE_COMPLETED_AUTO_KILL 未設定 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 baseline）"
-    status: RED
+    status: GREEN
     note: "Scenario 20。opt-in env var の負例（未設定）。現実装でも PASS する baseline。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -16,7 +16,7 @@ mappings:
     ac_text: "IDLE_COMPLETED_AUTO_KILL 環境変数を参照し、未設定または 0 の場合は kill しない。1 の場合のみ自動 kill。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/2: IDLE_COMPLETED_AUTO_KILL=0 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 explicit disable）"
-    status: RED
+    status: GREEN
     note: "Scenario 21。opt-in env var の負例（明示 0）。現実装でも PASS する baseline。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -25,7 +25,7 @@ mappings:
     ac_text: "IDLE_COMPLETED_TS[$WIN]=$NOW 直後で tmux kill-window -t $WIN を発行。成功時は stdout に [IDLE-COMPLETED] <WIN>: auto-killed (IDLE_COMPLETED_AUTO_KILL=1) log。失敗時は stderr に [IDLE-COMPLETED] <WIN>: auto-kill failed (...) log。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）"
-    status: RED
+    status: GREEN
     note: "Scenario 22。auto-kill 未実装のため現状 fail。実装後 GREEN になる。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -34,7 +34,7 @@ mappings:
     ac_text: "IDLE_COMPLETED_TS[$WIN]=$NOW 直後で tmux kill-window -t $WIN を発行。成功時は stdout に [IDLE-COMPLETED] <WIN>: auto-killed (IDLE_COMPLETED_AUTO_KILL=1) log。失敗時は stderr に [IDLE-COMPLETED] <WIN>: auto-kill failed (...) log。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）"
-    status: RED
+    status: GREEN
     note: "Scenario 23。auto-kill 未実装のため現状 fail。実装後 GREEN になる。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -43,7 +43,7 @@ mappings:
     ac_text: "tmux kill-window exit 非 0 の場合、stderr に失敗 log を出力してメインループ継続。2>/dev/null で tmux stderr を抑制。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）"
-    status: RED
+    status: GREEN
     note: "Scenario 23 で AC-3 も検証（exit 0 確認）。auto-kill 未実装のため現状 fail。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -52,7 +52,7 @@ mappings:
     ac_text: "kill 成功時に unset 'IDLE_COMPLETED_TS[$WIN]'。kill 失敗時は cleanup しない（IDLE_COMPLETED_TS[$WIN] は $NOW を保持）。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）"
-    status: RED
+    status: GREEN
     note: "Scenario 22 で AC-4 も検証（state cleanup は killed JSON 非重複生成で間接確認）。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -61,7 +61,7 @@ mappings:
     ac_text: "EVENT_DIR 設定時、kill 成功後に idle-completed-killed-<safe_win>-<ts>.json を書き出し。フィールド: {channel:IDLE-COMPLETED-KILLED, window:<WIN>, elapsed_sec:<秒>, ts:<unix>}。kill 失敗時は生成しない。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）"
-    status: RED
+    status: GREEN
     note: "Scenario 22 で idle-completed-killed-*.json 生成を検証。auto-kill 未実装のため現状 fail。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -70,7 +70,7 @@ mappings:
     ac_text: "EVENT_DIR 設定時、kill 成功後に idle-completed-killed-<safe_win>-<ts>.json を書き出し。フィールド: {channel:IDLE-COMPLETED-KILLED, window:<WIN>, elapsed_sec:<秒>, ts:<unix>}。kill 失敗時は生成しない。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）"
-    status: RED
+    status: GREEN
     note: "Scenario 23 で kill 失敗時の JSON 非生成を検証。auto-kill 未実装のため現状 fail。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -79,7 +79,7 @@ mappings:
     ac_text: "IDLE_COMPLETED_AUTO_KILL=0 または未設定の場合、既存 alert 動作を変更しない。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/1: IDLE_COMPLETED_AUTO_KILL 未設定 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 baseline）"
-    status: RED
+    status: GREEN
     note: "Scenario 20。AC-6 は現実装でも PASS する baseline regression テスト。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -88,7 +88,7 @@ mappings:
     ac_text: "IDLE_COMPLETED_AUTO_KILL=0 または未設定の場合、既存 alert 動作を変更しない。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/2: IDLE_COMPLETED_AUTO_KILL=0 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 explicit disable）"
-    status: RED
+    status: GREEN
     note: "Scenario 21。AC-6 明示 0 ケース。現実装でも PASS する baseline regression テスト。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -97,7 +97,7 @@ mappings:
     ac_text: "_check_idle_completed() C3 条件（LLM indicator 存在）で false return の場合は emit/kill 両方発生しない。コード変更なし、bats 検証のみ。"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "AC-9/5: LLM-active indicator 存在時 → IDLE_COMPLETED_AUTO_KILL=1 でも emit/kill 両方発生しない（AC-7 baseline）"
-    status: RED
+    status: GREEN
     note: "Scenario 24。AC-7 は現実装でも PASS する baseline。LLM indicator guard（C3）の検証。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
@@ -115,7 +115,7 @@ mappings:
     ac_text: "bats fixture 5 ケースを実装: ケース1-5 (Scenario 20-24)"
     test_file: "plugins/session/tests/cld-observe-any.bats"
     test_name: "Scenario 20-24（5 テスト）"
-    status: RED
+    status: GREEN
     note: "AC-9 自体はテスト生成完了。Scenario 20/21/24 は baseline（現状 PASS 可能）。Scenario 22/23 は実装後 GREEN。"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
