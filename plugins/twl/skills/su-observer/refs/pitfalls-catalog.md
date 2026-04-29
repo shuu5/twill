@@ -302,7 +302,7 @@ commit は行わず `.supervisor/pending-pitfall-append.diff` として保存。
 
 ## 11. Observer idle 中の session disconnect 対策（MUST）
 
-★HUMAN GATE — §11.3/§11.4 の段階化・ScheduleWakeup 判断はユーザー escalation が必要（session disconnect 回避の承認）
+★HUMAN GATE — §11.3 は機械チェック PASS 時は HUMAN GATE skip 可（`_check_parallel_spawn_eligibility()` exit 0）。機械チェック欠落時は依然 escalate。§11.4 ScheduleWakeup 判断はユーザー escalation が必要（session disconnect 回避の承認）
 
 ### 事象（2026-04-22 ipatho1 実例、doobidoo hash 5fc20a83）
 
@@ -343,9 +343,67 @@ done
 - doobidoo に task_state memory 保存
 - session 停止しても resume 可能な状態を確保
 
-**11.3 並列 spawn の段階化（SHOULD）**
+**11.3 並列 spawn の自律判断 rule（MUST/SHOULD — Issue #1116 update）**
 
-co-architect / co-issue の 3 並列 spawn より 1 つずつ serial 処理の方が session disconnect リスク小。2026-04-22 事例では 3 並列後の 24 分 idle で停止。直列なら各 10-15 分で完了し idle 期間短縮。
+**条件成立時 ≤ 4 並列 MUST、不成立時 ≤ 2 並列 SHOULD**（既存 §11 keyword 階層 MUST/SHOULD/MAY と整合）。
+判定は `scripts/lib/observer-parallel-check.sh` の `_check_parallel_spawn_eligibility()` を呼び出すことで機械化済み（`spawn-controller.sh` 統合済み）。
+
+### 並列 spawn 可否 flowchart（疑似コード）
+
+```
+spawn 前評価:
+  SNAPSHOT_TS=$(date +%s)  # atomicity 保証
+  # 直近 30 秒以内 spawn は判定対象から除外（LLM_INDICATORS 未 emit による false positive 回避）
+  eligible_controllers = exclude_recent_spawned(controllers, threshold=30s)
+
+  # 必須条件 (causally decisive — 3つ全て満たす場合のみ ≤ 4 並列許可)
+  must_1 = (controller_heartbeat_alive(SNAPSHOT_TS, exclude_observer_writer=true) within 5min)
+  must_2 = (mode in [bypass, auto])
+  must_3 = (count(eligible_controllers) + 1 <= 4)
+  if NOT (must_1 AND must_2 AND must_3): exit 2 + stderr "DENY: <欠落条件>"
+
+  # precondition (他章 MUST 再確認 — 3つ全て満たす場合のみ ≤ 4 許可、不足時は ≤ 2)
+  pre_4 = (Monitor + cld-observe-any 起動)
+  pre_5 = all(c.state in [S-2 THINKING, S-3 MENU-READY, S-4 REVIEW-READY] for c in eligible_controllers)
+  pre_6 = (budget_minutes_remaining >= ${parallel_spawn_min_remaining_minutes:-150})
+  if NOT (pre_4 AND pre_5 AND pre_6): exit 1 + stderr "DEGRADE_TO_2: <欠落 precondition>"
+
+  exit 0  # ≤ 4 並列 OK
+```
+
+### 必須条件の根拠（3つ、causally decisive）
+
+1. **§11.1 Monitor heartbeat alive (≤ 5min)** — controller の heartbeat のみ（observer 自身の writer_pid は §15.3 で除外）
+2. **bypass または auto mode** — Layer A-D 自律実行可能性。deny 連発による idle 化を防止
+3. **SU-4 ≤5 整合: controller_count + 1 ≤ 4** — observer は SU-4 計数に含めない（SKILL.md L89 順守）
+
+### Precondition（3つ）
+
+4. **§4.1 Monitor + cld-observe-any 同時起動** — pattern `(ap-|wt-co-).*`
+5. **既存 controller が S-2/S-3/S-4 のいずれか** — S-1 IDLE は §4.10 で cleanup 対象（#1117 で格上げ予定）
+6. **budget 残量 ≥ 150 分** — `.supervisor/budget-config.json` の `parallel_spawn_min_remaining_minutes`（default 150）。既存 `[BUDGET-LOW]` 閾値(40分)とは独立
+
+### 失敗時 degrade
+
+- 必須条件 1 つでも false → **spawn 完全禁止 (exit 2)**、stderr に欠落必須条件
+- precondition 1 つでも false → **≤ 2 並列 degrade (exit 1)**、stderr に欠落 precondition
+- 全条件 PASS → ≤ 4 並列許可 (exit 0)
+
+### 実証パターン（2026-04-29 ipatho2）
+
+本 Issue 起票セッションが 4 並列で正常運用した実績（§11.3 緩和の根拠）:
+
+1. **並列数**: 4 controller（#1111 refine + #1113 refine + #1114 refine + #1105 explore）+ 1 observer = 5 windows（SU-4 ≤5 内）
+2. **観測継続時間**: spawn から Wave 完了確認まで 3時間超、session disconnect なし
+3. **session disconnect**: なし（2026-04-22 の 3 並列 24分 idle 停止とは対照的）
+4. **Monitor heartbeat alive**: writer_pid != observer による除外済み、5min heartbeat で active state 維持確認
+5. **doobidoo hash（ローカル参照、cross-machine 不変ではない）**: `bce7a4b9`（post-MCP-restart 自律進行）/ `e4f97e77`（Round 2 完遂 + Plan A 一貫判断、4 並列実績）/ `39ade8bd`（本セッション補足）
+
+### 過去文脈（旧 §11.3 — 2026-04-22 事例の教訓）
+
+旧文言: 「co-architect / co-issue の 3 並列 spawn より 1 つずつ serial 処理の方が session disconnect リスク小。2026-04-22 事例では 3 並列後の 24 分 idle で停止。直列なら各 10-15 分で完了し idle 期間短縮。」
+
+この制約は §11.1 Monitor heartbeat が未実装だった当時の overly conservative な rule。heartbeat + 上記 precondition を満たせば 4 並列まで安全に運用可能であることを 2026-04-29 ipatho2 で実証した。
 
 **11.4 ScheduleWakeup / Cron の活用（MAY）**
 

@@ -43,6 +43,25 @@ if [[ ! -x "$CLD_SPAWN" ]]; then
   exit 2
 fi
 
+# --- 並列 spawn 可否チェック（§11.3, Issue #1116）---
+# SKIP_PARALLEL_CHECK=1 で bypass 可（intervention 記録 MUST）
+_PARALLEL_CHECK_LIB="$TWILL_ROOT/plugins/twl/scripts/lib/observer-parallel-check.sh"
+if [[ "${SKIP_PARALLEL_CHECK:-0}" == "1" ]]; then
+  echo "[spawn-controller] WARN: SKIP_PARALLEL_CHECK=1 — §11.3 チェックをスキップ（intervention 記録 MUST）" >&2
+elif [[ -f "$_PARALLEL_CHECK_LIB" ]]; then
+  # shellcheck source=/dev/null
+  source "$_PARALLEL_CHECK_LIB"
+  _PARALLEL_CHECK_EXIT=0
+  _check_parallel_spawn_eligibility || _PARALLEL_CHECK_EXIT=$?
+  if [[ "$_PARALLEL_CHECK_EXIT" -eq 2 ]]; then
+    echo "[spawn-controller] ERROR: 並列 spawn 禁止（必須条件欠落）— spawn を abort します" >&2
+    exit 2
+  elif [[ "$_PARALLEL_CHECK_EXIT" -eq 1 ]]; then
+    echo "[spawn-controller] WARN: precondition 欠落 — ≤ 2 並列 degrade mode（spawn は続行）" >&2
+  fi
+fi
+# --- チェック終了 ---
+
 VALID_SKILLS=(co-explore co-issue co-architect co-autopilot co-project co-utility co-self-improve)
 
 usage() {

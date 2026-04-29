@@ -81,3 +81,43 @@ proxy 対話の要点:
 - spawn 直後に `tmux pipe-pane -t <window> -o "cat >> /tmp/<ctrl>-<sess>.log"` でセットアップ
 - input-waiting 検知 → pipe-pane log を ANSI strip して質問を読む → `session-comm.sh inject` で応答
 - co-issue の specialist review は絶対にスキップしてはならない（SHALL）
+
+## spawn 前条件チェック (§11.3) — MUST
+
+**MUST**: controller を spawn する前に必ず `_check_parallel_spawn_eligibility()` を呼び出して並列 spawn 可否を機械判定すること（教訓: `feedback_skill_md_not_enough.md`）。
+
+`spawn-controller.sh` はこのチェックを冒頭で自動実行する。直接 `cld-spawn` を呼び出してはならない（MUST NOT）。
+
+### exit コードと対応アクション
+
+| exit code | 意味 | observer の対応 |
+|-----------|------|----------------|
+| 0 | 全条件 PASS | ≤ 4 並列で spawn 実行 |
+| 1 | precondition 欠落 | ≤ 2 並列に degrade して spawn（stderr の欠落 precondition を確認） |
+| 2 | 必須条件欠落 | spawn 完全禁止（stderr の欠落必須条件を確認し、条件充足後に retry） |
+
+### fallback 判断 tree
+
+```
+_check_parallel_spawn_eligibility
+├── exit 0 → spawn 実行（≤ 4 並列）
+├── exit 1 → degrade: 現在の並列数が ≤ 2 になるまで spawn を延期
+│             → 欠落 precondition を stderr で確認
+│             → 条件充足後に再判定
+└── exit 2 → spawn abort
+              → 欠落必須条件を stderr で確認
+              → Layer 2 Escalate（ユーザー確認）または条件充足後に retry
+              → 自律 retry path（将来実装予定、本 Issue は文書化まで）
+```
+
+### override（observer 判断による介入時のみ）
+
+```bash
+SKIP_PARALLEL_CHECK=1 spawn-controller.sh <skill> <prompt>
+```
+
+`SKIP_PARALLEL_CHECK=1` を設定した場合は intervention 記録 MUST:
+```bash
+# 必ず記録すること
+echo "SKIP_PARALLEL_CHECK=1 使用: <理由>" >> .supervisor/intervention-log.md
+```
