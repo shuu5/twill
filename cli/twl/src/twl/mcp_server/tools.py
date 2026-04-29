@@ -231,22 +231,22 @@ def twl_get_session_state_handler(
         is_archived = False
         resolved_session_id = ""
     else:
-        # validate session_id against regex
-        if not _VALID_SESSION_ID_RE.match(session_id):
+        # session_id バリデーション — パストラバーサル防止 (AC3-12 / security)
+        if not isinstance(session_id, str) or not _VALID_SESSION_ID_RE.match(session_id):
             return {
                 "ok": False,
-                "error": f"invalid session_id: '{session_id}'",
+                "error": f"invalid session_id '{session_id}': must match ^[a-zA-Z0-9]+$",
                 "error_type": "invalid_session_id",
                 "exit_code": 2,
             }
-        archive_base = ap_dir / "archive" / session_id
-        # path traversal check
+        archive_base = (ap_dir / "archive" / session_id).resolve()
+        # resolve() 後に ap_dir 配下であることを確認（パストラバーサル防止）
         try:
-            archive_base.resolve().relative_to(ap_dir.resolve())
+            archive_base.relative_to(ap_dir.resolve())
         except ValueError:
             return {
                 "ok": False,
-                "error": f"path traversal detected for session_id: '{session_id}'",
+                "error": f"invalid session_id '{session_id}': path traversal detected",
                 "error_type": "invalid_session_id",
                 "exit_code": 2,
             }
@@ -339,13 +339,8 @@ def twl_get_pane_state_handler(
             "(only alphanumeric, underscore, dot, colon, slash, at, hyphen allowed)"
         )
 
-    # resolve script path
-    script_path_str = os.environ.get("SESSION_STATE_SCRIPT", "")
-    if script_path_str:
-        script_path = Path(script_path_str)
-    else:
-        script_path = _DEFAULT_SCRIPT
-
+    # SESSION_STATE_SCRIPT: env var が設定されていれば優先（テスト用上書き対応）
+    script_path = Path(os.environ.get("SESSION_STATE_SCRIPT", str(_DEFAULT_SCRIPT)))
     if not script_path.exists():
         return {
             "ok": False,
@@ -447,7 +442,7 @@ def twl_audit_session_handler(
                 "message": f"plan_path does not exist: '{plan_path_str}'",
             })
 
-    # R3: checkpoint files must have required fields
+    # R3: checkpoints/*.json structure — warning
     checkpoints_dir = ap_dir / "checkpoints"
     if checkpoints_dir.is_dir():
         for cp_file in sorted(checkpoints_dir.glob("*.json")):

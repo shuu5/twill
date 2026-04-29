@@ -319,6 +319,16 @@ class TestAC312ArchiveNotFound:
             f"error に session_id 'nonexistent' が含まれていない: {result.get('error')}"
         )
 
+    def test_ac12_invalid_session_id_rejected(self, autopilot_dir: Path):
+        # AC: session_id に英数字以外が含まれる場合は error envelope（パストラバーサル防止）
+        # RED: 実装前は任意パスを参照可能 → 実装後は error_type=invalid_session_id
+        for bad_id in ["../etc/passwd", "../../foo", "bad id", "bad!id"]:
+            result = _handler()(session_id=bad_id, autopilot_dir=str(autopilot_dir))
+            assert result.get("ok") is False, f"invalid session_id '{bad_id}' が ok=True"
+            assert result.get("error_type") == "invalid_session_id", (
+                f"session_id '{bad_id}': error_type={result.get('error_type')}"
+            )
+
     def test_ac12_existing_archive_succeeds(
         self, autopilot_dir: Path, session_json: Path,
         issue_files: list[Path], checkpoint_files: list[Path],
