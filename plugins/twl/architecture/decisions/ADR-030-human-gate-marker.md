@@ -2,7 +2,7 @@
 status: accepted
 ---
 
-# ADR-029: ★HUMAN GATE マーカー規約
+# ADR-030: ★HUMAN GATE マーカー規約
 
 ## Status
 

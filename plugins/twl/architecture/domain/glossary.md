@@ -42,7 +42,7 @@
 | Test Target | observer の観察対象として隔離された worktree（test-target/main branch） | Observation |
 | Observation Pattern | 過去に検出された問題パターンとその検知ルール | Observation |
 | Test Scenario | テストプロジェクトに投入する Issue 群と期待結果のセット（smoke / regression / load） | Observation |
-| ★HUMAN GATE | ユーザーの判断・承認が必要な箇所を示す統一マーカー (ADR-029)。主に observer の Layer 1/2 介入境界を明示、副次的に autopilot 系の AskUserQuestion ポイントもマーク。grep で hand-off ポイントを集約可能。AUTO モード bypass の自動承認には付与しない | 全体 (observer 主体) |
+| ★HUMAN GATE | ユーザーの判断・承認が必要な箇所を示す統一マーカー (ADR-030)。主に observer の Layer 1/2 介入境界を明示、副次的に autopilot 系の AskUserQuestion ポイントもマーク。grep で hand-off ポイントを集約可能。AUTO モード bypass の自動承認には付与しない | 全体 (observer 主体) |
 
 ## 照合ポリシー
 
