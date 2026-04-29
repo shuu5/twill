@@ -1,0 +1,199 @@
+mappings:
+  - ac_index: 1
+    ac_sub: 1
+    ac_text: "plugins/twl/docs/mcp-tools-inventory.md が存在する"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC11InventoryExists::test_ac1_1_inventory_file_exists"
+
+  - ac_index: 1
+    ac_sub: 2
+    ac_text: "5 tool名 (twl_validate / twl_audit / twl_check / twl_state_read / twl_state_write) が全て inventory に記載されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_names:
+      - "TestAC12FiveToolNames::test_ac1_2_twl_validate_in_inventory"
+      - "TestAC12FiveToolNames::test_ac1_2_twl_audit_in_inventory"
+      - "TestAC12FiveToolNames::test_ac1_2_twl_check_in_inventory"
+      - "TestAC12FiveToolNames::test_ac1_2_twl_state_read_in_inventory"
+      - "TestAC12FiveToolNames::test_ac1_2_twl_state_write_in_inventory"
+
+  - ac_index: 1
+    ac_sub: 3
+    ac_text: "Hybrid Path 5原則 (handler pure / json.dumps / try/except ImportError / 明示引数 / 1ファイル集約) が inventory に記載されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_names:
+      - "TestAC13HybridPath5Principles::test_ac1_3_handler_pure_principle"
+      - "TestAC13HybridPath5Principles::test_ac1_3_json_dumps_principle"
+      - "TestAC13HybridPath5Principles::test_ac1_3_try_except_importerror_principle"
+      - "TestAC13HybridPath5Principles::test_ac1_3_explicit_args_principle"
+      - "TestAC13HybridPath5Principles::test_ac1_3_single_file_principle"
+
+  - ac_index: 2
+    ac_sub: 1
+    ac_text: "残15モジュール (audit / audit_history / chain / checkpoint / github / init / launcher / mergegate / orchestrator / parser / plan / project / resolve_next_workflow / session / worktree) が inventory に記載されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_names:
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[audit]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[audit_history]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[chain]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[checkpoint]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[github]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[init]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[launcher]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[mergegate]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[orchestrator]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[parser]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[plan]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[project]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[resolve_next_workflow]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[session]"
+      - "TestAC21FifteenModules::test_ac2_1_module_in_inventory[worktree]"
+
+  - ac_index: 2
+    ac_sub: 2
+    ac_text: "各モジュールに対して tool 数が確定 (read / write / action 分類) されている (総 tool 数=54 の記載)"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_names:
+      - "TestAC22TotalToolCount::test_ac2_2_total_tool_count_54"
+      - "TestAC22TotalToolCount::test_ac2_2_read_write_action_classification"
+
+  - ac_index: 3
+    ac_sub: 1
+    ac_text: "検証系5 tool (twl_validate_deps / twl_validate_merge / twl_validate_commit / twl_check_completeness / twl_check_specialist) が子2入力として確定している"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_names:
+      - "TestAC31ValidationTools::test_ac3_1_twl_validate_deps_in_inventory"
+      - "TestAC31ValidationTools::test_ac3_1_twl_validate_merge_in_inventory"
+      - "TestAC31ValidationTools::test_ac3_1_twl_validate_commit_in_inventory"
+      - "TestAC31ValidationTools::test_ac3_1_twl_check_completeness_in_inventory"
+      - "TestAC31ValidationTools::test_ac3_1_twl_check_specialist_in_inventory"
+
+  - ac_index: 3
+    ac_sub: 2
+    ac_text: "状態系3 tool (twl_get_session_state / twl_get_pane_state / twl_audit_session) が子3入力として確定している"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_names:
+      - "TestAC32StateTools::test_ac3_2_twl_get_session_state_in_inventory"
+      - "TestAC32StateTools::test_ac3_2_twl_get_pane_state_in_inventory"
+      - "TestAC32StateTools::test_ac3_2_twl_audit_session_in_inventory"
+
+  - ac_index: 3
+    ac_sub: 3
+    ac_text: "通信系3 tool (twl_send_msg / twl_recv_msg / twl_notify_supervisor) が子5入力として確定している"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_names:
+      - "TestAC33CommunicationTools::test_ac3_3_twl_send_msg_in_inventory"
+      - "TestAC33CommunicationTools::test_ac3_3_twl_recv_msg_in_inventory"
+      - "TestAC33CommunicationTools::test_ac3_3_twl_notify_supervisor_in_inventory"
+
+  - ac_index: 4
+    ac_sub: 1
+    ac_text: "inventory に twl_<module>_<action> snake_case 命名規則が記載されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC41NamingConvention::test_ac4_1_naming_convention_in_inventory"
+
+  - ac_index: 4
+    ac_sub: 2
+    ac_text: "既存5 tool (変更なし維持) の記載がある"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC42ExistingFiveTools::test_ac4_2_existing_five_tools_unchanged"
+
+  - ac_index: 4
+    ac_sub: 3
+    ac_text: "衝突分析3ケース (twl_audit / twl_state_read vs twl_get_session_state / twl_check vs twl_check_completeness) が inventory に記載されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_names:
+      - "TestAC43ConflictAnalysis::test_ac4_3_twl_audit_conflict_in_inventory"
+      - "TestAC43ConflictAnalysis::test_ac4_3_twl_state_read_vs_get_session_state_conflict"
+      - "TestAC43ConflictAnalysis::test_ac4_3_twl_check_vs_check_completeness_conflict"
+
+  - ac_index: 5
+    ac_sub: 1
+    ac_text: "#754 仮説 H1+H3 が inventory に記載されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_names:
+      - "TestAC51H1H3Hypothesis::test_ac5_1_hypothesis_h1_in_inventory"
+      - "TestAC51H1H3Hypothesis::test_ac5_1_hypothesis_h3_in_inventory"
+
+  - ac_index: 5
+    ac_sub: 2
+    ac_text: "子2-5全てに適用される6 MUST design rule が inventory に記載されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC526DesignRules::test_ac5_2_six_must_design_rules_in_inventory"
+
+  - ac_index: 5
+    ac_sub: 3
+    ac_text: "並列 RPC hang 予防ルール表 (5 観点) が inventory に記載されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC53ParallelRPCRules::test_ac5_3_parallel_rpc_prevention_rules_in_inventory"
+
+  - ac_index: 6
+    ac_sub: 1
+    ac_text: "inventory に 子Issue共通フォーマット セクションがある (9項目記載)"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC61CommonFormatSection::test_ac6_1_common_format_section_exists"
+
+  - ac_index: 6
+    ac_sub: 2
+    ac_text: "inventory に 子2: 検証系 セクションがある"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC62Child2Section::test_ac6_2_child2_validation_section_exists"
+
+  - ac_index: 6
+    ac_sub: 3
+    ac_text: "inventory に 子3: 状態系 セクションがある"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC63Child3Section::test_ac6_3_child3_state_section_exists"
+
+  - ac_index: 6
+    ac_sub: 4
+    ac_text: "inventory に 子4: autopilot系 セクションがある"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC64Child4Section::test_ac6_4_child4_autopilot_section_exists"
+
+  - ac_index: 6
+    ac_sub: 5
+    ac_text: "inventory に 子5: 通信系 (mailbox MCP hub) セクションがある"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC65Child5Section::test_ac6_5_child5_communication_section_exists"
+
+  - ac_index: 6
+    ac_sub: 7
+    ac_text: "inventory の checkbox ([ ]) が AC6-7 の要件通り計 45 個以上ある"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC67CheckboxCount::test_ac6_7_checkbox_count_ge_45"
+
+  - ac_index: 7
+    ac_sub: 1
+    ac_text: "inventory に ADR-029 Decision 1-4 との整合性が記載されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC71ADR029Alignment::test_ac7_1_adr029_alignment_in_inventory"
+
+  - ac_index: 8
+    ac_sub: 1
+    ac_text: "plugins/twl/architecture/domain/glossary.md に 'epic' が定義されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC81EpicDefinition::test_ac8_1_epic_defined_in_glossary"
+
+  - ac_index: 8
+    ac_sub: 2
+    ac_text: "plugins/twl/architecture/domain/glossary.md に 'MCP server' が定義されている (英語表記)"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC82MCPServerDefinition::test_ac8_2_mcp_server_defined_in_glossary"
+
+  - ac_index: 8
+    ac_sub: 3
+    ac_text: "plugins/twl/architecture/domain/glossary.md に 'MCP tool' が定義されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC83MCPToolDefinition::test_ac8_3_mcp_tool_defined_in_glossary"
+
+  - ac_index: 8
+    ac_sub: 4
+    ac_text: "plugins/twl/architecture/domain/glossary.md に 'tools.py' が定義されている"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC84ToolsPyDefinition::test_ac8_4_tools_py_defined_in_glossary"
+
+  - ac_index: 9
+    ac_sub: 1
+    ac_text: "plugins/twl/architecture/domain/contexts/twill-integration.md に 'Phase 2' 章が存在する"
+    test_file: "cli/twl/tests/test_issue_1102_mcp_inventory.py"
+    test_name: "TestAC91Phase2ChapterExists::test_ac9_1_phase2_chapter_in_twill_integration"
