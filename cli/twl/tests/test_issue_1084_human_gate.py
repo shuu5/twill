@@ -60,30 +60,9 @@ def test_ac1_adr_required_sections():
 # ---------------------------------------------------------------------------
 
 
-def test_ac2a_intervention_catalog_layer1():
-    """AC2(a): intervention-catalog.md の Layer 1 セクション見出し直後に ★HUMAN GATE が存在すること。"""
-    path = _PLUGINS_ROOT / "refs" / "intervention-catalog.md"
-    assert path.exists(), f"{path} が存在しない"
-
-    content = path.read_text(encoding="utf-8")
-    lines = content.splitlines()
-
-    # Layer 1 見出し行を探し、その直後の数行に ★HUMAN GATE があるか確認
-    found = False
-    for i, line in enumerate(lines):
-        if re.search(r"Layer\s*1", line, re.IGNORECASE) and line.lstrip().startswith("#"):
-            # 見出し直後 5 行以内に ★HUMAN GATE
-            window = "\n".join(lines[i : i + 6])
-            if HUMAN_GATE_MARKER in window:
-                found = True
-                break
-    assert found, (
-        f"{path.name}: Layer 1 セクション見出し直後に {HUMAN_GATE_MARKER!r} が見つからない"
-    )
-
-
-def test_ac2a_intervention_catalog_layer2():
-    """AC2(a): intervention-catalog.md の Layer 2 セクション見出し直後に ★HUMAN GATE が存在すること。"""
+@pytest.mark.parametrize("layer_num", [1, 2])
+def test_ac2a_intervention_catalog_layer(layer_num: int):
+    """AC2(a): intervention-catalog.md の Layer N セクション見出し直後に ★HUMAN GATE が存在すること。"""
     path = _PLUGINS_ROOT / "refs" / "intervention-catalog.md"
     assert path.exists(), f"{path} が存在しない"
 
@@ -92,13 +71,13 @@ def test_ac2a_intervention_catalog_layer2():
 
     found = False
     for i, line in enumerate(lines):
-        if re.search(r"Layer\s*2", line, re.IGNORECASE) and line.lstrip().startswith("#"):
+        if re.search(rf"Layer\s*{layer_num}", line, re.IGNORECASE) and line.lstrip().startswith("#"):
             window = "\n".join(lines[i : i + 6])
             if HUMAN_GATE_MARKER in window:
                 found = True
                 break
     assert found, (
-        f"{path.name}: Layer 2 セクション見出し直後に {HUMAN_GATE_MARKER!r} が見つからない"
+        f"{path.name}: Layer {layer_num} セクション見出し直後に {HUMAN_GATE_MARKER!r} が見つからない"
     )
 
 
