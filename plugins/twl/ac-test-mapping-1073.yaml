@@ -1,0 +1,61 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/scripts/su-precompact.sh の Python ブロック内で pathlib.Path(SUPERVISOR_DIR).resolve() を実行し、結果がプロジェクトルート配下であることを Path.is_relative_to() で検証する。境界外時は stderr 出力 + sys.exit(1)"
+    test_file: "plugins/twl/tests/bats/scripts/su-precompact-path-validation.bats"
+    test_names:
+      - "ac1: SUPERVISOR_DIR が絶対パスで project root 外の場合 exit 1 する（Python layer）"
+      - "ac1: SUPERVISOR_DIR=/../../../etc で exit 1 する（Python layer 絶対パス traversal）"
+      - "ac1: su-precompact.sh の Python ブロックに Path.is_relative_to() が存在する（static grep）"
+      - "ac1: su-precompact.sh の Python ブロックに pathlib.Path.resolve() が存在する（static grep）"
+      - "ac1: su-precompact.sh の Python ブロックに sys.exit(1) が存在する（static grep）"
+
+  - ac_index: 2
+    ac_text: "plugins/twl/scripts/su-postcompact.sh で同様の SUPERVISOR_DIR 境界チェックを Python ブロック内に実装する（json.dump を含む write 操作のため必須）。CLAUDE_PROJECT_ROOT は os.environ.get(\"CLAUDE_PROJECT_ROOT\", os.getcwd()) で参照する"
+    test_file: "plugins/twl/tests/bats/scripts/su-postcompact-path-validation.bats"
+    test_names:
+      - "ac2: SUPERVISOR_DIR が絶対パスで project root 外の場合 exit 1 する（Python layer）"
+      - "ac2: SUPERVISOR_DIR=/etc で exit 1 する（Python layer 絶対パス traversal）"
+      - "ac2: su-postcompact.sh の Python ブロックに Path.is_relative_to() が存在する（static grep）"
+      - "ac2: su-postcompact.sh の Python ブロックに pathlib.Path.resolve() が存在する（static grep）"
+      - "ac2: su-postcompact.sh の Python ブロックに sys.exit(1) が存在する（static grep）"
+      - "ac2: su-postcompact.sh の Python ブロックが os.environ.get で CLAUDE_PROJECT_ROOT を参照する（static grep）"
+
+  - ac_index: 3
+    ac_text: "シェル層の前方一致チェック追加（実行順序: SUPERVISOR_DIR デフォルト設定の直後・[ -d \"$SUPERVISOR_DIR\" ] || exit 0 の前）: realpath -m \"$SUPERVISOR_DIR\" の結果が realpath \"$CLAUDE_PROJECT_ROOT\" (fallback pwd) で始まることを case 文で検証。境界外時 stderr に \"SUPERVISOR_DIR outside project root: <resolved-path>\" を出力して exit 1"
+    test_files:
+      - "plugins/twl/tests/bats/scripts/su-precompact-path-validation.bats"
+      - "plugins/twl/tests/bats/scripts/su-postcompact-path-validation.bats"
+    test_names:
+      - "ac3: SUPERVISOR_DIR=../../../etc （相対パス traversal）で exit 1 する（shell layer）"
+      - "ac3: SUPERVISOR_DIR 境界外時に stderr に解決済みパスが含まれる（shell layer）"
+      - "ac3: su-precompact.sh に realpath -m コマンドが存在する（static grep）"
+      - "ac3: su-precompact.sh に case 文でのパス前方一致チェックが存在する（static grep）"
+      - "ac3: シェル層チェックが SUPERVISOR_DIR デフォルト設定の直後に配置されている（static grep 順序確認）"
+      - "ac3: SUPERVISOR_DIR=../../../etc （相対パス traversal）で exit 1 する（shell layer）"
+      - "ac3: SUPERVISOR_DIR 境界外時に stderr に解決済みパスが含まれる（shell layer）"
+      - "ac3: su-postcompact.sh に realpath -m コマンドが存在する（static grep）"
+      - "ac3: su-postcompact.sh に case 文でのパス前方一致チェックが存在する（static grep）"
+      - "ac3: シェル層チェックが SUPERVISOR_DIR デフォルト設定の直後に配置されている（static grep 順序確認）"
+
+  - ac_index: 4
+    ac_text: "既存挙動の保持: SUPERVISOR_DIR 未指定時のデフォルト .supervisor 使用継続、.supervisor ディレクトリ不在時の [ -d \"$SUPERVISOR_DIR\" ] || exit 0 graceful degradation 維持（AC3 のパス検証通過後に実行）"
+    test_files:
+      - "plugins/twl/tests/bats/scripts/su-precompact-path-validation.bats"
+      - "plugins/twl/tests/bats/scripts/su-postcompact-path-validation.bats"
+    test_names:
+      - "ac4: SUPERVISOR_DIR 未指定時に .supervisor が存在しなければ exit 0（graceful degradation）"
+      - "ac4: SUPERVISOR_DIR をプロジェクトルート内の正常パスに設定した場合に exit 0（従来挙動維持）"
+      - "ac4: SUPERVISOR_DIR 未指定時のデフォルト値が .supervisor である（static grep）"
+      - "ac4: SUPERVISOR_DIR をプロジェクトルート内の存在するディレクトリに設定した場合に正常動作する"
+
+  - ac_index: 5
+    ac_text: "テスト追加: plugins/twl/tests/bats/scripts/su-precompact-path-validation.bats および su-postcompact-path-validation.bats を新設し、(a) SUPERVISOR_DIR=../../../etc で exit 1 + stderr 文言一致、(b) 正常 path で従来挙動維持を検証"
+    test_files:
+      - "plugins/twl/tests/bats/scripts/su-precompact-path-validation.bats"
+      - "plugins/twl/tests/bats/scripts/su-postcompact-path-validation.bats"
+    test_names:
+      - "ac3: SUPERVISOR_DIR=../../../etc （相対パス traversal）で exit 1 する（shell layer）"
+      - "ac3: SUPERVISOR_DIR 境界外時に stderr に解決済みパスが含まれる（shell layer）"
+      - "ac4: SUPERVISOR_DIR 未指定時に .supervisor が存在しなければ exit 0（graceful degradation）"
+      - "ac4: SUPERVISOR_DIR をプロジェクトルート内の正常パスに設定した場合に exit 0（従来挙動維持）"
+      - "ac4: SUPERVISOR_DIR をプロジェクトルート内の存在するディレクトリに設定した場合に正常動作する"
