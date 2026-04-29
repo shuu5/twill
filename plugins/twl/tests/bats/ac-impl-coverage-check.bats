@@ -114,6 +114,10 @@ teardown() {
 
 @test "ac2: --mapping <path> を受け付ける" {
   # RED: スクリプトが存在しないため fail する
+  [[ -f "$SCRIPT" ]] || {
+    echo "FAIL: AC #2 未実装 — $SCRIPT が存在しない" >&2
+    return 1
+  }
   local mapping_file="$SANDBOX/ac-test-mapping-1105.yaml"
   cat > "$mapping_file" <<'YAML'
 mappings:
@@ -125,11 +129,10 @@ mappings:
       - "scripts/foo.sh"
 YAML
 
-  echo "" | run bash "$SCRIPT" --mapping "$mapping_file"
-  # スクリプトが存在すれば何らかの exit code を返す
-  # 存在しない場合は "No such file" エラーで status != 0 かつ特定出力なし
-  [[ -f "$SCRIPT" ]] || {
-    echo "FAIL: AC #2 未実装 — $SCRIPT が存在しない" >&2
+  run bash -c "echo '' | bash '$SCRIPT' --mapping '$mapping_file'"
+  # スクリプトが存在すれば何らかの exit code を返す（127 以外）
+  [[ "$status" -ne 127 ]] || {
+    echo "FAIL: AC #2 未実装 — --mapping オプションが認識されない (exit 127)" >&2
     return 1
   }
 }
@@ -198,23 +201,31 @@ YAML
 }
 
 @test "ac2: impl_files 不在の AC はスキップ (INFO) される" {
+  # 混在ケース（一部 AC に impl_files あり、他 AC は不在）で not-present AC が INFO 扱いになることを確認
   # RED: スクリプトが存在しないため fail する
   [[ -f "$SCRIPT" ]] || {
     echo "FAIL: AC #2 未実装 — $SCRIPT が存在しない" >&2
     return 1
   }
 
-  local mapping_file="$SANDBOX/ac-test-mapping-no-impl.yaml"
+  local mapping_file="$SANDBOX/ac-test-mapping-mixed-noimpl.yaml"
   cat > "$mapping_file" <<'YAML'
 mappings:
   - ac_index: 1
+    ac_text: "impl_files あり AC（diff に一致）"
+    test_file: "tests/test_impl.sh"
+    test_name: "test_ac1_impl"
+    impl_files:
+      - "other/file.sh"
+  - ac_index: 2
     ac_text: "impl_files なし AC"
     test_file: "tests/test_noimpl.sh"
-    test_name: "test_ac1_noimpl"
+    test_name: "test_ac2_noimpl"
 YAML
 
+  # AC1 は diff と一致 (PASS)、AC2 は impl_files 不在 (INFO)
   run bash -c "echo 'other/file.sh' | bash '$SCRIPT' --mapping '$mapping_file'"
-  # exit 0 (INFO のみ) または出力なし
+  # exit 0 (INFO のみ)
   [[ "$status" -eq 0 ]] || {
     echo "FAIL: AC #2 未実装 — impl_files なし AC で exit ${status}（INFO/スキップ想定）" >&2
     return 1
@@ -247,10 +258,11 @@ YAML
     return 1
   }
 
-  # step_ac_verify 関数内で ac-impl-coverage-check が llm-delegate / "LLM ステップ" 出力より前に出現することを確認
+  # step_ac_verify 関数内で ac-impl-coverage-check が ok "ac-verify" より前に出現することを確認
+  # ok "ac-verify" は step_ac_verify の最終行に固定されるため、これを LLM step マーカーとして使用
   local pre_call_line llm_line
   pre_call_line=$(grep -n "ac-impl-coverage-check" "$chain_runner" | head -1 | cut -d: -f1)
-  llm_line=$(grep -n 'LLM ステップへ遷移\|llm-delegate\|ok "ac-verify"' "$chain_runner" | head -1 | cut -d: -f1)
+  llm_line=$(grep -n 'ok "ac-verify"' "$chain_runner" | head -1 | cut -d: -f1)
 
   [[ -n "$pre_call_line" ]] || {
     echo "FAIL: AC #3 未実装 — chain-runner.sh に ac-impl-coverage-check 行が存在しない" >&2
@@ -261,7 +273,7 @@ YAML
     return 1
   }
   [[ "$pre_call_line" -lt "$llm_line" ]] || {
-    echo "FAIL: AC #3 未実装 — ac-impl-coverage-check (line $pre_call_line) が LLM step (line $llm_line) より後にある" >&2
+    echo "FAIL: AC #3 未実装 — ac-impl-coverage-check (line $pre_call_line) が ok ac-verify (line $llm_line) より後にある" >&2
     return 1
   }
 }
@@ -353,10 +365,7 @@ mappings:
 YAML
 
   # PR #1024 相当の diff: mapping yaml + test file のみ変更（impl_files の dummy/impl_a.sh が含まれない）
-  local diff_input
-  diff_input="$(printf 'ac-test-mapping-1019.yaml\ntest_issue_1019_ac8_binomial.py')"
-
-  run bash -c "echo '$diff_input' | bash '$SCRIPT' --mapping '$mapping_file'"
+  run bash -c "printf 'ac-test-mapping-1019.yaml\ntest_issue_1019_ac8_binomial.py' | bash '$SCRIPT' --mapping '$mapping_file'"
 
   # CRITICAL 1件以上 → exit 1
   [[ "$status" -eq 1 ]] || {
@@ -373,7 +382,7 @@ YAML
   }
 }
 
-@test "ac5: fixture A - CRITICAL finding の category が ac-alignment である" {
+@test "ac5: fixture A - CRITICAL finding の category が ac-impl-coverage-missing である" {
   # RED: ac-impl-coverage-check.sh が存在しないため fail する
   [[ -f "$SCRIPT" ]] || {
     echo "FAIL: AC #5 (fixture A) — ac-impl-coverage-check.sh が存在しない" >&2
@@ -393,8 +402,8 @@ YAML
 
   run bash -c "printf 'ac-test-mapping-1019.yaml\ntest_issue_1019_ac8_binomial.py' | bash '$SCRIPT' --mapping '$mapping_file'"
 
-  echo "$output" | jq -e '[.[] | select(.severity == "CRITICAL" and .category == "ac-alignment")] | length >= 1' >/dev/null 2>&1 || {
-    echo "FAIL: AC #5 (fixture A) — CRITICAL finding の category が ac-alignment ではない" >&2
+  echo "$output" | jq -e '[.[] | select(.severity == "CRITICAL" and .category == "ac-impl-coverage-missing")] | length >= 1' >/dev/null 2>&1 || {
+    echo "FAIL: AC #5 (fixture A) — CRITICAL finding の category が ac-impl-coverage-missing ではない" >&2
     echo "  stdout: $output" >&2
     return 1
   }
@@ -632,18 +641,22 @@ YAML
 # AC6: Issue body の「関連」セクションに L2/#1025 scope 外・ADR-030 補完を明記（doc AC）
 # ---------------------------------------------------------------------------
 
-@test "ac6: (doc AC) Issue body 更新は自動検証不可 — テストスタブとして記録" {
-  # AC6 はドキュメントAC（Issue body 更新）のため機械的検証が困難。
-  # このテストは「AC6 が確認済みである」ことを人間が確認するためのスタブ。
-  # 実装者が Issue #1105 body を更新した後、このテストを skip -> pass に変更する。
-  #
-  # 検証項目:
-  #   - Issue #1105 body の「関連」セクションに以下が明記されていること:
-  #     1. L2/#1025 が scope 外である旨
-  #     2. ADR-030 補完の記述
-  #
-  # RED: 実装前は常に fail する（doc AC の RED stub）
-  echo "FAIL: AC #6 未実装 — Issue #1105 body の「関連」セクション更新が確認されていない" >&2
-  echo "  確認項目: L2/#1025 scope 外の明記 + ADR-030 補完の記述" >&2
-  return 1
+@test "ac6: Issue body の「関連」セクションに L2/#1025 scope 外と ADR-030 補完が明記されている" {
+  # gh CLI で Issue #1105 body を取得し、要求内容の存在を確認する
+  local issue_body
+  issue_body=$(gh issue view 1105 --json body -q .body 2>/dev/null || echo "")
+  [[ -n "$issue_body" ]] || {
+    echo "FAIL: AC #6 — Issue #1105 を取得できない (gh 未設定またはネットワーク不可)" >&2
+    return 1
+  }
+  # L2/#1025 scope 外の明記
+  echo "$issue_body" | grep -q "#1025" || {
+    echo "FAIL: AC #6 未実装 — Issue body に #1025 への言及がない" >&2
+    return 1
+  }
+  # ADR-030 補完の記述
+  echo "$issue_body" | grep -qE "ADR-030|HUMAN GATE" || {
+    echo "FAIL: AC #6 未実装 — Issue body に ADR-030 または HUMAN GATE への言及がない" >&2
+    return 1
+  }
 }

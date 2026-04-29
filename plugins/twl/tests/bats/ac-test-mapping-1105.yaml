@@ -64,9 +64,9 @@ mappings:
     test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
     test_name: "ac5: fixture A (PR #1024 相当) - impl_files が diff に含まれない → CRITICAL exit 1"
   - ac_index: 5a2
-    ac_text: "regression fixture A - CRITICAL finding の category が ac-alignment である"
+    ac_text: "regression fixture A - CRITICAL finding の category が ac-impl-coverage-missing である"
     test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
-    test_name: "ac5: fixture A - CRITICAL finding の category が ac-alignment である"
+    test_name: "ac5: fixture A - CRITICAL finding の category が ac-impl-coverage-missing である"
   - ac_index: 5b
     ac_text: "regression fixture B (PR #1104 相当): 変更ファイル [cli/twl/tests/test_issue_1084_human_gate.py] + impl_files: [dummy/impl_b.md] → CRITICAL 期待"
     test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
