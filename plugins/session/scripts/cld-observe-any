@@ -528,7 +528,7 @@ while true; do
             else
                 # completion phrase 初回検出 → first_seen_ts 記録
                 # C3: LLM indicator 不在の場合のみ記録（Thinking 中は false trigger を防ぐ）
-                local _idle_thinking
+                # local は関数外で使用不可 (bash baseline §2) — 単純代入を使う
                 _idle_thinking=$(detect_thinking "$(echo "$PANE_CONTENT" | tail -15)" 2>/dev/null || echo "")
                 if [[ "${IDLE_COMPLETED_TS[$WIN]:-0}" -eq 0 ]] && \
                    [[ -z "$_idle_thinking" ]] && \
