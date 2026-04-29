@@ -59,6 +59,22 @@ DIFF_BODY="$(git diff origin/main 2>/dev/null || true)"
 PR_TEST_STATUS="$(python3 -m twl.autopilot.checkpoint read --step pr-test --field status 2>/dev/null || echo "")"
 ```
 
+### Step 0.5: impl-coverage-check（機械検証、Issue #1105）
+
+`chain-runner.sh::step_ac_verify` が LLM delegate 通知より前に `ac-impl-coverage-check.sh` を pre-call する。
+LLM はこのステップの結果を参照して Step 1 の判定を補完する。
+
+**3 分岐 + 混在 per-AC 判定**:
+
+| 条件 | 動作 |
+|------|------|
+| mapping ファイル不在 | Step 1 LLM 判断に直行（backwards-compatible） |
+| mapping 存在 + 全 AC で `impl_files` 不在 | Step 1 LLM 判断に直行 + INFO Finding (`ac-impl-coverage-skip`) |
+| mapping 存在 + 混在（一部 AC に `impl_files` あり） | `impl_files` 存在 AC は機械検証、不在 AC は Step 1 LLM fallback |
+| mapping 存在 + `impl_files` 存在 AC で diff 一致なし | checkpoint に CRITICAL 書込、当該 AC は `status=FAIL` 確定（Step 1 重複回避） |
+
+Step 0.5 で CRITICAL が出た AC は Step 1 での再判定をスキップする（重複判定防止）。
+
 ### Step 1: AC 項目ごとの判定（LLM 判断）
 
 各 AC 項目について以下のロジックで判定する。

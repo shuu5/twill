@@ -1,0 +1,97 @@
+mappings:
+  - ac_index: 1
+    ac_text: "ac-test-mapping-N.yaml schema に impl_files (任意 field、string[]) を追加。schema 仕様書を plugins/twl/docs/ac-test-mapping-schema.md に記述する。"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac1: schema 文書 plugins/twl/docs/ac-test-mapping-schema.md が存在する"
+  - ac_index: 1b
+    ac_text: "schema 文書に impl_files フィールドの定義が含まれる"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac1: schema 文書に impl_files フィールドの定義が含まれる"
+  - ac_index: 1c
+    ac_text: "schema 文書に impl_files が string[] (任意 field) と記述されている"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac1: schema 文書に impl_files が string[] (任意 field) と記述されている"
+  - ac_index: 2
+    ac_text: "plugins/twl/scripts/ac-impl-coverage-check.sh を新設する。入力: --mapping <path> + stdin から git diff --name-only origin/main。出力: ref-specialist-output-schema 準拠の Findings JSON 配列。exit code: CRITICAL 1件以上 → 1、WARNING のみ → 2、INFO のみ/出力なし → 0"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac2: ac-impl-coverage-check.sh が scripts/ に存在する"
+  - ac_index: 2b
+    ac_text: "ac-impl-coverage-check.sh が実行可能である"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac2: ac-impl-coverage-check.sh が実行可能である"
+  - ac_index: 2c
+    ac_text: "--mapping オプションなしで呼び出すと使用方法を表示して exit 非 0"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac2: --mapping オプションなしで呼び出すと使用方法を表示して exit 非 0"
+  - ac_index: 2d
+    ac_text: "出力が ref-specialist-output-schema 準拠の JSON 配列形式である（空 diff、impl_files 一致）"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac2: 出力が ref-specialist-output-schema 準拠の JSON 配列形式である（空 diff、impl_files 一致）"
+  - ac_index: 2e
+    ac_text: "CRITICAL 1件以上の場合 exit code 1 を返す"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac2: CRITICAL 1件以上の場合 exit code 1 を返す"
+  - ac_index: 2f
+    ac_text: "impl_files 不在の AC はスキップ (INFO) される"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac2: impl_files 不在の AC はスキップ (INFO) される"
+  - ac_index: 3
+    ac_text: "chain-runner.sh::step_ac_verify を改修し、LLM delegate より前に ac-impl-coverage-check.sh を pre-call する"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac3: chain-runner.sh の step_ac_verify に ac-impl-coverage-check 呼び出しが含まれる"
+  - ac_index: 3b
+    ac_text: "step_ac_verify の ac-impl-coverage-check 呼び出しは LLM delegate より前にある"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac3: step_ac_verify の ac-impl-coverage-check 呼び出しは LLM delegate より前にある"
+  - ac_index: 3c
+    ac_text: "pre-call で CRITICAL が出た場合 step_ac_verify が非 0 で終了する"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac3: pre-call で CRITICAL が出た場合 step_ac_verify が非 0 で終了する"
+  - ac_index: 4
+    ac_text: "agents/ac-scaffold-tests.md に impl_files 候補生成ロジックを追加する"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac4: agents/ac-scaffold-tests.md が存在する"
+  - ac_index: 4b
+    ac_text: "agents/ac-scaffold-tests.md に impl_files 候補生成ロジックが追加されている"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac4: agents/ac-scaffold-tests.md に impl_files 候補生成ロジックが追加されている"
+  - ac_index: 4c
+    ac_text: "ac-scaffold-tests.md の impl_files ロジックが impl_files 候補をどう生成するか説明している"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac4: ac-scaffold-tests.md の impl_files ロジックが impl_files 候補をどう生成するか説明している"
+  - ac_index: 5a
+    ac_text: "regression fixture A (PR #1024 相当): 変更ファイル [ac-test-mapping-1019.yaml, test_issue_1019_ac8_binomial.py] + impl_files: [dummy/impl_a.sh] → CRITICAL 期待"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac5: fixture A (PR #1024 相当) - impl_files が diff に含まれない → CRITICAL exit 1"
+  - ac_index: 5a2
+    ac_text: "regression fixture A - CRITICAL finding の category が ac-impl-coverage-missing である"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac5: fixture A - CRITICAL finding の category が ac-impl-coverage-missing である"
+  - ac_index: 5b
+    ac_text: "regression fixture B (PR #1104 相当): 変更ファイル [cli/twl/tests/test_issue_1084_human_gate.py] + impl_files: [dummy/impl_b.md] → CRITICAL 期待"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac5: fixture B (PR #1104 相当) - impl_files が diff に含まれない → CRITICAL exit 1"
+  - ac_index: 5c
+    ac_text: "regression fixture C (正常系): 変更ファイル [dummy/impl_a.sh, test_foo.py] + impl_files: [dummy/impl_a.sh] → exit 0 PASS"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac5: fixture C (正常系) - impl_files が diff に含まれる → exit 0 PASS"
+  - ac_index: 5c2
+    ac_text: "regression fixture C - 出力 JSON に CRITICAL finding が含まれない"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac5: fixture C - 出力 JSON に CRITICAL finding が含まれない"
+  - ac_index: 5d
+    ac_text: "regression fixture D (混在): AC1 impl_files: [dummy/impl.sh] diff 不一致 → CRITICAL + AC2 impl_files 不在 → INFO、exit 1"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac5: fixture D (混在) - AC1 CRITICAL + AC2 INFO → exit 1"
+  - ac_index: 5d2
+    ac_text: "regression fixture D - CRITICAL 1件 + INFO 1件が出力される"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac5: fixture D - CRITICAL 1件 + INFO 1件が出力される"
+  - ac_index: 5d3
+    ac_text: "regression fixture D - 各 finding に severity/confidence/file/line/message/category フィールドが存在する"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac5: fixture D - 各 finding に severity/confidence/file/line/message/category フィールドが存在する"
+  - ac_index: 6
+    ac_text: "Issue body の「関連」セクションに L2/#1025 scope 外・ADR-030 補完を明記する（doc AC）"
+    test_file: "plugins/twl/tests/bats/ac-impl-coverage-check.bats"
+    test_name: "ac6: (doc AC) Issue body 更新は自動検証不可 — テストスタブとして記録"

@@ -1082,6 +1082,52 @@ step_ac_verify() {
     return 2  # force-exit: 呼び出し元は通常の LLM step 遷移を行わない
   fi
 
+  # --- Step 0.5: ac-impl-coverage-check.sh pre-call（機械検証、Issue #1105） ---
+  # LLM delegate より前に実行し、impl_files と PR diff の一致を機械的に検証する。
+  # mapping ファイル検出: SNAPSHOT_DIR または既存配置パス
+  local _mapping_file=""
+  local _snapshot_dir="${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${issue_num}}"
+  local _coverage_script
+  _coverage_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ac-impl-coverage-check.sh"
+
+  for _candidate in \
+    "${_snapshot_dir}/ac-test-mapping-${issue_num}.yaml" \
+    "plugins/twl/tests/bats/ac-test-mapping-${issue_num}.yaml" \
+    "cli/twl/ac-test-mapping.yaml"; do
+    if [[ -f "$_candidate" ]]; then
+      _mapping_file="$_candidate"
+      break
+    fi
+  done
+
+  if [[ -n "$_mapping_file" && -x "$_coverage_script" ]]; then
+    echo "[chain-runner] ac-impl-coverage-check: mapping=$_mapping_file" >&2
+    local _coverage_output _coverage_exit _coverage_tmpfile
+    _coverage_tmpfile=$(mktemp)
+    git diff --name-only origin/main 2>/dev/null \
+      | bash "$_coverage_script" --mapping "$_mapping_file" > "$_coverage_tmpfile" 2>&1
+    _coverage_exit=${PIPESTATUS[1]:-0}
+    _coverage_output=$(cat "$_coverage_tmpfile")
+    rm -f "$_coverage_tmpfile"
+    [[ -z "$_coverage_output" || "$_coverage_output" == "null" ]] && _coverage_output="[]"
+
+    if [[ "$_coverage_exit" -eq 1 ]]; then
+      # CRITICAL あり: checkpoint に書き込み、LLM delegate で重複判定を防ぐ
+      ensure_pythonpath || true
+      python3 -m twl.autopilot.checkpoint write \
+        --step ac-verify --status FAIL --findings "$_coverage_output" 2>/dev/null || true
+      echo "[chain-runner] ac-impl-coverage-check: CRITICAL findings → ac-verify checkpoint に書込済み" >&2
+    elif [[ "$_coverage_exit" -eq 2 ]]; then
+      echo "[chain-runner] ac-impl-coverage-check: WARNING findings (exit 2) → LLM delegate に引き継ぎ" >&2
+    else
+      echo "[chain-runner] ac-impl-coverage-check: PASS (exit 0)" >&2
+    fi
+  else
+    if [[ -z "$_mapping_file" ]]; then
+      echo "[chain-runner] ac-impl-coverage-check: mapping ファイル未検出 — LLM delegate に直行" >&2
+    fi
+  fi
+
   echo "[chain-runner] ac-verify は LLM ステップです。(call_count=${_new_count}/$((_max_retry + 1)))" >&2
   echo "[chain-runner] commands/ac-verify.md を Read して実行してください。" >&2
   echo "[chain-runner] 入力: AC checklist + PR diff + pr-test checkpoint" >&2
