@@ -1,0 +1,188 @@
+mappings:
+  # ===========================================================================
+  # AC-1: Pilot 自動 inject ロジック（pilot-fallback-monitor.sh 実装）
+  # bats テスト不要（実装 AC）
+  # ===========================================================================
+  - ac_index: 1
+    ac_text: "Pilot SKILL.md L251 周辺に orchestrator unavailable 時の next-workflow 自動 inject logic を追加。実装主体: plugins/twl/scripts/pilot-fallback-monitor.sh（独立 bash daemon）。PID file 管理 + orchestrator alive 時は自動停止。"
+    test_file: null
+    test_name: null
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+      - "plugins/twl/skills/co-autopilot/SKILL.md"
+
+  # ===========================================================================
+  # AC-2: Worker idle + next-workflow 検出 → session-comm.sh inject 発火（bats テスト）
+  # ===========================================================================
+  - ac_index: 2
+    ac_text: "bats test: Worker idle + next-workflow regex 検出 → Pilot helper script が session-comm.sh inject command を発火することを検証"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac2: pilot-fallback-monitor.sh exists"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "2b"
+    ac_text: "pilot-fallback-monitor.sh が実行可能である"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac2: pilot-fallback-monitor.sh is executable"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "2c"
+    ac_text: "pilot-fallback-monitor.sh に inject 判定ロジック（session-comm.sh inject 呼び出し）が実装される"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac2: pilot-fallback-monitor.sh defines inject judgment logic"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "2d"
+    ac_text: "pilot-fallback-monitor.sh に PID file 管理が実装されている"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac2: pilot-fallback-monitor.sh has PID file management"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "2e"
+    ac_text: "pilot-fallback-monitor.sh は orchestrator alive 時に自動停止する"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac2: pilot-fallback-monitor.sh stops when orchestrator is alive"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "2f"
+    ac_text: "Worker idle + next-workflow regex 検出時に session-comm.sh inject が呼ばれる（spy 確認）"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac2: worker idle + next-workflow regex → session-comm.sh inject is called"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: "2g"
+    ac_text: "inject コマンドが正しい Worker window を対象とする"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac2: inject command targets correct worker window"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "2h"
+    ac_text: "inject コマンドが /twl:workflow-* パターンのテキストを送信する"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac2: inject command sends /twl:workflow-* pattern"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "2i"
+    ac_text: "テスト実行時間は 1 秒以内（実時間待機なし mock の確認）"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac2: no real tmux or sleep in test execution"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  # ===========================================================================
+  # AC-3: PR merged 後の Worker window cleanup 実装（実装 AC、bats テスト不要）
+  # ===========================================================================
+  - ac_index: 3
+    ac_text: "PR merged 後の Worker window 即時 cleanup logic を pilot-fallback-monitor.sh に実装。_check_window_alive() を使用（pitfalls §4.9 準拠）。SLA: PR merged 検知から 30 秒以内（poll_interval ≤ 15s）"
+    test_file: null
+    test_name: null
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+      - "plugins/twl/scripts/lib/observer-window-check.sh"
+
+  # ===========================================================================
+  # AC-4: PR merged 検知後 30s 以内に Worker window kill（bats テスト・SLA 論理積検証）
+  # ===========================================================================
+  - ac_index: 4
+    ac_text: "bats test: PR merged 検知後 30s 以内に対応 Worker window kill。SLA は論理積で検証（poll_interval × max_retry ≤ 30s）。bats テスト実行時間は 1 秒以内。"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac4: pilot-fallback-monitor.sh has pr-merged cleanup logic"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "4b"
+    ac_text: "pilot-fallback-monitor.sh が _check_window_alive を observer-window-check.sh から使用する"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac4: pilot-fallback-monitor.sh uses _check_window_alive from observer-window-check.sh"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+      - "plugins/twl/scripts/lib/observer-window-check.sh"
+
+  - ac_index: "4c"
+    ac_text: "window 存在確認に list-windows を使用する（has-session 不使用、§4.9 準拠）"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac4: pilot-fallback-monitor.sh uses list-windows not has-session for window check"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "4d"
+    ac_text: "POLL_INTERVAL が定義され 15s 以下である（SLA 検証）"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac4: sla poll_interval is defined and <= 15s"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "4e"
+    ac_text: "poll_interval × max_retry ≤ 30s を論理積で assert（wall-clock 待機なし）"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac4: sla max_retry x poll_interval <= 30s (logical assertion without wall-clock wait)"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "4f"
+    ac_text: "gh pr view --json state stub が即時 MERGED を返す（CI で GitHub API を叩かない）"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac4: gh pr view --json state stub returns MERGED immediately"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "4g"
+    ac_text: "PR MERGED 状態のとき tmux kill-window が Worker window に対して実行される（spy 確認）"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac4: pr merged → tmux kill-window is called for worker window"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "4h"
+    ac_text: "kill-window の -t 引数が正しい Worker window 名である"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac4: kill-window targets correct worker window name"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  - ac_index: "4i"
+    ac_text: "cleanup テスト実行時間は 2 秒以内（wall-clock 待機なし mock の確認）"
+    test_file: "plugins/twl/tests/bats/pilot-fallback-monitor-1128.bats"
+    test_name: "ac4: no wall-clock sleep in cleanup test (executes under 2 seconds)"
+    impl_files:
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+
+  # ===========================================================================
+  # AC-5: pitfalls-catalog.md §17 追記 + §6.2 obsolete マーク（doc 更新 AC）
+  # bats テスト不要（catalog-integrity.bats がカバー）
+  # ===========================================================================
+  - ac_index: 5
+    ac_text: "pitfalls-catalog.md に §17 追記（BUDGET-LOW recovery で observer 介入が必須となった経緯 + 手順）+ 既存 §6.2 non_terminal_chain_end 復旧手順を obsolete マーク"
+    test_file: null
+    test_name: null
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+  # ===========================================================================
+  # AC-6: pitfalls-catalog.md §6.6 末尾に代替案検討セクション追記（doc 更新 AC）
+  # ===========================================================================
+  - ac_index: 6
+    ac_text: "pitfalls-catalog.md §6.6 末尾に「代替案検討：orchestrator alive のまま Worker Escape option（採用/非採用判断 + 根拠）」セクションを追記"
+    test_file: null
+    test_name: null
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+  # ===========================================================================
+  # AC-7: autopilot.md Recovery Procedures セクション更新（doc 更新 AC）
+  # ===========================================================================
+  - ac_index: 7
+    ac_text: "plugins/twl/architecture/domain/contexts/autopilot.md Recovery Procedures セクションに Pilot 自動 inject の許容範囲を追記（orchestrator unavailable 時のみ）"
+    test_file: null
+    test_name: null
+    impl_files:
+      - "plugins/twl/architecture/domain/contexts/autopilot.md"
