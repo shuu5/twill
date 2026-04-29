@@ -514,11 +514,13 @@ while true; do
     if declare -f _check_idle_completed &>/dev/null; then
         NOW=$(date +%s)
         for WIN in "${TARGET_WINS[@]}"; do
-            PANE_CONTENT=$(tmux capture-pane -t "$WIN" -p -S -60 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' || true)
+            # ANSI strip を strip_ansi() に統一 (evaluate_window() と同じ CSI 全除去)
+            PANE_CONTENT=$(tmux capture-pane -t "$WIN" -p -S -60 2>/dev/null | strip_ansi || true)
             FIRST_SEEN="${IDLE_COMPLETED_TS[$WIN]:-0}"
 
             if _check_idle_completed "$PANE_CONTENT" "$FIRST_SEEN" "$NOW" "${IDLE_COMPLETED_DEBOUNCE_SEC:-60}"; then
-                echo "[IDLE-COMPLETED] ${WIN}: completion confirmed, kill candidate (elapsed=$((NOW - FIRST_SEEN))s)"
+                # emit_event() に統一: --format json 時の出力形式を他チャネルと揃える
+                emit_event "IDLE-COMPLETED" "$WIN" "" "$(( NOW - FIRST_SEEN ))" "idle-confirmed" "-1"
                 if [[ -n "$EVENT_DIR" ]]; then
                     echo "{\"channel\":\"IDLE-COMPLETED\",\"window\":\"${WIN}\",\"elapsed_sec\":$((NOW - FIRST_SEEN)),\"ts\":${NOW}}" \
                         > "${EVENT_DIR}/idle-completed-${WIN//[^a-zA-Z0-9_-]/_}.json"
@@ -527,7 +529,7 @@ while true; do
                 IDLE_COMPLETED_TS[$WIN]=$NOW
             else
                 # completion phrase 初回検出 → first_seen_ts 記録
-                # C3: LLM indicator 不在の場合のみ記録（Thinking 中は false trigger を防ぐ）
+                # C3: detect_thinking() で LLM indicator 不在確認（Thinking 中は false trigger を防ぐ）
                 # local は関数外で使用不可 (bash baseline §2) — 単純代入を使う
                 _idle_thinking=$(detect_thinking "$(echo "$PANE_CONTENT" | tail -15)" 2>/dev/null || echo "")
                 if [[ "${IDLE_COMPLETED_TS[$WIN]:-0}" -eq 0 ]] && \
