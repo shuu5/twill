@@ -126,7 +126,7 @@ _DEFAULT_SCRIPT = (
 )
 # SESSION_STATE_SCRIPT env var で実行時上書き可能。テスト時は monkeypatch で設定。
 
-_VALID_SESSION_ID_RE = re.compile(r"^[a-zA-Z0-9]+\Z")
+_VALID_SESSION_ID_RE = re.compile(r"^[a-zA-Z0-9]+\Z")  # \Z は絶対末尾、$ より厳密（改行を許容しない）
 _VALID_WINDOW_NAME_RE = re.compile(r"^[A-Za-z0-9_./:@-]+\Z")
 _REQUIRED_CHECKPOINT_FIELDS = frozenset(
     {"step", "status", "findings_summary", "critical_count", "findings", "timestamp"}
