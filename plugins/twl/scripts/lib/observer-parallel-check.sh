@@ -76,13 +76,12 @@ check_controller_heartbeat_alive() {
 #
 # 判定方法（§11.3 必須条件2）:
 #   .supervisor/session.json の mode field を参照。
-#   field 不在時は --permission-mode flag の grep でフォールバック。
+#   field 不在または空文字の場合は "unknown" を返す（fail-closed）。
 # ---------------------------------------------------------------------------
 check_observer_mode() {
   local supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
   local session_file="${supervisor_dir}/session.json"
 
-  # .supervisor/session.json の mode field を優先
   if [[ -f "$session_file" ]]; then
     local mode
     mode=$(jq -r '.mode // empty' "$session_file" 2>/dev/null || echo "")
@@ -90,14 +89,6 @@ check_observer_mode() {
       echo "$mode"
       return
     fi
-  fi
-
-  # フォールバック: プロセス引数から --permission-mode を grep
-  local mode_from_ps
-  mode_from_ps=$(ps aux 2>/dev/null | grep 'cld\b' | grep -oP '(?:--permission-mode\s+)\K\S+' | head -1 || echo "")
-  if [[ -n "$mode_from_ps" ]]; then
-    echo "$mode_from_ps"
-    return
   fi
 
   echo "unknown"
