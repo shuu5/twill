@@ -239,3 +239,51 @@ issue_1087:
         - "debounce #1087-AC5: orchestrator.sh ヘッダーコメントが 120s debounce を記述している"
       status: RED
       red_mechanism: "各ドキュメントに DEBOUNCE_TRANSIENT_SEC=120s / 120 / Sonnet thinking time の記述が未追加"
+
+# --- Issue #1089 ---
+issue_1089:
+  issue: 1089
+  framework: bats
+  test_file: "plugins/twl/tests/bats/scripts/tech-stack-detect.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "plugins/twl/scripts/tech-stack-detect.sh に Hono 検出ロジックが追加され、変更ファイルに *.ts を含み、かつ PROJECT_ROOT 配下に from hono または import.*hono を含む .ts ファイルが存在する場合、LANGUAGE_HINTS[\"hono\"]=1 を設定して worker-code-reviewer language=hono を出力する。"
+      test_names:
+        - "ac1: tech-stack-detect detects hono via import hono in ts file"
+        - "ac1b: tech-stack-detect detects hono via from hono in ts file"
+      status: RED
+      red_mechanism: "Hono 検出ロジック未実装のため出力が空。assert_output --partial \"worker-code-reviewer language=hono\" が fail する。"
+
+    - ac_index: 2
+      ac_text: "*.tsx / *.jsx の Next.js 検出と Hono 検出が衝突しない。*.ts のみが Hono 検出のトリガとなり、*.tsx が Hono 検出をトリガしてはならない。"
+      test_name: "ac2: tech-stack-detect does not trigger hono detection on tsx-only changes"
+      status: GREEN_PRESERVED
+      note: "実装前でも .tsx のみでは Hono 非検出。実装後の boundary 保証として GREEN を維持すること。"
+
+    - ac_index: 3
+      ac_text: "regression: 同一スクリプトの FastAPI / Next.js / R / supabase / e2e 検出ロジックが本変更により壊れない。"
+      test_names:
+        - "ac3-regression: fastapi detection still works after hono addition"
+        - "ac3-regression: nextjs detection still works after hono addition"
+        - "ac3-regression: r detection still works after hono addition"
+        - "ac3-regression: supabase detection still works after hono addition"
+        - "ac3-regression: e2e detection still works after hono addition"
+      status: GREEN_PRESERVED
+      note: "既存検出は実装前後ともに PASS。実装後も regression しないことを保証する。"
+
+    - ac_index: 4
+      ac_text: "L14 の「Hono 検出は未実装」コメントを削除または「Hono 検出: .ts + from hono / import.*hono」を説明する正の記述に置換する。"
+      test_name: "ac4: hono-todo-comment is removed from tech-stack-detect.sh"
+      status: RED
+      red_mechanism: "コメント「Hono 検出は未実装」がまだ残っているため grep が成功し assert_failure が fail する。"
+
+    - ac_index: 5
+      ac_text: "plugins/twl/tests/bats/scripts/tech-stack-detect.bats に Hono 検出 PASS ケース（.ts + Hono import あり → worker-code-reviewer language=hono 出力）と negative ケース（.ts のみで Hono import なし → Hono hint 出力なし）を追加。"
+      test_names:
+        - "ac1: tech-stack-detect detects hono via import hono in ts file"
+        - "ac1b: tech-stack-detect detects hono via from hono in ts file"
+        - "ac5-negative: ts-only without hono import does not output hono"
+      status: MIXED
+      note: |
+        RED: ac1 / ac1b は実装前 fail（Hono 検出ロジック未実装）
+        GREEN: ac5-negative は実装前後ともに PASS（import なしでは非検出）
