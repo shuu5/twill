@@ -154,12 +154,17 @@ EOF
 # Group 3: Section number continuity (## N. format)
 # ===========================================================================
 
-@test "catalog-integrity: pitfalls-catalog has 14 consecutive sections §0-13" {
+@test "catalog-integrity: pitfalls-catalog has consecutive sections starting from §0" {
+  # 動的検出化: hardcoded section 数ではなく §0 起点契約と件数 ≥ 1 を assert する。
+  # pitfalls-catalog.md のセクション数変更（例: §0-15）に追従するためこの形式に移行。
+  # 背景: #1084 rework ブロッカー解消 / #1097 retrospective 参照。
   local pitfalls="${REPO_ROOT}/skills/su-observer/refs/pitfalls-catalog.md"
   [ -f "${pitfalls}" ]
   run bash "${SCRIPT}" --repo-root "${REPO_ROOT}" --check-sections "${pitfalls}"
   [ "${status}" -eq 0 ]
-  [[ "${output}" == *"sections:"*"pitfalls-catalog.md"*"14 sections §0-13"* ]]
+  # 動的 assertion: ファイル名 + section 件数 ≥ 1 + §0 起点
+  [[ "${output}" =~ sections:\ skills/su-observer/refs/pitfalls-catalog\.md\ \(([0-9]+)\ sections\ §0-[0-9]+\) ]]
+  [ "${BASH_REMATCH[1]}" -ge 1 ]
 }
 
 @test "catalog-integrity: --check-sections passes for all current ref files" {
@@ -182,6 +187,27 @@ EOF
   run bash "${SCRIPT}" --repo-root "${TMPDIR_TEST}" --check-sections "${fixture}"
   [ "${status}" -ne 0 ]
   [[ "${output}" == *"section gap"* ]]
+}
+
+@test "catalog-integrity: --check-sections §0-origin contract: §1-start catalog does not match §0 pattern" {
+  # AC3 regression: §0 起点契約の強制を確認する mock fixture テスト。
+  # §1 から始まる catalog は §0-origin assertion に一致しないことを検証する。
+  # test #12 (gap 検出) とは独立: gap なしで §1 起点という別条件をカバー。
+  local fixture="${TMPDIR_TEST}/non-zero-start.md"
+  cat > "${fixture}" <<'EOF'
+---
+type: reference
+---
+## 1. First Section
+content
+
+## 2. Second Section
+content
+EOF
+  run bash "${SCRIPT}" --repo-root "${TMPDIR_TEST}" --check-sections "${fixture}"
+  [ "${status}" -eq 0 ]
+  # §1 起点の出力は "§1-2" 形式になり、§0 起点パターンに一致しないことを確認
+  [[ ! "${output}" =~ \§0-[0-9]+ ]]
 }
 
 @test "catalog-integrity: --check-sections passes for file without numbered sections" {
