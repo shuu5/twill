@@ -41,13 +41,18 @@ _check_idle_completed() {
     echo "$pane_content" | grep -qE "$IDLE_COMPLETED_PHRASE_REGEX" || return 1
 
     # C3: LLM indicator 不在 (Thinking/Brewing 等の現在進行形)
-    # pitfalls-catalog.md §4.10 A2 定義準拠: 現在進行形のみ THINKING 扱い
-    local llm_indicators='Thinking|Brewing|Concocting|Ebbing|Proofing|Frosting|Reasoning|Computing|Planning|Composing|Processing|Burrowing|Cerebrating|Spinning|Orchestrating'
+    # SSOT: cld-observe-any の LLM_INDICATORS 配列と同期を保つこと (pitfalls §4.10 A2)
+    # 過去形 + "for N" は IDLE 扱い（Sautéed for / Worked for 等）— v18 past tense filter 準拠
+    local llm_indicators='Thinking|Brewing|Brewed|Concocting|Ebbing|Proofing|Frosting|Reasoning|Computing|Planning|Composing|Processing|Burrowing|Cerebrating|Spinning|Beboppin|Thundering|Baked|Cooked|Crunched|Churned|Skedaddling|Orchestrating|Running .* agents|[0-9]+ tool uses|thinking with max effort'
     if echo "$pane_content" | tail -15 | grep -qE "($llm_indicators)"; then
         return 1
     fi
 
-    # C4+C5: debounce 経過（first_seen_ts は Unix timestamp として扱う; elapsed >= debounce_sec）
+    # C4: first_seen_ts が設定済み（0 = 未設定 = 初回検出サイクル; Unix timestamp > 0 が必要）
+    # 0 のまま debounce 判定すると elapsed = now_ts（巨大値）で誤 emit が発生するため必須
+    [[ "$first_seen_ts" -gt 0 ]] || return 1
+
+    # C5: debounce 経過
     local elapsed=$(( now_ts - first_seen_ts ))
     [[ "$elapsed" -ge "$debounce_sec" ]] || return 1
 

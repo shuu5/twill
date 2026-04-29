@@ -377,8 +377,8 @@ teardown() {
     pane_content='✓ nothing pending (wt-twill-main-49606687)
 Worked for 2m 15s
 > '
-    first_seen_ts=0
-    now_ts=61
+    first_seen_ts=100
+    now_ts=161
     _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
   "
   [ "${status}" -eq 0 ]
@@ -395,8 +395,8 @@ Worked for 2m 15s
 Status=Refined
 Worked for 1m 30s
 > '
-    first_seen_ts=0
-    now_ts=61
+    first_seen_ts=100
+    now_ts=161
     _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
   "
   [ "${status}" -eq 0 ]
@@ -412,8 +412,8 @@ Worked for 1m 30s
     pane_content='refined ラベル付与: Issue #1114
 Worked for 45s
 > '
-    first_seen_ts=0
-    now_ts=61
+    first_seen_ts=100
+    now_ts=161
     _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
   "
   [ "${status}" -eq 0 ]
@@ -429,8 +429,8 @@ Worked for 45s
     pane_content='次のステップ: Issue #1105 の実装を開始してください。
 Worked for 3m 22s
 > '
-    first_seen_ts=0
-    now_ts=61
+    first_seen_ts=100
+    now_ts=161
     _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
   "
   [ "${status}" -eq 0 ]
@@ -446,8 +446,8 @@ Worked for 3m 22s
     pane_content='[merge-gate] merge-gate 成功: Issue #1118 マージ完了
 Worked for 5m 10s
 > '
-    first_seen_ts=0
-    now_ts=61
+    first_seen_ts=100
+    now_ts=161
     _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
   "
   [ "${status}" -eq 0 ]
