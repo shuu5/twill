@@ -187,6 +187,7 @@ teardown() {
     export PATH='${STUB_BIN}:${PATH}'
     export AUTOPILOT_DIR='${SANDBOX}/.autopilot'
     export WORKER_WINDOW='ap-worker-1128'
+    export NEXT_WORKFLOW='/twl:workflow-setup'
     bash '${MONITOR_SCRIPT}' --once --worker ap-worker-1128 2>/dev/null || true
   "
 
@@ -207,6 +208,7 @@ teardown() {
     export PATH='${STUB_BIN}:${PATH}'
     export AUTOPILOT_DIR='${SANDBOX}/.autopilot'
     export WORKER_WINDOW='ap-worker-1128'
+    export NEXT_WORKFLOW='/twl:workflow-setup'
     bash '${MONITOR_SCRIPT}' --once --worker ap-worker-1128 2>/dev/null || true
   "
 
