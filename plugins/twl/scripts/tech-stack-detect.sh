@@ -11,7 +11,7 @@
 #   worker-code-reviewer language=fastapi  (FastAPI + .py + fastapi import)
 #   worker-code-reviewer language=nextjs   (.tsx/.jsx + next.config.*)
 #   worker-code-reviewer language=r        (.R/.Rmd/.qmd)
-#   ※ Hono 検出は未実装（Issue #1081: hono は現状 tech-stack-detect.sh 未対応）
+#   worker-code-reviewer language=hono     (.ts + from 'hono' / from "hono" / from 'hono/...)
 # caller は prompt 先頭に "language=<name>:" を付与して Task を起動すること
 
 set -euo pipefail
@@ -53,6 +53,19 @@ done
 if $has_py; then
   if grep -rql --include="*.py" "from fastapi\|import fastapi" "$PROJECT_ROOT" 2>/dev/null; then
     LANGUAGE_HINTS["fastapi"]=1
+  fi
+fi
+
+# Hono: .ts ファイル + Hono import
+has_ts=false
+for f in "${FILES[@]}"; do
+  case "$f" in
+    *.ts) has_ts=true; break ;;
+  esac
+done
+if $has_ts; then
+  if grep -rql --include="*.ts" "from ['\"]hono['\"]\\|from ['\"]hono/" "$PROJECT_ROOT" 2>/dev/null; then
+    LANGUAGE_HINTS["hono"]=1
   fi
 fi
 
