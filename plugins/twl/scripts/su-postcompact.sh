@@ -3,7 +3,7 @@ set -euo pipefail
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
 PROJECT_ROOT="${CLAUDE_PROJECT_ROOT:-$(pwd)}"
 SUP_REAL="$(realpath -m "${SUPERVISOR_DIR}")"
-PROJECT_REAL="$(realpath "$PROJECT_ROOT")"
+PROJECT_REAL="$(realpath -m "$PROJECT_ROOT")"
 case "$SUP_REAL" in
   "$PROJECT_REAL"/*|"$PROJECT_REAL") : ;;
   *) echo "SUPERVISOR_DIR outside project root: $SUP_REAL" >&2; exit 1 ;;
