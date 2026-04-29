@@ -1,0 +1,160 @@
+mappings:
+  - ac_index: "common-1"
+    ac_text: "5 tool (twl_validate_deps / twl_validate_merge / twl_validate_commit / twl_check_completeness / twl_check_specialist) が tools.py に定義されていること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon1FiveToolsDefined::test_common1_five_tools_defined"
+
+  - ac_index: "common-2a"
+    ac_text: "各 tool に handler 関数 (twl_<name>_handler、pure Python) が存在すること（新 handler）"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon2HandlerFunctionsExist::test_common2_new_handler_functions_exist"
+
+  - ac_index: "common-2b"
+    ac_text: "既存 5 tool の signature/関数挙動/戻り値は不変"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon2HandlerFunctionsExist::test_common2_existing_handlers_intact"
+
+  - ac_index: "common-3"
+    ac_text: "@mcp.tool() decorator + try/except ImportError gate による MCP tool 登録が実装されていること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon3McpToolRegistration::test_common3_mcp_tool_registration_pattern"
+
+  - ac_index: "common-4a"
+    ac_text: "pytest 各 tool に対して handler 直接呼出経路で PASS すること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon4TwoCallPaths::test_common4_handler_directly_callable"
+
+  - ac_index: "common-4b"
+    ac_text: "pytest 各 tool に対して fastmcp 経由経路で PASS すること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon4TwoCallPaths::test_common4_mcp_tool_importable_via_module"
+
+  - ac_index: "common-5a"
+    ac_text: "pre-tool-use-deps-yaml-guard.sh が削除されず維持されていること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon5BashHooksPreserved::test_common5_pre_tool_use_deps_yaml_guard_exists"
+
+  - ac_index: "common-5b"
+    ac_text: "pre-bash-merge-guard.sh が削除されず維持されていること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon5BashHooksPreserved::test_common5_pre_bash_merge_guard_exists"
+
+  - ac_index: "common-5c"
+    ac_text: "pre-bash-commit-validate.sh が削除されず維持されていること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon5BashHooksPreserved::test_common5_pre_bash_commit_validate_exists"
+
+  - ac_index: "common-5d"
+    ac_text: "check-specialist-completeness.sh が削除されず維持されていること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon5BashHooksPreserved::test_common5_check_specialist_completeness_exists"
+
+  - ac_index: "common-7"
+    ac_text: "tools.py が mergegate.MergeGate クラスを import しないこと（sys.exit を含むため禁止）"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon7NoMergeGateImport::test_common7_no_mergegate_class_import"
+
+  - ac_index: "common-8"
+    ac_text: "twl_validate_merge_handler 呼出後に SystemExit が発生しないこと（MCP server プロセスが継続すること）"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon8NoSystemExit::test_common8_validate_merge_handler_no_system_exit"
+
+  - ac_index: "common-9a"
+    ac_text: "twl_validate_merge_handler が timeout_sec: int | None = 300 引数を持つこと"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon9TimeoutSecArgument::test_common9_validate_merge_handler_has_timeout_sec"
+
+  - ac_index: "common-9b"
+    ac_text: "twl_validate_commit_handler が timeout_sec: int | None = 300 引数を持つこと"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestCommon9TimeoutSecArgument::test_common9_validate_commit_handler_has_timeout_sec"
+
+  - ac_index: "AC2-1a"
+    ac_text: "twl_validate_deps_handler(plugin_root: str) -> dict の signature が正しいこと"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC21aValidateDepsSignature::test_ac2_1a_validate_deps_handler_signature"
+
+  - ac_index: "AC2-1b"
+    ac_text: "twl_validate_merge_handler(branch: str, base: str = 'main', timeout_sec: int | None = 300) -> dict の signature が正しいこと"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC21bValidateMergeSignature::test_ac2_1b_validate_merge_handler_signature"
+
+  - ac_index: "AC2-1c"
+    ac_text: "twl_validate_commit_handler(message: str, files: list[str], timeout_sec: int | None = 300) -> dict の signature が正しいこと"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC21cValidateCommitSignature::test_ac2_1c_validate_commit_handler_signature"
+
+  - ac_index: "AC2-1d"
+    ac_text: "twl_check_completeness_handler(manifest_context: str) -> dict の signature が正しいこと"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC21dCheckCompletenessSignature::test_ac2_1d_check_completeness_handler_signature"
+
+  - ac_index: "AC2-1e"
+    ac_text: "twl_check_specialist_handler(manifest_context: str) -> dict の signature が正しいこと"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC21eCheckSpecialistSignature::test_ac2_1e_check_specialist_handler_signature"
+
+  - ac_index: "AC2-3a"
+    ac_text: "twl_validate_merge_handler 呼出時に SystemExit が発生しないこと（C1-codex 検証）"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC23aNoSystemExit::test_ac2_3a_validate_merge_no_system_exit"
+
+  - ac_index: "AC2-3b-running"
+    ac_text: "twl_validate_merge_handler が _check_running_guard を呼ばないこと（Plan A' 2-guard scope 外）"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC23bNoGuardCalls::test_ac2_3b_no_check_running_guard_call"
+
+  - ac_index: "AC2-3b-phase"
+    ac_text: "twl_validate_merge_handler が _check_phase_review_guard を呼ばないこと（scope 外）"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC23bNoGuardCalls::test_ac2_3b_no_check_phase_review_guard_call"
+
+  - ac_index: "AC2-3c"
+    ac_text: "twl_check_completeness_handler が bash flock LOCK_EX 保持中に LOCK_SH で安全に読めること（R2-M3 flock 並列 test）"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC23cFlockParallel::test_ac2_3c_completeness_handler_readable_under_flock"
+
+  - ac_index: "AC2-3d"
+    ac_text: "twl_check_specialist_handler('test-ctx') の結果が ok=True, items=[], 'stub' in summary であること（R2-m2 stub envelope）"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC23dSpecialistStubEnvelope::test_ac2_3d_specialist_handler_stub_envelope"
+
+  - ac_index: "AC2-5a"
+    ac_text: "twl_validate_merge_handler(branch='test', timeout_sec=0) が {ok: False, error_type: 'timeout', exit_code: 124} を返すこと"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC25aValidateMergeTimeout::test_ac2_5a_validate_merge_timeout_response"
+
+  - ac_index: "AC2-5b"
+    ac_text: "twl_validate_commit_handler(message='test', files=[], timeout_sec=0) が {ok: False, error_type: 'timeout', exit_code: 124} を返すこと"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestAC25bValidateCommitTimeout::test_ac2_5b_validate_commit_timeout_response"
+
+  - ac_index: "AC-naming-2a"
+    ac_text: "twl_validate_deps の docstring 1 行目に 'validation module:' が含まれること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestACNaming2DocstringValidationModule::test_acnaming2_validate_deps_docstring"
+
+  - ac_index: "AC-naming-2b"
+    ac_text: "twl_validate_merge の docstring 1 行目に 'validation module:' が含まれること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestACNaming2DocstringValidationModule::test_acnaming2_validate_merge_docstring"
+
+  - ac_index: "AC-naming-2c"
+    ac_text: "twl_validate_commit の docstring 1 行目に 'validation module:' が含まれること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestACNaming2DocstringValidationModule::test_acnaming2_validate_commit_docstring"
+
+  - ac_index: "AC-naming-2d"
+    ac_text: "twl_check_completeness の docstring 1 行目に 'validation module:' が含まれること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestACNaming2DocstringValidationModule::test_acnaming2_check_completeness_docstring"
+
+  - ac_index: "AC-naming-2e"
+    ac_text: "twl_check_specialist の docstring 1 行目に 'validation module:' が含まれること"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestACNaming2DocstringValidationModule::test_acnaming2_check_specialist_docstring"
+
+  - ac_index: "AC-naming-3"
+    ac_text: "既存 twl_check の docstring に 'plugin file integrity' が含まれること（現在の docstring は「Check file existence and chain integrity for a plugin.」で含まれていない → RED）"
+    test_file: "cli/twl/tests/test_mcp_validation.py"
+    test_name: "TestACNaming3CheckDocstring::test_acnaming3_twl_check_docstring_contains_plugin_file_integrity"
