@@ -17,7 +17,7 @@ twl validate / deep-validate / check の出力。
 | message | string | 違反内容 |
 
 ### AuditReport
-twl audit の出力。5 セクション構成のレポート。
+twl audit の出力。10 セクション構成のレポート。
 
 | セクション | 内容 |
 |---|---|
@@ -242,9 +242,10 @@ Phase 2 は既存 Phase 0/1 の 5 MCP tool に加え、`cli/twl/src/twl/autopilo
 
 代表的な MCP tool call flow (完了後の最終形):
 
-- **chain dispatch**: `twl_chain_next_step` → `twl_chain_record_step` → next step
-- **merge-gate**: `twl_mergegate_run` → 内部 guard 検証 → gh PR merge → state transition
-- **worktree create**: `twl_worktree_create` → branch validation → `git worktree add` → state init
+<!-- chain dispatch flow は子 4-2/4-3 で chain module を MCP 化した後に具体化する -->
+- **merge-gate** (子 4 第 1 Wave): `twl_mergegate_run` → 内部 guard 検証 → gh PR merge → state transition
+- **worktree create** (子 4 第 1 Wave): `twl_worktree_create` → branch validation → `git worktree add` → state init
+- **chain dispatch** (子 4-2/4-3): `twl_chain_next_step` → `twl_chain_record_step` → next step (子 4 残 12 module で実装予定)
 
 ### Responsibility (Phase 2 スコープ)
 

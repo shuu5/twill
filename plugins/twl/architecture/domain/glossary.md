@@ -18,8 +18,8 @@
 | TWiLL | Type-Woven, invariant-Led Layering。フレームワークの正式名称。CLI コマンド `twl` で操作 | 全体 |
 | epic | 関連 Issue を統括する meta Issue。GitHub label `epic` が付与され、子 Issue を Acceptance Criteria の checkbox として保持する | Issue Management |
 | MCP server | Model Context Protocol server。AI session に対して tool/resource を提供する。本プロジェクトでは FastMCP stdio 実装を採用 (`cli/twl/src/twl/mcp_server/server.py`) | TWiLL Integration |
-| MCP tool | MCP server 経由で expose される callable 関数。`@mcp.tool()` decorator で登録され、JSON envelope を返す。tools.py に集約される | TWiLL Integration |
-| tools.py | `cli/twl/src/twl/mcp_server/tools.py`。MCP tool 群の SSOT ファイル。Hybrid Path 5 原則 (handler pure / json.dumps / try/except ImportError / 明示引数 / 1 ファイル集約) を踏襲 | TWiLL Integration |
+| MCP tool | MCP server 経由で expose される callable 関数。`@mcp.tool()` decorator で登録され、JSON envelope を返す。tools.py（または Phase 2 以降は分割後の tools_*.py）に集約される | TWiLL Integration |
+| tools.py | `cli/twl/src/twl/mcp_server/tools.py`。MCP tool 群の SSOT ファイル（Phase 0/1 現在）。Hybrid Path 5 原則 (handler pure / json.dumps / try/except ImportError / 明示引数 / 1 ファイル集約) を踏襲。Phase 2 末期に tools_validation.py / tools_state.py / tools_autopilot.py / tools_comm.py に分割予定 | TWiLL Integration |
 | twl | TWiLL の CLI コマンド短縮形 | 全体 |
 | twill-ecosystem | クロスリポジトリプロジェクト（#6）。TWiLL モノリポを統合管理 | Project Management |
 | TDD 直行 flow | Acceptance Criteria を起点に RED test → 実装 → GREEN 確認 → REFACTOR を順に進める co-autopilot の標準フロー（ADR-023）。proposal/specs 中間層を経由しない | Autopilot |
