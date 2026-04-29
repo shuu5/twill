@@ -633,3 +633,158 @@ MOCK_LIB
   grep -qiE 'spawn.*前.*条件|条件.*チェック.*spawn|_check_parallel_spawn_eligibility|11\.3' "$playbook" \
     || fail "su-observer-controller-spawn-playbook.md に spawn 前条件チェックセクションが存在しない（AC4 未実装）"
 }
+
+# ===========================================================================
+# Issue #1134: check_observer_mode セクション
+# AC3/AC4/AC5/AC6/AC7/AC9/AC10/AC11
+# ===========================================================================
+# 共通前提:
+#   - OBSERVER_PARALLEL_CHECK_MODE は unset して実行（env バイパス防止）
+#   - SUPERVISOR_DIR="$BATS_TEST_TMPDIR/.supervisor" を各テスト内で export
+#   - AC3 前提チェック: ps aux フォールバックブロック (L95-101) が削除済みであること
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Scenario #1134-1: mode=auto 取得
+# GIVEN: .supervisor/session.json に {"mode":"auto"} が書かれている
+# WHEN: check_observer_mode() を OBSERVER_PARALLEL_CHECK_MODE unset で呼ぶ
+# THEN: "auto" を stdout に返す
+# RED: AC3（ps aux フォールバック削除）が未実装のため、フォールバック除去後に PASS
+# ---------------------------------------------------------------------------
+
+@test "AC9 #1134-1: mode=auto 取得 - session.json から mode=auto を返す" {
+  # AC3 前提: ps aux フォールバックブロックが削除されていること
+  # RED: 現在 L97 に ps aux フォールバックが残存しているため fail する
+  if grep -l 'ps aux' "$PARALLEL_CHECK_LIB" >/dev/null 2>&1; then
+    fail "AC3 未実装: observer-parallel-check.sh に ps aux フォールバックブロック (L95-101) が残存している（削除対象: check_observer_mode() 内の ps aux | grep 'cld\\b' | grep -oP ... ブロック）"
+  fi
+
+  # SUPERVISOR_DIR を tmpdir に設定（AC11: common_setup は SUPERVISOR_DIR を export しないため個別設定）
+  export SUPERVISOR_DIR="$BATS_TEST_TMPDIR/.supervisor"
+  unset OBSERVER_PARALLEL_CHECK_MODE
+
+  mkdir -p "$SUPERVISOR_DIR"
+  echo '{"mode":"auto"}' > "$SUPERVISOR_DIR/session.json"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    export SUPERVISOR_DIR='$SUPERVISOR_DIR'
+    unset OBSERVER_PARALLEL_CHECK_MODE
+    check_observer_mode
+  "
+
+  assert_success
+  assert_output "auto"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario #1134-2: mode field 空 → unknown
+# GIVEN: .supervisor/session.json に {"mode":""} が書かれている
+# WHEN: check_observer_mode() を OBSERVER_PARALLEL_CHECK_MODE unset で呼ぶ
+# THEN: "unknown" を stdout に返す
+# RED: AC3（ps aux フォールバック削除）が未実装のため fail する
+# ---------------------------------------------------------------------------
+
+@test "AC9 #1134-2: mode field 空 → unknown - session.json mode 空のとき unknown を返す" {
+  # AC3 前提: ps aux フォールバックブロックが削除されていること
+  # RED: 現在 L97 に ps aux フォールバックが残存しているため fail する
+  if grep -l 'ps aux' "$PARALLEL_CHECK_LIB" >/dev/null 2>&1; then
+    fail "AC3 未実装: observer-parallel-check.sh に ps aux フォールバックブロック (L95-101) が残存している（削除対象: check_observer_mode() 内の ps aux | grep 'cld\\b' | grep -oP ... ブロック）"
+  fi
+
+  # SUPERVISOR_DIR を tmpdir に設定（AC11: 個別設定必須）
+  export SUPERVISOR_DIR="$BATS_TEST_TMPDIR/.supervisor"
+  unset OBSERVER_PARALLEL_CHECK_MODE
+
+  mkdir -p "$SUPERVISOR_DIR"
+  echo '{"mode":""}' > "$SUPERVISOR_DIR/session.json"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    export SUPERVISOR_DIR='$SUPERVISOR_DIR'
+    unset OBSERVER_PARALLEL_CHECK_MODE
+    check_observer_mode
+  "
+
+  assert_success
+  assert_output "unknown"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario #1134-3: file 不在 → unknown
+# GIVEN: .supervisor/session.json が存在しない
+# WHEN: check_observer_mode() を OBSERVER_PARALLEL_CHECK_MODE unset で呼ぶ
+# THEN: "unknown" を stdout に返す
+# RED: AC3（ps aux フォールバック削除）が未実装のため fail する
+# ---------------------------------------------------------------------------
+
+@test "AC9 #1134-3: file 不在 → unknown - session.json 不在のとき unknown を返す" {
+  # AC3 前提: ps aux フォールバックブロックが削除されていること
+  # RED: 現在 L97 に ps aux フォールバックが残存しているため fail する
+  if grep -l 'ps aux' "$PARALLEL_CHECK_LIB" >/dev/null 2>&1; then
+    fail "AC3 未実装: observer-parallel-check.sh に ps aux フォールバックブロック (L95-101) が残存している（削除対象: check_observer_mode() 内の ps aux | grep 'cld\\b' | grep -oP ... ブロック）"
+  fi
+
+  # SUPERVISOR_DIR を tmpdir に設定（AC11: 個別設定必須）
+  export SUPERVISOR_DIR="$BATS_TEST_TMPDIR/.supervisor"
+  unset OBSERVER_PARALLEL_CHECK_MODE
+
+  # session.json を作成しない（ディレクトリのみ作成）
+  mkdir -p "$SUPERVISOR_DIR"
+  # session.json は意図的に作成しない
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    export SUPERVISOR_DIR='$SUPERVISOR_DIR'
+    unset OBSERVER_PARALLEL_CHECK_MODE
+    check_observer_mode
+  "
+
+  assert_success
+  assert_output "unknown"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario #1134-4: fail-closed exit 2 with substring assert
+# GIVEN: .supervisor/session.json に {} （mode field なし）
+# AND: OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true, CONTROLLER_COUNT=2
+# AND: OBSERVER_PARALLEL_CHECK_MODE は unset（AC10: env バイパス防止）
+# WHEN: _check_parallel_spawn_eligibility() を呼ぶ
+# THEN: exit 2 かつ stderr に "bypass または auto mode が必要" を含む
+# RED: AC3（ps aux フォールバック削除）が未実装のため fail する
+# NOTE: assert_output --partial で substring 一致を確認（AC7 要件）
+# ---------------------------------------------------------------------------
+
+@test "AC9 #1134-4: fail-closed exit 2 - mode 不在で exit 2 かつ stderr substring assert" {
+  # AC3 前提: ps aux フォールバックブロックが削除されていること
+  # RED: 現在 L97 に ps aux フォールバックが残存しているため fail する
+  if grep -l 'ps aux' "$PARALLEL_CHECK_LIB" >/dev/null 2>&1; then
+    fail "AC3 未実装: observer-parallel-check.sh に ps aux フォールバックブロック (L95-101) が残存している（削除対象: check_observer_mode() 内の ps aux | grep 'cld\\b' | grep -oP ... ブロック）"
+  fi
+
+  # SUPERVISOR_DIR を tmpdir に設定（AC11: 個別設定必須）
+  export SUPERVISOR_DIR="$BATS_TEST_TMPDIR/.supervisor"
+  unset OBSERVER_PARALLEL_CHECK_MODE
+
+  mkdir -p "$SUPERVISOR_DIR"
+  # mode field なし（AC7: mode 不在状態）
+  echo '{}' > "$SUPERVISOR_DIR/session.json"
+
+  # AC10: OBSERVER_PARALLEL_CHECK_MODE は unset のまま実行
+  # heartbeat と controller_count は pass させる（mode の fail-closed のみ観測）
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    export SUPERVISOR_DIR='$SUPERVISOR_DIR'
+    unset OBSERVER_PARALLEL_CHECK_MODE
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=2 \
+    _check_parallel_spawn_eligibility
+  " 2>&1
+
+  # exit 2 であること
+  [[ "$status" -eq 2 ]] \
+    || fail "exit コードは 2 であるべきだが $status だった（mode 不在は必須条件失敗）"
+
+  # stderr に "bypass または auto mode が必要" が含まれること（AC7: assert_output --partial）
+  assert_output --partial "bypass または auto mode が必要"
+}
