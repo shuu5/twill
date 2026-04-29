@@ -36,8 +36,17 @@ MARKER = "★HUMAN GATE"  # ★HUMAN GATE
 
 def find_human_gate_adr() -> Path | None:
     """human-gate-marker を含む ADR ファイルを返す。存在しなければ None。"""
+    if not ADR_DIR.exists():
+        return None
     candidates = sorted(ADR_DIR.glob("ADR-*human-gate*.md"))
     return candidates[0] if candidates else None
+
+
+def _get_decision_text(adr_path: Path) -> str:
+    """ADR の Decision セクションテキストを返す。セクションがなければ空文字列。"""
+    text = adr_path.read_text(encoding="utf-8")
+    m = re.search(r"## Decision\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
+    return m.group(1) if m else ""
 
 
 # ---------------------------------------------------------------------------
@@ -66,68 +75,46 @@ class TestAC1ADRDocument:
                 f"AC1: ADR に '{section}' セクションが見当たらない"
             )
 
-    def test_ac1_decision_contains_marker_symbol(self):
-        # AC: Decision に記号 ★HUMAN GATE（U+2605）が明記されている
+    def _decision_text(self) -> str:
         adr_path = find_human_gate_adr()
         if adr_path is None:
-            pytest.fail("AC1: ADR ファイルが存在しないためマーカー検証不可")
-        text = adr_path.read_text(encoding="utf-8")
-        decision_match = re.search(r"## Decision\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
-        assert decision_match is not None, "AC1: Decision セクションが見当たらない"
-        decision_text = decision_match.group(1)
-        assert MARKER in decision_text, (
+            pytest.fail("AC1: ADR ファイルが存在しない")
+        dt = _get_decision_text(adr_path)
+        if not dt:
+            pytest.fail("AC1: Decision セクションが見当たらない")
+        return dt
+
+    def test_ac1_decision_contains_marker_symbol(self):
+        # AC: Decision に記号 ★HUMAN GATE（U+2605）が明記されている
+        assert MARKER in self._decision_text(), (
             f"AC1: Decision セクションに '{MARKER}' が見当たらない"
         )
 
     def test_ac1_decision_contains_primary_purpose(self):
         # AC: Decision に主目的が明記されている
-        adr_path = find_human_gate_adr()
-        if adr_path is None:
-            pytest.fail("AC1: ADR ファイルが存在しないため主目的検証不可")
-        text = adr_path.read_text(encoding="utf-8")
-        decision_match = re.search(r"## Decision\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
-        assert decision_match is not None, "AC1: Decision セクションが見当たらない"
-        decision_text = decision_match.group(1)
-        assert "主目的" in decision_text or "primary" in decision_text.lower(), (
+        dt = self._decision_text()
+        assert "主目的" in dt or "primary" in dt.lower(), (
             "AC1: Decision に主目的の記述が見当たらない"
         )
 
     def test_ac1_decision_contains_secondary_purpose(self):
         # AC: Decision に副目的が明記されている
-        adr_path = find_human_gate_adr()
-        if adr_path is None:
-            pytest.fail("AC1: ADR ファイルが存在しないため副目的検証不可")
-        text = adr_path.read_text(encoding="utf-8")
-        decision_match = re.search(r"## Decision\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
-        assert decision_match is not None, "AC1: Decision セクションが見当たらない"
-        decision_text = decision_match.group(1)
-        assert "副目的" in decision_text or "secondary" in decision_text.lower(), (
+        dt = self._decision_text()
+        assert "副目的" in dt or "secondary" in dt.lower(), (
             "AC1: Decision に副目的の記述が見当たらない"
         )
 
     def test_ac1_decision_contains_application_conditions(self):
         # AC: Decision に適用条件が明記されている
-        adr_path = find_human_gate_adr()
-        if adr_path is None:
-            pytest.fail("AC1: ADR ファイルが存在しないため適用条件検証不可")
-        text = adr_path.read_text(encoding="utf-8")
-        decision_match = re.search(r"## Decision\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
-        assert decision_match is not None, "AC1: Decision セクションが見当たらない"
-        decision_text = decision_match.group(1)
-        assert "適用条件" in decision_text or "condition" in decision_text.lower(), (
+        dt = self._decision_text()
+        assert "適用条件" in dt or "condition" in dt.lower(), (
             "AC1: Decision に適用条件の記述が見当たらない"
         )
 
     def test_ac1_decision_contains_phased_rollout(self):
         # AC: Decision に段階導入方針が明記されている
-        adr_path = find_human_gate_adr()
-        if adr_path is None:
-            pytest.fail("AC1: ADR ファイルが存在しないため段階導入方針検証不可")
-        text = adr_path.read_text(encoding="utf-8")
-        decision_match = re.search(r"## Decision\n(.*?)(?=\n## |\Z)", text, re.DOTALL)
-        assert decision_match is not None, "AC1: Decision セクションが見当たらない"
-        decision_text = decision_match.group(1)
-        assert "段階" in decision_text or "phase" in decision_text.lower() or "rollout" in decision_text.lower(), (
+        dt = self._decision_text()
+        assert "段階" in dt or "phase" in dt.lower() or "rollout" in dt.lower(), (
             "AC1: Decision に段階導入方針の記述が見当たらない"
         )
 
@@ -263,6 +250,9 @@ class TestAC4GrepVerification:
             capture_output=True,
             text=True,
         )
+        # grep: 0=found, 1=not-found, others=error
+        if result.returncode not in (0, 1):
+            pytest.fail(f"AC4: grep コマンドがエラー終了 (exit={result.returncode}): {result.stderr}")
         return [f.strip() for f in result.stdout.splitlines() if f.strip()]
 
     def test_ac4_stage1_at_least_6_files(self):
@@ -295,25 +285,20 @@ class TestAC4GrepVerification:
 
     def test_ac4_utf8_marker_not_corrupted(self):
         # AC: UTF-8 確認 — U+2605 (0xe2 0x98 0x85) が壊れていないこと
-        # grep -P '\xe2\x98\x85HUMAN GATE' で確認
+        marker_bytes = "★HUMAN GATE".encode("utf-8")  # \xe2\x98\x85HUMAN GATE
         target_files = [
-            str(INTERVENTION_CATALOG),
-            str(PITFALLS_CATALOG),
-            str(SU_OBSERVER_SKILL),
-            str(PR_MERGE_SKILL),
-            str(CO_AUTOPILOT_SKILL),
-            str(CO_ARCHITECT_SKILL),
-            str(GLOSSARY_PATH),
+            INTERVENTION_CATALOG,
+            PITFALLS_CATALOG,
+            SU_OBSERVER_SKILL,
+            PR_MERGE_SKILL,
+            CO_AUTOPILOT_SKILL,
+            CO_ARCHITECT_SKILL,
+            GLOSSARY_PATH,
         ]
-        result = subprocess.run(
-            ["grep", "-rlP", r"\xe2\x98\x85HUMAN GATE"] + target_files,
-            capture_output=True,
-            text=True,
-        )
-        matched_files = [f.strip() for f in result.stdout.splitlines() if f.strip()]
+        matched_files = [p for p in target_files if p.exists() and marker_bytes in p.read_bytes()]
         assert len(matched_files) >= 6, (
-            f"AC4 UTF-8: grep -P '\\xe2\\x98\\x85HUMAN GATE' で 6 ファイル以上ヒットしない。"
-            f"現在 {len(matched_files)} ファイル: {matched_files}"
+            f"AC4 UTF-8: U+2605 バイト列 ★HUMAN GATE が 6 ファイル以上に存在しない。"
+            f"現在 {len(matched_files)} ファイル: {[str(p) for p in matched_files]}"
         )
 
 
