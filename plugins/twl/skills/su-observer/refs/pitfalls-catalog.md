@@ -110,11 +110,18 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 
 | # | 状態 | A1 | A2 | A3 | A5 | 判定条件 | 期待アクション |
 |---|---|---|---|---|---|---|---|
-| S-1 | **IDLE** | stable | **なし**（または過去形 + for N） | stale 可 | processing/waiting | 所有権なしの非活動（完了済 Pilot/Worker の rest 状態） | 放置可。Wave 管理なら PR/commit 存在確認で完了を確定 |
+| S-1a | **IDLE**（一時的） | stable | **なし**（または過去形 + for N） | stale 可 | processing/waiting | 所有権なしの非活動（タスク進行中の一時的な非活性） | 放置可。Wave 管理なら PR/commit 存在確認で完了を確定 |
+| S-1b | **IDLE 確定 (cleanup target)** | stable | なし（または過去形 + for N） | stale | processing/waiting | S-1a + completion phrase 60s 安定（`monitor-channel-catalog.md [IDLE-COMPLETED]` regex マッチ） | **`[IDLE-COMPLETED]` 発火** → observer が kill 候補として判断。SU-4 ≤5 制約圧迫回避のため速やかに `tmux kill-window` |
 | S-2 | **THINKING** | dynamic | **現在進行形あり** | active | processing | LLM 活動中 | **`[PHASE-COMPLETE]/[REVIEW-READY]/[MENU-READY]/[FREEFORM-READY]/[STAGNATE]` 絶対 emit 禁止**（§4.3）。観察継続 |
 | S-3 | **MENU-READY** | stable | なし | stale 可 | input-waiting | 番号付き menu（`^[[:space:]❯►▶→]*[1-9][0-9]*[.):][[:space:]].+$`）または `[y/N]`/`Do you want to proceed\?`/`Enter to select` が pane 末尾に可視 | §2.4/§2.5 の deny-pattern 回避 + 最小番号 inject、specialist_handoff_menu なら `[D]` 最優先 |
 | S-4 | **REVIEW-READY** | stable | なし | active→stale 遷移 | ended/ready | `>>> 実装完了:`/`PASS`/`NEEDS_WORK`/`Phase N 完了` 等の signal。controller 別の正確な regex は `refs/pilot-completion-signals.md` 参照 | Wave 管理なら `commands/wave-collect.md` 起動。intervention-catalog pattern-7 参照 |
 | S-5 | **STAGNATE** | stable ≥ 3 連続 | なし | > 600s stale (`AUTOPILOT_STAGNATE_SEC` デフォルト) | processing (false positive) | 上記 S-1〜S-4 のいずれでもない真の stuck | `intervention-catalog.md` pattern-4（Layer 1 Confirm）→ 介入。Pilot なら phase-review 手動 inject、Worker なら `session-comm.sh inject` で軽い promt |
+
+**S-1 の区別（Issue #1117）**:
+- **S-1a IDLE（一時的、継続観察）**: completion phrase 未確認、または debounce 未達。タスク進行中の一時的な非活性として放置可
+- **S-1b IDLE 確定（cleanup 対象）**: completion phrase 60s 安定 → `[IDLE-COMPLETED]` 発火。`SU-4 ≤5` 制約（§4.5）圧迫回避のため速やかに kill する
+
+**S-1b と §4.3（LLM-active-override）の関係**: A2 に現在進行形 indicator がある場合は S-2 THINKING 確定のため `[IDLE-COMPLETED]` 絶対 emit 禁止。`_check_idle_completed()` の C3 条件で保証済み。
 
 **運用 MUST**:
 
@@ -125,7 +132,7 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 5. **past tense filter**: 動詞過去形 + `for [0-9]+[ms]` は **完了済** の表示。`Sautéed for 1m 30s` を S-2 扱いすると phase 境界で自動 inject が発火せず stall する（Phase AA Wave AA.2 Pilot stall 事例、Monitor v18 で修正済）
 
 **関連参照**:
-- `refs/monitor-channel-catalog.md` — チャネル定義（`[PHASE-COMPLETE]/[REVIEW-READY]/[MENU-READY]/[FREEFORM-READY]/[STAGNATE]/[BUDGET-LOW]/[PERMISSION-PROMPT]/[WINDOW-GONE]`）
+- `refs/monitor-channel-catalog.md` — チャネル定義（`[PHASE-COMPLETE]/[REVIEW-READY]/[MENU-READY]/[FREEFORM-READY]/[STAGNATE]/[BUDGET-LOW]/[PERMISSION-PROMPT]/[WINDOW-GONE]/[IDLE-COMPLETED]`）
 - `refs/pilot-completion-signals.md` — controller 別 S-4 signal 一覧
 - `refs/intervention-catalog.md` — 状態 × パターン × 3 層介入
 - §2.5 — S-3 specialist_handoff_menu variant（cursor marker 対応）

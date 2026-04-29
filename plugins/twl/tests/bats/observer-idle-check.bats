@@ -30,7 +30,7 @@ setup() {
   PITFALLS_CATALOG="${REPO_ROOT}/skills/su-observer/refs/pitfalls-catalog.md"
   SUPERVISE_CHANNELS="${REPO_ROOT}/skills/su-observer/refs/su-observer-supervise-channels.md"
   OBSERVER_LIB="${REPO_ROOT}/skills/su-observer/scripts/lib/observer-idle-check.sh"
-  CLD_OBSERVE_ANY="${REPO_ROOT}/../plugins/session/scripts/cld-observe-any"
+  CLD_OBSERVE_ANY="${REPO_ROOT}/../session/scripts/cld-observe-any"
 
   export MONITOR_CATALOG PITFALLS_CATALOG SUPERVISE_CHANNELS OBSERVER_LIB CLD_OBSERVE_ANY
 
@@ -57,8 +57,8 @@ teardown() {
   # AC: [IDLE-COMPLETED] セクションに completion phrase regex が SSOT として記載される
   # RED: セクションが存在しないため fail
   run bash -c "
-    # [IDLE-COMPLETED] セクション開始行番号を取得
-    section_line=\$(grep -n '\\[IDLE-COMPLETED\\]' '${MONITOR_CATALOG}' | head -1 | cut -d: -f1)
+    # ## [IDLE-COMPLETED] セクションヘッダー行番号を取得
+    section_line=\$(grep -n '^## \[IDLE-COMPLETED\]' '${MONITOR_CATALOG}' | head -1 | cut -d: -f1)
     [ -n \"\${section_line}\" ] || exit 1
     # セクション内に regex パターン定義が存在することを確認
     awk -v start=\"\${section_line}\" 'NR > start && /regex|REGEX|nothing pending|Status=Refined|merge-gate/ {found=1; exit} NR > start && /^## \[/ && NR > start+1 {exit} END {exit !found}' '${MONITOR_CATALOG}'

@@ -462,6 +462,17 @@ evaluate_window() {
 
 CYCLE=0
 
+# [IDLE-COMPLETED] 状態管理 — メインループスコープで宣言 (AC-5, Issue #1117)
+# evaluate_window() は stateless 設計を維持するため、連想配列はここで管理する
+declare -A IDLE_COMPLETED_TS
+
+# _check_idle_completed() の SSOT を source する
+_IDLE_CHECK_LIB="$(dirname "${BASH_SOURCE[0]}")/../plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+if [[ -f "$_IDLE_CHECK_LIB" ]]; then
+    # shellcheck source=/dev/null
+    source "$_IDLE_CHECK_LIB"
+fi
+
 # --once モード: 現在状態を評価して exit
 if [[ "$ONCE" == "true" ]]; then
     TARGET_WINS=()
@@ -496,6 +507,32 @@ while true; do
     for win in "${TARGET_WINS[@]}"; do
         evaluate_window "$win"
     done
+
+    # [IDLE-COMPLETED] 判定 — evaluate_window() 外のメインループ内に配置 (AC-5)
+    # stateless _check_idle_completed() に IDLE_COMPLETED_TS を渡す
+    if declare -f _check_idle_completed &>/dev/null; then
+        NOW=$(date +%s)
+        for WIN in "${TARGET_WINS[@]}"; do
+            PANE_CONTENT=$(tmux capture-pane -t "$WIN" -p -S -60 2>/dev/null | sed 's/\x1b\[[0-9;]*m//g' || true)
+            FIRST_SEEN="${IDLE_COMPLETED_TS[$WIN]:-0}"
+
+            if _check_idle_completed "$PANE_CONTENT" "$FIRST_SEEN" "$NOW" "${IDLE_COMPLETED_DEBOUNCE_SEC:-60}"; then
+                echo "[IDLE-COMPLETED] ${WIN}: completion confirmed, kill candidate (elapsed=$((NOW - FIRST_SEEN))s)"
+                if [[ -n "$EVENT_DIR" ]]; then
+                    echo "{\"channel\":\"IDLE-COMPLETED\",\"window\":\"${WIN}\",\"elapsed_sec\":$((NOW - FIRST_SEEN)),\"ts\":${NOW}}" \
+                        > "${EVENT_DIR}/idle-completed-${WIN//[^a-zA-Z0-9_-]/_}.json"
+                fi
+                # 60s ごとに継続 emit（observer が kill するまで繰り返す）
+                IDLE_COMPLETED_TS[$WIN]=$NOW
+            else
+                # completion phrase 初回検出 → first_seen_ts 記録
+                if [[ "${IDLE_COMPLETED_TS[$WIN]:-0}" -eq 0 ]] && \
+                   echo "$PANE_CONTENT" | grep -qE "${IDLE_COMPLETED_PHRASE_REGEX:-nothing pending}"; then
+                    IDLE_COMPLETED_TS[$WIN]=$NOW
+                fi
+            fi
+        done
+    fi
 
     if [[ "$MAX_CYCLES" -gt 0 && "$CYCLE" -ge "$MAX_CYCLES" ]]; then
         break
