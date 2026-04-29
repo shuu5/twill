@@ -107,11 +107,12 @@ B-1 (Python 経路 RMW atomic 化) 実装時に追加するサブコマンド:
 
 ### Amendment 1: mailbox write authority (Issue #1115, AC5-10)
 
-`twl_send_msg` / `twl_recv_msg` の追加により `mailbox/<receiver>.jsonl` への write 経路が追加された。
+`twl_send_msg` / `twl_notify_supervisor` の追加により `mailbox/<receiver>.jsonl` への write 経路が追加された。
 
 | ファイル | authorized writer | 経路 | 保護 |
 |---|---|---|---|
 | `mailbox/<receiver>.jsonl` | MCP server (`twl_send_msg_handler`) | Python flock (fcntl.LOCK_EX) | flock ✅ |
+| `mailbox/supervisor.jsonl` | MCP server (`twl_notify_supervisor_handler`) | Python flock (fcntl.LOCK_EX) | flock ✅ |
 
 - **write 経路**: `_append_atomic()` — `<receiver>.jsonl.lock` に LOCK_EX を取得してから jsonl に append
 - **read 経路**: `_read_since()` — lock なし read-only (append-only JSONL は read-only アクセスが安全)

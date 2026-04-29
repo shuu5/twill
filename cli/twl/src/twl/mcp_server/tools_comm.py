@@ -64,6 +64,7 @@ def _append_atomic(mailbox_path: Path, msg: dict) -> None:
     """Append msg as JSON line with flock protection (ADR-028)."""
     lock_path = mailbox_path.with_suffix(mailbox_path.suffix + ".lock")
     lock_path.touch(mode=0o600, exist_ok=True)
+    os.chmod(lock_path, 0o600)  # touch() ignores mode on existing files (Python spec)
     with open(lock_path, "a") as lockf:
         fcntl.flock(lockf, fcntl.LOCK_EX)
         try:
@@ -117,7 +118,8 @@ def _read_since(mailbox_path: Path, since: str | None) -> list[dict]:
                 result.append(msg)
             elif msg.get("id") == ulid_since:
                 found = True
-        return result
+        # Fallback when ULID not found (mailbox rotated/truncated): return all to avoid zero-loss violation
+        return result if found else lines
 
     if dt_since:
         result = []
@@ -144,7 +146,7 @@ def _send_msg_impl(
     type_: str,
     content: str,
     reply_to: str | None,
-    timeout_sec: int,
+    timeout_sec: int,  # reserved for future use; file-write is fire-and-forget
     autopilot_dir: str | None,
 ) -> dict:
     if not _validate_receiver(to):
@@ -170,8 +172,8 @@ def _send_msg_impl(
     try:
         _append_atomic(mailbox_path, msg)
         return {"ok": True, "id": msg_id, "exit_code": 0}
-    except Exception as exc:
-        return {"ok": False, "error_type": "write_error", "error": str(exc), "exit_code": 1}
+    except Exception:
+        return {"ok": False, "error_type": "write_error", "error": "mailbox write failed", "exit_code": 1}
 
 
 def _recv_msg_impl(
@@ -188,6 +190,8 @@ def _recv_msg_impl(
         if ulid_s is None and dt_s is None:
             return {"ok": False, "error_type": "invalid_since", "exit_code": 3}
 
+    if timeout_sec < 0:
+        return {"ok": False, "error_type": "invalid_timeout", "exit_code": 3}
     mailbox_path = _mailbox_dir(autopilot_dir) / f"{receiver}.jsonl"
     deadline = time.monotonic() + timeout_sec
 
