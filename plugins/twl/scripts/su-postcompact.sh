@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+PROJECT_ROOT="${CLAUDE_PROJECT_ROOT:-$(pwd)}"
+SUP_REAL="$(realpath -m "${SUPERVISOR_DIR}")"
+PROJECT_REAL="$(realpath -m "$PROJECT_ROOT")"
+case "$SUP_REAL" in
+  "$PROJECT_REAL"/*|"$PROJECT_REAL") : ;;
+  *) echo "SUPERVISOR_DIR outside project root: $SUP_REAL" >&2; exit 1 ;;
+esac
 [ -d "$SUPERVISOR_DIR" ] || exit 0
 
 # =============================================================================
@@ -19,7 +26,13 @@ if [[ -f "$SESSION_JSON" ]]; then
         # 変数を環境変数経由で渡す（heredoc への文字列展開 injection を防止）
         # ヒアドキュメントのデリミタをシングルクォートで囲みシェル展開を無効化
         SESSION_JSON_PATH="$SESSION_JSON" NEW_SESSION_ID_VAL="$NEW_SESSION_ID" python3 - <<'PYEOF'
-import json, os
+import json, os, sys
+from pathlib import Path
+project_root = Path(os.environ.get("CLAUDE_PROJECT_ROOT", os.getcwd())).resolve()
+sup_dir = Path(os.environ.get("SUPERVISOR_DIR", ".supervisor")).resolve()
+if not sup_dir.is_relative_to(project_root):
+    print(f"SUPERVISOR_DIR outside project root: {sup_dir}", file=sys.stderr)
+    sys.exit(1)
 path = os.environ["SESSION_JSON_PATH"]
 new_id = os.environ["NEW_SESSION_ID_VAL"]
 try:
