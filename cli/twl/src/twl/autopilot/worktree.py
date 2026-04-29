@@ -447,6 +447,63 @@ class WorktreeManager:
                         pass
             print(f"{branch}\t{path}\t{state}".rstrip())
 
+    def delete(self, branch_name: str) -> None:
+        """Delete a worktree and its local branch.
+
+        Mirrors worktree-delete.sh:30-100 logic (CWD guard excluded — handler layer).
+
+        Raises:
+            WorktreeArgError: On invalid branch name.
+            WorktreeError: On deletion failure.
+        """
+        if not branch_name or ".." in branch_name or branch_name.startswith("/"):
+            raise WorktreeArgError(f"不正なブランチ名: {branch_name!r}")
+
+        git_common_dir, project_dir = _resolve_git_common_dir(self.repo_path)
+        worktree_path = project_dir / "worktrees" / branch_name
+
+        if not worktree_path.exists():
+            raise WorktreeError(f"worktree が存在しません: {worktree_path}")
+
+        # Run teardown hook before removal
+        run_teardown_hook(worktree_path)
+
+        # git worktree remove --force
+        result = subprocess.run(
+            ["git", "--git-dir", str(_resolve_git_dir(project_dir, git_common_dir)),
+             "worktree", "remove", str(worktree_path), "--force"],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0:
+            # Fallback: manual removal
+            import shutil
+            try:
+                shutil.rmtree(str(worktree_path))
+            except OSError as e:
+                raise WorktreeError(
+                    f"worktree 削除に失敗しました: {result.stderr}\n{e}"
+                )
+
+        # Delete local branch
+        branch_result = subprocess.run(
+            ["git", "--git-dir", str(_resolve_git_dir(project_dir, git_common_dir)),
+             "branch", "-D", branch_name],
+            capture_output=True, text=True,
+        )
+        if branch_result.returncode != 0:
+            # Non-fatal: branch may already be deleted or not exist locally
+            pass
+
+    def list_porcelain(self) -> list[dict]:
+        """Return worktrees as list of dicts (read-only).
+
+        Returns:
+            List of {"branch": str, "path": str} for worktrees under worktrees/.
+        """
+        git_common_dir, project_dir = _resolve_git_common_dir(self.repo_path)
+        entries = self._list_worktrees(project_dir, git_common_dir)
+        return [{"branch": branch, "path": str(path)} for branch, path in entries]
+
     def cd(self, branch_query: str) -> None:
         """Print the path of a worktree matching branch_query to stdout."""
         git_common_dir, project_dir = _resolve_git_common_dir(self.repo_path)

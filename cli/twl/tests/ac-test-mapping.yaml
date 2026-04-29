@@ -1,46 +1,115 @@
 mappings:
-  - ac_index: 1
-    ac_text: "3 workflow とも mcp__twl__twl_audit で workflow_token_bloat <= 1200 tok 達成"
-    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+  - ac_index: "共通-1"
+    ac_text: "12 tool が tools.py に存在すること (twl_mergegate_run, twl_mergegate_reject, twl_mergegate_reject_final, twl_orchestrator_phase_review, twl_orchestrator_get_phase_issues, twl_orchestrator_summary, twl_orchestrator_resolve_repos, twl_worktree_create, twl_worktree_delete, twl_worktree_list, twl_worktree_generate_branch_name, twl_worktree_validate_branch_name)"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
     test_names:
-      - "TestAc1TokenBloat::test_ac1_lifecycle_token_bloat_le_1200"
-      - "TestAc1TokenBloat::test_ac1_refine_token_bloat_le_1200"
-      - "TestAc1TokenBloat::test_ac1_pr_merge_token_bloat_le_1200"
+      - "TestCommon1TwelveToolsExist::test_common1_all_12_tools_present_in_module"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_mergegate_run_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_mergegate_reject_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_mergegate_reject_final_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_orchestrator_phase_review_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_orchestrator_get_phase_issues_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_orchestrator_summary_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_orchestrator_resolve_repos_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_create_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_delete_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_list_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_generate_branch_name_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_validate_branch_name_exists"
 
-  - ac_index: 2
-    ac_text: "twl check --deps-integrity PASS (chain.py / chain-steps.sh / deps.yaml.chains の整合維持)"
-    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+  - ac_index: "共通-2"
+    ac_text: "12 個の handler 関数が tools.py に存在すること（twl_<name>_handler 命名）"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
     test_names:
-      - "TestAc2DepsIntegrity::test_ac2_deps_integrity_passes"
+      - "TestCommon2TwelveHandlersExist::test_common2_all_12_handlers_present"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_mergegate_run_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_orchestrator_phase_review_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_worktree_create_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_worktree_delete_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_worktree_list_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_worktree_validate_branch_name_handler_exists"
 
-  - ac_index: 3
-    ac_text: "twl check PASS (deps.yaml v3.0 構造整合)"
-    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+  - ac_index: "共通-3"
+    ac_text: "MCP tool 登録 — @mcp.tool() + try/except ImportError gate 実装済み"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
     test_names:
-      - "TestAc3TwlCheck::test_ac3_twl_check_passes"
+      - "TestCommon3McpToolRegistration::test_common3_tools_module_importable"
+      - "TestCommon3McpToolRegistration::test_common3_12_tools_importable_from_tools_module"
 
-  - ac_index: 4
-    ac_text: "各 workflow の動作変更なし (smoke test 3 件: lifecycle / refine / pr-merge を最小入力で実行し STATE 遷移が完了することを確認)"
-    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+  - ac_index: "共通-9"
+    ac_text: "action 系 tool (mergegate_run/reject/reject_final, orchestrator_phase_review, worktree_create/delete) に timeout_sec: int 引数が存在すること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
     test_names:
-      - "TestAc4SmokeTests::test_ac4_lifecycle_smoke_state_transition"
-      - "TestAc4SmokeTests::test_ac4_refine_smoke_state_transition"
-      - "TestAc4SmokeTests::test_ac4_pr_merge_smoke_state_transition"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_mergegate_run_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_mergegate_reject_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_mergegate_reject_final_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_orchestrator_phase_review_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_worktree_create_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_worktree_delete_handler_has_timeout_sec"
 
-  - ac_index: 5
-    ac_text: "split 先 (refs/ 配下の各 .md) が SKILL.md から正規 Read 経路で参照されることを確認 (grep で SKILL.md -> refs/ への参照を検証)"
-    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+  - ac_index: "AC4-1"
+    ac_text: "twl_mergegate_run_handler が存在し dict を返すこと。SystemExit/timeout/pr_resolve エラーを適切なエラー envelope で返却すること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
     test_names:
-      - "TestAc5RefsReferences::test_ac5_lifecycle_skill_references_refs"
-      - "TestAc5RefsReferences::test_ac5_refine_skill_references_refs"
-      - "TestAc5RefsReferences::test_ac5_pr_merge_skill_references_refs"
-      - "TestAc5RefsReferences::test_ac5_refs_files_exist_for_each_workflow"
+      - "TestAC41MergegateHandlers::test_ac41_twl_mergegate_run_handler_returns_dict"
+      - "TestAC41MergegateHandlers::test_ac41_twl_mergegate_run_handler_system_exit_catch"
+      - "TestAC41MergegateHandlers::test_ac41_twl_mergegate_run_handler_pr_resolve_error"
+      - "TestAC41MergegateHandlers::test_ac41_twl_mergegate_run_handler_timeout"
 
-  - ac_index: 6
-    ac_text: "specialist review 3 種 PASS — worker-architecture を必須として含む (chain SSoT 境界 / refs 切り出し境界の妥当性確認) + worker-codex-reviewer + issue-critic または issue-feasibility"
-    test_file: "cli/twl/tests/test_issue_985_workflow_split.py"
+  - ac_index: "AC4-2"
+    ac_text: "twl_orchestrator_phase_review_handler が存在し dict を返すこと。plan_file 不在/tmux 不在時は適切なエラー envelope を返却すること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
     test_names:
-      - "TestAc6SpecialistReview::test_ac6_worker_architecture_review_completed"
-      - "TestAc6SpecialistReview::test_ac6_worker_codex_reviewer_completed"
-      - "TestAc6SpecialistReview::test_ac6_issue_critic_or_feasibility_completed"
-    note: "specialist review は PR レビューフローで実施。テストはプレースホルダー。"
+      - "TestAC42OrchestratorHandlers::test_ac42_twl_orchestrator_phase_review_handler_returns_dict"
+      - "TestAC42OrchestratorHandlers::test_ac42_twl_orchestrator_phase_review_handler_plan_file_missing"
+      - "TestAC42OrchestratorHandlers::test_ac42_twl_orchestrator_phase_review_handler_tmux_not_found"
+      - "TestAC42OrchestratorHandlers::test_ac42_orchestrator_run_result_json_serializable"
+
+  - ac_index: "AC4-3"
+    ac_text: "WorktreeManager.delete/list_porcelain が worktree.py に存在し、twl_worktree_generate_branch_name_handler の issue_number が str 型であること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC43WorktreeHandlers::test_ac43_workTreeManager_delete_method_exists"
+      - "TestAC43WorktreeHandlers::test_ac43_workTreeManager_list_porcelain_method_exists"
+      - "TestAC43WorktreeHandlers::test_ac43_workTreeManager_list_porcelain_returns_list_of_dict"
+      - "TestAC43WorktreeHandlers::test_ac43_twl_worktree_generate_branch_name_handler_issue_number_is_str"
+
+  - ac_index: "AC4-5"
+    ac_text: "不変条件 B CWD-based role check — worktrees/ 配下の CWD から worktree_create/delete を呼ぶと invariant_b_violation で拒否される。main/ CWD からは通常実行パスに入る"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC45InvariantBCwdCheck::test_ac45_worktree_create_from_worktrees_cwd_rejected"
+      - "TestAC45InvariantBCwdCheck::test_ac45_worktree_delete_from_worktrees_cwd_rejected"
+      - "TestAC45InvariantBCwdCheck::test_ac45_worktree_create_from_main_cwd_not_rejected"
+
+  - ac_index: "AC4-6"
+    ac_text: "twl_worktree_list_handler が list[dict] 構造を含む dict を返すこと。twl_worktree_validate_branch_name_handler が WorktreeArgError を catch して envelope を返すこと"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC46CriticalAssertions::test_ac46_twl_worktree_list_handler_returns_list_dict_structure"
+      - "TestAC46CriticalAssertions::test_ac46_twl_worktree_validate_branch_name_handler_catches_worktree_arg_error"
+
+  - ac_index: "AC4-12"
+    ac_text: "twl_orchestrator_get_phase_issues_handler も plan_file 不在で graceful return すること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC412PlanFileCheck::test_ac412_twl_orchestrator_get_phase_issues_handler_plan_file_missing"
+
+  - ac_index: "AC4-13"
+    ac_text: "twl_mergegate_run と twl_orchestrator_phase_review の docstring に MCP_CLIENT_TIMEOUT が含まれること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC413DocstringTimeoutNote::test_ac413_twl_mergegate_run_docstring_has_mcp_client_timeout"
+      - "TestAC413DocstringTimeoutNote::test_ac413_twl_orchestrator_phase_review_docstring_has_mcp_client_timeout"
+
+  - ac_index: "AC-naming-1"
+    ac_text: "tool 名が snake_case で twl_<module>_<action> 規則に準拠していること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestACNaming1ToolNameConvention::test_naming1_all_tools_follow_snake_case_convention"
+
+  - ac_index: "AC-naming-2"
+    ac_text: "12 tool それぞれの docstring 1 行目が非空であること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestACNaming2DocstringNonEmpty::test_naming2_all_tools_have_non_empty_docstring_first_line"
