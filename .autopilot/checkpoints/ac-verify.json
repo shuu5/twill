@@ -1,8 +1,16 @@
 {
   "step": "ac-verify",
-  "status": "PASS",
-  "findings_summary": "0 CRITICAL, 0 WARNING",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 1 WARNING",
   "critical_count": 0,
-  "findings": [],
-  "timestamp": "2026-04-23T06:19:27Z"
+  "findings": [
+    {
+      "severity": "WARNING",
+      "category": "ac-side-effect-missing",
+      "confidence": 90,
+      "message": "AC5-7: #1033 close は PR merge 後の手動アクション。PR merge 前なので OPEN は正常だが、merge 後に 'gh issue close 1033 --repo shuu5/twill' の実行が必要。",
+      "evidence": "gh issue view 1033 state=OPEN (merge前の正常状態)"
+    }
+  ],
+  "timestamp": "2026-04-29T14:21:17Z"
 }

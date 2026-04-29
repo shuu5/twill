@@ -1,10 +1,15 @@
 {
+  "signal": "PHASE_COMPLETE",
   "phase": 1,
-  "done": [
-    799
-  ],
-  "failed": [],
-  "skipped": [],
-  "auto_close_fallback": [],
-  "sanity_warnings": []
+  "results": {
+    "done": [],
+    "failed": [
+      1128
+    ],
+    "skipped": [
+      1115,
+      1129
+    ]
+  },
+  "changed_files": []
 }

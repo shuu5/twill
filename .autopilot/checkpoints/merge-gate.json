@@ -6,44 +6,36 @@
   "findings": [
     {
       "severity": "WARNING",
-      "confidence": 92,
-      "file": "cli/twl/tests/test_autopilot_chain.py",
-      "line": 511,
-      "message": "_setup_ci still creates deltaspec/changes/ directories which are dead scaffolding after Phase Z removal. step_check() no longer validates DeltaSpec state.",
-      "category": "dead-code"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 90,
-      "file": "cli/twl/tests/test_autopilot_chain.py",
-      "line": 214,
-      "message": "test_propose_includes_direct_skip_steps and test_mode_unset_does_not_apply_direct_skip iterate over DIRECT_SKIP_STEPS which is now frozenset(). Tests pass vacuously.",
-      "category": "vacuous-test"
+      "confidence": 99,
+      "file": "cli/twl/src/twl/mcp_server/tools.py",
+      "line": 1125,
+      "message": "[FIXED] comm tools (twl_send_msg/recv_msg/notify_supervisor) が mcp インスタンスに未登録 → mcp.mount(_comm_mcp) 追加で修正済み (commit 5d60d03e)。23 tools 確認済み。",
+      "category": "architecture-fix-applied"
     },
     {
       "severity": "WARNING",
       "confidence": 85,
-      "file": "cli/twl/tests/test_autopilot_project.py",
-      "line": 163,
-      "message": "test_deltaspec_dirs_not_created_when_deltaspec_absent is stale after Phase Z removal - that code path was removed.",
-      "category": "stale-test"
+      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
+      "line": 58,
+      "message": "autopilot_dir パラメータに path traversal 検証なし (tech-debt)。内部 autopilot ツールの用途として受け入れ。",
+      "category": "path-traversal"
     },
     {
       "severity": "WARNING",
-      "confidence": 80,
-      "file": "plugins/twl/deps.yaml",
-      "line": 32,
-      "message": "setup chain description still mentions worktree-create which was removed from chain steps.",
-      "category": "stale-description"
+      "confidence": 85,
+      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
+      "line": 98,
+      "message": "_read_since がロックなし読み取り。不完全 JSONL 行は JSONDecodeError でスキップ。timeout_sec=0 ポールでの一時スキップ可能性あり。",
+      "category": "race-condition"
     },
     {
-      "severity": "INFO",
+      "severity": "WARNING",
       "confidence": 82,
-      "file": "cli/twl/src/twl/autopilot/chain.py",
-      "line": 57,
-      "message": "DIRECT_SKIP_STEPS = frozenset() is intentional but undocumented. Could confuse future readers.",
-      "category": "readability"
+      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
+      "line": 81,
+      "message": "_parse_since の re.IGNORECASE で小文字 ULID を受け入れるが、内部生成は大文字のみ。小文字 since 指定時にフォールバック全件返却が発動。",
+      "category": "boundary-condition"
     }
   ],
-  "timestamp": "2026-04-23T06:22:29Z"
+  "timestamp": "2026-04-29T14:42:48Z"
 }

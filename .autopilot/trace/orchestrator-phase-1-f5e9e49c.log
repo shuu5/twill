@@ -1,0 +1,161 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-04-29T13:42:54Z] orchestrator_pid=3608766 phase=1 started_at=2026-04-29T13:42:54Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #1128: Worker 起動
+[orchestrator] Issue #1128: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1128-tech-debtautopilot-budget-low-recover
+OK: issue-1128.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-45818c24-368d-44a6-b8ac-0dc02dc5b1ee-issue-1128 (parent=45818c24-368d-44a6-b8ac-0dc02dc5b1ee) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1128-tech-debtautopilot-budget-low-recover
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1128-tech-debtautopilot-budget-low-recover/.audit/auto-45818c24-368d-44a6-b8ac-0dc02dc5b1ee-issue-1128/panes/ap-twill-feat-1128-tech-debtautop-a3988da4.log
+Worker 起動完了: Issue #1128 (window=ap-twill-feat-1128-tech-debtautop-a3988da4, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1128-tech-debtautopilot-budget-low-recover)
+[orchestrator] Issue #1115: Worker 起動
+[orchestrator] Issue #1115: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1115-featmcp-tool-3-toolspy-epic-5-mailbox
+OK: issue-1115.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-45818c24-368d-44a6-b8ac-0dc02dc5b1ee-issue-1115 (parent=45818c24-368d-44a6-b8ac-0dc02dc5b1ee) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1115-featmcp-tool-3-toolspy-epic-5-mailbox
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1115-featmcp-tool-3-toolspy-epic-5-mailbox/.audit/auto-45818c24-368d-44a6-b8ac-0dc02dc5b1ee-issue-1115/panes/ap-twill-feat-1115-featmcp-tool-3-i3-f81a9787.log
+Worker 起動完了: Issue #1115 (window=ap-twill-feat-1115-featmcp-tool-3-i3-f81a9787, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1115-featmcp-tool-3-toolspy-epic-5-mailbox)
+[orchestrator] Issue #1129: Worker 起動
+[orchestrator] Issue #1129: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1129-fixmcp-merge-gate-specialist-toolspy
+Error: Issue #1129 は Project Board に登録されていません。
+  対処: Board に Issue を add してから再試行してください。
+ERROR: ファイルが存在しません: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1129.json
+  試したパス: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1129.json
+  bare sibling 候補: /home/shuu5/projects/local-projects/twill/.autopilot/issues/issue-1129.json
+  解決策: export AUTOPILOT_DIR=<.autopilot への絶対パス>
+[orchestrator] Issue #1129: Worker 起動失敗（スキップ）
+[orchestrator] Issue #1128: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1128.json を更新しました
+[orchestrator] Issue #1115: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1115.json を更新しました
+[orchestrator] Issue #1128: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1128.json を更新しました
+[orchestrator] Issue #1115: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1115.json を更新しました
+[orchestrator] Issue #1128: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1128.json を更新しました
+[orchestrator] Issue #1115: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1115.json を更新しました
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1115: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1115: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1115.json を更新しました
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 58 回, 607s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 59 回, 617s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 60 回, 628s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 61 回, 639s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 62 回, 649s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 63 回, 660s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 64 回, 670s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 65 回, 681s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 66 回, 692s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 67 回, 702s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 68 回, 713s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 69 回, 723s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 70 回, 734s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 71 回, 745s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 72 回, 755s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 73 回, 766s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 74 回, 777s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 75 回, 787s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 76 回, 798s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 77 回, 808s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 78 回, 819s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 79 回, 829s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 80 回, 840s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 81 回, 850s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 82 回, 861s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 83 回, 871s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 84 回, 882s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 85 回, 892s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 86 回, 903s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 87 回, 913s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 88 回, 924s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 89 回, 934s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 90 回, 945s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 91 回, 955s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 92 回, 966s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 93 回, 976s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 94 回, 987s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 95 回, 997s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 96 回, 1008s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 97 回, 1018s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 98 回, 1029s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 99 回, 1039s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 100 回, 1050s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 101 回, 1060s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 102 回, 1070s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 103 回, 1081s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 104 回, 1091s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 105 回, 1102s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 106 回, 1112s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 107 回, 1123s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 108 回, 1133s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 109 回, 1144s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 110 回, 1154s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 111 回, 1165s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 112 回, 1175s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 113 回, 1186s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 114 回, 1196s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 115 回, 1207s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 116 回, 1217s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 117 回, 1228s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 118 回, 1238s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 119 回, 1249s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 120 回, 1259s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 121 回, 1270s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 122 回, 1280s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 123 回, 1291s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 124 回, 1301s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 125 回, 1312s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 126 回, 1322s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 127 回, 1333s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 128 回, 1343s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 129 回, 1353s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 130 回, 1364s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 131 回, 1374s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 132 回, 1385s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 133 回, 1395s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 134 回, 1406s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 135 回, 1416s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 136 回, 1427s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1128 stagnate detected (RESOLVE_FAILED 137 回, 1437s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-04-29T14:39:59Z] orchestrator_pid=985333 phase=1 started_at=2026-04-29T14:39:59Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #1128: Worker 起動
+[orchestrator] Issue #1128: worktree 作成失敗: エラー: エラー: worktree 'feat/1128-tech-debtautopilot-budget-low-recover' は既に存在します
+Issue #1128 からブランチ名を生成中...
+生成されたブランチ名: feat/1128-tech-debtautopilot-budget-low-recover
+ERROR: 不正な状態遷移: failed → failed
+[orchestrator] Issue #1128: Worker 起動失敗（スキップ）
+[orchestrator] Issue #1115: Worker 起動
+[orchestrator] Issue #1115: 既存 worktree を使用: /home/shuu5/projects/local-projects/twill/worktrees/feat/1115-featmcp-tool-3-toolspy-epic-5-mailbox
+ERROR: issue-1115.json は既に存在します
+[orchestrator] Issue #1115: Worker 起動失敗（スキップ）
+[orchestrator] Issue #1129: Worker 起動
+[orchestrator] Issue #1129: worktree 作成失敗: エラー: エラー: worktree 'feat/1129-fixmcp-merge-gate-specialist-toolspy' は既に存在します
+Issue #1129 からブランチ名を生成中...
+生成されたブランチ名: feat/1129-fixmcp-merge-gate-specialist-toolspy
+ERROR: ファイルが存在しません: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1129.json
+  試したパス: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1129.json
+  bare sibling 候補: /home/shuu5/projects/local-projects/twill/.autopilot/issues/issue-1129.json
+  解決策: export AUTOPILOT_DIR=<.autopilot への絶対パス>
+[orchestrator] Issue #1129: Worker 起動失敗（スキップ）
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [],
+    "failed": [
+      1128
+    ],
+    "skipped": [
+      1115,
+      1129
+    ]
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了
