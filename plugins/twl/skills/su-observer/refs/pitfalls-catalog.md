@@ -241,6 +241,25 @@ EOF
 rm -f .supervisor/events/* 2>/dev/null || true
 ```
 
+### su-compact 内 inline 実行（mode 別）
+
+`su-compact` は §8 の step 1（doobidoo wave 保存）を **Step 2** で実施済とする。
+**Step 3** では step 5（working-memory.md 退避）+ step 6（events cleanup）のみ inline で実行する:
+
+```bash
+# Step 3 inline: working-memory.md 退避（step 5）
+mkdir -p .supervisor
+cat > .supervisor/working-memory.md <<EOF
+# Working Memory（退避: $(date +"%Y-%m-%d %H:%M")）
+...
+EOF
+
+# Step 3 inline: events cleanup（step 6）
+rm -f .supervisor/events/* 2>/dev/null || true
+```
+
+`commands/externalize-state.md` を nested invoke しない理由: Claude Code permission classifier の atomic command nested invoke 検知により permission prompt が発火するため（Issue #1120）。
+
 ---
 
 ## 9. 追記ルール

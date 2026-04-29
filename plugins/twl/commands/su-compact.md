@@ -79,10 +79,12 @@ TIMESTAMP=$(date +"%Y-%m-%d %H:%M")
 <!-- その他の重要な情報 -->
 ```
 
-`commands/externalize-state.md` を Read し、`--trigger <mode>` を引数として実行する:
-- `task` モード → `--trigger manual`
-- `wave` モード → `--trigger wave_complete`
-- `full` モード → `--trigger manual`
+以下を inline 実行する（`commands/externalize-state.md` への nested invoke は行わない — Issue #1120）:
+
+```bash
+# events cleanup（§8 step 6 — .supervisor/events/ 一括クリア）
+rm -f .supervisor/events/* 2>/dev/null || true
+```
 
 ### Step 4: compaction 提案（ユーザー手動実行）
 
@@ -101,6 +103,7 @@ TIMESTAMP=$(date +"%Y-%m-%d %H:%M")
 - externalize-state が存在しない場合にエラーを出力してはならない
 - `/compact` の自動実行を試みてはならない（built-in CLI のため skill/tool から起動不可）
 - 外部化が未完了の状態で処理を完了したと報告してはならない
+- `commands/externalize-state.md` への nested invoke（Read + 実行）を行ってはならない（permission prompt 回避、Issue #1120）
 
 ## 参照
 

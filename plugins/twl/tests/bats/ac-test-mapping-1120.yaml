@@ -1,0 +1,75 @@
+mappings:
+  - ac_index: 1
+    ac_text: >
+      plugins/twl/commands/su-compact.md Step 3 から commands/externalize-state.md への参照
+      （Read + 実行記述）を削除し、inline 処理に置換する。同 PR 内で
+      Issue #NN1119 placeholder 誤記を #1119 に修正する。
+    test_file: "plugins/twl/tests/bats/commands/su-compact-no-nested-invoke.bats"
+    test_names:
+      - "ac1: su-compact.md に externalize-state.md を Read する記述がないこと"
+      - "ac1: su-compact.md に externalize-state.md を実行する記述がないこと"
+      - "ac1: Issue 番号誤記 'Issue #NN1119' が存在しないこと"
+    impl_files:
+      - "plugins/twl/commands/su-compact.md"
+
+  - ac_index: 2
+    ac_text: >
+      plugins/twl/commands/externalize-state.md 自体は変更しない（独立 atomic として残置）。
+      git diff plugins/twl/commands/externalize-state.md が空であること。
+    test_file: "plugins/twl/tests/bats/commands/su-compact-no-nested-invoke.bats"
+    test_names:
+      - "ac2: externalize-state.md が変更されていないこと（git diff が空）"
+    impl_files:
+      - "plugins/twl/commands/externalize-state.md"
+
+  - ac_index: 3
+    ac_text: >
+      新セッション起動 → /twl:su-compact invoke → permission prompt が発火しないことを
+      human が観測する（manual テスト）。
+    test_file: null
+    test_names: []
+    impl_files: []
+    # manual テストのため自動テスト生成対象外
+
+  - ac_index: 4
+    ac_text: >
+      plugins/twl/commands/su-compact.md の「禁止事項（MUST NOT）」セクションに以下文言を追記する:
+      - `commands/externalize-state.md` への nested invoke（Read + 実行）を行ってはならない
+      （permission prompt 回避、Issue #1120）
+    test_file: "plugins/twl/tests/bats/commands/su-compact-no-nested-invoke.bats"
+    test_names:
+      - "ac4: MUST NOT セクションに nested invoke 禁止文言が追記されていること"
+      - "ac4: MUST NOT セクションに Issue #1120 の参照が含まれること"
+    impl_files:
+      - "plugins/twl/commands/su-compact.md"
+
+  - ac_index: 5
+    ac_text: >
+      plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §8「externalize-state inline 手順
+      クイックリファレンス」末尾に su-compact 内 inline 実装サブセクションを追加する。
+    test_file: "plugins/twl/tests/bats/commands/su-compact-no-nested-invoke.bats"
+    test_names:
+      - "ac5: pitfalls-catalog.md に su-compact inline 実装サブセクションが存在すること"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+  - ac_index: 6
+    ac_text: >
+      bats test を新規作成する。test path:
+      plugins/twl/tests/bats/commands/su-compact-no-nested-invoke.bats。
+      assertion: su-compact.md の本文中に commands/externalize-state.md を
+      Read + 実行する形式の記述がないこと。
+    test_file: "plugins/twl/tests/bats/commands/su-compact-no-nested-invoke.bats"
+    test_names:
+      - "ac6: su-compact.md 本文に externalize-state.md の Read + 実行形式の記述がないこと"
+      - "ac6: su-compact.md Step 3 に externalize-state.md への参照がないこと"
+    impl_files:
+      - "plugins/twl/commands/su-compact.md"
+
+  - ac_index: 7
+    ac_text: >
+      specialist review で permission classifier 再現性確認（manual 観察 → PR description に記載）。
+    test_file: null
+    test_names: []
+    impl_files: []
+    # manual テストのため自動テスト生成対象外
