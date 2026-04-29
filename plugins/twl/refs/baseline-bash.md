@@ -207,3 +207,53 @@ fi
 ```
 
 **レビュー観点**: 同一 input source に対する複数 `grep -E` / `=~` パターンの `^` 直後の character class（`[[:space:]]*` の有無）を比較し、形式が混在している場合は flag する。
+
+## 7. recursive glob (`**`) と globstar 設定
+
+bash の `**` パターン（recursive glob）は `shopt -s globstar` を有効化していなければ通常の `*` と同等に解釈され、ディレクトリを跨いだ再帰展開が行われない。`set -euo pipefail` 環境では展開後にマッチが 0 件でも `grep`・`ls`・`for` ループ等は終了コード 0 で「成功」を返すため、サイレント失敗（探索対象が空のまま処理が完了する）を引き起こす。
+
+**Why** (Issue #1081 / `plugins/twl/scripts/tech-stack-detect.sh:54` / commit `6d9bffa`): `tech-stack-detect.sh` で `grep -rql ... "$PROJECT_ROOT"/**/*.py` を `shopt -s globstar` なしに使用しており、リテラルの `**/*.py` パスとして展開されて FastAPI 検出が一切 fire しないバグが顕在化した。`grep -rql --include='*.py' "$pattern" "$PROJECT_ROOT"` 形式へ修正することで再帰探索 + 拡張子フィルタを明示している。
+
+### BAD: globstar 未設定で `**/*.ext` を使う
+
+```bash
+# BAD: shopt -s globstar なし — **/*.py がリテラルパスとして展開される
+# set -euo pipefail 下でも grep は match 0 件で exit 0 を返すためサイレント失敗
+if grep -rql 'from fastapi' "$PROJECT_ROOT"/**/*.py 2>/dev/null; then
+  LANGUAGE_HINTS["fastapi"]=1
+fi
+```
+
+### GOOD: `--include` で再帰検索を明示する
+
+```bash
+# GOOD: grep -r の再帰探索 + --include で拡張子フィルタ — globstar 設定不要
+if grep -rql --include='*.py' 'from fastapi' "$PROJECT_ROOT" 2>/dev/null; then
+  LANGUAGE_HINTS["fastapi"]=1
+fi
+```
+
+### GOOD: `find ... -name '*.ext'` で明示的に列挙する
+
+```bash
+# GOOD: find で再帰列挙してから処理する — POSIX 互換、globstar 不要
+while IFS= read -r f; do
+  : # process "$f"
+done < <(find "$PROJECT_ROOT" -type f -name '*.py')
+```
+
+### GOOD: 必要な範囲だけ `shopt -s globstar` を局所有効化する（最終手段）
+
+```bash
+# GOOD: サブシェル内で globstar を有効化し親シェルへ波及させない
+process_py_files() (
+  shopt -s globstar nullglob
+  for f in "$PROJECT_ROOT"/**/*.py; do
+    : # process "$f"
+  done
+)
+```
+
+> `nullglob` の併用も推奨（マッチ 0 件で iterable が空になる挙動を保証）。
+
+**レビュー観点**: bash スクリプトで `$VAR/**/*.ext` 形式の glob 展開を見つけた場合、同ファイル内（または source 元のスクリプト）で `shopt -s globstar` が有効化されているかを確認する。未設定であれば、`grep -rql --include='*.ext' ... "$DIR"` または `find "$DIR" -name '*.ext'` への置換を提案する。
