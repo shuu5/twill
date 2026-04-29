@@ -19,7 +19,7 @@ Wave 開始時に本カタログから Wave 種別に応じたチャネルを選
 | **PILOT-PHASE-COMPLETE** | Pilot 内部 chain の Phase/Issue 完了 signal | 即時 | Auto |
 | **PILOT-ISSUE-MERGED** | Pilot が merge-gate で Issue merge を完了した signal | 即時 | Auto |
 | **PILOT-WAVE-COLLECTED** | Pilot が wave-collect を完了した signal | 即時 | Auto |
-| [IDLE-COMPLETED] | completion phrase 確認済み controller の idle 確定 (cleanup-trigger) | 60s debounce | Confirm |
+| [IDLE-COMPLETED] | completion phrase 確認済み controller の idle 確定 (cleanup-trigger) | 60s debounce | Confirm（IDLE_COMPLETED_AUTO_KILL=1 時は Auto） |
 
 ---
 
@@ -786,7 +786,7 @@ for WIN in "${TARGET_WINS[@]}"; do
 done
 ```
 
-**自動 kill オプション (`IDLE_COMPLETED_AUTO_KILL=1`) は別 Issue に切出済み。本 Issue は alert (Confirm) のみ。**
+**自動 kill オプション**: `IDLE_COMPLETED_AUTO_KILL=1`（opt-in、Issue #1132）で `[IDLE-COMPLETED]` 発火時に `tmux kill-window` を自動実行（Layer 0 Auto）。デフォルトは alert のみ（Layer 1 Confirm）。
 
 ---
 
