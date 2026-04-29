@@ -103,6 +103,21 @@ B-1 (Python 経路 RMW atomic 化) 実装時に追加するサブコマンド:
 - 10s lock timeout: deadlock検出は弱い (flock(1) に deadlock detection はない)
 - `.lock` ファイルが session.json 隣に残存する (プロセス終了後も残る — 無害だが清掃が必要な場合がある)
 
+## Amendments
+
+### Amendment 1: mailbox write authority (Issue #1115, AC5-10)
+
+`twl_send_msg` / `twl_recv_msg` の追加により `mailbox/<receiver>.jsonl` への write 経路が追加された。
+
+| ファイル | authorized writer | 経路 | 保護 |
+|---|---|---|---|
+| `mailbox/<receiver>.jsonl` | MCP server (`twl_send_msg_handler`) | Python flock (fcntl.LOCK_EX) | flock ✅ |
+
+- **write 経路**: `_append_atomic()` — `<receiver>.jsonl.lock` に LOCK_EX を取得してから jsonl に append
+- **read 経路**: `_read_since()` — lock なし read-only (append-only JSONL は read-only アクセスが安全)
+- **file permissions**: mode=0o600 (`os.open(path, flags, 0o600)` opener)
+- **lock file 残留**: プロセス終了で LOCK_EX は自動解放、`.lock` ファイル自体は残留するが再利用可能
+
 ## Related
 
 - ADR-003 (unified-state-file) — session.json write authority matrix の拡張 (本 ADR が Amendments として追記)
@@ -110,3 +125,4 @@ B-1 (Python 経路 RMW atomic 化) 実装時に追加するサブコマンド:
 - ADR-018 (state-schema-ssot) — SSOT 原則の session.json write authority への拡張
 - Issue #974 — 本 ADR の発端、4 経路の atomic 化
 - Issue B-1 — Python 経路 RMW atomic 化 (session.py:add_warning / state.py:write)
+- Issue #1115 — mailbox MCP hub 実装 (Amendment 1)

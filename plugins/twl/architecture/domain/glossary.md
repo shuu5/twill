@@ -48,6 +48,8 @@
 | Test Scenario | テストプロジェクトに投入する Issue 群と期待結果のセット（smoke / regression / load） | Observation |
 | ★HUMAN GATE | ユーザーの判断・承認が必要な箇所を示す統一マーカー (ADR-030)。**主に observer の Layer 1/2 介入境界を明示**、副次的に autopilot 系の AskUserQuestion ポイントもマーク。grep で hand-off ポイントを集約可能。AUTO モード bypass の自動承認には付与しない | 全体 (observer 主体) |
 | architecture-drift | worker-architecture specialist が architecture spec drift を検出した際の category 値（ref-specialist-output-schema.md の category enum） | PR Cycle |
+| mailbox | MCP server 接続プロセス間の application-level message hub。`${AUTOPILOT_DIR}/mailbox/` 配下の file-based jsonl で実装。Autopilot Context 内部の通信機構として位置づけ（AC5-9）。session-comm.sh（tmux pane 操作）とは責務分離 | TWiLL Integration |
+| mailbox file | `${AUTOPILOT_DIR}/mailbox/<receiver>.jsonl`。per-receiver append-only JSONL ファイル。flock で保護（ADR-028）。mode=0o600。ULID ベースの message id を持つ | TWiLL Integration |
 
 ## 照合ポリシー
 
