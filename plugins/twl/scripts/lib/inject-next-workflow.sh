@@ -9,6 +9,8 @@ declare -gA RESOLVE_FAIL_COUNT 2>/dev/null || true
 declare -gA RESOLVE_FAIL_FIRST_TS 2>/dev/null || true
 declare -gA INJECT_TIMEOUT_COUNT 2>/dev/null || true
 declare -gA NUDGE_COUNTS 2>/dev/null || true
+declare -gA LAST_STATE_MTIME 2>/dev/null || true
+declare -gA LAST_STAGNATE_WARN_TS 2>/dev/null || true
 
 # inject_next_workflow: current_step terminal 値を検知して次の workflow skill を tmux inject する（ADR-018）
 # 引数: issue, window_name, entry（省略時は _default:${issue}）
@@ -37,18 +39,43 @@ inject_next_workflow() {
       echo "[${_trace_ts}] issue=${issue} category=RESOLVE_ERROR exit=${next_skill_exit} result=skip" >> "$_trace_log" 2>/dev/null || true
     fi
 
-    # --- AC-3: stagnate 検知（RESOLVE_FAILED 連続カウント） ---
-    local _fail_count="${RESOLVE_FAIL_COUNT[$entry]:-0}"
+    # --- stagnate 検知（RESOLVE_FAILED 連続カウント + mtime progress signal） ---
+    # AC-2/6: 関数スコープ宣言（二重宣言パターン — source 先での初期化保証）
+    declare -gA LAST_STATE_MTIME 2>/dev/null || true
+    declare -gA LAST_STAGNATE_WARN_TS 2>/dev/null || true
+
     local _now
     _now=$(date +%s 2>/dev/null || echo 0)
+
+    # AC-1/3: mtime チェックは FAIL_COUNT インクリメントより前に実施
+    local _state_file="${AUTOPILOT_DIR}/issues/issue-${issue}.json"
+    local _current_mtime=0
+    _current_mtime=$(stat -c '%Y' "$_state_file" 2>/dev/null || echo 0)
+    local _last_mtime="${LAST_STATE_MTIME[$entry]:-0}"
+    if (( _current_mtime > _last_mtime )); then
+      # mtime 進行 → RESOLVE_FAIL カウントリセット（AC-7: LAST_STAGNATE_WARN_TS はリセットしない）
+      RESOLVE_FAIL_COUNT[$entry]=0
+      RESOLVE_FAIL_FIRST_TS[$entry]=""
+    fi
+    LAST_STATE_MTIME[$entry]="$_current_mtime"
+
+    local _fail_count="${RESOLVE_FAIL_COUNT[$entry]:-0}"
     if [[ "$_fail_count" -eq 0 ]]; then
       RESOLVE_FAIL_FIRST_TS[$entry]="$_now"
     fi
     RESOLVE_FAIL_COUNT[$entry]=$(( _fail_count + 1 ))
     local _elapsed=$(( _now - ${RESOLVE_FAIL_FIRST_TS[$entry]:-_now} ))
     if (( _elapsed >= AUTOPILOT_STAGNATE_SEC )); then
-      echo "[orchestrator] WARN: issue=${issue} stagnate detected (RESOLVE_FAILED ${RESOLVE_FAIL_COUNT[$entry]} 回, ${_elapsed}s >= AUTOPILOT_STAGNATE_SEC=${AUTOPILOT_STAGNATE_SEC})" >&2
+      # AC-5/9: WARN rate limit（AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC 既定 60s）
+      local _warn_interval="${AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC:-60}"
+      local _last_warn_ts="${LAST_STAGNATE_WARN_TS[$entry]:-0}"
+      local _warn_elapsed=$(( _now - _last_warn_ts ))
+      # AC-8: trace log は rate limit に関わらず常に記録
       echo "[${_trace_ts}] issue=${issue} skill=RESOLVE_FAILED result=stagnate elapsed=${_elapsed}s count=${RESOLVE_FAIL_COUNT[$entry]}" >> "$_trace_log" 2>/dev/null || true
+      if (( _warn_elapsed >= _warn_interval )); then
+        echo "[orchestrator] WARN: issue=${issue} stagnate detected (RESOLVE_FAILED ${RESOLVE_FAIL_COUNT[$entry]} 回, ${_elapsed}s >= AUTOPILOT_STAGNATE_SEC=${AUTOPILOT_STAGNATE_SEC})" >&2
+        LAST_STAGNATE_WARN_TS[$entry]="$_now"
+      fi
     fi
 
     return 1
@@ -56,6 +83,7 @@ inject_next_workflow() {
   # inject 成功時は RESOLVE_FAIL カウントをリセット
   RESOLVE_FAIL_COUNT[$entry]=0
   RESOLVE_FAIL_FIRST_TS[$entry]=""
+  LAST_STAGNATE_WARN_TS[$entry]=""  # AC-7: inject 成功時にリセット（mtime 変化時はリセットしない）
 
   # --- allow-list バリデーション（コマンドインジェクション防止） ---
   # 許可: /twl:workflow-<kebab> 形式（/twl:workflow-pr-merge を含む。#744: pr-merge skip 分岐を削除）
