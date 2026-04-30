@@ -193,6 +193,24 @@ WARN
     printf '{"wave":%s,"watcher_pids":[]}\n' "$CHAIN_ISSUE" > "$_watcher_pids_file" 2>/dev/null || true
   fi
 
+  # ★ #1155: wave-queue.json へ enqueue（IF-2）
+  # CHAIN_WAVE_QUEUE_ENTRY が設定されている場合のみ実行（JSON 文字列で渡す）
+  # 例: CHAIN_WAVE_QUEUE_ENTRY='{"wave":7,"issues":[1155],"spawn_cmd_argv":["bash","..."],"depends_on_waves":[6],"spawn_when":"all_current_wave_idle_completed"}'
+  _wave_queue_file="${_supervisor_dir}/wave-queue.json"
+  if [[ -n "${CHAIN_WAVE_QUEUE_ENTRY:-}" ]]; then
+    if [[ ! -f "$_wave_queue_file" ]]; then
+      # 初期化: current_wave は CHAIN_ISSUE を使う
+      printf '{"version":1,"current_wave":%s,"queue":[]}\n' "${CHAIN_ISSUE:-0}" > "$_wave_queue_file" 2>/dev/null || true
+    fi
+    # エントリを queue に append（jq で安全に結合）
+    {
+      _updated=$(jq --argjson entry "$CHAIN_WAVE_QUEUE_ENTRY" '.queue += [$entry]' "$_wave_queue_file" 2>/dev/null)
+      [[ -n "$_updated" ]] && printf '%s\n' "$_updated" > "$_wave_queue_file"
+    } || {
+      echo "[spawn-controller] WARN: wave-queue.json enqueue failed (continuing spawn)" >&2
+    }
+  fi
+
   # prompt-file の内容を --context として注入
   CHAIN_CONTEXT="$(cat "$PROMPT_FILE" 2>/dev/null || true)"
   CONTEXT_ARG=()

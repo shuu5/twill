@@ -1,0 +1,347 @@
+mappings:
+  # ===========================================================================
+  # AC-1: IDLE_COMPLETED_AUTO_NEXT_SPAWN 環境変数新設（AUTO_KILL と独立評価）
+  # ===========================================================================
+  - ac_index: 1
+    ac_text: "IDLE_COMPLETED_AUTO_NEXT_SPAWN 環境変数を新設。IDLE_COMPLETED_AUTO_KILL=1 と独立評価。AUTO_NEXT_SPAWN=1 時のみ next-spawn 判定実行。デフォルト 0（disabled = #1132 既存 kill-only 動作維持）。AUTO_KILL=0 & AUTO_NEXT_SPAWN=1 は warning log + next-spawn skip。bats fixture で AUTO_KILL 各組み合わせ動作検証。"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac1: cld-observe-any has IDLE_COMPLETED_AUTO_NEXT_SPAWN branch"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: "1b"
+    ac_text: "AUTO_NEXT_SPAWN と AUTO_KILL が独立評価される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac1: AUTO_NEXT_SPAWN and AUTO_KILL are evaluated independently"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: "1c"
+    ac_text: "AUTO_KILL=0 & AUTO_NEXT_SPAWN=1 の場合に warning log が出力される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac1: AUTO_KILL=0 and AUTO_NEXT_SPAWN=1 triggers warning"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  # ===========================================================================
+  # AC-2: wave-queue.json JSON Schema 管理 + validation
+  # ===========================================================================
+  - ac_index: 2
+    ac_text: ".supervisor/wave-queue.json に JSON Schema で Wave 候補を管理。auto-next-spawn.sh 起動時に JSON Schema validation MUST（jq 検証 or validate-schema.sh）。不正なら warning log + skip。必須フィールド: version(int=1), current_wave(int), queue[].wave(int), queue[].issues(int[]), queue[].spawn_cmd_argv(string[], 1+), queue[].depends_on_waves(int[]), queue[].spawn_when(enum: all_current_wave_idle_completed)。不在時は warning log + skip（exit 0）。"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac9-case5: wave-queue.schema.json exists and is valid JSON"
+    impl_files:
+      - "plugins/twl/skills/su-observer/schemas/wave-queue.schema.json"
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "2b"
+    ac_text: "wave-queue.schema.json に version フィールド（int=1）が必須として定義される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac2: wave-queue.json schema has required version field (int=1)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/schemas/wave-queue.schema.json"
+
+  - ac_index: "2c"
+    ac_text: "wave-queue.schema.json に current_wave フィールドが必須として定義される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac2: wave-queue.json schema has required current_wave field (int)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/schemas/wave-queue.schema.json"
+
+  - ac_index: "2d"
+    ac_text: "wave-queue.schema.json に spawn_cmd_argv（string[], minItems=1）が定義される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac2: wave-queue.json schema has required queue[].spawn_cmd_argv field (string[], minItems=1)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/schemas/wave-queue.schema.json"
+
+  - ac_index: "2e"
+    ac_text: "wave-queue.schema.json に spawn_when enum（all_current_wave_idle_completed）が定義される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac2: wave-queue.json schema has spawn_when enum (all_current_wave_idle_completed)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/schemas/wave-queue.schema.json"
+
+  - ac_index: "2f"
+    ac_text: "auto-next-spawn.sh 起動時に jq または validate-schema.sh で JSON Schema validation を実行する"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac2: auto-next-spawn.sh performs jq schema validation on startup"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  # ===========================================================================
+  # AC-3: observer-wave-check.sh 新設（_all_current_wave_idle_completed 判定）
+  # ===========================================================================
+  - ac_index: 3
+    ac_text: "kill 成功後、_all_current_wave_idle_completed（observer-wave-check.sh 新規）で「同 Wave 全 controller window が IDLE-COMPLETED 状態」判定。判定観測可能基準: (i) wave-queue.json.current_wave 取得、(ii) 同 wave の monitor 対象 window 集合を tmux list-windows ^(ap|wt|coi)-.*フィルタから取得、(iii) 全 window で IDLE_COMPLETED_TS[$WIN] > 0 が真の場合のみ判定真。判定偽（同 Wave 他 window が active）の場合は kill のみ終了。"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac3: scripts/lib/observer-wave-check.sh exists"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+
+  - ac_index: "3b"
+    ac_text: "_all_current_wave_idle_completed() 関数が定義されている"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac3: observer-wave-check.sh defines _all_current_wave_idle_completed function"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+
+  - ac_index: "3c"
+    ac_text: "関数内で wave-queue.json の current_wave を取得している"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac3: _all_current_wave_idle_completed uses wave-queue.json current_wave"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+
+  - ac_index: "3d"
+    ac_text: "tmux list-windows の結果を ^(ap|wt|coi)-.* パターンでフィルタする"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac3: _all_current_wave_idle_completed uses tmux list-windows with (ap|wt|coi) filter"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+
+  - ac_index: "3e"
+    ac_text: "同 Wave 全 window の IDLE_COMPLETED_TS[$WIN] > 0 を確認する"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac3: _all_current_wave_idle_completed checks IDLE_COMPLETED_TS for all wave windows"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+
+  # ===========================================================================
+  # AC-4: auto-next-spawn.sh 新設
+  # ===========================================================================
+  - ac_index: 4
+    ac_text: "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh 新設。引数: --queue <path> --triggered-by <window> [--dry-run]。動作: queue から次 Wave 1 件 dequeue → spawn_cmd_argv 配列を exec で argv 直接渡し（eval/bash -c 禁止）→ wave-queue.json から該当 entry 削除 + current_wave 更新 → stdout 実行サマリ。spawn 失敗時 queue に残し exit 1。spawn_cmd_argv[0] は allowlist（bash / cld-spawn 絶対パスのみ）検証、外れる場合 abort + intervention-log に拒否ログ。"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac4: auto-next-spawn.sh exists"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "4b"
+    ac_text: "auto-next-spawn.sh が --queue 引数を受け付ける"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac4: auto-next-spawn.sh accepts --queue argument"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "4c"
+    ac_text: "auto-next-spawn.sh が --triggered-by 引数を受け付ける"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac4: auto-next-spawn.sh accepts --triggered-by argument"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "4d"
+    ac_text: "spawn_cmd_argv の実行に exec を使用し eval/bash -c は禁止"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac4: auto-next-spawn.sh uses exec not eval for spawn_cmd_argv"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "4e"
+    ac_text: "spawn_cmd_argv[0] を allowlist（bash / cld-spawn 絶対パス）で検証する"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac4: auto-next-spawn.sh validates spawn_cmd_argv[0] against allowlist"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "4f"
+    ac_text: "アローリスト外の spawn_cmd_argv[0] を abort し intervention-log に拒否ログを書く"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac4: auto-next-spawn.sh rejects spawn_cmd_argv[0] outside allowlist with intervention-log"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  # ===========================================================================
+  # AC-5: intervention-log.md への記録
+  # ===========================================================================
+  - ac_index: 5
+    ac_text: "auto-cleanup + auto-next-spawn 実行時に .supervisor/intervention-log.md に append。形式: <ISO8601 UTC> auto-cleanup+next-spawn: triggered_by=<window>, killed=<window>, next_wave=<N>, spawned=[<issue_csv>]。spawn skip 時: auto-cleanup+next-spawn-skipped: triggered_by=<window>, reason=<理由>。append 失敗時は stderr 警告のみで継続。"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac5: auto-next-spawn.sh appends ISO8601 UTC timestamp to intervention-log"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "5b"
+    ac_text: "intervention-log の形式が triggered_by=<window>, killed=<window> を含む"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac5: intervention-log format includes triggered_by and killed fields"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "5c"
+    ac_text: "spawn 成功時のログに next_wave=<N>, spawned=[<issue_csv>] を含む"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac5: intervention-log format includes next_wave and spawned fields on success"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "5d"
+    ac_text: "skip 時に auto-cleanup+next-spawn-skipped: triggered_by=<w>, reason=<理由> を記録する"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac5: intervention-log records spawn-skipped with reason on skip"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  # ===========================================================================
+  # AC-6: AUTO_NEXT_SPAWN=0 / 未設定時の #1132 既存 kill-only 動作保全
+  # ===========================================================================
+  - ac_index: 6
+    ac_text: "IDLE_COMPLETED_AUTO_NEXT_SPAWN=0 または未設定の場合、#1132 既存 kill-only 動作変更しない。bats fixture で「AUTO_KILL=1 のみ設定 → kill 実行 / wave-queue.json 不参照 / intervention-log auto- 記録なし / unset IDLE_COMPLETED_TS[$WIN] のみ」検証。"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac6: AUTO_KILL=1 only (no AUTO_NEXT_SPAWN) -> kill executes"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: "6b"
+    ac_text: "kill-only パスでは wave-queue.json を参照しない"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac6: AUTO_KILL=1 only -> wave-queue.json not referenced in kill-only path"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: "6c"
+    ac_text: "kill 後 intervention-log に auto-cleanup+next-spawn 行がない"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac6: AUTO_KILL=1 only -> no auto-cleanup+next-spawn in intervention-log"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: "6d"
+    ac_text: "kill 成功後に IDLE_COMPLETED_TS[$WIN] を unset する（既存動作）"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac6: AUTO_KILL=1 only -> unset IDLE_COMPLETED_TS[WIN] after kill"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  # ===========================================================================
+  # AC-7: 誤 spawn シナリオ全 spawn-skip（5 シナリオ）
+  # ===========================================================================
+  - ac_index: "7a"
+    ac_text: "同 Wave に active window 残存 → spawn skip"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac7-a: active window remaining in wave -> spawn skipped"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "7b"
+    ac_text: "_check_idle_completed C3(LLM-active-override)が真の window 存在 → spawn skip"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac7-b: LLM-active-override (C3) window exists -> spawn skipped"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: "7c"
+    ac_text: "wave-queue.json 不在 → warning log + spawn skip（exit 0）"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac7-c: wave-queue.json absent -> spawn skipped (exit 0)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "7d"
+    ac_text: "JSON Schema validation 失敗（e.g. version=2） → warning log + spawn skip"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac7-d: JSON schema validation failure -> spawn skipped"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+      - "plugins/twl/skills/su-observer/schemas/wave-queue.schema.json"
+
+  - ac_index: "7e"
+    ac_text: "current_wave mismatch（kill 対象 window が current_wave に属さない） → spawn skip"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac7-e: current_wave mismatch (triggered window not in current_wave) -> spawn skipped"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  # ===========================================================================
+  # AC-8: dry-run モード
+  # ===========================================================================
+  - ac_index: 8
+    ac_text: "IDLE_COMPLETED_AUTO_NEXT_SPAWN=dry-run で判定実行 + spawn コマンド echo のみ、実際の spawn なし。auto-next-spawn.sh --dry-run も同等。intervention-log に auto-cleanup+next-spawn-dryrun: として記録。queue は dequeue しない（dry-run なので状態保持）。"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac8: IDLE_COMPLETED_AUTO_NEXT_SPAWN=dry-run in env -> dry-run mode activated"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: "8b"
+    ac_text: "auto-next-spawn.sh --dry-run フラグで実際の spawn が抑制される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac8: auto-next-spawn.sh --dry-run flag suppresses exec"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "8c"
+    ac_text: "dry-run 時の intervention-log エントリに auto-cleanup+next-spawn-dryrun: プレフィックスを使う"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac8: dry-run intervention-log uses dryrun prefix"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: "8d"
+    ac_text: "dry-run 後に wave-queue.json の queue が変化しない（dequeue しない）"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac9-case6: dry-run -> wave-queue.json queue state preserved (not dequeued)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  # ===========================================================================
+  # AC-9: observer-auto-next-spawn.bats 6 ケース GREEN
+  # （本ファイルそのものの AC であるため test_file = 本ファイル）
+  # ===========================================================================
+  - ac_index: 9
+    ac_text: "plugins/twl/tests/bats/observer-auto-next-spawn.bats 新規作成、6 ケース全 GREEN: (1) AUTO_NEXT_SPAWN 未設定→kill のみ (2) AUTO_NEXT_SPAWN=1+全idle+valid queue→spawn実行+log+json更新 (3) AUTO_NEXT_SPAWN=1+一部active→skip+log (4) AUTO_NEXT_SPAWN=1+queue不在→warning+skip (5) AUTO_NEXT_SPAWN=1+schema invalid→warning+skip (6) AUTO_NEXT_SPAWN=dry-run→echo+queue保持+dryrunlog"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac9-case1: AUTO_NEXT_SPAWN unset -> kill only, wave-queue.json not referenced"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+      - "plugins/session/scripts/cld-observe-any"
+
+  # ===========================================================================
+  # AC-10: ドキュメント 5 箇所更新
+  # ===========================================================================
+  - ac_index: 10
+    ac_text: "以下 5 箇所 update: (1) monitor-channel-catalog.md §[IDLE-COMPLETED] に AUTO_NEXT_SPAWN 説明追加、(2) pitfalls-catalog.md §4.10 S-1b 行に記述追記、(3) SKILL.md の Wave 管理セクション更新、(4) deps.yaml に auto-next-spawn.sh と observer-wave-check.sh 登録、(5) su-observer-wave-management.md に参照リンク追加。"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac10: monitor-channel-catalog.md has IDLE_COMPLETED_AUTO_NEXT_SPAWN description"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+
+  - ac_index: "10b"
+    ac_text: "pitfalls-catalog.md §4.10 S-1b 行に AUTO_NEXT_SPAWN 関連の記述が追記される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac10: pitfalls-catalog.md section 4.10 S-1b row has AUTO_NEXT_SPAWN description"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+  - ac_index: "10c"
+    ac_text: "SKILL.md の Wave 管理セクションが auto-next-spawn を反映して更新される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac10: SKILL.md Wave management section is updated"
+    impl_files:
+      - "plugins/twl/skills/su-observer/SKILL.md"
+
+  - ac_index: "10d"
+    ac_text: "deps.yaml に auto-next-spawn.sh が登録される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac10: deps.yaml registers auto-next-spawn.sh"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: "10e"
+    ac_text: "deps.yaml に observer-wave-check.sh が登録される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac10: deps.yaml registers observer-wave-check.sh"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: "10f"
+    ac_text: "su-observer-wave-management.md に auto-next-spawn.sh への参照リンクが追加される"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac10: su-observer-wave-management.md has reference link to auto-next-spawn"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/su-observer-wave-management.md"

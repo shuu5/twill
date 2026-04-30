@@ -614,6 +614,34 @@ while true; do
                                 > "${EVENT_DIR}/idle-completed-killed-${SAFE_WIN}-$(date -u +%Y%m%dT%H%M%SZ).json"
                         fi
                         unset 'IDLE_COMPLETED_TS[$WIN]'
+                        # ★ #1155: opt-in next-spawn 判定（IDLE_COMPLETED_AUTO_NEXT_SPAWN）
+                        # AUTO_KILL と独立評価。AUTO_KILL=0 の場合は warning + skip。
+                        if [[ "${IDLE_COMPLETED_AUTO_NEXT_SPAWN:-0}" != "0" ]]; then
+                            if [[ "${IDLE_COMPLETED_AUTO_KILL:-0}" != "1" ]]; then
+                                echo "[IDLE-COMPLETED] WARN: IDLE_COMPLETED_AUTO_NEXT_SPAWN requires AUTO_KILL=1 — next-spawn skip" >&2
+                            else
+                                _WAVE_QUEUE="${SUPERVISOR_DIR:-.supervisor}/wave-queue.json"
+                                _WAVE_CHECK_LIB="$(dirname "${BASH_SOURCE[0]}")/../../twl/skills/su-observer/scripts/lib/observer-wave-check.sh"
+                                _AUTO_NEXT_SPAWN="$(dirname "${BASH_SOURCE[0]}")/../../twl/skills/su-observer/scripts/auto-next-spawn.sh"
+                                if [[ -f "$_WAVE_CHECK_LIB" ]]; then
+                                    # shellcheck source=/dev/null
+                                    source "$_WAVE_CHECK_LIB"
+                                    if _all_current_wave_idle_completed "$_WAVE_QUEUE" IDLE_COMPLETED_TS; then
+                                        _DRY_RUN_FLAG=""
+                                        [[ "${IDLE_COMPLETED_AUTO_NEXT_SPAWN}" == "dry-run" ]] && _DRY_RUN_FLAG="--dry-run"
+                                        if [[ -f "$_AUTO_NEXT_SPAWN" ]]; then
+                                            bash "$_AUTO_NEXT_SPAWN" \
+                                                --queue "$_WAVE_QUEUE" \
+                                                --triggered-by "$WIN" \
+                                                ${_DRY_RUN_FLAG:+"$_DRY_RUN_FLAG"} 2>&1 \
+                                                | tee -a "${SUPERVISOR_DIR:-.supervisor}/intervention-log.md"
+                                        else
+                                            echo "[IDLE-COMPLETED] WARN: auto-next-spawn.sh not found: ${_AUTO_NEXT_SPAWN}" >&2
+                                        fi
+                                    fi
+                                fi
+                            fi
+                        fi
                     else
                         echo "[IDLE-COMPLETED] $WIN: auto-kill failed (window already gone or permission denied)" >&2
                     fi

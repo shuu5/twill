@@ -85,3 +85,51 @@ _crg_path="${TWILL_REPO_ROOT}/main/.code-review-graph"
 2. `plugins/twl/refs/observation-pattern-catalog.md` を Read → パターンと照合
 3. 集約結果をユーザーに提示
 4. 新たな Issue 化が必要か確認し、承認時のみ Issue draft 生成
+
+---
+
+## Wave 自動連鎖（auto-next-spawn、#1155）
+
+`IDLE_COMPLETED_AUTO_NEXT_SPAWN=1`（`AUTO_KILL=1` 必須）で Wave N → Wave N+1 の連鎖実行を自動化する。
+
+### 設定方法
+
+```bash
+export IDLE_COMPLETED_AUTO_KILL=1
+export IDLE_COMPLETED_AUTO_NEXT_SPAWN=1  # or "dry-run" for testing
+```
+
+### wave-queue.json 管理
+
+- パス: `.supervisor/wave-queue.json`
+- スキーマ: `skills/su-observer/schemas/wave-queue.schema.json`（JSON Schema v7）
+- enqueue: `spawn-controller.sh` 起動時に `CHAIN_WAVE_QUEUE_ENTRY` 環境変数（JSON）で渡す
+
+```json
+{
+  "version": 1,
+  "current_wave": 6,
+  "queue": [{
+    "wave": 7,
+    "issues": [1155],
+    "spawn_cmd_argv": ["bash", "plugins/twl/skills/su-observer/scripts/spawn-controller.sh", "..."],
+    "depends_on_waves": [6],
+    "spawn_when": "all_current_wave_idle_completed"
+  }]
+}
+```
+
+### auto-next-spawn.sh フロー
+
+```
+kill 成功 → IDLE_COMPLETED_AUTO_NEXT_SPAWN=1 チェック
+  → observer-wave-check.sh::_all_current_wave_idle_completed()
+    → 全 window IDLE-COMPLETED? Yes → auto-next-spawn.sh 呼び出し
+      → JSON Schema validation → allowlist チェック → exec argv 直接渡し
+      → wave-queue.json dequeue + current_wave 更新
+      → intervention-log.md に記録
+```
+
+**参照スクリプト**:
+- `skills/su-observer/scripts/auto-next-spawn.sh`（メイン spawn スクリプト、#1155）
+- `skills/su-observer/scripts/lib/observer-wave-check.sh`（Wave 判定ライブラリ、#1155）
