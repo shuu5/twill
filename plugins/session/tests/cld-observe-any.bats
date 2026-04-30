@@ -39,8 +39,6 @@ run_observe_once() {
     printf 'test-session:0 %s\n' "$win" > "$list_file"
 
     run bash <<EOF
-_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR"
-
 # tmux モック
 tmux() {
     case "\$1" in

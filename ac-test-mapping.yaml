@@ -530,3 +530,41 @@ issue_1165:
       note: "AC10 は twl check（CLI コマンド）の実行確認。bats テスト対象外。実装後に手動検証または CI で確認。"
       impl_files:
         - "plugins/session/deps.yaml"
+
+# --- Issue #1168 ---
+issue_1168:
+  issue: 1168
+  framework: bats
+  test_file: "plugins/session/tests/test_ac1168_observe_any_cleanup.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "plugins/session/tests/cld-observe-any.bats L42 のコマンドなし変数代入が解消されている（推奨: 行削除、代替: export 化）"
+      test_name: "ac1/ac4: L42 standalone variable assignment is removed (RED before fix)"
+      status: RED
+      red_mechanism: "L42 に行末 \\ なしの standalone 変数代入が 1 件存在するため、grep | grep -vc '\\\\' が 1 を返し [ \"$output\" -eq 0 ] が fail する"
+      impl_files:
+        - "plugins/session/tests/cld-observe-any.bats"
+
+    - ac_index: 4
+      ac_text: "L42 近辺に単独行コマンドなし変数代入が存在しない（grep で standalone 行が 0 件）"
+      test_name: "ac1/ac4: L42 standalone variable assignment is removed (RED before fix)"
+      status: RED
+      red_mechanism: "AC1 と同テスト。行末 \\ なし行が 1 件存在するため 0 にならない"
+      impl_files:
+        - "plugins/session/tests/cld-observe-any.bats"
+
+    - ac_index: 2
+      ac_text: "bats plugins/session/tests/cld-observe-any.bats 全件 PASS（既存テスト挙動が壊れていない）"
+      test_name: "ac2: existing cld-observe-any.bats parses correctly (regression guard)"
+      status: GREEN
+      note: "回帰ガード。--count で文法チェックのみ。全件実行は bats 本体で別途確認"
+      impl_files:
+        - "plugins/session/tests/cld-observe-any.bats"
+
+    - ac_index: 3
+      ac_text: "L77 以降の env-prefix 形式（_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR=\"$SCRIPT_DIR\" \\ bash ...）は変更しない（子プロセスへの環境変数伝播が維持されている）"
+      test_name: "ac3: env-prefix form at L77 is preserved (regression guard)"
+      status: GREEN
+      note: "回帰ガード。行末 \\ 付き env-prefix 行が 1 件以上存在することを確認"
+      impl_files:
+        - "plugins/session/tests/cld-observe-any.bats"
