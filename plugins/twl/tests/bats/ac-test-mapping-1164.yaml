@@ -1,0 +1,55 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/agents/ac-scaffold-tests.md に bats heredoc quote 形式の使い分けルールが BAD/GOOD 例 or @refs/baseline-bash.md §9 引用と共に記述されている。grep -E \"heredoc|<<.MOCKEOF|シングルクォート\" が コメント行を除いて 1 件以上ヒットし、かつ「外部変数」「parent shell」「展開されない」のいずれか相当の説明文が含まれる。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1164.bats"
+    test_names:
+      - "ac-scaffold-tests-1164: AC1 agent file exists"
+      - "ac-scaffold-tests-1164: AC1 heredoc or MOCKEOF or シングルクォート keyword present"
+      - "ac-scaffold-tests-1164: AC1 explanation mentions 外部変数 or parent shell or 展開されない"
+      - "ac-scaffold-tests-1164: AC1 BAD or GOOD example for heredoc quoting present"
+    impl_files:
+      - "plugins/twl/agents/ac-scaffold-tests.md"
+
+  - ac_index: 2
+    ac_text: "plugins/twl/agents/ac-scaffold-tests.md に bats から source <script> を生成する前のチェック手順 (対象スクリプトの BASH_SOURCE[0] == $0 guard または --source-only 相当 mode の Grep 確認) が BAD/GOOD 例 or @refs/baseline-bash.md §10 引用と共に記述されている。grep -E \"BASH_SOURCE|source guard|--source-only|function-only|_DAEMON_LOAD_ONLY\" が コメント行を除いて 1 件以上ヒットし、かつ「main 到達前 return」「set -euo pipefail で exit に巻き込まれる」相当の説明が含まれる。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1164.bats"
+    test_names:
+      - "ac-scaffold-tests-1164: AC2 BASH_SOURCE or source guard or source-only keyword present"
+      - "ac-scaffold-tests-1164: AC2 explanation mentions main 到達前 return or set -euo pipefail exit"
+      - "ac-scaffold-tests-1164: AC2 BAD or GOOD example for source guard check present"
+    impl_files:
+      - "plugins/twl/agents/ac-scaffold-tests.md"
+
+  - ac_index: 3
+    ac_text: "plugins/twl/refs/baseline-bash.md に §9 bats heredoc 内変数展開 が新セクションとして追加され、BAD コードブロック (<<'EOF' ... $EXT_VAR ... EOF) と GOOD コードブロック (<<EOF または EXT=$EXT bash <<'EOF') の対比、および「レビュー観点」段落が含まれている。grep -c \"^## 9\\.\" baseline-bash.md >= 1。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1164.bats"
+    test_names:
+      - "ac-scaffold-tests-1164: AC3 baseline-bash.md section '## 9.' exists"
+      - "ac-scaffold-tests-1164: AC3 section heading includes 'heredoc' or 'bats' or '変数展開'"
+      - "ac-scaffold-tests-1164: AC3 BAD block uses single-quote heredoc with external variable"
+      - "ac-scaffold-tests-1164: AC3 GOOD block uses unquoted heredoc or EXT=$EXT bash pattern"
+      - "ac-scaffold-tests-1164: AC3 section §9 contains レビュー観点 paragraph"
+    impl_files:
+      - "plugins/twl/refs/baseline-bash.md"
+
+  - ac_index: 4
+    ac_text: "plugins/twl/refs/baseline-bash.md に §10 source 対象スクリプトの guard / function-only load mode が新セクションとして追加され、BAD/GOOD 対比と「レビュー観点」段落が含まれている。grep -c \"^## 10\\.\" baseline-bash.md >= 1。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1164.bats"
+    test_names:
+      - "ac-scaffold-tests-1164: AC4 baseline-bash.md section '## 10.' exists"
+      - "ac-scaffold-tests-1164: AC4 section heading includes 'source' or 'guard' or 'function-only'"
+      - "ac-scaffold-tests-1164: AC4 BAD block in section §10 present"
+      - "ac-scaffold-tests-1164: AC4 GOOD block in section §10 present"
+      - "ac-scaffold-tests-1164: AC4 section §10 contains BASH_SOURCE guard pattern"
+      - "ac-scaffold-tests-1164: AC4 section §10 contains レビュー観点 paragraph"
+      - "ac-scaffold-tests-1164: AC4 §10 appears after §9 in file"
+    impl_files:
+      - "plugins/twl/refs/baseline-bash.md"
+
+  - ac_index: 5
+    ac_text: "改修後 twl check (deps-integrity + structure + prompt review) が全て PASS する。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1164.bats"
+    test_names:
+      - "ac-scaffold-tests-1164: AC5 twl check --deps-integrity passes"
+    impl_files: []
+    # impl_files: [] — twl check は CLI コマンドであり、特定の実装ファイルに対応しない
