@@ -187,7 +187,7 @@ trace_event() {
       if [[ "$_autopilot_trusted" -eq 1 ]]; then
         local _ap_basename
         _ap_basename=$(basename "$_ap_resolved")
-        if [[ ! "$_ap_basename" =~ ^\.autopilot(-[a-z0-9_-]{1,32})?$ ]]; then
+        if [[ ! "$_ap_basename" =~ ^\.autopilot(-[-a-z0-9_]{1,32})?$ ]]; then
           _autopilot_trusted=0
         fi
       fi

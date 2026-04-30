@@ -100,7 +100,8 @@ teardown() {
 @test "#1169 C2: autopilot-init.sh が .autopilot-wave10 を AUTOPILOT_DIR として .gitignore に .autopilot-*/ を追加する（RED）" {
   # GIVEN
   local wave_dir="$SANDBOX/.autopilot-wave10"
-  rm -rf "$AUTOPILOT_DIR"  # common_setup の .autopilot を除去
+  # guard: $AUTOPILOT_DIR が $SANDBOX 配下であることを確認してから削除
+  [[ -n "$AUTOPILOT_DIR" && "$AUTOPILOT_DIR" == "$SANDBOX"* ]] && rm -rf "$AUTOPILOT_DIR" || true
 
   # WHEN
   AUTOPILOT_DIR="$wave_dir" run bash "$SANDBOX/scripts/autopilot-init.sh"
@@ -131,6 +132,7 @@ teardown() {
   local wave_dir="${HOME}/.autopilot-wave10-1169-bats${BATS_TEST_NUMBER}"
   local trace_file="$wave_dir/trace/test-c3.jsonl"
   mkdir -p "$wave_dir/trace" "$wave_dir/issues"
+  trap 'rm -rf "$wave_dir"' EXIT
 
   # WHEN
   run env \
@@ -145,11 +147,11 @@ teardown() {
     echo "  AUTOPILOT_DIR: $wave_dir" >&2
     echo "  Expected: basename .autopilot-wave10 matches .autopilot-* pattern → trusted" >&2
     echo "  Actual: current code only trusts basename .autopilot" >&2
-    rm -rf "$wave_dir"
     return 1
   }
 
   rm -rf "$wave_dir"
+  trap - EXIT
 }
 
 # ---------------------------------------------------------------------------
@@ -193,6 +195,7 @@ teardown() {
   local home_evil_dir="${HOME}/.autopilot-evil-1169-bats${BATS_TEST_NUMBER}"
   local trace_file="$home_evil_dir/trace/test-c5.jsonl"
   mkdir -p "$home_evil_dir/trace" "$home_evil_dir/issues"
+  trap 'rm -rf "$home_evil_dir"' EXIT
 
   # WHEN
   run env \
@@ -208,8 +211,10 @@ teardown() {
     echo "  Expected: basename .autopilot-evil matches .autopilot-* pattern → trusted" >&2
     echo "  Actual: current code only trusts basename .autopilot" >&2
     rm -rf "$home_evil_dir"
+    trap - EXIT
     return 1
   }
 
   rm -rf "$home_evil_dir"
+  trap - EXIT
 }
