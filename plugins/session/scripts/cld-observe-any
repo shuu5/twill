@@ -250,9 +250,9 @@ get_budget_minutes() {
 # AC5: daemon heartbeat atomic write（set -euo pipefail 配下でも main loop を die させない）
 # tmpfile は TMPFILES に追加しない（cleanup() の rm 不在ファイル呼び出し回避）
 _emit_daemon_heartbeat() {
+    mkdir -p "${SUPERVISOR_DIR}" 2>/dev/null || return 0
     local tmp_file
     tmp_file=$(mktemp "${SUPERVISOR_DIR}/observer-daemon-heartbeat.json.tmp.XXXXXX" 2>/dev/null) || return 0
-    mkdir -p "${SUPERVISOR_DIR}" 2>/dev/null || { rm -f "$tmp_file" 2>/dev/null; return 0; }
     {
         printf '{"writer":"cld-observe-any","pid":%d,"last_update":%d,"host":"%s","version":"%s","interval_sec":%d,"cycle_count":%d}\n' \
             "$$" "$(date +%s)" "${HOSTNAME:-$(hostname 2>/dev/null || echo "unknown")}" \
