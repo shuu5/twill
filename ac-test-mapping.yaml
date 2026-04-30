@@ -412,3 +412,121 @@ issue_1123:
       status: GREEN
       note: "回帰ガード。修正前後ともに PASS を維持すること"
       impl_files: []
+
+# --- Issue #1165 ---
+issue_1165:
+  issue: 1165
+  framework: bats
+  mappings:
+    - ac_index: 1
+      ac_text: "plugins/session/scripts/lib/path-validate.sh を新設し validate_supervisor_dir() 関数を実装する"
+      test_file: "plugins/session/tests/path-validate.bats"
+      test_name: "AC3(#1165): valid_home — HOME 配下の path は accept する (exit 0)"
+      status: RED
+      red_mechanism: "path-validate.sh が存在しないため source が失敗し全テストが fail する"
+      impl_files:
+        - "plugins/session/scripts/lib/path-validate.sh"
+
+    - ac_index: 2
+      ac_text: "validate_supervisor_dir() は GNU realpath --canonicalize-missing で path を正規化する（python3 fallback あり; 両方不在の場合は exit 1 で reject）"
+      test_file: "plugins/session/tests/path-validate.bats"
+      test_name: "AC2(#1165): valid_canonical_missing — HOME 配下の存在しない path も accept する (exit 0)"
+      status: RED
+      red_mechanism: "path-validate.sh 未実装のため fail する"
+      impl_files:
+        - "plugins/session/scripts/lib/path-validate.sh"
+
+    - ac_index: 3
+      ac_text: "validate_supervisor_dir() は以下を reject する（exit 1）: 空文字 / raw 入力に .. セグメント含有 / 正規化後に $HOME/ ・ $PWD/ ・ ${TMPDIR:-/tmp}/ のいずれの prefix にも該当しない path"
+      test_file: "plugins/session/tests/path-validate.bats"
+      test_names:
+        - "AC3(#1165): valid_home — HOME 配下の path は accept する (exit 0)"
+        - "AC3(#1165): valid_pwd — PWD 配下の path は accept する (exit 0)"
+        - "AC3(#1165): valid_tmpdir — TMPDIR 配下の path は accept する (exit 0)"
+        - "AC3(#1165): reject_dotdot — /tmp/../etc は reject する (exit != 0)"
+        - "AC3(#1165): reject_relative_dotdot — ../../etc/passwd は reject する (exit != 0)"
+        - "AC3(#1165): reject_outside_whitelist — /etc/foo は whitelist 外のため reject する (exit != 0)"
+        - "AC3(#1165): reject_empty — 空文字は reject する (exit != 0)"
+        - "AC3(#1165): reject_symlink_escape — /etc へのシンボリックリンクは reject する (exit != 0)"
+      status: RED
+      red_mechanism: "path-validate.sh 未実装のため全ケースが fail する"
+      impl_files:
+        - "plugins/session/scripts/lib/path-validate.sh"
+
+    - ac_index: 4
+      ac_text: "cld-observe-any の SUPERVISOR_DIR デフォルト値設定直後、かつ CLD_OBSERVE_ANY_HEARTBEAT_PATH 等のデフォルト設定より前に validate_supervisor_dir を呼び、失敗時は exit 2 で abort する。SUPERVISOR_DIR には $() による正規化済み path を再代入する"
+      test_file: "plugins/session/tests/cld-observe-any.bats"
+      test_name: "AC4(#1165): invalid SUPERVISOR_DIR=/tmp/../etc で exit 2 かつ stderr に FATAL が含まれる"
+      status: RED
+      red_mechanism: "cld-observe-any に validate_supervisor_dir 呼び出しが未追加のため exit 2 にならず fail する"
+      impl_files:
+        - "plugins/session/scripts/cld-observe-any"
+        - "plugins/session/scripts/lib/path-validate.sh"
+
+    - ac_index: 5
+      ac_text: "cld-observe-any-launcher の CLI 引数解析 while ループ完了直後に validate_supervisor_dir を呼び、失敗時は exit 2 で abort する。SUPERVISOR_DIR には正規化済み path を再代入する。SUPERVISOR_DIR が空（未指定）の場合は validation を呼ばず既存の遅延設定動作を維持する"
+      test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+      test_name: "AC5(#1165): --supervisor-dir /etc/invalid-path で exit 2 になる"
+      status: RED
+      red_mechanism: "cld-observe-any-launcher に validate_supervisor_dir 呼び出しが未追加のため exit 2 にならず fail する"
+      impl_files:
+        - "plugins/session/scripts/cld-observe-any-launcher"
+        - "plugins/session/scripts/lib/path-validate.sh"
+
+    - ac_index: 6
+      ac_text: "plugins/session/tests/path-validate.bats を新設し、以下 9 ケースが PASS する: valid_home / valid_pwd / valid_tmpdir / valid_canonical_missing / reject_dotdot / reject_relative_dotdot / reject_outside_whitelist / reject_empty / reject_symlink_escape"
+      test_file: "plugins/session/tests/path-validate.bats"
+      test_names:
+        - "AC3(#1165): valid_home — HOME 配下の path は accept する (exit 0)"
+        - "AC3(#1165): valid_pwd — PWD 配下の path は accept する (exit 0)"
+        - "AC3(#1165): valid_tmpdir — TMPDIR 配下の path は accept する (exit 0)"
+        - "AC2(#1165): valid_canonical_missing — HOME 配下の存在しない path も accept する (exit 0)"
+        - "AC3(#1165): reject_dotdot — /tmp/../etc は reject する (exit != 0)"
+        - "AC3(#1165): reject_relative_dotdot — ../../etc/passwd は reject する (exit != 0)"
+        - "AC3(#1165): reject_outside_whitelist — /etc/foo は whitelist 外のため reject する (exit != 0)"
+        - "AC3(#1165): reject_empty — 空文字は reject する (exit != 0)"
+        - "AC3(#1165): reject_symlink_escape — /etc へのシンボリックリンクは reject する (exit != 0)"
+      status: RED
+      red_mechanism: "path-validate.sh 未実装のため全 9 ケースが fail する"
+      impl_files:
+        - "plugins/session/scripts/lib/path-validate.sh"
+
+    - ac_index: 7
+      ac_text: "既存 plugins/session/tests/cld-observe-any.bats に invalid SUPERVISOR_DIR=/tmp/../etc で exit 2 + stderr に FATAL 含む統合テスト 1 件以上を追加する"
+      test_file: "plugins/session/tests/cld-observe-any.bats"
+      test_name: "AC4(#1165): invalid SUPERVISOR_DIR=/tmp/../etc で exit 2 かつ stderr に FATAL が含まれる"
+      status: RED
+      red_mechanism: "cld-observe-any への validation 呼び出し未追加のため fail する"
+      impl_files:
+        - "plugins/session/scripts/cld-observe-any"
+        - "plugins/session/scripts/lib/path-validate.sh"
+
+    - ac_index: 8
+      ac_text: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats に invalid SUPERVISOR_DIR で exit 2 を確認するテスト 1 件以上を追加する"
+      test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+      test_name: "AC5(#1165): --supervisor-dir /etc/invalid-path で exit 2 になる"
+      status: RED
+      red_mechanism: "cld-observe-any-launcher への validation 呼び出し未追加のため fail する"
+      impl_files:
+        - "plugins/session/scripts/cld-observe-any-launcher"
+        - "plugins/session/scripts/lib/path-validate.sh"
+
+    - ac_index: 9
+      ac_text: "bats plugins/session/tests/path-validate.bats plugins/session/tests/cld-observe-any.bats plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats が全件 PASS する"
+      test_file: "plugins/session/tests/path-validate.bats"
+      test_name: "(AC6/AC7/AC8 の全テストが GREEN であること)"
+      status: RED
+      red_mechanism: "AC1-AC8 の実装が完了するまで fail する。実装後に全件 GREEN"
+      impl_files:
+        - "plugins/session/scripts/lib/path-validate.sh"
+        - "plugins/session/scripts/cld-observe-any"
+        - "plugins/session/scripts/cld-observe-any-launcher"
+
+    - ac_index: 10
+      ac_text: "twl check がエラーなく完了する（deps.yaml 整合性）"
+      test_file: ""
+      test_name: ""
+      status: SKIP
+      note: "AC10 は twl check（CLI コマンド）の実行確認。bats テスト対象外。実装後に手動検証または CI で確認。"
+      impl_files:
+        - "plugins/session/deps.yaml"

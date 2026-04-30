@@ -289,3 +289,20 @@ JSON
     CALL_COUNT=$(cat "$CALL_COUNT_FILE")
     [ "$CALL_COUNT" -le 1 ]
 }
+
+# ===========================================================================
+# Issue #1165: tech-debt(session): cld-observe-any SUPERVISOR_DIR パストラバーサル防御
+# AC5: invalid SUPERVISOR_DIR で launcher が exit 2 を返すテスト
+# RED: cld-observe-any-launcher への validate_supervisor_dir 呼び出し未追加のため fail
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# AC5(#1165): --supervisor-dir /etc/invalid-path で exit 2 になる
+# RED: cld-observe-any-launcher に validate_supervisor_dir 呼び出しが
+#      未追加のため fail する
+# ---------------------------------------------------------------------------
+@test "AC5(#1165): --supervisor-dir /etc/invalid-path で exit 2 になる" {
+    # RED: cld-observe-any-launcher への validate_supervisor_dir 呼び出し未追加のため fail する
+    run bash "$LAUNCHER" --supervisor-dir "/etc/invalid-path" --dry-run
+    [ "$status" -eq 2 ]
+}

@@ -128,3 +128,13 @@ tests:
     type: test
     path: tests/lib-tmux-resolve.bats
     description: "_resolve_window_target と _kill_window_safe の RED テスト（Issue #1142: AC-4）"
+
+  path-validate-test:
+    type: test
+    path: tests/path-validate.bats
+    description: "validate_supervisor_dir() の unit tests（Issue #1165: SUPERVISOR_DIR パストラバーサル防御）"
+
+  cld-observe-any-self-supervision-test:
+    type: test
+    path: tests/bats/scripts/cld-observe-any-self-supervision.bats
+    description: "cld-observe-any-launcher の self-supervision bats tests（Issue #1146 + #1165）"
