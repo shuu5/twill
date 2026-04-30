@@ -1246,3 +1246,75 @@ MOCKEOF
     [[ "$status" -eq 0 ]]
     echo "$output" | grep -q "PASS: emit なし・kill-window 呼び出しなし"
 }
+
+# ---------------------------------------------------------------------------
+# Issue #1147 AC8: 多重起動防止（flock -n 9）
+#
+# テスト戦略:
+#   - flock を stub して「既にロック取得済み」状態をシミュレート
+#   - 第 2 instance 起動時に flock が exit 1（ロック失敗）→ cld-observe-any が exit 1
+#   - stderr に既存 PID が出力される
+#
+# RED: cld-observe-any に flock 多重起動防止が未実装のため fail する
+# PASS 条件（実装後）:
+#   - 既起動 instance あり → flock 失敗 → exit 1
+#   - stderr に既存 PID を含む出力
+# ---------------------------------------------------------------------------
+
+@test "AC8: 既起動 instance あり → flock -n 失敗 → exit 1 + stderr に既存 PID 出力（RED: 実装後 PASS）" {
+    # AC: cld-observe-any 起動時に flock -n 9 で /tmp/cld-observe-any.lock を取得。
+    #     取得失敗時は exit 1 + stderr に既存 PID を出力
+    # RED: flock 多重起動防止が未実装のため現状は fail する
+
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+LOCK_FILE="$TMPD/cld-observe-any.lock"
+FAKE_EXISTING_PID=54321
+
+# flock stub: ロック取得失敗をシミュレート（-n オプション付きで即 exit 1）
+flock() {
+    # "-n" オプションがある場合、ロック失敗をシミュレート
+    if [[ "$*" == *"-n"* ]]; then
+        return 1
+    fi
+    return 0
+}
+export -f flock
+
+# tmux モック（実際には呼ばれないが念のため）
+tmux() { return 0; }
+export -f tmux
+
+# 既存 PID のロックファイルを作成（実際の多重起動をシミュレート）
+echo "$FAKE_EXISTING_PID" > "$LOCK_FILE"
+
+STDERR_FILE="$TMPD/stderr.txt"
+bash "$CLD_OBSERVE_ANY" --window "test-win" --once \
+    2>"$STDERR_FILE" >/dev/null
+exit_code=$?
+stderr_text=$(cat "$STDERR_FILE" 2>/dev/null || echo "")
+
+# 検証1: exit 1 で終了すること
+if [[ "$exit_code" -ne 1 ]]; then
+    echo "FAIL: exit code $exit_code（期待: 1）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+
+# 検証2: stderr に既存 PID が含まれること
+if ! echo "$stderr_text" | grep -q "$FAKE_EXISTING_PID"; then
+    echo "FAIL: stderr に既存 PID ($FAKE_EXISTING_PID) が含まれていない（stderr=$stderr_text）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+
+echo "PASS: flock 失敗 exit 1 + stderr に PID 出力"
+rm -rf "$TMPD"
+MOCKEOF
+
+    # RED: 実装前は失敗する
+    # 実装後は [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:" に変わる
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS: flock 失敗 exit 1 + stderr に PID 出力"
+}
