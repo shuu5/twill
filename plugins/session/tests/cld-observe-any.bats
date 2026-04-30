@@ -1270,7 +1270,8 @@ MOCKEOF
 SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
 CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
 TMPD="$(mktemp -d)"
-LOCK_FILE="$TMPD/cld-observe-any.lock"
+# スクリプトが内部でハードコードする LOCK_FILE と同じパス
+ACTUAL_LOCK_PID_FILE="/tmp/cld-observe-any.lock.pid"
 FAKE_EXISTING_PID=54321
 
 # flock stub: ロック取得失敗をシミュレート（-n オプション付きで即 exit 1）
@@ -1287,8 +1288,8 @@ export -f flock
 tmux() { return 0; }
 export -f tmux
 
-# 既存 PID のロックファイルを作成（実際の多重起動をシミュレート）
-echo "$FAKE_EXISTING_PID" > "$LOCK_FILE"
+# 既存 PID のロックファイルを作成（スクリプトが cat で読むパスに書く）
+echo "$FAKE_EXISTING_PID" > "$ACTUAL_LOCK_PID_FILE"
 
 STDERR_FILE="$TMPD/stderr.txt"
 bash "$CLD_OBSERVE_ANY" --window "test-win" --once \
@@ -1296,22 +1297,23 @@ bash "$CLD_OBSERVE_ANY" --window "test-win" --once \
 exit_code=$?
 stderr_text=$(cat "$STDERR_FILE" 2>/dev/null || echo "")
 
+# クリーンアップ
+rm -f "$ACTUAL_LOCK_PID_FILE"
+rm -rf "$TMPD"
+
 # 検証1: exit 1 で終了すること
 if [[ "$exit_code" -ne 1 ]]; then
     echo "FAIL: exit code $exit_code（期待: 1）"
-    rm -rf "$TMPD"
     exit 1
 fi
 
 # 検証2: stderr に既存 PID が含まれること
 if ! echo "$stderr_text" | grep -q "$FAKE_EXISTING_PID"; then
     echo "FAIL: stderr に既存 PID ($FAKE_EXISTING_PID) が含まれていない（stderr=$stderr_text）"
-    rm -rf "$TMPD"
     exit 1
 fi
 
 echo "PASS: flock 失敗 exit 1 + stderr に PID 出力"
-rm -rf "$TMPD"
 MOCKEOF
 
     # RED: 実装前は失敗する

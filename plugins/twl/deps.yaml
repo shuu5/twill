@@ -2797,6 +2797,11 @@ scripts:
     path: scripts/hooks/explore-summary-link.sh
     description: "PostToolUse hook (Write|Edit): .explore/<N>/summary.md への書き込みを検知し gh issue comment で explore-summary リンクを自動追加。冪等チェック付き（#726）"
 
+  session-resume-observer-check:
+    type: script
+    path: scripts/hooks/session-resume-observer-check.sh
+    description: "SessionStart hook: cld-observe-any daemon の死活確認（kill -0）+ 自動再起動（tmux respawn-pane）。PID 死亡時に lock ファイルをクリアして respawn を試みる。失敗時は daemon-startup-failed.json, pane 消失時は daemon-restart-skipped.json を出力（#1147）"
+
   pr-review-manifest:
     type: script
     path: scripts/pr-review-manifest.sh
