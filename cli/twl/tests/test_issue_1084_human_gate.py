@@ -237,6 +237,109 @@ class TestAC3AutopilotMarkers:
 
 
 # ---------------------------------------------------------------------------
+# Issue #1099: AC4（異常系回帰テスト）— セクション境界精度向上
+# ---------------------------------------------------------------------------
+
+class TestAC2bSectionBoundaryRegression:
+    """Issue #1099: _make_section_regex ヘルパーの異常系回帰テスト。
+
+    RED フェーズ: _make_section_regex が未定義のため NameError で fail する。
+    """
+
+    def test_ac1_make_section_regex_helper_exists(self):
+        # AC1: _make_section_regex ヘルパー関数が存在し、Pattern を返すこと
+        # RED: _make_section_regex が未定義なので NameError で fail する
+        import cli.twl.tests.test_issue_1084_human_gate as _mod
+        assert hasattr(_mod, "_make_section_regex"), (
+            "AC1: _make_section_regex ヘルパー関数がモジュールに存在しない"
+        )
+        pattern = _mod._make_section_regex(11)
+        assert hasattr(pattern, "search"), (
+            "AC1: _make_section_regex(11) が re.Pattern を返さない"
+        )
+
+    def test_ac2_make_section_regex_terminates_at_h3(self):
+        # AC2: _make_section_regex は ### で始まる H3 見出しを終端境界として認識すること
+        # RED: _make_section_regex が未定義なので NameError で fail する
+        pattern = _make_section_regex(11)
+        fixture = (
+            "## 11. テストセクション\n"
+            "本文\n"
+            "### H3 subsection\n"
+            "H3 内本文\n"
+            "## 12. 次のセクション\n"
+        )
+        m = pattern.search(fixture)
+        assert m is not None, "AC2: §11 セクションがマッチしない"
+        extracted = m.group(0)
+        assert "### H3 subsection" not in extracted, (
+            f"AC2: _make_section_regex が H3 で終端せず H3 内容を含んでいる。抽出: {extracted!r}"
+        )
+
+    def test_ac4_1_h3_subsection_marker_excluded(self):
+        # AC4-1: H3 subsection 内の MARKER は §12 抽出範囲から除外されること
+        # RED: _make_section_regex が未定義なので NameError で fail する
+        pattern = _make_section_regex(12)
+        fixture = (
+            f"## 12. ヘッダ\n"
+            f"本文\n"
+            f"### 内部見出し\n"
+            f"本文に {MARKER} を含む\n"
+            f"## 13. 次\n"
+        )
+        m = pattern.search(fixture)
+        assert m is not None, "AC4-1: §12 セクションがマッチしない"
+        sec12_text = m.group(0)
+        assert MARKER not in sec12_text, (
+            f"AC4-1: H3 subsection 内の MARKER が §12 抽出範囲に含まれている。"
+            f"修正後の regex は H3 を終端境界として MARKER を除外すべき。"
+            f"抽出: {sec12_text!r}"
+        )
+
+    def test_ac4_2_no_next_section_h3_closes_boundary(self):
+        # AC4-2: §N+1 不在かつ H3 ありの場合、抽出範囲が H3 で正しく閉じること
+        # RED: _make_section_regex が未定義なので NameError で fail する
+        pattern = _make_section_regex(12)
+        fixture = (
+            f"## 12. ヘッダ\n"
+            f"{MARKER} 本文\n"
+            f"### 内部見出し\n"
+            f"H3 内本文"
+        )
+        m = pattern.search(fixture)
+        assert m is not None, "AC4-2: §12 セクションがマッチしない"
+        extracted = m.group(0)
+        assert len(extracted) < len(fixture), (
+            f"AC4-2: 抽出範囲が H3 で閉じておらず fixture 全体を含んでいる。"
+            f"抽出長={len(extracted)}, fixture 長={len(fixture)}"
+        )
+
+    @pytest.mark.xfail(reason="codeblock-fence-aware terminator は別 Issue で対応")
+    def test_ac5_codeblock_fence_resistance(self):
+        # AC5: codeblock 内の ### は終端境界として認識されないこと（現状は xfail）
+        # RED: _make_section_regex が未定義なので NameError で fail する
+        pattern = _make_section_regex(12)
+        fixture = (
+            f"## 12. ヘッダ\n"
+            f"{MARKER} 本文\n"
+            f"```bash\n"
+            f"### これは codeblock 内なので H3 ではない\n"
+            f"echo hello\n"
+            f"```\n"
+            f"codeblock 後の本文\n"
+            f"## 13. 次\n"
+        )
+        m = pattern.search(fixture)
+        assert m is not None, "AC5: §12 セクションがマッチしない"
+        extracted = m.group(0)
+        # codeblock 内の ### で終端してしまう場合、本文後の内容が欠落する
+        assert "codeblock 後の本文" in extracted, (
+            f"AC5: codeblock 内の ### が誤って終端境界として認識された。"
+            f"抽出: {extracted!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
 # AC4: grep 検証 (2 段階)
 # ---------------------------------------------------------------------------
 
