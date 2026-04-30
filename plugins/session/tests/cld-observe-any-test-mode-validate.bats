@@ -53,11 +53,12 @@ EOF
 @test "AC3: _TEST_MODE=1 かつ --window 指定 → /tmp/cld-observe-any-test-*.lock が存在する" {
     local script_dir="$SCRIPT_DIR"
     local cld_observe_any="$CLD_OBSERVE_ANY"
-    local tmpdir="$TMPDIR_TEST"
     local win="test-win-ac3-$$"
 
     run bash <<EOF
-# tmux モック: window が存在し pane_dead=1 で即終了
+# tmux モック: list-windows -a が window を返さず main loop が即 break して exit 0
+# (list-windows -a の戻り値が #{window_name} 形式でないため evaluate_window が
+#  target="" で PANE-DEAD 扱いとなり --once で終了する)
 tmux() {
     case "\$1" in
         list-windows)
@@ -68,7 +69,6 @@ tmux() {
             echo "test-session:0 $win"
             ;;
         display-message)
-            # pane_dead=1 → [PANE-DEAD] emit して --once 終了
             echo "1 bash"
             ;;
         capture-pane)
@@ -84,7 +84,7 @@ _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$script_dir" \
     bash "$cld_observe_any" --window "$win" --once 2>/dev/null
 EOF
 
-    # 終了コードの確認（PANE-DEAD 検出で exit 0）
+    # 終了コードの確認（即 break で exit 0）
     [[ "$status" -eq 0 ]]
     # 実装前: lock ファイルなし → FAIL、実装後: lock ファイルあり → PASS
     local lock_count

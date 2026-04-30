@@ -138,3 +138,8 @@ tests:
     type: test
     path: tests/bats/scripts/cld-observe-any-self-supervision.bats
     description: "cld-observe-any-launcher の self-supervision bats tests（Issue #1146 + #1165）"
+
+  cld-observe-any-test-mode-validate-test:
+    type: test
+    path: tests/cld-observe-any-test-mode-validate.bats
+    description: "cld-observe-any _TEST_MODE flock/validation 設計改善の regression guard（Issue #1166: AC1-AC4）"
