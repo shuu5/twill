@@ -4,7 +4,7 @@
 # RED フェーズ — 新しい GREEN コメント文字列が存在しないことを検証
 # 実装（コメント書き換え）後に GREEN になる
 
-BATS_FILE="/home/shuu5/projects/local-projects/twill/worktrees/feat/1162-tech-debttest-cld-observe-anybats-sce/plugins/session/tests/cld-observe-any.bats"
+BATS_FILE="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/cld-observe-any.bats"
 
 # ---------------------------------------------------------------------------
 # AC1: Scenario14 ヘッダーと末尾 inline コメントを GREEN regression guard 表現に書き換える
