@@ -141,8 +141,16 @@ fi
 if [[ "$IS_AUTOPILOT" == "false" ]]; then
   MAIN_WORKTREE_PATH="$(git worktree list --porcelain | awk '/^worktree / { wt=substr($0,10) } /branch refs\/heads\/main$/ { print wt; exit }')"
   if [[ -n "$MAIN_WORKTREE_PATH" ]]; then
-    MAIN_AUTOPILOT_DIR="${MAIN_WORKTREE_PATH}/.autopilot"
-    if [[ -f "${MAIN_AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}.json" ]]; then
+    # multi-instance support (#1169): .autopilot と .autopilot-* の全 dir を走査
+    # bash brace expansion {,-*} は nullglob と組み合わせで誤動作するため find を使用
+    _found_issue=false
+    while IFS= read -r -d '' _candidate; do
+      if [[ -f "$_candidate/issues/issue-${ISSUE_NUM}.json" ]]; then
+        _found_issue=true
+        break
+      fi
+    done < <(find "${MAIN_WORKTREE_PATH}" -maxdepth 1 -type d \( -name '.autopilot' -o -name '.autopilot-*' \) -print0 2>/dev/null)
+    if [[ "$_found_issue" == "true" ]]; then
       echo "[auto-merge] ⚠️ フォールバックガード発動: issue-${ISSUE_NUM}.json が存在するため merge を禁止" >&2
       python3 -m twl.autopilot.state write --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$ISSUE_NUM" --role worker --set status=merge-ready --set "pr=$PR_NUMBER" --set "branch=$BRANCH" 2>/dev/null || true
       echo "[auto-merge] autopilot 配下（フォールバック検出）: merge-ready 宣言。Pilot による merge-gate を待機。"

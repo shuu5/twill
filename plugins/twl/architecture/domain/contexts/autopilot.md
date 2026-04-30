@@ -305,6 +305,26 @@ ARCHIVE_DIR="$AUTOPILOT_DIR/archive"
 SESSION_FILE="$AUTOPILOT_DIR/session.json"
 ```
 
+#### Multi-instance support
+
+Wave 並列実行のため、複数の AUTOPILOT_DIR を同時に使用できる（#1169）。
+
+**命名規則**: `.autopilot-<suffix>` パターンを canonical とする。`<suffix>` は `[a-z0-9_-]{1,32}` の長さ制限付き。
+
+**basename 検証 regex**: `^\.autopilot(-[a-z0-9_-]{1,32})?$`（`chain-runner.sh` L185-191）。`.autopilot`、`.autopilot-wave10`、`.autopilot-test_isolation` を許可。`.AUTOPILOT-WAVE10`（大文字）、`.autopilot-`（trailing hyphen）、`.autopilot-aaa...`（33 文字以上）を拒否。
+
+**並列実行例（Wave N と Wave N+1 が同居）**:
+```bash
+export AUTOPILOT_DIR="${PROJECT_ROOT}/.autopilot-wave-10"
+bash autopilot-init.sh  # .autopilot-wave-10/ を初期化
+
+# 別ターミナルで Wave N+1
+export AUTOPILOT_DIR="${PROJECT_ROOT}/.autopilot-wave-11"
+bash autopilot-init.sh  # .autopilot-wave-11/ を独立初期化
+```
+
+**cleanup ライフサイクル**: Wave 完了後の `.autopilot-*/` は自動削除されない。手動 `rm -rf "${PROJECT_ROOT}/.autopilot-wave-10"` または archive 移動が必要。デフォルト `.autopilot/` が持つ `archive/<session_id>/` 自動 archive 機構（`autopilot-cleanup.sh`）は `.autopilot-*/` には適用されない（別 Issue で対応予定）。
+
 ## Recovery Procedures
 
 orchestrator が停止して chain 遷移が行われない場合、以下の正規手順のみ許可される（不変条件 M）:

@@ -372,7 +372,7 @@ commit は行わず `.supervisor/pending-pitfall-append.diff` として保存。
 
 ## 11. Observer idle 中の session disconnect 対策（MUST）
 
-★HUMAN GATE — §11.3 は機械チェック PASS 時は HUMAN GATE skip 可（`_check_parallel_spawn_eligibility()` exit 0）。機械チェック欠落時は依然 escalate。§11.4 ScheduleWakeup 判断はユーザー escalation が必要（session disconnect 回避の承認）
+★HUMAN GATE — §11.3 は機械チェック PASS 時は HUMAN GATE skip 可（`_check_parallel_spawn_eligibility()` exit 0）。機械チェック欠落時は依然 escalate。§11.5 ScheduleWakeup 判断はユーザー escalation が必要（session disconnect 回避の承認）
 
 ### 事象（2026-04-22 ipatho1 実例、doobidoo hash 5fc20a83）
 
@@ -501,7 +501,22 @@ spawn 前評価:
 
 この制約は §11.1 Monitor heartbeat が未実装だった当時の overly conservative な rule。heartbeat + 上記 precondition を満たせば 4 並列まで安全に運用可能であることを 2026-04-29 ipatho2 で実証した。
 
-**11.4 ScheduleWakeup / Cron の活用（MAY）**
+**11.4 複数 Pilot 同時起動の条件（AUTOPILOT_DIR 分離）— #1169**
+
+Wave 並列実行で複数 Pilot を同時起動する場合、**各 Pilot は独立した AUTOPILOT_DIR を使用しなければならない**（AUTOPILOT_DIR 独立 = state 隔離）。
+
+**有効なパターン**: `export AUTOPILOT_DIR="${PROJECT_ROOT}/.autopilot-wave-10"` で起動 → Pilot が `.autopilot-wave10/` 配下に state を隔離
+**無効なパターン**: 複数 Pilot が同一 `.autopilot/` を共有 → session.json / issue-N.json が競合して state が壊れる
+
+**AUTOPILOT_DIR 命名規則**: `.autopilot-<suffix>` パターン（`<suffix>` は `[a-z0-9_-]{1,32}`）が chain-runner.sh basename 検証を通過できる。`.autopilot-wave-10`、`.autopilot-wave-11` 等を推奨。
+
+**運用上の懸念（現状未解決）**:
+- (a) `.autopilot-*/` cleanup 自動化未対応: Wave 完了後に手動 `rm -rf` または archive 移動が必要。`autopilot-cleanup.sh` の archive 機構は `.autopilot/` のみ対象
+- (b) `auto-merge.sh` glob 走査の性能影響: 並列 dir N が増えると Layer 4 フォールバックガードが N dir を `find` 走査。通常 N ≤ 5 なら無視可能
+- (c) `archive/<session_id>/` の cross-dir consistency: `.autopilot-wave-N/` の archive は `.autopilot/archive/` とは別管理になる
+- (d) observer による複数 Pilot window の追跡経路: 現在 observer は AUTOPILOT_DIR 単一前提で設計。複数 dir の Pilot をまとめて追跡する機構は未実装（別 Issue で対応）
+
+**11.5 ScheduleWakeup / Cron の活用（MAY）**
 
 1h 以上の待機が確実な場合、ScheduleWakeup で 30-40 分後に自動 wakeup。Claude Code の idle disconnect リスクを回避。
 
@@ -518,7 +533,7 @@ FINAL_TS=$(grep -oE '"timestamp":"[^"]+"' "$JSONL" | sort -u | tail -1)
 # resume までの gap = 現時刻 - FINAL_TS
 ```
 
-### §11.5 Observer Self-Supervision — cld-observe-any crash 連動死亡対策（ADR-031）
+### §11.6 Observer Self-Supervision — cld-observe-any crash 連動死亡対策（ADR-031）
 
 **検出元**: 2026-04-30 09:00 ThinkPad crash incident（Issue #1146）
 

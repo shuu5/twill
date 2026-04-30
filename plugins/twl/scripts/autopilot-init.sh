@@ -148,14 +148,18 @@ if [[ -f "$PLAN_FILE" ]] && grep -q '^repos:' "$PLAN_FILE"; then
   done < <(sed -n '/^repos:/,/^[a-z]/p' "$PLAN_FILE" | head -n -1)
 fi
 
-# .gitignore に .autopilot/ を追加（未追加の場合）
+# .gitignore に .autopilot/ と .autopilot-*/ を追加（未追加の場合）
+# multi-instance support (#1169): .autopilot-wave10/ 等の並列 dir も除外
 gitignore="$PROJECT_ROOT/.gitignore"
 if [[ -f "$gitignore" ]]; then
   if ! grep -qxF '.autopilot/' "$gitignore"; then
     echo '.autopilot/' >> "$gitignore"
   fi
+  if ! grep -qxF '.autopilot-*/' "$gitignore"; then
+    echo '.autopilot-*/' >> "$gitignore"
+  fi
 else
-  echo '.autopilot/' > "$gitignore"
+  printf '.autopilot/\n.autopilot-*/\n' > "$gitignore"
 fi
 
 echo "OK: .autopilot/ を初期化しました"

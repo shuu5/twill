@@ -182,10 +182,12 @@ trace_event() {
       # 防ぐため、basename が ".autopilot" のディレクトリのみ信頼する。
       # resolve_autopilot_dir() の挙動（env var 優先、未設定時は ${main_wt}/.autopilot）と
       # 整合する正規パターンに限定する。
+      # multi-instance support (#1169): .autopilot-<suffix> パターンも許可
+      # suffix は [a-z0-9_-]{1,32} — 任意長攻撃を抑制しつつ Wave 並列実行を許可
       if [[ "$_autopilot_trusted" -eq 1 ]]; then
         local _ap_basename
         _ap_basename=$(basename "$_ap_resolved")
-        if [[ "$_ap_basename" != ".autopilot" ]]; then
+        if [[ ! "$_ap_basename" =~ ^\.autopilot(-[a-z0-9_-]{1,32})?$ ]]; then
           _autopilot_trusted=0
         fi
       fi
