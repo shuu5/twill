@@ -562,6 +562,9 @@ def twl_mergegate_reject_handler(
     timeout_sec: int = 300,
 ) -> dict:
     """autopilot.mergegate: invoke MergeGate.reject() with SystemExit catch + timeout wrap (300s)."""
+    violation = _check_invariant_b(cwd)
+    if violation:
+        return violation
     import subprocess
 
     def _inner() -> dict:
@@ -618,6 +621,9 @@ def twl_mergegate_reject_final_handler(
     timeout_sec: int = 300,
 ) -> dict:
     """autopilot.mergegate: invoke MergeGate.reject_final() with SystemExit catch + timeout wrap (300s)."""
+    violation = _check_invariant_b(cwd)
+    if violation:
+        return violation
     import subprocess
 
     def _inner() -> dict:

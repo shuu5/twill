@@ -218,8 +218,7 @@ class TestAC4RejectHandlerMainCwdReachesSubprocess:
 
     def test_ac4_reject_handler_none_cwd_reaches_subprocess(self):
         # AC: cwd=None (デフォルト) で呼び出すと subprocess.run が呼ばれること
-        # RED: cwd=None での _check_invariant_b は実際の CWD を使う。テスト実行環境が
-        #     worktrees/ 配下でない限り PASS するはずだが、明示的に確認する。
+        # os.getcwd() をパッチして worktrees/ 配下でないことを保証する
         from twl.mcp_server.tools import twl_mergegate_reject_handler
 
         mock_run = MagicMock()
@@ -227,7 +226,10 @@ class TestAC4RejectHandlerMainCwdReachesSubprocess:
         mock_run.stderr = "not found"
         mock_run.stdout = ""
 
-        with patch("subprocess.run", return_value=mock_run) as mock_subprocess:
+        with (
+            patch("subprocess.run", return_value=mock_run) as mock_subprocess,
+            patch("os.getcwd", return_value="/home/user/main"),
+        ):
             result = twl_mergegate_reject_handler(
                 pr_number=1173,
                 reason="test none cwd",
@@ -239,7 +241,7 @@ class TestAC4RejectHandlerMainCwdReachesSubprocess:
             "AC4 未実装: cwd=None で subprocess.run が呼ばれていない"
         )
         assert result.get("error_type") != "invariant_b_violation", (
-            f"AC4: cwd=None で invariant_b_violation が返された（テスト実行環境が worktrees/ 配下の可能性）。got={result}"
+            f"AC4: cwd=None で invariant_b_violation が返された。got={result}"
         )
 
 
@@ -274,6 +276,7 @@ class TestAC4RejectFinalHandlerMainCwdReachesSubprocess:
 
     def test_ac4_reject_final_handler_none_cwd_reaches_subprocess(self):
         # AC: cwd=None (デフォルト) で呼び出すと subprocess.run が呼ばれること
+        # os.getcwd() をパッチして worktrees/ 配下でないことを保証する
         from twl.mcp_server.tools import twl_mergegate_reject_final_handler
 
         mock_run = MagicMock()
@@ -281,7 +284,10 @@ class TestAC4RejectFinalHandlerMainCwdReachesSubprocess:
         mock_run.stderr = "not found"
         mock_run.stdout = ""
 
-        with patch("subprocess.run", return_value=mock_run) as mock_subprocess:
+        with (
+            patch("subprocess.run", return_value=mock_run) as mock_subprocess,
+            patch("os.getcwd", return_value="/home/user/main"),
+        ):
             result = twl_mergegate_reject_final_handler(
                 pr_number=1173,
                 reason="test none cwd",
@@ -293,7 +299,7 @@ class TestAC4RejectFinalHandlerMainCwdReachesSubprocess:
             "AC4 未実装: cwd=None で subprocess.run が呼ばれていない"
         )
         assert result.get("error_type") != "invariant_b_violation", (
-            f"AC4: cwd=None で invariant_b_violation が返された（テスト実行環境が worktrees/ 配下の可能性）。got={result}"
+            f"AC4: cwd=None で invariant_b_violation が返された。got={result}"
         )
 
 
