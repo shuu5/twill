@@ -75,6 +75,30 @@ test_that("ac{N}: {slug}", {
 })
 ```
 
+### bats の場合
+
+```bash
+@test "ac{N}: {slug}" {
+  # AC: {ac_text}
+  # RED: 実装前は fail する
+  false  # または実装対象ファイルの存在/内容チェックで fail させる
+}
+```
+
+#### bats 生成時のチェック観点（`@refs/baseline-bash.md §9-10` 参照）
+
+**heredoc 内変数展開 (`@refs/baseline-bash.md §9`)**:
+各 AC で heredoc を利用する場合、外部変数（`$BATS_TEST_FILENAME` 等）の有無を確認すること。シングルクォート heredoc (`<<'EOF'`) は parent shell で変数展開されないため、外部変数を参照していると子プロセスでは展開されない（空文字または未定義）。
+- シングルクォート heredoc + 外部変数の併用を検出した場合は **警告として記載** すること（自動補正は行わない）
+- 推奨: 非クォート heredoc (`<<EOF`) または `EXT_VAR=$EXT_VAR bash <<'EOF'` パターン
+
+**source guard / function-only load mode (`@refs/baseline-bash.md §10`)**:
+`source <script>` を生成する場合は対象スクリプトを Grep し、以下のいずれかが存在するかを確認すること:
+- `[[ "${BASH_SOURCE[0]}" == "${0}" ]]` guard
+- `--source-only` または `_DAEMON_LOAD_ONLY` pattern
+
+不在の場合は `set -euo pipefail` 環境で **main 到達前に exit に巻き込まれる** リスクがあるため、`impl_files` メモにフラグ追加要求を記載すること。
+
 ## `impl_files` 候補生成ロジック（MUST）
 
 mapping 生成時、各 AC エントリに `impl_files` を設定する。

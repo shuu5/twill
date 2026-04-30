@@ -287,3 +287,95 @@ fi
 **適用範囲**: `tmux kill-server` / `tmux -C` / `tmux -f` はホスト共通 CLAUDE.md（incident 2026-04-22）+ PreToolUse hook で別途ブロック済み。本パターンは destructive な window/session レベル op に focus する。
 
 **レビュー観点**: `tmux kill-window`、`kill-session`、`respawn-window` 等の destructive op で `-t "$WIN_NAME"` や `-t "${WINDOW}"` のように window 名変数を直接渡している箇所を見つけた場合、`#{session_name}:#{window_index}` 形式への解決が行われているかを確認する。解決なしは CRITICAL（confidence ≥ 90）として報告する。
+
+## 9. bats heredoc 内変数展開
+
+bats テストで外部変数を参照する heredoc を書く際、シングルクォート heredoc `<<'EOF'` は **parent shell で変数展開されない**。bats 由来の環境変数（`$BATS_TEST_FILENAME` 等）を heredoc 内で直接参照すると、子 bash プロセスは bats 環境変数を持たないため未定義となり意図しない動作が発生する（例: `cd ""/../scripts` として誤動作）。
+
+### BAD: シングルクォート heredoc 内で外部変数を参照
+
+```bash
+# BAD: <<'MOCKEOF' はシングルクォート heredoc — 親シェルで変数展開されない
+# $BATS_TEST_FILENAME は子 bash プロセスに展開されないため cd が失敗する
+run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+source "$SCRIPT_DIR/target.sh"
+MOCKEOF
+```
+
+### GOOD: ダブルクォート（非クォート）heredoc で展開を許可
+
+```bash
+# GOOD: <<EOF（クォートなし）— 親シェルで変数展開されるため外部変数が解決される
+THIS_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)"
+run bash <<EOF
+SCRIPT_DIR="${THIS_DIR}/../scripts"
+source "\$SCRIPT_DIR/target.sh"
+EOF
+```
+
+### GOOD: 外部変数を明示 export して子プロセスに渡す
+
+```bash
+# GOOD: EXT_VAR=$EXT_VAR bash <<'EOF' パターン — 外部変数を明示 export し、
+# シングルクォート heredoc 内でも安全に参照できる
+THIS_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)"
+THIS_DIR=$THIS_DIR run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$THIS_DIR/../scripts" && pwd)"
+source "$SCRIPT_DIR/target.sh"
+MOCKEOF
+```
+
+**レビュー観点**: bats テスト内で `run bash <<'EOF'` 等のシングルクォート heredoc を見つけた場合、heredoc 内で `$BATS_TEST_FILENAME`、`$BATS_TEST_TMPDIR` 等の bats 由来の外部変数を参照していないかを確認する。参照している場合は展開されない（空文字または未定義）ため、非クォート heredoc への変換、または `VAR=$VAR bash <<'EOF'` パターンへの修正を提案する。
+
+## 10. source 対象スクリプトの guard / function-only load mode
+
+bats テストで `source "$SCRIPT"` によって関数のみをロードしようとする場合、対象スクリプトが `set -euo pipefail` + 引数解析 + `exit 1` の main 部を持つと、source 時点で main 実行に到達し parent shell が exit する。`set -euo pipefail` 環境では引数不足で即 exit し、対象関数定義に到達せず **set -euo pipefail で exit に巻き込まれる**。
+
+### BAD: guard なし — source 時に main 部が実行されて exit に巻き込まれる
+
+```bash
+# BAD: source 先スクリプトに guard なし
+# bats から source すると main 実行が parent shell（bats）の exit を引き起こす
+#!/usr/bin/env bash
+set -euo pipefail
+
+MY_VAR="${1:?usage: script.sh <arg>}"  # source 時に exit 1
+
+my_function() { echo "hello $MY_VAR"; }
+
+my_function "$@"  # main 到達前に return できない
+```
+
+### GOOD: BASH_SOURCE guard で main を条件実行
+
+```bash
+# GOOD: BASH_SOURCE guard — source 時は main をスキップし関数定義のみロードされる
+#!/usr/bin/env bash
+set -euo pipefail
+
+my_function() { echo "hello $1"; }
+
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  my_function "$@"   # 直接実行時のみ main を呼ぶ
+fi
+```
+
+### GOOD: --source-only フラグで function-only load mode を実装
+
+```bash
+# GOOD: _DAEMON_LOAD_ONLY パターン — source 時は main 到達前に return する
+#!/usr/bin/env bash
+set -euo pipefail
+
+my_function() { echo "hello $1"; }
+
+# source-only モード: main をスキップして関数定義のみロードする
+if [[ "${_DAEMON_LOAD_ONLY:-0}" == "1" ]] || [[ "${1:-}" == "--source-only" ]]; then
+  return 0 2>/dev/null || exit 0
+fi
+
+my_function "$@"
+```
+
+**レビュー観点**: bats テストで `source "$TARGET_SCRIPT"` を生成する場合、対象スクリプトを Grep して `BASH_SOURCE` guard または `--source-only` / `_DAEMON_LOAD_ONLY` pattern が存在するかを確認する。不在の場合は `set -euo pipefail` + 引数解析で **main 到達前に exit に巻き込まれる** リスクがあるため、`impl_files` メモにフラグ追加要求を記載する。
