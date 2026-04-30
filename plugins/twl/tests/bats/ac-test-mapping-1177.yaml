@@ -51,10 +51,10 @@ mappings:
       - "plugins/twl/scripts/lib/inject-next-workflow.sh"
 
   - ac_index: 7
-    ac_text: "LAST_STAGNATE_WARN_TS のリセット条件（MUST）: mtime 進行で RESOLVE_FAIL_COUNT がリセットされた場合は LAST_STAGNATE_WARN_TS もリセットする"
+    ac_text: "LAST_STAGNATE_WARN_TS のリセット条件（MUST）: AC-1 の mtime 変化リセット時にはリセットしない（rate limit を mtime fluctuation で消費しないため）。inject 成功時（既存 L57-58 の RESOLVE_FAIL_COUNT[$entry]=0 と同箇所）に LAST_STAGNATE_WARN_TS[$entry]=\"\" を併せてリセットする"
     test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
     test_names:
-      - "ac7-warn-ts-reset-on-mtime: mtime リセット時に LAST_STAGNATE_WARN_TS もリセットされる"
+      - "ac7-warn-ts-inject-reset: inject 成功時に LAST_STAGNATE_WARN_TS がリセットされる（mtime リセット時はリセットしない）"
     impl_files:
       - "plugins/twl/scripts/lib/inject-next-workflow.sh"
 
@@ -63,7 +63,7 @@ mappings:
     test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
     test_names:
       - "ac5-warn-rate-limit: stagnate WARN は AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC 内で suppress される"
-      - "ac8-trace-log-on-suppress: WARN suppress 時も trace log にエントリが記録される"
+      - "ac8-trace-log-on-suppress: WARN suppress 時も trace log はより多く記録される（trace > warn）"
     impl_files:
       - "plugins/twl/scripts/lib/inject-next-workflow.sh"
 

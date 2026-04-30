@@ -240,8 +240,12 @@ HELPER
 
   run bash "$helper"
 
-  local warn_count
-  warn_count=$(grep -c '\[orchestrator\] WARN:.*stagnate' "${stderr_file}" 2>/dev/null || echo 0)
+  local warn_count=0
+  warn_count=$(grep -c '\[orchestrator\] WARN:.*stagnate' "${stderr_file}" 2>/dev/null) || true
+
+  # 最初の WARN は必ず emit される（rate limit 起点の確立）
+  [[ "$warn_count" -ge 1 ]] \
+    || fail "stagnate WARN が 1 回も emit されなかった（最初の WARN は必ず発出される必要がある — AC-5 scenario B）"
 
   # rate limit が機能すれば 2 回目は suppress → warn_count=1
   # RED: 現実装では warn_count=2（suppress なし）
@@ -254,9 +258,10 @@ HELPER
 # ===========================================================================
 # RED 理由: 現実装には rate limit 自体がないため、suppress 状態の trace log 記録ロジックも存在しない
 
-@test "ac8-trace-log-on-suppress: WARN suppress 時も trace log にエントリが記録される" {
+@test "ac8-trace-log-on-suppress: WARN suppress 時も trace log はより多く記録される（trace > warn）" {
   # AC: WARN を suppress する場合も trace log（stagnate エントリ）は連続記録を維持
-  # RED: 実装前は rate limit logic 自体がないため間接的に fail
+  # RED: 実装前は WARN も trace も 2 件記録される（rate limit なし）→ trace(2) > warn(2) が偽 → FAIL
+  # GREEN: 実装後は WARN=1（2 回目 suppress）、trace=2 → trace(2) > warn(1) が真 → PASS
 
   local state_file="${AUTOPILOT_DIR}/issues/issue-996.json"
   local trace_dir="${AUTOPILOT_DIR}/trace"
@@ -292,14 +297,17 @@ HELPER
   [[ -n "$trace_file" ]] \
     || fail "trace ログファイルが存在しない（AUTOPILOT_DIR=${AUTOPILOT_DIR}）"
 
-  # 2 回呼び出し → trace log には 2 エントリの stagnate 記録があるはず
-  local stagnate_trace_count
-  stagnate_trace_count=$(grep -c 'result=stagnate' "${trace_file}" 2>/dev/null || echo 0)
+  local stagnate_trace_count=0
+  stagnate_trace_count=$(grep -c 'result=stagnate' "${trace_file}" 2>/dev/null) || true
 
-  # WARN suppressed でも trace は 2 件記録されるはず
-  # RED: rate limit 未実装 → suppress 自体がないのでこのパスは実装依存
-  [[ "$stagnate_trace_count" -ge 2 ]] \
-    || fail "trace log に stagnate エントリが ${stagnate_trace_count} 件のみ（2 件以上を期待）（RED: AC-8 未実装 — suppress 時の trace 継続記録）"
+  local warn_count=0
+  warn_count=$(grep -c '\[orchestrator\] WARN:.*stagnate' "${stderr_file}" 2>/dev/null) || true
+
+  # suppress 後: trace > warn（trace は 2 件、warn は 1 件 suppress された）
+  # RED: 実装前は trace=2, warn=2 → 2 > 2 = false → FAIL
+  # GREEN: 実装後は trace=2, warn=1 → 2 > 1 = true → PASS
+  [[ "$stagnate_trace_count" -gt "$warn_count" ]] \
+    || fail "trace log(${stagnate_trace_count} 件) > WARN(${warn_count} 件) を期待（suppress 時は WARN < trace — RED: AC-8 未実装）"
 }
 
 # ===========================================================================
@@ -307,17 +315,18 @@ HELPER
 # ===========================================================================
 # RED 理由: LAST_STAGNATE_WARN_TS 自体が未実装
 
-@test "ac7-warn-ts-reset-on-mtime: mtime リセット時に LAST_STAGNATE_WARN_TS もリセットされる" {
-  # AC: LAST_STAGNATE_WARN_TS のリセット条件: mtime 進行で RESOLVE_FAIL_COUNT がリセットされた場合
-  # スクリプト内に LAST_STAGNATE_WARN_TS のリセット処理が存在することを静的に確認
+@test "ac7-warn-ts-inject-reset: inject 成功時に LAST_STAGNATE_WARN_TS がリセットされる（mtime リセット時はリセットしない）" {
+  # AC-7: LAST_STAGNATE_WARN_TS のリセット条件:
+  #   - inject 成功時（既存 L57-58 の RESOLVE_FAIL_COUNT[$entry]=0 と同箇所）: LAST_STAGNATE_WARN_TS[$entry]="" でリセット
+  #   - AC-1 の mtime 変化リセット時: リセットしない（rate limit を mtime fluctuation で消費しないため）
   # RED: 実装前は LAST_STAGNATE_WARN_TS 自体が存在しないため fail
 
   grep -q 'LAST_STAGNATE_WARN_TS' "$INJECT_LIB" \
     || fail "LAST_STAGNATE_WARN_TS がスクリプトに存在しない（RED: AC-7 未実装）"
 
-  # リセット処理が存在することを確認（代入で 0 または "" にする処理）
-  grep -qE 'LAST_STAGNATE_WARN_TS\[.*\]=(0|""|"0")' "$INJECT_LIB" \
-    || fail "LAST_STAGNATE_WARN_TS のリセット処理がスクリプトに存在しない（RED: AC-7 リセット条件未実装）"
+  # inject 成功時のリセット処理が存在することを確認（空文字 or 0 への代入）
+  grep -qE 'LAST_STAGNATE_WARN_TS\[.*\]=(0|""|"0"|"")' "$INJECT_LIB" \
+    || fail "LAST_STAGNATE_WARN_TS の inject-success リセット処理がスクリプトに存在しない（RED: AC-7 リセット条件未実装）"
 }
 
 # ===========================================================================
