@@ -446,6 +446,47 @@ class TestV2BackwardCompat:
         assert result.returncode == 0
 
 
+class TestFallbackTypeRulesConsistency:
+    """_FALLBACK_TYPE_RULES と types.yaml の整合性テスト (Issue #1122)"""
+
+    def _loom_root(self) -> Path:
+        return Path(__file__).parent.parent
+
+    def test_ac1_can_spawn_synced_with_types_yaml(self):
+        # AC: `_FALLBACK_TYPE_RULES` を `types.yaml` の定義と完全同期させる
+        from twl.core.types import _FALLBACK_TYPE_RULES, load_type_rules
+        loaded = load_type_rules(self._loom_root())
+        for type_name, fallback in _FALLBACK_TYPE_RULES.items():
+            expected = loaded[type_name]['can_spawn']
+            actual = set(fallback['can_spawn'])
+            assert actual == expected, (
+                f"{type_name}.can_spawn: fallback={sorted(actual)} != types.yaml={sorted(expected)}"
+            )
+
+    def test_ac1_spawnable_by_synced_with_types_yaml(self):
+        # AC: `_FALLBACK_TYPE_RULES` を `types.yaml` の定義と完全同期させる
+        from twl.core.types import _FALLBACK_TYPE_RULES, load_type_rules
+        loaded = load_type_rules(self._loom_root())
+        for type_name, fallback in _FALLBACK_TYPE_RULES.items():
+            expected = loaded[type_name]['spawnable_by']
+            actual = set(fallback['spawnable_by'])
+            assert actual == expected, (
+                f"{type_name}.spawnable_by: fallback={sorted(actual)} != types.yaml={sorted(expected)}"
+            )
+
+    def test_ac1_can_supervise_synced_with_types_yaml(self):
+        # AC: `_FALLBACK_TYPE_RULES` を `types.yaml` の定義と完全同期させる
+        # supervisor の can_supervise が types.yaml にあるが _FALLBACK_TYPE_RULES に未定義
+        from twl.core.types import _FALLBACK_TYPE_RULES, load_type_rules
+        loaded = load_type_rules(self._loom_root())
+        for type_name, fallback in _FALLBACK_TYPE_RULES.items():
+            expected = loaded[type_name]['can_supervise']
+            actual = set(fallback.get('can_supervise', []))
+            assert actual == expected, (
+                f"{type_name}.can_supervise: fallback={sorted(actual)} != types.yaml={sorted(expected)}"
+            )
+
+
 if __name__ == "__main__":
     import traceback
 
@@ -456,6 +497,7 @@ if __name__ == "__main__":
         TestV3StepIn,
         TestV3Chain,
         TestV2BackwardCompat,
+        TestFallbackTypeRulesConsistency,
     ]
     passed = 0
     failed = 0
