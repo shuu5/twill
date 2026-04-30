@@ -84,12 +84,16 @@ auto_inject_menu() {
     fi
 
     # 4. per-window cycle 制限（ファイルベース: サブシェルでも動作）
+    # 厳密な排他は flock 内の二重チェックで保証する（TOCTOU 対策）
     local cycle_dir="${TMPDIR:-/tmp}"
     local window_safe
     window_safe=$(echo "$window" | LC_ALL=C tr -c '[:alnum:]-_' '_')
     local cycle_file="${cycle_dir}/cld-auto-inject-cycle-${window_safe}"
     local count=0
-    [[ -f "$cycle_file" ]] && count=$(cat "$cycle_file" 2>/dev/null || echo 0)
+    if [[ -f "$cycle_file" ]]; then
+        count=$(cat "$cycle_file" 2>/dev/null || echo 0)
+        if [[ ! "$count" =~ ^[0-9]+$ ]]; then count=0; fi
+    fi
     if [[ "$count" -ge 1 ]]; then
         echo "auto_inject_menu: skip (window=$window, cycle limit reached)" >&2
         return 0
@@ -158,7 +162,13 @@ auto_inject_menu() {
         return 0
     fi
 
-    # 7. flock 排他制御
+    # 6e. selected_num を数字バリデーション（injection 防止）
+    if [[ ! "$selected_num" =~ ^[1-9][0-9]*$ ]]; then
+        echo "auto_inject_menu: selected_num validation failed: '$selected_num' (window=$window)" >&2
+        return 0
+    fi
+
+    # 7. flock 排他制御（cycle read/write も保護範囲に含める）
     local lock_file="${TMPDIR:-/tmp}/cld-auto-inject-${window_safe}.lock"
 
     (
@@ -167,22 +177,28 @@ auto_inject_menu() {
             exit 0
         }
 
-        # 8. inject 実行
-        tmux send-keys -t "$window" "$selected_num" "" 2>/dev/null
-        tmux send-keys -t "$window" "" Enter 2>/dev/null
+        # cycle 二重チェック（TOCTOU 対策: flock 内で再確認）
+        local flock_count=0
+        [[ -f "$cycle_file" ]] && flock_count=$(cat "$cycle_file" 2>/dev/null || echo 0)
+        if [[ ! "$flock_count" =~ ^[0-9]+$ ]]; then flock_count=0; fi
+        if [[ "$flock_count" -ge 1 ]]; then
+            exit 0
+        fi
+
+        # 8. inject 実行（単一 send-keys call で数字 + Enter を送信）
+        tmux send-keys -t "$window" "$selected_num" Enter 2>/dev/null
 
         # 9. Press up 状態検知 → 追加 Enter
         sleep 0.3
-        local current_pane
         current_pane=$(tmux capture-pane -t "$window" -p 2>/dev/null | tail -5 || true)
         if echo "$current_pane" | grep -qF 'Press up to edit queued messages'; then
             tmux send-keys -t "$window" "" Enter 2>/dev/null
         fi
 
-    ) 9>"$lock_file"
+        # 10. cycle カウンタ更新（flock 保護範囲内）
+        echo "$(( flock_count + 1 ))" > "$cycle_file" 2>/dev/null || true
 
-    # 10. cycle カウンタ更新（ファイルベース）
-    echo "$(( count + 1 ))" > "$cycle_file" 2>/dev/null || true
+    ) 9>"$lock_file"
 
     # 11. audit trail
     _write_audit_trail "$window" "$menu_pattern" "$selected_num" "$selected_text" "false" ""
@@ -220,9 +236,6 @@ _write_audit_trail() {
     local safe_mode=false
     [[ "${OBSERVER_AUTO_INJECT_ENABLE:-}" == "1" ]] || safe_mode=true
 
-    local skip_reason_json="null"
-    [[ -n "$skip_reason" ]] && skip_reason_json="\"$skip_reason\""
-
     jq -nc \
         --arg window "$window" \
         --arg timestamp "$ts" \
@@ -230,10 +243,10 @@ _write_audit_trail() {
         --arg selected_option "$selected_option" \
         --arg selected_text "$selected_text" \
         --argjson deny_pattern_matched "$deny_matched" \
-        --argjson skip_reason_val "$skip_reason_json" \
         --argjson safe_mode "$safe_mode" \
         --arg trigger_event "MENU-READY" \
         --arg session_id "${session_id:-}" \
+        --arg skip_reason "${skip_reason:-}" \
         '{
           window: $window,
           timestamp: $timestamp,
@@ -241,7 +254,7 @@ _write_audit_trail() {
           selected_option: $selected_option,
           selected_text: $selected_text,
           deny_pattern_matched: $deny_pattern_matched,
-          skip_reason: $skip_reason_val,
+          skip_reason: (if $skip_reason == "" then null else $skip_reason end),
           safe_mode: $safe_mode,
           trigger_event: $trigger_event,
           session_id: $session_id
