@@ -545,7 +545,7 @@ echo "event: $result"
 | `[PERMISSION-PROMPT]` | permission prompt 出現 | 文脈確認 → ユーザー通知（自動 inject 禁止） |
 | `[PHASE-COMPLETE]` | フェーズ完了フレーズ検知 | 次 Wave 移行 |
 | `[REVIEW-READY]` | Submit answers 表示 | inject で submit |
-| `[MENU-READY]` | Enter to select 表示 | inject + Tab + Enter |
+| `[MENU-READY]` | Enter to select 表示 | `OBSERVER_AUTO_INJECT_ENABLE=1` 設定時は daemon が自動 inject、未設定時は observer 手動 inject（#1145, Option A） |
 | `[FREEFORM-READY]` | [y/N]/Press up 表示 | inject で応答 |
 | `[STAGNATE-N]` | log age ≥ N 秒 | STAGNATE 介入フロー |
 
