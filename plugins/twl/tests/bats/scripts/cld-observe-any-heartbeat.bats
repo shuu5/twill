@@ -368,15 +368,12 @@ teardown() {
     export SUPERVISOR_DIR='$hb_dir'
     export CLD_OBSERVE_ANY_HEARTBEAT_PATH='$hb_path'
     export HEARTBEAT_INTERVAL_SEC=1
-    export MAX_CYCLES=3
     export INTERVAL=1
     export _TEST_MODE=1
     export CLD_OBSERVE_ANY_SCRIPT_DIR='$(dirname "$CLD_OBSERVE_ANY")'
-    # tmux コマンドを stub
+    # tmux コマンドを stub（空文字返却 → TARGET_WINS=0 → 1 cycle で break）
     tmux() { echo ''; }
     export -f tmux
-    # window が 0 件になると break するため TARGET_WINS=() で強制終了させず
-    # emit のみ検証
     source '$CLD_OBSERVE_ANY' 2>/dev/null || true
     # heartbeat 呼び出しが 3 回行われたかを確認
     [[ -f '$hb_path' ]] || exit 1
