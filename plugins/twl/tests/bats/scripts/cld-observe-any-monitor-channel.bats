@@ -130,11 +130,9 @@ teardown() {
   run grep -c "Monitor tool 連携経路" "${CATALOG}"
   [ "${status}" -eq 0 ]
   [ "${output}" -ge 1 ]
-  # セクション内（次の ## セクションまで）から5パターンを抽出
-  run bash -c "
-    awk '/Monitor tool 連携経路/,/^## /' '${CATALOG}' \
-      | grep -cE '^\[MENU-READY\]|\[REVIEW-READY\]|\[FREEFORM-READY\]|\[BUDGET-LOW\]|\[STAGNATE-'
-  "
+  # カタログ全体から5パターンを検出（awk range は ## 見出し自体が start/end 両方にマッチするため使用不可）
+  # AC: grep -cE "^\[MENU-READY\]|..." monitor-channel-catalog.md ≥ 5
+  run grep -cE '^\[MENU-READY\]|^\[REVIEW-READY\]|^\[FREEFORM-READY\]|^\[BUDGET-LOW\]|^\[STAGNATE-' "${CATALOG}"
   [ "${status}" -eq 0 ]
   [ "${output}" -ge 5 ]
 }

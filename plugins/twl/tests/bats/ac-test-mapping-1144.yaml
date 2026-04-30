@@ -51,7 +51,7 @@ mappings:
   - ac_index: 8
     ac_text: "--notify-dir 指定時は cld-observe-loop 互換の読み取り動作のみ（書き込みしない）"
     test_file: "plugins/twl/tests/bats/scripts/cld-observe-any-monitor-channel.bats"
-    test_name: "C3: --notify-dir 指定時に notify_dir へ書き込みが発生しない"
+    test_name: "C3: --notify-dir は読み取り動作のみ（cld-observe-loop 互換の通知ファイル書き込みをしない）"
     impl_files:
       - "plugins/session/scripts/cld-observe-any"
 
