@@ -500,6 +500,7 @@ class TestAC42OrchestratorHandlers:
             project_dir="/tmp/proj",
             autopilot_dir="/tmp/.autopilot",
             timeout_sec=60,
+            cwd="/tmp/main",
         )
         assert isinstance(result, dict), "handler が dict を返さない (AC4-2 未実装)"
         assert result.get("ok") is False, "ok が False でない (AC4-2 未実装)"
@@ -533,6 +534,7 @@ class TestAC42OrchestratorHandlers:
                     project_dir="/tmp/proj",
                     autopilot_dir="/tmp/.autopilot",
                     timeout_sec=60,
+                    cwd="/tmp/main",
                 )
         finally:
             os.unlink(tmp_plan)
