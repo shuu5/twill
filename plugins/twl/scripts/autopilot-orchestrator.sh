@@ -36,6 +36,7 @@ NUDGE_TIMEOUT="${DEV_AUTOPILOT_NUDGE_TIMEOUT:-30}"
 POLL_INTERVAL=10
 # stagnate 判定閾値（秒）: inject skip が連続してこの時間を超えたら WARN (#469, #472, #475 共通化）
 AUTOPILOT_STAGNATE_SEC="${AUTOPILOT_STAGNATE_SEC:-600}"
+AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC="${AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC:-60}"  # #1177: stagnate WARN rate limit
 
 # --- usage ---
 usage() {
@@ -762,6 +763,8 @@ declare -A RESOLVE_FAIL_FIRST_TS=() # AC-3: 連続開始タイムスタンプ（
 declare -A LAST_INJECTED_STEP=()    # ADR-018: inject 済み current_step（重複 inject 防止）
 declare -A INJECT_TIMEOUT_COUNT=()  # AC-2 #744: pr-merge 限定 inject timeout 連続カウント
 declare -A INPUT_WAITING_SEEN_PATTERN=()  # デバウンス: key="<issue>:<pattern>", value=1回目検知済み
+declare -A LAST_STATE_MTIME=()           # AC-1 #1177: state file mtime 履歴（mtime progress signal）
+declare -A LAST_STAGNATE_WARN_TS=()      # AC-2 #1177: stagnate WARN 最終出力タイムスタンプ（rate limit）
 
 # input-waiting 検知 + デバウンス + state 書き込み（Issue #510）
 # 引数: pane_output, issue, window_name

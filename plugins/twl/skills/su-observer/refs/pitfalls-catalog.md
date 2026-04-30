@@ -148,6 +148,8 @@ observer-side の A3 mtime + A1 多指標パターンは、orchestrator-side の
 
 実装: `inject-next-workflow.sh` の `LAST_STATE_MTIME` 連想配列で mtime 履歴を管理し、stagnate 検知ブロック先頭で mtime チェックを FAIL_COUNT インクリメントより前に実施することで、exit code とは独立した progress signal として機能する。
 
+注: `issue-lifecycle-orchestrator.sh` の `DEBOUNCE_TRANSIENT_SEC=120s`（LLM thinking time 中の transient state 保護、Worker kill 防止文脈）とは別文脈。orchestrator stagnate 検知の mtime AND 判定は inject-next-workflow.sh の RESOLVE_FAILED カウント制御であり、debounce 対象のプロセス kill とは独立した機構である。
+
 #### §4.11 cld-observe-any と Monitor tool の連携落とし穴
 
 **背景事象（2026-04-29 22:57 〜 2026-04-30 02:39、3h45m）**:

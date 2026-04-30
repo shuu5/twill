@@ -40,10 +40,6 @@ inject_next_workflow() {
     fi
 
     # --- stagnate 検知（RESOLVE_FAILED 連続カウント + mtime progress signal） ---
-    # AC-2/6: 関数スコープ宣言（二重宣言パターン — source 先での初期化保証）
-    declare -gA LAST_STATE_MTIME 2>/dev/null || true
-    declare -gA LAST_STAGNATE_WARN_TS 2>/dev/null || true
-
     local _now
     _now=$(date +%s 2>/dev/null || echo 0)
 
