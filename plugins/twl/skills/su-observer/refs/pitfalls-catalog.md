@@ -470,6 +470,52 @@ FINAL_TS=$(grep -oE '"timestamp":"[^"]+"' "$JSONL" | sort -u | tail -1)
 # resume までの gap = 現時刻 - FINAL_TS
 ```
 
+### §11.5 Observer Self-Supervision — cld-observe-any crash 連動死亡対策（ADR-031）
+
+**検出元**: 2026-04-30 09:00 ThinkPad crash incident（Issue #1146）
+
+#### 死亡メカニズム検証結果（AC0）
+
+`cld-observe-any` が observer Claude session 終了時に死亡する経路:
+
+| シナリオ | 結果 | 根拠 |
+|---|---|---|
+| ① Claude session 通常終了 | **SIGHUP または子 PG SIGTERM** | Claude Code が明示的に子プロセスグループを kill する可能性（未確定）|
+| ② kill -9 Claude session pid | **子プロセス連動死亡** | bash の `run_in_background` 子は SIGKILL 後に孤立するが実際には停止を確認 |
+| ③ tmux pane kill | **SIGHUP（POSIX pane-died 伝播）** | tmux は `pane-died` 時に pane 内プロセスに SIGHUP を送る |
+| ④ SIGHUP 直接送信 | **終了（trap なしのデフォルト動作）** | `cld-observe-any` は SIGHUP を trap しない（INT/TERM のみ trap）|
+
+**結論**: `cld-observe-any` は SIGHUP を trap しないため、tmux pane kill + observer crash のいずれのシナリオでも停止する。
+
+#### 対策（option B — ADR-031 採択）
+
+`plugins/session/scripts/cld-observe-any-launcher` を SessionStart hook から呼び出す:
+
+```bash
+# ~/.claude/settings.json (または twill/main/.claude/settings.json) の SessionStart hook
+pgrep -f 'cld-observe-any$' >/dev/null 2>&1 || \
+  bash /path/to/plugins/session/scripts/cld-observe-any-launcher [OPTIONS]
+```
+
+launcher の動作:
+1. `flock -n` で多重起動防止
+2. `pgrep -f cld-observe-any$` で既存 daemon 確認
+3. 不在 + 前回 PID 記録あり → `daemon-down-<ts>.json` event 出力
+4. `nohup cld-observe-any [args]` でバックグラウンド起動
+5. 1 秒後生存確認 → 失敗時は `daemon-startup-failed-<ts>.json` event 出力
+
+#### observer の対応（MUST）
+
+observer は Wave 開始時 `check_monitor_cld_observe_alive()` で確認し、不在時は以下を実行:
+
+```bash
+# launcher を直接呼び出して再起動
+bash plugins/session/scripts/cld-observe-any-launcher --window <pattern> [OPTIONS]
+# または SessionStart hook 設定を確認し、未設定なら設定を促す
+```
+
+**HUMAN GATE 対象外**: `cld-observe-any-launcher` 経由の再起動は self-supervision の範囲内で observer が自律判断可能。ただし launcher 起動失敗（`daemon-startup-failed` event）は §11 ★HUMAN GATE に準じてユーザーに escalate する。
+
 ---
 
 ## 12. Claude Code classifier bypass 検出パターン（MUST）
