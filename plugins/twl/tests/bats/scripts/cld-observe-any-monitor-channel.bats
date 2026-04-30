@@ -338,9 +338,9 @@ esac
   end_ts=$(date +%s)
   elapsed=$(( end_ts - start_ts ))
 
-  # 1 秒以内に完了すること
+  # 2 秒未満で完了すること（date +%s は 1 秒粒度のため 1 秒の余裕を持たせる）
   [[ "$elapsed" -lt 2 ]] \
-    || fail "cld-observe-any --once の実行に ${elapsed} 秒かかった（1 秒以内の期待に違反）"
+    || fail "cld-observe-any --once の実行に ${elapsed} 秒かかった（2 秒未満の期待に違反）"
 
   # logfile に [MENU-READY] 行が存在すること
   [[ -f "$logfile" ]] \
