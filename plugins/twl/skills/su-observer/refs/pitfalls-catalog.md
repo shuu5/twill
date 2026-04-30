@@ -650,12 +650,15 @@ gate deny (1 回目) → STOP（即時停止、追加試行禁止）→ AskUserQ
 | 14.2 | Worker CWD が git 管理外になる経路 | `bash -c "cd /tmp && ..."` などで呼び出された chain-runner.sh が tier 1 失敗後に `pwd` = `/tmp` を採用する | tier 2 (script-path fallback) が `BASH_SOURCE[0]` のディレクトリから git rev-parse を試みる。script が worktree 内 symlink 経由で常駐している前提で救済可能 |
 | 14.3 | script 自体が worktree 外に配置される異常状態（tier 2 も fail） | script が `/tmp` にコピーされた状態で実行される | tier 3 が `[chain-runner] FATAL: resolve_project_root failed (cwd=..., script=...)` を stderr に出力し `return 1` で abort。誤 root への書き込みは構造的に不可能 |
 
+| 14.4 | autopilot Worker 起動時に `SNAPSHOT_DIR` が env inject されず、子 agent が user-global fallback path に mkdir する | `ac-scaffold-tests` 等の sub-agent が `~/.claude/plugins/twl/.dev-session/issue-N/` への mkdir を要求し permission prompt で stall する。`chain-runner.sh:330` の `export SNAPSHOT_DIR=` は `step_init` 経由の Worker にしか届かない（#1176） | **defense in depth**: `autopilot-launch.sh` の tmux new-window env inject に `SNAPSHOT_DIR=${LAUNCH_DIR}/.dev-session/issue-${ISSUE}` を追加する（#1176）。chain-runner.sh の SSOT は維持し、env 伝搬経路を補完する二重設定として実装 |
+
 **正しい設計原則**:
 - `resolve_project_root()` で `pwd` を fallback として使ってはならない（ADR-027）
 - 他の `resolve_*` 関数（例: `resolve_autopilot_dir()`）でも同様の `|| pwd` fallback は禁止
 - 残骸 cleanup: `~/.claude/plugins/twl/.dev-session/` に孤児ファイルが残る場合は `plugins/twl/commands/cleanup-orphan-snapshots.md` の手順を参照
+- **§14.4 別軸対策**: §14.1-14.3 は `resolve_project_root()` 自体の bug（ADR-027 軸）、§14.4 は env 伝搬経路の補完（#1176 軸）。両者は独立した対策として共存する
 
-**参照**: ADR-027, Issue #966, Issue #938 (per-issue namespace), doobidoo `b81b1962`
+**参照**: ADR-027, Issue #966, Issue #938 (per-issue namespace), Issue #1176, doobidoo `b81b1962`
 
 ---
 

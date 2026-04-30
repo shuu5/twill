@@ -382,6 +382,14 @@ fi
 QUOTED_ISSUE=$(printf '%q' "$ISSUE")
 WORKER_ISSUE_NUM_ENV="WORKER_ISSUE_NUM=${QUOTED_ISSUE}"
 
+# --- SNAPSHOT_DIR 環境変数構築 (#1176) ---
+# Worker が spawn する子 agent (ac-scaffold-tests 等) で SNAPSHOT_DIR 未継承時の
+# fallback (~/.claude/plugins/twl/.dev-session/...) を回避するため、
+# cld parent process レベルで明示的に設定する (defense in depth)。
+# chain-runner.sh:330 の step_init 内 export は SSOT として維持。
+QUOTED_SNAPSHOT_DIR=$(printf '%q' "${LAUNCH_DIR}/.dev-session/issue-${ISSUE}")
+SNAPSHOT_DIR_ENV="SNAPSHOT_DIR=${QUOTED_SNAPSHOT_DIR}"
+
 # --- PYTHONPATH 環境変数構築 ---
 # Worker の cld セッション内で python3 -m twl.autopilot.* が動作するために必要
 # bare repo 構造: PROJECT_DIR/.bare が存在 → main/ 配下に cli/twl/src がある
@@ -488,7 +496,7 @@ QUOTED_CLD=$(printf '%q' "$CLD_PATH")
 QUOTED_PROMPT=$(printf '%q' "$PROMPT")
 # プロンプトは positional arg で渡す。-p/--print は禁止（非対話モードで即終了する）
 tmux new-window -d -n "$WINDOW_NAME" -c "$LAUNCH_DIR" \
-  "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} ${PYTHONPATH_ENV} ${CLD_ENV_FILE_ENV} ${EFFORT_ENV} ${AUDIT_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
+  "env ${AUTOPILOT_ENV} ${TRACE_ENV} ${REPO_ENV} ${WORKER_ISSUE_NUM_ENV} ${SNAPSHOT_DIR_ENV} ${PYTHONPATH_ENV} ${CLD_ENV_FILE_ENV} ${EFFORT_ENV} ${AUDIT_ENV} $QUOTED_CLD --model $MODEL $CONTEXT_ARGS $QUOTED_PROMPT"
 
 # --- #897-B: pipe-pane で Worker 会話履歴を audit dir に永続化 ---
 # tmux scrollback のみでは window kill で消失するため、pipe-pane で
