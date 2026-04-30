@@ -113,11 +113,7 @@ _check_parallel_spawn_eligibility
 ### override（observer 判断による介入時のみ）
 
 ```bash
-SKIP_PARALLEL_CHECK=1 spawn-controller.sh <skill> <prompt>
+SKIP_PARALLEL_CHECK=1 SKIP_PARALLEL_REASON="<reason>" spawn-controller.sh <skill> <prompt>
 ```
 
-`SKIP_PARALLEL_CHECK=1` を設定した場合は intervention 記録 MUST:
-```bash
-# 必ず記録すること
-echo "SKIP_PARALLEL_CHECK=1 使用: <理由>" >> .supervisor/intervention-log.md
-```
+`SKIP_PARALLEL_CHECK=1` を設定した場合、`spawn-controller.sh` が自動的に `.supervisor/intervention-log.md` に記録する。理由は `SKIP_PARALLEL_REASON` 環境変数で渡すこと（未指定時は `(reason not provided)` が記録される）。手動上書き記録も許容する。

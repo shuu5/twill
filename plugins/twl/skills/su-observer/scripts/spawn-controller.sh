@@ -47,7 +47,21 @@ fi
 # SKIP_PARALLEL_CHECK=1 で bypass 可（intervention 記録 MUST）
 _PARALLEL_CHECK_LIB="$TWILL_ROOT/plugins/twl/scripts/lib/observer-parallel-check.sh"
 if [[ "${SKIP_PARALLEL_CHECK:-0}" == "1" ]]; then
-  echo "[spawn-controller] WARN: SKIP_PARALLEL_CHECK=1 — §11.3 チェックをスキップ（intervention 記録 MUST）" >&2
+  echo "[spawn-controller] WARN: SKIP_PARALLEL_CHECK=1 — §11.3 チェックをスキップ（intervention-log に自動記録。SKIP_PARALLEL_REASON で理由を渡すこと）" >&2
+  # 自動記録 (tech-debt #1135、fail-open ポリシー)
+  {
+    _supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
+    mkdir -p "$_supervisor_dir"
+    _reason="${SKIP_PARALLEL_REASON:-(reason not provided)}"
+    _reason="${_reason//$'\n'/ }"
+    printf '%s SKIP_PARALLEL_CHECK=1: %s\n' \
+      "$(date -u +%FT%TZ)" \
+      "$_reason" \
+      >> "$_supervisor_dir/intervention-log.md"
+  } || {
+    echo "[spawn-controller] WARN: intervention-log append failed (continuing spawn)" >&2
+    true
+  }
 elif [[ -f "$_PARALLEL_CHECK_LIB" ]]; then
   # shellcheck source=/dev/null
   source "$_PARALLEL_CHECK_LIB"

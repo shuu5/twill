@@ -250,3 +250,54 @@ make_prompt_file() {
   [[ "$output" == *"co-explore"* ]] \
     || fail "エラーメッセージに有効な skill リストが含まれない: $output"
 }
+
+# ===========================================================================
+# AC12: SKIP_PARALLEL_CHECK=1 パスで実 .supervisor/intervention-log.md を汚染しない
+# Regression fix: SUPERVISOR_DIR=$(mktemp -d) 注入により実ログを保護
+# RED: spawn-controller.sh に自動記録実装がないため fail する
+# ===========================================================================
+
+@test "skip-parallel-check: SKIP_PARALLEL_CHECK=1 + SUPERVISOR_DIR 注入で実ログを汚染しない（regression fix）" {
+  # RED: spawn-controller.sh に自動記録実装がないため fail する
+  # （実装後は SUPERVISOR_DIR 指定先にのみ記録され、実 .supervisor は汚染されない）
+  make_prompt_file 5 "$SANDBOX/prompt.txt"
+  > "$CLD_SPAWN_ARGS_LOG"
+
+  local tmp_supervisor_dir
+  tmp_supervisor_dir="$(mktemp -d)"
+
+  SUPERVISOR_DIR="$tmp_supervisor_dir" \
+  SKIP_PARALLEL_CHECK=1 \
+  SKIP_PARALLEL_REASON="regression-fix test" \
+  run bash "$SANDBOX/run-spawn-controller.sh" co-explore "$SANDBOX/prompt.txt" \
+    --window-name "test-window"
+
+  assert_success
+
+  # 指定した tmp_supervisor_dir に intervention-log.md が作成されていること（RED ポイント）
+  [[ -f "$tmp_supervisor_dir/intervention-log.md" ]] \
+    || fail "SUPERVISOR_DIR 指定先に intervention-log.md が作成されていない: $tmp_supervisor_dir/intervention-log.md"
+
+  rm -rf "$tmp_supervisor_dir"
+}
+
+@test "skip-parallel-check: SKIP_PARALLEL_CHECK=1 で spawn は継続される" {
+  # 実装後も PASS すべき regression guard
+  # SKIP_PARALLEL_CHECK=1 設定時に spawn が abort せず cld-spawn が呼ばれること
+  make_prompt_file 5 "$SANDBOX/prompt.txt"
+  > "$CLD_SPAWN_ARGS_LOG"
+
+  local tmp_supervisor_dir
+  tmp_supervisor_dir="$(mktemp -d)"
+
+  SUPERVISOR_DIR="$tmp_supervisor_dir" \
+  SKIP_PARALLEL_CHECK=1 \
+  SKIP_PARALLEL_REASON="spawn-continues test" \
+  run bash "$SANDBOX/run-spawn-controller.sh" co-explore "$SANDBOX/prompt.txt" \
+    --window-name "test-window"
+
+  assert_success
+  [[ -f "$CLD_SPAWN_ARGS_LOG" ]] || fail "cld-spawn が呼ばれなかった"
+
+  rm -rf "$tmp_supervisor_dir"
+}
