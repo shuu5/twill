@@ -106,10 +106,12 @@ EOF
 # 検証方法: _DAEMON_LOAD_ONLY=1 かつ --window 指定なし で実行。
 #   実装前 (unset なし): _DAEMON_LOAD_ONLY=1 が live のため validation skip → exit 0
 #                       だが、これは「env 由来の値で bypass された」状態であり不正。
-#   実装後 (unset あり): 引数解析後に unset → _DAEMON_LOAD_ONLY は空
-#                       → validation が発動して exit 1（--window/--pattern 未指定）
+#   実装後 (AC1+AC2 両方適用後):
+#     - AC2: 引数解析後に unset → _DAEMON_LOAD_ONLY は空
+#     - AC1: L144 条件が [[ -z "${_DAEMON_LOAD_ONLY:-}" ]] のみ（_TEST_MODE 除去済み）
+#     → 両条件が揃って validation が発動して exit 1（--window/--pattern 未指定）
 #
-# RED 根拠: 実装前は exit 0（validation bypass）、実装後は exit 1（validation 発動）
+# RED 根拠: 実装前は exit 0（validation bypass）、AC1+AC2 実装後は exit 1
 # ---------------------------------------------------------------------------
 @test "AC2: env 経由 _DAEMON_LOAD_ONLY=1 は unset され --window 未指定で exit 1 になる" {
     local script_dir="$SCRIPT_DIR"
