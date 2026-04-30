@@ -249,11 +249,10 @@ class TestAC2bSectionBoundaryRegression:
     def test_ac1_make_section_regex_helper_exists(self):
         # AC1: _make_section_regex ヘルパー関数が存在し、Pattern を返すこと
         # RED: _make_section_regex が未定義なので NameError で fail する
-        import cli.twl.tests.test_issue_1084_human_gate as _mod
-        assert hasattr(_mod, "_make_section_regex"), (
-            "AC1: _make_section_regex ヘルパー関数がモジュールに存在しない"
+        assert callable(_make_section_regex), (
+            "AC1: _make_section_regex ヘルパー関数が callable でない"
         )
-        pattern = _mod._make_section_regex(11)
+        pattern = _make_section_regex(11)
         assert hasattr(pattern, "search"), (
             "AC1: _make_section_regex(11) が re.Pattern を返さない"
         )
