@@ -1,0 +1,95 @@
+# ac-test-mapping-1142.yaml — Issue #1142: rule-gap tmux kill-window sessionindex
+# 生成: AC Scaffold Tests Agent
+# 対象テストファイル: plugins/session/tests/lib-tmux-resolve.bats
+
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md に新 subsection `#### §4.11 tmux 破壊的操作のターゲット解決` を、既存 `#### §4.10 〜`（L98〜L141）の直後（L142 の `---` 区切り直前）に追加する。"
+    test_file: ""
+    test_name: ""
+    status: SKIP
+    note: "doc-only AC。pitfalls-catalog.md への subsection 追記のみ。bats テスト不要。"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+  - ac_index: 2
+    ac_text: "plugins/session/scripts/lib/tmux-resolve.sh を新規作成し、`_resolve_window_target <window_name>` と `_kill_window_safe <window_name>` を定義する。"
+    test_file: "plugins/session/tests/lib-tmux-resolve.bats"
+    test_name: "AC4-1, AC4-2, AC4-3, AC4-4a, AC4-4b（lib-tmux-resolve.bats 全件）"
+    status: RED
+    note: "lib/tmux-resolve.sh 未作成のため source 失敗。AC-4 の bats テストでカバー。"
+    impl_files:
+      - "plugins/session/scripts/lib/tmux-resolve.sh"
+
+  - ac_index: 3
+    ac_text: "plugins/session/scripts/cld-observe-any の L347-358 と L560-562 を新 helper に置換。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "（既存テスト全件 — regression 確認）"
+    status: SKIP
+    note: "regression テスト AC。新規テスト不要。既存 cld-observe-any.bats の全 PASS で確認する。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: 4
+    ac_text: "plugins/session/tests/lib-tmux-resolve.bats を新規作成。正常解決 / 不在 / ambiguous / kill_window_safe の 4 ケース RED テストを生成。"
+    test_file: "plugins/session/tests/lib-tmux-resolve.bats"
+    test_name: "AC4-1: 正常解決 — tmux mock が main:3 wt-target 返却 → stdout main:3 + exit 0"
+    status: RED
+    note: "lib/tmux-resolve.sh 未実装のため fail。実装後 GREEN になる。"
+    impl_files:
+      - "plugins/session/scripts/lib/tmux-resolve.sh"
+
+  - ac_index: 4
+    ac_text: "不在ケース: tmux mock が空文字返却 → exit 1 + stderr に 'window not found: wt-target'"
+    test_file: "plugins/session/tests/lib-tmux-resolve.bats"
+    test_name: "AC4-2: 不在 — tmux mock が空文字返却 → exit 1 + stderr に 'window not found: wt-target'"
+    status: RED
+    note: "lib/tmux-resolve.sh 未実装のため fail。実装後 GREEN になる。"
+    impl_files:
+      - "plugins/session/scripts/lib/tmux-resolve.sh"
+
+  - ac_index: 4
+    ac_text: "ambiguous ケース: tmux mock が s1:0 wt-target と s2:0 wt-target を返す → exit 1 + stderr 'ambiguous: multiple sessions have window wt-target'"
+    test_file: "plugins/session/tests/lib-tmux-resolve.bats"
+    test_name: "AC4-3: ambiguous — 複数セッションに同名 window → exit 1 + stderr 'ambiguous'"
+    status: RED
+    note: "strict 挙動（最初の match を返す貪欲挙動禁止）。lib 未実装のため fail。"
+    impl_files:
+      - "plugins/session/scripts/lib/tmux-resolve.sh"
+
+  - ac_index: 4
+    ac_text: "kill_window_safe 正常系: _resolve 成功 → kill-window stub が 1 回呼出される"
+    test_file: "plugins/session/tests/lib-tmux-resolve.bats"
+    test_name: "AC4-4a: kill_window_safe 正常 — _resolve 成功 → kill-window が 1 回呼出される"
+    status: RED
+    note: "lib/tmux-resolve.sh 未実装のため fail。実装後 GREEN になる。"
+    impl_files:
+      - "plugins/session/scripts/lib/tmux-resolve.sh"
+
+  - ac_index: 4
+    ac_text: "kill_window_safe 不在系: _resolve 失敗 → kill stub 0 回 + stderr に log"
+    test_file: "plugins/session/tests/lib-tmux-resolve.bats"
+    test_name: "AC4-4b: kill_window_safe 不在 — _resolve 失敗 → kill stub 0 回 + stderr に log"
+    status: RED
+    note: "lib/tmux-resolve.sh 未実装のため fail。実装後 GREEN になる。"
+    impl_files:
+      - "plugins/session/scripts/lib/tmux-resolve.sh"
+
+  - ac_index: 5
+    ac_text: "既存 plugins/session/tests/cld-observe-any.bats の全ケースが PASS を維持（regression なし）。"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "（既存テスト全件）"
+    status: SKIP
+    note: "新規テスト不要。AC-3 実装後に既存テストで regression 確認する。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: 6
+    ac_text: "monitor-channel-catalog.md への note 追記 + pitfalls-catalog cross-ref 確認。"
+    test_file: ""
+    test_name: ""
+    status: SKIP
+    note: "doc-only AC。bats テスト不要。"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
