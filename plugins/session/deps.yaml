@@ -123,3 +123,8 @@ tests:
     type: test
     path: tests/session-comm-usage-typo-1066.bats
     description: "session-comm.sh ファイルヘッダ usage の inject-file 行に --wait SECONDS 重複がないことを検証（#1066）"
+
+  lib-tmux-resolve-test:
+    type: test
+    path: tests/lib-tmux-resolve.bats
+    description: "_resolve_window_target と _kill_window_safe の RED テスト（Issue #1142: AC-4）"
