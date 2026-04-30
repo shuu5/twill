@@ -531,7 +531,7 @@ skills:
     path: skills/workflow-observe-loop/SKILL.md
     effort: high
     spawnable_by: [controller]
-    can_spawn: [composite, atomic, specialist]
+    can_spawn: [composite, atomic, specialist, script]
     calls:
       - composite: observe-and-detect  # bash 最適化で直接実行（composite のロジックを inline 化）
       - atomic: observe-retrospective
