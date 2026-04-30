@@ -73,6 +73,11 @@ scripts:
     path: scripts/cld-observe-loop
     description: "定期監視ループ（cld-observe-any の thin wrapper。--pattern 'ap-*' デフォルト、既存 API を維持）"
 
+  cld-observe-any-launcher:
+    type: script
+    path: scripts/cld-observe-any-launcher
+    description: "option B flock+nohup daemon 自律再起動管理（ADR-031: SessionStart hook 経由で cld-observe-any を自動再起動）"
+
   claude-session-save:
     type: script
     path: scripts/claude-session-save.sh
