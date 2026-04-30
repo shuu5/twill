@@ -24,9 +24,11 @@ __all__ = [
 ]
 
 _RECEIVER_RE = re.compile(r"^[a-zA-Z0-9_\-:]+$")
-# To add a new receiver prefix: append an alternative inside the group (e.g. "|newrole:").
-_RECEIVER_PATTERN = re.compile(r"^(supervisor$|pilot:|worker:|sibling:|observer:|ap-|wt-co-)")
 _SUPERVISOR_NAME = "supervisor"
+# To add a new receiver prefix: append an alternative inside the group (e.g. "|newrole:").
+_RECEIVER_PATTERN = re.compile(
+    rf"^({re.escape(_SUPERVISOR_NAME)}$|pilot:|worker:|sibling:|observer:|ap-|wt-co-)"
+)
 
 # Crockford base32 alphabet for ULID generation (no external dep)
 _B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
