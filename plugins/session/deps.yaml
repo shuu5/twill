@@ -143,3 +143,8 @@ tests:
     type: test
     path: tests/cld-observe-any-test-mode-validate.bats
     description: "cld-observe-any _TEST_MODE flock/validation 設計改善の regression guard（Issue #1166: AC1-AC4）"
+
+  test-1167-ac-verify:
+    type: test
+    path: tests/test_1167_ac_verify.bats
+    description: "Issue #1167: cld-observe-any.bats L74 slash-in-function-name AC テスト（AC1-AC5: _mock_session_state rename 検証）"
