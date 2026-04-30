@@ -1320,3 +1320,275 @@ MOCKEOF
     # 実装後は [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:" に変わる
     [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS: flock 失敗 exit 1 + stderr に PID 出力"
 }
+
+# ===========================================================================
+# Issue #1153: observer cld-observe-any TDD RED フェーズ（AC0〜AC7）
+# 全テストは実装前に fail（RED）する。実装後に GREEN になる。
+# ===========================================================================
+
+REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../../.." && pwd)"
+OBSERVER_IDLE_CHECK="$REPO_ROOT/plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+PITFALLS_CATALOG="$REPO_ROOT/plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+ORCHESTRATOR="$REPO_ROOT/plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+# ---------------------------------------------------------------------------
+# AC0: PCRE 可用性チェック — 非 PCRE 環境で warn を出すこと
+# ---------------------------------------------------------------------------
+@test "AC0 (#1153): cld-observe-any に PCRE 可用性チェックコードが存在すること (RED)" {
+    # RED: 実装前は fail する — PCRE availability check が未実装
+    # 実装後: grep --version | grep -qi perl または PCRE warn ロジックが追加される
+    grep -qiE "pcre|PCRE_SUPPORT|check.pcre|grep.*perl|warn.*perl" "$CLD_OBSERVE_ANY"
+}
+
+# ---------------------------------------------------------------------------
+# AC1: Unicode ellipsis 含む fixture — detect_thinking が検知すること
+# ---------------------------------------------------------------------------
+@test "AC1 (#1153): detect_thinking が 'Flambéing… (15s · ↑234 tokens)' を検知すること (RED)" {
+    # RED: 実装前は fail する
+    # 現状: grep -qiE の [a-z]+ は ASCII 限定。é (non-ASCII) を含む Flambéing が regex に hit しない
+    # 実装後: grep -qiP + \p{Ll} または明示リスト追加で Flambéing を検知
+
+    run bash <<EOF
+# detect_thinking 相当ロジックを直接テスト（ script sourcing を避けてリスク軽減）
+pane_text='Flambéing… (15s · ↑234 tokens)'
+LLM_INDICATORS=(
+    "Thinking" "Brewing" "Brewed" "Concocting" "Ebbing" "Proofing" "Frosting"
+    "Reasoning" "Computing" "Planning" "Composing" "Processing"
+    "Running .* agents" "[0-9]+ tool uses" "thinking with max effort"
+    "Saut.*ed" "Burrowing" "Cerebrating" "Spinning" "Beboppin" "Thundering"
+    "Baked" "Cooked" "Crunched" "Churned" "Skedaddling" "Orchestrating"
+    "[A-Z][a-z]+(in'|ing|ed)(…| for [0-9]| \\([0-9])"
+)
+detected=""
+for ind in "\${LLM_INDICATORS[@]}"; do
+    if echo "\$pane_text" | grep -qiE "\$ind" 2>/dev/null; then
+        detected="\$ind"
+        break
+    fi
+done
+if [[ -n "\$detected" ]]; then
+    echo "PASS: detected=\$detected"
+else
+    echo "FAIL: Flambéing not detected by current regex"
+    exit 1
+fi
+EOF
+
+    [[ "$status" -eq 0 ]]
+}
+
+# ---------------------------------------------------------------------------
+# AC2: ASCII 3-dot — detect_thinking が検知すること
+# ---------------------------------------------------------------------------
+@test "AC2 (#1153): detect_thinking が 'Garnishing... (15s)' (ASCII 3-dot) を検知すること (RED)" {
+    # RED: 実装前は fail する
+    # 現状: regex の trailing alternatives に \.{3} がなく ASCII "..." が未対応
+    # 実装後: \.{3} 追加 or 明示リスト追加で検知できる
+
+    run bash <<EOF
+pane_text='Garnishing... (15s)'
+LLM_INDICATORS=(
+    "Thinking" "Brewing" "Brewed" "Concocting" "Ebbing" "Proofing" "Frosting"
+    "Reasoning" "Computing" "Planning" "Composing" "Processing"
+    "Running .* agents" "[0-9]+ tool uses" "thinking with max effort"
+    "Saut.*ed" "Burrowing" "Cerebrating" "Spinning" "Beboppin" "Thundering"
+    "Baked" "Cooked" "Crunched" "Churned" "Skedaddling" "Orchestrating"
+    "[A-Z][a-z]+(in'|ing|ed)(…| for [0-9]| \\([0-9])"
+)
+detected=""
+for ind in "\${LLM_INDICATORS[@]}"; do
+    if echo "\$pane_text" | grep -qiE "\$ind" 2>/dev/null; then
+        detected="\$ind"
+        break
+    fi
+done
+if [[ -n "\$detected" ]]; then
+    echo "PASS: detected=\$detected"
+else
+    echo "FAIL: Garnishing... (ASCII 3-dot) not detected"
+    exit 1
+fi
+EOF
+
+    [[ "$status" -eq 0 ]]
+}
+
+# ---------------------------------------------------------------------------
+# AC3: bare-word safety net — LLM_INDICATORS に 'Garnishing' が含まれること
+# ---------------------------------------------------------------------------
+@test "AC3 (#1153): 'Garnishing' (bare-word) が LLM_INDICATORS に含まれること (RED)" {
+    # RED: 実装前は fail する
+    # 現状: "Garnishing" は LLM_INDICATORS 配列に存在せず、一般化 regex も bare-word に hit しない
+    # 実装後: 明示リスト追加（対策3）で救済される
+
+    grep -q "Garnishing" "$CLD_OBSERVE_ANY"
+}
+
+# ---------------------------------------------------------------------------
+# AC4: LLM_INDICATORS coverage — 20 件の indicator が 3 箇所すべてに含まれること
+# ---------------------------------------------------------------------------
+@test "AC4 (#1153): REQUIRED 20 indicators が cld-observe-any に含まれること (RED)" {
+    # RED: 実装前は fail する — 20 件すべて MISSING
+    local REQUIRED=(Garnishing Embellishing Flambéing Tomfoolering Reticulating Topsy-turvying Generating Whisking Mulling Fermenting Caramelizing Inferring Discerning Ratiocinating Sleuthing Investigating Reviewing Studying Pondering Reflecting)
+    local missing=()
+    for word in "${REQUIRED[@]}"; do
+        grep -q "$word" "$CLD_OBSERVE_ANY" || missing+=("$word")
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        echo "MISSING from cld-observe-any: ${missing[*]}"
+        false
+    fi
+}
+
+@test "AC4 (#1153): REQUIRED 20 indicators が observer-idle-check.sh に含まれること (RED)" {
+    # RED: 実装前は fail する
+    local REQUIRED=(Garnishing Embellishing Flambéing Tomfoolering Reticulating Topsy-turvying Generating Whisking Mulling Fermenting Caramelizing Inferring Discerning Ratiocinating Sleuthing Investigating Reviewing Studying Pondering Reflecting)
+    local missing=()
+    for word in "${REQUIRED[@]}"; do
+        grep -q "$word" "$OBSERVER_IDLE_CHECK" || missing+=("$word")
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        echo "MISSING from observer-idle-check.sh: ${missing[*]}"
+        false
+    fi
+}
+
+@test "AC4 (#1153): REQUIRED 20 indicators が pitfalls-catalog.md に含まれること (RED)" {
+    # RED: 実装前は fail する
+    local REQUIRED=(Garnishing Embellishing Flambéing Tomfoolering Reticulating Topsy-turvying Generating Whisking Mulling Fermenting Caramelizing Inferring Discerning Ratiocinating Sleuthing Investigating Reviewing Studying Pondering Reflecting)
+    local missing=()
+    for word in "${REQUIRED[@]}"; do
+        grep -q "$word" "$PITFALLS_CATALOG" || missing+=("$word")
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        echo "MISSING from pitfalls-catalog.md: ${missing[*]}"
+        false
+    fi
+}
+
+@test "AC4 (#1153): catalog 独自 8 件が cld-observe-any に追加されていること (RED)" {
+    # RED: 実装前は fail する（対策5: catalog → 実装 同期方向）
+    # pitfalls-catalog.md 独自の 8 件も cld-observe-any に追加すること
+    local CATALOG_8=(Steeping Simmering Marinating Newspapering Flummoxing Befuddling Waddling Lollygagging)
+    local missing=()
+    for word in "${CATALOG_8[@]}"; do
+        grep -q "$word" "$CLD_OBSERVE_ANY" || missing+=("$word")
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        echo "MISSING catalog-8 from cld-observe-any: ${missing[*]}"
+        false
+    fi
+}
+
+@test "AC4 (#1153): catalog 独自 8 件が observer-idle-check.sh に追加されていること (RED)" {
+    # RED: 実装前は fail する（対策5: catalog → 実装 同期方向）
+    local CATALOG_8=(Steeping Simmering Marinating Newspapering Flummoxing Befuddling Waddling Lollygagging)
+    local missing=()
+    for word in "${CATALOG_8[@]}"; do
+        grep -q "$word" "$OBSERVER_IDLE_CHECK" || missing+=("$word")
+    done
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        echo "MISSING catalog-8 from observer-idle-check.sh: ${missing[*]}"
+        false
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# AC5: pitfalls-catalog.md §4.10.1 subsection の存在確認
+# ---------------------------------------------------------------------------
+@test "AC5 (#1153): pitfalls-catalog.md に §4.10.1 non-ASCII/ASCII ellipsis/bare-word セクションが存在すること (RED)" {
+    # RED: 実装前は fail する — §4.10.1 は未新設
+    grep -q "4\.10\.1" "$PITFALLS_CATALOG"
+}
+
+@test "AC5 (#1153): pitfalls-catalog.md §4.10.1 に 3 落とし穴が記載されていること (RED)" {
+    # RED: 実装前は fail する
+    # non-ASCII、ASCII ellipsis、bare-word の 3 パターンが記載されていること
+    grep -q "non-ASCII\|Unicode" "$PITFALLS_CATALOG" && \
+    grep -q "ASCII.*ellipsis\|ASCII.*\.\.\." "$PITFALLS_CATALOG" && \
+    grep -q "bare-word\|bare word" "$PITFALLS_CATALOG"
+}
+
+@test "AC5 (#1153): pitfalls-catalog.md §4.10.1 に SSOT 三方向同期義務が記載されていること (RED)" {
+    # RED: 実装前は fail する
+    # §4.10.1 内に SSOT 三方向同期（cld-observe-any / observer-idle-check / pitfalls-catalog）の記載
+    local section_start
+    section_start=$(grep -n "4\.10\.1" "$PITFALLS_CATALOG" | head -1 | cut -d: -f1)
+    [[ -n "$section_start" ]] || { echo "§4.10.1 not found"; false; return; }
+    # §4.10.1 以降の内容に SSOT 三方向同期に関する記述があること
+    tail -n "+${section_start}" "$PITFALLS_CATALOG" | head -50 | \
+        grep -q "SSOT\|三方向\|同期"
+}
+
+@test "AC5 (#1153): pitfalls-catalog.md §4.10.1 に Steeping/Simmering 等 8 件の同期 indicator が記載されていること (RED)" {
+    # RED: 実装前は fail する
+    # 同期 indicator 8 件: Steeping, Simmering, Marinating, Newspapering, Flummoxing, Befuddling, Waddling, Lollygagging
+    local section_start
+    section_start=$(grep -n "4\.10\.1" "$PITFALLS_CATALOG" | head -1 | cut -d: -f1)
+    [[ -n "$section_start" ]] || { echo "§4.10.1 not found"; false; return; }
+    local section_text
+    section_text=$(tail -n "+${section_start}" "$PITFALLS_CATALOG" | head -100)
+    for word in Steeping Simmering Marinating Newspapering Flummoxing Befuddling Waddling Lollygagging; do
+        echo "$section_text" | grep -q "$word" || { echo "MISSING in §4.10.1: $word"; false; return; }
+    done
+}
+
+# ---------------------------------------------------------------------------
+# AC6: 回帰防止 — detect_thinking が grep -qiP を使用していること + 既存パターン互換性
+# ---------------------------------------------------------------------------
+@test "AC6 (#1153): detect_thinking が grep -qiP を使用していること (RED)" {
+    # RED: 実装前は fail する — detect_thinking は grep -qiE を使用中
+    # 実装後: grep -qiP への切替で PASS（PCRE モード切替の核心確認）
+    grep -q 'grep -qiP' "$CLD_OBSERVE_ANY"
+}
+
+@test "AC6 (#1153): grep -qiP で 'Running .* agents' が動作すること（回帰ガード）" {
+    # 実装後も既存 indicator が grep -qiP で動作することを保証
+    echo "Running 3 agents in parallel" | grep -qiP "Running .* agents"
+}
+
+@test "AC6 (#1153): grep -qiP で '[0-9]+ tool uses' が動作すること（回帰ガード）" {
+    echo "42 tool uses completed" | grep -qiP "[0-9]+ tool uses"
+}
+
+@test "AC6 (#1153): grep -qiP で 'Saut.*ed' が動作すること（回帰ガード）" {
+    # Sautéed は non-ASCII だが Saut.*ed パターンは PCRE で動作すること
+    echo "Sautéed ingredients (30s)" | grep -qiP "Saut.*ed"
+}
+
+# ---------------------------------------------------------------------------
+# AC7: orchestrator 動的読み込み smoke test
+# ---------------------------------------------------------------------------
+@test "AC7 (#1153): issue-lifecycle-orchestrator.sh の LLM_INDICATORS 動的読み込みが破壊されていないこと (RED)" {
+    # RED: 実装前は fail する
+    # orchestrator は awk で cld-observe-any から LLM_INDICATORS を動的読み込みする
+    # 配列追加・grep フラグ変更後も読み込み経路が維持されること
+
+    run bash <<EOF
+# orchestrator から LLM_INDICATORS 動的読み込みロジックを抽出して実行
+_COA_SCRIPT="$CLD_OBSERVE_ANY"
+LLM_INDICATORS=()
+if [[ -f "\$_COA_SCRIPT" ]]; then
+    eval "\$(awk '/^LLM_INDICATORS=\(/{p=1} p{print} /^\)\$/{if(p){p=0; exit}}' "\$_COA_SCRIPT" 2>/dev/null)" 2>/dev/null || true
+fi
+
+# 動的読み込み後に REQUIRED indicators が含まれること
+REQUIRED=(Garnishing Embellishing Flambéing Tomfoolering Reticulating Generating)
+missing=()
+for word in "\${REQUIRED[@]}"; do
+    found=0
+    for indicator in "\${LLM_INDICATORS[@]}"; do
+        [[ "\$indicator" == "\$word" ]] && found=1 && break
+    done
+    [[ "\$found" -eq 0 ]] && missing+=("\$word")
+done
+
+if [[ \${#missing[@]} -gt 0 ]]; then
+    echo "FAIL: orchestrator dynamic load missing: \${missing[*]}"
+    exit 1
+fi
+echo "PASS: orchestrator dynamic load OK (loaded \${#LLM_INDICATORS[@]} indicators)"
+EOF
+
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS: orchestrator dynamic load OK"
+}
