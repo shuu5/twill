@@ -434,6 +434,10 @@ evaluate_window() {
     if echo "$tail15" | grep -qE 'Enter to select|Esc to cancel'; then
         if [[ "$log_age" -ge 30 ]]; then
             emit_event "MENU-READY" "$win" "$thinking" "$log_age" "$state" "$budget_min"
+            # auto-inject（opt-in: OBSERVER_AUTO_INJECT_ENABLE=1 のみ有効）
+            if declare -f auto_inject_menu &>/dev/null; then
+                auto_inject_menu "$win" "$tail15" "thinking=${thinking:-}"
+            fi
             return
         fi
     fi
@@ -474,6 +478,13 @@ if [[ -f "$_IDLE_CHECK_LIB" ]]; then
     source "$_IDLE_CHECK_LIB"
 fi
 
+# auto_inject_menu() を source する（#1145: AskUserQuestion menu 自動 inject 機構）
+_AUTO_INJECT_LIB="$(dirname "${BASH_SOURCE[0]}")/lib/observer-auto-inject.sh"
+if [[ -f "$_AUTO_INJECT_LIB" ]]; then
+    # shellcheck source=/dev/null
+    source "$_AUTO_INJECT_LIB"
+fi
+
 # --once モード: 現在状態を評価して exit
 if [[ "$ONCE" == "true" ]]; then
     TARGET_WINS=()
@@ -507,6 +518,10 @@ while true; do
 
     for win in "${TARGET_WINS[@]}"; do
         evaluate_window "$win"
+        # auto-inject cycle カウンタをリセット（次サイクルで再度 inject 可能にする）
+        if declare -f auto_inject_reset_cycle &>/dev/null; then
+            auto_inject_reset_cycle "$win"
+        fi
     done
 
     # [IDLE-COMPLETED] 判定 — evaluate_window() 外のメインループ内に配置 (AC-5)
