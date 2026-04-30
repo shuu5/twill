@@ -30,16 +30,6 @@ assert_file_contains() {
   [[ -f "${PROJECT_ROOT}/${file}" ]] && grep -qP -- "$pattern" "${PROJECT_ROOT}/${file}"
 }
 
-assert_file_not_contains() {
-  local file="$1"
-  local pattern="$2"
-  [[ -f "${PROJECT_ROOT}/${file}" ]] || return 1
-  if grep -qP -- "$pattern" "${PROJECT_ROOT}/${file}"; then
-    return 1
-  fi
-  return 0
-}
-
 assert_count_ge() {
   local count="$1"
   local min="$2"
@@ -118,12 +108,25 @@ run_test "AC1: ★HUMAN GATE が ## merge-gate ユーザー介入要件 節内�
 
 # WHEN: SKILL.md が修正済みである
 # THEN: compaction 復帰プロトコル節内に ★HUMAN GATE が含まれていない
-# grep -A 5 'compaction 復帰プロトコル' ... | grep -c '★HUMAN GATE' == 0
 test_ac1_compaction_section_no_human_gate() {
   assert_file_exists "$SKILL_MD" || return 1
-  local count
-  count=$(grep -A 10 'compaction 復帰プロトコル' "${PROJECT_ROOT}/${SKILL_MD}" | grep -c '★HUMAN GATE' || true)
-  [[ "$count" -eq 0 ]]
+  SKILL_MD_ABS="$SKILL_MD_ABS" python3 - <<'PYEOF'
+import re, sys, os
+
+skill_md_path = os.environ.get("SKILL_MD_ABS", "")
+with open(skill_md_path, encoding="utf-8") as f:
+    content = f.read()
+
+m = re.search(r'^## compaction 復帰プロトコル.*?(?=^##|\Z)', content, re.MULTILINE | re.DOTALL)
+if not m:
+    sys.exit(0)  # 節が存在しない場合は PASS（★HUMAN GATE も含まれない）
+
+section = m.group(0)
+if '★HUMAN GATE' in section:
+    print("ERROR: ★HUMAN GATE found in '## compaction 復帰プロトコル' section", file=sys.stderr)
+    sys.exit(1)
+sys.exit(0)
+PYEOF
 }
 run_test "AC1: compaction 復帰プロトコル節内に ★HUMAN GATE が含まれていない" test_ac1_compaction_section_no_human_gate
 
