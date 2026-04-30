@@ -1,0 +1,71 @@
+mappings:
+  - ac_index: 1
+    ac_text: "★HUMAN GATE を新設の ## merge-gate ユーザー介入要件 節に移動する。compaction 復帰プロトコル節には移動後 ★HUMAN GATE が含まれないこと"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC1: ## merge-gate ユーザー介入要件 節が存在する"
+    impl_files:
+      - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
+
+  - ac_index: 1b
+    ac_text: "★HUMAN GATE が ## merge-gate ユーザー介入要件 節内に配置されていること"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC1: ★HUMAN GATE が ## merge-gate ユーザー介入要件 節内に配置されている"
+    impl_files:
+      - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
+
+  - ac_index: 1c
+    ac_text: "compaction 復帰プロトコル節内に ★HUMAN GATE が含まれていないこと"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC1: compaction 復帰プロトコル節内に ★HUMAN GATE が含まれていない"
+    impl_files:
+      - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
+
+  - ac_index: 2
+    ac_text: "移動後の ★HUMAN GATE 行の前後（同節内）に ADR-030 §適用条件「merge-gate REJECT によりエスカレーションが必要な場合 / Layer 2 Escalate」を 1 行で明示"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC2: 新節内に merge-gate REJECT エスカレーション条件が明示されている"
+    impl_files:
+      - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
+
+  - ac_index: 2b
+    ac_text: "新節内に Layer 2 Escalate への言及が含まれていること"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC2: 新節内に Layer 2 Escalate への言及が含まれている"
+    impl_files:
+      - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
+
+  - ac_index: 3
+    ac_text: "co-autopilot/SKILL.md と co-architect/SKILL.md の配置スタイルと比較し PR description に 1 段落追記"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC3: PR description への比較結果追記 (SKIP)"
+    impl_files: []
+    # impl_files 推定失敗: プロセス AC — PR description は静的ファイル検証不能
+
+  - ac_index: 4
+    ac_text: "grep -rln '★HUMAN GATE' plugins/ | wc -l >= 8（ファイル数保全）"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC4: ★HUMAN GATE を含むファイル数が 8 以上（修正前と同数）"
+    impl_files:
+      - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
+
+  - ac_index: 4b
+    ac_text: "UTF-8 健全性: SKILL.md 内に ★HUMAN GATE が UTF-8 エンコードで存在する"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC4: UTF-8 健全性 — SKILL.md 内に ★HUMAN GATE が存在する"
+    impl_files:
+      - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
+
+  - ac_index: 4c
+    ac_text: "#1084 AC3(d) anchor 保全: grep -n 'merge-gate エスカレーション' SKILL.md が 1 件以上ヒット"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC4: #1084 AC3(d) anchor 'merge-gate エスカレーション' が保全されている"
+    impl_files:
+      - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
+
+  - ac_index: 5
+    ac_text: "修正案が ADR-030 §Decision §適用条件 §段階導入方針 のいずれにも矛盾しない。★HUMAN GATE 件数を変えず位置・文脈を変えるのみ"
+    test_file: "plugins/twl/tests/scenarios/workflow-pr-merge-human-gate-placement.test.sh"
+    test_name: "AC5: SKILL.md 内の ★HUMAN GATE 件数が 1（追加・削除なし）"
+    impl_files:
+      - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
+      - "plugins/twl/architecture/decisions/ADR-030-human-gate-marker.md"
