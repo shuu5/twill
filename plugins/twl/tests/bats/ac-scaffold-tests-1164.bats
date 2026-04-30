@@ -244,8 +244,8 @@ teardown() {
 # ===========================================================================
 
 @test "ac-scaffold-tests-1164: AC5 twl check --deps-integrity passes" {
-  # AC: twl check --deps-integrity が PASS する
-  # RED: 実装変更が未完了の場合 fail する可能性があるが、deps 整合性は現時点で PASS のはず
+  # AC: twl check --deps-integrity が PASS する（regression guard — .md 追加で deps を壊さないことを確認）
+  command -v twl > /dev/null 2>&1 || skip "twl not available in PATH"
   run bash -c "cd '${REPO_ROOT}' && twl check --deps-integrity"
   [ "${status}" -eq 0 ]
 }
