@@ -1,129 +1,131 @@
-# ac-test-mapping.yaml — Issue #1132: feat(observer): IDLE_COMPLETED auto-kill
+# ac-test-mapping.yaml — Issue #1146: feat(observer): self-monitoring daemon (option B)
 # 生成: AC Scaffold Tests Agent
-# 対象テストファイル: plugins/session/tests/cld-observe-any.bats (Scenario 20-24)
+# 対象テストファイル: plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats
 
 mappings:
-  - ac_index: 1
-    ac_text: "IDLE_COMPLETED_AUTO_KILL 環境変数を参照し、未設定または 0 の場合は kill しない。1 の場合のみ自動 kill。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/1: IDLE_COMPLETED_AUTO_KILL 未設定 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 baseline）"
-    status: GREEN
-    note: "Scenario 20。opt-in env var の負例（未設定）。現実装でも PASS する baseline。"
+  - ac_index: 0
+    ac_text: "cld-observe-any が observer Claude session 終了時にどのシグナルで死亡するかを再現実験で確定し、pitfalls-catalog.md 付録に記録する。"
+    test_file: ""
+    test_name: ""
+    status: SKIP
+    note: "AC0 はドキュメント/実験 AC。再現実験・記録のみ。bats テスト不要。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
 
   - ac_index: 1
-    ac_text: "IDLE_COMPLETED_AUTO_KILL 環境変数を参照し、未設定または 0 の場合は kill しない。1 の場合のみ自動 kill。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/2: IDLE_COMPLETED_AUTO_KILL=0 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 explicit disable）"
-    status: GREEN
-    note: "Scenario 21。opt-in env var の負例（明示 0）。現実装でも PASS する baseline。"
+    ac_text: "plugins/twl/architecture/decisions/ADR-031-observer-self-supervision.md を作成し、option 採択理由・代替案検討・boundary を記録する。"
+    test_file: ""
+    test_name: ""
+    status: SKIP
+    note: "AC1 は ADR 作成のみ。bats テスト不要。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/twl/architecture/decisions/ADR-031-observer-self-supervision.md"
+      # impl_files 推定: ADR ファイルは新規作成予定（現時点では存在しない）
 
   - ac_index: 2
-    ac_text: "IDLE_COMPLETED_TS[$WIN]=$NOW 直後で tmux kill-window -t $WIN を発行。成功時は stdout に [IDLE-COMPLETED] <WIN>: auto-killed (IDLE_COMPLETED_AUTO_KILL=1) log。失敗時は stderr に [IDLE-COMPLETED] <WIN>: auto-kill failed (...) log。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）"
-    status: GREEN
-    note: "Scenario 22。auto-kill 未実装のため現状 fail。実装後 GREEN になる。"
+    ac_text: "option B: plugins/session/scripts/cld-observe-any-launcher (新規 / flock(/tmp/cld-observe-any.lock) + nohup 起動) + .supervisor/session.json schema に cld_observe_any: { pid, started_at, log_path } フィールド追加。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC2: flock による多重起動防止 — 2 回目の launcher 起動は即 exit する"
+    status: RED
+    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/cld-observe-any-launcher"
 
   - ac_index: 2
-    ac_text: "IDLE_COMPLETED_TS[$WIN]=$NOW 直後で tmux kill-window -t $WIN を発行。成功時は stdout に [IDLE-COMPLETED] <WIN>: auto-killed (IDLE_COMPLETED_AUTO_KILL=1) log。失敗時は stderr に [IDLE-COMPLETED] <WIN>: auto-kill failed (...) log。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）"
-    status: GREEN
-    note: "Scenario 23。auto-kill 未実装のため現状 fail。実装後 GREEN になる。"
+    ac_text: "option B: .supervisor/session.json schema に cld_observe_any: { pid, started_at, log_path } フィールド追加。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC2: launcher 起動後に .supervisor/session.json に cld_observe_any フィールドが追記される"
+    status: RED
+    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/cld-observe-any-launcher"
 
   - ac_index: 3
-    ac_text: "tmux kill-window exit 非 0 の場合、stderr に失敗 log を出力してメインループ継続。2>/dev/null で tmux stderr を抑制。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）"
-    status: GREEN
-    note: "Scenario 23 で AC-3 も検証（exit 0 確認）。auto-kill 未実装のため現状 fail。"
+    ac_text: "option B: SessionStart hook で pgrep -f cld-observe-any || launcher — daemon 不在時に自動再起動。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC3: daemon 不在時に SessionStart hook が launcher を呼び出す"
+    status: RED
+    note: "launcher 未実装のため完全な検証は不可。hook ロジック自体は mock で GREEN 可能。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/cld-observe-any-launcher"
+
+  - ac_index: 3
+    ac_text: "option B: SessionStart hook — daemon が存在する場合は launcher を呼び出さない。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC3: daemon 存在時は SessionStart hook が launcher を呼び出さない"
+    status: RED
+    note: "hook ロジックの負例検証。mock で動作するが実装後に regression 防止として機能。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any-launcher"
 
   - ac_index: 4
-    ac_text: "kill 成功時に unset 'IDLE_COMPLETED_TS[$WIN]'。kill 失敗時は cleanup しない（IDLE_COMPLETED_TS[$WIN] は $NOW を保持）。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）"
-    status: GREEN
-    note: "Scenario 22 で AC-4 も検証（state cleanup は killed JSON 非重複生成で間接確認）。"
+    ac_text: "daemon 死亡検知時に .supervisor/events/daemon-down-<ts>.json を出力。schema: {event:\"daemon-down\", reason, ts, pid}。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC4: daemon 死亡検知時に .supervisor/events/daemon-down-<ts>.json が出力される"
+    status: RED
+    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/cld-observe-any-launcher"
+
+  - ac_index: 4
+    ac_text: "daemon-down JSON schema 必須フィールド: event/reason/ts/pid。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC4: daemon-down JSON の必須フィールド検証 (event/reason/ts/pid)"
+    status: GREEN
+    note: "JSON schema 単体検証。手動生成 JSON で検証するため現時点でも PASS する。実装後は launcher 出力との結合確認が必要。"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any-launcher"
 
   - ac_index: 5
-    ac_text: "EVENT_DIR 設定時、kill 成功後に idle-completed-killed-<safe_win>-<ts>.json を書き出し。フィールド: {channel:IDLE-COMPLETED-KILLED, window:<WIN>, elapsed_sec:<秒>, ts:<unix>}。kill 失敗時は生成しない。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/3: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 成功 → kill 1回・auto-killed log・killed JSON 生成（RED: 実装後 PASS）"
-    status: GREEN
-    note: "Scenario 22 で idle-completed-killed-*.json 生成を検証。auto-kill 未実装のため現状 fail。"
+    ac_text: "daemon 起動失敗時に .supervisor/events/daemon-startup-failed-<ts>.json を出力。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC5: daemon 起動失敗時に .supervisor/events/daemon-startup-failed-<ts>.json が出力される"
+    status: RED
+    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/cld-observe-any-launcher"
 
   - ac_index: 5
-    ac_text: "EVENT_DIR 設定時、kill 成功後に idle-completed-killed-<safe_win>-<ts>.json を書き出し。フィールド: {channel:IDLE-COMPLETED-KILLED, window:<WIN>, elapsed_sec:<秒>, ts:<unix>}。kill 失敗時は生成しない。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/4: IDLE_COMPLETED_AUTO_KILL=1 + kill-window 失敗 → exit 0・stderr failed log・killed JSON 非生成（RED: 実装後 PASS）"
+    ac_text: "daemon-startup-failed JSON schema 必須フィールド: event/reason/ts。pid は null 可。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC5: daemon-startup-failed JSON の必須フィールド検証 (event/reason/ts)"
     status: GREEN
-    note: "Scenario 23 で kill 失敗時の JSON 非生成を検証。auto-kill 未実装のため現状 fail。"
+    note: "JSON schema 単体検証。手動生成 JSON で検証するため現時点でも PASS する。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/cld-observe-any-launcher"
 
   - ac_index: 6
-    ac_text: "IDLE_COMPLETED_AUTO_KILL=0 または未設定の場合、既存 alert 動作を変更しない。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/1: IDLE_COMPLETED_AUTO_KILL 未設定 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 baseline）"
-    status: GREEN
-    note: "Scenario 20。AC-6 は現実装でも PASS する baseline regression テスト。"
+    ac_text: "kill -9 でプロセス殺害 → 60 sec 以内に再起動（option B は SessionStart hook をテスト用 mock で発火させて検証）。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC6: kill -9 で daemon 殺害後 — SessionStart hook mock で再起動が確認される"
+    status: RED
+    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/cld-observe-any-launcher"
 
   - ac_index: 6
-    ac_text: "IDLE_COMPLETED_AUTO_KILL=0 または未設定の場合、既存 alert 動作を変更しない。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/2: IDLE_COMPLETED_AUTO_KILL=0 → IDLE-COMPLETED emit のみ、kill-window 呼び出しなし（AC-6 explicit disable）"
-    status: GREEN
-    note: "Scenario 21。AC-6 明示 0 ケース。現実装でも PASS する baseline regression テスト。"
+    ac_text: "flock による多重起動防止（option B）。"
+    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
+    test_name: "AC6: flock 多重起動防止 — SessionStart hook が二重起動しないことの確認"
+    status: RED
+    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/cld-observe-any-launcher"
 
   - ac_index: 7
-    ac_text: "_check_idle_completed() C3 条件（LLM indicator 存在）で false return の場合は emit/kill 両方発生しない。コード変更なし、bats 検証のみ。"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "AC-9/5: LLM-active indicator 存在時 → IDLE_COMPLETED_AUTO_KILL=1 でも emit/kill 両方発生しない（AC-7 baseline）"
-    status: GREEN
-    note: "Scenario 24。AC-7 は現実装でも PASS する baseline。LLM indicator guard（C3）の検証。"
-    impl_files:
-      - "plugins/session/scripts/cld-observe-any"
-      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+    ac_text: "option B 採択時、Issue #1147 を本 Issue に統合し close する。"
+    test_file: ""
+    test_name: ""
+    status: SKIP
+    note: "AC7 はプロセス AC（Issue 統合）。bats テスト不要。"
+    impl_files: []
+    # impl_files 推定失敗: プロセス AC のため対象ファイルなし
 
   - ac_index: 8
-    ac_text: "window pattern 制約維持。スコープ外、テスト不要。"
+    ac_text: "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §11 系列に「observer self-supervision」サブセクションを追記。"
     test_file: ""
     test_name: ""
     status: SKIP
-    note: "AC-8 はスコープ外。テスト不要。"
-    impl_files: []
-
-  - ac_index: 9
-    ac_text: "bats fixture 5 ケースを実装: ケース1-5 (Scenario 20-24)"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "Scenario 20-24（5 テスト）"
-    status: GREEN
-    note: "AC-9 自体はテスト生成完了。Scenario 20/21/24 は baseline（現状 PASS 可能）。Scenario 22/23 は実装後 GREEN。"
+    note: "AC8 はドキュメント更新 AC。bats テスト不要。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
-
-  - ac_index: 10
-    ac_text: "ドキュメント更新。bats テスト不要。"
-    test_file: ""
-    test_name: ""
-    status: SKIP
-    note: "AC-10 はドキュメント更新のみ。テスト不要。"
-    impl_files: []
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
