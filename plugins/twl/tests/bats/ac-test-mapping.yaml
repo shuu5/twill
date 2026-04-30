@@ -1,0 +1,35 @@
+mappings:
+  - ac_index: 1
+    ac_text: "2 つの異なる AUTOPILOT_DIR に autopilot-init.sh を順次実行すると、各 dir に独立した issues/ ディレクトリが作成され、手動作成した session.json の session_id が互いに異なる"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-multi-instance-isolation.bats"
+    test_name: "#1169 C1: 2 つの AUTOPILOT_DIR が独立して初期化され issues/ が各自作成される"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-init.sh"
+  - ac_index: 2
+    ac_text: "AUTOPILOT_DIR=.autopilot-wave10 で autopilot-init.sh を実行すると .autopilot-wave10/issues/ が作成され、.gitignore に .autopilot-*/ 行が含まれる（RED: 現在は .autopilot/ のみ追加）"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-multi-instance-isolation.bats"
+    test_name: "#1169 C2: autopilot-init.sh が .autopilot-wave10 を AUTOPILOT_DIR として .gitignore に .autopilot-*/ を追加する（RED）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-init.sh"
+  - ac_index: 3
+    ac_text: "AUTOPILOT_DIR の basename が .autopilot-wave10 のとき chain-runner.sh check が TWL_CHAIN_TRACE に trace を書き込む（RED: 現在は .autopilot のみ許可）"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-multi-instance-isolation.bats"
+    test_name: "#1169 C3: chain-runner.sh が AUTOPILOT_DIR=.autopilot-wave10 のとき trace ファイルを書き込む（RED）"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+    # 注意: テストでは AUTOPILOT_DIR を $HOME 配下に配置して /tmp/* whitelist をバイパスし、
+    #       basename 検証が唯一の通過条件となる構成を使用している
+  - ac_index: 4
+    ac_text: "AUTOPILOT_DIR の basename が evil-attempt（.autopilot-* 非該当）のとき chain-runner.sh check が trace ファイルを作成しない（セキュリティ保持）"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-multi-instance-isolation.bats"
+    test_name: "#1169 C4: chain-runner.sh が AUTOPILOT_DIR=evil-attempt のとき trace ファイルを書き込まない（セキュリティ保持）"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+    # 注意: テストでは AUTOPILOT_DIR を $HOME 配下に配置して /tmp/* whitelist をバイパスし、
+    #       basename 検証でセキュリティが正しく機能することを確認する構成を使用している
+  - ac_index: 5
+    ac_text: "$HOME/.autopilot-evil（basename .autopilot-evil、パターン適合）で chain-runner.sh check が TWL_CHAIN_TRACE に trace を書き込む（RED: 現在は .autopilot のみ許可）"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-multi-instance-isolation.bats"
+    test_name: "#1169 C5: chain-runner.sh が AUTOPILOT_DIR=$HOME/.autopilot-evil のとき trace ファイルを書き込む（RED）"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
