@@ -28,7 +28,7 @@ LIB_PATH="$SCRIPT_DIR/lib/tmux-resolve.sh"
 # ---------------------------------------------------------------------------
 @test "AC4-1: 正常解決 — tmux mock が main:3 wt-target 返却 → stdout main:3 + exit 0" {
     # RED: lib/tmux-resolve.sh が存在しないため source 失敗で fail する
-    run /usr/bin/bash <<EOF
+    run bash <<EOF
 tmux() {
     case "\$1" in
         list-windows)
@@ -58,7 +58,8 @@ EOF
 @test "AC4-2: 不在 — tmux mock が空文字返却 → exit 1 + stderr に 'window not found: wt-target'" {
     # RED: lib/tmux-resolve.sh が存在しないため source 失敗で fail する
     STDERR_FILE="$(mktemp)"
-    run /usr/bin/bash 2>"$STDERR_FILE" <<EOF
+    run bash <<EOF
+exec 2>"$STDERR_FILE"
 tmux() {
     case "\$1" in
         list-windows)
@@ -92,7 +93,8 @@ EOF
 @test "AC4-3: ambiguous — 複数セッションに同名 window → exit 1 + stderr 'ambiguous'" {
     # RED: lib/tmux-resolve.sh が存在しないため source 失敗で fail する
     STDERR_FILE="$(mktemp)"
-    run /usr/bin/bash 2>"$STDERR_FILE" <<EOF
+    run bash <<EOF
+exec 2>"$STDERR_FILE"
 tmux() {
     case "\$1" in
         list-windows)
@@ -126,7 +128,7 @@ EOF
     KILL_COUNT_FILE="$(mktemp)"
     echo 0 > "$KILL_COUNT_FILE"
 
-    run /usr/bin/bash <<EOF
+    run bash <<EOF
 KILL_COUNT_FILE="$KILL_COUNT_FILE"
 
 tmux() {
@@ -168,7 +170,8 @@ EOF
     echo 0 > "$KILL_COUNT_FILE"
     STDERR_FILE="$(mktemp)"
 
-    run /usr/bin/bash 2>"$STDERR_FILE" <<EOF
+    run bash <<EOF
+exec 2>"$STDERR_FILE"
 KILL_COUNT_FILE="$KILL_COUNT_FILE"
 
 tmux() {
