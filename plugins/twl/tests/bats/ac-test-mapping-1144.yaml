@@ -16,7 +16,7 @@ mappings:
   - ac_index: 3
     ac_text: "5 event grep パターン（MENU-READY/REVIEW-READY/FREEFORM-READY/BUDGET-LOW/STAGNATE-）が catalog に記載されている"
     test_file: "plugins/twl/tests/bats/scripts/cld-observe-any-monitor-channel.bats"
-    test_name: "Doc-3: 5 event grep パターンが monitor-channel-catalog.md に記載されている"
+    test_name: "Doc-3: 5 event grep パターンが Monitor tool 連携経路セクション内に記載されている"
     impl_files:
       - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
 
