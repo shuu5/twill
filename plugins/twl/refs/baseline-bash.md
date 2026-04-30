@@ -262,7 +262,7 @@ process_py_files() (
 
 `tmux kill-window` / `kill-session` 等の destructive op に window 名のみを直接 `-t` で渡すと、複数 session に同名 window が存在する場合に ambiguous target または誤 kill が発生する。
 
-### BAD: window 名を直接 -t に渡す（ambiguous target リスク）
+### BAD: tmux kill-window で window 名を直接 -t に渡す（ambiguous target リスク）
 
 ```bash
 # BAD: 複数 session に同名 window があると誤 kill
