@@ -788,6 +788,8 @@ done
 
 **自動 kill オプション**: `IDLE_COMPLETED_AUTO_KILL=1`（opt-in、Issue #1132）で `[IDLE-COMPLETED]` 発火時に `tmux kill-window` を自動実行（Layer 0 Auto）。デフォルトは alert のみ（Layer 1 Confirm）。
 
+**自動 next-spawn オプション**: `IDLE_COMPLETED_AUTO_NEXT_SPAWN=1`（opt-in、Issue #1155）で kill 成功後に `.supervisor/wave-queue.json` を参照して次 Wave を自動 spawn（`AUTO_KILL=1` と独立評価、両方設定が必要）。`AUTO_NEXT_SPAWN=dry-run` で spawn コマンド echo のみ（実行なし）。未設定時は kill-only（#1132 既存動作維持）。
+
 ---
 
 ## Wave 種別ごとのチャネル選択ガイド

@@ -119,7 +119,7 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 
 **S-1 の区別（Issue #1117）**:
 - **S-1a IDLE（一時的、継続観察）**: completion phrase 未確認、または debounce 未達。タスク進行中の一時的な非活性として放置可
-- **S-1b IDLE 確定（cleanup 対象）**: completion phrase 60s 安定 → `[IDLE-COMPLETED]` 発火。`SU-4 ≤5` 制約（§4.5）圧迫回避のため速やかに kill する。**`IDLE_COMPLETED_AUTO_KILL=1` 設定済みなら observer 介入不要（自動 cleanup、#1132）**
+- **S-1b IDLE 確定（cleanup 対象）**: completion phrase 60s 安定 → `[IDLE-COMPLETED]` 発火。`SU-4 ≤5` 制約（§4.5）圧迫回避のため速やかに kill する。**`IDLE_COMPLETED_AUTO_KILL=1` 設定済みなら observer 介入不要（自動 cleanup、#1132）**。**`IDLE_COMPLETED_AUTO_NEXT_SPAWN=1` 設定済みなら次 Wave 自動起動（#1155）**
 
 **S-1b と §4.3（LLM-active-override）の関係**: A2 に現在進行形 indicator がある場合は S-2 THINKING 確定のため `[IDLE-COMPLETED]` 絶対 emit 禁止。`_check_idle_completed()` の C3 条件で保証済み。
 

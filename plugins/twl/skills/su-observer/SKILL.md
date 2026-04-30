@@ -59,6 +59,28 @@ spawnable_by:
 **`refs/su-observer-wave-management.md` を Read** して実行。
 問題検出時の介入: **`plugins/twl/refs/intervention-catalog.md` を Read** して 3 層分類（Auto/Confirm/Escalate）を照合（1-hop 直接参照）。
 
+### Wave N → Wave N+1 自動連鎖（#1155）
+
+`IDLE_COMPLETED_AUTO_NEXT_SPAWN=1` と `IDLE_COMPLETED_AUTO_KILL=1` を同時に設定すると、`[IDLE-COMPLETED]` kill 成功後に `.supervisor/wave-queue.json` から次 Wave を自動 spawn する。
+
+**wave-queue.json スキーマ**（`skills/su-observer/schemas/wave-queue.schema.json` 参照）:
+```json
+{
+  "version": 1,
+  "current_wave": 6,
+  "queue": [{
+    "wave": 7,
+    "issues": [1155],
+    "spawn_cmd_argv": ["bash", "plugins/twl/skills/su-observer/scripts/spawn-controller.sh", "..."],
+    "depends_on_waves": [6],
+    "spawn_when": "all_current_wave_idle_completed"
+  }]
+}
+```
+
+enqueue は `spawn-controller.sh` 起動時に `CHAIN_WAVE_QUEUE_ENTRY` 環境変数（JSON）で渡す（IF-2）。
+`auto-next-spawn.sh` は `--dry-run` で動作確認可能（実際の spawn なし）。
+
 ### compaction が必要な場合
 
 `Skill(twl:su-compact)` を呼び出して知識外部化し、`/compact` 手動実行をユーザーへ提案する（`/compact` は built-in CLI のためユーザー手動実行が必須）。
