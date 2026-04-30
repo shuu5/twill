@@ -57,8 +57,8 @@ teardown() {
     kill "$FIRST_PID" 2>/dev/null; wait "$FIRST_PID" 2>/dev/null || true
     rm -f "$LOCK_FILE"
 
-    # exit code は 1 (already running) または 75 (EX_TEMPFAIL) を期待
-    [[ "$status" -eq 1 || "$status" -eq 75 ]]
+    # exit code は 0（サイレントスキップ）を期待（hook エラーログ汚染防止）
+    [ "$status" -eq 0 ]
 }
 
 # ---------------------------------------------------------------------------

@@ -101,7 +101,7 @@ fi
 
 # flock で多重起動防止（dry-run を含む全モードで適用）
 (
-    flock -n 9 || exit 1  # ロック取得失敗 → 既に別インスタンスが起動中
+    flock -n 9 || exit 0  # ロック取得失敗 → 既に別インスタンスが起動中（サイレントスキップ）
 
     if $DRY_RUN; then
         update_session_json "$$" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$LOG_FILE"
@@ -110,7 +110,8 @@ fi
     fi
 
     # 既存 daemon 確認（起動中なら何もしない）
-    if pgrep -f "cld-observe-any$" >/dev/null 2>&1; then
+    # pgrep -f は引数を含むコマンドライン全体にマッチするため $ アンカーは使わない
+    if pgrep -f "cld-observe-any" >/dev/null 2>&1; then
         exit 0
     fi
 
