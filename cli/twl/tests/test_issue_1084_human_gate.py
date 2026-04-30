@@ -30,6 +30,19 @@ CO_ARCHITECT_SKILL = PLUGINS_TWL / "skills" / "co-architect" / "SKILL.md"
 MARKER = "★HUMAN GATE"  # ★HUMAN GATE
 
 
+def _make_section_regex(section_num: int) -> re.Pattern[str]:
+    """§N 抽出用 regex を生成する。
+
+    終端: 次の番号付き H2 (## M. 形式、M != N)、非番号 H2 (## 文字列)、H3 (### )、または EOF。
+    限界: codeblock fence 内の `### ` / `## ` も終端として誤判定する（AC5 参照、将来課題）。
+    """
+    return re.compile(
+        rf"## {section_num}\.(.*?)"
+        rf"(?=\n## (?!{section_num}\.)\d+\.|\n## (?!\d)|\n### |\Z)",
+        re.DOTALL,
+    )
+
+
 # ---------------------------------------------------------------------------
 # ADR ファイル特定ヘルパー
 # ---------------------------------------------------------------------------
@@ -153,7 +166,7 @@ class TestAC2ObserverMarkers:
         # AC: pitfalls-catalog.md §11 のユーザー escalation 判断 trigger 行に ★HUMAN GATE
         text = PITFALLS_CATALOG.read_text(encoding="utf-8")
         # §11 セクションを抽出
-        sec11_match = re.search(r"## 11\.(.*?)(?=\n## 12\.|\Z)", text, re.DOTALL)
+        sec11_match = _make_section_regex(11).search(text)
         assert sec11_match is not None, "AC2(b): pitfalls-catalog.md に §11 セクションが見当たらない"
         sec11_text = sec11_match.group(0)
         assert MARKER in sec11_text, (
@@ -164,7 +177,7 @@ class TestAC2ObserverMarkers:
         # AC: pitfalls-catalog.md §12 のユーザー escalation 判断 trigger 行に ★HUMAN GATE
         text = PITFALLS_CATALOG.read_text(encoding="utf-8")
         # §12 セクションを抽出
-        sec12_match = re.search(r"## 12\.(.*?)(?=\n## 13\.|\Z)", text, re.DOTALL)
+        sec12_match = _make_section_regex(12).search(text)
         assert sec12_match is not None, "AC2(b): pitfalls-catalog.md に §12 セクションが見当たらない"
         sec12_text = sec12_match.group(0)
         assert MARKER in sec12_text, (
