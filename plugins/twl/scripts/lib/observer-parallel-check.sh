@@ -141,12 +141,50 @@ count_eligible_controllers() {
 #   プロセスリストから cld-observe-any の存在を確認する。
 # ---------------------------------------------------------------------------
 check_monitor_cld_observe_alive() {
-  # cld-observe-any プロセスの存在確認
-  if pgrep -f "cld-observe-any" >/dev/null 2>&1; then
-    echo "true"
-  else
+  local supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
+  # AC4: heartbeat file path override（テスト用）
+  local hb_path="${OBSERVER_PARALLEL_CHECK_DAEMON_HEARTBEAT_PATH:-${supervisor_dir}/observer-daemon-heartbeat.json}"
+  # AC4: stale 閾値 override（default=120: 60sec 周期の 2 倍 + IO 余裕）
+  local stale_sec="${OBSERVER_DAEMON_HEARTBEAT_STALE_SEC:-120}"
+
+  # AC3 (a): pgrep 必須（既存挙動）
+  if ! pgrep -f "cld-observe-any" >/dev/null 2>&1; then
     echo "false"
+    return 0
   fi
+
+  # AC3 (b): heartbeat ファイル不在 → grace period（新規インストール / CI / migration 期間）
+  if [[ ! -f "$hb_path" ]]; then
+    echo "[parallel-check] WARN: observer-daemon-heartbeat.json 不在 — pgrep のみで判定（grace period）" >&2
+    echo "true"
+    return 0
+  fi
+
+  # AC3 (c): mtime 検証（stale_sec 以内）
+  local now
+  now=$(date +%s)
+  local mtime
+  mtime=$(stat -c %Y "$hb_path" 2>/dev/null || stat -f %m "$hb_path" 2>/dev/null || echo "0")
+  if (( now - mtime > stale_sec )); then
+    echo "false"
+    return 0
+  fi
+
+  # AC3 (d): JSON 内容検証（writer == "cld-observe-any" かつ pid が pgrep 結果に含まれる）
+  # TOCTOU note: (a) 後に daemon が死亡すると最大 stale_sec 秒の偽陽性 window が残る（許容済）
+  local writer pid
+  writer=$(jq -r '.writer // empty' "$hb_path" 2>/dev/null || echo "")
+  pid=$(jq -r '.pid // empty' "$hb_path" 2>/dev/null || echo "")
+  if [[ "$writer" != "cld-observe-any" ]]; then
+    echo "false"
+    return 0
+  fi
+  if [[ -n "$pid" ]] && ! pgrep -f "cld-observe-any" 2>/dev/null | grep -qxF "$pid"; then
+    echo "false"
+    return 0
+  fi
+
+  echo "true"
 }
 
 # ---------------------------------------------------------------------------

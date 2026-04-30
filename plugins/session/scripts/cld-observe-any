@@ -130,6 +130,10 @@ while [[ $# -gt 0 ]]; do
             ONCE=true; shift ;;
         -h|--help)
             usage ;;
+        --source-only|--no-exec)
+            # Function-only load: define functions without executing main logic
+            # Used by tests to source just the function definitions
+            _DAEMON_LOAD_ONLY=1; shift ;;
         -*)
             echo "Error: unknown option '$1'" >&2; exit 1 ;;
         *)
@@ -137,20 +141,34 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ ${#WINDOWS[@]} -eq 0 && ${#PATTERNS[@]} -eq 0 ]]; then
-    echo "Error: --window または --pattern を指定してください" >&2
-    exit 1
+if [[ -z "${_DAEMON_LOAD_ONLY:-}" && -z "${_TEST_MODE:-}" ]]; then
+    if [[ ${#WINDOWS[@]} -eq 0 && ${#PATTERNS[@]} -eq 0 ]]; then
+        echo "Error: --window または --pattern を指定してください" >&2
+        exit 1
+    fi
 fi
 
+# --- daemon heartbeat 設定 ---
+# AC1: SUPERVISOR_DIR 明示解決（observer-parallel-check.sh:45 と同一 path を保証）
+SUPERVISOR_DIR="${SUPERVISOR_DIR:-${PWD}/.supervisor}"
+# AC4: heartbeat 周期・path（env override 可）
+HEARTBEAT_INTERVAL_SEC="${HEARTBEAT_INTERVAL_SEC:-60}"
+CLD_OBSERVE_ANY_HEARTBEAT_PATH="${CLD_OBSERVE_ANY_HEARTBEAT_PATH:-${SUPERVISOR_DIR}/observer-daemon-heartbeat.json}"
+# AC2: version は startup 時 1 回だけ capture（毎 cycle subprocess を回避）
+_DAEMON_VERSION=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
 # --- flock 多重起動防止 ---
-LOCK_FILE="/tmp/cld-observe-any.lock"
-exec 9>"$LOCK_FILE"
-if ! flock -n 9; then
-    existing_pid=$(cat "$LOCK_FILE.pid" 2>/dev/null || echo "?")
-    echo "[cld-observe-any] ERROR: 既存 instance が起動中 (PID=$existing_pid)" >&2
-    exit 1
+LOCK_FILE=""
+if [[ -z "${_DAEMON_LOAD_ONLY:-}" && -z "${_TEST_MODE:-}" ]]; then
+    LOCK_FILE="/tmp/cld-observe-any.lock"
+    exec 9>"$LOCK_FILE"
+    if ! flock -n 9; then
+        existing_pid=$(cat "$LOCK_FILE.pid" 2>/dev/null || echo "?")
+        echo "[cld-observe-any] ERROR: 既存 instance が起動中 (PID=$existing_pid)" >&2
+        exit 1
+    fi
+    echo $$ > "$LOCK_FILE.pid"
 fi
-echo $$ > "$LOCK_FILE.pid"
 
 # --- クリーンアップ ---
 TMPFILES=()
@@ -158,7 +176,7 @@ cleanup() {
     for f in "${TMPFILES[@]:+${TMPFILES[@]}}"; do
         rm -f "$f" 2>/dev/null || true
     done
-    rm -f "$LOCK_FILE.pid"
+    [[ -n "${LOCK_FILE:-}" ]] && rm -f "$LOCK_FILE.pid" 2>/dev/null || true
 }
 trap cleanup EXIT
 trap 'echo ""; echo "[cld-observe-any] SIGINT/SIGTERM 受信 → 終了"; cleanup; exit 0' INT TERM
@@ -227,6 +245,22 @@ get_budget_minutes() {
     else
         echo "-1"
     fi
+}
+
+# AC5: daemon heartbeat atomic write（set -euo pipefail 配下でも main loop を die させない）
+# tmpfile は TMPFILES に追加しない（cleanup() の rm 不在ファイル呼び出し回避）
+_emit_daemon_heartbeat() {
+    mkdir -p "${SUPERVISOR_DIR}" 2>/dev/null || return 0
+    local tmp_file
+    tmp_file=$(mktemp "${SUPERVISOR_DIR}/observer-daemon-heartbeat.json.tmp.XXXXXX" 2>/dev/null) || return 0
+    {
+        printf '{"writer":"cld-observe-any","pid":%d,"last_update":%d,"host":"%s","version":"%s","interval_sec":%d,"cycle_count":%d}\n' \
+            "$$" "$(date +%s)" "${HOSTNAME:-$(hostname 2>/dev/null || echo "unknown")}" \
+            "${_DAEMON_VERSION:-unknown}" "${HEARTBEAT_INTERVAL_SEC:-60}" "${CYCLE:-0}" \
+            > "$tmp_file" 2>/dev/null
+    } || { rm -f "$tmp_file" 2>/dev/null; return 0; }
+    mv "$tmp_file" "${CLD_OBSERVE_ANY_HEARTBEAT_PATH}" 2>/dev/null || rm -f "$tmp_file" 2>/dev/null
+    return 0
 }
 
 # イベント emit（stdout + opt-in event-dir 書き出し）
@@ -475,7 +509,14 @@ evaluate_window() {
 
 # --- メインループ ---
 
+# --source-only / --no-exec: 関数定義のみ、実行しない
+if [[ -n "${_DAEMON_LOAD_ONLY:-}" ]]; then
+    return 0 2>/dev/null || exit 0
+fi
+
 CYCLE=0
+# AC1: heartbeat epoch-delta pattern 用タイムスタンプ（0 = 未 emit）
+LAST_HB_TS=0
 
 # [IDLE-COMPLETED] 状態管理 — メインループスコープで宣言 (AC-5, Issue #1117)
 # evaluate_window() は stateless 設計を維持するため、連想配列はここで管理する
@@ -511,6 +552,13 @@ fi
 
 while true; do
     CYCLE=$((CYCLE + 1))
+
+    # AC1: epoch-delta heartbeat（zero-windows break より前に emit）
+    _NOW=$(date +%s)
+    if (( _NOW - LAST_HB_TS >= HEARTBEAT_INTERVAL_SEC )); then
+        _emit_daemon_heartbeat || true
+        LAST_HB_TS=$_NOW
+    fi
 
     TARGET_WINS=()
     while IFS= read -r w; do
