@@ -142,6 +142,17 @@ if [[ ${#WINDOWS[@]} -eq 0 && ${#PATTERNS[@]} -eq 0 ]]; then
     exit 1
 fi
 
+# --- flock 多重起動防止 ---
+LOCK_FILE="/tmp/cld-observe-any.lock"
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+    existing_pid=$(cat "$LOCK_FILE.pid" 2>/dev/null || echo "?")
+    echo "[cld-observe-any] ERROR: 既存 instance が起動中 (PID=$existing_pid)" >&2
+    exit 1
+fi
+echo $$ > "$LOCK_FILE.pid"
+trap 'rm -f "$LOCK_FILE.pid"' EXIT
+
 # --- クリーンアップ ---
 TMPFILES=()
 cleanup() {

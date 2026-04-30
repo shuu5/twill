@@ -317,9 +317,30 @@ PYEOF
   tmux split-window -v -d -l 67% -t "${observer_window}:1.$((base+1))" -c "$cwd" "bash '$budget_script'" || \
     tmux split-window -v -d -t "${observer_window}:1.$((base+1))" -c "$cwd" "bash '$budget_script'"
 
-  # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動
-  tmux split-window -v -d -l 50% -t "${observer_window}:1.$((base+2))" -c "$cwd" "bash '$cld_observe_any'" || \
-    tmux split-window -v -d -t "${observer_window}:1.$((base+2))" -c "$cwd" "bash '$cld_observe_any'"
+  # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
+  local spawn_cmd="bash '$cld_observe_any' --window '$observer_window'"
+  tmux split-window -v -d -l 50% -t "${observer_window}:1.$((base+2))" -c "$cwd" "$spawn_cmd" || \
+    tmux split-window -v -d -t "${observer_window}:1.$((base+2))" -c "$cwd" "$spawn_cmd"
+
+  # cld-observe-any pane の PID・pane_id・spawn_cmd を session.json に記録
+  local obs_pane_id obs_pane_pid session_file
+  session_file="${supervisor_dir}/session.json"
+  obs_pane_id=$(tmux display-message -t "${observer_window}:1.$((base+3))" -p '#{pane_id}' 2>/dev/null || echo "")
+  obs_pane_pid=$(tmux display-message -t "${observer_window}:1.$((base+3))" -p '#{pane_pid}' 2>/dev/null || echo "")
+  if [[ -f "$session_file" && -n "$obs_pane_id" ]]; then
+    local tmp_file
+    tmp_file=$(mktemp)
+    jq --arg pid "$obs_pane_pid" \
+       --arg pane_id "$obs_pane_id" \
+       --arg spawn_cmd "$spawn_cmd" \
+       --arg started_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+       '.cld_observe_any.pid = ($pid | tonumber? // null) |
+        .cld_observe_any.pane_id = $pane_id |
+        .cld_observe_any.spawn_cmd = $spawn_cmd |
+        .cld_observe_any.started_at = $started_at' \
+       "$session_file" > "$tmp_file" && mv "$tmp_file" "$session_file" || rm -f "$tmp_file"
+    echo "[spawn-controller] ✓ cld_observe_any metadata 記録: pane_id=${obs_pane_id} pid=${obs_pane_pid}"
+  fi
 
   # pane 数を確認してログ出力
   local pane_count

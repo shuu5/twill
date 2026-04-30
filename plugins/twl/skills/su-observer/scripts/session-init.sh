@@ -37,7 +37,15 @@ data = {
   'observer_window': observer_window,
   'mode': observer_mode,
   'status': 'active',
-  'started_at': datetime.datetime.utcnow().isoformat() + 'Z'
+  'started_at': datetime.datetime.utcnow().isoformat() + 'Z',
+  'cld_observe_any': {
+    'pid': None,
+    'pane_id': None,
+    'spawn_cmd': None,
+    'started_at': None,
+    'log_path': None,
+    'lock_path': '/tmp/cld-observe-any.lock'
+  }
 }
 json.dump(data, open(session_file, 'w'), indent=2)
 print(f'[session-init] session.json 作成: {session_file}')
