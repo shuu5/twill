@@ -198,11 +198,11 @@ EOF
     rm -f "$KILL_COUNT_FILE" "$STDERR_FILE"
 
     # 実装後の期待:
-    #   exit 0（_kill_window_safe 自体は not-found でも exit 0 か 1 のどちらか — 要仕様確定）
+    #   exit 1（Issue AC-2: _resolve_window_target の exit code を伝播。not-found → exit 1）
     #   kill_count == 0
     #   stderr_content に "wt-target" を含む log
-    # RED フェーズ（lib 未実装）では status が非 0 になる
-    [[ "$status" -eq 0 ]]
+    # RED フェーズ（lib 未実装）では source 失敗で status が非 0 になる
+    [[ "$status" -eq 1 ]]
     [[ "$kill_count" -eq 0 ]]
     echo "$stderr_content" | grep -q "wt-target"
 }
