@@ -1,0 +1,77 @@
+mappings:
+  - ac_index: 1
+    ac_text: "_is_known_receiver() の prefix allow-list が module-level 単一変数 (例: _KNOWN_PREFIXES の mutable list 化、あるいは新規 _RECEIVER_PATTERN regex として一箇所に集約) として定義され、新 receiver prefix 追加が「tools_comm.py 内の 1 箇所のみの変更」で済むこと"
+    test_file: "cli/twl/tests/test_issue_1139_allow_list.py"
+    test_names:
+      - "TestAC1AllowListModuleLevelVariable::test_ac1_known_prefixes_is_mutable_list_or_regex_pattern"
+      - "TestAC1AllowListModuleLevelVariable::test_ac1_module_level_allow_list_variable_exists"
+      - "TestAC1AllowListModuleLevelVariable::test_ac1_adding_new_prefix_requires_only_one_place_change"
+    red_status: true
+    red_reason: "_KNOWN_PREFIXES が現在 tuple (immutable) のため list/Pattern の assert で FAIL"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 2
+    ac_text: "_SUPERVISOR_NAME = 'supervisor' 定数および name == _SUPERVISOR_NAME の exact-match 経路は本 Issue では変更しない。twl_notify_supervisor_handler (line 245 の to=_SUPERVISOR_NAME) の挙動は不変"
+    test_file: "cli/twl/tests/test_issue_1139_allow_list.py"
+    test_names:
+      - "TestAC2SupervisorNameConstantUnchanged::test_ac2_supervisor_name_constant_exists"
+      - "TestAC2SupervisorNameConstantUnchanged::test_ac2_supervisor_name_value_is_supervisor"
+      - "TestAC2SupervisorNameConstantUnchanged::test_ac2_supervisor_name_is_string_type"
+      - "TestAC2SupervisorNameConstantUnchanged::test_ac2_twl_notify_supervisor_handler_uses_supervisor_name"
+    red_status: false
+    red_reason: "現在の実装で _SUPERVISOR_NAME='supervisor' は存在するため PASS。リファクタリング中の回帰防止テストとして機能"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 3
+    ac_text: "既存呼び出し元 (_send_msg_impl (line 154) の if not _is_known_receiver(to) 検証) について、pilot:foo / worker:bar / sibling:baz / supervisor は引き続き受理 (exit_code=0)、不正値は引き続き {\"ok\": false, \"error_type\": \"unknown_receiver\", \"exit_code\": 3} を返す"
+    test_file: "cli/twl/tests/test_issue_1139_allow_list.py"
+    test_names:
+      - "TestAC3BackwardCompatibility::test_ac3_pilot_prefix_accepted"
+      - "TestAC3BackwardCompatibility::test_ac3_worker_prefix_accepted"
+      - "TestAC3BackwardCompatibility::test_ac3_sibling_prefix_accepted"
+      - "TestAC3BackwardCompatibility::test_ac3_supervisor_exact_match_accepted"
+      - "TestAC3BackwardCompatibility::test_ac3_unknown_prefix_rejected_with_unknown_receiver"
+      - "TestAC3BackwardCompatibility::test_ac3_invalid_chars_rejected_with_invalid_receiver"
+    red_status: false
+    red_reason: "現在の実装で全ケースが正しく動作するため PASS。リファクタリング後の後方互換保証テストとして機能"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 4
+    ac_text: "cli/twl/tests/test_issue_1115_comm_tools.py (AC5-3 assertion 含む全テスト) が pytest で全件 pass"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names: []
+    red_status: false
+    red_reason: "既存テストの継続確認のみ。新規テスト生成不要。現在 65 件全件 PASS 確認済み"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 5
+    ac_text: "新規回帰テスト (option-agnostic): (a) 既存 prefix pilot:foo / worker:bar / sibling:baz / supervisor がすべて受理されること、(b) 想定外の prefix (unknown:abc) が error_type: 'unknown_receiver' を返すこと"
+    test_file: "cli/twl/tests/test_issue_1139_allow_list.py"
+    test_names:
+      - "TestAC5RegressionTests::test_ac5a_all_known_prefixes_accepted_in_batch"
+      - "TestAC5RegressionTests::test_ac5a_pilot_prefix_positive"
+      - "TestAC5RegressionTests::test_ac5a_worker_prefix_positive"
+      - "TestAC5RegressionTests::test_ac5a_sibling_prefix_positive"
+      - "TestAC5RegressionTests::test_ac5a_supervisor_positive"
+      - "TestAC5RegressionTests::test_ac5b_unknown_prefix_returns_unknown_receiver_error"
+      - "TestAC5RegressionTests::test_ac5b_other_unknown_prefixes_also_rejected"
+    red_status: false
+    red_reason: "現在の実装で既に正しく動作するため PASS。実装方式変更後 (regex/list) も option-agnostic に PASS することを検証"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 6
+    ac_text: "採用した実装方式について「新 prefix を追加する手順」を tools_comm.py モジュール docstring または _KNOWN_PREFIXES 直前のコメントに 1〜3 行で記述すること"
+    test_file: "cli/twl/tests/test_issue_1139_allow_list.py"
+    test_names:
+      - "TestAC6ExtensionDocumentation::test_ac6_docstring_or_comment_contains_add_instruction"
+      - "TestAC6ExtensionDocumentation::test_ac6_docstring_or_comment_has_how_to_add_prefix"
+      - "TestAC6ExtensionDocumentation::test_ac6_extension_comment_is_1_to_3_lines"
+    red_status: true
+    red_reason: "現在 docstring に '追加'/'add' の記述なし、_KNOWN_PREFIXES 直前コメントも存在しないため FAIL"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"

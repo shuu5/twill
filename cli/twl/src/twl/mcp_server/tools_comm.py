@@ -2,6 +2,7 @@
 
 File-based jsonl + flock mailbox hub (ADR-028 §Implementation, AC5-2).
 Handler functions (_handler suffix) are pure Python, return JSON str directly.
+To add a new receiver prefix, extend _RECEIVER_PATTERN with an additional alternative.
 """
 from __future__ import annotations
 
@@ -23,8 +24,11 @@ __all__ = [
 ]
 
 _RECEIVER_RE = re.compile(r"^[a-zA-Z0-9_\-:]+$")
-_KNOWN_PREFIXES = ("pilot:", "worker:", "sibling:")
 _SUPERVISOR_NAME = "supervisor"
+# To add a new receiver prefix: append an alternative inside the group (e.g. "|newrole:").
+_RECEIVER_PATTERN = re.compile(
+    rf"^({re.escape(_SUPERVISOR_NAME)}$|pilot:|worker:|sibling:|observer:|ap-|wt-co-)"
+)
 
 # Crockford base32 alphabet for ULID generation (no external dep)
 _B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
@@ -50,9 +54,7 @@ def _validate_receiver(name: str) -> bool:
 
 
 def _is_known_receiver(name: str) -> bool:
-    return name == _SUPERVISOR_NAME or any(
-        name.startswith(p) for p in _KNOWN_PREFIXES
-    )
+    return bool(_RECEIVER_PATTERN.match(name))
 
 
 def _mailbox_dir(autopilot_dir: str | None) -> Path:
