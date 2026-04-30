@@ -380,9 +380,8 @@ teardown() {
     source '$CLD_OBSERVE_ANY' 2>/dev/null || true
     # heartbeat 呼び出しが 3 回行われたかを確認
     [[ -f '$hb_path' ]] || exit 1
-    local count
-    count=\$(jq -r '.cycle_count' '$hb_path' 2>/dev/null || echo 0)
-    [[ \"\$count\" -ge 1 ]] || exit 1
+    _count=\$(jq -r '.cycle_count' '$hb_path' 2>/dev/null || echo 0)
+    [[ \"\$_count\" -ge 1 ]] || exit 1
   " 2>/dev/null
 
   rm -rf "$hb_dir"

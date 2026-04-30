@@ -384,6 +384,32 @@ while true; do
 done
 ```
 
+**11.1.x cld-observe-any daemon heartbeat（60 sec, observer-daemon-heartbeat.json）**
+
+`cld-observe-any` daemon は 60 秒毎に独立した heartbeat を emit し、自身の liveness を機械的に証明する（Issue #1154）。
+
+**Pilot heartbeat (A) との semantics 区別（cross-dependency なし）:**
+
+| 機構 | Writer | ファイル | 周期 | 用途 |
+|------|--------|---------|------|------|
+| A: Pilot heartbeat | `supervisor-heartbeat.sh` (PostToolUse hook) | `.supervisor/events/heartbeat-<session_id>` | 5 min（Write/Edit 発火） | 必須条件 1 (return 2=DENY) |
+| C: daemon heartbeat | `cld-observe-any` (main loop) | `.supervisor/observer-daemon-heartbeat.json` | 60 sec（自律 emit） | precondition 4 (return 1=DEGRADE) |
+
+両機構は **独立して維持**する（A を C に統合しない、C が A を置き換えない）。
+
+**observer-parallel-check.sh の判定ロジック（precondition 4 拡張）:**
+
+```
+(a) pgrep -f cld-observe-any → false なら即 "false"
+(b) observer-daemon-heartbeat.json 不在 → grace period: pgrep 結果返却 + stderr WARNING
+(c) mtime ≤ 120 sec（OBSERVER_DAEMON_HEARTBEAT_STALE_SEC で override 可）
+(d) JSON: writer == "cld-observe-any" かつ pid が pgrep に含まれる
+```
+
+**heartbeat-absent grace period:** 新規インストール / CI / #1154 migration 期間中は heartbeat ファイル不在時に pgrep のみで判定（既存挙動を維持）。
+
+**TOCTOU window（既知トレードオフ）:** pgrep (a) 後に daemon が死亡すると最大 120 sec の偽陽性 window が残る。zombie 検知より格段に短いため許容。コード中にコメント明記済み。
+
 **11.2 Idle 前の externalize-state 自動実行（SHOULD）**
 
 長時間待機（30 分以上の event 待ち）が予想される場面では spawn 前に:
