@@ -305,6 +305,16 @@ ARCHIVE_DIR="$AUTOPILOT_DIR/archive"
 SESSION_FILE="$AUTOPILOT_DIR/session.json"
 ```
 
+### Orchestrator 環境変数
+
+orchestrator（`inject-next-workflow.sh` 含む）の動作を制御する環境変数一覧:
+
+| 変数 | デフォルト | 説明 |
+|------|-----------|------|
+| `AUTOPILOT_STAGNATE_SEC` | `1800` | stagnate 検知しきい値（秒）。RESOLVE_FAIL_COUNT が累積した経過時間がこれを超えると WARN を発出 |
+| `AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC` | `60` | stagnate WARN の rate limit 間隔（秒）。WARN を emit してからこの秒数が経過するまで次の WARN を suppress する。trace log は rate limit に関わらず常に記録される（Issue #1177） |
+| `POLL_INTERVAL` | `10` | orchestrator ポーリング間隔（秒）|
+
 ## Recovery Procedures
 
 orchestrator が停止して chain 遷移が行われない場合、以下の正規手順のみ許可される（不変条件 M）:
