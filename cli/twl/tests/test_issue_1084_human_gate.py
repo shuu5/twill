@@ -30,6 +30,19 @@ CO_ARCHITECT_SKILL = PLUGINS_TWL / "skills" / "co-architect" / "SKILL.md"
 MARKER = "★HUMAN GATE"  # ★HUMAN GATE
 
 
+def _make_section_regex(section_num: int) -> re.Pattern[str]:
+    """§N 抽出用 regex を生成する。
+
+    終端: 次の番号付き H2 (## M. 形式、M != N)、非番号 H2 (## 文字列)、H3 (### )、または EOF。
+    限界: codeblock fence 内の `### ` / `## ` も終端として誤判定する（AC5 参照、将来課題）。
+    """
+    return re.compile(
+        rf"## {section_num}\.(.*?)"
+        rf"(?=\n## (?!{section_num}\.)\d+\.|\n## (?!\d)|\n### |\Z)",
+        re.DOTALL,
+    )
+
+
 # ---------------------------------------------------------------------------
 # ADR ファイル特定ヘルパー
 # ---------------------------------------------------------------------------
@@ -153,7 +166,7 @@ class TestAC2ObserverMarkers:
         # AC: pitfalls-catalog.md §11 のユーザー escalation 判断 trigger 行に ★HUMAN GATE
         text = PITFALLS_CATALOG.read_text(encoding="utf-8")
         # §11 セクションを抽出
-        sec11_match = re.search(r"## 11\.(.*?)(?=\n## 12\.|\Z)", text, re.DOTALL)
+        sec11_match = _make_section_regex(11).search(text)
         assert sec11_match is not None, "AC2(b): pitfalls-catalog.md に §11 セクションが見当たらない"
         sec11_text = sec11_match.group(0)
         assert MARKER in sec11_text, (
@@ -164,7 +177,7 @@ class TestAC2ObserverMarkers:
         # AC: pitfalls-catalog.md §12 のユーザー escalation 判断 trigger 行に ★HUMAN GATE
         text = PITFALLS_CATALOG.read_text(encoding="utf-8")
         # §12 セクションを抽出
-        sec12_match = re.search(r"## 12\.(.*?)(?=\n## 13\.|\Z)", text, re.DOTALL)
+        sec12_match = _make_section_regex(12).search(text)
         assert sec12_match is not None, "AC2(b): pitfalls-catalog.md に §12 セクションが見当たらない"
         sec12_text = sec12_match.group(0)
         assert MARKER in sec12_text, (
@@ -233,6 +246,112 @@ class TestAC3AutopilotMarkers:
         assert MARKER in next_line, (
             f"AC3(f): co-architect/SKILL.md '## Step 4: ユーザー確認' 直後の行に "
             f"'{MARKER}' が見当たらない。実際: {next_line!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Issue #1099: AC4（異常系回帰テスト）— セクション境界精度向上
+# ---------------------------------------------------------------------------
+
+class TestAC2bSectionBoundaryRegression:
+    """Issue #1099: _make_section_regex ヘルパーの異常系回帰テスト。
+
+    AC2b（sec11/sec12 セクション抽出）の構造変化耐性を検証する。
+    メソッド名は Issue #1099 の AC 番号に対応（ac1=helper 存在確認、ac2=H3 終端、ac4_1/ac4_2=境界回帰、ac5=fence 耐性）。
+    """
+
+    def test_ac1_make_section_regex_helper_exists(self):
+        # _make_section_regex ヘルパー関数が存在し、Pattern を返すこと
+        assert callable(_make_section_regex), (
+            "AC1: _make_section_regex ヘルパー関数が callable でない"
+        )
+        pattern = _make_section_regex(11)
+        assert hasattr(pattern, "search"), (
+            "AC1: _make_section_regex(11) が re.Pattern を返さない"
+        )
+
+    def test_ac2_make_section_regex_terminates_at_h3(self):
+        # _make_section_regex は ### で始まる H3 見出しを終端境界として認識すること
+        pattern = _make_section_regex(11)
+        fixture = (
+            "## 11. テストセクション\n"
+            "本文\n"
+            "### H3 subsection\n"
+            "H3 内本文\n"
+            "## 12. 次のセクション\n"
+        )
+        m = pattern.search(fixture)
+        assert m is not None, "AC2: §11 セクションがマッチしない"
+        extracted = m.group(0)
+        assert "### H3 subsection" not in extracted, (
+            f"AC2: _make_section_regex が H3 で終端せず H3 内容を含んでいる。抽出: {extracted!r}"
+        )
+
+    def test_ac4_1_h3_subsection_marker_excluded(self):
+        # H3 subsection 内の MARKER は §12 抽出範囲から除外されること
+        pattern = _make_section_regex(12)
+        fixture = (
+            f"## 12. ヘッダ\n"
+            f"本文\n"
+            f"### 内部見出し\n"
+            f"本文に {MARKER} を含む\n"
+            f"## 13. 次\n"
+        )
+        m = pattern.search(fixture)
+        assert m is not None, "AC4-1: §12 セクションがマッチしない"
+        sec12_text = m.group(0)
+        assert MARKER not in sec12_text, (
+            f"AC4-1: H3 subsection 内の MARKER が §12 抽出範囲に含まれている。"
+            f"修正後の regex は H3 を終端境界として MARKER を除外すべき。"
+            f"抽出: {sec12_text!r}"
+        )
+
+    def test_ac4_2_no_next_section_h3_closes_boundary(self):
+        # §N+1 不在かつ H3 ありの場合、抽出範囲が H3 で正しく閉じること
+        pattern = _make_section_regex(12)
+        fixture = (
+            f"## 12. ヘッダ\n"
+            f"{MARKER} 本文\n"
+            f"### 内部見出し\n"
+            f"H3 内本文"
+        )
+        m = pattern.search(fixture)
+        assert m is not None, "AC4-2: §12 セクションがマッチしない"
+        extracted = m.group(0)
+        assert MARKER in extracted, (
+            f"AC4-2: §12 本文（MARKER を含む行）が抽出範囲に含まれていない。"
+            f"抽出: {extracted!r}"
+        )
+        assert "H3 内本文" not in extracted, (
+            f"AC4-2: H3 subsection 内の内容が抽出範囲に含まれている（H3 で境界が閉じていない）。"
+            f"抽出: {extracted!r}"
+        )
+        assert len(extracted) < len(fixture), (
+            f"AC4-2: 抽出範囲が H3 で閉じておらず fixture 全体を含んでいる。"
+            f"抽出長={len(extracted)}, fixture 長={len(fixture)}"
+        )
+
+    @pytest.mark.xfail(reason="codeblock-fence-aware terminator は別 Issue で対応")
+    def test_ac5_codeblock_fence_resistance(self):
+        # codeblock 内の ### は終端境界として認識されないこと（現状は xfail: codeblock-fence-aware 未実装）
+        pattern = _make_section_regex(12)
+        fixture = (
+            f"## 12. ヘッダ\n"
+            f"{MARKER} 本文\n"
+            f"```bash\n"
+            f"### これは codeblock 内なので H3 ではない\n"
+            f"echo hello\n"
+            f"```\n"
+            f"codeblock 後の本文\n"
+            f"## 13. 次\n"
+        )
+        m = pattern.search(fixture)
+        assert m is not None, "AC5: §12 セクションがマッチしない"
+        extracted = m.group(0)
+        # codeblock 内の ### で終端してしまう場合、本文後の内容が欠落する
+        assert "codeblock 後の本文" in extracted, (
+            f"AC5: codeblock 内の ### が誤って終端境界として認識された。"
+            f"抽出: {extracted!r}"
         )
 
 
