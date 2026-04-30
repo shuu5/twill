@@ -386,7 +386,7 @@ TMUXSTUB
     return 1
   }
 
-  # 必須フィールド確認: {timestamp, reason, pid_old, pid_new, error_log}
-  run jq -e '.timestamp and .reason and (.pid_old | . != null) and (.pid_new | . != null) and (.error_log | . != null)' "$failed_json"
+  # 必須フィールド確認: {timestamp, reason, pid_old, error_log}（pid_new は respawn 失敗時 null が正常）
+  run jq -e '.timestamp and .reason and (.pid_old | . != null) and (.error_log | . != null)' "$failed_json"
   assert_success
 }
