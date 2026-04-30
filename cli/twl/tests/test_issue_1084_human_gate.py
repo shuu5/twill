@@ -256,12 +256,12 @@ class TestAC3AutopilotMarkers:
 class TestAC2bSectionBoundaryRegression:
     """Issue #1099: _make_section_regex ヘルパーの異常系回帰テスト。
 
-    RED フェーズ: _make_section_regex が未定義のため NameError で fail する。
+    AC2b（sec11/sec12 セクション抽出）の構造変化耐性を検証する。
+    メソッド名は Issue #1099 の AC 番号に対応（ac1=helper 存在確認、ac2=H3 終端、ac4_1/ac4_2=境界回帰、ac5=fence 耐性）。
     """
 
     def test_ac1_make_section_regex_helper_exists(self):
-        # AC1: _make_section_regex ヘルパー関数が存在し、Pattern を返すこと
-        # RED: _make_section_regex が未定義なので NameError で fail する
+        # _make_section_regex ヘルパー関数が存在し、Pattern を返すこと
         assert callable(_make_section_regex), (
             "AC1: _make_section_regex ヘルパー関数が callable でない"
         )
@@ -271,8 +271,7 @@ class TestAC2bSectionBoundaryRegression:
         )
 
     def test_ac2_make_section_regex_terminates_at_h3(self):
-        # AC2: _make_section_regex は ### で始まる H3 見出しを終端境界として認識すること
-        # RED: _make_section_regex が未定義なので NameError で fail する
+        # _make_section_regex は ### で始まる H3 見出しを終端境界として認識すること
         pattern = _make_section_regex(11)
         fixture = (
             "## 11. テストセクション\n"
@@ -289,8 +288,7 @@ class TestAC2bSectionBoundaryRegression:
         )
 
     def test_ac4_1_h3_subsection_marker_excluded(self):
-        # AC4-1: H3 subsection 内の MARKER は §12 抽出範囲から除外されること
-        # RED: _make_section_regex が未定義なので NameError で fail する
+        # H3 subsection 内の MARKER は §12 抽出範囲から除外されること
         pattern = _make_section_regex(12)
         fixture = (
             f"## 12. ヘッダ\n"
@@ -309,8 +307,7 @@ class TestAC2bSectionBoundaryRegression:
         )
 
     def test_ac4_2_no_next_section_h3_closes_boundary(self):
-        # AC4-2: §N+1 不在かつ H3 ありの場合、抽出範囲が H3 で正しく閉じること
-        # RED: _make_section_regex が未定義なので NameError で fail する
+        # §N+1 不在かつ H3 ありの場合、抽出範囲が H3 で正しく閉じること
         pattern = _make_section_regex(12)
         fixture = (
             f"## 12. ヘッダ\n"
@@ -321,6 +318,14 @@ class TestAC2bSectionBoundaryRegression:
         m = pattern.search(fixture)
         assert m is not None, "AC4-2: §12 セクションがマッチしない"
         extracted = m.group(0)
+        assert MARKER in extracted, (
+            f"AC4-2: §12 本文（MARKER を含む行）が抽出範囲に含まれていない。"
+            f"抽出: {extracted!r}"
+        )
+        assert "H3 内本文" not in extracted, (
+            f"AC4-2: H3 subsection 内の内容が抽出範囲に含まれている（H3 で境界が閉じていない）。"
+            f"抽出: {extracted!r}"
+        )
         assert len(extracted) < len(fixture), (
             f"AC4-2: 抽出範囲が H3 で閉じておらず fixture 全体を含んでいる。"
             f"抽出長={len(extracted)}, fixture 長={len(fixture)}"
@@ -328,8 +333,7 @@ class TestAC2bSectionBoundaryRegression:
 
     @pytest.mark.xfail(reason="codeblock-fence-aware terminator は別 Issue で対応")
     def test_ac5_codeblock_fence_resistance(self):
-        # AC5: codeblock 内の ### は終端境界として認識されないこと（現状は xfail）
-        # RED: _make_section_regex が未定義なので NameError で fail する
+        # codeblock 内の ### は終端境界として認識されないこと（現状は xfail: codeblock-fence-aware 未実装）
         pattern = _make_section_regex(12)
         fixture = (
             f"## 12. ヘッダ\n"
