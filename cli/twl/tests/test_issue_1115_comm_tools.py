@@ -401,11 +401,11 @@ class TestAC53DispatchTable:
             f"error_type が 'invalid_receiver' でない: {result.get('error_type')} (AC5-3 未実装)"
         )
 
-    def test_ac53_recv_msg_invalid_receiver_rejected(self):
+    async def test_ac53_recv_msg_invalid_receiver_rejected(self):
         # AC: twl_recv_msg_handler でも invalid な receiver は拒否されること
         # RED: handler が未実装のため FAIL する
         from twl.mcp_server.tools_comm import twl_recv_msg_handler
-        result_str = twl_recv_msg_handler(
+        result_str = await twl_recv_msg_handler(
             receiver="../etc/passwd",
             timeout_sec=0,
         )
@@ -473,7 +473,7 @@ class TestAC54PureHandlers:
                     f"twl_send_msg_handler が str を返さない: {type(result)} (AC5-4 未実装)"
                 )
 
-    def test_ac54_twl_recv_msg_handler_is_directly_callable(self):
+    async def test_ac54_twl_recv_msg_handler_is_directly_callable(self):
         # AC: twl_recv_msg_handler を直接呼び出し可能で str を返すこと
         # RED: handler が未実装のため FAIL する
         import os
@@ -482,7 +482,7 @@ class TestAC54PureHandlers:
             mailbox_dir.mkdir()
             with patch.dict(os.environ, {"AUTOPILOT_DIR": tmpdir}):
                 from twl.mcp_server.tools_comm import twl_recv_msg_handler
-                result = twl_recv_msg_handler(
+                result = await twl_recv_msg_handler(
                     receiver="supervisor",
                     timeout_sec=0,
                 )
@@ -610,7 +610,7 @@ class TestAC56TimeoutBehavior:
     実装前は handler が未実装のため FAIL する（意図的 RED）。
     """
 
-    def test_ac56_timeout_sec_0_returns_immediately(self):
+    async def test_ac56_timeout_sec_0_returns_immediately(self):
         # AC: timeout_sec=0 の場合、空の mailbox でも即座に {ok: true, msgs: [], exit_code: 0} を返すこと
         # RED: handler が未実装のため FAIL する
         import os
@@ -621,7 +621,7 @@ class TestAC56TimeoutBehavior:
             with patch.dict(os.environ, {"AUTOPILOT_DIR": tmpdir}):
                 from twl.mcp_server.tools_comm import twl_recv_msg_handler
                 start = time.monotonic()
-                result_str = twl_recv_msg_handler(
+                result_str = await twl_recv_msg_handler(
                     receiver="supervisor",
                     timeout_sec=0,
                 )
@@ -642,7 +642,7 @@ class TestAC56TimeoutBehavior:
                     f"timeout_sec=0 なのに {elapsed:.2f}秒かかった (AC5-6 未実装)"
                 )
 
-    def test_ac56_timeout_when_no_messages_returns_empty(self):
+    async def test_ac56_timeout_when_no_messages_returns_empty(self):
         # AC: timeout_sec>0 で待機後、メッセージがなければ {ok: true, msgs: [], exit_code: 0}
         # RED: handler が未実装のため FAIL する
         import os
@@ -651,7 +651,7 @@ class TestAC56TimeoutBehavior:
             mailbox_dir.mkdir()
             with patch.dict(os.environ, {"AUTOPILOT_DIR": tmpdir}):
                 from twl.mcp_server.tools_comm import twl_recv_msg_handler
-                result_str = twl_recv_msg_handler(
+                result_str = await twl_recv_msg_handler(
                     receiver="supervisor",
                     timeout_sec=1,  # 短い timeout
                 )
@@ -663,11 +663,11 @@ class TestAC56TimeoutBehavior:
                     f"timeout 後に msgs が空でない (AC5-6 未実装): {result.get('msgs')}"
                 )
 
-    def test_ac56_invalid_since_format_returns_error(self):
+    async def test_ac56_invalid_since_format_returns_error(self):
         # AC: since に不正フォーマット文字列を渡すと {ok: false, error_type: "invalid_since", exit_code: 3}
         # RED: handler が未実装のため FAIL する
         from twl.mcp_server.tools_comm import twl_recv_msg_handler
-        result_str = twl_recv_msg_handler(
+        result_str = await twl_recv_msg_handler(
             receiver="supervisor",
             since="not-a-ulid-or-rfc3339",
             timeout_sec=0,
@@ -683,7 +683,7 @@ class TestAC56TimeoutBehavior:
             f"exit_code が 3 でない: {result.get('exit_code')} (AC5-6 未実装)"
         )
 
-    def test_ac56_valid_rfc3339_since_accepted(self):
+    async def test_ac56_valid_rfc3339_since_accepted(self):
         # AC: since に有効な RFC3339 UTC 文字列を渡すとエラーにならないこと
         # RED: handler が未実装のため FAIL する
         import os
@@ -692,7 +692,7 @@ class TestAC56TimeoutBehavior:
             mailbox_dir.mkdir()
             with patch.dict(os.environ, {"AUTOPILOT_DIR": tmpdir}):
                 from twl.mcp_server.tools_comm import twl_recv_msg_handler
-                result_str = twl_recv_msg_handler(
+                result_str = await twl_recv_msg_handler(
                     receiver="supervisor",
                     since="2024-01-01T00:00:00Z",
                     timeout_sec=0,
@@ -1079,7 +1079,7 @@ class TestCommon4HandlerTwoCallPaths:
                     f"JSON に 'ok' キーがない (共通-4 未実装): {result}"
                 )
 
-    def test_common4_twl_recv_msg_handler_direct_call_returns_json_str(self):
+    async def test_common4_twl_recv_msg_handler_direct_call_returns_json_str(self):
         # AC: twl_recv_msg_handler を直接呼び出して JSON str が返ること（経路 1: 直接呼び出し）
         # RED: handler が未実装のため FAIL する
         import os
@@ -1088,7 +1088,7 @@ class TestCommon4HandlerTwoCallPaths:
             mailbox_dir.mkdir()
             with patch.dict(os.environ, {"AUTOPILOT_DIR": tmpdir}):
                 from twl.mcp_server.tools_comm import twl_recv_msg_handler
-                result_str = twl_recv_msg_handler(
+                result_str = await twl_recv_msg_handler(
                     receiver="supervisor",
                     timeout_sec=0,
                 )

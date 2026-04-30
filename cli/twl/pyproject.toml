@@ -18,6 +18,11 @@ full = [
 ]
 mcp = [
     "fastmcp>=3.0",
+    "pytest-asyncio>=0.23",
+]
+test = [
+    "pytest",
+    "pytest-asyncio>=0.23",
 ]
 
 [project.scripts]
@@ -25,6 +30,9 @@ twl = "twl.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [tool.mypy]
 strict = false
