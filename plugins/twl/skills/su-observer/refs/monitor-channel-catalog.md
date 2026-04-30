@@ -535,6 +535,39 @@ result=$(plugins/session/scripts/cld-observe-any \
 echo "event: $result"
 ```
 
+### Monitor tool 連携経路（方式 A: 共有 logfile tail）
+
+cld-observe-any stdout を共有 logfile に `tee -a` で redirect し、Monitor tool がその logfile を `tail -F` で監視する正規経路（**方式 A**）。**Wave 起動時は本連携経路を使用すること**（SHOULD）。方式 B（event-dir polling）/ 方式 C（FIFO）は将来検討項目として `pitfalls-catalog.md §4.11` に記録。
+
+**起動例（方式 A）**:
+```bash
+# cld-observe-any stdout を共有 logfile に redirect（方式 A 正規パス）
+plugins/session/scripts/cld-observe-any \
+  --pattern '(ap-|wt-co-).*' \
+  --interval 180 \
+  --stagnate-sec 600 \
+  --budget-threshold 15 \
+  --event-dir .supervisor/events \
+  --notify-dir /tmp/claude-notifications \
+  2>&1 | tee -a .supervisor/cld-observe-any.log &
+
+# Monitor tool 側は logfile を tail -F で監視
+until [[ -s .supervisor/cld-observe-any.log ]]; do sleep 1; done
+tail -F .supervisor/cld-observe-any.log
+```
+
+**各 event の Monitor tool `pattern` フィールド（そのまま貼り付け可）**:
+
+[MENU-READY] — pattern: `\[MENU-READY\]`（Enter to select 表示。OBSERVER_AUTO_INJECT_ENABLE=1 で自動 inject）
+[REVIEW-READY] — pattern: `\[REVIEW-READY\]`（Submit answers 表示。inject で submit）
+[FREEFORM-READY] — pattern: `\[FREEFORM-READY\]`（[y/N]/Press up 表示。inject で応答）
+[BUDGET-LOW] — pattern: `\[BUDGET-LOW\]`（budget 残量 ≤ 閾値。停止シーケンス参照）
+[STAGNATE-N] — pattern: `\[STAGNATE-`（log age ≥ N 秒。STAGNATE 介入フロー参照）
+
+**参照**: `pitfalls-catalog.md §4.11`（方式 A 運用上の懸念と連携落とし穴）
+
+---
+
 ### イベント種別と対応アクション
 
 | イベント | 説明 | 対応 |
@@ -562,6 +595,9 @@ echo "event: $result"
 | **NON-TERMINAL** | `.supervisor/events/skill-step-*` の `skill` フィールドのタイムスタンプが 2 分超で chain 未遷移 → `[NON-TERMINAL]` | `session-comm.sh capture` + `>>> 実装完了:` grep |
 | **WORKERS** | `.supervisor/events/session-end-*` が存在する場合、`[WORKERS]` に追記。**読み出し後に個別削除（SHALL）**: `rm -f .supervisor/events/session-end-<session_id>` | — |
 | **PILOT-IDLE / PHASE-DONE** | イベントファイル対象外 | 既存 polling のまま |
+| **MENU-READY** | `.supervisor/events/MENU-READY-*.json`（`.json` 拡張子） | 方式 A: `.supervisor/cld-observe-any.log` を `tail -F` で監視し `\[MENU-READY\]` grep |
+| **REVIEW-READY** | `.supervisor/events/REVIEW-READY-*.json`（`.json` 拡張子） | 方式 A: `.supervisor/cld-observe-any.log` を `tail -F` で監視し `\[REVIEW-READY\]` grep |
+| **FREEFORM-READY** | `.supervisor/events/FREEFORM-READY-*.json`（`.json` 拡張子） | 方式 A: `.supervisor/cld-observe-any.log` を `tail -F` で監視し `\[FREEFORM-READY\]` grep |
 
 ---
 

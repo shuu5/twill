@@ -50,6 +50,8 @@ spawnable_by:
 
 **`refs/su-observer-supervise-channels.md` を Read** して実行。
 
+> **Monitor tool 連携経路（SHOULD）**: cld-observe-any 起動時は `refs/monitor-channel-catalog.md` の「Monitor tool 連携経路（方式 A: 共有 logfile tail）」セクションを参照し、stdout を `.supervisor/cld-observe-any.log` に `tee -a` redirect した上で Monitor tool を `tail -F` で起動すること。これにより `[MENU-READY]`/`[REVIEW-READY]`/`[FREEFORM-READY]` 等の event を Monitor tool でリアルタイム受信できる（#1144）。
+
 ### controller spawn が必要な場合
 
 ユーザーが実装・作成・設計・テスト等の実行を求めた場合、**`refs/su-observer-controller-spawn-playbook.md` を Read** して実行。対話型 controller（co-issue / co-architect）の proxy 対話は **`refs/proxy-dialog-playbook.md` を Read** して実行。
