@@ -1,28 +1,50 @@
+# ac-test-mapping.yaml — Issue #1167: tech-debt(session): cld-observe-any.bats L74 slash-in-function-name
+# 生成: AC Scaffold Tests Agent
+# 対象テストファイル: plugins/session/tests/test_1167_ac_verify.bats
+#
+# Note: このファイルは per-issue scaffold で各 Issue が上書きする設計。
+# 過去の Issue（#1166: cld-observe-any-test-mode-validate.bats AC1-4）は
+# https://github.com/shuu5/twill/pull/1190 でマージ済み（traceability は git history 参照）。
+
 mappings:
   - ac_index: 1
-    ac_text: "cld-observe-any:144 の条件から _TEST_MODE を除去し、_TEST_MODE 設定下でも --window/--pattern 不在で exit 1 する"
-    test_file: "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
-    test_name: "AC1: _TEST_MODE=1 かつ --window/--pattern 未指定 → exit 1 と validation エラー"
+    ac_text: "L74 の関数定義を _mock_session_state() { echo \"processing\"; } に rename する（slash 除去）"
+    test_file: "plugins/session/tests/test_1167_ac_verify.bats"
+    test_name: "ac1: L74 の関数定義が _mock_session_state() { ... } 形式になっている"
+    status: RED
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/tests/cld-observe-any.bats"
 
   - ac_index: 2
-    ac_text: "スクリプト冒頭（引数解析完了直後）に unset _DAEMON_LOAD_ONLY を実行し、env から流入した値を破棄する"
-    test_file: "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
-    test_name: "AC2: env 経由 _DAEMON_LOAD_ONLY=1 は unset され --window 未指定で exit 1 になる"
+    ac_text: "L75 の export -f \"$SCRIPT_DIR/session-state.sh\" 2>/dev/null || true を export -f _mock_session_state に置換する（2>/dev/null || true は不要になるため削除）"
+    test_file: "plugins/session/tests/test_1167_ac_verify.bats"
+    test_name: "ac2: L75 の export 行が export -f _mock_session_state になっている"
+    status: RED
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/tests/cld-observe-any.bats"
 
   - ac_index: 3
-    ac_text: "_TEST_MODE set 時 LOCK_FILE を /tmp/cld-observe-any-test-$$.lock にリダイレクトし flock を実行する"
-    test_file: "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
-    test_name: "AC3: _TEST_MODE=1 かつ --window 指定 → /tmp/cld-observe-any-test-*.lock が存在する"
+    ac_text: "L73 のコメント # session-state.sh モック を保持または # session-state.sh モック (関数名は slash-free) に更新する"
+    test_file: "plugins/session/tests/test_1167_ac_verify.bats"
+    test_name: "ac3: L73 の session-state.sh モックコメントが存在する"
+    status: GREEN
+    note: "修正前から comment が存在するため PASS。rename 後も保持を確認するためのリグレッション guard。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/tests/cld-observe-any.bats"
 
   - ac_index: 4
-    ac_text: "regression test 3 シナリオ（Scenario A/B/C）を cld-observe-any-test-mode-validate.bats に実装する"
-    test_file: "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
-    test_name: "（AC1〜AC3 テストがそのまま AC4 の regression guard として機能）"
+    ac_text: "bats plugins/session/tests/cld-observe-any.bats が PASS する（rename 前後で test 結果が変わらないこと）"
+    test_file: "plugins/session/tests/test_1167_ac_verify.bats"
+    test_name: "ac4: bats plugins/session/tests/cld-observe-any.bats が構文エラーなく読み込める"
+    status: GREEN
+    note: "bats -c による構文チェック。mock は元々非機能なため既存テスト結果は不変。"
     impl_files:
-      - "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
+      - "plugins/session/tests/cld-observe-any.bats"
+
+  - ac_index: 5
+    ac_text: "grep で \"$SCRIPT_DIR/session-state.sh\"() が当該ファイルに残っていないことを確認する"
+    test_file: "plugins/session/tests/test_1167_ac_verify.bats"
+    test_name: "ac5: slash-containing 関数定義 \"$SCRIPT_DIR/session-state.sh\"() が残っていない"
+    status: RED
+    impl_files:
+      - "plugins/session/tests/cld-observe-any.bats"
