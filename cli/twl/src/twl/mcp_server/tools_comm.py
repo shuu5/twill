@@ -6,6 +6,7 @@ To add a new receiver prefix, extend _RECEIVER_PATTERN with an additional altern
 """
 from __future__ import annotations
 
+import asyncio
 import fcntl
 import json
 import os
@@ -178,7 +179,7 @@ def _send_msg_impl(
         return {"ok": False, "error_type": "write_error", "error": "mailbox write failed", "exit_code": 1}
 
 
-def _recv_msg_impl(
+async def _recv_msg_impl(
     receiver: str,
     since: str | None,
     timeout_sec: int,
@@ -198,12 +199,12 @@ def _recv_msg_impl(
     deadline = time.monotonic() + timeout_sec
 
     while True:
-        msgs = _read_since(mailbox_path, since)
+        msgs = _read_since(mailbox_path, since)  # sync IO: mailbox is small (<KB), blocking time is negligible
         if msgs or timeout_sec == 0:
             return {"ok": True, "msgs": msgs, "exit_code": 0}
         if time.monotonic() >= deadline:
             return {"ok": True, "msgs": [], "exit_code": 0}
-        time.sleep(0.1)
+        await asyncio.sleep(0.1)
 
 
 # ---------------------------------------------------------------------------
@@ -225,14 +226,14 @@ def twl_send_msg_handler(
     )
 
 
-def twl_recv_msg_handler(
+async def twl_recv_msg_handler(
     receiver: str,
     since: str | None = None,
     timeout_sec: int = 0,
     autopilot_dir: str | None = None,
 ) -> str:
     return json.dumps(
-        _recv_msg_impl(receiver, since, timeout_sec, autopilot_dir),
+        await _recv_msg_impl(receiver, since, timeout_sec, autopilot_dir),
         ensure_ascii=False,
     )
 
@@ -282,14 +283,14 @@ try:
         )
 
     @_mcp_comm.tool()
-    def twl_recv_msg(
+    async def twl_recv_msg(
         receiver: str,
         since: str | None = None,
         timeout_sec: int = 0,
         autopilot_dir: str | None = None,
     ) -> str:
         """Receive messages from mailbox. timeout_sec=0: non-blocking poll; >0: blocking wait. Note: set MCP_CLIENT_TIMEOUT>=(timeout_sec+10)s."""
-        return twl_recv_msg_handler(
+        return await twl_recv_msg_handler(
             receiver=receiver, since=since,
             timeout_sec=timeout_sec, autopilot_dir=autopilot_dir,
         )
@@ -323,14 +324,14 @@ except ImportError:
             autopilot_dir=autopilot_dir,
         )
 
-    def twl_recv_msg(  # type: ignore[misc]
+    async def twl_recv_msg(  # type: ignore[misc]
         receiver: str,
         since: str | None = None,
         timeout_sec: int = 0,
         autopilot_dir: str | None = None,
     ) -> str:
         """Receive messages from mailbox (fastmcp not installed)."""
-        return twl_recv_msg_handler(
+        return await twl_recv_msg_handler(
             receiver=receiver, since=since,
             timeout_sec=timeout_sec, autopilot_dir=autopilot_dir,
         )

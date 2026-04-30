@@ -1,0 +1,106 @@
+mappings:
+  - ac_index: 1
+    ac_text: "_recv_msg_impl が async def で定義され、time.sleep ではなく await asyncio.sleep(0.1) を使用していること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac1_recv_msg_impl_is_async_def"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 1
+    ac_text: "tools_comm.py 内に time.sleep が残存しないこと"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac1_no_time_sleep_in_recv_msg_impl"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 1
+    ac_text: "tools_comm.py 内で await asyncio.sleep(0.1) が使用されていること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac1_asyncio_sleep_used_in_recv_msg_impl"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 2
+    ac_text: "twl_recv_msg_handler が async def（inspect.iscoroutinefunction が True）"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac2_twl_recv_msg_handler_is_coroutine_function"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 2
+    ac_text: "tools_comm.py 内の twl_recv_msg 定義が async def であること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac2_twl_recv_msg_is_async_def_in_source"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 2
+    ac_text: "twl_recv_msg_handler の戻り値型が str であること（async 化後も維持）"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac2_twl_recv_msg_handler_return_type_is_str"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 3
+    ac_text: "既存テストが pytest-asyncio 対応（pyproject.toml に asyncio_mode=auto が設定済み）"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac3_pyproject_has_asyncio_mode_auto"
+    impl_files:
+      - "cli/twl/pyproject.toml"
+
+  - ac_index: 4
+    ac_text: "asyncio.gather で 4 並行 twl_recv_msg_handler(timeout_sec=60) + 1 件 twl_send_msg_handler のシナリオが動作すること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac4_concurrent_recv_send_scenario"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 5
+    ac_text: "並行 await 中の _recv_msg_impl task に task.cancel() を発行した場合、asyncio.CancelledError が伝播する"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac5_cancelled_error_propagates"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+
+  - ac_index: 6
+    ac_text: "tools.py 末尾の mcp.mount(_mcp_comm) が async 化後 twl_recv_msg を MCP 経由で呼び出せること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac6_fastmcp_mount_compatibility"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 7
+    ac_text: "pyproject.toml の [project.optional-dependencies] に pytest-asyncio>=0.23 が含まれること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac7_pytest_asyncio_in_pyproject_mcp_extras"
+    impl_files:
+      - "cli/twl/pyproject.toml"
+
+  - ac_index: 7
+    ac_text: "pytest-asyncio のバージョン制約が >=0.23 であること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac7_pytest_asyncio_version_constraint"
+    impl_files:
+      - "cli/twl/pyproject.toml"
+
+  - ac_index: 7
+    ac_text: "pyproject.toml に test extras セクションが存在すること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac7_test_extras_section_exists"
+    impl_files:
+      - "cli/twl/pyproject.toml"
+
+  - ac_index: 8
+    ac_text: "pyproject.toml に [tool.pytest.ini_options] セクションが新設されていること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac8_tool_pytest_ini_options_section_exists"
+    impl_files:
+      - "cli/twl/pyproject.toml"
+
+  - ac_index: 8
+    ac_text: "pyproject.toml の [tool.pytest.ini_options] に asyncio_mode = \"auto\" が設定されていること"
+    test_file: "cli/twl/tests/test_issue_1138_recv_async.py"
+    test_name: "test_ac8_asyncio_mode_auto_configured"
+    impl_files:
+      - "cli/twl/pyproject.toml"
