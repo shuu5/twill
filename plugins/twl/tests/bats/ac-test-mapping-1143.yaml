@@ -1,0 +1,86 @@
+mappings:
+  - ac_index: 1
+    ac_text: "worker-code-reviewer.md の「### 2. バグパターン」セクション内、`- 競合状態の可能性` の箇条書き直後（`**False-positive 除外ルール（純粋 boolean 変数の条件式順序差）**` ブロックの直前）に tmux 破壊的操作のターゲット解決 bullet を追記する。kill-window / kill-session / respawn-window 等の destructive op で window 名を直接 -t に渡す実装を CRITICAL (confidence >= 90) として報告。"
+    test_file: "plugins/twl/tests/bats/worker-code-reviewer-tmux-1143.bats"
+    test_names:
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet exists in worker-code-reviewer.md"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet mentions 'CRITICAL'"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet mentions confidence >= 90 in tmux context"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet mentions 'kill-window' and 'kill-session'"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet mentions 'respawn-window'"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet mentions 'window_name' or '#{window_name}'"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet mentions 'ambiguous target' or '誤 kill'"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet mentions 'list-windows' resolution"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet mentions 'session:index' format"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet references pitfalls-catalog §4.11"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet references §4.9 or Issue #948"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet references tmux-resolve.sh or _resolve_window_target"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet references Issue #1142"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet appears inside §2 バグパターン section"
+      - "worker-code-reviewer-tmux-1143: AC1 tmux bullet appears after '競合状態の可能性' bullet"
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+
+  - ac_index: 2
+    ac_text: "baseline-bash.md に ## 8. tmux 破壊的操作のターゲット解決 セクションを既存 ## 7. の直後に追加する（§1–§7 は変更しない）。BAD/GOOD パターン、pitfalls-catalog §4.11 参照、tmux-resolve.sh 参照を含む。"
+    test_file: "plugins/twl/tests/bats/baseline-bash-section8.bats"
+    test_names:
+      - "baseline-bash-section8: AC2 section '## 8. tmux' exists"
+      - "baseline-bash-section8: AC2 section heading includes 'tmux'"
+      - "baseline-bash-section8: AC2 section heading includes '破壊的操作'"
+      - "baseline-bash-section8: AC2 §8 appears after §7 in file"
+      - "baseline-bash-section8: AC2 section mentions 'kill-window' or 'kill-session'"
+      - "baseline-bash-section8: AC2 BAD block heading exists for tmux target"
+      - "baseline-bash-section8: AC2 GOOD block heading exists for tmux target"
+      - "baseline-bash-section8: AC2 section mentions 'list-windows'"
+      - "baseline-bash-section8: AC2 section mentions 'session:index' format or 'session_name:'"
+      - "baseline-bash-section8: AC2 section mentions 'ambiguous target' or '誤 kill'"
+      - "baseline-bash-section8: AC2 section references pitfalls-catalog §4.11"
+      - "baseline-bash-section8: AC2 section references tmux-resolve.sh"
+      - "baseline-bash-section8: AC2 review observation line present in §8 context"
+      - "baseline-bash-section8: AC5 sections §1-§8 all present and consecutive"
+    impl_files:
+      - "plugins/twl/refs/baseline-bash.md"
+
+  - ac_index: 3
+    ac_text: "worker-code-reviewer.md の既存 false-positive 除外ルールと AC-1 で追加するルールが矛盾しないこと（構造的に破損していないことを確認）。"
+    test_file: "plugins/twl/tests/bats/worker-code-reviewer-tmux-1143.bats"
+    test_names:
+      - "worker-code-reviewer-tmux-1143: AC3 False-positive 除外ルール still present"
+      - "worker-code-reviewer-tmux-1143: AC3 False-positive rule content intact"
+      - "worker-code-reviewer-tmux-1143: AC3 False-positive rule intact — INFO level mention"
+      - "worker-code-reviewer-tmux-1143: AC3 existing-behavior-preserve section still present"
+      - "worker-code-reviewer-tmux-1143: AC3 §2 section heading unchanged"
+      - "worker-code-reviewer-tmux-1143: AC3 output format JSON schema section still present"
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+
+  - ac_index: 4
+    ac_text: "worker-codex-reviewer.md / issue-critic.md / issue-feasibility.md は変更対象外。"
+    test_file: "plugins/twl/tests/bats/worker-code-reviewer-tmux-1143.bats"
+    test_names:
+      - "worker-code-reviewer-tmux-1143: AC4 worker-codex-reviewer.md does not contain tmux §4.11 bullet"
+      - "worker-code-reviewer-tmux-1143: AC4 issue-critic.md does not contain tmux §4.11 bullet"
+      - "worker-code-reviewer-tmux-1143: AC4 issue-feasibility.md does not contain tmux §4.11 bullet"
+    impl_files:
+      - "plugins/twl/agents/worker-codex-reviewer.md"
+      - "plugins/twl/agents/issue-critic.md"
+      - "plugins/twl/agents/issue-feasibility.md"
+
+  - ac_index: 5
+    ac_text: "ドキュメント整合性: worker-code-reviewer.md の追記箇所に §4.11 への参照が含まれること。baseline-bash.md の §8 追記後も §1–§7 の heading が変更されていないこと。twl check --deps-integrity が PASS すること。"
+    test_file: "plugins/twl/tests/bats/worker-code-reviewer-tmux-1143.bats"
+    test_names:
+      - "worker-code-reviewer-tmux-1143: AC5 worker-code-reviewer.md contains §4.11 reference"
+      - "worker-code-reviewer-tmux-1143: AC5 twl check --deps-integrity passes"
+      - "baseline-bash-section8: AC5 regression §1 heading unchanged"
+      - "baseline-bash-section8: AC5 regression §2 heading unchanged"
+      - "baseline-bash-section8: AC5 regression §3 heading unchanged"
+      - "baseline-bash-section8: AC5 regression §4 heading unchanged"
+      - "baseline-bash-section8: AC5 regression §5 heading unchanged"
+      - "baseline-bash-section8: AC5 regression §6 heading unchanged"
+      - "baseline-bash-section8: AC5 regression §7 heading unchanged"
+      - "baseline-bash-section8: AC5 twl check --deps-integrity passes"
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+      - "plugins/twl/refs/baseline-bash.md"
