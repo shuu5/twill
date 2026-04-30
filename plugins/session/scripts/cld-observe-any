@@ -151,14 +151,14 @@ if ! flock -n 9; then
     exit 1
 fi
 echo $$ > "$LOCK_FILE.pid"
-trap 'rm -f "$LOCK_FILE.pid"' EXIT
 
 # --- クリーンアップ ---
 TMPFILES=()
 cleanup() {
-    for f in "${TMPFILES[@]:-}"; do
+    for f in "${TMPFILES[@]:+${TMPFILES[@]}}"; do
         rm -f "$f" 2>/dev/null || true
     done
+    rm -f "$LOCK_FILE.pid"
 }
 trap cleanup EXIT
 trap 'echo ""; echo "[cld-observe-any] SIGINT/SIGTERM 受信 → 終了"; cleanup; exit 0' INT TERM

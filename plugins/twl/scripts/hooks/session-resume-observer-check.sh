@@ -2,7 +2,7 @@
 # session-resume-observer-check.sh - SessionStart hook: cld-observe-any 死活確認 + 自動再起動
 # Issue #1147: SessionStart resume hook に cld-observe-any 死活確認 + 自動再起動
 
-set -uo pipefail
+set -euo pipefail
 
 # CWD を git toplevel に移動（SessionStart 時は任意 CWD の可能性あり）
 cd "$(git rev-parse --show-toplevel)" || exit 1
