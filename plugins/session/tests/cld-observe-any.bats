@@ -628,8 +628,8 @@ MOCKEOF
 
 # ---------------------------------------------------------------------------
 # Scenario 14: AC1 — 既知 thinking indicator "Burrowing" あり → STAGNATE emit なし
-#   現実装の LLM_INDICATORS に "Burrowing" が含まれていないため、
-#   thinking guard が機能せず STAGNATE が emit される → RED（実装後 PASS）
+#   "Burrowing" は L32 LLM_INDICATORS に収録済（PR #1161 で追加）→ thinking guard が機能し STAGNATE 抑止。
+#   GREEN: 実装済みの動作確認テスト（regression guard）。
 # ---------------------------------------------------------------------------
 @test "AC1: thinking indicator 'Burrowing' あり → STAGNATE emit なし（偽陽性防止）" {
     run bash <<'MOCKEOF'
@@ -667,14 +667,15 @@ rm -rf "$TMPD"
 MOCKEOF
 
     [[ "$status" -eq 0 ]]
-    # "Burrowing" は thinking 中の indicator なので STAGNATE は emit されない（RED: 現実装では emit される）
+    # "Burrowing" は thinking 中の indicator なので STAGNATE は emit されない（regression guard: thinking guard が機能し続けることを確認）
     ! echo "$output" | grep -q "STAGNATE"
 }
 
 # ---------------------------------------------------------------------------
 # Scenario 15: AC1 — 複数の未収録 indicator（Sautéed, Cerebrating, Thundering）
-#   各 indicator あり + stagnate 超過 → STAGNATE emit なしを assert
-#   現実装ではカタログ未収録のため thinking guard をすり抜けて STAGNATE emit される → RED
+#   各 indicator あり + stagnate 超過 → STAGNATE emit なしを assert。
+#   "Saut.*ed" (L31), "Cerebrating" (L33), "Thundering" (L36) いずれも LLM_INDICATORS に収録済（PR #1161 で追加）→ thinking guard が機能し STAGNATE 抑止。
+#   GREEN: 実装済みの動作確認テスト（regression guard）。
 # ---------------------------------------------------------------------------
 @test "AC1: thinking indicator 'Sautéed / Cerebrating / Thundering' あり → STAGNATE emit なし" {
     # Sautéed のテスト
@@ -750,8 +751,8 @@ MOCKEOF
 
 # ---------------------------------------------------------------------------
 # Scenario 16: AC2 — 完全未知の indicator（"Fizzing… (1s)"）でも STAGNATE emit なし
-#   一般化 regex `^[*•·✻✽✶✢✻] [A-Z][a-z]+(ed|ing|in')` で未知 indicator を汎用検出する実装後 PASS
-#   現実装（固定リスト）では "Fizzing" を検出できないため STAGNATE emit される → RED
+#   一般化 regex `[A-Z][a-z]+(in'|ing|ed)(…| for [0-9]| \([0-9])`（L43）で "Fizzing" を検出 → thinking guard が機能し STAGNATE 抑止。
+#   GREEN: 一般化 regex の動作確認テスト（regression guard）。
 # ---------------------------------------------------------------------------
 @test "AC2: 未知 indicator 'Fizzing… (1s)'（一般化 regex 対象） → STAGNATE emit なし" {
     run bash <<'MOCKEOF'
@@ -788,14 +789,15 @@ rm -rf "$TMPD"
 MOCKEOF
 
     [[ "$status" -eq 0 ]]
-    # 未知の indicator でも thinking guard が機能し STAGNATE は emit されない（RED: 現実装では emit される）
+    # 未知の indicator でも一般化 regex (L43) で thinking guard が機能し STAGNATE は emit されない（regression guard）
     ! echo "$output" | grep -q "STAGNATE"
 }
 
 # ---------------------------------------------------------------------------
 # Scenario 17: AC2 — indicator suffix pattern "in'" （Beboppin'）も一般化検出対象
-#   "Beboppin'… (5s)" は `[A-Z][a-z]+in'` パターン → 実装後は thinking guard が機能するはず
-#   現実装では "Beboppin'" が LLM_INDICATORS に含まれないため STAGNATE emit される → RED
+#   "Beboppin" は L35 LLM_INDICATORS に直接収録済（一般化 regex L43 の `[A-Z][a-z]+in'` パターンでも検出可能）。
+#   いずれの経路でも thinking guard が機能し STAGNATE 抑止。
+#   GREEN: 実装済みの動作確認テスト（regression guard）。
 # ---------------------------------------------------------------------------
 @test "AC2: indicator suffix \"in'\" を持つ 'Beboppin\\'' → STAGNATE emit なし（一般化 regex で検出）" {
     run bash <<'MOCKEOF'
@@ -836,8 +838,9 @@ MOCKEOF
 
 # ---------------------------------------------------------------------------
 # Scenario 18: AC3 — 偽陽性ケース: "Burrowing…" indicator あり → STAGNATE emit なし
-#   Scenario 14 と同一趣旨だが AC3 の「偽陽性 case 検証」として明示的に配置
-#   現実装で "Burrowing" が未収録なため STAGNATE emit される → RED
+#   Scenario 14 と同じ "Burrowing" indicator を使うが、`stagnate-sec 30` × `log mtime 60s 前` で stagnate 閾値を厳しく設定。
+#   既収録 indicator でも regression なく STAGNATE 抑止が機能することを確認する偽陽性 case の regression guard。
+#   GREEN: 実装済みの動作確認テスト。
 # ---------------------------------------------------------------------------
 @test "AC3: 偽陽性ケース — 'Burrowing…' indicator あり → STAGNATE emit なし" {
     run bash <<'MOCKEOF'
@@ -872,7 +875,7 @@ rm -rf "$TMPD"
 MOCKEOF
 
     [[ "$status" -eq 0 ]]
-    # Burrowing indicator が存在する → LLM は思考中 → STAGNATE は emit されない（RED: 現実装では emit される）
+    # Burrowing indicator が存在する → LLM は思考中 → STAGNATE は emit されない（regression guard）
     ! echo "$output" | grep -q "STAGNATE"
 }
 
