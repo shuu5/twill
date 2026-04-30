@@ -1592,3 +1592,21 @@ EOF
 
     [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS: orchestrator dynamic load OK"
 }
+
+# ===========================================================================
+# Issue #1165: tech-debt(session): cld-observe-any SUPERVISOR_DIR パストラバーサル防御
+# AC4: invalid SUPERVISOR_DIR で exit 2 + stderr に "FATAL" 含む統合テスト
+# RED: cld-observe-any への validate_supervisor_dir 呼び出し未追加のため fail
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# AC4(#1165): invalid SUPERVISOR_DIR=/tmp/../etc で exit 2 + stderr FATAL
+# RED: path-validate.sh の source + validate_supervisor_dir 呼び出しが
+#      cld-observe-any に未追加のため fail する
+# ---------------------------------------------------------------------------
+@test "AC4(#1165): invalid SUPERVISOR_DIR=/tmp/../etc で exit 2 かつ stderr に FATAL が含まれる" {
+    # RED: cld-observe-any への validate_supervisor_dir 呼び出し未追加のため fail する
+    run bash -c "SUPERVISOR_DIR='/tmp/../etc' bash '$CLD_OBSERVE_ANY' --window dummy-win --once 2>&1"
+    [ "$status" -eq 2 ]
+    [[ "$output" =~ "FATAL" ]]
+}
