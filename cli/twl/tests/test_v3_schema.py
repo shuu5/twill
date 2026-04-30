@@ -447,15 +447,36 @@ class TestV2BackwardCompat:
 
 
 class TestFallbackTypeRulesConsistency:
-    """_FALLBACK_TYPE_RULES と types.yaml の整合性テスト (Issue #1122)"""
+    """_FALLBACK_TYPE_RULES と types.yaml の整合性テスト (Issue #1122)
+
+    This class reads from the real repository (no tmpdir needed).
+    setup_method/teardown_method are no-ops for __main__ runner compatibility.
+    """
+
+    def setup_method(self):
+        pass
+
+    def teardown_method(self):
+        pass
 
     def _loom_root(self) -> Path:
         return Path(__file__).parent.parent
 
+    def _load_and_validate(self):
+        """types.yaml の存在確認と型ルールの読み込み。"""
+        loom_root = self._loom_root()
+        assert (loom_root / "types.yaml").exists(), f"types.yaml が見つかりません: {loom_root / 'types.yaml'}"
+        from twl.core.types import _FALLBACK_TYPE_RULES, load_type_rules
+        loaded = load_type_rules(loom_root)
+        assert set(loaded.keys()) == set(_FALLBACK_TYPE_RULES.keys()), (
+            f"型の集合が不一致: yaml={sorted(loaded.keys())} != fallback={sorted(_FALLBACK_TYPE_RULES.keys())}"
+        )
+        return loaded
+
     def test_ac1_can_spawn_synced_with_types_yaml(self):
         # AC: `_FALLBACK_TYPE_RULES` を `types.yaml` の定義と完全同期させる
-        from twl.core.types import _FALLBACK_TYPE_RULES, load_type_rules
-        loaded = load_type_rules(self._loom_root())
+        from twl.core.types import _FALLBACK_TYPE_RULES
+        loaded = self._load_and_validate()
         for type_name, fallback in _FALLBACK_TYPE_RULES.items():
             expected = loaded[type_name]['can_spawn']
             actual = set(fallback['can_spawn'])
@@ -465,8 +486,8 @@ class TestFallbackTypeRulesConsistency:
 
     def test_ac1_spawnable_by_synced_with_types_yaml(self):
         # AC: `_FALLBACK_TYPE_RULES` を `types.yaml` の定義と完全同期させる
-        from twl.core.types import _FALLBACK_TYPE_RULES, load_type_rules
-        loaded = load_type_rules(self._loom_root())
+        from twl.core.types import _FALLBACK_TYPE_RULES
+        loaded = self._load_and_validate()
         for type_name, fallback in _FALLBACK_TYPE_RULES.items():
             expected = loaded[type_name]['spawnable_by']
             actual = set(fallback['spawnable_by'])
@@ -477,8 +498,8 @@ class TestFallbackTypeRulesConsistency:
     def test_ac1_can_supervise_synced_with_types_yaml(self):
         # AC: `_FALLBACK_TYPE_RULES` を `types.yaml` の定義と完全同期させる
         # supervisor の can_supervise が types.yaml にあるが _FALLBACK_TYPE_RULES に未定義
-        from twl.core.types import _FALLBACK_TYPE_RULES, load_type_rules
-        loaded = load_type_rules(self._loom_root())
+        from twl.core.types import _FALLBACK_TYPE_RULES
+        loaded = self._load_and_validate()
         for type_name, fallback in _FALLBACK_TYPE_RULES.items():
             expected = loaded[type_name]['can_supervise']
             actual = set(fallback.get('can_supervise', []))
