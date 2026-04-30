@@ -197,7 +197,7 @@ async def _recv_msg_impl(
     deadline = time.monotonic() + timeout_sec
 
     while True:
-        msgs = _read_since(mailbox_path, since)
+        msgs = _read_since(mailbox_path, since)  # sync IO: mailbox is small (<KB), blocking time is negligible
         if msgs or timeout_sec == 0:
             return {"ok": True, "msgs": msgs, "exit_code": 0}
         if time.monotonic() >= deadline:
