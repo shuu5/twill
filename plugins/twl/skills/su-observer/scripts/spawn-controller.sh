@@ -54,6 +54,7 @@ if [[ "${SKIP_PARALLEL_CHECK:-0}" == "1" ]]; then
     mkdir -p "$_supervisor_dir"
     _reason="${SKIP_PARALLEL_REASON:-(reason not provided)}"
     _reason="${_reason//$'\n'/ }"
+    _reason="${_reason//$'\r'/ }"
     printf '%s SKIP_PARALLEL_CHECK=1: %s\n' \
       "$(date -u +%FT%TZ)" \
       "$_reason" \
