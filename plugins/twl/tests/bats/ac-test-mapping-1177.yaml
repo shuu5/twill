@@ -1,0 +1,143 @@
+mappings:
+  - ac_index: 1
+    ac_text: "inject-next-workflow.sh の stagnate 検知ロジック（L39-54）に、state file .autopilot/issues/issue-${issue}.json の mtime を progress signal として組み込む"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac1-mtime-reset: state file mtime 進行で RESOLVE_FAIL_COUNT がリセットされる"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 2
+    ac_text: "新規連想配列 LAST_STATE_MTIME を 2 箇所に追加（二重宣言が必要 — 既存 RESOLVE_FAIL_COUNT と同パターン）"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac2-a: LAST_STATE_MTIME の declare -gA が inject-next-workflow.sh に存在する"
+      - "ac2-b: LAST_STATE_MTIME の declare -gA が 2 箇所に存在する（RESOLVE_FAIL_COUNT と同パターン）"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 3
+    ac_text: "ロジックの実行順序（MUST）: stagnate 検知ブロック先頭で mtime チェックを FAIL_COUNT インクリメントの前に実施する"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac1-mtime-reset: state file mtime 進行で RESOLVE_FAIL_COUNT がリセットされる"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 4
+    ac_text: "state file 不在時の挙動（後方互換）: stat 失敗 → _current_mtime=0 フォールバック。LAST_STATE_MTIME 初期値 0 のため current(0) > last(0) が偽 → リセット非発火、現行の RESOLVE_FAIL_COUNT カウントアップを維持"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac4-absent-state-file: state file 不在時は RESOLVE_FAIL_COUNT が正常にカウントアップされる"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 5
+    ac_text: "_elapsed >= AUTOPILOT_STAGNATE_SEC 達成後の [orchestrator] WARN 出力に、新規環境変数 AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC（既定 60s）の rate limit を実装する"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac5-env-var: AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC がスクリプト内で参照されている"
+      - "ac5-warn-rate-limit: stagnate WARN は AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC 内で suppress される"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 6
+    ac_text: "新規連想配列 LAST_STAGNATE_WARN_TS を 2 箇所に追加（AC-1 と同一の二重宣言パターン）"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac6-a: LAST_STAGNATE_WARN_TS の declare -gA が inject-next-workflow.sh に存在する"
+      - "ac6-b: LAST_STAGNATE_WARN_TS の declare -gA が 2 箇所に存在する"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 7
+    ac_text: "LAST_STAGNATE_WARN_TS のリセット条件（MUST）: mtime 進行で RESOLVE_FAIL_COUNT がリセットされた場合は LAST_STAGNATE_WARN_TS もリセットする"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac7-warn-ts-reset-on-mtime: mtime リセット時に LAST_STAGNATE_WARN_TS もリセットされる"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 8
+    ac_text: "WARN 出力前に _now - LAST_STAGNATE_WARN_TS[$entry] >= AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC をチェックし、満たさない場合は WARN を suppress（trace log は対象外、連続記録を維持）"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac5-warn-rate-limit: stagnate WARN は AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC 内で suppress される"
+      - "ac8-trace-log-on-suppress: WARN suppress 時も trace log にエントリが記録される"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 9
+    ac_text: "環境変数命名は既存 AUTOPILOT_STAGNATE_SEC の規則（AUTOPILOT_*_SEC）に揃える"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac9-naming: AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC は AUTOPILOT_*_SEC 命名規則に準拠している"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 10
+    ac_text: "本 Issue では既存ロジック L31-37 の exit code 振り分け（exit==1 → RESOLVE_NOT_READY、exit!=0 && !=1 → RESOLVE_ERROR）は変更しない。AC-1 の mtime 判定は category 区分とは独立に適用する"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac10-exit-code-unchanged: exit==1 → RESOLVE_NOT_READY ロジックが維持されている"
+      - "ac10-exit-code-unchanged: exit!=0&&!=1 → RESOLVE_ERROR ロジックが維持されている"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 11
+    ac_text: "resolve_next_workflow.py の exit 1 に DUPLICATE_INJECT・INIT_INCOMPLETE 等が混在している点は保持。exit code 体系再設計は別 Issue"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac10-exit-code-unchanged: exit==1 → RESOLVE_NOT_READY ロジックが維持されている"
+    impl_files: []
+    # impl_files: [] — AC-11 は「変更しない」制約のため resolve_next_workflow.py の変更を期待しない
+
+  - ac_index: 12
+    ac_text: "bats 単体テストを新規作成: plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats（仮称）"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names: []
+    impl_files:
+      - "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    # impl_files: テストファイル自体が成果物
+
+  - ac_index: 13
+    ac_text: "追加するテストシナリオ（MUST）: mtime 進行リセット、state file 不在フォールバック、WARN rate limit、WARN suppress 時の trace 記録継続"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac1-mtime-reset: state file mtime 進行で RESOLVE_FAIL_COUNT がリセットされる"
+      - "ac4-absent-state-file: state file 不在時は RESOLVE_FAIL_COUNT が正常にカウントアップされる"
+      - "ac5-warn-rate-limit: stagnate WARN は AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC 内で suppress される"
+      - "ac8-trace-log-on-suppress: WARN suppress 時も trace log にエントリが記録される"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+
+  - ac_index: 14
+    ac_text: "テスト環境セットアップ: 各テスト先頭で export AUTOPILOT_DIR=\"/tmp/test-autopilot-$$\" を明示し、mkdir -p \"${AUTOPILOT_DIR}/issues\" で state file ディレクトリを準備する"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names: []
+    impl_files:
+      - "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+
+  - ac_index: 15
+    ac_text: "既存テスト干渉なし確認"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac15-no-interference: twl check --deps-integrity が PASS する"
+    impl_files: []
+
+  - ac_index: 16
+    ac_text: "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §4.10 に「orchestrator-side の多指標 AND 判定の適用例」として inject-next-workflow.sh の mtime AND 判定を追記"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac16-pitfalls-catalog: pitfalls-catalog §4.10 に mtime AND 判定の適用例が存在する"
+      - "ac16-pitfalls-catalog: pitfalls-catalog §4.10 に inject-next-workflow.sh への言及がある"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+  - ac_index: 17
+    ac_text: "環境変数 AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC を plugins/twl/architecture/domain/contexts/autopilot.md の env-var セクション（L289-295 周辺）に追加"
+    test_file: "plugins/twl/tests/bats/scripts/inject-next-workflow-stagnate.bats"
+    test_names:
+      - "ac17-autopilot-doc: AUTOPILOT_STAGNATE_WARN_INTERVAL_SEC が autopilot.md に記載されている"
+    impl_files:
+      - "plugins/twl/architecture/domain/contexts/autopilot.md"
