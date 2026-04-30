@@ -257,3 +257,33 @@ process_py_files() (
 > `nullglob` の併用も推奨（マッチ 0 件で iterable が空になる挙動を保証）。
 
 **レビュー観点**: bash スクリプトで `$VAR/**/*.ext` 形式の glob 展開を見つけた場合、同ファイル内（または source 元のスクリプト）で `shopt -s globstar` が有効化されているかを確認する。未設定であれば、`grep -rql --include='*.ext' ... "$DIR"` または `find "$DIR" -name '*.ext'` への置換を提案する。
+
+## 8. tmux 破壊的操作のターゲット解決
+
+`tmux kill-window` / `kill-session` 等の destructive op に window 名のみを直接 `-t` で渡すと、複数 session に同名 window が存在する場合に ambiguous target または誤 kill が発生する。
+
+### BAD: tmux kill-window で window 名を直接 -t に渡す（ambiguous target リスク）
+
+```bash
+# BAD: 複数 session に同名 window があると誤 kill
+WIN="wt-target"
+tmux kill-window -t "$WIN"
+```
+
+### GOOD: session:index 形式に解決してから kill
+
+```bash
+# GOOD: list-windows -a で session:index に解決
+WIN="wt-target"
+RESOLVED=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' \
+  | awk -v n="$WIN" '$2==n {print $1}')
+if [[ -n "$RESOLVED" ]] && [[ $(echo "$RESOLVED" | wc -l) -eq 1 ]]; then
+  tmux kill-window -t "$RESOLVED"
+fi
+```
+
+または共通ヘルパー（Issue #1142 で `plugins/session/scripts/lib/tmux-resolve.sh::_resolve_window_target` 提供予定）を使用する。先行 ref: pitfalls-catalog `§4.11 tmux 破壊的操作のターゲット解決`（Issue #1142）、`§4.9 has-session 誤用`（Issue #948）。
+
+**適用範囲**: `tmux kill-server` / `tmux -C` / `tmux -f` はホスト共通 CLAUDE.md（incident 2026-04-22）+ PreToolUse hook で別途ブロック済み。本パターンは destructive な window/session レベル op に focus する。
+
+**レビュー観点**: `tmux kill-window`、`kill-session`、`respawn-window` 等の destructive op で `-t "$WIN_NAME"` や `-t "${WINDOW}"` のように window 名変数を直接渡している箇所を見つけた場合、`#{session_name}:#{window_index}` 形式への解決が行われているかを確認する。解決なしは CRITICAL（confidence ≥ 90）として報告する。
