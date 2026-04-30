@@ -2,7 +2,7 @@ mappings:
   - ac_index: 1
     ac_text: "方式 A（共有 logfile tail）を正規パスとして採用する（本 Issue では実装しない、選定のみ）"
     test_file: ""
-    test_name: ""
+    test_names: []
     impl_files: []
     # impl_files: [] — AC-1 は選定のみ。実装ファイルなし
 
@@ -127,13 +127,13 @@ mappings:
   - ac_index: 15
     ac_text: "grep -rn \"cld-observe-any\" plugins/twl/skills/ plugins/session/ の結果を技術メモに付与"
     test_file: ""
-    test_name: ""
+    test_names: []
     impl_files: []
     # impl_files: [] — AC-15 はプロセス AC（grep 結果記録）。実装ファイルなし
 
   - ac_index: 16
     ac_text: "不整合が 2 ファイル以内 → 本 Issue 内 fix、3 ファイル以上 → 別 Issue defer（判定のみ）"
     test_file: ""
-    test_name: ""
+    test_names: []
     impl_files: []
     # impl_files: [] — AC-16 はプロセス AC（判定のみ）。実装ファイルなし

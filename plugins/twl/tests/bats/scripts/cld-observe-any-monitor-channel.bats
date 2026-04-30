@@ -192,7 +192,7 @@ teardown() {
     || fail "monitor-channel-catalog.md が存在しない: $MONITOR_CATALOG"
 
   local count
-  count=$(grep -c "MENU-READY-\*\.json\|cld-observe-any\.log" "$MONITOR_CATALOG" 2>/dev/null || echo 0)
+  count=$(grep -cE "MENU-READY-\*\.json|cld-observe-any\.log" "$MONITOR_CATALOG" 2>/dev/null || echo 0)
   [[ "$count" -ge 2 ]] \
     || fail "monitor-channel-catalog.md の Hybrid 検知ポリシー表に MENU-READY-*.json または cld-observe-any.log が ${count} 件しかない（2 件以上必要）（AC5 未実装）"
 }
@@ -263,13 +263,18 @@ teardown() {
   [[ -f "$SKILL_MD" ]] \
     || fail "SKILL.md が存在しない: $SKILL_MD"
 
-  # Monitor tool 連携経路の言及周辺に SHOULD または SHOULD 相当の記述があること
-  grep -qE "SHOULD|推奨|should" "$SKILL_MD" \
-    || fail "SKILL.md に SHOULD 相当の注記がない（AC6 未実装）"
-
-  # 連携経路リンクが追記されていること（AC6 本体）が前提
-  grep -qE "Monitor tool 連携経路|cld-observe-any.*Monitor tool" "$SKILL_MD" \
+  # Monitor tool 連携経路の言及と同一行 or 近接行に SHOULD が存在することを確認
+  # (単独 SHOULD grep では既存キーワードにマッチするため、連携経路言及と組み合わせて確認)
+  local linkline
+  linkline=$(grep -n "Monitor tool 連携経路\|cld-observe-any.*Monitor tool" "$SKILL_MD" | head -1 | cut -d: -f1)
+  [[ -n "$linkline" ]] \
     || fail "SKILL.md に Monitor tool 連携経路への言及がない（AC6 未実装: リンク追記なし）"
+
+  # 連携経路リンク行から ±5 行以内に SHOULD が存在すること
+  local start=$(( linkline > 5 ? linkline - 5 : 1 ))
+  local end=$(( linkline + 5 ))
+  sed -n "${start},${end}p" "$SKILL_MD" | grep -qE "SHOULD|推奨|should" \
+    || fail "SKILL.md の Monitor tool 連携経路参照箇所（L${linkline}±5行）に SHOULD 相当の注記がない（AC6 未実装）"
 }
 
 # ===========================================================================
@@ -292,11 +297,16 @@ teardown() {
   local logfile="${log_dir}/cld-observe-any.log"
 
   # stub: tmux capture-pane → MENU-READY 状態を模擬（Enter to select 表示）
-  # tmux list-windows → テスト用 window 名を返す
+  # list-windows は "session:index window_name" 形式で返す（awk が $2 でマッチ）
   stub_command "tmux" '
 case "$1" in
   list-windows)
-    echo "test-worker-1144"
+    echo "test-session:0 test-worker-1144"
+    exit 0
+    ;;
+  display-message)
+    # #{pane_dead} #{pane_current_command}
+    echo "0 bash"
     exit 0
     ;;
   capture-pane)
@@ -316,6 +326,7 @@ esac
   # --once モードで実行し stdout を logfile に redirect（tee -a 模擬）
   run bash -c "
     export PATH='${STUB_BIN}:${PATH}'
+    export _TEST_MODE=1
     '${CLD_OBSERVE_ANY}' \
       --window test-worker-1144 \
       --once \
@@ -362,7 +373,11 @@ esac
   stub_command "tmux" '
 case "$1" in
   list-windows)
-    echo "test-worker-1144"
+    echo "test-session:0 test-worker-1144"
+    exit 0
+    ;;
+  display-message)
+    echo "0 bash"
     exit 0
     ;;
   capture-pane)
@@ -377,6 +392,7 @@ esac
 
   run bash -c "
     export PATH='${STUB_BIN}:${PATH}'
+    export _TEST_MODE=1
     '${CLD_OBSERVE_ANY}' \
       --window test-worker-1144 \
       --once \
@@ -417,8 +433,9 @@ esac
   notify_dir="$(mktemp -d)/notifications"
   mkdir -p "$notify_dir"
 
-  # 初期ファイル数を記録（空ディレクトリ）
-  local before_count=0
+  # 初期ファイル数を実際に計測（空ディレクトリ前提だが防御的に計測）
+  local before_count
+  before_count=$(find "$notify_dir" -maxdepth 1 -type f 2>/dev/null | wc -l)
 
   # stub: window なし → 何も検出しない状態
   stub_command "tmux" '
@@ -475,7 +492,11 @@ esac
   stub_command "tmux" '
 case "$1" in
   list-windows)
-    echo "test-worker-1144"
+    echo "test-session:0 test-worker-1144"
+    exit 0
+    ;;
+  display-message)
+    echo "0 bash"
     exit 0
     ;;
   capture-pane)
@@ -490,6 +511,7 @@ esac
 
   run bash -c "
     export PATH='${STUB_BIN}:${PATH}'
+    export _TEST_MODE=1
     '${CLD_OBSERVE_ANY}' \
       --window test-worker-1144 \
       --once \
@@ -611,12 +633,14 @@ ${output}"
   grep -qE "^#### §4\.11 " "$PITFALLS_CATALOG" \
     || fail "§4.11 が存在しない（AC12 前提未実装）"
 
-  # 運用上の懸念（logfile rotation / ディスク圧迫 / 競合 / 遅延等）への言及があること
-  # 4 項目の具体内容は実装側で決定するため、懸念への言及数で間接確認
+  # §4.11 セクション内の運用上の懸念（logfile rotation / ディスク圧迫 / 競合 / 遅延等）への言及
+  # §4.11 から次の "---" または "## " セクション区切りまでを抽出して確認
+  local section411
+  section411=$(awk '/^#### §4\.11 /{found=1} found{print} found && /^---/{exit}' "$PITFALLS_CATALOG")
   local concern_count
-  concern_count=$(grep -cE "logfile|rotation|ディスク|競合|遅延|tail.*race|多重|truncate|buffering|flush" "$PITFALLS_CATALOG" 2>/dev/null || echo 0)
+  concern_count=$(echo "$section411" | grep -cE "logfile|rotation|ディスク|競合|遅延|tail.*race|多重|truncate|buffering|flush" 2>/dev/null || echo 0)
   [[ "$concern_count" -ge 2 ]] \
-    || fail "pitfalls-catalog.md §4.11 に方式 A 運用上の懸念が ${concern_count} 件しかない（4 項目の記載が必要）（AC13 未実装）"
+    || fail "pitfalls-catalog.md §4.11 内に方式 A 運用上の懸念が ${concern_count} 件しかない（4 項目の記載が必要）（AC13 未実装）"
 }
 
 # ===========================================================================

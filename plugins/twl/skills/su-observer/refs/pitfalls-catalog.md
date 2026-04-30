@@ -139,6 +139,28 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 - §4.3 — A2 LLM indicator による emit 抑制
 - §4.5 — Heartbeat（5 min silence 自動 capture）で S-1 と S-5 の誤分類を防ぐ
 
+#### §4.11 cld-observe-any と Monitor tool の連携落とし穴
+
+**背景事象（2026-04-29 22:57 〜 2026-04-30 02:39、3h45m）**:
+Wave 5a Pilot 起動時に `cld-observe-any` を `--event-dir`/`--notify-dir` 付きで起動したが、Monitor tool との連携経路（stdout tail）が catalog に未定義だったため、`[MENU-READY]` が 60+ 件 emit されたにもかかわらず Monitor tool 側は無音となった。3h45m にわたって AskUserQuestion 検知が失敗し、observer 手動 `tmux capture-pane` 介入によって 5+ 分遅延の AskUserQuestion が解消された。root cause は「cld-observe-any → Monitor tool 連携経路の catalog 未定義」（doobidoo hash `726db016`）。
+
+**3 経路の意味論差（実コード verified）**:
+
+| 経路 | フラグ | 方向 | 設計意図 |
+|---|---|---|---|
+| stdout | （無条件） | cld-observe-any → 親 process | 親 process / pipe / capture が前提 |
+| `--event-dir` | `--event-dir <path>` | cld-observe-any → ファイル（書き込み） | post-hoc 解析・Hybrid 検知プライマリ |
+| `--notify-dir` | `--notify-dir <path>` | cld-observe-loop → cld-observe-any（**読み取り**） | **書き込み側ではない**。cld-observe-loop 互換通知の受取口 |
+
+**正規パス（方式 A: 共有 logfile tail）**:
+`refs/monitor-channel-catalog.md` の「Monitor tool 連携経路（方式 A: 共有 logfile tail）」セクションを参照。stdout を `.supervisor/cld-observe-any.log` に `tee -a` redirect し、Monitor tool を `tail -F` で起動する。
+
+**方式 A 運用上の懸念（実装時 MUST 考慮）**:
+1. **logfile rotation 未定義**: `.supervisor/cld-observe-any.log` は無限増大するため、長時間 Wave では `logrotate` または定期 truncation を検討する
+2. **concurrent tail**: 複数 observer が同一 logfile を `tail -F` する場合、各 observer がすべての行を受信できることを確認（通常は問題ないが、NFS/remote fs では注意）
+3. **`.supervisor/` 権限**: worktree ルートに `.supervisor/` ディレクトリを作成する権限が必要。CI 環境等では事前作成が必要
+4. **プロセス再起動時の logfile 切り替え idempotency**: cld-observe-any を再起動した場合、同一 logfile に `tee -a` することで継続可能だが、Monitor tool 側の `tail -F` が継続していることを確認すること
+
 ---
 
 ## 5. Memory MCP（doobidoo）運用
