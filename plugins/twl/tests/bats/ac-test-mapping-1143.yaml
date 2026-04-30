@@ -62,10 +62,8 @@ mappings:
       - "worker-code-reviewer-tmux-1143: AC4 worker-codex-reviewer.md does not contain tmux §4.11 bullet"
       - "worker-code-reviewer-tmux-1143: AC4 issue-critic.md does not contain tmux §4.11 bullet"
       - "worker-code-reviewer-tmux-1143: AC4 issue-feasibility.md does not contain tmux §4.11 bullet"
-    impl_files:
-      - "plugins/twl/agents/worker-codex-reviewer.md"
-      - "plugins/twl/agents/issue-critic.md"
-      - "plugins/twl/agents/issue-feasibility.md"
+    impl_files: []
+    # impl_files: [] — AC-4 は「変更しない」制約のため対象ファイルの diff 存在を期待しない
 
   - ac_index: 5
     ac_text: "ドキュメント整合性: worker-code-reviewer.md の追記箇所に §4.11 への参照が含まれること。baseline-bash.md の §8 追記後も §1–§7 の heading が変更されていないこと。twl check --deps-integrity が PASS すること。"
