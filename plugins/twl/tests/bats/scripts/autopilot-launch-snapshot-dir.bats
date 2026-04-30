@@ -148,9 +148,10 @@ _tmux_cmd_contains() {
   assert_success
   local tmux_cmd
   tmux_cmd=$(_get_tmux_cmd)
-  # worktree-dir が指定された場合、project/.dev-session ではなく wt/.dev-session になること
-  # (LAUNCH_DIR = WORKTREE_DIR であることの検証)
+  # worktree-dir が指定された場合、wt/.dev-session になること（正）
   echo "$tmux_cmd" | tr -d '\\' | grep -qF "wt/.dev-session/issue-1176"
+  # project/.dev-session ではないこと（負の検証）
+  ! echo "$tmux_cmd" | tr -d '\\' | grep -qF "project/.dev-session"
 }
 
 # ---------------------------------------------------------------------------
