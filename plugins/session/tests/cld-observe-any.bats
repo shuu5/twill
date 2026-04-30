@@ -1606,7 +1606,7 @@ EOF
 # ---------------------------------------------------------------------------
 @test "AC4(#1165): invalid SUPERVISOR_DIR=/tmp/../etc で exit 2 かつ stderr に FATAL が含まれる" {
     # RED: cld-observe-any への validate_supervisor_dir 呼び出し未追加のため fail する
-    run bash -c "SUPERVISOR_DIR='/tmp/../etc' bash '$CLD_OBSERVE_ANY' --window dummy-win --once 2>&1"
+    run bash -c "_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR='$SCRIPT_DIR' SUPERVISOR_DIR='/tmp/../etc' bash '$CLD_OBSERVE_ANY' --window dummy-win --once 2>&1"
     [ "$status" -eq 2 ]
     [[ "$output" =~ "FATAL" ]]
 }

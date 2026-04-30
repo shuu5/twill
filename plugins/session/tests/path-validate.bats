@@ -64,9 +64,9 @@ teardown() {
 # RED: path-validate.sh 未実装のため fail する
 # ---------------------------------------------------------------------------
 @test "AC3(#1165): reject_dotdot — /tmp/../etc は reject する (exit != 0)" {
-    # RED: path-validate.sh が存在しなければ fail する（実装後は exit != 0 で pass）
-    [ -f "$PATH_VALIDATE_SH" ] || { false; return; }
-    run bash -c "source '$PATH_VALIDATE_SH' && validate_supervisor_dir '/tmp/../etc'"
+    # RED: path-validate.sh 未実装のため source が失敗しこのテスト自体が fail する
+    source "$PATH_VALIDATE_SH"
+    run validate_supervisor_dir '/tmp/../etc'
     [ "$status" -ne 0 ]
 }
 
@@ -76,9 +76,9 @@ teardown() {
 # RED: path-validate.sh 未実装のため fail する
 # ---------------------------------------------------------------------------
 @test "AC3(#1165): reject_relative_dotdot — ../../etc/passwd は reject する (exit != 0)" {
-    # RED: path-validate.sh が存在しなければ fail する（実装後は exit != 0 で pass）
-    [ -f "$PATH_VALIDATE_SH" ] || { false; return; }
-    run bash -c "source '$PATH_VALIDATE_SH' && validate_supervisor_dir '../../etc/passwd'"
+    # RED: path-validate.sh 未実装のため source が失敗しこのテスト自体が fail する
+    source "$PATH_VALIDATE_SH"
+    run validate_supervisor_dir '../../etc/passwd'
     [ "$status" -ne 0 ]
 }
 
@@ -88,9 +88,9 @@ teardown() {
 # RED: path-validate.sh 未実装のため fail する
 # ---------------------------------------------------------------------------
 @test "AC3(#1165): reject_outside_whitelist — /etc/foo は whitelist 外のため reject する (exit != 0)" {
-    # RED: path-validate.sh が存在しなければ fail する（実装後は exit != 0 で pass）
-    [ -f "$PATH_VALIDATE_SH" ] || { false; return; }
-    run bash -c "source '$PATH_VALIDATE_SH' && validate_supervisor_dir '/etc/foo'"
+    # RED: path-validate.sh 未実装のため source が失敗しこのテスト自体が fail する
+    source "$PATH_VALIDATE_SH"
+    run validate_supervisor_dir '/etc/foo'
     [ "$status" -ne 0 ]
 }
 
@@ -99,9 +99,9 @@ teardown() {
 # RED: path-validate.sh 未実装のため fail する
 # ---------------------------------------------------------------------------
 @test "AC3(#1165): reject_empty — 空文字は reject する (exit != 0)" {
-    # RED: path-validate.sh が存在しなければ fail する（実装後は exit != 0 で pass）
-    [ -f "$PATH_VALIDATE_SH" ] || { false; return; }
-    run bash -c "source '$PATH_VALIDATE_SH' && validate_supervisor_dir ''"
+    # RED: path-validate.sh 未実装のため source が失敗しこのテスト自体が fail する
+    source "$PATH_VALIDATE_SH"
+    run validate_supervisor_dir ''
     [ "$status" -ne 0 ]
 }
 
@@ -111,9 +111,9 @@ teardown() {
 # RED: path-validate.sh 未実装のため fail する
 # ---------------------------------------------------------------------------
 @test "AC3(#1165): reject_symlink_escape — /etc へのシンボリックリンクは reject する (exit != 0)" {
-    # RED: path-validate.sh が存在しなければ fail する（実装後は exit != 0 で pass）
+    # RED: path-validate.sh 未実装のため source が失敗しこのテスト自体が fail する
     # setup() で $TMPDIR_TEST/sym -> /etc が作成されている
-    [ -f "$PATH_VALIDATE_SH" ] || { false; return; }
-    run bash -c "source '$PATH_VALIDATE_SH' && validate_supervisor_dir '$TMPDIR_TEST/sym'"
+    source "$PATH_VALIDATE_SH"
+    run validate_supervisor_dir "$TMPDIR_TEST/sym"
     [ "$status" -ne 0 ]
 }
