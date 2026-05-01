@@ -1,0 +1,38 @@
+issue: 1223
+title: "bug(plugins-twl): session-init.sh の mode 取得失敗で spawn-controller.sh が全 controller spawn を DENY"
+mappings:
+  - ac: AC1
+    description: "--dangerously-skip-permissions のみ含む cmdline mock で session.json の mode=bypass が記録される"
+    tests:
+      - path: plugins/twl/tests/bats/scripts/su-observer-session-init-mode-extraction.bats
+        names:
+          - "AC1-dangerously-skip: --dangerously-skip-permissions のみで mode=bypass が記録される"
+          - "AC1-dangerously-skip-extra-args: 他フラグと共存しても mode=bypass が記録される"
+
+  - ac: AC2
+    description: "--permission-mode bypassPermissions が cmdline に含まれる場合、normalize により mode=bypass が記録される"
+    tests:
+      - path: plugins/twl/tests/bats/scripts/su-observer-session-init-mode-extraction.bats
+        names:
+          - "AC2-bypass-permissions-normalize: --permission-mode bypassPermissions → mode=bypass"
+
+  - ac: AC3
+    description: "--permission-mode auto または acceptEdits で mode=auto が記録される"
+    tests:
+      - path: plugins/twl/tests/bats/scripts/su-observer-session-init-mode-extraction.bats
+        names:
+          - "AC3-auto-normalize: --permission-mode auto → mode=auto が記録される"
+          - "AC3-acceptEdits-normalize: --permission-mode acceptEdits → mode=auto が記録される"
+
+  - ac: AC4
+    description: "regression: spawn-controller dry-run で session.json mode=bypass 時に DENY しない"
+    tests:
+      - path: plugins/twl/tests/bats/scripts/su-observer-parallel-check.bats
+        names:
+          - "AC4-mode-bypass-passes: session.json mode=bypass 時に _check_parallel_spawn_eligibility が exit 2 にならない"
+          - "AC4-mode-bypass-check-observer-mode: session.json mode=bypass のとき check_observer_mode が 'bypass' を返す"
+
+  - ac: AC5
+    description: "smoke: 実 cld 起動で session-init.sh → session.json mode=bypass 確認 + spawn-controller co-explore で DENY しない"
+    tests: []
+    note: "smoke テストは手動検証（observer Step 0 step 2 通過確認）"

@@ -755,6 +755,74 @@ MOCK_LIB
 # NOTE: assert_output --partial で substring 一致を確認（AC7 要件）
 # ---------------------------------------------------------------------------
 
+# ===========================================================================
+# Issue #1223 AC4 (regression): mode=bypass 時に spawn-controller が DENY しない
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Scenario AC4-mode-bypass-passes: session.json mode=bypass → DENY しない
+# GIVEN: .supervisor/session.json に {"mode":"bypass"} が書かれている
+# AND: OBSERVER_PARALLEL_CHECK_MODE は unset（session.json から実読み）
+# AND: heartbeat_alive=true, controller_count=1 （他必須条件 PASS）
+# WHEN: _check_parallel_spawn_eligibility() を呼ぶ
+# THEN: exit 2 にならない（exit 0 または exit 1 = spawn degrade は許容）
+# RED: 現時点では session-init.sh が mode=bypass を記録しないため、
+#      session.json に mode=bypass を手動で書いた場合の動作を確認する
+# ---------------------------------------------------------------------------
+
+@test "AC4-mode-bypass-passes: session.json mode=bypass 時に _check_parallel_spawn_eligibility が exit 2 にならない" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  export SUPERVISOR_DIR="$BATS_TEST_TMPDIR/.supervisor"
+  unset OBSERVER_PARALLEL_CHECK_MODE
+  mkdir -p "$SUPERVISOR_DIR"
+  echo '{"mode":"bypass"}' > "$SUPERVISOR_DIR/session.json"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    export SUPERVISOR_DIR='$SUPERVISOR_DIR'
+    unset OBSERVER_PARALLEL_CHECK_MODE
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=1 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_STATES='S-2' \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  " 2>&1
+
+  [[ "$status" -ne 2 ]] \
+    || fail "exit 2（spawn DENY）が返った — mode=bypass は spawn を許可すべきだが DENY された（Issue #1223 regression）"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario AC4-mode-bypass-check-observer-mode: check_observer_mode が bypass を正しく返す
+# GIVEN: .supervisor/session.json に {"mode":"bypass"} が書かれている
+# WHEN: check_observer_mode() を OBSERVER_PARALLEL_CHECK_MODE unset で呼ぶ
+# THEN: "bypass" を stdout に返す
+# ---------------------------------------------------------------------------
+
+@test "AC4-mode-bypass-check-observer-mode: session.json mode=bypass のとき check_observer_mode が 'bypass' を返す" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  export SUPERVISOR_DIR="$BATS_TEST_TMPDIR/.supervisor"
+  unset OBSERVER_PARALLEL_CHECK_MODE
+  mkdir -p "$SUPERVISOR_DIR"
+  echo '{"mode":"bypass"}' > "$SUPERVISOR_DIR/session.json"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    export SUPERVISOR_DIR='$SUPERVISOR_DIR'
+    unset OBSERVER_PARALLEL_CHECK_MODE
+    check_observer_mode
+  "
+
+  assert_success
+  assert_output "bypass"
+}
+
 @test "AC9 #1134-4: fail-closed exit 2 - mode 不在で exit 2 かつ stderr substring assert" {
   # AC3 前提: ps aux フォールバックブロックが削除されていること
   # RED: 現在 L97 に ps aux フォールバックが残存しているため fail する
