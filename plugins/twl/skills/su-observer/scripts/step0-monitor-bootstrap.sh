@@ -25,6 +25,10 @@ MODE="${1:-}"
 # OBSERVER_DAEMON_HEARTBEAT_STALE_SEC: heartbeat.json の staleness 判定閾値（秒）
 # cld-observe-any 側の HEARTBEAT_INTERVAL_SEC（60 秒）とは独立して読み取り側で定義する（pitfalls §11.1）
 OBSERVER_DAEMON_HEARTBEAT_STALE_SEC="${OBSERVER_DAEMON_HEARTBEAT_STALE_SEC:-120}"
+if [[ ! "$OBSERVER_DAEMON_HEARTBEAT_STALE_SEC" =~ ^[0-9]+$ ]]; then
+  echo "ERROR: OBSERVER_DAEMON_HEARTBEAT_STALE_SEC は非負整数である必要があります: $OBSERVER_DAEMON_HEARTBEAT_STALE_SEC" >&2
+  exit 2
+fi
 
 _daemon_running() {
   local hb_file="${SUPERVISOR_DIR}/observer-daemon-heartbeat.json"
