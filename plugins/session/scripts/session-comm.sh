@@ -278,6 +278,10 @@ cmd_inject() {
             lock_dir="/tmp"
         fi
     fi
+    mkdir -p "$lock_dir" 2>/dev/null || {
+        echo "Error: SESSION_COMM_LOCK_DIR '$lock_dir' is not creatable" >&2
+        exit 1
+    }
     local lock_file="${lock_dir}/session-comm-${target//[^a-zA-Z0-9]/-}.lock"
     {
         flock -w 30 9 || {
