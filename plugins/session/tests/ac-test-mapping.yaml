@@ -1,131 +1,28 @@
-# ac-test-mapping.yaml — Issue #1146: feat(observer): self-monitoring daemon (option B)
-# 生成: AC Scaffold Tests Agent
-# 対象テストファイル: plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats
-
 mappings:
-  - ac_index: 0
-    ac_text: "cld-observe-any が observer Claude session 終了時にどのシグナルで死亡するかを再現実験で確定し、pitfalls-catalog.md 付録に記録する。"
-    test_file: ""
-    test_name: ""
-    status: SKIP
-    note: "AC0 はドキュメント/実験 AC。再現実験・記録のみ。bats テスト不要。"
-    impl_files:
-      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
-
   - ac_index: 1
-    ac_text: "plugins/twl/architecture/decisions/ADR-031-observer-self-supervision.md を作成し、option 採択理由・代替案検討・boundary を記録する。"
-    test_file: ""
-    test_name: ""
-    status: SKIP
-    note: "AC1 は ADR 作成のみ。bats テスト不要。"
+    ac_text: "cld-observe-any:144 の条件から _TEST_MODE を除去し、_TEST_MODE 設定下でも --window/--pattern 不在で exit 1 する"
+    test_file: "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
+    test_name: "AC1: _TEST_MODE=1 かつ --window/--pattern 未指定 → exit 1 と validation エラー"
     impl_files:
-      - "plugins/twl/architecture/decisions/ADR-031-observer-self-supervision.md"
-      # impl_files 推定: ADR ファイルは新規作成予定（現時点では存在しない）
+      - "plugins/session/scripts/cld-observe-any"
 
   - ac_index: 2
-    ac_text: "option B: plugins/session/scripts/cld-observe-any-launcher (新規 / flock(/tmp/cld-observe-any.lock) + nohup 起動) + .supervisor/session.json schema に cld_observe_any: { pid, started_at, log_path } フィールド追加。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC2: flock による多重起動防止 — 2 回目の launcher 起動は即 exit する"
-    status: RED
-    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
+    ac_text: "スクリプト冒頭（引数解析完了直後）に unset _DAEMON_LOAD_ONLY を実行し、env から流入した値を破棄する"
+    test_file: "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
+    test_name: "AC2: env 経由 _DAEMON_LOAD_ONLY=1 は unset され --window 未指定で exit 1 になる"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
-
-  - ac_index: 2
-    ac_text: "option B: .supervisor/session.json schema に cld_observe_any: { pid, started_at, log_path } フィールド追加。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC2: launcher 起動後に .supervisor/session.json に cld_observe_any フィールドが追記される"
-    status: RED
-    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
-    impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
+      - "plugins/session/scripts/cld-observe-any"
 
   - ac_index: 3
-    ac_text: "option B: SessionStart hook で pgrep -f cld-observe-any || launcher — daemon 不在時に自動再起動。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC3: daemon 不在時に SessionStart hook が launcher を呼び出す"
-    status: RED
-    note: "launcher 未実装のため完全な検証は不可。hook ロジック自体は mock で GREEN 可能。"
+    ac_text: "_TEST_MODE set 時 LOCK_FILE を /tmp/cld-observe-any-test-$$.lock にリダイレクトし flock を実行する"
+    test_file: "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
+    test_name: "AC3: _TEST_MODE=1 かつ --window 指定 → /tmp/cld-observe-any-test-*.lock が存在する"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
-
-  - ac_index: 3
-    ac_text: "option B: SessionStart hook — daemon が存在する場合は launcher を呼び出さない。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC3: daemon 存在時は SessionStart hook が launcher を呼び出さない"
-    status: RED
-    note: "hook ロジックの負例検証。mock で動作するが実装後に regression 防止として機能。"
-    impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
+      - "plugins/session/scripts/cld-observe-any"
 
   - ac_index: 4
-    ac_text: "daemon 死亡検知時に .supervisor/events/daemon-down-<ts>.json を出力。schema: {event:\"daemon-down\", reason, ts, pid}。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC4: daemon 死亡検知時に .supervisor/events/daemon-down-<ts>.json が出力される"
-    status: RED
-    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
+    ac_text: "regression test 3 シナリオ（Scenario A/B/C）を cld-observe-any-test-mode-validate.bats に実装する"
+    test_file: "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
+    test_name: "（AC1〜AC3 テストがそのまま AC4 の regression guard として機能）"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
-
-  - ac_index: 4
-    ac_text: "daemon-down JSON schema 必須フィールド: event/reason/ts/pid。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC4: daemon-down JSON の必須フィールド検証 (event/reason/ts/pid)"
-    status: GREEN
-    note: "JSON schema 単体検証。手動生成 JSON で検証するため現時点でも PASS する。実装後は launcher 出力との結合確認が必要。"
-    impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
-
-  - ac_index: 5
-    ac_text: "daemon 起動失敗時に .supervisor/events/daemon-startup-failed-<ts>.json を出力。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC5: daemon 起動失敗時に .supervisor/events/daemon-startup-failed-<ts>.json が出力される"
-    status: RED
-    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
-    impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
-
-  - ac_index: 5
-    ac_text: "daemon-startup-failed JSON schema 必須フィールド: event/reason/ts。pid は null 可。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC5: daemon-startup-failed JSON の必須フィールド検証 (event/reason/ts)"
-    status: GREEN
-    note: "JSON schema 単体検証。手動生成 JSON で検証するため現時点でも PASS する。"
-    impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
-
-  - ac_index: 6
-    ac_text: "kill -9 でプロセス殺害 → 60 sec 以内に再起動（option B は SessionStart hook をテスト用 mock で発火させて検証）。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC6: kill -9 で daemon 殺害後 — SessionStart hook mock で再起動が確認される"
-    status: RED
-    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
-    impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
-
-  - ac_index: 6
-    ac_text: "flock による多重起動防止（option B）。"
-    test_file: "plugins/session/tests/bats/scripts/cld-observe-any-self-supervision.bats"
-    test_name: "AC6: flock 多重起動防止 — SessionStart hook が二重起動しないことの確認"
-    status: RED
-    note: "launcher 未実装のため fail する。実装後 GREEN になる。"
-    impl_files:
-      - "plugins/session/scripts/cld-observe-any-launcher"
-
-  - ac_index: 7
-    ac_text: "option B 採択時、Issue #1147 を本 Issue に統合し close する。"
-    test_file: ""
-    test_name: ""
-    status: SKIP
-    note: "AC7 はプロセス AC（Issue 統合）。bats テスト不要。"
-    impl_files: []
-    # impl_files 推定失敗: プロセス AC のため対象ファイルなし
-
-  - ac_index: 8
-    ac_text: "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §11 系列に「observer self-supervision」サブセクションを追記。"
-    test_file: ""
-    test_name: ""
-    status: SKIP
-    note: "AC8 はドキュメント更新 AC。bats テスト不要。"
-    impl_files:
-      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+      - "plugins/session/tests/cld-observe-any-test-mode-validate.bats"
