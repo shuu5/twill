@@ -363,3 +363,74 @@ EOF
   [ "${status}" -eq 0 ]
   [[ "${output}" == *"PASS: catalog integrity checks passed"* ]]
 }
+
+# ===========================================================================
+# Group 7: Issue #1218 — pitfalls-catalog.md §4.11 → §4.12 renumber
+# AC4: "Monitor 連携" セクションが §4.12 に renumber され、
+#       §4.11 は別コンテンツ（tmux kill-window / set-option 落とし穴）に割り当てられる
+# RED: renumber 前は §4.12 が存在しないため fail する
+# ===========================================================================
+
+@test "AC4(#1218): pitfalls-catalog.md に §4.12 が存在すること (RED)" {
+  # RED: §4.11 → §4.12 renumber 前は §4.12 が存在しないため fail する
+  # 実装後: "Monitor 連携" 節が §4.12 に移動し grep で検出される
+  local pitfalls="${REPO_ROOT}/skills/su-observer/refs/pitfalls-catalog.md"
+  [ -f "${pitfalls}" ]
+  grep -q "4\.12" "${pitfalls}"
+}
+
+@test "AC4(#1218): pitfalls-catalog.md §4.12 に 'Monitor 連携' または 'Monitor tool' の記述があること (RED)" {
+  # RED: renumber 前は §4.12 が存在しないため fail する
+  # 実装後: 旧 §4.11「cld-observe-any と Monitor tool の連携落とし穴」が §4.12 に移動している
+  local pitfalls="${REPO_ROOT}/skills/su-observer/refs/pitfalls-catalog.md"
+  [ -f "${pitfalls}" ]
+
+  # §4.12 のセクション開始行を取得
+  local section_line
+  section_line=$(grep -n "4\.12" "${pitfalls}" | head -1 | cut -d: -f1)
+  [[ -n "$section_line" ]] || { echo "§4.12 not found in pitfalls-catalog.md"; false; return; }
+
+  # §4.12 以降 30 行以内に Monitor 連携の記述があること
+  local section_text
+  section_text=$(tail -n "+${section_line}" "${pitfalls}" | head -30)
+  echo "$section_text" | grep -qiE "Monitor|cld-observe-any|連携"
+}
+
+@test "AC4(#1218): pitfalls-catalog.md TOC に §4.12 への cross-ref が含まれること (RED)" {
+  # RED: renumber 前は §4.12 cross-ref が存在しないため fail する
+  # 実装後: TOC または §4 冒頭の概要リストに §4.12 が記載される
+  local pitfalls="${REPO_ROOT}/skills/su-observer/refs/pitfalls-catalog.md"
+  [ -f "${pitfalls}" ]
+
+  # §4 セクション（"## 4." 行）から次のセクション（"## 5."）までの範囲を取得
+  local sec4_start sec5_start
+  sec4_start=$(grep -n "^## 4\." "${pitfalls}" | head -1 | cut -d: -f1)
+  sec5_start=$(grep -n "^## 5\." "${pitfalls}" | head -1 | cut -d: -f1)
+
+  [[ -n "$sec4_start" ]] || { echo "§4 section not found"; false; return; }
+  [[ -n "$sec5_start" ]] || { echo "§5 section not found"; false; return; }
+
+  local sec4_text
+  sec4_text=$(sed -n "${sec4_start},${sec5_start}p" "${pitfalls}")
+
+  # §4 内に §4.12 への参照または §4.12 見出しが存在すること
+  echo "$sec4_text" | grep -q "4\.12"
+}
+
+@test "AC4(#1218): pitfalls-catalog.md §4.11 が tmux kill-window / set-option 落とし穴の内容になっていること (RED)" {
+  # RED: §4.11 が renumber 前は「Monitor 連携」の内容のままのため fail する
+  # 実装後: §4.11 は新コンテンツ（tmux kill-window ambiguous target 落とし穴）になる
+  local pitfalls="${REPO_ROOT}/skills/su-observer/refs/pitfalls-catalog.md"
+  [ -f "${pitfalls}" ]
+
+  local section_line
+  section_line=$(grep -n "4\.11" "${pitfalls}" | head -1 | cut -d: -f1)
+  [[ -n "$section_line" ]] || { echo "§4.11 not found"; false; return; }
+
+  local section_text
+  section_text=$(tail -n "+${section_line}" "${pitfalls}" | head -30)
+
+  # §4.11 には tmux kill-window または set-option に関する記述があること
+  # （旧「Monitor 連携」の内容ではなく新コンテンツ）
+  echo "$section_text" | grep -qiE "kill-window|set-option|tmux.*ambiguous|ambiguous.*tmux"
+}
