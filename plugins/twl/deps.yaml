@@ -356,6 +356,7 @@ skills:
       - script: budget-monitor-watcher  # #814 Phase 1: budget 専用 Monitor watcher ループ
       - script: session-init          # #814 Phase 1: SupervisorSession 初期化
       - script: step0-memory-ambient  # #830 Wave B: Step 0 ambient-hints.md TTL チェック・書き込み
+      - script: step0-monitor-bootstrap  # #1185: Step 0 Monitor task 起動コマンド emit
       - script: observer-idle-check   # #1117: _check_idle_completed() stateless 関数 (IDLE-COMPLETED 検知)
       - script: auto-next-spawn       # #1155: Wave 候補自動 spawn（exec argv 直接渡し, allowlist 検証）
       - script: observer-wave-check   # #1155: _all_current_wave_idle_completed() Wave 全 window 判定
@@ -2938,6 +2939,12 @@ scripts:
     type: script
     path: skills/su-observer/scripts/step0-memory-ambient.sh
     description: "su-observer Step 0 ambient-hints.md TTL チェック（24h）と書き込み: --check で FRESH(exit 0)/STALE(exit 1) を返す。--write で stdin を .supervisor/ambient-hints.md に保存（TTL リセット）。STALE 時は LLM が mcp__doobidoo__memory_search を実行して --write で保存する"
+
+  # su-observer Step 0 Monitor task 起動コマンド emit (#1185)
+  step0-monitor-bootstrap:
+    type: script
+    path: skills/su-observer/scripts/step0-monitor-bootstrap.sh
+    description: "su-observer Step 0 monitor task 起動: cld-observe-any daemon + Monitor tool tail -F 連携起動コマンドを stdout に emit する。--check でデーモン死活確認（exit 0=起動済み）、引数なしで起動未済時のみコマンドを出力（SOP 用）"
 
 # エージェント（C-3 で追加）
 agents:

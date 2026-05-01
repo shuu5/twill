@@ -14,9 +14,9 @@
 set -euo pipefail
 
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
-# パストラバーサル防止: .. を含むパスを拒否
-if [[ "$SUPERVISOR_DIR" == *..* ]]; then
-  echo "ERROR: SUPERVISOR_DIR に '..' は使用できません: $SUPERVISOR_DIR" >&2
+# パス検証: 英数字・ドット・アンダースコア・ハイフン・スラッシュのみ許可（特殊文字・空白・.. 拒否）
+if [[ ! "$SUPERVISOR_DIR" =~ ^[a-zA-Z0-9._/-]+$ ]] || [[ "$SUPERVISOR_DIR" == *..* ]]; then
+  echo "ERROR: SUPERVISOR_DIR に無効な文字が含まれています: $SUPERVISOR_DIR" >&2
   exit 2
 fi
 LOG_FILE="${SUPERVISOR_DIR}/cld-observe-any.log"
