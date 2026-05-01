@@ -189,3 +189,32 @@ create_plan_yaml() {
   echo "$content" > "$SANDBOX/.autopilot/plan.yaml"
 }
 
+# ---------------------------------------------------------------------------
+# autopilot-launch test helpers (shared across autopilot-launch-*.bats)
+# ---------------------------------------------------------------------------
+
+# extracted from: autopilot-launch-merge-context.bats, autopilot-launch-snapshot-dir.bats, autopilot-launch-autopilotdir.bats
+_get_tmux_cmd() {
+  cat "$TMUX_CMD_FILE" 2>/dev/null || echo ""
+}
+
+# extracted from: autopilot-launch-merge-context.bats, autopilot-launch-snapshot-dir.bats, autopilot-launch-autopilotdir.bats
+_tmux_cmd_contains() {
+  local keyword="$1"
+  local tmux_cmd
+  tmux_cmd=$(_get_tmux_cmd)
+  echo "$tmux_cmd" | tr -d '\\' | grep -qF "$keyword"
+}
+
+# extracted from: autopilot-launch-merge-context.bats, autopilot-launch-snapshot-dir.bats
+_run_launch() {
+  local issue="${1:-42}"
+  local extra_args="${2:-}"
+  # shellcheck disable=SC2086
+  run bash "$SANDBOX/scripts/autopilot-launch.sh" \
+    --issue "$issue" \
+    --project-dir "$TEST_PROJECT_DIR" \
+    --autopilot-dir "$SANDBOX/.autopilot" \
+    $extra_args
+}
+

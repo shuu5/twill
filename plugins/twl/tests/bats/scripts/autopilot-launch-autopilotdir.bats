@@ -65,9 +65,13 @@ exit 0
 STUB
   chmod +x "$STUB_BIN/cld"
 
-  # gh スタブ: quick ラベルなし（デフォルト）
+  # gh スタブ: project item-list + ラベルなし
   stub_command "gh" '
     case "$*" in
+      *"project item-list"*)
+        echo "{\"items\":[{\"id\":\"I_7\",\"content\":{\"number\":7,\"type\":\"Issue\"},\"status\":\"In Progress\"},{\"id\":\"I_10\",\"content\":{\"number\":10,\"type\":\"Issue\"},\"status\":\"In Progress\"},{\"id\":\"I_42\",\"content\":{\"number\":42,\"type\":\"Issue\"},\"status\":\"In Progress\"},{\"id\":\"I_55\",\"content\":{\"number\":55,\"type\":\"Issue\"},\"status\":\"In Progress\"},{\"id\":\"I_100\",\"content\":{\"number\":100,\"type\":\"Issue\"},\"status\":\"In Progress\"}]}" ;;
+      *"repo view"*"--json owner"*)
+        echo "shuu5" ;;
       *"issue view"*"--json labels"*"--jq"*)
         echo "" ;;
       *)
@@ -119,6 +123,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 # autopilot-launch.sh を実行してtmux new-windowコマンドを記録する
+# NOTE: 3引数版（issue, autopilot_dir, extra_args）。common の2引数版とは別シグネチャのため保持。
 _run_launch() {
   local issue="${1:-42}"
   local autopilot_dir="${2:-$CUSTOM_AUTOPILOT_DIR}"
@@ -129,20 +134,6 @@ _run_launch() {
     --project-dir "$TEST_PROJECT_DIR" \
     --autopilot-dir "$autopilot_dir" \
     $extra_args
-}
-
-# tmux new-window コマンド全体を返す
-_get_tmux_cmd() {
-  cat "$TMUX_CMD_FILE" 2>/dev/null || echo ""
-}
-
-# tmux コマンド内に指定キーワードが含まれるか確認
-# printf '%q' によるバックスラッシュエスケープを除去してから検索する
-_tmux_cmd_contains() {
-  local keyword="$1"
-  local tmux_cmd
-  tmux_cmd=$(_get_tmux_cmd)
-  echo "$tmux_cmd" | tr -d '\\' | grep -qF "$keyword"
 }
 
 # ---------------------------------------------------------------------------
