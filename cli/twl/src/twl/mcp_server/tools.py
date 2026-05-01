@@ -1005,7 +1005,7 @@ def twl_check_completeness_handler(manifest_context: str) -> dict:
     """validation module: specialist completeness check via flock-guarded manifest files."""
     import fcntl
 
-    if not _VALID_MANIFEST_CTX_RE.match(manifest_context or ""):
+    if not manifest_context or not _VALID_MANIFEST_CTX_RE.match(manifest_context):
         return {"ok": False, "error": f"invalid manifest_context: {manifest_context!r}", "error_type": "arg_error", "exit_code": 2}
 
     expected_path = Path(f"/tmp/.specialist-manifest-{manifest_context}.txt")
