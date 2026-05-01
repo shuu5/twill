@@ -136,7 +136,7 @@ teardown() {
 # RED: SESSION_INIT_CMDLINE_OVERRIDE 未サポートのため fail する
 # ---------------------------------------------------------------------------
 
-@test "AC3-auto-acceptEdits-normalize: --permission-mode auto → mode=auto が記録される" {
+@test "AC3-auto-normalize: --permission-mode auto → mode=auto が記録される" {
   export SESSION_INIT_CMDLINE_OVERRIDE="node cld --permission-mode auto"
   export SUPERVISOR_DIR="$SANDBOX/.supervisor"
 
@@ -163,7 +163,7 @@ teardown() {
 # RED: normalize ロジック（acceptEdits→auto）が未実装のため fail する
 # ---------------------------------------------------------------------------
 
-@test "AC3-auto-acceptEdits-normalize: --permission-mode acceptEdits → mode=auto が記録される" {
+@test "AC3-acceptEdits-normalize: --permission-mode acceptEdits → mode=auto が記録される" {
   export SESSION_INIT_CMDLINE_OVERRIDE="node cld --permission-mode acceptEdits"
   export SUPERVISOR_DIR="$SANDBOX/.supervisor"
 

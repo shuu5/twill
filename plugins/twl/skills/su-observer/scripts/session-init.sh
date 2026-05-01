@@ -7,6 +7,11 @@
 set -euo pipefail
 
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+# パストラバーサル防止（step0-monitor-bootstrap.sh に合わせたバリデーション）
+if [[ ! "$SUPERVISOR_DIR" =~ ^[a-zA-Z0-9._/=-]+$ ]] || [[ "$SUPERVISOR_DIR" == *..* ]]; then
+  echo "[session-init] ERROR: SUPERVISOR_DIR に不正な文字または '..' が含まれています: $SUPERVISOR_DIR" >&2
+  exit 1
+fi
 mkdir -p "$SUPERVISOR_DIR"
 
 # Claude Code session ID と tmux window 名を取得
@@ -28,10 +33,12 @@ if [[ -n "$_CMDLINE_SRC" ]]; then
     OBSERVER_MODE="bypass"
   else
     _RAW_MODE=$(echo "$_CMDLINE_SRC" | grep -oP '(?:--permission-mode )\K\S+' || echo "")
+    # 許可値のみを通過させる（ホワイトリスト）
     case "$_RAW_MODE" in
       bypassPermissions) OBSERVER_MODE="bypass" ;;
       acceptEdits)       OBSERVER_MODE="auto" ;;
-      *)                 OBSERVER_MODE="$_RAW_MODE" ;;
+      auto|bypass|default|plan) OBSERVER_MODE="$_RAW_MODE" ;;
+      *)                 OBSERVER_MODE="" ;;
     esac
   fi
   [[ -z "$OBSERVER_MODE" ]] && echo "[session-init] WARN: permission mode が cmdline に見つかりません（mode は空文字で記録）" >&2 || true
