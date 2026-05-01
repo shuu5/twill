@@ -56,9 +56,10 @@ _daemon_running() {
   fi
 
   # (d) JSON 内の writer == "cld-observe-any" かつ pid が pgrep 結果に含まれる
+  # || true: grep no-match (exit 1) が set -euo pipefail 下でスクリプトを exit させないよう抑制
   local hb_writer hb_pid
-  hb_writer=$(grep -o '"writer":"[^"]*"' "$hb_file" 2>/dev/null | cut -d'"' -f4)
-  hb_pid=$(grep -o '"pid":[0-9]*' "$hb_file" 2>/dev/null | grep -o '[0-9]*$')
+  hb_writer=$(grep -o '"writer":"[^"]*"' "$hb_file" 2>/dev/null | cut -d'"' -f4 || true)
+  hb_pid=$(grep -o '"pid":[0-9]*' "$hb_file" 2>/dev/null | grep -o '[0-9]*$' || true)
 
   [[ "$hb_writer" == "cld-observe-any" ]] || return 1
   [[ -n "$hb_pid" ]] || return 1
