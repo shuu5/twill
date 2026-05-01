@@ -124,6 +124,11 @@ tests:
     path: tests/session-comm-usage-typo-1066.bats
     description: "session-comm.sh ファイルヘッダ usage の inject-file 行に --wait SECONDS 重複がないことを検証（#1066）"
 
+  session-comm-lock-dir-validation-test:
+    type: test
+    path: tests/session-comm-lock-dir-validation.bats
+    description: "SESSION_COMM_LOCK_DIR 不在時の mkdir-p 自動作成・作成不可時の明示エラー検証（#1051）"
+
   lib-tmux-resolve-test:
     type: test
     path: tests/lib-tmux-resolve.bats
