@@ -56,10 +56,12 @@ setup() {
 }
 
 teardown() {
-  # mock daemon が残存している場合は cleanup
+  # mock daemon が残存している場合は cleanup（MOCK_PID 追跡分）
   if [[ -n "${MOCK_PID:-}" ]] && kill -0 "${MOCK_PID}" 2>/dev/null; then
     kill "${MOCK_PID}" 2>/dev/null || true
   fi
+  # フォールバック: スクリプトパスにマッチする残留 daemon を全 kill
+  pkill -f "mock-cld-observe-any" 2>/dev/null || true
   rm -rf "${TMPDIR_TEST}"
 }
 
@@ -100,8 +102,8 @@ teardown() {
 #   exit 0 かつ PID > 0 を返すことを確認する。
 #   実 cld-observe-any は CI 環境で起動不可のため mock で代替する。
 #
-#   mock 起動形式: `bash -c 'echo cld-observe-any-mock; sleep 9999' &`
-#   argv に 'cld-observe-any' を含めることで pgrep -f がマッチする。
+#   mock 起動形式: `bash "${MOCK_DAEMON}" &`
+#   スクリプトパスに 'cld-observe-any' を含めることで pgrep -f がマッチする。
 # ===========================================================================
 
 @test "ac5.2: mock cld-observe-any daemon starts as background process" {
@@ -149,7 +151,9 @@ teardown() {
 @test "ac5.2: cld-observe-any mock is stopped when killed" {
   # AC: mock daemon を kill すると pgrep がマッチしなくなる (cleanup 動作確認)
   bash "${MOCK_DAEMON}" &
-  local mock_pid=$!
+  MOCK_PID=$!
+  export MOCK_PID
+  local mock_pid="${MOCK_PID}"
 
   # 起動直後は pgrep でマッチする
   sleep 0.3
@@ -240,7 +244,7 @@ print('OK' if not bad else 'FAIL:' + str(bad[:3]))
 
   # catalog から section 番号を抽出してソート
   local catalog_sections
-  catalog_sections=$(grep -oE "^\| [0-9]+\.[0-9]+" "${PITFALLS_CATALOG}" | tr -d '| ' | sort)
+  catalog_sections=$(grep -oE "^\| [0-9]+\.[0-9]+" "${PITFALLS_CATALOG}" | tr -d '| ' | LC_ALL=C sort)
 
   # snapshot から section 番号を抽出してソート
   local snapshot_sections

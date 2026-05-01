@@ -25,10 +25,12 @@ mappings:
     test_file: "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
     test_name: "ac5.4: spawn-controller.sh output contains '>>> Monitor 再 arm 必要' (Sub 2 feature)"
     impl_files:
-      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+      - "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
+    # spawn-controller.sh 実装は Sub 2 (#1186) で担当。本 PR は conditional-skip テストのみ。
   - ac_index: 5
     ac_text: "AC5.5: bats 全 PASS（local + CI）"
     test_file: "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
     test_name: "(process AC - no separate test, verified by running all above)"
-    impl_files: []
-    # impl_files 推定失敗: プロセス AC（テスト全 PASS を CI で確認）
+    impl_files:
+      - "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
+    # CI 収集: run-tests.sh find bats/ -name '*.bats' で observer/ を再帰収集
