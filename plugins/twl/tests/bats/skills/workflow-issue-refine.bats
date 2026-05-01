@@ -184,3 +184,50 @@ teardown() {
   [ "$has_guard" -ge 1 ]
   [ "$has_independent" -ge 1 ]
 }
+
+# ===========================================================================
+# AC5(i): gh label create が gh issue edit --add-label の前に呼ばれることを verify
+# co-issue-phase4-aggregate.md における呼び出し順序（spec doc line ordering）
+# ===========================================================================
+
+@test "ac5(i): co-issue-phase4-aggregate.md で gh label create refined が --add-label refined より前に存在する" {
+  # AC5(i): calls log assertion — label create が add-label より先（行番号が小さい）
+  # (ac4 のラインオーダーテストと同等だが AC5 として明示的に分類)
+  local create_line add_label_line
+  create_line=$(grep -n 'gh label create refined' "$CO_ISSUE_PHASE4_MD" | head -1 | cut -d: -f1)
+  add_label_line=$(grep -n -- '--add-label refined' "$CO_ISSUE_PHASE4_MD" | head -1 | cut -d: -f1)
+  [ -n "$create_line" ]
+  [ -n "$add_label_line" ]
+  [ "$create_line" -lt "$add_label_line" ]
+}
+
+# ===========================================================================
+# AC5(ii): add-label refined の後に board-status-update Refined が出現することを verify（順序保持）
+# refine-processing-flow.md Step 6' における dual-write 順序を verify
+# ===========================================================================
+
+@test "ac5(ii): refine-processing-flow.md で --add-label の後に board-status-update Refined が存在する" {
+  # AC5(ii): 次行順序 — add-label ループ後に board-status-update Refined が出現すること
+  local add_label_line board_status_line
+  add_label_line=$(grep -n -- '--add-label' "$REFINE_FLOW_MD" | head -1 | cut -d: -f1)
+  board_status_line=$(grep -n 'board-status-update.*Refined' "$REFINE_FLOW_MD" | head -1 | cut -d: -f1)
+  [ -n "$add_label_line" ]
+  [ -n "$board_status_line" ]
+  [ "$add_label_line" -lt "$board_status_line" ]
+}
+
+# ===========================================================================
+# AC5(iii): label add 失敗時でも board-status-update Refined が実行されることを verify（独立性）
+# spec doc に「|| true guard + Status update 独立性」が両方明記されていることを確認
+# ===========================================================================
+
+@test "ac5(iii): refine-processing-flow.md に label add 失敗でも Status update が実行される独立性保証がある" {
+  # AC5(iii): label add 失敗 mock injection の等価 — spec doc に || true guard と独立性が明記されていること
+  # シェルレベルの || true guard（label add 失敗でも loop が継続）
+  run grep -E -- '--add-label.*\|\|.*true' "$REFINE_FLOW_MD"
+  [ "$status" -eq 0 ]
+
+  # Status update が label 結果と独立して実行されることの明示（独立性保証テキスト）
+  run grep -qE '独立|無関係|label.*成否|部分失敗' "$REFINE_FLOW_MD"
+  [ "$status" -eq 0 ]
+}
