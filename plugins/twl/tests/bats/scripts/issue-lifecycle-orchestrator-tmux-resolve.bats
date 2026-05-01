@@ -44,6 +44,8 @@ teardown() {
     local KILL_LOG_FILE
     KILL_LOG_FILE="$(mktemp)"
     local WINDOW_NAME="wt-test-multi-session"
+    # LIB_PATH を heredoc 外で計算（BATS_TEST_FILENAME ベース - codex-reviewer CRITICAL 修正）
+    local lib_path="$REPO_ROOT/../session/scripts/lib/tmux-resolve.sh"
 
     # IN/draft.md を含む subdir を作成（orchestrator がスキャンする対象）
     mkdir -p "$PER_ISSUE_DIR_LOCAL/issue-001/IN"
@@ -55,6 +57,7 @@ teardown() {
     run bash <<EOF
 KILL_LOG_FILE="$KILL_LOG_FILE"
 WINDOW_NAME="$WINDOW_NAME"
+LIB_PATH="$lib_path"
 
 # tmux mock: list-windows -a に同名 window が s1 と s2 の両 session に存在する
 tmux() {
@@ -88,9 +91,6 @@ tmux() {
     esac
 }
 export -f tmux
-
-# lib/tmux-resolve.sh が session:index 形式で kill することを直接テスト
-LIB_PATH="$(cd "\$(dirname "\$0")" && pwd)/../../session/scripts/lib/tmux-resolve.sh"
 
 if [[ ! -f "\$LIB_PATH" ]]; then
     echo "FAIL: lib/tmux-resolve.sh が存在しない（実装前）"

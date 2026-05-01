@@ -150,7 +150,34 @@ observer-side の A3 mtime + A1 多指標パターンは、orchestrator-side の
 
 注: `issue-lifecycle-orchestrator.sh` の `DEBOUNCE_TRANSIENT_SEC=120s`（LLM thinking time 中の transient state 保護、Worker kill 防止文脈）とは別文脈。orchestrator stagnate 検知の mtime AND 判定は inject-next-workflow.sh の RESOLVE_FAILED カウント制御であり、debounce 対象のプロセス kill とは独立した機構である。
 
-#### §4.11 cld-observe-any と Monitor tool の連携落とし穴
+#### §4.11 tmux kill-window / set-option の target 解決落とし穴
+
+**問題**: `tmux kill-window -t "$window_name"` / `tmux set-option -t "$window_name"` がウィンドウ名文字列を直接 `-t` に渡している。複数 tmux session に同名 window が存在する場合、ambiguous target エラーまたは誤 kill が発生する（Issue #1218、Issue #1142）。
+
+**正規解決パターン**: `plugins/session/scripts/lib/tmux-resolve.sh` の `_kill_window_safe()` / `_resolve_window_target()` を使用する。
+
+```bash
+source "${SESSION_SCRIPTS}/lib/tmux-resolve.sh"
+
+# 旧（危険）:
+tmux kill-window -t "$window_name" 2>/dev/null || true
+
+# 新（安全）:
+_kill_window_safe "$window_name"
+
+# set-option の場合:
+if target=$(_resolve_window_target "$window_name"); then
+    tmux set-option -t "$target" remain-on-exit on
+fi
+```
+
+**適用 callsite**: `issue-lifecycle-orchestrator.sh` 11 箇所（L368, L372, L411, L526, L553, L559, L605, L645, L654, L679, L718）
+
+**参照**: PR #1229、`plugins/session/tests/lib-tmux-resolve.bats`
+
+---
+
+#### §4.12 cld-observe-any と Monitor tool の連携落とし穴
 
 **背景事象（2026-04-29 22:57 〜 2026-04-30 02:39、3h45m）**:
 Wave 5a Pilot 起動時に `cld-observe-any` を `--event-dir`/`--notify-dir` 付きで起動したが、Monitor tool との連携経路（stdout tail）が catalog に未定義だったため、`[MENU-READY]` が 60+ 件 emit されたにもかかわらず Monitor tool 側は無音となった。3h45m にわたって AskUserQuestion 検知が失敗し、observer 手動 `tmux capture-pane` 介入によって 5+ 分遅延の AskUserQuestion が解消された。root cause は「cld-observe-any → Monitor tool 連携経路の catalog 未定義」（doobidoo hash `726db016`）。
