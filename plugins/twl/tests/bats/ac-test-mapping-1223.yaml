@@ -21,8 +21,8 @@ mappings:
     tests:
       - path: plugins/twl/tests/bats/scripts/su-observer-session-init-mode-extraction.bats
         names:
-          - "AC3-auto-acceptEdits-normalize: --permission-mode auto → mode=auto が記録される"
-          - "AC3-auto-acceptEdits-normalize: --permission-mode acceptEdits → mode=auto が記録される"
+          - "AC3-auto-normalize: --permission-mode auto → mode=auto が記録される"
+          - "AC3-acceptEdits-normalize: --permission-mode acceptEdits → mode=auto が記録される"
 
   - ac: AC4
     description: "regression: spawn-controller dry-run で session.json mode=bypass 時に DENY しない"
