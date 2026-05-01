@@ -525,10 +525,11 @@ def twl_mergegate_run_handler(
         except (subprocess.TimeoutExpired, json.JSONDecodeError, Exception) as e:
             return {"ok": False, "error": str(e), "error_type": "pr_resolve_error", "exit_code": 2}
 
-        from twl.autopilot.mergegate import MergeGate, MergeGateError
+        import twl.autopilot.mergegate as _mergegate_mod
+        import twl.autopilot.mergegate_guards as _mgguards
         ap_dir = Path(autopilot_dir).expanduser().resolve() if autopilot_dir else None
         try:
-            mg = MergeGate(
+            mg = _mergegate_mod.MergeGate(
                 pr_number=str(pr_number),
                 branch=branch,
                 issue=issue,
@@ -541,7 +542,7 @@ def twl_mergegate_run_handler(
             if code == 0:
                 return {"ok": True, "message": "merge completed (exit 0)", "exit_code": 0}
             return {"ok": False, "error": f"merge_gate exit code {code}", "error_type": f"merge_exit_{code}", "exit_code": code}
-        except MergeGateError as e:
+        except _mgguards.MergeGateError as e:
             return {"ok": False, "error": str(e), "error_type": "merge_gate_error", "exit_code": 1}
 
     if timeout_sec is None:
@@ -583,10 +584,11 @@ def twl_mergegate_reject_handler(
         except (subprocess.TimeoutExpired, json.JSONDecodeError, Exception) as e:
             return {"ok": False, "error": str(e), "error_type": "pr_resolve_error", "exit_code": 2}
 
-        from twl.autopilot.mergegate import MergeGate, MergeGateError
+        import twl.autopilot.mergegate as _mergegate_mod
+        import twl.autopilot.mergegate_guards as _mgguards
         ap_dir = Path(autopilot_dir).expanduser().resolve() if autopilot_dir else None
         try:
-            mg = MergeGate(
+            mg = _mergegate_mod.MergeGate(
                 pr_number=str(pr_number),
                 branch=branch,
                 issue=issue,
@@ -600,7 +602,7 @@ def twl_mergegate_reject_handler(
             if code == 0:
                 return {"ok": True, "message": "rejected (exit 0)", "exit_code": 0}
             return {"ok": False, "error": f"merge_gate exit code {code}", "error_type": f"merge_exit_{code}", "exit_code": code}
-        except MergeGateError as e:
+        except _mgguards.MergeGateError as e:
             return {"ok": False, "error": str(e), "error_type": "merge_gate_error", "exit_code": 1}
 
     if timeout_sec is None:
@@ -642,10 +644,11 @@ def twl_mergegate_reject_final_handler(
         except (subprocess.TimeoutExpired, json.JSONDecodeError, Exception) as e:
             return {"ok": False, "error": str(e), "error_type": "pr_resolve_error", "exit_code": 2}
 
-        from twl.autopilot.mergegate import MergeGate, MergeGateError
+        import twl.autopilot.mergegate as _mergegate_mod
+        import twl.autopilot.mergegate_guards as _mgguards
         ap_dir = Path(autopilot_dir).expanduser().resolve() if autopilot_dir else None
         try:
-            mg = MergeGate(
+            mg = _mergegate_mod.MergeGate(
                 pr_number=str(pr_number),
                 branch=branch,
                 issue=issue,
@@ -659,7 +662,7 @@ def twl_mergegate_reject_final_handler(
             if code == 0:
                 return {"ok": True, "message": "reject_final completed (exit 0)", "exit_code": 0}
             return {"ok": False, "error": f"merge_gate exit code {code}", "error_type": f"merge_exit_{code}", "exit_code": code}
-        except MergeGateError as e:
+        except _mgguards.MergeGateError as e:
             return {"ok": False, "error": str(e), "error_type": "merge_gate_error", "exit_code": 1}
 
     if timeout_sec is None:
@@ -891,6 +894,148 @@ def twl_worktree_validate_branch_name_handler(
         return {"ok": False, "error": str(e), "error_type": "arg_error", "exit_code": 2}
 
 
+# ---------------------------------------------------------------------------
+# Issue #1224: 5 validation tool handlers
+# ---------------------------------------------------------------------------
+
+
+def twl_validate_deps_handler(plugin_root: str) -> dict:
+    """validation module: deps.yaml syntax validation for plugin structure."""
+    from twl.validation.validate import validate_types, validate_body_refs, validate_v3_schema
+    from twl.chain.validate import chain_validate
+    from twl.core.plugin import get_deps_version
+    from twl.core.output import build_envelope, violations_to_items
+
+    p, deps, graph, plugin_name = _load_plugin_ctx(plugin_root)
+    _ok, violations, xref_warnings = validate_types(deps, graph, p)
+    _ok2, body_violations = validate_body_refs(deps, p)
+    violations.extend(body_violations)
+    _ok3, v3_violations = validate_v3_schema(deps)
+    violations.extend(v3_violations)
+    cv_criticals, cv_warnings, _cv_infos = chain_validate(deps, p)
+    violations.extend(cv_criticals)
+    violations.extend(cv_warnings)
+    exit_code = 1 if violations else 0
+    items = violations_to_items(violations)
+    items.extend(violations_to_items(xref_warnings, "warning"))
+    return build_envelope("validate_deps", get_deps_version(deps), plugin_name, items, exit_code)
+
+
+def twl_validate_merge_handler(
+    branch: str,
+    base: str = "main",
+    timeout_sec: int | None = 300,
+) -> dict:
+    """validation module: merge pre-flight guard (2-guard scope only)."""
+    import os as _os
+
+    if timeout_sec is not None and timeout_sec <= 0:
+        return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
+
+    def _inner() -> dict:
+        import twl.autopilot.mergegate_guards as _mgguards2
+        cwd = _os.getcwd()
+        try:
+            _mgguards2._check_worktree_guard(cwd)
+            _mgguards2._check_worker_window_guard()
+            return {
+                "ok": True,
+                "branch": branch,
+                "base": base,
+                "exit_code": 0,
+                "summary": "merge pre-flight guards passed",
+            }
+        except _mgguards2.MergeGateError as e:
+            return {"ok": False, "error": str(e), "error_type": "merge_guard_error", "exit_code": 1}
+        except Exception as e:
+            return {"ok": False, "error": str(e), "error_type": "error", "exit_code": 1}
+
+    if timeout_sec is None:
+        return _inner()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+        future = ex.submit(_inner)
+        try:
+            return future.result(timeout=timeout_sec)
+        except concurrent.futures.TimeoutError:
+            return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
+
+
+def twl_validate_commit_handler(
+    message: str,
+    files: list[str],
+    timeout_sec: int | None = 300,
+) -> dict:
+    """validation module: commit message and file deps validation (in-process, no subprocess)."""
+    if timeout_sec is not None and timeout_sec <= 0:
+        return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
+
+    def _inner() -> dict:
+        from twl.validation.validate import validate_v3_schema
+        import yaml
+        all_violations: list[str] = []
+        for f in files:
+            p = Path(f).expanduser().resolve()
+            if not p.exists() or p.name != "deps.yaml":
+                continue
+            try:
+                deps = yaml.safe_load(p.read_text())
+                if isinstance(deps, dict):
+                    _, v3_violations = validate_v3_schema(deps)
+                    all_violations.extend(v3_violations)
+            except Exception as e:
+                all_violations.append(f"parse error in {f}: {e}")
+        ok = len(all_violations) == 0
+        return {
+            "ok": ok,
+            "items": all_violations,
+            "exit_code": 0 if ok else 1,
+            "summary": f"{len(all_violations)} violation(s) found",
+        }
+
+    if timeout_sec is None:
+        return _inner()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+        future = ex.submit(_inner)
+        try:
+            return future.result(timeout=timeout_sec)
+        except concurrent.futures.TimeoutError:
+            return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
+
+
+def twl_check_completeness_handler(manifest_context: str) -> dict:
+    """validation module: specialist completeness check via flock-guarded manifest files."""
+    import fcntl
+
+    expected_path = Path(f"/tmp/.specialist-manifest-{manifest_context}.txt")
+    actual_path = Path(f"/tmp/.specialist-spawned-{manifest_context}.txt")
+
+    def _read_locked(path: Path) -> list[str]:
+        if not path.exists():
+            return []
+        with path.open("r") as fd:
+            fcntl.flock(fd, fcntl.LOCK_SH)
+            try:
+                return [line.strip() for line in fd.readlines() if line.strip()]
+            finally:
+                fcntl.flock(fd, fcntl.LOCK_UN)
+
+    expected = _read_locked(expected_path)
+    actual = set(_read_locked(actual_path))
+    missing = [name for name in expected if name not in actual]
+    ok = len(missing) == 0
+    return {
+        "ok": ok,
+        "items": missing,
+        "exit_code": 0 if ok else 1,
+        "summary": f"{len(missing)} specialist(s) missing",
+    }
+
+
+def twl_check_specialist_handler(manifest_context: str) -> dict:
+    """validation module: specialist check (stub — detailed spec in future Issue)."""
+    return {"ok": True, "items": [], "exit_code": 0, "summary": "stub: not yet implemented"}
+
+
 # MCP tool registration — requires fastmcp (optional dep)
 try:
     from fastmcp import FastMCP as _FastMCP
@@ -909,7 +1054,7 @@ try:
 
     @mcp.tool()
     def twl_check(plugin_root: str) -> str:
-        """Check file existence and chain integrity for a plugin."""
+        """plugin file integrity check: file existence and chain integrity for a plugin."""
         return json.dumps(twl_check_handler(plugin_root=plugin_root), ensure_ascii=False)
 
     @mcp.tool()
@@ -1028,6 +1173,31 @@ try:
         """Audit autopilot session.json for structural integrity (R1-R4 rules). Idempotent."""
         return json.dumps(twl_audit_session_handler(autopilot_dir=autopilot_dir), ensure_ascii=False)
 
+    @mcp.tool()
+    def twl_validate_deps(plugin_root: str) -> str:
+        """validation module: deps.yaml syntax validation for plugin structure."""
+        return json.dumps(twl_validate_deps_handler(plugin_root=plugin_root), ensure_ascii=False)
+
+    @mcp.tool()
+    def twl_validate_merge(branch: str, base: str = "main", timeout_sec: int | None = 300) -> str:
+        """validation module: merge pre-flight guard (2-guard scope only)."""
+        return json.dumps(twl_validate_merge_handler(branch=branch, base=base, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    @mcp.tool()
+    def twl_validate_commit(message: str, files: list[str], timeout_sec: int | None = 300) -> str:
+        """validation module: commit message and file deps validation (in-process, no subprocess)."""
+        return json.dumps(twl_validate_commit_handler(message=message, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    @mcp.tool()
+    def twl_check_completeness(manifest_context: str) -> str:
+        """validation module: specialist completeness check via flock-guarded manifest files."""
+        return json.dumps(twl_check_completeness_handler(manifest_context=manifest_context), ensure_ascii=False)
+
+    @mcp.tool()
+    def twl_check_specialist(manifest_context: str) -> str:
+        """validation module: specialist check (stub — detailed spec in future Issue)."""
+        return json.dumps(twl_check_specialist_handler(manifest_context=manifest_context), ensure_ascii=False)
+
 except ImportError:
     mcp = None  # type: ignore[assignment]
 
@@ -1040,7 +1210,7 @@ except ImportError:
         return json.dumps(twl_audit_handler(plugin_root=plugin_root), ensure_ascii=False)
 
     def twl_check(plugin_root: str) -> str:  # type: ignore[misc]
-        """Check file existence and chain integrity (fastmcp not installed)."""
+        """plugin file integrity check: file existence and chain integrity (fastmcp not installed)."""
         return json.dumps(twl_check_handler(plugin_root=plugin_root), ensure_ascii=False)
 
     def twl_state_read(  # type: ignore[misc]
@@ -1139,6 +1309,26 @@ except ImportError:
     def twl_audit_session(autopilot_dir: str | None = None) -> str:  # type: ignore[misc]
         """Audit autopilot session.json for structural integrity (R1-R4 rules). Idempotent."""
         return json.dumps(twl_audit_session_handler(autopilot_dir=autopilot_dir), ensure_ascii=False)
+
+    def twl_validate_deps(plugin_root: str) -> str:  # type: ignore[misc]
+        """validation module: deps.yaml syntax validation for plugin structure."""
+        return json.dumps(twl_validate_deps_handler(plugin_root=plugin_root), ensure_ascii=False)
+
+    def twl_validate_merge(branch: str, base: str = "main", timeout_sec: int | None = 300) -> str:  # type: ignore[misc]
+        """validation module: merge pre-flight guard (2-guard scope only)."""
+        return json.dumps(twl_validate_merge_handler(branch=branch, base=base, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    def twl_validate_commit(message: str, files: list[str], timeout_sec: int | None = 300) -> str:  # type: ignore[misc]
+        """validation module: commit message and file deps validation (in-process, no subprocess)."""
+        return json.dumps(twl_validate_commit_handler(message=message, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    def twl_check_completeness(manifest_context: str) -> str:  # type: ignore[misc]
+        """validation module: specialist completeness check via flock-guarded manifest files."""
+        return json.dumps(twl_check_completeness_handler(manifest_context=manifest_context), ensure_ascii=False)
+
+    def twl_check_specialist(manifest_context: str) -> str:  # type: ignore[misc]
+        """validation module: specialist check (stub — detailed spec in future Issue)."""
+        return json.dumps(twl_check_specialist_handler(manifest_context=manifest_context), ensure_ascii=False)
 
 # Communication tools (tools_comm.py) — outside the try/except gate to avoid double-gate (AC5-8 Option A)
 from .tools_comm import *  # noqa: E402, F401, F403
