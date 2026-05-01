@@ -13,6 +13,7 @@ setup() {
     PLUGIN_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
     SCRIPT="$PLUGIN_ROOT/scripts/session-comm.sh"
     SANDBOX="$(mktemp -d)"
+    unset _PERM_DENY_PARENT
     export SANDBOX SCRIPT PLUGIN_ROOT
 }
 
@@ -40,8 +41,8 @@ teardown() {
 
 @test "session-comm-lock-dir[structural][RED]: mkdir -p 失敗時の Error メッセージが含まれる" {
     # エラーメッセージの存在を構造的に確認
-    grep -F "SESSION_COMM_LOCK_DIR" "$SCRIPT" | grep -F "is not creatable" || {
-        echo "FAIL: session-comm.sh に 'is not creatable' エラーメッセージが含まれていない" >&2
+    grep -F "is not creatable" "$SCRIPT" | grep -F "SESSION_COMM_LOCK_DIR" || {
+        echo "FAIL: session-comm.sh に 'is not creatable' + 'SESSION_COMM_LOCK_DIR' エラーメッセージが含まれていない" >&2
         return 1
     }
 }
@@ -59,7 +60,7 @@ teardown() {
     local nonexistent_dir="${SANDBOX}/nonexistent_lock_dir_$$"
     rm -rf "$nonexistent_dir" 2>/dev/null || true
 
-    # cmd_inject の lock_dir validation ブロックをサブシェルで再現
+    # cmd_inject の lock_dir validation ブロックをサブシェルで再現（session-comm.sh L274-284 と同期保持必要）
     # 実装後は mkdir -p が走り、ディレクトリが作成される
     # 実装前は mkdir -p が存在せず、ディレクトリが作成されない -> FAIL
     local created
@@ -118,7 +119,7 @@ teardown() {
     chmod 000 "$perm_deny_parent"
     local perm_deny_sub="${perm_deny_parent}/sub"
 
-    # cmd_inject の lock_dir validation ブロックをサブシェルで再現
+    # cmd_inject の lock_dir validation ブロックをサブシェルで再現（session-comm.sh L274-284 と同期保持必要）
     # 実装後は mkdir -p が失敗し、Error メッセージを stderr に出力して exit 1 する
     local stderr_output
     local exit_code=0
