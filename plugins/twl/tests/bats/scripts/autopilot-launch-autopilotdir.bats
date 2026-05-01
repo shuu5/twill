@@ -119,6 +119,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 # autopilot-launch.sh を実行してtmux new-windowコマンドを記録する
+# NOTE: 3引数版（issue, autopilot_dir, extra_args）。common の2引数版とは別シグネチャのため保持。
 _run_launch() {
   local issue="${1:-42}"
   local autopilot_dir="${2:-$CUSTOM_AUTOPILOT_DIR}"
@@ -129,20 +130,6 @@ _run_launch() {
     --project-dir "$TEST_PROJECT_DIR" \
     --autopilot-dir "$autopilot_dir" \
     $extra_args
-}
-
-# tmux new-window コマンド全体を返す
-_get_tmux_cmd() {
-  cat "$TMUX_CMD_FILE" 2>/dev/null || echo ""
-}
-
-# tmux コマンド内に指定キーワードが含まれるか確認
-# printf '%q' によるバックスラッシュエスケープを除去してから検索する
-_tmux_cmd_contains() {
-  local keyword="$1"
-  local tmux_cmd
-  tmux_cmd=$(_get_tmux_cmd)
-  echo "$tmux_cmd" | tr -d '\\' | grep -qF "$keyword"
 }
 
 # ---------------------------------------------------------------------------

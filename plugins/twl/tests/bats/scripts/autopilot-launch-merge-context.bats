@@ -108,37 +108,6 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# ヘルパー: autopilot-launch.sh を実行して tmux new-window コマンドを記録する
-# ---------------------------------------------------------------------------
-
-_run_launch() {
-  local issue="${1:-42}"
-  local extra_args="${2:-}"
-  # shellcheck disable=SC2086
-  run bash "$SANDBOX/scripts/autopilot-launch.sh" \
-    --issue "$issue" \
-    --project-dir "$TEST_PROJECT_DIR" \
-    --autopilot-dir "$SANDBOX/.autopilot" \
-    $extra_args
-}
-
-# tmux new-window に渡されたコマンド文字列全体を返す
-_get_tmux_cmd() {
-  cat "$TMUX_CMD_FILE" 2>/dev/null || echo ""
-}
-
-# tmux コマンド内に指定キーワードが含まれるか確認（grep ベース）
-# printf '%q' によるエスケープ（スペースを \ でエスケープ）を考慮するため、
-# キーワードのスペースを "[ \\\\]+" にして grep する
-_tmux_cmd_contains() {
-  local keyword="$1"
-  local tmux_cmd
-  tmux_cmd=$(_get_tmux_cmd)
-  # バックスラッシュエスケープを除去してから検索
-  echo "$tmux_cmd" | tr -d '\\' | grep -qF "$keyword"
-}
-
-# ---------------------------------------------------------------------------
 # Scenario 3: Worker 起動時に merge 禁止コンテキストが注入される
 # ---------------------------------------------------------------------------
 
