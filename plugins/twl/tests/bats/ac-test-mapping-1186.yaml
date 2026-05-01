@@ -1,0 +1,86 @@
+# ac-test-mapping-1186.yaml
+# Issue #1186: spawn-controller.sh に WINDOW_NAME 変数導入 + Monitor 再 arm emit
+# 生成: 2026-05-01 (RED フェーズ)
+#
+# impl_files 注記:
+#   spawn-controller.sh に source guard ([[ "${BASH_SOURCE[0]}" == "${0}" ]]) が存在しない。
+#   set -euo pipefail 環境で source すると main 到達前に exit に巻き込まれるリスクあり。
+#   実装時に source guard 追加を検討すること。
+
+mappings:
+  - ac_index: "3.0a"
+    ac_text: "spawn-controller.sh 内に WINDOW_NAME 変数を導入（自動生成時: WINDOW_NAME=\"wt-${SKILL_NORMALIZED}-$(date +%H%M%S)\"）"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.0: spawn-controller.sh が WINDOW_NAME 変数を内部で設定する（自動生成時）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  - ac_index: "3.0b"
+    ac_text: "spawn-controller.sh に --window-name 明示時: \$@ を getopt 風 loop でパースして WINDOW_NAME に格納"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.0: --window-name 明示時に WINDOW_NAME が指定値を保持する（getopt 風 loop）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  - ac_index: "3.1a"
+    ac_text: "emit は exec CLD_SPAWN 呼出の直前に行う（else 分岐 line 376-378）"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.1: exec CLD_SPAWN 直前に emit 文が存在する（else 分岐）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  - ac_index: "3.1b"
+    ac_text: "emit は cld-spawn 非 exec 呼出の直前に行う（co-autopilot 非 --with-chain 分岐 line 372-375）"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.1: cld-spawn 非 exec 呼び出し直前にも emit 文が存在する（co-autopilot 非 --with-chain 分岐）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  - ac_index: "3.1c"
+    ac_text: "emit は exec autopilot-launch.sh 直前に行う（--with-chain 分岐 line 219-223）"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.1: exec autopilot-launch.sh 直前にも emit 文が存在する（--with-chain 分岐）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  - ac_index: "3.2a"
+    ac_text: "monitor-channel-catalog.md に '>>> Monitor 再 arm 必要:' パターンを追加"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.2: monitor-channel-catalog.md に '>>> Monitor 再 arm 必要:' パターンが追加されている"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+
+  - ac_index: "3.2b"
+    ac_text: "monitor-channel-catalog.md の emit regex が '>>> Monitor 再 arm 必要: [^\\n]+' 形式"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.2: monitor-channel-catalog.md の emit regex が [^\\n]+ パターンを含む"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+
+  - ac_index: "3.3a"
+    ac_text: "pitfalls-catalog.md に channel reset MUST エントリを追加（§11.6 または §11.7）"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.3: pitfalls-catalog.md に channel reset MUST エントリが追加されている"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+  - ac_index: "3.3b"
+    ac_text: "pitfalls-catalog.md の channel reset エントリが §11 セクション内に存在する（Hash 3ecbfbc2 formal 化）"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.3: pitfalls-catalog.md の channel reset エントリが §11 セクション内に存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+  - ac_index: "3.4a"
+    ac_text: "co-issue --window-name test-spawn の stdout 末尾1行に '>>> Monitor 再 arm 必要: test-spawn' を含む"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.4: co-issue --window-name test-spawn の stdout 末尾に emit が含まれる"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  - ac_index: "3.4b"
+    ac_text: "--window-name 省略時の自動生成名 (wt-co-issue-HHMMSS) も emit に含まれる"
+    test_file: "plugins/twl/tests/bats/observer/spawn-controller-monitor-reset.bats"
+    test_name: "ac3.4: --window-name 省略時の自動生成名 wt-co-issue-HHMMSS が emit に含まれる"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
