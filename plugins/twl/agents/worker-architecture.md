@@ -12,7 +12,7 @@ tools:
 skills:
 - ref-specialist-output-schema
 - ref-specialist-few-shot
-- ref-architecture
+- ref-skill-arch-patterns
 ---
 
 # worker-architecture: アーキテクチャパターン検証
@@ -91,7 +91,7 @@ PR diff から以下を検出し、該当があれば `severity: WARNING`, `cate
 - これらが specialist に委任されているか deps.yaml の calls と照合
 
 ### 4. パターン評価
-ref-architecture のチェックリストに照合し、各パターンを判定:
+ref-skill-arch-patterns のチェックリストに照合し、各パターンを判定:
 
 | パターン | 確認項目 |
 |---------|---------|
@@ -109,7 +109,7 @@ lifecycle 妥当性（per_phase 時 external_context 定義）・max_size 整合
 
 ## 制約
 
-Task tool 禁止。ファイル編集禁止。推測での報告禁止（確認した事実のみ）。ref-architecture の検出方法・ギャップ検出・アンチパターンに厳密に従う。
+Task tool 禁止。ファイル編集禁止。推測での報告禁止（確認した事実のみ）。ref-skill-arch-patterns の検出方法・ギャップ検出・アンチパターンに厳密に従う。
 
 ## 出力形式（MUST）
 

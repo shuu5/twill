@@ -90,7 +90,7 @@ NEW_REFS=(
   ref-types
   ref-practices
   ref-deps-format
-  ref-architecture
+  ref-skill-arch-patterns
   ref-architecture-spec
   ref-project-model
   ref-issue-quality-criteria
@@ -106,7 +106,7 @@ SYNC_REFS=(
   ref-types
   ref-practices
   ref-deps-format
-  ref-architecture
+  ref-skill-arch-patterns
 )
 
 # 4 plugin-specific refs
@@ -406,8 +406,8 @@ run_test "baseline-coding-style.md が glob パターンで参照可能" test_ba
 echo ""
 echo "--- Requirement: deps.yaml refs セクション登録 ---"
 
-# 全 11 new refs が存在
-test_all_11_new_refs_exist() {
+# 全 12 new refs が存在
+test_all_12_new_refs_exist() {
   local missing=()
   for name in "${NEW_REFS[@]}"; do
     if ! assert_file_exists "refs/${name}.md"; then
@@ -420,7 +420,7 @@ test_all_11_new_refs_exist() {
   fi
   return 0
 }
-run_test "全 12 new reference ファイルが refs/ に存在" test_all_11_new_refs_exist
+run_test "全 12 new reference ファイルが refs/ に存在" test_all_12_new_refs_exist
 
 # 全 reference に frontmatter type: reference がある
 test_all_refs_have_type_reference() {
@@ -446,8 +446,8 @@ test_all_refs_have_type_reference() {
 run_test "全 12 new reference に type: reference frontmatter" test_all_refs_have_type_reference
 
 # Scenario: reference の deps.yaml 登録 (line 44)
-# WHEN: 全 11 references の deps.yaml 登録が完了した
-# THEN: refs セクションに 15 エントリが存在する（既存 4 + 新規 11）
+# WHEN: 全 12 references の deps.yaml 登録が完了した
+# THEN: refs セクションに 16 エントリが存在する（既存 4 + 新規 12）
 test_deps_refs_count_15() {
   assert_file_exists "$DEPS_YAML" || return 1
   assert_valid_yaml "$DEPS_YAML" || return 1
@@ -462,7 +462,7 @@ sys.exit(0)
 }
 run_test "deps.yaml refs セクションに 16 エントリ (既存 4 + 新規 12)" test_deps_refs_count_15
 
-# 全 11 new refs が deps.yaml に登録されている
+# 全 12 new refs が deps.yaml に登録されている
 test_deps_all_new_refs_registered() {
   assert_file_exists "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "

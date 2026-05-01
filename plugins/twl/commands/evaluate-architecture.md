@@ -26,7 +26,7 @@ maxTurns: 10
 - controller の calls 順序（パイプライン長）
 
 ### 3. 7パターン評価
-ref-architecture のチェックリストに照合:
+ref-skill-arch-patterns のチェックリストに照合:
 
 **AT並列レビュー**:
 - team-phase + parallel: true の存在確認
@@ -64,7 +64,7 @@ ref-architecture のチェックリストに照合:
 - **エントリーポイント設計**: 単一 `controller-entry` にルーティングテーブルがないか → `controller-{purpose}` への分割を推奨
 
 ### 5. 結果出力
-ref-architecture の報告フォーマットで評価結果を出力。
+ref-skill-arch-patterns の報告フォーマットで評価結果を出力。
 
 ### 6. ユーザー確認
 AskUserQuestion で推奨アクションの適用を確認:
