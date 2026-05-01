@@ -1211,9 +1211,10 @@ echo "[orchestrator] Phase ${PHASE} 開始" >&2
 # --- orchestrator.pid: atomic write (mktemp + mv) + EXIT trap ---
 _orch_pid_file="${AUTOPILOT_DIR}/orchestrator.pid"
 _orch_pid_tmp=$(mktemp "${AUTOPILOT_DIR}/.orchestrator.pid.XXXXXX")
+# Register cleanup before write so tmp file is always removed (even if mv fails or on signal)
+trap 'rm -f "$_orch_pid_file" "${_orch_pid_tmp:-}"' EXIT INT TERM HUP
 echo "$$" > "$_orch_pid_tmp"
 mv "$_orch_pid_tmp" "$_orch_pid_file"
-trap 'rm -f "$_orch_pid_file"' EXIT
 # --- trace: PID と起動時刻を記録（ログ名に session_id を付与して Wave 間分離） ---
 _orch_started_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 _orch_session_id=$(jq -r '.session_id // "unknown"' "${SESSION_FILE}" 2>/dev/null || echo "unknown")

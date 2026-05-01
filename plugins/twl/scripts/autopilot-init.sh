@@ -106,8 +106,13 @@ if [[ -f "$SESSION_FILE" ]]; then
       _orch_alive=false
       if [[ -f "$_orch_pid_file" ]]; then
         _orch_pid=$(cat "$_orch_pid_file" 2>/dev/null || echo "")
-        if [[ "$_orch_pid" =~ ^[0-9]+$ ]] && kill -0 "$_orch_pid" 2>/dev/null; then
-          _orch_alive=true
+        if [[ "$_orch_pid" =~ ^[0-9]+$ && "$_orch_pid" -gt 0 ]]; then
+          if kill -0 "$_orch_pid" 2>/dev/null; then
+            _orch_alive=true
+          elif kill -0 "$_orch_pid" 2>&1 | grep -q "Operation not permitted"; then
+            # EPERM: process exists but owned by another user → treat as alive
+            _orch_alive=true
+          fi
         fi
       fi
       if [[ "$_orch_alive" == "true" ]]; then

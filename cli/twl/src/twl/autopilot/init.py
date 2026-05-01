@@ -63,15 +63,24 @@ class AutopilotInitializer:
         self.autopilot_dir = autopilot_dir or _autopilot_dir()
 
     def _is_orchestrator_alive(self) -> bool:
-        """Return True if orchestrator.pid exists and the PID is alive (kill -0 succeeds)."""
+        """Return True if orchestrator.pid exists and the PID is alive (kill -0 succeeds).
+
+        PermissionError means the process exists but is owned by another user — still alive.
+        ProcessLookupError (ESRCH) means the process does not exist — dead/stale.
+        """
         pid_file = self.autopilot_dir / "orchestrator.pid"
         if not pid_file.is_file():
             return False
         try:
             pid = int(pid_file.read_text(encoding="utf-8").strip())
+            if pid <= 0:
+                return False
             os.kill(pid, 0)
             return True
-        except (ValueError, ProcessLookupError, PermissionError):
+        except PermissionError:
+            # EPERM: process exists but is owned by a different user → treat as alive
+            return True
+        except (ValueError, ProcessLookupError, OSError):
             return False
 
     def run(self, check_only: bool = False, force: bool = False) -> str:
