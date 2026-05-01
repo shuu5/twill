@@ -15,7 +15,7 @@ set -euo pipefail
 
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
 # パス検証: 英数字・ドット・アンダースコア・ハイフン・スラッシュのみ許可（特殊文字・空白・.. 拒否）
-if [[ ! "$SUPERVISOR_DIR" =~ ^[a-zA-Z0-9._/-]+$ ]] || [[ "$SUPERVISOR_DIR" == *..* ]]; then
+if [[ ! "$SUPERVISOR_DIR" =~ ^[a-zA-Z0-9./_-]+$ ]] || [[ "$SUPERVISOR_DIR" == *..* ]]; then
   echo "ERROR: SUPERVISOR_DIR に無効な文字が含まれています: $SUPERVISOR_DIR" >&2
   exit 2
 fi
