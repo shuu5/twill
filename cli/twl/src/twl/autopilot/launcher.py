@@ -74,6 +74,9 @@ _STATUS_GATE_LOG = os.environ.get(
 _ALLOWED_STATUSES = {"Refined", "In Progress", "Done"}
 
 
+_DUAL_WRITE_LOG = "/tmp/refined-dual-write.log"
+
+
 def _log_gate_event(event: str) -> None:
     try:
         from datetime import datetime, timezone
@@ -82,6 +85,25 @@ def _log_gate_event(event: str) -> None:
             f.write(f"[{ts}] {event}\n")
     except Exception:
         pass
+
+
+def _check_dual_write_log(issue_num: str) -> str | None:
+    """Return actionable hint if label_add_failed found for issue_num, else None."""
+    try:
+        with open(_DUAL_WRITE_LOG, "r") as f:
+            lines = f.readlines()[-200:]
+    except (OSError, FileNotFoundError):
+        return None
+    search_key = f"issue=#{issue_num}"
+    for line in reversed(lines):
+        if search_key in line and "label_add_failed" in line:
+            m = re.search(r"repo=(\S+)", line)
+            repo = m.group(1) if m else "OWNER/REPO"
+            return (
+                f"\n[hint] label add 失敗が観測されています ({_DUAL_WRITE_LOG})。\n"
+                f"対処: gh label create refined --repo {repo} --color 8B5CF6 を実行してから再 refine してください。"
+            )
+    return None
 
 
 def _check_refined_status(issue: str, bypass: bool = False) -> None:
@@ -167,11 +189,15 @@ def _check_refined_status(issue: str, bypass: bool = False) -> None:
         return
 
     _log_gate_event(f"DENY status={status} issue=#{issue}")
-    raise LaunchError(
+    _deny_msg = (
         f"Issue #{issue} の Status={status} です。Refined への遷移が必要です。\n"
         f"  現在: {status} → 必要: Refined\n"
         "  対処: /twl:workflow-issue-refine を実行して Specialist review を完了してください。"
     )
+    hint = _check_dual_write_log(issue)
+    if hint:
+        _deny_msg += hint
+    raise LaunchError(_deny_msg)
 
 
 class WorkerLauncher:

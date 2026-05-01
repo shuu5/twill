@@ -451,6 +451,22 @@ wait_for_batch() {
           echo "[issue-lifecycle-orchestrator] ${subdir##*/}: ウィンドウ消失・report.json なし — フォールバック生成" >&2
           mkdir -p "${subdir}/OUT"
           _generate_fallback_report "$subdir" "window_lost"
+          # dual-write observability trace (Issue #1212): label_add_failed / status_update_failed 検出時に pane snapshot を保存
+          _subdir_issue_num="$(jq -r '.issue_number // empty' "${subdir}/IN/deps.json" 2>/dev/null)"
+          [[ -z "${_subdir_issue_num}" ]] && _subdir_issue_num="$(basename "${subdir}")"
+          if [[ -n "${_subdir_issue_num}" ]] && \
+             grep -q "issue=#${_subdir_issue_num}" /tmp/refined-dual-write.log 2>/dev/null && \
+             grep "issue=#${_subdir_issue_num}" /tmp/refined-dual-write.log 2>/dev/null \
+               | grep -q "label_add_failed\|status_update_failed"; then
+            local _dw_trace_proj_root=""
+            _dw_trace_proj_root="$(git -C "${subdir}" rev-parse --show-toplevel 2>/dev/null)" \
+              || _dw_trace_proj_root="$(cd "${subdir}/../../.." 2>/dev/null && pwd)" \
+              || _dw_trace_proj_root="$(pwd)"
+            local _trace_dir="${_dw_trace_proj_root}/.autopilot/trace"
+            mkdir -p "$_trace_dir" 2>/dev/null || true
+            tmux capture-pane -t "$window_name" -p -S -3000 \
+              >> "${_trace_dir}/dual-write-${subdir##*/}-$(date -u +%Y%m%dT%H%M%SZ).log" 2>/dev/null || true
+          fi
         else
           local inject_count_file="${subdir}/.inject_count"
           local inject_count=0
