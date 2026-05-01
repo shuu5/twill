@@ -139,6 +139,17 @@ tmux capture-pane -t <worker-win> -p -S -50 | grep -E '⏵⏵ auto mode|permissi
 - §4.3 — A2 LLM indicator による emit 抑制
 - §4.5 — Heartbeat（5 min silence 自動 capture）で S-1 と S-5 の誤分類を防ぐ
 
+**orchestrator-side の多指標 AND 判定の適用例（Issue #1177）**:
+
+observer-side の A3 mtime + A1 多指標パターンは、orchestrator-side の stagnate 検知にも適用できる。`inject-next-workflow.sh` の stagnate 検知（`RESOLVE_FAIL_COUNT` 連続カウント）は、resolve 失敗が続いても Worker が state file（`.autopilot/issues/issue-${issue}.json`）の mtime を更新している場合は「実質的に進行中」と判断し、カウントをリセットする。これにより「resolve は失敗しているが Worker は活動している」状態と「真の stagnate」を区別できる:
+
+- **mtime 進行あり**: `RESOLVE_FAIL_COUNT` リセット → stagnate タイマーが延長される（Worker が進行しているため）
+- **mtime 変化なし**: `RESOLVE_FAIL_COUNT` インクリメント → 従来通り stagnate 検知が蓄積される
+
+実装: `inject-next-workflow.sh` の `LAST_STATE_MTIME` 連想配列で mtime 履歴を管理し、stagnate 検知ブロック先頭で mtime チェックを FAIL_COUNT インクリメントより前に実施することで、exit code とは独立した progress signal として機能する。
+
+注: `issue-lifecycle-orchestrator.sh` の `DEBOUNCE_TRANSIENT_SEC=120s`（LLM thinking time 中の transient state 保護、Worker kill 防止文脈）とは別文脈。orchestrator stagnate 検知の mtime AND 判定は inject-next-workflow.sh の RESOLVE_FAILED カウント制御であり、debounce 対象のプロセス kill とは独立した機構である。
+
 #### §4.11 cld-observe-any と Monitor tool の連携落とし穴
 
 **背景事象（2026-04-29 22:57 〜 2026-04-30 02:39、3h45m）**:
