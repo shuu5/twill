@@ -65,9 +65,13 @@ exit 0
 STUB
   chmod +x "$STUB_BIN/cld"
 
-  # gh スタブ: quick ラベルなし（デフォルト）
+  # gh スタブ: project item-list + ラベルなし
   stub_command "gh" '
     case "$*" in
+      *"project item-list"*)
+        echo "{\"items\":[{\"id\":\"I_7\",\"content\":{\"number\":7,\"type\":\"Issue\"},\"status\":\"In Progress\"},{\"id\":\"I_10\",\"content\":{\"number\":10,\"type\":\"Issue\"},\"status\":\"In Progress\"},{\"id\":\"I_42\",\"content\":{\"number\":42,\"type\":\"Issue\"},\"status\":\"In Progress\"},{\"id\":\"I_55\",\"content\":{\"number\":55,\"type\":\"Issue\"},\"status\":\"In Progress\"},{\"id\":\"I_100\",\"content\":{\"number\":100,\"type\":\"Issue\"},\"status\":\"In Progress\"}]}" ;;
+      *"repo view"*"--json owner"*)
+        echo "shuu5" ;;
       *"issue view"*"--json labels"*"--jq"*)
         echo "" ;;
       *)
