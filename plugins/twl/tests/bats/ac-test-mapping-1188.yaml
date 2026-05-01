@@ -1,0 +1,34 @@
+mappings:
+  - ac_index: 1
+    ac_text: "AC5.1: 新規 plugins/twl/tests/bats/observer/su-observer-step0-sop.bats を作成（tests/bats/observer/ は未存在 → mkdir）"
+    test_file: "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
+    test_name: "ac5.1: tests/bats/observer/ directory exists"
+    impl_files:
+      - "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
+      - "plugins/twl/tests/bats/observer/fixtures/mock-cld-observe-any.sh"
+      - "plugins/twl/tests/bats/observer/fixtures/pitfalls-doobidoo-snapshot.json"
+  - ac_index: 2
+    ac_text: "AC5.2: C1 — Step 0 完了後、Monitor task が active であることを assert"
+    test_file: "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
+    test_name: "ac5.2: pgrep -f 'cld-observe-any' matches mock daemon process"
+    impl_files:
+      - "plugins/twl/tests/bats/observer/fixtures/mock-cld-observe-any.sh"
+  - ac_index: 3
+    ac_text: "AC5.3: C2 — pitfalls-catalog.md 各 §X.Y エントリが doobidoo observer-pitfall tag に対応する記憶を持つことを assert"
+    test_file: "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
+    test_name: "ac5.3: snapshot entries count matches pitfalls-catalog.md entry count"
+    impl_files:
+      - "plugins/twl/tests/bats/observer/fixtures/pitfalls-doobidoo-snapshot.json"
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 4
+    ac_text: "AC5.4: C3 — spawn-controller.sh 起動後に Monitor channel reset 出力（>>> Monitor 再 arm 必要:）が含まれることを assert"
+    test_file: "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
+    test_name: "ac5.4: spawn-controller.sh output contains '>>> Monitor 再 arm 必要' (Sub 2 feature)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 5
+    ac_text: "AC5.5: bats 全 PASS（local + CI）"
+    test_file: "plugins/twl/tests/bats/observer/su-observer-step0-sop.bats"
+    test_name: "(process AC - no separate test, verified by running all above)"
+    impl_files: []
+    # impl_files 推定失敗: プロセス AC（テスト全 PASS を CI で確認）
