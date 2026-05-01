@@ -14,6 +14,11 @@
 set -euo pipefail
 
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+# パストラバーサル防止: .. を含むパスを拒否
+if [[ "$SUPERVISOR_DIR" == *..* ]]; then
+  echo "ERROR: SUPERVISOR_DIR に '..' は使用できません: $SUPERVISOR_DIR" >&2
+  exit 2
+fi
 LOG_FILE="${SUPERVISOR_DIR}/cld-observe-any.log"
 MODE="${1:-}"
 
