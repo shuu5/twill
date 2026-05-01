@@ -455,9 +455,10 @@ wait_for_batch() {
           local _subdir_issue_num=""
           _subdir_issue_num="$(jq -r '.issue_number // empty' "${subdir}/IN/deps.json" 2>/dev/null)"
           [[ -z "${_subdir_issue_num}" ]] && _subdir_issue_num="$(basename "${subdir}")"
+          local _DW_LOG="${REFINED_DUAL_WRITE_LOG:-/tmp/refined-dual-write.log}"
           if [[ -n "${_subdir_issue_num}" ]] && \
-             grep -q "issue=#${_subdir_issue_num}" /tmp/refined-dual-write.log 2>/dev/null && \
-             grep "issue=#${_subdir_issue_num}" /tmp/refined-dual-write.log 2>/dev/null \
+             grep -q "issue=#${_subdir_issue_num}" "$_DW_LOG" 2>/dev/null && \
+             grep "issue=#${_subdir_issue_num}" "$_DW_LOG" 2>/dev/null \
                | grep -q "label_add_failed\|status_update_failed"; then
             local _dw_trace_proj_root=""
             _dw_trace_proj_root="$(git -C "${subdir}" rev-parse --show-toplevel 2>/dev/null)" \
@@ -544,9 +545,10 @@ wait_for_batch() {
               local _subdir_issue_num_t=""
               _subdir_issue_num_t="$(jq -r '.issue_number // empty' "${subdir}/IN/deps.json" 2>/dev/null)"
               [[ -z "${_subdir_issue_num_t}" ]] && _subdir_issue_num_t="$(basename "${subdir}")"
+              local _DW_LOG_T="${REFINED_DUAL_WRITE_LOG:-/tmp/refined-dual-write.log}"
               if [[ -n "${_subdir_issue_num_t}" ]] && \
-                 grep -q "issue=#${_subdir_issue_num_t}" /tmp/refined-dual-write.log 2>/dev/null && \
-                 grep "issue=#${_subdir_issue_num_t}" /tmp/refined-dual-write.log 2>/dev/null \
+                 grep -q "issue=#${_subdir_issue_num_t}" "$_DW_LOG_T" 2>/dev/null && \
+                 grep "issue=#${_subdir_issue_num_t}" "$_DW_LOG_T" 2>/dev/null \
                    | grep -q "label_add_failed\|status_update_failed"; then
                 local _dw_trace_root_t=""
                 _dw_trace_root_t="$(git -C "${subdir}" rev-parse --show-toplevel 2>/dev/null)" \
