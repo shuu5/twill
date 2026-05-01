@@ -44,7 +44,7 @@ agents/ 配下の team-worker ファイルを読み込み、以下を評価:
 - [ ] 不要に高価なモデルを使っていない
 
 ### 4. アーキテクチャパターン評価
-ref-architecture を参照し、5パターンの適用状態を評価:
+ref-skill-arch-patterns を参照し、5パターンの適用状態を評価:
 
 - **AT並列レビュー**: team-phase + parallel: true + worker 構成の確認
 - **パイプライン**: controller の calls 順序と依存関係の確認

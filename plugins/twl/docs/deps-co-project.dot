@@ -1,158 +1,42 @@
-digraph Dependencies {
-    // Graph settings
-    rankdir=LR;
-    ranksep=0.8;
-    nodesep=0.3;
-    fontname="Helvetica";
-    node [fontname="Helvetica", fontsize=10];
-    edge [fontname="Helvetica", fontsize=9];
-    label="co-project";
-    labelloc=t;
-    fontsize=14;
+=== Dependencies of co-project ===
 
-    // L0: Controller Skills
-    skill_co_project [label="twl:co-project\n(1,625 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
-
-    // L0: Launchers
-
-    // L0.5: Workflow Skills
-    skill_workflow_plugin_create [label="twl:workflow-plugin-create\n(558 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_plugin_diagnose [label="twl:workflow-plugin-diagnose\n(693 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-    skill_workflow_prompt_audit [label="twl:workflow-prompt-audit\n(684 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
-
-    // Reference Skills
-    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_types [label="twl:ref-types\n(2,144 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_practices [label="twl:ref-practices\n(6,471 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_deps_format [label="twl:ref-deps-format\n(2,028 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_ref_architecture [label="twl:ref-architecture\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-
-    // L1: Direct Commands
-    cmd_label_sync [label="label-sync\n(1,205 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_create [label="project-create\n(455 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_board_configure [label="project-board-configure\n(1,213 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_governance [label="project-governance\n(974 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_project_migrate [label="project-migrate\n(463 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_container_dependency_check [label="container-dependency-check\n(509 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_setup_crg [label="setup-crg\n(754 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_snapshot_analyze [label="snapshot-analyze\n(617 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_snapshot_classify [label="snapshot-classify\n(891 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_snapshot_generate [label="snapshot-generate\n(752 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_interview [label="plugin-interview\n(1,118 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_research [label="plugin-research\n(678 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_design [label="plugin-design\n(1,192 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_generate [label="plugin-generate\n(1,419 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_migrate_analyze [label="plugin-migrate-analyze\n(476 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_prompt_audit_scan [label="prompt-audit-scan\n(334 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_prompt_audit_review [label="prompt-audit-review\n(458 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_prompt_audit_apply [label="prompt-audit-apply\n(710 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_diagnose [label="plugin-diagnose\n(944 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_fix [label="plugin-fix\n(1,092 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_verify [label="plugin-verify\n(536 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
-    cmd_plugin_phase_diagnose [label="plugin-phase-diagnose\n(652 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_plugin_phase_verify [label="plugin-phase-verify\n(634 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-
-    // L2: Sub Commands
-
-    // L3: Agents
-    agent_worker_structure [label="worker-structure\n(1,244 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_principles [label="worker-principles\n(1,154 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_architecture [label="worker-architecture\n(1,695 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-
-    // L3.5: Scripts
-
-    // L4: External
-
-    // Layer constraints
-    { rank=same; skill_co_project; }
-    { rank=same; skill_workflow_plugin_create; skill_workflow_plugin_diagnose; skill_workflow_prompt_audit; }
-    { rank=same; skill_ref_specialist_output_schema; skill_ref_types; skill_ref_practices; skill_ref_deps_format; skill_ref_architecture; }
-    { rank=same; cmd_label_sync; cmd_project_create; cmd_project_board_configure; cmd_project_governance; cmd_project_migrate; cmd_container_dependency_check; cmd_setup_crg; cmd_snapshot_analyze; cmd_snapshot_classify; cmd_snapshot_generate; cmd_plugin_interview; cmd_plugin_research; cmd_plugin_design; cmd_plugin_generate; cmd_plugin_migrate_analyze; cmd_prompt_audit_scan; cmd_prompt_audit_review; cmd_prompt_audit_apply; cmd_plugin_diagnose; cmd_plugin_fix; cmd_plugin_verify; cmd_plugin_phase_diagnose; cmd_plugin_phase_verify; }
-    { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_architecture; }
-
-    // Edges
-    skill_co_project -> cmd_project_create;
-    skill_co_project -> cmd_project_governance;
-    skill_co_project -> cmd_project_board_configure;
-    skill_co_project -> cmd_project_migrate;
-    skill_co_project -> cmd_container_dependency_check;
-    skill_co_project -> cmd_setup_crg;
-    skill_co_project -> cmd_snapshot_analyze;
-    skill_co_project -> cmd_snapshot_classify;
-    skill_co_project -> cmd_snapshot_generate;
-    skill_co_project -> skill_workflow_plugin_create;
-    skill_co_project -> skill_workflow_plugin_diagnose;
-    skill_co_project -> skill_workflow_prompt_audit;
-    skill_co_project -> cmd_label_sync;
-    skill_co_project -> skill_ref_types;
-    skill_co_project -> skill_ref_practices;
-    skill_co_project -> skill_ref_deps_format;
-    skill_workflow_plugin_create -> cmd_plugin_interview;
-    skill_workflow_plugin_create -> cmd_plugin_research;
-    skill_workflow_plugin_create -> cmd_plugin_design;
-    skill_workflow_plugin_create -> cmd_plugin_generate;
-    skill_workflow_plugin_diagnose -> cmd_plugin_migrate_analyze;
-    skill_workflow_plugin_diagnose -> cmd_plugin_diagnose;
-    skill_workflow_plugin_diagnose -> cmd_plugin_phase_diagnose;
-    skill_workflow_plugin_diagnose -> cmd_plugin_fix;
-    skill_workflow_plugin_diagnose -> cmd_plugin_verify;
-    skill_workflow_plugin_diagnose -> cmd_plugin_phase_verify;
-    skill_workflow_prompt_audit -> cmd_prompt_audit_scan;
-    skill_workflow_prompt_audit -> cmd_prompt_audit_review;
-    skill_workflow_prompt_audit -> cmd_prompt_audit_apply;
-    cmd_plugin_phase_diagnose -> agent_worker_structure [style=dashed];
-    cmd_plugin_phase_diagnose -> agent_worker_principles [style=dashed];
-    cmd_plugin_phase_diagnose -> agent_worker_architecture [style=dashed];
-    cmd_plugin_phase_diagnose -> skill_ref_specialist_output_schema;
-    cmd_plugin_phase_diagnose -> skill_ref_architecture;
-    cmd_plugin_phase_verify -> agent_worker_structure [style=dashed];
-    cmd_plugin_phase_verify -> agent_worker_principles [style=dashed];
-    cmd_plugin_phase_verify -> agent_worker_architecture [style=dashed];
-    cmd_plugin_phase_verify -> skill_ref_specialist_output_schema;
-    cmd_plugin_phase_verify -> skill_ref_architecture;
-    agent_worker_structure -> skill_ref_specialist_output_schema [style=dotted];
-    agent_worker_principles -> skill_ref_specialist_output_schema [style=dotted];
-    agent_worker_architecture -> skill_ref_specialist_output_schema [style=dotted];
-    agent_worker_architecture -> skill_ref_architecture [style=dotted];
-
-    // Ordering constraints (invisible edges)
-    cmd_project_create -> cmd_project_governance [style=invis, weight=10];
-    cmd_project_governance -> cmd_project_board_configure [style=invis, weight=10];
-    cmd_project_board_configure -> cmd_project_migrate [style=invis, weight=10];
-    cmd_project_migrate -> cmd_container_dependency_check [style=invis, weight=10];
-    cmd_container_dependency_check -> cmd_setup_crg [style=invis, weight=10];
-    cmd_setup_crg -> cmd_snapshot_analyze [style=invis, weight=10];
-    cmd_snapshot_analyze -> cmd_snapshot_classify [style=invis, weight=10];
-    cmd_snapshot_classify -> cmd_snapshot_generate [style=invis, weight=10];
-    cmd_snapshot_generate -> skill_workflow_plugin_create [style=invis, weight=10];
-    skill_workflow_plugin_create -> skill_workflow_plugin_diagnose [style=invis, weight=10];
-    skill_workflow_plugin_diagnose -> skill_workflow_prompt_audit [style=invis, weight=10];
-    skill_workflow_prompt_audit -> cmd_label_sync [style=invis, weight=10];
-    cmd_label_sync -> skill_ref_types [style=invis, weight=10];
-    skill_ref_types -> skill_ref_practices [style=invis, weight=10];
-    skill_ref_practices -> skill_ref_deps_format [style=invis, weight=10];
-    cmd_plugin_interview -> cmd_plugin_research [style=invis, weight=10];
-    cmd_plugin_research -> cmd_plugin_design [style=invis, weight=10];
-    cmd_plugin_design -> cmd_plugin_generate [style=invis, weight=10];
-    cmd_plugin_migrate_analyze -> cmd_plugin_diagnose [style=invis, weight=10];
-    cmd_plugin_diagnose -> cmd_plugin_phase_diagnose [style=invis, weight=10];
-    cmd_plugin_phase_diagnose -> cmd_plugin_fix [style=invis, weight=10];
-    cmd_plugin_fix -> cmd_plugin_verify [style=invis, weight=10];
-    cmd_plugin_verify -> cmd_plugin_phase_verify [style=invis, weight=10];
-    cmd_prompt_audit_scan -> cmd_prompt_audit_review [style=invis, weight=10];
-    cmd_prompt_audit_review -> cmd_prompt_audit_apply [style=invis, weight=10];
-    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
-    agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
-    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
-    skill_ref_specialist_output_schema -> skill_ref_architecture [style=invis, weight=10];
-    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
-    agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
-    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
-    skill_ref_specialist_output_schema -> skill_ref_architecture [style=invis, weight=10];
-    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
-    agent_worker_architecture -> agent_worker_structure [style=invis, weight=10];
-    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
-    agent_worker_principles -> skill_ref_specialist_output_schema [style=invis, weight=10];
-    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
-
-}
+co-project (skill) [controller]
+├── project-create (command)
+├── project-governance (command)
+├── project-board-configure (command)
+├── project-migrate (command)
+├── container-dependency-check (command)
+├── setup-crg (command)
+├── snapshot-analyze (command)
+├── snapshot-classify (command)
+├── snapshot-generate (command)
+├── workflow-plugin-create (skill) [workflow]
+│   ├── plugin-interview (command)
+│   ├── plugin-research (command)
+│   ├── plugin-design (command)
+│   └── plugin-generate (command)
+├── workflow-plugin-diagnose (skill) [workflow]
+│   ├── plugin-migrate-analyze (command)
+│   ├── plugin-diagnose (command)
+│   ├── plugin-phase-diagnose (command)
+│   │   ├── worker-structure (agent)
+│   │   ├── worker-principles (agent)
+│   │   ├── worker-architecture (agent)
+│   │   ├── ref-specialist-output-schema (skill) [reference]
+│   │   └── ref-skill-arch-patterns (skill) [reference]
+│   ├── plugin-fix (command)
+│   ├── plugin-verify (command)
+│   └── plugin-phase-verify (command)
+│   │   ├── worker-structure (agent)
+│   │   ├── worker-principles (agent)
+│   │   ├── worker-architecture (agent)
+│   │   ├── ref-specialist-output-schema (skill) [reference]
+│   │   └── ref-skill-arch-patterns (skill) [reference]
+├── workflow-prompt-audit (skill) [workflow]
+│   ├── prompt-audit-scan (command)
+│   ├── prompt-audit-review (command)
+│   └── prompt-audit-apply (command)
+├── label-sync (command)
+├── ref-types (skill) [reference]
+├── ref-practices (skill) [reference]
+└── ref-deps-format (skill) [reference]

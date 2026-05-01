@@ -282,7 +282,7 @@ skills:
       - atomic: architect-group-refine
       - atomic: evaluate-architecture
       - reference: ref-architecture-spec
-      - reference: ref-architecture
+      - reference: ref-skill-arch-patterns
       - workflow: workflow-arch-review
     description: "対話的アーキテクチャ構築ワークフロー（explore-summary 入力、branch/PR + review フロー付き）"
 
@@ -697,9 +697,9 @@ refs:
     path: refs/ref-deps-format.md
     description: "deps.yaml 形式仕様（twl sync）"
 
-  ref-architecture:
+  ref-skill-arch-patterns:
     type: reference
-    path: refs/ref-architecture.md
+    path: refs/ref-skill-arch-patterns.md
     description: "アーキテクチャパターン評価チェックリスト（twl sync）"
 
   # C-3: プラグイン固有 (4)
@@ -1549,7 +1549,7 @@ commands:
       - specialist: worker-principles
       - specialist: worker-architecture
       - reference: ref-specialist-output-schema
-      - reference: ref-architecture
+      - reference: ref-skill-arch-patterns
     description: "並列診断フェーズ（specialist x3 並列 spawn + 統合処理）"
 
   plugin-phase-verify:
@@ -1567,7 +1567,7 @@ commands:
       - specialist: worker-principles
       - specialist: worker-architecture
       - reference: ref-specialist-output-schema
-      - reference: ref-architecture
+      - reference: ref-skill-arch-patterns
     description: "並列検証フェーズ（specialist x3 並列 spawn + 統合処理）"
 
   # === C-2a: 汎用系（5個） ===
@@ -3124,7 +3124,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: [ref-specialist-output-schema, ref-architecture, ref-specialist-few-shot]
+    skills: [ref-specialist-output-schema, ref-skill-arch-patterns, ref-specialist-few-shot]
     description: "アーキテクチャパターン検証 (PR diff モード: architecture/domain/glossary.md, architecture/domain/model.md, architecture/vision.md を参照)"
 
   worker-issue-pr-alignment:

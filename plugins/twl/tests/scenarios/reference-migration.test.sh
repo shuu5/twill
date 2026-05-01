@@ -90,7 +90,7 @@ NEW_REFS=(
   ref-types
   ref-practices
   ref-deps-format
-  ref-architecture
+  ref-skill-arch-patterns
   ref-architecture-spec
   ref-project-model
   ref-issue-quality-criteria
@@ -106,7 +106,7 @@ SYNC_REFS=(
   ref-types
   ref-practices
   ref-deps-format
-  ref-architecture
+  ref-skill-arch-patterns
 )
 
 # 4 plugin-specific refs

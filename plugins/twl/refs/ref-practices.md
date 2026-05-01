@@ -16,7 +16,7 @@ type: reference
 | **5原則** | 本ドキュメント | 完結・明示・外部化・並列安全・コスト意識 |
 | **7パターン** | 本ドキュメント | 並列レビュー、パイプライン、ファンアウト/ファンイン、Context Snapshot、Subagent Delegation、Session Isolation、Compaction Recovery |
 | **Controller 設計原則** | 本ドキュメント | サイズ制限、インライン実装禁止、Phase 委譲、1 Controller = 1 Workflow |
-| **アーキテクチャ評価** | `ref-architecture` | パターン適用状態の検証チェックリスト |
+| **アーキテクチャ評価** | `ref-skill-arch-patterns` | パターン適用状態の検証チェックリスト |
 | **依存グラフ SSOT** | `ref-deps-format` + `twl` | deps.yaml による宣言的構造管理とツーリング |
 
 ### TWiLL のメタファー

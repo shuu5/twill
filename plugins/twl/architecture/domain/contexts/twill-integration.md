@@ -112,7 +112,7 @@ flowchart TD
 | **reference** | ref-types | deps.yaml 型ルールリファレンス |
 | **reference** | ref-deps-format | deps.yaml フォーマットリファレンス |
 | **reference** | ref-architecture-spec | architecture/ 仕様リファレンス |
-| **reference** | ref-architecture | アーキテクチャパターン評価チェックリスト |
+| **reference** | ref-skill-arch-patterns | アーキテクチャパターン評価チェックリスト |
 
 ### twl CLI コマンドと使用コンポーネントの対応表
 
