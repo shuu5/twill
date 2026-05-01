@@ -7,7 +7,7 @@
 #   AC3.0 - spawn-controller.sh 内に WINDOW_NAME 変数を導入
 #   AC3.1 - emit は exec/cld-spawn 呼出の直前に行う（両分岐対応）
 #   AC3.2 - emit pattern を monitor-channel-catalog.md に追加
-#   AC3.3 - pitfalls-catalog.md に §11.6 として channel reset MUST エントリを追加
+#   AC3.3 - pitfalls-catalog.md に §11.7 または §11.8 として channel reset MUST エントリを追加（実際は §11.8）
 #   AC3.4 - 完了判定: stdout 末尾に正しい emit が含まれる
 #
 # テスト設計:
