@@ -163,14 +163,14 @@ teardown() {
   }
 }
 
-@test "ac3: RESOLVED_MODEL 変数が probe 出力から抽出される" {
-  # RED: codex-probe-check.sh が存在しないため fail する
+@test "ac3: resolved_model 変数が probe 出力から抽出される" {
+  # codex-probe-check.sh の実装変数名は resolved_model（小文字）
   [[ -f "$PROBE_CHECK_SCRIPT" ]] || {
     echo "FAIL: AC #3/#10 未実装 — $PROBE_CHECK_SCRIPT が存在しない" >&2
     return 1
   }
-  grep -qE 'RESOLVED_MODEL' "$PROBE_CHECK_SCRIPT" || {
-    echo "FAIL: AC #3 未実装 — RESOLVED_MODEL 変数が定義されていない" >&2
+  grep -qE 'resolved_model' "$PROBE_CHECK_SCRIPT" || {
+    echo "FAIL: AC #3 未実装 — resolved_model 変数が定義されていない" >&2
     return 1
   }
 }

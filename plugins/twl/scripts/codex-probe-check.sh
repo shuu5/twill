@@ -26,7 +26,9 @@ fi
 # 対象: gpt-5.3-codex のデフォルト採用後に明らかに古い世代のモデル
 # 除外: gpt-5.1-codex (AC #7 — env override 利用時の誤発火防止)
 # ---------------------------------------------------------------------------
-_CODEX_BLOCKLIST_PATTERN='gpt-4[^-]|gpt-4\.|gpt-3|^o3-|^o4-'
+_CODEX_BLOCKLIST_PATTERN='gpt-4[^-]|gpt-3|o3-|o4-'
+# 注: ^ アンカーなし — probe 出力全体を grep するため行頭限定にしない
+# gpt-4- 系列（gpt-4-turbo 等）は [^-] 除外のため blocklist 対象外（意図的）
 
 # ---------------------------------------------------------------------------
 # run_probe_check
@@ -52,7 +54,7 @@ run_probe_check() {
   fi
 
   # AC #6: retired/deprecated model ID が probe 出力に含まれる場合 → CODEX_OK=0
-  # blocklist: gpt-4*, gpt-3*, ^o3-*, ^o4-* （gpt-5.1-codex は除外）
+  # blocklist: gpt-4* (非ハイフン), gpt-3*, o3-*, o4-* （gpt-5.1-codex は除外）
   if echo "${PROBE_OUT:-}" | grep -qE "${_CODEX_BLOCKLIST_PATTERN}"; then
     CODEX_OK=0
     echo "WARN: retired model detected in probe output (blocklist: ${_CODEX_BLOCKLIST_PATTERN})" >&2
