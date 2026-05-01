@@ -69,3 +69,137 @@ mappings:
     impl_files:
       - "plugins/twl/skills/workflow-pr-merge/SKILL.md"
       - "plugins/twl/architecture/decisions/ADR-030-human-gate-marker.md"
+
+# =============================================================================
+# Issue #1213: ref-architecture.md -> ref-skill-arch-patterns.md リネーム
+# =============================================================================
+
+  - ac_index: "1213-AC1a"
+    ac_text: "plugins/twl/refs/ref-architecture.md が git mv で plugins/twl/refs/ref-skill-arch-patterns.md にリネームされる（新ファイル存在）"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC1: refs/ref-skill-arch-patterns.md が存在する"
+    impl_files:
+      - "plugins/twl/refs/ref-skill-arch-patterns.md"
+
+  - ac_index: "1213-AC1b"
+    ac_text: "plugins/twl/refs/ref-architecture.md が git mv で plugins/twl/refs/ref-skill-arch-patterns.md にリネームされる（旧ファイル不在）"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC1: refs/ref-architecture.md が不在（git mv 済み）"
+    impl_files:
+      - "plugins/twl/refs/ref-skill-arch-patterns.md"
+
+  - ac_index: "1213-AC2a"
+    ac_text: "plugins/twl/deps.yaml で ref-architecture component key が ref-skill-arch-patterns に変更される（新キー存在）"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC2: deps.yaml に ref-skill-arch-patterns キーが存在する"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: "1213-AC2b"
+    ac_text: "plugins/twl/deps.yaml の path: も ref-skill-arch-patterns.md に追従する"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC2: deps.yaml の path が refs/ref-skill-arch-patterns.md を指す"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: "1213-AC2c"
+    ac_text: "plugins/twl/deps.yaml から ref-architecture 単独キー（ref-architecture-spec 以外）が削除される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC2: deps.yaml から ref-architecture キー（単独）が削除されている"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: "1213-AC2d"
+    ac_text: "plugins/twl/deps.yaml の reference エントリで ref-architecture（-spec 以外、L285/L1552/L1570/L3127）が ref-skill-arch-patterns に変更される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC2: deps.yaml の reference エントリで ref-architecture（非spec）が残っていない"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: "1213-AC3a"
+    ac_text: "agents/worker-architecture.md で ref-architecture 参照が ref-skill-arch-patterns に置換される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC3: agents/worker-architecture.md の ref-architecture 参照が置換されている"
+    impl_files:
+      - "plugins/twl/agents/worker-architecture.md"
+
+  - ac_index: "1213-AC3b"
+    ac_text: "architecture/domain/contexts/twill-integration.md で ref-architecture 参照が ref-skill-arch-patterns に置換される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC3: architecture/domain/contexts/twill-integration.md の ref-architecture 参照が置換されている"
+    impl_files:
+      - "plugins/twl/architecture/domain/contexts/twill-integration.md"
+
+  - ac_index: "1213-AC3c"
+    ac_text: "commands/plugin-diagnose.md で ref-architecture 参照が ref-skill-arch-patterns に置換される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC3: commands/plugin-diagnose.md の ref-architecture 参照が置換されている"
+    impl_files:
+      - "plugins/twl/commands/plugin-diagnose.md"
+
+  - ac_index: "1213-AC3d"
+    ac_text: "commands/evaluate-architecture.md で ref-architecture 参照が ref-skill-arch-patterns に置換される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC3: commands/evaluate-architecture.md の ref-architecture 参照が置換されている"
+    impl_files:
+      - "plugins/twl/commands/evaluate-architecture.md"
+
+  - ac_index: "1213-AC3e"
+    ac_text: "refs/ref-practices.md で ref-architecture 参照が ref-skill-arch-patterns に置換される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC3: refs/ref-practices.md の ref-architecture 参照が置換されている"
+    impl_files:
+      - "plugins/twl/refs/ref-practices.md"
+
+  - ac_index: "1213-AC4a"
+    ac_text: "twl update-readme 実行で docs/deps.dot が ref-skill-arch-patterns に自動更新される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC4: docs/deps.dot に ref-skill-arch-patterns が含まれる"
+    impl_files:
+      - "plugins/twl/docs/deps.dot"
+
+  - ac_index: "1213-AC4b"
+    ac_text: "twl update-readme 実行で docs/deps-co-architect.dot が ref-skill-arch-patterns に自動更新される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC4: docs/deps-co-architect.dot に ref-skill-arch-patterns が含まれる"
+    impl_files:
+      - "plugins/twl/docs/deps-co-architect.dot"
+
+  - ac_index: "1213-AC4c"
+    ac_text: "twl update-readme 実行で docs/deps-workflow-plugin-diagnose.dot が ref-skill-arch-patterns に自動更新される"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC4: docs/deps-workflow-plugin-diagnose.dot に ref-skill-arch-patterns が含まれる"
+    impl_files:
+      - "plugins/twl/docs/deps-workflow-plugin-diagnose.dot"
+
+  - ac_index: "1213-AC5a"
+    ac_text: "twl check が PASS する"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC5: twl check が PASS する"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+      - "plugins/twl/refs/ref-skill-arch-patterns.md"
+
+  - ac_index: "1213-AC5b"
+    ac_text: "bash plugins/twl/tests/scenarios/reference-migration.test.sh が PASS する"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC5: bash reference-migration.test.sh が PASS する"
+    impl_files:
+      - "plugins/twl/refs/ref-skill-arch-patterns.md"
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: "1213-AC6"
+    ac_text: "grep -rn 'ref-architecture[^-]' plugins/twl/docs/deps*.dot で出力が空（旧名残骸なし）"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC6: grep -rn 'ref-architecture[^-]' docs/deps*.dot の出力が空"
+    impl_files:
+      - "plugins/twl/docs/deps.dot"
+      - "plugins/twl/docs/deps-co-architect.dot"
+      - "plugins/twl/docs/deps-workflow-plugin-diagnose.dot"
+
+  - ac_index: "1213-AC7"
+    ac_text: "archive（plugins/twl/architecture/archive/migration/component-mapping.md）は歴史資料として変更しない（旧名 ref-architecture を保持）"
+    test_file: "plugins/twl/tests/scenarios/issue-1213-ref-architecture-rename.test.sh"
+    test_name: "AC7: archive ファイルに旧名 ref-architecture が保持されている"
+    impl_files: []
+    # impl_files: archive は変更しない（プロセス AC）
