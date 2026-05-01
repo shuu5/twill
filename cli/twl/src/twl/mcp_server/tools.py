@@ -128,6 +128,7 @@ _DEFAULT_SCRIPT = (
 
 _VALID_SESSION_ID_RE = re.compile(r"^[a-zA-Z0-9]+\Z")  # \Z は絶対末尾、$ より厳密（改行を許容しない）
 _VALID_WINDOW_NAME_RE = re.compile(r"^[A-Za-z0-9_./:@-]+\Z")
+_VALID_MANIFEST_CTX_RE = re.compile(r"^[a-zA-Z0-9_-]+\Z")
 _REQUIRED_CHECKPOINT_FIELDS = frozenset(
     {"step", "status", "findings_summary", "critical_count", "findings", "timestamp"}
 )
@@ -927,14 +928,12 @@ def twl_validate_merge_handler(
     timeout_sec: int | None = 300,
 ) -> dict:
     """validation module: merge pre-flight guard (2-guard scope only)."""
-    import os as _os
-
     if timeout_sec is not None and timeout_sec <= 0:
         return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
 
     def _inner() -> dict:
         import twl.autopilot.mergegate_guards as _mgguards2
-        cwd = _os.getcwd()
+        cwd = os.getcwd()
         try:
             _mgguards2._check_worktree_guard(cwd)
             _mgguards2._check_worker_window_guard()
@@ -1005,6 +1004,9 @@ def twl_validate_commit_handler(
 def twl_check_completeness_handler(manifest_context: str) -> dict:
     """validation module: specialist completeness check via flock-guarded manifest files."""
     import fcntl
+
+    if not _VALID_MANIFEST_CTX_RE.match(manifest_context or ""):
+        return {"ok": False, "error": f"invalid manifest_context: {manifest_context!r}", "error_type": "arg_error", "exit_code": 2}
 
     expected_path = Path(f"/tmp/.specialist-manifest-{manifest_context}.txt")
     actual_path = Path(f"/tmp/.specialist-spawned-{manifest_context}.txt")
