@@ -1,0 +1,172 @@
+issue: 1225
+title: "feat/hooks: Tier-1 PoC: deps.yaml guard を mcp_tool hook で shadow 実装"
+mappings:
+  - ac_index: 1
+    ac_text: ".claude/settings.json に PreToolUse mcp_tool hook を追加"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac1: settings.json に PreToolUse mcp_tool hook エントリが含まれる"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 1
+    ac_text: ".claude/settings.json に PreToolUse mcp_tool hook を追加 (PreToolUse セクション確認)"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac1: settings.json の mcp_tool hook エントリは PreToolUse セクションに存在する"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 2
+    ac_text: "shadow mode = decision field を返さない (log only)。mcp_tool の output は ~/.local/state/twill/hooks/deps-yaml-shadow.log (JSONL 1 line/event) に追記"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac2: shadow log ファイルは JSONL 形式 (1 line/event)"
+    impl_files: []
+    # impl_files 推定失敗: mcp_tool hook の実装は .claude/settings.json のコマンド文字列内か
+    # 別スクリプトに書かれる予定。実装後に補完が必要
+
+  - ac_index: 2
+    ac_text: "shadow mode = decision field を返さない (log only)"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac2: shadow log に decision field が含まれない (log-only = no blocking)"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 3
+    ac_text: "既存 pre-tool-use-deps-yaml-guard.sh を保持 (regression 比較用、削除しない)"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac3: pre-tool-use-deps-yaml-guard.sh が存在する (保持確認)"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-tool-use-deps-yaml-guard.sh"
+
+  - ac_index: 3
+    ac_text: "既存 pre-tool-use-deps-yaml-guard.sh のバイト数が不変"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac3: pre-tool-use-deps-yaml-guard.sh のバイト数が基準値 3753 に一致する"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-tool-use-deps-yaml-guard.sh"
+
+  - ac_index: 3
+    ac_text: "bash hook の判定 (exit 0 / exit 2) を同 log file に追記し、mcp_tool 判定と突合可能にする"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac3: bash hook の判定 (exit 0/exit 2) が shadow log に追記される"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-tool-use-deps-yaml-guard.sh"
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "比較スクリプト plugins/twl/scripts/mcp-shadow-compare.sh (新規、~50 行) を実装。同一 event の bash 判定と mcp_tool 判定を突合し、mismatch を stderr 出力 + exit code で表現"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac4: mcp-shadow-compare.sh が存在する"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "mcp-shadow-compare.sh が実行可能"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac4: mcp-shadow-compare.sh が実行可能である"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "mismatch を stderr 出力"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac4: mcp-shadow-compare.sh は mismatch 時に stderr に出力する"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "mismatch を exit code で表現"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac4: mcp-shadow-compare.sh は mismatch 時に非ゼロ exit code を返す"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "一致時に exit 0"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac4: mcp-shadow-compare.sh は一致時に exit 0 を返す"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "~50 行の実装"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac4: mcp-shadow-compare.sh は約 50 行以内の実装である"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 5
+    ac_text: "bats test (plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats、新規) で 5 サンプルの整合性を検証"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac5-sample1: both=allow (Write deps.yaml) → match, exit 0"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 5
+    ac_text: "Sample 2: both=block → match"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac5-sample2: both=block (Write deps.yaml invalid YAML) → match, exit 0"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 5
+    ac_text: "Sample 3: bash=allow mcp_tool=block → mismatch"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac5-sample3: bash=allow mcp_tool=block → mismatch, nonzero exit + stderr"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 5
+    ac_text: "Sample 4: bash=block mcp_tool=allow → mismatch"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac5-sample4: bash=block mcp_tool=allow → mismatch, nonzero exit + stderr"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 5
+    ac_text: "Sample 5: 複数イベント混在 (2 match + 1 mismatch) → nonzero exit"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac5-sample5: mixed events (2 match + 1 mismatch) → nonzero exit"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 6
+    ac_text: "1 週間以上の並走運用で mismatch 0 件を確認 (su-observer / Wave 完了時の audit で集計)"
+    test_file: ""
+    test_name: ""
+    impl_files: []
+    # プロセス AC: 実装物なし。手動運用確認のみ
+
+  - ac_index: 7
+    ac_text: "blocking 切替判断は別 Issue として起票 (本 PR では切替実施しない、ADR-029 案 B Step 2 相当)"
+    test_file: ""
+    test_name: ""
+    impl_files: []
+    # プロセス AC: 実装物なし。別 Issue 起票で完了
+
+  - ac_index: 8
+    ac_text: "ADR-029 Decision 4 への amendment 影響を Issue body と PR description に記載"
+    test_file: ""
+    test_name: ""
+    impl_files: []
+    # プロセス AC: 実装物なし。Issue/PR description 更新で完了
+
+  - ac_index: 9
+    ac_text: "AC-V1: PR diff で .claude/settings.json への PreToolUse mcp_tool hook 追加 (1 entry) が含まれることを ac-verify で機械検証"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "acv1: settings.json に PreToolUse mcp_tool エントリが diff で確認できる"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 10
+    ac_text: "AC-V2: 既存 pre-tool-use-deps-yaml-guard.sh の bytes が不変であることを diff で確認 (削除・改変防止)"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "acv2: pre-tool-use-deps-yaml-guard.sh の bytes が不変 (3753 bytes)"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-tool-use-deps-yaml-guard.sh"
+
+  - ac_index: 11
+    ac_text: "AC-V3: bats 5 サンプル全 PASS (bats plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats)"
+    test_file: "plugins/twl/tests/bats/scripts/mcp-shadow-compare.bats"
+    test_name: "ac5-sample1 〜 ac5-sample5 (5 テスト全 PASS = AC-V3 充足)"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
