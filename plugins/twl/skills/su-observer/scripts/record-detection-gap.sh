@@ -24,10 +24,17 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --type)           TYPE="$2";           shift 2 ;;
-    --detail)         DETAIL="$2";         shift 2 ;;
-    --related-issue)  RELATED_ISSUE="$2";  shift 2 ;;
-    --severity)       SEVERITY="$2";       shift 2 ;;
+    --type|--detail|--related-issue|--severity)
+      if [[ $# -lt 2 ]]; then
+        echo "ERROR: $1 requires a value" >&2; usage; exit 1
+      fi
+      case "$1" in
+        --type)           TYPE="$2" ;;
+        --detail)         DETAIL="$2" ;;
+        --related-issue)  RELATED_ISSUE="$2" ;;
+        --severity)       SEVERITY="$2" ;;
+      esac
+      shift 2 ;;
     *) echo "ERROR: Unknown argument: $1" >&2; usage; exit 1 ;;
   esac
 done
@@ -43,23 +50,43 @@ if [[ -z "$DETAIL" ]]; then
   exit 1
 fi
 
-# Action 1: .supervisor/intervention-log.md に追記（prior art: spawn-controller.sh L58）
+# --severity validation
+case "$SEVERITY" in
+  low|medium|high) ;;
+  *) echo "ERROR: --severity must be low|medium|high (got: $SEVERITY)" >&2; usage; exit 1 ;;
+esac
+
+# SUPERVISOR_DIR basic path safety (reject traversal patterns)
 _supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
+if [[ "$_supervisor_dir" == *..* ]]; then
+  echo "ERROR: SUPERVISOR_DIR must not contain '..'" >&2; exit 1
+fi
+
+# Sanitize DETAIL: strip newlines and control characters to prevent log injection
+DETAIL="${DETAIL//$'\n'/ }"
+DETAIL="${DETAIL//$'\r'/ }"
+
+# Action 1: .supervisor/intervention-log.md に追記（prior art: spawn-controller.sh L58）
 mkdir -p "$_supervisor_dir"
 _ts="$(date -u +%FT%TZ)"
-printf '%s [detection-gap] type=%s severity=%s: %s\n' \
-  "$_ts" "$TYPE" "$SEVERITY" "$DETAIL" \
-  >> "$_supervisor_dir/intervention-log.md"
+if [[ -n "$RELATED_ISSUE" ]]; then
+  printf '%s [detection-gap] type=%s severity=%s related=%s: %s\n' \
+    "$_ts" "$TYPE" "$SEVERITY" "$RELATED_ISSUE" "$DETAIL" \
+    >> "$_supervisor_dir/intervention-log.md"
+else
+  printf '%s [detection-gap] type=%s severity=%s: %s\n' \
+    "$_ts" "$TYPE" "$SEVERITY" "$DETAIL" \
+    >> "$_supervisor_dir/intervention-log.md"
+fi
 
 # Action 2: doobidoo memory_store hint → stderr（MCP は shell から呼出不可のため hint のみ）
 {
   echo "[hint] doobidoo memory_store recommended:"
   echo "  content: \"detection-gap: ${DETAIL}\""
+  echo "  tags: [\"observer-pitfall\", \"detection-gap\", \"${TYPE}\"]"
   if [[ -n "$RELATED_ISSUE" ]]; then
-    echo "  tags: [\"observer-pitfall\", \"detection-gap\", \"${TYPE}\"]"
     echo "  metadata: { \"severity\": \"${SEVERITY}\", \"related_issue\": \"${RELATED_ISSUE}\" }"
   else
-    echo "  tags: [\"observer-pitfall\", \"detection-gap\", \"${TYPE}\"]"
     echo "  metadata: { \"severity\": \"${SEVERITY}\" }"
   fi
 } >&2
