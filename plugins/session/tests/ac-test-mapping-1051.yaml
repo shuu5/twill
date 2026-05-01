@@ -1,0 +1,80 @@
+# ac-test-mapping.yaml — Issue #1051: tech-debt: session-comm SESSION_COMM_LOCK_DIR mkdir -p
+# 生成: AC Scaffold Tests Agent
+# 対象テストファイル: plugins/session/tests/session-comm-lock-dir-validation.bats
+
+mappings:
+  # ---------------------------------------------------------------------------
+  # AC1: session-comm.sh cmd_inject に採用案 A の mkdir -p ブロックを追加
+  # ---------------------------------------------------------------------------
+  - ac_index: 1
+    ac_text: "plugins/session/scripts/session-comm.sh の cmd_inject 内、L280 直後（local lock_file=... 直前）に mkdir -p \"$lock_dir\" 2>/dev/null || { echo \"Error: SESSION_COMM_LOCK_DIR '$lock_dir' is not creatable\" >&2; exit 1; } を追加する"
+    test_file: "plugins/session/tests/session-comm-lock-dir-validation.bats"
+    test_name: "session-comm-lock-dir[structural][RED]: cmd_inject に mkdir -p lock_dir ガードが含まれる"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 1b
+    ac_text: "mkdir -p 失敗時に 'is not creatable' エラーメッセージが stderr に出力される（AC1 の構造的サブ確認）"
+    test_file: "plugins/session/tests/session-comm-lock-dir-validation.bats"
+    test_name: "session-comm-lock-dir[structural][RED]: mkdir -p 失敗時の Error メッセージが含まれる"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC2-1: 不存在ディレクトリ → mkdir -p で自動作成
+  # ---------------------------------------------------------------------------
+  - ac_index: 2a
+    ac_text: "不存在ディレクトリ: SESSION_COMM_LOCK_DIR=/nonexistent_lock_dir_$$ → mkdir -p PASS（自動作成）→ flock 成功"
+    test_file: "plugins/session/tests/session-comm-lock-dir-validation.bats"
+    test_name: "session-comm-lock-dir[functional][RED]: 不存在ディレクトリは mkdir -p で自動作成される"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC2-2: 作成不可ディレクトリ → stderr Error + exit 1
+  # ---------------------------------------------------------------------------
+  - ac_index: 2b
+    ac_text: "作成不可ディレクトリ（permission denied）: SESSION_COMM_LOCK_DIR=/some_chmod_000_dir/sub → mkdir -p FAIL → stderr Error メッセージ + exit code 1"
+    test_file: "plugins/session/tests/session-comm-lock-dir-validation.bats"
+    test_name: "session-comm-lock-dir[functional][RED]: 作成不可ディレクトリで Error メッセージ + exit 1"
+    status: RED
+    note: "root 実行時は skip guard により自動スキップ（[[ $(id -u) == 0 ]] → skip）"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC2-3: 既存ディレクトリ /tmp → 回帰なし（mkdir -p 冪等）
+  # ---------------------------------------------------------------------------
+  - ac_index: 2c
+    ac_text: "既存ディレクトリ: SESSION_COMM_LOCK_DIR=/tmp → 通常動作（既存ケース回帰なし）"
+    test_file: "plugins/session/tests/session-comm-lock-dir-validation.bats"
+    test_name: "session-comm-lock-dir[regression]: 既存ディレクトリ /tmp では mkdir -p が冪等で成功する"
+    status: GREEN
+    note: "mkdir -p は既存ディレクトリに対して no-op で成功するため、実装前後どちらも GREEN。回帰ガードとして記載。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC3: bats session-comm-lock-dir-validation.bats 全件 PASS（実装後）
+  # メタ AC のため専用テストは不要
+  # ---------------------------------------------------------------------------
+  - ac_index: 3
+    ac_text: "bats plugins/session/tests/session-comm-lock-dir-validation.bats が PASS する（実装後）"
+    test_file: null
+    test_name: null
+    impl_files: []
+    # メタ的な「全テスト PASS 確認」AC のため専用テストは不要（workflow が確認する）
+
+  # ---------------------------------------------------------------------------
+  # AC4: 既存 session-comm-*.bats の回帰なし PASS
+  # メタ AC のため専用テストは不要
+  # ---------------------------------------------------------------------------
+  - ac_index: 4
+    ac_text: "既存 bats plugins/session/tests/session-comm-*.bats（session-comm-script-dir-validate.bats / session-comm-usage-typo-1066.bats）の全件が回帰なく PASS する"
+    test_file: null
+    test_name: null
+    impl_files: []
+    # メタ的な「回帰なし確認」AC のため専用テストは不要（workflow が確認する）
