@@ -839,3 +839,47 @@ done
 | Wave 完了監視 | **PILOT-WAVE-COLLECTED** + STAGNATE |
 | 並列 controller 運用（refine/explore 群） | **IDLE-COMPLETED** + INPUT-WAIT + WORKERS |
 | デバッグ・問題調査 | INPUT-WAIT + STAGNATE（最小セット） |
+
+---
+
+## Monitor task 起動テンプレート（起動時 SOP 用）
+
+> **差分明示**: 上記 §`cld-observe-any` 標準スニペット（L499-558）は推奨実装パターン。
+> 本節は Step 0 step 6.5「Monitor task 起動 MUST」用の **起動時 SOP テンプレート**であり、
+> observer LLM が「忘れる」リスクを排除するための構造化手順を提供する。
+> `step0-monitor-bootstrap.sh` が stdout に emit するコマンドをそのまま Monitor tool で実行すること。
+
+### 起動手順（Step 0 step 6.5 の実行内容）
+
+```bash
+# 1. bootstrap script を実行して起動コマンドを確認
+bash plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh
+
+# 2. daemon が未起動の場合: emit されたコマンドを Monitor tool で実行
+#    (cld-observe-any daemon + tail -F .supervisor/cld-observe-any.log)
+```
+
+### daemon 既存検知（pgrep -f パターン踏襲）
+
+```bash
+# daemon 起動済みチェック
+bash plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh --check
+# exit 0: RUNNING (起動コマンド emit をスキップ)
+# exit 1: NOT_RUNNING (起動コマンドを emit して Monitor tool で実行)
+```
+
+### 定期 audit pattern（Step 1 supervise loop 内 MUST）
+
+5 分ごとに全 `ap-/wt-/coi-` window に対し以下を実行し、menu/input-wait 状態を検知する:
+
+```bash
+# ANSI escape strip 必須（pitfalls-catalog.md §2.5 同様の制約）
+tmux capture-pane -p | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Enter to select|^❯ [1-9]\.|Press up to edit queued'
+```
+
+**検知パターン**:
+| パターン | 検知状況 |
+|---|---|
+| `Enter to select` | インタラクティブ選択メニュー待ち |
+| `^❯ [1-9]\.` | 番号付きメニュー選択待ち |
+| `Press up to edit queued` | キュー編集プロンプト待ち |
