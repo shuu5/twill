@@ -33,7 +33,7 @@ _emit_start_commands() {
   echo "# Step 1: cld-observe-any daemon を logfile redirect で起動"
   echo "mkdir -p ${SUPERVISOR_DIR}"
   echo "plugins/session/scripts/cld-observe-any \\"
-  echo "  --session \"\$(cat ${SUPERVISOR_DIR}/session.json | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"session_id\"])')\" \\"
+  echo "  --pattern '^(ap-|wt-|coi-|coe-)' \\"
   echo "  2>&1 | tee -a ${LOG_FILE} &"
   echo ""
   echo "# Step 2: logfile が出力開始するまで待機"
