@@ -68,9 +68,9 @@ tmux() {
 }
 export -f tmux
 
-# session-state.sh モック
-"$SCRIPT_DIR/session-state.sh"() { echo "processing"; }
-export -f "$SCRIPT_DIR/session-state.sh" 2>/dev/null || true
+# session-state.sh モック (関数名は slash-free)
+_mock_session_state() { echo "processing"; }
+export -f _mock_session_state
 
 _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
     bash "$CLD_OBSERVE_ANY" --window "$win" --once $extra_args
