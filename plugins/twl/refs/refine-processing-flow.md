@@ -193,7 +193,10 @@ gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --body-file "$FINAL_BODY"
 # dual-write 順序: label 先（ここまで）→ Status 後（下記）
 # 理由: Status を先に書くと autopilot が label 付与前に early spawn する race の可能性がある
 
-# AC1(1): idempotent auto-create pre-step（ADR-024 Phase 1; Phase B 移行で削除予定）
+# dual-write observability ロガーを source（Issue #1212）— 後続 loop で dual_write_log を使用するため先に読み込む
+source "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/scripts/refined-dual-write-log.sh" 2>/dev/null || true
+
+# AC1(1): idempotent auto-create pre-step（ADR-024 Phase 1; Phase B 移行で削除予定、#1209）
 # label 不在時に --add-label が失敗して Status=Refined 移行が skip される連鎖を断つため、
 # 付与前に label を事前作成する。|| true で「既存 label でも abort しない」を保証する。
 while IFS= read -r label; do
@@ -202,20 +205,35 @@ while IFS= read -r label; do
     --repo "$ISSUE_REPO" 2>/dev/null || true
 done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 
-# AC1(2): シェルレベル || true guard — label 付与 loop が abort せず次 label に継続することを保証する。
-# LLM ガード（spec の「失敗時継続」記述）だけでなくシェルレベルの分離が必須である（#1209）。
+# AC1(2): label 付与 + dual-write observability（#1209 のシェルレベル || true 分離 + Issue #1212 の logging）
+# 各 label の add 結果を dual_write_log で記録する。loop 内エラーは次 label に継続する。
 while IFS= read -r label; do
-  [[ -n "$label" ]] && gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label "$label" 2>/dev/null || true
+  if [[ -n "$label" ]]; then
+    gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label "$label"
+    _label_exit=$?
+    if [[ "$_label_exit" -ne 0 ]]; then
+      dual_write_log WARN label_add_failed "$ISSUE_NUMBER" "label=$label repo=$ISSUE_REPO exit_code=$_label_exit"
+    else
+      dual_write_log OK dual_write "$ISSUE_NUMBER" "label_ok=Y"
+    fi
+  fi
 done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 
 # AC2: Status update 独立性保証 — label 付与 loop の結果（成功/失敗/部分失敗）と無関係に実行される。
 # label 付与で発生した失敗は Status update を block しない。
 # これは ADR-024 dual-write 順序遵守の元、label 付与失敗で Status=Todo のまま残ることを防ぐ独立性保証である。
 # 責任境界: #943 gate は Status=Refined の有無のみ確認、phase-review の内容は検証しない（#940 の責務）
+# dual-write observability (Issue #1212): Status update 失敗時も dual_write_log WARN status_update_failed を呼び出す
 if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]]; then
   bash "${SCRIPTS_ROOT:-$(dirname "$0")/../../scripts}/chain-runner.sh" \
-    board-status-update "$ISSUE_NUMBER" "Refined" 2>/dev/null || \
+    board-status-update "$ISSUE_NUMBER" "Refined" 2>/dev/null
+  _status_exit=$?
+  if [[ "$_status_exit" -ne 0 ]]; then
     echo "⚠️  Status=Refined への Board 更新失敗（label は付与済み）"
+    dual_write_log WARN status_update_failed "$ISSUE_NUMBER" "status=Refined chain_runner_exit=$_status_exit"
+  else
+    dual_write_log OK dual_write "$ISSUE_NUMBER" "label_ok=Y status_ok=Y"
+  fi
 fi
 ```
 

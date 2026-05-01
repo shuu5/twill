@@ -2360,6 +2360,11 @@ commands:
 
 # スクリプト（B-3 で追加）
 scripts:
+  refined-dual-write-log:
+    type: script
+    path: scripts/refined-dual-write-log.sh
+    description: "dual-write observability helper — dual_write_log 関数を提供。label_add_failed / status_update_failed / dual_write イベントを /tmp/refined-dual-write.log に記録（Issue #1212）"
+
   state-read:
     type: script
     path: ../../cli/twl/src/twl/autopilot/state.py

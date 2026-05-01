@@ -1,0 +1,184 @@
+# ac-test-mapping-1212.yaml
+# Issue #1212: tech-debt refined dual-write skip observability
+# 生成: 2026-05-01 (RED フェーズ)
+#
+# impl_files 注記:
+#   - refined-dual-write-log.sh は新規作成対象。source guard の有無は不問
+#     (関数のみのライブラリなので main 到達問題は発生しない)。
+#   - issue-lifecycle-orchestrator.sh に source guard なし。set -euo pipefail 環境で
+#     source する場合は main 到達前に exit するリスクあり。
+#     ただし本 AC では直接 source せず grep/function extraction パターンで検証する。
+#   - AC6 (PR description 記載のみ) は実装対象コードなし → impl_files: []
+
+mappings:
+  # ---------------------------------------------------------------------------
+  # AC1 — 専用 log file の導入 (dual_write_log 関数)
+  # ---------------------------------------------------------------------------
+
+  - ac_index: "1i"
+    ac_text: "dual_write_log WARN label_add_failed が [TIMESTAMP] WARN label_add_failed issue=#<N> 形式で /tmp/refined-dual-write.log に書き込まれること"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac1(i): dual_write_log WARN label_add_failed が [TIMESTAMP] WARN label_add_failed issue=#<N> 形式で書き込まれる"
+    impl_files:
+      - "plugins/twl/scripts/refined-dual-write-log.sh"
+
+  - ac_index: "1ii"
+    ac_text: "dual_write_log OK dual_write が [TIMESTAMP] OK dual_write issue=#<N> label_ok=Y 形式で /tmp/refined-dual-write.log に書き込まれること"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac1(ii): dual_write_log OK dual_write が [TIMESTAMP] OK dual_write issue=#<N> label_ok=Y 形式で書き込まれる"
+    impl_files:
+      - "plugins/twl/scripts/refined-dual-write-log.sh"
+
+  - ac_index: "1iii"
+    ac_text: "/tmp/refined-dual-write.log と /tmp/refined-status-gate.log が物理分離されていること (dual_write_log は status-gate log に書き込まない)"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac1(iii): dual_write_log は refined-status-gate.log に書き込まない（物理分離）"
+    impl_files:
+      - "plugins/twl/scripts/refined-dual-write-log.sh"
+
+  - ac_index: "1iv"
+    ac_text: "plugins/twl/refs/refine-processing-flow.md に source + dual_write_log 呼び出し手順を明記 (Worker Step 6')"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac1(iv): refine-processing-flow.md に source + dual_write_log 呼び出し手順が明記されている"
+    impl_files:
+      - "plugins/twl/refs/refine-processing-flow.md"
+
+  - ac_index: "1v"
+    ac_text: "plugins/twl/refs/lifecycle-processing-flow.md Step 6 の issue-create 完了後かつ Step 6.5 前に source + dual_write_log を追記"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac1(v): lifecycle-processing-flow.md Step 6 に dual_write_log が追記されている"
+    impl_files:
+      - "plugins/twl/refs/lifecycle-processing-flow.md"
+
+  - ac_index: "1vi"
+    ac_text: "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md に bash -c source または inline printf を明記 (co-issue Phase 4 [B] manual fix path)"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac1(vi): co-issue-phase4-aggregate.md に dual_write_log または inline printf が明記されている"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md"
+
+  # ---------------------------------------------------------------------------
+  # AC2 — co-autopilot 起動時の cross-check + actionable hint
+  # ---------------------------------------------------------------------------
+
+  - ac_index: "2i"
+    ac_text: "cli/twl/src/twl/autopilot/launcher.py に _check_dual_write_log(issue_num: str) -> str | None を新規追加"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac2(i): launcher.py に _check_dual_write_log 関数が定義されている"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/launcher.py"
+
+  - ac_index: "2ii"
+    ac_text: "_check_dual_write_log が log hit (label_add_failed エントリあり) 時に actionable hint 文字列を返すこと"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac2(ii): _check_dual_write_log が log hit 時に actionable hint 文字列を返す"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/launcher.py"
+
+  - ac_index: "2iii"
+    ac_text: "_check_dual_write_log が log 不在時に None/空を返すこと"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac2(iii): _check_dual_write_log が log 不在時に None/空を返す"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/launcher.py"
+
+  - ac_index: "2iv"
+    ac_text: "_check_refined_status が Status=Todo 検出時に _check_dual_write_log(str(issue)) を呼び出し、hit 時に DENY LaunchError の message に hint を append すること"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac2(iv): Status=Todo 検出時の LaunchError に _check_dual_write_log hint が append される"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/launcher.py"
+
+  # ---------------------------------------------------------------------------
+  # AC3 — 観察 trace の永続化
+  # ---------------------------------------------------------------------------
+
+  - ac_index: "3i"
+    ac_text: "plugins/twl/scripts/issue-lifecycle-orchestrator.sh の _generate_fallback_report 呼び出し後バッチループ内に _subdir_issue_num 変数を新規導入 (jq で取得、fallback は basename)"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac3(i): issue-lifecycle-orchestrator.sh に _subdir_issue_num 変数が存在する"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  - ac_index: "3ii"
+    ac_text: "grep cross-check で label_add_failed/status_update_failed を検出するロジックが orchestrator に追加されていること"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac3(ii): issue-lifecycle-orchestrator.sh に label_add_failed / status_update_failed の grep cross-check が存在する"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  - ac_index: "3iii"
+    ac_text: "grep cross-check 発火時に tmux capture-pane で trace log を保存すること (/tmp/refined-dual-write.log 事前書き込み + tmux mock)"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac3(iii): label_add_failed 事前書き込み後に orchestrator が trace ファイルを生成する (tmux mock)"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC4 — bats test (最低 5 test case) — 本ファイル内の ac4(i)〜ac4(v)
+  # ---------------------------------------------------------------------------
+
+  - ac_index: "4i"
+    ac_text: "AC4(i): dual_write_log WARN label_add_failed が [TIMESTAMP] WARN label_add_failed issue=#<N> 形式で書き込まれること (bats)"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac4(i): dual_write_log WARN label_add_failed が [TIMESTAMP] WARN label_add_failed issue=#<N> 形式"
+    impl_files:
+      - "plugins/twl/scripts/refined-dual-write-log.sh"
+
+  - ac_index: "4ii"
+    ac_text: "AC4(ii): dual_write_log OK dual_write が [TIMESTAMP] OK dual_write issue=#<N> label_ok=Y 形式で書き込まれること (bats)"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac4(ii): dual_write_log OK dual_write が [TIMESTAMP] OK dual_write issue=#<N> label_ok=Y 形式"
+    impl_files:
+      - "plugins/twl/scripts/refined-dual-write-log.sh"
+
+  - ac_index: "4iii"
+    ac_text: "AC4(iii): _check_dual_write_log が log hit 時に actionable hint 文字列を返すこと (pytest または bats + python3 -c)"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac4(iii): _check_dual_write_log が log hit 時に actionable hint 文字列を返す (python3 -c)"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/launcher.py"
+
+  - ac_index: "4iv"
+    ac_text: "AC4(iv): _check_dual_write_log が log 不在時に None/空を返すこと"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac4(iv): _check_dual_write_log が log 不在時に None/空を返す (python3 -c)"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/launcher.py"
+
+  - ac_index: "4v"
+    ac_text: "AC4(v): AC3 発火条件 (grep cross-check 部分) が /tmp/refined-dual-write.log 事前書き込み後に trace ファイルを生成すること (tmux capture-pane を mock)"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac4(v): label_add_failed 事前書き込み後に trace ファイルが生成される (tmux capture-pane mock)"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC5 — regression なし
+  # ---------------------------------------------------------------------------
+
+  - ac_index: "5i"
+    ac_text: "plugins/twl/deps.yaml の scripts セクションに refined-dual-write-log が追記されていること"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac5(i): deps.yaml scripts セクションに refined-dual-write-log が登録されている"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+      - "plugins/twl/scripts/refined-dual-write-log.sh"
+
+  - ac_index: "5ii"
+    ac_text: "plugins/twl/scripts/refined-dual-write-log.sh ファイルが実際に存在すること (deps.yaml 登録に対応するファイルの実在確認)"
+    test_file: "plugins/twl/tests/bats/skills/refined-dual-write-observability.bats"
+    test_name: "ac5(ii): plugins/twl/scripts/refined-dual-write-log.sh ファイルが存在する"
+    impl_files:
+      - "plugins/twl/scripts/refined-dual-write-log.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC6 — 承認 gate (PR description 記載のみ、実装対象コードなし)
+  # ---------------------------------------------------------------------------
+
+  - ac_index: "6"
+    ac_text: "PR description に merge gate を明記する（実装不要、PR description 記載のみ）"
+    test_file: ""
+    test_name: ""
+    # impl_files 推定失敗: PR description はコードではないため impl_files なし
+    impl_files: []
