@@ -215,7 +215,8 @@ WARN
   CHAIN_CONTEXT="$(cat "$PROMPT_FILE" 2>/dev/null || true)"
   CONTEXT_ARG=()
   [[ -n "$CHAIN_CONTEXT" ]] && CONTEXT_ARG=(--context "$CHAIN_CONTEXT")
-
+  WINDOW_NAME="wt-${SKILL_NORMALIZED}-${CHAIN_ISSUE}"
+  echo ">>> Monitor 再 arm 必要: ${WINDOW_NAME}"
   exec bash "$AUTOPILOT_LAUNCH_SH" \
     --issue "$CHAIN_ISSUE" \
     --project-dir "$CHAIN_PROJECT_DIR" \
@@ -280,9 +281,20 @@ for arg in "$@"; do
   fi
 done
 
+WINDOW_NAME=""
 WINDOW_NAME_ARG=()
 if [[ "$HAS_WINDOW_NAME" == "false" ]]; then
-  WINDOW_NAME_ARG=(--window-name "wt-${SKILL_NORMALIZED}-$(date +%H%M%S)")
+  WINDOW_NAME="wt-${SKILL_NORMALIZED}-$(date +%H%M%S)"
+  WINDOW_NAME_ARG=(--window-name "$WINDOW_NAME")
+else
+  prev_arg=""
+  for arg in "$@"; do
+    if [[ "$prev_arg" == "--window-name" ]]; then
+      WINDOW_NAME="$arg"
+      break
+    fi
+    prev_arg="$arg"
+  done
 fi
 
 # _setup_observer_panes: observer window を 4 pane layout に分割し watcher を起動する
@@ -371,8 +383,10 @@ PYEOF
 # co-autopilot（非 --with-chain）は exec を避けて pane setup を後続実行する
 if [[ "$SKILL_NORMALIZED" == "co-autopilot" && "$WITH_CHAIN" == "false" ]]; then
   # cld-spawn は prompt inject 後すぐに 0 終了する。|| true で set -e を抑制し pane setup を必ず実行する
+  echo ">>> Monitor 再 arm 必要: ${WINDOW_NAME}"
   "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]+"${WINDOW_NAME_ARG[@]}"}" "$@" "$FINAL_PROMPT" || true
   _setup_observer_panes
 else
+  echo ">>> Monitor 再 arm 必要: ${WINDOW_NAME}"
   exec "$CLD_SPAWN" "${WINDOW_NAME_ARG[@]+"${WINDOW_NAME_ARG[@]}"}" "$@" "$FINAL_PROMPT"
 fi

@@ -828,6 +828,39 @@ done
 
 ---
 
+## [MONITOR-REARM] — controller spawn 完了後の Monitor 再 arm trigger（Issue #1186）
+
+> **追加背景（Issue #1186, doobidoo Hash 3ecbfbc2）**: `spawn-controller.sh` が新 controller window を spawn した直後、
+> observer LLM は旧 channel を監視し続けて新 window を捕捉できない問題（30+ 分 silent incident）。
+> spawn 完了直前に stdout へ emit することで observer に Monitor 再 arm を促す。
+
+**検知対象**: `spawn-controller.sh` stdout の emit 文（exec/cld-spawn 呼出直前）
+
+**emit 文**: `>>> Monitor 再 arm 必要: <window-name>`
+
+**regex パターン（Monitor tool / cld-observe-any --pattern 向け）:**
+
+```
+>>> Monitor 再 arm 必要: [^\n]+
+```
+
+**受信経路**（方式 A 推奨）: `spawn-controller.sh` 出力を `tee -a .supervisor/cld-observe-any.log` で共有 logfile に redirect、Monitor tool が `tail -F` で監視。
+
+```bash
+# spawn 呼び出し例（方式 A）
+bash spawn-controller.sh co-issue "$PROMPT_FILE" --window-name "$WINDOW" \
+  2>&1 | tee -a .supervisor/cld-observe-any.log
+```
+
+**observer の対応（Layer 0 Auto）**:
+1. `>>> Monitor 再 arm 必要: <window-name>` を検知する
+2. `<window-name>` を取得し、Monitor tool の監視対象を新 window に切り替える
+3. または `cld-observe-any --pattern ">>> Monitor 再 arm 必要"` で検知後、新 window へ re-arm
+
+**介入層**: Layer 0 Auto（既存 Monitor 再設定は observer 自律判断範囲内）
+
+---
+
 ## Wave 種別ごとのチャネル選択ガイド
 
 | Wave 種別 | 推奨チャネル |

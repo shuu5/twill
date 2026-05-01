@@ -610,6 +610,40 @@ done
 
 **関連**: `step0-monitor-bootstrap.sh` が emit するコマンドに polling template を含む（AC1.2）。
 
+### §11.8 Controller 遷移時の channel reset MUST（Monitor 再 arm）
+
+**検出元**: doobidoo Hash 3ecbfbc2（2026-04-24、Monitor 単独起動で 30+ 分 silent incident）
+
+#### 失敗メカニズム
+
+observer が旧 controller window を Monitor tool で監視中に `spawn-controller.sh` が新 controller window を spawn すると、observer は旧 channel を監視し続けて新 window の出力を受信できなくなる。
+
+#### MUST ルール
+
+`spawn-controller.sh` は exec/cld-spawn 呼出 **直前**（exec 後は dead code のため）に stdout へ以下を emit する:
+
+```
+>>> Monitor 再 arm 必要: <window-name>
+```
+
+observer はこの emit を受信した場合、**即座に**（Layer 0 Auto）Monitor tool の監視対象を新 `<window-name>` に切り替えること（re-arm）。
+
+#### 対策コード（spawn-controller.sh 実装済み — Issue #1186）
+
+```bash
+# exec/cld-spawn 呼出直前に emit（全分岐で必須）
+echo ">>> Monitor 再 arm 必要: ${WINDOW_NAME}"
+exec "$CLD_SPAWN" ...
+```
+
+**注**: `exec` 後はプロセスが置換されるため、emit は必ず exec の直前行に配置する。emit が stderr だと Monitor tool が受信できない（stdout MUST）。
+
+#### 関連
+
+- `monitor-channel-catalog.md`: `[MONITOR-REARM]` チャネル（regex: `>>> Monitor 再 arm 必要: [^\n]+`）
+- Hash 3ecbfbc2 (doobidoo): Monitor 単独起動 silent の根本原因
+- spawn-controller.sh:55-76 の intervention-log とは目的が異なる（本 emit は全 spawn 成功時の trigger、intervention-log は §11.3 bypass 記録専用）
+
 ---
 
 ## 12. Claude Code classifier bypass 検出パターン（MUST）
