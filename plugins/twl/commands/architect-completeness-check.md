@@ -16,17 +16,23 @@ architecture/ ディレクトリの完全性を検証し、不足ファイル・
 
 ### 1. 必須ファイル存在チェック
 
-以下のファイル/ディレクトリの存在を Glob で確認:
+**Step 1 冒頭**: `ref-architecture-spec.md` を Read し、`## 必須ファイル` セクションの必須テーブルから各パスの `Severity` 列を動的に読み出す。`RECOMMENDED` 不在は `INFO` レベルで報告する（`WARNING` より低い）。
 
-| パス | 必須 | 不在時レベル |
-|------|------|-------------|
-| `vision.md` | YES | WARNING |
-| `domain/model.md` | YES | WARNING |
-| `domain/glossary.md` | YES | WARNING |
-| `domain/contexts/*.md` | 1つ以上 | WARNING |
-| `phases/*.md` | 1つ以上 | WARNING |
-| `decisions/` | NO | INFO（未作成） |
-| `contracts/` | NO | INFO（未作成） |
+テーブル形式（`ref-architecture-spec.md` の `## 必須ファイル` テーブルを参照）:
+
+| パス | 必須 | Severity（ref-architecture-spec.md から読み出し） |
+|------|------|------------------------------------------------|
+| `vision.md` | YES | 動的読み出し |
+| `domain/model.md` | YES | 動的読み出し |
+| `domain/glossary.md` | YES | 動的読み出し |
+| `domain/contexts/*.md` | 1つ以上 | 動的読み出し |
+| `phases/*.md` | 1つ以上 | 動的読み出し |
+| `decisions/` | NO | 動的読み出し |
+| `contracts/` | NO | 動的読み出し |
+
+各パスを Glob で確認し、不在時は `ref-architecture-spec.md` テーブルの `Severity` 値に従ってレベルを決定する:
+- `Severity=WARNING` → `[WARNING]`
+- `Severity=RECOMMENDED` → `[INFO]`（RECOMMENDED 不在は WARNING より低い INFO レベル）
 
 ### 2. 必須セクションチェック
 

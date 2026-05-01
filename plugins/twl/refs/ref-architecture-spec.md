@@ -27,17 +27,17 @@ architecture/
 
 ## 必須ファイル
 
-アーキテクチャ完全性チェックで検証される必須ファイル:
+アーキテクチャ完全性チェックで検証される必須ファイル。`Severity` 列は不在時の報告レベルを定義する（`WARNING` または `RECOMMENDED`）。`RECOMMENDED` 不在は `INFO` レベルで報告する（`WARNING` より低い）。テーブル変更のみで `Severity` 値を切替可能な設計とする（テーブル駆動）。
 
-| ファイル | 必須 | 説明 |
-|---------|------|------|
-| vision.md | YES | プロジェクトの目的・制約・非目標 |
-| domain/model.md | YES | コアドメインモデル |
-| domain/glossary.md | YES | ユビキタス言語定義 |
-| domain/contexts/*.md | 1つ以上 | Bounded Context 定義 |
-| phases/*.md | 1つ以上 | Phase 計画 |
-| decisions/*.md | NO | ADR（任意） |
-| contracts/*.md | NO | API 境界（任意） |
+| ファイル | 必須 | Severity | 説明 |
+|---------|------|----------|------|
+| vision.md | YES | WARNING | プロジェクトの目的・制約・非目標 |
+| domain/model.md | YES | WARNING | コアドメインモデル |
+| domain/glossary.md | YES | WARNING | ユビキタス言語定義 |
+| domain/contexts/*.md | 1つ以上 | WARNING | Bounded Context 定義 |
+| phases/*.md | 1つ以上 | WARNING | Phase 計画 |
+| decisions/*.md | NO | RECOMMENDED | ADR（任意） |
+| contracts/*.md | NO | RECOMMENDED | API 境界（任意） |
 
 ## ファイルフォーマット
 
