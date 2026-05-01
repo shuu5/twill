@@ -568,3 +568,56 @@ issue_1168:
       note: "回帰ガード。行末 \\ 付き env-prefix 行が 1 件以上存在することを確認"
       impl_files:
         - "plugins/session/tests/cld-observe-any.bats"
+
+# --- Issue #1187 ---
+issue_1187:
+  issue: 1187
+  framework: bats
+  test_file: "plugins/twl/tests/bats/observer/record-detection-gap.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "AC4.1: plugins/twl/skills/su-observer/scripts/record-detection-gap.sh を新規作成 (--type, --detail, --related-issue, --severity 引数; 動作1: intervention-log.md 追記; 動作2: doobidoo hint→stderr; 動作3: --severity high のみ gh issue create hint→stderr)"
+      test_names:
+        - "ac4.1: record-detection-gap.sh exists at expected path"
+        - "ac4.1: record-detection-gap.sh is executable"
+        - "ac4.1: record-detection-gap.sh has set -euo pipefail"
+        - "ac4.1 action2: doobidoo memory_store hint is output to stderr"
+        - "ac4.1 action2: doobidoo hint includes content field"
+        - "ac4.1: default severity is medium when --severity is not specified"
+        - "ac4.1: --related-issue value appears in log or hint output"
+      status: RED
+      red_mechanism: "record-detection-gap.sh が存在しないため全テストが fail する"
+      impl_files:
+        - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+
+    - ac_index: 2
+      ac_text: "AC4.2: bats test plugins/twl/tests/bats/observer/record-detection-gap.bats — C1a: log regex マッチ, C1b: ファイル新規作成, C2: --severity high gh issue create hint, C3: 必須引数欠落 exit 1"
+      test_names:
+        - "ac4.2 C1a: log entry has ISO 8601 timestamp prefix"
+        - "ac4.2 C1a: log entry matches full regex pattern"
+        - "ac4.2 C1b: creates intervention-log.md when file does not exist"
+        - "ac4.2 C1b: creates parent directory with mkdir -p when not exists"
+        - "ac4.2 C1b: new file contains exactly one appended line"
+        - "ac4.2 C2: --severity high outputs gh issue create hint to stderr"
+        - "ac4.2 C2: --severity high hint includes required labels"
+        - "ac4.2 C2: --severity high also appends to intervention-log.md"
+        - "ac4.2 C2: --severity medium does NOT output gh issue create hint"
+        - "ac4.2 C3: missing --type exits with code 1"
+        - "ac4.2 C3: missing --detail exits with code 1"
+        - "ac4.2 C3: missing --type outputs usage to stderr"
+        - "ac4.2 C3: missing --detail outputs usage to stderr"
+      status: RED
+      red_mechanism: "record-detection-gap.sh が存在しないため全テストが fail する"
+      impl_files:
+        - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+
+    - ac_index: 3
+      ac_text: "AC4.3: SKILL.md (または委譲先 refs/su-observer-supervise-channels.md) の Step 1 supervise loop に「検知漏れ発生時 record-detection-gap.sh 呼出 SHOULD」を文書化"
+      test_names:
+        - "ac4.3: SKILL.md or supervise-channels.md documents record-detection-gap.sh call"
+        - "ac4.3: documentation includes SHOULD keyword for the call"
+      status: RED
+      red_mechanism: "SKILL.md および refs/su-observer-supervise-channels.md に record-detection-gap.sh の記述が存在しないため fail する"
+      impl_files:
+        - "plugins/twl/skills/su-observer/SKILL.md"
+        - "plugins/twl/skills/su-observer/refs/su-observer-supervise-channels.md"
