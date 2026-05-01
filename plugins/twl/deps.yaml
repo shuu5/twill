@@ -2955,7 +2955,7 @@ scripts:
   record-detection-gap:
     type: script
     path: skills/su-observer/scripts/record-detection-gap.sh
-    description: "su-observer 検知漏れ自動記録: --type <gap-type> --detail <text> で .supervisor/detection-gaps/ に JSONL 記録。--related-issue <#N> / --severity {low,medium,high} オプション対応。Monitor 見逃し・pitfall 未検知・介入失敗などを記録し波後レトロスペクティブに活用"
+    description: "su-observer 検知漏れ自動記録: --type <gap-type> --detail <text> で .supervisor/intervention-log.md に追記。--related-issue <#N> / --severity {low,medium,high} オプション対応。severity=high 時は gh issue create hint を stderr 出力。Monitor 見逃し・pitfall 未検知・介入失敗などを記録し波後レトロスペクティブに活用"
 
 # エージェント（C-3 で追加）
 agents:
