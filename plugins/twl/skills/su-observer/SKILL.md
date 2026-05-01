@@ -49,7 +49,7 @@ spawnable_by:
 
 ### supervise 1 iteration（co-autopilot 監視中の必須並行チャンネル）
 
-- 定期 audit MUST: 5 分ごとに全 ap-/wt-/coi- window を `tmux capture-pane -p | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Enter to select|^❯ [1-9]\.|Press up to edit queued'` で menu/input-wait pattern スキャン（cld-observe-any 補助）
+- 定期 audit MUST: 5 分ごとに全 ap-/wt-/coi- window を `for WIN in $(tmux list-windows -a -F '#{window_name}' | grep -E '^(ap-|wt-|coi-)'); do tmux capture-pane -t "$WIN" -p | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Enter to select|^❯ [1-9]\.|Press up to edit queued' && echo "[MENU-WAIT] $WIN"; done` で menu/input-wait pattern スキャン（cld-observe-any 補助、`-t $WIN` 必須・全 session 対象）
 
 **`refs/su-observer-supervise-channels.md` を Read** して実行。
 
