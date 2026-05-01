@@ -8,7 +8,8 @@
 # AC3:  probe stdout の `model: <name>` 行を grep で抽出
 # AC4:  抽出結果が PROBE_MODEL と不一致なら CODEX_OK=0 (silent fallback)
 # AC5:  不一致時は warning ログを出力
-# AC6:  retired/deprecated model ID (gpt-4*, gpt-3*, ^o3-, ^o4-) 検出で CODEX_OK=0
+# AC6:  retired/deprecated model ID (gpt-4*, gpt-3*, o3-*, o4-*) 検出で CODEX_OK=0
+#        パターン: gpt-4[^-]|gpt-3|o3-|o4- (^ アンカーなし、probe 出力全体で任意位置マッチ)
 # AC7:  gpt-5.1-codex は blocklist に含めない
 # AC8:  blocklist はコメントで根拠 (公式 doc URL + 失効確認日) を明記
 # AC9:  このテストファイル自体が新設される (このファイルの存在 = AC9 達成)

@@ -44,7 +44,7 @@ run_probe_check() {
   # AC #3: probe stdout の `model: <name>` 行を抽出
   resolved_model=$(echo "${PROBE_OUT:-}" | grep -E "^model:" | head -1 | awk '{print $2}')
 
-  # AC #4/#13: RESOLVED_MODEL が空文字列 or PROBE_MODEL と不一致 → CODEX_OK=0
+  # AC #4/#13: resolved_model が空文字列 or PROBE_MODEL と不一致 → CODEX_OK=0
   if [[ -z "$resolved_model" || "$resolved_model" != "${PROBE_MODEL:-}" ]]; then
     CODEX_OK=0
     # AC #5: warning ログ（空文字列の場合は resolved=<empty>）
