@@ -83,11 +83,15 @@ STUBEOF
 chmod +x "\$STUB_BIN/tmux"
 
 # flock stub（ロック操作を pass-through）
+# 注: flock は done 済み subdir の smoke では到達しない。将来のケース向けの保険。
 cat > "\$STUB_BIN/flock" <<'STUBEOF'
 #!/usr/bin/env bash
-# "-n fd" を読み飛ばして残りのコマンドを実行
-shift; shift
-exec "\$@"
+# flock の全引数形式に対応: flock [options] <file|fd> [command [args]]
+# オプション（- 始まり）を読み飛ばし、最初の非オプション引数の次からコマンドとして実行
+while [[ $# -gt 0 && "$1" == -* ]]; do shift; done
+shift  # file or fd を読み飛ばし
+[[ $# -gt 0 ]] && exec "$@"
+exit 0
 STUBEOF
 chmod +x "\$STUB_BIN/flock"
 

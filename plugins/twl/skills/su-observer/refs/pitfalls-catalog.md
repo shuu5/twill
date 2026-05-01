@@ -172,6 +172,8 @@ fi
 ```
 
 **適用 callsite**: `issue-lifecycle-orchestrator.sh` 11 箇所（L368, L372, L411, L526, L553, L559, L605, L645, L654, L679, L718）
+注: 上記 callsite のリファクタ（`_kill_window_safe` への置換）は PR #1229 の次フェーズで実施予定。
+本 PR #1229 では `lib/tmux-resolve.sh` の実装と bats テスト GREEN 化のみ。
 
 **参照**: PR #1229、`plugins/session/tests/lib-tmux-resolve.bats`
 

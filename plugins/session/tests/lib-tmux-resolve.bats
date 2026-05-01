@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
-# lib-tmux-resolve.bats — plugins/session/scripts/lib/tmux-resolve.sh の RED テスト
-# Issue #1142: AC-4
+# lib-tmux-resolve.bats — plugins/session/scripts/lib/tmux-resolve.sh のテスト
+# Issue #1142: AC-4（RED テスト生成）/ Issue #1218: AC-4-3b（uniqueness）+ GREEN 化
 #
 # 設計:
 #   - lib/tmux-resolve.sh が存在しない状態では source に失敗し、全テストが fail する（RED フェーズ）
