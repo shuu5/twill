@@ -124,18 +124,10 @@ teardown() {
 }
 
 @test "ac6.3: simulated PILOT-PHASE-COMPLETE event triggers kill-window within 60s" {
-  # AC: .supervisor/cld-observe-any.log に PILOT-PHASE-COMPLETE signal が書き込まれた場合、
-  #     60s 以内に kill-window が実行される（stub による動作確認）
-  # RED: kill 機構がまだ実装されていないため fail
-  SUPERVISOR_DIR="${TMPDIR_TEST}/.supervisor"
-  mkdir -p "${SUPERVISOR_DIR}"
-  LOG_FILE="${SUPERVISOR_DIR}/cld-observe-any.log"
-
-  # PILOT-PHASE-COMPLETE signal を simulate
-  echo "[PILOT-PHASE-COMPLETE] ap-twill-feat-1189-xxxxxxxx: Phase 2 完了" >> "${LOG_FILE}"
-  echo "[orchestrator] Phase 2 完了" >> "${LOG_FILE}"
-
-  # kill-window スクリプトが存在しかつ実行可能であることを assert
+  # AC: PILOT-PHASE-COMPLETE signal 検知後 60s 以内に kill-window が実行される
+  # RED: kill 機構（pilot-phase-kill.sh）がまだ実装されていないため fail
+  # Note: 実際の tmux kill-window 動作は integration test に委ねる。
+  #       ここでは kill スクリプトの存在（= 機構が実装済みの前提）を assert する。
   KILL_SCRIPT="${REPO_ROOT}/skills/su-observer/scripts/pilot-phase-kill.sh"
   [ -f "${KILL_SCRIPT}" ]
 }
@@ -215,7 +207,7 @@ teardown() {
     # セクション内に「能動 polling」または「active polling」が存在する
     awk -v start=\"\${section_line}\" '
       NR > start && /能動 polling|active polling|能動.*poll|poll.*能動|5.*min.*poll|5.*分.*poll/ {found=1; exit}
-      NR > start && /^## \[/ && NR > start+1 {exit}
+      NR > start && /^## \[/ {exit}
       END {exit !found}
     ' '${MONITOR_CATALOG}'
   "
@@ -231,7 +223,7 @@ teardown() {
     awk -v start=\"\${section_line}\" '
       NR > start && /受動|passive|stdout.*emit|emit.*stdout/ {passive=1}
       NR > start && /能動|active.*poll/ {active=1}
-      NR > start && /^## \[/ && NR > start+1 {exit}
+      NR > start && /^## \[/ {exit}
       END {exit !(passive && active)}
     ' '${MONITOR_CATALOG}'
   "
@@ -332,8 +324,8 @@ teardown() {
 
     for f in \"\${wrapper1}\" \"\${wrapper2}\" \"\${wrapper3}\"; do
       if [[ -f \"\$f\" ]]; then
-        # source して IDLE_COMPLETED_AUTO_KILL の値を確認
-        # --source-only / _DAEMON_LOAD_ONLY を使って関数定義のみロード
+        # _DAEMON_LOAD_ONLY=1: wrapper スクリプトが cld-observe-any 本体の起動をスキップし
+        # 関数定義・変数定義のみを行うための規約フラグ（session plugin 側の実装と合意済み）
         val=\$(
           _DAEMON_LOAD_ONLY=1 source \"\$f\" 2>/dev/null || true
           echo \"\${IDLE_COMPLETED_AUTO_KILL:-unset}\"
