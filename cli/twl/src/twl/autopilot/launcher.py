@@ -74,7 +74,8 @@ _STATUS_GATE_LOG = os.environ.get(
 _ALLOWED_STATUSES = {"Refined", "In Progress", "Done"}
 
 
-_DUAL_WRITE_LOG = "/tmp/refined-dual-write.log"
+_raw_dw_log = os.environ.get("REFINED_DUAL_WRITE_LOG", "/tmp/refined-dual-write.log")
+_DUAL_WRITE_LOG = _raw_dw_log if (_raw_dw_log.startswith("/") and "/.." not in _raw_dw_log) else "/tmp/refined-dual-write.log"
 
 
 def _log_gate_event(event: str) -> None:
@@ -92,13 +93,14 @@ def _check_dual_write_log(issue_num: str) -> str | None:
     try:
         with open(_DUAL_WRITE_LOG, "r") as f:
             lines = f.readlines()[-200:]
-    except (OSError, FileNotFoundError):
+    except OSError:
         return None
-    search_key = f"issue=#{issue_num}"
+    search_key = re.compile(rf"issue=#{re.escape(issue_num)}(?:\s|$)")
     for line in reversed(lines):
-        if search_key in line and "label_add_failed" in line:
+        if search_key.search(line) and "label_add_failed" in line:
             m = re.search(r"repo=(\S+)", line)
-            repo = m.group(1) if m else "OWNER/REPO"
+            raw_repo = m.group(1) if m else "OWNER/REPO"
+            repo = re.sub(r"[^a-zA-Z0-9_/.-]", "", raw_repo) or "OWNER/REPO"
             return (
                 f"\n[hint] label add 失敗が観測されています ({_DUAL_WRITE_LOG})。\n"
                 f"対処: gh label create refined --repo {repo} --color 8B5CF6 を実行してから再 refine してください。"
