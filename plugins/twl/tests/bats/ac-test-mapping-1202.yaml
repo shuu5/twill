@@ -1,0 +1,113 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/agents/worker-codex-reviewer.md の ${TWILL_CODEX_REVIEW_MODEL:-gpt-5.1-codex} を 2 箇所すべて ${TWILL_CODEX_REVIEW_MODEL:-gpt-5.3-codex} に変更 (PROBE_MODEL ライン + 本体 codex exec ライン)"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac1: worker-codex-reviewer.md に gpt-5.1-codex が残っていない"
+    impl_files:
+      - "plugins/twl/agents/worker-codex-reviewer.md"
+
+  - ac_index: 2
+    ac_text: "TWILL_CODEX_REVIEW_MODEL env override は維持"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac2: worker-codex-reviewer.md に TWILL_CODEX_REVIEW_MODEL env override 構文が残っている"
+    impl_files:
+      - "plugins/twl/agents/worker-codex-reviewer.md"
+
+  - ac_index: 3
+    ac_text: "probe stdout の model: <name> 行を grep で抽出 (grep -E \"^model:\" | head -1 | awk '{print $2}')"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac3: codex-probe-check.sh は PROBE_OUT から model: 行を grep で抽出する"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 4
+    ac_text: "抽出結果が PROBE_MODEL と不一致なら CODEX_OK=0 に設定し silent fallback として graceful skip。RESOLVED_MODEL が空文字列（probe 出力に model: 行が存在しない場合）も不一致として CODEX_OK=0 扱い"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac11: silent fallback — resolved が gpt-4o の場合 CODEX_OK=0 になる"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 5
+    ac_text: "検出時は warning ログ (WARN: model resolution mismatch: requested=$PROBE_MODEL, resolved=$RESOLVED_MODEL) を出力。空文字列の場合は resolved=<empty> で出力する"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac11: silent fallback — WARN ログが出力される (requested/resolved を含む)"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 6
+    ac_text: "probe 出力 (header + body) に gpt-4* / gpt-3* / ^o3- / ^o4- 等の retired/deprecated model ID が含まれる場合 CODEX_OK=0"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac12: blocklist — probe 出力に gpt-4.1 が含まれる場合 CODEX_OK=0 になる"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 7
+    ac_text: "gpt-5.1-codex は blocklist に含めない。TWILL_CODEX_REVIEW_MODEL=gpt-5.1-codex の env override 利用時に誤って blocklist が発火するのを防ぐ"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac7: blocklist — gpt-5.1-codex が blocklist に含まれない (env override 利用時に誤発火しない)"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 8
+    ac_text: "blocklist は worker-codex-reviewer.md 内コメントで根拠 (公式 doc URL + 失効確認日) と共に明記"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac8: codex-probe-check.sh の blocklist に根拠コメント (URL + 失効確認日) が含まれる"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+      - "plugins/twl/agents/worker-codex-reviewer.md"
+
+  - ac_index: 9
+    ac_text: "plugins/twl/tests/bats/scripts/worker-codex-reviewer-model-resolution.bats 新設 (~80 LOC)"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "(このテストファイル自体が AC #9 の成果物)"
+    impl_files:
+      - "plugins/twl/tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+
+  - ac_index: 10
+    ac_text: "テストロジック抽出: worker-codex-reviewer.md の probe / model_id verification / blocklist ロジックを scripts/codex-probe-check.sh として独立シェル関数ファイルに切り出し、bats から source scripts/codex-probe-check.sh で呼び出せる構造にする"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac10: scripts/codex-probe-check.sh が存在する"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 11
+    ac_text: "silent fallback シナリオ: mock probe 出力 (requested gpt-5.3-codex / resolved gpt-4o) で CODEX_OK=0 を検出する test"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac11: silent fallback — resolved が gpt-4o の場合 CODEX_OK=0 になる"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 12
+    ac_text: "blocklist シナリオ: gpt-4.1 / o3-mini 等が probe 出力に出現した場合の検出 test"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac12: blocklist — probe 出力に gpt-4.1 が含まれる場合 CODEX_OK=0 になる"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 13
+    ac_text: "empty RESOLVED_MODEL シナリオ: probe 出力に model: 行が存在しない場合、CODEX_OK=0 となることを検証する test"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac13: empty RESOLVED_MODEL — probe 出力に model: 行なし → CODEX_OK=0"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 14
+    ac_text: "non-regression: 正常応答 (model 一致 + retired ID 不出現) で CODEX_OK=1 を維持する test"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac14: non-regression — model 一致 + retired ID 不出現 → CODEX_OK=1 を維持"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+
+  - ac_index: 15
+    ac_text: "worker-codex-reviewer.md の PROBE_MODEL / 本体 codex exec 周辺コメントを更新 (gpt-5.3-codex 採用理由 + 公式 doc URL + 失効確認日 2026-05-01)"
+    test_file: "tests/bats/scripts/worker-codex-reviewer-model-resolution.bats"
+    test_name: "ac15: worker-codex-reviewer.md に gpt-5.3-codex 採用理由コメントが含まれる"
+    impl_files:
+      - "plugins/twl/agents/worker-codex-reviewer.md"
+
+  - ac_index: 16
+    ac_text: "PR merge 後、doobidoo memory に「2026-05-01 worker-codex-reviewer model 更新」を session 記録"
+    test_file: ""
+    test_name: ""
+    impl_files: []
+    # impl_files 推定失敗: プロセス AC（doobidoo memory 記録）のため実装ファイルなし
