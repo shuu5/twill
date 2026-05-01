@@ -186,6 +186,14 @@ teardown() {
     || fail "step0-monitor-bootstrap.sh に 'Enter to select' パターンがない（AC2.2 未達）"
 }
 
+@test "ac2.2: step0-monitor-bootstrap.sh に '❯ [1-9]' 検知パターンが存在する" {
+  [[ -f "$BOOTSTRAP_SCRIPT" ]] \
+    || fail "step0-monitor-bootstrap.sh が存在しない: $BOOTSTRAP_SCRIPT（AC2.2 未達: script 作成が必要）"
+
+  grep -qE "❯ \[1-9\]|❯ \\\[1-9\\\]" "$BOOTSTRAP_SCRIPT" \
+    || fail "step0-monitor-bootstrap.sh に '^❯ [1-9].' パターンがない（AC2.2 未達）"
+}
+
 @test "ac2.2: step0-monitor-bootstrap.sh に 'Press up to edit queued' 検知パターンが存在する" {
   [[ -f "$BOOTSTRAP_SCRIPT" ]] \
     || fail "step0-monitor-bootstrap.sh が存在しない: $BOOTSTRAP_SCRIPT（AC2.2 未達: script 作成が必要）"
