@@ -38,7 +38,7 @@ _CODEX_BLOCKLIST_PATTERN='gpt-4[^-]|gpt-3|o3-|o4-'
 # 出力: WARN ログを stderr に出力
 # ---------------------------------------------------------------------------
 run_probe_check() {
-  local resolved_model
+  local resolved_model=""
   local warn_prefix="WARN: model resolution mismatch:"
 
   # AC #3: probe stdout の `model: <name>` 行を抽出

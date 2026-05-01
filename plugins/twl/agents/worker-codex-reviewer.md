@@ -44,7 +44,7 @@ if command -v codex >/dev/null 2>&1 && codex login status 2>&1 | grep -qi "logge
 
   # codex-probe-check.sh: model_id verification + retired model blocklist
   # source して run_probe_check を呼び出す（PROBE_OUT, PROBE_MODEL, CODEX_OK を参照）
-  _PROBE_CHECK_SCRIPT="$(dirname "$(find . -path "*/plugins/twl/scripts/codex-probe-check.sh" 2>/dev/null | head -1)")/codex-probe-check.sh"
+  _PROBE_CHECK_SCRIPT="$(find . -path "*/plugins/twl/scripts/codex-probe-check.sh" 2>/dev/null | head -1)"
   if [[ -f "$_PROBE_CHECK_SCRIPT" ]]; then
     CODEX_OK=1
     # shellcheck source=/dev/null
