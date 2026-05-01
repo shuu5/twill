@@ -14,9 +14,10 @@
 #   - このテストは orchestrator が _kill_window_safe を呼び出すことを確認する
 #
 # 検証方法:
-#   - tmux mock で list-windows -a に s1:3 wt-target と s2:0 wt-target の 2 行を返す
-#   - s1 のみが kill されることを確認（spawn_session が wt-target の session を作成した場合）
+#   - tmux mock: list-windows（-a なし = current session）で s1:3 wt-test-multi-session を返す
+#   - _resolve_window_target は -a なし設計のため current session の s1:3 を一意に解決する
 #   - kill-window は session:index 形式 ("s1:3") で呼ばれること
+#   - mock の -a 分岐（複数セッション返却）は実装では使用されない（設計上 current session スコープ）
 
 load '../../bats/helpers/common'
 

@@ -6,6 +6,7 @@
 #
 # 提供関数:
 #   _resolve_window_target <window_name>
+#     current session を対象に window を解決し session:index 形式で返す（-a なし設計）。
 #     stdout: "session:index"（例: "main:3"）
 #     exit 0: 一意に解決
 #     exit 1: 不在（stderr: "window not found: <window_name>"）
@@ -22,8 +23,9 @@
 }
 
 # _resolve_window_target <window_name>
-# 全 session から window_name に一致する window を探し、session:index 形式で返す。
-# 複数一致（ambiguous）または不在の場合は exit 1。
+# current session の window_name に一致する window を session:index 形式で返す。
+# （-a なし = current session スコープ。orchestrator は自セッション内の window を管理する前提）
+# 複数一致（ambiguous: 同一 session に同名 window が複数）または不在の場合は exit 1。
 _resolve_window_target() {
     local window_name="$1"
 
