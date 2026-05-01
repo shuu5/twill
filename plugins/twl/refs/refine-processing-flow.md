@@ -192,11 +192,25 @@ gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --body-file "$FINAL_BODY"
 # Step 4.5 で追加された "refined" ラベルも含む
 # dual-write 順序: label 先（ここまで）→ Status 後（下記）
 # 理由: Status を先に書くと autopilot が label 付与前に early spawn する race の可能性がある
+
+# AC1(1): idempotent auto-create pre-step（ADR-024 Phase 1; Phase B 移行で削除予定）
+# label 不在時に --add-label が失敗して Status=Refined 移行が skip される連鎖を断つため、
+# 付与前に label を事前作成する。|| true で「既存 label でも abort しない」を保証する。
 while IFS= read -r label; do
-  [[ -n "$label" ]] && gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label "$label"
+  [[ -n "$label" ]] && gh label create "$label" --color "8B5CF6" \
+    --description "auto-created by workflow-issue-refine" \
+    --repo "$ISSUE_REPO" 2>/dev/null || true
 done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 
-# Status を Refined に更新（dual-write: label 書き込み完了後に実行）
+# AC1(2): シェルレベル || true guard — label 付与 loop が abort せず次 label に継続することを保証する。
+# LLM ガード（spec の「失敗時継続」記述）だけでなくシェルレベルの分離が必須である（#1209）。
+while IFS= read -r label; do
+  [[ -n "$label" ]] && gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label "$label" 2>/dev/null || true
+done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
+
+# AC2: Status update 独立性保証 — label 付与 loop の結果（成功/失敗/部分失敗）と無関係に実行される。
+# label 付与で発生した失敗は Status update を block しない。
+# これは ADR-024 dual-write 順序遵守の元、label 付与失敗で Status=Todo のまま残ることを防ぐ独立性保証である。
 # 責任境界: #943 gate は Status=Refined の有無のみ確認、phase-review の内容は検証しない（#940 の責務）
 if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]]; then
   bash "${SCRIPTS_ROOT:-$(dirname "$0")/../../scripts}/chain-runner.sh" \
