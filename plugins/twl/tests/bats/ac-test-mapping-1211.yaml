@@ -1,0 +1,70 @@
+mappings:
+  - ac_index: 1
+    ac_text: "ref-architecture-spec.md の必須テーブルに Severity 列が追加される (値域: WARNING または RECOMMENDED)"
+    test_file: "plugins/twl/tests/bats/architect-completeness-check-severity.bats"
+    test_names:
+      - "ac1-severity-col-present: ref-architecture-spec.md の必須テーブルに Severity 列が存在する"
+      - "ac1-severity-values: ref-architecture-spec.md の Severity 値が WARNING または RECOMMENDED のみ"
+      - "ac1-severity-no-invalid-values: Severity 列に WARNING/RECOMMENDED 以外の値が存在しない"
+    impl_files:
+      - "plugins/twl/refs/ref-architecture-spec.md"
+
+  - ac_index: 2
+    ac_text: "architect-completeness-check.md の Step 1 必須テーブル部分（現ハードコード箇所）が ref-architecture-spec.md の必須テーブルから Severity を動的に読み出して出力する。RECOMMENDED 不在は INFO レベルで報告。ref-architecture-spec.md の Read は Step 1 冒頭で実施する。"
+    test_file: "plugins/twl/tests/bats/architect-completeness-check-severity.bats"
+    test_names:
+      - "ac2-dynamic-read-ref: architect-completeness-check.md が ref-architecture-spec.md の Read を Step 1 冒頭で指示している"
+      - "ac2-severity-dynamic-output: architect-completeness-check.md が Severity を動的に出力する記述がある"
+      - "ac2-recommended-info-level: architect-completeness-check.md に RECOMMENDED 不在が INFO レベルという記述がある"
+      - "ac2-step1-read-before-table: Step 1 の Read が必須テーブルチェック前に配置されている"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 3
+    ac_text: "既定状態 (現行 5 ファイル全件 = WARNING) で architect-completeness-check の動作が変化しない (regression なし)"
+    test_file: "plugins/twl/tests/bats/architect-completeness-check-severity.bats"
+    test_names:
+      - "ac3-default-warning-rows: ref-architecture-spec.md の WARNING 行が 5 件以上存在する"
+      - "ac3-contexts-warning: domain/contexts/*.md エントリが WARNING Severity を持つ"
+      - "ac3-phases-warning: phases/*.md エントリが WARNING Severity を持つ"
+      - "ac3-no-existing-warning-removed: 既存の WARNING 定義が削除されていない"
+    impl_files:
+      - "plugins/twl/refs/ref-architecture-spec.md"
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 4
+    ac_text: "新規 bats test (plugins/twl/tests/bats/architect-completeness-check-severity.bats) を追加し、(a) 必須テーブルパース、(b) WARNING/RECOMMENDED 出力区別、(c) 既定動作 regression を検証する。前提: 既存テスト名との重複を避けること。"
+    test_file: "plugins/twl/tests/bats/architect-completeness-check-severity.bats"
+    test_names:
+      - "ac4-test-file-exists: architect-completeness-check-severity.bats が存在する"
+      - "ac4-no-duplicate-test-names: 既存 bats テストと test 名が重複しない"
+      - "ac4-table-parse-required-col: Severity 列がテーブルヘッダーで識別できる"
+      - "ac4-warning-output-distinct-from-recommended: RECOMMENDED 不在が INFO で出力されることが仕様に明記されている"
+    impl_files:
+      - "plugins/twl/tests/bats/architect-completeness-check-severity.bats"
+      - "plugins/twl/refs/ref-architecture-spec.md"
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 5
+    ac_text: "軽量 ADR を plugins/twl/architecture/decisions/ADR-032-completeness-severity-staging.md として PR 内で同時起草 (Status: accepted、Context: lightweight noise + TI-1 接続、Decision: Severity 列導入で動的化、Consequences: TI-1 が選択肢として活用可)"
+    test_file: "plugins/twl/tests/bats/architect-completeness-check-severity.bats"
+    test_names:
+      - "ac5-adr032-exists: ADR-032-completeness-severity-staging.md が decisions/ に存在する"
+      - "ac5-adr032-status-accepted: ADR-032 の Status が accepted"
+      - "ac5-adr032-context-lightweight-noise: ADR-032 の Context に lightweight noise または TI-1 への言及がある"
+      - "ac5-adr032-decision-severity-col: ADR-032 の Decision に Severity 列導入と動的化への言及がある"
+      - "ac5-adr032-consequences-ti1: ADR-032 の Consequences に TI-1 が選択肢として活用可能という記述がある"
+      - "ac5-adr032-number-is-max-plus-1: decisions/ の最大 ADR 番号が 032 である"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-032-completeness-severity-staging.md"
+
+  - ac_index: 6
+    ac_text: "TI-1 (--lightweight フラグ) の前提となる基盤として、後続 Issue で Severity=RECOMMENDED への切替が容易な設計になっている (テーブル変更のみで切替可能なこと)"
+    test_file: "plugins/twl/tests/bats/architect-completeness-check-severity.bats"
+    test_names:
+      - "ac6-table-driven-design: architect-completeness-check.md が ref-architecture-spec.md のテーブルを動的に参照する設計になっている"
+      - "ac6-recommended-entries-possible: ref-architecture-spec.md の Severity 列が RECOMMENDED を許容する値域定義がある"
+      - "ac6-single-source-of-truth: Severity 定義が ref-architecture-spec.md のみで管理されている"
+    impl_files:
+      - "plugins/twl/refs/ref-architecture-spec.md"
+      - "plugins/twl/commands/architect-completeness-check.md"
