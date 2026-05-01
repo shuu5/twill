@@ -1660,7 +1660,6 @@ full = [
 ]
 mcp = [
     { name = "fastmcp" },
-    { name = "pytest-asyncio" },
 ]
 test = [
     { name = "pytest" },
@@ -1671,7 +1670,6 @@ test = [
 requires-dist = [
     { name = "fastmcp", marker = "extra == 'mcp'", specifier = ">=3.0" },
     { name = "pytest", marker = "extra == 'test'" },
-    { name = "pytest-asyncio", marker = "extra == 'mcp'", specifier = ">=0.23" },
     { name = "pytest-asyncio", marker = "extra == 'test'", specifier = ">=0.23" },
     { name = "pyyaml" },
     { name = "rich", marker = "extra == 'full'" },
