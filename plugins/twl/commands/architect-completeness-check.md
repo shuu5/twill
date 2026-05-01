@@ -27,8 +27,8 @@ architecture/ ディレクトリの完全性を検証し、不足ファイル・
 | `domain/glossary.md` | YES | 動的読み出し |
 | `domain/contexts/*.md` | 1つ以上 | 動的読み出し |
 | `phases/*.md` | 1つ以上 | 動的読み出し |
-| `decisions/` | NO | 動的読み出し |
-| `contracts/` | NO | 動的読み出し |
+| `decisions/*.md` | NO | 動的読み出し |
+| `contracts/*.md` | NO | 動的読み出し |
 
 各パスを Glob で確認し、不在時は `ref-architecture-spec.md` テーブルの `Severity` 値に従ってレベルを決定する:
 - `Severity=WARNING` → `[WARNING]`

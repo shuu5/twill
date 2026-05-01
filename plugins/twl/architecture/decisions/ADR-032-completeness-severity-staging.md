@@ -20,8 +20,14 @@ accepted
 
 既定状態では現行 5 必須ファイル（`vision.md`, `domain/model.md`, `domain/glossary.md`, `domain/contexts/*.md`, `phases/*.md`）が `WARNING`、任意ファイル（`decisions/*.md`, `contracts/*.md`）が `RECOMMENDED` に設定し、既存の動作を regression なく維持する。
 
+## Alternatives
+
+1. **ハードコード維持（現状案）**: `architect-completeness-check.md` の Step 1 テーブルを書き換えず、TI-1 実装時にコマンド自体を修正する。変更コストは低いが、TI-1 実装毎に `architect-completeness-check.md` への変更が必要となり、仕様と実装が分散したまま残る。
+2. **専用設定ファイル分離案**: `severity-config.yaml` のような独立した設定ファイルを導入し、Severity を外部化する。柔軟性は高いが、新規ファイルの追加と管理コストが発生し、既存 `ref-architecture-spec.md` との二重管理になる。
+3. **採用案（ref-architecture-spec.md への Severity 列追加）**: SSOT を既存の参照ファイル（`ref-architecture-spec.md`）に集約する。新規ファイル追加不要、既存 Read 操作の延長で実現可能、TI-1 対応もテーブル変更のみで済む。
+
 ## Consequences
 
 - **良い面**: `ref-architecture-spec.md` のテーブル変更のみで Severity を切替可能になる（TI-1 が選択肢として活用可）。`architect-completeness-check.md` の保守コストが低減し、仕様と実装の乖離が防止される。
-- **悪い面**: `architect-completeness-check` 実行時に `ref-architecture-spec.md` の Read が必須となる（軽微なオーバーヘッド）。
+- **悪い面**: `architect-completeness-check` 実行時に `ref-architecture-spec.md` の Read が毎回必須となる（コマンド呼び出し 1 回あたり Read 1 回の追加）。`ref-architecture-spec.md` が不在の場合は Severity 情報が取得できないため、フォールバック挙動（デフォルト WARNING）を実装側で考慮する必要がある。また、`ref-architecture-spec.md` の Severity 列が意図せず変更された場合（WARNING → RECOMMENDED）、既存プロジェクトのチェックが警告なく降格するリスクがある。
 - **TI-1 接続**: TI-1（`--lightweight` フラグ）の実装時は、`ref-architecture-spec.md` の Severity 列を `RECOMMENDED` に変更するだけで軽量チェックモードが実現可能となる。
