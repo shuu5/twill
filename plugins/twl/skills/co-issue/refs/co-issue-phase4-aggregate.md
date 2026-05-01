@@ -65,8 +65,8 @@ Step 4a で `fallback_inject_exhausted` に分類された issue が存在する
   # refined label 不在時に --add-label が失敗して Status=Refined 移行が skip される連鎖を断つ（#1209）
   gh label create refined --color "C2E0C6" --description "auto-created by co-issue manual fix [B]" --repo "$ISSUE_REPO" 2>/dev/null || true
 
-  # (a) label 先に付与（ADR-024: label 先 → Status 後）
-  gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label refined
+  # (a) label 先に付与（ADR-024: label 先 → Status 後）。|| true で add-label 失敗時も (b) へ継続する
+  gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label refined 2>/dev/null || true
 
   # (b) Status を後に更新（ADR-024: label 完了後に実行）
   bash "${SCRIPTS_ROOT:-plugins/twl/scripts}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined

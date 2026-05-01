@@ -159,17 +159,21 @@ if STATE != circuit_broken:
 issue 作成後、labels_hint のラベルを付与する際は以下の dual-write パターンを適用する（AC1+AC2 と同等、#1209 準拠）:
 
 ```bash
+# ISSUE_NUMBER: issue_url（/twl:issue-create 出力）の末尾パスセグメントから抽出
+# TARGET_REPO: policies.target_repo（null の場合は既定リポジトリ）
+# LABELS_HINT: jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json" で取得
+
 # idempotent auto-create pre-step（ADR-024 Phase 1; Phase B 移行で削除予定）
 # label 不在時に --add-label が失敗して Status=Refined 移行が skip される連鎖を断つ
 # 例: gh label create refined --color "8B5CF6" --description "auto-created" --repo "$TARGET_REPO" 2>/dev/null || true
 while IFS= read -r label; do
   [[ -n "$label" ]] && gh label create "$label" --color "8B5CF6" --description "auto-created by workflow-issue-lifecycle" --repo "$TARGET_REPO" 2>/dev/null || true
-done < <(echo "$LABELS_HINT")
+done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 
 # シェルレベル || true guard — loop が abort せず次 label に継続することを保証する
 while IFS= read -r label; do
   [[ -n "$label" ]] && gh issue edit "$ISSUE_NUMBER" --repo "$TARGET_REPO" --add-label "$label" 2>/dev/null || true
-done < <(echo "$LABELS_HINT")
+done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 
 # Status update 独立性保証 — label 付与 loop の結果（成功/失敗/部分失敗）と無関係に実行される。
 # label 付与で発生した失敗は Status update を block しない（ADR-024 dual-write 独立性保証）。
