@@ -22,8 +22,50 @@ fi
 LOG_FILE="${SUPERVISOR_DIR}/cld-observe-any.log"
 MODE="${1:-}"
 
+# OBSERVER_DAEMON_HEARTBEAT_STALE_SEC: heartbeat.json の staleness 判定閾値（秒）
+# cld-observe-any 側の HEARTBEAT_INTERVAL_SEC（60 秒）とは独立して読み取り側で定義する（pitfalls §11.1）
+OBSERVER_DAEMON_HEARTBEAT_STALE_SEC="${OBSERVER_DAEMON_HEARTBEAT_STALE_SEC:-120}"
+if [[ ! "$OBSERVER_DAEMON_HEARTBEAT_STALE_SEC" =~ ^[0-9]+$ ]]; then
+  echo "ERROR: OBSERVER_DAEMON_HEARTBEAT_STALE_SEC は非負整数である必要があります: $OBSERVER_DAEMON_HEARTBEAT_STALE_SEC" >&2
+  exit 2
+fi
+
 _daemon_running() {
-  pgrep -f "cld-observe-any" > /dev/null 2>&1
+  local hb_file="${SUPERVISOR_DIR}/observer-daemon-heartbeat.json"
+
+  # (a) pgrep -f cld-observe-any → false なら grace period チェックへ
+  local pgrep_pids pgrep_exit=0
+  pgrep_pids=$(pgrep -f "cld-observe-any" 2>/dev/null) || pgrep_exit=1
+
+  # (b) heartbeat.json 不在 → grace period: pgrep 結果を返却（既存挙動互換）+ stderr WARNING
+  # 新規インストール / CI / #1154 migration 期間の互換性のためフォールバック
+  if [[ ! -f "$hb_file" ]]; then
+    echo "WARNING: ${hb_file} が不在です。pgrep 単独判定（grace period）で継続します" >&2
+    return $pgrep_exit
+  fi
+
+  # heartbeat.json が存在する場合は (a) pgrep が false なら即 false 返却
+  [[ $pgrep_exit -eq 0 ]] || return 1
+
+  # (c) heartbeat.json mtime ≤ OBSERVER_DAEMON_HEARTBEAT_STALE_SEC 秒
+  # TOCTOU window（既知トレードオフ）: pgrep (a) 後に daemon 死亡で最大 STALE_SEC の偽陽性あり
+  local mtime_age
+  mtime_age=$(( $(date +%s) - $(stat -c %Y "$hb_file" 2>/dev/null || echo 0) ))
+  if (( mtime_age > OBSERVER_DAEMON_HEARTBEAT_STALE_SEC )); then
+    return 1
+  fi
+
+  # (d) JSON 内の writer == "cld-observe-any" かつ pid が pgrep 結果に含まれる
+  # || true: grep no-match (exit 1) が set -euo pipefail 下でスクリプトを exit させないよう抑制
+  local hb_writer hb_pid
+  hb_writer=$(grep -o '"writer":"[^"]*"' "$hb_file" 2>/dev/null | cut -d'"' -f4 || true)
+  hb_pid=$(grep -o '"pid":[0-9]*' "$hb_file" 2>/dev/null | grep -o '[0-9]*$' || true)
+
+  [[ "$hb_writer" == "cld-observe-any" ]] || return 1
+  [[ -n "$hb_pid" ]] || return 1
+  echo "$pgrep_pids" | grep -qw "$hb_pid" || return 1
+
+  return 0
 }
 
 _emit_start_commands() {
