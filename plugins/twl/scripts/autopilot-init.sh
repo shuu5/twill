@@ -101,14 +101,27 @@ if [[ -f "$SESSION_FILE" ]]; then
         exit 2
       fi
     else
-      if [[ "$force" == "true" ]]; then
-        echo "ERROR: 実行中の issue があるセッションです (session_id=$session_id, ${hours}h経過)" >&2
-        echo "24h 経過後に再試行してください" >&2
-      else
-        echo "ERROR: 既存セッションが実行中です (session_id=$session_id, ${hours}h経過)" >&2
-        echo "同一プロジェクトでの複数 autopilot セッションの同時実行は禁止されています" >&2
+      # < 24h + not completed: check orchestrator.pid before blocking
+      _orch_pid_file="$AUTOPILOT_DIR/orchestrator.pid"
+      _orch_alive=false
+      if [[ -f "$_orch_pid_file" ]]; then
+        _orch_pid=$(cat "$_orch_pid_file" 2>/dev/null || echo "")
+        if [[ "$_orch_pid" =~ ^[0-9]+$ && "$_orch_pid" -gt 0 ]]; then
+          if kill -0 "$_orch_pid" 2>/dev/null; then
+            _orch_alive=true
+          elif kill -0 "$_orch_pid" 2>&1 | grep -q "Operation not permitted"; then
+            # EPERM: process exists but owned by another user → treat as alive
+            _orch_alive=true
+          fi
+        fi
       fi
-      exit 1
+      if [[ "$_orch_alive" == "true" ]]; then
+        echo "ERROR: orchestrator プロセスが実行中です (pid=$_orch_pid, session_id=$session_id)" >&2
+        echo "同一プロジェクトでの複数 autopilot セッションの同時実行は禁止されています" >&2
+        exit 1
+      else
+        echo "INFO: orchestrator 不在または dead PID — resume_safe として続行します (session_id=$session_id, ${hours}h経過)" >&2
+      fi
     fi
   fi
 fi

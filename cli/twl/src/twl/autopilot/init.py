@@ -62,6 +62,27 @@ class AutopilotInitializer:
     def __init__(self, autopilot_dir: Path | None = None) -> None:
         self.autopilot_dir = autopilot_dir or _autopilot_dir()
 
+    def _is_orchestrator_alive(self) -> bool:
+        """Return True if orchestrator.pid exists and the PID is alive (kill -0 succeeds).
+
+        PermissionError means the process exists but is owned by another user — still alive.
+        ProcessLookupError (ESRCH) means the process does not exist — dead/stale.
+        """
+        pid_file = self.autopilot_dir / "orchestrator.pid"
+        if not pid_file.is_file():
+            return False
+        try:
+            pid = int(pid_file.read_text(encoding="utf-8").strip())
+            if pid <= 0:
+                return False
+            os.kill(pid, 0)
+            return True
+        except PermissionError:
+            # EPERM: process exists but is owned by a different user → treat as alive
+            return True
+        except (ValueError, ProcessLookupError, OSError):
+            return False
+
     def run(self, check_only: bool = False, force: bool = False) -> str:
         """Initialize .autopilot/ directory.
 
@@ -76,13 +97,14 @@ class AutopilotInitializer:
                 pass  # session removed, proceed
             elif result == "stale_warn":
                 raise InitError(
-                    f"stale セッションが検出されました。削除するには --force を指定してください"
+                    "stale セッションが検出されました。削除するには --force を指定してください"
                 )
             elif result == "running":
                 raise InitError(
-                    "既存セッションが実行中です。"
+                    "orchestrator プロセスが実行中です（alive PID confirmed）。"
                     "同一プロジェクトでの複数 autopilot セッションの同時実行は禁止されています"
                 )
+            # "resume_safe": orchestrator dead/absent → proceed silently
 
         if check_only:
             return "OK: 実行中のセッションはありません"
@@ -90,7 +112,10 @@ class AutopilotInitializer:
         return self._initialize_directories()
 
     def _check_existing_session(self, session_file: Path, force: bool) -> str:
-        """Check existing session. Returns 'removed', 'stale_warn', or 'running'."""
+        """Check existing session.
+
+        Returns one of: 'removed', 'stale_warn', 'running', 'resume_safe'.
+        """
         try:
             data = json.loads(session_file.read_text(encoding="utf-8"))
         except Exception:
@@ -133,7 +158,10 @@ class AutopilotInitializer:
             else:
                 return "stale_warn"
 
-        return "running"
+        # < 24h + not completed: check orchestrator alive before blocking
+        if self._is_orchestrator_alive():
+            return "running"
+        return "resume_safe"
 
     def _initialize_directories(self) -> str:
         """Create directory structure. Returns OK message."""

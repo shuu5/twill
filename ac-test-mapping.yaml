@@ -621,3 +621,62 @@ issue_1187:
       impl_files:
         - "plugins/twl/skills/su-observer/SKILL.md"
         - "plugins/twl/skills/su-observer/refs/su-observer-supervise-channels.md"
+
+# --- Issue #1208 ---
+issue_1208:
+  issue: 1208
+  framework: pytest+bats
+  mappings:
+    - ac_index: 1
+      ac_text: "session.json 存在 + < 24h + 未完了 でも orchestrator.pid 不在なら resume 許可（resume_safe）"
+      test_file: "cli/twl/tests/test_autopilot_init_resume.py"
+      test_name: "test_ac1_resume_when_orchestrator_dead"
+      status: RED
+      red_mechanism: "現行実装は orchestrator.pid をチェックせず session.json < 24h + 未完了なら常に InitError を raise する"
+      impl_files:
+        - "cli/twl/src/twl/autopilot/init.py"
+
+    - ac_index: 2
+      ac_text: "session.json 存在 + orchestrator.pid 生 PID（kill -0 成功）→ InitError で block"
+      test_file: "cli/twl/tests/test_autopilot_init_resume.py"
+      test_name: "test_ac2_block_when_orchestrator_alive"
+      status: RED
+      red_mechanism: "現行実装は orchestrator.pid を参照しないため alive PID チェックによる block ができない"
+      impl_files:
+        - "cli/twl/src/twl/autopilot/init.py"
+
+    - ac_index: 3
+      ac_text: "autopilot-orchestrator.sh 起動時に ${AUTOPILOT_DIR}/orchestrator.pid を atomic write し、書かれた PID が現プロセス PID に一致する"
+      test_file: "plugins/twl/tests/integration/orchestrator-pid-write.bats"
+      test_name: "orchestrator_writes_pid_on_startup"
+      status: RED
+      red_mechanism: "現行実装の autopilot-orchestrator.sh には orchestrator.pid 書き込みコードが存在しない"
+      impl_files:
+        - "plugins/twl/scripts/autopilot-orchestrator.sh"
+
+    - ac_index: 4
+      ac_text: "autopilot-orchestrator.sh の EXIT trap で orchestrator.pid が削除される"
+      test_file: "plugins/twl/tests/integration/orchestrator-pid-cleanup.bats"
+      test_name: "orchestrator_clears_pid_on_exit"
+      status: RED
+      red_mechanism: "現行実装の autopilot-orchestrator.sh には EXIT trap での orchestrator.pid 削除が存在しない"
+      impl_files:
+        - "plugins/twl/scripts/autopilot-orchestrator.sh"
+
+    - ac_index: 5
+      ac_text: "stale orchestrator.pid（dead PID を指す）の場合 resume 許可"
+      test_file: "cli/twl/tests/test_autopilot_init_resume.py"
+      test_name: "test_ac5_resume_when_orchestrator_pid_stale"
+      status: RED
+      red_mechanism: "現行実装は orchestrator.pid をチェックしないため stale pid でも session.json < 24h + 未完了なら InitError を raise する"
+      impl_files:
+        - "cli/twl/src/twl/autopilot/init.py"
+
+    - ac_index: 6
+      ac_text: "bash 版 autopilot-init.sh も同等の orchestrator alive check を持つ"
+      test_file: "plugins/twl/tests/integration/autopilot-init-resume.bats"
+      test_name: "init_sh_resumes_when_orchestrator_dead"
+      status: RED
+      red_mechanism: "現行の autopilot-init.sh には orchestrator.pid 参照コードが存在しない"
+      impl_files:
+        - "plugins/twl/scripts/autopilot-init.sh"
