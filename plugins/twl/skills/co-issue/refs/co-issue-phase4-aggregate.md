@@ -61,6 +61,10 @@ Step 4a で `fallback_inject_exhausted` に分類された issue が存在する
 - `[B] manual fix` → Issue body 更新後、以下の決定論的 dual-write step を実行する（ADR-024 dual-write 順序準拠: label 先 → Status 後）:
 
   ```bash
+  # (a-pre) idempotent auto-create（ADR-024 Phase 1; Phase B 移行で削除予定）
+  # refined label 不在時に --add-label が失敗して Status=Refined 移行が skip される連鎖を断つ（#1209）
+  gh label create refined --color "C2E0C6" --description "auto-created by co-issue manual fix [B]" --repo "$ISSUE_REPO" 2>/dev/null || true
+
   # (a) label 先に付与（ADR-024: label 先 → Status 後）
   gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label refined
 
