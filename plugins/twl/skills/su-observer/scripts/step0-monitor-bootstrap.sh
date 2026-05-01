@@ -15,7 +15,7 @@ set -euo pipefail
 
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
 # パス検証: 英数字・ドット・アンダースコア・ハイフン・スラッシュのみ許可（特殊文字・空白・.. 拒否）
-if [[ ! "$SUPERVISOR_DIR" =~ ^[a-zA-Z0-9._/-]+$ ]] || [[ "$SUPERVISOR_DIR" == *..* ]]; then
+if [[ ! "$SUPERVISOR_DIR" =~ ^[a-zA-Z0-9./_-]+$ ]] || [[ "$SUPERVISOR_DIR" == *..* ]]; then
   echo "ERROR: SUPERVISOR_DIR に無効な文字が含まれています: $SUPERVISOR_DIR" >&2
   exit 2
 fi
@@ -33,7 +33,7 @@ _emit_start_commands() {
   echo "# Step 1: cld-observe-any daemon を logfile redirect で起動"
   echo "mkdir -p ${SUPERVISOR_DIR}"
   echo "plugins/session/scripts/cld-observe-any \\"
-  echo "  --session \"\$(cat ${SUPERVISOR_DIR}/session.json | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"session_id\"])')\" \\"
+  echo "  --pattern '^(ap-|wt-|coi-|coe-)' \\"
   echo "  2>&1 | tee -a ${LOG_FILE} &"
   echo ""
   echo "# Step 2: logfile が出力開始するまで待機"
