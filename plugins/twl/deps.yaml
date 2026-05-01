@@ -2951,6 +2951,12 @@ scripts:
     path: skills/su-observer/scripts/step0-monitor-bootstrap.sh
     description: "su-observer Step 0 monitor task 起動: cld-observe-any daemon + Monitor tool tail -F 連携起動コマンドを stdout に emit する。--check でデーモン死活確認（exit 0=起動済み）、引数なしで起動未済時のみコマンドを出力（SOP 用）"
 
+  # step0-monitor-bootstrap.sh _daemon_running() 多段確認ロジック bats テスト (#1199)
+  step0-monitor-bootstrap-daemon-running-bats:
+    type: script
+    path: tests/bats/scripts/step0-monitor-bootstrap-daemon-running.bats
+    description: "_daemon_running() 多段確認ロジック bats テスト（AC1/AC2/AC4/AC5）: zombie/stale heartbeat/grace period/正常 daemon の 4 シナリオ + --check/--write/引数なし 後方互換チェック"
+
 # エージェント（C-3 で追加）
 agents:
   # 構造チェック系（haiku）

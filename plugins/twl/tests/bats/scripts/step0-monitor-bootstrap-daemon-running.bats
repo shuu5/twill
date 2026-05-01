@@ -339,7 +339,12 @@ EOF
 
   stub_command "pgrep" 'exit 1'
 
-  run bash "${BOOTSTRAP_SCRIPT}" --check
+  # stderr を抑制: heartbeat.json 不在時の grace period WARNING は診断出力であり後方互換の範囲外
+  run bash -c "
+    export PATH='${STUB_BIN}:${PATH}'
+    export SUPERVISOR_DIR='${SUPERVISOR_DIR}'
+    bash '${BOOTSTRAP_SCRIPT}' --check 2>/dev/null
+  "
 
   assert_failure
   assert_output "NOT_RUNNING"
