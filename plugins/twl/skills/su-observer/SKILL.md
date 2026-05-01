@@ -37,6 +37,7 @@ spawnable_by:
 4.5. auto-memory はホストローカル補助のみ — cross-machine 知見 source として使用してはならない（MUST NOT）
 5. **`refs/pitfalls-catalog.md` を Read（MUST）** — 既知の落とし穴・Memory Principles・Worker auto mode 確認方法を把握
 6. **`refs/monitor-channel-catalog.md` を Read（SHOULD、Wave 管理時は MUST）** — Monitor チャネル定義と Hybrid 検知ポリシーを把握
+6.5. **Monitor task 起動 MUST**: `bash plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh` で出力されたコマンドを Monitor tool で実行する（cld-observe-any daemon + tail -F .supervisor/cld-observe-any.log の連携起動）
 7. `>>> su-observer 起動完了。指示をお待ちしています。` を表示
 
 ## Step 1: 常駐ループ（ユーザー指示待ち）
@@ -47,6 +48,8 @@ spawnable_by:
 **モードテーブルによる強制ルーティングは行わない**。AskUserQuestion でモード選択させない。
 
 ### supervise 1 iteration（co-autopilot 監視中の必須並行チャンネル）
+
+- 定期 audit MUST: 5 分ごとに全 ap-/wt-/coi- window を `for WIN in $(tmux list-windows -a -F '#{window_name}' | grep -E '^(ap-|wt-|coi-)'); do tmux capture-pane -t "$WIN" -p | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Enter to select|^❯ [1-9]\.|Press up to edit queued' && echo "[MENU-WAIT] $WIN"; done` で menu/input-wait pattern スキャン（cld-observe-any 補助、`-t $WIN` 必須・全 session 対象）
 
 **`refs/su-observer-supervise-channels.md` を Read** して実行。
 

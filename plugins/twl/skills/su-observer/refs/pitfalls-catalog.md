@@ -590,6 +590,26 @@ bash plugins/session/scripts/cld-observe-any-launcher --window <pattern> [OPTION
 
 **HUMAN GATE 対象外**: `cld-observe-any-launcher` 経由の再起動は self-supervision の範囲内で observer が自律判断可能。ただし launcher 起動失敗（`daemon-startup-failed` event）は §11 ★HUMAN GATE に準じてユーザーに escalate する。
 
+### §11.7 補助 polling Monitor — tmux capture-pane によるメニュー待ち状態検知（Issue #1185）
+
+**背景**: cld-observe-any + Monitor tool が正規の観察経路だが、TUI メニュー（`Enter to select` 等）の待ち状態は
+event emit されないため、LLM が気づかず放置されるケースがある（Observer が「忘れる」リスク）。
+
+**対策**: Step 1 supervise loop 内で 5 分ごとに補助 polling を実行する（定期 audit MUST）。
+
+```bash
+# 全 ap-/wt-/coi- window に対し ANSI strip + grep -E で menu/input-wait パターンをスキャン
+for WIN in $(tmux list-windows -a -F '#{window_name}' | grep -E '^(ap-|wt-|coi-)'); do
+  MATCH=$(tmux capture-pane -t "$WIN" -p | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Enter to select|^❯ [1-9]\.|Press up to edit queued' || true)
+  [[ -n "$MATCH" ]] && echo "[MENU-WAIT] $WIN: $MATCH"
+done
+```
+
+**ANSI escape strip 必須**: `pitfalls-catalog.md §2.5` 同様、`tmux capture-pane -p` 出力には ANSI seq が混入するため、
+`sed 's/\x1b\[[0-9;]*m//g'` による strip なしでは grep が空マッチになる。
+
+**関連**: `step0-monitor-bootstrap.sh` が emit するコマンドに polling template を含む（AC1.2）。
+
 ---
 
 ## 12. Claude Code classifier bypass 検出パターン（MUST）
