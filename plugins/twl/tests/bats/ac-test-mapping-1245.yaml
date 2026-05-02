@@ -1,0 +1,56 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/skills/su-observer/refs/observer-supervise-checklist.md が新規作成されている"
+    test_file: "plugins/twl/tests/bats/issue-1245-observer-checklist.bats"
+    test_names:
+      - "ac1: observer-supervise-checklist.md exists at expected path"
+      - "ac1: observer-supervise-checklist.md is non-empty"
+      - "ac1: observer-supervise-checklist.md contains checklist items (at least one checkbox or list item)"
+      - "ac1: observer-supervise-checklist.md filename includes 'supervise' and 'checklist'"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/observer-supervise-checklist.md"
+    # impl_files 注記: 実装前は存在しない新規作成ファイル。RED 状態で全 AC1 テストが fail する。
+
+  - ac_index: 2
+    ac_text: "plugins/twl/skills/su-observer/SKILL.md Step 1 supervise loop から checklist への reference が追加されている"
+    test_file: "plugins/twl/tests/bats/issue-1245-observer-checklist.bats"
+    test_names:
+      - "ac2: SKILL.md contains reference to observer-supervise-checklist"
+      - "ac2: SKILL.md reference to checklist is in Step 1 supervise loop section"
+      - "ac2: SKILL.md checklist reference uses Read directive or link format"
+    impl_files:
+      - "plugins/twl/skills/su-observer/SKILL.md"
+
+  - ac_index: 3
+    ac_text: "plugins/twl/skills/su-observer/refs/su-observer-supervise-channels.md から checklist への reference が追加されている"
+    test_file: "plugins/twl/tests/bats/issue-1245-observer-checklist.bats"
+    test_names:
+      - "ac3: su-observer-supervise-channels.md contains reference to observer-supervise-checklist"
+      - "ac3: su-observer-supervise-channels.md checklist reference is not a comment-only line"
+      - "ac3: su-observer-supervise-channels.md checklist reference appears as Read directive or link"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/su-observer-supervise-channels.md"
+
+  - ac_index: 4
+    ac_text: "plugins/twl/deps.yaml に observer-supervise-checklist エントリが登録されている（type=reference）"
+    test_file: "plugins/twl/tests/bats/issue-1245-observer-checklist.bats"
+    test_names:
+      - "ac4: deps.yaml contains observer-supervise-checklist entry"
+      - "ac4: deps.yaml observer-supervise-checklist entry has type: reference"
+      - "ac4: deps.yaml observer-supervise-checklist entry has path pointing to checklist md"
+      - "ac4: deps.yaml observer-supervise-checklist entry has description field"
+      - "ac4: deps.yaml observer-supervise-checklist is placed in su-observer split refs section"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: 5
+    ac_text: "bats テストが追加されている（plugins/twl/tests/bats/issue-1245-observer-checklist.bats）"
+    test_file: "plugins/twl/tests/bats/issue-1245-observer-checklist.bats"
+    test_names:
+      - "ac5: this bats test file exists at expected path"
+      - "ac5: this bats test file contains at least 5 test blocks"
+    impl_files:
+      - "plugins/twl/tests/bats/issue-1245-observer-checklist.bats"
+    # 注記: AC5 のテストは self-referential。本ファイル書き出し時点で GREEN になる。
+    #       「対象ファイルが存在し、かつ 5 件以上の @test ブロックを含む」として検証する。
+    #       他の AC1-4 と異なり、RED -> GREEN の遷移はファイル生成完了後に即座に発生する。

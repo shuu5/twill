@@ -54,6 +54,8 @@ spawnable_by:
 
 **`refs/su-observer-supervise-channels.md` を Read** して実行。
 
+> **supervise cycle 開始前 checklist（SHOULD）**: **`refs/observer-supervise-checklist.md` を Read** して 7 項目を確認し、未設定項目があれば補完すること（#1245）。
+
 > **Monitor tool 連携経路（SHOULD）**: cld-observe-any 起動時は `refs/monitor-channel-catalog.md` の「Monitor tool 連携経路（方式 A: 共有 logfile tail）」セクションを参照し、stdout を `.supervisor/cld-observe-any.log` に `tee -a` redirect した上で Monitor tool を `tail -F` で起動すること。これにより `[MENU-READY]`/`[REVIEW-READY]`/`[FREEFORM-READY]` 等の event を Monitor tool でリアルタイム受信できる（#1144）。
 
 > **検知漏れ記録（SHOULD）**: Monitor 不在・pitfall 適用漏れ・observer 自身の介入失敗など「検知漏れ」が発生した判断ポイントでは `scripts/record-detection-gap.sh` を呼び出すこと。SHOULD — 完全自動では難しいが、介入後に気づいた場合は積極的に記録する。
