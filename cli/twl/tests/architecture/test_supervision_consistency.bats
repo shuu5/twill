@@ -52,9 +52,10 @@ setup() {
     [[ -n "$max_defined" ]] \
         || { echo "FAIL: テーブルから SU-N 定義が抽出できませんでした"; false; }
 
-    # 本文中の "SU-1〜SU-N" 表記から N を抽出（最後に出現するものを使用）
+    # 本文中の "SU-1〜SU-N" 表記から N を抽出（廃止メモ行を除外して最大値を取得）
     local text_max
-    text_max="$(grep -oP 'SU-1〜SU-\K[0-9]+' "$SUPERVISION_MD" \
+    text_max="$(grep -v '廃止' "$SUPERVISION_MD" \
+        | grep -oP 'SU-1〜SU-\K[0-9]+' \
         | sort -n \
         | tail -1)"
 
