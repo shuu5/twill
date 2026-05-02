@@ -74,6 +74,25 @@ class TestAC1RecommendedStructureParsing:
             f"type: 値伝搬が見当たらない。Step 2 テキスト:\n{step2_text[:500]}"
         )
 
+    def test_ac1_co_architect_step2_handles_include_list(self):
+        # AC1 coverage: co-architect Step 2 が include: リストを処理することを検証
+        # Issue body の技術アプローチ: type: / skip: / include: 抽出が明記されている
+        text = CO_ARCHITECT_SKILL.read_text(encoding="utf-8")
+        step2_match = re.search(
+            r"## Step 2:.*?(?=\n## Step 3:|\Z)",
+            text,
+            re.DOTALL,
+        )
+        assert step2_match is not None, (
+            "AC1 coverage: co-architect/SKILL.md に '## Step 2:' セクションが見当たらない"
+        )
+        step2_text = step2_match.group(0)
+        assert "include:" in step2_text or "include" in step2_text.lower(), (
+            "AC1 coverage: co-architect/SKILL.md Step 2 に 'include:' フィールドの処理記述が"
+            "見当たらない。技術アプローチに type: / skip: / include: 抽出が明記されている。"
+            f"Step 2 テキスト:\n{step2_text[:500]}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # AC2: `skip:` リスト内の必須ファイルは `architect-completeness-check` で
