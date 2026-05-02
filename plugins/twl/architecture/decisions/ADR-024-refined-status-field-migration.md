@@ -47,9 +47,11 @@ Project Board は `twill-ecosystem` にリンクされた repo の Issue のみ 
 
 ### Dual-write 期間（Phase 1）
 
-Phase B 移行まで **label と Status を dual-write** する。書き込み順序: **label 先 → Status 後**。
+> **Phase B 完了 (2026-05-03)**: label write は削除済み。Twill 内部 Issue は Status=Refined のみを write する。以下は Phase 1 の歴史的記録。
 
-理由: Status を先に書くと、Status=Refined を見た autopilot が label 付与前に早期 spawn する race の可能性がある。
+Phase B 移行まで **label と Status を dual-write** した。書き込み順序: **label 先 → Status 後**。
+
+理由: Status を先に書くと、Status=Refined を見た autopilot が label 付与前に早期 spawn する race の可能性があった。
 
 ### fail-closed 設計
 
@@ -61,7 +63,7 @@ Status gate は fail-closed を採用:
 ### cache 戦略（Phase 分離）
 
 - **Phase 1 (本 Issue)**: fresh API call（gate の即時性を優先、cache なし）
-- **Phase B (別 Issue)**: `/tmp/refined-status-cache-<pilot-pid>.json` TTL 5分 cache（bash/Python 共有、invalidation = Status write 直後 + TTL）
+- **Phase B**: cache 導入は見送り（実運用で R1 rate limit が問題にならなかったため）。将来必要になった場合は別 Issue として管理する
 
 ## Consequences
 
@@ -73,10 +75,10 @@ Status gate は fail-closed を採用:
 
 ### Negative / Risks
 
-- **R1**: hot path API rate limit（Phase B で cache 導入により解消予定）
+- **R1**: hot path API rate limit（Phase B では cache 導入を見送り。実運用で問題は発生しなかった）
 - **R4**: breaking change: pre-seed bypass invariant が 2 層になる（hook + launcher）
 - **R5**: cross-repo Board scope 制約（Option A の label fallback で回避）
-- **R8**: 既存 `layer-d-refined-gate.bats` は Phase 1 では label write 継続により PASS 維持
+- **R8**: 既存 `layer-d-refined-gate.bats` は Phase 1 では label write 継続により PASS を維持していた。Phase B 完了後は label write が削除されたため、このテストの扱いは Phase B 完了 (Tier A/B) で対応済み
 
 ## Implementation
 
