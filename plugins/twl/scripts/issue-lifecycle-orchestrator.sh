@@ -680,7 +680,8 @@ wait_for_batch() {
                   # AC4: unclassified debounce 確認後に STATE チェックを実行（Pattern 4 より後）
                   local _round_num=""
                   _round_num=$(ls -d "${subdir}/rounds"/[0-9]* 2>/dev/null \
-                    | sort -n -t'/' -k7 2>/dev/null | tail -1 | xargs -I{} basename {} 2>/dev/null || echo "")
+                    | xargs -I{} basename {} 2>/dev/null \
+                    | sort -n | tail -1 || echo "")
                   local _findings_path="${subdir}/rounds/${_round_num:-0}/findings.yaml"
                   if [[ "$current_state" == "reviewing" && -n "$_round_num" && -f "$_findings_path" ]]; then
                     # AC1: STATE=reviewing + findings.yaml 存在 → issue-review-aggregate inject

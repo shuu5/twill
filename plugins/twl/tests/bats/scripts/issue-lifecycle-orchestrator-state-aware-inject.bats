@@ -50,7 +50,7 @@ teardown() {
   # AC1: findings.yaml 存在チェックと reviewing inject が同一ブロックに存在する
   # RED: 実装前はパターンが存在しないため fail する
   local reviewing_line findings_line
-  reviewing_line=$(grep -n '"reviewing"' "$SCRIPT_SRC" | grep -v "^#" | tail -1 | cut -d: -f1)
+  reviewing_line=$(grep -n '"reviewing"' "$SCRIPT_SRC" | grep -v "^[0-9]*:#" | head -1 | cut -d: -f1)
   findings_line=$(grep -n 'findings\.yaml.*reviewing\|reviewing.*findings\.yaml\|_findings_path.*findings\.yaml' "$SCRIPT_SRC" | head -1 | cut -d: -f1)
 
   [[ -n "$reviewing_line" ]] \
