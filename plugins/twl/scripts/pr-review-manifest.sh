@@ -181,7 +181,7 @@ fi
 if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
   for f in "${FILES[@]}"; do
     case "$f" in
-      */architecture/*.md|*/architecture/*/*.md|*/architecture/*/*/*.md)
+      *architecture/*.md|*architecture/*/*.md|*architecture/*/*/*.md)
         SPECIALISTS["worker-arch-doc-reviewer"]=1
         break
         ;;
