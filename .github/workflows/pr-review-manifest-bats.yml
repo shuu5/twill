@@ -1,0 +1,30 @@
+name: pr-review-manifest bats tests
+
+on:
+  push:
+    paths:
+      - 'plugins/twl/scripts/pr-review-manifest.sh'
+      - 'plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats'
+  pull_request:
+    paths:
+      - 'plugins/twl/scripts/pr-review-manifest.sh'
+      - 'plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats'
+
+permissions: {}
+
+jobs:
+  pr-review-manifest-bats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bats
+        run: |
+          git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+          sudo /tmp/bats-core/install.sh /usr/local
+          rm -rf plugins/twl/tests/lib/bats-support
+          git clone --depth 1 https://github.com/bats-core/bats-support.git plugins/twl/tests/lib/bats-support
+          rm -rf plugins/twl/tests/lib/bats-assert
+          git clone --depth 1 https://github.com/bats-core/bats-assert.git plugins/twl/tests/lib/bats-assert
+      - name: Run pr-review-manifest architecture tests
+        working-directory: plugins/twl
+        run: bats tests/bats/scripts/pr-review-manifest-mode-architecture.bats
