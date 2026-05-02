@@ -1,9 +1,9 @@
 #!/usr/bin/env bats
 # pr-review-manifest-mode-architecture.bats
-# AC A-3: phase-review mode での architecture/ ファイル変更時 worker-architecture 追加テスト
+# A-3: phase-review mode での architecture/ ファイル変更時 worker-architecture 追加テスト
+# B-1〜B-6: #1242 regression — top-level/nested architecture/*.md で worker-arch-doc-reviewer 追加テスト
 #
-# RED テスト: A-3-i, A-3-iv, A-3-v は現状の pr-review-manifest.sh では FAIL する
-# PASS テスト: A-3-ii, A-3-iii は現状でも PASS するが、テストとして明示する
+# テスト名末尾の (RED) は TDD RED フェーズで生成されたテストを示す慣例表記（PASS になった後も維持）
 
 load '../helpers/common'
 

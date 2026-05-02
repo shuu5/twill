@@ -178,6 +178,7 @@ if [[ "$MODE" == "merge-gate" ]]; then
 fi
 
 # phase-review / merge-gate モード: architecture/ 配下の .md 変更 → worker-arch-doc-reviewer
+# glob は L159 の worker-architecture 条件と同一パターン（意図的）。条件: phase-review|merge-gate（L159 は phase-review のみ）
 if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
   for f in "${FILES[@]}"; do
     case "$f" in
