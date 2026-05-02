@@ -132,78 +132,40 @@ if round == policies.max_rounds and CRITICAL findings あり:
   exit 0
 ```
 
-### Step 4.5: refined ラベル判定
-
-round loop が正常完了した場合（STATE が `circuit_broken` でない場合）、`labels_hint` に `"refined"` を追加する:
-
-```
-if STATE != circuit_broken:
-  policies.labels_hint ← policies.labels_hint + ["refined"]
-```
-
-- `STATE == circuit_broken` の場合: スキップ（round loop が正常完了していないため）
-- `STATE == failed` の場合: Step 4c の `exit 0` で制御フローが終了するため Step 4.5 に到達しない（条件式の対象外）
-
 ### Step 5: arch-drift
 
 `/twl:issue-arch-drift` を Skill tool で呼び出す:
 - 入力: 最終 body（最後の body-fixed.md または rounds/0/body.md）
 
-### Step 6: issue 作成 + Status 書き込み（dual-write: label 先 → Status 後）
+### Step 6: issue 作成 + Status 書き込み（ADR-024 Phase B: Status=Refined SSoT）
 
 `/twl:issue-create` を Skill tool で呼び出す:
 - タイトルと本文は最終 body から抽出
-- labels: policies.labels_hint（Step 4.5 で追加された "refined" ラベルを含む）
+- labels: policies.labels_hint（refined を除く）
 - `--repo policies.target_repo`（null の場合は省略）
 
-issue 作成後、labels_hint のラベルを付与する際は以下の dual-write パターンを適用する（AC1+AC2 と同等、#1209 準拠）:
+issue 作成後、labels_hint のラベルを付与し、Status=Refined を設定する:
 
 ```bash
 # ISSUE_NUMBER: issue_url（/twl:issue-create 出力）の末尾パスセグメントから抽出
 # TARGET_REPO: policies.target_repo（null の場合は既定リポジトリ）
-# LABELS_HINT: jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json" で取得
 
-# idempotent auto-create pre-step（ADR-024 Phase 1; Phase B 移行で削除予定）
-# label 不在時に --add-label が失敗して Status=Refined 移行が skip される連鎖を断つ
-# 例: gh label create refined --color "8B5CF6" --description "auto-created" --repo "$TARGET_REPO" 2>/dev/null || true
-while IFS= read -r label; do
-  [[ -n "$label" ]] && gh label create "$label" --color "8B5CF6" --description "auto-created by workflow-issue-lifecycle" --repo "$TARGET_REPO" 2>/dev/null || true
-done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
-
-# シェルレベル || true guard — loop が abort せず次 label に継続することを保証する
+# labels_hint のラベルを付与（refined を除く）
 while IFS= read -r label; do
   [[ -n "$label" ]] && gh issue edit "$ISSUE_NUMBER" --repo "$TARGET_REPO" --add-label "$label" 2>/dev/null || true
 done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 
-# Status update 独立性保証 — label 付与 loop の結果（成功/失敗/部分失敗）と無関係に実行される。
-# label 付与で発生した失敗は Status update を block しない（ADR-024 dual-write 独立性保証）。
-bash "${SCRIPTS_ROOT:-plugins/twl/scripts}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined \
-  2>/dev/null || echo "⚠️ Status=Refined への Board 更新失敗（label は付与済み）"
+# Status=Refined を設定（Phase B 移行後: Status only SSoT）
+bash "${SCRIPTS_ROOT:-plugins/twl/scripts}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined
+_status_exit=$?
+if [[ "$_status_exit" -ne 0 ]]; then
+  printf '[%s] WARN status_update_failed issue=#%s exit_code=%s\n' \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ISSUE_NUMBER" "$_status_exit" \
+    >> /tmp/refined-status-update.log 2>/dev/null || true
+fi
 ```
-
-labels_hint に "refined" が含まれていれば Status=Todo を初期値として Board に登録する（project-board-sync で対応）。
 
 責任境界: #943 gate は Status=Refined の有無のみ確認。phase-review の内容は #940 の責務。
-
-**dual-write observability（Issue #1212）**: `/twl:issue-create` 完了後かつ Step 6.5 の前に、labels_hint に "refined" が含まれる場合は以下を実行する:
-
-```bash
-# refined-dual-write-log.sh を source（CLAUDE_PLUGIN_ROOT 不確定時の fallback あり）
-source "${CLAUDE_PLUGIN_ROOT}/scripts/refined-dual-write-log.sh" 2>/dev/null || true
-
-# /twl:issue-create は Skill tool 呼び出しのため exit code は直接取得できない。
-# Skill 実行後の labels_hint 付与を gh issue edit で行う場合は以下のパターンを使用する:
-#   gh issue edit "${ISSUE_NUMBER}" --repo "${TARGET_REPO}" --add-label refined
-#   _label_exit=$?
-#   if [[ "$_label_exit" -ne 0 ]]; then
-#     dual_write_log WARN label_add_failed "${ISSUE_NUMBER}" "label=refined repo=${TARGET_REPO} exit_code=${_label_exit}"
-#   else
-#     dual_write_log OK dual_write "${ISSUE_NUMBER}" "label_ok=Y"
-#   fi
-# Skill 内部での label 付与の場合は、Skill 完了後の issue label 状態を gh issue view で確認して記録する。
-```
-
-CLAUDE_PLUGIN_ROOT が不確定の場合の fallback: `bash -c 'source "${CLAUDE_PLUGIN_ROOT}/scripts/refined-dual-write-log.sh" && dual_write_log ...'` またはインライン `printf '[%s] WARN label_add_failed issue=#%s ...\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${ISSUE_NUMBER}" >> /tmp/refined-dual-write.log` を使用する。
 
 ### Step 6.5: project-board-sync
 

@@ -145,28 +145,12 @@ if round == policies.max_rounds and CRITICAL findings あり:
   exit 0
 ```
 
-### Step 4.5: refined ラベル判定
-
-round loop が正常完了した場合（STATE が `circuit_broken` でない場合）、`labels_hint` に `"refined"` を追加する:
-
-```bash
-if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]]; then
-  # policies.json に "refined" ラベルを追加して永続化（Step 6' が jq で読み取るため）
-  jq '.labels_hint += ["refined"] | .labels_hint |= unique' \
-    "$PER_ISSUE_DIR/IN/policies.json" > "$PER_ISSUE_DIR/IN/policies.json.tmp" \
-    && mv "$PER_ISSUE_DIR/IN/policies.json.tmp" "$PER_ISSUE_DIR/IN/policies.json"
-fi
-```
-
-- `STATE == circuit_broken` の場合: スキップ（round loop が正常完了していないため）
-- `STATE == failed` の場合: Step 4c の `exit 0` で制御フローが終了するため Step 4.5 に到達しない（条件式の対象外）
-
 ### Step 5: arch-drift
 
 `/twl:issue-arch-drift` を Skill tool で呼び出す:
 - 入力: 最終 body（最後の body-fixed.md または rounds/0/body.md）
 
-### Step 6': body 更新 + ラベル付与 + Status 書き込み（dual-write: label 先 → Status 後）
+### Step 6': body 更新 + Status 書き込み（ADR-024 Phase B: Status=Refined SSoT）
 
 `existing-issue.json` から `number` と `repo` を取得し、既存 Issue の body を更新する。
 
@@ -185,59 +169,28 @@ for f in "$PER_ISSUE_DIR"/rounds/*/body-fixed.md; do
   [[ -f "$f" ]] && FINAL_BODY="$f"
 done
 
-# body 更新
+# body 更新（既存ラベル・title は変更しない）
 gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --body-file "$FINAL_BODY"
 
-# labels_hint のラベルを付与（既存ラベル・title は変更しない）
-# Step 4.5 で追加された "refined" ラベルも含む
-# dual-write 順序: label 先（ここまで）→ Status 後（下記）
-# 理由: Status を先に書くと autopilot が label 付与前に early spawn する race の可能性がある
-
-# dual-write observability ロガーを source（Issue #1212）— 後続 loop で dual_write_log を使用するため先に読み込む
-source "${CLAUDE_PLUGIN_ROOT:-$(dirname "$0")/..}/scripts/refined-dual-write-log.sh" 2>/dev/null || true
-
-# AC1(1): idempotent auto-create pre-step（ADR-024 Phase 1; Phase B 移行で削除予定、#1209）
-# label 不在時に --add-label が失敗して Status=Refined 移行が skip される連鎖を断つため、
-# 付与前に label を事前作成する。|| true で「既存 label でも abort しない」を保証する。
+# labels_hint のラベルを付与（refined を除く labels_hint のみ）
 while IFS= read -r label; do
-  [[ -n "$label" ]] && gh label create "$label" --color "8B5CF6" \
-    --description "auto-created by workflow-issue-refine" \
-    --repo "$ISSUE_REPO" 2>/dev/null || true
+  [[ -n "$label" ]] && gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label "$label" 2>/dev/null || true
 done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 
-# AC1(2): label 付与 + dual-write observability（#1209 のシェルレベル || true 分離 + Issue #1212 の logging）
-# 各 label の add 結果を dual_write_log で記録する。loop 内エラーは次 label に継続する。
-while IFS= read -r label; do
-  if [[ -n "$label" ]]; then
-    gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label "$label"
-    _label_exit=$?
-    if [[ "$_label_exit" -ne 0 ]]; then
-      dual_write_log WARN label_add_failed "$ISSUE_NUMBER" "label=$label repo=$ISSUE_REPO exit_code=$_label_exit"
-    else
-      dual_write_log OK dual_write "$ISSUE_NUMBER" "label_ok=Y"
-    fi
-  fi
-done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
-
-# AC2: Status update 独立性保証 — label 付与 loop の結果（成功/失敗/部分失敗）と無関係に実行される。
-# label 付与で発生した失敗は Status update を block しない。
-# これは ADR-024 dual-write 順序遵守の元、label 付与失敗で Status=Todo のまま残ることを防ぐ独立性保証である。
-# 責任境界: #943 gate は Status=Refined の有無のみ確認、phase-review の内容は検証しない（#940 の責務）
-# dual-write observability (Issue #1212): Status update 失敗時も dual_write_log WARN status_update_failed を呼び出す
+# Status=Refined を設定（Phase B 移行後: Status only SSoT）
 if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]]; then
   bash "${SCRIPTS_ROOT:-$(dirname "$0")/../../scripts}/chain-runner.sh" \
     board-status-update "$ISSUE_NUMBER" "Refined" 2>/dev/null
   _status_exit=$?
   if [[ "$_status_exit" -ne 0 ]]; then
-    echo "⚠️  Status=Refined への Board 更新失敗（label は付与済み）"
-    dual_write_log WARN status_update_failed "$ISSUE_NUMBER" "status=Refined chain_runner_exit=$_status_exit"
-  else
-    dual_write_log OK dual_write "$ISSUE_NUMBER" "label_ok=Y status_ok=Y"
+    printf '[%s] WARN status_update_failed issue=#%s exit_code=%s\n' \
+      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ISSUE_NUMBER" "$_status_exit" \
+      >> /tmp/refined-status-update.log 2>/dev/null || true
   fi
 fi
 ```
 
-**制約**: 既存ラベル・title は変更しない（body のみ更新 + ラベル追加）。dual-write は label 先・Status 後の順序を厳守。Status 書き込み失敗時は label 付与済み状態で継続（ワークフロー停止しない）。
+**制約**: 既存ラベル・title は変更しない（body のみ更新）。Status=Refined は circuit_broken でない場合のみ設定。
 
 ### Step 7: 完了
 

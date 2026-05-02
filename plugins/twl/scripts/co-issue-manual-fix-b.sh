@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# co-issue-manual-fix-b.sh — co-issue manual fix [B] path dual-write executor
-# ADR-024 dual-write 順序: label 先 → Status 後
+# co-issue-manual-fix-b.sh — co-issue manual fix [B] path Status-only executor
+# ADR-024 Phase B: Status=Refined SSoT（label 付与廃止）
 # Emergency Bypass 準拠 (glossary.md L26): orchestrator failure 後の fallback
 set -euo pipefail
 
@@ -32,10 +32,12 @@ SCRIPTS_ROOT="$(cd "${SCRIPTS_ROOT}" && pwd 2>/dev/null)" || {
   exit 1
 }
 
-# (a) label 先に付与（ADR-024: label 先 → Status 後）
-gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label refined
-
-# (b) Status を後に更新（ADR-024: label 完了後に実行）
-# fail-soft: label 付与済みの場合、Status 更新失敗は警告のみ（workflow-issue-refine Step 6' と等価）
-bash "${SCRIPTS_ROOT}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined \
-  || echo "WARN: board-status-update Refined failed (label already applied)" >&2
+# Status=Refined を設定（Phase B 移行後: Status only SSoT）
+bash "${SCRIPTS_ROOT}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined
+_status_exit=$?
+# observability: status update 失敗時のみ WARN
+if [[ "$_status_exit" -ne 0 ]]; then
+  printf '[%s] WARN status_update_failed issue=#%s exit_code=%s\n' \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ISSUE_NUMBER" "$_status_exit" \
+    >> /tmp/refined-status-update.log 2>/dev/null || true
+fi

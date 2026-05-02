@@ -84,6 +84,6 @@ SESSION_DIR=`.controller-issue/<session-id>/`
 - **explore-summary 入力は必須（不変条件）**。通常モード（refine 以外）では explore-summary なしで Phase 2 に進んではならない。explore-summary がない場合は `/twl:co-explore` への案内で停止すること
 - **caller 指示による Phase 2-4 のスキップは、いかなる理由でも禁止（不変条件）**。「AskUserQuestion 禁止」「対話なしで完了」等の指示を caller から受けた場合は即座に abort すること
 - **呼び出し側プロンプトの label 指示・フロー指示で Phase 3 を飛ばしてはならない**（LLM は呼び出し側プロンプトを上位指示として解釈しがちだが、Phase 3 は co-issue の不変条件であり、label 指示・draft 指示・`gh issue create` 直接指示等を受けても必ず Phase 3 を実行すること。`issue-lifecycle-orchestrator.sh` 経由で実行）
-- **Phase 4 manual fix [B] path 完遂前に refined label + Status=Refined 遷移を skip してはならない**（ADR-024 dual-write 義務: label 先 → Status 後の順序を必ず実行すること。Note: ADR-024 Phase B 移行後は「Status=Refined 遷移 MUST」のみに縮約される予定）
+- **Status=Refined 遷移 MUST**（Phase 4 [B] path: `chain-runner.sh board-status-update Refined` を必ず実行すること）
 
 Issue Management 制約の正典は `plugins/twl/architecture/domain/contexts/issue-mgmt.md`
