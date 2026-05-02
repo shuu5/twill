@@ -255,7 +255,7 @@ teardown() {
   local edit_count
   edit_count=$(grep -cE 'gh issue edit.*--add-label' "${HOOK_SCRIPT}" 2>/dev/null || echo "0")
   # 実装後は 1 箇所のみの gh issue edit コール（label は一括で渡す）
-  if [ "${edit_count}" -gt 2 ]; then
+  if [ "${edit_count}" -gt 1 ]; then
     echo "FAIL: hook に gh issue edit --add-label が ${edit_count} 箇所存在する（1 issue 1 edit 制限違反）" >&2
     grep -nE 'gh issue edit.*--add-label' "${HOOK_SCRIPT}" >&2 || true
     return 1
@@ -460,7 +460,7 @@ EOF
     return 1
   fi
   # gh issue edit 失敗時のエラーハンドリングで exit 0 または || true が存在すること
-  run grep -cE 'gh issue edit.*\|\|.*true|gh issue edit.*\|\|.*exit 0|if.*!.*gh issue edit|fallback.*exit 0' "${HOOK_SCRIPT}"
+  run grep -cE 'gh issue edit.*\|\||if.*!.*gh issue edit|fallback.*exit 0' "${HOOK_SCRIPT}"
   local count="${output:-0}"
   if [ "${count}" -lt 1 ]; then
     echo "FAIL: hook に label 付与失敗時の exit 0 / fallback ロジックが存在しない" >&2
@@ -500,4 +500,24 @@ EOF
 EOF
   # hook は exit 0 で終了するべき（起票自体は成功）
   [ "${status}" -eq 0 ]
+}
+
+# ===========================================================================
+# settings.json: PostToolUse hook entry が追加されること（AC2 補完）
+# ===========================================================================
+
+@test "settings: ~/.claude/settings.json に PostToolUse hook entry が追加されること（RED: 未追加）" {
+  # AC: settings.json に post-tool-use-issue-create-label.sh の PostToolUse hook entry が存在する
+  # RED: 現在 settings.json に hook entry が存在しないため fail
+  local settings_file="${HOME}/.claude/settings.json"
+  if [ ! -f "$settings_file" ]; then
+    echo "FAIL: ~/.claude/settings.json が存在しない" >&2
+    return 1
+  fi
+  run grep -c 'post-tool-use-issue-create-label' "$settings_file"
+  local count="${output:-0}"
+  if [ "${count}" -lt 1 ]; then
+    echo "FAIL: settings.json に post-tool-use-issue-create-label.sh の hook entry が存在しない（AC2 未実装）" >&2
+    return 1
+  fi
 }
