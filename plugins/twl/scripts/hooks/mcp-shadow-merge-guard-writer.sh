@@ -32,8 +32,12 @@ while [[ $# -gt 0 ]]; do
     --bash-exit)        BASH_EXIT="$2";        shift 2 ;;
     --mcp-exit)         MCP_EXIT="$2";         shift 2 ;;
     --log)              LOG_FILE="$2";         shift 2 ;;
-    --bash-stderr-match) BASH_STDERR_MATCH="$2"; shift 2 ;;
-    --mcp-stderr-match)  MCP_STDERR_MATCH="$2";  shift 2 ;;
+    --bash-stderr-match)
+      [[ "$2" == "true" || "$2" == "false" ]] || { echo "ERROR: --bash-stderr-match must be true|false" >&2; exit 1; }
+      BASH_STDERR_MATCH="$2"; shift 2 ;;
+    --mcp-stderr-match)
+      [[ "$2" == "true" || "$2" == "false" ]] || { echo "ERROR: --mcp-stderr-match must be true|false" >&2; exit 1; }
+      MCP_STDERR_MATCH="$2";  shift 2 ;;
     *) echo "Unknown argument: $1" >&2; exit 1 ;;
   esac
 done
