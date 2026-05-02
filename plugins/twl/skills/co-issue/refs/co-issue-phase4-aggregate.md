@@ -57,7 +57,7 @@ Step 4a で `fallback_inject_exhausted` に分類された issue が存在する
 
 **failure / circuit_broken の場合（AskUserQuestion）:**
 
-- `[A] retry subset` → `bash scripts/issue-lifecycle-orchestrator.sh --per-issue-dir ".controller-issue/<session-id>/per-issue/" --resume --model sonnet` で非 done のみ再実行
+- `[A] retry subset` → `bash "${CLAUDE_PLUGIN_ROOT}/scripts/issue-lifecycle-orchestrator.sh" --per-issue-dir ".controller-issue/<session-id>/per-issue/" --resume --model sonnet` で非 done のみ再実行
 - `[B] manual fix` → Issue body 更新後、以下の決定論的 dual-write step を実行する（ADR-024 dual-write 順序準拠: label 先 → Status 後）:
 
   ```bash

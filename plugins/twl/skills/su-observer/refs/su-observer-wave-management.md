@@ -40,7 +40,7 @@ _crg_path="${TWILL_REPO_ROOT}/main/.code-review-graph"
    - `commands/externalize-state.md` を Read → 実行（`--trigger wave_complete`）
    - audit snapshot: `twl audit snapshot --source-dir "${AUTOPILOT_DIR:-.autopilot}" --label "wave/${WAVE_NUM}"`
    - イベントクリーンアップ: `rm -f .supervisor/events/* 2>/dev/null || true`
-   - **SU-6a（MUST）**: doobidoo に `observer-wave` / `observer-pitfall` / `observer-lesson` / `observer-intervention` タグで保存（詳細: `refs/pitfalls-catalog.md` §8）。`commands/externalize-state.md` Step 4 Exit Gate で `pitfall_declaration` を宣言し、`scripts/externalize-state-exit-gate.sh` で exit 0 を確認すること（未宣言は WARN）
+   - **SU-6a（MUST）**: doobidoo に `observer-wave` / `observer-pitfall` / `observer-lesson` / `observer-intervention` タグで保存（詳細: `refs/pitfalls-catalog.md` §8）。`commands/externalize-state.md` Step 4 Exit Gate で `pitfall_declaration` を宣言し、`${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/externalize-state-exit-gate.sh` で exit 0 を確認すること（未宣言は WARN）
    - **SU-6b（SHOULD）**: context 消費量 80% 以上で `/compact` をユーザーへ提案
    - **Phase B 起票トリガー判定（AC13）**: 以下のいずれかを満たした場合、Phase B Issue を自動起票する（ユーザー確認を得てから）:
      - (a) `gh project item-list 6 --owner shuu5 --format json | jq '[.items[] | select(.status=="Done" and .content.type=="Issue")]'` で Status=Refined 経由 Done が累計 5 件以上
@@ -112,7 +112,7 @@ export IDLE_COMPLETED_AUTO_NEXT_SPAWN=1  # or "dry-run" for testing
   "queue": [{
     "wave": 7,
     "issues": [1155],
-    "spawn_cmd_argv": ["bash", "plugins/twl/skills/su-observer/scripts/spawn-controller.sh", "..."],
+    "spawn_cmd_argv": ["bash", "${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/spawn-controller.sh", "..."],
     "depends_on_waves": [6],
     "spawn_when": "all_current_wave_idle_completed"
   }]
