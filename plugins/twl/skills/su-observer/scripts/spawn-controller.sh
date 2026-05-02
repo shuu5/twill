@@ -362,7 +362,8 @@ PYEOF
   tmux split-window -v -d -l 67% -t "${resolved_target}.$((base+1))" -c "$cwd" "bash '$budget_script'"
 
   # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
-  local spawn_cmd="bash '$cld_observe_any' --window '$observer_window'"
+  local spawn_cmd
+  printf -v spawn_cmd 'bash %q --window %q' "$cld_observe_any" "$observer_window"
   tmux split-window -v -d -l 50% -t "${resolved_target}.$((base+2))" -c "$cwd" "$spawn_cmd"
 
   # cld-observe-any pane の PID・pane_id・spawn_cmd を session.json に記録
