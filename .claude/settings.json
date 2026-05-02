@@ -70,6 +70,16 @@
             },
             "outputType": "log",
             "timeout": 10
+          },
+          {
+            "type": "mcp_tool",
+            "server": "twl",
+            "tool": "twl_validate_commit",
+            "input": {
+              "command": "${tool_input.command}"
+            },
+            "outputType": "log",
+            "timeout": 30
           }
         ]
       }
