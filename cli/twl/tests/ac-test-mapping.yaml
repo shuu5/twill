@@ -1,6 +1,350 @@
-# ac-test-mapping.yaml - Issue #1261
-# supervision.md の SU-* 範囲表記ドリフト修正 + regression bats
 mappings:
+  - ac_index: "共通-1"
+    ac_text: "12 tool が tools.py に存在すること (twl_mergegate_run, twl_mergegate_reject, twl_mergegate_reject_final, twl_orchestrator_phase_review, twl_orchestrator_get_phase_issues, twl_orchestrator_summary, twl_orchestrator_resolve_repos, twl_worktree_create, twl_worktree_delete, twl_worktree_list, twl_worktree_generate_branch_name, twl_worktree_validate_branch_name)"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestCommon1TwelveToolsExist::test_common1_all_12_tools_present_in_module"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_mergegate_run_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_mergegate_reject_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_mergegate_reject_final_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_orchestrator_phase_review_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_orchestrator_get_phase_issues_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_orchestrator_summary_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_orchestrator_resolve_repos_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_create_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_delete_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_list_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_generate_branch_name_exists"
+      - "TestCommon1TwelveToolsExist::test_common1_twl_worktree_validate_branch_name_exists"
+
+  - ac_index: "共通-2"
+    ac_text: "12 個の handler 関数が tools.py に存在すること（twl_<name>_handler 命名）"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestCommon2TwelveHandlersExist::test_common2_all_12_handlers_present"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_mergegate_run_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_orchestrator_phase_review_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_worktree_create_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_worktree_delete_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_worktree_list_handler_exists"
+      - "TestCommon2TwelveHandlersExist::test_common2_twl_worktree_validate_branch_name_handler_exists"
+
+  - ac_index: "共通-3"
+    ac_text: "MCP tool 登録 — @mcp.tool() + try/except ImportError gate 実装済み"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestCommon3McpToolRegistration::test_common3_tools_module_importable"
+      - "TestCommon3McpToolRegistration::test_common3_12_tools_importable_from_tools_module"
+
+  - ac_index: "共通-9"
+    ac_text: "action 系 tool (mergegate_run/reject/reject_final, orchestrator_phase_review, worktree_create/delete) に timeout_sec: int 引数が存在すること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_mergegate_run_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_mergegate_reject_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_mergegate_reject_final_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_orchestrator_phase_review_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_worktree_create_handler_has_timeout_sec"
+      - "TestCommon9TimeoutSecArgument::test_common9_twl_worktree_delete_handler_has_timeout_sec"
+
+  - ac_index: "AC4-1"
+    ac_text: "twl_mergegate_run_handler が存在し dict を返すこと。SystemExit/timeout/pr_resolve エラーを適切なエラー envelope で返却すること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC41MergegateHandlers::test_ac41_twl_mergegate_run_handler_returns_dict"
+      - "TestAC41MergegateHandlers::test_ac41_twl_mergegate_run_handler_system_exit_catch"
+      - "TestAC41MergegateHandlers::test_ac41_twl_mergegate_run_handler_pr_resolve_error"
+      - "TestAC41MergegateHandlers::test_ac41_twl_mergegate_run_handler_timeout"
+
+  - ac_index: "AC4-2"
+    ac_text: "twl_orchestrator_phase_review_handler が存在し dict を返すこと。plan_file 不在/tmux 不在時は適切なエラー envelope を返却すること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC42OrchestratorHandlers::test_ac42_twl_orchestrator_phase_review_handler_returns_dict"
+      - "TestAC42OrchestratorHandlers::test_ac42_twl_orchestrator_phase_review_handler_plan_file_missing"
+      - "TestAC42OrchestratorHandlers::test_ac42_twl_orchestrator_phase_review_handler_tmux_not_found"
+      - "TestAC42OrchestratorHandlers::test_ac42_orchestrator_run_result_json_serializable"
+
+  - ac_index: "AC4-3"
+    ac_text: "WorktreeManager.delete/list_porcelain が worktree.py に存在し、twl_worktree_generate_branch_name_handler の issue_number が str 型であること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC43WorktreeHandlers::test_ac43_workTreeManager_delete_method_exists"
+      - "TestAC43WorktreeHandlers::test_ac43_workTreeManager_list_porcelain_method_exists"
+      - "TestAC43WorktreeHandlers::test_ac43_workTreeManager_list_porcelain_returns_list_of_dict"
+      - "TestAC43WorktreeHandlers::test_ac43_twl_worktree_generate_branch_name_handler_issue_number_is_str"
+
+  - ac_index: "AC4-5"
+    ac_text: "不変条件 B CWD-based role check — worktrees/ 配下の CWD から worktree_create/delete を呼ぶと invariant_b_violation で拒否される。main/ CWD からは通常実行パスに入る"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC45InvariantBCwdCheck::test_ac45_worktree_create_from_worktrees_cwd_rejected"
+      - "TestAC45InvariantBCwdCheck::test_ac45_worktree_delete_from_worktrees_cwd_rejected"
+      - "TestAC45InvariantBCwdCheck::test_ac45_worktree_create_from_main_cwd_not_rejected"
+
+  - ac_index: "AC4-6"
+    ac_text: "twl_worktree_list_handler が list[dict] 構造を含む dict を返すこと。twl_worktree_validate_branch_name_handler が WorktreeArgError を catch して envelope を返すこと"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC46CriticalAssertions::test_ac46_twl_worktree_list_handler_returns_list_dict_structure"
+      - "TestAC46CriticalAssertions::test_ac46_twl_worktree_validate_branch_name_handler_catches_worktree_arg_error"
+
+  - ac_index: "AC4-12"
+    ac_text: "twl_orchestrator_get_phase_issues_handler も plan_file 不在で graceful return すること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC412PlanFileCheck::test_ac412_twl_orchestrator_get_phase_issues_handler_plan_file_missing"
+
+  - ac_index: "AC4-13"
+    ac_text: "twl_mergegate_run と twl_orchestrator_phase_review の docstring に MCP_CLIENT_TIMEOUT が含まれること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestAC413DocstringTimeoutNote::test_ac413_twl_mergegate_run_docstring_has_mcp_client_timeout"
+      - "TestAC413DocstringTimeoutNote::test_ac413_twl_orchestrator_phase_review_docstring_has_mcp_client_timeout"
+
+  - ac_index: "AC-naming-1"
+    ac_text: "tool 名が snake_case で twl_<module>_<action> 規則に準拠していること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestACNaming1ToolNameConvention::test_naming1_all_tools_follow_snake_case_convention"
+
+  - ac_index: "AC-naming-2"
+    ac_text: "12 tool それぞれの docstring 1 行目が非空であること"
+    test_file: "cli/twl/tests/test_issue_1114_autopilot_tools.py"
+    test_names:
+      - "TestACNaming2DocstringNonEmpty::test_naming2_all_tools_have_non_empty_docstring_first_line"
+
+# ---------------------------------------------------------------------------
+# Issue #1115: feat(mcp): tool-3 tools.py epic-5 mailbox (comm tools)
+# ---------------------------------------------------------------------------
+
+  - ac_index: "AC5-1"
+    ac_text: "3 tool 追加: twl_send_msg(to, type_, content, reply_to=None, timeout_sec=10), twl_recv_msg(receiver, since=None, timeout_sec=0), twl_notify_supervisor(event, payload, timeout_sec=10)"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC51ThreeToolsAdded::test_ac51_twl_send_msg_exists_in_tools_comm"
+      - "TestAC51ThreeToolsAdded::test_ac51_twl_recv_msg_exists_in_tools_comm"
+      - "TestAC51ThreeToolsAdded::test_ac51_twl_notify_supervisor_exists_in_tools_comm"
+      - "TestAC51ThreeToolsAdded::test_ac51_twl_send_msg_handler_signature"
+      - "TestAC51ThreeToolsAdded::test_ac51_twl_recv_msg_handler_signature"
+      - "TestAC51ThreeToolsAdded::test_ac51_twl_notify_supervisor_handler_signature"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "AC5-2"
+    ac_text: "dispatch ロジックは file-based jsonl + flock 方式。mailbox file path: ${AUTOPILOT_DIR:-.autopilot}/mailbox/<receiver>.jsonl、lock file: <receiver>.jsonl.lock、file permissions MUST: mode=0o600"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC52FileBasedJsonlFlock::test_ac52_mailbox_file_path_uses_autopilot_dir"
+      - "TestAC52FileBasedJsonlFlock::test_ac52_mailbox_file_permissions_are_0o600"
+      - "TestAC52FileBasedJsonlFlock::test_ac52_lock_file_created_alongside_jsonl"
+      - "TestAC52FileBasedJsonlFlock::test_ac52_mailbox_file_content_is_valid_jsonl"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "AC5-3"
+    ac_text: "dispatch table 設計: 名前空間 pilot:<session-id>, worker:<window-name>, supervisor, sibling:<window-name>。unknown receiver: {ok: false, error_type: unknown_receiver, exit_code: 3}。セキュリティ: to/receiver は [a-zA-Z0-9_\\-:]+ のみ許可、invalid は {ok: false, error_type: invalid_receiver, exit_code: 3}"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC53DispatchTable::test_ac53_supervisor_receiver_is_valid"
+      - "TestAC53DispatchTable::test_ac53_pilot_namespace_receiver_is_valid"
+      - "TestAC53DispatchTable::test_ac53_worker_namespace_receiver_is_valid"
+      - "TestAC53DispatchTable::test_ac53_sibling_namespace_receiver_is_valid"
+      - "TestAC53DispatchTable::test_ac53_invalid_receiver_characters_rejected"
+      - "TestAC53DispatchTable::test_ac53_receiver_with_space_is_invalid"
+      - "TestAC53DispatchTable::test_ac53_recv_msg_invalid_receiver_rejected"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "AC5-4"
+    ac_text: "handler は pure Python、_handler suffix、直接呼び出し可能"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC54PureHandlers::test_ac54_all_comm_handlers_exist"
+      - "TestAC54PureHandlers::test_ac54_all_comm_handlers_are_callable"
+      - "TestAC54PureHandlers::test_ac54_twl_send_msg_handler_is_directly_callable"
+      - "TestAC54PureHandlers::test_ac54_twl_recv_msg_handler_is_directly_callable"
+      - "TestAC54PureHandlers::test_ac54_twl_notify_supervisor_handler_is_directly_callable"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "AC5-5"
+    ac_text: "並列 100 メッセージ送受で損失ゼロ（concurrent.futures + ThreadPoolExecutor）"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC55ConcurrentMessages::test_ac55_100_parallel_sends_no_loss"
+      - "TestAC55ConcurrentMessages::test_ac55_100_parallel_sends_all_json_valid"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "AC5-6"
+    ac_text: "timeout_sec=0 は non-blocking poll、>0 は blocking。timeout 時は {ok: true, msgs: [], exit_code: 0}。since パラメータ: ULID または RFC3339 UTC 文字列。不正フォーマット時 {ok: false, error_type: invalid_since, exit_code: 3}"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC56TimeoutBehavior::test_ac56_timeout_sec_0_returns_immediately"
+      - "TestAC56TimeoutBehavior::test_ac56_timeout_when_no_messages_returns_empty"
+      - "TestAC56TimeoutBehavior::test_ac56_invalid_since_format_returns_error"
+      - "TestAC56TimeoutBehavior::test_ac56_valid_rfc3339_since_accepted"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "AC5-7"
+    ac_text: "#1033 close（プロセス AC）- 手動実施確認テスト"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC57Issue1033Close::test_ac57_comm_tools_module_importable_as_prerequisite_for_1033"
+    impl_files: []
+    # impl_files: [] — プロセス AC（手動実施）
+
+  - ac_index: "AC5-8"
+    ac_text: "Option A 採用: tools_comm.py に __all__ 定義、tools.py 末尾に from .tools_comm import * 追加"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC58OptionAModuleSplit::test_ac58_tools_comm_has_all_defined"
+      - "TestAC58OptionAModuleSplit::test_ac58_all_includes_comm_tool_names"
+      - "TestAC58OptionAModuleSplit::test_ac58_tools_py_exposes_comm_tools_via_star_import"
+      - "TestAC58OptionAModuleSplit::test_ac58_tools_py_source_contains_from_tools_comm_import_star"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "AC5-9"
+    ac_text: "glossary.md に mailbox / mailbox file 用語追加"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC59GlossaryMailbox::test_ac59_glossary_contains_mailbox_term"
+      - "TestAC59GlossaryMailbox::test_ac59_glossary_contains_mailbox_file_term"
+    impl_files:
+      - "plugins/twl/architecture/domain/glossary.md"
+
+  - ac_index: "AC5-10"
+    ac_text: "ADR-028 write authority matrix に mailbox 行追加"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC510Adr028MailboxRow::test_ac510_adr028_contains_mailbox_write_authority"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-028-atomic-rmw-strategy.md"
+
+  - ac_index: "AC5-11"
+    ac_text: "session-comm.sh との責務分離（設計制約 AC）- tools_comm.py は session-comm.sh を直接呼び出してはならない"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC511SessionCommSeparation::test_ac511_tools_comm_does_not_shell_out_to_session_comm"
+    impl_files: []
+    # impl_files: [] — 設計制約 AC
+
+  - ac_index: "AC5-12"
+    ac_text: "bats は不要（pytest がメイン）- comm 系は新規のため bats wrapper 不要"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestAC512BatsNotRequired::test_ac512_pytest_test_file_exists_for_comm_tools"
+      - "TestAC512BatsNotRequired::test_ac512_no_bats_file_for_comm_tools_required"
+    impl_files: []
+    # impl_files: [] — 設計制約 AC（no-op）
+
+  - ac_index: "1115-共通-1"
+    ac_text: "3 tool が tools.py（または tools_comm.py 経由）に存在すること"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestCommon1CommToolsExist::test_common1_all_3_comm_tools_present_via_tools_module"
+      - "TestCommon1CommToolsExist::test_common1_twl_send_msg_accessible_from_tools"
+      - "TestCommon1CommToolsExist::test_common1_twl_recv_msg_accessible_from_tools"
+      - "TestCommon1CommToolsExist::test_common1_twl_notify_supervisor_accessible_from_tools"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1115-共通-2"
+    ac_text: "handler 関数（twl_send_msg_handler, twl_recv_msg_handler, twl_notify_supervisor_handler）が存在すること"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestCommon2CommHandlersExist::test_common2_all_3_comm_handlers_present"
+      - "TestCommon2CommHandlersExist::test_common2_twl_send_msg_handler_exists"
+      - "TestCommon2CommHandlersExist::test_common2_twl_recv_msg_handler_exists"
+      - "TestCommon2CommHandlersExist::test_common2_twl_notify_supervisor_handler_exists"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1115-共通-3"
+    ac_text: "MCP tool 登録（@mcp.tool() + try/except ImportError gate）"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestCommon3McpToolRegistration::test_common3_tools_comm_importable_without_mcp_installed"
+      - "TestCommon3McpToolRegistration::test_common3_comm_tools_appear_in_mcp_server_module"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1115-共通-4"
+    ac_text: "handler unit test（fastmcp 経由 + 直接呼び出し 2 経路、両方で PASS）"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestCommon4HandlerTwoCallPaths::test_common4_twl_send_msg_handler_direct_call_returns_json_str"
+      - "TestCommon4HandlerTwoCallPaths::test_common4_twl_recv_msg_handler_direct_call_returns_json_str"
+      - "TestCommon4HandlerTwoCallPaths::test_common4_twl_send_msg_handler_via_tools_module_accessible"
+      - "TestCommon4HandlerTwoCallPaths::test_common4_twl_recv_msg_handler_via_tools_module_accessible"
+      - "TestCommon4HandlerTwoCallPaths::test_common4_twl_notify_supervisor_handler_via_tools_module_accessible"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1115-共通-5"
+    ac_text: "bats 互換性（comm 系は新規のため no-op、PR body に「対応 wrapper なし」を明記）"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestCommon5BatsCompatibility::test_common5_comm_tools_have_no_bats_wrapper_required"
+    impl_files: []
+    # impl_files: [] — no-op AC
+
+  - ac_index: "1115-共通-6"
+    ac_text: "tools.py + tools_comm.py の行数確認（twl validate PASS）"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestCommon6LineCountValidation::test_common6_tools_comm_py_exists"
+      - "TestCommon6LineCountValidation::test_common6_tools_py_still_importable_after_split"
+      - "TestCommon6LineCountValidation::test_common6_tools_comm_py_importable"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1115-共通-7"
+    ac_text: "Bounded Context 整合（Autopilot 配下、OHS 方向維持）"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestCommon7BoundedContextAlignment::test_common7_tools_comm_in_mcp_server_namespace"
+      - "TestCommon7BoundedContextAlignment::test_common7_tools_comm_file_located_in_mcp_server_dir"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1115-共通-8"
+    ac_text: "ADR-028 整合確認（write 経路追加）"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestCommon8Adr028Alignment::test_common8_adr028_exists"
+      - "TestCommon8Adr028Alignment::test_common8_adr028_contains_write_authority_matrix"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-028-atomic-rmw-strategy.md"
+
+  - ac_index: "1115-共通-9"
+    ac_text: "action 系 tool の timeout_sec: int 引数必須（twl_send_msg, twl_notify_supervisor）"
+    test_file: "cli/twl/tests/test_issue_1115_comm_tools.py"
+    test_names:
+      - "TestCommon9TimeoutSecForCommActions::test_common9_twl_send_msg_handler_has_timeout_sec_int"
+      - "TestCommon9TimeoutSecForCommActions::test_common9_twl_notify_supervisor_handler_has_timeout_sec_int"
+      - "TestCommon9TimeoutSecForCommActions::test_common9_twl_recv_msg_has_timeout_sec_but_defaults_zero"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools_comm.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  # --- Issue #1261 ---
   - ac_index: 1
     ac_text: "plugins/twl/architecture/domain/contexts/supervision.md L246 の「SU-1〜SU-7」を「SU-1〜SU-9」に修正"
     test_file: "cli/twl/tests/architecture/test_supervision_consistency.bats"
