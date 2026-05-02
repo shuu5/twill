@@ -169,7 +169,7 @@ merge-gate が REJECT した場合:
 
 ## プロンプト規約
 
-- spawn-controller.sh が付与した provenance section を Issue body 末尾にコピーすること（MUST）
+- spawn-controller.sh が注入した `## provenance (auto-injected)` セクションを Issue body 末尾にコピーすること（MUST）
 
 ## 禁止事項（MUST NOT）
 
