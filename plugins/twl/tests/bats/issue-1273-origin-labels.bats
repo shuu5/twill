@@ -206,8 +206,31 @@ teardown() {
 
 @test "ac5: setup-origin-labels.sh contains Project Board or project-board reference" {
   # AC: Project Board #6 への言及またはコメントが含まれる（Cross-repo view filter）
-  # RED: ファイルが存在しないため fail
   run grep -qiE 'project.?board|project #6|twill-ecosystem|view filter|Cross-repo|ipatho2 host|ipatho-1 host|thinkpad host' "${SETUP_SCRIPT}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac5: setup-origin-labels.sh references Cross-repo filter (label:origin:repo:soap-copilot-mock)" {
+  # AC5 view filter 個別確認: Cross-repo フィルター
+  run grep -qF 'label:origin:repo:soap-copilot-mock' "${SETUP_SCRIPT}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac5: setup-origin-labels.sh references ipatho2 host filter (label:origin:host:ipatho2)" {
+  # AC5 view filter 個別確認: ipatho2 host 起票フィルター
+  run grep -qF 'label:origin:host:ipatho2' "${SETUP_SCRIPT}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac5: setup-origin-labels.sh references ipatho-1 host filter (label:origin:host:ipatho-1)" {
+  # AC5 view filter 個別確認: ipatho-1 host 起票フィルター
+  run grep -qF 'label:origin:host:ipatho-1' "${SETUP_SCRIPT}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac5: setup-origin-labels.sh references thinkpad host filter (label:origin:host:thinkpad)" {
+  # AC5 view filter 個別確認: thinkpad host 起票フィルター
+  run grep -qF 'label:origin:host:thinkpad' "${SETUP_SCRIPT}"
   [ "${status}" -eq 0 ]
 }
 
