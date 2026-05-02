@@ -22,10 +22,15 @@ maxTurns: 60
 
 対話的アーキテクチャ構築 → branch/PR + workflow-arch-review 経由マージ。Issue 化は co-issue に委譲。explore-summary リンク付き Issue を入力として開始。Non-implementation controller（chain-driven 不要）。
 
-## Step 0: --group 分岐
+## Step 0: 引数解析 + --group 分岐
+
+引数から `--type=<value>` と `--group <context-name>` を解析する。
+有効な type 値: `ddd` | `generic`（デフォルト: `ddd`、未指定時のデフォルト）
 
 `--group <context-name>` が含まれる場合:
-→ `/twl:architect-group-refine <context-name>` を実行して終了（Step 1〜7 スキップ）。
+→ `--type` が指定されていれば `--type` を `architect-group-refine` に引き継ぐ: `/twl:architect-group-refine <context-name> --type=<value>`
+→ `--type` 未指定の場合: `/twl:architect-group-refine <context-name>`
+→ Step 1〜7 スキップ。`--group` と `--type` 同時指定時は `--group` 優先で動作し、`--type` は `--group` 処理内に引き継がれる。
 
 `--group` なし → Step 1 へ。
 
@@ -54,21 +59,37 @@ python3 -m twl.autopilot.worktree create "${BRANCH}"
 
 作成した worktree ディレクトリに移動する。
 
+**type 表示:**
+
+選択された type 名をユーザーに表示する（type 名: `ddd` または `generic`）:
+```
+アーキテクチャ設計を開始します（type: <type名>）
+```
+
 **explore-summary 読み込み:**
 
 入力 Issue に explore-summary がリンクされている場合、`twl explore-link read <N>` で読み込み、探索の出発点として活用する。リンクがない場合は Issue body から直接コンテキストを取得する。
 
-**対話的アーキテクチャ探索（worktree 上）:**
+**対話的アーキテクチャ探索（worktree 上）— type による分岐:**
 
+type=ddd（デフォルト）:
 explore-summary（または Issue body）を基に、ユーザーと対話しながらアーキテクチャ設計を構造化する。DDD の Bounded Context、ユビキタス言語、Context Map を使い設計を構造化。
 
 確定した設計事項は architecture/ の対応ファイルに Write:
 - ビジョン → `architecture/vision.md`
 - ドメインモデル → `architecture/domain/model.md`
 - 用語定義 → `architecture/domain/glossary.md`
-- Bounded Context → `architecture/domain/contexts/<name>.md`
+- Bounded Context → `architecture/domain/contexts/<name>.md`（generic では不要・省略可）
 - 設計判断 → `architecture/decisions/<NNNN>-<title>.md`
 - API 境界 → `architecture/contracts/<name>.md`
+
+type=generic（Bounded Context / ユビキタス言語は不要・省略）— generic フロー:
+explore-summary（または Issue body）を基に、ユーザーと対話しながらアーキテクチャ設計を構造化する。generic vision.md + phases/*.md 設計フロー中心で、DDD 特有の Bounded Context / ユビキタス言語の設計は行わない。
+
+確定した設計事項は architecture/ の対応ファイルに Write:
+- ビジョン → `architecture/vision.md`
+- Phase 計画 → `architecture/phases/<N>.md`
+- 設計判断 → `architecture/decisions/<NNNN>-<title>.md`（任意）
 
 TaskUpdate → completed
 

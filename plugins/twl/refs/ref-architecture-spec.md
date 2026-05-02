@@ -11,6 +11,18 @@ disable-model-invocation: true
 
 プロジェクトレベルの設計意図（前方参照）を管理するディレクトリ構造。
 
+## Project Type
+
+プロジェクトの種別（`type`）に応じて、必須ファイルと Severity が異なる。`architect-completeness-check` は `--type` 引数または type 解決ロジック（`.architecture-type` ファイル → `vision.md` frontmatter → デフォルト `ddd`）で type を決定し、対応する Severity 列を動的に参照する（テーブル駆動）。
+
+有効な type 値: `ddd` | `generic` | `lib`（`lib` は将来実装予定、定義のみ）
+
+| type | 説明 |
+|------|------|
+| `ddd` | Domain-Driven Design。Bounded Context / ユビキタス言語を中心に設計（デフォルト） |
+| `generic` | 汎用プロジェクト。`vision.md` + `phases/*.md` 中心の軽量設計フロー |
+| `lib` | ライブラリ。将来実装予定（TBD）、現時点では未実装・予約済み |
+
 ## ディレクトリ構造
 
 ```
@@ -27,17 +39,17 @@ architecture/
 
 ## 必須ファイル
 
-アーキテクチャ完全性チェックで検証される必須ファイル。`Severity` 列は不在時の報告レベルを定義する（`WARNING` または `RECOMMENDED`）。`RECOMMENDED` 不在は `INFO` レベルで報告する（`WARNING` より低い）。テーブル変更のみで `Severity` 値を切替可能な設計とする（テーブル駆動）。
+アーキテクチャ完全性チェックで検証される必須ファイル。`Severity` 列は type 別に定義し、不在時の報告レベルを決定する（`WARNING` または `RECOMMENDED`）。`RECOMMENDED` 不在は `INFO` レベルで報告する（`WARNING` より低い）。テーブル変更のみで `Severity` 値を切替可能な設計とする（テーブル駆動）。
 
-| ファイル | 必須 | Severity | 説明 |
-|---------|------|----------|------|
-| vision.md | YES | WARNING | プロジェクトの目的・制約・非目標 |
-| domain/model.md | YES | WARNING | コアドメインモデル |
-| domain/glossary.md | YES | WARNING | ユビキタス言語定義 |
-| domain/contexts/*.md | 1つ以上 | WARNING | Bounded Context 定義 |
-| phases/*.md | 1つ以上 | WARNING | Phase 計画 |
-| decisions/*.md | NO | RECOMMENDED | ADR（任意） |
-| contracts/*.md | NO | RECOMMENDED | API 境界（任意） |
+| ファイル | 必須 | Severity (DDD) | Severity (Generic) | 説明 |
+|---------|------|----------------|--------------------|------|
+| vision.md | YES | WARNING | WARNING | プロジェクトの目的・制約・非目標 |
+| domain/model.md | YES | WARNING | RECOMMENDED | コアドメインモデル（generic では任意） |
+| domain/glossary.md | YES | WARNING | RECOMMENDED | ユビキタス言語定義（generic では任意） |
+| domain/contexts/*.md | 1つ以上 | WARNING | RECOMMENDED | Bounded Context 定義（generic では任意） |
+| phases/*.md | 1つ以上 | WARNING | WARNING | Phase 計画 |
+| decisions/*.md | NO | RECOMMENDED | RECOMMENDED | ADR（任意） |
+| contracts/*.md | NO | RECOMMENDED | RECOMMENDED | API 境界（任意） |
 
 ## ファイルフォーマット
 
