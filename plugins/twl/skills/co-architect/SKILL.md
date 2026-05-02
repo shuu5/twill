@@ -22,10 +22,15 @@ maxTurns: 60
 
 対話的アーキテクチャ構築 → branch/PR + workflow-arch-review 経由マージ。Issue 化は co-issue に委譲。explore-summary リンク付き Issue を入力として開始。Non-implementation controller（chain-driven 不要）。
 
-## Step 0: 引数解析 + --group 分岐
+## Step 0: 引数解析 + type 検証 + --group 分岐
 
 引数から `--type=<value>` と `--group <context-name>` を解析する。
 有効な type 値: `ddd` | `generic`（デフォルト: `ddd`、未指定時のデフォルト）
+
+`--type` が指定されており、値が `ddd` / `generic` のいずれでもない場合は明示エラーで停止:
+```
+ERROR: 未知の type 値 '<value>'。有効な type: ddd | generic
+```
 
 `--group <context-name>` が含まれる場合:
 → `--type` が指定されていれば `--type` を `architect-group-refine` に引き継ぐ: `/twl:architect-group-refine <context-name> --type=<value>`
@@ -97,7 +102,7 @@ TaskUpdate → completed
 
 TaskCreate 「Architecture: 完全性チェック」(status: in_progress)
 
-`/twl:architect-completeness-check` を実行。
+Step 0 で決定した type を渡して `/twl:architect-completeness-check --type=<type>` を実行（type 別 Severity テーブルが正しく適用される）。
 
 WARNING がある場合 → ユーザーに不足箇所を提示し補完するか確認。
 補完する場合 → Step 2 の探索ループに戻る。
