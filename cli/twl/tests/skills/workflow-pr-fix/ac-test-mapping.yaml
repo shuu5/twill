@@ -1,0 +1,72 @@
+mappings:
+  - ac_index: 1
+    ac_text: >-
+      chain logic 修正 (案 A): workflow-pr-fix の fix-phase 判定で phase-review.json CRITICAL に加え
+      ac-verify.json CRITICAL も critical_count に含めるよう修正
+      (plugins/twl/skills/workflow-pr-fix/ 該当箇所)。
+      SKIP 条件は phase_review_critical + ac_verify_critical == 0 のみ
+    test_file: "cli/twl/tests/skills/workflow-pr-fix/test_1263_fix_phase_ac_verify.bats"
+    test_name: "ac1: fix-phase.md の発動条件に ac-verify CRITICAL が含まれる"
+    impl_files:
+      - "plugins/twl/commands/fix-phase.md"
+
+  - ac_index: 2
+    ac_text: >-
+      regression bats (a): ac-verify CRITICAL 1+ かつ phase-review CRITICAL 0 → fix-phase が走ること
+    test_file: "cli/twl/tests/skills/workflow-pr-fix/test_1263_fix_phase_ac_verify.bats"
+    test_name: "ac2a: ac-verify CRITICAL 1+ かつ phase-review CRITICAL 0 のとき fix-phase が実行される"
+    impl_files:
+      - "plugins/twl/commands/fix-phase.md"
+
+  - ac_index: 2
+    ac_text: >-
+      regression bats (b): 両方 0 → SKIP
+    test_file: "cli/twl/tests/skills/workflow-pr-fix/test_1263_fix_phase_ac_verify.bats"
+    test_name: "ac2b: phase-review CRITICAL 0 かつ ac-verify CRITICAL 0 のとき fix-phase を SKIP する"
+    impl_files:
+      - "plugins/twl/commands/fix-phase.md"
+
+  - ac_index: 2
+    ac_text: >-
+      regression bats (c): 両方 1+ → fix-phase が走り両 findings が input として渡ること
+    test_file: "cli/twl/tests/skills/workflow-pr-fix/test_1263_fix_phase_ac_verify.bats"
+    test_name: "ac2c: phase-review と ac-verify 両方 CRITICAL 1+ のとき両 findings が fix-phase の input として渡される"
+    impl_files:
+      - "plugins/twl/commands/fix-phase.md"
+
+  - ac_index: 3
+    ac_text: >-
+      Worker prompt 注入 (案 C): Worker prompt template
+      (plugins/twl/skills/co-autopilot/refs/worker-prompt-*.md 該当箇所) に
+      「TDD-style Issue では GREEN phase まで実装し、test scaffold のみで PR を出してはならない。
+      RED 状態 PR は ac-verify CRITICAL でブロックされる」旨の指示を追加
+    test_file: "cli/twl/tests/skills/workflow-pr-fix/test_1263_fix_phase_ac_verify.bats"
+    test_name: "ac3: co-autopilot SKILL.md に TDD GREEN phase 完遂の指示が含まれる"
+    impl_files:
+      - "plugins/twl/skills/co-autopilot/SKILL.md"
+
+  - ac_index: 4
+    ac_text: >-
+      docs 追記: plugins/twl/refs/pr-merge-chain-steps.md の fix-phase セクションに
+      「ac-verify CRITICAL も判定対象」と明記
+    test_file: "cli/twl/tests/skills/workflow-pr-fix/test_1263_fix_phase_ac_verify.bats"
+    test_name: "ac4a: pr-merge-chain-steps.md の fix-phase セクションに ac-verify CRITICAL が明記されている"
+    impl_files:
+      - "plugins/twl/refs/pr-merge-chain-steps.md"
+
+  - ac_index: 4
+    ac_text: >-
+      ADR-022 (chain SSoT) に変更点を記録
+    test_file: "cli/twl/tests/skills/workflow-pr-fix/test_1263_fix_phase_ac_verify.bats"
+    test_name: "ac4b: ADR-022 に ac-verify CRITICAL を fix-phase 判定に追加した変更点が記録されている"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-022-chain-ssot-boundary.md"
+
+  - ac_index: 5
+    ac_text: >-
+      検証 (本 Issue クローズ条件): lab-assistant#6 を再 spawn し、本 fix 後の autopilot で
+      TDD RED → GREEN 完遂が確認できる（または同等条件の minimal fixture project で再現）こと
+    test_file: "cli/twl/tests/skills/workflow-pr-fix/test_1263_fix_phase_ac_verify.bats"
+    test_name: "ac5: fix-phase.md が ac-verify CRITICAL を含む発動条件を持つ（TDD RED->GREEN 前提条件）"
+    impl_files: []
+    # impl_files: プロセス AC。full e2e 検証は lab-assistant#6 再 spawn で実施。

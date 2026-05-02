@@ -2,6 +2,22 @@
 
 `workflow-pr-merge/SKILL.md` から切り出した各 Step の詳細実行手順。
 
+## Step 4: fix-phase（自動修正ループ）— 判定条件リファレンス
+
+fix-phase（`workflow-pr-fix` で実行）の発動条件は以下の通り:
+
+```
+IF phase_review_critical + ac_verify_critical == 0
+THEN skip（修正不要）
+ELSE fix-phase を実行
+```
+
+**ac-verify CRITICAL も判定対象**（#1263 追加）。
+phase-review が PASS（critical_count=0）でも、ac-verify CRITICAL が 1 以上の場合は fix-phase を実行する。
+
+- **ac-verify CRITICAL の例**: テスト RED のまま PR を出した（GREEN 未完了）、AC 実装が欠落している等の TDD 違反
+- checkpoint: `python3 -m twl.autopilot.checkpoint read --step ac-verify --field critical_count`
+
 ## Step 6: e2e-screening（Visual 検証）【LLM 判断】
 
 `commands/e2e-screening.md` を Read → 実行。E2E なければスキップ。

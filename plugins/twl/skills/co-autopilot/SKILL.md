@@ -245,6 +245,14 @@ issue-{N}.json の status から自動判定:
 
 マージ手順は `refs/co-autopilot-emergency-bypass.md` を Read → 実行。
 
+## TDD 実装ルール（Worker 向け — MUST）
+
+TDD-style Issue（ac-scaffold-tests で RED テストが生成された場合）の Worker は以下を遵守すること:
+
+- **GREEN phase まで実装してから PR を出すこと**。test scaffold のみのコミットで PR を出してはならない
+- RED 状態の PR は ac-verify CRITICAL でブロックされる（`fix-phase` が強制実行される）
+- GREEN 確認コマンド例: `bats cli/twl/tests/skills/workflow-pr-fix/test_*.bats` 等、issue 固有のテストコマンドを実行し全 PASS を確認してから push すること
+
 ## 禁止事項（MUST NOT）
 
 - plan.yaml を独自生成してはならない（制約 AP-1）
@@ -254,3 +262,4 @@ issue-{N}.json の status から自動判定:
 - trivial change であっても co-autopilot を bypass してはならない（制約 AP-2）
 - Pilot は Worker の代わりに Issue を直接実装してはならない（不変条件 K）。Worker 失敗時は根本原因分析 → Issue 化で対処する
 - **Worker chain 停止時に Pilot が直接 nudge してマージしてはならない（不変条件 M）**。chain 停止時の復旧手順に従い orchestrator 再起動 or 手動 workflow inject で再開すること。specialist review スキップ禁止
+- **TDD-style Issue で test scaffold のみで PR を出してはならない**。GREEN phase 完了（全テスト PASS）後に PR を出すこと

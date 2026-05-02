@@ -87,3 +87,20 @@ ADR-020 D-1 (名称正規化)、D-3 (export API)、D-4 (feature flag) は本 ADR
 - **chain.py と workflow-pr-merge SKILL の step 順序整合化**: `all-pass-check` と `pr-cycle-report` の順序不整合は別 Issue (Phase D) で調査する。本 ADR のスコープ外
 - **CHAIN_META の将来導入**: step メタデータ (dispatch_mode, 所属 chain) が必要になった場合は、chain.py の新規 dict として追加検討 (本 ADR で廃案にしたわけではなく、必要性が再確認された時点で再提案)
 - **deps.yaml.chains の step 順序検証**: workflow skill 概念順の正しさは bats テスト (#870 chain-export-drift.bats) で verify する方針 (本 ADR のスコープ外)
+
+## 変更履歴
+
+### #1263 (2026-05-03): fix-phase 発動条件に ac-verify CRITICAL を追加
+
+`workflow-pr-fix` の `fix-phase` 判定を変更:
+
+- **変更前**: `phase-review.critical_count > 0` のみが fix-phase の発動条件
+- **変更後**: `phase_review_critical + ac_verify_critical > 0`（どちらか 1 以上で発動）
+
+変更対象:
+- `plugins/twl/commands/fix-phase.md` — checkpoint 読み込みと発動条件を更新
+- `plugins/twl/skills/workflow-pr-fix/SKILL.md` — fix ループ条件の記述を更新
+- `plugins/twl/skills/co-autopilot/SKILL.md` — TDD GREEN phase 完遂ルール追加（禁止事項）
+- `plugins/twl/refs/pr-merge-chain-steps.md` — fix-phase セクションに ac-verify CRITICAL 判定を明記
+
+この変更は D-4（workflow skill 内 orchestrate step の取扱い）の範囲内であり、chain.py CHAIN_STEPS や chain-steps.sh には影響しない。

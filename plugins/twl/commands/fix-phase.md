@@ -20,23 +20,34 @@ chain ステップの実行順序は deps.yaml で宣言されている。
 
 ### checkpoint 読み込み（MUST）
 
-phase-review の checkpoint から CRITICAL findings を読み込む。
+phase-review と ac-verify の両 checkpoint から CRITICAL findings を読み込む。
 specialist raw output は参照しない。
 
 ```bash
 # phase-review checkpoint から CRITICAL findings を取得
-CRITICAL_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --critical-findings)
-CRITICAL_COUNT=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field critical_count)
+PHASE_REVIEW_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --critical-findings 2>/dev/null || echo "")
+phase_review_critical=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field critical_count 2>/dev/null || echo "0")
+
+# ac-verify checkpoint から CRITICAL findings を取得
+AC_VERIFY_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step ac-verify --critical-findings 2>/dev/null || echo "")
+ac_verify_critical=$(python3 -m twl.autopilot.checkpoint read --step ac-verify --field critical_count 2>/dev/null || echo "0")
+
+# 両方を結合して修正指示として使用
+CRITICAL_FINDINGS="${PHASE_REVIEW_FINDINGS}
+${AC_VERIFY_FINDINGS}"
+CRITICAL_COUNT=$(( ${phase_review_critical:-0} + ${ac_verify_critical:-0} ))
 ```
 
 ### 発動条件
 
 ```
-IF phase-review の checkpoint に critical_count > 0 かつ
-   CRITICAL findings の confidence>=80 が存在
-THEN fix-phase を実行
-ELSE スキップ
+IF phase_review_critical + ac_verify_critical == 0
+THEN SKIP（修正不要）
+ELSE fix-phase を実行（phase-review CRITICAL / ac-verify CRITICAL のいずれかが 1 以上）
 ```
+
+**重要**: ac-verify CRITICAL は「テスト RED のまま PR を出した（GREEN 未完了）」等の TDD 違反を示す。
+phase-review CRITICAL が 0 であっても ac-verify CRITICAL が 1 以上なら fix-phase を発動する。
 
 ### 修正ループ
 
