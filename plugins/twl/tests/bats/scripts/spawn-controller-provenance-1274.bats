@@ -120,15 +120,15 @@ make_prompt_file() {
   [ "$status" -eq 0 ]
 }
 
-@test "ac2: FINAL_PROMPT に provenance 呼び出しが /twl:<skill> の直後に配置されている" {
-  # AC: FINAL_PROMPT="/twl:${SKILL_NORMALIZED}\n$(provenance section)" の順序で構築される
-  # RED: 実装前は provenance section がないため fail する
+@test "ac2: FINAL_PROMPT に PROVENANCE 変数が /twl:<skill> の直後に配置されている" {
+  # AC: FINAL_PROMPT="/twl:${SKILL_NORMALIZED}\n${PROVENANCE}\n${PROMPT_BODY}" の順序で構築される
+  # RED: 実装前は provenance が FINAL_PROMPT に含まれないため fail する
   run bash -c "
-    # FINAL_PROMPT 代入ブロックを抽出し、/twl: と provenance の順序を確認
+    # FINAL_PROMPT 代入ブロックを抽出し、/twl: と PROVENANCE の順序を確認
     awk '
       /^FINAL_PROMPT=/ { start=NR }
       start && NR >= start && NR < (start+5) {
-        if (/emit_provenance_section/) { found_prov=1 }
+        if (/PROVENANCE/) { found_prov=1 }
         if (/\/twl:/) { found_skill=1 }
       }
       start && NR > (start+5) { start=0 }
@@ -159,7 +159,7 @@ make_prompt_file() {
   local args
   args="$(cat "$CLD_SPAWN_ARGS_LOG")"
   # provenance section の識別子として "<!-- provenance" または "PROVENANCE" または "hostname:" を検索
-  [[ "$args" == *"<!-- provenance"* || "$args" == *"PROVENANCE"* || "$args" == *"hostname:"* || "$args" == *"git-root:"* ]] \
+  [[ "$args" == *"## provenance"* || "$args" == *"provenance (auto-injected)"* || "$args" == *"- host:"* ]] \
     || fail "co-issue prompt に provenance section が含まれない: $args"
 }
 
@@ -176,7 +176,7 @@ make_prompt_file() {
   assert_success
   local args
   args="$(cat "$CLD_SPAWN_ARGS_LOG")"
-  [[ "$args" == *"<!-- provenance"* || "$args" == *"PROVENANCE"* || "$args" == *"hostname:"* || "$args" == *"git-root:"* ]] \
+  [[ "$args" == *"## provenance"* || "$args" == *"provenance (auto-injected)"* || "$args" == *"- host:"* ]] \
     || fail "co-explore prompt に provenance section が含まれない: $args"
 }
 
@@ -193,7 +193,7 @@ make_prompt_file() {
   assert_success
   local args
   args="$(cat "$CLD_SPAWN_ARGS_LOG")"
-  [[ "$args" == *"<!-- provenance"* || "$args" == *"PROVENANCE"* || "$args" == *"hostname:"* || "$args" == *"git-root:"* ]] \
+  [[ "$args" == *"## provenance"* || "$args" == *"provenance (auto-injected)"* || "$args" == *"- host:"* ]] \
     || fail "co-architect prompt に provenance section が含まれない: $args"
 }
 
