@@ -184,9 +184,6 @@ assign_labels() {
     echo "$existing_labels" | grep -qF "origin:host:" && has_host_label=true
     echo "$existing_labels" | grep -qF "origin:repo:" && has_repo_label=true
 
-    local need_host=[[ "$has_host_label" == "false" ]] && echo true || echo false
-    local need_repo=[[ "$has_repo_label" == "false" ]] && echo true || echo false
-
     if [[ "$has_host_label" == "true" && "$has_repo_label" == "true" ]]; then
       [[ "$VERBOSE" == "true" ]] && log "  skip (already labeled): #$num"
       ((skipped++)) || true
