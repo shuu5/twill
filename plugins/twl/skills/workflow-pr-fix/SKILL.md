@@ -31,19 +31,23 @@ workflow-pr-cycle を 3 分割した第2段階。fix ループと warning 修正
 
 ### fix ループ条件
 
-phase-review（workflow-pr-verify で実行済み）が CRITICAL findings を返した場合の修正ループ:
+phase-review と ac-verify（workflow-pr-verify で実行済み）が CRITICAL findings を返した場合の修正ループ:
 
 ```
-IF phase-review に CRITICAL findings (confidence >= 80) が存在
+IF phase_review_critical + ac_verify_critical > 0
+   （phase-review CRITICAL または ac-verify CRITICAL のいずれかが 1 以上）
 THEN
   1. fix-phase を実行（Step 4）
   2. post-fix-verify を実行（Step 4.5）
   3. pr-test を再実行（runner）
   4. テスト PASS → warning-fix へ（Step 5）
   5. テスト FAIL → fix-phase に戻る（最大 1 ループ）
-ELSE
+ELSE （phase_review_critical + ac_verify_critical == 0 のみ）
   fix-phase をスキップし warning-fix へ
 ```
+
+**ac-verify CRITICAL の例**: テストが RED のまま PR を出した（GREEN 未完了）、
+AC の実装が欠落している等の TDD 違反。phase-review が PASS でも fix-phase を発動する。
 
 ## chain 実行指示（MUST — 全ステップを順に実行せよ。途中で停止するな）
 
@@ -60,7 +64,7 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 ```
 
 ### Step 4: fix-phase（自動修正ループ）【LLM 判断】
-review に CRITICAL findings がある場合のみ。`commands/fix-phase.md` を Read → 実行。
+`phase_review_critical + ac_verify_critical > 0` の場合のみ実行。`commands/fix-phase.md` を Read → 実行。
 fix 後は post-fix-verify（Step 4.5）→ pr-test 再実行のループ。
 
 ### Step 4.5: post-fix-verify（fix 後検証）【LLM 判断】
