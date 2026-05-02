@@ -1,0 +1,91 @@
+mappings:
+  - ac_index: 1
+    ac_text: "spawn-controller.sh が plugins/session/scripts/lib/tmux-resolve.sh を source する（1 行追加、TWILL_ROOT 起点の絶対パスで参照）"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac1: spawn-controller.sh に tmux-resolve.sh の source 行が存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 1
+    ac_text: "spawn-controller.sh が plugins/session/scripts/lib/tmux-resolve.sh を source する（TWILL_ROOT 起点）"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac1: source 行が TWILL_ROOT 起点の絶対パスで tmux-resolve.sh を参照する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "_setup_observer_panes 内の tmux split-window -t 呼び出し 3 箇所が _resolve_window_target で解決した target を使う"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac2: spawn-controller.sh 内に _resolve_window_target の呼び出しが存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "${observer_window}:1.${base} 形式（廃止パターン）が除去されている"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac2: 固定 index ':1.${base}' 形式（廃止パターン）が spawn-controller.sh に残っていない"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "split-window の -t に resolved_target.base 形式が使われている"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac2: split-window の -t に resolved_target.base 形式が使われている"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "_setup_observer_panes 実行時に _resolve_window_target が tmux list-windows を呼ぶ"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac2: _setup_observer_panes 実行時に _resolve_window_target が tmux list-windows を呼ぶ"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+      - "plugins/session/scripts/lib/tmux-resolve.sh"
+  - ac_index: 3
+    ac_text: "既存の fallback ブランチ（|| 後で bare ${observer_window} を -t に渡す式）の取り扱いが決定されている"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac3: spawn-controller.sh の _setup_observer_panes 内に fallback 取り扱いコメントまたは実装が存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 3
+    ac_text: "fallback 廃止または代替実装を示す AC3 コメントが spawn-controller.sh に存在する"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac3: fallback 廃止または代替実装を示す AC3 コメントが spawn-controller.sh に存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 4
+    ac_text: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats（新規）が存在する"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac4: spawn-controller-tmux-resolve.bats ファイルが存在する"
+    impl_files: []
+  - ac_index: 5
+    ac_text: "_resolve_window_target 失敗時の log message（stderr）が [spawn-controller] prefix 付きで記録される"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac5: _resolve_window_target 失敗時に [spawn-controller] prefix 付き stderr が出力される"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 5
+    ac_text: "[spawn-controller] prefix 付きログが実装されている（静的確認）"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac5: spawn-controller.sh に _resolve_window_target 失敗時の [spawn-controller] ログが記述されている"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 6
+    ac_text: "L358/L359 の tmux display-message も _resolve_window_target で解決した fully-qualified target に書き換えられている"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac6: tmux display-message の -t が固定 :1. 形式を使っていない"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 6
+    ac_text: "display-message の -t に resolved_target 形式が使われている"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac6: tmux display-message の -t に resolved_target 形式が使われている"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 6
+    ac_text: "_setup_observer_panes 実行時に display-message が tmux log に記録される"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac6: _setup_observer_panes 実行時に display-message が tmux log に記録される"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 7
+    ac_text: "Wave 17 記録（.autopilot/ または当該 Wave の summary）に本 fix の merge を追記"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac7: Wave 17 記録（.autopilot/ 配下）に Issue #1231 の merge 追記が存在する"
+    impl_files: []
+    # impl_files 推定失敗: Wave 17 summary ファイルのパスは実行時決定
