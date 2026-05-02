@@ -1,0 +1,49 @@
+mappings:
+  - ac_index: 1
+    ac_text: "co-issue-phase4-aggregate.md から gh label create refined / gh issue edit --add-label refined 行が消えている (grep -nE 'gh (label create|issue edit.*refined)' ... で 0 件)"
+    test_file: "plugins/twl/tests/bats/co-issue-status-only-flow.bats"
+    test_name: "ac1: grep -nE 'gh (label create|issue edit.*refined)' が 0 件（RED: 現状は 2 件以上）"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md"
+  - ac_index: 2
+    ac_text: "co-issue-manual-fix-b.sh から label 付与 step が消えている (Status=Refined 設定 + observability の最小構成)"
+    test_file: "plugins/twl/tests/bats/co-issue-manual-fix-b.bats"
+    test_name: "ac2: 実行時に gh issue edit --add-label refined が呼ばれないこと（RED: 現状は呼ばれる）"
+    impl_files:
+      - "plugins/twl/scripts/co-issue-manual-fix-b.sh"
+  - ac_index: 3
+    ac_text: "refine-processing-flow.md から labels_hint += [\"refined\"] が消えている"
+    test_file: "plugins/twl/tests/bats/co-issue-status-only-flow.bats"
+    test_name: "ac3: refine-processing-flow.md に labels_hint += [\"refined\"] が存在しないこと（RED: 現状 L155 に存在する）"
+    impl_files:
+      - "plugins/twl/refs/refine-processing-flow.md"
+  - ac_index: 4
+    ac_text: "lifecycle-processing-flow.md から labels_hint += [\"refined\"] が消えている"
+    test_file: "plugins/twl/tests/bats/co-issue-status-only-flow.bats"
+    test_name: "ac4: lifecycle-processing-flow.md に policies.labels_hint + refined 追加コードが存在しないこと（RED: 現状 L141 に存在する）"
+    impl_files:
+      - "plugins/twl/refs/lifecycle-processing-flow.md"
+  - ac_index: 5
+    ac_text: "co-issue SKILL.md の MUST NOT 注意書きが「Status=Refined 遷移 MUST」に縮約されている"
+    test_file: "plugins/twl/tests/bats/co-issue-status-only-flow.bats"
+    test_name: "ac5: SKILL.md に縮約済み形式 'Status=Refined 遷移 MUST' が存在すること（RED: 現状は長い注意書き形式）"
+    impl_files:
+      - "plugins/twl/skills/co-issue/SKILL.md"
+  - ac_index: 6
+    ac_text: "bats test (co-issue-manual-fix-b.bats 等) が Status only 期待に書き換えられて全 PASS"
+    test_file: "plugins/twl/tests/bats/co-issue-manual-fix-b.bats"
+    test_name: "ac6: このテストファイルが Status only 期待のテストであること（meta: テスト名に add-label が存在しないこと）"
+    impl_files: []
+    # impl_files: co-issue-manual-fix-b.bats 自体がテスト対象（meta test）
+  - ac_index: 7
+    ac_text: "dual-write log event 整理 — WARN label_add_failed / OK dual_write が消え、WARN status_update_failed のみが残る"
+    test_file: "plugins/twl/tests/bats/co-issue-status-only-flow.bats"
+    test_name: "ac7: co-issue-phase4-aggregate.md に WARN label_add_failed が存在しないこと（RED: 現状 L73,L80 に存在する）"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md"
+  - ac_index: 8
+    ac_text: "新規起票 (本 PR の bats E2E) で Issue が Status=Refined のみ設定され、refined label が付与されないことを確認"
+    test_file: "plugins/twl/tests/bats/co-issue-manual-fix-b.bats"
+    test_name: "ac8: 実行後に refined label が付与されないこと（RED: 現状は付与される）"
+    impl_files:
+      - "plugins/twl/scripts/co-issue-manual-fix-b.sh"

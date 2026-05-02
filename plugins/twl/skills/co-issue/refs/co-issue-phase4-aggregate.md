@@ -58,42 +58,19 @@ Step 4a で `fallback_inject_exhausted` に分類された issue が存在する
 **failure / circuit_broken の場合（AskUserQuestion）:**
 
 - `[A] retry subset` → `bash "${CLAUDE_PLUGIN_ROOT}/scripts/issue-lifecycle-orchestrator.sh" --per-issue-dir ".controller-issue/<session-id>/per-issue/" --resume --model sonnet` で非 done のみ再実行
-- `[B] manual fix` → Issue body 更新後、以下の決定論的 dual-write step を実行する（ADR-024 dual-write 順序準拠: label 先 → Status 後）:
+- `[B] manual fix` → Issue body 更新後、以下の決定論的 step を実行する（ADR-024 Phase B: Status=Refined SSoT）:
 
   ```bash
-  # (a-pre) idempotent auto-create（ADR-024 Phase 1; Phase B 移行で削除予定、#1209）
-  # refined label 不在時に --add-label が失敗して Status=Refined 移行が skip される連鎖を断つ
-  gh label create refined --color "C2E0C6" --description "auto-created by co-issue manual fix [B]" --repo "$ISSUE_REPO" 2>/dev/null || true
-
-  # (a) label 先に付与（ADR-024: label 先 → Status 後）。exit code を _label_exit に記録（Issue #1212 の dual-write log で使用）
-  gh issue edit "$ISSUE_NUMBER" --repo "$ISSUE_REPO" --add-label refined
-  _label_exit=$?
-
-  # (b) dual-write observability (Issue #1212): label 付与 exit code に応じて記録
-  # 失敗時（_label_exit != 0）: WARN label_add_failed を記録
-  # 成功時（_label_exit == 0）: OK dual_write を記録
-  # Pilot LLM は Bash tool で直接実行する（shell helper を source できない場合に備えた fallback 付き）
-  if [[ "$_label_exit" -ne 0 ]]; then
-    bash -c 'source "${CLAUDE_PLUGIN_ROOT}/scripts/refined-dual-write-log.sh" 2>/dev/null \
-      && dual_write_log WARN label_add_failed "'"$ISSUE_NUMBER"'" "label=refined repo='"$ISSUE_REPO"' exit_code='"$_label_exit"'"' \
-      2>/dev/null || \
-      printf '[%s] WARN label_add_failed issue=#%s label=refined repo=%s exit_code=%s\n' \
-        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ISSUE_NUMBER" "$ISSUE_REPO" "$_label_exit" \
-        >> /tmp/refined-dual-write.log 2>/dev/null || true
-  else
-    bash -c 'source "${CLAUDE_PLUGIN_ROOT}/scripts/refined-dual-write-log.sh" 2>/dev/null \
-      && dual_write_log OK dual_write "'"$ISSUE_NUMBER"'" "label_ok=Y"' \
-      2>/dev/null || \
-      printf '[%s] OK dual_write issue=#%s label_ok=Y\n' \
-        "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ISSUE_NUMBER" \
-        >> /tmp/refined-dual-write.log 2>/dev/null || true
-  fi
-  # CLAUDE_PLUGIN_ROOT 不確定時: inline printf で直接書き込む（上記 fallback）
-  # ISSUE_NUMBER は [B] path で Pilot が確認した Issue 番号（数字文字列）
-
-  # (c) Status を後に更新（ADR-024: label 完了後に実行）
+  # Status=Refined を設定（Phase B 移行後: Status only SSoT）
   bash "${SCRIPTS_ROOT:-plugins/twl/scripts}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined
+  _status_exit=$?
+  # observability: status update 失敗時のみ WARN
+  if [[ "$_status_exit" -ne 0 ]]; then
+    printf '[%s] WARN status_update_failed issue=#%s exit_code=%s\n' \
+      "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$ISSUE_NUMBER" "$_status_exit" \
+      >> /tmp/refined-status-update.log 2>/dev/null || true
+  fi
   ```
 
-  dual-write 完了後、ユーザーに修正箇所と完了を案内する。
+  Status 更新完了後、ユーザーに修正箇所と完了を案内する。
 - `[C] accept partial` → このまま完了（**ユーザーの明示的承認を確認してから実行すること**。デフォルト選択禁止）
