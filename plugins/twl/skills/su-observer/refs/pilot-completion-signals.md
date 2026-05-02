@@ -21,7 +21,7 @@ Monitor filter / cld-observe-any pattern 設定時に本ファイルを参照す
 | co-autopilot | クリーンアップ | `[orchestrator] cleanup: Issue #<N> — window/branch クリーンアップ` | orchestrator |
 | co-autopilot | Wave 収集 | `[wave-collect] Wave <N> サマリを生成しました: <path>` | `wave-collect.md` |
 | co-issue | Issue 作成完了 | `>>> Issue #<N> 作成完了` | co-issue SKILL.md |
-| co-issue (refine) | refine 完遂 | (Status=Refined 遷移 + label "refined" 付与) | issue-lifecycle-orchestrator.sh 出口 |
+| co-issue (refine) | refine 完遂 | `[IDLE-COMPLETED]` channel (`Status=Refined` + label `refined` 付与で検知) | issue-lifecycle-orchestrator.sh 出口 |
 | co-architect | arch review PASS | `>>> arch-phase-review PASS` | co-architect SKILL.md |
 | co-architect | arch merge | `[arch-merge] ...` | co-architect SKILL.md |
 | 共通（Pilot カスタム） | Phase/Wave/Step 完遂 | `>>> Phase <X> Wave <N> step <M> 完遂` | Pilot 直接出力 |

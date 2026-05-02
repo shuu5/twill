@@ -869,8 +869,8 @@ Signal regex の詳細は `pilot-completion-signals.md` を参照すること（
 
 | controller type | primary | secondary | tertiary |
 |---|---|---|---|
-| co-autopilot | `[PILOT-WAVE-COLLECTED]` | `[wave-collect] Wave N サマリ` | `[IDLE-COMPLETED]` |
-| co-issue (refine) | `[IDLE-COMPLETED]` | `Status=Refined` regex | window kill (env=1) |
+| co-autopilot | `[PILOT-WAVE-COLLECTED]` | `[wave-collect] Wave <N> サマリを生成しました` | `[IDLE-COMPLETED]` |
+| co-issue (refine) | `[IDLE-COMPLETED]` | `Status=Refined` regex | window kill (`IDLE_COMPLETED_AUTO_KILL=1`) |
 | co-issue (新規) | `>>> Issue #N 作成完了` | `[IDLE-COMPLETED]` | window kill |
 | co-explore | `[CO-EXPLORE-COMPLETE]` | `>>> explore 完了:` | `[IDLE-COMPLETED]` |
 | co-architect | `>>> arch-phase-review PASS` | `[arch-merge]` | `[IDLE-COMPLETED]` |
