@@ -276,7 +276,7 @@ if [[ -n "$CODEX_SESSION_DIR" && -d "$CODEX_SESSION_DIR" ]]; then
     CODEX_SILENT_SKIP_RATE="${CODEX_SILENT}/${CODEX_TOTAL}"
     if [[ $((CODEX_SILENT * 100)) -gt $((CODEX_TOTAL * 50)) ]]; then
       STATUS="FAIL"
-      EXIT_CODE=0  # WARN_ONLY/audit_mode に関わらず JSON status は FAIL（exit code はそのまま）
+      # EXIT_CODE は変更しない（strict モードで EXIT_CODE=1 確定済みの場合を上書きしない）
     fi
   fi
 fi
