@@ -1034,8 +1034,90 @@ def twl_check_completeness_handler(manifest_context: str) -> dict:
 
 
 def twl_check_specialist_handler(manifest_context: str) -> dict:
-    """validation module: specialist check (stub — detailed spec in future Issue)."""
-    return {"ok": True, "items": [], "exit_code": 0, "summary": "stub: not yet implemented"}
+    """Shadow mode: check specialist spawn completeness vs bash hook, log to shadow log."""
+    import glob
+    import time
+    from pathlib import Path
+
+    SHADOW_LOG = Path("/tmp/mcp-shadow-specialist-completeness.log")
+    _MANIFEST_GLOB = "/tmp/.specialist-manifest-*.txt"
+    _CTX_RE = re.compile(r"^[a-zA-Z0-9_-]+$")
+
+    def _check_context(ctx: str) -> list[str]:
+        manifest_file = Path(f"/tmp/.specialist-manifest-{ctx}.txt")
+        spawned_file = Path(f"/tmp/.specialist-spawned-{ctx}.txt")
+        if not manifest_file.exists() or manifest_file.is_symlink():
+            return []
+        try:
+            lines = manifest_file.read_text().splitlines()
+        except Exception:
+            return []
+        expected = [
+            ln.strip().removeprefix("twl:twl:")
+            for ln in lines
+            if ln.strip() and not ln.startswith("#") and re.match(r"^[a-zA-Z0-9:_-]+$", ln.strip())
+        ]
+        if not expected:
+            return []
+        spawned: set[str] = set()
+        if spawned_file.exists() and not spawned_file.is_symlink():
+            try:
+                spawned = {l.strip() for l in spawned_file.read_text().splitlines() if l.strip()}
+            except Exception:
+                pass
+        return [e for e in expected if e not in spawned]
+
+    missing_by_ctx: dict[str, list[str]] = {}
+    ctx_path = Path(manifest_context) if manifest_context else None
+
+    if ctx_path and ctx_path.is_dir():
+        # Directory mode (test fixtures): no runtime spawn state → return ok
+        pass
+    elif manifest_context and _CTX_RE.match(manifest_context):
+        # Context-specific mode: check that context; fall back to scan-all if file absent
+        specific = Path(f"/tmp/.specialist-manifest-{manifest_context}.txt")
+        if specific.exists() and not specific.is_symlink():
+            m = _check_context(manifest_context)
+            if m:
+                missing_by_ctx[manifest_context] = m
+        else:
+            # File not found for this context → scan all active manifest files
+            for mf in glob.glob(_MANIFEST_GLOB):
+                if os.path.islink(mf):
+                    continue
+                ctx = os.path.basename(mf).removeprefix(".specialist-manifest-").removesuffix(".txt")
+                if not _CTX_RE.match(ctx):
+                    continue
+                m = _check_context(ctx)
+                if m:
+                    missing_by_ctx[ctx] = m
+
+    all_missing = [item for items in missing_by_ctx.values() for item in items]
+    ok = len(all_missing) == 0
+    verdict = "ok" if ok else "warn"
+
+    event_id = f"specialist-check-{int(time.time() * 1000)}"
+    log_entry = json.dumps({
+        "event_id": event_id,
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "source": "mcp_tool",
+        "verdict": verdict,
+        "tool_name": "Stop",
+        "file_path": "specialist-completeness",
+        "manifest_context": manifest_context,
+    }, ensure_ascii=False)
+    try:
+        with open(str(SHADOW_LOG), "a") as f:
+            f.write(log_entry + "\n")
+    except Exception:
+        pass
+
+    return {
+        "ok": ok,
+        "items": all_missing,
+        "exit_code": 0 if ok else 1,
+        "summary": f"{len(all_missing)} specialist(s) missing" if all_missing else "all specialists present",
+    }
 
 
 # MCP tool registration — requires fastmcp (optional dep)

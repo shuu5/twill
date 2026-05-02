@@ -175,6 +175,33 @@
             "type": "command",
             "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/supervisor-session-end.sh\"",
             "timeout": 3000
+          },
+          {
+            "type": "mcp_tool",
+            "server": "twl",
+            "tool": "twl_check_specialist",
+            "input": {
+              "manifest_context": "session"
+            },
+            "outputType": "log",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "mcp_tool",
+            "server": "twl",
+            "tool": "twl_check_specialist",
+            "input": {
+              "manifest_context": "session"
+            },
+            "outputType": "log",
+            "timeout": 30
           }
         ]
       }
