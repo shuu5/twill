@@ -24,8 +24,9 @@ maxTurns: 60
 
 ## Step 0: --group 分岐
 
-`--group <context-name>` が含まれる場合:
-→ `/twl:architect-group-refine <context-name>` を実行して終了（Step 1〜7 スキップ）。
+`--group <context-name>` が含まれる場合（`--group` 優先）:
+→ `--type` が同時指定されていれば `--type` を architect-group-refine に引き継ぐ（type propagate）。
+→ `/twl:architect-group-refine <context-name> --type=<type>` を実行して終了（Step 1〜7 スキップ）。
 
 `--group` なし → Step 1 へ。
 
@@ -87,17 +88,32 @@ Recommended Structure が検出されました:
 
 `Recommended Structure` セクションが存在しない場合: フォールバック（`--type=ddd` default）を適用してアーキテクチャ探索を続行する。
 
+**選択 type 名の表示（type name display）:**
+
+type が確定したら、Step 2 の冒頭でユーザーに選択された type 名を表示する:
+```
+選択 type: <TYPE_NAME>（ddd / generic）
+```
+例: `選択 type: generic（--type=generic を適用）`
+
 **対話的アーキテクチャ探索（worktree 上）:**
 
-explore-summary（または Issue body）を基に、ユーザーと対話しながらアーキテクチャ設計を構造化する。DDD の Bounded Context、ユビキタス言語、Context Map を使い設計を構造化。
+type 別設計フロー:
 
-確定した設計事項は architecture/ の対応ファイルに Write:
-- ビジョン → `architecture/vision.md`
-- ドメインモデル → `architecture/domain/model.md`
-- 用語定義 → `architecture/domain/glossary.md`
-- Bounded Context → `architecture/domain/contexts/<name>.md`
-- 設計判断 → `architecture/decisions/<NNNN>-<title>.md`
-- API 境界 → `architecture/contracts/<name>.md`
+- **ddd type**: DDD の Bounded Context、ユビキタス言語、Context Map を使い設計を構造化。確定した設計事項は architecture/ の対応ファイルに Write:
+  - ビジョン → `architecture/vision.md`
+  - ドメインモデル → `architecture/domain/model.md`
+  - 用語定義 → `architecture/domain/glossary.md`
+  - Bounded Context → `architecture/domain/contexts/<name>.md`
+  - 設計判断 → `architecture/decisions/<NNNN>-<title>.md`
+  - API 境界 → `architecture/contracts/<name>.md`
+
+- **generic type**: DDD 特有の設計（Bounded Context / ユビキタス言語）を使わない。generic type では DDD 非使用のため domain/ ディレクトリは作成しない。`vision.md` + `phases/*.md` を中心とした設計フローで進める:
+  - ビジョン → `architecture/vision.md`
+  - Phase 計画 → `architecture/phases/<NN>.md`
+  - 設計判断 → `architecture/decisions/<NNNN>-<title>.md`
+
+  generic.*vision.md.*phases の設計フロー（vision.md と phases/*.md が中心）
 
 TaskUpdate → completed
 

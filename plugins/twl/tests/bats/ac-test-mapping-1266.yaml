@@ -1,0 +1,104 @@
+issue: 1266
+framework: bats
+mappings:
+  - ac_index: 1
+    ac_text: "co-architect --type=generic 起動時、domain/model.md / domain/glossary.md / domain/contexts/*.md 不在で architect-completeness-check が WARNING を出さない (INFO 降格)"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac1-generic-type-domain-demote: architect-completeness-check.md に --type=generic で domain/* が INFO 降格する記述がある"
+      - "ac1-generic-domain-model-info: generic type 時 domain/model.md の不在が INFO レベルになることが記述されている"
+      - "ac1-generic-contexts-not-warning: --type=generic 時に domain/contexts/*.md が WARNING にならない設計が記述されている"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 2
+    ac_text: "ref-architecture-spec.md に Project Type 概念と type 別必須テーブル (DDD / Generic 列) が定義されている"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac2-project-type-concept: ref-architecture-spec.md に Project Type の概念が記述されている"
+      - "ac2-ddd-generic-columns: ref-architecture-spec.md の必須テーブルに DDD 列と Generic 列が存在する"
+      - "ac2-type-table-header: ref-architecture-spec.md の type 別テーブルヘッダーに DDD と Generic が含まれる"
+      - "ac2-generic-type-domain-optional: ref-architecture-spec.md で generic type 時 domain/* が optional（非必須）と定義されている"
+      - "ac2-ddd-type-domain-required: ref-architecture-spec.md で ddd type 時 domain/* が必須と定義されている"
+    impl_files:
+      - "plugins/twl/refs/ref-architecture-spec.md"
+
+  - ac_index: 3
+    ac_text: "--type 未指定時のデフォルトが ddd で、既存 architecture/ を持つプロジェクトは影響なし (後方互換)"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac3-default-type-ddd: architect-completeness-check.md に --type 未指定時のデフォルト ddd の記述がある"
+      - "ac3-backward-compat-no-type-break: co-architect SKILL.md に --type 未指定時の後方互換保証の記述がある"
+      - "ac3-ddd-default-in-ref-spec: ref-architecture-spec.md に ddd がデフォルト type として記述されている"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+      - "plugins/twl/skills/co-architect/SKILL.md"
+      - "plugins/twl/refs/ref-architecture-spec.md"
+
+  - ac_index: 4
+    ac_text: "architect-completeness-check が --type=<value> 引数を受け取り、ref-architecture-spec.md の対応列を動的に選択する (ADR-032 のテーブル駆動拡張)"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac4-type-argument-defined: architect-completeness-check.md の入力に --type=<value> 引数が定義されている"
+      - "ac4-dynamic-column-selection: architect-completeness-check.md に type 別対応列の動的選択が記述されている"
+      - "ac4-adr032-table-driven-extension: architect-completeness-check.md に ADR-032 テーブル駆動拡張への言及がある"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 5
+    ac_text: "architect-completeness-check の --type 未指定時は .architecture-type → vision.md frontmatter → ddd の順で type を解決する"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac5-resolve-order-architecture-type-file: architect-completeness-check.md に .architecture-type ファイルからの解決が記述されている"
+      - "ac5-resolve-order-vision-frontmatter: architect-completeness-check.md に vision.md frontmatter からの解決が記述されている"
+      - "ac5-resolve-priority-order: architect-completeness-check.md に .architecture-type → vision.md → ddd の解決順序が記述されている"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 6
+    ac_text: "type 値の検証 — 未知の type (--type=foo) は明示エラーで停止"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac6-unknown-type-error: architect-completeness-check.md に未知の type が明示エラーで停止する記述がある"
+      - "ac6-unknown-type-error-in-spec: ref-architecture-spec.md に type 値の検証（値域定義）が記述されている"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+      - "plugins/twl/refs/ref-architecture-spec.md"
+
+  - ac_index: 7
+    ac_text: "co-architect Step 2 のメッセージに選択された type 名を表示"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac7-step2-type-display: co-architect SKILL.md の Step 2 に選択された type 名を表示する記述がある"
+      - "ac7-step2-type-message-format: co-architect SKILL.md の Step 2 に type 名を含むメッセージフォーマット例がある"
+    impl_files:
+      - "plugins/twl/skills/co-architect/SKILL.md"
+
+  - ac_index: 8
+    ac_text: "--type=generic 時、Step 2 の対話プロンプトが DDD 特有の設計（Bounded Context / ユビキタス言語等）ではなく、vision.md + phases/*.md 設計フローに切り替わる"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac8-generic-step2-phases-flow: co-architect SKILL.md に --type=generic 時の phases/*.md 設計フロー記述がある"
+      - "ac8-generic-no-bounded-context: co-architect SKILL.md に --type=generic 時は Bounded Context を使わない旨の記述がある"
+      - "ac8-generic-vision-phases-design: co-architect SKILL.md に --type=generic 時は vision.md + phases/*.md を中心とした設計の記述がある"
+    impl_files:
+      - "plugins/twl/skills/co-architect/SKILL.md"
+
+  - ac_index: 9
+    ac_text: "--group と --type 同時指定時は --group 優先で動作し、--type は --group 処理内に引き継がれる"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac9-group-priority-over-type: co-architect SKILL.md の Step 0 に --group 優先の記述がある"
+      - "ac9-type-propagated-to-group: co-architect SKILL.md に --type が --group 処理内に引き継がれる記述がある"
+    impl_files:
+      - "plugins/twl/skills/co-architect/SKILL.md"
+
+  - ac_index: 10
+    ac_text: "lib type の予約 (実装は将来、定義のみ)"
+    test_file: "plugins/twl/tests/bats/issue-1266-co-architect-type-ddd-skip.bats"
+    test_names:
+      - "ac10-lib-type-reserved: ref-architecture-spec.md に lib type の予約定義がある"
+      - "ac10-lib-type-no-impl-yet: lib type の実装は将来予定として定義のみ（実装なし）"
+      - "ac10-lib-not-in-validator: architect-completeness-check.md に lib type が実装済みとして扱われていない"
+    impl_files:
+      - "plugins/twl/refs/ref-architecture-spec.md"

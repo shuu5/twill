@@ -12,6 +12,7 @@ architecture/ ディレクトリの完全性を検証し、不足ファイル・
 
 - `architecture-dir-path`（省略時: `$(git rev-parse --show-toplevel)/architecture`）
 - `skip:`（省略可）— explore-summary の Recommended Structure から渡される skip リスト。リスト内の必須ファイルを FAIL → INFO に降格する（スキップ対象として扱う）
+- `--type=<value>`（省略可）— Project Type を指定。`ddd` または `generic`。未指定時は type 解決順序（Step 0.5）で自動決定。
 
 ## 手順
 
@@ -29,9 +30,24 @@ architecture/ ディレクトリの完全性を検証し、不足ファイル・
 これにより、explore フェーズでユーザーが「DDD は不要」と判断したファイルが
 完全性チェックをブロックするのを防ぐ。
 
+### 0.5. type 解決（--type 未指定時の自動解決）
+
+`--type` が明示指定されている場合はそれを使用する。未指定時は以下の解決順序（priority order）で type を決定する:
+
+1. **`.architecture-type` ファイル**: `$(git rev-parse --show-toplevel)/.architecture-type` を読み込み、1行目の値を type とする
+2. **`vision.md` frontmatter**: `architecture/vision.md` の YAML frontmatter `type:` 値を読み込む
+3. **`ddd` フォールバック**: 上記いずれも不在の場合、`ddd` をデフォルト適用（後方互換）
+
+**型検証**: 解決された type 値が `ddd` / `generic` 以外（未知の type / invalid type）の場合は明示エラーで停止する:
+```
+ERROR: 未知の type 値: '<value>'（type error）。許容値域: ddd, generic
+```
+
+`generic` type の場合: `domain/model.md`, `domain/glossary.md`, `domain/contexts/*.md` を INFO 降格対象として skip リストに追加する（generic type では domain/* は optional）。
+
 ### 1. 必須ファイル存在チェック
 
-**Step 1 冒頭**: `ref-architecture-spec.md` を Read し、`## 必須ファイル` セクションの必須テーブルから各パスの `Severity` 列を動的に読み出す。`RECOMMENDED` 不在は `INFO` レベルで報告する（`WARNING` より低い）。
+**Step 1 冒頭**: `ref-architecture-spec.md` を Read し、`## 必須ファイル` セクションの `Project Type 別必須テーブル` から Step 0.5 で解決した type に対応する列（DDD 列 または Generic 列）を動的選択する（ADR-032 テーブル駆動拡張）。`RECOMMENDED` 不在は `INFO` レベルで報告する（`WARNING` より低い）。
 
 **skip リスト降格**: Step 0 で記録した skip リスト内のパスが必須ファイルとして検出された場合、`[FAIL]` / `[WARNING]` ではなく `[INFO]` に降格して報告する。
 
