@@ -3,8 +3,7 @@
 #
 # 動作:
 #   - tool_name が "Bash" のときのみ発火
-#   - tool_input.command が "gh issue create" または
-#     "gh issue edit.*--add-label.*refined" にマッチしない → 通過（exit 0）
+#   - tool_input.command が "gh issue create" にマッチしない → 通過（exit 0）
 #   - gate state ファイルが存在しない → 通過（co-issue 外からの呼び出し）
 #   - phase3_completed=false → deny（Phase 3 未完了）
 #   - phase3_completed=true → 通過
@@ -38,16 +37,8 @@ if [[ -z "$CMD" ]]; then
 fi
 
 # ゲート対象コマンドのみ処理
-# 対象: "gh issue create" または "gh issue edit.*--add-label.*refined"
-IS_TARGET=false
-if printf '%s' "$CMD" | grep -qE 'gh issue create'; then
-  IS_TARGET=true
-fi
-if printf '%s' "$CMD" | grep -qE 'gh issue edit' && printf '%s' "$CMD" | grep -qE '(--add-label|--label)[^;|&]*\brefined\b'; then
-  IS_TARGET=true
-fi
-
-if [[ "$IS_TARGET" == "false" ]]; then
+# 対象: "gh issue create"
+if ! printf '%s' "$CMD" | grep -qE 'gh issue create'; then
   exit 0
 fi
 

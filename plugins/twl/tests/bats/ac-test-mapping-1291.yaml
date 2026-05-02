@@ -1,0 +1,58 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/scripts/hooks/pre-bash-refined-label-gate.sh が削除されている"
+    test_file: "plugins/twl/tests/bats/issue-1291-adr024-phase-b-tier-a.bats"
+    test_names:
+      - "ac1: pre-bash-refined-label-gate.sh が存在しない"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-refined-label-gate.sh"
+
+  - ac_index: 2
+    ac_text: "plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh から refined キーワードが消えている (grep -n refined で 0 件)"
+    test_file: "plugins/twl/tests/bats/issue-1291-adr024-phase-b-tier-a.bats"
+    test_names:
+      - "ac2: pre-bash-phase3-gate.sh に refined キーワードが存在しない"
+      - "ac2: pre-bash-phase3-gate.sh の refined 条件分岐ロジックが消えている"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh"
+
+  - ac_index: 3
+    ac_text: ".claude/settings.json から pre-bash-refined-label-gate.sh の hook 登録が消えている (L51-53 該当エントリ除去)"
+    test_file: "plugins/twl/tests/bats/issue-1291-adr024-phase-b-tier-a.bats"
+    test_names:
+      - "ac3: settings.json に pre-bash-refined-label-gate.sh エントリが存在しない"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 4
+    ac_text: "pre-bash-phase3-gate.sh の Phase 3 gate 本体ロジック (state 不在時の deny) は機能維持 — 既存 bats test PASS"
+    test_file: "plugins/twl/tests/bats/issue-1291-adr024-phase-b-tier-a.bats"
+    test_names:
+      - "ac4: phase3-gate が refined なしかつ SESSION_ID なし環境で gh issue create を allow する"
+      - "ac4: phase3-gate が refined なし状態で gh issue create の deny ロジックを保持する"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh"
+
+  - ac_index: 5
+    ac_text: "layer-d-refined-gate.bats が deprecate / skip / 削除されている (どの方針かは Sub-1 PR 内で明記)"
+    test_file: "plugins/twl/tests/bats/issue-1291-adr024-phase-b-tier-a.bats"
+    test_names:
+      - "ac5: layer-d-refined-gate.bats が削除またはskip/deprecate されている"
+    impl_files:
+      - "plugins/twl/tests/bats/layer-d-refined-gate.bats"
+
+  - ac_index: 6
+    ac_text: "gh issue edit <N> --add-label refined が deny されない (cross-repo Issue 用に label 付与は Sub-2 削除まで一時的に通る状態)"
+    test_file: "plugins/twl/tests/bats/issue-1291-adr024-phase-b-tier-a.bats"
+    test_names:
+      - "ac6: SESSION_ID なし環境で gh issue edit --add-label refined が deny されない"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh"
+
+  - ac_index: 7
+    ac_text: "plugins/twl/deps.yaml から pre-bash-refined-label-gate エントリが削除され、twl check が drift エラーなしで PASS する"
+    test_file: "plugins/twl/tests/bats/issue-1291-adr024-phase-b-tier-a.bats"
+    test_names:
+      - "ac7: deps.yaml に pre-bash-refined-label-gate エントリが存在しない"
+    impl_files:
+      - "plugins/twl/deps.yaml"
