@@ -13,7 +13,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
         run: |
+          # PAT 存在チェック（未設定時は早期 fail）
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "ERROR: ADD_TO_PROJECT_PAT が未設定です" >&2
+            exit 1
+          fi
           bash plugins/twl/scripts/project-board-refined-migrate.sh --force
+          # Status=Todo または Board 未登録の refined OPEN Issue を検出
+          # projectItems[0] は twill-ecosystem board のエントリを期待
           REMAINING=$(gh issue list --repo shuu5/twill --search 'is:open label:refined' \
             --json number,projectItems --limit 100 \
             | jq '[.[] | select(
