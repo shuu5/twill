@@ -154,11 +154,22 @@ class TestAC3FallbackDefault:
         )
 
     def test_ac3_fallback_is_ddd_type(self):
-        # AC: フォールバックが明示的に ddd type であることが co-architect SKILL.md に記述されている
+        # AC: フォールバックが明示的に ddd type であることが co-architect SKILL.md Step 2 に記述されている
+        # ファイル全体スキャンではなく Step 2 スコープに限定する（他箇所の DDD 言及と区別）
         text = CO_ARCHITECT_SKILL.read_text(encoding="utf-8")
-        assert "--type=ddd" in text or "type=ddd" in text, (
-            "AC3: co-architect/SKILL.md に '--type=ddd' フォールバックが明示されていない。"
-            f"ファイル: {CO_ARCHITECT_SKILL}"
+        step2_match = re.search(
+            r"## Step 2:.*?(?=\n## Step 3:|\Z)",
+            text,
+            re.DOTALL,
+        )
+        assert step2_match is not None, (
+            "AC3: co-architect/SKILL.md に '## Step 2:' セクションが見当たらない"
+        )
+        step2_text = step2_match.group(0)
+        assert "--type=ddd" in step2_text or "type=ddd" in step2_text, (
+            "AC3: co-architect/SKILL.md Step 2 に '--type=ddd' フォールバックが明示されていない。"
+            "Recommended Structure 不在時のフォールバックは Step 2 に明記すること。"
+            f"Step 2 テキスト:\n{step2_text[:500]}"
         )
 
 
@@ -204,19 +215,22 @@ class TestAC4HumanGate:
 
     def test_ac4_human_gate_is_near_recommended_structure_handling(self):
         # AC: HUMAN GATE マーカーが Recommended Structure の処理ロジックの近傍にある
+        # さらに A/B/C 選択肢（受諾/修正/DDD default）への言及が HUMAN GATE 周辺にあることを検証
         text = CO_ARCHITECT_SKILL.read_text(encoding="utf-8")
-        # Recommended Structure と HUMAN GATE の両方が存在し、近傍（500文字以内）にあること
         rs_pos = text.find("Recommended Structure")
-        hg_pos = text.find(HUMAN_GATE_MARKER)
 
         if rs_pos == -1:
             pytest.fail(
                 "AC4: co-architect/SKILL.md に 'Recommended Structure' が見当たらない。"
                 "AC1 の実装が前提条件。"
             )
+
+        # 1つ目のテストと同じく rs_pos - 1000 から前方検索でロジックを統一
+        hg_pos = text.find(HUMAN_GATE_MARKER, rs_pos - 1000)
         if hg_pos == -1:
             pytest.fail(
-                f"AC4: co-architect/SKILL.md に '{HUMAN_GATE_MARKER}' が見当たらない。"
+                f"AC4: co-architect/SKILL.md の 'Recommended Structure' 近傍（前後1000文字）に "
+                f"'{HUMAN_GATE_MARKER}' が見当たらない。"
             )
 
         distance = abs(rs_pos - hg_pos)
@@ -224,6 +238,21 @@ class TestAC4HumanGate:
             f"AC4: 'Recommended Structure'（pos={rs_pos}）と"
             f"'{HUMAN_GATE_MARKER}'（pos={hg_pos}）の距離が {distance} 文字と離れすぎている。"
             "HUMAN GATE は Recommended Structure 処理の近傍に配置すること。"
+        )
+
+        # A/B/C 選択肢（受諾 / 修正 / DDD default）への言及
+        # HUMAN GATE の前後2000文字以内にユーザー選択肢の記述があること
+        context_start = max(0, hg_pos - 1000)
+        context_end = min(len(text), hg_pos + 1000)
+        hg_context = text[context_start:context_end]
+        has_choices = (
+            ("受諾" in hg_context or "accept" in hg_context.lower())
+            and ("修正" in hg_context or "修正" in hg_context or "modify" in hg_context.lower())
+        )
+        assert has_choices, (
+            "AC4: HUMAN GATE 近傍に選択肢（受諾/修正/DDD default）の記述が見当たらない。"
+            "ADR-030 準拠: ユーザーに具体的な選択肢を提示すること（A/B/C: 受諾 / 修正 / DDD default 等）。"
+            f"HUMAN GATE 周辺テキスト:\n{hg_context[:500]}"
         )
 
 
@@ -302,7 +331,7 @@ class TestAC6ParseErrorMessage:
         )
         has_parse_fail = (
             "パース失敗" in text
-            or "parse.*fail" in text.lower()
+            or bool(re.search(r"parse.*fail", text.lower()))
             or "パース不可" in text
             or "解析エラー" in text
         )
