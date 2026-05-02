@@ -1,0 +1,113 @@
+mappings:
+  - ac_index: 1
+    ac_text: ".claude/settings.json の PreToolUse Bash matcher に mcp_tool entry を追加（既存 bash hook entry は維持）"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC1: settings.json の Bash matcher に mcp_tool hook が存在する"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 1
+    ac_text: ".claude/settings.json の PreToolUse Bash matcher に mcp_tool entry を追加（既存 bash hook entry は維持）— regression guard"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC1: 既存 Bash hook entries（pre-bash-commit-validate.sh 等）が維持されている"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 2
+    ac_text: "mcp_tool entry が mcp__twl__twl_validate_commit を呼び、${tool_input.command} を引数に渡すこと"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC2: mcp_tool hook の server が twl である"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 2
+    ac_text: "mcp_tool entry が mcp__twl__twl_validate_commit を呼び、${tool_input.command} を引数に渡すこと"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC2: mcp_tool hook の tool が twl_validate_commit である"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 2
+    ac_text: "mcp_tool entry が mcp__twl__twl_validate_commit を呼び、${tool_input.command} を引数に渡すこと"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC2: mcp_tool hook の input.command が ${tool_input.command} を参照する"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 3
+    ac_text: "mcp_tool 失敗時は warning ログのみ（block しない）— outputType: \"log\" 指定"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC3: mcp_tool hook が outputType: log を持つ（warning ログのみ、block しない）"
+    impl_files:
+      - ".claude/settings.json"
+
+  - ac_index: 4
+    ac_text: "bats fixture 5+ 件（valid commit）で bash と mcp_tool の出力を突合し mismatch 0 を確認"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC4 fixture1: valid commit — bash=allow mcp=allow → mismatch false (exit 0)"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "bats fixture 5+ 件（invalid commit）で bash と mcp_tool の出力を突合し mismatch 0 を確認"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC4 fixture2: invalid commit (violations) — bash=block mcp=block → mismatch false (exit 0)"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "bats fixture 5+ 件（non-git command）で bash と mcp_tool の出力を突合し mismatch 0 を確認"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC4 fixture3: non-git command (ls) — bash=skip mcp=skip → mismatch false (exit 0)"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "bats fixture 5+ 件（edge: empty command）で bash と mcp_tool の出力を突合し mismatch 0 を確認"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC4 fixture4: empty command — bash=skip mcp=skip → mismatch false (exit 0)"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "bats fixture 5+ 件（edge: timeout）で bash と mcp_tool の出力を突合し mismatch 0 を確認"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC4 fixture5: timeout/error (両者error) — bash=error mcp=error → mismatch false (exit 0)"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 4
+    ac_text: "bats fixture — mismatch 検出テスト（bash と mcp_tool 判定が異なる場合は exit 1）"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC4 extra: mismatch — bash=allow mcp=block → exit 1 (MISMATCH 検出)"
+    impl_files:
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+  - ac_index: 5
+    ac_text: "mcp-shadow-compare.sh 互換ログを /tmp/mcp-shadow-commit-validate.log に追記する形式で配置"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC5: /tmp/mcp-shadow-commit-validate.log に JSONL エントリが書き込まれる"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-commit-validate.sh"
+
+  - ac_index: 5
+    ac_text: "mcp-shadow-compare.sh 互換ログを /tmp/mcp-shadow-commit-validate.log に追記する形式で配置"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC5: shadow log エントリに source フィールド（bash または mcp_tool）が存在する"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-commit-validate.sh"
+
+  - ac_index: 5
+    ac_text: "mcp-shadow-compare.sh 互換ログを /tmp/mcp-shadow-commit-validate.log に追記する形式で配置"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC5: shadow log エントリに command フィールドが存在する"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-commit-validate.sh"
+
+  - ac_index: 5
+    ac_text: "mcp-shadow-compare.sh 互換ログを /tmp/mcp-shadow-commit-validate.log に追記する形式で配置"
+    test_file: "plugins/twl/tests/bats/scripts/commit-validate-mcp-shadow.bats"
+    test_name: "@test AC5: shadow log が mcp-shadow-compare.sh で解析可能（mismatch 0 またはエラーなし）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-commit-validate.sh"
+      - "plugins/twl/scripts/mcp-shadow-compare.sh"
