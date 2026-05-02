@@ -2918,7 +2918,7 @@ scripts:
   record-detection-gap:
     type: script
     path: skills/su-observer/scripts/record-detection-gap.sh
-    description: "su-observer 検知漏れ自動記録 helper: --type <gap-type> --detail <text> [--related-issue <#N>] [--severity low|medium|high]。missing-monitor / pitfall-miss / intervention-fail / proxy-stuck / kill-miss 等の検知漏れを .supervisor/detection-gaps.jsonl に記録（#1187）"
+    description: "su-observer 検知漏れ自動記録 helper: --type <gap-type> --detail <text> [--related-issue <#N>] [--severity low|medium|high]。missing-monitor / pitfall-miss / intervention-fail / proxy-stuck / kill-miss 等の検知漏れを .supervisor/intervention-log.md に追記（#1187）"
 
   # su-observer heartbeat watcher (#948 Phase AA 2026-04-24)
   heartbeat-watcher:
