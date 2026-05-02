@@ -368,6 +368,7 @@ skills:
       - reference: su-observer-controller-spawn-playbook  # #984: controller spawn パターン・並列度・spawn prompt 規約
       - reference: su-observer-wave-management         # #984: Wave 管理・問題検出・過去介入記録確認
       - reference: su-observer-security-gate           # #984: Security gate Layer A-D 定義・bypass 禁止
+      - reference: su-observer-constraints             # #1254: SU-1〜SU-9 制約・禁止事項 10 項目の運用 mirror
     dependencies:
       - plugin: session  # cld --observer: session.json の claude_session_id 読み取りに session plugin の session-state.sh を使用
     description: "メタ認知レイヤー: 全 controller の監視・介入。hook プライマリ / polling フォールバックの Hybrid 検知（#570）。テストシナリオ実行は co-self-improve に委譲"
@@ -853,6 +854,14 @@ refs:
     spawnable_by: [controller, workflow, atomic]
     can_spawn: []
     description: "Security gate Layer A-D ゲート定義・bypass 禁止手法（session file pre-seed / bypass hint / settings self-modification）・permission 拒否対応プロトコル（#984 split）"
+
+  # su-observer SU-* 制約 reference (#1254)
+  su-observer-constraints:
+    type: reference
+    path: skills/su-observer/refs/su-observer-constraints.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "SU-1〜SU-9 制約テーブル・禁止事項 10 項目・Security gate (Layer A-D) 注記の運用 mirror。正典は architecture/domain/contexts/supervision.md。SKILL.md Step 0 の 1-hop Read 対象（#1254）"
 
   # su-observer Monitor チャネルカタログ (#486, #599)
   monitor-channel-catalog:
