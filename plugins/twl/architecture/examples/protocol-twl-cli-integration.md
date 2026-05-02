@@ -1,7 +1,13 @@
+---
+type: example
+review-scope: excluded
+---
+
 # Example: twl CLI Integration Protocol
 
 > このファイルは `protocols/<name>.md` フォーマットの実例です（AC9）。
 > `architecture/protocols/` 配下に配置して使用します。
+> `type: example` frontmatter により worker-arch-doc-reviewer の SHA 検証スキャン対象外。
 
 ---
 

@@ -133,10 +133,10 @@ class TestAC3TagBranchRejection:
         # RED: 現在の ref-architecture-spec.md には tag/branch 拒否の記述が存在しないため FAIL する
         assert REF_ARCH_SPEC.exists(), f"ref-architecture-spec.md が存在しない: {REF_ARCH_SPEC}"
         text = REF_ARCH_SPEC.read_text(encoding="utf-8")
-        # tag または branch の参照を拒否する記述が含まれていること
+        # tag または branch の参照を「明示的に拒否・禁止」する記述が含まれていること
+        # drift だけでは AC3 の意図（拒否の明文化）を保証しないため除外する
         has_tag_rejection = re.search(r"tag|branch", text, re.IGNORECASE) and (
             "拒否" in text or "reject" in text.lower() or "禁止" in text or "不可" in text
-            or "drift" in text.lower()
         )
         assert has_tag_rejection, (
             "AC3 未実装: ref-architecture-spec.md に tag/branch 参照拒否 (drift リスク明文化) の記述が存在しない"
@@ -172,10 +172,8 @@ class TestAC4SHAPinConfidence:
             f"worker-arch-doc-reviewer.md が存在しない: {WORKER_ARCH_DOC_REVIEWER}"
         )
         text = WORKER_ARCH_DOC_REVIEWER.read_text(encoding="utf-8")
-        # protocols/*.md のレビュー観点セクションが存在すること
-        has_protocols_section = "protocols" in text.lower() and (
-            "### " in text  # セクション見出しがあること
-        )
+        # protocols/*.md を明示的に対象にした ### セクション見出しが存在すること
+        has_protocols_section = bool(re.search(r"###.*protocols", text, re.IGNORECASE))
         assert has_protocols_section, (
             "AC4 未実装: worker-arch-doc-reviewer.md に protocols/*.md の SHA pin 検出観点セクションが存在しない"
         )
@@ -385,8 +383,8 @@ class TestAC9ProtocolsExamplesDirectory:
         example_files: list[Path] = []
         for d in candidate_dirs:
             if d.exists():
-                example_files.extend(d.glob("*.md"))
-                example_files.extend(d.glob("**/*.md"))
+                # **/*.md は再帰的なため *.md を内包する。set() で重複を除去する
+                example_files.extend(set(d.glob("**/*.md")))
         assert len(example_files) >= 1, (
             "AC9 未実装: examples/ ディレクトリに protocols/*.md の実例 .md ファイルが存在しない "
             f"(確認ディレクトリ: {[str(d) for d in candidate_dirs]})"
