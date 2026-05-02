@@ -246,19 +246,40 @@ EOF
   esac
 done
 
+# --- provenance section ヘルパー（Issue #1274）---
+_get_host_alias() {
+  local f="${XDG_CONFIG_HOME:-$HOME/.config}/twl/host-aliases.json"
+  [[ -f "$f" ]] && python3 -c "import json,socket,sys; d=json.load(open(sys.argv[1])); print(d.get(socket.gethostname(),''))" "$f" 2>/dev/null || true
+}
+_emit_provenance_section() {
+  local a g="" p="" sfile="${SUPERVISOR_DIR:-.supervisor}/session.json"
+  a="$(_get_host_alias)"
+  g="$(git -C "$TWILL_ROOT" rev-parse --show-toplevel 2>/dev/null || true)"; g="${g//$'\n'/ }"
+  p="${PREDECESSOR_HOST:-}"; [[ -z "$p" && -f "$sfile" ]] && p="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('predecessor_host',''))" "$sfile" 2>/dev/null || true)"; p="${p//$'\n'/ }"
+  printf '## provenance (auto-injected)\n- host: %s (%s)\n- pwd: %s\n- predecessor: %s\n- timestamp: %s\n' \
+    "$(hostname)" "$a" "$g" "$p" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+# --- provenance section ここまで ---
+
+# provenance section を先に取得し、サイズガードの実効上限（EFFECTIVE_LIMIT）を調整
+PROVENANCE="$(_emit_provenance_section)"
+PROVENANCE_LINES=$(printf '%s\n' "$PROVENANCE" | wc -l)
+echo "[spawn-controller] PROVENANCE_LINES=${PROVENANCE_LINES}" >&2
+
 # /twl:<skill> を prompt 先頭に prepend
 PROMPT_BODY="$(cat "$PROMPT_FILE")"
 
 # size guard: §10 spawn prompt 最小化原則（MUST NOT）
 PROMPT_LINE_COUNT=$(printf '%s\n' "$PROMPT_BODY" | wc -l)
+EFFECTIVE_LIMIT=$((30 - PROVENANCE_LINES))
 FORCE_LARGE=false
 for arg in "$@"; do
   [[ "$arg" == "--force-large" ]] && FORCE_LARGE=true
 done
 
-if [[ "$FORCE_LARGE" == "false" && $PROMPT_LINE_COUNT -gt 30 ]]; then
+if [[ "$FORCE_LARGE" == "false" && $PROMPT_LINE_COUNT -gt $EFFECTIVE_LIMIT ]]; then
   cat >&2 <<WARN
-WARN: prompt size ${PROMPT_LINE_COUNT} lines exceeds recommended 30 lines.
+WARN: prompt size ${PROMPT_LINE_COUNT} lines exceeds recommended ${EFFECTIVE_LIMIT} lines (30 - ${PROVENANCE_LINES} provenance lines).
 §10 spawn prompt 最小化原則: skill 自律取得可能な情報を prompt に転記しないこと。
 詳細: plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §10
 suppress する場合: --force-large + prompt 冒頭に REASON: 行
@@ -274,6 +295,7 @@ done
 set -- "${NEW_ARGS[@]+"${NEW_ARGS[@]}"}"
 
 FINAL_PROMPT="/twl:${SKILL_NORMALIZED}
+${PROVENANCE}
 ${PROMPT_BODY}"
 
 # --window-name が明示されていなければ自動生成
