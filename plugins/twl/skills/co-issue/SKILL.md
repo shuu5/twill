@@ -74,6 +74,10 @@ SESSION_DIR=`.controller-issue/<session-id>/`
 
 `refs/co-issue-cleanup.md` を Read → 実行
 
+## プロンプト規約
+
+- spawn-controller.sh が付与した provenance section を Issue body 末尾にコピーすること（MUST）
+
 ## 禁止事項（MUST NOT）
 
 - Phase 1 で Issue テンプレートやラベルに言及してはならない（UX ルール）

@@ -246,6 +246,22 @@ EOF
   esac
 done
 
+# --- provenance section ヘルパー（Issue #1274）---
+_get_host_alias() {
+  local f="${XDG_CONFIG_HOME:-$HOME/.config}/twl/host-aliases.json"
+  [[ -f "$f" ]] && python3 -c "import json,socket,sys; d=json.load(open(sys.argv[1])); print(d.get(socket.gethostname(),''))" "$f" 2>/dev/null || true
+}
+_emit_provenance_section() {
+  local a g="" p="" sfile="${SUPERVISOR_DIR:-.supervisor}/session.json"
+  a="$(_get_host_alias)"
+  g="$(git -C "$TWILL_ROOT" rev-parse --show-toplevel 2>/dev/null || true)"
+  [[ -f "$sfile" ]] && p="$(python3 -c "import json; print(json.load(open('$sfile')).get('predecessor_host',''))" 2>/dev/null || true)"
+  local s="<!-- provenance: hostname=$(hostname) (${a}) git-root=${g} predecessor=${p} -->"
+  PROVENANCE_LINES=$(printf '%s\n' "$s" | wc -l)
+  echo "[spawn-controller] PROVENANCE_LINES=${PROVENANCE_LINES}" >&2; printf '%s\n' "$s"
+}
+# --- provenance section ここまで ---
+
 # /twl:<skill> を prompt 先頭に prepend
 PROMPT_BODY="$(cat "$PROMPT_FILE")"
 
@@ -274,6 +290,7 @@ done
 set -- "${NEW_ARGS[@]+"${NEW_ARGS[@]}"}"
 
 FINAL_PROMPT="/twl:${SKILL_NORMALIZED}
+$(_emit_provenance_section)
 ${PROMPT_BODY}"
 
 # --window-name が明示されていなければ自動生成

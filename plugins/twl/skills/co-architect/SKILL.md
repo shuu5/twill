@@ -167,6 +167,10 @@ merge-gate が REJECT した場合:
   - autopilot: /twl:co-autopilot で Issue 群を一括実装
 ```
 
+## プロンプト規約
+
+- spawn-controller.sh が付与した provenance section を Issue body 末尾にコピーすること（MUST）
+
 ## 禁止事項（MUST NOT）
 
 - ユーザーの設計判断を代替してはならない（UX ルール。提案は可、決定はユーザー）

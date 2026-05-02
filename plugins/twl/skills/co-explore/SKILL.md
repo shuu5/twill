@@ -117,6 +117,10 @@ Issue にリンク済み。
   - 直接実装: /twl:co-autopilot #<N>
 ```
 
+## プロンプト規約
+
+- spawn-controller.sh が付与した provenance section を Issue body 末尾にコピーすること（MUST）
+
 ## 禁止事項（MUST NOT）
 
 - Issue の精緻化・テンプレート適用・ラベル付与を行ってはならない（co-issue の責務）
