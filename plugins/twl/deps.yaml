@@ -2785,7 +2785,7 @@ scripts:
   pre-bash-phase3-gate:
     type: script
     path: scripts/hooks/pre-bash-phase3-gate.sh
-    description: "PreToolUse gate (Layer C-2): co-issue Phase 3 未完了時に gh issue create / gh issue edit --add-label refined を deny する（Bash tool matcher）。gate state /tmp/.co-issue-phase3-gate-{cksum}.json で管理"
+    description: "PreToolUse gate (Layer C-2): co-issue Phase 3 未完了時に gh issue create を deny する（Bash tool matcher）。gate state /tmp/.co-issue-phase3-gate-{cksum}.json で管理"
 
   supervisor-heartbeat:
     type: script
