@@ -97,7 +97,7 @@ TaskUpdate → completed
 - [B] → Step 2 に戻り explore を再開
 - [C] → worktree を削除して終了:
   ```bash
-  bash plugins/twl/scripts/worktree-delete.sh "${BRANCH}"
+  bash "${CLAUDE_PLUGIN_ROOT}/scripts/worktree-delete.sh" "${BRANCH}"
   git push origin --delete "${BRANCH}" 2>/dev/null || true
   ```
 
@@ -150,7 +150,7 @@ merge-gate が PASS してマージ完了した場合:
 
 ```bash
 # worktree 削除 + remote branch 削除（BRANCH は Step 2 で設定）
-bash plugins/twl/scripts/worktree-delete.sh "${BRANCH}"
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/worktree-delete.sh" "${BRANCH}"
 git push origin --delete "${BRANCH}" 2>/dev/null || true
 rm -f /tmp/co-architect-pr-number.txt
 ```

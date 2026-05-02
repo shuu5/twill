@@ -46,7 +46,7 @@ Step 2 で承認済み Issue が 1 件以上あった場合のみ実行。
 IS_AUTOPILOT 判定:
 
 ```bash
-source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh" 2>/dev/null || true
+source "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-issue-num.sh" 2>/dev/null || true
 ISSUE_NUM=$(resolve_issue_num)
 IS_AUTOPILOT=false
 if [ -n "$ISSUE_NUM" ]; then

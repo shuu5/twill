@@ -2,11 +2,11 @@
 
 ## 起動パターン（文脈判断で選択、spawn-controller.sh 経由）
 
-`cld-spawn` の直接呼び出しは禁止。必ず `scripts/spawn-controller.sh` 経由で起動すること（`refs/pitfalls-catalog.md` §1 参照）。
+`cld-spawn` の直接呼び出しは禁止。必ず `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/spawn-controller.sh` 経由で起動すること（`refs/pitfalls-catalog.md` §1 参照）。
 
 ```bash
 # Usage:
-scripts/spawn-controller.sh <skill> <prompt-file> [cld-spawn opts...]
+"${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/spawn-controller.sh" <skill> <prompt-file> [cld-spawn opts...]
 ```
 
 | controller | 用途 | 並列度（同時 spawn 可能数） | 観察モード |

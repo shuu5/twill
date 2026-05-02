@@ -30,14 +30,14 @@ spawnable_by:
 ## Step 0: セッション初期化
 
 1. bare repo 構造を検証（main/ で起動されていることを確認）
-2. `.supervisor/session.json` 確認: 存在 + active → 復帰・`claude_session_id` 更新; なし → `scripts/session-init.sh` 新規作成
+2. `.supervisor/session.json` 確認: 存在 + active → 復帰・`claude_session_id` 更新; なし → `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/session-init.sh` 新規作成
 2.5. `.supervisor/budget-pause.json` 確認: `status: "paused"` → Worker 状態確認 → orchestrator 再起動 → `status: "resumed"` 更新 → `>>> budget 回復: 全セッション再開完了`
 3. Project Board から Todo/In Progress の Issue 一覧を取得
-4. **Memory MCP（MUST）**: `scripts/step0-memory-ambient.sh` → exit 0: `.supervisor/ambient-hints.md` Read; exit 1: `observer-pitfall`/`observer-lesson`/`observer-wave` タグで memory_search → `--write` 保存 → Read
+4. **Memory MCP（MUST）**: `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/step0-memory-ambient.sh` → exit 0: `.supervisor/ambient-hints.md` Read; exit 1: `observer-pitfall`/`observer-lesson`/`observer-wave` タグで memory_search → `--write` 保存 → Read
 4.5. auto-memory はホストローカル補助のみ — cross-machine 知見 source として使用してはならない（MUST NOT）
 5. **`refs/pitfalls-catalog.md` を Read（MUST）** — 既知の落とし穴・Memory Principles・Worker auto mode 確認方法を把握
 6. **`refs/monitor-channel-catalog.md` を Read（SHOULD、Wave 管理時は MUST）** — Monitor チャネル定義と Hybrid 検知ポリシーを把握
-6.5. **Monitor task 起動 MUST**: `bash plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh` で出力されたコマンドを Monitor tool で実行する（cld-observe-any daemon + tail -F .supervisor/cld-observe-any.log の連携起動）
+6.5. **Monitor task 起動 MUST**: `bash "${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/step0-monitor-bootstrap.sh"` で出力されたコマンドを Monitor tool で実行する（cld-observe-any daemon + tail -F .supervisor/cld-observe-any.log の連携起動）
 6.6. **controller type 判定 MUST**: controller spawn 前に controller type（co-autopilot / co-issue / co-explore 等）を特定し、`refs/monitor-channel-catalog.md` の「controller type 別 primary completion signal mapping」table を参照して primary completion signal を確認すること
 7. `>>> su-observer 起動完了。指示をお待ちしています。` を表示
 
@@ -58,9 +58,9 @@ spawnable_by:
 
 > **Monitor tool 連携経路（SHOULD）**: cld-observe-any 起動時は `refs/monitor-channel-catalog.md` の「Monitor tool 連携経路（方式 A: 共有 logfile tail）」セクションを参照し、stdout を `.supervisor/cld-observe-any.log` に `tee -a` redirect した上で Monitor tool を `tail -F` で起動すること。これにより `[MENU-READY]`/`[REVIEW-READY]`/`[FREEFORM-READY]` 等の event を Monitor tool でリアルタイム受信できる（#1144）。
 
-> **検知漏れ記録（SHOULD）**: Monitor 不在・pitfall 適用漏れ・observer 自身の介入失敗など「検知漏れ」が発生した判断ポイントでは `scripts/record-detection-gap.sh` を呼び出すこと。SHOULD — 完全自動では難しいが、介入後に気づいた場合は積極的に記録する。
+> **検知漏れ記録（SHOULD）**: Monitor 不在・pitfall 適用漏れ・observer 自身の介入失敗など「検知漏れ」が発生した判断ポイントでは `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/record-detection-gap.sh` を呼び出すこと。SHOULD — 完全自動では難しいが、介入後に気づいた場合は積極的に記録する。
 > ```bash
-> bash skills/su-observer/scripts/record-detection-gap.sh \
+> bash "${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/record-detection-gap.sh" \
 >   --type <missing-monitor|pitfall-miss|intervention-fail|proxy-stuck|kill-miss> \
 >   --detail "<状況の詳細>" \
 >   [--related-issue "#<N>"] \
@@ -89,7 +89,7 @@ spawnable_by:
   "queue": [{
     "wave": 7,
     "issues": [1155],
-    "spawn_cmd_argv": ["bash", "plugins/twl/skills/su-observer/scripts/spawn-controller.sh", "..."],
+    "spawn_cmd_argv": ["bash", "<TWILL_ROOT>/plugins/twl/skills/su-observer/scripts/spawn-controller.sh", "..."],
     "depends_on_waves": [6],
     "spawn_when": "all_current_wave_idle_completed"
   }]

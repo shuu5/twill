@@ -24,7 +24,7 @@ Level リスト（Phase 2 で構築した DAG levels）を L0 から順に以下
    # current level に属する per-issue dirs をリスト化して LEVEL_DIRS 環境変数で渡す
    LEVEL_DIR=".controller-issue/<session-id>/per-issue-level-<level>/"
    # per-issue dirs を LEVEL_DIR 以下に symlink
-   bash scripts/issue-lifecycle-orchestrator.sh \
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/issue-lifecycle-orchestrator.sh" \
      --per-issue-dir "${LEVEL_DIR}" \
      --model sonnet
    ```

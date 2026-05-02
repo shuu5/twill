@@ -880,3 +880,41 @@ tmux kill-window -t <WORKER_WINDOW>
 ```
 
 **参照**: Issue #1128, 2026-04-29 ipatho2 session 26c380eb, `wt-co-autopilot-164142` pane
+
+---
+
+## §16 skill markdown の relative path 落とし穴（#1244）
+
+### 症状
+
+observer が `scripts/spawn-controller.sh` や `bash scripts/...` 形式のパスをそのまま実行しようとすると、**main project ディレクトリで作業中** の場合（CWD = `~/projects/local-projects/twill/main/`）に path 解決が失敗する。
+
+例:
+- `bash scripts/spawn-controller.sh` → `main/scripts/` は存在しない → Not found
+- `bash skills/su-observer/scripts/record-detection-gap.sh` → `main/skills/` は存在しない → Not found
+
+### 根本原因
+
+skill markdown（SKILL.md / refs/*.md）内のスクリプト参照が `${CLAUDE_PLUGIN_ROOT}` を使わない相対パス形式で記載されていると、LLM が **CWD ベースでパスを解釈** しようとして誤認する。
+
+### 検出シグナル
+
+`bash scripts/...` 形式を skill markdown 内で見たら **`${CLAUDE_PLUGIN_ROOT}` migration 漏れの可能性**がある。
+
+具体的なパターン:
+- `bash scripts/<script>.sh` → skill-relative 短形式（最も危険）
+- `` `scripts/<script>.sh` `` → backtick 内の skill-relative 短形式
+- `bash skills/<skill>/scripts/<script>.sh` → `skills/` prefix 形式
+- `bash plugins/twl/skills/<skill>/scripts/<script>.sh` → repo-relative 長形式
+
+### mitigation note（観察 LLM 向け）
+
+**`bash scripts/...` 形式を見たら `${CLAUDE_PLUGIN_ROOT}` migration 漏れの可能性** — 即座に確認すること。
+
+修正形式:
+- 同一 plugin 内 script → `bash "${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/<script>.sh"` または `bash "${CLAUDE_PLUGIN_ROOT}/scripts/<script>.sh"`
+- cross-plugin script → `bash "$(git rev-parse --show-toplevel)/plugins/<other>/scripts/<script>.sh"` + `# cross-plugin reference` コメント
+
+broken 形式の例: `source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh"` — repo root の `scripts/` は存在せず、`plugins/twl/scripts/` が正しい。
+
+**参照**: Issue #1244, 2026-05-02 ipatho-server-2
