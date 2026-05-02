@@ -189,12 +189,8 @@ setup() {
   # RED: スクリプト不在のため fail
   [ -f "${HOOK_SCRIPT}" ]
   # 複数の gh issue edit 呼び出しが存在しないことを確認
-  run bash -c "
-    count=\$(grep -c 'gh issue edit' '${HOOK_SCRIPT}')
-    # 1 回の edit 呼び出し（+ テスト用モック等の最大 3 行）を許容
-    [ \"\${count}\" -le 3 ]
-  "
-  [ "${status}" -eq 0 ]
+  count=$(grep -c 'gh issue edit' "${HOOK_SCRIPT}")
+  [ "${count}" -le 3 ]
 }
 
 # ===========================================================================
@@ -220,7 +216,7 @@ setup() {
   # RED: スクリプト不在のため fail
   [ -f "${HOOK_SCRIPT}" ]
   # script を実行して exit 0 で終了することを確認（label 付与なし）
-  run bash -c "TWILL_PROVENANCE_AUTO_LABEL=0 TOOL_NAME=Bash TOOL_INPUT_command='gh issue create' bash '${HOOK_SCRIPT}'"
+  run env TWILL_PROVENANCE_AUTO_LABEL=0 TOOL_NAME=Bash TOOL_INPUT_command='gh issue create' bash "${HOOK_SCRIPT}"
   [ "${status}" -eq 0 ]
 }
 
