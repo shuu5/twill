@@ -675,15 +675,53 @@ wait_for_batch() {
                   all_done=false
                 else
                   rm -f "$_unclassified_debounce_ts_file"
-                  echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unclassified input-waiting confirmed ($((current_ts - _unclassified_prev_ts))s elapsed) — failed" >&2
-                  mkdir -p "${subdir}/OUT"
-                  _generate_fallback_report "$subdir" "unclassified_input_waiting_confirmed"
-                  tmux kill-window -t "$window_name" 2>/dev/null || true
+                  echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unclassified input-waiting confirmed ($((current_ts - _unclassified_prev_ts))s elapsed) — STATE チェック" >&2
+                  # #1246 STATE-aware inject: debounce 確認後に STATE チェック（AC1/AC2/AC4）
+                  # AC4: unclassified debounce 確認後に STATE チェックを実行（Pattern 4 より後）
+                  local _round_num=""
+                  _round_num=$(ls -d "${subdir}/rounds"/[0-9]* 2>/dev/null \
+                    | xargs -I{} basename {} 2>/dev/null \
+                    | sort -n | tail -1 || echo "")
+                  local _findings_path="${subdir}/rounds/${_round_num:-0}/findings.yaml"
+                  if [[ "$current_state" == "reviewing" && -n "$_round_num" && -f "$_findings_path" ]]; then
+                    # AC1: STATE=reviewing + findings.yaml 存在 → issue-review-aggregate inject
+                    inject_count=$((inject_count + 1))
+                    echo "$inject_count" > "$inject_count_file"
+                    echo "$current_ts" > "$last_inject_ts_file"
+                    rm -f "$debounce_ts_file"
+                    echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=reviewing → issue-review-aggregate inject ($inject_count/5)" >&2
+                    "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" \
+                      "/twl:issue-review-aggregate ${_findings_path}" \
+                      2>/dev/null || true
+                    all_done=false
+                  elif [[ "$current_state" == "fixing" ]]; then
+                    # AC2: STATE=fixing → 次 round 開始 prompt inject
+                    inject_count=$((inject_count + 1))
+                    echo "$inject_count" > "$inject_count_file"
+                    echo "$current_ts" > "$last_inject_ts_file"
+                    rm -f "$debounce_ts_file"
+                    echo "[issue-lifecycle-orchestrator] ${subdir##*/}: STATE=fixing → resume-from-fixing inject ($inject_count/5)" >&2
+                    "${SCRIPTS_ROOT}/../../session/scripts/session-comm.sh" inject "$window_name" \
+                      "/twl:workflow-issue-lifecycle ${subdir} --resume-from-fixing" \
+                      2>/dev/null || true
+                    all_done=false
+                  else
+                    echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unclassified input-waiting confirmed — failed" >&2
+                    mkdir -p "${subdir}/OUT"
+                    _generate_fallback_report "$subdir" "unclassified_input_waiting_confirmed"
+                    tmux kill-window -t "$window_name" 2>/dev/null || true
+                  fi
                 fi
               fi
             else
               # inject 5 回失敗 → fallback (#647, #709)
-              local reason="inject_exhausted_${inject_count}"
+              # AC3: STATE-aware path の場合は inject_exhausted_state_aware reason を使用
+              local reason
+              if [[ "$current_state" == "reviewing" || "$current_state" == "fixing" ]]; then
+                reason="inject_exhausted_state_aware"
+              else
+                reason="inject_exhausted_${inject_count}"
+              fi
               echo "[issue-lifecycle-orchestrator] ${subdir##*/}: inject exhausted (STATE=$current_state, inject=$inject_count) — フォールバック生成" >&2
               mkdir -p "${subdir}/OUT"
               _generate_fallback_report "$subdir" "$reason"

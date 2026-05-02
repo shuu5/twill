@@ -481,9 +481,19 @@ tmux send-keys -t "<WORKER_WINDOW>" "/twl:workflow-test-ready" Enter
 | #722 | #733 | inject が input-waiting を見逃す問題修正（`USE_SESSION_STATE=true` ブランチの backoff 改善） |
 | #752 | #760 | SESSION_STATE_CMD デフォルトパス (`$HOME/ubuntu-note-system/...`) が fresh clone 環境で不在 → 全 3 スクリプトで `USE_SESSION_STATE=false` に silent fallback。wrapper 参照に変更して解決 |
 | #1087 | TBD | co-issue v2 orchestrator の `DEBOUNCE_TRANSIENT_SEC` 30s → 120s 延長 + thinking indicator 検出によるリセット（Sonnet 4.6 max effort thinking time 対応） |
+| #1246 | #1255 | STATE-aware next-step auto-inject（reviewing → issue-review-aggregate / fixing → resume-from-fixing）を unclassified debounce 確認後に追加 |
 
 **再発防止**: `autopilot-session-state-cmd.bats` の AC-6 tests が `ubuntu-note-system` ハードコードの
 再導入を CI で検知する。
+
+### STATE-aware auto-inject（#1246）
+
+`issue-lifecycle-orchestrator.sh` の wait loop で unclassified debounce が確認された後、Worker の STATE を確認して次ステップへの自動 inject を行う（INFO レベル）。
+
+- **AC4 配置順序**: `AskUserQuestion` パターン検出 → `Waiting for user input` Pattern 4 → unclassified debounce 確認（`DEBOUNCE_UNCLASSIFIED_CONFIRM_SEC` 経過後）→ STATE チェック
+- **STATE=reviewing + findings.yaml 存在**: `/twl:issue-review-aggregate <findings_path>` を inject
+- **STATE=fixing**: `/twl:workflow-issue-lifecycle <subdir> --resume-from-fixing` を inject
+- **inject_count 5 回到達 + reviewing/fixing**: `inject_exhausted_state_aware` reason で `_generate_fallback_report` に移行（既存 `inject_exhausted_*` 系列と整合）
 
 ## Dependencies
 
