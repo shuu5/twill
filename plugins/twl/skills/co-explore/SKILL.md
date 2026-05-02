@@ -85,6 +85,27 @@ spawnable_by:
 「以下の内容で explore-summary をまとめます:」
 （summary 内容をテキストで表示）
 
+explore-summary には **optional セクション** `Recommended Structure` を追加できる（省略可）。
+explore フェーズで判断した推奨プロジェクト構造を記述することで、co-architect Step 2 が
+type 推論と必須ファイル skip リストに自動反映する（HUMAN GATE によるユーザー確認を経て採用）。
+
+**Recommended Structure** の書式例（`recommended_structure` として co-architect に渡される）:
+
+```
+type: generic
+skip: [domain/model.md, domain/glossary.md, domain/contexts/]
+include: [vision.md, phases/01.md]
+rationale: DDD は過剰、軽量 spec で十分なため
+```
+
+各フィールドの意味:
+- `type:` — ProjectType 識別子（`generic` / `ddd` / `module` 等）
+- `skip:` — 必須ファイルのうち意図的に省略するパス（architect-completeness-check で INFO 降格）
+- `include:` — 優先的に作成するファイルパス（任意）
+- `rationale:` — この構造を選んだ理由（任意）
+
+**不在の場合**: co-architect は `--type=ddd` default で動作する。
+
 AskUserQuestion で 3 択を提示:
 - `[A] この summary で確定`
 - `[B] summary を修正したい（具体的に指定してください）`

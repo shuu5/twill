@@ -58,6 +58,35 @@ python3 -m twl.autopilot.worktree create "${BRANCH}"
 
 入力 Issue に explore-summary がリンクされている場合、`twl explore-link read <N>` で読み込み、探索の出発点として活用する。リンクがない場合は Issue body から直接コンテキストを取得する。
 
+**Recommended Structure パース（TI-5）:**
+
+explore-summary に `## Recommended Structure` セクションが存在する場合:
+
+1. `type:` 値を抽出し ProjectType パイプラインに伝搬（`--type=<value>` 相当）
+2. `skip:` リストを `architect-completeness-check` に渡し、リスト内の必須ファイルを FAIL → INFO に降格
+3. `include:` リストを優先作成ファイルとして保持
+
+パース失敗時: どのフィールド（`type:` / `skip:` / `include:`）がパース不可かをエラーメッセージに表示して続行:
+```
+⚠️ 解析エラー: フィールド 'type:' が読み込めません（パース失敗）。フォールバック (--type=ddd) を適用します。
+```
+
+★HUMAN GATE — Recommended Structure の内容をユーザーに確認し、承認を得てから反映する（ADR-030 準拠）:
+
+```
+Recommended Structure が検出されました:
+  type: <値>
+  skip: <リスト>
+  include: <リスト>
+
+この構造で進めますか？
+[A] 受諾（この Recommended Structure を採用する）
+[B] 修正（type/skip/include を手動で変更する）
+[C] DDD default（--type=ddd、Recommended Structure を無視する）
+```
+
+`Recommended Structure` セクションが存在しない場合: フォールバック（`--type=ddd` default）を適用してアーキテクチャ探索を続行する。
+
 **対話的アーキテクチャ探索（worktree 上）:**
 
 explore-summary（または Issue body）を基に、ユーザーと対話しながらアーキテクチャ設計を構造化する。DDD の Bounded Context、ユビキタス言語、Context Map を使い設計を構造化。

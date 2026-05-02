@@ -50,6 +50,25 @@ architecture/
 | contracts/*.md | NO | RECOMMENDED | API 境界（任意） |
 | protocols/*.md | NO | RECOMMENDED | クロスリポジトリ知識転送プロトコル（任意） |
 
+## skip リスト
+
+`architect-completeness-check` の `skip:` パラメータに渡すことで、
+必須ファイルの FAIL/WARNING 判定を INFO に降格（demote）できる。
+
+**用途**: `co-explore` の explore-summary `## Recommended Structure` の `skip:` フィールドから
+自動的に渡される。DDD 不要なプロジェクトで `domain/model.md` 等をスキップしたい場合に使用。
+
+```
+# 例: Recommended Structure → architect-completeness-check 連携
+skip: [domain/model.md, domain/glossary.md, domain/contexts/]
+→ これらのパスが不在でも [INFO] で報告し、[FAIL] / [WARNING] には昇格しない
+```
+
+**skip リスト適用ルール**:
+- skip リスト内のパスは完全性チェックで `[INFO]` として降格報告される（FAIL → INFO 降格）
+- skip リストに含まれないパスは通常の Severity テーブルに従い判定される
+- skip リストは HUMAN GATE でユーザーが承認した場合にのみ有効となる（ADR-030 準拠）
+
 ## ファイルフォーマット
 
 ### vision.md
