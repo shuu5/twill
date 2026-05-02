@@ -208,7 +208,7 @@ _shadow_dispatch() {
 
 ---
 
-### Phase 3: Blocking 切替（PR #3）
+### Phase 3: Blocking 切替（PR #2）
 
 **目的**: default backend を `mcp` に切替、`tmux send-keys` を緊急介入用 fallback に限定。
 
@@ -235,7 +235,7 @@ _shadow_dispatch() {
 
 ---
 
-### Phase 4: Cleanup（PR #4）
+### Phase 4: Cleanup（PR #3）
 
 **目的**: deprecation alias 削除 + lint 追加 + 関連 Issue close。
 
