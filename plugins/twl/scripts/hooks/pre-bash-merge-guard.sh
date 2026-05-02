@@ -25,7 +25,7 @@ cmd="${TOOL_INPUT_command:-}"
 _log_shadow() {
   local verdict="$1"
   local event_id="mg-$(date -u +%s 2>/dev/null || echo "0")-$$-${RANDOM}"
-  local ts
+  local ts="1970-01-01T00:00:00Z"
   ts="$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "1970-01-01T00:00:00Z")"
   if command -v jq &>/dev/null; then
     jq -nc \

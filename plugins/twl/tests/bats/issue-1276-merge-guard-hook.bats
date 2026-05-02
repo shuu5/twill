@@ -35,6 +35,9 @@ setup() {
   # テスト用の一時ディレクトリ
   TMPDIR_TEST="$(mktemp -d)"
   export TMPDIR_TEST
+
+  # shadow log をテスト開始前にクリア（teardown 失敗時の残存エントリを防止）
+  rm -f "${SHADOW_LOG}" 2>/dev/null || true
 }
 
 teardown() {
@@ -275,8 +278,15 @@ teardown() {
     return 1
   }
 
+  local last_entry
+  last_entry=$(grep '"source":"bash"' "${SHADOW_LOG}" 2>/dev/null | tail -1 || true)
+  [ -n "${last_entry}" ] || {
+    echo "FAIL: block パス — shadow log に source=bash エントリが存在しない" >&2
+    return 1
+  }
+
   local verdict_val
-  verdict_val=$(grep '"source":"bash"' "${SHADOW_LOG}" | tail -1 | jq -r '.verdict // empty' 2>/dev/null || echo "")
+  verdict_val=$(echo "${last_entry}" | jq -r '.verdict // empty' 2>/dev/null || echo "")
   [ "${verdict_val}" = "block" ] || {
     echo "FAIL: block パス — shadow log の verdict が 'block' でない: '${verdict_val}'" >&2
     return 1
