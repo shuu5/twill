@@ -21,9 +21,19 @@ architecture/
 │   ├── glossary.md        # ユビキタス言語
 │   └── contexts/          # Bounded Context 定義（1ファイル/Context）
 ├── decisions/             # ADR（Architecture Decision Records）
-├── contracts/             # Context 間 API 境界定義
+├── contracts/             # Context 間 API 境界定義（同一リポジトリ内の静的型制約）
+├── protocols/             # クロスリポジトリ知識転送プロトコル（SHA ピン必須）
 └── phases/                # Phase 計画 + スコープ定義 + 実装状態テーブル
 ```
+
+### contracts/ と protocols/ の棲み分け
+
+| | contracts/ | protocols/ |
+|--|------------|------------|
+| 対象 | 同一リポジトリ内 Context 間 | クロスリポジトリ依存 |
+| 参照形式 | ファイルパス・型定義 | **40-char commit SHA**（tag/branch 禁止） |
+| 変更頻度 | コード変更と同期 | 明示的な migration で変更 |
+| drift 検出 | コンパイラ・型チェッカー | `Drift Detection` セクションの運用手順 |
 
 ## 必須ファイル
 
@@ -38,6 +48,7 @@ architecture/
 | phases/*.md | 1つ以上 | WARNING | Phase 計画 |
 | decisions/*.md | NO | RECOMMENDED | ADR（任意） |
 | contracts/*.md | NO | RECOMMENDED | API 境界（任意） |
+| protocols/*.md | NO | RECOMMENDED | クロスリポジトリ知識転送プロトコル（任意） |
 
 ## ファイルフォーマット
 
@@ -134,6 +145,53 @@ architecture/
 
 <!-- この契約の制約条件 -->
 ```
+
+### protocols/<protocol-name>.md
+
+ファイル名: kebab-case（例: `cli-integration.md`, `plugin-api.md`）
+
+**必須セクション（5つ）:**
+
+```markdown
+## Participants
+
+<!-- 関与するリポジトリ・システム -->
+- Provider: <repo-name>
+- Consumer: <repo-name>
+
+## Pinned Reference
+
+<!-- クロスリポジトリ参照の固定点 -->
+<!-- MUST: 40-char commit SHA のみ使用（tag/branch 禁止 — drift リスク） -->
+<!-- 禁止例: main, v1.0.0, HEAD -->
+<!-- 正しい例: a3f8c2d1e4b5f6a7b8c9d0e1f2a3b4c5d6e7f8a9 -->
+
+repo: <repo-name>
+sha: <40-char commit SHA>  # ^[a-f0-9]{40}$ で検証
+
+## Interface Contract
+
+<!-- このプロトコルで共有するインターフェース定義 -->
+<!-- エンドポイント、イベント、スキーマ等 -->
+
+## Drift Detection
+
+<!-- SHA ピンのドリフト検出方法 -->
+<!-- 運用例: -->
+<!-- - cron: 定期的に sha と現在の main を比較 -->
+<!-- - GitHub Actions: PR で sha を検証する CI ステップ -->
+<!-- - 手動レビュー: ADR レビュー時に sha を確認 -->
+
+## Migration Path
+
+<!-- SHA ピンを更新する手順 -->
+<!-- 1. Provider 側で変更を commit する -->
+<!-- 2. 新しい SHA を本ファイルの Pinned Reference セクションに記録する -->
+<!-- 3. Consumer 側で差分を確認し、Interface Contract を更新する -->
+```
+
+**tag/branch 参照の禁止理由**: tag/branch は可変参照であり、後から指し示す commit が変わる（drift）可能性がある。
+`Pinned Reference` セクションには 40-char commit SHA のみ使用すること。
 
 ### phases/<phase-number>.md
 
