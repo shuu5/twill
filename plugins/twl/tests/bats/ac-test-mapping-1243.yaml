@@ -1,0 +1,57 @@
+mappings:
+  - ac_index: 1
+    ac_text: "monitor-channel-catalog.md に「controller type 別 primary completion signal mapping」section が追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac1: monitor-channel-catalog.md has 'controller type 別 primary completion signal mapping' section"
+  - ac_index: 1
+    ac_text: "monitor-channel-catalog.md に「controller type 別 primary completion signal mapping」section が追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac1: primary completion signal mapping section contains at least co-autopilot and co-issue entries"
+  - ac_index: 1
+    ac_text: "monitor-channel-catalog.md に「controller type 別 primary completion signal mapping」section が追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac1: primary completion signal mapping section documents primary signal per controller type"
+  - ac_index: 2
+    ac_text: "pilot-completion-signals.md table に co-issue refine 専用行が新規行として追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac2: pilot-completion-signals.md table has co-issue refine dedicated row"
+  - ac_index: 2
+    ac_text: "pilot-completion-signals.md table に co-issue refine 専用行が新規行として追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac2: co-issue refine row in pilot-completion-signals.md is a new table row (not a comment)"
+  - ac_index: 2
+    ac_text: "pilot-completion-signals.md table に co-issue refine 専用行が新規行として追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac2: co-issue refine row includes signal text (what to look for in log)"
+  - ac_index: 3
+    ac_text: "_emit_start_commands() が stdout に出力するコマンド文字列に export IDLE_COMPLETED_AUTO_KILL=1 が含まれている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac3: _emit_start_commands() stdout contains 'export IDLE_COMPLETED_AUTO_KILL=1' as emitted string"
+  - ac_index: 3
+    ac_text: "_emit_start_commands() が stdout に出力するコマンド文字列に export IDLE_COMPLETED_AUTO_KILL=1 が含まれている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac3: bootstrap script file contains echo of 'export IDLE_COMPLETED_AUTO_KILL=1' in _emit_start_commands"
+  - ac_index: 4
+    ac_text: "SKILL.md の Step 0 step 6.5 直後に step 6.6 として controller type 判定 + primary signal mapping 参照の MUST 規定が追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac4: SKILL.md has step 6.6 after step 6.5 in Step 0"
+  - ac_index: 4
+    ac_text: "SKILL.md の Step 0 step 6.5 直後に step 6.6 として controller type 判定 + primary signal mapping 参照の MUST 規定が追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac4: SKILL.md step 6.6 references controller type 判定"
+  - ac_index: 4
+    ac_text: "SKILL.md の Step 0 step 6.5 直後に step 6.6 として controller type 判定 + primary signal mapping 参照の MUST 規定が追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac4: SKILL.md step 6.6 references primary signal mapping"
+  - ac_index: 4
+    ac_text: "SKILL.md の Step 0 step 6.5 直後に step 6.6 として controller type 判定 + primary signal mapping 参照の MUST 規定が追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac4: SKILL.md step 6.6 contains MUST keyword for primary signal mapping reference"
+  - ac_index: 4
+    ac_text: "SKILL.md の Step 0 step 6.5 直後に step 6.6 として controller type 判定 + primary signal mapping 参照の MUST 規定が追加されている"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac4: SKILL.md step 6.6 is placed immediately after step 6.5 (L40)"
+  - ac_index: 5
+    ac_text: "bats テストが追加されている（issue-1243-controller-primary-signal.bats）"
+    test_file: "tests/bats/issue-1243-controller-primary-signal.bats"
+    test_name: "ac5: this bats test file exists at expected path"
