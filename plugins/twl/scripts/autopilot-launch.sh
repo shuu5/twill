@@ -248,14 +248,14 @@ _check_refined_status() {
     fi
   done
   if [[ -z "$status" && -z "$board_items" ]]; then
-    # Board 取得失敗 → cross-repo fallback: refined label を確認
+    # Board 取得失敗 → cross-repo fallback: refined label を確認 (ADR-024 Phase B Tier C 残置)
     _check_label_fallback "$issue_num" "DENY_API_FAILURE" \
       "Error: GitHub API 障害により Status を取得できませんでした (3 回リトライ後)。
   対処: gh auth refresh -s project を実行してから再試行してください。"
     return $?
   fi
   if [[ -z "$status" ]]; then
-    # Issue が Board 未登録 → cross-repo fallback: refined label を確認
+    # Issue が Board 未登録 → cross-repo fallback: refined label を確認 (ADR-024 Phase B Tier C 残置)
     _check_label_fallback "$issue_num" "DENY_NOT_ON_BOARD" \
       "Error: Issue #${issue_num} は Project Board に登録されていません。
   対処: Board に Issue を add してから再試行してください。"

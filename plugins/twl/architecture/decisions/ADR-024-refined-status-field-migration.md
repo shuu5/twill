@@ -47,9 +47,11 @@ Project Board は `twill-ecosystem` にリンクされた repo の Issue のみ 
 
 ### Dual-write 期間（Phase 1）
 
-Phase B 移行まで **label と Status を dual-write** する。書き込み順序: **label 先 → Status 後**。
+> **Phase B 完了 (2026-05-03)**: label write は削除済み。Twill 内部 Issue は Status=Refined のみを write する。以下は Phase 1 の歴史的記録。
 
-理由: Status を先に書くと、Status=Refined を見た autopilot が label 付与前に早期 spawn する race の可能性がある。
+Phase B 移行まで **label と Status を dual-write** した。書き込み順序: **label 先 → Status 後**。
+
+理由: Status を先に書くと、Status=Refined を見た autopilot が label 付与前に早期 spawn する race の可能性があった。
 
 ### fail-closed 設計
 
@@ -61,7 +63,7 @@ Status gate は fail-closed を採用:
 ### cache 戦略（Phase 分離）
 
 - **Phase 1 (本 Issue)**: fresh API call（gate の即時性を優先、cache なし）
-- **Phase B (別 Issue)**: `/tmp/refined-status-cache-<pilot-pid>.json` TTL 5分 cache（bash/Python 共有、invalidation = Status write 直後 + TTL）
+- **Phase B**: cache 導入は見送り（実運用で R1 rate limit が問題にならなかったため）。将来必要になった場合は別 Issue として管理する
 
 ## Consequences
 
@@ -73,10 +75,10 @@ Status gate は fail-closed を採用:
 
 ### Negative / Risks
 
-- **R1**: hot path API rate limit（Phase B で cache 導入により解消予定）
+- **R1**: hot path API rate limit（Phase B では cache 導入を見送り。実運用で問題は発生しなかった）
 - **R4**: breaking change: pre-seed bypass invariant が 2 層になる（hook + launcher）
 - **R5**: cross-repo Board scope 制約（Option A の label fallback で回避）
-- **R8**: 既存 `layer-d-refined-gate.bats` は Phase 1 では label write 継続により PASS 維持
+- **R8**: 既存 `layer-d-refined-gate.bats` は Phase 1 では label write 継続により PASS を維持していた。Phase B 完了後は label write が削除されたため、このテストの扱いは Phase B 完了 (Tier A/B) で対応済み
 
 ## Implementation
 
@@ -89,13 +91,20 @@ Status gate は fail-closed を採用:
 - **#1026 (AC1+AC2) merged**: `cli/twl/src/twl/autopilot/github.py` `extract_parent_epic` + `plugins/twl/scripts/chain-runner.sh` `_transition_parent_epic_if_refined` (子 In Progress 遷移時に親 Epic Refined→In Progress を auto-fire)
 - **#1070 (AC checklist auto-update) merged**: `cli/twl/src/twl/autopilot/github.py` `extract_closes_ac` / `flip_epic_ac_checkbox` / `update_epic_ac_checklist` + `plugins/twl/scripts/chain-runner.sh` `_update_parent_epic_ac_checklist` (子 Done 遷移時に親 Epic body の `- [ ] **AC{N}**` を `Closes-AC: #EPIC:ACN` 規約に従って auto-flip)
 
-## Phase B（別 Issue 起票予定）
+## Phase B 完了 (2026-05-03)
 
-以下のいずれかの条件を満たした時点で su-observer が自動起票:
-- (a) Status=Refined 経由 Done 累計 5 件以上
-- (b) Phase 1 merge から 2 Wave 経過
-- (c) su-observer による明示的 approval
+### 完了サマリ
 
-Phase B 内容: `pre-bash-refined-label-gate.sh` deprecate / 削除、label write 削除（Status のみ）、cache 導入。
+- **Tier A**: read site（`pre-bash-refined-label-gate.sh`、`pre-bash-phase3-gate.sh`）から refined label 参照削除 (Sub-1)
+- **Tier B**: write site（co-issue Phase 4 [B] / manual-fix-b.sh / refine-flow / lifecycle-flow）から label 付与削除 (Sub-2)
+- **Tier C 残置**: cross-repo R5 fallback（`autopilot-launch.sh`、`launcher.py`、`issue-cross-repo-create.md`）は label `refined` を fallback として継続使用
+- **Tier D**: doc 整合（本 Sub-3 = Issue #1293）
+- **Migration**: 既存 OPEN Issue Status=Refined 一括設定 + `project-board-refined-migrate.sh --force` CI 実行 (Sub-4)
 
-**Auto-update layer 完成 (Phase 1 範囲)**: 子 Issue → 親 Epic の Status auto-transition (#1026 AC1+AC2) と AC checklist auto-flip (#1070) の両方が autopilot 経路 (chain-runner.sh `step_board_status_update`) に組み込まれた。新規 Issue は `--parent #N` + `--closes-ac #EPIC:ACN` (issue-create.md) を指定することで dual-write 規約を full enforce できる。
+### Phase B 後の運用ルール
+
+- **Twill 内部 Issue**: Status=Refined を SSoT として書き、`refined` label は付与しない
+- **Cross-repo Issue**: `refined` label を fallback として書き続ける（ADR-024 R5 制約）
+- **observability**: `/tmp/refined-status-update.log` で Status update 失敗のみ WARN
+
+**Auto-update layer 完成 (Phase 1 範囲)**: 子 Issue → 親 Epic の Status auto-transition (#1026 AC1+AC2) と AC checklist auto-flip (#1070) の両方が autopilot 経路 (chain-runner.sh `step_board_status_update`) に組み込まれた。新規 Issue は `--parent #N` + `--closes-ac #EPIC:ACN` (issue-create.md) を指定することで Phase B 完了後の規約を full enforce できる。

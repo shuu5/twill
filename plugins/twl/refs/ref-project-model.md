@@ -135,7 +135,7 @@ Project Board のカラムで作業進捗を管理する。
 | In Progress | 作業中（worktree/ブランチ作成済み） |
 | Done | 完了（PR マージ済み） |
 
-> **注**: `refined` label（小文字）は ADR-024 で Status field `Refined`（先頭大文字）に移行。Phase 1 では dual-write（label 先 → Status 後）、Phase B で label 削除予定。
+> **注**: `refined` label（小文字）は ADR-024 で Status field `Refined`（先頭大文字）に移行済み（Phase B 完了）。Twill 内部 Issue は Status=Refined を SSoT として運用し、label は付与しない。cross-repo Issue（Board 未登録）は ADR-024 R5 制約により `refined` label を fallback として残置。
 
 ---
 
@@ -185,7 +185,7 @@ Project Board のカラムで作業進捗を管理する。
 
 | 操作 | コンポーネント | 説明 |
 |------|---------------|------|
-| Producer | workflow-issue-refine / workflow-issue-lifecycle | specialist review 完了時に Status=Refined を設定（dual-write: label 先 → Status 後） |
+| Producer | workflow-issue-refine / workflow-issue-lifecycle | specialist review 完了時に Status=Refined を設定（Phase B 完了: Twill 内部 Issue は Status のみ write） |
 | Producer | workflow-setup | In Progress に移動 |
 | Producer | workflow-pr-cycle | Done に移動（PR マージ後） |
 | Consumer | controller-autopilot | Todo → Refined の Issue を選択（Phase 1 はクエリ据え置き、launcher gate で enforce） |
