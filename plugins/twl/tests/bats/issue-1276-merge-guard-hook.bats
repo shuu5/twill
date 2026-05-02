@@ -205,7 +205,9 @@ teardown() {
 }
 
 @test "ac4-fixture2: direct main commit reject — bash エントリが shadow log に記録される" {
-  # AC: git push origin main 実行時、bash 側が shadow log に verdict=block で記録する
+  # AC: git push origin main 実行時、bash 側が shadow log に verdict=skip で記録する
+  # （pre-bash-merge-guard.sh は gh pr merge のみをブロック対象とするため、
+  #   git push origin main は merge 非関係コマンドとして skip verdict になる）
   # RED: pre-bash-merge-guard.sh に shadow log 書き込みが未実装のため fail
   TOOL_INPUT_command="git push origin main" \
     bash "${MERGE_GUARD}" 2>/dev/null || true
@@ -256,6 +258,27 @@ teardown() {
   bash_entry=$(grep '"source":"bash"' "${SHADOW_LOG}" 2>/dev/null || true)
   [ -n "${bash_entry}" ] || {
     echo "FAIL: AC4 未実装 — shadow log に source=bash エントリが存在しない (fixture5: git merge FETCH_HEAD)" >&2
+    return 1
+  }
+}
+
+@test "ac4-block-path: AUTOPILOT_DIR 設定時の gh pr merge は verdict=block で shadow log に記録される" {
+  # AC: Worker セッション（AUTOPILOT_DIR 設定）からの gh pr merge 直接実行は
+  #     _log_shadow "block" が呼ばれ、shadow log に verdict=block で記録される
+  # RED: pre-bash-merge-guard.sh に shadow log 書き込みが未実装のため fail
+  AUTOPILOT_DIR="${TMPDIR_TEST}" \
+  TOOL_INPUT_command="gh pr merge 123" \
+    bash "${MERGE_GUARD}" 2>/dev/null || true
+
+  [ -f "${SHADOW_LOG}" ] || {
+    echo "FAIL: block パス — shadow log が存在しない: ${SHADOW_LOG}" >&2
+    return 1
+  }
+
+  local verdict_val
+  verdict_val=$(grep '"source":"bash"' "${SHADOW_LOG}" | tail -1 | jq -r '.verdict // empty' 2>/dev/null || echo "")
+  [ "${verdict_val}" = "block" ] || {
+    echo "FAIL: block パス — shadow log の verdict が 'block' でない: '${verdict_val}'" >&2
     return 1
   }
 }
