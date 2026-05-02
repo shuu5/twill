@@ -44,6 +44,10 @@ setup() {
   AUDIT_SCRIPT="$SANDBOX/scripts/specialist-audit.sh"
   export CLAUDE_PLUGIN_ROOT="$SANDBOX"
   stub_command "pr-review-manifest.sh" 'exit 0'
+  # /dev/null は -f チェックを通過しないため、空ファイルを用意する
+  EMPTY_JSONL="$SANDBOX/empty.jsonl"
+  EMPTY_MANIFEST="$SANDBOX/empty-manifest.txt"
+  touch "$EMPTY_JSONL" "$EMPTY_MANIFEST"
 }
 
 teardown() {
@@ -69,8 +73,8 @@ teardown() {
   done
 
   run bash "$AUDIT_SCRIPT" \
-    --jsonl /dev/null \
-    --manifest-file /dev/null \
+    --jsonl "$EMPTY_JSONL" \
+    --manifest-file "$EMPTY_MANIFEST" \
     --codex-session-dir "$session_dir" \
     --json
 
@@ -95,8 +99,8 @@ teardown() {
   done
 
   run bash "$AUDIT_SCRIPT" \
-    --jsonl /dev/null \
-    --manifest-file /dev/null \
+    --jsonl "$EMPTY_JSONL" \
+    --manifest-file "$EMPTY_MANIFEST" \
     --codex-session-dir "$session_dir" \
     --json
 
@@ -119,8 +123,8 @@ worker-code-reviewer:
 EOF
 
   run bash "$AUDIT_SCRIPT" \
-    --jsonl /dev/null \
-    --manifest-file /dev/null \
+    --jsonl "$EMPTY_JSONL" \
+    --manifest-file "$EMPTY_MANIFEST" \
     --codex-session-dir "$session_dir" \
     --json
 
@@ -133,9 +137,10 @@ EOF
 
 @test "ac4-or-combine: specialist_missing FAIL のみでも status:FAIL になる (OR 結合維持)" {
   # 既存の specialist_missing FAIL ロジックが OR 結合で機能すること (regression テスト)
+  # SPECIALIST_AUDIT_MODE=strict でないと specialist_missing は WARN になるため strict 指定
   local session_dir="$SANDBOX/.controller-issue/test-session4/per-issue/999/rounds"
   mkdir -p "$session_dir"
-  # silent_skip 0% (全て reason あり) でも specialist_missing があれば FAIL
+  # silent_skip 0% (全て reason あり) でも specialist_missing があれば FAIL (strict モード)
   create_findings_yaml "$session_dir/round1" "true"
 
   # manifest に worker-security-reviewer を要求するが JSONL に含まれない
@@ -145,7 +150,7 @@ EOF
   local jsonl_file="$SANDBOX/test.jsonl"
   echo '{"type":"tool_use","subagent_type":"twl:twl:worker-code-reviewer"}' > "$jsonl_file"
 
-  run bash "$AUDIT_SCRIPT" \
+  run env SPECIALIST_AUDIT_MODE=strict bash "$AUDIT_SCRIPT" \
     --jsonl "$jsonl_file" \
     --manifest-file "$manifest_file" \
     --codex-session-dir "$session_dir" \
@@ -171,11 +176,11 @@ EOF
   done
 
   run bash "$AUDIT_SCRIPT" \
-    --jsonl /dev/null \
-    --manifest-file /dev/null \
+    --jsonl "$EMPTY_JSONL" \
+    --manifest-file "$EMPTY_MANIFEST" \
     --codex-session-dir "$session_dir" \
     --json
 
-  # su-observer は 'grep "status":"FAIL"' で検知する
+  # su-observer は 'grep "status":"FAIL"' で検知する (6/10 = 60% > 50%, コメント修正: 以前の 51/100 は誤り)
   echo "$output" | grep -q '"status":"FAIL"'
 }

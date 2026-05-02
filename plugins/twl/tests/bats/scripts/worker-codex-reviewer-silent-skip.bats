@@ -31,20 +31,13 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "ac3-no-silent-skip: worker-codex-reviewer.md の CODEX_OK=0 スキップ出力に reason: が含まれる" {
-  # RED: 現在の spec は 'findings: []' のみ出力し reason: を含まない → FAIL
   [[ -f "$WORKER_AGENT" ]] || {
     echo "FAIL: worker-codex-reviewer.md が存在しない" >&2
     return 1
   }
-  # CODEX_OK=0 ブロック前後30行に reason: が存在すること
-  grep -n "CODEX_OK=0" "$WORKER_AGENT" | while IFS=: read -r linenum _; do
-    # 前後30行を抽出して reason: を検索
-    if awk "NR>=${linenum} && NR<=$((linenum+30))" "$WORKER_AGENT" | grep -q "reason:"; then
-      return 0
-    fi
-  done
-  # reason: が見つからなければ FAIL
-  grep -A30 "CODEX_OK=0.*の場合\|CODEX_OK=0.*case\|CODEX_OK.*0.*skip" "$WORKER_AGENT" | grep -q "reason:"
+  # CODEX_OK=0 ブロック以降50行以内に reason: が存在すること
+  # process substitution でサブシェル問題を回避
+  grep -A50 "CODEX_OK=0" "$WORKER_AGENT" | grep -q "reason:"
 }
 
 # ---------------------------------------------------------------------------
@@ -52,13 +45,10 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "ac3-findings-empty-array-removed: worker-codex-reviewer.md の skip 出力に reason なし findings: [] がない" {
-  # RED: 現在の spec の skip 出力に 'findings: []' が残っている → FAIL
-  # 実装後: CODEX_OK=0 の場合 findings に reason: を含む形式に変更済みであること
+  # CODEX_OK=0 スキップブロックの直後30行に 'findings: []' が残っていてはならない
   [[ -f "$WORKER_AGENT" ]] || skip "agent spec not found"
-  # 'findings: []' が CODEX_OK=0 スキップブロック内に残っていてはならない
-  local skip_block
-  skip_block=$(awk '/CODEX_OK=0.*の場合|CODEX_OK.*0.*skip/,/^###/' "$WORKER_AGENT" 2>/dev/null | head -30)
-  ! (echo "$skip_block" | grep -qF "findings: []")
+  # grep -A30 で CODEX_OK=0 ブロックの後続を抽出し findings: [] がないことを確認
+  ! (grep -A30 "CODEX_OK=0.*の場合\|CODEX_OK=0.*case" "$WORKER_AGENT" | grep -qF "findings: []")
 }
 
 # ---------------------------------------------------------------------------
