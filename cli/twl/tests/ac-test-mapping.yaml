@@ -343,3 +343,33 @@ mappings:
     impl_files:
       - "cli/twl/src/twl/mcp_server/tools_comm.py"
       - "cli/twl/src/twl/mcp_server/tools.py"
+
+  # --- Issue #1261 ---
+  - ac_index: 1
+    ac_text: "plugins/twl/architecture/domain/contexts/supervision.md L246 の「SU-1〜SU-7」を「SU-1〜SU-9」に修正"
+    test_file: "cli/twl/tests/architecture/test_supervision_consistency.bats"
+    test_name: "ac1: supervision.md に SU-1〜SU-9 が含まれる"
+    impl_files:
+      - "plugins/twl/architecture/domain/contexts/supervision.md"
+
+  - ac_index: 2
+    ac_text: "同 L246 周辺文脈で SU-8 / SU-9 への言及（または ## SU-8 / ## SU-9 セクションへの内部リンク）が破綻していないことを目視確認（目視確認=manual、自動テスト不要）"
+    test_file: ""
+    test_name: ""
+    impl_files:
+      - "plugins/twl/architecture/domain/contexts/supervision.md"
+    # manual 確認のため自動テスト不要
+
+  - ac_index: 3
+    ac_text: "regression bats: supervision.md 内の SU-* 定義行を抽出し、本文中の「SU-1〜SU-N」表記の N が定義最大値と一致することを assert する fixture を追加（cli/twl/tests/architecture/ 配下）"
+    test_file: "cli/twl/tests/architecture/test_supervision_consistency.bats"
+    test_name: "ac3: テーブル定義の SU-N 最大値と本文の SU-1〜SU-N の N が一致する"
+    impl_files:
+      - "plugins/twl/architecture/domain/contexts/supervision.md"
+
+  - ac_index: 4
+    ac_text: "twl audit 実行で supervision.md の整合性 finding が消えることを確認（manual 確認のため自動テスト不要）"
+    test_file: ""
+    test_name: ""
+    impl_files: []
+    # manual 確認のため自動テスト不要

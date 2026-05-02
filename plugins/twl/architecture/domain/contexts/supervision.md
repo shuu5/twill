@@ -243,7 +243,7 @@ co-issue / co-architect / co-self-improve / co-utility / co-project は session:
 
 **observation.md の OB-* 制約との関係**:
 - OB-1〜OB-5 は co-self-improve にのみ適用される
-- su-observer には SU-1〜SU-7 が適用される
+- su-observer には SU-1〜SU-9 が適用される
 - OBS-1〜OBS-5（旧 co-observer 専用）は SU-1〜SU-7 に統合され廃止
 
 ## su-observer 非起動時のフォールバック
