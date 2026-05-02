@@ -1,0 +1,25 @@
+mappings:
+  - ac_index: 1
+    ac_text: "Wave 17 summary 行更新が完遂する — .autopilot/waves/17.summary.md の #1231 行が | #1231 (...) | #1253 | merged | 形式（PR 列に #1253、Status 列に merged、いずれも小文字）に更新されている。検証コマンド: grep -E '^\\| #1231\\b.*\\| #1253 \\| merged \\|' .autopilot/waves/17.summary.md が exit 0 を返す"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac7: Wave 17 記録（.autopilot/ 配下）に Issue #1231 の merge 追記が存在する"
+    impl_files:
+      - ".autopilot/waves/17.summary.md"
+  - ac_index: 2
+    ac_text: "bats test 15 が実 assertion を実行する — plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats L409-L413 の @test \"ac7: ...\" 内の false が run grep -qi \"#1231.*merged\" .autopilot/waves/17.summary.md + [ \"$status\" -eq 0 ] 形式の実チェックに置換され、AC1 完遂後に当該 test が PASS する"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "ac7: Wave 17 記録（.autopilot/ 配下）に Issue #1231 の merge 追記が存在する"
+    impl_files:
+      - "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+  - ac_index: 3
+    ac_text: "bats suite 全体が GREEN — bats plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats 実行時に AC1-AC7 全 test が PASS"
+    test_file: "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+    test_name: "(full suite)"
+    impl_files:
+      - ".autopilot/waves/17.summary.md"
+      - "plugins/twl/tests/bats/su-observer/spawn-controller-tmux-resolve.bats"
+  - ac_index: 4
+    ac_text: "将来改善として post-merge hook 候補を記録 — Issue body の「技術メモ」に Wave 18 完遂以降を視野に入れた post-merge 自動化 hook 候補が記載されている（実装は別 Issue）"
+    test_file: ""
+    test_name: "(documentation AC - no test)"
+    impl_files: []

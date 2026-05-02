@@ -408,6 +408,6 @@ _setup_observer_panes 'nonexistent-window' '0'
 
 @test "ac7: Wave 17 記録（.autopilot/ 配下）に Issue #1231 の merge 追記が存在する" {
   # AC: Wave 17 記録に本 fix の merge を追記する
-  # RED: ドキュメント更新が未実施のため fail する
-  false
+  run grep -qi "#1231.*merged" "${BATS_TEST_DIRNAME}/../../../../../.autopilot/waves/17.summary.md"
+  [ "$status" -eq 0 ]
 }
