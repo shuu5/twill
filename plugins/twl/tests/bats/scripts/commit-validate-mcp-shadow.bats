@@ -70,7 +70,7 @@ _run_compare_commit() {
     '{event_id:$id, ts:$ts, source:"mcp_tool", verdict:$v, command:$cmd}')" \
     >> "$log_file"
 
-  run bash "$COMPARE_SH" --log-file "$log_file"
+  run bash "$COMPARE_SH" --log-file "$log_file" 2>&1
 }
 
 # ---------------------------------------------------------------------------
@@ -248,7 +248,7 @@ _run_compare_commit() {
   }
   _run_compare_commit "allow" "block" "evt-mismatch-commit" "git commit -m 'divergent'"
   [ "$status" -eq 1 ]
-  [[ "$output" == *"MISMATCH"* ]] || [[ "$stderr" == *"MISMATCH"* ]]
+  [[ "$output" == *"MISMATCH"* ]]
 }
 
 # ---------------------------------------------------------------------------
