@@ -151,7 +151,7 @@ _mcp_send() {
 
 ---
 
-### Phase 2: Shadow Migration（PR #1 と同 PR、または PR #2）
+### Phase 2: Shadow Migration（PR #1 と同 PR）
 
 **目的**: production caller を `session_msg send` API に書換 + 両 backend 並走 + shadow log 記録。
 
@@ -349,11 +349,11 @@ mismatch 検出ロジック:
 
 ### 6.1 PR 構成
 
-ADR-029 Decision 5 に従い 3-4 PR 構成:
+ADR-029 Decision 5 に従い 3 PR 構成（PR 番号は連番、Phase 番号と必ずしも一致しない）:
 
-- **PR #1**: Phase 1 + Phase 2 を一括（shadow log 並走で blocking なし、観察期間中は同 PR 内）
-- **PR #3**: Phase 3 (default 切替、blocking)
-- **PR #4**: Phase 4 (cleanup)
+- **PR #1**: Phase 1 + Phase 2 を一括（shadow log 並走で blocking なし、Phase 2 観察期間中は同 PR 内で管理。merge 後に shadow 観察を開始）
+- **PR #2**: Phase 3 (default 切替、blocking、`#1033`/`#1034` close)
+- **PR #3**: Phase 4 (cleanup、lint 追加、`#1050` close)
 
 ### 6.2 主要リスクと緩和
 

@@ -105,7 +105,7 @@ gh pr create --title "revert: ADR-029 Decision 5 PR#1 — Tier 2 caller migratio
 2. **PR #1 の修正 PR**: `session-comm.sh` の dispatcher を `inject` / `inject-file` 直接呼出に書き換え + backend ファイル削除
 3. **caller 側は維持可**（`session_msg send` API は alias として `inject` を呼ぶ shim を残す）
 
-### 3.2 Phase 3 (PR #3) rollback
+### 3.2 Phase 3 (PR #2) rollback
 
 **シナリオ**: default `mcp` 切替後に inject 失敗率上昇 / mailbox 整合性問題 / AT 依存性問題。
 
@@ -118,17 +118,17 @@ export TWILL_MSG_BACKEND=tmux
 
 → **§2.1 緊急 rollback** と同等。コード変更不要。
 
-#### 経路 B: PR #3 git revert
+#### 経路 B: PR #2 git revert
 
 ```bash
-git revert <PR_3_MERGE_COMMIT> -m 1
+git revert <PR_2_MERGE_COMMIT> -m 1
 ```
 
 **revert で復元される状態**:
 - `session-comm.sh` の default backend `tmux`
 - 既存 `inject` / `inject-file` API 経路を default として使用
 
-### 3.3 Phase 4 (PR #4) rollback
+### 3.3 Phase 4 (PR #3) rollback
 
 **シナリオ**: lint 追加または cleanup で既存 caller / 緊急介入が壊れた。
 
@@ -140,10 +140,10 @@ git revert <PR_3_MERGE_COMMIT> -m 1
 export TWILL_AUDIT_SKIP_TMUX_SEND_KEYS=1
 ```
 
-#### 経路 B: PR #4 git revert
+#### 経路 B: PR #3 git revert
 
 ```bash
-git revert <PR_4_MERGE_COMMIT> -m 1
+git revert <PR_3_MERGE_COMMIT> -m 1
 ```
 
 **revert で復元される状態**:
