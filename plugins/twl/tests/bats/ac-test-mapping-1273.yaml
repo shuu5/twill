@@ -1,0 +1,186 @@
+mappings:
+  - ac_index: 1
+    ac_text: "以下の label が gh label create (または GraphQL mutation) で作成される: origin:host:ipatho-1 / origin:host:ipatho2 / origin:host:thinkpad (色: #fef2c0) / origin:repo:soap-copilot-mock / origin:repo:twill (色: #bfd4f2)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac1: setup-origin-labels.sh exists at expected path"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 1
+    ac_text: "以下の label が gh label create (または GraphQL mutation) で作成される: origin:host:ipatho-1 / origin:host:ipatho2 / origin:host:thinkpad (色: #fef2c0) / origin:repo:soap-copilot-mock / origin:repo:twill (色: #bfd4f2)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac1: setup-origin-labels.sh contains origin:host:ipatho-1 label"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 1
+    ac_text: "以下の label が gh label create (または GraphQL mutation) で作成される: origin:host:ipatho-1 / origin:host:ipatho2 / origin:host:thinkpad (色: #fef2c0) / origin:repo:soap-copilot-mock / origin:repo:twill (色: #bfd4f2)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac1: setup-origin-labels.sh contains origin:host:ipatho2 label"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 1
+    ac_text: "以下の label が gh label create (または GraphQL mutation) で作成される: origin:host:ipatho-1 / origin:host:ipatho2 / origin:host:thinkpad (色: #fef2c0) / origin:repo:soap-copilot-mock / origin:repo:twill (色: #bfd4f2)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac1: setup-origin-labels.sh contains origin:host:thinkpad label"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 1
+    ac_text: "以下の label が gh label create (または GraphQL mutation) で作成される: origin:host:ipatho-1 / origin:host:ipatho2 / origin:host:thinkpad (色: #fef2c0) / origin:repo:soap-copilot-mock / origin:repo:twill (色: #bfd4f2)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac1: setup-origin-labels.sh contains origin:repo:soap-copilot-mock label"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 1
+    ac_text: "以下の label が gh label create (または GraphQL mutation) で作成される: origin:host:ipatho-1 / origin:host:ipatho2 / origin:host:thinkpad (色: #fef2c0) / origin:repo:soap-copilot-mock / origin:repo:twill (色: #bfd4f2)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac1: setup-origin-labels.sh contains origin:repo:twill label"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 1
+    ac_text: "以下の label が gh label create (または GraphQL mutation) で作成される: origin:host:ipatho-1 / origin:host:ipatho2 / origin:host:thinkpad (色: #fef2c0) / origin:repo:soap-copilot-mock / origin:repo:twill (色: #bfd4f2)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac1: setup-origin-labels.sh references host label color fef2c0"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 1
+    ac_text: "以下の label が gh label create (または GraphQL mutation) で作成される: origin:host:ipatho-1 / origin:host:ipatho2 / origin:host:thinkpad (色: #fef2c0) / origin:repo:soap-copilot-mock / origin:repo:twill (色: #bfd4f2)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac1: setup-origin-labels.sh references repo label color bfd4f2"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 1
+    ac_text: "以下の label が gh label create (または GraphQL mutation) で作成される: origin:host:ipatho-1 / origin:host:ipatho2 / origin:host:thinkpad (色: #fef2c0) / origin:repo:soap-copilot-mock / origin:repo:twill (色: #bfd4f2)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac1: setup-origin-labels.sh uses gh label create or GraphQL mutation"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 2
+    ac_text: "既存 OPEN/CLOSED Issue を多段階検索 (--state all --limit 500) で全数分類し、cross-repo 起源を確定する"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac2: setup-origin-labels.sh contains --state all flag"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 2
+    ac_text: "既存 OPEN/CLOSED Issue を多段階検索 (--state all --limit 500) で全数分類し、cross-repo 起源を確定する"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac2: setup-origin-labels.sh contains --limit 500 flag"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 2
+    ac_text: "既存 OPEN/CLOSED Issue を多段階検索 (--state all --limit 500) で全数分類し、cross-repo 起源を確定する"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac2: setup-origin-labels.sh contains cross-repo origin search keywords"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 2
+    ac_text: "既存 OPEN/CLOSED Issue を多段階検索 (--state all --limit 500) で全数分類し、cross-repo 起源を確定する"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac2: setup-origin-labels.sh contains gh issue view for body retrieval"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 3
+    ac_text: "AC2 で確定した Issue に対し gh issue edit <N> --repo shuu5/twill --add-label で一括付与（べき等性: 既付与は skip）"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac3: setup-origin-labels.sh contains idempotency check (skip if already labeled)"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 3
+    ac_text: "AC2 で確定した Issue に対し gh issue edit <N> --repo shuu5/twill --add-label で一括付与（べき等性: 既付与は skip）"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac3: setup-origin-labels.sh uses gh issue edit with --add-label"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 3
+    ac_text: "AC2 で確定した Issue に対し gh issue edit <N> --repo shuu5/twill --add-label で一括付与（べき等性: 既付与は skip）"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac3: setup-origin-labels.sh references shuu5/twill repo for label assignment"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 4
+    ac_text: "hostname -> 通称 mapping を ~/.config/twl/host-aliases.json に新規定義 (ipatho-server-2->ipatho2, ipatho-server-1->ipatho-1, shuu5-thinkpad->thinkpad)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac4: host-aliases.json exists at ~/.config/twl/host-aliases.json"
+    impl_files: []
+    # impl_files 推定失敗: ~/.config/twl/host-aliases.json はローカル設定ファイル（リポジトリ外）のため手動確認が必要
+  - ac_index: 4
+    ac_text: "hostname -> 通称 mapping を ~/.config/twl/host-aliases.json に新規定義 (ipatho-server-2->ipatho2, ipatho-server-1->ipatho-1, shuu5-thinkpad->thinkpad)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac4: host-aliases.json is valid JSON"
+    impl_files: []
+  - ac_index: 4
+    ac_text: "hostname -> 通称 mapping を ~/.config/twl/host-aliases.json に新規定義 (ipatho-server-2->ipatho2, ipatho-server-1->ipatho-1, shuu5-thinkpad->thinkpad)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac4: host-aliases.json contains ipatho-server-2 -> ipatho2 mapping"
+    impl_files: []
+  - ac_index: 4
+    ac_text: "hostname -> 通称 mapping を ~/.config/twl/host-aliases.json に新規定義 (ipatho-server-2->ipatho2, ipatho-server-1->ipatho-1, shuu5-thinkpad->thinkpad)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac4: host-aliases.json contains ipatho-server-1 -> ipatho-1 mapping"
+    impl_files: []
+  - ac_index: 4
+    ac_text: "hostname -> 通称 mapping を ~/.config/twl/host-aliases.json に新規定義 (ipatho-server-2->ipatho2, ipatho-server-1->ipatho-1, shuu5-thinkpad->thinkpad)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac4: host-aliases.json contains shuu5-thinkpad -> thinkpad mapping"
+    impl_files: []
+  - ac_index: 4
+    ac_text: "hostname -> 通称 mapping を ~/.config/twl/host-aliases.json に新規定義 (ipatho-server-2->ipatho2, ipatho-server-1->ipatho-1, shuu5-thinkpad->thinkpad)"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac4: host-aliases.json has exactly 3 entries"
+    impl_files: []
+  - ac_index: 5
+    ac_text: "[WARNING] Project Board #6 (shuu5/twill-ecosystem) に Cross-repo / ipatho2 host 起票 / ipatho-1 host 起票 / thinkpad host 起票 の view filter を追加"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac5: setup-origin-labels.sh contains Project Board or project-board reference"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+    # NOTE: Project Board view filter 自体はプロセス AC（GitHub UI 操作）。script への言及有無のみ検証
+  - ac_index: 6
+    ac_text: "[WARNING] 遡及付与 script を plugins/twl/scripts/onboarding/setup-origin-labels.sh に保存。--state all --limit 500 フラグを含み、べき等実行可能であること"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac6: setup-origin-labels.sh is executable"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 6
+    ac_text: "[WARNING] 遡及付与 script を plugins/twl/scripts/onboarding/setup-origin-labels.sh に保存。--state all --limit 500 フラグを含み、べき等実行可能であること"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac6: setup-origin-labels.sh has bash shebang"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 6
+    ac_text: "[WARNING] 遡及付与 script を plugins/twl/scripts/onboarding/setup-origin-labels.sh に保存。--state all --limit 500 フラグを含み、べき等実行可能であること"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac6: setup-origin-labels.sh contains --state all --limit 500 as documented in AC6"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 6
+    ac_text: "[WARNING] 遡及付与 script を plugins/twl/scripts/onboarding/setup-origin-labels.sh に保存。--state all --limit 500 フラグを含み、べき等実行可能であること"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac6: setup-origin-labels.sh is idempotent (no duplicate label assignment on re-run)"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 6
+    ac_text: "[WARNING] 遡及付与 script を plugins/twl/scripts/onboarding/setup-origin-labels.sh に保存。--state all --limit 500 フラグを含み、べき等実行可能であること"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac6: setup-origin-labels.sh has source guard (BASH_SOURCE check - baseline-bash.md §10)"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+    # NOTE: source guard なしで set -euo pipefail 環境で source すると main 到達前に exit する（baseline-bash §10）
+    # 実装者は [[ "${BASH_SOURCE[0]}" == "${0}" ]] guard を追加すること
+  - ac_index: 7
+    ac_text: "[INFO] AC2 の確定件数をユーザーに報告し、3 件超の場合は差分を明示"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac7: setup-origin-labels.sh reports classified issue count"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 7
+    ac_text: "[INFO] AC2 の確定件数をユーザーに報告し、3 件超の場合は差分を明示"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac7: setup-origin-labels.sh has branch for count > 3"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+  - ac_index: 8
+    ac_text: "[INFO] doobidoo memory (hash 3c47c84a) の cross-reference 情報を遡及解析の補助情報として活用"
+    test_file: "tests/bats/issue-1273-origin-labels.bats"
+    test_name: "ac8: setup-origin-labels.sh mentions doobidoo memory hash 3c47c84a"
+    impl_files:
+      - "plugins/twl/scripts/onboarding/setup-origin-labels.sh"
+    # NOTE: AC8 は INFO レベル。script 内コメントとして言及されることを期待
