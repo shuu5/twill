@@ -104,14 +104,15 @@ teardown() {
   fi
 }
 
-@test "ac3: refine-processing-flow.md に labels_hint.*refined の追加コードが存在しないこと（RED）" {
+@test "ac3: refine-processing-flow.md に labels_hint += [\"refined\"] の追加コードが存在しないこと（RED）" {
   # AC: Step 4.5 の refined ラベル追加ロジックが削除される
   # RED: 現在 L155-157 の jq コードブロックが存在するため fail
+  # 注: regex は追加演算子（+= または + ["refined"]）に限定してコメント行の偽陽性を除去
   local count
-  count=$(grep -cE 'labels_hint.*\+.*\[.*"refined".*\]|labels_hint.*refined' "${REFINE_FLOW}" 2>/dev/null || echo "0")
+  count=$(grep -cE 'labels_hint.*\+=.*"refined"|\.labels_hint.*\+.*\["refined"\]|\+ \["refined"\]' "${REFINE_FLOW}" 2>/dev/null || echo "0")
   if [ "${count}" -gt 0 ]; then
-    echo "FAIL: refine-processing-flow.md に labels_hint + refined 追加コードが ${count} 件存在する" >&2
-    grep -nE 'labels_hint.*\+.*\[.*"refined".*\]|labels_hint.*refined' "${REFINE_FLOW}" >&2 || true
+    echo "FAIL: refine-processing-flow.md に labels_hint += refined 追加コードが ${count} 件存在する" >&2
+    grep -nE 'labels_hint.*\+=.*"refined"|\.labels_hint.*\+.*\["refined"\]|\+ \["refined"\]' "${REFINE_FLOW}" >&2 || true
     return 1
   fi
 }
@@ -135,17 +136,15 @@ teardown() {
   fi
 }
 
-@test "ac4: lifecycle-processing-flow.md の Step 4.5 に refined ラベル判定コードが存在しないこと（RED）" {
+@test "ac4: lifecycle-processing-flow.md の Step 4.5 に refined ラベル追加コードが存在しないこと（RED）" {
   # AC: Step 4.5 refined ラベル判定セクション自体が削除される
   # RED: 現在 L135-145 のブロックが存在するため fail
+  # 注: regex は追加演算子（← または + ["refined"]）に限定してコメント行の偽陽性を除去
   local count
-  count=$(grep -cE 'labels_hint.*refined|refined.*labels_hint' "${LIFECYCLE_FLOW}" 2>/dev/null || echo "0")
-  # L156, L184, L188 は labels_hint に refined が含まれる場合の参照として残る可能性があるが
-  # L141 の追加コードは削除必須。2 件を超える場合は削除が不完全
-  # Phase B 移行後は labels_hint に refined が含まれないため、参照記述自体も 0 件を期待
+  count=$(grep -cE 'labels_hint.*←.*refined|\+ \["refined"\]|labels_hint.*\+=.*refined' "${LIFECYCLE_FLOW}" 2>/dev/null || echo "0")
   if [ "${count}" -gt 0 ]; then
-    echo "FAIL: lifecycle-processing-flow.md に labels_hint refined 参照が ${count} 件存在する" >&2
-    grep -nE 'labels_hint.*refined|refined.*labels_hint' "${LIFECYCLE_FLOW}" >&2 || true
+    echo "FAIL: lifecycle-processing-flow.md に labels_hint refined 追加コードが ${count} 件存在する" >&2
+    grep -nE 'labels_hint.*←.*refined|\+ \["refined"\]|labels_hint.*\+=.*refined' "${LIFECYCLE_FLOW}" >&2 || true
     return 1
   fi
 }

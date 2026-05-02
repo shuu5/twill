@@ -33,8 +33,9 @@ SCRIPTS_ROOT="$(cd "${SCRIPTS_ROOT}" && pwd 2>/dev/null)" || {
 }
 
 # Status=Refined を設定（Phase B 移行後: Status only SSoT）
-bash "${SCRIPTS_ROOT}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined
-_status_exit=$?
+# || _status_exit=$? で set -euo pipefail 下でも失敗終了コードを捕捉できる
+_status_exit=0
+bash "${SCRIPTS_ROOT}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined || _status_exit=$?
 # observability: status update 失敗時のみ WARN
 if [[ "$_status_exit" -ne 0 ]]; then
   printf '[%s] WARN status_update_failed issue=#%s exit_code=%s\n' \
