@@ -64,7 +64,7 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 ```
 
 ### Step 4: fix-phase（自動修正ループ）【LLM 判断】
-review に CRITICAL findings がある場合のみ。`commands/fix-phase.md` を Read → 実行。
+`phase_review_critical + ac_verify_critical > 0` の場合のみ実行。`commands/fix-phase.md` を Read → 実行。
 fix 後は post-fix-verify（Step 4.5）→ pr-test 再実行のループ。
 
 ### Step 4.5: post-fix-verify（fix 後検証）【LLM 判断】
