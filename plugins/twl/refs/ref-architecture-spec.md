@@ -26,6 +26,18 @@ architecture/
 └── phases/                # Phase 計画 + スコープ定義 + 実装状態テーブル
 ```
 
+## Project Type
+
+`architect-completeness-check` の `--type` パラメータで指定するプロジェクト分類。**デフォルトは `ddd`**（後方互換）。
+
+| type | 説明 |
+|------|------|
+| `ddd` | DDD-first 設計（Bounded Context / ユビキタス言語）。`domain/` 必須。**ddd がデフォルト**（--type 未指定時）。 |
+| `generic` | 汎用プロジェクト設計。`vision.md` + `phases/*.md` 中心。`domain/` は optional（不在でも WARNING にならない）。 |
+| `lib` | 予約済み（lib type は将来実装予定。reserved, not impl yet）。定義のみ。 |
+
+**型検証（許容 type 値域）**: `ddd`, `generic`（`lib` は予約済み）。未知の type（例: `--type=foo`）は `architect-completeness-check` が invalid type エラーで停止する。
+
 ### contracts/ と protocols/ の棲み分け
 
 | | contracts/ | protocols/ |
@@ -39,16 +51,24 @@ architecture/
 
 アーキテクチャ完全性チェックで検証される必須ファイル。`Severity` 列は不在時の報告レベルを定義する（`WARNING` または `RECOMMENDED`）。`RECOMMENDED` 不在は `INFO` レベルで報告する（`WARNING` より低い）。テーブル変更のみで `Severity` 値を切替可能な設計とする（テーブル駆動）。
 
-| ファイル | 必須 | Severity | 説明 |
-|---------|------|----------|------|
-| vision.md | YES | WARNING | プロジェクトの目的・制約・非目標 |
-| domain/model.md | YES | WARNING | コアドメインモデル |
-| domain/glossary.md | YES | WARNING | ユビキタス言語定義 |
-| domain/contexts/*.md | 1つ以上 | WARNING | Bounded Context 定義 |
-| phases/*.md | 1つ以上 | WARNING | Phase 計画 |
-| decisions/*.md | NO | RECOMMENDED | ADR（任意） |
-| contracts/*.md | NO | RECOMMENDED | API 境界（任意） |
-| protocols/*.md | NO | RECOMMENDED | クロスリポジトリ知識転送プロトコル（任意） |
+### Project Type 別必須テーブル
+
+`architect-completeness-check` が `--type` に応じて参照する type 別 Severity テーブル（ADR-032 テーブル駆動拡張）。`Severity` 列はデフォルト（ddd）の値。`DDD` 列・`Generic` 列は type 別オーバーライド値。
+
+| ファイル | 必須 | Severity | DDD | Generic | 説明 |
+|---------|------|----------|-----|---------|------|
+| vision.md | YES | WARNING | WARNING | WARNING | プロジェクトの目的・制約・非目標 |
+| domain/model.md | YES(DDD) | WARNING | WARNING | - | コアドメインモデル（generic type では optional / INFO 降格） |
+| domain/glossary.md | YES(DDD) | WARNING | WARNING | - | ユビキタス言語定義（generic type では optional / INFO 降格） |
+| domain/contexts/*.md | 1つ以上(DDD) | WARNING | WARNING | - | Bounded Context 定義（generic type では optional / INFO 降格） |
+| phases/*.md | 1つ以上 | WARNING | WARNING | WARNING | Phase 計画 |
+| decisions/*.md | NO | RECOMMENDED | RECOMMENDED | RECOMMENDED | ADR（任意） |
+| contracts/*.md | NO | RECOMMENDED | RECOMMENDED | RECOMMENDED | API 境界（任意） |
+| protocols/*.md | NO | RECOMMENDED | RECOMMENDED | RECOMMENDED | クロスリポジトリ知識転送プロトコル（任意） |
+
+**DDD** type の domain/* ファイル（domain/model.md, domain/glossary.md, domain/contexts/*.md）は Severity=WARNING で YES 必須。
+
+**Generic** type では domain/ ディレクトリは optional（不在時に INFO 降格、WARNING にならない）。
 
 ## skip リスト
 

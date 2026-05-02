@@ -270,9 +270,10 @@ teardown() {
 
 @test "ac9-group-priority-over-type: co-architect SKILL.md の Step 0 に --group 優先の記述がある" {
   # RED: --type が Step 0 の --group 分岐に言及されていないため fail
+  # NOTE: grep -qE に -- を付与して --group が option として解釈されるのを防ぐ
   run bash -c "
     awk '/## Step 0/{found=1} found && /## Step 1/{exit} found{print}' '${CO_ARCHITECT_SKILL}' \
-      | grep -qE '--group.*優先|--type.*引き継|--group.*--type|type.*group.*propagate'
+      | grep -qE -- '--group.*優先|--type.*引き継|--group.*--type|type.*group.*propagate'
   "
   [ "${status}" -eq 0 ]
 }
