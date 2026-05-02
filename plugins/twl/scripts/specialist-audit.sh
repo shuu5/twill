@@ -42,6 +42,7 @@ MANIFEST_FILE_ARG=""
 WARN_ONLY=false
 OUTPUT_FORMAT="json"
 AUDIT_MODE="${SPECIALIST_AUDIT_MODE:-warn}"
+CODEX_SESSION_DIR=""
 
 # --- 引数パース ---
 while [[ $# -gt 0 ]]; do
@@ -60,6 +61,8 @@ while [[ $# -gt 0 ]]; do
       OUTPUT_FORMAT="json"; shift ;;
     --summary)
       OUTPUT_FORMAT="summary"; shift ;;
+    --codex-session-dir)
+      CODEX_SESSION_DIR="$2"; shift 2 ;;
     *)
       echo "Unknown argument: $1" >&2
       exit 1 ;;
@@ -231,7 +234,7 @@ for act in "${ACTUAL_SPECIALISTS[@]+"${ACTUAL_SPECIALISTS[@]}"}"; do
   $found || EXTRA+=("$act")
 done
 
-# --- status 判定 ---
+# --- status 判定（specialist_missing チェック）---
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "unknown")
 if [[ ${#MISSING[@]} -eq 0 ]]; then
   STATUS="PASS"
@@ -246,6 +249,35 @@ else
   else
     STATUS="FAIL"
     EXIT_CODE=1
+  fi
+fi
+
+# --- codex silent_skip 率チェック（AC-4 #1289）---
+# --codex-session-dir が指定された場合、findings.yaml を走査して silent_skip 率を算出。
+# silent_skip > 50%（exclusive）の場合、STATUS を FAIL に昇格（既存チェックと OR 結合）。
+CODEX_SILENT_SKIP_RATE=""
+CODEX_TOTAL=0
+CODEX_SILENT=0
+if [[ -n "$CODEX_SESSION_DIR" && -d "$CODEX_SESSION_DIR" ]]; then
+  while IFS= read -r findings_file; do
+    # worker-codex-reviewer エントリが存在するか確認
+    if grep -q "worker-codex-reviewer" "$findings_file" 2>/dev/null; then
+      CODEX_TOTAL=$((CODEX_TOTAL + 1))
+      # reason: フィールドが worker-codex-reviewer エントリの後30行以内にあるか確認
+      if ! grep -A30 "worker-codex-reviewer" "$findings_file" 2>/dev/null | grep -q "reason:"; then
+        CODEX_SILENT=$((CODEX_SILENT + 1))
+      fi
+    fi
+  done < <(find "$CODEX_SESSION_DIR" -name "findings.yaml" 2>/dev/null | sort)
+
+  if [[ "$CODEX_TOTAL" -gt 0 ]]; then
+    # silent_skip 率 = CODEX_SILENT / CODEX_TOTAL × 100（整数演算）
+    # > 50% exclusive: CODEX_SILENT * 100 > CODEX_TOTAL * 50
+    CODEX_SILENT_SKIP_RATE="${CODEX_SILENT}/${CODEX_TOTAL}"
+    if [[ $((CODEX_SILENT * 100)) -gt $((CODEX_TOTAL * 50)) ]]; then
+      STATUS="FAIL"
+      # EXIT_CODE は変更しない（strict モードで EXIT_CODE=1 確定済みの場合を上書きしない）
+    fi
   fi
 fi
 
@@ -280,7 +312,8 @@ RESULT_JSON=$(jq -cn \
   --argjson extra "$extra_json" \
   --arg timestamp "$TIMESTAMP" \
   --arg audit_mode "$AUDIT_MODE" \
-  '{status:$status,issue:$issue,jsonl:$jsonl,mode:$mode,expected:$expected,actual:$actual,missing:$missing,extra:$extra,timestamp:$timestamp,audit_mode:$audit_mode}')
+  --arg codex_silent_skip_rate "${CODEX_SILENT_SKIP_RATE:-}" \
+  '{status:$status,issue:$issue,jsonl:$jsonl,mode:$mode,expected:$expected,actual:$actual,missing:$missing,extra:$extra,timestamp:$timestamp,audit_mode:$audit_mode,codex_silent_skip_rate:$codex_silent_skip_rate}')
 
 # --- audit ログ保存 ---
 TIMESTAMP_NS=$(date +%s%N 2>/dev/null || date +%s 2>/dev/null || echo "0")

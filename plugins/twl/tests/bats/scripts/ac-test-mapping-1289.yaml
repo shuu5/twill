@@ -1,0 +1,68 @@
+mappings:
+  - ac_index: 1
+    ac_text: "codex-probe-check.sh::run_probe_check() が probe stderr の 401|Unauthorized|connection refused|websocket パターンを検知して CODEX_OK=0 を返すこと。probe capture の head -5 は head -20 に増加すること"
+    test_file: "plugins/twl/tests/bats/scripts/codex-probe-check.bats"
+    test_name: "ac1-head20: worker-codex-reviewer.md の probe capture が head -20 を使用する"
+    impl_files:
+      - "plugins/twl/agents/worker-codex-reviewer.md"
+      - "plugins/twl/scripts/codex-probe-check.sh"
+  - ac_index: 2
+    ac_text: "plugins/twl/tests/bats/scripts/codex-probe-check.bats を新規作成し、401/Unauthorized/connection refused/websocket の各 fixture で CODEX_OK=0 を assert すること（fixture ファイルベースのオフラインテスト）"
+    test_file: "plugins/twl/tests/bats/scripts/codex-probe-check.bats"
+    test_name: "ac2-401: model 行あり + PROBE_OUT に 401 を含む場合 CODEX_OK=0 になる"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+  - ac_index: 2
+    ac_text: "Unauthorized fixture"
+    test_file: "plugins/twl/tests/bats/scripts/codex-probe-check.bats"
+    test_name: "ac2-unauthorized: model 行あり + PROBE_OUT に Unauthorized を含む場合 CODEX_OK=0 になる"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+  - ac_index: 2
+    ac_text: "connection refused fixture"
+    test_file: "plugins/twl/tests/bats/scripts/codex-probe-check.bats"
+    test_name: "ac2-connection-refused: model 行あり + connection refused 時 CODEX_OK=0 になる"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+  - ac_index: 2
+    ac_text: "websocket fixture"
+    test_file: "plugins/twl/tests/bats/scripts/codex-probe-check.bats"
+    test_name: "ac2-websocket: model 行あり + websocket エラー時 CODEX_OK=0 になる"
+    impl_files:
+      - "plugins/twl/scripts/codex-probe-check.sh"
+  - ac_index: 3
+    ac_text: "worker-codex-reviewer.md で silent skip (reason 無し findings: []) を禁止し、401/auth エラー検知時に findings.yaml に reason: field を必ず記録すること"
+    test_file: "plugins/twl/tests/bats/scripts/worker-codex-reviewer-silent-skip.bats"
+    test_name: "ac3-no-silent-skip: worker-codex-reviewer.md の CODEX_OK=0 スキップ出力に reason: が含まれる"
+    impl_files:
+      - "plugins/twl/agents/worker-codex-reviewer.md"
+  - ac_index: 3
+    ac_text: "findings: [] (reason なし) が spec に残っていないこと"
+    test_file: "plugins/twl/tests/bats/scripts/worker-codex-reviewer-silent-skip.bats"
+    test_name: "ac3-findings-empty-array-removed: worker-codex-reviewer.md の skip 出力に reason なし findings: [] がない"
+    impl_files:
+      - "plugins/twl/agents/worker-codex-reviewer.md"
+  - ac_index: 4
+    ac_text: "specialist-audit.sh が codex silent_skip 率 > 50% の場合に JSON 出力で status:FAIL に昇格すること"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit-codex-silent-skip.bats"
+    test_name: "ac4-silent-skip-over-50pct-is-fail: silent_skip 51% (51/100) で status:FAIL になる"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"
+  - ac_index: 4
+    ac_text: "50% ちょうどは PASS (exclusive)"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit-codex-silent-skip.bats"
+    test_name: "ac4-silent-skip-exactly-50pct-is-pass: silent_skip 50% (5/10) で status:PASS になる"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"
+  - ac_index: 4
+    ac_text: "既存 specialist_missing チェックと OR 結合"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit-codex-silent-skip.bats"
+    test_name: "ac4-or-combine: specialist_missing FAIL のみでも status:FAIL になる (OR 結合維持)"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"
+  - ac_index: 4
+    ac_text: "su-observer grep 契約 status:FAIL 互換維持"
+    test_file: "plugins/twl/tests/bats/scripts/specialist-audit-codex-silent-skip.bats"
+    test_name: "ac4-grep-contract: JSON 出力の status フィールドが grep 契約 '\"status\":\"FAIL\"' にマッチする"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"

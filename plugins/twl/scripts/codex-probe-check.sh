@@ -31,15 +31,32 @@ _CODEX_BLOCKLIST_PATTERN='gpt-4[^-]|gpt-3|o3-|o4-'
 # gpt-4- 系列（gpt-4-turbo 等）は [^-] 除外のため blocklist 対象外（意図的）
 
 # ---------------------------------------------------------------------------
+# Auth/connection error detection pattern (AC-1 #1289)
+# probe 出力（stdout+stderr merged via 2>&1）に 401 系エラーが含まれる場合に CODEX_OK=0。
+# head -20（worker-codex-reviewer.md で設定）で 401 retry ログを確実にキャプチャ。
+# ---------------------------------------------------------------------------
+_CODEX_AUTH_ERROR_PATTERN='401|Unauthorized|connection refused|websocket'
+
+# ---------------------------------------------------------------------------
 # run_probe_check
 #
 # 引数: なし（PROBE_OUT, PROBE_MODEL, CODEX_OK を環境変数として参照）
 # 副作用: CODEX_OK を 0 に設定する可能性がある（1 には戻さない）
+#         CODEX_SKIP_REASON を設定する（CODEX_OK=0 の場合のみ）
 # 出力: WARN ログを stderr に出力
 # ---------------------------------------------------------------------------
 run_probe_check() {
   local resolved_model=""
   local warn_prefix="WARN: model resolution mismatch:"
+
+  # AC #1289: auth/connection error detection — model 解決前に先行チェック
+  # PROBE_OUT には stdout+stderr が merged されており 401 retry ログが含まれる
+  if echo "${PROBE_OUT:-}" | grep -qiE "${_CODEX_AUTH_ERROR_PATTERN}"; then
+    CODEX_OK=0
+    CODEX_SKIP_REASON="auth/connection error (${_CODEX_AUTH_ERROR_PATTERN})"
+    echo "WARN: auth/connection error detected in probe output (pattern: ${_CODEX_AUTH_ERROR_PATTERN})" >&2
+    return
+  fi
 
   # AC #3: probe stdout の `model: <name>` 行を抽出
   resolved_model=$(echo "${PROBE_OUT:-}" | grep -E "^model:" | head -1 | awk '{print $2}')
@@ -47,6 +64,7 @@ run_probe_check() {
   # AC #4/#13: resolved_model が空文字列 or PROBE_MODEL と不一致 → CODEX_OK=0
   if [[ -z "$resolved_model" || "$resolved_model" != "${PROBE_MODEL:-}" ]]; then
     CODEX_OK=0
+    CODEX_SKIP_REASON="model resolution mismatch: requested=${PROBE_MODEL:-}, resolved=${resolved_model:-<empty>}"
     # AC #5: warning ログ（空文字列の場合は resolved=<empty>）
     local display_resolved="${resolved_model:-<empty>}"
     echo "${warn_prefix} requested=${PROBE_MODEL:-}, resolved=${display_resolved}" >&2
@@ -57,6 +75,7 @@ run_probe_check() {
   # blocklist: gpt-4* (非ハイフン), gpt-3*, o3-*, o4-* （gpt-5.1-codex は除外）
   if echo "${PROBE_OUT:-}" | grep -qE "${_CODEX_BLOCKLIST_PATTERN}"; then
     CODEX_OK=0
+    CODEX_SKIP_REASON="retired model detected (blocklist: ${_CODEX_BLOCKLIST_PATTERN})"
     echo "WARN: retired model detected in probe output (blocklist: ${_CODEX_BLOCKLIST_PATTERN})" >&2
     return
   fi
