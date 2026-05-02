@@ -38,6 +38,10 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 TWILL_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 CLD_SPAWN="$TWILL_ROOT/plugins/session/scripts/cld-spawn"
 
+# AC1: tmux window target を session:index 形式で解決するヘルパーを読み込む
+# shellcheck source=/dev/null
+source "$TWILL_ROOT/plugins/session/scripts/lib/tmux-resolve.sh"
+
 if [[ ! -x "$CLD_SPAWN" ]]; then
   echo "Error: cld-spawn not executable at $CLD_SPAWN" >&2
   exit 2
@@ -339,24 +343,34 @@ PYEOF
   local budget_script="$SCRIPT_DIR/budget-monitor-watcher.sh"
   local cld_observe_any="$TWILL_ROOT/plugins/session/scripts/cld-observe-any"
 
+  # AC2: _resolve_window_target で session:index 形式に解決（ambiguous リスクを排除）
+  local resolved_target
+  if ! resolved_target=$(_resolve_window_target "${observer_window}" 2>&1); then
+    # AC5: 解決失敗時は [spawn-controller] prefix 付きで stderr にログ出力
+    echo "[spawn-controller] ERROR: _resolve_window_target '${observer_window}' 失敗 — ${resolved_target}" >&2
+    return 1
+  fi
+
+  # AC3: fallback（bare ${observer_window}）は廃止。_resolve_window_target 失敗時は abort（上記参照）。
+  # 理由: bare window 名での -t 指定は同名 window が複数セッションに存在する場合 ambiguous となり
+  # 誤ったペインを操作するリスクがあるため、解決失敗時は安全側に倒して停止する。
+
   # Step 1: horizontal split (左右) — 右カラムに heartbeat-watcher を起動
-  tmux split-window -h -d -l 50% -t "${observer_window}:1.${base}" -c "$cwd" "bash '$heartbeat_script'" || \
-    tmux split-window -h -d -l 50% -t "${observer_window}" -c "$cwd" "bash '$heartbeat_script'"
+  tmux split-window -h -d -l 50% -t "${resolved_target}.${base}" -c "$cwd" "bash '$heartbeat_script'"
 
   # Step 2: vertical split — 右カラムを上下分割して budget-monitor を起動
-  tmux split-window -v -d -l 67% -t "${observer_window}:1.$((base+1))" -c "$cwd" "bash '$budget_script'" || \
-    tmux split-window -v -d -t "${observer_window}:1.$((base+1))" -c "$cwd" "bash '$budget_script'"
+  tmux split-window -v -d -l 67% -t "${resolved_target}.$((base+1))" -c "$cwd" "bash '$budget_script'"
 
   # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
   local spawn_cmd="bash '$cld_observe_any' --window '$observer_window'"
-  tmux split-window -v -d -l 50% -t "${observer_window}:1.$((base+2))" -c "$cwd" "$spawn_cmd" || \
-    tmux split-window -v -d -t "${observer_window}:1.$((base+2))" -c "$cwd" "$spawn_cmd"
+  tmux split-window -v -d -l 50% -t "${resolved_target}.$((base+2))" -c "$cwd" "$spawn_cmd"
 
   # cld-observe-any pane の PID・pane_id・spawn_cmd を session.json に記録
+  # AC6: display-message も _resolve_window_target で解決した fully-qualified target を使う
   local obs_pane_id obs_pane_pid session_file
   session_file="${supervisor_dir}/session.json"
-  obs_pane_id=$(tmux display-message -t "${observer_window}:1.$((base+3))" -p '#{pane_id}' 2>/dev/null || echo "")
-  obs_pane_pid=$(tmux display-message -t "${observer_window}:1.$((base+3))" -p '#{pane_pid}' 2>/dev/null || echo "")
+  obs_pane_id=$(tmux display-message -t "${resolved_target}.$((base+3))" -p '#{pane_id}' 2>/dev/null || echo "")
+  obs_pane_pid=$(tmux display-message -t "${resolved_target}.$((base+3))" -p '#{pane_pid}' 2>/dev/null || echo "")
   if [[ -f "$session_file" && -n "$obs_pane_id" ]]; then
     local tmp_file
     tmp_file=$(mktemp)
