@@ -1,0 +1,80 @@
+---
+# ac-test-mapping-1266.yaml
+# Issue #1266: co-architect --type=value / DDD skip 対応
+# 生成日: 2026-05-03
+# テストファイル: plugins/twl/tests/bats/ac-scaffold-tests-1266.bats
+# フェーズ: TDD RED（全テストが実装前に fail することを確認済み）
+
+mappings:
+  - ac_index: 1
+    ac_text: "co-architect --type=generic 起動時、domain/model.md / domain/glossary.md / domain/contexts/*.md 不在で architect-completeness-check が WARNING を出さない (INFO 降格)"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac1-generic-domain-no-warning: architect-completeness-check.md が generic type 時 domain/* を WARNING しない旨を記述している"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 2
+    ac_text: "ref-architecture-spec.md に Project Type 概念と type 別必須テーブル (DDD / Generic 列) が定義されている"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac2-project-type-concept / ac2-type-table-ddd-col / ac2-type-table-generic-col"
+    impl_files:
+      - "plugins/twl/refs/ref-architecture-spec.md"
+
+  - ac_index: 3
+    ac_text: "--type 未指定時のデフォルトが ddd で、既存 architecture/ を持つプロジェクトは影響なし (後方互換)"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac3-default-type-ddd / ac3-backward-compat"
+    impl_files:
+      - "plugins/twl/skills/co-architect/SKILL.md"
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 4
+    ac_text: "architect-completeness-check が --type=<value> 引数を受け取り、ref-architecture-spec.md の対応列を動的に選択する (ADR-032 のテーブル駆動拡張)"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac4-type-argument / ac4-dynamic-column-selection"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 5
+    ac_text: "architect-completeness-check の --type 未指定時は .architecture-type → vision.md frontmatter → ddd の順で type を解決する"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac5-resolution-architecture-type-file / ac5-resolution-frontmatter / ac5-resolution-order"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+
+  - ac_index: 6
+    ac_text: "type 値の検証 — 未知の type (--type=foo) は明示エラーで停止"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac6-unknown-type-error / ac6-valid-type-values"
+    impl_files:
+      - "plugins/twl/commands/architect-completeness-check.md"
+      - "plugins/twl/refs/ref-architecture-spec.md"
+
+  - ac_index: 7
+    ac_text: "co-architect Step 2 のメッセージに選択された type 名を表示"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac7-step2-type-display"
+    impl_files:
+      - "plugins/twl/skills/co-architect/SKILL.md"
+
+  - ac_index: 8
+    ac_text: "--type=generic 時、Step 2 の対話プロンプトが DDD 特有の設計（Bounded Context / ユビキタス言語等）ではなく、vision.md + phases/*.md 設計フローに切り替わる"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac8-generic-flow-switch / ac8-generic-no-bounded-context"
+    impl_files:
+      - "plugins/twl/skills/co-architect/SKILL.md"
+
+  - ac_index: 9
+    ac_text: "--group と --type 同時指定時は --group 優先で動作し、--type は --group 処理内に引き継がれる"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac9-group-takes-precedence / ac9-type-passed-to-group"
+    impl_files:
+      - "plugins/twl/skills/co-architect/SKILL.md"
+      - "plugins/twl/commands/architect-group-refine.md"
+
+  - ac_index: 10
+    ac_text: "lib type の予約 (実装は将来、定義のみ)"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1266.bats"
+    test_name: "ac10-lib-type-reserved / ac10-lib-type-not-implemented"
+    impl_files:
+      - "plugins/twl/refs/ref-architecture-spec.md"
