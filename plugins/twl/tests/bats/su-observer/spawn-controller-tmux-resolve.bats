@@ -41,7 +41,7 @@ setup() {
   common_setup
 
   SPAWN_SCRIPT="${REPO_ROOT}/skills/su-observer/scripts/spawn-controller.sh"
-  TMUX_RESOLVE_SCRIPT="${REPO_ROOT}/../../../../plugins/session/scripts/lib/tmux-resolve.sh"
+  TMUX_RESOLVE_SCRIPT="${REPO_ROOT}/../session/scripts/lib/tmux-resolve.sh"
 
   # .supervisor ディレクトリと session.json を SANDBOX に作成
   mkdir -p "$SANDBOX/.supervisor"

@@ -345,9 +345,9 @@ PYEOF
 
   # AC2: _resolve_window_target で session:index 形式に解決（ambiguous リスクを排除）
   local resolved_target
-  if ! resolved_target=$(_resolve_window_target "${observer_window}" 2>&1); then
-    # AC5: 解決失敗時は [spawn-controller] prefix 付きで stderr にログ出力
-    echo "[spawn-controller] ERROR: _resolve_window_target '${observer_window}' 失敗 — ${resolved_target}" >&2
+  if ! resolved_target=$(_resolve_window_target "${observer_window}"); then
+    # AC5: 解決失敗時は [spawn-controller] prefix 付きで stderr にログ出力（エラー詳細は _resolve_window_target が出力）
+    echo "[spawn-controller] ERROR: _resolve_window_target '${observer_window}' 失敗" >&2
     return 1
   fi
 
@@ -388,7 +388,7 @@ PYEOF
 
   # pane 数を確認してログ出力
   local pane_count
-  pane_count=$(tmux list-panes -t "$observer_window" 2>/dev/null | wc -l || echo "?")
+  pane_count=$(tmux list-panes -t "${resolved_target}" 2>/dev/null | wc -l || echo "?")
   echo "[spawn-controller] ✓ observer window ${observer_window}: ${pane_count} pane layout を設定 (pane-base-index=${base})"
 }
 
