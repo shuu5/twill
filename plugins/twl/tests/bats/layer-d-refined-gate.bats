@@ -1,7 +1,9 @@
 #!/usr/bin/env bats
-# layer-d-refined-gate.bats
+# DEPRECATED: ADR-024 Phase B Tier A (Issue #1291) — pre-bash-refined-label-gate.sh 削除に伴い全テスト skip
+# layer-d-refined-gate.bats — DEPRECATED (ADR-024 Phase B Tier A, Issue #1291)
 #
-# Tests for plugins/twl/scripts/hooks/pre-bash-refined-label-gate.sh
+# pre-bash-refined-label-gate.sh は削除済み。全テストを skip する。
+# Sub-2 (#1292) で本ファイルごと削除予定。
 #
 # Scenarios:
 #   1. 正規経路: session file 存在 + gh issue edit N --add-label refined → allow (exit 0)
@@ -25,6 +27,7 @@ SESSION_FILE=""
 SESSION_TMP_DIR_TEST=""
 
 setup() {
+  skip "DEPRECATED: pre-bash-refined-label-gate.sh は削除済み (ADR-024 Phase B Tier A, Issue #1291)"
   common_setup
   HOOK_SRC="$(cd "$REPO_ROOT" && pwd)/scripts/hooks/pre-bash-refined-label-gate.sh"
   SESSION_TMP_DIR_TEST="$SANDBOX/session-tmp"

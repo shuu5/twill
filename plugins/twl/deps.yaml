@@ -2775,11 +2775,6 @@ scripts:
     path: scripts/hooks/pre-tool-use-spec-review-gate.sh
     description: "PreToolUse gate: completed < total の間 issue-review-aggregate を deny する（Skill tool matcher）"
 
-  pre-bash-refined-label-gate:
-    type: script
-    path: scripts/hooks/pre-bash-refined-label-gate.sh
-    description: "PreToolUse gate (Layer D): spec-review session state 非存在時に gh issue edit --add-label refined を deny する（Bash tool matcher）。Worker セッション内（/tmp/.spec-review-session-*.json 存在時）は allow"
-
   co-issue-manual-fix-b:
     type: script
     path: scripts/co-issue-manual-fix-b.sh

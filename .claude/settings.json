@@ -48,11 +48,6 @@
           },
           {
             "type": "command",
-            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-refined-label-gate.sh\"",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
             "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh\"",
             "timeout": 5000
           },
