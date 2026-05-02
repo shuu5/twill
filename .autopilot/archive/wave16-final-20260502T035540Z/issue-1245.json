@@ -1,0 +1,25 @@
+{
+  "issue": 1245,
+  "status": "failed",
+  "branch": "",
+  "pr": null,
+  "window": "",
+  "started_at": "2026-05-02T01:22:24Z",
+  "updated_at": "2026-05-02T01:22:24Z",
+  "last_heartbeat_at": "2026-05-02T01:22:24Z",
+  "current_step": "",
+  "retry_count": 0,
+  "ac_verify_call_count": 0,
+  "fix_instructions": null,
+  "merged_at": null,
+  "files_changed": [],
+  "failure": {
+    "message": "Worker crash detected: tmux window 'ap-twill-feat-1245-tech-debtobser-ed0310c0' disappeared",
+    "step": "",
+    "timestamp": "2026-05-02T01:22:24Z",
+    "detected_state": "pane_absent"
+  },
+  "implementation_pr": null,
+  "input_waiting_detected": null,
+  "input_waiting_at": null
+}

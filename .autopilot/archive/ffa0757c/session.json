@@ -1,0 +1,20 @@
+{
+  "session_id": "ffa0757c",
+  "plan_path": "/home/shuu5/projects/local-projects/twill/main/.autopilot/plan.yaml",
+  "current_phase": 1,
+  "phase_count": 1,
+  "started_at": "2026-05-02T03:59:03Z",
+  "cross_issue_warnings": [],
+  "phase_insights": [],
+  "patterns": {},
+  "self_improve_issues": [],
+  "precheck_log": [
+    {
+      "phase": 1,
+      "warnings": [
+        "issue=1231 reason=skipped-over-max-verify"
+      ],
+      "fails": []
+    }
+  ]
+}

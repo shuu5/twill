@@ -1,41 +1,30 @@
 {
   "step": "merge-gate",
-  "status": "WARN",
-  "findings_summary": "0 CRITICAL, 4 WARNING",
+  "status": "PASS",
+  "findings_summary": "0 CRITICAL, 2 WARNING",
   "critical_count": 0,
   "findings": [
     {
+      "specialist": "worker-code-reviewer",
       "severity": "WARNING",
-      "confidence": 99,
-      "file": "cli/twl/src/twl/mcp_server/tools.py",
-      "line": 1125,
-      "message": "[FIXED] comm tools (twl_send_msg/recv_msg/notify_supervisor) が mcp インスタンスに未登録 → mcp.mount(_comm_mcp) 追加で修正済み (commit 5d60d03e)。23 tools 確認済み。",
-      "category": "architecture-fix-applied"
+      "confidence": 92,
+      "file": "plugins/twl/tests/bats/ac-test-mapping-1245.yaml",
+      "line": 8,
+      "message": "ac1 test_names[3] がbatsファイルの実際の@test名と不一致。YAMLは\"ac1: observer-supervise-checklist.md filename includes s supervise and checklist\"だがbatsは\"ac1: observer-supervise-checklist.md has a markdown heading\""
     },
     {
+      "specialist": "worker-workflow-integrity",
       "severity": "WARNING",
-      "confidence": 85,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 58,
-      "message": "autopilot_dir パラメータに path traversal 検証なし (tech-debt)。内部 autopilot ツールの用途として受け入れ。",
-      "category": "path-traversal"
+      "confidence": 70,
+      "file": "plugins/twl/architecture/domain/contexts/supervision.md",
+      "message": "observer-supervise-checklist が deps.yaml に追加されたが architecture spec Component Mapping に対応エントリなし。pre-existing パターン（su-observer split refs も未記載）と同様の追従漏れ"
     },
     {
-      "severity": "WARNING",
-      "confidence": 85,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 98,
-      "message": "_read_since がロックなし読み取り。不完全 JSONL 行は JSONDecodeError でスキップ。timeout_sec=0 ポールでの一時スキップ可能性あり。",
-      "category": "race-condition"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 82,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 81,
-      "message": "_parse_since の re.IGNORECASE で小文字 ULID を受け入れるが、内部生成は大文字のみ。小文字 since 指定時にフォールバック全件返却が発動。",
-      "category": "boundary-condition"
+      "specialist": "worker-issue-pr-alignment",
+      "severity": "INFO",
+      "confidence": 65,
+      "message": "AC5 bats テストコミットメッセージに #1245 が含まれない（test(issue-1245):形式のみ）。PR diff 全体では確認済み"
     }
   ],
-  "timestamp": "2026-04-29T14:42:48Z"
+  "timestamp": "2026-05-02T04:24:58Z"
 }

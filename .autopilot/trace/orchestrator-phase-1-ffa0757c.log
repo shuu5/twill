@@ -1,0 +1,117 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-05-02T03:59:18Z] orchestrator_pid=2869261 phase=1 started_at=2026-05-02T03:59:18Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: WARNING: merged ブランチ残存 (7日以内): docs/pitfalls-16-step0-incident
+[orchestrator] startup cleanup 完了: 削除=0件, 警告=1件
+[orchestrator] Issue #1246: Worker 起動
+[orchestrator] Issue #1246: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/fix/1246-featorchestrator-co-issue-worker-stop
+OK: issue-1246.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777682633_v5zh-issue-1246 (parent=1777682633_v5zh) in /home/shuu5/projects/local-projects/twill/worktrees/fix/1246-featorchestrator-co-issue-worker-stop
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/fix/1246-featorchestrator-co-issue-worker-stop/.audit/auto-1777682633_v5zh-issue-1246/panes/ap-twill-fix-1246-featorchestrato-9655fe5a.log
+Worker 起動完了: Issue #1246 (window=ap-twill-fix-1246-featorchestrato-9655fe5a, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/fix/1246-featorchestrator-co-issue-worker-stop)
+[orchestrator] Issue #1245: Worker 起動
+[orchestrator] Issue #1245: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1245-tech-debtobserver-observer-supervise
+OK: issue-1245.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777682633_v5zh-issue-1245 (parent=1777682633_v5zh) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1245-tech-debtobserver-observer-supervise
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1245-tech-debtobserver-observer-supervise/.audit/auto-1777682633_v5zh-issue-1245/panes/ap-twill-feat-1245-tech-debtobser-ed0310c0.log
+Worker 起動完了: Issue #1245 (window=ap-twill-feat-1245-tech-debtobser-ed0310c0, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1245-tech-debtobserver-observer-supervise)
+[orchestrator] Issue #1242: Worker 起動
+[orchestrator] Issue #1242: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/fix/1242-pr-review-manifestsh-l184-glob-archite
+OK: issue-1242.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777682633_v5zh-issue-1242 (parent=1777682633_v5zh) in /home/shuu5/projects/local-projects/twill/worktrees/fix/1242-pr-review-manifestsh-l184-glob-archite
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/fix/1242-pr-review-manifestsh-l184-glob-archite/.audit/auto-1777682633_v5zh-issue-1242/panes/ap-twill-fix-1242-pr-review-manif-bf1bd025.log
+Worker 起動完了: Issue #1242 (window=ap-twill-fix-1242-pr-review-manif-bf1bd025, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/fix/1242-pr-review-manifestsh-l184-glob-archite)
+[orchestrator] Issue #1231: Worker 起動
+[orchestrator] Issue #1231: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1231-tech-debtsu-observer-spawn-controller
+OK: issue-1231.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777682633_v5zh-issue-1231 (parent=1777682633_v5zh) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1231-tech-debtsu-observer-spawn-controller
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1231-tech-debtsu-observer-spawn-controller/.audit/auto-1777682633_v5zh-issue-1231/panes/ap-twill-feat-1231-tech-debtsu-ob-fb63794b.log
+Worker 起動完了: Issue #1231 (window=ap-twill-feat-1231-tech-debtsu-ob-fb63794b, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1231-tech-debtsu-observer-spawn-controller)
+[orchestrator] Issue #1242: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1242.json を更新しました
+[orchestrator] Issue #1246: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1246.json を更新しました
+[orchestrator] Issue #1245: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1245.json を更新しました
+[orchestrator] Issue #1231: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1231.json を更新しました
+[orchestrator] Issue #1242: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1242.json を更新しました
+[orchestrator] Issue #1245: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1245.json を更新しました
+[orchestrator] Issue #1231: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1231.json を更新しました
+[orchestrator] WARN: issue=1246 stagnate detected (RESOLVE_FAILED 53 回, 603s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1246 stagnate detected (RESOLVE_FAILED 59 回, 674s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #1242: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1242.json を更新しました
+[orchestrator] WARN: issue=1246 stagnate detected (RESOLVE_FAILED 65 回, 744s >= AUTOPILOT_STAGNATE_SEC=600)
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1242: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1242: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1242.json を更新しました
+[orchestrator] Issue #1246: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1246.json を更新しました
+[orchestrator] Issue #1245: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1245.json を更新しました
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1245: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1245: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1245.json を更新しました
+[orchestrator] Issue #1231: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1231.json を更新しました
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1231: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1231: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1231.json を更新しました
+[orchestrator] Issue #1246: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1246.json を更新しました
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1246: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1246: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1246.json を更新しました
+[orchestrator] Issue #1246: merge-gate 実行 (PR #1255)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1246.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #1246: PR #1255 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #1246: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #1246: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #1246: merge 成功
+[orchestrator] cleanup: Issue #1246 — window/branch クリーンアップ
+[orchestrator] Issue #1245: merge-gate 実行 (PR #1252)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1245.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #1245: PR #1252 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #1245: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #1245: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #1245: merge 成功
+[orchestrator] cleanup: Issue #1245 — window/branch クリーンアップ
+[orchestrator] Issue #1242: merge-gate 実行 (PR #1251)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1242.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #1242: PR #1251 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #1242: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #1242: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #1242: merge 成功
+[orchestrator] cleanup: Issue #1242 — window/branch クリーンアップ
+[orchestrator] Issue #1231: merge-gate 実行 (PR #1253)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1231.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #1231: PR #1253 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #1231: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #1231: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #1231: merge 成功
+[orchestrator] cleanup: Issue #1231 — window/branch クリーンアップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      1246,
+      1245,
+      1242,
+      1231
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

@@ -1,0 +1,55 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-05-02T01:20:50Z] orchestrator_pid=2548246 phase=1 started_at=2026-05-02T01:20:50Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: WARNING: merged ブランチ残存 (7日以内): docs/pitfalls-16-step0-incident
+[orchestrator] startup cleanup 完了: 削除=0件, 警告=1件
+[orchestrator] Issue #1245: Worker 起動
+[orchestrator] Issue #1245: worktree 作成失敗: エラー: エラー: worktree 'feat/1245-tech-debtobserver-observer-supervise' は既に存在します
+Issue #1245 からブランチ名を生成中...
+生成されたブランチ名: feat/1245-tech-debtobserver-observer-supervise
+ERROR: ファイルが存在しません: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1245.json
+  試したパス: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1245.json
+  bare sibling 候補: /home/shuu5/projects/local-projects/twill/.autopilot/issues/issue-1245.json
+  解決策: export AUTOPILOT_DIR=<.autopilot への絶対パス>
+[orchestrator] Issue #1245: Worker 起動失敗（スキップ）
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [],
+    "failed": [],
+    "skipped": [
+      1245
+    ]
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-05-02T01:22:18Z] orchestrator_pid=2559389 phase=1 started_at=2026-05-02T01:22:18Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: WARNING: merged ブランチ残存 (7日以内): docs/pitfalls-16-step0-incident
+[orchestrator] startup cleanup 完了: 削除=0件, 警告=1件
+[orchestrator] Issue #1245: Worker 起動
+[orchestrator] Issue #1245: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1245-tech-debtobserver-observer-supervise
+OK: issue-1245.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777682633_v5zh-issue-1245 (parent=1777682633_v5zh) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1245-tech-debtobserver-observer-supervise
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1245-tech-debtobserver-observer-supervise/.audit/auto-1777682633_v5zh-issue-1245/panes/ap-twill-feat-1245-tech-debtobser-ed0310c0.log
+Worker 起動完了: Issue #1245 (window=ap-twill-feat-1245-tech-debtobser-ed0310c0, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1245-tech-debtobserver-observer-supervise)
+[orchestrator] Issue #1245: 失敗
+[orchestrator] cleanup: Issue #1245 — window/branch クリーンアップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [],
+    "failed": [
+      1245
+    ],
+    "skipped": []
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

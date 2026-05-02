@@ -1,89 +1,41 @@
 {
   "step": "phase-review",
   "status": "WARN",
-  "findings_summary": "0 CRITICAL, 9 WARNING",
+  "findings_summary": "0 CRITICAL, 3 WARNING",
   "critical_count": 0,
   "findings": [
     {
       "severity": "WARNING",
-      "confidence": 95,
-      "file": "plugins/twl/architecture/decisions/ADR-028-atomic-rmw-strategy.md",
-      "line": 112,
-      "message": "Amendment 1 write authority matrix に twl_notify_supervisor_handler が未記載。twl_notify_supervisor_handler は _send_msg_impl 経由で _append_atomic() を呼び mailbox/supervisor.jsonl へ write する authorized writer だが表には twl_send_msg_handler のみ記載。",
-      "category": "architecture-quality"
+      "confidence": 85,
+      "file": "plugins/twl/scripts/issue-lifecycle-orchestrator.sh",
+      "line": 682,
+      "message": "sort -n -t/ -k7 のフィールド番号がパス深さに依存する。_round_num の数値ソートが実環境で破綻する可能性がある。xargs basename 経由の sort -n が推奨。",
+      "category": "バグパターン"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 82,
+      "file": "plugins/twl/scripts/issue-lifecycle-orchestrator.sh",
+      "line": 711,
+      "message": "tmux kill-window -t window_name の直接渡し（既存パターン踏襲）",
+      "category": "tmux操作"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 75,
+      "file": "plugins/twl/architecture/domain/contexts/autopilot.md",
+      "line": 1,
+      "message": "AC6: autopilot.md に STATE-aware inject ロジックの追記が未実施",
+      "category": "ac-alignment"
     },
     {
       "severity": "INFO",
-      "confidence": 85,
-      "file": "plugins/twl/architecture/decisions/ADR-028-atomic-rmw-strategy.md",
-      "line": 110,
-      "message": "Amendment 1 導入文で twl_recv_msg を write 文脈に並列列挙しているが、twl_recv_msg は read-only (\\_read_since のみ) で write 経路を持たない。",
-      "category": "architecture-quality"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 85,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 59,
-      "message": "_mailbox_dir() の autopilot_dir パラメータにバリデーションがなく、../../etc のようなパス区切り文字を含む値で任意ディレクトリへの mailbox 生成が可能。Path.resolve() でベースディレクトリ内への制限が必要。",
-      "category": "path-traversal"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 82,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 174,
-      "message": "_send_msg_impl() で str(exc) をそのままレスポンスの error フィールドに含めている。OS 絶対パス等がクライアントに露出する可能性がある。",
-      "category": "info-exposure"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 88,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 200,
-      "message": "time.sleep(0.1) が asyncio イベントループをブロックする可能性。長い timeout_sec 指定時に影響大。asyncio.sleep() または threading への切り分けを検討。",
-      "category": "blocking-io"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 85,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 196,
-      "message": "timeout_sec に負値を渡すと deadline が過去時刻になり即時空リストを返すサイレントな non-blocking 動作になる。exit_code=3 の invalid_timeout バリデーションが必要。",
-      "category": "input-validation"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 85,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 149,
-      "message": "_send_msg_impl の timeout_sec 引数が関数内で一切使用されていない dead parameter。将来の拡張用なら docstring に明記すること。",
-      "category": "dead-code"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 82,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 66,
-      "message": "lock_path.touch(mode=0o600, exist_ok=True) は既存ファイルでは mode を無視する Python 仕様。umask=022 環境で既存ロックファイルが 0o644 になる可能性。os.chmod(lock_path, 0o600) を touch 後に呼ぶか os.open() で直接作成を検討。",
-      "category": "file-permissions"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 85,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 112,
-      "message": "_read_since() が since=ULID 指定時、指定 ULID が mailbox に存在しない場合に全件ではなく空リストを返す。ULID 辞書順比較または ULID-not-found 時の全件返却フォールバックへ変更推奨。",
-      "category": "bug"
-    },
-    {
-      "severity": "WARNING",
-      "confidence": 70,
-      "file": "cli/twl/src/twl/mcp_server/tools_comm.py",
-      "line": 52,
-      "message": "_is_known_receiver() が _KNOWN_PREFIXES と supervisor をハードコード。将来の mailbox ロール追加時にコード編集なしに対応できない。",
-      "category": "extensibility"
+      "confidence": 90,
+      "file": "plugins/twl/tests/bats/scripts/issue-lifecycle-orchestrator-state-aware-inject.bats",
+      "line": 53,
+      "message": "test 3 の grep で tail -1 が inject exhausted 行を参照。head -1 推奨",
+      "category": "テスト品質"
     }
   ],
-  "timestamp": "2026-04-29T14:19:33Z"
+  "timestamp": "2026-05-02T04:26:11Z"
 }
