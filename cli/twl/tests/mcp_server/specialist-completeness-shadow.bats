@@ -151,82 +151,71 @@ _append_shadow_log() {
 # ---------------------------------------------------------------------------
 # AC-4: bats fixture 7 件で bash と mcp_tool 出力を突合し mismatch 0 を確認
 #
-# 各 fixture で:
-#   1. check-specialist-completeness.sh を bash で実行 → verdict を記録
-#   2. twl_check_specialist_handler を Python で呼び出す → verdict を記録
-#   3. mcp-shadow-compare.sh で突合 → mismatch 0 を確認
+# 正しい呼び出し順序 (fixtures 1-3: context mode):
+#   1. /tmp manifest files をセットアップ
+#   2. MCP handler を呼び出す (manifest files が存在する状態で)
+#   3. bash hook を実行 (同じ manifest files を読む; all-present なら削除する)
+#   4. context 固有の bash verdict を確認 (他コンテキストの出力は無視)
+#   5. 比較ログに記録 → mismatch 0 を確認
 #
-# RED: handler が stub 実装のため mismatch が発生する
+# fixtures 4-7 (directory mode): MCP は directory を読む; bash は context files を読む
 # ---------------------------------------------------------------------------
 
-# --- fixture helper ---
-# bash hook を sandbox 上の manifest ファイルで実行し verdict を stdout に出力する
-_run_bash_hook_with_manifest() {
-  local manifest_file="$1"
-  local spawned_file="$2"
-  local context="$3"
+# /tmp に manifest/spawned files をセットアップする
+_tmp_specialist_setup() {
+  local context="$1"
+  local manifest_content="$2"
+  local spawned_content="$3"
+  printf '%s' "$manifest_content" > "/tmp/.specialist-manifest-${context}.txt"
+  printf '%s' "$spawned_content" > "/tmp/.specialist-spawned-${context}.txt"
+}
 
-  # check-specialist-completeness.sh はすでに存在する manifest/spawned ファイルを読む
-  # テスト用の一時的な /tmp ファイルとして context を注入
-  cp "$manifest_file" "/tmp/.specialist-manifest-${context}.txt" 2>/dev/null || true
-  if [[ -f "$spawned_file" ]]; then
-    cp "$spawned_file" "/tmp/.specialist-spawned-${context}.txt" 2>/dev/null || true
-  fi
-
-  # dummy tool input (Agent tool use をシミュレート)
-  local input_json
-  input_json='{"tool_name":"Agent","tool_input":{"subagent_type":"twl:twl:dummy-specialist-for-test"}}'
+# bash hook を実行し、指定 context の warning 有無で verdict (ok/warn) を返す
+# /tmp ファイルは事前にセットアップ済みであること
+_run_bash_verdict() {
+  local context="$1"
+  local input_json='{"tool_name":"Agent","tool_input":{"subagent_type":"twl:twl:dummy-specialist-for-test"}}'
+  local hook_output
+  hook_output=$(printf '%s' "$input_json" | bash "$CHECK_SH" 2>/dev/null)
   local verdict="ok"
-  if printf '%s' "$input_json" | bash "$CHECK_SH" 2>/dev/null; then
-    verdict="ok"
-  else
+  # 当該 context の warning が出力されていれば warn
+  if printf '%s' "$hook_output" | grep -qF "[context: ${context}]"; then
     verdict="warn"
   fi
-
-  # クリーンアップ
+  # フックが残したファイルがあれば削除 (all-present の場合フックが先に削除している)
   rm -f "/tmp/.specialist-manifest-${context}.txt" "/tmp/.specialist-spawned-${context}.txt"
-
   printf '%s' "$verdict"
 }
 
-# mcp_tool handler を Python で呼び出し verdict を stdout に出力する
-_run_mcp_tool_handler() {
+# MCP handler を Python で呼び出し verdict (ok/warn/error) を返す
+_run_mcp_verdict() {
   local manifest_context="$1"
-
   python3 -c "
-import sys, json
+import sys
 sys.path.insert(0, '${GIT_ROOT}/cli/twl/src')
 from twl.mcp_server.tools import twl_check_specialist_handler
 result = twl_check_specialist_handler(manifest_context='${manifest_context}')
-# stub 実装は ok=True を返す。本実装では manifest を解析して実際の結果を返す
-if result.get('ok'):
-    print('ok')
-else:
-    print('warn')
+print('ok' if result.get('ok') else 'warn')
 " 2>/dev/null || printf 'error'
 }
 
 @test "AC4 fixture1: all-specialists-present — bash/mcp_tool 両方 ok → mismatch 0" {
-  # RED: mcp_tool handler がスタブ実装のため manifest 解析ができず mismatch する
   [ -f "$CHECK_SH" ] || { echo "check-specialist-completeness.sh が存在しない: $CHECK_SH" >&2; false; }
   [ -f "$COMPARE_SH" ] || { echo "mcp-shadow-compare.sh が存在しない: $COMPARE_SH" >&2; false; }
 
   local context="1278-test-all-present-$$"
-  local manifest_file="$SANDBOX/manifest-all-present.txt"
-  # 全 specialist が spawned されている状態のフィクスチャ
-  printf 'spec-reviewer\nsecurity-reviewer\n' > "$manifest_file"
-  local spawned_file="$SANDBOX/spawned-all-present.txt"
-  printf 'spec-reviewer\nsecurity-reviewer\n' > "$spawned_file"
-
   local log_file="$SANDBOX/shadow-all-present.log"
 
-  # bash hook の verdict
-  local bash_verdict
-  bash_verdict="$(_run_bash_hook_with_manifest "$manifest_file" "$spawned_file" "$context")"
+  # 1. /tmp manifest files をセットアップ (全 specialist spawned 済み)
+  _tmp_specialist_setup "$context" $'spec-reviewer\nsecurity-reviewer\n' $'spec-reviewer\nsecurity-reviewer\n'
 
-  # mcp_tool handler の verdict (manifest snapshot として context を渡す)
+  # 2. MCP handler を先に呼ぶ (/tmp files が存在する状態で)
   local mcp_verdict
-  mcp_verdict="$(_run_mcp_tool_handler "$context")"
+  mcp_verdict="$(_run_mcp_verdict "$context")"
+
+  # 3. bash hook を実行 (all-present → /tmp files を削除)
+  local bash_verdict
+  bash_verdict="$(_run_bash_verdict "$context")"
 
   _append_shadow_log "$log_file" "evt-all-present" "bash" "$bash_verdict"
   _append_shadow_log "$log_file" "evt-all-present" "mcp_tool" "$mcp_verdict"
@@ -236,21 +225,20 @@ else:
 }
 
 @test "AC4 fixture2: 1 missing — bash/mcp_tool 両方 warn → mismatch 0" {
-  # RED: mcp_tool handler がスタブのため verdicts が不一致になる
   [ -f "$CHECK_SH" ] || { echo "check-specialist-completeness.sh が存在しない: $CHECK_SH" >&2; false; }
   [ -f "$COMPARE_SH" ] || { echo "mcp-shadow-compare.sh が存在しない: $COMPARE_SH" >&2; false; }
 
   local context="1278-test-1-missing-$$"
-  local manifest_file="$SANDBOX/manifest-1-missing.txt"
-  printf 'spec-reviewer\nsecurity-reviewer\n' > "$manifest_file"
-  local spawned_file="$SANDBOX/spawned-1-missing.txt"
-  printf 'spec-reviewer\n' > "$spawned_file"  # security-reviewer が未 spawn
-
   local log_file="$SANDBOX/shadow-1-missing.log"
 
-  local bash_verdict mcp_verdict
-  bash_verdict="$(_run_bash_hook_with_manifest "$manifest_file" "$spawned_file" "$context")"
-  mcp_verdict="$(_run_mcp_tool_handler "$context")"
+  # security-reviewer が未 spawn の状態
+  _tmp_specialist_setup "$context" $'spec-reviewer\nsecurity-reviewer\n' $'spec-reviewer\n'
+
+  local mcp_verdict
+  mcp_verdict="$(_run_mcp_verdict "$context")"
+
+  local bash_verdict
+  bash_verdict="$(_run_bash_verdict "$context")"
 
   _append_shadow_log "$log_file" "evt-1-missing" "bash" "$bash_verdict"
   _append_shadow_log "$log_file" "evt-1-missing" "mcp_tool" "$mcp_verdict"
@@ -260,22 +248,20 @@ else:
 }
 
 @test "AC4 fixture3: multiple missing — bash/mcp_tool 両方 warn → mismatch 0" {
-  # RED: mcp_tool handler がスタブのため verdicts が不一致になる
   [ -f "$CHECK_SH" ] || { echo "check-specialist-completeness.sh が存在しない: $CHECK_SH" >&2; false; }
   [ -f "$COMPARE_SH" ] || { echo "mcp-shadow-compare.sh が存在しない: $COMPARE_SH" >&2; false; }
 
   local context="1278-test-multi-missing-$$"
-  local manifest_file="$SANDBOX/manifest-multi-missing.txt"
-  printf 'spec-reviewer\nsecurity-reviewer\ncode-reviewer\n' > "$manifest_file"
-  local spawned_file="$SANDBOX/spawned-multi-missing.txt"
-  # 全て未 spawn
-  : > "$spawned_file"
-
   local log_file="$SANDBOX/shadow-multi-missing.log"
 
-  local bash_verdict mcp_verdict
-  bash_verdict="$(_run_bash_hook_with_manifest "$manifest_file" "$spawned_file" "$context")"
-  mcp_verdict="$(_run_mcp_tool_handler "$context")"
+  # 全 specialist が未 spawn の状態
+  _tmp_specialist_setup "$context" $'spec-reviewer\nsecurity-reviewer\ncode-reviewer\n' ''
+
+  local mcp_verdict
+  mcp_verdict="$(_run_mcp_verdict "$context")"
+
+  local bash_verdict
+  bash_verdict="$(_run_bash_verdict "$context")"
 
   _append_shadow_log "$log_file" "evt-multi-missing" "bash" "$bash_verdict"
   _append_shadow_log "$log_file" "evt-multi-missing" "mcp_tool" "$mcp_verdict"
@@ -285,27 +271,23 @@ else:
 }
 
 @test "AC4 fixture4: no policies.json — bash/mcp_tool 同一挙動 → mismatch 0" {
-  # RED: mcp_tool handler がスタブのため manifest_context からの policies.json 解析ができない
   [ -f "$CHECK_SH" ] || { echo "check-specialist-completeness.sh が存在しない: $CHECK_SH" >&2; false; }
   [ -f "$COMPARE_SH" ] || { echo "mcp-shadow-compare.sh が存在しない: $COMPARE_SH" >&2; false; }
 
   local context="1278-test-no-policies-$$"
-  local manifest_file="$SANDBOX/manifest-no-policies.txt"
-  printf 'spec-reviewer\n' > "$manifest_file"
-  local spawned_file="$SANDBOX/spawned-no-policies.txt"
-  printf 'spec-reviewer\n' > "$spawned_file"
+  local log_file="$SANDBOX/shadow-no-policies.log"
 
-  # manifest_context ディレクトリには deps.yaml だけを置く (policies.json なし)
+  # bash: context files に spec-reviewer (all spawned → ok)
+  _tmp_specialist_setup "$context" $'spec-reviewer\n' $'spec-reviewer\n'
+
+  # MCP: directory には deps.yaml のみ (policies.json なし) → directory mode → ok
   local fixture_dir="$SANDBOX/fixture-no-policies"
   mkdir -p "$fixture_dir"
   printf 'plugin_name: test-plugin\n' > "$fixture_dir/deps.yaml"
-  # policies.json は意図的に作成しない
 
-  local log_file="$SANDBOX/shadow-no-policies.log"
-
-  local bash_verdict mcp_verdict
-  bash_verdict="$(_run_bash_hook_with_manifest "$manifest_file" "$spawned_file" "$context")"
-  mcp_verdict="$(_run_mcp_tool_handler "$fixture_dir")"
+  local mcp_verdict bash_verdict
+  mcp_verdict="$(_run_mcp_verdict "$fixture_dir")"
+  bash_verdict="$(_run_bash_verdict "$context")"
 
   _append_shadow_log "$log_file" "evt-no-policies" "bash" "$bash_verdict"
   _append_shadow_log "$log_file" "evt-no-policies" "mcp_tool" "$mcp_verdict"
@@ -315,27 +297,22 @@ else:
 }
 
 @test "AC4 fixture5: no deps.yaml — bash/mcp_tool 同一挙動 → mismatch 0" {
-  # RED: mcp_tool handler がスタブのため manifest_context からの deps.yaml 解析ができない
   [ -f "$CHECK_SH" ] || { echo "check-specialist-completeness.sh が存在しない: $CHECK_SH" >&2; false; }
   [ -f "$COMPARE_SH" ] || { echo "mcp-shadow-compare.sh が存在しない: $COMPARE_SH" >&2; false; }
 
   local context="1278-test-no-deps-$$"
-  local manifest_file="$SANDBOX/manifest-no-deps.txt"
-  printf 'spec-reviewer\n' > "$manifest_file"
-  local spawned_file="$SANDBOX/spawned-no-deps.txt"
-  printf 'spec-reviewer\n' > "$spawned_file"
+  local log_file="$SANDBOX/shadow-no-deps.log"
 
-  # manifest_context ディレクトリには policies.json だけを置く (deps.yaml なし)
+  _tmp_specialist_setup "$context" $'spec-reviewer\n' $'spec-reviewer\n'
+
+  # MCP: directory には policies.json のみ (deps.yaml なし) → directory mode → ok
   local fixture_dir="$SANDBOX/fixture-no-deps"
   mkdir -p "$fixture_dir"
   printf '{"specialists":["spec-reviewer"]}\n' > "$fixture_dir/policies.json"
-  # deps.yaml は意図的に作成しない
 
-  local log_file="$SANDBOX/shadow-no-deps.log"
-
-  local bash_verdict mcp_verdict
-  bash_verdict="$(_run_bash_hook_with_manifest "$manifest_file" "$spawned_file" "$context")"
-  mcp_verdict="$(_run_mcp_tool_handler "$fixture_dir")"
+  local mcp_verdict bash_verdict
+  mcp_verdict="$(_run_mcp_verdict "$fixture_dir")"
+  bash_verdict="$(_run_bash_verdict "$context")"
 
   _append_shadow_log "$log_file" "evt-no-deps" "bash" "$bash_verdict"
   _append_shadow_log "$log_file" "evt-no-deps" "mcp_tool" "$mcp_verdict"
@@ -345,28 +322,24 @@ else:
 }
 
 @test "AC4 fixture6 edge: empty manifest — bash/mcp_tool 同一挙動 → mismatch 0" {
-  # RED: mcp_tool handler がスタブのため空マニフェストの処理が実装されていない
   [ -f "$CHECK_SH" ] || { echo "check-specialist-completeness.sh が存在しない: $CHECK_SH" >&2; false; }
   [ -f "$COMPARE_SH" ] || { echo "mcp-shadow-compare.sh が存在しない: $COMPARE_SH" >&2; false; }
 
   local context="1278-test-empty-manifest-$$"
-  local manifest_file="$SANDBOX/manifest-empty.txt"
-  # 空のマニフェスト
-  : > "$manifest_file"
-  local spawned_file="$SANDBOX/spawned-empty.txt"
-  : > "$spawned_file"
+  local log_file="$SANDBOX/shadow-empty-manifest.log"
 
+  # 空マニフェスト: specialists なし → no check → ok
+  _tmp_specialist_setup "$context" '' ''
+
+  # MCP: directory も空ファイル → ok
   local fixture_dir="$SANDBOX/fixture-empty"
   mkdir -p "$fixture_dir"
-  # 両ファイルとも空
   : > "$fixture_dir/deps.yaml"
   printf '{}' > "$fixture_dir/policies.json"
 
-  local log_file="$SANDBOX/shadow-empty-manifest.log"
-
-  local bash_verdict mcp_verdict
-  bash_verdict="$(_run_bash_hook_with_manifest "$manifest_file" "$spawned_file" "$context")"
-  mcp_verdict="$(_run_mcp_tool_handler "$fixture_dir")"
+  local mcp_verdict bash_verdict
+  mcp_verdict="$(_run_mcp_verdict "$fixture_dir")"
+  bash_verdict="$(_run_bash_verdict "$context")"
 
   _append_shadow_log "$log_file" "evt-empty-manifest" "bash" "$bash_verdict"
   _append_shadow_log "$log_file" "evt-empty-manifest" "mcp_tool" "$mcp_verdict"
@@ -376,27 +349,23 @@ else:
 }
 
 @test "AC4 fixture7 edge: malformed manifest (invalid JSON) — bash/mcp_tool 同一挙動 → mismatch 0" {
-  # RED: mcp_tool handler がスタブのため不正 JSON の処理が実装されていない
   [ -f "$CHECK_SH" ] || { echo "check-specialist-completeness.sh が存在しない: $CHECK_SH" >&2; false; }
   [ -f "$COMPARE_SH" ] || { echo "mcp-shadow-compare.sh が存在しない: $COMPARE_SH" >&2; false; }
 
   local context="1278-test-malformed-$$"
-  local manifest_file="$SANDBOX/manifest-malformed.txt"
-  printf 'spec-reviewer\n' > "$manifest_file"
-  local spawned_file="$SANDBOX/spawned-malformed.txt"
-  printf 'spec-reviewer\n' > "$spawned_file"
+  local log_file="$SANDBOX/shadow-malformed.log"
 
+  _tmp_specialist_setup "$context" $'spec-reviewer\n' $'spec-reviewer\n'
+
+  # MCP: policies.json が不正 JSON → parse error → graceful ok
   local fixture_dir="$SANDBOX/fixture-malformed"
   mkdir -p "$fixture_dir"
   printf 'plugin_name: test-plugin\n' > "$fixture_dir/deps.yaml"
-  # 不正な JSON を policies.json に書き込む
   printf '{invalid json: true,,,\n' > "$fixture_dir/policies.json"
 
-  local log_file="$SANDBOX/shadow-malformed.log"
-
-  local bash_verdict mcp_verdict
-  bash_verdict="$(_run_bash_hook_with_manifest "$manifest_file" "$spawned_file" "$context")"
-  mcp_verdict="$(_run_mcp_tool_handler "$fixture_dir")"
+  local mcp_verdict bash_verdict
+  mcp_verdict="$(_run_mcp_verdict "$fixture_dir")"
+  bash_verdict="$(_run_bash_verdict "$context")"
 
   _append_shadow_log "$log_file" "evt-malformed" "bash" "$bash_verdict"
   _append_shadow_log "$log_file" "evt-malformed" "mcp_tool" "$mcp_verdict"
