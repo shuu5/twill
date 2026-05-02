@@ -861,6 +861,23 @@ bash spawn-controller.sh co-issue "$PROMPT_FILE" --window-name "$WINDOW" \
 
 ---
 
+## controller type 別 primary completion signal mapping
+
+su-observer が controller window の完了を判定する際に参照する primary signal の SSOT。
+各 controller type は primary / secondary / tertiary の優先順で completion を検知する。
+Signal regex の詳細は `pilot-completion-signals.md` を参照すること（MUST）。
+
+| controller type | primary | secondary | tertiary |
+|---|---|---|---|
+| co-autopilot | `[PILOT-WAVE-COLLECTED]` | `[wave-collect] Wave N サマリ` | `[IDLE-COMPLETED]` |
+| co-issue (refine) | `[IDLE-COMPLETED]` | `Status=Refined` regex | window kill (env=1) |
+| co-issue (新規) | `>>> Issue #N 作成完了` | `[IDLE-COMPLETED]` | window kill |
+| co-explore | `[CO-EXPLORE-COMPLETE]` | `>>> explore 完了:` | `[IDLE-COMPLETED]` |
+| co-architect | `>>> arch-phase-review PASS` | `[arch-merge]` | `[IDLE-COMPLETED]` |
+| co-self-improve | (TBD) | (TBD) | `[STAGNATE]` |
+
+---
+
 ## Wave 種別ごとのチャネル選択ガイド
 
 | Wave 種別 | 推奨チャネル |

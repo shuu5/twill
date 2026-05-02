@@ -38,6 +38,7 @@ spawnable_by:
 5. **`refs/pitfalls-catalog.md` を Read（MUST）** — 既知の落とし穴・Memory Principles・Worker auto mode 確認方法を把握
 6. **`refs/monitor-channel-catalog.md` を Read（SHOULD、Wave 管理時は MUST）** — Monitor チャネル定義と Hybrid 検知ポリシーを把握
 6.5. **Monitor task 起動 MUST**: `bash plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh` で出力されたコマンドを Monitor tool で実行する（cld-observe-any daemon + tail -F .supervisor/cld-observe-any.log の連携起動）
+6.6. **controller type 判定 MUST**: controller spawn 前に controller type（co-autopilot / co-issue / co-explore 等）を特定し、`refs/monitor-channel-catalog.md` の「controller type 別 primary completion signal mapping」table を参照して primary completion signal を確認すること
 7. `>>> su-observer 起動完了。指示をお待ちしています。` を表示
 
 ## Step 1: 常駐ループ（ユーザー指示待ち）
