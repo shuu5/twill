@@ -363,6 +363,7 @@ skills:
       - reference: pitfalls-catalog   # Phase A: 起動時 Step 0 Read MUST
       - reference: proxy-dialog-playbook  # #814 Phase 2: proxy 対話完全手順
       - reference: ref-invariants     # 不変条件 A-M 正典参照（境界説明）
+      - reference: observer-supervise-checklist         # #1245: supervise cycle MUST verify 7 項目チェックリスト
       - reference: su-observer-supervise-channels      # #984: supervise 必須並行チャンネル詳細
       - reference: su-observer-controller-spawn-playbook  # #984: controller spawn パターン・並列度・spawn prompt 規約
       - reference: su-observer-wave-management         # #984: Wave 管理・問題検出・過去介入記録確認
@@ -818,6 +819,13 @@ refs:
     description: "負荷テスト level の定量基準"
 
   # su-observer split refs (#984: SKILL.md token_bloat 解消)
+  observer-supervise-checklist:
+    type: reference
+    path: skills/su-observer/refs/observer-supervise-checklist.md
+    spawnable_by: [controller, workflow, atomic]
+    can_spawn: []
+    description: "supervise loop 各 cycle で MUST verify する 7 項目チェックリスト（#1189 AC9.2）"
+
   su-observer-supervise-channels:
     type: reference
     path: skills/su-observer/refs/su-observer-supervise-channels.md

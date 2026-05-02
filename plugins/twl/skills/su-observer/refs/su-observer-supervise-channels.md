@@ -1,5 +1,7 @@
 # supervise 1 iteration — 必須並行チャンネル
 
+> **cycle 開始前 checklist（SHOULD）**: 各 iteration 開始前に **`refs/observer-supervise-checklist.md` を Read** して 7 項目を確認すること（#1245）。チャンネル起動前の前提確認が目的。
+
 co-autopilot を supervise している間、1 iteration で以下のチャンネルを並行実行しなければならない（SHALL）:
 
 | チャンネル | 目的 | Worker spawn あり | Pilot-only chain | 閾値/間隔 |
