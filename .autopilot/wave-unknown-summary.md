@@ -4,6 +4,18 @@
 
 **全タスク完了**。次 session は新規 Wave or 新規タスク着手。Open bug fix なし。
 
+---
+
+## #1242 fix 記録 (2026-05-02)
+
+**architecture spec PR で worker-arch-doc-reviewer が抜け落ちる bug を修正**
+
+- 対象: `plugins/twl/scripts/pr-review-manifest.sh` L184
+- 修正: glob `*/architecture/*.md` → `*architecture/*.md`（top-level 相対パスにマッチするよう修正）
+- テスト: B-1〜B-6 regression tests 追加（phase-review/merge-gate × top-level/nested-1/nested-2）
+- CI: `.github/workflows/pr-review-manifest-bats.yml` 追加
+- PR: #1251 (Closes #1242)
+
 ## 本 session 完了 PRs
 
 ### twill main
