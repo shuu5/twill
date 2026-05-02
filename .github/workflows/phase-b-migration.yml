@@ -1,0 +1,35 @@
+name: ADR-024 Phase B Migration
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ADR-024 Phase B migration (project-board-refined-migrate --force)
+        env:
+          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+        run: |
+          # PAT 存在チェック（未設定時は早期 fail）
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "ERROR: ADD_TO_PROJECT_PAT が未設定です" >&2
+            exit 1
+          fi
+          bash plugins/twl/scripts/project-board-refined-migrate.sh --force
+          # Status=Todo または Board 未登録の refined OPEN Issue を検出
+          # projectItems[0] は twill-ecosystem board のエントリを期待
+          REMAINING=$(gh issue list --repo shuu5/twill --search 'is:open label:refined' \
+            --json number,projectItems --limit 100 \
+            | jq '[.[] | select(
+                .projectItems == null or
+                (.projectItems | length == 0) or
+                (.projectItems[0].status.name == "Todo")
+              )] | length')
+          if [ "${REMAINING:-0}" -gt 0 ]; then
+            echo "⚠️ ${REMAINING} 件の refined Issue が Status=Todo のままです"
+            exit 1
+          fi
+          echo "✓ Status=Todo の refined Issue: 0 件"

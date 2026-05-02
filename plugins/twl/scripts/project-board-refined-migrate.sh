@@ -45,8 +45,8 @@ if [[ -z "$FIELDS" ]]; then
   exit 0
 fi
 
-FOUND_REFINED=$(echo "$FIELDS" | jq -r \
-  '.fields[] | select(.name=="Status") | .options[]? | select(.id=="3d983780") | .id' 2>/dev/null || echo "")
+FOUND_REFINED=$(echo "$FIELDS" | jq -r --arg rid "$REFINED_OPTION_ID" \
+  '.fields[] | select(.name=="Status") | .options[]? | select(.id==$rid) | .id' 2>/dev/null || echo "")
 if [[ -n "$FOUND_REFINED" ]]; then
   echo "✓ Refined option ID (3d983780) 確認済み"
 else
@@ -87,6 +87,18 @@ PROJECT_ID=$(gh api graphql -f query='
   }' -f owner="$OWNER" -F num="$PROJECT_NUM" \
   -q '.data.user.projectV2.id' 2>/dev/null || echo "")
 
+# ── set_status_refined: Status=Refined への単体設定 helper ──────
+# explore section 7.1 set_status_refined() を migration script に正式組み込み
+set_status_refined() {
+  local item_id="$1"
+  local project_id="$2"
+  gh project item-edit \
+    --id "$item_id" \
+    --project-id "$project_id" \
+    --field-id "$STATUS_FIELD_ID" \
+    --single-select-option-id "$REFINED_OPTION_ID" >/dev/null
+}
+
 # ── Step 4: 各 Issue を処理 ───────────────────────────────────
 echo "Step 4: Status 更新処理..."
 UPDATED=0
@@ -104,8 +116,15 @@ while IFS= read -r issue_num; do
     continue
   fi
 
+  # In Progress / Done は active 状態 → 上書き禁止
+  if [[ "$current_status" == "In Progress" || "$current_status" == "Done" ]]; then
+    echo "  #${issue_num}: Status=${current_status} → アクティブ状態のためスキップ"
+    SKIPPED=$((SKIPPED + 1))
+    continue
+  fi
+
   if [[ -z "$current_status" ]]; then
-    echo "  #${issue_num}: Board 未登録 → スキップ"
+    echo "  #${issue_num}: Board 未登録 → スキップ（手動 Board 追加が必要）"
     NOT_ON_BOARD=$((NOT_ON_BOARD + 1))
     continue
   fi
@@ -116,12 +135,14 @@ while IFS= read -r issue_num; do
     ITEM_ID=$(echo "$BOARD_ITEMS" | jq -r --argjson n "$issue_num" \
       '.items[] | select(.content.number==$n and .content.type=="Issue") | .id' 2>/dev/null | head -1)
     if [[ -n "$ITEM_ID" && -n "$PROJECT_ID" ]]; then
-      gh project item-edit --id "$ITEM_ID" --project-id "$PROJECT_ID" \
-        --field-id "$STATUS_FIELD_ID" --single-select-option-id "$REFINED_OPTION_ID" >/dev/null 2>&1
-      echo "  #${issue_num}: Status=${current_status} → Refined ✓"
-      UPDATED=$((UPDATED + 1))
+      if set_status_refined "$ITEM_ID" "$PROJECT_ID"; then
+        echo "  #${issue_num}: Status=${current_status} → Refined ✓"
+        UPDATED=$((UPDATED + 1))
+      else
+        echo "  #${issue_num}: item-edit 失敗 (exit=$?)" >&2
+      fi
     else
-      echo "  #${issue_num}: item-edit 失敗 (ITEM_ID='${ITEM_ID}', PROJECT_ID='${PROJECT_ID}')"
+      echo "  #${issue_num}: item-edit スキップ (ITEM_ID='${ITEM_ID}', PROJECT_ID='${PROJECT_ID}')" >&2
     fi
   fi
 done < <(echo "$LABELED_ISSUES" | jq -r '.[].number')
@@ -130,3 +151,4 @@ echo ""
 echo "=== 完了 ==="
 echo "  更新: ${UPDATED} 件 / スキップ(冪等): ${SKIPPED} 件 / Board未登録: ${NOT_ON_BOARD} 件"
 [ "$DRY_RUN" -eq 1 ] && echo "  (dry-run モード: 実際の変更なし。--force で実行)"
+exit 0
