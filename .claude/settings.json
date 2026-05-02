@@ -60,6 +60,16 @@
             "type": "command",
             "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-merge-guard.sh\"",
             "timeout": 3000
+          },
+          {
+            "type": "mcp_tool",
+            "server": "twl",
+            "tool": "twl_validate_merge",
+            "input": {
+              "command": "${tool_input.command}"
+            },
+            "outputType": "log",
+            "timeout": 10
           }
         ]
       }
