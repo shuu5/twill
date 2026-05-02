@@ -64,7 +64,9 @@ teardown() {
   # RED: 実装前は存在しないため fail する
   local reviewing_line comm_after_reviewing
 
-  reviewing_line=$(grep -n '"reviewing"' "$SCRIPT_SRC" | grep -v "^#" | tail -1 | cut -d: -f1)
+  # "reviewing" と "session-comm.sh" + "issue-review-aggregate" が同一ブロック内に存在する
+  # reviewing inject ブロックの先頭行（inject_exhausted ブロック手前 = 最初の reviewing）
+  reviewing_line=$(grep -n '"reviewing"' "$SCRIPT_SRC" | grep -v "^[0-9]*:#" | head -1 | cut -d: -f1)
   [[ -n "$reviewing_line" ]] \
     || fail "AC1: reviewing 条件がスクリプトに存在しない"
 
@@ -99,7 +101,8 @@ teardown() {
   # RED: 実装前は存在しないため fail する
   local fixing_line comm_after_fixing
 
-  fixing_line=$(grep -n '"fixing"' "$SCRIPT_SRC" | grep -v "^#" | tail -1 | cut -d: -f1)
+  # fixing inject ブロックの先頭行（inject_exhausted ブロック手前 = 最初の fixing）
+  fixing_line=$(grep -n '"fixing"' "$SCRIPT_SRC" | grep -v "^[0-9]*:#" | head -1 | cut -d: -f1)
   [[ -n "$fixing_line" ]] \
     || fail "AC2: fixing 条件がスクリプトに存在しない"
 
