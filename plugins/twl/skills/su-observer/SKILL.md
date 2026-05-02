@@ -89,7 +89,7 @@ spawnable_by:
   "queue": [{
     "wave": 7,
     "issues": [1155],
-    "spawn_cmd_argv": ["bash", "${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/spawn-controller.sh", "..."],
+    "spawn_cmd_argv": ["bash", "<TWILL_ROOT>/plugins/twl/skills/su-observer/scripts/spawn-controller.sh", "..."],
     "depends_on_waves": [6],
     "spawn_when": "all_current_wave_idle_completed"
   }]

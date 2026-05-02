@@ -754,10 +754,10 @@ tmux display-message -t "twill-ipatho1:wt-co-explore-114550" -p '#{window_id}' 2
   && echo "alive" || echo "gone"
 ```
 
-**共通ライブラリ**: `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/lib/observer-window-check.sh` に `_check_window_alive()` として実装済み。
+**共通ライブラリ**: `${CLAUDE_PLUGIN_ROOT}/scripts/lib/observer-window-check.sh` に `_check_window_alive()` として実装済み。
 
 ```bash
-source "scripts/lib/observer-window-check.sh"
+source "${CLAUDE_PLUGIN_ROOT}/scripts/lib/observer-window-check.sh"
 _check_window_alive "wt-co-explore-114550" && echo "alive" || echo "gone"
 # session 名を指定する場合
 _check_window_alive "wt-co-explore-114550" "twill-ipatho1" && echo "alive" || echo "gone"
