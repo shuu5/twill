@@ -95,3 +95,82 @@ teardown() {
   assert_success
   assert_output --partial "worker-architecture"
 }
+
+# ===========================================================================
+# B-1: phase-review + top-level architecture/foo.md → worker-arch-doc-reviewer 含む
+# RED: L184 の */architecture/*.md は先頭に1文字以上を要求するため top-level にマッチしない
+#      fix: *architecture/*.md|... に変更すると PASS
+# ===========================================================================
+
+@test "B-1: phase-review + top-level architecture/foo.md → worker-arch-doc-reviewer included (RED)" {
+  mkdir -p "$SANDBOX/architecture"
+
+  run bash -c "echo 'architecture/foo.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode phase-review"
+  assert_success
+  assert_output --partial "worker-arch-doc-reviewer"
+}
+
+# ===========================================================================
+# B-2: phase-review + nested-1 architecture/contexts/foo.md → worker-arch-doc-reviewer 含む
+# RED: L184 の */architecture/*/*.md は先頭に1文字以上を要求するため top-level nested にマッチしない
+# ===========================================================================
+
+@test "B-2: phase-review + nested-1 architecture/contexts/foo.md → worker-arch-doc-reviewer included (RED)" {
+  mkdir -p "$SANDBOX/architecture/contexts"
+
+  run bash -c "echo 'architecture/contexts/foo.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode phase-review"
+  assert_success
+  assert_output --partial "worker-arch-doc-reviewer"
+}
+
+# ===========================================================================
+# B-3: phase-review + nested-2 architecture/decisions/sub/foo.md → worker-arch-doc-reviewer 含む
+# RED: L184 の */architecture/*/*/*.md は先頭に1文字以上を要求するため top-level nested-2 にマッチしない
+# ===========================================================================
+
+@test "B-3: phase-review + nested-2 architecture/decisions/sub/foo.md → worker-arch-doc-reviewer included (RED)" {
+  mkdir -p "$SANDBOX/architecture/decisions/sub"
+
+  run bash -c "echo 'architecture/decisions/sub/foo.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode phase-review"
+  assert_success
+  assert_output --partial "worker-arch-doc-reviewer"
+}
+
+# ===========================================================================
+# B-4: merge-gate + top-level architecture/foo.md → worker-arch-doc-reviewer 含む
+# RED: L184 の */architecture/*.md は先頭に1文字以上を要求するため top-level にマッチしない
+# ===========================================================================
+
+@test "B-4: merge-gate + top-level architecture/foo.md → worker-arch-doc-reviewer included (RED)" {
+  mkdir -p "$SANDBOX/architecture"
+
+  run bash -c "echo 'architecture/foo.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  assert_output --partial "worker-arch-doc-reviewer"
+}
+
+# ===========================================================================
+# B-5: merge-gate + nested-1 architecture/contexts/foo.md → worker-arch-doc-reviewer 含む
+# RED: L184 の */architecture/*/*.md は先頭に1文字以上を要求するため top-level nested にマッチしない
+# ===========================================================================
+
+@test "B-5: merge-gate + nested-1 architecture/contexts/foo.md → worker-arch-doc-reviewer included (RED)" {
+  mkdir -p "$SANDBOX/architecture/contexts"
+
+  run bash -c "echo 'architecture/contexts/foo.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  assert_output --partial "worker-arch-doc-reviewer"
+}
+
+# ===========================================================================
+# B-6: merge-gate + nested-2 architecture/decisions/sub/foo.md → worker-arch-doc-reviewer 含む
+# RED: L184 の */architecture/*/*/*.md は先頭に1文字以上を要求するため top-level nested-2 にマッチしない
+# ===========================================================================
+
+@test "B-6: merge-gate + nested-2 architecture/decisions/sub/foo.md → worker-arch-doc-reviewer included (RED)" {
+  mkdir -p "$SANDBOX/architecture/decisions/sub"
+
+  run bash -c "echo 'architecture/decisions/sub/foo.md' | bash '$SANDBOX/scripts/pr-review-manifest.sh' --mode merge-gate"
+  assert_success
+  assert_output --partial "worker-arch-doc-reviewer"
+}

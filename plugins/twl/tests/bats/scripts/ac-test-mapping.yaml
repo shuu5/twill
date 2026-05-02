@@ -1,0 +1,37 @@
+mappings:
+  - ac_index: 1
+    ac_text: "phase-review + top-level architecture/foo.md で worker-arch-doc-reviewer が含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
+    test_name: "B-1: phase-review + top-level architecture/foo.md → worker-arch-doc-reviewer included (RED)"
+    impl_files:
+      - "plugins/twl/scripts/pr-review-manifest.sh"
+  - ac_index: 2
+    ac_text: "phase-review + nested-1 architecture/contexts/foo.md で worker-arch-doc-reviewer が含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
+    test_name: "B-2: phase-review + nested-1 architecture/contexts/foo.md → worker-arch-doc-reviewer included (RED)"
+    impl_files:
+      - "plugins/twl/scripts/pr-review-manifest.sh"
+  - ac_index: 3
+    ac_text: "phase-review + nested-2 architecture/decisions/sub/foo.md で worker-arch-doc-reviewer が含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
+    test_name: "B-3: phase-review + nested-2 architecture/decisions/sub/foo.md → worker-arch-doc-reviewer included (RED)"
+    impl_files:
+      - "plugins/twl/scripts/pr-review-manifest.sh"
+  - ac_index: 4
+    ac_text: "merge-gate + top-level architecture/foo.md で worker-arch-doc-reviewer が含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
+    test_name: "B-4: merge-gate + top-level architecture/foo.md → worker-arch-doc-reviewer included (RED)"
+    impl_files:
+      - "plugins/twl/scripts/pr-review-manifest.sh"
+  - ac_index: 5
+    ac_text: "merge-gate + nested-1 architecture/contexts/foo.md で worker-arch-doc-reviewer が含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
+    test_name: "B-5: merge-gate + nested-1 architecture/contexts/foo.md → worker-arch-doc-reviewer included (RED)"
+    impl_files:
+      - "plugins/twl/scripts/pr-review-manifest.sh"
+  - ac_index: 6
+    ac_text: "merge-gate + nested-2 architecture/decisions/sub/foo.md で worker-arch-doc-reviewer が含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
+    test_name: "B-6: merge-gate + nested-2 architecture/decisions/sub/foo.md → worker-arch-doc-reviewer included (RED)"
+    impl_files:
+      - "plugins/twl/scripts/pr-review-manifest.sh"
