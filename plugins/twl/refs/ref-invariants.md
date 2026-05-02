@@ -163,4 +163,4 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 
 ## SU-* との境界
 
-SU-1〜SU-7 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-M とは独立した体系である。SU-* の定義は [`skills/su-observer/SKILL.md`](../skills/su-observer/SKILL.md) を参照。
+SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-M とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。

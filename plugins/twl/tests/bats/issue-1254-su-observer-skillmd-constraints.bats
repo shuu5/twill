@@ -235,7 +235,7 @@ setup() {
     '--with-chain --issue'
   )
   for kw in "${keywords[@]}"; do
-    grep -q "${kw}" "${CONSTRAINTS_MD}" || {
+    grep -q -- "${kw}" "${CONSTRAINTS_MD}" || {
       echo "Missing keyword: ${kw}" >&2
       return 1
     }
@@ -278,7 +278,7 @@ setup() {
   if ! command -v loom >/dev/null 2>&1; then
     skip "loom command not found"
   fi
-  run loom --check
+  run loom check
   [ "${status}" -eq 0 ]
 }
 
