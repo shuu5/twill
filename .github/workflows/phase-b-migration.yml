@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: ADR-024 Phase B migration (project-board-refined-migrate --force)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
         run: |
           bash plugins/twl/scripts/project-board-refined-migrate.sh --force
           REMAINING=$(gh issue list --repo shuu5/twill --search 'is:open label:refined' \

@@ -96,7 +96,7 @@ set_status_refined() {
     --id "$item_id" \
     --project-id "$project_id" \
     --field-id "$STATUS_FIELD_ID" \
-    --single-select-option-id "$REFINED_OPTION_ID" >/dev/null 2>&1
+    --single-select-option-id "$REFINED_OPTION_ID" >/dev/null
 }
 
 # ── Step 4: 各 Issue を処理 ───────────────────────────────────
@@ -135,11 +135,14 @@ while IFS= read -r issue_num; do
     ITEM_ID=$(echo "$BOARD_ITEMS" | jq -r --argjson n "$issue_num" \
       '.items[] | select(.content.number==$n and .content.type=="Issue") | .id' 2>/dev/null | head -1)
     if [[ -n "$ITEM_ID" && -n "$PROJECT_ID" ]]; then
-      set_status_refined "$ITEM_ID" "$PROJECT_ID"
-      echo "  #${issue_num}: Status=${current_status} → Refined ✓"
-      UPDATED=$((UPDATED + 1))
+      if set_status_refined "$ITEM_ID" "$PROJECT_ID"; then
+        echo "  #${issue_num}: Status=${current_status} → Refined ✓"
+        UPDATED=$((UPDATED + 1))
+      else
+        echo "  #${issue_num}: item-edit 失敗 (exit=$?)" >&2
+      fi
     else
-      echo "  #${issue_num}: item-edit 失敗 (ITEM_ID='${ITEM_ID}', PROJECT_ID='${PROJECT_ID}')"
+      echo "  #${issue_num}: item-edit スキップ (ITEM_ID='${ITEM_ID}', PROJECT_ID='${PROJECT_ID}')" >&2
     fi
   fi
 done < <(echo "$LABELED_ISSUES" | jq -r '.[].number')
