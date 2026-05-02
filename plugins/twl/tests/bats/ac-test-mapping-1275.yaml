@@ -1,0 +1,103 @@
+mappings:
+  - ac_index: 1
+    ac_text: "co-issue Phase 4 issue create 時に body footer として provenance footer を append (既存 issue-cross-repo-create.md の --body-file convention で実装)"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac1: co-issue-phase4-aggregate.md が存在すること"
+      - "ac1: co-issue-phase4-aggregate.md に provenance footer append 記述が存在すること（RED: 現状は未実装）"
+      - "ac1: co-issue-phase4-aggregate.md に --body-file convention による provenance footer 記述が存在すること（RED）"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md"
+      - "plugins/twl/commands/issue-cross-repo-create.md"
+
+  - ac_index: 2
+    ac_text: "起票後 PostToolUse hook (post-tool-use-issue-create-label.sh 新規) で gh issue edit --add-label origin:host:* origin:repo:* を自動実行"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac2: post-tool-use-issue-create-label.sh が存在すること（RED: 新規ファイル未存在）"
+      - "ac2: post-tool-use-issue-create-label.sh に gh issue edit --add-label origin:host: 記述が存在すること（RED）"
+      - "ac2: post-tool-use-issue-create-label.sh に origin:repo: label 付与記述が存在すること（RED）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/post-tool-use-issue-create-label.sh"
+    # impl_files 注記: post-tool-use-issue-create-label.sh は新規ファイル（現在未存在）
+
+  - ac_index: 3
+    ac_text: "bats test で provenance footer + label が確実に付与されることを検証 (co-issue 経由 / 直接 gh issue create 経由 両方)"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac3: hook スクリプトが co-issue 経由の issue create を検知できること（RED）"
+      - "ac3: hook スクリプトが直接 gh issue create 経由も処理できること（RED）"
+      - "ac3: provenance footer テンプレートに origin:host: と origin:repo: が含まれること（RED）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/post-tool-use-issue-create-label.sh"
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md"
+
+  - ac_index: 4
+    ac_text: "co-explore summary.md の冒頭メタ情報セクションに provenance section が自動追加される (PostToolUse Write hook 流用または explore-summary-link.sh 拡張)"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac4: explore-summary-link.sh が存在すること"
+      - "ac4: explore-summary-link.sh に provenance section 追加ロジックが存在すること（RED: 現状は未実装）"
+      - "ac4: explore-summary-link.sh で summary.md に provenance メタ情報セクションが書き込まれること（RED）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/explore-summary-link.sh"
+
+  - ac_index: 5
+    ac_text: "PostToolUse hook で label 付与時の重複付与回避: 既付与 label は skip (べき等性確保)"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac5: hook スクリプトに既存 label チェックロジックが存在すること（RED）"
+      - "ac5: hook スクリプトで origin:host: が既付与の場合は gh issue edit をスキップすること（RED）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/post-tool-use-issue-create-label.sh"
+
+  - ac_index: 6
+    ac_text: "gh の rate limit (5000 req/h) に抵触しない設計 — bulk 起票時は 1 issue 1 edit に制限"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac6: hook スクリプトで 1 issue につき 1 回の gh issue edit に制限されること（RED）"
+      - "ac6: issue-lifecycle-orchestrator.sh に bulk 起票時の rate limit 考慮記述があること（RED）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/post-tool-use-issue-create-label.sh"
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  - ac_index: 7
+    ac_text: "hook ON/OFF 切り替え機構 (環境変数 TWILL_PROVENANCE_AUTO_LABEL=0 で disable 可能)"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac7: hook スクリプトに TWILL_PROVENANCE_AUTO_LABEL env var チェックが存在すること（RED）"
+      - "ac7: TWILL_PROVENANCE_AUTO_LABEL=0 時に hook が exit 0 で即終了すること（RED）"
+      - "ac7: stub で TWILL_PROVENANCE_AUTO_LABEL=0 を設定した場合 hook が label 付与をスキップすること（RED）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/post-tool-use-issue-create-label.sh"
+
+  - ac_index: 8
+    ac_text: "gh issue create の引数 parse は --body, --body-file, -b, -F, パイプ stdin の全パターンを test fixture でカバー"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac8: hook スクリプトに --body 引数 parse ロジックが存在すること（RED）"
+      - "ac8: hook スクリプトに --body-file / -F 引数 parse ロジックが存在すること（RED）"
+      - "ac8: hook スクリプトに -b 短縮形 parse ロジックが存在すること（RED）"
+      - "ac8: hook スクリプトにパイプ stdin parse ロジックが存在すること（RED）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/post-tool-use-issue-create-label.sh"
+
+  - ac_index: 9
+    ac_text: "ユーザー直接起票 (terminal から直接 gh issue create) への適用範囲を documented (Phase D で再評価予定の旨を明示)"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac9: hook スクリプトまたは関連ドキュメントに Phase D 再評価の記述が存在すること（RED）"
+      - "ac9: post-tool-use-issue-create-label.sh に適用範囲コメント（ユーザー直接起票 Phase D）があること（RED）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/post-tool-use-issue-create-label.sh"
+    # プロセス AC（ドキュメント記述）のため、将来 docs ファイルが追加される可能性あり
+
+  - ac_index: 10
+    ac_text: "hook 失敗時の fallback (label 付与失敗を WARN log に記録、起票自体は成功させる)"
+    test_file: "plugins/twl/tests/bats/issue-1275-provenance-phase4.bats"
+    test_names:
+      - "ac10: hook スクリプトに label 付与失敗時の WARN log 記録ロジックが存在すること（RED）"
+      - "ac10: hook スクリプトが label 付与失敗時に exit 0 で終了すること（RED）"
+      - "ac10: stub で gh issue edit 失敗時に hook が exit 0 で終了すること（RED）"
+    impl_files:
+      - "plugins/twl/scripts/hooks/post-tool-use-issue-create-label.sh"
