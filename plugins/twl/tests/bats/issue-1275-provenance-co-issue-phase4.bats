@@ -282,7 +282,7 @@ setup() {
   # AC: gh issue edit 失敗時でも hook は exit 0 で終了する
   # RED: スクリプト不在のため fail
   [ -f "${HOOK_SCRIPT}" ]
-  grep -qiE 'fallback|WARN|warn||| true|exit 0.*fail|fail.*exit 0|2>/dev/null' "${HOOK_SCRIPT}"
+  grep -qiE 'fallback|WARN|warn' "${HOOK_SCRIPT}" || grep -qF '|| true' "${HOOK_SCRIPT}" || grep -qE 'exit 0.*fail|fail.*exit 0|2>/dev/null' "${HOOK_SCRIPT}"
 }
 
 @test "ac10: hook script logs WARN on label assignment failure" {
