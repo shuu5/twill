@@ -33,6 +33,8 @@ setup() {
 
   TMPDIR_TEST="$(mktemp -d)"
   export TMPDIR_TEST
+  # SUPERVISOR_DIR は相対パスのみ許可（#1238）。TMPDIR_TEST を CWD にして相対パスで使う
+  cd "${TMPDIR_TEST}"
 }
 
 teardown() {
@@ -73,8 +75,8 @@ teardown() {
   # AC: log 末尾行が <ISO 8601> [detection-gap] type=test-gap severity=medium: smoke にマッチ
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  local log_file="${TMPDIR_TEST}/intervention-log.md"
-  SUPERVISOR_DIR="${TMPDIR_TEST}" \
+  local log_file=".supervisor-test/intervention-log.md"
+  SUPERVISOR_DIR=".supervisor-test" \
     bash "${SCRIPT}" --type test-gap --detail "smoke" --severity medium
   run tail -1 "${log_file}"
   [[ "${output}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z\ \[detection-gap\]\ type=test-gap\ severity=medium:\ smoke$ ]]
@@ -84,10 +86,10 @@ teardown() {
   # AC: 末尾行が \d{4}-...-\d{2}T\d{2}:\d{2}:\d{2}Z \[detection-gap\] type=.* severity=.*: .* にマッチ
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  local log_file="${TMPDIR_TEST}/intervention-log.md"
-  SUPERVISOR_DIR="${TMPDIR_TEST}" \
+  local log_file=".supervisor-test/intervention-log.md"
+  SUPERVISOR_DIR=".supervisor-test" \
     bash "${SCRIPT}" --type test-gap --detail "smoke" --severity medium
-  run bash -c "tail -1 '${log_file}' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z \[detection-gap\] type=[^ ]+ severity=[^:]+: .+$'"
+  run bash -c "tail -1 '${log_file}' | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z \[detection-gap\] type=[^ ]+ severity=[^:]+: .+\$'"
   [ "${status}" -eq 0 ]
 }
 
@@ -99,7 +101,7 @@ teardown() {
   # AC: .supervisor/intervention-log.md が存在しない状態で実行 → ファイル新規作成
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  local supervisor_dir="${TMPDIR_TEST}/.supervisor-new"
+  local supervisor_dir=".supervisor-new"
   [ ! -d "${supervisor_dir}" ]
   SUPERVISOR_DIR="${supervisor_dir}" \
     bash "${SCRIPT}" --type missing-monitor --detail "test creation"
@@ -110,7 +112,7 @@ teardown() {
   # AC: 親ディレクトリが存在しない場合でも mkdir -p で作成される
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  local supervisor_dir="${TMPDIR_TEST}/nested/deep/.supervisor"
+  local supervisor_dir="nested/deep/.supervisor"
   [ ! -d "${supervisor_dir}" ]
   SUPERVISOR_DIR="${supervisor_dir}" \
     bash "${SCRIPT}" --type pitfall-miss --detail "deep dir test"
@@ -122,7 +124,7 @@ teardown() {
   # AC: 新規作成後のファイルに 1 行（追記分）が存在する
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  local supervisor_dir="${TMPDIR_TEST}/.supervisor-c1b"
+  local supervisor_dir=".supervisor-c1b"
   SUPERVISOR_DIR="${supervisor_dir}" \
     bash "${SCRIPT}" --type intervention-fail --detail "single line test"
   run wc -l "${supervisor_dir}/intervention-log.md"
@@ -138,7 +140,7 @@ teardown() {
   # AC: --severity high 実行時に stderr へ gh issue create hint が出力される
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  run bash -c "SUPERVISOR_DIR='${TMPDIR_TEST}' bash '${SCRIPT}' --type proxy-stuck --detail 'high severity test' --severity high 2>&1 >/dev/null"
+  run bash -c "SUPERVISOR_DIR='.supervisor-test' bash '${SCRIPT}' --type proxy-stuck --detail 'high severity test' --severity high 2>&1 >/dev/null"
   [ "${status}" -eq 0 ]
   [[ "${output}" =~ "gh issue create" ]]
 }
@@ -147,7 +149,7 @@ teardown() {
   # AC: hint の label に scope/plugins-twl,ctx/supervision,enhancement,P1 が含まれる
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  run bash -c "SUPERVISOR_DIR='${TMPDIR_TEST}' bash '${SCRIPT}' --type kill-miss --detail 'label check' --severity high 2>&1 >/dev/null"
+  run bash -c "SUPERVISOR_DIR='.supervisor-test' bash '${SCRIPT}' --type kill-miss --detail 'label check' --severity high 2>&1 >/dev/null"
   [ "${status}" -eq 0 ]
   [[ "${output}" =~ "scope/plugins-twl" ]]
 }
@@ -156,10 +158,10 @@ teardown() {
   # AC: --severity high でも動作1（log 追記）が実行される
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  SUPERVISOR_DIR="${TMPDIR_TEST}" \
+  SUPERVISOR_DIR=".supervisor-test" \
     bash "${SCRIPT}" --type kill-miss --detail "high severity log check" --severity high
-  [ -f "${TMPDIR_TEST}/intervention-log.md" ]
-  run grep '\[detection-gap\]' "${TMPDIR_TEST}/intervention-log.md"
+  [ -f ".supervisor-test/intervention-log.md" ]
+  run grep '\[detection-gap\]' ".supervisor-test/intervention-log.md"
   [ "${status}" -eq 0 ]
 }
 
@@ -167,7 +169,7 @@ teardown() {
   # AC: --severity medium では gh issue create hint は出力されない（high のみ）
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  run bash -c "SUPERVISOR_DIR='${TMPDIR_TEST}' bash '${SCRIPT}' --type test-gap --detail 'medium check' --severity medium 2>&1 >/dev/null"
+  run bash -c "SUPERVISOR_DIR='.supervisor-test' bash '${SCRIPT}' --type test-gap --detail 'medium check' --severity medium 2>&1 >/dev/null"
   [ "${status}" -eq 0 ]
   [[ ! "${output}" =~ "gh issue create" ]]
 }
@@ -218,7 +220,7 @@ teardown() {
   # AC: 動作2 — doobidoo memory_store の推奨 content/tags/metadata が stderr に出力される
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  run bash -c "SUPERVISOR_DIR='${TMPDIR_TEST}' bash '${SCRIPT}' --type test-gap --detail 'hint check' 2>&1 >/dev/null"
+  run bash -c "SUPERVISOR_DIR='.supervisor-test' bash '${SCRIPT}' --type test-gap --detail 'hint check' 2>&1 >/dev/null"
   [ "${status}" -eq 0 ]
   [[ "${output}" =~ "doobidoo" ]] || [[ "${output}" =~ "memory_store" ]] || [[ "${output}" =~ "[hint]" ]]
 }
@@ -227,7 +229,7 @@ teardown() {
   # AC: hint に content フィールドが含まれる
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  run bash -c "SUPERVISOR_DIR='${TMPDIR_TEST}' bash '${SCRIPT}' --type test-gap --detail 'content check' 2>&1 >/dev/null"
+  run bash -c "SUPERVISOR_DIR='.supervisor-test' bash '${SCRIPT}' --type test-gap --detail 'content check' 2>&1 >/dev/null"
   [ "${status}" -eq 0 ]
   [[ "${output}" =~ "content" ]] || [[ "${output}" =~ "tags" ]]
 }
@@ -240,9 +242,9 @@ teardown() {
   # AC: --severity 未指定時のデフォルトが medium
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  SUPERVISOR_DIR="${TMPDIR_TEST}" \
+  SUPERVISOR_DIR=".supervisor-test" \
     bash "${SCRIPT}" --type test-gap --detail "default severity test"
-  run grep 'severity=medium' "${TMPDIR_TEST}/intervention-log.md"
+  run grep 'severity=medium' ".supervisor-test/intervention-log.md"
   [ "${status}" -eq 0 ]
 }
 
@@ -254,9 +256,9 @@ teardown() {
   # AC: --related-issue #N が指定された場合、log または hint に反映される
   # RED: script が存在しないため fail
   [ -f "${SCRIPT}" ]
-  run bash -c "SUPERVISOR_DIR='${TMPDIR_TEST}' bash '${SCRIPT}' --type test-gap --detail 'issue ref test' --related-issue '#1187' 2>&1"
+  run bash -c "SUPERVISOR_DIR='.supervisor-test' bash '${SCRIPT}' --type test-gap --detail 'issue ref test' --related-issue '#1187' 2>&1"
   [ "${status}" -eq 0 ]
-  [[ "${output}" =~ "1187" ]] || grep -q '1187' "${TMPDIR_TEST}/intervention-log.md" 2>/dev/null
+  [[ "${output}" =~ "1187" ]] || grep -q '1187' ".supervisor-test/intervention-log.md" 2>/dev/null
 }
 
 # ===========================================================================

@@ -72,18 +72,19 @@ fi
 DETAIL="${DETAIL//$'\n'/ }"
 DETAIL="${DETAIL//$'\r'/ }"
 
-# Action 1: .supervisor/intervention-log.md に追記（prior art: spawn-controller.sh L58）
+# Action 1: .supervisor/intervention-log.md に追記（flock で race condition 防止 #1250）
 mkdir -p "$_supervisor_dir"
 _ts="$(date -u +%FT%TZ)"
-if [[ -n "$RELATED_ISSUE" ]]; then
-  printf '%s [detection-gap] type=%s severity=%s related=%s: %s\n' \
-    "$_ts" "$TYPE" "$SEVERITY" "$RELATED_ISSUE" "$DETAIL" \
-    >> "$_supervisor_dir/intervention-log.md"
-else
-  printf '%s [detection-gap] type=%s severity=%s: %s\n' \
-    "$_ts" "$TYPE" "$SEVERITY" "$DETAIL" \
-    >> "$_supervisor_dir/intervention-log.md"
-fi
+{
+  flock 9
+  if [[ -n "$RELATED_ISSUE" ]]; then
+    printf '%s [detection-gap] type=%s severity=%s related=%s: %s\n' \
+      "$_ts" "$TYPE" "$SEVERITY" "$RELATED_ISSUE" "$DETAIL" >&9
+  else
+    printf '%s [detection-gap] type=%s severity=%s: %s\n' \
+      "$_ts" "$TYPE" "$SEVERITY" "$DETAIL" >&9
+  fi
+} 9>>"$_supervisor_dir/intervention-log.md"
 
 # Action 2: doobidoo memory_store hint → stderr（MCP は shell から呼出不可のため hint のみ）
 {
