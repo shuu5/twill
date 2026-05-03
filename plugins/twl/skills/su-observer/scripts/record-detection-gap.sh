@@ -56,10 +56,16 @@ case "$SEVERITY" in
   *) echo "ERROR: --severity must be low|medium|high (got: $SEVERITY)" >&2; usage; exit 1 ;;
 esac
 
-# SUPERVISOR_DIR basic path safety (reject traversal patterns)
+# SUPERVISOR_DIR path safety: reject traversal, absolute paths, and forbidden characters
 _supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
 if [[ "$_supervisor_dir" == *..* ]]; then
   echo "ERROR: SUPERVISOR_DIR must not contain '..'" >&2; exit 1
+fi
+if [[ "$_supervisor_dir" =~ ^/ ]]; then
+  echo "ERROR: SUPERVISOR_DIR must not be an absolute path (got: ${_supervisor_dir})" >&2; exit 1
+fi
+if [[ "$_supervisor_dir" =~ [$\;\|\`\&\(\)\<\>] ]]; then
+  echo "ERROR: SUPERVISOR_DIR must only contain allowed characters (alphanumeric, dot, hyphen, underscore, slash)" >&2; exit 1
 fi
 
 # Sanitize DETAIL: strip newlines and control characters to prevent log injection
