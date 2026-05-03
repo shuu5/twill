@@ -50,6 +50,10 @@
 | architecture-drift | worker-architecture specialist が architecture spec drift を検出した際の category 値（ref-specialist-output-schema.md の category enum） | PR Cycle |
 | mailbox | MCP server 接続プロセス間の application-level message hub。`${AUTOPILOT_DIR}/mailbox/` 配下の file-based jsonl で実装。Autopilot Context 内部の通信機構として位置づけ（AC5-9）。session-comm.sh（tmux pane 操作）とは責務分離 | TWiLL Integration |
 | mailbox file | `${AUTOPILOT_DIR}/mailbox/<receiver>.jsonl`。per-receiver append-only JSONL ファイル。flock で保護（ADR-028）。mode=0o600。ULID ベースの message id を持つ | TWiLL Integration |
+| Pinned Reference | 40-char commit SHA によるクロスリポジトリ参照の固定点。`protocols/<name>.md` の `Pinned Reference` セクションに記録される。tag/branch などの可変参照は禁止（ADR-033） | Cross-Repo Protocol |
+| protocols/ | クロスリポジトリ知識転送プロトコルを格納するディレクトリ（`architecture/protocols/`）。contracts/（同一リポジトリ内 Context 間）とは直交する概念であり、外部リポジトリの Pinned Reference を管理する（ADR-033） | Cross-Repo Protocol |
+| SHA pin | 可変参照（tag/branch）を避け、40-char commit SHA で依存を固定すること。再現性と一貫性を保証する（ADR-033） | Cross-Repo Protocol |
+| Drift Detection | SHA ピンと実際の Provider HEAD を定期比較してずれを検出する運用。cron・GitHub Actions・手動レビューのいずれかで実施する（ADR-033） | Cross-Repo Protocol |
 
 ## 照合ポリシー
 
