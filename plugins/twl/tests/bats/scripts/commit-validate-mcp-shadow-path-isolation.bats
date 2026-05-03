@@ -1,14 +1,14 @@
 #!/usr/bin/env bats
 # commit-validate-mcp-shadow-path-isolation.bats
 #
-# RED テストスタブ (Issue #1286)
+# SHADOW_LOG パス隔離検証 (Issue #1286)
 #
 # AC-1: commit-validate-mcp-shadow.bats 内の SHADOW_LOG が /tmp 固定パスを使用していない
 #        （$SANDBOX ベースであること）
 # AC-2: bats teardown 後、/tmp/mcp-shadow-commit-validate.log に残留しない
 #
-# 全テストは実装前に fail (RED) する。
-# 実装後: L20 の SHADOW_LOG="/tmp/..." を SHADOW_LOG="$SANDBOX/..." に変更すれば GREEN になる。
+# 実装: SHADOW_LOG を setup() 内で "$SANDBOX/mcp-shadow-commit-validate.log" に設定済み。
+# 全テストは GREEN で通過する。
 #
 
 load '../helpers/common'
@@ -37,7 +37,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 
 @test "ac1: SHADOW_LOG のグローバル代入が /tmp 固定パスを使用していない" {
-  # RED: L20 が SHADOW_LOG="/tmp/..." のためこの grep が一致し fail する
+  # setup() 内で $SANDBOX ベースに設定されているため /tmp 固定パスが存在しないことを検証
   [ -f "$BATS_FILE" ] || {
     echo "テスト対象ファイルが存在しない: $BATS_FILE" >&2
     false
@@ -52,7 +52,7 @@ teardown() {
 }
 
 @test "ac1: SHADOW_LOG が SANDBOX ベースのパスで設定されている" {
-  # RED: L20 で /tmp/... が設定されており $SANDBOX/... が存在しないため fail する
+  # setup() 内で SHADOW_LOG="$SANDBOX/mcp-shadow-commit-validate.log" が設定されていることを検証
   [ -f "$BATS_FILE" ] || {
     echo "テスト対象ファイルが存在しない: $BATS_FILE" >&2
     false
@@ -68,8 +68,7 @@ teardown() {
 }
 
 @test "ac1: SHADOW_LOG のグローバルスコープ代入が setup() 内または setup() 後に限定されている" {
-  # RED: L20 がグローバルスコープ（setup() 外）で /tmp/... を代入しているため fail する
-  # 実装後は setup() 内で SANDBOX を参照する形になる（テスト間分離が保証される）
+  # setup() 内で SANDBOX を参照することでテスト間分離が保証されていることを検証
   [ -f "$BATS_FILE" ] || {
     echo "テスト対象ファイルが存在しない: $BATS_FILE" >&2
     false
@@ -93,14 +92,11 @@ teardown() {
 # AC-2: teardown 後、/tmp/mcp-shadow-commit-validate.log が残留しない
 #
 # WHEN commit-validate-mcp-shadow.bats の teardown を確認する
-# THEN /tmp/mcp-shadow-commit-validate.log が cleanup される仕組みがある
-#      または SHADOW_LOG が $SANDBOX/ ベースであり common_teardown で自動削除される
-# RED: SHADOW_LOG が /tmp 固定パスのため common_teardown では削除されず残留する
+# THEN SHADOW_LOG が $SANDBOX/ ベースであり common_teardown で自動削除される
 # ---------------------------------------------------------------------------
 
 @test "ac2: teardown が /tmp/mcp-shadow-commit-validate.log を明示的に削除するか SANDBOX ベースである" {
-  # RED: SHADOW_LOG が /tmp/... のため common_teardown では削除されず、
-  #      かつ teardown() 内に rm -f /tmp/... が存在しないため fail する
+  # SHADOW_LOG が $SANDBOX/ ベースのため common_teardown で自動クリーンアップされることを検証
   [ -f "$BATS_FILE" ] || {
     echo "テスト対象ファイルが存在しない: $BATS_FILE" >&2
     false
@@ -133,14 +129,8 @@ teardown() {
   fi
 }
 
-@test "ac2: /tmp/mcp-shadow-commit-validate.log が現在のテスト実行後に残留しない（実地検証）" {
-  # RED: SHADOW_LOG="/tmp/..." のため、テスト実行後に /tmp ファイルが残留するリスクがある
-  # このテストは実地で /tmp への書き込みが発生しないことを検証する
-
-  # 事前に /tmp の当該ファイルを削除（前回実行残留を排除）
-  rm -f /tmp/mcp-shadow-commit-validate.log
-
-  # SHADOW_LOG のパスを直接チェック: /tmp/... を使用していれば危険状態
+@test "ac2: /tmp/mcp-shadow-commit-validate.log が現在のテスト実行後に残留しない（静的検証）" {
+  # SHADOW_LOG が /tmp/... を使用していないことを静的に検証する（副作用なし）
   [ -f "$BATS_FILE" ] || {
     echo "テスト対象ファイルが存在しない: $BATS_FILE" >&2
     false
