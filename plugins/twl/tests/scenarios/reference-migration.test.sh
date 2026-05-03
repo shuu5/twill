@@ -239,13 +239,14 @@ test_non_sync_refs_no_marker() {
 }
 run_test "sync 対象外ファイルに同期マーカーがない [edge]" test_non_sync_refs_no_marker
 
-# Scenario: twl sync-docs --check の通過 (line 11)
-test_twl_sync_docs_check() {
+# Scenario: twl --check の通過（ファイル存在検証）
+# twl sync-docs はフラグ形式 (--sync-docs TARGET_DIR)。--check で全依存ファイル存在を検証
+test_twl_check_passes() {
   if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output exit_code
-  output=$(cd "${PROJECT_ROOT}" && twl sync-docs --check 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl --check 2>&1)
   exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
     echo "$output" >&2
@@ -255,14 +256,9 @@ test_twl_sync_docs_check() {
 }
 
 if command -v twl &>/dev/null; then
-  # twl sync-docs may not be available yet
-  if cd "${PROJECT_ROOT}" && twl sync-docs --help &>/dev/null 2>&1; then
-    run_test "twl sync-docs --check がエラーなしで通過" test_twl_sync_docs_check
-  else
-    run_test_skip "twl sync-docs --check がエラーなしで通過" "twl sync-docs subcommand not available"
-  fi
+  run_test "twl --check がエラーなしで通過（refs ファイル存在検証）" test_twl_check_passes
 else
-  run_test_skip "twl sync-docs --check がエラーなしで通過" "twl command not found"
+  run_test_skip "twl --check がエラーなしで通過" "twl command not found"
 fi
 
 # =============================================================================
@@ -447,20 +443,20 @@ run_test "全 12 new reference に type: reference frontmatter" test_all_refs_ha
 
 # Scenario: reference の deps.yaml 登録 (line 44)
 # WHEN: 全 12 references の deps.yaml 登録が完了した
-# THEN: refs セクションに 16 エントリが存在する（既存 4 + 新規 12）
-test_deps_refs_count_15() {
+# THEN: refs セクションに 16 以上のエントリが存在する（既存 4 + 新規 12 が最小セット、その後の migration で追加あり）
+test_deps_refs_count_at_least_16() {
   assert_file_exists "$DEPS_YAML" || return 1
   assert_valid_yaml "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "
 refs = data.get('refs', {})
 count = len(refs)
-if count != 16:
-    print(f'Expected 16 refs, got {count}', file=sys.stderr)
+if count < 16:
+    print(f'Expected at least 16 refs, got {count}', file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
 "
 }
-run_test "deps.yaml refs セクションに 16 エントリ (既存 4 + 新規 12)" test_deps_refs_count_15
+run_test "deps.yaml refs セクションに 16 以上のエントリ (既存 4 + 新規 12 が最小セット)" test_deps_refs_count_at_least_16
 
 # 全 12 new refs が deps.yaml に登録されている
 test_deps_all_new_refs_registered() {
@@ -539,19 +535,22 @@ sys.exit(0)
 }
 run_test "deps.yaml 全 refs の type が reference [edge]" test_deps_refs_type_all_reference
 
-# Edge case: 全 refs の path が refs/<name>.md と一致
+# Edge case: 全 refs の path が refs/<name>.md または skills/*/refs/<name>.md と一致
+# su-observer / co-autopilot などスキル固有 refs は skills/<skill>/refs/<name>.md パスを使用
 test_deps_refs_path_consistency() {
   assert_file_exists "$DEPS_YAML" || return 1
   yaml_get "$DEPS_YAML" "
+import re
 refs = data.get('refs', {})
 errors = []
 for name, entry in refs.items():
     if not isinstance(entry, dict):
         continue
-    expected_path = f'refs/{name}.md'
     actual_path = entry.get('path', '')
-    if actual_path != expected_path:
-        errors.append(f'{name}: path={actual_path}, expected {expected_path}')
+    flat_path = f'refs/{name}.md'
+    skill_pattern = re.compile(r'^skills/[^/]+/refs/' + re.escape(name) + r'\.md$')
+    if actual_path != flat_path and not skill_pattern.match(actual_path):
+        errors.append(f'{name}: path={actual_path}, expected refs/{name}.md or skills/*/refs/{name}.md')
 if errors:
     for e in errors:
         print(e, file=sys.stderr)
@@ -559,15 +558,15 @@ if errors:
 sys.exit(0)
 "
 }
-run_test "deps.yaml 全 refs の path が refs/<name>.md [edge: パス整合性]" test_deps_refs_path_consistency
+run_test "deps.yaml 全 refs の path が refs/<name>.md または skills/*/refs/<name>.md [edge: パス整合性]" test_deps_refs_path_consistency
 
-# Scenario: twl validate が通過 (line 48)
+# Scenario: twl --validate が通過 (line 48)
 test_twl_validate_refs() {
   if ! command -v twl &>/dev/null; then
     return 1
   fi
   local output exit_code
-  output=$(cd "${PROJECT_ROOT}" && twl validate 2>&1)
+  output=$(cd "${PROJECT_ROOT}" && twl --validate 2>&1)
   exit_code=$?
   if [[ $exit_code -ne 0 ]]; then
     echo "$output" >&2
@@ -577,9 +576,9 @@ test_twl_validate_refs() {
 }
 
 if command -v twl &>/dev/null; then
-  run_test "twl validate がエラーなしで通過する (refs)" test_twl_validate_refs
+  run_test "twl --validate がエラーなしで通過する (refs)" test_twl_validate_refs
 else
-  run_test_skip "twl validate がエラーなしで通過する (refs)" "twl command not found"
+  run_test_skip "twl --validate がエラーなしで通過する (refs)" "twl command not found"
 fi
 
 # =============================================================================
