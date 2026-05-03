@@ -7,12 +7,13 @@ SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") --autopilot-dir DIR [--ttl SECONDS] [--dry-run]
+Usage: $(basename "$0") --autopilot-dir DIR [--project-dir DIR] [--ttl SECONDS] [--dry-run]
 
 セッション完了後の残存リソースを一括クリーンアップする。
 
 Options:
   --autopilot-dir DIR   .autopilot ディレクトリのパス（必須）
+  --project-dir DIR     プロジェクトルート（並列 Wave の active branches 保護に使用）
   --ttl SECONDS         failed セッションのアーカイブ閾値（デフォルト: 86400 = 24h）
   --dry-run             アクションをログ出力のみ（実行しない）
   -h, --help            このヘルプを表示
@@ -21,12 +22,14 @@ EOF
 
 # ── 引数パース ──
 AUTOPILOT_DIR=""
+PROJECT_DIR=""
 TTL="${DEV_AUTOPILOT_CLEANUP_TTL:-86400}"
 DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --autopilot-dir) AUTOPILOT_DIR="$2"; shift 2 ;;
+    --project-dir) PROJECT_DIR="$2"; shift 2 ;;
     --ttl) TTL="$2"; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -43,6 +46,10 @@ fi
 # パストラバーサル防止（ディレクトリ存在確認より先に実行）
 if [[ "$AUTOPILOT_DIR" =~ \.\. ]]; then
   echo "ERROR: AUTOPILOT_DIR に '..' は使用できません" >&2
+  exit 1
+fi
+if [[ -n "$PROJECT_DIR" && "$PROJECT_DIR" =~ \.\. ]]; then
+  echo "ERROR: PROJECT_DIR に '..' は使用できません" >&2
   exit 1
 fi
 
@@ -208,15 +215,30 @@ for issue_file in "$AUTOPILOT_DIR/issues"/issue-*.json; do
 done
 
 # ── Phase 2: 孤立 worktree 検出・削除 ──
-# state file に記録された branch を収集
+# state file に記録された branch を収集（並列 Wave 全体をスキャン）
 declare -A active_branches
+
+# 指定 autopilot-dir の issues
 for issue_file in "$AUTOPILOT_DIR/issues"/issue-*.json; do
   [[ -f "$issue_file" ]] || continue
   branch=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('branch',''))" "$issue_file" 2>/dev/null || echo "")
-  if [[ -n "$branch" ]]; then
-    active_branches["$branch"]=1
-  fi
+  [[ -n "$branch" ]] && active_branches["$branch"]=1
 done
+
+# --project-dir 指定時: 他の Wave (.autopilot*/) の issues も走査して active branches を保護
+if [[ -n "$PROJECT_DIR" && -d "$PROJECT_DIR" ]]; then
+  for wave_dir in "$PROJECT_DIR"/.autopilot*/; do
+    [[ -d "$wave_dir/issues" ]] || continue
+    # 同一 autopilot-dir は既にスキャン済み（末尾スラッシュを正規化）
+    [[ "$(realpath "$wave_dir" 2>/dev/null || echo "${wave_dir%/}")" == \
+       "$(realpath "$AUTOPILOT_DIR" 2>/dev/null || echo "$AUTOPILOT_DIR")" ]] && continue
+    for issue_file in "$wave_dir/issues"/issue-*.json; do
+      [[ -f "$issue_file" ]] || continue
+      branch=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('branch',''))" "$issue_file" 2>/dev/null || echo "")
+      [[ -n "$branch" ]] && active_branches["$branch"]=1
+    done
+  done
+fi
 
 # git worktree list から autopilot 関連の worktree を検出
 while IFS= read -r line; do
@@ -261,10 +283,21 @@ while IFS= read -r line; do
           done
           if $_wt_ok; then
             echo "[cleanup] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
-            # リモートブランチも削除（パストラバーサル防止: L288 と同一の `.` 除外 regex を使用）
+            # リモートブランチも削除（パストラバーサル防止: `.` 除外 regex を使用）
             if [[ -n "$wt_branch" && "$wt_branch" =~ ^[a-zA-Z0-9_/\-]+$ ]]; then
-              git push origin --delete "$wt_branch" 2>/dev/null || \
-                echo "[cleanup] ⚠️ リモートブランチ削除失敗: $wt_branch（続行）" >&2
+              # AC-2: git push --delete 直前に OPEN PR がないか確認
+              # gh 不在時はフェールセーフ（削除をスキップ）
+              if ! command -v gh &>/dev/null; then
+                echo "WARN: [cleanup] gh CLI が未インストールです — PR チェック不可のためリモートブランチ削除スキップ: $wt_branch" >&2
+              else
+                _open_prs=$(gh pr list --head "$wt_branch" --state open 2>/dev/null || true)
+                if [[ -n "$_open_prs" ]]; then
+                  echo "WARN: [cleanup] ブランチ $wt_branch に OPEN PR があります — リモートブランチ削除スキップ" >&2
+                else
+                  git push origin --delete "$wt_branch" 2>/dev/null || \
+                    echo "[cleanup] ⚠️ リモートブランチ削除失敗: $wt_branch（続行）" >&2
+                fi
+              fi
             else
               echo "[cleanup] ⚠️ ブランチ名に不正な文字: $wt_branch — リモート削除スキップ" >&2
             fi
