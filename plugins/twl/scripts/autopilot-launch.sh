@@ -222,8 +222,8 @@ _check_label_fallback() {
   fi
   # gh 完全不可用（exit≠0）→ non-fatal（graceful fallback、#1241）
   if [[ "$gh_exit" -ne 0 ]]; then
-    echo "[$(date -Iseconds)] ALLOW_GH_UNAVAILABLE issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
-    echo "WARN: gh API 障害のため status gate をスキップします (issue=#${issue_num})" >&2
+    echo "[$(date -Iseconds)] ALLOW_GH_UNAVAILABLE(exit=${gh_exit}) issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
+    echo "WARN: gh API 障害のため status gate をスキップします (issue=#${issue_num}, exit=${gh_exit})" >&2
     return 0
   fi
   echo "[$(date -Iseconds)] ${deny_log_token} issue=#${issue_num}" >> "$_STATUS_GATE_LOG" 2>/dev/null || true
