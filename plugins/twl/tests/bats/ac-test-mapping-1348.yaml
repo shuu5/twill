@@ -1,0 +1,65 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/refs/baseline-bash.md に「bash スクリプトの入力検証（パス・識別子・列挙値）は allowlist regex 方式を採用する」規約セクションを追加する（配置先は本 Issue で確定: bash 固有 DSL に密着し既存 regex 節と隣接できるため）"
+    test_file: "plugins/twl/tests/bats/issue-1348-bash-allowlist-rule.bats"
+    test_names:
+      - "issue-1348-bash-allowlist-rule: AC1 section '## 11.' exists in baseline-bash.md"
+      - "issue-1348-bash-allowlist-rule: AC1 section heading mentions allowlist or allow-list"
+      - "issue-1348-bash-allowlist-rule: AC1 section heading mentions regex or 正規表現"
+      - "issue-1348-bash-allowlist-rule: AC1 §11 appears after §10 in file"
+    impl_files:
+      - "plugins/twl/refs/baseline-bash.md"
+
+  - ac_index: 2
+    ac_text: "規約セクションに allowlist パターン例（数値: ^[1-9][0-9]*$、安全パス: ^[A-Za-z0-9._/-]+$、列挙: case ... in foo|bar) ;;）と blocklist と比較した利点（境界値網羅・新攻撃面に対する fail-closed 性質）を明記する"
+    test_file: "plugins/twl/tests/bats/issue-1348-bash-allowlist-rule.bats"
+    test_names:
+      - "issue-1348-bash-allowlist-rule: AC2 numeric pattern example present (^[1-9][0-9]*$)"
+      - "issue-1348-bash-allowlist-rule: AC2 safe-path pattern example present (^[A-Za-z0-9._/-]+$)"
+      - "issue-1348-bash-allowlist-rule: AC2 enum pattern example present (case ... in)"
+      - "issue-1348-bash-allowlist-rule: AC2 fail-closed benefit mentioned"
+      - "issue-1348-bash-allowlist-rule: AC2 blocklist comparison mentioned (境界値 or blocklist)"
+    impl_files:
+      - "plugins/twl/refs/baseline-bash.md"
+
+  - ac_index: 3
+    ac_text: "既存スクリプトの prior art として plugins/twl/skills/su-observer/scripts/spawn-controller.sh の CHAIN_ISSUE regex バリデーション（L167）と VALID_SKILLS 配列チェック（L113-125）を引用する"
+    test_file: "plugins/twl/tests/bats/issue-1348-bash-allowlist-rule.bats"
+    test_names:
+      - "issue-1348-bash-allowlist-rule: AC3 spawn-controller.sh referenced in baseline-bash.md"
+      - "issue-1348-bash-allowlist-rule: AC3 CHAIN_ISSUE regex validation referenced"
+      - "issue-1348-bash-allowlist-rule: AC3 VALID_SKILLS array check referenced"
+      - "issue-1348-bash-allowlist-rule: AC3 spawn-controller.sh CHAIN_ISSUE regex exists at expected line in source"
+      - "issue-1348-bash-allowlist-rule: AC3 spawn-controller.sh VALID_SKILLS array exists in source"
+    impl_files:
+      - "plugins/twl/refs/baseline-bash.md"
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  - ac_index: 4
+    ac_text: "plugins/twl/refs/baseline-security-checklist.md に bash 入力検証の allowlist 規約への参照を追加する（bash 固有セクションが存在しない場合は新節「bash 入力検証」を追加し、同ファイルのパストラバーサル節と相互参照する）"
+    test_file: "plugins/twl/tests/bats/issue-1348-bash-allowlist-rule.bats"
+    test_names:
+      - "issue-1348-bash-allowlist-rule: AC4 bash 入力検証 section exists in security checklist"
+      - "issue-1348-bash-allowlist-rule: AC4 cross-link to baseline-bash.md exists in security checklist"
+      - "issue-1348-bash-allowlist-rule: AC4 allowlist reference exists in security checklist"
+      - "issue-1348-bash-allowlist-rule: AC4 cross-reference to path traversal section present"
+    impl_files:
+      - "plugins/twl/refs/baseline-security-checklist.md"
+
+  - ac_index: 5
+    ac_text: "後続作業として PR #1345 の record-detection-gap.sh SUPERVISOR_DIR バリデーション（L59-69）を allowlist 方式に置換する Issue を分離起票する（または本 Issue で同時修正、実装担当者の判断に委任）"
+    test_file: null
+    test_names: []
+    impl_files: []
+    # NOTE: AC5 はファイルコンテンツで検証困難なためテストスキップ。
+    # GitHub Issue 起票またはコメント記録にて完了確認する。
+
+  - ac_index: 6
+    ac_text: "plugins/twl/scripts/ および plugins/twl/skills/*/scripts/ 内の bash 入力検証パターンを grep で棚卸しし、blocklist 方式の箇所を列挙して baseline-bash.md の新規節内または Issue コメントに記録する（棚卸し結果の記録をもって AC 完了とする）"
+    test_file: "plugins/twl/tests/bats/issue-1348-bash-allowlist-rule.bats"
+    test_names:
+      - "issue-1348-bash-allowlist-rule: AC6 blocklist inventory section exists in baseline-bash.md §11"
+      - "issue-1348-bash-allowlist-rule: AC6 at least one blocklist script path recorded in §11"
+      - "issue-1348-bash-allowlist-rule: AC6 レビュー観点 line present in §11"
+    impl_files:
+      - "plugins/twl/refs/baseline-bash.md"
