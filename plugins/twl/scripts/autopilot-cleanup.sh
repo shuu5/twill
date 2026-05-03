@@ -286,15 +286,17 @@ while IFS= read -r line; do
             # リモートブランチも削除（パストラバーサル防止: `.` 除外 regex を使用）
             if [[ -n "$wt_branch" && "$wt_branch" =~ ^[a-zA-Z0-9_/\-]+$ ]]; then
               # AC-2: git push --delete 直前に OPEN PR がないか確認
-              _open_prs=""
-              if command -v gh &>/dev/null; then
-                _open_prs=$(gh pr list --head "$wt_branch" --state open 2>/dev/null || true)
-              fi
-              if [[ -n "$_open_prs" ]]; then
-                echo "WARN: [cleanup] ブランチ $wt_branch に OPEN PR があります — リモートブランチ削除スキップ" >&2
+              # gh 不在時はフェールセーフ（削除をスキップ）
+              if ! command -v gh &>/dev/null; then
+                echo "WARN: [cleanup] gh CLI が未インストールです — PR チェック不可のためリモートブランチ削除スキップ: $wt_branch" >&2
               else
-                git push origin --delete "$wt_branch" 2>/dev/null || \
-                  echo "[cleanup] ⚠️ リモートブランチ削除失敗: $wt_branch（続行）" >&2
+                _open_prs=$(gh pr list --head "$wt_branch" --state open 2>/dev/null || true)
+                if [[ -n "$_open_prs" ]]; then
+                  echo "WARN: [cleanup] ブランチ $wt_branch に OPEN PR があります — リモートブランチ削除スキップ" >&2
+                else
+                  git push origin --delete "$wt_branch" 2>/dev/null || \
+                    echo "[cleanup] ⚠️ リモートブランチ削除失敗: $wt_branch（続行）" >&2
+                fi
               fi
             else
               echo "[cleanup] ⚠️ ブランチ名に不正な文字: $wt_branch — リモート削除スキップ" >&2
