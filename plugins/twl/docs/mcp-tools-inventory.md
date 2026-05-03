@@ -128,7 +128,7 @@ ADR-029 (twl-mcp-integration-strategy) Decision 2 準拠。
 |---|---|---|
 | `twl_validate_deps(plugin_root)` | `pre-tool-use-deps-yaml-guard.sh` | deps.yaml YAML syntax + integrity 検証 |
 | `twl_validate_merge(branch, base, timeout_sec?)` | `pre-bash-merge-guard.sh` | merge 前の不変条件 (worktree, worker_window, status) 検証 |
-| `twl_validate_commit(message, files, timeout_sec?)` | `pre-bash-commit-validate.sh` | commit 前の `twl --validate` 実行 |
+| `twl_validate_commit(command, files, timeout_sec?)` | `pre-bash-commit-validate.sh` | commit コマンド文字列の記録 (MCP shadow = 記録専用; ブロックは bash 側が担当) |
 | `twl_check_completeness(spec_path, context?)` | `check-specialist-completeness.sh` | specialist spawn manifest との突合 |
 | `twl_check_specialist(spec_path)` | (新規) | specialist 設計の整合性検証 |
 

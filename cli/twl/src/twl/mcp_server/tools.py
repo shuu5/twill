@@ -962,8 +962,32 @@ def twl_validate_merge_handler(
             return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
 
 
+def extract_commit_message_from_command(command: str) -> str:
+    """Extract commit message body from a git commit command string.
+
+    Handles -m/--message flags; returns "" for -F (file-based) or unrecognized forms.
+    """
+    import shlex
+
+    try:
+        parts = shlex.split(command)
+    except ValueError:
+        return ""
+
+    i = 0
+    while i < len(parts):
+        token = parts[i]
+        if token in ("-m", "--message") and i + 1 < len(parts):
+            return parts[i + 1]
+        # -m"message" without space (e.g. -m"feat: X")
+        if token.startswith("-m") and len(token) > 2:
+            return token[2:]
+        i += 1
+    return ""
+
+
 def twl_validate_commit_handler(
-    message: str,
+    command: str,
     files: list[str],
     timeout_sec: int | None = 300,
 ) -> dict:
@@ -1271,9 +1295,9 @@ try:
         return json.dumps(twl_validate_merge_handler(branch=branch, base=base, timeout_sec=timeout_sec), ensure_ascii=False)
 
     @mcp.tool()
-    def twl_validate_commit(message: str, files: list[str], timeout_sec: int | None = 300) -> str:
+    def twl_validate_commit(command: str, files: list[str], timeout_sec: int | None = 300) -> str:
         """validation module: commit message and file deps validation (in-process, no subprocess)."""
-        return json.dumps(twl_validate_commit_handler(message=message, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(twl_validate_commit_handler(command=command, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
 
     @mcp.tool()
     def twl_check_completeness(manifest_context: str) -> str:
@@ -1405,9 +1429,9 @@ except ImportError:
         """validation module: merge pre-flight guard (2-guard scope only)."""
         return json.dumps(twl_validate_merge_handler(branch=branch, base=base, timeout_sec=timeout_sec), ensure_ascii=False)
 
-    def twl_validate_commit(message: str, files: list[str], timeout_sec: int | None = 300) -> str:  # type: ignore[misc]
+    def twl_validate_commit(command: str, files: list[str], timeout_sec: int | None = 300) -> str:  # type: ignore[misc]
         """validation module: commit message and file deps validation (in-process, no subprocess)."""
-        return json.dumps(twl_validate_commit_handler(message=message, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(twl_validate_commit_handler(command=command, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
 
     def twl_check_completeness(manifest_context: str) -> str:  # type: ignore[misc]
         """validation module: specialist completeness check via flock-guarded manifest files."""

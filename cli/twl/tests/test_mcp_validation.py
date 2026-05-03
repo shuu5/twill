@@ -367,18 +367,21 @@ class TestAC21bValidateMergeSignature:
 # ---------------------------------------------------------------------------
 
 class TestAC21cValidateCommitSignature:
-    """AC2-1c: twl_validate_commit_handler(message: str, files: list[str], timeout_sec: int | None = 300) -> dict."""
+    """AC2-1c: twl_validate_commit_handler(command: str, files: list[str], timeout_sec: int | None = 300) -> dict.
+
+    Updated in Issue #1334: message → command (handler now accepts full git command string).
+    """
 
     def test_ac2_1c_validate_commit_handler_signature(self):
-        # AC: twl_validate_commit_handler(message: str, files: list[str], timeout_sec: int | None = 300) -> dict
-        # RED: 未実装のため ImportError
+        # AC: twl_validate_commit_handler(command: str, files: list[str], timeout_sec: int | None = 300) -> dict
+        # Updated by Issue #1334: message param renamed to command
         from twl.mcp_server.tools import twl_validate_commit_handler
 
         sig = inspect.signature(twl_validate_commit_handler)
         params = sig.parameters
 
-        assert "message" in params, (
-            "twl_validate_commit_handler に message 引数がない (AC2-1c 未実装)"
+        assert "command" in params, (
+            "twl_validate_commit_handler に command 引数がない (Issue #1334 で message → command に変更)"
         )
         assert "files" in params, (
             "twl_validate_commit_handler に files 引数がない (AC2-1c 未実装)"
@@ -629,15 +632,18 @@ class TestAC25aValidateMergeTimeout:
 # ---------------------------------------------------------------------------
 
 class TestAC25bValidateCommitTimeout:
-    """AC2-5b: twl_validate_commit_handler(message="test", files=[], timeout_sec=0) がタイムアウト応答を返すこと."""
+    """AC2-5b: twl_validate_commit_handler(command="git commit -m test", files=[], timeout_sec=0) がタイムアウト応答を返すこと.
+
+    Updated in Issue #1334: message → command parameter.
+    """
 
     def test_ac2_5b_validate_commit_timeout_response(self):
-        # AC: twl_validate_commit_handler(message="test", files=[], timeout_sec=0) が
+        # AC: twl_validate_commit_handler(command="...", files=[], timeout_sec=0) が
         #     {ok: False, error_type: "timeout", exit_code: 124} を返すこと
-        # RED: 未実装のため ImportError
+        # Updated by Issue #1334: message param renamed to command
         from twl.mcp_server.tools import twl_validate_commit_handler
 
-        result = twl_validate_commit_handler(message="test", files=[], timeout_sec=0)
+        result = twl_validate_commit_handler(command='git commit -m "test"', files=[], timeout_sec=0)
 
         assert isinstance(result, dict), (
             f"twl_validate_commit_handler の戻り値が dict でない: {type(result)} (AC2-5b 未実装)"
