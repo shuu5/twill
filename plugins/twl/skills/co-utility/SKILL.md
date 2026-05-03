@@ -24,20 +24,25 @@ standalone ユーティリティコマンドの統合エントリポイント。
 
 ユーザー入力（引数 or プロンプト）からカテゴリとコマンドを判定する。
 
-### カテゴリマッピング
+### カテゴリマッピング（コマンド別キーワード辞書）
 
-| カテゴリ | キーワード | コマンド |
-|---------|-----------|---------|
-| **Worktree** | worktree, 一覧, 削除, list, delete | worktree-list, worktree-delete |
-| **検証** | validate, 検証, チェック | twl-validate |
-| **開発** | services, サービス, ui, capture, スクショ, schema | services, ui-capture, schema-update |
+各コマンドへ直接マッチするキーワードを定義する。マッチすれば menu skip して自動選択する。
+
+| コマンド | 代表キーワード | 備考 |
+|---------|--------------|------|
+| worktree-list | worktree, 一覧, list, ls | Worktree 一覧のみ |
+| worktree-delete | worktree-delete, 削除, delete, rm | Worktree 削除のみ |
+| twl-validate | validate, 検証, チェック, audit, 整合性 | 構造・型検証 |
+| services | services, サービス, 起動 | 開発サービス管理 |
+| ui-capture | ui, capture, スクショ, スクリーンショット, screenshot | UI キャプチャ |
+| schema-update | schema, schema-update | Zod/OpenAPI 更新 |
 
 ### 判定ロジック
 
-1. **プロンプトあり**: キーワードマッチでカテゴリ → コマンドを特定
-   - 1 コマンドに絞れる → Step 2 へ
-   - カテゴリは分かるがコマンドが曖昧 → カテゴリ内の候補をテーブル表示し AskUserQuestion
-   - 該当なし → Step 1 へ
+1. **プロンプトあり**: キーワード辞書でコマンドを特定
+   - 1 コマンドに絞れる → **menu skip**（matched keyword log: 自動選択）→ Step 2 へ
+   - 複数コマンドが候補 → Step 1 へ（絞り込み不能 → menu 表示）
+   - キーワードなし → Step 1 へ（menu 表示）
 2. **プロンプトなし**: Step 1 へ
 
 ## Step 1: 対話的ツール紹介
