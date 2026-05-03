@@ -33,3 +33,38 @@ mappings:
     test_name: "#1169 C5: chain-runner.sh が AUTOPILOT_DIR=$HOME/.autopilot-evil のとき trace ファイルを書き込む（RED）"
     impl_files:
       - "plugins/twl/scripts/chain-runner.sh"
+
+  # ---------------------------------------------------------------------------
+  # Issue #1318: feat(co-issue) Step 2a-5 dispatch 自動化
+  # ---------------------------------------------------------------------------
+  - ac_index: 1
+    ac_text: "co-issue/refs/co-issue-phase2-bundles.md L80-89 の AskUserQuestion ブロックを削除する（grep -c 'AskUserQuestion' が 0 になること）"
+    issue: 1318
+    test_file: "plugins/twl/tests/bats/issue-1318-dispatch-auto.bats"
+    test_names:
+      - "ac1: co-issue-phase2-bundles.md contains no 'AskUserQuestion' references"
+      - "ac1: Step 2a-5 section heading does not reference AskUserQuestion"
+      - "ac1: dispatch option block '[dispatch | adjust | cancel]' is absent"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase2-bundles.md"
+  - ac_index: 2
+    ac_text: "dispatch 自動選択 + 進捗 log 出力 ('>>> Phase 2a-5 dispatch (auto): N levels') が refs ファイルに含まれ、かつ AskUserQuestion が含まれない"
+    issue: 1318
+    test_file: "plugins/twl/tests/bats/issue-1318-dispatch-auto.bats"
+    test_names:
+      - "ac2: co-issue-phase2-bundles.md contains auto dispatch log pattern"
+      - "ac2: auto dispatch log includes level count placeholder"
+      - "ac2: AskUserQuestion is absent (AC2 combined with AC1)"
+      - "ac2: Step 2a-5 section describes automatic dispatch (not user confirmation)"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase2-bundles.md"
+  - ac_index: 3
+    ac_text: "regression bats: dispatch 自動進行確認（ユーザー入力待ちが発生しないこと）"
+    issue: 1318
+    test_file: "plugins/twl/tests/bats/issue-1318-dispatch-auto.bats"
+    test_names:
+      - "ac3: refs file does not contain any interactive prompt patterns"
+      - "ac3: regression - Step 2a-5 section heading exists (section not deleted)"
+      - "ac3: regression - co-issue-phase2-bundles.md file exists and is readable"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase2-bundles.md"
