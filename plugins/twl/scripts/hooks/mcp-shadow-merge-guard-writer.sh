@@ -62,11 +62,19 @@ if ! [[ "$BASH_EXIT" =~ ^[0-9]+$ ]] || ! [[ "$MCP_EXIT" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
+# パストラバーサル対策: realpath で正規化してから許可リストと照合 (#1336)
+# canonicalize-missing は存在しないパスも正規化する (GNU coreutils)
+if command -v realpath &>/dev/null; then
+  _LOG_FILE_NORM=$(realpath --canonicalize-missing "$LOG_FILE" 2>/dev/null) && LOG_FILE="$_LOG_FILE_NORM"
+  unset _LOG_FILE_NORM
+fi
+
 # パスバリデーション: 許可プレフィックス先頭一致チェック（最小権限原則 + symlink attack 対策 #1336）
-# 許可リスト: /tmp/, ${HOME}/.cache/, ${SUPERVISOR_DIR}/
+# 許可リスト: /tmp/, ${HOME}/.cache/, ${XDG_RUNTIME_DIR}/, ${SUPERVISOR_DIR}/
 _is_log_path_allowed() {
   local path="$1"
   local -a allowed=("/tmp/" "${HOME}/.cache/")
+  [[ -n "${XDG_RUNTIME_DIR:-}" ]] && allowed+=("${XDG_RUNTIME_DIR}/")
   [[ -n "${SUPERVISOR_DIR:-}" ]] && allowed+=("${SUPERVISOR_DIR}/")
   for prefix in "${allowed[@]}"; do
     [[ "$path" == "$prefix"* ]] && return 0
@@ -75,7 +83,7 @@ _is_log_path_allowed() {
 }
 
 if ! _is_log_path_allowed "$LOG_FILE"; then
-  echo "WARNING: shadow log path '${LOG_FILE}' is not in the allowed list (/tmp/, \${HOME}/.cache/, \${SUPERVISOR_DIR}/). Skipping log write (fail-open)." >&2
+  echo "WARNING: shadow log path '${LOG_FILE}' is not in the allowed list (/tmp/, \${HOME}/.cache/, \${XDG_RUNTIME_DIR}/, \${SUPERVISOR_DIR}/). Skipping log write (fail-open)." >&2
   exit 0
 fi
 
