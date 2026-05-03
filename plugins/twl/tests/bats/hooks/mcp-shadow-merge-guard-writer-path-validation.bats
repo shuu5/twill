@@ -110,10 +110,8 @@ teardown() {
       --bash-exit 0 \
       --mcp-exit 0
 
-  # stderr に WARN または WARNING が含まれること
-  # bats-assert の assert_output は combined output を見る
-  # stderr のみを確認するには output variable を直接使う
-  [[ "$output" == *"WARN"* ]] || [[ "$stderr" == *"WARN"* ]]
+  # $output に WARN が含まれること (bats run は stdout+stderr を $output に結合)
+  [[ "$output" == *"WARN"* ]]
 }
 
 # ===========================================================================
@@ -174,7 +172,8 @@ teardown() {
     --mcp-exit 0 \
     --log "$DENY_LOG"
 
-  [[ "$output" == *"WARN"* ]] || [[ "$stderr" == *"WARN"* ]]
+  # $output に WARN が含まれること (bats run は stdout+stderr を $output に結合)
+  [[ "$output" == *"WARN"* ]]
 }
 
 # ===========================================================================
