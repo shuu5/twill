@@ -217,7 +217,7 @@ ADR-029 (twl-mcp-integration-strategy) Decision 2 準拠。
 由来: #1037 Tier 0「検証系 tool 追加」、既存 Bash hook の MCP 化前提。
 effort: 2-3 日。依存: 子 1 完了。
 
-- [ ] **AC2-1**: 5 tool 追加 — `twl_validate_deps(plugin_root) / twl_validate_merge(branch, base, timeout_sec?) / twl_validate_commit(message, files, timeout_sec?) / twl_check_completeness(spec_path, context?) / twl_check_specialist(spec_path)`
+- [ ] **AC2-1**: 5 tool 追加 — `twl_validate_deps(plugin_root) / twl_validate_merge(branch, base, timeout_sec?) / twl_validate_commit(command, files, timeout_sec?) / twl_check_completeness(spec_path, context?) / twl_check_specialist(spec_path)`
 - [ ] **AC2-2**: 各 handler は pure Python (in-process testable)、Hybrid Path 5 原則準拠
 - [ ] **AC2-3**: pytest 5 件 (各 tool)、fastmcp 経由 + 直接呼出 2 経路で PASS
 - [ ] **AC2-4**: 既存 Bash hook (`pre-tool-use-deps-yaml-guard.sh` / `pre-bash-merge-guard.sh` / `pre-bash-commit-validate.sh` / `check-specialist-completeness.sh`) は維持

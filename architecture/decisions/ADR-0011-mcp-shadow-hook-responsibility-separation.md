@@ -39,6 +39,20 @@ handler 内部でコマンド文字列を解析してメッセージを抽出す
 hook 設定を単純化し（`tool_input.command` をそのまま渡す）、
 将来的な `-m`/`--message` 以外のオプション対応も handler 内に集約できる。
 
+## Alternatives Considered
+
+### Option 1: `message: str` パラメータを維持し hook 側でメッセージ抽出
+
+hook 設定で `"message": "$(echo '${tool_input.command}' | sed 's/.*-m //')"` 等のシェル展開でメッセージを抽出する案。
+
+**却下理由**: Claude Code の settings.json は変数展開に対応しているが、シェルコマンドの埋め込みは非サポート。また hook 側に解析ロジックを置くと責務が分散し、将来の `-m`/`--message`/`-F` 拡張が困難になる。
+
+### Option 2: MCP shadow hook の廃止
+
+`twl_validate_commit` MCP hook 自体を削除し、bash hook のみでバリデーションを行う案。
+
+**却下理由**: MCP shadow hook は記録・監視（将来的なメトリクス収集）の用途を持つ。また PR #1332 / Issue #1288 のレビューで shadow hook パターンが設計として確立されており、廃止は過剰な変更となる。
+
 ## Consequences
 
 - `twl_validate_commit` の `command` パラメータは full git command 文字列を受け取る

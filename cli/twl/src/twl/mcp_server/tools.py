@@ -965,7 +965,7 @@ def twl_validate_merge_handler(
 def extract_commit_message_from_command(command: str) -> str:
     """Extract commit message body from a git commit command string.
 
-    Handles -m/--message flags; returns "" for -F (file-based) or unrecognized forms.
+    Handles -m/--message flags (with and without =); returns "" for -F (file-based) or unrecognized forms.
     """
     import shlex
 
@@ -979,6 +979,9 @@ def extract_commit_message_from_command(command: str) -> str:
         token = parts[i]
         if token in ("-m", "--message") and i + 1 < len(parts):
             return parts[i + 1]
+        # --message=value form
+        if token.startswith("--message="):
+            return token[len("--message="):]
         # -m"message" without space (e.g. -m"feat: X")
         if token.startswith("-m") and len(token) > 2:
             return token[2:]
@@ -994,6 +997,8 @@ def twl_validate_commit_handler(
     """validation module: commit message and file deps validation (in-process, no subprocess)."""
     if timeout_sec is not None and timeout_sec <= 0:
         return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
+
+    _message = extract_commit_message_from_command(command)
 
     def _inner() -> dict:
         from twl.validation.validate import validate_v3_schema
@@ -1016,6 +1021,7 @@ def twl_validate_commit_handler(
             "items": all_violations,
             "exit_code": 0 if ok else 1,
             "summary": f"{len(all_violations)} violation(s) found",
+            "commit_message": _message,
         }
 
     if timeout_sec is None:

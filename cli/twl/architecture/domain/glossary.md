@@ -92,3 +92,6 @@
 | SSOT | Single Source of Truth。唯一の正しい情報源 | (cross-cutting) |
 | orphan | どのコンポーネントからも参照されない孤立ノード | Refactoring |
 | dead component | entry_points から到達不能なコンポーネント | Refactoring |
+| MCP shadow hook | ブロックせずに記録・検査のみを行う MCP tool 型 hook（outputType=log）。ADR-0011 参照 | Hook Integration |
+| pre-bash-commit-validate.sh | PreToolUse:Bash hook として git commit コマンドを検証し必要に応じてブロックする bash スクリプト | Hook Integration |
+| outputType | Claude Code hook 設定のフィールド。"log" を指定すると hook の出力が stderr のみに限定される | Hook Integration |
