@@ -107,6 +107,7 @@ for entry in mappings:
     if match_count == 0:
         expected = ", ".join(impl_files) if impl_files else "(empty)"
         diff_sample = ", ".join(sorted(diff_files)[:5])
+        # confidence=90 固定: merge-gate ブロック条件 (confidence >= 80) を満たす writer-side invariant
         findings.append({
             "severity": "CRITICAL",
             "category": "ac-impl-coverage-missing",
