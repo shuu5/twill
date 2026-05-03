@@ -1,0 +1,25 @@
+mappings:
+  - ac_index: 1
+    ac_text: "autopilot-cleanup.sh が ${PROJECT_DIR}/.autopilot*/issues/ を再帰的スキャンし、全 active branches を尊重する"
+    test_file: "plugins/twl/tests/bats/issue-1310-autopilot-cleanup-multiwave.bats"
+    test_name: "ac1: PROJECT_DIR 配下の別 Wave (.autopilot-w2) の active branch を保護する"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-cleanup.sh"
+  - ac_index: 2
+    ac_text: "git push origin --delete 直前に gh pr list --head <branch> で active PR がないことを確認、ある場合は skip + WARN"
+    test_file: "plugins/twl/tests/bats/issue-1310-autopilot-cleanup-multiwave.bats"
+    test_name: "ac2: active PR がある branch への remote 削除を skip し WARN を出す"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-cleanup.sh"
+  - ac_index: 3
+    ac_text: "regression test: parallel Wave fixture (.autopilot/issues/issue-A.json + .autopilot-w2/issues/issue-B.json) で --autopilot-dir .autopilot-w2 実行時 issue-A の worktree が削除されないこと"
+    test_file: "plugins/twl/tests/bats/issue-1310-autopilot-cleanup-multiwave.bats"
+    test_name: "ac3: --autopilot-dir .autopilot-w2 実行時 .autopilot/ 側 issue-A の worktree が削除されない"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-cleanup.sh"
+  - ac_index: 4
+    ac_text: "既存単一 Wave 動作（孤立 worktree 削除）には影響なし"
+    test_file: "plugins/twl/tests/bats/issue-1310-autopilot-cleanup-multiwave.bats"
+    test_name: "ac4: 単一 Wave 動作 - 真の孤立 worktree（state file なし）は削除される"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-cleanup.sh"
