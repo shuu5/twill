@@ -155,3 +155,13 @@ _run_compare_with_log() {
   [ "$status" -eq 1 ]
   [[ "$output" == *"MISMATCH"* ]] || [[ "$stderr" == *"MISMATCH"* ]]
 }
+
+# ---------------------------------------------------------------------------
+# Issue #1285: set -euo pipefail への統一（-e 欠如修正）
+# ---------------------------------------------------------------------------
+
+@test "ac1 (Issue #1285): mcp-shadow-compare.sh が set -euo pipefail を使用している" {
+  # AC: set -uo pipefail → set -euo pipefail に変更（-e 欠如修正）
+  # RED: 実装前は fail する（現在 set -uo pipefail で -e が欠如）
+  grep -q "^set -euo pipefail" "$COMPARE_SH"
+}
