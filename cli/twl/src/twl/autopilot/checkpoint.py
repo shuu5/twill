@@ -81,7 +81,13 @@ class CheckpointManager:
         status: str,
         findings: list[Any] | None = None,
     ) -> str:
-        """Write checkpoint JSON and return a confirmation message."""
+        """Write checkpoint JSON and return a confirmation message.
+
+        critical_count は severity=CRITICAL のみカウントし confidence フィルタを持たない。
+        confidence フィルタは書き込み側（writer）の責務であり、ac-verify 書き込み経路
+        （ac-impl-coverage-check.sh: confidence=90、LLM delegate パス: confidence=80）が
+        confidence >= 80 を保証する。fix-phase はこの invariant に依存する。
+        """
         self._validate_step(step)
         self._validate_status(status)
         findings_list: list[Any] = findings if findings is not None else []

@@ -138,6 +138,9 @@ ref-specialist-output-schema 準拠:
 }
 ```
 
+**confidence 制約（書き込み側 invariant）**: CRITICAL Finding は必ず confidence >= 80 で書き込むこと。
+fix-phase は confidence フィルタを持たない（checkpoint.py の設計意図）ため、書き込み側がこの invariant を保証する責務を持つ。
+
 **注**: `category: ac-alignment` enum は Issue #135 (worker-issue-pr-alignment specialist) で
 ref-specialist-output-schema に追加される予定。Issue #135 完了前は暫定で `category: bug` を使用する。
 

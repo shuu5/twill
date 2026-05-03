@@ -63,6 +63,9 @@ findings の severity から機械的に導出（AI 裁量禁止）:
 
 0-100 整数。merge-gate フィルタ閾値: `confidence >= 80`。
 
+**書き込み側 invariant**: CRITICAL severity の Finding は confidence >= 80 で書き込むこと。
+checkpoint.py の `critical_count` は confidence フィルタを持たないため、各 ac-verify 書き込み経路がこの invariant を保証する責務を持つ（ac-impl-coverage-check.sh: confidence=90、LLM delegate パス: confidence=80）。
+
 ## category
 
 **merge-gate specialist 用:**
