@@ -28,14 +28,10 @@ def adr_text() -> str:
 
 def test_ac1_status_is_deprecated(adr_text: str):
     # AC-1: Status を Deprecated に更新（protocols/ ディレクトリが未実装のため廃止）
-    # RED: 現在は Status: Accepted のため fail する
-    assert "Deprecated" in adr_text, (
-        "ADR-033 の Status が Deprecated になっていない。"
-        "現在の値: " + (re.search(r"## Status\s*\n+(.+)", adr_text) or type("", (), {"group": lambda s, n: "不明"})()).group(1)
-    )
-    assert "Accepted" not in adr_text.split("## Rationale")[0] or "Deprecated" in adr_text.split("## Rationale")[0], (
-        "Status セクションに 'Accepted' が残っている"
-    )
+    m = re.search(r"## Status\s*\n+(.+)", adr_text)
+    current_value = m.group(1).strip() if m else "不明"
+    assert "Deprecated" in adr_text, f"ADR-033 の Status が Deprecated になっていない。現在の値: '{current_value}'"
+    assert "Accepted" not in adr_text.split("## Rationale")[0], "Status セクションに 'Accepted' が残っている"
 
 
 def test_ac1_status_section_value(adr_text: str):
@@ -93,22 +89,20 @@ def test_ac2_no_accepted_in_status_section(adr_text: str):
 
 
 def test_ac3_protocols_dir_absence_acknowledged(adr_text: str):
-    # AC-3: 関連 ADR/SKILL/refs に整合する更新 — protocols/ 未実装の理由が記録されていること
-    # Decision セクションまたは Changelog に protocols/ ディレクトリが未実装である旨の記述があること
-    # RED: 現在は Changelog セクション自体が存在しないため fail する
-    has_protocols_not_implemented = any(
-        phrase in adr_text for phrase in [
-            "protocols/ ディレクトリ",
-            "protocols/ directory",
-            "protocols/ は未実装",
-            "protocols/ not implemented",
-            "未実装",
-        ]
-    )
-    # Changelog セクション内またはバナー内での言及を確認
+    # AC-3: 関連 ADR/SKILL/refs に整合する更新 — Changelog または廃止バナーに protocols/ 未実装の理由が記録されていること
+    # Changelog セクション内か [DEPRECATED] バナー内に protocols/ への言及が必須
     changelog_match = re.search(r"## Changelog\s*\n(.*?)(?=\n## |\Z)", adr_text, re.DOTALL)
-    assert changelog_match is not None or has_protocols_not_implemented, (
-        "Changelog セクションが存在しない、かつ protocols/ 未実装への言及もない"
+    banner_match = re.search(r"^>.*\[DEPRECATED\].*$", adr_text, re.MULTILINE)
+    changelog_text = changelog_match.group(1) if changelog_match else ""
+    banner_text = banner_match.group(0) if banner_match else ""
+    protocols_mentioned = any(
+        keyword in (changelog_text + banner_text)
+        for keyword in ["protocols/", "protocols/ディレクトリ", "未実装"]
+    )
+    assert changelog_match is not None, "## Changelog セクションが存在しない"
+    assert protocols_mentioned, (
+        f"Changelog またはバナーに protocols/ 未実装への言及がない。"
+        f"Changelog={changelog_text[:100]!r}, Banner={banner_text!r}"
     )
 
 
