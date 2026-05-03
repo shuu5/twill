@@ -278,13 +278,14 @@ cmd_inject() {
             lock_dir="/tmp"
         else
             # OWASP A01: allowlist で許可パスを制限（#1239）
-            # /tmp または XDG_RUNTIME_DIR プレフィックスのみ許可
-            local xdg_runtime="${XDG_RUNTIME_DIR:-/run/user/${UID:-$(id -u)}}"
+            # /tmp または /run/user/<uid> プレフィックスのみ許可
+            # XDG_RUNTIME_DIR は攻撃者制御可能なため使用しない（環境変数汚染対策）
+            local xdg_runtime="/run/user/$(id -u)"
             local is_allowed=false
             [[ "${SESSION_COMM_LOCK_DIR}" == /tmp || "${SESSION_COMM_LOCK_DIR}" == /tmp/* ]] && is_allowed=true
             [[ "${SESSION_COMM_LOCK_DIR}" == "${xdg_runtime}" || "${SESSION_COMM_LOCK_DIR}" == "${xdg_runtime}/"* ]] && is_allowed=true
             if ! $is_allowed; then
-                echo "Error: SESSION_COMM_LOCK_DIR '${SESSION_COMM_LOCK_DIR}' is not allowed (allowlist: /tmp, \$XDG_RUNTIME_DIR)" >&2
+                echo "Error: SESSION_COMM_LOCK_DIR '${SESSION_COMM_LOCK_DIR}' is not allowed (allowlist: /tmp, /run/user/$(id -u))" >&2
                 exit 1
             fi
         fi
