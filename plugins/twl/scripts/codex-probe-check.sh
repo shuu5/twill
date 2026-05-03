@@ -31,11 +31,13 @@ _CODEX_BLOCKLIST_PATTERN='gpt-4[^-]|gpt-3|o3-|o4-'
 # gpt-4- 系列（gpt-4-turbo 等）は [^-] 除外のため blocklist 対象外（意図的）
 
 # ---------------------------------------------------------------------------
-# Auth/connection error detection pattern (AC-1 #1289)
+# Auth/connection error detection pattern (AC-1 #1289, fixed #1308)
 # probe 出力（stdout+stderr merged via 2>&1）に 401 系エラーが含まれる場合に CODEX_OK=0。
 # head -20（worker-codex-reviewer.md で設定）で 401 retry ログを確実にキャプチャ。
+# websocket は 'websocket connected' 等の正常ログで false positive が発生するため
+# websocket.*error|websocket.*fail のエラー限定パターンに絞る（Issue #1308）。
 # ---------------------------------------------------------------------------
-_CODEX_AUTH_ERROR_PATTERN='401|Unauthorized|connection refused|websocket'
+_CODEX_AUTH_ERROR_PATTERN='401|Unauthorized|connection refused|websocket.*error|websocket.*fail'
 
 # ---------------------------------------------------------------------------
 # run_probe_check
