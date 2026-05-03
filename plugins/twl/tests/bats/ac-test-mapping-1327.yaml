@@ -1,0 +1,38 @@
+mappings:
+  - ac_index: 1
+    ac_text: "dynamic regression bats ファイルが存在する（issue-1327-co-explore-autosave-dynamic.bats）"
+    test_file: "tests/bats/issue-1327-co-explore-autosave-dynamic.bats"
+    test_name: "baseline: static regression test file (issue-1321) is present"
+    impl_files:
+      - "tests/bats/issue-1327-co-explore-autosave-dynamic.bats"
+
+  - ac_index: 2
+    ac_text: "CO_EXPLORE_AUTOSAVE env var の OS レベル継承（子プロセスへの伝播）が確認される"
+    test_file: "tests/bats/issue-1327-co-explore-autosave-dynamic.bats"
+    test_name: "baseline: CO_EXPLORE_AUTOSAVE env var propagates to child processes (OS inheritance)"
+    impl_files:
+      - "skills/co-explore/SKILL.md"
+
+  - ac_index: 3
+    ac_text: "CO_EXPLORE_AUTOSAVE=1 でスキル実行時に [auto-confirm] が出力される（SKILL.md executor 対応後）"
+    test_file: "tests/bats/issue-1327-co-explore-autosave-dynamic.bats"
+    test_name: "dynamic(skip): CO_EXPLORE_AUTOSAVE=1 causes [auto-confirm] output in skill execution"
+    impl_files:
+      - "skills/co-explore/SKILL.md"
+    # skip: SKILL.md executor (e2e-screening) 対応後に有効化
+
+  - ac_index: 4
+    ac_text: "500 行超の summary では CO_EXPLORE_AUTOSAVE=1 を無視してメニュー表示（safety override）"
+    test_file: "tests/bats/issue-1327-co-explore-autosave-dynamic.bats"
+    test_name: "dynamic(skip): large summary (>500 lines) overrides CO_EXPLORE_AUTOSAVE=1 (safety)"
+    impl_files:
+      - "skills/co-explore/SKILL.md"
+    # skip: SKILL.md executor (e2e-screening) 対応後に有効化
+
+  - ac_index: 5
+    ac_text: "refine モード引数でスキル実行時に CO_EXPLORE_AUTOSAVE=1 が自動 enable される"
+    test_file: "tests/bats/issue-1327-co-explore-autosave-dynamic.bats"
+    test_name: "dynamic(skip): refine mode auto-enables CO_EXPLORE_AUTOSAVE in spawned session"
+    impl_files:
+      - "skills/co-explore/SKILL.md"
+    # skip: SKILL.md executor (e2e-screening) 対応後に有効化
