@@ -68,15 +68,16 @@ if [[ "$_supervisor_dir" =~ [$\;\|\`\&\(\)\<\>] ]]; then
   echo "ERROR: SUPERVISOR_DIR must only contain allowed characters (alphanumeric, dot, hyphen, underscore, slash)" >&2; exit 1
 fi
 
-# Sanitize DETAIL: strip newlines and control characters to prevent log injection
-DETAIL="${DETAIL//$'\n'/ }"
-DETAIL="${DETAIL//$'\r'/ }"
+# Sanitize free-text fields: strip newlines and control characters to prevent log injection
+DETAIL="${DETAIL//$'\n'/ }"; DETAIL="${DETAIL//$'\r'/ }"
+TYPE="${TYPE//$'\n'/ }"; TYPE="${TYPE//$'\r'/ }"
+RELATED_ISSUE="${RELATED_ISSUE//$'\n'/ }"; RELATED_ISSUE="${RELATED_ISSUE//$'\r'/ }"
 
 # Action 1: .supervisor/intervention-log.md に追記（flock で race condition 防止 #1250）
 mkdir -p "$_supervisor_dir"
 _ts="$(date -u +%FT%TZ)"
 {
-  flock 9
+  flock -w 10 9
   if [[ -n "$RELATED_ISSUE" ]]; then
     printf '%s [detection-gap] type=%s severity=%s related=%s: %s\n' \
       "$_ts" "$TYPE" "$SEVERITY" "$RELATED_ISSUE" "$DETAIL" >&9
