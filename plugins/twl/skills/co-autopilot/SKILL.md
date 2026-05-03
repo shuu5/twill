@@ -257,7 +257,7 @@ TDD-style Issue（ac-scaffold-tests で RED テストが生成された場合）
 ## 禁止事項（MUST NOT）
 
 - plan.yaml を独自生成してはならない（制約 AP-1）
-- --auto 未指定時に計画確認をスキップしてはならない（UX ルール）
+- `--interactive` 未指定時に HUMAN GATE（AskUserQuestion）を挿入してはならない（default AUTO — UX ルール #1317）
 - Worker が worktree を削除してはならない（不変条件 B）
 - merge-gate 失敗時に rebase を試みてはならない（不変条件 F）
 - trivial change であっても co-autopilot を bypass してはならない（制約 AP-2）
