@@ -85,9 +85,9 @@ setup() {
 
 @test "ac3a: autopilot-orchestrator.sh の kill-window 直後に sleep 1 が挿入されている" {
   # AC: observer 側 (autopilot-orchestrator.sh) は doobidoo hash 26cc074d で sleep 1 既挿入
-  # NOTE: この AC は既適用のため GREEN になることが期待される
-  # kill-window の後の行を確認：直後に sleep 1 があることを検証
-  run awk '/tmux kill-window.*window_name.*2>\/dev\/null.*true/{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  # RED: 実装フェーズで sleep 1 を挿入した後 GREEN になる
+  # 空行をスキップして kill-window 直後の sleep 1 を確認
+  run awk '/tmux kill-window.*window_name.*2>\/dev\/null.*true/{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${AUTOPILOT_ORCH}"
   [ "${status}" -eq 0 ]
 }
@@ -98,70 +98,70 @@ setup() {
 
 @test "ac3b: orchestrator の kill-window L372 直後に sleep 1 がある" {
   # RED: sleep 1 が未挿入のため fail
-  run awk 'NR==372{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==372{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window L411 直後に sleep 1 がある" {
   # RED: sleep 1 が未挿入のため fail
-  run awk 'NR==411{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==411{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window L562 直後に sleep 1 がある" {
-  run awk 'NR==562{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==562{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window L589 直後に sleep 1 がある" {
-  run awk 'NR==589{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==589{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window L595 直後に sleep 1 がある" {
-  run awk 'NR==595{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==595{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window L641 直後に sleep 1 がある" {
-  run awk 'NR==641{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==641{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window L712 直後に sleep 1 がある" {
-  run awk 'NR==712{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==712{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window L728 直後に sleep 1 がある" {
-  run awk 'NR==728{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==728{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window L753 直後に sleep 1 がある" {
-  run awk 'NR==753{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==753{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window L792 直後に sleep 1 がある" {
-  run awk 'NR==792{found=1; next} found && /sleep 1/{exit 0} found{exit 1}' \
+  run awk 'NR==792{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{exit 0} found{exit 1}' \
     "${ORCHESTRATOR}"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac3b: orchestrator の kill-window 全 10 箇所すべてに sleep 1 が挿入されている（集約確認）" {
-  # kill-window 直後の次行に sleep 1 がある箇所のカウントが 10 以上であることを確認
+  # kill-window 直後（空行スキップ）に sleep 1 がある箇所のカウントが 10 以上であることを確認
   local count
-  count=$(awk '/tmux kill-window.*2>\/dev\/null.*true/{found=1; next} found && /sleep 1/{count++; found=0; next} found{found=0}END{print count+0}' \
+  count=$(awk '/tmux kill-window.*2>\/dev\/null.*true/{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{count++; found=0; next} found{found=0} END{print count+0}' \
     "${ORCHESTRATOR}")
   [ "${count}" -ge 10 ]
 }
@@ -177,7 +177,8 @@ setup() {
 
 @test "ac3c: tmux-safety-guard.sh に kill-window 直後 sleep 1 なし検出の lint ロジックが含まれる" {
   # RED: lint ロジックが未実装のため fail
-  run grep -qE 'kill-window|sleep.*1|lint|warning|warn' "${SAFETY_GUARD}"
+  # kill-window と sleep 1 の組み合わせを検査するロジックを確認（広すぎるパターンを避ける）
+  run grep -qE 'kill-window[^|]*sleep[[:space:]]*1|sleep[[:space:]]*1[^|]*kill-window|kill.window.*lint' "${SAFETY_GUARD}"
   [ "${status}" -eq 0 ]
 }
 

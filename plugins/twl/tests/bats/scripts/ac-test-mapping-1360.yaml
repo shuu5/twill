@@ -43,31 +43,31 @@ mappings:
 
   - ac_index: 7
     ac_text: "AC-4a: 既存 tmux-resurrect-save.service の動作確認（save interval / save 対象 / restore 経路）"
-    test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
-    test_name: "ac1: coredump runbook が architecture/runbooks/ 配下に存在する"
+    test_file: ""
+    test_name: ""
     impl_files: []
-    # impl_files 推定失敗: AC-4a はドキュメント記録 AC（systemd unit 確認）、実装ファイルなし
+    # AC-4a はドキュメント記録 AC（systemd unit 確認）— 専用テストなし（scope 外）
 
   - ac_index: 8
     ac_text: "AC-4b: tmux-twill.service の ExecStartPost で resurrect restore を fire する設計を検討"
-    test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
-    test_name: "ac6b: tmux-twill.service の wave-queue hook 設計が ADR または design doc に記録されている"
+    test_file: ""
+    test_name: ""
     impl_files: []
-    # impl_files 推定失敗: 設計文書 AC
+    # AC-4b は設計文書 AC — 専用テストなし（scope 外）
 
   - ac_index: 9
     ac_text: "AC-4c: claude code session 状態と tmux pane の対応を保つ仕組みを設計する"
-    test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
-    test_name: "ac6b: tmux-twill.service の wave-queue hook 設計が ADR または design doc に記録されている"
+    test_file: ""
+    test_name: ""
     impl_files: []
-    # impl_files 推定失敗: 設計 AC
+    # AC-4c は設計 AC — 専用テストなし（scope 外）
 
   - ac_index: 10
     ac_text: "AC-4d: bats test: tmux kill-server (テスト socket で実行) → tmux-twill.service 自動 spawn → tmux-resurrect restore が成功することを確認"
-    test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
-    test_name: "ac6b: tmux-twill.service の wave-queue hook 設計が ADR または design doc に記録されている"
+    test_file: ""
+    test_name: ""
     impl_files: []
-    # impl_files 推定失敗: systemd unit + tmux-resurrect の結合テスト、専用テスト未作成
+    # AC-4d: systemd + tmux-resurrect 結合テスト — 実装フェーズで専用ファイル作成予定
 
   - ac_index: 11
     ac_text: "AC-5a: tmux 3.5 / 3.6 changelog の SIGSEGV / memory corruption fix 一覧を architecture/runbooks/tmux-version-evaluation.md に記録"

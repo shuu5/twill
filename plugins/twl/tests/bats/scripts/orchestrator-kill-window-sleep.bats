@@ -27,12 +27,22 @@ assert_sleep_after_line() {
   local file="$1"
   local lineno="$2"
   local next_line
-  next_line="$(sed -n "$((lineno + 1))p" "${file}")"
-  if ! echo "${next_line}" | grep -q "sleep 1"; then
-    echo "FAIL: ${file}:${lineno} の kill-window 直後 (L$((lineno + 1))) に sleep 1 がない"
+  # 直後行（空行は最大2行スキップ）で sleep 1 を探す（sleep 10 等の部分マッチを避ける）
+  local i
+  for i in 1 2 3; do
+    next_line="$(sed -n "$((lineno + i))p" "${file}")"
+    if echo "${next_line}" | grep -qE '^[[:space:]]*$'; then
+      continue
+    fi
+    if echo "${next_line}" | grep -qE '^[[:space:]]*sleep 1([[:space:]]|$)'; then
+      return 0
+    fi
+    echo "FAIL: ${file}:${lineno} の kill-window 直後 (L$((lineno + i))) に sleep 1 がない"
     echo "  actual: ${next_line}"
     return 1
-  fi
+  done
+  echo "FAIL: ${file}:${lineno} の kill-window 直後 3 行以内に sleep 1 がない"
+  return 1
 }
 
 # ---------------------------------------------------------------------------
@@ -100,9 +110,9 @@ assert_sleep_after_line() {
 }
 
 @test "ac3d: orchestrator の kill-window 直後 sleep 1 挿入が全 10 箇所に存在する（集約）" {
-  # 全 kill-window 直後に sleep 1 があることを一括検証
+  # 全 kill-window 直後（空行スキップ）に sleep 1 があることを一括検証
   local count
-  count=$(awk '/tmux kill-window.*2>\/dev\/null.*true/{found=1; next} found && /sleep 1/{count++; found=0; next} found{found=0} END{print count+0}' \
+  count=$(awk '/tmux kill-window.*2>\/dev\/null.*true/{found=1; next} found && /^[[:space:]]*$/{next} found && /^[[:space:]]*sleep 1([[:space:]]|$)/{count++; found=0; next} found{found=0} END{print count+0}' \
     "${ORCHESTRATOR}")
   echo "sleep 1 挿入済み箇所: ${count}/10"
   [ "${count}" -ge 10 ]
