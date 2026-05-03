@@ -135,6 +135,7 @@ WITH_CHAIN=false
 CHAIN_ISSUE=""
 CHAIN_PROJECT_DIR=""
 CHAIN_AUTOPILOT_DIR=""
+INTERACTIVE_FLAG=""  # --interactive: co-autopilot Plan 承認 menu opt-in (#1317)
 PASS_THROUGH_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -142,6 +143,7 @@ while [[ $# -gt 0 ]]; do
     --issue)         CHAIN_ISSUE="$2"; shift 2 ;;
     --project-dir)   CHAIN_PROJECT_DIR="$2"; shift 2 ;;
     --autopilot-dir) CHAIN_AUTOPILOT_DIR="$2"; shift 2 ;;
+    --interactive)   INTERACTIVE_FLAG="--interactive"; shift ;;
     *)               PASS_THROUGH_ARGS+=("$1"); shift ;;
   esac
 done
@@ -225,6 +227,7 @@ WARN
     --issue "$CHAIN_ISSUE" \
     --project-dir "$CHAIN_PROJECT_DIR" \
     --autopilot-dir "$CHAIN_AUTOPILOT_DIR" \
+    ${INTERACTIVE_FLAG:+"$INTERACTIVE_FLAG"} \
     "${CONTEXT_ARG[@]+"${CONTEXT_ARG[@]}"}"
 fi
 
@@ -294,7 +297,7 @@ for arg in "$@"; do
 done
 set -- "${NEW_ARGS[@]+"${NEW_ARGS[@]}"}"
 
-FINAL_PROMPT="/twl:${SKILL_NORMALIZED}
+FINAL_PROMPT="/twl:${SKILL_NORMALIZED}${INTERACTIVE_FLAG:+ $INTERACTIVE_FLAG}
 ${PROVENANCE}
 ${PROMPT_BODY}"
 
