@@ -285,7 +285,7 @@ cmd_inject() {
             [[ "${SESSION_COMM_LOCK_DIR}" == /tmp || "${SESSION_COMM_LOCK_DIR}" == /tmp/* ]] && is_allowed=true
             [[ "${SESSION_COMM_LOCK_DIR}" == "${xdg_runtime}" || "${SESSION_COMM_LOCK_DIR}" == "${xdg_runtime}/"* ]] && is_allowed=true
             if ! $is_allowed; then
-                echo "Error: SESSION_COMM_LOCK_DIR '${SESSION_COMM_LOCK_DIR}' is not allowed (allowlist: /tmp, /run/user/$(id -u))" >&2
+                echo "Error: SESSION_COMM_LOCK_DIR '${SESSION_COMM_LOCK_DIR}' is not allowed (allowlist: /tmp, ${xdg_runtime})" >&2
                 exit 1
             fi
         fi
