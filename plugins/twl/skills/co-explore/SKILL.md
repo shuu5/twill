@@ -37,6 +37,7 @@ spawnable_by:
 - **`#N` パターン検出時**: 既存 Issue `#N` に紐づく探索。`gh issue view N --json number,title,body` で取得し `ISSUE_NUMBER=N` に設定
 - **`#N` なし + テキストあり**: 新規問題の探索。Step 1 で Issue draft を起票
 - **引数なし**: 「何を探索しますか？」と AskUserQuestion で確認
+- **`refine` モード検出** (AC-4): `$ARGUMENTS` に `refine` または `--refine` が含まれる場合、`REFINE_MODE=true` に設定し `CO_EXPLORE_AUTOSAVE=1` を自動 enable する
 
 ## Step 1: Issue 確保
 
@@ -105,6 +106,16 @@ rationale: DDD は過剰、軽量 spec で十分なため
 - `rationale:` — この構造を選んだ理由（任意）
 
 **不在の場合**: co-architect は `--type=ddd` default で動作する。
+
+### CO_EXPLORE_AUTOSAVE 判定（summary-gate env check）
+
+summary を提示した後、AskUserQuestion を呼ぶ前に以下を判定する（AC-1）:
+
+1. **大規模変更 safety override** (AC-3): explore-summary の行数が 500 を超える場合は `CO_EXPLORE_AUTOSAVE=1` 設定を無視してメニューを表示する（以下の自動選択をスキップ）
+2. **自動選択** (AC-2): `CO_EXPLORE_AUTOSAVE=1` が設定されている（または REFINE_MODE=true で自動 enable された）場合は `[A]` を自動選択し、以下をログ出力して Step 4 へ進む:
+   ```
+   [auto-confirm] CO_EXPLORE_AUTOSAVE=1: summary-gate [A] を自動選択しました
+   ```
 
 AskUserQuestion で 3 択を提示:
 - `[A] この summary で確定`
