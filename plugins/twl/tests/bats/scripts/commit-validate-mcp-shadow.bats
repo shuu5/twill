@@ -17,7 +17,7 @@ load '../helpers/common'
 
 SETTINGS_JSON=""
 COMPARE_SH=""
-SHADOW_LOG="/tmp/mcp-shadow-commit-validate.log"
+SHADOW_LOG=""
 
 setup() {
   common_setup
@@ -27,6 +27,7 @@ setup() {
 
   SETTINGS_JSON="${git_root}/.claude/settings.json"
   COMPARE_SH="${git_root}/plugins/twl/scripts/mcp-shadow-compare.sh"
+  SHADOW_LOG="$SANDBOX/mcp-shadow-commit-validate.log"
 }
 
 teardown() {
