@@ -2,7 +2,7 @@ mappings:
   - ac_index: 1
     ac_text: "co-utility/SKILL.md Step 0 キーワード辞書追加 (各 category 代表 keyword)"
     test_file: "plugins/twl/tests/bats/co-utility-step0-keyword-match.bats"
-    test_name: "ac1: co-utility SKILL.md Worktree category has extended keyword entries"
+    test_name: "ac1: co-utility SKILL.md Worktree category keyword column has per-command keywords"
     impl_files:
       - "plugins/twl/skills/co-utility/SKILL.md"
   - ac_index: 2
