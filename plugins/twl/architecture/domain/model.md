@@ -85,6 +85,16 @@ classDiagram
         resolved_at: string|null
         reason: string
     }
+    class Protocol {
+        participants: string[]
+        pinned_sha: string
+        interface_contract: string
+    }
+    class CrossRepoDependency {
+        provider_repo: string
+        consumer_repo: string
+        protocol_name: string
+    }
     Controller --> Workflow : spawns
     Workflow --> AtomicCommand : calls (chain steps)
     Workflow --> Specialist : spawns (parallel)
@@ -99,6 +109,7 @@ classDiagram
     Orchestrator --> Script : executes (health-check, crash-detect)
     Supervisor ..> Controller : supervises
     Supervisor *-- InterventionRecord : records
+    Protocol "Provider" --> "Consumer" CrossRepoDependency : pins
 ```
 
 ### Controller Spawning 関係図
