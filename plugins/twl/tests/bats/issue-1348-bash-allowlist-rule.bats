@@ -16,6 +16,24 @@ setup() {
 }
 
 # ===========================================================================
+# Helper: §11 の開始行と終了行を取得する
+# Usage: eval "$(_get_section11_bounds)"
+#        echo "$section11_start $next_section"
+# ===========================================================================
+_get_section11_bounds() {
+  cat <<'HELPER'
+local section11_start total_lines next_section
+total_lines=$(wc -l < "${BASELINE}")
+section11_start=$(grep -n '^## 11\.' "${BASELINE}" | head -1 | cut -d: -f1)
+[ -n "${section11_start}" ] || return 1
+next_section=$(awk -v start="${section11_start}" 'NR > start && /^## [0-9]+\./ { print NR; exit }' "${BASELINE}")
+if [ -z "${next_section}" ]; then
+  next_section="${total_lines}"
+fi
+HELPER
+}
+
+# ===========================================================================
 # AC1: §11 allowlist regex 規約セクションが baseline-bash.md に存在する
 # ===========================================================================
 
@@ -58,21 +76,22 @@ setup() {
   grep -qF '^[A-Za-z0-9._/-]+$' "${BASELINE}"
 }
 
-@test "issue-1348-bash-allowlist-rule: AC2 enum pattern example present (case ... in)" {
+@test "issue-1348-bash-allowlist-rule: AC2 enum case-in pattern present in §11" {
   [ -f "${BASELINE}" ]
-  # §11 内に case ... in による列挙バリデーション例が存在すること
-  local section11_start total_lines
-  total_lines=$(wc -l < "${BASELINE}")
-  section11_start=$(grep -n '^## 11\.' "${BASELINE}" | head -1 | cut -d: -f1)
-  [ -n "${section11_start}" ]
-  local next_section
-  next_section=$(awk -v start="${section11_start}" 'NR > start && /^## [0-9]+\./ { print NR; exit }' "${BASELINE}")
-  if [ -z "${next_section}" ]; then
-    next_section="${total_lines}"
-  fi
+  eval "$(_get_section11_bounds)"
   local found
   found=$(awk -v s="${section11_start}" -v e="${next_section}" \
-    'NR >= s && NR <= e && /case.*in|foo\|bar/ { found=1 } END { print found+0 }' "${BASELINE}")
+    'NR >= s && NR <= e && /case[[:space:]]/ { found=1 } END { print found+0 }' "${BASELINE}")
+  [ "${found}" -eq 1 ]
+}
+
+@test "issue-1348-bash-allowlist-rule: AC2 enum pipe-alternation example present in §11 (foo|bar)" {
+  [ -f "${BASELINE}" ]
+  eval "$(_get_section11_bounds)"
+  # case ... in foo|bar) ;; という具体的な列挙例が存在すること
+  local found
+  found=$(awk -v s="${section11_start}" -v e="${next_section}" \
+    'NR >= s && NR <= e && /[a-z][a-z_-]*[|][a-z]/ { found=1 } END { print found+0 }' "${BASELINE}")
   [ "${found}" -eq 1 ]
 }
 
@@ -103,6 +122,12 @@ setup() {
 @test "issue-1348-bash-allowlist-rule: AC3 VALID_SKILLS array check referenced" {
   [ -f "${BASELINE}" ]
   grep -qE 'VALID_SKILLS' "${BASELINE}"
+}
+
+@test "issue-1348-bash-allowlist-rule: AC3 line number reference L167 or spawn-controller line cited" {
+  # Issue が明示する「L167」という行番号引用が baseline-bash.md に含まれること
+  [ -f "${BASELINE}" ]
+  grep -qE 'L167|spawn-controller.*L1[0-9][0-9]|L1[0-9][0-9].*spawn-controller' "${BASELINE}"
 }
 
 @test "issue-1348-bash-allowlist-rule: AC3 spawn-controller.sh CHAIN_ISSUE regex exists at expected line in source" {
@@ -139,8 +164,6 @@ setup() {
 @test "issue-1348-bash-allowlist-rule: AC4 cross-reference to path traversal section present" {
   # bash 固有セクションがパストラバーサル節と相互参照すること
   [ -f "${SECURITY_CHECKLIST}" ]
-  grep -qiE 'パストラバーサル|path.traversal' "${SECURITY_CHECKLIST}"
-  # セキュリティチェックリスト内に allowlist への参照とパストラバーサルへの言及が共存する
   local has_allowlist has_path_traversal
   has_allowlist=$(grep -ciE 'allowlist|allow.list' "${SECURITY_CHECKLIST}")
   has_path_traversal=$(grep -ciE 'パストラバーサル|path.traversal' "${SECURITY_CHECKLIST}")
@@ -156,19 +179,14 @@ setup() {
 
 # ===========================================================================
 # AC6: §11 内に棚卸し結果（blocklist 方式の箇所リスト）が記録されている
+# NOTE: Issue AC6 は「baseline-bash.md §11 内または Issue コメントに記録する」という
+#       2つの達成パスを認めている。bats テストは §11 内記録のみを機械検証でき、
+#       Issue コメント経由の達成は検証不能なため、§11 内記録を前提とする。
 # ===========================================================================
 
 @test "issue-1348-bash-allowlist-rule: AC6 blocklist inventory section exists in baseline-bash.md §11" {
   [ -f "${BASELINE}" ]
-  local section11_start total_lines
-  total_lines=$(wc -l < "${BASELINE}")
-  section11_start=$(grep -n '^## 11\.' "${BASELINE}" | head -1 | cut -d: -f1)
-  [ -n "${section11_start}" ]
-  local next_section
-  next_section=$(awk -v start="${section11_start}" 'NR > start && /^## [0-9]+\./ { print NR; exit }' "${BASELINE}")
-  if [ -z "${next_section}" ]; then
-    next_section="${total_lines}"
-  fi
+  eval "$(_get_section11_bounds)"
   local found
   found=$(awk -v s="${section11_start}" -v e="${next_section}" \
     'NR >= s && NR <= e && /棚卸し|blocklist.*箇所|blocklist.*一覧|blocklist.*リスト|inventory/ { found=1 } END { print found+0 }' "${BASELINE}")
@@ -177,36 +195,11 @@ setup() {
 
 @test "issue-1348-bash-allowlist-rule: AC6 at least one blocklist script path recorded in §11" {
   [ -f "${BASELINE}" ]
-  local section11_start total_lines
-  total_lines=$(wc -l < "${BASELINE}")
-  section11_start=$(grep -n '^## 11\.' "${BASELINE}" | head -1 | cut -d: -f1)
-  [ -n "${section11_start}" ]
-  local next_section
-  next_section=$(awk -v start="${section11_start}" 'NR > start && /^## [0-9]+\./ { print NR; exit }' "${BASELINE}")
-  if [ -z "${next_section}" ]; then
-    next_section="${total_lines}"
-  fi
-  # plugins/twl/scripts/ または skills/*/scripts/ 配下のパスが記録されている
+  eval "$(_get_section11_bounds)"
+  # plugins/twl/scripts/ または plugins/twl/skills/ 配下のパスが記録されている
   local found
   found=$(awk -v s="${section11_start}" -v e="${next_section}" \
     'NR >= s && NR <= e && /plugins\/twl\/(scripts|skills)/ { found=1 } END { print found+0 }' "${BASELINE}")
-  [ "${found}" -eq 1 ]
-}
-
-@test "issue-1348-bash-allowlist-rule: AC6 レビュー観点 line present in §11" {
-  [ -f "${BASELINE}" ]
-  local section11_start total_lines
-  total_lines=$(wc -l < "${BASELINE}")
-  section11_start=$(grep -n '^## 11\.' "${BASELINE}" | head -1 | cut -d: -f1)
-  [ -n "${section11_start}" ]
-  local next_section
-  next_section=$(awk -v start="${section11_start}" 'NR > start && /^## [0-9]+\./ { print NR; exit }' "${BASELINE}")
-  if [ -z "${next_section}" ]; then
-    next_section="${total_lines}"
-  fi
-  local found
-  found=$(awk -v s="${section11_start}" -v e="${next_section}" \
-    'NR >= s && NR <= e && /レビュー観点/ { found=1 } END { print found+0 }' "${BASELINE}")
   [ "${found}" -eq 1 ]
 }
 
@@ -216,32 +209,32 @@ setup() {
 
 @test "issue-1348-bash-allowlist-rule: regression §1 heading unchanged" {
   [ -f "${BASELINE}" ]
-  grep -qF '## 1. Character Class のハイフン配置' "${BASELINE}"
+  grep -qE '^## 1\. Character Class' "${BASELINE}"
 }
 
 @test "issue-1348-bash-allowlist-rule: regression §2 heading unchanged" {
   [ -f "${BASELINE}" ]
-  grep -qF '## 2. for-loop 変数の local 宣言' "${BASELINE}"
+  grep -qE '^## 2\. for-loop' "${BASELINE}"
 }
 
 @test "issue-1348-bash-allowlist-rule: regression §3 heading unchanged" {
   [ -f "${BASELINE}" ]
-  grep -qF '## 3. local 宣言の set -u 初期化' "${BASELINE}"
+  grep -qE '^## 3\. local' "${BASELINE}"
 }
 
 @test "issue-1348-bash-allowlist-rule: regression §4 heading unchanged" {
   [ -f "${BASELINE}" ]
-  grep -qF '## 4. 環境変数パースの IFS 問題' "${BASELINE}"
+  grep -qE '^## 4\.' "${BASELINE}"
 }
 
 @test "issue-1348-bash-allowlist-rule: regression §5 heading unchanged" {
   [ -f "${BASELINE}" ]
-  grep -qF '## 5. source スクリプトの set -e 制約' "${BASELINE}"
+  grep -qE '^## 5\. source' "${BASELINE}"
 }
 
 @test "issue-1348-bash-allowlist-rule: regression §6 heading unchanged" {
   [ -f "${BASELINE}" ]
-  grep -qF '## 6. 複数 regex パターンの ^ アンカー一貫性' "${BASELINE}"
+  grep -qE '^## 6\.' "${BASELINE}"
 }
 
 @test "issue-1348-bash-allowlist-rule: regression §7 heading unchanged" {

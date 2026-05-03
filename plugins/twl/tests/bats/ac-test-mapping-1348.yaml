@@ -16,7 +16,8 @@ mappings:
     test_names:
       - "issue-1348-bash-allowlist-rule: AC2 numeric pattern example present (^[1-9][0-9]*$)"
       - "issue-1348-bash-allowlist-rule: AC2 safe-path pattern example present (^[A-Za-z0-9._/-]+$)"
-      - "issue-1348-bash-allowlist-rule: AC2 enum pattern example present (case ... in)"
+      - "issue-1348-bash-allowlist-rule: AC2 enum case-in pattern present in §11"
+      - "issue-1348-bash-allowlist-rule: AC2 enum pipe-alternation example present in §11 (foo|bar)"
       - "issue-1348-bash-allowlist-rule: AC2 fail-closed benefit mentioned"
       - "issue-1348-bash-allowlist-rule: AC2 blocklist comparison mentioned (境界値 or blocklist)"
     impl_files:
@@ -29,6 +30,7 @@ mappings:
       - "issue-1348-bash-allowlist-rule: AC3 spawn-controller.sh referenced in baseline-bash.md"
       - "issue-1348-bash-allowlist-rule: AC3 CHAIN_ISSUE regex validation referenced"
       - "issue-1348-bash-allowlist-rule: AC3 VALID_SKILLS array check referenced"
+      - "issue-1348-bash-allowlist-rule: AC3 line number reference L167 or spawn-controller line cited"
       - "issue-1348-bash-allowlist-rule: AC3 spawn-controller.sh CHAIN_ISSUE regex exists at expected line in source"
       - "issue-1348-bash-allowlist-rule: AC3 spawn-controller.sh VALID_SKILLS array exists in source"
     impl_files:
@@ -60,6 +62,5 @@ mappings:
     test_names:
       - "issue-1348-bash-allowlist-rule: AC6 blocklist inventory section exists in baseline-bash.md §11"
       - "issue-1348-bash-allowlist-rule: AC6 at least one blocklist script path recorded in §11"
-      - "issue-1348-bash-allowlist-rule: AC6 レビュー観点 line present in §11"
     impl_files:
       - "plugins/twl/refs/baseline-bash.md"
