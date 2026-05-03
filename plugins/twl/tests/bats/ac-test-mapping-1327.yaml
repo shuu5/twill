@@ -36,3 +36,11 @@ mappings:
     impl_files:
       - "skills/co-explore/SKILL.md"
     # skip: SKILL.md executor (e2e-screening) 対応後に有効化
+
+  - ac_index: 6
+    ac_text: "CO_EXPLORE_AUTOSAVE 未設定時はインタラクティブメニュー表示（自動確認なし）"
+    test_file: "tests/bats/issue-1327-co-explore-autosave-dynamic.bats"
+    test_name: "dynamic(skip): unset CO_EXPLORE_AUTOSAVE requires interactive menu (no auto-confirm)"
+    impl_files:
+      - "skills/co-explore/SKILL.md"
+    # skip: SKILL.md executor (e2e-screening) 対応後に有効化

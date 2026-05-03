@@ -58,7 +58,8 @@ setup() {
 # 有効化手順:
 #   1. SKILL.md executor コマンド（例: twl skill-exec co-explore）が利用可能になる
 #   2. 各テストの skip 行を削除
-#   3. # Implementation hint のコードを実際のテスト呼び出しに置き換える
+#   3. テスト末尾の `false` を削除
+#   4. # Implementation hint のコードを実際のテスト呼び出しに置き換える
 # ===========================================================================
 
 @test "dynamic(skip): CO_EXPLORE_AUTOSAVE=1 causes [auto-confirm] output in skill execution" {
