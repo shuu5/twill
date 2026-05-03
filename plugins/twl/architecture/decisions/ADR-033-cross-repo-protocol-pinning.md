@@ -1,8 +1,10 @@
 # ADR-033: Cross-Repo Knowledge Transfer via Protocol Pinning
 
+> **[DEPRECATED]** This ADR has been deprecated. `protocols/` ディレクトリは導入が宣言されたが未実装のまま廃止された。クロスリポジトリ依存の追跡には別のアプローチを採用する。
+
 ## Status
 
-Accepted
+Deprecated
 
 ## Context
 
@@ -97,3 +99,7 @@ ADR-033 は**知識・仕様の転送と固定**を扱う。
 
 - `worker-arch-doc-reviewer` が SHA 形式を自動検証し、tag/branch 参照を CRITICAL として検出する
 - `architect-completeness-check` は protocols/ の不在を RECOMMENDED（INFO レベル）として扱い、ERROR にはしない
+
+## Changelog
+
+- **2026-05-03 Deprecated**: `protocols/` ディレクトリが未実装のまま廃止。ADR-033 は Accepted 状態で存在していたが、導入を宣言した `architecture/protocols/` ディレクトリは一度も作成されず、クロスリポジトリ知識転送の実運用に至らなかった。ライフサイクル手順に従い Deprecated に遷移（Issue #1313）。

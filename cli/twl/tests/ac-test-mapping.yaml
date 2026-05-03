@@ -373,3 +373,44 @@ mappings:
     test_name: ""
     impl_files: []
     # manual 確認のため自動テスト不要
+
+  # ---------------------------------------------------------------------------
+  # Issue #1313: tech-debt: ADR-033 が Accepted 状態のままファイル削除 — Deprecated/Superseded 遷移が必要
+  # ---------------------------------------------------------------------------
+
+  - ac_index: "1313-AC1"
+    ac_text: "ADR-033 の Status を Deprecated に更新（protocols/ ディレクトリが未実装のため廃止）、ファイル冒頭に廃止バナーを追加（ADR-013 パターン）"
+    test_file: "cli/twl/tests/test_issue_1313_adr_033_deprecated.py"
+    test_names:
+      - "test_ac1_status_is_deprecated"
+      - "test_ac1_status_section_value"
+      - "test_ac1_deprecation_banner_exists"
+      - "test_ac1_deprecation_banner_content"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-033-cross-repo-protocol-pinning.md"
+
+  - ac_index: "1313-AC2"
+    ac_text: "修正後 twl validate または該当 specialist で WARNING 解消確認 — Status セクションに Accepted が残っていないことを機械検証で代替"
+    test_file: "cli/twl/tests/test_issue_1313_adr_033_deprecated.py"
+    test_names:
+      - "test_ac2_no_accepted_in_status_section"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-033-cross-repo-protocol-pinning.md"
+
+  - ac_index: "1313-AC3"
+    ac_text: "関連 ADR/SKILL/refs に整合する更新 — protocols/ 未実装の理由が Changelog またはバナー内に記録されていること"
+    test_file: "cli/twl/tests/test_issue_1313_adr_033_deprecated.py"
+    test_names:
+      - "test_ac3_protocols_dir_absence_acknowledged"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-033-cross-repo-protocol-pinning.md"
+
+  - ac_index: "1313-AC4"
+    ac_text: "regression test — Changelog セクション存在確認、廃止理由記載確認、ファイルが decisions/ に残存していること"
+    test_file: "cli/twl/tests/test_issue_1313_adr_033_deprecated.py"
+    test_names:
+      - "test_ac4_changelog_section_exists"
+      - "test_ac4_changelog_has_deprecation_reason"
+      - "test_ac4_file_remains_in_decisions_dir"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-033-cross-repo-protocol-pinning.md"
