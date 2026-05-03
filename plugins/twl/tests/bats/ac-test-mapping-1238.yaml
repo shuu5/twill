@@ -1,0 +1,57 @@
+mappings:
+  - ac_index: 1
+    ac_text: "`..` を含むパスは拒否される（既存動作の回帰防止）"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac1: '..' を含むパスは exit 1 で拒否される"
+  - ac_index: 1b
+    ac_text: "`..` を含むパスはエラーメッセージを出力する"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac1: '..' を含むパスは エラーメッセージを出力する"
+  - ac_index: 2
+    ac_text: "絶対パス（`/` で始まるパス）は拒否される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac2: 絶対パス '/etc/passwd' は exit 1 で拒否される"
+  - ac_index: 2b
+    ac_text: "絶対パス '/tmp/supervisor' は拒否される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac2: 絶対パス '/tmp/supervisor' は exit 1 で拒否される"
+  - ac_index: 2c
+    ac_text: "絶対パスのエラーメッセージが stderr に出力される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac2: 絶対パスのエラーメッセージが stderr に出力される"
+  - ac_index: 2d
+    ac_text: "絶対パス検証ロジックがスクリプトに存在する"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac2: 絶対パス検証ロジックがスクリプトに存在する"
+  - ac_index: 3
+    ac_text: "デフォルト値 '.supervisor' は受理される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac3: デフォルト値 '.supervisor' 相当の相対パスは受理される"
+  - ac_index: 3b
+    ac_text: "英数字のみの相対パスは受理される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac3: 英数字のみの相対パスは受理される"
+  - ac_index: 3c
+    ac_text: "ハイフンを含む相対パスは受理される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac3: ハイフンを含む相対パスは受理される"
+  - ac_index: 3d
+    ac_text: "スラッシュを含む相対パスは受理される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac3: スラッシュを含む相対パスは受理される"
+  - ac_index: 4
+    ac_text: "禁止文字（$、;、|等）を含むパスは拒否される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac4: '\\$HOME/.supervisor' のような変数展開文字を含むパスは exit 1 で拒否される"
+  - ac_index: 4b
+    ac_text: "セミコロンを含むパスは拒否される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac4: セミコロンを含むパスは exit 1 で拒否される"
+  - ac_index: 4c
+    ac_text: "パイプ文字を含むパスは拒否される"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac4: パイプ文字を含むパスは exit 1 で拒否される"
+  - ac_index: 4d
+    ac_text: "禁止文字検証ロジックがスクリプトに存在する"
+    test_file: "plugins/twl/tests/bats/issue-1238-supervisor-dir-path-validation.bats"
+    test_name: "ac4: 禁止文字検証ロジックがスクリプトに存在する"
