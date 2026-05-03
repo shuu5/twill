@@ -1,0 +1,36 @@
+mappings:
+  - ac_index: "AC-1"
+    ac_text: "co-autopilot/SKILL.md Step 2 default mode = AUTO (skip Plan 承認 menu)"
+    test_file: "cli/twl/tests/skills/co-autopilot/test_1317_auto_default_interactive.bats"
+    test_names:
+      - "ac1: SKILL.md Step 2 に '--interactive なし' が default AUTO の記述がある"
+      - "ac1: SKILL.md Step 2 の HUMAN GATE が --interactive 条件付きになっている"
+    impl_files:
+      - "plugins/twl/skills/co-autopilot/SKILL.md"
+
+  - ac_index: "AC-2"
+    ac_text: "--interactive flag で従来動作 (Plan 承認 menu 表示)"
+    test_file: "cli/twl/tests/skills/co-autopilot/test_1317_auto_default_interactive.bats"
+    test_names:
+      - "ac2: SKILL.md に --interactive flag の説明がある"
+      - "ac2: SKILL.md の --interactive flag が AskUserQuestion 表示と紐づいている"
+    impl_files:
+      - "plugins/twl/skills/co-autopilot/SKILL.md"
+
+  - ac_index: "AC-3"
+    ac_text: "regression bats: --auto default 経路で Phase 1 dispatch 直行確認"
+    test_file: "cli/twl/tests/skills/co-autopilot/test_1317_auto_default_interactive.bats"
+    test_names:
+      - "ac3: SKILL.md Step 2 が '--interactive なし' を default AUTO 経路（Phase 1 直行）として明示している"
+      - "ac3: SKILL.md Step 2 に '通常モードでは AskUserQuestion' の無条件記述が存在しない"
+    impl_files:
+      - "plugins/twl/skills/co-autopilot/SKILL.md"
+
+  - ac_index: "AC-4"
+    ac_text: "spawn-controller.sh で --interactive flag 透過"
+    test_file: "cli/twl/tests/skills/co-autopilot/test_1317_auto_default_interactive.bats"
+    test_names:
+      - "ac4: spawn-controller.sh が --interactive フラグを受け付ける"
+      - "ac4: spawn-controller.sh が --interactive を co-autopilot へ透過させる記述がある"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
