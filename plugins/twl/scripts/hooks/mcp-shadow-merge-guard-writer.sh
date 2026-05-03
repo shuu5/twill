@@ -62,6 +62,23 @@ if ! [[ "$BASH_EXIT" =~ ^[0-9]+$ ]] || ! [[ "$MCP_EXIT" =~ ^[0-9]+$ ]]; then
   exit 1
 fi
 
+# パスバリデーション: 許可プレフィックス先頭一致チェック（最小権限原則 + symlink attack 対策 #1336）
+# 許可リスト: /tmp/, ${HOME}/.cache/, ${SUPERVISOR_DIR}/
+_is_log_path_allowed() {
+  local path="$1"
+  local -a allowed=("/tmp/" "${HOME}/.cache/")
+  [[ -n "${SUPERVISOR_DIR:-}" ]] && allowed+=("${SUPERVISOR_DIR}/")
+  for prefix in "${allowed[@]}"; do
+    [[ "$path" == "$prefix"* ]] && return 0
+  done
+  return 1
+}
+
+if ! _is_log_path_allowed "$LOG_FILE"; then
+  echo "WARNING: shadow log path '${LOG_FILE}' is not in the allowed list (/tmp/, \${HOME}/.cache/, \${SUPERVISOR_DIR}/). Skipping log write (fail-open)." >&2
+  exit 0
+fi
+
 TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # コマンドを先頭 CMD_MAX_LEN 文字に切り詰め（秘密情報漏洩リスクの軽減 #1280）
