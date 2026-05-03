@@ -8,7 +8,6 @@ CLD_OBSERVE_LOOP="$SCRIPT_DIR/cld-observe-loop"
 
 setup() {
     TMPDIR_TEST="$(mktemp -d)"
-    FAKE_WIN="test-win-$$"
 }
 
 teardown() {

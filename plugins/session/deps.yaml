@@ -152,4 +152,9 @@ tests:
   test-1167-ac-verify:
     type: test
     path: tests/test_1167_ac_verify.bats
-    description: "Issue #1167: cld-observe-any.bats L74 slash-in-function-name AC テスト（AC1-AC5: _mock_session_state rename 検証）"
+    description: "Issue #1167/#1197: cld-observe-any.bats _mock_session_state 削除完了の回帰ガード（AC1-AC5）"
+
+  test-1197-ac-verify:
+    type: test
+    path: tests/test_ac1197_mock_intercept.bats
+    description: "Issue #1197: run_observe_once dead mock 削除の regression guard（AC1-AC4）"
