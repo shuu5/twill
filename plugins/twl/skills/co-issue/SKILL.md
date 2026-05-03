@@ -58,7 +58,7 @@ SESSION_DIR=`.controller-issue/<session-id>/`
 **Step 2a: クロスリポ検出** — GitHub Project のリンク済みリポから対象リポを動的取得。2+ リポ検出時は AskUserQuestion で [A] リポ単位分割 / [B] 単一 Issue を確認。
 
 
-**Step 2c: 分解確認** — 複数の場合は AskUserQuestion で [A] この分解で進める / [B] 調整 / [C] 単一のまま。
+**Step 2c: 分解確認** — 複数の場合は `[A] 分解で進める` を自動選択（Layer 0 Auto）。詳細は `refs/co-issue-phase2-bundles.md` Step 2c を参照。
 
 詳細は `refs/co-issue-phase2-bundles.md` を Read → 実行
 
