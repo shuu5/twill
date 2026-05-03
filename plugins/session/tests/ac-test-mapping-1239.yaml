@@ -1,0 +1,84 @@
+# ac-test-mapping-1239.yaml — Issue #1239: tech-debt(session): SESSION_COMM_LOCK_DIR の mkdir -p による任意ディレクトリ作成リスク
+# 生成: AC Scaffold Tests Agent
+# 対象テストファイル: plugins/session/tests/session-comm-lock-dir-allowlist.bats
+
+mappings:
+  # ---------------------------------------------------------------------------
+  # AC1: session-comm.sh cmd_inject に SESSION_COMM_LOCK_DIR allowlist 検証を追加
+  #   /tmp または ${XDG_RUNTIME_DIR} 配下のみ許可。それ以外は exit 1。
+  # ---------------------------------------------------------------------------
+  - ac_index: 1
+    ac_text: "plugins/session/scripts/session-comm.sh の cmd_inject 内、既存バリデーション直後に allowlist チェック（/tmp または XDG_RUNTIME_DIR プレフィックス照合）を追加し、許可外パスは exit 1 する"
+    test_file: "plugins/session/tests/session-comm-lock-dir-allowlist.bats"
+    test_name: "lock-dir-allowlist[structural][RED]: SESSION_COMM_LOCK_DIR allowlist 検証ブロックが存在する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 1b
+    ac_text: "許可リスト外パスに対して 'not allowed' / 'allowlist' 等のエラーメッセージを stderr 出力する"
+    test_file: "plugins/session/tests/session-comm-lock-dir-allowlist.bats"
+    test_name: "lock-dir-allowlist[structural][RED]: /tmp 以外のパスへのエラーメッセージが含まれる"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC2-1: 許可リスト外パス（/home/user 等）→ exit 1 かつ mkdir -p 非実行
+  # ---------------------------------------------------------------------------
+  - ac_index: 2a
+    ac_text: "/home/user 配下など許可リスト外のパスを SESSION_COMM_LOCK_DIR に指定した場合 exit 1 で終了し、ディレクトリを作成しない"
+    test_file: "plugins/session/tests/session-comm-lock-dir-allowlist.bats"
+    test_name: "lock-dir-allowlist[functional][RED]: /home/user 配下のパスはエラー終了する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 2b
+    ac_text: "/var/tmp 等 /tmp 以外のシステムディレクトリも許可リスト外として exit 1 で終了する"
+    test_file: "plugins/session/tests/session-comm-lock-dir-allowlist.bats"
+    test_name: "lock-dir-allowlist[functional][RED]: /var/tmp 等 /tmp 以外のシステムディレクトリもエラー終了する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 2c
+    ac_text: "allowlist 外パスで stderr に 'not allowed' / 'allowlist' / 'outside' / 'permitted' 等のエラーメッセージが出力される"
+    test_file: "plugins/session/tests/session-comm-lock-dir-allowlist.bats"
+    test_name: "lock-dir-allowlist[functional][RED]: allowlist 外パスで stderr にエラーメッセージが出力される"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC3: /tmp は引き続き許可（regression）
+  # ---------------------------------------------------------------------------
+  - ac_index: 3
+    ac_text: "SESSION_COMM_LOCK_DIR=/tmp は allowlist 内として正常動作する（回帰なし）"
+    test_file: "plugins/session/tests/session-comm-lock-dir-allowlist.bats"
+    test_name: "lock-dir-allowlist[regression]: /tmp は allowlist 内で正常動作する"
+    status: GREEN
+    note: "回帰ガード。/tmp は実装前後どちらも許可。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 3b
+    ac_text: "SESSION_COMM_LOCK_DIR 未設定時は /tmp フォールバックで正常動作する（回帰なし）"
+    test_file: "plugins/session/tests/session-comm-lock-dir-allowlist.bats"
+    test_name: "lock-dir-allowlist[regression]: SESSION_COMM_LOCK_DIR 未設定時は /tmp フォールバックで正常動作する"
+    status: GREEN
+    note: "回帰ガード。未設定時は /tmp デフォルト。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC4: XDG_RUNTIME_DIR プレフィックスは許可（optional allowlist エントリ）
+  # ---------------------------------------------------------------------------
+  - ac_index: 4
+    ac_text: "XDG_RUNTIME_DIR 配下のパスは allowlist 内として許可され、inject が正常動作する"
+    test_file: "plugins/session/tests/session-comm-lock-dir-allowlist.bats"
+    test_name: "lock-dir-allowlist[functional][RED]: XDG_RUNTIME_DIR 配下のパスは allowlist 内として許可される"
+    status: GREEN
+    note: "実装前は allowlist なし→通過、実装後は XDG_RUNTIME_DIR を allowlist に含めることで GREEN 維持。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"

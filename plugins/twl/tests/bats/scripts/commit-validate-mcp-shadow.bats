@@ -17,7 +17,7 @@ load '../helpers/common'
 
 SETTINGS_JSON=""
 COMPARE_SH=""
-SHADOW_LOG="/tmp/mcp-shadow-commit-validate.log"
+SHADOW_LOG=""
 
 setup() {
   common_setup
@@ -27,6 +27,7 @@ setup() {
 
   SETTINGS_JSON="${git_root}/.claude/settings.json"
   COMPARE_SH="${git_root}/plugins/twl/scripts/mcp-shadow-compare.sh"
+  SHADOW_LOG="$SANDBOX/mcp-shadow-commit-validate.log"
 }
 
 teardown() {
@@ -252,21 +253,21 @@ _run_compare_commit() {
 }
 
 # ---------------------------------------------------------------------------
-# AC-5: mcp-shadow-compare.sh 互換ログを /tmp/mcp-shadow-commit-validate.log に追記
+# AC-5: mcp-shadow-compare.sh 互換ログを $SHADOW_LOG に追記
 # WHEN commit-validate の bash hook または mcp_tool hook が実行される
-# THEN /tmp/mcp-shadow-commit-validate.log に JSONL 形式でエントリが追記されること
+# THEN $SHADOW_LOG（$SANDBOX/mcp-shadow-commit-validate.log）に JSONL 形式でエントリが追記されること
 # RED: shadow log 書き込みロジック未実装のため fail する
 # ---------------------------------------------------------------------------
 
-@test "AC5: /tmp/mcp-shadow-commit-validate.log に JSONL エントリが書き込まれる" {
+@test "AC5: shadow log に JSONL エントリが書き込まれる" {
   # RED: shadow log 書き込みロジックが未実装のため、ログファイルが存在しないか空のため fail する
   # 実装後は pre-bash-commit-validate.sh または別の shadow hook がこのファイルに書き込む
   [ -f "$SHADOW_LOG" ] || {
-    echo "/tmp/mcp-shadow-commit-validate.log が存在しない（shadow log 書き込み未実装）" >&2
+    echo "$SHADOW_LOG が存在しない（shadow log 書き込み未実装）" >&2
     false
   }
   [ -s "$SHADOW_LOG" ] || {
-    echo "/tmp/mcp-shadow-commit-validate.log が空（shadow log 書き込み未実装）" >&2
+    echo "$SHADOW_LOG が空（shadow log 書き込み未実装）" >&2
     false
   }
 }
@@ -274,7 +275,7 @@ _run_compare_commit() {
 @test "AC5: shadow log エントリに source フィールド（bash または mcp_tool）が存在する" {
   # RED: shadow log 書き込みロジックが未実装のため fail する
   [ -f "$SHADOW_LOG" ] || {
-    echo "/tmp/mcp-shadow-commit-validate.log が存在しない" >&2
+    echo "$SHADOW_LOG が存在しない" >&2
     false
   }
   local has_bash has_mcp
@@ -286,11 +287,11 @@ _run_compare_commit() {
 @test "AC5: shadow log エントリに command フィールドが存在する" {
   # RED: shadow log 書き込みロジックが未実装のため fail する
   [ -f "$SHADOW_LOG" ] || {
-    echo "/tmp/mcp-shadow-commit-validate.log が存在しない" >&2
+    echo "$SHADOW_LOG が存在しない" >&2
     false
   }
   grep -q '"command"' "$SHADOW_LOG" || {
-    echo "shadow log に command フィールドが存在しない" >&2
+    echo "$SHADOW_LOG に command フィールドが存在しない" >&2
     false
   }
 }
@@ -302,7 +303,7 @@ _run_compare_commit() {
     false
   }
   [ -f "$SHADOW_LOG" ] || {
-    echo "/tmp/mcp-shadow-commit-validate.log が存在しない" >&2
+    echo "$SHADOW_LOG が存在しない" >&2
     false
   }
   run bash "$COMPARE_SH" --log-file "$SHADOW_LOG"

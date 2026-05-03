@@ -11,7 +11,7 @@
 #   mismatch がない場合: exit 0 (出力なし)
 #   mismatch がある場合: exit 1、stderr に MISMATCH エントリを出力
 
-set -uo pipefail
+set -euo pipefail
 
 LOG_FILE=""
 

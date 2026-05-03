@@ -89,11 +89,13 @@ while [[ $# -gt 0 ]]; do
     --repo-path) REPO_PATH="$2"; shift 2 ;;
     --worktree-dir) WORKTREE_DIR="$2"; shift 2 ;;
     --bypass-status-gate) BYPASS_STATUS_GATE=1; shift ;;
+    --interactive) INTERACTIVE_MODE=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Error: 不明なオプション: $1" >&2; exit 1 ;;
   esac
 done
 BYPASS_STATUS_GATE="${BYPASS_STATUS_GATE:-0}"
+INTERACTIVE_MODE="${INTERACTIVE_MODE:-0}"
 
 # --- 入力バリデーション (Task 1.4) ---
 

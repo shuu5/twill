@@ -88,3 +88,17 @@ DAG levels: L0=[1,2], L1=[3], L2=[4] (計N issue)
 ```
 
 → Phase 3 へ（ユーザー確認なし）
+
+#### Step 2c: 分解確認（自動選択）
+
+複数 Issue の分解が確定した場合、`[A] 分解で進める` を自動選択する（Layer 0 Auto）。
+
+```bash
+SID="<session-id>"
+AUTO_LOG=".controller-issue/${SID}/auto-decisions.log"
+echo ">>> Step 2c 分解確認 (auto): [A] 分解で進める" | tee -a "${AUTO_LOG}"
+```
+
+- AskUserQuestion を呼ばない（履歴サンプル 100% `[A]` 選択）
+- 決定を `auto-decisions.log` に記録する
+- Phase 3 へ進む

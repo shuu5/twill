@@ -16,6 +16,9 @@ def _load_plugin_ctx(plugin_root: str) -> "tuple[Path, dict, dict, str]":
     from twl.core.plugin import load_deps, build_graph, get_plugin_name
     # Resolve to absolute path to prevent path traversal
     p = Path(plugin_root).expanduser().resolve()
+    # Accept file path (e.g. deps.yaml) and derive plugin root from parent dir
+    if p.is_file():
+        p = p.parent
     if not p.is_dir():
         raise ValueError(f"plugin_root '{plugin_root}' is not a directory")
     try:
