@@ -21,7 +21,7 @@
 
 set -uo pipefail
 
-CMD_MAX_LEN=128
+readonly CMD_MAX_LEN=128
 
 CMD=""
 BASH_EXIT=""
@@ -78,6 +78,7 @@ else
   MISMATCH="true"
 fi
 
+mkdir -p "$(dirname "$LOG_FILE")"
 jq -nc \
   --arg    ts                "$TS"               \
   --arg    command           "$CMD_TRUNCATED"    \

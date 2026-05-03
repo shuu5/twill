@@ -51,6 +51,7 @@ teardown() {
   # RED: 現在の実装は /tmp/mcp-shadow-merge-guard.log 固定のため FAIL
   local xdg_runtime_dir
   xdg_runtime_dir="$(mktemp -d /tmp/xdg-runtime-XXXXXX)"
+  trap 'rm -rf "$xdg_runtime_dir"' EXIT
 
   XDG_RUNTIME_DIR="$xdg_runtime_dir" \
     bash "$WRITER" \
@@ -73,6 +74,7 @@ teardown() {
   # RED: 現在の実装は /tmp/mcp-shadow-merge-guard.log に書き込むため FAIL
   local xdg_runtime_dir
   xdg_runtime_dir="$(mktemp -d /tmp/xdg-runtime-XXXXXX)"
+  trap 'rm -rf "$xdg_runtime_dir"' EXIT
   local tmp_fixed_log="/tmp/mcp-shadow-merge-guard.log"
 
   # 固定パスが既存の場合でも上書きしないよう退避
@@ -109,6 +111,7 @@ teardown() {
   # 現在の実装でも SHADOW_LOG_PATH は機能するが、XDG_RUNTIME_DIR サポート追加後も維持されることを確認
   local xdg_runtime_dir
   xdg_runtime_dir="$(mktemp -d /tmp/xdg-runtime-XXXXXX)"
+  trap 'rm -rf "$xdg_runtime_dir"' EXIT
   local override_log
   override_log="$(mktemp /tmp/mcp-override-XXXXXX.log)"
 
