@@ -290,8 +290,9 @@ while IFS= read -r line; do
               if ! command -v gh &>/dev/null; then
                 echo "WARN: [cleanup] gh CLI が未インストールです — PR チェック不可のためリモートブランチ削除スキップ: $wt_branch" >&2
               else
-                _open_prs=$(gh pr list --head "$wt_branch" --state open 2>/dev/null || true)
-                if [[ -n "$_open_prs" ]]; then
+                _open_pr_count=$(gh pr list --head "$wt_branch" --state open --json number --jq 'length' 2>/dev/null || echo '0')
+                _open_pr_count=$(echo "$_open_pr_count" | tr -cd '0-9')
+                if [[ $_open_pr_count -gt 0 ]]; then
                   echo "WARN: [cleanup] ブランチ $wt_branch に OPEN PR があります — リモートブランチ削除スキップ" >&2
                 else
                   git push origin --delete "$wt_branch" 2>/dev/null || \
