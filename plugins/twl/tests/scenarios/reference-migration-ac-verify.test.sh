@@ -79,8 +79,8 @@ test_ac3_twl_validate_passes() {
     echo "$output" >&2
     return 1
   fi
-  # validate 出力に Violations があれば失敗
-  if echo "$output" | grep -q 'Violations: [^0]'; then
+  # validate 出力に Violations があれば失敗（0 以外の数値を検出）
+  if echo "$output" | grep -qP 'Violations:\s*[1-9]'; then
     echo "Type constraint violations found:" >&2
     echo "$output" >&2
     return 1
@@ -96,10 +96,12 @@ run_test "AC-3: twl --validate がエラー・Violations なしで通過" test_a
 test_ac4_deps_refs_path_consistency() {
   local deps_yaml="${PROJECT_ROOT}/deps.yaml"
   [[ -f "$deps_yaml" ]] || return 1
-  local errors
-  errors=$(python3 -c "
-import yaml, sys
-with open('${deps_yaml}') as f:
+  local errors ec
+  # シングルクォートで python3 を呼び出し、シェル展開を避ける
+  errors=$(python3 - "$deps_yaml" <<'PYEOF'
+import yaml, sys, re
+deps_yaml = sys.argv[1]
+with open(deps_yaml) as f:
     data = yaml.safe_load(f)
 refs = data.get('refs', {})
 errors = []
@@ -107,18 +109,18 @@ for name, entry in refs.items():
     if not isinstance(entry, dict):
         continue
     path = entry.get('path', '')
-    # 許容パターン: refs/<name>.md OR skills/**/refs/<name>.md
-    expected_flat = f'refs/{name}.md'
-    import re
-    if path != expected_flat and not re.match(r'^skills/[^/]+/refs/' + re.escape(name) + r'\.md\$', path):
+    flat_path = f'refs/{name}.md'
+    skill_pattern = re.compile(r'^skills/[^/]+/refs/' + re.escape(name) + r'\.md$')
+    if path != flat_path and not skill_pattern.match(path):
         errors.append(f'{name}: path={path}, expected refs/{name}.md or skills/*/refs/{name}.md')
 if errors:
     for e in errors:
         print(e, file=sys.stderr)
     sys.exit(1)
 sys.exit(0)
-" 2>&1)
-  local ec=$?
+PYEOF
+  )
+  ec=$?
   if [[ $ec -ne 0 ]]; then
     echo "$errors" >&2
     return 1
@@ -129,7 +131,7 @@ test_ac4_reference_migration_idempotent() {
   local test_file="${PROJECT_ROOT}/tests/scenarios/reference-migration.test.sh"
   [[ -f "$test_file" ]] || return 1
   # 2回実行してどちらも 0 failures
-  local exit1 exit2
+  local exit1=0 exit2=0
   cd "${PROJECT_ROOT}" && bash "$test_file" &>/dev/null; exit1=$?
   cd "${PROJECT_ROOT}" && bash "$test_file" &>/dev/null; exit2=$?
   if [[ $exit1 -ne 0 || $exit2 -ne 0 ]]; then
