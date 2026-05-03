@@ -37,9 +37,8 @@ teardown() {
   [ -f "${SETTINGS_JSON}" ]
 
   local hook_input
-  hook_input=$(jq -r '
+  hook_input=$(jq '
     .hooks.PreToolUse[]
-    | select(.hooks[]?.type == "mcp_tool" and .hooks[]?.tool == "twl_validate_deps")
     | .hooks[]
     | select(.type == "mcp_tool" and .tool == "twl_validate_deps")
     | .input
@@ -57,9 +56,8 @@ teardown() {
   [ -f "${SETTINGS_JSON}" ]
 
   local hook_input
-  hook_input=$(jq -r '
+  hook_input=$(jq '
     .hooks.PreToolUse[]
-    | select(.hooks[]?.type == "mcp_tool" and .hooks[]?.tool == "twl_validate_deps")
     | .hooks[]
     | select(.type == "mcp_tool" and .tool == "twl_validate_deps")
     | .input
@@ -89,7 +87,6 @@ teardown() {
   local output_type
   output_type=$(jq -r '
     .hooks.PreToolUse[]
-    | select(.hooks[]?.type == "mcp_tool" and .hooks[]?.tool == "twl_validate_deps")
     | .hooks[]
     | select(.type == "mcp_tool" and .tool == "twl_validate_deps")
     | .outputType // "MISSING"
@@ -114,9 +111,8 @@ teardown() {
   [ -f "${SETTINGS_JSON}" ]
 
   local hook_input
-  hook_input=$(jq -r '
+  hook_input=$(jq '
     .hooks.PreToolUse[]
-    | select(.hooks[]?.type == "mcp_tool" and .hooks[]?.tool == "twl_validate_merge")
     | .hooks[]
     | select(.type == "mcp_tool" and .tool == "twl_validate_merge")
     | .input
@@ -134,9 +130,8 @@ teardown() {
   [ -f "${SETTINGS_JSON}" ]
 
   local hook_input
-  hook_input=$(jq -r '
+  hook_input=$(jq '
     .hooks.PreToolUse[]
-    | select(.hooks[]?.type == "mcp_tool" and .hooks[]?.tool == "twl_validate_merge")
     | .hooks[]
     | select(.type == "mcp_tool" and .tool == "twl_validate_merge")
     | .input
@@ -155,9 +150,8 @@ teardown() {
   [ -f "${SETTINGS_JSON}" ]
 
   local hook_input
-  hook_input=$(jq -r '
+  hook_input=$(jq '
     .hooks.PreToolUse[]
-    | select(.hooks[]?.type == "mcp_tool" and .hooks[]?.tool == "twl_validate_commit")
     | .hooks[]
     | select(.type == "mcp_tool" and .tool == "twl_validate_commit")
     | .input
@@ -175,9 +169,8 @@ teardown() {
   [ -f "${SETTINGS_JSON}" ]
 
   local hook_input
-  hook_input=$(jq -r '
+  hook_input=$(jq '
     .hooks.PreToolUse[]
-    | select(.hooks[]?.type == "mcp_tool" and .hooks[]?.tool == "twl_validate_commit")
     | .hooks[]
     | select(.type == "mcp_tool" and .tool == "twl_validate_commit")
     | .input

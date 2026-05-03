@@ -19,11 +19,9 @@
             "server": "twl",
             "tool": "twl_validate_deps",
             "input": {
-              "file_path": "${tool_input.file_path}",
-              "content": "${tool_input.content}",
-              "old_string": "${tool_input.old_string}",
-              "new_string": "${tool_input.new_string}"
+              "plugin_root": "${tool_input.file_path}"
             },
+            "outputType": "log",
             "timeout": 30
           }
         ]
@@ -61,7 +59,7 @@
             "server": "twl",
             "tool": "twl_validate_merge",
             "input": {
-              "command": "${tool_input.command}"
+              "branch": "${tool_input.command}"
             },
             "outputType": "log",
             "timeout": 10
@@ -71,7 +69,8 @@
             "server": "twl",
             "tool": "twl_validate_commit",
             "input": {
-              "command": "${tool_input.command}"
+              "message": "${tool_input.command}",
+              "files": []
             },
             "outputType": "log",
             "timeout": 30
