@@ -34,14 +34,21 @@ CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
 
 # ---------------------------------------------------------------------------
 # AC-3: twl validate または該当 specialist で WARNING 解消確認
-# twl check が errors なしで完了することを確認
+# worker-code-reviewer (confidence 92%) が報告した dead mock パターンが解消されていること:
+#   - フルパス subprocess をインターセプトできない export -f が存在しないこと
+#   - run_observe_once ヘルパーが存在しないこと（dead code）
 # ---------------------------------------------------------------------------
-@test "ac3 (#1197): twl check が errors なしで完了すること" {
-    run twl check 2>&1
-    echo "$output"
-    # errors があれば "errors:" が出力に含まれる
-    [[ "$output" != *"errors:"* ]] || {
-        echo "FAIL: twl check に errors が検出された"
+@test "ac3 (#1197): worker-code-reviewer が報告した dead mock パターンが cld-observe-any.bats から解消されていること" {
+    # export -f でフルパスサブプロセスをインターセプトしようとするパターンの不在
+    run grep -E 'export -f.*(_mock_session_state|session-state)' "$BATS_FILE"
+    [[ "$status" -ne 0 ]] || {
+        echo "FAIL: dead mock export パターンが残存: $output"
+        false
+    }
+    # run_observe_once dead code helper の不在
+    run grep -E '^run_observe_once\(\)' "$BATS_FILE"
+    [[ "$status" -ne 0 ]] || {
+        echo "FAIL: dead code ヘルパー run_observe_once が残存: $output"
         false
     }
 }
