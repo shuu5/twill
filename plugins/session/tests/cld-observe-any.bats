@@ -16,68 +16,6 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# ヘルパー: tmux/session-state.sh をモックして cld-observe-any --once を実行
-# ---------------------------------------------------------------------------
-# pane_info: "pane_dead pane_cmd"（例: "0 claude"）
-# capture_content: tmux capture-pane が返す scrollback テキスト
-# status_line: status line（budget パース対象、空可）
-run_observe_once() {
-    local win="$1"
-    local pane_info="${2:-0 claude}"
-    local capture_content="${3:-}"
-    local status_line="${4:-}"
-    local extra_args="${5:-}"
-
-    local pane_dead="${pane_info%% *}"
-    local pane_cmd="${pane_info#* }"
-
-    local capture_file="$TMPDIR_TEST/capture.txt"
-    printf '%s\n' "$capture_content" > "$capture_file"
-    local status_file="$TMPDIR_TEST/status.txt"
-    printf '%s\n' "$status_line" > "$status_file"
-    local list_file="$TMPDIR_TEST/list.txt"
-    printf 'test-session:0 %s\n' "$win" > "$list_file"
-
-    run bash <<EOF
-# tmux モック
-tmux() {
-    case "\$1" in
-        list-windows)
-            if [[ "\${2:-}" == "-a" ]]; then
-                # get_target_windows の呼び出し
-                printf 'test-session:0\n'
-                return
-            fi
-            cat "$list_file"
-            ;;
-        display-message)
-            # pane_dead + pane_current_command
-            echo "${pane_dead} ${pane_cmd}"
-            ;;
-        capture-pane)
-            # status line または scrollback
-            if [[ "\${*}" == *"-S -1"* ]]; then
-                cat "$status_file"
-            else
-                cat "$capture_file"
-            fi
-            ;;
-        *)
-            return 0 ;;
-    esac
-}
-export -f tmux
-
-# session-state.sh モック (関数名は slash-free)
-_mock_session_state() { echo "processing"; }
-export -f _mock_session_state
-
-_TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
-    bash "$CLD_OBSERVE_ANY" --window "$win" --once $extra_args
-EOF
-}
-
-# ---------------------------------------------------------------------------
 # Scenario 1: LLM indicator あり → event emit されないこと（false positive 再発防止）
 # ---------------------------------------------------------------------------
 @test "LLM indicator 'Brewing' あり → event emit なし" {
