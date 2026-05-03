@@ -873,10 +873,10 @@ bash plugins/twl/scripts/pilot-fallback-monitor.sh &
 python3 -m twl.autopilot.resolve_next_workflow --issue <ISSUE_NUM>
 
 # session-comm.sh で inject
-bash plugins/session/scripts/session-comm.sh inject <WORKER_WINDOW> "/twl:workflow-pr-fix"
+bash "$(git rev-parse --show-toplevel)/plugins/session/scripts/session-comm.sh" inject <WORKER_WINDOW> "/twl:workflow-pr-fix"  # cross-plugin reference
 
 # PR merged 後の window cleanup
-tmux kill-window -t <WORKER_WINDOW>
+_kill_window_safe <WORKER_WINDOW>  # §4.11 session-safe pattern
 ```
 
 **参照**: Issue #1128, 2026-04-29 ipatho2 session 26c380eb, `wt-co-autopilot-164142` pane

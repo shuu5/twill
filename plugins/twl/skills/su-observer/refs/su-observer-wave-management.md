@@ -131,5 +131,5 @@ kill 成功 → IDLE_COMPLETED_AUTO_NEXT_SPAWN=1 チェック
 ```
 
 **参照スクリプト**:
-- `skills/su-observer/scripts/auto-next-spawn.sh`（メイン spawn スクリプト、#1155）
-- `skills/su-observer/scripts/lib/observer-wave-check.sh`（Wave 判定ライブラリ、#1155）
+- `plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh`（メイン spawn スクリプト、#1155）
+- `plugins/twl/skills/su-observer/scripts/lib/observer-wave-check.sh`（Wave 判定ライブラリ、#1155）
