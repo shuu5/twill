@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-WORKTREE_ROOT = Path(__file__).resolve().parents[3]
+WORKTREE_ROOT = Path(__file__).resolve().parents[3]  # tests(0) → twl(1) → cli(2) → repo-root(3)
 
 PITFALLS_CATALOG = (
     WORKTREE_ROOT / "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
@@ -66,24 +66,38 @@ def test_ac1_session_comm_uses_absolute_path_form():
 
 
 def test_ac2_kill_window_not_bare_window_name():
-    """AC-2: §17 の tmux kill-window -t <WORKER_WINDOW> が session 修飾なし形式でない
-    RED: 修正前は bare window name が残存するため FAIL
-    GREEN: session:window 形式に修正後 PASS
+    """AC-2: §17 の tmux kill-window -t <WORKER_WINDOW> が bare window-name 形式でない
+    RED: 修正前は `tmux kill-window -t <WORKER_WINDOW>` が §17 にあるため FAIL
+    GREEN: _kill_window_safe への書き換え後、kill-window 行が §17 から消えるため PASS
     """
     content = PITFALLS_CATALOG.read_text(encoding="utf-8")
     lines = content.splitlines()
 
-    # §17 section 内 (L860 以降) の kill-window 行を探す
+    # §17 section 内の kill-window 行を探す（次の ## セクションで終端）
     in_section17 = False
     for line in lines:
         if "§17" in line or "## 17" in line:
             in_section17 = True
+        elif in_section17 and line.startswith("## ") and "§17" not in line and "## 17" not in line:
+            in_section17 = False
         if in_section17 and "kill-window" in line and "<WORKER_WINDOW>" in line:
             # session 修飾なし (":"が含まれない) は NG
             assert ":" in line, (
                 f"bare window-name kill-window found in §17: {line.strip()!r} — "
-                "expected session-qualified target e.g. $SESSION:<WORKER_WINDOW>"
+                "expected session-safe wrapper (_kill_window_safe) or session-qualified target"
             )
+
+
+def test_ac2_kill_window_safe_present_in_section17():
+    """AC-2: §17 の window cleanup が _kill_window_safe 形式になっている（正のアサーション）
+    RED: 修正前は _kill_window_safe が §17 に存在しないため FAIL
+    GREEN: 修正後 PASS
+    """
+    content = PITFALLS_CATALOG.read_text(encoding="utf-8")
+    assert "_kill_window_safe" in content, (
+        "_kill_window_safe not found in pitfalls-catalog.md — "
+        "expected §17 window cleanup to use session-safe wrapper"
+    )
 
 
 # ---------------------------------------------------------------------------
