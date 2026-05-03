@@ -38,6 +38,11 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 TWILL_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 CLD_SPAWN="$TWILL_ROOT/plugins/session/scripts/cld-spawn"
 
+# SUPERVISOR_DIR パス検証（スクリプト冒頭の単一 validate で L57/L258/L337 を一括保護）
+# shellcheck source=/dev/null
+source "$TWILL_ROOT/plugins/twl/scripts/lib/supervisor-dir-validate.sh"
+validate_supervisor_dir "${SUPERVISOR_DIR:-.supervisor}" || exit 1
+
 # AC1: tmux window target を session:index 形式で解決するヘルパーを読み込む
 # shellcheck source=/dev/null
 source "$TWILL_ROOT/plugins/session/scripts/lib/tmux-resolve.sh"

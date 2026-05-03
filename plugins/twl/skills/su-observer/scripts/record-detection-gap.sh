@@ -56,17 +56,12 @@ case "$SEVERITY" in
   *) echo "ERROR: --severity must be low|medium|high (got: $SEVERITY)" >&2; usage; exit 1 ;;
 esac
 
-# SUPERVISOR_DIR path safety: reject traversal, absolute paths, and forbidden characters
+# SUPERVISOR_DIR path safety: shared lib による統一検証（Issue #1346）
+_RDG_SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+# shellcheck source=/dev/null
+source "$_RDG_SCRIPT_DIR/../../../scripts/lib/supervisor-dir-validate.sh"
 _supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
-if [[ "$_supervisor_dir" == *..* ]]; then
-  echo "ERROR: SUPERVISOR_DIR must not contain '..'" >&2; exit 1
-fi
-if [[ "$_supervisor_dir" =~ ^/ ]]; then
-  echo "ERROR: SUPERVISOR_DIR must not be an absolute path (got: ${_supervisor_dir})" >&2; exit 1
-fi
-if [[ "$_supervisor_dir" =~ [$\;\|\`\&\(\)\<\>] ]]; then
-  echo "ERROR: SUPERVISOR_DIR must only contain allowed characters (alphanumeric, dot, hyphen, underscore, slash)" >&2; exit 1
-fi
+validate_supervisor_dir "$_supervisor_dir" || exit 1
 
 # Sanitize DETAIL: strip newlines and control characters to prevent log injection
 DETAIL="${DETAIL//$'\n'/ }"

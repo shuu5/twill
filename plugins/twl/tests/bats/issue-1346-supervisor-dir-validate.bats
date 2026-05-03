@@ -52,14 +52,6 @@ teardown() {
 
 # ---------------------------------------------------------------------------
 # ヘルパー: validate 関数を source して呼び出す
-# ---------------------------------------------------------------------------
-_source_lib_and_validate() {
-  local dir="$1"
-  bash -c "
-    source '${LIB_VALIDATE}' 2>/dev/null || exit 127
-    validate_supervisor_dir '${dir}'
-  "
-}
 
 # ---------------------------------------------------------------------------
 # ヘルパー: spawn-controller.sh を SUPERVISOR_DIR 付きで実行（最小引数）
@@ -411,6 +403,18 @@ _run_spawn_with_supervisor_dir() {
   run bash -c "source '$LIB_VALIDATE'; validate_supervisor_dir '.supervisor<>/evil'"
   assert_failure || {
     echo "FAIL: AC #6c — '<>' を含むパスが拒否されなかった" >&2
+    return 1
+  }
+}
+
+@test "ac6c: lib 単体 — '\\\\' を含むパスを拒否する" {
+  [[ -f "$LIB_VALIDATE" ]] || {
+    echo "FAIL: AC #6c 未実装 — $LIB_VALIDATE が存在しない" >&2
+    return 1
+  }
+  run bash -c 'source '"'"''"$LIB_VALIDATE"''"'"'; validate_supervisor_dir '"'"'.supervisor\evil'"'"
+  assert_failure || {
+    echo "FAIL: AC #6c — バックスラッシュを含むパスが拒否されなかった" >&2
     return 1
   }
 }

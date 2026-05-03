@@ -18,6 +18,12 @@
 
 set -uo pipefail
 
+_ANS_SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+# shellcheck source=/dev/null
+source "$_ANS_SCRIPT_DIR/../../../scripts/lib/supervisor-dir-validate.sh"
+# set -e なしのため || exit 1 パターンで明示的に停止（AC5）
+validate_supervisor_dir "${SUPERVISOR_DIR:-.supervisor}" || exit 1
+
 # ---- 引数パース ----
 QUEUE_FILE=""
 TRIGGERED_BY=""

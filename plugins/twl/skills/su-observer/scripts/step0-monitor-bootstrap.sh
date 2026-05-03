@@ -13,12 +13,11 @@
 
 set -euo pipefail
 
+_SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+# shellcheck source=/dev/null
+source "$_SCRIPT_DIR/../../../scripts/lib/supervisor-dir-validate.sh"
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
-# パス検証: 英数字・ドット・アンダースコア・ハイフン・スラッシュのみ許可（特殊文字・空白・.. 拒否）
-if [[ ! "$SUPERVISOR_DIR" =~ ^[a-zA-Z0-9./_-]+$ ]] || [[ "$SUPERVISOR_DIR" == *..* ]]; then
-  echo "ERROR: SUPERVISOR_DIR に無効な文字が含まれています: $SUPERVISOR_DIR" >&2
-  exit 2
-fi
+validate_supervisor_dir "$SUPERVISOR_DIR" || exit 1
 LOG_FILE="${SUPERVISOR_DIR}/cld-observe-any.log"
 MODE="${1:-}"
 

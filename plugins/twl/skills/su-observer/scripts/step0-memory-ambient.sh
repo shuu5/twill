@@ -14,7 +14,11 @@
 
 set -euo pipefail
 
+_SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+# shellcheck source=/dev/null
+source "$_SCRIPT_DIR/../../../scripts/lib/supervisor-dir-validate.sh"
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+validate_supervisor_dir "$SUPERVISOR_DIR" || exit 1
 AMBIENT_TTL_SEC="${AMBIENT_TTL_SEC:-86400}"
 HINTS_FILE="${SUPERVISOR_DIR}/ambient-hints.md"
 MODE="${1:-}"

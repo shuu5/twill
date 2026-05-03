@@ -2691,6 +2691,12 @@ scripts:
     path: scripts/lib/gh-read-content.sh
     description: "Issue/PR body + 全 comments 取得ヘルパー（gh_read_issue_full / gh_read_pr_full 関数: content-reading は body + comments 必須ポリシーを実装）"
 
+  # SUPERVISOR_DIR パス検証共有ライブラリ (Issue #1346)
+  supervisor-dir-validate:
+    type: script
+    path: scripts/lib/supervisor-dir-validate.sh
+    description: "SUPERVISOR_DIR パス検証共有 lib（validate_supervisor_dir 関数: .. トラバーサル・絶対パス・禁止文字を拒否し exit 1 で統一。spawn-controller.sh / session-init.sh / step0-monitor-bootstrap.sh / record-detection-gap.sh / step0-memory-ambient.sh / heartbeat-watcher.sh / auto-next-spawn.sh が source して使用）"
+
   # observer window 存在確認共通ライブラリ (#948 Phase AA 2026-04-24)
   observer-parallel-check:
     type: script

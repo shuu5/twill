@@ -25,9 +25,12 @@ EVENTS_DIR="${EVENTS_DIR:-.supervisor/events}"
 CAPTURE_OUTPUT_DIR="${CAPTURE_OUTPUT_DIR:-.supervisor/captures}"
 POLL_INTERVAL_SEC="${POLL_INTERVAL_SEC:-60}"
 AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
-SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
 # stagnate-suppress-check.sh パス解決 (#1052)
 _SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+# shellcheck source=/dev/null
+source "$_SCRIPT_DIR/../../../scripts/lib/supervisor-dir-validate.sh"
+SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+validate_supervisor_dir "$SUPERVISOR_DIR" || exit 1
 STAGNATE_SUPPRESS_CHECK="${STAGNATE_SUPPRESS_CHECK:-${_SCRIPT_DIR}/../../../scripts/stagnate-suppress-check.sh}"
 
 if [[ -z "$PILOT_WINDOW" ]]; then

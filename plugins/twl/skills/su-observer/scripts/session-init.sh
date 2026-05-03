@@ -6,12 +6,11 @@
 
 set -euo pipefail
 
+_SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
+# shellcheck source=/dev/null
+source "$_SCRIPT_DIR/../../../scripts/lib/supervisor-dir-validate.sh"
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
-# パストラバーサル防止（step0-monitor-bootstrap.sh に合わせたバリデーション）
-if [[ ! "$SUPERVISOR_DIR" =~ ^[a-zA-Z0-9._/=-]+$ ]] || [[ "$SUPERVISOR_DIR" == *..* ]]; then
-  echo "[session-init] ERROR: SUPERVISOR_DIR に不正な文字または '..' が含まれています: $SUPERVISOR_DIR" >&2
-  exit 1
-fi
+validate_supervisor_dir "$SUPERVISOR_DIR" || exit 1
 mkdir -p "$SUPERVISOR_DIR"
 
 # Claude Code session ID と tmux window 名を取得
