@@ -69,7 +69,7 @@
             "server": "twl",
             "tool": "twl_validate_commit",
             "input": {
-              "message": "${tool_input.command}",
+              "command": "${tool_input.command}",
               "files": []
             },
             "outputType": "log",
