@@ -1,38 +1,36 @@
 #!/usr/bin/env bats
 # test_1167_ac_verify.bats
 # Issue #1167: tech-debt: cld-observe-any.bats L74 slash-containing function name
-# RED フェーズ — 修正前の現状では全テストが FAIL する
-# 修正後（実装完了後）は全テストが PASS する
+# Issue #1197 により run_observe_once ヘルパーごと削除済み
+# AC1-3: _mock_session_state が存在しないことを確認（削除完了の回帰ガード）
 
 TARGET_FILE="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)/cld-observe-any.bats"
 
 # ---------------------------------------------------------------------------
-# AC1: L74 の関数定義を _mock_session_state() に rename する（slash 除去）
-# RED: 修正前は "\"$SCRIPT_DIR/session-state.sh\"()" 形式が残っているため FAIL
+# AC1: _mock_session_state() 関数定義が存在しないこと
+# #1167 で rename 済み、#1197 で dead code 削除済み
 # ---------------------------------------------------------------------------
-@test "ac1: L74 の関数定義が _mock_session_state() { ... } 形式になっている" {
-    # 修正済みならこのパターンが存在する → PASS
-    grep -qE '^_mock_session_state\(\)[[:space:]]*\{' "$TARGET_FILE"
+@test "ac1: _mock_session_state() 関数定義が cld-observe-any.bats に存在しない（#1197 削除確認）" {
+    run grep -E '^_mock_session_state\(\)[[:space:]]*\{' "$TARGET_FILE"
+    [ "$status" -ne 0 ]
 }
 
 # ---------------------------------------------------------------------------
-# AC2: L75 の export 行が export -f _mock_session_state に置換されている
-# RED: 修正前は export -f "$SCRIPT_DIR/session-state.sh" 形式が残っているため FAIL
+# AC2: export -f _mock_session_state が存在しないこと
+# #1167 で rename 済み、#1197 で dead code 削除済み
 # ---------------------------------------------------------------------------
-@test "ac2: L75 の export 行が export -f _mock_session_state になっている" {
-    # 修正済みならこのパターンが存在する → PASS
-    grep -qE '^export -f _mock_session_state[[:space:]]*$' "$TARGET_FILE"
+@test "ac2: export -f _mock_session_state が cld-observe-any.bats に存在しない（#1197 削除確認）" {
+    run grep -E '^export -f _mock_session_state[[:space:]]*$' "$TARGET_FILE"
+    [ "$status" -ne 0 ]
 }
 
 # ---------------------------------------------------------------------------
-# AC3: L73 のコメントが保持または更新されている
-# GREEN 寄りだが、コメント行の存在確認として記録する
-# 修正前でもコメントは存在するため、このテストは PASS する可能性がある
-# ただし rename 前後でコメントが消去されていないことを担保するために配置する
+# AC3: session-state.sh モックコメント（run_observe_once ヘルパー内）が存在しないこと
+# #1197 で run_observe_once ヘルパーごと削除済み
 # ---------------------------------------------------------------------------
-@test "ac3: L73 の session-state.sh モックコメントが存在する" {
-    # コメント行（"session-state.sh" と "モック" を含む）が存在する → PASS
-    grep -qE '#.*session-state\.sh.*モック' "$TARGET_FILE"
+@test "ac3: session-state.sh モックコメントが cld-observe-any.bats に存在しない（#1197 削除確認）" {
+    run grep -E '#.*session-state\.sh.*モック' "$TARGET_FILE"
+    [ "$status" -ne 0 ]
 }
 
 # ---------------------------------------------------------------------------
