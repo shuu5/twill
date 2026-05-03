@@ -967,7 +967,17 @@ def twl_validate_commit_handler(
     files: list[str],
     timeout_sec: int | None = 300,
 ) -> dict:
-    """validation module: commit message and file deps validation (in-process, no subprocess)."""
+    """validation module: commit message and file deps validation (in-process, no subprocess).
+
+    現状: Claude Code の PreToolUse hook では tool_input から staged files リストを取得する
+    仕組みがない（hook 仕様制約）。そのため settings.json の files フィールドは常に空リスト
+    で呼び出され、このハンドラは files 空リストにより実質 no-op となる。
+    deps.yaml validation の実体は pre-bash-commit-validate.sh (bash hook) が担当する。
+    代替: pre-bash-commit-validate.sh (bash hook) が deps.yaml validation を担当。
+    MCP hook は記録専用（shadow mode）として位置づける。
+    # TODO: Claude Code hook 仕様拡張時に再検討 — staged files が取得可能になった場合に
+    #       files パラメータを実活用できる。Issue #1335 参照（self-deferred）。
+    """
     if timeout_sec is not None and timeout_sec <= 0:
         return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
 
