@@ -229,8 +229,8 @@ done
 if [[ -n "$PROJECT_DIR" && -d "$PROJECT_DIR" ]]; then
   for wave_dir in "$PROJECT_DIR"/.autopilot*/; do
     [[ -d "$wave_dir/issues" ]] || continue
-    # 同一 autopilot-dir は既にスキャン済み
-    [[ "$(realpath "$wave_dir" 2>/dev/null || echo "$wave_dir")" == \
+    # 同一 autopilot-dir は既にスキャン済み（末尾スラッシュを正規化）
+    [[ "$(realpath "$wave_dir" 2>/dev/null || echo "${wave_dir%/}")" == \
        "$(realpath "$AUTOPILOT_DIR" 2>/dev/null || echo "$AUTOPILOT_DIR")" ]] && continue
     for issue_file in "$wave_dir/issues"/issue-*.json; do
       [[ -f "$issue_file" ]] || continue
