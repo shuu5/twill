@@ -77,17 +77,14 @@ for level_idx in "${!levels[@]}"; do
 done
 ```
 
-#### Step 2a-5: Dispatch 確認（AskUserQuestion）
+#### Step 2a-5: Dispatch（自動）
 
-以下を表示してユーザーに確認:
+以下を出力し、自動的に Phase 3 へ進む:
 
 ```
+>>> Phase 2a-5 dispatch (auto): N levels
 DAG levels: L0=[1,2], L1=[3], L2=[4] (計N issue)
 各 level を順次 dispatch します。
 ```
 
-AskUserQuestion: `[dispatch | adjust | cancel]`
-
-- `dispatch` → Phase 3 へ
-- `adjust` → Phase 2 に戻り再確認
-- `cancel` → 処理を中断
+→ Phase 3 へ（ユーザー確認なし）

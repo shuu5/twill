@@ -33,7 +33,8 @@ setup() {
   # AC: "AskUserQuestion" の出現件数が 0 件になっている
   # RED: 現在 L80, L89 に "AskUserQuestion" が存在するため fail
   local count
-  count=$(grep -c "AskUserQuestion" "${PHASE2_BUNDLES}" 2>/dev/null || echo "0")
+  count=$(grep -c "AskUserQuestion" "${PHASE2_BUNDLES}" 2>/dev/null || true)
+  count=${count:-0}
   [ "${count}" -eq 0 ]
 }
 
@@ -52,7 +53,8 @@ setup() {
   # AC: "[dispatch | adjust | cancel]" 形式の選択肢記述が存在しない
   # RED: 現在 L89 に "AskUserQuestion: \`[dispatch | adjust | cancel]\`" が存在するため fail
   local count
-  count=$(grep -cF "dispatch | adjust | cancel" "${PHASE2_BUNDLES}" 2>/dev/null || echo "0")
+  count=$(grep -cF "dispatch | adjust | cancel" "${PHASE2_BUNDLES}" 2>/dev/null || true)
+  count=${count:-0}
   [ "${count}" -eq 0 ]
 }
 
@@ -78,7 +80,8 @@ setup() {
   # AC: 自動 dispatch 実装後、AskUserQuestion が 0 件になっている
   # RED: 現在 AskUserQuestion が存在するため fail
   local count
-  count=$(grep -c "AskUserQuestion" "${PHASE2_BUNDLES}" 2>/dev/null || echo "0")
+  count=$(grep -c "AskUserQuestion" "${PHASE2_BUNDLES}" 2>/dev/null || true)
+  count=${count:-0}
   [ "${count}" -eq 0 ]
 }
 
@@ -106,7 +109,8 @@ setup() {
   #     対象パターン: AskUserQuestion, read -p, select コマンド相当
   # RED: 現在 AskUserQuestion が存在するため fail
   run bash -c "
-    count=\$(grep -cE 'AskUserQuestion|\bread\b.*-p|^\s*select\b' '${PHASE2_BUNDLES}' 2>/dev/null || echo 0)
+    count=\$(grep -cE 'AskUserQuestion|\bread\b.*-p|^\s*select\b' '${PHASE2_BUNDLES}' 2>/dev/null || true)
+    count=\${count:-0}
     [ \"\${count}\" -eq 0 ]
   "
   [ "${status}" -eq 0 ]
