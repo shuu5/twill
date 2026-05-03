@@ -1,0 +1,49 @@
+mappings:
+  - ac_index: 1
+    ac_text: "SUPERVISOR_DIR に絶対パス（先頭が /）を渡した場合、スクリプトが exit 1 でエラーを返す"
+    test_file: "plugins/twl/tests/bats/scripts/record-detection-gap-path-validation-1238.bats"
+    test_name: "ac1: SUPERVISOR_DIR に絶対パス /tmp/evil を渡すと exit 1 を返す"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 1
+    ac_text: "SUPERVISOR_DIR に絶対パス（先頭が /）を渡した場合、スクリプトが exit 1 でエラーを返す"
+    test_file: "plugins/twl/tests/bats/scripts/record-detection-gap-path-validation-1238.bats"
+    test_name: "ac1: SUPERVISOR_DIR に絶対パス /tmp/evil123 を渡すと exit 1 を返す"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 1
+    ac_text: "SUPERVISOR_DIR に絶対パス（先頭が /）を渡した場合、スクリプトが exit 1 でエラーを返す"
+    test_file: "plugins/twl/tests/bats/scripts/record-detection-gap-path-validation-1238.bats"
+    test_name: "ac1: エラーメッセージに絶対パス禁止の旨が含まれる（stderr に出力される）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 2
+    ac_text: "SUPERVISOR_DIR に許可文字セット外の文字（英数字・ハイフン・スラッシュ・ドット以外）を含む場合、exit 1 でエラーを返す"
+    test_file: "plugins/twl/tests/bats/scripts/record-detection-gap-path-validation-1238.bats"
+    test_name: "ac2: SUPERVISOR_DIR にセミコロンを含む場合 exit 1 を返す"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 2
+    ac_text: "SUPERVISOR_DIR に許可文字セット外の文字（英数字・ハイフン・スラッシュ・ドット以外）を含む場合、exit 1 でエラーを返す"
+    test_file: "plugins/twl/tests/bats/scripts/record-detection-gap-path-validation-1238.bats"
+    test_name: "ac2: SUPERVISOR_DIR にスペースを含む場合 exit 1 を返す"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 2
+    ac_text: "SUPERVISOR_DIR に許可文字セット外の文字（英数字・ハイフン・スラッシュ・ドット以外）を含む場合、exit 1 でエラーを返す"
+    test_file: "plugins/twl/tests/bats/scripts/record-detection-gap-path-validation-1238.bats"
+    test_name: "ac2: SUPERVISOR_DIR にドル記号を含む場合 exit 1 を返す"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 2
+    ac_text: "SUPERVISOR_DIR に許可文字セット外の文字（英数字・ハイフン・スラッシュ・ドット以外）を含む場合、exit 1 でエラーを返す"
+    test_file: "plugins/twl/tests/bats/scripts/record-detection-gap-path-validation-1238.bats"
+    test_name: "ac2: SUPERVISOR_DIR にバックティックを含む場合 exit 1 を返す"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 2
+    ac_text: "SUPERVISOR_DIR に許可文字セット外の文字（英数字・ハイフン・スラッシュ・ドット以外）を含む場合、exit 1 でエラーを返す"
+    test_file: "plugins/twl/tests/bats/scripts/record-detection-gap-path-validation-1238.bats"
+    test_name: "ac2: エラーメッセージに不正文字の旨が含まれる"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
