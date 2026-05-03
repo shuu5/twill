@@ -20,6 +20,13 @@
 #     を使うようにリファクタされる
 #   - set-option callsite (L368) も同様にリファクタされる
 #   - それらの変更後も orchestrator が exit 0 で完了すること
+#
+# 「空 dir」の定義（Issue #1230: tech-debt clarification）:
+#   Issue #1218 AC5「空 dir で起動して exit 0 確認」の「空 dir」は
+#   literally 空ディレクトリ（IN/draft.md なし）を意味しない。
+#   正確な定義: 有効な per-issue-dir（done 済み subdir を少なくとも 1 つ含む dir）
+#   - 空 dir = done 済み subdir 1 件含む dir → spawn_session スキップ → exit 0
+#   - truly 空 dir（IN/draft.md なし）→ バリデーション失敗 → exit 1（AC5-smoke-empty-dir-exit1 参照）
 
 load '../../bats/helpers/common'
 

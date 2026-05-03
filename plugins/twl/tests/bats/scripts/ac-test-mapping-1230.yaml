@@ -1,0 +1,9 @@
+mappings:
+  - ac_index: 1
+    ac_text: "smoke テストのコメントに Issue #1218 AC5「空 dir」の定義が明示されている（done 済み subdir を含む dir = exit 0、truly 空 dir = exit 1 の区別）"
+    test_file: "plugins/twl/tests/bats/scripts/smoke-ac5-dir-clarification-1230.bats"
+    test_name: "@test AC1: smoke テストに「空 dir」の定義コメントがある（Issue #1218 AC5 との対応明示）"
+    status: RED
+    red_mechanism: "smoke bats に「空 dir」（Issue body 表記）がなく grep -qE が fail する"
+    impl_files:
+      - "plugins/twl/tests/bats/scripts/issue-lifecycle-orchestrator-smoke.bats"
