@@ -1,0 +1,24 @@
+mappings:
+  - ac_index: 1
+    ac_text: "co-utility/SKILL.md Step 0 キーワード辞書追加 (各 category 代表 keyword)"
+    test_file: "plugins/twl/tests/bats/co-utility-step0-keyword-match.bats"
+    test_name: "ac1: co-utility SKILL.md Worktree category has extended keyword entries"
+    impl_files:
+      - "plugins/twl/skills/co-utility/SKILL.md"
+  - ac_index: 2
+    ac_text: "引数中 keyword 検出時 → menu skip (matched category 自動選択 + log)"
+    test_file: "plugins/twl/tests/bats/co-utility-step0-keyword-match.bats"
+    test_name: "ac2: co-utility SKILL.md Step 0 describes menu skip on keyword match"
+    impl_files:
+      - "plugins/twl/skills/co-utility/SKILL.md"
+  - ac_index: 3
+    ac_text: "keyword 不在時のみ既存 menu 表示"
+    test_file: "plugins/twl/tests/bats/co-utility-step0-keyword-match.bats"
+    test_name: "ac3: co-utility SKILL.md Step 0 gates menu display to keyword-absent case only"
+    impl_files:
+      - "plugins/twl/skills/co-utility/SKILL.md"
+  - ac_index: 4
+    ac_text: "regression bats: keyword 経路で menu skip 確認"
+    test_file: "plugins/twl/tests/bats/co-utility-step0-keyword-match.bats"
+    test_name: "ac4: this bats test file exists at expected path"
+    impl_files: []
