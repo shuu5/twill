@@ -1,0 +1,93 @@
+mappings:
+  - ac_index: 1
+    ac_text: "autopilot-orchestrator.sh の launch_worker 関数に「既存 Worker 検出時の spawn skip」logic を追加する。worktree 作成試行前に state file の status を確認し、running / merge-ready の場合は worktree 作成・Worker 起動をスキップしてポーリングループに直接合流する。"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac1: launch_worker contains spawn skip logic for existing worker detection"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 1
+    ac_text: "（AC1 追加）spawn skip ロジックが worktree 作成より前に配置されていること"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac1: spawn skip logic checks status field before worktree creation"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 2
+    ac_text: "既存 Worker 検出条件: state file の status ∈ {running, merge-ready} かつ branch フィールドが空でない かつ 該当 worktree dir が worktrees/<branch>/ に実在する（-d チェック）"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac2: spawn skip condition checks status running or merge-ready"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 2
+    ac_text: "（AC2 追加）branch フィールド非空チェックが spawn skip 条件に含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac2: spawn skip condition verifies branch field is non-empty"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 2
+    ac_text: "（AC2 追加）worktree dir の -d チェックが spawn skip 条件に含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac2: spawn skip condition verifies worktree dir exists with -d check"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 3
+    ac_text: "skip 時はログに [orchestrator] Issue #N: 既存 Worker 検出（status=<status>, branch=<branch>） — spawn skip を出力し、failure フィールドを書き換えない（既存値を保持）"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac3: spawn skip emits expected log message pattern"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 3
+    ac_text: "（AC3 追加）spawn skip ログに status= および branch= 変数展開が含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac3: spawn skip log includes status and branch variables"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 3
+    ac_text: "（AC3 追加）spawn skip パスで failure フィールドを上書きしていない"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac3: spawn skip path does not overwrite failure field"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 4
+    ac_text: "skip 時に tmux window 不在の場合は crash と判定し、既存の crash-detect.sh 経路に委譲する（独自に status=failed を書き込まない）"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac4: spawn skip delegates to crash-detect.sh when tmux window is absent"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+      - "plugins/twl/scripts/crash-detect.sh"
+  - ac_index: 4
+    ac_text: "（AC4 追加）crash-detect.sh 委譲ブロック内で status=failed を直接書き込まない"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac4: spawn skip does not directly write status=failed when window absent"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 5
+    ac_text: "回帰テスト AC5-1: status=running + worktree 存在 + tmux window 存在 → spawn skip + failure 保持"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac5-1: status=running + worktree exists + tmux window exists → spawn skip + failure retained"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 5
+    ac_text: "回帰テスト AC5-2: status=running + worktree 存在 + tmux window 不在 → crash 経路へ委譲（status=failed 直接書き込み禁止）"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac5-2: status=running + worktree exists + tmux window absent → crash-detect path delegated"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+      - "plugins/twl/scripts/crash-detect.sh"
+  - ac_index: 5
+    ac_text: "回帰テスト AC5-3: status=done → 通常の worktree 作成パスを実行"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac5-3: status=done → normal worktree creation path is taken"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 5
+    ac_text: "回帰テスト AC5-3 追加: status=empty → 通常の worktree 作成パスを実行"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-spawn-skip.bats"
+    test_name: "ac5-3: status=empty → normal worktree creation path is taken"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 6
+    ac_text: "既存テストの回帰なし（bash plugins/twl/tests/run-bats.sh Pass）"
+    test_file: ""
+    test_name: ""
+    impl_files: []
+    # プロセス AC: bats テスト不要。既存テストスイートの実行で確認する。
