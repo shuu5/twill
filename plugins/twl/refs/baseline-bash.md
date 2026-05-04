@@ -472,7 +472,7 @@ if [[ ! "$CHAIN_ISSUE" =~ ^[1-9][0-9]*$ ]]; then
 fi
 ```
 
-**L113-125: `VALID_SKILLS` 配列チェック（列挙値 allowlist）**
+**L84: `VALID_SKILLS` 配列宣言 + L113-125: バリデーションループ（列挙値 allowlist）**
 
 ```bash
 VALID_SKILLS=(co-explore co-issue co-architect co-autopilot co-project co-utility co-self-improve)
