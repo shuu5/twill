@@ -190,12 +190,12 @@ hist-auto-yes-43-45:
 
 hist-inject-buffer-collide:
   regex: 'inject-file.*concurrent|paste.*buffer.*corrupt|buffer.*collide|tmux.*buffer.*fail'
-  severity: error
+  severity: info
   category: inject-buffer-collision
-  description: "[BUFFER-COLLIDE] inject-file を 2 セッション同時実行すると tmux paste buffer が破損する。inject 間隔は serial 15s 以上を MUST 化すること"
-  observation_signal: "inject 後に対象 pane でコマンドが二重実行 / 文字化け / 無応答が発生"
-  detection_condition: "2 以上の セッションが 15s 未満の間隔で inject-file を呼び出した場合"
-  action: "inject を直列化し 15s 以上の間隔を確保。並列 inject は禁止"
+  description: "[BUFFER-COLLIDE] inject-file の tmux named buffer 化（#1050）により解消済み。session-comm.sh は paste-buffer -b <unique-name> を使用するため、並列 inject-file は安全。serial 15s 制約を解除。"
+  observation_signal: "inject 後に対象 pane でコマンドが二重実行 / 文字化け / 無応答が発生（named buffer 化以前の現象）"
+  detection_condition: "paste-buffer -b のない unbuffered 形に regress した場合（session-comm.sh の named buffer 実装が削除されたとき）"
+  action: "serial 15s 制約は不要（named buffer で衝突回避済み）。regress 検出時は session-comm.sh の load-buffer -b / paste-buffer -b / delete-buffer -b 実装を復元すること"
   memory_hash: "06fd9a74"
 
 hist-inject-wait-timeout:
