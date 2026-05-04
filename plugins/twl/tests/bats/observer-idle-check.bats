@@ -583,3 +583,104 @@ nothing pending
   # JP indicator なし + completion phrase あり → idle 確定（exit 0）
   [ "${status}" -eq 0 ]
 }
+
+# ===========================================================================
+# Issue #1375 — co-autopilot phrase regression
+# IDLE_COMPLETED_PHRASE_REGEX に co-autopilot 完了 phrase 6件を追加
+# ===========================================================================
+
+@test "ac1375-1: 'co-autopilot complete' is recognized as idle (Issue #1375)" {
+  # AC: IDLE_COMPLETED_PHRASE_REGEX に 'co-autopilot complete' が追加される
+  # RED: 現在の regex には含まれていないため fail（C2 条件不満足）
+  [ -f "${OBSERVER_LIB}" ]
+  run bash -c "
+    source '${OBSERVER_LIB}'
+    pane_content='co-autopilot complete
+Worked for 3m 22s
+> '
+    first_seen_ts=100
+    now_ts=161
+    _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
+  "
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac1375-2: 'Wave N co-autopilot complete' is recognized as idle (Issue #1375)" {
+  # AC: IDLE_COMPLETED_PHRASE_REGEX に 'Wave [0-9]+ co-autopilot complete' が追加される
+  # RED: 現在の regex には含まれていないため fail（C2 条件不満足）
+  [ -f "${OBSERVER_LIB}" ]
+  run bash -c "
+    source '${OBSERVER_LIB}'
+    pane_content='Wave 3 co-autopilot complete
+Worked for 10m 5s
+> '
+    first_seen_ts=100
+    now_ts=161
+    _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
+  "
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac1375-3: 'hand control back to su-observer' is recognized as idle (Issue #1375)" {
+  # AC: IDLE_COMPLETED_PHRASE_REGEX に 'hand control back to su-observer' が追加される
+  # RED: 現在の regex には含まれていないため fail（C2 条件不満足）
+  [ -f "${OBSERVER_LIB}" ]
+  run bash -c "
+    source '${OBSERVER_LIB}'
+    pane_content='hand control back to su-observer
+Worked for 5m 0s
+> '
+    first_seen_ts=100
+    now_ts=161
+    _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
+  "
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac1375-4: 'observer 側で次の' is recognized as idle (Issue #1375)" {
+  # AC: IDLE_COMPLETED_PHRASE_REGEX に 'observer 側で次の' が追加される
+  # RED: 現在の regex には含まれていないため fail（C2 条件不満足）
+  [ -f "${OBSERVER_LIB}" ]
+  run bash -c "
+    source '${OBSERVER_LIB}'
+    pane_content='observer 側で次のステップを実行してください
+Worked for 2m 30s
+> '
+    first_seen_ts=100
+    now_ts=161
+    _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
+  "
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac1375-5: 'Step 5 完了処理' is recognized as idle (Issue #1375)" {
+  # AC: IDLE_COMPLETED_PHRASE_REGEX に 'Step 5 完了処理' が追加される
+  # RED: 現在の regex には含まれていないため fail（C2 条件不満足）
+  [ -f "${OBSERVER_LIB}" ]
+  run bash -c "
+    source '${OBSERVER_LIB}'
+    pane_content='Step 5 完了処理: クリーンアップを実行します
+Worked for 1m 45s
+> '
+    first_seen_ts=100
+    now_ts=161
+    _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
+  "
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac1375-6: 'orchestrator --summary（done=' is recognized as idle (Issue #1375)" {
+  # AC: IDLE_COMPLETED_PHRASE_REGEX に 'orchestrator --summary（done=' が追加される
+  # RED: 現在の regex には含まれていないため fail（C2 条件不満足）
+  [ -f "${OBSERVER_LIB}" ]
+  run bash -c "
+    source '${OBSERVER_LIB}'
+    pane_content='orchestrator --summary（done=3/3）
+Worked for 8m 12s
+> '
+    first_seen_ts=100
+    now_ts=161
+    _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
+  "
+  [ "${status}" -eq 0 ]
+}
