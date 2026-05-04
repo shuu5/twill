@@ -6,13 +6,16 @@
 #   validate_supervisor_dir "${SUPERVISOR_DIR:-.supervisor}" || exit 1
 #
 # Validates that a SUPERVISOR_DIR value is safe to use with mkdir -p / file path ops.
-# Rejects: path traversal (..), absolute paths (/...), and shell-injection chars.
+# Rejects: any double-dot sequence (..), absolute paths (/), and shell-injection chars.
 # Allowed: alphanumeric, dot, hyphen, underscore, slash (relative paths only).
+# Note: "." (single dot = CWD) passes the allowlist by design; callers rely on relative
+#       paths like ".supervisor" which also contain dots.
 
 # validate_supervisor_dir <dir>
 #   Returns: 0 (valid), 1 (invalid, prints ERROR to stderr)
 validate_supervisor_dir() {
   local _dir="${1:-}"
+  # Reject any double-dot sequence (conservative: also blocks "a..b"-style names).
   if [[ "$_dir" == *..* ]]; then
     echo "ERROR: SUPERVISOR_DIR must not contain '..'" >&2
     return 1
@@ -21,7 +24,7 @@ validate_supervisor_dir() {
     echo "ERROR: SUPERVISOR_DIR must not be an absolute path (got: ${_dir})" >&2
     return 1
   fi
-  if [[ ! "$_dir" =~ ^[a-zA-Z0-9._/-]+$ ]]; then
+  if [[ ! "$_dir" =~ ^[a-zA-Z0-9./_-]+$ ]]; then
     echo "ERROR: SUPERVISOR_DIR must only contain allowed characters (alphanumeric, dot, hyphen, underscore, slash)" >&2
     return 1
   fi
