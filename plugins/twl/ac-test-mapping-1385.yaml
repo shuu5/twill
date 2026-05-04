@@ -1,0 +1,40 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/scripts/lib/tmux-window-kill.sh（または同等のヘルパー）が存在し、safe_kill_window 関数を export している"
+    test_file: "plugins/twl/tests/bats/issue-1385-tmux-window-kill.bats"
+    test_name: "ac1: plugins/twl/scripts/lib/tmux-window-kill.sh が存在し safe_kill_window を export している"
+    impl_files:
+      - "plugins/twl/scripts/lib/tmux-window-kill.sh"
+  - ac_index: 2
+    ac_text: "grep -rn 'tmux kill-window -t' plugins/twl/scripts/ の結果が、ヘルパー関数定義 1 件のみとなる（既存 18 箇所の直接呼び出しは 0 件）"
+    test_file: "plugins/twl/tests/bats/issue-1385-tmux-window-kill.bats"
+    test_name: "ac2: plugins/twl/scripts/ の tmux kill-window -t 直接呼び出しがヘルパー定義 1 件のみ"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+      - "plugins/twl/scripts/auto-merge.sh"
+      - "plugins/twl/scripts/spec-review-orchestrator.sh"
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+      - "plugins/twl/scripts/lib/tmux-window-kill.sh"
+  - ac_index: 3
+    ac_text: "safe_kill_window がヘルパーで tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' を経由して target を解決している"
+    test_file: "plugins/twl/tests/bats/issue-1385-tmux-window-kill.bats"
+    test_name: "ac3: safe_kill_window が list-windows -a -F を経由して target を解決している"
+    impl_files:
+      - "plugins/twl/scripts/lib/tmux-window-kill.sh"
+  - ac_index: 4
+    ac_text: "同名 window が複数 session に存在する場合に ambiguous target エラーで script が終了しない（set -e 下でも継続）"
+    test_file: "plugins/twl/tests/bats/issue-1385-tmux-window-kill.bats"
+    test_name: "ac4: 同名 window が複数 session に存在する場合に set -e 下で safe_kill_window が継続する"
+    impl_files:
+      - "plugins/twl/scripts/lib/tmux-window-kill.sh"
+  - ac_index: 5
+    ac_text: "既存 e2e/integration テストが green（bash plugins/twl/test/... または等価コマンド）"
+    test_file: "plugins/twl/tests/bats/issue-1385-tmux-window-kill.bats"
+    test_name: "ac5: autopilot-orchestrator.sh の tmux kill-window -t 直接呼び出しが 0 件になっている"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+      - "plugins/twl/scripts/pilot-fallback-monitor.sh"
+      - "plugins/twl/scripts/auto-merge.sh"
+      - "plugins/twl/scripts/spec-review-orchestrator.sh"
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"

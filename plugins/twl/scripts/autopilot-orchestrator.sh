@@ -13,6 +13,8 @@ set -euo pipefail
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=./lib/python-env.sh
 source "${SCRIPTS_ROOT}/lib/python-env.sh"
+# shellcheck source=./lib/tmux-window-kill.sh
+source "${SCRIPTS_ROOT}/lib/tmux-window-kill.sh"
 # shellcheck source=chain-steps.sh
 source "${SCRIPTS_ROOT}/chain-steps.sh" 2>/dev/null || true
 
@@ -428,7 +430,7 @@ cleanup_worker() {
   esac
 
   # Step 1: tmux window を先に終了（Worker がworktreeで動作していない状態を保証してから削除）
-  tmux kill-window -t "$window_name" 2>/dev/null || true
+  safe_kill_window "$window_name"
 
   # REPO_MODE 自動判定（mergegate.py と同一パターン）
   local repo_mode _git_dir
@@ -495,7 +497,7 @@ handle_health_check_fallback() {
         --set 'failure={"message":"api_overload_stall_no_fallback","step":"polling"}' || true
     else
       echo "[orchestrator] Issue #${issue}: API overload — fallback to ${FALLBACK_MODEL} (attempt 1/1)" >&2
-      tmux kill-window -t "$window_name" 2>/dev/null || true
+      safe_kill_window "$window_name"
       python3 -m twl.autopilot.state write --type issue "${state_repo_args[@]}" --issue "$issue" --role pilot \
         --set "fallback_count=1" || true
       launch_worker "$entry" "$FALLBACK_MODEL" || \
