@@ -283,7 +283,7 @@ while IFS= read -r line; do
           done
           if $_wt_ok; then
             echo "[cleanup] 孤立 worktree 削除: $wt_path (branch=$wt_branch)" >&2
-            # リモートブランチも削除（パストラバーサル防止: `.` 除外 regex を使用）
+            # リモートブランチも削除（パストラバーサル防止: ブランチ名を許可文字のみに制限）
             if [[ -n "$wt_branch" && "$wt_branch" =~ ^[a-zA-Z0-9_/.-]+$ ]]; then
               # AC-2: git push --delete 直前に OPEN PR がないか確認
               # gh 不在時はフェールセーフ（削除をスキップ）
