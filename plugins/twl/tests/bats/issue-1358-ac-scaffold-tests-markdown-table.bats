@@ -71,7 +71,7 @@ teardown() {
 @test "issue-1358: AC3 false-positive example is present" {
   # AC: 「偽陽性」または "false positive" または「過剰マッチ」相当の記述が 1 件以上
   # RED: 現在 ac-scaffold-tests.md にこの記述が存在しない
-  grep -qE "偽陽性|false.positive|過剰マッチ|overmatc" "${AGENT_FILE}"
+  grep -qE "偽陽性|false.positive|過剰マッチ|overmatch" "${AGENT_FILE}"
 }
 
 @test "issue-1358: AC3 BAD grep example without pipe delimiters is present" {

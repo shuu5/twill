@@ -3285,6 +3285,14 @@ agents:
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Visual検証失敗の分析・修復"
 
+  ac-scaffold-tests:
+    type: specialist
+    path: agents/ac-scaffold-tests.md
+    model: sonnet
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    description: "AC チェックリストを入力に TDD RED フェーズ用テストスタブを生成する（ADR-023 D-2）"
+
   # observer 系 (sonnet)
   observer-evaluator:
     type: specialist
