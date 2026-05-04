@@ -192,7 +192,7 @@ teardown() {
     #
     # 全 ${_supervisor_dir} 埋め込み行を取得
     local all_embeds
-    all_embeds="$(grep -n '(echo|printf).*\$\{?_supervisor_dir\}?.*>&2' "${SCRIPT}" 2>/dev/null || true)"
+    all_embeds="$(grep -nE '(echo|printf).*\$\{?_supervisor_dir\}?.*>&2' "${SCRIPT}" 2>/dev/null || true)"
 
     if [ -z "${all_embeds}" ]; then
         # 埋め込みがない（または L65 の 1 行のみ）→ AC4 は自明に PASS
