@@ -40,7 +40,7 @@ LLM_INDICATORS=(
     "Churned"
     "Skedaddling"
     "Orchestrating"
-    "[A-Z][a-z]+(in'|ing|ed)(…| for [0-9]| \\([0-9])"
+    "[A-Z][a-z]+(in'|ing)(…| for [0-9]| \\([0-9])"
 
     # --- AC5: EN 13 new indicators (#1374) ---
     "Philosophising"

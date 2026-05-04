@@ -522,7 +522,7 @@ nothing pending but still thinking'
   # AC: JP 6 件を SSOT 配列に追加した後、observer-idle-check.sh の C3 が JP indicator も検出する
   # RED: llm-indicators.sh 未存在 + observer-idle-check.sh が JP indicator を未検出のため fail
   [ -f "${OBSERVER_LIB}" ]
-  LLM_LIB="${REPO_ROOT}/plugins/session/scripts/lib/llm-indicators.sh"
+  LLM_LIB="${REPO_ROOT}/../session/scripts/lib/llm-indicators.sh"
   [ -f "${LLM_LIB}" ]
   run bash -c "
     source '${OBSERVER_LIB}'
@@ -546,7 +546,7 @@ nothing pending
   # AC: JP indicator「構築中」も C3 guard として機能する
   # RED: JP indicator が observer-idle-check.sh の C3 に組み込まれていないため fail
   [ -f "${OBSERVER_LIB}" ]
-  LLM_LIB="${REPO_ROOT}/plugins/session/scripts/lib/llm-indicators.sh"
+  LLM_LIB="${REPO_ROOT}/../session/scripts/lib/llm-indicators.sh"
   [ -f "${LLM_LIB}" ]
   run bash -c "
     source '${OBSERVER_LIB}'
@@ -568,7 +568,7 @@ nothing pending
   # AC: JP indicator が存在しない場合、既存の completion phrase で idle 確定すること
   # RED: lib 未存在のため fail（実装後は regression guard として GREEN を維持）
   [ -f "${OBSERVER_LIB}" ]
-  LLM_LIB="${REPO_ROOT}/plugins/session/scripts/lib/llm-indicators.sh"
+  LLM_LIB="${REPO_ROOT}/../session/scripts/lib/llm-indicators.sh"
   [ -f "${LLM_LIB}" ]
   run bash -c "
     source '${OBSERVER_LIB}'

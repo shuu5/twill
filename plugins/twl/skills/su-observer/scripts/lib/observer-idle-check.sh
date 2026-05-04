@@ -45,7 +45,7 @@ _check_idle_completed() {
     # 過去形 + "for N" は IDLE 扱い（Sautéed for / Worked for 等）— v18 past tense filter 準拠
     local _lib_dir
     _lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local _llm_lib="${_lib_dir}/../../../../session/scripts/lib/llm-indicators.sh"
+    local _llm_lib="${_lib_dir}/../../../../../session/scripts/lib/llm-indicators.sh"
     if [[ -f "$_llm_lib" ]]; then
         source "$_llm_lib"
     fi
