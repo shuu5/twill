@@ -62,8 +62,10 @@ def test_ac1_aggregate_step_log_format_correct():
     content = AGGREGATE_MD.read_text(encoding="utf-8")
     # grep -E '^\[AGGREGATE-STEP\] step=[0-9]+ status=(enter|exit) ts=' 相当のパターンが
     # ドキュメント内に記述されていること（実際の出力例またはフォーマット仕様として）
+    # ドキュメント内のフォーマット仕様例にマッチするパターン
+    # "[AGGREGATE-STEP] step=<N> status=<enter|exit> ts=" または実際の出力例 "step=1 status=enter ts=" 等
     pattern = re.compile(
-        r"\[AGGREGATE-STEP\]\s+step=[0-9\<N\>]+\s+status=(enter|exit|\<enter\|exit\>)\s+ts=",
+        r"\[AGGREGATE-STEP\]\s+step=(?:[0-9]+|<N>)\s+status=(?:enter|exit|<enter\|exit>)\s+ts=",
         re.MULTILINE,
     )
     assert pattern.search(content) is not None, (
