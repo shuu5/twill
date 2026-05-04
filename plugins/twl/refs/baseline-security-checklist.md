@@ -50,6 +50,18 @@ disable-model-invocation: true
 | `yaml.load(data)` | コード実行 | `yaml.safe_load()` |
 | `open(user_path)` | パストラバーサル | `pathlib.Path.resolve()` + 親ディレクトリ検証 |
 
+### bash 入力検証
+
+bash スクリプトで受け取るパス・識別子・列挙値の検証は **allowlist regex 方式** を採用する。詳細な規約・パターン例・prior art は [`baseline-bash.md` §11](baseline-bash.md) を参照。
+
+| パターン | リスク | 対策 |
+|---------|-------|------|
+| blocklist 方式（禁止文字列の列挙）によるパス検証 | パストラバーサル（参照: 上記 TypeScript/Python 節） | allowlist regex `^[A-Za-z0-9._/-]+$` で受理パターンを明示 |
+| 未検証の識別子（issue 番号・ブランチ名・skill 名）を shell コマンドに渡す | コマンドインジェクション | 数値: `^[1-9][0-9]*$`、識別子: `^[A-Za-z0-9._-]+$` で allowlist 検証 |
+| 列挙値の未検証（severity・action 等） | 想定外の値による処理分岐 | `case "$VAR" in val1\|val2) ;; *) exit 1 ;; esac` で allowlist 列挙 |
+
+**パストラバーサルとの関係**: TypeScript の `path.resolve()` / Python の `pathlib.Path.resolve()` に相当する bash の対策が allowlist regex によるパス検証である。`*..* ` や `^/` の blocklist チェックは網羅性が保証されないため採用しない（→ [`baseline-bash.md` §11](baseline-bash.md) 参照）。
+
 ## False Positive リスト
 
 以下のパターンは**報告しない**（誤検出リスクが高い）:
