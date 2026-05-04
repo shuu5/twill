@@ -99,6 +99,16 @@ test_that("ac{N}: {slug}", {
 
 不在の場合は `set -euo pipefail` 環境で **main 到達前に exit に巻き込まれる** リスクがあるため、`impl_files` メモにフラグ追加要求を記載すること。
 
+**Markdown テーブル用語列マッチ（PR #1357 / commit `532d6e20`）**:
+bats で Markdown テーブルの用語列（1列目）に特定の文字列が存在するかを検証する場合、**必ず左右のパイプ区切りを含む** `grep -qF '| term |'` パターンを使用すること。
+
+- **BAD（偽陽性リスク）**: `grep -qF 'term'` — テーブルの説明列（2列目以降）にも `term` が含まれる場合、用語列になくても PASS してしまう（過剰マッチ）
+  ```
+  # 例: 以下のテーブルで grep -qF 'foo' は「foo の使い方」がある行にも PASS する
+  | bar | foo の使い方を参照 |
+  ```
+- **GOOD**: `grep -qF '| term |'` — 用語列のみに限定してマッチする
+
 ## `impl_files` 候補生成ロジック（MUST）
 
 mapping 生成時、各 AC エントリに `impl_files` を設定する。
