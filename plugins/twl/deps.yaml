@@ -2707,6 +2707,11 @@ scripts:
     path: scripts/lib/pr-create-helper.sh
     description: "PR 作成共通ヘルパー（pr_create_with_closes 関数: PR 本文に Closes #N を機械的に挿入）"
 
+  supervisor-dir-validate:
+    type: script
+    path: scripts/lib/supervisor-dir-validate.sh
+    description: "SUPERVISOR_DIR パス検証共有ライブラリ（validate_supervisor_dir 関数: '..'トラバーサル / 絶対パス / 禁止文字を拒否。record-detection-gap.sh L59-69 パターンを共有化 #1346）"
+
   pseudo-pilot-pr-wait:
     type: script
     path: scripts/pseudo-pilot/pr-wait.sh
@@ -2914,6 +2919,8 @@ scripts:
     type: script
     path: skills/su-observer/scripts/spawn-controller.sh
     description: "su-observer 用 controller 起動 wrapper: /twl:<skill> invocation 自動 prepend + invalid flag (--help 等) ガード + window 名自動一意化。cld-spawn 直接呼び出しを代替し pitfalls-catalog §1 の失敗を防ぐ。co-autopilot + --with-chain --issue N で autopilot-launch.sh に委譲し chain 連携モードで起動（#835）"
+    calls:
+      - script: supervisor-dir-validate
 
   # su-observer budget/session scripts (#814 Phase 1 2026-04-22)
   budget-detect:
