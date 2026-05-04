@@ -1548,3 +1548,135 @@ EOF
     [ "$status" -eq 2 ]
     [[ "$output" =~ "FATAL" ]]
 }
+
+# ===========================================================================
+# Issue #1374: LLM indicator SSOT lib 新設（cld-observe-any から分離）
+# AC7: 新 lib を source した状態で LLM_INDICATORS が EN/JP 両方を含む
+# RED: plugins/session/scripts/lib/llm-indicators.sh が未存在のため fail
+# ===========================================================================
+
+REPO_ROOT_1374="$(cd "$(dirname "$BATS_TEST_FILENAME")/../../.." && pwd)"
+LLM_INDICATORS_LIB="${REPO_ROOT_1374}/plugins/session/scripts/lib/llm-indicators.sh"
+
+# ---------------------------------------------------------------------------
+# AC7/1: llm-indicators.sh が存在すること
+# ---------------------------------------------------------------------------
+@test "AC7(#1374): plugins/session/scripts/lib/llm-indicators.sh が存在すること (RED)" {
+    # AC: plugins/session/scripts/lib/llm-indicators.sh を新設する
+    # RED: ファイルが未存在のため fail
+    [ -f "$LLM_INDICATORS_LIB" ]
+}
+
+# ---------------------------------------------------------------------------
+# AC7/2: source 後 LLM_INDICATORS が bash 配列として export される
+# ---------------------------------------------------------------------------
+@test "AC7(#1374): source 後 LLM_INDICATORS bash 配列が export される (RED)" {
+    # AC: LLM_INDICATORS を bash 配列として export する（SSOT）
+    # RED: ファイルが未存在のため fail
+    [ -f "$LLM_INDICATORS_LIB" ]
+    run bash -c "
+        source '${LLM_INDICATORS_LIB}'
+        # LLM_INDICATORS が配列として定義されており要素が存在する
+        [[ \"\${#LLM_INDICATORS[@]}\" -gt 0 ]]
+    "
+    [ "$status" -eq 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# AC7/3: LLM_INDICATORS が既存 EN indicator（Thinking, Brewing 等）を含む
+# ---------------------------------------------------------------------------
+@test "AC7(#1374): LLM_INDICATORS が既存 EN indicator（Thinking, Brewing）を含む (RED)" {
+    # AC: LLM_INDICATORS に EN/JP 両方の indicator が含まれる
+    # RED: ファイルが未存在のため fail
+    [ -f "$LLM_INDICATORS_LIB" ]
+    run bash -c "
+        source '${LLM_INDICATORS_LIB}'
+        # 既存 EN indicator の存在確認
+        found_thinking=0
+        found_brewing=0
+        for ind in \"\${LLM_INDICATORS[@]}\"; do
+            [[ \"\$ind\" == *'Thinking'* ]] && found_thinking=1
+            [[ \"\$ind\" == *'Brewing'* ]] && found_brewing=1
+        done
+        [[ \$found_thinking -eq 1 && \$found_brewing -eq 1 ]]
+    "
+    [ "$status" -eq 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# AC7/4: LLM_INDICATORS が AC5 追加 EN 13 件を含む
+# ---------------------------------------------------------------------------
+@test "AC7(#1374): LLM_INDICATORS が AC5 EN 13 件（Philosophising 等）を含む (RED)" {
+    # AC: EN 13 件を SSOT 配列に追加する
+    # RED: ファイルが未存在または indicator 未追加のため fail
+    [ -f "$LLM_INDICATORS_LIB" ]
+    run bash -c "
+        source '${LLM_INDICATORS_LIB}'
+        REQUIRED=(Philosophising Drizzling Fluttering Spelunking Determining Infusing Prestidigitating Cogitated Frolicking Marinating Metamorphosing Shimmying Transfiguring)
+        missing=()
+        for word in \"\${REQUIRED[@]}\"; do
+            found=0
+            for ind in \"\${LLM_INDICATORS[@]}\"; do
+                [[ \"\$ind\" == *\"\$word\"* ]] && found=1 && break
+            done
+            [[ \$found -eq 0 ]] && missing+=(\"\$word\")
+        done
+        if [[ \${#missing[@]} -gt 0 ]]; then
+            echo \"MISSING EN indicators: \${missing[*]}\"
+            exit 1
+        fi
+        echo 'PASS: EN 13 件確認'
+    "
+    [ "$status" -eq 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# AC7/5: LLM_INDICATORS が AC6 追加 JP 6 件を含む
+# ---------------------------------------------------------------------------
+@test "AC7(#1374): LLM_INDICATORS が AC6 JP 6 件（生成中 等）を含む (RED)" {
+    # AC: JP 6 件を SSOT 配列に追加する
+    # RED: ファイルが未存在または JP indicator 未追加のため fail
+    [ -f "$LLM_INDICATORS_LIB" ]
+    run bash -c "
+        source '${LLM_INDICATORS_LIB}'
+        REQUIRED_JP=(生成中 構築中 処理中 作成中 分析中 検証中)
+        missing_jp=()
+        for word in \"\${REQUIRED_JP[@]}\"; do
+            found=0
+            for ind in \"\${LLM_INDICATORS[@]}\"; do
+                [[ \"\$ind\" == *\"\$word\"* ]] && found=1 && break
+            done
+            [[ \$found -eq 0 ]] && missing_jp+=(\"\$word\")
+        done
+        if [[ \${#missing_jp[@]} -gt 0 ]]; then
+            echo \"MISSING JP indicators: \${missing_jp[*]}\"
+            exit 1
+        fi
+        echo 'PASS: JP 6 件確認'
+    "
+    [ "$status" -eq 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# AC7/6: cld-observe-any が LLM_INDICATORS inline 定義を持たず lib を source する
+# ---------------------------------------------------------------------------
+@test "AC7(#1374): cld-observe-any の inline LLM_INDICATORS が削除され lib source に切り替わる (RED)" {
+    # AC: cld-observe-any L15-44 の inline 配列定義を削除し新 lib を source で参照する
+    # RED: inline 定義がまだ存在するため fail（実装後は inline が消えて source 行が追加される）
+    # inline 定義（LLM_INDICATORS=( ... )）が消え、lib の source 行が存在すること
+    # 現状: inline 定義あり → grep で見つかれば fail（RED テスト）
+    run bash -c "
+        # inline LLM_INDICATORS=( 定義が cld-observe-any に残っていれば RED（未実装）
+        if grep -q '^LLM_INDICATORS=(' '${CLD_OBSERVE_ANY}'; then
+            echo 'FAIL: inline LLM_INDICATORS=( が cld-observe-any に残存している（lib 分離未実装）'
+            exit 1
+        fi
+        # lib の source 行が存在すること
+        if ! grep -q 'llm-indicators.sh' '${CLD_OBSERVE_ANY}'; then
+            echo 'FAIL: llm-indicators.sh の source 行が cld-observe-any に未追加'
+            exit 1
+        fi
+        echo 'PASS: inline 削除 + lib source 確認'
+    "
+    [ "$status" -eq 0 ]
+}

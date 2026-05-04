@@ -1,0 +1,188 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/session/scripts/lib/llm-indicators.sh を新設し、LLM_INDICATORS を bash 配列として export する（SSOT）"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac1(#1374)/1: plugins/session/scripts/lib/llm-indicators.sh が存在すること"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "plugins/session/scripts/lib/llm-indicators.sh を新設し、LLM_INDICATORS を bash 配列として export する（SSOT）"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac1(#1374)/2: llm-indicators.sh が LLM_INDICATORS を bash 配列として定義する"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "plugins/session/scripts/lib/llm-indicators.sh を新設し、LLM_INDICATORS を bash 配列として export する（SSOT）"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac1(#1374)/3: llm-indicators.sh の LLM_INDICATORS が export されている"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "plugins/session/scripts/lib/llm-indicators.sh を新設し、LLM_INDICATORS を bash 配列として export する（SSOT）"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac1(#1374)/4: llm-indicators.sh に source guard または function-only load guard があること"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 2
+    ac_text: "plugins/session/scripts/cld-observe-any L15-44 の inline 配列定義を削除し、新 lib を source で参照する"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac2(#1374)/1: cld-observe-any の inline LLM_INDICATORS 定義が削除されていること"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: 2
+    ac_text: "plugins/session/scripts/cld-observe-any L15-44 の inline 配列定義を削除し、新 lib を source で参照する"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac2(#1374)/2: cld-observe-any が llm-indicators.sh を source する行を持つこと"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: 2
+    ac_text: "plugins/session/scripts/cld-observe-any L15-44 の inline 配列定義を削除し、新 lib を source で参照する"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC7(#1374): cld-observe-any の inline LLM_INDICATORS が削除され lib source に切り替わる"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 3
+    ac_text: "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh L46 の local llm_indicators=... alternation 文字列を新 lib 由来の配列から動的生成する"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac3(#1374)/1: observer-idle-check.sh の local llm_indicators=... ハードコードが削除されていること"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 3
+    ac_text: "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh L46 の local llm_indicators=... alternation 文字列を新 lib 由来の配列から動的生成する"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac3(#1374)/2: observer-idle-check.sh が llm-indicators.sh を参照する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 3
+    ac_text: "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh L46 の local llm_indicators=... alternation 文字列を新 lib 由来の配列から動的生成する"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8(#1374)/1: observer-idle-check.sh が llm-indicators.sh を source または参照していること"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 4
+    ac_text: "plugins/twl/scripts/issue-lifecycle-orchestrator.sh L62-79 の awk 抽出を新 lib source 方式に切り替える（cld-observe-any から inline 配列削除後、awk 抽出は空配列を返すため必須）"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac4(#1374)/1: issue-lifecycle-orchestrator.sh の awk LLM_INDICATORS 抽出が削除されていること"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  - ac_index: 4
+    ac_text: "plugins/twl/scripts/issue-lifecycle-orchestrator.sh L62-79 の awk 抽出を新 lib source 方式に切り替える（cld-observe-any から inline 配列削除後、awk 抽出は空配列を返すため必須）"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac4(#1374)/2: issue-lifecycle-orchestrator.sh が llm-indicators.sh を source する"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 5
+    ac_text: "EN 13 件を SSOT 配列に追加: Philosophising, Drizzling, Fluttering, Spelunking, Determining, Infusing, Prestidigitating, Cogitated, Frolicking, Marinating, Metamorphosing, Shimmying, Transfiguring"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac5(#1374)/2: LLM_INDICATORS に AC5 EN 13 件が全て含まれること"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 5
+    ac_text: "EN 13 件を SSOT 配列に追加: Philosophising, Drizzling, Fluttering, Spelunking, Determining, Infusing, Prestidigitating, Cogitated, Frolicking, Marinating, Metamorphosing, Shimmying, Transfiguring"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC7(#1374): LLM_INDICATORS が AC5 EN 13 件（Philosophising 等）を含む"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 6
+    ac_text: "JP 6 件を SSOT 配列に追加: 生成中, 構築中, 処理中, 作成中, 分析中, 検証中"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac6(#1374)/1: LLM_INDICATORS に JP 6 件（生成中 等）が全て含まれること"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 6
+    ac_text: "JP 6 件を SSOT 配列に追加: 生成中, 構築中, 処理中, 作成中, 分析中, 検証中"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC7(#1374): LLM_INDICATORS が AC6 JP 6 件（生成中 等）を含む"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 7
+    ac_text: "tests/cld-observe-any.bats で「新 lib を source した状態で LLM_INDICATORS が EN/JP 両方を含む」ことを assert する bats を追加"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC7(#1374): plugins/session/scripts/lib/llm-indicators.sh が存在すること"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 7
+    ac_text: "tests/cld-observe-any.bats で「新 lib を source した状態で LLM_INDICATORS が EN/JP 両方を含む」ことを assert する bats を追加"
+    test_file: "plugins/session/tests/cld-observe-any.bats"
+    test_name: "AC7(#1374): source 後 LLM_INDICATORS bash 配列が export される"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 8
+    ac_text: "tests/bats/observer-idle-check.bats の SSOT 参照を新 lib に変更し、JP indicator が C3 で正しく detect されることを bats fixture で検証する"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8(#1374)/2: observer-idle-check.sh のコメントが 'SSOT: lib/llm-indicators.sh' に更新されている"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 8
+    ac_text: "tests/bats/observer-idle-check.bats の SSOT 参照を新 lib に変更し、JP indicator が C3 で正しく detect されることを bats fixture で検証する"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8(#1374)/3: JP indicator '生成中' が C3 で検出され idle 判定されない"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 8
+    ac_text: "tests/bats/observer-idle-check.bats の SSOT 参照を新 lib に変更し、JP indicator が C3 で正しく detect されることを bats fixture で検証する"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac8(#1374)/4: JP indicator '構築中' が C3 で検出され idle 判定されない"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 9
+    ac_text: "observer-idle-check.sh のコメント「SSOT: cld-observe-any の LLM_INDICATORS 配列と同期を保つこと」を「SSOT: lib/llm-indicators.sh を参照」に更新する"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac9(#1374)/1: observer-idle-check.sh の古い SSOT コメントが更新されていること"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 9
+    ac_text: "observer-idle-check.sh のコメント「SSOT: cld-observe-any の LLM_INDICATORS 配列と同期を保つこと」を「SSOT: lib/llm-indicators.sh を参照」に更新する"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac9(#1374)/2: observer-idle-check.sh に「SSOT: lib/llm-indicators.sh を参照」コメントがあること"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 10
+    ac_text: "monitor-channel-catalog.md または pitfalls §4.10 に SSOT lib の場所と参照規約を追記する"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac10(#1374)/1: monitor-channel-catalog.md に llm-indicators.sh への言及があること"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+
+  - ac_index: 10
+    ac_text: "monitor-channel-catalog.md または pitfalls §4.10 に SSOT lib の場所と参照規約を追記する"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac10(#1374)/2: pitfalls-catalog.md §4.10 に llm-indicators.sh への言及があること"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+  - ac_index: 10
+    ac_text: "monitor-channel-catalog.md または pitfalls §4.10 に SSOT lib の場所と参照規約を追記する"
+    test_file: "plugins/twl/tests/bats/issue-1374-llm-indicators-ssot.bats"
+    test_name: "ac10(#1374)/3: SSOT lib の参照規約（source 方法）が記載されていること"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
