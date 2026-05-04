@@ -496,9 +496,8 @@ fi
 
 | ファイル | 箇所 | 内容 |
 |---|---|---|
-| `plugins/twl/skills/su-observer/scripts/record-detection-gap.sh` | L61-69 | `SUPERVISOR_DIR`: `*..* ` / `^/` / 禁止文字 reject の blocklist 3段階チェック（PR #1345 導入）|
 | `plugins/twl/scripts/worktree-delete.sh` | L25 | `branch`: `\.\.` / `^/` blocklist + `^[a-zA-Z0-9/_.-]+$` allowlist の混在 |
 | `plugins/twl/skills/su-observer/scripts/session-init.sh` | L11 | `SUPERVISOR_DIR`: allowlist `^[a-zA-Z0-9._/=-]+$` + 追加 `*..* ` blocklist の混在 |
 | `plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh` | L18 | `SUPERVISOR_DIR`: allowlist `^[a-zA-Z0-9./_-]+$` + `*..* ` blocklist の混在 |
 
-**対応方針**: `record-detection-gap.sh` の SUPERVISOR_DIR は純粋 blocklist のため優先度高。mixed 方式は allowlist で網羅できているため blocklist 部分を削除するだけで改善可能。
+**対応方針**: mixed 方式は allowlist で網羅できているため blocklist 部分を削除するだけで改善可能。後続 Issue で個別対応予定。

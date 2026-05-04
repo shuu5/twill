@@ -1,0 +1,62 @@
+mappings:
+  - ac_index: 1
+    ac_text: "record-detection-gap.sh L61-69 の blocklist 3 チェックを allowlist regex に置換する。エラーメッセージは baseline-bash.md §11 のパターン例（Error: invalid path: ${_supervisor_dir} 形式または must match ^[A-Za-z0-9._/-]+$ 形式）に準拠する"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "ac1: script contains allowlist regex pattern ^[A-Za-z0-9._/-]"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 2
+    ac_text: "allowlist regex 適用後も以下のセキュリティ要件が維持されることを bats テストで検証"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "(umbrella AC — covered by ac_index 3-7)"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+      - "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+  - ac_index: 3
+    ac_text: "正常パス（.supervisor、.supervisor-test、nested/deep/.supervisor）が受理される"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "ac3: .supervisor (default) is accepted with exit 0"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 4
+    ac_text: "絶対パス（/etc、/tmp/foo）が拒否される（exit 1 + ERROR メッセージ）"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "ac4: /etc is rejected with exit 1"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 5
+    ac_text: "path traversal を含むパス（../foo、foo/../bar）が拒否される（exit 1）"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "ac5: ../foo is rejected with exit 1"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 6
+    ac_text: "shell 特殊文字（$foo、a;b、a|b、a`b、a&b、a(b、a<b、a>b）を含むパスが拒否される"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "ac6: $foo is rejected with exit 1"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 7
+    ac_text: "空文字 / 未定義 SUPERVISOR_DIR で .supervisor フォールバックが受理される"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "ac7: unset SUPERVISOR_DIR falls back to .supervisor and is accepted"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 8
+    ac_text: "既存テスト（record-detection-gap.bats、issue-1250-record-detection-gap-flock.bats、record-detection-gap-deps-registered.bats）が引き続き PASS する"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "ac8: regression test file record-detection-gap.bats exists"
+    impl_files: []
+    # impl_files: 回帰確認のため impl_files なし（既存テストの PASS を手動確認）
+  - ac_index: 9
+    ac_text: "修正コードに '# allowlist regex per baseline-bash §11' のコメントを残し、規約準拠の根拠を明示する"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "ac9: script contains comment '# allowlist regex per baseline-bash §11'"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 10
+    ac_text: "baseline-bash.md §11 の「blocklist 方式の棚卸し」表から record-detection-gap.sh の行を削除する PR を本 Issue の修正に含める"
+    test_file: "tests/bats/issue-1378-record-detection-gap-allowlist.bats"
+    test_name: "ac10: baseline-bash.md has a section 11 for allowlist approach"
+    impl_files:
+      - "refs/baseline-bash.md"
