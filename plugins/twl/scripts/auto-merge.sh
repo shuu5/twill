@@ -18,6 +18,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=./lib/python-env.sh
 source "${SCRIPT_DIR}/lib/python-env.sh"
+# shellcheck source=./lib/tmux-window-kill.sh
+source "${SCRIPT_DIR}/lib/tmux-window-kill.sh"
 
 # AUTOPILOT_DIR を解決（env var 優先、未設定時は main worktree から推定）
 resolve_autopilot_dir() {
@@ -240,12 +242,9 @@ if [[ "$REPO_MODE" == "worktree" ]]; then
     # 不変条件 B の defensive 実装: 呼び手 (_cleanup_worker) が Worker window kill を
     # skip していた場合でも、auto-merge.sh 自身が safety net として機能する。
     WORKER_WINDOW=$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$ISSUE_NUM" --field window 2>/dev/null || echo "")
-    if [[ -n "$WORKER_WINDOW" ]] && tmux list-windows -a -F '#{window_name}' 2>/dev/null | grep -qxF "$WORKER_WINDOW"; then
-      echo "[auto-merge] Issue #${ISSUE_NUM}: Worker window (${WORKER_WINDOW}) 生存確認 — worktree 削除前に kill"
-      if ! tmux kill-window -t "$WORKER_WINDOW" 2>/dev/null; then
-        echo "[auto-merge] Issue #${ISSUE_NUM}: ERROR: Worker window kill 失敗 — worktree 削除中止 (unsafe state)" >&2
-        exit 1
-      fi
+    if [[ -n "$WORKER_WINDOW" ]]; then
+      echo "[auto-merge] Issue #${ISSUE_NUM}: Worker window (${WORKER_WINDOW}) kill — worktree 削除前"
+      safe_kill_window "$WORKER_WINDOW"
     fi
     if git worktree remove --force "$WORKTREE_PATH" 2>/dev/null; then
       echo "[auto-merge] Issue #${ISSUE_NUM}: worktree 削除成功: ${WORKTREE_PATH}"

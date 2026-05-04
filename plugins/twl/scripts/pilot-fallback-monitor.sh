@@ -39,6 +39,8 @@ AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="${SCRIPT_DIR}/lib"
 SESSION_DIR="$(cd "${SCRIPT_DIR}/../../session/scripts" 2>/dev/null && pwd || echo "")"
+# shellcheck source=./lib/tmux-window-kill.sh
+source "${LIB_DIR}/tmux-window-kill.sh"
 
 # PID file（daemon 多重起動防止）
 PID_FILE="${AUTOPILOT_DIR}/pilot-fallback-monitor.pid"
@@ -222,7 +224,7 @@ _cleanup_worker_window() {
   fi
 
   echo "[pilot-fallback-monitor] PR merged: window '${window}' を kill します" >&2
-  tmux kill-window -t "$window" 2>/dev/null || true
+  safe_kill_window "$window"
   echo "[pilot-fallback-monitor] window '${window}' を kill しました" >&2
   return 0
 }

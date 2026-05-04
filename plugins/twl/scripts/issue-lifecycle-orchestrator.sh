@@ -59,6 +59,8 @@ fi
 # LLM thinking indicator 検出 (SSOT: lib/llm-indicators.sh, #1374)
 LLM_INDICATORS=()
 source "${SCRIPTS_ROOT}/../../session/scripts/lib/llm-indicators.sh" 2>/dev/null || true
+# shellcheck source=./lib/tmux-window-kill.sh
+source "${SCRIPTS_ROOT}/lib/tmux-window-kill.sh"
 
 # detect_thinking: pane テキストから LLM thinking indicator を検出
 # AC4(d): past tense "word for Nm Ns" または "word for Ns" 完了形は IDLE 扱い（thinking としてカウントしない）
@@ -365,7 +367,7 @@ _spawn_tmux_window_with_prompt() {
   # inject-file: プロンプトをセッションに安全に送達（wait-ready 後）
   "${SESSION_SCRIPTS}/session-comm.sh" inject-file "${window_name}" "${prompt_file}" --wait 60 || {
     rm -f "$prompt_file" 2>/dev/null || true
-    tmux kill-window -t "${window_name}" 2>/dev/null || true
+    safe_kill_window "$window_name"
     echo "[issue-lifecycle-orchestrator] ${subdir##*/}: inject-file 失敗" >&2
     return 1
   }
@@ -404,7 +406,7 @@ spawn_session() {
     return 0
   fi
 
-  tmux kill-window -t "$window_name" 2>/dev/null || true
+  safe_kill_window "$window_name"
   mkdir -p "${subdir}/OUT"
 
   local max_rounds="" specialists="" depth="" policy_qflag="" target_repo=""
@@ -555,7 +557,7 @@ wait_for_batch() {
                 tmux capture-pane -t "$window_name" -p -S -3000 \
                   >> "${_trace_dir_t}/dual-write-${subdir##*/}-$(date -u +%Y%m%dT%H%M%SZ).log" 2>/dev/null || true
               fi
-              tmux kill-window -t "$window_name" 2>/dev/null || true
+              safe_kill_window "$window_name"
             elif [[ "$inject_count" -lt 5 ]]; then
               # inject 直前再確認 — 状態が変化していれば inject をスキップ (#709)
               local _pre_inject_state
@@ -582,13 +584,13 @@ wait_for_batch() {
                 echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unexpected permission prompt — failed" >&2
                 mkdir -p "${subdir}/OUT"
                 _generate_fallback_report "$subdir" "unexpected_permission_prompt"
-                tmux kill-window -t "$window_name" 2>/dev/null || true
+                safe_kill_window "$window_name"
               # Pattern 3: y/N confirmation → escalate (before AskUserQuestion to avoid misclassification)
               elif printf '%s' "$_pane" | grep -qE '\[y/N\]|\[Y/n\]'; then
                 echo "[issue-lifecycle-orchestrator] ${subdir##*/}: y/N prompt — failed (escalate)" >&2
                 mkdir -p "${subdir}/OUT"
                 _generate_fallback_report "$subdir" "yn_confirmation_prompt"
-                tmux kill-window -t "$window_name" 2>/dev/null || true
+                safe_kill_window "$window_name"
               # Pattern 2: AskUserQuestion — numbered menu
               # AC1: cursor marker (❯/►/▶/→) + terminator variant (./)/:) support (#956)
               # 注: 前半の日本語キーワード grep は LC_ALL 不要（bracket class 未使用）
@@ -634,7 +636,7 @@ wait_for_batch() {
                   echo "[issue-lifecycle-orchestrator] ${subdir##*/}: AskUserQuestion parse failed — failed" >&2
                   mkdir -p "${subdir}/OUT"
                   _generate_fallback_report "$subdir" "unclassified_askuserquestion"
-                  tmux kill-window -t "$window_name" 2>/dev/null || true
+                  safe_kill_window "$window_name"
                 fi
               # Pattern 4: generic "Waiting for user input"
               elif printf '%s' "$_pane" | grep -q 'Waiting for user input'; then
@@ -705,7 +707,7 @@ wait_for_batch() {
                     echo "[issue-lifecycle-orchestrator] ${subdir##*/}: unclassified input-waiting confirmed — failed" >&2
                     mkdir -p "${subdir}/OUT"
                     _generate_fallback_report "$subdir" "unclassified_input_waiting_confirmed"
-                    tmux kill-window -t "$window_name" 2>/dev/null || true
+                    safe_kill_window "$window_name"
                   fi
                 fi
               fi
@@ -721,7 +723,7 @@ wait_for_batch() {
               echo "[issue-lifecycle-orchestrator] ${subdir##*/}: inject exhausted (STATE=$current_state, inject=$inject_count) — フォールバック生成" >&2
               mkdir -p "${subdir}/OUT"
               _generate_fallback_report "$subdir" "$reason"
-              tmux kill-window -t "$window_name" 2>/dev/null || true
+              safe_kill_window "$window_name"
             fi
           else
             rm -f "$debounce_ts_file"
@@ -746,7 +748,7 @@ wait_for_batch() {
           rm -f "${subdir}/.spawn_ts" 2>/dev/null || true  # AC2: grace period orphan 防止 (#987)
           local window_name
           window_name="$(window_name_for_subdir "$subdir")"
-          tmux kill-window -t "$window_name" 2>/dev/null || true
+          safe_kill_window "$window_name"
         fi
       done
       break
@@ -785,7 +787,7 @@ while [[ "$BATCH_START" -lt "$TOTAL" ]]; do
 
   for subdir in "${local_batch[@]}"; do
     window_name="$(window_name_for_subdir "$subdir")"
-    tmux kill-window -t "$window_name" 2>/dev/null || true
+    safe_kill_window "$window_name"
   done
 
   # audit_snapshot fallback: Worker が snapshot を書かなかった場合に orchestrator 側で保全

@@ -14,6 +14,8 @@
 set -euo pipefail
 
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=./lib/tmux-window-kill.sh
+source "${SCRIPTS_ROOT}/lib/tmux-window-kill.sh"
 
 MAX_PARALLEL="${MAX_PARALLEL:-3}"
 if ! [[ "$MAX_PARALLEL" =~ ^[1-9][0-9]*$ ]]; then
@@ -141,7 +143,7 @@ spawn_session() {
   fi
 
   # 既存ウィンドウがあれば kill
-  tmux kill-window -t "$window_name" 2>/dev/null || true
+  safe_kill_window "$window_name"
 
   # Issue データ読み込み（環境変数経由で安全に渡す — インライン展開によるインジェクション防止）
   local issue_body scope_files related_issues spec_quick_cand
@@ -202,7 +204,7 @@ print(str(d.get('is_quick_candidate', False)).lower())
   # inject-file: プロンプトをセッションに安全に送達（wait-ready 後）
   "${SESSION_SCRIPTS}/session-comm.sh" inject-file "${window_name}" "${prompt_file}" --wait 60 || {
     rm -f "$prompt_file" 2>/dev/null || true
-    tmux kill-window -t "${window_name}" 2>/dev/null || true
+    safe_kill_window "$window_name"
     echo "[spec-review-orchestrator] Issue #${issue_num}: inject-file 失敗" >&2
     return 1
   }
@@ -256,7 +258,7 @@ wait_for_batch() {
           echo "TIMEOUT: Issue #${issue_num} — ポーリング上限到達" > "$result_file"
           local window_name
           window_name="$(window_name_for_file "$issue_file")"
-          tmux kill-window -t "$window_name" 2>/dev/null || true
+          safe_kill_window "$window_name"
         fi
       done
       break
@@ -299,7 +301,7 @@ while [[ "$BATCH_START" -lt "$TOTAL" ]]; do
   for issue_file in "${local_batch[@]}"; do
     local window_name
     window_name="$(window_name_for_file "$issue_file")"
-    tmux kill-window -t "$window_name" 2>/dev/null || true
+    safe_kill_window "$window_name"
   done
 
   echo "[spec-review-orchestrator] バッチ完了: ${COMPLETED}/${TOTAL} Issues 処理済み"
