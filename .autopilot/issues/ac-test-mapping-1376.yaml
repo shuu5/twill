@@ -1,0 +1,73 @@
+mappings:
+  - ac_index: 1
+    ac_text: "commands/issue-review-aggregate.md の Step 1〜6（全 Step）の入退出時に [AGGREGATE-STEP] step=<N> status=<enter|exit> ts=<ISO8601> 形式の行を pane stdout に出力する宣言が markdown プロンプトに追加される"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac1_aggregate_step_log_keyword_present"
+    impl_files:
+      - "plugins/twl/commands/issue-review-aggregate.md"
+  - ac_index: 1b
+    ac_text: "AC-1 補足: [AGGREGATE-STEP] step=N status=enter|exit ts= フォーマット宣言"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac1_aggregate_step_log_format_correct"
+    impl_files:
+      - "plugins/twl/commands/issue-review-aggregate.md"
+  - ac_index: 1c
+    ac_text: "AC-1 補足: Step 1〜6 全ステップカバレッジ"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac1_aggregate_step_log_covers_all_six_steps"
+    impl_files:
+      - "plugins/twl/commands/issue-review-aggregate.md"
+  - ac_index: 1d
+    ac_text: "AC-1 補足: enter と exit 両方のステータス宣言"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac1_aggregate_step_log_includes_both_statuses"
+    impl_files:
+      - "plugins/twl/commands/issue-review-aggregate.md"
+  - ac_index: 2
+    ac_text: "pitfalls-catalog.md §3 テーブルの末尾（§3.7 として）に「co-issue Phase 4 aggregate stuck (進行停止)」のエントリが追加され、本 Issue (#1376) と発生 source Issue (#1038) を参照する記述がある"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac2_pitfalls_catalog_has_section_3_7"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 2b
+    ac_text: "AC-2 補足: Issue #1376 参照"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac2_pitfalls_catalog_3_7_references_issue_1376"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 2c
+    ac_text: "AC-2 補足: source Issue #1038 参照"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac2_pitfalls_catalog_3_7_references_source_issue_1038"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 2d
+    ac_text: "AC-2 補足: aggregate stuck / 進行停止 の説明"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac2_pitfalls_catalog_3_7_describes_aggregate_stuck"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 3
+    ac_text: "pitfalls-catalog 新エントリは「既知 case §3.3（specialist 打ち切り — 出力なし完了）との区別」を明示する"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac3_pitfalls_catalog_3_7_distinguishes_from_3_3"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 4
+    ac_text: "aggregate phase が >5 min 進行なしで継続した場合に検知できる pane 監視 regex（[AGGREGATE-STEP] タグの mtime 監視）を pitfalls-catalog.md 同エントリ内に明記する"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac4_pitfalls_catalog_3_7_has_monitoring_regex"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 5
+    ac_text: "[AGGREGATE-STEP] ログ機構の動作確認手順を pitfalls-catalog.md 同エントリ内に「再現確認方法」として記述する"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac5_pitfalls_catalog_3_7_has_reproduction_procedure"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 6
+    ac_text: "既存 [B] manual fix path の retrospective 記録要件は維持される（issue-mgmt.md L164 既存制約）"
+    test_file: "cli/twl/tests/test_issue_1376_aggregate_stuck_logging.py"
+    test_name: "test_ac6_issue_mgmt_b_path_retrospective_requirement_maintained"
+    impl_files:
+      - "plugins/twl/architecture/domain/contexts/issue-mgmt.md"

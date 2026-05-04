@@ -1246,7 +1246,7 @@ commands:
   issue-review-aggregate:
     type: atomic
     refined_by: "ref-prompt-guide@2c7a62f2"
-    refined_at: "2026-04-07"
+    refined_at: "2026-05-04"
     path: commands/issue-review-aggregate.md
     spawnable_by: [controller, workflow]
     can_spawn: []
