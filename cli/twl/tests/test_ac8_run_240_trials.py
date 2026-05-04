@@ -148,15 +148,11 @@ class TestAC2CldMcpPoC:
     """
 
     def test_ac2_cld_command_available(self):
-        # AC: cld コマンドが PATH 上に存在する
-        # RED: 動作未確認のため FAIL（exists チェックは通るが動作確認は別途）
-        result = subprocess.run(
-            ["which", "cld"],
-            capture_output=True,
-            text=True,
-            timeout=10,
+        # AC: cld -p で mcp__twl__twl_state_read を呼び出して exit 0 になる PoC が完成している
+        # RED: PoC 未実装のため FAIL（cld PATH 存在確認ではなく PoC 完了確認）
+        raise NotImplementedError(
+            "AC #2 未実装: cld -p による mcp__twl__twl_state_read PoC が未完了"
         )
-        assert result.returncode == 0, "cld コマンドが PATH 上に存在しない"
 
     def test_ac2_cld_mcp_twl_state_read_exit0(self):
         # AC: cld -p で mcp__twl__twl_state_read を呼び出した際、exit 0 で終了する（1 trial 検証）
@@ -230,7 +226,7 @@ class TestAC4TwelveTrialSmoke:
 # AC5: 12 trial の success=true 行が 12 件（goldfile 一致 100%）
 # ---------------------------------------------------------------------------
 
-class TestAC5SmokeSucessRate:
+class TestAC5SmokeSuccessRate:
     """AC5: 12 trial の success=true 行が 12 件（goldfile 一致 100%）。
 
     RED: ac8_run_240_trials.py 未実装のため FAIL する。

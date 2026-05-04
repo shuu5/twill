@@ -52,8 +52,8 @@ mappings:
     ac_text: "12 trial の success=true 行が 12 件（goldfile 一致 100%）"
     test_file: "cli/twl/tests/test_ac8_run_240_trials.py"
     test_names:
-      - "TestAC5SmokeSucessRate::test_ac5_all_12_trials_success"
-      - "TestAC5SmokeSucessRate::test_ac5_goldfile_match_function_works"
+      - "TestAC5SmokeSuccessRate::test_ac5_all_12_trials_success"
+      - "TestAC5SmokeSuccessRate::test_ac5_goldfile_match_function_works"
     impl_files:
       - "cli/twl/tests/scripts/ac8_run_240_trials.py"
       - "cli/twl/tests/scripts/ac8_goldfiles"
