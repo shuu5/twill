@@ -379,3 +379,126 @@ my_function "$@"
 ```
 
 **レビュー観点**: bats テストで `source "$TARGET_SCRIPT"` を生成する場合、対象スクリプトを Grep して `BASH_SOURCE` guard または `--source-only` / `_DAEMON_LOAD_ONLY` pattern が存在するかを確認する。不在の場合は `set -euo pipefail` + 引数解析で **main 到達前に exit に巻き込まれる** リスクがあるため、`impl_files` メモにフラグ追加要求を記載する。
+
+## 11. bash スクリプトの入力検証: allowlist regex による入力バリデーション規約
+
+bash スクリプトでパス・識別子・列挙値を受け取る場合、**allowlist regex 方式**（許可されたパターンのみを受理）を採用する。blocklist 方式（禁止パターンを列挙して除外）は採用しない。
+
+### 規約
+
+> **bash スクリプトの入力検証（パス・識別子・列挙値）は allowlist regex 方式を採用する。**
+
+入力が allowlist パターンに **一致しない** 場合は即座にエラー終了する（fail-closed）。
+
+### パターン例
+
+#### 数値（正整数）
+
+```bash
+# GOOD: allowlist — 正整数のみ受理
+if [[ ! "$ISSUE_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
+  echo "Error: invalid issue number: ${ISSUE_NUMBER}" >&2; exit 1
+fi
+```
+
+パターン: `^[1-9][0-9]*$`
+
+#### 安全パス（ディレクトリ名・ファイル名）
+
+```bash
+# GOOD: allowlist — 英数字・ドット・ハイフン・アンダースコア・スラッシュのみ受理
+if [[ ! "$WORK_DIR" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+  echo "Error: invalid path: ${WORK_DIR}" >&2; exit 1
+fi
+```
+
+パターン: `^[A-Za-z0-9._/-]+$`
+
+#### 列挙値（case 文による allowlist）
+
+```bash
+# GOOD: case 文で許可値を列挙し、それ以外を reject
+case "$SEVERITY" in
+  low|medium|high) ;;
+  *) echo "Error: invalid severity: ${SEVERITY}" >&2; exit 1 ;;
+esac
+```
+
+#### 識別子（リポジトリ名など）
+
+```bash
+# GOOD: allowlist — owner/repo 形式のみ受理
+if [[ ! "$ISSUE_REPO" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]]; then
+  echo "Error: invalid repo: ${ISSUE_REPO}" >&2; exit 1
+fi
+```
+
+### blocklist 方式との比較
+
+| 観点 | allowlist | blocklist |
+|---|---|---|
+| 境界値網羅 | 許可パターン外はすべて拒否（fail-closed） | 禁止パターン漏れが許可になる（fail-open） |
+| 新攻撃面への耐性 | 新しいインジェクション手法も自動排除 | 新手法が禁止リストに含まれるまで脆弱 |
+| コードの明示性 | 許可仕様が regex 1行で表現可能 | 禁止パターンが増殖し管理困難 |
+
+**Why fail-closed が重要か**: blocklist は「既知の危険パターン」を列挙するため、想定外の入力（例: Unicode エスケープ、新しいシェル特殊文字）が許可される。allowlist は「許可されたパターン以外すべて拒否」するため、未知の攻撃面に対しても安全性が保たれる。
+
+### BAD: blocklist 方式（採用禁止）
+
+```bash
+# BAD: blocklist — 禁止パターンを列挙。網羅性が保証されない
+if [[ "$_dir" == *..* ]]; then
+  echo "Error: path traversal detected" >&2; exit 1
+fi
+if [[ "$_dir" =~ ^/ ]]; then
+  echo "Error: absolute path not allowed" >&2; exit 1
+fi
+if [[ "$_dir" =~ [$\;\|\`\&\(\)\<\>] ]]; then
+  echo "Error: forbidden characters" >&2; exit 1
+fi
+# → '$'、';'、'|'、'`' などを列挙しても新しい特殊文字が抜ける可能性がある
+```
+
+### Prior art: spawn-controller.sh の allowlist 実装
+
+`plugins/twl/skills/su-observer/scripts/spawn-controller.sh` は allowlist 方式の実装例:
+
+**L167: `CHAIN_ISSUE` regex バリデーション（正整数 allowlist）**
+
+```bash
+if [[ ! "$CHAIN_ISSUE" =~ ^[1-9][0-9]*$ ]]; then
+  echo "Error: --issue の値は正整数である必要があります: ${CHAIN_ISSUE}" >&2
+  exit 2
+fi
+```
+
+**L113-125: `VALID_SKILLS` 配列チェック（列挙値 allowlist）**
+
+```bash
+VALID_SKILLS=(co-explore co-issue co-architect co-autopilot co-project co-utility co-self-improve)
+
+SKILL_FOUND=false
+for s in "${VALID_SKILLS[@]}"; do
+  if [[ "$SKILL_NORMALIZED" == "$s" ]]; then
+    SKILL_FOUND=true
+    break
+  fi
+done
+if [[ "$SKILL_FOUND" == "false" ]]; then
+  echo "Error: invalid skill name '$SKILL'." >&2
+  exit 2
+fi
+```
+
+### blocklist 方式の棚卸し（2026-05-04 時点）
+
+以下のスクリプトで blocklist 方式または mixed 方式（allowlist と blocklist の混在）が確認された。後続 Issue で allowlist 方式への置換を検討する:
+
+| ファイル | 箇所 | 内容 |
+|---|---|---|
+| `plugins/twl/skills/su-observer/scripts/record-detection-gap.sh` | L61-69 | `SUPERVISOR_DIR`: `*..* ` / `^/` / 禁止文字 reject の blocklist 3段階チェック（PR #1345 導入）|
+| `plugins/twl/scripts/worktree-delete.sh` | L25 | `branch`: `\.\.` / `^/` blocklist + `^[a-zA-Z0-9/_.-]+$` allowlist の混在 |
+| `plugins/twl/skills/su-observer/scripts/session-init.sh` | L11 | `SUPERVISOR_DIR`: allowlist `^[a-zA-Z0-9._/=-]+$` + 追加 `*..* ` blocklist の混在 |
+| `plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh` | L18 | `SUPERVISOR_DIR`: allowlist `^[a-zA-Z0-9./_-]+$` + `*..* ` blocklist の混在 |
+
+**対応方針**: `record-detection-gap.sh` の SUPERVISOR_DIR は純粋 blocklist のため優先度高。mixed 方式は allowlist で網羅できているため blocklist 部分を削除するだけで改善可能。
