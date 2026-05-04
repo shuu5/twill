@@ -35,6 +35,40 @@ fastmcp run src/twl/mcp_server/server.py
 
 stdio プロトコルで起動します。Claude Code / MCP クライアントから接続してください。
 
+## Restart（再起動）
+
+`tools.py` を編集した後は MCP server を再起動する必要があります。長時間稼働するサーバープロセスは古いコードのままであるため、編集内容が反映されません。
+
+```bash
+twl mcp restart
+```
+
+このコマンドは以下を行います:
+1. 既存の `fastmcp run` プロセスを SIGTERM で停止
+2. `.mcp.json` に定義されたコマンドでサーバーを detach 再起動
+
+**重要**: サーバー再起動後、**Claude Code セッション自体も再起動**する必要があります。既存セッションの MCP 接続はリフレッシュされません。
+
+### 再起動が必要なタイミング
+
+- `cli/twl/src/twl/mcp_server/tools.py` を編集したとき
+- `cli/twl/src/twl/mcp_server/server.py` を編集したとき
+- `twl` パッケージをアップデートしたとき（`pip install -e .` 後）
+
+### 手動再起動
+
+`twl mcp restart` が使えない場合:
+
+```bash
+# 1. 既存プロセスを停止
+pkill -f 'fastmcp run.*src/twl/mcp_server/server.py'
+
+# 2. サーバーを再起動
+uv run --directory cli/twl --extra mcp fastmcp run src/twl/mcp_server/server.py &
+
+# 3. Claude Code セッションを再起動
+```
+
 ## 提供ツール
 
 3 ツールを公開しています。いずれも `plugin_root: str` を必須引数として受け取り、

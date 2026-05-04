@@ -78,6 +78,17 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == 'refine':
         sys.exit(handle_refine(sys.argv[2:]))
 
+    # mcp サブコマンド（MCP server lifecycle 管理）
+    if len(sys.argv) >= 2 and sys.argv[1] == 'mcp':
+        if len(sys.argv) >= 3 and sys.argv[2] == 'restart':
+            from twl.mcp_server.lifecycle import restart_mcp_server
+            sys.exit(restart_mcp_server())
+        else:
+            subcmd = sys.argv[2] if len(sys.argv) >= 3 else ''
+            print(f"Error: unknown mcp subcommand '{subcmd}'", file=sys.stderr)
+            print("Usage: twl mcp restart", file=sys.stderr)
+            sys.exit(1)
+
     # chain サブコマンドの前処理（sys.argv を先に検査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'chain':
         if len(sys.argv) >= 3 and sys.argv[2] == 'generate':
