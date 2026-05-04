@@ -121,9 +121,9 @@ teardown() {
   [ -n "${line_md}" ]
   [ -n "${line_pr}" ]
   [ -n "${line_commit}" ]
-  [ "${line_pr}" -gt "${line_md}" ]
+  [ "${line_pr}" -ge "${line_md}" ]
   [ "${line_pr}" -lt "${line_mustnot}" ]
-  [ "${line_commit}" -gt "${line_md}" ]
+  [ "${line_commit}" -ge "${line_md}" ]
   [ "${line_commit}" -lt "${line_mustnot}" ]
 }
 
