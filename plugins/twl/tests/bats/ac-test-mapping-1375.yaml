@@ -1,0 +1,67 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh:14 の IDLE_COMPLETED_PHRASE_REGEX (readonly 変数) に co-autopilot 完了 phrase 群を追加する: co-autopilot complete / Wave [0-9]+ co-autopilot complete / hand control back to su-observer / observer 側で次の / Step 5 完了処理 / orchestrator --summary（done="
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1375-1: 'co-autopilot complete' is recognized as idle (Issue #1375)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "1b"
+    ac_text: "'Wave [0-9]+ co-autopilot complete' phrase が IDLE_COMPLETED_PHRASE_REGEX に追加される"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1375-2: 'Wave N co-autopilot complete' is recognized as idle (Issue #1375)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "1c"
+    ac_text: "'hand control back to su-observer' phrase が IDLE_COMPLETED_PHRASE_REGEX に追加される"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1375-3: 'hand control back to su-observer' is recognized as idle (Issue #1375)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "1d"
+    ac_text: "'observer 側で次の' phrase が IDLE_COMPLETED_PHRASE_REGEX に追加される"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1375-4: 'observer 側で次の' is recognized as idle (Issue #1375)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "1e"
+    ac_text: "'Step 5 完了処理' phrase が IDLE_COMPLETED_PHRASE_REGEX に追加される"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1375-5: 'Step 5 完了処理' is recognized as idle (Issue #1375)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: "1f"
+    ac_text: "'orchestrator --summary（done=' phrase が IDLE_COMPLETED_PHRASE_REGEX に追加される"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1375-6: 'orchestrator --summary（done=' is recognized as idle (Issue #1375)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: 2
+    ac_text: "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md の L783 周辺（既存 regex 説明コードブロック）を SSOT と一致するよう同期更新し、L819 周辺（[IDLE-COMPLETED] channel 説明箇所）に追加 phrase の意図と参照元 (Issue #1375) を追記"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: null
+    # AC2 に対応する bats テストは未生成（ドキュメント更新の機械検証は RED フェーズ外）
+    # AC2 は実装者が手動で検証する
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+  - ac_index: 3
+    ac_text: "plugins/twl/tests/bats/observer-idle-check.bats の末尾（既存 AC1-AC10 テスト群の後）に新セクション '# === Issue #1375 — co-autopilot phrase regression ===' を追加し、追加 phrase 6 件すべてが _check_idle_completed C2 条件を満たすことを assert する regression test を追加する"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "ac1375-1 〜 ac1375-6 (6 tests)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+  - ac_index: 4
+    ac_text: "既存 regex 定義の SSOT 単一性を保持する（実行時参照は observer-idle-check.sh:14 のみ）"
+    test_file: null
+    test_name: null
+    # AC4 はプロセス AC（SSOT 単一性の保持）。機械的テストは不適。
+    # 実装者は grep で他ファイルへの regex 複製がないことを確認する
+    impl_files: []
+    # impl_files 推定失敗: SSOT 単一性の確認は全ファイル横断検索が必要。手動検証を推奨
+  - ac_index: 5
+    ac_text: "bash plugins/twl/tests/bats/observer-idle-check.bats が PASS する（GREEN — 既存 AC1-AC10 と新 ac1375-* の両方が通る）"
+    test_file: "plugins/twl/tests/bats/observer-idle-check.bats"
+    test_name: "全テスト（ac1375-1 〜 ac1375-6 を含む）"
+    # AC5 は GREEN フェーズ AC。RED フェーズ（現在）では ac1375-* は意図的に fail する。
+    # AC1 の実装（IDLE_COMPLETED_PHRASE_REGEX 拡張）完了後に GREEN になる。
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"

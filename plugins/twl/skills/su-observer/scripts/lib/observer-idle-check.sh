@@ -11,7 +11,7 @@
 
 # COMPLETION_PHRASE_REGEX — SSOT (AC-1)
 # 行単位 grep -qE で機能する。A2+A3+A4 の他条件 AND により false positive を抑制。
-readonly IDLE_COMPLETED_PHRASE_REGEX='(refined ラベル付与|Status=Refined|nothing pending|recap: Goal|>>> 実装完了|Phase 4 完了|merge-gate.*成功|spec-review marker cleanup|explore-summary saved|\.explore/[0-9]+/summary\.md|次のステップ:)'
+readonly IDLE_COMPLETED_PHRASE_REGEX='(refined ラベル付与|Status=Refined|nothing pending|recap: Goal|>>> 実装完了|Phase 4 完了|merge-gate.*成功|spec-review marker cleanup|explore-summary saved|\.explore/[0-9]+/summary\.md|次のステップ:|co-autopilot complete|Wave [0-9]+ co-autopilot complete|hand control back to su-observer|observer 側で次の|Step [0-9]+ 完了処理|orchestrator --summary（done=)'
 
 # IDLE_COMPLETED_DEBOUNCE_SEC — デフォルト 60s、env var で override 可能 (AC-2)
 IDLE_COMPLETED_DEBOUNCE_SEC="${IDLE_COMPLETED_DEBOUNCE_SEC:-60}"
