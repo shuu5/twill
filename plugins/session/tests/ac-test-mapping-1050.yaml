@@ -1,0 +1,85 @@
+mappings:
+  - ac_index: 1
+    ac_text: "cmd_inject_file が tmux load-buffer -b <unique-name> \"$file_path\" で named buffer に読み込む"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac1[structural][RED]: cmd_inject_file が load-buffer -b <unique-name> を使用する"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+  - ac_index: 1
+    ac_text: "buffer 名が session-comm-$$-$(date +%s%N) 形式の一意名"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac1[structural][RED]: buffer 名が session-comm-PID 形式の一意名を使用する"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+  - ac_index: 2
+    ac_text: "同 named buffer を tmux paste-buffer -b <unique-name> [-p] -t \"$target\" で貼り付け"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac2[structural][RED]: cmd_inject_file が paste-buffer -b <unique-name> を使用する"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+  - ac_index: 2
+    ac_text: "続けて tmux delete-buffer -b <unique-name> で削除する"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac2[structural][RED]: cmd_inject_file が delete-buffer -b <unique-name> を呼ぶ"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+  - ac_index: 2
+    ac_text: "EXIT trap で delete-buffer が保証される"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac2[structural][RED]: EXIT trap で delete-buffer が保証される"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+  - ac_index: 3
+    ac_text: "bats テスト tests/issue-1050-inject-file-named-buffer.bats を新規追加し、以下を検証する"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac3[functional][RED]: 単一 inject-file が named buffer (-b オプション付き) 経由で target に届ける"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+  - ac_index: 3
+    ac_text: "並列 inject-file で各 target が自分宛の内容のみ受信する"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac3[functional][RED]: 並列 10 プロセス inject-file で各 target が自分宛の内容のみ受信する"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+  - ac_index: 3
+    ac_text: "named buffer 使用後に tmux delete-buffer -b が呼ばれる"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac3[structural][RED]: named buffer 使用後に tmux delete-buffer -b が呼ばれる"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+  - ac_index: 4
+    ac_text: "既存テスト tests/session-comm.test.sh および tests/session-comm-robustness.test.sh の AC1-3 が引き続き green"
+    test_file: ""
+    test_name: "# skip: 既存テスト維持確認 — 実装後に手動または CI で確認"
+    impl_files: []
+    # impl_files 推定失敗: 既存テストの維持確認のため RED test 不要
+  - ac_index: 5
+    ac_text: "plugins/twl/refs/observation-pattern-catalog.md の [BUFFER-COLLIDE] を更新"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac5[structural][RED]: observation-pattern-catalog.md の [BUFFER-COLLIDE] に named buffer 化記述が含まれる"
+    impl_files:
+      - "plugins/twl/refs/observation-pattern-catalog.md"
+  - ac_index: 5
+    ac_text: "[BUFFER-COLLIDE] の action フィールドが serial 15s 制約解除を記述する"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac5[structural][RED]: [BUFFER-COLLIDE] の action フィールドが serial 15s 制約解除を記述する"
+    impl_files:
+      - "plugins/twl/refs/observation-pattern-catalog.md"
+  - ac_index: 5
+    ac_text: "[BUFFER-COLLIDE] の detection_condition が paste-buffer -b なし検出を記述する"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac5[structural][RED]: [BUFFER-COLLIDE] の detection_condition が paste-buffer -b なし検出を記述する"
+    impl_files:
+      - "plugins/twl/refs/observation-pattern-catalog.md"
+  - ac_index: 6
+    ac_text: "tmux 前提条件として tmux >= 2.0 を cmd_inject_file 冒頭コメントまたは usage に明示する"
+    test_file: "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+    test_name: "ac6[structural][RED]: cmd_inject_file 冒頭コメントまたは usage に tmux 2.0 以上の前提条件が明示される"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+  - ac_index: 7
+    ac_text: "twl validate が green、twl check PASS、deps.yaml 変更なし"
+    test_file: ""
+    test_name: "# skip: プロセス AC — 実装後に手動確認"
+    impl_files: []
+    # impl_files 推定失敗: プロセス AC のため RED test 不要

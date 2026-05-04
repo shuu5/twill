@@ -55,9 +55,9 @@ run_test_skip() {
 echo ""
 echo "--- Structural: inject-file submit fix ---"
 
-# tmux >= 3.2 向けの -p フラグ実装が存在する
+# tmux >= 3.2 向けの -p フラグ実装が存在する（named buffer 化後は paste-buffer -b <name> -p の順）
 test_bracketed_paste_flag_exists() {
-    grep -q 'paste-buffer -p' "$SCRIPT"
+    grep -qE 'paste-buffer.*-p' "$SCRIPT"
 }
 run_test "bracketed paste mode (-p フラグ) が実装されている" test_bracketed_paste_flag_exists
 
@@ -157,8 +157,8 @@ test_inject_file_uses_bracketed_paste() {
 
     rm -f "$tmpfile"
 
-    # paste-buffer -p が呼ばれたことを確認
-    grep -q 'paste-buffer -p' "$call_log"
+    # paste-buffer で -p (bracketed paste) が呼ばれたことを確認（named buffer 化後は -b <name> -p の順）
+    grep -qE 'paste-buffer.*-p' "$call_log"
 }
 run_test "inject-file が bracketed paste mode (-p) で paste-buffer を呼ぶ" test_inject_file_uses_bracketed_paste
 
