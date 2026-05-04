@@ -56,12 +56,12 @@ case "$SEVERITY" in
   *) echo "ERROR: --severity must be low|medium|high (got: $SEVERITY)" >&2; usage; exit 1 ;;
 esac
 
-# allowlist regex per baseline-bash §11
+# allowlist regex per baseline-bash §11 (+ guards: ^/ rejects absolute paths; *..* rejects traversal)
 _supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
 if [[ ! "$_supervisor_dir" =~ ^[A-Za-z0-9._/-]+$ ]] || \
    [[ "$_supervisor_dir" =~ ^/ ]] || \
    [[ "$_supervisor_dir" == *..* ]]; then
-  echo "ERROR: invalid path: ${_supervisor_dir} (must match ^[A-Za-z0-9._/-]+$)" >&2; exit 1
+  echo "ERROR: invalid path: ${_supervisor_dir} (must be relative, no '..', must match ^[A-Za-z0-9._/-]+$)" >&2; exit 1
 fi
 
 # Sanitize free-text fields: strip newlines and control characters to prevent log injection
