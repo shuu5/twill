@@ -780,10 +780,10 @@ _check_window_alive "wt-co-explore-114550" "twill-ipatho1" && echo "alive" || ec
 行単位（`grep -qE`）で機能する。`次のステップ:` は A2 (LLM idle) + A3 (log mtime stale) + A4 (no menu) の他条件 AND によって false positive を抑制する前提:
 
 ```
-(refined ラベル付与|Status=Refined|nothing pending|recap: Goal|>>> 実装完了|Phase 4 完了|merge-gate.*成功|spec-review marker cleanup|explore-summary saved|\.explore/[0-9]+/summary\.md|次のステップ:|co-autopilot complete|hand control back to su-observer|observer 側で次の|Step [0-9]+ 完了処理|orchestrator --summary（done=)
+(refined ラベル付与|Status=Refined|nothing pending|recap: Goal|>>> 実装完了|Phase 4 完了|merge-gate.*成功|spec-review marker cleanup|explore-summary saved|\.explore/[0-9]+/summary\.md|次のステップ:|co-autopilot complete|Wave [0-9]+ co-autopilot complete|hand control back to su-observer|observer 側で次の|Step [0-9]+ 完了処理|orchestrator --summary（done=)
 ```
 
-*注: このコードブロックは `observer-idle-check.sh:14` の SSOT と同期した説明用コピー（Issue #1375 で co-autopilot 完了 phrase 5件追加）。実行時参照は `observer-idle-check.sh` のみ。*
+*注: このコードブロックは `observer-idle-check.sh:14` の SSOT と同期した説明用コピー（Issue #1375 で co-autopilot 完了 phrase 6件追加）。実行時参照は `observer-idle-check.sh` のみ。*
 
 **実装の分離**:
 - `_check_idle_completed()` → `skills/su-observer/scripts/lib/observer-idle-check.sh` (stateless 純粋関数)
