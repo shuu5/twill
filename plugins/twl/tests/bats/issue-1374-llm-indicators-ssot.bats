@@ -85,13 +85,7 @@ teardown() {
   # RED: ファイルが未存在のため fail
   # NOTE: bash の lib ファイルなので BASH_SOURCE guard または --source-only パターンを確認
   [ -f "${LLM_INDICATORS_LIB}" ]
-  run bash -c "
-    # 直接実行しても exit 1 等で落ちないこと（lib は source 専用）
-    # source guard: BASH_SOURCE[0] != \$0 の場合のみ実行等
-    # または: スクリプト本体が関数定義のみで main がない構造
-    grep -qE 'BASH_SOURCE|source.only|_DAEMON_LOAD_ONLY|source guard' '${LLM_INDICATORS_LIB}' || \
-    ! grep -qE '^[^#]*exit [0-9]' '${LLM_INDICATORS_LIB}'
-  "
+  run grep -qE 'BASH_SOURCE|source.only|_DAEMON_LOAD_ONLY|_LLM_INDICATORS_LOADED' "${LLM_INDICATORS_LIB}"
   [ "${status}" -eq 0 ]
 }
 

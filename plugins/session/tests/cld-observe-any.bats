@@ -1552,18 +1552,21 @@ EOF
 # ===========================================================================
 # Issue #1374: LLM indicator SSOT lib 新設（cld-observe-any から分離）
 # AC7: 新 lib を source した状態で LLM_INDICATORS が EN/JP 両方を含む
-# RED: plugins/session/scripts/lib/llm-indicators.sh が未存在のため fail
 # ===========================================================================
 
-REPO_ROOT_1374="$(cd "$(dirname "$BATS_TEST_FILENAME")/../../.." && pwd)"
-LLM_INDICATORS_LIB="${REPO_ROOT_1374}/plugins/session/scripts/lib/llm-indicators.sh"
+setup_ac7() {
+    local this_dir
+    this_dir="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)"
+    REPO_ROOT_1374="$(cd "${this_dir}/../../.." && pwd)"
+    LLM_INDICATORS_LIB="${REPO_ROOT_1374}/plugins/session/scripts/lib/llm-indicators.sh"
+}
 
 # ---------------------------------------------------------------------------
 # AC7/1: llm-indicators.sh が存在すること
 # ---------------------------------------------------------------------------
 @test "AC7(#1374): plugins/session/scripts/lib/llm-indicators.sh が存在すること (RED)" {
+    setup_ac7
     # AC: plugins/session/scripts/lib/llm-indicators.sh を新設する
-    # RED: ファイルが未存在のため fail
     [ -f "$LLM_INDICATORS_LIB" ]
 }
 
@@ -1571,8 +1574,8 @@ LLM_INDICATORS_LIB="${REPO_ROOT_1374}/plugins/session/scripts/lib/llm-indicators
 # AC7/2: source 後 LLM_INDICATORS が bash 配列として export される
 # ---------------------------------------------------------------------------
 @test "AC7(#1374): source 後 LLM_INDICATORS bash 配列が export される (RED)" {
+    setup_ac7
     # AC: LLM_INDICATORS を bash 配列として export する（SSOT）
-    # RED: ファイルが未存在のため fail
     [ -f "$LLM_INDICATORS_LIB" ]
     run bash -c "
         source '${LLM_INDICATORS_LIB}'
@@ -1586,8 +1589,8 @@ LLM_INDICATORS_LIB="${REPO_ROOT_1374}/plugins/session/scripts/lib/llm-indicators
 # AC7/3: LLM_INDICATORS が既存 EN indicator（Thinking, Brewing 等）を含む
 # ---------------------------------------------------------------------------
 @test "AC7(#1374): LLM_INDICATORS が既存 EN indicator（Thinking, Brewing）を含む (RED)" {
+    setup_ac7
     # AC: LLM_INDICATORS に EN/JP 両方の indicator が含まれる
-    # RED: ファイルが未存在のため fail
     [ -f "$LLM_INDICATORS_LIB" ]
     run bash -c "
         source '${LLM_INDICATORS_LIB}'
@@ -1607,8 +1610,8 @@ LLM_INDICATORS_LIB="${REPO_ROOT_1374}/plugins/session/scripts/lib/llm-indicators
 # AC7/4: LLM_INDICATORS が AC5 追加 EN 13 件を含む
 # ---------------------------------------------------------------------------
 @test "AC7(#1374): LLM_INDICATORS が AC5 EN 13 件（Philosophising 等）を含む (RED)" {
+    setup_ac7
     # AC: EN 13 件を SSOT 配列に追加する
-    # RED: ファイルが未存在または indicator 未追加のため fail
     [ -f "$LLM_INDICATORS_LIB" ]
     run bash -c "
         source '${LLM_INDICATORS_LIB}'
@@ -1634,8 +1637,8 @@ LLM_INDICATORS_LIB="${REPO_ROOT_1374}/plugins/session/scripts/lib/llm-indicators
 # AC7/5: LLM_INDICATORS が AC6 追加 JP 6 件を含む
 # ---------------------------------------------------------------------------
 @test "AC7(#1374): LLM_INDICATORS が AC6 JP 6 件（生成中 等）を含む (RED)" {
+    setup_ac7
     # AC: JP 6 件を SSOT 配列に追加する
-    # RED: ファイルが未存在または JP indicator 未追加のため fail
     [ -f "$LLM_INDICATORS_LIB" ]
     run bash -c "
         source '${LLM_INDICATORS_LIB}'
@@ -1661,10 +1664,8 @@ LLM_INDICATORS_LIB="${REPO_ROOT_1374}/plugins/session/scripts/lib/llm-indicators
 # AC7/6: cld-observe-any が LLM_INDICATORS inline 定義を持たず lib を source する
 # ---------------------------------------------------------------------------
 @test "AC7(#1374): cld-observe-any の inline LLM_INDICATORS が削除され lib source に切り替わる (RED)" {
+    setup_ac7
     # AC: cld-observe-any L15-44 の inline 配列定義を削除し新 lib を source で参照する
-    # RED: inline 定義がまだ存在するため fail（実装後は inline が消えて source 行が追加される）
-    # inline 定義（LLM_INDICATORS=( ... )）が消え、lib の source 行が存在すること
-    # 現状: inline 定義あり → grep で見つかれば fail（RED テスト）
     run bash -c "
         # inline LLM_INDICATORS=( 定義が cld-observe-any に残っていれば RED（未実装）
         if grep -q '^LLM_INDICATORS=(' '${CLD_OBSERVE_ANY}'; then
