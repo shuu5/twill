@@ -58,6 +58,79 @@ su-observer が繰り返し踏み続ける落とし穴の集積。起動時に S
 | 3.4 | co-issue / co-architect spawn 後「指示待ち」に戻ってしまう | **proxy 対話ループ必須** — observer がユーザー代理で対話継続（SKILL.md「対話型コントローラーとの proxy 対話」セクション） |
 | 3.5 | spawn プロンプトにユーザー文脈が不足、controller が迷子 | **observer 固有文脈のみ**を包含（§10 参照、自律取得可能情報は MUST NOT）（SKILL.md「spawn プロンプトの文脈包含」セクション） |
 | 3.6 | co-autopilot は能動 observe（cld-observe-loop）、co-issue / co-architect は proxy 対話 — 混同すると監視漏れ | controller ごとの観察モードを明示判別（SKILL.md「controller spawn が必要な場合」→「起動パターン」） |
+| 3.7 | co-issue Phase 4 aggregate stuck (進行停止): specialist 完了後 `/twl:issue-review-aggregate` が >5 min 無進行 — `§3.3`（specialist 打ち切り）とは異なり **specialists は完了済み**、aggregate phase 自体で停止 | `[AGGREGATE-STEP]` ログ（step=N status=enter\|exit ts=ISO8601）を有効にし pane mtime 監視で早期検知。回避: Pilot が round 1 findings を直接消費する [B] manual fix path（#1376 / source: #1038） |
+
+#### §3.7 補足: co-issue Phase 4 aggregate stuck 詳細
+
+**発生事象（2026-05-04 09:50 JST、Issue #1038 refine 中）**:
+Worker session `coi-17778543-0`（Sonnet 4.6）が `/twl:issue-review-aggregate` skill load 後、>5 min 無変化で停止。pane tail に新規出力なし。Monitor の STAGNATE 検知も未発火。
+
+**§3.3 との区別（MUST）**:
+- **§3.3（specialist 打ち切り）**: critic / feasibility agent が tool_uses 25-30 で打ち切られ最終 report なし。**specialist 自体が不完全な状態で終了**する
+- **§3.7（aggregate stuck）**: 全 specialist は完了済み（findings あり）。`/twl:issue-review-aggregate` を呼び出した **aggregate phase 自体**で停止する。§3.3 のガード（`WARNING: 構造化出力なしで完了`）とは異なる症状
+
+**`[AGGREGATE-STEP]` ログ機構**:
+
+`commands/issue-review-aggregate.md` の Step 1〜6 各入退出時に以下を stdout に出力:
+```
+[AGGREGATE-STEP] step=<N> status=enter ts=<ISO8601>
+[AGGREGATE-STEP] step=<N> status=exit ts=<ISO8601>
+```
+
+stuck 検知 grep パターン:
+```bash
+tmux capture-pane -t <worker-win> -p -S -200 | grep -E '^\[AGGREGATE-STEP\] step=[0-9]+ status=(enter|exit) ts='
+```
+
+**pane 監視 regex（>5 min 無進行の検知）**:
+
+aggregate phase の stuck を検知するには、`[AGGREGATE-STEP]` ログの最終出力 mtime を監視する:
+
+```bash
+# aggregate phase 開始後、[AGGREGATE-STEP] の最終出力から経過時間を確認
+LAST_TS=$(tmux capture-pane -t <worker-win> -p -S -500 \
+  | grep -E '^\[AGGREGATE-STEP\]' \
+  | tail -1 \
+  | grep -oP 'ts=\K[0-9T:Z]+')
+if [[ -n "$LAST_TS" ]]; then
+  ELAPSED=$(( $(date -u +%s) - $(date -d "$LAST_TS" +%s) ))
+  if (( ELAPSED > 300 )); then  # >5 min
+    echo "STAGNATE: aggregate stuck 検知 — 最終ログから ${ELAPSED}s 経過"
+  fi
+fi
+```
+
+代替（pane キャプチャのハッシュ比較 — A1 多指標）:
+```bash
+HASH1=$(tmux capture-pane -t <worker-win> -p | sha256sum)
+sleep 60
+HASH2=$(tmux capture-pane -t <worker-win> -p | sha256sum)
+[[ "$HASH1" == "$HASH2" ]] && echo "A1: STAGNATE candidate"
+```
+
+**回避手順（[B] manual fix path）**:
+1. Pilot が specialist findings（round 1）を直接取得: `cat <snapshot>/specialist-results-*.md`
+2. findings を消費して body v2 を手動生成（`co-issue` aggregate step 相当）
+3. dual-write: label 先（`refined`）→ Status=Refined 後（ADR-024 準拠）
+4. retrospective: 今回の stuck 事象を doobidoo に `co-issue-aggregate-stuck` タグで保存
+
+**再現確認方法**（atomic LLM skill のため手動確認手順で代替）:
+
+1. `/twl:issue-review-aggregate` を実行し、pane capture で `[AGGREGATE-STEP]` ログが出力されることを確認:
+   ```bash
+   tmux capture-pane -t <worker-win> -p -S -100 | grep '\[AGGREGATE-STEP\]'
+   # 期待出力例:
+   # [AGGREGATE-STEP] step=1 status=enter ts=2026-05-04T01:58:11Z
+   # [AGGREGATE-STEP] step=1 status=exit ts=2026-05-04T01:58:13Z
+   # [AGGREGATE-STEP] step=2 status=enter ts=2026-05-04T01:58:13Z
+   ```
+2. Step 1〜6 全ての enter/exit ログが出力されれば実装 PASS
+3. stuck 発生シミュレーション: Step 3 enter ログ後に Step 3 exit ログが >5 min 出ない場合、上記 pane 監視 regex でアラート
+
+**関連統計収集（doobidoo運用）**:
+stuck 発生時は `co-issue-aggregate-stuck` タグで以下を保存: Worker session 名（`coi-*`）・aggregate skill load timestamp・最終 `[AGGREGATE-STEP]` 出力 timestamp（`62574c71` に続く記録）
+
+**参照**: Issue #1376（ログ機構追加）、source Issue #1038（発生事象）、§3.3（specialist 打ち切り — 区別注意）
 
 ---
 
