@@ -787,6 +787,7 @@ _check_window_alive "wt-co-explore-114550" "twill-ipatho1" && echo "alive" || ec
 - `_check_idle_completed()` → `skills/su-observer/scripts/lib/observer-idle-check.sh` (stateless 純粋関数)
 - `IDLE_COMPLETED_TS[$WIN]` 連想配列 → `cld-observe-any` メインループスコープで管理
 - `evaluate_window()` は stateless 設計を維持（連想配列を内部に持たない）
+- **LLM indicator SSOT**: `plugins/session/scripts/lib/llm-indicators.sh` が `LLM_INDICATORS` 配列の唯一の定義源（#1374）。`cld-observe-any`・`issue-lifecycle-orchestrator.sh`・`observer-idle-check.sh` の3ファイルが `source` 経由で参照する
 
 **既存 channel との関係**:
 - `[PHASE-DONE]` / `[PILOT-PHASE-COMPLETE]` 等は completion phrase 1 回 emit（一過性）

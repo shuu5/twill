@@ -470,3 +470,116 @@ nothing pending but still thinking'
   # Thinking... が存在する場合は idle と判定しない（non-0）
   [ "${status}" -ne 0 ]
 }
+
+# ===========================================================================
+# Issue #1374: LLM indicator SSOT lib 新設（AC8）
+# observer-idle-check.sh の SSOT 参照を llm-indicators.sh に変更し、
+# JP indicator が C3 で正しく detect されることを fixture で検証する
+# RED: llm-indicators.sh 未存在 + observer-idle-check.sh 未更新のため fail
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# AC8/1(#1374): observer-idle-check.sh が llm-indicators.sh を参照していること
+# ---------------------------------------------------------------------------
+@test "ac8(#1374)/1: observer-idle-check.sh が llm-indicators.sh を source または参照していること (RED)" {
+  # AC: observer-idle-check.sh L46 のハードコード alternation を新 lib 由来に変更する
+  # RED: まだ lib 参照が追加されていないため fail
+  run grep -E 'llm-indicators\.sh|LLM_INDICATORS' "${OBSERVER_LIB}"
+  [ "${status}" -eq 0 ]
+  # 参照が llm-indicators.sh（SSOT lib）を向いていること
+  run grep -qE 'llm-indicators\.sh' "${OBSERVER_LIB}"
+  [ "${status}" -eq 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# AC8/2(#1374): observer-idle-check.sh のコメントが更新されていること
+# "SSOT: lib/llm-indicators.sh を参照" の記述があること
+# ---------------------------------------------------------------------------
+@test "ac8(#1374)/2: observer-idle-check.sh のコメントが 'SSOT: lib/llm-indicators.sh' に更新されている (RED)" {
+  # AC: コメント「SSOT: cld-observe-any の LLM_INDICATORS 配列と同期を保つこと」を
+  #     「SSOT: lib/llm-indicators.sh を参照」に更新する
+  # RED: 古いコメントがまだ残っているため fail（または新コメントが未追加）
+  [ -f "${OBSERVER_LIB}" ]
+  # 古いコメントが残っていれば RED（未実装）
+  run bash -c "
+    if grep -q 'cld-observe-any の LLM_INDICATORS 配列と同期を保つこと' '${OBSERVER_LIB}'; then
+        echo 'FAIL: 古いコメントが残存している（更新未実施）'
+        exit 1
+    fi
+    if ! grep -qE 'llm-indicators\.sh' '${OBSERVER_LIB}'; then
+        echo 'FAIL: llm-indicators.sh への参照コメントが追加されていない'
+        exit 1
+    fi
+    echo 'PASS: コメント更新確認'
+  "
+  [ "${status}" -eq 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# AC8/3(#1374): JP indicator（生成中）がある場合、C3 で idle と判定されない
+# ---------------------------------------------------------------------------
+@test "ac8(#1374)/3: JP indicator '生成中' が C3 で検出され idle 判定されない (RED)" {
+  # AC: JP 6 件を SSOT 配列に追加した後、observer-idle-check.sh の C3 が JP indicator も検出する
+  # RED: llm-indicators.sh 未存在 + observer-idle-check.sh が JP indicator を未検出のため fail
+  [ -f "${OBSERVER_LIB}" ]
+  LLM_LIB="${REPO_ROOT}/../session/scripts/lib/llm-indicators.sh"
+  [ -f "${LLM_LIB}" ]
+  run bash -c "
+    source '${OBSERVER_LIB}'
+    # JP indicator '生成中' が存在する pane content — C3 で idle 判定されないこと
+    pane_content='生成中... (5s)
+nothing pending
+ファイルを処理しています'
+    first_seen_ts=100
+    now_ts=200  # debounce 超過（elapsed=100s > 60s）
+    # _check_idle_completed が non-0 を返す（JP indicator により C3 fail）
+    _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
+  "
+  # JP indicator があるため idle 判定されない（non-0）
+  [ "${status}" -ne 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# AC8/4(#1374): JP indicator（構築中）がある場合も C3 で検出される
+# ---------------------------------------------------------------------------
+@test "ac8(#1374)/4: JP indicator '構築中' が C3 で検出され idle 判定されない (RED)" {
+  # AC: JP indicator「構築中」も C3 guard として機能する
+  # RED: JP indicator が observer-idle-check.sh の C3 に組み込まれていないため fail
+  [ -f "${OBSERVER_LIB}" ]
+  LLM_LIB="${REPO_ROOT}/../session/scripts/lib/llm-indicators.sh"
+  [ -f "${LLM_LIB}" ]
+  run bash -c "
+    source '${OBSERVER_LIB}'
+    pane_content='構築中... (10s)
+nothing pending
+ビルドを実行しています'
+    first_seen_ts=100
+    now_ts=200
+    _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
+  "
+  # JP indicator があるため idle 判定されない（non-0）
+  [ "${status}" -ne 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# AC8/5(#1374): JP indicator が不在で completion phrase あり → idle 確定
+# ---------------------------------------------------------------------------
+@test "ac8(#1374)/5: JP indicator 不在 + completion phrase あり → idle 確定（regression guard） (RED)" {
+  # AC: JP indicator が存在しない場合、既存の completion phrase で idle 確定すること
+  # RED: lib 未存在のため fail（実装後は regression guard として GREEN を維持）
+  [ -f "${OBSERVER_LIB}" ]
+  LLM_LIB="${REPO_ROOT}/../session/scripts/lib/llm-indicators.sh"
+  [ -f "${LLM_LIB}" ]
+  run bash -c "
+    source '${OBSERVER_LIB}'
+    # JP indicator なし、completion phrase あり
+    pane_content='nothing pending
+タスクが完了しました
+> '
+    first_seen_ts=100
+    now_ts=165  # elapsed=65s > 60s
+    _check_idle_completed \"\${pane_content}\" \"\${first_seen_ts}\" \"\${now_ts}\"
+  "
+  # JP indicator なし + completion phrase あり → idle 確定（exit 0）
+  [ "${status}" -eq 0 ]
+}

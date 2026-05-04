@@ -41,11 +41,20 @@ _check_idle_completed() {
     echo "$pane_content" | grep -qE "$IDLE_COMPLETED_PHRASE_REGEX" || return 1
 
     # C3: LLM indicator 不在 (Thinking/Brewing 等の現在進行形)
-    # SSOT: cld-observe-any の LLM_INDICATORS 配列と同期を保つこと (pitfalls §4.10 A2)
+    # SSOT: lib/llm-indicators.sh を参照 (#1374)
     # 過去形 + "for N" は IDLE 扱い（Sautéed for / Worked for 等）— v18 past tense filter 準拠
-    local llm_indicators='Thinking|Brewing|Brewed|Concocting|Ebbing|Proofing|Frosting|Reasoning|Computing|Planning|Composing|Processing|Burrowing|Cerebrating|Spinning|Beboppin|Thundering|Baked|Cooked|Crunched|Churned|Skedaddling|Orchestrating|Running .* agents|[0-9]+ tool uses|thinking with max effort'
-    if echo "$pane_content" | tail -15 | grep -qE "($llm_indicators)"; then
-        return 1
+    local _lib_dir
+    _lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local _llm_lib="${_lib_dir}/../../../../../session/scripts/lib/llm-indicators.sh"
+    if [[ -f "$_llm_lib" ]]; then
+        source "$_llm_lib"
+    fi
+    if [[ ${#LLM_INDICATORS[@]} -gt 0 ]]; then
+        local _alternation
+        _alternation="$(IFS='|'; echo "${LLM_INDICATORS[*]}")"
+        if echo "$pane_content" | tail -15 | grep -qE "($_alternation)"; then
+            return 1
+        fi
     fi
 
     # C4: first_seen_ts が設定済み（0 = 未設定 = 初回検出サイクル; Unix timestamp > 0 が必要）

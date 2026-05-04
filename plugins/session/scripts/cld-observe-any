@@ -9,39 +9,8 @@ else
     SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 fi
 
-# LLM 思考 indicator 定数リスト（Claude Code UI 変更時はここを更新）
-# AC1: Claude Code 4.x 追加 indicator
-# AC2: 一般化 regex "[A-Z][a-z]+(in'|ing|ed)(…| for [0-9]| \([0-9])" で未知 indicator をカバー
-LLM_INDICATORS=(
-    "Thinking"
-    "Brewing"
-    "Brewed"
-    "Concocting"
-    "Ebbing"
-    "Proofing"
-    "Frosting"
-    "Reasoning"
-    "Computing"
-    "Planning"
-    "Composing"
-    "Processing"
-    "Running .* agents"
-    "[0-9]+ tool uses"
-    "thinking with max effort"
-    "Saut.*ed"
-    "Burrowing"
-    "Cerebrating"
-    "Spinning"
-    "Beboppin"
-    "Thundering"
-    "Baked"
-    "Cooked"
-    "Crunched"
-    "Churned"
-    "Skedaddling"
-    "Orchestrating"
-    "[A-Z][a-z]+(in'|ing|ed)(…| for [0-9]| \\([0-9])"
-)
+# LLM_INDICATORS SSOT: lib/llm-indicators.sh を参照 (#1374)
+source "${SCRIPT_DIR}/lib/llm-indicators.sh"
 
 # --- デフォルト値 ---
 WINDOWS=()

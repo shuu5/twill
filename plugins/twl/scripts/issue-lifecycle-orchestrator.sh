@@ -56,13 +56,9 @@ if ! [[ "$STARTUP_GRACE_PERIOD" =~ ^[0-9]+$ ]]; then
   STARTUP_GRACE_PERIOD=15
 fi
 
-# AC3: LLM thinking indicator 検出 (SSOT: cld-observe-any, #1087)
-# LLM_INDICATORS 配列を cld-observe-any から動的に読み込み、detect_thinking() で再利用
-_COA_SCRIPT="${SCRIPTS_ROOT}/../../session/scripts/cld-observe-any"
+# LLM thinking indicator 検出 (SSOT: lib/llm-indicators.sh, #1374)
 LLM_INDICATORS=()
-if [[ -f "$_COA_SCRIPT" ]]; then
-  eval "$(awk '/^LLM_INDICATORS=\(/{p=1} p{print} /^\)$/{if(p){p=0; exit}}' "$_COA_SCRIPT" 2>/dev/null)" 2>/dev/null || true
-fi
+source "${SCRIPTS_ROOT}/../../session/scripts/lib/llm-indicators.sh" 2>/dev/null || true
 
 # detect_thinking: pane テキストから LLM thinking indicator を検出
 # AC4(d): past tense "word for Nm Ns" または "word for Ns" 完了形は IDLE 扱い（thinking としてカウントしない）
