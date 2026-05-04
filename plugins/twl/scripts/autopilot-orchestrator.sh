@@ -294,13 +294,12 @@ launch_worker() {
       local spawn_skip_window
       spawn_skip_window=$(resolve_worker_window "$ISSUE" "$ISSUE_REPO_ID")
       local tmux_window_exists=false
-      if [[ -n "$spawn_skip_window" ]] && tmux list-windows -F '#{window_name}' 2>/dev/null | grep -qF "$spawn_skip_window"; then
+      if [[ -n "$spawn_skip_window" ]] && tmux list-windows -a -F '#{window_name}' 2>/dev/null | grep -qxF "$spawn_skip_window"; then
         tmux_window_exists=true
       fi
       if [[ "$tmux_window_exists" == "false" ]]; then
         echo "[orchestrator] Issue #${ISSUE}: 既存 Worker 検出（status=${existing_status}）— tmux window 不在 → crash-detect.sh 委譲" >&2
-        local spawn_skip_crash_exit=0
-        bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$ISSUE" --window "${spawn_skip_window:-}" 2>/dev/null || spawn_skip_crash_exit=$?
+        bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$ISSUE" --window "${spawn_skip_window:-}" 2>/dev/null || true
         return 0
       fi
       echo "[orchestrator] Issue #${ISSUE}: 既存 Worker 検出（status=${existing_status}, branch=${existing_branch_for_skip}） — spawn skip" >&2
