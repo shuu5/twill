@@ -770,7 +770,7 @@ class TestAC25ManifestBehaviorUnchanged:
         #     result["summary"] は "stub" を含まず、
         #     "all specialists present" または "N specialist(s) missing" を返すこと
         # REGRESSION GUARD: AC1-3 実装後も manifest file 存在時の挙動が変わらないことを保証
-        import os
+        # NOTE: /tmp 直書きだが "issue1349" サフィックスで一意性を確保。pytest-xdist 未使用のため並列衝突リスクなし
         from pathlib import Path
         from twl.mcp_server.tools import twl_check_specialist_handler
 
@@ -793,5 +793,4 @@ class TestAC25ManifestBehaviorUnchanged:
                 f"(期待: 'all specialists present' または 'N specialist(s) missing')"
             )
         finally:
-            if manifest_path.exists():
-                os.unlink(str(manifest_path))
+            manifest_path.unlink(missing_ok=True)
