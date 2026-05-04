@@ -3,24 +3,26 @@ import json
 import os
 import signal
 import subprocess
-import sys
 import time
 from pathlib import Path
 
 
-def _find_mcp_server_pid() -> "int | None":
-    """Find running twl MCP server PID via pgrep."""
+def _find_mcp_server_pids() -> "list[int]":
+    """Find running twl MCP server PIDs via pgrep."""
     result = subprocess.run(
         ["pgrep", "-f", "fastmcp run.*src/twl/mcp_server/server.py"],
         capture_output=True,
         text=True,
     )
     if result.returncode == 0 and result.stdout.strip():
-        try:
-            return int(result.stdout.strip().split("\n")[0])
-        except ValueError:
-            pass
-    return None
+        pids = []
+        for line in result.stdout.strip().split("\n"):
+            try:
+                pids.append(int(line.strip()))
+            except ValueError:
+                pass
+        return pids
+    return []
 
 
 def _find_mcp_server_cmd() -> "list[str] | None":
@@ -41,9 +43,29 @@ def _find_mcp_server_cmd() -> "list[str] | None":
         twl_server = config.get("mcpServers", {}).get("twl", {})
         if not twl_server:
             return None
-        return [twl_server.get("command", "")] + twl_server.get("args", [])
+        command = twl_server.get("command", "")
+        if not command:
+            return None
+        return [command] + twl_server.get("args", [])
     except Exception:
         return None
+
+
+def _wait_for_pids_exit(pids: "list[int]", timeout: int = 5) -> bool:
+    """Wait up to `timeout` seconds for all PIDs to exit. Returns True if all exited."""
+    deadline = time.monotonic() + timeout
+    remaining = list(pids)
+    while remaining and time.monotonic() < deadline:
+        time.sleep(0.5)
+        still_running = []
+        for pid in remaining:
+            try:
+                os.kill(pid, 0)
+                still_running.append(pid)
+            except ProcessLookupError:
+                pass
+        remaining = still_running
+    return len(remaining) == 0
 
 
 def restart_mcp_server() -> int:
@@ -52,14 +74,22 @@ def restart_mcp_server() -> int:
     NOTE: After restart, the Claude Code session must also be restarted
     to reconnect to the new server process.
     """
-    old_pid = _find_mcp_server_pid()
-    if old_pid is not None:
-        print(f"Stopping twl MCP server (PID {old_pid})...")
-        try:
-            os.kill(old_pid, signal.SIGTERM)
-            time.sleep(1)
-        except ProcessLookupError:
-            pass
+    old_pids = _find_mcp_server_pids()
+    if old_pids:
+        print(f"Stopping twl MCP server (PIDs {old_pids})...")
+        for pid in old_pids:
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+        if not _wait_for_pids_exit(old_pids, timeout=5):
+            print("Server did not exit within 5s after SIGTERM; sending SIGKILL...")
+            for pid in old_pids:
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            _wait_for_pids_exit(old_pids, timeout=3)
     else:
         print("No running twl MCP server found.")
 
@@ -79,9 +109,9 @@ def restart_mcp_server() -> int:
     )
     time.sleep(0.5)
 
-    new_pid = _find_mcp_server_pid()
-    if new_pid is not None:
-        print(f"twl MCP server started (PID {new_pid}).")
+    new_pids = _find_mcp_server_pids()
+    if new_pids:
+        print(f"twl MCP server started (PIDs {new_pids}).")
     else:
         print("twl MCP server starting (PID not yet confirmed).")
 

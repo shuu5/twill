@@ -19,7 +19,7 @@ mappings:
     test_file: "plugins/twl/tests/bats/issue-1388-mcp-restart.bats"
     test_names:
       - "ac2: 'twl mcp restart' exits with code 0"
-      - "ac2: 'twl mcp restart' does not emit 'unknown command' error"
+      - "ac2: 'twl mcp restart' does not emit 'error:' to stderr"
     impl_files:
       - "cli/twl/src/twl/cli.py"
       - "cli/twl/src/twl/mcp_server/lifecycle.py"
