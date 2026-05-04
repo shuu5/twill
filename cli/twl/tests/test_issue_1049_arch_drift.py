@@ -7,10 +7,7 @@ AC 1件につき 1テスト。全テストは実装前に FAIL（RED）する。
 
 from __future__ import annotations
 
-import subprocess
 from pathlib import Path
-
-import pytest
 
 REPO_ROOT = Path(__file__).parents[3]
 CLI_TWL_TESTS = REPO_ROOT / "cli" / "twl" / "tests"
