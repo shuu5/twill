@@ -1077,7 +1077,7 @@ def twl_check_completeness_handler(manifest_context: str) -> dict:
 
 
 def twl_check_specialist_handler(manifest_context: str) -> dict:
-    """Shadow mode: check specialist spawn completeness vs bash hook, log to shadow log."""
+    """Shadow mode: check specialist spawn completeness vs bash hook. Logs to shadow log when manifest file exists; returns stub envelope silently when manifest is absent (no runtime state to check)."""
     import glob
     import time
     from pathlib import Path
