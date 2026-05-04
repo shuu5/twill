@@ -1,0 +1,56 @@
+mappings:
+  - ac_index: 1
+    ac_text: >
+      cli/twl/src/twl/mcp_server/tools.py を編集して再デプロイした後、新規 Claude Code セッションを
+      起動すれば PreToolUse:Bash hook で Unknown tool エラーが出ない手順 / スクリプトが整備されていること
+      （手順 README または twl --help から発見可能）
+    test_file: "plugins/twl/tests/bats/issue-1388-mcp-restart.bats"
+    test_names:
+      - "ac1: cli.py contains 'mcp' subcommand if-chain entry"
+      - "ac1: cli.py contains 'restart' subcommand dispatch for mcp"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 2
+    ac_text: >
+      上記再起動を伴うフロー（twl mcp restart または採用された方針）を bats で 1 ケース以上カバーする
+      （最低: twl mcp restart が exit 0 で完了すること）
+    test_file: "plugins/twl/tests/bats/issue-1388-mcp-restart.bats"
+    test_names:
+      - "ac2: 'twl mcp restart' exits with code 0"
+      - "ac2: 'twl mcp restart' does not emit 'unknown command' error"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+    # impl_files 注記: lifecycle.py は新規作成予定ファイル（現在は存在しない）
+
+  - ac_index: 3
+    ac_text: >
+      cli/twl/src/twl/mcp_server/tools.py 編集後の運用者向け再起動契機を README で明示すること
+      （「tools.py を編集したら server を再起動する必要がある」旨の記述。stale 自動検知は optional）
+    test_file: "plugins/twl/tests/bats/issue-1388-mcp-restart.bats"
+    test_names:
+      - "ac3: mcp_server/README.md mentions tools.py edit requires server restart"
+      - "ac3: mcp_server/README.md contains a restart section or procedure"
+      - "ac3: mcp_server/README.md contains 'twl mcp restart' command example"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/README.md"
+
+  - ac_index: 4
+    ac_text: >
+      新規 Claude Code セッションで Bash 実行時に PreToolUse:Bash hook error / Unknown tool が
+      出ないことを手動で 1 セッション分確認する（自動テスト不可）
+    test_file: null
+    test_names: []
+    impl_files: []
+    # 自動テスト不可: 手動確認が必要
+
+  - ac_index: 5
+    ac_text: >
+      #1037 epic の Sub-Issue として追加し、close 時に epic 側 checklist の対応行を update する
+      （自動テスト不可）
+    test_file: null
+    test_names: []
+    impl_files: []
+    # 自動テスト不可: プロジェクト管理操作のため
