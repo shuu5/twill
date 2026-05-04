@@ -245,6 +245,11 @@ if [[ "$REPO_MODE" == "worktree" ]]; then
     if [[ -n "$WORKER_WINDOW" ]]; then
       echo "[auto-merge] Issue #${ISSUE_NUM}: Worker window (${WORKER_WINDOW}) kill — worktree 削除前"
       safe_kill_window "$WORKER_WINDOW"
+      # #898 safety net: kill 後に window が残存していれば worktree 削除を中止（CWD 消失事故防止）
+      if tmux list-windows -a -F '#{window_name}' 2>/dev/null | grep -qxF "$WORKER_WINDOW"; then
+        echo "[auto-merge] Issue #${ISSUE_NUM}: ERROR: Worker window kill 失敗 — worktree 削除中止 (unsafe state)" >&2
+        exit 1
+      fi
     fi
     if git worktree remove --force "$WORKTREE_PATH" 2>/dev/null; then
       echo "[auto-merge] Issue #${ISSUE_NUM}: worktree 削除成功: ${WORKTREE_PATH}"
