@@ -1,0 +1,76 @@
+mappings:
+  - ac_index: 1
+    ac_text: >-
+      cli/twl/tests/ 配下に Path(__file__).parents[.*] / "plugins" パターンが残存しないこと
+      （grep で 0 件）。ただし test_issue_980_audit_mode.py 内の .supervisor/ 参照は plugins/twl
+      への drift ではないため AC1 の対象外とする（当該ファイルは plugins/twl 参照部分のみを AC5 の対象とする）
+    test_file: cli/twl/tests/test_issue_1049_arch_drift.py
+    test_name: test_ac1_no_plugins_path_pattern_in_cli_tests
+    impl_files:
+      - cli/twl/tests/test_981_chain_runner_triage.py
+      - cli/twl/tests/test_adr_025.py
+      - cli/twl/tests/test_issue_1084_human_gate.py
+      - cli/twl/tests/test_issue_1118_workflow_can_spawn.py
+      - cli/twl/tests/test_issue_1123_observe_loop_can_spawn.py
+      - cli/twl/tests/test_issue_1265_recommended_structure.py
+      - cli/twl/tests/test_issue_1300_architect_group_refine_type.py
+      - cli/twl/tests/test_issue_1313_adr_033_deprecated.py
+      - cli/twl/tests/test_issue_980_audit_mode.py
+
+  - ac_index: 2
+    ac_text: >-
+      テストが必要とする plugins/twl 由来の fixture（agents/*.md, deps.yaml,
+      scripts/chain-runner.sh 等）は test-fixtures/ 配下に複製または最小再現として配置されていること
+    test_file: cli/twl/tests/test_issue_1049_arch_drift.py
+    test_name: test_ac2_fixture_assets_exist_in_test_fixtures
+    impl_files:
+      - test-fixtures/minimal-plugin/deps.yaml
+      - test-fixtures/minimal-plugin/scripts/helper.sh
+      - plugins/twl/deps.yaml
+      - plugins/twl/scripts/chain-runner.sh
+
+  - ac_index: 3
+    ac_text: >-
+      pytest cli/twl/tests/ の全 PASS 数が refactor 前と同等以上であること（リグレッションなし）
+    test_file: cli/twl/tests/test_issue_1049_arch_drift.py
+    test_name: test_ac3_no_regression_in_pass_count
+    impl_files:
+      - cli/twl/tests/test_981_chain_runner_triage.py
+      - cli/twl/tests/test_adr_025.py
+      - cli/twl/tests/test_issue_1084_human_gate.py
+      - cli/twl/tests/test_issue_1118_workflow_can_spawn.py
+      - cli/twl/tests/test_issue_1123_observe_loop_can_spawn.py
+      - cli/twl/tests/test_issue_1265_recommended_structure.py
+      - cli/twl/tests/test_issue_1300_architect_group_refine_type.py
+      - cli/twl/tests/test_issue_1313_adr_033_deprecated.py
+      - cli/twl/tests/test_issue_980_audit_mode.py
+
+  - ac_index: 4
+    ac_text: >-
+      plugins/twl/architecture/domain/contexts/twill-integration.md の Rules セクションに
+      「TWiLL Integration → plugins/* 方向の test fixture 参照は test-fixtures/ 経由のみ許可」
+      の依存方向ルールを明記すること（drift 再発防止）
+    test_file: cli/twl/tests/test_issue_1049_arch_drift.py
+    test_name: test_ac4_twill_integration_rules_contain_fixture_direction
+    impl_files:
+      - plugins/twl/architecture/domain/contexts/twill-integration.md
+
+  - ac_index: 5
+    ac_text: >-
+      該当する 9 ファイル全てが plugins/twl への直接参照部分を上記方針に沿って書き換えられていること:
+      test_981_chain_runner_triage.py, test_adr_025.py, test_issue_1084_human_gate.py,
+      test_issue_1118_workflow_can_spawn.py, test_issue_1123_observe_loop_can_spawn.py,
+      test_issue_1265_recommended_structure.py, test_issue_1300_architect_group_refine_type.py,
+      test_issue_1313_adr_033_deprecated.py, test_issue_980_audit_mode.py（plugins/twl 参照部分のみ対象）
+    test_file: cli/twl/tests/test_issue_1049_arch_drift.py
+    test_name: test_ac5_all_nine_files_rewritten
+    impl_files:
+      - cli/twl/tests/test_981_chain_runner_triage.py
+      - cli/twl/tests/test_adr_025.py
+      - cli/twl/tests/test_issue_1084_human_gate.py
+      - cli/twl/tests/test_issue_1118_workflow_can_spawn.py
+      - cli/twl/tests/test_issue_1123_observe_loop_can_spawn.py
+      - cli/twl/tests/test_issue_1265_recommended_structure.py
+      - cli/twl/tests/test_issue_1300_architect_group_refine_type.py
+      - cli/twl/tests/test_issue_1313_adr_033_deprecated.py
+      - cli/twl/tests/test_issue_980_audit_mode.py
