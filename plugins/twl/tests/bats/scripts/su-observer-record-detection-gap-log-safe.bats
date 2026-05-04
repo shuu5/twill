@@ -56,11 +56,9 @@ teardown() {
         bash "$SCRIPT" --type test --detail test 2>&1 1>/dev/null
     # status は 1 (exit 1) になるはず
     [ "$status" -eq 1 ]
-    # stderr 出力を行数チェック: "FAKE LOG ENTRY" が独立行として現れていないこと
-    local stderr_lines
-    stderr_lines=$(echo "$output" | grep -c "FAKE LOG ENTRY" || true)
-    [ "$stderr_lines" -eq 0 ] \
-        || fail "stderr に FAKE LOG ENTRY が独立行として現れた (log injection 未防止): $(echo "$output")"
+    # stderr 出力行数チェック: 改行で分割された FAKE LOG ENTRY が独立行として現れない
+    [ "${#lines[@]}" -le 1 ] \
+        || fail "stderr が複数行になった（改行インジェクション未防止）: ${lines[*]}"
 }
 
 # ---------------------------------------------------------------------------
@@ -101,10 +99,8 @@ teardown() {
     run env SUPERVISOR_DIR=$'/absolute\nFAKE LOG ENTRY' \
         bash "$SCRIPT" --type test --detail test 2>&1 1>/dev/null
     [ "$status" -eq 1 ]
-    local stderr_lines
-    stderr_lines=$(echo "$output" | grep -c "FAKE LOG ENTRY" || true)
-    [ "$stderr_lines" -eq 0 ] \
-        || fail "絶対パス拒否 stderr に FAKE LOG ENTRY が独立行として現れた: $(echo "$output")"
+    [ "${#lines[@]}" -le 1 ] \
+        || fail "絶対パス拒否 stderr が複数行になった（改行インジェクション未防止）: ${lines[*]}"
 }
 
 # ---------------------------------------------------------------------------
@@ -123,8 +119,6 @@ teardown() {
     run env SUPERVISOR_DIR=$'../etc\nFAKE LOG ENTRY' \
         bash "$SCRIPT" --type test --detail test 2>&1 1>/dev/null
     [ "$status" -eq 1 ]
-    local stderr_lines
-    stderr_lines=$(echo "$output" | grep -c "FAKE LOG ENTRY" || true)
-    [ "$stderr_lines" -eq 0 ] \
-        || fail ".. 拒否 stderr に FAKE LOG ENTRY が独立行として現れた: $(echo "$output")"
+    [ "${#lines[@]}" -le 1 ] \
+        || fail ".. 拒否 stderr が複数行になった（改行インジェクション未防止）: ${lines[*]}"
 }
