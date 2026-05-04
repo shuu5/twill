@@ -61,7 +61,7 @@ _supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
 if [[ ! "$_supervisor_dir" =~ ^[A-Za-z0-9._/-]+$ ]] || \
    [[ "$_supervisor_dir" =~ ^/ ]] || \
    [[ "$_supervisor_dir" == *..* ]]; then
-  echo "ERROR: invalid path: ${_supervisor_dir} (must be relative, no '..', must match ^[A-Za-z0-9._/-]+$)" >&2; exit 1
+  _safe_dir="$(printf '%q' "${_supervisor_dir}")"; echo "ERROR: invalid path: ${_safe_dir} (must be relative, no '..', must match ^[A-Za-z0-9._/-]+$)" >&2; exit 1
 fi
 
 # Sanitize free-text fields: strip newlines and control characters to prevent log injection
