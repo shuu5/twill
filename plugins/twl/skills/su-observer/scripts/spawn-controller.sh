@@ -42,6 +42,11 @@ CLD_SPAWN="$TWILL_ROOT/plugins/session/scripts/cld-spawn"
 # shellcheck source=/dev/null
 source "$TWILL_ROOT/plugins/session/scripts/lib/tmux-resolve.sh"
 
+# Issue #1346: SUPERVISOR_DIR パス検証（record-detection-gap.sh パターン準拠）
+# shellcheck source=/dev/null
+source "$TWILL_ROOT/plugins/twl/scripts/lib/supervisor-dir-validate.sh"
+validate_supervisor_dir "${SUPERVISOR_DIR:-.supervisor}" || exit 1
+
 if [[ ! -x "$CLD_SPAWN" ]]; then
   echo "Error: cld-spawn not executable at $CLD_SPAWN" >&2
   exit 2
