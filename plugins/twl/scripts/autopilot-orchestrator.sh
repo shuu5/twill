@@ -281,6 +281,33 @@ launch_worker() {
   # 既存 worktree の確認（冪等性: branch が state に記録済みの場合）
   local -a _repo_args=()
   [[ "$ISSUE_REPO_ID" != "_default" ]] && _repo_args=(--repo "$ISSUE_REPO_ID")
+
+  # ADR-018 SSOT: 既存 Worker 検出時の重複起動防止ガード（status=running/merge-ready）
+  local existing_status
+  existing_status=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$ISSUE" --field status 2>/dev/null || echo "")
+  if [[ "$existing_status" == "running" || "$existing_status" == "merge-ready" ]]; then
+    local existing_branch_for_skip
+    existing_branch_for_skip=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$ISSUE" --field branch 2>/dev/null || echo "")
+    local skip_candidate_dir="$effective_project_dir/worktrees/$existing_branch_for_skip"
+    if [[ -n "$existing_branch_for_skip" && "$existing_branch_for_skip" =~ ^[a-zA-Z0-9_/\-]+$ && -d "$skip_candidate_dir" ]]; then
+      # spawn skip: window 不在 → crash-detect.sh に委譲（failure フィールド保持、直接書き込み禁止）
+      local spawn_skip_window
+      spawn_skip_window=$(resolve_worker_window "$ISSUE" "$ISSUE_REPO_ID")
+      local tmux_window_exists=false
+      if [[ -n "$spawn_skip_window" ]] && tmux list-windows -F '#{window_name}' 2>/dev/null | grep -qF "$spawn_skip_window"; then
+        tmux_window_exists=true
+      fi
+      if [[ "$tmux_window_exists" == "false" ]]; then
+        echo "[orchestrator] Issue #${ISSUE}: 既存 Worker 検出（status=${existing_status}）— tmux window 不在 → crash-detect.sh 委譲" >&2
+        local spawn_skip_crash_exit=0
+        bash "$SCRIPTS_ROOT/crash-detect.sh" --issue "$ISSUE" --window "${spawn_skip_window:-}" 2>/dev/null || spawn_skip_crash_exit=$?
+        return 0
+      fi
+      echo "[orchestrator] Issue #${ISSUE}: 既存 Worker 検出（status=${existing_status}, branch=${existing_branch_for_skip}） — spawn skip" >&2
+      return 0
+    fi
+  fi
+
   local existing_branch
   existing_branch=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$ISSUE" --field branch 2>/dev/null || echo "")
   # ブランチ名バリデーション: `.` 除外の統一 regex（L288/L418/L1270 + autopilot-cleanup.sh L186 + orchestrator-cleanup-sequence.bats test double）
