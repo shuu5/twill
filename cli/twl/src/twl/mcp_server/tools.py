@@ -1124,16 +1124,13 @@ def twl_check_specialist_handler(manifest_context: str) -> dict:
             if m:
                 missing_by_ctx[manifest_context] = m
         else:
-            # File not found for this context → scan all active manifest files
-            for mf in glob.glob(_MANIFEST_GLOB):
-                if os.path.islink(mf):
-                    continue
-                ctx = os.path.basename(mf).removeprefix(".specialist-manifest-").removesuffix(".txt")
-                if not _CTX_RE.match(ctx):
-                    continue
-                m = _check_context(ctx)
-                if m:
-                    missing_by_ctx[ctx] = m
+            # File not found for this context → stub envelope (R2-m2: no runtime state to check)
+            return {
+                "ok": True,
+                "items": [],
+                "exit_code": 0,
+                "summary": "stub",
+            }
 
     all_missing = [item for items in missing_by_ctx.values() for item in items]
     ok = len(all_missing) == 0
