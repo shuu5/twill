@@ -751,3 +751,46 @@ class TestACNaming3CheckDocstring:
         assert "plugin file integrity" in doc, (
             f"twl_check の docstring に 'plugin file integrity' が含まれない: '{doc}' (AC-naming-3 未実装)"
         )
+
+
+# ---------------------------------------------------------------------------
+# AC5: manifest file 存在時の既存挙動不変（regression guard）
+# ---------------------------------------------------------------------------
+
+class TestAC25ManifestBehaviorUnchanged:
+    """AC5: manifest_context に対応する manifest file が存在する場合、既存挙動は不変であること.
+
+    このテストは regression guard として動作する。
+    AC1-3 の実装（stub envelope 追加）で manifest file 存在時も誤って "stub" を
+    返してしまうバグを防ぐ。GREEN スタート可（現在の実装は正しく動作している）。
+    """
+
+    def test_ac5_manifest_context_behavior_unchanged_when_file_exists(self):
+        # AC: manifest_context に対応する manifest file が存在する場合、
+        #     result["summary"] は "stub" を含まず、
+        #     "all specialists present" または "N specialist(s) missing" を返すこと
+        # REGRESSION GUARD: AC1-3 実装後も manifest file 存在時の挙動が変わらないことを保証
+        # NOTE: /tmp 直書きだが "issue1349" サフィックスで一意性を確保。pytest-xdist 未使用のため並列衝突リスクなし
+        from pathlib import Path
+        from twl.mcp_server.tools import twl_check_specialist_handler
+
+        manifest_path = Path("/tmp/.specialist-manifest-test-ac5-issue1349.txt")
+        try:
+            manifest_path.write_text("worker-code-reviewer\n")
+
+            result = twl_check_specialist_handler("test-ac5-issue1349")
+
+            assert isinstance(result, dict), (
+                f"twl_check_specialist_handler の戻り値が dict でない: {type(result)} (AC5)"
+            )
+            summary = str(result.get("summary", ""))
+            assert "stub" not in summary, (
+                f"manifest file 存在時に summary に 'stub' が含まれてしまっている: '{summary}' "
+                f"(AC5 regression: AC1-3 実装で既存挙動を壊してはならない)"
+            )
+            assert ("all specialists present" in summary or "specialist(s) missing" in summary), (
+                f"manifest file 存在時の summary が期待する形式でない: '{summary}' "
+                f"(期待: 'all specialists present' または 'N specialist(s) missing')"
+            )
+        finally:
+            manifest_path.unlink(missing_ok=True)
