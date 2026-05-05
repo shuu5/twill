@@ -323,9 +323,10 @@ teardown() {
         return 1
     fi
 
-    # deps-integrity チェック: chain.py CHAIN_STEPS と deps.yaml.chains の整合性確認
+    # deps-integrity チェック: chain SSoT 非干渉確認（plugins/twl で実行）
+    # chain の deps-integrity は plugins/twl が SSoT（plugins/session は chain 定義なし）
     local exit_code=0
-    "$twl_bin" check --deps-integrity 2>&1 || exit_code=$?
+    (cd "$REPO_ROOT/plugins/twl" && "$twl_bin" check --deps-integrity) 2>&1 || exit_code=$?
     if [[ "$exit_code" -ne 0 ]]; then
         echo "FAIL: twl check --deps-integrity が失敗した（exit code: $exit_code）" >&2
         return 1

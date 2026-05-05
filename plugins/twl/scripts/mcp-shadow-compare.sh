@@ -40,6 +40,7 @@ fi
 
 # ファイルが空なら mismatch なし
 if [[ ! -s "$LOG_FILE" ]]; then
+  echo "mismatch_count: 0"
   exit 0
 fi
 
@@ -77,6 +78,8 @@ for event_id in "${!BASH_VERDICT[@]}"; do
     MISMATCH_COUNT=$((MISMATCH_COUNT + 1))
   fi
 done
+
+echo "mismatch_count: ${MISMATCH_COUNT}"
 
 if [[ "$MISMATCH_COUNT" -gt 0 ]]; then
   exit 1

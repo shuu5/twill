@@ -295,19 +295,24 @@ cmd_inject() {
         exit 1
     }
     local lock_file="${lock_dir}/session-comm-${target//[^a-zA-Z0-9]/-}.lock"
+    # shellcheck source=./session-comm-backend-tmux.sh
+    source "${SCRIPT_DIR}/session-comm-backend-tmux.sh"
     {
         flock -w 30 9 || {
             echo "Error: failed to acquire send lock for '$window_name'" >&2
             exit 1
         }
-        # send-keys で送信（-l: literal モード、キー名解釈を抑制）
-        tmux send-keys -t "$target" -l "$text" || {
-            echo "Error: failed to send keys to '$window_name'" >&2
-            exit 1
-        }
-
-        if ! $no_enter; then
-            tmux send-keys -t "$target" Enter
+        # Delegate to backend (AC-1: no direct send-keys in this file)
+        if $no_enter; then
+            _backend_tmux_send "$target" "$text" --no-enter || {
+                echo "Error: failed to send keys to '$window_name'" >&2
+                exit 1
+            }
+        else
+            _backend_tmux_send "$target" "$text" || {
+                echo "Error: failed to send keys to '$window_name'" >&2
+                exit 1
+            }
         fi
     } 9>"$lock_file"
 }
@@ -430,7 +435,9 @@ cmd_inject_file() {
         # paste-buffer 後に待機（Ink の非同期イベントループがペースト処理を
         # 完了する前に Enter が到着するタイミング問題を回避。#234）
         sleep 0.3
-        tmux send-keys -t "$target" Enter
+        # shellcheck source=./session-comm-backend-tmux.sh
+        source "${SCRIPT_DIR}/session-comm-backend-tmux.sh"
+        _backend_tmux_send "$target" "" --enter-only
     fi
 }
 
@@ -480,30 +487,83 @@ cmd_wait_ready() {
 }
 
 # =============================================================================
-# メインディスパッチ
+# Strategy pattern: session_msg API (ADR-029 Decision 5)
+# Dispatches send/recv/ack/list to backend based on TWILL_MSG_BACKEND env var.
+# Default: tmux (Phase 1+2). Switch to mcp in Phase 3.
 # =============================================================================
-case "${1:-}" in
-    capture)
-        shift
-        cmd_capture "$@"
-        ;;
-    inject)
-        shift
-        cmd_inject "$@"
-        ;;
-    inject-file)
-        shift
-        cmd_inject_file "$@"
-        ;;
-    wait-ready)
-        shift
-        cmd_wait_ready "$@"
-        ;;
-    -h|--help|"")
-        usage
-        ;;
-    *)
-        echo "Error: unknown subcommand '$1'" >&2
-        usage
-        ;;
-esac
+session_msg() {
+    local _subcmd="${1:-}"
+    shift || true
+
+    case "$_subcmd" in
+        send)
+            # Dispatch by TWILL_MSG_BACKEND (tmux|mcp|mcp_with_fallback)
+            local _backend="${TWILL_MSG_BACKEND:-tmux}"
+            case "$_backend" in
+                tmux)
+                    # shellcheck source=./session-comm-backend-tmux.sh
+                    source "${SCRIPT_DIR}/session-comm-backend-tmux.sh"
+                    _backend_tmux_send "$@"
+                    ;;
+                mcp)
+                    # shellcheck source=./session-comm-backend-mcp.sh
+                    source "${SCRIPT_DIR}/session-comm-backend-mcp.sh"
+                    _backend_mcp_send "$@"
+                    ;;
+                mcp_with_fallback)
+                    # shellcheck source=./session-comm-backend-mcp.sh
+                    source "${SCRIPT_DIR}/session-comm-backend-mcp.sh"
+                    _backend_shadow_send "$@"
+                    ;;
+                *)
+                    echo "Error: session_msg: unknown TWILL_MSG_BACKEND '${_backend}'" >&2
+                    return 1
+                    ;;
+            esac
+            ;;
+        recv|ack|list)
+            # Phase 3+ functionality — stub for Phase 1+2
+            echo "Warning: session_msg ${_subcmd}: not implemented in Phase 1+2 (backend=${TWILL_MSG_BACKEND:-tmux})" >&2
+            return 0
+            ;;
+        *)
+            echo "Error: session_msg: unknown subcommand '${_subcmd}'" >&2
+            return 1
+            ;;
+    esac
+}
+
+# =============================================================================
+# メインディスパッチ（source ガード: source 時は実行しない）
+# =============================================================================
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    case "${1:-}" in
+        capture)
+            shift
+            cmd_capture "$@"
+            ;;
+        inject|send)
+            shift
+            cmd_inject "$@"
+            ;;
+        inject-file|send-file)
+            shift
+            cmd_inject_file "$@"
+            ;;
+        wait-ready)
+            shift
+            cmd_wait_ready "$@"
+            ;;
+        session_msg)
+            shift
+            session_msg "$@"
+            ;;
+        -h|--help|"")
+            usage
+            ;;
+        *)
+            echo "Error: unknown subcommand '$1'" >&2
+            usage
+            ;;
+    esac
+fi
