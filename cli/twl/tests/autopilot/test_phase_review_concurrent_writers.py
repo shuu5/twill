@@ -56,6 +56,13 @@ class TestConcurrentWriterIsolation:
         # 現在 (RED): 実装前なので NotImplementedError を送出する
         raise NotImplementedError("AC #1 未実装: per-issue checkpoint writer が存在しない")
 
+    def _setup_per_issue_ckpt(self, autopilot_dir: Path, issue_num: str, findings: list, status: str = "FAIL") -> None:
+        ckpt = autopilot_dir / "checkpoints" / f"phase-review-{issue_num}.json"
+        ckpt.write_text(json.dumps(
+            {"step": "phase-review", "status": status, "findings": findings, "issue_number": issue_num},
+            ensure_ascii=False,
+        ))
+
     def test_ac1_issue_a_not_blocked_by_issue_b_critical_finding(
         self, tmp_path: Path
     ) -> None:
@@ -68,10 +75,27 @@ class TestConcurrentWriterIsolation:
 
         Issue 101 と 103 の merge-gate は 102 の CRITICAL finding で block されてはならない。
         """
-        raise NotImplementedError(
-            "AC #1 未実装: per-issue checkpoint isolation がないため "
-            "Issue 101/103 が Issue 102 の CRITICAL finding で誤って block される"
-        )
+        from twl.autopilot.mergegate import MergeGateError
+
+        autopilot_dir = tmp_path / ".autopilot"
+        autopilot_dir.mkdir()
+        (autopilot_dir / "checkpoints").mkdir()
+
+        self._setup_per_issue_ckpt(autopilot_dir, "101", [], "PASS")
+        self._setup_per_issue_ckpt(autopilot_dir, "102", [
+            {"severity": "CRITICAL", "confidence": 90, "message": "issue 102 critical finding"}
+        ], "FAIL")
+        self._setup_per_issue_ckpt(autopilot_dir, "103", [], "PASS")
+
+        # Issue 101: PASS → block されない
+        _check_phase_review_guard(autopilot_dir=autopilot_dir, issue_labels=[], force=False, issue_number="101")
+
+        # Issue 102: CRITICAL → block される
+        with pytest.raises(MergeGateError, match="CRITICAL"):
+            _check_phase_review_guard(autopilot_dir=autopilot_dir, issue_labels=[], force=False, issue_number="102")
+
+        # Issue 103: PASS → block されない
+        _check_phase_review_guard(autopilot_dir=autopilot_dir, issue_labels=[], force=False, issue_number="103")
 
     def test_ac1_three_concurrent_writers_no_cross_contamination(
         self, tmp_path: Path
@@ -81,10 +105,27 @@ class TestConcurrentWriterIsolation:
         各 worker は異なる issue 番号で per-issue checkpoint を書き込む。
         merge-gate は自分の issue の checkpoint のみを読む。
         """
-        raise NotImplementedError(
-            "AC #1 未実装: concurrent writer isolation テストは "
-            "per-issue checkpoint (AC2) の実装が前提"
-        )
+        from twl.autopilot.checkpoint import CheckpointManager
+        from twl.autopilot.mergegate import MergeGateError
+
+        autopilot_dir = tmp_path / ".autopilot"
+        autopilot_dir.mkdir()
+        ckpt_dir = autopilot_dir / "checkpoints"
+        ckpt_dir.mkdir()
+        mgr = CheckpointManager(checkpoint_dir=ckpt_dir)
+
+        # 3 Workers が concurrent に per-issue checkpoint を書き込む
+        mgr.write("phase-review", "PASS", findings=[], issue_number="201")
+        mgr.write("phase-review", "FAIL", findings=[
+            {"severity": "CRITICAL", "confidence": 90, "message": "worker 202 CRITICAL"}
+        ], issue_number="202")
+        mgr.write("phase-review", "PASS", findings=[], issue_number="203")
+
+        # 各 merge-gate は自分の checkpoint のみを参照
+        _check_phase_review_guard(autopilot_dir=autopilot_dir, issue_labels=[], force=False, issue_number="201")
+        with pytest.raises(MergeGateError):
+            _check_phase_review_guard(autopilot_dir=autopilot_dir, issue_labels=[], force=False, issue_number="202")
+        _check_phase_review_guard(autopilot_dir=autopilot_dir, issue_labels=[], force=False, issue_number="203")
 
     def test_ac1_worker_reads_only_own_issue_checkpoint(
         self, tmp_path: Path
@@ -95,10 +136,26 @@ class TestConcurrentWriterIsolation:
         checkpoints/phase-review-201.json や checkpoints/phase-review.json を
         読まないことを確認する。
         """
-        raise NotImplementedError(
-            "AC #1 未実装: _check_phase_review_guard が issue_number 引数を受け付けず "
-            "per-issue checkpoint ファイルを解決できない"
-        )
+        from twl.autopilot.mergegate import MergeGateError
+
+        autopilot_dir = tmp_path / ".autopilot"
+        autopilot_dir.mkdir()
+        (autopilot_dir / "checkpoints").mkdir()
+
+        # 200: PASS、201: CRITICAL、shared: CRITICAL
+        self._setup_per_issue_ckpt(autopilot_dir, "200", [], "PASS")
+        self._setup_per_issue_ckpt(autopilot_dir, "201", [
+            {"severity": "CRITICAL", "confidence": 90, "message": "issue 201 CRITICAL"}
+        ], "FAIL")
+        shared = autopilot_dir / "checkpoints" / "phase-review.json"
+        shared.write_text(json.dumps(
+            {"step": "phase-review", "status": "FAIL", "findings": [
+                {"severity": "CRITICAL", "confidence": 90, "message": "shared CRITICAL"}
+            ]}
+        ))
+
+        # issue_number=200 は phase-review-200.json を読み、201 や shared の CRITICAL を無視する
+        _check_phase_review_guard(autopilot_dir=autopilot_dir, issue_labels=[], force=False, issue_number="200")
 
     def test_ac1_check_phase_review_guard_accepts_issue_number(
         self, tmp_path: Path
@@ -145,8 +202,35 @@ class TestConcurrentWriterIsolation:
         - issue 401: CRITICAL checkpoint → merge-gate は REJECT
         - issue 402: PASS checkpoint → merge-gate は通過
         """
-        raise NotImplementedError(
-            "AC #1 未実装: parallel merge-gate の per-issue isolation が未実装。"
-            "全 issue が phase-review.json を共有しており、"
-            "issue 401 の CRITICAL finding が 400/402 を誤って block する。"
-        )
+        import concurrent.futures
+        from twl.autopilot.mergegate import MergeGateError
+
+        autopilot_dir = tmp_path / ".autopilot"
+        autopilot_dir.mkdir()
+        (autopilot_dir / "checkpoints").mkdir()
+
+        self._setup_per_issue_ckpt(autopilot_dir, "400", [], "PASS")
+        self._setup_per_issue_ckpt(autopilot_dir, "401", [
+            {"severity": "CRITICAL", "confidence": 90, "message": "issue 401 CRITICAL finding"}
+        ], "FAIL")
+        self._setup_per_issue_ckpt(autopilot_dir, "402", [], "PASS")
+
+        results: dict[str, str] = {}
+
+        def run_gate(issue_num: str) -> str:
+            try:
+                _check_phase_review_guard(
+                    autopilot_dir=autopilot_dir, issue_labels=[], force=False, issue_number=issue_num
+                )
+                return "PASS"
+            except MergeGateError:
+                return "REJECT"
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            futs = {executor.submit(run_gate, n): n for n in ("400", "401", "402")}
+            for fut in concurrent.futures.as_completed(futs):
+                results[futs[fut]] = fut.result()
+
+        assert results["400"] == "PASS", f"issue 400 should PASS, got {results['400']}"
+        assert results["401"] == "REJECT", f"issue 401 should REJECT, got {results['401']}"
+        assert results["402"] == "PASS", f"issue 402 should PASS, got {results['402']}"

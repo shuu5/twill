@@ -114,9 +114,23 @@ class TestPerIssueCheckpointSchema:
         _check_phase_review_guard に issue_number="500" を渡すと
         checkpoints/phase-review-500.json を参照することを確認する。
         """
-        raise NotImplementedError(
-            "AC #2 未実装: _check_phase_review_guard が issue_number 引数を受け付けず、"
-            "per-issue checkpoint ファイル (phase-review-{ISSUE_NUMBER}.json) を解決できない"
+        import json
+
+        # per-issue checkpoint のみを作成（共有ファイルなし）
+        per_issue_ckpt = autopilot_dir / "checkpoints" / "phase-review-500.json"
+        per_issue_ckpt.write_text(
+            json.dumps(
+                {"step": "phase-review", "status": "PASS", "findings": [], "issue_number": "500"},
+                ensure_ascii=False,
+            )
+        )
+
+        # issue_number="500" を渡すと per-issue ファイルを読んで PASS する
+        _check_phase_review_guard(
+            autopilot_dir=autopilot_dir,
+            issue_labels=[],
+            force=False,
+            issue_number="500",
         )
 
     def test_ac2_guard_reads_per_issue_checkpoint_when_issue_number_given(
@@ -166,12 +180,12 @@ class TestPerIssueCheckpointSchema:
             )
         )
 
-        # AC2 実装後: issue_number="500" を渡すと phase-review-500.json を読み
-        # 共有 checkpoint の CRITICAL finding を無視して通過するはず。
-        # 現在 (RED): issue_number 引数がないため fail する。
-        raise NotImplementedError(
-            "AC #2 未実装: _check_phase_review_guard(issue_number='500') が "
-            "phase-review-500.json を読まず、共有 phase-review.json の CRITICAL finding で block される"
+        # issue_number="500" を渡すと per-issue checkpoint を読み、共有 CRITICAL を無視して PASS する
+        _check_phase_review_guard(
+            autopilot_dir=autopilot_dir,
+            issue_labels=[],
+            force=False,
+            issue_number="500",
         )
 
     def test_ac2_checkpoint_writer_accepts_issue_number_argument(
@@ -198,9 +212,18 @@ class TestPerIssueCheckpointSchema:
 
         スキーマ検証: phase-review-{N}.json は issue_number フィールドを持つ。
         """
-        raise NotImplementedError(
-            "AC #2 未実装: CheckpointManager.write が issue_number を受け付けないため "
-            "checkpoint JSON に issue_number フィールドが含まれない"
+        import json
+        from twl.autopilot.checkpoint import CheckpointManager
+
+        ckpt_dir = tmp_path / ".autopilot" / "checkpoints"
+        mgr = CheckpointManager(checkpoint_dir=ckpt_dir)
+        mgr.write(step="phase-review", status="PASS", findings=[], issue_number="600")
+
+        ckpt_file = ckpt_dir / "phase-review-600.json"
+        assert ckpt_file.exists(), "phase-review-600.json が生成されていない"
+        data = json.loads(ckpt_file.read_text())
+        assert data.get("issue_number") == "600", (
+            f"checkpoint JSON に issue_number フィールドが含まれない: {data}"
         )
 
     def test_ac2_issue_number_from_environment_variable(

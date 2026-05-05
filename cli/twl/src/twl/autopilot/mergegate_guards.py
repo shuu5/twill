@@ -7,6 +7,7 @@ These functions have no dependency on MergeGate instance attributes.
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -122,14 +123,28 @@ def _check_phase_review_guard(
     autopilot_dir: Path,
     issue_labels: list[str],
     force: bool,
+    issue_number: str | None = None,
 ) -> None:
     """Reject merge when phase-review checkpoint is absent or has CRITICAL findings.
+
+    Checkpoint isolation: when issue_number is provided (or ISSUE_NUMBER env var is set),
+    reads from checkpoints/phase-review-{issue_number}.json to prevent cross-Worker
+    contamination in parallel autopilot sessions (Issue #1399).
+    Falls back to checkpoints/phase-review.json when the per-issue file is absent.
 
     - If --force is set and checkpoint is absent, emit a WARNING but continue.
     - If checkpoint is absent, raise MergeGateError.
     - If checkpoint has CRITICAL findings with confidence >= 80, raise MergeGateError.
     """
-    checkpoint_file = autopilot_dir / "checkpoints" / "phase-review.json"
+    resolved_issue = issue_number or os.environ.get("ISSUE_NUMBER") or None
+
+    if resolved_issue:
+        per_issue_file = autopilot_dir / "checkpoints" / f"phase-review-{resolved_issue}.json"
+        checkpoint_file = per_issue_file if per_issue_file.exists() else (
+            autopilot_dir / "checkpoints" / "phase-review.json"
+        )
+    else:
+        checkpoint_file = autopilot_dir / "checkpoints" / "phase-review.json"
 
     if not checkpoint_file.exists():
         if force:

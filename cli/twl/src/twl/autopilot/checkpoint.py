@@ -23,6 +23,7 @@ from typing import Any
 _VALID_STEP_RE = re.compile(r"^[a-z0-9-]+$")
 _VALID_FIELD_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_.]*$")
 _VALID_STATUSES = {"PASS", "WARN", "FAIL"}
+_VALID_ISSUE_NUMBER_RE = re.compile(r"^[1-9][0-9]*$")
 
 
 def _checkpoint_dir() -> Path:
@@ -80,6 +81,7 @@ class CheckpointManager:
         step: str,
         status: str,
         findings: list[Any] | None = None,
+        issue_number: str | None = None,
     ) -> str:
         """Write checkpoint JSON and return a confirmation message.
 
@@ -87,9 +89,14 @@ class CheckpointManager:
         confidence フィルタは書き込み側（writer）の責務であり、ac-verify 書き込み経路
         （ac-impl-coverage-check.sh: confidence=90、LLM delegate パス: confidence=80）が
         confidence >= 80 を保証する。fix-phase はこの invariant に依存する。
+
+        issue_number が指定された場合、{step}-{issue_number}.json に書き込み
+        並列 Worker 間の checkpoint isolation を実現する（Issue #1399）。
         """
         self._validate_step(step)
         self._validate_status(status)
+        if issue_number is not None:
+            self._validate_issue_number(issue_number)
         findings_list: list[Any] = findings if findings is not None else []
 
         critical_count = sum(
@@ -108,7 +115,11 @@ class CheckpointManager:
             "findings": findings_list,
             "timestamp": _now_utc(),
         }
-        file = self.checkpoint_dir / f"{step}.json"
+        if issue_number is not None:
+            data["issue_number"] = issue_number
+
+        filename = f"{step}-{issue_number}.json" if issue_number else f"{step}.json"
+        file = self.checkpoint_dir / filename
 
         # audit 保全: 上書き前に既存ファイルをタイムスタンプ付きでコピー
         try:
@@ -187,20 +198,27 @@ class CheckpointManager:
                 f"不正なフィールド名: {field}（英数字、アンダースコア、ドットのみ許可）"
             )
 
+    def _validate_issue_number(self, issue_number: str) -> None:
+        if not _VALID_ISSUE_NUMBER_RE.match(issue_number):
+            raise CheckpointArgError(
+                f"--issue-number に不正な値: {issue_number!r}（正の整数のみ許可）"
+            )
+
 
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
 def _parse_write_args(argv: list[str]) -> dict[str, Any]:
-    args: dict[str, Any] = {"step": None, "status": None, "findings": None, "autopilot_dir": None}
+    args: dict[str, Any] = {"step": None, "status": None, "findings": None, "autopilot_dir": None, "issue_number": None}
     i = 0
     while i < len(argv):
         a = argv[i]
         if a in ("-h", "--help"):
             print(
                 "Usage: python3 -m twl.autopilot.checkpoint write "
-                "--step <step> --status <PASS|WARN|FAIL> [--findings <json_array>] [--autopilot-dir <dir>]"
+                "--step <step> --status <PASS|WARN|FAIL> [--findings <json_array>] "
+                "[--issue-number <N>] [--autopilot-dir <dir>]"
             )
             sys.exit(0)
         elif a == "--step" and i + 1 < len(argv):
@@ -209,6 +227,8 @@ def _parse_write_args(argv: list[str]) -> dict[str, Any]:
             args["status"] = argv[i + 1]; i += 2
         elif a == "--findings" and i + 1 < len(argv):
             args["findings"] = argv[i + 1]; i += 2
+        elif a == "--issue-number" and i + 1 < len(argv):
+            args["issue_number"] = argv[i + 1]; i += 2
         elif a == "--autopilot-dir" and i + 1 < len(argv):
             args["autopilot_dir"] = argv[i + 1]; i += 2
         else:
@@ -277,6 +297,7 @@ def main(argv: list[str] | None = None) -> int:
                 step=parsed["step"],
                 status=parsed["status"],
                 findings=findings,
+                issue_number=parsed.get("issue_number"),
             )
             print(msg)
             return 0

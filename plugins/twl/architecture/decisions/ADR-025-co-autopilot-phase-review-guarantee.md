@@ -66,6 +66,8 @@ chain 正規 flow における phase-review の必須保証を以下 5 レイヤ
 
 **Known Gap 3 (追跡中)**: `SPECIALIST_AUDIT_MODE=warn` の長期化 — `specialist-audit.sh` のデフォルトが `warn` のため、audit FAIL を exit 0 で素通りしている。これは **phase-review step の実行保証（Layer 3: merge-gate-check-phase-review.sh）とは別レイヤー** の問題（audit result の severity 制御）であり、Consequences 「phase-review をスキップした shortcut は認めない」は phase-review step の実行を指し、audit result の評価方法は対象外。修正 A/G (#971) が main に入った後、false-positive 0 件を 2 週間確認してから warn → fail 昇格（修正 E）を別 Issue で実施予定。
 
+**Known Gap 4 (解消済み, #1399)**: checkpoint isolation 欠如 — `phase-review.json` が autopilot session 全体で 1 ファイル共有のため、並列 Worker 実行時に last-writer-wins で stale な finding を merge-gate が読む race condition（Wave 40 evidence: 3 PR が false-block）。解消策: per-issue checkpoint ファイル（`checkpoints/phase-review-{ISSUE_NUMBER}.json`）を導入し、`_check_phase_review_guard` が `issue_number` 引数または `ISSUE_NUMBER` 環境変数から checkpoint ファイルを動的解決する（checkpoint isolation）。Layer 3（merge-gate-check-phase-review.sh / `_check_phase_review_guard`）の拡張として実装。既存の `phase-review.json` へのフォールバックにより後方互換性を維持。
+
 ## References
 
 - #940 (本 ADR 起票 Issue)

@@ -434,15 +434,23 @@ class TestNewSchemaRegression:
     def test_ac5_new_schema_issue_number_field_required_in_per_issue_checkpoint(
         self, tmp_path: Path
     ) -> None:
-        """新スキーマ: per-issue checkpoint は issue_number フィールドを必須とする。
+        """新スキーマ: per-issue checkpoint は issue_number フィールドを含むこと。
 
-        AC2 実装後の新スキーマでは phase-review-{N}.json に issue_number フィールドが
-        必須となる。このテストはスキーマ検証ロジックの存在を確認する。
+        AC2 実装後の新スキーマでは CheckpointManager.write(issue_number=N) が
+        phase-review-{N}.json を生成し、JSON に issue_number フィールドが含まれる。
         """
-        raise NotImplementedError(
-            "AC #5 新スキーマ regression: per-issue checkpoint スキーマバリデーション未実装。"
-            "AC2 実装後に issue_number フィールド必須チェックを追加する必要がある。"
-        )
+        import json
+        from twl.autopilot.checkpoint import CheckpointManager
+
+        ckpt_dir = tmp_path / ".autopilot" / "checkpoints"
+        mgr = CheckpointManager(checkpoint_dir=ckpt_dir)
+        mgr.write("phase-review", "PASS", findings=[], issue_number="999")
+
+        ckpt_file = ckpt_dir / "phase-review-999.json"
+        assert ckpt_file.exists(), "per-issue checkpoint ファイルが生成されていない"
+        data = json.loads(ckpt_file.read_text())
+        assert "issue_number" in data, f"issue_number フィールドが checkpoint JSON に存在しない: {data}"
+        assert data["issue_number"] == "999"
 
     def test_ac5_mergegate_guard_signature_backward_compatible(self) -> None:
         """AC5 regression: _check_phase_review_guard の既存シグネチャが維持されること。
