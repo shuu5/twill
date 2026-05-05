@@ -475,3 +475,75 @@ class TestNewSchemaRegression:
             "AC #2/#5 未実装: issue_number が _check_phase_review_guard に追加されていない。"
             "既存呼び出しとの後方互換性を保ちつつ Optional 引数として追加が必要。"
         )
+
+
+class TestIssueNumberValidation:
+    """issue_number バリデーション（負例テスト）。
+
+    _check_phase_review_guard と CheckpointManager._validate_issue_number が
+    不正な issue_number を受け付けないことを検証する。
+    Warning finding 対応: 負例テストが欠落していたため追加。
+    """
+
+    @pytest.mark.parametrize("bad_value", [
+        "0",          # 0 始まりは不正
+        "abc",        # 英字
+        "-1",         # 負数
+        "12345678",   # 8桁（上限 7桁）
+        "1.5",        # 小数
+        "1 2",        # スペース含む
+    ])
+    def test_invalid_issue_number_raises_in_guard(self, tmp_path: Path, bad_value: str) -> None:
+        """不正な issue_number を渡すと _check_phase_review_guard が MergeGateError を送出する。"""
+        from twl.autopilot.mergegate_guards import MergeGateError, _check_phase_review_guard
+
+        autopilot_dir = tmp_path / ".autopilot"
+        autopilot_dir.mkdir()
+        (autopilot_dir / "checkpoints").mkdir()
+
+        with pytest.raises(MergeGateError, match="不正な issue_number"):
+            _check_phase_review_guard(
+                autopilot_dir=autopilot_dir,
+                issue_labels=[],
+                force=False,
+                issue_number=bad_value,
+            )
+
+    @pytest.mark.parametrize("bad_value", [
+        "0",
+        "abc",
+        "-1",
+        "12345678",
+        "1.5",
+    ])
+    def test_invalid_issue_number_raises_in_checkpoint_manager(self, tmp_path: Path, bad_value: str) -> None:
+        """不正な issue_number を渡すと CheckpointManager.write が CheckpointArgError を送出する。"""
+        from twl.autopilot.checkpoint import CheckpointArgError, CheckpointManager
+
+        mgr = CheckpointManager(checkpoint_dir=tmp_path)
+        with pytest.raises(CheckpointArgError, match="不正な値"):
+            mgr.write("phase-review", "PASS", findings=[], issue_number=bad_value)
+
+    @pytest.mark.parametrize("good_value", [
+        "1",
+        "42",
+        "1399",
+        "9999999",  # 7桁（上限）
+    ])
+    def test_valid_issue_number_accepted(self, tmp_path: Path, good_value: str) -> None:
+        """正常な issue_number は _check_phase_review_guard で受け付けられる（checkpoint 不在は別 error）。"""
+        from twl.autopilot.mergegate_guards import MergeGateError, _check_phase_review_guard
+
+        autopilot_dir = tmp_path / ".autopilot"
+        autopilot_dir.mkdir()
+        (autopilot_dir / "checkpoints").mkdir()
+        (autopilot_dir / "checkpoints" / f"phase-review-{good_value}.json").write_text(
+            '{"step": "phase-review", "status": "PASS", "findings": []}'
+        )
+
+        _check_phase_review_guard(
+            autopilot_dir=autopilot_dir,
+            issue_labels=[],
+            force=False,
+            issue_number=good_value,
+        )
