@@ -3,8 +3,70 @@ import json
 import os
 import signal
 import subprocess
+import sys
 import time
 from pathlib import Path
+
+_ALLOWED_COMMANDS: frozenset[str] = frozenset({"uv", "uvx"})
+
+# Static system-wide prefixes. ~/.local/bin is added at call time via _get_allowed_prefixes()
+# to avoid evaluating Path.home() at module load (CI/container HOME isolation).
+_ALLOWED_PREFIXES: frozenset[Path] = frozenset({
+    Path("/usr/bin"),
+    Path("/usr/local/bin"),
+})
+
+
+def _get_allowed_prefixes() -> frozenset[Path]:
+    """Return allowed absolute path prefixes, including user-local bin (evaluated at call time)."""
+    return _ALLOWED_PREFIXES | {Path.home() / ".local" / "bin"}
+
+
+def _validate_command(command: str) -> None:
+    """Validate command against allowlist. Raises ValueError if rejected."""
+    if os.path.isabs(command):
+        allowed_prefixes = _get_allowed_prefixes()
+        # resolve() follows symlinks to prevent symlink/traversal bypass.
+        # On OSError (e.g. cyclic symlink), fail closed rather than fall back to unresolved path.
+        try:
+            cmd_path = Path(command).resolve()
+        except OSError as e:
+            print(
+                f"ERROR: mcp command rejected — path resolution failed.\n"
+                f"  command: {command}\n"
+                f"  reason: {e}",
+                file=sys.stderr,
+            )
+            raise ValueError(f"command '{command}' path resolution failed: {e}") from e
+        resolved_prefixes = frozenset(p.resolve() for p in allowed_prefixes)
+        for prefix in resolved_prefixes:
+            try:
+                cmd_path.relative_to(prefix)
+                return
+            except ValueError:
+                continue
+        print(
+            f"ERROR: mcp command rejected — absolute path not in allowed prefixes.\n"
+            f"  command: {command}\n"
+            f"  allowed_prefixes: {sorted(str(p) for p in allowed_prefixes)}\n"
+            f"  reason: absolute path outside known binary directories",
+            file=sys.stderr,
+        )
+        raise ValueError(
+            f"command '{command}' not in allowed prefixes: "
+            f"{sorted(str(p) for p in allowed_prefixes)}"
+        )
+    if command not in _ALLOWED_COMMANDS:
+        print(
+            f"ERROR: mcp command rejected — not in allowlist.\n"
+            f"  command: {command}\n"
+            f"  allowed_commands: {sorted(_ALLOWED_COMMANDS)}\n"
+            f"  reason: command not in allowlist",
+            file=sys.stderr,
+        )
+        raise ValueError(
+            f"command '{command}' not in allowlist: {sorted(_ALLOWED_COMMANDS)}"
+        )
 
 
 def _find_mcp_server_pids() -> "list[int]":
@@ -46,9 +108,10 @@ def _find_mcp_server_cmd() -> "list[str] | None":
         command = twl_server.get("command", "")
         if not command:
             return None
-        return [command] + twl_server.get("args", [])
     except Exception:
         return None
+    _validate_command(command)
+    return [command] + twl_server.get("args", [])
 
 
 def _wait_for_pids_exit(pids: "list[int]", timeout: int = 5) -> bool:
