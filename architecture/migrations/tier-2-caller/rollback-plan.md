@@ -41,6 +41,22 @@ bash plugins/twl/scripts/mcp-shadow-compare.sh --log-file .autopilot/mailbox/sha
 export TWILL_MSG_BACKEND=tmux
 ```
 
+## Phase 4 Rollback（#1050 — cleanup 後の緊急復旧）
+
+Phase 4 では `cmd_inject_file` 削除・`#1197` 再評価が行われる。
+cleanup 後に問題が発覚した場合:
+
+```bash
+# git revert で cleanup 変更を戻す
+git revert <phase-4-commit-sha>
+# または
+export TWILL_MSG_BACKEND=tmux
+```
+
+Phase 4 cleanup 前の commit を `git revert` することで `cmd_inject_file` を復元可能。
+`session-comm-backend-tmux.sh` は Phase 4 後も whitelist として保持されるため、
+tmux fallback は常に利用可能。
+
 ## 影響範囲
 
 - `session_msg send` API は `TWILL_MSG_BACKEND` env var で backend を切替

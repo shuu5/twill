@@ -35,7 +35,9 @@ _find_twill_root() {
     return 1
 }
 
-_TWILL_ROOT="${_TWILL_ROOT:-$(_find_twill_root "$_BACKEND_MCP_SCRIPT_DIR" 2>/dev/null || echo "")}"
+# Auto-detect takes precedence over env var to prevent path traversal via _TWILL_ROOT override.
+_DETECTED_ROOT="$(_find_twill_root "$_BACKEND_MCP_SCRIPT_DIR" 2>/dev/null || echo "")"
+_TWILL_ROOT="${_DETECTED_ROOT:-${_TWILL_ROOT:-}}"
 
 # _backend_mcp_python_send TARGET CONTENT TYPE
 # Calls twl_send_msg_handler via Python (uses flock-based jsonl atomic append).
@@ -128,8 +130,16 @@ _backend_shadow_send() {
             || _mcp_result="error"
         local _ts
         _ts=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "")
-        printf '{"ts":"%s","target":"%s","tmux_exit":%d,"mcp_result":"%s","fallback":true}\n' \
-            "$_ts" "$target" "$_tmux_exit" "$_mcp_result" >> "$_shadow_log" 2>/dev/null || true
+        # Use jq for proper JSON escaping of target field (security: prevent JSON injection)
+        if command -v jq &>/dev/null; then
+            jq -n --arg ts "$_ts" --arg target "$target" \
+                --argjson tmux_exit "$_tmux_exit" --arg mcp_result "$_mcp_result" \
+                '{"ts":$ts,"target":$target,"tmux_exit":$tmux_exit,"mcp_result":$mcp_result,"fallback":true}' \
+                >> "$_shadow_log" 2>/dev/null || true
+        else
+            printf '{"ts":"%s","target":"%s","tmux_exit":%d,"mcp_result":"%s","fallback":true}\n' \
+                "$_ts" "$target" "$_tmux_exit" "$_mcp_result" >> "$_shadow_log" 2>/dev/null || true
+        fi
     } &
 
     return $_tmux_exit
