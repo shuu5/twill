@@ -41,7 +41,17 @@ scripts:
   session-comm:
     type: script
     path: scripts/session-comm.sh
-    description: "セッション間通信プリミティブ（capture/inject/wait-ready）"
+    description: "セッション間通信プリミティブ（capture/inject/wait-ready/session_msg Strategy dispatch）"
+
+  session-comm-backend-tmux:
+    type: script
+    path: scripts/session-comm-backend-tmux.sh
+    description: "session_msg tmux backend — _backend_tmux_send（ADR-029 Decision 5 Phase 1）"
+
+  session-comm-backend-mcp:
+    type: script
+    path: scripts/session-comm-backend-mcp.sh
+    description: "session_msg MCP mailbox backend — _backend_mcp_send / _backend_shadow_send（ADR-029 Decision 5 Phase 2+）"
 
   cld:
     type: script
@@ -158,3 +168,8 @@ tests:
     type: test
     path: tests/test_ac1197_mock_intercept.bats
     description: "Issue #1197: run_observe_once dead mock 削除の regression guard（AC1-AC4）"
+
+  issue-1032-session-comm-strategy-test:
+    type: test
+    path: tests/issue-1032-session-comm-strategy.bats
+    description: "Issue #1032: session-comm Strategy pattern bats tests（AC1-AC9）"

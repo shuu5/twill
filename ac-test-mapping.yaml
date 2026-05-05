@@ -736,3 +736,106 @@ issue_1351:
       note: "実装前から PASS。実装後の回帰防止テスト"
       impl_files:
         - "plugins/twl/scripts/autopilot-cleanup.sh"
+
+# --- Issue #1032 ---
+issue_1032:
+  issue: 1032
+  framework: bats
+  test_file: "plugins/session/tests/issue-1032-session-comm-strategy.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "production caller 全件が session_msg API 経由に migrate 済 (grep -rn \"tmux send-keys\" plugins/{twl,session}/{scripts,skills}/ --exclude-dir=tests で whitelist 記載のみ)"
+      test_names:
+        - "ac1: session-comm.sh に tmux send-keys の直呼び出しが存在しない（whitelist: backend-tmux.sh のみ）"
+        - "ac1: session-comm-backend-tmux.sh が存在する（whitelist として）"
+      status: RED
+      red_mechanism: "session-comm.sh L304/L310/L433 に tmux send-keys が直接存在し、backend-tmux.sh も未存在"
+      impl_files:
+        - "plugins/session/scripts/session-comm.sh"
+        - "plugins/session/scripts/session-comm-backend-tmux.sh"
+
+    - ac_index: 2
+      ac_text: "bidirectional 通信が並列 100 msg で損失ゼロ (mailbox jsonl atomic append 検証、stress test)"
+      test_names:
+        - "ac2: session-comm.sh に session_msg 関数が定義されている"
+        - "ac2: session_msg が mailbox jsonl への atomic append をサポートしている（構造確認）"
+      status: RED
+      red_mechanism: "session-comm.sh に session_msg 関数が未定義、session-comm-backend-mcp.sh も未存在"
+      impl_files:
+        - "plugins/session/scripts/session-comm.sh"
+        - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+    - ac_index: 3
+      ac_text: "bats integration test PASS、CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=0 でも動作 (AT 非依存性)"
+      test_name: "ac3: CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=0 で session_msg が関数として呼び出し可能"
+      status: RED
+      red_mechanism: "session_msg 関数が未実装のため source 後に declare -f が失敗する"
+      impl_files:
+        - "plugins/session/scripts/session-comm.sh"
+        - "plugins/session/scripts/session-comm-backend-tmux.sh"
+        - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+    - ac_index: 4
+      ac_text: "backend 切替 (TWILL_MSG_BACKEND={tmux,mcp}) で同 test PASS"
+      test_names:
+        - "ac4: TWILL_MSG_BACKEND=tmux のとき session-comm-backend-tmux.sh が dispatch される（構造確認）"
+        - "ac4: TWILL_MSG_BACKEND=mcp のとき session-comm-backend-mcp.sh が dispatch される（構造確認）"
+        - "ac4: session-comm.sh の TWILL_MSG_BACKEND dispatch が tmux と mcp の両方を処理する"
+      status: RED
+      red_mechanism: "TWILL_MSG_BACKEND の参照が session-comm.sh に存在しない"
+      impl_files:
+        - "plugins/session/scripts/session-comm.sh"
+        - "plugins/session/scripts/session-comm-backend-tmux.sh"
+        - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+    - ac_index: 5
+      ac_text: "shadow mode で mismatch 0 件を 1 週間維持 (mcp-shadow-compare.sh exit 0 を 7 日連続、判定基準: 出力に mismatch_count: 0 が含まれること)"
+      test_names:
+        - "ac5: mcp-shadow-compare.sh が存在する"
+        - "ac5: mcp-shadow-compare.sh が mismatch_count: 0 を出力する（判定基準形式）"
+        - "ac5: session-comm-backend-mcp.sh に mcp_with_fallback backend が実装されている（構造確認）"
+      status: RED
+      red_mechanism: "mcp-shadow-compare.sh は存在するが mismatch_count: 0 形式の出力なし、mcp_with_fallback backend も未実装"
+      impl_files:
+        - "plugins/session/scripts/session-comm-backend-mcp.sh"
+        - "plugins/twl/scripts/mcp-shadow-compare.sh"
+
+    - ac_index: 6
+      ac_text: "Phase 3 完遂時に #1033 close、Phase 3 完遂 + Tier B (#1032) merge AND で #1034 epic close。Phase 4 完了時に #1050 close"
+      test_name: "ac6: session_msg が mcp backend で動作する（Phase 3 移行前提の構造確認）"
+      status: RED
+      red_mechanism: "session_msg 未定義のため TWILL_MSG_BACKEND=mcp で source 後の declare -f が失敗する"
+      impl_files:
+        - "plugins/session/scripts/session-comm.sh"
+
+    - ac_index: 7
+      ac_text: "補助ドキュメント architecture/migrations/tier-2-caller/{migration-strategy.md, rollback-plan.md} の存在確認と本 Issue / ADR-029 整合性確認"
+      test_names:
+        - "ac7: architecture/migrations/tier-2-caller/migration-strategy.md が存在する"
+        - "ac7: architecture/migrations/tier-2-caller/rollback-plan.md が存在する"
+        - "ac7: migration-strategy.md が Issue #1032 への言及を含む（整合性確認）"
+      status: RED
+      red_mechanism: "architecture/migrations/tier-2-caller/ ディレクトリが存在しない"
+      impl_files:
+        - "architecture/migrations/tier-2-caller/migration-strategy.md"
+        - "architecture/migrations/tier-2-caller/rollback-plan.md"
+
+    - ac_index: 8
+      ac_text: "mcp__twl__twl_send_msg の try/except ImportError gate と FastMCP 接続失敗時の fallback パス (session-comm-backend-tmux.sh) が Phase 3 後も保持される"
+      test_names:
+        - "ac8: tools_comm.py に try/except ImportError gate が存在する"
+        - "ac8: session-comm-backend-tmux.sh が Phase 3 後も保持される（存在確認）"
+        - "ac8: session-comm-backend-tmux.sh が FastMCP 接続失敗時の fallback として機能する（構造確認）"
+      status: RED
+      red_mechanism: "ImportError gate は tools_comm.py に存在するが session-comm-backend-tmux.sh が未存在"
+      impl_files:
+        - "cli/twl/src/twl/mcp_server/tools_comm.py"
+        - "plugins/session/scripts/session-comm-backend-tmux.sh"
+
+    - ac_index: 9
+      ac_text: "各 Phase の PR で twl check --deps-integrity PASS (chain SSoT との非干渉、ADR-022 整合)"
+      test_name: "ac9: twl check --deps-integrity が PASS する（chain SSoT 非干渉確認）"
+      status: RED
+      red_mechanism: "新規スクリプト (backend-tmux.sh, backend-mcp.sh) が deps.yaml に未登録のため deps-integrity が fail する可能性"
+      impl_files:
+        - "plugins/session/deps.yaml"
