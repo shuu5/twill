@@ -1,0 +1,154 @@
+mappings:
+  # AC1: _find_mcp_server_cmd() が allowlist 照合し ValueError で fail-fast
+  - ac_index: 1
+    ac_text: "_find_mcp_server_cmd() が command フィールドを許可リスト（既定: uv, uvx）と照合し、不一致時は subprocess.Popen を呼び出さず ValueError（または同等の構造化例外）で fail-fast する"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC1AllowlistValidation::test_ac1_unknown_command_raises_value_error"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 1
+    ac_text: "_find_mcp_server_cmd() が command フィールドを許可リスト（既定: uv, uvx）と照合し、不一致時は subprocess.Popen を呼び出さず ValueError で fail-fast する（任意バイナリ名）"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC1AllowlistValidation::test_ac1_arbitrary_binary_raises_value_error"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 1
+    ac_text: "_find_mcp_server_cmd() の allowlist 定数（_ALLOWED_COMMANDS 等）が lifecycle モジュールに存在すること"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC1AllowlistValidation::test_ac1_allowlist_attribute_or_constant_exists"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 1
+    ac_text: "allowlist 外コマンドでは subprocess.Popen が呼ばれないこと"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC1AllowlistValidation::test_ac1_popen_not_called_on_rejected_command"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  # AC2: 絶対パスの command は既知バイナリディレクトリ prefix に限定される
+  - ac_index: 2
+    ac_text: "絶対パスで指定された command は既知のバイナリディレクトリ prefix（/usr/bin, /usr/local/bin, ~/.local/bin）に限定される — 検証関数の存在確認"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC2AbsolutePathValidation::test_ac2_known_prefix_usr_bin_allowed"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 2
+    ac_text: "絶対パスで指定された command は既知のバイナリディレクトリ prefix に限定される — /tmp/malicious は ValueError を raise する"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC2AbsolutePathValidation::test_ac2_arbitrary_absolute_path_raises_value_error"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 2
+    ac_text: "既知プレフィックスリスト（_ALLOWED_PREFIXES 等）が lifecycle モジュールに存在すること"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC2AbsolutePathValidation::test_ac2_home_local_bin_prefix_is_known"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 2
+    ac_text: "~/.local/bin/uv は既知プレフィックスのため ValueError を raise しない"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC2AbsolutePathValidation::test_ac2_home_local_bin_uv_raises_no_error"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 2
+    ac_text: "/etc/passwd など明らかに不正な絶対パスは ValueError を raise する"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC2AbsolutePathValidation::test_ac2_etc_passwd_absolute_path_raises"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  # AC3: 検証失敗時は構造化ログ（command/allowlist/reason）を出力する
+  - ac_index: 3
+    ac_text: "検証失敗時は構造化ログ（command 値・許可リスト・拒否理由）を出力し、原因が特定可能である — ValueError メッセージに command 値が含まれる"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC3StructuredLogging::test_ac3_value_error_message_contains_command"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 3
+    ac_text: "検証失敗時の ValueError メッセージに allowlist または拒否理由が含まれる"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC3StructuredLogging::test_ac3_value_error_message_contains_allowlist_or_reason"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 3
+    ac_text: "検証失敗時に stdout または stderr に構造化情報が出力される"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC3StructuredLogging::test_ac3_structured_log_output_on_rejection"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  # AC4: 既存正常系（uv/uvx コマンド起動）は影響を受けず PASS する
+  - ac_index: 4
+    ac_text: "既存の twl mcp restart 正常系（uv run 系コマンド起動）は影響を受けず PASS する — allowlist に uv が含まれる"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC4LegitimateCommandsUnaffected::test_ac4_uv_command_is_in_allowlist"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 4
+    ac_text: "既存の twl mcp restart 正常系（uv run 系コマンド起動）は影響を受けず PASS する — allowlist に uvx が含まれる"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC4LegitimateCommandsUnaffected::test_ac4_uvx_command_is_in_allowlist"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 4
+    ac_text: "command = uv では ValueError が raise されないこと（allowlist 実装後も正常動作を保証）"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC4LegitimateCommandsUnaffected::test_ac4_uv_command_does_not_raise"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  # AC5: 単体テストカバレッジ（許可/拒否/絶対パス許可/拒否）
+  - ac_index: 5
+    ac_text: "単体テストで「許可ケース（uv/uvx）」「拒否ケース（任意バイナリ名）」「絶対パス許可ケース」「絶対パス拒否ケース」をカバーする — allowlist が uv/uvx 両方をカバー"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC5UnitTestCoverage::test_ac5_allowlist_covers_uv_and_uvx"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 5
+    ac_text: "allowlist が危険なコマンド（bash/sh/python 等）を含まない厳格なリストであること"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC5UnitTestCoverage::test_ac5_allowlist_is_restrictive"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  # AC6: cli.py の mcp restart ディスパッチが ValueError を捕捉して sys.exit(1) する
+  - ac_index: 6
+    ac_text: "cli/twl/src/twl/cli.py の mcp restart ディスパッチが ValueError を捕捉し、エラーメッセージを出力して sys.exit(1) する — sys.exit(1) を確認"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC6CliValueErrorHandling::test_ac6_mcp_restart_catches_value_error_exits_1"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+
+  - ac_index: 6
+    ac_text: "cli/twl/src/twl/cli.py の mcp restart ディスパッチが ValueError 発生時にエラーメッセージを出力する"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC6CliValueErrorHandling::test_ac6_error_message_printed_on_value_error"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+
+  - ac_index: 6
+    ac_text: "cli.py の mcp restart ブロックに ValueError 捕捉が実装されていること（ソースコード検証）"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC6CliValueErrorHandling::test_ac6_cli_dispatch_has_try_except_for_value_error"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+
+  - ac_index: 6
+    ac_text: "allowlist 実装後に subprocess として twl mcp restart が不正コマンドで exit 1 を返す（前提: allowlist 存在確認）"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestAC6CliValueErrorHandling::test_ac6_cli_mcp_restart_exits_1_on_value_error_subprocess"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
