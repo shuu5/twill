@@ -1,0 +1,58 @@
+mappings:
+  - ac_index: 1
+    ac_text: >-
+      cli/twl/tests/test_ac8_run_240_trials.py 内に loaded_ac8_module fixture が追加され、
+      AC8_RUN_SCRIPT が存在しない場合 pytest.skip で skip、存在する場合は importlib でロードした
+      module オブジェクトを返す
+    test_file: "cli/twl/tests/test_ac1402_ac8_refactor.py"
+    test_names:
+      - "TestAC1LoadedFixtureExists::test_ac1_loaded_ac8_module_fixture_is_defined"
+      - "TestAC1LoadedFixtureExists::test_ac1_fixture_has_pytest_skip_for_missing_script"
+    impl_files:
+      - "cli/twl/tests/test_ac8_run_240_trials.py"
+
+  - ac_index: 2
+    ac_text: >-
+      TestAC1SkeletonImplemented の 4 hasattr テスト（main / run_trial / classify_failure /
+      goldfile_match）が pytest.mark.parametrize で 1 メソッドに統合されている
+    test_file: "cli/twl/tests/test_ac1402_ac8_refactor.py"
+    test_names:
+      - "TestAC2HasattrParametrizeIntegration::test_ac2_old_separate_methods_are_removed"
+      - "TestAC2HasattrParametrizeIntegration::test_ac2_parametrize_method_exists_in_skeleton_class"
+      - "TestAC2HasattrParametrizeIntegration::test_ac2_parametrize_covers_all_four_functions"
+    impl_files:
+      - "cli/twl/tests/test_ac8_run_240_trials.py"
+
+  - ac_index: 3
+    ac_text: >-
+      TestAC2CldMcpPoC::test_ac2_run_trial_with_mcp_route_succeeds が loaded_ac8_module
+      fixture を利用する形に書き換えられ、メソッド body 内に
+      importlib.util.spec_from_file_location の直接呼び出しが含まれない
+    test_file: "cli/twl/tests/test_ac1402_ac8_refactor.py"
+    test_names:
+      - "TestAC3NoDirectImportlibInMcpTest::test_ac3_mcp_test_method_has_no_direct_importlib_call"
+      - "TestAC3NoDirectImportlibInMcpTest::test_ac3_mcp_test_method_uses_loaded_ac8_module_fixture"
+    impl_files:
+      - "cli/twl/tests/test_ac8_run_240_trials.py"
+
+  - ac_index: 4
+    ac_text: >-
+      grep -c "importlib.util.spec_from_file_location" cli/twl/tests/test_ac8_run_240_trials.py
+      の結果が 2 以下（fixture 内 1 + test_ac1_script_importable の subprocess 文字列内 1）
+    test_file: "cli/twl/tests/test_ac1402_ac8_refactor.py"
+    test_names:
+      - "TestAC4ImportlibOccurrenceCount::test_ac4_importlib_spec_occurrence_count_is_at_most_2"
+    impl_files:
+      - "cli/twl/tests/test_ac8_run_240_trials.py"
+
+  - ac_index: 5
+    ac_text: >-
+      pytest cli/twl/tests/test_ac8_run_240_trials.py -v --collect-only のテスト ID 一覧と、
+      pytest cli/twl/tests/test_ac8_run_240_trials.py -v の skip/pass/fail 件数の合計が
+      リファクタ前後で等価（parametrize 化により ID は変化するが、実行件数の総和は同等）
+    test_file: "cli/twl/tests/test_ac1402_ac8_refactor.py"
+    test_names:
+      - "TestAC5ParametrizeTestIds::test_ac5_collected_ids_include_parametrize_format"
+      - "TestAC5ParametrizeTestIds::test_ac5_test_execution_count_preserved"
+    impl_files:
+      - "cli/twl/tests/test_ac8_run_240_trials.py"
