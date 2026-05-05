@@ -78,21 +78,6 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == 'refine':
         sys.exit(handle_refine(sys.argv[2:]))
 
-    # mcp サブコマンド（MCP server lifecycle 管理）
-    if len(sys.argv) >= 2 and sys.argv[1] == 'mcp':
-        if len(sys.argv) >= 3 and sys.argv[2] == 'restart':
-            from twl.mcp_server.lifecycle import restart_mcp_server
-            try:
-                sys.exit(restart_mcp_server())
-            except ValueError as e:
-                print(f"Error: mcp restart failed — {e}", file=sys.stderr)
-                sys.exit(1)
-        else:
-            subcmd = sys.argv[2] if len(sys.argv) >= 3 else ''
-            print(f"Error: unknown mcp subcommand '{subcmd}'", file=sys.stderr)
-            print("Usage: twl mcp restart", file=sys.stderr)
-            sys.exit(1)
-
     # chain サブコマンドの前処理（sys.argv を先に検査）
     if len(sys.argv) >= 2 and sys.argv[1] == 'chain':
         if len(sys.argv) >= 3 and sys.argv[2] == 'generate':
@@ -148,7 +133,21 @@ def main():
     parser.add_argument('--sync-docs', metavar='TARGET_DIR', help='Sync docs/ref-*.md to target directory with frontmatter from deps.yaml')
     parser.add_argument('--format', choices=['json'], help='Output format (default: text)')
 
+    # mcp subparser（argparse 化; 他サブコマンドは if-chain で早期 exit するハイブリッド構造）
+    subparsers = parser.add_subparsers(dest='subcommand')
+    mcp_parser = subparsers.add_parser('mcp', help='MCP server lifecycle 管理')
+    mcp_subparsers = mcp_parser.add_subparsers(dest='mcp_subcommand', required=True)
+    mcp_subparsers.add_parser('restart', help='Restart MCP server')
+
     args = parser.parse_args()
+
+    if args.subcommand == 'mcp':
+        if args.mcp_subcommand == 'restart':
+            from twl.mcp_server.lifecycle import restart_mcp_server
+            sys.exit(restart_mcp_server())
+        else:
+            mcp_parser.print_help(sys.stderr)
+            sys.exit(1)
 
     if args.rules:
         print_rules()
