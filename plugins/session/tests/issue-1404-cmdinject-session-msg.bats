@@ -88,8 +88,9 @@ _extract_cmd_inject_body() {
 # ===========================================================================
 
 @test "ac4: TWILL_MSG_BACKEND=mcp で cmd_inject が mcp backend に dispatch される" {
-    # mock session-state.sh: always input-waiting
     mkdir -p "$SANDBOX/bin"
+
+    # mock session-state.sh: always input-waiting
     cat > "$SANDBOX/bin/session-state.sh" <<'EOF'
 #!/usr/bin/env bash
 echo "input-waiting"
@@ -97,13 +98,12 @@ exit 0
 EOF
     chmod +x "$SANDBOX/bin/session-state.sh"
 
-    # mock tmux: target 解決用（display-message で pane ID を返す）
+    # mock tmux: list-windows -a -F で resolve_target が期待する形式を返す
     cat > "$SANDBOX/bin/tmux" <<'EOF'
 #!/usr/bin/env bash
 case "${1:-}" in
-    display-message) echo "mock-pane" ;;
-    list-windows)    echo "main" ;;
-    has-session)     exit 0 ;;
+    list-windows) echo "testsession:0 main" ;;
+    has-session)  exit 0 ;;
     send-keys)
         echo "FAIL: tmux send-keys was called directly (should go through session_msg → mcp backend)" >&2
         exit 1
@@ -116,21 +116,17 @@ EOF
     # mock session-comm-backend-mcp.sh: call を記録して成功
     local backend_mcp="$PLUGIN_ROOT/scripts/session-comm-backend-mcp.sh"
     local mock_mcp="$SANDBOX/mock-mcp-called"
-    local orig_mcp=""
-    if [[ -f "$backend_mcp" ]]; then
-        orig_mcp=$(cat "$backend_mcp")
-    fi
+    local orig_mcp_content=""
+    [[ -f "$backend_mcp" ]] && orig_mcp_content=$(cat "$backend_mcp")
 
-    # 一時的に backend-mcp.sh を差し替え（teardown で復元）
     cat > "$backend_mcp" <<EOF
 #!/usr/bin/env bash
-# mock: mcp backend stub
 _backend_mcp_send() {
-    echo "mcp-backend-called" > "$mock_mcp"
+    echo "mcp-backend-called" > "${mock_mcp}"
     return 0
 }
 _backend_shadow_send() {
-    echo "shadow-backend-called" > "$mock_mcp"
+    echo "shadow-backend-called" > "${mock_mcp}"
     return 0
 }
 EOF
@@ -141,9 +137,9 @@ EOF
     TWILL_MSG_BACKEND=mcp \
     bash "$SCRIPT" inject "main" "hello" --force 2>/dev/null || exit_code=$?
 
-    # 元の backend-mcp.sh を復元
-    if [[ -n "$orig_mcp" ]]; then
-        echo "$orig_mcp" > "$backend_mcp"
+    # backend-mcp.sh を復元
+    if [[ -n "$orig_mcp_content" ]]; then
+        echo "$orig_mcp_content" > "$backend_mcp"
     else
         rm -f "$backend_mcp"
     fi
@@ -175,15 +171,14 @@ exit 0
 EOF
     chmod +x "$SANDBOX/bin/session-state.sh"
 
-    # mock tmux: send-keys の呼び出しを記録
+    # mock tmux: list-windows -a -F で resolve_target が期待する形式 + send-keys 記録
     cat > "$SANDBOX/bin/tmux" <<EOF
 #!/usr/bin/env bash
 case "\${1:-}" in
-    display-message) echo "mock-pane" ;;
-    list-windows)    echo "main" ;;
-    has-session)     exit 0 ;;
+    list-windows) echo "testsession:0 main" ;;
+    has-session)  exit 0 ;;
     send-keys)
-        echo "\$@" > "$sent_file"
+        echo "\$@" > "${sent_file}"
         exit 0
         ;;
     *) exit 0 ;;
