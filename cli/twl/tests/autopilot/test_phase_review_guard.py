@@ -385,7 +385,7 @@ class TestCheckpointIsolationDocumentation:
             / "decisions"
             / "ADR-025-co-autopilot-phase-review-guarantee.md"
         )
-        assert adr_file.exists(), f"ADR-025 ファイルが存在しない: {adr_path}"
+        assert adr_file.exists(), f"ADR-025 ファイルが存在しない: {adr_file}"
 
         content = adr_file.read_text(encoding="utf-8")
         assert "checkpoint isolation" in content.lower(), (

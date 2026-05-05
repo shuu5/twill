@@ -23,7 +23,7 @@ from typing import Any
 _VALID_STEP_RE = re.compile(r"^[a-z0-9-]+$")
 _VALID_FIELD_RE = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_.]*$")
 _VALID_STATUSES = {"PASS", "WARN", "FAIL"}
-_VALID_ISSUE_NUMBER_RE = re.compile(r"^[1-9][0-9]*$")
+_VALID_ISSUE_NUMBER_RE = re.compile(r"^[1-9][0-9]{0,6}$")
 
 
 def _checkpoint_dir() -> Path:

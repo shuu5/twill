@@ -28,6 +28,7 @@ class MergeGateError(Exception):
 # ---------------------------------------------------------------------------
 
 _ASCII_PRINTABLE = re.compile(r"[^\x20-\x7e]")
+_VALID_ISSUE_NUMBER_RE = re.compile(r"^[1-9][0-9]{0,6}$")
 
 
 # ---------------------------------------------------------------------------
@@ -137,6 +138,10 @@ def _check_phase_review_guard(
     - If checkpoint has CRITICAL findings with confidence >= 80, raise MergeGateError.
     """
     resolved_issue = issue_number or os.environ.get("ISSUE_NUMBER") or None
+    if resolved_issue is not None and not _VALID_ISSUE_NUMBER_RE.match(resolved_issue):
+        raise MergeGateError(
+            f"不正な issue_number: {resolved_issue!r}（1〜7桁の正の整数のみ許可）"
+        )
 
     if resolved_issue:
         per_issue_file = autopilot_dir / "checkpoints" / f"phase-review-{resolved_issue}.json"
