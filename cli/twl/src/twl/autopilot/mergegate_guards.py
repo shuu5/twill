@@ -7,6 +7,7 @@ These functions have no dependency on MergeGate instance attributes.
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -27,6 +28,7 @@ class MergeGateError(Exception):
 # ---------------------------------------------------------------------------
 
 _ASCII_PRINTABLE = re.compile(r"[^\x20-\x7e]")
+_VALID_ISSUE_NUMBER_RE = re.compile(r"^[1-9][0-9]{0,6}$")
 
 
 # ---------------------------------------------------------------------------
@@ -122,14 +124,32 @@ def _check_phase_review_guard(
     autopilot_dir: Path,
     issue_labels: list[str],
     force: bool,
+    issue_number: str | None = None,
 ) -> None:
     """Reject merge when phase-review checkpoint is absent or has CRITICAL findings.
+
+    Checkpoint isolation: when issue_number is provided (or ISSUE_NUMBER env var is set),
+    reads from checkpoints/phase-review-{issue_number}.json to prevent cross-Worker
+    contamination in parallel autopilot sessions (Issue #1399).
+    Falls back to checkpoints/phase-review.json when the per-issue file is absent.
 
     - If --force is set and checkpoint is absent, emit a WARNING but continue.
     - If checkpoint is absent, raise MergeGateError.
     - If checkpoint has CRITICAL findings with confidence >= 80, raise MergeGateError.
     """
-    checkpoint_file = autopilot_dir / "checkpoints" / "phase-review.json"
+    resolved_issue = issue_number or os.environ.get("ISSUE_NUMBER") or None
+    if resolved_issue is not None and not _VALID_ISSUE_NUMBER_RE.match(resolved_issue):
+        raise MergeGateError(
+            f"不正な issue_number: {resolved_issue!r}（1〜7桁の正の整数のみ許可）"
+        )
+
+    if resolved_issue:
+        per_issue_file = autopilot_dir / "checkpoints" / f"phase-review-{resolved_issue}.json"
+        checkpoint_file = per_issue_file if per_issue_file.exists() else (
+            autopilot_dir / "checkpoints" / "phase-review.json"
+        )
+    else:
+        checkpoint_file = autopilot_dir / "checkpoints" / "phase-review.json"
 
     if not checkpoint_file.exists():
         if force:

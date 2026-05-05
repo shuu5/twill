@@ -151,6 +151,7 @@ class MergeGate(MergeGateOperationsMixin):
             autopilot_dir=self.autopilot_dir,
             issue_labels=issue_labels,
             force=self.force,
+            issue_number=self.issue,
         )
 
         repo_mode = _detect_repo_mode()
