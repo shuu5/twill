@@ -335,11 +335,12 @@ MOCK
     fi
 
     # cmd_inject_file 範囲内の load-buffer error ブロックを抽出
-    # "tmux load-buffer" 行から最初の閉じ中括弧 "}" まで（error ブロック）
+    # "tmux load-buffer -b" 行から最初の閉じ中括弧 "}" まで（error ブロック）
+    # NOTE: /tmux load-buffer/ は comment 行 (L405) にもマッチするため、-b オプション付きで限定
     local load_buffer_block
     load_buffer_block=$(awk "
         NR >= $start_line && NR <= ${end_line:-99999} {
-            if (/tmux load-buffer/) { in_block=1 }
+            if (/tmux load-buffer -b/) { in_block=1 }
             if (in_block) { print }
             if (in_block && /^\s*\}/) { in_block=0 }
         }
@@ -365,35 +366,46 @@ MOCK
 
 @test "ac1[structural][RED]: paste-buffer (-p) error path 直前に inline delete-buffer コードが存在する" {
     # AC1: paste-buffer -p 分岐の失敗 exit 1 の直前に delete-buffer が inline で存在する
-    # 現在の実装では paste-buffer -p の失敗時も trap に委ねる → FAIL
 
-    # paste-buffer -p の error block を抽出（"paste-buffer -b" + "-p" 行から "exit 1" まで）
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
+
+    # cmd_inject_file スコープ内で paste-buffer -p の error block を抽出
     local paste_p_block
-    paste_p_block=$(awk '/paste-buffer.*-p/{found=1} found && /exit 1/{print; found=0; next} found{print}' "$SCRIPT" | head -20)
+    paste_p_block=$(awk "
+        NR >= $start_line && NR <= ${end_line:-99999} {
+            if (/paste-buffer.*-p.*-t/) { in_block=1 }
+            if (in_block) { print }
+            if (in_block && /^\s*\}/) { in_block=0 }
+        }
+    " "$SCRIPT" | head -15)
 
     echo "$paste_p_block" | grep -q 'delete-buffer' || {
         echo "FAIL: paste-buffer -p error path に inline delete-buffer が存在しない" >&2
-        echo "  現在の実装（trap ベース）ではこのテストは FAIL します" >&2
         return 1
     }
 }
 
 @test "ac1[structural][RED]: paste-buffer fallback error path 直前に inline delete-buffer コードが存在する" {
     # AC1: paste-buffer fallback 分岐（-p なし）の失敗 exit 1 直前に delete-buffer が存在する
-    # 現在の実装では fallback 分岐の失敗時も trap に委ねる → FAIL
 
-    # fallback paste-buffer の error block を探す
-    # "-p" を含まない paste-buffer の失敗 exit 1 ブロック
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
+
+    # cmd_inject_file スコープ内で fallback paste-buffer の error block を抽出（-p なし）
     local fallback_block
-    fallback_block=$(awk '
-        /paste-buffer -b/ && !/paste-buffer -b.*-p/ { in_fallback=1 }
-        in_fallback && /exit 1/ { print; in_fallback=0; next }
-        in_fallback { print }
-    ' "$SCRIPT" | head -20)
+    fallback_block=$(awk "
+        NR >= $start_line && NR <= ${end_line:-99999} {
+            if (/paste-buffer -b/ && !/paste-buffer -b.*-p/) { in_block=1 }
+            if (in_block) { print }
+            if (in_block && /^\s*\}/) { in_block=0 }
+        }
+    " "$SCRIPT" | head -15)
 
     echo "$fallback_block" | grep -q 'delete-buffer' || {
         echo "FAIL: paste-buffer fallback error path に inline delete-buffer が存在しない" >&2
-        echo "  現在の実装（trap ベース）ではこのテストは FAIL します" >&2
         return 1
     }
 }
@@ -436,18 +448,18 @@ MOCK
 }
 
 @test "ac2[structural][RED]: session-comm.sh 全体で 'trap.*EXIT' が cmd_inject_file 範囲にない（行番号確認）" {
-    # AC2 詳細確認: grep -n "trap.*EXIT" の結果が cmd_inject_file (L323-L470 付近) に含まれない
-    #
-    # 現在の状態:
-    #   L410: trap "tmux delete-buffer -b $_buf_name 2>/dev/null || true" EXIT  ← 存在する
-    #   L432: trap - EXIT  ← 存在する
-    # → このテストは FAIL する
+    # AC2 詳細確認: grep -n "trap.*EXIT" の結果が cmd_inject_file 範囲に含まれない
+    # 行番号を動的に取得（ハードコード禁止 - inline cleanup 後に行番号がずれるため）
+
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
 
     local trap_in_range
-    trap_in_range=$(grep -n 'trap.*EXIT' "$SCRIPT" | awk -F: '$1 >= 323 && $1 <= 470')
+    trap_in_range=$(grep -n 'trap.*EXIT' "$SCRIPT" | awk -F: -v s="$start_line" -v e="${end_line:-99999}" '$1 >= s && $1 <= e')
 
     if [[ -n "$trap_in_range" ]]; then
-        echo "FAIL: L323-L470 範囲内に trap.*EXIT が存在する" >&2
+        echo "FAIL: cmd_inject_file 範囲内に trap.*EXIT が存在する" >&2
         echo "  該当行:" >&2
         echo "$trap_in_range" >&2
         echo "  AC2 達成には trap 対を削除し inline cleanup に移行する必要があります" >&2
@@ -725,18 +737,22 @@ MOCK_FALLBACK
     local end_line
     end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
 
+    # _buf_name 定義行以降のみを対象にする（バッファ生成前の exit 1 は cleanup 不要）
+    local buf_name_line
+    buf_name_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /local _buf_name=/ {print NR; exit}" "$SCRIPT")
     local func_body
-    func_body=$(awk "NR >= $start_line && NR <= ${end_line:-99999}" "$SCRIPT")
+    func_body=$(awk "NR >= ${buf_name_line:-$start_line} && NR <= ${end_line:-99999}" "$SCRIPT")
 
-    # error path の exit 1 数（_buf_name 定義後のもの）
+    # _buf_name 定義後の exit 1 の数（cleanup が必要な exit のみ）
     local exit1_count
     exit1_count=$(echo "$func_body" | grep -c 'exit 1' || true)
 
     # delete-buffer を含む exit ブロック数
     # awk: "delete-buffer" の後に "exit 1" が出現するブロック数
+    # NOTE: trap 設定行（trap "tmux delete-buffer..."）は除外する
     local cleanup_exit_count
     cleanup_exit_count=$(echo "$func_body" | awk '
-        /delete-buffer/ { has_delete=1 }
+        /delete-buffer/ && !/trap.*delete-buffer/ { has_delete=1 }
         /exit 1/ && has_delete { count++; has_delete=0 }
         /^\s*\}/ { has_delete=0 }
         END { print count+0 }
@@ -745,7 +761,6 @@ MOCK_FALLBACK
     if [[ "$cleanup_exit_count" -lt "$exit1_count" ]]; then
         echo "FAIL: exit 1 の数($exit1_count) と inline cleanup 付き exit 1 の数($cleanup_exit_count) が一致しない" >&2
         echo "  inline cleanup が不足している exit 1 が存在します" >&2
-        echo "  現在の実装（trap ベース）ではこのテストは FAIL します" >&2
         return 1
     fi
 }

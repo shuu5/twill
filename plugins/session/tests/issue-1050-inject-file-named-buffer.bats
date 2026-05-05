@@ -168,12 +168,20 @@ MOCK
     }
 }
 
-@test "ac2[structural][RED]: EXIT trap で delete-buffer が保証される" {
-    # AC-2 詳細: immediate-expansion trap で cleanup を保証する
-    # `trap "tmux delete-buffer -b $_buf 2>/dev/null || true" EXIT` パターン
-    # 実装前: trap が存在しない → FAIL
-    grep -qE 'trap.*delete-buffer.*EXIT|trap.*EXIT.*delete-buffer' "$SCRIPT" || {
-        echo "FAIL: session-comm.sh に delete-buffer の EXIT trap が含まれていない" >&2
+@test "ac2[structural]: inline cleanup で delete-buffer が各 exit 前に呼ばれる" {
+    # AC-2 更新（Issue #1395）: EXIT trap を廃止し inline cleanup に移行した
+    # 各 exit 経路の直前に delete-buffer が inline で呼ばれていることを確認する
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
+    local buf_name_line
+    buf_name_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /local _buf_name=/ {print NR; exit}" "$SCRIPT")
+    local func_body
+    func_body=$(awk "NR >= ${buf_name_line:-$start_line} && NR <= ${end_line:-99999}" "$SCRIPT")
+    local cleanup_count
+    cleanup_count=$(echo "$func_body" | grep -c 'delete-buffer -b.*_buf_name' || true)
+    [[ "$cleanup_count" -ge 1 ]] || {
+        echo "FAIL: cmd_inject_file に inline delete-buffer が存在しない" >&2
         return 1
     }
 }
