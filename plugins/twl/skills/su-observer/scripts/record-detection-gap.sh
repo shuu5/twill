@@ -35,7 +35,7 @@ while [[ $# -gt 0 ]]; do
         --severity)       SEVERITY="$2" ;;
       esac
       shift 2 ;;
-    *) echo "ERROR: Unknown argument: $1" >&2; usage; exit 1 ;;
+    *) printf 'ERROR: Unknown argument: %q\n' "$1" >&2; usage; exit 1 ;;
   esac
 done
 
@@ -53,7 +53,7 @@ fi
 # --severity validation
 case "$SEVERITY" in
   low|medium|high) ;;
-  *) echo "ERROR: --severity must be low|medium|high (got: $SEVERITY)" >&2; usage; exit 1 ;;
+  *) printf 'ERROR: --severity must be low|medium|high (got: %q)\n' "$SEVERITY" >&2; usage; exit 1 ;;
 esac
 
 # allowlist regex per baseline-bash §11 (+ guards: ^/ rejects absolute paths; *..* rejects traversal)
