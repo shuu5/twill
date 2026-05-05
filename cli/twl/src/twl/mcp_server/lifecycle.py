@@ -26,14 +26,22 @@ def _validate_command(command: str) -> None:
     """Validate command against allowlist. Raises ValueError if rejected."""
     if os.path.isabs(command):
         allowed_prefixes = _get_allowed_prefixes()
-        # resolve() follows symlinks to prevent bypass via symlinks or traversal
+        # resolve() follows symlinks to prevent symlink/traversal bypass.
+        # On OSError (e.g. cyclic symlink), fail closed rather than fall back to unresolved path.
         try:
             cmd_path = Path(command).resolve()
-        except OSError:
-            cmd_path = Path(command)
-        for prefix in allowed_prefixes:
+        except OSError as e:
+            print(
+                f"ERROR: mcp command rejected — path resolution failed.\n"
+                f"  command: {command}\n"
+                f"  reason: {e}",
+                file=sys.stderr,
+            )
+            raise ValueError(f"command '{command}' path resolution failed: {e}") from e
+        resolved_prefixes = frozenset(p.resolve() for p in allowed_prefixes)
+        for prefix in resolved_prefixes:
             try:
-                cmd_path.relative_to(prefix.resolve())
+                cmd_path.relative_to(prefix)
                 return
             except ValueError:
                 continue
