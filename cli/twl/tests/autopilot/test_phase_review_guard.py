@@ -329,6 +329,13 @@ class TestWaveParallelFalseBlockObservation:
     impl_files: [] （観測プロセス AC）
     """
 
+    @pytest.mark.skip(
+        reason=(
+            "AC3 はプロセス AC: Wave 41+ 並列実行観測は自動テストでは検証不可。"
+            "su-observer が .autopilot/archive/<session-id>/ の orchestrator log を"
+            " grep し 0 件であることを doobidoo memory に記録する。"
+        )
+    )
     def test_ac3_process_ac_stub(self) -> None:
         """AC3 はプロセス AC のため、最小スタブのみ。
 
@@ -336,11 +343,6 @@ class TestWaveParallelFalseBlockObservation:
         orchestrator log を `grep "merge-gate.*ERROR.*phase-review.*CRITICAL"` し
         0 件であることを doobidoo memory に記録する。
         """
-        raise NotImplementedError(
-            "AC #3 プロセス AC: Wave 41 以降の並列実行観測は自動テストでは検証不可。"
-            "su-observer による手動確認が必要。"
-            "実装完了後にこのスタブを削除またはスキップマーカーを追加する。"
-        )
 
 
 # ---------------------------------------------------------------------------
@@ -373,15 +375,16 @@ class TestCheckpointIsolationDocumentation:
 
     def test_ac4_adr025_contains_checkpoint_isolation_section(self) -> None:
         """ADR-025 の Known Gap セクションに 'checkpoint isolation' が含まれること。"""
-        adr_path = (
-            "/home/shuu5/projects/local-projects/twill/worktrees/"
-            "feat/1399-tech-debtmerge-gate-phase-reviewjson/"
-            "plugins/twl/architecture/decisions/"
-            "ADR-025-co-autopilot-phase-review-guarantee.md"
-        )
         from pathlib import Path
 
-        adr_file = Path(adr_path)
+        adr_file = (
+            Path(__file__).resolve().parents[4]
+            / "plugins"
+            / "twl"
+            / "architecture"
+            / "decisions"
+            / "ADR-025-co-autopilot-phase-review-guarantee.md"
+        )
         assert adr_file.exists(), f"ADR-025 ファイルが存在しない: {adr_path}"
 
         content = adr_file.read_text(encoding="utf-8")
