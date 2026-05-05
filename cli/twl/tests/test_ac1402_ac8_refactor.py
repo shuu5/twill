@@ -336,17 +336,9 @@ class TestAC5ParametrizeTestIds:
     def test_ac5_collected_ids_include_parametrize_format(self):
         # AC: pytest --collect-only で TestAC1SkeletonImplemented 内に [...] 形式の ID が存在する
         # RED: リファクタ前は parametrize がないため [...] 形式が存在しない → FAIL
+        # 注: -v を外して flat list 形式（NodeID::...） にすることで同一行に class + parametrize ID が現れる
         result = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pytest",
-                str(TARGET_FILE),
-                "-v",
-                "--collect-only",
-                "-q",
-                "--no-header",
-            ],
+            [sys.executable, "-m", "pytest", str(TARGET_FILE), "--collect-only", "-q", "--no-header"],
             capture_output=True,
             text=True,
             timeout=60,
@@ -354,8 +346,7 @@ class TestAC5ParametrizeTestIds:
         )
         output = result.stdout + result.stderr
 
-        # parametrize 形式: TestAC1SkeletonImplemented::test_ac1_has_function[...]
-        # "[" + "]" の組合せで parametrize ID を検出
+        # flat 形式: tests/test_ac8_run_240_trials.py::TestAC1SkeletonImplemented::test_ac1_has_function[main]
         parametrize_ids = [
             line for line in output.splitlines()
             if "TestAC1SkeletonImplemented" in line
@@ -374,19 +365,8 @@ class TestAC5ParametrizeTestIds:
         # RED: parametrize 統合前は TestAC1SkeletonImplemented に
         #      個別 hasattr メソッドしか存在しないため、このテストは
         #      "parametrize で 4 件が生成されていること" を確認できず FAIL
-        #
-        # 検証: parametrize で 4 パラメータ分のテストが生成されるか確認する
         result = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pytest",
-                str(TARGET_FILE),
-                "-v",
-                "--collect-only",
-                "-q",
-                "--no-header",
-            ],
+            [sys.executable, "-m", "pytest", str(TARGET_FILE), "--collect-only", "-q", "--no-header"],
             capture_output=True,
             text=True,
             timeout=60,
@@ -394,7 +374,7 @@ class TestAC5ParametrizeTestIds:
         )
         output = result.stdout + result.stderr
 
-        # TestAC1SkeletonImplemented の parametrize テスト ID を収集
+        # flat 形式でパラメータ付き ID を収集
         skeleton_parametrize_ids = [
             line for line in output.splitlines()
             if "TestAC1SkeletonImplemented" in line
