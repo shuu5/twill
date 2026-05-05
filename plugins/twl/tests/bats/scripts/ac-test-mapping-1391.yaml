@@ -1,0 +1,25 @@
+mappings:
+  - ac_index: 1
+    ac_text: "L38 の $1（未知引数名）が改行インジェクションに対してサニタイズされる。newline-injected arg でログ汚染が発生しない"
+    test_file: "tests/bats/issue-1391-record-detection-gap-sanitize.bats"
+    test_name: "ac1: L38 unknown-arg — newline-injected arg does not produce injected line in stderr"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 2
+    ac_text: "L38 の echo 'ERROR: Unknown argument: $1' が printf '%q' 形式に置換される（静的確認）"
+    test_file: "tests/bats/issue-1391-record-detection-gap-sanitize.bats"
+    test_name: "ac2: L38 raw echo 'ERROR: Unknown argument:' has been replaced — not using unquoted echo"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 3
+    ac_text: "L56 の $SEVERITY が改行インジェクションに対してサニタイズされる。newline-injected severity でログ汚染が発生しない"
+    test_file: "tests/bats/issue-1391-record-detection-gap-sanitize.bats"
+    test_name: "ac3: L56 severity — newline-injected severity does not produce injected line in stderr"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 4
+    ac_text: "L56 の echo 'ERROR: ... (got: $SEVERITY)' が printf '%q' 形式に置換される（静的確認）"
+    test_file: "tests/bats/issue-1391-record-detection-gap-sanitize.bats"
+    test_name: "ac4: L56 raw echo 'got: $SEVERITY' has been replaced — not using unquoted echo"
+    impl_files:
+      - "skills/su-observer/scripts/record-detection-gap.sh"
