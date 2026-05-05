@@ -136,7 +136,7 @@ def main():
     # mcp subparser（argparse 化; 他サブコマンドは if-chain で早期 exit するハイブリッド構造）
     subparsers = parser.add_subparsers(dest='subcommand')
     mcp_parser = subparsers.add_parser('mcp', help='MCP server lifecycle 管理')
-    mcp_subparsers = mcp_parser.add_subparsers(dest='mcp_subcommand')
+    mcp_subparsers = mcp_parser.add_subparsers(dest='mcp_subcommand', required=True)
     mcp_subparsers.add_parser('restart', help='Restart MCP server')
 
     args = parser.parse_args()
@@ -146,7 +146,7 @@ def main():
             from twl.mcp_server.lifecycle import restart_mcp_server
             sys.exit(restart_mcp_server())
         else:
-            mcp_parser.print_help()
+            mcp_parser.print_help(sys.stderr)
             sys.exit(1)
 
     if args.rules:
