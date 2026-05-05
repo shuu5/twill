@@ -10,10 +10,16 @@ setup() {
     PLUGIN_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
     SCRIPT="$PLUGIN_ROOT/scripts/session-comm.sh"
     SANDBOX="$(mktemp -d)"
-    export SANDBOX SCRIPT PLUGIN_ROOT
+    BACKEND_MCP_BAK=""  # ac4 で設定。teardown が安全ネットとして復元
+    export SANDBOX SCRIPT PLUGIN_ROOT BACKEND_MCP_BAK
 }
 
 teardown() {
+    # ac4: 本番 backend-mcp.sh が上書きされた場合の安全ネット復元
+    if [[ -n "${BACKEND_MCP_BAK:-}" && -f "$BACKEND_MCP_BAK" ]]; then
+        local backend_mcp="$PLUGIN_ROOT/scripts/session-comm-backend-mcp.sh"
+        mv "$BACKEND_MCP_BAK" "$backend_mcp"
+    fi
     [[ -n "${SANDBOX:-}" && -d "$SANDBOX" ]] && rm -rf "$SANDBOX"
 }
 
@@ -116,8 +122,9 @@ EOF
     # mock session-comm-backend-mcp.sh: call を記録して成功
     local backend_mcp="$PLUGIN_ROOT/scripts/session-comm-backend-mcp.sh"
     local mock_mcp="$SANDBOX/mock-mcp-called"
-    local orig_mcp_content=""
-    [[ -f "$backend_mcp" ]] && orig_mcp_content=$(cat "$backend_mcp")
+    # teardown 安全ネット用バックアップ（bats kill 時でも復元される）
+    BACKEND_MCP_BAK="$SANDBOX/session-comm-backend-mcp.sh.bak"
+    [[ -f "$backend_mcp" ]] && cp "$backend_mcp" "$BACKEND_MCP_BAK"
 
     cat > "$backend_mcp" <<EOF
 #!/usr/bin/env bash
@@ -131,18 +138,19 @@ _backend_shadow_send() {
 }
 EOF
 
-    local exit_code=0
+    # --force: state チェックをスキップ（session-state.sh は SCRIPT_DIR 絶対パス呼出のため PATH mock 非介入）
     PATH="$SANDBOX/bin:$PATH" \
     SESSION_COMM_LOCK_DIR="/tmp" \
     TWILL_MSG_BACKEND=mcp \
-    bash "$SCRIPT" inject "main" "hello" --force 2>/dev/null || exit_code=$?
+    bash "$SCRIPT" inject "main" "hello" --force 2>/dev/null || true
 
-    # backend-mcp.sh を復元
-    if [[ -n "$orig_mcp_content" ]]; then
-        echo "$orig_mcp_content" > "$backend_mcp"
+    # backend-mcp.sh を復元（teardown も安全ネットとして同じ復元を行う）
+    if [[ -f "$BACKEND_MCP_BAK" ]]; then
+        mv "$BACKEND_MCP_BAK" "$backend_mcp"
     else
         rm -f "$backend_mcp"
     fi
+    BACKEND_MCP_BAK=""
 
     if [[ ! -f "$mock_mcp" ]]; then
         echo "FAIL: TWILL_MSG_BACKEND=mcp を設定しても mcp backend が呼ばれなかった" >&2
