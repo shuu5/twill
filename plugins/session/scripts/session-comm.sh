@@ -295,21 +295,18 @@ cmd_inject() {
         exit 1
     }
     local lock_file="${lock_dir}/session-comm-${target//[^a-zA-Z0-9]/-}.lock"
-    # shellcheck source=./session-comm-backend-tmux.sh
-    source "${SCRIPT_DIR}/session-comm-backend-tmux.sh"
     {
         flock -w 30 9 || {
             echo "Error: failed to acquire send lock for '$window_name'" >&2
             exit 1
         }
-        # Delegate to backend (AC-1: no direct send-keys in this file)
         if $no_enter; then
-            _backend_tmux_send "$target" "$text" --no-enter || {
+            session_msg send "$target" "$text" --no-enter || {
                 echo "Error: failed to send keys to '$window_name'" >&2
                 exit 1
             }
         else
-            _backend_tmux_send "$target" "$text" || {
+            session_msg send "$target" "$text" || {
                 echo "Error: failed to send keys to '$window_name'" >&2
                 exit 1
             }
