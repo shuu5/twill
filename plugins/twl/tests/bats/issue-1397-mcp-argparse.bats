@@ -114,7 +114,7 @@ setup() {
 @test "ac3b: cli.py contains add_parser('mcp') for argparse subparser" {
   # AC: cli.py に argparse の add_parser('mcp') 呼び出しが存在すること
   # RED: 現在 cli.py に add_subparsers() が未設定のため add_parser('mcp') も存在しない
-  run grep -qF "add_parser('mcp')" "${CLI_PY}"
+  run grep -qF "add_parser('mcp'" "${CLI_PY}"
   echo "grep exit status (expected 0 after migration): ${status}"
   [ "${status}" -eq 0 ]
 }

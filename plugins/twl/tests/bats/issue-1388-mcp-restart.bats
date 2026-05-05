@@ -35,13 +35,14 @@ setup() {
 }
 
 # ===========================================================================
-# AC1: cli.py に `mcp` サブコマンドの if-chain が存在する（静的確認）
+# AC1: cli.py に `mcp` サブコマンドが argparse subparser として登録されている（静的確認）
+# (Issue #1397 で if-chain から argparse subparser へ移行済み)
 # ===========================================================================
 
-@test "ac1: cli.py contains 'mcp' subcommand if-chain entry" {
-  # AC: cli.py の if-chain に `sys.argv[1] == 'mcp'` の分岐が存在する
-  # RED: 現在 cli.py に mcp サブコマンドの if-chain が存在しないため fail
-  run grep -qF "sys.argv[1] == 'mcp'" "${CLI_PY}"
+@test "ac1: cli.py contains 'mcp' subcommand argparse registration" {
+  # AC: cli.py に mcp サブコマンドが argparse subparser として登録されていること
+  # (Issue #1397: if-chain から argparse 移行後の確認)
+  run grep -qF "add_parser('mcp'" "${CLI_PY}"
   [ "${status}" -eq 0 ]
 }
 
