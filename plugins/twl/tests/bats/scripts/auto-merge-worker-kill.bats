@@ -29,12 +29,12 @@ setup() {
 #!/usr/bin/env bash
 # auto-merge.sh から呼ばれる `python3 -m twl.autopilot.state` の mock
 case "$*" in
-  *"state read"*"--field status"*) echo "done" ;;
-  *"state read"*"--field is_quick"*) echo "false" ;;
+  *"state read"*"--field status"*)       echo "done" ;;
+  *"state read"*"--field is_quick"*)     echo "false" ;;
   *"state read"*"--field current_step"*) echo "" ;;
-  *"state read"*"--field window"*) echo "${WINDOW_FIELD_OUT:-ap-#898}" ;;
-  *"state write"*) exit 0 ;;
-  *) exit 0 ;;
+  *"state read"*"--field window"*)       echo "${WINDOW_FIELD_OUT}" ;;
+  *"state write"*)                       exit 0 ;;
+  *)                                     exit 0 ;;
 esac
 PYSTUB
   chmod +x "$STUB_BIN/python3"
@@ -88,27 +88,35 @@ GITSTUB
 
   # tmux stub: display-message / list-windows / kill-window を mock
   # TMUX_KILL_WINDOW_LOG に kill-window 呼出履歴を記録
-  # TMUX_WINDOW_LIST_OUT で list-windows の出力を制御 (デフォルトは window 生存)
+  # TMUX_ALL_WINDOWS     : "session:index window_name" 形式（safe_kill_window + 事前セッション解決用）
+  # TMUX_SESSION_WINDOWS : window 名のみ（post-kill session-scoped check 用、#1393 修正後）
   # TMUX_KILL_FAIL=true のときは kill-window を失敗させる
   TMUX_KILL_WINDOW_LOG="$SANDBOX/tmux-kill-window.log"
   export TMUX_KILL_WINDOW_LOG
   : > "$TMUX_KILL_WINDOW_LOG"
 
-  TMUX_WINDOW_LIST_OUT="${TMUX_WINDOW_LIST_OUT:-ap-#898}"
-  export TMUX_WINDOW_LIST_OUT
+  TMUX_ALL_WINDOWS="${TMUX_ALL_WINDOWS:-sess1:0 ap-#898}"
+  TMUX_SESSION_WINDOWS="${TMUX_SESSION_WINDOWS:-}"
+  export TMUX_ALL_WINDOWS TMUX_SESSION_WINDOWS
 
-  cat > "$STUB_BIN/tmux" <<TMUXSTUB
+  cat > "$STUB_BIN/tmux" <<'TMUXSTUB'
 #!/usr/bin/env bash
-case "\$1" in
+case "$1" in
   display-message)
-    # auto-merge.sh L125: tmux display-message -p '#W' → non-ap window
     echo "main" ;;
   list-windows)
-    # '\${TMUX_WINDOW_LIST_OUT}' の複数行を出力 (window 名一覧)
-    printf '%s\n' "\${TMUX_WINDOW_LIST_OUT:-}" ;;
+    # -t が引数に含まれる → session-scoped（post-kill check 用）
+    HAS_T=false
+    for arg in "$@"; do [[ "$arg" == "-t" ]] && HAS_T=true; done
+    if $HAS_T; then
+      printf '%s\n' "${TMUX_SESSION_WINDOWS:-}"
+    else
+      # global (-a): session:index 形式（safe_kill_window + 事前セッション解決用）
+      printf '%s\n' "${TMUX_ALL_WINDOWS:-}"
+    fi ;;
   kill-window)
-    printf '%s\n' "\$*" >> "\${TMUX_KILL_WINDOW_LOG}"
-    if [[ "\${TMUX_KILL_FAIL:-false}" == "true" ]]; then exit 1; fi
+    printf '%s\n' "$*" >> "${TMUX_KILL_WINDOW_LOG}"
+    [[ "${TMUX_KILL_FAIL:-false}" == "true" ]] && exit 1
     exit 0 ;;
   *)
     exit 0 ;;
@@ -145,20 +153,23 @@ teardown() {
 
 @test "#898 (a): Worker window 生存 + kill 成功で worktree 削除続行" {
   export WINDOW_FIELD_OUT="ap-#898"
-  export TMUX_WINDOW_LIST_OUT="ap-#898
-main
-other-window"
+  # TMUX_ALL_WINDOWS: session:index 形式（safe_kill_window + 事前セッション解決用）
+  export TMUX_ALL_WINDOWS="sess1:0 ap-#898
+sess1:1 main
+sess1:2 other-window"
+  # TMUX_SESSION_WINDOWS: kill 後 worker session は空（kill 成功）
+  export TMUX_SESSION_WINDOWS=""
 
   run bash "$SANDBOX/scripts/auto-merge.sh" --issue 898 --pr 899 --branch feat/898-test
 
   assert_success
   # safety net 発火確認
-  echo "$output" | grep -qF "Worker window (ap-#898) 生存確認"
-  # kill-window 呼出記録確認
+  assert_output --partial "Worker window (ap-#898) kill"
+  # kill-window が session-scoped target（sess1:0）で呼ばれている
   [ -f "$TMUX_KILL_WINDOW_LOG" ]
-  grep -qF "kill-window -t ap-#898" "$TMUX_KILL_WINDOW_LOG"
+  grep -qF "kill-window -t sess1:0" "$TMUX_KILL_WINDOW_LOG"
   # worktree 削除成功メッセージ
-  echo "$output" | grep -qF "worktree 削除成功"
+  assert_output --partial "worktree 削除成功"
 }
 
 # ---------------------------------------------------------------------------
@@ -167,21 +178,20 @@ other-window"
 
 @test "#898 (b): Worker window 不在 (既 cleanup 済) でも通常動作継続" {
   export WINDOW_FIELD_OUT="ap-#898"
-  # tmux list-windows の出力に ap-#898 を含めない
-  export TMUX_WINDOW_LIST_OUT="main
-other-window"
+  # ap-#898 を含まない（worker window は既に cleanup 済み）
+  export TMUX_ALL_WINDOWS="sess1:0 main
+sess1:1 other-window"
+  export TMUX_SESSION_WINDOWS=""
 
   run bash "$SANDBOX/scripts/auto-merge.sh" --issue 898 --pr 899 --branch feat/898-test
 
   assert_success
-  # safety net の「生存確認」メッセージは出ない
-  ! echo "$output" | grep -qF "Worker window (ap-#898) 生存確認"
-  # kill-window は呼ばれていない
+  # kill-window は呼ばれていない（window が存在しないため）
   if [[ -s "$TMUX_KILL_WINDOW_LOG" ]]; then
     ! grep -qF "kill-window" "$TMUX_KILL_WINDOW_LOG"
   fi
   # worktree 削除は成功
-  echo "$output" | grep -qF "worktree 削除成功"
+  assert_output --partial "worktree 削除成功"
 }
 
 # ---------------------------------------------------------------------------
@@ -190,19 +200,18 @@ other-window"
 
 @test "#898 (c): Worker window kill 失敗で exit 1、worktree 削除せず abort" {
   export WINDOW_FIELD_OUT="ap-#898"
-  export TMUX_WINDOW_LIST_OUT="ap-#898
-main"
-  export TMUX_KILL_FAIL="true"
+  # Worker session に ap-#898 が存在（WORKER_SESSION="sess1" として解決される）
+  export TMUX_ALL_WINDOWS="sess1:0 ap-#898
+sess1:1 main"
+  # post-kill session-scoped check: window が残存（kill 失敗を模擬）
+  export TMUX_SESSION_WINDOWS="ap-#898"
 
   run bash "$SANDBOX/scripts/auto-merge.sh" --issue 898 --pr 899 --branch feat/898-test
 
   assert_failure
-  # ERROR メッセージ出力
-  echo "$output" | grep -qF "ERROR: Worker window kill 失敗"
-  # "unsafe state" キーワード
-  echo "$output" | grep -qF "unsafe state"
-  # worktree 削除は実行されていない (delete 成功メッセージ不在)
-  ! echo "$output" | grep -qF "worktree 削除成功"
+  assert_output --partial "ERROR: Worker window kill 失敗"
+  assert_output --partial "unsafe state"
+  refute_output --partial "worktree 削除成功"
 }
 
 # ---------------------------------------------------------------------------
@@ -210,19 +219,20 @@ main"
 # ---------------------------------------------------------------------------
 
 @test "#898 (d): state.window 空のときは safety net skip (Pilot 通常経路)" {
+  # WINDOW_FIELD_OUT を明示的に空文字に（python3 stub は ${WINDOW_FIELD_OUT} を直接出力）
   export WINDOW_FIELD_OUT=""
-  export TMUX_WINDOW_LIST_OUT="main
-other-window"
+  export TMUX_ALL_WINDOWS="sess1:0 main
+sess1:1 other-window"
+  export TMUX_SESSION_WINDOWS=""
 
   run bash "$SANDBOX/scripts/auto-merge.sh" --issue 898 --pr 899 --branch feat/898-test
 
   assert_success
-  # safety net は発火しない
-  ! echo "$output" | grep -qF "生存確認"
+  # WORKER_WINDOW が空のため safety net は発火しない
+  refute_output --partial "Worker window"
   # kill-window は呼ばれていない
   if [[ -s "$TMUX_KILL_WINDOW_LOG" ]]; then
     ! grep -qF "kill-window" "$TMUX_KILL_WINDOW_LOG"
   fi
-  # worktree 削除は成功
-  echo "$output" | grep -qF "worktree 削除成功"
+  assert_output --partial "worktree 削除成功"
 }

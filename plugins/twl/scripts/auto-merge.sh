@@ -244,9 +244,13 @@ if [[ "$REPO_MODE" == "worktree" ]]; then
     WORKER_WINDOW=$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$ISSUE_NUM" --field window 2>/dev/null || echo "")
     if [[ -n "$WORKER_WINDOW" ]]; then
       echo "[auto-merge] Issue #${ISSUE_NUM}: Worker window (${WORKER_WINDOW}) kill — worktree 削除前"
+      # #1393: kill 前に Worker window が属するセッションを解決（post-kill check を session-scoped にするため）
+      WORKER_SESSION=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
+        | awk -v wn="$WORKER_WINDOW" '$2 == wn {split($1, a, ":"); print a[1]; exit}')
       safe_kill_window "$WORKER_WINDOW"
-      # #898 safety net: kill 後に window が残存していれば worktree 削除を中止（CWD 消失事故防止）
-      if tmux list-windows -a -F '#{window_name}' 2>/dev/null | grep -qxF -- "$WORKER_WINDOW"; then
+      # #898 safety net: kill 後に Worker session の window が残存していれば worktree 削除を中止（CWD 消失事故防止）
+      # #1393: list-windows -a（全セッション）ではなく session-scoped check で他セッション同名 window の誤検知を防ぐ
+      if [[ -n "$WORKER_SESSION" ]] && tmux list-windows -t "$WORKER_SESSION" -F '#{window_name}' 2>/dev/null | grep -qxF -- "$WORKER_WINDOW"; then
         echo "[auto-merge] Issue #${ISSUE_NUM}: ERROR: Worker window kill 失敗 — worktree 削除中止 (unsafe state)" >&2
         exit 1
       fi
