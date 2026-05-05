@@ -1,0 +1,61 @@
+mappings:
+  - ac_index: 1
+    ac_text: >
+      twl --help 実行時に mcp サブコマンドが表示されること
+      （subparser メタデータ・ヘルプテキスト含む）
+    test_file: "plugins/twl/tests/bats/issue-1397-mcp-argparse.bats"
+    test_name: "ac1: 'twl --help' output contains 'mcp' subcommand"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+
+  - ac_index: 2
+    ac_text: >
+      twl mcp --help で restart サブサブコマンドが表示されること
+    test_file: "plugins/twl/tests/bats/issue-1397-mcp-argparse.bats"
+    test_names:
+      - "ac2: 'twl mcp --help' exits with code 0"
+      - "ac2: 'twl mcp --help' output contains 'restart'"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+
+  - ac_index: 3
+    ac_text: >
+      twl mcp restart の既存挙動（restart_mcp_server() 呼び出し、exit 0 回帰）が破綻しないこと
+      (a) cli.py に sys.argv[1] == 'mcp' if-chain が存在しない（argparse 移行後に削除済み）
+      (b) cli.py に add_parser('mcp') が存在する（argparse subparser 登録済み）
+      (c) twl mcp restart が exit 0 で完了する（回帰チェック）
+    test_file: "plugins/twl/tests/bats/issue-1397-mcp-argparse.bats"
+    test_names:
+      - "ac3a: cli.py does NOT contain 'sys.argv[1] == .mcp.' if-chain (argparse migration)"
+      - "ac3b: cli.py contains add_parser('mcp') for argparse subparser"
+      - "ac3c: 'twl mcp restart' exits with code 0 (regression)"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+
+  - ac_index: 4
+    ac_text: >
+      既存の if-chain サブコマンド（hello, audit, audit-history, config, explore-link, check,
+      refine, chain）が引き続き動作すること（各サブコマンドを引数なしで呼び出して
+      exit code が変化しないこと）
+    test_file: "plugins/twl/tests/bats/issue-1397-mcp-argparse.bats"
+    test_name: "ac4: 'twl hello' exits with code 0 (regression)"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+
+  - ac_index: 5
+    ac_text: >
+      plugins/twl/tests/bats/issue-1388-mcp-restart.bats を argparse 構造に合わせて更新した上で
+      PASS すること（L44 の grep -qF "sys.argv[1] == 'mcp'" 静的チェックは argparse 移行後に
+      削除または書き換えること）
+    test_file: "plugins/twl/tests/bats/issue-1397-mcp-argparse.bats"
+    test_name: "ac5: issue-1388-mcp-restart.bats does NOT contain 'sys.argv[1] == .mcp.' grep check"
+    impl_files:
+      - "plugins/twl/tests/bats/issue-1388-mcp-restart.bats"
+
+  - ac_index: 6
+    ac_text: >
+      スコープ判断が PR description に明記されること
+    test_file: "plugins/twl/tests/bats/issue-1397-mcp-argparse.bats"
+    test_name: "ac6: PR description contains scope decision (process AC - manual verification required)"
+    impl_files: []
+    # プロセス AC: PR description の内容は手動確認が必要
