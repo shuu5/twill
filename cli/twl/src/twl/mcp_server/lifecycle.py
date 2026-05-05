@@ -7,35 +7,46 @@ import sys
 import time
 from pathlib import Path
 
-_ALLOWED_COMMANDS: frozenset = frozenset({"uv", "uvx"})
+_ALLOWED_COMMANDS: frozenset[str] = frozenset({"uv", "uvx"})
 
-_ALLOWED_PREFIXES: frozenset = frozenset({
+# Static system-wide prefixes. ~/.local/bin is added at call time via _get_allowed_prefixes()
+# to avoid evaluating Path.home() at module load (CI/container HOME isolation).
+_ALLOWED_PREFIXES: frozenset[Path] = frozenset({
     Path("/usr/bin"),
     Path("/usr/local/bin"),
-    Path.home() / ".local" / "bin",
 })
+
+
+def _get_allowed_prefixes() -> frozenset[Path]:
+    """Return allowed absolute path prefixes, including user-local bin (evaluated at call time)."""
+    return _ALLOWED_PREFIXES | {Path.home() / ".local" / "bin"}
 
 
 def _validate_command(command: str) -> None:
     """Validate command against allowlist. Raises ValueError if rejected."""
     if os.path.isabs(command):
-        cmd_path = Path(command)
-        for prefix in _ALLOWED_PREFIXES:
+        allowed_prefixes = _get_allowed_prefixes()
+        # resolve() follows symlinks to prevent bypass via symlinks or traversal
+        try:
+            cmd_path = Path(command).resolve()
+        except OSError:
+            cmd_path = Path(command)
+        for prefix in allowed_prefixes:
             try:
-                cmd_path.relative_to(prefix)
+                cmd_path.relative_to(prefix.resolve())
                 return
             except ValueError:
                 continue
         print(
             f"ERROR: mcp command rejected — absolute path not in allowed prefixes.\n"
             f"  command: {command}\n"
-            f"  allowed_prefixes: {sorted(str(p) for p in _ALLOWED_PREFIXES)}\n"
+            f"  allowed_prefixes: {sorted(str(p) for p in allowed_prefixes)}\n"
             f"  reason: absolute path outside known binary directories",
             file=sys.stderr,
         )
         raise ValueError(
             f"command '{command}' not in allowed prefixes: "
-            f"{sorted(str(p) for p in _ALLOWED_PREFIXES)}"
+            f"{sorted(str(p) for p in allowed_prefixes)}"
         )
     if command not in _ALLOWED_COMMANDS:
         print(
