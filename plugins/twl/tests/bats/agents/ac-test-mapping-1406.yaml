@@ -1,0 +1,68 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/agents/worker-code-reviewer.md の ### 2. バグパターン 節内、**tmux 破壊的操作のターゲット解決** ルール直後に「関数シグネチャ変更時の caller クロスチェック」ルールが追加されている（grep -F 'caller-signature-mismatch' でヒット）"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "1406-AC1: caller-signature-mismatch rule exists in worker-code-reviewer.md"
+    status: RED
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+
+  - ac_index: 2
+    ac_text: "追加ルールは MUST キーワードを含む（grep -E 'シグネチャ.*MUST|MUST.*caller' でヒット）"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "1406-AC2: caller-signature-mismatch rule contains MUST keyword"
+    status: RED
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+
+  - ac_index: 3
+    ac_text: "False-positive 除外節（デフォルト値追加・動的呼び出し）が追加ルール内に記載されている"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "1406-AC3: caller-signature-mismatch rule documents false-positive exclusions (default value / dynamic dispatch)"
+    status: RED
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+
+  - ac_index: 4
+    ac_text: "severity / confidence の数値（CRITICAL / confidence ≥ 90）が明記されている"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "1406-AC4: caller-signature-mismatch rule specifies CRITICAL severity and confidence >= 90"
+    status: RED
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+
+  - ac_index: 5
+    ac_text: "既存の **False-positive 除外ルール（純粋 boolean 変数の条件式順序差）** ブロックは削除・変更されていない"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "1406-AC5: existing False-positive exclusion rule (pure boolean variable order) is preserved"
+    status: GREEN
+    note: "保護テスト。実装前後ともに GREEN が期待される（既存ブロックの削除・変更が起きた場合に RED になる）"
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+
+  - ac_index: 6
+    ac_text: "既存の **tmux 破壊的操作のターゲット解決** ルール（L50）と整合する書式（**...（MUST）** 見出し + 番号付きステップ）で記述されている"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "1406-AC6: caller-signature-mismatch rule uses consistent format with tmux rule (MUST header + numbered steps)"
+    status: RED
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+
+  - ac_index: 7
+    ac_text: "twl check が新規 warning なしで成功する"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "1406-AC7: twl check passes without new warnings after rule addition"
+    status: GREEN
+    note: "ランタイムチェック。bats では twl check 実行で確認。現時点では deps.yaml 変更がないため GREEN（実装後も deps.yaml を変更しなければ GREEN を維持する）"
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+
+  - ac_index: 8
+    ac_text: "静的 regression test: plugins/twl/tests/bats/agents/worker-code-reviewer.bats に caller-signature-mismatch の grep -qF テストが追加されている"
+    test_file: "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
+    test_name: "1406-AC8: worker-code-reviewer.bats contains grep -qF test for caller-signature-mismatch"
+    status: RED
+    note: "agent ファイルに caller-signature-mismatch が存在しない間は RED。agent ファイル実装完了後、bats ファイル自身の grep -qF 確認も通る（1406-AC1 相当テストが bats に存在することをメタ検証）"
+    impl_files:
+      - "plugins/twl/agents/worker-code-reviewer.md"
+      - "plugins/twl/tests/bats/agents/worker-code-reviewer.bats"
