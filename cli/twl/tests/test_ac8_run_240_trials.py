@@ -20,7 +20,6 @@ AC12b: test_issue_1027_followup.py の measurement-dependent 4 tests が GREEN�
 import csv
 import importlib.util
 import json
-import os
 import subprocess
 import sys
 import tempfile

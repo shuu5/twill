@@ -48,15 +48,6 @@ def _parse_target_file() -> ast.Module:
     return ast.parse(source, filename=str(TARGET_FILE))
 
 
-def _get_all_function_defs(tree: ast.Module) -> list[ast.FunctionDef]:
-    """AST ツリーから全ての FunctionDef（トップレベル + クラス内）を収集する。"""
-    result = []
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef):
-            result.append(node)
-    return result
-
-
 def _get_fixture_names(tree: ast.Module) -> list[str]:
     """@pytest.fixture デコレータが付いた関数名一覧を返す。"""
     fixture_names = []
@@ -71,25 +62,6 @@ def _get_fixture_names(tree: ast.Module) -> list[str]:
                     if isinstance(func, ast.Attribute) and func.attr == "fixture":
                         fixture_names.append(node.name)
     return fixture_names
-
-
-def _get_parametrize_methods(tree: ast.Module) -> list[ast.FunctionDef]:
-    """@pytest.mark.parametrize デコレータが付いたメソッド一覧を返す。"""
-    result = []
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef):
-            for decorator in node.decorator_list:
-                if isinstance(decorator, ast.Call):
-                    func = decorator.func
-                    # pytest.mark.parametrize の形式
-                    if (
-                        isinstance(func, ast.Attribute)
-                        and func.attr == "parametrize"
-                        and isinstance(func.value, ast.Attribute)
-                        and func.value.attr == "mark"
-                    ):
-                        result.append(node)
-    return result
 
 
 def _get_method_source(method_name: str, class_name: str) -> str:
