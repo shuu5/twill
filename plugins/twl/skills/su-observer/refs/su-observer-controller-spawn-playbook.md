@@ -69,6 +69,21 @@ Wave 文脈 / 並列タスク境界: Wave <N>、並列 <M> Issue 中 <K> 番目
 
 **例外**: `--force-large` を spawn-controller.sh に渡し、prompt 冒頭に `REASON:` 行で正当化することで 30 行超を許容できる。
 
+## Wave 完遂時の出力規約（#1457）
+
+Pilot (co-autopilot) は Wave 完了時に以下の形式で必ず出力すること（MUST）。これにより `cld-observe-any` の `IDLE_COMPLETED_PHRASE_REGEX` が確実に検知し auto-kill が発火する。
+
+```text
+>>> Wave N 完遂: <完了内容の要約>
+```
+
+例:
+```text
+>>> Wave 51 完遂: PR #1234, #1235 マージ完了。次の指示をお待ちします。
+```
+
+**注意**: この形式なしに「observer の次の指示を待機」「次の Wave 指示まで休止」等の自然言語表現だけで完了を示すと、`IDLE_COMPLETED_PHRASE_REGEX` が一致しない場合に auto-kill が不発火になる（Issue #1457 pitfall）。`>>> Wave N 完遂:` は machine-readable な completion marker として使うこと。
+
 ## Worker 起動時の auto mode 確認方針
 
 Worker pane に `⏵⏵ auto mode on` が出ない場合でも auto mode は有効である（`refs/pitfalls-catalog.md` §4.7-4.8 参照）。確認方法 A（heartbeat ファイル存在確認）/ 確認方法 B（pane capture grep）の詳細は同 §4.7-4.8 を参照。
