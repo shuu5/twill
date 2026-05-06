@@ -1,0 +1,86 @@
+---
+# ac-test-mapping-1436.yaml
+# Issue #1436: tech-debt: session-comm test 6 (SIGINT exit code) bats 非インタラクティブ問題修正
+#
+# 生成日: 2026-05-06
+# テストフレームワーク: bats
+# 対象テストファイル: plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats
+
+mappings:
+  - ac_index: 1
+    ac_text: "bats 非インタラクティブ環境で SIGINT を背景プロセスに到達させる、もしくは届けずに同等の検証を行う方法を選定し、根拠（POSIX 仕様 / bats docs / 実証ログ）を PR description に記録する。完了判定: PR description に選定方式・根拠・実証コマンドまたはログの 3 点が含まれていること"
+    test_file: null
+    test_name: null
+    impl_files: []
+    # ac1 はプロセス AC（PR description 確認）のため bats テストでの自動検証不可。
+    # 人手レビューによる確認が必要:
+    #   - PR description に「選定方式」が記載されていること
+    #   - PR description に「根拠（POSIX 仕様 / bats docs / 実証ログ）」が記載されていること
+    #   - PR description に「実証コマンドまたはログ」が記載されていること
+
+  - ac_index: 2
+    ac_text: "選定方式に基づき test 6 を改修し、`bats plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats` 単体実行で SKIP/PASS のいずれかとなる（FAIL ではない）。SKIP とする場合は環境制約を `skip` 理由に明記する"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac3[functional][RED]: SIGINT 送信時に終了コード 130 (128+2) で終了する [ISSUE-1436-TARGET]"
+    impl_files:
+      - "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    # ac2 の検証: test 6 が SKIP/PASS になることを確認する。
+    # 現在 test 6 は FAIL（RED 状態）→ Issue #1436 の修正後に SKIP または PASS になる。
+    # impl_files に session-comm.sh を含めない理由: ac2 のスコープは test ファイルの修正のみ
+    # （session-comm.sh の trap 実装は #1420 前提であり、#1436 の OUT スコープ）。
+
+  - ac_index: 3
+    ac_text: "改修後 test が GitHub Actions 相当のヘッドレス環境（非 TTY、bats 通常実行、ubuntu-latest runner 相当）で安定して同じ結果を再現する（最低 3 回連続で同一結果）。ローカル CI なら `bats` を 3 回連続実行して結果が一致することで代替可"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac3[functional][RED]: SIGINT 送信時に終了コード 130 (128+2) で終了する [ISSUE-1436-TARGET]"
+    impl_files:
+      - "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    # ac3 の検証方法:
+    #   bats plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats を
+    #   3 回連続実行して test 6 の結果が一致することを確認する。
+    # 自動化スクリプト例:
+    #   for i in 1 2 3; do bats test_1420_cmd_inject_file_signal_cleanup.bats 2>&1 | tee run_$i.log; done
+    #   diff run_1.log run_2.log && diff run_2.log run_3.log
+    # bats 単体では安定性（3回連続）の自動検証は困難なため人手確認を推奨。
+
+  - ac_index: 4
+    ac_text: "既存 test 1〜5・7〜（test 6 以外の全件）に regression がないことを `bats plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats` の結果で確認する。本 AC の検証は #1420 実装（または同等のブランチ）上で行うこと"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "（test 6 以外の全テスト: test 1-5, 7-15）"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+      - "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    # ac4 の検証対象テスト（test 6 を除く）:
+    #   - test 1: ac1[structural][RED]: cmd_inject_file に trap TERM が存在する
+    #   - test 2: ac1[structural][RED]: cmd_inject_file に trap HUP と trap INT が存在する
+    #   - test 3: ac2[structural][RED]: trap が _buf_name 代入後かつ load-buffer 前に設定される
+    #   - test 4: ac3[functional][RED]: SIGTERM 送信時に終了コード 143 (128+15) で終了する
+    #   - test 5: ac3[functional][RED]: SIGHUP 送信時に終了コード 129 (128+1) で終了する
+    #   - test 7: ac4[structural][GREEN-regression]: load-buffer error path の inline delete-buffer が温存
+    #   - test 8: ac4[structural][GREEN-regression]: cmd_inject_file に trap EXIT が存在しない
+    #   - test 9: ac5[structural][RED]: trap TERM ハンドラに delete-buffer -b が含まれる
+    #   - test 10: ac5[structural][RED]: trap HUP と trap INT ハンドラに delete-buffer -b が含まれる
+    #   - test 11: ac6[functional][RED]: SIGTERM 受信後にバッファが残留しない
+    #   - test 12: ac6[functional][RED]: SIGHUP 受信後にバッファが残留しない
+    #   - test 13: ac6[functional][RED]: SIGINT 受信後にバッファが残留しない [ISSUE-1436-TARGET]
+    #   - test 14: ac7[structural][GREEN]: test_1395 ファイル存在確認
+    #   - test 15: ac7[structural][GREEN]: issue-1050 ファイル存在確認
+    # 注意: test 1-5, 9-13 は #1420 実装（trap 追加）後に GREEN になる。
+    #       test 13 は Issue #1436 修正後に SKIP/PASS になる。
+    #       test 7-8, 14-15 は現在の状態で GREEN。
+
+  - ac_index: 5
+    ac_text: "同 plugin の関連 bats（少なくとも `issue-1050-inject-file-named-buffer.bats`、`issue-1410-cmdinject-file-session-msg.bats`、`session-comm-robustness.test.sh`）が引き続き全件 PASS する"
+    test_file: "（複数ファイル参照）"
+    test_name: "（各ファイルの全テスト）"
+    impl_files:
+      - "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+      - "plugins/session/tests/issue-1410-cmdinject-file-session-msg.bats"
+      - "plugins/session/tests/session-comm-robustness.test.sh"
+      - "plugins/session/scripts/session-comm.sh"
+    # ac5 の検証コマンド:
+    #   bats plugins/session/tests/issue-1050-inject-file-named-buffer.bats
+    #   bats plugins/session/tests/issue-1410-cmdinject-file-session-msg.bats
+    #   bash plugins/session/tests/session-comm-robustness.test.sh
+    # 上記コマンドで全件 PASS（exit 0）することを確認する。
+    # session-comm-robustness.test.sh は bats ではなく bash スクリプトのため個別実行。
