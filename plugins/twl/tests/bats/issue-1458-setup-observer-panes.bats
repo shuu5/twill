@@ -530,7 +530,7 @@ echo '[test] Wave 51 spawn 完了'
   fi
 
   # sync barrier の有無を確認
-  if echo "$between_step1_step2" | grep -qE "(list-panes|split-window.*-P)"; then
+  if echo "$between_step1_step2" | grep -qE "(list-panes|split-window.*-P|_wait_pane_count)"; then
     # sync barrier が存在する → GREEN（実装完了）
     return 0
   else
@@ -559,7 +559,7 @@ echo '[test] Wave 51 spawn 完了'
     false
   fi
 
-  if echo "$between_step2_step3" | grep -qE "(list-panes|split-window.*-P)"; then
+  if echo "$between_step2_step3" | grep -qE "(list-panes|split-window.*-P|_wait_pane_count)"; then
     return 0
   else
     echo "FAIL: Step 2 と Step 3 の間に sync barrier (list-panes または split-window -P) が存在しない"

@@ -389,28 +389,31 @@ PYEOF
   local live_pane_count
   live_pane_count=$(tmux list-panes -t "${resolved_target}" 2>/dev/null | wc -l || echo 0)
 
+  # _wait_pane_count: sync barrier — pane 数が min_count に達するまで最大 3 秒待機
+  # タイムアウト時は WARN ログを出力して return 1（呼び出し元で abort）
+  _wait_pane_count() {
+    local target="$1" min_count="$2" retries=15
+    while [[ "$retries" -gt 0 ]]; do
+      live_pane_count=$(tmux list-panes -t "$target" 2>/dev/null | wc -l || echo 0)
+      [[ "$live_pane_count" -ge "$min_count" ]] && return 0
+      sleep 0.2; ((retries--))
+    done
+    echo "[spawn-controller] WARN: pane barrier timeout (target=${min_count}, actual=${live_pane_count})" >&2
+    return 1
+  }
+
   # Step 1: horizontal split (左右) — 右カラムに heartbeat-watcher を起動
   if [[ "$live_pane_count" -lt 2 ]]; then
     tmux split-window -h -d -l 50% -t "${resolved_target}.${base}" -c "$cwd" "bash '$heartbeat_script'"
     # Sync barrier: pane 生成を確認してから次の split に進む（"can't find pane: N" 防止）
-    local _retries=15
-    while [[ "$_retries" -gt 0 ]]; do
-      live_pane_count=$(tmux list-panes -t "${resolved_target}" 2>/dev/null | wc -l || echo 0)
-      [[ "$live_pane_count" -ge 2 ]] && break
-      sleep 0.2; ((_retries--))
-    done
+    _wait_pane_count "${resolved_target}" 2 || return 1
   fi
 
   # Step 2: vertical split — 右カラムを上下分割して budget-monitor を起動
   if [[ "$live_pane_count" -lt 3 ]]; then
     tmux split-window -v -d -l 67% -t "${resolved_target}.$((base+1))" -c "$cwd" "bash '$budget_script'"
     # Sync barrier: pane 生成を確認してから次の split に進む
-    local _retries=15
-    while [[ "$_retries" -gt 0 ]]; do
-      live_pane_count=$(tmux list-panes -t "${resolved_target}" 2>/dev/null | wc -l || echo 0)
-      [[ "$live_pane_count" -ge 3 ]] && break
-      sleep 0.2; ((_retries--))
-    done
+    _wait_pane_count "${resolved_target}" 3 || return 1
   fi
 
   # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
