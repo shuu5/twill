@@ -1,0 +1,151 @@
+mappings:
+  - ac_index: 1
+    ac_text: "wave-progress-watchdog.sh に gh API polling 関数（例: poll_gh_api_fallback）を追加し、60s 間隔のループとして動作する"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac1: wave-progress-watchdog.sh exists"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 1
+    ac_text: "wave-progress-watchdog.sh に gh API polling 関数（例: poll_gh_api_fallback）を追加し、60s 間隔のループとして動作する"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac1: wave-progress-watchdog.sh defines poll_gh_api_fallback function"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 1
+    ac_text: "wave-progress-watchdog.sh に gh API polling 関数（例: poll_gh_api_fallback）を追加し、60s 間隔のループとして動作する"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac1: wave-progress-watchdog.sh has 60 second polling interval"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 1
+    ac_text: "wave-progress-watchdog.sh に gh API polling 関数（例: poll_gh_api_fallback）を追加し、60s 間隔のループとして動作する"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac1: wave-progress-watchdog.sh has polling loop structure"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 2
+    ac_text: "gh api /repos/{owner}/{repo}/pulls?state=closed&per_page=100 で current_wave に紐付く PR の merge 状態を取得する（WAVE_N = wave-queue.json の current_wave フィールド）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac2: wave-progress-watchdog.sh calls gh api with closed PRs endpoint"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 2
+    ac_text: "gh api /repos/{owner}/{repo}/pulls?state=closed&per_page=100 で current_wave に紐付く PR の merge 状態を取得する（WAVE_N = wave-queue.json の current_wave フィールド）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac2: wave-progress-watchdog.sh uses state=closed and per_page=100 parameters"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 2
+    ac_text: "gh api /repos/{owner}/{repo}/pulls?state=closed&per_page=100 で current_wave に紐付く PR の merge 状態を取得する（WAVE_N = wave-queue.json の current_wave フィールド）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac2: wave-progress-watchdog.sh reads current_wave from wave-queue.json"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 2
+    ac_text: "gh api /repos/{owner}/{repo}/pulls?state=closed&per_page=100 で current_wave に紐付く PR の merge 状態を取得する（WAVE_N = wave-queue.json の current_wave フィールド）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac2: poll_gh_api_fallback fetches merged status for current_wave PRs (stub test)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 3
+    ac_text: "events/ ディレクトリの signal ファイル（パターン: .supervisor/events/wave-${WAVE_N}-pr-merged-*.json）が存在する場合、Layer 3 polling は skip する（duplicate fire 抑止）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac3: wave-progress-watchdog.sh checks events/ signal files before polling"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 3
+    ac_text: "events/ ディレクトリの signal ファイル（パターン: .supervisor/events/wave-${WAVE_N}-pr-merged-*.json）が存在する場合、Layer 3 polling は skip する（duplicate fire 抑止）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac3: wave-progress-watchdog.sh skips polling when signal file exists (stub test)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 4
+    ac_text: "全 current_wave PR が merged と確認された場合、auto-next-spawn.sh --queue .supervisor/wave-queue.json --triggered-by wave-progress-watchdog を呼び出す（lock file は S3 で実装される共有ロックを利用）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac4: wave-progress-watchdog.sh calls auto-next-spawn.sh when all PRs merged"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 4
+    ac_text: "全 current_wave PR が merged と確認された場合、auto-next-spawn.sh --queue .supervisor/wave-queue.json --triggered-by wave-progress-watchdog を呼び出す（lock file は S3 で実装される共有ロックを利用）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac4: auto-next-spawn is called with correct --queue and --triggered-by arguments"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 5
+    ac_text: "gh API call は ETag（If-None-Match header）を活用し、未変更時は 304 で query 消費を回避する（キャッシュファイル: /tmp/.wave-watchdog-etag-${WAVE_N}.txt、消失時はフルポーリングに degradation）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac5: wave-progress-watchdog.sh uses ETag cache file for If-None-Match header"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 5
+    ac_text: "gh API call は ETag（If-None-Match header）を活用し、未変更時は 304 で query 消費を回避する（キャッシュファイル: /tmp/.wave-watchdog-etag-${WAVE_N}.txt、消失時はフルポーリングに degradation）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac5: etag cache file path is /tmp/.wave-watchdog-etag-WAVE_N.txt"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 5
+    ac_text: "gh API call は ETag（If-None-Match header）を活用し、未変更時は 304 で query 消費を回避する（キャッシュファイル: /tmp/.wave-watchdog-etag-${WAVE_N}.txt、消失時はフルポーリングに degradation）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac5: 304 response skips query consumption (degradation to full poll on cache miss)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 6
+    ac_text: "rate-limit 応答 (HTTP 403 + X-RateLimit-Remaining: 0) を検知し、exponential backoff (60s → 120s → 240s, cap 600s) で polling 間隔を延長する"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac6: wave-progress-watchdog.sh detects HTTP 403 rate-limit response"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 6
+    ac_text: "rate-limit 応答 (HTTP 403 + X-RateLimit-Remaining: 0) を検知し、exponential backoff (60s → 120s → 240s, cap 600s) で polling 間隔を延長する"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac6: exponential backoff sequence is 60->120->240 with cap 600"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 7
+    ac_text: "gh auth status 失敗時は polling を skip し .supervisor/intervention-log.md に WARN レコードを残す（daemon を crash させない）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac7: wave-progress-watchdog.sh checks gh auth status before polling"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 7
+    ac_text: "gh auth status 失敗時は polling を skip し .supervisor/intervention-log.md に WARN レコードを残す（daemon を crash させない）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac7: gh auth failure writes WARN to intervention-log.md (stub test)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 7
+    ac_text: "gh auth status 失敗時は polling を skip し .supervisor/intervention-log.md に WARN レコードを残す（daemon を crash させない）"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac7: gh auth failure does not crash daemon (exit 0)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 8
+    ac_text: "auto-next-spawn 起動時は wave-queue.json の current_wave を確認し、Layer 1/Layer 2 と重複 spawn しない"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac8: wave-progress-watchdog.sh verifies current_wave before calling auto-next-spawn"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 8
+    ac_text: "auto-next-spawn 起動時は wave-queue.json の current_wave を確認し、Layer 1/Layer 2 と重複 spawn しない"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac8: wave-progress-watchdog.sh prevents duplicate spawn when current_wave already advanced"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 9
+    ac_text: "テスト (bats): tests/bats/scripts/wave-progress-watchdog.bats を新規作成し、gh API mock で events/ 不在 + 全 PR merged 状態を再現し、auto-next-spawn が 1 回のみ呼ばれることを検証する"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac9: events/ absent + all PRs merged -> auto-next-spawn called exactly once"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 10
+    ac_text: "テスト (bats): 403 rate-limit 応答時に exponential backoff が適用されることを同 bats ファイルで検証する"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac10: 403 rate-limit response triggers exponential backoff (stub test)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 11
+    ac_text: "shellcheck pass (shellcheck plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh)"
+    test_file: "plugins/twl/tests/bats/scripts/wave-progress-watchdog.bats"
+    test_name: "ac11: shellcheck passes on wave-progress-watchdog.sh"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
