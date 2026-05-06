@@ -1,0 +1,68 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/scripts/issue-lifecycle-orchestrator.sh で extract_sid8 -> extract_sid にリネームし、${sid:0:8} truncate を削除している"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1407.bats"
+    test_name: "ac1: extract_sid8 は削除され extract_sid にリネームされている"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+    notes: |
+      AC-1 は 3 つのサブテストに分割:
+        ac1  - extract_sid8() 定義が消えていること
+        ac1b - extract_sid() 定義が存在すること
+        ac1c - ${sid:0:8} truncate が消えていること
+
+  - ac_index: 2
+    ac_text: "window_name_for_subdir が coi-${SID}-${idx} を出力する（full session ID 使用）"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1407.bats"
+    test_name: "ac2: window_name_for_subdir が coi-<fullsid>-<idx> を出力する（full SID 使用）"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  - ac_index: 3
+    ac_text: "sanitization regex ${clean_sid//[^a-zA-Z0-9_-]/x} は維持し、_ を含む SID（例: 1777948423_7wmn）が破壊されないことを bats test で確認している"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1407.bats"
+    test_name: "ac3: アンダースコアを含む SID (1777948423_7wmn) が sanitization で破壊されない"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  - ac_index: 4
+    ac_text: "同一秒範囲で生成した 2 つの sid（先頭 8 文字一致、9 文字目以降相違）から異なる window 名が生成されることを bats test で確認している"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1407.bats"
+    test_name: "ac4: 先頭8文字一致・9文字目以降相違の2つの SID から異なる window 名が生成される"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  - ac_index: 5
+    ac_text: "tmux window 名長さが既存運用の安全範囲内（30 文字以内目安: coi- 4 + sid 15 + - 1 + idx 2 = 22 chars）に収まることを test で assert している"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1407.bats"
+    test_name: "ac5: tmux window 名長さが 30 文字以内（coi-4+sid15+dash1+idx2=22chars 目安）に収まる"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+
+  - ac_index: 6
+    ac_text: "flock lockfile 名 (/tmp/.coi-window-*.lock) も新 window_name に追従し、並行 session で衝突しないことを確認している"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1407.bats"
+    test_name: "ac6: flock lockfile 名が新 window_name に追従し並行 session で衝突しない"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+    notes: |
+      AC-6 は 2 つのサブテストに分割:
+        ac6  - lockfile パターンが window_name 変数を使用していること（grep 確認）
+        ac6b - 先頭 8 文字一致の 2 SID で lockfile 名が異なること（衝突なし確認）
+
+  - ac_index: 7
+    ac_text: "既存 bats test がすべて PASS する（bash plugins/twl/tests/bats/run-bats.sh 相当）"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1407.bats"
+    test_name: "ac7: issue-lifecycle-orchestrator.sh に既存テストが依存する関数が全て存在する"
+    impl_files:
+      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+    notes: |
+      全スイート実行は CI（plugins/twl/tests/run-tests.sh --bats-only）で確認する。
+      このテストは実装完了後に必要な関数が存在することを代理確認する。
+
+  - ac_index: 8
+    ac_text: "CHANGELOG / ADR への影響評価（破壊的変更なし: per-issue/<idx> 構造は不変、window 名のみ拡張）"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1407.bats"
+    test_name: "ac8: CHANGELOG / ADR 影響評価（破壊的変更なし）はプロセス AC - 手動確認が必要"
+    impl_files: []
+    # プロセス AC: CHANGELOG / ADR は機械検証不可。手動確認後にテストを skip すること。
