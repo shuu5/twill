@@ -1,0 +1,201 @@
+# ac-test-mapping-1454.yaml — Issue #1454: LLM_INDICATORS に 11 件追加
+# 生成: test-scaffold
+# 対象テストファイル: plugins/session/tests/test_1454_llm_indicators.bats
+
+mappings:
+  # ---------------------------------------------------------------------------
+  # AC1: 9 件を LLM_INDICATORS に追加（Cooked は既存、Sautéed/Worked は past tense = IDLE）
+  # ---------------------------------------------------------------------------
+  - ac_index: 1
+    ac_text: "Newspapering を LLM_INDICATORS 配列に追加"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac1(#1454): Newspapering が LLM_INDICATORS に含まれること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "Fiddle-faddling を LLM_INDICATORS 配列に追加"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac1(#1454): Fiddle-faddling が LLM_INDICATORS に含まれること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "Levitating を LLM_INDICATORS 配列に追加"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac1(#1454): Levitating が LLM_INDICATORS に含まれること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "Cogitating を LLM_INDICATORS 配列に追加"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac1(#1454): Cogitating が LLM_INDICATORS に含まれること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "Bloviating を LLM_INDICATORS 配列に追加"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac1(#1454): Bloviating が LLM_INDICATORS に含まれること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "Vibing を LLM_INDICATORS 配列に追加"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac1(#1454): Vibing が LLM_INDICATORS に含まれること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "Puttering を LLM_INDICATORS 配列に追加"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac1(#1454): Puttering が LLM_INDICATORS に含まれること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "Zesting を LLM_INDICATORS 配列に追加"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac1(#1454): Zesting が LLM_INDICATORS に含まれること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 1
+    ac_text: "Sautéing を LLM_INDICATORS に明示追加（非 ASCII é 対応）、Saut.*ed を削除"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac1(#1454): Sautéing が LLM_INDICATORS に含まれること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC2: detect_thinking() が各 indicator を "X Nm" format で検知
+  # ---------------------------------------------------------------------------
+  - ac_index: 2
+    ac_text: "bats test で Newspapering が detect_thinking() で認識されること（'X Nm' format）"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac2(#1454): detect_thinking が 'Newspapering 5m' を検知すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 2
+    ac_text: "bats test で Fiddle-faddling が detect_thinking() で認識されること（Wave 50 実測 format）"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac2(#1454): detect_thinking が 'Fiddle-faddling 5m' を検知すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 2
+    ac_text: "bats test で Levitating が detect_thinking() で認識されること（'X Nm' format）"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac2(#1454): detect_thinking が 'Levitating 5m' を検知すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 2
+    ac_text: "bats test で Cogitating が detect_thinking() で認識されること"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac2(#1454): detect_thinking が 'Cogitating 4m' を検知すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 2
+    ac_text: "bats test で Bloviating が detect_thinking() で認識されること"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac2(#1454): detect_thinking が 'Bloviating 2m' を検知すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 2
+    ac_text: "bats test で Vibing が detect_thinking() で認識されること"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac2(#1454): detect_thinking が 'Vibing 10m' を検知すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 2
+    ac_text: "bats test で Puttering が detect_thinking() で認識されること"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac2(#1454): detect_thinking が 'Puttering 4m' を検知すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 2
+    ac_text: "bats test で Zesting が detect_thinking() で認識されること"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac2(#1454): detect_thinking が 'Zesting 6m' を検知すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 2
+    ac_text: "bats test で Sautéing が detect_thinking() で認識されること（非 ASCII 対応）"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac2(#1454): detect_thinking が 'Sautéing 5m' を検知すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC3: Wave 50/51 capture 再現 sample で STAGNATE-300 誤発火が解消
+  # ---------------------------------------------------------------------------
+  - ac_index: 3
+    ac_text: "Wave 50 cycle #1 の 'Fiddle-faddling 5m' pane で STAGNATE を抑止すること"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac3(#1454): Wave 50 cycle #1 'Fiddle-faddling 5m' pane で STAGNATE を抑止すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 3
+    ac_text: "Wave 50 cycle #4 の 'Cogitating 4m' pane で STAGNATE を抑止すること"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac3(#1454): Wave 50 cycle #4 'Cogitating 4m' pane で STAGNATE を抑止すること (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC4: past tense filter 整合性確認
+  # ---------------------------------------------------------------------------
+  - ac_index: 4
+    ac_text: "'Sautéed for 1m' は detect_thinking が空（IDLE）を返すこと（'Saut.*ed' 削除）"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac4(#1454): 'Sautéed for 1m' は detect_thinking が空（IDLE）を返すこと (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 4
+    ac_text: "'Sautéing for 1m' は detect_thinking が非空（THINKING）を返すこと"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac4(#1454): 'Sautéing for 1m' は detect_thinking が非空（THINKING）を返すこと (RED)"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
+
+  - ac_index: 4
+    ac_text: "'Worked for 2m' は detect_thinking が空（IDLE）を返すこと（regression guard）"
+    test_file: "plugins/session/tests/test_1454_llm_indicators.bats"
+    test_name: "ac4(#1454): 'Worked for 2m' は detect_thinking が空（IDLE）を返すこと (regression guard)"
+    status: GREEN
+    note: "現状 'Worked' は LLM_INDICATORS 未登録のため正しく IDLE。regression ガード。"
+    impl_files:
+      - "plugins/session/scripts/lib/llm-indicators.sh"
