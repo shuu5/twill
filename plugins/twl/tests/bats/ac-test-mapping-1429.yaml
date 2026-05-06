@@ -1,0 +1,90 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh が新設され実行可能 (chmod +x、shebang #!/usr/bin/env bash)"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac1: wave-progress-watchdog.sh が存在する / 実行可能 / shebang が #!/usr/bin/env bash"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+
+  - ac_index: 2
+    ac_text: ".supervisor/events/wave-${current_wave}-pr-merged-*.json を監視 (inotify / polling どちらでも検知可能)"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac2: wave-progress-watchdog.sh が wave-N-pr-merged イベントパターンを参照している / inotify または polling ロジックを含む / SUPERVISOR_DIR を参照"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+
+  - ac_index: 3
+    ac_text: "current_wave の全 Issue (wave-queue.json.queue[].issues を .wave フィールドで current_wave フィルタして取得) が merged 時のみ auto-next-spawn.sh を 1 回だけ呼び出す (idempotency: completed-flag による再 spawn 防止を含む)"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac3: wave-queue.json queue[].issues 参照 / .wave フィルタロジック / auto-next-spawn.sh 呼び出し / completed-flag idempotency"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: 4
+    ac_text: "lock file .supervisor/locks/wave-progress-watchdog.lock を flock -n で取得し、保持中の二重 invocation を skip (重複 spawn 防止)"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac4: flock 使用 / flock -n オプション / lock file パス wave-progress-watchdog.lock / ロック失敗時 skip 分岐"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+
+  - ac_index: 5
+    ac_text: "未完了 (一部のみ merged) 時は spawn せずに次 event を待機する (false positive 防止)"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac5: 全 Issue merged 判定ロジック / 一部 merged 時は spawn skip 分岐"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+
+  - ac_index: 6
+    ac_text: "PID を .supervisor/watcher-pid-wave-progress に書き、SIGTERM/exit で trap 削除する (context-budget-monitor.sh 互換)"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac6: watcher-pid-wave-progress への PID 書き込み / SIGTERM trap 設定 / trap が PID ファイルを rm -f / watcher-pid- プレフィックス互換"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+
+  - ac_index: 7
+    ac_text: "wave-queue.json の current_wave を Wave N+1 spawn 後に atomic 更新 (mktemp → mv)、既存 schema validation を通過する。auto-next-spawn.sh の dequeue 完了後に watchdog が更新する順序を保証すること"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac7: mktemp による atomic 更新 / mv で atomic 置換 / auto-next-spawn.sh 後に current_wave 更新 / wave-queue.schema.json が valid JSON"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+      - "plugins/twl/skills/su-observer/schemas/wave-queue.schema.json"
+
+  - ac_index: 8
+    ac_text: "bats wave-progress-watchdog.bats で以下シナリオを PASS（bats シナリオ自体の AC）"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac8: wave-progress-watchdog.bats 自身が存在する / AC-1〜AC-7 のシナリオを含む"
+    impl_files:
+      - "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    notes: |
+      AC-8 はテストファイル自体の存在確認テスト。
+      wave-progress-watchdog.bats が生成された時点で ac8: wave-progress-watchdog.bats 自身が存在する は GREEN になる。
+      残りの RED テストは wave-progress-watchdog.sh の実装後に GREEN になる。
+
+  - ac_index: 9
+    ac_text: "ac-test-mapping-1429.yaml で AC-1〜AC-8 と bats シナリオを 1 対 1 マッピング"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac9: ac-test-mapping-1429.yaml が存在する / mappings: セクションを持つ / ac_index 1〜12 の全エントリが存在する / impl_files が存在する"
+    impl_files:
+      - "plugins/twl/tests/bats/ac-test-mapping-1429.yaml"
+
+  - ac_index: 10
+    ac_text: "plugins/twl/deps.yaml に script コンポーネントとして追記され twl check が PASS。エントリには calls: [auto-next-spawn] を含めること"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac10: deps.yaml に wave-progress-watchdog が登録 / calls: [auto-next-spawn] が含まれる / path が含まれる"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: 11
+    ac_text: "簡易 reference plugins/twl/refs/ref-wave-progress-watchdog.md を新設"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac11: refs/ref-wave-progress-watchdog.md が存在する / 空でない / wave-progress-watchdog.sh への言及を含む"
+    impl_files:
+      - "plugins/twl/refs/ref-wave-progress-watchdog.md"
+
+  - ac_index: 12
+    ac_text: "既定で OFF (環境変数 WAVE_PROGRESS_WATCHDOG_ENABLED=1 等の opt-in) として段階導入"
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac12: WAVE_PROGRESS_WATCHDOG_ENABLED を参照 / 未設定時は早期 exit / WAVE_PROGRESS_WATCHDOG_ENABLED=1 で起動開始"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
