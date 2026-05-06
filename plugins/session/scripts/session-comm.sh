@@ -432,9 +432,7 @@ cmd_inject_file() {
         # paste-buffer 後に待機（Ink の非同期イベントループがペースト処理を
         # 完了する前に Enter が到着するタイミング問題を回避。#234）
         sleep 0.3
-        # shellcheck source=./session-comm-backend-tmux.sh
-        source "${SCRIPT_DIR}/session-comm-backend-tmux.sh"
-        _backend_tmux_send "$target" "" --enter-only
+        session_msg send "$target" "" --enter-only
     fi
 }
 
