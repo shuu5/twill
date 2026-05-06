@@ -1460,6 +1460,15 @@ step_auto_merge() {
     # .autopilot/ 配下の checkpoints/issues/trace を audit dir に永続化し、
     # 後続の worktree 削除で消失する中間成果物を保全する。
     _audit_snapshot_autopilot
+    # #1428: post-merge event emission (Layer 1 of #1425)
+    # auto-merge.sh に渡した引数をそのまま emit スクリプトに転送する。
+    # 失敗しても ok 判定を維持（best-effort）。
+    local emit_script="$script_dir/emit-wave-pr-merged-event.sh"
+    if [[ -x "$emit_script" ]]; then
+      "$emit_script" "$@" || \
+        printf '[%s] WARN post-merge event emission failed (best-effort)\n' \
+               "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >&2
+    fi
   else
     local rc=$?
     err "auto-merge" "auto-merge.sh 失敗 (exit=$rc)"
