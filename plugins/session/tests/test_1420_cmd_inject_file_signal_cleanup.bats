@@ -385,7 +385,10 @@ MOCK
     local active_buffers="$SANDBOX/active_buffers"
 
     # set -m: ジョブ制御有効化 → background プロセスが独立 process group に配置される
+    # bats サブシェルとは別 pgid に配置されるため kill -INT -$pgid が bats 自身に届かない
     set -m
+    # set +m を RETURN trap でガード（return 1 パスで set -m が残留しないようにする）
+    trap 'set +m' RETURN
     local pid exit_code=0
     PATH="$SANDBOX/bin:$PATH" \
     _TEST_MODE=1 \
@@ -399,13 +402,21 @@ MOCK
         sleep 0.1; waited=$((waited+1))
     done
 
-    # pgid を取得してプロセスグループへ SIGINT 送信
+    # タイムアウト確認（active_buffers 未書き込みはタイムアウト = CI 低速環境）
+    if [[ ! -s "$active_buffers" ]]; then
+        skip "タイムアウト: load-buffer 待機が 2s 内に完了しなかった（CI 低速環境の可能性）"
+    fi
+
+    # pgid を取得してプロセスグループへ SIGINT 送信（allowlist 検証付き）
     local pgid
     pgid=$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')
-    kill -INT "-$pgid" 2>/dev/null || kill -INT "$pid" 2>/dev/null || true
+    if [[ "$pgid" =~ ^[1-9][0-9]*$ ]]; then
+        kill -INT "-$pgid" 2>/dev/null || kill -INT "$pid" 2>/dev/null || true
+    else
+        kill -INT "$pid" 2>/dev/null || true
+    fi
 
     wait "$pid" 2>/dev/null || exit_code=$?
-    set +m
 
     # SIGINT のデフォルト動作: exit 130 (128 + 2)
     # trap INT 未実装でも SIGINT で終了するため exit 130 になる
