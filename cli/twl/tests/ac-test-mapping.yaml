@@ -414,3 +414,77 @@ mappings:
       - "test_ac4_file_remains_in_decisions_dir"
     impl_files:
       - "plugins/twl/architecture/decisions/ADR-033-cross-repo-protocol-pinning.md"
+
+  # ---------------------------------------------------------------------------
+  # Issue #1414: tech-debt(#1398): _validate_command() double-output — print(stderr) 削除 + cli.py try/except 復元
+  # ---------------------------------------------------------------------------
+
+  - ac_index: "1414-AC1"
+    ac_text: "cli/twl/src/twl/mcp_server/lifecycle.py の _validate_command() から print(file=sys.stderr) を全箇所削除する（OSError / 絶対パス reject / allowlist reject の3経路）。OSError 経路は raise ValueError(...) from e の連鎖を維持し、cli.py の except ValueError で捕捉可能であること"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_names:
+      - "TestAC3StructuredLogging::test_ac3_value_error_message_contains_command"
+      - "TestAC3StructuredLogging::test_ac3_value_error_message_contains_allowlist_or_reason"
+      - "TestAC3StructuredLogging::test_ac3_structured_log_output_on_rejection"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: "1414-AC2"
+    ac_text: "cli/twl/src/twl/cli.py の argparse ベースのディスパッチブロック（if args.subcommand == 'mcp': 〜 if args.mcp_subcommand == 'restart':、現 line 144-147 周辺）に try/except ValueError を復元する。restart_mcp_server() 呼び出しが _find_mcp_server_cmd() → _validate_command() 経由で raise する ValueError を捕捉し、print(f\"Error: mcp restart failed — {e}\", file=sys.stderr) + sys.exit(1) で構造化エラー出力する"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_names:
+      - "TestAC6CliValueErrorHandling::test_ac6_mcp_restart_catches_value_error_exits_1"
+      - "TestAC6CliValueErrorHandling::test_ac6_error_message_printed_on_value_error"
+      - "TestAC6CliValueErrorHandling::test_ac6_cli_dispatch_has_try_except_for_value_error"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: "1414-AC3"
+    ac_text: "_validate_command() が raise する ValueError のメッセージに、拒否理由（コマンド名・allowlist・許可 prefix リスト）が含まれること（既存挙動の維持）"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_names:
+      - "TestAC3StructuredLogging::test_ac3_value_error_message_contains_command"
+      - "TestAC3StructuredLogging::test_ac3_value_error_message_contains_allowlist_or_reason"
+      - "TestAC1AllowlistValidation::test_ac1_unknown_command_raises_value_error"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: "1414-AC4"
+    ac_text: "cli/twl/tests/test_mcp_lifecycle.py::TestAC3StructuredLogging::test_ac3_structured_log_output_on_rejection を更新し、_find_mcp_server_cmd() 直接呼び出しではなく cli.main() 経由で stderr に構造化情報が出力されることを検証する（テスト境界が unit → integration にシフトする点を docstring に明記）"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_names:
+      - "TestAC3StructuredLogging::test_ac3_structured_log_output_on_rejection"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: "1414-AC5"
+    ac_text: "test_mcp_lifecycle.py の TestAC6CliValueErrorHandling クラス内 4 テスト全てを GREEN にする"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_names:
+      - "TestAC6CliValueErrorHandling::test_ac6_mcp_restart_catches_value_error_exits_1"
+      - "TestAC6CliValueErrorHandling::test_ac6_error_message_printed_on_value_error"
+      - "TestAC6CliValueErrorHandling::test_ac6_cli_dispatch_has_try_except_for_value_error"
+      - "TestAC6CliValueErrorHandling::test_ac6_cli_mcp_restart_exits_1_on_value_error_subprocess"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: "1414-AC6"
+    ac_text: "正常系（uv / uvx 起動）の挙動は影響を受けない"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_names:
+      - "TestAC4LegitimateCommandsUnaffected::test_ac4_uv_command_is_in_allowlist"
+      - "TestAC4LegitimateCommandsUnaffected::test_ac4_uvx_command_is_in_allowlist"
+      - "TestAC4LegitimateCommandsUnaffected::test_ac4_uv_command_does_not_raise"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+      - "cli/twl/src/twl/cli.py"
+
+  - ac_index: "1414-AC7"
+    ac_text: "stderr 出力が単一経路になることを behavioral test で確認する。cli.main() 経由で不正コマンド検出時、captured.err に 'Error: mcp restart failed —' で始まる行が正確に 1 行のみ出現し、Python traceback（Traceback (most recent call last):）が含まれないことを assert する"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_names:
+      - "TestAC6CliValueErrorHandling::test_ac7_stderr_single_line_no_traceback_on_invalid_command"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
