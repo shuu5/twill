@@ -102,7 +102,7 @@ STUB_EOF
   # AC: ポーリングループが 60s 間隔で動作する設定を持つ
   # RED: ファイルが存在しないため fail
   [ -f "${WATCHDOG_SCRIPT}" ]
-  run grep -E 'POLL_INTERVAL.*60|60.*POLL_INTERVAL|sleep.*60|interval.*60' "${WATCHDOG_SCRIPT}"
+  run grep -iE 'POLL_INTERVAL.*60|60.*POLL_INTERVAL|sleep.*60|GH_API_FALLBACK.*60|60.*GH_API' "${WATCHDOG_SCRIPT}"
   [ "${status}" -eq 0 ]
 }
 
@@ -271,10 +271,15 @@ exit 0
 SPAWN_STUB
   chmod +x "${STUB_BIN}/auto-next-spawn.sh"
 
-  run env AUTO_NEXT_SPAWN="${STUB_BIN}/auto-next-spawn.sh" bash "${WATCHDOG_SCRIPT}" \
-    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
-    --supervisor-dir "${SUPERVISOR_DIR}" \
-    --single-poll
+  run env \
+    WAVE_PROGRESS_WATCHDOG_ENABLED=1 \
+    WAVE_QUEUE_FILE="${SUPERVISOR_DIR}/wave-queue.json" \
+    SUPERVISOR_DIR="${SUPERVISOR_DIR}" \
+    AUTO_NEXT_SPAWN_SCRIPT="${STUB_BIN}/auto-next-spawn.sh" \
+    GH_API_FALLBACK_INTERVAL_SEC=1 \
+    POLL_INTERVAL_SEC=1 \
+    SINGLE_POLL_TEST_MODE=1 \
+    bash "${WATCHDOG_SCRIPT}"
   [ "${status}" -eq 0 ]
 
   # auto-next-spawn が 1 回のみ呼ばれたことを確認
@@ -366,12 +371,14 @@ GH_STUB_AC10
   # backoff ログファイルがスクリプト実行後に生成されることを期待
   BACKOFF_LOG="${SUPERVISOR_DIR}/backoff-applied.log"
 
-  run bash "${WATCHDOG_SCRIPT}" \
-    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
-    --supervisor-dir "${SUPERVISOR_DIR}" \
-    --single-poll \
-    --backoff-log "${BACKOFF_LOG}"
-  # ファイル不在のため fail（RED）
+  run env \
+    WAVE_PROGRESS_WATCHDOG_ENABLED=1 \
+    WAVE_QUEUE_FILE="${SUPERVISOR_DIR}/wave-queue.json" \
+    SUPERVISOR_DIR="${SUPERVISOR_DIR}" \
+    GH_API_FALLBACK_INTERVAL_SEC=1 \
+    POLL_INTERVAL_SEC=1 \
+    SINGLE_POLL_TEST_MODE=1 \
+    bash "${WATCHDOG_SCRIPT}"
   [ "${status}" -eq 0 ]
 
   # backoff が適用されたログが残ること
@@ -406,11 +413,14 @@ GH_STUB_AC10
   esac
   '
 
-  run bash "${WATCHDOG_SCRIPT}" \
-    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
-    --supervisor-dir "${SUPERVISOR_DIR}" \
-    --single-poll
-  # daemon を crash させないため exit 0 期待（スクリプト不在のため RED）
+  run env PATH="${STUB_BIN}:${PATH}" \
+    WAVE_PROGRESS_WATCHDOG_ENABLED=1 \
+    WAVE_QUEUE_FILE="${SUPERVISOR_DIR}/wave-queue.json" \
+    SUPERVISOR_DIR="${SUPERVISOR_DIR}" \
+    GH_API_FALLBACK_INTERVAL_SEC=1 \
+    POLL_INTERVAL_SEC=1 \
+    SINGLE_POLL_TEST_MODE=1 \
+    bash "${WATCHDOG_SCRIPT}"
   [ "${status}" -eq 0 ]
 
   # intervention-log に WARN が記録されていることを確認

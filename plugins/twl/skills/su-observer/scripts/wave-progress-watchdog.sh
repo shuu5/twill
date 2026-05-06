@@ -50,6 +50,8 @@ AUTO_NEXT_SPAWN_SCRIPT="${AUTO_NEXT_SPAWN_SCRIPT:-${_SCRIPT_DIR}/auto-next-spawn
 AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
 GH_API_FALLBACK_INTERVAL_SEC="${GH_API_FALLBACK_INTERVAL_SEC:-60}"
 _GH_API_FALLBACK_MAX_BACKOFF=600
+# テスト用: 1 回のポーリングのみ実行して終了（SINGLE_POLL_TEST_MODE=1）
+SINGLE_POLL_TEST_MODE="${SINGLE_POLL_TEST_MODE:-0}"
 
 mkdir -p "${SUPERVISOR_DIR}/events" "${SUPERVISOR_DIR}/locks" 2>/dev/null || true
 
@@ -310,5 +312,6 @@ while true; do
     esac
   fi
 
+  [[ "$SINGLE_POLL_TEST_MODE" == "1" ]] && exit 0
   sleep "$POLL_INTERVAL_SEC"
 done
