@@ -158,6 +158,7 @@ UPDATED_JSON=$(jq --argjson nw "$NEXT_WAVE" '
 }
 
 # ---- AC4: completed-flag set（TARGET_WAVE 指定時、dequeue 永続化成功後） ----
+[[ -n "$TARGET_WAVE" ]] && mkdir -p "${_SUPERVISOR_DIR}/locks" 2>/dev/null || true
 [[ -n "$TARGET_WAVE" ]] && touch "${_SUPERVISOR_DIR}/locks/wave-${TARGET_WAVE}-completed.flag"
 
 echo "[auto-next-spawn] spawning wave ${NEXT_WAVE}: ${SPAWN_ARGV[*]}"
