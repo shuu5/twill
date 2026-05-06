@@ -403,8 +403,17 @@ cmd_inject_file() {
     # 前提: tmux >= 2.0 (delete-buffer -b は tmux 2.0+ で追加)
     # named buffer でバッファ衝突を防止 (#1050)
     local _buf_name="session-comm-$$-$(date +%s%N)"
+    # 信号ハンドラ: SIGTERM/SIGHUP/SIGINT で buffer を削除して終了する (#1420)
+    # _buf_name 代入直後（load-buffer 呼び出し前）に設定する（AC2）
+    # shellcheck disable=SC2064
+    trap "tmux delete-buffer -b $_buf_name 2>/dev/null || true; exit 143" TERM
+    # shellcheck disable=SC2064
+    trap "tmux delete-buffer -b $_buf_name 2>/dev/null || true; exit 129" HUP
+    # shellcheck disable=SC2064
+    trap "tmux delete-buffer -b $_buf_name 2>/dev/null || true; exit 130" INT
     tmux load-buffer -b "$_buf_name" "$file_path" || {
         tmux delete-buffer -b "$_buf_name" 2>/dev/null || true
+        trap - TERM HUP INT
         echo "Error: failed to load buffer from '$file_path'" >&2
         exit 1
     }
@@ -416,17 +425,20 @@ cmd_inject_file() {
     if [[ "$tmux_major" -gt 3 ]] || { [[ "$tmux_major" -eq 3 ]] && [[ "$tmux_minor" -ge 2 ]]; }; then
         tmux paste-buffer -b "$_buf_name" -p -t "$target" || {
             tmux delete-buffer -b "$_buf_name" 2>/dev/null || true
+            trap - TERM HUP INT
             echo "Error: failed to paste buffer to '$window_name'" >&2
             exit 1
         }
     else
         tmux paste-buffer -b "$_buf_name" -t "$target" || {
             tmux delete-buffer -b "$_buf_name" 2>/dev/null || true
+            trap - TERM HUP INT
             echo "Error: failed to paste buffer to '$window_name'" >&2
             exit 1
         }
     fi
     tmux delete-buffer -b "$_buf_name" 2>/dev/null || true
+    trap - TERM HUP INT
 
     if ! $no_enter; then
         # paste-buffer 後に待機（Ink の非同期イベントループがペースト処理を

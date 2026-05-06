@@ -1,133 +1,161 @@
-# ac-test-mapping.yaml — Issue #1218: tech-debt: tmux kill-window / set-option
+# ac-test-mapping.yaml — Issue #1420: tech-debt: session-comm cmd_inject_file シグナルハンドラ
 # 生成: AC Scaffold Tests Agent
-# 対象テストファイル: 複数（AC 毎に配置先が異なる）
+# 対象テストファイル: plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats
 #
-# 注意: このファイルは Issue #1218 用に上書き。Issue #1167 の mapping は
-# git history（PR #1190 付近）でトレーサビリティを維持。
+# 注意: このファイルは Issue #1420 用に上書き。Issue #1218 の mapping は
+# git history でトレーサビリティを維持。
 #
 # ac-impl-coverage-check.sh 向け:
 #   impl_files が [] の AC はプロセス AC または未特定のため手動補完が必要。
 
 mappings:
   # ---------------------------------------------------------------------------
-  # AC1: 既存テスト GREEN 化（lib/tmux-resolve.sh 実装）
-  #   既存の lib-tmux-resolve.bats 5 ケース (AC4-1〜AC4-4b) を GREEN にする
-  #   テスト生成不要（既存 bats に記載済み）
+  # AC1: cmd_inject_file 内に trap '<cleanup>' TERM HUP INT ハンドラを追加する
   # ---------------------------------------------------------------------------
   - ac_index: 1
-    ac_text: "既存 plugins/session/tests/lib-tmux-resolve.bats 5 ケースを GREEN 化（実装追加）（test ID: ::AC4-1 〜 ::AC4-4b）"
-    test_file: "plugins/session/tests/lib-tmux-resolve.bats"
-    test_name: "AC4-1: 正常解決 — tmux mock が main:3 wt-target 返却 → stdout main:3 + exit 0"
+    ac_text: "cmd_inject_file 内に trap '<cleanup>' TERM HUP INT ハンドラを追加し、各シグナル受信時に tmux delete-buffer -b \"$_buf_name\" 2>/dev/null || true が実行される"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac1[structural][RED]: cmd_inject_file に 'trap.*TERM.*HUP.*INT' または 'trap.*TERM' が存在する"
     status: RED
-    note: |
-      既存 5 ケース (AC4-1, AC4-2, AC4-3, AC4-4a, AC4-4b) は
-      plugins/session/scripts/lib/tmux-resolve.sh が存在しないため全て RED。
-      実装後 GREEN になる（テスト scaffold 不要、既存テストを流用）。
     impl_files:
-      - "plugins/session/scripts/lib/tmux-resolve.sh"
-      # 注意: tmux-resolve.sh は実装前（未存在）。このパスが実装ターゲット。
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 1
+    ac_text: "cmd_inject_file の trap handler に delete-buffer が含まれる"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac1[structural][RED]: cmd_inject_file の trap handler に delete-buffer が含まれる"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
 
   # ---------------------------------------------------------------------------
-  # AC2: 複数 session 同名 window の disambig（新規テスト）
+  # AC2: handler は _buf_name 代入直後（load-buffer 直前）に設定する
   # ---------------------------------------------------------------------------
   - ac_index: 2
-    ac_text: "tmux mock で複数 session 同名 window 時に正しい session が kill される（bats: issue-lifecycle-orchestrator-tmux-resolve.bats::AC2-multi-session-disambig）"
-    test_file: "plugins/twl/tests/bats/scripts/issue-lifecycle-orchestrator-tmux-resolve.bats"
-    test_name: "AC2-multi-session-disambig: 複数セッションに同名 window が存在する場合 kill-window は session:index 形式で呼ばれる (RED)"
+    ac_text: "handler は _buf_name 代入直後（= tmux load-buffer 呼び出し直前）に設定する。代入前に trap を仕込まない（未設定変数参照を避ける）"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac2[structural][RED]: trap handler は _buf_name 代入後・load-buffer 呼び出し前の行に存在する"
     status: RED
     impl_files:
-      - "plugins/session/scripts/lib/tmux-resolve.sh"
-      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
-
-  - ac_index: 2
-    ac_text: "tmux mock で set-option が resolved target (session:index) で呼ばれる（bats: launcher-tmux-resolve.bats::AC2-set-option-resolved-target）"
-    test_file: "plugins/session/tests/launcher-tmux-resolve.bats"
-    test_name: "AC2-set-option-resolved-target: _resolve_window_target 成功時 set-option は session:index 形式で呼ばれる (RED)"
-    status: RED
-    impl_files:
-      - "plugins/session/scripts/lib/tmux-resolve.sh"
-      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+      - "plugins/session/scripts/session-comm.sh"
 
   # ---------------------------------------------------------------------------
-  # AC3: regression（cld-observe-any.bats PASS 維持）
-  #   新規テスト不要（既存テストの PASS 維持を確認するのみ）
+  # AC3: 信号別 signal-conventional 終了コード（SIGTERM=143, SIGHUP=129, SIGINT=130）
   # ---------------------------------------------------------------------------
   - ac_index: 3
-    ac_text: "cld-observe-any.bats PASS 維持（既存 evaluate_window() 動作不変）"
-    test_file: "plugins/session/tests/cld-observe-any.bats"
-    test_name: "(既存テスト群の regression 維持、新規テスト追加なし)"
+    ac_text: "handler 実行後、信号別の signal-conventional 終了コードで終了する: SIGTERM=143 (128+15), SIGHUP=129 (128+1), SIGINT=130 (128+2)"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac3[functional][RED]: SIGTERM 送信時に終了コード 143 (128+15) で終了する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 3
+    ac_text: "SIGHUP 受信時に終了コード 129 (128+1) で終了する"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac3[functional][RED]: SIGHUP 送信時に終了コード 129 (128+1) で終了する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 3
+    ac_text: "SIGINT 受信時に終了コード 130 (128+2) で終了する"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac3[functional][RED]: SIGINT 送信時に終了コード 130 (128+2) で終了する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC4: 既存 inline cleanup（normal path / 3 つの error path）は温存する
+  #      regression ガードとして現時点でも PASS する
+  # ---------------------------------------------------------------------------
+  - ac_index: 4
+    ac_text: "既存 inline cleanup（normal path / 3 つの error path）は温存する。handler との重複呼び出しは冪等であることを delete-buffer ... 2>/dev/null || true で保証"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac4[structural][GREEN-regression]: load-buffer error path の inline delete-buffer が温存されている"
     status: GREEN
-    note: "regression ガード。既存テストの PASS 継続を確認するためのみ記載。新規テスト生成不要。"
+    note: "現時点で既に inline cleanup 実装済みのため GREEN。AC1 実装後も消えていないことを確認する regression ガード。"
     impl_files:
-      - "plugins/session/scripts/cld-observe-any"
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 4
+    ac_text: "paste-buffer error path（-p 分岐）の inline delete-buffer が温存されている"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac4[structural][GREEN-regression]: paste-buffer error path の inline delete-buffer が温存されている"
+    status: GREEN
+    note: "regression ガード。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
 
   # ---------------------------------------------------------------------------
-  # AC4: doc renumber（pitfalls-catalog.md §4.11 → §4.12）
-  # ---------------------------------------------------------------------------
-  - ac_index: 4
-    ac_text: "pitfalls-catalog.md §4.11 節番号衝突解消（Monitor 連携 を §4.12 に renumber、TOC・cross-ref も追従）"
-    test_file: "plugins/twl/tests/bats/catalog-integrity.bats"
-    test_name: "AC4(#1218): pitfalls-catalog.md に §4.12 が存在すること (RED)"
-    status: RED
-    impl_files:
-      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
-
-  - ac_index: 4
-    ac_text: "pitfalls-catalog.md §4.12 に Monitor 連携の記述があること"
-    test_file: "plugins/twl/tests/bats/catalog-integrity.bats"
-    test_name: "AC4(#1218): pitfalls-catalog.md §4.12 に 'Monitor 連携' または 'Monitor tool' の記述があること (RED)"
-    status: RED
-    impl_files:
-      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
-
-  - ac_index: 4
-    ac_text: "pitfalls-catalog.md TOC に §4.12 cross-ref が含まれること"
-    test_file: "plugins/twl/tests/bats/catalog-integrity.bats"
-    test_name: "AC4(#1218): pitfalls-catalog.md TOC に §4.12 への cross-ref が含まれること (RED)"
-    status: RED
-    impl_files:
-      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
-
-  - ac_index: 4
-    ac_text: "pitfalls-catalog.md §4.11 が tmux kill-window / set-option 落とし穴の新コンテンツになっていること"
-    test_file: "plugins/twl/tests/bats/catalog-integrity.bats"
-    test_name: "AC4(#1218): pitfalls-catalog.md §4.11 が tmux kill-window / set-option 落とし穴の内容になっていること (RED)"
-    status: RED
-    impl_files:
-      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
-
-  # ---------------------------------------------------------------------------
-  # AC5: smoke テスト（issue-lifecycle-orchestrator.sh dry-run で exit 0）
+  # AC5: 各 exit 経路の直前で trap - TERM HUP INT で trap を解除する
   # ---------------------------------------------------------------------------
   - ac_index: 5
-    ac_text: "issue-lifecycle-orchestrator.sh が --per-issue-dir を done 済み subdir で起動して exit 0 確認"
-    test_file: "plugins/twl/tests/bats/scripts/issue-lifecycle-orchestrator-smoke.bats"
-    test_name: "AC5-smoke: done 済み subdir 1 件で orchestrator が exit 0 で完了する (smoke)"
+    ac_text: "各 exit 経路（正常終了・3 つの error path）の exit 直前で trap - TERM HUP INT で trap を解除する。正常終了では tmux delete-buffer（L431 相当）後に解除し、error path では delete-buffer 直後に解除する"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac5[structural][RED]: cmd_inject_file 内に 'trap - TERM HUP INT' が存在する"
     status: RED
-    note: |
-      空ディレクトリ（IN/draft.md なし）では exit 1 が仕様（バリデーション）。
-      done 済み subdir を 1 件含むディレクトリを使うのが正しい smoke。
-      lib/tmux-resolve.sh 実装 + callsite リファクタ後も exit 0 を維持することを確認。
     impl_files:
-      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
-      - "plugins/session/scripts/lib/tmux-resolve.sh"
+      - "plugins/session/scripts/session-comm.sh"
 
   - ac_index: 5
-    ac_text: "空ディレクトリ（IN/draft.md なし）で exit 1（バリデーション回帰ガード）"
-    test_file: "plugins/twl/tests/bats/scripts/issue-lifecycle-orchestrator-smoke.bats"
-    test_name: "AC5-smoke: 空ディレクトリ（IN/draft.md なし）で exit 1（バリデーション回帰ガード）"
-    status: GREEN
-    note: "バリデーション動作は実装前から仕様通り。リグレッションガードとして記載。"
+    ac_text: "正常終了 exit 前（delete-buffer 後）に trap - TERM HUP INT がある"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac5[structural][RED]: 正常終了 exit 前（delete-buffer 後）に trap - TERM HUP INT がある"
+    status: RED
     impl_files:
-      - "plugins/twl/scripts/issue-lifecycle-orchestrator.sh"
+      - "plugins/session/scripts/session-comm.sh"
 
   # ---------------------------------------------------------------------------
-  # AC6: _resolve_window_target() unique 保証（同一 session 内同名 window edge case）
+  # AC6: 新規 bats テストで signal 送信・終了コード・バッファ残留を検証
   # ---------------------------------------------------------------------------
   - ac_index: 6
-    ac_text: "lib/tmux-resolve.sh の _resolve_window_target() が unique 保証（同名 window が同一 session に複数存在する edge case で fail-loud）"
-    test_file: "plugins/session/tests/lib-tmux-resolve.bats"
-    test_name: "AC4-3b: same-session uniqueness — 同一 session 内に同名 window が複数 → exit 1 + stderr に uniqueness 違反 (AC6)"
+    ac_text: "SIGTERM を cmd_inject_file 実行中の subprocess に送信し、終了コードが 143 であること"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac6[functional][RED]: SIGTERM 受信後に session-comm-$$- プレフィックスのバッファが残留しない"
+    status: RED
+    note: "AC3 の SIGTERM=143 テストとセット。バッファ残留チェックと終了コードチェックは別テストに分離。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 6
+    ac_text: "SIGHUP（129）受信後にバッファが残留しないこと"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac6[functional][RED]: SIGHUP 受信後に session-comm-$$- プレフィックスのバッファが残留しない"
     status: RED
     impl_files:
-      - "plugins/session/scripts/lib/tmux-resolve.sh"
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 6
+    ac_text: "SIGINT（130）受信後にバッファが残留しないこと"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac6[functional][RED]: SIGINT 受信後に session-comm-$$- プレフィックスのバッファが残留しない"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC7: 既存テストが PASS する（regression なし）
+  #      現時点でも PASS する構造チェック（ファイル存在確認のみ）
+  # ---------------------------------------------------------------------------
+  - ac_index: 7
+    ac_text: "既存テスト plugins/session/tests/issue-1050-inject-file-named-buffer.bats および plugins/session/tests/session-comm-robustness.test.sh が PASS する（regression なし）"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac7: 既存テスト issue-1050-inject-file-named-buffer.bats が存在する（regression ガード）"
+    status: GREEN
+    note: |
+      現時点でも PASS する（ファイル存在確認のみ）。
+      実際の既存テスト実行は make test / bats コマンドで確認する。
+      AC1-AC5 実装後も既存テストが PASS することを bats 実行で確認すること。
+    impl_files:
+      - "plugins/session/tests/issue-1050-inject-file-named-buffer.bats"
+
+  - ac_index: 7
+    ac_text: "既存テスト session-comm-robustness.test.sh が存在すること（regression ガード）"
+    test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+    test_name: "ac7: 既存テスト session-comm-robustness.test.sh が存在する（regression ガード）"
+    status: GREEN
+    note: "ファイル存在確認のみ。実際の regression 確認は bats / bash で実行。"
+    impl_files:
+      - "plugins/session/tests/session-comm-robustness.test.sh"
