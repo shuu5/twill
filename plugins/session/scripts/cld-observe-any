@@ -490,6 +490,10 @@ LAST_HB_TS=0
 # [IDLE-COMPLETED] 状態管理 — メインループスコープで宣言 (AC-5, Issue #1117)
 # evaluate_window() は stateless 設計を維持するため、連想配列はここで管理する
 declare -A IDLE_COMPLETED_TS
+# #1457: timeout-based fallback — phrase 非マッチでも IDLE_COMPLETED_TIMEOUT_SEC 秒経過後に auto-kill
+# IDLE_COMPLETED_TIMEOUT_SEC=0 (default) で無効化。env var で override 可能
+IDLE_COMPLETED_TIMEOUT_SEC="${IDLE_COMPLETED_TIMEOUT_SEC:-0}"
+declare -A IDLE_TIMEOUT_FIRST_ACTIVE_TS
 
 # _check_idle_completed() の SSOT を source する
 # BASH_SOURCE[0] = plugins/session/scripts/cld-observe-any → ../twl/ = plugins/twl/
@@ -622,6 +626,25 @@ while true; do
                    [[ -z "$_idle_thinking" ]] && \
                    echo "$PANE_CONTENT" | grep -qE "${IDLE_COMPLETED_PHRASE_REGEX:-nothing pending}"; then
                     IDLE_COMPLETED_TS[$WIN]=$NOW
+                fi
+                # #1457 Approach B: timeout-based fallback — phrase 非マッチでも TIMEOUT_SEC 経過で auto-kill
+                if [[ "${IDLE_COMPLETED_TIMEOUT_SEC:-0}" -gt 0 ]] && \
+                   [[ -n "$PANE_CONTENT" ]] && \
+                   [[ -z "$_idle_thinking" ]]; then
+                    if [[ "${IDLE_TIMEOUT_FIRST_ACTIVE_TS[$WIN]:-0}" -eq 0 ]]; then
+                        IDLE_TIMEOUT_FIRST_ACTIVE_TS[$WIN]=$NOW
+                    elif (( NOW - IDLE_TIMEOUT_FIRST_ACTIVE_TS[WIN] >= IDLE_COMPLETED_TIMEOUT_SEC )); then
+                        echo "[IDLE-COMPLETED] $WIN: timeout-based auto-kill (IDLE_COMPLETED_TIMEOUT_SEC=${IDLE_COMPLETED_TIMEOUT_SEC}s)"
+                        if [[ "${IDLE_COMPLETED_AUTO_KILL:-0}" == "1" ]]; then
+                            SAFE_WIN="${WIN//[^a-zA-Z0-9_-]/_}"
+                            KILL_TARGET=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
+                                | awk -v n="$WIN" '$2 == n { print $1; exit }')
+                            if [[ -n "$KILL_TARGET" ]] && tmux kill-window -t "$KILL_TARGET" 2>/dev/null; then
+                                echo "[IDLE-COMPLETED] $WIN: killed (timeout=${IDLE_COMPLETED_TIMEOUT_SEC}s)"
+                                unset 'IDLE_TIMEOUT_FIRST_ACTIVE_TS[$WIN]'
+                            fi
+                        fi
+                    fi
                 fi
             fi
         done
