@@ -144,7 +144,11 @@ def main():
     if args.subcommand == 'mcp':
         if args.mcp_subcommand == 'restart':
             from twl.mcp_server.lifecycle import restart_mcp_server
-            sys.exit(restart_mcp_server())
+            try:
+                sys.exit(restart_mcp_server())
+            except ValueError as e:
+                print(f"Error: mcp restart failed — {e}", file=sys.stderr)
+                sys.exit(1)
         else:
             mcp_parser.print_help(sys.stderr)
             sys.exit(1)
