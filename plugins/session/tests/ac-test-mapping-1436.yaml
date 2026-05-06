@@ -21,11 +21,13 @@ mappings:
   - ac_index: 2
     ac_text: "選定方式に基づき test 6 を改修し、`bats plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats` 単体実行で SKIP/PASS のいずれかとなる（FAIL ではない）。SKIP とする場合は環境制約を `skip` 理由に明記する"
     test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
-    test_name: "ac3[functional][RED]: SIGINT 送信時に終了コード 130 (128+2) で終了する [ISSUE-1436-TARGET]"
+    test_name: "ac3[functional]: SIGINT 送信時に終了コード 130 (128+2) で終了する [ISSUE-1436-FIXED]"
+    test_name_also:
+      - "ac6[functional]: SIGINT 受信後に session-comm-* バッファが残留しない [ISSUE-1436-DEFERRED]"
     impl_files:
       - "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
-    # ac2 の検証: test 6 が SKIP/PASS になることを確認する。
-    # 現在 test 6 は FAIL（RED 状態）→ Issue #1436 の修正後に SKIP または PASS になる。
+    # ac2 の検証: test 6 が PASS（set -m 方式で修正済み）、test 13 が SKIP（#1420 待ち）。
+    # test_name_also: test 13 は #1436 スコープだが buffer cleanup は #1420 前提のため DEFERRED。
     # impl_files に session-comm.sh を含めない理由: ac2 のスコープは test ファイルの修正のみ
     # （session-comm.sh の trap 実装は #1420 前提であり、#1436 の OUT スコープ）。
 
