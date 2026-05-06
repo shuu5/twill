@@ -22,7 +22,7 @@
 #   PID:  .supervisor/watcher-pid-wave-progress
 #   trap: SIGTERM/EXIT で PID ファイルを削除（context-budget-monitor.sh 互換）
 
-set -uo pipefail
+set -euo pipefail
 
 # ---- --help ----
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
@@ -42,6 +42,11 @@ fi
 _SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 
 SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+# SUPERVISOR_DIR allowlist 検証（パストラバーサル防止）
+if [[ ! "$SUPERVISOR_DIR" =~ ^[A-Za-z0-9._/:-]+$ ]]; then
+  echo "[wave-progress-watchdog] ERROR: SUPERVISOR_DIR contains invalid characters: ${SUPERVISOR_DIR}" >&2
+  exit 1
+fi
 WAVE_QUEUE_FILE="${WAVE_QUEUE_FILE:-${SUPERVISOR_DIR}/wave-queue.json}"
 POLL_INTERVAL_SEC="${POLL_INTERVAL_SEC:-30}"
 AUTO_NEXT_SPAWN_SCRIPT="${AUTO_NEXT_SPAWN_SCRIPT:-${_SCRIPT_DIR}/auto-next-spawn.sh}"
@@ -49,18 +54,18 @@ AUTOPILOT_DIR="${AUTOPILOT_DIR:-.autopilot}"
 
 mkdir -p "${SUPERVISOR_DIR}/events" "${SUPERVISOR_DIR}/locks" 2>/dev/null || true
 
-# ---- AC-6: PID ファイル（context-budget-monitor.sh 互換 watcher-pid-* プレフィックス） ----
-_PID_FILE="${SUPERVISOR_DIR}/watcher-pid-wave-progress"
-echo $$ > "$_PID_FILE" 2>/dev/null || true
-trap 'rm -f "$_PID_FILE" 2>/dev/null || true' SIGTERM EXIT
-
-# ---- AC-4: flock -n で二重 invocation skip ----
+# ---- AC-4: flock -n で二重 invocation skip（PID 書き込みより先に lock を取得する）----
 _LOCK_FILE="${SUPERVISOR_DIR}/locks/wave-progress-watchdog.lock"
 exec 9>"$_LOCK_FILE"
 if ! flock -n 9; then
   echo "[wave-progress-watchdog] INFO: already running (lock held) — skip" >&2
   exit 0
 fi
+
+# ---- AC-6: PID ファイル（flock 取得後に書き込む、context-budget-monitor.sh 互換 watcher-pid-* プレフィックス） ----
+_PID_FILE="${SUPERVISOR_DIR}/watcher-pid-wave-progress"
+echo $$ > "$_PID_FILE" 2>/dev/null || true
+trap 'rm -f "$_PID_FILE" 2>/dev/null || true' SIGTERM EXIT
 
 # ---- ヘルパー関数 ----
 
@@ -81,6 +86,7 @@ _get_wave_issue_count() {
 _count_merged_events() {
   local wave="$1"
   local count=0
+  local f
   local events_dir="${SUPERVISOR_DIR}/events"
   for f in "${events_dir}/wave-${wave}-pr-merged-"*.json; do
     [[ -f "$f" ]] && count=$(( count + 1 ))
@@ -100,7 +106,7 @@ _all_merged() {
     return 1
   fi
 
-  local merged
+  local merged=0
   merged=$(_count_merged_events "$wave")
   echo "[wave-progress-watchdog] DEBUG: wave=${wave} expected=${expected} merged=${merged}" >&2
 
@@ -145,6 +151,12 @@ while true; do
 
   current_wave=$(_get_current_wave)
   if [[ -z "$current_wave" || "$current_wave" -eq 0 ]]; then
+    sleep "$POLL_INTERVAL_SEC"
+    continue
+  fi
+  # current_wave allowlist: 正の整数のみ許可（パストラバーサル防止）
+  if [[ ! "$current_wave" =~ ^[1-9][0-9]*$ ]]; then
+    echo "[wave-progress-watchdog] WARN: invalid current_wave value: ${current_wave}" >&2
     sleep "$POLL_INTERVAL_SEC"
     continue
   fi
