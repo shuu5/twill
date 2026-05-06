@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# auto-next-spawn.sh — Wave 候補自動 spawn (#1155)
+# auto-next-spawn.sh — Wave 候補自動 spawn (#1155, --target-wave #1447)
 #
 # Usage:
-#   bash auto-next-spawn.sh --queue <path> --triggered-by <window> [--dry-run]
+#   bash auto-next-spawn.sh --queue <path> --triggered-by <window> [--target-wave N] [--dry-run]
 #
 # 動作:
 #   wave-queue.json から次 Wave 1 件 dequeue → spawn_cmd_argv を exec で argv 直接渡し
@@ -11,6 +11,7 @@
 # 引数:
 #   --queue <path>         wave-queue.json パス（必須）
 #   --triggered-by <win>   kill トリガーの window 名（必須）
+#   --target-wave <N>      期待する queue[0].wave 番号（正整数のみ）。不一致・flag 残留時は skip
 #   --dry-run              spawn コマンドの echo のみ（実際の exec なし）
 #
 # spawn_cmd_argv[0] allowlist: bash / /bin/bash / /usr/bin/bash / cld-spawn
@@ -22,11 +23,13 @@ set -uo pipefail
 QUEUE_FILE=""
 TRIGGERED_BY=""
 DRY_RUN=0
+TARGET_WAVE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --queue)        QUEUE_FILE="$2"; shift 2 ;;
     --triggered-by) TRIGGERED_BY="$2"; shift 2 ;;
+    --target-wave)  TARGET_WAVE="$2"; shift 2 ;;
     --dry-run)      DRY_RUN=1; shift ;;
     *) echo "[auto-next-spawn] WARN: unknown argument: $1" >&2; shift ;;
   esac
@@ -49,6 +52,13 @@ _append_log() {
     echo "[auto-next-spawn] WARN: intervention-log append failed (continuing)" >&2
   }
 }
+
+# ---- AC1: --target-wave バリデーション（正整数のみ受理）----
+if [[ -n "$TARGET_WAVE" ]] && ! [[ "$TARGET_WAVE" =~ ^[1-9][0-9]*$ ]]; then
+  echo "[auto-next-spawn] ABORT: invalid --target-wave value: ${TARGET_WAVE}" >&2
+  _append_log "auto-cleanup+next-spawn-aborted: triggered_by=${TRIGGERED_BY}, reason=invalid --target-wave value ${TARGET_WAVE}"
+  exit 1
+fi
 
 # ---- wave-queue.json 不在チェック ----
 if [[ ! -f "$QUEUE_FILE" ]]; then
@@ -98,7 +108,7 @@ NEXT_ISSUES=$(jq -r '[.queue[0].issues[] | tostring] | join(",")' "$QUEUE_FILE")
 # spawn_cmd_argv を bash 配列に読み込む
 mapfile -t SPAWN_ARGV < <(jq -r '.queue[0].spawn_cmd_argv[]' "$QUEUE_FILE")
 
-# ---- allowlist チェック（shell injection 防止、AC-4）----
+# ---- allowlist チェック（shell injection 防止）----
 CMD0="${SPAWN_ARGV[0]:-}"
 _ALLOWED=0
 case "$CMD0" in
@@ -112,11 +122,28 @@ if [[ "$_ALLOWED" -eq 0 ]]; then
   exit 1
 fi
 
-# ---- dry-run モード（AC-8）----
+# ---- dry-run モード ----
 if [[ "$DRY_RUN" -eq 1 ]]; then
   echo "[auto-next-spawn] DRY-RUN: would exec: ${SPAWN_ARGV[*]}"
   _append_log "auto-cleanup+next-spawn-dryrun: triggered_by=${TRIGGERED_BY}, next_wave=${NEXT_WAVE}, spawned=[${NEXT_ISSUES}]"
   exit 0
+fi
+
+# ---- AC3: completed-flag 第二防衛線（TARGET_WAVE 指定時、dequeue 直前） ----
+if [[ -n "$TARGET_WAVE" ]] && [[ -f "${_SUPERVISOR_DIR}/locks/wave-${TARGET_WAVE}-completed.flag" ]]; then
+  echo "[auto-next-spawn] INFO: wave-${TARGET_WAVE}-completed.flag already exists — skip (idempotency)" >&2
+  _append_log "auto-cleanup+next-spawn-skipped: triggered_by=${TRIGGERED_BY}, reason=wave_already_completed wave=${TARGET_WAVE}"
+  exit 0
+fi
+
+# ---- AC2: target-wave 不一致チェック（TARGET_WAVE 指定時、dequeue 直前）----
+if [[ -n "$TARGET_WAVE" ]]; then
+  QUEUE_WAVE_0=$(jq -r '.queue[0].wave // empty' "$QUEUE_FILE" 2>/dev/null || echo "")
+  if [[ -z "$QUEUE_WAVE_0" || "$QUEUE_WAVE_0" != "$TARGET_WAVE" ]]; then
+    echo "[auto-next-spawn] INFO: target-wave mismatch — expected=${TARGET_WAVE} actual=${QUEUE_WAVE_0:-empty} — skip" >&2
+    _append_log "auto-cleanup+next-spawn-skipped: triggered_by=${TRIGGERED_BY}, reason=target_wave_mismatch expected=${TARGET_WAVE} actual=${QUEUE_WAVE_0:-empty}"
+    exit 0
+  fi
 fi
 
 # ---- actual spawn ----
@@ -130,11 +157,18 @@ UPDATED_JSON=$(jq --argjson nw "$NEXT_WAVE" '
   exit 1
 }
 
+# ---- AC4: completed-flag set（TARGET_WAVE 指定時、dequeue 永続化成功後） ----
+[[ -n "$TARGET_WAVE" ]] && touch "${_SUPERVISOR_DIR}/locks/wave-${TARGET_WAVE}-completed.flag"
+
 echo "[auto-next-spawn] spawning wave ${NEXT_WAVE}: ${SPAWN_ARGV[*]}"
 _append_log "auto-cleanup+next-spawn: triggered_by=${TRIGGERED_BY}, killed=${TRIGGERED_BY}, next_wave=${NEXT_WAVE}, spawned=[${NEXT_ISSUES}]"
 
+# execfail を有効化: exec 失敗時に shell が即 exit せず rollback ブロックに到達させる
+shopt -s execfail
 exec "${SPAWN_ARGV[@]}"
 # exec 失敗時（通常ここには到達しない）
 printf '%s\n' "$ORIGINAL_JSON" > "$QUEUE_FILE"
+# ---- AC4: completed-flag rollback（exec 失敗時）----
+[[ -n "$TARGET_WAVE" ]] && rm -f "${_SUPERVISOR_DIR}/locks/wave-${TARGET_WAVE}-completed.flag"
 _append_log "auto-cleanup+next-spawn-failed: triggered_by=${TRIGGERED_BY}, next_wave=${NEXT_WAVE}, reason=exec failed"
 exit 1

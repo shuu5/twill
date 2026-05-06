@@ -1,0 +1,103 @@
+mappings:
+  - ac_index: 1
+    ac_text: >-
+      auto-next-spawn.sh に --target-wave <int> 引数を追加する。値は正整数（^[1-9][0-9]*$）のみ受理し、
+      規約外（負数/非数値/空文字）なら abort（exit 1）+ intervention-log。--target-wave 未指定時は後方互換で従来動作。
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac8-2, ac8-3, ac8-4 (バリデーション失敗), ac8-1 (正整数受理)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: 2
+    ac_text: >-
+      --target-wave N 指定時、dequeue 直前に wave-queue.json を再読み込みし .queue[0].wave == N を検証する。
+      不一致なら exit 0 + intervention-log（target_wave_mismatch）。冪等的に再試行可能な状態で終了する。
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac8-5: --target-wave N + queue[0].wave != N -> exit 0 + intervention-log に target_wave_mismatch"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: 3
+    ac_text: >-
+      --target-wave N 指定時、.supervisor/locks/wave-N-completed.flag の存在を再確認し、
+      既に存在するなら exit 0 + intervention-log（wave_already_completed）。二重 dequeue 防止の第二防衛線。
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac8-6: --target-wave N + wave-N-completed.flag 存在 -> exit 0 + intervention-log に wave_already_completed"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: 4
+    ac_text: >-
+      dequeue 永続化成功後に --target-wave N が指定されていれば .supervisor/locks/wave-N-completed.flag を touch する。
+      exec 失敗時の rollback ブロックに flag rollback を追加し、queue rollback と同時に flag も rollback する。
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac8-7, ac8-8"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: 5
+    ac_text: >-
+      wave-progress-watchdog.sh:137 _invoke_auto_next_spawn を改修し、
+      --target-wave "$1" を追加、既存の _mark_wave_completed "$1" 呼び出しを削除する。
+      AUTO_NEXT_SPAWN_SCRIPT が unexecutable/不在時は flag set 操作を一切行わず WARN ログのみ。
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac9-1447: auto-next-spawn が schema validation skip 時に completed-flag が作成されず wave-queue.json も改変されない"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+
+  - ac_index: 6
+    ac_text: >-
+      既存 plugins/twl/tests/bats/observer-auto-next-spawn.bats の全 @test 件
+      （ac1〜ac10 + ac9-case1〜ac9-case6 を含む）を全件 PASS 維持する。後方互換確認。
+    test_file: "(既存テストが対応) plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "(全既存テスト — 新規追加不要)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: 7
+    ac_text: >-
+      既存 plugins/twl/tests/bats/wave-progress-watchdog.bats 全件 PASS を維持する。
+      Layer 2 / Layer 3 の正常系はそのまま動作すること。
+    test_file: "(既存テストが対応) plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "(全既存テスト — 新規追加不要)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+
+  - ac_index: 8
+    ac_text: >-
+      observer-auto-next-spawn.bats に --target-wave 関連テストケース（ac8-1〜ac8-9）を追加する。
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "ac8-1, ac8-2, ac8-3, ac8-4, ac8-5, ac8-6, ac8-7, ac8-8, ac8-9"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: 9
+    ac_text: >-
+      wave-progress-watchdog.bats に「auto-next-spawn が schema validation で失敗した場合に
+      completed-flag が残らない」回帰テストを追加する。
+      (a) .supervisor/locks/wave-N-completed.flag が作成されていない
+      (b) wave-queue.json が改変されていない ことを assert する。
+    test_file: "plugins/twl/tests/bats/wave-progress-watchdog.bats"
+    test_name: "ac9-1447: auto-next-spawn が schema validation skip 時に completed-flag が作成されず wave-queue.json も改変されない"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+
+  - ac_index: 10
+    ac_text: >-
+      shellcheck plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh
+      plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh が clean PASS する。
+    test_file: "(非機能 — shellcheck CI で確認)"
+    test_name: "(テスト不要)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/auto-next-spawn.sh"
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+
+  - ac_index: 11
+    ac_text: >-
+      plugins/twl/refs/ref-wave-progress-watchdog.md の「completed-flag の説明」と起動方法に
+      新仕様（--target-wave の意味、flag set 主体の移管、failure/exec 失敗時の skip/rollback 動作）を反映する。
+    test_file: "(非機能 — ドキュメント更新)"
+    test_name: "(テスト不要)"
+    impl_files:
+      - "plugins/twl/refs/ref-wave-progress-watchdog.md"

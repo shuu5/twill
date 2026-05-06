@@ -53,6 +53,16 @@ kill "$(cat .supervisor/watcher-pid-wave-progress)"
 - 同一 wave に対して auto-next-spawn.sh を 2 回以上呼び出すことを防ぐ
 - 手動リセット: `rm .supervisor/locks/wave-N-completed.flag`
 
+### #1447 変更点（--target-wave と flag set 責務の移管）
+
+`wave-progress-watchdog.sh` の `_invoke_auto_next_spawn` から `_mark_wave_completed` 呼び出しを削除し、代わりに `--target-wave N` フラグを `auto-next-spawn.sh` に渡すようにした。flag set の責務が watchdog 側から spawn スクリプト側へ移管された。
+
+- **flag set 主体**: `auto-next-spawn.sh` が dequeue 永続化成功直後（queue 書き込み後）に `touch wave-N-completed.flag` を実行する
+- **skip 動作（第一防衛線）**: `--target-wave N` 指定時、dequeue 直前に `queue[0].wave == N` を再検証。不一致なら `exit 0`（副作用なし、介入ログに `target_wave_mismatch` を記録）
+- **skip 動作（第二防衛線）**: dequeue 直前に `wave-N-completed.flag` の存在を再確認。既存なら `exit 0`（介入ログに `wave_already_completed` を記録）。watchdog 多重起動時の二重 dequeue を防ぐ
+- **rollback 動作**: `exec` 失敗時（通常は到達しない）は queue を元に戻し、同時に flag も `rm -f` する（exec 失敗 → flag 残留による永久 skip を防止）
+- **後方互換**: `--target-wave` 未指定時は従来通り（flag set / rm なし、無条件 dequeue）
+
 ## enable 後の動作確認手順
 
 1. `WAVE_PROGRESS_WATCHDOG_ENABLED=1` を設定して起動
