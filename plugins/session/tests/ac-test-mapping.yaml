@@ -131,3 +131,93 @@ mappings:
     status: RED
     impl_files:
       - "plugins/session/scripts/lib/tmux-resolve.sh"
+
+  # ---------------------------------------------------------------------------
+  # Issue #1424: tech-debt(test): bats AC4 で session-comm-backend-mcp.sh を
+  #              直接上書き — SIGKILL 時モック残留リスク
+  #
+  # 修正方針: _TEST_MODE + SESSION_COMM_SCRIPT_DIR sandbox 化で本番ファイルに触れない
+  # テストファイル: plugins/session/tests/test_1424_bats_ac4_sandbox.bats
+  # ---------------------------------------------------------------------------
+
+  # AC1: issue-1410 bats への guardrail（本番ファイルへの直接 cp/cat> なし）
+  - ac_index: 1
+    issue: 1424
+    ac_text: "plugins/session/tests/issue-1410-cmdinject-file-session-msg.bats 全体に対し git grep -nE '(cp|cat>).*session-comm-backend-mcp.sh' がマッチしないこと"
+    test_file: "plugins/session/tests/test_1424_bats_ac4_sandbox.bats"
+    test_name: "ac1: issue-1410 bats に本番 mcp backend への直接 cp/cat> がないこと（guardrail）"
+    status: GREEN
+    note: |
+      guardrail テスト。現在は変数 $backend_mcp 経由のため NO MATCH（PASS）。
+      Fix 後も SESSION_COMM_SCRIPT_DIR sandbox 化で本番ファイルに触れないため PASS 維持。
+      "現在も PASS だが Fix 前後で設計の意味が変わる" ことを記録する。
+    impl_files:
+      - "plugins/session/tests/issue-1410-cmdinject-file-session-msg.bats"
+
+  # AC2: issue-1404 bats への guardrail（同上）
+  - ac_index: 2
+    issue: 1424
+    ac_text: "plugins/session/tests/issue-1404-cmdinject-session-msg.bats についても AC1 同様（本番 mcp backend への上書き・cp なし）"
+    test_file: "plugins/session/tests/test_1424_bats_ac4_sandbox.bats"
+    test_name: "ac2: issue-1404 bats に本番 mcp backend への直接 cp/cat> がないこと（guardrail）"
+    status: GREEN
+    note: "AC1 同様の guardrail。Fix 後も PASS 維持。"
+    impl_files:
+      - "plugins/session/tests/issue-1404-cmdinject-session-msg.bats"
+
+  # AC3: 両 bats 実行で全 11 ケース PASS
+  - ac_index: 3
+    issue: 1424
+    ac_text: "両 bats を bats ... で実行した結果、全 11 ケース（issue-1410: 6ケース ac1〜ac6、issue-1404: 5ケース ac1〜ac5）が PASS すること"
+    test_file: "plugins/session/tests/test_1424_bats_ac4_sandbox.bats"
+    test_name: "ac3: 両 bats 実行で全 11 ケース PASS すること（issue-1410: 6件, issue-1404: 5件）"
+    status: GREEN
+    note: |
+      SESSION_COMM_SCRIPT_DIR sandbox 化後も既存の 11 ケースが PASS であることを確認する
+      リグレッション防止テスト。現ブランチでは既に PASS。
+    impl_files:
+      - "plugins/session/tests/issue-1410-cmdinject-file-session-msg.bats"
+      - "plugins/session/tests/issue-1404-cmdinject-session-msg.bats"
+
+  # AC4: bats 実行前後で sha256sum が一致すること
+  - ac_index: 4
+    issue: 1424
+    ac_text: "両 bats 実行前後で sha256sum plugins/session/scripts/session-comm-backend-mcp.sh が一致すること（本番ファイルが改変されていないこと）"
+    test_file: "plugins/session/tests/test_1424_bats_ac4_sandbox.bats"
+    test_name: "ac4: 両 bats 実行前後で session-comm-backend-mcp.sh の sha256sum が一致すること"
+    status: GREEN
+    note: |
+      BACKEND_MCP_BAK パターンでは teardown が正常動作する間は sha256sum が一致するが、
+      SIGKILL 時に teardown が呼ばれないと本番ファイルがモック状態で残る。
+      Fix 後: SESSION_COMM_SCRIPT_DIR sandbox 化で本番ファイルに一切触れないため確実に一致。
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+      - "plugins/session/tests/issue-1410-cmdinject-file-session-msg.bats"
+      - "plugins/session/tests/issue-1404-cmdinject-session-msg.bats"
+
+  # AC5-1: issue-1410 bats から BACKEND_MCP_BAK 削除確認（RED）
+  - ac_index: 5
+    issue: 1424
+    ac_text: "setup() / teardown() の BACKEND_MCP_BAK ハンドリングが不要になり削除されていること（grep -n BACKEND_MCP_BAK がマッチしないこと）"
+    test_file: "plugins/session/tests/test_1424_bats_ac4_sandbox.bats"
+    test_name: "ac5: issue-1410 bats に BACKEND_MCP_BAK ハンドリングが残っていないこと"
+    status: RED
+    note: |
+      現在 BACKEND_MCP_BAK が issue-1410 bats に 9 箇所存在するため FAIL（RED）。
+      Fix: SESSION_COMM_SCRIPT_DIR sandbox 化により BACKEND_MCP_BAK が不要になり削除される。
+    impl_files:
+      - "plugins/session/tests/issue-1410-cmdinject-file-session-msg.bats"
+
+  # AC5-2: issue-1404 bats から BACKEND_MCP_BAK 削除確認（RED）
+  - ac_index: 5
+    issue: 1424
+    ac_text: "setup() / teardown() の BACKEND_MCP_BAK ハンドリングが不要になり削除されていること（issue-1404 bats）"
+    test_file: "plugins/session/tests/test_1424_bats_ac4_sandbox.bats"
+    test_name: "ac5: issue-1404 bats に BACKEND_MCP_BAK ハンドリングが残っていないこと"
+    status: RED
+    note: |
+      現在 BACKEND_MCP_BAK が issue-1404 bats に 9 箇所存在するため FAIL（RED）。
+      Fix: SESSION_COMM_SCRIPT_DIR sandbox 化により BACKEND_MCP_BAK が不要になり削除される。
+    impl_files:
+      - "plugins/session/tests/issue-1404-cmdinject-session-msg.bats"
+

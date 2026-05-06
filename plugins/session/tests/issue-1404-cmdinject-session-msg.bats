@@ -10,16 +10,10 @@ setup() {
     PLUGIN_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/.." && pwd)"
     SCRIPT="$PLUGIN_ROOT/scripts/session-comm.sh"
     SANDBOX="$(mktemp -d)"
-    BACKEND_MCP_BAK=""  # ac4 で設定。teardown が安全ネットとして復元
-    export SANDBOX SCRIPT PLUGIN_ROOT BACKEND_MCP_BAK
+    export SANDBOX SCRIPT PLUGIN_ROOT
 }
 
 teardown() {
-    # ac4: 本番 backend-mcp.sh が上書きされた場合の安全ネット復元
-    if [[ -n "${BACKEND_MCP_BAK:-}" && -f "$BACKEND_MCP_BAK" ]]; then
-        local backend_mcp="$PLUGIN_ROOT/scripts/session-comm-backend-mcp.sh"
-        mv "$BACKEND_MCP_BAK" "$backend_mcp"
-    fi
     [[ -n "${SANDBOX:-}" && -d "$SANDBOX" ]] && rm -rf "$SANDBOX"
 }
 
@@ -94,39 +88,23 @@ _extract_cmd_inject_body() {
 # ===========================================================================
 
 @test "ac4: TWILL_MSG_BACKEND=mcp で cmd_inject が mcp backend に dispatch される" {
-    mkdir -p "$SANDBOX/bin"
+    local mock_mcp="$SANDBOX/mock-mcp-called"
+
+    # sandbox: SANDBOX/scripts/ に必要ファイルを配置（本番ファイルに一切触れない）
+    mkdir -p "$SANDBOX/scripts" "$SANDBOX/bin"
+    cp "$PLUGIN_ROOT/scripts/session-comm-backend-tmux.sh" "$SANDBOX/scripts/"
 
     # mock session-state.sh: always input-waiting
-    cat > "$SANDBOX/bin/session-state.sh" <<'EOF'
+    cat > "$SANDBOX/scripts/session-state.sh" <<'EOF'
 #!/usr/bin/env bash
-echo "input-waiting"
+if [[ "$1" == "state" ]]; then echo "input-waiting"; fi
 exit 0
 EOF
-    chmod +x "$SANDBOX/bin/session-state.sh"
+    chmod +x "$SANDBOX/scripts/session-state.sh"
 
-    # mock tmux: list-windows -a -F で resolve_target が期待する形式を返す
-    cat > "$SANDBOX/bin/tmux" <<'EOF'
-#!/usr/bin/env bash
-case "${1:-}" in
-    list-windows) echo "testsession:0 main" ;;
-    has-session)  exit 0 ;;
-    send-keys)
-        echo "FAIL: tmux send-keys was called directly (should go through session_msg → mcp backend)" >&2
-        exit 1
-        ;;
-    *) exit 0 ;;
-esac
-EOF
-    chmod +x "$SANDBOX/bin/tmux"
-
-    # mock session-comm-backend-mcp.sh: call を記録して成功
-    local backend_mcp="$PLUGIN_ROOT/scripts/session-comm-backend-mcp.sh"
-    local mock_mcp="$SANDBOX/mock-mcp-called"
-    # teardown 安全ネット用バックアップ（bats kill 時でも復元される）
-    BACKEND_MCP_BAK="$SANDBOX/session-comm-backend-mcp.sh.bak"
-    [[ -f "$backend_mcp" ]] && cp "$backend_mcp" "$BACKEND_MCP_BAK"
-
-    cat > "$backend_mcp" <<EOF
+    # mock mcp backend を SANDBOX/scripts/ に配置（本番には一切触れない）
+    local sandbox_mcp="$SANDBOX/scripts/session-comm-backend-mcp.sh"
+    cat > "$sandbox_mcp" <<EOF
 #!/usr/bin/env bash
 _backend_mcp_send() {
     echo "mcp-backend-called" > "${mock_mcp}"
@@ -137,20 +115,31 @@ _backend_shadow_send() {
     return 0
 }
 EOF
+    chmod +x "$sandbox_mcp"
 
-    # --force: state チェックをスキップ（session-state.sh は SCRIPT_DIR 絶対パス呼出のため PATH mock 非介入）
+    # mock tmux: list-windows で resolve_target が期待する形式を返す
+    # send-keys が呼ばれたら FAIL（mcp backend 経由になるべき）
+    cat > "$SANDBOX/bin/tmux" <<'EOF'
+#!/usr/bin/env bash
+case "${1:-}" in
+    list-windows) echo "testsession:0 main" ;;
+    has-session)  exit 0 ;;
+    send-keys)
+        echo "FAIL: tmux send-keys was called directly (should go through session_msg -> mcp backend)" >&2
+        exit 1
+        ;;
+    *) exit 0 ;;
+esac
+EOF
+    chmod +x "$SANDBOX/bin/tmux"
+
+    # _TEST_MODE + SESSION_COMM_SCRIPT_DIR で sandbox を参照（本番ファイルに触れない）
     PATH="$SANDBOX/bin:$PATH" \
     SESSION_COMM_LOCK_DIR="/tmp" \
+    _TEST_MODE=1 \
+    SESSION_COMM_SCRIPT_DIR="$SANDBOX/scripts" \
     TWILL_MSG_BACKEND=mcp \
     bash "$SCRIPT" inject "main" "hello" --force 2>/dev/null || true
-
-    # backend-mcp.sh を復元（teardown も安全ネットとして同じ復元を行う）
-    if [[ -f "$BACKEND_MCP_BAK" ]]; then
-        mv "$BACKEND_MCP_BAK" "$backend_mcp"
-    else
-        rm -f "$backend_mcp"
-    fi
-    BACKEND_MCP_BAK=""
 
     if [[ ! -f "$mock_mcp" ]]; then
         echo "FAIL: TWILL_MSG_BACKEND=mcp を設定しても mcp backend が呼ばれなかった" >&2
