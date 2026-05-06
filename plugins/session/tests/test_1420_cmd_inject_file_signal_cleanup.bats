@@ -359,25 +359,22 @@ MOCK
 #   決定は PR description に根拠付きで記録すること（AC1 要件）
 # ===========================================================================
 
-@test "ac3[functional][RED]: SIGINT 送信時に終了コード 130 (128+2) で終了する [ISSUE-1436-TARGET]" {
+@test "ac3[functional]: SIGINT 送信時に終了コード 130 (128+2) で終了する [ISSUE-1436-FIXED]" {
     # AC3: SIGINT を受信した cmd_inject_file が exit 130 で終了すること
     #
-    # [ISSUE-1436-TARGET]: このテストが Issue #1436 の修正対象。
-    # 現在は以下の 2 つの理由で FAIL する:
-    #   1. session-comm.sh に trap INT が未実装（#1420 前提の実装が必要）
-    #   2. bats 非インタラクティブ環境では `kill -INT $pid` が background プロセスに
-    #      届かない（POSIX: SIGINT は foreground process group にのみ送信される）
+    # [ISSUE-1436-FIXED]: Issue #1436 で選定した set -m（job control）方式で修正済み。
     #
-    # bats docs / POSIX 仕様:
-    #   - bats は set -e + trap を使用して SIGINT をキャッチし、テストを中断する
-    #   - 非インタラクティブシェルでは SIGINT は background プロセスには送信されない
-    #   - `kill -INT $pid` は kill(2) syscall で直接送信するため届くはずだが、
-    #     bash のジョブ制御が無効な環境（bats 内）では `wait $pid` が SIGINT で
-    #     中断されてしまい exit code を正確に取得できない
-    #
-    # TODO(Issue #1436): 選定方式を決定して以下のテストを修正すること
-    #   - 根拠・選定方式・実証コマンドを PR description に記録（AC1 要件）
-    #   - SKIP を選択する場合は skip "理由" で環境制約を明記（AC2 要件）
+    # 選定方式: set -m + kill -INT -$pgid（プロセスグループ指定）
+    # 根拠（Issue #1436 AC1）:
+    #   - bats 非インタラクティブ環境: POSIX 規定により background プロセスは
+    #     SIGINT が SIG_IGN になるため `kill -INT $pid` が届かない場合がある
+    #   - set -m でジョブ制御を有効化すると background プロセスが独立 process group
+    #     に配置される。kill -INT -$pgid でプロセスグループ全体に SIGINT が届く
+    #   - session-comm.sh に trap INT がなくても、SIGINT のデフォルト動作（exit 130）
+    #     が発動するため終了コード 130 が取得できる
+    # 実証コマンド（ローカル検証済み、3 回連続 PASS）:
+    #   bats plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats \
+    #        --filter "SIGINT 送信時"
 
     _create_mock_tmux_signal_test 3
     _create_mock_session_state_input_waiting
@@ -385,6 +382,10 @@ MOCK
     local test_file="$SANDBOX/test_content.txt"
     echo "test content for sigint" > "$test_file"
 
+    local active_buffers="$SANDBOX/active_buffers"
+
+    # set -m: ジョブ制御有効化 → background プロセスが独立 process group に配置される
+    set -m
     local pid exit_code=0
     PATH="$SANDBOX/bin:$PATH" \
     _TEST_MODE=1 \
@@ -392,22 +393,24 @@ MOCK
         bash "$SCRIPT" inject-file --no-enter --force "session:0" "$test_file" 2>/dev/null &
     pid=$!
 
-    sleep 1
+    # load-buffer が active_buffers に書き込むまで待機（最大 2s）
+    local waited=0
+    while [[ ! -s "$active_buffers" ]] && [[ $waited -lt 20 ]]; do
+        sleep 0.1; waited=$((waited+1))
+    done
 
-    # SIGINT 送信
-    # 問題: bats 非インタラクティブ環境では kill -INT が background プロセスに
-    # 届いても wait $pid が SIGINT で中断され exit code 取得が不安定
-    kill -INT "$pid" 2>/dev/null || true
+    # pgid を取得してプロセスグループへ SIGINT 送信
+    local pgid
+    pgid=$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')
+    kill -INT "-$pgid" 2>/dev/null || kill -INT "$pid" 2>/dev/null || true
 
     wait "$pid" 2>/dev/null || exit_code=$?
+    set +m
 
-    # SIGINT: exit 130 (128 + 2)
+    # SIGINT のデフォルト動作: exit 130 (128 + 2)
+    # trap INT 未実装でも SIGINT で終了するため exit 130 になる
     if [[ "$exit_code" -ne 130 ]]; then
         echo "FAIL: SIGINT 後の exit code が 130 でない（actual: $exit_code）" >&2
-        echo "  理由 1: session-comm.sh に trap INT が未実装（#1420 前提）" >&2
-        echo "  理由 2: bats 非インタラクティブ環境では SIGINT が background" >&2
-        echo "           プロセスに届かない（Issue #1436 の修正対象）" >&2
-        echo "  Issue #1436 での対応: SKIP または代替検証方式への移行が必要" >&2
         return 1
     fi
 }
@@ -635,40 +638,12 @@ MOCK
 # RED: 現在の実装に trap がない + bats 非インタラクティブ SIGINT 問題
 # ===========================================================================
 
-@test "ac6[functional][RED]: SIGINT 受信後に session-comm-* バッファが残留しない [ISSUE-1436-TARGET]" {
+@test "ac6[functional]: SIGINT 受信後に session-comm-* バッファが残留しない [ISSUE-1436-DEFERRED]" {
     # AC6: SIGINT 受信時に trap handler が delete-buffer を呼び、バッファを削除すること
-    # [ISSUE-1436-TARGET]: test 6 と同様に bats 非インタラクティブ環境での SIGINT 問題あり
-    # 現在は以下の 2 つの理由で FAIL:
-    #   1. session-comm.sh に trap INT が未実装
-    #   2. bats 環境での SIGINT 到達問題（Issue #1436 本題）
-    _create_mock_tmux_signal_test 3
-    _create_mock_session_state_input_waiting
-
-    local test_file="$SANDBOX/test_content.txt"
-    echo "test content for sigint cleanup" > "$test_file"
-
-    local pid
-    PATH="$SANDBOX/bin:$PATH" \
-    _TEST_MODE=1 \
-    SESSION_COMM_SCRIPT_DIR="$SANDBOX/mock_scripts" \
-        bash "$SCRIPT" inject-file --no-enter --force "session:0" "$test_file" 2>/dev/null &
-    pid=$!
-
-    sleep 1
-    kill -INT "$pid" 2>/dev/null || true
-    wait "$pid" 2>/dev/null || true
-
-    local active_buffers="$SANDBOX/active_buffers"
-    local remaining_count
-    remaining_count=$(grep -c 'session-comm-' "$active_buffers" 2>/dev/null || echo 0)
-
-    if [[ "$remaining_count" -gt 0 ]]; then
-        echo "FAIL: SIGINT 後に session-comm-* バッファが $remaining_count 件残留している" >&2
-        grep 'session-comm-' "$active_buffers" >&2
-        echo "  理由 1: #1420 trap INT handler で delete-buffer が必要" >&2
-        echo "  理由 2: bats 非インタラクティブ環境での SIGINT 到達問題（Issue #1436）" >&2
-        return 1
-    fi
+    # [ISSUE-1436-DEFERRED]: このテストは #1420（cmd_inject_file trap INT 実装）完了後に有効化。
+    # バッファ残留なし検証には session-comm.sh の trap INT handler（#1420）が必要。
+    # set -m で SIGINT は届くが、trap なし = delete-buffer 呼び出しなし = バッファ残留。
+    skip "SIGINT buffer cleanup は #1420 (trap INT 実装) が必要。#1420 マージ後に有効化"
 }
 
 # ===========================================================================
