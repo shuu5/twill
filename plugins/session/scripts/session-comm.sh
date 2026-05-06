@@ -71,7 +71,7 @@ resolve_target() {
     if [[ "$window_name" == *:* ]]; then
         local session="${window_name%%:*}"
         local win="${window_name#*:}"
-        if ! [[ "$session" =~ ^[A-Za-z0-9_./-]+$ ]]; then
+        if ! [[ "$session" =~ ^[A-Za-z0-9_./\-]+$ ]]; then
             echo "Error: invalid target format '$window_name'" >&2
             return 1
         fi
@@ -87,6 +87,11 @@ resolve_target() {
         if [[ "$win" =~ ^[0-9]+$ ]]; then
             echo "$window_name"
             return
+        fi
+        # window name allowlist: reject characters that could cause issues
+        if ! [[ "$win" =~ ^[A-Za-z0-9_./\-]+$ ]]; then
+            echo "Error: invalid window name '$win'" >&2
+            return 1
         fi
         # window name: resolve to session:index within the specified session
         local target=""
