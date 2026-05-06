@@ -4,7 +4,7 @@ mappings:
     test_file: "plugins/twl/tests/bats/step0-monitor-bootstrap-1456.bats"
     test_names:
       - "ac1: inotifywait 不在環境で polling fallback が出力される (find コマンド含む)"
-      - "ac1: inotifywait 不在環境で polling fallback が出力される (sleep 含む)"
+      - "ac1: inotifywait 不在環境で polling fallback が出力される (while true + sleep loop 含む)"
       - "ac1: inotifywait 不在環境では inotifywait コマンドが出力に含まれない"
     impl_files:
       - "plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh"
