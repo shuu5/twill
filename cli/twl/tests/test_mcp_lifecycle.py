@@ -86,9 +86,9 @@ class TestAC1AllowlistValidation:
              patch.object(lifecycle_mod.subprocess, "Popen") as mock_popen:
             try:
                 lifecycle_mod._find_mcp_server_cmd()
-            except (ValueError, Exception):
+            except Exception:
                 pass
-        mock_popen.assert_not_called()
+            mock_popen.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
