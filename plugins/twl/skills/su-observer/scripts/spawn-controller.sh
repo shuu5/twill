@@ -385,16 +385,52 @@ PYEOF
   # 理由: bare window 名での -t 指定は同名 window が複数セッションに存在する場合 ambiguous となり
   # 誤ったペインを操作するリスクがあるため、解決失敗時は安全側に倒して停止する。
 
-  # Step 1: horizontal split (左右) — 右カラムに heartbeat-watcher を起動
-  tmux split-window -h -d -l 50% -t "${resolved_target}.${base}" -c "$cwd" "bash '$heartbeat_script'"
+  # 現在の pane 数を取得（AC2: 既存 4-pane 状態は split をスキップして watcher のみ再起動）
+  local live_pane_count
+  live_pane_count=$(tmux list-panes -t "${resolved_target}" 2>/dev/null | wc -l || echo 0)
 
-  # Step 2: vertical split — 右カラムを上下分割して budget-monitor を起動
-  tmux split-window -v -d -l 67% -t "${resolved_target}.$((base+1))" -c "$cwd" "bash '$budget_script'"
+  # _wait_pane_count: sync barrier — pane 数が min_count に達するまで最大 3 秒待機
+  # タイムアウト時は WARN ログを出力して return 1（呼び出し元で abort）
+  _wait_pane_count() {
+    local target="$1" min_count="$2" retries=15
+    while [[ "$retries" -gt 0 ]]; do
+      live_pane_count=$(tmux list-panes -t "$target" 2>/dev/null | wc -l || echo 0)
+      [[ "$live_pane_count" -ge "$min_count" ]] && return 0
+      sleep 0.2; ((retries--))
+    done
+    echo "[spawn-controller] WARN: pane barrier timeout (target=${min_count}, actual=${live_pane_count})" >&2
+    return 1
+  }
 
-  # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
   local spawn_cmd
   printf -v spawn_cmd 'env IDLE_COMPLETED_AUTO_KILL=%q bash %q --window %q' "${IDLE_COMPLETED_AUTO_KILL:-0}" "$cld_observe_any" "$observer_window"
-  tmux split-window -v -d -l 50% -t "${resolved_target}.$((base+2))" -c "$cwd" "$spawn_cmd"
+
+  if [[ "$live_pane_count" -ge 4 ]]; then
+    # AC2: 既存 4-pane 状態 — split をスキップして watcher を既存 pane 内で再起動
+    echo "[spawn-controller] ✓ 既存 ${live_pane_count} pane 状態 — split をスキップ、watcher を pane 内で再起動"
+    tmux respawn-pane -k -t "${resolved_target}.$((base+1))" "bash '$heartbeat_script'" 2>/dev/null || true
+    tmux respawn-pane -k -t "${resolved_target}.$((base+2))" "bash '$budget_script'" 2>/dev/null || true
+    tmux respawn-pane -k -t "${resolved_target}.$((base+3))" "$spawn_cmd" 2>/dev/null || true
+  else
+    # Step 1: horizontal split (左右) — 右カラムに heartbeat-watcher を起動
+    if [[ "$live_pane_count" -lt 2 ]]; then
+      tmux split-window -h -d -l 50% -t "${resolved_target}.${base}" -c "$cwd" "bash '$heartbeat_script'"
+      # Sync barrier: pane 生成を確認してから次の split に進む（"can't find pane: N" 防止）
+      _wait_pane_count "${resolved_target}" 2 || return 1
+    fi
+
+    # Step 2: vertical split — 右カラムを上下分割して budget-monitor を起動
+    if [[ "$live_pane_count" -lt 3 ]]; then
+      tmux split-window -v -d -l 67% -t "${resolved_target}.$((base+1))" -c "$cwd" "bash '$budget_script'"
+      # Sync barrier: pane 生成を確認してから次の split に進む
+      _wait_pane_count "${resolved_target}" 3 || return 1
+    fi
+
+    # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
+    if [[ "$live_pane_count" -lt 4 ]]; then
+      tmux split-window -v -d -l 50% -t "${resolved_target}.$((base+2))" -c "$cwd" "$spawn_cmd"
+    fi
+  fi
 
   # cld-observe-any pane の PID・pane_id・spawn_cmd を session.json に記録
   # AC6: display-message も _resolve_window_target で解決した fully-qualified target を使う
