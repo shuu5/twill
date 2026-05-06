@@ -587,16 +587,16 @@ class TestAC6CliValueErrorHandling:
         cli_path = TWL_SRC / "twl" / "cli.py"
         content = cli_path.read_text()
 
-        # mcp restart のディスパッチ付近に ValueError 捕捉があること
-        # 「mcp」セクションに「ValueError」が含まれること
-        mcp_section_start = content.find("sys.argv[1] == 'mcp'")
+        # mcp restart のディスパッチ付近に ValueError 捕捉があること（argparse ベース）
+        # 「args.subcommand == 'mcp'」セクションに「ValueError」が含まれること
+        mcp_section_start = content.find("args.subcommand == 'mcp'")
         assert mcp_section_start != -1, (
-            "cli.py に mcp ディスパッチが見つからない"
+            "cli.py に mcp ディスパッチが見つからない（args.subcommand == 'mcp' が存在しない）"
         )
         # mcp セクション以降に ValueError が含まれること
         mcp_section = content[mcp_section_start:mcp_section_start + 500]
         assert "ValueError" in mcp_section, (
-            f"cli.py の mcp ディスパッチ付近に ValueError 捕捉が存在しない (AC6 未実装):\n{mcp_section}"
+            f"cli.py の mcp ディスパッチ付近に ValueError 捕捉が存在しない (AC2 未実装):\n{mcp_section}"
         )
 
     def test_ac6_cli_mcp_restart_exits_1_on_value_error_subprocess(self):
@@ -645,7 +645,10 @@ class TestAC6CliValueErrorHandling:
                     cli_mod.main()
                 except SystemExit:
                     pass
-                # ValueError propagate は捕捉せずに assert まで流す（traceback 有無を検証するため）
+                except ValueError:
+                    pytest.fail(
+                        "ValueError が cli.py で捕捉されず propagate した (AC2/Issue#1414 未実装)"
+                    )
 
         captured = capsys.readouterr()
 
