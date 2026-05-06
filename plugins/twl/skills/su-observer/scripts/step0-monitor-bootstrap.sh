@@ -68,6 +68,23 @@ _daemon_running() {
   return 0
 }
 
+_emit_events_monitor_commands() {
+  echo ""
+  echo "# Step 4: events/ ディレクトリ監視 (state signal: MENU-READY / STAGNATE / PHASE-COMPLETE)"
+  echo "# 別 Monitor tool または tmux window で実行すること"
+  if command -v inotifywait >/dev/null 2>&1; then
+    echo "inotifywait -m -e create -e modify ${SUPERVISOR_DIR}/events/ \\"
+    echo "  --format '%w%f %e'"
+  else
+    echo "# polling-based fallback (find + sleep loop)"
+    echo "while true; do"
+    echo "  find ${SUPERVISOR_DIR}/events/ -name 'heartbeat-*' -newer /tmp/.events-marker -print \\"
+    echo "    -exec touch /tmp/.events-marker \\; 2>/dev/null"
+    echo "  sleep 10"
+    echo "done"
+  fi
+}
+
 _emit_start_commands() {
   echo "# Monitor task 起動コマンド (起動時 SOP 用)"
   echo "# cld-observe-any daemon + Monitor tool tail -F 連携起動"
@@ -89,6 +106,7 @@ _emit_start_commands() {
   echo ""
   echo "# 定期 audit pattern (5 分ごとに全 controller window に対し実行):"
   echo "# tmux capture-pane -p | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Enter to select|^❯ [1-9]\.|Press up to edit queued'"
+  _emit_events_monitor_commands
 }
 
 case "$MODE" in
