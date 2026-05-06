@@ -1,0 +1,79 @@
+mappings:
+  - ac_index: 1
+    ac_text: "poll_gh_api_fallback 関数が rate-limit を判定する際、エラーメッセージ文字列ではなく HTTP ステータスライン (HTTP/.*403) と X-RateLimit-Remaining: 0 ヘッダの両方を確認する実装に変更されている"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac1: HTTP 403 status line + x-ratelimit-remaining: 0 header triggers rate-limit (return 2)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 1
+    ac_text: "poll_gh_api_fallback が HTTP/.*403 パターンを参照している"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac1: implementation checks HTTP/.*403 pattern in response"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 1
+    ac_text: "poll_gh_api_fallback が X-RateLimit-Remaining ヘッダを参照している"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac1: implementation checks X-RateLimit-Remaining header in response"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 2
+    ac_text: "rate-limit 検知時の戻り値（return 2）と呼び出し側の exponential backoff 動作（60s → 120s → 240s, cap 600s）は変更されない"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac2: poll_gh_api_fallback still returns 2 on rate-limit detection"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 2
+    ac_text: "_gh_backoff exponential doubling logic is preserved"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac2: _gh_backoff exponential doubling logic is preserved"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 3
+    ac_text: "wave-progress-watchdog.bats の ac6 系テストが HTTP 403 + x-ratelimit-remaining: 0 ヘッダ fixture で PASS する"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac3: existing ac6 test passes with HTTP 403 + x-ratelimit-remaining: 0 fixture"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 3
+    ac_text: "wave-progress-watchdog.bats の ac10 系テストが HTTP 403 + x-ratelimit-remaining: 0 ヘッダ fixture で PASS する"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac3: existing ac10 test passes with HTTP 403 + x-ratelimit-remaining: 0 fixture"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 4
+    ac_text: "既存のエラーメッセージマッチ（grep -qiE 'rate limit|API rate|exceeded'）は削除されている"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac4: old grep -qiE 'rate limit|API rate|exceeded' pattern is removed"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 5
+    ac_text: "gh CLI exit code 非ゼロかつヘッダから rate-limit 判定不能な場合は WARN ログ出力 + return 0 で daemon を継続"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac5: non-rate-limit gh failure produces WARN and returns 0 (daemon continues)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 5
+    ac_text: "WARN ログの実装が存在する"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac5: gh api failure without rate-limit headers keeps daemon running"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 7
+    ac_text: "JSON body 内の rate limit 文字列では rate-limit 判定しない（ヘッダ解析は header section のみ）"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac7: 'rate limit' text in JSON body does NOT trigger rate-limit detection"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 7
+    ac_text: "ヘッダ解析が最初の空行までに限定されている（実装パターン確認）"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac7: implementation limits header parsing to section before blank line"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
+  - ac_index: 7
+    ac_text: "HTTP 403 単体（x-ratelimit-remaining ヘッダなし）では rate-limit 判定しない"
+    test_file: "tests/bats/scripts/wave-progress-watchdog-1446.bats"
+    test_name: "ac7: HTTP 403 without x-ratelimit-remaining: 0 does NOT trigger rate-limit"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/wave-progress-watchdog.sh"
