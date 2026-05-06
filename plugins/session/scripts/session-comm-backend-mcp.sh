@@ -121,8 +121,36 @@ _backend_shadow_send() {
     _backend_tmux_send "$@"
     local _tmux_exit=$?
 
+    # Resolve AUTOPILOT_DIR to absolute path before allowlist validation
+    local _shadow_dir_raw="${AUTOPILOT_DIR:-.autopilot}"
+    local _shadow_dir_resolved
+    if [[ "${_shadow_dir_raw}" != /* ]]; then
+        _shadow_dir_resolved="$(pwd)/${_shadow_dir_raw}"
+    else
+        _shadow_dir_resolved="${_shadow_dir_raw}"
+    fi
+
+    # OWASP A01: allowlist で AUTOPILOT_DIR の解決先を制限 (#1411)
+    # 許可プレフィックス: /tmp, /run/user/$(id -u), project root
+    # XDG_RUNTIME_DIR は環境変数汚染対策のため使用しない (#1239 と同一方針)
+    local _shadow_allowed=false
+    local _shadow_xdg_runtime="/run/user/$(id -u)"
+    local _shadow_project_root
+    _shadow_project_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+    if [[ "${_shadow_dir_resolved}" != *..* ]]; then
+        [[ "${_shadow_dir_resolved}" == /tmp || "${_shadow_dir_resolved}" == /tmp/* ]] && _shadow_allowed=true
+        [[ "${_shadow_dir_resolved}" == "${_shadow_xdg_runtime}" || "${_shadow_dir_resolved}" == "${_shadow_xdg_runtime}/"* ]] && _shadow_allowed=true
+        [[ "${_shadow_dir_resolved}" == "${_shadow_project_root}" || "${_shadow_dir_resolved}" == "${_shadow_project_root}/"* ]] && _shadow_allowed=true
+    fi
+
+    if ! $_shadow_allowed; then
+        echo "Warning: AUTOPILOT_DIR '${_shadow_dir_raw}' is not allowed (allowlist: /tmp, ${_shadow_xdg_runtime}, ${_shadow_project_root}), shadow log skipped" >&2
+        return $_tmux_exit
+    fi
+
     # Shadow log to MCP mailbox (background, non-blocking)
-    local _shadow_log="${AUTOPILOT_DIR:-.autopilot}/mailbox/shadow-$(date +%Y%m%d).jsonl"
+    local _shadow_log="${_shadow_dir_resolved}/mailbox/shadow-$(date +%Y%m%d).jsonl"
     {
         mkdir -p "$(dirname "$_shadow_log")" 2>/dev/null || true
         local _mcp_result="ok"

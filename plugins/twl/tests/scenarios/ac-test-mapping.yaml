@@ -203,3 +203,136 @@ mappings:
     test_name: "AC7: archive ファイルに旧名 ref-architecture が保持されている"
     impl_files: []
     # impl_files: archive は変更しない（プロセス AC）
+
+# =============================================================================
+# Issue #1411: AUTOPILOT_DIR allowlist validation in _backend_shadow_send
+# =============================================================================
+
+  - ac_index: "1411-AC1a"
+    ac_text: "_backend_shadow_send 内で AUTOPILOT_DIR の resolved 値（cwd 解決後）を allowlist 検証してから mkdir-p / >> を実行する"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac1: _backend_shadow_send に allowlist 検証コードが存在する"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC1b"
+    ac_text: "_backend_shadow_send 内に allowlist 検証の構造的記述（コメントまたは変数）が存在する"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac1: _backend_shadow_send 内に allowlist 検証の構造的記述（コメントまたは変数）が存在する"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC2a"
+    ac_text: "不正値の場合、shadow log 書き出しをスキップし、stderr に Warning を出力する"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac2: 不正 AUTOPILOT_DIR 時の Warning メッセージが実装されている"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC2b"
+    ac_text: "Warning が stderr (>&2) に出力される"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac2: Warning が stderr (>&2) に出力される"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC2c"
+    ac_text: "不正値時に shadow log 書き出しをスキップする制御フローが存在する"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac2: 不正値時に shadow log 書き出しをスキップする制御フローが存在する"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC3a"
+    ac_text: "allowlist は /tmp プレフィックスチェックを含む"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac3: allowlist に /tmp プレフィックスチェックが存在する"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC3b"
+    ac_text: "allowlist は /run/user/<uid> プレフィックスチェックを含む"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac3: allowlist に /run/user/<uid> プレフィックスチェックが存在する"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC3c"
+    ac_text: "allowlist は project root チェック（git rev-parse --show-toplevel 利用）を含む"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac3: allowlist に project root チェック（git rev-parse 利用）が存在する"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC3d"
+    ac_text: "git rev-parse 失敗時に pwd フォールバックが存在する"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac3: git rev-parse 失敗時に pwd フォールバックが存在する"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC3e"
+    ac_text: "AUTOPILOT_DIR の .. 含有チェックが存在する"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac3: AUTOPILOT_DIR の .. 含有チェックが存在する"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC3f"
+    ac_text: "AUTOPILOT_DIR の絶対パスチェックが存在する"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac3: AUTOPILOT_DIR の絶対パスチェックが存在する"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC4a"
+    ac_text: "/run/user/$(id -u) を hardcode（XDG_RUNTIME_DIR を使用しない）"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac4: /run/user/$(id -u) が hardcode されている（XDG_RUNTIME_DIR 非使用）"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC4b"
+    ac_text: "shadow send 文脈で XDG_RUNTIME_DIR が参照されていない（regression guard）"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac4: shadow send 文脈で XDG_RUNTIME_DIR が参照されていない"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+    # 実装前後ともに PASS すべき regression guard
+
+  - ac_index: "1411-AC5"
+    ac_text: "既存の正常ケース（AUTOPILOT_DIR 未設定 → .autopilot 相対 → cwd で project 配下に解決）が引き続き動作する"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac5: AUTOPILOT_DIR 未設定時の .autopilot デフォルト値パターンが存在する（regression guard）"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+    # 実装前後ともに PASS すべき regression guard
+
+  - ac_index: "1411-AC6a"
+    ac_text: "テストシナリオ: パストラバーサル拒否 (AUTOPILOT_DIR=../../etc)"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac6(a): AUTOPILOT_DIR=../../etc (パストラバーサル) → stderr に Warning が出る"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC6b"
+    ac_text: "テストシナリオ: allowlist 外絶対パス拒否 (AUTOPILOT_DIR=/var/log/foo)"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac6(b): AUTOPILOT_DIR=/var/log/foo (allowlist 外絶対パス) → stderr に Warning が出る"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+  - ac_index: "1411-AC6c"
+    ac_text: "テストシナリオ: デフォルト動作（AUTOPILOT_DIR 未設定）"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac6(c): AUTOPILOT_DIR 未設定時はエラーなく完了する（デフォルト動作）"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
+    # 実装前後ともに PASS すべき regression guard
+
+  - ac_index: "1411-AC6d"
+    ac_text: "テストシナリオ: /tmp 配下許可 (AUTOPILOT_DIR=/tmp/test-shadow)"
+    test_file: "plugins/twl/tests/scenarios/autopilot-dir-allowlist-shadow-send.test.sh"
+    test_name: "ac6(d): AUTOPILOT_DIR=/tmp/... → allowlist 許可コードが実装されている"
+    impl_files:
+      - "plugins/session/scripts/session-comm-backend-mcp.sh"
