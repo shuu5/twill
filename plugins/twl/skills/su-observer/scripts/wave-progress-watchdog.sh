@@ -174,6 +174,12 @@ _gh_auth_ok() {
 poll_gh_api_fallback() {
   local wave_n="$1"
 
+  # wave_n は正整数のみ許可（path traversal・glob injection 防止）
+  if ! [[ "$wave_n" =~ ^[1-9][0-9]*$ ]]; then
+    echo "[wave-progress-watchdog] WARN: invalid wave_n '${wave_n}' — skip gh API polling" >&2
+    return 0
+  fi
+
   # Layer 1 signal 存在時は Layer 3 skip（duplicate fire 抑止）
   if ls "${SUPERVISOR_DIR}/events/wave-${wave_n}-pr-merged-"*.json 2>/dev/null | grep -q .; then
     return 0
