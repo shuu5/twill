@@ -28,7 +28,8 @@ teardown() {
 # ===========================================================================
 
 _extract_cmd_inject_file_body() {
-    # cmd_inject_file() { ... } の本体のみ抽出（次の空行 or 次の関数定義まで）
+    # NOTE: /^\}/ は行頭の } でマッチするため、cmd_inject_file 内に行頭 } が
+    # 追加されると抽出が早期終了し AC1-AC3 が偽陰性になる（issue-1410 時点では非該当）。
     awk '/^cmd_inject_file\(\) *\{/,/^\}/' "$SCRIPT" 2>/dev/null
 }
 
