@@ -501,3 +501,47 @@ fi
 | `plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh` | L18 | `SUPERVISOR_DIR`: allowlist `^[a-zA-Z0-9./_-]+$` + `*..* ` blocklist の混在 |
 
 **対応方針**: mixed 方式は allowlist で網羅できているため blocklist 部分を削除するだけで改善可能。後続 Issue で個別対応予定。
+
+## 12. bats 非インタラクティブ SIGINT 送信
+
+bats は**非インタラクティブシェル**として実行されるため、POSIX 規定により `kill -INT $pid` でバックグラウンドプロセスに SIGINT を送ると **SIG_IGN**（無視）が設定されて届かない。非インタラクティブシェルのバックグラウンドプロセスは SIGINT が SIG_IGN になる（POSIX 規定）。
+
+### BAD: 非インタラクティブ環境で kill -INT $pid を直接送信
+
+```bash
+# BAD: bats（非インタラクティブ）環境では SIGINT がバックグラウンドプロセスに届かない
+run_target &
+pid=$!
+sleep 0.1
+kill -INT "$pid"  # SIG_IGN のため無効 — プロセスが停止しない
+```
+
+### GOOD: set -m + kill -INT -$pgid でプロセスグループに送信
+
+```bash
+# GOOD: set -m でジョブ制御を有効化 → バックグラウンドプロセスが独立した process group に配置
+# kill -INT -$pgid でプロセスグループ全体に SIGINT が届く
+set -m
+trap 'set +m' RETURN  # スコープ漏れを防止
+
+run_target &
+pid=$!
+pgid=$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')
+if [[ "$pgid" =~ ^[1-9][0-9]*$ ]]; then
+    kill -INT "-$pgid" 2>/dev/null || kill -INT "$pid" 2>/dev/null || true
+else
+    kill -INT "$pid" 2>/dev/null || true
+fi
+```
+
+### ポイント
+
+| 要素 | 役割 |
+|---|---|
+| `set -m` | ジョブ制御を有効化。バックグラウンドプロセスが独立した process group に配置される |
+| `trap 'set +m' RETURN` | 関数終了時に `set -m` を解除しスコープ漏れを防止 |
+| `kill -INT -$pgid` | プロセスグループ全体に SIGINT を送信（`-$pgid` の `-` がグループ指定） |
+| `[[ "$pgid" =~ ^[1-9][0-9]*$ ]]` | pgid の数値検証（allowlist regex）。空文字 `kill -INT ""` による事故を防止 |
+| `|| kill -INT "$pid"` | pgid 送信失敗時の fallback（プロセス個別送信） |
+
+**レビュー観点**: bats テスト内でバックグラウンドプロセスに `kill -INT "$pid"` を送信している箇所を見つけた場合、`set -m` が有効かつ `kill -INT "-$pgid"` 形式（プロセスグループ指定）が使われているかを確認する。非インタラクティブ環境での SIGINT 未到達は MEDIUM（confidence ≥ 80）として報告する。
