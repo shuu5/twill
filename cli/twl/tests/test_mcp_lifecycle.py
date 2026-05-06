@@ -341,30 +341,40 @@ class TestAC3StructuredLogging:
                     )
 
     def test_ac3_structured_log_output_on_rejection(self, tmp_path, capsys):
-        # AC: 検証失敗時に stdout または stderr に構造化情報が出力される
-        # RED: 現状は出力なし
-        from twl.mcp_server.lifecycle import _find_mcp_server_cmd
+        """AC4 (Issue #1414): cli.main() 経由で stderr に構造化情報が出力されることを検証する。
 
-        mcp_json = self._make_mcp_json("nc", tmp_path)
+        テスト境界: unit（_find_mcp_server_cmd 直接呼び出し）から
+        integration（cli.main() 経由）にシフトした。
+        これにより cli.py の try/except ValueError が存在しない限り
+        stderr への "Error: mcp restart failed — ..." 出力は発生せず、
+        テストは RED のままとなる（Issue #1414 実装後に GREEN になる）。
 
-        with patch("subprocess.run") as mock_run:
-            mock_run.return_value = MagicMock(
-                returncode=0,
-                stdout=str(tmp_path) + "\n",
-            )
-            with patch("pathlib.Path.exists", return_value=True), \
-                 patch("builtins.open", return_value=open(mcp_json)):
+        AC: cli.main() 経由で不正コマンド検出時、stderr に構造化エラー行が出力される。
+        RED: cli.py に try/except ValueError がないため、ValueError が propagate して
+             "Error: mcp restart failed — ..." の stderr 出力がなく FAIL する。
+        """
+        import twl.cli as cli_mod
+
+        error_msg = "command 'nc' not in allowlist: ['uv', 'uvx']"
+        with patch("twl.mcp_server.lifecycle.restart_mcp_server") as mock_restart:
+            mock_restart.side_effect = ValueError(error_msg)
+            with patch.object(sys, "argv", ["twl", "mcp", "restart"]):
                 try:
-                    _find_mcp_server_cmd()
-                    pytest.fail("ValueError が raise されなかった (AC3 未実装)")
-                except ValueError:
+                    cli_mod.main()
+                except SystemExit:
                     pass
+                except ValueError:
+                    # ValueError が cli.py で捕捉されず propagate した場合は FAIL
+                    pytest.fail(
+                        "ValueError が cli.py で捕捉されず propagate した (AC2/Issue#1414 未実装)"
+                    )
 
         captured = capsys.readouterr()
-        combined_output = captured.out + captured.err
-        # stdout/stderr に何らかの情報が出力されていること（構造化ログ）
-        assert combined_output.strip(), (
-            "検証失敗時に stdout/stderr に何も出力されていない (AC3 未実装)"
+        # cli.py が "Error: mcp restart failed — ..." を stderr に出力すること
+        assert "Error: mcp restart failed" in captured.err, (
+            f"cli.main() 経由で不正コマンド検出時に stderr に構造化エラー行が出力されていない "
+            f"(AC2/Issue#1414 未実装).\n"
+            f"stderr: {captured.err!r}"
         )
 
 
@@ -612,4 +622,46 @@ class TestAC6CliValueErrorHandling:
         )
         assert allowlist is not None, (
             "allowlist が未実装のため subprocess テストが意味をなさない (AC6 前提 未実装)"
+        )
+
+    def test_ac7_stderr_single_line_no_traceback_on_invalid_command(self, capsys):
+        """AC7: stderr 出力が単一経路になることを behavioral test で確認する。
+
+        cli.main() 経由で不正コマンド検出時:
+          - captured.err に "Error: mcp restart failed —" で始まる行が正確に 1 行のみ出現すること
+          - "Traceback (most recent call last):" が含まれないこと
+
+        RED: cli.py に try/except ValueError がないため、ValueError が propagate して
+             Python traceback が出力される（または "Error: mcp restart failed —" 行が存在しない）。
+             いずれの場合も assert が FAIL する（Issue #1414 実装後に GREEN になる）。
+        """
+        import twl.cli as cli_mod
+
+        error_detail = "command 'evil' not in allowlist: ['uv', 'uvx']"
+        with patch("twl.mcp_server.lifecycle.restart_mcp_server") as mock_restart:
+            mock_restart.side_effect = ValueError(error_detail)
+            with patch.object(sys, "argv", ["twl", "mcp", "restart"]):
+                try:
+                    cli_mod.main()
+                except SystemExit:
+                    pass
+                # ValueError propagate は捕捉せずに assert まで流す（traceback 有無を検証するため）
+
+        captured = capsys.readouterr()
+
+        # "Error: mcp restart failed —" で始まる行が正確に 1 行のみ出現すること
+        error_lines = [
+            line for line in captured.err.splitlines()
+            if line.startswith("Error: mcp restart failed —")
+        ]
+        assert len(error_lines) == 1, (
+            f"stderr に 'Error: mcp restart failed —' で始まる行が正確に 1 行のみ存在するべきだが "
+            f"{len(error_lines)} 行あった (AC7 未実装).\n"
+            f"stderr: {captured.err!r}"
+        )
+
+        # Python traceback が含まれないこと
+        assert "Traceback (most recent call last):" not in captured.err, (
+            f"stderr に Python traceback が含まれている (AC7 未実装 — try/except なしで ValueError propagate).\n"
+            f"stderr: {captured.err!r}"
         )
