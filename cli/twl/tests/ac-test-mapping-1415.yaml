@@ -1,0 +1,168 @@
+mappings:
+  # AC1: patch("builtins.open", ...) 全10箇所をモジュール限定パッチまたは mock_open に置換
+  - ac_index: 1
+    ac_text: "test_mcp_lifecycle.py 内の patch(\"builtins.open\", ...) 全10箇所が (a) patch(\"twl.mcp_server.lifecycle.open\", ...) モジュール限定パッチ、または (b) mock_open ベースの形式に置き換えられている — builtins.open の消失確認"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC1PatchTarget::test_ac1_no_builtins_open_in_lifecycle_test"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 1
+    ac_text: "test_mcp_lifecycle.py にモジュール限定パッチ (patch('twl.mcp_server.lifecycle.open', ...)) または mock_open の使用が存在すること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC1PatchTarget::test_ac1_module_scoped_patch_used"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 1
+    ac_text: "grep で builtins.open がテスト本体から消えていること（0件）"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC1PatchTarget::test_ac1_builtins_open_count_is_zero"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  # AC2: conftest.py に make_mcp_json fixture が定義されている
+  - ac_index: 2
+    ac_text: "conftest.py に make_mcp_json fixture（または同等の共有ヘルパー）が存在すること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC2ConfTestFixture::test_ac2_make_mcp_json_exists_in_conftest"
+    impl_files:
+      - "cli/twl/tests/conftest.py"
+
+  - ac_index: 2
+    ac_text: "make_mcp_json が @pytest.fixture デコレータを持つ関数として定義されていること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC2ConfTestFixture::test_ac2_make_mcp_json_is_fixture"
+    impl_files:
+      - "cli/twl/tests/conftest.py"
+
+  - ac_index: 2
+    ac_text: "make_mcp_json の定義に command パラメータが含まれること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC2ConfTestFixture::test_ac2_fixture_signature_has_command_param"
+    impl_files:
+      - "cli/twl/tests/conftest.py"
+
+  - ac_index: 2
+    ac_text: "make_mcp_json の定義に tmp_path パラメータが含まれること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC2ConfTestFixture::test_ac2_fixture_signature_has_tmp_path_param"
+    impl_files:
+      - "cli/twl/tests/conftest.py"
+
+  - ac_index: 2
+    ac_text: "make_mcp_json が .mcp.json を生成して Path を返すこと"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC2ConfTestFixture::test_ac2_fixture_returns_path"
+    impl_files:
+      - "cli/twl/tests/conftest.py"
+
+  # AC3: 各クラスの _make_mcp_json() メソッドが削除され共有 fixture を利用している
+  - ac_index: 3
+    ac_text: "test_mcp_lifecycle.py 内の def _make_mcp_json 定義が0件（全削除）"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC3RemoveClassLevelMakeMcpJson::test_ac3_no_duplicate_make_mcp_json_in_lifecycle_test"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 3
+    ac_text: "TestAC1AllowlistValidation クラスに _make_mcp_json が残存していないこと"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC3RemoveClassLevelMakeMcpJson::test_ac3_testac1_class_no_make_mcp_json"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 3
+    ac_text: "TestAC2AbsolutePathValidation クラスに _make_mcp_json が残存していないこと"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC3RemoveClassLevelMakeMcpJson::test_ac3_testac2_class_no_make_mcp_json"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 3
+    ac_text: "TestAC3StructuredLogging クラスに _make_mcp_json が残存していないこと"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC3RemoveClassLevelMakeMcpJson::test_ac3_testac3_class_no_make_mcp_json"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 3
+    ac_text: "TestAC4LegitimateCommandsUnaffected クラスに _make_mcp_json が残存していないこと"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC3RemoveClassLevelMakeMcpJson::test_ac3_testac4_class_no_make_mcp_json"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 3
+    ac_text: "test_mcp_lifecycle.py で共有 fixture make_mcp_json が参照され self._make_mcp_json が残存しないこと"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC3RemoveClassLevelMakeMcpJson::test_ac3_shared_fixture_referenced_in_lifecycle_test"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  # AC4: test_mcp_lifecycle.py の行数が 500 行以下に削減されている
+  - ac_index: 4
+    ac_text: "test_mcp_lifecycle.py の行数が 500 行以下であること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC4LineCount::test_ac4_lifecycle_test_line_count_under_500"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 4
+    ac_text: "test_mcp_lifecycle.py の行数が現在（615行）より削減されていること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC4LineCount::test_ac4_line_count_reduction_amount"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  # AC5: pytest が PR #1412 と同じテスト数かつ全 PASS する（構造確認）
+  - ac_index: 5
+    ac_text: "PR #1412 で確立されたテストクラス（AC1〜AC6）が test_mcp_lifecycle.py に全て存在すること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC5TestCountAndPass::test_ac5_lifecycle_test_classes_preserved"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 5
+    ac_text: "test_mcp_lifecycle.py のテストメソッド数が PR #1412 時点（20件）以上であること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC5TestCountAndPass::test_ac5_test_method_count_not_reduced"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 5
+    ac_text: "PR #1412 で確立された代表的なテストメソッドが test_mcp_lifecycle.py から消えていないこと"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC5TestCountAndPass::test_ac5_no_test_deletion_in_refactor"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  # AC6: ac-test-mapping-1398.yaml のカバレッジが維持されている
+  - ac_index: 6
+    ac_text: "ac-test-mapping-1398.yaml が存在すること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC6MappingCoveragePreserved::test_ac6_mapping_1398_exists"
+    impl_files: []
+    # impl_files: プロセス確認テスト（ファイル存在チェック）のため空
+
+  - ac_index: 6
+    ac_text: "mapping が参照する test_mcp_lifecycle.py が実在すること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC6MappingCoveragePreserved::test_ac6_mapping_references_test_file_exists"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  - ac_index: 6
+    ac_text: "ac-test-mapping-1398.yaml に ac_index 1〜6 のエントリが存在すること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC6MappingCoveragePreserved::test_ac6_mapping_ac_indices_1_to_6_present"
+    impl_files:
+      - "cli/twl/tests/ac-test-mapping-1398.yaml"
+
+  - ac_index: 6
+    ac_text: "ac-test-mapping-1398.yaml が参照する全テストメソッド名が test_mcp_lifecycle.py に存在すること"
+    test_file: "cli/twl/tests/test_issue_1415_tech_debt.py"
+    test_name: "TestAC6MappingCoveragePreserved::test_ac6_all_mapped_test_names_exist_in_lifecycle_test"
+    impl_files:
+      - "cli/twl/tests/test_mcp_lifecycle.py"
+      - "cli/twl/tests/ac-test-mapping-1398.yaml"
