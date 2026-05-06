@@ -75,6 +75,10 @@ resolve_target() {
             echo "Error: invalid target format '$window_name'" >&2
             return 1
         fi
+        if [[ -z "$win" ]]; then
+            echo "Error: invalid target format '$window_name'" >&2
+            return 1
+        fi
         if ! tmux has-session -t "$session" 2>/dev/null; then
             echo "Error: session '$session' not found" >&2
             return 1
@@ -85,7 +89,7 @@ resolve_target() {
             return
         fi
         # window name: resolve to session:index within the specified session
-        local target
+        local target=""
         target=$(tmux list-windows -t "$session" -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
             | awk -v name="$win" '$2 == name { print $1; exit }')
         if [[ -z "$target" ]]; then

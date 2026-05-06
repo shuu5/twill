@@ -57,15 +57,34 @@ resolve_target() {
     local window_name="$1"
     # session:window 形式: フォーマット検証してからtmuxで存在確認
     if [[ "$window_name" == *:* ]]; then
-        if ! [[ "$window_name" =~ ^[A-Za-z0-9_./-]+:[0-9]+$ ]]; then
+        local session="${window_name%%:*}"
+        local win="${window_name#*:}"
+        if ! [[ "$session" =~ ^[A-Za-z0-9_./-]+$ ]]; then
             echo "Error: invalid target format '$window_name'" >&2
             return 1
         fi
-        if ! tmux has-session -t "${window_name%%:*}" 2>/dev/null; then
-            echo "Error: session '${window_name%%:*}' not found" >&2
+        if [[ -z "$win" ]]; then
+            echo "Error: invalid target format '$window_name'" >&2
             return 1
         fi
-        echo "$window_name"
+        if ! tmux has-session -t "$session" 2>/dev/null; then
+            echo "Error: session '$session' not found" >&2
+            return 1
+        fi
+        # numeric window index: use session:index directly
+        if [[ "$win" =~ ^[0-9]+$ ]]; then
+            echo "$window_name"
+            return
+        fi
+        # window name: resolve to session:index within the specified session
+        local target=""
+        target=$(tmux list-windows -t "$session" -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
+            | awk -v name="$win" '$2 == name { print $1; exit }')
+        if [[ -z "$target" ]]; then
+            echo "Error: window '$win' not found in session '$session'" >&2
+            return 1
+        fi
+        echo "$target"
         return
     fi
     # ウィンドウ名で検索（最初にマッチしたもの）
