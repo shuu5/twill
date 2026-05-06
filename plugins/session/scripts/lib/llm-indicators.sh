@@ -28,7 +28,7 @@ LLM_INDICATORS=(
     "Running .* agents"
     "[0-9]+ tool uses"
     "thinking with max effort"
-    "Saut.*ed"
+    "Sautéing"
     "Burrowing"
     "Cerebrating"
     "Spinning"
@@ -41,6 +41,16 @@ LLM_INDICATORS=(
     "Skedaddling"
     "Orchestrating"
     "[A-Z][a-z]+(in'|ing)(…| for [0-9]| \\([0-9])"
+
+    # --- AC: EN 9 new indicators (#1454) ---
+    "Newspapering"
+    "Fiddle-faddling"
+    "Levitating"
+    "Cogitating"
+    "Bloviating"
+    "Vibing"
+    "Puttering"
+    "Zesting"
 
     # --- AC5: EN 13 new indicators (#1374) ---
     "Philosophising"
