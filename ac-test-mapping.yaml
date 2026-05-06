@@ -899,3 +899,47 @@ mappings:
     red_mechanism: "allowlist チェックが未実装のため (a)(b) の Warning grep が失敗する"
     impl_files:
       - "plugins/session/scripts/session-comm-backend-mcp.sh"
+
+# --- Issue #1451 ---
+issue_1451:
+  issue: 1451
+  framework: bats
+  test_file: "plugins/twl/tests/bats/baseline-bash-section12.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "refs/baseline-bash.md に ## 12. bats 非インタラクティブ SIGINT 送信 セクションが §11 の直後に存在する"
+      test_name: "baseline-bash-section12: AC1 section '## 12.' exists"
+      status: RED
+      red_mechanism: "§12 セクションが未存在のため grep が失敗する"
+      impl_files:
+        - "plugins/twl/refs/baseline-bash.md"
+
+    - ac_index: 2
+      ac_text: "§12 は推奨パターン（set -m, kill -INT -$pgid, trap 'set +m' RETURN, pgid 数値検証）を含む"
+      test_names:
+        - "baseline-bash-section12: AC2 mentions 'set -m'"
+        - "baseline-bash-section12: AC2 mentions 'kill -INT' with process group"
+        - "baseline-bash-section12: AC2 mentions 'trap' for set +m cleanup"
+        - "baseline-bash-section12: AC2 includes pgid numeric validation"
+      status: RED
+      red_mechanism: "§12 未存在のため sed コマンドが空を返し全パターン grep が失敗する"
+      impl_files:
+        - "plugins/twl/refs/baseline-bash.md"
+
+    - ac_index: 3
+      ac_text: "§12 は BAD/GOOD ブロック構造を持つ（既存セクションのパターンに準拠）"
+      test_names:
+        - "baseline-bash-section12: AC3 has BAD block for kill -INT without process group"
+        - "baseline-bash-section12: AC3 has GOOD block with recommended pattern"
+      status: RED
+      red_mechanism: "§12 未存在のため BAD/GOOD heading grep が失敗する"
+      impl_files:
+        - "plugins/twl/refs/baseline-bash.md"
+
+    - ac_index: 4
+      ac_text: "§12 は POSIX 規定（非インタラクティブシェルでの SIG_IGN）の説明を含む"
+      test_name: "baseline-bash-section12: AC4 mentions non-interactive shell or POSIX constraint"
+      status: RED
+      red_mechanism: "§12 未存在のため非インタラクティブ/SIG_IGN キーワード grep が失敗する"
+      impl_files:
+        - "plugins/twl/refs/baseline-bash.md"
