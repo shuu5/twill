@@ -40,6 +40,7 @@ spawnable_by:
 6.5. **Monitor task 起動 MUST**: `bash "${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/step0-monitor-bootstrap.sh"` で出力されたコマンドを Monitor tool で実行する（cld-observe-any daemon + tail -F .supervisor/cld-observe-any.log の連携起動）
 6.6. **controller type 判定 MUST**: controller spawn 前に controller type（co-autopilot / co-issue / co-explore 等）を特定し、`refs/monitor-channel-catalog.md` の「controller type 別 primary completion signal mapping」table を参照して primary completion signal を確認すること
 6.7. **`refs/su-observer-constraints.md` を Read（MUST）** — SU-1〜SU-9 制約・禁止事項 10 項目・Security gate (Layer A-D) 注記の運用 mirror
+6.8. **mailbox poll loop 再開（MUST — resume 時）**: 前回セッションで起動していた mailbox poll loop が停止している場合、`twl_recv_msg` を使って再開すること（詳細: `refs/pitfalls-catalog.md §11.5`）。mailbox event 受信時も spawn コマンド発行を行わない（MUST NOT）。
 7. `>>> su-observer 起動完了。指示をお待ちしています。` を表示
 
 ## Step 1: 常駐ループ（ユーザー指示待ち）
@@ -68,6 +69,25 @@ spawnable_by:
 >   [--severity <low|medium|high>]
 > ```
 > script は `.supervisor/intervention-log.md` に追記し、stderr に doobidoo memory_store hint を出力する。LLM は hint を読んで自身で `mcp__doobidoo__memory_store` を実行すること（#1187）。
+
+### mailbox poll（`twl_recv_msg` active poll cycle）
+
+**spawn 責任は wave-progress-watchdog (S3) 単独。** observer は mailbox event を受信しても spawn コマンドを発行しない（MUST NOT）。
+
+ScheduleWakeup を active poll cycle として組み込むことで idle disconnect を回避する（詳細: `refs/pitfalls-catalog.md §11.5`）:
+
+```
+# polling loop（Step 1 常駐中）
+events = twl_recv_msg(timeout=30)
+for event in events:
+    if event.type == "pr-merge":
+        # intervention-log への記録
+        # Wave 進捗報告のみ実施
+        # spawn コマンド発行を行わない（MUST NOT）
+    # その他の event も同様に log + report のみ
+```
+
+PR-merge event 受領時の処理: `intervention-log` に記録し Wave 進捗を報告する。spawn コマンド発行を行わないこと（spawn 禁止）。
 
 ### controller spawn が必要な場合
 
