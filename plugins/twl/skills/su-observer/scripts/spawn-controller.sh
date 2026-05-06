@@ -385,16 +385,40 @@ PYEOF
   # 理由: bare window 名での -t 指定は同名 window が複数セッションに存在する場合 ambiguous となり
   # 誤ったペインを操作するリスクがあるため、解決失敗時は安全側に倒して停止する。
 
+  # 現在の pane 数を取得（AC2: 既存 4-pane 状態は split をスキップして watcher のみ再起動）
+  local live_pane_count
+  live_pane_count=$(tmux list-panes -t "${resolved_target}" 2>/dev/null | wc -l || echo 0)
+
   # Step 1: horizontal split (左右) — 右カラムに heartbeat-watcher を起動
-  tmux split-window -h -d -l 50% -t "${resolved_target}.${base}" -c "$cwd" "bash '$heartbeat_script'"
+  if [[ "$live_pane_count" -lt 2 ]]; then
+    tmux split-window -h -d -l 50% -t "${resolved_target}.${base}" -c "$cwd" "bash '$heartbeat_script'"
+    # Sync barrier: pane 生成を確認してから次の split に進む（"can't find pane: N" 防止）
+    local _retries=15
+    while [[ "$_retries" -gt 0 ]]; do
+      live_pane_count=$(tmux list-panes -t "${resolved_target}" 2>/dev/null | wc -l || echo 0)
+      [[ "$live_pane_count" -ge 2 ]] && break
+      sleep 0.2; ((_retries--))
+    done
+  fi
 
   # Step 2: vertical split — 右カラムを上下分割して budget-monitor を起動
-  tmux split-window -v -d -l 67% -t "${resolved_target}.$((base+1))" -c "$cwd" "bash '$budget_script'"
+  if [[ "$live_pane_count" -lt 3 ]]; then
+    tmux split-window -v -d -l 67% -t "${resolved_target}.$((base+1))" -c "$cwd" "bash '$budget_script'"
+    # Sync barrier: pane 生成を確認してから次の split に進む
+    local _retries=15
+    while [[ "$_retries" -gt 0 ]]; do
+      live_pane_count=$(tmux list-panes -t "${resolved_target}" 2>/dev/null | wc -l || echo 0)
+      [[ "$live_pane_count" -ge 3 ]] && break
+      sleep 0.2; ((_retries--))
+    done
+  fi
 
   # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
   local spawn_cmd
   printf -v spawn_cmd 'env IDLE_COMPLETED_AUTO_KILL=%q bash %q --window %q' "${IDLE_COMPLETED_AUTO_KILL:-0}" "$cld_observe_any" "$observer_window"
-  tmux split-window -v -d -l 50% -t "${resolved_target}.$((base+2))" -c "$cwd" "$spawn_cmd"
+  if [[ "$live_pane_count" -lt 4 ]]; then
+    tmux split-window -v -d -l 50% -t "${resolved_target}.$((base+2))" -c "$cwd" "$spawn_cmd"
+  fi
 
   # cld-observe-any pane の PID・pane_id・spawn_cmd を session.json に記録
   # AC6: display-message も _resolve_window_target で解決した fully-qualified target を使う

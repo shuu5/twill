@@ -68,3 +68,54 @@ mappings:
       - "ac3: regression - co-issue-phase2-bundles.md file exists and is readable"
     impl_files:
       - "plugins/twl/skills/co-issue/refs/co-issue-phase2-bundles.md"
+
+  # ---------------------------------------------------------------------------
+  # Issue #1458: tech-debt(spawn-controller): _setup_observer_panes が
+  #              can't find pane: 2 で watcher group auto 起動失敗
+  # ---------------------------------------------------------------------------
+  - ac_index: 1
+    ac_text: "1-pane observer window で spawn-controller.sh 実行 → 4 pane に分割成功 + heartbeat-watcher / budget-monitor / cld-observe-any 起動確認"
+    issue: 1458
+    test_file: "plugins/twl/tests/bats/issue-1458-setup-observer-panes.bats"
+    test_names:
+      - "ac1: _setup_observer_panes が split-window を 3 回呼び出して 4 pane layout を作る"
+      - "ac1: _setup_observer_panes が heartbeat-watcher.sh を起動引数に含む"
+      - "ac1: _setup_observer_panes が budget-monitor-watcher.sh を起動引数に含む"
+      - "ac1: _setup_observer_panes が cld-observe-any を起動引数に含む"
+      - "ac1: 実行後に tmux の pane count が 4 になる（stateful mock 検証）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+    # NOTE: spawn-controller.sh に BASH_SOURCE[0] source guard が存在しない。
+    # set -euo pipefail 環境で source すると main block に到達し exec が走る。
+    # テストでは awk 抽出 + eval 方式で回避。実装時に source guard 追加を推奨。
+  - ac_index: 2
+    ac_text: "既に 4 pane 状態で spawn → 既存 pane 維持 + watcher 再起動"
+    issue: 1458
+    test_file: "plugins/twl/tests/bats/issue-1458-setup-observer-panes.bats"
+    test_names:
+      - "ac2: 既存 4 pane 状態で実行しても pane 数が 7 に増えない（pane 維持）"
+      - "ac2: 既存 4 pane 状態で watcher が再起動される（pkill + 再起動確認）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 3
+    ac_text: "ipatho-1 host で 2 連続 spawn 検証 (Wave 50 + Wave 51 相当)"
+    issue: 1458
+    test_file: "plugins/twl/tests/bats/issue-1458-setup-observer-panes.bats"
+    test_names:
+      - "ac3: 2 連続 _setup_observer_panes 呼び出しで 1 回目が正常完了する"
+      - "ac3: 2 連続 _setup_observer_panes 呼び出しで 2 回目も正常完了する"
+      - "ac3: 2 連続呼び出し後に split-window が合計 6 回記録される（各 spawn で 3 回）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 4
+    ac_text: "bats test で _setup_observer_panes の pane 数遷移を検証"
+    issue: 1458
+    test_file: "plugins/twl/tests/bats/issue-1458-setup-observer-panes.bats"
+    test_names:
+      - "ac4a: spawn-controller.sh の Step1 と Step2 の間に sync barrier (list-panes または split-window -P) が存在する"
+      - "ac4a: spawn-controller.sh の Step2 と Step3 の間にも sync barrier が存在する"
+      - "ac4b: split-window (Step1) の直後に list-panes が呼ばれる（sync barrier 検証）"
+      - "ac4b: split-window (Step2) の直後にも list-panes が呼ばれる（sync barrier 検証）"
+      - "ac4b: pane-transitions.log に split → list-panes のペアが存在する（順序検証）"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
