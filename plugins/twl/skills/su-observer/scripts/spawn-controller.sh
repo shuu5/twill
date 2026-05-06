@@ -393,7 +393,7 @@ PYEOF
 
   # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
   local spawn_cmd
-  printf -v spawn_cmd 'bash %q --window %q' "$cld_observe_any" "$observer_window"
+  printf -v spawn_cmd 'env IDLE_COMPLETED_AUTO_KILL=%q bash %q --window %q' "${IDLE_COMPLETED_AUTO_KILL:-0}" "$cld_observe_any" "$observer_window"
   tmux split-window -v -d -l 50% -t "${resolved_target}.$((base+2))" -c "$cwd" "$spawn_cmd"
 
   # cld-observe-any pane の PID・pane_id・spawn_cmd を session.json に記録
