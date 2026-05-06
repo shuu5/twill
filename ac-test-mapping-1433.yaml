@@ -1,0 +1,87 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md が新規作成されている"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac1: ADR-034 ファイルが存在する"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+
+  - ac_index: 2
+    ac_text: "Status: Accepted が記載されている"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac2: Status Accepted が記載されている"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+
+  - ac_index: 3
+    ac_text: "Context section に Failure mode F1/F2/F3 と AUTO_KILL=0 維持制約が明記されている"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac3a: Context に Failure mode F1 が明記されている"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+    # sub-tests: ac3a (F1), ac3b (F2), ac3c (F3), ac3d (AUTO_KILL=0)
+
+  - ac_index: 4
+    ac_text: "Decision section に 5 つの principle が箇条書きで記載されている（LLM judgment exclusion / Multi-layer signal redundancy / Dedicated executor daemon / Observer role redefinition / Data SSoT enforcement）"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac4a: Decision に LLM judgment exclusion principle が記載されている"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+    # sub-tests: ac4a (LLM judgment exclusion), ac4b (Multi-layer signal redundancy), ac4c (Dedicated executor daemon), ac4d (Observer role redefinition), ac4e (Data SSoT enforcement)
+
+  - ac_index: 5
+    ac_text: "Architecture section に 4-layer 図（Layer 0-4）が ASCII art または table で記載されている"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac5a: Architecture に Layer 0 が記載されている"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+    # sub-tests: ac5a (Layer 0), ac5b (Layer 4)
+
+  - ac_index: 6
+    ac_text: "Consequences section に reliability / crash resilience / observability の利点と operational complexity / migration cost のコストが記載されている"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac6a: Consequences に reliability の利点が記載されている"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+    # sub-tests: ac6a (reliability), ac6b (crash resilience), ac6c (observability), ac6d (operational complexity), ac6e (migration cost)
+
+  - ac_index: 7
+    ac_text: "Alternatives rejected section に 3 つの却下案（AUTO_KILL=1 復帰 / cld-observe-any 拡張のみ / Stop hook のみ）と却下理由が記載されている"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac7a: Alternatives に AUTO_KILL=1 復帰案の却下理由が記載されている"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+    # sub-tests: ac7a (AUTO_KILL=1 復帰), ac7b (cld-observe-any 拡張のみ), ac7c (Stop hook のみ)
+
+  - ac_index: 8
+    ac_text: "Risk section に 6 項目（SPOF / race condition / gh API rate limit / event 欠損 / spawn race / event 蓄積）と mitigation が table 形式で記載されている"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac8a: Risk section に table 形式が存在する"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+    # sub-tests: ac8a (SPOF/table), ac8b (race condition), ac8c (rate limit), ac8d (event 欠損), ac8e (spawn race), ac8f (event 蓄積)
+    # Note: ac8a は '| SPOF |' パターンでテーブル用語列限定マッチ（偽陽性防止）
+
+  - ac_index: 9
+    ac_text: "Related section に ADR-013 / ADR-014 / ADR-029 への相互参照と Epic #1425 / Sub-Issues S1〜S7 への参照が記載されている"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac9a: Related に ADR-013 への参照が記載されている"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+    # sub-tests: ac9a (ADR-013), ac9b (ADR-014), ac9c (ADR-029), ac9d (Epic #1425), ac9e (S1〜S7)
+
+  - ac_index: 10
+    ac_text: "markdown lint（既存 ADR と同一フォーマット）に準拠している"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac10a: markdown lint - H1 見出しが ADR-034 で始まる"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-034-autonomous-chain-reliability.md"
+    # sub-tests: ac10a (H1 見出し), ac10b (## Status), ac10c (## Context), ac10d (## Decision), ac10e (## Consequences)
+
+  - ac_index: 11
+    ac_text: "Issue タイトルを ADR-030 から ADR-034 に更新済みであること（本文は ADR-034 前提に修正済み、タイトルの更新が残作業）"
+    test_file: "cli/twl/tests/architecture/test_1433_adr034_autonomous_chain.bats"
+    test_name: "ac11: Issue タイトルが ADR-034 に更新済みである"
+    impl_files: []
+    # impl_files: [] - GitHub API が必要なプロセス AC のため検証対象ファイルなし
+    # test は bats skip で対処
