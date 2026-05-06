@@ -104,7 +104,7 @@ mappings:
     test_names:
       - "ac3: 2 連続 _setup_observer_panes 呼び出しで 1 回目が正常完了する"
       - "ac3: 2 連続 _setup_observer_panes 呼び出しで 2 回目も正常完了する"
-      - "ac3: 2 連続呼び出し後に split-window が合計 6 回記録される（各 spawn で 3 回）"
+      - "ac3: 各 spawn が独立した 1-pane window で 3 split を実行する（wave50 + wave51 各々検証）"
     impl_files:
       - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
   - ac_index: 4
