@@ -188,7 +188,8 @@ extract_sid() {
 index_of_subdir() {
   local target="$1"
   local i=0
-  for d in "${SUBDIRS[@]}"; do
+  local d
+  for d in "${SUBDIRS[@]+"${SUBDIRS[@]}"}"; do
     if [[ "$d" == "$target" ]]; then
       echo "$i"
       return
@@ -202,13 +203,13 @@ index_of_subdir() {
 # window 名生成（source 経由のテストでロード可能）
 # =============================================================================
 
-# SID を毎回 PER_ISSUE_DIR から算出することで source テスト時も正しく動作する
+# 直接実行時は _SID_CACHE（arg parse 後に設定）を使い subshell を省く。
+# source テスト時は _SID_CACHE が未設定のため extract_sid にフォールバックする。
 window_name_for_subdir() {
   local subdir="$1"
   local idx
   idx="$(index_of_subdir "$subdir")"
-  local sid
-  sid="$(extract_sid "$PER_ISSUE_DIR")"
+  local sid="${_SID_CACHE:-$(extract_sid "$PER_ISSUE_DIR")}"
   echo "coi-${sid}-${idx}"
 }
 
@@ -286,6 +287,9 @@ if [[ "$TOTAL" -eq 0 ]]; then
 fi
 
 echo "[issue-lifecycle-orchestrator] サブディレクトリ数: ${TOTAL}, MAX_PARALLEL: ${MAX_PARALLEL}"
+
+# SID をセッション開始時に 1 回だけ算出してキャッシュ（polling ループでの subshell 多発防止）
+_SID_CACHE="$(extract_sid "$PER_ISSUE_DIR")"
 
 # ADR-017 IM-7: N=1 不変量は各 Worker（workflow-issue-lifecycle）が個別に
 # spec-review-session-init.sh 1 を呼び出すことで保証する。
