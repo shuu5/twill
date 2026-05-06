@@ -164,6 +164,54 @@ with open(os.environ["_FB_OUTPUT"], "w") as f:
 '
 }
 
+# =============================================================================
+# sid 抽出ユーティリティ（source 経由のテストでロード可能）
+# =============================================================================
+
+# per-issue-dir のパスから sid（full session ID）を抽出
+extract_sid() {
+  local dir="$1"
+  # .controller-issue/<sid>/per-issue パターンから抽出を試みる
+  local sid
+  sid="$(basename "$(dirname "$dir")" 2>/dev/null || echo "")"
+  if [[ -z "$sid" || "$sid" == "." ]]; then
+    # フォールバック: パス全体のハッシュ
+    sid="$(printf '%s' "$dir" | md5sum | cut -c1-8)"
+  fi
+  # tmux 特殊文字（:, %, ., !）を除去してウィンドウ名を安全にする
+  local clean_sid="${sid}"
+  clean_sid="${clean_sid//[^a-zA-Z0-9_-]/x}"
+  printf '%s' "$clean_sid"
+}
+
+# サブディレクトリからインデックスを取得
+index_of_subdir() {
+  local target="$1"
+  local i=0
+  for d in "${SUBDIRS[@]}"; do
+    if [[ "$d" == "$target" ]]; then
+      echo "$i"
+      return
+    fi
+    i=$((i + 1))
+  done
+  echo "0"
+}
+
+# =============================================================================
+# window 名生成（source 経由のテストでロード可能）
+# =============================================================================
+
+# SID を毎回 PER_ISSUE_DIR から算出することで source テスト時も正しく動作する
+window_name_for_subdir() {
+  local subdir="$1"
+  local idx
+  idx="$(index_of_subdir "$subdir")"
+  local sid
+  sid="$(extract_sid "$PER_ISSUE_DIR")"
+  echo "coi-${sid}-${idx}"
+}
+
 # source 経由でのテスト用に、直接実行時のみメインロジックを実行する
 if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then return 0; fi
 
@@ -243,52 +291,6 @@ echo "[issue-lifecycle-orchestrator] サブディレクトリ数: ${TOTAL}, MAX_
 # spec-review-session-init.sh 1 を呼び出すことで保証する。
 # orchestrator はセッション初期化を行わない（state file 競合防止）。
 
-# =============================================================================
-# sid 抽出ユーティリティ
-# =============================================================================
-
-# per-issue-dir のパスから sid8（先頭8文字）を抽出
-extract_sid8() {
-  local dir="$1"
-  # .controller-issue/<sid>/per-issue パターンから抽出を試みる
-  local sid
-  sid="$(basename "$(dirname "$dir")" 2>/dev/null || echo "")"
-  if [[ -z "$sid" || "$sid" == "." ]]; then
-    # フォールバック: パス全体のハッシュ
-    sid="$(printf '%s' "$dir" | md5sum | cut -c1-8)"
-  fi
-  # tmux 特殊文字（:, %, ., !）を除去してウィンドウ名を安全にする
-  local clean_sid="${sid:0:8}"
-  clean_sid="${clean_sid//[^a-zA-Z0-9_-]/x}"
-  printf '%s' "$clean_sid"
-}
-
-# サブディレクトリからインデックスを取得
-index_of_subdir() {
-  local target="$1"
-  local i=0
-  for d in "${SUBDIRS[@]}"; do
-    if [[ "$d" == "$target" ]]; then
-      echo "$i"
-      return
-    fi
-    i=$((i + 1))
-  done
-  echo "0"
-}
-
-SID8="$(extract_sid8 "$PER_ISSUE_DIR")"
-
-# =============================================================================
-# window 名生成
-# =============================================================================
-
-window_name_for_subdir() {
-  local subdir="$1"
-  local idx
-  idx="$(index_of_subdir "$subdir")"
-  echo "coi-${SID8}-${idx}"
-}
 
 # =============================================================================
 # セッション spawn ヘルパー
