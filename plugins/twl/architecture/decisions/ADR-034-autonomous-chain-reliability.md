@@ -4,6 +4,10 @@
 
 Accepted
 
+## Amends
+
+ADR-014 Decision 4（Wave 完了時の自動外部化）step 4 では `su-observer が Wave N+1 の Issue を co-autopilot に渡して spawn する` と明記している。本 ADR Decision 4（Observer role redefinition）はこの spawn 責務を `wave-progress-watchdog.sh`（Layer 2）に委譲する。su-observer は spawn 責任を持たず、監視・通知・報告に専念する（ADR-014 Decision 4 の部分改訂）。
+
 ## Context
 
 ### 観測された事故（2026-05-05〜06）
@@ -52,11 +56,11 @@ Wave N → Wave N+1 の自動連鎖を以下の 5 原則で実装する:
 
 4. **Observer role redefinition**: observer（su-observer）は監視・通知・報告レイヤーに専念し、spawn 判断を持たない。mailbox + ScheduleWakeup pattern で idle 化を防ぎ、visibility を確保する（F3 部分解消）。spawn の critical path には含めない。
 
-5. **Data SSoT enforcement**: wave-queue.json は spawn 時に強制 maintenance する。`CHAIN_WAVE_QUEUE_ENTRY` を opt-in から強制に変更し、spawn 時に current + next wave を必ず populate する（F1 解消）。
+5. **Data SSoT enforcement**: wave-queue.json は spawn 時に強制 maintenance する。`CHAIN_WAVE_QUEUE_ENTRY` を opt-in から強制に変更し、spawn 時に `current_wave`（整数）と `queue`（次 Wave 以降のエントリ配列）を必ず populate する（F1 解消）。wave-queue.schema.json の `required: [version, current_wave, queue]` と整合する。
 
 ## Architecture
 
-### 4-layer reliability architecture
+### 5-layer reliability architecture (Layer 0–4)
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -71,9 +75,11 @@ Wave N → Wave N+1 の自動連鎖を以下の 5 原則で実装する:
 │   - chain-runner 自身が完了 signal を出すため確実              │
 ├─────────────────────────────────────────────────────────────────┤
 │ Layer 2: Executor (wave-progress-watchdog.sh daemon)            │
-│   - events/ inotify / polling → auto-next-spawn.sh 呼び出し    │
+│   - events/ inotify (Linux) / polling fallback → auto-next-spawn.sh 呼び出し │
 │   - lock file で重複 spawn 防止                                 │
 │   - AUTO_KILL=0 維持のまま AUTO_NEXT_SPAWN と等価機能実現       │
+│   - current_wave 更新権限: wave-progress-watchdog.sh が単独保有 │
+│     （Wave N+1 spawn 完了後に atomic 更新する）                 │
 ├─────────────────────────────────────────────────────────────────┤
 │ Layer 3: Safety Net (gh API polling fallback)                   │
 │   - gh pr list --state merged を 60s 間隔で polling            │
@@ -156,7 +162,7 @@ Claude Code の `Stop` hook を利用し、chain-runner session 終了時に aut
 
 ### 関連 ADR
 
-- **ADR-013** ([Observer の First-Class 昇格](ADR-013-observer-first-class.md)): observer 型の定義と介入プロトコル（Auto/Confirm/Escalate）の原点。本 ADR の Layer 4 observer role redefinition はこの介入プロトコルを継承する。
+- **ADR-013** ([Observer の First-Class 昇格](ADR-013-observer-first-class.md)) ⚠️ Superseded by ADR-014: 介入プロトコル（Auto/Confirm/Escalate）の起源。実効定義は ADR-014 Decision 5 に継承されており、本 ADR の Layer 4 observer role redefinition はその継承版を参照する。
 - **ADR-014** ([Observer → Supervisor 再定義](ADR-014-supervisor-redesign.md)): su-observer のプロジェクト常駐ライフサイクルと三層記憶モデルを確立。本 ADR が F3（observer LLM idle）を解消することで ADR-014 の Wave 管理自動化パスが実現する。
 - **ADR-029** ([TWL MCP Integration Strategy](ADR-029-twl-mcp-integration-strategy.md)): mailbox（`twl_notify_supervisor / recv_msg`）の設計方針。本 ADR の Layer 1/4 は ADR-029 Tier C（tools_comm.py）を直接利用する。
 
@@ -169,11 +175,12 @@ Claude Code の `Stop` hook を利用し、chain-runner session 終了時に aut
 - **S4 #1430**: cld-observe-any AUTO_NEXT_SPAWN bind 解除（Layer 2 補完）
 - **S5 #1431**: observer skill ScheduleWakeup pattern + recv_msg loop（Layer 4 実装）
 - **S6 #1432**: gh API polling fallback in watchdog（Layer 3 実装）
+- **S7 #1433**: ADR-034 起草（本 Issue / 本 ADR）
 
 ### 推奨実装順序
 
 ```
-Wave A (parallel): S1 (queue 強制) + S4 (bind 解除) + S2 (event emit) + S7/本 ADR
+Wave A (parallel): S1 (queue 強制) + S4 (bind 解除) + S2 (event emit) + S7 #1433 (本 ADR)
    ↓
 Wave B (sequential): S3 (watchdog daemon) + S6 (gh fallback)
    ↓
