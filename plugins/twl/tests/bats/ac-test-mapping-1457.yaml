@@ -1,0 +1,77 @@
+mappings:
+  - ac_index: 1
+    ac_text: "上記 4 件 phrase が IDLE_COMPLETED_PHRASE_REGEX に追加され、bats test で match 確認"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac1(#1457): IDLE_COMPLETED_PHRASE_REGEX contains 'observer.*(待機|休止|介入を待)' pattern"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 1
+    ac_text: "上記 4 件 phrase が IDLE_COMPLETED_PHRASE_REGEX に追加され、bats test で match 確認 (次の Wave)"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac1(#1457): IDLE_COMPLETED_PHRASE_REGEX contains '次の.*Wave.*(指示|まで)' pattern"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 1
+    ac_text: "上記 4 件 phrase が IDLE_COMPLETED_PHRASE_REGEX に追加され、bats test で match 確認 (Wave 完遂)"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac1(#1457): IDLE_COMPLETED_PHRASE_REGEX matches 'Wave 50 完遂確認' phrase"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 1
+    ac_text: "上記 4 件 phrase が IDLE_COMPLETED_PHRASE_REGEX に追加され、bats test で match 確認 (これ以上)"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac1(#1457): IDLE_COMPLETED_PHRASE_REGEX contains 'これ以上.*(処理|追加).*不要' pattern"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 1
+    ac_text: "上記 4 件 phrase が IDLE_COMPLETED_PHRASE_REGEX に追加され、bats test で match 確認 (behavioral)"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac1(#1457): _check_idle_completed detects 'observer の次の指示を待機'"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 2
+    ac_text: "timeout-based fallback (Approach B) 実装、IDLE_COMPLETED_TIMEOUT_SEC env で制御"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac2(#1457): cld-observe-any references IDLE_COMPLETED_TIMEOUT_SEC env var"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: 2
+    ac_text: "timeout-based fallback (Approach B) 実装、IDLE_COMPLETED_TIMEOUT_SEC default 0"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac2(#1457): IDLE_COMPLETED_TIMEOUT_SEC default is 0 (disabled)"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: 3
+    ac_text: "spawn prompt 規約 (Approach C) を spawn-controller-playbook.md に追加"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac3(#1457): su-observer-controller-spawn-playbook.md contains Wave completion output convention"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/su-observer-controller-spawn-playbook.md"
+
+  - ac_index: 4
+    ac_text: "Wave 完遂シナリオ再現テスト: regex match → kill"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac4(#1457): scenario — regex match phrase 検出 → _check_idle_completed returns 0 after debounce"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 4
+    ac_text: "Wave 完遂シナリオ再現テスト: 通常 thinking → kill しない (regression)"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac4(#1457): scenario — LLM thinking indicator あり → _check_idle_completed returns 1 (no kill)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+  - ac_index: 4
+    ac_text: "Wave 完遂シナリオ再現テスト: phrase なし + timeout → kill"
+    test_file: "plugins/twl/tests/bats/issue-1457-idle-phrase-extend.bats"
+    test_name: "ac4(#1457): scenario — IDLE_COMPLETED_TIMEOUT_SEC=1800 で phrase なし + 経過 → auto-kill パス存在"
+    impl_files:
+      - "plugins/session/scripts/cld-observe-any"
