@@ -402,25 +402,34 @@ PYEOF
     return 1
   }
 
-  # Step 1: horizontal split (左右) — 右カラムに heartbeat-watcher を起動
-  if [[ "$live_pane_count" -lt 2 ]]; then
-    tmux split-window -h -d -l 50% -t "${resolved_target}.${base}" -c "$cwd" "bash '$heartbeat_script'"
-    # Sync barrier: pane 生成を確認してから次の split に進む（"can't find pane: N" 防止）
-    _wait_pane_count "${resolved_target}" 2 || return 1
-  fi
-
-  # Step 2: vertical split — 右カラムを上下分割して budget-monitor を起動
-  if [[ "$live_pane_count" -lt 3 ]]; then
-    tmux split-window -v -d -l 67% -t "${resolved_target}.$((base+1))" -c "$cwd" "bash '$budget_script'"
-    # Sync barrier: pane 生成を確認してから次の split に進む
-    _wait_pane_count "${resolved_target}" 3 || return 1
-  fi
-
-  # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
   local spawn_cmd
   printf -v spawn_cmd 'env IDLE_COMPLETED_AUTO_KILL=%q bash %q --window %q' "${IDLE_COMPLETED_AUTO_KILL:-0}" "$cld_observe_any" "$observer_window"
-  if [[ "$live_pane_count" -lt 4 ]]; then
-    tmux split-window -v -d -l 50% -t "${resolved_target}.$((base+2))" -c "$cwd" "$spawn_cmd"
+
+  if [[ "$live_pane_count" -ge 4 ]]; then
+    # AC2: 既存 4-pane 状態 — split をスキップして watcher を既存 pane 内で再起動
+    echo "[spawn-controller] ✓ 既存 ${live_pane_count} pane 状態 — split をスキップ、watcher を pane 内で再起動"
+    tmux respawn-pane -k -t "${resolved_target}.$((base+1))" "bash '$heartbeat_script'" 2>/dev/null || true
+    tmux respawn-pane -k -t "${resolved_target}.$((base+2))" "bash '$budget_script'" 2>/dev/null || true
+    tmux respawn-pane -k -t "${resolved_target}.$((base+3))" "$spawn_cmd" 2>/dev/null || true
+  else
+    # Step 1: horizontal split (左右) — 右カラムに heartbeat-watcher を起動
+    if [[ "$live_pane_count" -lt 2 ]]; then
+      tmux split-window -h -d -l 50% -t "${resolved_target}.${base}" -c "$cwd" "bash '$heartbeat_script'"
+      # Sync barrier: pane 生成を確認してから次の split に進む（"can't find pane: N" 防止）
+      _wait_pane_count "${resolved_target}" 2 || return 1
+    fi
+
+    # Step 2: vertical split — 右カラムを上下分割して budget-monitor を起動
+    if [[ "$live_pane_count" -lt 3 ]]; then
+      tmux split-window -v -d -l 67% -t "${resolved_target}.$((base+1))" -c "$cwd" "bash '$budget_script'"
+      # Sync barrier: pane 生成を確認してから次の split に進む
+      _wait_pane_count "${resolved_target}" 3 || return 1
+    fi
+
+    # Step 3: vertical split — 下段をさらに分割して cld-observe-any を起動（必須引数 --window 付き）
+    if [[ "$live_pane_count" -lt 4 ]]; then
+      tmux split-window -v -d -l 50% -t "${resolved_target}.$((base+2))" -c "$cwd" "$spawn_cmd"
+    fi
   fi
 
   # cld-observe-any pane の PID・pane_id・spawn_cmd を session.json に記録

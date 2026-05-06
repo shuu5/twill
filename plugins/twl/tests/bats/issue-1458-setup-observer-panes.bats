@@ -390,9 +390,10 @@ _setup_observer_panes '${observer_window}' 0
   }
 }
 
-@test "ac2: 既存 4 pane 状態で watcher が再起動される（pkill + 再起動確認）" {
+@test "ac2: 既存 4 pane 状態で watcher が再起動される（pkill + respawn-pane 確認）" {
   # AC: 既存 pane 維持 + watcher 再起動
   # RED: pkill は実行されるが、watcher 再起動のコマンドは pane 状態次第で異なる
+  # PASS: pkill 後 respawn-pane -k で各 watcher を既存 pane 内で再起動する
   _run_setup_observer_panes_with_mock 4 "observer-test"
 
   assert_success
@@ -401,6 +402,10 @@ _setup_observer_panes '${observer_window}' 0
   run cat "$PKILL_LOG"
   assert_success
   assert_output --partial "pkill"
+
+  # respawn-pane が呼ばれて watcher が再起動されることを確認
+  run grep "respawn-pane" "$SANDBOX/tmux-calls.log"
+  assert_success
 }
 
 # ===========================================================================
