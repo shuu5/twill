@@ -1,0 +1,60 @@
+mappings:
+  - ac_index: 1
+    ac_text: "`step_auto_merge` 関数で、`auto-merge.sh` が exit 0 を返した場合のみ post-merge hook を発火する"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "#1428 AC1: auto-merge 成功後に .supervisor/events/ にイベントファイルが生成される (RED)"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 2
+    ac_text: "post-merge hook が `.supervisor/events/wave-{N}-pr-merged-{issue}.json` を atomic write（temp file → mv）で生成する"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "#1428 AC2: events ファイルが atomic write (temp→mv) で生成される (RED)"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 3
+    ac_text: "event JSON が必須フィールドを持つ: event=WAVE-PR-MERGED, wave(int), issue(int), pr(int), branch(str), timestamp(UTC ISO 8601), host(str)"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "#1428 AC3: event JSON に必須フィールドが揃っている (RED)"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 4
+    ac_text: "post-merge hook が twl_notify_supervisor_handler を呼び出し、event 名 WAVE-PR-MERGED と payload を mailbox push する"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "#1428 AC4: post-merge hook が twl_notify_supervisor_handler を呼び出す (RED)"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 5
+    ac_text: "auto-merge 失敗時は event 発火しない"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "#1428 AC5: auto-merge 失敗時は events ファイルが生成されない"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 6
+    ac_text: "event 発火または mailbox push が失敗しても step_auto_merge 自体は ok 判定を維持する（best-effort、WARN ログのみ stderr 出力）"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "#1428 AC6: events 書き込み失敗時も step_auto_merge は exit 0 を維持し WARN を出力する (RED)"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 7
+    ac_text: "wave 番号は .supervisor/wave-queue.json の current_wave から取得し、取得失敗時は wave=-1 で続行（warning フィールド追加）"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "#1428 AC7a: wave-queue.json の current_wave=5 で wave-5-pr-merged-1428.json が生成される (RED)"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 7
+    ac_text: "wave 番号は .supervisor/wave-queue.json の current_wave から取得し、取得失敗時は wave=-1 で続行（warning フィールド追加）"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "#1428 AC7b: wave-queue.json が不在の場合 wave=-1 で続行し warning フィールドを持つ (RED)"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 8
+    ac_text: "integration test を plugins/twl/tests/bats/scripts/ に追加（#897-C パターン）"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "AC1-AC7 が統合テストとして機能（AC8 は他 AC でカバー）"
+    impl_files: []
+  - ac_index: 9
+    ac_text: "mailbox push 失敗時のフォールバック挙動を技術メモに明文化（events/ が SSoT、Layer 2 watchdog が拾える設計）"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-pr-merge-event-emission.bats"
+    test_name: "#1428 AC9: 技術メモに mailbox push 失敗時フォールバック挙動が明文化されている (RED)"
+    impl_files:
+      - "plugins/twl/refs/ref-pr-merge-event-emission.md"

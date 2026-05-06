@@ -2608,6 +2608,13 @@ scripts:
     path: scripts/auto-merge.sh
     description: "autopilot-first auto-merge（4 Layer ガード付き、Worker マージ禁止の機械的担保）"
 
+  emit-wave-pr-merged-event:
+    type: script
+    path: scripts/emit-wave-pr-merged-event.sh
+    calls:
+      - script: auto-merge
+    description: "#1428 Layer 1 post-merge event emitter: .supervisor/events/wave-{N}-pr-merged-{issue}.json atomic write + twl_notify_supervisor_handler mailbox push（best-effort）"
+
   generate-invariants-bats:
     type: script
     path: scripts/generate-invariants-bats.sh
