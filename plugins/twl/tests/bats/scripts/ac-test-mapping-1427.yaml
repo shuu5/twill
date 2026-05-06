@@ -1,0 +1,43 @@
+mappings:
+  - ac_index: 1
+    ac_text: "spawn-controller.sh の wave-queue.json 操作が CHAIN_WAVE_QUEUE_ENTRY 未設定でも current_wave を CHAIN_ISSUE 値で update する"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-wave-queue.bats"
+    test_name: "ac1: CHAIN_WAVE_QUEUE_ENTRY 未設定でも current_wave が CHAIN_ISSUE 値で更新される"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "wave-queue.json 不在時の初期化が CHAIN_WAVE_QUEUE_ENTRY 有無に関わらず実行され、schema validation を通過する"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-wave-queue.bats"
+    test_name: "ac2: wave-queue.json 不在時に schema 準拠の初期 JSON が作成される"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 3
+    ac_text: "既存の current_wave が新規 CHAIN_ISSUE より大きい場合は warning を stderr に出力し、値は overwrite しない"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-wave-queue.bats"
+    test_name: "ac3: existing current_wave > CHAIN_ISSUE → stderr に warning を出力し値を overwrite しない"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 4
+    ac_text: "CHAIN_WAVE_QUEUE_ENTRY 提供時の queue append 動作が既存どおり保たれる（後方互換）"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-wave-queue.bats"
+    test_name: "ac4: CHAIN_WAVE_QUEUE_ENTRY 提供時に queue にエントリが append される"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 5
+    ac_text: "bats テスト plugins/twl/tests/bats/scripts/spawn-controller-wave-queue.bats を新設し、AC-1〜4 を網羅"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-wave-queue.bats"
+    test_name: "(file existence itself)"
+    impl_files:
+      - "plugins/twl/tests/bats/scripts/spawn-controller-wave-queue.bats"
+  - ac_index: 6
+    ac_text: "破損 JSON が wave-queue.json に存在する場合に Step 2/3 が WARN を stderr に出して spawn を継続する"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-wave-queue.bats"
+    test_name: "ac6: 破損 JSON + CHAIN_WAVE_QUEUE_ENTRY 未設定 → WARN stderr + spawn 継続 (exit 0)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 7
+    ac_text: "既存 plugins/twl/tests/bats/observer-auto-next-spawn.bats が本改修後も全 PASS することを CI で確認"
+    test_file: "plugins/twl/tests/bats/observer-auto-next-spawn.bats"
+    test_name: "(CI verification - process AC)"
+    impl_files: []
+    # impl_files: CI 確認のプロセス AC のため実装ファイル特定不要
