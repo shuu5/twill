@@ -1,0 +1,47 @@
+mappings:
+  - ac_index: 1
+    ac_text: "inotifywait 不在環境で step0-monitor-bootstrap.sh 実行 → polling-based fallback コマンドが出力される"
+    test_file: "plugins/twl/tests/bats/step0-monitor-bootstrap-1456.bats"
+    test_names:
+      - "ac1: inotifywait 不在環境で polling fallback が出力される (find コマンド含む)"
+      - "ac1: inotifywait 不在環境で polling fallback が出力される (while true + sleep loop 含む)"
+      - "ac1: inotifywait 不在環境では inotifywait コマンドが出力に含まれない"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh"
+
+  - ac_index: 2
+    ac_text: "inotifywait 在環境で実行 → 従来通り inotify ベースコマンド出力 (regression なし)"
+    test_file: "plugins/twl/tests/bats/step0-monitor-bootstrap-1456.bats"
+    test_names:
+      - "ac2: inotifywait 在環境で inotifywait ベースの Monitor コマンドが出力される"
+      - "ac2: inotifywait 在環境では -e create と -e modify オプションが出力に含まれる"
+      - "ac2: inotifywait 在環境で .supervisor/events/ ディレクトリが監視対象として出力される"
+      - "ac2: inotifywait 在環境で cld-observe-any daemon 起動コマンドが失われていない (regression)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh"
+
+  - ac_index: 3
+    ac_text: "bats test で両 host (mock 環境) の出力差異を検証"
+    test_file: "plugins/twl/tests/bats/step0-monitor-bootstrap-1456.bats"
+    test_names:
+      - "ac3: inotifywait 在環境と不在環境で出力が異なる"
+      - "ac3: 在環境出力には inotifywait が含まれ、不在環境出力には find/sleep が含まれる"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh"
+
+  - ac_index: 4
+    ac_text: "ipatho-1 host で takeover 検証: events Monitor 起動成功 (structural check: inotifywait guard が script に存在する)"
+    test_file: "plugins/twl/tests/bats/step0-monitor-bootstrap-1456.bats"
+    test_names:
+      - "ac4: step0-monitor-bootstrap.sh が存在する"
+      - "ac4: script に inotifywait 在否チェックのロジックが存在する"
+      - "ac4: script に polling fallback ブランチのコードが存在する"
+      - "ac4: script に inotifywait ベースコマンド出力のブランチが存在する"
+      - "ac4: script が実行可能である"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/step0-monitor-bootstrap.sh"
+    # impl_notes: |
+    #   AC4 は ipatho-1 host での実機検証を含むが、bats では structural check として代替。
+    #   step0-monitor-bootstrap.sh に BASH_SOURCE guard が不在のため、
+    #   source でロードするテストパターンを使う場合は set -euo pipefail 下で
+    #   main 到達前に exit に巻き込まれるリスクあり。実装時に guard 追加を推奨。
