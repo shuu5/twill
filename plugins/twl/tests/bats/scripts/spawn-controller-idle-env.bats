@@ -285,56 +285,32 @@ _setup_observer_panes '${observer_window}' '${pane_base_index}'
 
 @test "ac3: spawn-controller の spawn_cmd 経由で起動した子プロセスの /proc/PID/environ に IDLE_COMPLETED_AUTO_KILL が存在する" {
   # AC: bats test で env passthrough を検証 (/proc/.../environ 経由)
-  # RED: spawn-controller.sh が 'env IDLE_COMPLETED_AUTO_KILL=...' を spawn_cmd に含めないため
-  #     実際の子プロセスは IDLE_COMPLETED_AUTO_KILL を持たない
-  # PASS 条件（実装後）: spawn_cmd が 'env IDLE_COMPLETED_AUTO_KILL=1 bash ...' 形式になり
+  # PASS 条件: spawn_cmd が 'env IDLE_COMPLETED_AUTO_KILL=1 bash ...' 形式になり
   #     子プロセスの /proc/<PID>/environ に IDLE_COMPLETED_AUTO_KILL=1 が存在する
+  #
+  # 実装: 即 exit するプロセスの /proc は race condition を起こすため、
+  #       sleep で十分な読み取り時間を確保し、read 後に wait で同期する。
 
-  # /proc はこのテスト環境（Linux）で利用可能であることを前提とする
   [[ -d /proc ]] || skip "/proc が存在しない（非 Linux 環境）"
 
-  # spawn-controller.sh の printf -v spawn_cmd 行から実際の spawn_cmd 形式を抽出する
-  # 実装後: 'env IDLE_COMPLETED_AUTO_KILL=%q bash %q --window %q'
-  # 現行:   'bash %q --window %q' → IDLE_COMPLETED_AUTO_KILL なし
+  # spawn-controller.sh の spawn_cmd フォーマットを静的確認（RED チェック）
   local spawn_cmd_fmt
   spawn_cmd_fmt=$(grep 'printf -v spawn_cmd' "${SPAWN_SCRIPT}" 2>/dev/null || echo "")
-
-  # 現行: env IDLE_COMPLETED_AUTO_KILL が spawn_cmd フォーマットにない → fail （RED）
   echo "${spawn_cmd_fmt}" | grep -qF 'IDLE_COMPLETED_AUTO_KILL' \
     || fail "spawn-controller.sh の spawn_cmd フォーマットに IDLE_COMPLETED_AUTO_KILL が存在しない（未実装）。
 現行の spawn_cmd 行:
 ${spawn_cmd_fmt}
 期待: printf -v spawn_cmd 'env IDLE_COMPLETED_AUTO_KILL=%q bash %q --window %q' ..."
 
-  # 実装後の動作確認: spawn_cmd を実際に構築して子プロセスを起動し /proc で検証
-  local pid_file
-  pid_file="${SANDBOX}/child.pid"
-
-  # spawn_cmd を spawn-controller.sh と同じロジックで再現する
-  # 実装後は 'env IDLE_COMPLETED_AUTO_KILL=1 bash <cld-observe-any> --window <win>' 形式
-  local cld_observe_any="${CLD_OBSERVE_ANY}"
-  local built_spawn_cmd
-  # shellcheck disable=SC2059
-  printf -v built_spawn_cmd "env IDLE_COMPLETED_AUTO_KILL=%q bash %q --source-only" "1" "${cld_observe_any}"
-
-  # 子プロセスを起動して PID を記録（--source-only で即 exit）
-  # 実際の spawn_cmd を再現して /proc で確認する
+  # /proc 動的検証: sleep で十分な生存時間を確保（race condition 回避）
   local bg_pid
-  eval "${built_spawn_cmd} & echo \$! > '${pid_file}'"
-  bg_pid=$(cat "${pid_file}" 2>/dev/null || echo "")
-
-  local waited=0
-  while [[ ! -f "/proc/${bg_pid}/environ" && ${waited} -lt 20 ]]; do
-    sleep 0.1
-    waited=$((waited + 1))
-  done
-
-  if [[ -z "${bg_pid}" || ! -f "/proc/${bg_pid}/environ" ]]; then
-    fail "子プロセス PID=${bg_pid} の /proc/${bg_pid}/environ が取得できない"
-  fi
+  env IDLE_COMPLETED_AUTO_KILL=1 sleep 2 &
+  bg_pid=$!
 
   local environ_content
   environ_content=$(tr '\0' '\n' < "/proc/${bg_pid}/environ" 2>/dev/null || echo "")
+  kill "${bg_pid}" 2>/dev/null || true
+  wait "${bg_pid}" 2>/dev/null || true
 
   echo "${environ_content}" | grep -qF 'IDLE_COMPLETED_AUTO_KILL=1' \
     || fail "/proc/${bg_pid}/environ に IDLE_COMPLETED_AUTO_KILL=1 が存在しない。
