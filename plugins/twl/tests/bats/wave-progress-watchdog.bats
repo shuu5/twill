@@ -418,3 +418,97 @@ teardown() {
   # 実装前は [ -f ] で fail するためここには到達しない
   true
 }
+
+# ===========================================================================
+# Issue #1447 — AC-9: auto-next-spawn が schema validation skip 時に
+#   completed-flag が残らない回帰テスト（RED: 現行 _invoke_auto_next_spawn は
+#   _mark_wave_completed を先行呼び出しするため fail する）
+# ===========================================================================
+
+@test "ac9-1447: auto-next-spawn が schema validation skip 時に completed-flag が作成されず wave-queue.json も改変されない" {
+  # AC: AUTO_NEXT_SPAWN_SCRIPT を schema validation 失敗パス（exit 0 + skip log）として動作させ、
+  #     watchdog 1 iteration 後に:
+  #     (a) .supervisor/locks/wave-N-completed.flag が作成されていない
+  #     (b) wave-queue.json が改変されていない
+  #     ことを assert する
+  #
+  # RED: 現行 _invoke_auto_next_spawn は _mark_wave_completed "$1" を auto-next-spawn.sh 呼び出し前に
+  #      実行するため、auto-next-spawn が skip しても flag が残留する。
+  #      ac5 の実装（_mark_wave_completed 削除 + --target-wave 移管）後に GREEN となる。
+
+  CURRENT_WAVE=3
+
+  # wave-queue.json を正常な形式で作成
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 3,
+  "queue": [
+    {
+      "wave": 3,
+      "issues": [500, 501],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [2],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  # wave-queue.json のスナップショット（改変チェック用）
+  local original_queue
+  original_queue=$(cat "${SUPERVISOR_DIR}/wave-queue.json")
+
+  # 全 Issue の merge イベントを作成（_all_merged が true を返すよう）
+  for issue_num in 500 501; do
+    echo '{"issue": '"${issue_num}"', "merged_at": "2026-01-01T00:00:00Z"}' \
+      > "${SUPERVISOR_DIR}/events/wave-${CURRENT_WAVE}-pr-merged-${issue_num}.json"
+  done
+
+  mkdir -p "${SUPERVISOR_DIR}/locks"
+
+  # schema validation で必ず skip するフェイク auto-next-spawn.sh を作成
+  # exit 0 を返すが dequeue も flag set も行わない（実際の skip パス相当）
+  local fake_spawn
+  fake_spawn="${TMPDIR_TEST}/fake-auto-next-spawn.sh"
+  cat > "${fake_spawn}" <<'FAKE_EOF'
+#!/usr/bin/env bash
+# フェイク: schema validation 失敗による skip 動作をシミュレート
+_SUPERVISOR_DIR="${SUPERVISOR_DIR:-.supervisor}"
+INTERVENTION_LOG="${_SUPERVISOR_DIR}/intervention-log.md"
+TRIGGERED_BY=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --triggered-by) TRIGGERED_BY="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+mkdir -p "$_SUPERVISOR_DIR" 2>/dev/null || true
+printf '%s %s\n' "$(date -u +%FT%TZ)" \
+  "auto-cleanup+next-spawn-skipped: triggered_by=${TRIGGERED_BY}, reason=JSON Schema validation failed" \
+  >> "$INTERVENTION_LOG" 2>/dev/null || true
+exit 0
+FAKE_EOF
+  chmod +x "${fake_spawn}"
+
+  # _all_merged=true のとき continue してループするため --kill-after=1 で確実に SIGKILL する。
+  # flag は最初のイテレーション（~1s）で作成される。SIGKILL 後に状態を確認する。
+  SUPERVISOR_DIR="${SUPERVISOR_DIR}" \
+  WAVE_QUEUE_FILE="${SUPERVISOR_DIR}/wave-queue.json" \
+  AUTO_NEXT_SPAWN_SCRIPT="${fake_spawn}" \
+  POLL_INTERVAL_SEC=1 \
+  GH_API_FALLBACK_INTERVAL_SEC=1 \
+  SINGLE_POLL_TEST_MODE=1 \
+  WAVE_PROGRESS_WATCHDOG_ENABLED=1 \
+  timeout --kill-after=1 3 bash "${WATCHDOG_SCRIPT}" 2>/dev/null || true
+
+  # (a) completed.flag が作成されていないことを assert
+  #     RED: 現行 _invoke_auto_next_spawn は _mark_wave_completed を先行呼び出しするため
+  #          flag が残留する → [ ! -f ... ] が FAIL する
+  [ ! -f "${SUPERVISOR_DIR}/locks/wave-${CURRENT_WAVE}-completed.flag" ]
+
+  # (b) wave-queue.json が改変されていないことを assert
+  local current_queue
+  current_queue=$(cat "${SUPERVISOR_DIR}/wave-queue.json")
+  [ "${current_queue}" = "${original_queue}" ]
+}

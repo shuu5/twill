@@ -135,11 +135,11 @@ _atomic_update_current_wave() {
 }
 
 _invoke_auto_next_spawn() {
-  _mark_wave_completed "$1"
   if [[ -x "$AUTO_NEXT_SPAWN_SCRIPT" ]]; then
     bash "$AUTO_NEXT_SPAWN_SCRIPT" \
       --queue "$WAVE_QUEUE_FILE" \
-      --triggered-by "wave-progress-watchdog" || true
+      --triggered-by "wave-progress-watchdog" \
+      --target-wave "$1" || true
   else
     echo "[wave-progress-watchdog] WARN: auto-next-spawn.sh not found or not executable: ${AUTO_NEXT_SPAWN_SCRIPT}" >&2
   fi

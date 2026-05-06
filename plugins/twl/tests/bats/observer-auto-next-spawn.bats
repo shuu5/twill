@@ -794,3 +794,336 @@ EOF
   run grep -E 'auto-next-spawn' "${WAVE_MGMT_DOC}"
   [ "${status}" -eq 0 ]
 }
+
+# ===========================================================================
+# Issue #1447 — AC-8: --target-wave 引数バリデーションおよび動作テスト
+# (9 ケース、全テスト RED — 実装前は fail する)
+# ===========================================================================
+
+@test "ac8-1: --target-wave 正整数値 -> 受理（exit 0 かつ unknown argument 警告なし）" {
+  # AC: --target-wave に正整数値を渡した場合、バリデーションをパスして exit 0 となり、
+  #     "unknown argument" 警告が stderr に出力されないことを確認する
+  # RED: --target-wave 引数が auto-next-spawn.sh に未実装のため、
+  #      現状は "WARN: unknown argument: --target-wave" が stderr に出力される → FAIL
+
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 2,
+  "queue": [
+    {
+      "wave": 2,
+      "issues": [100],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [1],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  run bash "${AUTO_NEXT_SPAWN_SCRIPT}" \
+    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
+    --triggered-by "wt-test-1447" \
+    --target-wave 2 \
+    --dry-run
+  [ "${status}" -eq 0 ]
+  # unknown argument 警告が出ていないこと（実装前は "WARN: unknown argument: --target-wave" が出る）
+  [[ "${output}" != *"unknown argument"* ]]
+}
+
+@test "ac8-2: --target-wave 0 -> abort（exit 1）+ intervention-log に invalid --target-wave value 0" {
+  # AC: --target-wave 0 は正整数でないため abort（exit 1）し、
+  #     intervention-log に "invalid --target-wave value 0" を記録する
+  # RED: --target-wave 引数が auto-next-spawn.sh に未実装のため fail
+
+  INTERVENTION_LOG="${SUPERVISOR_DIR}/intervention-log.md"
+
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 1,
+  "queue": [
+    {
+      "wave": 2,
+      "issues": [100],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [1],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  run bash "${AUTO_NEXT_SPAWN_SCRIPT}" \
+    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
+    --triggered-by "wt-test-1447" \
+    --target-wave 0
+  [ "${status}" -eq 1 ]
+
+  run grep -F 'invalid --target-wave value 0' "${INTERVENTION_LOG}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac8-3: --target-wave -1 -> abort（exit 1）+ intervention-log に invalid --target-wave value -1" {
+  # AC: --target-wave -1 は負数のため abort（exit 1）し、
+  #     intervention-log に "invalid --target-wave value -1" を記録する
+  # RED: --target-wave 引数が auto-next-spawn.sh に未実装のため fail
+
+  INTERVENTION_LOG="${SUPERVISOR_DIR}/intervention-log.md"
+
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 1,
+  "queue": [
+    {
+      "wave": 2,
+      "issues": [100],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [1],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  run bash "${AUTO_NEXT_SPAWN_SCRIPT}" \
+    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
+    --triggered-by "wt-test-1447" \
+    --target-wave -1
+  [ "${status}" -eq 1 ]
+
+  run grep -F 'invalid --target-wave value -1' "${INTERVENTION_LOG}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac8-4: --target-wave abc -> abort（exit 1）+ intervention-log に invalid --target-wave value abc" {
+  # AC: --target-wave abc は非数値のため abort（exit 1）し、
+  #     intervention-log に "invalid --target-wave value abc" を記録する
+  # RED: --target-wave 引数が auto-next-spawn.sh に未実装のため fail
+
+  INTERVENTION_LOG="${SUPERVISOR_DIR}/intervention-log.md"
+
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 1,
+  "queue": [
+    {
+      "wave": 2,
+      "issues": [100],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [1],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  run bash "${AUTO_NEXT_SPAWN_SCRIPT}" \
+    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
+    --triggered-by "wt-test-1447" \
+    --target-wave abc
+  [ "${status}" -eq 1 ]
+
+  run grep -F 'invalid --target-wave value abc' "${INTERVENTION_LOG}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac8-5: --target-wave N + queue[0].wave != N -> exit 0 + intervention-log に target_wave_mismatch" {
+  # AC: --target-wave N を指定したが wave-queue.json の .queue[0].wave が N と異なる場合は
+  #     exit 0（skip）し、intervention-log に "target_wave_mismatch expected=N actual=<actual>" を記録する
+  # RED: --target-wave 検証ロジックが auto-next-spawn.sh に未実装のため fail
+
+  INTERVENTION_LOG="${SUPERVISOR_DIR}/intervention-log.md"
+
+  # queue[0].wave = 3 だが --target-wave 2 を渡す（不一致）
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 2,
+  "queue": [
+    {
+      "wave": 3,
+      "issues": [100],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [2],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  run bash "${AUTO_NEXT_SPAWN_SCRIPT}" \
+    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
+    --triggered-by "wt-test-1447" \
+    --target-wave 2
+  [ "${status}" -eq 0 ]
+
+  run grep -F 'target_wave_mismatch' "${INTERVENTION_LOG}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac8-6: --target-wave N + wave-N-completed.flag 存在 -> exit 0 + intervention-log に wave_already_completed" {
+  # AC: --target-wave N 指定時に .supervisor/locks/wave-N-completed.flag が既に存在する場合は
+  #     exit 0（skip）し、intervention-log に "wave_already_completed wave=N" を記録する
+  # RED: --target-wave 検証ロジックが auto-next-spawn.sh に未実装のため fail
+
+  INTERVENTION_LOG="${SUPERVISOR_DIR}/intervention-log.md"
+  TARGET_WAVE=5
+
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 4,
+  "queue": [
+    {
+      "wave": 5,
+      "issues": [100],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [4],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  # completed.flag を事前作成
+  mkdir -p "${SUPERVISOR_DIR}/locks"
+  touch "${SUPERVISOR_DIR}/locks/wave-${TARGET_WAVE}-completed.flag"
+
+  run bash "${AUTO_NEXT_SPAWN_SCRIPT}" \
+    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
+    --triggered-by "wt-test-1447" \
+    --target-wave "${TARGET_WAVE}"
+  [ "${status}" -eq 0 ]
+
+  run grep -F 'wave_already_completed' "${INTERVENTION_LOG}"
+  [ "${status}" -eq 0 ]
+}
+
+@test "ac8-7: --target-wave N + dequeue 成功 -> wave-N-completed.flag が作成される" {
+  # AC: --target-wave N 指定かつ dequeue 成功後に
+  #     .supervisor/locks/wave-N-completed.flag が touch される
+  # RED: --target-wave による flag set が auto-next-spawn.sh に未実装のため fail
+
+  TARGET_WAVE=7
+
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 6,
+  "queue": [
+    {
+      "wave": 7,
+      "issues": [200],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [6],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  mkdir -p "${SUPERVISOR_DIR}/locks"
+
+  # --dry-run ではなく実際の dequeue を行う（bash --version は即終了するため exec 後に flag 確認可能）
+  # exec 後はプロセス置換されるため、dequeue 永続化成功後に flag が touch されることを確認する
+  # ここでは dry-run を外して dequeue+flag set のみを検証する（exec は bash --version で安全）
+  bash "${AUTO_NEXT_SPAWN_SCRIPT}" \
+    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
+    --triggered-by "wt-test-1447" \
+    --target-wave "${TARGET_WAVE}" || true
+
+  # dequeue 後に flag が作成されているべき
+  [ -f "${SUPERVISOR_DIR}/locks/wave-${TARGET_WAVE}-completed.flag" ]
+}
+
+@test "ac8-8: --target-wave N + exec 失敗（rollback）-> wave-N-completed.flag が残留しない" {
+  # AC: --target-wave N 指定で dequeue 後 exec が失敗した場合、
+  #     queue rollback と同時に wave-N-completed.flag も削除される（rollback）
+  # RED: exec 失敗時の flag rollback が auto-next-spawn.sh に未実装のため fail
+  #
+  # exec 実失敗: fake_bin/bash を non-executable (chmod 644) にして PATH に優先挿入。
+  # exec bash ... が EACCES で失敗 → rollback ブロック到達 → flag 削除 → exit 1
+
+  TARGET_WAVE=9
+
+  # exec 実失敗: 存在しないシェバンインタープリタ付き executable "bash" を fake_bin に用意する。
+  # shopt -s execfail により exec 失敗時に bash が即 exit せず rollback ブロックに到達する。
+  local fake_bin="${TMPDIR_TEST}/fake_bin"
+  mkdir -p "${fake_bin}"
+  # shebang のインタープリタが存在しない → exec ENOENT → execfail で継続 → rollback 到達
+  printf '#!/tmp/nonexistent-interp-1447\n' > "${fake_bin}/bash"
+  chmod +x "${fake_bin}/bash"
+
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 8,
+  "queue": [
+    {
+      "wave": 9,
+      "issues": [300],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [8],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  mkdir -p "${SUPERVISOR_DIR}/locks"
+
+  # 外側は /usr/bin/bash (絶対パス) で呼び出し、サブプロセスの PATH のみ fake_bin 優先にする。
+  # auto-next-spawn.sh 内の "exec bash" が fake_bin/bash（nonexistent interpreter）を使用
+  # → exec ENOENT → shopt -s execfail により rollback ブロック到達 → exit 1
+  PATH="${fake_bin}:${PATH}" run /usr/bin/bash "${AUTO_NEXT_SPAWN_SCRIPT}" \
+    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
+    --triggered-by "wt-test-1447" \
+    --target-wave "${TARGET_WAVE}"
+  # exec 失敗時は exit 1
+  [ "${status}" -eq 1 ]
+
+  # flag が rollback されて残留していないことを確認
+  [ ! -f "${SUPERVISOR_DIR}/locks/wave-${TARGET_WAVE}-completed.flag" ]
+}
+
+@test "ac8-9: --target-wave 未指定 -> 従来通りの無条件 dequeue（flag set なし、後方互換）" {
+  # AC: --target-wave を指定しない場合は従来動作（無条件 dequeue）を維持し、
+  #     completed.flag の set / rm は一切行わない（後方互換）
+  # RED: このテストは実装後 GREEN になる。現状は既存動作のため PASS する可能性もあるが、
+  #      後方互換の明示的な回帰確認として記録する
+  # NOTE: 実装後も GREEN であるべきテスト（後方互換検証）
+
+  TARGET_WAVE=11
+
+  cat > "${SUPERVISOR_DIR}/wave-queue.json" <<'EOF'
+{
+  "version": 1,
+  "current_wave": 10,
+  "queue": [
+    {
+      "wave": 11,
+      "issues": [400],
+      "spawn_cmd_argv": ["bash", "--version"],
+      "depends_on_waves": [10],
+      "spawn_when": "all_current_wave_idle_completed"
+    }
+  ]
+}
+EOF
+
+  mkdir -p "${SUPERVISOR_DIR}/locks"
+
+  # --target-wave 未指定で実行（dry-run で dequeue を防ぐ）
+  run bash "${AUTO_NEXT_SPAWN_SCRIPT}" \
+    --queue "${SUPERVISOR_DIR}/wave-queue.json" \
+    --triggered-by "wt-test-1447" \
+    --dry-run
+  [ "${status}" -eq 0 ]
+
+  # --target-wave 未指定なので completed.flag が作成されていないこと
+  [ ! -f "${SUPERVISOR_DIR}/locks/wave-${TARGET_WAVE}-completed.flag" ]
+}
