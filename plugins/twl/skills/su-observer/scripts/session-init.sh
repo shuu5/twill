@@ -20,29 +20,53 @@ CLAUDE_SESSION_ID_VAL=$(ls -t ~/.claude/projects/${PROJECT_HASH}/*.jsonl 2>/dev/
   | head -1 | xargs -r basename 2>/dev/null | sed 's|\.jsonl$||' || echo "")
 OBSERVER_WINDOW_NAME=$(tmux display-message -p '#W' 2>/dev/null || echo "")
 
-# 親プロセス (cld 本体) から permission mode を抽出（/proc/$PPID/cmdline 経由）
-# SESSION_INIT_CMDLINE_OVERRIDE が設定されている場合はそちらを使用（テスト用）
+# 親プロセス (cld 本体) から permission mode を抽出
+# 優先順: SESSION_INIT_CMDLINE_OVERRIDE（テスト用後方互換）
+#        → pgrep -f claude でプロセスツリーを辿る（bash subshell 対応 #1459）
+#        → /proc/$PPID/cmdline フォールバック（既存動作）
+# SESSION_INIT_PGREP_PROC_DIR: fake /proc ルート（テスト用、default: /proc）
+_PROC_DIR="${SESSION_INIT_PGREP_PROC_DIR:-/proc}"
 OBSERVER_MODE=""
-_CMDLINE_SRC="${SESSION_INIT_CMDLINE_OVERRIDE:-}"
-if [[ -z "$_CMDLINE_SRC" && -r "/proc/$PPID/cmdline" ]]; then
-  _CMDLINE_SRC=$(tr '\0' ' ' < "/proc/$PPID/cmdline")
-fi
-if [[ -n "$_CMDLINE_SRC" ]]; then
-  if echo "$_CMDLINE_SRC" | grep -q -- '--dangerously-skip-permissions'; then
-    # cld のデフォルト起動経路（PR #804 revert 後）
-    OBSERVER_MODE="bypass"
-  else
-    _RAW_MODE=$(echo "$_CMDLINE_SRC" | grep -oP '(?:--permission-mode )\K\S+' || echo "")
-    # 許可値のみを通過させる（ホワイトリスト）
-    case "$_RAW_MODE" in
-      bypassPermissions) OBSERVER_MODE="bypass" ;;
-      acceptEdits)       OBSERVER_MODE="auto" ;;
-      auto|bypass|default|plan) OBSERVER_MODE="$_RAW_MODE" ;;
-      *)                 OBSERVER_MODE="" ;;
-    esac
+
+_parse_cmdline_for_mode() {
+  local cmdline="$1"
+  if echo "$cmdline" | grep -q -- '--dangerously-skip-permissions'; then
+    echo "bypass"
+    return
   fi
-  [[ -z "$OBSERVER_MODE" ]] && echo "[session-init] WARN: permission mode が cmdline に見つかりません（mode は空文字で記録）" >&2 || true
+  local raw
+  raw=$(echo "$cmdline" | grep -oP '(?:--permission-mode )\K\S+' || echo "")
+  case "$raw" in
+    bypassPermissions) echo "bypass" ;;
+    acceptEdits)       echo "auto" ;;
+    auto|bypass|default|plan) echo "$raw" ;;
+    *)                 echo "" ;;
+  esac
+}
+
+if [[ -n "${SESSION_INIT_CMDLINE_OVERRIDE:-}" ]]; then
+  OBSERVER_MODE=$(_parse_cmdline_for_mode "$SESSION_INIT_CMDLINE_OVERRIDE")
+else
+  # pgrep でプロセスツリーを辿って claude プロセスを検索
+  _CLAUDE_PIDS=$(pgrep -f 'claude' 2>/dev/null || true)
+  for _PID in $_CLAUDE_PIDS; do
+    if [[ -r "${_PROC_DIR}/${_PID}/cmdline" ]]; then
+      _CMD=$(tr '\0' ' ' < "${_PROC_DIR}/${_PID}/cmdline")
+      _MODE=$(_parse_cmdline_for_mode "$_CMD")
+      if [[ -n "$_MODE" ]]; then
+        OBSERVER_MODE="$_MODE"
+        break
+      fi
+    fi
+  done
+  # pgrep ヒットなし or mode 未検出: $PPID/cmdline にフォールバック（既存動作）
+  if [[ -z "$OBSERVER_MODE" && -r "/proc/$PPID/cmdline" ]]; then
+    _PPID_CMD=$(tr '\0' ' ' < "/proc/$PPID/cmdline")
+    OBSERVER_MODE=$(_parse_cmdline_for_mode "$_PPID_CMD")
+  fi
 fi
+
+[[ -z "$OBSERVER_MODE" ]] && echo "[session-init] WARN: permission mode が cmdline に見つかりません（mode は空文字で記録）" >&2 || true
 
 # session.json に書き込む（env var prefix 形式で Python に変数を渡す）
 CLAUDE_SESSION_ID_VAL="$CLAUDE_SESSION_ID_VAL" \
