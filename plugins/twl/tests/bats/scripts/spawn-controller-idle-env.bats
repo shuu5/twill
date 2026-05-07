@@ -481,6 +481,11 @@ tmux() {
 }
 export -f tmux
 
+# --max-cycles 2 は必須:
+# Cycle 1: phrase 検出 → IDLE_COMPLETED_TS[$WIN]=$NOW を記録（C4: first_seen_ts>0 待ち）
+# Cycle 2: DEBOUNCE_SEC=0 により elapsed=1s >= 0 → _check_idle_completed PASS → auto-kill
+# IDLE_COMPLETED_DEBOUNCE_SEC=0 は C5(elapsed>=debounce) を即時通過させるが
+# C4(first_seen_ts>0) により 2 サイクル目まで auto-kill は発火しない。
 output_text=$(IDLE_COMPLETED_AUTO_KILL=1 \
     IDLE_COMPLETED_DEBOUNCE_SEC=0 \
     _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="${SCRIPT_DIR}" \
