@@ -11,6 +11,10 @@
 [[ -n "${_LLM_INDICATORS_LOADED:-}" ]] && return 0
 _LLM_INDICATORS_LOADED=1
 
+# COMPACTION_INDICATORS: Sonnet 4.6 auto-compaction フェーズ名（#1475 SSOT）
+# cld-observe-any の [COMPACTION-DETECTED] ループも本配列を参照する
+COMPACTION_INDICATORS=("Compacting" "Snapshotting" "Externalizing" "Restoring" "Summarizing")
+
 LLM_INDICATORS=(
     # --- existing EN indicators ---
     "Thinking"
@@ -40,6 +44,11 @@ LLM_INDICATORS=(
     "Churned"
     "Skedaddling"
     "Orchestrating"
+
+    # --- compaction phase indicators: Sonnet 4.6 auto-compaction (#1475) ---
+    # SSOT: COMPACTION_INDICATORS 配列に定義し、LLM_INDICATORS は参照する
+    "${COMPACTION_INDICATORS[@]}"
+
     "[A-Z][a-z]+(in'|ing)(…| for [0-9]| \\([0-9])"
 
     # --- AC: EN 9 new indicators (#1454) ---

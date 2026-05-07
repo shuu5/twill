@@ -943,3 +943,65 @@ issue_1451:
       red_mechanism: "§12 未存在のため非インタラクティブ/SIG_IGN キーワード grep が失敗する"
       impl_files:
         - "plugins/twl/refs/baseline-bash.md"
+
+- issue: 1475
+  title: "bug(cld-observe-any): Sonnet 4.6 auto-compaction 中の Worker を STAGNATE-300 として誤検知"
+  framework: bats
+  test_file: "plugins/session/tests/test_1475_compaction_detect.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "LLM_INDICATORS に Compacting/Snapshotting/Externalizing/Restoring/Summarizing を明示追加する"
+      test_names:
+        - "ac1(#1475): Compacting が llm-indicators.sh に明示登録されていること (RED)"
+        - "ac1(#1475): Snapshotting が llm-indicators.sh に明示登録されていること (RED)"
+        - "ac1(#1475): Externalizing が llm-indicators.sh に明示登録されていること (RED)"
+        - "ac1(#1475): Restoring が llm-indicators.sh に明示登録されていること (RED)"
+        - "ac1(#1475): Summarizing が llm-indicators.sh に明示登録されていること (RED)"
+        - "ac1(#1475): detect_thinking が 'Compacting' (サフィックスなし) を検知すること (RED)"
+        - "ac1(#1475): detect_thinking が 'Snapshotting' (サフィックスなし) を検知すること (RED)"
+      status: RED
+      red_mechanism: "llm-indicators.sh に compaction 系キーワードが未登録のため grep/indicator loop が失敗する"
+      impl_files:
+        - "plugins/session/scripts/lib/llm-indicators.sh"
+
+    - ac_index: 2
+      ac_text: "cld-observe-any が compaction 中 pane を検知し [COMPACTION-DETECTED] を emit する"
+      test_name: "ac2(#1475): 'Compacting…' pane で COMPACTION-DETECTED が emit されること (RED)"
+      status: RED
+      red_mechanism: "cld-observe-any に COMPACTION-DETECTED emit ロジックが存在しないため出力に含まれない"
+      impl_files:
+        - "plugins/session/scripts/cld-observe-any"
+
+    - ac_index: 3
+      ac_text: "COMPACTION-DETECTED 発火後フラグを持続し次サイクルで STAGNATE を抑止する"
+      test_names:
+        - "ac3(#1475): COMPACTION-DETECTED 発火後にフラグ持続して次サイクルで STAGNATE を抑止すること (RED)"
+        - "ac3(#1475): Compacting キーワード含む pane で detect_thinking が 'Compacting' を返すこと (RED)"
+      status: RED
+      red_mechanism: "COMPACTION_ACTIVE フラグ機構が未実装のため compaction 完了後もSTAGNATE-300が発火する"
+      impl_files:
+        - "plugins/session/scripts/cld-observe-any"
+
+    - ac_index: 4
+      ac_text: "observer-idle-check C3 が Compacting/Snapshotting (サフィックスなし) で IDLE-COMPLETED を抑制する"
+      test_names:
+        - "ac4(#1475): observer-idle-check C3 が 'Compacting' (サフィックスなし) で IDLE-COMPLETED を抑制すること (RED)"
+        - "ac4(#1475): observer-idle-check C3 が 'Snapshotting' (サフィックスなし) で IDLE-COMPLETED を抑制すること (RED)"
+      status: RED
+      red_mechanism: "llm-indicators.sh に明示登録なしのため汎用 regex がサフィックスなし単語を捕捉できずC3不発"
+      impl_files:
+        - "plugins/session/scripts/lib/llm-indicators.sh"
+        - "plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh"
+
+    - ac_index: 5
+      ac_text: "compaction 状態を検知し STAGNATE false positive を防止する統合確認"
+      test_names:
+        - "ac5(#1475): cld-observe-any が compaction 状態を検知して COMPACTION-DETECTED を emit すること (RED)"
+        - "ac5(#1475): Externalizing (サフィックスなし) が detect_thinking で検知されること (RED)"
+        - "ac5(#1475): Restoring (サフィックスなし) が detect_thinking で検知されること (RED)"
+        - "ac5(#1475): Summarizing (サフィックスなし) が detect_thinking で検知されること (RED)"
+      status: RED
+      red_mechanism: "Externalizing/Restoring/Summarizing が未登録かつ COMPACTION-DETECTED 未実装"
+      impl_files:
+        - "plugins/session/scripts/lib/llm-indicators.sh"
+        - "plugins/session/scripts/cld-observe-any"
