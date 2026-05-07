@@ -421,6 +421,27 @@ rm -f .supervisor/events/* 2>/dev/null || true
 
 ---
 
+## 18. merge_failed: draft 誤認（chain workflow の実装 gap #1497）
+
+| # | Pitfall | 対策 |
+|---|---------|------|
+| 18.1 | `gh pr merge` が `GraphQL: Pull Request is still a draft (mergePullRequest)` で失敗 → Pilot が「Issue 元 bug の再現」と誤認して Wave abort | **chain workflow の実装 gap**（Issue #1497 fix: auto-merge.sh に `gh pr ready` を追加済み）。`merge_failed: PR is still a draft` = Issue 元 bug の再現ではなく、chain の draft → ready 切替不足。`gh pr ready <PR>` を手動実行して recovery 可能 |
+| 18.2 | Pilot が `failed (recursive bug 観察)` 宣言後に idle → Wave が完遂扱いで終了せず | observer が `gh pr ready <PR>` → `gh pr merge --squash --delete-branch` を自律実行。recovery 後に Wave 完遂宣言させる（Wave 58 / Issue #1481 実例） |
+
+**発生条件**: Worker が PR を draft で作成（`autopilot-launch.sh --draft`）→ GREEN 実装完遂 → `workflow-pr-merge` の `auto-merge.sh` で merge attempt → draft のまま merge attempt → 失敗。
+
+**根本原因（Issue #1497 fix 前）**: `auto-merge.sh` の非 autopilot path に `gh pr ready` 呼び出しが存在しなかった。
+
+**recovery 手順**:
+```bash
+gh pr ready <PR_NUMBER>
+gh pr merge <PR_NUMBER> --squash --delete-branch
+```
+
+**参照**: Issue #1497, Wave 58, PR #1492 (wave 58 fix), doobidoo `cf02430b`
+
+---
+
 ## 9. 追記ルール
 
 - 新規 pitfall を doobidoo `observer-pitfall` で保存したら、後日（次 Wave 完了時など）このカタログに 1 行追記
