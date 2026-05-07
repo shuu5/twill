@@ -1,0 +1,68 @@
+mappings:
+  - ac_index: 1
+    ac_text: >
+      co-explore / co-autopilot subagent の bash 内で mcp__twl__twl_send_msg 等の tool 呼び出しが
+      成功すること。subagent から mcp__twl__* tool が呼べる設定が存在すること（.mcp.json の
+      twl エントリの存在と正しい構造、subagent MCP 継承の仕組み）。
+    test_file: "plugins/twl/tests/bats/issue-1506-subagent-mcp-connection.bats"
+    test_names:
+      - "ac1: .mcp.json exists at mono root"
+      - "ac1: .mcp.json contains 'twl' server entry"
+      - "ac1: .mcp.json twl entry has stdio type"
+      - "ac1: .mcp.json twl entry invokes fastmcp run"
+      - "ac1: .mcp.json twl entry points to mcp_server/server.py"
+      - "ac1: subagent MCP inheritance config or env mechanism exists"
+    impl_files:
+      - ".mcp.json"
+      - ".claude/settings.json"
+    # impl_files 注記: subagent MCP 継承を有効化する設定ファイルが追加される想定。
+    # 実装対象は .mcp.json の subagent 継承設定追加、または新規設定ファイル作成。
+
+  - ac_index: 2
+    ac_text: >
+      両 hook event（PreToolUse:Bash, SubagentStop）で twl MCP 接続済み状態であること。
+      co-explore / co-autopilot Worker subagent 内で PreToolUse:Bash hook が
+      MCP server 'twl' not connected エラーを出さないこと。
+    test_file: "plugins/twl/tests/bats/issue-1506-subagent-mcp-connection.bats"
+    test_names:
+      - "ac2: PreToolUse Bash hook references twl mcp_tool in settings.json"
+      - "ac2: twl mcp server is listed in PreToolUse Bash hook context"
+      - "ac2: subagent MCP connection does not fail due to missing twl server config"
+    impl_files:
+      - ".claude/settings.json"
+      - "plugins/twl/scripts/hooks/pre-bash-commit-validate.sh"
+      - "plugins/twl/scripts/hooks/pre-bash-merge-guard.sh"
+      - "plugins/twl/scripts/hooks/pre-bash-phase3-gate.sh"
+    # impl_files 注記: hook スクリプト自体の変更か、subagent における MCP 接続確立の
+    # 仕組み（設定または環境変数）の追加が実装対象。
+
+  - ac_index: 3
+    ac_text: >
+      subagent 起動 → mcp__twl__twl_state_read を呼ぶ → success の bats test を追加すること
+      （plugins/twl/tests/bats/ 配下）。
+      本 AC の成果物 = issue-1506-subagent-mcp-connection.bats の存在。
+    test_file: "plugins/twl/tests/bats/issue-1506-subagent-mcp-connection.bats"
+    test_names:
+      - "ac3: issue-1506-subagent-mcp-connection.bats exists in plugins/twl/tests/bats/"
+      - "ac3: issue-1506 bats file contains AC1 test cases"
+      - "ac3: issue-1506 bats file contains AC2 test cases"
+    impl_files:
+      - "plugins/twl/tests/bats/issue-1506-subagent-mcp-connection.bats"
+    # impl_files 注記: 本ファイル自体が AC3 の実装成果物。
+
+  - ac_index: 4
+    ac_text: >
+      plugins/twl/architecture/decisions/ に subagent MCP server inheritance の ADR を作成
+      または既存 ADR に追記し、両 epic の前提条件として記録すること。
+      ADR は Accepted ステータスで、MCP server not connected 問題の背景と解決方針を含むこと。
+    test_file: "plugins/twl/tests/bats/issue-1506-subagent-mcp-connection.bats"
+    test_names:
+      - "ac4: ADR file for subagent MCP server inheritance exists"
+      - "ac4: ADR for subagent MCP inheritance references Issue 1506"
+      - "ac4: ADR for subagent MCP inheritance has Accepted status"
+      - "ac4: ADR context describes subagent MCP server not connected error"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-035-subagent-mcp-server-inheritance.md"
+    # impl_files 注記: ADR-034 が最新のため ADR-035 が次番号の想定。
+    # 実際の番号は実装時に確定する。または既存 ADR-029（twl MCP integration strategy）への追記も可。
+    # impl_files の ADR パスは手動補完が必要な場合がある。

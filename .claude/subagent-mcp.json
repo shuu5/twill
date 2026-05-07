@@ -1,9 +1,5 @@
 {
   "mcpServers": {
-    "code-review-graph": {
-      "command": "uvx",
-      "args": ["code-review-graph", "serve"]
-    },
     "twl": {
       "type": "stdio",
       "command": "/home/shuu5/projects/local-projects/twill/main/cli/twl/.venv/bin/fastmcp",
