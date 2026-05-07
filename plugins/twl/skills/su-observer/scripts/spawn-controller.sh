@@ -141,18 +141,44 @@ CHAIN_ISSUE=""
 CHAIN_PROJECT_DIR=""
 CHAIN_AUTOPILOT_DIR=""
 INTERACTIVE_FLAG=""  # --interactive: co-autopilot Plan 承認 menu opt-in (#1317)
+PRE_CHECK_ISSUE=""   # --pre-check-issue N: co-autopilot spawn 前 Status=Refined check (#1516)
 PASS_THROUGH_ARGS=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --with-chain)    WITH_CHAIN=true; shift ;;
-    --issue)         CHAIN_ISSUE="$2"; shift 2 ;;
-    --project-dir)   CHAIN_PROJECT_DIR="$2"; shift 2 ;;
-    --autopilot-dir) CHAIN_AUTOPILOT_DIR="$2"; shift 2 ;;
-    --interactive)   INTERACTIVE_FLAG="--interactive"; shift ;;
-    *)               PASS_THROUGH_ARGS+=("$1"); shift ;;
+    --with-chain)       WITH_CHAIN=true; shift ;;
+    --issue)            CHAIN_ISSUE="$2"; shift 2 ;;
+    --project-dir)      CHAIN_PROJECT_DIR="$2"; shift 2 ;;
+    --autopilot-dir)    CHAIN_AUTOPILOT_DIR="$2"; shift 2 ;;
+    --interactive)      INTERACTIVE_FLAG="--interactive"; shift ;;
+    --pre-check-issue)  PRE_CHECK_ISSUE="$2"; shift 2 ;;
+    *)                  PASS_THROUGH_ARGS+=("$1"); shift ;;
   esac
 done
 set -- "${PASS_THROUGH_ARGS[@]+"${PASS_THROUGH_ARGS[@]}"}"
+
+# --- Status=Refined pre-check（#1516 — co-autopilot spawn 前 MUST）---
+# --pre-check-issue N が指定された場合、Issue の Project Board Status を確認する。
+# Status=Todo の場合は error abort し、board-status-update --status Refined を hint として出力。
+if [[ -n "$PRE_CHECK_ISSUE" && "$SKILL_NORMALIZED" == "co-autopilot" ]]; then
+  _board_number="${TWL_BOARD_NUMBER:-$(python3 -m twl.config get project-board.number 2>/dev/null || echo "")}"
+  _board_owner="${TWL_BOARD_OWNER:-$(python3 -m twl.config get project-board.owner 2>/dev/null || echo "shuu5")}"
+  if [[ -n "$_board_number" ]]; then
+    _issue_status=$(gh project item-list "$_board_number" --owner "$_board_owner" --format json 2>/dev/null \
+      | python3 -c "import json,sys; items=json.load(sys.stdin).get('items',[]); \
+        match=[i.get('status','') for i in items if i.get('content',{}).get('number')==${PRE_CHECK_ISSUE}]; \
+        print(match[0] if match else '')" 2>/dev/null || echo "")
+    if [[ "$_issue_status" == "Todo" ]]; then
+      echo "[spawn-controller] ERROR: Issue #${PRE_CHECK_ISSUE} の Status=Todo のため co-autopilot spawn を abort します。" >&2
+      echo "[spawn-controller] HINT: 以下のコマンドで Status=Refined に遷移させてから再実行してください:" >&2
+      echo "[spawn-controller]   bash \"\${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh\" board-status-update ${PRE_CHECK_ISSUE}" >&2
+      echo "[spawn-controller]   または: board-status-update --status Refined を実行後に spawn-controller.sh を再実行" >&2
+      exit 2
+    fi
+  else
+    echo "[spawn-controller] WARN: --pre-check-issue: TWL_BOARD_NUMBER 未設定のため Status=Refined check をスキップ" >&2
+  fi
+fi
+# --- pre-check ここまで ---
 
 if [[ "$WITH_CHAIN" == "true" ]]; then
   cat >&2 <<'WARN'
