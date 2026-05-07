@@ -36,8 +36,9 @@ PYSTUB
   chmod +x "$STUB_BIN/python3"
 
   # gh stub: 呼び出しをログに記録する（各テストで PR_READY_FAIL / PR_ALREADY_READY を override 可能）
-  # PR_READY_FAIL=true  → gh pr ready が失敗する
-  # PR_ALREADY_READY=true → gh pr ready が "already ready" 系の exit 0 を返す（idempotent 検証用）
+  # PR_READY_FAIL=true    → gh pr ready が真のエラーで失敗する（例: GraphQL 権限エラー）
+  # PR_ALREADY_READY=true → gh pr ready が "PR is not a draft" で exit 1 を返す
+  #                         （実際の GitHub CLI 動作: already-ready な PR への gh pr ready は exit 1）
   GH_CALL_LOG="$SANDBOX/gh-calls.log"
   : > "$GH_CALL_LOG"
   export GH_CALL_LOG
@@ -47,8 +48,12 @@ PYSTUB
 echo "gh $*" >> "${GH_CALL_LOG}"
 case "$*" in
   *"pr ready "*)
+    if [[ "${PR_ALREADY_READY:-false}" == "true" ]]; then
+      echo "PR is not a draft" >&2
+      exit 1
+    fi
     if [[ "${PR_READY_FAIL:-false}" == "true" ]]; then
-      echo "failed to mark PR as ready for review: PR is not a draft" >&2
+      echo "GraphQL: Unresolved review request" >&2
       exit 1
     fi
     exit 0 ;;
@@ -261,6 +266,83 @@ teardown() {
   # "merge_failed" に関する記述が存在すること
   grep -qi "merge_failed\|merge.*draft\|draft.*merge" "$PITFALLS_CATALOG" || {
     echo "FAIL: pitfalls-catalog.md に 'merge_failed' / draft merge 関連の記述がない"
+    false
+  }
+}
+
+# ---------------------------------------------------------------------------
+# AC-idempotency: "PR is not a draft" exit 1 を no-op 扱いにして merge を続行する
+# Issue #1499: GitHub CLI の一部バージョンでは already-ready な PR への gh pr ready は exit 1 を返す
+# ---------------------------------------------------------------------------
+
+@test "ac-idempotency: gh pr ready が 'PR is not a draft' で exit 1 を返しても merge を続行する" {
+  # AC: gh pr ready が exit 1 + "PR is not a draft" を返す場合、
+  #     already-ready（no-op）と判断して merge を続行する（成功）
+  # RED: 現在の実装（L192-196）は exit 1 を一律エラーとして扱うため FAIL する
+  export PR_ALREADY_READY=true
+
+  run bash "$SANDBOX/scripts/auto-merge.sh" --issue 1497 --pr 1498 --branch fix/1497-draft-ready
+
+  # "PR is not a draft" は no-op: auto-merge.sh は成功（exit 0）すること
+  assert_success
+
+  # gh pr ready が呼ばれていること
+  grep -qF "gh pr ready 1498" "$GH_CALL_LOG" || {
+    echo "FAIL: gh pr ready 1498 が呼ばれていない"
+    cat "$GH_CALL_LOG"
+    false
+  }
+
+  # "PR is not a draft" を受けても merge が続行されていること
+  grep -qF "gh pr merge 1498 --squash" "$GH_CALL_LOG" || {
+    echo "FAIL: gh pr merge 1498 --squash が呼ばれていない（already-ready の no-op 後に merge が続行されるべき）"
+    cat "$GH_CALL_LOG"
+    false
+  }
+
+  assert_output --partial "merge 成功"
+}
+
+# ---------------------------------------------------------------------------
+# AC-stub-distinct: PR_READY_FAIL=true と PR_ALREADY_READY=true が異なるエラーを返す
+# Issue #1499: スタブを更新して idempotency 分岐テストが正確に動作することを確認する
+# ---------------------------------------------------------------------------
+
+@test "ac-stub-distinct: PR_READY_FAIL=true は 'GraphQL' エラーを返し draft/ready メッセージを出力する" {
+  # AC: PR_READY_FAIL=true（真のエラー）と PR_ALREADY_READY=true（already-ready）を区別する
+  #     PR_READY_FAIL=true → 別エラーメッセージ（GraphQL 系）で失敗
+  #     PR_ALREADY_READY=true → "PR is not a draft" で exit 1 → no-op 扱い（別テスト AC-idempotency）
+  # RED（AC-stub-distinct の観点）:
+  #     auto-merge.sh に idempotency 分岐がないため、
+  #     PR_ALREADY_READY=true のケースで merge が続行されない（ac-idempotency と連動）
+  export PR_READY_FAIL=true
+
+  run bash "$SANDBOX/scripts/auto-merge.sh" --issue 1497 --pr 1498 --branch fix/1497-draft-ready
+
+  # 真のエラー（GraphQL 系）時は失敗すること
+  assert_failure
+
+  # auto-merge.sh のエラーメッセージに "draft" と "ready" が含まれること
+  # （スタブが "GraphQL" エラーを返しても、auto-merge.sh の固定メッセージが出力される）
+  echo "$output" | grep -qi "draft" || {
+    echo "FAIL: 出力に 'draft' が含まれていない（auto-merge.sh エラーメッセージ要確認）"
+    echo "--- output ---"
+    echo "$output"
+    false
+  }
+  echo "$output" | grep -qi "ready" || {
+    echo "FAIL: 出力に 'ready' が含まれていない（auto-merge.sh エラーメッセージ要確認）"
+    echo "--- output ---"
+    echo "$output"
+    false
+  }
+
+  # スタブが "GraphQL" エラーを出力していること（PR_READY_FAIL が PR_ALREADY_READY と別扱いになっていること）
+  echo "$output" | grep -qi "graphql\|unresolved\|review" || {
+    echo "FAIL: PR_READY_FAIL=true 時に 'GraphQL' 系メッセージが出力されていない"
+    echo "FAIL: スタブが PR_READY_FAIL と PR_ALREADY_READY を区別できていない可能性"
+    echo "--- output ---"
+    echo "$output"
     false
   }
 }
