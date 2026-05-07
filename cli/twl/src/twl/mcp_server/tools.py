@@ -719,6 +719,91 @@ def twl_list_windows_handler(
     return {"ok": True, "windows": windows, "error": None}
 
 
+# Issue #1515: SUB-7 — budget capture + regex extraction + format spec
+_BUDGET_PCT_RE = re.compile(r'5h:(\d+)%\(([^)]+)\)')
+_BUDGET_RAW_UNIT_RE = re.compile(r'^(?:(\d+)h)?(?:(\d+)m)?$')
+
+
+def _parse_budget_raw_to_min(raw: str) -> int:
+    """Parse '83m', '1h21m', '2h' → minutes. Returns -1 on parse failure."""
+    m = _BUDGET_RAW_UNIT_RE.match(raw.strip())
+    if not m:
+        return -1
+    h = int(m.group(1) or 0)
+    mins = int(m.group(2) or 0)
+    return h * 60 + mins
+
+
+def twl_get_budget_handler(
+    window_name: str,
+    threshold_remaining_minutes: int = 40,
+    threshold_cycle_minutes: int = 5,
+    config_path: str | None = None,
+) -> dict:
+    """Capture tmux pane and extract budget info via 5h:%(Ym) regex.
+
+    AC1: handler 追加。AC2: 引数 {window_name, threshold_remaining_minutes?,
+    threshold_cycle_minutes?, config_path?}。AC3: 戻り値 {ok, budget_pct,
+    budget_min, cycle_reset_min, low: bool, error}。AC5: format mismatch →
+    low=True, error="format-mismatch"。AC7: subprocess mock 可能。AC8: timeout=10s。
+    """
+    import subprocess  # noqa: PLC0415
+
+    cmd = ["tmux", "capture-pane", "-t", window_name, "-p", "-S", "-1"]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "budget_pct": None, "budget_min": None,
+                "cycle_reset_min": None, "low": True, "error": "timeout"}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "budget_pct": None, "budget_min": None,
+                "cycle_reset_min": None, "low": True, "error": str(exc)}
+
+    if proc.returncode != 0:
+        return {"ok": False, "budget_pct": None, "budget_min": None,
+                "cycle_reset_min": None, "low": True,
+                "error": proc.stderr.strip() or f"exit code {proc.returncode}"}
+
+    pane_text = proc.stdout
+
+    # load threshold overrides from config_path if provided
+    if config_path:
+        try:
+            cfg = json.loads(Path(config_path).read_text(encoding="utf-8"))
+            threshold_remaining_minutes = int(
+                cfg.get("threshold_remaining_minutes", threshold_remaining_minutes)
+            )
+            threshold_cycle_minutes = int(
+                cfg.get("threshold_cycle_minutes", threshold_cycle_minutes)
+            )
+        except Exception:  # noqa: BLE001
+            pass
+
+    m = _BUDGET_PCT_RE.search(pane_text)
+    if not m:
+        return {"ok": True, "budget_pct": None, "budget_min": None,
+                "cycle_reset_min": None, "low": True, "error": "format-mismatch"}
+
+    budget_pct = int(m.group(1))
+    cycle_reset_min = _parse_budget_raw_to_min(m.group(2))
+    budget_min = 300 * (100 - budget_pct) // 100
+
+    low = False
+    if budget_min >= 0 and budget_min <= threshold_remaining_minutes:
+        low = True
+    if cycle_reset_min >= 0 and cycle_reset_min <= threshold_cycle_minutes:
+        low = True
+
+    return {
+        "ok": True,
+        "budget_pct": budget_pct,
+        "budget_min": budget_min,
+        "cycle_reset_min": cycle_reset_min,
+        "low": low,
+        "error": None,
+    }
+
+
 def twl_audit_session_handler(
     autopilot_dir: str | None = None,
 ) -> dict:
@@ -1931,6 +2016,11 @@ try:
         return json.dumps(twl_capture_pane_handler(window_name=window_name, lines=lines, mode=mode, from_line=from_line, to_line=to_line), ensure_ascii=False)
 
     @mcp.tool()
+    def twl_get_budget(window_name: str, threshold_remaining_minutes: int = 40, threshold_cycle_minutes: int = 5, config_path: str | None = None) -> str:
+        """Capture tmux pane and extract Claude budget via 5h:%(Ym) regex. Returns {ok, budget_pct, budget_min, cycle_reset_min, low, error}."""
+        return json.dumps(twl_get_budget_handler(window_name=window_name, threshold_remaining_minutes=threshold_remaining_minutes, threshold_cycle_minutes=threshold_cycle_minutes, config_path=config_path), ensure_ascii=False)
+
+    @mcp.tool()
     def twl_audit_session(autopilot_dir: str | None = None) -> str:
         """Audit autopilot session.json for structural integrity (R1-R4 rules). Idempotent."""
         return json.dumps(twl_audit_session_handler(autopilot_dir=autopilot_dir), ensure_ascii=False)
@@ -2130,6 +2220,10 @@ except ImportError:
     def twl_capture_pane(window_name: str, lines: int | None = None, mode: str = "raw", from_line: int | None = None, to_line: int | None = None) -> str:  # type: ignore[misc]
         """Capture tmux pane content as raw or plain (ANSI-stripped) text (fastmcp not installed)."""
         return json.dumps(twl_capture_pane_handler(window_name=window_name, lines=lines, mode=mode, from_line=from_line, to_line=to_line), ensure_ascii=False)
+
+    def twl_get_budget(window_name: str, threshold_remaining_minutes: int = 40, threshold_cycle_minutes: int = 5, config_path: str | None = None) -> str:  # type: ignore[misc]
+        """Capture tmux pane and extract Claude budget via 5h:%(Ym) regex (fastmcp not installed)."""
+        return json.dumps(twl_get_budget_handler(window_name=window_name, threshold_remaining_minutes=threshold_remaining_minutes, threshold_cycle_minutes=threshold_cycle_minutes, config_path=config_path), ensure_ascii=False)
 
     def twl_audit_session(autopilot_dir: str | None = None) -> str:  # type: ignore[misc]
         """Audit autopilot session.json for structural integrity (R1-R4 rules). Idempotent."""
