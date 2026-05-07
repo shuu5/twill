@@ -1,0 +1,75 @@
+mappings:
+  - ac_index: 1
+    ac_text: "既存 handler (tools.py line 221) を拡張または置換。既存実装との差分・置換方針を PR で明記"
+    test_file: "cli/twl/tests/test_issue_1514_get_session_state.py"
+    test_name: "TestAC1ProcessCheck::test_ac1_existing_handler_still_importable"
+    impl_files: []
+    # AC1 はプロセス AC（PR 記載が要件）のため impl_files は空。
+    # 実装は tools.py および session-state.sh だが AC2-7 でカバー済み。
+
+  - ac_index: 2
+    ac_text: "subcommand 互換 state / list [--json] / wait <state> [--timeout N]"
+    test_file: "cli/twl/tests/test_issue_1514_get_session_state.py"
+    test_names:
+      - "TestAC2SubcommandCompat::test_ac2_subcommand_param_exists"
+      - "TestAC2SubcommandCompat::test_ac2_window_name_param_exists"
+      - "TestAC2SubcommandCompat::test_ac2_json_flag_param_exists"
+      - "TestAC2SubcommandCompat::test_ac2_timeout_param_exists"
+      - "TestAC2SubcommandCompat::test_ac2_state_subcommand_calls_session_state_sh"
+      - "TestAC2SubcommandCompat::test_ac2_list_subcommand_calls_session_state_sh"
+      - "TestAC2SubcommandCompat::test_ac2_wait_subcommand_calls_session_state_sh"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+      - "plugins/session/scripts/session-state.sh"
+
+  - ac_index: 3
+    ac_text: "戻り値 {ok, state: \"idle\"|\"input-waiting\"|\"processing\"|\"error\"|\"exited\", details, error}"
+    test_file: "cli/twl/tests/test_issue_1514_get_session_state.py"
+    test_names:
+      - "TestAC3ReturnValueSchema::test_ac3_ok_key_exists_on_success"
+      - "TestAC3ReturnValueSchema::test_ac3_state_key_exists_on_success"
+      - "TestAC3ReturnValueSchema::test_ac3_state_value_is_valid_enum"
+      - "TestAC3ReturnValueSchema::test_ac3_details_key_exists_on_success"
+      - "TestAC3ReturnValueSchema::test_ac3_error_key_exists_on_failure"
+      - "TestAC3ReturnValueSchema::test_ac3_invalid_state_from_script_returns_error"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 4
+    ac_text: "既存 caller の backward compatibility（破壊的変更回避 or 移行 PR 同梱）"
+    test_file: "cli/twl/tests/test_issue_1514_get_session_state.py"
+    test_names:
+      - "TestAC4BackwardCompat::test_ac4_existing_params_and_new_subcommand_coexist"
+      - "TestAC4BackwardCompat::test_ac4_no_subcommand_returns_legacy_format_and_new_subcommand_works"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 5
+    ac_text: "shadow mode rollout"
+    test_file: "cli/twl/tests/test_issue_1514_get_session_state.py"
+    test_names:
+      - "TestAC5ShadowMode::test_ac5_shadow_mode_env_var_or_param_exists"
+      - "TestAC5ShadowMode::test_ac5_shadow_mode_does_not_raise"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 6
+    ac_text: "AT 非依存性"
+    test_file: "cli/twl/tests/test_issue_1514_get_session_state.py"
+    test_names:
+      - "TestAC6ATIndependence::test_ac6_session_state_sh_exists_as_impl_target"
+      - "TestAC6ATIndependence::test_ac6_no_autopilot_dir_needed_for_state_subcommand"
+      - "TestAC6ATIndependence::test_ac6_no_session_json_dependency_for_state_subcommand"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+      - "plugins/session/scripts/session-state.sh"
+
+  - ac_index: 7
+    ac_text: "short-lived 設計"
+    test_file: "cli/twl/tests/test_issue_1514_get_session_state.py"
+    test_names:
+      - "TestAC7ShortLivedDesign::test_ac7_subprocess_called_per_invocation"
+      - "TestAC7ShortLivedDesign::test_ac7_no_persistent_connection"
+      - "TestAC7ShortLivedDesign::test_ac7_handler_is_stateless_function"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
