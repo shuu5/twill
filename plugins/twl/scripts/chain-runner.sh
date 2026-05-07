@@ -1100,6 +1100,7 @@ step_ac_verify() {
 
   for _candidate in \
     "${_snapshot_dir}/ac-test-mapping-${issue_num}.yaml" \
+    "plugins/twl/tests/bats/scripts/ac-test-mapping-${issue_num}.yaml" \
     "plugins/twl/tests/bats/ac-test-mapping-${issue_num}.yaml" \
     "cli/twl/ac-test-mapping.yaml"; do
     if [[ -f "$_candidate" ]]; then
