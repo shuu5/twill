@@ -1890,8 +1890,6 @@ tmux() {
         kill-window)
             echo "KILLED: $@" >> "$TMPD/kill-log.txt"
             return 0;;
-        list-windows\ -a*)
-            echo "test-session:0 $win";;
         *) return 0;;
     esac
 }
