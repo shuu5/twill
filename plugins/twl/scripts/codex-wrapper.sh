@@ -24,19 +24,16 @@ CODEX_REAL="${HOME}/.local/bin/codex.real"
   echo "PID=$$"
   echo "PPID=$PPID"
   echo "PWD=$PWD"
-  echo "ARGS=$*"
+  printf 'ARGS=%s\n' "$(printf '%q ' "$@")"
   echo "PARENT=$(ps -o args= -p "$PPID" 2>/dev/null | head -c 300)"
 } >> "$LOG"
 
-# Stdin handling (AC2: STDIN_LEN/STDIN_HEAD)
+# Stdin handling (AC2: STDIN_LEN only — STDIN_HEAD omitted to avoid logging sensitive data)
 TMP=""
 if [[ ! -t 0 ]]; then
   TMP=$(mktemp)
   cat > "$TMP"
-  {
-    echo "STDIN_LEN=$(wc -c < "$TMP")"
-    echo "STDIN_HEAD=$(head -c 300 "$TMP" | tr '\n' ' ')"
-  } >> "$LOG"
+  echo "STDIN_LEN=$(wc -c < "$TMP")" >> "$LOG"
 fi
 
 # Interactive TTY: exec codex.real for true transparency (AC1)
