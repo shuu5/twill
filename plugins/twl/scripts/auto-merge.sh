@@ -187,6 +187,21 @@ if [[ "${DEV_AUTOPILOT_MERGEABILITY_PRECHECK:-false}" == "true" ]]; then
   esac
 fi
 
+# Layer 5 (Issue #1540 fix): specialist-audit による test-scaffold-only HARD FAIL 検出
+# Pilot merge-gate command (merge-gate.md) を経由しない直接 auto-merge.sh 呼び出し経路で
+# lesson 19 reproduction を防止する。本 invoke で specialist-audit が test path のみの
+# changed_files を検出した場合 HARD FAIL exit、merge を skip する。
+# (PR #1537 で specialist-audit.sh に追加した HARD FAIL を本経路で activate)
+_audit_script="${SCRIPT_DIR}/specialist-audit.sh"
+if [[ -f "$_audit_script" ]]; then
+  _audit_exit=0
+  bash "$_audit_script" --issue "${ISSUE_NUM:-}" --mode merge-gate 2>/dev/null || _audit_exit=$?
+  if [[ $_audit_exit -ne 0 ]]; then
+    echo "[auto-merge] REJECT: specialist-audit FAIL (exit=${_audit_exit}) — test scaffold only PR の可能性 (Issue #1540、lesson 19 reproduction 防止)" >&2
+    exit $_audit_exit
+  fi
+fi
+
 # #1497: merge 前に PR を ready に切り替える（draft → ready、idempotent）
 # #1499: "PR is not a draft" exit 1 は already-ready の no-op として扱う
 PR_READY_ERR=$(mktemp /tmp/auto-merge-ready-XXXXXX.log)
