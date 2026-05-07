@@ -27,7 +27,7 @@ _is_test_file() {
   [[ "$f" == *.spec.js ]] && return 0
   [[ "$f" == */tests/* ]] && return 0
   [[ "$f" == */test/* ]] && return 0
-  [[ "$f" == ac-test-mapping*.yaml ]] && return 0
+  [[ "$f" == *ac-test-mapping*.yaml ]] && return 0
   return 1
 }
 
