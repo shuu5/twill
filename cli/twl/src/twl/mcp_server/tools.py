@@ -767,17 +767,24 @@ def twl_get_budget_handler(
     pane_text = proc.stdout
 
     # load threshold overrides from config_path if provided
+    config_error: str | None = None
     if config_path:
         try:
-            cfg = json.loads(Path(config_path).read_text(encoding="utf-8"))
+            resolved = Path(config_path).expanduser().resolve()
+            # prevent path traversal — only allow .json files under CWD or home
+            cwd = Path.cwd().resolve()
+            home = Path.home().resolve()
+            if not (str(resolved).startswith(str(cwd)) or str(resolved).startswith(str(home))):
+                raise ValueError(f"config_path outside allowed directories: {resolved}")
+            cfg = json.loads(resolved.read_text(encoding="utf-8"))
             threshold_remaining_minutes = int(
                 cfg.get("threshold_remaining_minutes", threshold_remaining_minutes)
             )
             threshold_cycle_minutes = int(
                 cfg.get("threshold_cycle_minutes", threshold_cycle_minutes)
             )
-        except Exception:  # noqa: BLE001
-            pass
+        except Exception as _cfg_exc:  # noqa: BLE001
+            config_error = str(_cfg_exc)
 
     m = _BUDGET_PCT_RE.search(pane_text)
     if not m:
@@ -800,7 +807,7 @@ def twl_get_budget_handler(
         "budget_min": budget_min,
         "cycle_reset_min": cycle_reset_min,
         "low": low,
-        "error": None,
+        "error": config_error,
     }
 
 
