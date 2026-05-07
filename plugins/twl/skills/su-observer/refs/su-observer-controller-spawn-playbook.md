@@ -12,7 +12,7 @@
 | controller | 用途 | 並列度（同時 spawn 可能数） | 観察モード |
 |---|---|---|---|
 | **co-autopilot** | Issue 実装 | **MUST 1 のみ** — 複数 Issue は **1 prompt に列挙**、Pilot が orchestrator 経由で複数 Worker (ap-*) を並列起動する | `cld-observe-loop` で能動 observe |
-| **co-explore** | 問題探索 | 複数 spawn 可（各 `.explore/<N>/summary.md` 独立） | proxy 対話 or 自律完了待ち |
+| **co-explore** | 問題探索 | 複数 spawn 可（各 `.explore/<N>/summary.md` 独立） | **menu 連発型（4-5 menu/session 想定）**: observer は menu 出現 ≤ 60s 以内に応答すべき（SLA）。自律完了型判別: `summary.md` 存在 + menu-ready event なし（single summary, no menu）の場合は自律完了と判定。詳細: `refs/proxy-dialog-playbook.md` 参照 |
 | **co-issue** | Issue 作成/refine | 複数 spawn 可（各 `.controller-issue/<sid>/` 独立） | **proxy 対話ループ** |
 | **co-architect** | architecture 設計 | 複数 spawn 可だが proxy 負荷重く 1 つずつ推奨 | **proxy 対話ループ** |
 | co-project | プロジェクト管理 | 1 推奨 | 指示待ち |

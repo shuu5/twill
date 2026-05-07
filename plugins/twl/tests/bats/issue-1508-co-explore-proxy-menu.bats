@@ -165,36 +165,36 @@ setup() {
 
 @test "ac4: record-detection-gap.sh --type proxy-stuck outputs observer-co-explore-gap tag" {
   # AC: --type proxy-stuck で実行すると observer-co-explore-gap タグが stderr hint に含まれる
-  # RED: co-explore-specific tag がまだ追加されていないため fail
-  local tmpdir
-  tmpdir="$(mktemp -d)"
+  # record-detection-gap.sh は SUPERVISOR_DIR に相対パスを要求する（絶対パス拒否 §11）
+  local tmpname
+  tmpname="test-supervisor-ac4a-$$"
+  mkdir -p "$tmpname"
   run bash -c "
-    SUPERVISOR_DIR='${tmpdir}/.supervisor' \
+    SUPERVISOR_DIR='${tmpname}' \
     bash '${RECORD_SCRIPT}' \
       --type proxy-stuck \
       --detail 'test-detection-gap' \
     2>&1 | grep -qF 'observer-co-explore-gap'
-    status=\$?
-    rm -rf '${tmpdir}'
-    exit \$status
   "
+  rm -rf "$tmpname"
   [ "${status}" -eq 0 ]
 }
 
 @test "ac4: record-detection-gap.sh --type proxy-stuck tag appears in tags list" {
   # AC: hint の tags: [...] 配列に observer-co-explore-gap が含まれる
-  # RED: tag がまだ追加されていないため fail
-  local tmpdir
-  tmpdir="$(mktemp -d)"
+  # record-detection-gap.sh は SUPERVISOR_DIR に相対パスを要求する（絶対パス拒否 §11）
+  local tmpname
+  tmpname="test-supervisor-ac4b-$$"
+  mkdir -p "$tmpname"
   run bash -c "
-    output=\$(SUPERVISOR_DIR='${tmpdir}/.supervisor' \
+    output=\$(SUPERVISOR_DIR='${tmpname}' \
       bash '${RECORD_SCRIPT}' \
         --type proxy-stuck \
         --detail 'test-detection-gap' \
       2>&1)
-    rm -rf '${tmpdir}'
     echo \"\$output\" | grep -qE 'tags:.*observer-co-explore-gap|observer-co-explore-gap.*tags'
   "
+  rm -rf "$tmpname"
   [ "${status}" -eq 0 ]
 }
 

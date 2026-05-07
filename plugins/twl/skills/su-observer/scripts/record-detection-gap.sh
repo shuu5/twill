@@ -84,10 +84,15 @@ _ts="$(date -u +%FT%TZ)"
 } 9>>"$_supervisor_dir/intervention-log.md"
 
 # Action 2: doobidoo memory_store hint → stderr（MCP は shell から呼出不可のため hint のみ）
+# proxy-stuck type: co-explore 専用タグを追加（#1508）
+_extra_tags=""
+if [[ "$TYPE" == "proxy-stuck" ]]; then
+  _extra_tags=", \"observer-co-explore-gap\""
+fi
 {
   echo "[hint] doobidoo memory_store recommended:"
   echo "  content: \"detection-gap: ${DETAIL}\""
-  echo "  tags: [\"observer-pitfall\", \"detection-gap\", \"${TYPE}\"]"
+  echo "  tags: [\"observer-pitfall\", \"detection-gap\", \"${TYPE}\"${_extra_tags}]"
   if [[ -n "$RELATED_ISSUE" ]]; then
     echo "  metadata: { \"severity\": \"${SEVERITY}\", \"related_issue\": \"${RELATED_ISSUE}\" }"
   else
