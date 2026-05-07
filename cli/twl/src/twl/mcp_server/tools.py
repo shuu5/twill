@@ -467,6 +467,81 @@ def twl_capture_pane_handler(
     }
 
 
+def twl_list_windows_handler(
+    session: str | None = None,
+    format: str = "minimal",
+) -> dict:
+    """List tmux windows/sessions as structured JSON.
+
+    AC1: handler 追加 (twl_capture_pane_handler と並列配置).
+    AC2: 引数 {session?, format?: 'minimal'|'detailed'}.
+    AC3: 戻り値 {ok, windows: [{name, index, session, active, panes_count, ...}], error}.
+    AC4: tmux list-sessions と list-windows -F 両方サポート (session=None で全 session 横断).
+    AC5-7: shadow mode rollout / AT 非依存性 / short-lived 設計 (subprocess timeout=10s).
+
+    Issue #1513 SUB-5 handler 本体補完 (Wave 71 PR #1534 が test scaffold のみだった補完、observer 直接 implement、Issue #1535 関連)。
+    """
+    import subprocess  # noqa: PLC0415
+
+    if format not in ("minimal", "detailed"):
+        return {
+            "ok": False,
+            "error": f"Invalid format '{format}': must be 'minimal' or 'detailed'",
+            "error_type": "invalid_format",
+            "windows": [],
+        }
+
+    if session is not None and not _VALID_WINDOW_NAME_RE.match(session):
+        return {
+            "ok": False,
+            "error": f"Invalid session name '{session}': must match [A-Za-z0-9_./:@-]+",
+            "error_type": "invalid_session",
+            "windows": [],
+        }
+
+    if session is None:
+        cmd = ["tmux", "list-windows", "-a"]
+    else:
+        cmd = ["tmux", "list-windows", "-t", session]
+
+    if format == "detailed":
+        cmd.extend(["-F", "#{session_name}|#{window_index}|#{window_name}|#{window_active}|#{window_panes}"])
+    else:
+        cmd.extend(["-F", "#{session_name}|#{window_index}|#{window_name}"])
+
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "timeout", "error_type": "timeout", "windows": []}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": str(exc), "error_type": "error", "windows": []}
+
+    if proc.returncode != 0:
+        return {
+            "ok": False,
+            "error": proc.stderr.strip() or f"exit code {proc.returncode}",
+            "error_type": "shell_error",
+            "windows": [],
+        }
+
+    windows: list[dict] = []
+    for line in proc.stdout.strip().split("\n"):
+        if not line:
+            continue
+        parts = line.split("|")
+        entry: dict = {
+            "session": parts[0] if len(parts) > 0 else "",
+            "index": int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0,
+            "name": parts[2] if len(parts) > 2 else "",
+        }
+        if format == "detailed":
+            entry["active"] = parts[3] == "1" if len(parts) > 3 else False
+            entry["panes_count"] = int(parts[4]) if len(parts) > 4 and parts[4].isdigit() else 0
+        windows.append(entry)
+
+    return {"ok": True, "windows": windows, "error": None}
+
+
 def twl_audit_session_handler(
     autopilot_dir: str | None = None,
 ) -> dict:
