@@ -1,0 +1,32 @@
+mappings:
+  - ac_index: 1
+    ac_text: "specialist-audit.sh に 'test scaffold only' HARD FAIL を実装 — Worker PR の changed_files が test 系のみ (cli/twl/tests/、plugins/twl/tests/) で src/ への変更がない場合、specialist-audit.sh が STATUS=FAIL を返す。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1535.bats"
+    test_name: "ac1a: specialist-audit.sh に 'test scaffold only' 検出ロジックが存在する"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"
+  - ac_index: 2
+    ac_text: "SUB-5 (#1513) handler 本体補完 — twl_list_windows_handler を tools.py に追加し、test_issue_1513 を GREEN 化。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1535.bats"
+    test_name: "ac2a: tools.py に twl_list_windows_handler 関数定義が存在する"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 3
+    ac_text: "worker-issue-pr-alignment specialist の強化 — PR の AC 完遂検証で「AC mentioned in body but no impl in diff」を CRITICAL として検出。observer 自律 verify SOP に inject。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1535.bats"
+    test_name: "ac3a: worker-issue-pr-alignment.md に 'no impl in diff' CRITICAL 検出ロジックが記述されている"
+    impl_files:
+      - "plugins/twl/agents/worker-issue-pr-alignment.md"
+  - ac_index: 4
+    ac_text: "ADR-036 + Invariant N の adherence verify — lesson 構造化チェーンを Worker が自身の PR に適用しているか specialist-audit が check (再帰的)。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1535.bats"
+    test_name: "ac4a: specialist-audit.sh に ADR-036 または lesson-structuralization チェックロジックが存在する"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"
+  - ac_index: 5
+    ac_text: "bats test (重要) — specialist-audit.sh の 'test scaffold only' 検出 + AC unimpl 検出を bats test で verify (lesson 19 / 26 の構造化が回帰しないことを保証)。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1535.bats"
+    test_name: "ac5a: specialist-audit.sh が test-only PR を FAIL と判定する（regression guard）"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"
+      - "plugins/twl/tests/bats/ac-scaffold-tests-1535.bats"
