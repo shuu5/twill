@@ -1232,6 +1232,24 @@ _CLD_SPAWN_SCRIPT = (
 )
 _SPAWN_SHADOW_LOG = Path("/tmp/mcp-shadow-spawn.log")
 
+# --- spawn_controller (Issue #1511) ---
+
+_SPAWN_CONTROLLER_SCRIPT = (
+    Path(__file__).resolve().parent.parent.parent.parent.parent
+    / "plugins" / "twl" / "skills" / "su-observer" / "scripts" / "spawn-controller.sh"
+)
+_SPAWN_CONTROLLER_SHADOW_LOG = Path("/tmp/mcp-shadow-spawn-controller.log")
+
+_VALID_CONTROLLER_SKILLS = [
+    "co-explore",
+    "co-issue",
+    "co-architect",
+    "co-autopilot",
+    "co-project",
+    "co-utility",
+    "co-self-improve",
+]
+
 
 def twl_spawn_session_handler(
     prompt: str,
@@ -1378,6 +1396,149 @@ def _get_window_pid(window_name: str | None) -> int | None:
         return int(out.splitlines()[0]) if out else None
     except Exception:
         return None
+
+
+def twl_spawn_controller_handler(
+    skill_name: str,
+    prompt_file_or_text: str,
+    with_chain: bool = False,
+    issue: str | None = None,
+    project_dir: str | None = None,
+    autopilot_dir: str | None = None,
+    extra_args: list[str] | None = None,
+) -> dict:
+    """Spawn a TWiLL controller skill via spawn-controller.sh.
+
+    AC3: skill_name validated against allow-list (co-explore/co-issue/co-architect/
+    co-autopilot/co-project/co-utility/co-self-improve; "twl:" prefix accepted).
+    Returns {ok, window, session, prompt_prepended, error}.
+    AC9: fire-and-forget — spawn-controller.sh returns once the tmux window is created.
+    """
+    import subprocess  # noqa: PLC0415
+    import tempfile  # noqa: PLC0415
+
+    # AC3: allow-list validation (strip "twl:" prefix)
+    skill_normalized = skill_name.removeprefix("twl:")
+    if skill_normalized not in _VALID_CONTROLLER_SKILLS:
+        return {
+            "ok": False,
+            "window": None,
+            "session": None,
+            "prompt_prepended": None,
+            "error": f"invalid skill name '{skill_name}'. Valid: {', '.join(_VALID_CONTROLLER_SKILLS)}",
+        }
+
+    script = Path(os.environ.get("SPAWN_CONTROLLER_SCRIPT", str(_SPAWN_CONTROLLER_SCRIPT)))
+    if not script.exists():
+        return {
+            "ok": False,
+            "window": None,
+            "session": None,
+            "prompt_prepended": None,
+            "error": f"spawn-controller.sh not found: {script}",
+        }
+
+    # Write prompt text to temp file if not a file path
+    prompt_is_file = Path(prompt_file_or_text).is_file() if prompt_file_or_text else False
+    _tmpfile_path: str | None = None
+    try:
+        if prompt_is_file:
+            prompt_path = prompt_file_or_text
+        else:
+            tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False)
+            tmp.write(prompt_file_or_text)
+            tmp.flush()
+            tmp.close()
+            _tmpfile_path = tmp.name
+            prompt_path = _tmpfile_path
+
+        cmd: list[str] = ["bash", str(script), skill_name, prompt_path]
+        if with_chain:
+            cmd.append("--with-chain")
+        if issue:
+            cmd += ["--issue", str(issue)]
+        if project_dir:
+            cmd += ["--project-dir", project_dir]
+        if autopilot_dir:
+            cmd += ["--autopilot-dir", autopilot_dir]
+        if extra_args:
+            cmd.extend(extra_args)
+
+        # AC6: inherit env so SKIP_PARALLEL_CHECK / SKIP_PARALLEL_REASON pass through
+        env = os.environ.copy()
+
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=60,
+                env=env,
+            )
+        except FileNotFoundError as exc:
+            _spawn_controller_shadow_log({"ok": False, "exit_code": -1, "stderr": str(exc)})
+            return {"ok": False, "window": None, "session": None, "prompt_prepended": None, "error": str(exc)}
+        except subprocess.TimeoutExpired:
+            _spawn_controller_shadow_log({"ok": False, "exit_code": -2, "stderr": "timeout"})
+            return {"ok": False, "window": None, "session": None, "prompt_prepended": None, "error": "spawn-controller.sh timed out after 60s"}
+        except Exception as exc:
+            _spawn_controller_shadow_log({"ok": False, "exit_code": -3, "stderr": str(exc)})
+            return {"ok": False, "window": None, "session": None, "prompt_prepended": None, "error": str(exc)}
+
+        ok = result.returncode == 0
+        _spawn_controller_shadow_log({
+            "ok": ok,
+            "exit_code": result.returncode,
+            "stderr": result.stderr,
+            "stdout": result.stdout,
+        })
+
+        if not ok:
+            return {
+                "ok": False,
+                "window": None,
+                "session": None,
+                "prompt_prepended": None,
+                "error": result.stderr.strip() or f"spawn-controller.sh exited {result.returncode}",
+            }
+
+        parsed_window = _parse_spawn_window(result.stdout)
+
+        try:
+            session_name = subprocess.check_output(
+                ["tmux", "display-message", "-p", "#{session_name}"],
+                text=True, timeout=5, stderr=subprocess.DEVNULL,
+            ).strip()
+        except Exception:
+            session_name = None
+
+        return {
+            "ok": True,
+            "window": parsed_window,
+            "session": session_name,
+            "prompt_prepended": True,  # spawn-controller.sh always prepends /twl:<skill>
+            "error": None,
+        }
+    finally:
+        if _tmpfile_path is not None:
+            try:
+                Path(_tmpfile_path).unlink(missing_ok=True)
+            except Exception:
+                pass
+
+
+def _spawn_controller_shadow_log(entry: dict) -> None:
+    import time  # noqa: PLC0415
+    record = json.dumps({
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "tool": "twl_spawn_controller",
+        **entry,
+    }, ensure_ascii=False)
+    try:
+        with open(str(_SPAWN_CONTROLLER_SHADOW_LOG), "a") as f:
+            f.write(record + "\n")
+    except Exception:
+        pass
 
 
 # MCP tool registration — requires fastmcp (optional dep)
@@ -1575,6 +1736,37 @@ try:
             ensure_ascii=False,
         )
 
+    @mcp.tool()
+    def twl_spawn_controller(  # type: ignore[misc]
+        skill_name: str,
+        prompt_file_or_text: str,
+        with_chain: bool = False,
+        issue: str | None = None,
+        project_dir: str | None = None,
+        autopilot_dir: str | None = None,
+        extra_args: list[str] | None = None,
+    ) -> str:
+        """Spawn a TWiLL controller skill via spawn-controller.sh.
+
+        skill_name: one of co-explore/co-issue/co-architect/co-autopilot/co-project/
+        co-utility/co-self-improve (accepts "twl:" prefix).
+        prompt_file_or_text: prompt file path or inline text.
+        Returns JSON {ok, window, session, prompt_prepended, error}.
+        Fire-and-forget: the controller session runs independently.
+        """
+        return json.dumps(
+            twl_spawn_controller_handler(
+                skill_name=skill_name,
+                prompt_file_or_text=prompt_file_or_text,
+                with_chain=with_chain,
+                issue=issue,
+                project_dir=project_dir,
+                autopilot_dir=autopilot_dir,
+                extra_args=extra_args,
+            ),
+            ensure_ascii=False,
+        )
+
 except ImportError:
     mcp = None  # type: ignore[assignment]
 
@@ -1730,6 +1922,29 @@ except ImportError:
                 timeout=timeout,
                 model=model,
                 force_new=force_new,
+            ),
+            ensure_ascii=False,
+        )
+
+    def twl_spawn_controller(  # type: ignore[misc]
+        skill_name: str,
+        prompt_file_or_text: str,
+        with_chain: bool = False,
+        issue: str | None = None,
+        project_dir: str | None = None,
+        autopilot_dir: str | None = None,
+        extra_args: list[str] | None = None,
+    ) -> str:
+        """Spawn a TWiLL controller skill via spawn-controller.sh (fastmcp not installed)."""
+        return json.dumps(
+            twl_spawn_controller_handler(
+                skill_name=skill_name,
+                prompt_file_or_text=prompt_file_or_text,
+                with_chain=with_chain,
+                issue=issue,
+                project_dir=project_dir,
+                autopilot_dir=autopilot_dir,
+                extra_args=extra_args,
             ),
             ensure_ascii=False,
         )
