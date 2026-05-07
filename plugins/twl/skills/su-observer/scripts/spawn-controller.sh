@@ -158,19 +158,28 @@ set -- "${PASS_THROUGH_ARGS[@]+"${PASS_THROUGH_ARGS[@]}"}"
 
 # --- Status=Refined pre-check（#1516 — co-autopilot spawn 前 MUST）---
 # --pre-check-issue N が指定された場合、Issue の Project Board Status を確認する。
-# Status=Todo の場合は error abort し、board-status-update --status Refined を hint として出力。
+# Status が Refined でない場合は error abort し、board-status-update を hint として出力。
 if [[ -n "$PRE_CHECK_ISSUE" && "$SKILL_NORMALIZED" == "co-autopilot" ]]; then
+  # CRITICAL fix: 整数バリデーション（CHAIN_ISSUE の ^[1-9][0-9]*$ パターン準拠）
+  if [[ ! "$PRE_CHECK_ISSUE" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Error: --pre-check-issue の値は正整数である必要があります: ${PRE_CHECK_ISSUE}" >&2
+    exit 2
+  fi
   _board_number="${TWL_BOARD_NUMBER:-$(python3 -m twl.config get project-board.number 2>/dev/null || echo "")}"
   _board_owner="${TWL_BOARD_OWNER:-$(python3 -m twl.config get project-board.owner 2>/dev/null || echo "shuu5")}"
   if [[ -n "$_board_number" ]]; then
+    # PRE_CHECK_ISSUE は上記で正整数バリデーション済み（python3 への展開は安全）
     _issue_status=$(gh project item-list "$_board_number" --owner "$_board_owner" --format json 2>/dev/null \
-      | python3 -c "import json,sys; items=json.load(sys.stdin).get('items',[]); \
-        match=[i.get('status','') for i in items if i.get('content',{}).get('number')==${PRE_CHECK_ISSUE}]; \
+      | python3 -c "import json,sys; n=int('${PRE_CHECK_ISSUE}'); items=json.load(sys.stdin).get('items',[]); \
+        match=[i.get('status','') for i in items if i.get('content',{}).get('number')==n]; \
         print(match[0] if match else '')" 2>/dev/null || echo "")
-    if [[ "$_issue_status" == "Todo" ]]; then
-      echo "[spawn-controller] ERROR: Issue #${PRE_CHECK_ISSUE} の Status=Todo のため co-autopilot spawn を abort します。" >&2
+    # CRITICAL fix: Status != Refined を abort 条件とする（Todo のみではなく非 Refined 全般）
+    if [[ -z "$_issue_status" ]]; then
+      echo "[spawn-controller] WARN: --pre-check-issue: Issue #${PRE_CHECK_ISSUE} の Status を取得できませんでした（board 未登録または API エラー）。spawn を続行します。" >&2
+    elif [[ "$_issue_status" != "Refined" ]]; then
+      echo "[spawn-controller] ERROR: Issue #${PRE_CHECK_ISSUE} の Status=${_issue_status}（Refined でない）のため co-autopilot spawn を abort します。" >&2
       echo "[spawn-controller] HINT: 以下のコマンドで Status=Refined に遷移させてから再実行してください:" >&2
-      echo "[spawn-controller]   bash \"\${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh\" board-status-update ${PRE_CHECK_ISSUE}" >&2
+      echo "[spawn-controller]   bash \"$TWILL_ROOT/plugins/twl/scripts/chain-runner.sh\" board-status-update ${PRE_CHECK_ISSUE}" >&2
       echo "[spawn-controller]   または: board-status-update --status Refined を実行後に spawn-controller.sh を再実行" >&2
       exit 2
     fi
