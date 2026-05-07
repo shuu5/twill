@@ -1,0 +1,26 @@
+mappings:
+  - ac_index: 1
+    ac_text: "chain-runner.sh の for _candidate in ループに plugins/twl/tests/bats/scripts/ac-test-mapping-${issue_num}.yaml を追加"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-ac-mapping-lookup.bats"
+    test_name: "ac1: chain-runner.sh の候補リストに scripts/ lookup path が含まれる"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 2
+    ac_text: "plugins/twl/tests/bats/scripts/chain-runner-ac-mapping-lookup.bats 新設、新 location の mapping を検出することを assert"
+    test_file: "plugins/twl/tests/bats/scripts/chain-runner-ac-mapping-lookup.bats"
+    test_name: "ac2: scripts/ ディレクトリの mapping ファイルが chain-runner.sh の lookup で検出される"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+      - "plugins/twl/tests/bats/scripts/chain-runner-ac-mapping-lookup.bats"
+  - ac_index: 3
+    ac_text: "scripts/issue-create-refined.sh を別 PR で実装し ac-impl-coverage-check が CRITICAL を出さないことを検証（別 PR スコープ）"
+    test_file: ""
+    test_name: "out_of_scope_ac3"
+    impl_files: []
+    # 別 PR スコープのため impl 不要。このチケットではテスト skip として記録のみ。
+  - ac_index: 4
+    ac_text: "impact assessment: 過去 14 件の impl 不在 PR を refile（プロセス AC）"
+    test_file: ""
+    test_name: "out_of_scope_ac4"
+    impl_files: []
+    # プロセス AC（手動 refile）のためコード実装なし。
