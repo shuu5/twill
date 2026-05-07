@@ -56,6 +56,12 @@ chains:
       - pr-test
       - ac-verify
 
+  pr-fix:
+    type: "B"
+    description: "PR修正後検証（fix 後の deterministic specialist spawn）"
+    steps:
+      - post-fix-verify
+
   pr-merge:
     type: "B"
     description: "PRマージ（e2e → report → analysis → check → merge）"

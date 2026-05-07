@@ -31,9 +31,9 @@ AUDIT_SH=""
 
 setup() {
   common_setup
-  CHAIN_PY="$REPO_ROOT/../../../cli/twl/src/twl/autopilot/chain.py"
+  CHAIN_PY="$REPO_ROOT/../../cli/twl/src/twl/autopilot/chain.py"
   CHAIN_STEPS_SH="$REPO_ROOT/scripts/chain-steps.sh"
-  DEPS_YAML="$REPO_ROOT/../deps.yaml"
+  DEPS_YAML="$REPO_ROOT/deps.yaml"
   CHAIN_RUNNER_SH="$SANDBOX/scripts/chain-runner.sh"
   MERGE_GATE_SPAWN_SH="$SANDBOX/scripts/merge-gate-check-spawn.sh"
   AUDIT_SH="$SANDBOX/scripts/specialist-audit.sh"
@@ -294,12 +294,16 @@ MOCK_EOF
 
 @test "ac9: specialist-audit.sh が codex コマンド存在 + findings.yaml 不在で HARD FAIL する" {
   # AC: codex_available=YES かつ findings.yaml 不在の場合に HARD FAIL (exit 1 + "HARD FAIL")
-  # RED: specialist-audit.sh の現状の HARD FAIL は CODEX_SESSION_DIR が指定されている場合のみ
-  #      動作し、--codex-session-dir 未渡し時の codex コマンド単体存在チェックが未実装のため FAIL
+  # RED: merge-gate-check-spawn.sh が --codex-session-dir を渡していないため
+  #      specialist-audit.sh の HARD FAIL が発動せず silent pass している
 
   local codex_session_dir="$SANDBOX/codex-session-empty"
   mkdir -p "$codex_session_dir"
   # findings.yaml を生成しない（空ディレクトリ）
+
+  # 空 JSONL ファイル（/dev/null は character special file のため -f チェックで early exit する）
+  local empty_jsonl="$SANDBOX/empty.jsonl"
+  touch "$empty_jsonl"
 
   # codex コマンドスタブ（存在するが実行しない）
   local stub_bin="$SANDBOX/.codex-stub"
@@ -308,7 +312,7 @@ MOCK_EOF
   chmod +x "$stub_bin/codex"
 
   run env PATH="$stub_bin:$PATH" bash "$AUDIT_SH" \
-    --jsonl /dev/null \
+    --jsonl "$empty_jsonl" \
     --codex-session-dir "$codex_session_dir" \
     --mode merge-gate 2>&1
 
@@ -318,11 +322,14 @@ MOCK_EOF
 
 @test "ac9: specialist-audit.sh の HARD FAIL 出力に 'HARD FAIL' が含まれる" {
   # AC: HARD FAIL 時のメッセージに "HARD FAIL" が含まれること
-  # RED: 上記と同一条件。HARD FAIL ロジック自体は実装済みだが
-  #      --codex-session-dir 未渡し時の fallback パスが未実装のため FAIL
+  # RED: merge-gate-check-spawn.sh が --codex-session-dir を渡さないため
+  #      specialist-audit.sh の HARD FAIL が発動せず "HARD FAIL" が出力されない
 
   local codex_session_dir="$SANDBOX/codex-session-empty-msg"
   mkdir -p "$codex_session_dir"
+
+  local empty_jsonl="$SANDBOX/empty-msg.jsonl"
+  touch "$empty_jsonl"
 
   local stub_bin="$SANDBOX/.codex-stub-msg"
   mkdir -p "$stub_bin"
@@ -330,7 +337,7 @@ MOCK_EOF
   chmod +x "$stub_bin/codex"
 
   run env PATH="$stub_bin:$PATH" bash "$AUDIT_SH" \
-    --jsonl /dev/null \
+    --jsonl "$empty_jsonl" \
     --codex-session-dir "$codex_session_dir" \
     --mode merge-gate 2>&1
 
