@@ -576,6 +576,10 @@ while true; do
                 IDLE_COMPLETED_TS[$WIN]=$NOW
                 # opt-in auto-kill（IDLE_COMPLETED_AUTO_KILL=1 時のみ）
                 if [[ "${IDLE_COMPLETED_AUTO_KILL:-0}" == "1" ]]; then
+                    # controller window (wt-co-*) は auto-kill 対象から除外 (#1474)
+                    if [[ "$WIN" == wt-co-* ]]; then
+                        echo "[IDLE-COMPLETED-SKIP] $WIN (controller window, auto-kill excluded)"
+                    else
                     SAFE_WIN="${WIN//[^a-zA-Z0-9_-]/_}"
                     # evaluate_window() と同じ方法で session:index に解決し ambiguous target を回避
                     KILL_TARGET=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
@@ -590,6 +594,7 @@ while true; do
                     else
                         echo "[IDLE-COMPLETED] $WIN: auto-kill failed (window already gone or permission denied)" >&2
                     fi
+                    fi  # end: wt-co-* else branch
                 fi
                 # ★ #1430: opt-in next-spawn 判定（AUTO_KILL から独立評価）
                 if [[ "${IDLE_COMPLETED_AUTO_NEXT_SPAWN:-0}" != "0" ]]; then
