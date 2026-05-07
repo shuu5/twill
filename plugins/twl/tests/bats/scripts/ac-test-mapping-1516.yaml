@@ -1,0 +1,92 @@
+mappings:
+  - ac_index: 1
+    ac_text: "su-observer SKILL.md と su-observer-controller-spawn-playbook.md の co-autopilot spawn セクションに 'co-autopilot spawn 前 MUST' として Status=Todo 確認 (gh project item-list) / board-status-update --status Refined 実行 / Status=Refined 確認後 spawn の3ステップが存在すること"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac1a: SKILL.md に 'co-autopilot spawn 前 MUST' セクションが存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/SKILL.md"
+      - "plugins/twl/skills/su-observer/refs/su-observer-controller-spawn-playbook.md"
+  - ac_index: 1
+    ac_text: "SKILL.md に 'Status=Todo の場合は board-status-update --status Refined を実行' の記述が存在する（MUST step 2）"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac1b: SKILL.md に 'Status=Todo の場合は board-status-update --status Refined を実行' の記述が存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/SKILL.md"
+  - ac_index: 1
+    ac_text: "SKILL.md に 'gh project item-list' を使った Status 確認手順が存在する（MUST step 1）"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac1c: SKILL.md に 'gh project item-list' を使った Status 確認手順が存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/SKILL.md"
+  - ac_index: 1
+    ac_text: "su-observer-controller-spawn-playbook.md に 'co-autopilot spawn 前 MUST' セクションが存在する"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac1d: su-observer-controller-spawn-playbook.md に 'co-autopilot spawn 前 MUST' セクションが存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/su-observer-controller-spawn-playbook.md"
+  - ac_index: 1
+    ac_text: "su-observer-controller-spawn-playbook.md に 'Status=Refined 確認後に co-autopilot spawn' の記述が存在する（MUST step 3）"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac1e: su-observer-controller-spawn-playbook.md に 'Status=Refined 確認後に co-autopilot spawn' の記述が存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/su-observer-controller-spawn-playbook.md"
+  - ac_index: 2
+    ac_text: "spawn-controller.sh の co-autopilot サブコマンドで、対象 Issue の Status=Refined を pre-check し、Todo なら error abort + 修正方法 hint を stderr 出力する機能が存在すること"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac2a: spawn-controller.sh に Status=Refined の pre-check ロジックが存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "spawn-controller.sh に Status=Todo 時の abort（exit 非 0）分岐が存在する"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac2b: spawn-controller.sh に Todo Status 時の abort パターンが存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "spawn-controller.sh に修正方法 hint（board-status-update 等）を stderr 出力するロジックが存在する"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac2c: spawn-controller.sh に修正方法 hint を stderr 出力するロジックが存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "Status=Todo の Issue を co-autopilot spawn 対象に渡すと spawn-controller.sh が abort（exit 非 0）する"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac2d: Status=Todo の Issue を co-autopilot に渡すと spawn-controller.sh が abort する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "Status=Todo 時の abort で stderr に board-status-update / Refined 修正 hint が出力される"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac2e: Status=Todo 時の abort で stderr に修正 hint が出力される"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 3
+    ac_text: "Status=Todo の Issue を spawn 対象に渡した時に observer が事前 refine するか / spawn-controller が abort するかの bats test が存在すること"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac3: この bats ファイルが存在し Status=Todo abort テストを含む"
+    impl_files: []
+    # impl_files: AC3 はテスト存在確認であり、実装ファイルへのマッピングは不要（プロセス AC）
+  - ac_index: 4
+    ac_text: "pitfalls-catalog.md に Wave spawn 前 Status=Refined check section が追加されていること（§N に整理）"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac4a: pitfalls-catalog.md に 'Wave spawn 前 Status=Refined check' セクションが存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 4
+    ac_text: "pitfalls-catalog.md の Wave spawn 前 Status check が §N 形式の見出しとして追記されている"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac4b: pitfalls-catalog.md の該当セクションが §N 形式で整理されている"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 4
+    ac_text: "pitfalls-catalog.md の Wave spawn セクションに board-status-update による修正手順が含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac4c: pitfalls-catalog.md の Wave spawn セクションに board-status-update の記述が存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 4
+    ac_text: "pitfalls-catalog.md の Wave spawn セクションに 'gh project item-list' による Status 確認が記述されている"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1516.bats"
+    test_name: "ac4d: pitfalls-catalog.md の Wave spawn セクションに 'gh project item-list' による Status 確認が記述されている"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"

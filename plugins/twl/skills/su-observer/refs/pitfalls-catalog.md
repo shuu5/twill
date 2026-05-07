@@ -1035,3 +1035,38 @@ skill markdown（SKILL.md / refs/*.md）内のスクリプト参照が `${CLAUDE
 broken 形式の例: `source "$(git rev-parse --show-toplevel)/scripts/resolve-issue-num.sh"` — repo root の `scripts/` は存在せず、`plugins/twl/scripts/` が正しい。
 
 **参照**: Issue #1244, 2026-05-02 ipatho-server-2
+
+---
+
+## §19 Wave spawn 前 Status=Refined check 未実施（#1516 文書化）
+
+### 症状
+
+Wave spawn 時に co-autopilot へ Status=Todo の Issue を渡すと、orchestrator が ADR-024 Phase B gate で Worker spawn を reject し、Pilot が同じ skip-stuck パターンを繰り返す。Wave 60 / Wave 63 で 2 度発生（本セッション 2026-05-07）。
+
+### 根本原因
+
+observer 仕様（SKILL.md / spawn-playbook.md）に「co-autopilot spawn 前の Status=Refined 確認 MUST」が明記されていなかった。
+
+### 対策（MUST）
+
+co-autopilot を spawn する前に以下を実行すること:
+
+1. 対象 Issue の Project Board Status を確認:
+   ```bash
+   gh project item-list <BOARD_NUMBER> --owner <OWNER> --format json \
+     | jq -r '.items[] | select(.content.number == <ISSUE_NUM>) | .status'
+   ```
+2. Status=Todo の場合は `board-status-update --status Refined` を実行:
+   ```bash
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" board-status-update <ISSUE_NUM>
+   ```
+3. Status=Refined を確認後に co-autopilot spawn を実行する。
+
+または `spawn-controller.sh co-autopilot --pre-check-issue N` を使用すると自動チェック＆abort が走る。
+
+### 検出シグナル
+
+Pilot ログに `ADR-024 Phase B` / `Status=Refined required` / `skip: Status is not Refined` 等のメッセージが繰り返し現れる。
+
+**参照**: Issue #1516, Wave 60 / Wave 63 (2026-05-07), doobidoo hash 7b487dfb (Wave 60 lesson 23), 7c0421a3 (Wave 63 skip)

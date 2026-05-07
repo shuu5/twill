@@ -28,6 +28,23 @@
 - 並列単位の階層: co-autopilot Pilot = 常に 1 / orchestrator Worker = MAX_PARALLEL=4 / Issue = 複数同時実行可
 - 依存 Issue 群（β → α 等のマージ依存）は 1 Pilot 内 plan の Phase 分割または Wave 分割で順序付ける
 
+## co-autopilot spawn 前 MUST（#1516 — Status=Refined check）
+
+co-autopilot を spawn する**前に必ず**以下を実行すること（`pitfalls-catalog.md §19` 参照）:
+
+1. 対象 Issue の Project Status を確認（`gh project item-list` を使用）:
+   ```bash
+   gh project item-list <BOARD_NUMBER> --owner <OWNER> --format json \
+     | jq -r '.items[] | select(.content.number == <ISSUE_NUM>) | .status'
+   ```
+2. Status=Todo の場合は `board-status-update --status Refined` を実行:
+   ```bash
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" board-status-update <ISSUE_NUM>
+   ```
+3. Status=Refined 確認後に co-autopilot spawn を実行する。
+
+または `spawn-controller.sh co-autopilot` に `--pre-check-issue N` を渡すと自動チェックが走る（AC2）。
+
 ## co-autopilot 起動時の推奨経路（#836 — MUST）
 
 `spawn-controller.sh co-autopilot` は **Pilot セッション全体**を spawn する（経路 B）。
