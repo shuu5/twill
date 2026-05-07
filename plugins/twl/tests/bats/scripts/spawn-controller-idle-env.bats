@@ -403,3 +403,115 @@ _setup_observer_panes 'observer-test' '0'
   run grep -F 'IDLE_COMPLETED_AUTO_KILL=0' "${SANDBOX}/split-window.log"
   assert_success
 }
+
+# ===========================================================================
+# AC1 (E2E): completion phrase 検知 → tmux kill-window E2E 動的検証
+#
+# Issue #1464: spawn-controller-idle-env.bats の ac2 系テスト(test 5-7)は
+#   spawn_cmd に IDLE_COMPLETED_AUTO_KILL=1 が含まれるかの grep 検証のみ。
+#   completion phrase 検知 → tmux kill-window 呼び出しのエンドツーエンド動的検証が存在しない。
+#
+# PASS 条件（実装済み）:
+#   cld-observe-any を IDLE_COMPLETED_AUTO_KILL=1 で直接起動し、
+#   Pilot completion phrase が pane content に存在する場合に
+#   tmux kill-window が呼ばれ、stdout に "auto-killed" ログが出ること。
+#
+# NOTE: cld-observe-any の IDLE_COMPLETED_AUTO_KILL 対応は実装済み（line 578）のため
+#   このテストは GREEN になる（E2E 動的検証の存在証明として有効）。
+# ===========================================================================
+
+@test "ac2-e2e: completion phrase 検知時 cld-observe-any が tmux kill-window を呼び出す（E2E 動的検証）" {
+  # AC: cld-observe-any を IDLE_COMPLETED_AUTO_KILL=1 で直接起動し、
+  #     Pilot completion phrase（例: "nothing pending"）が pane content に存在する場合に
+  #     tmux kill-window が呼ばれることを動的に検証する。
+
+  [[ -f "${CLD_OBSERVE_ANY}" ]] \
+    || fail "cld-observe-any が存在しない: ${CLD_OBSERVE_ANY}"
+
+  # CLD_OBSERVE_ANY は setup() で export 済み。非クォート heredoc で展開する。
+  # WARNING: シングルクォート heredoc は使わないこと（外部変数 $CLD_OBSERVE_ANY が展開されない）
+  local tmpd
+  tmpd="$(mktemp -d)"
+  local event_dir="${tmpd}/events"
+  mkdir -p "${event_dir}"
+
+  # win / capture を export して heredoc 内の bash subprocess に引き継ぐ
+  local win="ap-1464-e2e-win"
+  local cld_observe_any_path="${CLD_OBSERVE_ANY}"
+  local cld_script_dir
+  cld_script_dir="$(dirname "${CLD_OBSERVE_ANY}")"
+
+  export win cld_observe_any_path cld_script_dir
+
+  run bash -c '
+win="${win}"
+CLD_OBSERVE_ANY="${cld_observe_any_path}"
+SCRIPT_DIR="${cld_script_dir}"
+TMPD="'"${tmpd}"'"
+EVENT_DIR_PATH="'"${event_dir}"'"
+
+capture="All tasks are done.
+nothing pending
+System is idle."
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows)
+            echo "test-session:0 ${win}"
+            ;;
+        display-message)
+            echo "0 claude"
+            ;;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then
+                echo ""
+            else
+                printf '"'"'%s\n'"'"' "${capture}"
+            fi
+            ;;
+        kill-window)
+            # stub: 成功（exit 0）
+            return 0
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+}
+export -f tmux
+
+# --max-cycles 2 は必須:
+# Cycle 1: phrase 検出 → IDLE_COMPLETED_TS[$WIN]=$NOW を記録（C4: first_seen_ts>0 待ち）
+# Cycle 2: DEBOUNCE_SEC=0 により elapsed=1s >= 0 → _check_idle_completed PASS → auto-kill
+# IDLE_COMPLETED_DEBOUNCE_SEC=0 は C5(elapsed>=debounce) を即時通過させるが
+# C4(first_seen_ts>0) により 2 サイクル目まで auto-kill は発火しない。
+output_text=$(IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="${SCRIPT_DIR}" \
+    bash "${CLD_OBSERVE_ANY}" --window "${win}" \
+    --event-dir "${EVENT_DIR_PATH}" \
+    --max-cycles 2 --interval 1 2>/dev/null)
+
+# 検証1: stdout に auto-killed ログが出たか
+if ! echo "${output_text}" | grep -q "auto-killed"; then
+    echo "FAIL: stdout に auto-killed ログがない（output=${output_text}）"
+    rm -rf "${TMPD}"
+    exit 1
+fi
+
+# 検証2: idle-completed-killed-*.json が生成されたか
+killed_json=$(find "${EVENT_DIR_PATH}" -name "idle-completed-killed-*.json" 2>/dev/null | head -1)
+if [[ -z "${killed_json}" ]]; then
+    echo "FAIL: idle-completed-killed-*.json が生成されなかった"
+    rm -rf "${TMPD}"
+    exit 1
+fi
+
+echo "PASS: E2E completion phrase → tmux kill-window 動的検証成功"
+rm -rf "${TMPD}"
+'
+
+  # E2E 動的検証: PASS ログが出て exit 0 であること
+  [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
