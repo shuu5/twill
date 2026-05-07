@@ -1099,7 +1099,7 @@ step_ac_verify() {
   _coverage_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ac-impl-coverage-check.sh"
 
   local REPO_ROOT
-  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
+  REPO_ROOT="$(resolve_project_root 2>/dev/null || echo "")"
 
   for _candidate in \
     "${_snapshot_dir}/ac-test-mapping-${issue_num}.yaml" \
