@@ -1098,11 +1098,14 @@ step_ac_verify() {
   local _coverage_script
   _coverage_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/ac-impl-coverage-check.sh"
 
+  local REPO_ROOT
+  REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "")"
+
   for _candidate in \
     "${_snapshot_dir}/ac-test-mapping-${issue_num}.yaml" \
-    "plugins/twl/tests/bats/scripts/ac-test-mapping-${issue_num}.yaml" \
-    "plugins/twl/tests/bats/ac-test-mapping-${issue_num}.yaml" \
-    "cli/twl/ac-test-mapping.yaml"; do
+    "${REPO_ROOT:+${REPO_ROOT}/}plugins/twl/tests/bats/scripts/ac-test-mapping-${issue_num}.yaml" \
+    "${REPO_ROOT:+${REPO_ROOT}/}plugins/twl/tests/bats/ac-test-mapping-${issue_num}.yaml" \
+    "${REPO_ROOT:+${REPO_ROOT}/}cli/twl/ac-test-mapping.yaml"; do
     if [[ -f "$_candidate" ]]; then
       _mapping_file="$_candidate"
       break

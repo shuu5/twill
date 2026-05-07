@@ -1,0 +1,13 @@
+mappings:
+  - ac_index: 1
+    ac_text: "step_ac_verify の for _candidate in ブロック内のパスが ${REPO_ROOT}/ プレフィックスを使って絶対パスに変換されている"
+    test_file: "tests/bats/scripts/chain-runner-step-ac-verify-cwd.bats"
+    test_name: "ac1: step_ac_verify の候補パスが REPO_ROOT プレフィックスを使って絶対パスに変換されている"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 2
+    ac_text: "非リポジトリルートの CWD から ac-verify を呼び出しても mapping ファイルが正しく検出される"
+    test_file: "tests/bats/scripts/chain-runner-step-ac-verify-cwd.bats"
+    test_name: "ac2: 非リポジトリルート CWD から ac-verify を呼び出しても mapping ファイルが検出される"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
