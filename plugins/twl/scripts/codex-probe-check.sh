@@ -31,13 +31,17 @@ _CODEX_BLOCKLIST_PATTERN='gpt-4[^-]|gpt-3|o3-|o4-'
 # gpt-4- 系列（gpt-4-turbo 等）は [^-] 除外のため blocklist 対象外（意図的）
 
 # ---------------------------------------------------------------------------
-# Auth/connection error detection pattern (AC-1 #1289, fixed #1308)
-# probe 出力（stdout+stderr merged via 2>&1）に 401 系エラーが含まれる場合に CODEX_OK=0。
+# Auth/connection error detection pattern (AC-1 #1289, fixed #1308, extended #1485)
+# probe 出力（stdout+stderr merged via 2>&1）に 401 系またはquota系エラーが含まれる場合に CODEX_OK=0。
 # head -20（worker-codex-reviewer.md で設定）で 401 retry ログを確実にキャプチャ。
 # websocket は 'websocket connected' 等の正常ログで false positive が発生するため
 # websocket.*error|websocket.*fail のエラー限定パターンに絞る（Issue #1308）。
+# quota/insufficient_quota/rate_limit は OpenAI quota 系エラーコード（Issue #1485）。
+# billing.*details|billing.*error は OpenAI billing エラーメッセージ（単体 'billing' は汎用語のため限定）。
+# 'exceeded' は汎用動詞のため削除 — quota/rate_limit パターンで代替可能（Issue #1485 warning-fix）。
 # ---------------------------------------------------------------------------
-_CODEX_AUTH_ERROR_PATTERN='401|Unauthorized|connection refused|websocket.*error|websocket.*fail'
+_CODEX_AUTH_ERROR_PATTERN='401|Unauthorized|connection refused|websocket.*error|websocket.*fail|quota|billing.*details|billing.*error|insufficient_quota|rate_limit'
+_CODEX_QUOTA_ERROR_PATTERN='quota|billing.*details|billing.*error|insufficient_quota|rate_limit'
 
 # ---------------------------------------------------------------------------
 # run_probe_check
@@ -51,11 +55,15 @@ run_probe_check() {
   local resolved_model=""
   local warn_prefix="WARN: model resolution mismatch:"
 
-  # AC #1289: auth/connection error detection — model 解決前に先行チェック
+  # AC #1289/#1485: auth/connection/quota error detection — model 解決前に先行チェック
   # PROBE_OUT には stdout+stderr が merged されており 401 retry ログが含まれる
   if echo "${PROBE_OUT:-}" | grep -qiE "${_CODEX_AUTH_ERROR_PATTERN}"; then
     CODEX_OK=0
-    CODEX_SKIP_REASON="auth/connection error (${_CODEX_AUTH_ERROR_PATTERN})"
+    if echo "${PROBE_OUT:-}" | grep -qiE "${_CODEX_QUOTA_ERROR_PATTERN}"; then
+      CODEX_SKIP_REASON="quota/billing exhausted"
+    else
+      CODEX_SKIP_REASON="auth/connection error"
+    fi
     echo "WARN: auth/connection error detected in probe output (pattern: ${_CODEX_AUTH_ERROR_PATTERN})" >&2
     return
   fi
