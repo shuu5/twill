@@ -1,0 +1,39 @@
+mappings:
+  - ac_index: 1
+    ac_text: "workflow-pr-merge step が merge 前に gh pr ready を実行。auto-merge.sh の非 autopilot path（squash merge 直前）に gh pr ready <PR> 呼び出しを追加。merge attempt 直前に実行（failure 時は abort）。既に ready の場合は no-op（idempotent）"
+    test_file: "plugins/twl/tests/bats/scripts/auto-merge-pr-ready.bats"
+    test_name: "ac1: 非 autopilot path で gh pr ready が gh pr merge --squash より前に呼ばれる"
+    impl_files:
+      - "plugins/twl/scripts/auto-merge.sh"
+
+  - ac_index: 2
+    ac_text: "ready 切替失敗時のエラーメッセージ改善。gh pr ready 失敗時に Pilot へ明確なエラーを返す。'draft のまま merge は不可、ready 切替を要' のメッセージを含む"
+    test_file: "plugins/twl/tests/bats/scripts/auto-merge-pr-ready.bats"
+    test_name: "ac2: gh pr ready 失敗時に draft/ready を含む明確なエラーメッセージが出力される"
+    impl_files:
+      - "plugins/twl/scripts/auto-merge.sh"
+
+  - ac_index: 3
+    ac_text: "bats test 追加。draft PR を ready 化してから merge する動作を verify。既に ready の PR を idempotent に処理する動作を verify"
+    test_file: "plugins/twl/tests/bats/scripts/auto-merge-pr-ready.bats"
+    test_name: "ac3a: draft PR を ready 化してから squash merge する end-to-end 動作を verify"
+    impl_files:
+      - "plugins/twl/scripts/auto-merge.sh"
+      - "plugins/twl/tests/bats/scripts/auto-merge-pr-ready.bats"
+
+  - ac_index: 3
+    ac_text: "bats test 追加。既に ready の PR を idempotent に処理する動作を verify"
+    test_file: "plugins/twl/tests/bats/scripts/auto-merge-pr-ready.bats"
+    test_name: "ac3b: 既に ready の PR に対して idempotent（no-op）に処理し merge を続行する"
+    impl_files:
+      - "plugins/twl/scripts/auto-merge.sh"
+      - "plugins/twl/tests/bats/scripts/auto-merge-pr-ready.bats"
+
+  - ac_index: 4
+    ac_text: "co-autopilot SKILL.md に 'merge_failed: draft' 解釈ガイドを追加。pitfalls-catalog.md に 'merge_failed: PR is still a draft' = chain workflow の bug（Issue 元 bug ではない）という注記"
+    test_file: "plugins/twl/tests/bats/scripts/auto-merge-pr-ready.bats"
+    test_name: "ac4: pitfalls-catalog.md に merge_failed_draft の解釈ガイドが存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+      # NOTE: co-autopilot SKILL.md への追記も AC4 の対象だが、テストでは pitfalls-catalog.md を主検証対象とした。
+      # 実装時に SKILL.md 側に追記する場合は impl_files に追加すること。
