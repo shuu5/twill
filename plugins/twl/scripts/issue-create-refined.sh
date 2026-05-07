@@ -45,6 +45,12 @@ done
 
 ISSUE_NUMBER=$(gh "${ISSUE_ARGS[@]}")
 
+# ISSUE_NUMBER は正の整数のみ許可（chain-runner.sh と同一規約）
+if [[ ! "$ISSUE_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
+  echo "ERROR: gh issue create returned unexpected output: ${ISSUE_NUMBER}" >&2
+  exit 1
+fi
+
 # Status=Refined に遷移
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 bash "${SCRIPTS_ROOT}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined
