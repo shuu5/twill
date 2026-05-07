@@ -62,4 +62,4 @@ mappings:
     test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
     test_name: "ac9: specialist-audit.sh が codex コマンド存在 + findings.yaml 不在で HARD FAIL する"
     impl_files:
-      - "plugins/twl/scripts/specialist-audit.sh"
+      - "plugins/twl/scripts/merge-gate-check-spawn.sh"
