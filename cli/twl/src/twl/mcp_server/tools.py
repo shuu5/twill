@@ -215,18 +215,195 @@ def twl_state_write_handler(
 
 # ---------------------------------------------------------------------------
 # Phase γ Wave 2-B: Session aggregate handlers (AC3-11, Issue #1113)
+# Issue #1514: twl_get_session_state subcommand extension (session-state.sh wrapper)
 # ---------------------------------------------------------------------------
+
+
+def _session_state_subcommand_handler(
+    subcommand: str,
+    window_name: str | None,
+    target_state: str | None,
+    timeout: int,
+    json_output: bool,
+) -> dict:
+    """Route state/list/wait subcommands to session-state.sh (AC2, AC3, AC5-AC7)."""
+    import subprocess  # noqa: PLC0415
+
+    shadow = os.environ.get("TWL_SHADOW_MODE") == "1"
+
+    _valid_subcommands = {"state", "list", "wait"}
+    if subcommand not in _valid_subcommands:
+        result: dict = {
+            "ok": False,
+            "error": f"invalid subcommand '{subcommand}': must be one of {sorted(_valid_subcommands)}",
+            "error_type": "invalid_subcommand",
+            "exit_code": 2,
+            "state": None,
+            "details": None,
+        }
+        if shadow:
+            result["shadow"] = True
+        return result
+
+    script_path = Path(os.environ.get("SESSION_STATE_SCRIPT", str(_DEFAULT_SCRIPT)))
+    if not script_path.exists():
+        result = {
+            "ok": False,
+            "error": f"session-state.sh not found: {script_path}",
+            "error_type": "script_not_found",
+            "exit_code": 2,
+            "state": None,
+            "details": None,
+        }
+        if shadow:
+            result["shadow"] = True
+        return result
+
+    cmd = [str(script_path), subcommand]
+    if subcommand == "state":
+        if window_name:
+            cmd.append(window_name)
+    elif subcommand == "list":
+        if json_output:
+            cmd.append("--json")
+    elif subcommand == "wait":
+        if window_name:
+            cmd.append(window_name)
+        if target_state:
+            cmd.append(target_state)
+        cmd.extend(["--timeout", str(timeout)])
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        result = {
+            "ok": False,
+            "error": "timeout",
+            "error_type": "timeout",
+            "exit_code": 124,
+            "state": None,
+            "details": None,
+        }
+        if shadow:
+            result["shadow"] = True
+        return result
+    except (OSError, FileNotFoundError) as e:
+        result = {
+            "ok": False,
+            "error": str(e),
+            "error_type": "script_not_found",
+            "exit_code": 2,
+            "state": None,
+            "details": None,
+        }
+        if shadow:
+            result["shadow"] = True
+        return result
+
+    if proc.returncode != 0:
+        result = {
+            "ok": False,
+            "error": proc.stderr.strip() or f"exit code {proc.returncode}",
+            "error_type": "shell_error",
+            "exit_code": proc.returncode,
+            "state": None,
+            "details": None,
+        }
+        if shadow:
+            result["shadow"] = True
+        return result
+
+    output = proc.stdout.strip()
+
+    if subcommand == "state":
+        _valid_states = {"idle", "input-waiting", "processing", "error", "exited"}
+        state = output
+        if state not in _valid_states:
+            result = {
+                "ok": False,
+                "error": f"unknown state: '{state}'",
+                "error_type": "unknown_state",
+                "exit_code": 3,
+                "state": None,
+                "details": output,
+            }
+        else:
+            result = {
+                "ok": True,
+                "state": state,
+                "details": None,
+                "error": None,
+                "exit_code": 0,
+            }
+    elif subcommand == "list":
+        if json_output:
+            try:
+                windows = json.loads(output) if output else []
+            except json.JSONDecodeError:
+                windows = []
+            result = {
+                "ok": True,
+                "windows": windows,
+                "details": None,
+                "error": None,
+                "exit_code": 0,
+            }
+        else:
+            result = {
+                "ok": True,
+                "output": output,
+                "details": None,
+                "error": None,
+                "exit_code": 0,
+            }
+    else:  # wait
+        result = {
+            "ok": True,
+            "state": target_state,
+            "details": output or None,
+            "error": None,
+            "exit_code": 0,
+        }
+
+    if shadow:
+        result["shadow"] = True
+    return result
 
 
 def twl_get_session_state_handler(
     session_id: str | None = None,
     autopilot_dir: str | None = None,
+    subcommand: str | None = None,
+    window_name: str | None = None,
+    target_state: str | None = None,
+    timeout: int = 30,
+    json_output: bool = False,
 ) -> dict:
-    """Return aggregate view of autopilot session (active or archived) for observer/supervisor.
+    """Return aggregate view of autopilot session, or tmux pane state via session-state.sh.
 
-    If session_id is None, reads the active session.json from autopilot_dir.
-    If session_id is given, reads from autopilot_dir/archive/<session_id>/session.json.
+    subcommand=None (default): autopilot aggregate view (backward compatible).
+    subcommand="state": session-state.sh state <window_name> -> {ok, state, details, error}.
+    subcommand="list": session-state.sh list [--json] -> {ok, windows|output, error}.
+    subcommand="wait": session-state.sh wait <window_name> <target_state> [--timeout N].
+
+    Session-state.sh path: SESSION_STATE_SCRIPT env var (default: plugins/session/scripts/session-state.sh).
+    Shadow mode: TWL_SHADOW_MODE=1 adds shadow=True to response.
     """
+    if subcommand is not None:
+        return _session_state_subcommand_handler(
+            subcommand=subcommand,
+            window_name=window_name,
+            target_state=target_state,
+            timeout=timeout,
+            json_output=json_output,
+        )
+
+    # --- backward-compatible autopilot aggregate view ---
     ap_dir = _resolve_autopilot_dir(autopilot_dir)
 
     if session_id is None:
@@ -1739,9 +1916,9 @@ try:
         return json.dumps(twl_worktree_validate_branch_name_handler(branch=branch), ensure_ascii=False)
 
     @mcp.tool()
-    def twl_get_session_state(session_id: str | None = None, autopilot_dir: str | None = None) -> str:
-        """Return aggregate view of autopilot session (active or archived) for observer/supervisor."""
-        return json.dumps(twl_get_session_state_handler(session_id=session_id, autopilot_dir=autopilot_dir), ensure_ascii=False)
+    def twl_get_session_state(session_id: str | None = None, autopilot_dir: str | None = None, subcommand: str | None = None, window_name: str | None = None, target_state: str | None = None, timeout: int = 30, json_output: bool = False) -> str:
+        """Return autopilot session view or tmux pane state via session-state.sh subcommands (state/list/wait)."""
+        return json.dumps(twl_get_session_state_handler(session_id=session_id, autopilot_dir=autopilot_dir, subcommand=subcommand, window_name=window_name, target_state=target_state, timeout=timeout, json_output=json_output), ensure_ascii=False)
 
     @mcp.tool()
     def twl_get_pane_state(window_name: str, timeout_sec: int = 30) -> str:
@@ -1942,9 +2119,9 @@ except ImportError:
         """autopilot.worktree: pure validate_branch_name() (read-only, raises WorktreeArgError)."""
         return json.dumps(twl_worktree_validate_branch_name_handler(branch=branch), ensure_ascii=False)
 
-    def twl_get_session_state(session_id: str | None = None, autopilot_dir: str | None = None) -> str:  # type: ignore[misc]
-        """Return aggregate view of autopilot session (active or archived) for observer/supervisor."""
-        return json.dumps(twl_get_session_state_handler(session_id=session_id, autopilot_dir=autopilot_dir), ensure_ascii=False)
+    def twl_get_session_state(session_id: str | None = None, autopilot_dir: str | None = None, subcommand: str | None = None, window_name: str | None = None, target_state: str | None = None, timeout: int = 30, json_output: bool = False) -> str:  # type: ignore[misc]
+        """Return autopilot session view or tmux pane state via session-state.sh subcommands (state/list/wait)."""
+        return json.dumps(twl_get_session_state_handler(session_id=session_id, autopilot_dir=autopilot_dir, subcommand=subcommand, window_name=window_name, target_state=target_state, timeout=timeout, json_output=json_output), ensure_ascii=False)
 
     def twl_get_pane_state(window_name: str, timeout_sec: int = 30) -> str:  # type: ignore[misc]
         """Return tmux pane/window state. window_name: tmux window name or session:index form."""
