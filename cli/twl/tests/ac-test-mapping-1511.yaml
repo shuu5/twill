@@ -1,0 +1,66 @@
+mappings:
+  - ac_index: 1
+    ac_text: "mcp__twl__twl_spawn_controller handler 追加"
+    test_file: "cli/twl/tests/test_issue_1511_spawn_controller.py"
+    test_name: "TestAC1HandlerExists::test_ac1_handler_importable"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 2
+    ac_text: "引数 spec {skill_name, prompt_file_or_text, with_chain?, issue?, project_dir?, autopilot_dir?, extra_args?}"
+    test_file: "cli/twl/tests/test_issue_1511_spawn_controller.py"
+    test_name: "TestAC2ArgumentSpec::test_ac2_all_required_params_present"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 3
+    ac_text: "skill 名 allow-list 検証（co-explore/co-issue/co-architect/co-autopilot/co-project/co-utility/co-self-improve、twl: prefix 両対応）"
+    test_file: "cli/twl/tests/test_issue_1511_spawn_controller.py"
+    test_name: "TestAC3SkillAllowList::test_ac3_invalid_skill_returns_error"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  - ac_index: 4
+    ac_text: "戻り値 {ok, window, session, prompt_prepended, error}"
+    test_file: "cli/twl/tests/test_issue_1511_spawn_controller.py"
+    test_name: "TestAC4ReturnValueSchema::test_ac4_ok_true_contains_required_keys"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 5
+    ac_text: "SUPERVISOR_DIR validation 継承（#1346 pattern）"
+    test_file: "cli/twl/tests/test_issue_1511_spawn_controller.py"
+    test_name: "TestAC5SupervisorDirValidation::test_ac5_invalid_supervisor_dir_returns_error"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+      - "plugins/twl/scripts/lib/supervisor-dir-validate.sh"
+
+  - ac_index: 6
+    ac_text: "§11.3 並列 spawn check 継承（#1116）— SKIP_PARALLEL_CHECK=1 bypass + intervention-log 自動記録"
+    test_file: "cli/twl/tests/test_issue_1511_spawn_controller.py"
+    test_name: "TestAC6ParallelSpawnCheck::test_ac6_handler_passes_skip_parallel_check_to_script"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  - ac_index: 7
+    ac_text: "shadow mode rollout (SUB-2 と同)"
+    test_file: "cli/twl/tests/test_issue_1511_spawn_controller.py"
+    test_name: "TestAC7ShadowModeRollout::test_ac7_stderr_captured_in_shadow_log"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 8
+    ac_text: "AT 非依存性"
+    test_file: "cli/twl/tests/test_issue_1511_spawn_controller.py"
+    test_name: "TestAC8ATIndependence::test_ac8_handler_works_without_at_flag"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 9
+    ac_text: "short-lived 設計"
+    test_file: "cli/twl/tests/test_issue_1511_spawn_controller.py"
+    test_name: "TestAC9ShortLivedDesign::test_ac9_handler_does_not_block_indefinitely"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
