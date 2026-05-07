@@ -198,7 +198,7 @@ fi
 rm -f "$PR_READY_ERR"
 
 MERGE_ERROR_LOG=$(mktemp /tmp/auto-merge-error-XXXXXX.log)
-trap 'rm -f "${MERGE_ERROR_LOG:-}"' EXIT
+trap 'rm -f "${MERGE_ERROR_LOG:-}" "${PR_READY_ERR:-}"' EXIT
 if ! gh pr merge "$PR_NUMBER" --squash 2>"$MERGE_ERROR_LOG"; then
   ERROR_RAW=$(sed -E 's/ghp_[a-zA-Z0-9]+/ghp_***MASKED***/g; s/Bearer [^ ]+/Bearer ***MASKED***/g' "$MERGE_ERROR_LOG" | head -c 500)
   echo "[auto-merge] Error: merge 失敗 - ${ERROR_RAW}" >&2
