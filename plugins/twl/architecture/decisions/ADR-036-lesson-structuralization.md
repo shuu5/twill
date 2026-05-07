@@ -56,12 +56,26 @@ doobidoo 保存のみで止まることは **NOT DONE** である。
 
 - 個別 lesson が再消費されない（同じ失敗パターンの再発を防止）
 - architecture-spec が事実上の SSOT として機能する
-- observer/Pilot が lesson 保存時に自動的に Issue 起票まで完結させるようになる
+- 4 ステップ全完遂により：Issue 起票でタスク化 → Wave 実装で skill/refs に反映 → 永続文書化で次セッション以降の自動適用が保証される
 
 ### Negative / Trade-offs
 
 - lesson 保存コストが増大する（4 step 完遂が義務）
 - 軽微な lesson も Issue 起票が必要になる（将来的に粒度判断が必要な可能性）
+
+## Alternatives Rejected
+
+### 案A: doobidoo 保存のみ（現状維持）
+
+doobidoo に lesson を保存するのみで終了。
+
+**却下理由**: ADR-034 Context で確認済みの再発パターン（「doobidoo memory に lesson 保存しても LLM 内で運用に落ちない」）を解消しない。同セッション内で `memory hash 3ddf2a20` に lesson を保存した直後に同パターンが再発した実例（Wave 46 → 47）がある。
+
+### 案B: doobidoo 保存 + 永続文書化のみ（Issue 起票・Wave 実装を省略）
+
+doobidoo に保存し、その場で直接 SKILL.md / refs を編集する。
+
+**却下理由**: Issue 起票なしでは変更が追跡不可能になる。また、即時編集はレビューなしで SKILL.md 等の重要ファイルを変更するリスクがあり、誤った lesson の伝播を招く可能性がある。Wave 実装（PR review）を経ることで品質を担保する。
 
 ## References
 

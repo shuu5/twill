@@ -4,7 +4,7 @@
 #
 # AC summary:
 #   AC1: ADR-036-lesson-structuralization.md を新規作成
-#   AC2: ref-invariants.md に Invariant L: Lesson Structuralization を追加
+#   AC2: ref-invariants.md に Invariant N: Lesson Structuralization を追加
 #   AC3: su-observer SKILL.md Step 1 末尾に lesson 確立時の MUST チェーン追加
 #   AC4: pitfalls-catalog.md に §19（lesson 一時保存の落とし穴）追加
 #
@@ -70,7 +70,7 @@ setup() {
 }
 
 # ===========================================================================
-# AC2: ref-invariants.md に Invariant L: Lesson Structuralization を追加
+# AC2: ref-invariants.md に Invariant N: Lesson Structuralization を追加
 # ===========================================================================
 
 @test "issue-1517: AC2 ref-invariants.md に 'Lesson Structuralization' が含まれること" {
