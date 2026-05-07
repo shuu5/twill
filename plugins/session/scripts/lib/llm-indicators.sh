@@ -40,6 +40,14 @@ LLM_INDICATORS=(
     "Churned"
     "Skedaddling"
     "Orchestrating"
+
+    # --- compaction phase indicators: Sonnet 4.6 auto-compaction (#1475) ---
+    "Compacting"
+    "Snapshotting"
+    "Externalizing"
+    "Restoring"
+    "Summarizing"
+
     "[A-Z][a-z]+(in'|ing)(…| for [0-9]| \\([0-9])"
 
     # --- AC: EN 9 new indicators (#1454) ---

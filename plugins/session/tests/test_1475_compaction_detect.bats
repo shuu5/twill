@@ -208,21 +208,21 @@ EOF
 }
 
 @test "ac3(#1475): Compacting キーワード含む pane で detect_thinking が 'Compacting' を返すこと (RED)" {
-    # RED: 汎用 regex は "Compacting…" や "Compacting for 3m" にはマッチするが
-    #      grep -q "Compacting" での明示確認が必要
-    # このテストは AC1 の補強: detect_thinking の返値が "Compacting" (明示 indicator) であること
+    # detect_thinking は grep -qiE で部分マッチ（アンカーなし）。
+    # "Compacting" 明示登録が generic regex より先に並ぶため、
+    # "Compacting for 9m 19s · max effort" を与えると "Compacting" が最初にマッチする。
+    # → 返値が "Compacting" であることを確認。
     run bash <<EOF
 source "$LLM_INDICATORS_LIB"
 pane_text="Compacting for 9m 19s · max effort"
 detected=""
 for ind in "\${LLM_INDICATORS[@]}"; do
-    if echo "\$pane_text" | grep -qiE "^\${ind}\$" 2>/dev/null; then
-        # 完全一致（行全体）で detect
+    if echo "\$pane_text" | grep -qiE "\$ind" 2>/dev/null; then
         detected="\$ind"
         break
     fi
 done
-# 汎用 regex ではなく明示登録の "Compacting" だけにマッチすることを確認
+# 明示登録 "Compacting" が generic regex より先に反応することを確認
 if [[ "\$detected" == "Compacting" ]]; then
     echo "PASS: detected by explicit 'Compacting' entry"
 else

@@ -419,6 +419,16 @@ evaluate_window() {
         return
     fi
 
+    # [COMPACTION-DETECTED]: Sonnet 4.6 auto-compaction フェーズ検知（#1475）
+    # thinking guard 前に配置 — compaction は LLM active 状態のため即時 emit
+    local _ci
+    for _ci in Compacting Snapshotting Externalizing Restoring Summarizing; do
+        if echo "$tail15" | grep -qiE "$_ci"; then
+            emit_event "COMPACTION-DETECTED" "$win" "$_ci" "$log_age" "$state" "$budget_min"
+            return
+        fi
+    done
+
     # 以下: thinking がある場合は絶対 emit しない
     if [[ -n "$thinking" ]]; then
         return
@@ -465,7 +475,8 @@ evaluate_window() {
     fi
 
     # [STAGNATE]
-    if [[ "$log_age" -ge "$STAGNATE_SEC" ]]; then
+    # COMPACTION_ACTIVE=1: compaction 完了後の pane 静止時に誤発火を抑止（#1475）
+    if [[ "${COMPACTION_ACTIVE:-0}" != "1" ]] && [[ "$log_age" -ge "$STAGNATE_SEC" ]]; then
         emit_event "STAGNATE-${STAGNATE_SEC}" "$win" "$thinking" "$log_age" "$state" "$budget_min"
         return
     fi
