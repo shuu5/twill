@@ -5,8 +5,25 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # プロジェクトルートを特定（main/ worktree を前提）
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-# AUTOPILOT_DIR 環境変数によるオーバーライドをサポート（テスト用）
-AUTOPILOT_DIR="${AUTOPILOT_DIR:-$PROJECT_ROOT/.autopilot}"
+# AUTOPILOT_DIR 解決 (#1543 fix: SCRIPT_DIR ベース default は plugin install 先を汚染するため避ける)
+# 優先順位:
+#   1. env var で明示指定 (export AUTOPILOT_DIR=<path>)
+#   2. git worktree list から main worktree を探して main/.autopilot を使用
+#   3. fallback: $(pwd)/.autopilot (caller の cwd ベース、SCRIPT_DIR 経由しない)
+if [[ -z "${AUTOPILOT_DIR:-}" ]]; then
+  _autopilot_main_wt=$(git worktree list --porcelain 2>/dev/null | awk '
+    /^worktree /{ wt=substr($0,10) }
+    /^HEAD 0{40}$/{ wt="" }
+    /^bare$/{ wt="" }
+    /^branch refs\/heads\/main$/{ if(wt!="") { print wt; exit } }
+  ' || true)
+  if [[ -n "$_autopilot_main_wt" && -d "$_autopilot_main_wt" ]]; then
+    AUTOPILOT_DIR="${_autopilot_main_wt}/.autopilot"
+  else
+    AUTOPILOT_DIR="$(pwd)/.autopilot"
+  fi
+  unset _autopilot_main_wt
+fi
 if [[ "$AUTOPILOT_DIR" == *".."* ]]; then
   echo "ERROR: AUTOPILOT_DIR にパストラバーサル文字 '..' が含まれています: $AUTOPILOT_DIR" >&2
   exit 1
