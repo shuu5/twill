@@ -1160,6 +1160,162 @@ def twl_check_specialist_handler(manifest_context: str) -> dict:
     }
 
 
+# --- spawn_session (Issue #1510) ---
+
+_CLD_SPAWN_SCRIPT = (
+    Path(__file__).resolve().parent.parent.parent.parent.parent
+    / "plugins" / "session" / "scripts" / "cld-spawn"
+)
+_SPAWN_SHADOW_LOG = Path("/tmp/mcp-shadow-spawn.log")
+
+
+def twl_spawn_session_handler(
+    prompt: str,
+    cwd: str | None = None,
+    env_file: str | None = None,
+    window_name: str | None = None,
+    timeout: int | None = 120,
+    model: str | None = None,
+    force_new: bool = False,
+) -> dict:
+    """Start a new cld session in a tmux window via cld-spawn.
+
+    AC7: fire-and-forget — cld-spawn launches the tmux window and returns immediately;
+    the Claude Code session runs independently (no blocking wait).
+    Returns {ok, session, window, pid, error}.
+    """
+    import subprocess  # noqa: PLC0415
+    import time  # noqa: PLC0415
+
+    script = Path(os.environ.get("CLD_SPAWN_SCRIPT", str(_CLD_SPAWN_SCRIPT)))
+    if not script.exists():
+        return {"ok": False, "session": None, "window": None, "pid": None, "error": f"cld-spawn script not found: {script}"}
+
+    if window_name and not _VALID_WINDOW_NAME_RE.match(window_name):
+        return {"ok": False, "session": None, "window": None, "pid": None, "error": f"window_name contains invalid characters: {window_name!r}"}
+
+    cmd: list[str] = ["bash", str(script)]
+    if cwd:
+        cmd += ["--cd", cwd]
+    if env_file:
+        cmd += ["--env-file", env_file]
+    if window_name:
+        cmd += ["--window-name", window_name]
+    if timeout is not None:
+        cmd += ["--timeout", str(timeout)]
+    if model:
+        cmd += ["--model", model]
+    if force_new:
+        cmd.append("--force-new")
+    if prompt:
+        cmd.append(prompt)
+
+    run_timeout = (timeout or 120) + 30  # extra headroom beyond inject timeout
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=run_timeout,
+        )
+    except FileNotFoundError as exc:
+        _spawn_shadow_log({"ok": False, "exit_code": -1, "stderr": str(exc), "cmd": cmd})
+        return {"ok": False, "session": None, "window": None, "pid": None, "error": str(exc)}
+    except subprocess.TimeoutExpired as exc:
+        _spawn_shadow_log({"ok": False, "exit_code": -2, "stderr": "timeout", "cmd": cmd})
+        return {"ok": False, "session": None, "window": None, "pid": None, "error": f"cld-spawn timed out after {run_timeout}s"}
+    except Exception as exc:
+        _spawn_shadow_log({"ok": False, "exit_code": -3, "stderr": str(exc), "cmd": cmd})
+        return {"ok": False, "session": None, "window": None, "pid": None, "error": str(exc)}
+
+    ok = result.returncode == 0
+    _spawn_shadow_log({
+        "ok": ok,
+        "exit_code": result.returncode,
+        "stderr": result.stderr,
+        "stdout": result.stdout,
+        "cmd": cmd,
+    })
+
+    if not ok:
+        return {
+            "ok": False,
+            "session": None,
+            "window": None,
+            "pid": None,
+            "error": result.stderr.strip() or f"cld-spawn exited {result.returncode}",
+        }
+
+    # Parse window name from stdout "spawned → tmux window 'NAME'" or "reusing existing window: NAME (...)"
+    parsed_window = _parse_spawn_window(result.stdout)
+
+    # Try to get tmux window PID (best-effort)
+    pid = _get_window_pid(parsed_window) if parsed_window else None
+
+    # Get current tmux session name (best-effort)
+    try:
+        session_name = subprocess.check_output(
+            ["tmux", "display-message", "-p", "#{session_name}"],
+            text=True, timeout=5, stderr=subprocess.DEVNULL,
+        ).strip()
+    except Exception:
+        session_name = None
+
+    return {
+        "ok": True,
+        "session": session_name,
+        "window": parsed_window,
+        "pid": pid,
+        "error": None,
+    }
+
+
+def _spawn_shadow_log(entry: dict) -> None:
+    import time  # noqa: PLC0415
+    record = json.dumps({
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "tool": "twl_spawn_session",
+        **{k: v for k, v in entry.items() if k != "cmd"},
+    }, ensure_ascii=False)
+    try:
+        with open(str(_SPAWN_SHADOW_LOG), "a") as f:
+            f.write(record + "\n")
+    except Exception:
+        pass
+
+
+def _parse_spawn_window(stdout: str) -> str | None:
+    import re  # noqa: PLC0415
+    for line in stdout.splitlines():
+        m = re.search(r"spawned → tmux window '([^']+)'", line)
+        if m:
+            return m.group(1)
+        m = re.search(r"prompt injected → '([^']+)'", line)
+        if m:
+            return m.group(1)
+        m = re.search(r"reusing existing window: (\S+)", line)
+        if m:
+            return m.group(1).split()[0]
+    return None
+
+
+def _get_window_pid(window_name: str | None) -> int | None:
+    if not window_name:
+        return None
+    if not _VALID_WINDOW_NAME_RE.match(window_name):
+        return None
+    import subprocess  # noqa: PLC0415
+    try:
+        out = subprocess.check_output(
+            ["tmux", "list-panes", "-t", window_name, "-F", "#{pane_pid}"],
+            text=True, timeout=5, stderr=subprocess.DEVNULL,
+        ).strip()
+        return int(out.splitlines()[0]) if out else None
+    except Exception:
+        return None
+
+
 # MCP tool registration — requires fastmcp (optional dep)
 try:
     from fastmcp import FastMCP as _FastMCP
@@ -1322,6 +1478,34 @@ try:
         """validation module: specialist check (stub — detailed spec in future Issue)."""
         return json.dumps(twl_check_specialist_handler(manifest_context=manifest_context), ensure_ascii=False)
 
+    @mcp.tool()
+    def twl_spawn_session(  # type: ignore[misc]
+        prompt: str,
+        cwd: str | None = None,
+        env_file: str | None = None,
+        window_name: str | None = None,
+        timeout: int | None = 120,
+        model: str | None = None,
+        force_new: bool = False,
+    ) -> str:
+        """Start a new Claude Code (cld) session in a tmux window via cld-spawn.
+
+        Returns JSON {ok, session, window, pid, error}.
+        Fire-and-forget: the cld session runs independently; this tool returns once the window is created.
+        """
+        return json.dumps(
+            twl_spawn_session_handler(
+                prompt=prompt,
+                cwd=cwd,
+                env_file=env_file,
+                window_name=window_name,
+                timeout=timeout,
+                model=model,
+                force_new=force_new,
+            ),
+            ensure_ascii=False,
+        )
+
 except ImportError:
     mcp = None  # type: ignore[assignment]
 
@@ -1453,6 +1637,29 @@ except ImportError:
     def twl_check_specialist(manifest_context: str) -> str:  # type: ignore[misc]
         """validation module: specialist check (stub — detailed spec in future Issue)."""
         return json.dumps(twl_check_specialist_handler(manifest_context=manifest_context), ensure_ascii=False)
+
+    def twl_spawn_session(  # type: ignore[misc]
+        prompt: str,
+        cwd: str | None = None,
+        env_file: str | None = None,
+        window_name: str | None = None,
+        timeout: int | None = 120,
+        model: str | None = None,
+        force_new: bool = False,
+    ) -> str:
+        """Start a new Claude Code (cld) session in a tmux window via cld-spawn (fastmcp not installed)."""
+        return json.dumps(
+            twl_spawn_session_handler(
+                prompt=prompt,
+                cwd=cwd,
+                env_file=env_file,
+                window_name=window_name,
+                timeout=timeout,
+                model=model,
+                force_new=force_new,
+            ),
+            ensure_ascii=False,
+        )
 
 # Communication tools (tools_comm.py) — outside the try/except gate to avoid double-gate (AC5-8 Option A)
 from .tools_comm import *  # noqa: E402, F401, F403
