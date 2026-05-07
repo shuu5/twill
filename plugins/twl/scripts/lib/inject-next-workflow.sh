@@ -12,6 +12,17 @@ declare -gA NUDGE_COUNTS 2>/dev/null || true
 declare -gA LAST_STATE_MTIME 2>/dev/null || true
 declare -gA LAST_STAGNATE_WARN_TS 2>/dev/null || true
 
+# _has_terminal_phrase: Worker pane に chain-step-completed terminal phrase が存在するか検査する
+# (#1468 Approach A): orchestrator の deadlock bypass ヘルパー
+# 引数: window_name
+# 戻り値: 0=terminal phrase あり、1=なし
+_has_terminal_phrase() {
+  local window_name="$1"
+  local _pane_out
+  _pane_out=$(tmux capture-pane -t "$window_name" -p -S -30 2>/dev/null || true)
+  echo "$_pane_out" | grep -qF ">>> chain-step-completed:"
+}
+
 # inject_next_workflow: current_step terminal 値を検知して次の workflow skill を tmux inject する（ADR-018）
 # 引数: issue, window_name, entry（省略時は _default:${issue}）
 # 戻り値: 0=inject 成功、1=失敗（タイムアウト / resolve 失敗 / バリデーション失敗）、2=force-exit（status=failed 書き込み済み）
@@ -71,6 +82,11 @@ inject_next_workflow() {
       if (( _warn_elapsed >= _warn_interval )); then
         echo "[orchestrator] WARN: issue=${issue} stagnate detected (RESOLVE_FAILED ${RESOLVE_FAIL_COUNT[$entry]} 回, ${_elapsed}s >= AUTOPILOT_STAGNATE_SEC=${AUTOPILOT_STAGNATE_SEC})" >&2
         LAST_STAGNATE_WARN_TS[$entry]="$_now"
+      fi
+      # AC4 (#1468 Approach B): AUTOPILOT_AUTO_UNSTUCK=1 opt-in で auto-unstuck ログ記録
+      # LAST_INJECTED_STEP bypass（force inject）は orchestrator 側の DEADLOCK_DETECT_TS が担当
+      if [[ "${AUTOPILOT_AUTO_UNSTUCK:-0}" == "1" ]]; then
+        echo "[${_trace_ts}] issue=${issue} skill=AUTO_UNSTUCK result=stagnate_signal elapsed=${_elapsed}s" >> "$_trace_log" 2>/dev/null || true
       fi
     fi
 

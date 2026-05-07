@@ -1,0 +1,107 @@
+mappings:
+  - ac_index: 1
+    ac_text: "orchestrator に terminal phrase 検知 + auto re-inject (Approach A) を実装"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac1: autopilot-orchestrator.sh に terminal phrase 検知ロジックが存在する（structural）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+  - ac_index: 1b
+    ac_text: "LAST_INJECTED_STEP bypass ロジックが autopilot-orchestrator.sh に存在する"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac1: autopilot-orchestrator.sh に LAST_INJECTED_STEP bypass ロジックが存在する（structural）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 1c
+    ac_text: "inject-next-workflow.sh に terminal phrase 検知関数が存在する"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac1: inject-next-workflow.sh に terminal phrase 検知関数が存在する（structural）"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+  - ac_index: 2
+    ac_text: "chain-runner.sh autopilot-detect で明示 terminal phrase emit (Approach C)"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac2: autopilot-detect は running 時に '>>> chain-step-completed:' を出力する"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 2b
+    ac_text: "autopilot-detect は IS_AUTOPILOT=true を出力する（既存動作の回帰防止）"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac2: autopilot-detect は IS_AUTOPILOT=true を出力する（既存動作の回帰防止）"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 2c
+    ac_text: "autopilot-detect は current_step を terminal phrase に含める"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac2: autopilot-detect は current_step を terminal phrase に含める"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 2d
+    ac_text: "autopilot=false 時は terminal phrase を出力しない"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac2: autopilot=false 時は terminal phrase を出力しない"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 2e
+    ac_text: "chain-runner.sh に terminal phrase emit ロジックが存在する（structural check）"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac2: chain-runner.sh に terminal phrase emit ロジックが存在する（structural check）"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 3
+    ac_text: "bats test で deadlock 再現 + 自動 unstuck 検証"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac3: terminal phrase あり + LAST_INJECTED_STEP 一致 → LAST_INJECTED_STEP がリセットされる（structural）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 3b
+    ac_text: "deadlock 自動 unstuck のシーケンス — chain-step-completed + LAST_INJECTED_STEP bypass の組み合わせ"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac3: deadlock 自動 unstuck のシーケンス — chain-step-completed + LAST_INJECTED_STEP bypass の組み合わせ（structural）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 4
+    ac_text: "stagnate timeout fallback (Approach B) を opt-in env で実装"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac4: inject-next-workflow.sh に AUTOPILOT_AUTO_UNSTUCK 変数の参照が存在する（structural）"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+  - ac_index: 4b
+    ac_text: "autopilot-orchestrator.sh に AUTOPILOT_AUTO_UNSTUCK 参照が存在する"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac4: autopilot-orchestrator.sh に AUTOPILOT_AUTO_UNSTUCK 参照が存在する（structural）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 4c
+    ac_text: "AUTOPILOT_AUTO_UNSTUCK=1 で auto-unstuck が inject_next_workflow に実装されている"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac4: AUTOPILOT_AUTO_UNSTUCK=1 で auto-unstuck が inject_next_workflow または orchestrator に実装されている"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+  - ac_index: 5
+    ac_text: "Wave 54+ で deadlock 自然解消することを確認 (Pilot 介入なし)"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac5: AC1/AC2/AC4 の全実装が揃っている（integration structural check）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+      - "plugins/twl/scripts/chain-runner.sh"
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
+  - ac_index: 5b
+    ac_text: "autopilot-orchestrator.sh は bash -n を通過する（syntax check）"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac5: autopilot-orchestrator.sh は bash -n を通過する（syntax check）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 5c
+    ac_text: "chain-runner.sh は bash -n を通過する（syntax check）"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac5: chain-runner.sh は bash -n を通過する（syntax check）"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+  - ac_index: 5d
+    ac_text: "inject-next-workflow.sh は bash -n を通過する（syntax check）"
+    test_file: "plugins/twl/tests/bats/issue-1468-orchestrator-deadlock-unstuck.bats"
+    test_name: "ac5: inject-next-workflow.sh は bash -n を通過する（syntax check）"
+    impl_files:
+      - "plugins/twl/scripts/lib/inject-next-workflow.sh"
