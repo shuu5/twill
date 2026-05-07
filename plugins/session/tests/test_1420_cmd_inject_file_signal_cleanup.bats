@@ -649,12 +649,54 @@ MOCK
 # RED: 現在の実装に trap がない + bats 非インタラクティブ SIGINT 問題
 # ===========================================================================
 
-@test "ac6[functional]: SIGINT 受信後に session-comm-* バッファが残留しない [ISSUE-1436-DEFERRED]" {
+@test "ac6[functional]: SIGINT 受信後に session-comm-* バッファが残留しない" {
     # AC6: SIGINT 受信時に trap handler が delete-buffer を呼び、バッファを削除すること
-    # [ISSUE-1436-DEFERRED]: このテストは #1420（cmd_inject_file trap INT 実装）完了後に有効化。
-    # バッファ残留なし検証には session-comm.sh の trap INT handler（#1420）が必要。
-    # set -m で SIGINT は届くが、trap なし = delete-buffer 呼び出しなし = バッファ残留。
-    skip "SIGINT buffer cleanup は #1420 (trap INT 実装) が必要。#1420 マージ後に有効化"
+    # #1420 で trap INT handler が実装されたため skip を解除
+    _create_mock_tmux_signal_test 3
+    _create_mock_session_state_input_waiting
+
+    local test_file="$SANDBOX/test_content.txt"
+    echo "test content for ac6 sigint cleanup" > "$test_file"
+
+    local active_buffers="$SANDBOX/active_buffers"
+
+    set -m
+    trap 'set +m' RETURN
+
+    local pid exit_code=0
+    PATH="$SANDBOX/bin:$PATH" \
+    _TEST_MODE=1 \
+    SESSION_COMM_SCRIPT_DIR="$SANDBOX/mock_scripts" \
+        bash "$SCRIPT" inject-file --no-enter --force "session:0" "$test_file" 2>/dev/null &
+    pid=$!
+
+    local waited=0
+    while [[ ! -s "$active_buffers" ]] && [[ $waited -lt 20 ]]; do
+        sleep 0.1; waited=$((waited+1))
+    done
+
+    if [[ ! -s "$active_buffers" ]]; then
+        skip "タイムアウト: load-buffer 待機が 2s 内に完了しなかった（CI 低速環境の可能性）"
+    fi
+
+    local pgid
+    pgid=$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')
+    if [[ "$pgid" =~ ^[1-9][0-9]*$ ]]; then
+        kill -INT "-$pgid" 2>/dev/null || kill -INT "$pid" 2>/dev/null || true
+    else
+        kill -INT "$pid" 2>/dev/null || true
+    fi
+
+    wait "$pid" 2>/dev/null || exit_code=$?
+
+    local remaining_count
+    remaining_count=$(grep -c 'session-comm-' "$active_buffers" 2>/dev/null || echo 0)
+
+    if [[ "$remaining_count" -gt 0 ]]; then
+        echo "FAIL: SIGINT 後に session-comm-* バッファが $remaining_count 件残留している" >&2
+        grep 'session-comm-' "$active_buffers" >&2
+        return 1
+    fi
 }
 
 # ===========================================================================
