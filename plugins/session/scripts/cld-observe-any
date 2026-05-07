@@ -423,8 +423,7 @@ evaluate_window() {
     # thinking guard 前に配置 — compaction は LLM active 状態のため即時 emit
     # COMPACTION_INDICATORS SSOT: lib/llm-indicators.sh 参照
     local _ci=""
-    for _ci in "${COMPACTION_INDICATORS[@]:-}"; do
-        if [[ -z "$_ci" ]]; then continue; fi
+    for _ci in "${COMPACTION_INDICATORS[@]}"; do
         if echo "$tail15" | grep -qiE "$_ci"; then
             COMPACTION_DETECTED_TS["$win"]=$(date +%s)
             emit_event "COMPACTION-DETECTED" "$win" "$_ci" "$log_age" "$state" "$budget_min"
@@ -515,7 +514,8 @@ LAST_HB_TS=0
 declare -A IDLE_COMPLETED_TS
 
 # [COMPACTION-DETECTED] 状態管理 — daemon mode でのサイクル間 STAGNATE 抑止（#1475）
-# COMPACTION-DETECTED emit 後 COMPACTION_SUPPRESS_SEC 秒間 STAGNATE を抑止する
+# IDLE_COMPLETED_TS と異なり evaluate_window() 内部で書き込む（compaction 検知がそこで発生するため）。
+# --once mode では呼び出し元が COMPACTION_ACTIVE=1 env var で引き継ぐ設計。
 declare -A COMPACTION_DETECTED_TS
 COMPACTION_SUPPRESS_SEC="${COMPACTION_SUPPRESS_SEC:-2700}"
 # #1457: timeout-based fallback — phrase 非マッチでも IDLE_COMPLETED_TIMEOUT_SEC 秒経過後に auto-kill
