@@ -1,0 +1,70 @@
+mappings:
+  - ac_index: 1
+    ac_text: "plugins/twl/agents/worker-red-only-detector.md 新設 (model: sonnet, tools: Bash, Read, Grep)"
+    test_file: "plugins/twl/tests/bats/scripts/worker-red-only-detector.bats"
+    test_names:
+      - "ac1: agents/worker-red-only-detector.md が存在する"
+      - "ac1: worker-red-only-detector.md に YAML フロントマターが含まれる"
+      - "ac1: worker-red-only-detector.md の model が sonnet である"
+      - "ac1: worker-red-only-detector.md の tools に Bash が含まれる"
+      - "ac1: worker-red-only-detector.md の tools に Read が含まれる"
+      - "ac1: worker-red-only-detector.md の tools に Grep が含まれる"
+      - "ac1: worker-red-only-detector.md に name フィールドが存在する"
+      - "ac1: worker-red-only-detector.md に type フィールドが存在する"
+    impl_files:
+      - plugins/twl/agents/worker-red-only-detector.md
+    # NOTE: worker-red-only-detector.md は新規作成が必要。
+    # 既存 agents/worker-issue-pr-alignment.md を参考にフロントマター構造を実装する。
+
+  - ac_index: 2
+    ac_text: "ロジック: gh pr view --json files,additions,deletions で *.bats|*test*|tests/.*\\.yaml|*.test.sh 以外の impl-candidate ファイル変更が 0 件なら CRITICAL (confidence=85)"
+    test_file: "plugins/twl/tests/bats/scripts/worker-red-only-detector.bats"
+    test_names:
+      - "ac2: worker-red-only-detector.md に gh pr view --json files コマンドへの言及がある"
+      - "ac2: worker-red-only-detector.md に impl-candidate ファイルパターンが定義されている"
+      - "ac2: worker-red-only-detector.md に confidence=85 または confidence: 85 が含まれる"
+      - "ac2: worker-red-only-detector.md に CRITICAL severity への言及がある"
+    impl_files:
+      - plugins/twl/agents/worker-red-only-detector.md
+
+  - ac_index: 3
+    ac_text: "PR body から「実装」「新設」「migrate」等 implementation claim キーワードを抽出、impl-candidate ファイル変更と不整合なら CRITICAL"
+    test_file: "plugins/twl/tests/bats/scripts/worker-red-only-detector.bats"
+    test_names:
+      - "ac3: worker-red-only-detector.md に PR body 解析への言及がある"
+      - "ac3: worker-red-only-detector.md に implementation claim キーワード（実装|新設|migrate）への言及がある"
+    impl_files:
+      - plugins/twl/agents/worker-red-only-detector.md
+
+  - ac_index: 4
+    ac_text: "merge-gate manifest に常時追加 (pr-review-manifest.sh の phase-review|merge-gate 分岐)"
+    test_file: "plugins/twl/tests/bats/scripts/worker-red-only-detector.bats"
+    test_names:
+      - "ac4: pr-review-manifest.sh が scripts/ に存在する"
+      - "ac4: merge-gate モードで worker-red-only-detector が出力される"
+      - "ac4: phase-review モードで worker-red-only-detector が出力される"
+      - "ac4: worker-red-only-detector が pr-review-manifest.sh のコード内に記載されている"
+    impl_files:
+      - plugins/twl/scripts/pr-review-manifest.sh
+
+  - ac_index: 5
+    ac_text: "False-positive 抑止: 純粋 RED test PR (label 'red-only' 明示付き) はスキップ、その後の green-impl PR で AC1 の機械検証を経る運用に"
+    test_file: "plugins/twl/tests/bats/scripts/worker-red-only-detector.bats"
+    test_names:
+      - "ac5: worker-red-only-detector.md に red-only ラベルチェックへの言及がある"
+      - "ac5: worker-red-only-detector.md に SKIP または スキップへの言及がある"
+    impl_files:
+      - plugins/twl/agents/worker-red-only-detector.md
+
+  - ac_index: 6
+    ac_text: "BATS test: scenario fixture (test only PR / test+impl PR / docs only PR) で expected severity 一致"
+    test_file: "plugins/twl/tests/bats/scripts/worker-red-only-detector.bats"
+    test_names:
+      - "ac6: scenario: test-only PR で CRITICAL が検出される"
+      - "ac6: scenario: test+impl PR で CRITICAL が検出されない"
+      - "ac6: scenario: docs-only PR で CRITICAL が検出されない"
+      - "ac6: scenario: red-only ラベル付き PR で CRITICAL がスキップされる"
+    impl_files:
+      - plugins/twl/agents/worker-red-only-detector.md
+    # NOTE: AC6 のシナリオテストは実装後に具体的な detector スクリプト呼び出しに置き換える。
+    # 現状は false でフォールバック（エージェントファイル不在チェックを経て fail）。
