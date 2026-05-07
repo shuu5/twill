@@ -1,0 +1,65 @@
+mappings:
+  - ac_index: 1
+    ac_text: "chain.py の CHAIN_STEPS リストに post-fix-verify が含まれる"
+    test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
+    test_name: "ac1: chain.py CHAIN_STEPS に post-fix-verify が含まれる"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/chain.py"
+
+  - ac_index: 2
+    ac_text: "chain.py の CHAIN_STEP_DISPATCH で post-fix-verify の dispatch mode が runner"
+    test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
+    test_name: "ac2: chain.py CHAIN_STEP_DISPATCH に post-fix-verify の dispatch mode runner が含まれる"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/chain.py"
+
+  - ac_index: 3
+    ac_text: "chain-steps.sh の CHAIN_STEP_DISPATCH に post-fix-verify が含まれ、値が runner"
+    test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
+    test_name: "ac3: chain-steps.sh の CHAIN_STEPS 配列に post-fix-verify が含まれる"
+    impl_files:
+      - "plugins/twl/scripts/chain-steps.sh"
+
+  - ac_index: 4
+    ac_text: "deps.yaml の post-fix-verify エントリと chain.py の設定が一致する（twl check --deps-integrity が PASS に相当）"
+    test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
+    test_name: "ac4: twl check --deps-integrity が post-fix-verify で PASS する（Python モジュール経由）"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/chain.py"
+      - "plugins/twl/scripts/chain-steps.sh"
+      - "plugins/twl/deps.yaml"
+
+  - ac_index: 5
+    ac_text: "step_post_fix_verify が codex_available=YES 時に worker-codex-reviewer を spawn する"
+    test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
+    test_name: "ac5: step_post_fix_verify が codex_available 条件分岐を持つ"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+
+  - ac_index: 6
+    ac_text: "step_post_fix_verify が agent に <review_target> (Issue body) と <target_files> (git diff 一覧) を渡す"
+    test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
+    test_name: "ac6: step_post_fix_verify が review_target を agent 呼び出しに含める"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+
+  - ac_index: 7
+    ac_text: "step_post_fix_verify が findings.yaml と checkpoint を生成する"
+    test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
+    test_name: "ac7: step_post_fix_verify が findings.yaml の生成処理を含む"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+
+  - ac_index: 8
+    ac_text: "merge-gate-check-spawn.sh が specialist-audit.sh に --codex-session-dir と --controller-issue-dir を渡す"
+    test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
+    test_name: "ac8: merge-gate-check-spawn.sh が specialist-audit.sh に --codex-session-dir を渡す"
+    impl_files:
+      - "plugins/twl/scripts/merge-gate-check-spawn.sh"
+
+  - ac_index: 9
+    ac_text: "specialist-audit.sh が codex_available=YES かつ findings.yaml 不在の場合に HARD FAIL する（exit 1 + HARD FAIL メッセージ）"
+    test_file: "plugins/twl/tests/bats/scripts/post-fix-verify-ssot-1507.bats"
+    test_name: "ac9: specialist-audit.sh が codex コマンド存在 + findings.yaml 不在で HARD FAIL する"
+    impl_files:
+      - "plugins/twl/scripts/merge-gate-check-spawn.sh"

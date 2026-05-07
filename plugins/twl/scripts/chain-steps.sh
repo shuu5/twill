@@ -21,6 +21,7 @@ CHAIN_STEPS=(
   scope-judge
   pr-test
   ac-verify
+  post-fix-verify
   all-pass-check
   pr-cycle-report
 )
@@ -46,6 +47,7 @@ declare -A CHAIN_STEP_DISPATCH=(
   [scope-judge]=llm
   [pr-test]=runner
   [ac-verify]=llm
+  [post-fix-verify]=runner
   [all-pass-check]=runner
   [pr-cycle-report]=runner
 )
@@ -65,6 +67,7 @@ declare -A CHAIN_STEP_WORKFLOW=(
   [scope-judge]=pr-verify
   [pr-test]=pr-verify
   [ac-verify]=pr-verify
+  [post-fix-verify]=pr-fix
   [all-pass-check]=pr-merge
   [pr-cycle-report]=pr-merge
 )

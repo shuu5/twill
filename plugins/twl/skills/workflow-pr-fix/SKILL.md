@@ -67,8 +67,12 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 `phase_review_critical + ac_verify_critical > 0` の場合のみ実行。`commands/fix-phase.md` を Read → 実行。
 fix 後は post-fix-verify（Step 4.5）→ pr-test 再実行のループ。
 
-### Step 4.5: post-fix-verify（fix 後検証）【LLM 判断】
-fix-phase を実行した場合のみ。`commands/post-fix-verify.md` を Read → 実行。
+### Step 4.5: post-fix-verify（fix 後検証）【機械的 → runner】
+fix-phase を実行した場合のみ。chain-runner.sh が deterministic dispatch する（#1507）。
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" post-fix-verify
+```
 
 ### Step 5: warning-fix（Warning 修正）【LLM 判断】
 `commands/warning-fix.md` を Read → 実行。

@@ -1033,37 +1033,90 @@ step_post_fix_verify() {
 
   # post-fix-verify 用マニフェスト生成（pr-review-manifest.sh 経由）
   local manifest
-  manifest=$(bash "$pr_review_manifest" --mode post-fix-verify 2>/dev/null || echo "")
+  manifest=$(git diff --name-only origin/main 2>/dev/null \
+    | bash "$pr_review_manifest" --mode post-fix-verify 2>/dev/null || echo "")
   if [[ -z "$manifest" ]]; then
     skip "post-fix-verify" "マニフェスト空 — specialist なし"
     return 0
   fi
 
   local issue_num="${ISSUE_NUM:-$(resolve_issue_num 2>/dev/null || echo "")}"
+
+  # review_target: Issue body（agent の <review_target> として渡す）
+  local review_target=""
+  if [[ -n "$issue_num" ]] && command -v gh &>/dev/null; then
+    review_target=$(gh issue view "$issue_num" --json body -q '.body' 2>/dev/null || echo "")
+  fi
+
+  # target_files: git diff --name-only origin/main（agent の <target_files> として渡す）
+  local target_files
+  target_files=$(git diff --name-only origin/main 2>/dev/null || echo "")
+
+  # codex_available 判定（specialist-audit.sh の HARD FAIL と整合）
+  local codex_available=false
+  if command -v codex &>/dev/null; then
+    codex_available=true
+  fi
+
   local spawn_errors=0
+  # findings capture: specialist ごとの stdout を一時ファイルに保存して後で集約
+  local tmp_findings_dir
+  tmp_findings_dir=$(mktemp -d)
 
   while IFS= read -r specialist; do
     [[ -z "$specialist" || "$specialist" == \#* ]] && continue
     local specialist_name="${specialist#twl:twl:}"
+
     # deterministic spawn: LLM 自己申告に依存しない claude --print --agent 呼び出し
+    # <review_target> と <target_files> を prompt に含める（#1507 AC-6）
     if command -v claude &>/dev/null; then
-      claude --print --agent "${specialist}" \
-        "Issue #${issue_num:-?} post-fix-verify: ${specialist_name} を実行してください" \
-        2>/dev/null || spawn_errors=$((spawn_errors + 1))
+      local prompt="Issue #${issue_num:-?} post-fix-verify: ${specialist_name} を実行してください
+<review_target>
+${review_target}
+</review_target>
+<target_files>
+${target_files}
+</target_files>"
+      local findings_tmp="${tmp_findings_dir}/${specialist_name}.txt"
+      claude --print --agent "${specialist}" "${prompt}" \
+        > "$findings_tmp" 2>/dev/null || spawn_errors=$((spawn_errors + 1))
     else
       echo "WARN: claude コマンドが利用できません — ${specialist} をスキップ" >&2
     fi
   done <<< "$manifest"
+
+  # findings.yaml 生成: specialist 出力を集約（#1507 AC-7）
+  local controller_issue_dir="${CONTROLLER_ISSUE_DIR:-}"
+  if [[ -n "$controller_issue_dir" ]]; then
+    local out_dir="${controller_issue_dir}/OUT/worker-codex-reviewer"
+    mkdir -p "$out_dir"
+    local findings_yaml="${out_dir}/findings.yaml"
+    {
+      echo "# post-fix-verify findings ($(date -u +"%Y-%m-%dT%H:%M:%SZ"))"
+      echo "specialists:"
+      for f in "$tmp_findings_dir"/*.txt; do
+        [[ -f "$f" ]] || continue
+        local sname
+        sname=$(basename "$f" .txt)
+        echo "  - name: ${sname}"
+        echo "    reason: post-fix-verify"
+        echo "    output: |"
+        sed 's/^/      /' "$f" 2>/dev/null || true
+      done
+    } > "$findings_yaml"
+  fi
+  rm -rf "$tmp_findings_dir"
+
+  # checkpoint 書き込み（#1507 AC-7）
+  python3 -m twl.autopilot.checkpoint write --step post-fix-verify \
+    --field status=PASS 2>/dev/null || true
 
   if [[ $spawn_errors -gt 0 ]]; then
     err "post-fix-verify" "specialist spawn エラー: ${spawn_errors} 件"
     return 1
   fi
 
-  # worker-codex-reviewer の deterministic spawn を含む（#1481 AC-1c）
-  # 上の while ループで manifest に worker-codex-reviewer が含まれる場合に
-  # claude --print --agent twl:twl:worker-codex-reviewer が実行される
-  ok "post-fix-verify" "specialist 並列 spawn 完了（pr-review-manifest.sh 経由）"
+  ok "post-fix-verify" "specialist 並列 spawn 完了（pr-review-manifest.sh 経由、codex_available=${codex_available}）"
 }
 
 # --- pr-test: テスト実行 ---

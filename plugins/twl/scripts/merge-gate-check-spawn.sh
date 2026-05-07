@@ -56,10 +56,20 @@ if [[ -f "$_audit_script" ]]; then
   _manifest_args=()
   [[ -n "${MANIFEST_FILE:-}" && -f "${MANIFEST_FILE:-}" ]] && _manifest_args=(--manifest-file "${MANIFEST_FILE}")
 
+  # --codex-session-dir: codex セッションログの場所（HARD FAIL 経路の活性化、#1507 AC-8/B3）
+  # --controller-issue-dir: OUT/ ファイル存在確認用（#1507 AC-8）
+  _codex_session_dir="${CODEX_SESSION_DIR:-${HOME}/.codex/sessions/$(date +%Y/%m 2>/dev/null || echo "")}"
+  _controller_issue_dir_arg="${CONTROLLER_ISSUE_DIR:-}"
+
+  _codex_args=()
+  [[ -n "$_codex_session_dir" ]] && _codex_args+=(--codex-session-dir "$_codex_session_dir")
+  [[ -n "$_controller_issue_dir_arg" ]] && _codex_args+=(--controller-issue-dir "$_controller_issue_dir_arg")
+
   _audit_exit=0
   if [[ -n "$_issue_num" ]]; then
     bash "$_audit_script" --issue "$_issue_num" --mode merge-gate \
-      "${_manifest_args[@]+"${_manifest_args[@]}"}" 2>/dev/null || _audit_exit=$?
+      "${_manifest_args[@]+"${_manifest_args[@]}"}" \
+      "${_codex_args[@]+"${_codex_args[@]}"}" 2>/dev/null || _audit_exit=$?
   else
     echo "WARN: specialist-audit: Issue 番号が解決できないためスキップ" >&2
   fi

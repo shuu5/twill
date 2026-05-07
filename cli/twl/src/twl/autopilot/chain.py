@@ -41,6 +41,7 @@ CHAIN_STEPS: list[str] = [
     "scope-judge",
     "pr-test",
     "ac-verify",
+    "post-fix-verify",
     "all-pass-check",
     "pr-cycle-report",
 ]
@@ -62,6 +63,7 @@ STEP_TO_WORKFLOW: dict[str, str] = {
     "scope-judge": "pr-verify",
     "pr-test": "pr-verify",
     "ac-verify": "pr-verify",
+    "post-fix-verify": "pr-fix",
     "all-pass-check": "pr-merge",
     "pr-cycle-report": "pr-merge",
 }
@@ -79,6 +81,7 @@ WORKFLOW_NEXT_SKILL: dict[str, str] = {
 # Maps terminal current_step values to the next workflow skill (ADR-018).
 # Replaces workflow_done-based inject detection.
 # "warning-fix" is the pr-fix terminal step (not in CHAIN_STEPS; dynamically set by chain-runner).
+# "post-fix-verify" is in CHAIN_STEPS (runner step); "warning-fix" is the dynamic terminal.
 TERMINAL_STEP_TO_NEXT_SKILL: dict[str, str] = {
     "ac-extract": "workflow-test-ready",
     "check": "workflow-pr-verify",
@@ -105,6 +108,7 @@ CHAIN_STEP_DISPATCH: dict[str, str] = {
     "scope-judge": "llm",
     "pr-test": "runner",
     "ac-verify": "llm",
+    "post-fix-verify": "runner",
     "all-pass-check": "runner",
     "pr-cycle-report": "runner",
 }
@@ -131,6 +135,10 @@ CHAIN_METADATA: dict[str, dict[str, str]] = {
     "pr-verify": {
         "type": "B",
         "description": "PR検証（preflight → review → scope → test → ac-verify）",
+    },
+    "pr-fix": {
+        "type": "B",
+        "description": "PR修正後検証（fix 後の deterministic specialist spawn）",
     },
     "pr-merge": {
         "type": "B",
