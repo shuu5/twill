@@ -1,0 +1,51 @@
+mappings:
+  - ac_index: 1
+    ac_text: "統合 script (Approach A) を `scripts/issue-create-refined.sh` に実装、bats test 追加"
+    test_file: "plugins/twl/tests/bats/scripts/issue-create-refined.bats"
+    test_name: "ac1: issue-create-refined.sh が scripts/ に存在し実行可能である"
+    impl_files:
+      - "plugins/twl/scripts/issue-create-refined.sh"
+
+  - ac_index: 1
+    ac_text: "統合 script (Approach A) を `scripts/issue-create-refined.sh` に実装、bats test 追加 (動作検証)"
+    test_file: "plugins/twl/tests/bats/scripts/issue-create-refined.bats"
+    test_name: "ac1: issue-create-refined.sh が gh issue create と board-status-update Refined を実行する"
+    impl_files:
+      - "plugins/twl/scripts/issue-create-refined.sh"
+
+  - ac_index: 2
+    ac_text: "既存 `gh issue create` 呼び出しを段階的に新 script に migrate (まず co-issue / observer 起票 path)"
+    test_file: "plugins/twl/tests/bats/scripts/issue-create-refined.bats"
+    test_name: "ac2: co-issue-manual-fix-b.sh が issue-create-refined.sh を参照している"
+    impl_files:
+      - "plugins/twl/scripts/co-issue-manual-fix-b.sh"
+      - "plugins/twl/scripts/issue-create-refined.sh"
+
+  - ac_index: 2
+    ac_text: "既存 `gh issue create` 呼び出しを段階的に新 script に migrate (observer 起票 path)"
+    test_file: "plugins/twl/tests/bats/scripts/issue-create-refined.bats"
+    test_name: "ac2: observer spawn-controller.sh が issue-create-refined.sh を参照している"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+      - "plugins/twl/scripts/issue-create-refined.sh"
+
+  - ac_index: 3
+    ac_text: "GitHub Actions (Approach C) で fallback 自動化 (tech-debt label 検出 → Refined 遷移)"
+    test_file: "plugins/twl/tests/bats/scripts/issue-create-refined.bats"
+    test_name: "ac3: .github/workflows/auto-refined.yml が存在する"
+    impl_files:
+      - ".github/workflows/auto-refined.yml"
+
+  - ac_index: 3
+    ac_text: "GitHub Actions (Approach C) で fallback 自動化 — 定義内容検証"
+    test_file: "plugins/twl/tests/bats/scripts/issue-create-refined.bats"
+    test_name: "ac3: auto-refined.yml が tech-debt label 検出と Refined 遷移ステップを含む"
+    impl_files:
+      - ".github/workflows/auto-refined.yml"
+
+  - ac_index: 4
+    ac_text: "Wave 54+ で bug Issue 起票 → autopilot spawn が手動介入なしで通過することを確認"
+    test_file: "plugins/twl/tests/bats/scripts/issue-create-refined.bats"
+    test_name: "ac4: smoke — issue-create-refined.sh が存在し autopilot gate を通過できる前提を満たす"
+    impl_files:
+      - "plugins/twl/scripts/issue-create-refined.sh"
