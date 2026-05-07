@@ -362,7 +362,7 @@ skills:
       - script: observer-wave-check   # #1155: _all_current_wave_idle_completed() Wave 全 window 判定
       - reference: pitfalls-catalog   # Phase A: 起動時 Step 0 Read MUST
       - reference: proxy-dialog-playbook  # #814 Phase 2: proxy 対話完全手順
-      - reference: ref-invariants     # 不変条件 A-M 正典参照（境界説明）
+      - reference: ref-invariants     # 不変条件 A-N 正典参照（境界説明）
       - reference: observer-supervise-checklist         # #1245: supervise cycle MUST verify 7 項目チェックリスト
       - reference: su-observer-supervise-channels      # #984: supervise 必須並行チャンネル詳細
       - reference: su-observer-controller-spawn-playbook  # #984: controller spawn パターン・並列度・spawn prompt 規約
@@ -738,7 +738,7 @@ refs:
   ref-invariants:
     type: reference
     path: refs/ref-invariants.md
-    description: "不変条件 A-M の正典定義（定義・根拠・検証方法・影響範囲）"
+    description: "不変条件 A-N の正典定義（定義・根拠・検証方法・影響範囲）"
 
   ref-compaction-recovery:
     type: reference
