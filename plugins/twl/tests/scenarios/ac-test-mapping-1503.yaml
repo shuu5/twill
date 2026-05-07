@@ -1,0 +1,21 @@
+mappings:
+  - ac_index: 1
+    ac_text: "READY_ERR_RAW が ghs_（GitHub App server-to-server）トークンをマスクする"
+    test_file: "tests/scenarios/issue-1503-token-masking.test.sh"
+    test_name: "AC1: READY_ERR_RAW sed パターンが ghs_ トークンをマスクする"
+  - ac_index: 2
+    ac_text: "READY_ERR_RAW が ghu_（user-to-server OAuth）トークンをマスクする"
+    test_file: "tests/scenarios/issue-1503-token-masking.test.sh"
+    test_name: "AC2: READY_ERR_RAW sed パターンが ghu_ トークンをマスクする"
+  - ac_index: 3
+    ac_text: "ERROR_RAW が ghs_ トークンをマスクする"
+    test_file: "tests/scenarios/issue-1503-token-masking.test.sh"
+    test_name: "AC3: ERROR_RAW sed パターンが ghs_ トークンをマスクする"
+  - ac_index: 4
+    ac_text: "ERROR_RAW が ghu_ トークンをマスクする"
+    test_file: "tests/scenarios/issue-1503-token-masking.test.sh"
+    test_name: "AC4: ERROR_RAW sed パターンが ghu_ トークンをマスクする"
+  - ac_index: 5
+    ac_text: "マスキングパターンが gh[a-z]_ の汎用パターンを使用している"
+    test_file: "tests/scenarios/issue-1503-token-masking.test.sh"
+    test_name: "AC5: READY_ERR_RAW の sed パターンが gh[a-z]_ 汎用形式または ghs_/ghu_ を含む"

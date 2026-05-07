@@ -192,7 +192,7 @@ fi
 PR_READY_ERR=$(mktemp /tmp/auto-merge-ready-XXXXXX.log)
 trap 'rm -f "${PR_READY_ERR:-}"' EXIT
 if ! gh pr ready "$PR_NUMBER" 2>"$PR_READY_ERR"; then
-  READY_ERR_RAW=$(sed -E 's/ghp_[a-zA-Z0-9]+/ghp_***MASKED***/g; s/Bearer [^ ]+/Bearer ***MASKED***/g' "$PR_READY_ERR" | head -c 300)
+  READY_ERR_RAW=$(sed -E 's/gh[a-z]_[a-zA-Z0-9_]+/***MASKED***/g; s/Bearer [^ ]+/Bearer ***MASKED***/g' "$PR_READY_ERR" | head -c 300)
   if echo "$READY_ERR_RAW" | grep -qiE '(not a draft)'; then
     echo "[auto-merge] Issue #${ISSUE_NUM}: PR #${PR_NUMBER} は already-ready（no-op）" >&2
     rm -f "$PR_READY_ERR"
@@ -207,7 +207,7 @@ rm -f "$PR_READY_ERR"
 MERGE_ERROR_LOG=$(mktemp /tmp/auto-merge-error-XXXXXX.log)
 trap 'rm -f "${MERGE_ERROR_LOG:-}" "${PR_READY_ERR:-}"' EXIT
 if ! gh pr merge "$PR_NUMBER" --squash 2>"$MERGE_ERROR_LOG"; then
-  ERROR_RAW=$(sed -E 's/ghp_[a-zA-Z0-9]+/ghp_***MASKED***/g; s/Bearer [^ ]+/Bearer ***MASKED***/g' "$MERGE_ERROR_LOG" | head -c 500)
+  ERROR_RAW=$(sed -E 's/gh[a-z]_[a-zA-Z0-9_]+/***MASKED***/g; s/Bearer [^ ]+/Bearer ***MASKED***/g' "$MERGE_ERROR_LOG" | head -c 500)
   echo "[auto-merge] Error: merge 失敗 - ${ERROR_RAW}" >&2
   rm -f "$MERGE_ERROR_LOG"
   exit 1
