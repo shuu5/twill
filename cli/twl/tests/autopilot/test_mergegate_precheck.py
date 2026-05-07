@@ -78,15 +78,25 @@ class TestPrecheckBranchProtection:
         self, gate: MergeGate, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.delenv("DEV_AUTOPILOT_MERGEABILITY_PRECHECK", raising=False)
+        ready_result = MagicMock(returncode=0, stdout="", stderr="")
         merge_result = MagicMock(returncode=0, stdout="", stderr="")
 
-        with patch("twl.autopilot.mergegate_ops.subprocess.run", return_value=merge_result) as mock_run:
+        call_log: list[list[str]] = []
+
+        def _fake(cmd: list[str], **kw):  # noqa: ANN001
+            call_log.append(cmd)
+            if "ready" in cmd:
+                return ready_result
+            return merge_result
+
+        with patch("twl.autopilot.mergegate_ops.subprocess.run", side_effect=_fake):
             ret = gate._run_merge([])
 
         assert ret is True
-        # precheck スキップされ、gh pr merge のみが直接呼ばれる
-        assert mock_run.call_count == 1
-        assert mock_run.call_args_list[0].args[0][:3] == ["gh", "pr", "merge"]
+        # precheck スキップ、gh pr ready → gh pr merge の順で呼ばれる
+        assert len(call_log) == 2
+        assert call_log[0][:3] == ["gh", "pr", "ready"]
+        assert call_log[1][:3] == ["gh", "pr", "merge"]
 
     def test_precheck_clean_proceeds_to_merge(
         self, gate: MergeGate, monkeypatch: pytest.MonkeyPatch
@@ -94,11 +104,12 @@ class TestPrecheckBranchProtection:
         """CLEAN 等 OK 状態なら precheck を通過して merge 実行."""
         monkeypatch.setenv("DEV_AUTOPILOT_MERGEABILITY_PRECHECK", "true")
         precheck_result = MagicMock(returncode=0, stdout=json.dumps({"mergeStateStatus": "CLEAN"}))
+        ready_result = MagicMock(returncode=0, stdout="", stderr="")
         merge_result = MagicMock(returncode=0, stdout="", stderr="")
 
         with patch(
             "twl.autopilot.mergegate_ops.subprocess.run",
-            new=_mock_run_sequence([precheck_result, merge_result]),
+            new=_mock_run_sequence([precheck_result, ready_result, merge_result]),
         ):
             ret = gate._run_merge([])
 
@@ -117,9 +128,15 @@ class TestMergeConflictClassification:
         self, gate: MergeGate, stderr_msg: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.delenv("DEV_AUTOPILOT_MERGEABILITY_PRECHECK", raising=False)
+        ready_result = MagicMock(returncode=0, stdout="", stderr="")
         merge_result = MagicMock(returncode=1, stdout="", stderr=stderr_msg)
 
-        with patch("twl.autopilot.mergegate_ops.subprocess.run", return_value=merge_result), \
+        def _fake(cmd: list[str], **kw):  # noqa: ANN001
+            if "ready" in cmd:
+                return ready_result
+            return merge_result
+
+        with patch("twl.autopilot.mergegate_ops.subprocess.run", side_effect=_fake), \
              patch("twl.autopilot.mergegate_ops._state_write") as mock_write:
             ret = gate._run_merge([])
 
@@ -135,11 +152,17 @@ class TestMergeConflictClassification:
         self, gate: MergeGate, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.delenv("DEV_AUTOPILOT_MERGEABILITY_PRECHECK", raising=False)
+        ready_result = MagicMock(returncode=0, stdout="", stderr="")
         merge_result = MagicMock(
             returncode=1, stdout="", stderr="GraphQL: Required status check \"build\" is pending."
         )
 
-        with patch("twl.autopilot.mergegate_ops.subprocess.run", return_value=merge_result), \
+        def _fake(cmd: list[str], **kw):  # noqa: ANN001
+            if "ready" in cmd:
+                return ready_result
+            return merge_result
+
+        with patch("twl.autopilot.mergegate_ops.subprocess.run", side_effect=_fake), \
              patch("twl.autopilot.mergegate_ops._state_write") as mock_write:
             ret = gate._run_merge([])
 
@@ -154,11 +177,18 @@ class TestMergeConflictClassification:
         self, gate: MergeGate, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.delenv("DEV_AUTOPILOT_MERGEABILITY_PRECHECK", raising=False)
+        ready_result = MagicMock(returncode=0, stdout="", stderr="")
         merge_result = MagicMock(
             returncode=1, stdout="",
             stderr="auth failed with ghp_abcdef123456 not mergeable conflict",
         )
-        with patch("twl.autopilot.mergegate_ops.subprocess.run", return_value=merge_result), \
+
+        def _fake(cmd: list[str], **kw):  # noqa: ANN001
+            if "ready" in cmd:
+                return ready_result
+            return merge_result
+
+        with patch("twl.autopilot.mergegate_ops.subprocess.run", side_effect=_fake), \
              patch("twl.autopilot.mergegate_ops._state_write") as mock_write:
             gate._run_merge([])
 

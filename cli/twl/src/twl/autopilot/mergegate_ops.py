@@ -391,6 +391,31 @@ class MergeGateOperationsMixin:
                 except (json.JSONDecodeError, ValueError):
                     pass  # precheck parse 失敗時は従来の merge flow に fallback
 
+        # #1500: draft → ready 変換（idempotent: already ready なら no-op）
+        ready_result = subprocess.run(
+            ["gh", "pr", "ready", self.pr_number, *gh_repo_flag],
+            capture_output=True,
+            text=True,
+        )
+        if ready_result.returncode != 0:
+            raw_ready_err = ready_result.stderr
+            raw_ready_err = re.sub(r"ghp_[a-zA-Z0-9]+", "ghp_***MASKED***", raw_ready_err)
+            raw_ready_err = re.sub(r"Bearer\s+\S+", "Bearer ***MASKED***", raw_ready_err)
+            raw_ready_err = raw_ready_err[:500]
+            failure = json.dumps({
+                "reason": "draft_pr_ready_failed",
+                "details": raw_ready_err,
+                "step": "merge-gate",
+                "pr": f"#{self.pr_number}",
+            })
+            _state_write(self.issue, "pilot", status="failed", failure=failure)
+            print(
+                f"[merge-gate] Issue #{self.issue}: draft のまま merge は不可"
+                f" — gh pr ready 失敗: {raw_ready_err[:200]}",
+                file=sys.stderr,
+            )
+            return False
+
         result = subprocess.run(
             ["gh", "pr", "merge", self.pr_number, *gh_repo_flag, "--squash"],
             capture_output=True,

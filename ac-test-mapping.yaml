@@ -115,6 +115,39 @@ issue_1015:
       test_file: "plugins/twl/tests/unit/chain-runner-trace-abspath/chain-runner-trace-abspath.bats"
       test_name: "trace-relpath[regression]: 相対パスの場合、trace ファイルが作成される"
       status: GREEN
+
+# --- Issue #1500 ---
+issue_1500:
+  issue: 1500
+  framework: pytest
+  test_file: "cli/twl/tests/autopilot/test_mergegate_ops.py"
+  mappings:
+    - ac_index: 1
+      ac_text: "mergegate_ops.py の _run_merge に gh pr ready を追加。gh pr merge 直前に gh pr ready を呼び出す。idempotent (既に ready なら no-op)。失敗時は明確なエラーで fail-fast。"
+      test_name: "test_ac1_gh_pr_ready_called_before_merge"
+      status: RED
+      red_mechanism: "_run_merge に gh pr ready 呼び出しが未追加のため call_log に ready が含まれず fail する"
+      impl_files:
+        - "cli/twl/src/twl/autopilot/mergegate_ops.py"
+    - ac_index: 2
+      ac_text: "pytest 追加: gh pr ready 失敗時は fail-fast し gh pr merge を呼ばない"
+      test_name: "test_ac2_gh_pr_ready_fail_raises"
+      status: RED
+      red_mechanism: "gh pr ready が未実装のため returncode=1 でも merge が続行し result=True になりアサーション失敗"
+      impl_files:
+        - "cli/twl/src/twl/autopilot/mergegate_ops.py"
+    - ac_index: 2
+      ac_text: "pytest 追加: idempotent ケース（既に ready）でも gh pr ready が呼ばれ、gh pr merge が継続すること"
+      test_name: "test_ac2_gh_pr_ready_idempotent_already_ready"
+      status: RED
+      red_mechanism: "gh pr ready が未実装のため call_log に ready が含まれず fail する"
+      impl_files:
+        - "cli/twl/src/twl/autopilot/mergegate_ops.py"
+    - ac_index: 3
+      ac_text: "ac-test-mapping 追加（本エントリ）"
+      test_name: "N/A (doc artifact)"
+      status: DONE
+      impl_files: []
       note: "回帰テスト。修正前後ともに PASS であること"
     - ac_index: 3
       ac_text: "TWL_CHAIN_TRACE に *..*（パストラバーサル）を含む場合、trace_event() はファイルを作成しない（既存動作）"
