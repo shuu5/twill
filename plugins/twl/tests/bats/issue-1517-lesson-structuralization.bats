@@ -128,7 +128,7 @@ setup() {
   grep -qi "lesson.*MUST.*チェーン\|lesson 確立時" "${SKILL_MD}"
 }
 
-@test "issue-1517: AC3 SKILL.md に ADR-036 と Invariant L への参照が含まれること" {
+@test "issue-1517: AC3 SKILL.md に ADR-036 と Invariant N への参照が含まれること" {
   # RED: Step 1 末尾への追加が未実施のため fail する
   [ -f "${SKILL_MD}" ]
   grep -qF "ADR-036" "${SKILL_MD}"
