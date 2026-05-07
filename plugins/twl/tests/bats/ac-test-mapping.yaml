@@ -119,3 +119,59 @@ mappings:
       - "ac4b: pane-transitions.log に split → list-panes のペアが存在する（順序検証）"
     impl_files:
       - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+  # ---------------------------------------------------------------------------
+  # Issue #1508: bug(su-observer): co-explore proxy 対話 menu の検知漏れ
+  # ---------------------------------------------------------------------------
+  - ac_index: 1
+    ac_text: "co-explore active 中: 補助 polling Monitor を 3-5 分間隔で起動 MUST。ScheduleWakeup は co-autopilot cycle と独立に co-explore 用 cycle を持つ"
+    issue: 1508
+    test_file: "plugins/twl/tests/bats/issue-1508-co-explore-proxy-menu.bats"
+    test_names:
+      - "ac1: SKILL.md or su-observer-supervise-channels.md contains co-explore polling interval spec (3-5 min)"
+      - "ac1: co-explore polling spec mentions auxiliary polling or supplemental monitor"
+      - "ac1: co-explore ScheduleWakeup cycle is independent from co-autopilot cycle"
+    impl_files:
+      - "plugins/twl/skills/su-observer/SKILL.md"
+      - "plugins/twl/skills/su-observer/refs/su-observer-supervise-channels.md"
+  - ac_index: 2
+    ac_text: "cld-observe-any 起動時の filter または別 Monitor task で co-explore window を高頻度 watch (tail -F + grep wt-co-explore- で即時 alert)"
+    issue: 1508
+    test_file: "plugins/twl/tests/bats/issue-1508-co-explore-proxy-menu.bats"
+    test_names:
+      - "ac2: su-observer-supervise-channels.md contains co-explore dedicated channel section"
+      - "ac2: su-observer-supervise-channels.md contains wt-co-explore- grep pattern"
+      - "ac2: su-observer-supervise-channels.md contains tail -F for co-explore window watch"
+      - "ac2: su-observer-supervise-channels.md co-explore alert is described as immediate (即時)"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/su-observer-supervise-channels.md"
+  - ac_index: 3
+    ac_text: "su-observer-controller-spawn-playbook.md co-explore 行: menu 連発型・SLA 60s・自律完了型判別パターンを明記"
+    issue: 1508
+    test_file: "plugins/twl/tests/bats/issue-1508-co-explore-proxy-menu.bats"
+    test_names:
+      - "ac3: controller-spawn-playbook.md co-explore row mentions menu-heavy pattern"
+      - "ac3: controller-spawn-playbook.md co-explore row mentions SLA 60 seconds"
+      - "ac3: controller-spawn-playbook.md co-explore row mentions autonomous-completion detection pattern"
+      - "ac3: controller-spawn-playbook.md co-explore section has SLA and menu pattern together"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/su-observer-controller-spawn-playbook.md"
+  - ac_index: 4
+    ac_text: "record-detection-gap.sh --type proxy-stuck 記録時に co-explore-specific tag (observer-co-explore-gap) を追加"
+    issue: 1508
+    test_file: "plugins/twl/tests/bats/issue-1508-co-explore-proxy-menu.bats"
+    test_names:
+      - "ac4: record-detection-gap.sh exists and is executable"
+      - "ac4: record-detection-gap.sh --type proxy-stuck outputs observer-co-explore-gap tag"
+      - "ac4: record-detection-gap.sh --type proxy-stuck tag appears in tags list"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-detection-gap.sh"
+  - ac_index: 5
+    ac_text: "bats テスト自身が存在し 10 件以上のテストを含む (self-referential GREEN)"
+    issue: 1508
+    test_file: "plugins/twl/tests/bats/issue-1508-co-explore-proxy-menu.bats"
+    test_names:
+      - "ac5: this bats test file exists at expected path"
+      - "ac5: this bats test file contains at least 10 test blocks"
+    impl_files: []
+    # AC5 は self-referential: ファイル存在・テスト件数の自己検証。impl_files は空

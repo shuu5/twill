@@ -54,7 +54,7 @@ spawnable_by:
 
 - 定期 audit MUST: 5 分ごとに全 ap-/wt-/coi-/coe- window を `for WIN in $(tmux list-windows -a -F '#{window_name}' | grep -E '^(ap-|wt-|coi-|coe-)'); do tmux capture-pane -t "$WIN" -p | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Enter to select|^❯ [1-9]\.|Press up to edit queued' && echo "[MENU-WAIT] $WIN"; done` で menu/input-wait pattern スキャン（cld-observe-any 補助、`-t $WIN` 必須・全 session 対象）
 
-**`refs/su-observer-supervise-channels.md` を Read** して実行。
+**`refs/su-observer-supervise-channels.md` を Read** して実行。co-explore active 中は同ファイルの「co-explore active 時の補助 polling（MUST — #1508）」セクションの dedicated Monitor channel（3-5 分間隔）も起動すること（MUST）。
 
 > **supervise cycle 開始前 checklist（SHOULD）**: **`refs/observer-supervise-checklist.md` を Read** して 7 項目を確認し、未設定項目があれば補完すること（#1245）。
 
