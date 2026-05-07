@@ -4,7 +4,8 @@
 # Issue #1485: _CODEX_AUTH_ERROR_PATTERN に quota/billing 系パターンを追加し、
 # CODEX_SKIP_REASON を keyword で分岐する。
 #
-# AC-1: _CODEX_AUTH_ERROR_PATTERN に quota/billing/exceeded/insufficient_quota/rate_limit 追加
+# AC-1: _CODEX_AUTH_ERROR_PATTERN に quota/billing.*details|billing.*error/insufficient_quota/rate_limit 追加
+#        (exceeded は汎用語のため除外 — warning-fix #1485)
 # AC-2: CODEX_SKIP_REASON を分岐 (quota系 → "quota/billing exhausted", auth系 → "auth/connection error")
 # AC-3: quota fixture test 3 件以上追加 (Quota exceeded / billing details / insufficient_quota)
 # AC-4: regression: 既存 401/Unauthorized/websocket error 検出が壊れない
