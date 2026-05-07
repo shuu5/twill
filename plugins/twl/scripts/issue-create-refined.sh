@@ -42,6 +42,7 @@ for lbl in "${LABELS[@]:-}"; do
   [[ -n "${lbl:-}" ]] && ISSUE_ARGS+=(--label "$lbl")
 done
 [[ -n "$REPO" ]]  && ISSUE_ARGS+=(--repo "$REPO")
+ISSUE_ARGS+=(--json number -q .number)
 
 ISSUE_NUMBER=$(gh "${ISSUE_ARGS[@]}")
 
