@@ -188,12 +188,19 @@ if [[ "${DEV_AUTOPILOT_MERGEABILITY_PRECHECK:-false}" == "true" ]]; then
 fi
 
 # #1497: merge 前に PR を ready に切り替える（draft → ready、idempotent）
+# #1499: "PR is not a draft" exit 1 は already-ready の no-op として扱う
 PR_READY_ERR=$(mktemp /tmp/auto-merge-ready-XXXXXX.log)
+trap 'rm -f "${PR_READY_ERR:-}"' EXIT
 if ! gh pr ready "$PR_NUMBER" 2>"$PR_READY_ERR"; then
   READY_ERR_RAW=$(sed -E 's/ghp_[a-zA-Z0-9]+/ghp_***MASKED***/g; s/Bearer [^ ]+/Bearer ***MASKED***/g' "$PR_READY_ERR" | head -c 300)
-  echo "[auto-merge] Error: PR #${PR_NUMBER} draft → ready 切替失敗。draft のまま merge は不可。ready 切替を要。詳細: ${READY_ERR_RAW}" >&2
-  rm -f "$PR_READY_ERR"
-  exit 1
+  if echo "$READY_ERR_RAW" | grep -qiE '(not a draft)'; then
+    echo "[auto-merge] Issue #${ISSUE_NUM}: PR #${PR_NUMBER} は already-ready（no-op）" >&2
+    rm -f "$PR_READY_ERR"
+  else
+    echo "[auto-merge] Error: PR #${PR_NUMBER} draft → ready 切替失敗。draft のまま merge は不可。ready 切替を要。詳細: ${READY_ERR_RAW}" >&2
+    rm -f "$PR_READY_ERR"
+    exit 1
+  fi
 fi
 rm -f "$PR_READY_ERR"
 
