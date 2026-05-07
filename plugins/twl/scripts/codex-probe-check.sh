@@ -36,10 +36,12 @@ _CODEX_BLOCKLIST_PATTERN='gpt-4[^-]|gpt-3|o3-|o4-'
 # head -20（worker-codex-reviewer.md で設定）で 401 retry ログを確実にキャプチャ。
 # websocket は 'websocket connected' 等の正常ログで false positive が発生するため
 # websocket.*error|websocket.*fail のエラー限定パターンに絞る（Issue #1308）。
-# quota/billing/exceeded/insufficient_quota/rate_limit は OpenAI quota 系エラー（Issue #1485）。
+# quota/insufficient_quota/rate_limit は OpenAI quota 系エラーコード（Issue #1485）。
+# billing.*details|billing.*error は OpenAI billing エラーメッセージ（単体 'billing' は汎用語のため限定）。
+# 'exceeded' は汎用動詞のため削除 — quota/rate_limit パターンで代替可能（Issue #1485 warning-fix）。
 # ---------------------------------------------------------------------------
-_CODEX_AUTH_ERROR_PATTERN='401|Unauthorized|connection refused|websocket.*error|websocket.*fail|quota|billing|exceeded|insufficient_quota|rate_limit'
-_CODEX_QUOTA_ERROR_PATTERN='quota|billing|exceeded|insufficient_quota|rate_limit'
+_CODEX_AUTH_ERROR_PATTERN='401|Unauthorized|connection refused|websocket.*error|websocket.*fail|quota|billing.*details|billing.*error|insufficient_quota|rate_limit'
+_CODEX_QUOTA_ERROR_PATTERN='quota|billing.*details|billing.*error|insufficient_quota|rate_limit'
 
 # ---------------------------------------------------------------------------
 # run_probe_check
