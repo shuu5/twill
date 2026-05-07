@@ -177,6 +177,11 @@ if [[ "$MODE" == "merge-gate" ]]; then
   SPECIALISTS["worker-security-reviewer"]=1
 fi
 
+# phase-review / merge-gate: RED-only PR 検出 specialist を常時追加（Issue #1482）
+if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
+  SPECIALISTS["worker-red-only-detector"]=1
+fi
+
 # phase-review / merge-gate モード: architecture/ 配下の .md 変更 → worker-arch-doc-reviewer
 # glob は L159 の worker-architecture 条件と同一パターン（意図的）。条件: phase-review|merge-gate（L159 は phase-review のみ）
 if [[ "$MODE" == "phase-review" || "$MODE" == "merge-gate" ]]; then
