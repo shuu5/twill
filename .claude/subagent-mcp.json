@@ -1,6 +1,4 @@
 {
-  "_comment": "Issue #1506: Subagent MCP server inheritance configuration",
-  "_doc": "Claude Code subagents (spawned via Agent tool) do not automatically inherit project-local .mcp.json servers. This file documents the workaround: subagent frontmatter must explicitly declare mcpServers to use twl MCP tools.",
   "mcpServers": {
     "twl": {
       "type": "stdio",
@@ -11,9 +9,5 @@
       ],
       "env": {}
     }
-  },
-  "usage": {
-    "description": "Add the following to agent frontmatter to enable twl MCP tools in subagents",
-    "example": "mcpServers:\n  twl:\n    command: /home/shuu5/projects/local-projects/twill/main/cli/twl/.venv/bin/fastmcp\n    args:\n      - run\n      - /home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/mcp_server/server.py"
   }
 }
