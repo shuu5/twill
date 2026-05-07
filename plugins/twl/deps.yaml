@@ -3210,7 +3210,7 @@ agents:
     gate_role: hard
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    skills: []
+    skills: [ref-specialist-output-schema]
     description: "merge-gate 常時追加: RED-only PR (テストのみ変更) を CRITICAL reject する specialist (Issue #1482)"
 
   worker-workflow-integrity:
