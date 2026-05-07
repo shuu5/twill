@@ -30,30 +30,6 @@ setup() {
 
   export SPAWN_CONTROLLER SKILL_MD SPAWN_PLAYBOOK PITFALLS_CATALOG
 
-  CLD_SPAWN_ARGS_LOG="${SANDBOX}/cld-spawn-args.log"
-  export CLD_SPAWN_ARGS_LOG
-
-  # cld-spawn stub: 引数を記録して正常終了
-  cat > "${STUB_BIN}/cld-spawn" <<'MOCK'
-#!/usr/bin/env bash
-echo "$@" >> "${CLD_SPAWN_ARGS_LOG:-/dev/null}"
-exit 0
-MOCK
-  chmod +x "${STUB_BIN}/cld-spawn"
-
-  # spawn-controller.sh wrapper: CLD_SPAWN を stub に差し替えて実行
-  # NOTE (baseline-bash.md §10): spawn-controller.sh に source guard がないため
-  #   exec bash wrapper 経由で実行し、source 直接呼び出しを回避する
-  cat > "${SANDBOX}/run-spawn-controller.sh" <<WRAPPER
-#!/usr/bin/env bash
-set -euo pipefail
-TMP_SCRIPT="\$(mktemp)"
-cp "${SPAWN_CONTROLLER}" "\$TMP_SCRIPT"
-sed -i "s|CLD_SPAWN=\"\\\$TWILL_ROOT/plugins/session/scripts/cld-spawn\"|CLD_SPAWN=\"${STUB_BIN}/cld-spawn\"|g" "\$TMP_SCRIPT"
-chmod +x "\$TMP_SCRIPT"
-exec bash "\$TMP_SCRIPT" "\$@"
-WRAPPER
-  chmod +x "${SANDBOX}/run-spawn-controller.sh"
 }
 
 teardown() {

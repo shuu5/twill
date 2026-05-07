@@ -167,6 +167,11 @@ if [[ -n "$PRE_CHECK_ISSUE" && "$SKILL_NORMALIZED" == "co-autopilot" ]]; then
   fi
   _board_number="${TWL_BOARD_NUMBER:-$(python3 -m twl.config get project-board.number 2>/dev/null || echo "")}"
   _board_owner="${TWL_BOARD_OWNER:-$(python3 -m twl.config get project-board.owner 2>/dev/null || echo "shuu5")}"
+  # WARNING fix: TWL_BOARD_OWNER 形式検証（^[A-Za-z0-9._-]+$）
+  if [[ -n "$_board_owner" && ! "$_board_owner" =~ ^[A-Za-z0-9._-]+$ ]]; then
+    echo "[spawn-controller] WARN: --pre-check-issue: TWL_BOARD_OWNER の値が不正です（^[A-Za-z0-9._-]+$）。Status check をスキップします。" >&2
+    _board_number=""
+  fi
   if [[ -n "$_board_number" ]]; then
     # PRE_CHECK_ISSUE は上記で正整数バリデーション済み（python3 への展開は安全）
     _issue_status=$(gh project item-list "$_board_number" --owner "$_board_owner" --format json 2>/dev/null \
