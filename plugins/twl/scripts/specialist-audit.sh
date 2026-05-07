@@ -43,6 +43,7 @@ WARN_ONLY=false
 OUTPUT_FORMAT="json"
 AUDIT_MODE="${SPECIALIST_AUDIT_MODE:-warn}"
 CODEX_SESSION_DIR=""
+CONTROLLER_ISSUE_DIR=""
 
 # --- 引数パース ---
 while [[ $# -gt 0 ]]; do
@@ -63,6 +64,8 @@ while [[ $# -gt 0 ]]; do
       OUTPUT_FORMAT="summary"; shift ;;
     --codex-session-dir)
       CODEX_SESSION_DIR="$2"; shift 2 ;;
+    --controller-issue-dir)
+      CONTROLLER_ISSUE_DIR="$2"; shift 2 ;;
     *)
       echo "Unknown argument: $1" >&2
       exit 1 ;;
@@ -255,6 +258,7 @@ fi
 # --- codex silent_skip 率チェック（AC-4 #1289）---
 # --codex-session-dir が指定された場合、findings.yaml を走査して silent_skip 率を算出。
 # silent_skip > 50%（exclusive）の場合、STATUS を FAIL に昇格（既存チェックと OR 結合）。
+# HARD FAIL: codex_available=YES かつ CODEX_TOTAL=0（findings.yaml 未生成）→ FAIL (#1481 AC-3)
 CODEX_SILENT_SKIP_RATE=""
 CODEX_TOTAL=0
 CODEX_SILENT=0
@@ -278,6 +282,26 @@ if [[ -n "$CODEX_SESSION_DIR" && -d "$CODEX_SESSION_DIR" ]]; then
       STATUS="FAIL"
       # EXIT_CODE は変更しない（strict モードで EXIT_CODE=1 確定済みの場合を上書きしない）
     fi
+  else
+    # HARD FAIL: codex_available=YES なのに findings.yaml に worker-codex-reviewer reason なし
+    # CODEX_TOTAL=0 = findings.yaml が全く存在しない（worker-codex-reviewer が spawn されていない）
+    # codex コマンドが利用可能な環境では HARD FAIL（#1481 AC-3）
+    if command -v codex &>/dev/null; then
+      echo "HARD FAIL: codex_available=YES だが findings.yaml に worker-codex-reviewer reason が記録されていない (CODEX_TOTAL=0)" >&2
+      STATUS="FAIL"
+      EXIT_CODE=1
+    fi
+  fi
+fi
+
+# --- controller-issue-dir の OUT/ ファイル存在確認（#1481 AC-5）---
+# --controller-issue-dir が指定された場合、各 specialist の OUT/ ファイル存在を確認する。
+if [[ -n "$CONTROLLER_ISSUE_DIR" && -d "$CONTROLLER_ISSUE_DIR" ]]; then
+  _out_dir="${CONTROLLER_ISSUE_DIR}/OUT"
+  if [[ ! -d "$_out_dir" ]]; then
+    echo "WARN: OUT/ ディレクトリが存在しません: ${_out_dir}" >&2
+  else
+    echo "✓ OUT/ ディレクトリ確認済み: ${_out_dir}" >&2
   fi
 fi
 
