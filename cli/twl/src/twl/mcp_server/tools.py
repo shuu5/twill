@@ -1188,6 +1188,11 @@ def twl_spawn_session_handler(
     import time  # noqa: PLC0415
 
     script = Path(os.environ.get("CLD_SPAWN_SCRIPT", str(_CLD_SPAWN_SCRIPT)))
+    if not script.exists():
+        return {"ok": False, "session": None, "window": None, "pid": None, "error": f"cld-spawn script not found: {script}"}
+
+    if window_name and not _VALID_WINDOW_NAME_RE.match(window_name):
+        return {"ok": False, "session": None, "window": None, "pid": None, "error": f"window_name contains invalid characters: {window_name!r}"}
 
     cmd: list[str] = ["bash", str(script)]
     if cwd:
@@ -1297,6 +1302,8 @@ def _parse_spawn_window(stdout: str) -> str | None:
 
 def _get_window_pid(window_name: str | None) -> int | None:
     if not window_name:
+        return None
+    if not _VALID_WINDOW_NAME_RE.match(window_name):
         return None
     import subprocess  # noqa: PLC0415
     try:
