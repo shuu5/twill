@@ -16,11 +16,13 @@ load '../helpers/common'
 
 AGENT_FILE=""
 MANIFEST_SCRIPT=""
+DETECTOR_SCRIPT=""
 
 setup() {
   common_setup
   AGENT_FILE="$REPO_ROOT/agents/worker-red-only-detector.md"
   MANIFEST_SCRIPT="$SANDBOX/scripts/pr-review-manifest.sh"
+  DETECTOR_SCRIPT="$REPO_ROOT/scripts/worker-red-only-detector.sh"
 
   # Default codex stub: "Not logged in"
   cat > "$STUB_BIN/codex" <<'STUB'
@@ -380,10 +382,13 @@ RESEOF
   local pr_json
   pr_json='{"number":9999,"title":"add RED tests for foo","body":"テスト追加","labels":[],"files":[{"path":"plugins/twl/tests/bats/scripts/foo.bats","additions":50,"deletions":0}]}'
 
-  # worker-red-only-detector.md の logic を bash で実行するスクリプトが未実装のため fail
-  # 実装後は: run bash "$DETECTOR_SCRIPT" --pr-json "$pr_json"
-  #            assert_output --partial "CRITICAL"
-  false  # RED: 実装前は fail する
+  [[ -f "$DETECTOR_SCRIPT" ]] || {
+    echo "FAIL: AC #6 未実装 — $DETECTOR_SCRIPT が存在しない（detector bash wrapper 未作成）" >&2
+    return 1
+  }
+
+  run bash "$DETECTOR_SCRIPT" --pr-json "$pr_json"
+  assert_output --partial "CRITICAL"
 }
 
 @test "ac6: scenario: test+impl PR で CRITICAL が検出されない" {
@@ -398,9 +403,13 @@ RESEOF
   local pr_json
   pr_json='{"number":9998,"title":"implement foo","body":"実装追加","labels":[],"files":[{"path":"plugins/twl/tests/bats/scripts/foo.bats","additions":50,"deletions":0},{"path":"plugins/twl/scripts/foo.sh","additions":100,"deletions":0}]}'
 
-  # 実装後は: run bash "$DETECTOR_SCRIPT" --pr-json "$pr_json"
-  #            refute_output --partial "CRITICAL"
-  false  # RED: 実装前は fail する
+  [[ -f "$DETECTOR_SCRIPT" ]] || {
+    echo "FAIL: AC #6 未実装 — $DETECTOR_SCRIPT が存在しない（detector bash wrapper 未作成）" >&2
+    return 1
+  }
+
+  run bash "$DETECTOR_SCRIPT" --pr-json "$pr_json"
+  refute_output --partial "CRITICAL"
 }
 
 @test "ac6: scenario: docs-only PR で CRITICAL が検出されない" {
@@ -416,9 +425,13 @@ RESEOF
   local pr_json
   pr_json='{"number":9997,"title":"update docs","body":"ドキュメント更新のみ","labels":[],"files":[{"path":"docs/guide.md","additions":10,"deletions":5}]}'
 
-  # 実装後は: run bash "$DETECTOR_SCRIPT" --pr-json "$pr_json"
-  #            refute_output --partial "CRITICAL"
-  false  # RED: 実装前は fail する
+  [[ -f "$DETECTOR_SCRIPT" ]] || {
+    echo "FAIL: AC #6 未実装 — $DETECTOR_SCRIPT が存在しない（detector bash wrapper 未作成）" >&2
+    return 1
+  }
+
+  run bash "$DETECTOR_SCRIPT" --pr-json "$pr_json"
+  refute_output --partial "CRITICAL"
 }
 
 @test "ac6: scenario: red-only ラベル付き PR で CRITICAL がスキップされる" {
@@ -433,7 +446,11 @@ RESEOF
   local pr_json
   pr_json='{"number":9996,"title":"RED tests only","body":"テスト追加","labels":[{"name":"red-only"}],"files":[{"path":"plugins/twl/tests/bats/scripts/foo.bats","additions":50,"deletions":0}]}'
 
-  # 実装後は: run bash "$DETECTOR_SCRIPT" --pr-json "$pr_json"
-  #            refute_output --partial "CRITICAL"
-  false  # RED: 実装前は fail する
+  [[ -f "$DETECTOR_SCRIPT" ]] || {
+    echo "FAIL: AC #6 未実装 — $DETECTOR_SCRIPT が存在しない（detector bash wrapper 未作成）" >&2
+    return 1
+  }
+
+  run bash "$DETECTOR_SCRIPT" --pr-json "$pr_json"
+  refute_output --partial "CRITICAL"
 }

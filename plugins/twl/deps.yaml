@@ -3202,6 +3202,17 @@ agents:
     skills: [ref-specialist-output-schema, ref-specialist-few-shot]
     description: "Issue body と PR diff の意味的整合性レビュー (soft gate、ac-alignment 専用 specialist)"
 
+  worker-red-only-detector:
+    type: specialist
+    path: agents/worker-red-only-detector.md
+    model: sonnet
+    effort: low
+    gate_role: hard
+    spawnable_by: [workflow, composite, controller]
+    can_spawn: []
+    skills: [ref-specialist-output-schema]
+    description: "merge-gate 常時追加: RED-only PR (テストのみ変更) を CRITICAL reject する specialist (Issue #1482)"
+
   worker-workflow-integrity:
     type: specialist
     refined_by: "ref-prompt-guide@de6a54f5"
