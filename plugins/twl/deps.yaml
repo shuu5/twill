@@ -1123,8 +1123,8 @@ commands:
       - specialist: worker-codex-reviewer
       - script: pr-review-manifest
       - script: autopilot-parser
-    dispatch_mode: llm
-    description: "fix 後の specialist 並列レビュー"
+    dispatch_mode: runner
+    description: "fix 後の specialist 並列レビュー（pr-review-manifest.sh + deterministic spawn）"
 
   warning-fix:
     type: atomic

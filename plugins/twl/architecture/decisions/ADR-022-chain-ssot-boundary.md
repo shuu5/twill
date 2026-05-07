@@ -90,6 +90,23 @@ ADR-020 D-1 (名称正規化)、D-3 (export API)、D-4 (feature flag) は本 ADR
 
 ## 変更履歴
 
+### #1481 (2026-05-07): post-fix-verify の deterministic dispatch への変更
+
+`post-fix-verify` の `dispatch_mode` を `llm` から `runner` に変更し、deterministic dispatch を実現:
+
+- **変更前**: `post-fix-verify.dispatch_mode: llm` — workflow-pr-fix SKILL が LLM 判断で specialist spawn
+- **変更後**: `post-fix-verify.dispatch_mode: runner` — chain-runner.sh が `pr-review-manifest.sh` を実行し、manifest 各行に対して `claude --print --agent twl:twl:worker-codex-reviewer` 等で deterministic spawn
+
+**背景**: 2026-05-01 以降、worker-codex-reviewer の出力がゼロになる問題（#1481）が発生。LLM 自己申告ベースの dispatch では spawn が保証されないため、deterministic runner step への移行が必要。
+
+**影響範囲**:
+- `deps.yaml` の `post-fix-verify.dispatch_mode` を `runner` に変更
+- `chain-runner.sh` に `step_post_fix_verify` 関数を追加（pr-review-manifest.sh 呼び出し + deterministic spawn）
+- `merge-gate-check-spawn.sh` から `SPAWNED_FILE` 自己申告を廃止し、`findings.yaml` 存在ベース判定に変更
+- `specialist-audit.sh` に HARD FAIL ロジックを追加（`codex_available=YES` かつ `findings.yaml` に `worker-codex-reviewer` reason なし → exit 1）
+
+D-4 の範囲内の変更だが、`post-fix-verify` は runner step に移行するため D-1 テーブルの分類が更新される（workflow SKILL orchestrate → chain-runner.sh dispatch）。
+
 ### #1263 (2026-05-03): fix-phase 発動条件に ac-verify CRITICAL を追加
 
 `workflow-pr-fix` の `fix-phase` 判定を変更:

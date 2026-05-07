@@ -1018,6 +1018,54 @@ step_prompt_compliance() {
   fi
 }
 
+# --- post-fix-verify: fix 後の deterministic specialist spawn ---
+# pr-review-manifest.sh でマニフェストを生成し、各 specialist を
+# claude --print --agent で deterministic spawn する。
+# deps.yaml post-fix-verify.dispatch_mode=runner に対応（#1481）。
+step_post_fix_verify() {
+  record_current_step "post-fix-verify"
+
+  local pr_review_manifest="${SCRIPT_DIR}/pr-review-manifest.sh"
+  if [[ ! -f "$pr_review_manifest" ]]; then
+    err "post-fix-verify" "pr-review-manifest.sh が見つかりません: ${pr_review_manifest}"
+    return 1
+  fi
+
+  # post-fix-verify 用マニフェスト生成（pr-review-manifest.sh 経由）
+  local manifest
+  manifest=$(bash "$pr_review_manifest" --mode post-fix-verify 2>/dev/null || echo "")
+  if [[ -z "$manifest" ]]; then
+    skip "post-fix-verify" "マニフェスト空 — specialist なし"
+    return 0
+  fi
+
+  local issue_num="${ISSUE_NUM:-$(resolve_issue_num 2>/dev/null || echo "")}"
+  local spawn_errors=0
+
+  while IFS= read -r specialist; do
+    [[ -z "$specialist" || "$specialist" == \#* ]] && continue
+    local specialist_name="${specialist#twl:twl:}"
+    # deterministic spawn: LLM 自己申告に依存しない claude --print --agent 呼び出し
+    if command -v claude &>/dev/null; then
+      claude --print --agent "${specialist}" \
+        "Issue #${issue_num:-?} post-fix-verify: ${specialist_name} を実行してください" \
+        2>/dev/null || spawn_errors=$((spawn_errors + 1))
+    else
+      echo "WARN: claude コマンドが利用できません — ${specialist} をスキップ" >&2
+    fi
+  done <<< "$manifest"
+
+  if [[ $spawn_errors -gt 0 ]]; then
+    err "post-fix-verify" "specialist spawn エラー: ${spawn_errors} 件"
+    return 1
+  fi
+
+  # worker-codex-reviewer の deterministic spawn を含む（#1481 AC-1c）
+  # 上の while ループで manifest に worker-codex-reviewer が含まれる場合に
+  # claude --print --agent twl:twl:worker-codex-reviewer が実行される
+  ok "post-fix-verify" "specialist 並列 spawn 完了（pr-review-manifest.sh 経由）"
+}
+
 # --- pr-test: テスト実行 ---
 step_pr_test() {
   record_current_step "pr-test"
@@ -1623,6 +1671,7 @@ main() {
     phase-review)        record_current_step "phase-review"; ok "phase-review" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     scope-judge)         record_current_step "scope-judge";  ok "scope-judge"  "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     record-current-step) [[ -z "${1:-}" ]] && { echo "ERROR: record-current-step requires step name" >&2; exit 1; }; record_current_step "$1"; ok "record-current-step" "current_step=$1 を記録" ;;
+    post-fix-verify)     step_post_fix_verify "$@" ;;
     pr-test)             step_pr_test "$@" ;;
     ac-verify)           step_ac_verify "$@" ;;
     all-pass-check)      step_all_pass_check "$@" ;;
