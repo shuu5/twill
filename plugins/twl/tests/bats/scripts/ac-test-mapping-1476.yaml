@@ -1,0 +1,55 @@
+mappings:
+  - ac_index: 1
+    ac_text: "merge-gate specialist で \"RED-only PR\" を検出して reject (Approach 1)"
+    test_file: "plugins/twl/tests/bats/scripts/issue-1476-red-only-merge.bats"
+    test_names:
+      - "ac1: merge-gate-check-red-only.sh が scripts/ に存在する"
+      - "ac1: merge-gate-check-red-only.sh が実行可能である"
+      - "ac1: merge-gate-check-red-only.sh が bash 構文チェック pass"
+      - "ac1: diff がテストファイルのみの場合 REJECT メッセージを出力する"
+      - "ac1: diff がテストファイルのみの場合 exit 1 を返す"
+      - "ac1: diff に実装ファイルが含まれる場合は exit 0 を返す"
+      - "ac1: diff が実装ファイルのみ（テストなし）の場合は exit 0 を返す（テストなし自体は reject しない）"
+    impl_files:
+      - plugins/twl/scripts/merge-gate-check-red-only.sh
+    # NOTE: merge-gate-check-red-only.sh は未実装（新規作成が必要）。
+    # merge-gate-check-phase-review.sh（既存）を参考に実装する。
+
+  - ac_index: 2
+    ac_text: "bats test で diff = test only PR を simulate → reject 動作確認"
+    test_file: "plugins/twl/tests/bats/scripts/issue-1476-red-only-merge.bats"
+    test_names:
+      - "ac2: テストファイルのみの diff で RED-only を検出できる"
+      - "ac2: .bats ファイル群のみを含む diff で RED-only と判定される"
+      - "ac2: テスト + 実装ファイルを含む diff では RED-only と判定されない"
+    impl_files:
+      - plugins/twl/scripts/merge-gate-check-red-only.sh
+
+  - ac_index: 3
+    ac_text: "別途 follow-up Issue (#1469 fix) を起票し issue-create-refined.sh 実装 (Approach 3)"
+    test_file: ""
+    test_names: []
+    impl_files: []
+    # プロセス系 AC（Issue 起票）のため自動テスト不要。
+    # impl_files は [] — 手動起票で達成を確認する。
+
+  - ac_index: 4
+    ac_text: "PR #1470 でmerged された bats test の expected 実装が main に存在することを確認"
+    test_file: "plugins/twl/tests/bats/scripts/issue-1476-red-only-merge.bats"
+    test_names:
+      - "ac4: issue-create-refined.sh が scripts/ に存在する"
+      - "ac4: issue-create-refined.sh が実行可能である"
+      - "ac4: issue-create-refined.sh が bash 構文チェック pass"
+      - "ac4: issue-create-refined.sh が gh issue create と Refined 遷移を実行する"
+    impl_files:
+      - plugins/twl/scripts/issue-create-refined.sh
+    # NOTE: issue-create-refined.sh は未実装（PR #1470 で bats test のみ追加、実装欠落）。
+    # 既存 issue-create-refined.bats との共存に注意（#1469 分の RED テストが既に存在する）。
+
+  - ac_index: 5
+    ac_text: "Wave 56+ で同症状 (RED-only merge) が再発しないことを確認"
+    test_file: ""
+    test_names: []
+    impl_files: []
+    # AC1/AC2 の達成で担保されるため独立したテスト不要。
+    # impl_files は [] — AC1 の merge-gate-check-red-only.sh 実装により回帰防止される。
