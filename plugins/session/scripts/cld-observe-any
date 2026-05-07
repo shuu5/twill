@@ -576,19 +576,24 @@ while true; do
                 IDLE_COMPLETED_TS[$WIN]=$NOW
                 # opt-in auto-kill（IDLE_COMPLETED_AUTO_KILL=1 時のみ）
                 if [[ "${IDLE_COMPLETED_AUTO_KILL:-0}" == "1" ]]; then
-                    SAFE_WIN="${WIN//[^a-zA-Z0-9_-]/_}"
-                    # evaluate_window() と同じ方法で session:index に解決し ambiguous target を回避
-                    KILL_TARGET=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
-                        | awk -v n="$WIN" '$2 == n { print $1; exit }')
-                    if [[ -n "$KILL_TARGET" ]] && tmux kill-window -t "$KILL_TARGET" 2>/dev/null; then
-                        echo "[IDLE-COMPLETED] $WIN: auto-killed (IDLE_COMPLETED_AUTO_KILL=1)"
-                        if [[ -n "$EVENT_DIR" ]]; then
-                            echo "{\"channel\":\"IDLE-COMPLETED-KILLED\",\"window\":\"${WIN}\",\"elapsed_sec\":$((NOW - FIRST_SEEN)),\"ts\":${NOW}}" \
-                                > "${EVENT_DIR}/idle-completed-killed-${SAFE_WIN}-$(date -u +%Y%m%dT%H%M%SZ).json"
-                        fi
-                        unset 'IDLE_COMPLETED_TS[$WIN]'
+                    # controller window (wt-co-*) は auto-kill 対象から除外 (#1474)
+                    if [[ "$WIN" == wt-co-* ]]; then
+                        echo "[IDLE-COMPLETED-SKIP] $WIN (controller window, auto-kill excluded)"
                     else
-                        echo "[IDLE-COMPLETED] $WIN: auto-kill failed (window already gone or permission denied)" >&2
+                        SAFE_WIN="${WIN//[^a-zA-Z0-9_-]/_}"
+                        # evaluate_window() と同じ方法で session:index に解決し ambiguous target を回避
+                        KILL_TARGET=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
+                            | awk -v n="$WIN" '$2 == n { print $1; exit }')
+                        if [[ -n "$KILL_TARGET" ]] && tmux kill-window -t "$KILL_TARGET" 2>/dev/null; then
+                            echo "[IDLE-COMPLETED] $WIN: auto-killed (IDLE_COMPLETED_AUTO_KILL=1)"
+                            if [[ -n "$EVENT_DIR" ]]; then
+                                echo "{\"channel\":\"IDLE-COMPLETED-KILLED\",\"window\":\"${WIN}\",\"elapsed_sec\":$((NOW - FIRST_SEEN)),\"ts\":${NOW}}" \
+                                    > "${EVENT_DIR}/idle-completed-killed-${SAFE_WIN}-$(date -u +%Y%m%dT%H%M%SZ).json"
+                            fi
+                            unset 'IDLE_COMPLETED_TS[$WIN]'
+                        else
+                            echo "[IDLE-COMPLETED] $WIN: auto-kill failed (window already gone or permission denied)" >&2
+                        fi
                     fi
                 fi
                 # ★ #1430: opt-in next-spawn 判定（AUTO_KILL から独立評価）
@@ -638,11 +643,16 @@ while true; do
                         # タイムスタンプリセット: AUTO_KILL 有無に関わらず次サイクル spam を防止
                         unset 'IDLE_TIMEOUT_FIRST_ACTIVE_TS[$WIN]'
                         if [[ "${IDLE_COMPLETED_AUTO_KILL:-0}" == "1" ]]; then
-                            SAFE_WIN="${WIN//[^a-zA-Z0-9_-]/_}"
-                            KILL_TARGET=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
-                                | awk -v n="$WIN" '$2 == n { print $1; exit }')
-                            if [[ -n "$KILL_TARGET" ]] && tmux kill-window -t "$KILL_TARGET" 2>/dev/null; then
-                                echo "[IDLE-COMPLETED] $WIN: killed (timeout=${IDLE_COMPLETED_TIMEOUT_SEC}s)"
+                            # controller window (wt-co-*) は timeout auto-kill 対象から除外 (#1474)
+                            if [[ "$WIN" == wt-co-* ]]; then
+                                echo "[IDLE-COMPLETED-SKIP] $WIN (controller window, timeout auto-kill excluded)"
+                            else
+                                SAFE_WIN="${WIN//[^a-zA-Z0-9_-]/_}"
+                                KILL_TARGET=$(tmux list-windows -a -F '#{session_name}:#{window_index} #{window_name}' 2>/dev/null \
+                                    | awk -v n="$WIN" '$2 == n { print $1; exit }')
+                                if [[ -n "$KILL_TARGET" ]] && tmux kill-window -t "$KILL_TARGET" 2>/dev/null; then
+                                    echo "[IDLE-COMPLETED] $WIN: killed (timeout=${IDLE_COMPLETED_TIMEOUT_SEC}s)"
+                                fi
                             fi
                         fi
                     fi

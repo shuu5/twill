@@ -1681,3 +1681,354 @@ setup_ac7() {
     "
     [ "$status" -eq 0 ]
 }
+
+# ---------------------------------------------------------------------------
+# Issue #1474: controller window (wt-co-*) を IDLE_COMPLETED_AUTO_KILL 対象から除外
+#
+# Scenario 25: AC1 — wt-co-* prefix window は auto-kill されない（RED: 実装後 PASS）
+# Scenario 26: AC2 — controller spawn → IDLE_COMPLETED phrase 出力 → 非 kill 検証（RED）
+# Scenario 27: AC3 — worker window (ap-*) は従来通り auto-kill される（regression）
+# Scenario 28: AC4 — [IDLE-COMPLETED-SKIP] log が出力される（RED）
+# Scenario 29: AC5 — cld-observe-any に controller prefix 除外ロジックが存在する（静的検証）
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Scenario 25: AC1 — controller window prefix (wt-co-*) を auto-kill 対象から除外
+#   RED: 現状は除外ロジックが存在しないため controller も kill される
+#   PASS 条件（実装後）:
+#     - win=wt-co-autopilot-091135 で IDLE_COMPLETED_AUTO_KILL=1 でも kill-window 未呼び出し
+#
+#   Note: tmux list-windows -a -F ... も正しく応答させて kill_target を解決させる。
+#         これにより kill-window が呼ばれるかどうかを除外ロジックの有無で判定できる。
+# ---------------------------------------------------------------------------
+@test "AC1(#1474): controller window (wt-co-*) は IDLE_COMPLETED_AUTO_KILL=1 でも auto-kill されない (RED: 実装後 PASS)" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="wt-co-autopilot-091135"
+SESSION_WIN="test-session:0"
+export win SESSION_WIN TMPD
+
+capture=">>> 実装完了
+Phase 4 完了
+nothing pending"
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows)
+            if [[ "${*}" == *"-a"* ]]; then
+                echo "$SESSION_WIN $win"
+            else
+                echo "$SESSION_WIN $win"
+            fi;;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            echo "KILLED: $@" >> "$TMPD/kill-log.txt"
+            return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 2 --interval 1 2>/dev/null
+
+if [[ -f "$TMPD/kill-log.txt" ]]; then
+    echo "FAIL: controller window が auto-killed された（除外ロジック未実装）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+echo "PASS: controller window は auto-kill されなかった"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 25b: AC1 強化版 — list-windows -a の awk 解決込みで kill_target 特定
+#   RED: 除外ロジックがないため wt-co-* prefix でも kill-window が呼ばれる
+#   PASS 条件（実装後）:
+#     - 除外ロジックにより kill-window が呼ばれない
+# ---------------------------------------------------------------------------
+@test "AC1b(#1474): wt-co-* prefix window は除外ロジックにより auto-kill スキップされる（awk 解決込み RED）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="wt-co-autopilot-091135"
+export win TMPD
+
+capture=">>> 実装完了
+Phase 4 完了
+nothing pending"
+export capture
+
+# list-windows -a -F 形式で返すことで awk が kill_target を解決できる
+tmux() {
+    case "$1" in
+        list-windows)
+            echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            echo "KILLED: $@" >> "$TMPD/kill-log.txt"
+            return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 2 --interval 1 2>/dev/null
+
+if [[ -f "$TMPD/kill-log.txt" ]]; then
+    echo "FAIL: controller window (wt-co-*) が auto-killed された（除外ロジック未実装）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+echo "PASS: controller window は auto-kill されなかった"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 26: AC2 — controller spawn → IDLE_COMPLETED phrase 出力 → 非 kill 検証
+#   RED: 現状は controller も kill される（list-windows -a が正しく動けば）
+#   PASS 条件（実装後）:
+#     - IDLE-COMPLETED イベントは emit されても kill-window は呼ばれない
+#
+#   テスト方針: 静的検証として「除外ロジックが実装されたか」を確認する
+# ---------------------------------------------------------------------------
+@test "AC2(#1474): controller spawn → IDLE_COMPLETED phrase 検出 → kill-window 未呼び出し (RED: 実装後 PASS)" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+CALL_LOG="$TMPD/tmux-calls.log"
+win="wt-co-issue-1474-abc12345"
+export win TMPD CALL_LOG
+
+# IDLE_COMPLETED_PHRASE_REGEX にマッチするフレーズを含む
+capture="Worker 完了
+nothing pending
+All tasks done."
+export capture
+
+tmux() {
+    echo "$1 $*" >> "$CALL_LOG"
+    case "$1" in
+        list-windows)
+            echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            echo "KILLED: $@" >> "$TMPD/kill-log.txt"
+            return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+output_text=$(IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 2 --interval 1 2>/dev/null)
+
+if [[ -f "$TMPD/kill-log.txt" ]]; then
+    echo "FAIL: controller window が kill-window で削除された"
+    cat "$TMPD/kill-log.txt"
+    rm -rf "$TMPD"
+    exit 1
+fi
+echo "PASS: controller は kill されなかった"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 27: AC3 — worker window (ap-*) は従来通り auto-kill される（regression test）
+#   このテストは現実装でも PASS する可能性が高い（worker は従来通り対象）
+#   RED: ac3 実装後に controller 除外ロジックが worker まで影響しないことを保証
+# ---------------------------------------------------------------------------
+@test "AC3(#1474): worker window (ap-*) は IDLE_COMPLETED_AUTO_KILL=1 で auto-kill される（regression: 実装後も PASS）" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="ap-twill-feat-1474-ab1cd234"
+export win TMPD
+
+capture="All tasks are done.
+nothing pending
+System is idle."
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            echo "KILLED: $@" >> "$TMPD/kill-log.txt"
+            return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+output_text=$(IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 2 --interval 1 2>/dev/null)
+
+if [[ ! -f "$TMPD/kill-log.txt" ]]; then
+    echo "FAIL: worker window (ap-*) が auto-kill されなかった（regression）"
+    rm -rf "$TMPD"
+    exit 1
+fi
+echo "PASS: worker window は auto-kill された"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 28: AC4 — controller window skip 時に [IDLE-COMPLETED-SKIP] ログが出力される
+#   RED: 現状は除外ロジック自体が存在しないためログも出ない
+#   PASS 条件（実装後）:
+#     - stdout または stderr に "[IDLE-COMPLETED-SKIP]" を含む行が出力される
+# ---------------------------------------------------------------------------
+@test "AC4(#1474): controller window skip 時に [IDLE-COMPLETED-SKIP] ログが出力される (RED: 実装後 PASS)" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="wt-co-autopilot-091135"
+export win TMPD
+
+capture=">>> 実装完了
+Phase 4 完了
+nothing pending"
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            echo "KILLED: $@" >> "$TMPD/kill-log.txt"
+            return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+combined=$(IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 2 --interval 1 2>&1)
+
+if ! echo "$combined" | grep -q "\[IDLE-COMPLETED-SKIP\]"; then
+    echo "FAIL: [IDLE-COMPLETED-SKIP] ログが出力されなかった"
+    echo "output was: $combined"
+    rm -rf "$TMPD"
+    exit 1
+fi
+echo "PASS: [IDLE-COMPLETED-SKIP] ログ確認"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 29: AC5 — 静的コード検証: cld-observe-any に controller prefix 除外ロジックが存在する
+#   RED: 現状は除外ロジックが存在しないため fail する
+#   PASS 条件（実装後）:
+#     - cld-observe-any に "wt-co-" を含む除外ロジックが grep で確認できる
+# ---------------------------------------------------------------------------
+@test "AC5(#1474): cld-observe-any に controller prefix (wt-co-) 除外ロジックが存在する（静的検証 RED: 実装後 PASS）" {
+    run bash -c "
+        script='${CLD_OBSERVE_ANY}'
+        # controller prefix 除外ロジックの存在確認（wt-co- パターンを含む条件分岐）
+        if ! grep -q 'wt-co-' \"\$script\"; then
+            echo 'FAIL: cld-observe-any に wt-co- を含む除外ロジックが存在しない'
+            exit 1
+        fi
+        echo 'PASS: controller prefix 除外ロジック確認'
+    "
+    [ "$status" -eq 0 ]
+}
+
+# ---------------------------------------------------------------------------
+# Scenario 30: AC1-timeout — timeout-based fallback パスでも controller は auto-kill されない
+#   merge-gate specialist が発見した CRITICAL 指摘（timeout path missing wt-co-* check）への対応
+#   (#1474 fix: phrase path だけでなく timeout path にも wt-co-* 除外を追加)
+# ---------------------------------------------------------------------------
+@test "AC1-timeout(#1474): controller window (wt-co-*) は IDLE_COMPLETED_TIMEOUT_SEC 経由でも auto-kill されない" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="wt-co-autopilot-091135"
+export win TMPD
+
+capture="some output without idle phrase"
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            echo "KILLED: $@" >> "$TMPD/kill-log.txt"
+            return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_TIMEOUT_SEC=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 3 --interval 1 2>/dev/null
+
+if [[ -f "$TMPD/kill-log.txt" ]]; then
+    echo "FAIL: controller window が timeout path で auto-killed された"
+    rm -rf "$TMPD"
+    exit 1
+fi
+echo "PASS: controller window は timeout path でも auto-kill されなかった"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
