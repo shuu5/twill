@@ -161,6 +161,23 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 
 ---
 
+## 不変条件 N: Lesson Structuralization
+
+- **定義**: 任意の lesson（observer-pitfall / observer-lesson / observer-wave 等）を doobidoo に保存した後、以下のチェーンを完遂しない限り「完遂」と扱わない（SHALL）:
+  1. doobidoo 保存
+  2. Issue 起票（`gh issue create` for follow-up implementation）
+  3. Wave 実装（skill/refs/scripts 反映 PR）
+  4. 永続文書化（pitfalls-catalog / SKILL.md / ADR）
+- **適用範囲**: observer/Pilot が lesson を認識・記録する全ての文脈。
+- **根拠**: [ADR-036: Lesson Structuralization MUST](../architecture/decisions/ADR-036-lesson-structuralization.md)
+- **検証方法**: pitfalls-catalog.md §19, su-observer SKILL.md Step 1 lesson チェーン記載で確認。
+- **影響範囲**:
+  - `plugins/twl/skills/su-observer/SKILL.md`
+  - `plugins/twl/skills/su-observer/refs/pitfalls-catalog.md`
+  - `plugins/twl/architecture/decisions/ADR-036-lesson-structuralization.md`
+
+---
+
 ## SU-* との境界
 
-SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-M とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。
+SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-N とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。
