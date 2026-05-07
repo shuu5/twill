@@ -1,0 +1,53 @@
+mappings:
+  - ac_index: 1
+    ac_text: "post-fix-verify / merge-gate を runner step に分割: chain-runner.sh が pr-review-manifest.sh を実行し manifest 各行に対し claude --print --agent twl:worker-codex-reviewer 等で deterministic spawn"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1481.bats"
+    test_names:
+      - "ac1a: deps.yaml の post-fix-verify に dispatch_mode: runner が存在する"
+      - "ac1b: chain-runner.sh に post-fix-verify 用 pr-review-manifest.sh 呼び出しロジックが存在する"
+      - "ac1c: chain-runner.sh に claude --print --agent.*worker-codex-reviewer spawn パターンが存在する"
+    impl_files:
+      - "plugins/twl/deps.yaml"
+      - "plugins/twl/scripts/chain-runner.sh"
+      - "plugins/twl/scripts/pr-review-manifest.sh"
+
+  - ac_index: 2
+    ac_text: "SPAWNED_FILE 自己申告 path を deprecate、merge-gate-check-spawn.sh を JSONL findings.yaml 存在ベース判定へ"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1481.bats"
+    test_names:
+      - "ac2a: merge-gate-check-spawn.sh が SPAWNED_FILE 参照を持たない（deprecate 済み）"
+      - "ac2b: merge-gate-check-spawn.sh が comm -23 + SPAWNED_FILE パターンを持たない"
+      - "ac2c: merge-gate-check-spawn.sh が findings.yaml 存在確認ロジックを持つ"
+    impl_files:
+      - "plugins/twl/scripts/merge-gate-check-spawn.sh"
+      - "plugins/twl/scripts/merge-gate-build-manifest.sh"
+
+  - ac_index: 3
+    ac_text: "codex_available=YES なのに findings.yaml に worker-codex-reviewer reason 記録なし → HARD FAIL"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1481.bats"
+    test_names:
+      - "ac3a: merge-gate-check-spawn.sh または specialist-audit.sh に codex_available + no-reason = HARD FAIL ロジックが存在する"
+      - "ac3b: codex_available=YES 環境で findings.yaml に worker-codex-reviewer reason なし → exit 1"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"
+      - "plugins/twl/scripts/merge-gate-check-spawn.sh"
+
+  - ac_index: 4
+    ac_text: "ADR-017 (manual fallback exception) と ADR-022 (chain SSoT) の整合性ドキュメント更新"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1481.bats"
+    test_names:
+      - "ac4a: ADR-022 に deterministic dispatch に関する記述が存在する"
+      - "ac4b: ADR-022 に post-fix-verify の dispatch_mode: runner への変更が記述されている"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-022-chain-ssot-boundary.md"
+    # ADR-017 は存在確認が必要。ファイル名が不明な場合は手動補完が必要
+
+  - ac_index: 5
+    ac_text: "regression test: 1 wave 完走させ全 specialist の OUT/ ファイル生成を BATS で検証"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1481.bats"
+    test_names:
+      - "ac5a: merge-gate-check-spawn.sh または specialist-audit.sh が OUT/ ファイル存在確認ロジックを持つ"
+      - "ac5b: specialist-audit.sh が .controller-issue/ ディレクトリの OUT/ ファイルを検証できる"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"
+      - "plugins/twl/scripts/merge-gate-check-spawn.sh"
