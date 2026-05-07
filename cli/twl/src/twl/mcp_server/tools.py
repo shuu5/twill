@@ -403,6 +403,70 @@ def twl_get_pane_state_handler(
     }
 
 
+def twl_capture_pane_handler(
+    window_name: str,
+    lines: int | None = None,
+    mode: str = "raw",
+    from_line: int | None = None,
+    to_line: int | None = None,
+) -> dict:
+    """Capture tmux pane/window content as raw or plain text. AC4: content retrieval only."""
+    import subprocess  # noqa: PLC0415
+    import re as _re  # noqa: PLC0415
+
+    if not _VALID_WINDOW_NAME_RE.match(window_name):
+        return {
+            "ok": False,
+            "error": f"Invalid window_name '{window_name}': must match [A-Za-z0-9_./:@-]+",
+            "error_type": "invalid_window_name",
+        }
+
+    if mode not in ("raw", "plain"):
+        return {
+            "ok": False,
+            "error": f"Invalid mode '{mode}': must be 'raw' or 'plain'",
+            "error_type": "invalid_mode",
+        }
+
+    cmd = ["tmux", "capture-pane", "-t", window_name, "-p"]
+    if mode == "raw":
+        cmd.append("-e")
+    if from_line is not None:
+        cmd.extend(["-S", str(from_line)])
+    elif lines is not None:
+        cmd.extend(["-S", str(-lines)])
+    if to_line is not None:
+        cmd.extend(["-E", str(to_line)])
+
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "timeout", "error_type": "timeout"}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": str(exc), "error_type": "error"}
+
+    if proc.returncode != 0:
+        return {
+            "ok": False,
+            "error": proc.stderr.strip() or f"exit code {proc.returncode}",
+            "error_type": "shell_error",
+        }
+
+    content = proc.stdout
+    ansi_stripped = False
+    if mode == "plain":
+        ansi_escape = _re.compile(r"\x1b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        content = ansi_escape.sub("", content)
+        ansi_stripped = True
+
+    return {
+        "ok": True,
+        "content": content,
+        "ansi_stripped": ansi_stripped,
+        "lines": len(content.splitlines()),
+    }
+
+
 def twl_audit_session_handler(
     autopilot_dir: str | None = None,
 ) -> dict:
@@ -1449,6 +1513,11 @@ try:
         return json.dumps(twl_get_pane_state_handler(window_name=window_name, timeout_sec=timeout_sec), ensure_ascii=False)
 
     @mcp.tool()
+    def twl_capture_pane(window_name: str, lines: int | None = None, mode: str = "raw", from_line: int | None = None, to_line: int | None = None) -> str:
+        """Capture tmux pane content as raw or plain (ANSI-stripped) text."""
+        return json.dumps(twl_capture_pane_handler(window_name=window_name, lines=lines, mode=mode, from_line=from_line, to_line=to_line), ensure_ascii=False)
+
+    @mcp.tool()
     def twl_audit_session(autopilot_dir: str | None = None) -> str:
         """Audit autopilot session.json for structural integrity (R1-R4 rules). Idempotent."""
         return json.dumps(twl_audit_session_handler(autopilot_dir=autopilot_dir), ensure_ascii=False)
@@ -1613,6 +1682,10 @@ except ImportError:
     def twl_get_pane_state(window_name: str, timeout_sec: int = 30) -> str:  # type: ignore[misc]
         """Return tmux pane/window state. window_name: tmux window name or session:index form."""
         return json.dumps(twl_get_pane_state_handler(window_name=window_name, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    def twl_capture_pane(window_name: str, lines: int | None = None, mode: str = "raw", from_line: int | None = None, to_line: int | None = None) -> str:  # type: ignore[misc]
+        """Capture tmux pane content as raw or plain (ANSI-stripped) text (fastmcp not installed)."""
+        return json.dumps(twl_capture_pane_handler(window_name=window_name, lines=lines, mode=mode, from_line=from_line, to_line=to_line), ensure_ascii=False)
 
     def twl_audit_session(autopilot_dir: str | None = None) -> str:  # type: ignore[misc]
         """Audit autopilot session.json for structural integrity (R1-R4 rules). Idempotent."""
