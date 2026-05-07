@@ -192,7 +192,7 @@ _shadow_dispatch() {
 
 # 1. /tmp/twill-mcp-shadow.log から (window, text, timestamp) tuple を抽出
 # 2. .twill/state/mailbox/<window>.jsonl の since-filter と突合
-# 3. mismatch 行を JSON で stdout に出力（exit 0 = mismatch 0、exit 2 = mismatch あり）
+# 3. mismatch 行を JSON で stdout に出力（exit 0 = mismatch 0、exit 1 = mismatch あり）
 ```
 
 > `#1225 deps-yaml-guard` の `deps-yaml-shadow-compare.sh` pattern を踏襲（既存 SSoT 再利用）。
