@@ -305,6 +305,30 @@ if [[ -n "$CONTROLLER_ISSUE_DIR" && -d "$CONTROLLER_ISSUE_DIR" ]]; then
   fi
 fi
 
+# --- test scaffold only HARD FAIL (Issue #1535、lesson 19 reproduction 防止) ---
+# Worker chain (Sonnet) が AC GREEN化を主張しても test scaffold だけで PR を merge する
+# pattern (Wave 68/70/71/72 で 4 連続発生) を構造的に防止する。
+# 現在の git diff (HEAD vs origin/main) の changed_files が test 系 path のみで、
+# impl path (cli/twl/src/, plugins/twl/scripts/, plugins/twl/skills/, plugins/twl/architecture/, etc) への
+# 変更がない場合 HARD FAIL → STATUS=FAIL, EXIT_CODE=1。
+if command -v git &>/dev/null; then
+  _current_branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+  if [[ -n "$_current_branch" && "$_current_branch" != "main" && "$_current_branch" != "HEAD" ]]; then
+    _changed_files=$(git diff --name-only origin/main..HEAD 2>/dev/null || echo "")
+    if [[ -n "$_changed_files" ]]; then
+      # test path 以外の変更カウント (impl/scripts/skill/architecture を含む)
+      _non_test_count=$(echo "$_changed_files" | grep -cvE '^(cli/twl/tests/|plugins/twl/tests/|plugins/session/tests/|tests/)' || true)
+      if [[ "$_non_test_count" -eq 0 ]]; then
+        echo "HARD FAIL: PR contains only test scaffold changes (no impl in src/scripts/skills/architecture paths) - lesson 19 reproduction 防止 (Issue #1535)" >&2
+        echo "  branch: ${_current_branch}" >&2
+        echo "  changed_files (test only): $(echo "$_changed_files" | head -5 | tr '\n' ' ')" >&2
+        STATUS="FAIL"
+        EXIT_CODE=1
+      fi
+    fi
+  fi
+fi
+
 # --- JSON 生成 ---
 issue_field="${ISSUE_NUM:-null}"
 
