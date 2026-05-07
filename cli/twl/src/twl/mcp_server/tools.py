@@ -1439,20 +1439,26 @@ def twl_spawn_controller_handler(
         }
 
     # Write prompt text to temp file if not a file path
-    prompt_is_file = Path(prompt_file_or_text).is_file() if prompt_file_or_text else False
     _tmpfile_path: str | None = None
     try:
+        try:
+            prompt_is_file = bool(prompt_file_or_text) and Path(prompt_file_or_text).is_file()
+        except OSError:
+            prompt_is_file = False
+
         if prompt_is_file:
             prompt_path = prompt_file_or_text
         else:
             tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False)
+            _tmpfile_path = tmp.name  # assign before write so finally can clean up
             tmp.write(prompt_file_or_text)
             tmp.flush()
             tmp.close()
-            _tmpfile_path = tmp.name
             prompt_path = _tmpfile_path
 
-        cmd: list[str] = ["bash", str(script), skill_name, prompt_path]
+        # spawn-controller.sh accepts skill_name with or without "twl:" prefix;
+        # pass skill_normalized so logs are consistent
+        cmd: list[str] = ["bash", str(script), skill_normalized, prompt_path]
         if with_chain:
             cmd.append("--with-chain")
         if issue:
@@ -1462,6 +1468,14 @@ def twl_spawn_controller_handler(
         if autopilot_dir:
             cmd += ["--autopilot-dir", autopilot_dir]
         if extra_args:
+            # Blocklist flags that could cause unintended file access or path changes.
+            # extra_args is a pass-through for cld-spawn flags (--force-large, --model, etc.).
+            _BLOCKED_EXTRA_ARGS = {"--cd", "--env-file"}
+            for arg in extra_args:
+                arg_key = arg.split("=")[0]
+                if arg_key in _BLOCKED_EXTRA_ARGS:
+                    return {"ok": False, "window": None, "session": None, "prompt_prepended": None,
+                            "error": f"extra_args contains blocked flag: {arg!r}"}
             cmd.extend(extra_args)
 
         # AC6: inherit env so SKIP_PARALLEL_CHECK / SKIP_PARALLEL_REASON pass through
