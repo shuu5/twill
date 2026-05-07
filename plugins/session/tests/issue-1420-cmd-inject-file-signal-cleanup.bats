@@ -1,28 +1,25 @@
 #!/usr/bin/env bats
-# test_1420_cmd_inject_file_signal_cleanup.bats
+# issue-1420-cmd-inject-file-signal-cleanup.bats
 # Issue #1420: session-comm cmd_inject_file signal cleanup (SIGTERM/SIGHUP/SIGINT)
-# Issue #1436: tech-debt: test 6 (SIGINT exit code 検証) の bats 非インタラクティブ問題修正
+#
+# RED テストスタブ。各テストは実装前に FAIL する。
 #
 # AC1: SIGTERM/SIGHUP/SIGINT の trap が cmd_inject_file に存在する（構造確認）
 # AC2: trap が _buf_name 代入後・load-buffer 前に設定される（構造確認）
 # AC3: SIGTERM -> exit 143 / SIGHUP -> exit 129 / SIGINT -> exit 130（機能確認）
-# AC4: 既存 test 1-5, 7+ に regression がない（GREEN-regression）
-# AC5: trap が正常パスの load-buffer 前後に適切に処置される（構造確認）
+# AC4: 既存 inline cleanup が温存され、冪等性が 2>/dev/null || true で保証される（構造確認）
+# AC5: 各 exit 経路の exit 直前で trap - TERM HUP INT による trap 解除が存在する（構造確認）
 # AC6: シグナル受信後バッファ残留なし（機能確認）
-# AC7: 既存テストファイル存在確認（GREEN）
+# AC7: 既存テストファイル存在確認
 #
-# NOTE: test 6 (SIGINT exit code 検証) は bats 非インタラクティブ環境での制約により
-#       Issue #1436 の修正対象。現在は FAIL する（= RED 状態）。
-#       bats 通常実行では SIGINT がサブプロセスに到達しないため、
-#       Issue #1436 では「SKIP with 理由明記」または「代替検証方式」への移行が必要。
+# NOTE: source guard 確認 (baseline-bash.md §10):
+#       session-comm.sh に `[[ "${BASH_SOURCE[0]}" == "${0}" ]]` guard が L558 に存在する。
+#       このファイルは `bash "$SCRIPT"` で実行（source ではない）ため main 到達前 exit のリスクなし。
 #
-# NOTE: source guard 確認:
-#       session-comm.sh に `[[ "${BASH_SOURCE[0]}" == "${0}" ]]` guard が存在する (L539)。
-#       このファイルは bash "$SCRIPT" で実行（source ではない）ため問題なし。
-#
-# NOTE: heredoc 変数展開:
+# NOTE: heredoc 変数展開 (baseline-bash.md §9):
 #       mock tmux の heredoc は非クォート heredoc (<< MOCK) を使用する。
 #       外部変数 $SANDBOX, $call_log, $active_buffers を parent shell で展開するため。
+#       シングルクォート heredoc (<< 'MOCK') は外部変数を参照しない箇所にのみ使用する。
 
 # ===========================================================================
 # setup / teardown
@@ -41,12 +38,11 @@ teardown() {
 
 # ===========================================================================
 # helper: load-buffer を遅延させる mock tmux（シグナルテスト用）
-# SIGTERM/SIGHUP/SIGINT がサブプロセスに到達した場合に trap を発火させるため
-# load-buffer 中に sleep で待機する
+# load-buffer 実行中に sleep を挟み、その間にシグナルを受信させる
 # ===========================================================================
 
 _create_mock_tmux_signal_test() {
-    local delay="${1:-2}"  # load-buffer の遅延秒数（default: 2s）
+    local delay="${1:-2}"
     local mock="$SANDBOX/bin/tmux"
     local call_log="$SANDBOX/tmux_calls.log"
     local active_buffers="$SANDBOX/active_buffers"
@@ -153,13 +149,13 @@ MOCK
 }
 
 # ===========================================================================
-# test 1: ac1[structural][RED] - trap TERM が cmd_inject_file に存在するか
+# AC1 テスト: trap TERM/HUP/INT が cmd_inject_file に存在する（構造確認）
 # RED: 現在の session-comm.sh には trap TERM/HUP/INT が存在しない
 # ===========================================================================
 
-@test "ac1[structural][RED]: cmd_inject_file に trap TERM が存在する" {
+@test "ac1: cmd_inject_file に trap TERM が存在する" {
     # AC1: cmd_inject_file 関数内に SIGTERM trap が設定されていること
-    # 現在の実装には trap が存在しない → FAIL (RED)
+    # RED: 現在の実装には trap が存在しない → FAIL
     local start_line end_line
     start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
     end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
@@ -178,14 +174,9 @@ MOCK
     fi
 }
 
-# ===========================================================================
-# test 2: ac1[structural][RED] - trap HUP/INT が cmd_inject_file に存在するか
-# RED: 現在の session-comm.sh には trap TERM/HUP/INT が存在しない
-# ===========================================================================
-
-@test "ac1[structural][RED]: cmd_inject_file に trap HUP と trap INT が存在する" {
-    # AC1: cmd_inject_file 関数内に SIGHUP・SIGINT trap が設定されていること
-    # 現在の実装には trap が存在しない → FAIL (RED)
+@test "ac1: cmd_inject_file に trap HUP が存在する" {
+    # AC1: cmd_inject_file 関数内に SIGHUP trap が設定されていること
+    # RED: 現在の実装には trap が存在しない → FAIL
     local start_line end_line
     start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
     end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
@@ -195,29 +186,67 @@ MOCK
         return 1
     fi
 
-    local trap_hup trap_int
+    local trap_hup
     trap_hup=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap.*HUP/" "$SCRIPT")
+
+    if [[ -z "$trap_hup" ]]; then
+        echo "FAIL: cmd_inject_file に 'trap ... HUP' が存在しない（#1420 trap 実装が必要）" >&2
+        return 1
+    fi
+}
+
+@test "ac1: cmd_inject_file に trap INT が存在する" {
+    # AC1: cmd_inject_file 関数内に SIGINT trap が設定されていること
+    # RED: 現在の実装には trap が存在しない → FAIL
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
+
+    if [[ -z "$start_line" ]]; then
+        echo "FAIL: cmd_inject_file() 関数が見つからない" >&2
+        return 1
+    fi
+
+    local trap_int
     trap_int=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap.*INT/" "$SCRIPT")
 
-    local missing=()
-    [[ -z "$trap_hup" ]] && missing+=("HUP")
-    [[ -z "$trap_int" ]] && missing+=("INT")
+    if [[ -z "$trap_int" ]]; then
+        echo "FAIL: cmd_inject_file に 'trap ... INT' が存在しない（#1420 trap 実装が必要）" >&2
+        return 1
+    fi
+}
 
-    if [[ "${#missing[@]}" -gt 0 ]]; then
-        echo "FAIL: cmd_inject_file に trap が不足している: ${missing[*]}" >&2
-        echo "  #1420 trap 実装が必要" >&2
+@test "ac1: trap handler に delete-buffer が含まれる（TERM/HUP/INT いずれか）" {
+    # AC1: trap handler 内で tmux delete-buffer -b "$_buf_name" が実行されること
+    # RED: 現在の実装には trap が存在しない → FAIL
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
+
+    if [[ -z "$start_line" ]]; then
+        echo "FAIL: cmd_inject_file() 関数が見つからない" >&2
+        return 1
+    fi
+
+    # trap 行に delete-buffer が含まれているか確認
+    local trap_with_delete
+    trap_with_delete=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap.*delete-buffer/" "$SCRIPT")
+
+    if [[ -z "$trap_with_delete" ]]; then
+        echo "FAIL: cmd_inject_file の trap handler に delete-buffer が含まれていない" >&2
+        echo "  期待: trap 'tmux delete-buffer -b \"\$_buf_name\" 2>/dev/null; exit N' TERM/HUP/INT" >&2
         return 1
     fi
 }
 
 # ===========================================================================
-# test 3: ac2[structural][RED] - trap が _buf_name 代入後・load-buffer 前に設定されるか
+# AC2 テスト: trap が _buf_name 代入後・load-buffer 前に設定される（構造確認）
 # RED: 現在の実装には trap 自体が存在しない
 # ===========================================================================
 
-@test "ac2[structural][RED]: trap が _buf_name 代入後かつ load-buffer 前に設定される" {
-    # AC2: trap を _buf_name 確定後に設定し、シグナルでバッファ名が確定していることを保証する
-    # 現在の実装には trap が存在しない → FAIL (RED)
+@test "ac2: trap が _buf_name 代入後かつ load-buffer 呼び出し前に設定される" {
+    # AC2: _buf_name が確定してから trap を設定し、未設定変数参照を避ける
+    # RED: 現在の実装には trap が存在しない → FAIL
     local start_line end_line
     start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
     end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
@@ -227,16 +256,9 @@ MOCK
         return 1
     fi
 
-    # _buf_name 代入行番号
-    local buf_name_line
+    local buf_name_line trap_line load_buffer_line
     buf_name_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /local _buf_name=/ {print NR; exit}" "$SCRIPT")
-
-    # trap 設定行番号（最初の trap TERM/HUP/INT）
-    local trap_line
     trap_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap.*TERM|trap.*HUP|trap.*INT/ {print NR; exit}" "$SCRIPT")
-
-    # load-buffer 呼び出し行番号
-    local load_buffer_line
     load_buffer_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /tmux load-buffer -b/ {print NR; exit}" "$SCRIPT")
 
     if [[ -z "$trap_line" ]]; then
@@ -245,7 +267,7 @@ MOCK
     fi
 
     if [[ -z "$buf_name_line" || -z "$load_buffer_line" ]]; then
-        echo "FAIL: _buf_name 代入行 ($buf_name_line) または load-buffer 行 ($load_buffer_line) が特定できない" >&2
+        echo "FAIL: _buf_name 代入行 (${buf_name_line:-未特定}) または load-buffer 行 (${load_buffer_line:-未特定}) が特定できない" >&2
         return 1
     fi
 
@@ -261,21 +283,17 @@ MOCK
 }
 
 # ===========================================================================
-# test 4: ac3[functional][RED] - SIGTERM -> exit 143
-# RED: 現在の実装に trap がないため SIGTERM が正しく処理されない
+# AC3 テスト: シグナル別の signal-conventional 終了コード（機能確認）
 # ===========================================================================
 
-@test "ac3[functional][RED]: SIGTERM 送信時に終了コード 143 (128+15) で終了する" {
-    # AC3: SIGTERM を受信した cmd_inject_file が exit 143 で終了すること
-    # 現在の実装には trap がないため、SIGTERM は bash デフォルト動作（exit 143）になる場合もあるが
-    # バッファ cleanup が保証されない → この構造テストで #1420 trap の存在を前提とする
-    #
-    # 機能テスト: load-buffer 遅延中に SIGTERM を送信し、exit code を確認する
+@test "ac3: SIGTERM 送信時に終了コード 143 (128+15) で終了する" {
+    # AC3: SIGTERM 受信時に trap handler が exit 143 を実行すること
+    # 現在の実装には trap がないため、SIGTERM でのバッファ cleanup が保証されない
     _create_mock_tmux_signal_test 3
     _create_mock_session_state_input_waiting
 
     local test_file="$SANDBOX/test_content.txt"
-    echo "test content for sigterm" > "$test_file"
+    echo "test content for ac3 sigterm" > "$test_file"
 
     local pid exit_code=0
     PATH="$SANDBOX/bin:$PATH" \
@@ -284,16 +302,12 @@ MOCK
         bash "$SCRIPT" inject-file --no-enter --force "session:0" "$test_file" 2>/dev/null &
     pid=$!
 
-    # プロセスが起動するまで待機（load-buffer 遅延中に SIGTERM を送る）
+    # プロセスが load-buffer の sleep に入るまで待機
     sleep 1
 
-    # SIGTERM 送信
     kill -TERM "$pid" 2>/dev/null || true
-
-    # プロセス完了を待機
     wait "$pid" 2>/dev/null || exit_code=$?
 
-    # SIGTERM: exit 143 (128 + 15)
     if [[ "$exit_code" -ne 143 ]]; then
         echo "FAIL: SIGTERM 後の exit code が 143 でない（actual: $exit_code）" >&2
         echo "  #1420 trap 実装が必要: trap 'tmux delete-buffer -b \"\$_buf_name\" 2>/dev/null; exit 143' TERM" >&2
@@ -301,19 +315,14 @@ MOCK
     fi
 }
 
-# ===========================================================================
-# test 5: ac3[functional][RED] - SIGHUP -> exit 129
-# RED: 現在の実装に trap がないため SIGHUP が正しく処理されない
-# ===========================================================================
-
-@test "ac3[functional][RED]: SIGHUP 送信時に終了コード 129 (128+1) で終了する" {
-    # AC3: SIGHUP を受信した cmd_inject_file が exit 129 で終了すること
+@test "ac3: SIGHUP 送信時に終了コード 129 (128+1) で終了する" {
+    # AC3: SIGHUP 受信時に trap handler が exit 129 を実行すること
     # 現在の実装には trap がないため → FAIL (RED)
     _create_mock_tmux_signal_test 3
     _create_mock_session_state_input_waiting
 
     local test_file="$SANDBOX/test_content.txt"
-    echo "test content for sighup" > "$test_file"
+    echo "test content for ac3 sighup" > "$test_file"
 
     local pid exit_code=0
     PATH="$SANDBOX/bin:$PATH" \
@@ -324,12 +333,9 @@ MOCK
 
     sleep 1
 
-    # SIGHUP 送信
     kill -HUP "$pid" 2>/dev/null || true
-
     wait "$pid" 2>/dev/null || exit_code=$?
 
-    # SIGHUP: exit 129 (128 + 1)
     if [[ "$exit_code" -ne 129 ]]; then
         echo "FAIL: SIGHUP 後の exit code が 129 でない（actual: $exit_code）" >&2
         echo "  #1420 trap 実装が必要: trap 'tmux delete-buffer -b \"\$_buf_name\" 2>/dev/null; exit 129' HUP" >&2
@@ -337,58 +343,21 @@ MOCK
     fi
 }
 
-# ===========================================================================
-# test 6: ac3[functional][RED] - SIGINT -> exit 130
-#
-# *** Issue #1436 の修正対象テスト ***
-#
-# RED 理由（Issue #1436 スコープ）:
-#   bats の非インタラクティブ環境では、bats は SIGINT を自身でトラップして
-#   サブプロセスには転送しない。`kill -INT $pid` でも bats の制御機構が
-#   SIGINT を消費するため、background プロセスに SIGINT が届かない場合がある。
-#
-# 現在のステータス: FAIL
-#   - session-comm.sh に trap INT が未実装（#1420 前提）
-#   - bats 非インタラクティブ環境での SIGINT 到達問題（#1436 本題）
-#
-# Issue #1436 での解決方針:
-#   - 選定方式 A: SIGINT の代わりに kill -INT を bash サブシェル経由で送信し、
-#     終了コード 130 を検証する代替方式に変更する
-#   - 選定方式 B: 環境制約を明記して skip にする
-#   - 選定方式 C: bats external runner でプロセスグループを分離して SIGINT を送信する
-#   決定は PR description に根拠付きで記録すること（AC1 要件）
-# ===========================================================================
-
-@test "ac3[functional]: SIGINT 送信時に終了コード 130 (128+2) で終了する [ISSUE-1436-FIXED]" {
-    # AC3: SIGINT を受信した cmd_inject_file が exit 130 で終了すること
-    #
-    # [ISSUE-1436-FIXED]: Issue #1436 で選定した set -m（job control）方式で修正済み。
-    #
-    # 選定方式: set -m + kill -INT -$pgid（プロセスグループ指定）
-    # 根拠（Issue #1436 AC1）:
-    #   - bats 非インタラクティブ環境: POSIX 規定により background プロセスは
-    #     SIGINT が SIG_IGN になるため `kill -INT $pid` が届かない場合がある
-    #   - set -m でジョブ制御を有効化すると background プロセスが独立 process group
-    #     に配置される。kill -INT -$pgid でプロセスグループ全体に SIGINT が届く
-    #   - session-comm.sh に trap INT がなくても、SIGINT のデフォルト動作（exit 130）
-    #     が発動するため終了コード 130 が取得できる
-    # 実証コマンド（ローカル検証済み、3 回連続 PASS）:
-    #   bats plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats \
-    #        --filter "SIGINT 送信時"
-
+@test "ac3: SIGINT 送信時に終了コード 130 (128+2) で終了する" {
+    # AC3: SIGINT 受信時に trap handler が exit 130 を実行すること
+    # set -m（ジョブ制御）+ kill -INT -$pgid でプロセスグループへ SIGINT を送信する
     _create_mock_tmux_signal_test 3
     _create_mock_session_state_input_waiting
 
     local test_file="$SANDBOX/test_content.txt"
-    echo "test content for sigint" > "$test_file"
+    echo "test content for ac3 sigint" > "$test_file"
 
     local active_buffers="$SANDBOX/active_buffers"
 
     # set -m: ジョブ制御有効化 → background プロセスが独立 process group に配置される
-    # bats サブシェルとは別 pgid に配置されるため kill -INT -$pgid が bats 自身に届かない
     set -m
-    # set +m を RETURN trap でガード（return 1 パスで set -m が残留しないようにする）
     trap 'set +m' RETURN
+
     local pid exit_code=0
     PATH="$SANDBOX/bin:$PATH" \
     _TEST_MODE=1 \
@@ -396,18 +365,17 @@ MOCK
         bash "$SCRIPT" inject-file --no-enter --force "session:0" "$test_file" 2>/dev/null &
     pid=$!
 
-    # load-buffer が active_buffers に書き込むまで待機（最大 2s）
+    # active_buffers に書き込まれるまで待機（load-buffer が呼ばれたことの確認）
     local waited=0
     while [[ ! -s "$active_buffers" ]] && [[ $waited -lt 20 ]]; do
         sleep 0.1; waited=$((waited+1))
     done
 
-    # タイムアウト確認（active_buffers 未書き込みはタイムアウト = CI 低速環境）
     if [[ ! -s "$active_buffers" ]]; then
         skip "タイムアウト: load-buffer 待機が 2s 内に完了しなかった（CI 低速環境の可能性）"
     fi
 
-    # pgid を取得してプロセスグループへ SIGINT 送信（allowlist 検証付き）
+    # pgid を取得してプロセスグループへ SIGINT 送信
     local pgid
     pgid=$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')
     if [[ "$pgid" =~ ^[1-9][0-9]*$ ]]; then
@@ -418,23 +386,21 @@ MOCK
 
     wait "$pid" 2>/dev/null || exit_code=$?
 
-    # SIGINT のデフォルト動作: exit 130 (128 + 2)
-    # trap INT 未実装でも SIGINT で終了するため exit 130 になる
     if [[ "$exit_code" -ne 130 ]]; then
         echo "FAIL: SIGINT 後の exit code が 130 でない（actual: $exit_code）" >&2
+        echo "  #1420 trap 実装が必要: trap 'tmux delete-buffer -b \"\$_buf_name\" 2>/dev/null; exit 130' INT" >&2
         return 1
     fi
 }
 
 # ===========================================================================
-# test 7: ac4[structural][GREEN-regression] - inline cleanup が温存されているか確認
+# AC4 テスト: 既存 inline cleanup（normal path / 3 つの error path）が温存されている
 # GREEN-regression: inline cleanup (#1395) が trap 追加後も残っていること
 # ===========================================================================
 
-@test "ac4[structural][GREEN-regression]: load-buffer error path の inline delete-buffer が温存されている" {
-    # AC4: #1395 の inline cleanup（load-buffer error block の delete-buffer）が
-    #      #1420 trap 追加後も削除されていないことを確認する
-    # このテストは現在 GREEN になる可能性がある（inline cleanup は既に実装済み）
+@test "ac4: load-buffer error path の inline delete-buffer が温存されている" {
+    # AC4: load-buffer 失敗時の inline cleanup が残っていること
+    # このテストは現在 GREEN になる可能性あり（inline cleanup は既に実装済み）
     local start_line end_line
     start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
     end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
@@ -444,7 +410,6 @@ MOCK
         return 1
     fi
 
-    # load-buffer error block 内に delete-buffer が存在するか（inline cleanup の確認）
     local load_buffer_block
     load_buffer_block=$(awk "
         NR >= $start_line && NR <= ${end_line:-99999} {
@@ -461,13 +426,8 @@ MOCK
     }
 }
 
-# ===========================================================================
-# test 8: ac4[structural][GREEN-regression] - trap EXIT 対が cmd_inject_file に戻っていないか
-# GREEN-regression: #1395 で削除された trap EXIT が再追加されていないことを確認
-# ===========================================================================
-
-@test "ac4[structural][GREEN-regression]: cmd_inject_file に trap EXIT が存在しない（#1395 regression 確認）" {
-    # AC4: #1395 で削除された trap EXIT 対が #1420 trap 追加時に再導入されていないことを確認
+@test "ac4: paste-buffer error path の inline delete-buffer が温存されている" {
+    # AC4: paste-buffer 失敗時の inline cleanup が残っていること
     local start_line end_line
     start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
     end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
@@ -477,59 +437,25 @@ MOCK
         return 1
     fi
 
-    local trap_exit_lines
-    trap_exit_lines=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap.*EXIT/" "$SCRIPT")
+    # paste-buffer ブロック内に delete-buffer が含まれるか
+    local paste_buffer_block
+    paste_buffer_block=$(awk "
+        NR >= $start_line && NR <= ${end_line:-99999} {
+            if (/tmux paste-buffer -b/) { in_block=1 }
+            if (in_block) { print }
+            if (in_block && /^\s*\}/) { in_block=0 }
+        }
+    " "$SCRIPT" | head -20)
 
-    if [[ -n "$trap_exit_lines" ]]; then
-        echo "FAIL: cmd_inject_file に trap.*EXIT が存在する（#1395 regression）" >&2
-        echo "  該当行:" >&2
-        echo "$trap_exit_lines" >&2
-        return 1
-    fi
-}
-
-# ===========================================================================
-# test 9: ac5[structural][RED] - trap ハンドラが delete-buffer を含む（TERM）
-# RED: 現在の実装に trap が存在しない
-# ===========================================================================
-
-@test "ac5[structural][RED]: trap TERM ハンドラに delete-buffer -b が含まれる" {
-    # AC5: SIGTERM trap の handler で _buf_name バッファを delete すること
-    # 現在の実装には trap が存在しない → FAIL (RED)
-    local start_line end_line
-    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
-    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
-
-    if [[ -z "$start_line" ]]; then
-        echo "FAIL: cmd_inject_file() 関数が見つからない" >&2
-        return 1
-    fi
-
-    # trap TERM の行を抽出し、delete-buffer が含まれるか確認
-    local trap_term_line
-    trap_term_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap.*TERM/" "$SCRIPT" | head -1)
-
-    if [[ -z "$trap_term_line" ]]; then
-        echo "FAIL: cmd_inject_file に trap TERM が存在しない" >&2
-        return 1
-    fi
-
-    # trap handler に delete-buffer が含まれるか
-    echo "$trap_term_line" | grep -q 'delete-buffer' || {
-        echo "FAIL: trap TERM handler に delete-buffer が含まれていない" >&2
-        echo "  actual: $trap_term_line" >&2
+    echo "$paste_buffer_block" | grep -q 'delete-buffer' || {
+        echo "FAIL: paste-buffer error block に inline delete-buffer が存在しない" >&2
+        echo "  #1395 の inline cleanup が削除されている可能性あり（regression）" >&2
         return 1
     }
 }
 
-# ===========================================================================
-# test 10: ac5[structural][RED] - trap ハンドラが delete-buffer を含む（HUP/INT）
-# RED: 現在の実装に trap が存在しない
-# ===========================================================================
-
-@test "ac5[structural][RED]: trap HUP と trap INT ハンドラに delete-buffer -b が含まれる" {
-    # AC5: SIGHUP・SIGINT trap の handler で _buf_name バッファを delete すること
-    # 現在の実装には trap が存在しない → FAIL (RED)
+@test "ac4: normal path の最終 delete-buffer が温存されている（正常終了 cleanup）" {
+    # AC4: 正常終了時（paste-buffer 後）の delete-buffer が残っていること
     local start_line end_line
     start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
     end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
@@ -539,48 +465,139 @@ MOCK
         return 1
     fi
 
-    local missing=()
+    # 正常終了 delete-buffer: paste-buffer 行より後に存在する delete-buffer
+    local paste_line last_delete_line
+    paste_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /tmux paste-buffer -b/ {line=NR} END {print line+0}" "$SCRIPT")
+    last_delete_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /tmux delete-buffer -b.*2>\/dev\/null/ {line=NR} END {print line+0}" "$SCRIPT")
 
-    # trap HUP
-    local trap_hup_line
-    trap_hup_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap.*HUP/" "$SCRIPT" | head -1)
-    if [[ -z "$trap_hup_line" ]]; then
-        missing+=("HUP: trap 未存在")
-    elif ! echo "$trap_hup_line" | grep -q 'delete-buffer'; then
-        missing+=("HUP: trap handler に delete-buffer なし")
+    if [[ "$last_delete_line" -le "$paste_line" ]]; then
+        echo "FAIL: paste-buffer 後に delete-buffer が存在しない（正常終了 cleanup が消えている）" >&2
+        echo "  paste-buffer: L$paste_line, delete-buffer: L$last_delete_line" >&2
+        return 1
+    fi
+}
+
+@test "ac4: delete-buffer が 2>/dev/null || true で冪等性を保証している（inline cleanup 全体）" {
+    # AC4: 既存の delete-buffer 呼び出しが全て 2>/dev/null || true パターンで冪等
+    # RED: 現在は冪等性チェックのみ（実装は既存だが、AC5 trap 追加後も維持が必要）
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
+
+    if [[ -z "$start_line" ]]; then
+        echo "FAIL: cmd_inject_file() 関数が見つからない" >&2
+        return 1
     fi
 
-    # trap INT
-    local trap_int_line
-    trap_int_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap.*INT/" "$SCRIPT" | head -1)
-    if [[ -z "$trap_int_line" ]]; then
-        missing+=("INT: trap 未存在")
-    elif ! echo "$trap_int_line" | grep -q 'delete-buffer'; then
-        missing+=("INT: trap handler に delete-buffer なし")
-    fi
+    # delete-buffer 行が全て 2>/dev/null || true を持つかチェック
+    # trap handler 行を除外（trap 行は1行に凝縮されているため別途確認）
+    local delete_without_idempotent
+    delete_without_idempotent=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /tmux delete-buffer/ && !/2>\/dev\/null/ && !/trap/" "$SCRIPT")
 
-    if [[ "${#missing[@]}" -gt 0 ]]; then
-        echo "FAIL: 以下の trap ハンドラに問題あり:" >&2
-        for m in "${missing[@]}"; do
-            echo "  - $m" >&2
-        done
+    if [[ -n "$delete_without_idempotent" ]]; then
+        echo "FAIL: 冪等性パターン 2>/dev/null || true を持たない delete-buffer が存在する:" >&2
+        echo "$delete_without_idempotent" >&2
         return 1
     fi
 }
 
 # ===========================================================================
-# test 11: ac6[functional][RED] - SIGTERM 受信後バッファ残留なし
+# AC5 テスト: 各 exit 経路の exit 直前で trap - TERM HUP INT が実行される（構造確認）
+# RED: 現在の実装には trap も trap 解除も存在しない
+# ===========================================================================
+
+@test "ac5: cmd_inject_file に trap - TERM HUP INT（trap 解除）が存在する" {
+    # AC5: 各 exit 経路で trap - TERM HUP INT により trap を解除すること
+    # RED: 現在の実装には trap 自体が存在しない → FAIL
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
+
+    if [[ -z "$start_line" ]]; then
+        echo "FAIL: cmd_inject_file() 関数が見つからない" >&2
+        return 1
+    fi
+
+    # 'trap -' または 'trap -- ' の存在確認
+    local trap_deregister
+    trap_deregister=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap -[[:space:]].*TERM|trap --[[:space:]].*TERM/" "$SCRIPT")
+
+    if [[ -z "$trap_deregister" ]]; then
+        echo "FAIL: cmd_inject_file に 'trap - TERM HUP INT' / 'trap -- TERM HUP INT' が存在しない" >&2
+        echo "  #1420 実装が必要: 各 exit 経路の exit 直前で trap 解除が必要" >&2
+        return 1
+    fi
+}
+
+@test "ac5: trap 解除が複数の exit 経路（error path 含む）で存在する" {
+    # AC5: error path（load-buffer fail, paste-buffer fail）と正常終了の両方で trap 解除があること
+    # RED: 現在の実装には trap も trap 解除も存在しない → FAIL
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
+
+    if [[ -z "$start_line" ]]; then
+        echo "FAIL: cmd_inject_file() 関数が見つからない" >&2
+        return 1
+    fi
+
+    # trap 解除の出現回数を確認（最低 2 回: 正常 + error path 群）
+    local trap_reset_count
+    trap_reset_count=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap -[[:space:]].*TERM|trap --[[:space:]].*TERM/" "$SCRIPT" | wc -l)
+
+    if [[ "$trap_reset_count" -lt 2 ]]; then
+        echo "FAIL: trap 解除が $trap_reset_count 箇所しか存在しない（最低 2 箇所必要: 正常パス + error path）" >&2
+        echo "  現在の trap 解除箇所: $trap_reset_count" >&2
+        echo "  期待: 正常終了 + load-buffer error + paste-buffer error の各 exit 前" >&2
+        return 1
+    fi
+}
+
+@test "ac5: 正常終了の delete-buffer 後に trap 解除が存在する（順序確認）" {
+    # AC5: 正常終了では delete-buffer 後に trap - TERM HUP INT を実行する
+    # RED: 現在の実装には trap も trap 解除も存在しない → FAIL
+    local start_line end_line
+    start_line=$(grep -n '^cmd_inject_file()' "$SCRIPT" | head -1 | cut -d: -f1)
+    end_line=$(awk "NR > $start_line && /^[a-z_]+\(\)/ {print NR; exit}" "$SCRIPT")
+
+    if [[ -z "$start_line" ]]; then
+        echo "FAIL: cmd_inject_file() 関数が見つからない" >&2
+        return 1
+    fi
+
+    # 正常終了 delete-buffer の最終行番号
+    local last_delete_line
+    last_delete_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /tmux delete-buffer -b.*2>\/dev\/null/ {line=NR} END {print line+0}" "$SCRIPT")
+
+    # trap 解除の最終行番号（正常終了パスのもの）
+    local last_trap_reset_line
+    last_trap_reset_line=$(awk "NR >= $start_line && NR <= ${end_line:-99999} && /trap -[[:space:]].*TERM|trap --[[:space:]].*TERM/ {line=NR} END {print line+0}" "$SCRIPT")
+
+    if [[ "$last_trap_reset_line" -eq 0 ]]; then
+        echo "FAIL: cmd_inject_file に trap 解除が存在しない" >&2
+        return 1
+    fi
+
+    if [[ "$last_trap_reset_line" -le "$last_delete_line" ]]; then
+        echo "FAIL: 最後の trap 解除 (L$last_trap_reset_line) が最後の delete-buffer (L$last_delete_line) より前にある" >&2
+        echo "  正常終了パスでは delete-buffer 後に trap 解除が必要" >&2
+        return 1
+    fi
+}
+
+# ===========================================================================
+# AC6 テスト: シグナル受信後バッファ残留なし（機能確認）
 # RED: 現在の実装に trap がないためバッファが残留する
 # ===========================================================================
 
-@test "ac6[functional][RED]: SIGTERM 受信後に session-comm-* バッファが残留しない" {
+@test "ac6: SIGTERM 受信後に session-comm-* バッファが残留しない" {
     # AC6: SIGTERM 受信時に trap handler が delete-buffer を呼び、バッファを削除すること
-    # 現在の実装には trap がないため → バッファが残留する可能性 → FAIL (RED)
+    # RED: 現在の実装には trap がないためバッファが残留する → FAIL
     _create_mock_tmux_signal_test 3
     _create_mock_session_state_input_waiting
 
     local test_file="$SANDBOX/test_content.txt"
-    echo "test content for sigterm cleanup" > "$test_file"
+    echo "test content for ac6 sigterm cleanup" > "$test_file"
 
     local pid exit_code=0
     PATH="$SANDBOX/bin:$PATH" \
@@ -593,33 +610,26 @@ MOCK
     kill -TERM "$pid" 2>/dev/null || true
     wait "$pid" 2>/dev/null || exit_code=$?
 
-    # バッファ残留確認
     local active_buffers="$SANDBOX/active_buffers"
     local remaining_count
     remaining_count=$(grep -c 'session-comm-' "$active_buffers" 2>/dev/null || echo 0)
 
     if [[ "$remaining_count" -gt 0 ]]; then
         echo "FAIL: SIGTERM 後に session-comm-* バッファが $remaining_count 件残留している" >&2
-        echo "  残留バッファ:" >&2
         grep 'session-comm-' "$active_buffers" >&2
         echo "  #1420 trap TERM handler で delete-buffer が必要" >&2
         return 1
     fi
 }
 
-# ===========================================================================
-# test 12: ac6[functional][RED] - SIGHUP 受信後バッファ残留なし
-# RED: 現在の実装に trap がないためバッファが残留する
-# ===========================================================================
-
-@test "ac6[functional][RED]: SIGHUP 受信後に session-comm-* バッファが残留しない" {
+@test "ac6: SIGHUP 受信後に session-comm-* バッファが残留しない" {
     # AC6: SIGHUP 受信時に trap handler が delete-buffer を呼び、バッファを削除すること
-    # 現在の実装には trap がないため → FAIL (RED)
+    # RED: 現在の実装には trap がないためバッファが残留する → FAIL
     _create_mock_tmux_signal_test 3
     _create_mock_session_state_input_waiting
 
     local test_file="$SANDBOX/test_content.txt"
-    echo "test content for sighup cleanup" > "$test_file"
+    echo "test content for ac6 sighup cleanup" > "$test_file"
 
     local pid exit_code=0
     PATH="$SANDBOX/bin:$PATH" \
@@ -644,14 +654,10 @@ MOCK
     fi
 }
 
-# ===========================================================================
-# test 13: ac6[functional][RED] - SIGINT 受信後バッファ残留なし
-# RED: 現在の実装に trap がない + bats 非インタラクティブ SIGINT 問題
-# ===========================================================================
-
-@test "ac6[functional]: SIGINT 受信後に session-comm-* バッファが残留しない" {
+@test "ac6: SIGINT 受信後に session-comm-* バッファが残留しない" {
     # AC6: SIGINT 受信時に trap handler が delete-buffer を呼び、バッファを削除すること
-    # #1420 で trap INT handler が実装されたため skip を解除
+    # RED: 現在の実装には trap INT がないためバッファが残留する
+    #      set -m 方式で SIGINT を届かせるが、trap が未実装のためバッファ残留が発生する
     _create_mock_tmux_signal_test 3
     _create_mock_session_state_input_waiting
 
@@ -695,36 +701,31 @@ MOCK
     if [[ "$remaining_count" -gt 0 ]]; then
         echo "FAIL: SIGINT 後に session-comm-* バッファが $remaining_count 件残留している" >&2
         grep 'session-comm-' "$active_buffers" >&2
+        echo "  #1420 trap INT handler で delete-buffer が必要" >&2
         return 1
     fi
 }
 
 # ===========================================================================
-# test 14: ac7[structural][GREEN] - test_1395 ファイル存在確認
-# GREEN: 既存テストファイルが存在することを確認（regression 防止）
+# AC7 テスト: 既存テストファイル存在確認（regression 防止）
 # ===========================================================================
 
-@test "ac7[structural][GREEN]: test_1395_cmd_inject_file_cleanup.bats が存在する" {
-    # AC7: #1395 テストファイルが削除されていないことを確認
-    # このテストは現在 GREEN になる
-    local test_1395="$(dirname "$BATS_TEST_FILENAME")/test_1395_cmd_inject_file_cleanup.bats"
-    [[ -f "$test_1395" ]] || {
-        echo "FAIL: test_1395_cmd_inject_file_cleanup.bats が存在しない（regression）" >&2
+@test "ac7: issue-1050-inject-file-named-buffer.bats が存在する" {
+    # AC7: 既存テストファイルが削除されていないこと（regression 防止）
+    local test_1050
+    test_1050="$(dirname "$BATS_TEST_FILENAME")/issue-1050-inject-file-named-buffer.bats"
+    [[ -f "$test_1050" ]] || {
+        echo "FAIL: issue-1050-inject-file-named-buffer.bats が存在しない（regression）" >&2
         return 1
     }
 }
 
-# ===========================================================================
-# test 15: ac7[structural][GREEN] - issue-1050 ファイル存在確認
-# GREEN: 既存テストファイルが存在することを確認（regression 防止）
-# ===========================================================================
-
-@test "ac7[structural][GREEN]: issue-1050-inject-file-named-buffer.bats が存在する" {
-    # AC7: #1050 テストファイルが削除されていないことを確認
-    # このテストは現在 GREEN になる
-    local test_1050="$(dirname "$BATS_TEST_FILENAME")/issue-1050-inject-file-named-buffer.bats"
-    [[ -f "$test_1050" ]] || {
-        echo "FAIL: issue-1050-inject-file-named-buffer.bats が存在しない（regression）" >&2
+@test "ac7: session-comm-robustness.test.sh が存在する" {
+    # AC7: 既存テストファイルが削除されていないこと（regression 防止）
+    local test_robustness
+    test_robustness="$(dirname "$BATS_TEST_FILENAME")/session-comm-robustness.test.sh"
+    [[ -f "$test_robustness" ]] || {
+        echo "FAIL: session-comm-robustness.test.sh が存在しない（regression）" >&2
         return 1
     }
 }

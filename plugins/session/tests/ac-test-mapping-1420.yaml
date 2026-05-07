@@ -1,0 +1,205 @@
+# ac-test-mapping-1420.yaml — Issue #1420: tech-debt: session-comm cmd_inject_file signal cleanup
+# 生成: AC Scaffold Tests Agent
+# 対象テストファイル: plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats
+#                    plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats (既存)
+#
+# 注意: test_1420_cmd_inject_file_signal_cleanup.bats は先行実装済み（全 AC の変形版テスト）
+#       issue-1420-cmd-inject-file-signal-cleanup.bats は本 Agent が生成した正規スタブ
+
+mappings:
+  # ---------------------------------------------------------------------------
+  # AC1: cmd_inject_file 内に trap TERM HUP INT ハンドラを追加し、
+  #      各シグナル受信時に tmux delete-buffer -b "$_buf_name" 2>/dev/null || true が実行される
+  # ---------------------------------------------------------------------------
+  - ac_index: 1
+    ac_text: "cmd_inject_file 内に trap '<cleanup>' TERM HUP INT ハンドラを追加し、各シグナル受信時に tmux delete-buffer -b \"$_buf_name\" 2>/dev/null || true が実行される"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac1: cmd_inject_file に trap TERM が存在する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 1
+    ac_text: "cmd_inject_file に trap SIGHUP ハンドラが存在する"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac1: cmd_inject_file に trap HUP が存在する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 1
+    ac_text: "cmd_inject_file に trap SIGINT ハンドラが存在する"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac1: cmd_inject_file に trap INT が存在する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 1
+    ac_text: "trap handler に delete-buffer が含まれる（TERM/HUP/INT いずれか）"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac1: trap handler に delete-buffer が含まれる（TERM/HUP/INT いずれか）"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC2: handler は _buf_name 代入直後（= tmux load-buffer 呼び出し直前）に設定する
+  #      代入前に trap を仕込まない（未設定変数参照を避ける）
+  # ---------------------------------------------------------------------------
+  - ac_index: 2
+    ac_text: "handler は _buf_name 代入直後（= tmux load-buffer 呼び出し直前）に設定する。代入前に trap を仕込まない（未設定変数参照を避ける）"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac2: trap が _buf_name 代入後かつ load-buffer 呼び出し前に設定される"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC3: handler 実行後、信号別の signal-conventional 終了コードで終了する
+  #      SIGTERM=143 (128+15), SIGHUP=129 (128+1), SIGINT=130 (128+2)
+  # ---------------------------------------------------------------------------
+  - ac_index: 3
+    ac_text: "SIGTERM を受信した cmd_inject_file が exit 143 で終了すること"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac3: SIGTERM 送信時に終了コード 143 (128+15) で終了する"
+    status: GREEN
+    note: |
+      bash デフォルトのシグナル動作で exit 143 は trap なしでも達成される。
+      trap 実装後は trap handler 内の exit 143 で明示的に達成される。
+      現在の GREEN は「デフォルト動作で偶然一致」のため、trap 実装後に確認が必要。
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 3
+    ac_text: "SIGHUP を受信した cmd_inject_file が exit 129 で終了すること"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac3: SIGHUP 送信時に終了コード 129 (128+1) で終了する"
+    status: GREEN
+    note: "AC3 SIGTERM と同様。デフォルト動作で GREEN。trap 実装後も GREEN 維持が必要。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 3
+    ac_text: "SIGINT を受信した cmd_inject_file が exit 130 で終了すること（set -m ジョブ制御方式）"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac3: SIGINT 送信時に終了コード 130 (128+2) で終了する"
+    status: GREEN
+    note: |
+      set -m + kill -INT -$pgid でプロセスグループへ SIGINT を届かせる方式。
+      デフォルト動作で exit 130 が達成される。
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC4: 既存 inline cleanup（normal path / 3 つの error path）は温存する
+  #      handler との重複呼び出しは冪等であることを delete-buffer ... 2>/dev/null || true で保証
+  # ---------------------------------------------------------------------------
+  - ac_index: 4
+    ac_text: "既存 inline cleanup（load-buffer error path の delete-buffer）が温存されている"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac4: load-buffer error path の inline delete-buffer が温存されている"
+    status: GREEN
+    note: "inline cleanup は #1395 で実装済み。regression ガード。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 4
+    ac_text: "既存 inline cleanup（paste-buffer error path の delete-buffer）が温存されている"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac4: paste-buffer error path の inline delete-buffer が温存されている"
+    status: GREEN
+    note: "inline cleanup は #1395 で実装済み。regression ガード。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 4
+    ac_text: "normal path の最終 delete-buffer が温存されている（正常終了 cleanup）"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac4: normal path の最終 delete-buffer が温存されている（正常終了 cleanup）"
+    status: GREEN
+    note: "inline cleanup は #1395 で実装済み。regression ガード。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 4
+    ac_text: "delete-buffer が 2>/dev/null || true で冪等性を保証している"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac4: delete-buffer が 2>/dev/null || true で冪等性を保証している（inline cleanup 全体）"
+    status: GREEN
+    note: "現在の inline cleanup は全て 2>/dev/null || true を持つ。trap 追加後も維持が必要。"
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC5: 各 exit 経路（正常終了・3 つの error path）の exit 直前で trap - TERM HUP INT で trap を解除する
+  # ---------------------------------------------------------------------------
+  - ac_index: 5
+    ac_text: "各 exit 経路の exit 直前で trap - TERM HUP INT で trap を解除する（cmd_inject_file 内に trap 解除が存在する）"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac5: cmd_inject_file に trap - TERM HUP INT（trap 解除）が存在する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 5
+    ac_text: "trap 解除が複数の exit 経路（error path 含む）で存在する（最低 2 箇所）"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac5: trap 解除が複数の exit 経路（error path 含む）で存在する"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 5
+    ac_text: "正常終了では tmux delete-buffer 後に trap - TERM HUP INT を実行する（順序確認）"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac5: 正常終了の delete-buffer 後に trap 解除が存在する（順序確認）"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC6: シグナル受信後バッファ残留なし（機能確認）
+  # ---------------------------------------------------------------------------
+  - ac_index: 6
+    ac_text: "SIGTERM を cmd_inject_file 実行中の subprocess に送信し、session-comm-$$- プレフィックスのバッファが残っていないこと"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac6: SIGTERM 受信後に session-comm-* バッファが残留しない"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 6
+    ac_text: "SIGHUP を cmd_inject_file 実行中の subprocess に送信し、session-comm-$$- プレフィックスのバッファが残っていないこと"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac6: SIGHUP 受信後に session-comm-* バッファが残留しない"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  - ac_index: 6
+    ac_text: "SIGINT を cmd_inject_file 実行中の subprocess に送信し、session-comm-$$- プレフィックスのバッファが残っていないこと"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac6: SIGINT 受信後に session-comm-* バッファが残留しない"
+    status: RED
+    impl_files:
+      - "plugins/session/scripts/session-comm.sh"
+
+  # ---------------------------------------------------------------------------
+  # AC7: 既存テストファイルの存在確認（regression なし）
+  # ---------------------------------------------------------------------------
+  - ac_index: 7
+    ac_text: "既存テスト plugins/session/tests/issue-1050-inject-file-named-buffer.bats が存在する（削除されていない）"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac7: issue-1050-inject-file-named-buffer.bats が存在する"
+    status: GREEN
+    note: "ファイル存在確認のみ。現在 GREEN。"
+    impl_files: []
+
+  - ac_index: 7
+    ac_text: "既存テスト plugins/session/tests/session-comm-robustness.test.sh が存在する（削除されていない）"
+    test_file: "plugins/session/tests/issue-1420-cmd-inject-file-signal-cleanup.bats"
+    test_name: "ac7: session-comm-robustness.test.sh が存在する"
+    status: GREEN
+    note: "ファイル存在確認のみ。現在 GREEN。"
+    impl_files: []
