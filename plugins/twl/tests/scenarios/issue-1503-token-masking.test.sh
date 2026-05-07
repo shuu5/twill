@@ -209,6 +209,50 @@ test_regression_bearer_still_masked_ready_err() {
 run_test "回帰: READY_ERR_RAW で既存 Bearer も引き続きマスクされる" test_regression_bearer_still_masked_ready_err
 
 # =============================================================================
+# github_pat_ Fine-grained PAT テスト（Issue #1503 明示対象）
+# =============================================================================
+echo ""
+echo "--- github_pat_ Fine-grained PAT マスキング ---"
+
+test_github_pat_masked_in_ready_err() {
+  local sed_pattern
+  sed_pattern=$(_extract_ready_err_sed_cmd)
+  [[ -z "$sed_pattern" ]] && return 1
+
+  local token="github_pat_AbCdEfGhIj0123456789XxYyZz"
+  local input="error: ${token} bad credentials"
+  local output
+  output=$(echo "$input" | sed -E "$sed_pattern")
+  ! echo "$output" | grep -qF "$token"
+}
+run_test "READY_ERR_RAW で github_pat_ Fine-grained PAT がマスクされる" test_github_pat_masked_in_ready_err
+
+test_github_pat_masked_in_error_raw() {
+  local sed_pattern
+  sed_pattern=$(_extract_error_raw_sed_cmd)
+  [[ -z "$sed_pattern" ]] && return 1
+
+  local token="github_pat_AbCdEfGhIj0123456789XxYyZz"
+  local input="merge failed: ${token} bad credentials"
+  local output
+  output=$(echo "$input" | sed -E "$sed_pattern")
+  ! echo "$output" | grep -qF "$token"
+}
+run_test "ERROR_RAW で github_pat_ Fine-grained PAT がマスクされる" test_github_pat_masked_in_error_raw
+
+test_github_pat_masked_result_contains_marker() {
+  local sed_pattern
+  sed_pattern=$(_extract_ready_err_sed_cmd)
+  [[ -z "$sed_pattern" ]] && return 1
+
+  local input="error: github_pat_AbCdEfGhIj0123456789XxYyZz token"
+  local output
+  output=$(echo "$input" | sed -E "$sed_pattern")
+  echo "$output" | grep -qE "MASKED|\*\*\*"
+}
+run_test "READY_ERR_RAW で github_pat_ マスク後に MASKED マーカーが含まれる" test_github_pat_masked_result_contains_marker
+
+# =============================================================================
 # Summary
 # =============================================================================
 echo ""
