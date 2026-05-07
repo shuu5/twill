@@ -979,6 +979,27 @@ gh pr merge <PR_NUMBER> --squash --delete-branch
 
 ---
 
+## 19. lesson 一時保存の落とし穴（2026-05-07 失敗事例 / Issue #1517）
+
+| # | Pitfall | 対策 |
+|---|---------|------|
+| 19.1 | lesson を doobidoo に保存した後、Issue 起票・Wave 実装・永続文書化を行わずに「完遂」扱いにする → 次セッション/次 Wave で同じ失敗パターンが再発 | **ADR-036 / Invariant N の 4 ステップチェーンを完遂すること**。doobidoo 保存のみは NOT DONE |
+| 19.2 | doobidoo に同セッション内で lesson を保存した直後に AUTO_NEXT_SPAWN 等の別タスクに移行 → Issue 起票を先送りにしたまま忘却 | lesson 保存後は **即座に** `gh issue create` を実行する。先送り禁止 |
+| 19.3 | Wave 60 で doobidoo に lesson 23（board-status-update 自発実行）を保存 → SKILL.md に逆移植せず → Wave 63 で同じ計画ミス再発（2026-05-07 実例） | Wave 完了後に lesson を SKILL.md / refs の該当セクションに追記する PR を作成する |
+| 19.4 | co-explore proxy の 25min cycle 不適を lesson 24 として保存 → monitor channel に組み込まず → ユーザー指摘で初対応（2026-05-07 実例） | lesson の種別（monitor 閾値 / spawn ルール 等）に応じた**正しい永続化先**（SKILL.md § / refs / scripts）に反映する |
+
+**根本原因**: doobidoo 保存 ≠ 構造化。個別 lesson は記録されるが architecture spec に組み込む方針が文書化されていなかった。
+
+**4 ステップチェーン（ADR-036 / 不変条件 N）**:
+1. doobidoo 保存（短期記憶）
+2. Issue 起票（`gh issue create` for follow-up implementation）
+3. Wave 実装（skill/refs/scripts 反映 PR）
+4. 永続文書化（pitfalls-catalog / SKILL.md / ADR への正式追記）
+
+**参照**: ADR-036 (`architecture/decisions/ADR-036-lesson-structuralization.md`), 不変条件 N (`refs/ref-invariants.md`), Issue #1517, doobidoo `422c9ee8` (meta-lesson 26)
+
+---
+
 ## §16 skill markdown の relative path 落とし穴（#1244）
 
 ### 症状

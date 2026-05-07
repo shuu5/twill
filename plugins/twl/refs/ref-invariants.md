@@ -1,12 +1,12 @@
-# 不変条件 A-M 参照ドキュメント
+# 不変条件 A-N 参照ドキュメント
 
-twill autopilot システムの不変条件 A-M（13 件）の正典定義。各条件の定義・根拠・検証方法・影響範囲を一本化する。
+twill autopilot システムの不変条件 A-N（14 件）の正典定義。各条件の定義・根拠・検証方法・影響範囲を一本化する。
 
-更新日: 2026-04-23
+更新日: 2026-05-08
 
 ## 本ドキュメントの SSoT 位置付け
 
-本ドキュメントは不変条件 A-M の **SSoT（Single Source of Truth）** であり、各 invariant の定義・意味は本ドキュメント自身で自己完結する。
+本ドキュメントは不変条件 A-N の **SSoT（Single Source of Truth）** であり、各 invariant の定義・意味は本ドキュメント自身で自己完結する。
 
 - **「根拠」欄の役割**: 設計判断の出典 ADR または導入された背景を示す。ADR が invariant の詳細仕様を個別定義しない場合でも、invariant の実装整合性は **検証方法欄の bats test** と **影響範囲欄の実装ファイル** で維持される。
 - **ADR-023 継承について**: 不変条件 D/E/F/G/I/J/K は Phase Z (#901) の chain 再設計に伴い [ADR-023](../architecture/decisions/ADR-023-tdd-direct-flow.md) に継承された。ADR-023 は chain 構造変更の ADR であり individual invariant の詳細仕様は持たないが、invariant の意味定義は本ドキュメント自身が SSoT として保持し、検証は bats test (`../tests/bats/invariants/autopilot-invariants.bats`) が担保する。
@@ -161,6 +161,23 @@ twill autopilot システムの不変条件 A-M（13 件）の正典定義。各
 
 ---
 
+## 不変条件 N: Lesson Structuralization
+
+- **定義**: 任意の lesson（observer-pitfall / observer-lesson / observer-wave 等）を doobidoo に保存した後、以下のチェーンを完遂しない限り「完遂」と扱わない（SHALL）:
+  1. doobidoo 保存
+  2. Issue 起票（`gh issue create` for follow-up implementation）
+  3. Wave 実装（skill/refs/scripts 反映 PR）
+  4. 永続文書化（pitfalls-catalog / SKILL.md / ADR）
+- **適用範囲**: observer/Pilot が lesson を認識・記録する全ての文脈。
+- **根拠**: [ADR-036: Lesson Structuralization MUST](../architecture/decisions/ADR-036-lesson-structuralization.md)
+- **検証方法**: [`invariant-N: ref-invariants.md defines invariant N (Lesson Structuralization)`](../tests/bats/issue-1517-lesson-structuralization.bats), [`invariant-N: su-observer SKILL.md Step 1 contains lesson MUST chain`](../tests/bats/issue-1517-lesson-structuralization.bats), [`invariant-N: pitfalls-catalog §19 documents lesson structuralization pitfalls`](../tests/bats/issue-1517-lesson-structuralization.bats)
+- **影響範囲**:
+  - `plugins/twl/skills/su-observer/SKILL.md`
+  - `plugins/twl/skills/su-observer/refs/pitfalls-catalog.md`
+  - `plugins/twl/architecture/decisions/ADR-036-lesson-structuralization.md`
+
+---
+
 ## SU-* との境界
 
-SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-M とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。
+SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-N とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。
