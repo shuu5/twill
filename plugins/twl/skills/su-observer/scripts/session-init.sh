@@ -34,7 +34,7 @@ _parse_cmdline_for_mode() {
     echo "bypass"
     return
   fi
-  local raw
+  local raw=""
   raw=$(echo "$cmdline" | grep -oP '(?:--permission-mode )\K\S+' || echo "")
   case "$raw" in
     bypassPermissions) echo "bypass" ;;
@@ -60,8 +60,8 @@ else
     fi
   done
   # pgrep ヒットなし or mode 未検出: $PPID/cmdline にフォールバック（既存動作）
-  if [[ -z "$OBSERVER_MODE" && -r "/proc/$PPID/cmdline" ]]; then
-    _PPID_CMD=$(tr '\0' ' ' < "/proc/$PPID/cmdline")
+  if [[ -z "$OBSERVER_MODE" && -r "${_PROC_DIR}/$PPID/cmdline" ]]; then
+    _PPID_CMD=$(tr '\0' ' ' < "${_PROC_DIR}/$PPID/cmdline")
     OBSERVER_MODE=$(_parse_cmdline_for_mode "$_PPID_CMD")
   fi
 fi
