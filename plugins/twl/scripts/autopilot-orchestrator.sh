@@ -183,6 +183,21 @@ get_phase_issues() {
   fi
 }
 
+# bare_root_dir を解決する (#1495 fix)
+# bare repo worktree mode では main/.git がファイルで、worktrees/ は main の親 (= bare_root) 直下にある。
+# PROJECT_DIR ($effective_project_dir) は main/ を指すため、worktrees/ 検索には親ディレクトリが必要。
+# Python 側 (cli/twl/src/twl/autopilot/worktree.py:_resolve_git_common_dir) と同等のパス解決ロジック。
+_resolve_bare_root_dir() {
+  local _project_dir="$1"
+  if [[ -f "$_project_dir/.git" ]]; then
+    # bare repo worktree mode: main/.git is a file → parent is bare_root
+    dirname "$_project_dir"
+  else
+    # standalone repo or non-worktree mode
+    echo "$_project_dir"
+  fi
+}
+
 # Worker の tmux window 名を解決する
 # autopilot-launch.sh が state に保存した window 名を優先し、未設定時はレガシーパターンにフォールバック
 resolve_worker_window() {
@@ -250,6 +265,25 @@ filter_active_issues() {
       continue
     fi
 
+    # #1495 fix: status=running/merge-ready で worktree が bare_root/worktrees/ に存在する場合は
+    # resume と判定して spawn skip (orchestrator crash → resume シナリオの safety guard)
+    if [[ "$status" == "running" || "$status" == "merge-ready" ]]; then
+      local _ff_branch
+      _ff_branch=$(python3 -m twl.autopilot.state read --type issue --issue "$ISSUE" --field branch 2>/dev/null || echo "")
+      if [[ -n "$_ff_branch" && "$_ff_branch" =~ ^[a-zA-Z0-9_/\-]+$ ]]; then
+        local _ff_effective_dir="$PROJECT_DIR"
+        if [[ -n "${ISSUE_REPO_PATH:-}" ]]; then
+          _ff_effective_dir="$ISSUE_REPO_PATH"
+        fi
+        local _ff_bare_root
+        _ff_bare_root=$(_resolve_bare_root_dir "$_ff_effective_dir")
+        if [[ -d "$_ff_bare_root/worktrees/$_ff_branch" ]]; then
+          echo "[orchestrator] Issue #${ISSUE}: skip (status=${status}, worktree active in bare_root: ${_ff_bare_root}/worktrees/${_ff_branch})" >&2
+          continue
+        fi
+      fi
+    fi
+
     if bash "$SCRIPTS_ROOT/autopilot-should-skip.sh" "$PLAN_FILE" "$ISSUE" 2>/dev/null; then
       echo "[orchestrator] Issue #${ISSUE}: skip (dependency failed)" >&2
       python3 -m twl.autopilot.state write --type issue --issue "$ISSUE" --role pilot \
@@ -284,13 +318,17 @@ launch_worker() {
   local -a _repo_args=()
   [[ "$ISSUE_REPO_ID" != "_default" ]] && _repo_args=(--repo "$ISSUE_REPO_ID")
 
+  # #1495 fix: bare_root_dir を解決 (worktree mode の main の親ディレクトリ = bare_root)
+  local _bare_root_dir
+  _bare_root_dir=$(_resolve_bare_root_dir "$effective_project_dir")
+
   # ADR-018 SSOT: 既存 Worker 検出時の重複起動防止ガード（status=running/merge-ready）
   local existing_status
   existing_status=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$ISSUE" --field status 2>/dev/null || echo "")
   if [[ "$existing_status" == "running" || "$existing_status" == "merge-ready" ]]; then
     local existing_branch_for_skip
     existing_branch_for_skip=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$ISSUE" --field branch 2>/dev/null || echo "")
-    local skip_candidate_dir="$effective_project_dir/worktrees/$existing_branch_for_skip"
+    local skip_candidate_dir="$_bare_root_dir/worktrees/$existing_branch_for_skip"
     if [[ -n "$existing_branch_for_skip" && "$existing_branch_for_skip" =~ ^[a-zA-Z0-9_/\-]+$ && -d "$skip_candidate_dir" ]]; then
       # spawn skip: window 不在 → crash-detect.sh に委譲（failure フィールド保持、直接書き込み禁止）
       local spawn_skip_window
@@ -312,8 +350,9 @@ launch_worker() {
   local existing_branch
   existing_branch=$(python3 -m twl.autopilot.state read --type issue "${_repo_args[@]}" --issue "$ISSUE" --field branch 2>/dev/null || echo "")
   # ブランチ名バリデーション: `.` 除外の統一 regex（L288/L418/L1270 + autopilot-cleanup.sh L186 + orchestrator-cleanup-sequence.bats test double）
+  # #1495 fix: bare_root_dir/worktrees/ で検索 (PROJECT_DIR は main を指すため worktrees/ を検出できなかった bug)
   if [[ -n "$existing_branch" && "$existing_branch" =~ ^[a-zA-Z0-9_/\-]+$ ]]; then
-    local candidate_dir="$effective_project_dir/worktrees/$existing_branch"
+    local candidate_dir="$_bare_root_dir/worktrees/$existing_branch"
     if [[ -d "$candidate_dir" ]]; then
       worktree_dir="$candidate_dir"
       echo "[orchestrator] Issue #${ISSUE}: 既存 worktree を使用: $worktree_dir" >&2
@@ -457,10 +496,18 @@ cleanup_worker() {
       $_wt_ok || echo "[orchestrator] Issue #${issue}: ⚠️ worktree削除失敗（クリーンアップは続行）: ${_wt_del_out}" >&2
     fi
 
-    # Step 3: リモートブランチ削除（クロスリポ対応）
+    # Step 3: リモートブランチ削除（クロスリポ対応）+ #1495 fix: PR open check
     resolve_issue_repo_context "$entry"
-    # ISSUE_REPO_PATH パストラバーサル防止: 絶対パスかつ ".." を含まないことを確認
-    if [[ -n "$ISSUE_REPO_PATH" && "$ISSUE_REPO_PATH" == /* && "$ISSUE_REPO_PATH" != *..* ]]; then
+    # #1495 fix: open PR があるブランチは削除しない (autopilot-cleanup.sh:283-299 と同一パターン)
+    local _cw_pr_count=0
+    if command -v gh &>/dev/null; then
+      _cw_pr_count=$(gh pr list --head "$branch" --state open --json number --jq 'length' 2>/dev/null || echo "0")
+      _cw_pr_count=$(echo "$_cw_pr_count" | tr -cd '0-9')
+    fi
+    if [[ "${_cw_pr_count:-0}" -gt 0 ]]; then
+      echo "[orchestrator] Issue #${issue}: WARN: open PR あり — リモートブランチ削除スキップ: ${branch} (PR count=${_cw_pr_count})" >&2
+    elif [[ -n "$ISSUE_REPO_PATH" && "$ISSUE_REPO_PATH" == /* && "$ISSUE_REPO_PATH" != *..* ]]; then
+      # ISSUE_REPO_PATH パストラバーサル防止: 絶対パスかつ ".." を含まないことを確認
       git -C "$ISSUE_REPO_PATH" push origin --delete "$branch" 2>/dev/null || true
     else
       git push origin --delete "$branch" 2>/dev/null || true
