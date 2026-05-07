@@ -1983,3 +1983,52 @@ MOCKEOF
     "
     [ "$status" -eq 0 ]
 }
+
+# ---------------------------------------------------------------------------
+# Scenario 30: AC1-timeout — timeout-based fallback パスでも controller は auto-kill されない
+#   merge-gate specialist が発見した CRITICAL 指摘（timeout path missing wt-co-* check）への対応
+#   (#1474 fix: phrase path だけでなく timeout path にも wt-co-* 除外を追加)
+# ---------------------------------------------------------------------------
+@test "AC1-timeout(#1474): controller window (wt-co-*) は IDLE_COMPLETED_TIMEOUT_SEC 経由でも auto-kill されない" {
+    run bash <<'MOCKEOF'
+SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../scripts" && pwd)"
+CLD_OBSERVE_ANY="$SCRIPT_DIR/cld-observe-any"
+TMPD="$(mktemp -d)"
+win="wt-co-autopilot-091135"
+export win TMPD
+
+capture="some output without idle phrase"
+export capture
+
+tmux() {
+    case "$1" in
+        list-windows) echo "test-session:0 $win";;
+        display-message) echo "0 claude";;
+        capture-pane)
+            if [[ "${*}" == *"-S -1"* ]]; then echo ""; else printf '%s\n' "$capture"; fi;;
+        kill-window)
+            echo "KILLED: $@" >> "$TMPD/kill-log.txt"
+            return 0;;
+        *) return 0;;
+    esac
+}
+export -f tmux
+
+IDLE_COMPLETED_AUTO_KILL=1 \
+    IDLE_COMPLETED_TIMEOUT_SEC=1 \
+    IDLE_COMPLETED_DEBOUNCE_SEC=0 \
+    _TEST_MODE=1 CLD_OBSERVE_ANY_SCRIPT_DIR="$SCRIPT_DIR" \
+    bash "$CLD_OBSERVE_ANY" --window "$win" \
+    --max-cycles 3 --interval 1 2>/dev/null
+
+if [[ -f "$TMPD/kill-log.txt" ]]; then
+    echo "FAIL: controller window が timeout path で auto-killed された"
+    rm -rf "$TMPD"
+    exit 1
+fi
+echo "PASS: controller window は timeout path でも auto-kill されなかった"
+rm -rf "$TMPD"
+MOCKEOF
+
+    [[ "$status" -eq 0 ]] && echo "$output" | grep -q "PASS:"
+}
