@@ -2026,6 +2026,7 @@ commands:
       step: "8"
     calls:
       - script: merge-gate-check-pr
+      - script: merge-gate-check-red-only
       - script: merge-gate-build-manifest
       - script: merge-gate-check-spawn
       - script: merge-gate-checkpoint-merge
@@ -2882,6 +2883,16 @@ scripts:
     type: script
     path: scripts/merge-gate-check-pr.sh
     description: "PR 存在確認（merge-gate）: PR が存在しない場合は REJECT checkpoint を書き込んで exit 1"
+
+  merge-gate-check-red-only:
+    type: script
+    path: scripts/merge-gate-check-red-only.sh
+    description: "RED-only PR 検出（merge-gate）: PR diff がテストファイルのみで実装ファイルなしの場合に REJECT して exit 1（Issue #1476）"
+
+  issue-create-refined:
+    type: script
+    path: scripts/issue-create-refined.sh
+    description: "Issue 起票 + Status=Refined 自動遷移（Issue #1469）: gh issue create 後に board-status-update Refined を呼び出す"
 
   merge-gate-build-manifest:
     type: script
