@@ -21,6 +21,16 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/merge-gate-check-pr.sh"
 
 PR が存在しない場合は即座に REJECT。Supervisor / Pilot が PR を作成（`intervene-auto --pattern pr-create`）してから再実行すること。
 
+### RED-only PR 検出（MUST — PR 存在確認の直後に実行）
+
+変更ファイルがテストファイルのみで実装ファイルを含まない "RED-only PR" を検出して REJECT する（Issue #1476）。
+
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/merge-gate-check-red-only.sh"
+```
+
+テストファイルのみの PR は AC が GREEN になる前に merge されるリスクがある。動的レビュアー構築より先に実行すること。
+
 ### 動的レビュアー構築
 
 ```bash

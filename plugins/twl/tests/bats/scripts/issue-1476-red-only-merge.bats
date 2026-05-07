@@ -303,6 +303,12 @@ teardown() {
 
   local call_log="$SANDBOX/gh_calls.log"
   stub_command "gh" "echo \"\$*\" >> '$call_log'; echo '1469'"
+  # chain-runner.sh を inline スタブに置き換え（board-status-update Refined を call_log に記録）
+  cat > "$SANDBOX/scripts/chain-runner.sh" <<EOF
+#!/usr/bin/env bash
+echo "chain: \$*" >> "${SANDBOX}/gh_calls.log" || true
+EOF
+  chmod +x "$SANDBOX/scripts/chain-runner.sh"
 
   run bash "$script" \
     --title "test bug" \
