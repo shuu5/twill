@@ -1,0 +1,57 @@
+issue: 1515
+title: "feature(twl-mcp): twl_get_budget — capture + regex extraction + format spec (SUB-7, epic #1271)"
+test_file: tests/test_issue_1515_get_budget.py
+mappings:
+  - ac: AC1
+    description: handler 追加
+    tests:
+      - TestAC1HandlerExists::test_ac1_handler_importable
+      - TestAC1HandlerExists::test_ac1_handler_is_callable
+      - TestAC1HandlerExists::test_ac1_mcp_tool_registered
+      - TestAC1HandlerExists::test_ac1_coexists_with_list_windows
+  - ac: AC2
+    description: 引数 {window_name, threshold_remaining_minutes?, threshold_cycle_minutes?, config_path?}
+    tests:
+      - TestAC2Signature::test_ac2_window_name_param_required
+      - TestAC2Signature::test_ac2_threshold_remaining_minutes_optional
+      - TestAC2Signature::test_ac2_threshold_cycle_minutes_optional
+      - TestAC2Signature::test_ac2_config_path_optional
+  - ac: AC3
+    description: 戻り値 {ok, budget_pct, budget_min, cycle_reset_min, low: bool, error}
+    tests:
+      - TestAC3ReturnSchema::test_ac3_success_schema_required_keys
+      - TestAC3ReturnSchema::test_ac3_success_ok_true
+      - TestAC3ReturnSchema::test_ac3_budget_pct_parsed
+      - TestAC3ReturnSchema::test_ac3_cycle_reset_min_parsed
+      - TestAC3ReturnSchema::test_ac3_budget_min_derived
+      - TestAC3ReturnSchema::test_ac3_low_false_above_threshold
+      - TestAC3ReturnSchema::test_ac3_low_true_below_threshold
+      - TestAC3ReturnSchema::test_ac3_low_type_is_bool
+  - ac: AC4
+    description: plugins/twl/refs/ref-budget-format.md 作成（epic AC10）
+    tests:
+      - TestAC4RefBudgetFormatMd::test_ac4_ref_file_exists
+      - TestAC4RefBudgetFormatMd::test_ac4_ref_file_not_empty
+      - TestAC4RefBudgetFormatMd::test_ac4_ref_file_contains_regex_pattern
+  - ac: AC5
+    description: format mismatch 検出時に low=true, error="format-mismatch" で安全側 fallback
+    tests:
+      - TestAC5FormatMismatchFallback::test_ac5_no_budget_pattern_returns_format_mismatch
+      - TestAC5FormatMismatchFallback::test_ac5_format_mismatch_low_is_true
+      - TestAC5FormatMismatchFallback::test_ac5_empty_pane_returns_format_mismatch
+  - ac: AC6
+    description: shadow mode rollout
+    tests:
+      - TestAC6ShadowMode::test_ac6_handler_defined_in_tools_py
+      - TestAC6ShadowMode::test_ac6_shadow_mode_env_respected
+  - ac: AC7
+    description: AT 非依存性
+    tests:
+      - TestAC7ATIndependence::test_ac7_handler_uses_subprocess_mockable
+      - TestAC7ATIndependence::test_ac7_no_real_tmux_required
+  - ac: AC8
+    description: short-lived 設計
+    tests:
+      - TestAC8ShortLived::test_ac8_timeout_set_on_subprocess
+      - TestAC8ShortLived::test_ac8_timeout_expired_handled
+      - TestAC8ShortLived::test_ac8_tmux_error_handled
