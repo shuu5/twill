@@ -584,7 +584,28 @@ poll_single() {
         if [[ -n "$_cur_step" && "${LAST_INJECTED_STEP[$entry]:-}" != "$_cur_step" ]]; then
           if inject_next_workflow "$issue" "$window_name" "$entry"; then
             LAST_INJECTED_STEP[$entry]="$_cur_step"
+            DEADLOCK_DETECT_TS[$entry]=0  # inject 成功 → deadlock タイマーリセット
             inject_matched=1
+          fi
+        elif [[ -n "$_cur_step" && "${LAST_INJECTED_STEP[$entry]:-}" == "$_cur_step" ]]; then
+          # LAST_INJECTED_STEP 一致 → deadlock 候補: terminal phrase チェック（#1468 Approach A）
+          if _has_terminal_phrase "$window_name"; then
+            echo "[orchestrator] Issue #${issue}: chain-step-completed 検知 → LAST_INJECTED_STEP bypass" >&2
+            LAST_INJECTED_STEP[$entry]=""  # bypass suppression → next cycle で re-inject
+            DEADLOCK_DETECT_TS[$entry]=0
+          elif [[ "${AUTOPILOT_AUTO_UNSTUCK:-0}" == "1" ]]; then
+            # AC4 (#1468 Approach B): opt-in stagnate timeout で LAST_INJECTED_STEP を force bypass
+            local _deadlock_now
+            _deadlock_now=$(date +%s 2>/dev/null || echo 0)
+            local _deadlock_ts="${DEADLOCK_DETECT_TS[$entry]:-0}"
+            [[ "$_deadlock_ts" -eq 0 ]] && DEADLOCK_DETECT_TS[$entry]="$_deadlock_now"
+            local _deadlock_elapsed=$(( _deadlock_now - ${DEADLOCK_DETECT_TS[$entry]:-_deadlock_now} ))
+            local _auto_unstuck_sec="${AUTOPILOT_AUTO_UNSTUCK_SEC:-600}"
+            if (( _deadlock_elapsed >= _auto_unstuck_sec )); then
+              echo "[orchestrator] WARN: Issue #${issue}: AUTOPILOT_AUTO_UNSTUCK=1 → auto-unstuck (${_deadlock_elapsed}s deadlock, bypass LAST_INJECTED_STEP)" >&2
+              LAST_INJECTED_STEP[$entry]=""  # force bypass suppression
+              DEADLOCK_DETECT_TS[$entry]=0
+            fi
           fi
         fi
 
@@ -679,7 +700,28 @@ poll_phase() {
           if [[ -n "$_cur_step_p" && "${LAST_INJECTED_STEP[$entry]:-}" != "$_cur_step_p" ]]; then
             if inject_next_workflow "$issue_num" "$window_name" "$entry"; then
               LAST_INJECTED_STEP[$entry]="$_cur_step_p"
+              DEADLOCK_DETECT_TS[$entry]=0  # inject 成功 → deadlock タイマーリセット
               inject_matched=1
+            fi
+          elif [[ -n "$_cur_step_p" && "${LAST_INJECTED_STEP[$entry]:-}" == "$_cur_step_p" ]]; then
+            # LAST_INJECTED_STEP 一致 → deadlock 候補: terminal phrase チェック（#1468 Approach A）
+            if _has_terminal_phrase "$window_name"; then
+              echo "[orchestrator] Issue #${issue_num}: chain-step-completed 検知 → LAST_INJECTED_STEP bypass" >&2
+              LAST_INJECTED_STEP[$entry]=""  # bypass suppression → next cycle で re-inject
+              DEADLOCK_DETECT_TS[$entry]=0
+            elif [[ "${AUTOPILOT_AUTO_UNSTUCK:-0}" == "1" ]]; then
+              # AC4 (#1468 Approach B): opt-in stagnate timeout で LAST_INJECTED_STEP を force bypass
+              local _dl_now
+              _dl_now=$(date +%s 2>/dev/null || echo 0)
+              local _dl_ts="${DEADLOCK_DETECT_TS[$entry]:-0}"
+              [[ "$_dl_ts" -eq 0 ]] && DEADLOCK_DETECT_TS[$entry]="$_dl_now"
+              local _dl_elapsed=$(( _dl_now - ${DEADLOCK_DETECT_TS[$entry]:-_dl_now} ))
+              local _au_sec="${AUTOPILOT_AUTO_UNSTUCK_SEC:-600}"
+              if (( _dl_elapsed >= _au_sec )); then
+                echo "[orchestrator] WARN: Issue #${issue_num}: AUTOPILOT_AUTO_UNSTUCK=1 → auto-unstuck (${_dl_elapsed}s deadlock, bypass LAST_INJECTED_STEP)" >&2
+                LAST_INJECTED_STEP[$entry]=""  # force bypass suppression
+                DEADLOCK_DETECT_TS[$entry]=0
+              fi
             fi
           fi
 
@@ -793,6 +835,7 @@ declare -A INJECT_TIMEOUT_COUNT=()  # AC-2 #744: pr-merge 限定 inject timeout 
 declare -A INPUT_WAITING_SEEN_PATTERN=()  # デバウンス: key="<issue>:<pattern>", value=1回目検知済み
 declare -A LAST_STATE_MTIME=()           # AC-1 #1177: state file mtime 履歴（mtime progress signal）
 declare -A LAST_STAGNATE_WARN_TS=()      # AC-2 #1177: stagnate WARN 最終出力タイムスタンプ（rate limit）
+declare -A DEADLOCK_DETECT_TS=()         # #1468: LAST_INJECTED_STEP==current_step 開始タイムスタンプ（auto-unstuck 用）
 
 # input-waiting 検知 + デバウンス + state 書き込み（Issue #510）
 # 引数: pane_output, issue, window_name

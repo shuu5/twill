@@ -284,6 +284,12 @@ step_autopilot_detect() {
   autopilot_status="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field status 2>/dev/null || echo "")"
   if [[ "$autopilot_status" == "running" ]]; then
     echo "IS_AUTOPILOT=true"
+    # AC2 (#1468 Approach C): orchestrator の deadlock 検知用 terminal phrase を emit
+    local _cur_step
+    _cur_step="$(python3 -m twl.autopilot.state read --autopilot-dir "$(resolve_autopilot_dir)" --type issue --issue "$issue_num" --field current_step 2>/dev/null || echo "")"
+    if [[ -n "$_cur_step" ]]; then
+      echo ">>> chain-step-completed: ${_cur_step} → autopilot 引き継ぎ待ち"
+    fi
   else
     echo "IS_AUTOPILOT=false"
   fi
