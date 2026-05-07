@@ -1,0 +1,89 @@
+mappings:
+  - ac_index: 1
+    ac_text: "/home/shuu5/.local/bin/codex を wrapper に置換、codex.real に元本体を rename。wrapper は exec で透過実行 (副作用なし)"
+    test_file: "plugins/twl/tests/bats/scripts/codex-wrapper-fidelity.bats"
+    test_names:
+      - "ac1: codex.real が ~/.local/bin/ に存在する"
+      - "ac1: codex.real が実行可能である"
+      - "ac1: ~/.local/bin/codex が bash wrapper スクリプトである (バイナリではない)"
+      - "ac1: codex wrapper が exec で codex.real を呼ぶ (透過実行)"
+      - "ac1: codex wrapper が引数を変更せずに codex.real に渡す (透過性)"
+    impl_files:
+      - /home/shuu5/.local/bin/codex
+      - /home/shuu5/.local/bin/codex.real
+    # NOTE: ~/.local/bin/codex は現在 Node.js バイナリへのシンボリックリンク。
+    # wrapper 実装では codex.real に元バイナリを mv し、bash wrapper を codex として配置する。
+    # impl_files は絶対パス（$HOME 配下）のため、リポジトリ外ファイル。
+
+  - ac_index: 2
+    ac_text: "全呼び出しを ~/.codex-call-trace.log に記録 (timestamp/PID/PPID/PWD/ARGS/PARENT/STDIN_LEN/STDIN_HEAD/EXIT_CODE/stdout/stderr)"
+    test_file: "plugins/twl/tests/bats/scripts/codex-wrapper-fidelity.bats"
+    test_names:
+      - "ac2: wrapper 実行後に ~/.codex-call-trace.log にエントリが追記される"
+      - "ac2: ログエントリに timestamp フィールドが含まれる"
+      - "ac2: ログエントリに PID フィールドが含まれる"
+      - "ac2: ログエントリに EXIT_CODE フィールドが含まれる"
+      - "ac2: ログエントリに ARGS フィールドが含まれる"
+    impl_files:
+      - /home/shuu5/.local/bin/codex
+    # NOTE: ログ記録ロジックは wrapper スクリプト内に実装する。
+    # ログファイルは ~/.codex-call-trace.log (リポジトリ外)。
+
+  - ac_index: 3
+    ac_text: "plugins/twl/tests/bats/scripts/codex-wrapper-fidelity.bats で wrapper 透過性を 3 項目以上 assert"
+    test_file: "plugins/twl/tests/bats/scripts/codex-wrapper-fidelity.bats"
+    test_names:
+      - "ac3: codex wrapper の exit code が codex.real の exit code と一致する"
+      - "ac3: codex wrapper の stdout が codex.real の stdout と一致する"
+      - "ac3: codex wrapper が stdin を codex.real に透過的に渡す"
+    impl_files:
+      - /home/shuu5/.local/bin/codex
+      - /home/shuu5/.local/bin/codex.real
+    # NOTE: AC3 はこのテストファイル自体が実装物。
+    # 透過性の 3 項目 = exit code / stdout / stdin 透過。
+
+  - ac_index: 4
+    ac_text: "plugins/twl/scripts/codex-call-trace-monitor.sh で定期 audit (24h ゼロ call → WARN, exit ≠ 0 連続 → WARN)"
+    test_file: "plugins/twl/tests/bats/scripts/codex-wrapper-fidelity.bats"
+    test_names:
+      - "ac4: codex-call-trace-monitor.sh が scripts/ に存在する"
+      - "ac4: codex-call-trace-monitor.sh が実行可能である"
+      - "ac4: codex-call-trace-monitor.sh が bash 構文チェック pass"
+      - "ac4: monitor.sh が 24h ゼロ call 時に WARN を出力する"
+      - "ac4: monitor.sh が exit != 0 連続時に WARN を出力する"
+    impl_files:
+      - plugins/twl/scripts/codex-call-trace-monitor.sh
+    # NOTE: codex-call-trace-monitor.sh は未実装（新規作成が必要）。
+    # --log オプションでログファイルを指定できるインターフェースを推奨。
+
+  - ac_index: 5
+    ac_text: "ロールバック手順をドキュメント化: mv ~/.local/bin/codex.real ~/.local/bin/codex で 1 コマンド復旧"
+    test_file: "plugins/twl/tests/bats/scripts/codex-wrapper-fidelity.bats"
+    test_names:
+      - "ac5: ロールバック手順ドキュメントが存在する"
+      - "ac5: ロールバック手順に 'mv ~/.local/bin/codex.real ~/.local/bin/codex' が記載されている"
+    impl_files: []
+    # impl_files 推定失敗: ドキュメントファイル名が未定。
+    # refs/codex-wrapper-rollback.md または docs/codex-wrapper.md 等への配置が想定されるが、
+    # 実装時に確定する。手動補完が必要。
+
+  - ac_index: 6
+    ac_text: "NEW-2 (#1484) merged 後の実機 test で [Qq]uota|exceeded パターン match 時に CODEX_SKIP_REASON 記録 + ~/.codex-call-trace.log に該当エントリ存在"
+    test_file: "plugins/twl/tests/bats/scripts/codex-wrapper-fidelity.bats"
+    test_names:
+      - "ac6: wrapper が quota パターン検知時に CODEX_SKIP_REASON を記録する"
+      - "ac6: wrapper が quota 検知時に ~/.codex-call-trace.log に CODEX_SKIP_REASON エントリを記録する"
+    impl_files:
+      - /home/shuu5/.local/bin/codex
+    # NOTE: quota パターン検知は wrapper スクリプト内に実装する。
+    # 実機での quota 再現は困難なため、ソース grep で実装存在を確認する RED テスト。
+
+  - ac_index: 7
+    ac_text: "Wave 56 全 PR merged 後 1 回 worker-codex-reviewer subagent invoke (e.g. Wave 57 dummy PR) で wrapper log にエントリ生成 (= subagent が actual に codex 呼ぶことを確認)"
+    test_file: "plugins/twl/tests/bats/scripts/codex-wrapper-fidelity.bats"
+    test_names:
+      - "ac7: [SKIP] Wave 57 dummy PR 実行後に wrapper log にエントリが生成される"
+    impl_files: []
+    # NOTE: AC7 は Wave 57 dummy PR の実機実行に依存するため自動テストは skip。
+    # 実機確認手順はテスト内コメントを参照。
+    # プロセス系 AC のため impl_files は []。
