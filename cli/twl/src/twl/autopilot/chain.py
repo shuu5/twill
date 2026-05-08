@@ -43,6 +43,7 @@ CHAIN_STEPS: list[str] = [
     "ac-verify",
     "post-fix-verify",
     "all-pass-check",
+    "merge-gate-check",
     "pr-cycle-report",
 ]
 
@@ -65,6 +66,7 @@ STEP_TO_WORKFLOW: dict[str, str] = {
     "ac-verify": "pr-verify",
     "post-fix-verify": "pr-fix",
     "all-pass-check": "pr-merge",
+    "merge-gate-check": "pr-merge",
     "pr-cycle-report": "pr-merge",
 }
 
@@ -110,6 +112,7 @@ CHAIN_STEP_DISPATCH: dict[str, str] = {
     "ac-verify": "llm",
     "post-fix-verify": "runner",
     "all-pass-check": "runner",
+    "merge-gate-check": "runner",
     "pr-cycle-report": "runner",
 }
 
@@ -1030,6 +1033,15 @@ def main(argv: list[str] | None = None) -> int:
             if issue_num:
                 runner.record_step(issue_num, step)
             print(f"✓ {step}: LLM スキル実行（chain は ステップ記録のみ）")
+            return 0
+
+        elif step == "merge-gate-check":
+            # Delegated to chain-runner.sh step_merge_gate_check via runner dispatch.
+            # This CLI branch records the step for completeness.
+            issue_num = runner._resolve_issue_num()
+            if issue_num:
+                runner.record_step(issue_num, step)
+            print(f"✓ {step}: chain-runner.sh step_merge_gate_check に委譲")
             return 0
 
         else:

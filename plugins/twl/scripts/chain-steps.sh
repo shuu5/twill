@@ -23,6 +23,7 @@ CHAIN_STEPS=(
   ac-verify
   post-fix-verify
   all-pass-check
+  merge-gate-check
   pr-cycle-report
 )
 
@@ -49,6 +50,7 @@ declare -A CHAIN_STEP_DISPATCH=(
   [ac-verify]=llm
   [post-fix-verify]=runner
   [all-pass-check]=runner
+  [merge-gate-check]=runner
   [pr-cycle-report]=runner
 )
 
@@ -69,6 +71,7 @@ declare -A CHAIN_STEP_WORKFLOW=(
   [ac-verify]=pr-verify
   [post-fix-verify]=pr-fix
   [all-pass-check]=pr-merge
+  [merge-gate-check]=pr-merge
   [pr-cycle-report]=pr-merge
 )
 

@@ -16,6 +16,8 @@ load 'helpers/common'
 
 SCRIPTS_DIR=""
 PLUGIN_ROOT_DIR=""
+CHAIN_PY=""
+CHAIN_RUNNER=""
 
 setup() {
   common_setup
@@ -25,6 +27,10 @@ setup() {
   local tests_dir
   tests_dir="$(cd "${bats_dir}/.." && pwd)"
   PLUGIN_ROOT_DIR="$(cd "${tests_dir}/.." && pwd)"
+  local repo_git_root
+  repo_git_root="$(cd "${PLUGIN_ROOT_DIR}" && git rev-parse --show-toplevel 2>/dev/null || echo "")"
+  CHAIN_PY="${repo_git_root}/cli/twl/src/twl/autopilot/chain.py"
+  CHAIN_RUNNER="${SCRIPTS_DIR}/chain-runner.sh"
 }
 
 teardown() {
@@ -70,33 +76,38 @@ teardown() {
 # ===========================================================================
 # AC2: chain workflow で specialist-audit を必ず呼ぶ Hook 追加
 #
-# auto-merge.sh に Layer 5 として specialist-audit を追加し、
-# Pilot が merge-gate command を経由しない直接呼び出しでも HARD FAIL が発動する。
+# chain.py CHAIN_STEPS に merge-gate-check を追加し、chain-runner.sh の
+# step_merge_gate_check 関数で Worker chain 経由でも specialist-audit を invoke する。
+# (Issue #1554 fix: PR #1550 で AC2 未実装のまま merge された真の修正)
 #
-# GREEN: PR #1541 で実装済み
+# GREEN: Issue #1554 実装後
 # ===========================================================================
 
-@test "ac2a: auto-merge.sh が specialist-audit REJECT メッセージを出力できる記述が存在する" {
-  # AC: specialist-audit FAIL 時に [auto-merge] REJECT メッセージが stderr に出力される
-  run bash -c "grep -q '\[auto-merge\].*REJECT.*specialist-audit' '${SCRIPTS_DIR}/auto-merge.sh'"
+@test "ac2a: chain.py CHAIN_STEPS に merge-gate-check が含まれる（chain SSOT 検証）" {
+  # AC: chain.py CHAIN_STEPS に "merge-gate-check" が追加されている (Issue #1554 fix)
+  [ -f "${CHAIN_PY}" ]
+  run bash -c "grep -qF '\"merge-gate-check\"' '${CHAIN_PY}'"
   assert_success
 }
 
-@test "ac2b: auto-merge.sh の specialist-audit が lesson 19 reproduction 防止として明示されている" {
-  # AC: auto-merge.sh の specialist-audit invoke コメントに lesson 19 reproduction 防止が記述されている
-  run bash -c "grep -q 'lesson 19' '${SCRIPTS_DIR}/auto-merge.sh'"
+@test "ac2b: chain.py STEP_TO_WORKFLOW で merge-gate-check が pr-merge workflow に紐付けられている" {
+  # AC: STEP_TO_WORKFLOW に "merge-gate-check": "pr-merge" エントリが存在する
+  [ -f "${CHAIN_PY}" ]
+  run bash -c "grep -qE '\"merge-gate-check\".*:.*\"pr-merge\"' '${CHAIN_PY}'"
   assert_success
 }
 
-@test "ac2c: auto-merge.sh の specialist-audit が _audit_script 変数で呼ばれる（injection 防止）" {
-  # AC: _audit_script 変数経由で呼ぶことで script path のハードコードを避けている
-  run bash -c "grep -q '_audit_script' '${SCRIPTS_DIR}/auto-merge.sh'"
+@test "ac2c: chain-runner.sh に step_merge_gate_check 関数が定義されている" {
+  # AC: chain-runner.sh に step_merge_gate_check 関数が存在し specialist-audit を invoke する
+  [ -f "${CHAIN_RUNNER}" ]
+  run bash -c "grep -qE '^step_merge_gate_check\(\)' '${CHAIN_RUNNER}'"
   assert_success
 }
 
-@test "ac2d: auto-merge.sh が bash 構文チェック pass (Layer 5 追加後)" {
-  # AC: auto-merge.sh に Layer 5 を追加しても bash 構文エラーがない
-  run bash -n "${SCRIPTS_DIR}/auto-merge.sh"
+@test "ac2d: chain-runner.sh の step_merge_gate_check 関数が specialist-audit を invoke する" {
+  # AC: step_merge_gate_check スコープ内に specialist-audit の呼び出しが存在する
+  [ -f "${CHAIN_RUNNER}" ]
+  run bash -c "awk '/^step_merge_gate_check\(\)/,/^}/' '${CHAIN_RUNNER}' | grep -qF 'specialist-audit'"
   assert_success
 }
 
@@ -226,23 +237,22 @@ teardown() {
   [ "${count}" -ge 5 ]
 }
 
-@test "ac4c: auto-merge.sh が specialist-audit.sh を Layer 5 として呼ぶコードが存在する（static trace）" {
-  # AC: auto-merge.sh に specialist-audit.sh を Layer 5 として呼ぶコードが存在することを静的確認
-  # auto-merge.sh を実際に起動せず、コード存在を grep で確認する（環境依存を排除）
+@test "ac4c: chain.py CHAIN_STEPS + chain-runner.sh step_merge_gate_check が整合している（static trace）" {
+  # AC: chain.py CHAIN_STEPS に merge-gate-check が含まれ、chain-runner.sh に
+  #     step_merge_gate_check 関数が定義されている（Issue #1554 真の修正確認）
+  [ -f "${CHAIN_PY}" ]
+  [ -f "${CHAIN_RUNNER}" ]
 
-  local auto_merge="${SCRIPTS_DIR}/auto-merge.sh"
-  [ -f "${auto_merge}" ]
-
-  # Layer 5 コメントが存在する
-  run bash -c "grep -q 'Layer 5' '${auto_merge}'"
+  # chain.py CHAIN_STEPS に merge-gate-check が存在する
+  run bash -c "grep -qF '\"merge-gate-check\"' '${CHAIN_PY}'"
   assert_success
 
-  # specialist-audit.sh の呼び出しコードが存在する
-  run bash -c "grep -q 'specialist-audit' '${auto_merge}'"
+  # chain-runner.sh に step_merge_gate_check 関数が定義されている
+  run bash -c "grep -qE '^step_merge_gate_check\(\)' '${CHAIN_RUNNER}'"
   assert_success
 
-  # REJECT メッセージが存在する
-  run bash -c "grep -q 'REJECT.*specialist-audit\|specialist-audit.*REJECT' '${auto_merge}'"
+  # step_merge_gate_check が specialist-audit を invoke する
+  run bash -c "awk '/^step_merge_gate_check\(\)/,/^}/' '${CHAIN_RUNNER}' | grep -qF 'specialist-audit'"
   assert_success
 }
 
