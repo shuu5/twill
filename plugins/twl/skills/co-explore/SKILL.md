@@ -50,15 +50,26 @@ mcpServers:
 `ISSUE_NUMBER` が未設定（新規探索）の場合:
 
 1. ユーザーの要望テキストから 1 行タイトルを生成
-2. draft Issue を起票:
+1.5. bootstrap state file 書き込み（ADR-037, 不変条件 P — Issue 起票 gate 解除用）:
    ```bash
-   ISSUE_NUMBER=$(gh issue create \
+   CKSUM=$(printf '%s' "$TITLE" | cksum | awk '{print $1}')
+   jq -nc --arg t "$TITLE" --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+     '{title:$t, started_at:$ts, controller:"co-explore"}' \
+     > "/tmp/.co-explore-bootstrap-${CKSUM}.json"
+   ```
+2. draft Issue を起票（`TWL_CALLER_AUTHZ` env marker 必須）:
+   ```bash
+   ISSUE_NUMBER=$(TWL_CALLER_AUTHZ=co-explore-bootstrap gh issue create \
      --title "<タイトル>" \
      --body "co-explore による探索中。summary 完了後に更新予定。" \
      --label "exploration" \
      --json number -q '.number')
    ```
 3. `ISSUE_NUMBER` を設定
+4. bootstrap state file 削除（Step 4 summary 保存後にクリーンアップ）:
+   ```bash
+   rm -f "/tmp/.co-explore-bootstrap-${CKSUM}.json"
+   ```
 
 既に `ISSUE_NUMBER` がある場合はスキップ。
 

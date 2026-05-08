@@ -2818,6 +2818,11 @@ scripts:
       - script: chain-runner
     description: "co-issue manual fix [B] path の dual-write executor（ADR-024 準拠: label 先 → Status=Refined 後）。orchestrator 失敗時の Emergency Bypass fallback（glossary.md L26）。ISSUE_NUMBER/ISSUE_REPO の入力検証付き"
 
+  pre-bash-issue-create-gate:
+    type: script
+    path: scripts/hooks/pre-bash-issue-create-gate.sh
+    description: "PreToolUse hook (Layer C-3): gh issue create を intercept し co-explore precondition を強制する（ADR-037, 不変条件 P）。TWL_CALLER_AUTHZ env marker / SKIP_ISSUE_GATE bypass / phase3-gate fallback の 4-path 判定。#1578"
+
   pre-bash-phase3-gate:
     type: script
     path: scripts/hooks/pre-bash-phase3-gate.sh

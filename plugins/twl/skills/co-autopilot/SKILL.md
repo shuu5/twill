@@ -260,6 +260,11 @@ TDD-style Issue（ac-scaffold-tests で RED テストが生成された場合）
 - RED 状態の PR は ac-verify CRITICAL でブロックされる（`fix-phase` が強制実行される）
 - GREEN 確認コマンド例: `bats cli/twl/tests/skills/workflow-pr-fix/test_*.bats` 等、issue 固有のテストコマンドを実行し全 PASS を確認してから push すること
 
+## 前提条件（Precondition — ADR-037, 不変条件 P）
+
+- **実装対象 Issue は co-explore による explore-summary 作成済みであること（SHALL）**。`twl explore-link check <N>` でリンク確認可能。未実施の場合は `/twl:co-explore #<N>` を案内して停止する
+- **co-autopilot 自身が新規 Issue を自己起票してはならない（MUST NOT）**。follow-up Issue が必要な場合は `SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='<reason>'` bypass + `/twl:co-explore` への案内 + ユーザー確認が必須
+
 ## 禁止事項（MUST NOT）
 
 - plan.yaml を独自生成してはならない（制約 AP-1）
