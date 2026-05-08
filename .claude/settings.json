@@ -191,6 +191,16 @@
             "timeout": 5000
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash plugins/twl/scripts/wait_for_mcp_ready.sh",
+            "timeout": 35000
+          }
+        ]
       }
     ],
     "Stop": [
