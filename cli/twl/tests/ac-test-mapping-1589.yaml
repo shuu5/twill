@@ -1,0 +1,45 @@
+mappings:
+  - ac_index: 1
+    ac_text: "cli/twl/src/twl/cli.py に doctor サブパーサーを追加: mcp_subparsers.add_parser('doctor') に --probe と --format 引数を追加し、elif args.mcp_subcommand == 'doctor' ブロックで doctor.run_doctor(args) を呼び出す"
+    test_file: "cli/twl/tests/test_mcp_doctor.py"
+    test_name: "TestAC1CliDoctorSubparser"
+    impl_files:
+      - "cli/twl/src/twl/cli.py"
+
+  - ac_index: 2
+    ac_text: "doctor 本体を新規モジュール cli/twl/src/twl/mcp_server/doctor.py に実装: .mcp.json 独自読み込み → _validate_command 呼び出し → binary 存在確認 → --probe optional stdio handshake"
+    test_file: "cli/twl/tests/test_mcp_doctor.py"
+    test_name: "TestAC2DoctorModule / TestAC2ProbeFlag"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/doctor.py"
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 3
+    ac_text: "出力フォーマット 2 種類: human-readable（default）と --format json（status/summary/checks スキーマ）"
+    test_file: "cli/twl/tests/test_mcp_doctor.py"
+    test_name: "TestAC3OutputFormats"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/doctor.py"
+
+  - ac_index: 4
+    ac_text: "exit code 規約: 0=OK / 1=warning（binary_exists miss / stdio_probe fail）/ 2=critical（mcp_json_readable fail / validate_command fail）"
+    test_file: "cli/twl/tests/test_mcp_doctor.py"
+    test_name: "TestAC4ExitCodes"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/doctor.py"
+
+  - ac_index: 5
+    ac_text: "lifecycle.py に _format_fix_guidance(reason: str) -> str を追加し、restart_mcp_server() の except ValueError ブロックで使用する。doctor.py を import してはならない"
+    test_file: "cli/twl/tests/test_mcp_lifecycle.py"
+    test_name: "TestIssue1588AC3FailFastBehavior::test_ac5_fix_guidance_in_error_message"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+
+  - ac_index: 6
+    ac_text: "テスト追加: test_mcp_doctor.py 新規（OK/warning/critical 各ケース）と test_mcp_lifecycle.py の TestIssue1588AC3FailFastBehavior に test_ac5_fix_guidance_in_error_message を追加"
+    test_file: "cli/twl/tests/test_mcp_doctor.py"
+    test_name: "全クラス（TestAC1〜TestAC4, TestAC2ProbeFlag）"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/doctor.py"
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+      - "cli/twl/src/twl/cli.py"
