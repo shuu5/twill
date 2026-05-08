@@ -1,0 +1,34 @@
+mappings:
+  - ac_index: 1
+    ac_text: "specialist-audit 呼び出し経路の root cause 調査 — grep -rn 'specialist-audit' plugins/twl/ で全呼び出し経路を網羅。chain workflow (workflow-pr-fix / merge-gate-check-spawn / autopilot-launch) のどこで実行され、git context (cwd) が正しいか trace。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1540.bats"
+    test_name: "ac1a: auto-merge.sh に specialist-audit invoke が Layer 5 として追加されている"
+    impl_files:
+      - "plugins/twl/scripts/auto-merge.sh"
+      - "plugins/twl/scripts/merge-gate-check-spawn.sh"
+  - ac_index: 2
+    ac_text: "chain workflow で specialist-audit を必ず呼ぶ Hook 追加 — merge 直前 (workflow-pr-merge / auto-merge.sh) に specialist-audit を invoke する step を chain.py SSOT (CHAIN_STEPS) に追加。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1540.bats"
+    test_name: "ac2a: auto-merge.sh が specialist-audit REJECT メッセージを出力できる記述が存在する"
+    impl_files:
+      - "plugins/twl/scripts/auto-merge.sh"
+  - ac_index: 3
+    ac_text: "HARD FAIL 検出が trigger しない場合の log 出力 — specialist-audit.sh で git diff 取得失敗時 / non-impl detection skip 時に明示的 WARN log 出力。debug 容易化。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1540.bats"
+    test_name: "ac3a: specialist-audit.sh が git diff empty 時に WARN log を stderr に出力する"
+    impl_files:
+      - "plugins/twl/scripts/specialist-audit.sh"
+  - ac_index: 4
+    ac_text: "bats test 拡張 — PR #1537 fix の bats test (test scaffold only PR で HARD FAIL trigger) に加えて、chain workflow 経路で specialist-audit が呼ばれることを verify する integration test。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1540.bats"
+    test_name: "ac4a: ac-scaffold-tests-1540.bats が存在する（自己参照 bootstrap）"
+    impl_files:
+      - "plugins/twl/tests/bats/ac-scaffold-tests-1540.bats"
+      - "plugins/twl/tests/bats/ac-test-mapping-1540.yaml"
+  - ac_index: 5
+    ac_text: "ADR-036 + Invariant N 真の verify — 「lesson 19 構造化 fix が main 永続化 + chain workflow で active」を end-to-end test で確認。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1540.bats"
+    test_name: "ac5a: PR #1541 の Layer 5 fix commit が git log に存在する"
+    impl_files:
+      - "plugins/twl/scripts/auto-merge.sh"
+      - "plugins/twl/scripts/specialist-audit.sh"
