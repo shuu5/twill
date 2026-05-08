@@ -138,6 +138,9 @@ def main():
     mcp_parser = subparsers.add_parser('mcp', help='MCP server lifecycle 管理')
     mcp_subparsers = mcp_parser.add_subparsers(dest='mcp_subcommand', required=True)
     mcp_subparsers.add_parser('restart', help='Restart MCP server')
+    doctor_parser = mcp_subparsers.add_parser('doctor', help='Self-check .mcp.json configuration')
+    doctor_parser.add_argument('--probe', action='store_true', help='Run stdio handshake probe (timeout 5s)')
+    doctor_parser.add_argument('--format', choices=['human', 'json'], default='human', help='Output format')
 
     args = parser.parse_args()
 
@@ -149,6 +152,9 @@ def main():
             except ValueError as e:
                 print(f"Error: mcp restart failed — {e}", file=sys.stderr)
                 sys.exit(1)
+        elif args.mcp_subcommand == 'doctor':
+            from twl.mcp_server import doctor
+            sys.exit(doctor.run_doctor(args))
         else:
             mcp_parser.print_help(sys.stderr)
             sys.exit(1)

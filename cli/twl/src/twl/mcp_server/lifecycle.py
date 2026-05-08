@@ -49,6 +49,19 @@ def _validate_command(command: str) -> None:
         )
 
 
+def _format_fix_guidance(reason: str) -> str:
+    """Return human-readable fix guidance for a validation failure reason."""
+    if "not in allowlist" in reason:
+        allowed = sorted(_ALLOWED_COMMANDS)
+        return f"{reason} — Use one of: {allowed}. Update .mcp.json 'command' field."
+    if "not in allowed prefixes" in reason:
+        prefixes = sorted(str(p) for p in _get_allowed_prefixes())
+        return f"{reason} — Use a command under: {prefixes}."
+    if "path resolution failed" in reason:
+        return f"{reason} — Check that the command path is valid and accessible."
+    return reason
+
+
 def _find_mcp_server_pids() -> "list[int]":
     """Find running twl MCP server PIDs via pgrep."""
     result = subprocess.run(
@@ -126,7 +139,7 @@ def restart_mcp_server() -> int:
     try:
         cmd = _find_mcp_server_cmd()
     except ValueError as exc:
-        print(f"Error: mcp restart aborted — {exc}", file=sys.stderr)
+        print(f"Error: mcp restart aborted — {_format_fix_guidance(str(exc))}", file=sys.stderr)
         return 1
     if cmd is None:
         print("Error: mcp restart aborted — could not determine startup command from .mcp.json", file=sys.stderr)

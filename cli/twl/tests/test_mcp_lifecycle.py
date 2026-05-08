@@ -674,6 +674,24 @@ class TestIssue1588AC3FailFastBehavior:
             f"(Issue #1588 AC3 未実装)"
         )
 
+    def test_ac5_fix_guidance_in_error_message(self, capsys):
+        # AC: _format_fix_guidance が実装され、restart_mcp_server() の stderr に
+        #     その出力文字列が含まれること
+        # RED: _format_fix_guidance が未実装のため AttributeError または出力内容が変わらない
+        with patch.object(lifecycle_mod, "_find_mcp_server_pids", return_value=[]), \
+             patch.object(lifecycle_mod, "_find_mcp_server_cmd",
+                          side_effect=ValueError("command 'xxx' not in allowlist: ['uv', 'uvx']")):
+            result = lifecycle_mod.restart_mcp_server()
+        assert result == 1
+        captured = capsys.readouterr()
+        # _format_fix_guidance の出力が含まれることを確認
+        # 実装前は _format_fix_guidance が存在しないため fail する
+        assert hasattr(lifecycle_mod, "_format_fix_guidance"), \
+            "_format_fix_guidance が lifecycle.py に未実装 (AC5 RED)"
+        expected_guidance = lifecycle_mod._format_fix_guidance("command 'xxx' not in allowlist: ['uv', 'uvx']")
+        assert expected_guidance in captured.err, \
+            f"stderr に _format_fix_guidance の出力が含まれていない: {captured.err!r}"
+
 
 # ---------------------------------------------------------------------------
 # Issue #1588 AC4: ADR-0008 ファイルが存在すること

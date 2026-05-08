@@ -897,12 +897,12 @@ refs:
     description: "su-observer pitfalls catalog: cld-spawn / inject / explore / monitor / memory / recovery の失敗パターンと教訓集 + Memory Principles（doobidoo = cross-machine SSoT）+ externalize-state inline 手順 + Worker auto mode 確認 A/B。起動時 Step 0 で Read 必須"
 
   stuck-patterns-yaml:
-    type: ref
+    type: reference
     path: refs/stuck-patterns.yaml
     description: "全 stuck pattern の SSoT（#1582）: id/regex/recovery_action/owner_layer/confidence スキーマ。consumer は stuck-patterns-lib.sh 経由で参照。新規 pattern は必ずこの YAML に追加する。"
 
   stuck-patterns-md:
-    type: ref
+    type: reference
     path: refs/stuck-patterns.md
     description: "stuck-patterns.yaml の Markdown 参照ドキュメント（#1582）: 人間可読の pattern 一覧表 + consumer 一覧"
 
@@ -2906,6 +2906,11 @@ scripts:
     type: script
     path: ../../cli/twl/src/twl/autopilot/checkpoint.py
     description: "checkpoint ファイルから要約フィールドまたは CRITICAL findings を読み取る"
+
+  mcp-doctor:
+    type: script
+    path: ../../cli/twl/src/twl/mcp_server/doctor.py
+    description: "twl mcp doctor サブコマンド: .mcp.json の整合性 self-check（command allowlist 検証・binary 存在確認・stdio probe）(#1589)"
 
   observe-wrapper:
     type: script
