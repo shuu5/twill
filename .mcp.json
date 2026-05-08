@@ -6,8 +6,14 @@
     },
     "twl": {
       "type": "stdio",
-      "command": "/home/shuu5/projects/local-projects/twill/main/cli/twl/.venv/bin/fastmcp",
+      "command": "uv",
       "args": [
+        "run",
+        "--directory",
+        "/home/shuu5/projects/local-projects/twill/main/cli/twl",
+        "--extra",
+        "mcp",
+        "fastmcp",
         "run",
         "/home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/mcp_server/server.py"
       ],

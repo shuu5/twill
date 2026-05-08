@@ -492,3 +492,318 @@ class TestAC6CliValueErrorHandling:
             f"stderr に Python traceback が含まれている (AC7 未実装 — try/except なしで ValueError propagate).\n"
             f"stderr: {captured.err!r}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Issue #1588 AC1: .mcp.json の command が "uv" であること
+# ---------------------------------------------------------------------------
+
+class TestIssue1588AC1McpJsonCommand:
+    """Issue #1588 AC1: .mcp.json の mcpServers.twl.command が "uv" に変更されていること。
+
+    RED: 現状の .mcp.json は command が fastmcp の絶対パスのため FAIL する。
+    """
+
+    def test_ac1_mcp_json_twl_command_is_uv(self):
+        # AC: .mcp.json の mcpServers.twl.command が "uv" であること
+        # RED: 現状は "/home/.../fastmcp" が設定されているため FAIL する
+        import json
+        mcp_json_path = Path(__file__).resolve().parents[3] / ".mcp.json"
+        assert mcp_json_path.exists(), f".mcp.json が見つからない: {mcp_json_path}"
+        with open(mcp_json_path) as f:
+            config = json.load(f)
+        twl_server = config.get("mcpServers", {}).get("twl", {})
+        assert twl_server, ".mcp.json に mcpServers.twl エントリが存在しない"
+        command = twl_server.get("command", "")
+        assert command == "uv", (
+            f".mcp.json mcpServers.twl.command が 'uv' でない: {command!r} "
+            f"(Issue #1588 AC1 未実装 — fastmcp パスから uv への変更が必要)"
+        )
+
+    def test_ac1_mcp_json_twl_args_starts_with_run(self):
+        # AC: .mcp.json の mcpServers.twl.args の先頭が "run" であること
+        # RED: 現状は fastmcp コマンドの args が設定されているため FAIL する
+        import json
+        mcp_json_path = Path(__file__).resolve().parents[3] / ".mcp.json"
+        assert mcp_json_path.exists(), f".mcp.json が見つからない: {mcp_json_path}"
+        with open(mcp_json_path) as f:
+            config = json.load(f)
+        twl_server = config.get("mcpServers", {}).get("twl", {})
+        args = twl_server.get("args", [])
+        assert args and args[0] == "run", (
+            f".mcp.json mcpServers.twl.args の先頭が 'run' でない: {args!r} "
+            f"(Issue #1588 AC1 未実装)"
+        )
+
+    def test_ac1_mcp_json_twl_args_contains_directory_flag(self):
+        # AC: args に "--directory" と cli/twl への絶対パスが含まれること
+        # RED: 現状の args は uv --directory 形式でないため FAIL する
+        import json
+        mcp_json_path = Path(__file__).resolve().parents[3] / ".mcp.json"
+        assert mcp_json_path.exists(), f".mcp.json が見つからない: {mcp_json_path}"
+        with open(mcp_json_path) as f:
+            config = json.load(f)
+        twl_server = config.get("mcpServers", {}).get("twl", {})
+        args = twl_server.get("args", [])
+        assert "--directory" in args, (
+            f".mcp.json mcpServers.twl.args に '--directory' が含まれない: {args!r} "
+            f"(Issue #1588 AC1 未実装)"
+        )
+
+    def test_ac1_mcp_json_twl_args_contains_extra_mcp(self):
+        # AC: args に "--extra" "mcp" が含まれること
+        # RED: 現状の args に --extra mcp がないため FAIL する
+        import json
+        mcp_json_path = Path(__file__).resolve().parents[3] / ".mcp.json"
+        assert mcp_json_path.exists(), f".mcp.json が見つからない: {mcp_json_path}"
+        with open(mcp_json_path) as f:
+            config = json.load(f)
+        twl_server = config.get("mcpServers", {}).get("twl", {})
+        args = twl_server.get("args", [])
+        assert "--extra" in args and "mcp" in args, (
+            f".mcp.json mcpServers.twl.args に '--extra' 'mcp' が含まれない: {args!r} "
+            f"(Issue #1588 AC1 未実装)"
+        )
+
+    def test_ac1_mcp_json_twl_type_is_stdio(self):
+        # AC: type: "stdio" が維持されていること
+        # RED: type フィールドが変わっている場合は FAIL する（防衛的検証）
+        import json
+        mcp_json_path = Path(__file__).resolve().parents[3] / ".mcp.json"
+        assert mcp_json_path.exists(), f".mcp.json が見つからない: {mcp_json_path}"
+        with open(mcp_json_path) as f:
+            config = json.load(f)
+        twl_server = config.get("mcpServers", {}).get("twl", {})
+        typ = twl_server.get("type", "")
+        assert typ == "stdio", (
+            f".mcp.json mcpServers.twl.type が 'stdio' でない: {typ!r} "
+            f"(Issue #1588 AC1 — type維持が必要)"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Issue #1588 AC3: fail-fast regression 二次予防
+# ---------------------------------------------------------------------------
+
+class TestIssue1588AC3FailFastBehavior:
+    """Issue #1588 AC3: restart_mcp_server() が SIGTERM 前に _find_mcp_server_cmd() を
+    dry-run し、エラー時はサーバーを停止せずに return 1 すること。
+
+    RED: 現状の restart_mcp_server() は SIGTERM 後に _find_mcp_server_cmd() を呼ぶため、
+    ValueError 時もサーバーを停止してしまう（fail-fast なし）。
+    """
+
+    def test_ac3_value_error_in_find_cmd_returns_1_without_sigterm(self):
+        # AC: _find_mcp_server_cmd() が ValueError を raise するとき、
+        #     restart_mcp_server() は SIGTERM を送らずに 1 を返すこと
+        # RED: 現状は SIGTERM 後に _find_mcp_server_cmd() を呼ぶため、
+        #     ValueError が出てもすでにサーバーが停止している
+        with patch.object(lifecycle_mod, "_find_mcp_server_pids", return_value=[99999]), \
+             patch.object(lifecycle_mod, "_find_mcp_server_cmd",
+                          side_effect=ValueError("command not in allowlist")), \
+             patch("os.kill") as mock_kill, \
+             patch.object(lifecycle_mod, "_wait_for_pids_exit", return_value=True):
+            result = lifecycle_mod.restart_mcp_server()
+        assert result == 1, (
+            f"restart_mcp_server() が ValueError 時に 1 を返さなかった: {result} "
+            f"(Issue #1588 AC3 未実装 — fail-fast 前に SIGTERM が必要)"
+        )
+        # SIGTERM が送られていないこと
+        sigterm_calls = [
+            call for call in mock_kill.call_args_list
+            if len(call.args) >= 2 and call.args[1] == signal.SIGTERM
+        ]
+        assert not sigterm_calls, (
+            f"ValueError 検出前に SIGTERM が送られた: {sigterm_calls} "
+            f"(Issue #1588 AC3 未実装 — dry-run 検証が SIGTERM より前にない)"
+        )
+
+    def test_ac3_none_return_from_find_cmd_returns_1_without_stopping_server(self):
+        # AC: _find_mcp_server_cmd() が None を返すとき、
+        #     restart_mcp_server() はサーバーを停止せずに 1 を返すこと
+        # RED: 現状は None 時に停止させずに return 0 する（return 1 でない）
+        with patch.object(lifecycle_mod, "_find_mcp_server_pids", return_value=[88888]), \
+             patch.object(lifecycle_mod, "_find_mcp_server_cmd", return_value=None), \
+             patch("os.kill") as mock_kill, \
+             patch.object(lifecycle_mod, "_wait_for_pids_exit", return_value=True):
+            result = lifecycle_mod.restart_mcp_server()
+        assert result == 1, (
+            f"restart_mcp_server() が None 時に 1 を返さなかった: {result} "
+            f"(Issue #1588 AC3 未実装 — None は return 1 でなければならない)"
+        )
+        # SIGTERM が送られていないこと
+        sigterm_calls = [
+            call for call in mock_kill.call_args_list
+            if len(call.args) >= 2 and call.args[1] == signal.SIGTERM
+        ]
+        assert not sigterm_calls, (
+            f"None 検出前に SIGTERM が送られた: {sigterm_calls} "
+            f"(Issue #1588 AC3 未実装 — dry-run 検証が SIGTERM より前にない)"
+        )
+
+    def test_ac3_value_error_outputs_structured_error_to_stderr(self, capsys):
+        # AC: ValueError 時に stderr に "Error: mcp restart aborted — <reason>" が出力されること
+        # RED: 現状の実装は ValueError を捕捉して構造化出力する処理がない
+        with patch.object(lifecycle_mod, "_find_mcp_server_pids", return_value=[]), \
+             patch.object(lifecycle_mod, "_find_mcp_server_cmd",
+                          side_effect=ValueError("command not in allowlist")):
+            result = lifecycle_mod.restart_mcp_server()
+
+        assert result == 1, (
+            f"restart_mcp_server() が ValueError 時に 1 を返さなかった: {result} "
+            f"(Issue #1588 AC3 未実装)"
+        )
+        captured = capsys.readouterr()
+        assert "Error: mcp restart aborted" in captured.err, (
+            f"ValueError 時に stderr に 'Error: mcp restart aborted' が出力されていない "
+            f"(Issue #1588 AC3 未実装).\n"
+            f"stderr: {captured.err!r}"
+        )
+
+    def test_ac3_docstring_updated(self):
+        # AC: restart_mcp_server() の docstring が
+        #     "Returns 0 on success, 1 on validation failure (server not stopped)" に更新されていること
+        # RED: 現状は "Always returns 0" のまま
+        doc = lifecycle_mod.restart_mcp_server.__doc__ or ""
+        assert "Always returns 0" not in doc, (
+            "restart_mcp_server() の docstring がまだ 'Always returns 0' のまま "
+            "(Issue #1588 AC3 未実装 — docstring 更新が必要)"
+        )
+        assert "1" in doc and ("validation failure" in doc or "server not stopped" in doc), (
+            f"restart_mcp_server() の docstring に '1' と検証失敗の説明がない: {doc!r} "
+            f"(Issue #1588 AC3 未実装)"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Issue #1588 AC4: ADR-0008 ファイルが存在すること
+# ---------------------------------------------------------------------------
+
+class TestIssue1588AC4AdrExists:
+    """Issue #1588 AC4: ADR-0008-mcp-config-command-format.md が存在すること。
+
+    RED: ファイルがまだ作成されていないため FAIL する。
+    """
+
+    def test_ac4_adr_0008_file_exists(self):
+        # AC: cli/twl/architecture/decisions/ADR-0008-mcp-config-command-format.md が存在すること
+        # RED: ファイルが存在しないため FAIL する
+        adr_path = (
+            Path(__file__).resolve().parents[1]
+            / "architecture"
+            / "decisions"
+            / "ADR-0008-mcp-config-command-format.md"
+        )
+        assert adr_path.exists(), (
+            f"ADR-0008-mcp-config-command-format.md が存在しない: {adr_path} "
+            f"(Issue #1588 AC4 未実装 — ADR 作成が必要)"
+        )
+
+    def test_ac4_adr_0008_file_has_content(self):
+        # AC: ADR-0008 ファイルが空でないこと
+        # RED: ファイルが存在しないため FAIL する
+        adr_path = (
+            Path(__file__).resolve().parents[1]
+            / "architecture"
+            / "decisions"
+            / "ADR-0008-mcp-config-command-format.md"
+        )
+        assert adr_path.exists(), (
+            f"ADR-0008-mcp-config-command-format.md が存在しない: {adr_path} "
+            f"(Issue #1588 AC4 未実装)"
+        )
+        content = adr_path.read_text().strip()
+        assert content, (
+            f"ADR-0008-mcp-config-command-format.md が空ファイル "
+            f"(Issue #1588 AC4 未実装)"
+        )
+
+    def test_ac4_adr_0008_mentions_uv_command(self):
+        # AC: ADR-0008 の内容に "uv" コマンドへの言及があること
+        # RED: ファイルが存在しないため FAIL する
+        adr_path = (
+            Path(__file__).resolve().parents[1]
+            / "architecture"
+            / "decisions"
+            / "ADR-0008-mcp-config-command-format.md"
+        )
+        assert adr_path.exists(), (
+            f"ADR-0008-mcp-config-command-format.md が存在しない: {adr_path} "
+            f"(Issue #1588 AC4 未実装)"
+        )
+        content = adr_path.read_text()
+        assert "uv" in content, (
+            f"ADR-0008 に 'uv' への言及がない (Issue #1588 AC4 未実装).\n"
+            f"content: {content[:200]!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Issue #1588 AC5: 実 .mcp.json round-trip test
+# ---------------------------------------------------------------------------
+
+class TestActualMcpJsonRoundTrip:
+    """Issue #1588 AC5: 実 .mcp.json を読み込み _find_mcp_server_cmd() が
+    ValueError を raise せず list[str] を返し、先頭が "uv" であることを検証する。
+
+    RED: 現状の .mcp.json は command が fastmcp パスのため
+    _validate_command() が ValueError を raise するか、
+    先頭要素が "uv" でないため FAIL する。
+
+    既存テストクラス（TestAC1AllowlistValidation 〜 TestAC6CliValueErrorHandling）は維持する。
+    """
+
+    def test_actual_mcp_json_find_cmd_no_value_error(self):
+        # AC: 実 .mcp.json を読み込んで _find_mcp_server_cmd() が ValueError を raise しないこと
+        # RED: 現状の .mcp.json は fastmcp パスのため _validate_command() が ValueError を raise する
+        mcp_json_path = Path(__file__).resolve().parents[3] / ".mcp.json"
+        assert mcp_json_path.exists(), f"実 .mcp.json が見つからない: {mcp_json_path}"
+
+        repo_root = str(mcp_json_path.parent)
+        with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=repo_root + "\n")):
+            try:
+                result = lifecycle_mod._find_mcp_server_cmd()
+            except ValueError as e:
+                pytest.fail(
+                    f"実 .mcp.json を使った _find_mcp_server_cmd() が ValueError を raise した: {e} "
+                    f"(Issue #1588 AC5 未実装 — .mcp.json を uv コマンドに変更する必要がある)"
+                )
+
+    def test_actual_mcp_json_find_cmd_returns_list(self):
+        # AC: _find_mcp_server_cmd() が list[str] を返すこと（None でないこと）
+        # RED: 現状は ValueError が raise されるか、コマンド解釈に失敗して None を返す可能性がある
+        mcp_json_path = Path(__file__).resolve().parents[3] / ".mcp.json"
+        assert mcp_json_path.exists(), f"実 .mcp.json が見つからない: {mcp_json_path}"
+
+        repo_root = str(mcp_json_path.parent)
+        with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=repo_root + "\n")):
+            try:
+                result = lifecycle_mod._find_mcp_server_cmd()
+            except ValueError:
+                result = None
+
+        assert isinstance(result, list), (
+            f"_find_mcp_server_cmd() が list を返さなかった: {result!r} "
+            f"(Issue #1588 AC5 未実装)"
+        )
+
+    def test_actual_mcp_json_find_cmd_first_element_is_uv(self):
+        # AC: _find_mcp_server_cmd() の戻り値の先頭要素が "uv" であること
+        # RED: 現状は fastmcp パスが先頭になるため FAIL する
+        mcp_json_path = Path(__file__).resolve().parents[3] / ".mcp.json"
+        assert mcp_json_path.exists(), f"実 .mcp.json が見つからない: {mcp_json_path}"
+
+        repo_root = str(mcp_json_path.parent)
+        with patch("subprocess.run", return_value=MagicMock(returncode=0, stdout=repo_root + "\n")):
+            try:
+                result = lifecycle_mod._find_mcp_server_cmd()
+            except ValueError as e:
+                pytest.fail(
+                    f"実 .mcp.json を使った _find_mcp_server_cmd() が ValueError を raise した: {e} "
+                    f"(Issue #1588 AC5 未実装)"
+                )
+
+        assert result is not None and result[0] == "uv", (
+            f"_find_mcp_server_cmd() の先頭要素が 'uv' でない: {result!r} "
+            f"(Issue #1588 AC5 未実装 — .mcp.json command を 'uv' に変更する必要がある)"
+        )
