@@ -319,8 +319,12 @@ teardown() {
   mkdir -p "${SANDBOX}/scripts"
   cp "${SCRIPTS_DIR}/specialist-audit.sh" "${audit_script}"
 
+  # dummy JSONL で引数エラーを回避し test-only HARD FAIL ロジックに到達させる（ac3a パターン）
+  local dummy_jsonl="${SANDBOX}/dummy.jsonl"
+  echo '{"type":"message","content":"test"}' > "${dummy_jsonl}"
+
   local exit_code=0
-  bash "${audit_script}" --mode merge-gate 2>/dev/null || exit_code=$?
+  bash "${audit_script}" --jsonl "${dummy_jsonl}" --mode merge-gate 2>/dev/null || exit_code=$?
 
   popd >/dev/null || true
 
