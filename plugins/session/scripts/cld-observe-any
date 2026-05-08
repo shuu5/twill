@@ -12,6 +12,11 @@ fi
 # LLM_INDICATORS SSOT: lib/llm-indicators.sh を参照 (#1374)
 source "${SCRIPT_DIR}/lib/llm-indicators.sh"
 
+# stuck-patterns.yaml SSoT ローダー (#1582)
+_STUCK_PATTERNS_LIB="$(dirname "${BASH_SOURCE[0]}")/../../twl/scripts/lib/stuck-patterns-lib.sh"
+# shellcheck source=/dev/null
+[[ -f "${_STUCK_PATTERNS_LIB}" ]] && source "${_STUCK_PATTERNS_LIB}" || true
+
 # --- デフォルト値 ---
 WINDOWS=()
 PATTERNS=()

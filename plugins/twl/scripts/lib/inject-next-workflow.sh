@@ -83,9 +83,9 @@ inject_next_workflow() {
         echo "[orchestrator] WARN: issue=${issue} stagnate detected (RESOLVE_FAILED ${RESOLVE_FAIL_COUNT[$entry]} 回, ${_elapsed}s >= AUTOPILOT_STAGNATE_SEC=${AUTOPILOT_STAGNATE_SEC})" >&2
         LAST_STAGNATE_WARN_TS[$entry]="$_now"
       fi
-      # AC4 (#1468 Approach B): AUTOPILOT_AUTO_UNSTUCK=1 opt-in で auto-unstuck ログ記録
+      # AC4 (#1468 Approach B): AUTOPILOT_AUTO_UNSTUCK default=1 で auto-unstuck ログ記録 (AUTOPILOT_AUTO_UNSTUCK_DISABLE=1 で opt-out)
       # LAST_INJECTED_STEP bypass（force inject）は orchestrator 側の DEADLOCK_DETECT_TS が担当
-      if [[ "${AUTOPILOT_AUTO_UNSTUCK:-0}" == "1" ]]; then
+      if [[ "${AUTOPILOT_AUTO_UNSTUCK:-1}" == "1" ]] && [[ "${AUTOPILOT_AUTO_UNSTUCK_DISABLE:-0}" != "1" ]]; then
         echo "[${_trace_ts}] issue=${issue} skill=AUTO_UNSTUCK result=stagnate_signal elapsed=${_elapsed}s" >> "$_trace_log" 2>/dev/null || true
       fi
     fi

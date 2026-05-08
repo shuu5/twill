@@ -15,6 +15,8 @@ SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPTS_ROOT}/lib/python-env.sh"
 # shellcheck source=./lib/tmux-window-kill.sh
 source "${SCRIPTS_ROOT}/lib/tmux-window-kill.sh"
+# shellcheck source=./lib/stuck-patterns-lib.sh
+source "${SCRIPTS_ROOT}/lib/stuck-patterns-lib.sh"
 # shellcheck source=chain-steps.sh
 source "${SCRIPTS_ROOT}/chain-steps.sh" 2>/dev/null || true
 
@@ -640,8 +642,8 @@ poll_single() {
             echo "[orchestrator] Issue #${issue}: chain-step-completed 検知 → LAST_INJECTED_STEP bypass" >&2
             LAST_INJECTED_STEP[$entry]=""  # bypass suppression → next cycle で re-inject
             DEADLOCK_DETECT_TS[$entry]=0
-          elif [[ "${AUTOPILOT_AUTO_UNSTUCK:-0}" == "1" ]]; then
-            # AC4 (#1468 Approach B): opt-in stagnate timeout で LAST_INJECTED_STEP を force bypass
+          elif [[ "${AUTOPILOT_AUTO_UNSTUCK:-1}" == "1" ]] && [[ "${AUTOPILOT_AUTO_UNSTUCK_DISABLE:-0}" != "1" ]]; then
+            # AC4 (#1468 Approach B): default-on stagnate timeout (AUTOPILOT_AUTO_UNSTUCK_DISABLE=1 で opt-out) で LAST_INJECTED_STEP を force bypass
             local _deadlock_now
             _deadlock_now=$(date +%s 2>/dev/null || echo 0)
             local _deadlock_ts="${DEADLOCK_DETECT_TS[$entry]:-0}"
@@ -769,8 +771,8 @@ poll_phase() {
               echo "[orchestrator] Issue #${issue_num}: chain-step-completed 検知 → LAST_INJECTED_STEP bypass" >&2
               LAST_INJECTED_STEP[$entry]=""  # bypass suppression → next cycle で re-inject
               DEADLOCK_DETECT_TS[$entry]=0
-            elif [[ "${AUTOPILOT_AUTO_UNSTUCK:-0}" == "1" ]]; then
-              # AC4 (#1468 Approach B): opt-in stagnate timeout で LAST_INJECTED_STEP を force bypass
+            elif [[ "${AUTOPILOT_AUTO_UNSTUCK:-1}" == "1" ]] && [[ "${AUTOPILOT_AUTO_UNSTUCK_DISABLE:-0}" != "1" ]]; then
+              # AC4 (#1468 Approach B): default-on stagnate timeout (AUTOPILOT_AUTO_UNSTUCK_DISABLE=1 で opt-out) で LAST_INJECTED_STEP を force bypass
               local _dl_now
               _dl_now=$(date +%s 2>/dev/null || echo 0)
               local _dl_ts="${DEADLOCK_DETECT_TS[$entry]:-0}"

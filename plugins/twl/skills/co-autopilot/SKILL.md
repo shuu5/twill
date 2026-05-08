@@ -265,6 +265,19 @@ TDD-style Issue（ac-scaffold-tests で RED テストが生成された場合）
 - **実装対象 Issue は co-explore による explore-summary 作成済みであること（SHALL）**。`twl explore-link check <N>` でリンク確認可能。未実施の場合は `/twl:co-explore #<N>` を案内して停止する
 - **co-autopilot 自身が新規 Issue を自己起票してはならない（MUST NOT）**。follow-up Issue が必要な場合は `SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='<reason>'` bypass + `/twl:co-explore` への案内 + ユーザー確認が必須
 
+## 主要環境変数
+
+| 変数 | デフォルト | 説明 |
+|------|-----------|------|
+| `AUTOPILOT_AUTO_UNSTUCK` | `1`（default=1、#1582） | `1` で deadlock タイムアウト後に LAST_INJECTED_STEP を自動 bypass（600s 後に FORCE_BYPASS）。`0` で無効化 |
+| `AUTOPILOT_AUTO_UNSTUCK_DISABLE` | `0` | `1` で `AUTOPILOT_AUTO_UNSTUCK` の値に関わらず auto-unstuck を強制無効化 |
+| `AUTOPILOT_AUTO_UNSTUCK_SEC` | `600` | auto-unstuck タイムアウト秒数 |
+| `AUTOPILOT_STAGNATE_SEC` | `1800` | stagnate 検知タイムアウト秒数 |
+| `DEV_AUTOPILOT_MAX_PARALLEL` | `4` | 並列 Worker 最大数 |
+
+> `AUTOPILOT_AUTO_UNSTUCK` は #1580 で opt-in（default=0）として実装され、#1582 で **default=1（opt-out 型）** に変更された。
+> 無効化が必要な場合は `AUTOPILOT_AUTO_UNSTUCK_DISABLE=1` を export すること。
+
 ## 禁止事項（MUST NOT）
 
 - plan.yaml を独自生成してはならない（制約 AP-1）

@@ -1,0 +1,67 @@
+# stuck-patterns.yaml — Stuck Pattern SSoT (#1582)
+#
+# このファイルはすべての stuck pattern knowledge の唯一の情報源。
+# consumer は stuck-patterns-lib.sh 経由で参照する。
+#
+# スキーマ:
+#   id             : パターン識別子（英数字・アンダースコア）
+#   regex          : ERE 正規表現（detect_input_waiting / grep -E で使用）
+#   recovery_action: 検知時のアクション（人間可読説明）
+#   owner_layer    : 責任レイヤ（orchestrator / observer / orchestrator+observer）
+#   confidence     : 検知信頼度（high / medium / low）
+#
+# 廃止予定:
+#   queued_message_residual は #1034 mailbox Phase 3 完遂で deprecate 候補
+
+patterns:
+  # Recovery patterns: 操作待ち UI の自動復旧
+  - id: queued_message_residual
+    regex: "Press up to edit queued messages"
+    recovery_action: "Enter送信（queued message をクリア）"
+    owner_layer: "orchestrator+observer"
+    confidence: high
+    notes: "#1580 AC1 で追加。#1034 Phase 3 完遂後は deprecate 候補"
+
+  # Menu patterns: インタラクティブ選択 UI
+  - id: menu_enter_select
+    regex: "Enter to select"
+    recovery_action: "番号 inject + Enter (auto_inject_menu)"
+    owner_layer: observer
+    confidence: high
+
+  - id: menu_arrow_navigate
+    regex: "↑/↓ to navigate"
+    recovery_action: "番号 inject + Enter (auto_inject_menu)"
+    owner_layer: observer
+    confidence: high
+
+  - id: menu_prompt_number
+    regex: "❯[[:space:]]*[0-9]+\\."
+    recovery_action: "番号 inject + Enter (auto_inject_menu)"
+    owner_layer: observer
+    confidence: high
+
+  # Freeform patterns: 自然言語の確認要求（auto-recovery なし、state 書き込みのみ）
+  - id: freeform_kaishi
+    regex: "(開始|始め)(て|します)[^？?]*[？?]?"
+    recovery_action: "state write only (manual) — observer 通知のみ"
+    owner_layer: orchestrator
+    confidence: medium
+
+  - id: freeform_yoroshii
+    regex: "よろしいですか[？?]"
+    recovery_action: "state write only (manual) — observer 通知のみ"
+    owner_layer: orchestrator
+    confidence: medium
+
+  - id: freeform_tsuzukemasu
+    regex: "続けますか|進んでよいですか|実行しますか"
+    recovery_action: "state write only (manual) — observer 通知のみ"
+    owner_layer: orchestrator
+    confidence: medium
+
+  - id: freeform_yn_bracket
+    regex: "\\[[Yy]/[Nn]\\]"
+    recovery_action: "state write only (manual) — observer 通知のみ"
+    owner_layer: orchestrator
+    confidence: medium
