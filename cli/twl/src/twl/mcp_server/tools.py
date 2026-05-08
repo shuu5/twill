@@ -1552,6 +1552,71 @@ def twl_validate_status_transition_handler(
     return {"decision": "deny", "reason": deny_reason, "evidence_path": None, "matched_option_id": matched_id}
 
 
+def twl_validate_issue_create_handler(
+    command: str,
+    tool_name: str = "Bash",
+    session_tmp_dir: str | None = None,
+    controller_issue_dir: str | None = None,
+    timeout_sec: int | None = 10,
+) -> dict:
+    """validation module: gh issue create pre-flight guard (ADR-037, 不変条件 P).
+
+    Tier 2 MCP-native defense; Tier 1 Bash hook (pre-bash-issue-create-gate.sh) is primary.
+    Initial outputType: "log" (shadow mode) — does not block execution.
+
+    Returns:
+        {
+            "decision": "allow" | "deny",
+            "reason": str,
+            "evidence_path": str | None,
+        }
+    """
+    if tool_name != "Bash" or not command:
+        return {"decision": "allow", "reason": "no-op: not target tool/command", "evidence_path": None}
+
+    import re as _re
+
+    if not _re.search(r"\bgh\s+issue\s+create\b", command):
+        return {"decision": "allow", "reason": "no-op: not gh issue create command", "evidence_path": None}
+
+    _tmp = session_tmp_dir or "/tmp"
+
+    # (a) SKIP bypass
+    skip_match = _re.search(r"(?:^|[[:space:]]|(?<=\s))SKIP_ISSUE_GATE=1(?:\s|$)", command)
+    if _re.search(r"(?:^|\s)SKIP_ISSUE_GATE=1(?:\s|$)", command):
+        reason_match = _re.search(r"SKIP_ISSUE_REASON=['\"]?([^'\"]+)['\"]?", command)
+        if reason_match:
+            return {"decision": "allow", "reason": f"bypass:{reason_match.group(1).strip()}", "evidence_path": None}
+        return {"decision": "deny", "reason": "SKIP_ISSUE_GATE=1 requires SKIP_ISSUE_REASON='...'", "evidence_path": None}
+
+    # (b) co-explore bootstrap path
+    if _re.search(r"(?:^|\s)TWL_CALLER_AUTHZ=co-explore-bootstrap(?:\s|$)", command):
+        import glob
+        bootstrap_files = glob.glob(f"{_tmp}/.co-explore-bootstrap-*.json")
+        reason = "caller:co-explore-bootstrap" if bootstrap_files else "caller:co-explore-bootstrap-env-only"
+        return {"decision": "allow", "reason": reason, "evidence_path": bootstrap_files[0] if bootstrap_files else None}
+
+    # (c) co-issue Phase 4 create path
+    if _re.search(r"(?:^|\s)TWL_CALLER_AUTHZ=co-issue-phase4-create(?:\s|$)", command):
+        import glob, time
+        _ctrl_dir = controller_issue_dir or ".controller-issue"
+        now = time.time()
+        summary_files = [
+            f for f in glob.glob(f"{_ctrl_dir}/*/explore-summary.md")
+            if (now - Path(f).stat().st_mtime) < 7200
+        ] if Path(_ctrl_dir).exists() else []
+        if summary_files:
+            return {"decision": "allow", "reason": "caller:co-issue-phase4-create", "evidence_path": summary_files[0]}
+        return {"decision": "deny", "reason": "co-issue Phase 4 requires .controller-issue/<sid>/explore-summary.md (ADR-037)", "evidence_path": None}
+
+    # (d) phase3-gate fallback
+    import glob as _glob
+    if _glob.glob(f"{_tmp}/.co-issue-phase3-gate-*.json"):
+        return {"decision": "allow", "reason": "phase3-gate-judgment", "evidence_path": None}
+
+    return {"decision": "deny", "reason": "co-explore による explore-summary が必須 (ADR-037, 不変条件 P)", "evidence_path": None}
+
+
 def twl_check_completeness_handler(manifest_context: str) -> dict:
     """validation module: specialist completeness check via flock-guarded manifest files."""
     import fcntl
@@ -2164,6 +2229,17 @@ try:
         return json.dumps(twl_validate_status_transition_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
 
     @mcp.tool()
+    def twl_validate_issue_create(
+        command: str,
+        tool_name: str = "Bash",
+        session_tmp_dir: str | None = None,
+        controller_issue_dir: str | None = None,
+        timeout_sec: int | None = 10,
+    ) -> str:
+        """validation module: gh issue create pre-flight guard — ADR-037 Invariant P enforcement (shadow log mode)."""
+        return json.dumps(twl_validate_issue_create_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    @mcp.tool()
     def twl_check_completeness(manifest_context: str) -> str:
         """validation module: specialist completeness check via flock-guarded manifest files."""
         return json.dumps(twl_check_completeness_handler(manifest_context=manifest_context), ensure_ascii=False)
@@ -2371,6 +2447,10 @@ except ImportError:
     def twl_validate_status_transition(command: str, tool_name: str = "Bash", session_tmp_dir: str | None = None, controller_issue_dir: str | None = None, timeout_sec: int | None = 10) -> str:  # type: ignore[misc]
         """validation module: gh project item-edit Status field transition gate (fastmcp not installed)."""
         return json.dumps(twl_validate_status_transition_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    def twl_validate_issue_create(command: str, tool_name: str = "Bash", session_tmp_dir: str | None = None, controller_issue_dir: str | None = None, timeout_sec: int | None = 10) -> str:  # type: ignore[misc]
+        """validation module: gh issue create pre-flight guard — ADR-037 Invariant P enforcement (fastmcp not installed)."""
+        return json.dumps(twl_validate_issue_create_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
 
     def twl_check_completeness(manifest_context: str) -> str:  # type: ignore[misc]
         """validation module: specialist completeness check via flock-guarded manifest files."""

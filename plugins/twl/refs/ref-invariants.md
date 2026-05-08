@@ -202,6 +202,35 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
+## 不変条件 P: Issue 起票 flow 大原則 (SHALL)
+
+**目的**: 新規 Issue の起票 (`gh issue create`) は co-explore による explore-summary 作成を precondition として満たさなければならない (SHALL)。bypass は `SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='<reason>'` の明示的併用のみ許可される。
+
+**制約**:
+- 新規 Issue の起票は以下いずれかの precondition を満たすこと (SHALL):
+  1. **co-explore bootstrap path**: `TWL_CALLER_AUTHZ=co-explore-bootstrap` env marker + `/tmp/.co-explore-bootstrap-*.json` state file
+  2. **co-issue Phase 4 create path**: `TWL_CALLER_AUTHZ=co-issue-phase4-create` env marker + `.controller-issue/<sid>/explore-summary.md` 存在
+  3. **co-issue session in-flight path**: `/tmp/.co-issue-phase3-gate-*.json` 存在
+  4. **明示的 bypass**: `SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='<reason>'` の明示的併用 (intervention 記録 MUST)
+- 上記以外の経路 (observer 直接 / Pilot 直接 / PR review 起点 / 手動) は deny される
+- `SKIP_ISSUE_GATE=1` のみ (`SKIP_ISSUE_REASON` 欠落) は deny する
+
+**適用範囲**: observer / Pilot / co-explore / co-issue / 手動 すべての `gh issue create` 経路 (GraphQL `gh api graphql` mutation は本 invariant の射程外、後継 Issue で追跡)
+
+**根拠**: [ADR-037: Issue 作成 flow 大原則の正典化と enforcement 階層](../architecture/decisions/ADR-037-issue-creation-flow-canonicalization.md)
+
+**検証方法**: bats `pre-bash-issue-create-gate.bats` (S1-S12)、pytest `test_validate_issue_create.py`
+
+**影響範囲**:
+  - `plugins/twl/scripts/hooks/pre-bash-issue-create-gate.sh`
+  - `cli/twl/src/twl/mcp_server/tools.py` (`twl_validate_issue_create_handler`)
+  - `plugins/twl/skills/co-explore/SKILL.md`
+  - `plugins/twl/skills/co-issue/SKILL.md`
+  - `plugins/twl/agents/su-observer/SKILL.md`
+  - `plugins/twl/skills/co-autopilot/SKILL.md`
+
+---
+
 ## SU-* との境界
 
 SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-N とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。

@@ -158,6 +158,27 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 - **リスク評価**: 中（classifier の判断を override するため意図確認必須）
 - **事後**: InterventionRecord を `.observation/` に記録。bypass 経緯を doobidoo に `observer-lesson` タグで保存
 
+### パターン 13: SKIP_ISSUE_GATE bypass — Issue 起票 gate 例外承認（ADR-037）
+
+- **発火条件**: observer/Pilot が `SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='<reason>' gh issue create ...` を実行しようとしている、または co-explore flow を経由せずに Issue 起票が必要な状況
+- **判定基準**:
+
+| reason category | 例 | 承認 |
+|---|---|---|
+| `trivial config: ...` | 1-line label rename, README typo | Auto allow |
+| `urgent bugfix: ...` | P0 production bug, fix tracked in PR | Auto allow + flag for retro review |
+| `ci-automated` | GitHub Actions, scheduled scans | Auto allow |
+| その他 | (未分類) | Confirm: AskUserQuestion で「co-explore を経由しない理由」を user に確認 |
+
+- **ユーザーへの報告内容**（Confirm 分類時）:
+  - bypass の理由と起票予定の Issue 内容
+  - 「co-explore を経由せずに Issue を起票してよいか」の確認
+- **修復手順**: ユーザー承認後 `SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='<reason>' gh issue create ...` を実行
+- **前提条件**: `SKIP_ISSUE_REASON` が必ず指定されていること（欠落時は deny）
+- **リスク評価**: 低〜中（trivial config は低リスク、新規設計判断は中リスク）
+- **ログ**: `/tmp/issue-create-gate.log` に `[ts] BYPASS reason=<reason> cmd_hash=<hash>` が記録される
+- **事後**: InterventionRecord を `.observation/` に記録。Wave 完了時に su-observer が log を集計し、bypass 5+ 件/Wave で alert
+
 ---
 
 ## Layer 2: Escalate

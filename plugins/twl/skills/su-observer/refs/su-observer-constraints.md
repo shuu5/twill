@@ -30,6 +30,7 @@
 - Wave 完了後の externalize-state を省略してはならない（SU-6a）
 - /compact の自動実行を試みてはならない（built-in CLI のためユーザー手動実行が必須）
 - 検出結果をユーザー確認なしで自動 Issue 起票してはならない
+- **Issue 起票関連（不変条件 P / ADR-037）**: `gh issue create` を直接実行してはならない。新規 Issue の起票は必ず co-explore による explore-summary 作成後に co-issue 経由で行う。explore-summary なしの直接起票は `pre-bash-issue-create-gate.sh` で block される（bypass は `SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='<reason>'` 明記時のみ）
 - `--with-chain --issue N` で co-autopilot を直接起動してはならない（ADR-026、SU-3 連鎖）
 
 ## Security gate (Layer A-D) 回避は MUST NOT
