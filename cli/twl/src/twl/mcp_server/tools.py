@@ -1582,19 +1582,19 @@ def twl_validate_issue_create_handler(
     _tmp = session_tmp_dir or "/tmp"
 
     # (a) SKIP bypass
-    skip_match = _re.search(r"(?:^|[[:space:]]|(?<=\s))SKIP_ISSUE_GATE=1(?:\s|$)", command)
     if _re.search(r"(?:^|\s)SKIP_ISSUE_GATE=1(?:\s|$)", command):
-        reason_match = _re.search(r"SKIP_ISSUE_REASON=['\"]?([^'\"]+)['\"]?", command)
+        reason_match = _re.search(r"SKIP_ISSUE_REASON=['\"]([^'\"]+)['\"]", command)
         if reason_match:
             return {"decision": "allow", "reason": f"bypass:{reason_match.group(1).strip()}", "evidence_path": None}
         return {"decision": "deny", "reason": "SKIP_ISSUE_GATE=1 requires SKIP_ISSUE_REASON='...'", "evidence_path": None}
 
-    # (b) co-explore bootstrap path
+    # (b) co-explore bootstrap path — requires BOTH env marker AND state file (ADR-037 §1, R2 mitigation)
     if _re.search(r"(?:^|\s)TWL_CALLER_AUTHZ=co-explore-bootstrap(?:\s|$)", command):
         import glob
         bootstrap_files = glob.glob(f"{_tmp}/.co-explore-bootstrap-*.json")
-        reason = "caller:co-explore-bootstrap" if bootstrap_files else "caller:co-explore-bootstrap-env-only"
-        return {"decision": "allow", "reason": reason, "evidence_path": bootstrap_files[0] if bootstrap_files else None}
+        if bootstrap_files:
+            return {"decision": "allow", "reason": "caller:co-explore-bootstrap", "evidence_path": bootstrap_files[0]}
+        return {"decision": "deny", "reason": "co-explore-bootstrap requires /tmp/.co-explore-bootstrap-*.json state file (ADR-037 §1-b)", "evidence_path": None}
 
     # (c) co-issue Phase 4 create path
     if _re.search(r"(?:^|\s)TWL_CALLER_AUTHZ=co-issue-phase4-create(?:\s|$)", command):

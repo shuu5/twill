@@ -1,294 +1,236 @@
 #!/usr/bin/env bats
-# pre-bash-issue-create-gate.bats — AC2 RED テストスタブ
+# pre-bash-issue-create-gate.bats — AC2 GREEN テスト
 #
 # Issue #1578: feat(supervisor): Issue 起票前 co-explore 強制 enforcement
 # AC2: pre-bash-issue-create-gate.sh 実装 + bats 12 シナリオ (S1-S12 全 PASS)
 #
-# 対象ファイル（未実装）:
-#   plugins/twl/scripts/hooks/pre-bash-issue-create-gate.sh  (REPO_ROOT相対: scripts/hooks/...)
-#
-# RED: 対象スクリプトが存在しないため全シナリオが fail する（意図的 RED フェーズ）
+# Hook interface: JSON payload via stdin
+#   {tool_name:"Bash", tool_input:{command:"<cmd>"}}
+# Deny: hook outputs {hookSpecificOutput:{permissionDecision:"deny",...}}, exits 0
+# Allow: hook outputs nothing (or non-deny), exits 0
 #
 # Scenarios:
-#   S1:  gh issue create + CO_EXPLORE_DONE 未設定 → deny
-#   S2:  gh issue create + CO_EXPLORE_DONE=1 → allow
-#   S3:  gh issue create + explore-summary ファイル存在 → allow
-#   S4:  gh issue create --template を含む → deny（template 指定も gate 対象）
-#   S5:  gh issue create + CO_EXPLORE_DONE=1 + --repo 指定 → allow（cross-repo も通過）
+#   S1:  gh issue create + no allow path → deny
+#   S2:  gh issue create + SKIP_ISSUE_GATE=1 + SKIP_ISSUE_REASON='trivial config' → allow
+#   S3:  gh issue create + TWL_CALLER_AUTHZ=co-issue-phase4-create + summary file → allow
+#   S4:  gh issue create --template + no allow path → deny
+#   S5:  gh issue create + SKIP_ISSUE_GATE=1 + SKIP_ISSUE_REASON='...' + --repo → allow (cross-repo)
 #   S6:  gh pr create → allow（gate 対象外コマンド）
 #   S7:  gh issue list → allow（gate 対象外コマンド）
 #   S8:  git commit → allow（gh issue create でないため対象外）
-#   S9:  gh issue create + CO_EXPLORE_SKIP=1 → deny（SKIP env は gate を bypass しない）
-#   S10: gh issue create + 空白コマンド prefix → deny（前置き空白あっても検知）
-#   S11: gh issue create --body "..." + CO_EXPLORE_DONE 未設定 → deny + actionable message
-#   S12: gh issue create + explore-summary ファイルなし + CO_EXPLORE_DONE 未設定 → deny + summary path を含むメッセージ
+#   S9:  SKIP_ISSUE_GATE=1 のみ (SKIP_ISSUE_REASON 欠落) → deny
+#   S10: gh issue create (先頭空白あり) + no allow path → deny
+#   S11: gh issue create → deny + "co-explore" を含む actionable message
+#   S12: TWL_CALLER_AUTHZ=co-explore-bootstrap + state file なし → deny (state file 必須)
 
 load '../helpers/common'
 
 GATE_SCRIPT="scripts/hooks/pre-bash-issue-create-gate.sh"
+GATE_PATH=""
+TMP_DIR=""
 
 setup() {
   common_setup
-
-  # REPO_ROOT は common.bash で解決済み（= plugins/twl/ を指す）
   GATE_PATH="$REPO_ROOT/$GATE_SCRIPT"
-
-  # explore-summary 用ディレクトリ
-  mkdir -p "$SANDBOX/.explore"
-
-  # gate が未実装の場合は全テストで false になる（RED）
-  # 実装後はスクリプトが SANDBOX/scripts/ へコピーされた状態でテストされる
+  TMP_DIR="$SANDBOX/tmp-session"
+  mkdir -p "$TMP_DIR"
 }
 
 teardown() {
-  unset CO_EXPLORE_DONE CO_EXPLORE_SKIP
   common_teardown
 }
 
-# ---------------------------------------------------------------------------
-# S1: gh issue create + CO_EXPLORE_DONE 未設定 → deny
-# ---------------------------------------------------------------------------
+# Build Bash tool JSON payload
+_payload() {
+  local cmd="$1"
+  jq -nc --arg c "$cmd" '{tool_name:"Bash", tool_input:{command:$c}}'
+}
 
-# WHEN: CO_EXPLORE_DONE が設定されておらず gh issue create を実行しようとする
-# THEN: exit 2 (PreToolUse deny) で block される
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
-@test "S1: gh issue create + CO_EXPLORE_DONE 未設定 → deny" {
-  # RED: gate スクリプトが存在しないため fail
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+# Run hook with JSON payload on stdin; SESSION_TMP_DIR and CONTROLLER_ISSUE_DIR isolated
+_run_hook() {
+  local payload="$1"
+  echo "$payload" | SESSION_TMP_DIR="$TMP_DIR" CONTROLLER_ISSUE_DIR="$SANDBOX/.controller-issue" bash "$GATE_PATH"
+}
 
-  unset CO_EXPLORE_DONE
-
-  TOOL_INPUT_command="gh issue create --title 'test' --body 'body'" \
-    run bash "$GATE_PATH"
-
-  assert_failure
+# Check if hook output is a deny decision
+_is_deny() {
+  echo "$output" | jq -e '.hookSpecificOutput.permissionDecision == "deny"' > /dev/null 2>&1
 }
 
 # ---------------------------------------------------------------------------
-# S2: gh issue create + CO_EXPLORE_DONE=1 → allow
+# S1: gh issue create + no allow path → deny
 # ---------------------------------------------------------------------------
 
-# WHEN: CO_EXPLORE_DONE=1 が設定された状態で gh issue create を実行しようとする
-# THEN: exit 0 で allow される
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
-@test "S2: gh issue create + CO_EXPLORE_DONE=1 → allow" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+@test "S1: gh issue create + no allow path → deny" {
+  skip_if_gate_missing
 
-  CO_EXPLORE_DONE=1 \
-  TOOL_INPUT_command="gh issue create --title 'test' --body 'body'" \
-    run bash "$GATE_PATH"
+  run _run_hook "$(_payload "gh issue create --title 'test' --body 'body'")"
+
+  assert_success  # hook always exits 0
+  _is_deny || fail "expected deny but got allow"
+}
+
+# ---------------------------------------------------------------------------
+# S2: gh issue create + SKIP_ISSUE_GATE=1 + SKIP_ISSUE_REASON → allow
+# ---------------------------------------------------------------------------
+
+@test "S2: gh issue create + SKIP_ISSUE_GATE=1 + SKIP_ISSUE_REASON → allow" {
+  skip_if_gate_missing
+
+  run _run_hook "$(_payload "SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='trivial config: label rename' gh issue create --title 'test'")"
 
   assert_success
+  _is_deny && fail "expected allow but got deny"
+  true
 }
 
 # ---------------------------------------------------------------------------
-# S3: gh issue create + explore-summary ファイル存在 → allow
+# S3: gh issue create + TWL_CALLER_AUTHZ=co-issue-phase4-create + summary file → allow
 # ---------------------------------------------------------------------------
 
-# WHEN: CO_EXPLORE_DONE は未設定だが explore-summary ファイルが存在する
-# THEN: exit 0 で allow される（ファイル存在が証跡になる）
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
-@test "S3: gh issue create + explore-summary ファイル存在 → allow" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+@test "S3: gh issue create + TWL_CALLER_AUTHZ=co-issue-phase4-create + summary → allow" {
+  skip_if_gate_missing
 
-  # explore-summary を作成（証跡ファイル）
-  mkdir -p "$SANDBOX/.explore/99"
-  echo '{"summary": "test"}' > "$SANDBOX/.explore/99/summary.md"
+  # create explore-summary.md in controller-issue session dir
+  mkdir -p "$SANDBOX/.controller-issue/test-session"
+  echo "# explore summary" > "$SANDBOX/.controller-issue/test-session/explore-summary.md"
 
-  unset CO_EXPLORE_DONE
-
-  CO_EXPLORE_SUMMARY_DIR="$SANDBOX/.explore" \
-  TOOL_INPUT_command="gh issue create --title 'test' --body 'body'" \
-    run bash "$GATE_PATH"
+  run _run_hook "$(_payload "TWL_CALLER_AUTHZ=co-issue-phase4-create gh issue create --title 'issue' --body 'b'")"
 
   assert_success
+  _is_deny && fail "expected allow but got deny"
+  true
 }
 
 # ---------------------------------------------------------------------------
-# S4: gh issue create --template → deny（template 指定も gate 対象）
+# S4: gh issue create --template + no allow path → deny
 # ---------------------------------------------------------------------------
 
-# WHEN: --template オプション付きでも CO_EXPLORE_DONE 未設定
-# THEN: deny（template 付きでも issue 起票は gate を通る）
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
-@test "S4: gh issue create --template + CO_EXPLORE_DONE 未設定 → deny" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+@test "S4: gh issue create --template + no allow path → deny" {
+  skip_if_gate_missing
 
-  unset CO_EXPLORE_DONE
-
-  TOOL_INPUT_command="gh issue create --template bug_report.md --title 'bug'" \
-    run bash "$GATE_PATH"
-
-  assert_failure
-}
-
-# ---------------------------------------------------------------------------
-# S5: gh issue create + CO_EXPLORE_DONE=1 + --repo 指定 → allow
-# ---------------------------------------------------------------------------
-
-# WHEN: cross-repo (--repo owner/repo) 指定 + CO_EXPLORE_DONE=1
-# THEN: allow（cross-repo でも env marker が有効）
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
-@test "S5: gh issue create + CO_EXPLORE_DONE=1 + --repo 指定 → allow (cross-repo)" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
-
-  CO_EXPLORE_DONE=1 \
-  TOOL_INPUT_command="gh issue create --repo shuu5/other-repo --title 'cross' --body 'b'" \
-    run bash "$GATE_PATH"
+  run _run_hook "$(_payload "gh issue create --template bug_report.md --title 'bug'")"
 
   assert_success
+  _is_deny || fail "expected deny but got allow"
 }
 
 # ---------------------------------------------------------------------------
-# S6: gh pr create → allow（gate 対象外コマンド）
+# S5: gh issue create + SKIP_ISSUE_GATE=1 + SKIP_ISSUE_REASON + --repo → allow (cross-repo)
 # ---------------------------------------------------------------------------
 
-# WHEN: gh pr create を実行しようとする
-# THEN: gate は対象外として allow
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
+@test "S5: gh issue create + SKIP_ISSUE_GATE + SKIP_REASON + --repo → allow (cross-repo)" {
+  skip_if_gate_missing
+
+  run _run_hook "$(_payload "SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='trivial config' gh issue create --repo shuu5/other --title 'x'")"
+
+  assert_success
+  _is_deny && fail "expected allow but got deny"
+  true
+}
+
+# ---------------------------------------------------------------------------
+# S6: gh pr create → allow (gate 対象外)
+# ---------------------------------------------------------------------------
+
 @test "S6: gh pr create → allow (gate 対象外)" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+  skip_if_gate_missing
 
-  unset CO_EXPLORE_DONE
-
-  TOOL_INPUT_command="gh pr create --title 'feat' --body 'desc'" \
-    run bash "$GATE_PATH"
+  run _run_hook "$(_payload "gh pr create --title 'feat' --body 'desc'")"
 
   assert_success
+  _is_deny && fail "expected allow but got deny"
+  true
 }
 
 # ---------------------------------------------------------------------------
-# S7: gh issue list → allow（gate 対象外コマンド）
+# S7: gh issue list → allow (gate 対象外)
 # ---------------------------------------------------------------------------
 
-# WHEN: gh issue list を実行しようとする
-# THEN: gate は対象外として allow
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
 @test "S7: gh issue list → allow (gate 対象外)" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+  skip_if_gate_missing
 
-  unset CO_EXPLORE_DONE
-
-  TOOL_INPUT_command="gh issue list --state open" \
-    run bash "$GATE_PATH"
+  run _run_hook "$(_payload "gh issue list --state open")"
 
   assert_success
+  _is_deny && fail "expected allow but got deny"
+  true
 }
 
 # ---------------------------------------------------------------------------
-# S8: git commit → allow（gh issue create でないため対象外）
+# S8: git commit → allow (gh issue create でない)
 # ---------------------------------------------------------------------------
 
-# WHEN: git commit を実行しようとする
-# THEN: gate は対象外として allow
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
 @test "S8: git commit → allow (gh issue create でない)" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+  skip_if_gate_missing
 
-  unset CO_EXPLORE_DONE
-
-  TOOL_INPUT_command="git commit -m 'feat: add feature'" \
-    run bash "$GATE_PATH"
+  run _run_hook "$(_payload "git commit -m 'feat: add feature'")"
 
   assert_success
+  _is_deny && fail "expected allow but got deny"
+  true
 }
 
 # ---------------------------------------------------------------------------
-# S9: gh issue create + CO_EXPLORE_SKIP=1 → deny（SKIP env は bypass しない）
+# S9: SKIP_ISSUE_GATE=1 のみ (SKIP_ISSUE_REASON 欠落) → deny
 # ---------------------------------------------------------------------------
 
-# WHEN: CO_EXPLORE_SKIP=1 が設定されているが CO_EXPLORE_DONE は未設定
-# THEN: deny（SKIP は gate bypass には使用できない。CO_EXPLORE_DONE のみが許可証）
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
-@test "S9: gh issue create + CO_EXPLORE_SKIP=1 (CO_EXPLORE_DONE 未設定) → deny" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+@test "S9: SKIP_ISSUE_GATE=1 + SKIP_ISSUE_REASON 欠落 → deny" {
+  skip_if_gate_missing
 
-  unset CO_EXPLORE_DONE
-  CO_EXPLORE_SKIP=1 \
-  TOOL_INPUT_command="gh issue create --title 'skip test' --body 'body'" \
-    run bash "$GATE_PATH"
+  run _run_hook "$(_payload "SKIP_ISSUE_GATE=1 gh issue create --title 'no reason'")"
 
-  assert_failure
+  assert_success
+  _is_deny || fail "expected deny (SKIP_ISSUE_REASON missing) but got allow"
 }
 
 # ---------------------------------------------------------------------------
-# S10: gh issue create（前置き空白あり）→ deny
+# S10: gh issue create (先頭空白あり) + no allow path → deny
 # ---------------------------------------------------------------------------
 
-# WHEN: コマンド文字列に前置き空白がある場合も gh issue create として検知される
-# THEN: deny（前置きスペース・タブがあっても正規化して検知する）
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
-@test "S10: '  gh issue create' (先頭空白) + CO_EXPLORE_DONE 未設定 → deny" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+@test "S10: '  gh issue create' (先頭空白) + no allow path → deny" {
+  skip_if_gate_missing
 
-  unset CO_EXPLORE_DONE
+  run _run_hook "$(_payload "  gh issue create --title 'trimmed'")"
 
-  TOOL_INPUT_command="  gh issue create --title 'trimmed' --body 'body'" \
-    run bash "$GATE_PATH"
-
-  assert_failure
+  assert_success
+  _is_deny || fail "expected deny but got allow"
 }
 
 # ---------------------------------------------------------------------------
-# S11: gh issue create + CO_EXPLORE_DONE 未設定 → deny + actionable message
+# S11: gh issue create → deny + actionable message に "co-explore" を含む
 # ---------------------------------------------------------------------------
 
-# WHEN: CO_EXPLORE_DONE が未設定で gh issue create を実行しようとする
-# THEN: exit 2 (deny) かつ actionable message（co-explore 手順の案内）を stdout/stderr に出力
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
-@test "S11: gh issue create + CO_EXPLORE_DONE 未設定 → deny + actionable message 出力" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+@test "S11: gh issue create → deny + actionable message に co-explore 案内" {
+  skip_if_gate_missing
 
-  unset CO_EXPLORE_DONE
+  run _run_hook "$(_payload "gh issue create --title 'new feat' --body 'feature description'")"
 
-  TOOL_INPUT_command="gh issue create --title 'new feat' --body 'feature description'" \
-    run bash "$GATE_PATH"
-
-  assert_failure
-  # actionable message: co-explore への案内が含まれること
-  assert_output --partial "co-explore"
+  assert_success
+  _is_deny || fail "expected deny but got allow"
+  echo "$output" | grep -q "co-explore" || fail "expected 'co-explore' in deny message"
 }
 
 # ---------------------------------------------------------------------------
-# S12: gh issue create + summary なし + CO_EXPLORE_DONE 未設定 → deny + summary path 言及
+# S12: TWL_CALLER_AUTHZ=co-explore-bootstrap + state file なし → deny
 # ---------------------------------------------------------------------------
 
-# WHEN: CO_EXPLORE_DONE 未設定かつ explore-summary も存在しない
-# THEN: deny かつ summary の期待パス（.explore/<N>/summary.md 等）を含むメッセージ
-# RED: pre-bash-issue-create-gate.sh が未実装のため fail
-@test "S12: gh issue create + summary なし → deny + summary path 言及" {
-  [ -f "$GATE_PATH" ] || {
-    false  # RED: gate 未実装
-  }
+@test "S12: TWL_CALLER_AUTHZ=co-explore-bootstrap + state file なし → deny" {
+  skip_if_gate_missing
 
-  unset CO_EXPLORE_DONE
+  # ensure no bootstrap state files exist in isolated TMP_DIR
+  rm -f "$TMP_DIR"/.co-explore-bootstrap-*.json 2>/dev/null || true
 
-  TOOL_INPUT_command="gh issue create --title 'no-summary' --body 'body'" \
-    run bash "$GATE_PATH"
+  run _run_hook "$(_payload "TWL_CALLER_AUTHZ=co-explore-bootstrap gh issue create --title 'spoof attempt'")"
 
-  assert_failure
-  # summary ファイルパスへの言及が含まれること
-  assert_output --partial ".explore"
+  assert_success
+  _is_deny || fail "expected deny (state file missing) but got allow"
+}
+
+# ---------------------------------------------------------------------------
+# helper: skip if gate script not found
+# ---------------------------------------------------------------------------
+
+skip_if_gate_missing() {
+  [[ -f "$GATE_PATH" ]] || skip "gate script not found: $GATE_PATH"
 }

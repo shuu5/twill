@@ -50,7 +50,10 @@ log_event() {
 
 # (a) SKIP_ISSUE_GATE bypass
 if printf '%s' "$CMD" | grep -qE '(^|[[:space:]])SKIP_ISSUE_GATE=1([[:space:]]|$)'; then
-  REASON=$(printf '%s' "$CMD" | grep -oE "SKIP_ISSUE_REASON=['\"]?[^'\"[:space:]]+['\"]?" | head -1 | sed "s/SKIP_ISSUE_REASON=['\"]//;s/['\"]$//" || echo "")
+  # extract full quoted value (single or double quotes) to support multi-word reasons
+  REASON=$(printf '%s' "$CMD" | grep -oP "SKIP_ISSUE_REASON='[^']+'" | head -1 | sed "s/SKIP_ISSUE_REASON='//;s/'$//" 2>/dev/null \
+    || printf '%s' "$CMD" | grep -oP 'SKIP_ISSUE_REASON="[^"]+"' | head -1 | sed 's/SKIP_ISSUE_REASON="//;s/"$//' 2>/dev/null \
+    || echo "")
   if [[ -z "$REASON" ]]; then
     DENY_MSG='SKIP_ISSUE_GATE=1 を使う場合は SKIP_ISSUE_REASON を必ず併記してください。
 
@@ -67,15 +70,22 @@ fi
 
 _SESSION_TMP_DIR="${SESSION_TMP_DIR:-/tmp}"
 
-# (b) co-explore Step 1 bootstrap path
+# (b) co-explore Step 1 bootstrap path — requires BOTH env marker AND state file (ADR-037 §1-b, R2 mitigation)
 if printf '%s' "$CMD" | grep -qE '(^|[[:space:]])TWL_CALLER_AUTHZ=co-explore-bootstrap([[:space:]]|$)'; then
   BOOTSTRAP_FILES=("${_SESSION_TMP_DIR}"/.co-explore-bootstrap-*.json)
   if [[ -e "${BOOTSTRAP_FILES[0]}" ]]; then
     AGE=$(( $(date +%s) - $(stat -c %Y "${BOOTSTRAP_FILES[0]}" 2>/dev/null || echo 0) ))
     log_event "ALLOW caller=co-explore-bootstrap age=${AGE}s"
-  else
-    log_event "WARN caller=co-explore-bootstrap-env-only state_file_missing"
+    exit 0
   fi
+  log_event "DENY caller=co-explore-bootstrap state_file_missing"
+  DENY_MSG='co-explore Step 1 の Issue 起票には /tmp/.co-explore-bootstrap-*.json が必要です。
+
+TWL_CALLER_AUTHZ=co-explore-bootstrap は co-explore Step 1.5 の bootstrap state file 書込み後に使用してください。
+
+詳細: ADR-037 §1-b / 不変条件 P / 親 epic #1578'
+  jq -nc --arg reason "$DENY_MSG" \
+    '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$reason}}'
   exit 0
 fi
 
