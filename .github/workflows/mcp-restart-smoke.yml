@@ -74,8 +74,8 @@ jobs:
           set -euo pipefail
           uv run --directory cli/twl twl mcp restart
           for i in $(seq 1 10); do
-            if pgrep -f 'fastmcp run.*src/twl/mcp_server/server.py' >/dev/null; then
-              echo "MCP server PID detected: $(pgrep -f 'fastmcp run.*src/twl/mcp_server/server.py')"
+            if pgrep -f 'fastmcp run.*src/twl/mcp_server/server.py' >/dev/null 2>&1; then
+              echo "MCP server PID detected: $(pgrep -f 'fastmcp run.*src/twl/mcp_server/server.py' || true)"
               break
             fi
             sleep 1
