@@ -1,0 +1,13 @@
+mappings:
+  - ac_index: 1
+    ac_text: "ref-invariants.md に invariant-n-lesson-structuralization アンカーを追加（ADR-036 が参照する #invariant-n-lesson-structuralization と整合させる）"
+    test_file: "tests/bats/issue-1551-invariant-n-anchor.bats"
+    test_name: "issue-1551: AC1 ref-invariants.md に 'invariant-n-lesson-structuralization' アンカーが存在すること"
+    impl_files:
+      - "plugins/twl/refs/ref-invariants.md"
+  - ac_index: 2
+    ac_text: "plugins/twl/CLAUDE.md に Invariant N / lesson 19 への言及を追加"
+    test_file: "tests/bats/issue-1551-invariant-n-anchor.bats"
+    test_name: "issue-1551: AC2 CLAUDE.md に 'Invariant N' または 'lesson 19' への言及が存在すること"
+    impl_files:
+      - "plugins/twl/CLAUDE.md"
