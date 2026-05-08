@@ -154,10 +154,7 @@ json.dump(data, open(path, 'w'), indent=2)
   assert_success
 
   # stderr に WARN が含まれること
-  echo "${output}" | grep -qi 'WARN\|warn\|invalid.*claude_session_id\|rejected' \
-    || fail "AC1 FAIL: invalid claude_session_id に対する WARN が出力されていない。
-現行の session-init.sh に UUID v4 検証が存在しないため fail する（#1552 RED）。
-期待: '[session-init] WARN: invalid claude_session_id rejected: ${invalid_id}' が stderr に出力される。"
+  assert_output --partial 'WARN'
 }
 
 # ---------------------------------------------------------------------------
@@ -286,9 +283,7 @@ print(repr(d.get('claude_session_id', 'KEY_MISSING')))
 
   # 空文字列が WARN なく書き込まれていること（空は許容）
   # 実装後は WARN が出ないことを確認
-  echo "${output}" | grep -qi 'rejected' \
-    && fail "AC1 FAIL: 空文字列の claude_session_id に対して 'rejected' WARN が出力された。
-空文字列は許容されるべき（#1552 AC1 仕様）。" || true
+  refute_output --partial 'rejected'
 
   echo "actual claude_session_id repr: $actual_id (test passed: empty string accepted)"
 }
@@ -351,10 +346,7 @@ print(repr(d.get('claude_session_id', 'KEY_MISSING')))
   assert_success
 
   # stderr に WARN が含まれること
-  echo "${output}" | grep -qi 'WARN\|warn\|invalid.*claude_session_id\|rejected' \
-    || fail "AC1 FAIL: su-postcompact.sh で invalid claude_session_id に対する WARN が出力されていない。
-現行の su-postcompact.sh に UUID v4 検証が存在しないため fail する（#1552 RED）。
-期待: '[su-postcompact] WARN: invalid claude_session_id rejected: ${invalid_id}' が stderr に出力される。"
+  assert_output --partial 'WARN'
 }
 
 # ---------------------------------------------------------------------------
@@ -523,11 +515,7 @@ j.dump(data, open('${SANDBOX}/.supervisor/session.json', 'w'), indent=2)
   run bash "${CLD_SRC}" --observer
 
   # stderr に actionable error が含まれること
-  echo "${output}" | grep -qiE 'Invalid.*claude_session_id|invalid.*session.*json|Recovery|session\.json.*invalid' \
-    || fail "AC2 FAIL: invalid claude_session_id に対する actionable error が出力されていない。
-現行の cld に UUID v4 検証が存在しないため fail する（#1552 RED）。
-期待: 'Invalid claude_session_id in session.json: ${invalid_id}' + Recovery 手順が stderr に出力される。
-実際の出力: '${output}'"
+  assert_output --partial 'Invalid'
 }
 
 # ---------------------------------------------------------------------------
