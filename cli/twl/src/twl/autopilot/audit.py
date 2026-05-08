@@ -243,6 +243,95 @@ def audit_snapshot(
 # CLI entry point
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# stuck-patterns lint (#1582)
+# ---------------------------------------------------------------------------
+
+def _cmd_stuck_patterns_lint(args: "argparse.Namespace") -> int:
+    """Lint stuck-patterns.yaml against consumer scripts for drift detection."""
+    import subprocess
+    import glob
+
+    project_root = _project_root()
+
+    # stuck-patterns.yaml の解決
+    yaml_path_arg = getattr(args, "yaml_path", None)
+    if yaml_path_arg:
+        yaml_path = Path(yaml_path_arg)
+    else:
+        yaml_path = project_root / "plugins" / "twl" / "refs" / "stuck-patterns.yaml"
+
+    if not yaml_path.exists():
+        print(f"error: stuck-patterns.yaml not found: {yaml_path}", file=sys.stderr)
+        return 1
+
+    # YAML からパターン ID を抽出
+    pattern_ids: list[str] = []
+    with open(yaml_path) as f:
+        for line in f:
+            m = re.match(r"\s*-\s*id:\s*(\S+)", line)
+            if m:
+                pattern_ids.append(m.group(1))
+
+    if not pattern_ids:
+        print("error: stuck-patterns.yaml にパターンが見つかりません", file=sys.stderr)
+        return 1
+
+    print(f"stuck-patterns.yaml: {len(pattern_ids)} patterns found")
+
+    # consumer スクリプトのデフォルトリスト
+    consumer_paths_arg = getattr(args, "consumers", None)
+    if consumer_paths_arg:
+        consumer_files = [Path(p) for p in consumer_paths_arg]
+    else:
+        consumer_files = [
+            project_root / "plugins" / "twl" / "scripts" / "autopilot-orchestrator.sh",
+            project_root / "plugins" / "session" / "scripts" / "lib" / "observer-auto-inject.sh",
+            project_root / "plugins" / "session" / "scripts" / "cld-observe-any",
+            project_root / "plugins" / "twl" / "skills" / "su-observer" / "scripts" / "step0-monitor-bootstrap.sh",
+        ]
+
+    # 各 consumer が stuck-patterns-lib.sh を参照しているか確認
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    for consumer in consumer_files:
+        if not consumer.exists():
+            warnings.append(f"WARN: consumer not found: {consumer}")
+            continue
+        try:
+            result = subprocess.run(
+                ["grep", "-qF", "stuck-patterns-lib.sh"],
+                input=consumer.read_text(),
+                capture_output=True,
+                text=True,
+            )
+        except Exception:
+            result = subprocess.CompletedProcess([], returncode=1)
+
+        if result.returncode != 0:
+            # grep で直接確認
+            with open(consumer) as cf:
+                text = cf.read()
+            if "stuck-patterns-lib.sh" not in text and "_load_stuck_patterns" not in text:
+                errors.append(f"DRIFT: {consumer.name} does not reference stuck-patterns-lib.sh")
+            else:
+                print(f"  ✓ {consumer.name}: references stuck-patterns-lib.sh")
+        else:
+            print(f"  ✓ {consumer.name}: references stuck-patterns-lib.sh")
+
+    for w in warnings:
+        print(w)
+    for e in errors:
+        print(e, file=sys.stderr)
+
+    if errors:
+        return 1
+
+    print("stuck-patterns lint: OK")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     import argparse
     parser = argparse.ArgumentParser(description="twl audit — autopilot execution history")
@@ -257,6 +346,11 @@ def main(argv: list[str] | None = None) -> int:
     snap_p = sub.add_parser("snapshot", help="Copy directory to audit for persistence")
     snap_p.add_argument("--source-dir", dest="source_dir", required=True, help="Directory to snapshot")
     snap_p.add_argument("--label", required=True, help="Label for the snapshot (e.g. co-issue/1)")
+
+    sp = sub.add_parser("stuck-patterns", help="Lint stuck-patterns.yaml against consumer scripts")
+    sp.add_argument("--yaml", dest="yaml_path", default=None, help="Path to stuck-patterns.yaml (default: auto-detect)")
+    sp.add_argument("--consumer", dest="consumers", action="append", default=None,
+                    metavar="PATH", help="Consumer script path to check (repeatable)")
 
     args = parser.parse_args(argv if argv is not None else sys.argv[1:])
 
@@ -301,6 +395,9 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as e:
             print(f"error: {e}", file=sys.stderr)
             return 1
+
+    if args.cmd == "stuck-patterns":
+        return _cmd_stuck_patterns_lint(args)
 
     parser.print_help()
     return 1
