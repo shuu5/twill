@@ -54,6 +54,8 @@
 | protocols/ | クロスリポジトリ知識転送プロトコルを格納するディレクトリ（`architecture/protocols/`）。contracts/（同一リポジトリ内 Context 間）とは直交する概念であり、外部リポジトリの Pinned Reference を管理する（ADR-033） | Cross-Repo Protocol |
 | SHA pin | 可変参照（tag/branch）を避け、40-char commit SHA で依存を固定すること。再現性と一貫性を保証する（ADR-033） | Cross-Repo Protocol |
 | Drift Detection | SHA ピンと実際の Provider HEAD を定期比較してずれを検出する運用。cron・GitHub Actions・手動レビューのいずれかで実施する（ADR-033） | Cross-Repo Protocol |
+| Tier 1+ | ADR-029 Decision 6 で定義された次層改善カテゴリ。Tier 2 caller migration（Decision 5）完遂後に着手する observer/controller の bash 呼び出し依存を解消する 6 MCP tool 群の総称（epic #1271）。spawn/observation/budget の 3 分類で構成される | TWiLL Integration |
+| shadow rollout pattern | ADR-029 Decision 5/6 で validated 済の 3-step migration pattern。Step 1: bash hook 保持 + MCP tool log-only 並走（mcp-shadow-compare.sh で整合検証）、Step 2: 1 週間 mismatch 0 件確認後 blocking 切替、Step 3: 既存 bash hook 削除（#1225 pattern 踏襲） | TWiLL Integration |
 
 ## 照合ポリシー
 

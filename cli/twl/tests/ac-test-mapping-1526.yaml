@@ -1,0 +1,13 @@
+mappings:
+  - ac_index: 1
+    ac_text: "Tier 1+ 用語が glossary.md の MUST 用語テーブルに登録されている（ADR-029 Decision 6）"
+    test_file: "cli/twl/tests/architecture/test_issue1526_glossary_tier1plus_shadow.bats"
+    test_name: "ac1: glossary.md に Tier 1+ が登録されている"
+    impl_files:
+      - "plugins/twl/architecture/domain/glossary.md"
+  - ac_index: 2
+    ac_text: "shadow rollout pattern 用語が glossary.md に登録されている（ADR-029 Decision 5/6）"
+    test_file: "cli/twl/tests/architecture/test_issue1526_glossary_tier1plus_shadow.bats"
+    test_name: "ac2: glossary.md に shadow rollout pattern が登録されている"
+    impl_files:
+      - "plugins/twl/architecture/domain/glossary.md"
