@@ -82,6 +82,14 @@ jobs:
             [[ "$i" -eq 10 ]] && { echo "ERROR: MCP server PID not detected within 10s"; exit 1; }
           done
 
+      - name: New session warmup (Scenario B, AC4 #1568)
+        run: |
+          set -euo pipefail
+          uv run --directory cli/twl twl mcp restart
+          sleep 1
+          uv run --directory cli/twl twl mcp doctor --probe
+          echo "new session warmup: MCP server probe ok"
+
       - name: Repair guidance on restart failure (#1588 #1589 ADR-0008)
         if: failure()
         run: |
