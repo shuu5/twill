@@ -43,6 +43,7 @@ CHAIN_STEPS: list[str] = [
     "ac-verify",
     "post-fix-verify",
     "all-pass-check",
+    "merge-gate-check",
     "pr-cycle-report",
 ]
 
@@ -65,6 +66,7 @@ STEP_TO_WORKFLOW: dict[str, str] = {
     "ac-verify": "pr-verify",
     "post-fix-verify": "pr-fix",
     "all-pass-check": "pr-merge",
+    "merge-gate-check": "pr-merge",
     "pr-cycle-report": "pr-merge",
 }
 
@@ -110,6 +112,7 @@ CHAIN_STEP_DISPATCH: dict[str, str] = {
     "ac-verify": "llm",
     "post-fix-verify": "runner",
     "all-pass-check": "runner",
+    "merge-gate-check": "runner",
     "pr-cycle-report": "runner",
 }
 

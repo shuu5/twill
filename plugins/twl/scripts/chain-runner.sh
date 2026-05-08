@@ -1328,6 +1328,31 @@ step_all_pass_check() {
   fi
 }
 
+# --- merge-gate-check: specialist-audit による test-scaffold-only HARD FAIL 検出 ---
+# chain SSOT 経由で Worker chain runner からも specialist-audit を invoke し、
+# lesson 19 reproduction (test scaffold only PR) を防止する (Issue #1554 / AC2)。
+step_merge_gate_check() {
+  record_current_step "merge-gate-check"
+  local _script_dir
+  _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local _audit_script="${_script_dir}/specialist-audit.sh"
+
+  if [[ ! -f "$_audit_script" ]]; then
+    skip "merge-gate-check" "specialist-audit.sh 未存在 — スキップ"
+    return 0
+  fi
+
+  local _audit_exit=0
+  bash "$_audit_script" --issue "${ISSUE_NUM:-}" --mode merge-gate 2>/dev/null || _audit_exit=$?
+  if [[ $_audit_exit -ne 0 ]]; then
+    echo "[merge-gate-check] REJECT: specialist-audit FAIL (exit=${_audit_exit}) — test scaffold only PR の可能性 (lesson 19 reproduction 防止)" >&2
+    err "merge-gate-check" "specialist-audit HARD FAIL — chain 停止"
+    return 1
+  fi
+
+  ok "merge-gate-check" "specialist-audit PASS"
+}
+
 # --- pr-cycle-report: 結果レポート構造化集約 ---
 step_pr_cycle_report() {
   record_current_step "pr-cycle-report"
@@ -1728,6 +1753,7 @@ main() {
     pr-test)             step_pr_test "$@" ;;
     ac-verify)           step_ac_verify "$@" ;;
     all-pass-check)      step_all_pass_check "$@" ;;
+    merge-gate-check)    step_merge_gate_check "$@" ;;
     record-pr)           step_record_pr "$@" ;;
     pr-cycle-report)     step_pr_cycle_report "$@" ;;
     auto-merge)          step_auto_merge "$@" ;;

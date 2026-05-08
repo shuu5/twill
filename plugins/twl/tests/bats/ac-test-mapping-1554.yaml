@@ -1,0 +1,42 @@
+mappings:
+  - ac_index: 1
+    ac_text: "chain.py CHAIN_STEPS に merge-gate-check step 追加 — CHAIN_STEPS list に \"merge-gate-check\" を追加し、STEP_TO_WORKFLOW で \"pr-merge\" workflow に紐付け。CHAIN_STEP_DISPATCH にも runner エントリを追加。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1554.bats"
+    test_name: "ac1a: chain.py CHAIN_STEPS に merge-gate-check が含まれる"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/chain.py"
+
+  - ac_index: 2
+    ac_text: "chain-runner.sh に step_merge_gate_check 関数実装 — specialist-audit.sh を invoke し、HARD FAIL 時は EXIT_CODE=1 で chain 停止。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1554.bats"
+    test_name: "ac2a: chain-runner.sh に step_merge_gate_check 関数が定義されている"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+    # NOTE: chain-runner.sh は source guard を持たない（末尾 main "$@" あり）。
+    # source chain-runner.sh するテストは set -euo pipefail 環境で main 到達リスクがある。
+    # このテストでは source せず grep/awk 静的検証で回避済み。
+    # 実装時: chain-runner.sh に [[ "${BASH_SOURCE[0]}" == "${0}" ]] guard の追加を推奨。
+
+  - ac_index: 3
+    ac_text: "chain-steps.sh export 整合性 — chain.py から生成される chain-steps.sh (CHAIN_STEPS array) に merge-gate-check が含まれることを twl --check --deps-integrity で verify。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1554.bats"
+    test_name: "ac3a: chain-steps.sh の CHAIN_STEPS array に merge-gate-check が含まれる"
+    impl_files:
+      - "plugins/twl/scripts/chain-steps.sh"
+      - "cli/twl/src/twl/autopilot/chain.py"
+
+  - ac_index: 4
+    ac_text: "bats integration test — ac-scaffold-tests-1540.bats の AC2/AC4 tests を chain.py 実体 grep + chain-runner.sh step_merge_gate_check 関数存在確認に書き換えた正しい検証内容のテスト（新ファイルに生成）。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1554.bats"
+    test_name: "ac4a: chain.py を grep すると merge-gate-check エントリが CHAIN_STEPS 定義内に存在する（static trace）"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/chain.py"
+      - "plugins/twl/scripts/chain-runner.sh"
+
+  - ac_index: 5
+    ac_text: "end-to-end verify — worktree で TDD RED scaffold + 実装 + chain workflow 経由で specialist-audit が trigger することを bats e2e で確認。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1554.bats"
+    test_name: "ac5c: sandbox 環境で step_merge_gate_check の HARD FAIL が EXIT_CODE=1 を返す（e2e）"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+      - "plugins/twl/scripts/specialist-audit.sh"

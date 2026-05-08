@@ -67,6 +67,7 @@ chains:
     description: "PRマージ（e2e → report → analysis → check → merge）"
     steps:
       - all-pass-check
+      - merge-gate-check
       - pr-cycle-report
 
 meta_chains:
@@ -480,6 +481,8 @@ skills:
         step: "7.3"
       - atomic: all-pass-check
         step: "7.5"
+      - atomic: merge-gate-check
+        step: "7.6"
       - composite: merge-gate
         step: "8"
       - atomic: auto-merge
@@ -1177,6 +1180,19 @@ commands:
       - reference: ref-dci
     dispatch_mode: runner
     description: "全パス判定（autopilot-first）"
+
+  merge-gate-check:
+    type: atomic
+    spawnable_by: [workflow]
+    can_spawn: [script]
+    chain: "pr-merge"
+    step_in:
+      parent: workflow-pr-merge
+      step: "7.6"
+    calls:
+      - script: specialist-audit
+    dispatch_mode: runner
+    description: "Worker chain 経由の specialist-audit HARD FAIL 検出（Issue #1554 fix — chain.py SSOT 経由で lesson 19 reproduction 防止）"
 
   ac-verify:
     type: atomic
