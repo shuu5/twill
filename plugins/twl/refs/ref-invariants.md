@@ -161,6 +161,8 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
+<a id="invariant-n-lesson-structuralization"></a>
+
 ## 不変条件 N: Lesson Structuralization
 
 - **定義**: 任意の lesson（observer-pitfall / observer-lesson / observer-wave 等）を doobidoo に保存した後、以下のチェーンを完遂しない限り「完遂」と扱わない（SHALL）:
