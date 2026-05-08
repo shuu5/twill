@@ -280,6 +280,14 @@ teardown() {
   # RED: bats 専用 mock session（MOCK_SESSION_NAME）が未作成のため、
   #      wt-co-explore-bats-<PID> window が存在せず MENU-READY は emit されない
   #      → detected=false で fail
+  #
+  # 即時 fail ガード: cld-observe-any に --co-explore-sla フラグが未実装のため RED を即時確定
+  # このガードにより、30秒ポーリングを待たずに即時 fail する（CI 時間節約）
+  if ! grep -qF -- '--co-explore-sla' "${CLD_OBSERVE_ANY}"; then
+    echo "RED: --co-explore-sla flag not implemented in cld-observe-any" >&2
+    false
+    return
+  fi
 
   local t0
   t0=$(date +%s)
