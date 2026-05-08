@@ -406,3 +406,32 @@ sys.exit(0)
   # 合計カウント表記（例: "Refs: 19" または "19 refs" など）を検出
   grep -qE 'Refs.*19|19.*[Rr]ef' "$README_FILE"
 }
+
+# ===========================================================================
+# Issue #1577: 不変条件 Q 追加後のカウントアサーション
+# Scenario: 不変条件 Q（budget status line の (YYm) 解釈）追加後の section 数検証
+# WHEN: ref-invariants.md に不変条件 Q を追加した後
+# THEN: [A-Z] pattern の不変条件セクション数が 17 以上になる（A-P=16 + Q=17）
+#
+# 背景: 不変条件 A-M (13件) → N/O/P 追加で 16 件（Issue #1577 実装前時点）
+#       Issue #1577 で Q を追加 → 17 件になること
+# RED: 実装前は fail する — 不変条件 Q が存在しないため count = 16 < 17
+# ===========================================================================
+
+@test "ref-invariants: 不変条件 Q 追加後: section 数が 17 以上になる (Issue #1577)" {
+  # AC1: ref-invariants.md に不変条件 Q を新設した後の構造検証
+  # RED: 実装前は fail する — Q が存在せず count=16 のため [ 16 -ge 17 ] が false
+  local count
+  count=$(grep -c "^## 不変条件 [A-Z]:" "$REF_FILE")
+  [ "$count" -ge 17 ] || {
+    echo "FAIL: 不変条件 Q が未追加。現在のセクション数: ${count}（期待: 17 以上）"
+    grep "^## 不変条件 [A-Z]:" "$REF_FILE" || true
+    return 1
+  }
+}
+
+@test "ref-invariants: 不変条件 Q セクションが存在する (Issue #1577)" {
+  # AC1: 不変条件 Q の具体的な存在確認
+  # RED: 実装前は fail する — 不変条件 Q が存在しない
+  grep -q "^## 不変条件 Q:" "$REF_FILE"
+}
