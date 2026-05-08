@@ -727,7 +727,20 @@ poll_phase() {
             cleaned_up[$entry]=1
           fi
           continue ;;
-        merge-ready|conflict)
+        merge-ready)
+          # AC3 #1580: AUTOPILOT_EARLY_MERGE_GATE=1 時は merge-ready Worker を即時 merge-gate 発火
+          if [[ "${AUTOPILOT_EARLY_MERGE_GATE}" == "1" ]]; then
+            if [[ -z "${MERGE_GATE_TRIGGERED[$entry]+x}" ]]; then
+              echo "[orchestrator] Issue #${issue_num}: EARLY_MERGE_GATE=1 → 即時 run_merge_gate" >&2
+              if run_merge_gate "$entry"; then
+                MERGE_GATE_TRIGGERED[$entry]=1
+              else
+                unset "MERGE_GATE_TRIGGERED[$entry]"  # 失敗時リセット → 次 poll-cycle で再試行
+              fi
+            fi
+          fi
+          continue ;;
+        conflict)
           continue ;;
         running)
           all_resolved=false
@@ -883,6 +896,9 @@ declare -A INPUT_WAITING_SEEN_PATTERN=()  # デバウンス: key="<issue>:<patte
 declare -A LAST_STATE_MTIME=()           # AC-1 #1177: state file mtime 履歴（mtime progress signal）
 declare -A LAST_STAGNATE_WARN_TS=()      # AC-2 #1177: stagnate WARN 最終出力タイムスタンプ（rate limit）
 declare -A DEADLOCK_DETECT_TS=()         # #1468: LAST_INJECTED_STEP==current_step 開始タイムスタンプ（auto-unstuck 用）
+declare -A MERGE_GATE_TRIGGERED=()       # AC3 #1580: early merge-gate 発火済みエントリ（重複防止）
+declare -A FREEFORM_NOTIFY_TS=()         # AC2 #1580: freeform_kaishi 重複通知抑止タイムスタンプ
+AUTOPILOT_EARLY_MERGE_GATE=${AUTOPILOT_EARLY_MERGE_GATE:-0}  # AC3 #1580: 1=merge-ready 即時 merge-gate
 
 # input-waiting 検知 + デバウンス + state 書き込み（Issue #510）
 # 引数: pane_output, issue, window_name
@@ -903,12 +919,18 @@ detect_input_waiting() {
     "よろしいですか[？?]:freeform_yoroshii"
     "続けますか|進んでよいですか|実行しますか:freeform_tsuzukemasu"
     "\\[[Yy]/[Nn]\\]:freeform_yn_bracket"
+    "(開始|始め)(て|します)[^？?]*[？?]?:freeform_kaishi"
+  )
+  # Recovery patterns（AC1 #1580: queued message 残留 → Enter 自動送信）
+  # TODO: deprecate after #1034 Phase 3（mailbox 移行で構造的に消滅）
+  local -a recovery_patterns=(
+    "Press up to edit queued messages:queued_message_residual"
   )
 
   local detected_name=""
-  for entry in "${menu_patterns[@]}" "${freeform_patterns[@]}"; do
-    local pat="${entry%%:*}"
-    local name="${entry#*:}"
+  for entry in "${menu_patterns[@]}" "${freeform_patterns[@]}" "${recovery_patterns[@]}"; do
+    local pat="${entry%:*}"   # 末尾 :name を除去（% = 最短マッチ。%% だと [[:space:]] 内の : で切れる）
+    local name="${entry##*:}" # 最後の : より後を取得
     if echo "$pane_output" | grep -qE "$pat" 2>/dev/null; then
       detected_name="$name"
       break
@@ -929,21 +951,49 @@ detect_input_waiting() {
     return 0
   fi
 
-  # 2 回目: state 書き込み確定
-  echo "[orchestrator] Issue #${issue}: input-waiting 確定 pattern=${detected_name} window=${window_name} — state 書き込み" >&2
+  # 2 回目: パターン別アクション確定
+  echo "[orchestrator] Issue #${issue}: input-waiting 確定 pattern=${detected_name} window=${window_name}" >&2
   local ts
   ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-  python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
-    --set "input_waiting_detected=${detected_name}" \
-    --set "input_waiting_at=${ts}" 2>/dev/null || true
-
-  # Trace log
-  mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true
-  local trace_log="${AUTOPILOT_DIR}/trace/input-waiting-$(date -u +%Y%m%d).log"
-  echo "[${ts}] issue=${issue} pattern=${detected_name} window=${window_name}" >> "$trace_log" 2>/dev/null || true
 
   # デバウンスキーをリセット（次回からまた 2 cycle 必要）
   unset "INPUT_WAITING_SEEN_PATTERN[$debounce_key]"
+
+  case "$detected_name" in
+    queued_message_residual)
+      # AC1 #1580: queued message 残留 → Enter 自動送信（auto-recovery）
+      # 安全境界: debounce 2-cycle 確定後に 1 回のみ発火
+      echo "[orchestrator] Issue #${issue}: queued_message_residual → auto-recovery Enter 送信" >&2
+      tmux send-keys -t "$window_name" Enter 2>/dev/null || true
+      ;;
+    freeform_kaishi)
+      # AC2 #1580: freeform 開始確認 → state 書き込み + observer 通知のみ（auto-recovery しない）
+      # 自動 Enter 送信禁止: 危険操作の自動承認リスク（削除しますか？→誤 Yes）
+      python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
+        --set "input_waiting_detected=${detected_name}" \
+        --set "input_waiting_at=${ts}" 2>/dev/null || true
+      # Observer 通知（重複抑止: 同一 issue:pattern は 60 秒以内の重複通知を抑止）
+      local notify_key="${issue}:${detected_name}"
+      local last_notify="${FREEFORM_NOTIFY_TS[$notify_key]:-0}"
+      local now_ts
+      now_ts=$(date +%s 2>/dev/null || echo 0)
+      if (( now_ts - last_notify > 60 )); then
+        mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true
+        local freeform_log="${AUTOPILOT_DIR}/trace/input-waiting-freeform-$(date -u +%Y%m%d).log"
+        echo "[${ts}] [input_waiting] issue=${issue} pattern=${detected_name} window=${window_name}" >> "$freeform_log" 2>/dev/null || true
+        FREEFORM_NOTIFY_TS[$notify_key]="$now_ts"
+      fi
+      ;;
+    *)
+      # 既存 patterns: state 書き込み + trace log
+      python3 -m twl.autopilot.state write --type issue --issue "$issue" --role pilot \
+        --set "input_waiting_detected=${detected_name}" \
+        --set "input_waiting_at=${ts}" 2>/dev/null || true
+      mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true
+      local trace_log="${AUTOPILOT_DIR}/trace/input-waiting-$(date -u +%Y%m%d).log"
+      echo "[${ts}] issue=${issue} pattern=${detected_name} window=${window_name}" >> "$trace_log" 2>/dev/null || true
+      ;;
+  esac
 
   echo "$detected_name"
   return 0

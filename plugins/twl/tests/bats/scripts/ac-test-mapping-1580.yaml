@@ -1,0 +1,133 @@
+mappings:
+  - ac_index: 1
+    ac_text: "autopilot-orchestrator.sh detect_input_waiting() に Press up to edit queued messages:queued_message_residual pattern を追加し、検知時に tmux send-keys -t <window> Enter を auto-recovery action として実行する。debounce 2-cycle 確定後に 1 回のみ発火（INPUT_WAITING_SEEN_PATTERN カウンタが 2 に達した時点）。Enter 送信後は INPUT_WAITING_SEEN_PATTERN をリセット。"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T1a: queued_message_residual 1cycle 目 — Enter 送信なし（debounce 1 回目）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 1
+    ac_text: "AC1 (Pattern 1): queued_message_residual — debounce 2 cycle 後に Enter 1 回のみ送信"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T1b: queued_message_residual 2cycle 目 — Enter が 1 回のみ送信される（debounce 確定）"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 1
+    ac_text: "AC1 (Pattern 1): queued_message_residual — Enter 送信後は INPUT_WAITING_SEEN_PATTERN をリセット"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T1c: queued_message_residual Enter 送信後リセット — 3cycle 目は再び 1 回目扱い"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 2
+    ac_text: "detect_input_waiting() に ERE 互換 pattern (開始|始め)(て|します)[^？?]*[？?]?:freeform_kaishi を追加し、検知時は状態書き込み + observer 通知のみ（auto-recovery しない）。状態書き込み: input_waiting_state ファイルに ${issue}:freeform_kaishi:${timestamp} 形式で追記。observer 通知: twl notify-supervisor または既存 OBSERVER_NOTIFY_CHANNEL 経由で [input_waiting] issue=${issue} pattern=freeform_kaishi 送信（同一 issue:pattern 組み合わせは 60 秒以内の重複通知を抑止）。"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T2a: freeform_kaishi 検知 — STATE_LOG に書き込み、tmux send-keys なし"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 2
+    ac_text: "AC2 (Pattern 2): freeform_kaishi — observer 通知を送信する"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T2b: freeform_kaishi — observer 通知が送信される"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 2
+    ac_text: "AC2 (Pattern 2): freeform_kaishi — '始めます' バリアントも ERE で検知される"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T2c: freeform_kaishi — '始めます' バリアントも検知される"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 2
+    ac_text: "AC2 (Pattern 2): freeform_kaishi — debounce 2 cycle 後に state 書き込みが発生する"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T2d: freeform_kaishi + debounce — 2cycle 目で state 書き込みが発生する"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 3
+    ac_text: "poll_phase ループ内の case \"$status\" 文で merge-ready|conflict) continue ブランチを分岐し、AUTOPILOT_EARLY_MERGE_GATE=1 かつ merge-ready 状態の場合のみ run_merge_gate を即時呼出。MERGE_GATE_TRIGGERED[$entry] チェックで未発火 entry のみ発火。失敗時は MERGE_GATE_TRIGGERED unset して再試行可能。AUTOPILOT_EARLY_MERGE_GATE=0（default）では従来通り。"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T4a: EARLY_MERGE_GATE=1 + merge-ready — run_merge_gate が 1 回発火"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 3
+    ac_text: "AC3 (poll_phase): EARLY_MERGE_GATE=1 — running entry には発火しない"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T4b: EARLY_MERGE_GATE=1 — running entry には run_merge_gate が発火しない"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 3
+    ac_text: "AC3 (poll_phase): MERGE_GATE_TRIGGERED[$entry] 設定済み → run_merge_gate は呼ばれない"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T5a: MERGE_GATE_TRIGGERED 設定済み — run_merge_gate は発火しない"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 3
+    ac_text: "AC3 (poll_phase): AUTOPILOT_EARLY_MERGE_GATE=0（デフォルト）では run_merge_gate を呼ばない"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T6a: EARLY_MERGE_GATE=0 デフォルト — merge-ready でも run_merge_gate を呼ばない"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 3
+    ac_text: "AC3 (poll_phase): AUTOPILOT_EARLY_MERGE_GATE 未設定 — run_merge_gate を呼ばない"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T6b: EARLY_MERGE_GATE 未設定 — merge-ready でも run_merge_gate を呼ばない"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 4
+    ac_text: "既存 6 patterns (Enter to select / ↑/↓ to navigate / ❯[[:space:]]*[0-9]+\\. / よろしいですか / 続けますか|進んでよいですか|実行しますか / \\[Y/N\\]) と既存 polling logic / _has_terminal_phrase / LAST_INJECTED_STEP suppression / AUTOPILOT_AUTO_UNSTUCK 動作はリグレッションしない"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T3a: menu_prompt_number (❯ 1.) リグレッション — 検知される"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 4
+    ac_text: "AC4 (regression): menu_enter_select — freeform_kaishi と混同されない"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T3b: menu_enter_select リグレッション — freeform_kaishi と混同されない"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 4
+    ac_text: "AC4 (regression): freeform_tsuzukemasu — 検知される"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T3c: freeform_tsuzukemasu リグレッション — 検知される"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 4
+    ac_text: "AC4 (regression): 既存 pattern と新 pattern の優先順位が正しい"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "T3d: 既存 pattern と新 pattern の優先順位 — 既存 menu pattern が優先される"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 5
+    ac_text: "既存 INPUT_WAITING_SEEN_PATTERN debounce 機構 (2 cycle 確定) を新 pattern にも適用する。queued_message_residual の auto-Enter は debounce 後に発火。debounce key は既存 ${issue}:${pattern_name} 形式を踏襲"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "AC5a: queued_message_residual debounce key 形式 — issue:pattern_name 形式で記録"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 5
+    ac_text: "AC5 (debounce): freeform_kaishi の debounce key 形式が既存と同じ"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "AC5b: freeform_kaishi debounce key 形式 — issue:pattern_name 形式で記録"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 5
+    ac_text: "AC5 (debounce): 異なる issue:pattern の debounce key は独立して管理される"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "AC5c: 異なる issue:pattern の debounce key は独立して管理される"
+    impl_files:
+      - "plugins/twl/scripts/autopilot-orchestrator.sh"
+  - ac_index: 6
+    ac_text: "bats test を plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats に新設。既存 autopilot-orchestrator.bats との重複を避けるため、新ファイルは stuck pattern 固有の新規テストのみを収録。T1-T6 を網羅。"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "(このファイル自体の存在)"
+    impl_files: []
+    # impl_files: AC6 はテストファイル自体の存在確認であり、実装ファイルへのマッピングは不要（プロセス AC）
+  - ac_index: 7
+    ac_text: "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §2.1 に「orchestrator-side でも検知/復旧する」note を追記。refs/monitor-channel-catalog.md の Press up 説明にも orchestrator-side 検知 reference を追加"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "AC7a: pitfalls-catalog.md §2.1 に orchestrator-side 検知/復旧 note が追記されている"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+  - ac_index: 7
+    ac_text: "AC7 (doc): monitor-channel-catalog.md の Press up 説明に orchestrator-side 参照がある"
+    test_file: "plugins/twl/tests/bats/scripts/autopilot-orchestrator-stuck-patterns.bats"
+    test_name: "AC7b: monitor-channel-catalog.md の Press up 説明に orchestrator-side 参照がある"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
