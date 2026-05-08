@@ -1,0 +1,47 @@
+mappings:
+  - ac_index: 1
+    ac_text: "_find_mcp_server_cmd() が args[0] を検証し、\"run\" でない場合（例: \"malicious-subcmd\", ...）は ValueError を raise すること"
+    test_file: "cli/twl/tests/test_issue_1597_args_validation.py"
+    test_names:
+      - "TestAC1ArgsFirstElementValidation::test_ac1_args0_malicious_subcmd_raises_value_error"
+      - "TestAC1ArgsFirstElementValidation::test_ac1_args0_install_raises_value_error"
+      - "TestAC1ArgsFirstElementValidation::test_ac1_args0_shell_injection_raises_value_error"
+      - "TestAC1ArgsFirstElementValidation::test_ac1_validate_args_function_exists"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+    red_reason: "現状は _validate_args() が未実装のため args 無検証で ValueError は raise されない"
+
+  - ac_index: 2
+    ac_text: "_find_mcp_server_cmd() が --directory フラグの値を検証し、リポジトリルート（git rev-parse --show-toplevel）の外部パス（例: /tmp/evil）の場合は ValueError を raise すること"
+    test_file: "cli/twl/tests/test_issue_1597_args_validation.py"
+    test_names:
+      - "TestAC2DirectoryFlagValidation::test_ac2_directory_outside_repo_root_raises_value_error"
+      - "TestAC2DirectoryFlagValidation::test_ac2_directory_absolute_path_outside_repo_raises"
+      - "TestAC2DirectoryFlagValidation::test_ac2_directory_path_traversal_raises"
+      - "TestAC2DirectoryFlagValidation::test_ac2_missing_directory_flag_but_unsafe_path_raises"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+    red_reason: "現状は args 無検証のため --directory 値がリポジトリルート外でも ValueError は raise されない"
+
+  - ac_index: 3
+    ac_text: "args が空配列または args[0] が存在しない（空 args）の場合も適切に処理すること（ValueError または None 返却）"
+    test_file: "cli/twl/tests/test_issue_1597_args_validation.py"
+    test_names:
+      - "TestAC3EmptyArgsHandling::test_ac3_empty_args_raises_or_returns_none"
+      - "TestAC3EmptyArgsHandling::test_ac3_empty_args_does_not_return_bare_command"
+      - "TestAC3EmptyArgsHandling::test_ac3_single_element_args_without_run_raises_or_returns_none"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+    red_reason: "現状は空 args で ['uv'] を返してしまう。args 検証後は None または ValueError が正しい"
+
+  - ac_index: 4
+    ac_text: "正常な args（[\"run\", \"--directory\", \"<valid_repo_path>/cli/twl\", \"--extra\", \"mcp\", \"fastmcp\", \"run\", \"<path>\"]）では ValueError を raise しないこと（既存正常系の不変性）"
+    test_file: "cli/twl/tests/test_issue_1597_args_validation.py"
+    test_names:
+      - "TestAC4LegitimateArgsUnaffected::test_ac4_valid_args_run_with_directory_does_not_raise"
+      - "TestAC4LegitimateArgsUnaffected::test_ac4_valid_args_first_element_is_uv"
+      - "TestAC4LegitimateArgsUnaffected::test_ac4_valid_args_no_directory_flag_does_not_raise"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+    red_reason: "AC4 は正常系不変性テスト。実装前（現在）も PASS するが、実装後も PASS し続けることを保証する"
+    note: "AC4 テストは実装前から PASS する（正常系不変性の保護目的）。実装後に GREEN のままであることを確認すること"
