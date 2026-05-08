@@ -1,0 +1,9 @@
+mappings:
+  - ac_index: 1
+    ac_text: "ADR-029 L165 の「5 並列まで」という旧値記述が除去されている"
+    test_file: "tests/bats/issue-1573-adr029-su4-wave-concurrency.bats"
+    test_name: "ADR-029: Wave 並走数が旧値「5 並列まで」を含まない"
+  - ac_index: 2
+    ac_text: "ADR-029 L165 が SU-4（上限 10）の現行制約を反映している"
+    test_file: "tests/bats/issue-1573-adr029-su4-wave-concurrency.bats"
+    test_name: "ADR-029: Wave 並走数が SU-4 上限 10 の記述を含む"
