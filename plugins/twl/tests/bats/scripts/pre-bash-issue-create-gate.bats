@@ -5,7 +5,7 @@
 # AC2: pre-bash-issue-create-gate.sh 実装 + bats 12 シナリオ (S1-S12 全 PASS)
 #
 # 対象ファイル（未実装）:
-#   plugins/twl/scripts/hooks/pre-bash-issue-create-gate.sh
+#   plugins/twl/scripts/hooks/pre-bash-issue-create-gate.sh  (REPO_ROOT相対: scripts/hooks/...)
 #
 # RED: 対象スクリプトが存在しないため全シナリオが fail する（意図的 RED フェーズ）
 #
@@ -25,12 +25,12 @@
 
 load '../helpers/common'
 
-GATE_SCRIPT="plugins/twl/scripts/hooks/pre-bash-issue-create-gate.sh"
+GATE_SCRIPT="scripts/hooks/pre-bash-issue-create-gate.sh"
 
 setup() {
   common_setup
 
-  # REPO_ROOT は common.bash で解決済み
+  # REPO_ROOT は common.bash で解決済み（= plugins/twl/ を指す）
   GATE_PATH="$REPO_ROOT/$GATE_SCRIPT"
 
   # explore-summary 用ディレクトリ

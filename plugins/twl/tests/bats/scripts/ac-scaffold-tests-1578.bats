@@ -18,10 +18,12 @@
 
 load '../helpers/common'
 
-REPO_ROOT_ABS="/home/shuu5/projects/local-projects/twill/worktrees/feat/1578-featsupervisor-issue-co-explore-enfor"
+REPO_ROOT_ABS=""
 
 setup() {
   common_setup
+  # git rev-parse で動的解決（CI 移植性）
+  REPO_ROOT_ABS="$(cd "$REPO_ROOT" && git rev-parse --show-toplevel 2>/dev/null)"
 }
 
 teardown() {
