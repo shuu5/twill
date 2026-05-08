@@ -9,7 +9,7 @@
 # 依存: tmux, jq, flock
 # 注意: source される前提のため set -euo pipefail は設定しない
 # stuck-patterns.yaml SSoT ローダー (#1582)
-_STUCK_PATTERNS_LIB="$(dirname "${BASH_SOURCE[0]}")/../../../../twl/scripts/lib/stuck-patterns-lib.sh"
+_STUCK_PATTERNS_LIB="$(dirname "${BASH_SOURCE[0]}")/../../../twl/scripts/lib/stuck-patterns-lib.sh"
 # shellcheck source=/dev/null
 [[ -f "${_STUCK_PATTERNS_LIB}" ]] && source "${_STUCK_PATTERNS_LIB}" || true
 
