@@ -16,6 +16,6 @@ setup() {
 }
 
 @test "ADR-029: Wave 並走数が SU-4 上限 10 の記述を含む" {
-  run grep -n "SU-4" "$ADR029"
+  run grep -n "Wave 並走数は SU-4（上限 10）を満たす" "$ADR029"
   [ "$status" -eq 0 ]
 }
