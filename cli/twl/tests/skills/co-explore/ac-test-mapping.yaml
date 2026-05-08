@@ -1,0 +1,32 @@
+mappings:
+  - ac_index: "AC-1"
+    ac_text: "co-explore/SKILL.md frontmatter に mcpServers キーが存在する"
+    test_file: "cli/twl/tests/skills/co-explore/test_1519_mcp_frontmatter.bats"
+    test_names:
+      - "ac1: co-explore/SKILL.md frontmatter に mcpServers キーが存在する"
+    impl_files:
+      - "plugins/twl/skills/co-explore/SKILL.md"
+
+  - ac_index: "AC-2"
+    ac_text: "co-explore/SKILL.md の mcpServers に twl エントリがある"
+    test_file: "cli/twl/tests/skills/co-explore/test_1519_mcp_frontmatter.bats"
+    test_names:
+      - "ac2: co-explore/SKILL.md の mcpServers に twl エントリがある"
+    impl_files:
+      - "plugins/twl/skills/co-explore/SKILL.md"
+
+  - ac_index: "AC-3"
+    ac_text: "co-autopilot/SKILL.md frontmatter に mcpServers キーが存在する"
+    test_file: "cli/twl/tests/skills/co-explore/test_1519_mcp_frontmatter.bats"
+    test_names:
+      - "ac3: co-autopilot/SKILL.md frontmatter に mcpServers キーが存在する"
+    impl_files:
+      - "plugins/twl/skills/co-autopilot/SKILL.md"
+
+  - ac_index: "AC-4"
+    ac_text: "co-autopilot/SKILL.md の mcpServers に twl エントリがある"
+    test_file: "cli/twl/tests/skills/co-explore/test_1519_mcp_frontmatter.bats"
+    test_names:
+      - "ac4: co-autopilot/SKILL.md の mcpServers に twl エントリがある"
+    impl_files:
+      - "plugins/twl/skills/co-autopilot/SKILL.md"
