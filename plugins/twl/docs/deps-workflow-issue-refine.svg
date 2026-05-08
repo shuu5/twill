@@ -24,7 +24,7 @@
 <polyline fill="none" stroke="black" points="1103.51,-68.05 1103.51,-62.05 "/>
 <polyline fill="none" stroke="black" points="1109.51,-62.05 1103.51,-62.05 "/>
 <text text-anchor="middle" x="1038.01" y="-53.05" font-family="Helvetica,sans-Serif" font-size="10.00">twl:refine&#45;processing&#45;flow</text>
-<text text-anchor="middle" x="1038.01" y="-42.05" font-family="Helvetica,sans-Serif" font-size="10.00">(2,840 tok)</text>
+<text text-anchor="middle" x="1038.01" y="-42.05" font-family="Helvetica,sans-Serif" font-size="10.00">(2,497 tok)</text>
 </g>
 <!-- skill_workflow_issue_refine&#45;&gt;skill_refine_processing_flow -->
 <g id="edge5" class="edge">
@@ -50,7 +50,7 @@
 <title>cmd_issue_review_aggregate</title>
 <polygon fill="#e3f2fd" stroke="black" points="387.99,-126.05 255.99,-126.05 255.99,-90.05 387.99,-90.05 387.99,-126.05"/>
 <text text-anchor="middle" x="321.99" y="-111.05" font-family="Helvetica,sans-Serif" font-size="10.00">issue&#45;review&#45;aggregate</text>
-<text text-anchor="middle" x="321.99" y="-100.05" font-family="Helvetica,sans-Serif" font-size="10.00">(1,157 tok)</text>
+<text text-anchor="middle" x="321.99" y="-100.05" font-family="Helvetica,sans-Serif" font-size="10.00">(1,503 tok)</text>
 </g>
 <!-- skill_workflow_issue_refine&#45;&gt;cmd_issue_review_aggregate -->
 <g id="edge2" class="edge">
@@ -117,7 +117,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="537.21" cy="-197.05" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="537.21" y="-200.05" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="537.21" y="-189.05" font-family="Helvetica,sans-Serif" font-size="10.00">(1,841 tok)</text>
+<text text-anchor="middle" x="537.21" y="-189.05" font-family="Helvetica,sans-Serif" font-size="10.00">(2,121 tok)</text>
 </g>
 <!-- cmd_issue_spec_review&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge8" class="edge">

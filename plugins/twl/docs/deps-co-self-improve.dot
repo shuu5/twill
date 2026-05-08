@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_self_improve [label="twl:co-self-improve\n(2,239 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_self_improve [label="twl:co-self-improve\n(2,295 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -20,7 +20,7 @@ digraph Dependencies {
 
     // Reference Skills
     skill_test_scenario_catalog [label="twl:test-scenario-catalog\n(4,173 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(2,760 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_observation_pattern_catalog [label="twl:observation-pattern-catalog\n(2,827 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_load_test_baselines [label="twl:load-test-baselines\n(670 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands

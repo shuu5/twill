@@ -71,77 +71,139 @@ Autopilot で複数 Issue を一括実装:
 Notable scripts: `specialist-audit` (specialist completeness 監査 — merge-gate および su-observer から呼び出し、JSONL の specialist 実行数を期待集合と照合し JSON 形式で結果を出力)
 
 <!-- DEPS-GRAPH-START -->
-| From | To |
-|------|-----|
-| twl:co-autopilot | autopilot-init, autopilot-launch, autopilot-poll, autopilot-phase-execute, autopilot-pilot-wakeup-bootstrap, autopilot-pilot-wakeup-poll, autopilot-pilot-wakeup-heartbeat, autopilot-phase-sanity, autopilot-pilot-precheck, autopilot-pilot-rebase, autopilot-multi-source-verdict, autopilot-phase-postprocess, autopilot-collect, autopilot-retrospective, autopilot-patterns, autopilot-cross-issue, autopilot-summary, session-audit, self-improve-review, →twl:workflow-setup, →twl:workflow-test-ready, →twl:workflow-pr-verify, →twl:workflow-pr-fix, →twl:workflow-pr-merge, →twl:workflow-dead-cleanup, →twl:workflow-tech-debt-triage, →twl:workflow-self-improve, →twl:co-autopilot-emergency-bypass |
-| twl:co-issue | issue-glossary-check, →twl:workflow-issue-lifecycle, →twl:workflow-issue-refine, →twl:co-issue-step0.5-modes, →twl:co-issue-phase2-bundles, →twl:co-issue-phase3-dispatch, →twl:co-issue-phase4-aggregate, →twl:co-issue-cleanup |
-| twl:co-project | project-create, project-governance, project-board-configure, project-migrate, container-dependency-check, setup-crg, snapshot-analyze, snapshot-classify, snapshot-generate, →twl:workflow-plugin-create, →twl:workflow-plugin-diagnose, →twl:workflow-prompt-audit, label-sync, →twl:ref-types, →twl:ref-practices, →twl:ref-deps-format |
-| twl:co-architect | architect-completeness-check, architect-group-refine, evaluate-architecture, →twl:ref-architecture-spec, →twl:ref-skill-arch-patterns, →twl:workflow-arch-review |
-| twl:co-utility | worktree-list, worktree-delete, twl-validate, services, ui-capture, schema-update |
-| twl:co-self-improve | →twl:workflow-observe-loop, test-project-init, test-project-reset, test-project-scenario-load, observe-once, problem-detect, issue-draft-from-observation, observe-retrospective, ●observer-evaluator, →twl:test-scenario-catalog, →twl:observation-pattern-catalog, →twl:load-test-baselines |
-| twl:su-observer | observe-once, problem-detect, ●observer-evaluator, intervene-auto, intervene-confirm, intervene-escalate, →twl:intervention-catalog, →twl:observation-pattern-catalog, →twl:monitor-channel-catalog, su-compact, wave-collect, externalize-state, →twl:pitfalls-catalog, →twl:proxy-dialog-playbook, →twl:ref-invariants, →twl:observer-supervise-checklist, →twl:su-observer-supervise-channels, →twl:su-observer-controller-spawn-playbook, →twl:su-observer-wave-management, →twl:su-observer-security-gate, →twl:su-observer-constraints |
-| twl:workflow-setup | init, worktree-create, project-board-status-update, crg-auto-build, ac-extract |
-| twl:workflow-test-ready | ◆test-scaffold, check, e2e-plan |
-| twl:workflow-pr-verify | ac-deploy-trigger, prompt-compliance, ts-preflight, ◆phase-review, scope-judge, pr-test, ac-verify, ◆test-phase |
-| twl:workflow-pr-fix | ◆fix-phase, ◆post-fix-verify, warning-fix |
-| twl:workflow-pr-merge | ◆e2e-screening, pr-cycle-report, pr-cycle-analysis, all-pass-check, ◆merge-gate, auto-merge, →twl:pr-merge-domain-rules, →twl:pr-merge-chain-steps |
-| twl:workflow-dead-cleanup | dead-component-detect, dead-component-execute |
-| twl:workflow-tech-debt-triage | triage-execute |
-| twl:workflow-self-improve | self-improve-collect, self-improve-propose, self-improve-close, ecc-monitor |
-| twl:workflow-observe-loop | ◆observe-and-detect, observe-retrospective |
-| twl:workflow-plugin-create | plugin-interview, plugin-research, plugin-design, plugin-generate |
-| twl:workflow-plugin-diagnose | plugin-migrate-analyze, plugin-diagnose, ◆plugin-phase-diagnose, plugin-fix, plugin-verify, ◆plugin-phase-verify |
-| twl:workflow-prompt-audit | prompt-audit-scan, ◆prompt-audit-review, prompt-audit-apply |
-| twl:workflow-issue-lifecycle | issue-structure, ◆issue-spec-review, issue-review-aggregate, issue-arch-drift, issue-create, project-board-sync, →twl:lifecycle-processing-flow |
-| twl:workflow-issue-refine | ◆issue-spec-review, issue-review-aggregate, issue-arch-drift, →twl:refine-processing-flow |
-| twl:workflow-arch-review | ◆arch-phase-review, arch-fix-phase, ◆merge-gate, auto-merge |
-| post-fix-verify | ●worker-code-reviewer, ●worker-security-reviewer, ●worker-codex-reviewer |
-| all-pass-check | →twl:ref-dci |
-| issue-spec-review | ●issue-critic, ●issue-feasibility, ●worker-codex-reviewer |
-| issue-glossary-check | →twl:ref-glossary-criteria |
-| plugin-phase-diagnose | ●worker-structure, ●worker-principles, ●worker-architecture, →twl:ref-specialist-output-schema, →twl:ref-skill-arch-patterns |
-| plugin-phase-verify | ●worker-structure, ●worker-principles, ●worker-architecture, →twl:ref-specialist-output-schema, →twl:ref-skill-arch-patterns |
-| problem-detect | →twl:observation-pattern-catalog |
-| observe-and-detect | ●observer-evaluator |
-| su-compact | →twl:memory-mcp-config |
-| externalize-state | →twl:externalization-schema |
-| intervene-auto | →twl:intervention-catalog |
-| intervene-confirm | →twl:intervention-catalog |
-| intervene-escalate | →twl:intervention-catalog |
-| test-scaffold | ●e2e-generate, →twl:ref-specialist-output-schema |
-| phase-review | ●worker-structure, ●worker-principles, ●worker-code-reviewer, ●worker-security-reviewer, ●worker-supabase-migration-checker, ●worker-e2e-reviewer, ●worker-rls-reviewer, ●worker-llm-output-reviewer, ●worker-llm-eval-runner, ●worker-data-validator, ●worker-env-validator, ●worker-codex-reviewer, ●worker-issue-pr-alignment, →twl:ref-specialist-output-schema, →twl:baseline-coding-style, →twl:baseline-security-checklist, →twl:baseline-input-validation, →twl:baseline-bash |
-| arch-phase-review | ●worker-arch-doc-reviewer, ●worker-architecture, ●worker-structure, ●worker-principles, →twl:ref-specialist-output-schema |
-| merge-gate | ●worker-structure, ●worker-principles, ●worker-code-reviewer, ●worker-security-reviewer, ●worker-supabase-migration-checker, ●worker-e2e-reviewer, ●worker-rls-reviewer, ●worker-llm-output-reviewer, ●worker-llm-eval-runner, ●worker-data-validator, ●worker-env-validator, ●worker-codex-reviewer, ●worker-architecture, ●worker-issue-pr-alignment, →twl:ref-specialist-output-schema, →twl:ref-dci, →twl:baseline-coding-style, →twl:baseline-security-checklist, →twl:baseline-input-validation, →twl:baseline-bash |
-| test-phase | ●e2e-quality, →twl:ref-specialist-output-schema |
-| autopilot-phase-execute | →twl:ref-dci |
-| ⟶worker-structure | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-principles | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-env-validator | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-rls-reviewer | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-supabase-migration-checker | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-data-validator | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶template-validator | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶context-checker | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-e2e-reviewer | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶issue-critic | →twl:ref-issue-quality-criteria, →twl:ref-investigation-budget, →twl:ref-specialist-few-shot |
-| ⟶issue-feasibility | →twl:ref-issue-quality-criteria, →twl:ref-investigation-budget, →twl:ref-specialist-few-shot |
-| ⟶worker-codex-reviewer | →twl:ref-issue-quality-criteria, →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-code-reviewer | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-security-reviewer | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-arch-doc-reviewer | →twl:ref-specialist-output-schema |
-| ⟶worker-architecture | →twl:ref-specialist-output-schema, →twl:ref-skill-arch-patterns, →twl:ref-specialist-few-shot |
-| ⟶worker-issue-pr-alignment | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-workflow-integrity | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot, →twl:ref-prompt-guide |
-| ⟶worker-llm-output-reviewer | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-llm-eval-runner | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶worker-prompt-reviewer | →twl:ref-prompt-guide, →twl:ref-specialist-output-schema |
-| ⟶docs-researcher | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶e2e-quality | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶autofix-loop | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶e2e-generate | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶e2e-heal | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
-| ⟶e2e-visual-heal | →twl:ref-specialist-output-schema, →twl:ref-specialist-few-shot |
+![Dependency Graph](./docs/deps.svg)
 <!-- DEPS-GRAPH-END -->
 
 <!-- DEPS-SUBGRAPHS-START -->
+<details>
+<summary>co-autopilot</summary>
+
+![co-autopilot](./docs/deps-co-autopilot.svg)
+</details>
+
+<details>
+<summary>co-issue</summary>
+
+![co-issue](./docs/deps-co-issue.svg)
+</details>
+
+<details>
+<summary>co-project</summary>
+
+![co-project](./docs/deps-co-project.svg)
+</details>
+
+<details>
+<summary>co-explore</summary>
+
+![co-explore](./docs/deps-co-explore.svg)
+</details>
+
+<details>
+<summary>co-architect</summary>
+
+![co-architect](./docs/deps-co-architect.svg)
+</details>
+
+<details>
+<summary>co-utility</summary>
+
+![co-utility](./docs/deps-co-utility.svg)
+</details>
+
+<details>
+<summary>co-self-improve</summary>
+
+![co-self-improve](./docs/deps-co-self-improve.svg)
+</details>
+
+<details>
+<summary>workflow-setup</summary>
+
+![workflow-setup](./docs/deps-workflow-setup.svg)
+</details>
+
+<details>
+<summary>workflow-test-ready</summary>
+
+![workflow-test-ready](./docs/deps-workflow-test-ready.svg)
+</details>
+
+<details>
+<summary>workflow-pr-verify</summary>
+
+![workflow-pr-verify](./docs/deps-workflow-pr-verify.svg)
+</details>
+
+<details>
+<summary>workflow-pr-fix</summary>
+
+![workflow-pr-fix](./docs/deps-workflow-pr-fix.svg)
+</details>
+
+<details>
+<summary>workflow-pr-merge</summary>
+
+![workflow-pr-merge](./docs/deps-workflow-pr-merge.svg)
+</details>
+
+<details>
+<summary>workflow-dead-cleanup</summary>
+
+![workflow-dead-cleanup](./docs/deps-workflow-dead-cleanup.svg)
+</details>
+
+<details>
+<summary>workflow-tech-debt-triage</summary>
+
+![workflow-tech-debt-triage](./docs/deps-workflow-tech-debt-triage.svg)
+</details>
+
+<details>
+<summary>workflow-self-improve</summary>
+
+![workflow-self-improve](./docs/deps-workflow-self-improve.svg)
+</details>
+
+<details>
+<summary>workflow-observe-loop</summary>
+
+![workflow-observe-loop](./docs/deps-workflow-observe-loop.svg)
+</details>
+
+<details>
+<summary>workflow-plugin-create</summary>
+
+![workflow-plugin-create](./docs/deps-workflow-plugin-create.svg)
+</details>
+
+<details>
+<summary>workflow-plugin-diagnose</summary>
+
+![workflow-plugin-diagnose](./docs/deps-workflow-plugin-diagnose.svg)
+</details>
+
+<details>
+<summary>workflow-prompt-audit</summary>
+
+![workflow-prompt-audit](./docs/deps-workflow-prompt-audit.svg)
+</details>
+
+<details>
+<summary>workflow-issue-lifecycle</summary>
+
+![workflow-issue-lifecycle](./docs/deps-workflow-issue-lifecycle.svg)
+</details>
+
+<details>
+<summary>workflow-issue-refine</summary>
+
+![workflow-issue-refine](./docs/deps-workflow-issue-refine.svg)
+</details>
+
+<details>
+<summary>workflow-arch-review</summary>
+
+![workflow-arch-review](./docs/deps-workflow-arch-review.svg)
+</details>
 <!-- DEPS-SUBGRAPHS-END -->

@@ -1,65 +1,248 @@
-=== Dependencies of co-architect ===
+digraph Dependencies {
+    // Graph settings
+    rankdir=LR;
+    ranksep=0.8;
+    nodesep=0.3;
+    fontname="Helvetica";
+    node [fontname="Helvetica", fontsize=10];
+    edge [fontname="Helvetica", fontsize=9];
+    label="co-architect";
+    labelloc=t;
+    fontsize=14;
 
-co-architect (skill) [controller]
-├── architect-completeness-check (command)
-├── architect-group-refine (command)
-├── evaluate-architecture (command)
-├── ref-architecture-spec (skill) [reference]
-├── ref-skill-arch-patterns (skill) [reference]
-└── workflow-arch-review (skill) [workflow]
-│   ├── arch-phase-review (command)
-│   │   ├── pr-review-manifest (script)
-│   │   │   ├── tech-stack-detect (script)
-│   │   │   └── resolve-issue-num (script)
-│   │   ├── autopilot-parser (script)
-│   │   ├── checkpoint-write (script)
-│   │   ├── worker-arch-doc-reviewer (agent)
-│   │   ├── worker-architecture (agent)
-│   │   ├── worker-structure (agent)
-│   │   ├── worker-principles (agent)
-│   │   └── ref-specialist-output-schema (skill) [reference]
-│   ├── arch-fix-phase (command)
-│   │   ├── checkpoint-read (script)
-│   │   └── checkpoint-write (script)
-│   ├── merge-gate (command)
-│   │   ├── merge-gate-check-pr (script)
-│   │   ├── merge-gate-build-manifest (script)
-│   │   │   └── pr-review-manifest (script)
-│   │   ├── merge-gate-check-spawn (script)
-│   │   │   └── specialist-audit (script)
-│   │   ├── merge-gate-checkpoint-merge (script)
-│   │   │   └── checkpoint-read (script)
-│   │   ├── merge-gate-check-phase-review (script)
-│   │   │   ├── resolve-issue-num (script)
-│   │   │   └── checkpoint-read (script)
-│   │   ├── autopilot-parser (script)
-│   │   ├── tech-stack-detect (script)
-│   │   ├── state-write (script)
-│   │   ├── worktree-delete (script)
-│   │   ├── checkpoint-write (script)
-│   │   ├── checkpoint-read (script)
-│   │   ├── autopilot-mergegate (script)
-│   │   │   ├── autopilot-mergegate-guards (script)
-│   │   │   └── autopilot-mergegate-ops (script)
-│   │   ├── worker-structure (agent)
-│   │   ├── worker-principles (agent)
-│   │   ├── worker-code-reviewer (agent)
-│   │   ├── worker-security-reviewer (agent)
-│   │   ├── worker-supabase-migration-checker (agent)
-│   │   ├── worker-e2e-reviewer (agent)
-│   │   ├── worker-rls-reviewer (agent)
-│   │   ├── worker-llm-output-reviewer (agent)
-│   │   ├── worker-llm-eval-runner (agent)
-│   │   ├── worker-data-validator (agent)
-│   │   ├── worker-env-validator (agent)
-│   │   ├── worker-codex-reviewer (agent)
-│   │   ├── worker-architecture (agent)
-│   │   ├── worker-issue-pr-alignment (agent)
-│   │   ├── ref-specialist-output-schema (skill) [reference]
-│   │   ├── ref-dci (skill) [reference]
-│   │   ├── baseline-coding-style (skill) [reference]
-│   │   ├── baseline-security-checklist (skill) [reference]
-│   │   ├── baseline-input-validation (skill) [reference]
-│   │   └── baseline-bash (skill) [reference]
-│   └── auto-merge (command)
-│   │   └── auto-merge (script)
+    // L0: Controller Skills
+    skill_co_architect [label="twl:co-architect\n(2,628 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+
+    // L0: Launchers
+
+    // L0.5: Workflow Skills
+    skill_workflow_arch_review [label="twl:workflow-arch-review\n(982 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+
+    // Reference Skills
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,461 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_skill_arch_patterns [label="twl:ref-skill-arch-patterns\n(2,234 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_architecture_spec [label="twl:ref-architecture-spec\n(2,637 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_dci [label="twl:ref-dci\n(1,159 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,376 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(2,194 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_input_validation [label="twl:baseline-input-validation\n(1,408 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_bash [label="twl:baseline-bash\n(6,940 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+
+    // L1: Direct Commands
+    cmd_architect_completeness_check [label="architect-completeness-check\n(1,624 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_architect_group_refine [label="architect-group-refine\n(1,250 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_evaluate_architecture [label="evaluate-architecture\n(829 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_arch_phase_review [label="arch-phase-review\n(830 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_arch_fix_phase [label="arch-fix-phase\n(704 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_merge_gate [label="merge-gate\n(1,677 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_auto_merge [label="auto-merge\n(291 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+
+    // L2: Sub Commands
+
+    // L3: Agents
+    agent_worker_structure [label="worker-structure\n(1,244 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_principles [label="worker-principles\n(1,154 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_env_validator [label="worker-env-validator\n(1,426 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_rls_reviewer [label="worker-rls-reviewer\n(1,517 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_supabase_migration_checker [label="worker-supabase-migration-checker\n(1,338 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_data_validator [label="worker-data-validator\n(698 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_e2e_reviewer [label="worker-e2e-reviewer\n(1,226 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(2,121 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_code_reviewer [label="worker-code-reviewer\n(3,040 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_security_reviewer [label="worker-security-reviewer\n(866 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_arch_doc_reviewer [label="worker-arch-doc-reviewer\n(1,729 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_architecture [label="worker-architecture\n(1,814 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_issue_pr_alignment [label="worker-issue-pr-alignment\n(2,380 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_llm_output_reviewer [label="worker-llm-output-reviewer\n(1,162 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_llm_eval_runner [label="worker-llm-eval-runner\n(1,174 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+
+    // L3.5: Scripts
+    script_state_write [label="state-write\n(5,796 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_delete [label="worktree-delete\n(1,153 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_tech_stack_detect [label="tech-stack-detect\n(845 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_parser [label="autopilot-parser\n(2,484 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_mergegate [label="autopilot-mergegate\n(2,930 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_mergegate_guards [label="autopilot-mergegate-guards\n(1,730 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_mergegate_ops [label="autopilot-mergegate-ops\n(5,887 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_auto_merge [label="auto-merge\n(4,124 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_pr_review_manifest [label="pr-review-manifest\n(2,131 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_checkpoint_write [label="checkpoint-write\n(3,254 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_checkpoint_read [label="checkpoint-read\n(3,254 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_check_pr [label="merge-gate-check-pr\n(246 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_check_red_only [label="merge-gate-check-red-only\n(452 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_build_manifest [label="merge-gate-build-manifest\n(335 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_check_spawn [label="merge-gate-check-spawn\n(997 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_specialist_audit [label="specialist-audit\n(4,116 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_checkpoint_merge [label="merge-gate-checkpoint-merge\n(276 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_check_phase_review [label="merge-gate-check-phase-review\n(585 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+
+    // L4: External
+
+    // Layer constraints
+    { rank=same; skill_co_architect; }
+    { rank=same; skill_workflow_arch_review; }
+    { rank=same; skill_ref_specialist_output_schema; skill_ref_skill_arch_patterns; skill_ref_architecture_spec; skill_ref_dci; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; skill_baseline_bash; }
+    { rank=same; cmd_architect_completeness_check; cmd_architect_group_refine; cmd_evaluate_architecture; cmd_arch_phase_review; cmd_arch_fix_phase; cmd_merge_gate; cmd_auto_merge; }
+    { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_arch_doc_reviewer; agent_worker_architecture; agent_worker_issue_pr_alignment; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; }
+    { rank=same; script_state_write; script_worktree_delete; script_tech_stack_detect; script_autopilot_parser; script_autopilot_mergegate; script_autopilot_mergegate_guards; script_autopilot_mergegate_ops; script_auto_merge; script_resolve_issue_num; script_pr_review_manifest; script_checkpoint_write; script_checkpoint_read; script_merge_gate_check_pr; script_merge_gate_check_red_only; script_merge_gate_build_manifest; script_merge_gate_check_spawn; script_specialist_audit; script_merge_gate_checkpoint_merge; script_merge_gate_check_phase_review; }
+
+    // Edges
+    skill_co_architect -> cmd_architect_completeness_check;
+    skill_co_architect -> cmd_architect_group_refine;
+    skill_co_architect -> cmd_evaluate_architecture;
+    skill_co_architect -> skill_ref_architecture_spec;
+    skill_co_architect -> skill_ref_skill_arch_patterns;
+    skill_co_architect -> skill_workflow_arch_review;
+    skill_workflow_arch_review -> cmd_arch_phase_review;
+    skill_workflow_arch_review -> cmd_arch_fix_phase;
+    skill_workflow_arch_review -> cmd_merge_gate;
+    skill_workflow_arch_review -> cmd_auto_merge;
+    cmd_arch_phase_review -> script_pr_review_manifest;
+    cmd_arch_phase_review -> script_autopilot_parser;
+    cmd_arch_phase_review -> script_checkpoint_write;
+    cmd_arch_phase_review -> agent_worker_arch_doc_reviewer [style=dashed];
+    cmd_arch_phase_review -> agent_worker_architecture [style=dashed];
+    cmd_arch_phase_review -> agent_worker_structure [style=dashed];
+    cmd_arch_phase_review -> agent_worker_principles [style=dashed];
+    cmd_arch_phase_review -> skill_ref_specialist_output_schema;
+    cmd_arch_fix_phase -> script_checkpoint_read;
+    cmd_arch_fix_phase -> script_checkpoint_write;
+    cmd_merge_gate -> script_merge_gate_check_pr;
+    cmd_merge_gate -> script_merge_gate_check_red_only;
+    cmd_merge_gate -> script_merge_gate_build_manifest;
+    cmd_merge_gate -> script_merge_gate_check_spawn;
+    cmd_merge_gate -> script_merge_gate_checkpoint_merge;
+    cmd_merge_gate -> script_merge_gate_check_phase_review;
+    cmd_merge_gate -> script_autopilot_parser;
+    cmd_merge_gate -> script_tech_stack_detect;
+    cmd_merge_gate -> script_state_write;
+    cmd_merge_gate -> script_worktree_delete;
+    cmd_merge_gate -> script_checkpoint_write;
+    cmd_merge_gate -> script_checkpoint_read;
+    cmd_merge_gate -> script_autopilot_mergegate;
+    cmd_merge_gate -> agent_worker_structure [style=dashed];
+    cmd_merge_gate -> agent_worker_principles [style=dashed];
+    cmd_merge_gate -> agent_worker_code_reviewer [style=dashed];
+    cmd_merge_gate -> agent_worker_security_reviewer [style=dashed];
+    cmd_merge_gate -> agent_worker_supabase_migration_checker [style=dashed];
+    cmd_merge_gate -> agent_worker_e2e_reviewer [style=dashed];
+    cmd_merge_gate -> agent_worker_rls_reviewer [style=dashed];
+    cmd_merge_gate -> agent_worker_llm_output_reviewer [style=dashed];
+    cmd_merge_gate -> agent_worker_llm_eval_runner [style=dashed];
+    cmd_merge_gate -> agent_worker_data_validator [style=dashed];
+    cmd_merge_gate -> agent_worker_env_validator [style=dashed];
+    cmd_merge_gate -> agent_worker_codex_reviewer [style=dashed];
+    cmd_merge_gate -> agent_worker_architecture [style=dashed];
+    cmd_merge_gate -> agent_worker_issue_pr_alignment [style=dashed];
+    cmd_merge_gate -> skill_ref_specialist_output_schema;
+    cmd_merge_gate -> skill_ref_dci;
+    cmd_merge_gate -> skill_baseline_coding_style;
+    cmd_merge_gate -> skill_baseline_security_checklist;
+    cmd_merge_gate -> skill_baseline_input_validation;
+    cmd_merge_gate -> skill_baseline_bash;
+    cmd_auto_merge -> script_auto_merge;
+    agent_worker_structure -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_principles -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_env_validator -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_rls_reviewer -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_supabase_migration_checker -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_data_validator -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_e2e_reviewer -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_codex_reviewer -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_code_reviewer -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_security_reviewer -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_arch_doc_reviewer -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_architecture -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_architecture -> skill_ref_skill_arch_patterns [style=dotted];
+    agent_worker_issue_pr_alignment -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_llm_output_reviewer -> skill_ref_specialist_output_schema [style=dotted];
+    agent_worker_llm_eval_runner -> skill_ref_specialist_output_schema [style=dotted];
+
+    // Ordering constraints (invisible edges)
+    cmd_architect_completeness_check -> cmd_architect_group_refine [style=invis, weight=10];
+    cmd_architect_group_refine -> cmd_evaluate_architecture [style=invis, weight=10];
+    cmd_evaluate_architecture -> skill_ref_architecture_spec [style=invis, weight=10];
+    skill_ref_architecture_spec -> skill_ref_skill_arch_patterns [style=invis, weight=10];
+    skill_ref_skill_arch_patterns -> skill_workflow_arch_review [style=invis, weight=10];
+    cmd_merge_gate -> cmd_auto_merge [style=invis, weight=10];
+    cmd_arch_phase_review -> cmd_arch_fix_phase [style=invis, weight=10];
+    cmd_arch_fix_phase -> cmd_merge_gate [style=invis, weight=10];
+    cmd_merge_gate -> cmd_auto_merge [style=invis, weight=10];
+    agent_worker_code_reviewer -> agent_worker_security_reviewer [style=invis, weight=10];
+    agent_worker_security_reviewer -> agent_worker_codex_reviewer [style=invis, weight=10];
+    agent_worker_codex_reviewer -> script_pr_review_manifest [style=invis, weight=10];
+    script_pr_review_manifest -> script_autopilot_parser [style=invis, weight=10];
+    script_state_write -> script_checkpoint_write [style=invis, weight=10];
+    script_checkpoint_write -> skill_ref_dci [style=invis, weight=10];
+    script_checkpoint_write -> script_checkpoint_read [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
+    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_ref_skill_arch_patterns [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_principles -> agent_worker_architecture [style=invis, weight=10];
+    agent_worker_architecture -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_ref_skill_arch_patterns [style=invis, weight=10];
+    script_autopilot_parser -> script_tech_stack_detect [style=invis, weight=10];
+    script_tech_stack_detect -> script_checkpoint_write [style=invis, weight=10];
+    script_checkpoint_write -> agent_worker_structure [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_principles -> agent_worker_code_reviewer [style=invis, weight=10];
+    agent_worker_code_reviewer -> agent_worker_security_reviewer [style=invis, weight=10];
+    agent_worker_security_reviewer -> agent_worker_supabase_migration_checker [style=invis, weight=10];
+    agent_worker_supabase_migration_checker -> agent_worker_e2e_reviewer [style=invis, weight=10];
+    agent_worker_e2e_reviewer -> agent_worker_rls_reviewer [style=invis, weight=10];
+    agent_worker_rls_reviewer -> agent_worker_llm_output_reviewer [style=invis, weight=10];
+    agent_worker_llm_output_reviewer -> agent_worker_llm_eval_runner [style=invis, weight=10];
+    agent_worker_llm_eval_runner -> agent_worker_data_validator [style=invis, weight=10];
+    agent_worker_data_validator -> agent_worker_env_validator [style=invis, weight=10];
+    agent_worker_env_validator -> agent_worker_codex_reviewer [style=invis, weight=10];
+    agent_worker_codex_reviewer -> agent_worker_issue_pr_alignment [style=invis, weight=10];
+    agent_worker_issue_pr_alignment -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_baseline_coding_style [style=invis, weight=10];
+    skill_baseline_coding_style -> skill_baseline_security_checklist [style=invis, weight=10];
+    skill_baseline_security_checklist -> skill_baseline_input_validation [style=invis, weight=10];
+    skill_baseline_input_validation -> skill_baseline_bash [style=invis, weight=10];
+    script_pr_review_manifest -> script_autopilot_parser [style=invis, weight=10];
+    script_autopilot_parser -> script_checkpoint_write [style=invis, weight=10];
+    script_checkpoint_write -> agent_worker_arch_doc_reviewer [style=invis, weight=10];
+    agent_worker_arch_doc_reviewer -> agent_worker_architecture [style=invis, weight=10];
+    agent_worker_architecture -> agent_worker_structure [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_principles -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    script_checkpoint_read -> script_checkpoint_write [style=invis, weight=10];
+    script_merge_gate_check_pr -> script_merge_gate_check_red_only [style=invis, weight=10];
+    script_merge_gate_check_red_only -> script_merge_gate_build_manifest [style=invis, weight=10];
+    script_merge_gate_build_manifest -> script_merge_gate_check_spawn [style=invis, weight=10];
+    script_merge_gate_check_spawn -> script_merge_gate_checkpoint_merge [style=invis, weight=10];
+    script_merge_gate_checkpoint_merge -> script_merge_gate_check_phase_review [style=invis, weight=10];
+    script_merge_gate_check_phase_review -> script_autopilot_parser [style=invis, weight=10];
+    script_autopilot_parser -> script_tech_stack_detect [style=invis, weight=10];
+    script_tech_stack_detect -> script_state_write [style=invis, weight=10];
+    script_state_write -> script_worktree_delete [style=invis, weight=10];
+    script_worktree_delete -> script_checkpoint_write [style=invis, weight=10];
+    script_checkpoint_write -> script_checkpoint_read [style=invis, weight=10];
+    script_checkpoint_read -> script_autopilot_mergegate [style=invis, weight=10];
+    script_autopilot_mergegate -> agent_worker_structure [style=invis, weight=10];
+    agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
+    agent_worker_principles -> agent_worker_code_reviewer [style=invis, weight=10];
+    agent_worker_code_reviewer -> agent_worker_security_reviewer [style=invis, weight=10];
+    agent_worker_security_reviewer -> agent_worker_supabase_migration_checker [style=invis, weight=10];
+    agent_worker_supabase_migration_checker -> agent_worker_e2e_reviewer [style=invis, weight=10];
+    agent_worker_e2e_reviewer -> agent_worker_rls_reviewer [style=invis, weight=10];
+    agent_worker_rls_reviewer -> agent_worker_llm_output_reviewer [style=invis, weight=10];
+    agent_worker_llm_output_reviewer -> agent_worker_llm_eval_runner [style=invis, weight=10];
+    agent_worker_llm_eval_runner -> agent_worker_data_validator [style=invis, weight=10];
+    agent_worker_data_validator -> agent_worker_env_validator [style=invis, weight=10];
+    agent_worker_env_validator -> agent_worker_codex_reviewer [style=invis, weight=10];
+    agent_worker_codex_reviewer -> agent_worker_architecture [style=invis, weight=10];
+    agent_worker_architecture -> agent_worker_issue_pr_alignment [style=invis, weight=10];
+    agent_worker_issue_pr_alignment -> skill_ref_specialist_output_schema [style=invis, weight=10];
+    skill_ref_specialist_output_schema -> skill_ref_dci [style=invis, weight=10];
+    skill_ref_dci -> skill_baseline_coding_style [style=invis, weight=10];
+    skill_baseline_coding_style -> skill_baseline_security_checklist [style=invis, weight=10];
+    skill_baseline_security_checklist -> skill_baseline_input_validation [style=invis, weight=10];
+    skill_baseline_input_validation -> skill_baseline_bash [style=invis, weight=10];
+
+}

@@ -87,7 +87,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="591.32,-95.49 559.38,-119.98 495.51,-119.98 463.57,-95.49 495.51,-71.01 559.38,-71.01 591.32,-95.49"/>
 <text text-anchor="middle" x="527.44" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="527.44" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
+<text text-anchor="middle" x="527.44" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,844 tok)</text>
 </g>
 <!-- skill_workflow_setup&#45;&gt;script_chain_runner -->
 <g id="edge6" class="edge">
@@ -115,7 +115,7 @@
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="605.08,-269.49 566.26,-293.98 488.62,-293.98 449.81,-269.49 488.62,-245.01 566.26,-245.01 605.08,-269.49"/>
 <text text-anchor="middle" x="527.44" y="-272.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="527.44" y="-261.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,686 tok)</text>
+<text text-anchor="middle" x="527.44" y="-261.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,263 tok)</text>
 </g>
 <!-- cmd_worktree_create&#45;&gt;script_worktree_create -->
 <g id="edge8" class="edge">
@@ -174,7 +174,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="587.15,-553.49 557.3,-577.98 497.59,-577.98 467.73,-553.49 497.59,-529.01 557.3,-529.01 587.15,-553.49"/>
 <text text-anchor="middle" x="527.44" y="-556.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="527.44" y="-545.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
+<text text-anchor="middle" x="527.44" y="-545.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,844 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node15" class="node">

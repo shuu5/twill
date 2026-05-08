@@ -15,7 +15,7 @@
 <title>skill_workflow_pr_fix</title>
 <ellipse fill="#e8f5e9" stroke="black" cx="76.37" cy="-198.49" rx="76.24" ry="21.43"/>
 <text text-anchor="middle" x="76.37" y="-201.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:workflow&#45;pr&#45;fix</text>
-<text text-anchor="middle" x="76.37" y="-190.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,433 tok)</text>
+<text text-anchor="middle" x="76.37" y="-190.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,567 tok)</text>
 </g>
 <!-- cmd_post_fix_verify -->
 <g id="node2" class="node">
@@ -48,7 +48,7 @@
 <title>cmd_fix_phase</title>
 <polygon fill="#bbdefb" stroke="black" points="283.74,-274.49 221.74,-274.49 221.74,-238.49 283.74,-238.49 283.74,-274.49"/>
 <text text-anchor="middle" x="252.74" y="-259.49" font-family="Helvetica,sans-Serif" font-size="10.00">fix&#45;phase</text>
-<text text-anchor="middle" x="252.74" y="-248.49" font-family="Helvetica,sans-Serif" font-size="10.00">(552 tok)</text>
+<text text-anchor="middle" x="252.74" y="-248.49" font-family="Helvetica,sans-Serif" font-size="10.00">(891 tok)</text>
 </g>
 <!-- skill_workflow_pr_fix&#45;&gt;cmd_fix_phase -->
 <g id="edge1" class="edge">
@@ -62,7 +62,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="451.02" cy="-166.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="451.02" y="-169.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="451.02" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,841 tok)</text>
+<text text-anchor="middle" x="451.02" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,121 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge6" class="edge">
@@ -75,7 +75,7 @@
 <title>agent_worker_code_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="451.02" cy="-294.49" rx="86.95" ry="21.43"/>
 <text text-anchor="middle" x="451.02" y="-297.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;code&#45;reviewer</text>
-<text text-anchor="middle" x="451.02" y="-286.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,503 tok)</text>
+<text text-anchor="middle" x="451.02" y="-286.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,040 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;agent_worker_code_reviewer -->
 <g id="edge4" class="edge">
@@ -114,7 +114,7 @@
 <title>script_pr_review_manifest</title>
 <polygon fill="#ff9800" stroke="black" points="786.76,-166.49 741.94,-190.98 652.31,-190.98 607.5,-166.49 652.31,-142.01 741.94,-142.01 786.76,-166.49"/>
 <text text-anchor="middle" x="697.13" y="-169.49" font-family="Helvetica,sans-Serif" font-size="10.00">pr&#45;review&#45;manifest</text>
-<text text-anchor="middle" x="697.13" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,034 tok)</text>
+<text text-anchor="middle" x="697.13" y="-158.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,131 tok)</text>
 </g>
 <!-- cmd_post_fix_verify&#45;&gt;script_pr_review_manifest -->
 <g id="edge7" class="edge">
@@ -128,7 +128,7 @@
 <title>script_checkpoint_read</title>
 <polygon fill="#ff9800" stroke="black" points="774.76,-349.49 735.94,-373.98 658.31,-373.98 619.49,-349.49 658.31,-325.01 735.94,-325.01 774.76,-349.49"/>
 <text text-anchor="middle" x="697.13" y="-352.49" font-family="Helvetica,sans-Serif" font-size="10.00">checkpoint&#45;read</text>
-<text text-anchor="middle" x="697.13" y="-341.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,864 tok)</text>
+<text text-anchor="middle" x="697.13" y="-341.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,254 tok)</text>
 </g>
 <!-- cmd_fix_phase&#45;&gt;script_checkpoint_read -->
 <g id="edge9" class="edge">
@@ -146,7 +146,7 @@
 <title>script_tech_stack_detect</title>
 <polygon fill="#ff9800" stroke="black" points="780.19,-24.49 738.66,-48.98 655.59,-48.98 614.06,-24.49 655.59,-0.01 738.66,-0.01 780.19,-24.49"/>
 <text text-anchor="middle" x="697.13" y="-27.49" font-family="Helvetica,sans-Serif" font-size="10.00">tech&#45;stack&#45;detect</text>
-<text text-anchor="middle" x="697.13" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(773 tok)</text>
+<text text-anchor="middle" x="697.13" y="-16.49" font-family="Helvetica,sans-Serif" font-size="10.00">(845 tok)</text>
 </g>
 <!-- script_autopilot_parser&#45;&gt;script_tech_stack_detect -->
 <!-- script_autopilot_parser&#45;&gt;script_tech_stack_detect -->

@@ -55,6 +55,11 @@
             "timeout": 3000
           },
           {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh\"",
+            "timeout": 5000
+          },
+          {
             "type": "mcp_tool",
             "server": "twl",
             "tool": "twl_validate_merge",

@@ -15,23 +15,24 @@ digraph Dependencies {
     // L0: Launchers
 
     // L0.5: Workflow Skills
-    skill_workflow_pr_merge [label="twl:workflow-pr-merge\n(1,043 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
+    skill_workflow_pr_merge [label="twl:workflow-pr-merge\n(1,129 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,283 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_ref_specialist_output_schema [label="twl:ref-specialist-output-schema\n(1,461 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_dci [label="twl:ref-dci\n(1,159 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_pr_merge_domain_rules [label="twl:pr-merge-domain-rules\n(633 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_pr_merge_chain_steps [label="twl:pr-merge-chain-steps\n(605 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_pr_merge_chain_steps [label="twl:pr-merge-chain-steps\n(806 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_coding_style [label="twl:baseline-coding-style\n(1,376 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(1,815 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_security_checklist [label="twl:baseline-security-checklist\n(2,194 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_baseline_input_validation [label="twl:baseline-input-validation\n(1,408 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_baseline_bash [label="twl:baseline-bash\n(2,295 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_baseline_bash [label="twl:baseline-bash\n(6,940 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_pr_cycle_report [label="pr-cycle-report\n(345 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_all_pass_check [label="all-pass-check\n(842 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_merge_gate_check [label="merge-gate-check", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_e2e_screening [label="e2e-screening\n(460 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_merge_gate [label="merge-gate\n(1,536 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
+    cmd_merge_gate [label="merge-gate\n(1,677 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
     cmd_auto_merge [label="auto-merge\n(291 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_pr_cycle_analysis [label="pr-cycle-analysis\n(971 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
@@ -45,10 +46,10 @@ digraph Dependencies {
     agent_worker_supabase_migration_checker [label="worker-supabase-migration-checker\n(1,338 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_data_validator [label="worker-data-validator\n(698 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_e2e_reviewer [label="worker-e2e-reviewer\n(1,226 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,841 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_code_reviewer [label="worker-code-reviewer\n(2,503 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(2,121 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_code_reviewer [label="worker-code-reviewer\n(3,040 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_security_reviewer [label="worker-security-reviewer\n(866 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_architecture [label="worker-architecture\n(1,695 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_architecture [label="worker-architecture\n(1,814 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_issue_pr_alignment [label="worker-issue-pr-alignment\n(2,380 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_output_reviewer [label="worker-llm-output-reviewer\n(1,162 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_worker_llm_eval_runner [label="worker-llm-eval-runner\n(1,174 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
@@ -57,26 +58,27 @@ digraph Dependencies {
     script_state_read [label="state-read\n(5,796 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_state_write [label="state-write\n(5,796 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worktree_delete [label="worktree-delete\n(1,153 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_tech_stack_detect [label="tech-stack-detect\n(773 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_tech_stack_detect [label="tech-stack-detect\n(845 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_parser [label="autopilot-parser\n(2,484 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_mergegate [label="autopilot-mergegate\n(2,921 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_mergegate_guards [label="autopilot-mergegate-guards\n(1,473 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_autopilot_mergegate_ops [label="autopilot-mergegate-ops\n(5,604 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_runner [label="chain-runner\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_mergegate [label="autopilot-mergegate\n(2,930 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_mergegate_guards [label="autopilot-mergegate-guards\n(1,730 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_autopilot_mergegate_ops [label="autopilot-mergegate-ops\n(5,887 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(9,844 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_create [label="worktree-create\n(7,263 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(6,371 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_auto_merge [label="auto-merge\n(3,232 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_steps [label="chain-steps\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_auto_merge [label="auto-merge\n(4,124 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(9,844 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_compaction_resume [label="compaction-resume\n(927 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_pr_review_manifest [label="pr-review-manifest\n(2,034 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_checkpoint_write [label="checkpoint-write\n(2,864 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_checkpoint_read [label="checkpoint-read\n(2,864 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_pr_review_manifest [label="pr-review-manifest\n(2,131 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_checkpoint_write [label="checkpoint-write\n(3,254 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_checkpoint_read [label="checkpoint-read\n(3,254 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_check_pr [label="merge-gate-check-pr\n(246 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_check_red_only [label="merge-gate-check-red-only\n(452 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_build_manifest [label="merge-gate-build-manifest\n(335 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_merge_gate_check_spawn [label="merge-gate-check-spawn\n(705 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_specialist_audit [label="specialist-audit\n(2,771 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_merge_gate_check_spawn [label="merge-gate-check-spawn\n(997 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_specialist_audit [label="specialist-audit\n(4,116 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_checkpoint_merge [label="merge-gate-checkpoint-merge\n(276 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_merge_gate_check_phase_review [label="merge-gate-check-phase-review\n(585 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
@@ -85,15 +87,16 @@ digraph Dependencies {
     // Layer constraints
     { rank=same; skill_workflow_pr_merge; }
     { rank=same; skill_ref_specialist_output_schema; skill_ref_dci; skill_pr_merge_domain_rules; skill_pr_merge_chain_steps; skill_baseline_coding_style; skill_baseline_security_checklist; skill_baseline_input_validation; skill_baseline_bash; }
-    { rank=same; cmd_pr_cycle_report; cmd_all_pass_check; cmd_e2e_screening; cmd_merge_gate; cmd_auto_merge; cmd_pr_cycle_analysis; }
+    { rank=same; cmd_pr_cycle_report; cmd_all_pass_check; cmd_merge_gate_check; cmd_e2e_screening; cmd_merge_gate; cmd_auto_merge; cmd_pr_cycle_analysis; }
     { rank=same; agent_worker_structure; agent_worker_principles; agent_worker_env_validator; agent_worker_rls_reviewer; agent_worker_supabase_migration_checker; agent_worker_data_validator; agent_worker_e2e_reviewer; agent_worker_codex_reviewer; agent_worker_code_reviewer; agent_worker_security_reviewer; agent_worker_architecture; agent_worker_issue_pr_alignment; agent_worker_llm_output_reviewer; agent_worker_llm_eval_runner; }
-    { rank=same; script_state_read; script_state_write; script_worktree_delete; script_tech_stack_detect; script_autopilot_parser; script_autopilot_mergegate; script_autopilot_mergegate_guards; script_autopilot_mergegate_ops; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_auto_merge; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_pr_review_manifest; script_checkpoint_write; script_checkpoint_read; script_merge_gate_check_pr; script_merge_gate_build_manifest; script_merge_gate_check_spawn; script_specialist_audit; script_merge_gate_checkpoint_merge; script_merge_gate_check_phase_review; }
+    { rank=same; script_state_read; script_state_write; script_worktree_delete; script_tech_stack_detect; script_autopilot_parser; script_autopilot_mergegate; script_autopilot_mergegate_guards; script_autopilot_mergegate_ops; script_chain_runner; script_worker_terminal_guard; script_worktree_create; script_autopilot_github; script_auto_merge; script_chain_steps; script_compaction_resume; script_resolve_issue_num; script_pr_review_manifest; script_checkpoint_write; script_checkpoint_read; script_merge_gate_check_pr; script_merge_gate_check_red_only; script_merge_gate_build_manifest; script_merge_gate_check_spawn; script_specialist_audit; script_merge_gate_checkpoint_merge; script_merge_gate_check_phase_review; }
 
     // Edges
     skill_workflow_pr_merge -> cmd_e2e_screening;
     skill_workflow_pr_merge -> cmd_pr_cycle_report;
     skill_workflow_pr_merge -> cmd_pr_cycle_analysis;
     skill_workflow_pr_merge -> cmd_all_pass_check;
+    skill_workflow_pr_merge -> cmd_merge_gate_check;
     skill_workflow_pr_merge -> cmd_merge_gate;
     skill_workflow_pr_merge -> cmd_auto_merge;
     skill_workflow_pr_merge -> script_chain_runner;
@@ -103,8 +106,10 @@ digraph Dependencies {
     cmd_all_pass_check -> script_state_write;
     cmd_all_pass_check -> script_checkpoint_write;
     cmd_all_pass_check -> skill_ref_dci;
+    cmd_merge_gate_check -> script_specialist_audit;
     cmd_e2e_screening -> script_checkpoint_write;
     cmd_merge_gate -> script_merge_gate_check_pr;
+    cmd_merge_gate -> script_merge_gate_check_red_only;
     cmd_merge_gate -> script_merge_gate_build_manifest;
     cmd_merge_gate -> script_merge_gate_check_spawn;
     cmd_merge_gate -> script_merge_gate_checkpoint_merge;
@@ -159,7 +164,8 @@ digraph Dependencies {
     cmd_e2e_screening -> cmd_pr_cycle_report [style=invis, weight=10];
     cmd_pr_cycle_report -> cmd_pr_cycle_analysis [style=invis, weight=10];
     cmd_pr_cycle_analysis -> cmd_all_pass_check [style=invis, weight=10];
-    cmd_all_pass_check -> cmd_merge_gate [style=invis, weight=10];
+    cmd_all_pass_check -> cmd_merge_gate_check [style=invis, weight=10];
+    cmd_merge_gate_check -> cmd_merge_gate [style=invis, weight=10];
     cmd_merge_gate -> cmd_auto_merge [style=invis, weight=10];
     cmd_auto_merge -> script_chain_runner [style=invis, weight=10];
     script_chain_runner -> script_compaction_resume [style=invis, weight=10];
@@ -206,7 +212,8 @@ digraph Dependencies {
     agent_worker_structure -> agent_worker_principles [style=invis, weight=10];
     agent_worker_principles -> skill_ref_specialist_output_schema [style=invis, weight=10];
     script_checkpoint_read -> script_checkpoint_write [style=invis, weight=10];
-    script_merge_gate_check_pr -> script_merge_gate_build_manifest [style=invis, weight=10];
+    script_merge_gate_check_pr -> script_merge_gate_check_red_only [style=invis, weight=10];
+    script_merge_gate_check_red_only -> script_merge_gate_build_manifest [style=invis, weight=10];
     script_merge_gate_build_manifest -> script_merge_gate_check_spawn [style=invis, weight=10];
     script_merge_gate_check_spawn -> script_merge_gate_checkpoint_merge [style=invis, weight=10];
     script_merge_gate_checkpoint_merge -> script_merge_gate_check_phase_review [style=invis, weight=10];

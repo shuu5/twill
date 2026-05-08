@@ -11,7 +11,7 @@ digraph Dependencies {
     fontsize=14;
 
     // L0: Controller Skills
-    skill_co_issue [label="twl:co-issue\n(1,354 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
+    skill_co_issue [label="twl:co-issue\n(1,361 tok)", shape=ellipse, style=filled, fillcolor="#c8e6c9"];
 
     // L0: Launchers
 
@@ -21,19 +21,19 @@ digraph Dependencies {
 
     // Reference Skills
     skill_co_issue_step0_5_modes [label="twl:co-issue-step0.5-modes\n(734 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_co_issue_phase2_bundles [label="twl:co-issue-phase2-bundles\n(1,280 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_co_issue_phase3_dispatch [label="twl:co-issue-phase3-dispatch\n(673 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_co_issue_phase4_aggregate [label="twl:co-issue-phase4-aggregate\n(1,397 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_co_issue_phase2_bundles [label="twl:co-issue-phase2-bundles\n(1,402 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_co_issue_phase3_dispatch [label="twl:co-issue-phase3-dispatch\n(679 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_co_issue_phase4_aggregate [label="twl:co-issue-phase4-aggregate\n(1,439 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_co_issue_cleanup [label="twl:co-issue-cleanup\n(327 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
     skill_ref_glossary_criteria [label="twl:ref-glossary-criteria\n(873 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_lifecycle_processing_flow [label="twl:lifecycle-processing-flow\n(2,320 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
-    skill_refine_processing_flow [label="twl:refine-processing-flow\n(2,840 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_lifecycle_processing_flow [label="twl:lifecycle-processing-flow\n(2,325 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_refine_processing_flow [label="twl:refine-processing-flow\n(2,497 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_issue_structure [label="issue-structure\n(1,406 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_create [label="issue-create\n(1,440 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_spec_review [label="issue-spec-review\n(1,870 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_issue_review_aggregate [label="issue-review-aggregate\n(1,157 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_issue_review_aggregate [label="issue-review-aggregate\n(1,503 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_glossary_check [label="issue-glossary-check\n(899 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_arch_drift [label="issue-arch-drift\n(1,079 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_project_board_sync [label="project-board-sync\n(1,184 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
@@ -43,22 +43,22 @@ digraph Dependencies {
     // L3: Agents
     agent_issue_critic [label="issue-critic\n(1,268 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_issue_feasibility [label="issue-feasibility\n(1,175 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,841 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(2,121 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
     script_state_read [label="state-read\n(5,796 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_state_write [label="state-write\n(5,796 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_runner [label="chain-runner\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_runner [label="chain-runner\n(9,844 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_worker_terminal_guard [label="worker-terminal-guard\n(770 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_worktree_create [label="worktree-create\n(6,686 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_worktree_create [label="worktree-create\n(7,263 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_autopilot_github [label="autopilot-github\n(6,371 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_chain_steps [label="chain-steps\n(9,633 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_chain_steps [label="chain-steps\n(9,844 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_resolve_issue_num [label="resolve-issue-num\n(716 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_escape_issue_body [label="escape-issue-body\n(63 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_spec_review_manifest [label="spec-review-manifest\n(169 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
     script_spec_review_session_init [label="spec-review-session-init\n(501 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_issue_lifecycle_orchestrator [label="issue-lifecycle-orchestrator\n(9,324 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
-    script_co_issue_manual_fix_b [label="co-issue-manual-fix-b\n(462 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_issue_lifecycle_orchestrator [label="issue-lifecycle-orchestrator\n(10,705 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
+    script_co_issue_manual_fix_b [label="co-issue-manual-fix-b\n(482 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];
 
     // L4: External
 
