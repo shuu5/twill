@@ -8,10 +8,10 @@
 #
 # 使用方法:
 #   source "$(dirname "$0")/../scripts/lib/observer-parallel-check.sh"
-#   _check_parallel_spawn_eligibility && echo "≤4 並列 OK" || echo "spawn 不可"
+#   _check_parallel_spawn_eligibility && echo "≤10 並列 OK" || echo "spawn 不可"
 #
 # exit コード:
-#   0: 全条件 PASS → ≤ 4 並列 OK
+#   0: 全条件 PASS → ≤ 10 並列 OK
 #   1: precondition 1つでも false → ≤ 2 並列 degrade（stderr に欠落 precondition）
 #   2: 必須条件 1つでも false → spawn 完全禁止（stderr に欠落必須条件）
 #
@@ -300,7 +300,7 @@ get_parallel_spawn_min_remaining_minutes() {
 # _check_parallel_spawn_eligibility: 並列 spawn 可否を AND 評価する純関数
 #
 # 戻り値:
-#   0: 全条件 PASS → ≤ 4 並列 OK
+#   0: 全条件 PASS → ≤ 10 並列 OK
 #   1: precondition 1つでも false → ≤ 2 並列 degrade（stderr に欠落 precondition）
 #   2: 必須条件 1つでも false → spawn 完全禁止（stderr に欠落必須条件）
 # ---------------------------------------------------------------------------
@@ -329,9 +329,9 @@ _check_parallel_spawn_eligibility() {
     missing_must+=("mode=${mode}: bypass または auto mode が必要（Layer A-D 自律実行可能性）")
   fi
 
-  # 必須条件3: SU-4 整合: controller_count + 1 <= 4
-  if (( controller_count + 1 > 4 )); then
-    missing_must+=("controller_count=${controller_count}: +1=$(( controller_count + 1 )) > 4（SU-4 ≤5 整合違反）")
+  # 必須条件3: SU-4 整合: controller_count + 1 <= 10
+  if (( controller_count + 1 > 10 )); then
+    missing_must+=("controller_count=${controller_count}: +1=$(( controller_count + 1 )) > 10（SU-4 ≤10 整合違反）")
   fi
 
   if [[ ${#missing_must[@]} -gt 0 ]]; then

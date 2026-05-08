@@ -65,7 +65,7 @@ _crg_path="${TWILL_REPO_ROOT}/main/.code-review-graph"
 | # | 禁止パターン | 正しい対応 |
 |---|------------|-----------|
 | P1 | 「Phase 1 完遂後まで Phase 2 の next-step を postpone」（実在しない順序依存） | Phase 2 完遂を検知したら即時 spawn。Phase 1 の状態とは独立 |
-| P2 | 「ユーザー入力があるまで次の Issue 起票を postpone」（passive 化） | SU-4 制約（5 Issue 以内）を確認し、範囲内であれば直接 `gh issue create` で起票 |
+| P2 | 「ユーザー入力があるまで次の Issue 起票を postpone」（passive 化） | SU-4 制約（10 controllers 以内）を確認し、範囲内であれば直接 `gh issue create` で起票 |
 | P3 | 「co-explore が完遂したが worker-spawn チャネルが未確認のため postpone」 | `.explore/<N>/summary.md` 生成検知で即時 spawn 判定。worker-spawn 待ちは不要 |
 
 ### 完遂検知チャネル（組み合わせ使用 MUST）

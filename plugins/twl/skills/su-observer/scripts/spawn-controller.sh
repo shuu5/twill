@@ -52,7 +52,7 @@ if [[ ! -x "$CLD_SPAWN" ]]; then
   exit 2
 fi
 
-# --- 並列 spawn 可否チェック（§11.3, Issue #1116）---
+# --- 並列 spawn 可否チェック（§11.3, Issue #1116; SU-4 ≤10 並列 OK, observer 計数外, #1560）---
 # SKIP_PARALLEL_CHECK=1 で bypass 可（intervention 記録 MUST）
 _PARALLEL_CHECK_LIB="$TWILL_ROOT/plugins/twl/scripts/lib/observer-parallel-check.sh"
 if [[ "${SKIP_PARALLEL_CHECK:-0}" == "1" ]]; then

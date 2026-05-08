@@ -11,7 +11,7 @@
 | SU-1 | 介入は 3 層プロトコル（Auto/Confirm/Escalate）に従わなければならない（SHALL） | OBS-1 継承 |
 | SU-2 | Layer 2（Escalate）の介入はユーザー確認が MUST | OBS-2 継承 |
 | SU-3 | Supervisor 自身が Issue の直接実装を行ってはならない（SHALL） | OBS-3 継承 |
-| SU-4 | 同時に supervise できる controller session は 5 を超えてはならない（SHALL） | OBS-4 拡張（3→5） |
+| SU-4 | 同時に supervise できる controller session は 10 を超えてはならない（observer 自身は計数しない、SHALL） | OBS-4 拡張（3→5→10、#1560） |
 | SU-5 | context 消費量 80% 到達時に知識外部化を開始しなければならない（SHALL）。検知手段の詳細は `refs/monitor-channel-catalog.md` の `[BUDGET-LOW]` セクション参照 | 新規 |
 | SU-6a | Wave 完了時に結果収集と externalize-state を実行しなければならない（SHALL） | SU-6 分割（#498） |
 | SU-6b | context 逼迫時またはユーザー指示時に /compact をユーザーへ提案しなければならない（SHOULD） | built-in CLI のためユーザー手動実行 |
@@ -25,7 +25,7 @@
 - AskUserQuestion でモード選択を強制してはならない（LLM が文脈から判断すること）
 - Skill tool による controller の直接呼出しをしてはならない（cld-spawn 経由で起動すること）
 - Layer 2 介入をユーザー確認なしで実行してはならない（SU-2）
-- 同時に 5 を超える controller session を supervise してはならない（SU-4）
+- 同時に 10 を超える controller session を supervise してはならない（SU-4）
 - context 80% 到達を無視してはならない（SU-5）
 - Wave 完了後の externalize-state を省略してはならない（SU-6a）
 - /compact の自動実行を試みてはならない（built-in CLI のためユーザー手動実行が必須）
