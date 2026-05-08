@@ -1485,6 +1485,69 @@ def twl_validate_commit_handler(
             return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
 
 
+_STATUS_TARGET_OPTION_IDS = ("3d983780", "47fc9ee4")  # Refined, In Progress
+_STATUS_DENY_MESSAGES = {
+    "3d983780": (
+        "Status=Refined 直接遷移は禁止です。"
+        " /twl:co-issue refine #N を実行して spec-review-session を完了させてください。"
+    ),
+    "47fc9ee4": (
+        "Status=In Progress 直接遷移は禁止です。"
+        " autopilot/co-explore 経由で evidence を生成してください。"
+    ),
+}
+
+
+def _check_status_transition_evidence(session_tmp_dir: str | None, controller_issue_dir: str | None) -> str | None:
+    """spec-review-session 優先 → Phase4-complete.json の順で evidence を検索して返す。"""
+    stmp = Path(session_tmp_dir or os.environ.get("SESSION_TMP_DIR", "/tmp"))
+    spec_files = sorted(stmp.glob(".spec-review-session-*.json"))
+    if spec_files:
+        return str(spec_files[0])
+    cidir = Path(controller_issue_dir or os.environ.get("CONTROLLER_ISSUE_DIR", ".controller-issue"))
+    phase4_files = sorted(cidir.glob("*/Phase4-complete.json"))
+    if phase4_files:
+        return str(phase4_files[0])
+    return None
+
+
+def twl_validate_status_transition_handler(
+    command: str,
+    tool_name: str = "Bash",
+    session_tmp_dir: str | None = None,
+    controller_issue_dir: str | None = None,
+    timeout_sec: int | None = 10,
+) -> dict:
+    """validation module: gh project item-edit Status field transition gate.
+
+    Sub-1 (pre-bash-refined-status-gate.sh) の MCP-native 二重防御。
+    Sub-1 の In Progress gate に加え Refined gate と Phase4-complete.json evidence を追加する。
+
+    Returns:
+        {
+            "decision": "allow" | "deny",
+            "reason": str,
+            "evidence_path": str | None,
+            "matched_option_id": str | None,
+        }
+
+    Note: cross-repo R5 label fallback は本 handler 範囲外
+          (autopilot-launch.sh の _check_label_fallback が担当)。
+    """
+    if tool_name != "Bash" or not command:
+        return {"decision": "allow", "reason": "no-op: not target tool/command", "evidence_path": None, "matched_option_id": None}
+    if "gh project item-edit" not in command:
+        return {"decision": "allow", "reason": "no-op: not item-edit command", "evidence_path": None, "matched_option_id": None}
+    matched_id = next((oid for oid in _STATUS_TARGET_OPTION_IDS if re.search(rf"\b{oid}\b", command)), None)
+    if matched_id is None:
+        return {"decision": "allow", "reason": "no-op: target option ID not matched", "evidence_path": None, "matched_option_id": None}
+    evidence_path = _check_status_transition_evidence(session_tmp_dir, controller_issue_dir)
+    if evidence_path:
+        return {"decision": "allow", "reason": f"evidence found: {evidence_path}", "evidence_path": evidence_path, "matched_option_id": matched_id}
+    deny_reason = _STATUS_DENY_MESSAGES.get(matched_id, f"Status 遷移 option ID={matched_id} の直接遷移は禁止です。")
+    return {"decision": "deny", "reason": deny_reason, "evidence_path": None, "matched_option_id": matched_id}
+
+
 def twl_check_completeness_handler(manifest_context: str) -> dict:
     """validation module: specialist completeness check via flock-guarded manifest files."""
     import fcntl
@@ -2086,6 +2149,17 @@ try:
         return json.dumps(twl_validate_commit_handler(command=command, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
 
     @mcp.tool()
+    def twl_validate_status_transition(
+        command: str,
+        tool_name: str = "Bash",
+        session_tmp_dir: str | None = None,
+        controller_issue_dir: str | None = None,
+        timeout_sec: int | None = 10,
+    ) -> str:
+        """validation module: gh project item-edit Status field transition gate (MCP-native double defense)."""
+        return json.dumps(twl_validate_status_transition_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    @mcp.tool()
     def twl_check_completeness(manifest_context: str) -> str:
         """validation module: specialist completeness check via flock-guarded manifest files."""
         return json.dumps(twl_check_completeness_handler(manifest_context=manifest_context), ensure_ascii=False)
@@ -2289,6 +2363,10 @@ except ImportError:
     def twl_validate_commit(command: str, files: list[str], timeout_sec: int | None = 300) -> str:  # type: ignore[misc]
         """validation module: commit message and file deps validation (in-process, no subprocess)."""
         return json.dumps(twl_validate_commit_handler(command=command, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
+
+    def twl_validate_status_transition(command: str, tool_name: str = "Bash", session_tmp_dir: str | None = None, controller_issue_dir: str | None = None, timeout_sec: int | None = 10) -> str:  # type: ignore[misc]
+        """validation module: gh project item-edit Status field transition gate (fastmcp not installed)."""
+        return json.dumps(twl_validate_status_transition_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
 
     def twl_check_completeness(manifest_context: str) -> str:  # type: ignore[misc]
         """validation module: specialist completeness check via flock-guarded manifest files."""
