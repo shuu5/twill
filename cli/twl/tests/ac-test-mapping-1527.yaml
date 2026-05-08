@@ -2,36 +2,36 @@ mappings:
   - ac_index: 1
     ac_text: "twill-integration.md Phase 2 Component Mapping テーブルに twl_spawn_session が含む tool 群として記載されていること"
     test_file: "cli/twl/tests/test_issue_1527_twill_integration_component_mapping.py"
-    test_name: "test_ac1_spawn_session_in_component_mapping"
+    test_name: "TestAC1SpawnSession::test_ac1_spawn_session_in_component_mapping"
     impl_files:
       - "plugins/twl/architecture/domain/contexts/twill-integration.md"
   - ac_index: 2
     ac_text: "twill-integration.md Phase 2 Component Mapping テーブルに twl_spawn_controller が含む tool 群として記載されていること"
     test_file: "cli/twl/tests/test_issue_1527_twill_integration_component_mapping.py"
-    test_name: "test_ac2_spawn_controller_in_component_mapping"
+    test_name: "TestAC2SpawnController::test_ac2_spawn_controller_in_component_mapping"
     impl_files:
       - "plugins/twl/architecture/domain/contexts/twill-integration.md"
   - ac_index: 3
     ac_text: "twill-integration.md Phase 2 Component Mapping テーブルに twl_capture_pane が含む tool 群として記載されていること"
     test_file: "cli/twl/tests/test_issue_1527_twill_integration_component_mapping.py"
-    test_name: "test_ac3_capture_pane_in_component_mapping"
+    test_name: "TestAC3CapturePane::test_ac3_capture_pane_in_component_mapping"
     impl_files:
       - "plugins/twl/architecture/domain/contexts/twill-integration.md"
   - ac_index: 4
     ac_text: "twill-integration.md Phase 2 Component Mapping テーブルに twl_list_windows が含む tool 群として記載されていること"
     test_file: "cli/twl/tests/test_issue_1527_twill_integration_component_mapping.py"
-    test_name: "test_ac4_list_windows_in_component_mapping"
+    test_name: "TestAC4ListWindows::test_ac4_list_windows_in_component_mapping"
     impl_files:
       - "plugins/twl/architecture/domain/contexts/twill-integration.md"
   - ac_index: 5
     ac_text: "twill-integration.md Phase 2 Component Mapping テーブルに twl_get_session_state（拡張）が含む tool 群として記載されていること"
     test_file: "cli/twl/tests/test_issue_1527_twill_integration_component_mapping.py"
-    test_name: "test_ac5_get_session_state_in_component_mapping"
+    test_name: "TestAC5GetSessionState::test_ac5_get_session_state_in_component_mapping"
     impl_files:
       - "plugins/twl/architecture/domain/contexts/twill-integration.md"
   - ac_index: 6
     ac_text: "twill-integration.md Phase 2 Component Mapping テーブルに twl_get_budget が含む tool 群として記載されていること"
     test_file: "cli/twl/tests/test_issue_1527_twill_integration_component_mapping.py"
-    test_name: "test_ac6_get_budget_in_component_mapping"
+    test_name: "TestAC6GetBudget::test_ac6_get_budget_in_component_mapping"
     impl_files:
       - "plugins/twl/architecture/domain/contexts/twill-integration.md"
