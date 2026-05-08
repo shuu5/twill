@@ -14,7 +14,7 @@
 # Coverage: unit (env var injection / exit コード仕様 / helper 関数定義確認)
 #
 # exit コード仕様:
-#   0: 全条件 PASS → ≤ 4 並列 OK
+#   0: 全条件 PASS → ≤ 10 並列 OK（#1560 で ≤4→≤10 に緩和）
 #   1: precondition 1つでも false → ≤ 2 並列 degrade、stderr に欠落 precondition
 #   2: 必須条件 1つでも false → spawn 完全禁止、stderr に欠落必須条件
 
@@ -67,7 +67,7 @@ teardown() {
 # ---------------------------------------------------------------------------
 # Scenario: 全条件 PASS 時に exit 0 を返す（env var injection）
 # WHEN: 全必須条件 + 全 precondition を true に設定して呼び出す
-# THEN: exit 0（≤ 4 並列 OK）
+# THEN: exit 0（≤ 10 並列 OK）
 # ---------------------------------------------------------------------------
 
 @test "AC5a: 全条件 PASS 時に exit 0 を返す（env var injection）" {
