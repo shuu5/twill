@@ -28,9 +28,9 @@ setup() {
 # ===========================================================================
 
 @test "issue-1551: AC1 ref-invariants.md に 'invariant-n-lesson-structuralization' アンカーが存在すること" {
-  # RED: HTML アンカー未追加のため fail する
   [ -f "${REF_INVARIANTS}" ]
-  grep -qF "invariant-n-lesson-structuralization" "${REF_INVARIANTS}"
+  # <a id="invariant-n-lesson-structuralization"> 形式で存在すること
+  grep -qF '<a id="invariant-n-lesson-structuralization">' "${REF_INVARIANTS}"
 }
 
 @test "issue-1551: AC1 ADR-036 が参照するアンカーが ref-invariants.md で解決できること" {
@@ -47,7 +47,7 @@ setup() {
 # ===========================================================================
 
 @test "issue-1551: AC2 CLAUDE.md に 'Invariant N' または 'lesson 19' への言及が存在すること" {
-  # RED: CLAUDE.md に該当記述がないため fail する
   [ -f "${PLUGIN_CLAUDE_MD}" ]
-  grep -qiE "Invariant N|invariant.n|lesson.19|lesson_19" "${PLUGIN_CLAUDE_MD}"
+  # ワイルドカード回避: スペースを含む正確なフレーズで検索
+  grep -qiE "Invariant[[:space:]]+N|lesson[[:space:]]+19" "${PLUGIN_CLAUDE_MD}"
 }
