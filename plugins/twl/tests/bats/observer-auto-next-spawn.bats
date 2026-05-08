@@ -509,11 +509,19 @@ EOF
   [ "${status}" -eq 0 ]
 }
 
-@test "ac3: _all_current_wave_idle_completed uses tmux list-windows with (ap|wt|coi) filter" {
-  # AC: tmux list-windows の結果を ^(ap|wt|coi)-.*  パターンでフィルタする
-  # RED: ファイルが未作成のため fail
+@test "ac3: _all_current_wave_idle_completed uses tmux list-windows with (ap|coi) filter" {
+  # AC: tmux list-windows の結果を ^(ap|coi)-.*  パターンでフィルタする
+  #     (Issue #1599: wt-co-* は Pilot window であり Wave 完遂判定の参加者ではないため除外)
+  # RED: ファイルが未作成または旧パターン (ap|wt|coi) のため fail
   [ -f "${OBSERVER_WAVE_CHECK}" ]
-  run grep -E 'list-windows|ap.*wt.*coi|coi.*wt.*ap|\(ap\|wt\|coi\)' "${OBSERVER_WAVE_CHECK}"
+  # 新パターン ^(ap|coi)- が使われていること
+  run grep -E 'list-windows' "${OBSERVER_WAVE_CHECK}"
+  [ "${status}" -eq 0 ]
+  # wt を含む旧パターンが残存していないこと
+  run grep -E '\(ap\|wt\|coi\)' "${OBSERVER_WAVE_CHECK}"
+  [ "${status}" -ne 0 ]
+  # 新パターン (ap|coi) が存在すること
+  run grep -E '\(ap\|coi\)' "${OBSERVER_WAVE_CHECK}"
   [ "${status}" -eq 0 ]
 }
 

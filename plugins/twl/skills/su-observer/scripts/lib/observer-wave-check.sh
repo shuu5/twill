@@ -19,7 +19,7 @@
 #
 # 判定基準（AC-3）:
 #   (i)  wave-queue.json の current_wave を取得
-#   (ii) tmux list-windows で ^(ap|wt|coi)-.*  パターンの window 集合を取得
+#   (ii) tmux list-windows で ^(ap|coi)-.*  パターンの window 集合を取得（wt-co-* Pilot は除外）
 #   (iii) 全 window で IDLE_COMPLETED_TS[$WIN] > 0 が真なら 0 を返す
 _all_current_wave_idle_completed() {
   local queue_file="${1:-}"
@@ -37,13 +37,14 @@ _all_current_wave_idle_completed() {
     return 1
   fi
 
-  # tmux list-windows から ^(ap|wt|coi)-.*  パターンの window を取得
+  # tmux list-windows から ^(ap|coi)-.*  パターンの window を取得
+  # Pilot (wt-co-*) は Wave 完遂判定の参加者ではない（Pilot は制御役、Worker の完了を待つ側）
   local wave_windows
   wave_windows=$(tmux list-windows -a -F '#{window_name}' 2>/dev/null \
-    | grep -E '^(ap|wt|coi)-' || true)
+    | grep -E '^(ap|coi)-' || true)
 
   if [[ -z "$wave_windows" ]]; then
-    echo "[observer-wave-check] WARN: no (ap|wt|coi)-* windows found" >&2
+    echo "[observer-wave-check] WARN: no (ap|coi)-* windows found" >&2
     return 1
   fi
 
