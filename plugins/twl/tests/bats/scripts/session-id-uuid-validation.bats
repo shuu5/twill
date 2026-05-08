@@ -16,8 +16,7 @@
 # AC6:
 #   このファイル自体が AC6 の bats テスト成果物。
 #
-# RED 理由:
-#   現時点の実装には UUID v4 検証ロジックが存在しないため、全テストが fail する。
+# 実装状態: GREEN（Issue #1552 実装済み）
 #
 # UUID v4 パターン: ^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
 # (より緩い許容: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$)
@@ -177,7 +176,11 @@ json.dump(data, open(path, 'w'), indent=2)
   export SESSION_INIT_CMDLINE_OVERRIDE="node cld --dangerously-skip-permissions"
   local invalid_id="post-compact-2026-05-08T10:16-w77"
 
-  CLAUDE_SESSION_ID_VAL="$invalid_id" \
+  # ファイルシステム経由で invalid 値を注入（session-init.sh L19 が ls で CLAUDE_SESSION_ID_VAL を
+  # 上書きするため env var 渡しは効かない。HOME="${SANDBOX}" で実ホームから隔離する）
+  _inject_session_id_via_fs "$invalid_id"
+
+  HOME="${SANDBOX}" \
     SUPERVISOR_DIR="${SUPERVISOR_DIR}" \
     SESSION_INIT_CMDLINE_OVERRIDE="$SESSION_INIT_CMDLINE_OVERRIDE" \
     run bash "${SESSION_INIT_SRC}"
@@ -199,7 +202,6 @@ print(d.get('claude_session_id', ''))
   # invalid 値が書き込まれていないこと
   [[ "$actual_id" != "$invalid_id" ]] \
     || fail "AC1 FAIL: invalid claude_session_id '${invalid_id}' が session.json に書き込まれている。
-現行の session-init.sh に UUID v4 検証が存在しないため fail する（#1552 RED）。
 期待: invalid 値は skip され、claude_session_id は空文字のまま。"
 }
 
@@ -262,8 +264,8 @@ print(d.get('claude_session_id', ''))
 
   export SESSION_INIT_CMDLINE_OVERRIDE="node cld --dangerously-skip-permissions"
 
-  # CLAUDE_SESSION_ID_VAL を空文字列で実行
-  CLAUDE_SESSION_ID_VAL="" \
+  # HOME="${SANDBOX}" で実ホームから隔離。sandbox に .jsonl 不在 → CLAUDE_SESSION_ID_VAL="" となり空文字許容を確認
+  HOME="${SANDBOX}" \
     SUPERVISOR_DIR="${SUPERVISOR_DIR}" \
     SESSION_INIT_CMDLINE_OVERRIDE="$SESSION_INIT_CMDLINE_OVERRIDE" \
     run bash "${SESSION_INIT_SRC}"

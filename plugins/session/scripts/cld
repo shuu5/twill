@@ -79,10 +79,11 @@ except Exception:
     fi
 
     # UUID v4 形式検証（非 UUID 値での --resume 失敗防止 #1552）
+    # lowercase-only: uuid.uuid4() および Claude CLI はいずれも lowercase UUID を返すため大文字は想定しない
     if ! echo "$CLAUDE_SESSION_ID_VAL" | grep -qE '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'; then
         echo "Invalid claude_session_id in session.json: $CLAUDE_SESSION_ID_VAL" >&2
         echo "Expected UUID v4 format. Likely cause: phase identifier string was written instead of session UUID." >&2
-        echo "Recovery: bash plugins/twl/skills/su-observer/scripts/session-init.sh" >&2
+        echo "Recovery: bash ${PROJECT_ROOT}/plugins/twl/skills/su-observer/scripts/session-init.sh" >&2
         exit 1
     fi
 
