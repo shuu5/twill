@@ -112,11 +112,22 @@ def _wait_for_pids_exit(pids: "list[int]", timeout: int = 5) -> bool:
 
 
 def restart_mcp_server() -> int:
-    """Restart the twl MCP server. Always returns 0.
+    """Restart the twl MCP server.
+
+    Returns 0 on success, 1 on validation failure (server not stopped).
 
     NOTE: After restart, the Claude Code session must also be restarted
     to reconnect to the new server process.
     """
+    try:
+        cmd = _find_mcp_server_cmd()
+    except ValueError as exc:
+        print(f"Error: mcp restart aborted — {exc}", file=sys.stderr)
+        return 1
+    if cmd is None:
+        print("Error: mcp restart aborted — could not determine startup command from .mcp.json", file=sys.stderr)
+        return 1
+
     old_pids = _find_mcp_server_pids()
     if old_pids:
         print(f"Stopping twl MCP server (PIDs {old_pids})...")
@@ -135,13 +146,6 @@ def restart_mcp_server() -> int:
             _wait_for_pids_exit(old_pids, timeout=3)
     else:
         print("No running twl MCP server found.")
-
-    cmd = _find_mcp_server_cmd()
-    if cmd is None:
-        print("WARNING: Could not determine MCP server startup command from .mcp.json.")
-        print("  Start manually: uv run --directory cli/twl --extra mcp fastmcp run src/twl/mcp_server/server.py")
-        print("  NOTE: Restart your Claude Code session to reconnect.")
-        return 0
 
     print(f"Starting twl MCP server: {' '.join(cmd)}")
     subprocess.Popen(
