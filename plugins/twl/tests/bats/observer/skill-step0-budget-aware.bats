@@ -130,3 +130,40 @@ if '不変条件 Q' not in substep_text and 'invariant-q' not in substep_text.lo
 sys.exit(0)
 "
 }
+
+@test "ac6: SKILL.md Step 0 サブステップ 2.6 が ScheduleWakeup の delaySeconds 計算式を含む" {
+  # AC: 2.6(c) で ScheduleWakeup delaySeconds = (YYm) × 60 + 300 の計算式を明示すること
+  [ -f "$SKILL_MD" ]
+  python3 -c "
+import sys, re
+with open('$SKILL_MD') as f:
+    content = f.read()
+step0_m = re.search(r'## Step 0:.*?(?=^## Step [1-9]|\Z)', content, re.DOTALL | re.MULTILINE)
+if not step0_m:
+    print('Step 0 not found')
+    sys.exit(1)
+step0 = step0_m.group(0)
+lines = step0.splitlines()
+idx = None
+for i, line in enumerate(lines):
+    if '2.6' in line:
+        idx = i
+        break
+if idx is None:
+    print('2.6 not found in Step 0')
+    sys.exit(1)
+# 2.6 から次のサブステップ（2.7 or 3.）まで
+substep_block = []
+for line in lines[idx:]:
+    if re.match(r'\s*[23]\.[0-9]+\.', line) and line.strip().startswith(('2.7', '2.8', '2.9', '3.')):
+        break
+    substep_block.append(line)
+substep_text = '\n'.join(substep_block)
+has_schedulewakeup = 'ScheduleWakeup' in substep_text
+has_delay_seconds = 'delaySeconds' in substep_text
+if not (has_schedulewakeup and has_delay_seconds):
+    print(f'ScheduleWakeup={has_schedulewakeup}, delaySeconds={has_delay_seconds}: 計算式が不足')
+    sys.exit(1)
+sys.exit(0)
+"
+}

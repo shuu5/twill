@@ -68,9 +68,9 @@ sys.exit(0)
   grep -qE '<a id="invariant-q' "$REF_FILE"
 }
 
-@test "ac1: ref-invariants.md の不変条件セクション数が P + Q で 16 以上になる" {
+@test "ac1: ref-invariants.md の不変条件セクション数が P + Q で 17 以上になる" {
   # AC: 不変条件 Q 追加後はセクション数が増加する
-  # RED: 現在は P まで（15 個: A-O + P = 16 個）の状態で Q が存在しないため 16 で fail する
+  # RED: 現在は P まで（15 個: A-O + P = 16 個）の状態で Q が存在しないため 17 で fail する
   [ -f "$REF_FILE" ]
   local count
   count=$(grep -c "^## 不変条件 [A-Z]:" "$REF_FILE")
