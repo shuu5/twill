@@ -59,32 +59,31 @@ teardown() {
 }
 
 @test "ac1-L157: L157 に echo \"\${output}\" | grep -qi パターンが存在しない" {
-  # AC: L157 の旧パターンが置換済みであること
-  # RED: 現在 L157 に旧パターンが残存しているため FAIL する
-  run grep -n 'echo.*output.*grep -qi' "${TARGET_BATS}"
-  # grep が L157 を返す（= 出力に '157:' が含まれる）場合は FAIL であるべき
-  # assert_output --partial は出力が含まれれば PASS なので、ここでは反転した検証を行う
+  # AC: 旧パターン（origin/main L157 に存在）が置換済みであること
+  # 行番号は置換前の origin/main を基準とした歴史的マーカー（Issue body の L158 と 1 行ズレあり）
+  # grep -n が L157 を返す場合は旧パターンが残存 → assert_failure が FAIL（RED）
+  # 置換後は grep -n が空 → assert_failure が PASS（GREEN）
   run bash -c "grep -n 'echo.*output.*grep -qi' '${TARGET_BATS}' | grep -q '^157:'"
   assert_failure
 }
 
 @test "ac1-L289: L289 に echo \"\${output}\" | grep -qi パターンが存在しない" {
-  # AC: L289 の旧パターンが置換済みであること
-  # RED: 現在 L289 に旧パターンが残存しているため FAIL する
+  # AC: 旧パターン（origin/main L289 に存在）が置換済みであること
+  # 行番号は置換前の origin/main を基準とした歴史的マーカー（Issue body の L287 と 2 行ズレあり）
   run bash -c "grep -n 'echo.*output.*grep -qi' '${TARGET_BATS}' | grep -q '^289:'"
   assert_failure
 }
 
 @test "ac1-L354: L354 に echo \"\${output}\" | grep -qi パターンが存在しない" {
-  # AC: L354 の旧パターンが置換済みであること
-  # RED: 現在 L354 に旧パターンが残存しているため FAIL する
+  # AC: 旧パターン（origin/main L354 に存在）が置換済みであること
+  # 行番号は置換前の origin/main を基準とした歴史的マーカー（Issue body の L352 と 2 行ズレあり）
   run bash -c "grep -n 'echo.*output.*grep -qi' '${TARGET_BATS}' | grep -q '^354:'"
   assert_failure
 }
 
 @test "ac1-L526: L526 に echo \"\${output}\" | grep -qiE パターンが存在しない" {
-  # AC: L526 の旧パターン（grep -qiE）が置換済みであること
-  # RED: 現在 L526 に旧パターンが残存しているため FAIL する
+  # AC: 旧パターン（origin/main L526 に存在）が置換済みであること
+  # 行番号は置換前の origin/main を基準とした歴史的マーカー（Issue body の L524 と 2 行ズレあり）
   run bash -c "grep -n 'echo.*output.*grep -qiE' '${TARGET_BATS}' | grep -q '^526:'"
   assert_failure
 }
