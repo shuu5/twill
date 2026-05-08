@@ -233,6 +233,7 @@ Phase 2 は既存 Phase 0/1 の 5 MCP tool に加え、`cli/twl/src/twl/autopilo
 | `tools.py` (既存 + Phase 2 統合) | twl_validate / twl_audit / twl_check / twl_state_read / twl_state_write + Phase 2 全 handler (validation 5, state 3, autopilot 12+) | Phase 0/1 + #1101 統合 | ✅ 実装済（27 handler） |
 | `tools_comm.py` | twl_send_msg / twl_recv_msg / twl_notify_supervisor | 子 5（`#1101` epic CLOSED 2026-04-30） | ✅ 実装済（別ファイル extract） |
 | ~~`tools_validation.py` / `tools_state.py` / `tools_autopilot.py`~~ | （ファイル分割は当初計画。実装上は `tools.py` 内に統合された） | （N/A） | 🚫 未実施（モジュール分割は子 1 拡充計画から外れたが、handler は `tools.py` 内に実装済。Tier 2 caller migration（ADR-029 Decision 5）には影響なし） |
+| `tools.py` (Tier 1+ 拡張 / ADR-029 Decision 6) | twl_spawn_session / twl_spawn_controller / twl_capture_pane / twl_list_windows / twl_get_session_state（拡張） / twl_get_budget | epic #1271 子 Issue 6 件（spawn 系 2 / observation 系 3 / budget 系 1） | ✅ 実装済（6 handler） |
 
 ### Key Workflows (Phase 2 完了後に更新)
 
