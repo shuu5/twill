@@ -1,0 +1,91 @@
+mappings:
+  - ac_index: 1
+    ac_text: "cld-spawn script に MCP server eager-warm step を追加。inject-file --wait 行の直前に TWL_SKIP_MCP_WARM=1 bypass + twl mcp doctor --probe 2>/dev/null || true を呼び出す"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac1: cld-spawn contains TWL_SKIP_MCP_WARM bypass guard"
+    impl_files:
+      - "plugins/session/scripts/cld-spawn"
+  - ac_index: 1
+    ac_text: "cld-spawn に twl mcp doctor --probe 呼び出しが存在すること"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac1: cld-spawn calls 'twl mcp doctor --probe' for eager warm"
+    impl_files:
+      - "plugins/session/scripts/cld-spawn"
+  - ac_index: 1
+    ac_text: "cld-spawn の mcp warm step が inject-file --wait 行の直前に配置されていること"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac1: cld-spawn mcp warm step is placed before inject-file --wait line"
+    impl_files:
+      - "plugins/session/scripts/cld-spawn"
+  - ac_index: 1
+    ac_text: "cld-spawn の mcp doctor --probe が 2>/dev/null || true パターンで呼ばれること"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac1: cld-spawn mcp doctor --probe is called with '|| true' to suppress errors"
+    impl_files:
+      - "plugins/session/scripts/cld-spawn"
+  - ac_index: 2
+    ac_text: "plugins/twl/scripts/wait_for_mcp_ready.sh (新規) が存在し実行可能であること"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac2: wait_for_mcp_ready.sh exists at plugins/twl/scripts/"
+    impl_files:
+      - "plugins/twl/scripts/wait_for_mcp_ready.sh"
+  - ac_index: 2
+    ac_text: ".claude/settings.json の SessionStart 配列に wait_for_mcp_ready.sh の command hook が追加されること"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac2: settings.json SessionStart array contains wait_for_mcp_ready.sh hook"
+    impl_files:
+      - ".claude/settings.json"
+  - ac_index: 2
+    ac_text: "settings.json SessionStart の wait_for_mcp_ready.sh hook が type: command であること"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac2: settings.json SessionStart wait_for_mcp_ready hook has type command"
+    impl_files:
+      - ".claude/settings.json"
+  - ac_index: 3
+    ac_text: "issue-1568-cld-spawn-mcp-warm.bats が plugins/twl/tests/bats/ に存在すること (Scenario B CI 必須 + Scenario A skip-by-default)"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac3: issue-1568-cld-spawn-mcp-warm.bats exists in plugins/twl/tests/bats/"
+    impl_files:
+      - "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+  - ac_index: 3
+    ac_text: "bats ファイルに AC1 静的テスト (Scenario B) が含まれること"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac3: scenario-B: bats file contains AC1 static checks (CI required)"
+    impl_files:
+      - "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+  - ac_index: 3
+    ac_text: "bats ファイルに AC2 静的テスト (Scenario B) が含まれること"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac3: scenario-B: bats file contains AC2 static checks (CI required)"
+    impl_files:
+      - "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+  - ac_index: 3
+    ac_text: "TWL_SKIP_MCP_WARM bypass テストが skip-by-default でマークされていること (Scenario A)"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac3: scenario-A: TWL_SKIP_MCP_WARM bypass test is marked skip-by-default"
+    impl_files:
+      - "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+  - ac_index: 4
+    ac_text: ".github/workflows/mcp-restart-smoke.yml に「new session warmup」step が追加されること（既存 Doctor validation step if: false とは独立して有効化）"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac4: mcp-restart-smoke.yml contains 'new session warmup' step"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"
+  - ac_index: 4
+    ac_text: "mcp-restart-smoke.yml の warmup step が if: false で無効化されていないこと"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac4: mcp-restart-smoke.yml warmup step does not have 'if: false' guard"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"
+  - ac_index: 4
+    ac_text: "mcp-restart-smoke.yml warmup step が MCP warm 処理を実行すること"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac4: mcp-restart-smoke.yml warmup step calls twl mcp or cld-spawn warm logic"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"
+  - ac_index: 5
+    ac_text: "(任意) cli/twl/src/twl/mcp_server/doctor.py に --wait-ready オプションが追加されること (skip-by-default)"
+    test_file: "plugins/twl/tests/bats/issue-1568-cld-spawn-mcp-warm.bats"
+    test_name: "ac5: doctor.py contains --wait-ready flag definition (skip-by-default)"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/doctor.py"
