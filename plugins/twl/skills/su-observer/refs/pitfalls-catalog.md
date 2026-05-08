@@ -1070,3 +1070,28 @@ co-autopilot を spawn する前に以下を実行すること:
 Pilot ログに `ADR-024 Phase B` / `Status=Refined required` / `skip: Status is not Refined` 等のメッセージが繰り返し現れる。
 
 **参照**: Issue #1516, Wave 60 / Wave 63 (2026-05-07), doobidoo hash 7b487dfb (Wave 60 lesson 23), 7c0421a3 (Wave 63 skip)
+
+---
+
+## 20. claude_session_id に phase 文字列が混入して cld --observer が resume 失敗する（#1552）
+
+### 事象
+
+`.supervisor/session.json` の `claude_session_id` フィールドに UUID v4 ではなく phase identifier 文字列（例: `post-compact-2026-05-08T10:16-w77`）が書き込まれると、`cld --observer` が `claude --resume "post-compact-..."` を実行して `No sessions match "<phase string>"` で失敗する（P0 バグ）。
+
+### 例
+
+```
+claude_session_id="post-compact-2026-05-08T10:16-w77"
+→ cld --observer → claude --resume "post-compact-2026-05-08T10:16-w77"
+→ No sessions match "post-compact-2026-05-08T10:16-w77"
+```
+
+### 対処
+
+- `session.json` の `claude_session_id` を **LLM が直接編集してはならない**（`refs/session-schema.md` 参照）
+- phase 情報は `phase_handoff` フィールドに格納すること
+- `claude_session_id` の更新は `session-init.sh` / `su-postcompact.sh` のみが行う
+- 汚染発生時の recovery: `bash plugins/twl/skills/su-observer/scripts/session-init.sh`
+
+**参照**: Issue #1552, Invariant O（`plugins/twl/refs/ref-invariants.md`）

@@ -73,12 +73,16 @@ CLAUDE_SESSION_ID_VAL="$CLAUDE_SESSION_ID_VAL" \
 OBSERVER_WINDOW_NAME="$OBSERVER_WINDOW_NAME" \
 OBSERVER_MODE="$OBSERVER_MODE" \
 python3 -c "
-import json, datetime, os, uuid
+import json, datetime, os, uuid, re, sys
 supervisor_dir = os.environ.get('SUPERVISOR_DIR', '.supervisor')
 claude_session_id = os.environ.get('CLAUDE_SESSION_ID_VAL', '')
 observer_window = os.environ.get('OBSERVER_WINDOW_NAME', '')
 observer_mode = os.environ.get('OBSERVER_MODE', '')
 session_file = os.path.join(supervisor_dir, 'session.json')
+_UUID_V4_RE = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+if claude_session_id and not _UUID_V4_RE.match(claude_session_id):
+    print(f'[session-init] WARN: invalid claude_session_id rejected: {claude_session_id}', file=sys.stderr)
+    claude_session_id = ''
 data = {
   'session_id': str(uuid.uuid4()),
   'claude_session_id': claude_session_id,

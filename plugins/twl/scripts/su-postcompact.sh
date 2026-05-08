@@ -26,7 +26,7 @@ if [[ -f "$SESSION_JSON" ]]; then
         # 変数を環境変数経由で渡す（heredoc への文字列展開 injection を防止）
         # ヒアドキュメントのデリミタをシングルクォートで囲みシェル展開を無効化
         SESSION_JSON_PATH="$SESSION_JSON" NEW_SESSION_ID_VAL="$NEW_SESSION_ID" python3 - <<'PYEOF'
-import json, os, sys
+import json, os, sys, re
 from pathlib import Path
 project_root = Path(os.environ.get("CLAUDE_PROJECT_ROOT", os.getcwd())).resolve()
 sup_dir = Path(os.environ.get("SUPERVISOR_DIR", ".supervisor")).resolve()
@@ -35,16 +35,19 @@ if not sup_dir.is_relative_to(project_root):
     sys.exit(1)
 path = os.environ["SESSION_JSON_PATH"]
 new_id = os.environ["NEW_SESSION_ID_VAL"]
+_UUID_V4_RE = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
 try:
     with open(path) as f:
         data = json.load(f)
     old_id = data.get("claude_session_id", "")
-    if old_id != new_id:
+    if new_id and not _UUID_V4_RE.match(new_id):
+        print(f'[su-postcompact] WARN: invalid claude_session_id rejected: {new_id}', file=sys.stderr)
+    elif old_id != new_id:
         data["claude_session_id"] = new_id
         with open(path, "w") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-except Exception:
-    pass
+except Exception as e:
+    print(f'[su-postcompact] WARN: {e}', file=sys.stderr)
 PYEOF
     fi
 fi

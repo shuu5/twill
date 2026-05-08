@@ -1,6 +1,34 @@
 # Session Schema Reference
 
-observer daemon およびsession管理が使用するJSONスキーマ定義。
+session.json および observer-daemon-heartbeat.json のスキーマ定義。
+
+## session.json schema（Issue #1552）
+
+`${SUPERVISOR_DIR}/session.json` に `session-init.sh` が書き込み、`su-postcompact.sh` が `claude_session_id` を更新する。
+
+### フィールド定義
+
+| フィールド | 型 | 更新主体 | LLM 編集 | 説明 |
+|-----------|-----|---------|----------|------|
+| `session_id` | string (UUID v4) | `session-init.sh` | **MUST NOT** | supervisor session の一意 ID |
+| `claude_session_id` | string (UUID v4 or "") | `session-init.sh`, `su-postcompact.sh` | **MUST NOT** | Claude Code session UUID。`claude --resume` に渡す値。UUID v4 または空文字列のみ許容 |
+| `observer_window` | string | `session-init.sh` | MUST NOT | tmux ウィンドウ名 |
+| `mode` | string | `session-init.sh` | MUST NOT | permission mode (`bypass`/`auto`/`default`/`plan`/`""`) |
+| `status` | string | `session-init.sh` | 禁奨 | セッション状態 (`"active"` 等) |
+| `started_at` | string (ISO 8601) | `session-init.sh` | **MUST NOT** | セッション開始時刻 (UTC) |
+| `phase_handoff` | string or null | LLM / script | 可 | フェーズ引き継ぎ情報。`claude_session_id` の代わりに phase 文字列を格納すること |
+| `predecessor` | object or null | `su-postcompact.sh` / script | 禁奨 | 前 session の情報。`predecessor.claude_session_id` は UUID v4 のみ |
+| `predecessor_chain` | array | script | 禁奨 | 過去 session チェーン |
+| `cld_observe_any` | object | script | 禁奨 | `cld-observe-any` daemon の状態 |
+
+### 重要制約（MUST NOT）
+
+- **`claude_session_id` および `predecessor.claude_session_id` は LLM が直接編集してはならない**
+- これらのフィールドへの書き込みは `session-init.sh` / `su-postcompact.sh` のみが行う
+- phase 情報（例: `post-compact-2026-05-08T10:16-w77`）は `phase_handoff` フィールドに格納すること
+- `claude_session_id` には UUID v4 形式（`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`）または空文字列のみを格納すること
+
+---
 
 ## observer-daemon-heartbeat.json（Issue #1154）
 
