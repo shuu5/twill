@@ -980,7 +980,8 @@ detect_input_waiting() {
       if (( now_ts - last_notify > 60 )); then
         mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true
         local freeform_log="${AUTOPILOT_DIR}/trace/input-waiting-freeform-$(date -u +%Y%m%d).log"
-        echo "[${ts}] [input_waiting] issue=${issue} pattern=${detected_name} window=${window_name}" >> "$freeform_log" 2>/dev/null || true
+        local window_safe="${window_name//$'\n'/ }"
+        echo "[${ts}] [input_waiting] issue=${issue} pattern=${detected_name} window=${window_safe}" >> "$freeform_log" 2>/dev/null || true
         FREEFORM_NOTIFY_TS[$notify_key]="$now_ts"
       fi
       ;;
@@ -991,7 +992,8 @@ detect_input_waiting() {
         --set "input_waiting_at=${ts}" 2>/dev/null || true
       mkdir -p "${AUTOPILOT_DIR}/trace" 2>/dev/null || true
       local trace_log="${AUTOPILOT_DIR}/trace/input-waiting-$(date -u +%Y%m%d).log"
-      echo "[${ts}] issue=${issue} pattern=${detected_name} window=${window_name}" >> "$trace_log" 2>/dev/null || true
+      local window_safe="${window_name//$'\n'/ }"
+      echo "[${ts}] issue=${issue} pattern=${detected_name} window=${window_safe}" >> "$trace_log" 2>/dev/null || true
       ;;
   esac
 
