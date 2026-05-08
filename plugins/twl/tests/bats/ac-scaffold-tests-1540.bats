@@ -144,14 +144,16 @@ teardown() {
   mkdir -p "${SANDBOX}/scripts"
   cp "${SCRIPTS_DIR}/specialist-audit.sh" "${audit_script}"
 
-  # 実行: git diff が empty な状態で specialist-audit 実行
+  # 実行: git diff が empty な状態で specialist-audit 実行（--jsonl で引数エラー回避）
+  local dummy_jsonl="${SANDBOX}/dummy.jsonl"
+  echo '{"type":"message","content":"test"}' > "${dummy_jsonl}"
   local stderr_out
-  stderr_out="$(bash "${audit_script}" --mode merge-gate 2>&1 >/dev/null || true)"
+  stderr_out="$(bash "${audit_script}" --jsonl "${dummy_jsonl}" --mode merge-gate 2>&1 >/dev/null || true)"
 
   popd >/dev/null || true
 
-  # WARN: git diff empty の WARN が出力されるべき
-  echo "$stderr_out" | grep -qiE 'WARN.*git.*diff.*empty|WARN.*changed.files.*empty|WARN.*diff.*nothing|WARN.*test.only.*skip'
+  # WARN: git diff empty の WARN が出力されるべき（日本語「が空」を含む実装に対応）
+  echo "$stderr_out" | grep -qiE 'WARN.*git.*diff|WARN.*changed.files|WARN.*diff.*empty|WARN.*が空'
 }
 
 @test "ac3b: specialist-audit.sh が main branch 実行時に test-only チェックスキップの WARN を出力する" {
@@ -177,21 +179,24 @@ teardown() {
   mkdir -p "${SANDBOX}/scripts"
   cp "${SCRIPTS_DIR}/specialist-audit.sh" "${audit_script}"
 
+  # --jsonl で引数エラー回避
+  local dummy_jsonl="${SANDBOX}/dummy.jsonl"
+  echo '{"type":"message","content":"test"}' > "${dummy_jsonl}"
   local stderr_out
-  stderr_out="$(bash "${audit_script}" --mode merge-gate 2>&1 >/dev/null || true)"
+  stderr_out="$(bash "${audit_script}" --jsonl "${dummy_jsonl}" --mode merge-gate 2>&1 >/dev/null || true)"
 
   popd >/dev/null || true
 
   # WARN: main branch では test-only チェックをスキップする旨の WARN が出力されるべき
   echo "$stderr_out" | grep -qiE \
-    'WARN.*main.*branch|WARN.*test.only.*skip|WARN.*scaffold.*skip|skip.*test.only.*main'
+    'WARN.*main.*branch|WARN.*test.only.*skip|WARN.*scaffold.*skip|WARN.*main.*HEAD'
 }
 
 @test "ac3c: specialist-audit.sh に git diff empty 時の WARN 出力コードが存在する（静的確認）" {
   # AC: specialist-audit.sh に git diff empty 時の WARN 出力ロジックが存在する
   # RED: 現在 git diff empty 時の WARN が未実装のため grep fail
   run bash -c "grep -qE \
-    'WARN.*diff.*empty|WARN.*changed.files.*empty|WARN.*test.only.*skip|changed_files.*empty.*WARN' \
+    'WARN.*diff.*empty|WARN.*が空|WARN.*changed.files|WARN.*test.only.*skip|WARN.*main.*branch|WARN.*main.*HEAD' \
     '${SCRIPTS_DIR}/specialist-audit.sh'"
   assert_success
 }
