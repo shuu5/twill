@@ -684,10 +684,11 @@ def twl_list_windows_handler(
         for line in lines.strip().split("\n"):
             if not line:
                 continue
-            parts = line.split(":")
+            # rsplit from the right to tolerate colons in window names (e.g. "feat:1549")
+            parts = line.rsplit(":", 3)
             entry: dict = {
                 "session": sess,
-                "name": parts[0] if len(parts) > 0 else "",
+                "name": parts[0] if parts else "",
                 "index": int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0,
                 "active": parts[2] == "1" if len(parts) > 2 else False,
             }
@@ -717,7 +718,7 @@ def twl_list_windows_handler(
                 "windows": [],
             }
 
-        for sess in (s for s in sessions_proc.stdout.strip().split("\n") if s):
+        for sess in (s for s in sessions_proc.stdout.strip().split("\n") if s and _VALID_WINDOW_NAME_RE.match(s)):
             try:
                 win_proc = subprocess.run(
                     ["tmux", "list-windows", "-t", sess, "-F", fmt],
@@ -1917,12 +1918,6 @@ def _spawn_controller_shadow_log(entry: dict) -> None:
         pass
 
 
-# Module-level alias: accessible even when fastmcp is unavailable (AC7 #1549)
-def twl_list_windows(session: str | None = None, format: str = "minimal") -> str:
-    """List tmux windows/sessions as structured JSON. format: 'minimal'|'detailed'."""
-    return json.dumps(twl_list_windows_handler(session=session, format=format), ensure_ascii=False)
-
-
 # MCP tool registration — requires fastmcp (optional dep)
 try:
     from fastmcp import FastMCP as _FastMCP
@@ -2270,6 +2265,10 @@ except ImportError:
     def twl_capture_pane(window_name: str, lines: int | None = None, mode: str = "raw", from_line: int | None = None, to_line: int | None = None) -> str:  # type: ignore[misc]
         """Capture tmux pane content as raw or plain (ANSI-stripped) text (fastmcp not installed)."""
         return json.dumps(twl_capture_pane_handler(window_name=window_name, lines=lines, mode=mode, from_line=from_line, to_line=to_line), ensure_ascii=False)
+
+    def twl_list_windows(session: str | None = None, format: str = "minimal") -> str:  # type: ignore[misc]
+        """List tmux windows/sessions as structured JSON (fastmcp not installed). format: 'minimal'|'detailed'."""
+        return json.dumps(twl_list_windows_handler(session=session, format=format), ensure_ascii=False)
 
     def twl_get_budget(window_name: str, threshold_remaining_minutes: int = 40, threshold_cycle_minutes: int = 5, config_path: str | None = None) -> str:  # type: ignore[misc]
         """Capture tmux pane and extract Claude budget via 5h:%(Ym) regex (fastmcp not installed)."""
