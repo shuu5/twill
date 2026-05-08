@@ -180,6 +180,28 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
+## 不変条件 O: session.json の claude_session_id は UUID v4 または空文字列のみ（#1552）
+
+**目的**: `cld --observer` が非 UUID 値を `claude --resume` に渡して resume 失敗する P0 バグを防ぐ。
+
+**制約**:
+- `session.json` の `claude_session_id` および `predecessor.claude_session_id` には UUID v4 形式（`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`）または空文字列のみを格納する
+- LLM による `claude_session_id` の direct-edit は MUST NOT
+- `claude_session_id` の更新は `session-init.sh` / `su-postcompact.sh` のみが行う
+- phase 情報（例: `post-compact-YYYY-MM-DDTHH:MM-wNN`）は `phase_handoff` フィールドに格納すること
+
+**違反検知**:
+- `session-init.sh` / `su-postcompact.sh` は書き込み前に UUID v4 regex assert を行い、違反時は WARN を出力してその field の書き込みを skip する
+- `cld --observer` は読み取り直後に UUID v4 check を行い、違反時は actionable error を出力して `exit 1` する
+
+**影響範囲**:
+  - `plugins/twl/skills/su-observer/scripts/session-init.sh`
+  - `plugins/twl/scripts/su-postcompact.sh`
+  - `plugins/session/scripts/cld`
+  - `plugins/twl/skills/su-observer/refs/session-schema.md`
+
+---
+
 ## SU-* との境界
 
 SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-N とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。

@@ -78,6 +78,14 @@ except Exception:
         exit 1
     fi
 
+    # UUID v4 形式検証（非 UUID 値での --resume 失敗防止 #1552）
+    if ! echo "$CLAUDE_SESSION_ID_VAL" | grep -qE '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'; then
+        echo "Invalid claude_session_id in session.json: $CLAUDE_SESSION_ID_VAL" >&2
+        echo "Expected UUID v4 format. Likely cause: phase identifier string was written instead of session UUID." >&2
+        echo "Recovery: bash plugins/twl/skills/su-observer/scripts/session-init.sh" >&2
+        exit 1
+    fi
+
     # tmux ウィンドウ有効性確認（observer_window が記録されており session-state.sh が利用可能な場合）
     if [[ -n "$OBSERVER_WINDOW_NAME" ]] && command -v session-state.sh &>/dev/null; then
         OBSERVER_STATE=$(session-state.sh state "$OBSERVER_WINDOW_NAME" 2>/dev/null || echo "exited")

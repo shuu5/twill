@@ -30,7 +30,10 @@ spawnable_by:
 ## Step 0: セッション初期化
 
 1. bare repo 構造を検証（main/ で起動されていることを確認）
-2. `.supervisor/session.json` 確認: 存在 + active → 復帰・`claude_session_id` 更新; なし → `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/session-init.sh` 新規作成
+2. `.supervisor/session.json` 確認:
+   - 存在 + active → 内容を読み込んで復帰。`claude_session_id` の更新は `su-postcompact.sh` / `session-init.sh` のみが行う（LLM 手動編集 MUST NOT、`refs/session-schema.md` 参照）
+   - phase 情報は `phase_handoff` field を使用すること
+   - なし → `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/session-init.sh` で新規作成
 2.5. `.supervisor/budget-pause.json` 確認: `status: "paused"` → Worker 状態確認 → orchestrator 再起動 → `status: "resumed"` 更新 → `>>> budget 回復: 全セッション再開完了`
 3. Project Board から Todo/In Progress の Issue 一覧を取得
 4. **Memory MCP（MUST）**: `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/step0-memory-ambient.sh` → exit 0: `.supervisor/ambient-hints.md` Read; exit 1: `observer-pitfall`/`observer-lesson`/`observer-wave` タグで memory_search → `--write` 保存 → Read
