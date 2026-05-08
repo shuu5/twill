@@ -488,3 +488,80 @@ mappings:
       - "TestAC6CliValueErrorHandling::test_ac7_stderr_single_line_no_traceback_on_invalid_command"
     impl_files:
       - "cli/twl/tests/test_mcp_lifecycle.py"
+
+  # ---------------------------------------------------------------------------
+  # Issue #1562: feat(twl/mcp): mcp twl_validate_status_transition
+  # ---------------------------------------------------------------------------
+
+  - ac_index: "1562-AC1"
+    ac_text: "tool が gh project item-edit + Refined option ID 3d983780 パターンマッチかつ evidence なしのとき {decision: 'deny', reason: <actionable>, evidence_path: null} を返す"
+    test_file: "cli/twl/tests/test_issue_1562_validate_status_transition.py"
+    test_names:
+      - "TestAC5TruthTable::test_t3_refined_option_id_no_evidence_deny"
+      - "TestAC4OutputSchema::test_ac4_deny_result_has_required_keys"
+      - "TestAC5TruthTable::test_t5_in_progress_option_id_no_evidence_deny"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1562-AC2"
+    ac_text: "spec-review-session / Phase4-complete.json の evidence があるとき {decision: 'allow', reason: 'evidence found: <path>', evidence_path: <検出 path>} を返す（順序: spec-review-session 優先 → Phase4-complete）"
+    test_file: "cli/twl/tests/test_issue_1562_validate_status_transition.py"
+    test_names:
+      - "TestAC5TruthTable::test_t1_refined_option_id_with_spec_review_session"
+      - "TestAC5TruthTable::test_t2_refined_option_id_with_phase4_complete"
+      - "TestAC4OutputSchema::test_ac4_allow_result_has_required_keys"
+      - "TestAC4OutputSchema::test_ac4_spec_review_evidence_priority_over_phase4"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1562-AC3"
+    ac_text: "本 tool 範囲外"
+    test_file: null
+    test_name: null
+    impl_files: []
+    note: "out-of-scope: AC3 は本 tool の範囲外のためテスト生成スキップ"
+
+  - ac_index: "1562-AC4"
+    ac_text: "output schema は {decision: 'allow'|'deny', reason: str, evidence_path: str|None} で固定。任意で matched_option_id を含めて良い"
+    test_file: "cli/twl/tests/test_issue_1562_validate_status_transition.py"
+    test_names:
+      - "TestAC4OutputSchema::test_ac4_allow_result_has_required_keys"
+      - "TestAC4OutputSchema::test_ac4_deny_result_has_required_keys"
+      - "TestAC4OutputSchema::test_ac4_spec_review_evidence_priority_over_phase4"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1562-AC5"
+    ac_text: "pytest 単体テスト 11 件 (T1-T11 truth table) を追加"
+    test_file: "cli/twl/tests/test_issue_1562_validate_status_transition.py"
+    test_names:
+      - "TestAC5TruthTable::test_t1_refined_option_id_with_spec_review_session"
+      - "TestAC5TruthTable::test_t2_refined_option_id_with_phase4_complete"
+      - "TestAC5TruthTable::test_t3_refined_option_id_no_evidence_deny"
+      - "TestAC5TruthTable::test_t4_in_progress_option_id_with_spec_review_session"
+      - "TestAC5TruthTable::test_t5_in_progress_option_id_no_evidence_deny"
+      - "TestAC5TruthTable::test_t6_partial_option_id_word_boundary_allow"
+      - "TestAC5TruthTable::test_t7_item_list_command_allow"
+      - "TestAC5TruthTable::test_t8_todo_option_id_allow"
+      - "TestAC5TruthTable::test_t9_edit_tool_allow"
+      - "TestAC5TruthTable::test_t10_empty_command_allow"
+      - "TestAC5TruthTable::test_t11_gh_api_graphql_allow"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1562-AC6"
+    ac_text: "tools.py の 3 箇所に entry 追加（handler function / @mcp.tool() decorator / fallback stub）"
+    test_file: "cli/twl/tests/test_issue_1562_validate_status_transition.py"
+    test_names:
+      - "TestAC6FunctionExistsInToolsPy::test_ac6_handler_function_importable"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: "1562-AC7"
+    ac_text: "既存 In Progress option ID 47fc9ee4 の判定動作はリグレッションしない（T4/T5 で保証）"
+    test_file: "cli/twl/tests/test_issue_1562_validate_status_transition.py"
+    test_names:
+      - "TestAC5TruthTable::test_t4_in_progress_option_id_with_spec_review_session"
+      - "TestAC5TruthTable::test_t5_in_progress_option_id_no_evidence_deny"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
