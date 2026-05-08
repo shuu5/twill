@@ -16,6 +16,12 @@ tools:
 spawnable_by:
 - user
 - su-observer
+mcpServers:
+  twl:
+    command: /home/shuu5/projects/local-projects/twill/main/cli/twl/.venv/bin/fastmcp
+    args:
+      - run
+      - /home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/mcp_server/server.py
 ---
 
 # co-autopilot
