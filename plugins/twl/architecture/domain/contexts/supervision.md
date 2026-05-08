@@ -187,7 +187,7 @@ flowchart TD
 | SU-1 | 介入は 3 層プロトコル（Auto/Confirm/Escalate）に従わなければならない（SHALL） | OBS-1 継承 |
 | SU-2 | Layer 2（Escalate）の介入はユーザー確認が MUST | OBS-2 継承 |
 | SU-3 | Supervisor 自身が Issue の直接実装を行ってはならない（SHALL） | OBS-3 継承 |
-| SU-4 | 同時に supervise できる controller session は 5 を超えてはならない（SHALL） | OBS-4 拡張（3→5） |
+| SU-4 | 同時に supervise できる controller session は 10 を超えてはならない（observer 自身は計数しない、SHALL） | OBS-4 拡張（3→5→10、#1560） |
 | SU-5 | context 消費量 80% 到達時に知識外部化を開始しなければならない（SHALL） | 新規 |
 | SU-6a | Wave 完了時に結果収集と externalize-state を実行しなければならない（SHALL） | SU-6 分割（#498） |
 | SU-6b | context 逼迫時またはユーザー指示時に /compact をユーザーへ提案しなければならない（SHOULD） | built-in CLI のためユーザー手動実行 |
@@ -203,7 +203,7 @@ flowchart TD
 | OB-2 (生 capture 非保持) | 継続。SU には暗黙適用 |
 | OB-3 (inject 禁止) | **su-observer には適用しない**。co-self-improve には引き続き適用 |
 | OB-4 (自動起票禁止) | 継続。SU-2 に統合 |
-| OB-5 (同時3セッション上限) | co-self-improve にのみ適用。su-observer は SU-4（上限5）に従う |
+| OB-5 (同時3セッション上限) | co-self-improve にのみ適用。su-observer は SU-4（上限10）に従う |
 
 ## Component Mapping
 

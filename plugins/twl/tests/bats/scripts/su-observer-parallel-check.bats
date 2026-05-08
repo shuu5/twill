@@ -153,13 +153,13 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# Scenario: controller_count >= 4 時に exit 2 を返す（SU-4 上限超過）
-# WHEN: controller_count=4（+1=5>4）に設定
+# Scenario: controller_count=10 時に exit 2 を返す（SU-4 ≤10 上限超過）
+# #1560: 新閾値 controller_count + 1 > 10 への更新（旧: > 4）
+# WHEN: controller_count=10（+1=11>10）に設定
 # THEN: exit 2（spawn 完全禁止）
 # ---------------------------------------------------------------------------
 
-@test "AC5a: controller_count=4（+1=5>4）時に exit 2 を返す（SU-4 上限超過）" {
-  # RED: 実装前は fail する
+@test "AC5a: controller_count=10（+1=11>10）時に exit 2 を返す（SU-4 ≤10 上限超過）" {
   [[ -f "$PARALLEL_CHECK_LIB" ]] \
     || fail "observer-parallel-check.sh が存在しない（前提条件 AC5a 未実装）"
 
@@ -168,7 +168,7 @@ teardown() {
     OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
     OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
     OBSERVER_PARALLEL_CHECK_MODE=auto \
-    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=4 \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=10 \
     OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
     OBSERVER_PARALLEL_CHECK_STATES='S-3 S-4' \
     OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
@@ -178,7 +178,35 @@ teardown() {
 
   assert_failure
   [[ "$status" -eq 2 ]] \
-    || fail "exit コードは 2 であるべきだが $status だった（controller_count=4 は SU-4 上限超過）"
+    || fail "exit コードは 2 であるべきだが $status だった（controller_count=10 は SU-4 ≤10 上限超過）"
+}
+
+# ---------------------------------------------------------------------------
+# Scenario: controller_count=9 時に exit 0 を返す（SU-4 ≤10 boundary PASS）
+# #1560: 新閾値 boundary - 9+1=10 ≤ 10 なので PASS
+# WHEN: controller_count=9（+1=10≤10）に設定（全条件 PASS）
+# THEN: exit 0（≤ 10 並列 OK）
+# ---------------------------------------------------------------------------
+
+@test "AC5a: controller_count=9（+1=10≤10）時に exit 0 を返す（SU-4 ≤10 boundary PASS）" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない（前提条件 AC5a 未実装）"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=9 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_STATES='S-3 S-4' \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  "
+
+  assert_success \
+    || fail "exit コードは 0 であるべきだが $status だった（controller_count=9 は SU-4 ≤10 内）"
 }
 
 # ---------------------------------------------------------------------------
@@ -855,4 +883,476 @@ MOCK_LIB
 
   # stderr に "bypass または auto mode が必要" が含まれること（AC7: assert_output --partial）
   assert_output --partial "bypass または auto mode が必要"
+}
+
+# ===========================================================================
+# Issue #1560: SU-4 並列 controller 制約を 5 → 10 に緩和
+# AC1: supervision.md SSoT 定義更新
+# AC2: 周辺ドキュメント mirror 同期
+# AC3: observer-parallel-check.sh 閾値同期（5→10）
+# AC4: spawn-controller.sh エラーメッセージ更新
+# AC5: bats テスト新閾値 boundary ケース追加
+# AC6: pitfalls-catalog.md 運用 reference 更新
+# AC7: 実証検証（env-injection）
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# AC1: supervision.md L190 SU-4 定義に「10 を超えてはならない」が含まれること
+# WHEN: plugins/twl/architecture/domain/contexts/supervision.md を参照する
+# THEN: SU-4 行に「10」が含まれる（旧値「5」ではなく「10」）
+# RED: 実装前は fail する（supervision.md 未更新）
+# ---------------------------------------------------------------------------
+
+@test "AC1 #1560: supervision.md L190 SU-4 定義に上限 10 が含まれている" {
+  local supervision_md
+  supervision_md="$REPO_ROOT/architecture/domain/contexts/supervision.md"
+
+  [[ -f "$supervision_md" ]] \
+    || fail "supervision.md が存在しない: $supervision_md"
+
+  # SU-4 行に「10」が含まれること（上限 10 に更新済み）
+  grep -qE '^[[:space:]]*\|[[:space:]]*SU-4[[:space:]]*\|' "$supervision_md" \
+    || fail "supervision.md に SU-4 テーブル行が存在しない"
+
+  grep -E '^[[:space:]]*\|[[:space:]]*SU-4[[:space:]]*\|' "$supervision_md" \
+    | grep -q '10' \
+    || fail "supervision.md SU-4 行に上限 '10' が含まれていない（AC1 未実装: 現在は '5'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC1: supervision.md L206 OB-5 比較注記に「SU-4（上限10）」が含まれること
+# WHEN: OB-5 行を参照する
+# THEN: 「上限10」または「10）」が含まれる
+# RED: 実装前は fail する
+# ---------------------------------------------------------------------------
+
+@test "AC1 #1560: supervision.md OB-5 比較注記に SU-4（上限10）が含まれている" {
+  local supervision_md
+  supervision_md="$REPO_ROOT/architecture/domain/contexts/supervision.md"
+
+  [[ -f "$supervision_md" ]] \
+    || fail "supervision.md が存在しない: $supervision_md"
+
+  # OB-5 行の SU-4 参照に「上限10」または「10）」が含まれること
+  grep -E 'OB-5' "$supervision_md" \
+    | grep -q '10' \
+    || fail "supervision.md OB-5 行に上限 '10' が含まれていない（AC1 未実装: 現在は '上限5'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC2: su-observer-constraints.md L14 SU-4 定義に「10」が含まれること
+# WHEN: plugins/twl/skills/su-observer/refs/su-observer-constraints.md を参照する
+# THEN: SU-4 テーブル行に「10」が含まれる
+# RED: 実装前は fail する
+# ---------------------------------------------------------------------------
+
+@test "AC2 #1560: su-observer-constraints.md SU-4 行に上限 10 が含まれている" {
+  local constraints_md
+  constraints_md="$REPO_ROOT/skills/su-observer/refs/su-observer-constraints.md"
+
+  [[ -f "$constraints_md" ]] \
+    || fail "su-observer-constraints.md が存在しない: $constraints_md"
+
+  grep -qE '^[[:space:]]*\|[[:space:]]*SU-4[[:space:]]*\|' "$constraints_md" \
+    || fail "su-observer-constraints.md に SU-4 テーブル行が存在しない"
+
+  grep -E '^[[:space:]]*\|[[:space:]]*SU-4[[:space:]]*\|' "$constraints_md" \
+    | grep -q '10' \
+    || fail "su-observer-constraints.md SU-4 行に上限 '10' が含まれていない（AC2 未実装）"
+}
+
+# ---------------------------------------------------------------------------
+# AC2: su-observer-constraints.md L28 禁止事項に「10」が含まれること
+# WHEN: MUST NOT セクションを参照する
+# THEN: SU-4 禁止記述に「10」が含まれる
+# RED: 実装前は fail する
+# ---------------------------------------------------------------------------
+
+@test "AC2 #1560: su-observer-constraints.md 禁止事項に 10 を超える controller 禁止が含まれている" {
+  local constraints_md
+  constraints_md="$REPO_ROOT/skills/su-observer/refs/su-observer-constraints.md"
+
+  [[ -f "$constraints_md" ]] \
+    || fail "su-observer-constraints.md が存在しない: $constraints_md"
+
+  # 「10 を超える」または「10.*controller」パターンが禁止事項セクションに存在すること
+  grep -qE '10.*controller|controller.*10|10.*超' "$constraints_md" \
+    || fail "su-observer-constraints.md 禁止事項に上限 '10' の記述が含まれていない（AC2 未実装: 現在は '5'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC2: su-observer-skill-design.md L142 に「10 を超える」が含まれること
+# WHEN: plugins/twl/architecture/designs/su-observer-skill-design.md を参照する
+# THEN: MUST NOT リストに「10 を超える」が含まれる
+# RED: 実装前は fail する
+# ---------------------------------------------------------------------------
+
+@test "AC2 #1560: su-observer-skill-design.md 禁止事項に 10 を超える controller 記述が含まれている" {
+  local design_md
+  design_md="$REPO_ROOT/architecture/designs/su-observer-skill-design.md"
+
+  [[ -f "$design_md" ]] \
+    || fail "su-observer-skill-design.md が存在しない: $design_md"
+
+  grep -qE '10.*超|10.*controller|controller.*10' "$design_md" \
+    || fail "su-observer-skill-design.md に '10 を超える' の記述が含まれていない（AC2 未実装: 現在は '5 を超える'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC2: observation.md L140 OB-5 注記に「SU-4」参照が上限 10 を示すこと
+# WHEN: plugins/twl/architecture/domain/contexts/observation.md を参照する
+# THEN: OB-5 注記の SU-4 言及に「10」が含まれる
+# RED: 実装前は fail する
+# ---------------------------------------------------------------------------
+
+@test "AC2 #1560: observation.md OB-5 注記の SU-4 言及に上限 10 が含まれている" {
+  local observation_md
+  observation_md="$REPO_ROOT/architecture/domain/contexts/observation.md"
+
+  [[ -f "$observation_md" ]] \
+    || fail "observation.md が存在しない: $observation_md"
+
+  # OB-5 注記セクション内（2行以内）に SU-4 と 10 が含まれること
+  # 方式: OB-5 行を grep し、その行に 10 が含まれるか確認
+  grep -E 'OB-5' "$observation_md" \
+    | grep -qE 'SU-4' \
+    || fail "observation.md OB-5 注記に SU-4 参照が存在しない"
+
+  grep -E 'OB-5' "$observation_md" \
+    | grep -q '10' \
+    || fail "observation.md OB-5 注記の SU-4 言及に上限 '10' が含まれていない（AC2 未実装）"
+}
+
+# ---------------------------------------------------------------------------
+# AC2: su-observer-wave-management.md L68 に「SU-4 制約（10 controllers 以内）」が含まれること
+# WHEN: plugins/twl/skills/su-observer/refs/su-observer-wave-management.md を参照する
+# THEN: SU-4 制約の記述に「10」が含まれる
+# RED: 実装前は fail する
+# ---------------------------------------------------------------------------
+
+@test "AC2 #1560: su-observer-wave-management.md SU-4 制約記述に 10 が含まれている" {
+  local wave_mgmt_md
+  wave_mgmt_md="$REPO_ROOT/skills/su-observer/refs/su-observer-wave-management.md"
+
+  [[ -f "$wave_mgmt_md" ]] \
+    || fail "su-observer-wave-management.md が存在しない: $wave_mgmt_md"
+
+  grep -qE 'SU-4.*10|10.*SU-4|SU-4.*controller.*10|10.*controller' "$wave_mgmt_md" \
+    || fail "su-observer-wave-management.md SU-4 制約記述に上限 '10' が含まれていない（AC2 未実装: 現在は '5 Issue 以内'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC3: observer-parallel-check.sh の SU-4 判定閾値が 10 に更新されていること
+# WHEN: plugins/twl/scripts/lib/observer-parallel-check.sh の必須条件3を参照する
+# THEN: `controller_count + 1 > 10` のパターンが存在する（旧: > 4）
+# RED: 実装前は fail する（現在は > 4 のまま）
+# ---------------------------------------------------------------------------
+
+@test "AC3 #1560: observer-parallel-check.sh 必須条件3 の閾値が 10 に更新されている" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  # 新閾値パターンが存在すること
+  grep -qE 'controller_count[[:space:]]*\+[[:space:]]*1[[:space:]]*>[[:space:]]*10' "$PARALLEL_CHECK_LIB" \
+    || fail "observer-parallel-check.sh に 'controller_count + 1 > 10' が存在しない（AC3 未実装: 現在は '> 4'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC3: observer-parallel-check.sh のエラー文言に「SU-4 ≤10」が含まれること
+# WHEN: 必須条件3失敗時のエラーメッセージを確認する
+# THEN: エラー文言に「≤10」または「10」が含まれる
+# RED: 実装前は fail する
+# ---------------------------------------------------------------------------
+
+@test "AC3 #1560: observer-parallel-check.sh 必須条件3 エラー文言に ≤10 が含まれている" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  # エラーメッセージに ≤10 または 10 が含まれること（SU-4 ≤10 整合違反）
+  grep -qE '≤10|SU-4.*10|10.*整合|10.*SU-4' "$PARALLEL_CHECK_LIB" \
+    || fail "observer-parallel-check.sh 必須条件3 エラー文言に '≤10' が含まれていない（AC3 未実装: 現在は '≤5 整合違反'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC3: observer-parallel-check.sh ヘッダーコメントに「≤ 10 並列 OK」が含まれること
+# WHEN: ファイルヘッダーコメントを確認する
+# THEN: 「≤ 10 並列 OK」または「≤10 並列 OK」が含まれる
+# RED: 実装前は fail する
+# ---------------------------------------------------------------------------
+
+@test "AC3 #1560: observer-parallel-check.sh ヘッダーコメントに ≤ 10 並列 OK が含まれている" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  grep -qE '≤[[:space:]]*10[[:space:]]*並列[[:space:]]*OK|≤10.*並列.*OK' "$PARALLEL_CHECK_LIB" \
+    || fail "observer-parallel-check.sh ヘッダーに '≤ 10 並列 OK' が含まれていない（AC3 未実装: 現在は '≤ 4 並列 OK'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC4: spawn-controller.sh のSU-4関連コメント/エラーメッセージが 10 に更新されていること
+# WHEN: plugins/twl/skills/su-observer/scripts/spawn-controller.sh を参照する
+# THEN: SU-4 または parallel check 関連コメントに「10」が含まれる
+# RED: 実装前は fail する
+# ---------------------------------------------------------------------------
+
+@test "AC4 #1560: spawn-controller.sh の SU-4 関連コメントまたはエラーメッセージに 10 が含まれている" {
+  [[ -f "$SPAWN_CONTROLLER" ]] \
+    || fail "spawn-controller.sh が存在しない: $SPAWN_CONTROLLER"
+
+  # SU-4 または並列チェック関連の行に 10 が含まれること
+  grep -qE 'SU-4.*10|10.*SU-4|≤[[:space:]]*10|10.*並列|並列.*10' "$SPAWN_CONTROLLER" \
+    || fail "spawn-controller.sh に SU-4 上限 '10' の記述が含まれていない（AC4 未実装）"
+}
+
+# ---------------------------------------------------------------------------
+# AC4: spawn-controller.sh の SKIP_PARALLEL_CHECK 運用基準が変更されていないこと
+# WHEN: spawn-controller.sh を参照する
+# THEN: SKIP_PARALLEL_CHECK 関連記述が存在する（削除されていない）
+# RED: SKIP_PARALLEL_CHECK が削除されていれば fail する
+# ---------------------------------------------------------------------------
+
+@test "AC4 #1560: spawn-controller.sh の SKIP_PARALLEL_CHECK 運用基準が保持されている" {
+  [[ -f "$SPAWN_CONTROLLER" ]] \
+    || fail "spawn-controller.sh が存在しない: $SPAWN_CONTROLLER"
+
+  grep -q 'SKIP_PARALLEL_CHECK' "$SPAWN_CONTROLLER" \
+    || fail "spawn-controller.sh から SKIP_PARALLEL_CHECK が削除されている（AC4 要件: 削除禁止）"
+}
+
+# ---------------------------------------------------------------------------
+# AC5 #1560: 新閾値 boundary ケース - controller_count=9 → PASS（spawn 後 10 controllers = 上限）
+# WHEN: OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=9 で _check_parallel_spawn_eligibility を呼ぶ
+# THEN: exit 0（9+1=10 ≤ 10 なので PASS）
+# RED: 実装前は fail する（現在の閾値 > 4 では controller_count=9 は exit 2 になる）
+# ---------------------------------------------------------------------------
+
+@test "AC5 #1560: controller_count=9（+1=10≤10）時に exit 0 を返す（新閾値 boundary PASS）" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=9 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_STATES='S-3 S-4' \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  "
+
+  assert_success \
+    || fail "exit コードは 0 であるべきだが $status だった（controller_count=9 → +1=10 ≤ 10 なので PASS すべき、AC5 未実装: 現在の閾値は > 4）"
+}
+
+# ---------------------------------------------------------------------------
+# AC5 #1560: 新閾値 boundary ケース - controller_count=10 → DENY（10+1=11 > 10）
+# WHEN: OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=10 で _check_parallel_spawn_eligibility を呼ぶ
+# THEN: exit 2（10+1=11 > 10 で SU-4 違反）
+# RED: 現在も exit 2 になるが、エラー文言の閾値表記が更新後に正しく「≤10」を示す必要あり
+# NOTE: この boundary DENY テストは実装前後で両方 exit 2 だが、エラー文言検証で RED を担保する
+# ---------------------------------------------------------------------------
+
+@test "AC5 #1560: controller_count=10（+1=11>10）時に exit 2 を返す（新閾値 boundary DENY）" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=10 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_STATES='S-3 S-4' \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  " 2>&1
+
+  [[ "$status" -eq 2 ]] \
+    || fail "exit コードは 2 であるべきだが $status だった（controller_count=10 は SU-4 上限超過: 10+1=11 > 10）"
+
+  # エラー文言に新閾値（10）が含まれること（AC3 エラー文言更新の検証）
+  echo "$output" | grep -qE '≤10|10.*整合|SU-4.*10|11.*>[[:space:]]*10' \
+    || fail "DENY 時エラー文言に新閾値 '10' が含まれていない（AC3/AC5 未実装: 文言が古い '≤5 整合違反' のまま）"
+}
+
+# ---------------------------------------------------------------------------
+# AC5 #1560: 旧閾値 boundary（controller_count=4）は新閾値では PASS すること
+# WHEN: OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=4 で呼ぶ
+# THEN: exit 0（4+1=5 ≤ 10 なので新閾値では PASS）
+# RED: 実装前は fail する（現在の閾値 > 4 では 4+1=5>4 で exit 2 になる）
+# NOTE: 既存テスト "AC5a: controller_count=4（+1=5>4）時に exit 2 を返す" は旧閾値前提のため
+#       実装後はそのテスト自体が fail する（旧閾値テストの扱いは実装 Issue で判断）
+# ---------------------------------------------------------------------------
+
+@test "AC5 #1560: controller_count=4（+1=5≤10）は新閾値では exit 0 を返す（旧 boundary 動作変更確認）" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=4 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_STATES='S-3 S-4' \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  "
+
+  assert_success \
+    || fail "exit コードは 0 であるべきだが $status だった（controller_count=4 は新閾値 ≤10 では PASS すべき、AC5 未実装）"
+}
+
+# ---------------------------------------------------------------------------
+# AC6: pitfalls-catalog.md L559 に「≤ 10 並列 MUST」が含まれること
+# WHEN: plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §11.3 を参照する
+# THEN: 「≤ 10 並列 MUST」または「10.*MUST」が含まれる
+# RED: 実装前は fail する（現在は「≤ 4 並列 MUST」）
+# ---------------------------------------------------------------------------
+
+@test "AC6 #1560: pitfalls-catalog.md §11.3 に ≤ 10 並列 MUST が含まれている" {
+  local catalog
+  catalog="$REPO_ROOT/skills/su-observer/refs/pitfalls-catalog.md"
+
+  [[ -f "$catalog" ]] \
+    || fail "pitfalls-catalog.md が存在しない: $catalog"
+
+  grep -qE '≤[[:space:]]*10.*MUST|MUST.*≤[[:space:]]*10|10.*並列.*MUST|MUST.*10.*並列' "$catalog" \
+    || fail "pitfalls-catalog.md §11.3 に '≤ 10 並列 MUST' が含まれていない（AC6 未実装: 現在は '≤ 4 並列 MUST'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC6: pitfalls-catalog.md L570-583 疑似コードに「count + 1 <= 10」が含まれること
+# WHEN: §11.3 flowchart/疑似コードを参照する
+# THEN: must_3 の条件式に「<= 10」または「≤ 10」が含まれる
+# RED: 実装前は fail する（現在は「count + 1 <= 4」）
+# ---------------------------------------------------------------------------
+
+@test "AC6 #1560: pitfalls-catalog.md 疑似コード must_3 の条件式が <= 10 に更新されている" {
+  local catalog
+  catalog="$REPO_ROOT/skills/su-observer/refs/pitfalls-catalog.md"
+
+  [[ -f "$catalog" ]] \
+    || fail "pitfalls-catalog.md が存在しない: $catalog"
+
+  grep -qE 'count[[:space:]]*\+[[:space:]]*1[[:space:]]*(<=|≤)[[:space:]]*10' "$catalog" \
+    || fail "pitfalls-catalog.md 疑似コードに 'count + 1 <= 10' が含まれていない（AC6 未実装: 現在は '<= 4'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC6: pitfalls-catalog.md L589 SU-4 整合記述が「≤10 整合: controller_count + 1 ≤ 10」に更新されていること
+# WHEN: 必須条件根拠セクションを参照する
+# THEN: 「SU-4 ≤10」または「controller_count + 1 ≤ 10」が含まれる
+# RED: 実装前は fail する（現在は「SU-4 ≤5 整合: controller_count + 1 ≤ 4」）
+# ---------------------------------------------------------------------------
+
+@test "AC6 #1560: pitfalls-catalog.md SU-4 整合記述が ≤10 に更新されている" {
+  local catalog
+  catalog="$REPO_ROOT/skills/su-observer/refs/pitfalls-catalog.md"
+
+  [[ -f "$catalog" ]] \
+    || fail "pitfalls-catalog.md が存在しない: $catalog"
+
+  grep -qE 'SU-4[[:space:]]*(≤10|≤ 10)|controller_count[[:space:]]*\+[[:space:]]*1[[:space:]]*(≤|<=)[[:space:]]*10' "$catalog" \
+    || fail "pitfalls-catalog.md SU-4 整合記述に '≤10' が含まれていない（AC6 未実装: 現在は '≤5 整合: controller_count + 1 ≤ 4'）"
+}
+
+# ---------------------------------------------------------------------------
+# AC7: 実証検証 - CONTROLLER_COUNT=9 → exit 0
+# WHEN: OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=9 を env-injection で渡してスクリプト直接実行
+# THEN: exit 0（9+1=10 ≤ 10 なので PASS）
+# RED: 実装前は fail する（現在の閾値 > 4 では exit 2 になる）
+# NOTE: スクリプト直接実行（bash script.sh）のため source guard 不要
+# ---------------------------------------------------------------------------
+
+@test "AC7 #1560: env-injection CONTROLLER_COUNT=9 で observer-parallel-check.sh が exit 0 を返す" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=9 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_STATES='S-3 S-4' \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  "
+
+  assert_success \
+    || fail "AC7 実証: CONTROLLER_COUNT=9 で exit $status が返った（期待: exit 0 / AC3 閾値更新未実装）"
+}
+
+# ---------------------------------------------------------------------------
+# AC7: 実証検証 - CONTROLLER_COUNT=10 → exit 2
+# WHEN: OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=10 を env-injection で渡して実行
+# THEN: exit 2（10+1=11 > 10 で DENY）
+# RED: 実装前後ともに exit 2 だが、エラー文言に「10」が含まれることで RED を確認する
+# ---------------------------------------------------------------------------
+
+@test "AC7 #1560: env-injection CONTROLLER_COUNT=10 で observer-parallel-check.sh が exit 2 を返す" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=10 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_STATES='S-3 S-4' \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  " 2>&1
+
+  [[ "$status" -eq 2 ]] \
+    || fail "AC7 実証: CONTROLLER_COUNT=10 で exit $status が返った（期待: exit 2）"
+
+  # エラー文言に新閾値（10）が反映されていること
+  echo "$output" | grep -qE '≤10|10.*整合|SU-4.*10|11.*>[[:space:]]*10' \
+    || fail "AC7 実証: exit 2 だがエラー文言に新閾値 '10' が含まれていない（AC3 文言更新未実装）"
+}
+
+# ---------------------------------------------------------------------------
+# AC7: 実証検証 - CONTROLLER_COUNT=11 → exit 2
+# WHEN: OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=11 を env-injection で渡して実行
+# THEN: exit 2（11+1=12 > 10 で DENY）
+# RED: エラー文言に「10」が含まれることで文言更新の RED を確認する
+# ---------------------------------------------------------------------------
+
+@test "AC7 #1560: env-injection CONTROLLER_COUNT=11 で observer-parallel-check.sh が exit 2 を返す" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=11 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_STATES='S-3 S-4' \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  " 2>&1
+
+  [[ "$status" -eq 2 ]] \
+    || fail "AC7 実証: CONTROLLER_COUNT=11 で exit $status が返った（期待: exit 2）"
+
+  # エラー文言に新閾値（10）が反映されていること
+  echo "$output" | grep -qE '≤10|10.*整合|SU-4.*10|12.*>[[:space:]]*10' \
+    || fail "AC7 実証: exit 2 だがエラー文言に新閾値 '10' が含まれていない（AC3 文言更新未実装）"
 }

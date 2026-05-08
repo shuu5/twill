@@ -137,7 +137,7 @@ flowchart TD
 | OB-5 | 同時 3 observed session を超えて観察してはならない（SHALL）。context budget 維持 | **co-self-improve only** |
 
 > **OB-3 適用範囲注記**: su-observer は介入権限を持つ Supervisor レイヤー（ADR-014）のため OB-3 適用外。介入ルールは SU-7 で定義（supervision.md）。  
-> **OB-5 適用範囲注記**: co-self-improve の observed session 上限。su-observer の supervised controller 上限は SU-4 で定義（supervision.md）（対象エンティティが異なる別概念）。
+> **OB-5 適用範囲注記**: co-self-improve の observed session 上限。su-observer の supervised controller 上限は SU-4（≤10、observer 計数外）で定義（supervision.md）（対象エンティティが異なる別概念）。
 
 ### Observer Constraints (OBS-*)（廃止 / Superseded by SU-*）
 

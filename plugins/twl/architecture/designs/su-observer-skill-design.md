@@ -139,7 +139,7 @@ fi
 - AskUserQuestion でモード選択を強制してはならない（LLM が文脈から判断すること）
 - Skill tool による controller の直接呼出しをしてはならない（cld-spawn 経由で起動すること）
 - Layer 2 介入をユーザー確認なしで実行してはならない（SU-2）
-- 同時に 5 を超える controller session を supervise してはならない（SU-4）
+- 同時に 10 を超える controller session を supervise してはならない（SU-4）
 - context 80% 到達を無視してはならない（SU-5）
 - Wave 完了後の externalize-state を省略してはならない（SU-6a）
 - context 逼迫時またはユーザー指示なしに /compact を自動実行してはならない（SU-6b）
