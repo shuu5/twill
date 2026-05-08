@@ -22,8 +22,13 @@ setup() {
     [[ -f "$GLOSSARY_MD" ]] \
         || skip "glossary.md が見つかりません: $GLOSSARY_MD"
 
+    # 用語列限定マッチ（PR #1357 推奨パターン）
     grep -qF '| Tier 1+ |' "$GLOSSARY_MD" \
         || { echo "FAIL: glossary.md に '| Tier 1+ |' が見つかりません"; false; }
+
+    # 行形式検証: 定義列・Context 列を含む完全な 3 列形式であること
+    grep -qE '^\| Tier 1\+ \| .+ \| .+ \|' "$GLOSSARY_MD" \
+        || { echo "FAIL: Tier 1+ の行が定義列・Context 列を含む完全な形式ではありません"; false; }
 }
 
 # ===========================================================================
@@ -36,6 +41,11 @@ setup() {
     [[ -f "$GLOSSARY_MD" ]] \
         || skip "glossary.md が見つかりません: $GLOSSARY_MD"
 
+    # 用語列限定マッチ（PR #1357 推奨パターン）
     grep -qF '| shadow rollout pattern |' "$GLOSSARY_MD" \
         || { echo "FAIL: glossary.md に '| shadow rollout pattern |' が見つかりません"; false; }
+
+    # 行形式検証: 定義列・Context 列を含む完全な 3 列形式であること
+    grep -qE '^\| shadow rollout pattern \| .+ \| .+ \|' "$GLOSSARY_MD" \
+        || { echo "FAIL: shadow rollout pattern の行が定義列・Context 列を含む完全な形式ではありません"; false; }
 }
