@@ -942,4 +942,4 @@ tmux capture-pane -p | sed 's/\x1b\[[0-9;]*m//g' | grep -E 'Enter to select|^❯
 |---|---|
 | `Enter to select` | インタラクティブ選択メニュー待ち |
 | `^❯ [1-9]\.` | 番号付きメニュー選択待ち |
-| `Press up to edit queued` | キュー編集プロンプト待ち |
+| `Press up to edit queued` | キュー編集プロンプト待ち（orchestrator-side でも `queued_message_residual` pattern として自動検知・回復 — #1580） |
