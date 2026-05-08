@@ -87,7 +87,7 @@ if [[ "$BUDGET_ALERT" != "true" ]]; then
   exit 0
 fi
 
-echo "[BUDGET-LOW] 5h budget: token残量 ${BUDGET_REMAINING_MIN:-?}分 (${BUDGET_PCT:-?}% 消費), cycle reset まで ${BUDGET_CYCLE_MIN:-?}分。安全停止シーケンスを開始します。"
+echo "[BUDGET-LOW] 5h budget: token残量 ${BUDGET_REMAINING_MIN:-?}分 (${BUDGET_PCT:-?}% 消費), cycle reset まで ${BUDGET_CYCLE_MIN:-?}分（reset 後 5h budget 100% 完全回復）。安全停止シーケンスを開始します。"
 
 # 1. orchestrator 停止（PID 数値バリデーション必須: kill 0 はプロセスグループ全体を対象とするため禁止）
 ORCH_PID=$(cat "${AUTOPILOT_DIR}/orchestrator.pid" 2>/dev/null || pgrep -f 'autopilot-orchestrator' | head -1 || echo "")
@@ -109,22 +109,30 @@ PAUSED_WORKERS_RAW=$(printf '%s\n' "${PAUSED_WORKERS[@]:-}")
 WORKERS_JSON=$(PAUSED_WORKERS_RAW="$PAUSED_WORKERS_RAW" python3 -c \
   'import os, json; lines = os.environ.get("PAUSED_WORKERS_RAW", "").splitlines(); print(json.dumps([l.strip() for l in lines if l.strip()]))')
 ORCH_PID_SAFE="${ORCH_PID:-}"
+BUDGET_CYCLE_MIN_SAFE="${BUDGET_CYCLE_MIN:-0}"
 python3 -c "
 import json, datetime, os
 workers = json.loads(os.environ.get('WORKERS_JSON', '[]'))
 orch_pid_str = os.environ.get('ORCH_PID_SAFE', '')
 orch_pid = int(orch_pid_str) if orch_pid_str.isdigit() else None
+cycle_min_str = os.environ.get('BUDGET_CYCLE_MIN_SAFE', '0')
+cycle_min = int(cycle_min_str) if cycle_min_str.isdigit() else 0
+now = datetime.datetime.utcnow()
+expected_reset_at = (now + datetime.timedelta(minutes=cycle_min)).isoformat() + 'Z'
 data = {
   'status': 'paused',
-  'paused_at': datetime.datetime.utcnow().isoformat() + 'Z',
-  'estimated_recovery': (datetime.datetime.utcnow() + datetime.timedelta(minutes=90)).isoformat() + 'Z',
+  'paused_at': now.isoformat() + 'Z',
+  'cycle_reset_minutes_at_pause': cycle_min,
+  'expected_reset_at': expected_reset_at,
+  'auto_resume_via': 'schedulewakeup',
   'paused_workers': workers,
   'orchestrator_pid': orch_pid
 }
 json.dump(data, open('.supervisor/budget-pause.json', 'w'), indent=2)
 " 2>/dev/null
 
-# 4. CronCreate で回復時刻に自動再開をスケジュール（LLM が文脈で実行する）
-echo "[BUDGET-LOW] CronCreate で budget 回復後の自動再開をスケジュールしてください（90 分後）。"
+# 4. ScheduleWakeup で cycle reset 直後に自動再開（cycle reset + 5 分余裕）
+DELAY_SECONDS=$(( (${BUDGET_CYCLE_MIN:-0} + 5) * 60 ))
+echo "[BUDGET-LOW] ScheduleWakeup で cycle reset 後の自動再開をスケジュールしてください（cycle reset まで ${BUDGET_CYCLE_MIN:-?}分、delaySeconds=${DELAY_SECONDS}）。"
 
 exit 1
