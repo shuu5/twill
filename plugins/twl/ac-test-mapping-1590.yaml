@@ -1,0 +1,60 @@
+mappings:
+  - ac_index: 1
+    ac_text: ".github/workflows/mcp-restart-smoke.yml を新設する。name: mcp-restart-smoke、on: pull_request+workflow_dispatch、permissions: {}、defaults.run.shell: bash、jobs.smoke-test: runs-on: ubuntu-latest、timeout-minutes: 5、steps: を含むこと"
+    test_file: "cli/twl/tests/test_issue_1590_mcp_restart_smoke_workflow.py"
+    test_names:
+      - "test_ac1_workflow_file_exists"
+      - "test_ac1_name_key"
+      - "test_ac1_on_has_pull_request_trigger"
+      - "test_ac1_on_has_workflow_dispatch_trigger"
+      - "test_ac1_permissions_empty"
+      - "test_ac1_defaults_shell_bash"
+      - "test_ac1_jobs_smoke_test_exists"
+      - "test_ac1_jobs_smoke_test_runs_on_ubuntu"
+      - "test_ac1_jobs_smoke_test_timeout_minutes"
+      - "test_ac1_jobs_smoke_test_has_steps"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"
+
+  - ac_index: 2
+    ac_text: "jobs.smoke-test.steps は (a) checkout@v4、(a-bis) .mcp.json path 書き換え(Python+GITHUB_WORKSPACE)、(b) setup-python@v5+pip install uv（setup-uv@v3 禁止）、(c) uv sync --extra mcp (working-directory: cli/twl)、(d) doctor検証(if: ${{ false }})、(e) twl mcp restart + pgrep polling、(f) cleanup (if: always(), pkill -TERM || true) のシーケンスを実行すること"
+    test_file: "cli/twl/tests/test_issue_1590_mcp_restart_smoke_workflow.py"
+    test_names:
+      - "test_ac2_step_checkout_v4"
+      - "test_ac2_step_mcp_json_path_rewrite"
+      - "test_ac2_step_setup_python_v5"
+      - "test_ac2_step_pip_install_uv_not_setup_uv_action"
+      - "test_ac2_step_uv_sync_extra_mcp"
+      - "test_ac2_step_doctor_disabled_with_if_false"
+      - "test_ac2_step_restart_smoke_twl_mcp_restart"
+      - "test_ac2_step_restart_smoke_pgrep_polling"
+      - "test_ac2_step_cleanup_if_always"
+      - "test_ac2_cleanup_uses_pkill_term_with_or_true"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"
+
+  - ac_index: 3
+    ac_text: "on.pull_request.paths は .mcp.json、cli/twl/src/twl/mcp_server/**、cli/twl/tests/test_mcp_lifecycle.py、cli/twl/pyproject.toml、cli/twl/uv.lock、.github/workflows/mcp-restart-smoke.yml の全 patterns を含むこと"
+    test_file: "cli/twl/tests/test_issue_1590_mcp_restart_smoke_workflow.py"
+    test_names:
+      - "test_ac3_pull_request_paths_filter_exists"
+      - "test_ac3_pull_request_paths_contains_required[.mcp.json]"
+      - "test_ac3_pull_request_paths_contains_required[cli/twl/src/twl/mcp_server/**]"
+      - "test_ac3_pull_request_paths_contains_required[cli/twl/tests/test_mcp_lifecycle.py]"
+      - "test_ac3_pull_request_paths_contains_required[cli/twl/pyproject.toml]"
+      - "test_ac3_pull_request_paths_contains_required[cli/twl/uv.lock]"
+      - "test_ac3_pull_request_paths_contains_required[.github/workflows/mcp-restart-smoke.yml]"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"
+
+  - ac_index: 4
+    ac_text: "smoke test step (e) の直後に if: failure() step を追加し、#1588 root cause 真因説明、.mcp.json.mcpServers.twl.command を \"uv\" に修正する手順、#1588/#1589/ADR-0008-mcp-config-command-format.md を参照する内容を含むこと"
+    test_file: "cli/twl/tests/test_issue_1590_mcp_restart_smoke_workflow.py"
+    test_names:
+      - "test_ac4_failure_step_exists_after_restart_smoke"
+      - "test_ac4_failure_step_mentions_issue_1588"
+      - "test_ac4_failure_step_mentions_issue_1589"
+      - "test_ac4_failure_step_mentions_adr_0008"
+      - "test_ac4_failure_step_command_fix_guidance"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"

@@ -1,0 +1,110 @@
+name: mcp-restart-smoke
+
+on:
+  pull_request:
+    paths:
+      - '.mcp.json'
+      - 'cli/twl/src/twl/mcp_server/**'
+      - 'cli/twl/tests/test_mcp_lifecycle.py'
+      - 'cli/twl/pyproject.toml'
+      - 'cli/twl/uv.lock'
+      - '.github/workflows/mcp-restart-smoke.yml'
+  workflow_dispatch:
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Rewrite .mcp.json absolute paths for CI ($GITHUB_WORKSPACE)
+        run: |
+          set -euo pipefail
+          REPO_ROOT="${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}"
+          REPO_ROOT="$REPO_ROOT" python3 -c "
+          import os, json, pathlib
+          repo_root = pathlib.Path(os.environ['REPO_ROOT']).resolve()
+          p = repo_root / '.mcp.json'
+          cfg = json.loads(p.read_text())
+          args = cfg['mcpServers']['twl']['args']
+          cfg['mcpServers']['twl']['args'] = [
+              str(repo_root / 'cli/twl') if a.endswith('/cli/twl') else
+              str(repo_root / 'cli/twl/src/twl/mcp_server/server.py') if a.endswith('/cli/twl/src/twl/mcp_server/server.py') else
+              a
+              for a in args
+          ]
+          p.write_text(json.dumps(cfg, indent=2))
+          print('Rewrote .mcp.json using GITHUB_WORKSPACE:', repo_root)
+          " || echo "WARN: .mcp.json path rewrite failed; CI runner path may differ"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        run: |
+          set -euo pipefail
+          pip install uv
+
+      - name: Sync dependencies
+        working-directory: cli/twl
+        run: |
+          set -euo pipefail
+          uv sync --extra mcp
+
+      - name: Doctor validation
+        if: "${{ false }}"
+        run: |
+          set -euo pipefail
+          uv run --directory cli/twl twl mcp doctor --format json
+          uv run --directory cli/twl twl mcp doctor --format json | jq -e .
+          uv run --directory cli/twl twl mcp doctor --format json | jq -e '.status == "ok"'
+
+      - name: Restart smoke test (polling)
+        run: |
+          set -euo pipefail
+          uv run --directory cli/twl twl mcp restart
+          for i in $(seq 1 10); do
+            if pgrep -f 'fastmcp run.*src/twl/mcp_server/server.py' >/dev/null 2>&1; then
+              echo "MCP server PID detected: $(pgrep -f 'fastmcp run.*src/twl/mcp_server/server.py' || true)"
+              break
+            fi
+            sleep 1
+            [[ "$i" -eq 10 ]] && { echo "ERROR: MCP server PID not detected within 10s"; exit 1; }
+          done
+
+      - name: Repair guidance on restart failure (#1588 #1589 ADR-0008)
+        if: failure()
+        run: |
+          cat >&2 <<'EOF'
+          === MCP Restart Smoke Test Failure: Repair Guidance ===
+
+          Root cause (#1588, P0 fix, Wave 84):
+          Issue #1398 PR #1412 introduced allowlist validation that triggered a silent
+          regression when existing .mcp.json was not migrated to the new command format.
+          The fix (#1588) requires mcpServers.twl.command to be set to "uv".
+
+          Repair — set .mcp.json mcpServers.twl.command to "uv" and update args:
+            "command": "uv",
+            "args": ["run", "--directory", "<repo-root>/cli/twl", "--extra", "mcp",
+                     "fastmcp", "run", "<repo-root>/cli/twl/src/twl/mcp_server/server.py"]
+
+          References:
+            - #1588 (P0 fix, Wave 84): root cause and initial repair
+            - #1589 (twl mcp doctor): MCP server health diagnostic command
+            - ADR-0008: cli/twl/architecture/decisions/ADR-0008-mcp-config-command-format.md
+          EOF
+
+      - name: Cleanup MCP server processes
+        if: always()
+        run: |
+          pkill -TERM -f 'fastmcp run.*src/twl/mcp_server/server.py' || true
