@@ -68,7 +68,11 @@ def _find_mcp_server_pids() -> "list[int]":
 
 
 def _find_mcp_server_cmd() -> "list[str] | None":
-    """Get startup command from .mcp.json in the git repo root."""
+    """Get startup command from .mcp.json in the git repo root.
+
+    Returns None if .mcp.json is absent, missing the twl entry, or has an empty command.
+    Raises ValueError if the command fails allowlist/prefix validation.
+    """
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
