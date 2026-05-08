@@ -676,45 +676,78 @@ def twl_list_windows_handler(
             "windows": [],
         }
 
-    if session is None:
-        cmd = ["tmux", "list-windows", "-a"]
-    else:
-        cmd = ["tmux", "list-windows", "-t", session]
+    # Format: name:index:active:panes_count (session comes from parameter/loop)
+    fmt = "#{window_name}:#{window_index}:#{window_active}:#{window_panes}"
 
-    if format == "detailed":
-        cmd.extend(["-F", "#{session_name}|#{window_index}|#{window_name}|#{window_active}|#{window_panes}"])
-    else:
-        cmd.extend(["-F", "#{session_name}|#{window_index}|#{window_name}"])
-
-    try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
-    except subprocess.TimeoutExpired:
-        return {"ok": False, "error": "timeout", "error_type": "timeout", "windows": []}
-    except Exception as exc:  # noqa: BLE001
-        return {"ok": False, "error": str(exc), "error_type": "error", "windows": []}
-
-    if proc.returncode != 0:
-        return {
-            "ok": False,
-            "error": proc.stderr.strip() or f"exit code {proc.returncode}",
-            "error_type": "shell_error",
-            "windows": [],
-        }
+    def _parse_windows(lines: str, sess: str) -> list[dict]:
+        result = []
+        for line in lines.strip().split("\n"):
+            if not line:
+                continue
+            # rsplit from the right to tolerate colons in window names (e.g. "feat:1549")
+            parts = line.rsplit(":", 3)
+            entry: dict = {
+                "session": sess,
+                "name": parts[0] if parts else "",
+                "index": int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0,
+                "active": parts[2] == "1" if len(parts) > 2 else False,
+            }
+            if format == "detailed":
+                entry["panes_count"] = int(parts[3]) if len(parts) > 3 and parts[3].isdigit() else 0
+            result.append(entry)
+        return result
 
     windows: list[dict] = []
-    for line in proc.stdout.strip().split("\n"):
-        if not line:
-            continue
-        parts = line.split("|")
-        entry: dict = {
-            "session": parts[0] if len(parts) > 0 else "",
-            "index": int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else 0,
-            "name": parts[2] if len(parts) > 2 else "",
-        }
-        if format == "detailed":
-            entry["active"] = parts[3] == "1" if len(parts) > 3 else False
-            entry["panes_count"] = int(parts[4]) if len(parts) > 4 and parts[4].isdigit() else 0
-        windows.append(entry)
+
+    if session is None:
+        try:
+            sessions_proc = subprocess.run(
+                ["tmux", "list-sessions", "-F", "#{session_name}"],
+                capture_output=True, text=True, timeout=10,
+            )
+        except subprocess.TimeoutExpired:
+            return {"ok": False, "error": "timeout", "error_type": "timeout", "windows": []}
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "error": str(exc), "error_type": "error", "windows": []}
+
+        if sessions_proc.returncode != 0:
+            return {
+                "ok": False,
+                "error": sessions_proc.stderr.strip() or f"exit code {sessions_proc.returncode}",
+                "error_type": "shell_error",
+                "windows": [],
+            }
+
+        for sess in (s for s in sessions_proc.stdout.strip().split("\n") if s and _VALID_WINDOW_NAME_RE.match(s)):
+            try:
+                win_proc = subprocess.run(
+                    ["tmux", "list-windows", "-t", sess, "-F", fmt],
+                    capture_output=True, text=True, timeout=10,
+                )
+            except Exception:  # noqa: BLE001
+                continue
+            if win_proc.returncode == 0:
+                windows.extend(_parse_windows(win_proc.stdout, sess))
+    else:
+        try:
+            win_proc = subprocess.run(
+                ["tmux", "list-windows", "-t", session, "-F", fmt],
+                capture_output=True, text=True, timeout=10,
+            )
+        except subprocess.TimeoutExpired:
+            return {"ok": False, "error": "timeout", "error_type": "timeout", "windows": []}
+        except Exception as exc:  # noqa: BLE001
+            return {"ok": False, "error": str(exc), "error_type": "error", "windows": []}
+
+        if win_proc.returncode != 0:
+            return {
+                "ok": False,
+                "error": win_proc.stderr.strip() or f"exit code {win_proc.returncode}",
+                "error_type": "shell_error",
+                "windows": [],
+            }
+
+        windows.extend(_parse_windows(win_proc.stdout, session))
 
     return {"ok": True, "windows": windows, "error": None}
 
@@ -2023,6 +2056,11 @@ try:
         return json.dumps(twl_capture_pane_handler(window_name=window_name, lines=lines, mode=mode, from_line=from_line, to_line=to_line), ensure_ascii=False)
 
     @mcp.tool()
+    def twl_list_windows(session: str | None = None, format: str = "minimal") -> str:  # type: ignore[misc]
+        """List tmux windows/sessions as structured JSON. format: 'minimal'|'detailed'."""
+        return json.dumps(twl_list_windows_handler(session=session, format=format), ensure_ascii=False)
+
+    @mcp.tool()
     def twl_get_budget(window_name: str, threshold_remaining_minutes: int = 40, threshold_cycle_minutes: int = 5, config_path: str | None = None) -> str:
         """Capture tmux pane and extract Claude budget via 5h:%(Ym) regex. Returns {ok, budget_pct, budget_min, cycle_reset_min, low, error}."""
         return json.dumps(twl_get_budget_handler(window_name=window_name, threshold_remaining_minutes=threshold_remaining_minutes, threshold_cycle_minutes=threshold_cycle_minutes, config_path=config_path), ensure_ascii=False)
@@ -2227,6 +2265,10 @@ except ImportError:
     def twl_capture_pane(window_name: str, lines: int | None = None, mode: str = "raw", from_line: int | None = None, to_line: int | None = None) -> str:  # type: ignore[misc]
         """Capture tmux pane content as raw or plain (ANSI-stripped) text (fastmcp not installed)."""
         return json.dumps(twl_capture_pane_handler(window_name=window_name, lines=lines, mode=mode, from_line=from_line, to_line=to_line), ensure_ascii=False)
+
+    def twl_list_windows(session: str | None = None, format: str = "minimal") -> str:  # type: ignore[misc]
+        """List tmux windows/sessions as structured JSON (fastmcp not installed). format: 'minimal'|'detailed'."""
+        return json.dumps(twl_list_windows_handler(session=session, format=format), ensure_ascii=False)
 
     def twl_get_budget(window_name: str, threshold_remaining_minutes: int = 40, threshold_cycle_minutes: int = 5, config_path: str | None = None) -> str:  # type: ignore[misc]
         """Capture tmux pane and extract Claude budget via 5h:%(Ym) regex (fastmcp not installed)."""
