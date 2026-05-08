@@ -1035,6 +1035,15 @@ def main(argv: list[str] | None = None) -> int:
             print(f"✓ {step}: LLM スキル実行（chain は ステップ記録のみ）")
             return 0
 
+        elif step == "merge-gate-check":
+            # Delegated to chain-runner.sh step_merge_gate_check via runner dispatch.
+            # This CLI branch records the step for completeness.
+            issue_num = runner._resolve_issue_num()
+            if issue_num:
+                runner.record_step(issue_num, step)
+            print(f"✓ {step}: chain-runner.sh step_merge_gate_check に委譲")
+            return 0
+
         else:
             print(f"ERROR: 未知のステップ: {step}", file=sys.stderr)
             return 1

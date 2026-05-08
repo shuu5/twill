@@ -1343,7 +1343,7 @@ step_merge_gate_check() {
   fi
 
   local _audit_exit=0
-  bash "$_audit_script" --issue "${ISSUE_NUM:-}" --mode merge-gate 2>/dev/null || _audit_exit=$?
+  bash "$_audit_script" --issue "${ISSUE_NUM:-}" --mode merge-gate || _audit_exit=$?
   if [[ $_audit_exit -ne 0 ]]; then
     echo "[merge-gate-check] REJECT: specialist-audit FAIL (exit=${_audit_exit}) — test scaffold only PR の可能性 (lesson 19 reproduction 防止)" >&2
     err "merge-gate-check" "specialist-audit HARD FAIL — chain 停止"
