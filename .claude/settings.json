@@ -74,6 +74,17 @@
             },
             "outputType": "log",
             "timeout": 30
+          },
+          {
+            "type": "mcp_tool",
+            "server": "twl",
+            "tool": "twl_validate_status_transition",
+            "input": {
+              "command": "${tool_input.command}",
+              "tool_name": "${tool_name}"
+            },
+            "outputType": "log",
+            "timeout": 10
           }
         ]
       }
