@@ -18,11 +18,11 @@ digraph Dependencies {
     skill_workflow_issue_refine [label="twl:workflow-issue-refine\n(578 tok)", shape=ellipse, style=filled, fillcolor="#e8f5e9"];
 
     // Reference Skills
-    skill_refine_processing_flow [label="twl:refine-processing-flow\n(2,840 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
+    skill_refine_processing_flow [label="twl:refine-processing-flow\n(2,497 tok)", shape=note, style=filled, fillcolor="#e1f5fe"];
 
     // L1: Direct Commands
     cmd_issue_spec_review [label="issue-spec-review\n(1,870 tok)", shape=box, style=filled, fillcolor="#bbdefb"];
-    cmd_issue_review_aggregate [label="issue-review-aggregate\n(1,157 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
+    cmd_issue_review_aggregate [label="issue-review-aggregate\n(1,503 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
     cmd_issue_arch_drift [label="issue-arch-drift\n(1,079 tok)", shape=box, style=filled, fillcolor="#e3f2fd"];
 
     // L2: Sub Commands
@@ -30,7 +30,7 @@ digraph Dependencies {
     // L3: Agents
     agent_issue_critic [label="issue-critic\n(1,268 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
     agent_issue_feasibility [label="issue-feasibility\n(1,175 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
-    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(1,841 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
+    agent_worker_codex_reviewer [label="worker-codex-reviewer\n(2,121 tok)", shape=ellipse, style=filled, fillcolor="#ede7f6"];
 
     // L3.5: Scripts
     script_escape_issue_body [label="escape-issue-body\n(63 tok)", shape=hexagon, style=filled, fillcolor="#FF9800"];

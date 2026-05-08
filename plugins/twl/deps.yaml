@@ -2823,6 +2823,11 @@ scripts:
     path: scripts/hooks/pre-bash-phase3-gate.sh
     description: "PreToolUse gate (Layer C-2): co-issue Phase 3 未完了時に gh issue create を deny する（Bash tool matcher）。gate state /tmp/.co-issue-phase3-gate-{cksum}.json で管理"
 
+  pre-bash-refined-status-gate:
+    type: script
+    path: scripts/hooks/pre-bash-refined-status-gate.sh
+    description: "PreToolUse hook: Status field (Refined/In Progress option ID) への gh project item-edit 直接実行を evidence なし時に deny（ADR-024 Layer D enforcement、#1557 bypass #1 閉鎖）"
+
   supervisor-heartbeat:
     type: script
     path: scripts/hooks/supervisor-heartbeat.sh

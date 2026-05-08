@@ -35,7 +35,7 @@
 <title>cmd_plugin_diagnose</title>
 <polygon fill="#e3f2fd" stroke="black" points="398.69,-311.24 303.69,-311.24 303.69,-275.24 398.69,-275.24 398.69,-311.24"/>
 <text text-anchor="middle" x="351.19" y="-296.24" font-family="Helvetica,sans-Serif" font-size="10.00">plugin&#45;diagnose</text>
-<text text-anchor="middle" x="351.19" y="-285.24" font-family="Helvetica,sans-Serif" font-size="10.00">(944 tok)</text>
+<text text-anchor="middle" x="351.19" y="-285.24" font-family="Helvetica,sans-Serif" font-size="10.00">(945 tok)</text>
 </g>
 <!-- skill_workflow_plugin_diagnose&#45;&gt;cmd_plugin_diagnose -->
 <g id="edge2" class="edge">
@@ -102,19 +102,19 @@
 <polyline fill="none" stroke="black" points="860.08,-281.24 860.08,-275.24 "/>
 <polyline fill="none" stroke="black" points="866.08,-275.24 860.08,-275.24 "/>
 <text text-anchor="middle" x="778.58" y="-266.24" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;specialist&#45;output&#45;schema</text>
-<text text-anchor="middle" x="778.58" y="-255.24" font-family="Helvetica,sans-Serif" font-size="10.00">(1,283 tok)</text>
+<text text-anchor="middle" x="778.58" y="-255.24" font-family="Helvetica,sans-Serif" font-size="10.00">(1,461 tok)</text>
 </g>
-<!-- skill_ref_architecture -->
+<!-- skill_ref_skill_arch_patterns -->
 <g id="node3" class="node">
-<title>skill_ref_architecture</title>
-<polygon fill="#e1f5fe" stroke="black" points="827.58,-223.24 723.58,-223.24 723.58,-187.24 833.58,-187.24 833.58,-217.24 827.58,-223.24"/>
-<polyline fill="none" stroke="black" points="827.58,-223.24 827.58,-217.24 "/>
-<polyline fill="none" stroke="black" points="833.58,-217.24 827.58,-217.24 "/>
-<text text-anchor="middle" x="778.58" y="-208.24" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;architecture</text>
+<title>skill_ref_skill_arch_patterns</title>
+<polygon fill="#e1f5fe" stroke="black" points="842.58,-223.24 708.58,-223.24 708.58,-187.24 848.58,-187.24 848.58,-217.24 842.58,-223.24"/>
+<polyline fill="none" stroke="black" points="842.58,-223.24 842.58,-217.24 "/>
+<polyline fill="none" stroke="black" points="848.58,-217.24 842.58,-217.24 "/>
+<text text-anchor="middle" x="778.58" y="-208.24" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;skill&#45;arch&#45;patterns</text>
 <text text-anchor="middle" x="778.58" y="-197.24" font-family="Helvetica,sans-Serif" font-size="10.00">(2,234 tok)</text>
 </g>
-<!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_architecture -->
-<!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_architecture -->
+<!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_skill_arch_patterns -->
+<!-- skill_ref_specialist_output_schema&#45;&gt;skill_ref_skill_arch_patterns -->
 <!-- cmd_plugin_migrate_analyze&#45;&gt;cmd_plugin_diagnose -->
 <!-- cmd_plugin_diagnose&#45;&gt;cmd_plugin_phase_diagnose -->
 <!-- cmd_plugin_fix&#45;&gt;cmd_plugin_verify -->
@@ -125,9 +125,9 @@
 <path fill="none" stroke="black" d="M393.67,-253.39C401.37,-256.89 409.31,-260.61 416.69,-264.24 442.92,-277.13 446.34,-288.14 474.69,-295.24 553.64,-315.01 647.16,-299.44 709.18,-283.87"/>
 <polygon fill="black" stroke="black" points="710.43,-287.17 719.24,-281.28 708.68,-280.39 710.43,-287.17"/>
 </g>
-<!-- cmd_plugin_phase_diagnose&#45;&gt;skill_ref_architecture -->
+<!-- cmd_plugin_phase_diagnose&#45;&gt;skill_ref_skill_arch_patterns -->
 <g id="edge11" class="edge">
-<title>cmd_plugin_phase_diagnose&#45;&gt;skill_ref_architecture</title>
+<title>cmd_plugin_phase_diagnose&#45;&gt;skill_ref_skill_arch_patterns</title>
 <path fill="none" stroke="black" d="M401.46,-217.17C406.93,-214.01 412.16,-210.38 416.69,-206.24 455.48,-170.8 429.33,-129.75 474.69,-103.24 535.46,-67.71 565.98,-81.94 633.08,-103.24 680.5,-118.29 725.77,-155.14 752.62,-180.17"/>
 <polygon fill="black" stroke="black" points="750.36,-182.85 760.02,-187.2 755.19,-177.78 750.36,-182.85"/>
 </g>
@@ -163,7 +163,7 @@
 <title>agent_worker_architecture</title>
 <ellipse fill="#ede7f6" stroke="black" cx="553.88" cy="-263.24" rx="79.39" ry="21.43"/>
 <text text-anchor="middle" x="553.88" y="-266.24" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;architecture</text>
-<text text-anchor="middle" x="553.88" y="-255.24" font-family="Helvetica,sans-Serif" font-size="10.00">(1,695 tok)</text>
+<text text-anchor="middle" x="553.88" y="-255.24" font-family="Helvetica,sans-Serif" font-size="10.00">(1,814 tok)</text>
 </g>
 <!-- cmd_plugin_phase_diagnose&#45;&gt;agent_worker_architecture -->
 <g id="edge9" class="edge">
@@ -177,9 +177,9 @@
 <path fill="none" stroke="black" d="M406.41,-54.86C467.71,-50.65 567.49,-53.25 633.08,-103.24 683.72,-141.83 644.01,-191.36 691.08,-234.24 693.08,-236.06 695.19,-237.76 697.4,-239.36"/>
 <polygon fill="black" stroke="black" points="696.01,-242.62 706.34,-245.02 699.76,-236.71 696.01,-242.62"/>
 </g>
-<!-- cmd_plugin_phase_verify&#45;&gt;skill_ref_architecture -->
+<!-- cmd_plugin_phase_verify&#45;&gt;skill_ref_skill_arch_patterns -->
 <g id="edge16" class="edge">
-<title>cmd_plugin_phase_verify&#45;&gt;skill_ref_architecture</title>
+<title>cmd_plugin_phase_verify&#45;&gt;skill_ref_skill_arch_patterns</title>
 <path fill="none" stroke="black" d="M387.01,-43.23C442.14,-17.39 551.61,22.9 633.08,-17.24 701.43,-50.91 746.48,-134.16 766.19,-177.7"/>
 <polygon fill="black" stroke="black" points="763.1,-179.37 770.34,-187.11 769.51,-176.55 763.1,-179.37"/>
 </g>
@@ -229,11 +229,11 @@
 </g>
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
 <!-- agent_worker_architecture&#45;&gt;skill_ref_specialist_output_schema -->
-<!-- agent_worker_architecture&#45;&gt;skill_ref_architecture -->
+<!-- agent_worker_architecture&#45;&gt;skill_ref_skill_arch_patterns -->
 <g id="edge20" class="edge">
-<title>agent_worker_architecture&#45;&gt;skill_ref_architecture</title>
-<path fill="none" stroke="black" stroke-dasharray="1,5" d="M611.37,-248.53C642.55,-240.41 681.38,-230.29 713.67,-221.88"/>
-<polygon fill="black" stroke="black" points="714.67,-225.24 723.46,-219.33 712.9,-218.47 714.67,-225.24"/>
+<title>agent_worker_architecture&#45;&gt;skill_ref_skill_arch_patterns</title>
+<path fill="none" stroke="black" stroke-dasharray="1,5" d="M611.37,-248.53C637.76,-241.65 669.65,-233.35 698.4,-225.86"/>
+<polygon fill="black" stroke="black" points="699.63,-229.16 708.42,-223.25 697.86,-222.38 699.63,-229.16"/>
 </g>
 <!-- agent_worker_architecture&#45;&gt;agent_worker_structure -->
 </g>

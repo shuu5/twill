@@ -61,7 +61,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="547.84,-95.49 515.91,-119.98 452.03,-119.98 420.09,-95.49 452.03,-71.01 515.91,-71.01 547.84,-95.49"/>
 <text text-anchor="middle" x="483.97" y="-98.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="483.97" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
+<text text-anchor="middle" x="483.97" y="-87.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,844 tok)</text>
 </g>
 <!-- skill_workflow_test_ready&#45;&gt;script_chain_runner -->
 <g id="edge4" class="edge">
@@ -89,7 +89,7 @@
 <polyline fill="none" stroke="black" points="813.85,-247.49 813.85,-241.49 "/>
 <polyline fill="none" stroke="black" points="819.85,-241.49 813.85,-241.49 "/>
 <text text-anchor="middle" x="732.35" y="-232.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;specialist&#45;output&#45;schema</text>
-<text text-anchor="middle" x="732.35" y="-221.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,283 tok)</text>
+<text text-anchor="middle" x="732.35" y="-221.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,461 tok)</text>
 </g>
 <!-- cmd_check&#45;&gt;cmd_e2e_plan -->
 <!-- cmd_e2e_plan&#45;&gt;script_chain_runner -->
@@ -155,7 +155,7 @@
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="561.6,-555.49 522.79,-579.98 445.15,-579.98 406.33,-555.49 445.15,-531.01 522.79,-531.01 561.6,-555.49"/>
 <text text-anchor="middle" x="483.97" y="-558.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="483.97" y="-547.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,686 tok)</text>
+<text text-anchor="middle" x="483.97" y="-547.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,263 tok)</text>
 </g>
 <!-- script_autopilot_github -->
 <g id="node12" class="node">
@@ -169,7 +169,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="543.68,-697.49 513.82,-721.98 454.11,-721.98 424.26,-697.49 454.11,-673.01 513.82,-673.01 543.68,-697.49"/>
 <text text-anchor="middle" x="483.97" y="-700.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="483.97" y="-689.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
+<text text-anchor="middle" x="483.97" y="-689.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,844 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node15" class="node">

@@ -35,3 +35,46 @@ mappings:
     test_name: "B-6: merge-gate + nested-2 architecture/decisions/sub/foo.md → worker-arch-doc-reviewer included (RED)"
     impl_files:
       - "plugins/twl/scripts/pr-review-manifest.sh"
+  # Issue #1561: pre-bash-refined-status-gate.sh Refined option ID 拡張
+  - ac_index: 7
+    ac_text: "hook が gh project item-edit && \\b3d983780\\b + evidence なし で permissionDecision: deny JSON を出力する (AC1)"
+    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
+    test_name: "R1: gh project item-edit with 3d983780 (Refined option ID) + evidence なし → deny"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
+  - ac_index: 8
+    ac_text: ".spec-review-session-*.json evidence あり → allow (AC2)"
+    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
+    test_name: "R2: gh project item-edit with 3d983780 + .spec-review-session-*.json あり → allow"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
+  - ac_index: 9
+    ac_text: "Phase4-complete.json evidence あり → allow (AC2)"
+    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
+    test_name: "R3: gh project item-edit with 3d983780 + Phase4-complete.json あり → allow"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
+  - ac_index: 10
+    ac_text: "既存 47fc9ee4 (In Progress option ID) check がリグレッションしない - deny (AC7)"
+    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
+    test_name: "R4: gh project item-edit with 47fc9ee4 (In Progress option ID) + evidence なし → deny (regression)"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
+  - ac_index: 11
+    ac_text: "既存 47fc9ee4 check がリグレッションしない - allow with evidence (AC7)"
+    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
+    test_name: "R5: gh project item-edit with 47fc9ee4 + .spec-review-session-*.json あり → allow (regression)"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
+  - ac_index: 12
+    ac_text: "3d9837801 (部分一致) は word boundary でマッチしない - no-op (AC4 bypass なし確認)"
+    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
+    test_name: "R6: 3d9837801 (partial match of 3d983780) + evidence なし → no-op (word boundary guard)"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
+  - ac_index: 13
+    ac_text: "deny メッセージに /twl:co-issue refine と ADR-024 が含まれる (AC6)"
+    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
+    test_name: "R7: deny メッセージに /twl:co-issue refine および ADR-024 が含まれる"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"

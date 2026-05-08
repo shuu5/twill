@@ -74,7 +74,7 @@
 <title>cmd_ac_verify</title>
 <polygon fill="#e3f2fd" stroke="black" points="322.95,-404.49 252.95,-404.49 252.95,-368.49 322.95,-368.49 322.95,-404.49"/>
 <text text-anchor="middle" x="287.95" y="-389.49" font-family="Helvetica,sans-Serif" font-size="10.00">ac&#45;verify</text>
-<text text-anchor="middle" x="287.95" y="-378.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,146 tok)</text>
+<text text-anchor="middle" x="287.95" y="-378.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,514 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;cmd_ac_verify -->
 <g id="edge7" class="edge">
@@ -126,7 +126,7 @@
 <title>script_chain_runner</title>
 <polygon fill="#ff9800" stroke="black" points="568.7,-328.49 536.76,-352.98 472.89,-352.98 440.95,-328.49 472.89,-304.01 536.76,-304.01 568.7,-328.49"/>
 <text text-anchor="middle" x="504.83" y="-331.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;runner</text>
-<text text-anchor="middle" x="504.83" y="-320.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
+<text text-anchor="middle" x="504.83" y="-320.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,844 tok)</text>
 </g>
 <!-- skill_workflow_pr_verify&#45;&gt;script_chain_runner -->
 <g id="edge9" class="edge">
@@ -154,7 +154,7 @@
 <polyline fill="none" stroke="black" points="1164.23,-453.49 1164.23,-447.49 "/>
 <polyline fill="none" stroke="black" points="1170.23,-447.49 1164.23,-447.49 "/>
 <text text-anchor="middle" x="1082.73" y="-438.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:ref&#45;specialist&#45;output&#45;schema</text>
-<text text-anchor="middle" x="1082.73" y="-427.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,283 tok)</text>
+<text text-anchor="middle" x="1082.73" y="-427.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,461 tok)</text>
 </g>
 <!-- skill_baseline_coding_style -->
 <g id="node3" class="node">
@@ -173,7 +173,7 @@
 <polyline fill="none" stroke="black" points="1159.73,-337.49 1159.73,-331.49 "/>
 <polyline fill="none" stroke="black" points="1165.73,-331.49 1159.73,-331.49 "/>
 <text text-anchor="middle" x="1082.73" y="-322.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:baseline&#45;security&#45;checklist</text>
-<text text-anchor="middle" x="1082.73" y="-311.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,815 tok)</text>
+<text text-anchor="middle" x="1082.73" y="-311.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,194 tok)</text>
 </g>
 <!-- skill_baseline_coding_style&#45;&gt;skill_baseline_security_checklist -->
 <!-- skill_baseline_coding_style&#45;&gt;skill_baseline_security_checklist -->
@@ -195,7 +195,7 @@
 <polyline fill="none" stroke="black" points="1128.23,-221.49 1128.23,-215.49 "/>
 <polyline fill="none" stroke="black" points="1134.23,-215.49 1128.23,-215.49 "/>
 <text text-anchor="middle" x="1082.73" y="-206.49" font-family="Helvetica,sans-Serif" font-size="10.00">twl:baseline&#45;bash</text>
-<text text-anchor="middle" x="1082.73" y="-195.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,295 tok)</text>
+<text text-anchor="middle" x="1082.73" y="-195.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,940 tok)</text>
 </g>
 <!-- skill_baseline_input_validation&#45;&gt;skill_baseline_bash -->
 <!-- skill_baseline_input_validation&#45;&gt;skill_baseline_bash -->
@@ -215,7 +215,7 @@
 <title>script_checkpoint_write</title>
 <polygon fill="#ff9800" stroke="black" points="584.86,-257.49 544.84,-281.98 464.81,-281.98 424.79,-257.49 464.81,-233.01 544.84,-233.01 584.86,-257.49"/>
 <text text-anchor="middle" x="504.83" y="-260.49" font-family="Helvetica,sans-Serif" font-size="10.00">checkpoint&#45;write</text>
-<text text-anchor="middle" x="504.83" y="-249.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,864 tok)</text>
+<text text-anchor="middle" x="504.83" y="-249.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,254 tok)</text>
 </g>
 <!-- cmd_ac_verify&#45;&gt;script_checkpoint_write -->
 <g id="edge12" class="edge">
@@ -228,7 +228,7 @@
 <title>script_checkpoint_read</title>
 <polygon fill="#ff9800" stroke="black" points="582.46,-186.49 543.64,-210.98 466.01,-210.98 427.19,-186.49 466.01,-162.01 543.64,-162.01 582.46,-186.49"/>
 <text text-anchor="middle" x="504.83" y="-189.49" font-family="Helvetica,sans-Serif" font-size="10.00">checkpoint&#45;read</text>
-<text text-anchor="middle" x="504.83" y="-178.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,864 tok)</text>
+<text text-anchor="middle" x="504.83" y="-178.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,254 tok)</text>
 </g>
 <!-- cmd_ac_verify&#45;&gt;script_checkpoint_read -->
 <g id="edge13" class="edge">
@@ -363,7 +363,7 @@
 <title>agent_worker_codex_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="801.47" cy="-499.49" rx="91.43" ry="21.43"/>
 <text text-anchor="middle" x="801.47" y="-502.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;codex&#45;reviewer</text>
-<text text-anchor="middle" x="801.47" y="-491.49" font-family="Helvetica,sans-Serif" font-size="10.00">(1,841 tok)</text>
+<text text-anchor="middle" x="801.47" y="-491.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,121 tok)</text>
 </g>
 <!-- cmd_phase_review&#45;&gt;agent_worker_codex_reviewer -->
 <g id="edge28" class="edge">
@@ -376,7 +376,7 @@
 <title>agent_worker_code_reviewer</title>
 <ellipse fill="#ede7f6" stroke="black" cx="801.47" cy="-1075.49" rx="86.95" ry="21.43"/>
 <text text-anchor="middle" x="801.47" y="-1078.49" font-family="Helvetica,sans-Serif" font-size="10.00">worker&#45;code&#45;reviewer</text>
-<text text-anchor="middle" x="801.47" y="-1067.49" font-family="Helvetica,sans-Serif" font-size="10.00">(2,503 tok)</text>
+<text text-anchor="middle" x="801.47" y="-1067.49" font-family="Helvetica,sans-Serif" font-size="10.00">(3,040 tok)</text>
 </g>
 <!-- cmd_phase_review&#45;&gt;agent_worker_code_reviewer -->
 <g id="edge19" class="edge">
@@ -441,7 +441,7 @@
 <title>script_tech_stack_detect</title>
 <polygon fill="#ff9800" stroke="black" points="587.89,-1297.49 546.36,-1321.98 463.29,-1321.98 421.76,-1297.49 463.29,-1273.01 546.36,-1273.01 587.89,-1297.49"/>
 <text text-anchor="middle" x="504.83" y="-1300.49" font-family="Helvetica,sans-Serif" font-size="10.00">tech&#45;stack&#45;detect</text>
-<text text-anchor="middle" x="504.83" y="-1289.49" font-family="Helvetica,sans-Serif" font-size="10.00">(773 tok)</text>
+<text text-anchor="middle" x="504.83" y="-1289.49" font-family="Helvetica,sans-Serif" font-size="10.00">(845 tok)</text>
 </g>
 <!-- cmd_phase_review&#45;&gt;script_tech_stack_detect -->
 <g id="edge15" class="edge">
@@ -647,7 +647,7 @@
 <title>script_worktree_create</title>
 <polygon fill="#ff9800" stroke="black" points="582.46,-1581.49 543.64,-1605.98 466.01,-1605.98 427.19,-1581.49 466.01,-1557.01 543.64,-1557.01 582.46,-1581.49"/>
 <text text-anchor="middle" x="504.83" y="-1584.49" font-family="Helvetica,sans-Serif" font-size="10.00">worktree&#45;create</text>
-<text text-anchor="middle" x="504.83" y="-1573.49" font-family="Helvetica,sans-Serif" font-size="10.00">(6,686 tok)</text>
+<text text-anchor="middle" x="504.83" y="-1573.49" font-family="Helvetica,sans-Serif" font-size="10.00">(7,263 tok)</text>
 </g>
 <!-- script_autopilot_github -->
 <g id="node36" class="node">
@@ -661,7 +661,7 @@
 <title>script_chain_steps</title>
 <polygon fill="#ff9800" stroke="black" points="564.54,-1723.49 534.68,-1747.98 474.97,-1747.98 445.12,-1723.49 474.97,-1699.01 534.68,-1699.01 564.54,-1723.49"/>
 <text text-anchor="middle" x="504.83" y="-1726.49" font-family="Helvetica,sans-Serif" font-size="10.00">chain&#45;steps</text>
-<text text-anchor="middle" x="504.83" y="-1715.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,633 tok)</text>
+<text text-anchor="middle" x="504.83" y="-1715.49" font-family="Helvetica,sans-Serif" font-size="10.00">(9,844 tok)</text>
 </g>
 <!-- script_resolve_issue_num -->
 <g id="node39" class="node">
