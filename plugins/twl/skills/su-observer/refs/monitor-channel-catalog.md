@@ -453,13 +453,15 @@ check_budget_low() {
    {
      "status": "paused",
      "paused_at": "<ISO 8601>",
-     "estimated_recovery": "<停止時刻 + 90分>",
-     "cron_id": "<CronCreate で設定したID>",
+     "cycle_reset_minutes_at_pause": 26,
+     "expected_reset_at": "<paused_at + cycle_reset_minutes_at_pause>",
+     "auto_resume_via": "schedulewakeup",
      "paused_workers": ["ap-569", "ap-570"],
      "orchestrator_pid": 12345
    }
    ```
-4. CronCreate で回復時刻（保守的推定: 停止時刻 + 90 分）に su-observer の再起動をスケジュール
+   **注意**: `(YYm)` = `cycle_reset_minutes_at_pause` = cycle reset までの wall-clock（分）。reset 後に 5h budget 100% 完全回復（[不変条件 Q](../../refs/ref-invariants.md#invariant-q)）。
+4. ScheduleWakeup で `cycle reset まで Z分（reset 後に 5h budget 100% 完全回復）`。`delaySeconds = (YYm) × 60 + 300`（cycle reset + 5 分余裕）
 
 **再開シーケンス（Step 0 の budget-pause.json 復帰パスで実行）:**
 

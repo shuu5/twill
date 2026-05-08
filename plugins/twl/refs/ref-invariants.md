@@ -231,6 +231,33 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
+## 不変条件 Q: budget status line `(YYm)` format 解釈 (MUST) {#invariant-q}
+
+<a id="invariant-q"></a>
+
+**目的**: `5h:XX%(YYm)` の `(YYm)` は「次回 5h cycle reset までの wall-clock remaining（分）」であり、消費可能 token 残量ではない。reset 時点で budget は `5h:0%` に完全回復する。この解釈を MUST とする。
+
+**制約**:
+- `(YYm)` を「制限時間」「token 残量 YY分」「あと YY 分しか使えない」と読んではならない
+- `(YYm)` は cycle reset までの wall-clock であり、reset 後は 5h budget が 100% 完全回復する
+- `ScheduleWakeup` の `delaySeconds` は `(YYm) × 60 + 300`（cycle reset + 5 分余裕）を基準とすること
+
+**正解例**:
+- `5h:57%(26m)` → 26 分後に cycle reset、budget 100% 完全回復
+- `5h:88%(8m)` → 8 分後に cycle reset、budget 100% 完全回復（8 分＋5 分余裕 = 780 秒で `ScheduleWakeup`）
+
+**根拠**: doobidoo hash `f561e780` / `fa633006` の繰返し誤読観測（複数 session で 5+ 回誤読発生）
+
+**検証方法**: bats `ref-invariants-budget.bats`、`pitfalls-budget-format.bats`、`skill-step0-budget-aware.bats`
+
+**影響範囲**:
+  - `plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §4.6`
+  - `plugins/twl/skills/su-observer/SKILL.md` Step 0 サブステップ 2.6
+  - `plugins/twl/skills/su-observer/scripts/budget-detect.sh`
+  - `plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md §BUDGET-LOW`
+
+---
+
 ## SU-* との境界
 
 SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-N とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。

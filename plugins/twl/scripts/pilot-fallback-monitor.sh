@@ -257,6 +257,69 @@ _process_worker() {
 }
 
 # ---------------------------------------------------------------------------
+# budget-pause.json の expected_reset_at + 5min を過ぎた場合に paused Worker を resume
+# 不変条件 M との整合: orchestrator alive チェックの bypass 禁止。budget-pause 専用判定パスとして独立実装。
+# jq/date を使用（python3 はテスト環境でスタブ化される可能性があるため使用しない）
+# ---------------------------------------------------------------------------
+_check_budget_auto_resume() {
+  local budget_pause_file=".supervisor/budget-pause.json"
+  [[ -f "$budget_pause_file" ]] || return 0
+
+  # jq で JSON フィールドを抽出（python3 はテスト環境でスタブ化されるため jq を使用）
+  local status expected_reset_at auto_resume_via paused_at cycle_min
+  status=$(jq -r '.status // ""' "$budget_pause_file" 2>/dev/null || true)
+  [[ "$status" == "paused" ]] || return 0
+
+  expected_reset_at=$(jq -r '.expected_reset_at // ""' "$budget_pause_file" 2>/dev/null || true)
+  auto_resume_via=$(jq -r '.auto_resume_via // ""' "$budget_pause_file" 2>/dev/null || true)
+  paused_at=$(jq -r '.paused_at // ""' "$budget_pause_file" 2>/dev/null || true)
+  cycle_min=$(jq -r '.cycle_reset_minutes_at_pause // 0' "$budget_pause_file" 2>/dev/null || true)
+
+  # expected_reset_at が空の場合は paused_at + cycle_reset_minutes_at_pause から導出（不変条件 Q）
+  if [[ -z "$expected_reset_at" && -n "$paused_at" && "$cycle_min" =~ ^[0-9]+$ && "$cycle_min" -gt 0 ]]; then
+    local paused_epoch reset_epoch
+    paused_epoch=$(date -d "${paused_at}" +%s 2>/dev/null || echo "")
+    if [[ -n "$paused_epoch" ]]; then
+      reset_epoch=$(( paused_epoch + cycle_min * 60 ))
+      expected_reset_at=$(date -d "@${reset_epoch}" -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")
+    fi
+  fi
+  [[ -n "$expected_reset_at" ]] || return 0
+
+  # expected_reset_at + 5min を過ぎているか確認（不変条件 Q: cycle reset + 5 分余裕）
+  local reset_epoch resume_epoch now_epoch
+  reset_epoch=$(date -d "${expected_reset_at}" +%s 2>/dev/null || echo "")
+  [[ -n "$reset_epoch" && "$reset_epoch" =~ ^[0-9]+$ ]] || return 0
+  resume_epoch=$(( reset_epoch + 5 * 60 ))
+  now_epoch=$(date +%s)
+  [[ "$now_epoch" -ge "$resume_epoch" ]] || return 0
+
+  echo "[pilot-fallback-monitor] budget-pause auto-resume: expected_reset_at+5min 経過 — paused Worker を resume します (auto_resume_via=${auto_resume_via})" >&2
+
+  # paused_workers を resume
+  local workers_list
+  workers_list=$(jq -r '.paused_workers[]? // empty' "$budget_pause_file" 2>/dev/null || true)
+  if [[ -n "$workers_list" ]]; then
+    while IFS= read -r worker_window; do
+      [[ -n "$worker_window" ]] || continue
+      # issue 番号を取得して inject（state read は python3 module だがスタブで対応済み）
+      local issue_num
+      issue_num=$(python3 -m twl.autopilot.state read --type window --window "$worker_window" --field issue 2>/dev/null || echo "")
+      if [[ -n "$issue_num" ]]; then
+        _inject_next_workflow "$worker_window" "$issue_num" || true
+      fi
+    done <<< "$workers_list"
+  fi
+
+  # budget-pause.json の status を resumed に更新（jq を使用）
+  local tmp_file
+  tmp_file=$(mktemp "${budget_pause_file}.XXXXXX")
+  jq --arg resumed_at "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+    '.status = "resumed" | .resumed_at = $resumed_at' \
+    "$budget_pause_file" > "$tmp_file" 2>/dev/null && mv "$tmp_file" "$budget_pause_file" || rm -f "$tmp_file"
+}
+
+# ---------------------------------------------------------------------------
 # 全 ap-* Worker に対してスキャン
 # ---------------------------------------------------------------------------
 _scan_all_workers() {
@@ -296,6 +359,10 @@ _scan_all_workers() {
 # ---------------------------------------------------------------------------
 # メインループ
 # ---------------------------------------------------------------------------
+# budget-pause auto-resume チェック（不変条件 Q: expected_reset_at + 5min 経過で resume）
+# 常に実行: --worker 指定時も含む（budget-pause 専用判定パスは独立実行）
+_check_budget_auto_resume
+
 if [[ -n "$WORKER_WINDOW" ]]; then
   _process_worker "$WORKER_WINDOW" "$ISSUE_NUM"
 else

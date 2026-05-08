@@ -4,7 +4,12 @@
 # AC1: plugins/twl/refs/ref-invariants.md に不変条件 Q を新設する
 #      （budget status line の (YYm) 解釈）
 #
-# 重要な前提: 不変条件 P は既存（L205）。本 Issue で追加するのは不変条件 Q。
+# 【命名決定】Issue #1577 の AC1/AC7 は「不変条件 P」と記載しているが、
+# 不変条件 P は Issue #1578 (PR #1591) で「Issue 起票 flow 大原則」として
+# 既に使用済み（ref-invariants.md L205）。
+# そのため、budget format 不変条件は「不変条件 Q」として実装する。
+# 実装者はこのファイルの不変条件 Q アサーションに従い、不変条件 Q を実装すること。
+# （AC に「不変条件 P」と書かれていても「不変条件 Q」で実装する）
 #
 # RED: 全テストは実装前の状態で fail する
 

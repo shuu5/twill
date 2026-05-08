@@ -35,6 +35,11 @@ spawnable_by:
    - phase 情報は `phase_handoff` field を使用すること
    - なし → `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/session-init.sh` で新規作成
 2.5. `.supervisor/budget-pause.json` 確認: `status: "paused"` → Worker 状態確認 → orchestrator 再起動 → `status: "resumed"` 更新 → `>>> budget 回復: 全セッション再開完了`
+2.6. **budget status line `5h:XX%(YYm)` format 解釈（不変条件 Q 準拠、MUST）**:
+   - (a) tmux status line から `5h:[0-9]+%\([0-9]+m\)` を抽出: `tmux display-message -p '#{status-right}' | grep -oE '5h:[0-9]+%\([0-9]+m\)'`
+   - (b) `(YYm)` は「次回 5h cycle reset までの wall-clock（分）」と認識する（MUST）。`(YYm)` ≠ token 残量、≠ 制限時間（[不変条件 Q](../../refs/ref-invariants.md#invariant-q) 参照）
+   - (c) `ScheduleWakeup` の `delaySeconds` は `(YYm) × 60 + 300`（cycle reset 直後 + 5 分余裕）に設定する
+   - (d) `.supervisor/budget-pause.json` の `status=paused` を確認した場合は `expected_reset_at` フィールドを読み、経過確認後に resume する（`pilot-fallback-monitor.sh` の `_check_budget_auto_resume` も参照）
 3. Project Board から Todo/In Progress の Issue 一覧を取得
 4. **Memory MCP（MUST）**: `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/step0-memory-ambient.sh` → exit 0: `.supervisor/ambient-hints.md` Read; exit 1: `observer-pitfall`/`observer-lesson`/`observer-wave` タグで memory_search → `--write` 保存 → Read
 4.5. auto-memory はホストローカル補助のみ — cross-machine 知見 source として使用してはならない（MUST NOT）
