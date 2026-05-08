@@ -29,15 +29,15 @@ jobs:
         run: |
           set -euo pipefail
           REPO_ROOT="${GITHUB_WORKSPACE:-$(git rev-parse --show-toplevel)}"
-          python3 -c "
-          import json, pathlib
-          repo_root = pathlib.Path('$REPO_ROOT').resolve()
+          REPO_ROOT="$REPO_ROOT" python3 -c "
+          import os, json, pathlib
+          repo_root = pathlib.Path(os.environ['REPO_ROOT']).resolve()
           p = repo_root / '.mcp.json'
           cfg = json.loads(p.read_text())
           args = cfg['mcpServers']['twl']['args']
           cfg['mcpServers']['twl']['args'] = [
               str(repo_root / 'cli/twl') if a.endswith('/cli/twl') else
-              str(repo_root / 'cli/twl/src/twl/mcp_server/server.py') if a.endswith('/server.py') else
+              str(repo_root / 'cli/twl/src/twl/mcp_server/server.py') if a.endswith('/cli/twl/src/twl/mcp_server/server.py') else
               a
               for a in args
           ]
