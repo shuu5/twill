@@ -117,7 +117,10 @@ teardown() {
   # sandbox の git repo を初期化して非 main ブランチを作成（diff なし）
   local test_git_dir
   test_git_dir="$(mktemp -d)"
-  pushd "$test_git_dir" >/dev/null || return 1
+  # trap でクリーンアップを保証（pushd 失敗時のリーク防止）
+  trap "rm -rf '${test_git_dir}'" EXIT
+
+  pushd "$test_git_dir" >/dev/null || { rm -rf "$test_git_dir"; return 1; }
 
   git init --quiet
   git config user.email "test@example.com"
@@ -146,20 +149,20 @@ teardown() {
   stderr_out="$(bash "${audit_script}" --mode merge-gate 2>&1 >/dev/null || true)"
 
   popd >/dev/null || true
-  rm -rf "$test_git_dir"
 
   # WARN: git diff empty の WARN が出力されるべき
-  # RED: 現在 WARN が出力されないため grep fail
   echo "$stderr_out" | grep -qiE 'WARN.*git.*diff.*empty|WARN.*changed.files.*empty|WARN.*diff.*nothing|WARN.*test.only.*skip'
 }
 
 @test "ac3b: specialist-audit.sh が main branch 実行時に test-only チェックスキップの WARN を出力する" {
   # AC: main branch で実行した場合、test-only HARD FAIL チェックをスキップする旨を WARN で出力する
-  # RED: 現在 main branch 時に何も出力しないため WARN が存在しない
 
   local test_git_dir
   test_git_dir="$(mktemp -d)"
-  pushd "$test_git_dir" >/dev/null || return 1
+  # trap でクリーンアップを保証
+  trap "rm -rf '${test_git_dir}'" EXIT
+
+  pushd "$test_git_dir" >/dev/null || { rm -rf "$test_git_dir"; return 1; }
 
   git init --quiet
   git config user.email "test@example.com"
@@ -178,10 +181,8 @@ teardown() {
   stderr_out="$(bash "${audit_script}" --mode merge-gate 2>&1 >/dev/null || true)"
 
   popd >/dev/null || true
-  rm -rf "$test_git_dir"
 
   # WARN: main branch では test-only チェックをスキップする旨の WARN が出力されるべき
-  # RED: 現在 main branch 時に何も出力しないため grep fail
   echo "$stderr_out" | grep -qiE \
     'WARN.*main.*branch|WARN.*test.only.*skip|WARN.*scaffold.*skip|skip.*test.only.*main'
 }
@@ -220,36 +221,24 @@ teardown() {
   [ "${count}" -ge 5 ]
 }
 
-@test "ac4c: auto-merge.sh sandbox 実行で specialist-audit が呼ばれる（integration trace）" {
-  # AC: auto-merge.sh を sandbox 実行した際、specialist-audit への呼び出しが確認できる
-  # テスト方法: specialist-audit.sh をスタブ化してトレースログを記録
+@test "ac4c: auto-merge.sh が specialist-audit.sh を Layer 5 として呼ぶコードが存在する（static trace）" {
+  # AC: auto-merge.sh に specialist-audit.sh を Layer 5 として呼ぶコードが存在することを静的確認
+  # auto-merge.sh を実際に起動せず、コード存在を grep で確認する（環境依存を排除）
 
-  # スタブ specialist-audit.sh を作成
-  cat > "${SANDBOX}/scripts/specialist-audit.sh" <<'STUB_EOF'
-#!/usr/bin/env bash
-echo "STUB: specialist-audit called with args: $*" >&2
-echo '{"status":"PASS","issue":null}' | jq .
-exit 0
-STUB_EOF
-  chmod +x "${SANDBOX}/scripts/specialist-audit.sh"
+  local auto_merge="${SCRIPTS_DIR}/auto-merge.sh"
+  [ -f "${auto_merge}" ]
 
-  # auto-merge.sh のスタブ化（gh, git コマンドをスタブ化）
-  stub_command "gh" 'exit 0'
-  stub_command "git" 'exit 0'
+  # Layer 5 コメントが存在する
+  run bash -c "grep -q 'Layer 5' '${auto_merge}'"
+  assert_success
 
-  # auto-merge.sh を sandbox の scripts/ から実行（SCRIPT_DIR 解決用）
-  local auto_merge="${SANDBOX}/scripts/auto-merge.sh"
+  # specialist-audit.sh の呼び出しコードが存在する
+  run bash -c "grep -q 'specialist-audit' '${auto_merge}'"
+  assert_success
 
-  # ISSUE_NUM, PR_NUMBER を設定して auto-merge.sh を実行
-  # （実際の merge は gh コマンドスタブで skip される）
-  ISSUE_NUM=1540 PR_NUMBER=9999 AUTO_MERGE_DRYRUN=1 \
-    SCRIPT_DIR="${SANDBOX}/scripts" \
-    run bash "${auto_merge}" 2>&1 || true
-
-  # スタブの specialist-audit が呼ばれた場合 "STUB: specialist-audit called" が stderr に出る
-  # NOTE: AUTO_MERGE_DRYRUN フラグが未定義の場合はスタブが呼ばれない可能性があるため
-  #       specialist-audit.sh が存在することの確認に留める
-  [ -f "${SANDBOX}/scripts/specialist-audit.sh" ]
+  # REJECT メッセージが存在する
+  run bash -c "grep -q 'REJECT.*specialist-audit\|specialist-audit.*REJECT' '${auto_merge}'"
+  assert_success
 }
 
 # ===========================================================================
@@ -264,11 +253,11 @@ STUB_EOF
 @test "ac5a: PR #1541 の Layer 5 fix commit が git log に存在する" {
   # AC: fix(auto-merge): specialist-audit invoke を Layer 5 として追加 (PR #1541) が
   #     git log に存在する（revert されていない）
-  # commit hash: 947f2c7b
+  # commit hash: 947f2c7f
   local repo_root
   repo_root="$(cd "${PLUGIN_ROOT_DIR}/.." && git rev-parse --show-toplevel 2>/dev/null || echo "")"
   [ -n "${repo_root}" ]
-  run bash -c "git -C '${repo_root}' log --oneline | grep -q '947f2c7b\|Layer 5.*specialist-audit\|specialist-audit.*Layer 5'"
+  run bash -c "git -C '${repo_root}' log --oneline | grep -q '947f2c7f\|Layer 5.*specialist-audit\|specialist-audit.*Layer 5'"
   assert_success
 }
 
@@ -293,7 +282,10 @@ STUB_EOF
   # sandbox git repo で test-only diff を作成
   local test_git_dir
   test_git_dir="$(mktemp -d)"
-  pushd "$test_git_dir" >/dev/null || return 1
+  # trap でクリーンアップを保証
+  trap "rm -rf '${test_git_dir}'" EXIT
+
+  pushd "$test_git_dir" >/dev/null || { rm -rf "$test_git_dir"; return 1; }
 
   git init --quiet
   git config user.email "test@example.com"
@@ -326,7 +318,6 @@ STUB_EOF
   bash "${audit_script}" --mode merge-gate 2>/dev/null || exit_code=$?
 
   popd >/dev/null || true
-  rm -rf "$test_git_dir"
 
   # HARD FAIL → exit 1 であるべき
   [ "${exit_code}" -ne 0 ]

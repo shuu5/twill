@@ -325,6 +325,14 @@ if command -v git &>/dev/null; then
         STATUS="FAIL"
         EXIT_CODE=1
       fi
+    else
+      # AC3 fix (Issue #1540): git diff empty 時の WARN log — git context 問題を debug 容易化
+      echo "WARN: specialist-audit: git diff origin/main..HEAD が空 — test-only HARD FAIL チェックをスキップ (worktree の git context または未コミット変更を確認)" >&2
+    fi
+  else
+    # AC3 fix (Issue #1540): main/HEAD branch では test-only チェックをスキップ — WARN で明示
+    if [[ -n "$_current_branch" ]]; then
+      echo "WARN: specialist-audit: main/HEAD branch で実行 — test-only HARD FAIL チェックをスキップ (branch: ${_current_branch})" >&2
     fi
   fi
 fi
