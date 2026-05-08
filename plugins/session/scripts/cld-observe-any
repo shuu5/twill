@@ -629,6 +629,8 @@ while true; do
                         fi
                     fi
                 fi
+                # ★ #1599: controller window (wt-co-*) は next-spawn 判定から除外
+                [[ "$WIN" == wt-co-* ]] && { echo "[IDLE-COMPLETED-SKIP] $WIN (controller window, next-spawn excluded)"; continue; }
                 # ★ #1430: opt-in next-spawn 判定（AUTO_KILL から独立評価）
                 if [[ "${IDLE_COMPLETED_AUTO_NEXT_SPAWN:-0}" != "0" ]]; then
                     _WAVE_QUEUE="${SUPERVISOR_DIR:-.supervisor}/wave-queue.json"
