@@ -1485,8 +1485,8 @@ def twl_validate_commit_handler(
             return {"ok": False, "error": "timeout", "error_type": "timeout", "exit_code": 124}
 
 
-_STATUS_TARGET_OPTION_IDS = ("3d983780", "47fc9ee4")  # Refined, In Progress
-_STATUS_DENY_MESSAGES = {
+_STATUS_TARGET_OPTION_IDS: tuple[str, ...] = ("3d983780", "47fc9ee4")  # Refined, In Progress
+_STATUS_DENY_MESSAGES: dict[str, str] = {
     "3d983780": (
         "Status=Refined 直接遷移は禁止です。"
         " /twl:co-issue refine #N を実行して spec-review-session を完了させてください。"
@@ -1500,11 +1500,11 @@ _STATUS_DENY_MESSAGES = {
 
 def _check_status_transition_evidence(session_tmp_dir: str | None, controller_issue_dir: str | None) -> str | None:
     """spec-review-session 優先 → Phase4-complete.json の順で evidence を検索して返す。"""
-    stmp = Path(session_tmp_dir or os.environ.get("SESSION_TMP_DIR", "/tmp"))
+    stmp = Path(session_tmp_dir or os.environ.get("SESSION_TMP_DIR", "/tmp")).resolve()
     spec_files = sorted(stmp.glob(".spec-review-session-*.json"))
     if spec_files:
         return str(spec_files[0])
-    cidir = Path(controller_issue_dir or os.environ.get("CONTROLLER_ISSUE_DIR", ".controller-issue"))
+    cidir = Path(controller_issue_dir or os.environ.get("CONTROLLER_ISSUE_DIR", ".controller-issue")).resolve()
     phase4_files = sorted(cidir.glob("*/Phase4-complete.json"))
     if phase4_files:
         return str(phase4_files[0])
@@ -1533,6 +1533,10 @@ def twl_validate_status_transition_handler(
 
     Note: cross-repo R5 label fallback は本 handler 範囲外
           (autopilot-launch.sh の _check_label_fallback が担当)。
+
+    Note: timeout_sec は Sub-3 hook payload との API 一貫性のために定義。
+          本 handler は純粋 in-process ロジック（サブプロセス・ブロッキング I/O なし）のため
+          timeout は実施しない。
     """
     if tool_name != "Bash" or not command:
         return {"decision": "allow", "reason": "no-op: not target tool/command", "evidence_path": None, "matched_option_id": None}
