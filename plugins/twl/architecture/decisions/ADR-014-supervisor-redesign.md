@@ -158,7 +158,7 @@ ADR-013 の 3 層介入プロトコル（Auto/Confirm/Escalate）は **そのま
 **拡張点**:
 - **OB-3 の廃止**: su-observer は observed session への inject/send-keys を **許可** する（ユーザーの実行動と一致）
 - **OBS-3 の維持**: su-observer 自身が Issue の直接実装を行ってはならない（不変条件 K の supervisor 版）
-- **OBS-4 の緩和**: supervised controller session の上限を 3 → **5** に拡張（Wave 管理では 4-5 並行が実測値）
+- **OBS-4 の緩和**: supervised controller session の上限を 3 → **5** に拡張（Wave 管理では 4-5 並行が実測値）。その後 #1560 で **10** に再緩和済み（supervision.md SU-4 参照）
 - **intervention-catalog の継続使用**: 6 パターンの分類と InterventionRecord はそのまま活用
 
 ### Decision 6: Controller 操作カテゴリの更新

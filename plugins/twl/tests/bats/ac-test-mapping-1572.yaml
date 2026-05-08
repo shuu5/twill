@@ -1,0 +1,32 @@
+mappings:
+  - ac_index: 1
+    ac_text: "ADR-014 の OBS-4 記述が現行値（10）を参照している。L161 の記述に「10」または「#1560」が含まれること、旧値の「3 → 5」が更新されずに単独残存していないこと"
+    test_file: "plugins/twl/tests/bats/issue-1572-adr014-obs4-consistency.bats"
+    test_name: "ac1a: ADR-014 OBS-4 行に現行上限値「10」が含まれる"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-014-supervisor-redesign.md"
+  - ac_index: 1
+    ac_text: "ADR-014 の OBS-4 記述が現行値（10）を参照している（#1560 参照）"
+    test_file: "plugins/twl/tests/bats/issue-1572-adr014-obs4-consistency.bats"
+    test_name: "ac1b: ADR-014 OBS-4 行に「#1560」参照が含まれる（または上限値が 10 に更新済み）"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-014-supervisor-redesign.md"
+  - ac_index: 1
+    ac_text: "旧値の「3 → 5」が更新されずに単独残存していないこと"
+    test_file: "plugins/twl/tests/bats/issue-1572-adr014-obs4-consistency.bats"
+    test_name: "ac1c: ADR-014 に「3 → 5」が単独残存していない（旧値が更新済みであること）"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-014-supervisor-redesign.md"
+  - ac_index: 2
+    ac_text: "ADR-014 と supervision.md の SU-4 上限値が整合している。ADR-014 の OBS-4 セクションが supervision.md SU-4（≤10）と一致すること"
+    test_file: "plugins/twl/tests/bats/issue-1572-adr014-obs4-consistency.bats"
+    test_name: "ac2a: supervision.md の SU-4 テーブル行に上限値 10 が記載されている（前提確認）"
+    impl_files:
+      - "plugins/twl/architecture/domain/contexts/supervision.md"
+  - ac_index: 2
+    ac_text: "ADR-014 と supervision.md の SU-4 上限値が整合している"
+    test_file: "plugins/twl/tests/bats/issue-1572-adr014-obs4-consistency.bats"
+    test_name: "ac2b: ADR-014 の OBS-4 記述が supervision.md SU-4 の上限値（10）と整合している"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-014-supervisor-redesign.md"
+      - "plugins/twl/architecture/domain/contexts/supervision.md"
