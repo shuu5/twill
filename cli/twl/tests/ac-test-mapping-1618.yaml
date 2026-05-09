@@ -1,0 +1,75 @@
+mappings:
+  - ac_index: 1
+    ac_text: "cli/twl/tests/mcp_server/test_issue_1618_hook_output_e2e.bats が新規追加され、bats から実行可能であること（bats <path> で no-error 起動）"
+    test_file: "cli/twl/tests/mcp_server/test_issue_1618_hook_output_e2e.bats"
+    test_names:
+      - "ac1: test file が存在し bats から実行可能であること"
+      - "ac1: tools.py が存在すること"
+      - "ac1: _to_hook_output が tools.py に実装されていること (RED: 未実装)"
+    impl_files:
+      - "cli/twl/tests/mcp_server/test_issue_1618_hook_output_e2e.bats"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 2
+    ac_text: "PreToolUse:Bash 系 4 MCP tool（twl_validate_merge / twl_validate_commit / twl_validate_status_transition / twl_validate_issue_create）の戻り値 JSON が Claude Code 2.1.x HookOutput schema のみを含むことを bats fixture で assert（各 tool につき allow / deny / no-op の代表ケース ≥1 件）"
+    test_file: "cli/twl/tests/mcp_server/test_issue_1618_hook_output_e2e.bats"
+    test_names:
+      - "ac2: twl_validate_merge allow ケース — HookOutput schema 準拠 (RED)"
+      - "ac2: twl_validate_merge deny ケース (timeout) — HookOutput schema 準拠 (RED)"
+      - "ac2: twl_validate_commit no-op (files=[]) — HookOutput schema 準拠 (RED)"
+      - "ac2: twl_validate_commit deny ケース (timeout) — HookOutput schema 準拠 (RED)"
+      - "ac2: twl_validate_status_transition no-op — HookOutput schema 準拠 (RED)"
+      - "ac2: twl_validate_status_transition allow ケース (evidence あり) — HookOutput schema 準拠 (RED)"
+      - "ac2: twl_validate_status_transition deny ケース (evidence なし) — HookOutput schema 準拠 (RED)"
+      - "ac2: twl_validate_issue_create no-op — HookOutput schema 準拠 (RED)"
+      - "ac2: twl_validate_issue_create allow ケース — HookOutput schema 準拠 (RED)"
+      - "ac2: twl_validate_issue_create deny ケース — HookOutput schema 準拠かつ blocking (RED)"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 3
+    ac_text: "PreToolUse:Write 系 MCP tool twl_validate_deps の戻り値 JSON も Claude Code 2.1.x HookOutput schema 互換であること（または明示的に schema 外として分類されることを記録）"
+    test_file: "cli/twl/tests/mcp_server/test_issue_1618_hook_output_e2e.bats"
+    test_names:
+      - "ac3: twl_validate_deps — HookOutput schema 互換チェックまたは schema 外として記録 (RED)"
+      - "ac3: twl_validate_deps の raw 戻り値 (build_envelope) フィールド構造を記録 (RED)"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 4
+    ac_text: "bats シナリオから Claude Code 2.1.x の Zod validator 互換ロジックを呼び出す検証ハーネスが用意され、Hook JSON output validation failed エラーがゼロ件であることを確認できる（実環境の Claude Code を呼ばず、Zod schema 互換 fixture で検証する mock 戦略を採用）"
+    test_file: "cli/twl/tests/mcp_server/test_issue_1618_hook_output_e2e.bats"
+    test_names:
+      - "ac4: twl_validate_merge 全ケースで validation failed エラー 0 件 (RED)"
+      - "ac4: twl_validate_commit 全ケースで validation failed エラー 0 件 (RED)"
+      - "ac4: twl_validate_status_transition 全ケースで validation failed エラー 0 件 (RED)"
+      - "ac4: twl_validate_issue_create 全ケースで validation failed エラー 0 件 (RED)"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 5
+    ac_text: "tools.py 全件 audit: decision: \"allow\" / decision: \"deny\" リテラル（PR #1617 時点で 17 件存在）が schema 準拠後も _to_hook_output() の入力以外に残っていないこと、つまり @mcp.tool() decorator から expose される全 tool の最終出力に legacy enum が含まれないことを bats から grep + json 検証で assert"
+    test_file: "cli/twl/tests/mcp_server/test_issue_1618_hook_output_e2e.bats"
+    test_names:
+      - "ac5: tools.py の decision:allow/deny リテラルが _to_hook_output 入力のみに残ること (grep 検証) (RED)"
+      - "ac5: twl_validate_status_transition 最終出力に decision:allow/deny が含まれない (RED)"
+      - "ac5: twl_validate_issue_create 最終出力に decision:allow/deny が含まれない (RED)"
+      - "ac5: twl_validate_merge 最終出力に decision:allow/deny が含まれない (RED)"
+      - "ac5: twl_validate_commit 最終出力に decision:allow/deny が含まれない (RED)"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+
+  - ac_index: 6
+    ac_text: "cli/twl/tests/ac-test-mapping-1618.yaml が追加され、AC-1〜AC-5 の各 AC が bats test name（cli/twl/tests/mcp_server/test_issue_1618_hook_output_e2e.bats 内のテスト名）にマッピングされていること"
+    test_file: "cli/twl/tests/mcp_server/test_issue_1618_hook_output_e2e.bats"
+    test_names:
+      - "ac6: ac-test-mapping-1618.yaml が cli/twl/tests/ 直下に存在すること"
+      - "ac6: ac-test-mapping-1618.yaml に AC-1 のマッピングが含まれること"
+      - "ac6: ac-test-mapping-1618.yaml に AC-2 のマッピングが含まれること"
+      - "ac6: ac-test-mapping-1618.yaml に AC-3 のマッピングが含まれること"
+      - "ac6: ac-test-mapping-1618.yaml に AC-4 のマッピングが含まれること"
+      - "ac6: ac-test-mapping-1618.yaml に AC-5 のマッピングが含まれること"
+      - "ac6: ac-test-mapping-1618.yaml に AC-6 のマッピングが含まれること"
+      - "ac6: ac-test-mapping-1618.yaml の test_file が test_issue_1618_hook_output_e2e.bats を参照すること"
+    impl_files:
+      - "cli/twl/tests/ac-test-mapping-1618.yaml"
