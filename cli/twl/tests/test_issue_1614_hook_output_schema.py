@@ -316,6 +316,36 @@ class TestAC3BehavioralCompatibility:
         is_block = result.get("decision") == "block" or result.get("permissionDecision") == "deny"
         assert is_block, f"deny case must produce blocking signal, got: {result}"
 
+    def test_ac3_merge_failure_maps_to_block(self):
+        # AC-3: merge guard failure (ok=False) → must produce blocking signal after transformation
+        # RED: _to_hook_output doesn't exist
+        from twl.mcp_server.tools import _to_hook_output  # noqa: PLC0415
+        from twl.mcp_server.tools import twl_validate_merge_handler  # noqa: PLC0415
+
+        raw = twl_validate_merge_handler(branch="test", base="main", timeout_sec=0)
+        assert raw.get("ok") is False, "timeout_sec=0 should produce ok=False"
+        result = _to_hook_output(raw)
+        is_block = result.get("decision") == "block" or result.get("permissionDecision") == "deny"
+        assert is_block, f"merge failure must produce blocking signal, got: {result}"
+
+    def test_ac3_commit_violations_map_to_block(self, tmp_path):
+        # AC-3: commit with violations (ok=False) → must produce blocking signal
+        # RED: _to_hook_output doesn't exist
+        from twl.mcp_server.tools import _to_hook_output  # noqa: PLC0415
+        from twl.mcp_server.tools import twl_validate_commit_handler  # noqa: PLC0415
+
+        # Create a deps.yaml with a schema violation so ok=False
+        # (Actually commit handler with files=[] produces ok=True. Use timeout=0 for ok=False)
+        raw = twl_validate_commit_handler(
+            command='git commit -m "feat: test"',
+            files=[],
+            timeout_sec=0,
+        )
+        assert raw.get("ok") is False, "timeout_sec=0 should produce ok=False"
+        result = _to_hook_output(raw)
+        is_block = result.get("decision") == "block" or result.get("permissionDecision") == "deny"
+        assert is_block, f"commit failure must produce blocking signal, got: {result}"
+
 
 # ---------------------------------------------------------------------------
 # AC-4: evidence_path / matched_option_id info preserved in reason/systemMessage
@@ -362,8 +392,8 @@ class TestAC4EvidenceInfoPreserved:
         )
         result = _to_hook_output(raw)
         combined_text = (result.get("reason") or "") + (result.get("systemMessage") or "")
-        assert spec_file.name in combined_text or "evidence" in combined_text.lower(), (
-            f"evidence_path info (.spec-review-session-9999evidence.json) must be preserved "
+        assert spec_file.name in combined_text, (
+            f"evidence_path filename (.spec-review-session-9999evidence.json) must appear "
             f"in reason or systemMessage, got: {result}"
         )
 
