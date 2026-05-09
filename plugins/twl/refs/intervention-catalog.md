@@ -208,6 +208,26 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 - **実行制約**: Supervisor は実行しない。Issue 化を推奨
 - **リスク評価**: 高（影響範囲が広い。誤った修正は複数 Issue に影響する）
 
+### パターン 14: co-autopilot 失敗時の feature-dev fallback 提案（Issue #1620）
+
+- **検出条件**: 以下のいずれか 1 つが発生した場合:
+  1. **RED-only merge x1**: test only PR が merged（実装ゼロ、+N/-0 のみ）
+  2. **specialist NEEDS_WORK x3**: 同一 Issue に対し specialist が NEEDS_WORK を 3 回連続判定
+  3. **Worker chain failure x3**: Worker の chain が 3 回連続 failure（merge-gate REJECT）
+  4. **P0 緊急**: ユーザーの明示的 P0 指示
+- **情報提供内容**:
+  - trigger の種類と Issue 番号
+  - feature-dev fallback の手順（worktree 作成 → tmux window → cld 起動 → /feature-dev）
+  - Layer 2 Escalate である旨（ユーザー承認 MUST）
+- **命名規則**:
+  - tmux window: `wt-fd-<N>`（例: `wt-fd-1620`）
+  - worktree branch: `wt-fd-<N>-<short>`（例: `wt-fd-1620-fallback`）
+- **実行制約**: Supervisor は feature-dev を自律 spawn しない（SU-10）。ユーザーが手動で実行する
+  - 緊急時のみ: `SKIP_LAYER2=1 SKIP_LAYER2_REASON='<reason>'` で override 可能
+- **リスク評価**: 高（feature-dev は TDD ルール非強制、人間ドリブン実装）
+- **事後**: `record-feature-dev-fallback.sh` で InterventionRecord 保存 + doobidoo lesson 記録
+- **検知スクリプト**: `plugins/twl/skills/su-observer/scripts/feature-dev-fallback-detect.sh`
+
 ### パターン 13: Claude Code classifier permission deny 2 回以上 → 即時 STOP（W5 連携）
 
 - **Wave 実績**: Wave 5 で Layer D refined-label-gate が 6 連続 permission 拒否。classifier の判断を無視した継続が問題を拡大させた教訓

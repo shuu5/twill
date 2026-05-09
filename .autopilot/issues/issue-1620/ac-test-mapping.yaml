@@ -1,0 +1,64 @@
+mappings:
+  - ac_index: 1
+    ac_text: "4 trigger (RED-only merge x1 / specialist NEEDS_WORK x3 / Worker chain failure x3 / P0 緊急) のいずれかを検知時、observer は user に fallback を提案する（observer log に detection event + Layer 2 Escalate 記録）"
+    test_file: "plugins/twl/tests/bats/issue-1620-feature-dev-fallback.bats"
+    test_names:
+      - "ac1: feature-dev-fallback-detect.sh が scripts/ に存在する"
+      - "ac1: feature-dev-fallback-detect.sh が実行可能権限を持つ"
+      - "ac1: feature-dev-fallback-detect.sh が RED-only merge trigger を検知して Layer 2 Escalate を記録する"
+      - "ac1: feature-dev-fallback-detect.sh が specialist NEEDS_WORK x3 trigger を検知して Layer 2 Escalate を記録する"
+      - "ac1: feature-dev-fallback-detect.sh が Worker chain failure x3 trigger を検知して Layer 2 Escalate を記録する"
+      - "ac1: feature-dev-fallback-detect.sh が P0 緊急 trigger を検知して Layer 2 Escalate を記録する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/feature-dev-fallback-detect.sh"
+    # impl_files 推定: 新規作成対象ファイル（現在不在）
+
+  - ac_index: 2
+    ac_text: "observer は feature-dev fallback を自律 spawn してはならない (SU-3 連鎖、Layer 2 Escalate 経由必須) → spawn-controller.sh が feature-dev skill spawn を拒否 / SKIP_LAYER2=1 override のみ許可"
+    test_file: "plugins/twl/tests/bats/issue-1620-feature-dev-fallback.bats"
+    test_names:
+      - "ac2: spawn-controller.sh が feature-dev skill を拒否して非 0 で終了する"
+      - "ac2: SKIP_LAYER2=1 設定時は spawn-controller.sh が feature-dev を許可する"
+      - "ac2: spawn-controller.sh が feature-dev 拒否時に SKIP_LAYER2=1 を hint として出力する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+    # 注: feature-dev 拒否は L89 VALID_SKILLS 未登録で現状も達成済みだが、
+    #     SU-3/Layer 2 拒否メッセージおよび SKIP_LAYER2=1 override ロジックは未実装
+    # WARN: spawn-controller.sh に [[ "${BASH_SOURCE[0]}" == "${0}" ]] guard が不在。
+    #       source せず bash サブシェル直接実行で回避。実装者は source guard 追加を検討すること。
+
+  - ac_index: 3
+    ac_text: "spawn 命名規則: tmux window = wt-fd-<N>、worktree branch = wt-fd-<N>-<short> → intervention-catalog.md に記載"
+    test_file: "plugins/twl/tests/bats/issue-1620-feature-dev-fallback.bats"
+    test_names:
+      - "ac3: intervention-catalog.md に feature-dev fallback セクションが存在する"
+      - "ac3: intervention-catalog.md に tmux window 命名規則 wt-fd-<N> が記載されている"
+      - "ac3: intervention-catalog.md に worktree branch 命名規則 wt-fd-<N>-<short> が記載されている"
+    impl_files:
+      - "plugins/twl/refs/intervention-catalog.md"
+
+  - ac_index: 4
+    ac_text: "spawn prompt template が (a) refined Issue body + (b) co-autopilot 失敗経緯 + (c) AC + (d) DeltaSpec link を必ず含む → template ファイル存在 + 必須 4 sections check"
+    test_file: "plugins/twl/tests/bats/issue-1620-feature-dev-fallback.bats"
+    test_names:
+      - "ac4: feature-dev-fallback-prompt.md が templates/ に存在する"
+      - "ac4: template に section (a) refined Issue body が含まれる"
+      - "ac4: template に section (b) co-autopilot 失敗経緯が含まれる"
+      - "ac4: template に section (c) AC が含まれる"
+      - "ac4: template に section (d) DeltaSpec link が含まれる"
+    impl_files:
+      - "plugins/twl/skills/su-observer/templates/feature-dev-fallback-prompt.md"
+    # impl_files 推定: 新規作成対象ファイル（現在不在）
+
+  - ac_index: 5
+    ac_text: "完了後 .observation/interventions/<ts>-feature-dev-fallback.json に InterventionRecord、doobidoo に feature-dev-fallback tag で lesson 保存"
+    test_file: "plugins/twl/tests/bats/issue-1620-feature-dev-fallback.bats"
+    test_names:
+      - "ac5: record-feature-dev-fallback.sh が scripts/ に存在する"
+      - "ac5: record-feature-dev-fallback.sh が実行可能権限を持つ"
+      - "ac5: record-feature-dev-fallback.sh が .observation/interventions/ 配下に JSON を生成する"
+      - "ac5: 生成された InterventionRecord JSON が必須フィールドを含む"
+      - "ac5: record-feature-dev-fallback.sh が feature-dev-fallback tag での doobidoo lesson 保存コマンドを含む"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/record-feature-dev-fallback.sh"
+    # impl_files 推定: 新規作成対象ファイル（現在不在）
