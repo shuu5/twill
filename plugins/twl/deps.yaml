@@ -2849,6 +2849,11 @@ scripts:
     path: scripts/hooks/pre-bash-refined-status-gate.sh
     description: "PreToolUse hook: Status field (Refined/In Progress option ID) への gh project item-edit 直接実行を evidence なし時に deny（ADR-024 Layer D enforcement、#1557 bypass #1 閉鎖）"
 
+  pre-bash-merge-gate-block:
+    type: script
+    path: scripts/hooks/pre-bash-merge-gate-block.sh
+    description: "PreToolUse hook: merge-gate FAIL 状態で gh pr merge / auto-merge.sh を block (Issue #1626 AC3): merge-gate.json status=FAIL 時に permissionDecision=deny。TWL_MERGE_GATE_OVERRIDE プレフィックス付き command で audit log 記録 + 通過。merge-gate.json 不在は graceful passthrough"
+
   supervisor-heartbeat:
     type: script
     path: scripts/hooks/supervisor-heartbeat.sh
@@ -2941,17 +2946,17 @@ scripts:
   merge-gate-check-red-only:
     type: script
     path: scripts/merge-gate-check-red-only.sh
-    description: "RED-only PR 検出（merge-gate）: PR diff がテストファイルのみで実装ファイルなしの場合に REJECT して exit 1（Issue #1476）"
+    description: "RED-only PR 検出（merge-gate）: PR diff がテストファイルのみで実装ファイルなしの場合に REJECT して exit 1（Issue #1476）。Issue #1626 AC4: git diff 失敗時 gh pr view --json files fallback + 双方失敗で fail-closed REJECT（silent PASS 排除）。AC2: REJECT path で red-only label PR の follow-up Issue を idempotent に自動起票"
 
   merge-gate-check-merge-override-block:
     type: script
     path: scripts/merge-gate-check-merge-override-block.sh
-    description: "Pilot 手動 merge bypass の block (Issue #1613 不変条件 R): merge-gate.json が FAIL 状態で gh pr merge を block。TWL_MERGE_GATE_OVERRIDE 設定時のみ通過し audit log に記録"
+    description: "Pilot 手動 merge bypass の block (Issue #1613 不変条件 R): merge-gate.json が FAIL 状態で gh pr merge を block。TWL_MERGE_GATE_OVERRIDE 設定時のみ通過し audit log に記録。Issue #1626 で pre-bash-merge-gate-block.sh hook が PreToolUse 経由で同等機能を実装したため CLI 専用 fallback として残置"
 
   red-only-followup-create:
     type: script
     path: scripts/red-only-followup-create.sh
-    description: "RED-only PR merge 後 follow-up Issue 自動起票 (Issue #1613 AC3): merge-gate REJECT + red-only label 付き PR で gh issue create --draft を実行し test 滞留を防止"
+    description: "RED-only PR merge 後 follow-up Issue 自動起票 (Issue #1613 AC3): merge-gate REJECT + red-only label 付き PR で gh issue create --draft を実行し test 滞留を防止。Issue #1626 AC1.4: body template に '<!-- follow-up-for: PR #N -->' marker を含み、worker-red-only-detector の AND 条件検索で利用される"
 
   issue-create-refined:
     type: script
