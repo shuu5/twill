@@ -75,17 +75,25 @@ if [[ "$has_impl_file" == "false" ]]; then
   if [[ -n "$_pr_number" && "$_has_red_only_label" == "true" ]]; then
     # follow-up Issue 存在チェック（idempotent guard）
     # ローカルフィルタ方式（HTML コメントは GitHub search のデフォルト検索対象外のため）
+    # --limit 200: gh issue list のデフォルトは 30 件。30 件超で false absence を防ぐ
     _marker="<!-- follow-up-for: PR #${_pr_number} -->"
-    _existing=$(gh issue list --state all --json number,body 2>/dev/null \
-      | jq --arg m "$_marker" \
-          '[.[] | select(.body != null and (.body | contains($m)))] | length' 2>/dev/null || echo "0")
+    _issues_json=$(gh issue list --state all --limit 200 --json number,body 2>/dev/null || echo "")
+    if [[ -n "$_issues_json" ]]; then
+      _existing=$(printf '%s' "$_issues_json" \
+        | jq --arg m "$_marker" \
+            '[.[] | select(.body != null and (.body | contains($m)))] | length' 2>/dev/null || echo "")
+    else
+      _existing=""
+    fi
 
-    if [[ "${_existing:-0}" -eq 0 ]]; then
+    # _existing が空 (gh / jq 失敗) または 0 → 起票試行（idempotent: 失敗時は warn のみ）
+    if [[ -z "$_existing" || "${_existing:-0}" -eq 0 ]]; then
       _script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+      # follow-up-create の出力を audit trail として stderr に集約
       bash "${_script_dir}/red-only-followup-create.sh" \
         --pr-number "$_pr_number" \
         --merge-gate-result REJECTED \
-        --labels "red-only-followup" >&2 2>&1 || \
+        --labels "red-only-followup" >&2 || \
         echo "WARN: follow-up Issue 起票失敗（手動起票が必要）" >&2
     else
       echo "INFO: follow-up Issue 起票済み（idempotent skip）" >&2

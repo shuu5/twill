@@ -192,3 +192,36 @@ _make_merge_gate_json() {
   assert_success
   [ -z "$output" ]
 }
+
+# ===========================================================================
+# AC3.7-i: TWL_MERGE_GATE_OVERRIDE strict regex security test
+#   echo TWL_MERGE_GATE_OVERRIDE='r' gh pr merge ... の bypass 試行を block する
+# ===========================================================================
+
+@test "ac3.7i: echo TWL_MERGE_GATE_OVERRIDE=... による bypass 試行 → deny (strict regex)" {
+  local hook="${HOOKS_DIR}/pre-bash-merge-gate-block.sh"
+  [ -f "$hook" ]
+
+  _make_merge_gate_json "FAIL"
+  # `echo` は env var prefix でないため strict regex で false → override 不認定 → deny
+  local payload
+  payload=$(_make_payload "echo TWL_MERGE_GATE_OVERRIDE='bypass' && gh pr merge 123 --squash")
+
+  run bash "$hook" <<< "$payload"
+  assert_success
+  assert_output --partial '"permissionDecision":"deny"'
+}
+
+@test "ac3.7j: 複数 env var prefix chain (FOO=x BAR=y TWL_MERGE_GATE_OVERRIDE=z) → 通過" {
+  local hook="${HOOKS_DIR}/pre-bash-merge-gate-block.sh"
+  [ -f "$hook" ]
+
+  _make_merge_gate_json "FAIL"
+  # 複数 env var を chain した場合も strict regex で正常認識
+  local payload
+  payload=$(_make_payload "FOO=x BAR='val' TWL_MERGE_GATE_OVERRIDE='multi-env' gh pr merge 123 --squash")
+
+  run bash "$hook" <<< "$payload"
+  assert_success
+  refute_output --partial '"permissionDecision":"deny"'
+}

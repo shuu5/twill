@@ -51,12 +51,18 @@ log_event() {
 }
 
 # autopilot dir 解決:
-#   1. AUTOPILOT_DIR env (Worker session)
-#   2. <git-common-dir>/../main/.autopilot (Pilot session、main worktree の autopilot を参照)
-#   3. .autopilot (CWD 相対デフォルト)
+#   1. AUTOPILOT_DIR env (Worker session、bats common_setup で export される変数名)
+#   2. AUTOPILOT_DIR_ENV env (merge-gate-check-merge-override-block.sh と同一の既存変数名互換)
+#   3. <git-common-dir>/../main/.autopilot (Pilot session、main worktree の autopilot を参照)
+#   4. AUTOPILOT_DIR_DEFAULT (merge-gate-check-merge-override-block.sh と同一)
+#   5. .autopilot (CWD 相対デフォルト)
 _resolve_autopilot_dir() {
   if [[ -n "${AUTOPILOT_DIR:-}" ]]; then
     echo "$AUTOPILOT_DIR"
+    return
+  fi
+  if [[ -n "${AUTOPILOT_DIR_ENV:-}" ]]; then
+    echo "$AUTOPILOT_DIR_ENV"
     return
   fi
   local common_dir
@@ -65,7 +71,7 @@ _resolve_autopilot_dir() {
     echo "${common_dir}/../main/.autopilot"
     return
   fi
-  echo ".autopilot"
+  echo "${AUTOPILOT_DIR_DEFAULT:-.autopilot}"
 }
 
 AUTOPILOT_DIR_RESOLVED=$(_resolve_autopilot_dir)
@@ -93,8 +99,11 @@ if [[ "$mg_status" != "FAIL" ]]; then
   exit 0
 fi
 
-# (a) TWL_MERGE_GATE_OVERRIDE が command 文字列に含まれる → 通過 + audit log
-if printf '%s' "$CMD" | grep -qE '(^|[[:space:]])TWL_MERGE_GATE_OVERRIDE='; then
+# (a) TWL_MERGE_GATE_OVERRIDE が command の env var prefix chain に含まれる → 通過 + audit log
+# strict regex: command 先頭から、env var prefix (KEY=VALUE / KEY='...' / KEY="...") を 0 個以上経由した
+# 直後に TWL_MERGE_GATE_OVERRIDE= がある場合のみマッチ。
+# false positive 防止: `echo TWL_MERGE_GATE_OVERRIDE=...` のような quoted argument は match しない
+if printf '%s' "$CMD" | grep -qE "^([[:space:]]*[A-Za-z_][A-Za-z0-9_]*=([^[:space:]]+|'[^']*'|\"[^\"]*\")[[:space:]]+)*TWL_MERGE_GATE_OVERRIDE="; then
   REASON=$(printf '%s' "$CMD" | grep -oP "TWL_MERGE_GATE_OVERRIDE='[^']+'" | head -1 | sed "s/TWL_MERGE_GATE_OVERRIDE='//;s/'$//" 2>/dev/null \
     || printf '%s' "$CMD" | grep -oP 'TWL_MERGE_GATE_OVERRIDE="[^"]+"' | head -1 | sed 's/TWL_MERGE_GATE_OVERRIDE="//;s/"$//' 2>/dev/null \
     || echo "unspecified")

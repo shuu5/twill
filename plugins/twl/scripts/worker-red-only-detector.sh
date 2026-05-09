@@ -68,20 +68,24 @@ _is_test_file() {
 #   <!-- follow-up-for: PR #${pr_num} --> marker を body に含む Issue を検索する。
 #   GitHub search のデフォルトでは HTML コメントが index されないため、
 #   gh issue list の結果を jq でローカルフィルタする。
-# 返値: 0 = follow-up 存在, 1 = 不在, 2 = gh 失敗 (graceful skip)
+# 返値: 0 = follow-up 存在, 1 = 不在, 2 = gh / jq 失敗 (graceful skip)
 _check_followup_issue() {
   local pr_num="$1"
   [[ -z "$pr_num" ]] && return 2
   local marker="<!-- follow-up-for: PR #${pr_num} -->"
   local issues_json
-  if ! issues_json=$(gh issue list --state all --json number,body 2>/dev/null); then
+  # --limit 200: gh issue list のデフォルトは 30 件。30 件超で false absence を防ぐ
+  if ! issues_json=$(gh issue list --state all --limit 200 --json number,body 2>/dev/null); then
     return 2
   fi
   local count
-  count=$(printf '%s' "$issues_json" \
-    | jq --arg m "$marker" \
-        '[.[] | select(.body != null and (.body | contains($m)))] | length' 2>/dev/null \
-    || echo "0")
+  # jq 失敗 (非 JSON 入力 / rate limit text 返却 等) → graceful skip
+  if ! count=$(printf '%s' "$issues_json" \
+      | jq --arg m "$marker" \
+          '[.[] | select(.body != null and (.body | contains($m)))] | length' 2>/dev/null); then
+    return 2
+  fi
+  [[ -z "$count" ]] && return 2
   if [[ "${count:-0}" -gt 0 ]]; then
     return 0
   fi
