@@ -1,0 +1,53 @@
+mappings:
+  - ac_index: 1
+    ac_text: "mid-session disconnect 検出の仕組みが存在すること: wait_for_mcp_ready.sh が SessionStart 以外でも呼び出し可能な設計になっていること、または twl mcp doctor --probe が失敗した場合に自動で再起動を試みる --auto-restart オプションが存在すること"
+    test_file: "plugins/twl/tests/bats/issue-1612-mcp-mid-session-disconnect.bats"
+    test_names:
+      - "ac1: wait_for_mcp_ready.sh exists (prerequisite)"
+      - "ac1: wait_for_mcp_ready.sh supports mid-session mode or standalone invocation"
+      - "ac1: wait_for_mcp_ready.sh is not restricted to SessionStart-only by its shebang comment"
+      - "ac1: doctor.py has --auto-restart option for mid-session recovery"
+      - "ac1: doctor.py --auto-restart triggers lifecycle restart on probe failure"
+    impl_files:
+      - "plugins/twl/scripts/wait_for_mcp_ready.sh"
+      - "cli/twl/src/twl/mcp_server/doctor.py"
+
+  - ac_index: 2
+    ac_text: "`twl mcp restart` の実行後、回復のための明確なガイダンスが提供されること: restart 後に「Restart your Claude Code session to reconnect.」メッセージが出力されること（既存）、または session 再起動不要な recovery mechanism が実装されること"
+    test_file: "plugins/twl/tests/bats/issue-1612-mcp-mid-session-disconnect.bats"
+    test_names:
+      - "ac2: lifecycle.py emits restart guidance after mcp restart (existing, should pass)"
+      - "ac2: lifecycle.py restart guidance references mid-session disconnect scenario"
+      - "ac2: mcp-restart-smoke.yml includes mid-session disconnect scenario test"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+      - ".github/workflows/mcp-restart-smoke.yml"
+
+  - ac_index: 3
+    ac_text: "MCP server プロセスの permanence 保証（ウォッチドッグまたは supervisord 相当）: MCP server が死んだ場合に自動再起動する仕組みが存在すること、または cld-spawn が起動する MCP server の process group 管理が改善されること"
+    test_file: "plugins/twl/tests/bats/issue-1612-mcp-mid-session-disconnect.bats"
+    test_names:
+      - "ac3: mcp watchdog script or equivalent exists"
+      - "ac3: cld-spawn MCP server process group is managed for mid-session stability"
+      - "ac3: lifecycle.py restart uses process group isolation to prevent mid-session death"
+      - "ac3: scenario-A: mcp watchdog daemonizes and auto-restarts on process death (skip-by-default)"
+    impl_files:
+      - "plugins/session/scripts/cld-spawn"
+      - "cli/twl/src/twl/mcp_server/lifecycle.py"
+    # impl_files 補完メモ:
+    # watchdog スクリプトは現時点で未存在。実装時に以下のいずれかが作成される想定:
+    #   - plugins/twl/scripts/mcp-watchdog.sh
+    #   - plugins/session/scripts/mcp-watchdog.sh
+    # 作成後は impl_files に追加すること
+
+  - ac_index: 4
+    ac_text: "bats テスト追加（本 Issue の mid-session シナリオをカバー）: plugins/twl/tests/bats/issue-1612-mcp-mid-session-disconnect.bats が存在すること、mid-session disconnect のシナリオをカバーするテストが含まれること"
+    test_file: "plugins/twl/tests/bats/issue-1612-mcp-mid-session-disconnect.bats"
+    test_names:
+      - "ac4: issue-1612-mcp-mid-session-disconnect.bats exists in plugins/twl/tests/bats/"
+      - "ac4: bats file contains AC1 mid-session detection tests"
+      - "ac4: bats file contains AC2 restart guidance tests"
+      - "ac4: bats file contains AC3 watchdog / permanence tests"
+      - "ac4: bats file includes skip-by-default dynamic scenario"
+    impl_files:
+      - "plugins/twl/tests/bats/issue-1612-mcp-mid-session-disconnect.bats"
