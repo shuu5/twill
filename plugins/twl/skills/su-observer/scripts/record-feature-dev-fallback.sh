@@ -34,6 +34,28 @@ if [[ -z "$ISSUE_NUM" ]]; then
   exit 2
 fi
 
+# 入力バリデーション（baseline-bash.md §11 準拠）
+if [[ ! "$ISSUE_NUM" =~ ^[1-9][0-9]*$ ]]; then
+  echo "Error: --issue の値は正整数である必要があります: ${ISSUE_NUM}" >&2
+  exit 2
+fi
+
+VALID_TRIGGERS=(red-only-merge specialist-needs-work worker-chain-failure p0-urgent manual manual-override)
+TRIGGER_VALID=false
+for t in "${VALID_TRIGGERS[@]}"; do
+  [[ "$TRIGGER" == "$t" ]] && TRIGGER_VALID=true && break
+done
+if [[ "$TRIGGER_VALID" == "false" ]]; then
+  echo "Error: invalid trigger '${TRIGGER}'. Valid: ${VALID_TRIGGERS[*]}" >&2
+  exit 2
+fi
+
+# OUTPUT_DIR パストラバーサル防止（'..' を拒否）
+if [[ "$OUTPUT_DIR" == *".."* ]]; then
+  echo "Error: OUTPUT_DIR に '..' を含めることはできません: ${OUTPUT_DIR}" >&2
+  exit 2
+fi
+
 mkdir -p "$OUTPUT_DIR"
 TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
 RECORD_FILE="${OUTPUT_DIR}/${TIMESTAMP}-feature-dev-fallback.json"

@@ -132,12 +132,20 @@ if [[ "$SKILL_FOUND" == "false" ]]; then
         echo "[spawn-controller] WARN: SKIP_LAYER2=1 — SKIP_LAYER2_REASON 未設定（設定推奨）" >&2
       fi
       echo "[spawn-controller] WARN: SKIP_LAYER2=1 — feature-dev fallback spawn を許可（SU-10 bypass、理由: ${SKIP_LAYER2_REASON:-未設定}）" >&2
+      # SKIP_LAYER2=1 bypass を intervention-log に記録（SKIP_PARALLEL_CHECK=1 と同等）
+      _layer2_reason="${SKIP_LAYER2_REASON:-未設定}"
+      # 改行・CR を除去（ログインジェクション防止）
+      _layer2_reason="${_layer2_reason//$'\n'/ }"
+      _layer2_reason="${_layer2_reason//$'\r'/ }"
+      echo "[spawn-controller] SKIP_LAYER2=1 bypass: SU-10 override, reason=${_layer2_reason}, skill=feature-dev" >> "${SUPERVISOR_DIR:-.supervisor}/intervention-log.md" 2>/dev/null || true
       # feature-dev は人間ドリブン実装のため、cld-spawn は呼ばず手順を出力して exit 0
       # ユーザーが手動で cld セッションを起動し /feature-dev を実行する
       SCRIPT_DIR_FD="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
       DETECT_SCRIPT_FD="${SCRIPT_DIR_FD}/feature-dev-fallback-detect.sh"
+      # CHAIN_ISSUE は L166 以降で初期化されるため、ここでは環境変数または空文字を使う
+      _fd_issue="${CHAIN_ISSUE:-}"
       if [[ -x "$DETECT_SCRIPT_FD" ]]; then
-        bash "$DETECT_SCRIPT_FD" --trigger "manual-override" --issue "${CHAIN_ISSUE:-unknown}" 2>/dev/null || true
+        bash "$DETECT_SCRIPT_FD" --trigger "manual-override" ${_fd_issue:+--issue "$_fd_issue"} 2>/dev/null || true
       else
         echo "[spawn-controller] feature-dev fallback: ユーザーが手動で cld セッション → /feature-dev を実行してください" >&2
       fi

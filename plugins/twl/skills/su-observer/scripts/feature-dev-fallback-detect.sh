@@ -51,6 +51,18 @@ if [[ "$TRIGGER_FOUND" == "false" ]]; then
   exit 2
 fi
 
+# COUNT は正整数のみ許可（JSON インジェクション防止）
+if [[ ! "$COUNT" =~ ^[0-9]+$ ]]; then
+  echo "Error: --count は非負整数である必要があります: ${COUNT}" >&2
+  exit 2
+fi
+
+# LOG_DIR パストラバーサル防止（'..' を拒否）
+if [[ "$LOG_DIR" == *".."* ]]; then
+  echo "Error: --log-dir に '..' を含めることはできません: ${LOG_DIR}" >&2
+  exit 2
+fi
+
 TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
 
 # Layer 2 Escalate 記録（--log-dir に記録）
