@@ -2943,6 +2943,16 @@ scripts:
     path: scripts/merge-gate-check-red-only.sh
     description: "RED-only PR 検出（merge-gate）: PR diff がテストファイルのみで実装ファイルなしの場合に REJECT して exit 1（Issue #1476）"
 
+  merge-gate-check-merge-override-block:
+    type: script
+    path: scripts/merge-gate-check-merge-override-block.sh
+    description: "Pilot 手動 merge bypass の block (Issue #1613 不変条件 R): merge-gate.json が FAIL 状態で gh pr merge を block。TWL_MERGE_GATE_OVERRIDE 設定時のみ通過し audit log に記録"
+
+  red-only-followup-create:
+    type: script
+    path: scripts/red-only-followup-create.sh
+    description: "RED-only PR merge 後 follow-up Issue 自動起票 (Issue #1613 AC3): merge-gate REJECT + red-only label 付き PR で gh issue create --draft を実行し test 滞留を防止"
+
   issue-create-refined:
     type: script
     path: scripts/issue-create-refined.sh

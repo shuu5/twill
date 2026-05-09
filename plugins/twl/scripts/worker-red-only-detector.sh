@@ -29,12 +29,11 @@ if [[ -z "$PR_JSON" ]]; then
   exit 1
 fi
 
-# red-only ラベルチェック（AC5: False-positive 抑止）
+# red-only ラベルチェック（Issue #1613: SKIP path 廃止 → WARNING 発行に変更）
+# 旧仕様: red-only label 付き PR は SKIP exit 0 で検出を pass-through していたが、
+# PR #1608 で「label 付与 + 手動 merge」による content-REJECT bypass が発生したため、
+# label が付いていても WARNING を発行し follow-up Issue の存在を verify する責務を残す。
 has_red_only_label=$(echo "$PR_JSON" | jq -r '[.labels[]?.name] | map(select(. == "red-only")) | length > 0')
-if [[ "$has_red_only_label" == "true" ]]; then
-  echo "SKIP: red-only ラベル付き PR のため検出をスキップします"
-  exit 0
-fi
 
 # ファイルリスト取得
 mapfile -t FILE_PATHS < <(echo "$PR_JSON" | jq -r '.files[]?.path // empty')
@@ -70,6 +69,14 @@ for file in "${FILE_PATHS[@]}"; do
 done
 
 if [[ "$has_impl_file" == "false" ]]; then
+  if [[ "$has_red_only_label" == "true" ]]; then
+    # Issue #1613 AC2: red-only label 付き RED-only PR は WARNING に降格し、
+    # follow-up Issue（実装 PR）の存在 verify を要求する。
+    echo "WARNING: RED-only PR を検出しました（red-only label 付き、confidence: 85）"
+    echo "変更ファイルに実装ファイルが含まれていません。"
+    echo "follow-up Issue（GREEN 実装 PR）の存在を verify してください — 不在なら scripts/red-only-followup-create.sh で起票。"
+    exit 0
+  fi
   echo "CRITICAL: RED-only PR を検出しました（confidence: 85）"
   echo "変更ファイルに実装ファイルが含まれていません。"
   exit 0
