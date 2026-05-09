@@ -55,9 +55,9 @@ teardown() {
 
   # merge-gate.json FAIL 状態を模擬
   local mg_json
-  mg_json="${SANDBOX}/.autopilot/checkpoints/merge-gate.md"
+  mg_json="${SANDBOX}/.autopilot/checkpoints/merge-gate.json"
   mkdir -p "$(dirname "$mg_json")"
-  printf 'status: FAIL\nresult: REJECTED\n' > "$mg_json"
+  printf '{"status":"FAIL","result":"REJECTED"}\n' > "$mg_json"
 
   run bash "$script" --autopilot-dir "${SANDBOX}/.autopilot"
   assert_failure
@@ -69,9 +69,9 @@ teardown() {
   local script="${SCRIPTS_DIR}/merge-gate-check-merge-override-block.sh"
   [ -f "$script" ]
 
-  local mg_json="${SANDBOX}/.autopilot/checkpoints/merge-gate.md"
+  local mg_json="${SANDBOX}/.autopilot/checkpoints/merge-gate.json"
   mkdir -p "$(dirname "$mg_json")"
-  printf 'status: FAIL\nresult: REJECTED\n' > "$mg_json"
+  printf '{"status":"FAIL","result":"REJECTED"}\n' > "$mg_json"
 
   run bash -c "TWL_MERGE_GATE_OVERRIDE='emergency-fix' bash '$script' --autopilot-dir '${SANDBOX}/.autopilot'"
   assert_success
@@ -122,6 +122,18 @@ teardown() {
   # SKIP 条件を定義する行（Step 2 見出し + skip/スキップ記述）が消えていること
   run grep -qE 'Step 2.*SKIP|検出をスキップ|PASS として扱う' "$md"
   assert_failure
+}
+
+@test "ac2d: worker-red-only-detector.sh は red-only ラベル付き PR で follow-up Issue 確認を要求する" {
+  # AC: label 付き PR でも WARNING を発行し、follow-up Issue の存在を verify する
+  # RED: 現在 red-only ラベルで SKIP するため follow-up verify の出力が含まれない
+  local script="${SCRIPTS_DIR}/worker-red-only-detector.sh"
+  [ -f "$script" ]
+
+  local pr_json='{"labels":[{"name":"red-only"}],"files":[{"path":"plugins/twl/tests/bats/ac-scaffold-tests-1613.bats"}]}'
+  run bash "$script" --pr-json "$pr_json"
+  # follow-up Issue の存在確認を要求するメッセージが含まれること
+  assert_output --partial "follow-up"
 }
 
 # ===========================================================================
@@ -187,46 +199,22 @@ teardown() {
 # RED: 整合チェックが未実装のため LIGHT-ERROR が出力されない → fail
 # ===========================================================================
 
-@test "ac4a: chain-runner.sh step_pr_comment_final は step PASS + overall REJECTED の矛盾を検出する" {
+@test "ac4a: chain-runner.sh step_pr_comment_final 関数が LIGHT-ERROR ロジックを含む（静的確認）" {
   # AC: Merge Gate Final comment 内の step status と overall result の整合チェックを追加
-  # RED: 整合チェック未実装のため LIGHT-ERROR が含まれない → assert_output が fail
+  # RED: LIGHT-ERROR ロジックが未実装のため grep fail
+  # NOTE: chain-runner.sh に BASH_SOURCE guard が不在のため source での関数呼び出しは
+  #       main が実行されてサブシェルが終了するリスクがある。静的 grep で検証する。
   local script="${SCRIPTS_DIR}/chain-runner.sh"
   [ -f "$script" ]
 
-  # source guard チェック: chain-runner.sh に BASH_SOURCE guard がなければ source 時に
-  # main ロジックが実行されるリスクあり。grep で関数のみ確認する。
+  # step_pr_comment_final 関数が存在すること
   run grep -qF 'step_pr_comment_final()' "$script"
   assert_success
 
-  # 矛盾ケース: 全 step PASS だが REJECTED が渡された場合に LIGHT-ERROR が出力されること
-  # checkpoint モック: 全 step PASS を返す python3 スタブを作成
-  local python3_stub="${STUB_BIN}/python3"
-  cat > "$python3_stub" <<'STUB'
-#!/usr/bin/env bash
-# python3 stub: checkpoint read の代替
-args="$*"
-if echo "$args" | grep -qF 'ac-verify'; then
-  echo "PASS"
-elif echo "$args" | grep -qF 'pr-test'; then
-  echo "PASS"
-elif echo "$args" | grep -qF 'e2e-screening'; then
-  echo "PASS"
-elif echo "$args" | grep -qF 'merge-gate'; then
-  echo "PASS"
-else
-  echo "UNKNOWN"
-fi
-STUB
-  chmod +x "$python3_stub"
-
-  stub_command "gh" 'echo "pr-comment-posted"'
-
-  run bash -c "
-    source '${SCRIPTS_DIR}/chain-runner.sh'
-    step_pr_comment_final 'REJECTED'
-  " 2>&1
-  # LIGHT-ERROR が出力されること
-  assert_output --partial "LIGHT-ERROR"
+  # step_pr_comment_final スコープ内に LIGHT-ERROR ロジックが存在すること
+  # RED: 未実装のため awk スコープ grep fail
+  run bash -c "awk '/^step_pr_comment_final\(\)/,/^}/' '${script}' | grep -qF 'LIGHT-ERROR'"
+  assert_success
 }
 
 @test "ac4b: chain-runner.sh step_pr_comment_final は MERGED 時に LIGHT-ERROR を出力しない" {
