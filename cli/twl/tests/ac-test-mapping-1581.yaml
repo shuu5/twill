@@ -1,0 +1,141 @@
+mappings:
+  - ac_index: 1
+    ac_text: "twl_validate_deps_handler(plugin_root) の冒頭で新規 private helper _resolve_plugin_root(input_path: Path, repo_root: Path | None = None) -> Path | None を呼び出す。この helper は _load_plugin_ctx とは独立した新規関数であり、_load_plugin_ctx 自体は変更しない"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC1ResolvePluginRootExists::test_ac1_resolve_plugin_root_function_exists"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 1
+    ac_text: "twl_validate_deps_handler の実装内で _resolve_plugin_root を呼び出すこと"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC1ResolvePluginRootExists::test_ac1_resolve_plugin_root_called_in_handler"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 2
+    ac_text: "_resolve_plugin_root は入力が file の場合 p.parent から始めて、deps.yaml を持つ最初の dir に到達するまで親方向に traverse する"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC2ResolvePluginRootFileInput::test_ac2_file_input_resolves_to_parent_dir"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 2
+    ac_text: "サブディレクトリのファイル入力時、上方向に deps.yaml を探索して plugin root を返す"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC2ResolvePluginRootFileInput::test_ac2_file_in_subdir_traverses_to_plugin_root"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 3
+    ac_text: "入力が dir かつ deps.yaml を含む: そのまま返す（既存動作と同等）"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC3DirWithDepsYaml::test_ac3_dir_with_deps_yaml_returns_same_dir"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 4
+    ac_text: "入力が dir かつ deps.yaml を含まない: 親方向 traversal で deps.yaml を探索"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC4DirWithoutDepsYaml::test_ac4_dir_without_deps_yaml_traverses_up"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 5
+    ac_text: "_load_plugin_ctx の既存 is_file() → parent ロジック（line 20-21）は残す（変更しない）"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC5LoadPluginCtxUnchanged::test_ac5_load_plugin_ctx_has_is_file_branch"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 6
+    ac_text: "_resolve_plugin_root が None を返した場合、handler は _load_plugin_ctx を呼ばずに skip envelope を early-return する"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC6SkipWhenNoneReturned::test_ac6_skip_envelope_returned_for_non_plugin_file"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 7
+    ac_text: "skip envelope: {\"ok\": true, \"skipped\": true, \"reason\": \"non-plugin-file\", \"input\": <input>, \"exit_code\": 0}"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC7SkipEnvelopeStructure::test_ac7_skip_envelope_has_required_fields"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 8
+    ac_text: "skip 時は ValueError を raise せず、stderr/log に \"is not a directory\" / \"Failed to load plugin context\" を出力しない"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC8NoErrorOnSkip::test_ac8_no_value_error_on_skip"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 8
+    ac_text: "subprocess 経由で呼び出した際も stderr にエラーメッセージを出力しない"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC8NoErrorOnSkip::test_ac8_no_error_message_in_subprocess_stderr"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 9
+    ac_text: "以下のケースで skip されること（AC12: /tmp 外部ファイル, AC13: repo 内 plugin 外ファイル — テストは AC12/AC13 にて実装）"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: null
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+    # AC9 は AC12/AC13 のポインタ AC。独立したテストケースなし。AC12/AC13 mapping を参照
+  - ac_index: 10
+    ac_text: "test_validate_deps_handler_accepts_file_path_in_plugin_root_dir: 入力 plugins/twl/SKILL.md → handler が plugins/twl/ を plugin_root として validate 実行 → validate_deps envelope 返却（skipped フィールド無 or false）"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC10AcceptFileInPluginRootDir::test_validate_deps_handler_accepts_file_path_in_plugin_root_dir"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 11
+    ac_text: "test_validate_deps_handler_accepts_file_path_in_plugin_subdir: 入力 plugins/twl/skills/co-issue/SKILL.md → 親 traversal で plugins/twl/ を plugin_root と判定 → validate 実行"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC11AcceptFileInPluginSubdir::test_validate_deps_handler_accepts_file_path_in_plugin_subdir"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 12
+    ac_text: "test_validate_deps_handler_skips_non_plugin_file_outside_repo: 入力 /tmp/foo.md → skip envelope（ok=True, skipped=True）。ValueError 非発生"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC12SkipNonPluginFileOutsideRepo::test_validate_deps_handler_skips_non_plugin_file_outside_repo"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 13
+    ac_text: "test_validate_deps_handler_skips_file_in_repo_without_deps_yaml: 入力 architecture/vision.md（plugin 外 top-level）→ skip"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC13SkipFileInRepoWithoutDepsYaml::test_validate_deps_handler_skips_file_in_repo_without_deps_yaml"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 14
+    ac_text: "test_validate_deps_handler_directory_passthrough_unchanged: 入力 plugins/twl/（dir）→ 既存動作変更なし（既存 test の non-regression）"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC14DirectoryPassthroughUnchanged::test_validate_deps_handler_directory_passthrough_unchanged"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 15
+    ac_text: "bats test は MCP サーバー起動を必要とせず、python3 -c \"from twl.mcp_server.tools import twl_validate_deps_handler; import json; print(json.dumps(twl_validate_deps_handler('FILEPATH')))\" で handler を直接呼び出す（既存 bats の python3 -c パターンに準拠）"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: null
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+    # AC15 はプロセス AC（bats テスト実装方針）。python3 -c 呼び出しパターン自体は AC16/AC17 の subprocess テストで検証済み
+  - ac_index: 16
+    ac_text: "when: file_path として plugins/twl/SKILL.md（plugin 内）を渡す → exit_code=0、stdout JSON に skipped フィールドなし（または skipped: false）、stderr に \"is not a directory\" / \"Failed to load plugin context\" を含まない"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC16PluginFileSubprocess::test_ac16_plugin_file_via_subprocess"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 17
+    ac_text: "when: file_path として一時 file /tmp/twl-test-$$.md（plugin 外）を渡す → exit_code=0、stdout JSON に skipped: true を含む、stderr に error message を含まない"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC17NonPluginTmpFileSubprocess::test_ac17_non_plugin_tmp_file_via_subprocess"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 18
+    ac_text: "twl_validate_deps_handler の docstring に「file path 入力時は _resolve_plugin_root で親 traversal して plugin_root を抽出、deps.yaml 不在時は skip envelope を返す」を明記"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC18DocstringUpdated::test_ac18_docstring_mentions_resolve_plugin_root"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 19
+    ac_text: "_load_plugin_ctx は変更しない（抽出ロジックは handler 側に閉じ込める。_load_plugin_ctx を呼ぶ他の handler への影響を排除）"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC19LoadPluginCtxNotModified::test_ac19_load_plugin_ctx_signature_unchanged"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 19
+    ac_text: "_load_plugin_ctx の実装に _resolve_plugin_root への参照がないこと（抽出ロジックは handler 側に閉じ込める）"
+    test_file: "cli/twl/tests/test_issue_1581_validate_deps_file_path.py"
+    test_name: "TestAC19LoadPluginCtxNotModified::test_ac19_load_plugin_ctx_source_unchanged"
+    impl_files:
+      - "cli/twl/src/twl/mcp_server/tools.py"
