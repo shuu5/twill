@@ -158,7 +158,7 @@ setup() {
   # RED: いずれも存在しない場合 fail
   local found=0
   # watchdog 専用スクリプトの存在確認
-  if find "${MONO_ROOT}" -name "*mcp*watchdog*" -o -name "*watchdog*mcp*" 2>/dev/null | grep -q '.'; then
+  if find "${MONO_ROOT}" \( -name "*mcp*watchdog*" -o -name "*watchdog*mcp*" \) 2>/dev/null | grep -q '.'; then
     found=1
   fi
   # または wait_for_mcp_ready.sh が watchdog mode を持つ場合
