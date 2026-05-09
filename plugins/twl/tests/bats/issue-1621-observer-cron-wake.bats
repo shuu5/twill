@@ -89,9 +89,11 @@ setup() {
   # RED: 実装前は fail する — ScheduleWakeup 行前後に /loop 前提の言及がない
   [ -f "$SKILL_MD" ]
   # ScheduleWakeup が出現する各行の前後3行に /loop または dynamic mode が存在すること
-  python3 -c "
-import sys
-with open('$SKILL_MD') as f:
+  # NOTE: SKILL_MD を os.environ 経由で受け取り、シェルインジェクションを防ぐ
+  SKILL_MD="$SKILL_MD" python3 - <<'PYEOF'
+import sys, os
+filepath = os.environ['SKILL_MD']
+with open(filepath) as f:
     lines = f.readlines()
 found_schedulewakeup = False
 for i, line in enumerate(lines):
@@ -107,14 +109,14 @@ if not found_schedulewakeup:
     sys.exit(1)
 print('ScheduleWakeup found but /loop prerequisite not mentioned within 3 lines')
 sys.exit(1)
-"
+PYEOF
 }
 
 @test "ac2: SKILL.md の mailbox poll セクションに /loop または dynamic mode の言及が存在する" {
   # AC: /loop dynamic mode 前提を明示
   # RED: 実装前は fail する — mailbox poll セクションに /loop 言及がない
   [ -f "$SKILL_MD" ]
-  awk '/mailbox poll/,/controller spawn が必要な場合/' "$SKILL_MD" | grep -qE "/loop|dynamic mode|loop 配下"
+  awk '/^### mailbox poll/,/^### controller spawn が必要な場合/' "$SKILL_MD" | grep -qE "/loop|dynamic mode|loop 配下"
 }
 
 # ===========================================================================
