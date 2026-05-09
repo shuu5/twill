@@ -1,0 +1,45 @@
+name: Bats Integration Tests 1626 (RED-only bypass closure)
+
+on:
+  push:
+    paths:
+      - 'plugins/twl/scripts/worker-red-only-detector.sh'
+      - 'plugins/twl/scripts/merge-gate-check-red-only.sh'
+      - 'plugins/twl/scripts/red-only-followup-create.sh'
+      - 'plugins/twl/scripts/merge-gate-check-merge-override-block.sh'
+      - 'plugins/twl/scripts/hooks/pre-bash-merge-gate-block.sh'
+      - 'plugins/twl/agents/worker-red-only-detector.md'
+      - 'plugins/twl/tests/bats/int-1626-*.bats'
+      - 'plugins/twl/tests/bats/ac-scaffold-tests-1613.bats'
+  pull_request:
+    paths:
+      - 'plugins/twl/scripts/worker-red-only-detector.sh'
+      - 'plugins/twl/scripts/merge-gate-check-red-only.sh'
+      - 'plugins/twl/scripts/red-only-followup-create.sh'
+      - 'plugins/twl/scripts/merge-gate-check-merge-override-block.sh'
+      - 'plugins/twl/scripts/hooks/pre-bash-merge-gate-block.sh'
+      - 'plugins/twl/agents/worker-red-only-detector.md'
+      - 'plugins/twl/tests/bats/int-1626-*.bats'
+      - 'plugins/twl/tests/bats/ac-scaffold-tests-1613.bats'
+
+permissions: {}
+
+jobs:
+  bats-1626:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bats
+        run: |
+          git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+          sudo /tmp/bats-core/install.sh /usr/local
+          rm -rf plugins/twl/tests/lib/bats-support
+          git clone --depth 1 https://github.com/bats-core/bats-support.git plugins/twl/tests/lib/bats-support
+          rm -rf plugins/twl/tests/lib/bats-assert
+          git clone --depth 1 https://github.com/bats-core/bats-assert.git plugins/twl/tests/lib/bats-assert
+      - name: Run Issue #1626 integration tests (5 ファイル / 25 test)
+        working-directory: plugins/twl
+        run: bats tests/bats/int-1626-followup-verify-and-condition.bats tests/bats/int-1626-followup-auto-create-on-reject.bats tests/bats/int-1626-pre-bash-hook-blocks-gh-pr-merge.bats tests/bats/int-1626-layer1-fail-closed-on-fetch-failure.bats tests/bats/int-1626-warning-fix-cannot-add-red-only-label.bats
+      - name: Regression check (Issue #1613 既存 14/14 GREEN 維持)
+        working-directory: plugins/twl
+        run: bats tests/bats/ac-scaffold-tests-1613.bats

@@ -285,6 +285,43 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
+## 不変条件 S: RED-only label-based bypass の構造的閉塞 (#1626)
+
+**目的**: `red-only` ラベルの付与だけで `worker-red-only-detector` の WARNING 降格 + merge-gate 通過を実現する escape hatch を機械強制で閉塞する。Wave 90/91/92 連続 4 件の RED-only merge 事故 (PR #1608/#1616/#1617/#1623) において、不変条件 R 実装後も「label 付与 → WARNING 降格 → label 付き = 正規 RED PR とみなして merge」の構造的バイパス経路が残存していたため、follow-up Issue 存在の AND 条件 + PreToolUse hook + Layer 1 fail-closed の三層 defense-in-depth で閉塞する。
+
+**制約**:
+- `red-only` ラベル付き PR で変更ファイルが test のみの場合、`worker-red-only-detector.sh` は follow-up Issue (`<!-- follow-up-for: PR #N -->` marker 付き body を持つ Issue) の存在を **AND 条件**として検証する (MUST)
+  - follow-up 存在 → severity = **WARNING** (TDD RED phase 正規 path、merge 可)
+  - follow-up 不在 → severity = **CRITICAL 昇格** (escape hatch 閉鎖、confidence 90、merge block)
+  - gh 失敗 / PR_NUMBER 不明 → graceful skip (WARNING 維持、既存テスト互換)
+- `merge-gate-check-red-only.sh` は変更ファイルリスト取得失敗時に `gh pr view --json files` で fallback を試み、双方失敗時は **fail-closed REJECT** を返す (MUST)。silent PASS (exit 0) は禁止
+- `red-only-followup-create.sh` が生成する follow-up Issue の body には `<!-- follow-up-for: PR #N -->` marker を必ず含む (MUST)。ローカルフィルタ検索で識別可能な唯一の根拠
+- merge-gate REJECT 時かつ red-only ラベル付き PR は follow-up Issue を自動起票する (SHOULD)。idempotent: marker 存在確認で重複起票を防ぐ
+- `pre-bash-merge-gate-block.sh` PreToolUse hook が `gh pr merge` / `auto-merge.sh` 実行時に merge-gate.json status を verify する (MUST)。auto-merge.sh 経由も含む一律 block (Pilot/main session の bypass を防ぐ)
+
+**違反検知**:
+- `plugins/twl/scripts/worker-red-only-detector.sh`: follow-up 不在時に CRITICAL を出力 (severity 昇格)
+- `plugins/twl/scripts/merge-gate-check-red-only.sh`: REJECT path で `red-only-followup-create.sh` を idempotent invoke + Layer 1 fail-closed (`gh pr view` fallback)
+- `plugins/twl/scripts/hooks/pre-bash-merge-gate-block.sh`: `gh pr merge` / `auto-merge.sh` 実行時に merge-gate FAIL を検出して `permissionDecision=deny` を返す (PreToolUse hook 経由)
+- bats: `int-1626-followup-verify-and-condition.bats` (5 test) / `int-1626-followup-auto-create-on-reject.bats` (4 test) / `int-1626-pre-bash-hook-blocks-gh-pr-merge.bats` (8 test) / `int-1626-layer1-fail-closed-on-fetch-failure.bats` (5 test) / `int-1626-warning-fix-cannot-add-red-only-label.bats` (3 test)
+
+**根拠**: Issue #1626 explore-summary (`.explore/1626/summary.md`、363 行) — 不変条件 R で実装された 5 layer defense-in-depth の構造的不完全部分 (AC1/AC3 production flow 統合不在 + AC2 escape hatch + Layer 1 fail-open) を、TDD RED phase の正規利用を維持しつつ機械強制で閉塞する。lesson 28 (ADR-038): 「Worker self-discipline + SKILL prompt 警告では構造的 fix 不可、機械強制 (chain-runner + auto-merge + hook) の多層防御が必須」(Wave 90/91/92 で実証)
+
+**検証方法**: bats `int-1626-*.bats` (5 ファイル、25 test、本 Issue で追加)、`ac-scaffold-tests-1613.bats` 14/14 GREEN regression 維持
+
+**影響範囲**:
+  - `plugins/twl/scripts/worker-red-only-detector.sh` (AC1 follow-up AND 条件)
+  - `plugins/twl/scripts/merge-gate-check-red-only.sh` (AC2 followup auto-invoke + AC4 fail-closed)
+  - `plugins/twl/scripts/red-only-followup-create.sh` (AC1.4 marker 追加)
+  - `plugins/twl/scripts/hooks/pre-bash-merge-gate-block.sh` (AC3 新設 hook)
+  - `plugins/twl/agents/worker-red-only-detector.md` (AC1.5 出力スキーマ更新)
+  - `.claude/settings.json` (AC3.8 hook 登録)
+  - `plugins/twl/architecture/decisions/ADR-038-lesson-28-red-only-label-bypass-closure.md` (lesson 永続文書化)
+
+**対象外**: GitHub Web UI / `gh api graphql` 直接呼び出しの block (本 Issue scope 外、別 Issue で branch protection rule で対応)
+
+---
+
 ## SU-* との境界
 
 SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-N とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。
