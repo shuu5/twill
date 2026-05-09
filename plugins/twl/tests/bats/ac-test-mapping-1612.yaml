@@ -1,3 +1,8 @@
+# NOTE(#1612 AC乖離): PR採用AC（AC1-AC4）はexplore-summary AC草案（AC1-AC5）と意味的に異なる。
+# explore-summary AC1 → hook fallback（mcp-fallback-wrapper.sh）
+# PR AC1 → wait_for_mcp_ready.sh standalone + doctor --auto-restart
+# 実装 PR で explore-summary AC との整合を再確認すること（worker-issue-pr-alignment WARN参照）。
+# Scenario B（CI必須）テストは ac4-scenario-b として追記済み。
 mappings:
   - ac_index: 1
     ac_text: "mid-session disconnect 検出の仕組みが存在すること: wait_for_mcp_ready.sh が SessionStart 以外でも呼び出し可能な設計になっていること、または twl mcp doctor --probe が失敗した場合に自動で再起動を試みる --auto-restart オプションが存在すること"
@@ -49,5 +54,9 @@ mappings:
       - "ac4: bats file contains AC2 restart guidance tests"
       - "ac4: bats file contains AC3 watchdog / permanence tests"
       - "ac4: bats file includes skip-by-default dynamic scenario"
+      - "ac4-scenario-b: mcp-fallback-wrapper.sh exists or alternative fallback mechanism present"
+      - "ac4-scenario-b: bats file references Scenario B CI test"
     impl_files:
       - "plugins/twl/tests/bats/issue-1612-mcp-mid-session-disconnect.bats"
+    # Scenario B テスト（CI 必須）: ac4-scenario-b として追記済み
+    # explore-summary AC1（hook fallback）または PR AC1（standalone/--auto-restart）のいずれかで GREEN になる

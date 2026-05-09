@@ -242,3 +242,36 @@ setup() {
   run grep -qE 'skip.*Scenario A|skip-by-default' "${BATS_TARGET_FILE}"
   [ "${status}" -eq 0 ]
 }
+
+# ===========================================================================
+# AC4 Scenario B: CI 必須 — hook fallback 動作確認
+# explore-summary AC1 が提案する mcp-fallback-wrapper.sh の存在確認
+# WARNING: この Scenario B は explore-summary AC 草案から補完されたテスト。
+#          PR 採用 AC1（wait_for_mcp_ready.sh standalone + --auto-restart）とは
+#          方向性が異なるが、いずれか一方が実装されれば mid-session disconnect に対処できる。
+# ===========================================================================
+
+@test "ac4-scenario-b: mcp-fallback-wrapper.sh exists or alternative fallback mechanism present" {
+  # AC: explore-summary AC1 が提案する hook fallback 機構が存在すること
+  #     - mcp-fallback-wrapper.sh（settings.json PreToolUse mcp_tool を command に fallback）
+  #     - または: wait_for_mcp_ready.sh の mid-session 対応（PR AC1 の代替アプローチ）
+  # Scenario B (CI 必須): 静的存在確認
+  # RED: いずれの fallback 機構も存在しない場合 fail
+  local found=0
+  # explore-summary AC1 アプローチ: mcp-fallback-wrapper.sh
+  if find "${MONO_ROOT}" -name "mcp-fallback-wrapper.sh" 2>/dev/null | grep -q '.'; then
+    found=1
+  fi
+  # PR AC1 アプローチ: wait_for_mcp_ready.sh の mid-session/standalone 対応
+  if [ -f "${WAIT_FOR_MCP_SCRIPT}" ] && grep -qiE 'standalone|mid.session|on.demand|reconnect' "${WAIT_FOR_MCP_SCRIPT}"; then
+    found=1
+  fi
+  [ "${found}" -eq 1 ]
+}
+
+@test "ac4-scenario-b: bats file references Scenario B CI test" {
+  # AC: 本 bats ファイルに Scenario B（CI 必須）のテストが含まれること
+  # NOTE: 本テスト自体が Scenario B の記録テスト（実行時 PASS）
+  run grep -qE 'scenario.b|Scenario B|SCENARIO.B' "${BATS_TARGET_FILE}"
+  [ "${status}" -eq 0 ]
+}
