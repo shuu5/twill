@@ -1,0 +1,51 @@
+mappings:
+  - ac_index: 1
+    ac_text: "merge-gate-check-merge-override-block.sh 新設 — merge-gate.json が FAIL 状態の PR で gh pr merge 実行を block。TWL_MERGE_GATE_OVERRIDE=<理由> env 設定時のみ通過し audit log に記録。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1613.bats"
+    test_names:
+      - "ac1a: merge-gate-check-merge-override-block.sh が存在する"
+      - "ac1b: merge-gate-check-merge-override-block.sh は merge-gate.json FAIL 状態で exit 1 を返す"
+      - "ac1c: TWL_MERGE_GATE_OVERRIDE 設定時は通過し audit log に記録される"
+    impl_files:
+      - "plugins/twl/scripts/merge-gate-check-merge-override-block.sh"
+
+  - ac_index: 2
+    ac_text: "worker-red-only-detector.sh/md の red-only label SKIP path を廃止 → label 付き PR でも WARNING を発行し、follow-up Issue の存在を verify する。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1613.bats"
+    test_names:
+      - "ac2a: worker-red-only-detector.sh は red-only ラベル付き PR でも WARNING を発行する"
+      - "ac2b: worker-red-only-detector.sh は red-only ラベル付き PR で SKIP を出力しない"
+      - "ac2c: worker-red-only-detector.md の Step 2 SKIP 条件が廃止されている"
+    impl_files:
+      - "plugins/twl/scripts/worker-red-only-detector.sh"
+      - "plugins/twl/agents/worker-red-only-detector.md"
+
+  - ac_index: 3
+    ac_text: "merge-gate REJECT + red-only label 付き PR で scripts/red-only-followup-create.sh が自動で follow-up Issue を起票（draft）する。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1613.bats"
+    test_names:
+      - "ac3a: red-only-followup-create.sh が存在する"
+      - "ac3b: red-only-followup-create.sh は gh issue create --draft を呼び出す"
+      - "ac3c: red-only-followup-create.sh は merge-gate REJECT + red-only label 条件で起動する"
+    impl_files:
+      - "plugins/twl/scripts/red-only-followup-create.sh"
+
+  - ac_index: 4
+    ac_text: "plugins/twl/scripts/pr-comment-findings.sh (またはその呼び出し先) で Merge Gate Final comment 内の step status と overall result の整合チェックを追加 — 矛盾検出時に LIGHT-ERROR を append。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1613.bats"
+    test_names:
+      - "ac4a: chain-runner.sh step_pr_comment_final は step PASS + overall REJECTED の矛盾を検出する"
+      - "ac4b: chain-runner.sh step_pr_comment_final は MERGED 時に LIGHT-ERROR を出力しない"
+    impl_files:
+      - "plugins/twl/scripts/chain-runner.sh"
+    # NOTE: AC4 は pr-comment-findings.sh が chain-runner.sh の step_pr_comment_final に実装されているため
+    # chain-runner.sh を impl_files に設定。独立した pr-comment-findings.sh は現在存在しない。
+
+  - ac_index: 5
+    ac_text: "plugins/twl/refs/ref-invariants.md に「content-REJECT override 禁止」の不変条件が明文化される。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1613.bats"
+    test_names:
+      - "ac5a: ref-invariants.md に content-REJECT override 禁止の不変条件が存在する"
+      - "ac5b: ref-invariants.md の content-REJECT override 禁止条件が不変条件テーブルに掲載される"
+    impl_files:
+      - "plugins/twl/refs/ref-invariants.md"

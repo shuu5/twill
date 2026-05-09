@@ -258,6 +258,33 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
+## 不変条件 R: content-REJECT override 禁止 (#1613)
+
+**目的**: merge-gate が content レベルで REJECT を返した PR (例: RED-only / AC 未達 / specialist CRITICAL) を Pilot が手動 `gh pr merge` で bypass することを禁止する。PR #1608 (Wave 90) で `merge-gate.json` が FAIL を書いたにも関わらず Pilot が手動 merge し test 11 件 RED を main に滞留させた regression の再発防止。
+
+**制約**:
+- merge-gate `status=FAIL` (REJECTED) 状態の PR で `gh pr merge` を実行してはならない (MUST NOT)
+- override が必要な場合は `TWL_MERGE_GATE_OVERRIDE='<理由>'` env と専用 audit log への記録を併用すること
+- stall recovery (不変条件 L パターン 8) と content-REJECT override は別カテゴリ。前者は Supervisor 観察介入として許可されるが、後者は本 invariant により禁止される
+- `red-only` label 付与による specialist SKIP 経路は廃止 — label が付いていても worker-red-only-detector は WARNING を発行し、follow-up Issue (GREEN 実装 PR) の存在を verify する責務を負う
+
+**違反検知**:
+- `plugins/twl/scripts/merge-gate-check-merge-override-block.sh` が `gh pr merge` 直前に `merge-gate.json` を読み、FAIL 状態かつ override 未設定の場合は exit 1 で block する
+- override 経路は `<autopilot-dir>/merge-override-audit.log` に user / 時刻 / 理由を記録
+
+**根拠**: Issue #1613 explore-summary (PR #1608 timeline 解析) — content-REJECT を stall recovery 経路で処理した運用ルール曖昧 + label 二重設計の言い訳経路 + comment 表示の真偽値矛盾の 3 真因に対する defense-in-depth Layer 4 (human gate)
+
+**検証方法**: bats `ac-scaffold-tests-1613.bats` (ac1a/ac1b/ac1c) — `merge-gate-check-merge-override-block.sh` が FAIL 状態で exit 1 を返し、`TWL_MERGE_GATE_OVERRIDE` 設定時のみ通過し audit log に記録すること
+
+**影響範囲**:
+  - `plugins/twl/scripts/merge-gate-check-merge-override-block.sh`
+  - `plugins/twl/scripts/red-only-followup-create.sh`
+  - `plugins/twl/scripts/worker-red-only-detector.sh` (red-only label の WARNING 降格)
+  - `plugins/twl/agents/worker-red-only-detector.md`
+  - `plugins/twl/scripts/chain-runner.sh` (`step_pr_comment_final` LIGHT-ERROR consistency check)
+
+---
+
 ## SU-* との境界
 
 SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-N とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。

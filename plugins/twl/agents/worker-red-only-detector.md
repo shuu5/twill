@@ -28,10 +28,18 @@ skills:
 gh pr view --json files,additions,deletions,labels,body,number
 ```
 
-### Step 2: False-positive 抑止（SKIP 条件）
+### Step 2: red-only ラベル付き PR の取り扱い（WARNING 降格）
 
-PR に `red-only` ラベルが付いている場合は検出をスキップする（PASS として扱う）。
-純粋な RED test PR（TDD RED フェーズ）は意図的にテストのみを含む。
+PR に `red-only` ラベルが付いている場合でも検出は実行する。Issue #1613 で
+「label 付与 + 手動 merge」による content-REJECT bypass が発生したため、
+旧 SKIP 動作は廃止し、以下のように振る舞う:
+
+- 変更ファイルが test のみであっても severity を **CRITICAL → WARNING に降格**
+- WARNING には「follow-up Issue（GREEN 実装 PR）の存在を verify してください」を併記
+- follow-up Issue 不在時は `plugins/twl/scripts/red-only-followup-create.sh` で起票
+
+純粋な RED test PR（TDD RED フェーズ）は意図的にテストのみを含むが、
+follow-up（実装）の存在確認なしに main へ load されることを防ぐ。
 
 ### Step 3: impl-candidate ファイル分類
 

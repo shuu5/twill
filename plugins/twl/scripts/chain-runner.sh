@@ -1572,6 +1572,43 @@ step_pr_comment_final() {
     *)       body+="**Result**: ${final_result}" ;;
   esac
 
+  # Issue #1613 AC4: step status と overall result の整合チェック
+  # PR #1608 で `merge-gate: PASS` と `Result: REJECTED` が同居し Pilot を誤誘導した
+  # regression を防ぐ。矛盾検出時は LIGHT-ERROR を comment 末尾に append する
+  # (本 step 自体は ok 判定を維持し、人間が誤読する余地を機械的に潰す)。
+  local has_inconsistency=0
+  case "$final_result" in
+    MERGED)
+      # MERGED 主張なのに任意 step が FAIL → 矛盾
+      for s in "$ac_status" "$pr_test_status" "$e2e_status" "$mg_status"; do
+        if [[ "$s" == "FAIL" ]]; then
+          has_inconsistency=1
+          break
+        fi
+      done
+      ;;
+    REJECTED)
+      # REJECTED 主張なのに全 step が PASS/N/A → 矛盾
+      local saw_fail=0 saw_warn=0
+      for s in "$ac_status" "$pr_test_status" "$e2e_status" "$mg_status"; do
+        case "$s" in
+          FAIL) saw_fail=1 ;;
+          WARN) saw_warn=1 ;;
+        esac
+      done
+      if [[ "$saw_fail" -eq 0 && "$saw_warn" -eq 0 ]]; then
+        has_inconsistency=1
+      fi
+      ;;
+  esac
+  if [[ "$has_inconsistency" -eq 1 ]]; then
+    body+=$'\n\n'
+    body+="> [LIGHT-ERROR] step status と overall result に矛盾があります "
+    body+="(ac-verify=${ac_status} / pr-test=${pr_test_status} / "
+    body+="e2e-screening=${e2e_status} / merge-gate=${mg_status} / "
+    body+="result=${final_result})。Pilot は手動 merge 前に検証してください。"
+  fi
+
   gh pr comment "$pr_num" --body "$body" 2>/dev/null || {
     skip "pr-comment-final" "PR コメント投稿失敗"
     return 0
