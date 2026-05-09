@@ -12,6 +12,23 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 
+def _resolve_plugin_root(input_path: Path, repo_root: Path | None = None) -> Path | None:
+    """Traverse ancestors to find the nearest dir containing deps.yaml.
+
+    - file input: start from input_path.parent
+    - dir input: start from the dir itself
+    Returns None when deps.yaml is not found up to repo_root / filesystem root.
+    """
+    start = input_path.parent if input_path.is_file() else input_path
+    current = start.resolve()
+    stop = (repo_root.resolve() if repo_root else Path("/")).parent
+    while current != stop and current != current.parent:
+        if (current / "deps.yaml").exists():
+            return current
+        current = current.parent
+    return None
+
+
 def _load_plugin_ctx(plugin_root: str) -> "tuple[Path, dict, dict, str]":
     from twl.core.plugin import load_deps, build_graph, get_plugin_name
     # Resolve to absolute path to prevent path traversal
@@ -1345,13 +1362,21 @@ def twl_worktree_validate_branch_name_handler(
 
 
 def twl_validate_deps_handler(plugin_root: str) -> dict:
-    """validation module: deps.yaml syntax validation for plugin structure."""
+    """validation module: deps.yaml syntax validation for plugin structure.
+
+    file path 入力時は _resolve_plugin_root で親 traversal して plugin_root を抽出し、
+    deps.yaml 不在時は skip envelope を返す（ValueError を raise しない）。
+    """
     from twl.validation.validate import validate_types, validate_body_refs, validate_v3_schema
     from twl.chain.validate import chain_validate
     from twl.core.plugin import get_deps_version
     from twl.core.output import build_envelope, violations_to_items
 
-    p, deps, graph, plugin_name = _load_plugin_ctx(plugin_root)
+    resolved = _resolve_plugin_root(Path(plugin_root).expanduser().resolve())
+    if resolved is None:
+        return {"ok": True, "skipped": True, "reason": "non-plugin-file", "input": plugin_root, "exit_code": 0}
+
+    p, deps, graph, plugin_name = _load_plugin_ctx(str(resolved))
     _ok, violations, xref_warnings = validate_types(deps, graph, p)
     _ok2, body_violations = validate_body_refs(deps, p)
     violations.extend(body_violations)

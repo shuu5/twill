@@ -269,8 +269,8 @@ class TestAC10AcceptFileInPluginRootDir:
         assert not result.get("skipped"), (
             f"plugin 内ファイルなのに skip された: {result} (AC10 未実装)"
         )
-        # validate_deps envelope が返ること
-        assert result.get("ok") is not None, f"ok フィールドがない: {result}"
+        # validate_deps envelope が返ること（command フィールドで判定）
+        assert result.get("command") == "validate_deps", f"validate_deps envelope でない: {result}"
         assert "exit_code" in result, f"exit_code フィールドがない: {result}"
         # ValueError / "is not a directory" が発生していないことは例外が起きていない時点で保証
 
@@ -293,7 +293,7 @@ class TestAC11AcceptFileInPluginSubdir:
         assert not result.get("skipped"), (
             f"plugin サブディレクトリのファイルなのに skip された: {result} (AC11 未実装)"
         )
-        assert result.get("ok") is not None, f"ok フィールドがない: {result}"
+        assert result.get("command") == "validate_deps", f"validate_deps envelope でない: {result}"
         assert "exit_code" in result, f"exit_code フィールドがない: {result}"
 
 
@@ -362,7 +362,7 @@ class TestAC14DirectoryPassthroughUnchanged:
         assert not result.get("skipped"), (
             f"dir 入力なのに skip された (AC14 破壊): {result}"
         )
-        assert result.get("ok") is not None, f"ok フィールドがない: {result}"
+        assert result.get("command") == "validate_deps", f"validate_deps envelope でない: {result}"
         assert "exit_code" in result, f"exit_code フィールドがない: {result}"
 
 
