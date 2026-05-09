@@ -18,6 +18,7 @@
 | SU-7 | observed session への inject/send-keys は介入プロトコルに従う場合に許可（MAY） | OB-3 廃止に対応 |
 | SU-8 | supervisor hook は bare repo 構造（main/ がディレクトリとして存在すること）を前提とし、non-bare 検出時は no-op で exit 0 する（SHALL） | #728 |
 | SU-9 | supervisor hook は filename に埋め込む前に SESSION_ID を allow-list サニタイズ（[A-Za-z0-9_-]）しなければならず、サニタイズ前後で差分があれば stderr に警告を出力しなければならない（SHALL） | #729 |
+| SU-10 | feature-dev plugin の fallback spawn は Layer 2 Escalate 経由でユーザー承認後にのみ実行できる（SHALL NOT automate）。observer は feature-dev を自律 spawn してはならない。緊急時は SKIP_LAYER2=1 SKIP_LAYER2_REASON='<reason>' override のみ許可 | #1620 |
 
 ## 禁止事項（MUST NOT）
 
@@ -32,6 +33,7 @@
 - 検出結果をユーザー確認なしで自動 Issue 起票してはならない
 - **Issue 起票関連（不変条件 P / ADR-037）**: `gh issue create` を直接実行してはならない。新規 Issue の起票は必ず co-explore による explore-summary 作成後に co-issue 経由で行う。explore-summary なしの直接起票は `pre-bash-issue-create-gate.sh` で block される（bypass は `SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='<reason>'` 明記時のみ）
 - `--with-chain --issue N` で co-autopilot を直接起動してはならない（ADR-026、SU-3 連鎖）
+- feature-dev plugin を自律 spawn してはならない（SU-10）。ユーザー承認後の Layer 2 Escalate 経由のみ許可
 
 ## Security gate (Layer A-D) 回避は MUST NOT
 
