@@ -1,0 +1,91 @@
+mappings:
+  - ac_index: 1
+    ac_text: "4 validator handler (twl_validate_merge, twl_validate_commit, twl_validate_status_transition, twl_validate_issue_create) の戻り値が Claude Code 2.1.x HookOutput schema を pass する"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC1StatusTransitionHookOutputSchema::test_ac1_no_op_not_item_edit_conforms_to_schema"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 1b
+    ac_text: "AC-1 (deny case): twl_validate_status_transition deny → HookOutput-valid"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC1StatusTransitionHookOutputSchema::test_ac1_deny_case_conforms_to_schema"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 1c
+    ac_text: "AC-1 (allow+evidence): twl_validate_status_transition allow+evidence → HookOutput-valid"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC1StatusTransitionHookOutputSchema::test_ac1_allow_with_evidence_conforms_to_schema"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 1d
+    ac_text: "AC-1: twl_validate_issue_create no-op → HookOutput-valid"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC1IssueCreateHookOutputSchema::test_ac1_no_op_not_gh_issue_create_conforms_to_schema"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 1e
+    ac_text: "AC-1: twl_validate_issue_create deny → HookOutput-valid (decision=block)"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC1IssueCreateHookOutputSchema::test_ac1_deny_case_conforms_to_schema"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 1f
+    ac_text: "AC-1: twl_validate_merge guard result → HookOutput-valid"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC1ValidateMergeHookOutputSchema::test_ac1_merge_guard_result_conforms_to_schema"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 1g
+    ac_text: "AC-1: twl_validate_commit no-violations → HookOutput-valid"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC1ValidateCommitHookOutputSchema::test_ac1_commit_no_violations_conforms_to_schema"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 2
+    ac_text: "tools.py 内の return {\"decision\":} パターン 16 箇所を全件 audit し、schema 準拠に統一（または schema 外経路に移行）"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC2NoLegacyDecisionEnum::test_ac2_status_transition_no_allow_decision"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 2b
+    ac_text: "AC-2: twl_validate_issue_create output has no decision='allow'/'deny'"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC2NoLegacyDecisionEnum::test_ac2_issue_create_no_allow_decision"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 3
+    ac_text: "既存の deny/allow 判断ロジックは行動互換（gate 機能の regression 無し）"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC3BehavioralCompatibility::test_ac3_status_transition_deny_maps_to_block"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 3b
+    ac_text: "AC-3: allow case must not produce blocking decision"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC3BehavioralCompatibility::test_ac3_status_transition_allow_is_not_block"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 3c
+    ac_text: "AC-3: issue_create deny maps to block"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC3BehavioralCompatibility::test_ac3_issue_create_deny_maps_to_block"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 4
+    ac_text: "evidence_path / matched_option_id の情報は失われない（debug log もしくは schema 内 reason/systemMessage に再配置）"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC4EvidenceInfoPreserved::test_ac4_evidence_path_not_top_level_key"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 4b
+    ac_text: "AC-4: evidence_path info preserved in reason or systemMessage"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC4EvidenceInfoPreserved::test_ac4_evidence_path_info_in_reason_or_systemmessage"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
+  - ac_index: 4c
+    ac_text: "AC-4: issue_create evidence_path not top-level in HookOutput"
+    test_file: "tests/test_issue_1614_hook_output_schema.py"
+    test_name: "TestAC4EvidenceInfoPreserved::test_ac4_issue_create_evidence_path_not_top_level"
+    impl_files:
+      - "src/twl/mcp_server/tools.py"
