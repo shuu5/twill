@@ -209,6 +209,8 @@ sys.exit(1)
 @test "ac5: SKILL.md に CronCreate fail 時の record-detection-gap または HUMAN GATE escalate 記述が存在する" {
   # AC: CronCreate 不在時は record-detection-gap.sh + ★HUMAN GATE escalate の手順を追記
   # RED: 実装前は fail する — escalate 手順の記述が存在しない
+  # NOTE: record-detection-gap 単独パターンを避け CronCreate との複合条件に限定する
+  #       （record-detection-gap は L71 に CronCreate と無関係に既存するため偽陽性防止）
   [ -f "$SKILL_MD" ]
-  grep -qE "record-detection-gap|HUMAN GATE.*CronCreate|CronCreate.*HUMAN GATE|CronCreate.*escalate" "$SKILL_MD"
+  grep -qE "CronCreate.*(escalate|record-detection-gap|HUMAN GATE)|HUMAN GATE.*CronCreate" "$SKILL_MD"
 }
