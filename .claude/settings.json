@@ -61,6 +61,11 @@
           },
           {
             "type": "command",
+            "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-merge-gate-block.sh\"",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
             "command": "bash \"$(git rev-parse --git-common-dir 2>/dev/null)/../main/plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh\"",
             "timeout": 5000
           },

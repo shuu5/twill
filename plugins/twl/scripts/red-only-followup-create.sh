@@ -66,6 +66,8 @@ if [[ -n "$BODY_FILE" && -f "$BODY_FILE" ]]; then
 else
   TMP_BODY=$(mktemp)
   cat > "$TMP_BODY" <<EOF
+<!-- follow-up-for: PR #${PR_NUMBER} -->
+
 ## 概要
 
 PR #${PR_NUMBER} は RED-only test PR として merge されました。
