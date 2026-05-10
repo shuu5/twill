@@ -1121,3 +1121,40 @@ claude_session_id="post-compact-2026-05-08T10:16-w77"
 - 汚染発生時の recovery: `bash plugins/twl/skills/su-observer/scripts/session-init.sh`
 
 **参照**: Issue #1552, Invariant O（`plugins/twl/refs/ref-invariants.md`）
+
+## 21. Event horizon の整理（Issue #1633 / ADR-039 文書化）
+
+### 事象
+
+RED-only PR (test-only diff のみ、実装ファイル不在) が **PR 作成段階で一時的に main merge 候補状態 (CLEAN)** になる現象が Wave T (PR #1631、2026-05-09) で観察された。`#1626` の B+C+D defense は merge 段階で動作するため、PR 作成と merge の間の時間窓を防衛できない。autopilot の自動進行下では検証スキップによる主目的逸脱を許す可能性がある。
+
+### Defense in Depth の 3 段防衛体制 (ADR-039)
+
+| 段階 | 責務 | 実装 | 該当 layer |
+|------|------|------|-----------|
+| **GREEN 実装段階** | Worker が test-scaffold 直後に impl を生成 | `chain.py` `green-impl` step + `tdd-green-guard.sh` | chain ordering |
+| **PR 作成段階** | `gh pr create` 試行時に test-only diff を ABORT | `pre-bash-pre-pr-gate.sh` PreToolUse hook | hook (event horizon) |
+| **merge 段階** (既存) | `red-only` label + follow-up 不在を REJECT | `merge-gate-check-red-only.sh` | hook (`#1626`) |
+
+各段階は **意図的に重複した判定ロジック** (test-only diff 検出) を持つ Defense in Depth 設計。いずれかの層が fail-open しても他層が catch する冗長性。
+
+### bypass / allowlist / 例外運用
+
+| 機構 | bypass / allowlist | 用途 |
+|------|-------------------|------|
+| `pre-bash-pre-pr-gate.sh` | `SKIP_PRE_PR_GATE=1 SKIP_PRE_PR_GATE_REASON='<理由>'` | PR 作成段階の緊急 bypass、REASON 必須、`/tmp/pre-pr-gate-bypass.log` に audit |
+| `pre-bash-pre-pr-gate.sh` | Issue label `tdd-followup` / `test-only` | TDD followup PR の正規 path |
+| `merge-gate-check-red-only.sh` | `red-only` label + follow-up Issue 存在 | RED-only PR の正規 path (`#1626`) |
+| `merge-gate-check-red-only.sh` | `TWL_MERGE_GATE_OVERRIDE='<理由>'` | merge 段階の緊急 override (不変条件 R 違反) |
+
+### chain ordering の前提
+
+`workflow-test-ready` chain を `test-scaffold → green-impl → check` の順で実行することで、**PR 作成前に GREEN 実装まで完了** する flow を構造化。`pre-bash-pre-pr-gate.sh` hook が機械的 backstop として機能する。
+
+### 観察ポイント (observer)
+
+- `/tmp/pre-pr-gate-bypass.log` の bypass 頻度を nightly に確認 (濫用パターン検出)
+- chain checkpoint で `green-impl` step が skip されていないか (5 辞書 SSoT integrity 違反の可能性)
+- Wave 完了時に `tdd-green-guard.sh` が graceful skip (unknown framework) で WARNING を出していないか確認
+
+**参照**: Issue #1633, ADR-039, ADR-038 (RED-only label-based bypass closure), Issue #1626 (merge 段階 defense), 不変条件 R / S (`plugins/twl/refs/ref-invariants.md`)

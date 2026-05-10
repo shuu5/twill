@@ -1,9 +1,11 @@
 ---
 name: twl:ac-scaffold-tests
 description: |
-  AC を入力に RED test を生成する agent (ADR-023 D-2)。
-  01.5-ac-checklist.md を読み、AC 1 件につき 1 RED test を生成する。
-  Worker が TDD 直行 flow の起点として消費する。
+  AC を入力に test または GREEN 実装を生成する agent (ADR-023 D-2 / ADR-039)。
+  01.5-ac-checklist.md を読み、AC 1 件につき 1 成果物を生成する。
+  Worker が TDD 直行 flow (test-scaffold → green-impl → check) の起点として消費する。
+  Mode: red (default = RED test 生成) / green (RED test を PASS させる GREEN 実装生成) / red+green (両方)。
+  呼び出し側が prompt 内で "with mode=green" のように自然言語で指定する。
 type: specialist
 model: sonnet
 effort: medium
@@ -13,13 +15,28 @@ tools: [Read, Grep, Glob, Write, Edit, Bash]
 
 # AC Scaffold Tests Agent
 
-AC チェックリストを入力に、TDD RED フェーズ用テストスタブを生成する specialist。
+AC チェックリストを入力に、TDD のフェーズに応じて test または GREEN 実装を生成する specialist。
+
+## Mode（MUST READ）
+
+呼び出し側 prompt に `mode=red` / `mode=green` / `mode=red+green` のいずれかが含まれる。
+未指定時は `red` (default、後方互換)。
+
+| Mode | 生成物 | 完了条件 |
+|------|--------|---------|
+| `red` (default) | AC 1 件につき 1 RED test (意図的に fail) | 全テストが RED |
+| `green` | RED test を PASS させる実装ファイル | 全テストが GREEN (`tdd-green-guard.sh` で検証) |
+| `red+green` | RED test 生成 → 即座に GREEN 実装まで | 全テストが GREEN |
+
+`green` / `red+green` モードでは「## 禁止事項（MUST NOT）」の **PASS するテスト禁止** 制約は適用されない (mode に応じて分岐)。
 
 ## 入力（MUST READ）
 
 1. 渡された AC テキストまたは `${SNAPSHOT_DIR:-${CLAUDE_PLUGIN_ROOT:-.}/.dev-session/issue-${ISSUE_NUM:-unknown}}/01.5-ac-checklist.md`
 2. 実装対象ファイル（Glob/Grep で特定）
 3. 既存テストファイル（テストフレームワーク推定に使用）
+4. **Mode 指定**: 呼び出し prompt から `mode=<value>` を抽出 (default: `red`)
+5. **既存 `ac-test-mapping.yaml`** (mode=green / red+green の場合): 既存 RED test の `impl_files` を実装対象として読む
 
 ## テストフレームワーク推定
 
@@ -35,7 +52,7 @@ find . -name "test-*.R" -o -name "test_*.R" | head -3
 
 既存テストがなければ Issue body / 実装対象ファイルの拡張子から推定。
 
-## RED テスト生成ルール
+## RED テスト生成ルール (mode=red / red+green)
 
 AC 1 件につき 1 テストを生成する。テストは**意図的に fail する**ように書く:
 
@@ -161,14 +178,43 @@ mappings:
     # impl_files 推定失敗: 手動補完が必要
 ```
 
+## GREEN 実装ルール (mode=green / red+green)
+
+`mode=green`: 既存 RED test を PASS させる **実装ファイル** を生成する。
+
+### 入力前提
+
+1. `ac-test-mapping.yaml` が既存 (test-scaffold step で生成済み)
+2. 各 AC エントリの `impl_files` リストが実装対象パスを示す
+3. RED test が現在 fail していること (生成前提)
+
+### 実装手順
+
+1. **mapping 読み込み**: `ac-test-mapping.yaml` を Read して全 `impl_files` パスを収集
+2. **AC 1 件ごとに impl_files を編集/新規作成**:
+   - 既存ファイルなら Edit (該当箇所の最小編集)
+   - 新規ファイルなら Write (AC が要求する最小実装)
+3. **テスト実行で GREEN 確認**: 各 AC のテストが PASS することを `tdd-green-guard.sh` に委ねる (本 agent は実装のみ責務)
+
+### 実装ガイドライン (公式 + twill 慣習)
+
+- **最小実装**: AC を満たす **最小限のコード** を書く。AC が要求しない機能は追加しない
+- **フレームワーク慣習に従う**: 既存コードのパターン (関数命名、エラーハンドリング、ログ形式) を踏襲
+- **後方互換**: 既存テストを破壊しないこと (RED test 以外を fail させない)
+
+`mode=red+green`: Step 1 で RED test 生成 → Step 2 で上記 GREEN 実装 を連続実行する。
+
 ## 完了条件
 
-- AC 全件に対してテストが生成されていること
-- 全テストが RED（fail）状態であること
-- `ac-test-mapping.yaml` が書き出されていること
+| Mode | 完了条件 |
+|------|---------|
+| `red` | AC 全件に対してテストが生成され、全テストが RED (fail) であること。`ac-test-mapping.yaml` が書き出されていること |
+| `green` | `ac-test-mapping.yaml` の全 `impl_files` が編集/新規作成され、テストが GREEN になっていること |
+| `red+green` | RED + GREEN 両方の完了条件を満たすこと |
 
 ## 禁止事項（MUST NOT）
 
 - deltaspec/changes/ を参照してはならない
-- PASS するテストを意図的に生成してはならない（実装後 GREEN になる RED テストのみ）
-- 既存テストを削除・弱化してはならない
+- 既存テストを削除・弱化してはならない (全 mode 共通)
+- **(mode=red のみ)** PASS するテストを意図的に生成してはならない（実装後 GREEN になる RED テストのみ）。**mode=green / red+green では本制約は適用されない**
+- **(mode=green のみ)** RED test 自体を編集して PASS にしてはならない (実装ファイル側の編集のみ許可)

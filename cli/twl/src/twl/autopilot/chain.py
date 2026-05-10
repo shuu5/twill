@@ -34,6 +34,7 @@ CHAIN_STEPS: list[str] = [
     "arch-ref",
     "ac-extract",
     "test-scaffold",
+    "green-impl",
     "check",
     "prompt-compliance",
     "ts-preflight",
@@ -57,6 +58,7 @@ STEP_TO_WORKFLOW: dict[str, str] = {
     "arch-ref": "setup",
     "ac-extract": "setup",
     "test-scaffold": "test-ready",
+    "green-impl": "test-ready",
     "check": "test-ready",
     "prompt-compliance": "pr-verify",
     "ts-preflight": "pr-verify",
@@ -84,6 +86,12 @@ WORKFLOW_NEXT_SKILL: dict[str, str] = {
 # Replaces workflow_done-based inject detection.
 # "warning-fix" is the pr-fix terminal step (not in CHAIN_STEPS; dynamically set by chain-runner).
 # "post-fix-verify" is in CHAIN_STEPS (runner step); "warning-fix" is the dynamic terminal.
+#
+# NOTE: "green-impl" (test-ready chain の中間 LLM step、Issue #1633 / ADR-039) は意図的に
+# この辞書から除外する。test-ready chain の terminal step は依然として "check" のままで、
+# green-impl は test-scaffold と check の間に挿入される中間ステップのため、次 workflow
+# 遷移トリガーにはならない。5 辞書 SSoT は CHAIN_STEPS / STEP_TO_WORKFLOW /
+# CHAIN_STEP_DISPATCH / CHAIN_STEP_COMMAND / CHAIN_METADATA で完結。
 TERMINAL_STEP_TO_NEXT_SKILL: dict[str, str] = {
     "ac-extract": "workflow-test-ready",
     "check": "workflow-pr-verify",
@@ -103,6 +111,7 @@ CHAIN_STEP_DISPATCH: dict[str, str] = {
     "arch-ref": "runner",
     "ac-extract": "runner",
     "test-scaffold": "llm",
+    "green-impl": "llm",
     "check": "runner",
     "prompt-compliance": "runner",
     "ts-preflight": "runner",
@@ -120,6 +129,7 @@ CHAIN_STEP_DISPATCH: dict[str, str] = {
 CHAIN_STEP_COMMAND: dict[str, str] = {
     "crg-auto-build": "commands/crg-auto-build.md",
     "test-scaffold": "",
+    "green-impl": "commands/green-impl.md",
     "phase-review": "commands/phase-review.md",
     "scope-judge": "commands/scope-judge.md",
     "ac-verify": "commands/ac-verify.md",
@@ -133,7 +143,7 @@ CHAIN_METADATA: dict[str, dict[str, str]] = {
     },
     "test-ready": {
         "type": "B",
-        "description": "テスト生成と準備確認（test-scaffold → check）",
+        "description": "テスト生成と準備確認（test-scaffold → green-impl → check）",
     },
     "pr-verify": {
         "type": "B",
