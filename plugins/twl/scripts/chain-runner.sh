@@ -1776,6 +1776,7 @@ main() {
     ac-extract)          step_ac_extract "$@" ;;
     arch-ref)            step_arch_ref "$@" ;;
     test-scaffold)       record_current_step "test-scaffold"; ok "test-scaffold" "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
+    green-impl)          record_current_step "green-impl";    ok "green-impl"    "LLM スキル実行（chain-runner はステップ記録のみ）" ;;
     next-step)           step_next_step "$@" ;;
     dispatch-info)       step_dispatch_info "$@" ;;
     llm-delegate)        step_llm_delegate "$@" ;;

@@ -10,17 +10,10 @@ set -uo pipefail
 
 TEST_DIR="${1:-}"
 
-detect_framework() {
-  if find . -name "test_*.py" -o -name "*_test.py" 2>/dev/null | grep -q .; then
-    echo "pytest"
-  elif find . -name "*.test.ts" -o -name "*.spec.ts" 2>/dev/null | grep -q .; then
-    echo "vitest"
-  elif find . -name "test-*.R" -o -name "test_*.R" 2>/dev/null | grep -q .; then
-    echo "testthat"
-  else
-    echo "unknown"
-  fi
-}
+# Load shared detect_framework() (Issue #1633 / ADR-039 H1 fix)
+_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/tdd-framework-detect.sh
+source "${_SCRIPT_DIR}/lib/tdd-framework-detect.sh"
 
 FRAMEWORK=$(detect_framework)
 
@@ -78,6 +71,27 @@ case "$FRAMEWORK" in
       exit 1
     fi
     echo "✓ TDD RED guard: 少なくとも 1 件が fail — RED フェーズ確立"
+    ;;
+
+  bats)
+    if ! command -v bats &>/dev/null; then
+      echo "WARNING: bats が見つかりません — bats guard をスキップ" >&2
+      exit 0
+    fi
+    mapfile -t BATS_FILES < <(find . -name "*.bats" -not -path "*/node_modules/*" -not -path "*/build/*" 2>/dev/null | head -50)
+    if [[ "${#BATS_FILES[@]}" -eq 0 ]]; then
+      echo "WARNING: bats テストファイルが見つかりません — guard をスキップ" >&2
+      exit 0
+    fi
+    # RED フェーズ確認のため bats 出力は捨てる (RED 期待 = fail なので「テスト失敗の詳細」は必要ない)
+    bats "${BATS_FILES[@]}" >/dev/null 2>&1
+    EXIT_CODE=$?
+    if [[ "$EXIT_CODE" -eq 0 ]]; then
+      echo "WARNING: 全テストが PASS しています。RED フェーズの起点として適切ではありません。" >&2
+      echo "実装前に全 PASS している場合、テストが実装を検証できていない可能性があります。" >&2
+      exit 1
+    fi
+    echo "✓ TDD RED guard: ${#BATS_FILES[@]} bats ファイル中に少なくとも 1 件が fail — RED フェーズ確立"
     ;;
 
   unknown)

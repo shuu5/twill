@@ -14,6 +14,7 @@ CHAIN_STEPS=(
   arch-ref
   ac-extract
   test-scaffold
+  green-impl
   check
   prompt-compliance
   ts-preflight
@@ -41,6 +42,7 @@ declare -A CHAIN_STEP_DISPATCH=(
   [arch-ref]=runner
   [ac-extract]=runner
   [test-scaffold]=llm
+  [green-impl]=llm
   [check]=runner
   [prompt-compliance]=runner
   [ts-preflight]=runner
@@ -62,6 +64,7 @@ declare -A CHAIN_STEP_WORKFLOW=(
   [arch-ref]=setup
   [ac-extract]=setup
   [test-scaffold]=test-ready
+  [green-impl]=test-ready
   [check]=test-ready
   [prompt-compliance]=pr-verify
   [ts-preflight]=pr-verify
@@ -88,6 +91,7 @@ declare -A CHAIN_WORKFLOW_NEXT_SKILL=(
 declare -A CHAIN_STEP_COMMAND=(
   [crg-auto-build]="commands/crg-auto-build.md"
   [test-scaffold]=""
+  [green-impl]="commands/green-impl.md"
   [phase-review]="commands/phase-review.md"
   [scope-judge]="commands/scope-judge.md"
   [ac-verify]="commands/ac-verify.md"

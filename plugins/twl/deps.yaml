@@ -27,6 +27,8 @@ entry_points:
 # チェーン（chain.py から生成 — twl chain export --yaml で再生成）
 # チェーン（chain.py から生成 — twl chain export --yaml で再生成）
 # チェーン（chain.py から生成 — twl chain export --yaml で再生成）
+# チェーン（chain.py から生成 — twl chain export --yaml で再生成）
+# チェーン（chain.py から生成 — twl chain export --yaml で再生成）
 chains:
   setup:
     type: "A"
@@ -40,9 +42,10 @@ chains:
 
   test-ready:
     type: "B"
-    description: "テスト生成と準備確認（test-scaffold → check）"
+    description: "テスト生成と準備確認（test-scaffold → green-impl → check）"
     steps:
       - test-scaffold
+      - green-impl
       - check
 
   pr-verify:
@@ -414,11 +417,15 @@ skills:
     calls:
       - composite: test-scaffold
         step: "1"
+      - composite: green-impl
+        step: "1.5"
       - atomic: check
       - atomic: e2e-plan
       - script: chain-runner
       - script: compaction-resume
-    description: "テスト生成と準備確認ワークフロー"
+      - script: tdd-red-guard
+      - script: tdd-green-guard
+    description: "テスト生成と GREEN 実装ワークフロー（test-scaffold → green-impl → check、Issue #1633 / ADR-039）"
 
   workflow-pr-verify:
     type: workflow
@@ -1937,6 +1944,22 @@ commands:
     dispatch_mode: llm
     description: "テスト生成の統合コマンド（specialist 統合管理）"
 
+  green-impl:
+    type: composite
+    refined_by: "ref-prompt-guide@2c7a62f2"
+    refined_at: "2026-05-11"
+    path: commands/green-impl.md
+    spawnable_by: [controller, workflow]
+    can_spawn: [specialist]
+    chain: "test-ready"
+    step_in:
+      parent: workflow-test-ready
+      step: "1.5"
+    calls:
+      - specialist: ac-scaffold-tests
+    dispatch_mode: llm
+    description: "GREEN 実装コマンド（ac-scaffold-tests --mode=green 経由で RED test を PASS させる実装を生成、Issue #1633 / ADR-039）"
+
   worktree-delete:
     type: atomic
     refined_by: "ref-prompt-guide@2c7a62f2"
@@ -2759,6 +2782,11 @@ scripts:
     path: scripts/lib/stuck-patterns-lib.sh
     description: "stuck pattern SSoT ローダー（#1582）: _load_stuck_patterns() が refs/stuck-patterns.yaml を Python でパースし STUCK_PATTERN_MENU_ARR / STUCK_PATTERN_FREEFORM_ARR / STUCK_PATTERN_RECOVERY_ARR グローバル配列を生成。source 専用。"
 
+  tdd-framework-detect:
+    type: script
+    path: scripts/lib/tdd-framework-detect.sh
+    description: "TDD framework 検出 lib (Issue #1633 / ADR-039): detect_framework() 関数を提供。pytest/vitest/testthat/bats を優先順位で判定し node_modules/build/dist/.venv/.tox を除外。tdd-red-guard.sh と tdd-green-guard.sh から source 専用。"
+
   pseudo-pilot-pr-wait:
     type: script
     path: scripts/pseudo-pilot/pr-wait.sh
@@ -2853,6 +2881,21 @@ scripts:
     type: script
     path: scripts/hooks/pre-bash-merge-gate-block.sh
     description: "PreToolUse hook: merge-gate FAIL 状態で gh pr merge / auto-merge.sh を block (Issue #1626 AC3): merge-gate.json status=FAIL 時に permissionDecision=deny。TWL_MERGE_GATE_OVERRIDE プレフィックス付き command で audit log 記録 + 通過。merge-gate.json 不在は graceful passthrough"
+
+  pre-bash-pre-pr-gate:
+    type: script
+    path: scripts/hooks/pre-bash-pre-pr-gate.sh
+    description: "PreToolUse hook (Issue #1633 / ADR-039): gh pr create を intercept し test-only diff を ABORT する（PR 作成段階の event horizon、#1626 merge 段階 defense の前倒し）。permissionDecision=deny で blocking、Issue label allowlist (tdd-followup / test-only) で通過。SKIP_PRE_PR_GATE=1 + SKIP_PRE_PR_GATE_REASON='<理由>' で bypass (REASON 必須、/tmp/pre-pr-gate-bypass.log に audit)"
+
+  tdd-red-guard:
+    type: script
+    path: scripts/tdd-red-guard.sh
+    description: "TDD RED フェーズ guard: テストが存在し少なくとも 1 件が fail していることを確認（全 PASS なら exit 1 + WARNING）。pytest/vitest/testthat/bats 対応、unknown framework は graceful skip"
+
+  tdd-green-guard:
+    type: script
+    path: scripts/tdd-green-guard.sh
+    description: "TDD GREEN フェーズ guard (Issue #1633 / ADR-039): 全テスト PASS + ac-test-mapping.yaml の impl_files が git diff に含まれることを検証（fail なら exit 1）。pytest/vitest/testthat/bats 対応、unknown framework は graceful skip + WARNING (silent PASS 防止)"
 
   supervisor-heartbeat:
     type: script
@@ -3404,7 +3447,7 @@ agents:
     model: sonnet
     spawnable_by: [workflow, composite, controller]
     can_spawn: []
-    description: "AC チェックリストを入力に TDD RED フェーズ用テストスタブを生成する（ADR-023 D-2）"
+    description: "AC チェックリストを入力に TDD RED test または GREEN 実装を生成する（ADR-023 D-2 / ADR-039）。mode=red (default) / red+green / green を呼び出し prompt 内で自然言語指定。後方互換: mode=red default で既存 RED-only flow 維持"
 
   # observer 系 (sonnet)
   observer-evaluator:
