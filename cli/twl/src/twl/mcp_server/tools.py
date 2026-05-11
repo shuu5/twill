@@ -1391,6 +1391,99 @@ def twl_validate_deps_handler(plugin_root: str) -> dict:
     return build_envelope("validate_deps", get_deps_version(deps), plugin_name, items, exit_code)
 
 
+_HOOK_OUTPUT_VALID_FIELDS = frozenset({
+    "decision",
+    "permissionDecision",
+    "hookSpecificOutput",
+    "continue",
+    "suppressOutput",
+    "stopReason",
+    "reason",
+    "systemMessage",
+})
+
+
+_HOOK_OUTPUT_VALID_DECISION = frozenset({"approve", "block"})
+
+
+def _to_hook_output(raw: dict) -> dict:
+    """Transform an internal handler result into a HookOutput Zod schema-compliant dict.
+
+    Claude Code 2.1.x HookOutput schema allows only the fields in
+    _HOOK_OUTPUT_VALID_FIELDS.  Internal handlers return legacy fields
+    (decision="allow"/"deny", evidence_path, matched_option_id, ok, items,
+    summary, …) that violate the strict Zod check introduced in 2.1.136.
+
+    Conversion rules:
+      - decision="allow"  → decision="approve"
+      - decision="deny"   → decision="block"
+      - decision=<other valid value> → passed through unchanged
+      - decision=<unknown> → decision="block" (fail-safe: unknown → blocking)
+      - ok=True           → no blocking signal; reason set only on error/violations
+      - ok=False/None/falsy → decision="block"; reason set from error/items
+      - evidence_path → folded into reason as filename only (Path.name)
+      - matched_option_id → folded into reason
+      - commit_message → folded into reason (pipe chars sanitized)
+      - items (list) → joined as human-readable string in reason
+      - all other non-schema keys → dropped
+    """
+    from pathlib import Path as _Path
+
+    out: dict = {}
+
+    if "decision" in raw:
+        legacy = raw["decision"]
+        if legacy == "deny":
+            out["decision"] = "block"
+        elif legacy == "allow":
+            out["decision"] = "approve"
+        elif legacy in _HOOK_OUTPUT_VALID_DECISION:
+            out["decision"] = legacy
+        else:
+            out["decision"] = "block"
+
+        parts: list[str] = []
+        if raw.get("reason"):
+            reason_text = str(raw["reason"])
+            if raw.get("evidence_path"):
+                reason_text = reason_text.replace(
+                    str(raw["evidence_path"]), _Path(raw["evidence_path"]).name
+                )
+            parts.append(reason_text)
+        if raw.get("evidence_path"):
+            parts.append(f"evidence: {_Path(raw['evidence_path']).name}")
+        if raw.get("matched_option_id"):
+            parts.append(f"matched_option_id: {raw['matched_option_id']}")
+        if parts:
+            out["reason"] = " | ".join(parts)
+        for k in _HOOK_OUTPUT_VALID_FIELDS - {"decision", "reason"}:
+            if k in raw:
+                out[k] = raw[k]
+        return out
+
+    if "ok" in raw:
+        ok = raw.get("ok")
+        if not ok:
+            out["decision"] = "block"
+
+        parts = []
+        if raw.get("error"):
+            parts.append(str(raw["error"]))
+        items = raw.get("items")
+        if items:
+            parts.append(f"violations: {', '.join(str(i) for i in items)}")
+        if not ok and raw.get("commit_message"):
+            sanitized = str(raw["commit_message"]).replace("|", "/")
+            parts.append(f"commit: {sanitized}")
+        if not ok and raw.get("summary"):
+            parts.append(str(raw["summary"]))
+        if parts:
+            out["reason"] = " | ".join(parts)
+        return out
+
+    return {k: v for k, v in raw.items() if k in _HOOK_OUTPUT_VALID_FIELDS}
+
+
 def twl_validate_merge_handler(
     branch: str,
     base: str = "main",
@@ -2374,12 +2467,12 @@ try:
     @mcp.tool()
     def twl_validate_merge(branch: str, base: str = "main", timeout_sec: int | None = 300) -> str:
         """validation module: merge pre-flight guard (2-guard scope only)."""
-        return json.dumps(twl_validate_merge_handler(branch=branch, base=base, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(_to_hook_output(twl_validate_merge_handler(branch=branch, base=base, timeout_sec=timeout_sec)), ensure_ascii=False)
 
     @mcp.tool()
     def twl_validate_commit(command: str, files: list[str], timeout_sec: int | None = 300) -> str:
         """validation module: commit message and file deps validation (in-process, no subprocess)."""
-        return json.dumps(twl_validate_commit_handler(command=command, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(_to_hook_output(twl_validate_commit_handler(command=command, files=files, timeout_sec=timeout_sec)), ensure_ascii=False)
 
     @mcp.tool()
     def twl_validate_status_transition(
@@ -2390,7 +2483,7 @@ try:
         timeout_sec: int | None = 10,
     ) -> str:
         """validation module: gh project item-edit Status field transition gate (MCP-native double defense)."""
-        return json.dumps(twl_validate_status_transition_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(_to_hook_output(twl_validate_status_transition_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec)), ensure_ascii=False)
 
     @mcp.tool()
     def twl_validate_issue_create(
@@ -2401,7 +2494,7 @@ try:
         timeout_sec: int | None = 10,
     ) -> str:
         """validation module: gh issue create pre-flight guard — ADR-037 Invariant P enforcement (shadow log mode)."""
-        return json.dumps(twl_validate_issue_create_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(_to_hook_output(twl_validate_issue_create_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec)), ensure_ascii=False)
 
     @mcp.tool()
     def twl_check_completeness(manifest_context: str) -> str:
@@ -2631,19 +2724,19 @@ except ImportError:
 
     def twl_validate_merge(branch: str, base: str = "main", timeout_sec: int | None = 300) -> str:  # type: ignore[misc]
         """validation module: merge pre-flight guard (2-guard scope only)."""
-        return json.dumps(twl_validate_merge_handler(branch=branch, base=base, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(_to_hook_output(twl_validate_merge_handler(branch=branch, base=base, timeout_sec=timeout_sec)), ensure_ascii=False)
 
     def twl_validate_commit(command: str, files: list[str], timeout_sec: int | None = 300) -> str:  # type: ignore[misc]
         """validation module: commit message and file deps validation (in-process, no subprocess)."""
-        return json.dumps(twl_validate_commit_handler(command=command, files=files, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(_to_hook_output(twl_validate_commit_handler(command=command, files=files, timeout_sec=timeout_sec)), ensure_ascii=False)
 
     def twl_validate_status_transition(command: str, tool_name: str = "Bash", session_tmp_dir: str | None = None, controller_issue_dir: str | None = None, timeout_sec: int | None = 10) -> str:  # type: ignore[misc]
         """validation module: gh project item-edit Status field transition gate (fastmcp not installed)."""
-        return json.dumps(twl_validate_status_transition_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(_to_hook_output(twl_validate_status_transition_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec)), ensure_ascii=False)
 
     def twl_validate_issue_create(command: str, tool_name: str = "Bash", session_tmp_dir: str | None = None, controller_issue_dir: str | None = None, timeout_sec: int | None = 10) -> str:  # type: ignore[misc]
         """validation module: gh issue create pre-flight guard — ADR-037 Invariant P enforcement (fastmcp not installed)."""
-        return json.dumps(twl_validate_issue_create_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec), ensure_ascii=False)
+        return json.dumps(_to_hook_output(twl_validate_issue_create_handler(command=command, tool_name=tool_name, session_tmp_dir=session_tmp_dir, controller_issue_dir=controller_issue_dir, timeout_sec=timeout_sec)), ensure_ascii=False)
 
     def twl_check_completeness(manifest_context: str) -> str:  # type: ignore[misc]
         """validation module: specialist completeness check via flock-guarded manifest files."""
