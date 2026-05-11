@@ -1165,10 +1165,11 @@ co-autopilot を spawn する前に以下を実行すること:
    gh project item-list <BOARD_NUMBER> --owner <OWNER> --format json \
      | jq -r '.items[] | select(.content.number == <ISSUE_NUM>) | .status'
    ```
-2. Status=Todo の場合は `board-status-update --status Refined` を実行:
+2. **Status=Todo の場合は `/twl:co-issue refine #<N>` を spawn する（唯一の正規経路）**:
    ```bash
-   bash "${CLAUDE_PLUGIN_ROOT}/scripts/chain-runner.sh" board-status-update <ISSUE_NUM>
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/spawn-controller.sh" co-issue "refine #<ISSUE_NUM>"
    ```
+   - **MUST NOT**: `chain-runner.sh board-status-update <N> Refined` を co-issue Phase 4 外から直接実行してはならない
 3. Status=Refined を確認後に co-autopilot spawn を実行する。
 
 または `spawn-controller.sh co-autopilot --pre-check-issue N` を使用すると自動チェック＆abort が走る。

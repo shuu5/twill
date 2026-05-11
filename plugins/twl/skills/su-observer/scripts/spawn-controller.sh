@@ -222,7 +222,9 @@ if [[ "${1:-}" == "--check-refined-status" ]]; then
   fi
   if [[ "$_rs_issue_status" != "Refined" ]]; then
     echo "[spawn-controller] DENY: Issue #${_RS_ISSUE} Status must be Refined (current: ${_rs_issue_status})" >&2
-    echo "[spawn-controller] HINT: bash \"$TWILL_ROOT/plugins/twl/scripts/chain-runner.sh\" board-status-update ${_RS_ISSUE}" >&2
+    echo "[spawn-controller] HINT: /twl:co-issue refine #${_RS_ISSUE} を spawn してください（唯一の正規経路）" >&2
+    echo "[spawn-controller] HINT: bash \"$TWILL_ROOT/plugins/twl/scripts/spawn-controller.sh\" co-issue \"refine #${_RS_ISSUE}\"" >&2
+    echo "[spawn-controller] (MUST NOT: chain-runner.sh board-status-update を co-issue Phase 4 外から直接実行しない)" >&2
     exit 2
   fi
   exit 0
@@ -459,7 +461,7 @@ set -- "${PASS_THROUGH_ARGS[@]+"${PASS_THROUGH_ARGS[@]}"}"
 
 # --- Status=Refined pre-check（#1516 — co-autopilot spawn 前 MUST）---
 # --pre-check-issue N が指定された場合、Issue の Project Board Status を確認する。
-# Status が Refined でない場合は error abort し、board-status-update を hint として出力。
+# Status が Refined でない場合は error abort し、/twl:co-issue refine #N を hint として出力。
 # NOTE: feature-dev 用には #1635 で別 path (--check-refined-status) を提供（feature-dev は
 # 先頭の SKIP_LAYER2 fallback 分岐 L130 で exit するため、ここに到達しない）。
 if [[ -n "$PRE_CHECK_ISSUE" && "$SKILL_NORMALIZED" == "co-autopilot" ]]; then
@@ -487,8 +489,9 @@ if [[ -n "$PRE_CHECK_ISSUE" && "$SKILL_NORMALIZED" == "co-autopilot" ]]; then
     elif [[ "$_issue_status" != "Refined" ]]; then
       echo "[spawn-controller] ERROR: Issue #${PRE_CHECK_ISSUE} の Status=${_issue_status}（Refined でない）のため co-autopilot spawn を abort します。" >&2
       echo "[spawn-controller] HINT: 以下のコマンドで Status=Refined に遷移させてから再実行してください:" >&2
-      echo "[spawn-controller]   bash \"$TWILL_ROOT/plugins/twl/scripts/chain-runner.sh\" board-status-update ${PRE_CHECK_ISSUE}" >&2
-      echo "[spawn-controller]   または: board-status-update --status Refined を実行後に spawn-controller.sh を再実行" >&2
+      echo "[spawn-controller]   /twl:co-issue refine #${PRE_CHECK_ISSUE} を spawn してください（唯一の正規経路）" >&2
+      echo "[spawn-controller]   bash \"$TWILL_ROOT/plugins/twl/skills/su-observer/scripts/spawn-controller.sh\" co-issue \"refine #${PRE_CHECK_ISSUE}\"" >&2
+      echo "[spawn-controller]   (MUST NOT: chain-runner.sh board-status-update を co-issue Phase 4 外から直接実行しない。emergency bypass は --bypass-status-gate + PR description 記載)" >&2
       exit 2
     fi
   else
