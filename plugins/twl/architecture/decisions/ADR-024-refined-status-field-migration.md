@@ -108,3 +108,119 @@ Status gate は fail-closed を採用:
 - **observability**: `/tmp/refined-status-update.log` で Status update 失敗のみ WARN
 
 **Auto-update layer 完成 (Phase 1 範囲)**: 子 Issue → 親 Epic の Status auto-transition (#1026 AC1+AC2) と AC checklist auto-flip (#1070) の両方が autopilot 経路 (chain-runner.sh `step_board_status_update`) に組み込まれた。新規 Issue は `--parent #N` + `--closes-ac #EPIC:ACN` (issue-create.md) を指定することで Phase B 完了後の規約を full enforce できる。
+
+## Phase C 追加 (2026-05-11)
+
+**Status**: Planned（Epic #1625 spawn 時点で先行記載、実装は child Issue #1638 / #1639 で進行）
+**Issue**: #1625 (Epic) / #1638 (Axis 1-A: Explored 新設) / #1639 (Axis 1-B: Todo→Idea rename)
+
+> **Amendment note (4-stage 設計表 superseded)**: Phase C により旧 4-stage 設計表（## Decision §Status field 設計 L26-31）は **本 Phase C 記述に superseded** される。旧 4-stage 表は歴史的記録として保持し、新規参照は Phase C の 5-stage 表を MUST 採用。
+
+### Context（Phase C 追加の動機）
+
+Phase B 完了時点で 4-stage Status（`Todo / Refined / In Progress / Done`）は安定運用に到達したが、以下 2 つの観察事実から **5-stage taxonomy** への拡張が必要と判明した:
+
+1. **co-explore 完了 Issue と未精緻 Issue が区別不能**: `Todo` Status のみでは要望/バグレポレベル（探索前）と explore-summary 完了済（refine 直前）が同列に並ぶ。`Status=Explored` option 新設で区別可能にする。
+2. **`Todo` 名称が semantic 不明瞭**: `Todo` は task tracker 一般用語で、Issue lifecycle の最初期 stage の意味付けが弱い。`Idea` に rename することで「未精緻アイデア / 要望」という semantic を明示する（option_id は維持して既存 Project Board item の Status field value を保護）。
+
+### 5-stage taxonomy
+
+| Status | 旧名称 | option_id (planned) | 意味 | gate |
+|---|---|---|---|---|
+| `Idea` (default) | `Todo` | `f75ad846` (維持) | 新規 Issue、要望・バグレポ・観察記録レベル、specialist review 未完了 | - |
+| `Explored` | - | TBD (#1638 完了後追記) | co-explore による explore-summary 作成完了済、refine 直前 | - |
+| `Refined` | 同左 | `3d983780` | 3 specialist review 完了 (critic/feasibility/codex-reviewer) | `Idea/Explored` → `In Progress` **直接遷移 禁止** |
+| `In Progress` | 同左 | `47fc9ee4` | Worker 実装中 | Worker spawn 時 `Status=Refined && state==OPEN` **MUST** 検証 (#1640) |
+| `Done` | 同左 | `98236657` | PR merged + Issue closed | - |
+
+### 遷移規則
+
+```
+Idea ─── (co-explore 完了) ──→ Explored ─┐
+  │                                       │
+  └─── (co-issue refine 完了) ─────→ Refined ←┘
+                                  │
+                                  └─── (Worker spawn) ──→ In Progress ──→ Done
+```
+
+- **`Refined` gate は Idea / Explored 双方からの遷移を許容**: co-explore を skip して直接 refine する path も継続 OK（小規模 Issue 向け）。
+- **`Explored → In Progress` 直接遷移は禁止**: 必ず `Refined` 経由 MUST。
+  - **この禁止は実装レベルで spawn-controller.sh の `Status != Refined` abort によって機械的に保証される**（Idea / Explored のまま spawn しようとすると Status=Refined check に失敗して abort）。
+  - 追加 spawn-controller.sh 変更は #1640 (Axis 2) で `state==OPEN` AND check として補強される。
+- **状態が `state=CLOSED` の場合は全分岐で abort**: closed Issue は spawn 対象から machine 的に排除（#1640 Axis 2 で実装）。
+
+### `Todo` → `Idea` rename の根拠と影響範囲
+
+#### 根拠
+
+- semantic 明瞭化: `Idea` の方が「未精緻なアイデア / 要望 / バグレポ」を意味する Issue lifecycle 最初期 stage の意味を持つ。
+- 5-stage taxonomy の natural 命名: `Idea / Explored / Refined / In Progress / Done` で各 stage の精緻度を単調増加させる semantic 設計。
+
+#### option_id 維持 MUST
+
+- `Todo` option_id (`f75ad846`) を維持したまま name のみ `Idea` に変更（#1639 Axis 1-B で `updateProjectV2Field` mutation 経由）。
+- option_id 維持により既存 67+ 件の Project Board item の Status field value は無影響（field value は option_id 参照のため）。
+- option_id 維持 API サポートが未検証のため、`migrate-status-5stage.sh --idea-only` 実装時に staging-equivalent な事前検証を MUST（mutation 1 件発行 → option_id 不変 assert）。失敗時は「新 Idea option 作成 + 全 item の field value 移行」方式で代替。
+
+#### scope-of-change（影響範囲）
+
+hardcoded `\"Todo\"` 文字列が存在する ~16 ファイル（grep 結果、実装時に再 grep して網羅性再確認、#1639 Axis 1-B で実装）:
+
+- `plugins/twl/scripts/project-board-backfill.sh` (L80, L137) — **L80 の `select(.name == \"Todo\")` は rename 後 `\"Idea\"` に変更 MUST**
+- `plugins/twl/scripts/issue-create-refined.sh` (L5)
+- `plugins/twl/commands/project-board-sync.md` (L89, L96)
+- `plugins/twl/commands/scope-judge.md` (L37)
+- `plugins/twl/commands/warning-fix.md` (L57)
+- `plugins/twl/commands/prompt-audit-apply.md` (L75)
+- `plugins/twl/skills/co-self-improve/SKILL.md` (L134)
+- `plugins/twl/skills/su-observer/SKILL.md` (L113, L119)
+- `plugins/twl/skills/su-observer/refs/su-observer-controller-spawn-playbook.md` (L40)
+- `plugins/twl/skills/su-observer/refs/pitfalls-catalog.md` (L1071, L1086)
+- `plugins/twl/refs/ref-auto-issue-board-ops.md` (L10, L42, L45, L47, L50, L57)
+- `plugins/twl/architecture/decisions/ADR-006-project-board-mandatory.md` (L21)
+- `plugins/twl/architecture/decisions/ADR-024-refined-status-field-migration.md` (L28-29 — 本 Phase C 記述 + 旧 4-stage 表の Amendment note で対応)
+- `plugins/twl/architecture/domain/model.md` (L392)
+- `plugins/twl/architecture/domain/contexts/project-mgmt.md` (L122)
+- `plugins/twl/architecture/domain/contexts/autopilot.md` (L234)
+
+### option_id 動的取得の推奨
+
+option_id を hardcode せず、`gh project field-list` 経由で動的取得することが望ましい:
+
+```bash
+IDEA_OPTION_ID=$(gh project field-list 6 --owner shuu5 --format json \
+  | jq -r '.fields[] | select(.name == \"Status\") | .options[] | select(.name == \"Idea\") | .id')
+EXPLORED_OPTION_ID=$(gh project field-list 6 --owner shuu5 --format json \
+  | jq -r '.fields[] | select(.name == \"Status\") | .options[] | select(.name == \"Explored\") | .id')
+```
+
+production code は field-list 動的取得を優先し、`IDEA_OPTION_ID` 定数は script 内部の最適化用途のみに留める（再発防止: Phase B で `REFINED_OPTION_ID=\"3d983780\"` hardcode から学んだ pattern）。option_id 直接参照への production refactor は #1639 Axis 1-B AC1-11 で別 Issue 化候補として扱う。
+
+### #1516 (closed) との関係性
+
+`#1516` (closed) は pre-spawn `Status=Refined` check の前身であり、本 Phase C では以下の補強を行う（#1640 Axis 2 担当）:
+
+- 既存 `Status=Refined` check に `state==OPEN` の AND 条件を追加（closed Issue を spawn 対象から machine 的に排除）
+- abort hint に `Status=Idea` / `Status=Explored` 専用 message を追加（Phase C 後の actionable error UX）
+
+### child Issue 一覧（Wave U.Y option B 起票）
+
+| child | Axis | Status (本 ADR 記述時点) | 主な変更 |
+|---|---|---|---|
+| #1638 | Axis 1-A (Explored 新設、既存スコープ) | Todo (Idea 相当) | migrate-status-5stage.sh `--explored-only` / co-explore SKILL Step 4 / chain-runner bats / glossary `Explored Status` / pitfalls §23 / pitfalls §19 patch |
+| #1639 | Axis 1-B (Todo→Idea rename、拡張スコープ) | Todo (Idea 相当) | migrate-status-5stage.sh `--idea-only` / hardcoded \"Todo\" → \"Idea\" 置換 ~16 ファイル / migrate-status-5stage.bats 拡張 / glossary `Idea Status` |
+| #1640 | Axis 2 (state==OPEN AND gate) | Todo (Idea 相当) | spawn-controller.sh `--pre-check-issue` フロー内 state==OPEN AND check / su-observer SKILL.md MUST step 更新 / spawn-controller-state-open-gate.bats / abort hint Idea/Explored 対応 |
+| #1641 | Axis 3 (rescue reopen 規律) | Todo (Idea 相当) | su-observer SKILL.md PR closer 尊重 MUST 追加 / pitfalls §24 / ADR-014 Decision 5 carve-out |
+| #1642 | Axis 4 (eventual consistency SOP) | Todo (Idea 相当) | su-observer SKILL.md 30s window + run check MUST / .supervisor/status-observation.log / doobidoo pitfall / aggregate-status-observation-log.sh |
+| #1643 | Axis 5 (view 2 board column) | Todo (Idea 相当) | ref-project-board-views.md / verify-project-board-views.sh / view 2 UI 経由 groupBy=Status 設定実施 |
+
+### Phase C 完了条件
+
+- [ ] #1638 merged → `Explored` option Board に追加済 + Phase C 章末に option_id 追記済
+- [ ] #1639 merged → `Todo → Idea` rename 完了 + hardcoded \"Todo\" 置換完了 + Phase C 章末の rename 状況「完了 + 新 option_id 記録」更新
+- [ ] #1640 merged → spawn-controller.sh state==OPEN AND check 反映
+- [ ] #1641 merged → observer rescue reopen 規律 doc + ADR-014 carve-out 反映
+- [ ] #1642 merged → eventual consistency SOP + 永続ログ運用開始
+- [ ] #1643 merged → View 2 groupBy=Status 設定 + 検証 script 利用可能
+
+Phase C は全 child Issue merged + Phase C 章末の option_id 記録更新で **Status=Done** に遷移する（Epic #1625 の AC checkbox auto-flip 完遂で完了判定）。
