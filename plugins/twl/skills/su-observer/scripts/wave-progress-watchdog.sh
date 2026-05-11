@@ -209,7 +209,7 @@ poll_gh_api_fallback() {
     local header_section
     header_section=$(echo "$response" | tr -d '\r' | awk '/^$/{exit} {print}')
     # Rate-limit: HTTP/.*403 + X-RateLimit-Remaining: 0 in header section (AND condition)
-    if echo "$header_section" | grep -qE 'HTTP/.*403' && \
+    if echo "$header_section" | grep -qE '^HTTP/.*403' && \
        echo "$header_section" | grep -qiE 'X-RateLimit-Remaining:[[:space:]]*0'; then
       return 2
     fi
