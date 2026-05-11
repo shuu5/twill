@@ -1,0 +1,47 @@
+name: Auto Refined
+
+on:
+  issues:
+    types: [opened]
+
+permissions: {}
+
+env:
+  PROJECT_ID: PVT_kwHOCNFEd84BTu2W
+  STATUS_FIELD_ID: PVTSSF_lAHOCNFEd84BTu2WzhA7yTs
+  REFINED_OPTION_ID: "3d983780"
+
+jobs:
+  add-and-set-refined:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add to project
+        id: add-to-project
+        uses: actions/add-to-project@244f685bbc3b7adfa8466e08b698b5577571133e # v1.0.2
+        with:
+          project-url: https://github.com/users/shuu5/projects/6
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+
+      - name: Update status to Refined
+        if: steps.add-to-project.outputs.item-id != ''
+        env:
+          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
+          ITEM_ID: ${{ steps.add-to-project.outputs.item-id }}
+        run: |
+          set -euo pipefail
+          gh api graphql -f query='
+            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $projectId
+                itemId: $itemId
+                fieldId: $fieldId
+                value: { singleSelectOptionId: $optionId }
+              }) {
+                projectV2Item { id }
+              }
+            }
+          ' \
+            -f projectId="$PROJECT_ID" \
+            -f itemId="$ITEM_ID" \
+            -f fieldId="$STATUS_FIELD_ID" \
+            -f optionId="$REFINED_OPTION_ID"
