@@ -1038,3 +1038,43 @@ issue_1451:
       impl_files:
         - "plugins/session/scripts/lib/llm-indicators.sh"
         - "plugins/session/scripts/cld-observe-any"
+
+# --- Issue #1602 ---
+issue_1602:
+  issue: 1602
+  framework: bats
+  test_file: "plugins/twl/tests/unit/ci-mcp-smoke-sha-pin/ci-mcp-smoke-sha-pin.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "actions/checkout@v4 を actions/checkout@<40-char SHA> # v<major>.<minor>.<patch> 形式に置換する"
+      test_name: "ac1: actions/checkout は 40 文字 SHA ピン留め形式になっている"
+      status: RED
+      red_mechanism: "mcp-restart-smoke.yml に actions/checkout@v4 が残存しているため mutable tag 検出で fail する"
+      impl_files:
+        - ".github/workflows/mcp-restart-smoke.yml"
+    - ac_index: 2
+      ac_text: "actions/setup-python@v5 を actions/setup-python@<40-char SHA> # v<major>.<minor>.<patch> 形式に置換する"
+      test_name: "ac2: actions/setup-python は 40 文字 SHA ピン留め形式になっている"
+      status: RED
+      red_mechanism: "mcp-restart-smoke.yml に actions/setup-python@v5 が残存しているため mutable tag 検出で fail する"
+      impl_files:
+        - ".github/workflows/mcp-restart-smoke.yml"
+    - ac_index: 3
+      ac_text: "PR description 内で gh api 出力との一致を実装者本人が手動確認した旨を記載すること"
+      test_name: "ac3: PR description に SHA 手動確認の記載がある (プロセス AC — 手動検証)"
+      status: RED
+      red_mechanism: "プロセス AC のため常に fail (ローカル自動検証不可)"
+      impl_files: []
+    - ac_index: 4
+      ac_text: "修正後の mcp-restart-smoke.yml を PR 上の workflow run で 1 回成功させ PR description にその run URL を記載すること"
+      test_name: "ac4: PR の workflow run が 1 回成功し run URL が PR description に記載されている (CI AC)"
+      status: RED
+      red_mechanism: "CI AC のため常に fail (ローカル自動検証不可)"
+      impl_files: []
+    - ac_index: 5
+      ac_text: "表記が add-to-project.yml の既存パターン (<action>@<sha> # v<semver>) と一致すること"
+      test_name: "ac5: uses 行は @<40-char-sha> # v<semver> 形式に準拠している"
+      status: RED
+      red_mechanism: "mcp-restart-smoke.yml の uses 行が @v4/@v5 形式のため形式チェックで fail する"
+      impl_files:
+        - ".github/workflows/mcp-restart-smoke.yml"
