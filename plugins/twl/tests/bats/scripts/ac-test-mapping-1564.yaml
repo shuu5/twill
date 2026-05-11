@@ -1,0 +1,62 @@
+mappings:
+  - ac_index: 1
+    ac_text: "ADR-024 に Phase D (2026-05-12) 補遺セクションを追加する (Phase C の後に配置)"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1564.bats"
+    test_name: "ac1: ADR-024 に Phase D (2026-05-12) 補遺セクションが存在する"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-024-refined-status-field-migration.md"
+  - ac_index: 2
+    ac_text: "Phase4-complete.json JSON schema を schema_version=1.0.0 として正典化する（ADR-024 Phase D 補遺内に Markdown コードブロックとしてインライン記述）"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1564.bats"
+    test_name: "ac2: ADR-024 Phase D 補遺に schema_version=1.0.0 が含まれる"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-024-refined-status-field-migration.md"
+  - ac_index: 3
+    ac_text: "co-issue-phase4-aggregate.md の [B] manual fix path に Phase4-complete.json 生成 step を追加する"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1564.bats"
+    test_name: "ac3: co-issue-phase4-aggregate.md [B] path に Phase4-complete.json 生成 step が含まれる"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md"
+  - ac_index: 4
+    ac_text: "co-issue-phase4-aggregate.md の [D] direct specialist spawn path にも Phase4-complete.json 生成 step を追加する"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1564.bats"
+    test_name: "ac4: co-issue-phase4-aggregate.md [D] direct specialist spawn path に Phase4-complete.json 生成 step が含まれる"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md"
+  - ac_index: 5
+    ac_text: "co-issue-cleanup.md に Phase4-complete.json cleanup の設計方針を追加する"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1564.bats"
+    test_name: "ac5: co-issue-cleanup.md に Phase4-complete.json cleanup 方針が含まれる"
+    impl_files:
+      - "plugins/twl/skills/co-issue/refs/co-issue-cleanup.md"
+  - ac_index: 6
+    ac_text: "Sub-1/Sub-2 のソース内コメントを ADR-024 Phase D 参照に書き換える"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1564.bats"
+    test_name: "ac6: pre-bash-refined-status-gate.sh L13 に ADR-024 Phase D 参照が含まれる"
+    impl_files:
+      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
+      - "cli/twl/src/twl/mcp_server/tools.py"
+  - ac_index: 7
+    ac_text: "bats test co-issue-phase4-evidence-generation.bats を新規追加し E1/E2/E3 を検証する"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1564.bats"
+    test_name: "ac7: co-issue-phase4-evidence-generation.bats が plugins/twl/tests/bats/scripts/ に存在する"
+    impl_files:
+      - "plugins/twl/tests/bats/scripts/co-issue-phase4-evidence-generation.bats"
+  - ac_index: 8
+    ac_text: "ADR-024 Phase D 補遺で schema_version の breaking change 方針を明記する"
+    test_file: "plugins/twl/tests/bats/scripts/ac-scaffold-tests-1564.bats"
+    test_name: "ac8: ADR-024 Phase D 補遺に semver 後方互換方針 (1.x.y) が含まれる"
+    impl_files:
+      - "plugins/twl/architecture/decisions/ADR-024-refined-status-field-migration.md"
+  - ac_index: 9
+    ac_text: "本 PR merge 後、Sub-1/Sub-2 の既存 test が regression なし PASS することを CI で確認"
+    test_file: ""
+    test_name: ""
+    impl_files: []
+    # CI 検証のみ、本 PR 内で追加テストなし
+  - ac_index: 10
+    ac_text: "本 PR description で follow-up Issue を 1 件起票し reference する"
+    test_file: ""
+    test_name: ""
+    impl_files: []
+    # PR description での確認のみ
