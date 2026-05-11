@@ -16,43 +16,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add to project
+        id: add-to-project
         uses: actions/add-to-project@244f685bbc3b7adfa8466e08b698b5577571133e # v1.0.2
         with:
           project-url: https://github.com/users/shuu5/projects/6
           github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
 
-      - name: Find project item
-        id: find-item
-        env:
-          GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
-          ISSUE_NODE_ID: ${{ github.event.issue.node_id }}
-        run: |
-          ITEM_ID=$(gh api graphql -f query='
-            query($projectId: ID!) {
-              node(id: $projectId) {
-                ... on ProjectV2 {
-                  items(first: 100) {
-                    nodes {
-                      id
-                      content {
-                        ... on Issue { id }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          ' -f projectId="$PROJECT_ID" \
-            --jq ".data.node.items.nodes[] | select(.content.id == \"$ISSUE_NODE_ID\") | .id" \
-          | head -1)
-          echo "item_id=$ITEM_ID" >> "$GITHUB_OUTPUT"
-
       - name: Update status to Refined
-        if: steps.find-item.outputs.item_id != ''
+        if: steps.add-to-project.outputs.item-id != ''
         env:
           GH_TOKEN: ${{ secrets.ADD_TO_PROJECT_PAT }}
-          ITEM_ID: ${{ steps.find-item.outputs.item_id }}
+          ITEM_ID: ${{ steps.add-to-project.outputs.item-id }}
         run: |
+          set -euo pipefail
           gh api graphql -f query='
             mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
               updateProjectV2ItemFieldValue(input: {
