@@ -1,0 +1,35 @@
+mappings:
+  - ac_index: 1
+    ac_text: ".github/workflows/mcp-restart-smoke.yml の `pip install uv` (現 line 56) を `pip install \"uv==<X.Y.Z>\"` 形式に置換する。"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1603.bats"
+    test_name: "ac1: mcp-restart-smoke.yml に pip install uv のバージョン固定形式が存在する"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"
+
+  - ac_index: 2
+    ac_text: "採用バージョンが PR description に記載されていること（プロセス AC、機械的検証不可）"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1603.bats"
+    test_name: "ac2: PR description にバージョン記載（プロセス AC）"
+    impl_files: []
+    # impl_files: プロセス AC のため実装ファイルなし（skip テスト）
+
+  - ac_index: 3
+    ac_text: "修正後の workflow run で 1 回成功させ、PR description にその run URL を記載すること（プロセス AC、機械的検証不可）"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1603.bats"
+    test_name: "ac3: workflow run 成功と PR description への run URL 記載（プロセス AC）"
+    impl_files: []
+    # impl_files: プロセス AC のため実装ファイルなし（skip テスト）
+
+  - ac_index: 4
+    ac_text: "grep -nE '^\\s*pip install\\s+\"uv==[0-9]+\\.[0-9]+(\\.[0-9]+)?\"' .github/workflows/mcp-restart-smoke.yml が 1 行以上 match すること"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1603.bats"
+    test_name: "ac4: grep でバージョン固定形式の pip install uv が 1 行以上 match する"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"
+
+  - ac_index: 5
+    ac_text: "バージョン未指定の `pip install uv` が同ファイル内に残存しないこと: ! grep -nE '^\\s*pip install\\s+uv\\s*$' .github/workflows/mcp-restart-smoke.yml"
+    test_file: "plugins/twl/tests/bats/ac-scaffold-tests-1603.bats"
+    test_name: "ac5: バージョン未指定の pip install uv が残存しない"
+    impl_files:
+      - ".github/workflows/mcp-restart-smoke.yml"
