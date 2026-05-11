@@ -246,10 +246,11 @@ teardown() {
   # RED: 新 bullet が未追加のため追加行数 = 0 → [ "$added" -ge 1 ] が fail する
   [ -f "$SKILL_FILE" ]
 
-  # git diff で追加行数を取得（repo root から絶対パス指定）
+  # git diff で追加行数を取得（origin/main との比較、repo root から絶対パス指定）
+  # NOTE: HEAD との比較はコミット済み変更を検出できないため origin/main と比較する
   local added repo_root
   repo_root="$(cd "$(dirname "$SKILL_FILE")" && git rev-parse --show-toplevel 2>/dev/null)"
-  added="$(git -C "$repo_root" diff HEAD -- "plugins/twl/skills/co-issue/SKILL.md" 2>/dev/null | \
+  added="$(git -C "$repo_root" diff origin/main -- "plugins/twl/skills/co-issue/SKILL.md" 2>/dev/null | \
     grep '^+' | grep -v '^+++' | wc -l || echo 0)"
 
   # 追加が 1 行以上であること（新 bullet 追加の証拠）
@@ -267,7 +268,7 @@ teardown() {
 
   local deleted repo_root
   repo_root="$(cd "$(dirname "$SKILL_FILE")" && git rev-parse --show-toplevel 2>/dev/null)"
-  deleted="$(git -C "$repo_root" diff HEAD -- "plugins/twl/skills/co-issue/SKILL.md" 2>/dev/null | \
+  deleted="$(git -C "$repo_root" diff origin/main -- "plugins/twl/skills/co-issue/SKILL.md" 2>/dev/null | \
     grep '^-' | grep -v '^---' | wc -l || echo 0)"
 
   [ "$deleted" -eq 0 ]
