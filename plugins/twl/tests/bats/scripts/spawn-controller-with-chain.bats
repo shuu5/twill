@@ -48,10 +48,13 @@ MOCK
 set -euo pipefail
 _DEFAULT_AUTOPILOT_LAUNCH="$STUB_BIN/autopilot-launch.sh"
 _AUTOPILOT_LAUNCH_SH="\${AUTOPILOT_LAUNCH_SH:-\$_DEFAULT_AUTOPILOT_LAUNCH}"
+# #1650: --with-chain gate は default-deny のため、このレガシーテスト suite では SKIP_PILOT_GATE=1 で bypass する
 exec env CLD_SPAWN_OVERRIDE="$STUB_BIN/cld-spawn" \
   AUTOPILOT_LAUNCH_SH="\$_AUTOPILOT_LAUNCH_SH" \
   SKIP_PARALLEL_CHECK=\${SKIP_PARALLEL_CHECK:-1} \
   SKIP_PARALLEL_REASON="\${SKIP_PARALLEL_REASON:-bats test}" \
+  SKIP_PILOT_GATE=1 \
+  SKIP_PILOT_REASON="bats spawn-controller-with-chain legacy test (#1650)" \
   bash "$SPAWN_CONTROLLER" "\$@"
 WRAPPER
   chmod +x "$SANDBOX/run-spawn-controller.sh"

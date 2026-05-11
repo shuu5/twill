@@ -510,8 +510,7 @@ ERROR: SKIP_PILOT_GATE=1 を使う場合は SKIP_PILOT_REASON を必ず指定し
 DENY
       exit 2
     fi
-    _skip_pilot_reason="${_skip_pilot_reason//$'\n'/ }"
-    _skip_pilot_reason="${_skip_pilot_reason//$'\r'/ }"
+    _skip_pilot_reason="${_skip_pilot_reason//[^[:print:]]/ }"
     echo "[spawn-controller] WARN: SKIP_PILOT_GATE=1 — --with-chain --issue gate bypassed (issue=${CHAIN_ISSUE:-?}, reason=${_skip_pilot_reason})" >&2
     {
       _sup_dir="${SUPERVISOR_DIR:-.supervisor}"
