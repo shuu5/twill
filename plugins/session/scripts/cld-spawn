@@ -201,6 +201,9 @@ fi
 
 # MCP server eager-warm: uv cache + .venv import を pre-warm してから claude 起動
 # PROMPT 有無に関わらず常に実行（best-effort、graceful degradation）
+# mid-session stability (#1612): process group は start_new_session=True で分離済み
+# (lifecycle.py restart_mcp_server)。長時間セッション (3.5h+) での disconnect は
+# mcp-watchdog.sh または `twl mcp doctor --auto-restart` で対処する
 if [[ "${TWL_SKIP_MCP_WARM:-0}" != "1" ]]; then
   twl mcp doctor --probe 2>/dev/null || true  # exit 非 0 でも cld-spawn 継続
 fi
