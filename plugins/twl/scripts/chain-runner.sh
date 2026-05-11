@@ -477,6 +477,62 @@ _update_parent_epic_ac_checklist() {
   return 0
 }
 
+# --- _verify_refined_caller: Refined ステータス遷移を認可 caller のみに制限 (Issue #1567 ADR-024) ---
+# 認可 caller: workflow-issue-refine, workflow-issue-lifecycle, co-autopilot, manual-override
+# 非認可の場合: return 1（呼び出し側は || return 0 で chain を継続させる）
+# 呼び出し例:
+#   TWL_CALLER_AUTHZ=workflow-issue-refine    bash chain-runner.sh board-status-update N Refined
+#   TWL_CALLER_AUTHZ=workflow-issue-lifecycle bash chain-runner.sh board-status-update N Refined
+#   TWL_CALLER_AUTHZ=co-autopilot             bash chain-runner.sh board-status-update N Refined
+#   TWL_CALLER_AUTHZ=manual-override          bash chain-runner.sh board-status-update N Refined
+_verify_refined_caller() {
+  local issue_num="${1:-unknown}"
+  local log_file="${REFINED_STATUS_GATE_LOG:-/tmp/refined-status-gate.log}"
+  local caller_authz="${TWL_CALLER_AUTHZ:-}"
+  local ts
+  ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+  # bypass override: SKIP_REFINED_CALLER_VERIFY=1 AND SKIP_REFINED_REASON non-empty
+  if [[ "${SKIP_REFINED_CALLER_VERIFY:-}" == "1" ]]; then
+    if [[ -n "${SKIP_REFINED_REASON:-}" ]]; then
+      printf '[%s] BYPASS chain-runner-caller-verify issue=#%s caller_authz="%s" reason="%s" pid=%s ppid=%s\n' \
+        "$ts" "$issue_num" "$caller_authz" "$SKIP_REFINED_REASON" "$$" "$PPID" \
+        >> "$log_file" 2>/dev/null || true
+      return 0
+    fi
+    # reason 欠落 → bypass 不可、deny へ fall through
+  fi
+
+  # 認可チェック
+  case "$caller_authz" in
+    workflow-issue-refine|workflow-issue-lifecycle|co-autopilot|manual-override)
+      return 0
+      ;;
+  esac
+
+  # deny: log + stderr
+  printf '[%s] DENY chain-runner-caller-verify issue=#%s caller_authz="%s" pid=%s ppid=%s\n' \
+    "$ts" "$issue_num" "$caller_authz" "$$" "$PPID" \
+    >> "$log_file" 2>/dev/null || true
+
+  cat >&2 <<ERRMSG
+ERROR: Refined ステータスへの遷移は認可された caller からのみ許可されます (#1567 ADR-024)。
+  現在の caller: TWL_CALLER_AUTHZ="${caller_authz}"
+
+認可された caller の env marker 値:
+  TWL_CALLER_AUTHZ=workflow-issue-refine    (workflow-issue-refine 経由)
+  TWL_CALLER_AUTHZ=workflow-issue-lifecycle (workflow-issue-lifecycle 経由)
+  TWL_CALLER_AUTHZ=co-autopilot             (co-autopilot 経由)
+  TWL_CALLER_AUTHZ=manual-override          (手動 override)
+
+正規手順: 対応する workflow を経由して board-status-update を呼び出してください。
+bypass: SKIP_REFINED_CALLER_VERIFY=1 SKIP_REFINED_REASON='<理由>' を同時に set すると
+  BYPASS として許可されます（log に記録）。
+参照: ADR-024 / Issue #1557 / Issue #1567
+ERRMSG
+  return 1
+}
+
 # --- board-status-update: Project Board Status 更新 ---
 step_board_status_update() {
   record_current_step "board-status-update"
@@ -491,6 +547,11 @@ step_board_status_update() {
   # 正の整数チェック
   if ! [[ "$issue_num" =~ ^[0-9]+$ ]]; then
     return 0
+  fi
+
+  # Issue #1567: Refined 遷移は認可 caller のみ許可（非認可は skip 扱いで chain 継続）
+  if [[ "$target_status" == "Refined" ]]; then
+    _verify_refined_caller "$issue_num" || return 0
   fi
 
   # project スコープ確認

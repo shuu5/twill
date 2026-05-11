@@ -156,6 +156,7 @@ while IFS= read -r label; do
 done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 
 # Status=Refined を設定（Phase B 移行後: Status only SSoT）
+TWL_CALLER_AUTHZ=workflow-issue-lifecycle \
 bash "${SCRIPTS_ROOT:-plugins/twl/scripts}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined
 _status_exit=$?
 if [[ "$_status_exit" -ne 0 ]]; then
