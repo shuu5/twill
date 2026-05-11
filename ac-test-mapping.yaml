@@ -1163,3 +1163,58 @@ issue_1648:
       note: "本ファイルの実行可能権限確認。生成後は PASS する"
       impl_files:
         - "plugins/twl/tests/bats/issue-1648-auto-refined-workflow.bats"
+# --- Issue #1566 ---
+issue_1566:
+  issue: 1566
+  framework: bats
+  test_file: "plugins/twl/tests/bats/issue-1566-co-issue-skillmd-must-not.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "plugins/twl/skills/co-issue/SKILL.md の ## 禁止事項（MUST NOT）セクション（現 L81-91）に新規 bullet が 1 件追加され、bullet 数が 9 → 10 になる"
+      test_name: "ac1: SKILL.md ## 禁止事項 セクションの bullet 数が 10 件である"
+      status: RED
+      red_mechanism: "現在 bullet 数が 9 件のため [ \"$count\" -eq 10 ] が fail する"
+      impl_files:
+        - "plugins/twl/skills/co-issue/SKILL.md"
+
+    - ac_index: 2
+      ac_text: "新 bullet の文言は以下の 5 要素を全て含む: (a) 主文: 太字で board-status-update 外部呼び出し禁止を明示 (b) bypass #2、ADR-024 / epic #1557 の参照 (c) 認可 caller（co-issue Phase 4 [B] と migration script）の列挙 (d) #1567 caller verify / TWL_CALLER_AUTHZ チェックによる技術的 deny の説明 (e) co-issue 外で Refined を設定したい場合は /twl:co-issue refine #N を呼び出すこと"
+      test_name: "ac2a/ac2b/ac2c/ac2d/ac2e（5 つのサブテスト）"
+      status: RED
+      red_mechanism: "新 bullet が未追加のため、各要素の grep が fail する"
+      impl_files:
+        - "plugins/twl/skills/co-issue/SKILL.md"
+
+    - ac_index: 3
+      ac_text: "新 bullet が既存 L91 bullet（Status=Refined 遷移 MUST）と論理的に矛盾せず、bullet 配置順序（L91 直後への挿入）で読み取れる"
+      test_name: "ac3: 新 bullet が Status=Refined 遷移 MUST bullet の直後に配置されている"
+      status: RED
+      red_mechanism: "新 bullet が未追加のため board-status-update 行が存在しない → refined_line == new_bullet_line になり > 条件 fail"
+      impl_files:
+        - "plugins/twl/skills/co-issue/SKILL.md"
+
+    - ac_index: 4
+      ac_text: "既存の他 MUST NOT bullet の体裁（太字主文 + 括弧内の根拠/制約番号、続く半全角混在の説明文）に整合した記法であること。Markdown lint で新規 warning が増えない（既存 lint 基準内）"
+      test_name: "ac4: 新 bullet の行は太字主文（**...**）の禁止文で始まり括弧内根拠記述の体裁に整合する"
+      status: RED
+      red_mechanism: "新 bullet が未追加のため「呼び出してはならない」を太字で含む bullet 行が存在しない → grep fail"
+      impl_files:
+        - "plugins/twl/skills/co-issue/SKILL.md"
+
+    - ac_index: 5
+      ac_text: "SKILL.md 末尾の正典参照リンク（plugins/twl/architecture/domain/contexts/issue-mgmt.md）が破壊されない（grep で「Issue Management 制約の正典は」行が残存）"
+      test_name: "ac5: SKILL.md に正典参照リンク行（Issue Management 制約の正典は）が残存する"
+      status: GREEN
+      note: "現在から正典参照行が存在するため GREEN。実装後の回帰防止テスト"
+      impl_files:
+        - "plugins/twl/skills/co-issue/SKILL.md"
+
+    - ac_index: 6
+      ac_text: "PR diff の変更が plugins/twl/skills/co-issue/SKILL.md 1 ファイルに限定され、行追加数 <= 15、行削除数 = 0"
+      test_name: "ac6a/ac6b（行追加 >= 1 かつ <= 15、行削除 = 0）"
+      status: MIXED
+      note: |
+        RED: ac6a（行追加 >= 1）は新 bullet 未追加のため fail
+        GREEN: ac6b（行削除 = 0）は現在 diff なしのため fail しない。実装後も削除 0 を保証
+      impl_files:
+        - "plugins/twl/skills/co-issue/SKILL.md"
