@@ -53,25 +53,17 @@ MOCK
   _REAL_SESSION_SCRIPTS="$(cd "$REPO_ROOT/../../../../plugins/session/scripts" 2>/dev/null && pwd || true)"
   export _REAL_SESSION_SCRIPTS
 
-  # spawn-controller.sh 内の CLD_SPAWN 変数は絶対パスで解決されるため
-  # テスト時は CLD_SPAWN 環境変数でオーバーライドする（スクリプトが未対応の場合は
-  # wrapper 経由で呼び出す）。
-  # wrapper: spawn-controller.sh の実行を CLD_SPAWN を置き換えつつ動かす
+  # Issue #1644: CLD_SPAWN_OVERRIDE env var で mock 切り替え
   MOCK_CLD_SPAWN="$STUB_BIN/cld-spawn"
   export MOCK_CLD_SPAWN
 
-  # spawn-controller.sh wrapper: CLD_SPAWN を mock に差し替えて実行
   cat > "$SANDBOX/run-spawn-controller.sh" <<WRAPPER
 #!/usr/bin/env bash
 set -euo pipefail
-# spawn-controller.sh の本体を一時コピーし CLD_SPAWN を mock パスに差し替えて実行
-TMP_SCRIPT="\$(mktemp)"
-cp "$SPAWN_CONTROLLER" "\$TMP_SCRIPT"
-# CLD_SPAWN の解決をオーバーライド: スクリプト内の CLD_SPAWN 設定行を差し替え
-sed -i "s|CLD_SPAWN=\"\\\$TWILL_ROOT/plugins/session/scripts/cld-spawn\"|CLD_SPAWN=\"$MOCK_CLD_SPAWN\"|g" "\$TMP_SCRIPT"
-# 実行可能にして実行
-chmod +x "\$TMP_SCRIPT"
-exec bash "\$TMP_SCRIPT" "\$@"
+exec env CLD_SPAWN_OVERRIDE="$MOCK_CLD_SPAWN" \
+  SKIP_PARALLEL_CHECK=\${SKIP_PARALLEL_CHECK:-1} \
+  SKIP_PARALLEL_REASON="\${SKIP_PARALLEL_REASON:-bats test}" \
+  bash "$SPAWN_CONTROLLER" "\$@"
 WRAPPER
   chmod +x "$SANDBOX/run-spawn-controller.sh"
 }

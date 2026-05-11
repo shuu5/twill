@@ -42,19 +42,17 @@ exit 0
 MOCK
   chmod +x "$STUB_BIN/cld-spawn"
 
-  # spawn-controller.sh wrapper: CLD_SPAWN を mock に差し替えて実行
-  # AUTOPILOT_LAUNCH_SH は呼び出し元が設定している場合はそれを使い、
-  # 未設定の場合のみ stub にフォールバックする
+  # Issue #1644: CLD_SPAWN_OVERRIDE env var で mock 切り替え
   cat > "$SANDBOX/run-spawn-controller.sh" <<WRAPPER
 #!/usr/bin/env bash
 set -euo pipefail
 _DEFAULT_AUTOPILOT_LAUNCH="$STUB_BIN/autopilot-launch.sh"
-TMP_SCRIPT="\$(mktemp)"
-cp "$SPAWN_CONTROLLER" "\$TMP_SCRIPT"
-sed -i "s|CLD_SPAWN=\"\\\$TWILL_ROOT/plugins/session/scripts/cld-spawn\"|CLD_SPAWN=\"$STUB_BIN/cld-spawn\"|g" "\$TMP_SCRIPT"
-chmod +x "\$TMP_SCRIPT"
 _AUTOPILOT_LAUNCH_SH="\${AUTOPILOT_LAUNCH_SH:-\$_DEFAULT_AUTOPILOT_LAUNCH}"
-exec env AUTOPILOT_LAUNCH_SH="\$_AUTOPILOT_LAUNCH_SH" bash "\$TMP_SCRIPT" "\$@"
+exec env CLD_SPAWN_OVERRIDE="$STUB_BIN/cld-spawn" \
+  AUTOPILOT_LAUNCH_SH="\$_AUTOPILOT_LAUNCH_SH" \
+  SKIP_PARALLEL_CHECK=\${SKIP_PARALLEL_CHECK:-1} \
+  SKIP_PARALLEL_REASON="\${SKIP_PARALLEL_REASON:-bats test}" \
+  bash "$SPAWN_CONTROLLER" "\$@"
 WRAPPER
   chmod +x "$SANDBOX/run-spawn-controller.sh"
 

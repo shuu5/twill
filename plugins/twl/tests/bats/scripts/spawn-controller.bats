@@ -33,14 +33,15 @@ MOCK
   MOCK_CLD_SPAWN="$STUB_BIN/cld-spawn"
   export MOCK_CLD_SPAWN
 
+  # Issue #1644: CLD_SPAWN_OVERRIDE env var で mock 切り替え（旧 sed-replace + temp script は
+  # TWILL_ROOT が誤解決される latent bug があったため env override pattern に移行）
   cat > "$SANDBOX/run-spawn-controller.sh" <<WRAPPER
 #!/usr/bin/env bash
 set -euo pipefail
-TMP_SCRIPT="\$(mktemp)"
-cp "$SPAWN_CONTROLLER" "\$TMP_SCRIPT"
-sed -i "s|CLD_SPAWN=\"\\\$TWILL_ROOT/plugins/session/scripts/cld-spawn\"|CLD_SPAWN=\"$MOCK_CLD_SPAWN\"|g" "\$TMP_SCRIPT"
-chmod +x "\$TMP_SCRIPT"
-exec bash "\$TMP_SCRIPT" "\$@"
+exec env CLD_SPAWN_OVERRIDE="$MOCK_CLD_SPAWN" \
+  SKIP_PARALLEL_CHECK=\${SKIP_PARALLEL_CHECK:-1} \
+  SKIP_PARALLEL_REASON="\${SKIP_PARALLEL_REASON:-bats test}" \
+  bash "$SPAWN_CONTROLLER" "\$@"
 WRAPPER
   chmod +x "$SANDBOX/run-spawn-controller.sh"
 }
@@ -263,10 +264,13 @@ make_prompt_file() {
   make_prompt_file 5 "$SANDBOX/prompt.txt"
   > "$CLD_SPAWN_ARGS_LOG"
 
-  local tmp_supervisor_dir
-  tmp_supervisor_dir="$(mktemp -d)"
+  # SUPERVISOR_DIR は相対パスのみ許可 (validate_supervisor_dir)。
+  # SANDBOX に cd して相対 ".supervisor-test" を指定。
+  local rel_supervisor_dir=".supervisor-test"
+  mkdir -p "$SANDBOX/$rel_supervisor_dir"
 
-  SUPERVISOR_DIR="$tmp_supervisor_dir" \
+  cd "$SANDBOX"
+  SUPERVISOR_DIR="$rel_supervisor_dir" \
   SKIP_PARALLEL_CHECK=1 \
   SKIP_PARALLEL_REASON="regression-fix test" \
   run bash "$SANDBOX/run-spawn-controller.sh" co-explore "$SANDBOX/prompt.txt" \
@@ -274,11 +278,9 @@ make_prompt_file() {
 
   assert_success
 
-  # 指定した tmp_supervisor_dir に intervention-log.md が作成されていること（RED ポイント）
-  [[ -f "$tmp_supervisor_dir/intervention-log.md" ]] \
-    || fail "SUPERVISOR_DIR 指定先に intervention-log.md が作成されていない: $tmp_supervisor_dir/intervention-log.md"
-
-  rm -rf "$tmp_supervisor_dir"
+  # 指定した相対 supervisor_dir に intervention-log.md が作成されていること（RED ポイント）
+  [[ -f "$SANDBOX/$rel_supervisor_dir/intervention-log.md" ]] \
+    || fail "SUPERVISOR_DIR 指定先に intervention-log.md が作成されていない: $SANDBOX/$rel_supervisor_dir/intervention-log.md"
 }
 
 @test "skip-parallel-check: SKIP_PARALLEL_CHECK=1 で spawn は継続される" {
@@ -287,10 +289,11 @@ make_prompt_file() {
   make_prompt_file 5 "$SANDBOX/prompt.txt"
   > "$CLD_SPAWN_ARGS_LOG"
 
-  local tmp_supervisor_dir
-  tmp_supervisor_dir="$(mktemp -d)"
+  local rel_supervisor_dir=".supervisor-test"
+  mkdir -p "$SANDBOX/$rel_supervisor_dir"
 
-  SUPERVISOR_DIR="$tmp_supervisor_dir" \
+  cd "$SANDBOX"
+  SUPERVISOR_DIR="$rel_supervisor_dir" \
   SKIP_PARALLEL_CHECK=1 \
   SKIP_PARALLEL_REASON="spawn-continues test" \
   run bash "$SANDBOX/run-spawn-controller.sh" co-explore "$SANDBOX/prompt.txt" \
@@ -298,6 +301,4 @@ make_prompt_file() {
 
   assert_success
   [[ -f "$CLD_SPAWN_ARGS_LOG" ]] || fail "cld-spawn が呼ばれなかった"
-
-  rm -rf "$tmp_supervisor_dir"
 }

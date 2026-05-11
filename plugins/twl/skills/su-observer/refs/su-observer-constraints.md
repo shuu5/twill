@@ -18,7 +18,7 @@
 | SU-7 | observed session への inject/send-keys は介入プロトコルに従う場合に許可（MAY） | OB-3 廃止に対応 |
 | SU-8 | supervisor hook は bare repo 構造（main/ がディレクトリとして存在すること）を前提とし、non-bare 検出時は no-op で exit 0 する（SHALL） | #728 |
 | SU-9 | supervisor hook は filename に埋め込む前に SESSION_ID を allow-list サニタイズ（[A-Za-z0-9_-]）しなければならず、サニタイズ前後で差分があれば stderr に警告を出力しなければならない（SHALL） | #729 |
-| SU-10 | feature-dev plugin の spawn は `mcp__twl__twl_spawn_feature_dev` MCP tool 経由でのみ許可（SHALL）。user 明示依頼時に observer が `.supervisor/feature-dev-request-<N>.json` 承認証跡（TTL 内）を作成し、tool が schema validation + Status=Refined + parallel-check を満たすことを確認した上で spawn を実行する。SKIP_LAYER2=1 直接 path は deprecation period 中（2 wave 後廃止） | #1620（母艦）→ #1635（改訂） |
+| SU-10 | feature-dev plugin の spawn は `spawn-controller.sh feature-dev <issue-number>` 経由でのみ許可（SHALL）。MCP tool `mcp__twl__twl_spawn_feature_dev` は spawn-controller.sh への薄い wrapper として維持。user 明示依頼時に observer が `.supervisor/feature-dev-request-<N>.json` 承認証跡（TTL 内）を作成し、spawn-controller.sh が承認証跡 + schema + TTL + Status=Refined + parallel-check を満たすことを確認した上で cld-spawn を実行する。SKIP_LAYER2=1 直接 path は deprecation period 中（2 wave 後廃止） | #1620（母艦）→ #1635（gate 設計）→ #1644（spawn-controller 統合） |
 
 ## 禁止事項（MUST NOT）
 
@@ -33,7 +33,7 @@
 - 検出結果をユーザー確認なしで自動 Issue 起票してはならない
 - **Issue 起票関連（不変条件 P / ADR-037）**: `gh issue create` を直接実行してはならない。新規 Issue の起票は必ず co-explore による explore-summary 作成後に co-issue 経由で行う。explore-summary なしの直接起票は `pre-bash-issue-create-gate.sh` で block される（bypass は `SKIP_ISSUE_GATE=1 SKIP_ISSUE_REASON='<reason>'` 明記時のみ）
 - `--with-chain --issue N` で co-autopilot を直接起動してはならない（ADR-026、SU-3 連鎖）
-- feature-dev plugin を `mcp__twl__twl_spawn_feature_dev` MCP tool 以外で spawn してはならない（SU-10）。user 明示依頼受信時に `.supervisor/feature-dev-request-<N>.json` 承認証跡を書き出し、MCP tool 経由で gate 検証後に spawn を実行する。SKIP_LAYER2=1 path は deprecation period 中で代替推奨
+- feature-dev plugin を `spawn-controller.sh feature-dev` 経由（MCP tool `mcp__twl__twl_spawn_feature_dev` は wrapper として利用可）以外で spawn してはならない（SU-10、#1644 改訂）。user 明示依頼受信時に `.supervisor/feature-dev-request-<N>.json` 承認証跡を書き出し、spawn-controller.sh が承認証跡 + schema + TTL + Status=Refined + parallel-check を満たすことを確認した上で cld-spawn を実行する。SKIP_LAYER2=1 path は deprecation period 中で代替推奨
 
 ## Security gate (Layer A-D) 回避は MUST NOT
 

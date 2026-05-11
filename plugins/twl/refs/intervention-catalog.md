@@ -179,9 +179,9 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 - **ログ**: `/tmp/issue-create-gate.log` に `[ts] BYPASS reason=<reason> cmd_hash=<hash>` が記録される
 - **事後**: InterventionRecord を `.observation/` に記録。Wave 完了時に su-observer が log を集計し、bypass 5+ 件/Wave で alert
 
-### パターン 14: feature-dev 明示依頼時の spawn 実行（Issue #1635、SU-10 改訂）
+### パターン 14: feature-dev 明示依頼時の spawn 実行（Issue #1644、SU-10 改訂、spawn-controller.sh 統合）
 
-- **発火条件**: user が observer に明示的に feature-dev session の起動を依頼した場合（例: 「#1635 の feature-dev を起動して」「co-autopilot が失敗したので feature-dev に切り替えて」）
+- **発火条件**: user が observer に明示的に feature-dev session の起動を依頼した場合（例: 「#1644 の feature-dev を起動して」「co-autopilot が失敗したので feature-dev に切り替えて」）
 - **承認証跡（user 明示依頼の confirmation 証拠）**:
   - observer が依頼受信時点で `.supervisor/feature-dev-request-<N>.json` を書き出す（schema: `{issue, requested_at, requested_by:"user", ttl_seconds, intervention_id, notes?}`、TTL=1800s デフォルト）
   - 承認証跡ファイルが SU-2「Layer 2 Escalate の介入はユーザー確認が MUST」の confirmation 証拠として機能する
@@ -189,27 +189,32 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 
 | 条件 | 承認 |
 |---|---|
-| `.supervisor/feature-dev-request-<N>.json` 存在 + TTL 内 + Status=Refined + parallel-check pass | Auto allow（MCP tool 経由で spawn 実行） |
-| 承認証跡不在 | Deny: 「user 明示依頼が必要」エラー |
-| TTL 切れ | Deny: 「approval expired」エラー、再依頼必要 |
-| Status != Refined | Deny: 「Status must be Refined」エラー |
+| `.supervisor/feature-dev-request-<N>.json` 存在 + TTL 内 + Status=Refined + parallel-check pass | Auto allow（spawn-controller.sh feature-dev path で gate pass → cld-spawn 実行） |
+| 承認証跡不在 | Deny: 「approval trail not found」エラー |
+| TTL 切れ | Deny: 「approval trail TTL expired」エラー、再依頼必要 |
+| Status != Refined | Deny: 「Status=Refined check failed」エラー |
 
-- **実行制約**: feature-dev spawn は `mcp__twl__twl_spawn_feature_dev` MCP tool 経由でのみ許可（SHALL）。Supervisor が直接 cld-spawn を叩くことは禁止
+- **実行制約**: feature-dev spawn は `spawn-controller.sh feature-dev <issue-number>` 経由でのみ許可（SHALL）。MCP tool `mcp__twl__twl_spawn_feature_dev` は spawn-controller.sh を呼ぶ薄い wrapper として維持される。直接 cld-spawn を叩くことは禁止
 - **命名規則**:
-  - tmux window: `wt-fd-<N>`（例: `wt-fd-1635`）
-  - worktree branch: `wt-fd-<N>-<short>`（例: `wt-fd-1635-feature-dev-spawn-gate`）
+  - tmux window: `wt-fd-<N>`（例: `wt-fd-1644`）
+  - worktree branch: `fd-<N>`（例: `fd-1644`、spawn-controller.sh が `--cd` 未指定時に auto-create）
+- **main 直接 push 防止**（Issue #1644 で追加）:
+  - **pre-push hook**: spawn-controller.sh feature-dev path が `install-git-hooks.sh --worktree <PATH>` で per-worktree `core.hooksPath = .fd-hooks/` を設定。worktree 内から `git push origin main` を実行すると exit 1
+  - **prompt 注入**: skill prefix 直後に「MUST: worktree 内作業」「main への直接 push 禁止」「PR 経由 merge」を注入（多層防御）
+  - bypass: `git push --no-verify`（user 裁量）
 - **修復手順**:
   1. observer が `.supervisor/feature-dev-request-<N>.json` を作成
-  2. `mcp__twl__twl_spawn_feature_dev(issue=N, ...)` を呼び出し
-  3. tool 内で gate チェイン（schema → TTL → Status=Refined → parallel-check）を実行
-  4. cld-spawn が起動 → tmux window `wt-fd-<N>` 作成
-  5. 承認証跡を `.supervisor/consumed/feature-dev-request-<N>-<ts>.json` に atomic rename（one-shot 消費、再利用不可）
-- **リスク評価**: 中（feature-dev は TDD 強制 OFF だが、承認証跡 + Status gate + parallel gate の三層防御で過去事故パターン（RED-only merge 等）を回避）
-- **deprecation note**: `SKIP_LAYER2=1 SKIP_LAYER2_REASON='<reason>'` による直接 spawn-controller.sh 経由の override は deprecation period 中（2 wave 後に廃止予定）。MCP tool 経由を使用すること
+  2. `mcp__twl__twl_spawn_feature_dev(issue=N, ...)` を呼び出し（または直接 `spawn-controller.sh feature-dev <N>`）
+  3. spawn-controller.sh feature-dev path 内で gate チェイン（schema → TTL → Status=Refined → parallel-check）を実行
+  4. 承認証跡を `.supervisor/consumed/feature-dev-request-<N>-<ts>.json` に atomic rename（one-shot 消費、再利用不可）
+  5. worktree auto-create（`$TWILL_ROOT/worktrees/fd-<N>`）+ pre-push hook 設置
+  6. cld-spawn が起動 → tmux window `wt-fd-<N>` 作成
+- **リスク評価**: 中（feature-dev は TDD 強制 OFF だが、承認証跡 + Status gate + parallel gate + pre-push hook + prompt 注入の多層防御で過去事故パターン（RED-only merge、main 直接 push）を回避）
+- **deprecation note**: `SKIP_LAYER2=1 SKIP_LAYER2_REASON='<reason>'` で gate check のみ bypass 可能（2 wave 維持、AC-4.6）。完全削除は Wave U.W+2 で別 Issue
 - **事後**: `record-feature-dev-fallback.sh` で InterventionRecord 保存 + doobidoo lesson 記録
 - **検知スクリプト / tool**:
   - 検知: `plugins/twl/skills/su-observer/scripts/feature-dev-fallback-detect.sh`（trigger 検出は維持）
-  - spawn 実行: `mcp__twl__twl_spawn_feature_dev` MCP tool（`cli/twl/src/twl/mcp_server/tools.py`）
+  - spawn 実行: `bash plugins/twl/skills/su-observer/scripts/spawn-controller.sh feature-dev <N>`（または `mcp__twl__twl_spawn_feature_dev` MCP tool 経由）
 
 ---
 

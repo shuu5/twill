@@ -1774,15 +1774,10 @@ _SPAWN_CONTROLLER_SCRIPT = (
 )
 _SPAWN_CONTROLLER_SHADOW_LOG = Path("/tmp/mcp-shadow-spawn-controller.log")
 
-# --- spawn_feature_dev (Issue #1635) ---
+# --- spawn_feature_dev (Issue #1635 / Issue #1644 で wrapper 化) ---
 _SPAWN_FEATURE_DEV_SHADOW_LOG = Path("/tmp/mcp-shadow-spawn-feature-dev.log")
-_FEATURE_DEV_REQUEST_REQUIRED_FIELDS = frozenset({
-    "issue",
-    "requested_at",
-    "requested_by",
-    "ttl_seconds",
-    "intervention_id",
-})
+# NOTE: 旧 _FEATURE_DEV_REQUEST_REQUIRED_FIELDS は #1644 で削除。schema 検証は
+# spawn-controller.sh の _fd_run_gate_checks (bash) が責務を持つ。
 
 _VALID_CONTROLLER_SKILLS = [
     "co-explore",
@@ -2095,211 +2090,68 @@ def twl_spawn_feature_dev_handler(
     timeout: int = 120,
     supervisor_dir: str | None = None,
 ) -> dict:
-    """Spawn feature-dev session via cld-spawn after verifying user-explicit-request gate.
+    """Spawn feature-dev session via spawn-controller.sh (thin wrapper, Issue #1644).
 
-    Implements Issue #1635 (SU-10 改訂). The gate chain is:
-      1. issue positive-integer validation
-      2. .supervisor/feature-dev-request-<N>.json existence + schema validation
-      3. TTL check (now - requested_at <= ttl_seconds)
-      4. Status=Refined check (shell out to spawn-controller.sh --check-refined-status)
-      5. parallel-spawn check (shell out to spawn-controller.sh --check-parallel-only)
-      6. cld-spawn invocation with window_name=wt-fd-<N>
-      7. atomic rename to .supervisor/consumed/feature-dev-request-<N>-<ts>.json
-         (one-shot consume — approval cannot be reused)
+    Refactor history:
+      - #1635: original implementation (Python gate chain + direct cld-spawn invocation)
+      - #1644: refactored as a thin wrapper around spawn-controller.sh feature-dev path.
+        All gate logic (approval trace + schema + TTL + Refined + parallel + atomic rename),
+        prompt prefix (/feature-dev:feature-dev #N), provenance injection, worktree
+        auto-creation, and pre-push hook installation are now handled in bash. This unifies
+        the spawn path with the successful co-autopilot pattern (Pattern A) and structurally
+        eliminates bug-1/2/3/4 from the Wave U.Y dogfooding (see ADR-041 for details).
+
+    Parameters preserved for API compatibility (DP-1):
+      - prompt_text: accepted but silently ignored (FINAL_PROMPT is built in bash)
 
     Returns {ok, window, session, pid, error} (same schema as twl_spawn_session).
     """
     import subprocess  # noqa: PLC0415
-    import time  # noqa: PLC0415
-    import shutil  # noqa: PLC0415
-    from datetime import datetime, timezone  # noqa: PLC0415
 
-    # --- 1. issue validation ---
+    # --- 1. issue validation (defense-in-depth; spawn-controller.sh also validates) ---
     if not isinstance(issue, int) or issue < 1:
         return {
             "ok": False, "window": None, "session": None, "pid": None,
             "error": f"issue must be a positive integer: {issue!r}",
         }
 
-    # --- 2. supervisor_dir + request file path ---
-    sup_dir = Path(supervisor_dir) if supervisor_dir else Path(".supervisor")
-    request_file = sup_dir / f"feature-dev-request-{issue}.json"
-    if not request_file.exists():
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": (
-                f"request file not found: {request_file}. "
-                "User must create .supervisor/feature-dev-request-<N>.json with "
-                "{issue, requested_at, requested_by, ttl_seconds, intervention_id}."
-            ),
-        }
-
-    # --- 3. JSON parse + schema validation ---
-    try:
-        data = json.loads(request_file.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": f"approval trail JSON parse error: {exc} (file: {request_file})",
-        }
-    if not isinstance(data, dict):
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": f"approval trail must be a JSON object, got {type(data).__name__}",
-        }
-    missing = sorted(_FEATURE_DEV_REQUEST_REQUIRED_FIELDS - data.keys())
-    if missing:
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": f"approval trail missing field(s) {missing} in {request_file}",
-        }
-
-    # --- 4. TTL check ---
-    raw_at = str(data["requested_at"])
-    # Normalize 'Z' suffix → '+00:00' for datetime.fromisoformat compatibility
-    normalized_at = raw_at[:-1] + "+00:00" if raw_at.endswith("Z") else raw_at
-    try:
-        requested_at_dt = datetime.fromisoformat(normalized_at)
-    except ValueError as exc:
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": f"approval trail requested_at parse failed: {exc} (value: {raw_at!r})",
-        }
-    if requested_at_dt.tzinfo is None:
-        requested_at_dt = requested_at_dt.replace(tzinfo=timezone.utc)
-    try:
-        ttl_seconds = int(data["ttl_seconds"])
-    except (TypeError, ValueError):
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": f"approval trail ttl_seconds invalid: {data['ttl_seconds']!r}",
-        }
-    now = datetime.now(timezone.utc)
-    elapsed = (now - requested_at_dt).total_seconds()
-    if elapsed > ttl_seconds:
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": (
-                f"approval trail TTL expired: elapsed={int(elapsed)}s > ttl_seconds={ttl_seconds}s. "
-                "Re-request user approval."
-            ),
-        }
-
-    # --- 5. Status=Refined check (shell out to spawn-controller.sh) ---
+    # --- 2. resolve spawn-controller.sh path ---
     script = Path(os.environ.get("SPAWN_CONTROLLER_SCRIPT", str(_SPAWN_CONTROLLER_SCRIPT)))
     if not script.exists():
         return {
             "ok": False, "window": None, "session": None, "pid": None,
             "error": f"spawn-controller.sh not found: {script}",
         }
-    # Compose env for bash subprocess. SUPERVISOR_DIR must NOT be absolute for
-    # validate_supervisor_dir to pass; use cwd=sup_dir_parent + relative name.
-    sup_dir_abs = sup_dir.resolve()
-    sup_dir_parent = str(sup_dir_abs.parent)
-    sup_dir_name = sup_dir_abs.name or ".supervisor"
-    bash_env = {**os.environ, "SUPERVISOR_DIR": sup_dir_name}
-    # --check-refined-status is dispatched BEFORE parallel check in spawn-controller.sh
-    # (Issue #1635 — avoids SKIP_PARALLEL_CHECK intervention-log pollution). No SKIP env needed.
-    try:
-        rs = subprocess.run(
-            ["bash", str(script), "--check-refined-status", str(issue)],
-            capture_output=True, text=True, timeout=30,
-            cwd=sup_dir_parent, env=bash_env,
-        )
-        if rs.returncode == 2:
-            stderr = rs.stderr.strip()
-            msg = stderr if "Status must be Refined" in stderr else f"Status must be Refined: {stderr}"
-            return {"ok": False, "window": None, "session": None, "pid": None, "error": msg}
-    except subprocess.TimeoutExpired:
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": "Status check timeout after 30s",
-        }
 
-    # --- 6. parallel-spawn check (shell out) ---
-    try:
-        pc = subprocess.run(
-            ["bash", str(script), "--check-parallel-only", str(issue)],
-            capture_output=True, text=True, timeout=30,
-            cwd=sup_dir_parent, env=bash_env,
-        )
-        if pc.returncode == 2:
+    # --- 3. compose env (SUPERVISOR_DIR pass-through; validate_supervisor_dir requires non-absolute) ---
+    if supervisor_dir:
+        sup_dir_abs = Path(supervisor_dir).resolve()
+        sup_dir_name = sup_dir_abs.name
+        if not sup_dir_name:
             return {
                 "ok": False, "window": None, "session": None, "pid": None,
-                "error": f"parallel spawn denied: {pc.stderr.strip()}",
+                "error": f"supervisor_dir resolves to a root-like path: {supervisor_dir!r}",
             }
-        # exit 1 = degrade mode (warning only); continue
-    except subprocess.TimeoutExpired:
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": "parallel-spawn check timeout after 30s",
-        }
+        sup_dir_parent = str(sup_dir_abs.parent)
+        bash_env = {**os.environ, "SUPERVISOR_DIR": sup_dir_name}
+    else:
+        sup_dir_parent = None  # use current cwd
+        bash_env = {**os.environ}
 
-    # --- 7. one-shot claim (atomic rename BEFORE cld-spawn — Issue #1635 TOCTOU fix) ---
-    # All gate checks have passed. Atomically claim the approval by renaming to consumed/
-    # before invoking cld-spawn. If a parallel caller already claimed it, FileNotFoundError
-    # is raised by rename() — that caller is the winner; we abort. one-shot guarantee:
-    # even if cld-spawn fails downstream, the approval is consumed (user must re-approve).
-    consumed_dir = sup_dir / "consumed"
-    consumed_dir.mkdir(parents=True, exist_ok=True)
-    ts = int(time.time())
-    consumed_path = consumed_dir / f"feature-dev-request-{issue}-{ts}.json"
-    try:
-        request_file.rename(consumed_path)
-    except FileNotFoundError:
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": "approval trail already consumed by a parallel caller (race lost)",
-        }
-    except OSError:
-        # cross-fs fallback (e.g., tmpfs → ext4). copy2 + unlink, with explicit error handling.
-        try:
-            shutil.copy2(str(request_file), str(consumed_path))
-        except OSError as exc:
-            return {
-                "ok": False, "window": None, "session": None, "pid": None,
-                "error": f"approval consume copy failed: {exc}",
-            }
-        try:
-            request_file.unlink()
-        except OSError as exc:
-            # consumed copy exists but original could not be deleted — clean up the copy
-            # to keep filesystem consistent (avoid both files existing).
-            consumed_path.unlink(missing_ok=True)
-            return {
-                "ok": False, "window": None, "session": None, "pid": None,
-                "error": f"approval consume unlink failed: {exc}",
-            }
-
-    # --- 8. cld-spawn invocation (approval already consumed; one-shot guarantee) ---
-    cld_script = Path(os.environ.get("CLD_SPAWN_SCRIPT", str(_CLD_SPAWN_SCRIPT)))
-    if not cld_script.exists():
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": f"cld-spawn script not found: {cld_script} (approval was consumed at {consumed_path})",
-        }
-    window_name = f"wt-fd-{issue}"
-    # Defensive check — issue validated as positive int above, so window_name always matches
-    # _VALID_WINDOW_NAME_RE. Kept as defense-in-depth against future signature changes.
-    if not _VALID_WINDOW_NAME_RE.match(window_name):
-        return {
-            "ok": False, "window": None, "session": None, "pid": None,
-            "error": f"computed window_name contains invalid characters: {window_name!r}",
-        }
-    cmd: list[str] = ["bash", str(cld_script)]
+    # --- 4. build command: spawn-controller.sh feature-dev <issue> [--cd PATH] [--model] [--timeout] ---
+    # All gate logic is in bash (#1644). prompt_text is silently dropped (DP-1 API maintenance).
+    _ = prompt_text  # noqa: F841 — kept for API compatibility, ignored intentionally
+    cmd: list[str] = ["bash", str(script), "feature-dev", str(issue)]
     if worktree_path:
         cmd += ["--cd", worktree_path]
-    cmd += ["--window-name", window_name]
-    cmd += ["--timeout", str(timeout)]
-    cmd += ["--model", model]
-    if prompt_text:
-        cmd.append(prompt_text)
+    cmd += ["--model", model, "--timeout", str(timeout)]
 
     run_timeout = timeout + 30
     try:
-        result = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=run_timeout,
-        )
+        run_kwargs: dict = dict(capture_output=True, text=True, timeout=run_timeout, env=bash_env)
+        if sup_dir_parent is not None:
+            run_kwargs["cwd"] = sup_dir_parent
+        result = subprocess.run(cmd, **run_kwargs)
     except FileNotFoundError as exc:
         _spawn_feature_dev_shadow_log({"ok": False, "exit_code": -1, "stderr": str(exc), "issue": issue})
         return {"ok": False, "window": None, "session": None, "pid": None, "error": str(exc)}
@@ -2307,8 +2159,11 @@ def twl_spawn_feature_dev_handler(
         _spawn_feature_dev_shadow_log({"ok": False, "exit_code": -2, "stderr": "timeout", "issue": issue})
         return {
             "ok": False, "window": None, "session": None, "pid": None,
-            "error": f"cld-spawn timed out after {run_timeout}s",
+            "error": f"spawn-controller.sh feature-dev timed out after {run_timeout}s",
         }
+    except Exception as exc:  # noqa: BLE001 — defensive catch for unexpected subprocess errors
+        _spawn_feature_dev_shadow_log({"ok": False, "exit_code": -3, "stderr": str(exc), "issue": issue})
+        return {"ok": False, "window": None, "session": None, "pid": None, "error": str(exc)}
 
     ok = result.returncode == 0
     _spawn_feature_dev_shadow_log({
@@ -2317,15 +2172,15 @@ def twl_spawn_feature_dev_handler(
         "stderr": result.stderr,
         "stdout": result.stdout,
         "issue": issue,
-        "consumed_path": str(consumed_path),
     })
     if not ok:
         return {
             "ok": False, "window": None, "session": None, "pid": None,
-            "error": result.stderr.strip() or f"cld-spawn exited {result.returncode}",
+            "error": result.stderr.strip() or f"spawn-controller.sh feature-dev exited {result.returncode}",
         }
 
-    # --- 9. window/session/pid resolution ---
+    # --- 5. window/session/pid resolution ---
+    window_name = f"wt-fd-{issue}"
     parsed_window = _parse_spawn_window(result.stdout) or window_name
     pid = _get_window_pid(parsed_window) if parsed_window else None
     try:

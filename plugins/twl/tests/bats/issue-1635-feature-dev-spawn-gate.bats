@@ -1,19 +1,26 @@
 #!/usr/bin/env bats
 # issue-1635-feature-dev-spawn-gate.bats
-# Tests for Issue #1635: feat(supervision): observer feature-dev spawn gate
+# LEGACY tests for Issue #1635 (superseded by Issue #1644).
 #
-# AC coverage:
+# Issue #1644 で twl_spawn_feature_dev_handler は spawn-controller.sh feature-dev path の
+# 薄い wrapper に refactor された。Python 側の gate logic（schema/TTL/atomic rename）は
+# bash 側（spawn-controller.sh `_fd_run_gate_checks`）に移植され、Python は subprocess.run を
+# 呼ぶだけになった。
+#
+# 新挙動のテスト:
+#   - bash gate logic: plugins/twl/tests/bats/scripts/spawn-controller-feature-dev.bats
+#   - Python wrapper:   plugins/twl/tests/bats/scripts/spawn-feature-dev-mcp.bats
+#
+# 本ファイルは API 互換性確認のため残すが、Python 側の gate logic を直接 assert する
+# 個別テストは新仕様で path が変わるため skip する。
+#
+# 旧 AC coverage:
 #   AC1 - 新 MCP tool twl_spawn_feature_dev の骨格実装
 #   AC2 - 承認証跡ファイルの schema 定義と検証
 #   AC3 - Status=Refined 検証（Phase 1: 4-stage taxonomy ベース）
 #   AC4 - 承認証跡の one-shot 消費 + 並列 spawn check 統合
 #   AC6 - SKIP_LAYER2=1 path に deprecation warning
 #   AC7 - bats tests (RED → GREEN)
-#
-# テスト設計:
-#   - Python handler を python3 -c で起動し JSON 戻り値を assert（PYTHONPATH は common_setup 設定）
-#   - spawn-controller.sh の bash 側機能 (--check-parallel-only, SKIP_LAYER2 deprecation) も verify
-#   - cld-spawn, tmux, gh はすべて stub_command で mock
 
 load 'helpers/common'
 
@@ -22,6 +29,9 @@ load 'helpers/common'
 # ---------------------------------------------------------------------------
 
 setup() {
+  # Issue #1644: legacy archive. 新挙動は spawn-controller-feature-dev.bats / spawn-feature-dev-mcp.bats を参照。
+  skip "Legacy test for Issue #1635, superseded by Issue #1644 (handler refactored to thin wrapper). See plugins/twl/tests/bats/scripts/spawn-controller-feature-dev.bats and spawn-feature-dev-mcp.bats for current behavior."
+
   common_setup
 
   # 実スクリプトを直接呼ぶ（ファイルパス解決のため sandbox copy ではなく REPO_ROOT 経由）
