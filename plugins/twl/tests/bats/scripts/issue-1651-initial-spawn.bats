@@ -12,6 +12,8 @@
 # AC3: pitfalls-catalog §11.3 拡張
 #      初回 spawn 例外 path を明記 (chicken-and-egg 回避 logic)
 
+bats_require_minimum_version 1.5.0
+
 load '../helpers/common'
 
 PARALLEL_CHECK_LIB=""
@@ -111,7 +113,7 @@ teardown() {
   [[ -f "$PARALLEL_CHECK_LIB" ]] \
     || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
 
-  run bash -c "
+  run --separate-stderr bash -c "
     source '$PARALLEL_CHECK_LIB'
     OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
     OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=false \
@@ -122,9 +124,9 @@ teardown() {
     OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
     OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
     _check_parallel_spawn_eligibility
-  " 2>&1
+  "
 
-  echo "$output" | grep -qiE 'initial spawn|controller_count=0|初回|heartbeat.*skip|skip.*heartbeat' \
+  echo "$stderr" | grep -qiE 'initial spawn|controller_count=0|初回|heartbeat.*skip|skip.*heartbeat' \
     || fail "controller_count=0 時に初回 spawn に関する INFO ログが出力されていない（AC1 未実装）"
 }
 
