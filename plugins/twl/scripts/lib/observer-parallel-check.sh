@@ -311,6 +311,8 @@ _check_parallel_spawn_eligibility() {
   local heartbeat_alive="${OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE:-$(check_controller_heartbeat_alive "$snapshot_ts")}"
   local mode="${OBSERVER_PARALLEL_CHECK_MODE:-$(check_observer_mode)}"
   local controller_count="${OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT:-$(count_eligible_controllers "$snapshot_ts")}"
+  # 整数バリデーション: 非数値は 0 として扱う（bash 算術展開の暗黙 0 変換を明示化）
+  [[ "$controller_count" =~ ^[0-9]+$ ]] || controller_count=0
   local monitor_cld_alive="${OBSERVER_PARALLEL_CHECK_MONITOR_CLD:-$(check_monitor_cld_observe_alive)}"
   local controller_states="${OBSERVER_PARALLEL_CHECK_STATES:-$(get_controller_states "$snapshot_ts")}"
   local budget_min="${OBSERVER_PARALLEL_CHECK_BUDGET_MIN:-$(get_budget_minutes_remaining)}"
@@ -318,6 +320,16 @@ _check_parallel_spawn_eligibility() {
 
   # --- 必須条件評価（3つ, causally decisive） ---
   local missing_must=()
+
+  # [#1651] controller_count=0 短絡 path: 初回 spawn は heartbeat check skip
+  # chicken-and-egg 回避: controller 不在時は heartbeat が出ないため、
+  # controller_count=0 の場合のみ heartbeat_alive を true とみなす。
+  # states も空扱い（controller が 0 なら検証対象の state も 0 件）。
+  if (( controller_count == 0 )); then
+    echo "[parallel-check] INFO: controller_count=0 (initial spawn) — heartbeat check skipped" >&2
+    heartbeat_alive=true
+    controller_states=''
+  fi
 
   # 必須条件1: controller heartbeat alive (≤ 5min)
   if [[ "$heartbeat_alive" != "true" ]]; then
