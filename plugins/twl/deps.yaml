@@ -3048,7 +3048,7 @@ scripts:
   spawn-controller:
     type: script
     path: skills/su-observer/scripts/spawn-controller.sh
-    description: "su-observer 用 controller 起動 wrapper: /twl:<skill> invocation 自動 prepend + invalid flag (--help 等) ガード + window 名自動一意化。cld-spawn 直接呼び出しを代替し pitfalls-catalog §1 の失敗を防ぐ。co-autopilot + --with-chain --issue N で autopilot-launch.sh に委譲し chain 連携モードで起動（#835）"
+    description: "su-observer 用 controller 起動 wrapper: /twl:<skill> invocation 自動 prepend + invalid flag (--help 等) ガード + window 名自動一意化。cld-spawn 直接呼び出しを代替し pitfalls-catalog §1 の失敗を防ぐ。co-autopilot + --with-chain --issue N で autopilot-launch.sh に委譲し chain 連携モードで起動（#835）。Issue #1635 / ADR-040 で `--check-refined-status <N>` と `--check-parallel-only <N>` サブコマンドを追加（mcp__twl__twl_spawn_feature_dev MCP tool から shell out される SSoT）。SKIP_LAYER2=1 path は deprecation period 中"
     calls:
       - script: supervisor-dir-validate
 
