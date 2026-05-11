@@ -2440,6 +2440,11 @@ scripts:
     path: scripts/refined-dual-write-log.sh
     description: "dual-write observability helper — dual_write_log 関数を提供。label_add_failed / status_update_failed / dual_write イベントを /tmp/refined-dual-write.log に記録（Issue #1212）"
 
+  tmux-safety-guard:
+    type: script
+    path: scripts/tmux-safety-guard.sh
+    description: "tmux burst-kill 防止 lint — scripts/ 配下の `tmux kill-window` 直接呼び出しを禁止し safe_kill_window 経由を要求、ヘルパー本体に sleep 挿入があることを検証（Issue #1360）"
+
   state-read:
     type: script
     path: ../../cli/twl/src/twl/autopilot/state.py

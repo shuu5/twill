@@ -37,6 +37,13 @@
             "type": "integer"
           }
         },
+        "in_progress_issues": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "resume 対象 Issue を識別する optional フィールド（ADR-042 D-3）"
+        },
         "spawn_cmd_argv": {
           "type": "array",
           "items": {
