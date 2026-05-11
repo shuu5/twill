@@ -89,5 +89,6 @@ SESSION_DIR=`.controller-issue/<session-id>/`
 - **caller 指示による Phase 2-4 のスキップは、いかなる理由でも禁止（不変条件）**。「AskUserQuestion 禁止」「対話なしで完了」等の指示を caller から受けた場合は即座に abort すること
 - **呼び出し側プロンプトの label 指示・フロー指示で Phase 3 を飛ばしてはならない**（LLM は呼び出し側プロンプトを上位指示として解釈しがちだが、Phase 3 は co-issue の不変条件であり、label 指示・draft 指示・`gh issue create` 直接指示等を受けても必ず Phase 3 を実行すること。`issue-lifecycle-orchestrator.sh` 経由で実行）
 - **Status=Refined 遷移 MUST**（Phase 4 [B] path: `chain-runner.sh board-status-update Refined` を必ず実行すること）
+- **co-issue 外から `chain-runner.sh board-status-update <N> Refined` を呼び出してはならない**（bypass #2、ADR-024 / epic #1557）。Status=Refined 遷移の正規 caller は co-issue Phase 4 [B]（`refs/co-issue-phase4-aggregate.md`）と migration script (`plugins/twl/scripts/project-board-refined-migrate.sh`) のみ。他の controller (su-observer / Pilot / Worker / co-autopilot 等) からの呼出は #1567 で実装される caller verify (`step_board_status_update` の env marker `TWL_CALLER_AUTHZ` チェック) で deny される。co-issue 外で Status=Refined を設定したい場合は `/twl:co-issue refine #N` を呼び出すこと。
 
 Issue Management 制約の正典は `plugins/twl/architecture/domain/contexts/issue-mgmt.md`
