@@ -194,6 +194,7 @@ flowchart TD
 | SU-7 | observed session への inject/send-keys は介入プロトコルに従う場合に許可（MAY） | OB-3 廃止に対応 |
 | SU-8 | supervisor hook は bare repo 構造（main/ がディレクトリとして存在すること）を前提とし、non-bare 検出時は no-op で exit 0 する（SHALL） | #728 |
 | SU-9 | supervisor hook は filename に埋め込む前に SESSION_ID を allow-list サニタイズ（[A-Za-z0-9_-]）しなければならず、サニタイズ前後で差分があれば stderr に警告を出力しなければならない（SHALL） | #729 |
+| SU-10 | feature-dev plugin の spawn は `mcp__twl__twl_spawn_feature_dev` MCP tool 経由でのみ許可（SHALL）。user 明示依頼時に observer が `.supervisor/feature-dev-request-<N>.json` 承認証跡（TTL 内）を作成し、tool が schema validation + Status=Refined + parallel-check を満たすことを確認した上で spawn を実行する。SKIP_LAYER2=1 直接 path は deprecation period 中（2 wave 後廃止） | #1620（母艦）→ #1635（改訂） |
 
 ### OB-* Constraints との関係
 

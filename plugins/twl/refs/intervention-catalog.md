@@ -179,6 +179,38 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 - **ログ**: `/tmp/issue-create-gate.log` に `[ts] BYPASS reason=<reason> cmd_hash=<hash>` が記録される
 - **事後**: InterventionRecord を `.observation/` に記録。Wave 完了時に su-observer が log を集計し、bypass 5+ 件/Wave で alert
 
+### パターン 14: feature-dev 明示依頼時の spawn 実行（Issue #1635、SU-10 改訂）
+
+- **発火条件**: user が observer に明示的に feature-dev session の起動を依頼した場合（例: 「#1635 の feature-dev を起動して」「co-autopilot が失敗したので feature-dev に切り替えて」）
+- **承認証跡（user 明示依頼の confirmation 証拠）**:
+  - observer が依頼受信時点で `.supervisor/feature-dev-request-<N>.json` を書き出す（schema: `{issue, requested_at, requested_by:"user", ttl_seconds, intervention_id, notes?}`、TTL=1800s デフォルト）
+  - 承認証跡ファイルが SU-2「Layer 2 Escalate の介入はユーザー確認が MUST」の confirmation 証拠として機能する
+- **判定基準**:
+
+| 条件 | 承認 |
+|---|---|
+| `.supervisor/feature-dev-request-<N>.json` 存在 + TTL 内 + Status=Refined + parallel-check pass | Auto allow（MCP tool 経由で spawn 実行） |
+| 承認証跡不在 | Deny: 「user 明示依頼が必要」エラー |
+| TTL 切れ | Deny: 「approval expired」エラー、再依頼必要 |
+| Status != Refined | Deny: 「Status must be Refined」エラー |
+
+- **実行制約**: feature-dev spawn は `mcp__twl__twl_spawn_feature_dev` MCP tool 経由でのみ許可（SHALL）。Supervisor が直接 cld-spawn を叩くことは禁止
+- **命名規則**:
+  - tmux window: `wt-fd-<N>`（例: `wt-fd-1635`）
+  - worktree branch: `wt-fd-<N>-<short>`（例: `wt-fd-1635-feature-dev-spawn-gate`）
+- **修復手順**:
+  1. observer が `.supervisor/feature-dev-request-<N>.json` を作成
+  2. `mcp__twl__twl_spawn_feature_dev(issue=N, ...)` を呼び出し
+  3. tool 内で gate チェイン（schema → TTL → Status=Refined → parallel-check）を実行
+  4. cld-spawn が起動 → tmux window `wt-fd-<N>` 作成
+  5. 承認証跡を `.supervisor/consumed/feature-dev-request-<N>-<ts>.json` に atomic rename（one-shot 消費、再利用不可）
+- **リスク評価**: 中（feature-dev は TDD 強制 OFF だが、承認証跡 + Status gate + parallel gate の三層防御で過去事故パターン（RED-only merge 等）を回避）
+- **deprecation note**: `SKIP_LAYER2=1 SKIP_LAYER2_REASON='<reason>'` による直接 spawn-controller.sh 経由の override は deprecation period 中（2 wave 後に廃止予定）。MCP tool 経由を使用すること
+- **事後**: `record-feature-dev-fallback.sh` で InterventionRecord 保存 + doobidoo lesson 記録
+- **検知スクリプト / tool**:
+  - 検知: `plugins/twl/skills/su-observer/scripts/feature-dev-fallback-detect.sh`（trigger 検出は維持）
+  - spawn 実行: `mcp__twl__twl_spawn_feature_dev` MCP tool（`cli/twl/src/twl/mcp_server/tools.py`）
+
 ---
 
 ## Layer 2: Escalate
@@ -208,7 +240,9 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
 - **実行制約**: Supervisor は実行しない。Issue 化を推奨
 - **リスク評価**: 高（影響範囲が広い。誤った修正は複数 Issue に影響する）
 
-### パターン 14: co-autopilot 失敗時の feature-dev fallback 提案（Issue #1620）
+### パターン 14-detect: co-autopilot 失敗 trigger 検知（Issue #1620 / #1635 改訂）
+
+> **NOTE**: 検知のみが Layer 2 トピック。spawn 実行は #1635 改訂で **Layer 1 Confirm** に降格された（[パターン 14: feature-dev 明示依頼時の spawn 実行](#パターン-14-feature-dev-明示依頼時の-spawn-実行issue-1635su-10-改訂) 参照）。本セクションは trigger 検知と user への報告に限定する。
 
 - **検出条件**: 以下のいずれか 1 つが発生した場合:
   1. **RED-only merge x1**: test only PR が merged（実装ゼロ、+N/-0 のみ）
@@ -217,15 +251,11 @@ Supervisor の介入判断ルール定義。Wave 1-5 の実績を反映した介
   4. **P0 緊急**: ユーザーの明示的 P0 指示
 - **情報提供内容**:
   - trigger の種類と Issue 番号
-  - feature-dev fallback の手順（worktree 作成 → tmux window → cld 起動 → /feature-dev）
-  - Layer 2 Escalate である旨（ユーザー承認 MUST）
-- **命名規則**:
-  - tmux window: `wt-fd-<N>`（例: `wt-fd-1620`）
-  - worktree branch: `wt-fd-<N>-<short>`（例: `wt-fd-1620-fallback`）
-- **実行制約**: Supervisor は feature-dev を自律 spawn しない（SU-10）。ユーザーが手動で実行する
-  - 緊急時のみ: `SKIP_LAYER2=1 SKIP_LAYER2_REASON='<reason>'` で override 可能
-- **リスク評価**: 高（feature-dev は TDD ルール非強制、人間ドリブン実装）
-- **事後**: `record-feature-dev-fallback.sh` で InterventionRecord 保存 + doobidoo lesson 記録
+  - 「user が feature-dev 起動を明示依頼するなら Layer 1 Confirm のパターン 14 に従う」旨
+  - 命名規則・実行手順への参照
+- **実行制約**: 検知段階では Supervisor は spawn しない。user 明示依頼後に Layer 1 Confirm の手順で MCP tool 経由 spawn 可能
+- **リスク評価**: 中（trigger 検知自体は副作用なし、後段の spawn 制御は Layer 1 パターン 14 で管理）
+- **事後**: Layer 1 パターン 14 へ遷移（user 依頼受信時）または検知のみで終了
 - **検知スクリプト**: `plugins/twl/skills/su-observer/scripts/feature-dev-fallback-detect.sh`
 
 ### パターン 13: Claude Code classifier permission deny 2 回以上 → 即時 STOP（W5 連携）

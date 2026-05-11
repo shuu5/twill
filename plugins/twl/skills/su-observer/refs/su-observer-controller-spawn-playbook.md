@@ -149,3 +149,85 @@ SKIP_PARALLEL_CHECK=1 SKIP_PARALLEL_REASON="<reason>" spawn-controller.sh <skill
 ```
 
 `SKIP_PARALLEL_CHECK=1` を設定した場合、`spawn-controller.sh` が自動的に `.supervisor/intervention-log.md` に記録する。理由は `SKIP_PARALLEL_REASON` 環境変数で渡すこと（未指定時は `(reason not provided)` が記録される）。手動上書き記録も許容する。
+
+## feature-dev 明示依頼時の起動手順（Issue #1635 — SU-10 改訂）
+
+co-autopilot が以下のいずれかで失敗した場合に user が明示的に feature-dev 起動を依頼する pattern。`refs/intervention-catalog.md` パターン 14 と対応する。
+
+- RED-only merge x1（test only PR が merged）
+- specialist NEEDS_WORK x3
+- Worker chain failure x3
+- P0 緊急（user 明示指示）
+
+### 起動 3 step（observer が user 明示依頼を受信後に実行）
+
+**Step 1: 承認証跡を作成**
+
+```bash
+# observer が user 明示依頼を受けた時点で書き出す（uuid は intervention_id 用）
+ISSUE_NUM=1635
+TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+IID=$(uuidgen 2>/dev/null || python3 -c "import uuid; print(uuid.uuid4())")
+
+cat > .supervisor/feature-dev-request-${ISSUE_NUM}.json <<EOF
+{
+  "issue": ${ISSUE_NUM},
+  "requested_at": "${TS}",
+  "requested_by": "user",
+  "ttl_seconds": 1800,
+  "intervention_id": "${IID}",
+  "notes": "<user 依頼の文脈・trigger 名 等>"
+}
+EOF
+```
+
+> **過渡期注記**: 本 Issue マージ後、observer 側に専用 skill（承認証跡書き込み）を追加する follow-up Issue を起票する。それまでは上記の手動コマンドで作成。
+
+**Step 2: MCP tool 経由で spawn**
+
+```python
+# observer Python セッション内 or MCP client から
+result = mcp__twl__twl_spawn_feature_dev(
+    issue=1635,
+    worktree_path="/path/to/wt-fd-1635",  # optional, cld-spawn --cd に渡る
+    prompt_text="...feature-dev prompt...",
+    model="claude-opus-4-7",  # default
+    timeout=120,  # default
+)
+# result.ok == True なら spawn 成功、result.window == "wt-fd-1635" 等
+```
+
+tool 内 gate チェイン:
+1. 承認証跡 schema validation
+2. TTL チェック (now - requested_at ≤ 1800s)
+3. `spawn-controller.sh --check-refined-status <N>` shell-out → Status=Refined のみ pass
+4. `spawn-controller.sh --check-parallel-only <N>` shell-out → SU-4 並列上限チェック
+5. cld-spawn 実行 (`wt-fd-<N>` window)
+6. 承認証跡を `.supervisor/consumed/feature-dev-request-<N>-<ts>.json` に atomic rename（one-shot 消費）
+
+**Step 3: consume 確認**
+
+```bash
+# 承認証跡が消費されていることを確認
+ls .supervisor/feature-dev-request-${ISSUE_NUM}.json 2>/dev/null && echo "ERROR: not consumed" || echo "OK: consumed"
+ls .supervisor/consumed/feature-dev-request-${ISSUE_NUM}-*.json | head -1
+```
+
+### 命名規則（intervention-catalog パターン 14 と整合）
+
+- tmux window: `wt-fd-<N>`（例: `wt-fd-1635`）
+- worktree branch: `wt-fd-<N>-<short>`（例: `wt-fd-1635-feature-dev-spawn-gate`）
+
+### deprecated path（移行期のみ使用可）
+
+`SKIP_LAYER2=1 SKIP_LAYER2_REASON='<reason>' spawn-controller.sh feature-dev <prompt>` は deprecation period 中（2 wave 後に廃止予定）。MCP tool 経由を優先すること。
+
+### 失敗時の対処
+
+| エラー | 原因 | 対処 |
+|---|---|---|
+| `request file not found` | 承認証跡未作成 | user に再依頼を求め、Step 1 から実施 |
+| `TTL expired` | 承認証跡作成から 30 分超過 | 承認証跡を削除して Step 1 から再実施 |
+| `missing field(s)` | 承認証跡 schema 違反 | JSON フォーマットを確認、必須 field を補完 |
+| `Status must be Refined` | Issue Status が Refined でない | `chain-runner.sh board-status-update <N>` で Refined へ遷移 |
+| `parallel spawn denied` | SU-4 並列上限超過 | 他の supervised controller を待機 or completion |

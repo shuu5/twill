@@ -47,6 +47,45 @@ source "$TWILL_ROOT/plugins/session/scripts/lib/tmux-resolve.sh"
 source "$TWILL_ROOT/plugins/twl/scripts/lib/supervisor-dir-validate.sh"
 validate_supervisor_dir "${SUPERVISOR_DIR:-.supervisor}" || exit 1
 
+# --- #1635: --check-refined-status サブコマンド（cld-spawn / parallel check 不要のため早期分岐）---
+# MCP tool (twl_spawn_feature_dev) から shell out して Issue Status=Refined のみを検証する。
+# co-autopilot 用の --pre-check-issue (L300-) と同等ロジックの早期サブコマンド版。
+# feature-dev は L210-211 の SKIP_LAYER2 fallback で先に exit するため、L300 ルートを使えない。
+# parallel check を経由しないことで intervention-log の SKIP_PARALLEL_CHECK 汚染を回避する。
+# exit 0 = Refined / exit 2 = not Refined or invalid input / exit 0 (fail-open) = TWL_BOARD_NUMBER 未設定
+if [[ "${1:-}" == "--check-refined-status" ]]; then
+  _RS_ISSUE="${2:-}"
+  if [[ ! "$_RS_ISSUE" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Error: --check-refined-status の値は正整数である必要があります: ${_RS_ISSUE}" >&2
+    exit 2
+  fi
+  _rs_board_number="${TWL_BOARD_NUMBER:-$(python3 -m twl.config get project-board.number 2>/dev/null || echo "")}"
+  _rs_board_owner="${TWL_BOARD_OWNER:-$(python3 -m twl.config get project-board.owner 2>/dev/null || echo "shuu5")}"
+  if [[ -n "$_rs_board_owner" && ! "$_rs_board_owner" =~ ^[A-Za-z0-9._-]+$ ]]; then
+    echo "[spawn-controller] WARN: --check-refined-status: TWL_BOARD_OWNER 不正、Status check をスキップ（fail-open）" >&2
+    exit 0
+  fi
+  if [[ -z "$_rs_board_number" ]]; then
+    echo "[spawn-controller] WARN: --check-refined-status: TWL_BOARD_NUMBER 未設定、Status check をスキップ（fail-open）" >&2
+    exit 0
+  fi
+  _rs_issue_status=$(gh project item-list "$_rs_board_number" --owner "$_rs_board_owner" --format json 2>/dev/null \
+    | python3 -c "import json,sys; n=int('${_RS_ISSUE}'); items=json.load(sys.stdin).get('items',[]); \
+      match=[i.get('status','') for i in items if i.get('content',{}).get('number')==n]; \
+      print(match[0] if match else '')" 2>/dev/null || echo "")
+  if [[ -z "$_rs_issue_status" ]]; then
+    echo "[spawn-controller] WARN: --check-refined-status: Issue #${_RS_ISSUE} の Status を取得できませんでした（board 未登録または API エラー）。fail-open します" >&2
+    exit 0
+  fi
+  if [[ "$_rs_issue_status" != "Refined" ]]; then
+    echo "[spawn-controller] DENY: Issue #${_RS_ISSUE} Status must be Refined (current: ${_rs_issue_status})" >&2
+    echo "[spawn-controller] HINT: bash \"$TWILL_ROOT/plugins/twl/scripts/chain-runner.sh\" board-status-update ${_RS_ISSUE}" >&2
+    exit 2
+  fi
+  exit 0
+fi
+# --- #1635 --check-refined-status ここまで ---
+
 if [[ ! -x "$CLD_SPAWN" ]]; then
   echo "Error: cld-spawn not executable at $CLD_SPAWN" >&2
   exit 2
@@ -86,12 +125,25 @@ elif [[ -f "$_PARALLEL_CHECK_LIB" ]]; then
 fi
 # --- チェック終了 ---
 
+# --- #1635: --check-parallel-only サブコマンド ---
+# MCP tool (twl_spawn_feature_dev) から shell out して並列チェック結果のみを返す。
+# 上の parallel check (L75-86) は既に実行済みのため、その exit code をそのまま返す。
+# 引数 <ISSUE_NUM> はログ目的のみ（fn 自体は global state check）。
+# exit 0 = OK / exit 1 = degrade mode（warn 出ているが続行可）/ exit 2 = DENY（既に L82 で exit）
+# NOTE: --check-refined-status は cld-spawn / parallel check 不要のため L48 直後に分岐済み
+if [[ "${1:-}" == "--check-parallel-only" ]]; then
+  exit "${_PARALLEL_CHECK_EXIT:-0}"
+fi
+# --- #1635 --check-parallel-only ここまで ---
+
 VALID_SKILLS=(co-explore co-issue co-architect co-autopilot co-project co-utility co-self-improve)
 
 usage() {
   cat >&2 <<EOF
 Usage: $(basename "$0") <skill-name> <prompt-file> [cld-spawn extra args...]
        $(basename "$0") co-autopilot <prompt-file> --with-chain --issue N [--project-dir DIR] [--autopilot-dir DIR]
+       $(basename "$0") --check-refined-status <ISSUE_NUM>  # Issue #1635: Status=Refined チェックのみ実行
+       $(basename "$0") --check-parallel-only <ISSUE_NUM>   # Issue #1635: 並列 spawn チェックのみ実行
 
 Valid skills: ${VALID_SKILLS[*]}
 (Accepts with or without "twl:" prefix)
@@ -100,6 +152,8 @@ Example:
   $(basename "$0") co-explore /tmp/my-prompt.txt
   $(basename "$0") co-issue /tmp/issue-prompt.txt --timeout 90
   $(basename "$0") co-autopilot /tmp/ctx.txt --with-chain --issue 835
+  $(basename "$0") --check-refined-status 1635
+  $(basename "$0") --check-parallel-only 1635
 EOF
   exit 2
 }
@@ -132,6 +186,8 @@ if [[ "$SKILL_FOUND" == "false" ]]; then
         echo "[spawn-controller] WARN: SKIP_LAYER2=1 — SKIP_LAYER2_REASON 未設定（設定推奨）" >&2
       fi
       echo "[spawn-controller] WARN: SKIP_LAYER2=1 — feature-dev fallback spawn を許可（SU-10 bypass、理由: ${SKIP_LAYER2_REASON:-未設定}）" >&2
+      # #1635: SU-10 改訂で SKIP_LAYER2=1 path は deprecated。MCP tool 経由を推奨。
+      echo "[spawn-controller] DEPRECATION: SKIP_LAYER2=1 path は SU-10 改訂後 deprecation period 中です（Issue #1635）。今後は mcp__twl__twl_spawn_feature_dev MCP tool 経由で承認証跡ベースの spawn を使用してください" >&2
       # SKIP_LAYER2=1 bypass を intervention-log に記録（SKIP_PARALLEL_CHECK=1 と同等）
       _layer2_reason="${SKIP_LAYER2_REASON:-未設定}"
       # 改行・CR を除去（ログインジェクション防止）
@@ -193,6 +249,8 @@ set -- "${PASS_THROUGH_ARGS[@]+"${PASS_THROUGH_ARGS[@]}"}"
 # --- Status=Refined pre-check（#1516 — co-autopilot spawn 前 MUST）---
 # --pre-check-issue N が指定された場合、Issue の Project Board Status を確認する。
 # Status が Refined でない場合は error abort し、board-status-update を hint として出力。
+# NOTE: feature-dev 用には #1635 で別 path (--check-refined-status) を提供（feature-dev は
+# 先頭の SKIP_LAYER2 fallback 分岐 L130 で exit するため、ここに到達しない）。
 if [[ -n "$PRE_CHECK_ISSUE" && "$SKILL_NORMALIZED" == "co-autopilot" ]]; then
   # CRITICAL fix: 整数バリデーション（CHAIN_ISSUE の ^[1-9][0-9]*$ パターン準拠）
   if [[ ! "$PRE_CHECK_ISSUE" =~ ^[1-9][0-9]*$ ]]; then

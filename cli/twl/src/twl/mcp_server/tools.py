@@ -1774,6 +1774,16 @@ _SPAWN_CONTROLLER_SCRIPT = (
 )
 _SPAWN_CONTROLLER_SHADOW_LOG = Path("/tmp/mcp-shadow-spawn-controller.log")
 
+# --- spawn_feature_dev (Issue #1635) ---
+_SPAWN_FEATURE_DEV_SHADOW_LOG = Path("/tmp/mcp-shadow-spawn-feature-dev.log")
+_FEATURE_DEV_REQUEST_REQUIRED_FIELDS = frozenset({
+    "issue",
+    "requested_at",
+    "requested_by",
+    "ttl_seconds",
+    "intervention_id",
+})
+
 _VALID_CONTROLLER_SKILLS = [
     "co-explore",
     "co-issue",
@@ -2075,6 +2085,280 @@ def _spawn_controller_shadow_log(entry: dict) -> None:
         pass
 
 
+# --- spawn_feature_dev (Issue #1635) ---
+
+def twl_spawn_feature_dev_handler(
+    issue: int,
+    worktree_path: str | None = None,
+    prompt_text: str | None = None,
+    model: str = "claude-opus-4-7",
+    timeout: int = 120,
+    supervisor_dir: str | None = None,
+) -> dict:
+    """Spawn feature-dev session via cld-spawn after verifying user-explicit-request gate.
+
+    Implements Issue #1635 (SU-10 改訂). The gate chain is:
+      1. issue positive-integer validation
+      2. .supervisor/feature-dev-request-<N>.json existence + schema validation
+      3. TTL check (now - requested_at <= ttl_seconds)
+      4. Status=Refined check (shell out to spawn-controller.sh --check-refined-status)
+      5. parallel-spawn check (shell out to spawn-controller.sh --check-parallel-only)
+      6. cld-spawn invocation with window_name=wt-fd-<N>
+      7. atomic rename to .supervisor/consumed/feature-dev-request-<N>-<ts>.json
+         (one-shot consume — approval cannot be reused)
+
+    Returns {ok, window, session, pid, error} (same schema as twl_spawn_session).
+    """
+    import subprocess  # noqa: PLC0415
+    import time  # noqa: PLC0415
+    import shutil  # noqa: PLC0415
+    from datetime import datetime, timezone  # noqa: PLC0415
+
+    # --- 1. issue validation ---
+    if not isinstance(issue, int) or issue < 1:
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"issue must be a positive integer: {issue!r}",
+        }
+
+    # --- 2. supervisor_dir + request file path ---
+    sup_dir = Path(supervisor_dir) if supervisor_dir else Path(".supervisor")
+    request_file = sup_dir / f"feature-dev-request-{issue}.json"
+    if not request_file.exists():
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": (
+                f"request file not found: {request_file}. "
+                "User must create .supervisor/feature-dev-request-<N>.json with "
+                "{issue, requested_at, requested_by, ttl_seconds, intervention_id}."
+            ),
+        }
+
+    # --- 3. JSON parse + schema validation ---
+    try:
+        data = json.loads(request_file.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"approval trail JSON parse error: {exc} (file: {request_file})",
+        }
+    if not isinstance(data, dict):
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"approval trail must be a JSON object, got {type(data).__name__}",
+        }
+    missing = sorted(_FEATURE_DEV_REQUEST_REQUIRED_FIELDS - data.keys())
+    if missing:
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"approval trail missing field(s) {missing} in {request_file}",
+        }
+
+    # --- 4. TTL check ---
+    raw_at = str(data["requested_at"])
+    # Normalize 'Z' suffix → '+00:00' for datetime.fromisoformat compatibility
+    normalized_at = raw_at[:-1] + "+00:00" if raw_at.endswith("Z") else raw_at
+    try:
+        requested_at_dt = datetime.fromisoformat(normalized_at)
+    except ValueError as exc:
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"approval trail requested_at parse failed: {exc} (value: {raw_at!r})",
+        }
+    if requested_at_dt.tzinfo is None:
+        requested_at_dt = requested_at_dt.replace(tzinfo=timezone.utc)
+    try:
+        ttl_seconds = int(data["ttl_seconds"])
+    except (TypeError, ValueError):
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"approval trail ttl_seconds invalid: {data['ttl_seconds']!r}",
+        }
+    now = datetime.now(timezone.utc)
+    elapsed = (now - requested_at_dt).total_seconds()
+    if elapsed > ttl_seconds:
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": (
+                f"approval trail TTL expired: elapsed={int(elapsed)}s > ttl_seconds={ttl_seconds}s. "
+                "Re-request user approval."
+            ),
+        }
+
+    # --- 5. Status=Refined check (shell out to spawn-controller.sh) ---
+    script = Path(os.environ.get("SPAWN_CONTROLLER_SCRIPT", str(_SPAWN_CONTROLLER_SCRIPT)))
+    if not script.exists():
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"spawn-controller.sh not found: {script}",
+        }
+    # Compose env for bash subprocess. SUPERVISOR_DIR must NOT be absolute for
+    # validate_supervisor_dir to pass; use cwd=sup_dir_parent + relative name.
+    sup_dir_abs = sup_dir.resolve()
+    sup_dir_parent = str(sup_dir_abs.parent)
+    sup_dir_name = sup_dir_abs.name or ".supervisor"
+    bash_env = {**os.environ, "SUPERVISOR_DIR": sup_dir_name}
+    # --check-refined-status is dispatched BEFORE parallel check in spawn-controller.sh
+    # (Issue #1635 — avoids SKIP_PARALLEL_CHECK intervention-log pollution). No SKIP env needed.
+    try:
+        rs = subprocess.run(
+            ["bash", str(script), "--check-refined-status", str(issue)],
+            capture_output=True, text=True, timeout=30,
+            cwd=sup_dir_parent, env=bash_env,
+        )
+        if rs.returncode == 2:
+            stderr = rs.stderr.strip()
+            msg = stderr if "Status must be Refined" in stderr else f"Status must be Refined: {stderr}"
+            return {"ok": False, "window": None, "session": None, "pid": None, "error": msg}
+    except subprocess.TimeoutExpired:
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": "Status check timeout after 30s",
+        }
+
+    # --- 6. parallel-spawn check (shell out) ---
+    try:
+        pc = subprocess.run(
+            ["bash", str(script), "--check-parallel-only", str(issue)],
+            capture_output=True, text=True, timeout=30,
+            cwd=sup_dir_parent, env=bash_env,
+        )
+        if pc.returncode == 2:
+            return {
+                "ok": False, "window": None, "session": None, "pid": None,
+                "error": f"parallel spawn denied: {pc.stderr.strip()}",
+            }
+        # exit 1 = degrade mode (warning only); continue
+    except subprocess.TimeoutExpired:
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": "parallel-spawn check timeout after 30s",
+        }
+
+    # --- 7. one-shot claim (atomic rename BEFORE cld-spawn — Issue #1635 TOCTOU fix) ---
+    # All gate checks have passed. Atomically claim the approval by renaming to consumed/
+    # before invoking cld-spawn. If a parallel caller already claimed it, FileNotFoundError
+    # is raised by rename() — that caller is the winner; we abort. one-shot guarantee:
+    # even if cld-spawn fails downstream, the approval is consumed (user must re-approve).
+    consumed_dir = sup_dir / "consumed"
+    consumed_dir.mkdir(parents=True, exist_ok=True)
+    ts = int(time.time())
+    consumed_path = consumed_dir / f"feature-dev-request-{issue}-{ts}.json"
+    try:
+        request_file.rename(consumed_path)
+    except FileNotFoundError:
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": "approval trail already consumed by a parallel caller (race lost)",
+        }
+    except OSError:
+        # cross-fs fallback (e.g., tmpfs → ext4). copy2 + unlink, with explicit error handling.
+        try:
+            shutil.copy2(str(request_file), str(consumed_path))
+        except OSError as exc:
+            return {
+                "ok": False, "window": None, "session": None, "pid": None,
+                "error": f"approval consume copy failed: {exc}",
+            }
+        try:
+            request_file.unlink()
+        except OSError as exc:
+            # consumed copy exists but original could not be deleted — clean up the copy
+            # to keep filesystem consistent (avoid both files existing).
+            consumed_path.unlink(missing_ok=True)
+            return {
+                "ok": False, "window": None, "session": None, "pid": None,
+                "error": f"approval consume unlink failed: {exc}",
+            }
+
+    # --- 8. cld-spawn invocation (approval already consumed; one-shot guarantee) ---
+    cld_script = Path(os.environ.get("CLD_SPAWN_SCRIPT", str(_CLD_SPAWN_SCRIPT)))
+    if not cld_script.exists():
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"cld-spawn script not found: {cld_script} (approval was consumed at {consumed_path})",
+        }
+    window_name = f"wt-fd-{issue}"
+    # Defensive check — issue validated as positive int above, so window_name always matches
+    # _VALID_WINDOW_NAME_RE. Kept as defense-in-depth against future signature changes.
+    if not _VALID_WINDOW_NAME_RE.match(window_name):
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"computed window_name contains invalid characters: {window_name!r}",
+        }
+    cmd: list[str] = ["bash", str(cld_script)]
+    if worktree_path:
+        cmd += ["--cd", worktree_path]
+    cmd += ["--window-name", window_name]
+    cmd += ["--timeout", str(timeout)]
+    cmd += ["--model", model]
+    if prompt_text:
+        cmd.append(prompt_text)
+
+    run_timeout = timeout + 30
+    try:
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=run_timeout,
+        )
+    except FileNotFoundError as exc:
+        _spawn_feature_dev_shadow_log({"ok": False, "exit_code": -1, "stderr": str(exc), "issue": issue})
+        return {"ok": False, "window": None, "session": None, "pid": None, "error": str(exc)}
+    except subprocess.TimeoutExpired:
+        _spawn_feature_dev_shadow_log({"ok": False, "exit_code": -2, "stderr": "timeout", "issue": issue})
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": f"cld-spawn timed out after {run_timeout}s",
+        }
+
+    ok = result.returncode == 0
+    _spawn_feature_dev_shadow_log({
+        "ok": ok,
+        "exit_code": result.returncode,
+        "stderr": result.stderr,
+        "stdout": result.stdout,
+        "issue": issue,
+        "consumed_path": str(consumed_path),
+    })
+    if not ok:
+        return {
+            "ok": False, "window": None, "session": None, "pid": None,
+            "error": result.stderr.strip() or f"cld-spawn exited {result.returncode}",
+        }
+
+    # --- 9. window/session/pid resolution ---
+    parsed_window = _parse_spawn_window(result.stdout) or window_name
+    pid = _get_window_pid(parsed_window) if parsed_window else None
+    try:
+        session_name = subprocess.check_output(
+            ["tmux", "display-message", "-p", "#{session_name}"],
+            text=True, timeout=5, stderr=subprocess.DEVNULL,
+        ).strip() or None
+    except Exception:
+        session_name = None
+
+    return {
+        "ok": True,
+        "window": parsed_window,
+        "session": session_name,
+        "pid": pid,
+        "error": None,
+    }
+
+
+def _spawn_feature_dev_shadow_log(entry: dict) -> None:
+    import time  # noqa: PLC0415
+    record = json.dumps({
+        "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "tool": "twl_spawn_feature_dev",
+        **entry,
+    }, ensure_ascii=False)
+    try:
+        with open(str(_SPAWN_FEATURE_DEV_SHADOW_LOG), "a") as f:
+            f.write(record + "\n")
+    except Exception:
+        pass
+
+
 # MCP tool registration — requires fastmcp (optional dep)
 try:
     from fastmcp import FastMCP as _FastMCP
@@ -2333,6 +2617,35 @@ try:
             ensure_ascii=False,
         )
 
+    @mcp.tool()
+    def twl_spawn_feature_dev(  # type: ignore[misc]
+        issue: int,
+        worktree_path: str | None = None,
+        prompt_text: str | None = None,
+        model: str = "claude-opus-4-7",
+        timeout: int = 120,
+        supervisor_dir: str | None = None,
+    ) -> str:
+        """Spawn a feature-dev session via cld-spawn after verifying user-explicit-request gate (Issue #1635).
+
+        Requires a valid approval trail at `.supervisor/feature-dev-request-<issue>.json`
+        (schema: issue/requested_at/requested_by/ttl_seconds/intervention_id, TTL=1800s default).
+        Gate chain: schema validate → TTL → Status=Refined → parallel-check → cld-spawn → consume.
+        The approval trail is atomically renamed to `.supervisor/consumed/` on success (one-shot).
+        Returns JSON {ok, window, session, pid, error}.
+        """
+        return json.dumps(
+            twl_spawn_feature_dev_handler(
+                issue=issue,
+                worktree_path=worktree_path,
+                prompt_text=prompt_text,
+                model=model,
+                timeout=timeout,
+                supervisor_dir=supervisor_dir,
+            ),
+            ensure_ascii=False,
+        )
+
 except ImportError:
     mcp = None  # type: ignore[assignment]
 
@@ -2527,6 +2840,27 @@ except ImportError:
                 project_dir=project_dir,
                 autopilot_dir=autopilot_dir,
                 extra_args=extra_args,
+            ),
+            ensure_ascii=False,
+        )
+
+    def twl_spawn_feature_dev(  # type: ignore[misc]
+        issue: int,
+        worktree_path: str | None = None,
+        prompt_text: str | None = None,
+        model: str = "claude-opus-4-7",
+        timeout: int = 120,
+        supervisor_dir: str | None = None,
+    ) -> str:
+        """Spawn feature-dev session via cld-spawn after approval-trail gate (fastmcp not installed, Issue #1635)."""
+        return json.dumps(
+            twl_spawn_feature_dev_handler(
+                issue=issue,
+                worktree_path=worktree_path,
+                prompt_text=prompt_text,
+                model=model,
+                timeout=timeout,
+                supervisor_dir=supervisor_dir,
             ),
             ensure_ascii=False,
         )
