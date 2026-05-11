@@ -278,7 +278,7 @@ Phase 4 の各 path での生成タイミング:
 | path | 生成タイミング | `phase4_path` 値 |
 |---|---|---|
 | [B] manual fix | `chain-runner.sh board-status-update Refined` の **直前** | `"[B]"` |
-| [D] direct specialist spawn | aggregate 完了（step 5）直後、Step 4a done 処理に移行する前 | `"[D]"` |
+| [D] direct specialist spawn | aggregate が `status: "done"` で完了した場合のみ、step 5 直後・Step 4a done 処理に移行する前（`circuit_broken` 時は生成しない — board-status-update Refined hook は不要なため） | `"[D]"` |
 | [A] retry subset | **追加しない**（orchestrator 経由で hook 発火対象外 + `.spec-review-session-*.json` が存在する） | — |
 
 ### cleanup タイミング（race condition 回避方針）

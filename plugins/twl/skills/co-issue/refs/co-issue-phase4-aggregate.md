@@ -59,16 +59,22 @@ Step 4a で `fallback_inject_exhausted` に分類された issue が存在する
 
    ```bash
    # Phase4-complete.json 生成 (ADR-024 Phase D — refine 完了 evidence, phase4_path="[D]")
-   PHASE4_DIR="${CONTROLLER_ISSUE_DIR:-.controller-issue}/${SESSION_ID:-${CO_ISSUE_SESSION_ID:-unknown}}"
+   # SESSION_ID allowlist: 英数字・ハイフン・アンダースコアのみ (baseline-bash.md §11)
+   _phase4_sid="${SESSION_ID:-${CO_ISSUE_SESSION_ID:-unknown}}"
+   if [[ ! "$_phase4_sid" =~ ^[A-Za-z0-9_-]+$ ]]; then
+     printf '[%s] WARN phase4_invalid_session_id sid=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$_phase4_sid" >> /tmp/refined-status-update.log
+     _phase4_sid="unknown"
+   fi
+   PHASE4_DIR="${CONTROLLER_ISSUE_DIR:-.controller-issue}/${_phase4_sid}"
    mkdir -p "$PHASE4_DIR"
    jq -n \
      --arg schema_version "1.0.0" \
-     --arg sid "${SESSION_ID:-${CO_ISSUE_SESSION_ID:-unknown}}" \
+     --arg sid "$_phase4_sid" \
      --argjson n "${ISSUE_NUMBER:-0}" \
      --arg repo "${TARGET_REPO:-unknown/repo}" \
      --arg completed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
      --argjson specialists "$(jq '.specialists // []' "${PER_ISSUE_DIR:-/dev/null}/IN/policies.json" 2>/dev/null || echo '[]')" \
-     --arg report_path "${PER_ISSUE_DIR:-}/OUT/report.json" \
+     --arg report_path "${PER_ISSUE_DIR:-/dev/null}/OUT/report.json" \
      --arg phase4_path "[D]" \
      '{schema_version: $schema_version, session_id: $sid, issue_number: $n, repo: $repo, completed_at: $completed_at, specialists: $specialists, report_path: $report_path, phase4_path: $phase4_path}' \
      > "${PHASE4_DIR}/Phase4-complete.json" \
@@ -89,16 +95,22 @@ Step 4a で `fallback_inject_exhausted` に分類された issue が存在する
 
   ```bash
   # Phase4-complete.json 生成 (ADR-024 Phase D — refine 完了 evidence)
-  PHASE4_DIR="${CONTROLLER_ISSUE_DIR:-.controller-issue}/${SESSION_ID:-${CO_ISSUE_SESSION_ID:-unknown}}"
+  # SESSION_ID allowlist: 英数字・ハイフン・アンダースコアのみ (baseline-bash.md §11)
+  _phase4_sid="${SESSION_ID:-${CO_ISSUE_SESSION_ID:-unknown}}"
+  if [[ ! "$_phase4_sid" =~ ^[A-Za-z0-9_-]+$ ]]; then
+    printf '[%s] WARN phase4_invalid_session_id sid=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$_phase4_sid" >> /tmp/refined-status-update.log
+    _phase4_sid="unknown"
+  fi
+  PHASE4_DIR="${CONTROLLER_ISSUE_DIR:-.controller-issue}/${_phase4_sid}"
   mkdir -p "$PHASE4_DIR"
   jq -n \
     --arg schema_version "1.0.0" \
-    --arg sid "${SESSION_ID:-${CO_ISSUE_SESSION_ID:-unknown}}" \
+    --arg sid "$_phase4_sid" \
     --argjson n "${ISSUE_NUMBER:-0}" \
     --arg repo "${TARGET_REPO:-unknown/repo}" \
     --arg completed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     --argjson specialists "$(jq '.specialists // []' "${PER_ISSUE_DIR:-/dev/null}/IN/policies.json" 2>/dev/null || echo '[]')" \
-    --arg report_path "${PER_ISSUE_DIR:-}/OUT/report.json" \
+    --arg report_path "${PER_ISSUE_DIR:-/dev/null}/OUT/report.json" \
     --arg phase4_path "[B]" \
     '{schema_version: $schema_version, session_id: $sid, issue_number: $n, repo: $repo, completed_at: $completed_at, specialists: $specialists, report_path: $report_path, phase4_path: $phase4_path}' \
     > "${PHASE4_DIR}/Phase4-complete.json" \
