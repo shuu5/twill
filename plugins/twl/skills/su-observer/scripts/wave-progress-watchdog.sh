@@ -205,7 +205,12 @@ poll_gh_api_fallback() {
   http_status=$?
 
   if [[ "$http_status" -ne 0 ]]; then
-    if echo "$response" | grep -qiE 'rate limit|API rate|exceeded'; then
+    # Extract header section only (before first blank line) to avoid false positives from JSON body
+    local header_section
+    header_section=$(echo "$response" | tr -d '\r' | awk '/^$/{exit} {print}')
+    # Rate-limit: HTTP/.*403 + X-RateLimit-Remaining: 0 in header section (AND condition)
+    if echo "$header_section" | grep -qE 'HTTP/.*403' && \
+       echo "$header_section" | grep -qiE 'X-RateLimit-Remaining:[[:space:]]*0'; then
       return 2
     fi
     echo "[wave-progress-watchdog] WARN: gh api failed (exit=${http_status})" >&2
