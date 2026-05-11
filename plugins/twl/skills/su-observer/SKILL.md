@@ -38,8 +38,12 @@ spawnable_by:
 2.6. **budget status line `5h:XX%(YYm)` format 解釈（不変条件 Q 準拠、MUST）**:
    - (a) tmux status line から `5h:[0-9]+%\([0-9]+m\)` を抽出: `tmux display-message -p '#{status-right}' | grep -oE '5h:[0-9]+%\([0-9]+m\)'`
    - (b) `(YYm)` は「次回 5h cycle reset までの wall-clock（分）」と認識する（MUST）。`(YYm)` ≠ token 残量、≠ 制限時間（[不変条件 Q](../../refs/ref-invariants.md#invariant-q) 参照）
-   - (c) `ScheduleWakeup` の `delaySeconds` は `(YYm) × 60 + 300`（cycle reset 直後 + 5 分余裕）に設定する
+   - (c) `ScheduleWakeup` の `delaySeconds` は `(YYm) × 60 + 300`（cycle reset 直後 + 5 分余裕）に設定する（**注意**: `ScheduleWakeup` は `/loop` dynamic mode 配下でのみ有効。常駐 observer は **2.7 の CronCreate** を使うこと）
    - (d) `.supervisor/budget-pause.json` の `status=paused` を確認した場合は `expected_reset_at` フィールドを読み、経過確認後に resume する（`pilot-fallback-monitor.sh` の `_check_budget_auto_resume` も参照）
+2.7. **CronCreate 定期 wakeup 設定（MUST — idle disconnect 防止）**: 常駐 observer の session idle disconnect を防ぐため、起動直後に `CronCreate` で 25 分毎の定期 wakeup を設定する:
+   - `CronCreate(cron="*/25 * * * *", durable=true, prompt="<<autonomous-loop-dynamic>>")`
+   - 設定後 `CronList` で確認し、エントリが存在することを検証する
+   - CronCreate に失敗した（または `CronList` で確認できない）場合: `record-detection-gap.sh` を呼び出し、★HUMAN GATE escalate を実施する
 3. Project Board から Todo/In Progress の Issue 一覧を取得
 4. **Memory MCP（MUST）**: `${CLAUDE_PLUGIN_ROOT}/skills/su-observer/scripts/step0-memory-ambient.sh` → exit 0: `.supervisor/ambient-hints.md` Read; exit 1: `observer-pitfall`/`observer-lesson`/`observer-wave` タグで memory_search → `--write` 保存 → Read
 4.5. auto-memory はホストローカル補助のみ — cross-machine 知見 source として使用してはならない（MUST NOT）
@@ -82,7 +86,7 @@ spawnable_by:
 
 **spawn 責任は wave-progress-watchdog (S3) 単独。** observer は mailbox event を受信しても spawn コマンドを発行しない（MUST NOT）。
 
-ScheduleWakeup を active poll cycle として組み込むことで idle disconnect を回避する（詳細: `refs/pitfalls-catalog.md §11.5`）:
+**注意: `ScheduleWakeup` は `/loop` dynamic mode 配下でのみ有効**。常駐 observer は Step 0 の **CronCreate（item 2.7）** を使うこと（`ScheduleWakeup` をここで呼び出してはならない）。CronCreate による定期 wakeup で idle disconnect を回避する（詳細: `refs/pitfalls-catalog.md §11.5`）:
 
 ```
 # polling loop（Step 1 常駐中）
