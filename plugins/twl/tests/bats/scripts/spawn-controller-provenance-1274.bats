@@ -40,20 +40,14 @@ MOCK
   MOCK_CLD_SPAWN="$STUB_BIN/cld-spawn"
   export MOCK_CLD_SPAWN
 
-  ACTUAL_TWILL_ROOT="$(cd "$REPO_ROOT/../.." && pwd)"
-  export ACTUAL_TWILL_ROOT
-
-  # spawn-controller.sh wrapper: CLD_SPAWN と TWILL_ROOT を mock/実パスに差し替えて実行
+  # Issue #1644: CLD_SPAWN_OVERRIDE env var で mock 切り替え（旧 sed-replace 方式は廃止）
   cat > "$SANDBOX/run-spawn-controller.sh" <<WRAPPER
 #!/usr/bin/env bash
 set -euo pipefail
-TMP_SCRIPT="\$(mktemp)"
-cp "$SPAWN_CONTROLLER" "\$TMP_SCRIPT"
-# TWILL_ROOT をスクリプトコピー時に正しい実パスに差し替える（/tmp/ 実行時のパス解決失敗を防ぐ）
-sed -i "s|TWILL_ROOT=.*|TWILL_ROOT=\"$ACTUAL_TWILL_ROOT\"|" "\$TMP_SCRIPT"
-sed -i "s|CLD_SPAWN=\"\\\$TWILL_ROOT/plugins/session/scripts/cld-spawn\"|CLD_SPAWN=\"$MOCK_CLD_SPAWN\"|g" "\$TMP_SCRIPT"
-chmod +x "\$TMP_SCRIPT"
-exec bash "\$TMP_SCRIPT" "\$@"
+exec env CLD_SPAWN_OVERRIDE="$MOCK_CLD_SPAWN" \
+  SKIP_PARALLEL_CHECK=\${SKIP_PARALLEL_CHECK:-1} \
+  SKIP_PARALLEL_REASON="\${SKIP_PARALLEL_REASON:-bats test}" \
+  bash "$SPAWN_CONTROLLER" "\$@"
 WRAPPER
   chmod +x "$SANDBOX/run-spawn-controller.sh"
 }

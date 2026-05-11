@@ -4,19 +4,31 @@
 # Usage:
 #   spawn-controller.sh <skill-name> <prompt-file> [cld-spawn extra args...]
 #   spawn-controller.sh co-autopilot <prompt-file> --with-chain --issue N [--project-dir DIR] [--autopilot-dir DIR]
+#   spawn-controller.sh feature-dev <issue-number> [--cd PATH] [cld-spawn extra args...]   # Issue #1644
 #
 #   <skill-name>: co-explore / co-issue / co-architect / co-autopilot /
-#                 co-project / co-utility / co-self-improve
+#                 co-project / co-utility / co-self-improve / feature-dev
 #                 （"twl:" prefix あり/なし両対応）
-#   <prompt-file>: プロンプト本文が入ったファイルパス
+#   <prompt-file>: プロンプト本文が入ったファイルパス（feature-dev は不使用）
+#   <issue-number>: feature-dev のみ。対象 Issue 番号（正整数）
 #
-# 動作:
+# 動作（co-* skill）:
 #   1. skill 名を allow-list でバリデーション
 #   2. prompt-file を読み、先頭に "/twl:<skill>\n" を prepend
 #   3. --help / -h / --version / -v 等の invalid flag を弾く
 #      （cld-spawn は *) break で positional 扱いし prompt に混入する）
 #   4. --window-name 未指定時は wt-<skill>-<HHMMSS> を自動設定
 #   5. cld-spawn を exec
+#
+# 動作（feature-dev、Issue #1644）:
+#   1. ISSUE_NUMBER バリデーション（正整数）
+#   2. 承認証跡 gate: .supervisor/feature-dev-request-<N>.json schema + TTL + Refined + parallel
+#   3. atomic rename: 承認証跡を .supervisor/consumed/ に one-shot 消費
+#   4. worktree: --cd 未指定時は $TWILL_ROOT/worktrees/fd-<N> を auto-create
+#   5. hook: install-git-hooks.sh --worktree で pre-push hook を設置（main 直接 push を block）
+#   6. FINAL_PROMPT: "/feature-dev:feature-dev #<N>" + provenance + MUST 注入
+#   7. cld-spawn を exec（window=wt-fd-<N>、--cd <worktree>）
+#   SKIP_LAYER2=1 で gate check のみバイパス（escape hatch、AC-4.6: 2 wave 維持）
 #
 # chain 連携モード（co-autopilot のみ）:
 #   --with-chain  autopilot-launch.sh に委譲し state 初期化 + chain を起動する
@@ -36,7 +48,8 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 # spawn-controller.sh は plugins/twl/skills/su-observer/scripts/ に置かれる
 # cld-spawn は plugins/session/scripts/cld-spawn
 TWILL_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-CLD_SPAWN="$TWILL_ROOT/plugins/session/scripts/cld-spawn"
+# CLD_SPAWN_OVERRIDE 環境変数で test 時に mock に切り替え可能（Issue #1644）
+CLD_SPAWN="${CLD_SPAWN_OVERRIDE:-$TWILL_ROOT/plugins/session/scripts/cld-spawn}"
 
 # AC1: tmux window target を session:index 形式で解決するヘルパーを読み込む
 # shellcheck source=/dev/null
@@ -47,10 +60,135 @@ source "$TWILL_ROOT/plugins/session/scripts/lib/tmux-resolve.sh"
 source "$TWILL_ROOT/plugins/twl/scripts/lib/supervisor-dir-validate.sh"
 validate_supervisor_dir "${SUPERVISOR_DIR:-.supervisor}" || exit 1
 
+# --- provenance section ヘルパー（Issue #1274）---
+# Issue #1644: feature-dev early-exit path で使用するため、関数定義を冒頭に移動。
+_get_host_alias() {
+  local f="${XDG_CONFIG_HOME:-$HOME/.config}/twl/host-aliases.json"
+  [[ -f "$f" ]] && python3 -c "import json,socket,sys; d=json.load(open(sys.argv[1])); print(d.get(socket.gethostname(),''))" "$f" 2>/dev/null || true
+}
+_emit_provenance_section() {
+  local a g="" p="" sfile="${SUPERVISOR_DIR:-.supervisor}/session.json"
+  a="$(_get_host_alias)"
+  g="$(git -C "$TWILL_ROOT" rev-parse --show-toplevel 2>/dev/null || true)"; g="${g//$'\n'/ }"
+  p="${PREDECESSOR_HOST:-}"; [[ -z "$p" && -f "$sfile" ]] && p="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('predecessor_host',''))" "$sfile" 2>/dev/null || true)"; p="${p//$'\n'/ }"
+  printf '## provenance (auto-injected)\n- host: %s (%s)\n- pwd: %s\n- predecessor: %s\n- timestamp: %s\n' \
+    "$(hostname)" "$a" "$g" "$p" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+# --- provenance section ここまで ---
+
+# --- #1644: feature-dev gate checks（bash 実装、tools.py の Python 版と意味的等価）---
+# 引数: $1 = ISSUE_NUMBER（正整数、呼び出し側で validate 済み）
+# 効果: 全 gate を pass したら .supervisor/feature-dev-request-<N>.json を consumed/ に atomic rename
+# Exit: gate fail → exit 1（呼び出しは return ではなく exit）。pass → 戻り値で続行
+_fd_run_gate_checks() {
+  local issue_number="$1"
+  local sup_dir="${SUPERVISOR_DIR:-.supervisor}"
+  local request_file="${sup_dir}/feature-dev-request-${issue_number}.json"
+
+  # 1. request file 存在確認
+  if [[ ! -f "$request_file" ]]; then
+    echo "[spawn-controller] ERROR: feature-dev approval trail not found: $request_file" >&2
+    echo "[spawn-controller] User must create .supervisor/feature-dev-request-<N>.json with" >&2
+    echo "[spawn-controller]   {issue, requested_at, requested_by, ttl_seconds, intervention_id}" >&2
+    exit 1
+  fi
+
+  # 2. JSON schema 検証（必須 field の存在確認）
+  local required_fields=("issue" "requested_at" "requested_by" "ttl_seconds" "intervention_id")
+  local field
+  for field in "${required_fields[@]}"; do
+    if ! jq -e --arg f "$field" 'has($f)' "$request_file" >/dev/null 2>&1; then
+      echo "[spawn-controller] ERROR: approval trail missing field '$field' in $request_file" >&2
+      exit 1
+    fi
+  done
+
+  # 3. TTL check（ISO8601 → epoch → elapsed）
+  local requested_at ttl_seconds req_epoch now elapsed
+  requested_at=$(jq -r '.requested_at' "$request_file")
+  ttl_seconds=$(jq -r '.ttl_seconds' "$request_file")
+  if [[ ! "$ttl_seconds" =~ ^[0-9]+$ ]]; then
+    echo "[spawn-controller] ERROR: approval trail ttl_seconds invalid: $ttl_seconds" >&2
+    exit 1
+  fi
+  # 'Z' suffix を除去（GNU date と BSD date の両対応）
+  local requested_at_norm="${requested_at%Z}"
+  if req_epoch=$(date -u -d "${requested_at_norm}" +%s 2>/dev/null); then
+    :
+  elif req_epoch=$(date -u -j -f "%Y-%m-%dT%H:%M:%S" "${requested_at_norm}" +%s 2>/dev/null); then
+    :
+  else
+    echo "[spawn-controller] ERROR: approval trail requested_at parse failed: '$requested_at'" >&2
+    exit 1
+  fi
+  now=$(date -u +%s)
+  elapsed=$((now - req_epoch))
+  if [[ "$elapsed" -gt "$ttl_seconds" ]]; then
+    echo "[spawn-controller] ERROR: approval trail TTL expired: elapsed=${elapsed}s > ttl_seconds=${ttl_seconds}s" >&2
+    echo "[spawn-controller] Re-request user approval." >&2
+    exit 1
+  fi
+
+  # 4. Status=Refined check（self shell-out — tools.py と同じ pattern）
+  # NOTE: 親プロセスでは Status check が co-autopilot 専用 (--pre-check-issue) のため未実行。
+  # feature-dev では明示的に self shell-out する必要がある（--check-refined-status は早期 exit）
+  local refined_exit=0
+  bash "$0" --check-refined-status "$issue_number" || refined_exit=$?
+  if [[ "$refined_exit" -eq 2 ]]; then
+    echo "[spawn-controller] ERROR: Status=Refined check failed for issue #${issue_number}" >&2
+    exit 1
+  fi
+
+  # 5. parallel-spawn check
+  # NOTE: 親プロセスは既に L228-259 で parallel check を実行済み。
+  # exit 2 (DENY) なら親プロセスが L255 で exit 2 する → _fd_run_gate_checks には到達しない。
+  # exit 1 (degrade) または exit 0 (OK) の場合のみここに到達する。
+  # SKIP_PARALLEL_CHECK=1 の場合は _PARALLEL_CHECK_EXIT は未設定（既定 0 扱い）。
+  # ここでは defensive check として `_PARALLEL_CHECK_EXIT == 2` のみ追加チェックする（通常到達不能）
+  if [[ "${_PARALLEL_CHECK_EXIT:-0}" -eq 2 ]]; then
+    echo "[spawn-controller] ERROR: parallel spawn denied for issue #${issue_number} (defense-in-depth)" >&2
+    exit 1
+  fi
+
+  # 6. Atomic rename（one-shot 消費）— TOCTOU 対策で cld-spawn 前に実行
+  local consumed_dir="${sup_dir}/consumed"
+  mkdir -p "$consumed_dir"
+  local ts
+  ts=$(date +%s)
+  local consumed_path="${consumed_dir}/feature-dev-request-${issue_number}-${ts}.json"
+
+  # mv -n: 同 filesystem 内で atomic rename + no-clobber（並列呼び出しの 2 重消費を防ぐ）
+  local mv_output mv_exit=0
+  mv_output=$(mv -n "$request_file" "$consumed_path" 2>&1) || mv_exit=$?
+  if [[ "$mv_exit" -ne 0 ]]; then
+    if echo "$mv_output" | grep -qiE "cross.device|different.*file.*system|Invalid cross"; then
+      # cross-filesystem fallback: cp + rm（race window あり、best effort）
+      if ! cp "$request_file" "$consumed_path" 2>/dev/null; then
+        echo "[spawn-controller] ERROR: approval consume copy failed (cross-fs)" >&2
+        exit 1
+      fi
+      if ! rm "$request_file" 2>/dev/null; then
+        rm -f "$consumed_path"
+        echo "[spawn-controller] ERROR: approval consume unlink failed (cross-fs)" >&2
+        exit 1
+      fi
+    elif [[ ! -f "$request_file" ]]; then
+      # race: 別プロセスが既に消費
+      echo "[spawn-controller] ERROR: approval trail already consumed by a parallel caller (race lost)" >&2
+      exit 1
+    else
+      echo "[spawn-controller] ERROR: approval atomic rename failed: $mv_output" >&2
+      exit 1
+    fi
+  fi
+
+  echo "[spawn-controller] ✓ approval consumed: ${consumed_path}" >&2
+}
+# --- #1644: feature-dev gate checks ここまで ---
+
 # --- #1635: --check-refined-status サブコマンド（cld-spawn / parallel check 不要のため早期分岐）---
-# MCP tool (twl_spawn_feature_dev) から shell out して Issue Status=Refined のみを検証する。
-# co-autopilot 用の --pre-check-issue (L300-) と同等ロジックの早期サブコマンド版。
-# feature-dev は L210-211 の SKIP_LAYER2 fallback で先に exit するため、L300 ルートを使えない。
+# MCP tool (twl_spawn_feature_dev) および feature-dev gate（#1644 で bash 移植）から shell out して
+# Issue Status=Refined のみを検証する。co-autopilot 用の --pre-check-issue (後段) と同等ロジックの早期サブコマンド版。
 # parallel check を経由しないことで intervention-log の SKIP_PARALLEL_CHECK 汚染を回避する。
 # exit 0 = Refined / exit 2 = not Refined or invalid input / exit 0 (fail-open) = TWL_BOARD_NUMBER 未設定
 if [[ "${1:-}" == "--check-refined-status" ]]; then
@@ -136,12 +274,13 @@ if [[ "${1:-}" == "--check-parallel-only" ]]; then
 fi
 # --- #1635 --check-parallel-only ここまで ---
 
-VALID_SKILLS=(co-explore co-issue co-architect co-autopilot co-project co-utility co-self-improve)
+VALID_SKILLS=(co-explore co-issue co-architect co-autopilot co-project co-utility co-self-improve feature-dev)
 
 usage() {
   cat >&2 <<EOF
 Usage: $(basename "$0") <skill-name> <prompt-file> [cld-spawn extra args...]
        $(basename "$0") co-autopilot <prompt-file> --with-chain --issue N [--project-dir DIR] [--autopilot-dir DIR]
+       $(basename "$0") feature-dev <issue-number> [--cd PATH] [cld-spawn extra args...]   # Issue #1644
        $(basename "$0") --check-refined-status <ISSUE_NUM>  # Issue #1635: Status=Refined チェックのみ実行
        $(basename "$0") --check-parallel-only <ISSUE_NUM>   # Issue #1635: 並列 spawn チェックのみ実行
 
@@ -152,6 +291,7 @@ Example:
   $(basename "$0") co-explore /tmp/my-prompt.txt
   $(basename "$0") co-issue /tmp/issue-prompt.txt --timeout 90
   $(basename "$0") co-autopilot /tmp/ctx.txt --with-chain --issue 835
+  $(basename "$0") feature-dev 1644 --model claude-opus-4-7 --timeout 120
   $(basename "$0") --check-refined-status 1635
   $(basename "$0") --check-parallel-only 1635
 EOF
@@ -163,8 +303,7 @@ if [[ $# -lt 2 ]]; then
 fi
 
 SKILL="$1"
-PROMPT_FILE="$2"
-shift 2
+shift 1
 
 # skill 名 normalize（"twl:" prefix 除去）
 SKILL_NORMALIZED="${SKILL#twl:}"
@@ -178,52 +317,115 @@ for s in "${VALID_SKILLS[@]}"; do
   fi
 done
 if [[ "$SKILL_FOUND" == "false" ]]; then
-  # Issue #1620: feature-dev は Layer 2 Escalate 経由必須（SU-10）
-  # SKIP_LAYER2=1 override 時のみ許可（SKIP_LAYER2_REASON 必須）
-  if [[ "$SKILL_NORMALIZED" == "feature-dev" ]]; then
-    if [[ "${SKIP_LAYER2:-0}" == "1" ]]; then
-      if [[ -z "${SKIP_LAYER2_REASON:-}" ]]; then
-        echo "[spawn-controller] WARN: SKIP_LAYER2=1 — SKIP_LAYER2_REASON 未設定（設定推奨）" >&2
-      fi
-      echo "[spawn-controller] WARN: SKIP_LAYER2=1 — feature-dev fallback spawn を許可（SU-10 bypass、理由: ${SKIP_LAYER2_REASON:-未設定}）" >&2
-      # #1635: SU-10 改訂で SKIP_LAYER2=1 path は deprecated。MCP tool 経由を推奨。
-      echo "[spawn-controller] DEPRECATION: SKIP_LAYER2=1 path は SU-10 改訂後 deprecation period 中です（Issue #1635）。今後は mcp__twl__twl_spawn_feature_dev MCP tool 経由で承認証跡ベースの spawn を使用してください" >&2
-      # SKIP_LAYER2=1 bypass を intervention-log に記録（SKIP_PARALLEL_CHECK=1 と同等）
-      _layer2_reason="${SKIP_LAYER2_REASON:-未設定}"
-      # 改行・CR を除去（ログインジェクション防止）
-      _layer2_reason="${_layer2_reason//$'\n'/ }"
-      _layer2_reason="${_layer2_reason//$'\r'/ }"
-      echo "[spawn-controller] SKIP_LAYER2=1 bypass: SU-10 override, reason=${_layer2_reason}, skill=feature-dev" >> "${SUPERVISOR_DIR:-.supervisor}/intervention-log.md" 2>/dev/null || true
-      # feature-dev は人間ドリブン実装のため、cld-spawn は呼ばず手順を出力して exit 0
-      # ユーザーが手動で cld セッションを起動し /feature-dev を実行する
-      SCRIPT_DIR_FD="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
-      DETECT_SCRIPT_FD="${SCRIPT_DIR_FD}/feature-dev-fallback-detect.sh"
-      # CHAIN_ISSUE は L166 以降で初期化されるため、ここでは環境変数または空文字を使う
-      _fd_issue="${CHAIN_ISSUE:-}"
-      if [[ -x "$DETECT_SCRIPT_FD" ]]; then
-        bash "$DETECT_SCRIPT_FD" --trigger "manual-override" ${_fd_issue:+--issue "$_fd_issue"} 2>/dev/null || true
-      else
-        echo "[spawn-controller] feature-dev fallback: ユーザーが手動で cld セッション → /feature-dev を実行してください" >&2
-      fi
-      exit 0
-    else
-      echo "Error: 'feature-dev' は自律 spawn 禁止 (SU-10, Issue #1620)。" >&2
-      echo "  feature-dev fallback は Layer 2 Escalate 経由でユーザー承認後に実行してください。" >&2
-      echo "  緊急時: SKIP_LAYER2=1 SKIP_LAYER2_REASON='<reason>' を設定して再実行" >&2
-      exit 1
-    fi
-  else
-    echo "Error: invalid skill name '$SKILL'." >&2
-    echo "Valid: ${VALID_SKILLS[*]}" >&2
+  echo "Error: invalid skill name '$SKILL'." >&2
+  echo "Valid: ${VALID_SKILLS[*]}" >&2
+  exit 2
+fi
+
+# Issue #1644: feature-dev は ISSUE_NUMBER を 2nd 引数として受け取る（PROMPT_FILE ではない）
+# 既存 6 controller は <skill> <prompt-file> 形式で不変
+if [[ "$SKILL_NORMALIZED" == "feature-dev" ]]; then
+  ISSUE_NUMBER="${1:-}"
+  shift 1
+  if [[ ! "$ISSUE_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Error: feature-dev requires a positive integer issue number as the second arg, got: '${ISSUE_NUMBER:-}'" >&2
+    exit 2
+  fi
+  PROMPT_FILE=""  # feature-dev は prompt file 不使用（後続コードでの参照を防ぐ）
+else
+  PROMPT_FILE="${1:-}"
+  shift 1
+  # prompt file 存在確認
+  if [[ ! -f "$PROMPT_FILE" ]]; then
+    echo "Error: prompt file not found: $PROMPT_FILE" >&2
     exit 2
   fi
 fi
 
-# prompt file 存在確認
-if [[ ! -f "$PROMPT_FILE" ]]; then
-  echo "Error: prompt file not found: $PROMPT_FILE" >&2
-  exit 2
+# --- #1644: feature-dev early-exit path ---
+# co-* skills の通常フロー（PROMPT_FILE 読み込み・size guard・FINAL_PROMPT 構築）と異なる処理が必要のため、
+# ここで分岐して exec cld-spawn まで完結させる。
+if [[ "$SKILL_NORMALIZED" == "feature-dev" ]]; then
+  # feature-dev 専用引数パース
+  FD_WORKTREE_PATH=""  # --cd <path>: 指定時は worktree auto-create をスキップ
+  FD_PASS_ARGS=()      # cld-spawn への透過引数（--model, --timeout 等）
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --cd)  FD_WORKTREE_PATH="${2:-}"; shift 2 ;;
+      *)     FD_PASS_ARGS+=("$1"); shift ;;
+    esac
+  done
+
+  # 残り引数（PASS_ARGS）に invalid flag が含まれていないか検査
+  for arg in "${FD_PASS_ARGS[@]+"${FD_PASS_ARGS[@]}"}"; do
+    case "$arg" in
+      --help|-h|--version|-v)
+        cat >&2 <<EOF
+Error: '$arg' は cld-spawn の有効な option ではなく、prompt として誤注入される。
+指定しないこと。
+EOF
+        exit 2
+        ;;
+    esac
+  done
+
+  # Gate checks（SKIP_LAYER2=1 で bypass、AC-4.6: 2 wave 維持）
+  if [[ "${SKIP_LAYER2:-0}" == "1" ]]; then
+    _skip_reason="${SKIP_LAYER2_REASON:-未設定}"
+    _skip_reason="${_skip_reason//$'\n'/ }"
+    _skip_reason="${_skip_reason//$'\r'/ }"
+    echo "[spawn-controller] WARN: SKIP_LAYER2=1 — feature-dev gate checks bypassed (issue=${ISSUE_NUMBER}, reason=${_skip_reason})" >&2
+    echo "[spawn-controller] SKIP_LAYER2=1 bypass: feature-dev issue=${ISSUE_NUMBER}, reason=${_skip_reason}" >> "${SUPERVISOR_DIR:-.supervisor}/intervention-log.md" 2>/dev/null || true
+  else
+    _fd_run_gate_checks "$ISSUE_NUMBER"
+  fi
+
+  # Worktree: --cd 未指定時は auto-create（idempotent: 既存ならスキップ）
+  if [[ -z "$FD_WORKTREE_PATH" ]]; then
+    FD_BRANCH="fd-${ISSUE_NUMBER}"
+    FD_WORKTREE_PATH="$TWILL_ROOT/worktrees/$FD_BRANCH"
+    if [[ ! -d "$FD_WORKTREE_PATH" ]]; then
+      echo "[spawn-controller] worktree 作成中: ${FD_WORKTREE_PATH} (branch=${FD_BRANCH})" >&2
+      git -C "$TWILL_ROOT" worktree add -b "$FD_BRANCH" "$FD_WORKTREE_PATH" main \
+        || { echo "[spawn-controller] ERROR: git worktree add failed" >&2; exit 1; }
+      echo "[spawn-controller] ✓ worktree 作成完了: ${FD_WORKTREE_PATH}" >&2
+    else
+      echo "[spawn-controller] worktree 既存: ${FD_WORKTREE_PATH} (作成スキップ)" >&2
+    fi
+  fi
+
+  # Hook 設置（pre-push: main への push を block、per-worktree core.hooksPath 方式）
+  _install_script="$TWILL_ROOT/plugins/twl/scripts/install-git-hooks.sh"
+  if [[ -x "$_install_script" ]]; then
+    bash "$_install_script" --worktree "$FD_WORKTREE_PATH" >&2 || \
+      echo "[spawn-controller] WARN: pre-push hook install failed (続行)" >&2
+  fi
+
+  # FINAL_PROMPT 構築（skill prefix + provenance + MUST 注入）
+  _fd_provenance="$(_emit_provenance_section)"
+  FINAL_PROMPT_FD="/feature-dev:feature-dev #${ISSUE_NUMBER}
+${_fd_provenance}
+
+MUST: worktree 内で作業すること（main 直接編集禁止）。全変更は PR 経由で merge する。
+MUST: main への直接 push は禁止（pre-push hook が block）。bypass は --no-verify （ユーザー裁量）のみ。"
+
+  # window 名は --window-name 明示が無ければ wt-fd-<N> を使用
+  FD_WINDOW_NAME="wt-fd-${ISSUE_NUMBER}"
+  HAS_WINDOW_NAME_FD=false
+  for arg in "${FD_PASS_ARGS[@]+"${FD_PASS_ARGS[@]}"}"; do
+    if [[ "$arg" == "--window-name" ]]; then HAS_WINDOW_NAME_FD=true; break; fi
+  done
+  WINDOW_ARG_FD=()
+  [[ "$HAS_WINDOW_NAME_FD" == "false" ]] && WINDOW_ARG_FD=(--window-name "$FD_WINDOW_NAME")
+
+  echo ">>> Monitor 再 arm 必要: ${FD_WINDOW_NAME}"
+  exec "$CLD_SPAWN" \
+    --cd "$FD_WORKTREE_PATH" \
+    "${WINDOW_ARG_FD[@]+"${WINDOW_ARG_FD[@]}"}" \
+    "${FD_PASS_ARGS[@]+"${FD_PASS_ARGS[@]}"}" \
+    "$FINAL_PROMPT_FD"
 fi
+# --- #1644: feature-dev early-exit path ここまで ---
 
 # --with-chain: co-autopilot chain 連携モード（autopilot-launch.sh に委譲）
 WITH_CHAIN=false
@@ -386,20 +588,7 @@ EOF
   esac
 done
 
-# --- provenance section ヘルパー（Issue #1274）---
-_get_host_alias() {
-  local f="${XDG_CONFIG_HOME:-$HOME/.config}/twl/host-aliases.json"
-  [[ -f "$f" ]] && python3 -c "import json,socket,sys; d=json.load(open(sys.argv[1])); print(d.get(socket.gethostname(),''))" "$f" 2>/dev/null || true
-}
-_emit_provenance_section() {
-  local a g="" p="" sfile="${SUPERVISOR_DIR:-.supervisor}/session.json"
-  a="$(_get_host_alias)"
-  g="$(git -C "$TWILL_ROOT" rev-parse --show-toplevel 2>/dev/null || true)"; g="${g//$'\n'/ }"
-  p="${PREDECESSOR_HOST:-}"; [[ -z "$p" && -f "$sfile" ]] && p="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get('predecessor_host',''))" "$sfile" 2>/dev/null || true)"; p="${p//$'\n'/ }"
-  printf '## provenance (auto-injected)\n- host: %s (%s)\n- pwd: %s\n- predecessor: %s\n- timestamp: %s\n' \
-    "$(hostname)" "$a" "$g" "$p" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-# --- provenance section ここまで ---
+# NOTE: _get_host_alias / _emit_provenance_section は冒頭（Issue #1644 で feature-dev path 用に移動）で定義済み
 
 # provenance section を先に取得し、サイズガードの実効上限（EFFECTIVE_LIMIT）を調整
 PROVENANCE="$(_emit_provenance_section)"

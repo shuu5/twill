@@ -1,8 +1,17 @@
 #!/usr/bin/env bats
 # issue-1620-feature-dev-fallback.bats
-# RED tests for Issue #1620: feat(autopilot): feature-dev fallback path 正規化
+# LEGACY tests for Issue #1620 (superseded by Issue #1644).
 #
-# AC coverage:
+# Issue #1644 で spawn-controller.sh feature-dev 統合により以下が変更:
+#   - AC-2: spawn-controller.sh が feature-dev を **拒否** する仕様 → **承認** する仕様に変更
+#   - AC-2: SKIP_LAYER2=1 は fallback enable → gate check bypass に変更
+#   - 新挙動: plugins/twl/tests/bats/scripts/spawn-controller-feature-dev.bats
+#
+# AC-1（feature-dev-fallback-detect.sh）/ AC-3（intervention-catalog 命名）/
+# AC-4（template sections）/ AC-5（record-feature-dev-fallback.sh）は #1644 と直交のため
+# 本ファイルでは全テストを skip としアーカイブする（削除せず仕様履歴を保持）。
+#
+# 旧 AC coverage:
 #   AC-1 - observer が 4 trigger 検知時に fallback 提案 + Layer 2 Escalate 記録を行う
 #           → feature-dev-fallback-detect.sh の存在 + 動作確認
 #   AC-2 - observer は feature-dev fallback を自律 spawn してはならない
@@ -36,6 +45,9 @@ load 'helpers/common'
 # ---------------------------------------------------------------------------
 
 setup() {
+  # Issue #1644: legacy archive. 新挙動は spawn-controller-feature-dev.bats を参照。
+  skip "Legacy test for Issue #1620, superseded by Issue #1644 (spawn-controller feature-dev integration). See plugins/twl/tests/bats/scripts/spawn-controller-feature-dev.bats for current behavior."
+
   common_setup
 
   SPAWN_SCRIPT="${REPO_ROOT}/skills/su-observer/scripts/spawn-controller.sh"

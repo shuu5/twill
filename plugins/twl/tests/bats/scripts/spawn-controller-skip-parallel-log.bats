@@ -35,15 +35,12 @@ MOCK
   MOCK_CLD_SPAWN="$STUB_BIN/cld-spawn"
   export MOCK_CLD_SPAWN
 
-  # run-spawn-controller.sh wrapper（CLD_SPAWN パスを置換）
+  # Issue #1644: CLD_SPAWN_OVERRIDE env var で mock 切り替え（旧 sed-replace 方式は廃止）
+  # NOTE: SKIP_PARALLEL_CHECK は本テストの ASSERTION 対象のため wrapper で default 設定しない
   cat > "$SANDBOX/run-spawn-controller.sh" <<WRAPPER
 #!/usr/bin/env bash
 set -euo pipefail
-TMP_SCRIPT="\$(mktemp)"
-cp "$SPAWN_CONTROLLER" "\$TMP_SCRIPT"
-sed -i "s|CLD_SPAWN=\"\\\$TWILL_ROOT/plugins/session/scripts/cld-spawn\"|CLD_SPAWN=\"$MOCK_CLD_SPAWN\"|g" "\$TMP_SCRIPT"
-chmod +x "\$TMP_SCRIPT"
-exec bash "\$TMP_SCRIPT" "\$@"
+exec env CLD_SPAWN_OVERRIDE="$MOCK_CLD_SPAWN" bash "$SPAWN_CONTROLLER" "\$@"
 WRAPPER
   chmod +x "$SANDBOX/run-spawn-controller.sh"
 }
@@ -62,14 +59,14 @@ teardown() {
   # RED: spawn-controller.sh に自動記録実装がないため fail する
 
   local log_dir
-  log_dir="$(mktemp -d)"
+  log_dir_rel="_log_1_$$"; log_dir="$SANDBOX/$log_dir_rel"; mkdir -p "$log_dir"; pushd "$SANDBOX" >/dev/null
 
   local prompt_file
   prompt_file="$SANDBOX/prompt.txt"
   echo "test prompt" > "$prompt_file"
   > "$CLD_SPAWN_ARGS_LOG"
 
-  SUPERVISOR_DIR="$log_dir" \
+  SUPERVISOR_DIR="$log_dir_rel" \
   SKIP_PARALLEL_CHECK=1 \
   SKIP_PARALLEL_REASON="test reason" \
   run bash "$SANDBOX/run-spawn-controller.sh" co-explore "$prompt_file" \
@@ -100,14 +97,14 @@ teardown() {
   # RED: spawn-controller.sh に自動記録実装がないため fail する
 
   local log_dir
-  log_dir="$(mktemp -d)"
+  log_dir_rel="_log_2_$$"; log_dir="$SANDBOX/$log_dir_rel"; mkdir -p "$log_dir"; pushd "$SANDBOX" >/dev/null
 
   local prompt_file
   prompt_file="$SANDBOX/prompt.txt"
   echo "test prompt" > "$prompt_file"
   > "$CLD_SPAWN_ARGS_LOG"
 
-  SUPERVISOR_DIR="$log_dir" \
+  SUPERVISOR_DIR="$log_dir_rel" \
   SKIP_PARALLEL_CHECK=1 \
   run bash "$SANDBOX/run-spawn-controller.sh" co-explore "$prompt_file" \
     --window-name "test-window"
@@ -135,7 +132,7 @@ teardown() {
   # （ただしこのテスト自体は実 .supervisor 汚染がないことを確認する）
 
   local log_dir
-  log_dir="$(mktemp -d)"
+  log_dir_rel="_log_3_$$"; log_dir="$SANDBOX/$log_dir_rel"; mkdir -p "$log_dir"; pushd "$SANDBOX" >/dev/null
 
   # 実 .supervisor のパスを記録しておく（汚染確認用）
   local real_supervisor_dir
@@ -153,7 +150,7 @@ teardown() {
   echo "test prompt" > "$prompt_file"
   > "$CLD_SPAWN_ARGS_LOG"
 
-  SUPERVISOR_DIR="$log_dir" \
+  SUPERVISOR_DIR="$log_dir_rel" \
   SKIP_PARALLEL_CHECK=1 \
   SKIP_PARALLEL_REASON="isolation test" \
   run bash "$SANDBOX/run-spawn-controller.sh" co-explore "$prompt_file" \
@@ -189,7 +186,7 @@ teardown() {
   # RED: spawn-controller.sh に自動記録実装がないため fail する
 
   local base_dir
-  base_dir="$(mktemp -d)"
+  base_dir_rel="_base_1_$$"; base_dir="$SANDBOX/$base_dir_rel"; mkdir -p "$base_dir"; pushd "$SANDBOX" >/dev/null
   local log_dir="$base_dir/non-existent/nested/supervisor"
   # log_dir は事前作成しない
 
@@ -198,7 +195,7 @@ teardown() {
   echo "test prompt" > "$prompt_file"
   > "$CLD_SPAWN_ARGS_LOG"
 
-  SUPERVISOR_DIR="$log_dir" \
+  SUPERVISOR_DIR="$log_dir_rel" \
   SKIP_PARALLEL_CHECK=1 \
   SKIP_PARALLEL_REASON="mkdir-p test" \
   run bash "$SANDBOX/run-spawn-controller.sh" co-explore "$prompt_file" \
@@ -254,14 +251,14 @@ teardown() {
   # RED: spawn-controller.sh に自動記録実装がないため fail する
 
   local log_dir
-  log_dir="$(mktemp -d)"
+  log_dir_rel="_log_4_$$"; log_dir="$SANDBOX/$log_dir_rel"; mkdir -p "$log_dir"; pushd "$SANDBOX" >/dev/null
 
   local prompt_file
   prompt_file="$SANDBOX/prompt.txt"
   echo "test prompt" > "$prompt_file"
   > "$CLD_SPAWN_ARGS_LOG"
 
-  SUPERVISOR_DIR="$log_dir" \
+  SUPERVISOR_DIR="$log_dir_rel" \
   SKIP_PARALLEL_CHECK=1 \
   SKIP_PARALLEL_REASON=$'line1\nline2' \
   run bash "$SANDBOX/run-spawn-controller.sh" co-explore "$prompt_file" \
