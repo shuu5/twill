@@ -1444,7 +1444,12 @@ def _to_hook_output(raw: dict) -> dict:
 
         parts: list[str] = []
         if raw.get("reason"):
-            parts.append(str(raw["reason"]))
+            reason_text = str(raw["reason"])
+            if raw.get("evidence_path"):
+                reason_text = reason_text.replace(
+                    str(raw["evidence_path"]), _Path(raw["evidence_path"]).name
+                )
+            parts.append(reason_text)
         if raw.get("evidence_path"):
             parts.append(f"evidence: {_Path(raw['evidence_path']).name}")
         if raw.get("matched_option_id"):
@@ -1467,7 +1472,7 @@ def _to_hook_output(raw: dict) -> dict:
         items = raw.get("items")
         if items:
             parts.append(f"violations: {', '.join(str(i) for i in items)}")
-        if raw.get("commit_message"):
+        if not ok and raw.get("commit_message"):
             sanitized = str(raw["commit_message"]).replace("|", "/")
             parts.append(f"commit: {sanitized}")
         if not ok and raw.get("summary"):
