@@ -179,6 +179,7 @@ done < <(jq -r '.labels_hint[]' "$PER_ISSUE_DIR/IN/policies.json")
 
 # Status=Refined を設定（Phase B 移行後: Status only SSoT）
 if [[ "$(cat "$PER_ISSUE_DIR/STATE")" != "circuit_broken" ]]; then
+  TWL_CALLER_AUTHZ=workflow-issue-refine \
   bash "${SCRIPTS_ROOT:-$(dirname "$0")/../../scripts}/chain-runner.sh" \
     board-status-update "$ISSUE_NUMBER" "Refined" 2>/dev/null
   _status_exit=$?
