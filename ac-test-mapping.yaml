@@ -1100,3 +1100,66 @@ issue_1651:
       test_name: "AC3 #1651: pitfalls-catalog.md §11.3 に chicken-and-egg 回避の記述が存在する"
       impl_files:
         - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+
+# --- Issue #1648 ---
+issue_1648:
+  issue: 1648
+  framework: bats
+  test_file: "plugins/twl/tests/bats/issue-1648-auto-refined-workflow.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: ".github/workflows/auto-refined.yml を新規作成。trigger: issues: opened、action: 起票直後の Issue を Project Board に追加 + Status を Refined に遷移。用途: issue-create-refined.sh がローカル実行されなかった時の防御的 fallback"
+      test_name: "ac1: .github/workflows/auto-refined.yml が存在する"
+      status: RED
+      impl_files:
+        - ".github/workflows/auto-refined.yml"
+    - ac_index: 1
+      ac_text: "auto-refined.yml の on.issues.types に opened が含まれる"
+      test_name: "ac1: auto-refined.yml の on.issues.types に opened が含まれる"
+      status: RED
+      impl_files:
+        - ".github/workflows/auto-refined.yml"
+    - ac_index: 1
+      ac_text: "auto-refined.yml が Project Board への追加アクションを含む"
+      test_name: "ac1: auto-refined.yml が Project Board への追加アクションを含む"
+      status: RED
+      impl_files:
+        - ".github/workflows/auto-refined.yml"
+    - ac_index: 1
+      ac_text: "auto-refined.yml が Status を Refined に遷移させる処理を含む"
+      test_name: "ac1: auto-refined.yml が Status を Refined に遷移させる処理を含む"
+      status: RED
+      impl_files:
+        - ".github/workflows/auto-refined.yml"
+    - ac_index: 2
+      ac_text: "workflow が issue-create-refined.sh の fallback として機能 (script success 時は workflow no-op、または idempotent)"
+      test_name: "ac2: auto-refined.yml が issues: opened trigger を持ち fallback として機能する"
+      status: RED
+      impl_files:
+        - ".github/workflows/auto-refined.yml"
+    - ac_index: 2
+      ac_text: "auto-refined.yml の add-to-project ステップは冪等である（重複追加しない実装）"
+      test_name: "ac2: auto-refined.yml の add-to-project ステップは冪等である（重複追加しない実装）"
+      status: RED
+      impl_files:
+        - ".github/workflows/auto-refined.yml"
+    - ac_index: 2
+      ac_text: "auto-refined.yml の Refined 遷移ステップは既存 Status を上書きする（冪等）"
+      test_name: "ac2: auto-refined.yml の Refined 遷移ステップは既存 Status を上書きする（冪等）"
+      status: RED
+      impl_files:
+        - ".github/workflows/auto-refined.yml"
+    - ac_index: 3
+      ac_text: "bats test 追加 (workflow trigger simulation、または Action level integration test)"
+      test_name: "ac3: issue-1648-auto-refined-workflow.bats が bats テストファイルとして存在する"
+      status: GREEN
+      note: "本ファイル自体の存在確認。bats ファイル生成後は PASS する（AC3 の完了条件）"
+      impl_files:
+        - "plugins/twl/tests/bats/issue-1648-auto-refined-workflow.bats"
+    - ac_index: 3
+      ac_text: "bats test ファイルが実行可能権限を持つ"
+      test_name: "ac3: issue-1648-auto-refined-workflow.bats が実行可能権限を持つ"
+      status: GREEN
+      note: "本ファイルの実行可能権限確認。生成後は PASS する"
+      impl_files:
+        - "plugins/twl/tests/bats/issue-1648-auto-refined-workflow.bats"
