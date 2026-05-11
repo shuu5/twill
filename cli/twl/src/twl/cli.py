@@ -140,6 +140,8 @@ def main():
     mcp_subparsers.add_parser('restart', help='Restart MCP server')
     doctor_parser = mcp_subparsers.add_parser('doctor', help='Self-check .mcp.json configuration')
     doctor_parser.add_argument('--probe', action='store_true', help='Run stdio handshake probe (timeout 5s)')
+    doctor_parser.add_argument('--auto-restart', action='store_true', dest='auto_restart',
+                               help='Auto-restart MCP server on probe failure (mid-session recovery, #1612)')
     doctor_parser.add_argument('--format', choices=['human', 'json'], default='human', help='Output format')
 
     args = parser.parse_args()

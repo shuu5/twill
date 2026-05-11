@@ -267,6 +267,7 @@ def _format_human(checks: list[dict[str, Any]], status: str) -> None:
 def run_doctor(args: Any) -> int:
     """Entry point for twl mcp doctor. Returns exit code."""
     probe = getattr(args, "probe", False)
+    auto_restart = getattr(args, "auto_restart", False)
     fmt = getattr(args, "format", "human")
 
     mcp_json = _find_mcp_json()
@@ -281,9 +282,14 @@ def run_doctor(args: Any) -> int:
         binary_check = _check_binary_exists(command)
         checks.append(binary_check)
 
-        if probe:
+        if probe or auto_restart:
             probe_check = _check_stdio_probe(command, cmd_args)
             checks.append(probe_check)
+            # --auto-restart: probe fail 時に lifecycle restart_mcp_server() を呼ぶ (#1612)
+            if auto_restart and probe_check["result"] == "fail":
+                from twl.mcp_server.lifecycle import restart_mcp_server
+                print("auto-restart: probe failed — triggering restart_mcp_server()", file=sys.stderr)
+                restart_mcp_server()
         else:
             checks.append({
                 "name": "stdio_probe",

@@ -2960,6 +2960,16 @@ scripts:
     path: ../../cli/twl/src/twl/mcp_server/doctor.py
     description: "twl mcp doctor サブコマンド: .mcp.json の整合性 self-check（command allowlist 検証・binary 存在確認・stdio probe）(#1589)"
 
+  mcp-watchdog:
+    type: script
+    path: scripts/mcp-watchdog.sh
+    description: "MCP server watchdog — プロセス死を検知して自動再起動。長時間セッション (3.5h+) の mid-session disconnect 対策 (#1612)"
+
+  wait-for-mcp-ready:
+    type: script
+    path: scripts/wait_for_mcp_ready.sh
+    description: "MCP server 接続確認スクリプト (standalone / on-demand / mid-session reconnect 対応, #1612)"
+
   observe-wrapper:
     type: script
     path: scripts/observe-wrapper.sh

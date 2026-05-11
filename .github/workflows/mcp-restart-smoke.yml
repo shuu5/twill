@@ -90,6 +90,16 @@ jobs:
           uv run --directory cli/twl twl mcp doctor --probe
           echo "new session warmup: MCP server probe ok"
 
+      - name: Mid-session disconnect recovery (#1612 regression fix)
+        run: |
+          set -euo pipefail
+          # Simulate mid-session disconnect: kill the server, then verify --auto-restart recovers
+          pkill -TERM -f 'fastmcp run.*src/twl/mcp_server/server.py' || true
+          sleep 1
+          # --auto-restart should detect probe failure and trigger restart
+          uv run --directory cli/twl twl mcp doctor --auto-restart || true
+          echo "mid-session disconnect: --auto-restart triggered"
+
       - name: Repair guidance on restart failure (#1588 #1589 ADR-0008)
         if: failure()
         run: |

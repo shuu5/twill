@@ -135,6 +135,10 @@ def restart_mcp_server() -> int:
 
     NOTE: After restart, the Claude Code session must also be restarted
     to reconnect to the new server process.
+
+    Mid-session disconnect (#1612): long-running sessions (3.5h+) may lose MCP connectivity
+    due to process death. Use `twl mcp doctor --auto-restart` for on-demand mid-session
+    recovery. For keepalive / permanent process stability, use mcp-watchdog.sh.
     """
     try:
         cmd = _find_mcp_server_cmd()
