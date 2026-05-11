@@ -356,8 +356,8 @@ case "\$*" in
     count=\$((count + 1))
     echo "\${count}" > "\${count_file}"
     if [ "\${count}" -le 1 ]; then
-      echo '{"message":"API rate limit exceeded"}' >&2
-      exit 5
+      printf 'HTTP/1.1 403 Forbidden\r\nx-ratelimit-remaining: 0\r\n\r\n{"message":"API rate limit exceeded"}\n'
+      exit 1
     else
       printf '[]\n'
       exit 0
