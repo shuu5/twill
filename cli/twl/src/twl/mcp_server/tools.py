@@ -1403,6 +1403,9 @@ _HOOK_OUTPUT_VALID_FIELDS = frozenset({
 })
 
 
+_HOOK_OUTPUT_VALID_DECISION = frozenset({"approve", "block"})
+
+
 def _to_hook_output(raw: dict) -> dict:
     """Transform an internal handler result into a HookOutput Zod schema-compliant dict.
 
@@ -1414,12 +1417,18 @@ def _to_hook_output(raw: dict) -> dict:
     Conversion rules:
       - decision="allow"  → decision="approve"
       - decision="deny"   → decision="block"
-      - ok=True           → no blocking signal (decision omitted)
-      - ok=False          → decision="block"
-      - evidence_path, matched_option_id → folded into reason
-      - error, summary, items → folded into reason
+      - decision=<other valid value> → passed through unchanged
+      - decision=<unknown> → decision="block" (fail-safe: unknown → blocking)
+      - ok=True           → no blocking signal; reason set only on error/violations
+      - ok=False/None/falsy → decision="block"; reason set from error/items
+      - evidence_path → folded into reason as filename only (Path.name)
+      - matched_option_id → folded into reason
+      - commit_message → folded into reason (pipe chars sanitized)
+      - items (list) → joined as human-readable string in reason
       - all other non-schema keys → dropped
     """
+    from pathlib import Path as _Path
+
     out: dict = {}
 
     if "decision" in raw:
@@ -1428,16 +1437,23 @@ def _to_hook_output(raw: dict) -> dict:
             out["decision"] = "block"
         elif legacy == "allow":
             out["decision"] = "approve"
+        elif legacy in _HOOK_OUTPUT_VALID_DECISION:
+            out["decision"] = legacy
+        else:
+            out["decision"] = "block"
 
         parts: list[str] = []
         if raw.get("reason"):
             parts.append(str(raw["reason"]))
         if raw.get("evidence_path"):
-            parts.append(f"evidence: {raw['evidence_path']}")
+            parts.append(f"evidence: {_Path(raw['evidence_path']).name}")
         if raw.get("matched_option_id"):
             parts.append(f"matched_option_id: {raw['matched_option_id']}")
         if parts:
             out["reason"] = " | ".join(parts)
+        for k in _HOOK_OUTPUT_VALID_FIELDS - {"decision", "reason"}:
+            if k in raw:
+                out[k] = raw[k]
         return out
 
     if "ok" in raw:
@@ -1448,12 +1464,14 @@ def _to_hook_output(raw: dict) -> dict:
         parts = []
         if raw.get("error"):
             parts.append(str(raw["error"]))
-        if raw.get("summary"):
-            parts.append(str(raw["summary"]))
+        items = raw.get("items")
+        if items:
+            parts.append(f"violations: {', '.join(str(i) for i in items)}")
         if raw.get("commit_message"):
-            parts.append(f"commit: {raw['commit_message']}")
-        if raw.get("items"):
-            parts.append(f"violations: {raw['items']}")
+            sanitized = str(raw["commit_message"]).replace("|", "/")
+            parts.append(f"commit: {sanitized}")
+        if not ok and raw.get("summary"):
+            parts.append(str(raw["summary"]))
         if parts:
             out["reason"] = " | ".join(parts)
         return out
