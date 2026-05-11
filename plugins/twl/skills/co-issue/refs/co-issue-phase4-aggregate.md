@@ -55,6 +55,34 @@ Step 4a で `fallback_inject_exhausted` に分類された issue が存在する
 
 5. **aggregate 実行**: 収集した specialist outputs を入力として `/twl:issue-review-aggregate` を Skill tool で呼び出す。結果を `per-issue/<index>/OUT/report.json` に書き込み（`status: "done"` または `circuit_broken`）、Step 4a の `done` / `failed` と同様に処理する
 
+6. **Phase4-complete.json 生成** (ADR-024 Phase D): Step 5 で `done` に分類された issue について以下を実行する（生成失敗時は WARN のみで継続、hook/tool の evidence check に備えた意図的副作用）:
+
+   ```bash
+   # Phase4-complete.json 生成 (ADR-024 Phase D — refine 完了 evidence, phase4_path="[D]")
+   # SESSION_ID allowlist: 英数字・ハイフン・アンダースコアのみ (baseline-bash.md §11)
+   _phase4_sid="${SESSION_ID:-${CO_ISSUE_SESSION_ID:-unknown}}"
+   if [[ ! "$_phase4_sid" =~ ^[A-Za-z0-9_-]+$ ]]; then
+     printf '[%s] WARN phase4_invalid_session_id sid=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$_phase4_sid" >> /tmp/refined-status-update.log
+     _phase4_sid="unknown"
+   fi
+   PHASE4_DIR="${CONTROLLER_ISSUE_DIR:-.controller-issue}/${_phase4_sid}"
+   mkdir -p "$PHASE4_DIR"
+   jq -n \
+     --arg schema_version "1.0.0" \
+     --arg sid "$_phase4_sid" \
+     --argjson n "${ISSUE_NUMBER:-0}" \
+     --arg repo "${TARGET_REPO:-unknown/repo}" \
+     --arg completed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+     --argjson specialists "$(jq '.specialists // []' "${PER_ISSUE_DIR:-/dev/null}/IN/policies.json" 2>/dev/null || echo '[]')" \
+     --arg report_path "${PER_ISSUE_DIR:-/dev/null}/OUT/report.json" \
+     --arg phase4_path "[D]" \
+     '{schema_version: $schema_version, session_id: $sid, issue_number: $n, repo: $repo, completed_at: $completed_at, specialists: $specialists, report_path: $report_path, phase4_path: $phase4_path}' \
+     > "${PHASE4_DIR}/Phase4-complete.json" \
+     || printf '[%s] WARN phase4_marker_failed issue=#%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${ISSUE_NUMBER:-?}" >> /tmp/refined-status-update.log
+   ```
+
+   **設計注記**: [D] path は `spec-review-session-init.sh` の適用外であり `.spec-review-session-*.json` が存在しない。`Phase4-complete.json` を生成することで次の `board-status-update Refined` hook が allow される（意図した副作用、ADR-024 Phase D 参照）。
+
 **failure / circuit_broken の場合（AskUserQuestion）:**
 
 - `[A] retry subset` → 以下で非 done のみ再実行（env marker 必須 — ADR-037, 不変条件 P）:
@@ -66,6 +94,28 @@ Step 4a で `fallback_inject_exhausted` に分類された issue が存在する
 - `[B] manual fix` → Issue body 更新後、以下の決定論的 step を実行する（ADR-024 Phase B: Status=Refined SSoT）:
 
   ```bash
+  # Phase4-complete.json 生成 (ADR-024 Phase D — refine 完了 evidence)
+  # SESSION_ID allowlist: 英数字・ハイフン・アンダースコアのみ (baseline-bash.md §11)
+  _phase4_sid="${SESSION_ID:-${CO_ISSUE_SESSION_ID:-unknown}}"
+  if [[ ! "$_phase4_sid" =~ ^[A-Za-z0-9_-]+$ ]]; then
+    printf '[%s] WARN phase4_invalid_session_id sid=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$_phase4_sid" >> /tmp/refined-status-update.log
+    _phase4_sid="unknown"
+  fi
+  PHASE4_DIR="${CONTROLLER_ISSUE_DIR:-.controller-issue}/${_phase4_sid}"
+  mkdir -p "$PHASE4_DIR"
+  jq -n \
+    --arg schema_version "1.0.0" \
+    --arg sid "$_phase4_sid" \
+    --argjson n "${ISSUE_NUMBER:-0}" \
+    --arg repo "${TARGET_REPO:-unknown/repo}" \
+    --arg completed_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    --argjson specialists "$(jq '.specialists // []' "${PER_ISSUE_DIR:-/dev/null}/IN/policies.json" 2>/dev/null || echo '[]')" \
+    --arg report_path "${PER_ISSUE_DIR:-/dev/null}/OUT/report.json" \
+    --arg phase4_path "[B]" \
+    '{schema_version: $schema_version, session_id: $sid, issue_number: $n, repo: $repo, completed_at: $completed_at, specialists: $specialists, report_path: $report_path, phase4_path: $phase4_path}' \
+    > "${PHASE4_DIR}/Phase4-complete.json" \
+    || printf '[%s] WARN phase4_marker_failed issue=#%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${ISSUE_NUMBER:-?}" >> /tmp/refined-status-update.log
+
   # Status=Refined を設定（Phase B 移行後: Status only SSoT）
   bash "${SCRIPTS_ROOT:-plugins/twl/scripts}/chain-runner.sh" board-status-update "$ISSUE_NUMBER" Refined
   _status_exit=$?

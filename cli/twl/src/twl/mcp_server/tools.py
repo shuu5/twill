@@ -1617,7 +1617,7 @@ _STATUS_DENY_MESSAGES: dict[str, str] = {
 
 
 def _check_status_transition_evidence(session_tmp_dir: str | None, controller_issue_dir: str | None) -> str | None:
-    """spec-review-session 優先 → Phase4-complete.json の順で evidence を検索して返す。"""
+    """ADR-024 Phase D schema (schema_version=1.0.0) で正典化された Phase4-complete.json evidence を check。spec-review-session 優先 → Phase4-complete.json の順で evidence を検索して返す。"""
     stmp = Path(session_tmp_dir or os.environ.get("SESSION_TMP_DIR", "/tmp")).resolve()
     spec_files = sorted(stmp.glob(".spec-review-session-*.json"))
     if spec_files:
@@ -1639,7 +1639,7 @@ def twl_validate_status_transition_handler(
     """validation module: gh project item-edit Status field transition gate.
 
     Sub-1 (pre-bash-refined-status-gate.sh) の MCP-native 二重防御。
-    Sub-1 の In Progress gate に加え Refined gate と Phase4-complete.json evidence を追加する。
+    Sub-1 の In Progress gate に加え Refined gate と Phase4-complete.json evidence を check する（ADR-024 Phase D schema_version=1.0.0 で正典化済み）。
 
     Returns:
         {

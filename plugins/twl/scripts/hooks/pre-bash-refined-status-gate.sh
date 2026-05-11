@@ -10,7 +10,7 @@
 #   - マッチしない → 通過（exit 0）
 #   - マッチした場合、以下のいずれかの evidence が存在すれば allow:
 #     - ${SESSION_TMP_DIR:-/tmp}/.spec-review-session-*.json (Worker セッション内の正規操作)
-#     - ${CONTROLLER_ISSUE_DIR:-.controller-issue}/*/Phase4-complete.json (co-issue refine Phase 4 完了)
+#     - ${CONTROLLER_ISSUE_DIR:-.controller-issue}/*/Phase4-complete.json (co-issue Phase 4 完了 evidence (ADR-024 Phase D schema_version=1.0.0))
 #   - evidence なし → deny
 #
 # 注: --bypass-status-gate フラグは autopilot-launch.sh / launcher.py 内部で制御する。
