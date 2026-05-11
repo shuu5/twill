@@ -251,6 +251,49 @@ observer-side の A3 mtime + A1 多指標パターンは、orchestrator-side の
 
 注: `issue-lifecycle-orchestrator.sh` の `DEBOUNCE_TRANSIENT_SEC=120s`（LLM thinking time 中の transient state 保護、Worker kill 防止文脈）とは別文脈。orchestrator stagnate 検知の mtime AND 判定は inject-next-workflow.sh の RESOLVE_FAILED カウント制御であり、debounce 対象のプロセス kill とは独立した機構である。
 
+#### §4.10.1 non-ASCII / ASCII ellipsis / bare-word 検知漏れパターン（Issue #1153）
+
+LLM indicator 検知において以下の3つの落とし穴が確認されている。いずれも `detect_thinking()` が一部の入力テキストを検知できない原因となる。
+
+**落とし穴 1: non-ASCII 文字を含む indicator の検知漏れ**
+
+`grep -qiE` の文字クラス `[a-z]+` は ASCII 範囲のみを対象とするため、`Flambéing`（é は non-ASCII U+00E9）などの Unicode 文字を含む indicator が汎化 regex にヒットしない。
+
+- **BAD**: `grep -qiE "[A-Z][a-z]+(ing)..."` — `Flambéing` の `é` で中断される
+- **GOOD**: `grep -qiP "[\p{Lu}][\p{Ll}]+(ing)..."` — PCRE Unicode property で正しく動作
+
+**落とし穴 2: ASCII ellipsis (`...`) の検知漏れ**
+
+Claude Code が出力する thinking status には Unicode ellipsis（`…` U+2026）だけでなく ASCII 3-dot（`...`）も使われる。汎化 regex に `\.{3}` が含まれていないと ASCII ellipsis 付き indicator が検知されない。
+
+- **BAD**: `[A-Z][a-z]+(ing)(…| for [0-9]| \([0-9])` — `Garnishing... (15s)` を検知できない
+- **GOOD**: `[\p{Lu}][\p{Ll}]+(ing)(…|\.{3}| for [0-9]| \([0-9])` — ASCII `...` も検知
+
+**落とし穴 3: bare-word indicator の欠落**
+
+汎化 regex は接尾辞パターンに依存するため、indicator 単体（bare-word）で出現する場合は検知されないことがある。SSOT（`llm-indicators.sh`）に bare-word として明示的に追加することで安全網（safety net）を設ける。
+
+**SSOT 三方向同期義務（Issue #1153）**
+
+indicator の追加・削除は以下3箇所を同期すること:
+
+1. `plugins/session/scripts/lib/llm-indicators.sh` — 実装 SSOT
+2. `plugins/session/scripts/cld-observe-any` — static grep 互換コメントマニフェスト
+3. `plugins/twl/skills/su-observer/scripts/lib/observer-idle-check.sh` — static grep 互換コメントマニフェスト
+
+**同期対象 indicator 8 件（catalog 独自 / Issue #1153）**:
+
+`Steeping`, `Simmering`, `Marinating`, `Newspapering`, `Flummoxing`, `Befuddling`, `Waddling`, `Lollygagging`
+
+これらは pitfalls-catalog.md から逆同期された indicator であり、`llm-indicators.sh` および `cld-observe-any`、`observer-idle-check.sh` の両ファイルのコメントマニフェストに含まれること。
+
+**Issue #1153 追加 indicator 一覧（20 件）**:
+
+`Garnishing`, `Embellishing`, `Flambéing`, `Tomfoolering`, `Reticulating`, `Topsy-turvying`,
+`Generating`, `Whisking`, `Mulling`, `Fermenting`, `Caramelizing`, `Inferring`,
+`Discerning`, `Ratiocinating`, `Sleuthing`, `Investigating`, `Reviewing`, `Studying`,
+`Pondering`, `Reflecting`
+
 #### §4.11 tmux kill-window / set-option の target 解決落とし穴
 
 **問題**: `tmux kill-window -t "$window_name"` / `tmux set-option -t "$window_name"` がウィンドウ名文字列を直接 `-t` に渡している。複数 tmux session に同名 window が存在する場合、ambiguous target エラーまたは誤 kill が発生する（Issue #1218、Issue #1142）。

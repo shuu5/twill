@@ -49,7 +49,10 @@ LLM_INDICATORS=(
     # SSOT: COMPACTION_INDICATORS 配列に定義し、LLM_INDICATORS は参照する
     "${COMPACTION_INDICATORS[@]}"
 
-    "[A-Z][a-z]+(in'|ing)(…| for [0-9]| \\([0-9])"
+    # Generalized PCRE regex: Unicode uppercase + lowercase + ASCII ellipsis (#1153)
+    # NOTE: this pattern requires grep -qiP (PCRE mode) in detect_thinking()
+    # NOTE: 'ed' suffix intentionally omitted — past-tense + "for N" is IDLE (v18 past tense filter)
+    "[\\p{Lu}][\\p{Ll}]+(in'|ing)(…|\\.{3}| for [0-9]| \\([0-9])"
 
     # --- AC: EN 9 new indicators (#1454) ---
     "Newspapering"
@@ -83,6 +86,36 @@ LLM_INDICATORS=(
     "作成中"
     "分析中"
     "検証中"
+
+    # --- AC (#1153): 20 new indicators ---
+    "Garnishing"
+    "Embellishing"
+    "Flambéing"
+    "Tomfoolering"
+    "Reticulating"
+    "Topsy-turvying"
+    "Generating"
+    "Whisking"
+    "Mulling"
+    "Fermenting"
+    "Caramelizing"
+    "Inferring"
+    "Discerning"
+    "Ratiocinating"
+    "Sleuthing"
+    "Investigating"
+    "Reviewing"
+    "Studying"
+    "Pondering"
+    "Reflecting"
+
+    # --- AC (#1153): 6 catalog-only indicators (Marinating/Newspapering already above) ---
+    "Steeping"
+    "Simmering"
+    "Flummoxing"
+    "Befuddling"
+    "Waddling"
+    "Lollygagging"
 )
 
 export LLM_INDICATORS

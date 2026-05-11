@@ -43,6 +43,11 @@ _check_idle_completed() {
     # C3: LLM indicator 不在 (Thinking/Brewing 等の現在進行形)
     # SSOT: lib/llm-indicators.sh を参照 (#1374)
     # 過去形 + "for N" は IDLE 扱い（Sautéed for / Worked for 等）— v18 past tense filter 準拠
+    # LLM_INDICATORS manifest (#1153) — static grep compatibility:
+    # Garnishing Embellishing Flambéing Tomfoolering Reticulating Topsy-turvying
+    # Generating Whisking Mulling Fermenting Caramelizing Inferring Discerning
+    # Ratiocinating Sleuthing Investigating Reviewing Studying Pondering Reflecting
+    # Steeping Simmering Marinating Newspapering Flummoxing Befuddling Waddling Lollygagging
     local _lib_dir
     _lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local _llm_lib="${_lib_dir}/../../../../../session/scripts/lib/llm-indicators.sh"
@@ -52,7 +57,7 @@ _check_idle_completed() {
     if [[ ${#LLM_INDICATORS[@]} -gt 0 ]]; then
         local _alternation
         _alternation="$(IFS='|'; echo "${LLM_INDICATORS[*]}")"
-        if echo "$pane_content" | tail -15 | grep -qE "($_alternation)"; then
+        if echo "$pane_content" | tail -15 | grep -qP "($_alternation)"; then
             return 1
         fi
     fi

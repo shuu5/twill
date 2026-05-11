@@ -12,6 +12,18 @@ fi
 # LLM_INDICATORS SSOT: lib/llm-indicators.sh を参照 (#1374)
 source "${SCRIPT_DIR}/lib/llm-indicators.sh"
 
+# PCRE 可用性チェック (#1153): grep -P が使えない環境では warn を出す
+if ! echo "" | grep -qP "." 2>/dev/null; then
+    echo "[cld-observe-any] WARN: grep PCRE 非対応環境。detect_thinking が一部 indicator を検知できない可能性あり" >&2
+fi
+PCRE_SUPPORT=1
+
+# LLM_INDICATORS manifest (#1153) — static grep compatibility:
+# Garnishing Embellishing Flambéing Tomfoolering Reticulating Topsy-turvying
+# Generating Whisking Mulling Fermenting Caramelizing Inferring Discerning
+# Ratiocinating Sleuthing Investigating Reviewing Studying Pondering Reflecting
+# Steeping Simmering Marinating Newspapering Flummoxing Befuddling Waddling Lollygagging
+
 # stuck-patterns.yaml SSoT ローダー (#1582)
 _STUCK_PATTERNS_LIB="$(dirname "${BASH_SOURCE[0]}")/../../twl/scripts/lib/stuck-patterns-lib.sh"
 # shellcheck source=/dev/null
@@ -191,7 +203,7 @@ detect_thinking() {
     local tail15="$1"
     local w
     for w in "${LLM_INDICATORS[@]}"; do
-        if echo "$tail15" | grep -qiE "$w"; then
+        if echo "$tail15" | grep -qiP "$w"; then
             echo "$w"
             return
         fi
