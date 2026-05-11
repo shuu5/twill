@@ -487,8 +487,9 @@ if [[ -n "$PRE_CHECK_ISSUE" && "$SKILL_NORMALIZED" == "co-autopilot" ]]; then
     elif [[ "$_issue_status" != "Refined" ]]; then
       echo "[spawn-controller] ERROR: Issue #${PRE_CHECK_ISSUE} の Status=${_issue_status}（Refined でない）のため co-autopilot spawn を abort します。" >&2
       echo "[spawn-controller] HINT: 以下のコマンドで Status=Refined に遷移させてから再実行してください:" >&2
-      echo "[spawn-controller]   bash \"$TWILL_ROOT/plugins/twl/scripts/chain-runner.sh\" board-status-update ${PRE_CHECK_ISSUE}" >&2
-      echo "[spawn-controller]   または: board-status-update --status Refined を実行後に spawn-controller.sh を再実行" >&2
+      echo "[spawn-controller]   /twl:co-issue refine #${PRE_CHECK_ISSUE} を spawn してください（唯一の正規経路）" >&2
+      echo "[spawn-controller]   bash \"$TWILL_ROOT/plugins/twl/skills/su-observer/scripts/spawn-controller.sh\" co-issue \"refine #${PRE_CHECK_ISSUE}\"" >&2
+      echo "[spawn-controller]   (MUST NOT: chain-runner.sh board-status-update を co-issue Phase 4 外から直接実行しない。emergency bypass は --bypass-status-gate + PR description 記載)" >&2
       exit 2
     fi
   else
