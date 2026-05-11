@@ -1078,3 +1078,26 @@ issue_1602:
       red_mechanism: "mcp-restart-smoke.yml の uses 行が @v4/@v5 形式のため形式チェックで fail する"
       impl_files:
         - ".github/workflows/mcp-restart-smoke.yml"
+
+# --- Issue #1651 ---
+  - ac_index: 1
+    issue: 1651
+    ac_text: "_check_parallel_spawn_eligibility に controller_count=0 短絡 path 追加 — controller_count=0 の場合、必須条件1 (heartbeat_alive) を skip して spawn を許可"
+    test_file: "plugins/twl/tests/bats/scripts/issue-1651-initial-spawn.bats"
+    test_name: "AC1 #1651: controller_count=0 + heartbeat_alive=false → exit 0 (初回 spawn 許可)"
+    impl_files:
+      - "plugins/twl/scripts/lib/observer-parallel-check.sh"
+  - ac_index: 2
+    issue: 1651
+    ac_text: "bats test 追加 — controller_count=0 で spawn 成功する test / controller_count>0 + heartbeat 古い → DENY する test (既存挙動維持)"
+    test_file: "plugins/twl/tests/bats/scripts/issue-1651-initial-spawn.bats"
+    test_name: "AC2 #1651 regression: controller_count=1 + heartbeat_alive=false → exit 2 (既存挙動維持)"
+    impl_files:
+      - "plugins/twl/scripts/lib/observer-parallel-check.sh"
+  - ac_index: 3
+    issue: 1651
+    ac_text: "pitfalls-catalog §11.3 拡張 — 初回 spawn 例外 path を明記 (chicken-and-egg 回避 logic)"
+    test_file: "plugins/twl/tests/bats/scripts/issue-1651-initial-spawn.bats"
+    test_name: "AC3 #1651: pitfalls-catalog.md §11.3 に chicken-and-egg 回避の記述が存在する"
+    impl_files:
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"

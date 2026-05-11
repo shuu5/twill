@@ -664,6 +664,32 @@ spawn 前評価:
 5. **既存 controller が S-2/S-3/S-4 のいずれか** — S-1 IDLE は §4.10 で cleanup 対象（#1117 で格上げ予定）
 6. **budget 残量 ≥ 150 分** — `.supervisor/budget-config.json` の `parallel_spawn_min_remaining_minutes`（default 150）。既存 `[BUDGET-LOW]` 閾値(40分)とは独立
 
+### 初回 spawn 例外 path（controller_count=0, #1651 chicken-and-egg 回避）
+
+**問題**: 前 Wave の Pilot kill 後 (`controller_count=0`) に新 Wave を spawn しようとすると、
+`must_1`（heartbeat_alive）が false → exit 2 で spawn が完全 DENY される deadlock が発生する。
+controller を起動しないと heartbeat が出ず、heartbeat がないと controller を起動できない
+（chicken-and-egg 問題）。
+
+**解決策（`_check_parallel_spawn_eligibility()` #1651 実装）**:
+`controller_count == 0` の場合、`must_1` の heartbeat check を skip して spawn を許可する:
+
+```bash
+if (( controller_count == 0 )); then
+  # 初回 spawn は heartbeat_alive=true とみなす (chicken-and-egg 回避, #1651)
+  echo "[parallel-check] INFO: controller_count=0 (initial spawn) — heartbeat check skipped" >&2
+  heartbeat_alive=true
+fi
+```
+
+**適用条件**: `controller_count=0` のみ。`controller_count > 0` の並列 spawn では `must_1` は引き続き有効。
+**`must_2`（mode）・`must_3`（SU-4 上限）は `controller_count=0` でも適用される**（heartbeat のみスキップ）。
+
+**観測されたケース（2026-05-11 ipatho2, Wave U.audit-fix-A）**:
+- Wave U.Z Pilot kill 後、`.supervisor/events/heartbeat-*` が全て age > 5min
+- `controller_count=0` で `OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true` env var bypass が必要だった（規約違反）
+- 本修正で env var bypass 不要となり、正規の初回 spawn が可能になる
+
 ### 失敗時 degrade
 
 - 必須条件 1 つでも false → **spawn 完全禁止 (exit 2)**、stderr に欠落必須条件
