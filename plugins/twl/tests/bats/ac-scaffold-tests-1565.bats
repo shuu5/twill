@@ -218,14 +218,9 @@ teardown() {
   #      MUST NOT コンテキスト外の match が存在し fail する
   [ -d "$SU_OBSERVER_SKILL_DIR" ]
 
-  # 全マッチを取得して MUST NOT コンテキスト行のみに限定されることを確認
-  local match_count
-  run bash -c "grep -rn 'board-status-update --status Refined' '$SU_OBSERVER_SKILL_DIR' | grep -v 'MUST NOT' | grep -vc '^\s*#'"
   # MUST NOT コンテキスト外の出現が 0 件であることを確認
-  # (grep -v が全行除外 → grep -vc が 0 → run exit code は grep -vc が 0行で exit 1)
-  # 方針: 出現行数が 0 であれば PASS
+  # wc -l は常に exit 0 で整数を返す（grep -cv + || echo 0 の "0\n0" バグ対策）
   local raw_count
-  # wc -l は常に exit 0 で整数を返す（grep -cv + || echo 0 の "0\n0" バグ修正）
   raw_count="$(grep -rn 'board-status-update --status Refined' "$SU_OBSERVER_SKILL_DIR" \
     | grep -v 'MUST NOT' | wc -l)"
   [ "$raw_count" -eq 0 ]
