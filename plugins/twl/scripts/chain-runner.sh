@@ -487,7 +487,12 @@ _update_parent_epic_ac_checklist() {
 #   TWL_CALLER_AUTHZ=manual-override          bash chain-runner.sh board-status-update N Refined
 _verify_refined_caller() {
   local issue_num="${1:-unknown}"
-  local log_file="${REFINED_STATUS_GATE_LOG:-/tmp/refined-status-gate.log}"
+  # REFINED_STATUS_GATE_LOG は /tmp/ 配下のみ許可（監査ログ消去防止 A09）
+  local _log_override="${REFINED_STATUS_GATE_LOG:-}"
+  local log_file="/tmp/refined-status-gate.log"
+  if [[ -n "$_log_override" && "$_log_override" == /tmp/* ]]; then
+    log_file="$_log_override"
+  fi
   local caller_authz="${TWL_CALLER_AUTHZ:-}"
   local ts
   ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -548,6 +553,12 @@ step_board_status_update() {
   if ! [[ "$issue_num" =~ ^[0-9]+$ ]]; then
     return 0
   fi
+
+  # target_status allowlist（入力検証）
+  case "$target_status" in
+    Refined|"In Progress"|Todo|Done|"In Review"|Backlog) ;;
+    *) skip "board-status-update" "不正な target_status: $target_status"; return 0 ;;
+  esac
 
   # Issue #1567: Refined 遷移は認可 caller のみ許可（非認可は skip 扱いで chain 継続）
   if [[ "$target_status" == "Refined" ]]; then
