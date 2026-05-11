@@ -3,8 +3,13 @@
 #
 # Usage:
 #   spawn-controller.sh <skill-name> <prompt-file> [cld-spawn extra args...]
-#   spawn-controller.sh co-autopilot <prompt-file> --with-chain --issue N [--project-dir DIR] [--autopilot-dir DIR]
+#   spawn-controller.sh co-autopilot <prompt-file>                             # 正規運用: Pilot を 1 つ spawn
 #   spawn-controller.sh feature-dev <issue-number> [--cd PATH] [cld-spawn extra args...]   # Issue #1644
+#
+# DEPRECATED: --with-chain --issue N（Pilot bypass 経路、#1650 で default-deny に変更）
+#   co-autopilot <prompt-file> --with-chain --issue N [--project-dir DIR] [--autopilot-dir DIR]
+#   escape hatch: SKIP_PILOT_GATE=1 SKIP_PILOT_REASON='<理由>' spawn-controller.sh co-autopilot ...
+#   詳細: plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §13.5
 #
 #   <skill-name>: co-explore / co-issue / co-architect / co-autopilot /
 #                 co-project / co-utility / co-self-improve / feature-dev
@@ -279,7 +284,7 @@ VALID_SKILLS=(co-explore co-issue co-architect co-autopilot co-project co-utilit
 usage() {
   cat >&2 <<EOF
 Usage: $(basename "$0") <skill-name> <prompt-file> [cld-spawn extra args...]
-       $(basename "$0") co-autopilot <prompt-file> --with-chain --issue N [--project-dir DIR] [--autopilot-dir DIR]
+       $(basename "$0") co-autopilot <prompt-file>                              # 正規運用: Pilot を 1 つ spawn
        $(basename "$0") feature-dev <issue-number> [--cd PATH] [cld-spawn extra args...]   # Issue #1644
        $(basename "$0") --check-refined-status <ISSUE_NUM>  # Issue #1635: Status=Refined チェックのみ実行
        $(basename "$0") --check-parallel-only <ISSUE_NUM>   # Issue #1635: 並列 spawn チェックのみ実行
@@ -287,10 +292,14 @@ Usage: $(basename "$0") <skill-name> <prompt-file> [cld-spawn extra args...]
 Valid skills: ${VALID_SKILLS[*]}
 (Accepts with or without "twl:" prefix)
 
+DEPRECATED: --with-chain --issue N は Pilot bypass 経路です (#1650 で default-deny 化)。
+  正規運用: co-autopilot <prompt>（--with-chain なし）で Pilot を spawn してください。
+  escape hatch: SKIP_PILOT_GATE=1 SKIP_PILOT_REASON='<理由>' を設定してください。
+
 Example:
   $(basename "$0") co-explore /tmp/my-prompt.txt
   $(basename "$0") co-issue /tmp/issue-prompt.txt --timeout 90
-  $(basename "$0") co-autopilot /tmp/ctx.txt --with-chain --issue 835
+  $(basename "$0") co-autopilot /tmp/ctx.txt
   $(basename "$0") feature-dev 1644 --model claude-opus-4-7 --timeout 120
   $(basename "$0") --check-refined-status 1635
   $(basename "$0") --check-parallel-only 1635
@@ -489,12 +498,43 @@ fi
 # --- pre-check ここまで ---
 
 if [[ "$WITH_CHAIN" == "true" ]]; then
-  cat >&2 <<'WARN'
-WARN: --with-chain --issue は skill bypass 経路です（Pilot 不在で Worker 直接起動）。
-  正規運用: spawn-controller.sh co-autopilot <prompt>（オプション無し）で Pilot を 1 つ spawn し、
-            Pilot が複数 Issue の deps graph 計画と Worker 起動を担当する。
+  # #1650: default-deny gate — SKIP_PILOT_GATE=1 + SKIP_PILOT_REASON='...' の escape hatch 以外は exit 2
+  # ADR-037 SKIP_ISSUE_GATE と同じ pattern (SKIP_REASON 必須)
+  if [[ "${SKIP_PILOT_GATE:-0}" == "1" ]]; then
+    _skip_pilot_reason="${SKIP_PILOT_REASON:-}"
+    if [[ -z "$_skip_pilot_reason" ]]; then
+      cat >&2 <<'DENY'
+ERROR: SKIP_PILOT_GATE=1 を使う場合は SKIP_PILOT_REASON を必ず指定してください。
+  例: SKIP_PILOT_GATE=1 SKIP_PILOT_REASON='緊急対応: Wave U.audit-fix hotfix' spawn-controller.sh co-autopilot <prompt> --with-chain --issue N
   詳細: plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §13.5
-WARN
+DENY
+      exit 2
+    fi
+    _skip_pilot_reason="${_skip_pilot_reason//[^[:print:]]/ }"
+    echo "[spawn-controller] WARN: SKIP_PILOT_GATE=1 — --with-chain --issue gate bypassed (issue=${CHAIN_ISSUE:-?}, reason=${_skip_pilot_reason})" >&2
+    {
+      _sup_dir="${SUPERVISOR_DIR:-.supervisor}"
+      mkdir -p "$_sup_dir"
+      printf '%s SKIP_PILOT_GATE=1: %s\n' \
+        "$(date -u +%FT%TZ)" \
+        "$_skip_pilot_reason" \
+        >> "$_sup_dir/intervention-log.md"
+    } || {
+      echo "[spawn-controller] WARN: intervention-log append failed (continuing spawn)" >&2
+      true
+    }
+  else
+    cat >&2 <<'DENY'
+ERROR: --with-chain --issue は Pilot bypass 経路です（Worker が main で直接起動し、main push 事故の原因になります）。
+  再現コマンド: spawn-controller.sh co-autopilot <prompt> --with-chain --issue N
+  正規運用: spawn-controller.sh co-autopilot <prompt>（--with-chain なし）で Pilot を 1 つ spawn し、
+            Pilot が deps graph に基づく Wave 計画と Worker 起動を担当する。
+  回避が必要な場合: SKIP_PILOT_GATE=1 SKIP_PILOT_REASON='<理由>' を設定してください。
+  詳細: plugins/twl/skills/su-observer/refs/pitfalls-catalog.md §13.5
+  関連: bug-4 (Wave U.Y main 直接 push d6cb9859), #1644 ADR-041
+DENY
+    exit 2
+  fi
   if [[ "$SKILL_NORMALIZED" != "co-autopilot" ]]; then
     echo "Error: --with-chain は co-autopilot のみで有効です。" >&2
     exit 2

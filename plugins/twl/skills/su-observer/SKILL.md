@@ -122,6 +122,17 @@ co-autopilot を spawn する**前に必ず**以下を実行すること（`refs
 
 **なぜ MUST か**: ADR-024 Phase B により orchestrator は Status=Refined でない Issue の Worker spawn を reject する。Status=Todo のまま spawn すると Pilot が skip を繰り返す stuck pattern になる（Wave 60 / Wave 63 で 2 度発生）。
 
+#### co-autopilot spawn 時 `--with-chain --issue` flag 禁止 MUST（#1650）
+
+co-autopilot を spawn する際、**`--with-chain --issue N` flag を絶対に含めてはならない**（`spawn-controller.sh` が exit 2 で block）。
+
+- **含めてはいけない例**: `spawn-controller.sh co-autopilot <prompt> --with-chain --issue 1153`
+- **正規パターン**: `spawn-controller.sh co-autopilot <prompt>`（flag なし）
+
+wave-progress-watchdog または自動 spawn ロジックでコマンドを構築する際は、`--with-chain` が含まれていないことを確認すること。escape hatch が必要な例外ケースは `SKIP_PILOT_GATE=1 SKIP_PILOT_REASON='<理由>'` のみ（intervention-log に自動記録）。
+
+**なぜ MUST か**: `--with-chain` は Pilot を bypass して Worker を直接起動するため、Worker が worktree でなく main で作業し **main 直接 push 事故（bug-4: d6cb9859）** と同一 root cause になる。`refs/pitfalls-catalog.md §13.5` 参照。
+
 ### 既存セッション状態確認・問題検出・Wave 管理・過去介入記録確認が必要な場合
 
 **`refs/su-observer-wave-management.md` を Read** して実行。
