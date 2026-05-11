@@ -1,76 +1,82 @@
 mappings:
   - ac_index: 1
-    ac_text: "coredumpctl enable 相当の設定（/etc/systemd/coredump.conf の Storage=external 等）について、必要な手順を記録する"
+    ac_text: "AC-1: coredumpctl enable 相当の設定（/etc/systemd/coredump.conf の Storage=external 等）について、必要な手順を記録する"
     test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
     test_name: "ac1: coredump runbook が architecture/runbooks/ 配下に存在する"
     impl_files:
       - "architecture/runbooks/coredump-config.md"
 
   - ac_index: 2
-    ac_text: "strace -f -p <tmux-server-pid> -o /var/log/tmux-trace.log を long-running で実行する手順を runbook 化"
+    ac_text: "AC-2: strace -f -p <tmux-server-pid> -o /var/log/tmux-trace.log を long-running で実行する手順を runbook 化"
     test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
     test_name: "ac2: strace runbook が architecture/runbooks/ 配下に存在する"
     impl_files:
       - "architecture/runbooks/tmux-strace-runbook.md"
 
   - ac_index: 3
-    ac_text: "AC-3a: observer 側は doobidoo hash 26cc074d で kill-window 直後 sleep 1 既挿入"
+    ac_text: "AC-3a (revised): safe_kill_window ヘルパー本体に sleep 挿入。Issue #1385 集中化により 19 caller を一括保護"
     test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
-    test_name: "ac3a: autopilot-orchestrator.sh の kill-window 直後に sleep 1 が挿入されている"
+    test_name: "ac3a: safe_kill_window 内に tmux kill-window 直後の sleep がある"
     impl_files:
-      - "scripts/autopilot-orchestrator.sh"
+      - "scripts/lib/tmux-window-kill.sh"
 
   - ac_index: 4
-    ac_text: "AC-3b: issue-lifecycle-orchestrator.sh の 10 箇所の kill-window 呼び出し（L372,L411,L562,L589,L595,L641,L712,L728,L753,L792）すべてに sleep 1 を直後に挿入"
+    ac_text: "AC-3b (revised): orchestrator 内に直接 tmux kill-window 呼び出しが残存しないこと（#1385 集中化保持）"
     test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
-    test_name: "ac3b: orchestrator の kill-window 全 10 箇所すべてに sleep 1 が挿入されている（集約確認）"
+    test_name: "ac3b: issue-lifecycle-orchestrator.sh に tmux kill-window 直接呼び出しなし"
     impl_files:
       - "scripts/issue-lifecycle-orchestrator.sh"
+      - "scripts/autopilot-orchestrator.sh"
 
   - ac_index: 5
-    ac_text: "AC-3c: tmux-safety-guard.sh への lint 追加 — kill-window 直後に sleep 1 がない場合は warning"
+    ac_text: "AC-3c: tmux-safety-guard.sh への lint 追加 — kill-window 直接呼び出し禁止 + ヘルパー sleep 検証"
     test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
     test_name: "ac3c: tmux-safety-guard.sh が scripts/ 配下に存在する"
     impl_files:
       - "scripts/tmux-safety-guard.sh"
+      - "deps.yaml"
 
   - ac_index: 6
-    ac_text: "AC-3d: bats regression test 追加 — kill-window 連続呼び出しで sleep が入っていることを tests/bats/scripts/orchestrator-kill-window-sleep.bats で検証"
+    ac_text: "AC-3d: bats regression test — kill-window 連続呼び出しで sleep が入っていることを検証"
     test_file: "tests/bats/scripts/orchestrator-kill-window-sleep.bats"
-    test_name: "ac3d: orchestrator の kill-window 直後 sleep 1 挿入が全 10 箇所に存在する（集約）"
+    test_name: "ac3d-1: safe_kill_window ヘルパー内に tmux kill-window + sleep の組み合わせがある"
     impl_files:
+      - "scripts/lib/tmux-window-kill.sh"
       - "scripts/issue-lifecycle-orchestrator.sh"
 
   - ac_index: 7
-    ac_text: "AC-4a: 既存 tmux-resurrect-save.service の動作確認（save interval / save 対象 / restore 経路）"
-    test_file: ""
-    test_name: ""
-    impl_files: []
-    # AC-4a はドキュメント記録 AC（systemd unit 確認）— 専用テストなし（scope 外）
+    ac_text: "AC-4a: 既存 tmux-resurrect-save.service の動作確認"
+    test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
+    test_name: "ac6b: ADR-042 に tmux-twill.service の wave-queue hook 設計が記録されている"
+    impl_files:
+      - "architecture/decisions/ADR-042-tmux-crash-recovery-wave-resume.md"
+    # AC-4a は ADR-042 D-4 (tmux-resurrect 統合戦略) で記録
 
   - ac_index: 8
-    ac_text: "AC-4b: tmux-twill.service の ExecStartPost で resurrect restore を fire する設計を検討"
-    test_file: ""
-    test_name: ""
-    impl_files: []
-    # AC-4b は設計文書 AC — 専用テストなし（scope 外）
+    ac_text: "AC-4b: tmux-twill.service の ExecStartPost で resurrect restore を fire する設計"
+    test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
+    test_name: "ac6b: ADR-042 が architecture/decisions/ 配下に存在する"
+    impl_files:
+      - "architecture/decisions/ADR-042-tmux-crash-recovery-wave-resume.md"
+    # AC-4b は ADR-042 D-1 (tmux-twill.service 設計) で記録
 
   - ac_index: 9
-    ac_text: "AC-4c: claude code session 状態と tmux pane の対応を保つ仕組みを設計する"
+    ac_text: "AC-4c: claude code session 状態と tmux pane の対応を保つ仕組み"
     test_file: ""
     test_name: ""
-    impl_files: []
-    # AC-4c は設計 AC — 専用テストなし（scope 外）
+    impl_files:
+      - "architecture/decisions/ADR-042-tmux-crash-recovery-wave-resume.md"
+    # AC-4c は ADR-042 D-4 で記録（既存 claude-session-save.sh 連携）
 
   - ac_index: 10
-    ac_text: "AC-4d: bats test: tmux kill-server (テスト socket で実行) → tmux-twill.service 自動 spawn → tmux-resurrect restore が成功することを確認"
+    ac_text: "AC-4d: bats test — tmux kill-server → tmux-twill.service 自動 spawn → tmux-resurrect restore"
     test_file: ""
     test_name: ""
     impl_files: []
-    # AC-4d: systemd + tmux-resurrect 結合テスト — 実装フェーズで専用ファイル作成予定
+    # AC-4d は Wave 35 別 Issue で実装（ADR-042 D-5 ロードマップ）
 
   - ac_index: 11
-    ac_text: "AC-5a: tmux 3.5 / 3.6 changelog の SIGSEGV / memory corruption fix 一覧を architecture/runbooks/tmux-version-evaluation.md に記録"
+    ac_text: "AC-5a: tmux 3.5 / 3.6 changelog の SIGSEGV / memory corruption fix 一覧"
     test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
     test_name: "ac5a: tmux-version-evaluation.md が architecture/runbooks/ 配下に存在する"
     impl_files:
@@ -91,29 +97,29 @@ mappings:
       - "architecture/runbooks/tmux-version-evaluation.md"
 
   - ac_index: 14
-    ac_text: "AC-6a: #1155 機構との依存関係確認 — wave-queue.schema.json の現スキーマで Wave resume 対象 Issue 列を保持できるか検証"
+    ac_text: "AC-6a: #1155 機構との依存関係確認 — wave-queue schema で Wave resume 対象 Issue 列を保持できるか"
     test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
-    test_name: "ac6a: wave-queue.schema.json の WaveEntry に resume_issues または in_progress_issues フィールドが存在する"
+    test_name: "ac6a: wave-queue.schema.json の WaveEntry に in_progress_issues または resume_issues フィールドあり"
     impl_files:
       - "skills/su-observer/schemas/wave-queue.schema.json"
 
   - ac_index: 15
-    ac_text: "AC-6b: tmux-twill.service 起動時の hook で wave-queue.json から resume 対象 Wave を検出する設計"
+    ac_text: "AC-6b: tmux-twill.service 起動時の wave-queue hook 設計"
     test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
-    test_name: "ac6b: tmux-twill.service の wave-queue hook 設計が ADR または design doc に記録されている"
-    impl_files: []
-    # impl_files 推定失敗: 設計 AC
+    test_name: "ac6b: ADR-042 に tmux-twill.service の wave-queue hook 設計が記録されている"
+    impl_files:
+      - "architecture/decisions/ADR-042-tmux-crash-recovery-wave-resume.md"
 
   - ac_index: 16
-    ac_text: "AC-6c: 互換性 — 既存の AUTO_NEXT_SPAWN=0 パスで wave-queue.json を参照しない仕様（既存 bats テスト ac9-case1）を破らないこと"
+    ac_text: "AC-6c: AUTO_NEXT_SPAWN=0 パスで wave-queue.json を参照しない仕様を破らない"
     test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
     test_name: "ac6c: observer-auto-next-spawn.bats が存在し AUTO_NEXT_SPAWN=0 テストを含む"
     impl_files:
-      - "scripts/auto-next-spawn.sh"
+      - "tests/bats/observer-auto-next-spawn.bats"
 
   - ac_index: 17
-    ac_text: "AC-6d: scope 制限 — 本 AC は実装しない。Wave 35 で本格設計。本 refine では #1155 機構との結合点を ADR 化するまでを範囲とする"
-    test_file: ""
-    test_name: ""
-    impl_files: []
-    # AC-6d は scope 外、テスト生成なし
+    ac_text: "AC-6d: scope 制限 — Wave 35 で本格設計。本 PR では #1155 機構との結合点を ADR 化"
+    test_file: "tests/bats/issue-1360-tmux-server-protection.bats"
+    test_name: "ac6b: ADR-042 が architecture/decisions/ 配下に存在する"
+    impl_files:
+      - "architecture/decisions/ADR-042-tmux-crash-recovery-wave-resume.md"
