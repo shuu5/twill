@@ -27,8 +27,24 @@ set -euo pipefail
 
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# lockfile クリーンアップ（spawn_session 内で作成した /tmp/.coi-window-*.lock）
-trap 'rm -f /tmp/.coi-window-*.lock 2>/dev/null || true' EXIT
+# run_id: EXIT trap の audit log に使用（Issue #1674 AC2）
+run_id="$(date +%s)-$$"
+
+# AC2: early exit 時に audit log を記録するハンドラー（Issue #1674）
+_audit_exit_handler() {
+  local _ec="$1"
+  local _ad=".audit/auto-${run_id}"
+  mkdir -p "$_ad" 2>/dev/null || true
+  printf '{"exit_code":%d,"run_id":"%s"}\n' "$_ec" "${run_id}" \
+    >> "${_ad}/state-log.jsonl" 2>/dev/null || true
+}
+
+# lockfile クリーンアップ + audit log（spawn_session 内で作成した /tmp/.coi-window-*.lock）
+trap '
+  _exit_code=$?
+  _audit_exit_handler "$_exit_code"
+  rm -f /tmp/.coi-window-*.lock 2>/dev/null || true
+' EXIT
 
 MAX_PARALLEL="${MAX_PARALLEL:-3}"
 if ! [[ "$MAX_PARALLEL" =~ ^[1-9][0-9]*$ ]]; then
@@ -60,7 +76,9 @@ fi
 LLM_INDICATORS=()
 source "${SCRIPTS_ROOT}/../../session/scripts/lib/llm-indicators.sh" 2>/dev/null || true
 # shellcheck source=./lib/tmux-window-kill.sh
-source "${SCRIPTS_ROOT}/lib/tmux-window-kill.sh"
+source "${SCRIPTS_ROOT}/lib/tmux-window-kill.sh" 2>/dev/null || safe_kill_window() {
+  tmux kill-window -t "$1" 2>/dev/null || true
+}
 
 # detect_thinking: pane テキストから LLM thinking indicator を検出
 # AC4(d): past tense "word for Nm Ns" または "word for Ns" 完了形は IDLE 扱い（thinking としてカウントしない）
@@ -506,7 +524,7 @@ wait_for_batch() {
 
           # 非ブロッキング状態チェック — 旧: serial な wait --timeout 10 を置換 (#717)
           local pane_state
-          pane_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
+          pane_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null) || true
           local debounce_ts_file="${subdir}/.debounce_ts"
 
           if [[ "$pane_state" == "input-waiting" ]]; then
@@ -567,7 +585,7 @@ wait_for_batch() {
             elif [[ "$inject_count" -lt 5 ]]; then
               # inject 直前再確認 — 状態が変化していれば inject をスキップ (#709)
               local _pre_inject_state
-              _pre_inject_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
+              _pre_inject_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null) || true
               if [[ "$_pre_inject_state" != "input-waiting" ]]; then
                 all_done=false
                 continue
