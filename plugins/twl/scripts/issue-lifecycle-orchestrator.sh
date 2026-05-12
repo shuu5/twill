@@ -31,11 +31,16 @@ SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 run_id="$(date +%s)-$$"
 
 # AC2: early exit 時に audit log を記録するハンドラー（Issue #1674）
+# _AUDIT_ISSUE_LABEL: arg parse 後に設定される issue ラベル（パス構築用）
+_AUDIT_ISSUE_LABEL=""
 _audit_exit_handler() {
   local _ec="$1"
-  local _ad=".audit/auto-${run_id}"
+  local _reason="error_exit"
+  [[ "$_ec" -eq 0 ]] && _reason="normal_exit"
+  local _label="${_AUDIT_ISSUE_LABEL:-unknown}"
+  local _ad=".audit/auto-${run_id}-issue-${_label}"
   mkdir -p "$_ad" 2>/dev/null || true
-  printf '{"exit_code":%d,"run_id":"%s"}\n' "$_ec" "${run_id}" \
+  printf '{"exit_code":%d,"run_id":"%s","reason":"%s"}\n' "$_ec" "${run_id}" "$_reason" \
     >> "${_ad}/state-log.jsonl" 2>/dev/null || true
 }
 
@@ -254,6 +259,11 @@ if [[ -z "$WORKER_MODEL" ]]; then
   exit 1
 fi
 
+if ! [[ "$WORKER_MODEL" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  echo "Error: --model の値に不正な文字が含まれています: $WORKER_MODEL" >&2
+  exit 1
+fi
+
 if [[ -z "$PER_ISSUE_DIR" ]]; then
   echo "Error: --per-issue-dir は必須です" >&2
   usage
@@ -308,6 +318,9 @@ echo "[issue-lifecycle-orchestrator] サブディレクトリ数: ${TOTAL}, MAX_
 
 # SID をセッション開始時に 1 回だけ算出してキャッシュ（polling ループでの subshell 多発防止）
 _SID_CACHE="$(extract_sid "$PER_ISSUE_DIR")"
+
+# AC2: audit log のパスに使う issue ラベルを確定（EXIT trap で参照、Issue #1674）
+_AUDIT_ISSUE_LABEL="$(basename "$PER_ISSUE_DIR" | tr -dc 'a-zA-Z0-9_-' | cut -c1-20)"
 
 # ADR-017 IM-7: N=1 不変量は各 Worker（workflow-issue-lifecycle）が個別に
 # spec-review-session-init.sh 1 を呼び出すことで保証する。
