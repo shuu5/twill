@@ -1,12 +1,21 @@
 <!DOCTYPE html>
-<html lang="ja"><head><meta charset="UTF-8"><title>admin-cycle — placeholder</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
-<style>body{font-family:"Noto Sans JP",sans-serif;max-width:1100px;margin:0 auto;padding:24px;line-height:1.65}h1{border-bottom:3px solid #f5a623;padding-bottom:8px}.warning{background:#fff5e0;border-left:4px solid #f5a623;padding:12px 16px;margin:16px 0}</style>
-</head><body>
-<h1>admin-cycle — placeholder</h1>
-<p><strong>status</strong>: placeholder (本 session 未実装、次 session で着手予定)</p>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>admin-cycle — outline</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+</style>
+</head>
+<body>
 
-<div class="warning">本 file は <code>twill-plugin-rebuild</code> spec の placeholder。次 session で administrator polling cycle の詳細を実装する。draft-v1 §3b の内容を発展 + 不変条件 I-1〜I-7 を確立。</div>
+<header class="doc-header">
+  <h1>admin-cycle — outline</h1>
+  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+</header>
+
+<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で administrator polling cycle の詳細を実装する。draft-v1 §3b の内容を発展 + 不変条件 I-1〜I-7 を確立。</div>
 
 <h2>目的</h2>
 <p>administrator main session の polling cycle (CronCreate 25 min durable で fire) の動作詳細を仕様化する。read 3 (mailbox / GitHub status / tmux windows) → judge → write 3 (spawn / escalate / cleanup) のサイクルと、複数 Issue 並列管理時の conflict 解決を明示する。</p>
@@ -44,7 +53,9 @@
 <ul>
   <li><a href="overview.html">overview.html</a> §3 architecture</li>
   <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知)</li>
-  <li><a href="invariant-fate-table.md">invariant-fate-table.md</a> 不変条件 I (循環依存)</li>
-  <li>既存 draft <code>/tmp/twill-rebuild-design.html</code> §3b (原案、図 2b)</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 I (循環依存)</li>
+  <li>既存 draft <code>draft-v1.html</code> §3b (原案、archive、図 2b)</li>
 </ul>
-</body></html>
+
+</body>
+</html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>twill plugin rebuild — twl MCP 継承戦略</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  /* file-specific accent: twl-mcp は focus #292d9e で「既存資産の架橋」を象徴 */
+  header.doc-header { border-bottom: 3px solid var(--focus); }
+  .inventory-table { font-size: 14px; }
+  .inventory-table th, .inventory-table td { padding: 6px 10px; vertical-align: top; }
+  .inventory-table td:first-child { font-weight: 700; color: var(--gray-700); }
+  .verdict-keep { color: var(--success-fg); font-weight: 700; }
+  .verdict-replace { color: var(--caution-fg); font-weight: 700; }
+  .verdict-delete { color: var(--danger-fg); font-weight: 700; }
+  .verdict-new { color: var(--brand); font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>twl MCP 継承戦略 — 新 architecture との接続</h1>
+  <div class="meta">draft-v2 (2026-05-12) &middot; 既存 30+ tool + 10 audit sections + TWL_AUDIT 機構の選択的継承</div>
+</header>
+
+<div class="info">
+  <strong>目的</strong>: 既存 <code>cli/twl/src/twl/mcp_server/</code> 配下の <strong>30+ MCP tool</strong>、<strong>10 audit sections</strong>、<strong>TWL_AUDIT env + <code>.audit/&lt;run-id&gt;/</code> 中間ファイル機構</strong>、<strong><code>types.yaml</code> SSoT (token 閾値)</strong>、<strong>tier 階層 (hook + MCP shadow)</strong>、<strong>deferred-tool 戦略</strong> の継承価値を 1 件ずつ評価し、新 architecture (admin/pilot/worker 3 階層) に組み込む方法を定める。<br>
+  <br>
+  <strong>方針</strong>: script 依存を減らす方向ではあるが、<em>理論的骨子に継承価値あり</em>と判断された機能は MCP tool / Python module として継承する。<em>script 形式のままの機能</em>は新 architecture と整合的に MCP 化 or 廃止する。<br>
+  <br>
+  <strong>source</strong>: 本 session feature-dev workflow Phase 2 で code-explorer agent A が verified に深掘り。
+</div>
+
+<h2>§1. MCP server 全体構造 (継承する骨子)</h2>
+
+<h3>1.1 現状 (verified)</h3>
+
+<p>既存 twl MCP server は <code>cli/twl/src/twl/mcp_server/</code> 配下に集約されており、起動経路は:</p>
+
+<pre><code>.mcp.json
+  → uv run --directory cli/twl --extra mcp fastmcp run cli/twl/src/twl/mcp_server/server.py
+  → server.py: from twl.mcp_server.tools import mcp
+  → mcp.run()</code></pre>
+
+<p>tool 登録機構の核心は <code>tools.py</code> 末尾 (line 2311) の <strong>deferred-tool パターン</strong>:</p>
+
+<pre><code>try:
+    from fastmcp import FastMCP
+    mcp = FastMCP(...)
+except ImportError:
+    mcp = None
+
+# 全 handler は *_handler suffix の純 Python 関数として実装
+def twl_validate_handler(args):
+    ...
+    return {"items": [...]}
+
+# MCP wrapper は薄いラッパー
+if mcp is not None:
+    @mcp.tool()
+    def twl_validate(args):
+        return json.dumps(twl_validate_handler(args))</code></pre>
+
+<p>この設計により:</p>
+<ul>
+  <li><code>fastmcp</code> なし環境でも <code>twl_validate_handler()</code> を直接 import して in-process テスト可能</li>
+  <li>handler 関数は副作用最小、入出力は JSON 互換 dict</li>
+  <li><code>_to_hook_output()</code> (tools.py L1409) は Claude Code 2.1.x の HookOutput Zod schema 変換層で、legacy <code>decision="allow/deny"</code> を <code>"approve/block"</code> に正規化</li>
+</ul>
+
+<h3>1.2 登録済み 30+ tool の分類</h3>
+
+<table>
+  <thead>
+    <tr><th>分類</th><th>tool</th><th>新 spec での扱い</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>構造検証系</td><td><code>twl_validate</code>, <code>twl_check</code>, <code>twl_audit</code>, <code>twl_validate_deps</code></td><td class="verdict-keep">継承 (MCP tool 形式維持)</td></tr>
+    <tr><td>autopilot state</td><td><code>twl_state_read</code>, <code>twl_state_write</code>, <code>twl_get_session_state</code>, <code>twl_audit_session</code></td><td class="verdict-replace">置換 (per-Worker mailbox に再設計)</td></tr>
+    <tr><td>tmux 観測</td><td><code>twl_get_pane_state</code>, <code>twl_capture_pane</code>, <code>twl_list_windows</code>, <code>twl_get_budget</code></td><td class="verdict-keep">継承 (administrator polling から使用)</td></tr>
+    <tr><td>merge/worktree</td><td><code>twl_mergegate_run/reject</code>, <code>twl_worktree_create/delete/list</code></td><td class="verdict-keep">継承 (pilot から使用、worktree lifecycle は Inv B)</td></tr>
+    <tr><td>orchestrator</td><td><code>twl_orchestrator_phase_review</code>, <code>twl_orchestrator_get_phase_issues</code></td><td class="verdict-delete">削除 (orchestrator 概念廃止、admin polling cycle で代替)</td></tr>
+    <tr><td>hook guard</td><td><code>twl_validate_merge</code>, <code>twl_validate_commit</code>, <code>twl_validate_status_transition</code>, <code>twl_validate_issue_create</code>, <code>twl_check_completeness</code>, <code>twl_check_specialist</code></td><td class="verdict-replace">部分置換 (Inv W で PreToolUse hook 単一化、shadow mode のみ残す)</td></tr>
+    <tr><td>spawn</td><td><code>twl_spawn_session</code>, <code>twl_spawn_controller</code>, <code>twl_spawn_feature_dev</code></td><td class="verdict-replace">部分置換 (tmux new-window 直接呼び出しに簡素化、spawn-controller.sh 廃止。<code>twl_spawn_feature_dev</code> の approval trail は維持)</td></tr>
+  </tbody>
+</table>
+
+<h3>1.3 継承すべき設計原則 (MUST)</h3>
+
+<div class="success">
+  <strong>MUST</strong>:
+  <ul>
+    <li>MCP server は <strong>単一 <code>tools.py</code> + handler 関数 (<code>*_handler</code> suffix) 分離パターン</strong> で維持する (in-process テスト可能性の保証)</li>
+    <li><code>_to_hook_output</code> の <strong>HookOutput Zod schema 変換層</strong>を維持する (Claude Code 2.1.x+ 互換性)</li>
+    <li>handler 関数は純 Python (副作用最小、入出力 JSON 互換) を MUST</li>
+  </ul>
+</div>
+
+<h2>§2. 10 audit sections の継承戦略</h2>
+
+<p>既存 <code>cli/twl/src/twl/validation/audit.py</code> の <code>audit_collect()</code> は 10 section を順に実行し <code>items</code> リストに集約する。各 item は <code>{severity, component, message, section, value, threshold}</code> 形式。本 session の verified 把握:</p>
+
+<h3>2.1 10 section の継承判断</h3>
+
+<table>
+  <thead>
+    <tr><th style="width: 6%">#</th><th style="width: 22%">section 名称</th><th>検証内容</th><th>新 spec での扱い</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td><code>controller_size</code></td>
+      <td>controller type の本文行数 &gt; 120 (warning) / &gt; 200 (critical)</td>
+      <td class="verdict-keep">継承 (新 architecture でも component 品質チェック有効、phase-* / worker-* / tool-* に拡張)</td>
+    </tr>
+    <tr>
+      <td>2</td><td><code>inline_implementation</code></td>
+      <td>bash コードブロック行数 / 非空行数比率 &gt; 50% (warning) / &gt; 30% (info)</td>
+      <td class="verdict-keep">継承 (bash 削減方針と整合、新 spec で bash inline が増えていないか継続監視)</td>
+    </tr>
+    <tr>
+      <td>3</td><td><code>step0_routing</code></td>
+      <td>controller に <code>Step 0</code> + <code>IF/ELIF</code> ルーティングパターンが存在するか</td>
+      <td class="verdict-replace">置換 (Step 0 の概念は phase-* SKILL.md の Step 0 として継承するが、IF/ELIF よりも GitHub Project Board status 判定に再設計)</td>
+    </tr>
+    <tr>
+      <td>4</td><td><code>tools_accuracy</code></td>
+      <td>frontmatter <code>allowed-tools</code> と body の <code>mcp__*</code> 使用パターンの一致</td>
+      <td class="verdict-keep">継承 (新 architecture でも全 phase-* / worker-* / tool-* で allowed-tools 整合性チェック必須)</td>
+    </tr>
+    <tr>
+      <td>5</td><td><code>self_contained</code></td>
+      <td>specialist が Purpose/Output/Constraint section と output schema (PASS/FAIL/findings/severity/confidence) を持つか</td>
+      <td class="verdict-replace">部分置換 (specialist 概念は subagent (1 階層内側) に rebrand、新 architecture では pilot review framework + subagent の output schema として継承)</td>
+    </tr>
+    <tr>
+      <td>6</td><td><code>token_bloat</code></td>
+      <td>tiktoken によるトークン数計測、<code>types.yaml</code> の <code>token_target.warning/critical</code> と比較</td>
+      <td class="verdict-keep">継承 (§4 で詳述)</td>
+    </tr>
+    <tr>
+      <td>7</td><td><code>model_declaration</code></td>
+      <td>specialist の <code>model</code> field 宣言有無、<code>opus</code> 使用を warning</td>
+      <td class="verdict-keep">継承 (model 選択責任の明示は新 architecture でも有効、Inv 関連)</td>
+    </tr>
+    <tr>
+      <td>8</td><td><code>prompt_compliance</code></td>
+      <td><code>refined_by</code> field の <code>ref-prompt-guide@XXXXXXXX</code> 形式と現在 file の SHA-1 照合</td>
+      <td class="verdict-keep">継承 (prompt 品質保証は新 architecture でも有効、refined 状態の追跡を Project Board status に統合)</td>
+    </tr>
+    <tr>
+      <td>9</td><td><code>chain_integrity</code></td>
+      <td>deps.yaml workflow calls × chain-runner.sh dispatch table × SKILL.md 実行指示の三者整合性</td>
+      <td class="verdict-replace">置換 (新 SSoT 構造に合わせて再実装。<a href="ssot-design.html">ssot-design.html</a> の案 3 step.sh 単一 SSoT に対応する整合性チェックに変換)</td>
+    </tr>
+    <tr>
+      <td>10</td><td><code>cross_layer_consistency</code></td>
+      <td><code>architecture/vision.md</code> の Constraints/Non-Goals が monorepo → cli_twl → plugin_twl 層間で矛盾しないか (ADR-0008)</td>
+      <td class="verdict-keep">継承 (新 architecture でも層分離 = cli_twl (Python MCP) + plugin_twl (skill/script) の整合性チェックは有効)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>2.2 chain_integrity の置換 (重要)</h3>
+
+<p>section 9 <code>chain_integrity</code> の現実装 (audit.py L198-282) は:</p>
+<ol>
+  <li>chain-runner.sh から <code>step_&lt;func&gt;</code> パターンを <code>_parse_dispatch_table()</code> で抽出 (L105-118)</li>
+  <li>deps.yaml の workflow skill の <code>calls:</code> リストをイテレート</li>
+  <li><code>step:</code> 番号なし + LLM/trigger/SKILL.md 言及なし → <strong>warning (orphan_call)</strong></li>
+  <li><code>step:</code> あり + chain-runner.sh に <code>step_&lt;func&gt;</code> なし + LLM 宣言なし → <strong>critical (dispatch_gap)</strong></li>
+</ol>
+
+<p>これは <strong>chain-runner.sh の case 文を読む</strong>設計だが、新 architecture では chain-runner.sh が廃止される (<a href="ssot-design.html">ssot-design.html</a> 案 3)。よって section 9 は:</p>
+<ul>
+  <li><strong>新実装</strong>: <code>plugins/twl/scripts/steps/*.sh</code> の filename と <code>deps.yaml.chains</code> の steps list を突合 (1 step = 1 *.sh file = 1 deps.yaml entry の 3-way 整合)</li>
+  <li><strong>検出</strong>: <code>steps/foo.sh</code> 不在 → critical (orphan reference)、<code>steps/foo.sh</code> あり + deps.yaml 不在 → warning (orphan file)</li>
+</ul>
+
+<h3>2.3 継承する MUST</h3>
+
+<div class="success">
+  <strong>MUST</strong>:
+  <ul>
+    <li><strong>10 audit sections の枠組みを維持</strong>、section 9 のみ新 SSoT 構造に合わせて再実装</li>
+    <li><code>audit_collect()</code> + <code>audit_report()</code> の 2 段階設計 (収集 + 表示) を継承</li>
+    <li>severity 4 段階 (ok / info / warning / critical) を継承</li>
+  </ul>
+</div>
+
+<h2>§3. TWL_AUDIT env + <code>.audit/&lt;run-id&gt;/</code> 中間ファイル機構</h2>
+
+<h3>3.1 現状 (verified)</h3>
+
+<p><code>cli/twl/src/twl/autopilot/audit.py</code> が管理する audit mode 機構:</p>
+
+<table>
+  <tbody>
+    <tr><td><strong>起動条件</strong></td><td><code>TWL_AUDIT=1</code> env OR <code>.audit/.active</code> file 存在</td></tr>
+    <tr><td><strong>ディレクトリ構造</strong></td>
+    <td>
+      <ul style="margin: 0;">
+        <li><code>.audit/&lt;run-id&gt;/specialists/</code> — specialist 出力</li>
+        <li><code>.audit/&lt;run-id&gt;/checkpoints/</code> — checkpoint 推移</li>
+        <li><code>.audit/&lt;run-id&gt;/state-log.jsonl</code> — state 遷移 log</li>
+        <li><code>.audit/&lt;run-id&gt;/index.json</code> — メタデータ</li>
+      </ul>
+    </td></tr>
+    <tr><td><strong>API</strong></td><td><code>audit_snapshot(source_dir, label)</code> — isomorphic (audit active 時のみコピー、inactive は no-op)</td></tr>
+    <tr><td><strong>伝搬</strong></td><td>launcher が worker spawn 時に <code>TWL_AUDIT=1 -e TWL_AUDIT_DIR=&lt;path&gt;</code> を環境変数として伝搬</td></tr>
+  </tbody>
+</table>
+
+<h3>3.2 新 architecture での継承</h3>
+
+<p>3 階層 (administrator / pilot / worker) での <strong>audit propagation モデル</strong>として直接適用可能。継承後の経路:</p>
+
+<pre><code>administrator
+  ├── `twl audit on` で `.audit/.active` 作成 + run-id 生成
+  ├── pilot spawn 時に TWL_AUDIT=1 TWL_AUDIT_DIR=.audit/&lt;run-id&gt; を env 伝搬
+  └── tool-architect / tool-self-improve 等 (独立 tool) も同 env 伝搬
+
+pilot
+  ├── env 継承 (TWL_AUDIT, TWL_AUDIT_DIR)
+  ├── worker spawn 時に env 伝搬
+  └── pilot 自身の review 結果を `.audit/&lt;run-id&gt;/reviews/&lt;issue&gt;.json` に snapshot
+
+worker
+  ├── env 継承
+  ├── step.sh 内で audit_snapshot(checkpoint_dir, "step-&lt;name&gt;") 呼び出し
+  └── 完了時に `.audit/&lt;run-id&gt;/checkpoints/&lt;issue&gt;/` に推移を記録</code></pre>
+
+<h3>3.3 継承する MUST + SHOULD</h3>
+
+<div class="success">
+  <strong>MUST</strong>:
+  <ul>
+    <li><code>TWL_AUDIT=1</code> env + <code>TWL_AUDIT_DIR</code> による audit propagation 機構を新 architecture でも維持</li>
+    <li><code>audit_snapshot()</code> isomorphic API を維持 (audit active 時のみ動作、inactive で no-op)</li>
+    <li>新 architecture の per-Worker mailbox (<code>.mailbox/&lt;session&gt;/inbox.jsonl</code>) も audit snapshot 対象に含める</li>
+  </ul>
+  <strong>SHOULD</strong>:
+  <ul>
+    <li>audit mode で administrator polling cycle の全 polling event を log (<code>.audit/&lt;run-id&gt;/admin-cycle.jsonl</code>) に保存</li>
+    <li>audit run の <code>index.json</code> に「どの phase をどの worker が処理したか」の summary を自動生成</li>
+  </ul>
+</div>
+
+<h2>§4. <code>types.yaml</code> SSoT (token 閾値) の継承</h2>
+
+<h3>4.1 現状 (verified)</h3>
+
+<p><code>cli/twl/src/twl/core/types.py</code> の <code>_FALLBACK_TOKEN_THRESHOLDS</code>:</p>
+
+<table>
+  <thead>
+    <tr><th>型</th><th>Warning</th><th>Critical</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>controller</td><td>1500</td><td>2500</td></tr>
+    <tr><td>workflow</td><td>1200</td><td>2000</td></tr>
+    <tr><td>atomic / composite</td><td>1500</td><td>2500</td></tr>
+    <tr><td>specialist</td><td>1800</td><td>2500</td></tr>
+    <tr><td>supervisor</td><td>2000</td><td>3000</td></tr>
+  </tbody>
+</table>
+
+<p><code>types.yaml</code> の <code>token_target.warning/critical</code> が SSoT、読み込み失敗時は hardcode fallback で動作する設計。</p>
+
+<h3>4.2 新 architecture での継承</h3>
+
+<p>新 architecture のコンポーネント型に合わせて <code>types.yaml</code> を再設計:</p>
+
+<table>
+  <thead>
+    <tr><th>新型</th><th>役割</th><th>Warning</th><th>Critical</th><th>備考</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>administrator</td><td>L0、長命 main session、polling cycle</td><td>2000</td><td>3000</td><td>su-observer から rebrand</td></tr>
+    <tr><td>phase-*</td><td>L1、status 遷移 1:1 担当 pilot</td><td>1500</td><td>2500</td><td>controller を継承</td></tr>
+    <tr><td>worker-*</td><td>L2、worktree 内で実作業</td><td>1500</td><td>2500</td><td>controller を継承</td></tr>
+    <tr><td>tool-*</td><td>独立 invoke、status 遷移と無関係</td><td>1500</td><td>2500</td><td>controller を継承</td></tr>
+    <tr><td>step (step.sh)</td><td>1 step = 1 *.sh file</td><td>200</td><td>400</td><td>bash 行数基準 (token 概念外)</td></tr>
+    <tr><td>subagent</td><td>worker 内の 1 階層内側 subagent</td><td>1800</td><td>2500</td><td>specialist を継承</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3 継承する MUST</h3>
+
+<div class="success">
+  <strong>MUST</strong>:
+  <ul>
+    <li><code>types.yaml</code> を token 閾値 SSoT として維持、fallback hardcode を持つ</li>
+    <li>新型 (administrator / phase-* / worker-* / tool-* / step / subagent) を <code>types.yaml</code> に追加</li>
+    <li>audit section 6 (<code>token_bloat</code>) は新型に対応するように更新</li>
+  </ul>
+</div>
+
+<h2>§5. tier 階層 (hook + MCP shadow)</h2>
+
+<h3>5.1 現状 (verified)</h3>
+
+<p>現状の検証 / gate 機構は 3 tier 階層:</p>
+
+<table>
+  <thead>
+    <tr><th>tier</th><th>実装</th><th>responsibility</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>tier 1</strong></td><td>bash hook (PreToolUse)</td><td>fast path (50ms 以内)、結果が確定的、Claude Code 仕様制約への対応</td></tr>
+    <tr><td><strong>tier 2</strong></td><td>MCP shadow mode</td><td>tier 1 と同等 logic を MCP tool として登録、in-process テスト可能、Python 型安全</td></tr>
+    <tr><td><strong>tier 3</strong></td><td>script (chain-runner.sh 等)</td><td>BATS テストのみ、MCP 化されていない</td></tr>
+  </tbody>
+</table>
+
+<p>例: <code>twl_validate_commit</code> の自己コメント (tools.py L1562) に「<code>files</code> は常に空リストで実質 no-op、bash hook (<code>pre-bash-commit-validate.sh</code>) が本体」と明記。これは MCP hook が staged files を取得できない Claude Code 仕様制約による設計妥協 (Issue #1335 self-deferred)。</p>
+
+<h3>5.2 新 architecture での継承</h3>
+
+<p>tier 3 (script) は新 architecture で削減方針だが、tier 1 + tier 2 の 2 layer 階層は維持:</p>
+
+<table>
+  <thead>
+    <tr><th>新 tier</th><th>実装</th><th>新 architecture での responsibility</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>tier 1</strong></td><td>PreToolUse hook</td><td>Inv W に基づき phase-* invocation の前提 status を verify。<code>phase-gate.sh</code> (~30 lines) thin helper。fast path (50ms 以内)</td></tr>
+    <tr><td><strong>tier 2</strong></td><td>MCP shadow mode</td><td>tier 1 と同等 logic を MCP tool (<code>twl_validate_phase_gate</code> 等) として登録、in-process テスト可能</td></tr>
+    <tr><td><strong>tier 3</strong></td><td>step.sh 内の post-verify</td><td>Inv U に基づき step lifecycle の post-verify phase で機械検証 (test 数 / src diff / RED→GREEN 等)</td></tr>
+  </tbody>
+</table>
+
+<h3>5.3 継承する MUST</h3>
+
+<div class="success">
+  <strong>MUST</strong>:
+  <ul>
+    <li>tier 1 (bash hook) + tier 2 (MCP shadow) の <strong>階層防御</strong>を継承</li>
+    <li>Claude Code 仕様制約 (hook が staged files 取得不可等) を前提に設計</li>
+    <li>tier 3 は step.sh 内の post-verify として再設計、chain-runner.sh は廃止</li>
+  </ul>
+</div>
+
+<h2>§6. 新 architecture (admin/pilot/worker) との統合</h2>
+
+<h3>6.1 administrator から使う MCP tool</h3>
+
+<table>
+  <thead>
+    <tr><th>tool</th><th>用途</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>twl_get_pane_state</code></td><td>tmux pane の最新 capture を取得、idle/active 判定</td></tr>
+    <tr><td><code>twl_capture_pane</code></td><td>pane の N 行 capture (検知パターン照合)</td></tr>
+    <tr><td><code>twl_list_windows</code></td><td>全 tmux window listing (orphan 検知用)</td></tr>
+    <tr><td><code>twl_get_budget</code></td><td>5h / 7d budget 残量 (Inv Q format 解釈)</td></tr>
+    <tr><td><code>twl_audit</code></td><td>component 全件 audit (週次 / 月次 health check)</td></tr>
+  </tbody>
+</table>
+
+<h3>6.2 pilot から使う MCP tool</h3>
+
+<table>
+  <thead>
+    <tr><th>tool</th><th>用途</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>twl_worktree_create</code></td><td>worker 用 worktree 作成 (Inv B 機械化)</td></tr>
+    <tr><td><code>twl_worktree_delete</code></td><td>Wave 完了時の自分の worktree 削除 (Inv V スコープ保証)</td></tr>
+    <tr><td><code>twl_mergegate_run</code></td><td>worker PR の merge-gate 実行</td></tr>
+    <tr><td><code>twl_validate</code></td><td>worker 出力 (component 更新) の検証</td></tr>
+  </tbody>
+</table>
+
+<h3>6.3 worker から使う MCP tool</h3>
+
+<table>
+  <thead>
+    <tr><th>tool</th><th>用途</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>twl_check</code></td><td>step.sh post-verify での component 整合性チェック</td></tr>
+    <tr><td><code>twl_validate_deps</code></td><td>deps.yaml + step.sh の整合性 (新 chain_integrity に対応)</td></tr>
+  </tbody>
+</table>
+
+<p>tool-* (独立 tool) は administrator 経由で起動され、独自の MCP tool 利用は限定的。</p>
+
+<h2>§7. 削除 / 置換 / 継承 inventory</h2>
+
+<table class="inventory-table">
+  <thead>
+    <tr><th style="width: 36%">既存資産</th><th style="width: 10%">verdict</th><th>新 architecture での扱い</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>cli/twl/src/twl/mcp_server/tools.py</code> (2600+ lines)</td><td class="verdict-keep">継承 (再構成)</td><td>tool 数を 30+ → ~15 に削減 (orchestrator/state 系を削除)。handler 関数分離パターンは維持</td></tr>
+    <tr><td><code>cli/twl/src/twl/mcp_server/server.py</code></td><td class="verdict-keep">継承</td><td>起動経路維持</td></tr>
+    <tr><td><code>cli/twl/src/twl/validation/audit.py</code></td><td class="verdict-keep">継承 (section 9 のみ置換)</td><td>10 section 枠組み維持、section 9 (<code>chain_integrity</code>) を step.sh + deps.yaml 整合性に再実装</td></tr>
+    <tr><td><code>cli/twl/src/twl/autopilot/audit.py</code></td><td class="verdict-keep">継承</td><td>TWL_AUDIT + <code>.audit/&lt;run-id&gt;/</code> 機構を新 3 階層に伝搬</td></tr>
+    <tr><td><code>cli/twl/src/twl/core/types.py</code></td><td class="verdict-keep">継承 (型追加)</td><td>新型 (administrator / phase-* / worker-* / tool-* / step / subagent) を types.yaml に追加</td></tr>
+    <tr><td><code>cli/twl/src/twl/chain/integrity.py</code></td><td class="verdict-replace">置換</td><td>chain.py + chain-steps.sh の 3-way 検証 → step.sh + deps.yaml の 2-way 検証に再実装 (<a href="ssot-design.html">ssot-design.html</a>)</td></tr>
+    <tr><td><code>cli/twl/src/twl/autopilot/chain.py</code></td><td class="verdict-delete">削除</td><td>CHAIN_STEPS / STEP_TO_WORKFLOW / CHAIN_STEP_DISPATCH 等は step.sh 単一 SSoT に統合</td></tr>
+    <tr><td><code>plugins/twl/scripts/chain-steps.sh</code></td><td class="verdict-delete">削除</td><td>computed artifact 廃止</td></tr>
+    <tr><td><code>plugins/twl/scripts/chain-runner.sh</code> (1932 lines)</td><td class="verdict-delete">削除</td><td>step.sh で代替 (1 step = 1 file)、L1873-1884 自己申告 step も廃止 (post-verify framework で代替)</td></tr>
+    <tr><td><code>twl_orchestrator_*</code> tools</td><td class="verdict-delete">削除</td><td>orchestrator 概念廃止、admin polling cycle で代替</td></tr>
+    <tr><td><code>twl_state_read/write</code></td><td class="verdict-replace">置換</td><td>per-Worker mailbox (<code>twl_mailbox_read/write</code>) に再設計 (Inv V)</td></tr>
+    <tr><td><code>twl_validate_commit</code> (no-op stub)</td><td class="verdict-delete">削除</td><td>仕様制約解消されない、bash hook (<code>pre-bash-commit-validate.sh</code>) のみ残す</td></tr>
+    <tr><td><code>twl_spawn_controller</code></td><td class="verdict-replace">置換</td><td>tmux new-window 直接呼び出し helper (~50 lines) に簡素化</td></tr>
+    <tr><td><code>twl_spawn_feature_dev</code> approval trail</td><td class="verdict-keep">継承</td><td>tool-* の user 明示依頼検証 (ADR-040) として継承</td></tr>
+    <tr><td><code>twl_send_msg</code> / <code>twl_recv_msg</code> / <code>twl_notify_supervisor</code></td><td class="verdict-replace">置換</td><td>file mailbox (<code>twl_mailbox_*</code>) に統一 (Inv T)</td></tr>
+    <tr><td><strong>新規 (本 spec 起点)</strong></td><td class="verdict-new">新規</td><td><code>twl_mailbox_read/write</code> / <code>twl_phase_gate_check</code> / <code>twl_step_run</code> / <code>twl_validate_steps_sh</code></td></tr>
+  </tbody>
+</table>
+
+<h2>§8. 統合 MUST / SHOULD 一覧</h2>
+
+<h3>MUST (新 spec で必須)</h3>
+
+<ol>
+  <li>MCP server を <strong>単一 <code>tools.py</code> + <code>*_handler</code> 関数分離パターン</strong>で維持 (in-process テスト可能性)</li>
+  <li>validation は <strong>tier 1 (bash hook) + tier 2 (MCP shadow)</strong> の階層防御を継承</li>
+  <li><strong><code>TWL_AUDIT=1</code> env + <code>TWL_AUDIT_DIR</code></strong> による audit propagation 機構を新 architecture でも維持</li>
+  <li><strong><code>types.yaml</code> を token 閾値 SSoT</strong>として維持、fallback hardcode を持つ、新型 (administrator / phase-* / worker-* / tool-* / step / subagent) を追加</li>
+  <li><strong>10 audit sections の枠組み</strong>を維持、section 9 のみ新 SSoT 構造に合わせて再実装</li>
+  <li><strong><code>_to_hook_output</code></strong> の HookOutput Zod schema 変換層を維持 (Claude Code 2.1.x+ 互換)</li>
+</ol>
+
+<h3>SHOULD (推奨)</h3>
+
+<ol>
+  <li>chain SSoT を <strong>2-way (step.sh + deps.yaml.chains)</strong> に簡素化、chain-steps.sh の bash mirror 廃止 (<a href="ssot-design.html">ssot-design.html</a>)</li>
+  <li>不変条件 B (worktree lifecycle Pilot 専任) の MCP gate を新 3 階層 role 機構に統合</li>
+  <li>audit run の <code>index.json</code> に「どの phase をどの worker が処理したか」の summary を自動生成</li>
+  <li>token 閾値の <code>types.yaml</code> 値を新コンポーネント型に合わせて再設定</li>
+</ol>
+
+<h3>MAY (任意)</h3>
+
+<ol>
+  <li><code>twl_audit_session</code> (R1-R4 rules) を新 session 構造に合わせて rule 更新</li>
+  <li>specialist completeness check (<code>twl_check_completeness</code> / <code>/tmp/.specialist-manifest-*.txt</code>) の manifest ファイル方式を維持するか subagent output 直接読み取りに置換するか選択</li>
+  <li>MCP tool 一覧を docs に自動生成 (現状は手動 list)</li>
+</ol>
+
+<h2>関連 spec ファイル</h2>
+
+<ul>
+  <li>SSoT 統一の詳細設計: <a href="ssot-design.html">ssot-design.html</a> (chain SSoT 三重化解消、案 3 step.sh)</li>
+  <li>3 階層構造の全体図: <a href="overview.html">overview.html</a> (図 1: pyramid)</li>
+  <li>9 P0 bug + 新規不変条件 T-X: <a href="failure-analysis.html">failure-analysis.html</a> + <a href="invariant-fate-table.html">invariant-fate-table.html</a></li>
+  <li>step verification framework: <a href="step-verification.html">step-verification.html</a> (Inv U)</li>
+  <li>削除 inventory 全体: <a href="deletion-inventory.html">deletion-inventory.html</a> (outline、次 session)</li>
+  <li>既存資産の継承 catalog: <a href="pitfalls-inheritance.html">pitfalls-inheritance.html</a> (outline、次 session)</li>
+  <li>既存 ADR-029 (MCP 中心 4 epic): <a href="adr-fate-table.html">adr-fate-table.html</a> (部分 Superseded)</li>
+</ul>
+
+<h2>audit source</h2>
+
+<ul>
+  <li>本 session feature-dev workflow Phase 2 で code-explorer agent A が verified 深掘り</li>
+  <li>Key files (絶対パス):
+    <ul>
+      <li><code>/home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/mcp_server/tools.py</code></li>
+      <li><code>/home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/validation/audit.py</code></li>
+      <li><code>/home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/autopilot/audit.py</code></li>
+      <li><code>/home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/chain/integrity.py</code></li>
+      <li><code>/home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/core/types.py</code></li>
+      <li><code>/home/shuu5/projects/local-projects/twill/main/.mcp.json</code></li>
+    </ul>
+  </li>
+  <li>doobidoo Memory MCP hash <code>4c59e92d</code> (2026-04-28 twill plugin 内 hook + MCP server 実装の現状実測値) は本 audit の補助参照</li>
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>twill plugin rebuild — invariant fate table</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  /* file-specific accent: invariant audit は brand #5ac8b8 で「継承」を象徴 */
+  header.doc-header { border-bottom: 3px solid var(--brand); }
+  .inv-block { margin: 28px 0; padding: 18px 22px; border: 1px solid var(--border-default); border-radius: var(--radius-lg); background: var(--surface-primary); box-shadow: var(--elevation-1); }
+  .inv-block h3 { margin-top: 0; }
+  .inv-block dl { display: grid; grid-template-columns: 110px 1fr; gap: 8px 16px; margin: 12px 0; }
+  .inv-block dt { font-weight: 700; color: var(--gray-700); font-size: 14px; line-height: 1.65; letter-spacing: normal; font-feature-settings: normal; }
+  .inv-block dd { margin: 0; line-height: 1.65; }
+  .inv-block ul { margin: 8px 0; }
+  .drift-diff { background: #1a2025; color: #e3e8eb; padding: 16px 18px; border-radius: var(--radius-md); overflow-x: auto; font-family: var(--font-mono); font-size: 13px; line-height: 1.6; margin: 16px 0; }
+  .drift-diff .del { color: #ff9b9b; }
+  .drift-diff .add { color: #a0e8af; }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>不変条件 fate audit — 既存 A-S (19 件) 継承戦略 + 新規 T-X (5 件) 追加</h1>
+  <div class="meta">draft-v2 (2026-05-12) &middot; 既存 19 件 + 新規 5 件 = 24 件 (A-X) &middot; 9 P0 bug 全件カバー</div>
+</header>
+
+<div class="info">
+  <strong>目的</strong>: 既存 <code>plugins/twl/refs/ref-invariants.md</code> の不変条件 A-S (19 件) を 1 件ずつ audit し、新 spec での fate (保全 / 強化 / 部分 Superseded / 削除) を決定。さらに本 spec で 9 P0 bug 分析から導出される新規不変条件 T-X (5 件) を追加。<br>
+  <br>
+  <strong class="caution">drift 訂正</strong>: <code>ref-invariants.md</code> L1 の「A-N (14 件)」記述は 19 件 (A-S) との不整合 = drift。新 spec 起票時に訂正課題。
+</div>
+
+<h2>集計</h2>
+
+<table>
+  <thead>
+    <tr><th>fate</th><th style="width: 12%">件数</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>保全 (新 spec でも有効、変更なし)</td><td>14</td></tr>
+    <tr><td>保全 (強化) (新 spec の機構でより強く enforce)</td><td>3</td></tr>
+    <tr><td>部分 Superseded (一部 layer が新 spec で置換)</td><td>2</td></tr>
+    <tr><td><strong>新規追加 (T-X)</strong></td><td>5</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><td><strong>合計</strong></td><td><strong>既存 19 + 新規 5 = 24 件 (A-X)</strong></td></tr>
+  </tfoot>
+</table>
+
+<h2>既存 不変条件 A-S fate</h2>
+
+<h3>完全保全 (14 件)</h3>
+
+<table>
+  <thead>
+    <tr><th style="width: 8%">Inv</th><th style="width: 30%">主題</th><th>新 spec での扱い</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>A</strong></td><td>状態の一意性 (<code>issue-{N}.json</code> status 遷移)</td><td>保全。<code>status</code> field の遷移パス制約は新 spec の Project Board status と整合</td></tr>
+    <tr><td><strong>C</strong></td><td>Worker マージ禁止 (Pilot のみ merge 実行)</td><td>保全 (強化版は別表記)。新 spec で auto-merge.yml + branch protection で機械化</td></tr>
+    <tr><td><strong>D</strong></td><td>依存先 fail 時の skip 伝播</td><td>保全。phase 設計でも依存解決ロジックは継承</td></tr>
+    <tr><td><strong>E</strong></td><td>merge-gate リトライ制限 (最大 1 回)</td><td>保全。step verification framework でも同様の retry policy</td></tr>
+    <tr><td><strong>F</strong></td><td>squash merge API 失敗時 rebase 禁止</td><td>保全</td></tr>
+    <tr><td><strong>H</strong></td><td>deps.yaml コンフリクト時自動 rebase</td><td>保全</td></tr>
+    <tr><td><strong>I</strong></td><td>循環依存拒否</td><td>保全</td></tr>
+    <tr><td><strong>J</strong></td><td>merge 前 base drift 検知</td><td>保全</td></tr>
+    <tr><td><strong>L</strong></td><td>autopilot マージ実行責務 (orchestrator 経由のみ)</td><td>保全。Supervisor 観察介入例外 (#848) も継承</td></tr>
+    <tr><td><strong>N</strong></td><td>Lesson Structuralization (4-step chain)</td><td>保全。新 spec でも MUST (ADR-036)</td></tr>
+    <tr><td><strong>O</strong></td><td>session.json claude_session_id UUID v4</td><td>保全</td></tr>
+    <tr><td><strong>P</strong></td><td>Issue 起票 flow 大原則 (co-explore precondition)</td><td>保全。phase-explore の出力が precondition</td></tr>
+    <tr><td><strong>Q</strong></td><td>budget status line <code>(YYm)</code> format 解釈</td><td>保全。administrator polling cycle で参照</td></tr>
+    <tr><td><strong>R</strong></td><td>content-REJECT override 禁止</td><td>保全。step verification の post-verify FAIL → merge block</td></tr>
+  </tbody>
+</table>
+
+<h3>保全 (強化) (3 件)</h3>
+
+<table>
+  <thead>
+    <tr><th style="width: 8%">Inv</th><th style="width: 30%">主題</th><th>新 spec での強化点</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>B</strong></td><td>Worktree lifecycle Pilot 専任</td><td><strong>強化</strong>: 新 spec の 3 階層全層 tmux spawn 設計で、worker も自分の worktree 内で動作する前提が固まる。<code>spawn-tmux.sh</code> helper で「pilot が worker 用 worktree を事前作成、worker は使用のみ」を機械化</td></tr>
+    <tr><td><strong>G</strong></td><td>クラッシュ検知保証</td><td><strong>強化</strong>: <a href="crash-failure-mode.html">crash-failure-mode.html</a> で worker/pilot/admin の 3 階層 crash 検知 + recovery を仕様化、SLA + 検知閾値を明示</td></tr>
+    <tr><td><strong>K</strong></td><td>Pilot 実装禁止</td><td><strong>強化</strong>: 新 spec の pilot 責務 boundary 仕様で「pilot は worker を spawn / mail 集約 / status 遷移のみ、コード変更禁止」を SKILL.md MUST + step verification post-verify (src diff = pilot のみは fail) で機械化</td></tr>
+  </tbody>
+</table>
+
+<h3>部分 Superseded (2 件、新 spec で一部 layer 置換)</h3>
+
+<table>
+  <thead>
+    <tr><th style="width: 8%">Inv</th><th style="width: 30%">主題</th><th>部分 Superseded 内容</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>M</strong></td><td>chain 遷移は orchestrator / 手動 inject のみ</td><td>新 spec で「chain」概念再設計: phase 遷移は Project Board status 更新 + PreToolUse gate hook で機械化。<code>inject_next_workflow</code> の概念廃止 (admin polling cycle が status 変化を検知して次 phase spawn)。orchestrator の bash inject 経路は廃止、ただし「Pilot 直接 nudge による bypass 禁止」原則は新 spec でも MUST として継承</td></tr>
+    <tr><td><strong>S</strong></td><td>RED-only label-based bypass の構造的閉塞 (ADR-038)</td><td>5 layer defense は保全、ただし新 spec の step verification framework (<a href="step-verification.html">§6</a>) で「RED test 追加 + post-verify で RED 確認 + green-impl で src diff 確認」が機械化されることで、<code>worker-red-only-detector.sh</code> の severity 判定 layer (Layer 1) が <strong>構造的に不要</strong> になる。残り 4 layer (follow-up Issue 自動起票 + PreToolUse hook block 等) は保全</td></tr>
+  </tbody>
+</table>
+
+<h2>新規追加 不変条件 T-X (本 spec で導出)</h2>
+
+<div class="inv-block" id="inv-t">
+  <h3>不変条件 T: file mailbox atomic write 必須</h3>
+  <dl>
+    <dt>目的</dt><dd>9 P0 bug の #1703 (phase-review.json cross-pollution) を構造的に不能化する。</dd>
+    <dt>制約</dt>
+    <dd>
+      <ul>
+        <li>全 mailbox write は <strong><code>flock</code> を取得した atomic write</strong> を MUST とする</li>
+        <li>mailbox path は <code>.mailbox/&lt;session-name&gt;/inbox.jsonl</code> の per-session 形式</li>
+        <li>共通 path への write は禁止 (横断要因 F-1 の構造的解消)</li>
+        <li>mailbox write には必ず <code>{"from": "&lt;sender&gt;", "ts": "&lt;iso8601&gt;", ...}</code> を含める (sender tracking)</li>
+      </ul>
+    </dd>
+    <dt>根拠</dt><dd>9 P0 bug 分析の Bug #1703 lesson、横断要因 F-1。</dd>
+    <dt>検証方法</dt><dd>bats <code>file-mailbox-atomic-write.bats</code> (新規)、並列 write race condition test。</dd>
+    <dt>影響範囲</dt>
+    <dd>
+      <ul>
+        <li><code>plugins/twl/scripts/mailbox.sh</code> (新規 helper)</li>
+        <li>全 worker / pilot / administrator SKILL.md (mail write 経路)</li>
+      </ul>
+    </dd>
+  </dl>
+</div>
+
+<div class="inv-block" id="inv-u">
+  <h3>不変条件 U: step verification post-verify 必須</h3>
+  <dl>
+    <dt>目的</dt><dd>9 P0 bug の #973 (RED merge silent rot)、L1873-1884 自己申告 step を構造的に不能化する。</dd>
+    <dt>制約</dt>
+    <dd>
+      <ul>
+        <li>全 chain step は <strong>pre-check → exec → post-verify → report</strong> の 4 phase lifecycle を MUST</li>
+        <li>post-verify で機械検証 (test 数増加 / RED→GREEN / src diff / Agent return value 等) を <strong>必ず実施</strong></li>
+        <li>self-report-only (record_current_step + ok のみ) は禁止</li>
+        <li>post-verify FAIL → step abort + pilot escalate (mail に failure 明記)</li>
+      </ul>
+    </dd>
+    <dt>根拠</dt><dd>9 P0 bug 分析の Bug #973 lesson、L1873-1884 自己申告 step 問題。</dd>
+    <dt>検証方法</dt><dd>bats <code>step-verification-post-verify.bats</code> (新規)、test なしで green-impl 呼び出すと step abort することを verify。</dd>
+    <dt>影響範囲</dt>
+    <dd>
+      <ul>
+        <li><code>plugins/twl/scripts/step.sh</code> (新規 framework)</li>
+        <li>全 worker SKILL.md (step_run 経由でのみ step 実行)</li>
+      </ul>
+    </dd>
+  </dl>
+</div>
+
+<div class="inv-block" id="inv-v">
+  <h3>不変条件 V: per-Worker checkpoint path (共通 path 禁止)</h3>
+  <dl>
+    <dt>目的</dt><dd>9 P0 bug の #1703 (checkpoint cross-pollution) + #1673 (cleanup cross-Wave 破壊) を構造的に不能化する。</dd>
+    <dt>制約</dt>
+    <dd>
+      <ul>
+        <li>全 state / cleanup / checkpoint write は <strong>per-Worker (issue_number / session_name) を含むパス</strong> にデフォルト書き込み</li>
+        <li>共通パスへの write は明示的 <code>--shared</code> フラグ + audit log 必須</li>
+        <li>cleanup スクリプトは <code>--scope &lt;wave-id&gt;</code> を必須引数とし、他 Wave のリソースに触れない</li>
+      </ul>
+    </dd>
+    <dt>根拠</dt><dd>9 P0 bug 分析の Bug #1703, #1673 lesson、横断要因 F-1。</dd>
+    <dt>検証方法</dt><dd>bats <code>per-worker-state-isolation.bats</code> (新規)、複数 Worker simulation で他 Worker の state を読み書きしないことを verify。</dd>
+    <dt>影響範囲</dt>
+    <dd>
+      <ul>
+        <li><code>cli/twl/src/twl/autopilot/checkpoint.py</code> の <code>_checkpoint_dir()</code> (per-issue 必須化、<code>--shared</code> 明示なしは fail)</li>
+        <li><code>plugins/twl/scripts/autopilot-cleanup.sh</code> (<code>--scope</code> 必須化、または完全廃止)</li>
+      </ul>
+    </dd>
+  </dl>
+</div>
+
+<div class="inv-block" id="inv-w">
+  <h3>不変条件 W: PreToolUse hook で status gate 機械化</h3>
+  <dl>
+    <dt>目的</dt><dd>9 P0 bug の #1660 / #1662 / #1663 / #1684 (env var 経由 caller authz) を構造的に不能化する。</dd>
+    <dt>制約</dt>
+    <dd>
+      <ul>
+        <li>phase-* invocation は <strong>PreToolUse hook 経由で前提 status を verify</strong> することを MUST</li>
+        <li>bash env var (<code>TWL_CALLER_AUTHZ</code> 等) による caller authz は廃止</li>
+        <li>gate hook は <code>phase-gate.sh</code> thin helper (~30 lines) で実装、status 不一致は exit 1 + administrator notify</li>
+      </ul>
+    </dd>
+    <dt>根拠</dt><dd>9 P0 bug 分析の Bug #1660/1662/1663/1684 lesson、横断要因 F-2。</dd>
+    <dt>検証方法</dt><dd>bats <code>phase-gate-hook.bats</code> (新規)、Refined でない Issue に phase-impl を呼び出すと deny されることを verify。</dd>
+    <dt>影響範囲</dt>
+    <dd>
+      <ul>
+        <li><code>plugins/twl/scripts/phase-gate.sh</code> (新規 helper)</li>
+        <li><code>.claude/hooks/phase-gate.json</code> (PreToolUse hook 設定)</li>
+        <li>既存 <code>TWL_CALLER_AUTHZ</code> 機構の廃止 (chain-runner.sh / observer-parallel-check.sh 等)</li>
+      </ul>
+    </dd>
+  </dl>
+</div>
+
+<div class="inv-block" id="inv-x">
+  <h3>不変条件 X: deploy / verify セット必須 (daemon / watchdog)</h3>
+  <dl>
+    <dt>目的</dt><dd>9 P0 bug の #1687 (mcp-watchdog deploy 経路不在、5 ヶ月 5 回再発) を構造的に不能化する。</dd>
+    <dt>制約</dt>
+    <dd>
+      <ul>
+        <li>新規 daemon / watchdog 実装は <strong>「起動 hook」+「起動確認テスト」セット</strong> で merge することを MUST</li>
+        <li>起動 hook (session-start hook 等) と起動確認 test (bats で <code>ps</code> / <code>pgrep</code> 確認) を <strong>同 PR 内に含む</strong></li>
+        <li>N 回 (N≥2) 再発するバグは <strong>修正ではなく root cause 分析</strong> を required (epic / spike issue 化)</li>
+      </ul>
+    </dd>
+    <dt>根拠</dt><dd>9 P0 bug 分析の Bug #1687 lesson、横断要因 F-3。</dd>
+    <dt>検証方法</dt><dd>bats <code>daemon-deploy-verify-set.bats</code> (新規)、新規 watchdog 系 PR は起動 hook ファイルの追加を assert。</dd>
+    <dt>影響範囲</dt>
+    <dd>
+      <ul>
+        <li><code>.claude/hooks/</code> 配下の hook 登録規約</li>
+        <li><code>plugins/twl/tests/bats/</code> 配下の daemon verification test</li>
+        <li>新 spec の <a href="rebuild-plan.html">rebuild-plan.html</a> (本 invariant を Phase 1 PoC の verify points に含める)</li>
+      </ul>
+    </dd>
+  </dl>
+</div>
+
+<h2>ref-invariants.md drift 訂正課題</h2>
+
+<p>現状の <code>plugins/twl/refs/ref-invariants.md</code> L1:</p>
+
+<pre><code>twill autopilot システムの不変条件 A-N（14 件）の正典定義。</code></pre>
+
+<p>これは drift。実際は <strong>A-S の 19 件</strong> (O/P/Q/R/S が後から追加された)。新 spec 起票時に以下を訂正:</p>
+
+<pre class="drift-diff"><span class="del">- twill autopilot システムの不変条件 A-N（14 件）の正典定義。</span>
+<span class="add">+ twill autopilot システムの不変条件 A-X（24 件）の正典定義。
++ (旧版は A-N 14 件 → A-S 19 件 → A-X 24 件 と段階的拡張、ADR-043 で T-X 5 件追加)</span></pre>
+
+<p>更新日も <code>2026-05-08</code> → <code>2026-05-12</code> に。</p>
+
+<p>加えて、新規 invariant T-X の section を <code>ref-invariants.md</code> に追記する。新 spec の <code>invariant-fate-table.html</code> (本ファイル) は audit table、<code>ref-invariants.md</code> は正典定義として役割分担。</p>
+
+<h2>不変条件カバレッジ matrix (9 P0 bug → 不変条件)</h2>
+
+<table>
+  <thead>
+    <tr><th>Bug</th><th>既存 invariant</th><th>新規 invariant T-X</th><th>カバー状況</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>#1660 SKIP_*_REASON sanitize</td><td>(なし)</td><td><strong><a href="#inv-w">W</a></strong> (PreToolUse hook gate)</td><td>新規 W で構造的解消</td></tr>
+    <tr><td>#1662 OBSERVER_PARALLEL_CHECK_STATES <code>:-</code></td><td>(なし)</td><td><strong><a href="#inv-w">W</a></strong></td><td>同上</td></tr>
+    <tr><td>#1663 OBSERVER_PARALLEL_CHECK_STATES override</td><td>(なし)</td><td><strong><a href="#inv-w">W</a></strong></td><td>同上</td></tr>
+    <tr><td>#1673 autopilot-cleanup cross-wave</td><td>B (worktree pilot 専任)</td><td><strong><a href="#inv-v">V</a></strong> (per-Worker checkpoint)</td><td>B 強化 + V で構造的解消</td></tr>
+    <tr><td>#1674 orchestrator early-exit</td><td>M (chain 遷移制限)</td><td><strong><a href="#inv-u">U</a></strong> (step post-verify)</td><td>M 部分 Superseded + U で構造的解消</td></tr>
+    <tr><td>#1684 IS_AUTOPILOT cwd-guard</td><td>B (worktree pilot 専任)</td><td><strong><a href="#inv-w">W</a></strong></td><td>B 強化 + W で構造的解消</td></tr>
+    <tr><td>#1687 twl mcp disconnect</td><td>(なし)</td><td><strong><a href="#inv-x">X</a></strong> (deploy/verify セット)</td><td>新規 X で構造的解消</td></tr>
+    <tr><td>#1703 phase-review.json cross-pollution</td><td>(なし)</td><td><strong><a href="#inv-t">T</a></strong> + <strong><a href="#inv-v">V</a></strong></td><td>新規 T/V で構造的解消</td></tr>
+    <tr><td>#973 RED merge silent rot</td><td>S (RED-only bypass 閉塞)</td><td><strong><a href="#inv-u">U</a></strong></td><td>S 部分 Superseded + U で構造的解消</td></tr>
+  </tbody>
+</table>
+
+<p>= 9 P0 bug 全てが新規 invariant T-X (5 件) でカバー、横断要因 F-1/F-2/F-3 にも対応。</p>
+
+<h2>関連 spec ファイル</h2>
+
+<ul>
+  <li>新規 invariant T-X の具体実装: <a href="step-verification.html">step-verification.html</a> (Inv U) / <a href="spawn-protocol.html">spawn-protocol.html</a> (Inv T/V、outline) / <a href="gate-hook.html">gate-hook.html</a> (Inv W、outline) / <a href="crash-failure-mode.html">crash-failure-mode.html</a> (Inv G 強化)</li>
+  <li>既存 invariant 詳細: <code>plugins/twl/refs/ref-invariants.md</code> (本 spec で drift 訂正課題対応)</li>
+  <li>chain SSoT 統一 (Inv U + 新規 invariant 関連): <a href="ssot-design.html">ssot-design.html</a></li>
+  <li>twl MCP 継承戦略 (Inv X 関連): <a href="twl-mcp-integration.html">twl-mcp-integration.html</a></li>
+</ul>
+
+<h2>audit 方法</h2>
+
+<ul>
+  <li>既存 invariant 19 件: <code>ref-invariants.md</code> を本 session で Read 済 (verified)</li>
+  <li>新規 invariant T-X: 9 P0 bug 分析 (<a href="failure-analysis.html">failure-analysis.html</a>) の lesson から導出</li>
+  <li>confidence: 既存 = verified (file read 済)、新規 = deduced (本 spec 設計から)</li>
+</ul>
+
+</body>
+</html>

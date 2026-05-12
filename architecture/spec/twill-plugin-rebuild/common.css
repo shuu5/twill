@@ -1,0 +1,313 @@
+/* twill plugin rebuild spec — common stylesheet
+ * Design token: note DESIGN.md (kzhrknt/awesome-design-md-jp) 部分採用
+ *   採用: color (gray-50〜900 + brand)、font (Helvetica Neue + Hiragino Sans + Noto Sans JP)、
+ *         typography (h1 32px / h2 28px / body 18px line-height 2.0)、
+ *         shadow (elevation-1)、radius 12px、letter-spacing 0.04em palt (h1/h2 のみ)
+ *   非採用: max-width 620px (spec は 1100px 維持)、dark mode (将来検討)
+ * Reference: https://kzhrknt.github.io/awesome-design-md-jp/design-md/note/DESIGN.md
+ */
+
+:root {
+  /* Gray scale (DESIGN.md note) */
+  --gray-900: #08131a;
+  --gray-800: #202a30;
+  --gray-700: #363f42;
+  --gray-600: #5a656b;
+  --gray-500: #7e888f;
+  --gray-400: #9ca7ad;
+  --gray-300: #aeb7bd;
+  --gray-200: #c5ccd1;
+  --gray-100: #dce0e3;
+  --gray-50:  #f5f8fa;
+
+  /* Brand & semantic (DESIGN.md note) */
+  --brand:        #5ac8b8;
+  --success-fg:   #1e7b65;
+  --success-bg:   #e6f6f2;
+  --danger-fg:    #b22323;
+  --danger-bg:    #fdf3f3;
+  --caution-fg:   #916626;
+  --caution-bg:   #fefbea;
+  --point-fg:     #8b7f2c;
+  --focus:        #292d9e;
+
+  /* Text */
+  --text-primary:   #08131a;
+  --text-secondary: rgba(8, 19, 26, 0.66);
+  --text-invert:    #ffffff;
+  --text-placeholder: rgba(8, 19, 26, 0.50);
+
+  /* Surface */
+  --surface-primary:   #ffffff;
+  --surface-secondary: #f5f8fa;
+  --border-default: rgba(8, 19, 26, 0.14);
+  --border-strong:  rgba(8, 19, 26, 0.22);
+
+  /* Elevation (DESIGN.md note) */
+  --elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.14), 0px 1px 2px 0px rgba(0, 0, 0, 0.22);
+  --elevation-4: 0px 4px 8px 3px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.22);
+
+  /* Font families (DESIGN.md note) */
+  --font-sans: "Helvetica Neue", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Arial, "Noto Sans JP", Meiryo, sans-serif;
+  --font-mono: SFMono-Regular, Consolas, Menlo, Courier, "Noto Sans Mono", monospace;
+  --font-serif: "Hiragino Mincho ProN", "Hiragino Mincho Pro", HGSMinchoE, "Yu Mincho", YuMincho, "MS PMincho", serif;
+
+  /* Layout (spec 専用: max-width 1100px、article 620px は適用しない) */
+  --content-max: 1100px;
+  --content-padding: 24px;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* Base typography (DESIGN.md note: h1 32px/1.5, h2 28px/1.286, body 18px/2.0) */
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 2.0;
+  color: var(--text-primary);
+  background: var(--surface-primary);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--content-padding);
+  word-wrap: break-word;
+}
+
+/* Heading: letter-spacing 0.04em + palt は h1/h2 のみ (DESIGN.md 規約) */
+h1, h2 {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  font-feature-settings: "palt";
+  color: var(--text-primary);
+}
+h1 { font-size: 32px; line-height: 1.5;  margin: 0 0 8px 0; }
+h2 { font-size: 28px; line-height: 1.286; margin-top: 48px; padding-bottom: 8px; border-bottom: 2px solid var(--gray-100); }
+
+/* h3-h6 は palt を外す (本文と同質量) */
+h3 { font-size: 22px; font-weight: 700; line-height: 1.5; margin-top: 32px; color: var(--gray-800); }
+h4 { font-size: 18px; font-weight: 700; line-height: 1.5; margin-top: 24px; color: var(--gray-700); }
+h5 { font-size: 16px; font-weight: 700; line-height: 1.5; margin-top: 20px; color: var(--gray-700); }
+h6 { font-size: 14px; font-weight: 700; line-height: 1.5; margin-top: 16px; color: var(--gray-600); }
+
+/* Document header (file 上部の title + meta、border-bottom 色は file 別) */
+header.doc-header {
+  border-bottom: 3px solid var(--gray-300);  /* default: file 別に override */
+  padding-bottom: 16px;
+  margin-bottom: 32px;
+}
+header.doc-header h1 { margin: 0 0 8px 0; }
+header.doc-header .meta {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: normal;
+  font-feature-settings: normal;
+}
+
+/* Paragraph & inline */
+p { margin: 16px 0; }
+a { color: var(--focus); text-decoration: underline; text-underline-offset: 2px; }
+a:hover { color: var(--gray-900); }
+strong { font-weight: 700; }
+em { font-style: italic; }
+
+/* Lists */
+ul, ol { margin: 16px 0; padding-left: 28px; }
+li { margin: 4px 0; }
+li > p:first-child { margin-top: 0; }
+li > p:last-child { margin-bottom: 0; }
+
+/* Code (inline + block) */
+code, pre {
+  font-family: var(--font-mono);
+  font-feature-settings: normal;
+  letter-spacing: normal;
+}
+code {
+  background: var(--gray-50);
+  color: var(--gray-900);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88em;
+  border: 1px solid var(--gray-100);
+}
+pre {
+  background: #1a2025;
+  color: #e3e8eb;
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 16px 0;
+}
+pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border: none;
+  font-size: inherit;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 20px 0;
+  font-size: 15px;
+  line-height: 1.65;
+  background: var(--surface-primary);
+}
+th, td {
+  border: 1px solid var(--gray-100);
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+th {
+  background: var(--gray-50);
+  font-weight: 700;
+  letter-spacing: normal;
+  font-feature-settings: normal;
+}
+tr:hover td { background: rgba(8, 19, 26, 0.03); }
+
+/* Callouts (semantic、note DESIGN.md 配色) */
+.critical, .danger {
+  padding: 14px 18px;
+  margin: 20px 0;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--danger-fg);
+  background: var(--danger-bg);
+  color: var(--gray-900);
+}
+.warning, .caution {
+  padding: 14px 18px;
+  margin: 20px 0;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--caution-fg);
+  background: var(--caution-bg);
+  color: var(--gray-900);
+}
+.good, .success {
+  padding: 14px 18px;
+  margin: 20px 0;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--success-fg);
+  background: var(--success-bg);
+  color: var(--gray-900);
+}
+.info, .note {
+  padding: 14px 18px;
+  margin: 20px 0;
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--brand);
+  background: rgba(90, 200, 184, 0.08);
+  color: var(--gray-900);
+}
+
+/* Diagram container (SVG / figure) */
+.diagram {
+  background: var(--surface-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+  padding: 24px;
+  margin: 24px 0;
+  text-align: center;
+  overflow-x: auto;
+}
+.diagram-caption {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 12px;
+  font-style: italic;
+  letter-spacing: normal;
+  font-feature-settings: normal;
+}
+
+/* SVG (architecture diagrams) */
+svg.arch-svg {
+  width: 100%;
+  max-width: 1080px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+svg text {
+  font-family: var(--font-sans);
+  letter-spacing: normal;
+  font-feature-settings: normal;
+}
+
+/* Blockquote */
+blockquote {
+  margin: 20px 0;
+  padding: 12px 18px;
+  border-left: 4px solid var(--gray-200);
+  background: var(--gray-50);
+  color: var(--gray-800);
+  font-style: italic;
+}
+
+/* Horizontal rule */
+hr {
+  border: none;
+  border-top: 1px solid var(--gray-100);
+  margin: 40px 0;
+}
+
+/* Card (汎用、box-shadow 付き) */
+.card {
+  background: var(--surface-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-1);
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+/* Footnote / small text */
+.small, small { font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+
+/* Status badge (file の placeholder/完成 status 表示用) */
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.badge.done { background: var(--success-bg); color: var(--success-fg); }
+.badge.todo { background: var(--caution-bg); color: var(--caution-fg); }
+.badge.archive { background: var(--gray-100); color: var(--gray-700); }
+
+/* Responsive (spec は基本 desktop 想定だが、scroll 確保) */
+@media (max-width: 768px) {
+  body { padding: 16px; font-size: 16px; line-height: 1.85; }
+  h1 { font-size: 26px; }
+  h2 { font-size: 22px; margin-top: 36px; }
+  h3 { font-size: 18px; margin-top: 24px; }
+  pre { font-size: 12px; padding: 12px 14px; }
+  table { font-size: 13px; }
+  th, td { padding: 6px 10px; }
+}
+
+/* Print (PDF 出力用、shadow 抑制) */
+@media print {
+  body { max-width: 100%; padding: 0; }
+  .diagram, .card { box-shadow: none; border: 1px solid var(--gray-300); }
+  pre { background: #f5f5f5; color: #000; border: 1px solid #ccc; }
+  a { color: var(--gray-900); text-decoration: none; }
+}

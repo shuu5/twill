@@ -3,30 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>twill plugin rebuild — step verification framework</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Noto+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
 <style>
-  body { font-family: "Noto Sans JP", -apple-system, sans-serif; max-width: 1100px; margin: 0 auto; padding: 24px; line-height: 1.65; color: #1a1a1a; }
-  header.doc-header { border-bottom: 3px solid #388e3c; padding-bottom: 16px; margin-bottom: 24px; }
-  header.doc-header h1 { margin: 0 0 8px 0; font-size: 26px; }
-  header.doc-header .meta { color: #666; font-size: 14px; }
-  h2 { border-bottom: 2px solid #ddd; padding-bottom: 6px; margin-top: 40px; font-size: 22px; }
-  h3 { margin-top: 28px; font-size: 17px; }
-  h4 { margin-top: 20px; font-size: 15px; color: #555; }
-  code, pre { font-family: "Noto Sans Mono", "SF Mono", Consolas, "Noto Sans JP", monospace; }
-  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.88em; }
-  pre { background: #2d2d2d; color: #f8f8f2; padding: 14px 16px; border-radius: 6px; overflow-x: auto; font-size: 0.82em; }
-  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 0.92em; }
-  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; vertical-align: top; }
-  th { background: #f4f4f4; }
-  .diagram { background: white; border: 1px solid #ddd; padding: 20px; border-radius: 6px; margin: 20px 0; text-align: center; overflow-x: auto; }
-  .diagram-caption { color: #666; font-size: 13px; margin-top: 8px; font-style: italic; }
-  .critical { padding: 12px 16px; margin: 16px 0; border-radius: 4px; border-left: 4px solid #d0021b; background: #ffe6e6; }
-  .warning { padding: 12px 16px; margin: 16px 0; border-radius: 4px; border-left: 4px solid #f5a623; background: #fff5e0; }
-  .good { padding: 12px 16px; margin: 16px 0; border-radius: 4px; border-left: 4px solid #22863a; background: #e6ffed; }
-  text { font-family: "Noto Sans JP", -apple-system, sans-serif; }
-  svg.arch-svg { width: 100%; max-width: 1080px; height: auto; display: block; margin: 0 auto; }
+  /* file-specific accent: step verification は Success #1e7b65 で「検証 success」を象徴 */
+  header.doc-header { border-bottom: 3px solid var(--success-fg); }
 </style>
 </head>
 <body>
@@ -269,7 +249,7 @@ worker は exit 0 で終了。</code></pre>
 
 <h2>8. 不変条件 U との関係</h2>
 
-<p>本 framework は <a href="invariant-fate-table.md">invariant-fate-table.md</a> の新規 <strong>不変条件 U (step verification post-verify 必須)</strong> の実装。invariant 定義:</p>
+<p>本 framework は <a href="invariant-fate-table.html">invariant-fate-table.html</a> の新規 <strong>不変条件 U (step verification post-verify 必須)</strong> の実装。invariant 定義:</p>
 
 <div class="critical">
 <ul>
@@ -285,11 +265,11 @@ worker は exit 0 で終了。</code></pre>
 <h2>9. 関連 spec ファイル</h2>
 
 <ul>
-  <li>9 P0 bug 分析 (Bug #973 の lesson 抽出元): <a href="failure-analysis.md">failure-analysis.md</a></li>
-  <li>不変条件 U + 関連: <a href="invariant-fate-table.md">invariant-fate-table.md</a></li>
+  <li>9 P0 bug 分析 (Bug #973 の lesson 抽出元): <a href="failure-analysis.html">failure-analysis.html</a></li>
+  <li>不変条件 U + 関連: <a href="invariant-fate-table.html">invariant-fate-table.html</a></li>
   <li>file mailbox 仕様 (step.sh report 先): <a href="spawn-protocol.html">spawn-protocol.html</a> (placeholder)</li>
   <li>gate hook (status 前提検証): <a href="gate-hook.html">gate-hook.html</a> (placeholder)</li>
-  <li>Phase 1 PoC での verify points: <code>rebuild-plan.md</code> (placeholder)</li>
+  <li>Phase 1 PoC での verify points: <code>rebuild-plan.html</code> (placeholder)</li>
 </ul>
 
 <h2>10. 残課題 (次 session 以降)</h2>

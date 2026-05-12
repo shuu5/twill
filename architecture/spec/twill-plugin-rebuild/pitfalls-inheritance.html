@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>pitfalls-inheritance — outline</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>pitfalls-inheritance — outline</h1>
+  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+</header>
+
+<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で既存 pitfalls-catalog の継承戦略を実装する。</div>
+
+<h2>目的</h2>
+
+<p>既存 <code>plugins/twl/skills/su-observer/refs/pitfalls-catalog.md</code> の lesson 群を新 spec でどう継承するかを仕様化する。「構造的不能化で不要になる lesson」「新 spec でも有効な lesson」「新 spec で強化される lesson」の 3 分類で audit する。</p>
+
+<h2>想定 outline (次 session で実装)</h2>
+
+<ol>
+  <li><strong>既存 pitfalls-catalog の section 一覧</strong>
+    <ul>
+      <li>§1 lesson 構造化 chain (Invariant N)</li>
+      <li>§2 stuck pattern recovery</li>
+      <li>§3 budget format 解釈 (Invariant Q)</li>
+      <li>§4 RED-only label bypass (ADR-038)</li>
+      <li>§5 cross-Wave cleanup (#1673)</li>
+      <li>§6 phase-review.json cross-pollution (#1703 関連)</li>
+      <li>§7 mcp disconnect (#1687)</li>
+      <li>§8 self-申告 step (L1873-1884)</li>
+      <li>§9 deploy/verify 分離 (#1687)</li>
+      <li>§10-19 (個別 lesson、各 P0 bug)</li>
+    </ul>
+  </li>
+  <li><strong>継承分類 (audit table)</strong>
+    <table>
+      <thead>
+        <tr><th>pitfall</th><th>新 spec での扱い</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>構造化 chain (Inv N)</td><td>保全 (新 spec でも MUST)</td></tr>
+        <tr><td>stuck pattern</td><td>保全</td></tr>
+        <tr><td>budget format (Inv Q)</td><td>保全</td></tr>
+        <tr><td>RED-only bypass</td><td>部分継承 (step verification で構造的不能化、Layer 4 のみ保全)</td></tr>
+        <tr><td>cross-Wave cleanup</td><td>構造的不能化 (Inv V で per-Worker scope 強制)</td></tr>
+        <tr><td>phase-review cross-pollution</td><td>構造的不能化 (Inv T/V で共通 path 禁止)</td></tr>
+        <tr><td>mcp disconnect</td><td>構造的不能化 (Inv X で deploy/verify セット)</td></tr>
+        <tr><td>自己申告 step</td><td>構造的不能化 (Inv U で post-verify 必須)</td></tr>
+        <tr><td>deploy/verify 分離</td><td>構造的不能化 (Inv X)</td></tr>
+      </tbody>
+    </table>
+  </li>
+  <li><strong>新 spec で追加すべき pitfall</strong>
+    <ul>
+      <li>file mailbox 並列 write race (Inv T 検証)</li>
+      <li>PreToolUse hook config の deploy 漏れ (Inv X 強化)</li>
+      <li>3 階層 spawn の cwd 渡し漏れ (Inv B 強化)</li>
+      <li>tmux new-window で path 解決失敗 (新 pitfall、未経験)</li>
+    </ul>
+  </li>
+  <li><strong>継承先</strong>
+    <ul>
+      <li>構造的不能化 lesson → <a href="failure-analysis.html">failure-analysis.html</a> に集約 (本 spec の MUST / SHOULD)</li>
+      <li>保全 lesson → 既存 <code>pitfalls-catalog.md</code> を rebrand (new <code>administrator/refs/pitfalls-catalog.md</code>)</li>
+      <li>新規 lesson → <code>administrator/refs/pitfalls-catalog.md</code> に追加</li>
+    </ul>
+  </li>
+  <li><strong>運用ルール (Invariant N)</strong>
+    <ul>
+      <li>新 architecture でも 4-step chain (doobidoo → Issue → Wave → 永続文書) を MUST</li>
+      <li>永続文書化先は <code>administrator/refs/pitfalls-catalog.md</code> (rebrand 後)</li>
+    </ul>
+  </li>
+</ol>
+
+<h2>参照</h2>
+
+<ul>
+  <li><a href="failure-analysis.html">failure-analysis.html</a> (9 P0 bug 深掘り、本 spec の lesson 起点)</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 N (lesson structuralization) + T-X (新規)</li>
+  <li>既存 <code>plugins/twl/skills/su-observer/refs/pitfalls-catalog.md</code></li>
+  <li>ADR-036 (lesson structuralization MUST)</li>
+</ul>
+
+</body>
+</html>

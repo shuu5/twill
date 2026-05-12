@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>glossary — outline</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>glossary — outline</h1>
+  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+</header>
+
+<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で用語集を整備する。</div>
+
+<h2>目的</h2>
+
+<p>本 spec で使われる用語を 1 件ずつ定義し、既存 plugin との対応関係を明示する。新 spec 読解者が用語の意味を逆引きできるように整備する。</p>
+
+<h2>想定 outline (次 session で実装)</h2>
+
+<h3>階層構造</h3>
+
+<table>
+  <thead>
+    <tr><th>用語</th><th>定義</th><th>既存対応</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>administrator</strong></td><td>L0、user 代理、長命 main session、CronCreate polling、pilot mail のみ受信</td><td>su-observer (rebrand)</td></tr>
+    <tr><td><strong>pilot</strong></td><td>L1、phase-* SKILL.md として動作、status 遷移 1:1 担当、worker 群を spawn・mail 集約</td><td>co-autopilot の Pilot 役割 (拡張)</td></tr>
+    <tr><td><strong>worker</strong></td><td>L2、worker-* SKILL.md として動作、別 main session、単一目的の実作業</td><td>co-autopilot の Worker 役割 (拡張)</td></tr>
+    <tr><td><strong>tool</strong></td><td>tool-* SKILL.md、user / admin 直接 invoke、status 遷移と無関係</td><td>co-architect / project / utility / self-improve (rebrand)</td></tr>
+    <tr><td><strong>phase</strong></td><td>status 遷移 1 個に対応する pilot SKILL.md (phase-explore / phase-refine / phase-impl / phase-pr)</td><td>(新概念)</td></tr>
+  </tbody>
+</table>
+
+<h3>通信機構</h3>
+
+<table>
+  <thead>
+    <tr><th>用語</th><th>定義</th><th>既存対応</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>file mailbox</strong></td><td><code>.mailbox/&lt;session-name&gt;/inbox.jsonl</code> + flock atomic write</td><td>session-comm.sh / mailbox lock-dir (置換)</td></tr>
+    <tr><td><strong>mail</strong></td><td>JSON Lines 1 行、<code>{from, ts, event, detail, heartbeat_ts}</code> field</td><td>tmux send-keys 経由の message (置換)</td></tr>
+    <tr><td><strong>pyramid 集約</strong></td><td>worker mail → pilot 集約 → admin に要約 mail、context 効率化</td><td>(新概念)</td></tr>
+  </tbody>
+</table>
+
+<h3>step 機構</h3>
+
+<table>
+  <thead>
+    <tr><th>用語</th><th>定義</th><th>既存対応</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>step</strong></td><td>LLM 作業 1 単位 (test-scaffold / green-impl / check 等)</td><td>chain step (既存、framework は再設計)</td></tr>
+    <tr><td><strong>step lifecycle</strong></td><td>pre-check → exec → post-verify → report の 4 phase</td><td>(新概念、自己申告 step を置換)</td></tr>
+    <tr><td><strong>post-verify</strong></td><td>機械検証 (test 数 / RED→GREEN / src diff 等)、step rule に従う</td><td>(新概念)</td></tr>
+    <tr><td><strong>step.sh</strong></td><td>step lifecycle framework、~80 lines</td><td>chain-runner.sh L1873-1884 (置換、機械検証追加、<a href="ssot-design.html">ssot-design.html</a> 参照)</td></tr>
+  </tbody>
+</table>
+
+<h3>gate 機構</h3>
+
+<table>
+  <thead>
+    <tr><th>用語</th><th>定義</th><th>既存対応</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>gate hook</strong></td><td>PreToolUse hook で phase invocation 時に前提 status verify</td><td>TWL_CALLER_AUTHZ env-marker (置換)</td></tr>
+    <tr><td><strong>phase-gate.sh</strong></td><td>gate hook handler、~30 lines、<code>gh project item-list</code> で status query</td><td>(新概念)</td></tr>
+    <tr><td><strong>status SSoT</strong></td><td>GitHub Project Board の Status field、6-stage</td><td>既存 Project Board (拡張: 4→6 stage)</td></tr>
+  </tbody>
+</table>
+
+<h3>不変条件</h3>
+
+<table>
+  <thead>
+    <tr><th>用語</th><th>定義</th><th>既存対応</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>不変条件 (invariant)</strong></td><td>system が満たすべき property、MUST レベル</td><td>既存 A-S 19 件 + 新規 T-X 5 件</td></tr>
+    <tr><td><strong>MUST / SHOULD / MAY</strong></td><td>RFC 2119 の level (構造的 enforce / 推奨 / 任意)</td><td>既存 <code>ref-invariants.md</code> と整合</td></tr>
+  </tbody>
+</table>
+
+<h3>twl MCP</h3>
+
+<table>
+  <thead>
+    <tr><th>用語</th><th>定義</th><th>既存対応</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>twl MCP server</strong></td><td>twl 自前 MCP server、<code>cli/twl/src/twl/mcp_server/</code> 配下、30+ tool</td><td>既存、新 architecture で~15 tool に削減 (<a href="twl-mcp-integration.html">twl-mcp-integration.html</a>)</td></tr>
+    <tr><td><strong>TWL_AUDIT</strong></td><td>env 変数 <code>TWL_AUDIT=1</code> で audit mode 起動、<code>.audit/&lt;run-id&gt;/</code> に中間ファイル保存</td><td>既存 (Issue #642 起点)、新 architecture に伝搬</td></tr>
+    <tr><td><strong>deferred-tool 戦略</strong></td><td><code>fastmcp</code> なし環境でも純 Python handler として動作する設計</td><td>既存 (tools.py L2311)、新 architecture でも維持</td></tr>
+    <tr><td><strong>types.yaml</strong></td><td>component 型 + token bloat 閾値の SSoT</td><td>既存、新型 (administrator / phase-* / worker-* / tool-* / step / subagent) を追加</td></tr>
+  </tbody>
+</table>
+
+<h2>参照</h2>
+
+<ul>
+  <li><a href="overview.html">overview.html</a> (各用語の初出)</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (不変条件 24 件)</li>
+  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> (twl MCP 用語)</li>
+  <li><a href="ssot-design.html">ssot-design.html</a> (step / chain SSoT 用語)</li>
+  <li>既存 <code>plugins/twl/refs/ref-invariants.md</code> (既存 invariant SSoT)</li>
+</ul>
+
+</body>
+</html>

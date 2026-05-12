@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>regression-test-strategy — outline</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>regression-test-strategy — outline</h1>
+  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+</header>
+
+<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で既存 bats 90+ + 新 architecture 用追加 test の戦略を実装する。</div>
+
+<h2>目的</h2>
+
+<p>既存 bats regression test (90+ ファイル) を新 architecture で継承する戦略と、新規 invariant T-X (5 件) + 9 P0 bug を block する追加 test 計画を仕様化する。</p>
+
+<h2>想定 outline (次 session で実装)</h2>
+
+<ol>
+  <li><strong>既存 bats test の継承戦略 (90+ ファイル)</strong>
+    <ul>
+      <li>不変条件 A-S の bats test → 保全 (<code>invariant-A</code> 〜 <code>invariant-S</code> 全て継承、ただし <code>invariant-M</code> は部分 Superseded で test 内容調整)</li>
+      <li>ADR 個別 test (<code>ac-scaffold-tests-973.bats</code> 等) → 該当 ADR が Superseded されたら test は archive (<code>.archive/</code> directory に移動、削除はしない)</li>
+      <li>chain step test → <code>step.sh</code> framework に書き換え (test rule の logic は流用、<a href="ssot-design.html">ssot-design.html</a> 参照)</li>
+    </ul>
+  </li>
+  <li><strong>新規 bats test 追加 (新 invariant T-X)</strong>
+    <ul>
+      <li><code>file-mailbox-atomic-write.bats</code> (新 invariant T、並列 write race condition)</li>
+      <li><code>step-verification-post-verify.bats</code> (新 invariant U、自己申告 step block)</li>
+      <li><code>per-worker-state-isolation.bats</code> (新 invariant V、checkpoint cross-pollution 防止)</li>
+      <li><code>phase-gate-hook.bats</code> (新 invariant W、Refined でない Issue に phase-impl 呼び出して deny)</li>
+      <li><code>daemon-deploy-verify-set.bats</code> (新 invariant X、新規 daemon PR は起動 hook ファイル追加 assert)</li>
+    </ul>
+  </li>
+  <li><strong>9 P0 bug の regression test</strong>
+    <ul>
+      <li>各 bug の修正 PR が含む test を新 architecture で継承</li>
+      <li>Bug #1703 (cross-pollution): <code>phase-review-cross-pollution-regression.bats</code> (新規、複数 Worker simulation)</li>
+      <li>Bug #973 (RED merge silent rot): step verification で構造的 block されることを assert</li>
+      <li>Bug #1687 (mcp disconnect): MCP 極小化後の動作 (1 tool のみで chain が回る) を verify (<a href="twl-mcp-integration.html">twl-mcp-integration.html</a> 参照)</li>
+    </ul>
+  </li>
+  <li><strong>integration test (新 spec の e2e)</strong>
+    <ul>
+      <li>Phase 1 PoC の 8 verify points を bats 化 (Issue #1660 sanitize の e2e simulation)</li>
+      <li>3 階層 spawn の e2e (admin → pilot → worker の chain が tmux で動く)</li>
+      <li>file mailbox の pyramid 集約 (worker → pilot → admin が動く)</li>
+    </ul>
+  </li>
+  <li><strong>test 失敗時の運用</strong>
+    <ul>
+      <li>既存 RED test scaffold pattern は新 spec では禁止 (不変条件 U に違反)</li>
+      <li>新規 test は GREEN で merge、RED test は同 PR 内で実装と pair で merge</li>
+    </ul>
+  </li>
+  <li><strong>CI integration</strong>
+    <ul>
+      <li>GitHub Actions で全 bats test を main push 時に実行</li>
+      <li>新規 invariant T-X test は phase 1-3 内で必須 PASS</li>
+    </ul>
+  </li>
+</ol>
+
+<h2>参照</h2>
+
+<ul>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (新 invariant T-X の検証方法 field)</li>
+  <li><a href="failure-analysis.html">failure-analysis.html</a> (9 P0 bug の test 起点)</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 4 (bats 検証)</li>
+  <li><a href="ssot-design.html">ssot-design.html</a> §5 (steps_integrity audit の新 test)</li>
+  <li>既存 <code>plugins/twl/tests/bats/</code> 90+ ファイル</li>
+</ul>
+
+</body>
+</html>

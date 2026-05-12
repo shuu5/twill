@@ -3,30 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>twill plugin rebuild — crash failure mode</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Noto+Sans+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="common.css">
 <style>
-  body { font-family: "Noto Sans JP", -apple-system, sans-serif; max-width: 1100px; margin: 0 auto; padding: 24px; line-height: 1.65; color: #1a1a1a; }
-  header.doc-header { border-bottom: 3px solid #d0021b; padding-bottom: 16px; margin-bottom: 24px; }
-  header.doc-header h1 { margin: 0 0 8px 0; font-size: 26px; }
-  header.doc-header .meta { color: #666; font-size: 14px; }
-  h2 { border-bottom: 2px solid #ddd; padding-bottom: 6px; margin-top: 40px; font-size: 22px; }
-  h3 { margin-top: 28px; font-size: 17px; }
-  h4 { margin-top: 20px; font-size: 15px; color: #555; }
-  code, pre { font-family: "Noto Sans Mono", "SF Mono", Consolas, "Noto Sans JP", monospace; }
-  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.88em; }
-  pre { background: #2d2d2d; color: #f8f8f2; padding: 14px 16px; border-radius: 6px; overflow-x: auto; font-size: 0.82em; }
-  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 0.92em; }
-  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; vertical-align: top; }
-  th { background: #f4f4f4; }
-  .diagram { background: white; border: 1px solid #ddd; padding: 20px; border-radius: 6px; margin: 20px 0; text-align: center; overflow-x: auto; }
-  .diagram-caption { color: #666; font-size: 13px; margin-top: 8px; font-style: italic; }
-  .critical { padding: 12px 16px; margin: 16px 0; border-radius: 4px; border-left: 4px solid #d0021b; background: #ffe6e6; }
-  .warning { padding: 12px 16px; margin: 16px 0; border-radius: 4px; border-left: 4px solid #f5a623; background: #fff5e0; }
-  .good { padding: 12px 16px; margin: 16px 0; border-radius: 4px; border-left: 4px solid #22863a; background: #e6ffed; }
-  text { font-family: "Noto Sans JP", -apple-system, sans-serif; }
-  svg.arch-svg { width: 100%; max-width: 1080px; height: auto; display: block; margin: 0 auto; }
+  /* file-specific accent: crash は Danger #b22323 で「失敗 mode」を象徴 */
+  header.doc-header { border-bottom: 3px solid var(--danger-fg); }
 </style>
 </head>
 <body>
@@ -251,7 +231,7 @@
 <tr><td>pilot crash 検知</td><td>pilot session を `tmux kill-window` → administrator が 25 min cycle 内に検知 + re-spawn</td></tr>
 <tr><td>file mailbox 永続性</td><td>worker が mail 書き直後に kill → 新 pilot 起動 → mail を正しく読めることを verify</td></tr>
 <tr><td>state SSoT 整合</td><td>pilot crash 時、GitHub Project Board status と mailbox state が一致することを admin が verify</td></tr>
-<tr><td>tmux server crash recovery (#1360)</td><td>tmux server kill → 外部 cron が検知 → user の手動 recovery 手順が <code>rebuild-plan.md</code> に記載 (Phase 2 で自動化)</td></tr>
+<tr><td>tmux server crash recovery (#1360)</td><td>tmux server kill → 外部 cron が検知 → user の手動 recovery 手順が <code>rebuild-plan.html</code> に記載 (Phase 2 で自動化)</td></tr>
 </tbody>
 </table>
 
@@ -260,9 +240,9 @@
 <ul>
   <li>3 階層 spawn 機構: <a href="spawn-protocol.html">spawn-protocol.html</a> (placeholder)</li>
   <li>admin polling cycle (heartbeat check 含む): <a href="admin-cycle.html">admin-cycle.html</a> (placeholder)</li>
-  <li>9 P0 bug の crash 関連 (Bug #1674 orchestrator early-exit): <a href="failure-analysis.md">failure-analysis.md</a></li>
-  <li>不変条件 G (クラッシュ検知保証) + 新規 invariant X: <a href="invariant-fate-table.md">invariant-fate-table.md</a></li>
-  <li>tmux server crash recovery (ADR-042): <a href="adr-fate-table.md">adr-fate-table.md</a></li>
+  <li>9 P0 bug の crash 関連 (Bug #1674 orchestrator early-exit): <a href="failure-analysis.html">failure-analysis.html</a></li>
+  <li>不変条件 G (クラッシュ検知保証) + 新規 invariant X: <a href="invariant-fate-table.html">invariant-fate-table.html</a></li>
+  <li>tmux server crash recovery (ADR-042): <a href="adr-fate-table.html">adr-fate-table.html</a></li>
 </ul>
 
 <h2>10. 残課題 (次 session 以降)</h2>

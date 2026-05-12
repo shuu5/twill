@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>rebuild-plan — outline</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>rebuild-plan — outline</h1>
+  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+</header>
+
+<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で Strangler Fig 4 phase rebuild plan の詳細を実装する。draft-v1 §11 を発展、Phase 1 PoC (#1660 sanitize) の具体手順を deep-dive。</div>
+
+<h2>目的</h2>
+
+<p>新 architecture への移行 plan を Strangler Fig 4 phase + 各 phase の verify points + rollback path で仕様化する。Phase 1 PoC は Issue #1660 (SKIP_*_REASON sanitize) を新 architecture で再実装することで proof-of-concept とする。</p>
+
+<h2>想定 outline (次 session で実装)</h2>
+
+<ol>
+  <li><strong>Phase 1: PoC (Day 1-3)</strong> — 最小実装で 3 階層 + step verification + file mailbox + gate hook が動くことを実証
+    <ul>
+      <li>ADR-043 起票 (md 本体 + 本 spec directory を supplement として link)</li>
+      <li>新 helper 5 本作成 (mailbox.sh / step.sh / phase-gate.sh / spawn-tmux.sh / admin-cycle.sh、合計 ~200 lines)</li>
+      <li>SKILL.md 3 個 draft (phase-impl / worker-test-ready / administrator)</li>
+      <li>PreToolUse hook 設定 (<code>.claude/hooks/phase-gate.json</code>)</li>
+      <li>PoC 完遂: Issue #1660 sanitize を新 architecture で再実装 (6 step フロー、admin polling 検知 → phase-impl spawn → worker spawn → test-scaffold + green-impl + check → mail 集約 → status Implementing → phase-pr → branch protection auto-merge)</li>
+    </ul>
+  </li>
+  <li><strong>Phase 1 verify points (8 項目)</strong>
+    <ul>
+      <li>3 階層 spawn が動く (<code>tmux list-windows</code> で確認)</li>
+      <li>file mailbox が動く (<code>.mailbox/.../inbox.jsonl</code>)</li>
+      <li>step verification が動く (test 数増加 + RED / GREEN 確認)</li>
+      <li>gate hook が動く (Refined でない Issue に phase-impl 呼び出して deny)</li>
+      <li>admin polling が動く (CronCreate 25 min)</li>
+      <li>context 効率化 (admin token 使用量 &lt; 旧 su-observer)</li>
+      <li>fail-fast at step level (意図的 fail で step abort)</li>
+      <li>PR 完遂 (Issue #1660 auto-merge、Status=Merged)</li>
+    </ul>
+  </li>
+  <li><strong>Phase 2: dual-stack (Day 4-7)</strong> — 残り phase + 旧 freeze
+    <ul>
+      <li>残り 3 phase の SKILL.md (phase-explore / phase-refine / phase-pr)</li>
+      <li>残り worker 6 個の SKILL.md</li>
+      <li>tool-* 4 個 (rebrand from co-architect / project / utility / self-improve)</li>
+      <li>Project Board option 追加 (Explored / PR Reviewed の新規追加、Todo / InProgress / Done を Idea / Implementing / Merged に rename、option_id 維持)</li>
+      <li>Actions yaml 整理 (<code>archive-merged.yml</code> 新規、<code>auto-merge.yml</code> 改、<code>auto-refined.yml</code> / <code>project-status-done.yml</code> 削除)</li>
+      <li>旧 chain-runner.sh は freeze (新規修正禁止、in-flight Issue のみ実行)</li>
+    </ul>
+  </li>
+  <li><strong>Phase 3: cutover (Day 8-11)</strong> — 旧 bash 全削除
+    <ul>
+      <li>in-flight Issue 全完遂 or 新経路に migration</li>
+      <li>旧 bash 削除 (~5000 lines、<a href="deletion-inventory.html">deletion-inventory.html</a> 参照)</li>
+      <li><code>workflow-*</code> SKILL.md 13 個 削除</li>
+      <li>twl MCP server 極小化 (<a href="twl-mcp-integration.html">twl-mcp-integration.html</a> 参照)</li>
+      <li>chain SSoT 三重化撤廃 (<a href="ssot-design.html">ssot-design.html</a> 参照、chain.py / chain-steps.sh / chain 削除)</li>
+      <li>checkpoint dir 削除</li>
+    </ul>
+  </li>
+  <li><strong>Phase 4: cleanup (Day 12-14)</strong> — docs + 検証
+    <ul>
+      <li>README / CLAUDE.md / refs/ を新 architecture に整合</li>
+      <li>ADR Superseded マーク (<a href="adr-fate-table.html">adr-fate-table.html</a> の Superseded chain 順序に従う、Phase 4 最後に ADR-043 を Accepted 化)</li>
+      <li>bats regression test 全 PASS 確認</li>
+      <li>新規 bats test 追加 (file mailbox concurrent / phase-gate deny / step verification fail-fast / daemon deploy verify)</li>
+      <li>Project Board UI 設定 (Kanban 6-stage + Table view、Web UI 手動 or copyProjectV2)</li>
+      <li>Memory MCP に lesson 集約 (本 spec の deep-dive を doobidoo 保存)</li>
+      <li>ADR-037 番号重複正規化</li>
+    </ul>
+  </li>
+  <li><strong>rollback path</strong>
+    <ul>
+      <li>Phase 1 PoC 失敗 → 旧 chain-runner.sh で #1660 を再実装、本 spec 修正</li>
+      <li>Phase 2 dual-stack 中の問題 → 該当 phase を旧 chain にフォールバック</li>
+      <li>Phase 3 cutover 後の問題 → git revert (commit 単位で rollback、本 spec の rebuild commit を分離するため atomic rollback 可能)</li>
+      <li>Phase 4 後の問題 → Phase 4 cleanup commit を revert で旧 ADR Status を復元</li>
+    </ul>
+  </li>
+</ol>
+
+<h2>参照</h2>
+
+<ul>
+  <li><a href="overview.html">overview.html</a> §9 (rebuild plan overview)</li>
+  <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §8 (Phase 1 PoC での crash verify points)</li>
+  <li><a href="step-verification.html">step-verification.html</a> (Phase 1 PoC の核心 framework)</li>
+  <li><a href="ssot-design.html">ssot-design.html</a> §6 (Phase 1 PoC で検証する不変条件)</li>
+  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §6 (Phase 1 PoC で使う MCP tool)</li>
+  <li><a href="deletion-inventory.html">deletion-inventory.html</a> (Phase 3 削除対象詳細)</li>
+  <li><a href="regression-test-strategy.html">regression-test-strategy.html</a> (Phase 4 検証戦略)</li>
+  <li>既存 draft <code>draft-v1.html</code> §11 (原案、archive、図 5 timeline)</li>
+</ul>
+
+</body>
+</html>

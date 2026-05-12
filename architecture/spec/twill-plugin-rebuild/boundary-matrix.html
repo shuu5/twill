@@ -1,12 +1,21 @@
 <!DOCTYPE html>
-<html lang="ja"><head><meta charset="UTF-8"><title>boundary-matrix — placeholder</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
-<style>body{font-family:"Noto Sans JP",sans-serif;max-width:1100px;margin:0 auto;padding:24px;line-height:1.65}h1{border-bottom:3px solid #f5a623;padding-bottom:8px}.warning{background:#fff5e0;border-left:4px solid #f5a623;padding:12px 16px;margin:16px 0}</style>
-</head><body>
-<h1>boundary-matrix — placeholder</h1>
-<p><strong>status</strong>: placeholder (本 session 未実装、次 session で着手予定)</p>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>boundary-matrix — outline</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+</style>
+</head>
+<body>
 
-<div class="warning">本 file は <code>twill-plugin-rebuild</code> spec の placeholder。draft-v2 の 7 主要 file (README / overview / failure-analysis / adr-fate-table / invariant-fate-table / crash-failure-mode / step-verification) が先に実装され、本 file は次 session で内容実装される。</div>
+<header class="doc-header">
+  <h1>boundary-matrix — outline</h1>
+  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+</header>
+
+<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。draft-v2 の主要 file (README / overview / failure-analysis / adr-fate-table / invariant-fate-table / crash-failure-mode / step-verification / twl-mcp-integration / ssot-design) が先に実装され、本 file は次 session で content 実装される。</div>
 
 <h2>目的</h2>
 <p>administrator / pilot / worker / tool / phase の 5 entity の責務 boundary を行列形式で明示する。各 entity が何を行う / 行わない / 委譲する かを clean table で定義。</p>
@@ -24,7 +33,9 @@
 <h2>参照</h2>
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture)</li>
-  <li><a href="invariant-fate-table.md">invariant-fate-table.md</a> (各 entity の不変条件)</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (各 entity の不変条件)</li>
   <li>既存 ADR-002 (Controller 統合)、ADR-010 (Pilot active review)、ADR-017 (co-issue v2 Pilot/Worker isolation)</li>
 </ul>
-</body></html>
+
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>deletion-inventory — outline</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>deletion-inventory — outline</h1>
+  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+</header>
+
+<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で削除対象 60+ 件の詳細 inventory + 新規 helper 5 本の役割を実装する。draft-v1 §9 の内容を発展。</div>
+
+<h2>目的</h2>
+
+<p>新 spec で削除する既存 file (bash 5175 lines + workflow-* 13 個 + ADR Superseded 6 件 + checkpoint 系) と、新規追加する helper 5 本 (mailbox.sh / step.sh / phase-gate.sh / spawn-tmux.sh / admin-cycle.sh、合計 ~200 lines) の inventory を仕様化する。</p>
+
+<h2>想定 outline (次 session で実装)</h2>
+
+<ol>
+  <li><strong>削除対象 (bash orchestration ~5000 lines)</strong>
+    <ul>
+      <li><code>chain-runner.sh</code> (1932) / <code>autopilot-orchestrator.sh</code> (1508) / <code>issue-lifecycle-orchestrator.sh</code> (879) / <code>autopilot-launch.sh</code> (548) / <code>auto-merge.sh</code> (308)</li>
+      <li><code>spawn-controller.sh</code> / <code>cld-spawn</code> / <code>session-comm.sh</code> / <code>pseudo-pilot</code></li>
+      <li><code>mcp-watchdog.sh</code> / heartbeat-watcher / wave-progress-watchdog / pilot-fallback-monitor</li>
+      <li><code>autopilot-*.sh</code> 群 (~20 本)</li>
+      <li><code>merge-gate-*.sh</code> (10 本、step verification で代替)</li>
+      <li><code>cld-observe-any.sh</code> / observer-* monitoring scripts</li>
+    </ul>
+  </li>
+  <li><strong>削除対象 (chain SSoT 三重化 + checkpoint)</strong>
+    <ul>
+      <li><code>chain.py</code> CHAIN_STEPS (Python 側、<a href="ssot-design.html">ssot-design.html</a> 参照)</li>
+      <li><code>chain-steps.sh</code> (computed mirror)</li>
+      <li><code>chain</code> (slash command)</li>
+      <li><code>twl check --deps-integrity</code> (SSoT 同期不要なので廃止、<code>twl check --steps-integrity</code> に rename)</li>
+      <li><code>.autopilot/checkpoints/</code> / <code>.autopilot/issues/</code> / <code>.supervisor/events/</code></li>
+      <li><code>phase-review.json</code> (cross-pollution root cause)</li>
+    </ul>
+  </li>
+  <li><strong>削除対象 (skill 24 → 15)</strong>
+    <ul>
+      <li><code>workflow-pr-cycle</code> (DEPRECATED 確定)</li>
+      <li><code>workflow-*</code> 13 個 → worker-* に統合 or phase-* SKILL.md に inline</li>
+      <li><code>co-*</code> 7 個 → phase-* / tool-* に rebrand</li>
+    </ul>
+  </li>
+  <li><strong>削除対象 (twl MCP 7 hook → 1 hook)</strong>
+    <ul>
+      <li><code>twl_validate_merge</code> / <code>twl_validate_commit</code> / <code>twl_validate_status_transition</code> / <code>twl_validate_issue_create</code> / <code>twl_check_specialist</code> x 2 削除</li>
+      <li><code>twl_validate_deps</code> のみ保全 (deps.yaml syntax 確認)</li>
+      <li>詳細: <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §7 inventory</li>
+    </ul>
+  </li>
+  <li><strong>新規 helper 5 本 (~200 lines)</strong>
+    <ul>
+      <li><code>mailbox.sh</code> (~30 lines、file mailbox send / recv、flock atomic)</li>
+      <li><code>step.sh</code> (~80 lines、step verification framework、4 phase lifecycle)</li>
+      <li><code>phase-gate.sh</code> (~30 lines、PreToolUse hook handler、status check)</li>
+      <li><code>spawn-tmux.sh</code> (~30 lines、tmux new-window wrapper、3 階層共通)</li>
+      <li><code>admin-cycle.sh</code> (~30 lines、CronCreate handler、polling cycle)</li>
+    </ul>
+  </li>
+  <li><strong>保全対象</strong>
+    <ul>
+      <li>ADR 27 件 (詳細 <a href="adr-fate-table.html">adr-fate-table.html</a>)</li>
+      <li>不変条件 14 件 (詳細 <a href="invariant-fate-table.html">invariant-fate-table.html</a>)</li>
+      <li>refs 配下大半 (intervention-catalog / pitfalls-catalog / monitor-channel-catalog 等)</li>
+      <li>cli/twl/ の validate / status / config / mcp_server (極小化)</li>
+      <li>bats regression test 90+ (新規 5 件追加、削除なし)</li>
+    </ul>
+  </li>
+</ol>
+
+<h2>参照</h2>
+
+<ul>
+  <li><a href="overview.html">overview.html</a> §6 (構造的欠陥 3 種と不能化)</li>
+  <li><a href="failure-analysis.html">failure-analysis.html</a> (削除根拠の lesson)</li>
+  <li><a href="adr-fate-table.html">adr-fate-table.html</a> (ADR fate)</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (新規 invariant T-X が削除対象を unjustify)</li>
+  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §7 (MCP tool inventory)</li>
+  <li><a href="ssot-design.html">ssot-design.html</a> §4 (chain-runner.sh 廃止 migration)</li>
+  <li>既存 draft <code>draft-v1.html</code> §9 (原案、archive、bash 5175 → 200 lines の比較 bar chart)</li>
+</ul>
+
+</body>
+</html>

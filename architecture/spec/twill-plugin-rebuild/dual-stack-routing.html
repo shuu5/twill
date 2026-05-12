@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>dual-stack-routing — outline</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>dual-stack-routing — outline</h1>
+  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+</header>
+
+<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で Phase 2 dual-stack 期間中の Issue routing ルールを実装する。</div>
+
+<h2>目的</h2>
+
+<p>新 phase-* architecture と旧 chain-runner.sh が併存する Phase 2 期間中、各 Issue がどちらの flow で処理されるかの判定基準と routing 機構を仕様化する。移行完了 (Phase 3 cutover) 判定基準も明示。</p>
+
+<h2>想定 outline (次 session で実装)</h2>
+
+<ol>
+  <li><strong>routing 判定の SSoT</strong>
+    <ul>
+      <li>Issue label (<code>stack:new</code> or <code>stack:legacy</code>) を SSoT として運用</li>
+      <li>default: 新規 Issue は <code>stack:new</code>、in-flight Issue は <code>stack:legacy</code> 維持</li>
+    </ul>
+  </li>
+  <li><strong>routing flow</strong>
+    <ul>
+      <li>administrator polling が Issue を検知 → label を確認 → 新 stack なら phase-* spawn、旧 stack なら旧 co-autopilot 経由</li>
+      <li>共存中は両 stack の administrator (su-observer 旧 / administrator 新) が並列稼働</li>
+      <li>tmux window で stack 別 prefix (<code>phase-*</code> / <code>co-*</code>)、cross-stack mail 禁止</li>
+    </ul>
+  </li>
+  <li><strong>migration 経路 (旧 → 新)</strong>
+    <ul>
+      <li>in-flight Issue を新 stack に移行する手順 (status SSoT は GitHub 側で同じ、mail / state は新 stack 用に再初期化)</li>
+      <li>移行 cost (1 Issue あたり手動作業 ~10 min) と自動化可否</li>
+    </ul>
+  </li>
+  <li><strong>Phase 2 期間中の制約</strong>
+    <ul>
+      <li>新規 Issue は新 stack 必須 (label <code>stack:new</code> を default 化)</li>
+      <li>旧 stack は freeze (新規修正禁止、bug fix 以外の改修 PR を block)</li>
+      <li>両 stack の bats test を CI で並列実行</li>
+    </ul>
+  </li>
+  <li><strong>Phase 3 cutover 判定基準</strong>
+    <ul>
+      <li>旧 stack の in-flight Issue が全て Merged or 新 stack 移行完了</li>
+      <li>新 stack で 10+ Issue が安定完遂</li>
+      <li>bats regression 全 PASS (新 + 旧)</li>
+      <li>user 承認 (Phase 3 cutover は user 明示承認必須)</li>
+    </ul>
+  </li>
+  <li><strong>cutover 後の cleanup</strong>
+    <ul>
+      <li>旧 stack file 削除 (<a href="deletion-inventory.html">deletion-inventory.html</a> に従う)</li>
+      <li><code>stack:</code> label を全 Issue から削除</li>
+      <li>administrator (旧 su-observer rebrand) のみ稼働、co-* は archive</li>
+    </ul>
+  </li>
+</ol>
+
+<h2>参照</h2>
+
+<ul>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 2-3</li>
+  <li><a href="deletion-inventory.html">deletion-inventory.html</a> Phase 3 削除対象</li>
+  <li><a href="ssot-design.html">ssot-design.html</a> §4 (chain-runner.sh 廃止 migration、dual-stack 期間)</li>
+  <li>既存 ADR-024 (refined を label から Status field へ移行) の dual-stack 経験</li>
+</ul>
+
+</body>
+</html>
