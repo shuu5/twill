@@ -235,6 +235,7 @@ teardown() {
         echo \"exit:\$?\"
     "
     [[ "$output" == *"lockfile is a symlink"* ]]
+    [[ "$output" == *"exit:1"* ]]
 }
 
 @test "security: manifest_tombstone_entry rejects symlink lockfile" {
@@ -261,4 +262,5 @@ teardown() {
         echo \"exit:\$?\"
     "
     [[ "$output" == *"lockfile is a symlink"* ]]
+    [[ "$output" == *"exit:1"* ]]
 }
