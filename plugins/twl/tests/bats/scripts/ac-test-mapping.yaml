@@ -1,80 +1,55 @@
 mappings:
   - ac_index: 1
-    ac_text: "phase-review + top-level architecture/foo.md で worker-arch-doc-reviewer が含まれる"
-    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
-    test_name: "B-1: phase-review + top-level architecture/foo.md → worker-arch-doc-reviewer included (RED)"
+    ac_text: "_sanitize_skip_reason() ヘルパー関数を spawn-controller.sh 内に定義する (ASCII-only, printf '%s' 出力)"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-skip-reason-sanitize.bats"
+    test_name: "S6: _sanitize_skip_reason empty string returns empty"
     impl_files:
-      - "plugins/twl/scripts/pr-review-manifest.sh"
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
   - ac_index: 2
-    ac_text: "phase-review + nested-1 architecture/contexts/foo.md で worker-arch-doc-reviewer が含まれる"
-    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
-    test_name: "B-2: phase-review + nested-1 architecture/contexts/foo.md → worker-arch-doc-reviewer included (RED)"
+    ac_text: "L246-258 SKIP_PARALLEL_CHECK ブロックのサニタイズを _sanitize_skip_reason に統一"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-skip-reason-sanitize.bats"
+    test_name: "S1: tab in SKIP_PARALLEL_REASON is replaced in intervention-log"
     impl_files:
-      - "plugins/twl/scripts/pr-review-manifest.sh"
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 2
+    ac_text: "L246-258 SKIP_PARALLEL_CHECK ブロック - ESC 文字除去"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-skip-reason-sanitize.bats"
+    test_name: "S2: ESC char in SKIP_PARALLEL_REASON is replaced in intervention-log"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
   - ac_index: 3
-    ac_text: "phase-review + nested-2 architecture/decisions/sub/foo.md で worker-arch-doc-reviewer が含まれる"
-    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
-    test_name: "B-3: phase-review + nested-2 architecture/decisions/sub/foo.md → worker-arch-doc-reviewer included (RED)"
+    ac_text: "L383-389 SKIP_LAYER2 ブロックのサニタイズ統一 + echo→printf 化"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-skip-reason-sanitize.bats"
+    test_name: "S3: tab+newline+CR in SKIP_LAYER2_REASON -> single line append without tab in log"
     impl_files:
-      - "plugins/twl/scripts/pr-review-manifest.sh"
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+  - ac_index: 3
+    ac_text: "L383-389 SKIP_LAYER2 ブロック - BEL/BS 除去"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-skip-reason-sanitize.bats"
+    test_name: "S4: BEL+BS in SKIP_LAYER2_REASON are stripped in intervention-log"
+    impl_files:
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
   - ac_index: 4
-    ac_text: "merge-gate + top-level architecture/foo.md で worker-arch-doc-reviewer が含まれる"
-    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
-    test_name: "B-4: merge-gate + top-level architecture/foo.md → worker-arch-doc-reviewer included (RED)"
+    ac_text: "L516 SKIP_PILOT_REASON gate の DRY 化 (_sanitize_skip_reason 呼び出し)"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-skip-reason-sanitize.bats"
+    test_name: "S5: multiline+tab+CR in SKIP_PILOT_REASON -> sanitized in intervention-log (regression)"
     impl_files:
-      - "plugins/twl/scripts/pr-review-manifest.sh"
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
   - ac_index: 5
-    ac_text: "merge-gate + nested-1 architecture/contexts/foo.md で worker-arch-doc-reviewer が含まれる"
-    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
-    test_name: "B-5: merge-gate + nested-1 architecture/contexts/foo.md → worker-arch-doc-reviewer included (RED)"
+    ac_text: "新規 bats テスト spawn-controller-skip-reason-sanitize.bats (S1-S6)"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-skip-reason-sanitize.bats"
+    test_name: "S1: tab in SKIP_PARALLEL_REASON is replaced in intervention-log"
     impl_files:
-      - "plugins/twl/scripts/pr-review-manifest.sh"
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
   - ac_index: 6
-    ac_text: "merge-gate + nested-2 architecture/decisions/sub/foo.md で worker-arch-doc-reviewer が含まれる"
-    test_file: "plugins/twl/tests/bats/scripts/pr-review-manifest-mode-architecture.bats"
-    test_name: "B-6: merge-gate + nested-2 architecture/decisions/sub/foo.md → worker-arch-doc-reviewer included (RED)"
+    ac_text: "既存 bats テストが全 PASS (回帰なし) + C6 コメント更新"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-skip-parallel-log.bats"
+    test_name: "C6: 改行を含む REASON はサニタイズされてログ 1 行に収まる"
     impl_files:
-      - "plugins/twl/scripts/pr-review-manifest.sh"
-  # Issue #1561: pre-bash-refined-status-gate.sh Refined option ID 拡張
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
   - ac_index: 7
-    ac_text: "hook が gh project item-edit && \\b3d983780\\b + evidence なし で permissionDecision: deny JSON を出力する (AC1)"
-    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
-    test_name: "R1: gh project item-edit with 3d983780 (Refined option ID) + evidence なし → deny"
+    ac_text: "bash -n plugins/twl/skills/su-observer/scripts/spawn-controller.sh が syntax error なし"
+    test_file: "plugins/twl/tests/bats/scripts/spawn-controller-skip-reason-sanitize.bats"
+    test_name: "S6: _sanitize_skip_reason empty string returns empty"
     impl_files:
-      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
-  - ac_index: 8
-    ac_text: ".spec-review-session-*.json evidence あり → allow (AC2)"
-    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
-    test_name: "R2: gh project item-edit with 3d983780 + .spec-review-session-*.json あり → allow"
-    impl_files:
-      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
-  - ac_index: 9
-    ac_text: "Phase4-complete.json evidence あり → allow (AC2)"
-    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
-    test_name: "R3: gh project item-edit with 3d983780 + Phase4-complete.json あり → allow"
-    impl_files:
-      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
-  - ac_index: 10
-    ac_text: "既存 47fc9ee4 (In Progress option ID) check がリグレッションしない - deny (AC7)"
-    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
-    test_name: "R4: gh project item-edit with 47fc9ee4 (In Progress option ID) + evidence なし → deny (regression)"
-    impl_files:
-      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
-  - ac_index: 11
-    ac_text: "既存 47fc9ee4 check がリグレッションしない - allow with evidence (AC7)"
-    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
-    test_name: "R5: gh project item-edit with 47fc9ee4 + .spec-review-session-*.json あり → allow (regression)"
-    impl_files:
-      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
-  - ac_index: 12
-    ac_text: "3d9837801 (部分一致) は word boundary でマッチしない - no-op (AC4 bypass なし確認)"
-    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
-    test_name: "R6: 3d9837801 (partial match of 3d983780) + evidence なし → no-op (word boundary guard)"
-    impl_files:
-      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
-  - ac_index: 13
-    ac_text: "deny メッセージに /twl:co-issue refine と ADR-024 が含まれる (AC6)"
-    test_file: "plugins/twl/tests/bats/scripts/refined-status-gate-refined-option.bats"
-    test_name: "R7: deny メッセージに /twl:co-issue refine および ADR-024 が含まれる"
-    impl_files:
-      - "plugins/twl/scripts/hooks/pre-bash-refined-status-gate.sh"
+      - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"

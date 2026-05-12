@@ -8,7 +8,7 @@
 # C3: SUPERVISOR_DIR=$(mktemp -d) で実 .supervisor/intervention-log.md を汚染しない
 # C4: SUPERVISOR_DIR 不在ディレクトリでも mkdir -p が成功し append される
 # C5: append 失敗時（SUPERVISOR_DIR=/dev/null/x 等）に WARN 出力 + spawn 継続（fail-open）
-# C6: SKIP_PARALLEL_REASON=$'line1\nline2' の場合、ログ行が 1 行に保たれる
+# C6: SKIP_PARALLEL_REASON=$'line1\nline2' の場合、ログ行が 1 行に保たれる (\n/\r → 空白 (helper 化後は制御文字全般))
 
 load '../helpers/common'
 
@@ -243,7 +243,7 @@ teardown() {
 }
 
 # ---------------------------------------------------------------------------
-# C6: SKIP_PARALLEL_REASON=$'line1\nline2' の場合、ログ行が 1 行に保たれる
+# C6: SKIP_PARALLEL_REASON=$'line1\nline2' の場合、ログ行が 1 行に保たれる (\n/\r → 空白 (helper 化後は制御文字全般))
 # RED: 自動記録実装がないため fail する（サニタイズ実装なし）
 # ---------------------------------------------------------------------------
 
