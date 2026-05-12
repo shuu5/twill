@@ -10,6 +10,12 @@
 _MANIFEST_SCHEMA_VERSION=1
 WINDOW_MANIFEST_FILE="${WINDOW_MANIFEST_FILE:-$HOME/.local/share/twl/window-manifest.json}"
 
+# Security: WINDOW_MANIFEST_FILE must be under $HOME
+if [[ "$WINDOW_MANIFEST_FILE" != "$HOME/"* ]]; then
+    echo "WINDOW_MANIFEST_FILE must be under \$HOME (got: $WINDOW_MANIFEST_FILE)" >&2
+    exit 1
+fi
+
 # _manifest_atomic_write <json>
 # temp ファイル生成 → rename でアトミック上書きする。
 _manifest_atomic_write() {
@@ -72,6 +78,12 @@ manifest_append_entry() {
     dir="$(dirname "$WINDOW_MANIFEST_FILE")"
     mkdir -p "$dir"
 
+    # Security: reject symlink lockfile
+    if [[ -L "$lockfile" ]]; then
+        echo "lockfile is a symlink: $lockfile" >&2
+        return 1
+    fi
+
     (
         flock -x 9
         local current
@@ -110,6 +122,12 @@ manifest_tombstone_entry() {
     local dir
     dir="$(dirname "$WINDOW_MANIFEST_FILE")"
     mkdir -p "$dir"
+
+    # Security: reject symlink lockfile
+    if [[ -L "$lockfile" ]]; then
+        echo "lockfile is a symlink: $lockfile" >&2
+        return 1
+    fi
 
     (
         flock -x 9

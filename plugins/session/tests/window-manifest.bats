@@ -7,11 +7,16 @@ MANIFEST_LIB="$SCRIPT_DIR/window-manifest.sh"
 
 setup() {
     SANDBOX="$(mktemp -d)"
-    export WINDOW_MANIFEST_FILE="$SANDBOX/window-manifest.json"
+    # Use $HOME-based path to satisfy WINDOW_MANIFEST_FILE security policy
+    local _manifest_dir="$HOME/.local/share/twl"
+    mkdir -p "$_manifest_dir"
+    export WINDOW_MANIFEST_FILE="$_manifest_dir/window-manifest-test-${BATS_TEST_NUMBER:-0}.json"
 }
 
 teardown() {
     [[ -n "$SANDBOX" && -d "$SANDBOX" ]] && rm -rf "$SANDBOX"
+    rm -f "$WINDOW_MANIFEST_FILE" "${WINDOW_MANIFEST_FILE}.lock" 2>/dev/null || true
+    rm -f "${WINDOW_MANIFEST_FILE}".* 2>/dev/null || true
 }
 
 # ---------------------------------------------------------------------------
@@ -53,9 +58,11 @@ teardown() {
         "/home/user/projects/twill" "/home/user/projects/twill" "wt"
 
     # 中間 .XXXXXX 一時ファイルが残っていないことを確認（.lock ファイルは除外）
-    local leftover
-    leftover=$(find "$SANDBOX" -name "window-manifest.json.*" \
-        ! -name "window-manifest.json.lock" 2>/dev/null || true)
+    local manifest_dir manifest_base leftover
+    manifest_dir="$(dirname "$WINDOW_MANIFEST_FILE")"
+    manifest_base="$(basename "$WINDOW_MANIFEST_FILE")"
+    leftover=$(find "$manifest_dir" -name "$manifest_base.*" \
+        ! -name "$manifest_base.lock" 2>/dev/null || true)
     [[ -z "$leftover" ]]
 }
 
@@ -192,7 +199,7 @@ teardown() {
     # Scenario: $HOME 配下パス設定時の正常動作
     # WHEN: WINDOW_MANIFEST_FILE=$HOME/.local/share/twl/custom.json を設定した状態でスクリプトを source する
     # THEN: エラーなく正常に source される
-    local custom_path="$SANDBOX/custom.json"
+    local custom_path="$HOME/.local/share/twl/custom-test.json"
     run bash -c "
         export HOME='$HOME'
         export WINDOW_MANIFEST_FILE='$custom_path'
