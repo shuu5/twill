@@ -10,15 +10,19 @@
 _MANIFEST_SCHEMA_VERSION=1
 WINDOW_MANIFEST_FILE="${WINDOW_MANIFEST_FILE:-$HOME/.local/share/twl/window-manifest.json}"
 
-# Security: WINDOW_MANIFEST_FILE must be under $HOME
+# Security: WINDOW_MANIFEST_FILE must be under $HOME (path traversal prevention)
 if [[ -z "$HOME" ]]; then
     echo "WINDOW_MANIFEST_FILE must be under \$HOME (HOME is not set)" >&2
     return 1 2>/dev/null || exit 1
 fi
-if [[ "$WINDOW_MANIFEST_FILE" != "$HOME/"* ]]; then
+# Normalize via realpath to prevent $HOME/../../etc/passwd traversal
+_MANIFEST_CANONICAL="$(realpath -m -- "$WINDOW_MANIFEST_FILE" 2>/dev/null || printf '%s' "$WINDOW_MANIFEST_FILE")"
+if [[ "$_MANIFEST_CANONICAL" != "$HOME/"* ]]; then
     echo "WINDOW_MANIFEST_FILE must be under \$HOME (got: $WINDOW_MANIFEST_FILE)" >&2
+    unset _MANIFEST_CANONICAL
     return 1 2>/dev/null || exit 1
 fi
+unset _MANIFEST_CANONICAL
 
 # _manifest_atomic_write <json>
 # temp ファイル生成 → rename でアトミック上書きする。
