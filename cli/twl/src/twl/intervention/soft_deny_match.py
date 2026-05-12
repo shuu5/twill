@@ -9,8 +9,10 @@ exit code:
 Usage:
   python3 -m twl.intervention.soft_deny_match \\
     --prompt-context "<pane text>" \\
+    [--rules-path <path-to-soft-deny-rules.md>] \\
     [--session-id <id>] \\
-    [--observation-dir <dir>]
+    [--observation-dir <dir>] \\
+    [--count-category <rule_id>]
 """
 
 import argparse
@@ -20,6 +22,7 @@ import os
 import pathlib
 import re
 import sys
+import tempfile
 from typing import Any
 
 
@@ -27,8 +30,11 @@ from typing import Any
 # Rules loading
 # ---------------------------------------------------------------------------
 
-def _find_rules_file() -> pathlib.Path:
-    """soft-deny-rules.md を探す。SOFT_DENY_RULES_PATH 環境変数を優先する。"""
+def _find_rules_file(rules_path_arg: str | None = None) -> pathlib.Path:
+    """soft-deny-rules.md を探す。優先順位: 引数 > 環境変数 > 相対パス。"""
+    if rules_path_arg:
+        return pathlib.Path(rules_path_arg)
+
     env_path = os.environ.get("SOFT_DENY_RULES_PATH")
     if env_path:
         return pathlib.Path(env_path)
@@ -73,7 +79,6 @@ def load_rules(rules_path: pathlib.Path) -> list[dict[str, Any]]:
     try:
         import yaml  # type: ignore
     except ImportError:
-        # PyYAML unavailable: basic fallback (should not happen in production)
         yaml = None  # type: ignore
 
     text = rules_path.read_text(encoding="utf-8")
@@ -84,10 +89,13 @@ def load_rules(rules_path: pathlib.Path) -> list[dict[str, Any]]:
         return []
 
     if yaml is None:
-        # yaml unavailable: parse manually (minimal)
         return []
 
-    data = yaml.safe_load(yaml_text)
+    try:
+        data = yaml.safe_load(yaml_text)
+    except Exception:
+        return []
+
     if not isinstance(data, dict):
         return []
     return data.get("rules", [])
@@ -115,14 +123,20 @@ def match_rules(
     for rule in escalate_rules:
         regex = rule.get("regex", "")
         rule_id = rule.get("id", "unknown")
-        if regex and re.search(regex, prompt_context):
-            return "match-escalate", rule_id
+        try:
+            if regex and re.search(regex, prompt_context):
+                return "match-escalate", rule_id
+        except re.error:
+            continue
 
     for rule in confirm_rules:
         regex = rule.get("regex", "")
         rule_id = rule.get("id", "unknown")
-        if regex and re.search(regex, prompt_context):
-            return "match-confirm", rule_id
+        try:
+            if regex and re.search(regex, prompt_context):
+                return "match-confirm", rule_id
+        except re.error:
+            continue
 
     return "no-match", None
 
@@ -130,6 +144,14 @@ def match_rules(
 # ---------------------------------------------------------------------------
 # soft-deny-counter.json recording
 # ---------------------------------------------------------------------------
+
+_SESSION_ID_PATTERN = re.compile(r'^[A-Za-z0-9._-]+$')
+
+
+def _validate_session_id(session_id: str) -> bool:
+    """session_id がパストラバーサルに安全な文字のみを含むか検証する。"""
+    return bool(_SESSION_ID_PATTERN.fullmatch(session_id))
+
 
 def record_soft_deny_counter(
     observation_dir: str,
@@ -140,7 +162,18 @@ def record_soft_deny_counter(
 
     counter json 形式: {"entries": [{"ts": "iso8601", "category": "rule_id"}]}
     """
-    counter_dir = pathlib.Path(observation_dir) / session_id
+    # パストラバーサル防止: session_id を allowlist で検証
+    if not _validate_session_id(session_id):
+        raise ValueError(f"invalid session_id (unsafe chars): {session_id!r}")
+
+    obs_root = pathlib.Path(observation_dir).resolve()
+    counter_dir = obs_root / session_id
+    # 結合後のパスが obs_root 配下であることを検証
+    try:
+        counter_dir.relative_to(obs_root)
+    except ValueError:
+        raise ValueError(f"session_id causes path traversal: {session_id!r}")
+
     counter_dir.mkdir(parents=True, exist_ok=True)
     counter_file = counter_dir / "soft-deny-counter.json"
 
@@ -160,10 +193,41 @@ def record_soft_deny_counter(
     }
     data["entries"].append(entry)
 
-    # atomic write (write + replace)
-    tmp_file = counter_file.with_suffix(".tmp")
-    tmp_file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-    tmp_file.replace(counter_file)
+    # atomic write (mkstemp で一意な tmp ファイルを使用)
+    fd, tmp_path = tempfile.mkstemp(dir=counter_dir, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False)
+        pathlib.Path(tmp_path).replace(counter_file)
+    except OSError:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+
+def count_soft_deny_category(
+    observation_dir: str,
+    session_id: str,
+    category: str,
+) -> int:
+    """指定カテゴリの soft_deny 検知回数を返す（soft-deny-counter.json から集計）。"""
+    if not _validate_session_id(session_id):
+        return 0
+
+    obs_root = pathlib.Path(observation_dir).resolve()
+    counter_file = obs_root / session_id / "soft-deny-counter.json"
+
+    if not counter_file.exists():
+        return 0
+
+    try:
+        data = json.loads(counter_file.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return 0
+
+    return sum(1 for e in data.get("entries", []) if e.get("category") == category)
 
 
 # ---------------------------------------------------------------------------
@@ -176,8 +240,13 @@ def main() -> None:
     )
     parser.add_argument(
         "--prompt-context",
-        required=True,
-        help="tmux pane から取得した permission UI の文脈テキスト",
+        default=None,
+        help="tmux pane から取得した permission UI の文脈テキスト（--count-category 使用時は省略可）",
+    )
+    parser.add_argument(
+        "--rules-path",
+        default=None,
+        help="soft-deny-rules.md のパス（省略時は SOFT_DENY_RULES_PATH 環境変数または自動探索）",
     )
     parser.add_argument(
         "--session-id",
@@ -189,12 +258,33 @@ def main() -> None:
         default=".observation",
         help="soft-deny-counter.json を格納するディレクトリ（default: .observation）",
     )
+    parser.add_argument(
+        "--count-category",
+        default=None,
+        help="指定カテゴリの soft_deny 検知回数を stdout に出力して終了（照合は行わない）",
+    )
     args = parser.parse_args()
 
+    # --count-category モード: 指定カテゴリの回数を返して終了
+    if args.count_category is not None:
+        if not args.session_id:
+            print("0")
+            sys.exit(0)
+        count = count_soft_deny_category(
+            observation_dir=args.observation_dir,
+            session_id=args.session_id,
+            category=args.count_category,
+        )
+        print(str(count))
+        sys.exit(0)
+
+    # 照合モード: --prompt-context 必須
+    if not args.prompt_context:
+        parser.error("--prompt-context is required when not using --count-category")
+
     # ルール読み込み
-    rules_path = _find_rules_file()
+    rules_path = _find_rules_file(args.rules_path)
     if not rules_path.exists():
-        # ルールファイルが見つからない場合は no-match として扱う
         print("no-match")
         print("warning: soft-deny-rules.md not found, defaulting to no-match", file=sys.stderr)
         sys.exit(0)
@@ -227,7 +317,7 @@ def main() -> None:
                 session_id=args.session_id,
                 category=matched_rule_id,
             )
-        except OSError as e:
+        except (OSError, ValueError) as e:
             print(f"warning: soft-deny-counter.json 記録失敗: {e}", file=sys.stderr)
 
     sys.exit(exit_code)

@@ -5,7 +5,7 @@ schema_version: 1
 # layer: confirm = Layer 1 Confirm 昇格, escalate = Layer 2 Escalate 昇格
 rules:
   - id: code-from-external
-    regex: "(curl|wget)\\s+(-[a-zA-Z]+\\s+)*https?://.*\\.sh\\s*\\|\\s*(bash|sh|sudo)"
+    regex: "(curl|wget)\\s+\\S.*\\.sh\\s*\\|\\s*(bash|sh|sudo)"
     layer: confirm
     rationale: "外部スクリプトの直接実行はコード審査を迂回するリスクがある"
   - id: irreversible-local-destruction

@@ -142,7 +142,7 @@ cat > "$OBSERVATION_DIR/${TIMESTAMP}-${PATTERN_ID}.json" <<JSON
   "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
   "pattern_id": "${PATTERN_ID}",
   "layer": "auto",
-  "issue_num": ${ISSUE_NUM},
+  "issue_num": ${ISSUE_NUM:-null},
   "branch": "${BRANCH}",
   "action_taken": "${ACTION_TAKEN}",
   "result": "${RESULT}",
