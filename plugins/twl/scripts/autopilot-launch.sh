@@ -352,8 +352,14 @@ fi
 if [[ -n "$WORKTREE_DIR" ]]; then
   LAUNCH_DIR="$WORKTREE_DIR"
 elif [[ -d "$EFFECTIVE_PROJECT_DIR/.bare" ]]; then
-  # fallback: bare repo で worktree 作成失敗時は main/ で起動
-  LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR/main"
+  # ERROR(#1684/invariant B + ADR-008): bare repo で worktree 作成失敗時に main/ で起動するのは危険。
+  # _launch_dir_main_guard: Worker が main ブランチで動作するリスクを防ぐため、worktree 不在なら fail-closed。
+  # 根拠: 不変条件 B (Worktree ライフサイクル Pilot 専任) + ADR-008 (worktree lifecycle Pilot ownership)。
+  echo "ERROR: Worktree creation failed for Issue #${ISSUE} and bare repo was detected." >&2
+  echo "       Refusing to launch Worker on main/ (LAUNCH_DIR main guard — invariant B + ADR-008)." >&2
+  echo "       Fix worktree creation or specify --worktree-dir explicitly." >&2
+  record_failure "main_launch_guard: worktree creation failed, refusing main fallback (#1684/invariant B+ADR-008)" "launch_worker"
+  exit 1
 else
   LAUNCH_DIR="$EFFECTIVE_PROJECT_DIR"
 fi
