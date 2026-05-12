@@ -173,3 +173,16 @@ tests:
     type: test
     path: tests/issue-1032-session-comm-strategy.bats
     description: "Issue #1032: session-comm Strategy pattern bats tests（AC1-AC9）"
+
+# Issue #973: permission-ui-response 自動代理応答対応（cross-plugin 依存）
+cross_plugin_dependencies:
+  # plugins/session/scripts/cld-observe-any は plugins/twl/commands/intervene-auto.md の
+  # permission-ui-response パターンと連携する
+  - component: intervene-auto
+    plugin: twl
+    path: plugins/twl/commands/intervene-auto.md
+    reason: "permission-ui-response パターンで PERMISSION-PROMPT event への自動代理応答を実装"
+  - component: soft_deny_match
+    plugin: twl
+    path: cli/twl/src/twl/intervention/soft_deny_match.py
+    reason: "soft_deny ルール照合ヘルパー (yaml load + regex 突合)"

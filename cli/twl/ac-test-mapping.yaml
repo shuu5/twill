@@ -1,115 +1,77 @@
 mappings:
-  - ac_index: "1"
-    ac_text: "4 MCP validator tools return HookOutput schema-compliant JSON (no extra fields)"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC1StatusTransitionHookOutputSchema::test_ac1_no_op_not_item_edit_conforms_to_schema"
+  - ac_index: 1
+    ac_text: "cld-observe-any PERMISSION-PROMPT emit_event を拡張し prompt_context と options フィールドを追加する"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-safe.bats"
+    test_name: "ac4-safe-pre1: intervene-auto.md に --pattern permission-ui-response が定義されている"
     impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "1"
-    ac_text: "twl_validate_status_transition deny case conforms to HookOutput schema"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC1StatusTransitionHookOutputSchema::test_ac1_deny_case_conforms_to_schema"
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: 2
+    ac_text: "intervene-auto.md に --pattern permission-ui-response を追加し soft_deny_match.py を新設する"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-safe.bats"
+    test_name: "ac4-safe-pre2: soft_deny_match.py が cli/twl/src/twl/intervention/ に存在する"
     impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "1"
-    ac_text: "twl_validate_status_transition allow with evidence conforms to HookOutput schema"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC1StatusTransitionHookOutputSchema::test_ac1_allow_with_evidence_conforms_to_schema"
+      - "plugins/twl/commands/intervene-auto.md"
+      - "cli/twl/src/twl/intervention/soft_deny_match.py"
+
+  - ac_index: 3
+    ac_text: "soft-deny-rules.md を新設し schema_version/id/regex/layer/rationale フィールドを持つ yaml ルールを定義する"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-deny-confirm.bats"
+    test_name: "ac4-confirm-pre1: soft-deny-rules.md が存在する"
     impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "1"
-    ac_text: "twl_validate_issue_create no-op conforms to HookOutput schema"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC1IssueCreateHookOutputSchema::test_ac1_no_op_not_gh_issue_create_conforms_to_schema"
+      - "plugins/twl/skills/su-observer/refs/soft-deny-rules.md"
+
+  - ac_index: 4
+    ac_text: "bats integration test 3 ケース (safe/deny-confirm/deny-escalate) を追加する"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-safe.bats"
+    test_name: "ac4-safe-6: intervene-auto --pattern permission-ui-response が safe prompt で Layer 0 Auto 動作をする（統合）"
     impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "1"
-    ac_text: "twl_validate_issue_create deny case conforms to HookOutput schema"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC1IssueCreateHookOutputSchema::test_ac1_deny_case_conforms_to_schema"
+      - "plugins/twl/commands/intervene-auto.md"
+      - "cli/twl/src/twl/intervention/soft_deny_match.py"
+      - "plugins/twl/skills/su-observer/refs/soft-deny-rules.md"
+
+  - ac_index: 5
+    ac_text: "ドキュメント整合性 pitfalls-catalog/monitor-channel-catalog/intervention-catalog/observation-pattern-catalog 更新"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-safe.bats"
+    test_name: "ac4-safe-5: intervene-auto.md に InterventionRecord 記録フローが記述されている"
     impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "1"
-    ac_text: "twl_validate_merge merge guard result conforms to HookOutput schema"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC1ValidateMergeHookOutputSchema::test_ac1_merge_guard_result_conforms_to_schema"
+      - "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md"
+      - "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md"
+      - "plugins/twl/refs/intervention-catalog.md"
+      - "plugins/twl/refs/observation-pattern-catalog.md"
+
+  - ac_index: 6
+    ac_text: "regex 正確性 verify (一致4件/不一致3件/ANSI負荷1件/--force state=unknown 1件 を bats で検証)"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-deny-confirm.bats"
+    test_name: "ac4-confirm-2: fixture に curl | bash が含まれている"
     impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "1"
-    ac_text: "twl_validate_merge timeout result conforms to HookOutput schema"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC1ValidateMergeHookOutputSchema::test_ac1_merge_timeout_result_conforms_to_schema"
+      - "plugins/session/scripts/cld-observe-any"
+
+  - ac_index: 7
+    ac_text: "ADR-014 3 層 Auto/Confirm/Escalate プロトコル整合性 verify (soft_deny state tracking)"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-deny-escalate.bats"
+    test_name: "ac7-escalate-1: soft_deny_match.py が soft-deny-counter.json への記録をサポートする"
     impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "1"
-    ac_text: "twl_validate_commit no violations conforms to HookOutput schema"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC1ValidateCommitHookOutputSchema::test_ac1_commit_no_violations_conforms_to_schema"
+      - "cli/twl/src/twl/intervention/soft_deny_match.py"
+
+  - ac_index: 8
+    ac_text: "ADR-024 に従い specialist review 完了後 Status=Refined に遷移する（プロセス AC）"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-safe.bats"
+    test_name: "ac4-safe-pre1: intervene-auto.md に --pattern permission-ui-response が定義されている"
+    impl_files: []
+    # impl_files 推定失敗: プロセス AC のため実装ファイルなし
+
+  - ac_index: 9
+    ac_text: "cross-plugin deps.yaml 整合確認 (plugins/session ↔ plugins/twl)"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-safe.bats"
+    test_name: "ac4-safe-pre2: soft_deny_match.py が cli/twl/src/twl/intervention/ に存在する"
     impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "1"
-    ac_text: "twl_validate_commit timeout result conforms to HookOutput schema"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC1ValidateCommitHookOutputSchema::test_ac1_commit_timeout_result_conforms_to_schema"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "2"
-    ac_text: "No legacy decision='allow'/'deny' in transformed output (status_transition)"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC2NoLegacyDecisionEnum::test_ac2_status_transition_no_allow_decision"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "2"
-    ac_text: "No legacy decision='allow'/'deny' in transformed output (issue_create)"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC2NoLegacyDecisionEnum::test_ac2_issue_create_no_allow_decision"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "3"
-    ac_text: "Gate behavioral compatibility: status_transition deny maps to block"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC3BehavioralCompatibility::test_ac3_status_transition_deny_maps_to_block"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "3"
-    ac_text: "Gate behavioral compatibility: status_transition allow is not block"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC3BehavioralCompatibility::test_ac3_status_transition_allow_is_not_block"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "3"
-    ac_text: "Gate behavioral compatibility: issue_create deny maps to block"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC3BehavioralCompatibility::test_ac3_issue_create_deny_maps_to_block"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "3"
-    ac_text: "Gate behavioral compatibility: merge failure maps to block"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC3BehavioralCompatibility::test_ac3_merge_failure_maps_to_block"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "3"
-    ac_text: "Gate behavioral compatibility: commit violations map to block"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC3BehavioralCompatibility::test_ac3_commit_violations_map_to_block"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "4"
-    ac_text: "evidence_path not top-level HookOutput key (status_transition)"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC4EvidenceInfoPreserved::test_ac4_evidence_path_not_top_level_key"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "4"
-    ac_text: "evidence_path info preserved in reason or systemMessage"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC4EvidenceInfoPreserved::test_ac4_evidence_path_info_in_reason_or_systemmessage"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
-  - ac_index: "4"
-    ac_text: "evidence_path not top-level HookOutput key (issue_create)"
-    test_file: "tests/test_issue_1614_hook_output_schema.py"
-    test_name: "TestAC4EvidenceInfoPreserved::test_ac4_issue_create_evidence_path_not_top_level"
-    impl_files:
-      - "cli/twl/src/twl/mcp_server/tools.py"
+      - "plugins/twl/deps.yaml"
+      - "plugins/session/deps.yaml"
+
+  - ac_index: 10
+    ac_text: "ADR-024 改訂のための別 Issue 起票（プロセス AC）"
+    test_file: "plugins/twl/tests/bats/permission-ui-response-safe.bats"
+    test_name: "ac4-safe-pre1: intervene-auto.md に --pattern permission-ui-response が定義されている"
+    impl_files: []
+    # impl_files 推定失敗: プロセス AC のため実装ファイルなし

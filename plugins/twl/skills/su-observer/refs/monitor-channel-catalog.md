@@ -15,7 +15,7 @@ Wave 開始時に本カタログから Wave 種別に応じたチャネルを選
 | NON-TERMINAL | `>>> 実装完了:` 後の chain 不遷移 | 2分 | Confirm |
 | BUDGET-LOW | 5h rolling budget 残量 | token残量 40分以下 or cycle reset まで 5分以下（設定可） | Auto |
 | BUDGET-ALERT | Monitor watcher が検知した budget threshold 超過 | threshold_percent (default 90%) | Auto |
-| PERMISSION-PROMPT | Worker window の permission prompt 出現（`1. Yes, proceed` 等） | 即時（thinking 中でも emit） | Confirm |
+| PERMISSION-PROMPT | Worker window の permission prompt 出現（`1. Yes, proceed` 等） | 即時（thinking 中でも emit） | Auto（deny rule 該当時 Confirm/Escalate 昇格） |
 | **PILOT-PHASE-COMPLETE** | Pilot 内部 chain の Phase/Issue 完了 signal | 即時 | Auto |
 | **PILOT-ISSUE-MERGED** | Pilot が merge-gate で Issue merge を完了した signal | 即時 | Auto |
 | **PILOT-WAVE-COLLECTED** | Pilot が wave-collect を完了した signal | 即時 | Auto |
