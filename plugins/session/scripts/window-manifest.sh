@@ -11,9 +11,13 @@ _MANIFEST_SCHEMA_VERSION=1
 WINDOW_MANIFEST_FILE="${WINDOW_MANIFEST_FILE:-$HOME/.local/share/twl/window-manifest.json}"
 
 # Security: WINDOW_MANIFEST_FILE must be under $HOME
+if [[ -z "$HOME" ]]; then
+    echo "WINDOW_MANIFEST_FILE must be under \$HOME (HOME is not set)" >&2
+    return 1 2>/dev/null || exit 1
+fi
 if [[ "$WINDOW_MANIFEST_FILE" != "$HOME/"* ]]; then
     echo "WINDOW_MANIFEST_FILE must be under \$HOME (got: $WINDOW_MANIFEST_FILE)" >&2
-    exit 1
+    return 1 2>/dev/null || exit 1
 fi
 
 # _manifest_atomic_write <json>

@@ -186,6 +186,7 @@ teardown() {
     # WHEN: WINDOW_MANIFEST_FILE=/tmp/evil.json を設定した状態でスクリプトを source する
     # THEN: stderr に「WINDOW_MANIFEST_FILE must be under $HOME」を含むエラーを出力し、exit ステータス 1 を返す
     run bash -c "
+        set -e
         export HOME='$HOME'
         export WINDOW_MANIFEST_FILE='/tmp/evil.json'
         source '$MANIFEST_LIB'
