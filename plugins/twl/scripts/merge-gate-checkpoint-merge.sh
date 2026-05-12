@@ -16,6 +16,10 @@ POST_FIX_VERIFY_FINDINGS=$(python3 -m twl.autopilot.checkpoint read --step post-
 # ISSUE_NUMBER 設定時は phase-review-{N}.json findings を優先（cross-pollution 防止）
 _issue_number_args() {
   if [[ -n "${ISSUE_NUMBER:-}" ]]; then
+    # bash 側 allowlist バリデーション（パストラバーサル防止、Issue #1703 security fix）
+    if [[ ! "${ISSUE_NUMBER}" =~ ^[1-9][0-9]{0,6}$ ]]; then
+      return 0  # 不正値は無視して shared checkpoint を使う（フォールバック）
+    fi
     echo "--issue-number ${ISSUE_NUMBER}"
   fi
 }

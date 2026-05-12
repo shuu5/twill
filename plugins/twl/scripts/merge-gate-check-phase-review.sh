@@ -16,6 +16,10 @@ FORCE="${1:-}"
 # 不在時は phase-review.json にフォールバックする（cross-pollution 防止）。
 _issue_number_args() {
   if [[ -n "${ISSUE_NUMBER:-}" ]]; then
+    # bash 側 allowlist バリデーション（パストラバーサル防止、Issue #1703 security fix）
+    if [[ ! "${ISSUE_NUMBER}" =~ ^[1-9][0-9]{0,6}$ ]]; then
+      return 0  # 不正値は無視して shared checkpoint を使う（フォールバック）
+    fi
     echo "--issue-number ${ISSUE_NUMBER}"
   fi
 }
@@ -45,7 +49,8 @@ _resolve_checkpoint_file() {
     dir="${dir:-.autopilot/checkpoints}"
   fi
   # per-issue ファイルが存在すればそちらを優先（Issue #1703）
-  if [[ -n "${ISSUE_NUMBER:-}" && -f "${dir}/phase-review-${ISSUE_NUMBER}.json" ]]; then
+  # bash 側 allowlist バリデーション: ISSUE_NUMBER は数字のみ許可（パストラバーサル防止）
+  if [[ -n "${ISSUE_NUMBER:-}" && "${ISSUE_NUMBER}" =~ ^[1-9][0-9]{0,6}$ && -f "${dir}/phase-review-${ISSUE_NUMBER}.json" ]]; then
     echo "${dir}/phase-review-${ISSUE_NUMBER}.json"
   else
     echo "${dir}/phase-review.json"

@@ -37,14 +37,14 @@ teardown() {
 # checkpoint write helper (uses AUTOPILOT_DIR from common_setup)
 _write_checkpoint() {
   local step="$1"
-  local status="$2"
+  local ckpt_status="$2"  # renamed from 'status' to avoid conflict with bats $status variable
   local findings="${3:-[]}"
   local issue_number="${4:-}"
 
   local args=(
     python3 -m twl.autopilot.checkpoint write
     --step "$step"
-    --status "$status"
+    --status "$ckpt_status"
     --findings "$findings"
     --autopilot-dir "$AUTOPILOT_DIR"
   )
@@ -52,7 +52,7 @@ _write_checkpoint() {
     args+=(--issue-number "$issue_number")
   fi
   run "${args[@]}"
-  # checkpoint write は exit 0 であるべき
+  # $status here is bats run exit code (not ckpt_status)
   [ "$status" -eq 0 ] || return 1
 }
 
