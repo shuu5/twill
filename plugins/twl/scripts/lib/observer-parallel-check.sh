@@ -314,6 +314,10 @@ _check_parallel_spawn_eligibility() {
   # 整数バリデーション: 非数値は 0 として扱う（bash 算術展開の暗黙 0 変換を明示化）
   [[ "$controller_count" =~ ^[0-9]+$ ]] || controller_count=0
   local monitor_cld_alive="${OBSERVER_PARALLEL_CHECK_MONITOR_CLD:-$(check_monitor_cld_observe_alive)}"
+  # AC1 (#1663): env-var override の set 状態を expansion 前に capture
+  # ${VAR+x} は VAR が unset の場合のみ空文字を返すため、明示的 set（空文字含む）を検出可能
+  local _states_override_set=false
+  [[ -n "${OBSERVER_PARALLEL_CHECK_STATES+x}" ]] && _states_override_set=true
   local controller_states="${OBSERVER_PARALLEL_CHECK_STATES-$(get_controller_states "$snapshot_ts")}"
   local budget_min="${OBSERVER_PARALLEL_CHECK_BUDGET_MIN:-$(get_budget_minutes_remaining)}"
   local budget_threshold="${OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD:-$(get_parallel_spawn_min_remaining_minutes)}"
@@ -328,7 +332,12 @@ _check_parallel_spawn_eligibility() {
   if (( controller_count == 0 )); then
     echo "[parallel-check] INFO: controller_count=0 (initial spawn) — heartbeat check skipped" >&2
     heartbeat_alive=true
-    controller_states=''
+    # AC1 (#1663): env-var override が set されている場合のみ強制リセットを skip
+    if [[ "$_states_override_set" != "true" ]]; then
+      controller_states=''
+    else
+      echo "[parallel-check] INFO: OBSERVER_PARALLEL_CHECK_STATES override 検出 — controller_states reset skip" >&2
+    fi
   fi
 
   # 必須条件1: controller heartbeat alive (≤ 5min)
