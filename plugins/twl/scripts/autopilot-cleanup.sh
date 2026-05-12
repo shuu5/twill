@@ -72,6 +72,27 @@ if [[ ! "$SESSION_ID" =~ ^[a-zA-Z0-9_-]+$ ]]; then
   exit 1
 fi
 
+# ── 並列 Wave 自動検出 (AC2) ──
+_AD_REAL="$(realpath "$AUTOPILOT_DIR" 2>/dev/null || echo "$AUTOPILOT_DIR")"
+PARENT_DIR="$(dirname "$_AD_REAL")"
+PARALLEL_WAVES=()
+if [[ -d "$PARENT_DIR" ]]; then
+  shopt -s nullglob
+  for _pw in "$PARENT_DIR"/.autopilot*/; do
+    [[ -d "${_pw}issues" ]] || continue
+    _pw_real="$(realpath "$_pw" 2>/dev/null || echo "${_pw%/}")"
+    [[ "$_pw_real" == "$_AD_REAL" ]] && continue
+    PARALLEL_WAVES+=("${_pw%/}")
+  done
+  shopt -u nullglob
+fi
+
+# PROJECT_DIR 未指定かつ並列 Wave あり → degrade mode
+DEGRADE_MODE=false
+if [[ ${#PARALLEL_WAVES[@]} -gt 0 && -z "$PROJECT_DIR" ]]; then
+  DEGRADE_MODE=true
+fi
+
 # TTL 数値検証
 if [[ ! "$TTL" =~ ^[0-9]+$ ]]; then
   echo "ERROR: TTL は正の整数である必要があります: $TTL" >&2
@@ -215,6 +236,22 @@ for issue_file in "$AUTOPILOT_DIR/issues"/issue-*.json; do
 done
 
 # ── Phase 2: 孤立 worktree 検出・削除 ──
+# degrade mode: 並列 Wave 検出時は orphan cleanup をスキップして他 Wave worktree を保護 (AC1+AC2)
+if $DEGRADE_MODE; then
+  echo "[cleanup] 並列 Wave 検出 (${#PARALLEL_WAVES[@]}件) — orphan cleanup をスキップ（degrade mode）: ${PARALLEL_WAVES[*]}" >&2
+  # AC4: .audit/cleanup/ に JSON ログを書き込む
+  _AUDIT_LOG_DIR="$PARENT_DIR/.audit/cleanup"
+  if mkdir -p "$_AUDIT_LOG_DIR" 2>/dev/null; then
+    _AUDIT_LOG_FILE="${_AUDIT_LOG_DIR}/cleanup-${SESSION_ID}-$(date +%s 2>/dev/null || echo 0).json"
+    python3 -c "import json,sys; print(json.dumps({'session_id':sys.argv[1],'timestamp':sys.argv[2],'degrade_mode':True,'parallel_waves':sys.argv[3:],'deleted_orphans':[]}))" \
+      "$SESSION_ID" \
+      "$(date -u +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")" \
+      "${PARALLEL_WAVES[@]}" > "$_AUDIT_LOG_FILE" 2>/dev/null || true
+  fi
+  echo "[cleanup] 完了: アーカイブ=${ARCHIVED_COUNT}件, 孤立worktree削除=${ORPHAN_COUNT}件" >&2
+  exit 0
+fi
+
 # state file に記録された branch を収集（並列 Wave 全体をスキャン）
 declare -A active_branches
 
