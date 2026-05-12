@@ -11,7 +11,16 @@ set -euo pipefail
 
 FORCE="${1:-}"
 
-PHASE_REVIEW_STATUS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field status 2>/dev/null || echo "MISSING")
+# Issue #1703: ISSUE_NUMBER env var による per-Worker checkpoint isolation
+# ISSUE_NUMBER が設定されている場合は phase-review-{N}.json を優先参照し、
+# 不在時は phase-review.json にフォールバックする（cross-pollution 防止）。
+_issue_number_args() {
+  if [[ -n "${ISSUE_NUMBER:-}" ]]; then
+    echo "--issue-number ${ISSUE_NUMBER}"
+  fi
+}
+
+PHASE_REVIEW_STATUS=$(python3 -m twl.autopilot.checkpoint read --step phase-review --field status $(_issue_number_args) 2>/dev/null || echo "MISSING")
 
 if [[ "$PHASE_REVIEW_STATUS" == "MISSING" ]]; then
   if [[ "$FORCE" == "--force" ]]; then
@@ -24,6 +33,7 @@ if [[ "$PHASE_REVIEW_STATUS" == "MISSING" ]]; then
 fi
 
 # Issue #1025: findings の category=ac_missing WARNING で merge をブロック
+# Issue #1703: ISSUE_NUMBER が設定されている場合は per-issue ファイルを参照
 _resolve_checkpoint_file() {
   local dir=""
   if [[ -n "${AUTOPILOT_DIR:-}" ]]; then
@@ -34,7 +44,12 @@ _resolve_checkpoint_file() {
     dir="${root:+${root}/.autopilot/checkpoints}"
     dir="${dir:-.autopilot/checkpoints}"
   fi
-  echo "${dir}/phase-review.json"
+  # per-issue ファイルが存在すればそちらを優先（Issue #1703）
+  if [[ -n "${ISSUE_NUMBER:-}" && -f "${dir}/phase-review-${ISSUE_NUMBER}.json" ]]; then
+    echo "${dir}/phase-review-${ISSUE_NUMBER}.json"
+  else
+    echo "${dir}/phase-review.json"
+  fi
 }
 
 if ! command -v jq >/dev/null 2>&1; then

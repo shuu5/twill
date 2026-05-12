@@ -1,0 +1,70 @@
+mappings:
+  - ac_index: 1a
+    ac_text: "CheckpointManager.read() に issue_number 引数を追加し、per-issue ファイルを優先参照する"
+    test_file: "cli/twl/tests/test_issue_1703_phase_review_isolation.py"
+    test_name: "TestCheckpointReadIsolation::test_ac1_checkpoint_read_method_has_issue_number_parameter"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/checkpoint.py"
+
+  - ac_index: 1b
+    ac_text: "CheckpointManager.read() が issue_number 指定時に per-issue ファイルを返す"
+    test_file: "cli/twl/tests/test_issue_1703_phase_review_isolation.py"
+    test_name: "TestCheckpointReadIsolation::test_ac1_read_with_issue_number_reads_per_issue_file"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/checkpoint.py"
+
+  - ac_index: 1c
+    ac_text: "CheckpointManager.read() が issue_number 指定で per-issue 不在時に shared へフォールバック"
+    test_file: "cli/twl/tests/test_issue_1703_phase_review_isolation.py"
+    test_name: "TestCheckpointReadIsolation::test_ac1_read_with_issue_number_falls_back_to_shared_when_per_issue_absent"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/checkpoint.py"
+
+  - ac_index: 1d
+    ac_text: "checkpoint read CLI が --issue-number フラグを受け付ける"
+    test_file: "cli/twl/tests/test_issue_1703_phase_review_isolation.py"
+    test_name: "TestCheckpointReadIsolation::test_ac1_read_cli_accepts_issue_number_flag"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/checkpoint.py"
+
+  - ac_index: 2a
+    ac_text: "Worker A の per-issue FAIL が Worker B の per-issue read に影響しない"
+    test_file: "cli/twl/tests/test_issue_1703_phase_review_isolation.py"
+    test_name: "TestCrossPolluionRegression::test_ac2_worker_b_read_not_polluted_by_worker_a_per_issue_write"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/checkpoint.py"
+
+  - ac_index: 2b
+    ac_text: "shared FAIL が per-issue PASS を上書きしない"
+    test_file: "cli/twl/tests/test_issue_1703_phase_review_isolation.py"
+    test_name: "TestCrossPolluionRegression::test_ac2_shared_fail_does_not_affect_per_issue_pass_read"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/checkpoint.py"
+
+  - ac_index: 2c
+    ac_text: "5 Worker 並列シミュレーションで cross-pollution が発生しない"
+    test_file: "cli/twl/tests/test_issue_1703_phase_review_isolation.py"
+    test_name: "TestCrossPolluionRegression::test_ac2_five_parallel_workers_no_cross_pollution"
+    impl_files:
+      - "cli/twl/src/twl/autopilot/checkpoint.py"
+
+  - ac_index: 2d-bats
+    ac_text: "merge-gate-check-phase-review.sh が ISSUE_NUMBER で per-issue checkpoint を読む"
+    test_file: "plugins/twl/tests/bats/issue-1703-phase-review-cross-pollution.bats"
+    test_name: "ac1-a: ISSUE_NUMBER=1692 設定時に merge-gate-check-phase-review.sh が per-issue checkpoint を読む"
+    impl_files:
+      - "plugins/twl/scripts/merge-gate-check-phase-review.sh"
+
+  - ac_index: 2e-bats
+    ac_text: "5 Worker 並列シミュレーション（bats）: 各 Worker が自分の checkpoint を読む"
+    test_file: "plugins/twl/tests/bats/issue-1703-phase-review-cross-pollution.bats"
+    test_name: "ac2: 並列 5 Worker の cross-pollution regression"
+    impl_files:
+      - "plugins/twl/scripts/merge-gate-check-phase-review.sh"
+
+  - ac_index: 2f-bats
+    ac_text: "merge-gate-checkpoint-merge.sh が ISSUE_NUMBER で per-issue phase-review findings を参照"
+    test_file: "plugins/twl/tests/bats/issue-1703-phase-review-cross-pollution.bats"
+    test_name: "ac2: merge-gate-checkpoint-merge.sh が ISSUE_NUMBER で per-issue phase-review findings を参照"
+    impl_files:
+      - "plugins/twl/scripts/merge-gate-checkpoint-merge.sh"
