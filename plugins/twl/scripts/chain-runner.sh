@@ -364,6 +364,22 @@ step_worktree_create() {
   ok "worktree-create" "完了"
 }
 
+# --- cwd-guard: Worker が main ブランチで動作していないことを確認 (Issue #1684 / invariant K/L) ---
+# IS_AUTOPILOT=true + orchestrator early-exit で Worker が main worktree に留まるリスクへの安全装置。
+# test-scaffold など source-touching step の直前に呼ぶことで fail-closed を実現する。
+step_cwd_guard() {
+  record_current_step "cwd-guard"
+  local branch
+  branch="$(git branch --show-current 2>/dev/null || echo "main")"
+  if [[ "$branch" == "main" || "$branch" == "master" ]]; then
+    echo "ERROR: Worker is running on main branch (invariant K/L violation)." >&2
+    echo "       IS_AUTOPILOT=true + orchestrator early-exit may have caused this." >&2
+    echo "       Aborting to prevent source code contamination of main worktree." >&2
+    exit 2
+  fi
+  ok "cwd-guard" "branch=$branch (not main — invariant K/L satisfied)"
+}
+
 # --- _transition_parent_epic_if_refined: 親 Epic auto-transition (Issue #1026 ADR-024 AC1+AC2) ---
 # 子 Issue が "In Progress" に遷移した時、親 Epic が "Refined" なら "In Progress" に遷移する。
 # Idempotent: 親 Epic が既に "In Progress" / "Done" / 他の場合は no-op。
@@ -1842,6 +1858,7 @@ main() {
   case "$step" in
     init)                step_init "$@" ;;
     worktree-create)     step_worktree_create "$@" ;;
+    cwd-guard)           step_cwd_guard "$@" ;;
     board-status-update) step_board_status_update "$@" ;;
     project-board-status-update) step_board_status_update "$@" ;;
     board-archive)       step_board_archive "$@" ;;

@@ -1079,6 +1079,53 @@ issue_1602:
       impl_files:
         - ".github/workflows/mcp-restart-smoke.yml"
 
+# --- Issue #1684 ---
+issue_1684:
+  issue: 1684
+  framework: bats
+  test_file: "plugins/twl/tests/bats/issue-1684-autopilot-main-guard.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "IS_AUTOPILOT=true 時の worktree-create skip path 安全装置: chain-runner.sh に step_cwd_guard 関数が定義されている"
+      test_names:
+        - "ac1: chain-runner.sh に step_cwd_guard 関数が定義されている"
+        - "ac1: chain-runner.sh に cwd-guard ディスパッチが存在する"
+      status: RED
+      red_mechanism: "step_cwd_guard 関数が未実装のため grep が失敗する"
+      impl_files:
+        - "plugins/twl/scripts/chain-runner.sh"
+    - ac_index: 2
+      ac_text: "Worker の runtime cwd guard: main ブランチで exit 2 abort"
+      test_names:
+        - "ac2: cwd-guard step — main ブランチで exit 2 (abort)"
+        - "ac2: cwd-guard step — feature ブランチで success (exit 0)"
+        - "ac2: cwd-guard step — master ブランチでも exit 2 (abort)"
+      status: RED
+      red_mechanism: "step_cwd_guard 未実装のため chain-runner.sh cwd-guard が exit 1 (未知のステップ)"
+      impl_files:
+        - "plugins/twl/scripts/chain-runner.sh"
+    - ac_index: 3
+      ac_text: "bats regression: IS_AUTOPILOT=true + worktree 存在 = success (既存OK) / main ブランチ = abort (新規guard)"
+      test_names:
+        - "ac3: worktree-create — IS_AUTOPILOT=true + feature worktree で success"
+        - "ac3: cwd-guard — IS_AUTOPILOT=true + main ブランチで abort (exit 2)"
+      status: MIXED
+      note: |
+        GREEN: worktree-create は IS_AUTOPILOT=true + feature branch で skip → success (既存動作)
+        RED: cwd-guard step が未実装のため main ブランチ abort テストが fail
+      impl_files:
+        - "plugins/twl/scripts/chain-runner.sh"
+    - ac_index: 4
+      ac_text: "window naming guard: autopilot-launch.sh で main branch LAUNCH_DIR を error 化"
+      test_names:
+        - "ac4: autopilot-launch.sh に main ブランチ LAUNCH_DIR バリデーションが存在する"
+        - "ac4: autopilot-launch.sh の main fallback path が error 化されている"
+        - "ac4: autopilot-launch.sh に window name main ブロックガードが存在する"
+      status: RED
+      red_mechanism: "autopilot-launch.sh が main/ fallback を警告なしで許可しているため grep が失敗"
+      impl_files:
+        - "plugins/twl/scripts/autopilot-launch.sh"
+
 # --- Issue #1651 ---
 issue_1651:
   issue: 1651
