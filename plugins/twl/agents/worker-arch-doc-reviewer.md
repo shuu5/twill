@@ -14,6 +14,7 @@ tools:
   - Glob
 skills:
   - ref-specialist-output-schema
+  - ref-specialist-few-shot
 ---
 
 # worker-arch-doc-reviewer: Architecture Docs 品質レビュー
