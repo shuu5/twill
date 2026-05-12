@@ -314,7 +314,7 @@ _check_parallel_spawn_eligibility() {
   # 整数バリデーション: 非数値は 0 として扱う（bash 算術展開の暗黙 0 変換を明示化）
   [[ "$controller_count" =~ ^[0-9]+$ ]] || controller_count=0
   local monitor_cld_alive="${OBSERVER_PARALLEL_CHECK_MONITOR_CLD:-$(check_monitor_cld_observe_alive)}"
-  local controller_states="${OBSERVER_PARALLEL_CHECK_STATES:-$(get_controller_states "$snapshot_ts")}"
+  local controller_states="${OBSERVER_PARALLEL_CHECK_STATES-$(get_controller_states "$snapshot_ts")}"
   local budget_min="${OBSERVER_PARALLEL_CHECK_BUDGET_MIN:-$(get_budget_minutes_remaining)}"
   local budget_threshold="${OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD:-$(get_parallel_spawn_min_remaining_minutes)}"
 

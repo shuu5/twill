@@ -1356,3 +1356,134 @@ MOCK_LIB
   echo "$output" | grep -qE '≤10|10.*整合|SU-4.*10|12.*>[[:space:]]*10' \
     || fail "AC7 実証: exit 2 だがエラー文言に新閾値 '10' が含まれていない（AC3 文言更新未実装）"
 }
+
+# ===========================================================================
+# Issue #1662: OBSERVER_PARALLEL_CHECK_STATES :- → - tech-debt fix
+# ===========================================================================
+# 背景: :- は unset と空文字列の両方でフォールバックするため、
+#        OBSERVER_PARALLEL_CHECK_STATES='' での空文字列 override が機能しない。
+#        - に変更することで空文字列 override が正しく機能するようになる。
+#
+# ${VAR:-default} → unset または空文字列 → default を使用
+# ${VAR-default}  → unset のみ           → default を使用（空文字列は preserved）
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# AC1 #1662: L317 の OBSERVER_PARALLEL_CHECK_STATES は :- でなく - を使う
+# WHEN: observer-parallel-check.sh L317 の controller_states 代入を確認する
+# THEN: ${OBSERVER_PARALLEL_CHECK_STATES-$(get_controller_states ...)} 形式
+# RED: 修正前は :- が残存しているため fail する
+# ---------------------------------------------------------------------------
+
+@test "AC1 #1662: L317 の OBSERVER_PARALLEL_CHECK_STATES は :- でなく - を使う（空文字列 override を機能させるため）" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  # ${OBSERVER_PARALLEL_CHECK_STATES-$(get_controller_states ...)} 形式が存在すること
+  # RED: 現在 L317 に :- が残存しているため fail する
+  grep -qE '\$\{OBSERVER_PARALLEL_CHECK_STATES-\$\(' "$PARALLEL_CHECK_LIB" \
+    || fail "L317 に :- が残存（または - 形式未適用）— OBSERVER_PARALLEL_CHECK_STATES='' override が機能しない（AC1 #1662 未実装）"
+}
+
+# ---------------------------------------------------------------------------
+# AC5 #1662: Case A (unset): OBSERVER_PARALLEL_CHECK_STATES unset → get_controller_states が呼ばれる
+# WHEN: OBSERVER_PARALLEL_CHECK_STATES を unset して _check_parallel_spawn_eligibility を呼ぶ
+# THEN: get_controller_states が呼ばれ、MOCK_CALL_LOG にエントリが書き込まれる
+# NOTE: :- でも - でも unset の場合は同じ（フォールバック発動）
+# ---------------------------------------------------------------------------
+
+@test "AC5 #1662: Case A (unset): OBSERVER_PARALLEL_CHECK_STATES unset → get_controller_states が呼ばれる" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  local mock_log="$BATS_TEST_TMPDIR/mock-call-1662-a.log"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    get_controller_states() {
+      echo 'called' >> '$mock_log'
+      echo 'S-2'
+    }
+    unset OBSERVER_PARALLEL_CHECK_STATES
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=1 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  " 2>&1
+
+  [[ -f "$mock_log" ]] \
+    || fail "OBSERVER_PARALLEL_CHECK_STATES unset の場合 get_controller_states が呼ばれるべきだが MOCK_CALL_LOG が存在しない（AC5 #1662）"
+}
+
+# ---------------------------------------------------------------------------
+# AC6 #1662: Case B (空文字列 override): OBSERVER_PARALLEL_CHECK_STATES='' → get_controller_states が呼ばれない
+# WHEN: OBSERVER_PARALLEL_CHECK_STATES='' を設定して _check_parallel_spawn_eligibility を呼ぶ
+# THEN: get_controller_states が呼ばれず、MOCK_CALL_LOG が空のまま
+# RED: 現在 :- を使っているため空文字列でもフォールバックし get_controller_states が呼ばれる
+# ---------------------------------------------------------------------------
+
+@test "AC6 #1662: Case B (空文字列 override): OBSERVER_PARALLEL_CHECK_STATES='' → get_controller_states が呼ばれない" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  local mock_log="$BATS_TEST_TMPDIR/mock-call-1662-b.log"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    get_controller_states() {
+      echo 'called' >> '$mock_log'
+      echo 'S-2'
+    }
+    OBSERVER_PARALLEL_CHECK_STATES='' \
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=1 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  " 2>&1
+
+  # RED: 現在 :- を使っているため get_controller_states が呼ばれ MOCK_CALL_LOG が作成される
+  [[ ! -f "$mock_log" ]] \
+    || fail "OBSERVER_PARALLEL_CHECK_STATES='' override 時に get_controller_states が呼ばれた（:- tech-debt: 空文字列でもフォールバック発動）— AC6 #1662 未実装（- への変更が必要）"
+}
+
+# ---------------------------------------------------------------------------
+# AC7 #1662: Case C (値あり override): OBSERVER_PARALLEL_CHECK_STATES='S-3' → get_controller_states が呼ばれない
+# WHEN: OBSERVER_PARALLEL_CHECK_STATES='S-3' を設定して _check_parallel_spawn_eligibility を呼ぶ
+# THEN: get_controller_states が呼ばれず、controller_states='S-3' のまま
+# NOTE: :- でも - でも値あり（非空）の場合は同じ（フォールバック不発動）
+# ---------------------------------------------------------------------------
+
+@test "AC7 #1662: Case C (値あり override): OBSERVER_PARALLEL_CHECK_STATES='S-3' → get_controller_states が呼ばれない" {
+  [[ -f "$PARALLEL_CHECK_LIB" ]] \
+    || fail "observer-parallel-check.sh が存在しない: $PARALLEL_CHECK_LIB"
+
+  local mock_log="$BATS_TEST_TMPDIR/mock-call-1662-c.log"
+
+  run bash -c "
+    source '$PARALLEL_CHECK_LIB'
+    get_controller_states() {
+      echo 'called' >> '$mock_log'
+      echo 'S-2'
+    }
+    OBSERVER_PARALLEL_CHECK_STATES='S-3' \
+    OBSERVER_PARALLEL_CHECK_SNAPSHOT_TS=1000000 \
+    OBSERVER_PARALLEL_CHECK_HEARTBEAT_ALIVE=true \
+    OBSERVER_PARALLEL_CHECK_MODE=auto \
+    OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT=1 \
+    OBSERVER_PARALLEL_CHECK_MONITOR_CLD=true \
+    OBSERVER_PARALLEL_CHECK_BUDGET_MIN=200 \
+    OBSERVER_PARALLEL_CHECK_BUDGET_THRESHOLD=150 \
+    _check_parallel_spawn_eligibility
+  " 2>&1
+
+  [[ ! -f "$mock_log" ]] \
+    || fail "OBSERVER_PARALLEL_CHECK_STATES='S-3' 値あり override 時に get_controller_states が呼ばれた（値あり時はフォールバックしてはならない）— AC7 #1662"
+}
