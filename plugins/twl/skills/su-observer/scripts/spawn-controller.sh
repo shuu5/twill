@@ -81,6 +81,15 @@ _emit_provenance_section() {
 }
 # --- provenance section ここまで ---
 
+# ASCII reason のみを想定。UTF-8 マルチバイト文字は非印字バイト置換により破壊される可能性がある。
+# 第1引数を受け取り ${1//[^[:print:]]/ } の結果を printf '%s' で出力する (改行なし)。
+# 引数未指定または空文字の場合は空文字を出力する。
+# デフォルト値展開は呼び出し元の責務 (例: "${VAR:-default}")。
+_sanitize_skip_reason() {
+  local _r="${1:-}"
+  printf '%s' "${_r//[^[:print:]]/ }"
+}
+
 # --- #1644: feature-dev gate checks（bash 実装、tools.py の Python 版と意味的等価）---
 # 引数: $1 = ISSUE_NUMBER（正整数、呼び出し側で validate 済み）
 # 効果: 全 gate を pass したら .supervisor/feature-dev-request-<N>.json を consumed/ に atomic rename
@@ -245,9 +254,7 @@ if [[ "${SKIP_PARALLEL_CHECK:-0}" == "1" ]]; then
   {
     _supervisor_dir="${SUPERVISOR_DIR:-.supervisor}"
     mkdir -p "$_supervisor_dir"
-    _reason="${SKIP_PARALLEL_REASON:-(reason not provided)}"
-    _reason="${_reason//$'\n'/ }"
-    _reason="${_reason//$'\r'/ }"
+    _reason="$(_sanitize_skip_reason "${SKIP_PARALLEL_REASON:-(reason not provided)}")"
     printf '%s SKIP_PARALLEL_CHECK=1: %s\n' \
       "$(date -u +%FT%TZ)" \
       "$_reason" \
@@ -382,11 +389,20 @@ EOF
 
   # Gate checks（SKIP_LAYER2=1 で bypass、AC-4.6: 2 wave 維持）
   if [[ "${SKIP_LAYER2:-0}" == "1" ]]; then
-    _skip_reason="${SKIP_LAYER2_REASON:-未設定}"
-    _skip_reason="${_skip_reason//$'\n'/ }"
-    _skip_reason="${_skip_reason//$'\r'/ }"
+    _skip_reason="$(_sanitize_skip_reason "${SKIP_LAYER2_REASON:-(reason not set)}")"
     echo "[spawn-controller] WARN: SKIP_LAYER2=1 — feature-dev gate checks bypassed (issue=${ISSUE_NUMBER}, reason=${_skip_reason})" >&2
-    echo "[spawn-controller] SKIP_LAYER2=1 bypass: feature-dev issue=${ISSUE_NUMBER}, reason=${_skip_reason}" >> "${SUPERVISOR_DIR:-.supervisor}/intervention-log.md" 2>/dev/null || true
+    {
+      _sup_dir="${SUPERVISOR_DIR:-.supervisor}"
+      mkdir -p "$_sup_dir"
+      printf '%s SKIP_LAYER2=1 bypass: feature-dev issue=%s, reason=%s\n' \
+        "$(date -u +%FT%TZ)" \
+        "$ISSUE_NUMBER" \
+        "$_skip_reason" \
+        >> "$_sup_dir/intervention-log.md"
+    } || {
+      echo "[spawn-controller] WARN: intervention-log append failed (continuing spawn)" >&2
+      true
+    }
   else
     _fd_run_gate_checks "$ISSUE_NUMBER"
   fi
@@ -513,7 +529,7 @@ ERROR: SKIP_PILOT_GATE=1 を使う場合は SKIP_PILOT_REASON を必ず指定し
 DENY
       exit 2
     fi
-    _skip_pilot_reason="${_skip_pilot_reason//[^[:print:]]/ }"
+    _skip_pilot_reason="$(_sanitize_skip_reason "$_skip_pilot_reason")"
     echo "[spawn-controller] WARN: SKIP_PILOT_GATE=1 — --with-chain --issue gate bypassed (issue=${CHAIN_ISSUE:-?}, reason=${_skip_pilot_reason})" >&2
     {
       _sup_dir="${SUPERVISOR_DIR:-.supervisor}"
