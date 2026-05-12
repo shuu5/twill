@@ -1253,3 +1253,25 @@ issue_1566:
       note: "SKILL.md: +1, -0 (条件達成)。bats テストと ac-test-mapping.yaml は TDD ワークフロー標準産物"
       impl_files:
         - "plugins/twl/skills/co-issue/SKILL.md"
+
+# Issue #1682
+- issue: 1682
+  title: "bug(session-comm): #1420 trap 実装で SIGHUP exit 129 RED test 失敗"
+  framework: bats
+  mappings:
+    - ac_index: 1
+      ac_text: "SIGHUP 受信時に exit 129 実装"
+      test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+      test_name: "ac3[functional]: SIGHUP 送信時に終了コード 129 (128+1) で終了する [ISSUE-1682-FIXED]"
+      status: GREEN
+      note: "fix は commit 8e4c81bb (#1504) で適用済み。session-comm.sh line 437 に trap HUP が実装済み"
+      impl_files:
+        - "plugins/session/scripts/session-comm.sh"
+    - ac_index: 1
+      ac_text: "SIGHUP 受信時に tmux buffer cleanup 実装"
+      test_file: "plugins/session/tests/test_1420_cmd_inject_file_signal_cleanup.bats"
+      test_name: "ac6[functional]: SIGHUP 受信後に session-comm-* バッファが残留しない [ISSUE-1682-FIXED]"
+      status: GREEN
+      note: "fix は commit 8e4c81bb (#1504) で適用済み。session-comm.sh line 437 に trap HUP + delete-buffer が実装済み"
+      impl_files:
+        - "plugins/session/scripts/session-comm.sh"

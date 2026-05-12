@@ -302,13 +302,13 @@ MOCK
 }
 
 # ===========================================================================
-# test 5: ac3[functional][RED] - SIGHUP -> exit 129
-# RED: 現在の実装に trap がないため SIGHUP が正しく処理されない
+# test 5: ac3[functional] - SIGHUP -> exit 129
+# [ISSUE-1682-FIXED]: session-comm.sh に trap HUP が実装済み (#1504)
 # ===========================================================================
 
-@test "ac3[functional][RED]: SIGHUP 送信時に終了コード 129 (128+1) で終了する" {
+@test "ac3[functional]: SIGHUP 送信時に終了コード 129 (128+1) で終了する [ISSUE-1682-FIXED]" {
     # AC3: SIGHUP を受信した cmd_inject_file が exit 129 で終了すること
-    # 現在の実装には trap がないため → FAIL (RED)
+    # [ISSUE-1682-FIXED]: session-comm.sh line 437 に trap HUP 実装済み (#1504)
     _create_mock_tmux_signal_test 3
     _create_mock_session_state_input_waiting
 
@@ -608,13 +608,13 @@ MOCK
 }
 
 # ===========================================================================
-# test 12: ac6[functional][RED] - SIGHUP 受信後バッファ残留なし
-# RED: 現在の実装に trap がないためバッファが残留する
+# test 12: ac6[functional] - SIGHUP 受信後バッファ残留なし
+# [ISSUE-1682-FIXED]: session-comm.sh に trap HUP + delete-buffer が実装済み (#1504)
 # ===========================================================================
 
-@test "ac6[functional][RED]: SIGHUP 受信後に session-comm-* バッファが残留しない" {
+@test "ac6[functional]: SIGHUP 受信後に session-comm-* バッファが残留しない [ISSUE-1682-FIXED]" {
     # AC6: SIGHUP 受信時に trap handler が delete-buffer を呼び、バッファを削除すること
-    # 現在の実装には trap がないため → FAIL (RED)
+    # [ISSUE-1682-FIXED]: session-comm.sh line 437 に trap HUP + delete-buffer 実装済み (#1504)
     _create_mock_tmux_signal_test 3
     _create_mock_session_state_input_waiting
 
