@@ -364,20 +364,26 @@ step_worktree_create() {
   ok "worktree-create" "完了"
 }
 
-# --- cwd-guard: Worker が main ブランチで動作していないことを確認 (Issue #1684 / invariant K/L) ---
+# --- cwd-guard: Worker が main ブランチで動作していないことを確認 (Issue #1684 / invariant B + ADR-008) ---
 # IS_AUTOPILOT=true + orchestrator early-exit で Worker が main worktree に留まるリスクへの安全装置。
+# 根拠: 不変条件 B (Worktree ライフサイクル Pilot 専任) + ADR-008 (worktree lifecycle Pilot ownership)。
 # test-scaffold など source-touching step の直前に呼ぶことで fail-closed を実現する。
 step_cwd_guard() {
   record_current_step "cwd-guard"
   local branch
-  branch="$(git branch --show-current 2>/dev/null || echo "main")"
+  # git branch --show-current は detached HEAD 時に空文字列を返す (exit 0)。
+  # 空文字列も fail-closed として扱う（ADR-008: 不明ブランチでの source 変更リスク回避）。
+  branch="$(git branch --show-current 2>/dev/null)"
+  if [[ -z "$branch" ]]; then
+    branch="main"
+  fi
   if [[ "$branch" == "main" || "$branch" == "master" ]]; then
-    echo "ERROR: Worker is running on main branch (invariant K/L violation)." >&2
+    echo "ERROR: Worker is running on main branch (invariant B + ADR-008 violation)." >&2
     echo "       IS_AUTOPILOT=true + orchestrator early-exit may have caused this." >&2
     echo "       Aborting to prevent source code contamination of main worktree." >&2
     exit 2
   fi
-  ok "cwd-guard" "branch=$branch (not main — invariant K/L satisfied)"
+  ok "cwd-guard" "branch=$branch (not main — invariant B + ADR-008 satisfied)"
 }
 
 # --- _transition_parent_epic_if_refined: 親 Epic auto-transition (Issue #1026 ADR-024 AC1+AC2) ---

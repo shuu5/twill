@@ -45,6 +45,16 @@ CONTEXT_FILE="${AUTOPILOT_DIR}/issues/issue-${ISSUE_NUM}-context.md"
 [[ -n "$ISSUE_NUM" && -f "$CONTEXT_FILE" ]] && echo "=== 前 workflow コンテキスト ===" && cat "$CONTEXT_FILE"
 ```
 
+### Step 0.5: cwd-guard（main ブランチ動作防止、Issue #1684 / invariant B + ADR-008）
+
+```bash
+bash "$CR" cwd-guard
+```
+
+main/master ブランチで動作している場合は exit 2 で abort（IS_AUTOPILOT=true + orchestrator early-exit 対策）。
+source-touching step (test-scaffold) の直前に呼ぶことで fail-closed を実現する。
+失敗（exit 2）は即座に停止し、Pilot に報告すること。
+
 ### Step 1: test-scaffold（AC-based）
 
 `bash "$CR" llm-delegate "test-scaffold" "$ISSUE_NUM"` を実行し、`commands/test-scaffold.md` を Read → 実行。

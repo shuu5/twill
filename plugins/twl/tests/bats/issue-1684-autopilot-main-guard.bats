@@ -132,6 +132,25 @@ STUB
   [ "$status" -eq 2 ]
 }
 
+@test "ac2: cwd-guard step — detached HEAD (空文字列) でも exit 2 (fail-closed)" {
+  # detached HEAD: git branch --show-current は空文字列を返す (exit 0)
+  # fail-closed 設計: 空文字列も main と同等に扱い abort する (ADR-008)
+  cat > "$STUB_BIN/git" <<'STUB'
+#!/usr/bin/env bash
+if [[ "$*" == "branch --show-current" ]]; then
+  echo ""
+  exit 0
+fi
+exec /usr/bin/git "$@"
+STUB
+  chmod +x "$STUB_BIN/git"
+
+  cd "$SANDBOX"
+  run bash "${CHAIN_RUNNER}" cwd-guard
+  assert_failure
+  [ "$status" -eq 2 ]
+}
+
 # ===========================================================================
 # AC3 regression: IS_AUTOPILOT=true + worktree 存在 = success
 #
