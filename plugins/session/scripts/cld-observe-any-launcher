@@ -22,6 +22,9 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLD_OBSERVE_BIN="${SCRIPT_DIR}/cld-observe-any"
 
+# shellcheck source=lib/path-validate.sh
+source "${SCRIPT_DIR}/lib/path-validate.sh"
+
 LOCK_FILE="${CLD_OBSERVE_ANY_LOCK:-/tmp/cld-observe-any.lock}"
 LOG_FILE="${CLD_OBSERVE_ANY_LOG:-/tmp/cld-observe-any.log}"
 EVENT_DIR="${CLD_OBSERVE_ANY_EVENT_DIR:-}"
@@ -87,6 +90,16 @@ update_session_json() {
         fi
     fi
 }
+
+# SUPERVISOR_DIR パストラバーサル防御 (Issue #1165 AC5)
+if [[ -n "${SUPERVISOR_DIR:-}" ]]; then
+    _raw_supervisor_dir="${SUPERVISOR_DIR}"
+    if ! SUPERVISOR_DIR=$(validate_supervisor_dir "$SUPERVISOR_DIR"); then
+        echo "[cld-observe-any-launcher] Error: invalid --supervisor-dir: ${_raw_supervisor_dir}" >&2
+        exit 2
+    fi
+    unset _raw_supervisor_dir
+fi
 
 # テスト用シミュレーションモード
 if $SIMULATE_DAEMON_DEATH; then
