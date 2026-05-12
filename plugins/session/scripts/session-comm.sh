@@ -12,11 +12,15 @@
 # =============================================================================
 set -euo pipefail
 
-# テスト時のみ SESSION_COMM_SCRIPT_DIR を許可（_TEST_MODE ガード必須）
-# Issue #1048: 信頼境界として「実在ディレクトリ」かつ「session-state.sh を含む」
-# ことを追加検証し、攻撃者による任意パス上書きを拒否する
+# SCRIPT_DIR は常に実スクリプトディレクトリを指す（バックエンド読み込みに使用）
+# _state_script_dir はテスト時に SESSION_COMM_SCRIPT_DIR で session-state.sh のみを差し替える
+# Issue #1048: SESSION_COMM_SCRIPT_DIR は信頼境界として「実在ディレクトリ」かつ
+# 「session-state.sh を含む」ことを検証し、攻撃者による任意パス上書きを拒否する
 # M2 (#1048 follow-up): realpath で symlink を解決して実 path に固定し、
 # check と use の間に symlink 差し替えされる TOCTOU race window を縮小する
+# Fix #1679: SCRIPT_DIR を上書きしないことで session-comm-backend-tmux.sh の
+# source に失敗するバグを修正（SESSION_COMM_SCRIPT_DIR は state script 専用）
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [[ -n "${_TEST_MODE:-}" ]] && [[ -n "${SESSION_COMM_SCRIPT_DIR:-}" ]] \
     && [[ -d "$SESSION_COMM_SCRIPT_DIR" ]] \
     && [[ -f "$SESSION_COMM_SCRIPT_DIR/session-state.sh" ]]; then
@@ -31,13 +35,13 @@ if [[ -n "${_TEST_MODE:-}" ]] && [[ -n "${SESSION_COMM_SCRIPT_DIR:-}" ]] \
       _resolved_state=$(python3 -c 'import os, sys; print(os.path.realpath(sys.argv[1]))' "$SESSION_COMM_SCRIPT_DIR/session-state.sh" 2>/dev/null || true)
     fi
     if [[ -n "$_resolved_state" && -f "$_resolved_state" ]]; then
-      SCRIPT_DIR=$(dirname "$_resolved_state")
+      _state_script_dir=$(dirname "$_resolved_state")
     else
-      SCRIPT_DIR="$SESSION_COMM_SCRIPT_DIR"
+      _state_script_dir="$SESSION_COMM_SCRIPT_DIR"
     fi
     unset _resolved_state
 else
-    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    _state_script_dir="$SCRIPT_DIR"
 fi
 MAX_INJECT_LEN=4096
 DEFAULT_CAPTURE_LINES=50
@@ -271,7 +275,7 @@ cmd_inject() {
     local retry_count=0
     local state
     while true; do
-        if ! state=$("$SCRIPT_DIR/session-state.sh" state "$window_name" 2>/dev/null); then
+        if ! state=$("${_state_script_dir}/session-state.sh" state "$window_name" 2>/dev/null); then
             echo "Warning: session-state.sh failed for '$window_name'" >&2
             state="unknown"
         fi
@@ -402,13 +406,13 @@ cmd_inject_file() {
 
     # 状態チェック: --wait 指定時は input-waiting までアクティブ待機
     if [[ "$wait_timeout" -gt 0 ]]; then
-        if ! "$SCRIPT_DIR/session-state.sh" wait "$window_name" input-waiting --timeout "$wait_timeout"; then
+        if ! "${_state_script_dir}/session-state.sh" wait "$window_name" input-waiting --timeout "$wait_timeout"; then
             echo "Error: target '$window_name' did not reach input-waiting within ${wait_timeout}s" >&2
             exit 2
         fi
     else
         local state
-        if ! state=$("$SCRIPT_DIR/session-state.sh" state "$window_name" 2>/dev/null); then
+        if ! state=$("${_state_script_dir}/session-state.sh" state "$window_name" 2>/dev/null); then
             echo "Warning: session-state.sh failed for '$window_name'" >&2
             state="unknown"
         fi
@@ -517,7 +521,7 @@ cmd_wait_ready() {
         usage
     fi
 
-    exec "$SCRIPT_DIR/session-state.sh" wait "$window_name" input-waiting --timeout "$timeout"
+    exec "${_state_script_dir}/session-state.sh" wait "$window_name" input-waiting --timeout "$timeout"
 }
 
 # =============================================================================
