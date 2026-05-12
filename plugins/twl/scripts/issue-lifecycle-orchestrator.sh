@@ -27,8 +27,29 @@ set -euo pipefail
 
 SCRIPTS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# lockfile クリーンアップ（spawn_session 内で作成した /tmp/.coi-window-*.lock）
-trap 'rm -f /tmp/.coi-window-*.lock 2>/dev/null || true' EXIT
+# run_id: EXIT trap の audit log に使用（Issue #1674 AC2）
+run_id="$(date +%s)-$$"
+
+# AC2: early exit 時に audit log を記録するハンドラー（Issue #1674）
+# _AUDIT_ISSUE_LABEL: arg parse 後に設定される issue ラベル（パス構築用）
+_AUDIT_ISSUE_LABEL=""
+_audit_exit_handler() {
+  local _ec="$1"
+  local _reason="error_exit"
+  [[ "$_ec" -eq 0 ]] && _reason="normal_exit"
+  local _label="${_AUDIT_ISSUE_LABEL:-unknown}"
+  local _ad=".audit/auto-${run_id}-issue-${_label}"
+  mkdir -p "$_ad" 2>/dev/null || true
+  printf '{"exit_code":%d,"run_id":"%s","reason":"%s"}\n' "$_ec" "${run_id}" "$_reason" \
+    >> "${_ad}/state-log.jsonl" 2>/dev/null || true
+}
+
+# lockfile クリーンアップ + audit log（spawn_session 内で作成した /tmp/.coi-window-*.lock）
+trap '
+  _exit_code=$?
+  _audit_exit_handler "$_exit_code"
+  rm -f /tmp/.coi-window-*.lock 2>/dev/null || true
+' EXIT
 
 MAX_PARALLEL="${MAX_PARALLEL:-3}"
 if ! [[ "$MAX_PARALLEL" =~ ^[1-9][0-9]*$ ]]; then
@@ -60,7 +81,9 @@ fi
 LLM_INDICATORS=()
 source "${SCRIPTS_ROOT}/../../session/scripts/lib/llm-indicators.sh" 2>/dev/null || true
 # shellcheck source=./lib/tmux-window-kill.sh
-source "${SCRIPTS_ROOT}/lib/tmux-window-kill.sh"
+source "${SCRIPTS_ROOT}/lib/tmux-window-kill.sh" 2>/dev/null || safe_kill_window() {
+  tmux kill-window -t "$1" 2>/dev/null || true
+}
 
 # detect_thinking: pane テキストから LLM thinking indicator を検出
 # AC4(d): past tense "word for Nm Ns" または "word for Ns" 完了形は IDLE 扱い（thinking としてカウントしない）
@@ -236,6 +259,11 @@ if [[ -z "$WORKER_MODEL" ]]; then
   exit 1
 fi
 
+if ! [[ "$WORKER_MODEL" =~ ^[A-Za-z0-9._-]+$ ]]; then
+  echo "Error: --model の値に不正な文字が含まれています: $WORKER_MODEL" >&2
+  exit 1
+fi
+
 if [[ -z "$PER_ISSUE_DIR" ]]; then
   echo "Error: --per-issue-dir は必須です" >&2
   usage
@@ -290,6 +318,9 @@ echo "[issue-lifecycle-orchestrator] サブディレクトリ数: ${TOTAL}, MAX_
 
 # SID をセッション開始時に 1 回だけ算出してキャッシュ（polling ループでの subshell 多発防止）
 _SID_CACHE="$(extract_sid "$PER_ISSUE_DIR")"
+
+# AC2: audit log のパスに使う issue ラベルを確定（EXIT trap で参照、Issue #1674）
+_AUDIT_ISSUE_LABEL="$(basename "$PER_ISSUE_DIR" | tr -dc 'a-zA-Z0-9_-' | cut -c1-20)"
 
 # ADR-017 IM-7: N=1 不変量は各 Worker（workflow-issue-lifecycle）が個別に
 # spec-review-session-init.sh 1 を呼び出すことで保証する。
@@ -506,7 +537,7 @@ wait_for_batch() {
 
           # 非ブロッキング状態チェック — 旧: serial な wait --timeout 10 を置換 (#717)
           local pane_state
-          pane_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
+          pane_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null) || true
           local debounce_ts_file="${subdir}/.debounce_ts"
 
           if [[ "$pane_state" == "input-waiting" ]]; then
@@ -567,7 +598,7 @@ wait_for_batch() {
             elif [[ "$inject_count" -lt 5 ]]; then
               # inject 直前再確認 — 状態が変化していれば inject をスキップ (#709)
               local _pre_inject_state
-              _pre_inject_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null)
+              _pre_inject_state=$("${SCRIPTS_ROOT}/../../session/scripts/session-state.sh" state "$window_name" 2>/dev/null) || true
               if [[ "$_pre_inject_state" != "input-waiting" ]]; then
                 all_done=false
                 continue
