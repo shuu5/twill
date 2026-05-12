@@ -29,20 +29,26 @@
       <li>ADR-043 起票 (md 本体 + 本 spec directory を supplement として link)</li>
       <li>新 helper 5 本作成 (mailbox.sh / step.sh / phase-gate.sh / spawn-tmux.sh / admin-cycle.sh、合計 ~200 lines)</li>
       <li>SKILL.md 3 個 draft (phase-impl / worker-test-ready / administrator)</li>
-      <li>PreToolUse hook 設定 (<code>.claude/hooks/phase-gate.json</code>)</li>
+      <li>PreToolUse hook 設定 (<code>.claude/hooks/phase-gate.json</code>、<a href="gate-hook.html">verified schema</a>)</li>
+      <li><strong>mcp-watchdog.sh 廃止</strong> (research-findings.html §4): twl-watchdog 起動 hook 削除、<code>MCP server 'twl' not connected</code> 時は <code>/mcp</code> 手動 retry を運用ルール化</li>
+      <li><strong>GitHub 公式 MCP 追加</strong> (research-findings.html §3): <code>.mcp.json</code> に <code>github</code> server 追加 (<code>type: "http"</code> + <code>X-MCP-Toolsets: projects,issues,pull_requests,actions,repos</code> + <code>--read-only</code>)</li>
       <li>PoC 完遂: Issue #1660 sanitize を新 architecture で再実装 (6 step フロー、admin polling 検知 → phase-impl spawn → worker spawn → test-scaffold + green-impl + check → mail 集約 → status Implementing → phase-pr → branch protection auto-merge)</li>
     </ul>
   </li>
-  <li><strong>Phase 1 verify points (8 項目)</strong>
+  <li><strong>Phase 1 verify points (12 項目、本 session research 反映済)</strong>
     <ul>
-      <li>3 階層 spawn が動く (<code>tmux list-windows</code> で確認)</li>
-      <li>file mailbox が動く (<code>.mailbox/.../inbox.jsonl</code>)</li>
-      <li>step verification が動く (test 数増加 + RED / GREEN 確認)</li>
-      <li>gate hook が動く (Refined でない Issue に phase-impl 呼び出して deny)</li>
-      <li>admin polling が動く (CronCreate 25 min)</li>
-      <li>context 効率化 (admin token 使用量 &lt; 旧 su-observer)</li>
-      <li>fail-fast at step level (意図的 fail で step abort)</li>
-      <li>PR 完遂 (Issue #1660 auto-merge、Status=Merged)</li>
+      <li><strong>VP-1</strong>: 3 階層 spawn が動く (<code>tmux list-windows</code> で確認)</li>
+      <li><strong>VP-2</strong>: file mailbox が動く (<code>.mailbox/.../inbox.jsonl</code>、flock atomic、Inv T)</li>
+      <li><strong>VP-3</strong>: step verification が動く (test 数増加 + RED / GREEN 確認、Inv U)</li>
+      <li><strong>VP-4</strong>: gate hook が動く (Refined でない Issue に phase-impl 呼び出して deny、Inv W)</li>
+      <li><strong>VP-5</strong>: admin polling が動く (CronCreate recurring=true、25 min cycle、<strong>durable は使わない</strong> #40228)</li>
+      <li><strong>VP-6</strong>: context 効率化 (admin token 使用量 &lt; 旧 su-observer)</li>
+      <li><strong>VP-7</strong>: fail-fast at step level (意図的 fail で step abort)</li>
+      <li><strong>VP-8</strong>: PR 完遂 (Issue #1660 auto-merge、Status=Merged)</li>
+      <li><strong>VP-9</strong> (research §7-2 追加): tier 1 + tier 2 hook が parallel 実行されることを確認 (<code>additionalContext</code> に両方の reason が含まれる)</li>
+      <li><strong>VP-10</strong> (research §7-2 追加): <code>bypassPermissions</code> mode でも tier 2 の <code>deny</code> が効くことを確認 (<code>TWL_PHASE_GATE_BYPASS</code> 未設定で実証)</li>
+      <li><strong>VP-11</strong> (research §7-2 追加): <strong>mcp-watchdog 廃止後</strong>の <code>MCP server 'twl' not connected</code> 発生頻度測定 (active session で 8 時間以上稼働、SIGTERM 発生 / 未発生をログ)</li>
+      <li><strong>VP-12</strong> (research §7-2 追加): <code>twl_send_keys_safe</code> で escape 罠を防げることを確認 (セミコロン / ハイフン / スペース / Escape を含む string を送信して破壊しない)</li>
     </ul>
   </li>
   <li><strong>Phase 2: dual-stack (Day 4-7)</strong> — 残り phase + 旧 freeze
@@ -96,6 +102,9 @@
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §6 (Phase 1 PoC で使う MCP tool)</li>
   <li><a href="deletion-inventory.html">deletion-inventory.html</a> (Phase 3 削除対象詳細)</li>
   <li><a href="regression-test-strategy.html">regression-test-strategy.html</a> (Phase 4 検証戦略)</li>
+  <li><strong>research-findings.html</strong> (公式 verified、120 sources、Critique PASS、本 spec の根拠): <a href="research-findings.html">research-findings.html</a> §4 (mcp-watchdog 4 段階 migration) + §7 (本 session 5 件 WebFetch verified)</li>
+  <li><a href="admin-cycle.html">admin-cycle.html</a> §6 (案 2 先行実装の構成)</li>
+  <li><a href="gate-hook.html">gate-hook.html</a> §11 (Phase 1 PoC verify VP-9〜VP-12 の根拠)</li>
   <li>既存 draft <code>draft-v1.html</code> §11 (原案、archive、図 5 timeline)</li>
 </ul>
 

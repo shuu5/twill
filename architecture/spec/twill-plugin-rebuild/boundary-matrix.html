@@ -15,10 +15,93 @@
   <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
 </header>
 
-<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。draft-v2 の主要 file (README / overview / failure-analysis / adr-fate-table / invariant-fate-table / crash-failure-mode / step-verification / twl-mcp-integration / ssot-design) が先に実装され、本 file は次 session で content 実装される。</div>
+<div class="caution">本 file の<strong>詳細 content 実装は次 session</strong>。本 session で <a href="tool-architecture.html">tool-architecture.html</a> §2 を作成し、tool-* 列 (4 件統合) は確定済。残る administrator / pilot (phase-*) / worker (worker-*) の責務 boundary 詳細は次 session で content 化。</div>
 
 <h2>目的</h2>
 <p>administrator / pilot / worker / tool / phase の 5 entity の責務 boundary を行列形式で明示する。各 entity が何を行う / 行わない / 委譲する かを clean table で定義。</p>
+
+<h2>5x5 boundary matrix (暫定、tool 列のみ verified)</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width: 18%">操作</th>
+      <th>administrator (L0)</th>
+      <th>pilot (phase-*、L1)</th>
+      <th>worker (worker-*、L2)</th>
+      <th>tool-* (独立)</th>
+      <th>phase 概念</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>spawn 元</strong></td>
+      <td>user 直接起動</td>
+      <td>administrator (admin-cycle.sh)</td>
+      <td>pilot (spawn-tmux.sh)</td>
+      <td>user 明示 (tool-architect/self-improve は admin も可)</td>
+      <td>pilot SKILL.md として動作</td>
+    </tr>
+    <tr>
+      <td><strong>spawn 先</strong></td>
+      <td>pilot + tool-* (限定)</td>
+      <td>worker のみ</td>
+      <td>(spawn 禁止)</td>
+      <td>(spawn 禁止)</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>status 遷移</strong></td>
+      <td>read only (Inv I-5)</td>
+      <td>遷移実行 (gh project item-edit)</td>
+      <td>(更新禁止、pilot 経由)</td>
+      <td>無関係 (MUST NOT 触れる)</td>
+      <td>1 status 遷移を 1 phase が担当</td>
+    </tr>
+    <tr>
+      <td><strong>mailbox</strong></td>
+      <td>pilot mail のみ受信 (Inv I-4 pyramid)</td>
+      <td>worker mail 集約 + admin に要約 mail</td>
+      <td>pilot mailbox に書き込み</td>
+      <td>tool-self-improve のみ admin mail (他 3 tool は user 直接)</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>worktree</strong></td>
+      <td>(操作禁止)</td>
+      <td>worker 用 worktree 作成 + 完了時削除 (Inv B)</td>
+      <td>自身の worktree 内で実作業</td>
+      <td>tool-architect が PR 作成時に独自 worktree</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>step.sh</strong></td>
+      <td>(利用しない)</td>
+      <td>worker SKILL.md で step::run 呼び出し</td>
+      <td>step::run で 4 phase lifecycle</td>
+      <td>(利用しない、status と無関係)</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>gate hook</strong></td>
+      <td>(対象外)</td>
+      <td>PreToolUse gate 適用 (Inv W)</td>
+      <td>(対象外、worker は pilot 経由 spawn)</td>
+      <td>(対象外、status と無関係)</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><strong>TWL_AUDIT 出力</strong></td>
+      <td><code>.audit/&lt;run-id&gt;/admin-cycle.jsonl</code></td>
+      <td><code>.audit/&lt;run-id&gt;/pilot/&lt;name&gt;/</code></td>
+      <td><code>.audit/&lt;run-id&gt;/workers/&lt;name&gt;/</code></td>
+      <td><code>.audit/&lt;run-id&gt;/tools/&lt;name&gt;/</code></td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>注: pilot / worker 列の詳細は次 session で content 化 (admin-cycle / spawn-protocol / step-verification の各 file と整合する)。</p>
 
 <h2>想定 outline (次 session で実装)</h2>
 <ol>
@@ -34,6 +117,8 @@
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture)</li>
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (各 entity の不変条件)</li>
+  <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* 4 件の詳細、本 session 新規、tool 列の根拠)</li>
+  <li><a href="admin-cycle.html">admin-cycle.html</a> (administrator 列の詳細、本 session content 化)</li>
   <li>既存 ADR-002 (Controller 統合)、ADR-010 (Pilot active review)、ADR-017 (co-issue v2 Pilot/Worker isolation)</li>
 </ul>
 

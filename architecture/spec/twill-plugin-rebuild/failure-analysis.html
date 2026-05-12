@@ -55,14 +55,29 @@
 </div>
 
 <div class="factor-block">
-  <h3>F-3: deploy / verify の分離欠如 (#1687、5 ヶ月 5 回再発の根本)</h3>
+  <h3>F-3: deploy / verify の分離欠如 + Claude Code stdio MCP 仕様制約 (#1687、5 ヶ月 5 回再発の根本)</h3>
   <p><strong>症状</strong>: <code>mcp-watchdog.sh</code> は実装あるが deploy 経路 (session-start hook) が不在。「実装した = deploy された」という暗黙の前提。5 回再発しているのに毎回「watchdog を改善する」修正で、「watchdog が起動しているか確認する」CI/verification が存在しなかった。</p>
+  <p><strong>本 session で verified された真の root cause</strong> (research session bce9c4e4 + WebFetch <a href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177</a>):</p>
+  <ul>
+    <li><strong>Claude Code は stdio + sdk transport を auto-reconnect から意図的に exclude</strong>。<code>useManageMCPConnections.ts</code> L354-356 でソースコード提示済</li>
+    <li>HTTP/SSE/WebSocket のみ exponential backoff (5 attempts、1→2→4→8→16s) で auto-reconnect</li>
+    <li>修正は 1 行 PR (suggested、未提出): <code>if (configType !== 'sdk')</code> に変更すれば stdio も対象になる</li>
+    <li>サーバー側 watchdog (twl 含む) は orphan 自殺問題 (<a href="https://github.com/anthropics/claude-plugins-official/issues/1478">Issue #1478</a>) で「外部 respawn → 親 PID 変化 → watchdog 自殺」の悪循環</li>
+    <li>つまり <strong>自前 watchdog で解決不能、Claude Code 側の仕様問題</strong>。upstream fix 待ちが正しい対応</li>
+  </ul>
   <p><strong>lesson (MUST)</strong>:</p>
   <ul>
     <li>新規 daemon / watchdog 実装は「<strong>起動 hook</strong>」と「<strong>起動確認テスト</strong>」をセットで実装・merge しなければ Done と見なさない。</li>
-    <li>N 回再発するバグは「同じ修正を繰り返している」というメタシグナル。<strong>root (deploy 経路欠如) を追わない構造的問題</strong>。</li>
+    <li>N 回再発するバグは「同じ修正を繰り返している」というメタシグナル。<strong>root (upstream 仕様 + deploy 経路欠如) を追わない構造的問題</strong>。</li>
+    <li>upstream 仕様の制約は workaround では解決せず、3 経路 (HTTP transport / Plugin Monitors / 諦め + 手動 retry) の段階移行が正解。</li>
   </ul>
-  <p><strong>新 spec での不能化</strong>: Migration Phase 4 で MCP server を Claude Code 標準管理に委譲、自作 watchdog 廃止。</p>
+  <p><strong>新 spec での不能化</strong> (4 段階 migration、<a href="research-findings.html">research-findings.html</a> §4 参照):</p>
+  <ul>
+    <li>Phase 1: 自前 watchdog 廃止、<code>/mcp</code> 手動 retry を運用ルール化</li>
+    <li>Phase 2: server 側を「stdin EOF で素直に exit」に修正</li>
+    <li>Phase 3: HTTP transport 移行検討 (<code>.mcp.json</code> <code>type: "http"</code>)</li>
+    <li>Phase 4: Plugin Monitors (v2.1.105+) + <code>CLAUDE_PLUGIN_DATA</code> 統合の評価</li>
+  </ul>
 </div>
 
 <h2>9 件 P0 bug 詳細 (1 件ずつ)</h2>
@@ -139,15 +154,20 @@
   </tbody>
 </table>
 
-<h3>Bug 7: #1687 twl mcp disconnect (5 回目再発)</h3>
+<h3>Bug 7: #1687 twl mcp disconnect (5 回目再発、本 session で root cause verified)</h3>
 <table class="bug-table">
   <tbody>
     <tr><td>PR / commit</td><td>未マージ (migration Phase 4 対応予定)。過去 4 件 fix: #1506/#1568/#1588/#1612</td></tr>
-    <tr><td>root cause</td><td><code>plugins/twl/scripts/mcp-watchdog.sh</code> 実装は存在するが <strong>deploy 経路が存在しない</strong>。<code>plugins/twl/hooks/hooks.json</code> に mcp-watchdog.sh を起動する hooks エントリが不在。<code>deps.yaml</code> には参照あるが、session-start 時の自動起動 hook が存在しない。加えて Claude Code は stdio MCP server を自動 reconnect しない (upstream bug)。</td></tr>
-    <tr><td>confidence</td><td>verified (hooks.json 全行確認、mcp-watchdog.sh に <code>--daemon</code> flag あるが呼ぶ hook 不在)</td></tr>
-    <tr><td>構造的要因</td><td>「実装した = deploy された」という暗黙の前提。deploy 経路 (session-start hook 登録) の検証プロセスがなかった。5 回再発するが毎回 watchdog を改善する修正で、「watchdog が起動しているか確認する」CI/verification が不在。upstream limitation への対応が watchdog 一本に集中 (単一障害点)。</td></tr>
-    <tr><td>lesson (MUST)</td><td>新規 daemon/watchdog 実装は「起動 hook」と「起動確認テスト」をセットで実装・merge しなければ Done と見なさない。N 回再発するバグは「同じ修正を繰り返している」というメタシグナル、根本を追わなかった構造的問題。外部依存 (upstream bug) への workaround は docs に明記し upstream fix 待ち ticket を作成 (SHOULD)。</td></tr>
-    <tr><td>新 spec で不能化</td><td>Migration Phase 4: hooks を Claude Code 標準 hook で置換。MCP server は Claude Code が標準管理し、session-start hook に watchdog を仕込む代わりに Claude Code の native session management に委譲。</td></tr>
+    <tr><td>root cause (本 session で <strong>verified</strong>)</td><td>
+      二重原因:<br>
+      (1) <strong>Claude Code upstream 仕様</strong>: stdio + sdk transport は <code>useManageMCPConnections.ts</code> L354-356 で auto-reconnect から意図的に exclude。HTTP/SSE/WebSocket のみ retry。<a href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177 OPEN</a>、修正は 1 行 PR (suggested、未提出)。<br>
+      (2) <strong>twl 側 deploy 経路欠如</strong>: <code>plugins/twl/scripts/mcp-watchdog.sh</code> 実装あるが <code>plugins/twl/hooks/hooks.json</code> に session-start hook 登録なし、<code>--daemon</code> flag を呼ぶ経路不在。<br>
+      自前 watchdog は orphan 自殺問題 (<a href="https://github.com/anthropics/claude-plugins-official/issues/1478">Issue #1478</a>) で悪循環。
+    </td></tr>
+    <tr><td>confidence</td><td><strong>verified</strong> (本 session で WebFetch + ソースコード提示: <code>useManageMCPConnections.ts</code> L354-356 + research session bce9c4e4 で 120 sources 統合)</td></tr>
+    <tr><td>構造的要因</td><td>「実装した = deploy された」という暗黙の前提 + upstream limitation の認識不足。5 回再発するが毎回 watchdog を改善する修正で、upstream 仕様 (stdio reconnect なし) を見ていなかった。サーバー側 watchdog は orphan 自殺で逆効果のリスクあり。</td></tr>
+    <tr><td>lesson (MUST)</td><td>新規 daemon/watchdog 実装は「起動 hook」と「起動確認テスト」をセットで実装・merge しなければ Done と見なさない。N 回再発するバグは「同じ修正を繰り返している」というメタシグナル、upstream + 自前の両 root を追う構造的問題。外部依存 (upstream bug) への workaround は docs 明記 + upstream fix 待ち ticket 作成 (SHOULD)。</td></tr>
+    <tr><td>新 spec で不能化</td><td>4 段階 migration (<a href="research-findings.html">research-findings.html</a> §4 verified): Phase 1 = 自前 watchdog 廃止 + <code>/mcp</code> 手動 retry、Phase 2 = stdin EOF graceful exit、Phase 3 = HTTP transport 移行、Phase 4 = Plugin Monitors (v2.1.105+) + <code>CLAUDE_PLUGIN_DATA</code> 統合。</td></tr>
   </tbody>
 </table>
 
@@ -225,11 +245,12 @@
 <h2>関連 spec ファイル</h2>
 
 <ul>
-  <li>各 lesson の構造的不能化の詳細実装: <a href="step-verification.html">step-verification.html</a> / <a href="spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="gate-hook.html">gate-hook.html</a> (outline)</li>
+  <li>各 lesson の構造的不能化の詳細実装: <a href="step-verification.html">step-verification.html</a> / <a href="spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="gate-hook.html">gate-hook.html</a> (verified content、本 session 更新)</li>
   <li>失敗から導かれる crash failure mode 全体: <a href="crash-failure-mode.html">crash-failure-mode.html</a></li>
   <li>ADR 全件継承戦略: <a href="adr-fate-table.html">adr-fate-table.html</a> (ADR-025 Known Gap 4 解消含む)</li>
   <li>不変条件継承戦略: <a href="invariant-fate-table.html">invariant-fate-table.html</a> (不変条件 K/L/R/S 強化)</li>
-  <li>twl MCP 継承戦略: <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> (本 session 新規)</li>
+  <li>twl MCP 継承戦略: <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> (Phase 5 本 session 更新)</li>
+  <li><strong>verified 根拠 (research session)</strong>: <a href="research-findings.html">research-findings.html</a> §1 KP-3 (stdio MCP auto-reconnect) + §1 KP-4 (watchdog orphan 自殺)</li>
 </ul>
 
 <h2>audit source</h2>

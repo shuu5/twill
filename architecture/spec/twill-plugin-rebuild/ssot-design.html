@@ -246,6 +246,10 @@ step::run \
 
 <h3>3.3 step::run framework (pseudo-code、~80 lines)</h3>
 
+<div class="caution">
+<strong>bash 互換性注記 (verified、Agent A 指摘)</strong>: 以下の pseudo-bash で <code>local -n opts_ref</code> (nameref) を使用しているが、これは <strong>bash 4.3+ 限定</strong> の機能。twill は Linux 前提 + bash 5.x が typical だが、CI image / 移植先 (macOS デフォルト bash 3.2、Alpine 系) で動作しない可能性。Phase 1 PoC で CI image の bash version を verify、必要に応じて key=value array dispatching 等の非 nameref 実装に置換する。
+</div>
+
 <p><code>plugins/twl/scripts/steps/lib/step.sh</code>:</p>
 
 <pre><code>#!/bin/bash
@@ -531,7 +535,17 @@ def audit_steps_integrity(deps_yaml_path: Path, steps_dir: Path) -&gt; list[dict
   </tbody>
 </table>
 
-<h2>§7. 関連 spec ファイル</h2>
+<h2>§7. tmux / gh CLI wrapper 粒度 (research-findings KP-7/KP-8 反映)</h2>
+
+<p><a href="research-findings.html">research-findings.html</a> KP-7 (tmux 罠) + KP-8 (MCP 化粒度) の verified finding を反映:</p>
+
+<ul>
+  <li>step.sh 内で tmux 操作は <strong>MCP tool 経由</strong> (<code>twl_send_keys_safe</code> / <code>twl_pane_state</code> / <code>twl_new_window</code>) が推奨。素の <code>tmux send-keys</code> は escape 罠 (セミコロン / ハイフン / スペース脱落 / Escape timing) のため避ける</li>
+  <li>step.sh 内で gh 操作は <strong>bash 直接呼び出し</strong> (<code>gh project item-edit --single-select-option-id</code>) で十分。GraphQL を LLM に書かせない</li>
+  <li>「1 行コマンド = 1 MCP tool」薄ラッパーは Anthropic 公式推奨に反する (MCP は CLI 35x token、reliability 100% → 72%)。step.sh と MCP tool の粒度は workflow 統合型 (<code>twl_issue_promote</code> 等) を優先</li>
+</ul>
+
+<h2>§8. 関連 spec ファイル</h2>
 
 <ul>
   <li>step verification framework 詳細: <a href="step-verification.html">step-verification.html</a> (Inv U の根拠、step.sh framework 設計の前身)</li>
@@ -541,6 +555,7 @@ def audit_steps_integrity(deps_yaml_path: Path, steps_dir: Path) -&gt; list[dict
   <li>dual-stack 移行ルール: <a href="dual-stack-routing.html">dual-stack-routing.html</a> (outline、次 session)</li>
   <li>Phase 1 PoC 詳細: <a href="rebuild-plan.html">rebuild-plan.html</a> (outline、次 session)</li>
   <li>削除 inventory: <a href="deletion-inventory.html">deletion-inventory.html</a> (outline、次 session)</li>
+  <li><strong>verified 根拠 (research session)</strong>: <a href="research-findings.html">research-findings.html</a> §1 KP-7 (tmux 罠) + KP-8 (MCP 粒度) + §6 (リスク・落とし穴)</li>
 </ul>
 
 <h2>§8. audit source</h2>

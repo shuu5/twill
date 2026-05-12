@@ -65,8 +65,17 @@ if mcp is not None:
 <ul>
   <li><code>fastmcp</code> なし環境でも <code>twl_validate_handler()</code> を直接 import して in-process テスト可能</li>
   <li>handler 関数は副作用最小、入出力は JSON 互換 dict</li>
-  <li><code>_to_hook_output()</code> (tools.py L1409) は Claude Code 2.1.x の HookOutput Zod schema 変換層で、legacy <code>decision="allow/deny"</code> を <code>"approve/block"</code> に正規化</li>
+  <li><code>_to_hook_output()</code> (tools.py L1409) は Claude Code 2.1.x の HookOutput schema 変換層</li>
 </ul>
+
+<div class="critical">
+<strong>本 session で verified された訂正</strong>: 旧 spec の「<code>_to_hook_output</code> が <code>decision="allow/deny"</code> を <code>"approve/block"</code> に正規化」は誤り。
+公式 schema (<a href="https://code.claude.com/docs/en/hooks">WebFetch verified</a>) は:
+<pre style="background: #1a2025; color: #e3e8eb; padding: 8px 12px; font-size: 12px; line-height: 1.5; border-radius: 4px;">{ "hookSpecificOutput": { "hookEventName": "PreToolUse",
+    "permissionDecision": "allow|deny|ask|defer",
+    "permissionDecisionReason": "..." } }</pre>
+existing <code>tools.py</code> の <code>_to_hook_output</code> 実装は実コード確認が必要。仮に古い enum (<code>approve/block</code>) を返している場合は新 schema (<code>allow/deny</code>) に修正必須 (Phase 1 PoC で確認、<a href="research-findings.html">research-findings.html</a> §7 verified)。
+</div>
 
 <h3>1.2 登録済み 30+ tool の分類</h3>
 
@@ -85,14 +94,15 @@ if mcp is not None:
   </tbody>
 </table>
 
-<h3>1.3 継承すべき設計原則 (MUST)</h3>
+<h3>1.3 継承すべき設計原則 (MUST、verified)</h3>
 
 <div class="success">
   <strong>MUST</strong>:
   <ul>
-    <li>MCP server は <strong>単一 <code>tools.py</code> + handler 関数 (<code>*_handler</code> suffix) 分離パターン</strong> で維持する (in-process テスト可能性の保証)</li>
-    <li><code>_to_hook_output</code> の <strong>HookOutput Zod schema 変換層</strong>を維持する (Claude Code 2.1.x+ 互換性)</li>
+    <li>MCP server は <strong>単一 <code>tools.py</code> + handler 関数 (<code>*_handler</code> suffix) 分離パターン</strong> で維持する (in-process テスト可能性の保証)。<strong>ただし「deferred-tool 戦略」は公式 fastmcp docs に記載なし</strong>、twill 独自パターン (<a href="research-findings.html">research-findings.html</a> §7 verified)</li>
+    <li><code>_to_hook_output</code> は <strong>公式 schema (<code>permissionDecision: "allow"|"deny"|"ask"|"defer"</code>)</strong> に準拠する。旧 enum (<code>"approve"/"block"</code>) を残している場合は修正必須 (本 session WebFetch verified)</li>
     <li>handler 関数は純 Python (副作用最小、入出力 JSON 互換) を MUST</li>
+    <li>新規 hook 設計時は <code>matcher</code> (単数、<code>matchers</code> ではない) + <code>hooks: [...]</code> 配列構造を MUST、template 変数展開は <strong>非サポート</strong>、stdin JSON で受信</li>
   </ul>
 </div>
 
@@ -451,6 +461,8 @@ worker
   <li>削除 inventory 全体: <a href="deletion-inventory.html">deletion-inventory.html</a> (outline、次 session)</li>
   <li>既存資産の継承 catalog: <a href="pitfalls-inheritance.html">pitfalls-inheritance.html</a> (outline、次 session)</li>
   <li>既存 ADR-029 (MCP 中心 4 epic): <a href="adr-fate-table.html">adr-fate-table.html</a> (部分 Superseded)</li>
+  <li><strong>research session bce9c4e4 verified (120 sources、本 session)</strong>: <a href="research-findings.html">research-findings.html</a> §2 (tool inventory 15-18 件)、§3 (GitHub 公式 MCP 委譲)、§4 (mcp-watchdog 4 段階 migration)、§5 (tier 1+2 階層防御)</li>
+  <li>PreToolUse hook gate (公式 verified content): <a href="gate-hook.html">gate-hook.html</a> (本 session 更新)</li>
 </ul>
 
 <h2>audit source</h2>

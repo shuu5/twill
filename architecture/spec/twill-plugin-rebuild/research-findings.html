@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>twill plugin rebuild — research findings (verified)</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  /* file-specific accent: research は point #8b7f2c で「verified knowledge」を象徴 */
+  header.doc-header { border-bottom: 3px solid var(--point-fg); }
+  .kp { background: var(--gray-50); border-left: 4px solid var(--point-fg); padding: 12px 16px; margin: 12px 0; border-radius: var(--radius-md); }
+  .kp h4 { margin-top: 0; }
+  .kp .src { font-size: 12px; color: var(--gray-600); margin-top: 8px; }
+  .findings-table { font-size: 14px; }
+  .findings-table th, .findings-table td { padding: 6px 10px; }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>research findings — twl MCP 再設計 + 公式 verify 結果</h1>
+  <div class="meta">draft-v2 (2026-05-12) &middot; research session bce9c4e4 (120 sources、Critique PASS) + 本 session WebFetch 5 件 verify</div>
+</header>
+
+<div class="info">
+  <strong>目的</strong>: 本 spec の根拠となる research session の主要 finding を保全 + 本 session で実施した公式 docs WebFetch verify の結果を集約。LLM の知識陳腐化リスクに対する一次 source 引用層として機能。<br>
+  <br>
+  <strong>session ID</strong>: <code>bce9c4e4</code> (2026-05-12)、6 researcher 並列 + critique PASS、doobidoo hash <code>6fdf1d0b</code><br>
+  <br>
+  <strong>snapshot location</strong>: <code>/tmp/research-search-bce9c4e4/</code> (本 session 中 active、final report 503 行 + integrated findings 682 行 + 120 sources)
+</div>
+
+<h2>§0. エグゼクティブ・サマリー (5 件、verified)</h2>
+
+<ol>
+  <li><strong>twl MCP は thin helper として維持・縮小、公式 <code>github/github-mcp-server</code> に大半を委譲</strong>。Branch protection 操作と Issue → Project item linkage の自動化のみ twl 側で wrapper 化する価値あり。</li>
+  <li><strong>「1 行コマンド = 1 tool」薄ラッパーは Anthropic 公式推奨に反する</strong>。MCP は CLI 単独より 35x token 重く、reliability も 100% → 72% に低下する benchmark あり。workflow 統合型 tool (<code>twl_issue_promote</code> 等) を coarse-grained に設計し、tool 総数 20 前後を目標。</li>
+  <li><strong>mcp-watchdog (Bug #1687) は廃止が最適</strong>。Claude Code は stdio MCP を auto-reconnect しない仕様 (Issue #43177)、サーバー側 watchdog は orphan 自殺で逆効果 (Issue #1478)。代替は ① HTTP transport 移行 ② Plugin Monitors (v2.1.105+) ③ stdin EOF で素直に exit + 必要時 <code>/reload-plugins</code> 手動 の 3 経路。</li>
+  <li><strong>PreToolUse hook + MCP shadow tier は公式仕様で実現可能</strong>。tier 1 = <code>command</code> hook (粗フィルタ + daemon spawn 不可)、tier 2 = <code>mcp_tool</code> hook (接続済み MCP で stateful 判定) を並列実行、<code>deny &gt; ask &gt; allow</code> の最 restrictive 勝ち、<code>bypassPermissions</code> でも貫通。不変条件 W (status gate 機械化) は実装可能。</li>
+  <li><strong>tmux と gh CLI は MCP 化より bash helper + PreToolUse hook が現実的</strong>。tmux send-keys の escape 罠と <code>tmux -C kill-server</code> の破壊性は wrapper で必ず吸収。<code>gh project item-edit --single-select-option-id</code> で status 更新は CLI 単発完結、GraphQL を LLM に書かせる不安定さを排除可能。</li>
+</ol>
+
+<h2>§1. Key Points (8 件、120 sources verified)</h2>
+
+<div class="kp">
+  <h4>KP-1. GitHub 公式 MCP v1.0.4 は Project v2 status 更新を含む 79 tools サポート [verified]</h4>
+  <ul>
+    <li>19 toolset、<code>projects_write.update_project_item_field</code> で Status field 更新可能</li>
+    <li><strong>しかし Branch protection 専用 tool は存在しない</strong> → <code>gh api</code> 経由 or twl 側で wrapper 必須</li>
+    <li>Issue #2255 (open): issue → project item lookup → update の自動 workflow は未完全</li>
+  </ul>
+  <div class="src">source: <a href="https://github.com/github/github-mcp-server">github/github-mcp-server</a>、<a href="https://github.com/github/github-mcp-server/issues/2255">Issue #2255</a></div>
+</div>
+
+<div class="kp">
+  <h4>KP-2. gh CLI 単発で Project Board status 更新が完結 (GraphQL 不要) [verified]</h4>
+  <ul>
+    <li><code>gh project item-edit --project-id PVT_... --id PVTI_... --field-id PVTSSF_... --single-select-option-id OPT_ID</code> で status 変更</li>
+    <li><code>gh project field-list --format json</code> で field_id + option_id をワンショット取得、起動時 1 回キャッシュ</li>
+    <li><strong>LLM が GraphQL mutation を毎回生成する不安定さを完全排除可能</strong></li>
+  </ul>
+  <div class="src">source: <a href="https://cli.github.com/manual/gh_project_item-edit">gh project item-edit manual</a></div>
+</div>
+
+<div class="kp">
+  <h4>KP-3. Claude Code stdio MCP は auto-reconnect しない (Bug #1687 根本) [verified]</h4>
+  <ul>
+    <li>Issue #43177 でソースコード <code>useManageMCPConnections.ts</code> L354-356 で stdio + sdk transport は再接続から明示的に除外</li>
+    <li>HTTP/SSE/WebSocket のみ exponential backoff (5 attempts、1→2→4→8→16s)</li>
+    <li>v2.1.121 で初期接続は 3 回リトライ追加、ただし mid-session disconnect は未対応</li>
+    <li>修正は 1 行 PR で可能 (suggested、未提出)</li>
+  </ul>
+  <div class="src">source: <a href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177</a>、<a href="https://github.com/anthropics/claude-code/issues/40207">Issue #40207</a></div>
+</div>
+
+<div class="kp">
+  <h4>KP-4. サーバー側 watchdog は orphan 自殺問題で逆効果リスク [verified]</h4>
+  <ul>
+    <li>telegram plugin <code>server.ts</code> L658-664 の orphan watchdog: <code>process.stdin.destroyed</code> 検出で自殺</li>
+    <li>「外部から respawn しても親 PID 変化で再度 watchdog 自殺の悪循環」と公式 issue で報告</li>
+    <li>MCP プロトコル仕様: 「Servers SHOULD exit promptly when stdin is closed」(stdin EOF = portable graceful shutdown signal)</li>
+  </ul>
+  <div class="src">source: <a href="https://github.com/anthropics/claude-plugins-official/issues/1478">Issue #1478</a></div>
+</div>
+
+<div class="kp">
+  <h4>KP-5. Anthropic 公式は coarse-grained tool を推奨、「1 API endpoint = 1 tool」は anti-pattern [verified]</h4>
+  <ul>
+    <li>「Tools can consolidate functionality, handling potentially multiple discrete operations (or API calls) under the hood」</li>
+    <li>「More tools don't always lead to better outcomes」</li>
+    <li><strong>MindStudio benchmark: MCP は CLI の 35x token を消費、複雑タスクで reliability 100% → 72% に低下</strong></li>
+    <li>50 tools = 10,000-25,000 tokens (definition のみ、call 前)</li>
+  </ul>
+  <div class="src">source: <a href="https://www.anthropic.com/engineering/writing-tools-for-agents">Anthropic Writing tools for agents</a></div>
+</div>
+
+<div class="kp">
+  <h4>KP-6. PreToolUse hook で status gate 機械化 (不変条件 W) は実装可能 [verified]</h4>
+  <ul>
+    <li>tier 1 = <code>command</code> hook + <code>if: "Skill(phase-impl*)"</code> 等で粗フィルタ</li>
+    <li>tier 2 = <code>mcp_tool</code> hook で接続済み twl MCP の stateful 判定</li>
+    <li>同 event の全 hook が parallel 実行、<code>permissionDecision</code> は <code>deny &gt; ask &gt; allow</code> の最 restrictive 勝ち</li>
+    <li><strong>PreToolUse は permission mode より先に発火、<code>bypassPermissions</code> や <code>--dangerously-skip-permissions</code> でも <code>deny</code> は効く</strong></li>
+  </ul>
+  <div class="src">source: <a href="https://code.claude.com/docs/en/hooks">Claude Code Hooks reference</a></div>
+</div>
+
+<div class="kp">
+  <h4>KP-7. tmux 操作は LLM の素直な記述で安定しない [verified]</h4>
+  <ul>
+    <li>send-keys の罠: セミコロン (<a href="https://github.com/tmux/tmux/issues/4350">Issue #4350</a>)、ハイフン先頭 (<a href="https://github.com/tmux/tmux/issues/4408">Issue #4408</a>)、スペース脱落 (<a href="https://github.com/tmux/tmux/issues/1425">Issue #1425</a>)、Escape timing (Discussion #4482)</li>
+    <li><code>tmux -C</code> (control mode) で <code>kill-server</code> 含む任意 tmux コマンドが実行可能、出力は valid UTF-8 でない可能性あり</li>
+    <li>pane state は capture-pane でなく <strong>format 変数</strong> (<code>#{pane_dead}</code>, <code>#{pane_active}</code>, <code>#{pane_in_mode}</code>) が信頼できる</li>
+  </ul>
+  <div class="src">source: <a href="https://github.com/tmux/tmux/wiki/Control-Mode">tmux Control Mode Wiki</a></div>
+</div>
+
+<div class="kp">
+  <h4>KP-8. MCP の正当化は workflow 統合 / 動的 discovery / 型安全に集約 [verified]</h4>
+  <ul>
+    <li>単純な 1 行コマンドラッパーは Bash tool で直接実行で十分 (CLI 100% reliability)</li>
+    <li>MCP 化の価値: ① 複数 CLI を統合した workflow ② Issue 番号 → URL 変換などの前処理 ③ field_id / option_id キャッシュ ④ destructive hint / OAuth などのメタ情報</li>
+    <li>handler 分離パターンは推奨だが「絶対」ではない: FastMCP <code>Client</code> で in-memory test 可能、新規実装で必須ではない</li>
+  </ul>
+  <div class="src">source: <a href="https://jlowin.dev/blog/stop-vibe-testing-mcp-servers">Stop Vibe-Testing Your MCP Server</a>、<a href="https://gofastmcp.com/servers/tools">FastMCP Tools docs</a></div>
+</div>
+
+<h2>§2. twl MCP tool inventory 推奨案 (15-18 件)</h2>
+
+<table class="findings-table">
+  <thead>
+    <tr><th>カテゴリ</th><th>tool 名</th><th>機能</th><th>verdict</th></tr>
+  </thead>
+  <tbody>
+    <tr><td rowspan="4"><strong>Project Board</strong></td><td><code>twl_status_set</code></td><td>issue/PR number → project item ID lookup → status field 更新 (workflow 統合)</td><td>新規 (Inv W 関連)</td></tr>
+    <tr><td><code>twl_status_get</code></td><td>単一 item の status 取得 (cache を返す)</td><td>新規</td></tr>
+    <tr><td><code>twl_issue_promote</code></td><td>status 遷移 + label 更新 + comment 投稿の 3 操作を 1 tool に統合</td><td>新規 (coarse-grained)</td></tr>
+    <tr><td><code>twl_branch_protection_set/get</code></td><td><code>gh api</code> 経由 REST/GraphQL の薄ラッパー</td><td>新規 (公式 MCP 未対応)</td></tr>
+    <tr><td rowspan="3"><strong>tmux 観測</strong></td><td><code>twl_pane_state</code></td><td>format 変数ベースの pane state 取得</td><td>新規 (capture-pane でなく format 変数)</td></tr>
+    <tr><td><code>twl_send_keys_safe</code></td><td>escape を確実に吸収する send-keys ラッパー (target ID 強制)</td><td>新規 (escape 罠を構造的に防止)</td></tr>
+    <tr><td><code>twl_capture_pane</code></td><td><code>capture-pane -p -S -N</code> の薄ラッパー</td><td>既存継承</td></tr>
+    <tr><td>tmux 操作</td><td><code>twl_new_window</code>, <code>twl_list_windows</code>, <code>twl_get_budget</code></td><td>administrator polling 用</td><td>既存継承</td></tr>
+    <tr><td>phase gate</td><td><code>twl_phase_gate_check</code></td><td>tier 2 として Project Board status を query、不変条件 W 機械化</td><td>新規</td></tr>
+    <tr><td>step verification</td><td><code>twl_step_run</code> post-verify</td><td>step.sh framework の post-verify 機械検証 (Inv U)</td><td>新規 (Phase 1 PoC)</td></tr>
+    <tr><td>mailbox</td><td><code>twl_mailbox_read/write</code></td><td>per-Worker file mailbox (flock atomic、Inv T)</td><td>新規</td></tr>
+    <tr><td>monorepo audit</td><td><code>twl_validate</code>, <code>twl_check</code>, <code>twl_audit</code>, <code>twl_validate_deps</code></td><td>既存 10 audit sections の継承 (section 9 のみ再実装)</td><td>既存継承</td></tr>
+  </tbody>
+</table>
+
+<h3>2.1 廃止 (Phase 4 cleanup)</h3>
+
+<ul>
+  <li><code>twl_orchestrator_*</code> (orchestrator 概念廃止)</li>
+  <li><code>twl_state_read/write</code>, <code>twl_get_session_state</code>, <code>twl_audit_session</code> (per-Worker mailbox に置換)</li>
+  <li><code>twl_send_msg/recv_msg/notify_supervisor</code> (mailbox 統一)</li>
+  <li><code>twl_validate_commit</code> (no-op stub、bash hook のみ残す)</li>
+  <li><code>twl_spawn_controller/feature_dev</code> (tmux new-window 直接呼び出しに簡素化)</li>
+  <li><code>twl_check_completeness</code>, <code>twl_check_specialist</code> (subagent 直接読み取りに置換可)</li>
+</ul>
+
+<h2>§3. GitHub 公式 MCP 委譲 (`.mcp.json` 追加)</h2>
+
+<pre><code>{
+  "mcpServers": {
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_PAT}",
+        "X-MCP-Toolsets": "projects,issues,pull_requests,actions,repos"
+      }
+    }
+  }
+}</code></pre>
+
+<table>
+  <thead>
+    <tr><th>機能</th><th>公式 MCP 対応</th><th>推奨運用</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Issue CRUD + sub-issue</td><td><code>issues</code> toolset</td><td>完全委譲</td></tr>
+    <tr><td>PR CRUD + review + merge</td><td><code>pull_requests</code> toolset</td><td>完全委譲</td></tr>
+    <tr><td>Actions workflow_dispatch</td><td><code>actions</code> toolset</td><td>完全委譲</td></tr>
+    <tr><td>Project v2 item add/delete/field update</td><td><code>projects</code> toolset</td><td>基本操作は委譲、linkage は twl 側 (<code>twl_status_set</code>)</td></tr>
+    <tr><td>Repository file operations</td><td><code>repos</code> toolset</td><td>完全委譲</td></tr>
+    <tr><td><strong>Branch protection 操作</strong></td><td>未対応</td><td>twl の <code>twl_branch_protection_*</code> で <code>gh api</code> ラップ</td></tr>
+  </tbody>
+</table>
+
+<div class="critical">
+<strong>運用上の制約 (verified)</strong>:
+<ul>
+  <li><strong>Prompt injection 脆弱性</strong> (Invariant Labs 2025-05 公表): cross-repository data leakage 攻撃、"no easy solution" 評価</li>
+  <li>緩和策: <code>--read-only</code> モードまたは信頼 repo 限定運用</li>
+  <li>selective toolset 必須 (<code>--toolsets projects,issues,pull_requests,actions,repos</code>)、<code>copilot</code> <code>discussions</code> 等を無効化して token 削減</li>
+  <li>PAT scope: <code>repo</code>, <code>read:packages</code>, <code>read:org</code>, <code>project</code> (projects toolset 使用時)</li>
+  <li><strong><code>GITHUB_TOKEN</code> は project scope なし</strong>、GitHub Actions で project 操作には PAT 必須</li>
+</ul>
+</div>
+
+<h2>§4. mcp-watchdog 廃止 (Bug #1687) の 4 段階 migration</h2>
+
+<table>
+  <thead>
+    <tr><th>段階</th><th>方針</th><th>tools</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Phase 1 PoC</strong></td>
+      <td>現状 stdio 維持、twl-watchdog 廃止。<code>MCP server 'twl' not connected</code> 発生時は <code>/mcp</code> 手動 retry を運用ルール化</td>
+      <td>既存 stdio</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 2 dual-stack</strong></td>
+      <td>server 側を「stdin EOF で素直に exit」に修正 (orphan 自殺ロジック削除)</td>
+      <td>stdio 改善</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 3 cutover</strong></td>
+      <td>HTTP transport 移行検討、<code>.mcp.json</code> schema を <code>streamable-http</code> でテスト</td>
+      <td>HTTP transport</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 4 cleanup</strong></td>
+      <td>Plugin 化 + <code>CLAUDE_PLUGIN_DATA</code> 統合の評価</td>
+      <td>Plugin Monitors (v2.1.105+)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>§5. tier 1 + tier 2 階層防御 (gate-hook 詳細)</h2>
+
+<p>本 section の詳細実装は <a href="gate-hook.html">gate-hook.html</a> 参照。要点:</p>
+
+<ul>
+  <li><strong>tier 1</strong> = <code>command</code> hook + <code>if: "Skill(phase-impl-*)"</code> で粗フィルタ、fast path (50ms 以内)</li>
+  <li><strong>tier 2</strong> = <code>mcp_tool</code> hook = <code>twl_phase_gate_check</code> で stateful 判定 (<code>gh project item-list</code> ベース)</li>
+  <li>parallel 実行、<code>deny &gt; ask &gt; allow</code> 最 restrictive 勝ち</li>
+  <li><code>bypassPermissions</code> でも tier 2 deny 効く (Inv W 構造的保証)</li>
+</ul>
+
+<h2>§6. リスク・落とし穴 (6 件、verified)</h2>
+
+<ol>
+  <li><strong>GitHub 公式 MCP の prompt injection 脆弱性</strong> [verified、★警告]: 2025-05 Invariant Labs 公表、no easy solution。緩和は <code>--read-only</code> + 信頼 repo 限定</li>
+  <li><strong><code>addProjectV2ItemById</code> 2026-03 platform regression</strong> [uncertain]: <code>success: true</code> でも item が永続化されないバグ報告あり (community discussion #188487)。対策: twl 側で retry + verify</li>
+  <li><strong>tmux 操作の罠</strong> [verified、wrapper 必須]: send-keys のセミコロン / ハイフン / スペース / Escape / control mode 危険</li>
+  <li><strong>Claude Code SessionStart hook の制約</strong> [verified]: v2.1.87+ で SessionStart hook が background process spawn すると claude-code が無限 hang (<a href="https://github.com/anthropics/claude-code/issues/43123">Issue #43123</a>)。対策: <code>nohup ... &lt;/dev/null &gt;/dev/null 2&gt;&amp;1 &amp;</code> で完全 fd 切断、または Plugin Monitors</li>
+  <li><strong>GitHub Actions の SLA 制約</strong> [verified]: cron 最小 5 分、遅延・drop あり、public repo 60 日無活動で無効化</li>
+  <li><strong><code>GITHUB_TOKEN</code> の Project Board 操作不可</strong> [verified、★]: project scope なし、PAT 必須</li>
+</ol>
+
+<h2>§7. 本 session で WebFetch verified した 5 件 (公式 docs)</h2>
+
+<table>
+  <thead>
+    <tr><th>verify 対象</th><th>結果</th><th>source</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>PreToolUse hook JSON schema</td>
+      <td><code>matcher</code> (単数) + <code>hooks</code> 配列 + <code>permissionDecision: "allow|deny|ask|defer"</code>。template 変数展開 (<code>{{...}}</code>) は <strong>非サポート</strong>、stdin JSON のみ</td>
+      <td><a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></td>
+    </tr>
+    <tr>
+      <td>hook exit code</td>
+      <td><code>0</code> = success (JSON parse)、<code>2</code> = blocking error (deny)、<code>1</code> = non-blocking error (allow)。<code>exit 1</code> = deny は <strong>誤り</strong></td>
+      <td>同上</td>
+    </tr>
+    <tr>
+      <td>CronCreate durable=true</td>
+      <td><strong>BROKEN</strong> (<a href="https://github.com/anthropics/claude-code/issues/40228">Issue #40228 OPEN</a>): 永続化されない、<code>scheduled_tasks.json</code> 作成されない、session-scoped only</td>
+      <td>同上 + #40228</td>
+    </tr>
+    <tr>
+      <td>ScheduleWakeup / Snooze</td>
+      <td><code>ScheduleWakeup</code> は公式 docs に存在せず、<code>CronCreate</code> + <code>/loop</code> dynamic mode が代替。<code>Snooze</code> も本 fetch 内で確認できず</td>
+      <td>code.claude.com/docs/en/scheduled-tasks</td>
+    </tr>
+    <tr>
+      <td>fastmcp v3.0.0 API</td>
+      <td><code>@mcp.tool</code> (括弧なし) も OK、annotations 4 つは advisory hint、<strong>deferred-tool パターンは公式 docs 記載なし</strong> (本 spec の継承戦略は実装側の独自 pattern)</td>
+      <td><a href="https://gofastmcp.com/servers/tools">gofastmcp.com/servers/tools</a></td>
+    </tr>
+    <tr>
+      <td>MCP stdio auto-reconnect (#43177)</td>
+      <td>stdio + sdk transport は <code>useManageMCPConnections.ts</code> L354-356 で <strong>意図的に exclude</strong>、HTTP/SSE/WebSocket のみ retry。修正は 1 行 PR (suggested、未提出)</td>
+      <td>github.com/anthropics/claude-code/issues/43177</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>§8. 関連 spec 更新箇所</h2>
+
+<ul>
+  <li><a href="gate-hook.html">gate-hook.html</a>: §4 (tier 1 + tier 2 階層防御)、verified schema で全面書き直し済</li>
+  <li><a href="admin-cycle.html">admin-cycle.html</a>: CronCreate 公式制約反映 (#40228 known bug + session-scoped) + 案 2 先行実装の構成</li>
+  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a>: §2 tool inventory を本 §2 で 15-18 件確定、§5 tier 階層を本 §5 参照</li>
+  <li><a href="failure-analysis.html">failure-analysis.html</a>: Bug #1687 root cause を本 KP-3 + KP-4 で verified に格上げ予定</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a>: Phase 1 PoC verify points に #9-#12 追加予定</li>
+  <li><a href="ssot-design.html">ssot-design.html</a>: KP-8 (tool 化粒度) で tmux wrapper の 1 行 vs script 判断材料追加</li>
+</ul>
+
+<h2>§9. snapshot location</h2>
+
+<ul>
+  <li><strong>final report</strong>: <code>/tmp/research-search-bce9c4e4/02-final-report.md</code> (503 行、本 file の元データ)</li>
+  <li><strong>integrated findings</strong>: <code>/tmp/research-search-bce9c4e4/01-integrated-findings.md</code> (682 行、6 researcher 統合)</li>
+  <li><strong>critique result</strong>: <code>/tmp/research-search-bce9c4e4/critique-result.md</code> (Critique PASS、9.875 KB)</li>
+  <li><strong>workers</strong>: <code>/tmp/research-search-bce9c4e4/workers/researcher-{1..6}.md</code> (各 researcher の調査出力)</li>
+  <li><strong>doobidoo hash</strong>: <code>6fdf1d0b69a4d272111ec9fb34052914fab546c1bc6c61cbd4b006c48e4cc345</code> (memory_search で復元可)</li>
+  <li><strong>本 session 追加 doobidoo hash</strong>: 本 session 終了時に追加 (research-findings.html 取り込み完了の記録)</li>
+</ul>
+
+</body>
+</html>

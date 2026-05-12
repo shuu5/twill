@@ -2,59 +2,354 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>admin-cycle — outline</title>
+<title>twill plugin rebuild — administrator polling cycle (公式 verified)</title>
 <link rel="stylesheet" href="common.css">
 <style>
-  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+  /* file-specific accent: admin-cycle は brand #5ac8b8 で「全体采配」を象徴 */
+  header.doc-header { border-bottom: 3px solid var(--brand); }
+  .inv-row { display: grid; grid-template-columns: 100px 1fr; gap: 8px 14px; margin: 8px 0; }
+  .inv-row dt { font-weight: 700; color: var(--gray-700); font-size: 14px; line-height: 1.65; letter-spacing: normal; font-feature-settings: normal; }
+  .inv-row dd { margin: 0; line-height: 1.65; }
+  .official-quote { background: var(--gray-50); border-left: 4px solid var(--brand); padding: 12px 16px; margin: 16px 0; border-radius: var(--radius-md); font-size: 14px; }
+  .official-quote .src { font-size: 12px; color: var(--gray-600); margin-top: 8px; }
 </style>
 </head>
 <body>
 
 <header class="doc-header">
-  <h1>admin-cycle — outline</h1>
-  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+  <h1>administrator polling cycle — 6-step + 不変条件 I-1〜I-7 (公式 verified)</h1>
+  <div class="meta">draft-v2 (2026-05-12) &middot; CronCreate 制約反映済 (#40228 known bug 対応) &middot; 案 2 先行実装案</div>
 </header>
 
-<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で administrator polling cycle の詳細を実装する。draft-v1 §3b の内容を発展 + 不変条件 I-1〜I-7 を確立。</div>
+<div class="info">
+  <strong>目的</strong>: administrator main session の polling cycle (CronCreate で fire) の動作詳細を仕様化する。read 3 (mailbox / GitHub status / tmux windows) → judge → write 3 (spawn / escalate / cleanup) のサイクルと、複数 Issue 並列管理時の conflict 解決を明示する。<br>
+  <br>
+  <strong>verified source</strong>: Claude Code 公式 <a href="https://code.claude.com/docs/en/scheduled-tasks">scheduled-tasks docs</a> + <a href="https://github.com/anthropics/claude-code/issues/40228">Issue #40228</a> (CronCreate durable bug OPEN) + research session bce9c4e4。<br>
+  <br>
+  <strong>先行実装案 (案 2)</strong>: <a href="research-findings.html">research-findings.html</a> Agent C で推奨。本 file の content + <code>admin-cycle.sh</code> + <code>mailbox.sh</code> + <code>spawn-tmux.sh</code> + <code>administrator/SKILL.md</code> を最小実装することで、co-autopilot 停止中も admin 単独動作で validate 可能。
+</div>
 
-<h2>目的</h2>
-<p>administrator main session の polling cycle (CronCreate 25 min durable で fire) の動作詳細を仕様化する。read 3 (mailbox / GitHub status / tmux windows) → judge → write 3 (spawn / escalate / cleanup) のサイクルと、複数 Issue 並列管理時の conflict 解決を明示する。</p>
+<h2>§1. 公式 CronCreate 制約 (verified、設計に重大影響)</h2>
 
-<h2>想定 outline (次 session で実装)</h2>
+<div class="critical">
+<strong>重要な公式制約</strong> (本 session で WebFetch verified):
+<ul>
+  <li><strong>session-scoped only</strong>: scheduled tasks は <em>current conversation</em> に live、session 死亡で task も死亡。新 conversation 開始で全 task clear</li>
+  <li><strong><code>durable: true</code> は BROKEN</strong> (<a href="https://github.com/anthropics/claude-code/issues/40228">Issue #40228 OPEN</a>): 公式 schema には記載なし、output に "Session-only" と表示、<code>~/.claude/scheduled_tasks.json</code> は作成されない</li>
+  <li><code>--resume</code>/<code>--continue</code> で復元 (7 日以内 recurring、未 fire one-shot のみ)</li>
+  <li><strong>7 日 expiry</strong>: recurring task は creation から 7 日後に自動 expire (1 回 fire してから削除)</li>
+  <li>50 task 上限 / session</li>
+  <li><strong>jitter</strong>: recurring up to 30 min (or half-interval)、one-shot top/bottom hour up to 90 sec 早く</li>
+  <li>1 分粒度の standard 5-field cron expression</li>
+  <li><strong>tools</strong>: <code>CronCreate</code> / <code>CronList</code> / <code>CronDelete</code> (<code>ScheduleWakeup</code> は本 file context に存在せず、<code>/loop</code> dynamic mode で代替)</li>
+</ul>
+</div>
+
+<div class="official-quote">
+公式引用: 「Tasks are session-scoped: they live in the current conversation and stop when you start a new one. Resuming with <code>--resume</code> or <code>--continue</code> brings back any task that hasn't expired」「Recurring tasks automatically expire 7 days after creation. The task fires one final time, then deletes itself.」
+<div class="src">source: <a href="https://code.claude.com/docs/en/scheduled-tasks">code.claude.com/docs/en/scheduled-tasks</a></div>
+</div>
+
+<h3>1.1 永続化代替 (admin が machine 再起動を生き残るには)</h3>
+
+<p>CronCreate は session-scoped、admin session が <code>--resume</code> なしで起動された場合は task 不在。永続化代替は 3 つ:</p>
+
+<table>
+  <thead>
+    <tr><th>代替</th><th>用途</th><th>本 spec での扱い</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="https://code.claude.com/docs/en/routines">Routines</a> (cloud)</td><td>Anthropic-managed infra、machine off でも動く、fresh clone</td><td>tool-* など stateless task 向け、admin は使用不可 (local file 必要)</td></tr>
+    <tr><td><a href="https://code.claude.com/docs/en/desktop-scheduled-tasks">Desktop scheduled tasks</a></td><td>local machine cron、Claude Code 起動を schedule</td><td><strong>admin session 自動起動の手段として候補</strong> (machine boot で起動)</td></tr>
+    <tr><td>GitHub Actions <code>schedule</code></td><td>repo CI、cron-driven workflow</td><td>cleanup / archive 系 backup task に使用</td></tr>
+  </tbody>
+</table>
+
+<p>本 spec の方針: <strong>admin session は user が手動起動 + <code>--continue</code> で resume</strong>、CronCreate (recurring=true、durable 引数なし) で session 内 polling。machine 再起動時は user が手動 resume、または Desktop scheduled tasks で自動起動を schedule する。</p>
+
+<h2>§2. polling cycle 6 step (verified、draft-v1 §3b 発展)</h2>
+
+<div class="diagram">
+<svg class="arch-svg" viewBox="0 0 1080 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="ac-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <text x="540" y="30" text-anchor="middle" font-size="14" font-weight="700">administrator polling cycle (CronCreate 25min recurring)</text>
+
+  <rect x="40" y="60" width="180" height="60" rx="8" fill="#e6f6f2" stroke="#1e7b65" stroke-width="2"/>
+  <text x="130" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#1e7b65">1. inbox 読込</text>
+  <text x="130" y="102" text-anchor="middle" font-size="10" fill="#555">.mailbox/admin/inbox.jsonl</text>
+
+  <rect x="240" y="60" width="180" height="60" rx="8" fill="#e6f6f2" stroke="#1e7b65" stroke-width="2"/>
+  <text x="330" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#1e7b65">2. Board status poll</text>
+  <text x="330" y="102" text-anchor="middle" font-size="10" fill="#555">gh project item-list</text>
+
+  <rect x="440" y="60" width="180" height="60" rx="8" fill="#e6f6f2" stroke="#1e7b65" stroke-width="2"/>
+  <text x="530" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#1e7b65">3. tmux 列挙</text>
+  <text x="530" y="102" text-anchor="middle" font-size="10" fill="#555">tmux list-windows</text>
+
+  <line x1="220" y1="90" x2="240" y2="90" stroke="#333" stroke-width="2" marker-end="url(#ac-arr)"/>
+  <line x1="420" y1="90" x2="440" y2="90" stroke="#333" stroke-width="2" marker-end="url(#ac-arr)"/>
+
+  <line x1="530" y1="120" x2="530" y2="170" stroke="#333" stroke-width="2" marker-end="url(#ac-arr)"/>
+
+  <rect x="380" y="170" width="300" height="50" rx="8" fill="#fefbea" stroke="#916626" stroke-width="2"/>
+  <text x="530" y="194" text-anchor="middle" font-size="13" font-weight="700" fill="#916626">judge: 全 state を統合判断</text>
+  <text x="530" y="210" text-anchor="middle" font-size="10" fill="#555">Inv I-1〜I-7 を満たす形で判断</text>
+
+  <line x1="530" y1="220" x2="530" y2="260" stroke="#333" stroke-width="2" marker-end="url(#ac-arr)"/>
+
+  <rect x="40" y="260" width="180" height="60" rx="8" fill="#fdf3f3" stroke="#b22323" stroke-width="2"/>
+  <text x="130" y="284" text-anchor="middle" font-size="12" font-weight="700" fill="#b22323">4. spawn 判断</text>
+  <text x="130" y="302" text-anchor="middle" font-size="10" fill="#555">spawn-tmux.sh pilot</text>
+
+  <rect x="240" y="260" width="180" height="60" rx="8" fill="#fdf3f3" stroke="#b22323" stroke-width="2"/>
+  <text x="330" y="284" text-anchor="middle" font-size="12" font-weight="700" fill="#b22323">5. escalate</text>
+  <text x="330" y="302" text-anchor="middle" font-size="10" fill="#555">human gate / mail to user</text>
+
+  <rect x="440" y="260" width="180" height="60" rx="8" fill="#fdf3f3" stroke="#b22323" stroke-width="2"/>
+  <text x="530" y="284" text-anchor="middle" font-size="12" font-weight="700" fill="#b22323">6. cleanup</text>
+  <text x="530" y="302" text-anchor="middle" font-size="10" fill="#555">completed window close + archive</text>
+
+  <line x1="380" y1="220" x2="130" y2="260" stroke="#333" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ac-arr)"/>
+  <line x1="530" y1="220" x2="330" y2="260" stroke="#333" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ac-arr)"/>
+  <line x1="680" y1="220" x2="530" y2="260" stroke="#333" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#ac-arr)"/>
+
+  <rect x="700" y="60" width="160" height="60" rx="8" fill="#f5f8fa" stroke="#5a656b" stroke-width="2"/>
+  <text x="780" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#5a656b">read 3</text>
+  <text x="780" y="102" text-anchor="middle" font-size="10" fill="#555">side-effect なし</text>
+
+  <rect x="700" y="260" width="160" height="60" rx="8" fill="#f5f8fa" stroke="#5a656b" stroke-width="2"/>
+  <text x="780" y="284" text-anchor="middle" font-size="12" font-weight="700" fill="#5a656b">write 3</text>
+  <text x="780" y="302" text-anchor="middle" font-size="10" fill="#555">spawn / mail / cleanup</text>
+
+  <text x="540" y="370" text-anchor="middle" font-size="11" fill="#555" font-style="italic">25 min ごとに CronCreate fire → 6 step を 1 cycle として実行</text>
+</svg>
+<div class="diagram-caption">図 1: administrator polling cycle — read 3 (inbox / Board / tmux) → judge → write 3 (spawn / escalate / cleanup)</div>
+</div>
+
+<h2>§3. 各 step の詳細 (verified pattern)</h2>
+
+<h3>3.1 step 1: <code>.mailbox/admin/inbox.jsonl</code> 読込</h3>
+
+<p>各 pilot が emit した mail を読み、未読 line を line 番号で track。flock 共有 lock で read。format:</p>
+
+<pre><code>{"from":"phase-impl-1660","ts":"2026-05-12T22:00:00+09:00","event":"phase-completed","detail":{"issue":1660,"status":"Implementing"}}
+{"from":"phase-pr-1660","ts":"2026-05-12T22:15:00+09:00","event":"merge-gate-failed","detail":{"issue":1660,"reason":"specialist FAIL"}}
+{"from":"phase-gate","ts":"2026-05-12T22:20:00+09:00","event":"phase-gate-denied","detail":{"skill":"phase-impl-1700","issue":1700,"expected":"Refined","actual":"Todo"}}</code></pre>
+
+<h3>3.2 step 2: GitHub Project Board status poll</h3>
+
+<p><code>gh project item-list &lt;PROJ_NUMBER&gt; --owner &lt;OWNER&gt; --format json</code> で全 Issue Status + 前回 cycle との diff。5 min cache で API rate limit 緩和。</p>
+
+<h3>3.3 step 3: tmux windows 列挙</h3>
+
+<p><code>tmux list-windows -a -F '#{window_name}|#{pane_dead}'</code> で全 pilot/worker session の生存確認 (Inv G クラッシュ検知保証、format 変数 verified)。</p>
+
+<h3>3.4 step 4: spawn 判断</h3>
+
+<p>各 Issue について「次 phase を起動すべきか?」を判定。判断ロジック:</p>
+
+<pre><code>FOR each issue IN board_items:
+  current_status = issue.status
+  has_active_pilot = ANY tmux window prefix "phase-*" matches issue
+  next_phase = STATUS_TRANSITION_MAP[current_status]  # 例: Refined → phase-impl
+
+  IF current_status NOT IN ["Idea", "Explored", "Refined", "Implementing"]:
+    CONTINUE  # 終端 status は spawn 不要
+
+  IF has_active_pilot:
+    CONTINUE  # Inv I-1 idempotent guard
+
+  IF active_pilot_count &gt;= MAX_PARALLEL_PILOTS:
+    DEFER  # Inv I-2 parallelism 上限
+
+  IF unread_pilot_mail_for_issue:
+    PROCESS_MAIL_FIRST  # Inv I-3 mail check prerequisite
+
+  spawn_tmux pilot-{next_phase}-{issue_num}</code></pre>
+
+<h3>3.5 step 5: failure / escalate</h3>
+
+<ul>
+  <li>pilot failure mail (phase-gate-denied / phase-failed / specialist-FAIL) を集約</li>
+  <li>3 回連続 failure → ★HUMAN GATE escalate (user mail or AskUserQuestion)</li>
+  <li>budget exhaustion mail (Inv Q) → pause + recovery (CronCreate を <code>YYm+5min</code> 後に reschedule)</li>
+</ul>
+
+<h3>3.6 step 6: cleanup</h3>
+
+<ul>
+  <li>completed pilot window (status=PR Reviewed / Merged) は <code>tmux kill-window -t &lt;name&gt;</code></li>
+  <li><code>.mailbox/&lt;completed&gt;/inbox.jsonl</code> を <code>.mailbox/archive/inbox-&lt;ts&gt;.jsonl</code> に archive</li>
+  <li>7 日以上 stale の archive を削除 (disk pressure 緩和)</li>
+</ul>
+
+<h2>§4. 不変条件 I-1〜I-7 (verified、本 spec 確定)</h2>
+
+<dl class="inv-row">
+  <dt>I-1</dt><dd><strong>同 Issue に 1 個のみ pilot spawn</strong> (idempotent guard)。spawn 前に tmux list-windows で確認、active なら skip。</dd>
+  <dt>I-2</dt><dd><strong>parallelism 上限 (default 3) 超過時は defer</strong>。<code>MAX_PARALLEL_PILOTS</code> env で override 可能。budget 5h budget %、context 効率を考慮した default。</dd>
+  <dt>I-3</dt><dd><strong>mail check が next spawn の prerequisite</strong>。新 phase spawn 前に当該 Issue の未読 pilot mail を全件 process。</dd>
+  <dt>I-4</dt><dd><strong>administrator は worker のことを直接知らない</strong>。pilot mail のみ受信、worker 直接 mail 不可。pyramid 集約 model。</dd>
+  <dt>I-5</dt><dd><strong>status 更新は pilot 任せ</strong> (admin は read のみ)。<code>gh project item-edit</code> 実行は pilot 専任、admin が status を更新する場合は user 明示介入時のみ。</dd>
+  <dt>I-6</dt><dd><strong>escalate 時は user 確認</strong>。3 回連続 failure / 不明 mail / budget exhaustion → AskUserQuestion or mail to user。autonomous 判断は禁止。</dd>
+  <dt>I-7</dt><dd><strong>tmux send-keys 使用禁止 (mailbox 経由のみ)</strong>。tmux 操作は spawn (new-window) と list (list-windows / format 変数) のみ、send-keys / capture-pane で他 session に inject 禁止 (escape 罠、cross-session pollution 防止)。</dd>
+</dl>
+
+<h2>§5. CronCreate 設定 + recovery</h2>
+
+<h3>5.1 起動時 set</h3>
+
+<pre><code># administrator/SKILL.md Step 0 (session 起動時)
+# 1. CronList で既存 task 確認 (resume 時)
+existing = CronList()
+admin_cycle_task = existing.filter(lambda t: t.prompt.startswith("admin-cycle"))
+
+# 2. 不在なら CronCreate (recurring=true、durable 引数なし)
+if not admin_cycle_task:
+    CronCreate(
+        cron="*/25 * * * *",         # 25 分ごと (jitter で up to 12.5 min ずれる)
+        prompt="run admin-cycle.sh polling iteration",
+        recurring=true
+        # durable は使わない (#40228 BROKEN、session-scoped で十分)
+    )
+print("admin-cycle CronCreate set (session-scoped)")</code></pre>
+
+<h3>5.2 7 日 expiry 対応</h3>
+
+<p>recurring task は 7 日後 expire (1 回 final fire してから削除)。対策:</p>
+
+<ul>
+  <li>admin SKILL.md の polling iteration 内で <code>CronList</code> を確認</li>
+  <li>残 expiry &lt; 2 日 → 新 CronCreate を set + 旧 CronDelete (atomic substitution)</li>
+  <li>admin session が 7 日連続稼働しないと想定するなら、初回 set のみで十分</li>
+</ul>
+
+<h3>5.3 budget pause 対応 (Inv Q)</h3>
+
+<p>budget 5h cycle reset を待つ場合:</p>
+
+<ul>
+  <li>budget status line から <code>(YYm)</code> 抽出</li>
+  <li>CronDelete で polling 停止</li>
+  <li><code>(YYm) + 5 min</code> 後に再 set (CronCreate one-shot で wakeup → admin が recurring を再 set)</li>
+</ul>
+
+<h2>§6. 案 2 先行実装の構成 (Agent C 推奨)</h2>
+
+<table>
+  <thead>
+    <tr><th>file</th><th>行数 (見積)</th><th>役割</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>plugins/twl/skills/administrator/SKILL.md</code></td>
+      <td>~150 行 (su-observer 193 行から削減)</td>
+      <td>Step 0 で admin-cycle.sh 呼び出し、Step 1 で常駐 (CronCreate handler)</td>
+    </tr>
+    <tr>
+      <td><code>plugins/twl/scripts/admin-cycle.sh</code></td>
+      <td>~30-50 行</td>
+      <td>polling cycle 6 step を bash で実装 (judge は SKILL.md 側で LLM 判断)</td>
+    </tr>
+    <tr>
+      <td><code>plugins/twl/scripts/lib/mailbox.sh</code></td>
+      <td>~30 行</td>
+      <td>flock atomic send/recv 2 関数 (Inv T)</td>
+    </tr>
+    <tr>
+      <td><code>plugins/twl/scripts/lib/spawn-tmux.sh</code></td>
+      <td>~30 行</td>
+      <td>tmux new-window + claude code 呼び出し (3 階層共通)</td>
+    </tr>
+    <tr>
+      <td><code>plugins/twl/skills/su-observer/SKILL.md</code></td>
+      <td>~5 行追加</td>
+      <td>DEPRECATED マーク + administrator への migration 案内</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr><td><strong>合計</strong></td><td>~245 行</td><td>su-observer (193 行) + chain-runner (1714 行) 依存より大幅縮小</td></tr>
+  </tfoot>
+</table>
+
+<h2>§7. 案 2 の致命的制約 + safe degradation</h2>
+
+<div class="caution">
+<strong>制約</strong>: pilot / worker (phase-* / worker-*) が未実装の段階では、admin が status 遷移を検知して spawn コマンドを発行しても spawn 先 SKILL.md が存在しないため即エラー。
+</div>
+
+<p><strong>safe degradation 設計</strong>:</p>
+
 <ol>
-  <li>CronCreate 設定 (25 min durable=true、admin session 起動時に set)</li>
-  <li>polling cycle 6 step (図 2b、draft-v1 §3b から発展):
-    <ul>
-      <li>1. inbox.jsonl 読込 (未読 mail を line 番号で track)</li>
-      <li>2. GitHub Project Board status poll (全 Issue Status + 前回 cycle との diff)</li>
-      <li>3. tmux windows 列挙 (active pilot / worker session 把握)</li>
-      <li>4. spawn 判断 (Status 遷移 + active 不在 → 次 phase pilot spawn)</li>
-      <li>5. failure / escalate 処理 (pilot failure mail / human gate)</li>
-      <li>6. cleanup (completed pilot window close + mailbox archive)</li>
-    </ul>
-  </li>
-  <li><code>admin-cycle.sh</code> helper 実装 (~30 lines、CronCreate handler)</li>
-  <li>conflict 解決と不変条件 I-1〜I-7:
-    <ul>
-      <li>I-1: 同 Issue に 1 個のみ pilot spawn (idempotent guard)</li>
-      <li>I-2: parallelism 上限 (default 3) 超過時は defer</li>
-      <li>I-3: mail check が next spawn の prerequisite</li>
-      <li>I-4: worker のことを直接知らない (pilot mail のみ)</li>
-      <li>I-5: status 更新は pilot 任せ (admin は読むだけ)</li>
-      <li>I-6: escalate 時は user 確認</li>
-      <li>I-7: tmux send-keys 使用禁止 (mailbox 経由のみ)</li>
-    </ul>
-  </li>
-  <li>pseudo-bash 実装例 (draft-v1 §3b の cycle 関数)</li>
-  <li>conflict scenario (idempotent / parallelism / stale pilot / race / mail loss / cron skip)</li>
+  <li>admin-cycle.sh の step 4 (spawn 判断) で「target SKILL.md が存在するか」を pre-check</li>
+  <li>存在しない場合は <code>safe-no-op</code> mail を mailbox に emit、admin log のみ</li>
+  <li>user が phase-* / worker-* 実装を進めるに従い、spawn 対象が増えていく段階的 rollout</li>
 </ol>
 
-<h2>参照</h2>
+<p>この設計により、admin 単独動作で:</p>
+
 <ul>
-  <li><a href="overview.html">overview.html</a> §3 architecture</li>
-  <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知)</li>
-  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 I (循環依存)</li>
-  <li>既存 draft <code>draft-v1.html</code> §3b (原案、archive、図 2b)</li>
+  <li><strong>mailbox.sh flock atomic write</strong> (Inv T) 動作確認</li>
+  <li><strong>CronCreate recurring + jitter</strong> 動作確認</li>
+  <li><strong>tmux list-windows format 変数</strong> 動作確認</li>
+  <li><strong>gh project item-list キャッシュ</strong> 動作確認</li>
+</ul>
+
+<p>= Phase 1 PoC verify points の半数を admin 先行実装で確認可能。</p>
+
+<h2>§8. conflict scenario (verified)</h2>
+
+<table>
+  <thead>
+    <tr><th>scenario</th><th>対応 (Inv 根拠)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>idempotent 二重 spawn</td><td>step 4 pre-check で tmux 確認 (Inv I-1)</td></tr>
+    <tr><td>parallelism 上限超過</td><td>step 4 で defer、次 cycle に持ち越し (Inv I-2)</td></tr>
+    <tr><td>stale pilot (heartbeat 古い)</td><td><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 で検知 → escalate (Inv G)</td></tr>
+    <tr><td>mail race (pilot が同 ts で 2 mail)</td><td>mailbox.sh flock atomic で順序保証 (Inv T)</td></tr>
+    <tr><td>mail loss (disk 故障)</td><td>file 永続のため通常 loss しない、loss 時は user に escalate</td></tr>
+    <tr><td>cron skip (admin busy)</td><td>公式仕様で skip 後の catch-up なし、次 cycle で reconcile</td></tr>
+    <tr><td>cron jitter</td><td>up to half-interval ずれ前提で 25 min default (実 fire は 12-37 min 範囲)</td></tr>
+  </tbody>
+</table>
+
+<h2>§9. dual-stack 期間中の運用 (su-observer 旧 vs administrator 新)</h2>
+
+<p>詳細は <a href="dual-stack-routing.html">dual-stack-routing.html</a>。本 file で重要な点:</p>
+
+<ul>
+  <li><strong>state 分離</strong>: 旧 <code>.supervisor/</code> と新 <code>.admin/</code> を別 directory で管理 (session.json / cld-observe-any.log)</li>
+  <li><strong>session.json field 追加</strong>: <code>stack: "new"|"legacy"</code> で区別、cross-stack 操作禁止</li>
+  <li><strong>同時稼働制約</strong>: 同 Issue を両 stack が処理すると Project Board status race の risk、Issue label <code>stack:new</code>/<code>stack:legacy</code> で routing</li>
+</ul>
+
+<h2>§10. 関連 spec ファイル</h2>
+
+<ul>
+  <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図、administrator L0 図解)</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 G (crash 検知) + T (mailbox atomic) + V (per-Worker scope)</li>
+  <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知 + 3 階層 SLA)</li>
+  <li><a href="gate-hook.html">gate-hook.html</a> (phase-gate 経由の deny 受信処理)</li>
+  <li><a href="spawn-protocol.html">spawn-protocol.html</a> (outline、tmux + mailbox spec 詳細、次 session)</li>
+  <li><a href="dual-stack-routing.html">dual-stack-routing.html</a> (outline、su-observer 旧 → administrator 新 移行)</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 1 PoC (案 2 を最小実装する手順)</li>
+  <li><a href="research-findings.html">research-findings.html</a> (CronCreate + Project Board の verified 制約)</li>
+  <li>既存 ADR-014 (Supervisor redesign su-observer) — administrator の前身、rebrand 計画</li>
+</ul>
+
+<h2>§11. verify source</h2>
+
+<ul>
+  <li><strong>Claude Code Scheduled tasks docs</strong>: <a href="https://code.claude.com/docs/en/scheduled-tasks">code.claude.com/docs/en/scheduled-tasks</a> (本 session WebFetch verified)</li>
+  <li><strong>Issue #40228 (CronCreate durable bug)</strong>: <a href="https://github.com/anthropics/claude-code/issues/40228">github.com/anthropics/claude-code/issues/40228</a> (OPEN、stale)</li>
+  <li><strong>research session bce9c4e4</strong>: KP-6 (PreToolUse + MCP shadow tier)、KP-2 (gh project item-edit 単発)、§6-4 (SessionStart hook 制約)</li>
+  <li><strong>Agent C 分析 (本 session)</strong>: 案 2 先行実装の feasibility analysis、~245 行で su-observer + chain-runner 依存より縮小</li>
 </ul>
 
 </body>

@@ -15,7 +15,65 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
-<h2>2026-05-12 (続き) — draft-v2 HTML 統一 + twl mcp 継承 + SSoT design</h2>
+<h2>2026-05-12 (第 2 弾) — 公式 verify + tool-architecture + research-findings + content 化</h2>
+
+<h3>本 session 第 2 弾の核心成果</h3>
+
+<ul>
+  <li><strong>公式 docs WebFetch verify (5 件)</strong>: research session bce9c4e4 + Claude Code 公式 docs で dummy code 5 件を verified に格上げ:
+    <ul>
+      <li>PreToolUse hook schema: <code>matcher</code> 単数 (旧 <code>matchers</code> は誤)、<code>permissionDecision: "allow|deny|ask|defer"</code> (旧 <code>"approve|block"</code> は古い enum)、template 変数展開非サポート、stdin JSON のみ</li>
+      <li>Hook exit code: <code>exit 0</code> + JSON / <code>exit 2</code> = blocking error (旧 <code>exit 1</code> = deny は誤)</li>
+      <li>CronCreate <code>durable=true</code>: <a href="https://github.com/anthropics/claude-code/issues/40228">Issue #40228 OPEN</a> BROKEN、永続化されない、session-scoped only。Routines / Desktop scheduled tasks / GitHub Actions が永続代替</li>
+      <li>fastmcp v3.0.0: <code>@mcp.tool</code> (括弧なし) OK、annotations 4 つは advisory、deferred-tool パターンは公式に無い (twl 独自)</li>
+      <li>stdio MCP auto-reconnect: <code>useManageMCPConnections.ts</code> L354-356 で意図的 exclude、修正は 1 行 PR 未提出 (<a href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177 OPEN</a>)</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>新規追加 (本 session 第 2 弾)</h3>
+
+<ul>
+  <li><code>tool-architecture.html</code> (新規) — tool-* 4 件 (architect/project/utility/self-improve) の責務 boundary + 共通規約 + 5 曖昧点 + co-* migration mapping。既存 co-* SKILL.md 594 行から rebrand 詳細</li>
+  <li><code>research-findings.html</code> (新規) — research session bce9c4e4 (120 sources、Critique PASS、doobidoo hash <code>6fdf1d0b</code>) + 本 session WebFetch 5 件 verified の集約。spec 内に保全</li>
+</ul>
+
+<h3>content 化 (outline → content、本 session 第 2 弾)</h3>
+
+<ul>
+  <li><code>gate-hook.html</code>: 公式 verified schema で全面書き直し。tier 1 (phase-gate.sh ~40 行) + tier 2 (twl_phase_gate_check MCP shadow) の階層防御、Bug #1660/1662/1663/1684 構造的不能化、bats verify pattern</li>
+  <li><code>admin-cycle.html</code>: CronCreate 公式制約 (#40228 known bug + session-scoped) 反映、6-step polling cycle + Inv I-1〜I-7 詳細、案 2 先行実装 (~245 行) の構成、永続化代替 (Routines / Desktop tasks / GitHub Actions)</li>
+  <li><code>dual-stack-routing.html</code>: su-observer 旧 vs administrator 新 の共存運用、state 分離 (<code>.supervisor/</code> vs <code>.admin/</code>)、Issue label routing、6 phase migration</li>
+</ul>
+
+<h3>更新 (本 session 第 2 弾)</h3>
+
+<ul>
+  <li><code>twl-mcp-integration.html</code>: <code>_to_hook_output</code> の <code>approve/block</code> → <code>allow/deny</code> verified 訂正、MUST に hook schema verified 追記、research-findings.html link 追加</li>
+  <li><code>failure-analysis.html</code>: Bug #1687 root cause を verified に格上げ (Claude Code <code>useManageMCPConnections.ts</code> L354-356 stdio exclude、orphan 自殺問題)、横断要因 F-3 強化 (4 段階 migration)</li>
+  <li><code>rebuild-plan.html</code>: Phase 1 PoC verify points #9-12 追加 (tier 1+2 parallel / bypassPermissions deny / mcp-watchdog 廃止後測定 / send_keys_safe escape test)、mcp-watchdog 廃止確定 + GitHub 公式 MCP 追加</li>
+  <li><code>ssot-design.html</code>: bash 互換性注記 (<code>local -n</code> nameref は bash 4.3+ 限定)、§7 tmux/gh wrapper 粒度 (research KP-7/KP-8 反映)</li>
+  <li><code>glossary.html</code>: tool 行 1 → 4 行展開 (tool-architect / tool-project / tool-utility / tool-self-improve)、新 file link 追加</li>
+  <li><code>boundary-matrix.html</code>: 5x5 boundary matrix 暫定 content (tool 列 verified、admin/pilot/worker 列は次 session)</li>
+  <li><code>README.html</code>: status table 更新 (done 10 → 15、outline 10 → 5)、新 file 追加</li>
+</ul>
+
+<h3>verified の格上げ</h3>
+
+<ul>
+  <li>Bug #1687 (twl mcp disconnect): deduced → <strong>verified</strong> (Claude Code <code>useManageMCPConnections.ts</code> L354-356 ソース提示 + 1 行 PR suggested)</li>
+  <li>PreToolUse hook schema: 旧 draft-v1 / gate-hook の記述を全件 verified に格上げ</li>
+  <li>fastmcp tool registration: <code>@mcp.tool</code> 構文 verified、deferred-tool は twl 独自パターンと明示</li>
+  <li>CronCreate 制約: session-scoped only + #40228 known bug 反映</li>
+</ul>
+
+<h3>doobidoo hash 追加 (本 session 第 2 弾)</h3>
+
+<p>第 2 弾完了時に追加保存予定 (Phase 7 で実行)。前 hash: <code>3d10303e</code> (第 1 弾)、<code>6fdf1d0b</code> (research session bce9c4e4)</p>
+
+<hr>
+
+<h2>2026-05-12 (続き) — draft-v2 HTML 統一 + twl mcp 継承 + SSoT design (第 1 弾)</h2>
 
 <h3>新規追加 (本 session)</h3>
 

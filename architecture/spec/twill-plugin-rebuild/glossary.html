@@ -33,7 +33,10 @@
     <tr><td><strong>administrator</strong></td><td>L0、user 代理、長命 main session、CronCreate polling、pilot mail のみ受信</td><td>su-observer (rebrand)</td></tr>
     <tr><td><strong>pilot</strong></td><td>L1、phase-* SKILL.md として動作、status 遷移 1:1 担当、worker 群を spawn・mail 集約</td><td>co-autopilot の Pilot 役割 (拡張)</td></tr>
     <tr><td><strong>worker</strong></td><td>L2、worker-* SKILL.md として動作、別 main session、単一目的の実作業</td><td>co-autopilot の Worker 役割 (拡張)</td></tr>
-    <tr><td><strong>tool</strong></td><td>tool-* SKILL.md、user / admin 直接 invoke、status 遷移と無関係</td><td>co-architect / project / utility / self-improve (rebrand)</td></tr>
+    <tr><td><strong>tool-architect</strong></td><td>feature-dev workflow (architecture spec 作成 + PR)、user/admin 直接 invoke、status 遷移と無関係</td><td>co-architect (rebrand、226 行)</td></tr>
+    <tr><td><strong>tool-project</strong></td><td>クロスリポジトリ管理 (twill-ecosystem Board、create/migrate/snapshot/plugin-create/prompt-audit)、user 直接 invoke</td><td>co-project (rebrand、145 行)</td></tr>
+    <tr><td><strong>tool-utility</strong></td><td>standalone utility commands (size-check/lint/archive 等 6 件)、user 直接 invoke</td><td>co-utility (rebrand、79 行)</td></tr>
+    <tr><td><strong>tool-self-improve</strong></td><td>scenario 実行 + self-improvement (retrospect / test-project-manage)、user/admin 直接 invoke、admin への完了 mail を送る</td><td>co-self-improve (rebrand、144 行)</td></tr>
     <tr><td><strong>phase</strong></td><td>status 遷移 1 個に対応する pilot SKILL.md (phase-explore / phase-refine / phase-impl / phase-pr)</td><td>(新概念)</td></tr>
   </tbody>
 </table>
@@ -111,6 +114,9 @@
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (不変条件 24 件)</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> (twl MCP 用語)</li>
   <li><a href="ssot-design.html">ssot-design.html</a> (step / chain SSoT 用語)</li>
+  <li><a href="tool-architecture.html">tool-architecture.html</a> (4 tool の責務 / 共通規約 / migration mapping、本 session 新規)</li>
+  <li><a href="admin-cycle.html">admin-cycle.html</a> (administrator polling cycle、本 session content 化)</li>
+  <li><a href="research-findings.html">research-findings.html</a> (本 spec の verified 根拠、120 sources、本 session 新規)</li>
   <li>既存 <code>plugins/twl/refs/ref-invariants.md</code> (既存 invariant SSoT)</li>
 </ul>
 

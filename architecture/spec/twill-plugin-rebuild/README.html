@@ -106,13 +106,18 @@
     </tr>
     <tr>
       <td><a href="gate-hook.html"><code>gate-hook.html</code></a></td>
-      <td><span class="badge todo">outline</span></td>
-      <td>PreToolUse gate (図 4) + hook 実装案 (次 session)</td>
+      <td><span class="badge done">done</span></td>
+      <td>PreToolUse gate + hook 実装 (公式 verified schema、tier 1+2 階層防御、本 session 更新)</td>
     </tr>
     <tr>
       <td><a href="admin-cycle.html"><code>admin-cycle.html</code></a></td>
-      <td><span class="badge todo">outline</span></td>
-      <td>administrator polling cycle (図 5) + 不変条件 I-1〜I-7 (次 session)</td>
+      <td><span class="badge done">done</span></td>
+      <td>administrator polling cycle 6-step + 不変条件 I-1〜I-7 + 案 2 先行実装 (本 session content 化)</td>
+    </tr>
+    <tr>
+      <td><a href="tool-architecture.html"><code>tool-architecture.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>tool-* 4 件 (architect/project/utility/self-improve) の責務 + 共通規約 + co-* migration (本 session 新規)</td>
     </tr>
   </tbody>
 </table>
@@ -161,8 +166,8 @@
     </tr>
     <tr>
       <td><a href="dual-stack-routing.html"><code>dual-stack-routing.html</code></a></td>
-      <td><span class="badge todo">outline</span></td>
-      <td>旧 chain と新 phase の共存ルール + 移行完了判定 (次 session)</td>
+      <td><span class="badge done">done</span></td>
+      <td>su-observer 旧 vs administrator 新 共存ルール + state 分離 + 移行完了判定 (本 session content 化)</td>
     </tr>
   </tbody>
 </table>
@@ -183,6 +188,11 @@
       <td><a href="changelog.html"><code>changelog.html</code></a></td>
       <td><span class="badge done">done</span></td>
       <td>本 spec の変更履歴 (draft-v1 → draft-v2 → 本 session の HTML 統一)</td>
+    </tr>
+    <tr>
+      <td><a href="research-findings.html"><code>research-findings.html</code></a></td>
+      <td><span class="badge done">done</span></td>
+      <td>research session bce9c4e4 (120 sources、Critique PASS) + 本 session WebFetch 5 件 verified の集約 (本 session 新規)</td>
     </tr>
     <tr>
       <td><code>common.css</code></td>
@@ -230,7 +240,7 @@
   <li><a href="rebuild-plan.html">rebuild-plan.html</a> (次 session) — Phase 1-4 plan + Phase 1 PoC 手順</li>
 </ol>
 
-<h2>進捗 status (2026-05-12 時点、本 session 後)</h2>
+<h2>進捗 status (2026-05-12 時点、本 session 第 2 弾後)</h2>
 
 <table>
   <thead>
@@ -239,13 +249,13 @@
   <tbody>
     <tr>
       <td><span class="badge done">done</span></td>
-      <td>10</td>
-      <td>README / overview / failure-analysis / adr-fate-table / invariant-fate-table / crash-failure-mode / step-verification / <strong>twl-mcp-integration</strong> / <strong>ssot-design</strong> / changelog</td>
+      <td>15</td>
+      <td>README / overview / failure-analysis / adr-fate-table / invariant-fate-table / crash-failure-mode / step-verification / twl-mcp-integration / ssot-design / changelog / <strong>gate-hook</strong> / <strong>admin-cycle</strong> / <strong>tool-architecture</strong> / <strong>research-findings</strong> / <strong>dual-stack-routing</strong></td>
     </tr>
     <tr>
       <td><span class="badge todo">outline</span></td>
-      <td>10</td>
-      <td>boundary-matrix / spawn-protocol / gate-hook / admin-cycle / deletion-inventory / rebuild-plan / regression-test-strategy / dual-stack-routing / pitfalls-inheritance / glossary</td>
+      <td>5</td>
+      <td>boundary-matrix (部分 content) / spawn-protocol / deletion-inventory / rebuild-plan (verify points #9-12 追加済) / regression-test-strategy / pitfalls-inheritance / glossary (tool 4 行展開済)</td>
     </tr>
     <tr>
       <td><span class="badge archive">archive</span></td>
@@ -255,9 +265,11 @@
   </tbody>
 </table>
 
-<p>本 session の追加: <strong>twl-mcp-integration.html</strong> + <strong>ssot-design.html</strong> + <strong>common.css</strong>。既存 11 MD を全 HTML 化 (note DESIGN.md token 適用)。</p>
+<p>本 session (第 2 弾) の追加: <strong>tool-architecture.html</strong> + <strong>research-findings.html</strong>。content 化: <strong>gate-hook.html</strong> (公式 verified schema)、<strong>admin-cycle.html</strong> (CronCreate #40228 反映 + 案 2)、<strong>dual-stack-routing.html</strong>。更新: <strong>twl-mcp-integration / failure-analysis / rebuild-plan / ssot-design / glossary / boundary-matrix</strong>。</p>
 
-<p>次 session: outline の 10 file を content 実装。</p>
+<p>本 session で公式 docs 5 件 WebFetch verified、5 dummy code 不正確を修正。</p>
+
+<p>次 session: 残 outline file (spawn-protocol / deletion-inventory / regression-test-strategy / pitfalls-inheritance) の content 実装 + ADR-043/044 起票準備 + Phase 1 PoC 着手判断。</p>
 
 <h2>関連 (本 spec の外)</h2>
 

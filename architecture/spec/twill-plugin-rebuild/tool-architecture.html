@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>twill plugin rebuild — tool-* 4 件 architecture</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  /* file-specific accent: tool-* は brand #5ac8b8 で「独立 invoke」を象徴 */
+  header.doc-header { border-bottom: 3px solid var(--brand); }
+  .ambiguity { background: var(--caution-bg); border-left: 4px solid var(--caution-fg); padding: 12px 16px; margin: 12px 0; border-radius: var(--radius-md); }
+  .ambiguity h4 { margin-top: 0; color: var(--caution-fg); }
+  .tool-box { background: var(--surface-primary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--elevation-1); padding: 18px 22px; margin: 24px 0; }
+  .tool-box h3 { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>tool-* 4 件 architecture — 責務 / 共通規約 / migration</h1>
+  <div class="meta">draft-v2 (2026-05-12) &middot; tool-architect / tool-project / tool-utility / tool-self-improve &middot; 既存 co-* 594 行から rebrand</div>
+</header>
+
+<div class="info">
+  <strong>目的</strong>: 新 architecture の tool-* 層 (status 遷移と無関係、user/admin 直接 invoke の独立 tool 群) の責務 boundary・共通規約・既存 co-* skill からの migration mapping を仕様化する。<br>
+  <br>
+  <strong>位置づけ</strong>: <a href="overview.html">overview.html</a> 図 1 では右独立ボックスとして描画済。L0 administrator / L1 pilot (phase-*) / L2 worker (worker-*) の 3 階層とは別、status 遷移と無関係な独立 invoke 群。<br>
+  <br>
+  <strong>verified source</strong>: Agent B 分析 (本 session) — co-* 4 SKILL.md 全件 Read 済 (合計 594 行)、rebrand 差分は frontmatter + 表記置換のみで本体ロジック変更なし。
+</div>
+
+<h2>§1. 4 tool 概要 + 役割 mapping</h2>
+
+<table>
+  <thead>
+    <tr><th>tool</th><th>役割</th><th>既存対応</th><th>SKILL.md 行数</th><th>status との関係</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>tool-architect</strong></td><td>feature-dev workflow (architecture spec 作成)</td><td>co-architect (rebrand)</td><td>226 行</td><td>無関係 (本 spec 自体も tool-architect で作成可能)</td></tr>
+    <tr><td><strong>tool-project</strong></td><td>クロスリポジトリ管理 (twill-ecosystem Board)</td><td>co-project (rebrand)</td><td>145 行</td><td>無関係</td></tr>
+    <tr><td><strong>tool-utility</strong></td><td>雑多な utility (size-check / lint / archive / 6 commands)</td><td>co-utility (rebrand)</td><td>79 行</td><td>無関係</td></tr>
+    <tr><td><strong>tool-self-improve</strong></td><td>system self-improvement (scenario / retrospect / test-project-manage)</td><td>co-self-improve (rebrand)</td><td>144 行</td><td>無関係 (admin から spawn される唯一の tool)</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><td colspan="3"><strong>合計</strong></td><td>594 行</td><td>—</td></tr>
+  </tfoot>
+</table>
+
+<h2>§2. 共通規約 (4 tool 共通)</h2>
+
+<h3>2.1 起動経路 (verified、ADR-040 ベース)</h3>
+
+<table>
+  <thead>
+    <tr><th>tool</th><th>spawnable_by</th><th>禁止経路</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>tool-architect</td><td><code>user</code> (明示)、<strong>(deduced)</strong> <code>admin</code> (ADR-040 gate 経由)</td><td>phase-* / worker-* から直接 invoke MUST NOT</td></tr>
+    <tr><td>tool-project</td><td><code>user</code> (明示)</td><td>同上</td></tr>
+    <tr><td>tool-utility</td><td><code>user</code> (明示)</td><td>同上</td></tr>
+    <tr><td>tool-self-improve</td><td><code>user</code> (明示)、<code>admin</code> (旧 <code>su-observer</code> 経路を rebrand)</td><td>同上</td></tr>
+  </tbody>
+</table>
+
+<h3>2.2 mailbox 規約</h3>
+
+<ul>
+  <li>tool-* は <strong>status 遷移と無関係</strong>、phase-* / worker-* の per-Worker mailbox (<code>.mailbox/&lt;session&gt;/inbox.jsonl</code>) は使用しない</li>
+  <li>tool-self-improve のみ admin への完了 mail 必要 (旧 su-observer 経路の継承、<a href="admin-cycle.html">admin-cycle.html</a> §3.1 で受信)</li>
+  <li>tool-architect / tool-project / tool-utility は結果を user に直接提示 (admin mailbox 通知不要)</li>
+</ul>
+
+<h3>2.3 TWL_AUDIT 継承</h3>
+
+<ul>
+  <li>4 tool いずれも user / admin session から env 継承で <code>TWL_AUDIT=1</code> + <code>TWL_AUDIT_DIR</code> を受け取り、<code>.audit/&lt;run-id&gt;/tools/&lt;tool-name&gt;/</code> に出力</li>
+  <li>tool 内部の主要 step (PR 作成 / spec 生成 / utility 実行) は <code>audit_snapshot()</code> で snapshot</li>
+  <li>具体的な出力 schema は <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §3 の TWL_AUDIT 機構を踏襲</li>
+</ul>
+
+<h3>2.4 step.sh framework 利用可否</h3>
+
+<ul>
+  <li>tool-* は <strong>step.sh framework を利用しない</strong> (status 遷移と無関係、step-verification の post-verify 機械検証 (Inv U) は phase-* / worker-* 専用)</li>
+  <li>tool 内部の step 管理は各 tool の SKILL.md で完結 (chain step との混同を避ける)</li>
+</ul>
+
+<h3>2.5 PreToolUse gate hook</h3>
+
+<ul>
+  <li>tool-* は <a href="gate-hook.html">gate-hook.html</a> の phase-gate <strong>対象外</strong> (status 遷移と無関係)</li>
+  <li>phase-gate.sh の粗フィルタは <code>if: "Skill(phase-*)"</code> で tool-* を素通り</li>
+  <li>tool-* の起動承認は ADR-040 (user 明示依頼許可) が SSoT</li>
+</ul>
+
+<h3>2.6 公式 MCP / twl MCP の利用</h3>
+
+<ul>
+  <li>tool-architect / tool-self-improve は <code>mcp__doobidoo__memory_search</code> を使用 (verified、既存 SKILL.md)</li>
+  <li>tool-* は twl MCP の <code>twl_worktree_create</code> 等を呼ぶ (Phase 5 cleanup 後)</li>
+  <li>GitHub 公式 MCP (<a href="research-findings.html">research-findings.html</a> §3) は tool-project が大半を使用 (issues / pull_requests / projects toolset)</li>
+</ul>
+
+<h2>§3. 各 tool の詳細 + rebrand 差分</h2>
+
+<div class="tool-box">
+<h3>3.1 tool-architect (co-architect 226 行 から rebrand)</h3>
+<dl>
+  <dt>frontmatter 変更</dt><dd><code>name: twl:co-architect</code> → <code>name: twl:tool-architect</code>、<code>type: controller</code> → <code>type: tool</code></dd>
+  <dt>spawnable_by</dt><dd><code>user</code> のみ → <code>[user, admin]</code> (admin が ADR-040 gate 通過後の自律 spawn を許可) <strong>(deduced)</strong></dd>
+  <dt>body 変更</dt><dd>なし (本体ロジック完全継承)</dd>
+  <dt>worktree 作成</dt><dd><code>python3 -m twl.autopilot.worktree create</code> → MCP tool <code>twl_worktree_create</code> 経由 (Phase 3 cutover で migration)</dd>
+  <dt>本 spec 自体の作成も tool-architect</dt><dd>ADR-040 gate 通過 (user 明示) + tool-architect spawn で本 directory が生成された経緯がある (本 session で実体験)</dd>
+</dl>
+</div>
+
+<div class="tool-box">
+<h3>3.2 tool-project (co-project 145 行 から rebrand)</h3>
+<dl>
+  <dt>frontmatter 変更</dt><dd><code>name: twl:co-project</code> → <code>name: twl:tool-project</code>、<code>type: controller</code> → <code>type: tool</code></dd>
+  <dt>spawnable_by</dt><dd><code>user</code> のみ (admin spawn 経路なし)</dd>
+  <dt>body 変更</dt><dd>なし</dd>
+  <dt>主要 sub-command</dt><dd>create / migrate / snapshot / plugin-create / prompt-audit</dd>
+  <dt>GitHub 公式 MCP 委譲</dt><dd>Phase 3 cutover で <code>gh project</code> CLI 直接呼び出し → 公式 MCP <code>projects</code> toolset への移行を検討 (ただし linkage は twl 側 <code>twl_status_set</code>)</dd>
+</dl>
+</div>
+
+<div class="tool-box">
+<h3>3.3 tool-utility (co-utility 79 行 から rebrand)</h3>
+<dl>
+  <dt>frontmatter 変更</dt><dd><code>name: twl:co-utility</code> → <code>name: twl:tool-utility</code>、<code>type: controller</code> → <code>type: tool</code></dd>
+  <dt>spawnable_by</dt><dd><code>user</code> のみ</dd>
+  <dt>body 変更</dt><dd>なし (79 行は最小サイズ、変更不要)</dd>
+  <dt>commands</dt><dd>size-check / lint / archive 等 6 件 (詳細は SKILL.md 直接記載)</dd>
+</dl>
+</div>
+
+<div class="tool-box">
+<h3>3.4 tool-self-improve (co-self-improve 144 行 から rebrand)</h3>
+<dl>
+  <dt>frontmatter 変更</dt><dd><code>name: twl:co-self-improve</code> → <code>name: twl:tool-self-improve</code>、<code>type: controller</code> → <code>type: tool</code></dd>
+  <dt>spawnable_by</dt><dd><code>user</code> + <code>su-observer</code> → <code>user</code> + <code>admin</code> (su-observer → administrator の rebrand)</dd>
+  <dt>body 変更</dt><dd>L27 の spawn 受取手順「su-observer」表記を「administrator」に変更</dd>
+  <dt>主要 sub-command</dt><dd>scenario / retrospect / test-project-manage</dd>
+  <dt>doobidoo 連携</dt><dd><code>mcp__doobidoo__memory_search</code> で lesson 検索、memory_store で保存 (継承)</dd>
+  <dt>admin mailbox 経路</dt><dd>完了時に <code>.mailbox/admin/inbox.jsonl</code> に <code>{"from":"tool-self-improve","event":"completed","detail":{...}}</code> mail を flock atomic write</dd>
+</dl>
+</div>
+
+<h2>§4. invocation 経路詳細</h2>
+
+<h3>4.1 user 直接 invoke</h3>
+
+<pre><code># user が tmux session で直接実行
+/twl:tool-architect &lt;feature description&gt;
+/twl:tool-project &lt;sub-command&gt; &lt;args&gt;
+/twl:tool-utility &lt;command&gt; [args]
+/twl:tool-self-improve &lt;scenario|retrospect|test-project-manage&gt;</code></pre>
+
+<h3>4.2 admin invoke (tool-architect / tool-self-improve のみ)</h3>
+
+<p>administrator (admin-cycle.sh polling) が Board の Idea status Issue を見て tool-architect spawn を判断する場合:</p>
+
+<pre><code># administrator/SKILL.md Step 1 (polling iteration)
+FOR each idea_issue IN board.filter(status="Idea"):
+  IF idea_issue.labels contains "feature-dev":
+    # ADR-040 gate 通過判定: user 明示 ack を待つ or autonomous (要 user 設定)
+    spawn_tmux \
+      --window-name "tool-architect-${idea_issue.num}" \
+      --skill twl:tool-architect \
+      --args "${idea_issue.body}"</code></pre>
+
+<h3>4.3 禁止経路 (Inv 関連)</h3>
+
+<ul>
+  <li>phase-* (pilot) が tool-* を <code>Skill()</code> で呼ぶ → <strong>MUST NOT</strong> (ADR-040 違反)</li>
+  <li>worker-* (worker) が tool-* を <code>Skill()</code> で呼ぶ → <strong>MUST NOT</strong></li>
+  <li>cross-stack invoke (旧 su-observer ↔ 新 administrator 経由の tool-* 呼び出し) → dual-stack 期間中 MUST NOT</li>
+</ul>
+
+<h2>§5. co-* → tool-* migration mapping</h2>
+
+<table>
+  <thead>
+    <tr><th>step</th><th>変更内容</th><th>file 影響</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1. frontmatter 変更</td><td><code>name</code> + <code>type</code> 変更、4 file 全件</td><td>4 × SKILL.md frontmatter</td></tr>
+    <tr><td>2. spawnable_by 拡張</td><td>tool-architect: <code>admin</code> 追加、tool-self-improve: <code>su-observer</code> → <code>admin</code> 置換</td><td>2 × SKILL.md frontmatter</td></tr>
+    <tr><td>3. body 表記置換</td><td>tool-self-improve L27 の「su-observer」→「administrator」</td><td>1 × SKILL.md body</td></tr>
+    <tr><td>4. directory rename</td><td><code>plugins/twl/skills/co-{architect,project,utility,self-improve}/</code> → <code>plugins/twl/skills/tool-{architect,project,utility,self-improve}/</code></td><td>4 × directory rename + 関連 import 参照更新</td></tr>
+    <tr><td>5. 内部 helper 参照</td><td><code>worktree create</code> 等を MCP tool 化 (Phase 3 cutover で実施)</td><td>tool-architect SKILL.md body 部分</td></tr>
+  </tbody>
+</table>
+
+<p>本体ロジック (PR 作成 / spec 生成 / utility 実行 / scenario 実行) は変更不要 (verified)。</p>
+
+<h2>§6. 典型シナリオ</h2>
+
+<table>
+  <thead>
+    <tr><th>シナリオ</th><th>起動方法</th><th>結果</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>user が architecture spec を依頼</td><td><code>/twl:tool-architect</code> + 説明文</td><td>spec directory + PR 作成</td></tr>
+    <tr><td>user が新 plugin を作る</td><td><code>/twl:tool-project plugin-create &lt;name&gt;</code></td><td>plugin template 生成</td></tr>
+    <tr><td>user が worktree cleanup を依頼</td><td><code>/twl:tool-utility cleanup-worktrees</code></td><td>orphan worktree 削除</td></tr>
+    <tr><td>administrator が test scenario 実行を委譲</td><td>admin が spawn-tmux で <code>tool-self-improve scenario</code></td><td>シナリオ実行結果を admin mailbox に mail</td></tr>
+    <tr><td>user が doobidoo lesson retrospect</td><td><code>/twl:tool-self-improve retrospect</code></td><td>doobidoo 検索 + lesson 整理 report</td></tr>
+  </tbody>
+</table>
+
+<h2>§7. ADR-040 / ADR-041 との整合性</h2>
+
+<ul>
+  <li><strong>ADR-040 (feature-dev spawn gate)</strong>: user 明示依頼許可ルール。tool-* の起動承認 SSoT として継承。tool-architect / tool-project / tool-utility / tool-self-improve いずれも user 明示 (slash command) が起動条件</li>
+  <li><strong>ADR-041 (部分 Superseded)</strong>: spawn-controller.sh 統合は廃止、新 spec では tmux new-window 直接呼び出し (<code>spawn-tmux.sh</code> ~30 行) に簡素化。「user 明示依頼許可」原則は保全</li>
+</ul>
+
+<h2>§8. 5 つの曖昧点 (Agent B 提示、本 spec で項目化)</h2>
+
+<div class="ambiguity">
+<h4>曖昧 1: tool-architect の admin invoke 経路</h4>
+<p><strong>状況</strong>: ADR-040 は「user 明示依頼許可」だが、administrator が Project Board の Idea status Issue を自律的に tool-architect spawn するシナリオが未定義。</p>
+<p><strong>選択肢</strong>:
+<ul>
+  <li>(A) user 明示のみ (admin spawn 禁止)</li>
+  <li>(B) admin spawn を Idea status + specific label (e.g. <code>auto-feature-dev</code>) で許可</li>
+  <li>(C) admin spawn を user pre-approval (起動時 1 回 ack) で許可</li>
+</ul>
+</p>
+<p><strong>本 spec 暫定方針</strong> (deduced): (A) を default、(B)/(C) は次 session で user 明示確認後に追加</p>
+</div>
+
+<div class="ambiguity">
+<h4>曖昧 2: tool-* の TWL_AUDIT 出力内容</h4>
+<p><strong>状況</strong>: 4 tool が <code>.audit/&lt;run-id&gt;/tools/&lt;name&gt;/</code> に何を書くか未定義。</p>
+<p><strong>暫定方針</strong>: tool-architect は spec directory snapshot、tool-project は Board 操作 log、tool-utility は command output、tool-self-improve は scenario 実行 trace を保存 (次 session で詳細化)</p>
+</div>
+
+<div class="ambiguity">
+<h4>曖昧 3: audit section の type 対象拡張</h4>
+<p><strong>状況</strong>: twl MCP の audit section 1 (controller_size &gt; 120 行) が <code>type: tool</code> を対象とするか不明。types.yaml に <code>tool</code> type の token_target を追加するか。</p>
+<p><strong>暫定方針</strong> (deduced): types.yaml に <code>tool</code> type を追加 (controller と同じ 1500/2500 token 閾値、120 行 warning は維持)、co-utility (79 行) は当然 PASS</p>
+</div>
+
+<div class="ambiguity">
+<h4>曖昧 4: tool-self-improve の admin mailbox 仕様</h4>
+<p><strong>状況</strong>: 完了 mail の event / detail field 仕様が <a href="spawn-protocol.html">spawn-protocol.html</a> (outline) に委ねられている。tool-* 専用の mail 仕様 section が必要。</p>
+<p><strong>暫定方針</strong>: <code>{"from":"tool-self-improve","event":"tool-completed","detail":{"sub_command":"...","result":"..."}}</code> 形式。<a href="spawn-protocol.html">spawn-protocol.html</a> content 実装時に固める</p>
+</div>
+
+<div class="ambiguity">
+<h4>曖昧 5: tool-utility の commands 拡張性</h4>
+<p><strong>状況</strong>: tool-utility は現在 6 commands のみ、新 architecture で追加 utility を SKILL.md 直接追記 vs catalog 化が未定義。</p>
+<p><strong>暫定方針</strong> (deduced): commands &lt; 10 件は SKILL.md 直接記載、超えたら <code>refs/utility-commands.md</code> catalog 化を検討。size-check で 120 行 threshold 接近時に migration 判断</p>
+</div>
+
+<h2>§9. 関連 spec ファイル</h2>
+
+<ul>
+  <li><a href="overview.html">overview.html</a> 図 1 (tool-* (4) は右独立ボックス)</li>
+  <li><a href="glossary.html">glossary.html</a> (本 file 公開後、4 tool 用語定義を 1 行 → 4 行に拡張)</li>
+  <li><a href="boundary-matrix.html">boundary-matrix.html</a> (outline、tool 列を含む 5x5 boundary matrix を次 session で実装)</li>
+  <li><a href="adr-fate-table.html">adr-fate-table.html</a> ADR-005/007/011/040/041 (tool-* rebrand の根拠)</li>
+  <li><a href="admin-cycle.html">admin-cycle.html</a> §6 (案 2 先行実装で tool-self-improve mail を受信)</li>
+  <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §6.3 (tool-* が使う MCP tool)</li>
+  <li><a href="research-findings.html">research-findings.html</a> §3 (GitHub 公式 MCP 委譲、tool-project が主に使用)</li>
+  <li>既存 SKILL.md (verified):
+    <ul>
+      <li><code>plugins/twl/skills/co-architect/SKILL.md</code> (226 行)</li>
+      <li><code>plugins/twl/skills/co-project/SKILL.md</code> (145 行)</li>
+      <li><code>plugins/twl/skills/co-utility/SKILL.md</code> (79 行)</li>
+      <li><code>plugins/twl/skills/co-self-improve/SKILL.md</code> (144 行)</li>
+    </ul>
+  </li>
+</ul>
+
+</body>
+</html>
