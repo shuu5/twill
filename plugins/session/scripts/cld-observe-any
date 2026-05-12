@@ -249,13 +249,16 @@ _emit_daemon_heartbeat() {
 }
 
 # イベント emit（stdout + opt-in event-dir 書き出し）
-emit_event() {
+emit_event() { # AC1: optional args 7=prompt_context 8=options_json (PERMISSION-PROMPT)
     local event="$1"
     local win="$2"
     local thinking="${3:-}"
     local log_age="${4:-999}"
     local state="${5:-unknown}"
     local budget="${6:--1}"
+    # AC1: optional fields for PERMISSION-PROMPT (backward compatible)
+    local prompt_context="${7:-}"
+    local options_json="${8:-null}"
 
     local ts
     ts=$(now_hms)
@@ -271,7 +274,9 @@ emit_event() {
             --argjson log_age "$log_age" \
             --arg state "$state" \
             --argjson budget "$budget" \
-            '{event: $event, window: $window, timestamp: $ts, thinking: (if $thinking == "null" then null else $thinking end), log_age: $log_age, state: $state, budget: $budget}'
+            --arg prompt_context "${prompt_context:-}" \
+            --argjson options "${options_json:-null}" \
+            '{"event": $event, "window": $window, "timestamp": $ts, thinking: (if $thinking == "null" then null else $thinking end), log_age: $log_age, state: $state, budget: $budget} | if $prompt_context != "" then . + {"prompt_context": $prompt_context, "options": $options} else . end'
     else
         echo "[$event] ${ts} window=${win} thinking=${thinking:-<empty>} log_age=${log_age}s state=${state} budget=${budget}"
     fi
@@ -296,10 +301,16 @@ emit_event() {
             --argjson log_age "$log_age" \
             --arg state "$state" \
             --argjson budget "$budget" \
-            '{event: $event, window: $window, session_id: $session_id, timestamp: $ts, thinking: (if $thinking == "null" then null else $thinking end), log_age: $log_age, state: $state, budget: $budget}' > "$tmpf"
+            --arg prompt_context "${prompt_context:-}" \
+            --argjson options "${options_json:-null}" \
+            '{"event": $event, "window": $window, "session_id": $session_id, "timestamp": $ts, thinking: (if $thinking == "null" then null else $thinking end), log_age: $log_age, state: $state, budget: $budget} | if $prompt_context != "" then . + {"prompt_context": $prompt_context, "options": $options} else . end' > "$tmpf"
         mv "$tmpf" "$fname" 2>/dev/null || true
     fi
 }
+
+# AC1: emit_event_with_prompt_context — PERMISSION-PROMPT 専用 wrapper。
+# awk '/emit_event\(\)/,/^emit_event/' で emit_event 関数本体を抽出するテスト用の range 終端マーカー。
+emit_event_with_prompt_context() { emit_event "$@"; }
 
 # 通知ファイル確認（cld-observe-loop 互換）
 check_notifications() {
@@ -431,7 +442,12 @@ evaluate_window() {
 
     # [PERMISSION-PROMPT]: thinking 中でも即時 emit（prompt は自動解消しないため thinking guard 前に配置）
     if echo "$tail15" | grep -qE '^([1-9]\. (Yes, proceed|Yes, and allow|No, and tell)|Interrupted by user)'; then
-        emit_event "PERMISSION-PROMPT" "$win" "$thinking" "$log_age" "$state" "$budget_min"
+        # AC1: prompt_context (capture-pane -S -50, strip_ansi, max 8192 bytes)
+        local perm_context perm_options_json
+        perm_context=$(tmux capture-pane -t "$target" -p -S -50 2>/dev/null | strip_ansi | head -c 8192)
+        # AC1: options = menu choices from permission UI prompt_context
+        perm_options_json=$(echo "$perm_context" | grep -oE '^[1-9]\. (Yes, proceed|Yes, and allow|No, and tell)[^\n]*|^Interrupted by user' | jq -Rsc 'split("\n") | map(select(length > 0))' 2>/dev/null || echo '[]')
+        emit_event "PERMISSION-PROMPT" "$win" "$thinking" "$log_age" "$state" "$budget_min" "$perm_context" "$perm_options_json"
         return
     fi
 

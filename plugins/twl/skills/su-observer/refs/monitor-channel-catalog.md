@@ -15,7 +15,7 @@ Wave 開始時に本カタログから Wave 種別に応じたチャネルを選
 | NON-TERMINAL | `>>> 実装完了:` 後の chain 不遷移 | 2分 | Confirm |
 | BUDGET-LOW | 5h rolling budget 残量 | token残量 40分以下 or cycle reset まで 5分以下（設定可） | Auto |
 | BUDGET-ALERT | Monitor watcher が検知した budget threshold 超過 | threshold_percent (default 90%) | Auto |
-| PERMISSION-PROMPT | Worker window の permission prompt 出現（`1. Yes, proceed` 等） | 即時（thinking 中でも emit） | Confirm |
+| PERMISSION-PROMPT | Worker window の permission prompt 出現（`1. Yes, proceed` 等） | 即時（thinking 中でも emit） | Auto（deny rule 該当時 Confirm/Escalate 昇格） |
 | **PILOT-PHASE-COMPLETE** | Pilot 内部 chain の Phase/Issue 完了 signal | 即時 | Auto |
 | **PILOT-ISSUE-MERGED** | Pilot が merge-gate で Issue merge を完了した signal | 即時 | Auto |
 | **PILOT-WAVE-COLLECTED** | Pilot が wave-collect を完了した signal | 即時 | Auto |
@@ -484,13 +484,16 @@ check_budget_low() {
 
 **regex**: `^([1-9]\. (Yes, proceed|Yes, and allow|No, and tell)|Interrupted by user)`
 
-**observer が PERMISSION-PROMPT event を受信した際の振る舞い:**
+**observer が PERMISSION-PROMPT event を受信した際の振る舞い（Issue #973 以降）:**
 
 1. ログ出力: `[PERMISSION-PROMPT] window=<win> に permission prompt 検出`
-2. `tmux capture-pane -t <win> -p -S -50` で prompt 前後の文脈を取得
-3. auto mode classifier の `soft_deny` 該当ルール（`Code from External` / `Memory Poisoning` / `Irreversible Local Destruction` 等）と突き合わせ、prompt 原因を特定する
-4. ユーザー通知: `pitfalls-catalog.md §4.7` の手順に従い、安全確認後にユーザーへ確認を求める
-5. **自動拒否 inject は本チャネルのスコープ外**（安全確認なしの自動承認・拒否禁止。別 Issue で自動応答を検討）
+2. `cld-observe-any` が `prompt_context`（capture-pane 50行, strip_ansi, max 8KB）と `options`（メニュー選択肢）を event json に付加して emit する
+3. `soft_deny_match.py` で soft_deny ルール（`soft-deny-rules.md` SSoT）と照合する
+4. **分岐**:
+   - **no-match** → Layer 0 Auto: `session-comm.sh inject $WIN "1" --force` で自動承認
+   - **match-confirm** → STOP + Layer 1 Confirm 昇格（AskUserQuestion で文脈提示）
+   - **match-escalate** → STOP + Layer 2 Escalate 昇格（Pilot escalation 通知）
+5. 全分岐で InterventionRecord を `.observation/` に記録する
 
 **注意**: false positive 防止のため、`^[1-9]\.` + 具体語（`Yes, proceed|Yes, and allow|No, and tell`）による行頭マッチが必須。`Interrupted by user` は別 alternation として処理する（行頭英字のため `[1-9]\.` prefixなし）。
 
@@ -577,7 +580,7 @@ tail -F .supervisor/cld-observe-any.log
 | `[PANE-DEAD]` | pane 終了 | Worker 消失確認 → 後処理 |
 | `[ERROR-STATE]` | Traceback/command not found | ログ確認 → 自動修復または Escalate |
 | `[BUDGET-LOW]` | budget 残量 ≤ 閾値 | 停止シーケンス（BUDGET-LOW 定義参照） |
-| `[PERMISSION-PROMPT]` | permission prompt 出現 | 文脈確認 → ユーザー通知（自動 inject 禁止） |
+| `[PERMISSION-PROMPT]` | permission prompt 出現 | soft_deny 非該当時は Layer 0 Auto inject、該当時は Layer 1/2 昇格 |
 | `[PHASE-COMPLETE]` | フェーズ完了フレーズ検知 | 次 Wave 移行 |
 | `[REVIEW-READY]` | Submit answers 表示 | inject で submit |
 | `[MENU-READY]` | Enter to select 表示 | `OBSERVER_AUTO_INJECT_ENABLE=1` 設定時は daemon が自動 inject、未設定時は observer 手動 inject（#1145, Option A） |
