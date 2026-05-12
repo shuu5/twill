@@ -389,7 +389,7 @@ EOF
 
   # Gate checks（SKIP_LAYER2=1 で bypass、AC-4.6: 2 wave 維持）
   if [[ "${SKIP_LAYER2:-0}" == "1" ]]; then
-    _skip_reason="$(_sanitize_skip_reason "${SKIP_LAYER2_REASON:-未設定}")"
+    _skip_reason="$(_sanitize_skip_reason "${SKIP_LAYER2_REASON:-(reason not set)}")"
     echo "[spawn-controller] WARN: SKIP_LAYER2=1 — feature-dev gate checks bypassed (issue=${ISSUE_NUMBER}, reason=${_skip_reason})" >&2
     {
       _sup_dir="${SUPERVISOR_DIR:-.supervisor}"
