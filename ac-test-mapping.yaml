@@ -1275,3 +1275,32 @@ issue_1566:
       note: "fix は commit 8e4c81bb (#1504) で適用済み。session-comm.sh line 437 に trap HUP + delete-buffer が実装済み"
       impl_files:
         - "plugins/session/scripts/session-comm.sh"
+# --- Issue #1683 ---
+issue_1683:
+  issue: 1683
+  framework: bats
+  test_file: "plugins/twl/tests/bats/scripts/spawn-controller-prompt-size.bats"
+  mappings:
+    - ac_index: 1
+      ac_text: "30 行以下の prompt は WARN なし"
+      test_name: "size-guard: 30 行以下の prompt は stderr に WARN が出力されない"
+      status: RED
+      red_mechanism: "EFFECTIVE_LIMIT = 30 - PROVENANCE_LINES(5) = 25 のため 30 > 25 → WARN 発火する（regression）"
+      impl_files:
+        - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+    - ac_index: 2
+      ac_text: "29 行 (threshold-1) で WARN なし"
+      test_name: "size-guard: 29 行（threshold-1）の prompt は WARN が出力されない"
+      status: RED
+      red_mechanism: "EFFECTIVE_LIMIT = 25 のため 29 > 25 → WARN 発火する（regression）"
+      impl_files:
+        - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
+
+    - ac_index: 3
+      ac_text: "31 行で WARN に行数が含まれる"
+      test_name: "size-guard: 31 行の WARN に行数が含まれる"
+      status: RED
+      red_mechanism: "WARN メッセージが 'exceeds recommended 25 lines (30 - 5 provenance lines)' になり 'exceeds recommended 30' を含まない"
+      impl_files:
+        - "plugins/twl/skills/su-observer/scripts/spawn-controller.sh"
