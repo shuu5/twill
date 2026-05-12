@@ -649,7 +649,7 @@ done
 
 # NOTE: _get_host_alias / _emit_provenance_section は冒頭（Issue #1644 で feature-dev path 用に移動）で定義済み
 
-# provenance section を先に取得し、サイズガードの実効上限（EFFECTIVE_LIMIT）を調整
+# provenance section を先に取得し、PROVENANCE_LINES を logging する（AC8）
 PROVENANCE="$(_emit_provenance_section)"
 PROVENANCE_LINES=$(printf '%s\n' "$PROVENANCE" | wc -l)
 echo "[spawn-controller] PROVENANCE_LINES=${PROVENANCE_LINES}" >&2
