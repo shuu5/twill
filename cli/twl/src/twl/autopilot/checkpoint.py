@@ -149,15 +149,29 @@ class CheckpointManager:
         step: str,
         field: str | None = None,
         critical_findings: bool = False,
+        issue_number: str | None = None,
     ) -> str:
-        """Read checkpoint JSON and return a field value or filtered list."""
+        """Read checkpoint JSON and return a field value or filtered list.
+
+        issue_number が指定された場合、{step}-{issue_number}.json を優先参照し、
+        不在時は {step}.json にフォールバックする（Issue #1703: cross-pollution 防止）。
+        """
         self._validate_step(step)
         if not critical_findings and not field:
             raise CheckpointArgError("--field または --critical-findings が必要です")
         if field:
             self._validate_field(field)
+        if issue_number is not None:
+            self._validate_issue_number(issue_number)
 
-        file = self.checkpoint_dir / f"{step}.json"
+        if issue_number is not None:
+            per_issue_file = self.checkpoint_dir / f"{step}-{issue_number}.json"
+            file = per_issue_file if per_issue_file.is_file() else (
+                self.checkpoint_dir / f"{step}.json"
+            )
+        else:
+            file = self.checkpoint_dir / f"{step}.json"
+
         if not file.is_file():
             raise CheckpointError(f"checkpoint not found: {file}")
 
@@ -244,14 +258,15 @@ def _parse_write_args(argv: list[str]) -> dict[str, Any]:
 
 
 def _parse_read_args(argv: list[str]) -> dict[str, Any]:
-    args: dict[str, Any] = {"step": None, "field": None, "critical_findings": False, "autopilot_dir": None}
+    args: dict[str, Any] = {"step": None, "field": None, "critical_findings": False, "autopilot_dir": None, "issue_number": None}
     i = 0
     while i < len(argv):
         a = argv[i]
         if a in ("-h", "--help"):
             print(
                 "Usage: python3 -m twl.autopilot.checkpoint read "
-                "--step <step> (--field <field> | --critical-findings) [--autopilot-dir <dir>]"
+                "--step <step> (--field <field> | --critical-findings) "
+                "[--issue-number <N>] [--autopilot-dir <dir>]"
             )
             sys.exit(0)
         elif a == "--step" and i + 1 < len(argv):
@@ -260,6 +275,8 @@ def _parse_read_args(argv: list[str]) -> dict[str, Any]:
             args["field"] = argv[i + 1]; i += 2
         elif a == "--critical-findings":
             args["critical_findings"] = True; i += 1
+        elif a == "--issue-number" and i + 1 < len(argv):
+            args["issue_number"] = argv[i + 1]; i += 2
         elif a == "--autopilot-dir" and i + 1 < len(argv):
             args["autopilot_dir"] = argv[i + 1]; i += 2
         else:
@@ -310,6 +327,7 @@ def main(argv: list[str] | None = None) -> int:
                 step=parsed["step"],
                 field=parsed["field"],
                 critical_findings=parsed["critical_findings"],
+                issue_number=parsed.get("issue_number"),
             )
             print(result)
             return 0
