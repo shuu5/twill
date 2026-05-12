@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>gate-hook — placeholder</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:"Noto Sans JP",sans-serif;max-width:1100px;margin:0 auto;padding:24px;line-height:1.65}h1{border-bottom:3px solid #f5a623;padding-bottom:8px}.warning{background:#fff5e0;border-left:4px solid #f5a623;padding:12px 16px;margin:16px 0}</style>
+</head><body>
+<h1>gate-hook — placeholder</h1>
+<p><strong>status</strong>: placeholder (本 session 未実装、次 session で着手予定)</p>
+
+<div class="warning">本 file は <code>twill-plugin-rebuild</code> spec の placeholder。次 session で PreToolUse hook による status gate 機械化の仕様を実装する。</div>
+
+<h2>目的</h2>
+<p>不変条件 W (PreToolUse hook で status gate 機械化) の具体実装を仕様化する。phase-* invocation 時に前提 status を verify し、不一致なら deny + administrator notify する mechanism を draft-v1 §5 から発展。</p>
+
+<h2>想定 outline (次 session で実装)</h2>
+<ol>
+  <li>gate hook の役割 (TWL_CALLER_AUTHZ 経由 caller authz の廃止 + GitHub Project Board status を真の SSoT に)</li>
+  <li><code>.claude/hooks/phase-gate.json</code> 設定例 (matcher: skill_name → expected_status mapping)</li>
+  <li><code>phase-gate.sh</code> helper 実装 (~30 lines、gh project item-list で status query)</li>
+  <li>4 phase の前提 status (phase-explore=Idea / phase-refine=Explored / phase-impl=Refined / phase-pr=Implementing)</li>
+  <li>deny 時の administrator notify (失敗 mail を admin mailbox に書き込み)</li>
+  <li>bypass policy (user 手動 status edit のみ、それ以外は禁止)</li>
+  <li>失敗時の retry path (前 phase 完了待ち or user 介入)</li>
+  <li>flow chart (図 3 を発展 + 詳細化)</li>
+  <li>9 P0 bug の Bug #1660/1662/1663/1684 を構造的に不能化する根拠</li>
+</ol>
+
+<h2>参照</h2>
+<ul>
+  <li><a href="overview.html">overview.html</a> §3 architecture</li>
+  <li><a href="invariant-fate-table.md">invariant-fate-table.md</a> 不変条件 W</li>
+  <li><a href="failure-analysis.md">failure-analysis.md</a> Bug #1660/1662/1663/1684</li>
+  <li>既存 draft <code>/tmp/twill-rebuild-design.html</code> §5 (原案、図 3 top-down flow)</li>
+</ul>
+</body></html>

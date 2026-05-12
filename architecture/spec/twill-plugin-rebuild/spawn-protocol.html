@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>spawn-protocol — placeholder</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:"Noto Sans JP",sans-serif;max-width:1100px;margin:0 auto;padding:24px;line-height:1.65}h1{border-bottom:3px solid #f5a623;padding-bottom:8px}.warning{background:#fff5e0;border-left:4px solid #f5a623;padding:12px 16px;margin:16px 0}</style>
+</head><body>
+<h1>spawn-protocol — placeholder</h1>
+<p><strong>status</strong>: placeholder (本 session 未実装、次 session で着手予定)</p>
+
+<div class="warning">本 file は <code>twill-plugin-rebuild</code> spec の placeholder。次 session で 3 階層 spawn 仕様 + file mailbox 通信 protocol の詳細を実装する。</div>
+
+<h2>目的</h2>
+<p>新 spec の 3 階層 spawn (administrator → pilot → worker) の機構と、階層型 file mailbox による通信 protocol を仕様化する。draft-v1 §5b の内容を発展 + 詳細化。</p>
+
+<h2>想定 outline (次 session で実装)</h2>
+<ol>
+  <li>3 階層 spawn 機構 (tmux new-window + claude code、各層別 main session)
+    <ul>
+      <li>L0 administrator は user が起動</li>
+      <li>L1 pilot は administrator が <code>spawn-tmux.sh</code> で起動</li>
+      <li>L2 worker は pilot が <code>spawn-tmux.sh</code> で起動</li>
+    </ul>
+  </li>
+  <li><code>spawn-tmux.sh</code> helper 仕様 (~30 lines、引数: session-name / skill / args / mailbox-target)</li>
+  <li>file mailbox 仕様 (.mailbox/&lt;session-name&gt;/inbox.jsonl + flock atomic、不変条件 T)</li>
+  <li><code>mailbox.sh</code> helper 仕様 (~30 lines、send / recv 2 関数)</li>
+  <li>message format (JSON Lines、共通 field: from / ts / event / detail / heartbeat_ts)</li>
+  <li>send / recv code 例 (3 階層全方向の使用例)</li>
+  <li>mail loss 防止 (file 永続、disk 故障以外で loss しない)</li>
+  <li>archive 戦略 (7 日 retention、mailbox/archive/inbox-&lt;timestamp&gt;.jsonl)</li>
+  <li>公式 SendMessage primitive (experimental) との比較 + 採用しない理由</li>
+  <li>subagent nesting 制約 (公式 verified、worker 内部 subagent は 1 階層のみ)</li>
+</ol>
+
+<h2>参照</h2>
+<ul>
+  <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図)</li>
+  <li><a href="invariant-fate-table.md">invariant-fate-table.md</a> 不変条件 T (file mailbox atomic) + V (per-Worker checkpoint)</li>
+  <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> (mail loss / hang 検知)</li>
+  <li>既存 draft <code>/tmp/twill-rebuild-design.html</code> §5b (原案)</li>
+</ul>
+</body></html>

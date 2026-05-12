@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="UTF-8"><title>admin-cycle — placeholder</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+<style>body{font-family:"Noto Sans JP",sans-serif;max-width:1100px;margin:0 auto;padding:24px;line-height:1.65}h1{border-bottom:3px solid #f5a623;padding-bottom:8px}.warning{background:#fff5e0;border-left:4px solid #f5a623;padding:12px 16px;margin:16px 0}</style>
+</head><body>
+<h1>admin-cycle — placeholder</h1>
+<p><strong>status</strong>: placeholder (本 session 未実装、次 session で着手予定)</p>
+
+<div class="warning">本 file は <code>twill-plugin-rebuild</code> spec の placeholder。次 session で administrator polling cycle の詳細を実装する。draft-v1 §3b の内容を発展 + 不変条件 I-1〜I-7 を確立。</div>
+
+<h2>目的</h2>
+<p>administrator main session の polling cycle (CronCreate 25 min durable で fire) の動作詳細を仕様化する。read 3 (mailbox / GitHub status / tmux windows) → judge → write 3 (spawn / escalate / cleanup) のサイクルと、複数 Issue 並列管理時の conflict 解決を明示する。</p>
+
+<h2>想定 outline (次 session で実装)</h2>
+<ol>
+  <li>CronCreate 設定 (25 min durable=true、admin session 起動時に set)</li>
+  <li>polling cycle 6 step (図 2b、draft-v1 §3b から発展):
+    <ul>
+      <li>1. inbox.jsonl 読込 (未読 mail を line 番号で track)</li>
+      <li>2. GitHub Project Board status poll (全 Issue Status + 前回 cycle との diff)</li>
+      <li>3. tmux windows 列挙 (active pilot / worker session 把握)</li>
+      <li>4. spawn 判断 (Status 遷移 + active 不在 → 次 phase pilot spawn)</li>
+      <li>5. failure / escalate 処理 (pilot failure mail / human gate)</li>
+      <li>6. cleanup (completed pilot window close + mailbox archive)</li>
+    </ul>
+  </li>
+  <li><code>admin-cycle.sh</code> helper 実装 (~30 lines、CronCreate handler)</li>
+  <li>conflict 解決と不変条件 I-1〜I-7:
+    <ul>
+      <li>I-1: 同 Issue に 1 個のみ pilot spawn (idempotent guard)</li>
+      <li>I-2: parallelism 上限 (default 3) 超過時は defer</li>
+      <li>I-3: mail check が next spawn の prerequisite</li>
+      <li>I-4: worker のことを直接知らない (pilot mail のみ)</li>
+      <li>I-5: status 更新は pilot 任せ (admin は読むだけ)</li>
+      <li>I-6: escalate 時は user 確認</li>
+      <li>I-7: tmux send-keys 使用禁止 (mailbox 経由のみ)</li>
+    </ul>
+  </li>
+  <li>pseudo-bash 実装例 (draft-v1 §3b の cycle 関数)</li>
+  <li>conflict scenario (idempotent / parallelism / stale pilot / race / mail loss / cron skip)</li>
+</ol>
+
+<h2>参照</h2>
+<ul>
+  <li><a href="overview.html">overview.html</a> §3 architecture</li>
+  <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知)</li>
+  <li><a href="invariant-fate-table.md">invariant-fate-table.md</a> 不変条件 I (循環依存)</li>
+  <li>既存 draft <code>/tmp/twill-rebuild-design.html</code> §3b (原案、図 2b)</li>
+</ul>
+</body></html>
