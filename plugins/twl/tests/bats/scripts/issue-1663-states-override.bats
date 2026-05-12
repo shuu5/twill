@@ -122,7 +122,7 @@ teardown() {
     _check_parallel_spawn_eligibility
   "
 
-  assert_success \
+  [[ "$status" -eq 0 ]] \
     || fail "controller_count=0 + STATES unset で exit $status が返った（期待: exit 0 / 初回 spawn 許可）"
 }
 
@@ -161,7 +161,7 @@ teardown() {
     _check_parallel_spawn_eligibility
   "
 
-  assert_success \
+  [[ "$status" -eq 0 ]] \
     || fail "controller_count=0 + STATES='S-2' で exit $status が返った（期待: exit 0 / S-2 は valid state）"
 }
 
@@ -193,7 +193,7 @@ teardown() {
     _check_parallel_spawn_eligibility
   "
 
-  assert_failure \
+  [[ "$status" -ne 0 ]] \
     || fail "controller_count=0 + STATES='S-0' で exit $status が返った（期待: exit 1 / S-0 は precondition 違反 → degrade）"
 
   [[ "$status" -eq 1 ]] \
