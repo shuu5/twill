@@ -466,17 +466,28 @@ def _load_rules_for_section(registry: dict, section_num: int) -> List[dict]:
     return [r for r in rules if isinstance(r, dict) and r.get('audit_section') == section_num]
 
 
-def audit_vocabulary(registry: dict, plugin_root: Path) -> List[dict]:
+def audit_vocabulary(
+    registry: dict,
+    plugin_root: Path,
+    monorepo_root: Optional[Path] = None,
+    scan_spec: bool = False,
+) -> List[dict]:
     """Section 11: Vocabulary Check
 
-    registry['glossary'][*].forbidden の単語を skills/ + agents/ + refs/ 配下の
-    Markdown ファイルで word boundary 厳密検出する。
+    registry['glossary'][*].forbidden の単語を skills/ + agents/ + refs/ 配下
+    (+ scan_spec=True 時は monorepo_root/architecture/spec/twill-plugin-rebuild/
+    + monorepo_root/architecture/decisions/) の Markdown ファイルで word boundary
+    厳密検出する。
 
     False positive 抑制 (registry.yaml §5 vocabulary_forbidden_use.exclusion_contexts):
       1. backtick 内 (`...`) の公式名引用
       2. 「旧」「廃止予定」を含む説明行
       3. migration-stage 表記 (`Phase 1 PoC` 等、backtick 除去で副次対応)
       4. compound canonical entity (e.g., co-autopilot 内の pilot)
+
+    component prefix:
+      - skills/+agents/+refs/ 由来: `vocabulary:{entity}`
+      - spec/+ADR/ 由来 (scan_spec=True 時): `vocabulary:spec:{entity}`
 
     Returns: items リスト (severity, component, message, section, value, threshold)
     """
@@ -502,37 +513,50 @@ def audit_vocabulary(registry: dict, plugin_root: Path) -> List[dict]:
     if not forbidden_map:
         return items
 
-    scan_bases = [
-        (plugin_root / 'skills', True),
-        (plugin_root / 'agents', False),
-        (plugin_root / 'refs', False),
+    # scan_bases: (base_dir, recursive, component_prefix, root_for_relpath)
+    scan_bases: List[Tuple[Path, bool, str, Path]] = [
+        (plugin_root / 'skills', True, 'vocabulary', plugin_root),
+        (plugin_root / 'agents', False, 'vocabulary', plugin_root),
+        (plugin_root / 'refs', False, 'vocabulary', plugin_root),
     ]
-    target_files: List[Path] = []
-    for base, recursive in scan_bases:
+    if scan_spec:
+        _mr = monorepo_root if monorepo_root is not None else _detect_monorepo_root(plugin_root)
+        if _mr is not None:
+            scan_bases.append((_mr / 'architecture' / 'spec' / 'twill-plugin-rebuild',
+                               False, 'vocabulary:spec', _mr))
+            scan_bases.append((_mr / 'architecture' / 'decisions',
+                               False, 'vocabulary:spec', _mr))
+
+    # target_file_groups: (path, prefix, root_for_relpath)
+    target_file_groups: List[Tuple[Path, str, Path]] = []
+    for base, recursive, prefix, root in scan_bases:
         if not base.exists() or not base.is_dir():
             continue
         if recursive:
-            target_files.extend(p for p in base.rglob('*.md') if p.is_file())
+            target_file_groups.extend((p, prefix, root) for p in base.rglob('*.md') if p.is_file())
         else:
-            target_files.extend(p for p in base.glob('*.md') if p.is_file())
+            target_file_groups.extend((p, prefix, root) for p in base.glob('*.md') if p.is_file())
 
-    if not target_files:
+    if not target_file_groups:
         items.append({
             "severity": "info",
             "component": "vocabulary:scan",
-            "message": "no scannable Markdown files under skills/ + agents/ + refs/",
+            "message": "no scannable Markdown files under skills/ + agents/ + refs/" + (" + spec/ + decisions/" if scan_spec else ""),
             "section": "vocabulary_check",
             "value": 0,
             "threshold": 1,
         })
         return items
 
+    # entity × word × source prefix の組合せで集計
+    # key: (entity, word, prefix) → set of file paths
+    hits_by_source: Dict[Tuple[str, str, str], Set[str]] = {}
+
     for entity in sorted(forbidden_map.keys()):
         for word in forbidden_map[entity]:
-            hit_files: Set[str] = set()
             pattern = re.compile(r'\b' + re.escape(word) + r'\b')
             compound_pattern = re.compile(r'\b([\w]+(?:-[\w]+)*-' + re.escape(word) + r')\b')
-            for fpath in sorted(target_files):
+            for fpath, prefix, root in sorted(target_file_groups, key=lambda t: str(t[0])):
                 try:
                     raw = fpath.read_text(encoding='utf-8')
                 except Exception:
@@ -557,23 +581,26 @@ def audit_vocabulary(registry: dict, plugin_root: Path) -> List[dict]:
                     break
                 if found:
                     try:
-                        hit_files.add(str(fpath.relative_to(plugin_root)))
+                        rel = str(fpath.relative_to(root))
                     except ValueError:
-                        hit_files.add(fpath.name)
+                        rel = fpath.name
+                    hits_by_source.setdefault((entity, word, prefix), set()).add(rel)
 
-            if hit_files:
-                files_sorted = sorted(hit_files)
-                files_preview = ', '.join(files_sorted[:5])
-                if len(files_sorted) > 5:
-                    files_preview += f', ... (+{len(files_sorted) - 5} more)'
-                items.append({
-                    "severity": "warning",
-                    "component": f"vocabulary:{entity}",
-                    "message": f"forbidden word '{word}' detected in {len(files_sorted)} file(s): {files_preview}",
-                    "section": "vocabulary_check",
-                    "value": len(files_sorted),
-                    "threshold": 0,
-                })
+    # emit warning per (entity, word, prefix)
+    for (entity, word, prefix) in sorted(hits_by_source.keys()):
+        hit_files = hits_by_source[(entity, word, prefix)]
+        files_sorted = sorted(hit_files)
+        files_preview = ', '.join(files_sorted[:5])
+        if len(files_sorted) > 5:
+            files_preview += f', ... (+{len(files_sorted) - 5} more)'
+        items.append({
+            "severity": "warning",
+            "component": f"{prefix}:{entity}",
+            "message": f"forbidden word '{word}' detected in {len(files_sorted)} file(s): {files_preview}",
+            "section": "vocabulary_check",
+            "value": len(files_sorted),
+            "threshold": 0,
+        })
 
     rules_11 = _load_rules_for_section(registry, 11)
     for rule in rules_11:
@@ -744,11 +771,19 @@ def audit_registry(registry: dict, plugin_root: Path) -> List[dict]:
     return items
 
 
-def audit_collect(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = None) -> List[dict]:
+def audit_collect(
+    deps: dict,
+    plugin_root: Path,
+    monorepo_root: Optional[Path] = None,
+    scan_spec: bool = False,
+) -> List[dict]:
     """12 セクションの TWiLL 準拠度データを収集（print なし）
 
     Section 11/12 は registry.yaml を auto-detect: plugin_root / "registry.yaml" が
     存在すれば実行、不在なら skip（既存 Section 1-10 への影響なし）。
+
+    scan_spec=True 時、Section 11 は monorepo_root/architecture/spec/twill-plugin-rebuild/
+    + monorepo_root/architecture/decisions/ も scan 対象に含める。
 
     Returns: items リスト（severity, component, message, section, value, threshold）
     """
@@ -1022,7 +1057,9 @@ def audit_collect(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] =
             })
         else:
             if isinstance(_registry, dict):
-                items.extend(audit_vocabulary(_registry, plugin_root))
+                items.extend(audit_vocabulary(_registry, plugin_root,
+                                              monorepo_root=monorepo_root,
+                                              scan_spec=scan_spec))
                 items.extend(audit_registry(_registry, plugin_root))
 
     return items
@@ -1091,7 +1128,7 @@ def _scan_body_for_mcp_tools(file_path: Path) -> Set[str]:
     return tools
 
 
-def audit_report(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = None) -> Tuple[int, int, int]:
+def audit_report(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = None, scan_spec: bool = False) -> Tuple[int, int, int]:
     """12 セクションの TWiLL 準拠度レポートを出力
 
     Sections:
@@ -1112,7 +1149,7 @@ def audit_report(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = 
 
     Returns: (critical_count, warning_count, ok_count)
     """
-    items = audit_collect(deps, plugin_root, monorepo_root=monorepo_root)
+    items = audit_collect(deps, plugin_root, monorepo_root=monorepo_root, scan_spec=scan_spec)
 
     criticals = sum(1 for i in items if i['severity'] == 'critical')
     warnings = sum(1 for i in items if i['severity'] == 'warning')

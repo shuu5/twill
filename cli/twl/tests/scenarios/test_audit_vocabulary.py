@@ -274,3 +274,202 @@ def test_no_registry_skips_section_11(tmp_path):
     plugin = _make_plugin(tmp_path, skip_registry=True)
     items = _vocab_items(_audit_json(plugin))
     assert items == [], f"Section 11 should be skipped when registry.yaml absent, got: {items}"
+
+
+# =========================================================================
+# --scan-spec 拡張テスト (Phase A、Section 11 が spec/+ADR/ も scan 対象に)
+# =========================================================================
+
+def _make_plugin_with_spec(
+    tmpdir: Path,
+    *,
+    glossary,
+    spec_files=None,
+    adr_files=None,
+):
+    """monorepo_root + plugin_root を tmp に構築する (subprocess 経由で twl 実行用)。
+
+    Structure:
+      tmpdir/
+        plugins/test-spec-vocab/
+          registry.yaml + deps.yaml
+        architecture/
+          spec/twill-plugin-rebuild/*.md
+          decisions/ADR-*.md
+
+    twl は subprocess の cwd=plugin_dir で起動、_detect_monorepo_root が git rev-parse
+    で monorepo を解決するため tmpdir に git init する。
+    """
+    monorepo_dir = tmpdir / "monorepo"
+    monorepo_dir.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=str(monorepo_dir), check=True)
+
+    plugin_dir = monorepo_dir / "plugins" / "test-spec-vocab"
+    plugin_dir.mkdir(parents=True)
+
+    spec_dir = monorepo_dir / "architecture" / "spec" / "twill-plugin-rebuild"
+    spec_dir.mkdir(parents=True)
+    for rel, body in (spec_files or {}).items():
+        (spec_dir / rel).write_text(body, encoding="utf-8")
+
+    adr_dir = monorepo_dir / "architecture" / "decisions"
+    adr_dir.mkdir(parents=True)
+    for rel, body in (adr_files or {}).items():
+        (adr_dir / rel).write_text(body, encoding="utf-8")
+
+    registry = {
+        "version": "4.0",
+        "plugin": "test-spec-vocab",
+        "glossary": glossary,
+        "components": [],
+        "chains": {},
+        "hooks-monitors": {"hooks": [], "monitors": []},
+        "integrity_rules": [],
+    }
+    _write_registry(plugin_dir, registry)
+    _write_deps_minimal(plugin_dir)
+
+    return plugin_dir, monorepo_dir
+
+
+def test_scan_spec_detects_forbidden_in_spec_md(tmp_path):
+    """scan_spec=True 時、spec/ の .md ファイルで forbidden 語を検出する。"""
+    glossary = {
+        "administrator": {
+            "canonical": "administrator",
+            "aliases": [],
+            "forbidden": ["orchestrator"],
+            "context": "L0 role",
+            "description": "test",
+            "examples": [],
+        },
+    }
+    plugin, _ = _make_plugin_with_spec(
+        tmp_path,
+        glossary=glossary,
+        spec_files={
+            "overview.md": "The orchestrator manages all phases.\n",
+        },
+    )
+    items = _vocab_items(_audit_json(plugin, "--scan-spec"))
+    warnings = [i for i in items if i['severity'] == 'warning' and 'spec' in i['component']]
+    assert warnings, f"expected vocabulary:spec:* warning, got items: {items}"
+    assert any('orchestrator' in i['message'] for i in warnings), (
+        f"expected 'orchestrator' in spec .md, got: {warnings}"
+    )
+
+
+def test_scan_spec_detects_forbidden_in_adr(tmp_path):
+    """scan_spec=True 時、ADR-*.md で forbidden 語を検出する。"""
+    glossary = {
+        "phaser": {
+            "canonical": "phaser",
+            "aliases": [],
+            "forbidden": ["pilot"],
+            "context": "L1 role",
+            "description": "test",
+            "examples": [],
+        },
+    }
+    plugin, _ = _make_plugin_with_spec(
+        tmp_path,
+        glossary=glossary,
+        adr_files={
+            "ADR-0099-test.md": "## Decision\n\nThe pilot drives the exploration phase.\n",
+        },
+    )
+    items = _vocab_items(_audit_json(plugin, "--scan-spec"))
+    warnings = [i for i in items if i['severity'] == 'warning' and 'spec' in i['component']]
+    assert any('pilot' in i['message'] for i in warnings), (
+        f"expected 'pilot' detected in ADR, got: {warnings}"
+    )
+
+
+def test_scan_spec_off_does_not_scan_spec(tmp_path):
+    """scan_spec=False (default) 時、spec/ の forbidden 語は検出されない。"""
+    glossary = {
+        "administrator": {
+            "canonical": "administrator",
+            "aliases": [],
+            "forbidden": ["orchestrator"],
+            "context": "L0 role",
+            "description": "test",
+            "examples": [],
+        },
+    }
+    plugin, _ = _make_plugin_with_spec(
+        tmp_path,
+        glossary=glossary,
+        spec_files={
+            "overview.md": "The orchestrator is described here.\n",
+        },
+    )
+    # --scan-spec なしで実行 (default False)
+    items = _vocab_items(_audit_json(plugin))
+    spec_warnings = [
+        i for i in items
+        if i['severity'] == 'warning' and 'spec' in i['component']
+    ]
+    assert not spec_warnings, (
+        f"scan_spec=False should not emit vocabulary:spec:* warnings, got: {spec_warnings}"
+    )
+
+
+def test_scan_spec_false_positive_backtick_in_spec(tmp_path):
+    """spec .md の backtick 内 forbidden 語は false positive として除外される。"""
+    glossary = {
+        "administrator": {
+            "canonical": "administrator",
+            "aliases": [],
+            "forbidden": ["orchestrator"],
+            "context": "L0 role",
+            "description": "test",
+            "examples": [],
+        },
+    }
+    plugin, _ = _make_plugin_with_spec(
+        tmp_path,
+        glossary=glossary,
+        spec_files={
+            "overview.md": "The `orchestrator` was the old name.\n",
+        },
+    )
+    items = _vocab_items(_audit_json(plugin, "--scan-spec"))
+    spec_warnings = [
+        i for i in items
+        if i['severity'] == 'warning' and 'spec' in i['component']
+        and 'orchestrator' in i['message']
+    ]
+    assert not spec_warnings, (
+        f"backtick in spec .md should be excluded, got: {spec_warnings}"
+    )
+
+
+def test_scan_spec_false_positive_old_annotation(tmp_path):
+    """spec .md の「旧」行の forbidden 語は false positive として除外される。"""
+    glossary = {
+        "phaser": {
+            "canonical": "phaser",
+            "aliases": [],
+            "forbidden": ["pilot"],
+            "context": "L1 role",
+            "description": "test",
+            "examples": [],
+        },
+    }
+    plugin, _ = _make_plugin_with_spec(
+        tmp_path,
+        glossary=glossary,
+        spec_files={
+            "ADR-migrated.md": "旧 pilot は廃止予定。\n",
+        },
+    )
+    items = _vocab_items(_audit_json(plugin, "--scan-spec"))
+    spec_warnings = [
+        i for i in items
+        if i['severity'] == 'warning' and 'spec' in i['component']
+        and 'pilot' in i['message']
+    ]
+    assert not spec_warnings, (
+        f"'旧' annotation should exclude in spec .md, got: {spec_warnings}"
+    )

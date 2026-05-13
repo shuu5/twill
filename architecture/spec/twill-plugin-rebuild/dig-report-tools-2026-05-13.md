@@ -99,7 +99,7 @@
 | §3.7 similarity threshold | similarity > 0.75 で重複判定 | [inferred → EXP-031] | doobidoo の similarity score 範囲 (0-1) は verified、0.75 閾値は EXP で false +/- 率検証 |
 | §3.7 Idea Issue 起票 | severity=critical のみ起票、minor は doobidoo のみ | [deduced] | 設計選択 (Issue spam 回避) |
 | §3.8 timeout | wall-clock 30m default | [deduced] | 設計選択、`--timeout=30m` で override 可 |
-| §3.8 budget threshold | budget 5h % > 50 で timeout | [deduced] | Inv Q format ([verified](../../plugins/twl/refs/ref-invariants.md#invariant-q)) を判定に流用、50% 閾値は設計選択 |
+| §3.8 budget threshold | budget 5h % > 50 で timeout | [deduced] | Inv Q format ([verified](invariant-fate-table.html#inv-q)) を判定に流用、50% 閾値は設計選択 |
 | §3.8 EXP | <a href="EXP-030">EXP-030</a> sandbox 1 cycle 動作 + log 収集検証 | [inferred → EXP-030] | (実機未検証、Phase 1 PoC で実行) |
 
 ### tool-utility 廃止 §4 の verify

@@ -275,7 +275,7 @@ def handle_deep_validate(args, deps, graph, plugin_root, plugin_name):
         sys.exit(1)
 
 
-def handle_audit(*, format=None, section=None, deps, plugin_root, plugin_name):
+def handle_audit(*, format=None, section=None, scan_spec=False, deps, plugin_root, plugin_name):
     section_filter = section
     section_name_map = {
         1: 'controller_size',
@@ -293,7 +293,7 @@ def handle_audit(*, format=None, section=None, deps, plugin_root, plugin_name):
     }
 
     if format == 'json':
-        items = audit_collect(deps, plugin_root)
+        items = audit_collect(deps, plugin_root, scan_spec=scan_spec)
         if section_filter is not None:
             target_section = section_name_map.get(section_filter)
             if target_section:
@@ -415,7 +415,7 @@ def handle_audit(*, format=None, section=None, deps, plugin_root, plugin_name):
         if not isinstance(registry, dict):
             print("| (registry.yaml empty or invalid root) | - | - | WARNING |")
             return 0
-        vocab_items = audit_vocabulary(registry, plugin_root)
+        vocab_items = audit_vocabulary(registry, plugin_root, scan_spec=scan_spec)
         warnings = 0
         infos = 0
         for item in vocab_items:
@@ -509,7 +509,7 @@ def handle_audit(*, format=None, section=None, deps, plugin_root, plugin_name):
 
     print("=== TWiLL Compliance Audit ===")
     print()
-    audit_criticals, audit_warnings, audit_oks = audit_report(deps, plugin_root)
+    audit_criticals, audit_warnings, audit_oks = audit_report(deps, plugin_root, scan_spec=scan_spec)
     return 1 if audit_criticals > 0 else 0
 
 

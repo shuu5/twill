@@ -122,8 +122,9 @@ def main():
     parser.add_argument('--tokens', action='store_true', help='Show token counts for all nodes')
     parser.add_argument('--no-tokens', action='store_true', help='Hide token counts in graph output')
     parser.add_argument('--deep-validate', action='store_true', help='Deep validation (controller bloat, ref placement, tools consistency)')
-    parser.add_argument('--audit', action='store_true', help='TWiLL compliance audit (10-section markdown report)')
-    parser.add_argument('--section', type=int, metavar='N', help='Filter --audit output to a single section number (1-10)')
+    parser.add_argument('--audit', action='store_true', help='TWiLL compliance audit (12-section markdown report)')
+    parser.add_argument('--section', type=int, metavar='N', help='Filter --audit output to a single section number (1-12)')
+    parser.add_argument('--scan-spec', action='store_true', dest='scan_spec', help='Section 11: spec/+ADR/ も vocabulary forbidden word scan の対象に含める')
     parser.add_argument('--complexity', action='store_true', help='Complexity metrics report')
     parser.add_argument('--rename', nargs=2, metavar=('OLD', 'NEW'), help='Rename a component (updates deps.yaml, frontmatter, body refs)')
     parser.add_argument('--promote', nargs=2, metavar=('NAME', 'NEW_TYPE'), help='Change component type (promote/demote with section move, file move, can_spawn/spawnable_by adjustment)')
@@ -231,6 +232,7 @@ def main():
         sys.exit(handle_audit(
             format=args.format,
             section=args.section,
+            scan_spec=getattr(args, 'scan_spec', False),
             deps=deps,
             plugin_root=plugin_root,
             plugin_name=plugin_name,
