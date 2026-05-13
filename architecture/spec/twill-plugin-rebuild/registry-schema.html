@@ -43,6 +43,198 @@
   </tbody>
 </table>
 
+<h2 id="s1-5">§1.5. 全 SSoT 完全 enumeration (twill-plugin-rebuild 範囲)</h2>
+
+<div class="info">本節は <a href="#s5">§5 階層図</a> の Authority/Reference/Derived 3 段階分類を <strong>1 table で systematic 列挙</strong>。各 SSoT の場所 / 状態 / 依存関係 / 言及 file 数を一元化することで、SSoT 間の重複・矛盾 audit を容易にする。Phase 5 検証時点 (2026-05-13) の snapshot。</div>
+
+<h3>1.5.1 Authority SSoT (原典、人または合意が author)</h3>
+
+<table>
+  <thead>
+    <tr><th>SSoT</th><th>場所</th><th>concern</th><th>状態</th><th>言及 file 数 (spec)</th><th>依存される側</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>registry.yaml</code></td>
+      <td><code>plugins/twl/registry.yaml</code></td>
+      <td>vocabulary + components + chains + hooks/monitors + integrity_rules の 5 section 統合</td>
+      <td><span class="vs inferred">未作成 (本 dig で schema 確定、Phase 1 PoC で実体作成)</span></td>
+      <td>13 / 27</td>
+      <td>types.py fallback、README/CLAUDE.md listing が Derived として参照</td>
+    </tr>
+    <tr>
+      <td><code>ref-invariants.md</code></td>
+      <td><code>plugins/twl/refs/ref-invariants.md</code></td>
+      <td>不変条件 (invariant) A-X 24 件</td>
+      <td><span class="vs deduced">drift (A-N 14 件のまま、Pilot/Worker rename 未実施、Inv U title 未 rename)</span></td>
+      <td>9 / 27</td>
+      <td>invariant-fate-table.html が Reference として参照</td>
+    </tr>
+    <tr>
+      <td>Project Board (Status field)</td>
+      <td>external: GitHub Project <code>twill-ecosystem</code> (#10)</td>
+      <td>Issue lifecycle status (6-stage: Idea/Explored/Refined/Implementing/PR Reviewed/Merged)</td>
+      <td><span class="vs verified">運用中</span></td>
+      <td>16 / 27</td>
+      <td>administrator polling cycle、phaser status-transition が read</td>
+    </tr>
+    <tr>
+      <td>doobidoo MCP</td>
+      <td>external: <code>http://100.82.69.124:18765/mcp</code> (Tailscale)</td>
+      <td>lesson (cross-session knowledge) SSoT</td>
+      <td><span class="vs verified">運用中 (<code>claude mcp list</code> で Connected 確認済)</span></td>
+      <td>16 / 27</td>
+      <td>tool-sandbox-runner が重複 check + Idea Issue 起票</td>
+    </tr>
+    <tr>
+      <td>ADR-043</td>
+      <td><code>plugins/twl/architecture/decisions/ADR-043-twill-radical-rebuild.md</code></td>
+      <td>radical rebuild 設計の正典 (10 role + registry.yaml + 命名 policy)</td>
+      <td><span class="vs verified">Proposed (本 session 完了)</span></td>
+      <td>13 / 27</td>
+      <td>本 spec directory 全体を supplement として参照</td>
+    </tr>
+    <tr>
+      <td>ADR-044 (予定)</td>
+      <td>同上</td>
+      <td>chain SSoT 統一 (旧案 3 step.sh、現案 4 registry.yaml に更新)</td>
+      <td><span class="vs inferred">未起票</span></td>
+      <td>3 / 27</td>
+      <td>ssot-design.html が詳細記述</td>
+    </tr>
+    <tr>
+      <td><strong>ADR-045 (予定、第 5 弾 dig 由来)</strong></td>
+      <td>同上</td>
+      <td>命名 policy + vocabulary 6 field schema + 10 role 体系の formal ADR 化</td>
+      <td><span class="vs inferred">未起票</span></td>
+      <td>5 / 27</td>
+      <td>registry-schema.html §4 §8 の formal 化</td>
+    </tr>
+    <tr>
+      <td>各実 file (SKILL.md / agents/specialist-*.md)</td>
+      <td><code>plugins/twl/skills/&lt;role&gt;-&lt;name&gt;/SKILL.md</code> + <code>plugins/twl/agents/specialist-*.md</code></td>
+      <td>各 component の frontmatter (name / role / allowed-tools 等) + body 仕様</td>
+      <td><span class="vs deduced">部分実装 (一部 file は新名前未 rename、agents/worker-* 18 件未 rename)</span></td>
+      <td>(内側、registry.yaml components が listing)</td>
+      <td>registry.yaml components が listing、EXP-034 で整合性検証</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>1.5.2 Reference SSoT (Authority から参照される正典、supplement)</h3>
+
+<table>
+  <thead>
+    <tr><th>SSoT</th><th>場所</th><th>concern</th><th>状態</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>experiment-index.html</code></td>
+      <td>architecture/spec/twill-plugin-rebuild/</td>
+      <td>EXP-001〜038 結果集約 + status badge + 関連 spec link</td>
+      <td><span class="vs verified">第 5 弾 dig 反映完了 (EXP-032〜038 追加)</span></td>
+    </tr>
+    <tr>
+      <td><code>ref-pitfalls-catalog.md</code></td>
+      <td>plugins/twl/refs/</td>
+      <td>pitfalls + lesson の運用 catalog (incident logs + doobidoo 引用)</td>
+      <td><span class="vs verified">既存運用中</span></td>
+    </tr>
+    <tr>
+      <td><code>ref-intervention-catalog.md</code></td>
+      <td>plugins/twl/refs/</td>
+      <td>incident response 3 層分類 (Auto/Confirm/Escalate)</td>
+      <td><span class="vs verified">既存運用中</span></td>
+    </tr>
+    <tr>
+      <td><code>ref-monitor-channel-catalog.md</code></td>
+      <td>plugins/twl/refs/</td>
+      <td>Monitor channel 定義 + Hybrid 検知ポリシー</td>
+      <td><span class="vs verified">既存運用中</span></td>
+    </tr>
+    <tr>
+      <td><code>invariant-fate-table.html</code></td>
+      <td>architecture/spec/twill-plugin-rebuild/</td>
+      <td>A-X 24 件 fate audit (保全 / 強化 / 部分 Superseded / 新規)</td>
+      <td><span class="vs verified">本 session で Inv U rename banner 追加</span></td>
+    </tr>
+    <tr>
+      <td><code>adr-fate-table.html</code></td>
+      <td>architecture/spec/twill-plugin-rebuild/</td>
+      <td>ADR 43 件 fate audit + ADR-043 supersedes chain</td>
+      <td><span class="vs verified">本 session で ADR-043 定義ブロック更新</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>1.5.3 Derived (auto-generated、原典から派生、drift は <code>twl audit</code> で検出)</h3>
+
+<table>
+  <thead>
+    <tr><th>Derived</th><th>場所</th><th>派生元 Authority</th><th>状態</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>types.py</code> <code>_FALLBACK_TOKEN_THRESHOLDS</code></td>
+      <td>cli/twl/src/twl/core/types.py</td>
+      <td>registry.yaml#integrity_rules</td>
+      <td><span class="vs deduced">現状 types.yaml 由来、Phase 3 cutover で registry.yaml 派生に切替</span></td>
+    </tr>
+    <tr>
+      <td>README.md / CLAUDE.md component listing</td>
+      <td>plugins/twl/README.md + CLAUDE.md</td>
+      <td>registry.yaml#components</td>
+      <td><span class="vs deduced">現状 deps.yaml 由来、<code>twl update-readme</code> で auto-gen 機構維持</span></td>
+    </tr>
+    <tr>
+      <td><code>chain-steps.sh</code> (旧、廃止)</td>
+      <td>plugins/twl/scripts/chain-steps.sh</td>
+      <td>chain.py CHAIN_STEPS (旧 Authority)</td>
+      <td><span class="vs verified">Phase 3 cutover で全廃 (本 spec で確定)</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>1.5.4 SSoT 間の重複/矛盾 audit (本 dig 検出時点)</h3>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>矛盾 / 重複</th><th>状態</th><th>解消計画</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><code>registry.yaml</code> (新 Authority) と <code>deps.yaml</code>/<code>types.yaml</code> (旧、Phase 2 dual-stack 期間中併存)</td>
+      <td><span class="vs deduced">drift risk (両方が SSoT として併存)</span></td>
+      <td><code>Phase 2 dual-stack</code> 期間中は registry.yaml が先導、<code>Phase 3 cutover</code> で旧 2 file 全廃</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><code>ref-invariants.md</code> (A-N 14 件のまま) と <code>invariant-fate-table.html</code> (A-X 24 件)</td>
+      <td><span class="vs deduced">完全 drift (overview.html §8 で「訂正課題」と既に記載)</span></td>
+      <td>本 session 次 step で ref-invariants.md を A-X (24 件) に rename + Pilot/Worker rename + Inv U rename</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><code>agents/specialist-*.md</code> (新名前、spec で listing) と <code>agents/worker-*.md</code> (旧 18 件、実 file)</td>
+      <td><span class="vs deduced">実 file は <code>worker-*</code> のまま、rename 未実施</span></td>
+      <td><code>Phase 1 PoC</code> 着手前に実 file rename (<code>git mv</code> + 各 file frontmatter 更新)、EXP-034 で機械検証</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>registry.yaml components (spec で記述) と各実 SKILL.md frontmatter (現状 <code>phase-*</code> 等)</td>
+      <td><span class="vs deduced">drift (実 file 未 rename)</span></td>
+      <td>EXP-034 で機械検証、<code>Phase 1 PoC</code> seed 作成時に整合性確保</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Project Board status (Authority、6-stage) と既存 <code>autopilot-orchestrator.sh</code> 等の status hardcode</td>
+      <td><span class="vs verified">旧 4-stage 想定の hardcode が一部残存</span></td>
+      <td><code>Phase 3 cutover</code> で hardcode 廃止、registry.yaml#integrity_rules の status SSoT に統一</td>
+    </tr>
+  </tbody>
+</table>
+
 <h2 id="s2">§2. registry.yaml 全体 schema と 5 section</h2>
 
 <div class="info">本節は <a href="ssot-design.html">ssot-design.html §4</a> の中核仕様。<code>plugins/twl/registry.yaml</code> 1 file が 5 section を保有する。</div>
