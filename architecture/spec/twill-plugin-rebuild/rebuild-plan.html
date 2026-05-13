@@ -25,6 +25,33 @@
 
 <p>新 architecture への移行 plan を Strangler Fig 4 phase + 各 phase の verify points + rollback path で仕様化する。<code>Phase 1 PoC</code> は Issue #1660 (SKIP_*_REASON sanitize) を新 architecture で再実装することで proof-of-concept とする。</p>
 
+<h2 id="phase1-prerequisites"><code>Phase 1 PoC</code> 着手前 PASS 必須 EXP listing (Phase B 2026-05-14 確定)</h2>
+
+<div class="info">本節は ADR-043 / ADR-045 が前提条件として要求する EXP の formal listing。<code>Phase 1 PoC</code> 着手前に bats unit を実行し、全 PASS した時点で go-judgment 可能。Phase C (EXP framework 構築) + Phase D (実機検証) で本 listing の EXP を順次 verified 化する。</div>
+
+<table>
+  <thead>
+    <tr><th>EXP</th><th>concern</th><th>verify path</th><th>関連 ADR / Inv</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="experiment-index.html#EXP-001">EXP-001</a></td><td>PreToolUse hook matcher 単数 schema 受理</td><td>bats unit: <code>test-fixtures/experiments/hooks/EXP-001-hook-matcher-singular.bats</code></td><td>ADR-043 Decision §7 (gate hook)</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-002">EXP-002</a></td><td>PreToolUse hook exit code 0/1/2 の意味</td><td>bats unit: <code>test-fixtures/experiments/hooks/EXP-002-hook-exit-code.bats</code></td><td>ADR-043 Decision §7</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-003">EXP-003</a></td><td>permissionDecision enum 受理</td><td>bats unit: <code>test-fixtures/experiments/hooks/EXP-003-permission-decision.bats</code></td><td>ADR-043 Decision §7</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-006">EXP-006</a></td><td>mailbox flock atomic write (race condition)</td><td>bats unit: <code>test-fixtures/experiments/mailbox/EXP-006-mailbox-flock-atomic.bats</code></td><td><a href="invariant-fate-table.html#inv-t">Inv T</a> mailbox atomic</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-007">EXP-007</a></td><td>tier 1 + tier 2 hook parallel 実行</td><td>smoke (Claude session 必須)</td><td>ADR-043 Decision §7</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-008">EXP-008</a></td><td>bypassPermissions でも tier 2 deny 効く</td><td>smoke</td><td>ADR-043 Decision §7</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-009">EXP-009</a></td><td>Plugin Monitor stdout が session に notification (mcp-watchdog 廃止根拠)</td><td>smoke</td><td><a href="invariant-fate-table.html#inv-x">Inv X</a> deploy-verify セット (VP-11 対応)</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-010">EXP-010</a></td><td>twl plugin 化 + namespace 解決 (spawn 設計の根幹)</td><td>smoke (<code>claude --plugin-dir</code>)</td><td>ADR-043 Decision §1 (10 role plugin 構成)</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-027">EXP-027</a></td><td>tool-architect verify-coverage grep boundary</td><td>bats unit: <code>test-fixtures/experiments/tool-architect/EXP-027-verify-coverage-grep.bats</code></td><td>ADR-043 Decision §1 (tool role)</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-028">EXP-028</a></td><td>tool-architect spec write boundary (PreToolUse hook)</td><td>bats unit: <code>test-fixtures/experiments/tool-architect/EXP-028-spec-write-boundary.bats</code></td><td>ADR-043 Decision §1 + §7</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-032">EXP-032</a></td><td>registry.yaml audit (5 section parse + 7 integrity_rules trigger)</td><td>bats unit: <code>test-fixtures/experiments/registry/EXP-032-registry-audit.bats</code> (Step 3 で実装済、Phase C で path migration)</td><td>ADR-043 Decision §5 (registry.yaml 統合 SSoT) + ADR-045</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-034">EXP-034</a></td><td>registry.yaml ↔ 実 SKILL.md frontmatter 整合性</td><td>bats unit: <code>test-fixtures/experiments/registry/EXP-034-registry-components-consistency.bats</code> (Step 3 で実装済)</td><td>ADR-043 Decision §5 + ADR-045</td></tr>
+    <tr><td><a href="experiment-index.html#EXP-038">EXP-038</a></td><td>vocabulary audit (forbidden word boundary + false positive 抑制 3 種)</td><td>bats unit: <code>test-fixtures/experiments/registry/EXP-038-vocabulary-audit.bats</code> (Step 3 で実装済)</td><td>ADR-045 §1 (1 entity = 1 name)</td></tr>
+  </tbody>
+</table>
+
+<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>合計 13 件</strong> (bats unit 8 + smoke 4 + bats path migration 3、Step 3 実装済の EXP-006/032/034/038 + Step C で新規実装の EXP-001/002/003/027/028 + smoke EXP-007/008/009/010)。本 listing は ADR-043 / ADR-045 が <code>Phase 1 PoC</code> 着手前提として参照。残 25 件 (EXP-004/005 + EXP-011〜026 + EXP-029〜031 + EXP-033 + EXP-035〜037) は <code>Phase 2 dual-stack</code> 以降で順次検証。</em></p>
+
 <h2>想定 outline (次 session で実装)</h2>
 
 <ol>

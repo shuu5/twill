@@ -74,6 +74,7 @@
     <tr><td><strong>1 entity = 1 name ルール</strong></td><td>同一概念 entity に対し canonical name を 1 つだけ与える。多重 synonym は forbidden 扱いで audit</td></tr>
     <tr><td><strong>公式名衝突回避</strong></td><td>公式 Claude Code 名 (<code>Agent</code>/<code>Skill</code>/<code>Tool</code>/<code>Plan</code>/<code>Explore</code>) は大文字始まり + backtick、twl 内部 entity は小文字 + role-prefix</td></tr>
     <tr><td><strong>migration-stage entity</strong></td><td>Strangler Fig migration の phase 番号 (<code>Phase 1 PoC</code>/<code>Phase 2 dual-stack</code>/<code>Phase 3 cutover</code>/<code>Phase 4 cleanup</code>) は backtick + 大文字で migration-stage entity として明示分離、<code>phase</code> forbidden audit から除外</td></tr>
+    <tr><td><strong>migration-stage 文脈許容</strong> (Phase B 2026-05-14 追加)</td><td>migration-stage は本文中の見出し・説明主語として裸表記を許容 (例: rebuild-plan.html の「Phase 1 PoC」見出し、「Phase 1 で実装」等の説明文)。vocabulary audit の <code>exclusion_contexts</code> で backtick あり (<code>`Phase 1 PoC`</code>) は migration-stage 表記として除外、backtick なし裸の <code>phase</code> 単独語のみ forbidden 検出対象。読みやすさ重視、spec 整合性は backtick 引用の有無で機械区別</td></tr>
   </tbody>
 </table>
 
