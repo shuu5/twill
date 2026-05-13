@@ -17,7 +17,7 @@
 
 <header class="doc-header">
   <h1>sandbox experiment architecture — 実地検証 + spec hyperlink</h1>
-  <div class="meta">draft-v2 (2026-05-13) &middot; 4-state verification status + EXP-id 体系 + 既存 sandbox 機能継承</div>
+  <div class="meta">draft-v2 (2026-05-13、第 4 弾 dig 反映) &middot; 4-state verification status + EXP-id 体系 (31 EXP) + 既存 sandbox 機能継承 + <code>plugins/twl/sandboxes/</code> catalog + tool-sandbox-runner 連携</div>
 </header>
 
 <div class="info">
@@ -117,6 +117,16 @@
 ├── EXP-008-bypasspermissions-deny-effective.bats
 ├── EXP-009-plugin-monitor-notification.smoke.sh
 ├── EXP-010-plugin-namespace-loading.smoke.sh
+├── EXP-019-gh-project-status-option-write.smoke.sh   # 第 4 弾 dig 由来
+├── EXP-020-kanban-col-order-write.smoke.sh
+├── EXP-021-label-add-remove-write.smoke.sh
+├── EXP-022-view-switch-write.smoke.sh
+├── EXP-023-filter-groupby-write.smoke.sh
+├── EXP-025-template-apply-build.smoke.sh
+├── EXP-026-template-idempotent.smoke.sh
+├── EXP-029-worker-spec-review-fix-loop.smoke.sh
+├── EXP-030-sandbox-runner-twill-self-cycle.smoke.sh
+├── EXP-031-doobidoo-duplicate-check-precision.smoke.sh
 └── ...
 
 test-fixtures/experiments/hooks/    # bats unit test (mock 可能)
@@ -125,9 +135,30 @@ test-fixtures/experiments/hooks/    # bats unit test (mock 可能)
 ├── EXP-003-permission-decision-enum.bats
 ├── EXP-006-mailbox-flock-race.bats
 ├── EXP-007-tier1-tier2-parallel.bats
-└── ...</code></pre>
+├── EXP-027-verify-coverage-grep.bats                  # 第 4 弾 dig 由来
+├── EXP-028-spec-write-boundary-deny.bats
+└── ...
 
-<p><strong>分担</strong>: bats 化可能な (mock で再現可能) なもの → <code>test-fixtures/experiments/hooks/</code>。Claude Code セッション or 公式 tool (CronCreate / Plugin Monitor) が必要なもの → <code>experiments/</code> top-level smoke test。</p>
+plugins/twl/sandboxes/                # 第 4 弾 dig 由来 sandbox catalog (plugin scope)
+├── twill-self/                       # twill plugin sandbox (tool-sandbox-runner 用)
+│   ├── sandbox.yaml                  # manifest (description, features サポート一覧)
+│   ├── setup.sh                      # orphan branch test-target/main + worktree 作成
+│   └── features.yaml                 # feature 一覧と test 方法 (admin/pilot/worker)
+├── ts-nextjs-hono-mono/              # TS Next.js + Hono モノレポ sandbox
+│   ├── sandbox.yaml
+│   ├── setup.sh                      # template apply + tool-project init
+│   └── features.yaml                 # feature 一覧 (tool-project / build / test)
+└── _shared/
+    └── problem-patterns.yaml         # LLM 分析 pattern catalog (6 件: stuck-loop / mailbox-loss / context-bloat / phase-gate-mistake / step-abort-cascade / subagent-misuse)</code></pre>
+
+<p><strong>分担 (3 layer)</strong>:</p>
+<ul>
+  <li><code>test-fixtures/experiments/hooks/</code>: bats unit test (mock 可能、CI run)</li>
+  <li><code>experiments/</code> top-level: Claude Code セッション or 公式 tool (CronCreate / Plugin Monitor) が必要な smoke test</li>
+  <li><strong><code>plugins/twl/sandboxes/</code></strong> (第 4 弾 dig 追加): tool-sandbox-runner が実行する <strong>sandbox 環境 catalog</strong>。各 sandbox は <code>setup.sh</code> で orphan branch + worktree を作成、<code>claude --plugin-dir</code> で完全分離 Claude session を起動して E2E test を行う</li>
+</ul>
+
+<p><strong>problem-patterns.yaml</strong> (新規 file): tool-sandbox-runner の LLM 分析で使用。6 pattern × {severity, description} を YAML で定義し、LLM output schema (<code>pattern_id</code> field) と整合させる。詳細は <a href="tool-architecture.html">tool-architecture.html</a> §5.6 参照。</p>
 
 <h3>3.2 各 EXP file の構造規約</h3>
 
@@ -323,7 +354,30 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
   </tbody>
 </table>
 
-<h2>§8. Phase 1 PoC 前の sandbox 実験 sequence (推奨順)</h2>
+<h2>§8. 第 4 弾 dig 由来 EXP-019〜031 (13 件追加、tool-* 仕様 finalization)</h2>
+
+<p><strong>dig source</strong>: <a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (3 軸 × 5 ラウンド = 20 question)。全 EXP の詳細は <a href="experiment-index.html">experiment-index.html</a> カテゴリ I〜M 参照。</p>
+
+<table class="exp-table">
+  <thead><tr><th>EXP-id</th><th>検証対象</th><th>担当 tool</th><th>分類</th></tr></thead>
+  <tbody>
+    <tr><td>EXP-019</td><td>GitHub Project status field option 追加 (4 手段)</td><td>tool-project</td><td>smoke</td></tr>
+    <tr><td>EXP-020</td><td>kanban col order 変更 (4 手段)</td><td>tool-project</td><td>smoke</td></tr>
+    <tr><td>EXP-021</td><td>label add/remove (4 手段)</td><td>tool-project</td><td>smoke</td></tr>
+    <tr><td>EXP-022</td><td>view switch (kanban/table)</td><td>tool-project</td><td>smoke</td></tr>
+    <tr><td>EXP-023</td><td>filter / group-by 設定</td><td>tool-project</td><td>smoke</td></tr>
+    <tr><td>EXP-024</td><td>(将来) twl MCP custom tool 価値調査</td><td>tool-project</td><td>調査</td></tr>
+    <tr><td>EXP-025</td><td>template apply + build smoke test</td><td>tool-project</td><td>smoke</td></tr>
+    <tr><td>EXP-026</td><td>template idempotent (2 回 apply で同一 state)</td><td>tool-project</td><td>smoke</td></tr>
+    <tr><td>EXP-027</td><td>verify-coverage.sh の 4-state grep 検証</td><td>tool-architect</td><td>bats</td></tr>
+    <tr><td>EXP-028</td><td>pre-tool-use-spec-write-boundary.sh で tool-architect / user 以外を deny</td><td>tool-architect</td><td>bats</td></tr>
+    <tr><td>EXP-029</td><td>worker-spec-review agent の 3 回 fix loop 収束 / escalate</td><td>tool-architect</td><td>smoke</td></tr>
+    <tr><td>EXP-030</td><td>sandbox-runner で twill-self sandbox の 1 cycle 動作 + log 収集</td><td>tool-sandbox-runner</td><td>smoke</td></tr>
+    <tr><td>EXP-031</td><td>doobidoo 重複 check (similarity > 0.75) の false positive/negative 率</td><td>tool-sandbox-runner</td><td>調査</td></tr>
+  </tbody>
+</table>
+
+<h2>§9. Phase 1 PoC 前の sandbox 実験 sequence (推奨順、EXP-001〜031)</h2>
 
 <ol>
   <li><strong>EXP-001 ~ EXP-003</strong> (hook schema): 既存 <code>pre-tool-use-worktree-boundary.bats</code> pattern を踏襲、最小 setup で着手</li>
@@ -334,6 +388,12 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
   <li><strong>EXP-007 ~ EXP-008</strong> (tier 1+2 hook): Phase 1 PoC の前提</li>
   <li><strong>EXP-011 ~ EXP-013</strong> (step.sh): Phase 1 PoC で実装と並走</li>
   <li><strong>EXP-015 ~ EXP-018</strong> (toolchain): 各 helper 実装前に動作確認</li>
+  <li><strong>EXP-019 ~ EXP-023</strong> (第 4 弾 dig、GitHub Project write boundary): tool-project 実装前に 5 領域 × 4 手段 matrix の実機検証、最適手段を特定</li>
+  <li><strong>EXP-027 ~ EXP-028</strong> (第 4 弾 dig、tool-architect verify): bats で完結、verify-coverage.sh + spec-write-boundary.sh の動作確認</li>
+  <li><strong>EXP-025 ~ EXP-026</strong> (第 4 弾 dig、template): tool-project apply-template 機能の動作確認 + idempotent</li>
+  <li><strong>EXP-029</strong> (第 4 弾 dig、worker-spec-review): tool-architect の軽量 PR cycle 動作確認 (3 回 fix loop 収束)</li>
+  <li><strong>EXP-030 ~ EXP-031</strong> (第 4 弾 dig、tool-sandbox-runner): sandbox 1 cycle + doobidoo 重複 check 精度測定 (最後、他 EXP 完走後)</li>
+  <li><strong>EXP-024</strong> (将来 / Phase 2 以降): twl MCP custom tool 価値調査 (gh CLI + GraphQL + gh-mcp の組み合わせで十分か判断)</li>
 </ol>
 
 <h2>§9. spec hyperlink integration plan</h2>
@@ -368,7 +428,7 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
   </thead>
   <tbody>
     <tr><td>案 1: <code>test-fixtures/experiments/hooks/</code> 拡張</td><td><strong>採用</strong></td><td>bats 化可能な unit test (mock 可能)。既存 governance (CLAUDE.md hook ブロック) 継承、最小侵食</td></tr>
-    <tr><td>案 2: <code>tool-self-improve</code> 強化</td><td>限定採用</td><td>orphan worktree は重い、Claude Code session 必須 EXP に限定 (例: EXP-004 / EXP-009)</td></tr>
+    <tr><td>案 2: <code>tool-sandbox-runner</code> 強化 (旧 tool-self-improve rename、第 4 弾 dig 確定)</td><td><strong>全面採用</strong></td><td>orphan worktree pattern を catalog (<code>plugins/twl/sandboxes/&lt;name&gt;/</code>) として恒久化、sandbox × feature matrix で twill self test + 他 project test を統合。EXP-030 で 1 cycle 動作検証</td></tr>
     <tr><td>案 3: <code>experiments/</code> top-level 新設</td><td><strong>採用</strong></td><td>Claude Code セッション実行が必要な smoke test 置き場、bats と分離</td></tr>
     <tr><td>案 4: 別 repo <code>twill-sandbox</code></td><td>不採用</td><td>twl 依存複製コスト大、本 phase では不要</td></tr>
   </tbody>

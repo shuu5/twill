@@ -27,10 +27,11 @@
   <li><strong>Phase 1: PoC (Day 1-3)</strong> — 最小実装で 3 階層 + step verification + file mailbox + gate hook が動くことを実証
     <ul>
       <li><strong>★ STEP -1 (本 session 第 3 弾追加、user 要望): 既存 PreToolUse hook 全件無効化</strong> — <code>plugins/twl/hooks/hooks.json</code> を <code>hooks.json.bak</code> に rename し、<code>hooks.json</code> を <code>{"hooks":{}}</code> (空) に置換 (or 必要最小限の安全 hook のみ残す: host-safety / commit-validate / merge-guard の 3 件)。<strong>背景</strong>: 既存 hook は新 architecture でほぼ全廃予定 (chain-runner 廃止に伴い無意味化)、error 通知が運用 noise になる。<strong>復旧</strong>: rollback 時に <code>hooks.json.bak</code> を rename で復元。<strong>影響</strong>: spec-review-gate / phase3-gate / refined-status-gate / pre-pr-gate / merge-gate-block 等 17 件無効化、新 phase-gate.sh (tier 1) は plugin scope に新規配置で代替</li>
-      <li><strong>★ STEP 0 (本 session 第 3 弾追加): sandbox EXP 実行</strong> — <code>bash experiments/run-all.sh</code> で全 EXP-001〜018 を実行、core claim を experiment-verified に格上げ (<a href="sandbox-experiment.html">sandbox-experiment.html</a> §8 recommended sequence)</li>
+      <li><strong>★ STEP 0 (本 session 第 3 弾追加 + 第 4 弾 dig 拡張): sandbox EXP 実行</strong> — <code>bash experiments/run-all.sh</code> で全 EXP-001〜031 を実行 (本 dig で 13 件追加: EXP-019〜031)、core claim を experiment-verified に格上げ (<a href="sandbox-experiment.html">sandbox-experiment.html</a> §9 recommended sequence)。<strong>新規優先</strong>: EXP-027/028 (tool-architect verify hook) は bats で完結可能、EXP-019〜023 (GitHub Project write boundary 5 領域 × 4 手段) は tool-project 実装前提</li>
       <li><strong>★ STEP 1 (本 session 第 3 弾追加): twl plugin 化</strong> — <code>plugins/twl/.claude-plugin/plugin.json</code> 作成、<code>claude --plugin-dir plugins/twl</code> で起動確認、<code>/twl:*</code> namespace で skill invoke 動作 <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a></li>
       <li>ADR-043 起票 (md 本体 + 本 spec directory を supplement として link)</li>
       <li>新 helper 5 本作成 (mailbox.sh / step.sh / phase-gate.sh / spawn-tmux.sh / admin-cycle.sh、合計 ~260 lines、deletion-inventory §5 verified)</li>
+      <li><strong>第 4 弾 dig 由来 helper 7 件追加</strong>: verify-coverage.sh ~50 行 / pre-tool-use-spec-write-boundary.sh ~30 行 / worker-spec-review.md ~100 行 / problem-patterns.yaml ~50 行 / sandbox manifest (~130 行 × N sandbox) / project_setup.py ~80 行 / twill-templates 別 repo (deletion-inventory §5b verified)</li>
       <li>SKILL.md 3 個 draft (phase-impl / worker-test-ready / administrator)、plugin namespace で配置</li>
       <li>PreToolUse hook 設定 (<code>plugins/twl/hooks/hooks.json</code>、<a href="gate-hook.html">verified schema</a>)</li>
       <li><strong>Plugin Monitor 採用</strong> (本 session 第 3 弾): <code>plugins/twl/monitors/monitors.json</code> 新規、mcp-watchdog.sh 廃止 <a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></li>
@@ -52,13 +53,18 @@
       <li><strong>VP-10</strong> (research §7-2 追加): <code>bypassPermissions</code> mode でも tier 2 の <code>deny</code> が効くことを確認 (<code>TWL_PHASE_GATE_BYPASS</code> 未設定で実証)</li>
       <li><strong>VP-11</strong> (research §7-2 追加): <strong>mcp-watchdog 廃止後</strong>の <code>MCP server 'twl' not connected</code> 発生頻度測定 (active session で 8 時間以上稼働、SIGTERM 発生 / 未発生をログ)</li>
       <li><strong>VP-12</strong> (research §7-2 追加): <code>twl_send_keys_safe</code> で escape 罠を防げることを確認 (セミコロン / ハイフン / スペース / Escape を含む string を送信して破壊しない)</li>
+      <li><strong>VP-13</strong> (第 4 弾 dig 追加、tool-architect): verify-coverage.sh が未 verified を warn 出力、changelog 漏れ検出 <a class="exp-link" href="experiment-index.html#EXP-027">EXP-027</a></li>
+      <li><strong>VP-14</strong> (第 4 弾 dig 追加、tool-architect): pre-tool-use-spec-write-boundary.sh が tool-architect / user 以外を deny <a class="exp-link" href="experiment-index.html#EXP-028">EXP-028</a></li>
+      <li><strong>VP-15</strong> (第 4 弾 dig 追加、tool-project): GitHub Project 5 領域 (status field / kanban col / label / view / filter) × 4 手段 (gh CLI / GraphQL / gh-mcp / twl-mcp) の write boundary <a class="exp-link" href="experiment-index.html#EXP-019">EXP-019</a>〜<a class="exp-link" href="experiment-index.html#EXP-023">EXP-023</a></li>
+      <li><strong>VP-16</strong> (第 4 弾 dig 追加、tool-sandbox-runner): twill-self sandbox の 1 cycle 動作 + log 収集 + doobidoo 重複 check 精度 <a class="exp-link" href="experiment-index.html#EXP-030">EXP-030</a> <a class="exp-link" href="experiment-index.html#EXP-031">EXP-031</a></li>
     </ul>
   </li>
   <li><strong>Phase 2: dual-stack (Day 4-7)</strong> — 残り phase + 旧 freeze
     <ul>
       <li>残り 3 phase の SKILL.md (phase-explore / phase-refine / phase-pr)</li>
       <li>残り worker 6 個の SKILL.md</li>
-      <li>tool-* 4 個 (rebrand from co-architect / project / utility / self-improve)</li>
+      <li><strong>tool-* 3 個</strong> (第 4 弾 dig: tool-architect / tool-project / tool-sandbox-runner、co-utility 廃止 + tool-self-improve は tool-sandbox-runner に rename)</li>
+      <li>template repository <code>shuu5/twill-templates</code> 別 repo 作成 + git submodule 設定 + initial commit (ts-nextjs-hono-mono / supabase / docker-compose)</li>
       <li>Project Board option 追加 (Explored / PR Reviewed の新規追加、Todo / InProgress / Done を Idea / Implementing / Merged に rename、option_id 維持)</li>
       <li>Actions yaml 整理 (<code>archive-merged.yml</code> 新規、<code>auto-merge.yml</code> 改、<code>auto-refined.yml</code> / <code>project-status-done.yml</code> 削除)</li>
       <li>旧 chain-runner.sh は freeze (新規修正禁止、in-flight Issue のみ実行)</li>
@@ -108,6 +114,8 @@
   <li><strong>research-findings.html</strong> (公式 verified、120 sources、Critique PASS、本 spec の根拠): <a href="research-findings.html">research-findings.html</a> §4 (mcp-watchdog 4 段階 migration) + §7 (本 session 5 件 WebFetch verified)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> §6 (案 2 先行実装の構成)</li>
   <li><a href="gate-hook.html">gate-hook.html</a> §11 (Phase 1 PoC verify VP-9〜VP-12 の根拠)</li>
+  <li><strong><a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a></strong> (第 4 弾 dig 詳細、tool-* 3 件構成の根拠、VP-13〜VP-16 の根拠、§0.5 verify status)</li>
+  <li><a href="tool-architecture.html">tool-architecture.html</a> (第 4 弾 dig 反映、tool-architect / tool-project / tool-sandbox-runner 詳細仕様)</li>
   <li>既存 draft <code>draft-v1.html</code> §11 (原案、archive、図 5 timeline)</li>
 </ul>
 

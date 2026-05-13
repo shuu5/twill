@@ -35,9 +35,30 @@
     <tr><td><strong>worker</strong></td><td>L2、worker-* SKILL.md として動作、別 main session、単一目的の実作業</td><td>co-autopilot の Worker 役割 (拡張)</td></tr>
     <tr><td><strong>tool-architect</strong></td><td>feature-dev workflow (architecture spec 作成 + PR)、user/admin 直接 invoke、status 遷移と無関係</td><td>co-architect (rebrand、226 行)</td></tr>
     <tr><td><strong>tool-project</strong></td><td>クロスリポジトリ管理 (twill-ecosystem Board、create/migrate/snapshot/plugin-create/prompt-audit)、user 直接 invoke</td><td>co-project (rebrand、145 行)</td></tr>
-    <tr><td><strong>tool-utility</strong></td><td>standalone utility commands (size-check/lint/archive 等 6 件)、user 直接 invoke</td><td>co-utility (rebrand、79 行)</td></tr>
-    <tr><td><strong>tool-self-improve</strong></td><td>scenario 実行 + self-improvement (retrospect / test-project-manage)、user/admin 直接 invoke、admin への完了 mail を送る</td><td>co-self-improve (rebrand、144 行)</td></tr>
+    <tr style="text-decoration: line-through; color: var(--text-secondary);"><td><s><strong>tool-utility</strong></s></td><td><s>standalone utility commands (size-check/lint/archive 等 6 件)、user 直接 invoke</s> — <strong>第 4 弾 dig で廃止</strong>、commands は tool-architect / tool-project / admin / tool-sandbox-runner に再分配</td><td>co-utility (廃止、79 行)</td></tr>
+    <tr><td><strong>tool-sandbox-runner</strong></td><td>sandbox × feature matrix で twill 自身 + 他 project を一気通貫テスト、log 全層 (admin/pilot/worker) 収集 + LLM 分析 + doobidoo 重複 check + Idea Issue 起票 (severity=critical のみ)、user/admin 直接 invoke、admin への完了 mail を送る</td><td>co-self-improve (rebrand、144 行、第 4 弾 dig で rename)</td></tr>
     <tr><td><strong>phase</strong></td><td>status 遷移 1 個に対応する pilot SKILL.md (phase-explore / phase-refine / phase-impl / phase-pr)</td><td>(新概念)</td></tr>
+  </tbody>
+</table>
+
+<h3>第 4 弾 dig 由来の新規用語</h3>
+
+<table>
+  <thead>
+    <tr><th>用語</th><th>定義</th><th>導入経緯</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>sandbox catalog</strong></td><td><code>plugins/twl/sandboxes/&lt;name&gt;/{sandbox.yaml, setup.sh, features.yaml}</code> 形式の sandbox 環境定義 directory 群。tool-sandbox-runner が catalog から sandbox を選んで実行</td><td>第 4 弾 dig §3.3</td></tr>
+    <tr><td><strong>twill-self sandbox</strong></td><td><code>plugins/twl/sandboxes/twill-self/</code>。<code>test-target/main</code> orphan branch + 専用 worktree で twill plugin 自身を実行する sandbox。既存 co-self-improve の verified pattern を catalog 化</td><td>第 4 弾 dig §3.4 (verified)</td></tr>
+    <tr><td><strong>problem-patterns.yaml</strong></td><td><code>plugins/twl/sandboxes/_shared/problem-patterns.yaml</code>。LLM 分析の pattern catalog 6 件 (stuck-loop / mailbox-loss / context-bloat / phase-gate-mistake / step-abort-cascade / subagent-misuse) × severity</td><td>第 4 弾 dig §3.6</td></tr>
+    <tr><td><strong>worker-spec-review</strong></td><td><code>plugins/twl/agents/worker-spec-review.md</code> (~100 行)。tool-architect の軽量 PR cycle で 1 agent として spawn される spec review agent。findings: 未 verified claim / EXP 漏れ / changelog 漏れ / dead link を listing</td><td>第 4 弾 dig §1.3</td></tr>
+    <tr><td><strong>verify-coverage.sh</strong></td><td><code>plugins/twl/scripts/lib/verify-coverage.sh</code> (~50 行)。tool-architect 自律 verify 層 2 の PostToolUse hook。4-state status grep + changelog 漏れ check + EXP 漏れ check を warn (block しない、exit 0 で stderr → Claude)</td><td>第 4 弾 dig §1.2</td></tr>
+    <tr><td><strong>spec-write-boundary hook</strong></td><td><code>plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh</code> (~30 行)。PreToolUse hook で <code>Edit|Write architecture/spec/*</code> を block (caller が tool-architect / user 以外なら exit 2)</td><td>第 4 弾 dig §1.4</td></tr>
+    <tr><td><strong>軽量 PR cycle</strong></td><td>tool-architect の spec PR 自動 review 機構。spec edit → commit → PR → worker-spec-review 1 agent → fix loop 最大 3 回 → user approve → merge。worker-pr-cycle (8 specialist) よりも軽量</td><td>第 4 弾 dig §1.3</td></tr>
+    <tr><td><strong>twill-templates</strong></td><td>別 git repo <code>shuu5/twill-templates</code>。stack template 3 件 (ts-nextjs-hono-mono / supabase / docker-compose) を提供、twill main から git submodule + tag versioning で fetch</td><td>第 4 弾 dig §2.3</td></tr>
+    <tr><td><strong>twl_validate_project_setup</strong></td><td>tool-project 用 新規 twl MCP tool。<code>cli/twl/src/twl/validation/project_setup.py</code> (~80 行)。Project Board の status field option / kanban col order / label / view を expected と突合、diff 出力</td><td>第 4 弾 dig §2.6</td></tr>
+    <tr><td><strong>4-state verification status</strong></td><td>spec 内 claim の信頼度 4 段階: inferred → deduced → verified → experiment-verified。<code>&lt;span class="vs ..."&gt;</code> で表示</td><td>第 3 弾 + 第 4 弾 dig で全 file 適用</td></tr>
+    <tr><td><strong>EXP-id</strong></td><td>experiment-index.html#EXP-NNN に飛ぶ hyperlink。<code>&lt;a class="exp-link"&gt;</code> で表示。実機 sandbox 検証の参照 target、EXP-001〜031 (本 dig で 13 件追加: EXP-019〜031)</td><td>第 3 弾 + 第 4 弾 dig</td></tr>
   </tbody>
 </table>
 
@@ -114,7 +135,8 @@
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (不変条件 24 件)</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> (twl MCP 用語)</li>
   <li><a href="ssot-design.html">ssot-design.html</a> (step / chain SSoT 用語)</li>
-  <li><a href="tool-architecture.html">tool-architecture.html</a> (4 tool の責務 / 共通規約 / migration mapping、本 session 新規)</li>
+  <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* <strong>3 件</strong>の責務 / 共通規約 / migration mapping、本 session 新規 + 第 4 弾 dig 反映)</li>
+  <li><a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (第 4 弾 dig 独立 artifact、用語の起源 + verify status)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> (administrator polling cycle、本 session content 化)</li>
   <li><a href="research-findings.html">research-findings.html</a> (本 spec の verified 根拠、120 sources、本 session 新規)</li>
   <li>既存 <code>plugins/twl/refs/ref-invariants.md</code> (既存 invariant SSoT)</li>

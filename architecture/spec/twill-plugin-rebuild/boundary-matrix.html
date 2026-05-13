@@ -15,12 +15,12 @@
   <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
 </header>
 
-<div class="info">本 file は本 session で<strong>全列 content 化完了</strong>。tool-* 列は <a href="tool-architecture.html">tool-architecture.html</a> §2 確定、admin / pilot / worker 列は admin-cycle.html / spawn-protocol.html / step-verification.html と整合した content 化。</div>
+<div class="info">本 file は本 session で<strong>全列 content 化完了</strong>。<strong>第 4 弾 dig 反映</strong> (2026-05-13): tool-* 列を 4 件 → 3 件構成 (tool-utility 廃止 + tool-self-improve → tool-sandbox-runner rename)。tool-* 列は <a href="tool-architecture.html">tool-architecture.html</a> §2 確定、admin / pilot / worker 列は admin-cycle.html / spawn-protocol.html / step-verification.html と整合した content 化。</div>
 
 <h2>目的</h2>
 <p>administrator / pilot / worker / tool の 4 entity の責務 boundary を行列形式で明示する。各 entity が何を行う / 行わない / 委譲する かを clean table で定義。phase は pilot SKILL.md として実装される概念 (entity ではない、status 遷移 1 件に対応する SKILL)。</p>
 
-<h2>5x5 boundary matrix (暫定、tool 列のみ verified)</h2>
+<h2>5 entity boundary matrix (admin / pilot / worker / tool-* (3 件) / phase、8 行)</h2>
 
 <table>
   <thead>
@@ -29,7 +29,7 @@
       <th>administrator (L0)</th>
       <th>pilot (phase-*、L1)</th>
       <th>worker (worker-*、L2)</th>
-      <th>tool-* (独立)</th>
+      <th>tool-* (3 件、独立)</th>
       <th>phase 概念</th>
     </tr>
   </thead>
@@ -39,12 +39,12 @@
       <td>user 直接起動</td>
       <td>administrator (admin-cycle.sh)</td>
       <td>pilot (spawn-tmux.sh)</td>
-      <td>user 明示 (tool-architect/self-improve は admin も可)</td>
+      <td>user 明示 (tool-architect / tool-sandbox-runner は admin も可)</td>
       <td>pilot SKILL.md として動作</td>
     </tr>
     <tr>
       <td><strong>spawn 先</strong></td>
-      <td>pilot + tool-* (限定)</td>
+      <td>pilot + tool-architect / tool-sandbox-runner (限定、ADR-040 gate)</td>
       <td>worker のみ</td>
       <td>(spawn 禁止)</td>
       <td>(spawn 禁止)</td>
@@ -63,7 +63,7 @@
       <td>pilot mail のみ受信 (Inv I-4 pyramid)</td>
       <td>worker mail 集約 + admin に要約 mail</td>
       <td>pilot mailbox に書き込み</td>
-      <td>tool-self-improve のみ admin mail (他 3 tool は user 直接)</td>
+      <td>tool-sandbox-runner のみ admin mail (他 2 tool は user 直接)</td>
       <td>—</td>
     </tr>
     <tr>
@@ -116,7 +116,7 @@
   <dt>step.sh</dt><dd>利用しない (admin は polling cycle 6-step、step.sh framework は worker 専用)</dd>
   <dt>gate hook</dt><dd>対象外 (admin は phase-* invocation でないため PreToolUse gate 発火しない)</dd>
   <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/admin-cycle.jsonl</code> に全 cycle の read/judge/write 記録</dd>
-  <dt>受信 mail event</dt><dd><code>phase-completed</code> / <code>phase-failed</code> / <code>phase-gate-denied</code> / <code>spawn-completed</code> / <code>tool-completed</code> (tool-self-improve のみ)</dd>
+  <dt>受信 mail event</dt><dd><code>phase-completed</code> / <code>phase-failed</code> / <code>phase-gate-denied</code> / <code>spawn-completed</code> / <code>tool-completed</code> (tool-sandbox-runner のみ)</dd>
   <dt>送信 mail event</dt><dd><code>spawn-request</code> / <code>escalate-human-gate</code> / <code>budget-pause</code></dd>
   <dt>escalate</dt><dd>3 連続 failure → ★HUMAN GATE (AskUserQuestion or Discord mail)。budget exhaustion → CronDelete + one-shot wakeup</dd>
   <dt>crash recovery</dt><dd>heartbeat self-touch (Inv G)、session 死亡時は user 手動 <code>--continue</code>。CronCreate 復元 (7 日 expiry 注意)</dd>
@@ -155,19 +155,21 @@
   <dt>checkpoint</dt><dd><code>.mailbox/&lt;worker-name&gt;/</code> または per-Worker パスが必須 (Inv V)。共通 path への write は <code>--shared</code> フラグ明示 + audit log 必須</dd>
 </dl>
 
-<h3>tool-* (4 件、独立) の責務</h3>
+<h3>tool-* (3 件、独立) の責務 (第 4 弾 dig)</h3>
 
-<p>詳細は <a href="tool-architecture.html">tool-architecture.html</a> §2 参照。要約:</p>
+<p>詳細は <a href="tool-architecture.html">tool-architecture.html</a> §2-§5 + <a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §1-§3 参照。要約:</p>
 
 <dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
-  <dt>spawn 元</dt><dd>user 明示 (slash command <code>/twl:tool-architect &lt;args&gt;</code>) または admin (tool-architect/self-improve のみ、ADR-040 gate 通過後)</dd>
+  <dt>3 tool 構成</dt><dd>tool-architect (HTML spec 維持 + 軽量 PR cycle) / tool-project (GitHub Project + template + verify の 3 軽 scope) / tool-sandbox-runner (sandbox × feature matrix + Idea Issue 起票)。<strong>第 4 弾 dig で tool-utility 廃止</strong> (commands は他 3 tool + admin inline に再分配)</dd>
+  <dt>spawn 元</dt><dd>user 明示 (slash command <code>/twl:tool-architect &lt;args&gt;</code>) または admin (tool-architect / tool-sandbox-runner のみ、ADR-040 gate 通過後)</dd>
   <dt>spawn 先</dt><dd>spawn 禁止 (内部 subagent 可、1 階層)</dd>
   <dt>status 遷移</dt><dd>無関係 (MUST NOT 触れる)</dd>
-  <dt>mailbox</dt><dd>tool-self-improve のみ admin に <code>tool-completed</code> mail。他 3 tool は user に直接結果提示 (mailbox 不使用)</dd>
-  <dt>worktree</dt><dd>tool-architect のみ独自 worktree (PR 作成用)</dd>
+  <dt>mailbox</dt><dd>tool-sandbox-runner のみ admin に <code>tool-completed</code> mail。他 2 tool は user に直接結果提示 (mailbox 不使用)</dd>
+  <dt>worktree</dt><dd>tool-architect は spec edit PR の独自 worktree、tool-sandbox-runner は test-target/main orphan branch の専用 worktree (verified pattern 継承)</dd>
   <dt>step.sh</dt><dd>利用しない (status と無関係)</dd>
-  <dt>gate hook</dt><dd>対象外 (status と無関係、ADR-040 gate が SSoT)</dd>
-  <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/tools/&lt;name&gt;/</code> 配下</dd>
+  <dt>gate hook</dt><dd>対象外 (status と無関係、ADR-040 gate が SSoT)。<strong>例外</strong>: tool-architect は別系統で spec edit boundary hook (<code>pre-tool-use-spec-write-boundary.sh</code>) を保持し、tool-architect / user 以外の Edit/Write を deny</dd>
+  <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/tools/{architect,project,sandbox-runner}/</code> 配下</dd>
+  <dt>自律 verify</dt><dd>tool-architect は 2 層 verify (SKILL.md MUST + PostToolUse hook <code>verify-coverage.sh</code> warn) で 4-state status の漏れを catch、軽量 PR cycle で changelog 漏れを <code>worker-spec-review</code> agent が検出 (3 回 fix loop 上限)</dd>
 </dl>
 
 <h2>cross-entity 通信 (禁止 + 許可)</h2>
@@ -177,14 +179,14 @@
   <tbody>
     <tr><td>user</td><td>admin / tool-*</td><td>許可</td><td>tmux session 直接起動</td></tr>
     <tr><td>admin</td><td>pilot</td><td>許可</td><td>spawn-tmux.sh</td></tr>
-    <tr><td>admin</td><td>tool-* (一部)</td><td>限定許可</td><td>tool-architect / tool-self-improve のみ、ADR-040 gate</td></tr>
+    <tr><td>admin</td><td>tool-* (一部)</td><td>限定許可</td><td>tool-architect / tool-sandbox-runner のみ、ADR-040 gate</td></tr>
     <tr><td>admin</td><td>worker</td><td><strong>禁止</strong></td><td>(Inv I-4 pyramid)</td></tr>
     <tr><td>pilot</td><td>worker</td><td>許可</td><td>spawn-tmux.sh</td></tr>
     <tr><td>pilot</td><td>admin</td><td>許可 (mail)</td><td><code>.mailbox/admin/inbox.jsonl</code> へ要約 mail</td></tr>
     <tr><td>pilot</td><td>tool-*</td><td><strong>禁止</strong></td><td>(tool-* は user/admin invoke のみ)</td></tr>
     <tr><td>worker</td><td>pilot</td><td>許可 (mail)</td><td><code>.mailbox/&lt;pilot&gt;/inbox.jsonl</code> へ step event</td></tr>
     <tr><td>worker</td><td>admin / worker (他)</td><td><strong>禁止</strong></td><td>(Inv I-4)</td></tr>
-    <tr><td>tool-self-improve</td><td>admin</td><td>許可 (mail)</td><td><code>.mailbox/admin/inbox.jsonl</code> へ <code>tool-completed</code></td></tr>
+    <tr><td>tool-sandbox-runner</td><td>admin</td><td>許可 (mail)</td><td><code>.mailbox/admin/inbox.jsonl</code> へ <code>tool-completed</code></td></tr>
   </tbody>
 </table>
 
@@ -204,7 +206,8 @@
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture)</li>
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (各 entity の不変条件)</li>
-  <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* 4 件の詳細、本 session 新規、tool 列の根拠)</li>
+  <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* <strong>3 件</strong>の詳細、本 session 新規 + 第 4 弾 dig 反映、tool 列の根拠)</li>
+  <li><a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (第 4 弾 dig 独立 artifact、3 tool 構成 + 自律 verify + sandbox catalog の根拠)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> (administrator 列の詳細、本 session content 化)</li>
   <li>既存 ADR-002 (Controller 統合)、ADR-010 (Pilot active review)、ADR-017 (co-issue v2 Pilot/Worker isolation)</li>
 </ul>

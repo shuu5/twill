@@ -15,6 +15,82 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-13 (第 4 弾) — tool-* 仕様 finalization (dig 3 軸 × 5 ラウンド = 20 question)</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>tool-* 4 件 → 3 件構成確定</strong>: tool-utility 廃止 (79 行 + commands 再分配)、tool-self-improve → <strong>tool-sandbox-runner</strong> rename。新 3 tool: tool-architect (HTML spec 維持 + 自律 verify 2 層 + 軽量 PR cycle) / tool-project (GitHub Project + template + verify の 3 軽 scope) / tool-sandbox-runner (sandbox × feature matrix + LLM 分析 + Idea Issue 起票)</li>
+  <li><strong>tool-architect 自律 verify 2 層</strong>: 層 1 = SKILL.md MUST (LLM 規律で 4-state grep + EXP 候補生成必須)、層 2 = PostToolUse hook <code>verify-coverage.sh</code> (warn-only、grep + git diff + changelog 漏れ check)。両層併用で漏れと false positive の両方を抑制</li>
+  <li><strong>軽量 PR cycle</strong>: spec edit → commit → PR → <code>worker-spec-review</code> 1 agent (新規) → fix loop 3 回 → user approve → merge。worker-pr-cycle (8 specialist) より軽量、recursive PR OK (self review skip)</li>
+  <li><strong>spec edit 所有権機械 enforce</strong>: <code>pre-tool-use-spec-write-boundary.sh</code> (新規 ~30 行) で <code>Edit|Write architecture/spec/*</code> の caller を tool-architect / user 以外なら deny (既存 worktree-boundary pattern 継承)</li>
+  <li><strong>sandbox catalog 確定</strong>: <code>plugins/twl/sandboxes/&lt;name&gt;/{sandbox.yaml, setup.sh, features.yaml}</code> + <code>_shared/problem-patterns.yaml</code>。twill-self sandbox は <code>test-target/main</code> orphan branch + 専用 worktree (verified pattern 継承)</li>
+  <li><strong>doobidoo 重複 check + Idea Issue 起票</strong>: similarity > 0.75 で link、severity=critical のみ Issue 起票 (Issue spam 回避)、wall-clock 30m + budget 5h > 50% 両方で timeout</li>
+  <li><strong>dig-report verify (ユーザーフィードバック対応)</strong>: 本 dig の 57 claim を 4-state status で分類 (verified 19 / deduced 18 / inferred→EXP 13 / inferred→実装 7)、公式 docs 3 件再 WebFetch verified (plugins / hooks / gh project)</li>
+</ol>
+
+<h3>新規追加 (本 session 第 4 弾、1 file)</h3>
+
+<ul>
+  <li><code>dig-report-tools-2026-05-13.md</code> (新規) — 独立 dig artifact、12 section / ~510 行 (verify status legend + 各 section の verify status + 57 claim 分類含む)。spec 本体への反映は別途実施 (本 changelog 参照)</li>
+</ul>
+
+<h3>全面書き直し (本 session 第 4 弾、1 file)</h3>
+
+<ul>
+  <li><code>tool-architecture.html</code>: 4 tool → 3 tool 構成、各 tool の §1〜5 詳細 (役割 / verify 機構 / PR cycle / sandbox catalog / etc.)、§6 tool-utility 廃止 commands 再分配、§8 新規 helper 8 件、§11 関連 EXP-019〜031 13 件 listing</li>
+</ul>
+
+<h3>更新 (本 session 第 4 弾、9 file)</h3>
+
+<ul>
+  <li><code>experiment-index.html</code>: カテゴリ I〜M (EXP-019〜031) 追加。GitHub Project 5 領域 × 4 手段 matrix + twl MCP 価値調査 + template + tool-architect verify + tool-sandbox-runner cycle + doobidoo 精度</li>
+  <li><code>sandbox-experiment.html</code>: §3.1 file 配置に <code>plugins/twl/sandboxes/</code> catalog 追加、§8 (新) 第 4 弾 dig 由来 EXP-019〜031 listing table、§9 推奨 sequence 拡張 (EXP-001〜031)、§11 案 2 を tool-sandbox-runner 強化として全面採用</li>
+  <li><code>deletion-inventory.html</code>: §2 skill table で co-utility 削除 (rebrand→delete) + tool-sandbox-runner rename、§5 を §5a (既存 5 件) と §5b (第 4 弾 dig 7 件、~440 行) に分離、§8 削減効果 summary に tool-utility 廃止反映 (skill ~11-13 件)</li>
+  <li><code>rebuild-plan.html</code>: ★ STEP 0 を EXP-031 まで拡張、Phase 1 verify points に VP-13〜VP-16 追加 (tool-architect / tool-project / tool-sandbox-runner)、Phase 2 で tool-* を 3 件に補正 + twill-templates 別 repo 作成</li>
+  <li><code>boundary-matrix.html</code>: tool-self-improve → tool-sandbox-runner rename (全 occurrence)、tool-* (4 件 → 3 件) 表記、§ tool-* 責務に「3 tool 構成」明示 + 自律 verify 機構 + spec edit boundary hook 例外</li>
+  <li><code>glossary.html</code>: tool-utility 行を line-through (廃止明示)、tool-self-improve → tool-sandbox-runner 行更新、第 4 弾 dig 由来の新規用語 11 件 (sandbox catalog / twill-self sandbox / problem-patterns / worker-spec-review / verify-coverage / spec-write-boundary hook / 軽量 PR cycle / twill-templates / twl_validate_project_setup / 4-state status / EXP-id)</li>
+  <li><code>README.html</code>: tool-architecture.html 説明を 3 件構成に補正、experiment-index 説明を EXP-001〜031 に拡張、進捗 summary に第 4 弾 dig 成果 listing + 累積 13 件 WebFetch verified に更新</li>
+  <li>本 file: 第 4 弾 dig 履歴追加 (本 section)</li>
+  <li><code>ADR-043-twill-radical-rebuild.md</code>: Decision section に tool 構成変更 (4→3) と理由を追記 (次 task)</li>
+</ul>
+
+<h3>本 session 第 4 弾の公式 docs 再 WebFetch verified (3 件)</h3>
+
+<table>
+  <thead><tr><th>verify 対象</th><th>結果</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a></td><td><code>--plugin-dir</code> + skill namespace <code>/plugin:skill</code> + <code>.claude-plugin/plugin.json</code> + <code>monitors/monitors.json</code> + <code>hooks/hooks.json</code> + <code>bin/</code> PATH + <code>.lsp.json</code> + <code>settings.json</code> agent key (全 verbatim)</td></tr>
+    <tr><td><a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></td><td>matcher singular field + exit code 0/1/2 (PreToolUse は exit 2 で block、PostToolUse は block 不可で stderr → Claude) + <code>permissionDecision: "allow"|"deny"|"ask"|"defer"</code> enum + env (<code>CLAUDE_PROJECT_DIR</code>/<code>CLAUDE_PLUGIN_ROOT</code>/<code>CLAUDE_PLUGIN_DATA</code>/<code>CLAUDE_ENV_FILE</code>/<code>CLAUDE_EFFORT</code>) + stdin JSON schema (tool_name/tool_input/session_id/transcript_path/cwd/permission_mode)</td></tr>
+    <tr><td><a href="https://cli.github.com/manual/gh_project">cli.github.com/manual/gh_project</a></td><td>19 sub-commands listed (close/copy/create/delete/edit/field-create/field-delete/field-list/item-add/item-archive/item-create/item-delete/item-edit/item-list/link/list/mark-template/unlink/view)、15 件が write-capable</td></tr>
+  </tbody>
+</table>
+
+<h3>残課題 (将来 dig / 実装段階で詰める)</h3>
+
+<p>本 dig §8 で識別、本 session では確定せず:</p>
+
+<ul>
+  <li>worker-spec-review prompt + findings JSON schema</li>
+  <li>verify-coverage.sh の正確な grep regex</li>
+  <li>pre-tool-use-spec-write-boundary.sh の caller 識別ロジック (CLAUDE_PLUGIN_ROOT + TWL_TOOL_CONTEXT)</li>
+  <li>problem-patterns.yaml の各 pattern severity threshold</li>
+  <li>template version migration semver / breaking change handling</li>
+  <li>twill-templates 別 repo の管理者 / PR review policy</li>
+  <li>sandbox 並列実行可否 + resource conflict</li>
+  <li>sandbox-runner timeout budget threshold (50% 妥当性)</li>
+  <li>recursive PR review 委譲先 priority</li>
+  <li>cross-repo tool-project support</li>
+  <li>features.yaml sync automation</li>
+  <li>spec file 削除 / file rename の handling</li>
+</ul>
+
+<h3>doobidoo hash 追加 (本 session 第 4 弾)</h3>
+
+<p>第 4 弾 dig 完了時 <code>a6d6b7c1</code> 保存済 (su-compact 経由)。第 5 弾 (spec 反映完了) hash は本 changelog commit 後に追加保存予定。前累積: <code>6ef844e9</code> / <code>74b7cdf7</code> / <code>7727b59f</code> / <code>24e80e43</code> / <code>e61dd3e3</code> / <code>6fdf1d0b</code> / <code>3d10303e</code> / <code>4a6f90b9</code> / <code>ca37a5de</code> / <code>a6d6b7c1</code> (10 件、第 5 弾で 11 件)。</p>
+
+<hr>
+
 <h2>2026-05-13 (第 3 弾) — twl plugin 化 + experiment hyperlink + 全 outline content 化</h2>
 
 <h3>核心成果</h3>

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>experiment-index — 全 EXP 一覧 + status + 結果</title>
+<title>experiment-index — 全 EXP 一覧 + status + 結果 (EXP-001〜031)</title>
 <link rel="stylesheet" href="common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--brand); }
@@ -17,8 +17,8 @@
 <body>
 
 <header class="doc-header">
-  <h1>experiment-index — 全 EXP 一覧</h1>
-  <div class="meta">draft-v2 (2026-05-13) &middot; 18 EXP planned &middot; status は本 session 時点 (実行前は all <span class="vs verified">verified</span>、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
+  <h1>experiment-index — 全 EXP 一覧 (EXP-001〜031)</h1>
+  <div class="meta">draft-v2 (2026-05-13、第 4 弾 dig 反映) &middot; 31 EXP planned (本 dig で 13 件追加: EXP-019〜031) &middot; status は本 session 時点 (実行前は <span class="vs verified">verified</span> / <span class="vs deduced">deduced</span> / <span class="vs inferred">inferred</span> 併存、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
 </header>
 
 <div class="info">
@@ -264,6 +264,171 @@
     <dt>分類</dt><dd>bats / pytest unit</dd>
     <dt>期待結果</dt><dd>fastmcp なし環境でも handler 直接呼び出し成功 (deferred-tool pattern 動作)</dd>
     <dt>関連 spec</dt><dd><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §1.1</dd>
+  </dl>
+</div>
+
+<h2>カテゴリ I: GitHub Project write boundary (EXP-019〜023) — tool-project</h2>
+
+<p>本 dig (第 4 弾) で確定した <strong>5 領域 × 4 手段 matrix</strong> の write 可能性を実機検証。GitHub Projects v2 の status field option 追加 / kanban col order 変更 / label 操作 / view 切替 / filter 設定について、gh CLI / GraphQL API / GitHub 公式 MCP / twl MCP の 4 手段それぞれで write 可能か確認する。</p>
+
+<div class="exp-block" id="EXP-019">
+  <h3>EXP-019: status field option 追加 (4 手段)</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規追加、未実機検証)</dd>
+    <dt>verify 対象</dt><dd>Project status field に新 option (e.g. "Refined") を追加: gh CLI (<code>field-create</code> / <code>field-edit</code>) / GraphQL (<code>updateProjectV2Field</code>) / gh-mcp / twl-mcp の 4 手段で write 可否</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_project">cli.github.com/manual/gh_project</a> (15 write-capable sub-commands verified)、<a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations#updateprojectv2field">GraphQL updateProjectV2Field</a></dd>
+    <dt>分類</dt><dd>smoke (test project に対して実行、終了時 rollback)</dd>
+    <dt>期待結果</dt><dd>少なくとも 1 手段で write 成功、最適手段を特定</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §2.2</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-020">
+  <h3>EXP-020: kanban col order 変更 (4 手段)</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>verify 対象</dt><dd>kanban view の column 順序を rearrange: gh CLI / GraphQL (<code>updateProjectV2ItemFieldValue</code> + view config) / gh-mcp / twl-mcp の 4 手段</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations">GraphQL Projects v2 mutations</a></dd>
+    <dt>分類</dt><dd>smoke</dd>
+    <dt>期待結果</dt><dd>kanban col 順序 = [Todo, Refined, In Progress, Review, Merged, Done] に設定可能</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-021">
+  <h3>EXP-021: label add/remove (4 手段)</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>verify 対象</dt><dd>repository label の追加・削除: <code>gh label create/delete</code> / GraphQL (<code>createLabel</code>/<code>deleteLabel</code>) / gh-mcp / twl-mcp</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_label">gh label manual</a></dd>
+    <dt>分類</dt><dd>smoke (test repo、終了時 cleanup)</dd>
+    <dt>期待結果</dt><dd>label create/delete 成功、color/description 設定</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-022">
+  <h3>EXP-022: view switch (kanban/table)</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>verify 対象</dt><dd>Project view の kanban / table 切替を automation で行う: gh CLI / GraphQL (<code>updateProjectV2View</code>)</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations">GraphQL Projects v2 mutations</a></dd>
+    <dt>分類</dt><dd>smoke</dd>
+    <dt>期待結果</dt><dd>少なくとも 1 手段で view layout 設定可能</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-023">
+  <h3>EXP-023: filter / group-by 設定</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>verify 対象</dt><dd>view の filter (e.g. <code>status:Todo</code>) + group-by (e.g. <code>status</code>) を automation で設定: gh CLI / GraphQL</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations">GraphQL Projects v2 mutations</a></dd>
+    <dt>分類</dt><dd>smoke</dd>
+    <dt>期待結果</dt><dd>filter + group-by 設定が API で write 可能</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
+  </dl>
+</div>
+
+<h2>カテゴリ J: twl MCP custom tool 価値調査 (EXP-024)</h2>
+
+<div class="exp-block" id="EXP-024">
+  <h3>EXP-024: twl MCP custom tool (twl_validate_project_setup) の価値調査</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (将来検証、tool-project の MCP tool 化判断)</dd>
+    <dt>verify 対象</dt><dd>tool-project で gh CLI + GraphQL + gh-mcp の組み合わせで Project verify 可能か、独自 MCP tool <code>twl_validate_project_setup</code> 化の価値があるか</dd>
+    <dt>分類</dt><dd>調査 (実装後判断、必要なら EXP-025 と統合)</dd>
+    <dt>期待結果</dt><dd>3 手段で十分なら MCP tool 化見送り、不十分なら新規実装 (<code>cli/twl/src/twl/validation/project_setup.py</code> ~80 行)</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.6、<a href="twl-mcp-integration.html">twl-mcp-integration.html</a></dd>
+  </dl>
+</div>
+
+<h2>カテゴリ K: template apply (EXP-025〜026) — tool-project</h2>
+
+<div class="exp-block" id="EXP-025">
+  <h3>EXP-025: template apply + build smoke test</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>verify 対象</dt><dd>tool-project の <code>apply-template --stack=ts-nextjs-hono-mono</code> で template 適用 → 適用後の repo で <code>pnpm install + pnpm build</code> が成功するか</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://git-scm.com/docs/git-submodule">git-submodule docs</a></dd>
+    <dt>分類</dt><dd>smoke (test repo 作成 → template apply → build)</dd>
+    <dt>期待結果</dt><dd>template apply 成功 + build PASS (smoke level)</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.4</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-026">
+  <h3>EXP-026: template idempotent (2 回 apply で同一 state)</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>verify 対象</dt><dd>同じ template を 2 回 apply して、2 回目で「全 file skip」になり最終 state が 1 回目と完全一致 (idempotent)</dd>
+    <dt>分類</dt><dd>smoke (test repo、template 2 回 apply、git diff で確認)</dd>
+    <dt>期待結果</dt><dd>2 回目 apply で diff なし、destructive 操作なし</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.4</dd>
+  </dl>
+</div>
+
+<h2>カテゴリ L: tool-architect verify + PR cycle (EXP-027〜029) — tool-architect</h2>
+
+<div class="exp-block" id="EXP-027">
+  <h3>EXP-027: verify-coverage.sh の 4-state grep 検証</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PostToolUse hook 動作)</dd>
+    <dt>verify 対象</dt><dd>tool-architect の <code>verify-coverage.sh</code> (~50 行) が <code>&lt;span class="vs inferred|deduced"&gt;</code> を grep して未 verified を warn 出力、changelog 漏れ check、git diff の new section に <code>&lt;a class="exp-link"&gt;</code> 不在を warn する動作確認</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (PostToolUse は exit code 2 で block 不可、stderr → Claude verbatim)</dd>
+    <dt>分類</dt><dd>bats unit (mock 可、<code>test-fixtures/experiments/EXP-027-verify-coverage-grep.bats</code>)</dd>
+    <dt>期待結果</dt><dd>inferred / deduced を含む spec.html で warn 出力、verified のみで warn なし</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §3.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §1.2</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-028">
+  <h3>EXP-028: pre-tool-use-spec-write-boundary.sh で tool-architect / user 以外を deny</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PreToolUse hook deny pattern)</dd>
+    <dt>verify 対象</dt><dd><code>pre-tool-use-spec-write-boundary.sh</code> (~30 行) が <code>Edit|Write architecture/spec/*</code> matcher で発火、caller env (<code>CLAUDE_PLUGIN_ROOT</code> / <code>TWL_TOOL_CONTEXT</code>) が tool-architect / user 以外なら exit 2 で deny</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (exit 2 で PreToolUse block、CLAUDE_PLUGIN_ROOT env verified)</dd>
+    <dt>分類</dt><dd>bats unit (caller env mock、<code>test-fixtures/experiments/EXP-028-spec-write-boundary.bats</code>)</dd>
+    <dt>期待結果</dt><dd>(a) tool-architect caller で allow、(b) phase-* caller で exit 2 + deny reason、(c) user 手動 edit (env なし) で allow</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §3.4、既存 <a href="../../../plugins/twl/scripts/hooks/pre-tool-use-worktree-boundary.sh">pre-tool-use-worktree-boundary.sh</a> の pattern 継承</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-029">
+  <h3>EXP-029: worker-spec-review agent の 3 回 fix loop 収束 / escalate</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PR cycle 軽量化検証)</dd>
+    <dt>verify 対象</dt><dd>tool-architect の軽量 PR cycle が (a) review PASS で 1〜2 回で完了、(b) review FAIL で 3 回 fix → escalate to user、(c) 3 回後も FAIL で AskUserQuestion 起動</dd>
+    <dt>分類</dt><dd>smoke (sandbox 環境で実 PR 作成、review agent spawn)</dd>
+    <dt>期待結果</dt><dd>fix loop 3 回 max で必ず収束 (PASS or escalate)、無限 loop なし</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §3.3</dd>
+  </dl>
+</div>
+
+<h2>カテゴリ M: tool-sandbox-runner (EXP-030〜031) — tool-sandbox-runner</h2>
+
+<div class="exp-block" id="EXP-030">
+  <h3>EXP-030: sandbox-runner で twill-self sandbox の 1 cycle 動作 + log 収集</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、sandbox 全体 flow 検証)</dd>
+    <dt>verify 対象</dt><dd><code>/twl:tool-sandbox-runner --sandbox=twill-self --features=admin,pilot,worker --collect-logs=all</code> 実行 → orphan branch + worktree 作成 → claude --plugin-dir 起動 → log 収集 (<code>.sandbox-logs/&lt;run-id&gt;/</code>) → LLM 分析 → cleanup</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a> (claude --plugin-dir flag verified)、既存 <code>co-self-improve</code> の test-target/main pattern</dd>
+    <dt>分類</dt><dd>smoke (実 sandbox 起動、~30 min wall-clock)</dd>
+    <dt>期待結果</dt><dd>1 cycle 完走 (timeout なし)、log files 揃う (jsonl + tmux capture + .mailbox + .audit)、cleanup で worktree 削除</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §5.4-§5.5、<a href="sandbox-experiment.html">sandbox-experiment.html</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-031">
+  <h3>EXP-031: doobidoo 重複 check (similarity > 0.75) の false positive/negative 率</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、Idea Issue 起票精度検証)</dd>
+    <dt>verify 対象</dt><dd>(a) 既知 problem (e.g. "mailbox-loss") を query で投げて similarity > 0.75 で hit するか、(b) 新規 problem を投げて誤って既存と link されないか (false positive 率測定)</dd>
+    <dt>verify source</dt><dd><code>mcp__doobidoo__memory_search</code> tool interface (mode=hybrid + quality_boost、本 session で実利用、9 hash 蓄積)</dd>
+    <dt>分類</dt><dd>調査 (実 doobidoo に対して N=20+ query で precision/recall 測定)</dd>
+    <dt>期待結果</dt><dd>true positive (重複検出) > 80%、false positive (誤検出) < 20%。threshold 0.75 が不適切なら調整</dd>
+    <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §5.7、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §3.7</dd>
   </dl>
 </div>
 

@@ -13,7 +13,7 @@
 
 <header class="doc-header">
   <h1>twill plugin radical rebuild — 仕様書 index</h1>
-  <div class="meta">draft-v2 (2026-05-12) &middot; HTML 統一版 &middot; design token: note DESIGN.md 部分採用</div>
+  <div class="meta">draft-v2 (2026-05-13、第 4 弾 dig 反映) &middot; HTML 統一版 &middot; tool-* 3 件構成確定 &middot; design token: note DESIGN.md 部分採用</div>
 </header>
 
 <div class="info">
@@ -117,7 +117,7 @@
     <tr>
       <td><a href="tool-architecture.html"><code>tool-architecture.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>tool-* 4 件 (architect/project/utility/self-improve) の責務 + 共通規約 + co-* migration (本 session 新規)</td>
+      <td>tool-* <strong>3 件</strong> (architect / project / sandbox-runner) の責務 + 自律 verify 2 層 + 軽量 PR cycle + sandbox catalog + co-* migration (第 4 弾 dig 反映)</td>
     </tr>
   </tbody>
 </table>
@@ -202,7 +202,7 @@
     <tr>
       <td><a href="experiment-index.html"><code>experiment-index.html</code></a></td>
       <td><span class="badge done">done</span></td>
-      <td>全 EXP-001〜018 一覧 + 現 status + 結果集約 hub (本 session 第 3 弾新規)</td>
+      <td>全 EXP-001〜031 一覧 (本 dig で 13 件追加: EXP-019〜031) + 現 status + 結果集約 hub</td>
     </tr>
     <tr>
       <td><code>common.css</code></td>
@@ -285,9 +285,20 @@
   <li>twl plugin 化 + experiment-id hyperlink architecture を新 spec 設計に組み込み (長期安定 + living document)</li>
 </ul>
 
-<p><strong>累積</strong> (本 session 通算): 公式 docs 計 10 件 WebFetch verified、実測行数訂正 (chain-runner 1714 / chain.py 905 / bats 250 / pitfalls 23 sections)、verified 数十件。</p>
+<p><strong>本 session 第 4 弾の追加 (2026-05-13、dig)</strong>:</p>
+<ul>
+  <li>新規 1 file: <code>dig-report-tools-2026-05-13.md</code> (独立 dig artifact、12 section / ~510 行、3 軸 × 5 ラウンド = 20 question)</li>
+  <li><strong>tool-* 仕様 finalization</strong>: 4 tool → <strong>3 tool</strong> 構成 (tool-utility 廃止、tool-self-improve → tool-sandbox-runner rename) + 自律 verify 2 層 + 軽量 PR cycle + sandbox catalog</li>
+  <li>新規 EXP 13 件追加: EXP-019〜031 (GitHub Project write boundary × 5 / template × 2 / tool-architect verify × 3 / tool-sandbox-runner × 2 / 将来 × 1)</li>
+  <li>新規 helper 7 件: verify-coverage.sh / pre-tool-use-spec-write-boundary.sh / worker-spec-review.md / problem-patterns.yaml / sandbox manifest (per sandbox) / project_setup.py / twill-templates 別 repo</li>
+  <li>本 dig で公式 docs 3 件 WebFetch re-verify (plugins / hooks / gh project — claude --plugin-dir + permissionDecision enum + 15 write-capable sub-commands)</li>
+  <li>主要更新: tool-architecture (全面書き直し) + experiment-index (EXP-019〜031 追加) + sandbox-experiment (catalog 確定) + deletion-inventory (tool-utility 廃止 + helper 7 件追加) + rebuild-plan (VP-13〜VP-16 追加) + boundary-matrix (3 tool 構成) + glossary (新 11 用語) + README (本 file) + changelog (第 4 弾履歴) + ADR-043 (Decision 追記)</li>
+  <li><strong>dig-report verify status</strong>: 57 claim を 4-state 分類 (verified 19 / deduced 18 / inferred→EXP 13 / inferred→実装 7)</li>
+</ul>
 
-<p>次 session: ADR-043/044 起票 + 案 2 先行実装着手判断 (administrator + 3 helper、~260 行)、サンドボックス EXP 実行 (Phase 1 PoC STEP 0)。</p>
+<p><strong>累積</strong> (本 session 通算): 公式 docs 計 <strong>13 件</strong> WebFetch verified (前 session 第 2 弾 5 + 第 3 弾 5 + 第 4 弾 3)、実測行数訂正 (chain-runner 1714 / chain.py 905 / bats 250 / pitfalls 23 sections / co-utility 79 / co-self-improve 144)、verified 数十件。</p>
+
+<p>次 session: Phase 1 PoC 着手判断 (administrator + 5 helper、~260 行 / 第 4 弾 dig 由来 helper 7 件、~440 行 = 計 ~700 行)、サンドボックス EXP 実行 (Phase 1 PoC STEP 0、EXP-001〜031 計 31 件)。</p>
 
 <h2>関連 (本 spec の外)</h2>
 

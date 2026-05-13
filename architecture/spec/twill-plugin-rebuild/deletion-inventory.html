@@ -20,7 +20,7 @@
 
 <header class="doc-header">
   <h1>deletion inventory — 削除 / 保全 / rebrand 全件 (実測 verified)</h1>
-  <div class="meta">draft-v2 (2026-05-13) &middot; 実測行数 verified &middot; twl plugin 化 + 削除 ~6,000 行 + 新規 helper ~250 行</div>
+  <div class="meta">draft-v2 (2026-05-13、第 4 弾 dig 反映) &middot; 実測行数 verified &middot; twl plugin 化 + 削除 ~7,368 行 (+tool-utility 79) + 新規 helper ~530 行 (+第 4 弾 dig 由来 7 件)</div>
 </header>
 
 <div class="info">
@@ -124,8 +124,8 @@
     <tr><td><code>su-observer</code></td><td class="verdict-rebrand">rebrand</td><td><code>administrator</code> (Inv I-1〜I-7 強化)</td></tr>
     <tr><td><code>co-architect</code> (226 行)</td><td class="verdict-rebrand">rebrand</td><td><code>tool-architect</code></td></tr>
     <tr><td><code>co-project</code> (145 行)</td><td class="verdict-rebrand">rebrand</td><td><code>tool-project</code></td></tr>
-    <tr><td><code>co-utility</code> (79 行)</td><td class="verdict-rebrand">rebrand</td><td><code>tool-utility</code></td></tr>
-    <tr><td><code>co-self-improve</code> (144 行)</td><td class="verdict-rebrand">rebrand</td><td><code>tool-self-improve</code></td></tr>
+    <tr><td><code>co-utility</code> (79 行)</td><td class="verdict-delete">削除 (第 4 弾 dig)</td><td><strong>廃止</strong> (commands は tool-architect / tool-project / admin / tool-sandbox-runner に再分配、詳細 <a href="tool-architecture.html">tool-architecture.html</a> §6)</td></tr>
+    <tr><td><code>co-self-improve</code> (144 行)</td><td class="verdict-rebrand">rebrand</td><td><code>tool-sandbox-runner</code> (第 4 弾 dig で rename、sandbox × feature matrix + Idea Issue 起票)</td></tr>
     <tr><td><code>co-autopilot</code></td><td class="verdict-delete">削除</td><td>administrator + phase-* に分解</td></tr>
     <tr><td><code>co-issue</code></td><td class="verdict-delete">削除</td><td>phase-refine</td></tr>
     <tr><td><code>co-explore</code></td><td class="verdict-delete">削除</td><td>phase-explore</td></tr>
@@ -148,7 +148,7 @@
   </tbody>
 </table>
 
-<p><strong>結果</strong>: 24 → administrator (1) + phase-* (4) + worker-* (3-5) + tool-* (4) = ~12-14 skill。"15" は目標として range。</p>
+<p><strong>結果</strong>: 24 → administrator (1) + phase-* (4) + worker-* (3-5) + tool-* (<strong>3</strong>) = ~11-13 skill。"15" は目標 range で、第 4 弾 dig (tool-utility 廃止) により 1 件減少。</p>
 
 <h2>§3. 削除対象 chain SSoT 三重化 + checkpoint</h2>
 
@@ -197,7 +197,63 @@
     <tr><td><code>plugins/twl/scripts/lib/admin-cycle.sh</code></td><td>~50</td><td>administrator polling cycle 6-step</td><td><a class="exp-link" href="experiment-index.html#EXP-004">EXP-004</a></td></tr>
   </tbody>
   <tfoot>
-    <tr><td><strong>合計</strong></td><td><strong>~260</strong></td><td>(削除 7,289 行 → 新規 260 行、<strong>96% 削減</strong>)</td><td></td></tr>
+    <tr><td><strong>小計 (既存 spec)</strong></td><td><strong>~260</strong></td><td>(削除 7,289 行 → 新規 260 行、96% 削減)</td><td></td></tr>
+  </tfoot>
+</table>
+
+<h3>§5b. 第 4 弾 dig 由来 新規 helper / file (~280 行追加)</h3>
+
+<table class="delete-table">
+  <thead>
+    <tr><th>file</th><th>行数 (見積)</th><th>役割</th><th>verify</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>plugins/twl/scripts/lib/verify-coverage.sh</code></td>
+      <td>~50</td>
+      <td>tool-architect verify hook 層 2 (PostToolUse、4-state status grep + changelog 漏れ + EXP 漏れを warn)</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-027">EXP-027</a></td>
+    </tr>
+    <tr>
+      <td><code>plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh</code></td>
+      <td>~30</td>
+      <td>spec edit 所有権 enforce (PreToolUse deny、tool-architect / user 以外を block)</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-028">EXP-028</a></td>
+    </tr>
+    <tr>
+      <td><code>plugins/twl/agents/worker-spec-review.md</code></td>
+      <td>~100 (SKILL.md)</td>
+      <td>tool-architect PR cycle review agent (1 agent 軽量 review、3 回 fix loop)</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-029">EXP-029</a></td>
+    </tr>
+    <tr>
+      <td><code>plugins/twl/sandboxes/_shared/problem-patterns.yaml</code></td>
+      <td>~50</td>
+      <td>tool-sandbox-runner LLM 分析 pattern catalog (6 件: stuck-loop / mailbox-loss / context-bloat / phase-gate-mistake / step-abort-cascade / subagent-misuse)</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-030">EXP-030</a></td>
+    </tr>
+    <tr>
+      <td><code>plugins/twl/sandboxes/&lt;name&gt;/{sandbox.yaml, setup.sh, features.yaml}</code></td>
+      <td>~130 (per sandbox × N)</td>
+      <td>sandbox manifest (twill-self / ts-nextjs-hono-mono 等)</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-030">EXP-030</a></td>
+    </tr>
+    <tr>
+      <td><code>cli/twl/src/twl/validation/project_setup.py</code></td>
+      <td>~80</td>
+      <td><code>twl_validate_project_setup</code> MCP tool (tool-project の verify-board sub-command が呼ぶ)</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-024">EXP-024</a></td>
+    </tr>
+    <tr>
+      <td><code>shuu5/twill-templates</code> (別 git repo)</td>
+      <td>repo-level</td>
+      <td>template repository (stack 3 件: ts-nextjs-hono-mono / supabase / docker-compose)、git submodule で fetch、tag versioning</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-025">EXP-025</a> <a class="exp-link" href="experiment-index.html#EXP-026">EXP-026</a></td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr><td><strong>小計 (第 4 弾 dig)</strong></td><td><strong>~440 行 (twill-templates repo 別)</strong></td><td>tool-* 自律 verify + sandbox catalog の実装基盤</td><td></td></tr>
+    <tr><td><strong>新規 helper 合計</strong></td><td><strong>~700 行 (260 + 440)</strong></td><td>(削除 ~7,368 行 → 新規 ~700 行、<strong>~90% 削減</strong>)</td><td></td></tr>
   </tfoot>
 </table>
 
@@ -324,11 +380,11 @@ mv hooks.json.bak hooks.json
     <tr><th>領域</th><th>before</th><th>after</th><th>削減率</th></tr>
   </thead>
   <tbody>
-    <tr><td>bash orchestration</td><td>~7,289 行</td><td>~260 行 (helper 5 本)</td><td>96%</td></tr>
+    <tr><td>bash orchestration + tool-utility</td><td>~7,368 行 (5,000 bash + chain 905 + mcp-watchdog 120 + tool-utility 79)</td><td>~700 行 (helper 5 + 第 4 弾 dig 由来 7)</td><td>~90%</td></tr>
     <tr><td>chain SSoT</td><td>3 重 (chain.py 905 + chain-steps.sh 98 + deps.yaml.chains)</td><td>1 重 (deps.yaml.chains + steps/*.sh)</td><td>67%</td></tr>
-    <tr><td>twl MCP tool</td><td>30+ (一部 no-op stub 含む)</td><td>~15 (workflow 統合)</td><td>50%</td></tr>
-    <tr><td>skill</td><td>24 (co-* 7 + workflow-* 16 + su-* 1)</td><td>~12-14 (admin + phase-* 4 + worker-* 3-5 + tool-* 4)</td><td>40-50%</td></tr>
-    <tr><td>SSoT パス (skill / hook / mcp / monitor)</td><td>分散 (4-6 箇所)</td><td>1 箇所 (plugin root)</td><td>規定保証</td></tr>
+    <tr><td>twl MCP tool</td><td>30+ (一部 no-op stub 含む)</td><td>~15 + 1 新規 (<code>twl_validate_project_setup</code>)</td><td>50%</td></tr>
+    <tr><td>skill</td><td>24 (co-* 7 + workflow-* 16 + su-* 1)</td><td>~11-13 (admin + phase-* 4 + worker-* 3-5 + tool-* 3、第 4 弾 dig で tool-utility 廃止)</td><td>45-55%</td></tr>
+    <tr><td>SSoT パス (skill / hook / mcp / monitor)</td><td>分散 (4-6 箇所)</td><td>1 箇所 (plugin root) + sandbox catalog (<code>plugins/twl/sandboxes/</code>)</td><td>規定保証</td></tr>
   </tbody>
 </table>
 
