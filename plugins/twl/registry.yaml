@@ -284,11 +284,26 @@ glossary:
     context: cross-session knowledge (doobidoo に保存)
     description: |
       session を越えて再利用される経験的知見。doobidoo Knowledge Authority SSoT
-      (cross-machine HTTP MCP) に memory_store。tool-sandbox-runner が重複 check 後
+      (cross-machine HTTP MCP) に memory_store。tool-sandbox-runner が重復 check 後
       Idea Issue 起票 (severity=critical のみ)。
     examples:
       - "budget 表示 5h:N%(Xm) format 誤読"
       - "tmux -C 破壊禁止"
+
+  # === deprecated compound entities (Phase 3 cutover で削除予定、現在は false positive 抑制用に canonical 登録) ===
+
+  co-autopilot:
+    canonical: co-autopilot
+    aliases: []
+    forbidden: []
+    context: deprecated compound name (Phase 1 PoC で canonical 登録、Phase 3 cutover で廃止)
+    description: |
+      旧 controller 命名。`phaser-impl` の前身として運用中だが、新規参照は禁止。
+      vocabulary audit の compound exclusion ロジックが本 entry を canonical_names に
+      組み込むことで `co-autopilot` 文字列内の `pilot` を forbidden 検出から除外する
+      (false positive 抑制)。Phase 3 cutover で実 file rename 完了後に削除。
+    examples:
+      - co-autopilot
 
 # =========================================================================
 # §2. components — 全 file listing (Phase 1 PoC seed)

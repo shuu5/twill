@@ -111,6 +111,14 @@
       <td>registry-schema.html §4 §8 の formal 化</td>
     </tr>
     <tr>
+      <td><code>registry.yaml §6 token_thresholds</code></td>
+      <td><code>plugins/twl/registry.yaml</code> §6</td>
+      <td>token budget warning/critical 閾値 (6 role 分)</td>
+      <td><span class="vs verified">Phase 1 PoC seed に実装済 (本 dig で追加、旧 cli/twl/types.yaml の token_target を統合)</span></td>
+      <td>2 / 27</td>
+      <td>types.py <code>_FALLBACK_TOKEN_THRESHOLDS</code> が Derived、audit Section 6 Token Bloat が参照</td>
+    </tr>
+    <tr>
       <td>各実 file (SKILL.md / agents/specialist-*.md)</td>
       <td><code>plugins/twl/skills/&lt;role&gt;-&lt;name&gt;/SKILL.md</code> + <code>plugins/twl/agents/specialist-*.md</code></td>
       <td>各 component の frontmatter (name / role / allowed-tools 等) + body 仕様</td>
@@ -120,6 +128,8 @@
     </tr>
   </tbody>
 </table>
+
+<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ Authority SSoT 9 件 (本 §1.5.1 table)。<code>token_thresholds</code> は第 5 弾 dig Phase 5.5 で追記後、本 Step 3 spec drift 修正 (2026-05-13) で正式登録。</em></p>
 
 <h3>1.5.2 Reference SSoT (Authority から参照される正典、supplement)</h3>
 
@@ -299,20 +309,21 @@ chains:
         verify: all_tests_pass &amp;&amp; lint_pass
     next_workflow: workflow-pr-verify
 
-# §4. hooks+monitors (hooks.json + monitors.json の SSoT、YAML key は hooks_monitors / hooks + monitors のように 2 sub-section に分割可)
-hooks:
-  - name: hook-spec-write-boundary
-    event: PreToolUse
-    matcher: Edit|Write
-    handler_type: command
-    handler: scripts/hooks/pre-tool-use-spec-write-boundary.sh
-    concern: spec edit authority
+# §4. hooks-monitors (hooks.json + monitors.json の SSoT 統合、top-level key は hooks-monitors:、内部に hooks: / monitors: の 2 sub-section)
+hooks-monitors:
+  hooks:
+    - name: hook-spec-write-boundary
+      event: PreToolUse
+      matcher: Edit|Write
+      handler_type: command
+      handler: scripts/hooks/pre-tool-use-spec-write-boundary.sh
+      concern: spec edit authority
 
-monitors:
-  - name: monitor-twl-mcp-health
-    command: tail -F .mcp-health.log
-    description: twl MCP server health log
-    concern: MCP health observability
+  monitors:
+    - name: monitor-twl-mcp-health
+      command: tail -F .mcp-health.log
+      description: twl MCP server health log
+      concern: MCP health observability
 
 # §5. integrity_rules (audit 用)
 integrity_rules:

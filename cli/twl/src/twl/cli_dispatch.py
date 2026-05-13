@@ -288,6 +288,8 @@ def handle_audit(*, format=None, section=None, deps, plugin_root, plugin_name):
         8: 'prompt_compliance',
         9: 'chain_integrity',
         10: 'cross_layer_consistency',
+        11: 'vocabulary_check',
+        12: 'registry_integrity',
     }
 
     if format == 'json':
@@ -378,6 +380,130 @@ def handle_audit(*, format=None, section=None, deps, plugin_root, plugin_name):
         print(f"|----------|-------|")
         print(f"| CRITICAL | {criticals} |")
         print(f"| WARNING  | {warnings} |")
+        print(f"| OK       | {oks} |")
+        return 1 if criticals > 0 else 0
+
+    if section_filter == 11:
+        from twl.validation.audit import audit_vocabulary
+        registry_path = plugin_root / "registry.yaml"
+        print("=== TWiLL Compliance Audit (Section 11 only) ===")
+        print()
+        print("## 11. Vocabulary Check")
+        print()
+        print("| Entity | Forbidden / Rule | Files | Severity |")
+        print("|--------|------------------|-------|----------|")
+        if not registry_path.exists():
+            print("| (registry.yaml not found) | Section 11 skipped | - | INFO |")
+            print()
+            print("## Summary")
+            print("| Severity | Count |")
+            print("|----------|-------|")
+            print("| WARNING  | 0 |")
+            print("| INFO     | 1 |")
+            return 0
+        try:
+            import yaml as _yaml
+            registry = _yaml.safe_load(registry_path.read_text(encoding='utf-8')) or {}
+        except Exception as e:
+            print(f"| (registry.yaml parse error) | {e} | - | WARNING |")
+            print()
+            print("## Summary")
+            print("| Severity | Count |")
+            print("|----------|-------|")
+            print("| WARNING  | 1 |")
+            return 0
+        if not isinstance(registry, dict):
+            print("| (registry.yaml empty or invalid root) | - | - | WARNING |")
+            return 0
+        vocab_items = audit_vocabulary(registry, plugin_root)
+        warnings = 0
+        infos = 0
+        for item in vocab_items:
+            sev = item['severity']
+            entity = item['component'].split(':', 1)[-1] if ':' in item['component'] else item['component']
+            if sev == 'warning':
+                warnings += 1
+                print(f"| {entity} | {item['message']} | {item['value']} | WARNING |")
+            elif sev == 'info':
+                infos += 1
+                print(f"| {entity} | {item['message']} | - | INFO |")
+        if warnings == 0:
+            print(f"| (no forbidden word violations) | - | - | OK |")
+        print()
+        print("## Summary")
+        print("| Severity | Count |")
+        print("|----------|-------|")
+        print(f"| WARNING  | {warnings} |")
+        print(f"| INFO     | {infos} |")
+        return 0  # Section 11 は warning のみ、exit 1 しない
+
+    if section_filter == 12:
+        from twl.validation.audit import audit_registry
+        registry_path = plugin_root / "registry.yaml"
+        print("=== TWiLL Compliance Audit (Section 12 only) ===")
+        print()
+        print("## 12. Registry Integrity")
+        print()
+        print("| Component / Rule | Issue | Severity |")
+        print("|------------------|-------|----------|")
+        if not registry_path.exists():
+            print("| (registry.yaml not found) | Section 12 skipped | INFO |")
+            print()
+            print("## Summary")
+            print("| Severity | Count |")
+            print("|----------|-------|")
+            print("| CRITICAL | 0 |")
+            print("| WARNING  | 0 |")
+            print("| INFO     | 1 |")
+            return 0
+        try:
+            import yaml as _yaml
+            registry = _yaml.safe_load(registry_path.read_text(encoding='utf-8')) or {}
+        except Exception as e:
+            print(f"| (registry.yaml parse error) | {e} | WARNING |")
+            print()
+            print("## Summary")
+            print("| Severity | Count |")
+            print("|----------|-------|")
+            print("| CRITICAL | 0 |")
+            print("| WARNING  | 1 |")
+            return 0
+        if not isinstance(registry, dict):
+            print("| (registry.yaml empty or invalid root) | - | WARNING |")
+            print()
+            print("## Summary")
+            print("| Severity | Count |")
+            print("|----------|-------|")
+            print("| CRITICAL | 0 |")
+            print("| WARNING  | 1 |")
+            return 0
+        reg_items = audit_registry(registry, plugin_root)
+        criticals = 0
+        warnings = 0
+        oks = 0
+        infos = 0
+        for item in reg_items:
+            sev = item['severity']
+            if sev == 'critical':
+                criticals += 1
+                print(f"| {item['component']} | {item['message']} | CRITICAL |")
+            elif sev == 'warning':
+                warnings += 1
+                print(f"| {item['component']} | {item['message']} | WARNING |")
+            elif sev == 'info':
+                infos += 1
+                print(f"| {item['component']} | {item['message']} | INFO |")
+            else:
+                oks += 1
+        if criticals == 0 and warnings == 0:
+            print(f"| (all {oks} checks) | OK | OK |")
+        print()
+        print("## Summary")
+        print("| Severity | Count |")
+        print("|----------|-------|")
+        print(f"| CRITICAL | {criticals} |")
+        print(f"| WARNING  | {warnings} |")
+        print(f"| INFO     | {infos} |")
         print(f"| OK       | {oks} |")
         return 1 if criticals > 0 else 0
 

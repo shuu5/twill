@@ -455,8 +455,300 @@ def audit_cross_layer_consistency(monorepo_root: Path) -> List[dict]:
     return items
 
 
+def _load_rules_for_section(registry: dict, section_num: int) -> List[dict]:
+    """registry.yaml §5 integrity_rules から audit_section == section_num の rule を返す。
+
+    Phase 2 dual-stack 移行時に Section 別 dispatcher へ進化させる際のフック関数。
+    """
+    rules = registry.get('integrity_rules', []) or []
+    if not isinstance(rules, list):
+        return []
+    return [r for r in rules if isinstance(r, dict) and r.get('audit_section') == section_num]
+
+
+def audit_vocabulary(registry: dict, plugin_root: Path) -> List[dict]:
+    """Section 11: Vocabulary Check
+
+    registry['glossary'][*].forbidden の単語を skills/ + agents/ + refs/ 配下の
+    Markdown ファイルで word boundary 厳密検出する。
+
+    False positive 抑制 (registry.yaml §5 vocabulary_forbidden_use.exclusion_contexts):
+      1. backtick 内 (`...`) の公式名引用
+      2. 「旧」「廃止予定」を含む説明行
+      3. migration-stage 表記 (`Phase 1 PoC` 等、backtick 除去で副次対応)
+      4. compound canonical entity (e.g., co-autopilot 内の pilot)
+
+    Returns: items リスト (severity, component, message, section, value, threshold)
+    """
+    items: List[dict] = []
+    glossary = registry.get('glossary', {}) or {}
+    if not isinstance(glossary, dict) or not glossary:
+        return items
+
+    forbidden_map: Dict[str, List[str]] = {}
+    canonical_names: Set[str] = set()
+    for entity, entry in glossary.items():
+        if not isinstance(entry, dict):
+            continue
+        canonical = entry.get('canonical', entity)
+        if isinstance(canonical, str) and canonical.strip():
+            canonical_names.add(canonical.strip())
+        words = entry.get('forbidden', []) or []
+        if isinstance(words, list):
+            valid = [str(w).strip() for w in words if isinstance(w, str) and w.strip()]
+            if valid:
+                forbidden_map[entity] = valid
+
+    if not forbidden_map:
+        return items
+
+    scan_bases = [
+        (plugin_root / 'skills', True),
+        (plugin_root / 'agents', False),
+        (plugin_root / 'refs', False),
+    ]
+    target_files: List[Path] = []
+    for base, recursive in scan_bases:
+        if not base.exists() or not base.is_dir():
+            continue
+        if recursive:
+            target_files.extend(p for p in base.rglob('*.md') if p.is_file())
+        else:
+            target_files.extend(p for p in base.glob('*.md') if p.is_file())
+
+    if not target_files:
+        items.append({
+            "severity": "info",
+            "component": "vocabulary:scan",
+            "message": "no scannable Markdown files under skills/ + agents/ + refs/",
+            "section": "vocabulary_check",
+            "value": 0,
+            "threshold": 1,
+        })
+        return items
+
+    for entity in sorted(forbidden_map.keys()):
+        for word in forbidden_map[entity]:
+            hit_files: Set[str] = set()
+            pattern = re.compile(r'\b' + re.escape(word) + r'\b')
+            compound_pattern = re.compile(r'\b([\w]+(?:-[\w]+)*-' + re.escape(word) + r')\b')
+            for fpath in sorted(target_files):
+                try:
+                    raw = fpath.read_text(encoding='utf-8')
+                except Exception:
+                    continue
+                cleaned = re.sub(r'`[^`\n]*`', '', raw)
+                found = False
+                for line in cleaned.splitlines():
+                    if '旧' in line or '廃止予定' in line:
+                        continue
+                    if not pattern.search(line):
+                        continue
+                    compound_matches = compound_pattern.findall(line)
+                    if compound_matches:
+                        excluded_compounds = [m for m in compound_matches if m in canonical_names]
+                        if excluded_compounds:
+                            tmp = line
+                            for c in excluded_compounds:
+                                tmp = tmp.replace(c, '')
+                            if not pattern.search(tmp):
+                                continue
+                    found = True
+                    break
+                if found:
+                    try:
+                        hit_files.add(str(fpath.relative_to(plugin_root)))
+                    except ValueError:
+                        hit_files.add(fpath.name)
+
+            if hit_files:
+                files_sorted = sorted(hit_files)
+                files_preview = ', '.join(files_sorted[:5])
+                if len(files_sorted) > 5:
+                    files_preview += f', ... (+{len(files_sorted) - 5} more)'
+                items.append({
+                    "severity": "warning",
+                    "component": f"vocabulary:{entity}",
+                    "message": f"forbidden word '{word}' detected in {len(files_sorted)} file(s): {files_preview}",
+                    "section": "vocabulary_check",
+                    "value": len(files_sorted),
+                    "threshold": 0,
+                })
+
+    rules_11 = _load_rules_for_section(registry, 11)
+    for rule in rules_11:
+        rule_id = rule.get('id')
+        if rule_id == 'official_name_collision':
+            items.append({
+                "severity": "info",
+                "component": f"vocabulary:rule:{rule_id}",
+                "message": "Phase 1 PoC: not implemented (backtick exclusion partially covers)",
+                "section": "vocabulary_check",
+                "value": 0,
+                "threshold": 1,
+            })
+
+    return items
+
+
+def audit_registry(registry: dict, plugin_root: Path) -> List[dict]:
+    """Section 12: Registry Integrity
+
+    registry.yaml の 5 section schema 存在 + components core 2 rule + 3 rule stub。
+
+    Core rules (critical, implemented):
+      - prefix_role_match: components の name prefix と role 一致
+      - no_duplicate_concern: concern field unique
+
+    Stub rules (warning, Phase 1 PoC は未実装、Phase 2 dual-stack で実装):
+      - ssot_authority_unique: ssot_excludes (delegation) と他 component の concern の
+                               semantic 整合検証 — 単純な overlap 検出では false positive
+                               になるため、Authority field 追加と組み合わせて Phase 2 実装
+      - derived_drift_check: types.py fallback drift
+      - description_required_consistency: description_required field 整合
+      Note: vocabulary_forbidden_use / official_name_collision は Section 11 担当
+
+    Returns: items リスト
+    """
+    items: List[dict] = []
+
+    REQUIRED_SECTIONS = ['glossary', 'components', 'chains', 'hooks-monitors', 'integrity_rules']
+    for sec in REQUIRED_SECTIONS:
+        if sec not in registry:
+            items.append({
+                "severity": "critical",
+                "component": f"registry:section:{sec}",
+                "message": f"required section '{sec}' missing in registry.yaml",
+                "section": "registry_integrity",
+                "value": 0,
+                "threshold": 1,
+            })
+        else:
+            items.append({
+                "severity": "ok",
+                "component": f"registry:section:{sec}",
+                "message": "section present",
+                "section": "registry_integrity",
+                "value": 1,
+                "threshold": 1,
+            })
+
+    components_raw = registry.get('components', []) or []
+    components = components_raw if isinstance(components_raw, list) else []
+
+    SEED_NAMES = {'administrator', 'phaser-explore', 'phaser-refine', 'phaser-impl', 'phaser-pr'}
+    seed_components = [c for c in components if isinstance(c, dict) and c.get('name') in SEED_NAMES]
+
+    PREFIX_ROLE_MAP = {
+        'phaser': 'phaser',
+        'tool': 'tool',
+        'workflow': 'workflow',
+        'atomic': 'atomic',
+        'specialist': 'specialist',
+        'reference': 'reference',
+        'script': 'script',
+        'hook': 'hook',
+        'monitor': 'monitor',
+    }
+
+    # Rule 1: prefix_role_match
+    for comp in seed_components:
+        name = comp.get('name', '')
+        role = comp.get('role', '')
+        if name == 'administrator':
+            if role != 'administrator':
+                items.append({
+                    "severity": "critical",
+                    "component": f"registry:component:{name}",
+                    "message": f"prefix_role_match: 'administrator' has role='{role}' (expected: administrator)",
+                    "section": "registry_integrity",
+                    "value": 0,
+                    "threshold": 1,
+                })
+            continue
+        prefix = name.split('-', 1)[0] if '-' in name else name
+        expected_role = PREFIX_ROLE_MAP.get(prefix)
+        if expected_role is None:
+            continue
+        if role != expected_role:
+            items.append({
+                "severity": "critical",
+                "component": f"registry:component:{name}",
+                "message": f"prefix_role_match: '{name}' prefix '{prefix}' implies role '{expected_role}', got '{role}'",
+                "section": "registry_integrity",
+                "value": 0,
+                "threshold": 1,
+            })
+
+    # Rule 2: no_duplicate_concern
+    concern_owners: Dict[str, str] = {}
+    for comp in seed_components:
+        name = comp.get('name', '')
+        concern_raw = comp.get('concern', '')
+        concern = concern_raw.strip() if isinstance(concern_raw, str) else ''
+        if not concern:
+            continue
+        if concern in concern_owners:
+            items.append({
+                "severity": "critical",
+                "component": f"registry:component:{name}",
+                "message": f"no_duplicate_concern: concern '{concern}' duplicated with '{concern_owners[concern]}'",
+                "section": "registry_integrity",
+                "value": 0,
+                "threshold": 1,
+            })
+        else:
+            concern_owners[concern] = name
+
+    # Stub 3 rule (warning) - Section 12 担当の Phase 1 PoC 未実装
+    # ssot_authority_unique は ssot_excludes (delegation 宣言) と他 component の concern の
+    # semantic 整合性を見る必要があり、単純な overlap 検出では delegation を critical 化する
+    # false positive を生む。Phase 2 で Authority field 追加と組み合わせて実装。
+    STUB_RULES_12 = [
+        ('ssot_authority_unique',
+         'Phase 1 PoC seed: Authority delegation semantic verification deferred to Phase 2'),
+        ('derived_drift_check',
+         'Phase 1 PoC seed: types.py _FALLBACK_TOKEN_THRESHOLDS drift check not implemented'),
+        ('description_required_consistency',
+         'Phase 1 PoC seed: description_required field consistency check not implemented'),
+    ]
+    rules_12_ids = {r.get('id') for r in _load_rules_for_section(registry, 12) if isinstance(r, dict)}
+    for rule_id, msg in STUB_RULES_12:
+        if rule_id in rules_12_ids:
+            items.append({
+                "severity": "warning",
+                "component": f"registry:rule:{rule_id}",
+                "message": msg,
+                "section": "registry_integrity",
+                "value": 0,
+                "threshold": 1,
+            })
+
+    # EXP-034: seed component file existence (frontmatter parse は Phase 2)
+    for comp in seed_components:
+        name = comp.get('name', '')
+        file_rel = comp.get('file', '')
+        if not file_rel or not isinstance(file_rel, str):
+            continue
+        fpath = plugin_root / file_rel
+        if not fpath.exists():
+            items.append({
+                "severity": "info",
+                "component": f"registry:component:{name}",
+                "message": f"file '{file_rel}' not found (Phase 1 PoC seed, frontmatter check skipped)",
+                "section": "registry_integrity",
+                "value": 0,
+                "threshold": 1,
+            })
+
+    return items
+
+
 def audit_collect(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = None) -> List[dict]:
-    """10セクションの TWiLL 準拠度データを収集（print なし）
+    """12 セクションの TWiLL 準拠度データを収集（print なし）
+
+    Section 11/12 は registry.yaml を auto-detect: plugin_root / "registry.yaml" が
+    存在すれば実行、不在なら skip（既存 Section 1-10 への影響なし）。
 
     Returns: items リスト（severity, component, message, section, value, threshold）
     """
@@ -713,6 +1005,26 @@ def audit_collect(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] =
     if monorepo_root is not None:
         items.extend(audit_cross_layer_consistency(monorepo_root))
 
+    # Section 11 & 12: Registry-based audit (auto-detect registry.yaml)
+    _registry_path = plugin_root / "registry.yaml"
+    if _registry_path.exists():
+        try:
+            import yaml as _yaml
+            _registry = _yaml.safe_load(_registry_path.read_text(encoding='utf-8')) or {}
+        except Exception as _e:
+            items.append({
+                "severity": "warning",
+                "component": "registry:parse",
+                "message": f"registry.yaml parse error — Section 11/12 skipped: {_e}",
+                "section": "registry_integrity",
+                "value": 0,
+                "threshold": 1,
+            })
+        else:
+            if isinstance(_registry, dict):
+                items.extend(audit_vocabulary(_registry, plugin_root))
+                items.extend(audit_registry(_registry, plugin_root))
+
     return items
 
 
@@ -780,7 +1092,7 @@ def _scan_body_for_mcp_tools(file_path: Path) -> Set[str]:
 
 
 def audit_report(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = None) -> Tuple[int, int, int]:
-    """10セクションの TWiLL 準拠度レポートを出力
+    """12 セクションの TWiLL 準拠度レポートを出力
 
     Sections:
         1. Controller Size
@@ -793,6 +1105,10 @@ def audit_report(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = 
         8. Prompt Compliance
         9. Chain Integrity
        10. Cross-Layer Consistency
+       11. Vocabulary Check (registry.yaml glossary forbidden words)
+       12. Registry Integrity (registry.yaml schema + components rules)
+
+    Section 11/12 は plugin_root / "registry.yaml" 存在時のみ実行（auto-detect）。
 
     Returns: (critical_count, warning_count, ok_count)
     """
@@ -1099,6 +1415,54 @@ def audit_report(deps: dict, plugin_root: Path, monorepo_root: Optional[Path] = 
         if not has_cross_issue:
             ok_count_s10 = sum(1 for i in cross_items if i['severity'] == 'ok')
             print(f"| (all {ok_count_s10} pairs) | OK | OK |")
+    print()
+
+    # === Section 11: Vocabulary Check ===
+    print("## 11. Vocabulary Check")
+    print()
+    print("| Entity | Forbidden / Rule | Files | Severity |")
+    print("|--------|------------------|-------|----------|")
+    vocab_items = [i for i in items if i['section'] == 'vocabulary_check']
+    if not vocab_items:
+        print("| (registry.yaml not found) | Section 11 skipped | - | INFO |")
+    else:
+        has_vocab_issue = False
+        for item in vocab_items:
+            sev = item['severity']
+            if sev == 'warning':
+                has_vocab_issue = True
+                entity = item['component'].split(':', 1)[-1] if ':' in item['component'] else item['component']
+                print(f"| {entity} | {item['message']} | {item['value']} | WARNING |")
+            elif sev == 'info':
+                entity = item['component'].split(':', 1)[-1] if ':' in item['component'] else item['component']
+                print(f"| {entity} | {item['message']} | - | INFO |")
+        if not has_vocab_issue:
+            print(f"| (no forbidden word violations) | - | - | OK |")
+    print()
+
+    # === Section 12: Registry Integrity ===
+    print("## 12. Registry Integrity")
+    print()
+    print("| Component / Rule | Issue | Severity |")
+    print("|------------------|-------|----------|")
+    reg_items = [i for i in items if i['section'] == 'registry_integrity']
+    if not reg_items:
+        print("| (registry.yaml not found) | Section 12 skipped | INFO |")
+    else:
+        has_reg_issue = False
+        for item in reg_items:
+            sev = item['severity']
+            if sev == 'critical':
+                has_reg_issue = True
+                print(f"| {item['component']} | {item['message']} | CRITICAL |")
+            elif sev == 'warning':
+                has_reg_issue = True
+                print(f"| {item['component']} | {item['message']} | WARNING |")
+            elif sev == 'info':
+                print(f"| {item['component']} | {item['message']} | INFO |")
+        if not has_reg_issue:
+            ok_count_s12 = sum(1 for i in reg_items if i['severity'] == 'ok')
+            print(f"| (all {ok_count_s12} checks) | OK | OK |")
     print()
 
     # === Summary ===
