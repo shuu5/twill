@@ -1,16 +1,7 @@
 {
+  "_comment_": "Phase 1 PoC STEP -1 (2026-05-13、ADR-043 / deletion-inventory.html §6b 準拠): 既存 hook 9 件中、6 件を無効化し 5 件のみ保全。rollback は hooks.json.bak を rename。無効化済 (新 architecture で置換予定): pre-tool-use-ask-user-question / pre-tool-use-spec-review-gate / post-tool-use-validate / check-specialist-completeness / post-tool-use-bash-error / permission-request-auto-approve。保全: worktree-boundary (Inv B) / host-safety (tmux 破壊禁止) / deps-yaml-guard (chain SSoT) / pre-compact / post-compact。",
   "hooks": {
     "PreToolUse": [
-      {
-        "matcher": "AskUserQuestion",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-tool-use-ask-user-question.sh",
-            "timeout": 10000
-          }
-        ]
-      },
       {
         "matcher": "Edit|Write|NotebookEdit",
         "hooks": [
@@ -32,16 +23,6 @@
         ]
       },
       {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-tool-use-spec-review-gate.sh",
-            "timeout": 10000
-          }
-        ]
-      },
-      {
         "matcher": "Edit|Write",
         "hooks": [
           {
@@ -49,41 +30,6 @@
             "if": "Edit(deps.yaml)|Write(deps.yaml)",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-tool-use-deps-yaml-guard.sh",
             "timeout": 3000
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "if": "Edit(deps.yaml)|Write(deps.yaml)|Edit(*/SKILL.md)|Write(*/SKILL.md)|Edit(agents/*.md)|Write(agents/*.md)",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/post-tool-use-validate.sh",
-            "timeout": 10000
-          }
-        ]
-      },
-      {
-        "matcher": "Agent|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/check-specialist-completeness.sh",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/post-tool-use-bash-error.sh",
-            "timeout": 10000
           }
         ]
       }
@@ -105,17 +51,6 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/post-compact-checkpoint.sh",
-            "timeout": 10000
-          }
-        ]
-      }
-    ],
-    "PermissionRequest": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/hooks/permission-request-auto-approve.sh",
             "timeout": 10000
           }
         ]
