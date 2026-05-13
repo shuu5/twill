@@ -232,7 +232,7 @@ def main():
         sys.exit(handle_audit(
             format=args.format,
             section=args.section,
-            scan_spec=getattr(args, 'scan_spec', False),
+            scan_spec=args.scan_spec,
             deps=deps,
             plugin_root=plugin_root,
             plugin_name=plugin_name,

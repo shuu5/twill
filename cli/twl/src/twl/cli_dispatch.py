@@ -415,7 +415,10 @@ def handle_audit(*, format=None, section=None, scan_spec=False, deps, plugin_roo
         if not isinstance(registry, dict):
             print("| (registry.yaml empty or invalid root) | - | - | WARNING |")
             return 0
-        vocab_items = audit_vocabulary(registry, plugin_root, scan_spec=scan_spec)
+        # _detect_monorepo_root を再利用 (audit_collect と同じ pattern、git rev-parse の二重実行を防ぐ)
+        from twl.validation.audit import _detect_monorepo_root
+        _mr = _detect_monorepo_root(plugin_root) if scan_spec else None
+        vocab_items = audit_vocabulary(registry, plugin_root, monorepo_root=_mr, scan_spec=scan_spec)
         warnings = 0
         infos = 0
         for item in vocab_items:

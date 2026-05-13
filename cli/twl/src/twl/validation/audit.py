@@ -483,7 +483,10 @@ def audit_vocabulary(
       1. backtick 内 (`...`) の公式名引用
       2. 「旧」「廃止予定」を含む説明行
       3. migration-stage 表記 (`Phase 1 PoC` 等、backtick 除去で副次対応)
-      4. compound canonical entity (e.g., co-autopilot 内の pilot)
+      4. compound canonical entity:
+         - ハイフン区切り compound (e.g., `auto-pilot` 内の `pilot`): compound_pattern で検出 + canonical_names で除外
+         - non-hyphen compound (e.g., `co-autopilot` 内の subword `autopilot` の `pilot` 部分):
+           `\b` word boundary が自然に防ぐ (`a-pilot` の boundary は OK だが `o + p` の boundary は不成立)
 
     component prefix:
       - skills/+agents/+refs/ 由来: `vocabulary:{entity}`
@@ -522,9 +525,14 @@ def audit_vocabulary(
     if scan_spec:
         _mr = monorepo_root if monorepo_root is not None else _detect_monorepo_root(plugin_root)
         if _mr is not None:
+            # spec dir (twill-plugin-rebuild)
             scan_bases.append((_mr / 'architecture' / 'spec' / 'twill-plugin-rebuild',
                                False, 'vocabulary:spec', _mr))
+            # ADR dirs: monorepo-level (architecture/decisions/) + plugin-level (plugins/twl/architecture/decisions/)
+            # 後者には ADR-043/044/045 (twill plugin rebuild の core ADR) が存在
             scan_bases.append((_mr / 'architecture' / 'decisions',
+                               False, 'vocabulary:spec', _mr))
+            scan_bases.append((_mr / 'plugins' / 'twl' / 'architecture' / 'decisions',
                                False, 'vocabulary:spec', _mr))
 
     # target_file_groups: (path, prefix, root_for_relpath)

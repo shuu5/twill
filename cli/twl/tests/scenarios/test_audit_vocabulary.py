@@ -302,7 +302,7 @@ def _make_plugin_with_spec(
     """
     monorepo_dir = tmpdir / "monorepo"
     monorepo_dir.mkdir()
-    subprocess.run(["git", "init", "-q"], cwd=str(monorepo_dir), check=True)
+    subprocess.run(["git", "init", "-q"], cwd=str(monorepo_dir), check=True, timeout=10)
 
     plugin_dir = monorepo_dir / "plugins" / "test-spec-vocab"
     plugin_dir.mkdir(parents=True)

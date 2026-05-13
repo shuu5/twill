@@ -95,18 +95,18 @@
       <td>本 spec directory 全体を supplement として参照</td>
     </tr>
     <tr>
-      <td>ADR-044 (予定)</td>
+      <td>ADR-044</td>
       <td>同上</td>
-      <td>chain SSoT 統一 (旧案 3 step.sh、現案 4 registry.yaml に更新)</td>
-      <td><span class="vs inferred">未起票</span></td>
+      <td>chain SSoT 統一 (旧案 3 step.sh framework 検討)</td>
+      <td><span class="vs verified">Withdrawn (2026-05-14、第 5 弾 dig で案 4 採用、案 3 不採用化)</span></td>
       <td>3 / 27</td>
-      <td>ssot-design.html が詳細記述</td>
+      <td>Decision body は設計史として保存、chain SSoT 統一の最終 Decision は ADR-043 §5</td>
     </tr>
     <tr>
-      <td><strong>ADR-045 (予定、第 5 弾 dig 由来)</strong></td>
+      <td><strong>ADR-045</strong></td>
       <td>同上</td>
       <td>命名 policy + vocabulary 6 field schema + 10 role 体系の formal ADR 化</td>
-      <td><span class="vs inferred">未起票</span></td>
+      <td><span class="vs verified">Accepted (2026-05-14、Step 2 完遂で前提充足)</span></td>
       <td>5 / 27</td>
       <td>registry-schema.html §4 §8 の formal 化</td>
     </tr>
@@ -333,11 +333,17 @@ integrity_rules:
 
   - id: ssot_authority_unique
     description: Authority SSoT は concern ごとに 1 つのみ
-    severity: critical
+    severity: warning   # Phase 1 PoC stub (Phase 2 で critical に格上げ予定)
+    audit_section: 12
+    stub: true
+    stub_reason: "Phase 2 で Authority field 追加と組み合わせて実装"
 
   - id: derived_drift_check
     description: types.py fallback が registry.yaml から drift していないか
     severity: warning
+    audit_section: 12
+    stub: true
+    stub_reason: "Phase 1 PoC seed: types.py _FALLBACK_TOKEN_THRESHOLDS drift check not implemented"
 
   - id: prefix_role_match
     description: file prefix と role が一致 (phaser-* file は role phaser)
@@ -892,9 +898,9 @@ glossary:
 
 <p>公式 Claude Code plugin の 6 component kind は <strong>skills / agents / hooks / MCP / LSP / monitors</strong> (plugins-reference verbatim verified)。twl plugin は <strong>LSP component を使用しない</strong> (現状 / 将来共に scope 外)。理由: twl は orchestration plugin であり、language server 機能が不要。LSP 利用が必要な場合は別 plugin として独立化することを推奨。</p>
 
-<h3>9.5 命名 policy ADR (ADR-045) 起票予定</h3>
+<h3>9.5 命名 policy ADR (ADR-045) — Accepted (2026-05-14)</h3>
 
-<p>本 file の Round 7-10 結果を formal ADR 化。第 5 弾 dig での「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR-045 として正式化。</p>
+<p>本 file の Round 7-10 結果を formal ADR 化。第 5 弾 dig での「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR-045 として正式化、Step 2 完遂 (registry.yaml glossary 21 entity + ref-invariants.md A-X 24 件 + Step 3 audit Section 11/12) で前提充足し Accepted 化。</p>
 
 <h2>§10. 関連 spec / EXP</h2>
 
@@ -909,7 +915,7 @@ glossary:
   <li><a href="experiment-index.html">experiment-index.html</a> (EXP-032〜038、本 file §6 と §2 を実機検証)</li>
   <li><a href="rebuild-plan.html">rebuild-plan.html</a> (Strangler Fig 4 phase migration、本 file §9.1 vocabulary 拡張 schedule と整合)</li>
   <li>plugins/twl/architecture/decisions/ADR-043-twill-radical-rebuild.md (Decision §8 命名 policy + §5 registry.yaml 統合 SSoT)</li>
-  <li>plugins/twl/architecture/decisions/ADR-045-naming-policy.md (予定、本 file の formal ADR 化)</li>
+  <li>plugins/twl/architecture/decisions/ADR-045-naming-policy.md (Accepted 2026-05-14、本 file の formal ADR 化)</li>
 </ul>
 
 </body>

@@ -176,8 +176,9 @@ migration-stage:
 - `twl audit --vocabulary` warning 0 件達成
 
 `Phase 4 cleanup` (Day 12-14):
-- 本 ADR を Accepted 化
+- 本 ADR の `Phase 1 PoC` 着手前 Verification 完遂 (EXP-032/034/038 全 PASS で experiment-verified 化)
 - vocabulary table を 50+ entity に拡張、全 spec entity 登録
+- (注: 本 ADR の Status は 2026-05-14 に Accepted 化済、Step 2 完遂で前提充足。Phase 4 では EXP 実機検証完遂で experiment-verified 化)
 
 ---
 
@@ -197,7 +198,7 @@ migration-stage:
 - **EXP-034**: registry.yaml ↔ 実 SKILL.md frontmatter 整合性 — bats unit
 - **EXP-038**: `twl audit --vocabulary` の命名衝突検出 (`phaser` forbidden list + 公式名 false positive 抑制 + migration-stage entity 例外) — bats unit
 
-`Phase 1 PoC` 着手前に EXP-032 + EXP-034 + EXP-038 PASS 必須。
+`Phase 1 PoC` 着手前に EXP-032 + EXP-034 + EXP-038 PASS 必須 (実機検証で命名 policy を experiment-verified 化、ADR は 2026-05-14 に Accepted 化済 = core policy 有効化、experiment-verified 化は別 step として Phase C で完遂予定)。
 
 ---
 
@@ -214,11 +215,12 @@ migration-stage:
 ## Status timeline
 
 - 2026-05-13: Proposed (第 5 弾 dig 由来、ADR-043 §8 + §9 を formal ADR 化)
-- (予定) `Phase 1 PoC` EXP-032/034/038 全 PASS 後: Accepted
+- **2026-05-14: Accepted** (Step 2 完遂で前提充足 — registry.yaml glossary 21 entity + ref-invariants.md A-X 24 件 + Step 3 audit Section 11/12 実装 + bats EXP 4 件で命名 policy core が有効化)
+- (予定) `Phase 1 PoC` 着手前: EXP-032/034/038 全 PASS で実機検証完了、命名 policy が experiment-verified 化
 
 ## Related
 
 - ADR-043: twill plugin radical rebuild (本 ADR の origin、Decision §8 + §9 を formal 化)
-- ADR-044: chain SSoT 統一 (案 4 registry.yaml、本 ADR と同期、未起票)
+- ADR-044: chain SSoT 統一 (Withdrawn 2026-05-14、案 3 step.sh framework は不採用化、案 4 registry.yaml 統合 SSoT は ADR-043 §5 で記録)
 - Inv U (ref-invariants.md): Atomic skill verification (旧 Step verification framework、本 ADR の命名 policy 由来 rename)
 - doobidoo hash: `dcc7511a` (第 5 弾 dig 完成版 Round 1-10)
