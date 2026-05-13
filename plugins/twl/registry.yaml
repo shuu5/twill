@@ -6,7 +6,7 @@
 #   1. glossary  — vocabulary table (10 role + non-role entity の canonical/forbidden 定義)
 #   2. components — 全 file listing (role / path / concern / depends / next)
 #   3. chains    — workflow → atomic sequence + verify rule
-#   4. hooks_monitors — hooks.json + monitors.json の SSoT entry
+#   4. hooks-monitors — hooks.json + monitors.json の SSoT entry
 #   5. integrity_rules — audit ルール定義
 #
 # 詳細仕様: architecture/spec/twill-plugin-rebuild/registry-schema.html
@@ -376,16 +376,16 @@ chains:
         verify_rule: "red_to_green_transition && green_test_passing && src_diff > 0"
         description: "実装を書く、RED → GREEN 遷移 + 全 test PASS + src 変更あり"
       - name: atomic-check
-        verify_rule: "all_tests_pass && lint_pass && type_check_pass"
-        description: "lint / type-check 実行、exit 0"
+        verify_rule: "lint_pass && type_check_pass"
+        description: "lint / type-check 実行、exit 0 (atomic-verification.html §4 と整合、all_tests_pass は atomic-green-impl の責務)"
     next_workflow: workflow-pr-verify
 
 # =========================================================================
-# §4. hooks_monitors — hooks.json + monitors.json の SSoT entry
+# §4. hooks-monitors — hooks.json + monitors.json の SSoT entry
 # =========================================================================
-# YAML key は hooks_monitors (snake_case)、HTML display 名は "hooks+monitors"。
+# YAML key は hooks-monitors (snake_case)、HTML display 名は "hooks+monitors"。
 # Phase 1 PoC で core 1-2 件 seed、Phase 2 dual-stack で全 hook + monitor 移行。
-hooks_monitors:
+hooks-monitors:
 
   hooks:
     - name: hook-spec-write-boundary

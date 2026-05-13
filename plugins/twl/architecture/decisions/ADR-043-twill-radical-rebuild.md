@@ -117,7 +117,7 @@ twill plugin を **radical rebuild** する。設計の核心:
 - **公式 Claude Code 名衝突回避**: 公式名 (`Agent`, `Skill`, `Tool`) は大文字始まり + backtick、twl 内部 entity は小文字 + role-prefix
 - **言語 policy**: vocabulary canonical は英語 hyphen-kebab (公式 skill name 制約 verified: lowercase letters + numbers + hyphens のみ、`_` 不可)、説明文日本語可、entity 参照は backtick + 英語 canonical
 - **role 1 語化**: false positive audit リスク回避のため、複合 role 名 (pilot-phase 試案) ではなく 1 語 role 体系で uniform (phaser / administrator / tool / workflow / atomic / specialist / reference / script / hook / monitor)
-- **migration stage entity 例外**: Strangler Fig `Phase 1 PoC` / `Phase 2 dual-stack` 等は migration_stage entity として vocabulary table に登録、backtick + 大文字で `phase` forbidden audit から除外
+- **migration stage entity 例外**: Strangler Fig `Phase 1 PoC` / `Phase 2 dual-stack` 等は migration-stage entity として vocabulary table に登録、backtick + 大文字で `phase` forbidden audit から除外
 
 ### 9. 隠れ重複 SSoT の系統的解消 (第 5 弾 dig Round 10 確定)
 
@@ -152,7 +152,7 @@ twill plugin を **radical rebuild** する。設計の核心:
 | #1703 | per-phaser mailbox (Inv T/V)、共通 path 廃止 |
 | #973 | atomic skill 4-phase post-verify 機械化 (Inv U) |
 
-### Migration (Strangler Fig 4 phase、`Phase 1`〜`Phase 4` は migration_stage entity)
+### Migration (Strangler Fig 4 phase、`Phase 1`〜`Phase 4` は migration-stage entity)
 
 1. **`Phase 1 PoC` (Day 1-3)**: sandbox EXP 実行 (EXP-001〜038 計 38 件) → twl plugin 化 → registry.yaml 新規作成 + glossary section seed (core 12 entity) → 新 helper 5 本 + 第 4 弾 dig 由来 7 件 + 第 5 弾 dig 由来 atomic skill 群 → Issue #1660 sanitize を新 architecture で再実装。verify points VP-1〜VP-20 (第 5 弾 dig で VP-17〜VP-20 追加: registry.yaml audit + atomic composition + vocabulary audit + 命名衝突検出)
 2. **`Phase 2 dual-stack` (Day 4-7)**: 残り phaser / workflow / **tool-* 3 件** 実装、`shuu5/twill-templates` 別 repo 作成、旧 chain freeze、vocabulary table 拡張 (Phase 2: 隠れ重複 entity 追加)

@@ -98,7 +98,7 @@ twill plugin の component を 10 role に分類:
 | 3 | `tool` | `tool-` | `skills/tool-*/` | 有 |
 | 4 | `workflow` | `workflow-` | `skills/workflow-*/` | 無 (`disable-model-invocation: true`) |
 | 5 | `atomic` | `atomic-` | `skills/atomic-*/` | 無 (同上) |
-| 6 | `specialist` | `specialist-` | `agents/specialist-*.md` (公式 directory) | 有 (公式仕様必須) |
+| 6 | `specialist` | `specialist-` | `agents/specialist-*.md` (公式 directory) | 有 (公式仕様必須、**subagent spawn 不可** — sub-agents docs verbatim) |
 | 7 | `reference` | `ref-` | `refs/ref-*.md` | 概念外 |
 | 8 | `script` | event-based | `scripts/hooks/<event>-*.sh` | 概念外 |
 | 9 | `hook` | (registry entry) | `hooks/hooks.json` | 概念外 |
