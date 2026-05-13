@@ -19,7 +19,7 @@
 
 <div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: <code>Phase 1 PoC</code> の ★ STEP 0 で実行する EXP を <strong>EXP-001〜031 (31 件) → EXP-001〜038 (38 件)</strong> に拡張。第 5 弾 dig 由来の 7 件 (EXP-032 registry audit / EXP-033 atomic composition / EXP-034 registry↔SKILL 整合 / EXP-035 disable-model-invocation 効果実測 / EXP-036 atomic-Agent spawn / EXP-037 doobidoo Tailscale 安定性 / EXP-038 vocabulary audit) を追加。verify points も VP-13〜VP-16 → VP-17〜VP-20 (registry.yaml audit / atomic composition / disable-model-invocation 効果 / vocabulary 命名衝突検出) を追加。詳細: <a href="experiment-index.html">experiment-index.html カテゴリ N</a> + <a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md §9.4 新規 EXP</a>。
 <br>
-さらに <code>Phase 1 PoC</code> で新規作成: <code>plugins/twl/registry.yaml</code> (新規、5 section schema、glossary section seed = core 12 entity)。<code>Phase 2 dual-stack</code> で vocabulary table 拡張 (隠れ重複 entity 追加)、<code>Phase 3 cutover</code> で <code>cli/twl/types.yaml</code> + <code>plugins/twl/deps.yaml</code> + 第 3 弾 dig 案 3 <code>step.sh framework</code> を全廃、<code>Phase 4 cleanup</code> で命名 policy ADR (ADR-045) 起票。</div>
+さらに <code>Phase 1 PoC</code> で新規作成: <code>plugins/twl/registry.yaml</code> (新規、6 section schema、glossary section seed = core 21 entity = 10 role + 10 non-role + 1 deprecated)。<code>Phase 2 dual-stack</code> で components 完全 listing、<code>Phase 3 cutover</code> で <code>cli/twl/types.yaml</code> + <code>plugins/twl/deps.yaml</code> + 第 3 弾 dig 案 3 <code>step.sh framework</code> + <code>chain-steps.sh</code> (廃止予告 mark) を全廃、<code>Phase 4 cleanup</code> で命名 policy ADR (ADR-045 = 2026-05-14 Accepted 済) の experiment-verified 化完遂。</div>
 
 <h2>目的</h2>
 
@@ -50,7 +50,7 @@
   </tbody>
 </table>
 
-<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>合計 13 件</strong> (bats unit 8 + smoke 4 + bats path migration 3、Step 3 実装済の EXP-006/032/034/038 + Step C で新規実装の EXP-001/002/003/027/028 + smoke EXP-007/008/009/010)。本 listing は ADR-043 / ADR-045 が <code>Phase 1 PoC</code> 着手前提として参照。残 25 件 (EXP-004/005 + EXP-011〜026 + EXP-029〜031 + EXP-033 + EXP-035〜037) は <code>Phase 2 dual-stack</code> 以降で順次検証。</em></p>
+<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>合計 13 件</strong> = bats unit 9 件 (EXP-001/002/003/006/027/028/032/034/038) + smoke 4 件 (EXP-007/008/009/010)。うち Step 3 で実装済 4 件 (EXP-006/032/034/038、Phase C で path migration)、Phase C で bats unit 新規実装 5 件 (EXP-001/002/003/027/028)、smoke 4 件は Claude session 必須で別 session。本 listing は ADR-043 / ADR-045 が <code>Phase 1 PoC</code> 着手前提として参照。残 25 件 (EXP-004/005 + EXP-011〜026 + EXP-029〜031 + EXP-033 + EXP-035〜037) は <code>Phase 2 dual-stack</code> 以降で順次検証。</em></p>
 
 <h2>想定 outline (次 session で実装)</h2>
 

@@ -33,11 +33,11 @@
   </thead>
   <tbody>
     <tr><td><a href="glossary.html">glossary.html</a></td><td><a href="#s4">§4 (vocabulary 6 field schema)</a> + <a href="#s8">§8 (1 entity = 1 name ルール)</a></td><td>用語集の field 構造と命名 policy</td></tr>
-    <tr><td><a href="ssot-design.html">ssot-design.html</a></td><td><a href="#s5">§5 (階層図)</a> + <a href="#s2">§2 (5 section schema)</a></td><td>registry.yaml 統合 SSoT 設計の core 仕様</td></tr>
+    <tr><td><a href="ssot-design.html">ssot-design.html</a></td><td><a href="#s5">§5 (階層図)</a> + <a href="#s2">§2 (6 section schema)</a></td><td>registry.yaml 統合 SSoT 設計の core 仕様</td></tr>
     <tr><td><a href="tool-architecture.html">tool-architecture.html</a></td><td><a href="#s3">§3 (10 role × concern matrix)</a></td><td>tool-* 役割の 10 role 体系 における位置付け</td></tr>
     <tr><td><a href="boundary-matrix.html">boundary-matrix.html</a></td><td><a href="#s3">§3</a></td><td>role × concern boundary 定義</td></tr>
     <tr><td><a href="overview.html">overview.html</a></td><td><a href="#s3">§3</a> + <a href="#s5">§5</a></td><td>全体図の L1 = phaser-* + 新原則「10 role + vocabulary」</td></tr>
-    <tr><td><a href="twl-mcp-integration.html">twl-mcp-integration.html</a></td><td><a href="#s2">§2 (5 section schema)</a></td><td>types.yaml 廃止 + registry.yaml 統合の根拠</td></tr>
+    <tr><td><a href="twl-mcp-integration.html">twl-mcp-integration.html</a></td><td><a href="#s2">§2 (6 section schema)</a></td><td>types.yaml 廃止 + registry.yaml 統合の根拠</td></tr>
     <tr><td><a href="deletion-inventory.html">deletion-inventory.html</a></td><td><a href="#s2">§2</a> + <a href="#s3">§3</a></td><td>types.yaml / deps.yaml 廃止と worker→specialist rename の正当化</td></tr>
     <tr><td><a href="rebuild-plan.html">rebuild-plan.html</a></td><td><a href="#s6">§6 (vocabulary audit 統合設計)</a></td><td>EXP-032〜038 詳細設計ベース</td></tr>
   </tbody>
@@ -57,7 +57,7 @@
     <tr>
       <td><code>registry.yaml</code></td>
       <td><code>plugins/twl/registry.yaml</code></td>
-      <td>vocabulary + components + chains + hooks/monitors + integrity_rules の 5 section 統合</td>
+      <td>vocabulary + components + chains + hooks/monitors + integrity_rules + token_thresholds の 6 section 統合</td>
       <td><span class="vs inferred">未作成 (本 dig で schema 確定、Phase 1 PoC で実体作成)</span></td>
       <td>13 / 27</td>
       <td>types.py fallback、README/CLAUDE.md listing が Derived として参照</td>
@@ -105,7 +105,7 @@
   </tbody>
 </table>
 
-<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>Authority SSoT 6 件</strong> (本 §1.5.1 table、Phase B 2026-05-14 確定)。Phase B で 18→14 統合の一環として以下を本 table から除外:</em></p>
+<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>Authority SSoT 6 件</strong> (本 §1.5.1 table、Phase B 2026-05-14 確定)。Phase B で 18→15 統合 (Authority 6 + Reference 6 + Derived 3) の一環として以下を本 table から除外:</em></p>
 <ul style="margin-top: 0.5em; font-size: 0.9em;">
   <li><strong>ADR-044 (Withdrawn 2026-05-14)</strong>: 案 3 step.sh framework は不採用化、SSoT カウント外 (history は ADR-044 file + adr-fate-table.html 新 table で保存)</li>
   <li><strong><code>registry.yaml §6 token_thresholds</code></strong>: 独立 SSoT から registry.yaml 内部 subsection 扱いに変更、§1.5.5 で可視化保持</li>
@@ -168,8 +168,8 @@
     <tr>
       <td><code>types.py</code> <code>_FALLBACK_TOKEN_THRESHOLDS</code></td>
       <td>cli/twl/src/twl/core/types.py</td>
-      <td>registry.yaml#integrity_rules</td>
-      <td><span class="vs deduced">現状 types.yaml 由来、Phase 3 cutover で registry.yaml 派生に切替</span></td>
+      <td>registry.yaml#token_thresholds</td>
+      <td><span class="vs deduced">現状 types.yaml 由来、Phase 3 cutover で registry.yaml §6 token_thresholds 派生に切替</span></td>
     </tr>
     <tr>
       <td>README.md / CLAUDE.md component listing</td>
@@ -278,9 +278,9 @@
 
 <p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>役割</strong>: registry.yaml の内部 6 section が単なる YAML 内部構造ではなく「Authority SSoT (registry.yaml) の構成部品」として認識されることを明示。§1.5.1 で registry.yaml を 1 entity として Authority 6 件に列挙し、本節で内部構造を可視化することで SSoT 階層の意味を保つ。</em></p>
 
-<h2 id="s2">§2. registry.yaml 全体 schema と 5 section</h2>
+<h2 id="s2">§2. registry.yaml 全体 schema と 6 section</h2>
 
-<div class="info">本節は <a href="ssot-design.html">ssot-design.html §4</a> の中核仕様。<code>plugins/twl/registry.yaml</code> 1 file が 5 section を保有する。</div>
+<div class="info">本節は <a href="ssot-design.html">ssot-design.html §4</a> の中核仕様。<code>plugins/twl/registry.yaml</code> 1 file が 6 section を保有する (Phase B 2026-05-14 確定: token_thresholds を §6 として正式 listing)。</div>
 
 <pre><code># plugins/twl/registry.yaml
 # twill plugin の Authority SSoT (旧 deps.yaml v3.0 + types.yaml + chain.py CHAIN_STEPS を統合)
@@ -393,6 +393,28 @@ integrity_rules:
   - id: description_required_consistency
     description: role が administrator/phaser/tool/specialist のみ description あり、他 role は disable-model-invocation: true + description 省略
     severity: warning
+
+# §6. token_thresholds (token budget 警告/critical 閾値、6 role 分)
+# 旧 cli/twl/types.yaml の token_target を統合、types.py _FALLBACK_TOKEN_THRESHOLDS の Authority
+token_thresholds:
+  administrator:
+    warning: 2000
+    critical: 3000
+  phaser:
+    warning: 1500
+    critical: 2500
+  tool:
+    warning: 1500
+    critical: 2500
+  workflow:
+    warning: 800
+    critical: 1500
+  atomic:
+    warning: 800
+    critical: 1500
+  specialist:
+    warning: 1800
+    critical: 2500
 </code></pre>
 
 <h2 id="s3">§3. 10 role × concern matrix</h2>
@@ -749,7 +771,7 @@ glossary:
   </tbody>
 </table>
 
-<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>audit logic</strong>: <code>audit_registry</code> (Section 12) の <code>no_duplicate_concern</code> rule は component 間で同一 <code>concern</code> 値を保有する row を critical 検出する。本 list は audit の reference として機能、Phase 2 dual-stack で components 完全 listing 時に拡張予定。</em></p>
+<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>audit logic</strong>: <code>audit_registry</code> (Section 12) の <code>no_duplicate_concern</code> rule は component 間で同一 <code>concern</code> 値を保有する row を critical 検出する。<strong>concern field 値の正規化ルール</strong>: 実 registry.yaml components の concern field は「canonical + 括弧内説明」の複合形式を許容する (例: <code>status-transition (Idea → Explored)</code>)。audit は <strong>canonical prefix match</strong> (<code>concern.startswith(canonical)</code>) または正規化 (括弧内除去) で本 §4.5 list と照合する。Phase 2 dual-stack で components 完全 listing 時に正規化 logic を audit_registry に実装予定。</em></p>
 
 <h2 id="s5">§5. Authority / Reference / Derived 階層図</h2>
 
@@ -786,13 +808,15 @@ glossary:
     │   ├─ §1. glossary      (vocabulary table、10 role + entity) │
     │   ├─ §2. components    (全 file listing: role/path/concern) │
     │   ├─ §3. chains        (workflow → atomic sequence)         │
-    │   ├─ §4. hooks+monitors (entry config)                      │
-    │   └─ §5. integrity_rules (audit ルール定義)                  │
+    │   ├─ §4. hooks-monitors (entry config)                      │
+    │   ├─ §5. integrity_rules (audit ルール定義)                  │
+    │   └─ §6. token_thresholds (token budget 閾値、6 role 分)    │
     ├─ ref-invariants.md     (invariant A-X 24 件)                │
     ├─ Project Board (status SSoT、external)                       │
     ├─ doobidoo MCP (lesson SSoT、cross-machine)                   │
-    └─ 各実 file (SKILL.md / agents/specialist-*.md) ◀────────────┘
-           (registry.yaml components が role/path を listing)
+    └─ ADR-045 (命名 policy、Accepted 2026-05-14)                │
+    ※ 各実 file (SKILL.md / agents/specialist-*.md) は Implementation 扱い、SSoT hierarchy 外
+       (registry.yaml components が role/path を listing、EXP-034 で機械検証)
 
 [Reference SSoT]  ◀── Authority から参照される正典
     ├─ experiment-index.html  (EXP-NNN 結果集約)
@@ -802,7 +826,7 @@ glossary:
     ├─ types.py fallback      ◀── registry.yaml から生成
     └─ README/CLAUDE.md listing ◀── twl update-readme
 </pre>
-<p class="diagram-caption">図 1: Authority / Reference / Derived 3 段階 SSoT 分類と registry.yaml 内部 5 section の位置付け</p>
+<p class="diagram-caption">図 1: Authority / Reference / Derived 3 段階 SSoT 分類と registry.yaml 内部 6 section の位置付け</p>
 </div>
 
 <h2 id="s6">§6. vocabulary audit 統合設計</h2>

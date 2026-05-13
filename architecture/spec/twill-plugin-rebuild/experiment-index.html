@@ -124,7 +124,7 @@
     <dt>status</dt><dd><span class="vs verified">verified</span> (既存 <code>session-atomic-write.sh</code> L41-50 pattern、未 mailbox 特化検証)</dd>
     <dt>verify 対象</dt><dd>N 並列 process が同 <code>.mailbox/&lt;session&gt;/inbox.jsonl</code> に書き込み → flock で atomic + JSON Lines 完整性 (壊れた行なし)</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://man7.org/linux/man-pages/man1/flock.1.html">flock(1) man</a> + 既存 session-atomic-write.sh</dd>
-    <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-006-mailbox-flock-race.bats</code></dd>
+    <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/mailbox/EXP-006-mailbox-flock-atomic.bats</code> (Phase B 2026-05-14 規約統一)</dd>
     <dt>期待結果</dt><dd>100 並列 write 後、jq で全行 parse 成功、行数 = 100、order 不問</dd>
     <dt>関連 spec</dt><dd><a href="spawn-protocol.html">spawn-protocol.html</a> §4 (mailbox.sh)、<a href="invariant-fate-table.html#inv-t">不変条件 T</a></dd>
   </dl>
