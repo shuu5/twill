@@ -106,6 +106,32 @@ specification も「全 chain step は 4-phase lifecycle」→「全 atomic skil
   </tbody>
 </table>
 
+<h2>既存追加 不変条件 Q (Issue #1577 起源)</h2>
+
+<div class="inv-block" id="inv-q">
+  <h3>不変条件 Q: budget status line <code>5h:N%(Xm)</code> format 解釈の標準化</h3>
+  <dl>
+    <dt>目的</dt><dd>tmux status line の budget 表示 <code>5h:N%(Xm)</code> の誤読を構造的に不能化する (2026-05-11 事故: <code>(Xm)</code> を残量と誤解、Pilot 緊急 kill 事故発生)。</dd>
+    <dt>制約</dt>
+    <dd>
+      <ul>
+        <li><code>N%</code> = budget 使用率 (cumulative)</li>
+        <li><code>(Xm)</code> = 次回 5h cycle reset までの wall-clock 分 (残量ではない)</li>
+        <li><code>ScheduleWakeup</code> / <code>CronCreate</code> の delaySeconds は <code>(Xm) × 60 + 300</code> (cycle reset 直後 + 5 分余裕)</li>
+      </ul>
+    </dd>
+    <dt>根拠</dt><dd>Issue #1577 (budget format documenting)、CLAUDE.md auto memory <code>feedback_budget_display_misread.md</code>。</dd>
+    <dt>検証方法</dt><dd>bats <code>ref-invariants-structure.bats</code> Q section 存在 + count ≥ 17 assertion (本 session で実装済)。</dd>
+    <dt>影響範囲</dt>
+    <dd>
+      <ul>
+        <li><code>plugins/twl/skills/su-observer/SKILL.md</code> (item 2.6 で documenting 済)</li>
+        <li>全 controller spawn / pilot fallback monitor の budget 解釈経路</li>
+      </ul>
+    </dd>
+  </dl>
+</div>
+
 <h2>新規追加 不変条件 T-X (本 spec で導出)</h2>
 
 <div class="inv-block" id="inv-t">

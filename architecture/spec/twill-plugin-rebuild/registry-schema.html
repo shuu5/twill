@@ -376,7 +376,7 @@ integrity_rules:
   </thead>
   <tbody>
     <tr>
-      <td><strong>administrator</strong></td>
+      <td id="vocab-administrator"><strong>administrator</strong></td>
       <td><code>skills/administrator/</code></td>
       <td>(singleton、なし)</td>
       <td><span class="vs verified">有</span></td>
@@ -386,7 +386,7 @@ integrity_rules:
       <td><a href="#vocab-administrator">§4</a></td>
     </tr>
     <tr>
-      <td><strong>phaser</strong></td>
+      <td id="vocab-phaser"><strong>phaser</strong></td>
       <td><code>skills/phaser-*/</code></td>
       <td><code>phaser-</code></td>
       <td><span class="vs verified">有</span></td>
@@ -396,7 +396,7 @@ integrity_rules:
       <td><a href="#vocab-phaser">§4</a></td>
     </tr>
     <tr>
-      <td><strong>tool</strong></td>
+      <td id="vocab-tool"><strong>tool</strong></td>
       <td><code>skills/tool-*/</code></td>
       <td><code>tool-</code></td>
       <td><span class="vs verified">有</span></td>
@@ -406,7 +406,7 @@ integrity_rules:
       <td><a href="#vocab-tool">§4</a></td>
     </tr>
     <tr>
-      <td><strong>workflow</strong></td>
+      <td id="vocab-workflow"><strong>workflow</strong></td>
       <td><code>skills/workflow-*/</code></td>
       <td><code>workflow-</code></td>
       <td><span class="vs verified">無 (<code>disable-model-invocation: true</code>)</span></td>
@@ -416,7 +416,7 @@ integrity_rules:
       <td><a href="#vocab-workflow">§4</a></td>
     </tr>
     <tr>
-      <td><strong>atomic</strong></td>
+      <td id="vocab-atomic"><strong>atomic</strong></td>
       <td><code>skills/atomic-*/</code></td>
       <td><code>atomic-</code></td>
       <td><span class="vs verified">無 (同上)</span></td>
@@ -426,7 +426,7 @@ integrity_rules:
       <td><a href="#vocab-atomic">§4</a></td>
     </tr>
     <tr>
-      <td><strong>specialist</strong></td>
+      <td id="vocab-specialist"><strong>specialist</strong></td>
       <td><code>agents/specialist-*.md</code></td>
       <td><code>specialist-</code></td>
       <td><span class="vs verified">有 (公式必須)</span></td>
@@ -436,7 +436,7 @@ integrity_rules:
       <td><a href="#vocab-specialist">§4</a></td>
     </tr>
     <tr>
-      <td><strong>reference</strong></td>
+      <td id="vocab-reference"><strong>reference</strong></td>
       <td><code>refs/ref-*.md</code></td>
       <td><code>ref-</code></td>
       <td>概念外</td>
@@ -446,7 +446,7 @@ integrity_rules:
       <td><a href="#vocab-reference">§4</a></td>
     </tr>
     <tr>
-      <td><strong>script</strong></td>
+      <td id="vocab-script"><strong>script</strong></td>
       <td><code>scripts/hooks/&lt;event&gt;-*.sh</code></td>
       <td>event-based</td>
       <td>概念外</td>
@@ -456,7 +456,7 @@ integrity_rules:
       <td><a href="#vocab-script">§4</a></td>
     </tr>
     <tr>
-      <td><strong>hook</strong></td>
+      <td id="vocab-hook"><strong>hook</strong></td>
       <td><code>hooks/hooks.json</code> (entry)</td>
       <td>(registry entry)</td>
       <td>概念外</td>
@@ -466,7 +466,7 @@ integrity_rules:
       <td><a href="#vocab-hook">§4</a></td>
     </tr>
     <tr>
-      <td><strong>monitor</strong></td>
+      <td id="vocab-monitor"><strong>monitor</strong></td>
       <td><code>monitors/monitors.json</code> (entry)</td>
       <td>(registry entry)</td>
       <td>概念外</td>
@@ -768,18 +768,34 @@ glossary:
     return items
 </code></pre>
 
-<h3>6.2 integrity_rules との対応</h3>
+<h3>6.2 integrity_rules との対応 (Section 11/12 formal mapping)</h3>
 
 <table>
   <thead>
-    <tr><th>audit section</th><th>integrity_rules id</th><th>severity</th><th>検出内容</th></tr>
+    <tr><th>audit section #</th><th>section name (audit.py)</th><th>integrity_rules id</th><th>severity</th><th>stub</th><th>検出内容</th></tr>
   </thead>
   <tbody>
-    <tr><td>section 11: vocabulary</td><td><code>vocabulary_forbidden_use</code></td><td>warning</td><td>forbidden 語の word boundary 検出</td></tr>
-    <tr><td>section 11: vocabulary</td><td><code>official_name_collision</code></td><td>warning</td><td>公式名 (Agent/Skill/Tool) を backtick なしで twl entity として使用</td></tr>
-    <tr><td>既存 section 1-10</td><td>その他 rules</td><td>critical/warning</td><td>prefix-role mismatch、orphan file 等</td></tr>
+    <tr><td>11</td><td><code>vocabulary_check</code></td><td><code>vocabulary_forbidden_use</code></td><td>warning</td><td>—</td><td>forbidden 語の word boundary 検出 (skills/+agents/+refs/、<code>--scan-spec</code> 時は spec/+ADR/ も)</td></tr>
+    <tr><td>11</td><td><code>vocabulary_check</code></td><td><code>official_name_collision</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>公式名 (Agent/Skill/Tool) を backtick なしで twl entity として使用 (Phase 2 で実装)</td></tr>
+    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>no_duplicate_concern</code></td><td>critical</td><td>—</td><td>同じ concern を複数 role で保有してはならない</td></tr>
+    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>prefix_role_match</code></td><td>critical</td><td>—</td><td>file prefix と role が一致 (phaser-* file は role phaser)</td></tr>
+    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>ssot_authority_unique</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>Authority SSoT は concern ごとに 1 つのみ (Phase 2 で Authority field 追加と組み合わせて実装)</td></tr>
+    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>derived_drift_check</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>types.py fallback の drift 検出 (Phase 2 で実装)</td></tr>
+    <tr><td>12</td><td><code>registry_integrity</code></td><td><code>description_required_consistency</code></td><td>warning</td><td><span class="vs deduced">stub</span></td><td>description_required 真偽値と実 frontmatter の整合 (Phase 2 で実装)</td></tr>
+    <tr><td>既存 1-10</td><td>各 section name</td><td>—</td><td>—</td><td>—</td><td>controller_size / chain_integrity / cross_layer_consistency 等の既存 audit</td></tr>
   </tbody>
 </table>
+
+<p><strong>output dict schema (6 field、Section 1-12 共通)</strong>: <code>{severity, component, message, section, value, threshold}</code></p>
+
+<ul>
+  <li><code>severity</code>: <code>'critical'</code> / <code>'warning'</code> / <code>'info'</code> / <code>'ok'</code> (audit_collect 統一)</li>
+  <li><code>component</code>: entity 識別子 (Section 11 は <code>vocabulary:{entity}</code> または <code>vocabulary:spec:{entity}</code>、Section 12 は <code>registry:section:{name}</code> / <code>registry:component:{name}</code> / <code>registry:rule:{id}</code>)</li>
+  <li><code>message</code>: 人間向け説明文</li>
+  <li><code>section</code>: section name 文字列 (Section 11 = <code>vocabulary_check</code>、Section 12 = <code>registry_integrity</code>)</li>
+  <li><code>value</code>: 数値 (hit count / 0/1 boolean / file count 等)</li>
+  <li><code>threshold</code>: 警告閾値 (Section 11/12 は通常 0 = 検出ゼロが期待)</li>
+</ul>
 
 <h3>6.3 false positive 抑制の除外コンテキスト 3 種</h3>
 

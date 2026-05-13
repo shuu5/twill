@@ -29,6 +29,17 @@
   <strong>注意</strong>: 本 file は EXP 計画段階の listing。実装 / 実行は次 session で着手 (user 明示「実装はしない、architecture を完璧にしてから」)。
 </div>
 
+<div class="info" style="background: var(--surface-info); border-left: 4px solid var(--brand);">
+  <strong>bats path 規約 (Phase A 2026-05-14 確定)</strong>: 全 EXP の bats file path を <code>test-fixtures/experiments/&lt;category&gt;/EXP-NNN-&lt;short-name&gt;.bats</code> 規約に統一。<br>
+  <br>
+  <ul>
+    <li><strong>category dir</strong> は EXP の分類 (A=hooks, D=mailbox, E=tier, F=plugin, G=atomic, H=toolchain, I=gh-project, K=template, L=tool-architect, M=spec-review, N=registry 等)</li>
+    <li><strong>EXP-NNN- prefix</strong> は必須 (3 桁ゼロパディング)、short-name は kebab-case</li>
+    <li>例: <code>test-fixtures/experiments/registry/EXP-032-registry-audit.bats</code> / <code>test-fixtures/experiments/mailbox/EXP-006-mailbox-flock-atomic.bats</code></li>
+    <li>本 file 内の各 EXP「分類」field の path 記述は Phase C (EXP framework 構築) で 実 file migration と同時に新規約に統一する (現状の hooks/EXP-006-* や registry/audit.bats 等の不統一は Phase C で解消)</li>
+  </ul>
+</div>
+
 <div class="legend">
   <strong>status 凡例</strong>:
   <span class="vs inferred">inferred</span> 推測のみ &middot;

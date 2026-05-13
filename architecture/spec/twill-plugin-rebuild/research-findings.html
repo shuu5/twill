@@ -142,7 +142,7 @@
     <tr><td>phase gate</td><td><code>twl_phase_gate_check</code></td><td>tier 2 として Project Board status を query、不変条件 W 機械化</td><td>新規</td></tr>
     <tr><td>step verification</td><td><code>twl_step_run</code> post-verify</td><td>step.sh framework の post-verify 機械検証 (Inv U)</td><td>新規 (<code>Phase 1 PoC</code>)</td></tr>
     <tr><td>mailbox</td><td><code>twl_mailbox_read/write</code></td><td>per-specialist file mailbox (flock atomic、Inv T)</td><td>新規</td></tr>
-    <tr><td>monorepo audit</td><td><code>twl_validate</code>, <code>twl_check</code>, <code>twl_audit</code>, <code>twl_validate_deps</code></td><td>既存 10 audit sections の継承 (section 9 のみ再実装)</td><td>既存継承</td></tr>
+    <tr><td>monorepo audit</td><td><code>twl_validate</code>, <code>twl_check</code>, <code>twl_audit</code>, <code>twl_validate_deps</code></td><td>既存 10 audit sections の継承 (section 9 のみ再実装) + Section 11/12 (vocabulary_check / registry_integrity) 新規追加 = 12 audit sections</td><td>既存継承 + 拡張</td></tr>
   </tbody>
 </table>
 
