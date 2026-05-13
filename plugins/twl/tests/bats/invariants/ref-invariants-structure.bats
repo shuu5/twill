@@ -435,3 +435,51 @@ sys.exit(0)
   # RED: 実装前は fail する — 不変条件 Q が存在しない
   grep -q "^## 不変条件 Q:" "$REF_FILE"
 }
+
+# ===========================================================================
+# Step 3-4 / ADR-043: 不変条件 T/U/V/W/X 追加後のカウントアサーション
+# Scenario: 第 5 弾 dig で追加された T-X 5 件 (A-X 24 件) の存在検証
+# WHEN: ref-invariants.md に不変条件 T/U/V/W/X を追加した後
+# THEN: [A-Z] pattern の不変条件セクション数が 24 以上になる
+#       (A-Q=17 + R/S=19 + T/U/V/W/X=24)
+#
+# 背景:
+#   - A-M = 13 件 (initial)
+#   - N/O/P 追加 → 16 件
+#   - Q 追加 → 17 件 (Issue #1577)
+#   - R/S 追加 → 19 件
+#   - T (mailbox atomic) / U (atomic skill verification) / V (per-specialist scope) /
+#     W (gate hook) / X (deploy-verify セット) 追加 → 24 件 (ADR-043)
+#
+# 関連: plugins/twl/architecture/decisions/ADR-043-twill-radical-rebuild.md
+# ===========================================================================
+
+@test "ref-invariants: 不変条件 T-X 追加後: section 数が 24 以上になる (ADR-043)" {
+  local count
+  count=$(grep -c "^## 不変条件 [A-Z]:" "$REF_FILE")
+  [ "$count" -ge 24 ] || {
+    echo "FAIL: 不変条件 T-X (24 件) が未完備。現在のセクション数: ${count}（期待: 24 以上）"
+    grep "^## 不変条件 [A-Z]:" "$REF_FILE" || true
+    return 1
+  }
+}
+
+@test "ref-invariants: 不変条件 T セクションが存在する (ADR-043: mailbox atomic)" {
+  grep -q "^## 不変条件 T:" "$REF_FILE"
+}
+
+@test "ref-invariants: 不変条件 U セクションが存在する (ADR-043: atomic skill verification)" {
+  grep -q "^## 不変条件 U:" "$REF_FILE"
+}
+
+@test "ref-invariants: 不変条件 V セクションが存在する (ADR-043: per-specialist checkpoint)" {
+  grep -q "^## 不変条件 V:" "$REF_FILE"
+}
+
+@test "ref-invariants: 不変条件 W セクションが存在する (ADR-043: gate hook)" {
+  grep -q "^## 不変条件 W:" "$REF_FILE"
+}
+
+@test "ref-invariants: 不変条件 X セクションが存在する (ADR-043: deploy-verify セット)" {
+  grep -q "^## 不変条件 X:" "$REF_FILE"
+}
