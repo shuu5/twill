@@ -116,9 +116,27 @@ References: spec directory architecture/spec/twill-plugin-rebuild/ (27 file + 2 
 
 <div class="info"><strong>第 5 弾 dig (2026-05-13) での ADR-043 拡張</strong>: 旧「3 階層 administrator/pilot/worker」表記から「10 role architecture」(administrator / phaser / workflow / atomic / specialist + tool / reference / script / hook / monitor) に展開。新 Decision section §1 (10 role) + §3 (mail 4 階層) + §4 (Atomic skill verification) + §5 (registry.yaml 案 4) + §8 (命名 policy、1 entity = 1 name + vocabulary 6 field schema) + §9 (隠れ重複解消) を追加。詳細: <a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a>。</div>
 
-<p>ADR-045 (起票予定、第 5 弾 dig 由来): 命名 policy + vocabulary 6 field schema + 10 role 体系の formal ADR 化。本 ADR-043 の §8 + §9 を独立 ADR として正式化。</p>
+<h2>ADR-043 から派生する新 ADR (2026-05-14 status update)</h2>
 
-<p>ADR-044 (起票予定、別 ADR): chain SSoT 統一 (<a href="ssot-design.html">ssot-design.html</a> supplement) — ADR-020/022 の Superseded を ADR-043 と ADR-044 で 2 段階に分担する案を検討。</p>
+<table>
+  <thead>
+    <tr><th>ADR</th><th>title</th><th>Status</th><th>事情</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ADR-044</td>
+      <td>chain SSoT 統一 — step.sh 単一 SSoT (案 3)</td>
+      <td><span class="fate-superseded">Withdrawn (2026-05-14)</span></td>
+      <td>第 5 弾 dig (2026-05-13) で <strong>案 3 (step.sh framework)</strong> → <strong>案 4 (registry.yaml 統合 SSoT)</strong> に方針変更。本 ADR は Proposed のまま不採用化、Decision body は設計史として保存。chain SSoT 統一の最終 Decision は <strong>ADR-043 §5 + registry.yaml §3 chains</strong> で実装。</td>
+    </tr>
+    <tr>
+      <td>ADR-045</td>
+      <td>twill plugin 命名 policy — 1 entity = 1 name + vocabulary 6 field schema + 10 role 体系</td>
+      <td><span class="fate-keep">Accepted (2026-05-14)</span></td>
+      <td>ADR-043 §8 + §9 を formal ADR 化。Step 2 完遂 (registry.yaml glossary 21 entity + ref-invariants.md A-X 24 件) + Step 3 (audit Section 11/12 + bats EXP 4 件) で前提充足、Phase 1 PoC seed の命名 policy が有効化。</td>
+    </tr>
+  </tbody>
+</table>
 
 <h2>Superseded chain の起票順序 (実装計画)</h2>
 

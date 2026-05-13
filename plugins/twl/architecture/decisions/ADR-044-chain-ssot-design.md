@@ -1,10 +1,14 @@
-# ADR-044: chain SSoT 統一 — step.sh 単一 SSoT (1 step = 1 file)
+# ADR-044: chain SSoT 統一 — step.sh 単一 SSoT (1 step = 1 file) [Withdrawn]
 
-**Status**: Proposed (draft、2026-05-13)
+**Status**: Withdrawn (2026-05-14、第 5 弾 dig Round X で案 4 registry.yaml 統合 SSoT を採用、本 ADR の案 3 step.sh framework は不採用化)
 
-**Related**: ADR-043 (twill plugin radical rebuild、本 ADR の上位)、ADR-020 / ADR-022 (Superseded by 本 ADR + ADR-043)
+**Withdrawal Rationale**: 本 ADR は **案 3 (step.sh single SSoT)** を Decision として記述している。第 5 弾 dig (2026-05-13) で **案 4 (registry.yaml 統合 SSoT)** に方針変更され、案 3 は採用されないまま Proposed → Withdrawn に遷移した。chain SSoT 統一の最終 Decision は ADR-043 §5 + registry.yaml §3 chains を参照。本 ADR の body は **設計史 (案 3 検討プロセス)** として保存。
 
-**References**: `architecture/spec/twill-plugin-rebuild/ssot-design.html`
+**Superseding decision**: [ADR-043: twill plugin radical rebuild](ADR-043-twill-radical-rebuild.md) §5 (chain SSoT 統一は registry.yaml §3 chains で実装、step.sh framework は不要)
+
+**Related (historical)**: ADR-043 (twill plugin radical rebuild、本 ADR の上位)、ADR-020 / ADR-022 (Superseded by ADR-043)
+
+**References**: `architecture/spec/twill-plugin-rebuild/ssot-design.html` (案 4 registry.yaml 統合 SSoT、本 ADR の案 3 は廃案)
 
 ---
 
@@ -153,11 +157,27 @@ Phase 1 PoC 着手前に EXP-011〜014 PASS 必須。
 ## Status timeline
 
 - 2026-05-13: Proposed (本 draft)
-- (予定) Phase 2 dual-stack 開始時: Accepted
-- (予定) Phase 4 cleanup 完遂時: 最終確定 + ADR-020 / ADR-022 を Superseded by ADR-043 + ADR-044 でマーク
+- **2026-05-14: Withdrawn** (第 5 弾 dig で案 4 registry.yaml 統合 SSoT に方針変更、ADR-043 §5 で superseding decision を記録)
 
 ## Related
 
-- ADR-043: twill plugin radical rebuild (上位 ADR)
-- ADR-020 / ADR-022: Superseded (chain SSoT 三重化境界の旧定義)
-- ssot-design.html §6 verify points (本 ADR の verification 詳細)
+- ADR-043: twill plugin radical rebuild (本 ADR の Decision を superseding)
+- ADR-020 / ADR-022: Superseded by ADR-043 (chain SSoT 三重化境界の旧定義)
+- ssot-design.html §6 verify points (案 4 採用後の verify points は registry.yaml §3 chains 経由)
+
+---
+
+## Withdrawal Note
+
+本 ADR が Withdrawn になった経緯:
+
+第 5 弾 dig (2026-05-13、`architecture/spec/twill-plugin-rebuild/dig-report-ssot-2026-05-13.md` Round 1-10) で SSoT 設計の再検討が行われ、案 3 (step.sh 単一 SSoT) より **案 4 (registry.yaml 統合 SSoT、5 section: glossary / components / chains / hooks-monitors / integrity_rules)** が以下の理由で優位と判断:
+
+1. **単一 file での chain + vocabulary + components + audit rule の統合管理** (案 3 では step.sh + registry.yaml の二重管理)
+2. **machine-verification の容易性** (registry.yaml の YAML parse + `twl audit` での integrity check 一元化)
+3. **Phase 2 dual-stack への自然な拡張** (案 3 step.sh framework は new layer 追加、案 4 は既存 deps.yaml の進化系)
+4. **vocabulary audit との統合** (case 4 では glossary + integrity_rules を同一 file 内で参照、`twl audit --section 11/12` で 1 file scan)
+
+これに伴い、案 3 step.sh framework は不採用化、本 ADR は Withdrawn として Decision body を保存 (設計史)。
+
+最終 Decision は **ADR-043 §5 (chain SSoT 統一 = registry.yaml §3 chains で実装、step.sh framework 不要)** に記録済。Phase 1 PoC seed の chain (test-ready chain) は既に registry.yaml §3 で実装済。

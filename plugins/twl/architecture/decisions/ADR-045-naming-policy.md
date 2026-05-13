@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed (2026-05-13、第 5 弾 dig 由来、ADR-043 §8 を formal ADR 化)
+Accepted (2026-05-14、Step 2 完遂で前提充足 — registry.yaml glossary 21 entity + ref-invariants.md A-X 24 件 + Step 3 audit Section 11/12 実装 + bats EXP 4 件 検証完了で Phase 1 PoC seed 命名 policy が有効化)
 
-**Related**: [ADR-043: twill plugin radical rebuild](ADR-043-twill-radical-rebuild.md) Decision §8 + §9 を本 ADR で formal 化。ADR-044 (chain SSoT 統一、案 4 registry.yaml) と同期。
+**Related**: [ADR-043: twill plugin radical rebuild](ADR-043-twill-radical-rebuild.md) Decision §8 + §9 を本 ADR で formal 化。[ADR-044](ADR-044-chain-ssot-design.md) は 2026-05-14 に Withdrawn (案 3 step.sh framework は不採用化、案 4 registry.yaml 統合 SSoT は ADR-043 §5 で superseding decision を記録)。
 
 **References**: `architecture/spec/twill-plugin-rebuild/registry-schema.html` §1.5 + §4 + §7 + §8、`architecture/spec/twill-plugin-rebuild/glossary.html` §4 + §11、`architecture/spec/twill-plugin-rebuild/dig-report-ssot-2026-05-13.md` §2
 
