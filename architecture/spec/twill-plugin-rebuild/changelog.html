@@ -15,6 +15,76 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-13 (第 3 弾) — twl plugin 化 + experiment hyperlink + 全 outline content 化</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>twl plugin 化方針確定</strong> (長期安定設計): claude CLI <code>--skill</code> flag 不存在 verified → Claude Code 公式 plugin として twl を正式化、<code>.claude-plugin/plugin.json</code> + skill namespace <code>/twl:*</code> + Plugin Monitor + <code>--plugin-dir</code> local test</li>
+  <li><strong>experiment hyperlink architecture 導入</strong>: 4-state verification status (inferred → deduced → verified → experiment-verified) + EXP-001〜018 体系 + spec 内 hyperlink で living document 化</li>
+  <li><strong>全 outline → content 化</strong>: spawn-protocol / deletion-inventory / regression-test-strategy / pitfalls-inheritance 4 file + boundary-matrix 全列詳細</li>
+</ol>
+
+<h3>新規追加 (本 session 第 3 弾、2 file)</h3>
+
+<ul>
+  <li><code>sandbox-experiment.html</code> (新規) — 4-state verification status + EXP-id 体系 + 既存 sandbox 機能 inventory (test-fixtures / .audit / co-self-improve / bats infrastructure) + 18 EXP 初期計画 + Phase 1 PoC 前の sandbox 実験 sequence</li>
+  <li><code>experiment-index.html</code> (新規) — 全 EXP-001〜018 一覧 + 現 status + verify source + 関連 spec section + 結果集約 hub (将来 CI 自動更新)</li>
+</ul>
+
+<h3>content 化 (outline → content、4 file)</h3>
+
+<ul>
+  <li><code>spawn-protocol.html</code> (content) — twl plugin 化前提、tmux new-window verified、slash command inject、flock atomic pattern、mailbox.sh API、JSON Lines message format、3 階層 spawn 例</li>
+  <li><code>deletion-inventory.html</code> (content + 実測 verified) — chain-runner.sh 1714 / autopilot-orchestrator 1355 / issue-lifecycle 795 / chain.py 905 等の実測行数訂正、削除 ~7,289 行、新規 helper ~260 行 (96% 削減)</li>
+  <li><code>regression-test-strategy.html</code> (content + bats 250 実測) — 既存 250 件継承戦略、Superseded ADR の archive 戦略、新規 invariant T-X test 5 件 + 9 P0 bug regression + Phase 1 PoC 12 verify points × EXP-id 統合</li>
+  <li><code>pitfalls-inheritance.html</code> (content + 23 sections 反映) — pitfalls-catalog §0-§22 verified、保全 11 / 部分継承 4 / 構造的不能化 8 の分類 + 新 pitfall 5 件 (P-A〜P-E)</li>
+</ul>
+
+<h3>更新 (主要、本 session 第 3 弾)</h3>
+
+<ul>
+  <li><code>overview.html</code>: 新原則 7 条 → 9 条 (twl plugin 化 + 4-state verification status を追加)</li>
+  <li><code>twl-mcp-integration.html</code>: §6b 新設 (twl plugin 化 + Plugin Monitor 採用、Phase 1 PoC で検証)</li>
+  <li><code>rebuild-plan.html</code>: Phase 1 PoC に ★ STEP 0 (sandbox EXP 実行) + ★ STEP 1 (twl plugin 化) を最優先追加</li>
+  <li><code>research-findings.html</code>: §6b 新設 (本 session 5 件 WebFetch verified + 重大訂正)、§7 を「前 session 第 2 弾」に rename</li>
+  <li><code>boundary-matrix.html</code>: admin / pilot / worker / tool-* 全列詳細化 (8 row × 4 entity matrix + cross-entity 通信 table)</li>
+  <li><code>common.css</code>: <code>.vs.*</code> (4-state) + <code>.exp-link</code> + <code>.src-link</code> class 追加</li>
+  <li><code>README.html</code>: status table 更新 (done 15 → 22、outline 5 → 0、新 file 2 件)</li>
+</ul>
+
+<h3>本 session 第 3 弾の公式 docs WebFetch verified (5 件)</h3>
+
+<table>
+  <thead><tr><th>verify 対象</th><th>結果</th></tr></thead>
+  <tbody>
+    <tr><td>claude CLI <code>--skill</code> flag</td><td><strong>存在しない</strong>。skill は slash command (<code>/plugin:skill</code>) + plugin 強制 namespace</td></tr>
+    <tr><td>Plugin Monitor (monitors/monitors.json)</td><td><strong>正式存在</strong>。schema verified、stdout 各 line が Claude session に notification</td></tr>
+    <tr><td><code>gh project item-edit</code></td><td>flag verified、1 invocation で 1 field のみ更新</td></tr>
+    <tr><td>bats-core v1.7.0+ syntax</td><td><code>@test</code>/<code>run</code>/<code>$status</code> verified、built-in assert なし</td></tr>
+    <tr><td>tmux new-window / send-keys / capture-pane / list-windows</td><td>flag + target syntax + format 変数 verified</td></tr>
+  </tbody>
+</table>
+
+<h3>追加対応 (本 session 第 3 弾、user 追加要望)</h3>
+
+<ul>
+  <li><strong>既存 PreToolUse hook 全件無効化計画</strong>: <code>plugins/twl/hooks/hooks.json</code> の 17 hook を Phase 1 PoC 開始時 (★ STEP -1) に無効化、7 件のみ保全 (worktree-boundary / host-safety / deps-yaml-guard / commit-validate / merge-guard / pre-compact / post-compact)。背景: 既存 hook は新 architecture で大半無意味化、error 通知が運用 noise。詳細: <a href="deletion-inventory.html">deletion-inventory.html</a> §6b</li>
+</ul>
+
+<h3>重大訂正 (本 session 第 3 弾で発覚)</h3>
+
+<ul>
+  <li>「<code>claude --skill</code> flag」記述 → 修正 (twl plugin 化 + slash command が公式 path)</li>
+  <li>「Plugin Monitor は未知領域」(前 session 第 2 弾 §4) → 正式存在 verified、Phase 1 PoC 採用</li>
+  <li>「fastmcp deferred-tool pattern」公式 docs 記載 → 公式 docs に記載なし (twl 独自 pattern と明示)</li>
+  <li>bats 「90+」 → 実測 250 件、scripts/「5175 行」 → 実測 116 file / 16,747 行</li>
+  <li>chain-runner.sh 「1932 行」 → 実測 1714 行 (前 session の inferred 値を訂正)</li>
+  <li>pitfalls-catalog 「§1-§19」 → 実際 §0-§22 (23 sections verified)</li>
+</ul>
+
+<hr>
+
 <h2>2026-05-12 (第 2 弾) — 公式 verify + tool-architecture + research-findings + content 化</h2>
 
 <h3>本 session 第 2 弾の核心成果</h3>

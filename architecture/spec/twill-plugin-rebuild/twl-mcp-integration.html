@@ -395,6 +395,39 @@ worker
 
 <p>tool-* (独立 tool) は administrator 経由で起動され、独自の MCP tool 利用は限定的。</p>
 
+<h2>§6b. twl plugin 化 + Plugin Monitor 採用 (本 session 第 3 弾、verified)</h2>
+
+<div class="critical">
+<strong>長期安定設計 (本 session 第 3 弾 verified)</strong>: twl を Claude Code 公式 plugin として正式化する <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a>。
+<ul>
+  <li><code>plugins/twl/.claude-plugin/plugin.json</code> manifest 作成 (name="twl", version, description)</li>
+  <li>skill namespace <strong>強制</strong>: <code>/twl:administrator</code>, <code>/twl:phase-impl</code>, <code>/twl:worker-test-ready</code>, <code>/twl:tool-architect</code></li>
+  <li><code>plugins/twl/monitors/monitors.json</code> で Plugin Monitor 採用 → mcp-watchdog 廃止代替 <a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></li>
+  <li><code>plugins/twl/.mcp.json</code> (plugin scope MCP) + repo root <code>.mcp.json</code> (github 公式 MCP) の 2 段構造</li>
+  <li><code>plugins/twl/hooks/hooks.json</code> で PreToolUse phase-gate を plugin scope に</li>
+  <li>local test: <code>claude --plugin-dir plugins/twl</code> + <code>/reload-plugins</code> で再 load</li>
+</ul>
+<strong>verify source</strong> <a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a> + 本 session WebFetch verified
+</div>
+
+<h3>6b.1 Plugin Monitor schema (verified)</h3>
+
+<pre><code>// plugins/twl/monitors/monitors.json
+[
+  {
+    "name": "twl-mcp-health",
+    "command": "tail -F .mcp-health.log",
+    "description": "twl MCP server health log"
+  },
+  {
+    "name": "twl-budget-watcher",
+    "command": "bash plugins/twl/scripts/lib/budget-watcher.sh",
+    "description": "5h/7d budget status periodic emit"
+  }
+]</code></pre>
+
+<p>各 command の <strong>stdout line ごとに Claude session 内 notification</strong> が届く (公式仕様 verified)。mcp-watchdog 自前 daemon は廃止、Plugin Monitor が公式 path。</p>
+
 <h2>§7. 削除 / 置換 / 継承 inventory</h2>
 
 <table class="inventory-table">

@@ -2,50 +2,384 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>spawn-protocol — outline</title>
+<title>twill plugin rebuild — spawn protocol (公式 verified)</title>
 <link rel="stylesheet" href="common.css">
 <style>
-  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+  header.doc-header { border-bottom: 3px solid var(--focus); }
+  .api-block { background: var(--gray-50); border-left: 4px solid var(--focus); padding: 12px 16px; margin: 12px 0; border-radius: var(--radius-md); }
 </style>
 </head>
 <body>
 
 <header class="doc-header">
-  <h1>spawn-protocol — outline</h1>
-  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+  <h1>spawn protocol — 3 階層 spawn + file mailbox + plugin 化</h1>
+  <div class="meta">draft-v2 (2026-05-13) &middot; twl plugin 化前提 + tmux 公式 verified + flock atomic + JSON Lines</div>
 </header>
 
-<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で 3 階層 spawn 仕様 + file mailbox 通信 protocol の詳細を実装する。</div>
+<div class="info">
+  <strong>目的</strong>: 新 architecture の 3 階層 spawn (administrator → pilot → worker) の機構と、階層型 file mailbox による通信 protocol を仕様化する。<strong>twl を Claude Code 公式 plugin として正式化</strong>することで長期安定性を確保。<br>
+  <br>
+  <strong>verified source</strong>: tmux(1) <span class="vs verified">verified</span> <a class="src-link" href="https://man7.org/linux/man-pages/man1/tmux.1.html">tmux man</a> + Claude Code plugins <span class="vs verified">verified</span> <a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a> + flock(1) <span class="vs verified">verified</span> + 既存 <code>session-atomic-write.sh</code> L41-50 pattern
+</div>
 
-<h2>目的</h2>
-<p>新 spec の 3 階層 spawn (administrator → pilot → worker) の機構と、階層型 file mailbox による通信 protocol を仕様化する。draft-v1 §5b の内容を発展 + 詳細化。</p>
+<h2>§1. 設計の重要前提: twl plugin 化 (公式 path)</h2>
 
-<h2>想定 outline (次 session で実装)</h2>
+<div class="critical">
+<strong>本 session の重大発見 (verified)</strong>: <code>claude --skill &lt;name&gt;</code> flag は <strong>存在しない</strong>。Claude Code 公式の skill invoke 方法は:
 <ol>
-  <li>3 階層 spawn 機構 (tmux new-window + claude code、各層別 main session)
-    <ul>
-      <li>L0 administrator は user が起動</li>
-      <li>L1 pilot は administrator が <code>spawn-tmux.sh</code> で起動</li>
-      <li>L2 worker は pilot が <code>spawn-tmux.sh</code> で起動</li>
-    </ul>
-  </li>
-  <li><code>spawn-tmux.sh</code> helper 仕様 (~30 lines、引数: session-name / skill / args / mailbox-target)</li>
-  <li>file mailbox 仕様 (.mailbox/&lt;session-name&gt;/inbox.jsonl + flock atomic、不変条件 T)</li>
-  <li><code>mailbox.sh</code> helper 仕様 (~30 lines、send / recv 2 関数)</li>
-  <li>message format (JSON Lines、共通 field: from / ts / event / detail / heartbeat_ts)</li>
-  <li>send / recv code 例 (3 階層全方向の使用例)</li>
-  <li>mail loss 防止 (file 永続、disk 故障以外で loss しない)</li>
-  <li>archive 戦略 (7 日 retention、mailbox/archive/inbox-&lt;timestamp&gt;.jsonl)</li>
-  <li>公式 SendMessage primitive (experimental) との比較 + 採用しない理由</li>
-  <li>subagent nesting 制約 (公式 verified、worker 内部 subagent は 1 階層のみ)</li>
+  <li>twl を plugin として正式化: <code>plugins/twl/.claude-plugin/plugin.json</code> 作成</li>
+  <li>plugin として load: <code>claude --plugin-dir plugins/twl</code> or marketplace 経由 <code>/plugin install twl</code></li>
+  <li>skill invoke は <strong>slash command + namespace</strong>: <code>/twl:administrator</code>, <code>/twl:phase-impl &lt;args&gt;</code>, <code>/twl:worker-test-ready &lt;args&gt;</code></li>
 </ol>
+これにより namespace 衝突防止 (強制 <code>/twl:*</code>)、<code>/reload-plugins</code> 自動 reload、<code>--plugin-dir</code> local test、Plugin Monitor (公式機能) 利用が可能 <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a>
+</div>
 
-<h2>参照</h2>
+<h3>1.1 plugin 構造 (verified)</h3>
+
+<pre><code>plugins/twl/
+├── .claude-plugin/
+│   └── plugin.json                # manifest: name="twl", version, description
+├── skills/                        # skill 群 (旧 .claude/skills/ から移行)
+│   ├── administrator/SKILL.md
+│   ├── phase-explore/SKILL.md
+│   ├── phase-refine/SKILL.md
+│   ├── phase-impl/SKILL.md
+│   ├── phase-pr/SKILL.md
+│   ├── worker-test-ready/SKILL.md
+│   ├── worker-pr-cycle/SKILL.md
+│   ├── tool-architect/SKILL.md
+│   ├── tool-project/SKILL.md
+│   ├── tool-utility/SKILL.md
+│   └── tool-self-improve/SKILL.md
+├── hooks/
+│   └── hooks.json                 # PreToolUse phase-gate hook 等
+├── monitors/
+│   └── monitors.json              # Plugin Monitor (mcp-watchdog 廃止代替)
+├── .mcp.json                      # twl MCP server + github 公式 MCP
+├── scripts/
+│   └── lib/
+│       ├── mailbox.sh
+│       ├── spawn-tmux.sh
+│       ├── step.sh
+│       ├── phase-gate.sh
+│       └── admin-cycle.sh
+├── tests/bats/                    # 既存 bats 250 件
+└── refs/                          # ref-invariants.md 等
+</code></pre>
+
+<h2>§2. 3 階層 spawn 機構</h2>
+
+<table>
+  <thead>
+    <tr><th>層</th><th>spawn 元</th><th>session 命名 prefix</th><th>spawn 方式</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>L0 administrator</td><td>user 手動 + <code>--continue</code></td><td><code>admin</code> (固定 1 個)</td><td><code>claude --plugin-dir ./plugins/twl</code> + <code>/twl:administrator</code></td></tr>
+    <tr><td>L1 pilot (phase-*)</td><td>administrator</td><td><code>phase-&lt;type&gt;-&lt;issue&gt;</code></td><td><code>spawn-tmux.sh</code> wrapper</td></tr>
+    <tr><td>L2 worker (worker-*)</td><td>pilot</td><td><code>worker-&lt;name&gt;-&lt;issue&gt;</code></td><td>同上</td></tr>
+    <tr><td>独立 tool-*</td><td>user 明示 (or admin、ADR-040 gate)</td><td><code>tool-&lt;name&gt;-&lt;ts&gt;</code></td><td>同上</td></tr>
+  </tbody>
+</table>
+
+<p>tmux window 命名規約は既存 <a href="../../../plugins/session/CLAUDE.md"><code>plugins/session/CLAUDE.md</code></a> の <code>&lt;prefix&gt;-&lt;repo&gt;-&lt;branch&gt;[-i&lt;issue&gt;]-&lt;h8&gt;</code> (50 文字上限、verified) を継承。</p>
+
+<h2>§3. spawn-tmux.sh helper 仕様 (~50 行)</h2>
+
+<h3>3.1 引数</h3>
+
+<table>
+  <thead><tr><th>引数</th><th>意味</th><th>必須</th></tr></thead>
+  <tbody>
+    <tr><td><code>--window-name &lt;name&gt;</code></td><td>tmux window 名 (50 文字上限)</td><td>必須</td></tr>
+    <tr><td><code>--skill &lt;namespaced-name&gt;</code></td><td>起動 slash command (例: <code>twl:phase-impl</code>)</td><td>必須</td></tr>
+    <tr><td><code>--args &lt;string&gt;</code></td><td>slash command に渡す引数 (例: Issue 番号)</td><td>任意</td></tr>
+    <tr><td><code>--cwd &lt;path&gt;</code></td><td>worker 用 worktree path</td><td>worker 時必須</td></tr>
+    <tr><td><code>--mailbox-from &lt;name&gt;</code></td><td>mail 送信者識別 (sender field)</td><td>必須</td></tr>
+  </tbody>
+</table>
+
+<h3>3.2 実装 (pseudo-bash)</h3>
+
+<pre><code>#!/bin/bash
+# spawn-tmux.sh — 3 階層共通 spawn helper (~50 行)
+# verified: tmux new-window -d -n -c flags <span class="src-link">tmux(1)</span>
+
+set -euo pipefail
+source "$(dirname "$0")/mailbox.sh"
+
+main() {
+  local window_name skill args cwd mailbox_from
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --window-name) window_name="$2"; shift 2 ;;
+      --skill) skill="$2"; shift 2 ;;
+      --args) args="$2"; shift 2 ;;
+      --cwd) cwd="$2"; shift 2 ;;
+      --mailbox-from) mailbox_from="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  # 1. window 名 length check (50 文字上限、tmux 制約)
+  [ "${#window_name}" -le 50 ] || _fail "window name too long: $window_name"
+
+  # 2. 既存 window 確認 (Inv I-1 idempotent guard)
+  if tmux list-windows -a -F '#{window_name}' | grep -qx "$window_name"; then
+    _emit_admin "spawn-skip" "{\"window\":\"$window_name\",\"reason\":\"already exists\"}"
+    return 0
+  fi
+
+  # 3. plugin 化 twl の場合、--plugin-dir で起動
+  local plugin_dir="${TWILL_PLUGIN_DIR:-$CLAUDE_PROJECT_DIR/plugins/twl}"
+
+  # 4. tmux new-window (detached、cwd 指定)
+  tmux new-window \
+    -d \
+    -n "$window_name" \
+    -c "${cwd:-$CLAUDE_PROJECT_DIR}" \
+    -- "claude --plugin-dir $plugin_dir"
+  # ↑ tmux man verified: -d=detached, -n=name, -c=start-directory
+
+  # 5. slash command inject (Claude が起動して prompt ready になるまで wait)
+  _wait_session_ready "$window_name" 30 || _fail "session not ready after 30s"
+
+  # 6. inject /twl:&lt;skill&gt; &lt;args&gt;
+  local cmd="/${skill} ${args:-}"
+  tmux send-keys -t "$window_name" "$cmd" Enter
+  # ↑ send-keys: Enter key を C-m として inject (公式 syntax)
+
+  # 7. spawn-completed mail emit
+  _emit_admin "spawn-completed" "{\"window\":\"$window_name\",\"skill\":\"$skill\"}"
+}
+
+_wait_session_ready() {
+  local window="$1"; local timeout="$2"; local elapsed=0
+  while [ "$elapsed" -lt "$timeout" ]; do
+    if tmux list-windows -a -F '#{window_name}|#{pane_in_mode}' \
+         | grep -q "^${window}|0\$"; then
+      sleep 2; return 0  # ready + idle
+    fi
+    sleep 1; elapsed=$((elapsed+1))
+  done
+  return 1
+}
+
+_emit_admin() {
+  local event="$1"; local detail="$2"
+  mailbox_emit "$mailbox_from" "admin" "$event" "$detail"
+}
+
+_fail() { echo "spawn-tmux.sh: $*" &gt;&amp;2; exit 1; }
+main "$@"</code></pre>
+
+<p><strong>verify points</strong>: <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a> (plugin 起動 + namespace 解決)、<a class="exp-link" href="experiment-index.html#EXP-016">EXP-016</a> (tmux new-window -d)、<a class="exp-link" href="experiment-index.html#EXP-017">EXP-017</a> (format 変数 pane state)。</p>
+
+<h2>§4. file mailbox 仕様 (Inv T)</h2>
+
+<h3>4.1 path 規約</h3>
+
+<pre><code>.mailbox/
+├── admin/
+│   └── inbox.jsonl              # administrator が読む mail
+├── phase-impl-1660/
+│   └── inbox.jsonl              # pilot が worker mail を集約
+├── phase-pr-1660/
+│   └── inbox.jsonl
+├── worker-test-ready-1660/
+│   └── inbox.jsonl              # (worker は pilot mailbox に送る、自身 mailbox 不要な設計が default)
+└── archive/
+    └── inbox-&lt;ts&gt;.jsonl         # 7 日 retention archive</code></pre>
+
+<h3>4.2 flock atomic write (verified pattern)</h3>
+
+<p>既存 <code>plugins/twl/scripts/session-atomic-write.sh</code> L41-50 で verified pattern <span class="vs verified">verified</span>:</p>
+
+<pre><code># 既存 pattern (verified): fd 9 + timeout 10s + mktemp + mv
+flock -x -w 10 9 || exit 1
+# ... atomic write ...
+} 9&gt;&gt;"$LOCK_FILE"</code></pre>
+
+<p>本 spec 採用: 同 pattern を mailbox に適用 <a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a>。</p>
+
+<h2>§5. mailbox.sh helper 仕様 (~40 行)</h2>
+
+<div class="api-block">
+<strong>API</strong>:
+<ul>
+  <li><code>mailbox_emit &lt;from&gt; &lt;to&gt; &lt;event&gt; &lt;detail_json&gt;</code> — atomic write 1 line</li>
+  <li><code>mailbox_read &lt;mailbox-name&gt; [--since &lt;line-no&gt;]</code> — 未読 mail を stdout に出力 (read line-no を <code>.read-offset</code> file に保存)</li>
+  <li><code>mailbox_drain &lt;mailbox-name&gt; &lt;callback-fn&gt;</code> — 未読 mail を 1 件ずつ callback に渡す</li>
+  <li><code>mailbox_archive &lt;mailbox-name&gt;</code> — inbox.jsonl を archive/ に移動 (Wave 完了時)</li>
+</ul>
+</div>
+
+<pre><code>#!/bin/bash
+# mailbox.sh — file mailbox helper (~40 行)
+# verified pattern: session-atomic-write.sh L41-50 (flock + mktemp + mv)
+# 不変条件 T: file mailbox atomic write
+
+set -euo pipefail
+MAILBOX_ROOT="${TWILL_MAILBOX_ROOT:-.mailbox}"
+
+mailbox_emit() {
+  local from="$1" to="$2" event="$3" detail="$4"
+  local target_dir="$MAILBOX_ROOT/$to"
+  mkdir -p "$target_dir"
+  local lock_file="$target_dir/.lock"
+  local inbox="$target_dir/inbox.jsonl"
+
+  # JSON Lines 1 行 (jq -c で compact、改行なし)
+  local line=$(jq -nc \
+    --arg from "$from" --arg to "$to" \
+    --arg event "$event" --argjson detail "$detail" \
+    --arg ts "$(date -Iseconds)" \
+    '{from: $from, to: $to, ts: $ts, event: $event, detail: $detail}')
+
+  # flock atomic append (timeout 10s、fd 9)
+  (
+    flock -x -w 10 9 || exit 1
+    echo "$line" &gt;&gt; "$inbox"
+  ) 9&gt;&gt;"$lock_file"
+}
+
+mailbox_read() {
+  local mailbox="$1"
+  local inbox="$MAILBOX_ROOT/$mailbox/inbox.jsonl"
+  local offset_file="$MAILBOX_ROOT/$mailbox/.read-offset"
+  local from=$(cat "$offset_file" 2&gt;/dev/null || echo 0)
+
+  [ -f "$inbox" ] || return 0
+
+  # 共有 lock で read (write は exclusive で衝突防止)
+  (
+    flock -s -w 10 9 || exit 1
+    tail -n +$((from + 1)) "$inbox"
+    local total=$(wc -l &lt; "$inbox")
+    echo "$total" &gt; "$offset_file"
+  ) 9&gt;&gt;"$MAILBOX_ROOT/$mailbox/.lock"
+}</code></pre>
+
+<h2>§6. message format (JSON Lines、verified)</h2>
+
+<table>
+  <thead><tr><th>field</th><th>型</th><th>意味</th></tr></thead>
+  <tbody>
+    <tr><td><code>from</code></td><td>string</td><td>送信者 (例: <code>phase-impl-1660</code>)</td></tr>
+    <tr><td><code>to</code></td><td>string</td><td>受信者 mailbox 名 (例: <code>admin</code>)</td></tr>
+    <tr><td><code>ts</code></td><td>ISO 8601</td><td>送信時刻 (<code>date -Iseconds</code>)</td></tr>
+    <tr><td><code>event</code></td><td>string</td><td>event 種別 (例: <code>phase-completed</code>)</td></tr>
+    <tr><td><code>detail</code></td><td>object</td><td>event 固有 field</td></tr>
+    <tr><td><code>heartbeat_ts</code></td><td>ISO 8601 (任意)</td><td>送信元の heartbeat 時刻 (Inv G crash 検知)</td></tr>
+  </tbody>
+</table>
+
+<h3>6.1 event 種別 (本 spec で固定):</h3>
+
+<ul>
+  <li><strong>spawn 系</strong>: <code>spawn-completed</code>, <code>spawn-failed</code>, <code>spawn-skip</code></li>
+  <li><strong>phase 系</strong>: <code>phase-started</code>, <code>phase-progress</code>, <code>phase-completed</code>, <code>phase-failed</code></li>
+  <li><strong>step 系</strong> (worker→pilot): <code>step-started</code>, <code>step-completed</code>, <code>step-precheck-failed</code>, <code>step-postverify-failed</code></li>
+  <li><strong>gate 系</strong>: <code>phase-gate-denied</code></li>
+  <li><strong>tool 系</strong>: <code>tool-completed</code> (tool-self-improve のみ admin に送る)</li>
+  <li><strong>escalate 系</strong>: <code>escalate-human-gate</code>, <code>budget-pause</code></li>
+</ul>
+
+<h2>§7. 3 階層全方向の使用例</h2>
+
+<h3>7.1 worker → pilot (step 完了 mail)</h3>
+
+<pre><code># worker SKILL.md 内 step::run 経由
+source plugins/twl/scripts/lib/mailbox.sh
+mailbox_emit \
+  "worker-test-ready-1660" \
+  "phase-impl-1660" \
+  "step-completed" \
+  '{"step":"test-scaffold","issue":1660,"verify":{"test_added":5,"red":true}}'</code></pre>
+
+<h3>7.2 pilot → admin (phase 完了の集約 mail)</h3>
+
+<pre><code># pilot SKILL.md 内 (worker mail 集約後)
+source plugins/twl/scripts/lib/mailbox.sh
+mailbox_emit \
+  "phase-impl-1660" \
+  "admin" \
+  "phase-completed" \
+  '{"issue":1660,"status":"Implementing","worker_count":1,"all_steps_pass":true}'</code></pre>
+
+<h3>7.3 admin → pilot (spawn 経由、mailbox は使わない)</h3>
+
+<p>admin が pilot を起動するのは spawn-tmux.sh 経由 (mailbox 不使用)。pilot 起動後の通信は worker→pilot→admin の上方向のみ (pyramid)。</p>
+
+<h2>§8. mail loss 防止 + archive 戦略</h2>
+
+<ul>
+  <li><strong>file 永続</strong>: disk 故障以外で loss しない (verified、JSON Lines + append-only)</li>
+  <li><strong>backup</strong>: <code>.mailbox/</code> は <code>.gitignore</code> 対象、git で持たない。重要 mail は archive で残す</li>
+  <li><strong>archive</strong>: Wave 完了時に <code>mailbox_archive</code> で <code>.mailbox/&lt;name&gt;/inbox.jsonl</code> → <code>.mailbox/archive/inbox-&lt;name&gt;-&lt;ts&gt;.jsonl</code></li>
+  <li><strong>retention</strong>: 7 日 retention、cron で古い archive 削除</li>
+  <li><strong>audit 統合</strong>: <code>TWL_AUDIT=1</code> 時に <code>audit_snapshot(.mailbox, "mailbox-pre-archive")</code> で <code>.audit/&lt;run-id&gt;/</code> にもコピー</li>
+</ul>
+
+<h2>§9. 公式 SendMessage primitive (experimental) との比較</h2>
+
+<table>
+  <thead>
+    <tr><th>項目</th><th>file mailbox (本 spec)</th><th>SendMessage primitive (Claude Code)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>状態</td><td>本 spec 確定</td><td>experimental (<code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1</code> 必要)</td></tr>
+    <tr><td>scope</td><td>file mailbox (persistent)</td><td>process-internal (subagent 間 ephemeral)</td></tr>
+    <tr><td>階層間通信</td><td>3 階層全層対応</td><td>subagent 1 階層内のみ</td></tr>
+    <tr><td>recovery</td><td>file 永続、recovery 可</td><td>process 死亡で消失</td></tr>
+    <tr><td>採用判断</td><td><strong>採用</strong></td><td>不採用 (experimental + 階層間不適合)</td></tr>
+  </tbody>
+</table>
+
+<h2>§10. subagent nesting 制約 (公式 verified)</h2>
+
+<div class="warning">
+<strong>公式制約 (verified)</strong>: Claude Code subagent は <strong>1 階層内側のみ</strong> spawn 可能、子 subagent の更なる spawn は禁止。
+<ul>
+  <li>worker (L2) は内部で codex CLI 等の subagent を 1 階層内に持てる</li>
+  <li>worker 内 subagent が更に subagent spawn は <strong>禁止</strong></li>
+  <li>これが <strong>tmux で別 main session を spawn する根拠</strong>: 3 階層 (admin / pilot / worker) は全て別 main session、subagent 入れ子では実現不可</li>
+</ul>
+verified source: Claude Code 公式 docs (code.claude.com/docs/en/sub-agents.md L60/L348/L737)
+</div>
+
+<h2>§11. 不変条件 (本 file が enforce)</h2>
+
+<ul>
+  <li><strong>Inv T (file mailbox atomic write)</strong>: 全 mailbox write は flock 取得した atomic write <a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></li>
+  <li><strong>Inv V (per-Worker checkpoint)</strong>: <code>.mailbox/&lt;session-name&gt;/</code> は per-session、共通 path 禁止 <a class="exp-link" href="experiment-index.html#EXP-013">EXP-013</a></li>
+  <li><strong>Inv I-4 (admin は pilot mail のみ受信)</strong>: pyramid 集約、worker から admin 直接 mail 禁止</li>
+  <li><strong>Inv I-7 (tmux send-keys 使用禁止)</strong>: ただし spawn-tmux.sh の <strong>spawn 直後 1 回のみ</strong>例外として inject 許可 (skill 起動 trigger)。それ以外の通信は mailbox 経由</li>
+</ul>
+
+<h2>§12. Phase 1 PoC verify points (本 file 関連)</h2>
+
+<ul>
+  <li>VP-1: 3 階層 spawn が動く (<code>tmux list-windows</code>) <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a> + <a class="exp-link" href="experiment-index.html#EXP-016">EXP-016</a></li>
+  <li>VP-2: file mailbox 動作 <a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></li>
+  <li>VP-12: send-keys safe escape <a class="exp-link" href="experiment-index.html#EXP-017">EXP-017</a></li>
+</ul>
+
+<h2>§13. 関連 spec ファイル</h2>
+
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図)</li>
-  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 T (file mailbox atomic) + V (per-Worker checkpoint)</li>
-  <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> (mail loss / hang 検知)</li>
-  <li>既存 draft <code>draft-v1.html</code> §5b (原案、archive)</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> Inv T (mailbox atomic) + V (per-Worker scope)</li>
+  <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知 + mail loss)</li>
+  <li><a href="admin-cycle.html">admin-cycle.html</a> §3 (pilot mail 集約)</li>
+  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> §3 (EXP-006 mailbox flock + EXP-010 plugin spawn)</li>
+  <li><a href="research-findings.html">research-findings.html</a> §7 (tmux / Plugin 公式 verified)</li>
+  <li>既存 verified pattern source:
+    <ul>
+      <li><code>plugins/twl/scripts/session-atomic-write.sh</code> L41-50 (flock pattern)</li>
+      <li><code>plugins/session/CLAUDE.md</code> (tmux window 命名規約)</li>
+      <li><code>plugins/session/scripts/session-comm.sh</code> (inject MAX_INJECT_LEN=4096)</li>
+    </ul>
+  </li>
 </ul>
 
 </body>

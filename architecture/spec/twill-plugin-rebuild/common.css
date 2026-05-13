@@ -293,6 +293,61 @@ hr {
 .badge.todo { background: var(--caution-bg); color: var(--caution-fg); }
 .badge.archive { background: var(--gray-100); color: var(--gray-700); }
 
+/* 4-state verification status (experiment hyperlink architecture)
+ * inferred → deduced → verified → experiment-verified の昇格パス
+ * 各 claim の信頼度を spec 内で明示、living document として穴を埋めていく */
+.vs {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 4px;
+  vertical-align: middle;
+  font-feature-settings: normal;
+}
+.vs.inferred         { background: var(--gray-100); color: var(--gray-700); border: 1px dashed var(--gray-400); }
+.vs.deduced          { background: var(--gray-50);  color: var(--gray-800); border: 1px solid var(--gray-300); }
+.vs.verified         { background: var(--success-bg); color: var(--success-fg); border: 1px solid var(--success-fg); }
+.vs.experiment-verified { background: rgba(90, 200, 184, 0.15); color: var(--gray-900); border: 1px solid var(--brand); font-weight: 800; }
+
+/* experiment-id link (sandbox-experiment.html の各 EXP-NNN に飛ぶ) */
+.exp-link {
+  display: inline-block;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  padding: 2px 6px;
+  margin: 0 2px;
+  border-radius: 4px;
+  background: rgba(90, 200, 184, 0.10);
+  color: var(--gray-900);
+  border: 1px solid var(--brand);
+  text-decoration: none;
+  letter-spacing: 0;
+}
+.exp-link:hover { background: var(--brand); color: var(--text-invert); }
+
+/* verify source link (公式 docs 引用) */
+.src-link {
+  display: inline-block;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 2px 6px;
+  margin: 0 2px;
+  border-radius: 4px;
+  background: var(--gray-50);
+  color: var(--focus);
+  border: 1px solid var(--gray-200);
+  text-decoration: none;
+  letter-spacing: 0;
+}
+.src-link:hover { background: var(--focus); color: var(--text-invert); }
+
 /* Responsive (spec は基本 desktop 想定だが、scroll 確保) */
 @media (max-width: 768px) {
   body { padding: 16px; font-size: 16px; line-height: 1.85; }

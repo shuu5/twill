@@ -2,89 +2,175 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>pitfalls-inheritance — outline</title>
+<title>twill plugin rebuild — pitfalls-catalog 継承戦略</title>
 <link rel="stylesheet" href="common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+  .audit-table { font-size: 14px; }
+  .verdict-keep { color: var(--success-fg); font-weight: 700; }
+  .verdict-partial { color: var(--caution-fg); font-weight: 700; }
+  .verdict-eliminate { color: var(--danger-fg); font-weight: 700; }
 </style>
 </head>
 <body>
 
 <header class="doc-header">
-  <h1>pitfalls-inheritance — outline</h1>
-  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+  <h1>pitfalls catalog 継承戦略 — 23 sections audit + 新 pitfall 5 件</h1>
+  <div class="meta">draft-v2 (2026-05-13) &middot; pitfalls-catalog.md §0-§22 verified &middot; 3 分類 (保全 / 構造的不能化 / 新規)</div>
 </header>
 
-<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で既存 pitfalls-catalog の継承戦略を実装する。</div>
+<div class="info">
+  <strong>目的</strong>: 既存 <code>plugins/twl/skills/su-observer/refs/pitfalls-catalog.md</code> の lesson 群 (23 sections、Agent A verified) を新 spec でどう継承するかを仕様化。「保全」「構造的不能化で不要」「新 spec で強化」の 3 分類で audit。<br>
+  <br>
+  <strong>verified</strong>: 23 sections (§0 Memory Principles 〜 §22 feature-dev spawn gate)、旧 outline 「§1-§19」は誤 (本 session 訂正)。
+</div>
 
-<h2>目的</h2>
+<h2>§1. 既存 pitfalls-catalog の section 一覧 (23 sections、verified)</h2>
 
-<p>既存 <code>plugins/twl/skills/su-observer/refs/pitfalls-catalog.md</code> の lesson 群を新 spec でどう継承するかを仕様化する。「構造的不能化で不要になる lesson」「新 spec でも有効な lesson」「新 spec で強化される lesson」の 3 分類で audit する。</p>
+<table class="audit-table">
+  <thead><tr><th>§</th><th>title (要約)</th><th>由来</th></tr></thead>
+  <tbody>
+    <tr><td>§0</td><td>Memory Principles (doobidoo 運用)</td><td>su-observer 起動時 MUST</td></tr>
+    <tr><td>§1</td><td>lesson 構造化 4-step chain (Inv N、ADR-036)</td><td>横断原則</td></tr>
+    <tr><td>§2</td><td>stuck pattern recovery</td><td>orchestrator 障害対応</td></tr>
+    <tr><td>§3</td><td>budget format 解釈 (Inv Q)</td><td>budget exhaustion 検知</td></tr>
+    <tr><td>§4</td><td>RED-only label bypass (ADR-038、5 layer defense)</td><td>Bug #973 関連</td></tr>
+    <tr><td>§5</td><td>cross-Wave cleanup 破壊 (#1673)</td><td>autopilot-cleanup.sh</td></tr>
+    <tr><td>§6</td><td>phase-review.json cross-pollution (#1703)</td><td>checkpoint 共通 path</td></tr>
+    <tr><td>§7</td><td>mcp disconnect (#1687、5 回再発)</td><td>watchdog 仕様問題</td></tr>
+    <tr><td>§8</td><td>self-申告 step (L1873-1884、framing 訂正済)</td><td>chain-runner.sh</td></tr>
+    <tr><td>§9</td><td>deploy/verify 分離 (#1687)</td><td>横断要因 F-3</td></tr>
+    <tr><td>§10</td><td>specialist spawn fix patterns</td><td>autopilot orchestration</td></tr>
+    <tr><td>§11</td><td>queued message Enter / proxy 対話</td><td>session-comm.sh</td></tr>
+    <tr><td>§12</td><td>STAGNATE 判別法</td><td>observer 介入</td></tr>
+    <tr><td>§13</td><td>起動経路混同 (autopilot-launch.sh vs spawn-controller.sh)</td><td>旧 outline 未記載</td></tr>
+    <tr><td>§14</td><td>3 並列 co-issue race / dispatch failure</td><td>co-* spawn</td></tr>
+    <tr><td>§15</td><td>self-referential paradox (#971)</td><td>specialist meta-review</td></tr>
+    <tr><td>§16</td><td>autopilot-init race (#974)</td><td>ADR-028 atomic RMW</td></tr>
+    <tr><td>§17</td><td>pgrep self-match 罠</td><td>daemon kill 事故</td></tr>
+    <tr><td>§18</td><td>tmux server crash (incident 2026-04-22)</td><td>kill-server 事故</td></tr>
+    <tr><td>§19</td><td>specialist completeness check</td><td>merge-gate manifest</td></tr>
+    <tr><td>§20</td><td>claude_session_id phase 文字列混入 (#1552)</td><td>旧 outline 未記載</td></tr>
+    <tr><td>§21</td><td>Event horizon 整理 (ADR-039)</td><td>pre-pr-gate hook 関連</td></tr>
+    <tr><td>§22</td><td>feature-dev spawn gate 運用 (ADR-040/041)</td><td>tool-architect 起動 gate</td></tr>
+  </tbody>
+</table>
 
-<h2>想定 outline (次 session で実装)</h2>
+<h2>§2. 継承分類 audit table (23 sections × 3 分類)</h2>
 
-<ol>
-  <li><strong>既存 pitfalls-catalog の section 一覧</strong>
-    <ul>
-      <li>§1 lesson 構造化 chain (Invariant N)</li>
-      <li>§2 stuck pattern recovery</li>
-      <li>§3 budget format 解釈 (Invariant Q)</li>
-      <li>§4 RED-only label bypass (ADR-038)</li>
-      <li>§5 cross-Wave cleanup (#1673)</li>
-      <li>§6 phase-review.json cross-pollution (#1703 関連)</li>
-      <li>§7 mcp disconnect (#1687)</li>
-      <li>§8 self-申告 step (L1873-1884)</li>
-      <li>§9 deploy/verify 分離 (#1687)</li>
-      <li>§10-19 (個別 lesson、各 P0 bug)</li>
-    </ul>
-  </li>
-  <li><strong>継承分類 (audit table)</strong>
-    <table>
-      <thead>
-        <tr><th>pitfall</th><th>新 spec での扱い</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>構造化 chain (Inv N)</td><td>保全 (新 spec でも MUST)</td></tr>
-        <tr><td>stuck pattern</td><td>保全</td></tr>
-        <tr><td>budget format (Inv Q)</td><td>保全</td></tr>
-        <tr><td>RED-only bypass</td><td>部分継承 (step verification で構造的不能化、Layer 4 のみ保全)</td></tr>
-        <tr><td>cross-Wave cleanup</td><td>構造的不能化 (Inv V で per-Worker scope 強制)</td></tr>
-        <tr><td>phase-review cross-pollution</td><td>構造的不能化 (Inv T/V で共通 path 禁止)</td></tr>
-        <tr><td>mcp disconnect</td><td>構造的不能化 (Inv X で deploy/verify セット)</td></tr>
-        <tr><td>自己申告 step</td><td>構造的不能化 (Inv U で post-verify 必須)</td></tr>
-        <tr><td>deploy/verify 分離</td><td>構造的不能化 (Inv X)</td></tr>
-      </tbody>
-    </table>
-  </li>
-  <li><strong>新 spec で追加すべき pitfall</strong>
-    <ul>
-      <li>file mailbox 並列 write race (Inv T 検証)</li>
-      <li>PreToolUse hook config の deploy 漏れ (Inv X 強化)</li>
-      <li>3 階層 spawn の cwd 渡し漏れ (Inv B 強化)</li>
-      <li>tmux new-window で path 解決失敗 (新 pitfall、未経験)</li>
-    </ul>
-  </li>
-  <li><strong>継承先</strong>
-    <ul>
-      <li>構造的不能化 lesson → <a href="failure-analysis.html">failure-analysis.html</a> に集約 (本 spec の MUST / SHOULD)</li>
-      <li>保全 lesson → 既存 <code>pitfalls-catalog.md</code> を rebrand (new <code>administrator/refs/pitfalls-catalog.md</code>)</li>
-      <li>新規 lesson → <code>administrator/refs/pitfalls-catalog.md</code> に追加</li>
-    </ul>
-  </li>
-  <li><strong>運用ルール (Invariant N)</strong>
-    <ul>
-      <li>新 architecture でも 4-step chain (doobidoo → Issue → Wave → 永続文書) を MUST</li>
-      <li>永続文書化先は <code>administrator/refs/pitfalls-catalog.md</code> (rebrand 後)</li>
-    </ul>
-  </li>
-</ol>
+<table class="audit-table">
+  <thead><tr><th>§</th><th>pitfall</th><th>新 spec 扱い</th><th>根拠</th></tr></thead>
+  <tbody>
+    <tr><td>§0</td><td>Memory Principles</td><td class="verdict-keep">保全</td><td>doobidoo + Inv N、administrator/SKILL.md に rebrand 継承</td></tr>
+    <tr><td>§1</td><td>lesson 構造化 chain (Inv N)</td><td class="verdict-keep">保全</td><td>新 spec でも MUST、ADR-036 維持</td></tr>
+    <tr><td>§2</td><td>stuck pattern recovery</td><td class="verdict-keep">保全</td><td>admin-cycle.html §5 escalate に統合</td></tr>
+    <tr><td>§3</td><td>budget format (Inv Q)</td><td class="verdict-keep">保全</td><td>admin-cycle.html §5.3 budget pause 対応</td></tr>
+    <tr><td>§4</td><td>RED-only bypass 5 layer</td><td class="verdict-partial">部分継承</td><td>step verification (Inv U) で Layer 1 構造的不能化、Layer 4 (human gate) のみ保全</td></tr>
+    <tr><td>§5</td><td>cross-Wave cleanup 破壊</td><td class="verdict-eliminate">構造的不能化</td><td>Inv V で per-Worker scope 強制、cleanup --scope 必須</td></tr>
+    <tr><td>§6</td><td>phase-review.json cross-pollution</td><td class="verdict-eliminate">構造的不能化</td><td>Inv T/V で共通 path 禁止、per-Worker mailbox</td></tr>
+    <tr><td>§7</td><td>mcp disconnect</td><td class="verdict-eliminate">構造的不能化</td><td>Plugin Monitor (Inv X) で deploy/verify セット、自前 watchdog 廃止</td></tr>
+    <tr><td>§8</td><td>self-申告 step</td><td class="verdict-eliminate">構造的不能化</td><td>Inv U で post-verify 機械検証必須、step.sh framework</td></tr>
+    <tr><td>§9</td><td>deploy/verify 分離</td><td class="verdict-eliminate">構造的不能化</td><td>Inv X、Plugin Monitor の起動 hook + 起動確認 test セット必須</td></tr>
+    <tr><td>§10</td><td>specialist spawn fix</td><td class="verdict-partial">部分継承</td><td>specialist 概念は subagent (1 階層) に rebrand、phase-pr SKILL.md で再構成</td></tr>
+    <tr><td>§11</td><td>queued message / proxy</td><td class="verdict-keep">保全</td><td>spawn-tmux.sh の wait_session_ready で同 pattern 継承</td></tr>
+    <tr><td>§12</td><td>STAGNATE 判別</td><td class="verdict-keep">保全</td><td>admin-cycle.html §5 escalate 判定で継承</td></tr>
+    <tr><td>§13</td><td>起動経路混同</td><td class="verdict-eliminate">構造的不能化</td><td>spawn-tmux.sh 単一 helper に統一 (autopilot-launch.sh + spawn-controller.sh 廃止)</td></tr>
+    <tr><td>§14</td><td>3 並列 co-issue race</td><td class="verdict-eliminate">構造的不能化</td><td>3 階層 spawn の Inv I-1 idempotent + I-2 parallelism 上限で防止</td></tr>
+    <tr><td>§15</td><td>self-referential paradox</td><td class="verdict-partial">部分継承</td><td>subagent meta-review は 1 階層内のみ、worker から子 spawn 禁止 (verified)</td></tr>
+    <tr><td>§16</td><td>autopilot-init race</td><td class="verdict-keep">保全</td><td>ADR-028 atomic RMW、mailbox.sh flock pattern に継承</td></tr>
+    <tr><td>§17</td><td>pgrep self-match</td><td class="verdict-keep">保全</td><td>PID file or heartbeat file の pid field 使用 (Inv G crash recovery で継承)</td></tr>
+    <tr><td>§18</td><td>tmux server crash</td><td class="verdict-keep">保全</td><td>tmux -C / kill-server 禁止 hook (pre-tool-use 既存)、Inv G crash mode に統合</td></tr>
+    <tr><td>§19</td><td>specialist completeness</td><td class="verdict-partial">部分継承</td><td>subagent output 直接読み取りに置換可、manifest 方式は廃止検討</td></tr>
+    <tr><td>§20</td><td>claude_session_id 混入</td><td class="verdict-keep">保全</td><td>session.json 厳格化、Inv O 継承</td></tr>
+    <tr><td>§21</td><td>Event horizon 整理</td><td class="verdict-eliminate">構造的不能化</td><td>ADR-039 Superseded by ADR-043、step verification + gate hook に統合</td></tr>
+    <tr><td>§22</td><td>feature-dev spawn gate</td><td class="verdict-keep">保全 (強化)</td><td>tool-architecture.html §7 で継承、ADR-040 路線</td></tr>
+  </tbody>
+</table>
 
-<h2>参照</h2>
+<h3>2.1 分類 summary</h3>
 
 <ul>
-  <li><a href="failure-analysis.html">failure-analysis.html</a> (9 P0 bug 深掘り、本 spec の lesson 起点)</li>
-  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 N (lesson structuralization) + T-X (新規)</li>
-  <li>既存 <code>plugins/twl/skills/su-observer/refs/pitfalls-catalog.md</code></li>
+  <li><span class="verdict-keep">保全</span>: <strong>11 件</strong> (§0, §1, §2, §3, §11, §12, §16, §17, §18, §20, §22)</li>
+  <li><span class="verdict-partial">部分継承</span>: <strong>4 件</strong> (§4, §10, §15, §19)</li>
+  <li><span class="verdict-eliminate">構造的不能化</span>: <strong>8 件</strong> (§5, §6, §7, §8, §9, §13, §14, §21)</li>
+</ul>
+
+<h2>§3. 新 spec で追加すべき pitfall (5 件)</h2>
+
+<table>
+  <thead><tr><th>新 pitfall</th><th>根拠</th><th>関連 EXP / Inv</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>P-A</strong>: file mailbox 並列 write race</td>
+      <td>Inv T 検証、本 spec 確定</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></td>
+    </tr>
+    <tr>
+      <td><strong>P-B</strong>: PreToolUse hook config の deploy 漏れ</td>
+      <td>Inv X 強化、Bug #1687 lesson</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-001">EXP-001-003</a></td>
+    </tr>
+    <tr>
+      <td><strong>P-C</strong>: 3 階層 spawn の cwd 渡し漏れ</td>
+      <td>Inv B 強化、spawn-tmux.sh --cwd 必須</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-016">EXP-016</a></td>
+    </tr>
+    <tr>
+      <td><strong>P-D</strong>: tmux window 命名 50 文字制限超過 (truncation)</td>
+      <td>session/CLAUDE.md verified、新 pitfall</td>
+      <td>spawn-tmux.sh の name length check</td>
+    </tr>
+    <tr>
+      <td><strong>P-E</strong>: CronCreate durable=true 永続化期待 (#40228)</td>
+      <td>本 session WebFetch verified、admin-cycle.sh で誤用注意</td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-004">EXP-004</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>§4. 継承先 (新 path)</h2>
+
+<table>
+  <thead><tr><th>lesson type</th><th>移行先</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>構造的不能化 lesson (8 件)</td>
+      <td><a href="failure-analysis.html">failure-analysis.html</a> に集約 (本 spec の MUST / SHOULD として正式化)</td>
+    </tr>
+    <tr>
+      <td>保全 lesson (11 件)</td>
+      <td>既存 <code>pitfalls-catalog.md</code> を rebrand → <code>plugins/twl/skills/administrator/refs/pitfalls-catalog.md</code></td>
+    </tr>
+    <tr>
+      <td>部分継承 lesson (4 件)</td>
+      <td>部分 archive、残存部分のみ administrator/refs/pitfalls-catalog.md に</td>
+    </tr>
+    <tr>
+      <td>新規 lesson 5 件 (P-A〜P-E)</td>
+      <td>administrator/refs/pitfalls-catalog.md に追記</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>§5. 運用ルール (Invariant N: lesson 構造化 4-step chain)</h2>
+
+<ol>
+  <li><strong>doobidoo 保存</strong> (短期記憶) — 認識した lesson を即座に <code>mcp__doobidoo__memory_store</code></li>
+  <li><strong>Issue 起票</strong> — <code>gh issue create</code> で follow-up implementation を起票</li>
+  <li><strong>Wave 実装</strong> — skill / refs / scripts への反映 PR</li>
+  <li><strong>永続文書化</strong> — administrator/refs/pitfalls-catalog.md への正式追記</li>
+</ol>
+
+<p>新 architecture でも 4-step を MUST、永続文書化先を <code>administrator/refs/pitfalls-catalog.md</code> (rebrand 後) に更新する。</p>
+
+<h2>§6. 関連 spec</h2>
+
+<ul>
+  <li><a href="failure-analysis.html">failure-analysis.html</a> 9 P0 bug 深掘り + 横断要因</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> Inv N (lesson structuralization) + T-X (新規)</li>
+  <li><a href="admin-cycle.html">admin-cycle.html</a> §5 escalate (stuck pattern / budget pause)</li>
+  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> 新 pitfall の verify EXP</li>
+  <li>既存 <code>plugins/twl/skills/su-observer/refs/pitfalls-catalog.md</code> (23 sections verified)</li>
   <li>ADR-036 (lesson structuralization MUST)</li>
 </ul>
 

@@ -2,81 +2,226 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>regression-test-strategy — outline</title>
+<title>twill plugin rebuild — regression test strategy (250 bats + EXP 統合)</title>
 <link rel="stylesheet" href="common.css">
 <style>
-  header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+  header.doc-header { border-bottom: 3px solid var(--success-fg); }
+  .test-table { font-size: 14px; }
 </style>
 </head>
 <body>
 
 <header class="doc-header">
-  <h1>regression-test-strategy — outline</h1>
-  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+  <h1>regression test strategy — 既存 250 bats + 新規 invariant T-X test + EXP 統合</h1>
+  <div class="meta">draft-v2 (2026-05-13) &middot; bats-core v1.7.0+ verified syntax &middot; experiment hyperlink 統合</div>
 </header>
 
-<div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で既存 bats 90+ + 新 architecture 用追加 test の戦略を実装する。</div>
+<div class="info">
+  <strong>目的</strong>: 既存 bats regression test 250 件 (Agent A 実測 verified) を新 architecture で継承する戦略 + 新規 invariant T-X 用 test + 9 P0 bug regression + experiment-id 統合。<br>
+  <br>
+  <strong>verified</strong>: <code>plugins/twl/tests/bats/</code> + <code>tests/unit/</code> + <code>tests/integration/</code> 合計 250 file (旧 outline 「90+」は outdated)。bats-core 公式 syntax <a class="src-link" href="https://bats-core.readthedocs.io/en/stable/writing-tests.html">writing-tests.html</a> verified。
+</div>
 
-<h2>目的</h2>
+<h2>§1. 既存 bats test の継承戦略 (250 件)</h2>
 
-<p>既存 bats regression test (90+ ファイル) を新 architecture で継承する戦略と、新規 invariant T-X (5 件) + 9 P0 bug を block する追加 test 計画を仕様化する。</p>
+<h3>1.1 directory 分布 (verified)</h3>
 
-<h2>想定 outline (次 session で実装)</h2>
+<table class="test-table">
+  <thead><tr><th>directory</th><th>用途</th><th>新 architecture での扱い</th></tr></thead>
+  <tbody>
+    <tr><td><code>plugins/twl/tests/bats/scripts/</code></td><td>hook + script test (最大集合)</td><td>継承、削除対象 script 関連は archive</td></tr>
+    <tr><td><code>plugins/twl/tests/bats/invariants/</code></td><td>不変条件 A-S 別の test</td><td>継承 + 新規 T-X 5 件追加</td></tr>
+    <tr><td><code>plugins/twl/tests/bats/integration/</code></td><td>e2e integration test</td><td>3 階層 spawn e2e に拡張</td></tr>
+    <tr><td><code>plugins/twl/tests/unit/</code></td><td>pytest 系 unit (audit.py 等)</td><td>継承、新 step.sh test 追加</td></tr>
+    <tr><td><code>plugins/twl/tests/bats/regression/</code></td><td>個別 bug regression (例: issue-1703-cross-pollution.bats 174 行)</td><td>継承、新 Bug 用 test 追加</td></tr>
+    <tr><td><code>test-fixtures/experiments/hooks/</code></td><td>(新規) EXP-id 別 bats unit</td><td>本 spec で新設 <a href="sandbox-experiment.html">sandbox-experiment.html</a></td></tr>
+  </tbody>
+</table>
 
-<ol>
-  <li><strong>既存 bats test の継承戦略 (90+ ファイル)</strong>
-    <ul>
-      <li>不変条件 A-S の bats test → 保全 (<code>invariant-A</code> 〜 <code>invariant-S</code> 全て継承、ただし <code>invariant-M</code> は部分 Superseded で test 内容調整)</li>
-      <li>ADR 個別 test (<code>ac-scaffold-tests-973.bats</code> 等) → 該当 ADR が Superseded されたら test は archive (<code>.archive/</code> directory に移動、削除はしない)</li>
-      <li>chain step test → <code>step.sh</code> framework に書き換え (test rule の logic は流用、<a href="ssot-design.html">ssot-design.html</a> 参照)</li>
-    </ul>
-  </li>
-  <li><strong>新規 bats test 追加 (新 invariant T-X)</strong>
-    <ul>
-      <li><code>file-mailbox-atomic-write.bats</code> (新 invariant T、並列 write race condition)</li>
-      <li><code>step-verification-post-verify.bats</code> (新 invariant U、自己申告 step block)</li>
-      <li><code>per-worker-state-isolation.bats</code> (新 invariant V、checkpoint cross-pollution 防止)</li>
-      <li><code>phase-gate-hook.bats</code> (新 invariant W、Refined でない Issue に phase-impl 呼び出して deny)</li>
-      <li><code>daemon-deploy-verify-set.bats</code> (新 invariant X、新規 daemon PR は起動 hook ファイル追加 assert)</li>
-    </ul>
-  </li>
-  <li><strong>9 P0 bug の regression test</strong>
-    <ul>
-      <li>各 bug の修正 PR が含む test を新 architecture で継承</li>
-      <li>Bug #1703 (cross-pollution): <code>phase-review-cross-pollution-regression.bats</code> (新規、複数 Worker simulation)</li>
-      <li>Bug #973 (RED merge silent rot): step verification で構造的 block されることを assert</li>
-      <li>Bug #1687 (mcp disconnect): MCP 極小化後の動作 (1 tool のみで chain が回る) を verify (<a href="twl-mcp-integration.html">twl-mcp-integration.html</a> 参照)</li>
-    </ul>
-  </li>
-  <li><strong>integration test (新 spec の e2e)</strong>
-    <ul>
-      <li>Phase 1 PoC の 8 verify points を bats 化 (Issue #1660 sanitize の e2e simulation)</li>
-      <li>3 階層 spawn の e2e (admin → pilot → worker の chain が tmux で動く)</li>
-      <li>file mailbox の pyramid 集約 (worker → pilot → admin が動く)</li>
-    </ul>
-  </li>
-  <li><strong>test 失敗時の運用</strong>
-    <ul>
-      <li>既存 RED test scaffold pattern は新 spec では禁止 (不変条件 U に違反)</li>
-      <li>新規 test は GREEN で merge、RED test は同 PR 内で実装と pair で merge</li>
-    </ul>
-  </li>
-  <li><strong>CI integration</strong>
-    <ul>
-      <li>GitHub Actions で全 bats test を main push 時に実行</li>
-      <li>新規 invariant T-X test は phase 1-3 内で必須 PASS</li>
-    </ul>
-  </li>
-</ol>
+<h3>1.2 Superseded ADR 対応 test の archive 戦略</h3>
 
-<h2>参照</h2>
+<table>
+  <thead><tr><th>ADR / Bug</th><th>関連 bats</th><th>処理</th></tr></thead>
+  <tbody>
+    <tr><td>ADR-022 (chain SSoT boundary) Superseded</td><td>chain-runner.bats / chain-integrity.bats</td><td><code>tests/bats/.archive/chain-ssot/</code> に移動、削除しない</td></tr>
+    <tr><td>ADR-034 (wave-progress-watchdog) Superseded</td><td>wave-progress-watchdog.bats</td><td>同上 (admin-cycle test に置換)</td></tr>
+    <tr><td>ADR-038 (RED-only label bypass) 部分 Superseded</td><td><code>ac-scaffold-tests-973.bats</code> (446 行)</td><td>Layer 1-3 部分は archive、Layer 4 残存部分は継承</td></tr>
+    <tr><td>chain-runner.sh 1714 行削除</td><td>関連 hook test 全件</td><td>archive、step.sh framework test に置換</td></tr>
+  </tbody>
+</table>
+
+<h3>1.3 既存代表 test (verified)</h3>
 
 <ul>
-  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (新 invariant T-X の検証方法 field)</li>
-  <li><a href="failure-analysis.html">failure-analysis.html</a> (9 P0 bug の test 起点)</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 4 (bats 検証)</li>
-  <li><a href="ssot-design.html">ssot-design.html</a> §5 (steps_integrity audit の新 test)</li>
-  <li>既存 <code>plugins/twl/tests/bats/</code> 90+ ファイル</li>
+  <li><code>issue-1703-phase-review-cross-pollution.bats</code> (174 行) — Bug #1703 regression、新 Inv V/T で構造的不能化済、test 自体は継承</li>
+  <li><code>ac-scaffold-tests-973.bats</code> (446 行) — Bug #973 RED-only、Inv U で構造的不能化、Layer 4 部分継承</li>
+  <li><code>autopilot-orchestrator.bats</code> (1005 行) — orchestrator 削除に伴い archive</li>
+  <li><code>observer-auto-next-spawn.bats</code> (1137 行) — wave-progress-watchdog 削除に伴い archive</li>
+</ul>
+
+<h2>§2. 新規 bats test 5 件 (新 invariant T-X)</h2>
+
+<table class="test-table">
+  <thead><tr><th>file</th><th>不変条件</th><th>EXP-id</th><th>verify 内容</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>file-mailbox-atomic-write.bats</code></td>
+      <td><a href="invariant-fate-table.html#inv-t">Inv T</a></td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></td>
+      <td>並列 write race condition: N=100 process が同 inbox.jsonl に concurrent write、全行 parse 成功、行数 = 100</td>
+    </tr>
+    <tr>
+      <td><code>step-verification-post-verify.bats</code></td>
+      <td><a href="invariant-fate-table.html#inv-u">Inv U</a></td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-011">EXP-011</a> + <a class="exp-link" href="experiment-index.html#EXP-012">EXP-012</a></td>
+      <td>step::run 4 phase lifecycle、test なしで green-impl 呼び出すと post-verify FAIL で step abort</td>
+    </tr>
+    <tr>
+      <td><code>per-worker-state-isolation.bats</code></td>
+      <td><a href="invariant-fate-table.html#inv-v">Inv V</a></td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-013">EXP-013</a></td>
+      <td>2 worker simulation、各々 per-Worker mailbox 書き込み、cross-pollution なし</td>
+    </tr>
+    <tr>
+      <td><code>phase-gate-hook.bats</code></td>
+      <td><a href="invariant-fate-table.html#inv-w">Inv W</a></td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-001">EXP-001</a>〜<a class="exp-link" href="experiment-index.html#EXP-003">003</a> + <a class="exp-link" href="experiment-index.html#EXP-008">EXP-008</a></td>
+      <td>Refined でない Issue に phase-impl 呼び出して deny、bypassPermissions でも deny 効く</td>
+    </tr>
+    <tr>
+      <td><code>daemon-deploy-verify-set.bats</code></td>
+      <td><a href="invariant-fate-table.html#inv-x">Inv X</a></td>
+      <td><a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></td>
+      <td>新規 daemon PR が起動 hook ファイル追加 + ps/pgrep 確認 test を含むことを assert</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>§3. 9 P0 bug regression test</h2>
+
+<table class="test-table">
+  <thead><tr><th>Bug</th><th>既存 / 新規 bats</th><th>verify</th></tr></thead>
+  <tbody>
+    <tr><td>#1660 SKIP_*_REASON sanitize</td><td>既存 + 新 phase-gate-hook.bats</td><td>env bypass 全廃を確認</td></tr>
+    <tr><td>#1662/1663 OBSERVER_PARALLEL_CHECK_STATES</td><td>既存 (env override test) + 新 phase-gate-hook.bats</td><td>env override 不要設計を確認</td></tr>
+    <tr><td>#1673 autopilot-cleanup cross-wave</td><td>既存 (autopilot-cleanup.bats) + 新 per-worker-state-isolation.bats</td><td>cleanup --scope &lt;wave&gt; 必須化</td></tr>
+    <tr><td>#1674 orchestrator early-exit</td><td>archive (orchestrator 削除) + 新 step-verification-post-verify.bats</td><td>step.sh で代替動作</td></tr>
+    <tr><td>#1684 IS_AUTOPILOT cwd-guard</td><td>既存 (cwd-guard.bats) + 新 phase-gate-hook.bats</td><td>worktree 判定独立 invariant</td></tr>
+    <tr><td>#1687 twl mcp disconnect</td><td>既存 (mcp-restart-smoke.yml) + 新 daemon-deploy-verify-set.bats</td><td>Plugin Monitor 採用後の動作</td></tr>
+    <tr><td>#1703 phase-review.json cross-pollution</td><td>既存 issue-1703-phase-review-cross-pollution.bats (174 行) + 新 per-worker-state-isolation.bats</td><td>共通 path 廃止確認</td></tr>
+    <tr><td>#973 RED merge silent rot</td><td>既存 ac-scaffold-tests-973.bats (446 行、Layer 4 部分) + 新 step-verification-post-verify.bats</td><td>RED-only merge 構造的 block</td></tr>
+  </tbody>
+</table>
+
+<h2>§4. integration test (Phase 1 PoC 8 verify points + 拡張 12 件)</h2>
+
+<p>Phase 1 PoC で確認する 12 verify points を bats 化:</p>
+
+<table class="test-table">
+  <thead><tr><th>VP</th><th>verify 内容</th><th>EXP-id</th></tr></thead>
+  <tbody>
+    <tr><td>VP-1</td><td>3 階層 spawn 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a> + <a class="exp-link" href="experiment-index.html#EXP-016">EXP-016</a></td></tr>
+    <tr><td>VP-2</td><td>file mailbox 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-006">EXP-006</a></td></tr>
+    <tr><td>VP-3</td><td>step verification 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-011">EXP-011</a></td></tr>
+    <tr><td>VP-4</td><td>gate hook 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-001">EXP-001-003</a> + <a class="exp-link" href="experiment-index.html#EXP-008">EXP-008</a></td></tr>
+    <tr><td>VP-5</td><td>admin polling 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-004">EXP-004</a></td></tr>
+    <tr><td>VP-6</td><td>context 効率化 (admin token &lt; su-observer)</td><td>(token 計測専用 EXP は次 session)</td></tr>
+    <tr><td>VP-7</td><td>fail-fast at step level</td><td><a class="exp-link" href="experiment-index.html#EXP-012">EXP-012</a></td></tr>
+    <tr><td>VP-8</td><td>PR 完遂 (#1660 auto-merge)</td><td>e2e (Phase 1 PoC 内で実行)</td></tr>
+    <tr><td>VP-9</td><td>tier 1+2 parallel</td><td><a class="exp-link" href="experiment-index.html#EXP-007">EXP-007</a></td></tr>
+    <tr><td>VP-10</td><td>bypassPermissions でも deny</td><td><a class="exp-link" href="experiment-index.html#EXP-008">EXP-008</a></td></tr>
+    <tr><td>VP-11</td><td>mcp-watchdog 廃止後の disconnect 発生頻度</td><td><a class="exp-link" href="experiment-index.html#EXP-005">EXP-005</a> + <a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></td></tr>
+    <tr><td>VP-12</td><td>send_keys_safe escape</td><td><a class="exp-link" href="experiment-index.html#EXP-017">EXP-017</a></td></tr>
+  </tbody>
+</table>
+
+<h2>§5. test 失敗時の運用</h2>
+
+<ul>
+  <li><strong>RED test scaffold pattern 禁止</strong>: 新 spec の <a href="invariant-fate-table.html#inv-u">Inv U</a> で構造的に不能化、新規 test は GREEN で merge</li>
+  <li><strong>RED test 追加が必要な場合</strong>: 同 PR 内で実装と pair で merge (RED scaffold 単独 merge 禁止)</li>
+  <li><strong>FAIL 時の対応</strong>: ローカル <code>bats &lt;file&gt;</code> で原因特定、必要なら EXP-id 経由 sandbox で reproduce</li>
+</ul>
+
+<h2>§6. CI integration</h2>
+
+<h3>6.1 GitHub Actions workflow 構造案</h3>
+
+<pre><code>name: bats regression
+on: [push, pull_request]
+jobs:
+  bats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup bats
+        uses: bats-core/bats-action@v3
+        with:
+          bats-version: 1.10.0   # >= 1.7.0 (bats_require_minimum_version 対応)
+      - name: Verify bash version
+        run: bash --version | head -1 | grep -E 'version (5|4\.[3-9])' || exit 1
+        # bash 4.3+ 必須 (local -n nameref、EXP-014 verify)
+      - name: Run all bats
+        run: bats plugins/twl/tests/bats/ test-fixtures/experiments/hooks/
+      - name: Run experiments (smoke)
+        if: github.event_name == 'pull_request'
+        run: bash experiments/run-all.sh
+</code></pre>
+
+<h3>6.2 bats-core v1.7.0+ 規約</h3>
+
+<p>新規 bats test は以下を MUST:</p>
+
+<ul>
+  <li>file 冒頭: <code>bats_require_minimum_version 1.7.0</code></li>
+  <li><code>setup()</code> / <code>teardown()</code> で <code>$SANDBOX = mktemp -d</code> 採用 (既存 <code>common.bash</code> pattern)</li>
+  <li>assertion は組み込み (<code>[ "$status" -eq 0 ]</code>) または <code>bats-assert</code> external (load 必要)</li>
+  <li><code>run</code> で <code>$status</code> / <code>$output</code> / <code>${lines[@]}</code> を捕捉</li>
+  <li>各 EXP-id を bats 化する場合、file 名 = <code>EXP-NNN-&lt;name&gt;.bats</code></li>
+</ul>
+
+<h2>§7. bats-core 公式 verified syntax 引用</h2>
+
+<p>本 session の WebFetch verified からの引用 <a class="src-link" href="https://bats-core.readthedocs.io/en/stable/writing-tests.html">bats writing-tests</a>:</p>
+
+<pre><code>bats_require_minimum_version 1.7.0
+
+setup() {
+  load 'test_helper/bats-support/load'
+  load 'test_helper/bats-assert/load'
+  SANDBOX=$(mktemp -d)
+}
+
+teardown() {
+  rm -rf "$SANDBOX"
+}
+
+@test "EXP-006: mailbox flock atomic write" {
+  source plugins/twl/scripts/lib/mailbox.sh
+  export TWILL_MAILBOX_ROOT="$SANDBOX/mailbox"
+
+  # 100 並列 write
+  for i in $(seq 1 100); do
+    mailbox_emit "worker-$i" "pilot" "step-completed" "{\"i\":$i}" &amp;
+  done
+  wait
+
+  run jq -s 'length' "$SANDBOX/mailbox/pilot/inbox.jsonl"
+  assert_success
+  assert_output "100"
+}
+</code></pre>
+
+<h2>§8. 関連 spec</h2>
+
+<ul>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 新 invariant T-X 5 件の検証方法 field</li>
+  <li><a href="failure-analysis.html">failure-analysis.html</a> 9 P0 bug の test 起点</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 4 bats 検証</li>
+  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> EXP-id system の運用</li>
+  <li><a href="experiment-index.html">experiment-index.html</a> 全 EXP listing + status</li>
+  <li><a href="ssot-design.html">ssot-design.html</a> §5 steps_integrity audit test</li>
+  <li>既存 <code>plugins/twl/tests/bats/</code> 250 件 (verified)</li>
 </ul>
 
 </body>

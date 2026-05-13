@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>experiment-index — 全 EXP 一覧 + status + 結果</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--brand); }
+  .exp-block { background: var(--surface-primary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--elevation-1); padding: 16px 20px; margin: 20px 0; }
+  .exp-block h3 { margin-top: 0; }
+  .exp-block dl { display: grid; grid-template-columns: 140px 1fr; gap: 6px 12px; margin: 10px 0; }
+  .exp-block dt { font-weight: 700; color: var(--gray-700); font-size: 13px; line-height: 1.65; letter-spacing: normal; font-feature-settings: normal; }
+  .exp-block dd { margin: 0; line-height: 1.65; }
+  .legend { background: var(--gray-50); border-radius: var(--radius-md); padding: 12px 16px; margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>experiment-index — 全 EXP 一覧</h1>
+  <div class="meta">draft-v2 (2026-05-13) &middot; 18 EXP planned &middot; status は本 session 時点 (実行前は all <span class="vs verified">verified</span>、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
+</header>
+
+<div class="info">
+  <strong>目的</strong>: 全 experiment (EXP-001〜) を 1 file で listing。各 EXP の現 status / verify source / 関連 spec / 期待結果 / 実行結果 hash を集約。spec の他 file から <code>experiment-index.html#EXP-NNN</code> で hyperlink される hub。<br>
+  <br>
+  <strong>運用</strong>: <code>experiments/run-all.sh</code> 実行 → <code>.audit/&lt;run-id&gt;/experiments/index.json</code> 生成 → 本 file の status を update (将来 CI 自動化)。<br>
+  <br>
+  <strong>注意</strong>: 本 file は EXP 計画段階の listing。実装 / 実行は次 session で着手 (user 明示「実装はしない、architecture を完璧にしてから」)。
+</div>
+
+<div class="legend">
+  <strong>status 凡例</strong>:
+  <span class="vs inferred">inferred</span> 推測のみ &middot;
+  <span class="vs deduced">deduced</span> 文書/型から逆算 &middot;
+  <span class="vs verified">verified</span> 公式 docs 確認 &middot;
+  <span class="vs experiment-verified">experiment-verified</span> sandbox 実機再現 (目標)
+</div>
+
+<h2>カテゴリ A: PreToolUse hook schema (EXP-001〜003)</h2>
+
+<div class="exp-block" id="EXP-001">
+  <h3>EXP-001: matcher 単数 schema 受理</h3>
+  <dl>
+    <dt>status (現在)</dt><dd><span class="vs verified">verified</span> (公式 docs WebFetch、未実機検証)</dd>
+    <dt>verify 対象</dt><dd>hook config の <code>matcher</code> field は単数形 string、複数 tool 列挙は <code>matcher: "Bash|Edit"</code> 形式</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
+    <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-001-hook-matcher-singular.bats</code></dd>
+    <dt>期待結果</dt><dd>(a) <code>matcher: "Bash"</code> で hook 発火、(b) <code>matchers: ["Bash"]</code> で hook 発火しない or schema error</dd>
+    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §1.1、<a href="research-findings.html">research-findings.html</a> §7 DC-1</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-002">
+  <h3>EXP-002: hook exit code 0/1/2 の意味</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (公式 docs)</dd>
+    <dt>verify 対象</dt><dd>exit 0 = success (stdout JSON parse) / exit 2 = blocking error (deny) / exit 1 = non-blocking error (allow)</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
+    <dt>分類</dt><dd>bats unit</dd>
+    <dt>期待結果</dt><dd>exit 2 で tool denied、exit 1 で tool allowed + error log、exit 0 + JSON で permissionDecision に従う</dd>
+    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §3、<a href="research-findings.html">research-findings.html</a> §7 DC-2</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-003">
+  <h3>EXP-003: permissionDecision enum 受理</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (公式 docs)</dd>
+    <dt>verify 対象</dt><dd><code>permissionDecision: "allow"|"deny"|"ask"|"defer"</code> enum を hook が受理 (旧 <code>"approve"/"block"</code> は古い enum、現行サポート確認)</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
+    <dt>分類</dt><dd>bats unit</dd>
+    <dt>期待結果</dt><dd>4 enum で意図通り動作、不明 enum で error</dd>
+    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §3.1、<a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §1.3</dd>
+  </dl>
+</div>
+
+<h2>カテゴリ B: scheduled tasks (EXP-004)</h2>
+
+<div class="exp-block" id="EXP-004">
+  <h3>EXP-004: CronCreate durable=true bug #40228 reproduce</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (Issue #40228 OPEN、未実機再現)</dd>
+    <dt>verify 対象</dt><dd><code>CronCreate</code> with <code>durable=true</code> → output に "Session-only" 表示 + <code>~/.claude/scheduled_tasks.json</code> 不在 + 新 session で task 消滅</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://github.com/anthropics/claude-code/issues/40228">Issue #40228</a></dd>
+    <dt>分類</dt><dd>smoke (Claude session 必須、<code>experiments/EXP-004-croncreate-durable-bug-40228.smoke.sh</code>)</dd>
+    <dt>期待結果</dt><dd>3 件全て発生 (永続化されない)</dd>
+    <dt>代替策</dt><dd>Routines (cloud) / Desktop scheduled tasks / GitHub Actions schedule のいずれか</dd>
+    <dt>関連 spec</dt><dd><a href="admin-cycle.html">admin-cycle.html</a> §1.1、<a href="research-findings.html">research-findings.html</a> §7 DC-9</dd>
+  </dl>
+</div>
+
+<h2>カテゴリ C: MCP transport (EXP-005)</h2>
+
+<div class="exp-block" id="EXP-005">
+  <h3>EXP-005: stdio MCP auto-reconnect 不在</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (Issue #43177 OPEN、source code 引用)</dd>
+    <dt>verify 対象</dt><dd>stdio MCP server を <code>pkill -TERM</code> で強制切断 → Claude session 内で auto-reconnect なし (failed 状態、<code>/mcp</code> 手動 retry のみで復活)</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177</a> (useManageMCPConnections.ts L354-356)</dd>
+    <dt>分類</dt><dd>smoke (Claude session 必須、<code>experiments/EXP-005-stdio-mcp-no-autoreconnect.smoke.sh</code>)</dd>
+    <dt>期待結果</dt><dd>SIGTERM 後 5 attempts retry なし、`/mcp` で復活</dd>
+    <dt>代替策</dt><dd>HTTP transport 移行 (Phase 3) or Plugin Monitor で監視 (Phase 4)</dd>
+    <dt>関連 spec</dt><dd><a href="failure-analysis.html">failure-analysis.html</a> Bug #1687、<a href="research-findings.html">research-findings.html</a> §1 KP-3</dd>
+  </dl>
+</div>
+
+<h2>カテゴリ D: file mailbox (EXP-006)</h2>
+
+<div class="exp-block" id="EXP-006">
+  <h3>EXP-006: mailbox flock atomic write race condition</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (既存 <code>session-atomic-write.sh</code> L41-50 pattern、未 mailbox 特化検証)</dd>
+    <dt>verify 対象</dt><dd>N 並列 process が同 <code>.mailbox/&lt;session&gt;/inbox.jsonl</code> に書き込み → flock で atomic + JSON Lines 完整性 (壊れた行なし)</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://man7.org/linux/man-pages/man1/flock.1.html">flock(1) man</a> + 既存 session-atomic-write.sh</dd>
+    <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-006-mailbox-flock-race.bats</code></dd>
+    <dt>期待結果</dt><dd>100 並列 write 後、jq で全行 parse 成功、行数 = 100、order 不問</dd>
+    <dt>関連 spec</dt><dd><a href="spawn-protocol.html">spawn-protocol.html</a> §4 (mailbox.sh)、<a href="invariant-fate-table.html#inv-t">不変条件 T</a></dd>
+  </dl>
+</div>
+
+<h2>カテゴリ E: tier 1 + tier 2 hook (EXP-007〜008)</h2>
+
+<div class="exp-block" id="EXP-007">
+  <h3>EXP-007: tier 1 + tier 2 parallel 実行</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (公式仕様、未実機検証)</dd>
+    <dt>verify 対象</dt><dd>同 PreToolUse event に command hook (tier 1) + mcp_tool hook (tier 2) を登録 → 両方 parallel 実行、両 reason が additionalContext に含まれる</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
+    <dt>分類</dt><dd>bats + smoke</dd>
+    <dt>期待結果</dt><dd>両 hook 起動、reason 両方含む</dd>
+    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §4-5</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-008">
+  <h3>EXP-008: bypassPermissions でも tier 2 deny 効く</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (公式仕様: "PreToolUse は permission mode より先に発火")</dd>
+    <dt>verify 対象</dt><dd><code>--dangerously-skip-permissions</code> または <code>permission_mode: "bypassPermissions"</code> でも、PreToolUse hook の <code>deny</code> は tool call を block する</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
+    <dt>分類</dt><dd>smoke (Claude session 必須)</dd>
+    <dt>期待結果</dt><dd>bypassPermissions でも tool 起動 NG</dd>
+    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §3.2 (Inv W 構造的保証)</dd>
+  </dl>
+</div>
+
+<h2>カテゴリ F: Plugin 化 (EXP-009〜010)</h2>
+
+<div class="exp-block" id="EXP-009">
+  <h3>EXP-009: Plugin Monitor stdout が Claude session に notification</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (公式 docs schema)</dd>
+    <dt>verify 対象</dt><dd>plugin の <code>monitors/monitors.json</code> に <code>{"name":"test","command":"echo line1; sleep 1; echo line2","description":"..."}</code> を設定 → Claude session 内に line1, line2 が notification として届く</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a></dd>
+    <dt>分類</dt><dd>smoke (Claude + plugin 起動必須)</dd>
+    <dt>期待結果</dt><dd>各 stdout line が session 内 notification</dd>
+    <dt>関連 spec</dt><dd><a href="failure-analysis.html">failure-analysis.html</a> F-3、<a href="twl-mcp-integration.html">twl-mcp-integration.html</a> (mcp-watchdog 廃止代替)</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-010">
+  <h3>EXP-010: twl plugin 化 + namespace 解決</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (公式 docs)、<strong>spawn 設計の根幹</strong></dd>
+    <dt>verify 対象</dt><dd><code>plugins/twl/.claude-plugin/plugin.json</code> 作成、<code>claude --plugin-dir ./plugins/twl</code> で起動、<code>/twl:administrator</code> 等の slash command で skill invoke 成功</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a></dd>
+    <dt>分類</dt><dd>smoke</dd>
+    <dt>期待結果</dt><dd>plugin loaded、skill namespace で invoke、`/reload-plugins` で再 load 可</dd>
+    <dt>関連 spec</dt><dd><a href="spawn-protocol.html">spawn-protocol.html</a>、<a href="twl-mcp-integration.html">twl-mcp-integration.html</a></dd>
+  </dl>
+</div>
+
+<h2>カテゴリ G: step.sh framework (EXP-011〜014)</h2>
+
+<div class="exp-block" id="EXP-011">
+  <h3>EXP-011: step::run 4 phase lifecycle</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs deduced">deduced</span> (設計案のみ、未実装・未検証)</dd>
+    <dt>verify 対象</dt><dd>step::run が pre-check → exec → post-verify → report の順に実行、各 phase で mailbox event 発行</dd>
+    <dt>分類</dt><dd>bats unit</dd>
+    <dt>期待結果</dt><dd>4 mailbox event 順序通り emit</dd>
+    <dt>関連 spec</dt><dd><a href="step-verification.html">step-verification.html</a> §3、<a href="ssot-design.html">ssot-design.html</a> §3</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-012">
+  <h3>EXP-012: post-verify FAIL で step abort + escalate</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs deduced">deduced</span></dd>
+    <dt>verify 対象</dt><dd>test-scaffold step で test 数 0 増加 (RED test 未追加) → post-verify FAIL → step abort、pilot mailbox に <code>step-postverify-failed</code> mail</dd>
+    <dt>分類</dt><dd>bats unit</dd>
+    <dt>期待結果</dt><dd>exit code != 0、mail 1 件、評価 reason 含む</dd>
+    <dt>関連 spec</dt><dd><a href="invariant-fate-table.html#inv-u">不変条件 U</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-013">
+  <h3>EXP-013: per-Worker mailbox scope</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs deduced">deduced</span></dd>
+    <dt>verify 対象</dt><dd>2 worker 並列実行で各々が <code>.mailbox/&lt;worker&gt;/inbox.jsonl</code> に書き込み、共通 path 不在、cross-pollution なし</dd>
+    <dt>分類</dt><dd>bats unit</dd>
+    <dt>期待結果</dt><dd>2 mailbox 独立、内容 cross なし、Bug #1703 構造的不能化確認</dd>
+    <dt>関連 spec</dt><dd><a href="invariant-fate-table.html#inv-v">不変条件 V</a>、<a href="failure-analysis.html">failure-analysis.html</a> Bug #1703</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-014">
+  <h3>EXP-014: bash local -n nameref version check</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (bash 4.3+ 要件)、<strong>CI image 確認必要</strong></dd>
+    <dt>verify 対象</dt><dd>CI image (Ubuntu / GitHub Actions runner) で <code>bash --version</code> ≥ 4.3、<code>local -n</code> sample script 動作</dd>
+    <dt>verify source</dt><dd>GNU bash 4.3 changelog</dd>
+    <dt>分類</dt><dd>bats unit (CI で実行)</dd>
+    <dt>期待結果</dt><dd>bash 5.x 動作、nameref 機能</dd>
+    <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html</a> §3.3 bash 互換性注記</dd>
+  </dl>
+</div>
+
+<h2>カテゴリ H: toolchain (EXP-015〜018)</h2>
+
+<div class="exp-block" id="EXP-015">
+  <h3>EXP-015: gh project item-edit で status 更新</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (公式 flag 名)、<strong>本 repo の field_id / option_id verify 必要</strong></dd>
+    <dt>verify 対象</dt><dd><code>gh project field-list 18 --owner shuu5 --format json</code> で Status field の id 取得 → <code>gh project item-edit --id ... --project-id ... --field-id ... --single-select-option-id ...</code> で実 status 更新</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_project_item-edit">cli.github.com/manual/gh_project_item-edit</a></dd>
+    <dt>分類</dt><dd>smoke (test issue 1 件で実行、終了時 status 復元)</dd>
+    <dt>期待結果</dt><dd>status 更新成功、API rate limit OK</dd>
+    <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §5.2、<a href="admin-cycle.html">admin-cycle.html</a> §3.2</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-016">
+  <h3>EXP-016: tmux new-window -d 動作確認</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (man page)</dd>
+    <dt>verify 対象</dt><dd><code>tmux new-window -d -n test-window -c &lt;dir&gt; -- bash -c "sleep 5; exit"</code> で detached spawn、target session に新 window 追加、5 秒後に消滅</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://man7.org/linux/man-pages/man1/tmux.1.html">tmux(1)</a></dd>
+    <dt>分類</dt><dd>bats</dd>
+    <dt>期待結果</dt><dd>window 作成 / 消滅、tmux list-windows で確認</dd>
+    <dt>関連 spec</dt><dd><a href="spawn-protocol.html">spawn-protocol.html</a> §2</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-017">
+  <h3>EXP-017: tmux format 変数で pane state 取得</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (man page)</dd>
+    <dt>verify 対象</dt><dd><code>tmux list-windows -a -F '#{window_name}|#{pane_dead}|#{pane_active}|#{pane_in_mode}'</code> で各 window の pane state 取得、process exit 後 <code>#{pane_dead}=1</code></dd>
+    <dt>分類</dt><dd>bats</dd>
+    <dt>期待結果</dt><dd>format 変数で crash 検知可能 (capture-pane より高速・信頼)</dd>
+    <dt>関連 spec</dt><dd><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3、<a href="admin-cycle.html">admin-cycle.html</a> §3.3</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-018">
+  <h3>EXP-018: fastmcp v3.0.0 @mcp.tool + handler 分離</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (公式 docs)、<strong>handler 分離は twl 独自パターン (公式 docs 記載なし)</strong></dd>
+    <dt>verify 対象</dt><dd>fastmcp v3.0.0 で <code>mcp = FastMCP(name="test")</code> + <code>@mcp.tool</code> decorator + 純 Python handler を import して in-process test</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://gofastmcp.com/servers/tools">gofastmcp.com/servers/tools</a></dd>
+    <dt>分類</dt><dd>bats / pytest unit</dd>
+    <dt>期待結果</dt><dd>fastmcp なし環境でも handler 直接呼び出し成功 (deferred-tool pattern 動作)</dd>
+    <dt>関連 spec</dt><dd><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §1.1</dd>
+  </dl>
+</div>
+
+<h2>実行と結果集約 (将来 CI 自動化)</h2>
+
+<pre><code># 全 EXP 実行
+$ cd /home/shuu5/projects/local-projects/twill/main
+$ bash experiments/run-all.sh
+# → .audit/&lt;run-id&gt;-experiments/experiments/EXP-NNN.json (各 EXP の result)
+# → .audit/&lt;run-id&gt;-experiments/experiments/index.json (集約)
+
+# index.json 構造
+{
+  "run_id": "...",
+  "experiments": [
+    {"exp_id": "EXP-001", "pass": true, "ts": "...", "verify_source": "..."},
+    ...
+  ],
+  "generated_at": "..."
+}
+
+# 本 file の status badge は手動で update (Phase 4 で CI 自動化検討)
+</code></pre>
+
+<h2>関連 spec</h2>
+
+<ul>
+  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> (本 file の上位 spec、experiment hyperlink architecture)</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> (Phase 1 PoC 前提として EXP 実行)</li>
+  <li><a href="research-findings.html">research-findings.html</a> (verify source 集約)</li>
+  <li>個別 EXP の関連 spec section は各 EXP block の「関連 spec」field 参照</li>
+</ul>
+
+</body>
+</html>

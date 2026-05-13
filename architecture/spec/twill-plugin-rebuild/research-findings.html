@@ -249,7 +249,48 @@
   <li><strong><code>GITHUB_TOKEN</code> の Project Board 操作不可</strong> [verified、★]: project scope なし、PAT 必須</li>
 </ol>
 
-<h2>§7. 本 session で WebFetch verified した 5 件 (公式 docs)</h2>
+<h2>§6b. 本 session 第 3 弾の追加 WebFetch verified (5 件、2026-05-13)</h2>
+
+<table>
+  <thead><tr><th>verify 対象</th><th>結果</th><th>source</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Claude Code CLI <code>--skill</code> flag</td>
+      <td><strong>存在しない</strong>。skill invoke は slash command (<code>/plugin:skill-name</code>) で、plugin は強制 namespace。<code>--plugin-dir ./path</code> で local plugin test 可能、<code>/reload-plugins</code> で reload</td>
+      <td><a class="src-link" href="https://code.claude.com/docs/en/cli-reference">cli-reference</a> + <a class="src-link" href="https://code.claude.com/docs/en/plugins">plugins</a></td>
+    </tr>
+    <tr>
+      <td>Plugin Monitor (monitors/monitors.json)</td>
+      <td><strong>正式存在</strong>。schema = <code>[{"name":"...","command":"tail -F log","description":"..."}]</code>、stdout 各 line が Claude session に notification</td>
+      <td><a class="src-link" href="https://code.claude.com/docs/en/plugins">plugins</a></td>
+    </tr>
+    <tr>
+      <td><code>gh project item-edit</code> flags</td>
+      <td><code>--id</code> required、<code>--project-id</code> (non-draft only)、<code>--field-id</code> (field 更新時)、<code>--single-select-option-id</code> (single-select 専用)。<strong>1 invocation で 1 field のみ更新</strong></td>
+      <td><a class="src-link" href="https://cli.github.com/manual/gh_project_item-edit">gh project item-edit</a></td>
+    </tr>
+    <tr>
+      <td>bats-core v1.7.0+ syntax</td>
+      <td><code>@test "name" { ... }</code> / <code>run</code> / <code>$status</code> / <code>$output</code> / <code>${lines[@]}</code> verified、built-in assert なし (<code>bats-assert</code> external)、<code>bats_require_minimum_version 1.7.0</code></td>
+      <td><a class="src-link" href="https://bats-core.readthedocs.io/en/stable/writing-tests.html">writing-tests</a></td>
+    </tr>
+    <tr>
+      <td>tmux new-window / send-keys / capture-pane / list-windows</td>
+      <td>new-window <code>-a -b -d -k -P -F -n -t -c -e -S</code>、target <code>session:window.pane</code>、<code>=</code> で exact match、send-keys <code>-l</code>/<code>-R</code>、<code>-CC</code> control mode</td>
+      <td><a class="src-link" href="https://man7.org/linux/man-pages/man1/tmux.1.html">tmux(1)</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>6b.1 重大訂正 (前 session 主張から)</h3>
+
+<ul>
+  <li><strong>「<code>claude --skill</code> flag」は誤</strong>: spawn-tmux.sh 設計を「<code>claude</code> 起動 + slash command inject」または「plugin 化 + namespace」に修正済</li>
+  <li><strong>「Plugin Monitor は未知領域」は訂正</strong>: 公式に <code>monitors/monitors.json</code> schema verified、本 session で Phase 1 PoC に採用</li>
+  <li><strong>「fastmcp の deferred-tool pattern」は公式 docs に存在しない</strong>: twl 独自実装 pattern として明示</li>
+</ul>
+
+<h2>§7. 前 session で WebFetch verified した 5 件 (2026-05-12 第 2 弾)</h2>
 
 <table>
   <thead>

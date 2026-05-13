@@ -26,12 +26,15 @@
 <ol>
   <li><strong>Phase 1: PoC (Day 1-3)</strong> — 最小実装で 3 階層 + step verification + file mailbox + gate hook が動くことを実証
     <ul>
+      <li><strong>★ STEP -1 (本 session 第 3 弾追加、user 要望): 既存 PreToolUse hook 全件無効化</strong> — <code>plugins/twl/hooks/hooks.json</code> を <code>hooks.json.bak</code> に rename し、<code>hooks.json</code> を <code>{"hooks":{}}</code> (空) に置換 (or 必要最小限の安全 hook のみ残す: host-safety / commit-validate / merge-guard の 3 件)。<strong>背景</strong>: 既存 hook は新 architecture でほぼ全廃予定 (chain-runner 廃止に伴い無意味化)、error 通知が運用 noise になる。<strong>復旧</strong>: rollback 時に <code>hooks.json.bak</code> を rename で復元。<strong>影響</strong>: spec-review-gate / phase3-gate / refined-status-gate / pre-pr-gate / merge-gate-block 等 17 件無効化、新 phase-gate.sh (tier 1) は plugin scope に新規配置で代替</li>
+      <li><strong>★ STEP 0 (本 session 第 3 弾追加): sandbox EXP 実行</strong> — <code>bash experiments/run-all.sh</code> で全 EXP-001〜018 を実行、core claim を experiment-verified に格上げ (<a href="sandbox-experiment.html">sandbox-experiment.html</a> §8 recommended sequence)</li>
+      <li><strong>★ STEP 1 (本 session 第 3 弾追加): twl plugin 化</strong> — <code>plugins/twl/.claude-plugin/plugin.json</code> 作成、<code>claude --plugin-dir plugins/twl</code> で起動確認、<code>/twl:*</code> namespace で skill invoke 動作 <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a></li>
       <li>ADR-043 起票 (md 本体 + 本 spec directory を supplement として link)</li>
-      <li>新 helper 5 本作成 (mailbox.sh / step.sh / phase-gate.sh / spawn-tmux.sh / admin-cycle.sh、合計 ~200 lines)</li>
-      <li>SKILL.md 3 個 draft (phase-impl / worker-test-ready / administrator)</li>
-      <li>PreToolUse hook 設定 (<code>.claude/hooks/phase-gate.json</code>、<a href="gate-hook.html">verified schema</a>)</li>
-      <li><strong>mcp-watchdog.sh 廃止</strong> (research-findings.html §4): twl-watchdog 起動 hook 削除、<code>MCP server 'twl' not connected</code> 時は <code>/mcp</code> 手動 retry を運用ルール化</li>
-      <li><strong>GitHub 公式 MCP 追加</strong> (research-findings.html §3): <code>.mcp.json</code> に <code>github</code> server 追加 (<code>type: "http"</code> + <code>X-MCP-Toolsets: projects,issues,pull_requests,actions,repos</code> + <code>--read-only</code>)</li>
+      <li>新 helper 5 本作成 (mailbox.sh / step.sh / phase-gate.sh / spawn-tmux.sh / admin-cycle.sh、合計 ~260 lines、deletion-inventory §5 verified)</li>
+      <li>SKILL.md 3 個 draft (phase-impl / worker-test-ready / administrator)、plugin namespace で配置</li>
+      <li>PreToolUse hook 設定 (<code>plugins/twl/hooks/hooks.json</code>、<a href="gate-hook.html">verified schema</a>)</li>
+      <li><strong>Plugin Monitor 採用</strong> (本 session 第 3 弾): <code>plugins/twl/monitors/monitors.json</code> 新規、mcp-watchdog.sh 廃止 <a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></li>
+      <li><strong>GitHub 公式 MCP 追加</strong>: repo root <code>.mcp.json</code> に <code>github</code> server (<code>type: "http"</code> + <code>X-MCP-Toolsets</code> + <code>--read-only</code>)</li>
       <li>PoC 完遂: Issue #1660 sanitize を新 architecture で再実装 (6 step フロー、admin polling 検知 → phase-impl spawn → worker spawn → test-scaffold + green-impl + check → mail 集約 → status Implementing → phase-pr → branch protection auto-merge)</li>
     </ul>
   </li>

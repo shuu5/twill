@@ -30,17 +30,19 @@
 </ul>
 </div>
 
-<h2>2. 新原則 (7 条)</h2>
+<h2>2. 新原則 (9 条、本 session 第 3 弾で 2 条追加)</h2>
 
 <div class="good">
 <ol>
   <li><strong>LLM は判断のために使う</strong></li>
-  <li><strong>機械的処理は Claude Code primitives (hook / Skill / Agent / MCP の連携)</strong> で実現</li>
+  <li><strong>機械的処理は Claude Code primitives (hook / Skill / Agent / MCP / Plugin Monitor の連携)</strong> で実現</li>
   <li><strong>自作 script / 自作 MCP server は最小限</strong> (validate / status query の thin helper のみ)</li>
   <li><strong>administrator (1 個、user 代理)</strong> が全体采配、Project Board status を SSoT として参照</li>
   <li><strong>phase-* controller は administrator が 1 window = 1 個ずつ spawn</strong> (context reset、純粋指令)</li>
   <li><strong>status と phase は 1:1 対応</strong> (各 phase は 1 status 遷移のみ担当)</li>
   <li><strong>status gate は PreToolUse hook で機械化</strong> (前 status でない phase invoke は deny)</li>
+  <li><strong>twl は Claude Code 公式 plugin として正式化</strong> (本 session 第 3 弾追加): <code>.claude-plugin/plugin.json</code> + skill namespace <code>/twl:*</code> + Plugin Monitor + <code>--plugin-dir</code> local test。長期安定設計、upstream 仕様変更耐性</li>
+  <li><strong>各 spec claim は 4-state verification status で明示</strong> (本 session 第 3 弾追加): inferred → deduced → verified → experiment-verified。experiment-id hyperlink で sandbox 実地検証へ link、spec を living document として穴を計画的に埋める</li>
 </ol>
 </div>
 

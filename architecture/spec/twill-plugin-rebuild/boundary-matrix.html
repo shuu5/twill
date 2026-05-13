@@ -15,10 +15,10 @@
   <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
 </header>
 
-<div class="caution">本 file の<strong>詳細 content 実装は次 session</strong>。本 session で <a href="tool-architecture.html">tool-architecture.html</a> §2 を作成し、tool-* 列 (4 件統合) は確定済。残る administrator / pilot (phase-*) / worker (worker-*) の責務 boundary 詳細は次 session で content 化。</div>
+<div class="info">本 file は本 session で<strong>全列 content 化完了</strong>。tool-* 列は <a href="tool-architecture.html">tool-architecture.html</a> §2 確定、admin / pilot / worker 列は admin-cycle.html / spawn-protocol.html / step-verification.html と整合した content 化。</div>
 
 <h2>目的</h2>
-<p>administrator / pilot / worker / tool / phase の 5 entity の責務 boundary を行列形式で明示する。各 entity が何を行う / 行わない / 委譲する かを clean table で定義。</p>
+<p>administrator / pilot / worker / tool の 4 entity の責務 boundary を行列形式で明示する。各 entity が何を行う / 行わない / 委譲する かを clean table で定義。phase は pilot SKILL.md として実装される概念 (entity ではない、status 遷移 1 件に対応する SKILL)。</p>
 
 <h2>5x5 boundary matrix (暫定、tool 列のみ verified)</h2>
 
@@ -101,7 +101,94 @@
   </tbody>
 </table>
 
-<p>注: pilot / worker 列の詳細は次 session で content 化 (admin-cycle / spawn-protocol / step-verification の各 file と整合する)。</p>
+<p>本 table は admin-cycle.html / spawn-protocol.html / step-verification.html / gate-hook.html / tool-architecture.html と整合する verified content。</p>
+
+<h2>各 entity の責務詳細</h2>
+
+<h3>administrator (L0) の責務</h3>
+
+<dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
+  <dt>spawn 元</dt><dd>user 手動起動 (+ <code>--continue</code>/<code>--resume</code> で session 継続)。Desktop scheduled tasks で machine boot 自動起動も候補</dd>
+  <dt>spawn 先</dt><dd>pilot (phase-* 4 種) + tool-* 4 件 (限定)。spawn-tmux.sh 経由、Inv I-1 (idempotent) + I-2 (parallelism 上限) を守る</dd>
+  <dt>status 遷移</dt><dd><strong>read only</strong> (Inv I-5)。<code>gh project item-list</code> で 5 min cache poll。write は絶対禁止 (user 明示介入の例外のみ)</dd>
+  <dt>mailbox</dt><dd><code>.mailbox/admin/inbox.jsonl</code> のみ受信 (Inv I-4 pyramid)。worker 直接 mail 禁止、pilot 集約後に admin。flock 共有 lock で read</dd>
+  <dt>worktree</dt><dd><strong>操作禁止</strong> (read のみ)。<code>git worktree</code> コマンド実行禁止、pilot 経由</dd>
+  <dt>step.sh</dt><dd>利用しない (admin は polling cycle 6-step、step.sh framework は worker 専用)</dd>
+  <dt>gate hook</dt><dd>対象外 (admin は phase-* invocation でないため PreToolUse gate 発火しない)</dd>
+  <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/admin-cycle.jsonl</code> に全 cycle の read/judge/write 記録</dd>
+  <dt>受信 mail event</dt><dd><code>phase-completed</code> / <code>phase-failed</code> / <code>phase-gate-denied</code> / <code>spawn-completed</code> / <code>tool-completed</code> (tool-self-improve のみ)</dd>
+  <dt>送信 mail event</dt><dd><code>spawn-request</code> / <code>escalate-human-gate</code> / <code>budget-pause</code></dd>
+  <dt>escalate</dt><dd>3 連続 failure → ★HUMAN GATE (AskUserQuestion or Discord mail)。budget exhaustion → CronDelete + one-shot wakeup</dd>
+  <dt>crash recovery</dt><dd>heartbeat self-touch (Inv G)、session 死亡時は user 手動 <code>--continue</code>。CronCreate 復元 (7 日 expiry 注意)</dd>
+</dl>
+
+<h3>pilot (phase-*、L1) の責務</h3>
+
+<dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
+  <dt>spawn 元</dt><dd>administrator (<code>admin-cycle.sh</code> step 4)。spawn-tmux.sh wrapper 経由</dd>
+  <dt>spawn 先</dt><dd>worker のみ。worker 用 worktree を事前作成してから spawn (Inv B)</dd>
+  <dt>status 遷移</dt><dd><strong>遷移実行専任</strong>。<code>gh project item-edit --single-select-option-id</code> を 1 回のみ実行。担当 phase の 1 遷移のみ責任 (phase-impl なら Refined → Implementing)</dd>
+  <dt>mailbox</dt><dd>受信: worker から <code>.mailbox/&lt;phase-name&gt;/inbox.jsonl</code>。送信: <strong>admin mailbox に要約 mail のみ</strong> (pyramid 集約)。送受信両方を行う唯一の layer</dd>
+  <dt>worktree</dt><dd><strong>lifecycle 専任</strong> (Inv B)。<code>git worktree add</code> (phase 開始時) + <code>git worktree remove</code> (phase 完了時)。worker は worktree を自ら作成・削除しない</dd>
+  <dt>step.sh</dt><dd>worker SKILL.md で <code>step::run</code> を呼び出す規約を提供。pilot 自身は step.sh 直接呼ばない</dd>
+  <dt>gate hook</dt><dd><strong>PreToolUse gate 対象</strong> (Inv W)。phase-gate.sh (tier 1) + twl_phase_gate_check (tier 2) が pilot invocation 時に発火、前提 status 不一致なら deny + admin notify</dd>
+  <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/pilot/&lt;name&gt;/</code> 配下に phase lifecycle 全 event 記録</dd>
+  <dt>送信 mail event</dt><dd><code>phase-started</code> / <code>phase-progress</code> / <code>phase-completed</code> / <code>phase-failed</code> / <code>merge-gate-failed</code></dd>
+  <dt>review framework</dt><dd>worker 出力検証 (step post-verify 結果確認、src diff、test count 増加確認)。Inv K (Pilot 実装禁止) で src diff = pilot のみは FAIL</dd>
+  <dt>merge gate</dt><dd>phase-pr pilot のみが PR merge を実行 (Inv C 保全)。他 phase の pilot は merge 禁止</dd>
+  <dt>内部 subagent</dt><dd>1 階層内側 subagent 可 (codex CLI 等、verified 公式制約)、子 spawn 禁止</dd>
+</dl>
+
+<h3>worker (worker-*、L2) の責務</h3>
+
+<dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
+  <dt>spawn 元</dt><dd>pilot (<code>spawn-tmux.sh</code>)。pilot が worktree を作成してから worker を起動する順序が必須 (Inv B)</dd>
+  <dt>spawn 先</dt><dd><strong>禁止</strong>。内部 subagent (codex CLI 等) は 1 階層のみ可 (公式 verified)。<code>tmux new-window</code> / <code>claude --plugin-dir</code> の呼び出し禁止 (cross-session pollution 防止)</dd>
+  <dt>status 遷移</dt><dd><strong>更新禁止</strong>。pilot 経由のみ。<code>gh project item-edit</code> 実行は MUST NOT。worker は pilot に mail で報告し、pilot が status を遷移</dd>
+  <dt>mailbox</dt><dd>pilot の mailbox (<code>.mailbox/&lt;phase-name&gt;/inbox.jsonl</code>) にのみ書き込み。chain step ごとに <code>step-*</code> event を emit。flock exclusive lock で atomic write (Inv T)</dd>
+  <dt>worktree</dt><dd>自身の worktree 内での実作業のみ (cwd-guard Inv B)。pilot が作成した worktree の中で <code>git checkout</code>, <code>edit</code>, <code>test</code> 実行。他 Issue の worktree に触れることは MUST NOT (Inv V)</dd>
+  <dt>step.sh</dt><dd><strong><code>step::run &lt;name&gt; &lt;exec_fn&gt; &lt;verify_fn&gt;</code> の 4 phase lifecycle</strong> (pre-check → exec → post-verify → report) を MUST (Inv U)。self-report-only 禁止</dd>
+  <dt>gate hook</dt><dd>対象外。worker 自身が Skill invoke しないため PreToolUse gate 発火しない。gate は spawn する pilot の invocation 時に発火済み</dd>
+  <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/workers/&lt;name&gt;/</code> 配下に step lifecycle 全 4 phase 記録</dd>
+  <dt>送信 mail event</dt><dd><code>step-started</code> / <code>step-completed</code> / <code>step-precheck-failed</code> / <code>step-postverify-failed</code></dd>
+  <dt>内部 subagent</dt><dd>1 階層内側のみ可。codex CLI 等の呼び出しは可、subagent が更に子 spawn は禁止</dd>
+  <dt>checkpoint</dt><dd><code>.mailbox/&lt;worker-name&gt;/</code> または per-Worker パスが必須 (Inv V)。共通 path への write は <code>--shared</code> フラグ明示 + audit log 必須</dd>
+</dl>
+
+<h3>tool-* (4 件、独立) の責務</h3>
+
+<p>詳細は <a href="tool-architecture.html">tool-architecture.html</a> §2 参照。要約:</p>
+
+<dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
+  <dt>spawn 元</dt><dd>user 明示 (slash command <code>/twl:tool-architect &lt;args&gt;</code>) または admin (tool-architect/self-improve のみ、ADR-040 gate 通過後)</dd>
+  <dt>spawn 先</dt><dd>spawn 禁止 (内部 subagent 可、1 階層)</dd>
+  <dt>status 遷移</dt><dd>無関係 (MUST NOT 触れる)</dd>
+  <dt>mailbox</dt><dd>tool-self-improve のみ admin に <code>tool-completed</code> mail。他 3 tool は user に直接結果提示 (mailbox 不使用)</dd>
+  <dt>worktree</dt><dd>tool-architect のみ独自 worktree (PR 作成用)</dd>
+  <dt>step.sh</dt><dd>利用しない (status と無関係)</dd>
+  <dt>gate hook</dt><dd>対象外 (status と無関係、ADR-040 gate が SSoT)</dd>
+  <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/tools/&lt;name&gt;/</code> 配下</dd>
+</dl>
+
+<h2>cross-entity 通信 (禁止 + 許可)</h2>
+
+<table>
+  <thead><tr><th>from →</th><th>to</th><th>許可 / 禁止</th><th>方法</th></tr></thead>
+  <tbody>
+    <tr><td>user</td><td>admin / tool-*</td><td>許可</td><td>tmux session 直接起動</td></tr>
+    <tr><td>admin</td><td>pilot</td><td>許可</td><td>spawn-tmux.sh</td></tr>
+    <tr><td>admin</td><td>tool-* (一部)</td><td>限定許可</td><td>tool-architect / tool-self-improve のみ、ADR-040 gate</td></tr>
+    <tr><td>admin</td><td>worker</td><td><strong>禁止</strong></td><td>(Inv I-4 pyramid)</td></tr>
+    <tr><td>pilot</td><td>worker</td><td>許可</td><td>spawn-tmux.sh</td></tr>
+    <tr><td>pilot</td><td>admin</td><td>許可 (mail)</td><td><code>.mailbox/admin/inbox.jsonl</code> へ要約 mail</td></tr>
+    <tr><td>pilot</td><td>tool-*</td><td><strong>禁止</strong></td><td>(tool-* は user/admin invoke のみ)</td></tr>
+    <tr><td>worker</td><td>pilot</td><td>許可 (mail)</td><td><code>.mailbox/&lt;pilot&gt;/inbox.jsonl</code> へ step event</td></tr>
+    <tr><td>worker</td><td>admin / worker (他)</td><td><strong>禁止</strong></td><td>(Inv I-4)</td></tr>
+    <tr><td>tool-self-improve</td><td>admin</td><td>許可 (mail)</td><td><code>.mailbox/admin/inbox.jsonl</code> へ <code>tool-completed</code></td></tr>
+  </tbody>
+</table>
+
+<h2>関連 spec ファイル</h2>
 
 <h2>想定 outline (次 session で実装)</h2>
 <ol>

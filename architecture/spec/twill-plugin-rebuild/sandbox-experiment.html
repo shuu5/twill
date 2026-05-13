@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>twill plugin rebuild — sandbox experiment architecture</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--brand); }
+  .exp-card { background: var(--surface-primary); border: 1px solid var(--border-default); border-radius: var(--radius-lg); box-shadow: var(--elevation-1); padding: 16px 20px; margin: 16px 0; }
+  .exp-card h4 { margin-top: 0; }
+  .exp-table { font-size: 14px; }
+  .exp-table th, .exp-table td { padding: 6px 10px; vertical-align: top; }
+  .exp-table td:first-child { font-family: var(--font-mono); font-weight: 700; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>sandbox experiment architecture — 実地検証 + spec hyperlink</h1>
+  <div class="meta">draft-v2 (2026-05-13) &middot; 4-state verification status + EXP-id 体系 + 既存 sandbox 機能継承</div>
+</header>
+
+<div class="info">
+  <strong>目的</strong>: 公式 docs WebFetch verified した内容を sandbox で <strong>実機再現確認</strong>し、各 spec claim の信頼度を 4-state status (inferred → deduced → verified → experiment-verified) で表現する。spec を <strong>living document</strong> として、未検証部分 (穴) を計画的に EXP で埋めていく仕組みを構築。<br>
+  <br>
+  <strong>長期安定設計</strong>: twl を Claude Code 公式 plugin として正式化 (<code>.claude-plugin/plugin.json</code>)、Plugin Monitor (公式機能) を採用、experiment-id を spec 全体の verification hyperlink target として使用。
+</div>
+
+<h2>§1. 4-state verification status (本 spec 全体で使用)</h2>
+
+<table>
+  <thead>
+    <tr><th>status</th><th>意味</th><th>判断基準</th><th>例</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="vs inferred">inferred</span></td><td>LLM 推測のみ</td><td>根拠 file / docs を読んでいない</td><td>「~であろう」</td></tr>
+    <tr><td><span class="vs deduced">deduced</span></td><td>文書 / 型から逆算</td><td>code コメント / 関連 docs から推測</td><td>「コメントから推測」</td></tr>
+    <tr><td><span class="vs verified">verified</span></td><td>公式 docs / 実 file 確認</td><td>WebFetch + URL 引用 or git verified line</td><td>「Claude Code docs L42 引用」</td></tr>
+    <tr><td><span class="vs experiment-verified">experiment-verified</span></td><td>sandbox 実機再現</td><td>EXP-id + 結果 JSON + 期待 assert PASS</td><td>「EXP-001 で actual reproduction 確認」</td></tr>
+  </tbody>
+</table>
+
+<p>各 spec claim 横に badge 表示。<strong>experiment-verified は最高位</strong>、Phase 1 PoC 着手前に core claim を全件ここまで持ち上げる目標。</p>
+
+<h2>§2. 既存 sandbox / test 機能 inventory (verified)</h2>
+
+<table>
+  <thead>
+    <tr><th>機能</th><th>path</th><th>現状 (verified)</th><th>新 architecture での継承</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>test-fixtures/</code></td>
+      <td><code>/home/shuu5/projects/local-projects/twill/main/test-fixtures/</code></td>
+      <td>CLAUDE.md + minimal-plugin/ (deps.yaml v3.0 schema 検証 fixture) + .gitignore</td>
+      <td>継承 + <code>experiments/hooks/</code> sub-dir 追加 (案 1)</td>
+    </tr>
+    <tr>
+      <td><code>.audit/</code></td>
+      <td><code>cli/twl/src/twl/autopilot/audit.py</code></td>
+      <td><code>TWL_AUDIT=1</code> + <code>audit_snapshot()</code> isomorphic API、<code>.audit/&lt;run-id&gt;/{specialists,checkpoints,state-log.jsonl,index.json}</code></td>
+      <td>継承、<code>.audit/&lt;run-id&gt;/experiments/&lt;EXP-id&gt;.json</code> 追加</td>
+    </tr>
+    <tr>
+      <td><code>audit_history.py</code></td>
+      <td><code>cli/twl/src/twl/autopilot/audit_history.py</code></td>
+      <td><code>.autopilot/trace/*/issue-*.jsonl</code> から step 実行頻度集計 + deps.yaml dead step 検出</td>
+      <td>継承、step.sh framework と統合</td>
+    </tr>
+    <tr>
+      <td><code>co-self-improve/SKILL.md</code></td>
+      <td><code>plugins/twl/skills/co-self-improve/SKILL.md</code></td>
+      <td>3 mode: scenario-run / retrospect / test-project-manage。orphan branch <code>test-target/main</code> で完全分離 worktree</td>
+      <td>rebrand → <code>tool-self-improve</code>、experiment runner として強化</td>
+    </tr>
+    <tr>
+      <td><code>tests/bats/</code></td>
+      <td><code>plugins/twl/tests/bats/</code></td>
+      <td>250 bats file、<code>helpers/common.bash</code> で <code>$SANDBOX = mktemp -d</code> + <code>stub_command</code> + <code>PYTHONPATH</code> 注入 pattern 確立</td>
+      <td>継承 + 新規 invariant T-X test 追加 (regression-test-strategy.html)</td>
+    </tr>
+    <tr>
+      <td><code>pre-tool-use-worktree-boundary.sh</code></td>
+      <td><code>plugins/twl/scripts/hooks/</code></td>
+      <td>hook bats verified pattern: <code>jq -e '.hookSpecificOutput.permissionDecision == "deny"'</code></td>
+      <td><strong>本 EXP の pattern source</strong> (verified 既存)</td>
+    </tr>
+    <tr>
+      <td><code>session-atomic-write.sh</code></td>
+      <td><code>plugins/twl/scripts/</code></td>
+      <td>flock pattern verified: <code>flock -x -w 10 9</code> + mktemp + mv (fd 9、timeout 10s)</td>
+      <td><strong>本 EXP の flock pattern source</strong> (verified 既存)</td>
+    </tr>
+    <tr>
+      <td><code>mcp-restart-smoke.yml</code></td>
+      <td><code>.github/workflows/</code></td>
+      <td>「kill server → <code>twl mcp doctor --auto-restart</code>」smoke test pattern verified</td>
+      <td><strong>本 EXP の smoke test pattern source</strong> (verified 既存)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>§3. experiment-id 規約</h2>
+
+<h3>3.1 file 配置</h3>
+
+<pre><code>experiments/                        # top-level (Claude Code session 必須)
+├── README.md                       # EXP 一覧 + 規約
+├── run-all.sh                      # TWL_AUDIT=1 で全 EXP 実行
+├── EXP-001-hook-matcher-singular.smoke.sh
+├── EXP-002-hook-exit-code-semantics.smoke.sh
+├── EXP-003-permission-decision-enum.smoke.sh
+├── EXP-004-croncreate-durable-bug-40228.smoke.sh
+├── EXP-005-stdio-mcp-no-autoreconnect.smoke.sh
+├── EXP-006-mailbox-flock-race.bats
+├── EXP-007-tier1-tier2-parallel.bats
+├── EXP-008-bypasspermissions-deny-effective.bats
+├── EXP-009-plugin-monitor-notification.smoke.sh
+├── EXP-010-plugin-namespace-loading.smoke.sh
+└── ...
+
+test-fixtures/experiments/hooks/    # bats unit test (mock 可能)
+├── EXP-001-hook-matcher-singular.bats
+├── EXP-002-hook-exit-code-semantics.bats
+├── EXP-003-permission-decision-enum.bats
+├── EXP-006-mailbox-flock-race.bats
+├── EXP-007-tier1-tier2-parallel.bats
+└── ...</code></pre>
+
+<p><strong>分担</strong>: bats 化可能な (mock で再現可能) なもの → <code>test-fixtures/experiments/hooks/</code>。Claude Code セッション or 公式 tool (CronCreate / Plugin Monitor) が必要なもの → <code>experiments/</code> top-level smoke test。</p>
+
+<h3>3.2 各 EXP file の構造規約</h3>
+
+<pre><code>#!/bin/bash
+# EXP-001: PreToolUse hook 'matcher' (singular) verified by official docs
+#
+# verify target: spec claim "matcher 単数が正しい (旧 'matchers' 複数形は誤)"
+# verify source (verified): https://code.claude.com/docs/en/hooks
+# expected: hook config with `matcher: "Bash"` is accepted, with `matchers: ["Bash"]` is rejected
+# related spec: gate-hook.html §1.1, research-findings.html §7
+
+set -euo pipefail
+
+EXP_ID="EXP-001"
+RUN_ID="${TWL_AUDIT_DIR:-/tmp}/experiments"
+mkdir -p "$RUN_ID"
+RESULT_FILE="$RUN_ID/${EXP_ID}.json"
+
+# === Phase 1: setup ===
+TMPDIR=$(mktemp -d)
+trap "rm -rf $TMPDIR" EXIT
+
+# === Phase 2: exec (with both schemas) ===
+# (詳細実装は次 session)
+
+# === Phase 3: assert ===
+PASS=true
+REASON=""
+
+# === Phase 4: report ===
+jq -n \
+  --arg id "$EXP_ID" \
+  --arg ts "$(date -Iseconds)" \
+  --arg src "https://code.claude.com/docs/en/hooks" \
+  --argjson pass "$PASS" \
+  --arg reason "$REASON" \
+  '{exp_id: $id, ts: $ts, verify_source: $src, pass: $pass, reason: $reason}' \
+  &gt; "$RESULT_FILE"
+
+if [[ "$PASS" == "true" ]]; then
+  echo "[$EXP_ID] PASS"
+  exit 0
+else
+  echo "[$EXP_ID] FAIL: $REASON" &gt;&amp;2
+  exit 1
+fi</code></pre>
+
+<h3>3.3 audit 統合</h3>
+
+<p><code>experiments/run-all.sh</code>:</p>
+
+<pre><code>#!/bin/bash
+set -euo pipefail
+
+export TWL_AUDIT=1
+export TWL_AUDIT_DIR="$(pwd)/.audit/$(date +%Y%m%d-%H%M%S)-experiments"
+mkdir -p "$TWL_AUDIT_DIR/experiments"
+
+# 1. bats 化可能 (test-fixtures 内)
+bats test-fixtures/experiments/hooks/
+
+# 2. smoke test (top-level)
+for exp in experiments/EXP-*.smoke.sh; do
+  bash "$exp" || echo "[FAIL] $exp"
+done
+
+# 3. index 集約
+jq -s '{run_id: env.TWL_AUDIT_DIR, experiments: ., generated_at: now | todate}' \
+  "$TWL_AUDIT_DIR/experiments/"*.json &gt; "$TWL_AUDIT_DIR/experiments/index.json"
+
+echo "All experiments completed. Results: $TWL_AUDIT_DIR/experiments/"</code></pre>
+
+<h2>§4. spec 内 hyperlink syntax</h2>
+
+<p>各 claim に inline で 2 種の link を併記する:</p>
+
+<ul>
+  <li><strong>公式 verify source</strong>: WebFetch verified の URL (<code>src-link</code> class)</li>
+  <li><strong>experiment-id</strong>: sandbox 実機再現 script (<code>exp-link</code> class)</li>
+</ul>
+
+<h3>4.1 サンプル (新 syntax):</h3>
+
+<pre><code>&lt;p&gt;
+PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
+&lt;span class="vs experiment-verified"&gt;experiment-verified&lt;/span&gt;
+&lt;a class="src-link" href="https://code.claude.com/docs/en/hooks"&gt;official&lt;/a&gt;
+&lt;a class="exp-link" href="experiment-index.html#EXP-001"&gt;EXP-001&lt;/a&gt;
+&lt;/p&gt;</code></pre>
+
+<h3>4.2 表示例</h3>
+
+<p>
+  PreToolUse hook schema は <code>matcher</code> 単数を使う
+  <span class="vs experiment-verified">experiment-verified</span>
+  <a class="src-link" href="https://code.claude.com/docs/en/hooks">official</a>
+  <a class="exp-link" href="experiment-index.html#EXP-001">EXP-001</a>
+</p>
+
+<p>これにより user は click 1 回で公式 docs / experiment script に飛べる。</p>
+
+<h2>§5. 6 カテゴリ × 10 EXP 初期計画</h2>
+
+<table class="exp-table">
+  <thead>
+    <tr><th style="width: 16%">EXP-id</th><th>検証対象</th><th>verify source</th><th>分類</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>EXP-001</td>
+      <td>hook <code>matcher</code> 単数の schema 受理</td>
+      <td><a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></td>
+      <td>hook bats</td>
+    </tr>
+    <tr>
+      <td>EXP-002</td>
+      <td>hook exit code 0/1/2 の挙動 (deny / non-blocking / blocking)</td>
+      <td>同上</td>
+      <td>hook bats</td>
+    </tr>
+    <tr>
+      <td>EXP-003</td>
+      <td><code>permissionDecision: "allow"|"deny"|"ask"|"defer"</code> enum 受理</td>
+      <td>同上</td>
+      <td>hook bats</td>
+    </tr>
+    <tr>
+      <td>EXP-004</td>
+      <td>CronCreate <code>durable=true</code> bug #40228 reproduce</td>
+      <td><a href="https://github.com/anthropics/claude-code/issues/40228">Issue #40228</a></td>
+      <td>smoke (Claude session 必須)</td>
+    </tr>
+    <tr>
+      <td>EXP-005</td>
+      <td>stdio MCP auto-reconnect 不在 (SIGTERM 後 reconnect なし)</td>
+      <td><a href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177</a></td>
+      <td>smoke</td>
+    </tr>
+    <tr>
+      <td>EXP-006</td>
+      <td>mailbox flock atomic write の race condition test</td>
+      <td><a href="https://man7.org/linux/man-pages/man1/flock.1.html">flock(1)</a> + session-atomic-write.sh</td>
+      <td>bats unit</td>
+    </tr>
+    <tr>
+      <td>EXP-007</td>
+      <td>tier 1 (command) + tier 2 (mcp_tool) hook parallel 実行</td>
+      <td><a href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></td>
+      <td>bats + smoke</td>
+    </tr>
+    <tr>
+      <td>EXP-008</td>
+      <td><code>bypassPermissions</code> mode でも tier 2 deny が効く</td>
+      <td>同上</td>
+      <td>smoke</td>
+    </tr>
+    <tr>
+      <td>EXP-009</td>
+      <td>Plugin Monitor (<code>monitors/monitors.json</code>) stdout が Claude に notification</td>
+      <td><a href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a></td>
+      <td>smoke</td>
+    </tr>
+    <tr>
+      <td>EXP-010</td>
+      <td>twl plugin 化 (<code>.claude-plugin/plugin.json</code>) + namespace 解決</td>
+      <td>同上</td>
+      <td>smoke</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>§6. step.sh framework verification (追加 EXP)</h2>
+
+<table class="exp-table">
+  <thead><tr><th>EXP-id</th><th>検証対象</th><th>分類</th></tr></thead>
+  <tbody>
+    <tr><td>EXP-011</td><td>step::run 4 phase lifecycle (pre-check → exec → post-verify → report)</td><td>bats</td></tr>
+    <tr><td>EXP-012</td><td>post-verify FAIL で step abort + pilot escalate mail emit</td><td>bats</td></tr>
+    <tr><td>EXP-013</td><td>per-Worker mailbox path (<code>--shared</code> なしで共通 path 書き込み禁止)</td><td>bats</td></tr>
+    <tr><td>EXP-014</td><td>local -n nameref が CI bash version で動くか (bash 4.3+ 確認)</td><td>bats</td></tr>
+  </tbody>
+</table>
+
+<h2>§7. ツールチェーン verification (追加 EXP)</h2>
+
+<table class="exp-table">
+  <thead><tr><th>EXP-id</th><th>検証対象</th><th>分類</th></tr></thead>
+  <tbody>
+    <tr><td>EXP-015</td><td><code>gh project item-edit --single-select-option-id</code> で status 更新 (verified flag)</td><td>smoke</td></tr>
+    <tr><td>EXP-016</td><td><code>tmux new-window -d -n &lt;name&gt;</code> で detached spawn 成功</td><td>bats</td></tr>
+    <tr><td>EXP-017</td><td><code>#{pane_dead}</code>/<code>#{pane_active}</code> format 変数で crash 検知</td><td>bats</td></tr>
+    <tr><td>EXP-018</td><td>fastmcp v3.0.0 <code>@mcp.tool</code> 構文 + handler 分離 pattern</td><td>bats unit</td></tr>
+  </tbody>
+</table>
+
+<h2>§8. Phase 1 PoC 前の sandbox 実験 sequence (推奨順)</h2>
+
+<ol>
+  <li><strong>EXP-001 ~ EXP-003</strong> (hook schema): 既存 <code>pre-tool-use-worktree-boundary.bats</code> pattern を踏襲、最小 setup で着手</li>
+  <li><strong>EXP-006</strong> (flock): <code>session-atomic-write.sh</code> の既存 pattern を参考、race condition test</li>
+  <li><strong>EXP-014</strong> (bash version): CI image で <code>bash --version</code> + <code>local -n</code> test、code 影響大</li>
+  <li><strong>EXP-009 ~ EXP-010</strong> (Plugin): twl plugin 化前の dry-run、<code>.claude-plugin/plugin.json</code> 試作</li>
+  <li><strong>EXP-004 ~ EXP-005</strong> (CronCreate / stdio MCP): 公式 bug の reproduce、対策の代替経路確認</li>
+  <li><strong>EXP-007 ~ EXP-008</strong> (tier 1+2 hook): Phase 1 PoC の前提</li>
+  <li><strong>EXP-011 ~ EXP-013</strong> (step.sh): Phase 1 PoC で実装と並走</li>
+  <li><strong>EXP-015 ~ EXP-018</strong> (toolchain): 各 helper 実装前に動作確認</li>
+</ol>
+
+<h2>§9. spec hyperlink integration plan</h2>
+
+<p>本 sandbox-experiment.html 公開後、以下の spec file を順次更新して experiment-id hyperlink を埋め込む:</p>
+
+<table>
+  <thead>
+    <tr><th>spec file</th><th>埋め込み EXP-id</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="gate-hook.html">gate-hook.html</a></td><td>EXP-001 / 002 / 003 / 007 / 008</td></tr>
+    <tr><td><a href="admin-cycle.html">admin-cycle.html</a></td><td>EXP-004 (CronCreate)、EXP-009 (Plugin Monitor)</td></tr>
+    <tr><td><a href="twl-mcp-integration.html">twl-mcp-integration.html</a></td><td>EXP-005 (stdio MCP)、EXP-010 (plugin)、EXP-018 (fastmcp)</td></tr>
+    <tr><td><a href="spawn-protocol.html">spawn-protocol.html</a></td><td>EXP-006 (flock)、EXP-010 (plugin namespace)、EXP-016/017 (tmux)</td></tr>
+    <tr><td><a href="step-verification.html">step-verification.html</a></td><td>EXP-011 / 012 / 014</td></tr>
+    <tr><td><a href="ssot-design.html">ssot-design.html</a></td><td>EXP-014 (bash version)、EXP-015 (gh project)</td></tr>
+    <tr><td><a href="invariant-fate-table.html">invariant-fate-table.html</a></td><td>不変条件 T (EXP-006/013)、U (EXP-011/012)、V (EXP-013)、W (EXP-001-003, 007-008)、X (EXP-005, 009)</td></tr>
+    <tr><td><a href="failure-analysis.html">failure-analysis.html</a></td><td>Bug #1687 → EXP-005、Bug #1703 → EXP-013、Bug #973 → EXP-011 / 012</td></tr>
+  </tbody>
+</table>
+
+<h2>§10. experiment-index.html (全 EXP 一覧、別 file)</h2>
+
+<p>個別 EXP の詳細記述、現在の status (inferred / deduced / verified / experiment-verified)、最新実行結果 hash、関連 spec section を集約した index は <a href="experiment-index.html">experiment-index.html</a> 参照。bats CI で自動更新を将来検討。</p>
+
+<h2>§11. 改善案 (案 1+3 採用、Agent B 分析)</h2>
+
+<table>
+  <thead>
+    <tr><th>case</th><th>採否</th><th>用途</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>案 1: <code>test-fixtures/experiments/hooks/</code> 拡張</td><td><strong>採用</strong></td><td>bats 化可能な unit test (mock 可能)。既存 governance (CLAUDE.md hook ブロック) 継承、最小侵食</td></tr>
+    <tr><td>案 2: <code>tool-self-improve</code> 強化</td><td>限定採用</td><td>orphan worktree は重い、Claude Code session 必須 EXP に限定 (例: EXP-004 / EXP-009)</td></tr>
+    <tr><td>案 3: <code>experiments/</code> top-level 新設</td><td><strong>採用</strong></td><td>Claude Code セッション実行が必要な smoke test 置き場、bats と分離</td></tr>
+    <tr><td>案 4: 別 repo <code>twill-sandbox</code></td><td>不採用</td><td>twl 依存複製コスト大、本 phase では不要</td></tr>
+  </tbody>
+</table>
+
+<h2>§12. 長期安定設計の根拠</h2>
+
+<ul>
+  <li><strong>twl plugin 化</strong> (公式 path): Claude Code 公式 plugin システム (<code>.claude-plugin/plugin.json</code> + skill namespace + Plugin Monitor + <code>--plugin-dir</code> local test) に乗ることで upstream 仕様変更耐性 + reload 自動化 + 規約保証 を得る</li>
+  <li><strong>Plugin Monitor 採用</strong>: <code>monitors/monitors.json</code> で MCP server health log を Claude session 内 notification 化、mcp-watchdog 廃止後の official 代替</li>
+  <li><strong>experiment-id hyperlink</strong>: 各 spec claim の verification level を 4-state status で明示、未検証 (inferred / deduced) を計画的に EXP で潰す living document</li>
+  <li><strong>4-state status</strong>: inferred → deduced → verified → experiment-verified の昇格パスを spec 全体で運用、最終的に core claim を experiment-verified まで持ち上げ Phase 1 PoC 着手</li>
+</ul>
+
+<h2>§13. 関連 spec ファイル</h2>
+
+<ul>
+  <li><a href="experiment-index.html">experiment-index.html</a> — 全 EXP 一覧 + 現 status + 結果集約</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 1 PoC — sandbox 実験完了を前提</li>
+  <li><a href="gate-hook.html">gate-hook.html</a> + <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> + <a href="admin-cycle.html">admin-cycle.html</a> — EXP-id を hyperlink で参照</li>
+  <li><a href="research-findings.html">research-findings.html</a> — 公式 verify source 集約 (各 EXP の verify source URL リスト)</li>
+  <li>既存 sandbox 機能: <code>test-fixtures/CLAUDE.md</code> / <code>plugins/twl/skills/co-self-improve/SKILL.md</code> / <code>cli/twl/src/twl/autopilot/audit.py</code></li>
+</ul>
+
+</body>
+</html>
