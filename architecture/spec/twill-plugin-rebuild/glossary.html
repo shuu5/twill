@@ -73,7 +73,7 @@
     <tr><td><strong>forbidden synonym</strong></td><td>entity の禁止語。<code>twl audit --vocabulary</code> で word boundary 厳密 detect、severity: warning</td></tr>
     <tr><td><strong>1 entity = 1 name ルール</strong></td><td>同一概念 entity に対し canonical name を 1 つだけ与える。多重 synonym は forbidden 扱いで audit</td></tr>
     <tr><td><strong>公式名衝突回避</strong></td><td>公式 Claude Code 名 (<code>Agent</code>/<code>Skill</code>/<code>Tool</code>/<code>Plan</code>/<code>Explore</code>) は大文字始まり + backtick、twl 内部 entity は小文字 + role-prefix</td></tr>
-    <tr><td><strong>migration_stage entity</strong></td><td>Strangler Fig migration の phase 番号 (<code>Phase 1 PoC</code>/<code>Phase 2 dual-stack</code>/<code>Phase 3 cutover</code>/<code>Phase 4 cleanup</code>) は backtick + 大文字で migration_stage entity として明示分離、<code>phase</code> forbidden audit から除外</td></tr>
+    <tr><td><strong>migration-stage entity</strong></td><td>Strangler Fig migration の phase 番号 (<code>Phase 1 PoC</code>/<code>Phase 2 dual-stack</code>/<code>Phase 3 cutover</code>/<code>Phase 4 cleanup</code>) は backtick + 大文字で migration-stage entity として明示分離、<code>phase</code> forbidden audit から除外</td></tr>
   </tbody>
 </table>
 
@@ -157,7 +157,7 @@
     <tr><th>用語</th><th>定義</th><th>既存対応</th></tr>
   </thead>
   <tbody>
-    <tr><td><strong>不変条件 (invariant)</strong></td><td>system が満たすべき property、MUST レベル</td><td>既存 A-S 19 件 + 新規 T-X 5 件 (Inv U は第 5 弾 dig で「Atomic skill verification」に rename)</td></tr>
+    <tr><td><strong>不変条件 (invariant)</strong></td><td>system が満たすべき property、MUST レベル</td><td>現状 <code>ref-invariants.md</code> は A-N (14 件) のまま (drift)、実体は A-S (19 件、O/P/Q/R/S 後追加)。Step 2-1 で A-X (24 件) に rename + T-X 5 件追加予定。Inv U は第 5 弾 dig で「Atomic skill verification」に rename</td></tr>
     <tr><td><strong>MUST / SHOULD / MAY</strong></td><td>RFC 2119 の level</td><td>既存 <code>ref-invariants.md</code> と整合</td></tr>
   </tbody>
 </table>

@@ -86,8 +86,8 @@
       <li>protect: 既存 <code>&lt;code&gt;Phase 1 PoC&lt;/code&gt;</code>/<code>&lt;code&gt;Phase 2 dual-stack&lt;/code&gt;</code>/<code>&lt;code&gt;Phase 3 cutover&lt;/code&gt;</code>/<code>&lt;code&gt;Phase 4 cleanup&lt;/code&gt;</code> 等を一時 placeholder に escape</li>
       <li>裸の <code>\bPhase ([1-4])\b</code> を <code>&lt;code&gt;Phase $1&lt;/code&gt;</code> に backtick 化</li>
       <li>restore: protect placeholder を復元</li>
-      <li>結果: 裸の Phase 1-4 残存 0 件、<code>&lt;code&gt;Phase </code> 合計 131 件 (vocabulary <code>migration_stage</code> entity と整合、<code>twl audit --vocabulary</code> false positive 抑制基盤)</li>
-      <li>false positive (許容範囲): <code>sandbox-experiment.html</code> 内の bash script コメント「<code>Phase 1: setup</code>」「<code>Phase 2: exec</code>」「<code>Phase 3: assert</code>」も backtick 化 (一般語 phase の migration_stage 化、文脈上問題なし)</li>
+      <li>結果: 裸の Phase 1-4 残存 0 件、<code>&lt;code&gt;Phase </code> 合計 131 件 (vocabulary <code>migration-stage</code> entity と整合、<code>twl audit --vocabulary</code> false positive 抑制基盤)</li>
+      <li>false positive (許容範囲): <code>sandbox-experiment.html</code> 内の bash script コメント「<code>Phase 1: setup</code>」「<code>Phase 2: exec</code>」「<code>Phase 3: assert</code>」も backtick 化 (一般語 phase の migration-stage 化、文脈上問題なし)</li>
     </ul>
   </li>
   <li><strong>broken link fix</strong> (5 件):
@@ -129,7 +129,7 @@
 
 <ul>
   <li><code>twl audit --vocabulary</code> false positive 抑制 (文脈解析: backtick 引用、説明文の単語 vs 実 component name)</li>
-  <li><code>Step 0</code> / <code>Step 1</code> (公式 SKILL.md スタイル) と <code>Phase 1 PoC</code> (Strangler Fig migration_stage) の vocabulary table 例外処理詳細</li>
+  <li><code>Step 0</code> / <code>Step 1</code> (公式 SKILL.md スタイル) と <code>Phase 1 PoC</code> (Strangler Fig migration-stage) の vocabulary table 例外処理詳細</li>
   <li>phaser SKILL.md description 必須 standard template (administrator が AI 判断で phaser select する基準)</li>
   <li>vocabulary table 拡張 schedule (<code>Phase 1</code>: core 12 → <code>Phase 2</code>: 隠れ重複 → <code>Phase 3</code>: 全 entity)</li>
   <li>命名 policy ADR (ADR-045) 起票</li>

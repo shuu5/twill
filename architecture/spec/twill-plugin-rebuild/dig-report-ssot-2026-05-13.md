@@ -496,13 +496,15 @@ glossary:
 
 | concern | Authority SSoT | 場所 |
 |---|---|---|
-| 設計仕様 | architecture spec | `architecture/spec/twill-plugin-rebuild/` (26 file) |
-| 正典 ADR | ADR-043 等 | `plugins/twl/architecture/decisions/` |
+| 設計仕様 supplement (Authority の supplement、独立 Authority ではなく ADR の上位 doc) | architecture spec | `architecture/spec/twill-plugin-rebuild/` (27 file) |
+| 正典 ADR | ADR-043 等 (ADR-044 予定 chain SSoT、ADR-045 予定 命名 policy) | `plugins/twl/architecture/decisions/` |
 | **component 構成 + vocabulary + chain + integrity rules** | **registry.yaml (新規)** | **`plugins/twl/registry.yaml`** |
 | 不変条件 (invariant) | ref-invariants.md | `plugins/twl/refs/ref-invariants.md` |
 | Issue lifecycle status | Project Board | external (twill-ecosystem) |
 | **lesson** (cross-session knowledge) | **doobidoo MCP** | `http://100.82.69.124:18765/mcp` (cross-machine) |
 | 各 SKILL.md / agent.md 本体 | 実 file の frontmatter + body | `skills/*/SKILL.md` + `agents/specialist-*.md` |
+
+注: registry-schema.html §1.5.1 (本 file から派生する spec) では Authority SSoT を 8 件として列挙 (ADR-044/ADR-045 予定 + 各実 file を独立 entry 化)。本 dig-report は origin artifact として 7 件で記述、§1.5.1 が systematic enumeration。
 
 ### 5.2 Reference SSoT (Authority から参照される正典)
 

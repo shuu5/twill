@@ -149,7 +149,7 @@
 
 <h3>3.3 step 3: tmux windows 列挙</h3>
 
-<p><code>tmux list-windows -a -F '#{window_name}|#{pane_dead}'</code> で全 pilot/worker session の生存確認 (Inv G クラッシュ検知保証、format 変数 verified)。</p>
+<p><code>tmux list-windows -a -F '#{window_name}|#{pane_dead}'</code> で全 phaser session の生存確認 (Inv G クラッシュ検知保証、format 変数 verified)。specialist は subagent context で動作するため tmux window 不在。</p>
 
 <h3>3.4 step 4: spawn 判断</h3>
 
@@ -193,11 +193,11 @@
 <h2>§4. 不変条件 I-1〜I-7 (verified、本 spec 確定)</h2>
 
 <dl class="inv-row">
-  <dt>I-1</dt><dd><strong>同 Issue に 1 個のみ pilot spawn</strong> (idempotent guard)。spawn 前に tmux list-windows で確認、active なら skip。</dd>
-  <dt>I-2</dt><dd><strong>parallelism 上限 (default 3) 超過時は defer</strong>。<code>MAX_PARALLEL_PILOTS</code> env で override 可能。budget 5h budget %、context 効率を考慮した default。</dd>
-  <dt>I-3</dt><dd><strong>mail check が next spawn の prerequisite</strong>。新 phase spawn 前に当該 Issue の未読 pilot mail を全件 process。</dd>
-  <dt>I-4</dt><dd><strong>administrator は worker のことを直接知らない</strong>。pilot mail のみ受信、worker 直接 mail 不可。pyramid 集約 model。</dd>
-  <dt>I-5</dt><dd><strong>status 更新は pilot 任せ</strong> (admin は read のみ)。<code>gh project item-edit</code> 実行は pilot 専任、admin が status を更新する場合は user 明示介入時のみ。</dd>
+  <dt>I-1</dt><dd><strong>同 Issue に 1 個のみ phaser spawn</strong> (idempotent guard)。spawn 前に tmux list-windows で確認、active なら skip。</dd>
+  <dt>I-2</dt><dd><strong>parallelism 上限 (default 3) 超過時は defer</strong>。<code>MAX_PARALLEL_PHASERS</code> env で override 可能。budget 5h budget %、context 効率を考慮した default。</dd>
+  <dt>I-3</dt><dd><strong>mail check が next spawn の prerequisite</strong>。新 phaser spawn 前に当該 Issue の未読 phaser mail を全件 process。</dd>
+  <dt>I-4</dt><dd><strong>administrator は atomic/specialist のことを直接知らない</strong>。phaser mail のみ受信、atomic/specialist 直接 mail 不可。pyramid 集約 model (specialist → atomic → workflow → phaser → administrator)。</dd>
+  <dt>I-5</dt><dd><strong>status 更新は phaser 任せ</strong> (admin は read のみ)。<code>gh project item-edit</code> 実行は phaser 専任、admin が status を更新する場合は user 明示介入時のみ。</dd>
   <dt>I-6</dt><dd><strong>escalate 時は user 確認</strong>。3 回連続 failure / 不明 mail / budget exhaustion → AskUserQuestion or mail to user。autonomous 判断は禁止。</dd>
   <dt>I-7</dt><dd><strong>tmux send-keys 使用禁止 (mailbox 経由のみ)</strong>。tmux 操作は spawn (new-window) と list (list-windows / format 変数) のみ、send-keys / capture-pane で他 session に inject 禁止 (escape 罠、cross-session pollution 防止)。</dd>
 </dl>

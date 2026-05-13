@@ -19,7 +19,7 @@
 </header>
 
 <div class="info">
-  <strong>目的</strong>: 新 architecture の 3 階層 spawn (administrator → pilot → worker) の機構と、階層型 file mailbox による通信 protocol を仕様化する。<strong>twl を Claude Code 公式 plugin として正式化</strong>することで長期安定性を確保。<br>
+  <strong>目的</strong>: 新 architecture の 10 role spawn (administrator → phaser → workflow + atomic + specialist) の機構と、階層型 file mailbox による通信 protocol を仕様化する。<strong>twl を Claude Code 公式 plugin として正式化</strong>することで長期安定性を確保。<br>
   <br>
   <strong>verified source</strong>: tmux(1) <span class="vs verified">verified</span> <a class="src-link" href="https://man7.org/linux/man-pages/man1/tmux.1.html">tmux man</a> + Claude Code plugins <span class="vs verified">verified</span> <a class="src-link" href="https://code.claude.com/docs/en/plugins">code.claude.com/docs/en/plugins</a> + flock(1) <span class="vs verified">verified</span> + 既存 <code>session-atomic-write.sh</code> L41-50 pattern
 </div>
@@ -77,8 +77,8 @@
   </thead>
   <tbody>
     <tr><td>L0 administrator</td><td>user 手動 + <code>--continue</code></td><td><code>admin</code> (固定 1 個)</td><td><code>claude --plugin-dir ./plugins/twl</code> + <code>/twl:administrator</code></td></tr>
-    <tr><td>L1 phaser (phase-*)</td><td>administrator</td><td><code>phase-&lt;type&gt;-&lt;issue&gt;</code></td><td><code>spawn-tmux.sh</code> wrapper</td></tr>
-    <tr><td>L2 workflow+specialist (worker-*)</td><td>pilot</td><td><code>worker-&lt;name&gt;-&lt;issue&gt;</code></td><td>同上</td></tr>
+    <tr><td>L1 phaser (phaser-*)</td><td>administrator</td><td><code>phaser-&lt;type&gt;-&lt;issue&gt;</code></td><td><code>spawn-tmux.sh</code> wrapper</td></tr>
+    <tr><td>L2 workflow+atomic+specialist</td><td>phaser (Skill() / Agent())</td><td><code>specialist-&lt;name&gt;-&lt;issue&gt;</code> (subagent only)</td><td>公式 Skill / Agent tool</td></tr>
     <tr><td>独立 tool-*</td><td>user 明示 (or admin、ADR-040 gate)</td><td><code>tool-&lt;name&gt;-&lt;ts&gt;</code></td><td>同上</td></tr>
   </tbody>
 </table>
@@ -184,11 +184,11 @@ main "$@"</code></pre>
 ├── admin/
 │   └── inbox.jsonl              # administrator が読む mail
 ├── phaser-impl-1660/
-│   └── inbox.jsonl              # pilot が worker mail を集約
+│   └── inbox.jsonl              # phaser が atomic/specialist mail を集約
 ├── phaser-pr-1660/
 │   └── inbox.jsonl
 ├── specialist-test-ready-1660/
-│   └── inbox.jsonl              # (worker は pilot mailbox に送る、自身 mailbox 不要な設計が default)
+│   └── inbox.jsonl              # (atomic/specialist は phaser mailbox に送る、自身 mailbox 不要な設計が default)
 └── archive/
     └── inbox-&lt;ts&gt;.jsonl         # 7 日 retention archive</code></pre>
 

@@ -38,14 +38,16 @@ twill plugin を **radical rebuild** する。設計の核心:
 
 第 5 弾 dig (`architecture/spec/twill-plugin-rebuild/dig-report-ssot-2026-05-13.md` Round 1-10) で 10 role 体系に確定:
 
-| # | role | prefix | location | description 有無 | 役割 |
+詳細 matrix (allowed-tools / can_spawn / 公式仕様根拠 / vocabulary entry を含む 8 column matrix) は `architecture/spec/twill-plugin-rebuild/registry-schema.html` §3 を参照。本 ADR では中核 6 column を sub-table として記載:
+
+| # | role | prefix | location | description 有無 | 役割 (主要 can_spawn) |
 |---|---|---|---|---|---|
-| 1 | **administrator** | (singleton) | `skills/administrator/` | 有 | L0、長命 main session、user 代理、Project Board status SSoT polling |
-| 2 | **phaser** | `phaser-` | `skills/phaser-*/` | 有 | L1、別 session window controller、status 遷移 1:1 (旧 pilot/phase/controller 5 重を `phaser` 1 語に統一) |
-| 3 | **tool** | `tool-` | `skills/tool-*/` | 有 | admin/user session 内独立 skill、status 無関係 (公式 `Tool` とは大文字 + backtick で区別) |
-| 4 | **workflow** | `workflow-` | `skills/workflow-*/` | 無 (`disable-model-invocation: true`) | phaser/tool から `Skill()` で呼ばれる sub-workflow、atomic を順次呼ぶ launcher |
-| 5 | **atomic** | `atomic-` | `skills/atomic-*/` | 無 (同上) | 最小実行単位、workflow から `Skill()` で呼ばれる、内部で必要なら `Agent(specialist-*)` |
-| 6 | **specialist** | `specialist-` | `agents/specialist-*.md` (公式 directory) | 有 (公式仕様必須) | `Agent` tool 経由 sub-agent、subagent spawn 不可 (verified) |
+| 1 | **administrator** | (singleton) | `skills/administrator/` | 有 | L0、長命 main session、Project Board status SSoT polling、phaser-* + tool-* を spawn |
+| 2 | **phaser** | `phaser-` | `skills/phaser-*/` | 有 | L1、status 遷移 1:1 (旧 pilot/phase/controller 5 重を 1 語統一)、workflow-* を `Skill()` で / specialist-* を `Agent()` で spawn |
+| 3 | **tool** | `tool-` | `skills/tool-*/` | 有 | admin/user session 内独立 skill、status 無関係 (公式 `Tool` とは大文字 + backtick で区別)、specialist-* を `Agent()` で spawn 可 |
+| 4 | **workflow** | `workflow-` | `skills/workflow-*/` | 無 (`disable-model-invocation: true`) | phaser/tool から `Skill()` で呼ばれる sub-workflow、atomic-* を `Skill()` で順次呼ぶ launcher |
+| 5 | **atomic** | `atomic-` | `skills/atomic-*/` | 無 (同上) | 最小実行単位、workflow から `Skill()` で呼ばれる、必要時のみ `Agent(specialist-*)` で spawn |
+| 6 | **specialist** | `specialist-` | `agents/specialist-*.md` (公式 directory) | 有 (公式仕様必須) | `Agent` tool 経由 sub-agent、独立 context window、**subagent spawn 不可** (sub-agents docs verbatim verified) |
 | 7 | **reference** | `ref-` | `refs/ref-*.md` | 概念外 | 不変条件 / prompt guide / pitfalls catalog 等の正典 doc |
 | 8 | **script** | event-based | `scripts/hooks/<event>-*.sh` | 概念外 | hook handler bash (skill 呼び出し用 script = 0 目標) |
 | 9 | **hook** | (registry entry) | `hooks/hooks.json` | 概念外 | Claude Code event handler config |

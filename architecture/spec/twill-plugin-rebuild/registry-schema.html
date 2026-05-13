@@ -299,7 +299,7 @@ chains:
         verify: all_tests_pass &amp;&amp; lint_pass
     next_workflow: workflow-pr-verify
 
-# §4. hooks + monitors (hooks.json + monitors.json の SSoT)
+# §4. hooks+monitors (hooks.json + monitors.json の SSoT、YAML key は hooks_monitors / hooks + monitors のように 2 sub-section に分割可)
 hooks:
   - name: hook-spec-write-boundary
     event: PreToolUse
@@ -379,9 +379,9 @@ integrity_rules:
       <td><code>skills/phaser-*/</code></td>
       <td><code>phaser-</code></td>
       <td><span class="vs verified">有</span></td>
-      <td>Skill, Bash, Read, mcp__twl__*</td>
-      <td>workflow-*、specialist-* (条件付き)</td>
-      <td><span class="vs verified">skills docs</span></td>
+      <td>Skill, Bash, Read, mcp__twl__*, Agent</td>
+      <td>workflow-* (<code>Skill()</code>) + specialist-* (<code>Agent()</code>、直接 spawn 可、ただし通常は atomic 経由)</td>
+      <td><span class="vs verified">skills + sub-agents docs</span></td>
       <td><a href="#vocab-phaser">§4</a></td>
     </tr>
     <tr>
@@ -632,14 +632,14 @@ glossary:
     description: mail JSON の event field
     examples: [step-started, step-completed, step-postverify-failed, phase-completed]
 
-  migration_stage:
-    canonical: migration_stage
+  migration-stage:
+    canonical: migration-stage
     aliases: []
     forbidden: []
     context: Strangler Fig migration phase (公式スタイル backtick + 大文字で例外扱い)
     description: |
       Strangler Fig migration の `Phase 1 PoC`/`Phase 2 dual-stack`/
-      `Phase 3 cutover`/`Phase 4 cleanup` を migration_stage entity として
+      `Phase 3 cutover`/`Phase 4 cleanup` を migration-stage entity として
       vocabulary table に登録、phase forbidden audit から除外。
     examples: ["`Phase 1 PoC`", "`Phase 2 dual-stack`", "`Phase 3 cutover`", "`Phase 4 cleanup`"]
 
@@ -775,7 +775,7 @@ glossary:
 <ol>
   <li>backtick 内の公式名引用 (<code>`Agent`</code>)</li>
   <li>「旧〜」「廃止予定 〜」と明示した説明文</li>
-  <li><code>`Phase 1 PoC`</code> 等の Strangler Fig migration_stage 表記</li>
+  <li><code>`Phase 1 PoC`</code> 等の Strangler Fig migration-stage 表記</li>
 </ol>
 
 <h2 id="s7">§7. 公式名衝突回避ルール</h2>
@@ -839,8 +839,8 @@ glossary:
 <h3>9.1 vocabulary table 拡張 schedule</h3>
 
 <ul>
-  <li><strong><code>Phase 1 PoC</code> seed</strong>: core 12 entity (10 role + status + status-transition + mailbox + inbox + mail + event + migration_stage + sandbox + EXP + lesson)</li>
-  <li><strong><code>Phase 2 dual-stack</code></strong>: 隠れ重複追加 entity (orchestrator/controller/supervisor 等の「旧 type」明示、Strangler Fig migration_stage 詳細)</li>
+  <li><strong><code>Phase 1 PoC</code> seed</strong>: core 12 entity (10 role + status + status-transition + mailbox + inbox + mail + event + migration-stage + sandbox + EXP + lesson)</li>
+  <li><strong><code>Phase 2 dual-stack</code></strong>: 隠れ重複追加 entity (orchestrator/controller/supervisor 等の「旧 type」明示、Strangler Fig migration-stage 詳細)</li>
   <li><strong><code>Phase 3 cutover</code></strong>: 全 spec entity (50+ 件) の vocabulary 登録</li>
 </ul>
 
@@ -861,7 +861,11 @@ glossary:
   <li>公式 Claude Code skill / agent / hook / monitor 仕様の breaking change 監視</li>
 </ul>
 
-<h3>9.4 命名 policy ADR (ADR-045) 起票予定</h3>
+<h3>9.4 LSP component の twl plugin scope 外明示</h3>
+
+<p>公式 Claude Code plugin の 6 component kind は <strong>skills / agents / hooks / MCP / LSP / monitors</strong> (plugins-reference verbatim verified)。twl plugin は <strong>LSP component を使用しない</strong> (現状 / 将来共に scope 外)。理由: twl は orchestration plugin であり、language server 機能が不要。LSP 利用が必要な場合は別 plugin として独立化することを推奨。</p>
+
+<h3>9.5 命名 policy ADR (ADR-045) 起票予定</h3>
 
 <p>本 file の Round 7-10 結果を formal ADR 化。第 5 弾 dig での「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR-045 として正式化。</p>
 

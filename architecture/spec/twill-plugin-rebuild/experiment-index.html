@@ -538,7 +538,7 @@ $ bash experiments/run-all.sh
     <dt>verify 対象</dt><dd><code>twl audit --vocabulary</code> が <code>phaser</code> forbidden list (<code>pilot</code>/<code>phase</code>/<code>controller</code>) を word boundary 厳密 detect + 公式名 (<code>Agent</code>/<code>Skill</code>/<code>Tool</code>) は false positive 抑制</dd>
     <dt>verify source</dt><dd><a href="registry-schema.html#s6">registry-schema.html §6 (audit_vocabulary pseudo-code)</a> + skills docs (公式名 verbatim)</dd>
     <dt>分類</dt><dd>bats unit (<code>test-fixtures/experiments/registry/vocabulary_audit.bats</code>)</dd>
-    <dt>期待結果</dt><dd>(a) spec 中の <code>pilot</code> 旧用法 → warning N 件 detect、(b) backtick 引用の <code>`co-autopilot`</code> → false positive 0、(c) <code>`Agent`</code> (公式名) → false positive 0、(d) <code>Phase 1 PoC</code> (migration_stage entity) → false positive 0</dd>
+    <dt>期待結果</dt><dd>(a) spec 中の <code>pilot</code> 旧用法 → warning N 件 detect、(b) backtick 引用の <code>`co-autopilot`</code> → false positive 0、(c) <code>`Agent`</code> (公式名) → false positive 0、(d) <code>Phase 1 PoC</code> (migration-stage entity) → false positive 0</dd>
     <dt>関連 spec</dt><dd><a href="registry-schema.html">registry-schema.html §4 + §6</a> + <a href="glossary.html">glossary.html §11</a></dd>
   </dl>
 </div>

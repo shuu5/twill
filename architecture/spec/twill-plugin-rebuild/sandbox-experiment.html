@@ -179,18 +179,18 @@ RUN_ID="${TWL_AUDIT_DIR:-/tmp}/experiments"
 mkdir -p "$RUN_ID"
 RESULT_FILE="$RUN_ID/${EXP_ID}.json"
 
-# === <code>Phase 1</code>: setup ===
+# === step 1: setup ===
 TMPDIR=$(mktemp -d)
 trap "rm -rf $TMPDIR" EXIT
 
-# === <code>Phase 2</code>: exec (with both schemas) ===
+# === step 2: exec (with both schemas) ===
 # (詳細実装は次 session)
 
-# === <code>Phase 3</code>: assert ===
+# === step 3: assert ===
 PASS=true
 REASON=""
 
-# === <code>Phase 4</code>: report ===
+# === step 4: report ===
 jq -n \
   --arg id "$EXP_ID" \
   --arg ts "$(date -Iseconds)" \

@@ -18,7 +18,7 @@
 
 <h2>1. 目的</h2>
 
-<p>新 spec の 3 階層 architecture (administrator / pilot / worker) の各層について、crash failure mode を仕様化する。既存 <strong>不変条件 G (クラッシュ検知保証)</strong> を強化し、各 crash の検知方法・recovery 手順・SLA を明示する。</p>
+<p>新 spec の 10 role architecture (administrator / phaser / workflow+atomic+specialist) の各層について、crash failure mode を仕様化する。既存 <strong>不変条件 G (クラッシュ検知保証)</strong> を強化し、各 crash の検知方法・recovery 手順・SLA を明示する。</p>
 
 <div class="critical">
 <strong>背景</strong>: 既存 plugin の <code>crash-detect.sh</code> + <code>pilot-fallback-monitor.sh</code> は worker crash のみカバー。pilot crash / administrator crash 時の recovery が不明確だった (failure-analysis.md の Bug #1674 関連)。本 spec で 3 階層全てを仕様化する。
@@ -37,7 +37,7 @@
 <tr><td>tmux window kill</td><td>user 手動 kill, tmux server restart</td><td>同上</td></tr>
 <tr><td rowspan="3"><strong>L0 administrator</strong></td><td>process exit (non-zero)</td><td>claude code internal error, OOM</td><td><strong>全 system</strong> (orchestration 不在)</td></tr>
 <tr><td>hang (CronCreate fire 不在)</td><td>API 障害, MCP server 障害</td><td>同上 (新 pilot spawn 不能)</td></tr>
-<tr><td>tmux server crash (#1360)</td><td>tmux server 死亡 (kill-server, OOM)</td><td>同上 + 全 active pilot/worker も巻き添え死</td></tr>
+<tr><td>tmux server crash (#1360)</td><td>tmux server 死亡 (kill-server, OOM)</td><td>同上 + 全 active phaser/specialist (subagent) も巻き添え死</td></tr>
 </tbody>
 </table>
 
@@ -152,9 +152,9 @@
 <table>
 <thead><tr><th>crash 種別</th><th>検知</th><th>recovery 手順</th><th>SLA</th></tr></thead>
 <tbody>
-<tr><td>process exit (non-zero)</td><td>administrator mailbox に `{event: "pilot-failure", issue: N}` mail (pilot が exit 前に書く)</td><td>administrator が同 phase pilot を最大 1 回 re-spawn (worker 状態は worker mailbox から復元)、2 回目失敗で user escalate</td><td>25 min (admin cycle)</td></tr>
-<tr><td>hang (mail 集約停止)</td><td>pilot heartbeat mtime &gt; 15 min</td><td>administrator が pilot tmux window を確認 → tmux 内では生存しているが mail 書込 停止 → kill + re-spawn</td><td>15 min (検知) + 25 min (cycle 内 re-spawn) = 最大 40 min</td></tr>
-<tr><td>tmux window kill</td><td>administrator が tmux list-windows で pilot window 不在検知</td><td>同上 (re-spawn 1 回 or user escalate)</td><td>25 min</td></tr>
+<tr><td>process exit (non-zero)</td><td>administrator mailbox に `{event: "phase-failure", issue: N}` mail (phaser が exit 前に書く)</td><td>administrator が同 phaser を最大 1 回 re-spawn (atomic/specialist 状態は phaser mailbox から復元)、2 回目失敗で user escalate</td><td>25 min (admin cycle)</td></tr>
+<tr><td>hang (mail 集約停止)</td><td>phaser heartbeat mtime &gt; 15 min</td><td>administrator が phaser tmux window を確認 → tmux 内では生存しているが mail 書込 停止 → kill + re-spawn</td><td>15 min (検知) + 25 min (cycle 内 re-spawn) = 最大 40 min</td></tr>
+<tr><td>tmux window kill</td><td>administrator が tmux list-windows で phaser window 不在検知</td><td>同上 (re-spawn 1 回 or user escalate)</td><td>25 min</td></tr>
 </tbody>
 </table>
 

@@ -192,7 +192,7 @@
 
 <h3>5.2 atomic SKILL.md inline 4-phase lifecycle</h3>
 
-<p>旧 <code>step.sh framework</code> の外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に <code>Step 0</code>〜<code>Step 3</code> として 4-phase を inline 実装。<code>Step N</code> は公式 SKILL.md スタイルの手順番号 (backtick + 大文字、migration_stage entity との混同なし)。</p>
+<p>旧 <code>step.sh framework</code> の外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に <code>Step 0</code>〜<code>Step 3</code> として 4-phase を inline 実装。<code>Step N</code> は公式 SKILL.md スタイルの手順番号 (backtick + 大文字、migration-stage entity との混同なし)。</p>
 
 <pre><code>---
 disable-model-invocation: true
@@ -262,7 +262,7 @@ allowed-tools: [Bash, Read, Edit, Agent]
 
 <table>
   <thead>
-    <tr><th>migration_stage</th><th>期間</th><th>本 SSoT 設計の作業</th></tr>
+    <tr><th>migration-stage</th><th>期間</th><th>本 SSoT 設計の作業</th></tr>
   </thead>
   <tbody>
     <tr><td><code>Phase 1 PoC</code></td><td>Day 1-3</td><td>registry.yaml 新規作成 + glossary section seed (core 12 entity) + EXP-032〜038 PASS + Issue #1660 sanitize 再実装</td></tr>
