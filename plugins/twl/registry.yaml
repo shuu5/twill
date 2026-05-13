@@ -19,7 +19,7 @@ created_at: "2026-05-13"
 last_updated: "2026-05-13"
 
 # =========================================================================
-# §1. glossary — vocabulary table (core 12 entity seed、第 5 弾 dig Round 7-10)
+# §1. glossary — vocabulary table (core 20 entity seed = 10 role + 10 non-role、+ 1 deprecated)
 # =========================================================================
 # 各 entry は 6 field schema: canonical / aliases / forbidden / context / description / examples
 # 詳細: ADR-045 Decision §2、registry-schema.html §4
@@ -290,13 +290,15 @@ glossary:
       - "budget 表示 5h:N%(Xm) format 誤読"
       - "tmux -C 破壊禁止"
 
-  # === deprecated compound entities (Phase 3 cutover で削除予定、現在は false positive 抑制用に canonical 登録) ===
+  # === deprecated entities (Phase 3 cutover で削除予定、現在は false positive 抑制用に canonical 登録) ===
 
   co-autopilot:
     canonical: co-autopilot
     aliases: []
     forbidden: []
-    context: deprecated compound name (Phase 1 PoC で canonical 登録、Phase 3 cutover で廃止)
+    context: deprecated
+    deprecated: true
+    deprecated_reason: "旧 controller 命名 (phaser-impl の前身)、Phase 3 cutover で実 file rename 完了後に削除"
     description: |
       旧 controller 命名。`phaser-impl` の前身として運用中だが、新規参照は禁止。
       vocabulary audit の compound exclusion ロジックが本 entry を canonical_names に
@@ -438,13 +440,17 @@ integrity_rules:
 
   - id: ssot_authority_unique
     description: Authority SSoT は concern ごとに 1 つのみ
-    severity: critical
+    severity: warning   # Phase 1 PoC stub (Phase 2 で critical に格上げ予定)
     audit_section: 12
+    stub: true
+    stub_reason: "Phase 2 で Authority field 追加と組み合わせて実装 (delegation の semantic verification は単純 overlap 検出では false positive)"
 
   - id: derived_drift_check
     description: types.py fallback が registry.yaml から drift していないか
     severity: warning
     audit_section: 12
+    stub: true
+    stub_reason: "Phase 1 PoC seed: types.py _FALLBACK_TOKEN_THRESHOLDS drift check not implemented"
 
   - id: prefix_role_match
     description: file prefix と role が一致 (phaser-* file は role phaser)
@@ -464,6 +470,8 @@ integrity_rules:
     description: 公式 Claude Code 名 (Agent/Skill/Tool 等) を backtick なしで twl 内部 entity として使用
     severity: warning
     audit_section: 11
+    stub: true
+    stub_reason: "Phase 1 PoC: not implemented (backtick exclusion partially covers)"
 
   - id: description_required_consistency
     description: |
@@ -471,6 +479,8 @@ integrity_rules:
       他 role (workflow/atomic) は disable-model-invocation: true + description 省略
     severity: warning
     audit_section: 12
+    stub: true
+    stub_reason: "Phase 1 PoC seed: description_required field consistency check not implemented"
 
 # =========================================================================
 # §6. token_thresholds — token budget 警告閾値 (types.py _FALLBACK_TOKEN_THRESHOLDS の Authority)

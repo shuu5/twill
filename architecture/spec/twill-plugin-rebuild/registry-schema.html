@@ -255,7 +255,7 @@
 version: "4.0"
 plugin: twl
 
-# §1. glossary (vocabulary table、core 12 entity + 10 role + 重要 entity)
+# §1. glossary (vocabulary table、core 20 entity = 10 role + 10 non-role、+ 1 deprecated)
 glossary:
   # ... 各 entity を 6 field で listing。詳細は §4
 
@@ -497,7 +497,7 @@ integrity_rules:
   </tbody>
 </table>
 
-<h3>core 12 entity seed (Phase 1 PoC で registry.yaml に書き込む初期値)</h3>
+<h3>core 20 entity seed (Phase 1 PoC で registry.yaml に書き込む初期値、+ 1 deprecated entity)</h3>
 
 <pre><code># plugins/twl/registry.yaml の glossary section
 glossary:
@@ -850,7 +850,7 @@ glossary:
 <h3>9.1 vocabulary table 拡張 schedule</h3>
 
 <ul>
-  <li><strong><code>Phase 1 PoC</code> seed</strong>: core 12 entity (10 role + status + status-transition + mailbox + inbox + mail + event + migration-stage + sandbox + EXP + lesson)</li>
+  <li><strong><code>Phase 1 PoC</code> seed</strong>: core 20 entity = 10 role + 10 non-role (status / status-transition / mailbox / inbox / mail / event / migration-stage / sandbox / EXP / lesson) + 1 deprecated entity (co-autopilot、Phase 3 cutover で削除予定)</li>
   <li><strong><code>Phase 2 dual-stack</code></strong>: 隠れ重複追加 entity (orchestrator/controller/supervisor 等の「旧 type」明示、Strangler Fig migration-stage 詳細)</li>
   <li><strong><code>Phase 3 cutover</code></strong>: 全 spec entity (50+ 件) の vocabulary 登録</li>
 </ul>
