@@ -69,6 +69,50 @@
   <li><code>ADR-043-twill-radical-rebuild.md</code>: Title「3 階層 architecture」→「10 role architecture + registry.yaml 統合 SSoT」、Decision §1 (10 role 体系) + §3 (mail 4 階層) + §4 (Atomic skill verification rename) + §5 (registry.yaml 案 4) + §8 (命名 policy 新規) + §9 (隠れ重複解消 新規)、Migration / Verification / Supplement / Status timeline / Related の全面 update</li>
 </ul>
 
+<h3>Phase 5.5 (post-dig cleanup、本 session 第 5 弾 dig 後追加)</h3>
+
+<p><code>/dig</code> 後追加で発覚した残存問題 (Pilot/Worker 大文字 entity + 裸の Phase 1-4 表記 + broken link) を <code>sed</code> 一括 + Edit で機械化 cleanup。user 留意「変更が多岐にわたり、用語統一系で間違えやすい」に対応するための仕上げ pass。</p>
+
+<ul>
+  <li><strong>Pilot/Worker 大文字 entity name 全 rename</strong> (sed 一括、24 file 対象):
+    <ul>
+      <li><code>Pilot</code> (大文字 + role 文脈) → <code>phaser</code>: 「Pilot 専任」「Pilot のみ」「Pilot 経由」「Pilot 実装禁止」「Pilot active review」「Pilot から/は/が/を/の/に」 等 14 固定 phrase + <code>L1 Pilot</code>/<code>Pilot/Worker isolation</code> + 残存 <code>\bPilot\b</code> 一括</li>
+      <li><code>Worker</code> (大文字 + role 文脈) → <code>specialist</code>: 「Worker のみ」「Worker session」「Worker は/が/を/の/に」「Worker からの」「Worker マージ禁止」「Workers」 + <code>L2 Worker</code> + 残存 <code>\bWorker\b</code> 一括 (注: 文脈次第で本来 workflow + specialist の 2 分割だが、最も多い usage が specialist 担当のため一括は specialist 化)</li>
+      <li>結果: Pilot 0 残存 / Worker 0 残存 (大文字)、phaser/specialist 増加 (sample: spawn-protocol 14 / boundary-matrix 40 / invariant-fate-table 5 / admin-cycle 6)</li>
+    </ul>
+  </li>
+  <li><strong>Strangler Fig Phase 1-4 backtick 統一</strong> (sed 一括、24 file 対象):
+    <ul>
+      <li>protect: 既存 <code>&lt;code&gt;Phase 1 PoC&lt;/code&gt;</code>/<code>&lt;code&gt;Phase 2 dual-stack&lt;/code&gt;</code>/<code>&lt;code&gt;Phase 3 cutover&lt;/code&gt;</code>/<code>&lt;code&gt;Phase 4 cleanup&lt;/code&gt;</code> 等を一時 placeholder に escape</li>
+      <li>裸の <code>\bPhase ([1-4])\b</code> を <code>&lt;code&gt;Phase $1&lt;/code&gt;</code> に backtick 化</li>
+      <li>restore: protect placeholder を復元</li>
+      <li>結果: 裸の Phase 1-4 残存 0 件、<code>&lt;code&gt;Phase </code> 合計 131 件 (vocabulary <code>migration_stage</code> entity と整合、<code>twl audit --vocabulary</code> false positive 抑制基盤)</li>
+      <li>false positive (許容範囲): <code>sandbox-experiment.html</code> 内の bash script コメント「<code>Phase 1: setup</code>」「<code>Phase 2: exec</code>」「<code>Phase 3: assert</code>」も backtick 化 (一般語 phase の migration_stage 化、文脈上問題なし)</li>
+    </ul>
+  </li>
+  <li><strong>broken link fix</strong> (5 件):
+    <ul>
+      <li>旧 <code>href="step-verification.html"</code> → <code>href="atomic-verification.html"</code> rename (sed 一括)</li>
+      <li>対象: invariant-fate-table.html (2 件) + failure-analysis.html (2 件) + その他自動修正</li>
+      <li>display 文字列内の「旧 step-verification.html から rename」表記は historical reference として保全</li>
+    </ul>
+  </li>
+  <li><strong>sed entity rename 78 件 (Phase 5 から再掲)</strong>:
+    <ul>
+      <li>protect: co-* 旧 type 名 (<code>co-autopilot</code> 等 7 件) + <code>autopilot-orchestrator</code> + <code>su-observer</code> を一時 placeholder に</li>
+      <li>safe rename: <code>phase-explore/refine/impl/pr</code> → <code>phaser-*</code>、<code>worker-spec-review</code>/<code>worker-test-ready</code>/<code>worker-pr-cycle</code> 等 18 件 → <code>specialist-*</code>、<code>state-log.jsonl</code> → <code>status-log.jsonl</code>、<code>.supervisor/events/</code> → <code>.mailbox/</code></li>
+      <li>restore: co-* + autopilot-orchestrator + su-observer を保全 (vocabulary 上 <code>administrator</code> の forbidden synonym だが、backtick 引用で historical reference 保全方針)</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>意図的に残存させた forbidden 用語</strong> (cleanup 対象外):</p>
+<ul>
+  <li><code>glossary.html §11 用語廃止リスト</code> 内の旧用語 listing (pilot/phase/controller/worker/state/orchestrator/supervisor/step.sh/types.yaml/deps.yaml 等) — forbidden synonym 明示は仕様、<code>twl audit --vocabulary</code> 機械検証の対象</li>
+  <li><code>changelog.html 第 4 弾以前 section</code> — 歴史的記録、不変</li>
+  <li><code>「旧 step-verification.html から rename」</code> 等 historical reference — display 文字列として保全</li>
+</ul>
+
 <h3>本 session 第 5 弾の公式 docs 再 WebFetch verified (4 件)</h3>
 
 <table>
