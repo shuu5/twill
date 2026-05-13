@@ -1,0 +1,483 @@
+# plugins/twl/registry.yaml
+# twill plugin の Authority SSoT (第 5 弾 dig 確定、ADR-043 §5 + ADR-044 + ADR-045 由来)
+# 旧 deps.yaml v3.0 + cli/twl/types.yaml + 第 3 弾 dig 案 3 step.sh framework を統合廃止
+#
+# 5 section schema:
+#   1. glossary  — vocabulary table (10 role + non-role entity の canonical/forbidden 定義)
+#   2. components — 全 file listing (role / path / concern / depends / next)
+#   3. chains    — workflow → atomic sequence + verify rule
+#   4. hooks_monitors — hooks.json + monitors.json の SSoT entry
+#   5. integrity_rules — audit ルール定義
+#
+# 詳細仕様: architecture/spec/twill-plugin-rebuild/registry-schema.html
+# 関連 ADR: ADR-043 (radical rebuild) / ADR-044 (chain SSoT 統一、未起票) / ADR-045 (命名 policy)
+
+version: "4.0"
+plugin: twl
+status: "Phase 1 PoC seed"   # Phase 2 dual-stack で components 完全 listing、Phase 3 cutover で旧 deps.yaml/types.yaml 全廃
+created_at: "2026-05-13"
+last_updated: "2026-05-13"
+
+# =========================================================================
+# §1. glossary — vocabulary table (core 12 entity seed、第 5 弾 dig Round 7-10)
+# =========================================================================
+# 各 entry は 6 field schema: canonical / aliases / forbidden / context / description / examples
+# 詳細: ADR-045 Decision §2、registry-schema.html §4
+glossary:
+
+  # === 10 role ===
+
+  administrator:
+    canonical: administrator
+    aliases: []
+    forbidden:
+      - orchestrator
+      - controller
+      - supervisor
+      - su-observer
+    context: L0 role
+    description: |
+      長命 main session、user 代理、Project Board status SSoT を polling。
+      phaser-* + tool-* (一部) を spawn、phaser からの集約 mail のみ受信 (pyramid 集約)。
+    examples:
+      - administrator
+
+  phaser:
+    canonical: phaser
+    aliases: []
+    forbidden:
+      - pilot
+      - phase
+      - controller
+      - pilot-phase
+    context: L1 role
+    description: |
+      別 session window で動作する controller。
+      administrator が Project Board status に応じて 1 phaser を spawn。
+      各 phaser は 1 つの status 遷移 (`status-transition`) を担当。
+      workflow を Skill() で呼び、必要時 specialist を Agent() で spawn。
+    examples:
+      - phaser-explore
+      - phaser-refine
+      - phaser-impl
+      - phaser-pr
+
+  tool:
+    canonical: tool
+    aliases: []
+    forbidden: []   # 公式 `Tool` は大文字+backtick で別 entity (公式名衝突 policy 適用)
+    context: independent role
+    description: |
+      admin/user session 内で動作する独立 skill。status 遷移と無関係。
+      公式 `Tool` (Bash/Edit 等) とは小文字 + tool-* prefix で識別。
+    examples:
+      - tool-architect
+      - tool-project
+      - tool-sandbox-runner
+
+  workflow:
+    canonical: workflow
+    aliases: []
+    forbidden:
+      - worker
+    context: L2 role (phaser から spawn)
+    description: |
+      phaser / tool から Skill() で呼ばれる sub-workflow、atomic を順次呼ぶ launcher。
+      disable-model-invocation: true で context budget 外。
+    examples:
+      - workflow-test-ready
+      - workflow-pr-verify
+      - workflow-pr-merge
+
+  atomic:
+    canonical: atomic
+    aliases: []
+    forbidden:
+      - step
+      - composite
+    context: minimum unit (workflow から呼ばれる)
+    description: |
+      最小実行単位の skill。workflow から Skill() で呼ばれる。
+      内部で必要なら Agent(specialist-*) で specialist spawn。
+      4-phase lifecycle (pre-check / exec / post-verify / report) を SKILL.md 本文に inline 実装 (Inv U)。
+    examples:
+      - atomic-test-scaffold
+      - atomic-green-impl
+      - atomic-check
+
+  specialist:
+    canonical: specialist
+    aliases: []
+    forbidden:
+      - worker
+    context: subagent (agents/ directory)
+    description: |
+      Agent tool 経由で spawn される sub-agent。独立 context window。
+      公式 agents/ directory に配置 (公式仕様、変更不可)。
+      subagent spawn 不可 (sub-agents docs verbatim verified)。
+    examples:
+      - specialist-code-reviewer
+      - specialist-architecture
+      - specialist-spec-review
+
+  reference:
+    canonical: reference
+    aliases:
+      - ref
+    forbidden: []
+    context: documentation
+    description: 不変条件 / prompt guide / pitfalls catalog 等の正典 doc
+    examples:
+      - ref-invariants
+      - ref-prompt-guide
+      - ref-pitfalls-catalog
+
+  script:
+    canonical: script
+    aliases: []
+    forbidden: []
+    context: hook handler bash (hook 用のみ、skill 呼び出し用は 0 目標)
+    description: 公式 `command` type の hook 実装 bash file
+    examples:
+      - pre-tool-use-worktree-boundary
+      - pre-compact-checkpoint
+
+  hook:
+    canonical: hook
+    aliases: []
+    forbidden: []
+    context: Claude Code event handler (hooks.json entry)
+    description: 公式 hook lifecycle event の handler config (27 events、5 type)
+    examples:
+      - hook-spec-write-boundary
+      - hook-pre-compact
+
+  monitor:
+    canonical: monitor
+    aliases: []
+    forbidden: []
+    context: background process (monitors.json entry)
+    description: Plugin Monitor (stdout 各 line が session notification)
+    examples:
+      - monitor-twl-mcp-health
+      - monitor-budget-watcher
+
+  # === non-role 重要 entity ===
+
+  status:
+    canonical: status
+    aliases: []
+    forbidden:
+      - state
+    context: Project Board status (Issue lifecycle)
+    description: GitHub Project Board の Status field、6-stage
+    examples:
+      - Idea
+      - Explored
+      - Refined
+      - Implementing
+      - "PR Reviewed"
+      - Merged
+
+  status-transition:
+    canonical: status-transition
+    aliases:
+      - transition
+    forbidden:
+      - "遷移"
+      - "phase as transition"
+    context: 1 status から次 status への遷移 event
+    description: phaser が担当する 1 つの status-transition
+    examples:
+      - "Refined → Implementing"
+      - "Implementing → PR Reviewed"
+
+  mailbox:
+    canonical: mailbox
+    aliases: []
+    forbidden:
+      - events
+      - ".supervisor/events/"
+    context: file mailbox (.mailbox/<session>/)
+    description: per-session file mailbox directory、flock atomic write (Inv T)
+    examples:
+      - ".mailbox/administrator/"
+      - ".mailbox/phaser-impl-1660/"
+
+  inbox:
+    canonical: inbox
+    aliases: []
+    forbidden: []
+    context: mailbox 内の JSON Lines file
+    description: mailbox directory 内の inbox.jsonl file
+    examples:
+      - ".mailbox/administrator/inbox.jsonl"
+
+  mail:
+    canonical: mail
+    aliases: []
+    forbidden:
+      - message
+    context: inbox.jsonl の 1 entry (JSON Lines 1 行)
+    description: |
+      JSON Lines 1 行の mailbox entry。
+      schema: {from, to, ts, event, detail, heartbeat_ts}
+    examples:
+      - '{"from":"phaser-impl","event":"step-completed","detail":{...}}'
+
+  event:
+    canonical: event
+    aliases: []
+    forbidden: []
+    context: mail の event field
+    description: mail JSON の event field (e.g. "step-completed")
+    examples:
+      - step-started
+      - step-completed
+      - step-postverify-failed
+      - phase-completed
+
+  migration-stage:
+    canonical: migration-stage
+    aliases: []
+    forbidden: []
+    context: Strangler Fig migration phase (公式スタイル backtick + 大文字で例外扱い)
+    description: |
+      Strangler Fig migration の `Phase 1 PoC`/`Phase 2 dual-stack`/
+      `Phase 3 cutover`/`Phase 4 cleanup` を migration-stage entity として
+      vocabulary table に登録、`phase` forbidden audit から除外。
+    examples:
+      - "`Phase 1 PoC`"
+      - "`Phase 2 dual-stack`"
+      - "`Phase 3 cutover`"
+      - "`Phase 4 cleanup`"
+
+  sandbox:
+    canonical: sandbox
+    aliases: []
+    forbidden: []
+    context: tool-sandbox-runner が実行する isolated 環境
+    description: |
+      plugins/twl/sandboxes/<name>/{sandbox.yaml, setup.sh, features.yaml} で定義される
+      isolated 環境。twill-self (test-target/main orphan branch) や ts-nextjs-hono-mono
+      等の sandbox catalog から選択。
+    examples:
+      - twill-self
+      - ts-nextjs-hono-mono
+
+  EXP:
+    canonical: EXP
+    aliases: []
+    forbidden:
+      - "experiment as singular id"
+    context: sandbox experiment id (EXP-NNN format)
+    description: experiment-index.html で listing される実機検証 experiment
+    examples:
+      - EXP-001
+      - EXP-032
+      - EXP-038
+
+  lesson:
+    canonical: lesson
+    aliases: []
+    forbidden: []
+    context: cross-session knowledge (doobidoo に保存)
+    description: |
+      session を越えて再利用される経験的知見。doobidoo Knowledge Authority SSoT
+      (cross-machine HTTP MCP) に memory_store。tool-sandbox-runner が重複 check 後
+      Idea Issue 起票 (severity=critical のみ)。
+    examples:
+      - "budget 表示 5h:N%(Xm) format 誤読"
+      - "tmux -C 破壊禁止"
+
+# =========================================================================
+# §2. components — 全 file listing (Phase 1 PoC seed)
+# =========================================================================
+# 注: Phase 1 PoC では core 5 component (administrator + 4 phaser) のみ seed。
+# Phase 2 dual-stack で workflow / atomic / specialist / tool / reference / script / hook / monitor を完全 listing。
+# Phase 3 cutover で旧 deps.yaml + types.yaml 全廃。
+components:
+
+  # === L0 administrator ===
+  - name: administrator
+    role: administrator
+    file: skills/administrator/SKILL.md
+    concern: top-level orchestration + Project Board status polling
+    ssot_excludes:
+      - status-transition
+      - atomic-execution
+    description_required: true
+
+  # === L1 phaser (4 件、status 遷移 1:1) ===
+  - name: phaser-explore
+    role: phaser
+    file: skills/phaser-explore/SKILL.md
+    concern: status-transition (Idea → Explored)
+    depends_on_status: Idea
+    next_status: Explored
+    can_spawn:
+      - "Skill(workflow-explore)"
+      - "Agent(specialist-*)"
+    description_required: true
+
+  - name: phaser-refine
+    role: phaser
+    file: skills/phaser-refine/SKILL.md
+    concern: status-transition (Explored → Refined)
+    depends_on_status: Explored
+    next_status: Refined
+    can_spawn:
+      - "Skill(workflow-refine)"
+      - "Agent(specialist-spec-review)"
+    description_required: true
+
+  - name: phaser-impl
+    role: phaser
+    file: skills/phaser-impl/SKILL.md
+    concern: status-transition (Refined → Implementing)
+    depends_on_status: Refined
+    next_status: Implementing
+    can_spawn:
+      - "Skill(workflow-test-ready)"
+      - "Skill(workflow-pr-verify)"
+      - "Agent(specialist-*)"
+    description_required: true
+
+  - name: phaser-pr
+    role: phaser
+    file: skills/phaser-pr/SKILL.md
+    concern: status-transition (Implementing → PR Reviewed)
+    depends_on_status: Implementing
+    next_status: "PR Reviewed"
+    can_spawn:
+      - "Skill(workflow-pr-merge)"
+      - "Agent(specialist-code-reviewer)"
+    description_required: true
+
+  # === tool-* (3 件、independent) ===
+  # 第 4 弾 dig 確定: tool-architect / tool-project / tool-sandbox-runner
+  # Phase 2 dual-stack で詳細 entry 追加
+
+  # === workflow / atomic / specialist (Phase 2 dual-stack で full listing) ===
+
+# =========================================================================
+# §3. chains — workflow → atomic sequence + verify rule (Phase 1 PoC seed)
+# =========================================================================
+# 旧 chain.py CHAIN_STEPS + deps.yaml.chains の進化版。Phase 1 PoC で 1 chain (test-ready) を seed。
+chains:
+  test-ready:
+    workflow: workflow-test-ready
+    description: "RED test 生成 → GREEN 実装 → lint check の 3 atomic 順次実行"
+    steps:
+      - name: atomic-test-scaffold
+        verify_rule: "bats_count_increased && red_test_failing && src_diff == 0"
+        description: "AC から RED test を生成、test count 増加 + RED 確認 + src 変更 0"
+      - name: atomic-green-impl
+        verify_rule: "red_to_green_transition && green_test_passing && src_diff > 0"
+        description: "実装を書く、RED → GREEN 遷移 + 全 test PASS + src 変更あり"
+      - name: atomic-check
+        verify_rule: "all_tests_pass && lint_pass && type_check_pass"
+        description: "lint / type-check 実行、exit 0"
+    next_workflow: workflow-pr-verify
+
+# =========================================================================
+# §4. hooks_monitors — hooks.json + monitors.json の SSoT entry
+# =========================================================================
+# YAML key は hooks_monitors (snake_case)、HTML display 名は "hooks+monitors"。
+# Phase 1 PoC で core 1-2 件 seed、Phase 2 dual-stack で全 hook + monitor 移行。
+hooks_monitors:
+
+  hooks:
+    - name: hook-spec-write-boundary
+      event: PreToolUse
+      matcher: "Edit|Write"
+      handler_type: command
+      handler: scripts/hooks/pre-tool-use-spec-write-boundary.sh
+      concern: spec edit authority (tool-architect / user 以外を deny)
+      description: "architecture/spec/ への Edit/Write を tool-architect / user 以外は deny"
+
+    - name: hook-gate-phaser
+      event: PreToolUse
+      matcher: "Skill"
+      handler_type: command
+      handler: scripts/hooks/gate-hook-handler.sh
+      concern: phaser invocation の前提 status verify (Inv W)
+      description: "phaser-* skill invocation 時に Project Board status を verify、不一致なら deny"
+
+  monitors:
+    - name: monitor-twl-mcp-health
+      command: "tail -F .mcp-health.log"
+      description: "twl MCP server health log を tail、disconnect/error を stdout 通知"
+      concern: MCP health observability (Inv X、mcp-watchdog 代替)
+
+# =========================================================================
+# §5. integrity_rules — audit ルール定義 (twl audit --registry で使用)
+# =========================================================================
+# 詳細: registry-schema.html §6 (vocabulary audit 統合設計)
+integrity_rules:
+
+  - id: no_duplicate_concern
+    description: 同じ concern を複数 role で保有してはならない
+    severity: critical
+    audit_section: 12
+
+  - id: ssot_authority_unique
+    description: Authority SSoT は concern ごとに 1 つのみ
+    severity: critical
+    audit_section: 12
+
+  - id: derived_drift_check
+    description: types.py fallback が registry.yaml から drift していないか
+    severity: warning
+    audit_section: 12
+
+  - id: prefix_role_match
+    description: file prefix と role が一致 (phaser-* file は role phaser)
+    severity: critical
+    audit_section: 12
+
+  - id: vocabulary_forbidden_use
+    description: forbidden 単語の使用 (word boundary 厳密検出、Section 11 で実施)
+    severity: warning
+    audit_section: 11
+    exclusion_contexts:
+      - "backtick 内の公式名引用"
+      - "「旧」「廃止予定」と明示した説明文"
+      - "`Phase 1 PoC` 等の Strangler Fig migration-stage 表記"
+
+  - id: official_name_collision
+    description: 公式 Claude Code 名 (Agent/Skill/Tool 等) を backtick なしで twl 内部 entity として使用
+    severity: warning
+    audit_section: 11
+
+  - id: description_required_consistency
+    description: |
+      role が administrator/phaser/tool/specialist のみ description あり、
+      他 role (workflow/atomic) は disable-model-invocation: true + description 省略
+    severity: warning
+    audit_section: 12
+
+# =========================================================================
+# §6. token_thresholds — token budget 警告閾値 (types.py _FALLBACK_TOKEN_THRESHOLDS の Authority)
+# =========================================================================
+# 旧 cli/twl/types.yaml の token_target を統合。types.py は Derived として本 yaml から auto-gen。
+# 詳細: registry-schema.html §1.5.3 (Derived)
+token_thresholds:
+  administrator:
+    warning: 2000
+    critical: 3000
+  phaser:
+    warning: 1500
+    critical: 2500
+  tool:
+    warning: 1500
+    critical: 2500
+  workflow:
+    warning: 800
+    critical: 1500
+  atomic:
+    warning: 800
+    critical: 1500
+  specialist:
+    warning: 1800
+    critical: 2500

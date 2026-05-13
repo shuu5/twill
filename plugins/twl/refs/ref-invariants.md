@@ -1,16 +1,18 @@
-# 不変条件 A-N 参照ドキュメント
+# 不変条件 A-X 参照ドキュメント
 
-twill autopilot システムの不変条件 A-N（14 件）の正典定義。各条件の定義・根拠・検証方法・影響範囲を一本化する。
+twill autopilot システムの不変条件 A-X（24 件）の正典定義。各条件の定義・根拠・検証方法・影響範囲を一本化する。
 
-更新日: 2026-05-08
+更新日: 2026-05-13 (第 5 弾 dig 反映、A-N 14 件 → A-S 19 件 → A-X 24 件に拡張、新規 T-X 5 件追加、ADR-043 由来)
 
 ## 本ドキュメントの SSoT 位置付け
 
-本ドキュメントは不変条件 A-N の **SSoT（Single Source of Truth）** であり、各 invariant の定義・意味は本ドキュメント自身で自己完結する。
+本ドキュメントは不変条件 A-X の **Authority SSoT（Single Source of Truth）** であり、各 invariant の定義・意味は本ドキュメント自身で自己完結する。
 
 - **「根拠」欄の役割**: 設計判断の出典 ADR または導入された背景を示す。ADR が invariant の詳細仕様を個別定義しない場合でも、invariant の実装整合性は **検証方法欄の bats test** と **影響範囲欄の実装ファイル** で維持される。
 - **ADR-023 継承について**: 不変条件 D/E/F/G/I/J/K は Phase Z (#901) の chain 再設計に伴い [ADR-023](../architecture/decisions/ADR-023-tdd-direct-flow.md) に継承された。ADR-023 は chain 構造変更の ADR であり individual invariant の詳細仕様は持たないが、invariant の意味定義は本ドキュメント自身が SSoT として保持し、検証は bats test (`../tests/bats/invariants/autopilot-invariants.bats`) が担保する。
 - **不変条件 B の 2 根拠保持**: 不変条件 B のみ ADR-008 + ADR-023 の 2 根拠を明示しているのは、ADR-008 が Worktree ライフサイクル単独の独立 ADR として成立しているため。他の invariant (D/E/F/G/I/J/K) は対応する独立 ADR が存在しないため、ADR-023 を継承先として単一参照する。
+- **第 5 弾 dig (2026-05-13) 由来の用語 rename**: 旧 Pilot/Worker entity を新 phaser/specialist+atomic/workflow entity に rename。各 invariant の「定義」欄は新用語で記述するが、「検証方法」「影響範囲」path は既存 file (worker-* / pilot.sh / chain-runner.sh 等) を保全 (Phase 4 cleanup で実 file rename 完了時に path も連動更新予定)。
+- **新規 invariant T-X 追加**: ADR-043 由来の 5 件 (T mailbox atomic / U Atomic skill verification / V per-specialist scope / W gate hook / X deploy-verify セット) を本 doc 末尾に追加。Inv U は第 5 弾 dig で「Step verification framework」→「Atomic skill verification」に rename + bats file 名を `atomic-verification-post-verify.bats` に変更予定。
 
 ---
 
@@ -25,9 +27,9 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
-## 不変条件 B: Worktree ライフサイクル Pilot 専任
+## 不変条件 B: Worktree ライフサイクル phaser 専任
 
-- **定義**: Worktree の作成・削除は Pilot が行わなければならない（SHALL）。Worker は使用のみ。
+- **定義**: Worktree の作成・削除は phaser (旧 Pilot、L1 role) が行わなければならない（SHALL）。下位 role (atomic / specialist) は使用のみ。
 - **根拠**: [ADR-008: Worktree Lifecycle Pilot Ownership](../architecture/decisions/ADR-008-worktree-lifecycle-pilot-ownership.md) / [ADR-023](../architecture/decisions/ADR-023-tdd-direct-flow.md)
 - **検証方法**: [`invariant-B: worktree-delete rejects worker role`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-B: Worker chain (chain-steps.sh) does not include worktree-create`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
@@ -37,9 +39,9 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
-## 不変条件 C: Worker マージ禁止
+## 不変条件 C: specialist/atomic マージ禁止
 
-- **定義**: Worker は `merge-ready` を宣言するのみでなければならない（SHALL）。マージは Pilot が実行する。Worker が直接 `gh pr merge` を実行してはならない。
+- **定義**: 下位 role (specialist (旧 Worker subagent) / atomic (workflow chain の最小単位)) は `merge-ready` を宣言するのみでなければならない（SHALL）。マージは phaser-pr (旧 Pilot for PR phase) が実行する。下位 role が直接 `gh pr merge` を実行してはならない。
 - **根拠**: ADR なし — 慣習的制約
 - **検証方法**: [`invariant-C: merge-gate-execute rejects invalid ISSUE`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
@@ -124,9 +126,9 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
-## 不変条件 K: Pilot 実装禁止
+## 不変条件 K: phaser 実装禁止
 
-- **定義**: Pilot は Issue の実装（コード変更・PR 作成）を直接行ってはならない（SHALL）。実装は常に Worker 経由。Emergency Bypass 時も `mergegate merge --force` 経由のみ許可。
+- **定義**: phaser (旧 Pilot、L1 role) は Issue の実装（コード変更・PR 作成）を直接行ってはならない（SHALL）。実装は常に下位 role (workflow → atomic、必要時 specialist via Agent()) 経由。Emergency Bypass 時も `mergegate merge --force` 経由のみ許可。
 - **根拠**: [ADR-023](../architecture/decisions/ADR-023-tdd-direct-flow.md)
 - **検証方法**: [`invariant-K: ref-invariants.md defines invariant K (Pilot 実装禁止)`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-K: pilot cannot write implementation-only field`](../tests/bats/invariants/autopilot-invariants.bats)
 - **影響範囲**:
@@ -138,7 +140,7 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ## 不変条件 L: autopilot マージ実行責務
 
-- **定義**: autopilot 時のマージ実行は Orchestrator の `mergegate.py` 経由のみでなければならない（SHALL）。Worker chain の auto-merge ステップは `merge-ready` 宣言のみを行い、マージは実行しない。
+- **定義**: autopilot 時のマージ実行は Orchestrator の `mergegate.py` 経由のみでなければならない（SHALL）。下位 role (workflow/atomic) の auto-merge ステップは `merge-ready` 宣言のみを行い、マージは実行しない。第 5 弾 dig 後は `administrator` polling cycle が旧 Orchestrator を代替。
 - **適用範囲**: Worker chain および Orchestrator の autopilot 実行パス。**Supervisor (su-observer) による観察介入 (intervention-catalog.md Layer 0/1) は対象外**。stall 回復のための手動 squash merge 等は Supervisor の監視責務に基づく例外として許可される (#848)。
 - **根拠**: ADR なし — 慣習的制約
 - **検証方法**: [`invariant-L: ref-invariants.md defines invariant L (autopilot マージ実行責務)`](../tests/bats/invariants/autopilot-invariants.bats), [`invariant-L: auto-merge.sh sets merge-ready without merging in autopilot mode`](../tests/bats/invariants/autopilot-invariants.bats)
@@ -322,6 +324,96 @@ twill autopilot システムの不変条件 A-N（14 件）の正典定義。各
 
 ---
 
+## 不変条件 T: file mailbox atomic write 必須
+
+- **目的**: 9 P0 bug の #1703 (phase-review.json cross-pollution) を構造的に不能化する。
+- **制約**:
+  - 全 mailbox write は **`flock` を取得した atomic write** を MUST とする
+  - mailbox path は `.mailbox/<session-name>/inbox.jsonl` の per-session 形式
+  - 共通 path への write は禁止 (横断要因 F-1 の構造的解消)
+  - mailbox write には必ず `{"from": "<sender>", "ts": "<iso8601>", ...}` を含める (sender tracking)
+- **違反検知**: bats `file-mailbox-atomic-write.bats` で並列 write race condition を検証 (新規 EXP-006)。flock 不使用 / 共通 path write は CRITICAL severity で audit fail
+- **根拠**: [ADR-043](../architecture/decisions/ADR-043-twill-radical-rebuild.md) Decision §3 (file mailbox 4 階層 entity)、9 P0 bug 分析の Bug #1703 lesson、横断要因 F-1
+- **検証方法**: bats `file-mailbox-atomic-write.bats` (新規)、`twl audit --registry` で registry.yaml `mailbox` entity の forbidden (events / .supervisor/events/) を検出
+- **影響範囲**:
+  - `plugins/twl/scripts/mailbox.sh` (新規 helper、Phase 1 PoC で作成)
+  - 全 phaser / specialist / atomic SKILL.md (mail write 経路)
+
+---
+
+## 不変条件 U: Atomic skill verification
+
+- **目的**: 9 P0 bug の #973 (RED merge silent rot)、L1873-1884 自己申告 step を構造的に不能化する。第 5 弾 dig で「Step verification framework」→「Atomic skill verification」に rename + atomic SKILL.md inline 実装に変更。
+- **制約**:
+  - 全 atomic skill 呼び出しは **4-phase lifecycle (pre-check → exec → post-verify → report)** を atomic SKILL.md 本文に **inline 実装** することを MUST
+  - post-verify で機械検証 (test 数増加 / RED→GREEN / src diff / Agent return value 等) を **必ず実施**
+  - self-report-only (record_current_step + ok のみ) は禁止
+  - post-verify FAIL → atomic abort + phaser escalate (mail に failure 明記)
+  - 旧 `step.sh framework` 外部 bash 呼び出しは廃止 (案 3 step.sh 単一 SSoT は第 5 弾 dig で廃案、案 4 registry.yaml + atomic SKILL.md inline に進化)
+- **違反検知**: bats `atomic-verification-post-verify.bats` (新規、旧 step-verification-post-verify.bats から rename) で 4-phase 動作 + post-verify FAIL 時の escalate mail emit を検証 (EXP-011 + EXP-012 repurpose)
+- **根拠**: [ADR-043](../architecture/decisions/ADR-043-twill-radical-rebuild.md) Decision §4 (Atomic skill verification)、9 P0 bug 分析の Bug #973 lesson、L1873-1884 自己申告 step 問題
+- **検証方法**: bats `atomic-verification-post-verify.bats` (新規)、test なしで green-impl 呼び出すと atomic abort することを verify。EXP-011 (4-phase lifecycle) + EXP-012 (post-verify FAIL escalate) で実機検証
+- **影響範囲**:
+  - 全 atomic SKILL.md (`plugins/twl/skills/atomic-*/SKILL.md`、Phase 1 PoC で作成、4-phase lifecycle inline 実装 MUST)
+  - 全 workflow SKILL.md (`plugins/twl/skills/workflow-*/SKILL.md`、atomic を `Skill()` で順次呼ぶ)
+  - 旧 `plugins/twl/scripts/step.sh` (Phase 3 cutover で全廃)
+
+---
+
+## 不変条件 V: per-specialist checkpoint path (共通 path 禁止)
+
+- **目的**: 9 P0 bug の #1703 (checkpoint cross-pollution) + #1673 (cleanup cross-Wave 破壊) を構造的に不能化する。
+- **制約**:
+  - 全 state / cleanup / checkpoint write は **per-specialist (issue_number / session_name) を含むパス** にデフォルト書き込み
+  - 共通パスへの write は明示的 `--shared` フラグ + audit log 必須
+  - cleanup スクリプトは `--scope <wave-id>` を必須引数とし、他 Wave のリソースに触れない
+  - per-phaser worktree scope (phaser-impl-<issue> 等) で隔離
+- **違反検知**: bats `per-specialist-state-isolation.bats` (新規) で複数 specialist simulation の cross-pollution を検証
+- **根拠**: [ADR-043](../architecture/decisions/ADR-043-twill-radical-rebuild.md) Decision §3 (file mailbox per-session)、9 P0 bug 分析の Bug #1703, #1673 lesson、横断要因 F-1
+- **検証方法**: bats `per-specialist-state-isolation.bats` (新規)、複数 specialist simulation で他 specialist の state を読み書きしないことを verify
+- **影響範囲**:
+  - `cli/twl/src/twl/autopilot/checkpoint.py` の `_checkpoint_dir()` (per-issue 必須化、`--shared` 明示なしは fail)
+  - `plugins/twl/scripts/autopilot-cleanup.sh` (`--scope` 必須化、または完全廃止)
+
+---
+
+## 不変条件 W: PreToolUse hook で status gate 機械化
+
+- **目的**: 9 P0 bug の #1660 / #1662 / #1663 / #1684 (env var 経由 caller authz) を構造的に不能化する。
+- **制約**:
+  - phaser-* invocation は **PreToolUse hook 経由で前提 status を verify** することを MUST
+  - bash env var (`TWL_CALLER_AUTHZ` 等) による caller authz は廃止
+  - gate hook handler (旧 `phase-gate.sh`、第 5 弾 dig で「gate hook handler」概念に統一) thin helper (~30 lines) で実装、status 不一致は exit 2 + administrator notify
+  - tier 1 (`command` hook) + tier 2 (`mcp_tool` hook = `twl_phase_gate_check`) の階層防御、bypassPermissions でも貫通 (verified)
+- **違反検知**: bats `gate-hook.bats` (新規、旧 phase-gate-hook.bats から rename 推奨) で Refined でない Issue に phaser-impl を invoke して deny されることを verify (EXP-001〜003 + EXP-007〜008)
+- **根拠**: [ADR-043](../architecture/decisions/ADR-043-twill-radical-rebuild.md) Decision §6 (PreToolUse hook + MCP shadow tier 階層防御)、9 P0 bug 分析の Bug #1660/1662/1663/1684 lesson、横断要因 F-2
+- **検証方法**: bats `gate-hook.bats` (新規)、Refined でない Issue に phaser-impl を呼び出すと deny されることを verify
+- **影響範囲**:
+  - `plugins/twl/scripts/hooks/gate-hook-handler.sh` (新規 helper、旧 phase-gate.sh から rename)
+  - `plugins/twl/hooks/hooks.json` (PreToolUse hook 設定、registry.yaml hooks section から auto-gen)
+  - 既存 `TWL_CALLER_AUTHZ` 機構の廃止 (chain-runner.sh / observer-parallel-check.sh 等)
+
+---
+
+## 不変条件 X: deploy / verify セット必須 (daemon / watchdog)
+
+- **目的**: 9 P0 bug の #1687 (mcp-watchdog deploy 経路不在、5 ヶ月 5 回再発) を構造的に不能化する。
+- **制約**:
+  - 新規 daemon / watchdog 実装は **「起動 hook」+「起動確認テスト」セット** で merge することを MUST
+  - 起動 hook (session-start hook 等) と起動確認 test (bats で `ps` / `pgrep` 確認) を **同 PR 内に含む**
+  - N 回 (N≥2) 再発するバグは **修正ではなく root cause 分析** を required (epic / spike issue 化)
+  - Plugin Monitor (`plugins/twl/monitors/monitors.json`) で deploy + verify を一体化、自前 watchdog 廃止
+- **違反検知**: bats `daemon-deploy-verify-set.bats` (新規) で新規 watchdog 系 PR の起動 hook ファイル追加を assert
+- **根拠**: [ADR-043](../architecture/decisions/ADR-043-twill-radical-rebuild.md) Decision §2 (Plugin Monitor 採用)、9 P0 bug 分析の Bug #1687 lesson、横断要因 F-3
+- **検証方法**: bats `daemon-deploy-verify-set.bats` (新規)、新規 watchdog 系 PR は起動 hook ファイルの追加を assert
+- **影響範囲**:
+  - `plugins/twl/hooks/hooks.json` 配下の hook 登録規約
+  - `plugins/twl/monitors/monitors.json` (Plugin Monitor 設定、registry.yaml monitors section から auto-gen)
+  - `plugins/twl/tests/bats/` 配下の daemon verification test
+  - 新 spec の `architecture/spec/twill-plugin-rebuild/rebuild-plan.html` (本 invariant を `Phase 1 PoC` の verify points VP-X として含める)
+
+---
+
 ## SU-* との境界
 
-SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-N とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。
+SU-1〜SU-9 は Supervisor（su-observer）固有の application-level 制約であり、本ドキュメントの不変条件 A-X (24 件) とは独立した体系である。SU-* の正典は [`architecture/domain/contexts/supervision.md`](../architecture/domain/contexts/supervision.md)（SSoT）。運用 mirror は [`skills/su-observer/refs/su-observer-constraints.md`](../skills/su-observer/refs/su-observer-constraints.md) を参照。Security gate (Layer A-D) 定義は [`skills/su-observer/refs/su-observer-security-gate.md`](../skills/su-observer/refs/su-observer-security-gate.md) を参照。
