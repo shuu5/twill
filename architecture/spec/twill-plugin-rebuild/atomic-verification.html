@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>twill plugin rebuild — atomic skill verification</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--success-fg); }
+  .deprecated { text-decoration: line-through; color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>twill plugin rebuild — atomic skill verification</h1>
+  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; 旧 step-verification.html から rename &middot; LLM 責務 + 機械検証 の clean 分離 &middot; 不変条件 U の根拠</div>
+</header>
+
+<div class="info">本 file は <a href="registry-schema.html">registry-schema.html</a> の参照下にある。第 5 弾 dig (Round 9) で <code>step</code> 概念液化が決定し、本 file は旧 <code>step-verification.html</code> から rename された。<code>step.sh framework</code> 外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に 4-phase lifecycle を <strong>inline 実装</strong> する specification を提供する。</div>
+
+<h2>§1. 目的</h2>
+
+<p>不変条件 U (<strong>Atomic skill verification</strong>: 4-phase lifecycle を atomic SKILL.md 本文に inline 実装) の実現方法を仕様化。旧 <code>step.sh framework</code> による外部 bash 呼び出しを廃し、atomic SKILL.md の <code>Step 0</code>〜<code>Step 3</code> に <strong>pre-check / exec / post-verify / report</strong> の 4 phase を直接記述することで、LLM 判断責務と機械検証責務の clean 分離を達成する。</p>
+
+<p>= LLM の判断責務と機械の検証責務を <strong>clean に分離</strong>。LLM は AC に従い test / 実装を書くだけ、機械 (Bash <code>!</code> prefix) は test 数 / RED→GREEN / src diff 等の客観指標で結果を verify。</p>
+
+<h2>§2. 4-phase lifecycle (atomic skill 1 呼び出し)</h2>
+
+<div class="diagram">
+<svg class="arch-svg" viewBox="0 0 1080 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="sv-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+    <marker id="sv-arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d73a49"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="100" width="200" height="100" rx="6" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="140" y="124" text-anchor="middle" font-size="14" font-weight="700" fill="#0277bd">Step 0: pre-check</text>
+  <text x="140" y="146" text-anchor="middle" font-size="11" fill="#555">前提状態の snapshot</text>
+  <text x="140" y="162" text-anchor="middle" font-size="11" fill="#555">(test 数、git HEAD、</text>
+  <text x="140" y="178" text-anchor="middle" font-size="11" fill="#555">src/ file list 等)</text>
+
+  <rect x="280" y="100" width="200" height="100" rx="6" fill="#fff5e0" stroke="#f0883e" stroke-width="2"/>
+  <text x="380" y="124" text-anchor="middle" font-size="14" font-weight="700" fill="#f0883e">Step 1: exec (LLM 作業)</text>
+  <text x="380" y="146" text-anchor="middle" font-size="11" fill="#555">LLM が AC に従い</text>
+  <text x="380" y="162" text-anchor="middle" font-size="11" fill="#555">test / 実装 / review を実施</text>
+  <text x="380" y="178" text-anchor="middle" font-size="11" fill="#555">(機械検証なし)</text>
+
+  <rect x="520" y="100" width="200" height="100" rx="6" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
+  <text x="620" y="124" text-anchor="middle" font-size="14" font-weight="700" fill="#388e3c">Step 2: post-verify</text>
+  <text x="620" y="146" text-anchor="middle" font-size="11" fill="#555">機械検証 (Bash ! prefix)</text>
+  <text x="620" y="162" text-anchor="middle" font-size="11" fill="#555">pre と post の diff を assert</text>
+  <text x="620" y="178" text-anchor="middle" font-size="11" fill="#555">不一致なら exit 1</text>
+
+  <rect x="760" y="100" width="200" height="100" rx="6" fill="#fce4ec" stroke="#c2185b" stroke-width="2"/>
+  <text x="860" y="124" text-anchor="middle" font-size="14" font-weight="700" fill="#c2185b">Step 3: report</text>
+  <text x="860" y="146" text-anchor="middle" font-size="11" fill="#555">phaser mailbox に書き込み</text>
+  <text x="860" y="162" text-anchor="middle" font-size="11" fill="#555">event + evidence (test 数 / diff)</text>
+  <text x="860" y="178" text-anchor="middle" font-size="11" fill="#555">flock atomic</text>
+
+  <line x1="240" y1="150" x2="280" y2="150" stroke="#333" stroke-width="2" marker-end="url(#sv-arr)"/>
+  <line x1="480" y1="150" x2="520" y2="150" stroke="#333" stroke-width="2" marker-end="url(#sv-arr)"/>
+  <line x1="720" y1="150" x2="760" y2="150" stroke="#333" stroke-width="2" marker-end="url(#sv-arr)"/>
+
+  <line x1="620" y1="200" x2="620" y2="260" stroke="#d73a49" stroke-width="2" marker-end="url(#sv-arr-red)"/>
+  <text x="635" y="235" font-size="11" font-weight="700" fill="#d73a49">FAIL</text>
+  <rect x="500" y="265" width="240" height="60" rx="6" fill="#ffe6e6" stroke="#d73a49" stroke-width="2"/>
+  <text x="620" y="288" text-anchor="middle" font-size="12" font-weight="700" fill="#d73a49">atomic abort + phaser escalate</text>
+  <text x="620" y="306" text-anchor="middle" font-size="11" fill="#555">mailbox に step-postverify-failed mail</text>
+  <text x="620" y="320" text-anchor="middle" font-size="11" fill="#555">phaser は再 spawn / abort 判断</text>
+
+  <text x="540" y="60" text-anchor="middle" font-size="13" font-weight="700">atomic skill 1 呼び出し = 4 phase lifecycle (Step 0 → 1 → 2 → 3)</text>
+  <text x="540" y="80" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Step 2 post-verify が fail なら Step 1 exec の成果は無効 → phaser に escalate</text>
+</svg>
+<div class="diagram-caption">図 1: atomic skill lifecycle — 1 atomic 呼び出しにつき Step 0 (pre-check) / Step 1 (exec) / Step 2 (post-verify) / Step 3 (report) の 4 phase。`Step N` は公式 SKILL.md 手順番号スタイル (backtick + 大文字、migration_stage entity との混同なし)</div>
+</div>
+
+<h2>§3. atomic SKILL.md inline 実装 standard</h2>
+
+<p>旧 <code>step.sh framework</code> の外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に <code>Step 0</code>〜<code>Step 3</code> として 4-phase を inline 実装。公式仕様 (<code>disable-model-invocation: true</code> + <code>allowed-tools: [Bash, Read, Edit, Agent]</code>) に準拠する。</p>
+
+<pre><code>---
+disable-model-invocation: true
+allowed-tools: [Bash, Read, Edit, Agent]
+---
+
+# atomic-test-scaffold
+
+`Step 0` lifecycle phase: pre-check
+- !`bats --list tests/ | wc -l &gt; /tmp/pre_test_count`
+- !`git diff --name-only HEAD | grep '^src/' | wc -l &gt; /tmp/pre_src_diff`
+- Verify `status` == Refined via !`gh project item-list ...`
+
+`Step 1` lifecycle phase: exec
+- Read $ARGUMENTS[0] (AC file for Issue)
+- Generate RED test targeting the AC, Write to tests/unit/...
+- (機械検証は Step 2 が担う、LLM はここで判断/作業のみ)
+
+`Step 2` lifecycle phase: post-verify
+- !`POST=$(bats --list tests/ | wc -l); PRE=$(cat /tmp/pre_test_count); [ "$POST" -gt "$PRE" ] || exit 1`
+- !`bats tests/unit/... 2&gt;&amp;1 | grep -q "not ok"` # RED 確認 (fail が出ること)
+- !`cat /tmp/pre_src_diff | grep -q '^0$'` # src/ 変更 0 確認
+
+`Step 3` lifecycle phase: report
+- !`jq -nc '{from:"atomic-test-scaffold",ts:"'"$(date -u +%FT%TZ)"'",event:"step-completed",detail:{red_count:N}}' &gt;&gt; .mailbox/$ARGUMENTS[session]/inbox.jsonl`
+</code></pre>
+
+<p><strong><code>disable-model-invocation: true</code> + <code>allowed-tools</code> の rationale</strong> (<span class="vs verified">verified</span> skills docs):</p>
+
+<ul>
+  <li><code>disable-model-invocation: true</code> により description が context budget に乗らない (EXP-035 で実測検証)</li>
+  <li><code>allowed-tools: [Bash, Read, Edit, Agent]</code> — post-verify phase に <code>!</code> prefix の Bash call が必須。<code>Agent</code> は specialist 呼び出し時のみ (EXP-036 で検証)</li>
+</ul>
+
+<h2>§4. atomic verify rule table (旧 §5 から rename)</h2>
+
+<p>chain で呼ばれる atomic skill の verify rule 一覧。旧 <code>step::run</code> + <code>_verify_*</code> bash 関数の依存を廃し、atomic SKILL.md 本文に inline 実装する。</p>
+
+<table>
+  <thead>
+    <tr><th>atomic skill</th><th>pre snapshot</th><th>exec (LLM)</th><th>post-verify rule</th><th>report 内容</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>atomic-test-scaffold</code></td><td>test count</td><td>RED test を書く</td><td>test count 増加 + bats で fail (= RED 確認) + src diff = 0</td><td><code>{red_count: N}</code></td></tr>
+    <tr><td><code>atomic-green-impl</code></td><td>src/ files + test state</td><td>実装を書く</td><td><code>git diff src/</code> &gt; 0 + bats 全 PASS (= GREEN 確認)</td><td><code>{green: true}</code></td></tr>
+    <tr><td><code>atomic-check</code></td><td>lint state</td><td>(fix or no-op)</td><td>linter / type-checker exit 0</td><td><code>{lint_clean: true}</code></td></tr>
+    <tr><td><code>atomic-pr-test</code></td><td>bats state</td><td>(pre-existing)</td><td>bats 全 PASS、新 RED なし</td><td><code>{test_pass_count: N}</code></td></tr>
+    <tr><td><code>atomic-ac-verify</code></td><td>Issue AC checkbox 数</td><td>AC checkbox flip</td><td>未 check AC = 0</td><td><code>{ac_complete_count: N}</code></td></tr>
+    <tr><td><code>atomic-phase-review</code></td><td>review file 不在</td><td><code>Agent(specialist-code-reviewer)</code> 実行</td><td>Agent return value verdict = "PASS"</td><td><code>{findings_count: N}</code></td></tr>
+    <tr><td><code>atomic-pr-cycle-report</code></td><td>PR comment 不在</td><td>summary 生成</td><td>PR comment posted</td><td><code>{comment_url: "..."}</code></td></tr>
+  </tbody>
+</table>
+
+<h2>§5. EXP-011 / 012 の atomic lifecycle 検証 (repurpose 設計)</h2>
+
+<div class="info">旧 EXP-011/012 は <code>step.sh framework</code> 前提だったが、第 5 弾 dig で atomic skill lifecycle 検証に repurpose。詳細: <a href="experiment-index.html">experiment-index.html</a> カテゴリ G (旧 "step.sh framework" → 新 "atomic skill lifecycle")</div>
+
+<table>
+  <thead>
+    <tr><th>EXP-id</th><th>verify 対象 (旧)</th><th>verify 対象 (新、第 5 弾 dig repurpose)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>EXP-011</td><td>旧: <code>step::run</code> 4 phase lifecycle (bats、<code>step.sh</code> 依存)</td><td>新: atomic SKILL.md の <code>Step 0</code>〜<code>Step 3</code> が順序通り実行、各 phase で mailbox event 発行</td></tr>
+    <tr><td>EXP-012</td><td>旧: post-verify FAIL で <code>step abort</code> + phaser escalate mail emit</td><td>新: atomic-test-scaffold の <code>Step 2</code> でテスト数増加 0 → exit 1 → <code>.mailbox/${session}/inbox.jsonl</code> に <code>step-postverify-failed</code> mail emit</td></tr>
+  </tbody>
+</table>
+
+<h2>§6. 不変条件 U (Atomic skill verification) との binding</h2>
+
+<p>本 file は不変条件 U の core specification である。Inv U の text は第 5 弾 dig (Round 9) で以下に rename + 改訂された:</p>
+
+<table>
+  <thead>
+    <tr><th>項目</th><th>旧 (draft-v2)</th><th>新 (draft-v3、第 5 弾 dig)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>title</td><td class="deprecated">Step verification framework</td><td><strong>Atomic skill verification</strong></td></tr>
+    <tr><td>specification</td><td class="deprecated">全 chain step は pre-check → exec → post-verify → report の 4 phase lifecycle を MUST。<code>step.sh framework</code> による post-verify 機械検証を必須化</td><td>全 atomic skill 呼び出しは 4-phase lifecycle (pre-check → exec → post-verify → report) を <strong>atomic SKILL.md 本文に inline 実装</strong> すること。post-verify で機械検証を必須化、self-report-only を禁止</td></tr>
+    <tr><td>verify 方法</td><td class="deprecated">bats <code>step-verification-post-verify.bats</code></td><td>bats <code>atomic-verification-post-verify.bats</code> (rename)</td></tr>
+  </tbody>
+</table>
+
+<p><code>ref-invariants.md</code> に Inv U が追加される時点 (<code>Phase 4 cleanup</code>) で上記新 text を採用。それまで <a href="invariant-fate-table.html">invariant-fate-table.html</a> 内の Inv U section の title + bats file 名を最小変更 (rename) する。</p>
+
+<h2>§7. 関連 spec</h2>
+
+<ul>
+  <li><a href="registry-schema.html">registry-schema.html</a> (10 role × concern matrix + atomic role 定義)</li>
+  <li><a href="glossary.html">glossary.html</a> §7 (atomic skill verification 機構の用語)</li>
+  <li><a href="ssot-design.html">ssot-design.html</a> §5 (atomic skill composition pattern + workflow → atomic Skill() chain)</li>
+  <li><a href="overview.html">overview.html</a> §6 (構造的欠陥 4 種、本 file は欠陥 1 「自己申告 step」の不能化機構)</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (Inv U "Atomic skill verification" 旧 "Step verification framework")</li>
+  <li><a href="experiment-index.html">experiment-index.html</a> (EXP-011/012 atomic lifecycle repurpose、EXP-033 atomic composition、EXP-035 disable-model-invocation 効果)</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> (<code>Phase 1 PoC</code> での atomic SKILL.md 初期実装)</li>
+  <li><a href="regression-test-strategy.html">regression-test-strategy.html</a> (bats <code>atomic-verification-post-verify.bats</code> 計画)</li>
+  <li><a href="failure-analysis.html">failure-analysis.html</a> §自己申告 step (本 file が解決策)</li>
+  <li>plugins/twl/refs/ref-invariants.md (Inv U "Atomic skill verification" 追加、<code>Phase 4 cleanup</code> 時)</li>
+</ul>
+
+</body>
+</html>

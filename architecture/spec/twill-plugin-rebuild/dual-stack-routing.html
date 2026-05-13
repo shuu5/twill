@@ -12,11 +12,11 @@
 
 <header class="doc-header">
   <h1>dual-stack-routing — su-observer 旧 vs administrator 新 の共存運用</h1>
-  <div class="meta">draft-v2 (2026-05-12) &middot; Phase 2 dual-stack 期間中の Issue routing と state 分離</div>
+  <div class="meta">draft-v2 (2026-05-12) &middot; <code>Phase 2 dual-stack</code> 期間中の Issue routing と state 分離</div>
 </header>
 
 <div class="info">
-  <strong>目的</strong>: <a href="admin-cycle.html">administrator</a> (新、案 2 先行実装) と <code>su-observer</code> (旧) が併存する Phase 2 期間中、各 Issue がどちらの flow で処理されるかの判定基準と routing 機構を仕様化する。移行完了 (Phase 3 cutover) 判定基準も明示。<br>
+  <strong>目的</strong>: <a href="admin-cycle.html">administrator</a> (新、案 2 先行実装) と <code>su-observer</code> (旧) が併存する <code>Phase 2</code> 期間中、各 Issue がどちらの flow で処理されるかの判定基準と routing 機構を仕様化する。移行完了 (<code>Phase 3 cutover</code>) 判定基準も明示。<br>
   <br>
   <strong>verified context</strong>: Agent C 分析 (本 session) — 「administrator 単独稼働 + pilot/worker 未実装」段階での safe degradation 設計が前提。
 </div>
@@ -25,7 +25,7 @@
 
 <ul>
   <li><strong>Issue label を SSoT</strong>: <code>stack:new</code> / <code>stack:legacy</code> で routing</li>
-  <li>default: 新規 Issue は <code>stack:new</code> (Phase 2 開始時に GitHub Action <code>label-new-stack.yml</code> で自動付与)</li>
+  <li>default: 新規 Issue は <code>stack:new</code> (<code>Phase 2</code> 開始時に GitHub Action <code>label-new-stack.yml</code> で自動付与)</li>
   <li>in-flight Issue は <code>stack:legacy</code> を継続 (手動 migration まで)</li>
   <li>label が両方 (<code>stack:new</code> + <code>stack:legacy</code>) → CRITICAL、user 介入必要</li>
 </ul>
@@ -43,7 +43,7 @@
     <tr><td>mailbox</td><td>chain-runner / session-comm.sh 経由</td><td><code>.mailbox/admin/inbox.jsonl</code> (flock atomic、Inv T)</td></tr>
     <tr><td>tmux window prefix</td><td><code>ap-</code> / <code>wt-</code> / <code>coi-</code> / <code>coe-</code></td><td><code>phase-</code> / <code>worker-</code> / <code>tool-</code></td></tr>
     <tr><td>CronCreate task prompt</td><td>su-observer の polling</td><td><code>admin-cycle.sh</code> の polling</td></tr>
-    <tr><td>checkpoint</td><td><code>.autopilot/checkpoints/</code> (共通、cross-pollution risk)</td><td><code>.mailbox/&lt;session&gt;/checkpoints/</code> (per-Worker、Inv V)</td></tr>
+    <tr><td>checkpoint</td><td><code>.autopilot/checkpoints/</code> (共通、cross-pollution risk)</td><td><code>.mailbox/&lt;session&gt;/checkpoints/</code> (per-specialist、Inv V)</td></tr>
   </tbody>
 </table>
 
@@ -64,7 +64,7 @@ FOR each issue IN board.items:
 
 <h3>3.2 su-observer (旧) の routing</h3>
 
-<p>su-observer は既存 chain-runner 経由で動作、<code>stack:legacy</code> Issue のみを対象とするように <code>su-observer/SKILL.md</code> の Step 1 polling cycle に label filter 追加 (Phase 2 開始時に minor patch)。</p>
+<p>su-observer は既存 chain-runner 経由で動作、<code>stack:legacy</code> Issue のみを対象とするように <code>su-observer/SKILL.md</code> の Step 1 polling cycle に label filter 追加 (<code>Phase 2</code> 開始時に minor patch)。</p>
 
 <h3>3.3 共存中の制約</h3>
 
@@ -98,7 +98,7 @@ STEPS:
   <li>移行 cost: 1 Issue あたり 約 10 min (user 手動作業含む)</li>
 </ol>
 
-<h2>§5. Phase 2 期間中の制約</h2>
+<h2>§5. <code>Phase 2</code> 期間中の制約</h2>
 
 <ul>
   <li><strong>新規 Issue は新 stack 必須</strong>: <code>label-new-stack.yml</code> Action で <code>stack:new</code> default 付与</li>
@@ -107,14 +107,14 @@ STEPS:
   <li><strong>budget 配分</strong>: 5h budget は both stack で共有、片方が暴走しないよう <code>MAX_PARALLEL_PILOTS</code> を厳格に</li>
 </ul>
 
-<h2>§6. Phase 3 cutover 判定基準</h2>
+<h2>§6. <code>Phase 3 cutover</code> 判定基準</h2>
 
 <ol>
   <li>旧 stack の in-flight Issue が全て Merged or 新 stack 移行完了</li>
   <li>新 stack で 10+ Issue が安定完遂 (PR merge 成功率 &gt; 90%)</li>
   <li>bats regression 全 PASS (新 + 旧の test suite)</li>
-  <li>Phase 1 PoC verify points (VP-1〜VP-12) 全件 PASS</li>
-  <li><strong>user 明示承認</strong> (Phase 3 cutover は user 明示承認必須、autonomous 判断不可)</li>
+  <li><code>Phase 1 PoC</code> verify points (VP-1〜VP-12) 全件 PASS</li>
+  <li><strong>user 明示承認</strong> (<code>Phase 3 cutover</code> は user 明示承認必須、autonomous 判断不可)</li>
 </ol>
 
 <h2>§7. cutover 後の cleanup</h2>
@@ -140,16 +140,16 @@ STEPS:
     <tr><td>2: 並列稼働開始</td><td>次々 session</td><td><code>stack:new</code> label 自動付与 Action 追加、su-observer と並列稼働</td></tr>
     <tr><td>3: phase-* 順次実装</td><td>段階的</td><td>phase-impl / phase-pr 等を順次実装、対応する <code>stack:new</code> Issue を新 stack で処理</td></tr>
     <tr><td>4: 安定稼働</td><td>10+ Issue 完遂</td><td>cutover 判定 + user 承認</td></tr>
-    <tr><td>5: cutover + cleanup</td><td>Phase 3</td><td>旧 stack 削除、新 single stack 化</td></tr>
+    <tr><td>5: cutover + cleanup</td><td><code>Phase 3</code></td><td>旧 stack 削除、新 single stack 化</td></tr>
   </tbody>
 </table>
 
 <h2>§9. 関連 spec ファイル</h2>
 
 <ul>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 2-3 (dual-stack の Phase 概要)</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 2</code>-3 (dual-stack の Phase 概要)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> §9 (案 2 先行実装の dual-stack 注意点)</li>
-  <li><a href="deletion-inventory.html">deletion-inventory.html</a> (Phase 3 削除対象詳細)</li>
+  <li><a href="deletion-inventory.html">deletion-inventory.html</a> (<code>Phase 3</code> 削除対象詳細)</li>
   <li><a href="ssot-design.html">ssot-design.html</a> §4 (chain-runner.sh 廃止 migration、dual-stack 期間)</li>
   <li><a href="tool-architecture.html">tool-architecture.html</a> §4.3 (cross-stack tool invoke 禁止)</li>
   <li>既存 ADR-024 (refined label → Status field 移行) の dual-stack 経験</li>

@@ -65,24 +65,24 @@
     <tr><td>ADR-005</td><td>self-improve review</td><td>Accepted</td><td class="fate-keep">保全</td><td>tool-self-improve に rebrand</td></tr>
     <tr><td>ADR-006</td><td>Project Board 必須化 (Board = Issue status SSoT)</td><td>Accepted</td><td class="fate-strengthen">保全 (強化)</td><td>新 spec の核心、6-stage 拡張で発展 (Idea/Explored/Refined/Implementing/PR Reviewed/Merged)</td></tr>
     <tr><td>ADR-007</td><td>クロスリポジトリプロジェクト管理</td><td>Accepted</td><td class="fate-keep">保全</td><td>tool-project に rebrand</td></tr>
-    <tr><td>ADR-008</td><td>Worktree lifecycle Pilot 専任</td><td>Accepted</td><td class="fate-keep">保全</td><td>不変条件 B の根拠、新 spec でも全層 tmux spawn の前提として有効</td></tr>
+    <tr><td>ADR-008</td><td>Worktree lifecycle phaser 専任</td><td>Accepted</td><td class="fate-keep">保全</td><td>不変条件 B の根拠、新 spec でも全層 tmux spawn の前提として有効</td></tr>
     <tr><td>ADR-009</td><td>postprocess type</td><td>Accepted</td><td class="fate-keep">保全</td><td>skill type 分類、新 spec でも維持</td></tr>
-    <tr><td>ADR-010</td><td>Pilot active review trade-off</td><td>Accepted</td><td class="fate-strengthen">保全 (強化)</td><td>pilot 責務 boundary 設計に継承、worker mail 集約原則</td></tr>
+    <tr><td>ADR-010</td><td>phaser active review trade-off</td><td>Accepted</td><td class="fate-strengthen">保全 (強化)</td><td>pilot 責務 boundary 設計に継承、worker mail 集約原則</td></tr>
     <tr><td>ADR-011</td><td>co-self-improve 位置づけ</td><td>Accepted</td><td class="fate-keep">保全</td><td>tool-self-improve に rebrand</td></tr>
     <tr><td>ADR-012</td><td>drift detection severity levels</td><td>Accepted</td><td class="fate-keep">保全</td><td>step verification の severity 規約に継承</td></tr>
     <tr><td>ADR-013</td><td>Observer first-class (co-observer)</td><td>Accepted</td><td class="fate-other">Superseded by ADR-014 (既存 chain)</td><td>既に supersede 済、新 spec とは独立</td></tr>
     <tr><td>ADR-014</td><td>Supervisor redesign (su-observer)</td><td>Accepted</td><td class="fate-keep">保全 (rebrand)</td><td>administrator (新 spec) の前身。SKILL.md は rebrand、設計原則は保全</td></tr>
     <tr><td>ADR-015</td><td>deltaspec auto-init</td><td>Accepted</td><td class="fate-keep">保全</td><td>session 初期化フロー、新 spec の <code>admin-cycle.sh</code> で継承</td></tr>
     <tr><td>ADR-016</td><td>test target real issues</td><td>Accepted</td><td class="fate-keep">保全</td><td>regression test 戦略に継承</td></tr>
-    <tr><td>ADR-017</td><td>co-issue v2 Pilot/Worker プロセス隔離</td><td>Accepted</td><td class="fate-keep">保全 (3 階層への発展前提)</td><td>新 spec の 3 階層構造の前身、pilot/worker isolation は新 spec でも有効</td></tr>
+    <tr><td>ADR-017</td><td>co-issue v2 phaser/specialist プロセス隔離</td><td>Accepted</td><td class="fate-keep">保全 (3 階層への発展前提)</td><td>新 spec の 3 階層構造の前身、pilot/worker isolation は新 spec でも有効</td></tr>
     <tr><td>ADR-018</td><td>state schema SSOT</td><td>Accepted</td><td class="fate-keep">保全</td><td>不変条件 M の根拠、新 spec でも有効</td></tr>
     <tr><td>ADR-019</td><td>spec-implementation category</td><td>Accepted</td><td class="fate-keep">保全</td><td>skill category 分類、新 spec でも維持</td></tr>
     <tr><td>ADR-020</td><td>chain SSOT refinement (D-2/D-5 partial superseded)</td><td>Proposed</td><td class="fate-superseded">Superseded by ADR-022 (既存) + ADR-043 (完全)</td><td>新 spec で chain SSoT 三重化を解消、本 ADR は完全に Superseded</td></tr>
-    <tr><td>ADR-021</td><td>Pilot-driven workflow loop</td><td>Accepted</td><td class="fate-partial">部分 Superseded</td><td>pilot loop は維持、ただし orchestrator state 機械は新 spec の admin polling cycle に再設計</td></tr>
+    <tr><td>ADR-021</td><td>phaser-driven workflow loop</td><td>Accepted</td><td class="fate-partial">部分 Superseded</td><td>pilot loop は維持、ただし orchestrator state 機械は新 spec の admin polling cycle に再設計</td></tr>
     <tr><td>ADR-022</td><td>chain SSoT 境界明確化 (deps.yaml.chains 独立 SSoT)</td><td>Accepted</td><td class="fate-superseded">Superseded by ADR-043</td><td>新 spec で chain SSoT 三重化を廃止、deps.yaml.chains は step.sh に統合 (<a href="ssot-design.html">ssot-design.html</a>)</td></tr>
     <tr><td>ADR-023</td><td>TDD direct flow (chain 再設計)</td><td>Accepted</td><td class="fate-partial">部分 Superseded</td><td>chain step 構造の概念は保全、ただし「自己申告 step」(L1873-1884) の前提を step verification framework で再設計</td></tr>
     <tr><td>ADR-024</td><td>refined を label から Status field へ移行</td><td>Accepted</td><td class="fate-partial">部分 Superseded (拡張)</td><td>label→Status field 移行は保全、ただし 5-stage→6-stage に拡張 (Verified 削除確定、PR Reviewed 追加、Idea/Implementing/Merged rename)</td></tr>
-    <tr><td>ADR-025</td><td>co-autopilot phase review guarantee</td><td>Accepted</td><td class="fate-partial">部分 Superseded</td><td>Known Gap 4 (#1399 phase-review.json shared path) は新 spec の per-Worker mailbox で構造的解消、本 ADR の他の guarantee は保全</td></tr>
+    <tr><td>ADR-025</td><td>co-autopilot phase review guarantee</td><td>Accepted</td><td class="fate-partial">部分 Superseded</td><td>Known Gap 4 (#1399 phase-review.json shared path) は新 spec の per-specialist mailbox で構造的解消、本 ADR の他の guarantee は保全</td></tr>
     <tr><td>ADR-026</td><td>spawn syntax discipline</td><td>Accepted</td><td class="fate-strengthen">保全 (強化)</td><td>新 spec の tmux new-window 規約に継承</td></tr>
     <tr><td>ADR-027</td><td>pwd fallback forbidden</td><td>Accepted</td><td class="fate-strengthen">保全 (強化)</td><td>不変条件 K/L の補強、新 spec でも有効</td></tr>
     <tr><td>ADR-028</td><td>atomic RMW strategy</td><td>Accepted</td><td class="fate-strengthen">保全 (拡張)</td><td>state file への atomic write は新 spec の file mailbox の flock 設計に発展</td></tr>
@@ -106,13 +106,17 @@
 
 <h2>ADR-043 正典 (本 spec の起点)</h2>
 
-<pre><code>ADR-043: twill plugin radical rebuild — 3 階層 administrator/pilot/worker + file mailbox + step verification framework
-Status: Proposed (本 session 起票予定)
+<pre><code>ADR-043: twill plugin radical rebuild — 10 role architecture + registry.yaml 統合 SSoT + 命名 policy + experiment-verified spec
+Status: Proposed (本 session 起票完了、第 5 弾 dig で 10 role + registry.yaml + 命名 policy 確定)
 Supersedes (完全置換): ADR-020, ADR-022, ADR-034, ADR-039
 Supersedes (部分置換): ADR-003, ADR-021, ADR-023, ADR-024, ADR-025, ADR-029, ADR-038, ADR-041, ADR-042
 Strengthens (補強): ADR-006, ADR-008, ADR-010, ADR-014, ADR-017, ADR-026, ADR-027, ADR-028, ADR-035, ADR-040
 Inherits (保全継承): その他 22 件
-References: spec directory architecture/spec/twill-plugin-rebuild/</code></pre>
+References: spec directory architecture/spec/twill-plugin-rebuild/ (27 file + 2 dig-report MD)</code></pre>
+
+<div class="info"><strong>第 5 弾 dig (2026-05-13) での ADR-043 拡張</strong>: 旧「3 階層 administrator/pilot/worker」表記から「10 role architecture」(administrator / phaser / workflow / atomic / specialist + tool / reference / script / hook / monitor) に展開。新 Decision section §1 (10 role) + §3 (mail 4 階層) + §4 (Atomic skill verification) + §5 (registry.yaml 案 4) + §8 (命名 policy、1 entity = 1 name + vocabulary 6 field schema) + §9 (隠れ重複解消) を追加。詳細: <a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a>。</div>
+
+<p>ADR-045 (起票予定、第 5 弾 dig 由来): 命名 policy + vocabulary 6 field schema + 10 role 体系の formal ADR 化。本 ADR-043 の §8 + §9 を独立 ADR として正式化。</p>
 
 <p>ADR-044 (起票予定、別 ADR): chain SSoT 統一 (<a href="ssot-design.html">ssot-design.html</a> supplement) — ADR-020/022 の Superseded を ADR-043 と ADR-044 で 2 段階に分担する案を検討。</p>
 
@@ -120,19 +124,19 @@ References: spec directory architecture/spec/twill-plugin-rebuild/</code></pre>
 
 <p>ADR-043 を起票して既存 ADR を Superseded マークする際の <strong>順序</strong> (依存解決):</p>
 
-<h3>Phase 1 (PoC 着手と同時)</h3>
+<h3><code>Phase 1</code> (PoC 着手と同時)</h3>
 <ol>
   <li><strong>ADR-043 起票</strong> (Proposed status) + 本 spec directory への link</li>
 </ol>
 
-<h3>Phase 2 (dual-stack 開始時)</h3>
+<h3><code>Phase 2</code> (dual-stack 開始時)</h3>
 <ol start="2">
   <li>ADR-020 → Superseded by ADR-043 (chain SSoT 三重化解消)</li>
   <li>ADR-022 → Superseded by ADR-043 (chain SSoT boundary を ADR-043 に統合)</li>
   <li>ADR-039 → Superseded by ADR-043 (pre-pr-gate を step verification framework に統合)</li>
 </ol>
 
-<h3>Phase 3 (cutover 完了時)</h3>
+<h3><code>Phase 3</code> (cutover 完了時)</h3>
 <ol start="5">
   <li>ADR-034 → Superseded by ADR-043 (wave-progress-watchdog 廃止)</li>
   <li>ADR-023 → 部分 Superseded by ADR-043 (TDD direct flow を step verification framework に継承)</li>
@@ -146,17 +150,17 @@ References: spec directory architecture/spec/twill-plugin-rebuild/</code></pre>
   <li>ADR-021 → 部分 Superseded by ADR-043 (orchestrator 再設計)</li>
 </ol>
 
-<h3>Phase 4 (cleanup)</h3>
+<h3><code>Phase 4</code> (cleanup)</h3>
 <ol start="15">
   <li><strong>ADR-037 重複の正規化</strong> (ADR-037a / ADR-037b に rename or 新 ADR 番号付与)</li>
-  <li>ADR-043 を <strong>Accepted</strong> に昇格 (Phase 4 完了時)</li>
+  <li>ADR-043 を <strong>Accepted</strong> に昇格 (<code>Phase 4</code> 完了時)</li>
 </ol>
 
 <h2>注意事項</h2>
 
 <ol>
   <li><strong>ADR-013 / ADR-020 は既存 chain で既に Superseded</strong>: 新 spec とは独立、本 audit では「既存 chain」と注記。</li>
-  <li><strong>ADR-037 番号重複</strong>: <code>ADR-037-issue-creation-flow-canonicalization.md</code> と <code>ADR-037-stuck-pattern-ssot.md</code> の 2 件が同 number。新 spec で正規化必要 (Phase 4 cleanup 時)。</li>
+  <li><strong>ADR-037 番号重複</strong>: <code>ADR-037-issue-creation-flow-canonicalization.md</code> と <code>ADR-037-stuck-pattern-ssot.md</code> の 2 件が同 number。新 spec で正規化必要 (<code>Phase 4 cleanup</code> 時)。</li>
   <li><strong>「部分 Superseded」の意味</strong>: ADR 全体ではなく、その ADR 内の特定 section / decision が新 spec で置換される。残りは保全 (Superseded by ADR-043 とは別の status)。</li>
   <li><strong>「保全 (強化)」の意味</strong>: 新 spec でも ADR の原則は有効、加えて新 spec の仕組みでより強く enforce される。</li>
 </ol>
@@ -164,7 +168,7 @@ References: spec directory architecture/spec/twill-plugin-rebuild/</code></pre>
 <h2>audit 方法</h2>
 
 <ul>
-  <li>全 ADR ファイルを Phase 2 で code-explorer agent C が grep + 読み込み</li>
+  <li>全 ADR ファイルを <code>Phase 2</code> で code-explorer agent C が grep + 読み込み</li>
   <li>各 ADR の Title / Status / Decision section / Consequences section を確認</li>
   <li>新 spec (draft-v1 + 本 session で深掘り) との整合性を 1 件ずつ評価</li>
   <li>confidence: deduced (各 ADR を Read していない、本 audit は agent 出力からの集約)</li>

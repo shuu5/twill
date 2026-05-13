@@ -80,7 +80,7 @@
       <td><code>per-worker-state-isolation.bats</code></td>
       <td><a href="invariant-fate-table.html#inv-v">Inv V</a></td>
       <td><a class="exp-link" href="experiment-index.html#EXP-013">EXP-013</a></td>
-      <td>2 worker simulation、各々 per-Worker mailbox 書き込み、cross-pollution なし</td>
+      <td>2 worker simulation、各々 per-specialist mailbox 書き込み、cross-pollution なし</td>
     </tr>
     <tr>
       <td><code>phase-gate-hook.bats</code></td>
@@ -113,9 +113,9 @@
   </tbody>
 </table>
 
-<h2>§4. integration test (Phase 1 PoC 8 verify points + 拡張 12 件)</h2>
+<h2>§4. integration test (<code>Phase 1 PoC</code> 8 verify points + 拡張 12 件)</h2>
 
-<p>Phase 1 PoC で確認する 12 verify points を bats 化:</p>
+<p><code>Phase 1 PoC</code> で確認する 12 verify points を bats 化:</p>
 
 <table class="test-table">
   <thead><tr><th>VP</th><th>verify 内容</th><th>EXP-id</th></tr></thead>
@@ -127,7 +127,7 @@
     <tr><td>VP-5</td><td>admin polling 動作</td><td><a class="exp-link" href="experiment-index.html#EXP-004">EXP-004</a></td></tr>
     <tr><td>VP-6</td><td>context 効率化 (admin token &lt; su-observer)</td><td>(token 計測専用 EXP は次 session)</td></tr>
     <tr><td>VP-7</td><td>fail-fast at step level</td><td><a class="exp-link" href="experiment-index.html#EXP-012">EXP-012</a></td></tr>
-    <tr><td>VP-8</td><td>PR 完遂 (#1660 auto-merge)</td><td>e2e (Phase 1 PoC 内で実行)</td></tr>
+    <tr><td>VP-8</td><td>PR 完遂 (#1660 auto-merge)</td><td>e2e (<code>Phase 1 PoC</code> 内で実行)</td></tr>
     <tr><td>VP-9</td><td>tier 1+2 parallel</td><td><a class="exp-link" href="experiment-index.html#EXP-007">EXP-007</a></td></tr>
     <tr><td>VP-10</td><td>bypassPermissions でも deny</td><td><a class="exp-link" href="experiment-index.html#EXP-008">EXP-008</a></td></tr>
     <tr><td>VP-11</td><td>mcp-watchdog 廃止後の disconnect 発生頻度</td><td><a class="exp-link" href="experiment-index.html#EXP-005">EXP-005</a> + <a class="exp-link" href="experiment-index.html#EXP-009">EXP-009</a></td></tr>
@@ -217,7 +217,7 @@ teardown() {
 <ul>
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 新 invariant T-X 5 件の検証方法 field</li>
   <li><a href="failure-analysis.html">failure-analysis.html</a> 9 P0 bug の test 起点</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 4 bats 検証</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 4</code> bats 検証</li>
   <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> EXP-id system の運用</li>
   <li><a href="experiment-index.html">experiment-index.html</a> 全 EXP listing + status</li>
   <li><a href="ssot-design.html">ssot-design.html</a> §5 steps_integrity audit test</li>

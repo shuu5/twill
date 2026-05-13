@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>registry.yaml schema — 第 5 弾 dig 新規 SSoT 基盤</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  header.doc-header { border-bottom: 3px solid var(--focus); }
+  .role-matrix { min-width: 900px; }
+  .role-matrix td:first-child { font-weight: 700; white-space: nowrap; position: sticky; left: 0; background: var(--surface-primary); }
+  .role-matrix th:first-child { position: sticky; left: 0; background: var(--gray-50); z-index: 1; }
+  .deprecated { text-decoration: line-through; color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<header class="doc-header">
+  <h1>registry.yaml schema — twill plugin 統合 Authority SSoT</h1>
+  <div class="meta">draft-v1 (2026-05-13、第 5 弾 dig 新規) &middot; 10 role × concern matrix + vocabulary 6 field schema + Authority/Reference/Derived 階層図 &middot; 他 spec file の参照基盤</div>
+</header>
+
+<div class="info">
+  <strong>本 file は他 spec file の参照基盤として機能する。</strong> 第 5 弾 dig (Round 1-10、<a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a>) で確定した「registry.yaml 統合 SSoT」「10 role 体系」「vocabulary 6 field schema」「Authority / Reference / Derived 階層」を一元化。spec edit 時は本 file の各節を参照することで「1 entity = 1 name」ルールが担保される。
+</div>
+
+<h2 id="s1">§1. 本ファイルの役割と参照基盤 contract</h2>
+
+<p>本 file は <code>plugins/twl/registry.yaml</code> (新規、Authority SSoT) の schema specification を提供する。他 spec file が下記の節を参照することで、用語と構造の一貫性が機械検証可能になる。</p>
+
+<table>
+  <thead>
+    <tr><th>他 spec file</th><th>参照先節</th><th>参照内容</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="glossary.html">glossary.html</a></td><td><a href="#s4">§4 (vocabulary 6 field schema)</a> + <a href="#s8">§8 (1 entity = 1 name ルール)</a></td><td>用語集の field 構造と命名 policy</td></tr>
+    <tr><td><a href="ssot-design.html">ssot-design.html</a></td><td><a href="#s5">§5 (階層図)</a> + <a href="#s2">§2 (5 section schema)</a></td><td>registry.yaml 統合 SSoT 設計の core 仕様</td></tr>
+    <tr><td><a href="tool-architecture.html">tool-architecture.html</a></td><td><a href="#s3">§3 (10 role × concern matrix)</a></td><td>tool-* 役割の 10 role 体系 における位置付け</td></tr>
+    <tr><td><a href="boundary-matrix.html">boundary-matrix.html</a></td><td><a href="#s3">§3</a></td><td>role × concern boundary 定義</td></tr>
+    <tr><td><a href="overview.html">overview.html</a></td><td><a href="#s3">§3</a> + <a href="#s5">§5</a></td><td>全体図の L1 = phaser-* + 新原則「10 role + vocabulary」</td></tr>
+    <tr><td><a href="twl-mcp-integration.html">twl-mcp-integration.html</a></td><td><a href="#s2">§2 (5 section schema)</a></td><td>types.yaml 廃止 + registry.yaml 統合の根拠</td></tr>
+    <tr><td><a href="deletion-inventory.html">deletion-inventory.html</a></td><td><a href="#s2">§2</a> + <a href="#s3">§3</a></td><td>types.yaml / deps.yaml 廃止と worker→specialist rename の正当化</td></tr>
+    <tr><td><a href="rebuild-plan.html">rebuild-plan.html</a></td><td><a href="#s6">§6 (vocabulary audit 統合設計)</a></td><td>EXP-032〜038 詳細設計ベース</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s2">§2. registry.yaml 全体 schema と 5 section</h2>
+
+<div class="info">本節は <a href="ssot-design.html">ssot-design.html §4</a> の中核仕様。<code>plugins/twl/registry.yaml</code> 1 file が 5 section を保有する。</div>
+
+<pre><code># plugins/twl/registry.yaml
+# twill plugin の Authority SSoT (旧 deps.yaml v3.0 + types.yaml + chain.py CHAIN_STEPS を統合)
+
+version: "4.0"
+plugin: twl
+
+# §1. glossary (vocabulary table、core 12 entity + 10 role + 重要 entity)
+glossary:
+  # ... 各 entity を 6 field で listing。詳細は §4
+
+# §2. components (全 file の listing)
+components:
+  - name: administrator
+    role: administrator
+    file: skills/administrator/SKILL.md
+    concern: top-level orchestration
+    ssot_excludes: [status-transition, atomic-execution]
+
+  - name: phaser-impl
+    role: phaser
+    file: skills/phaser-impl/SKILL.md
+    concern: status-transition (Refined → Implementing)
+    depends_on_status: Refined
+    next_status: Implementing
+    can_spawn: [workflow-test-ready, workflow-pr-verify, specialist-*]
+
+  - name: workflow-test-ready
+    role: workflow
+    file: skills/workflow-test-ready/SKILL.md
+    concern: test scaffold sequence
+    sequence: [atomic-test-scaffold, atomic-green-impl, atomic-check]
+
+  - name: atomic-test-scaffold
+    role: atomic
+    file: skills/atomic-test-scaffold/SKILL.md
+    concern: RED test 生成
+    verify_rule: |
+      bats_count_increased &amp;&amp; red_test_failing &amp;&amp; src_diff == 0
+    can_spawn: []   # 通常 specialist 不要
+
+  - name: specialist-code-reviewer
+    role: specialist
+    file: agents/specialist-code-reviewer.md
+    concern: code quality review
+
+  # ... reference / script / hook / monitor も同様に listing
+
+# §3. chains (workflow → atomic sequence、verify rule 集約)
+chains:
+  test-ready:
+    workflow: workflow-test-ready
+    steps:
+      - name: atomic-test-scaffold
+        verify: bats_count_increased &amp;&amp; red_test_failing &amp;&amp; src_diff == 0
+      - name: atomic-green-impl
+        verify: red_to_green_transition &amp;&amp; green_test_passing
+      - name: atomic-check
+        verify: all_tests_pass &amp;&amp; lint_pass
+    next_workflow: workflow-pr-verify
+
+# §4. hooks + monitors (hooks.json + monitors.json の SSoT)
+hooks:
+  - name: hook-spec-write-boundary
+    event: PreToolUse
+    matcher: Edit|Write
+    handler_type: command
+    handler: scripts/hooks/pre-tool-use-spec-write-boundary.sh
+    concern: spec edit authority
+
+monitors:
+  - name: monitor-twl-mcp-health
+    command: tail -F .mcp-health.log
+    description: twl MCP server health log
+    concern: MCP health observability
+
+# §5. integrity_rules (audit 用)
+integrity_rules:
+  - id: no_duplicate_concern
+    description: 同じ concern を複数 role で保有してはならない
+    severity: critical
+
+  - id: ssot_authority_unique
+    description: Authority SSoT は concern ごとに 1 つのみ
+    severity: critical
+
+  - id: derived_drift_check
+    description: types.py fallback が registry.yaml から drift していないか
+    severity: warning
+
+  - id: prefix_role_match
+    description: file prefix と role が一致 (phaser-* file は role phaser)
+    severity: critical
+
+  - id: vocabulary_forbidden_use
+    description: forbidden 単語の使用 (audit --vocabulary section で検出)
+    severity: warning
+
+  - id: official_name_collision
+    description: 公式 Claude Code 名 (Agent/Skill/Tool 等) を backtick なしで twl 内部 entity として使用
+    severity: warning
+
+  - id: description_required_consistency
+    description: role が administrator/phaser/tool/specialist のみ description あり、他 role は disable-model-invocation: true + description 省略
+    severity: warning
+</code></pre>
+
+<h2 id="s3">§3. 10 role × concern matrix</h2>
+
+<div class="info">本節は <a href="tool-architecture.html">tool-architecture.html</a> と <a href="boundary-matrix.html">boundary-matrix.html</a> の参照基盤。10 role の concern 割り当てをここで一元定義する。</div>
+
+<div style="overflow-x: auto;">
+<table class="role-matrix">
+  <thead>
+    <tr>
+      <th>role</th>
+      <th>location</th>
+      <th>prefix</th>
+      <th>description 有無</th>
+      <th>allowed-tools (代表)</th>
+      <th>can_spawn</th>
+      <th>公式仕様根拠</th>
+      <th>vocabulary entry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>administrator</strong></td>
+      <td><code>skills/administrator/</code></td>
+      <td>(singleton、なし)</td>
+      <td><span class="vs verified">有</span></td>
+      <td>全 Tool</td>
+      <td>phaser-*、tool-*</td>
+      <td><span class="vs verified">skills docs</span></td>
+      <td><a href="#vocab-administrator">§4</a></td>
+    </tr>
+    <tr>
+      <td><strong>phaser</strong></td>
+      <td><code>skills/phaser-*/</code></td>
+      <td><code>phaser-</code></td>
+      <td><span class="vs verified">有</span></td>
+      <td>Skill, Bash, Read, mcp__twl__*</td>
+      <td>workflow-*、specialist-* (条件付き)</td>
+      <td><span class="vs verified">skills docs</span></td>
+      <td><a href="#vocab-phaser">§4</a></td>
+    </tr>
+    <tr>
+      <td><strong>tool</strong></td>
+      <td><code>skills/tool-*/</code></td>
+      <td><code>tool-</code></td>
+      <td><span class="vs verified">有</span></td>
+      <td>各 tool 定義</td>
+      <td>specialist-* (条件付き)</td>
+      <td><span class="vs verified">skills docs</span></td>
+      <td><a href="#vocab-tool">§4</a></td>
+    </tr>
+    <tr>
+      <td><strong>workflow</strong></td>
+      <td><code>skills/workflow-*/</code></td>
+      <td><code>workflow-</code></td>
+      <td><span class="vs verified">無 (<code>disable-model-invocation: true</code>)</span></td>
+      <td>Skill, Bash</td>
+      <td>atomic-* (Skill() 経由)</td>
+      <td><span class="vs verified">skills docs: disable-model-invocation</span></td>
+      <td><a href="#vocab-workflow">§4</a></td>
+    </tr>
+    <tr>
+      <td><strong>atomic</strong></td>
+      <td><code>skills/atomic-*/</code></td>
+      <td><code>atomic-</code></td>
+      <td><span class="vs verified">無 (同上)</span></td>
+      <td>Bash, Read, Write, Edit, Skill, Agent</td>
+      <td>specialist-* (Agent() 経由、必要時のみ)</td>
+      <td><span class="vs verified">skills + sub-agents docs</span></td>
+      <td><a href="#vocab-atomic">§4</a></td>
+    </tr>
+    <tr>
+      <td><strong>specialist</strong></td>
+      <td><code>agents/specialist-*.md</code></td>
+      <td><code>specialist-</code></td>
+      <td><span class="vs verified">有 (公式必須)</span></td>
+      <td>各 specialist 定義</td>
+      <td><span class="vs verified">不可 (subagent spawn 禁止)</span></td>
+      <td><span class="vs verified">sub-agents docs verbatim</span></td>
+      <td><a href="#vocab-specialist">§4</a></td>
+    </tr>
+    <tr>
+      <td><strong>reference</strong></td>
+      <td><code>refs/ref-*.md</code></td>
+      <td><code>ref-</code></td>
+      <td>概念外</td>
+      <td>— (doc のみ)</td>
+      <td>—</td>
+      <td>—</td>
+      <td><a href="#vocab-reference">§4</a></td>
+    </tr>
+    <tr>
+      <td><strong>script</strong></td>
+      <td><code>scripts/hooks/&lt;event&gt;-*.sh</code></td>
+      <td>event-based</td>
+      <td>概念外</td>
+      <td>— (bash)</td>
+      <td>—</td>
+      <td><span class="vs verified">plugins-reference: hook type=command</span></td>
+      <td><a href="#vocab-script">§4</a></td>
+    </tr>
+    <tr>
+      <td><strong>hook</strong></td>
+      <td><code>hooks/hooks.json</code> (entry)</td>
+      <td>(registry entry)</td>
+      <td>概念外</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="vs verified">plugins-reference: 27 lifecycle events</span></td>
+      <td><a href="#vocab-hook">§4</a></td>
+    </tr>
+    <tr>
+      <td><strong>monitor</strong></td>
+      <td><code>monitors/monitors.json</code> (entry)</td>
+      <td>(registry entry)</td>
+      <td>概念外</td>
+      <td>—</td>
+      <td>—</td>
+      <td><span class="vs verified">plugins-reference: monitors</span></td>
+      <td><a href="#vocab-monitor">§4</a></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="s4">§4. vocabulary entry 6 field schema</h2>
+
+<div class="info">本節は <a href="glossary.html">glossary.html</a> の参照基盤。glossary.html は本節の 6 field schema に準拠して用語集を実装する。</div>
+
+<table>
+  <thead>
+    <tr><th>field</th><th>型</th><th>必須</th><th>説明</th><th>例 (phaser)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>canonical</code></td><td>string</td><td>必須</td><td>唯一の正規名。英語 hyphen-kebab、lowercase + hyphens のみ (<code>_</code> 不可 <span class="vs verified">verified</span>)。audit の基準名</td><td><code>phaser</code></td></tr>
+    <tr><td><code>aliases</code></td><td>string[]</td><td>任意</td><td>許容される同義語。audit では warn しない</td><td><code>[]</code></td></tr>
+    <tr><td><code>forbidden</code></td><td>string[]</td><td>任意</td><td>禁止語。<code>twl audit --vocabulary</code> で word boundary 検出、severity: warning</td><td><code>[pilot, phase, controller, pilot-phase]</code></td></tr>
+    <tr><td><code>context</code></td><td>string</td><td>必須</td><td>entity が属する文脈 (role level / directory / 用途)</td><td><code>L1 role</code></td></tr>
+    <tr><td><code>description</code></td><td>string (multiline)</td><td>必須</td><td>自由記述。日本語可。entity 参照は backtick + 英語 canonical</td><td><em>別 session window controller...</em></td></tr>
+    <tr><td><code>examples</code></td><td>string[]</td><td>推奨</td><td>実ファイル名 or 実 entity 名の例示</td><td><code>[phaser-explore, phaser-refine, phaser-impl, phaser-pr]</code></td></tr>
+  </tbody>
+</table>
+
+<h3>core 12 entity seed (Phase 1 PoC で registry.yaml に書き込む初期値)</h3>
+
+<pre><code># plugins/twl/registry.yaml の glossary section
+glossary:
+  # === 10 role ===
+  administrator:
+    canonical: administrator
+    aliases: []
+    forbidden: [orchestrator, controller, supervisor, su-observer]
+    context: L0 role
+    description: 長命 main session、user 代理、Project Board status SSoT を polling
+    examples: [administrator]
+
+  phaser:
+    canonical: phaser
+    aliases: []
+    forbidden: [pilot, phase, controller, pilot-phase]
+    context: L1 role
+    description: |
+      別 session window で動作する controller。
+      administrator が Project Board status に応じて 1 phaser を spawn。
+      各 phaser は 1 つの status 遷移 (`status-transition`) を担当。
+    examples: [phaser-explore, phaser-refine, phaser-impl, phaser-pr]
+
+  tool:
+    canonical: tool
+    aliases: []
+    forbidden: []   # 公式 `Tool` は大文字+backtick で別 entity
+    context: independent role
+    description: |
+      admin/user session 内で動作する独立 skill。status 遷移と無関係。
+      公式 `Tool` (Bash/Edit 等) とは小文字 + tool-* prefix で識別。
+    examples: [tool-architect, tool-project, tool-sandbox-runner]
+
+  workflow:
+    canonical: workflow
+    aliases: []
+    forbidden: [worker]
+    context: L2 role (phaser から spawn)
+    description: phaser / tool から Skill() で呼ばれる sub-workflow、atomic を順次呼ぶ launcher
+    examples: [workflow-test-ready, workflow-pr-verify, workflow-pr-merge]
+
+  atomic:
+    canonical: atomic
+    aliases: []
+    forbidden: [step, composite]
+    context: minimum unit (workflow から呼ばれる)
+    description: |
+      最小実行単位の skill。workflow から `Skill()` で呼ばれる。
+      内部で必要なら `Agent(specialist-*)` で specialist spawn。
+      4-phase lifecycle (pre-check / exec / post-verify / report) を内部実装。
+    examples: [atomic-test-scaffold, atomic-green-impl, atomic-check]
+
+  specialist:
+    canonical: specialist
+    aliases: []
+    forbidden: [worker]
+    context: subagent (agents/ directory)
+    description: |
+      `Agent` tool 経由で spawn される sub-agent。独立 context window。
+      公式 `agents/` directory に配置 (公式仕様、変更不可)。
+    examples: [specialist-code-reviewer, specialist-architecture, specialist-spec-review]
+
+  reference:
+    canonical: reference
+    aliases: [ref]
+    forbidden: []
+    context: documentation
+    description: 不変条件 / prompt guide / pitfalls catalog 等の正典 doc
+    examples: [ref-invariants, ref-prompt-guide, ref-pitfalls-catalog]
+
+  script:
+    canonical: script
+    aliases: []
+    forbidden: []
+    context: hook handler bash (hook 用のみ、skill 呼び出し用は 0)
+    description: 公式 `command` type の hook 実装 bash file
+    examples: [pre-tool-use-worktree-boundary, pre-compact-checkpoint]
+
+  hook:
+    canonical: hook
+    aliases: []
+    forbidden: []
+    context: Claude Code event handler (hooks.json entry)
+    description: 公式 hook lifecycle event の handler config
+    examples: [hook-spec-write-boundary, hook-pre-compact]
+
+  monitor:
+    canonical: monitor
+    aliases: []
+    forbidden: []
+    context: background process (monitors.json entry)
+    description: Plugin Monitor (stdout 各 line が session notification)
+    examples: [monitor-twl-mcp-health, monitor-budget-watcher]
+
+  # === non-role 重要 entity ===
+  status:
+    canonical: status
+    aliases: []
+    forbidden: [state]
+    context: Project Board status (Issue lifecycle)
+    description: GitHub Project Board の Status field、6-stage
+    examples: [Refined, Implementing, "PR Reviewed"]
+
+  status-transition:
+    canonical: status-transition
+    aliases: [transition]
+    forbidden: [遷移, phase as transition]
+    context: 1 status から次 status への遷移 event
+    description: phaser が担当する 1 つの status-transition
+    examples: ["Refined → Implementing", "Implementing → PR Reviewed"]
+
+  mailbox:
+    canonical: mailbox
+    aliases: []
+    forbidden: [events, .supervisor/events/]
+    context: file mailbox (.mailbox/&lt;session&gt;/)
+    description: per-session file mailbox directory、flock atomic write (Inv T)
+    examples: [".mailbox/administrator/", ".mailbox/phaser-impl-1660/"]
+
+  inbox:
+    canonical: inbox
+    aliases: []
+    forbidden: []
+    context: mailbox 内の JSON Lines file
+    description: mailbox directory 内の inbox.jsonl file
+    examples: [".mailbox/administrator/inbox.jsonl"]
+
+  mail:
+    canonical: mail
+    aliases: []
+    forbidden: [message]
+    context: inbox.jsonl の 1 entry (JSON Lines 1 行)
+    description: |
+      JSON Lines 1 行の mailbox entry。
+      schema: {from, to, ts, event, detail, heartbeat_ts}
+    examples: ['{"from":"phaser-impl","event":"step-completed","detail":{...}}']
+
+  event:
+    canonical: event
+    aliases: []
+    forbidden: []
+    context: mail の event field
+    description: mail JSON の event field
+    examples: [step-started, step-completed, step-postverify-failed, phase-completed]
+
+  migration_stage:
+    canonical: migration_stage
+    aliases: []
+    forbidden: []
+    context: Strangler Fig migration phase (公式スタイル backtick + 大文字で例外扱い)
+    description: |
+      Strangler Fig migration の `Phase 1 PoC`/`Phase 2 dual-stack`/
+      `Phase 3 cutover`/`Phase 4 cleanup` を migration_stage entity として
+      vocabulary table に登録、phase forbidden audit から除外。
+    examples: ["`Phase 1 PoC`", "`Phase 2 dual-stack`", "`Phase 3 cutover`", "`Phase 4 cleanup`"]
+
+  sandbox:
+    canonical: sandbox
+    aliases: []
+    forbidden: []
+    context: tool-sandbox-runner が実行する isolated 環境
+    description: |
+      plugins/twl/sandboxes/&lt;name&gt;/{sandbox.yaml, setup.sh, features.yaml} で定義される
+      isolated 環境。twill-self (test-target/main orphan branch) や
+      ts-nextjs-hono-mono 等の sandbox catalog から選択。
+    examples: [twill-self, ts-nextjs-hono-mono]
+
+  EXP:
+    canonical: EXP
+    aliases: []
+    forbidden: [experiment as singular id]
+    context: sandbox experiment id (EXP-NNN format)
+    description: experiment-index.html で listing される実機検証 experiment
+    examples: [EXP-001, EXP-027, EXP-038]
+
+  lesson:
+    canonical: lesson
+    aliases: []
+    forbidden: []
+    context: cross-session knowledge (doobidoo に保存)
+    description: |
+      session を越えて再利用される経験的知見。doobidoo Knowledge Authority SSoT
+      (cross-machine HTTP MCP) に memory_store。tool-sandbox-runner が重複 check 後
+      Idea Issue 起票 (severity=critical のみ)。
+    examples: ["budget 表示 5h:N%(Xm) format 誤読", "tmux -C 破壊禁止"]
+</code></pre>
+
+<h2 id="s5">§5. Authority / Reference / Derived 階層図</h2>
+
+<div class="info">本節は <a href="ssot-design.html">ssot-design.html</a> と <a href="overview.html">overview.html</a> の参照基盤。旧 ssot-design.html の「chain SSoT 三重化解消」設計を本節 + ssot-design.html 全面書き直しで置き換える。</div>
+
+<h3>5.1 3 段階 SSoT 分類</h3>
+
+<table>
+  <thead>
+    <tr><th>分類</th><th>定義</th><th>例</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Authority SSoT</strong></td><td>原典、人または合意が author、各 concern について唯一存在</td><td>registry.yaml、ref-invariants.md、Project Board、doobidoo、ADR-043</td></tr>
+    <tr><td><strong>Reference SSoT</strong></td><td>Authority から参照される正典 (自動生成ではないが Authority の supplement)</td><td>experiment-index.html、ref-pitfalls-catalog.md、ref-intervention-catalog.md</td></tr>
+    <tr><td><strong>Derived</strong></td><td>Authority から自動生成、drift は <code>twl audit</code> で検出</td><td>types.py <code>_FALLBACK_TOKEN_THRESHOLDS</code>、README/CLAUDE.md component listing</td></tr>
+  </tbody>
+</table>
+
+<h3>5.2 階層図</h3>
+
+<div class="diagram">
+<pre style="background: #1a2025; color: #e3e8eb; padding: 12px; text-align: left;">
+[user / 設計者]
+    │ author
+    ▼
+[architecture spec]  (dig-report-ssot-2026-05-13.md を supplement として保持)
+    │ supplement of
+    ▼
+[ADR-043 正典]
+    │ describes
+    ▼
+[Authority SSoT] ─────────────────────────────────────────────────┐
+    ├─ registry.yaml  ◀── plugins/twl/registry.yaml               │
+    │   ├─ §1. glossary      (vocabulary table、10 role + entity) │
+    │   ├─ §2. components    (全 file listing: role/path/concern) │
+    │   ├─ §3. chains        (workflow → atomic sequence)         │
+    │   ├─ §4. hooks+monitors (entry config)                      │
+    │   └─ §5. integrity_rules (audit ルール定義)                  │
+    ├─ ref-invariants.md     (invariant A-X 24 件)                │
+    ├─ Project Board (status SSoT、external)                       │
+    ├─ doobidoo MCP (lesson SSoT、cross-machine)                   │
+    └─ 各実 file (SKILL.md / agents/specialist-*.md) ◀────────────┘
+           (registry.yaml components が role/path を listing)
+
+[Reference SSoT]  ◀── Authority から参照される正典
+    ├─ experiment-index.html  (EXP-NNN 結果集約)
+    └─ ref-*.md catalogs      (pitfalls / intervention / monitor-channel)
+
+[Derived]  ◀── 自動生成、drift は twl audit で検出
+    ├─ types.py fallback      ◀── registry.yaml から生成
+    └─ README/CLAUDE.md listing ◀── twl update-readme
+</pre>
+<p class="diagram-caption">図 1: Authority / Reference / Derived 3 段階 SSoT 分類と registry.yaml 内部 5 section の位置付け</p>
+</div>
+
+<h2 id="s6">§6. vocabulary audit 統合設計</h2>
+
+<div class="info">本節は <a href="rebuild-plan.html">rebuild-plan.html</a> EXP-038 (vocabulary audit) の設計基盤。<code>audit_collect()</code> の section 11 として実装する。</div>
+
+<h3>6.1 audit_vocabulary() pseudo-code</h3>
+
+<pre><code>def audit_vocabulary(registry_yaml, spec_dir, code_dir) -&gt; list[dict]:
+    """vocabulary table に基づき forbidden 語の使用を機械検出。"""
+    glossary = registry_yaml['glossary']
+    items = []
+    for entity_name, entry in glossary.items():
+        forbidden = entry.get('forbidden', [])
+        for forbidden_word in forbidden:
+            # spec/*.html、cli/twl/**/*.py、plugins/twl/**/*.sh、*.md を grep
+            for file in glob_files():
+                for line, content in enumerate(file):
+                    # word boundary 厳密 (正規表現 \b で囲む)
+                    if matches_word_boundary(content, forbidden_word):
+                        # ただし context (公式名 backtick 引用、説明用 etc.) は exclude
+                        if not is_excluded_context(content, forbidden_word):
+                            items.append({
+                                "severity": "warning",
+                                "section": "vocabulary",
+                                "component": f"{file}:{line}",
+                                "message": f"forbidden '{forbidden_word}' for entity '{entity_name}', canonical is '{entry['canonical']}'"
+                            })
+    return items
+</code></pre>
+
+<h3>6.2 integrity_rules との対応</h3>
+
+<table>
+  <thead>
+    <tr><th>audit section</th><th>integrity_rules id</th><th>severity</th><th>検出内容</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>section 11: vocabulary</td><td><code>vocabulary_forbidden_use</code></td><td>warning</td><td>forbidden 語の word boundary 検出</td></tr>
+    <tr><td>section 11: vocabulary</td><td><code>official_name_collision</code></td><td>warning</td><td>公式名 (Agent/Skill/Tool) を backtick なしで twl entity として使用</td></tr>
+    <tr><td>既存 section 1-10</td><td>その他 rules</td><td>critical/warning</td><td>prefix-role mismatch、orphan file 等</td></tr>
+  </tbody>
+</table>
+
+<h3>6.3 false positive 抑制の除外コンテキスト 3 種</h3>
+
+<ol>
+  <li>backtick 内の公式名引用 (<code>`Agent`</code>)</li>
+  <li>「旧〜」「廃止予定 〜」と明示した説明文</li>
+  <li><code>`Phase 1 PoC`</code> 等の Strangler Fig migration_stage 表記</li>
+</ol>
+
+<h2 id="s7">§7. 公式名衝突回避ルール</h2>
+
+<table>
+  <thead>
+    <tr><th>公式 Claude Code 名</th><th>spec での書き方</th><th>twl 内部 entity の対応物</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>Agent</code> (tool)</td><td>大文字始まり + backtick</td><td><code>specialist</code> (role)、<code>agents/</code> (directory)</td></tr>
+    <tr><td><code>Skill</code> (tool)</td><td>大文字始まり + backtick</td><td>(twl 側 entity なし、機構名として <code>Skill</code> で OK)</td></tr>
+    <tr><td><code>Tool</code> (abstract)</td><td>大文字始まり + backtick</td><td><code>tool</code> (role、小文字 + tool-* prefix で識別)</td></tr>
+    <tr><td><code>Bash</code>, <code>Edit</code>, <code>Read</code>, <code>Write</code> etc.</td><td>大文字始まり + backtick</td><td>(twl 側 entity なし)</td></tr>
+    <tr><td><code>Plan</code> (agent type)</td><td>大文字始まり + backtick</td><td>(twl 側 entity なし)</td></tr>
+    <tr><td><code>Explore</code> (agent type)</td><td>大文字始まり + backtick</td><td>(twl 側 entity なし)</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s8">§8. 命名 policy と 1 entity = 1 name ルール</h2>
+
+<h3>8.1 「1 entity = 1 name」ルール</h3>
+
+<p>各 entity (10 role + 重要 non-role entity) は 1 つの canonical name を持つ。vocabulary table に canonical + aliases (許容) + forbidden (禁止) を listing。spec / code / docs で同一 entity を指す時は canonical を使う。</p>
+
+<h3>8.2 言語 policy</h3>
+
+<table>
+  <thead>
+    <tr><th>要素</th><th>policy</th><th>根拠</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>canonical name</td><td>英語 hyphen-kebab、lowercase letters + numbers + hyphens のみ、<code>_</code> 不可</td><td>公式 skill name 制約 <span class="vs verified">verified</span> (skills docs verbatim「Lowercase letters, numbers, and hyphens only」)</td></tr>
+    <tr><td>description / 説明文</td><td>日本語可、ただし entity 参照時は backtick + 英語 canonical</td><td>第 5 弾 dig Round 7 合意</td></tr>
+    <tr><td>既存日本語表記 (「不変条件」「遷移」)</td><td>spec 説明文として OK、registry.yaml canonical は英語 (<code>invariant</code> / <code>status-transition</code>)</td><td>同上</td></tr>
+  </tbody>
+</table>
+
+<h3>8.3 role 1 語化</h3>
+
+<p>false positive audit リスクを下げるため、複合 role 名 (<code>pilot-phase</code> 試案) ではなく <strong>1 語 role 体系</strong> で uniform: <code>phaser</code> / <code>administrator</code> / <code>tool</code> / <code>workflow</code> / <code>atomic</code> / <code>specialist</code> / <code>reference</code> / <code>script</code> / <code>hook</code> / <code>monitor</code>。第 5 弾 dig Round 9 確定。</p>
+
+<h3>8.4 隠れ重複 SSoT の系統的解消</h3>
+
+<table>
+  <thead>
+    <tr><th>旧多重</th><th>新方針</th><th>旧 occurrence</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>state vs status</td><td>state 液化、status 統一、status-transition canonical</td><td>state 102</td></tr>
+    <tr><td>mail / event / message</td><td>4 階層 (mailbox &gt; inbox &gt; mail &gt; event)、message 廃止</td><td>message 10</td></tr>
+    <tr><td>.supervisor/events/</td><td>完全廃止、mailbox 統一</td><td>(directory)</td></tr>
+    <tr><td>制御系 4 語 (administrator / orchestrator / controller / supervisor)</td><td>administrator 統一、他 3 語は液化</td><td>108</td></tr>
+    <tr><td>pilot / phase / phase-* / controller / pilot-phase</td><td>phaser 1 語統一</td><td>934</td></tr>
+    <tr><td>worker / worker-*</td><td>workflow (L2 skill) + specialist (agents/) 2 分割</td><td>537</td></tr>
+    <tr><td>step (一般語) / step.sh / step::run</td><td>atomic 統一、`Step 0`/`Step 1` は公式 SKILL.md スタイル backtick 保全</td><td>716</td></tr>
+  </tbody>
+</table>
+
+<h2 id="s9">§9. 変更管理と将来計画</h2>
+
+<h3>9.1 vocabulary table 拡張 schedule</h3>
+
+<ul>
+  <li><strong><code>Phase 1 PoC</code> seed</strong>: core 12 entity (10 role + status + status-transition + mailbox + inbox + mail + event + migration_stage + sandbox + EXP + lesson)</li>
+  <li><strong><code>Phase 2 dual-stack</code></strong>: 隠れ重複追加 entity (orchestrator/controller/supervisor 等の「旧 type」明示、Strangler Fig migration_stage 詳細)</li>
+  <li><strong><code>Phase 3 cutover</code></strong>: 全 spec entity (50+ 件) の vocabulary 登録</li>
+</ul>
+
+<h3>9.2 registry.yaml version bump ルール</h3>
+
+<ul>
+  <li>major (e.g. <code>4.0</code> → <code>5.0</code>): schema breaking change (section 構造変更)</li>
+  <li>minor (e.g. <code>4.0</code> → <code>4.1</code>): glossary 追加、components 追加</li>
+  <li>patch (e.g. <code>4.0.0</code> → <code>4.0.1</code>): typo fix、forbidden list 追加</li>
+</ul>
+
+<h3>9.3 残課題 (実装段階で詰める)</h3>
+
+<ul>
+  <li><code>twl audit --vocabulary</code> false positive 抑制 (文脈解析: backtick 引用、説明文の単語 vs 実 component name)</li>
+  <li>types.py <code>_FALLBACK_TOKEN_THRESHOLDS</code> の registry.yaml 自動生成 logic</li>
+  <li>phaser SKILL.md description 必須 standard template (administrator が AI 判断で phaser-explore vs phaser-refine 等を select する基準)</li>
+  <li>公式 Claude Code skill / agent / hook / monitor 仕様の breaking change 監視</li>
+</ul>
+
+<h3>9.4 命名 policy ADR (ADR-045) 起票予定</h3>
+
+<p>本 file の Round 7-10 結果を formal ADR 化。第 5 弾 dig での「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR-045 として正式化。</p>
+
+<h2>§10. 関連 spec / EXP</h2>
+
+<ul>
+  <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 round + 33+ question + 921 行、本 file の origin)</li>
+  <li><a href="glossary.html">glossary.html</a> (本 file §4 を 6 field schema として実装する用語集)</li>
+  <li><a href="ssot-design.html">ssot-design.html</a> (案 4 registry.yaml 統合 SSoT 設計、本 file §2 と §5 を core 仕様化)</li>
+  <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* 3 件 + 10 role 適用、本 file §3 を参照)</li>
+  <li><a href="boundary-matrix.html">boundary-matrix.html</a> (role × concern boundary、本 file §3 を参照)</li>
+  <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle、forbidden = step を解消)</li>
+  <li><a href="deletion-inventory.html">deletion-inventory.html</a> (types.yaml + deps.yaml + step.sh framework 全廃の根拠)</li>
+  <li><a href="experiment-index.html">experiment-index.html</a> (EXP-032〜038、本 file §6 と §2 を実機検証)</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> (Strangler Fig 4 phase migration、本 file §9.1 vocabulary 拡張 schedule と整合)</li>
+  <li>plugins/twl/architecture/decisions/ADR-043-twill-radical-rebuild.md (Decision §8 命名 policy + §5 registry.yaml 統合 SSoT)</li>
+  <li>plugins/twl/architecture/decisions/ADR-045-naming-policy.md (予定、本 file の formal ADR 化)</li>
+</ul>
+
+</body>
+</html>

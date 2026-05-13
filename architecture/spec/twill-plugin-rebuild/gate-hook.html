@@ -15,8 +15,10 @@
 
 <header class="doc-header">
   <h1>PreToolUse gate hook — 不変条件 W 機械化 (公式 verified)</h1>
-  <div class="meta">draft-v2 (2026-05-12) &middot; tier 1 (command hook) + tier 2 (MCP shadow) 階層防御 &middot; 全 schema 公式 docs verified</div>
+  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; tier 1 (command hook) + tier 2 (MCP shadow) 階層防御 &middot; 全 schema 公式 docs verified &middot; phaser-* SKILL invoke gate (旧 phase-* から rename)</div>
 </header>
+
+<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: hook の <code>if</code> field 内 SKILL pattern を <code>Skill(phase-*)</code> から <code>Skill(phaser-*)</code> に rename (sed 機械化)。<code>phase-gate.sh</code> handler は概念的に「gate hook handler」と呼ぶ (vocabulary <code>hook</code> entity の一部、forbidden synonym: <code>phase-gate</code>)。tier 2 MCP handler の <code>_extract_issue_num(skill_name)</code> regex も <code>phaser-(explore|refine|impl|pr)-(\d+)</code> に更新する必要 (実装段階)。<a href="registry-schema.html">registry-schema.html</a> hooks section が SSoT。</div>
 
 <div class="info">
   <strong>目的</strong>: <a href="invariant-fate-table.html#inv-w">不変条件 W (PreToolUse hook で status gate 機械化)</a> の具体実装を仕様化する。phase-* invocation 時に GitHub Project Board status を verify し、不一致なら deny + administrator notify。<br>
@@ -48,14 +50,14 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Skill(phase-impl*)",
+            "if": "Skill(phaser-impl*)",
             "command": "${CLAUDE_PROJECT_DIR}/plugins/twl/scripts/phase-gate.sh",
             "args": [],
             "timeout": 5
           },
           {
             "type": "mcp_tool",
-            "if": "Skill(phase-impl*)",
+            "if": "Skill(phaser-impl*)",
             "server": "twl",
             "tool": "twl_phase_gate_check",
             "input": { "expected_status": "Refined" }
@@ -93,7 +95,7 @@
 <ul>
   <li><code>"Bash(git *)"</code> — Bash の git subcommand</li>
   <li><code>"Edit(*.ts)"</code> — TypeScript file の Edit</li>
-  <li><code>"Skill(phase-impl-*)"</code> — phase-impl で始まる skill 全件</li>
+  <li><code>"Skill(phaser-impl-*)"</code> — phaser-impl で始まる skill 全件</li>
 </ul>
 
 <h2>§2. hook 経由で受信する context (公式 verified)</h2>
@@ -109,7 +111,7 @@
   "hook_event_name": "PreToolUse",
   "tool_name": "Skill",
   "tool_input": {
-    "skill": "phase-impl",
+    "skill": "phaser-impl",
     "args": "1660"
   },
   "tool_use_id": "tool-abc123",
@@ -198,7 +200,7 @@ def twl_phase_gate_check_handler(args: dict) -> dict:
 
     Args:
         expected_status: "Idea"|"Explored"|"Refined"|"Implementing"
-        skill_name: phase-impl-1660 等
+        skill_name: phaser-impl-1660 等
 
     Returns:
         hookSpecificOutput を含む dict
@@ -206,7 +208,7 @@ def twl_phase_gate_check_handler(args: dict) -> dict:
     expected_status = args.get("expected_status")
     skill_name = args.get("skill_name", "")
 
-    # phase-N から issue 番号を抽出 (e.g. "phase-impl-1660" → 1660)
+    # phase-N から issue 番号を抽出 (e.g. "phaser-impl-1660" → 1660)
     issue_num = _extract_issue_num(skill_name)
     if not issue_num:
         # issue 番号特定不能 → allow (gate 対象外、log のみ)
@@ -278,10 +280,10 @@ if mcp is not None:
     <tr><th>Skill</th><th>前提 status</th><th>遷移後 status</th><th><code>if</code> 条件例</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>phase-explore</code></td><td>Idea</td><td>Explored</td><td><code>Skill(phase-explore*)</code></td></tr>
-    <tr><td><code>phase-refine</code></td><td>Explored</td><td>Refined</td><td><code>Skill(phase-refine*)</code></td></tr>
-    <tr><td><code>phase-impl</code></td><td>Refined</td><td>Implementing</td><td><code>Skill(phase-impl*)</code></td></tr>
-    <tr><td><code>phase-pr</code></td><td>Implementing</td><td>PR Reviewed</td><td><code>Skill(phase-pr*)</code></td></tr>
+    <tr><td><code>phaser-explore</code></td><td>Idea</td><td>Explored</td><td><code>Skill(phaser-explore*)</code></td></tr>
+    <tr><td><code>phaser-refine</code></td><td>Explored</td><td>Refined</td><td><code>Skill(phaser-refine*)</code></td></tr>
+    <tr><td><code>phaser-impl</code></td><td>Refined</td><td>Implementing</td><td><code>Skill(phaser-impl*)</code></td></tr>
+    <tr><td><code>phaser-pr</code></td><td>Implementing</td><td>PR Reviewed</td><td><code>Skill(phaser-pr*)</code></td></tr>
   </tbody>
 </table>
 
@@ -357,24 +359,24 @@ fi</code></pre>
 <pre><code>#!/usr/bin/env bats
 # Inv W enforcement test (新規 bats)
 
-@test "phase-impl on Refined Issue is allowed" {
+@test "phaser-impl on Refined Issue is allowed" {
   # setup: Issue #1660 を Refined にする
   mock_project_status 1660 "Refined"
 
   # exec
-  echo '{"tool_name":"Skill","tool_input":{"skill":"phase-impl-1660"}}' \
+  echo '{"tool_name":"Skill","tool_input":{"skill":"phaser-impl-1660"}}' \
     | bash plugins/twl/scripts/phase-gate.sh
 
   [ "$status" -eq 0 ]
   # JSON 出力なし (allow)、または "allow" を含む
 }
 
-@test "phase-impl on Todo Issue is denied (Inv W)" {
+@test "phaser-impl on Todo Issue is denied (Inv W)" {
   # setup
   mock_project_status 1660 "Todo"
 
   # exec
-  output=$(echo '{"tool_name":"Skill","tool_input":{"skill":"phase-impl-1660"}}' \
+  output=$(echo '{"tool_name":"Skill","tool_input":{"skill":"phaser-impl-1660"}}' \
     | bash plugins/twl/scripts/phase-gate.sh)
 
   [ "$status" -eq 0 ]
@@ -385,25 +387,25 @@ fi</code></pre>
   # setup: bypassPermissions mode でも tier 2 deny は効く (Inv W 構造的保証)
   mock_project_status 1660 "Todo"
 
-  output=$(echo '{"permission_mode":"bypassPermissions","tool_name":"Skill","tool_input":{"skill":"phase-impl-1660"}}' \
+  output=$(echo '{"permission_mode":"bypassPermissions","tool_name":"Skill","tool_input":{"skill":"phaser-impl-1660"}}' \
     | bash plugins/twl/scripts/phase-gate.sh)
 
   echo "$output" | jq -e '.hookSpecificOutput.permissionDecision == "deny"'
 }
 
-@test "TWL_PHASE_GATE_BYPASS env allows phase-impl" {
+@test "TWL_PHASE_GATE_BYPASS env allows phaser-impl" {
   export TWL_PHASE_GATE_BYPASS=1
   mock_project_status 1660 "Todo"
 
-  output=$(echo '{"tool_name":"Skill","tool_input":{"skill":"phase-impl-1660"}}' \
+  output=$(echo '{"tool_name":"Skill","tool_input":{"skill":"phaser-impl-1660"}}' \
     | bash plugins/twl/scripts/phase-gate.sh)
 
   echo "$output" | jq -e '.hookSpecificOutput.permissionDecision == "allow"'
 }</code></pre>
 
-<h3>11.2 Phase 1 PoC verify points (新規 #9-#12)</h3>
+<h3>11.2 <code>Phase 1 PoC</code> verify points (新規 #9-#12)</h3>
 
-<p><a href="rebuild-plan.html">rebuild-plan.html</a> の Phase 1 PoC verify points に以下を追加:</p>
+<p><a href="rebuild-plan.html">rebuild-plan.html</a> の <code>Phase 1 PoC</code> verify points に以下を追加:</p>
 
 <ul>
   <li>VP-9: tier 1 + tier 2 hook が parallel 実行されることを確認 (<code>additionalContext</code> に両方の reason が含まれる)</li>

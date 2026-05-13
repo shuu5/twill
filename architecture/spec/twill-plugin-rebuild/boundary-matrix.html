@@ -2,106 +2,107 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>boundary-matrix — outline</title>
+<title>boundary-matrix — 10 role 責務 boundary</title>
 <link rel="stylesheet" href="common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--caution-fg); }
+  .deprecated { text-decoration: line-through; color: var(--text-secondary); }
 </style>
 </head>
 <body>
 
 <header class="doc-header">
-  <h1>boundary-matrix — outline</h1>
-  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+  <h1>boundary-matrix — 10 role 責務 boundary (第 5 弾 dig 反映)</h1>
+  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; 第 4 弾 dig (tool-* 3 件) + 第 5 弾 dig (pilot→phaser、worker→workflow/atomic/specialist 分割、step.sh→atomic SKILL.md inline)</div>
 </header>
 
-<div class="info">本 file は本 session で<strong>全列 content 化完了</strong>。<strong>第 4 弾 dig 反映</strong> (2026-05-13): tool-* 列を 4 件 → 3 件構成 (tool-utility 廃止 + tool-self-improve → tool-sandbox-runner rename)。tool-* 列は <a href="tool-architecture.html">tool-architecture.html</a> §2 確定、admin / pilot / worker 列は admin-cycle.html / spawn-protocol.html / step-verification.html と整合した content 化。</div>
+<div class="info">本 file は <a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a> の参照下にある。10 role の責務 boundary を行列形式で明示し、各 role が何を行う / 行わない / 委譲する かを clean table で定義。</div>
 
 <h2>目的</h2>
-<p>administrator / pilot / worker / tool の 4 entity の責務 boundary を行列形式で明示する。各 entity が何を行う / 行わない / 委譲する かを clean table で定義。phase は pilot SKILL.md として実装される概念 (entity ではない、status 遷移 1 件に対応する SKILL)。</p>
+<p>10 role (<code>administrator</code> / <code>phaser</code> / <code>workflow</code> / <code>atomic</code> / <code>specialist</code> + <code>tool</code> / <code>reference</code> / <code>script</code> / <code>hook</code> / <code>monitor</code>) の責務 boundary を行列形式で明示する。簡略化のため core 5 entity (<code>administrator</code> / <code>phaser</code> / workflow+atomic+specialist (L2-3) / <code>tool</code> / status-transition) を中心に列挙。</p>
 
-<h2>5 entity boundary matrix (admin / pilot / worker / tool-* (3 件) / phase、8 行)</h2>
+<h2>5 entity boundary matrix (administrator / phaser / workflow+atomic+specialist / tool-* (3 件) / status-transition)</h2>
 
 <table>
   <thead>
     <tr>
       <th style="width: 18%">操作</th>
       <th>administrator (L0)</th>
-      <th>pilot (phase-*、L1)</th>
-      <th>worker (worker-*、L2)</th>
+      <th>phaser (phaser-*、L1)</th>
+      <th>workflow + atomic + specialist (L2-3)</th>
       <th>tool-* (3 件、独立)</th>
-      <th>phase 概念</th>
+      <th>status-transition 概念</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><strong>spawn 元</strong></td>
       <td>user 直接起動</td>
-      <td>administrator (admin-cycle.sh)</td>
-      <td>pilot (spawn-tmux.sh)</td>
+      <td><code>administrator</code> (admin-cycle.sh)</td>
+      <td><code>phaser</code> から <code>Skill()</code> (workflow/atomic) または <code>Agent()</code> (specialist)</td>
       <td>user 明示 (tool-architect / tool-sandbox-runner は admin も可)</td>
-      <td>pilot SKILL.md として動作</td>
+      <td><code>phaser</code> SKILL.md として動作</td>
     </tr>
     <tr>
       <td><strong>spawn 先</strong></td>
-      <td>pilot + tool-architect / tool-sandbox-runner (限定、ADR-040 gate)</td>
-      <td>worker のみ</td>
-      <td>(spawn 禁止)</td>
+      <td><code>phaser</code> + tool-architect / tool-sandbox-runner (限定、ADR-040 gate)</td>
+      <td>workflow / atomic (<code>Skill()</code>) + specialist (<code>Agent()</code>)</td>
+      <td>specialist は spawn 禁止 (公式制約 <span class="vs verified">verified</span>)、workflow/atomic は <code>Skill()</code> chain 続行 + <code>Agent(specialist-*)</code> 可</td>
       <td>(spawn 禁止)</td>
       <td>—</td>
     </tr>
     <tr>
       <td><strong>status 遷移</strong></td>
       <td>read only (Inv I-5)</td>
-      <td>遷移実行 (gh project item-edit)</td>
-      <td>(更新禁止、pilot 経由)</td>
+      <td>遷移実行 (gh project item-edit)、1 status-transition を 1 <code>phaser</code> が担当</td>
+      <td>(更新禁止、<code>phaser</code> 経由)</td>
       <td>無関係 (MUST NOT 触れる)</td>
-      <td>1 status 遷移を 1 phase が担当</td>
+      <td>1 status-transition を 1 <code>phaser</code> が担当 (forbidden: <code>state</code>)</td>
     </tr>
     <tr>
       <td><strong>mailbox</strong></td>
-      <td>pilot mail のみ受信 (Inv I-4 pyramid)</td>
-      <td>worker mail 集約 + admin に要約 mail</td>
-      <td>pilot mailbox に書き込み</td>
-      <td>tool-sandbox-runner のみ admin mail (他 2 tool は user 直接)</td>
+      <td><code>phaser</code> mail のみ受信 (Inv I-4 pyramid)</td>
+      <td>atomic/specialist mail 集約 + administrator に要約 mail</td>
+      <td>atomic は <code>phaser</code> mailbox に書き込み、specialist は subagent context で結果 return</td>
+      <td>tool-sandbox-runner のみ administrator mail (他 2 tool は user 直接)</td>
       <td>—</td>
     </tr>
     <tr>
       <td><strong>worktree</strong></td>
       <td>(操作禁止)</td>
-      <td>worker 用 worktree 作成 + 完了時削除 (Inv B)</td>
-      <td>自身の worktree 内で実作業</td>
+      <td>atomic 用 worktree 作成 + 完了時削除 (Inv B)</td>
+      <td>atomic は自身の worktree 内で実作業、specialist は worktree 不要 (subagent context)</td>
       <td>tool-architect が PR 作成時に独自 worktree</td>
       <td>—</td>
     </tr>
     <tr>
-      <td><strong>step.sh</strong></td>
+      <td><strong>verification framework</strong></td>
       <td>(利用しない)</td>
-      <td>worker SKILL.md で step::run 呼び出し</td>
-      <td>step::run で 4 phase lifecycle</td>
+      <td>workflow を <code>Skill()</code> で呼ぶ、各 atomic の 4-phase post-verify を確認</td>
+      <td>atomic SKILL.md 本文に 4-phase lifecycle (pre-check/exec/post-verify/report) を inline 実装 (Inv U "Atomic skill verification")</td>
       <td>(利用しない、status と無関係)</td>
       <td>—</td>
     </tr>
     <tr>
       <td><strong>gate hook</strong></td>
       <td>(対象外)</td>
-      <td>PreToolUse gate 適用 (Inv W)</td>
-      <td>(対象外、worker は pilot 経由 spawn)</td>
+      <td>PreToolUse gate 適用 (Inv W) — <code>phaser</code> invocation 時に前提 status verify</td>
+      <td>(対象外、<code>Skill()</code>/<code>Agent()</code> 公式機構の内側)</td>
       <td>(対象外、status と無関係)</td>
       <td>—</td>
     </tr>
     <tr>
       <td><strong>TWL_AUDIT 出力</strong></td>
       <td><code>.audit/&lt;run-id&gt;/admin-cycle.jsonl</code></td>
-      <td><code>.audit/&lt;run-id&gt;/pilot/&lt;name&gt;/</code></td>
-      <td><code>.audit/&lt;run-id&gt;/workers/&lt;name&gt;/</code></td>
+      <td><code>.audit/&lt;run-id&gt;/phaser/&lt;name&gt;/</code></td>
+      <td><code>.audit/&lt;run-id&gt;/atomic/&lt;name&gt;/</code> + <code>.audit/&lt;run-id&gt;/specialist/&lt;name&gt;/</code></td>
       <td><code>.audit/&lt;run-id&gt;/tools/&lt;name&gt;/</code></td>
       <td>—</td>
     </tr>
   </tbody>
 </table>
 
-<p>本 table は admin-cycle.html / spawn-protocol.html / step-verification.html / gate-hook.html / tool-architecture.html と整合する verified content。</p>
+<p>本 table は admin-cycle.html / spawn-protocol.html / atomic-verification.html / gate-hook.html / tool-architecture.html と整合する verified content。</p>
 
 <h2>各 entity の責務詳細</h2>
 
@@ -109,12 +110,12 @@
 
 <dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
   <dt>spawn 元</dt><dd>user 手動起動 (+ <code>--continue</code>/<code>--resume</code> で session 継続)。Desktop scheduled tasks で machine boot 自動起動も候補</dd>
-  <dt>spawn 先</dt><dd>pilot (phase-* 4 種) + tool-* 4 件 (限定)。spawn-tmux.sh 経由、Inv I-1 (idempotent) + I-2 (parallelism 上限) を守る</dd>
+  <dt>spawn 先</dt><dd><code>phaser</code> (phaser-* 4 種) + tool-* 3 件 (限定)。spawn-tmux.sh 経由、Inv I-1 (idempotent) + I-2 (parallelism 上限) を守る</dd>
   <dt>status 遷移</dt><dd><strong>read only</strong> (Inv I-5)。<code>gh project item-list</code> で 5 min cache poll。write は絶対禁止 (user 明示介入の例外のみ)</dd>
-  <dt>mailbox</dt><dd><code>.mailbox/admin/inbox.jsonl</code> のみ受信 (Inv I-4 pyramid)。worker 直接 mail 禁止、pilot 集約後に admin。flock 共有 lock で read</dd>
-  <dt>worktree</dt><dd><strong>操作禁止</strong> (read のみ)。<code>git worktree</code> コマンド実行禁止、pilot 経由</dd>
-  <dt>step.sh</dt><dd>利用しない (admin は polling cycle 6-step、step.sh framework は worker 専用)</dd>
-  <dt>gate hook</dt><dd>対象外 (admin は phase-* invocation でないため PreToolUse gate 発火しない)</dd>
+  <dt>mailbox</dt><dd><code>.mailbox/administrator/inbox.jsonl</code> のみ受信 (Inv I-4 pyramid)。atomic/specialist 直接 mail 禁止、<code>phaser</code> 集約後に administrator。flock 共有 lock で read</dd>
+  <dt>worktree</dt><dd><strong>操作禁止</strong> (read のみ)。<code>git worktree</code> コマンド実行禁止、<code>phaser</code> 経由</dd>
+  <dt>verification framework</dt><dd>利用しない (administrator は polling cycle 6-step、atomic SKILL.md inline lifecycle は atomic 専用)</dd>
+  <dt>gate hook</dt><dd>対象外 (administrator は phaser-* invocation でないため PreToolUse gate 発火しない)</dd>
   <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/admin-cycle.jsonl</code> に全 cycle の read/judge/write 記録</dd>
   <dt>受信 mail event</dt><dd><code>phase-completed</code> / <code>phase-failed</code> / <code>phase-gate-denied</code> / <code>spawn-completed</code> / <code>tool-completed</code> (tool-sandbox-runner のみ)</dd>
   <dt>送信 mail event</dt><dd><code>spawn-request</code> / <code>escalate-human-gate</code> / <code>budget-pause</code></dd>
@@ -122,37 +123,37 @@
   <dt>crash recovery</dt><dd>heartbeat self-touch (Inv G)、session 死亡時は user 手動 <code>--continue</code>。CronCreate 復元 (7 日 expiry 注意)</dd>
 </dl>
 
-<h3>pilot (phase-*、L1) の責務</h3>
+<h3>phaser (phaser-*、L1) の責務</h3>
 
 <dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
-  <dt>spawn 元</dt><dd>administrator (<code>admin-cycle.sh</code> step 4)。spawn-tmux.sh wrapper 経由</dd>
-  <dt>spawn 先</dt><dd>worker のみ。worker 用 worktree を事前作成してから spawn (Inv B)</dd>
-  <dt>status 遷移</dt><dd><strong>遷移実行専任</strong>。<code>gh project item-edit --single-select-option-id</code> を 1 回のみ実行。担当 phase の 1 遷移のみ責任 (phase-impl なら Refined → Implementing)</dd>
-  <dt>mailbox</dt><dd>受信: worker から <code>.mailbox/&lt;phase-name&gt;/inbox.jsonl</code>。送信: <strong>admin mailbox に要約 mail のみ</strong> (pyramid 集約)。送受信両方を行う唯一の layer</dd>
-  <dt>worktree</dt><dd><strong>lifecycle 専任</strong> (Inv B)。<code>git worktree add</code> (phase 開始時) + <code>git worktree remove</code> (phase 完了時)。worker は worktree を自ら作成・削除しない</dd>
-  <dt>step.sh</dt><dd>worker SKILL.md で <code>step::run</code> を呼び出す規約を提供。pilot 自身は step.sh 直接呼ばない</dd>
-  <dt>gate hook</dt><dd><strong>PreToolUse gate 対象</strong> (Inv W)。phase-gate.sh (tier 1) + twl_phase_gate_check (tier 2) が pilot invocation 時に発火、前提 status 不一致なら deny + admin notify</dd>
-  <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/pilot/&lt;name&gt;/</code> 配下に phase lifecycle 全 event 記録</dd>
+  <dt>spawn 元</dt><dd><code>administrator</code> (<code>admin-cycle.sh</code> step 4)。spawn-tmux.sh wrapper 経由</dd>
+  <dt>spawn 先</dt><dd><code>workflow-*</code> (<code>Skill()</code>) + 必要時 <code>specialist-*</code> (<code>Agent()</code>)。atomic は workflow から呼ばれる</dd>
+  <dt>status 遷移</dt><dd><strong>遷移実行専任</strong>。<code>gh project item-edit --single-select-option-id</code> を 1 回のみ実行。担当 status-transition の 1 遷移のみ責任 (<code>phaser-impl</code> なら Refined → Implementing)</dd>
+  <dt>mailbox</dt><dd>受信: atomic/specialist から <code>.mailbox/&lt;phaser-name&gt;/inbox.jsonl</code>。送信: <strong>administrator mailbox に要約 mail のみ</strong> (pyramid 集約)。送受信両方を行う唯一の layer</dd>
+  <dt>worktree</dt><dd><strong>lifecycle 専任</strong> (Inv B)。<code>git worktree add</code> (phaser 開始時) + <code>git worktree remove</code> (phaser 完了時)。atomic/specialist は worktree を自ら作成・削除しない</dd>
+  <dt>verification framework</dt><dd>workflow を <code>Skill()</code> で呼び、各 atomic の 4-phase post-verify 結果を mailbox から確認。phaser 自身は atomic SKILL.md 本文を実行しない</dd>
+  <dt>gate hook</dt><dd><strong>PreToolUse gate 対象</strong> (Inv W)。gate hook handler (旧 phase-gate.sh) (tier 1) + twl_phase_gate_check (tier 2) が <code>phaser</code> invocation 時に発火、前提 status 不一致なら deny + administrator notify</dd>
+  <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/phaser/&lt;name&gt;/</code> 配下に phaser lifecycle 全 event 記録</dd>
   <dt>送信 mail event</dt><dd><code>phase-started</code> / <code>phase-progress</code> / <code>phase-completed</code> / <code>phase-failed</code> / <code>merge-gate-failed</code></dd>
-  <dt>review framework</dt><dd>worker 出力検証 (step post-verify 結果確認、src diff、test count 増加確認)。Inv K (Pilot 実装禁止) で src diff = pilot のみは FAIL</dd>
-  <dt>merge gate</dt><dd>phase-pr pilot のみが PR merge を実行 (Inv C 保全)。他 phase の pilot は merge 禁止</dd>
-  <dt>内部 subagent</dt><dd>1 階層内側 subagent 可 (codex CLI 等、verified 公式制約)、子 spawn 禁止</dd>
+  <dt>review framework</dt><dd>atomic 出力検証 (post-verify 結果確認、src diff、test count 増加確認)。Inv K (phaser 実装禁止、第 5 弾 dig で phaser に rename) で src diff = phaser のみは FAIL</dd>
+  <dt>merge gate</dt><dd><code>phaser-pr</code> のみが PR merge を実行 (Inv C 保全)。他 phaser は merge 禁止</dd>
+  <dt>内部 spawn</dt><dd><code>Agent(specialist-*)</code> は可 (公式 verified、subagent context)、subagent からの更なる spawn は禁止</dd>
 </dl>
 
-<h3>worker (worker-*、L2) の責務</h3>
+<h3>workflow + atomic + specialist (L2-3) の責務</h3>
 
 <dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
-  <dt>spawn 元</dt><dd>pilot (<code>spawn-tmux.sh</code>)。pilot が worktree を作成してから worker を起動する順序が必須 (Inv B)</dd>
-  <dt>spawn 先</dt><dd><strong>禁止</strong>。内部 subagent (codex CLI 等) は 1 階層のみ可 (公式 verified)。<code>tmux new-window</code> / <code>claude --plugin-dir</code> の呼び出し禁止 (cross-session pollution 防止)</dd>
-  <dt>status 遷移</dt><dd><strong>更新禁止</strong>。pilot 経由のみ。<code>gh project item-edit</code> 実行は MUST NOT。worker は pilot に mail で報告し、pilot が status を遷移</dd>
-  <dt>mailbox</dt><dd>pilot の mailbox (<code>.mailbox/&lt;phase-name&gt;/inbox.jsonl</code>) にのみ書き込み。chain step ごとに <code>step-*</code> event を emit。flock exclusive lock で atomic write (Inv T)</dd>
-  <dt>worktree</dt><dd>自身の worktree 内での実作業のみ (cwd-guard Inv B)。pilot が作成した worktree の中で <code>git checkout</code>, <code>edit</code>, <code>test</code> 実行。他 Issue の worktree に触れることは MUST NOT (Inv V)</dd>
-  <dt>step.sh</dt><dd><strong><code>step::run &lt;name&gt; &lt;exec_fn&gt; &lt;verify_fn&gt;</code> の 4 phase lifecycle</strong> (pre-check → exec → post-verify → report) を MUST (Inv U)。self-report-only 禁止</dd>
-  <dt>gate hook</dt><dd>対象外。worker 自身が Skill invoke しないため PreToolUse gate 発火しない。gate は spawn する pilot の invocation 時に発火済み</dd>
-  <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/workers/&lt;name&gt;/</code> 配下に step lifecycle 全 4 phase 記録</dd>
-  <dt>送信 mail event</dt><dd><code>step-started</code> / <code>step-completed</code> / <code>step-precheck-failed</code> / <code>step-postverify-failed</code></dd>
-  <dt>内部 subagent</dt><dd>1 階層内側のみ可。codex CLI 等の呼び出しは可、subagent が更に子 spawn は禁止</dd>
-  <dt>checkpoint</dt><dd><code>.mailbox/&lt;worker-name&gt;/</code> または per-Worker パスが必須 (Inv V)。共通 path への write は <code>--shared</code> フラグ明示 + audit log 必須</dd>
+  <dt>spawn 元</dt><dd>workflow / atomic: <code>phaser</code> または上位 workflow から <code>Skill()</code> 公式機構。specialist: <code>phaser</code> または atomic から <code>Agent()</code> 公式機構</dd>
+  <dt>spawn 先</dt><dd><strong>specialist は spawn 禁止</strong> (subagent spawn 不可 <span class="vs verified">verified</span>)。workflow/atomic は <code>Skill()</code> chain 続行可、atomic 内で <code>Agent(specialist-*)</code> 可</dd>
+  <dt>status 遷移</dt><dd><strong>更新禁止</strong>。<code>phaser</code> 経由のみ。<code>gh project item-edit</code> 実行は MUST NOT。atomic/specialist は <code>phaser</code> に mail で報告し、<code>phaser</code> が status を遷移</dd>
+  <dt>mailbox</dt><dd>atomic は <code>phaser</code> mailbox (<code>.mailbox/&lt;phaser-name&gt;/inbox.jsonl</code>) にのみ書き込み (4-phase report で <code>step-*</code> event を emit)。specialist は subagent context で結果 return、mailbox 書き込みなし</dd>
+  <dt>worktree</dt><dd>atomic は自身の worktree 内での実作業のみ (cwd-guard Inv B)、<code>phaser</code> が作成した worktree 内で <code>git checkout</code>/<code>edit</code>/<code>test</code> 実行。他 Issue の worktree に触れることは MUST NOT (Inv V)。specialist は worktree 不要 (Read only)</dd>
+  <dt>verification framework</dt><dd><strong>atomic SKILL.md 本文に 4-phase lifecycle (pre-check → exec → post-verify → report) を inline 実装 MUST</strong> (Inv U "Atomic skill verification")。self-report-only 禁止。workflow は atomic を順次 <code>Skill()</code> で呼ぶ launcher (verify 詳細 inline なし)。specialist は独立判断、自己 verify は subagent prompt 内で完結</dd>
+  <dt>gate hook</dt><dd>対象外。Skill()/Agent() 公式機構の内側で PreToolUse gate 発火しない。gate は spawn する <code>phaser</code> の invocation 時に発火済み</dd>
+  <dt>audit 出力</dt><dd>atomic: <code>.audit/&lt;run-id&gt;/atomic/&lt;name&gt;/</code> 配下に 4-phase 全 event 記録。specialist: <code>.audit/&lt;run-id&gt;/specialist/&lt;name&gt;/</code> 配下に Agent return 記録</dd>
+  <dt>送信 mail event</dt><dd>atomic: <code>step-started</code> / <code>step-completed</code> / <code>step-precheck-failed</code> / <code>step-postverify-failed</code>。specialist: mail 送信なし (Agent return value で完結)</dd>
+  <dt>内部 spawn</dt><dd>atomic 内 <code>Agent(specialist-*)</code> 可、specialist は spawn 禁止 (公式 verified)</dd>
+  <dt>checkpoint</dt><dd><code>.mailbox/&lt;phaser-name&gt;/</code> または per-phaser パスが必須 (Inv V)。共通 path への write は <code>--shared</code> フラグ明示 + audit log 必須</dd>
 </dl>
 
 <h3>tool-* (3 件、独立) の責務 (第 4 弾 dig)</h3>
@@ -160,16 +161,16 @@
 <p>詳細は <a href="tool-architecture.html">tool-architecture.html</a> §2-§5 + <a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §1-§3 参照。要約:</p>
 
 <dl class="inv-row" style="display: grid; grid-template-columns: 160px 1fr; gap: 6px 14px; margin: 12px 0;">
-  <dt>3 tool 構成</dt><dd>tool-architect (HTML spec 維持 + 軽量 PR cycle) / tool-project (GitHub Project + template + verify の 3 軽 scope) / tool-sandbox-runner (sandbox × feature matrix + Idea Issue 起票)。<strong>第 4 弾 dig で tool-utility 廃止</strong> (commands は他 3 tool + admin inline に再分配)</dd>
-  <dt>spawn 元</dt><dd>user 明示 (slash command <code>/twl:tool-architect &lt;args&gt;</code>) または admin (tool-architect / tool-sandbox-runner のみ、ADR-040 gate 通過後)</dd>
-  <dt>spawn 先</dt><dd>spawn 禁止 (内部 subagent 可、1 階層)</dd>
+  <dt>3 tool 構成</dt><dd><code>tool-architect</code> (HTML spec 維持 + 軽量 PR cycle) / <code>tool-project</code> (GitHub Project + template + verify の 3 軽 scope) / <code>tool-sandbox-runner</code> (sandbox × feature matrix + Idea Issue 起票)。<strong>第 4 弾 dig で tool-utility 廃止</strong> (commands は他 3 tool + administrator inline に再分配)</dd>
+  <dt>spawn 元</dt><dd>user 明示 (slash command <code>/twl:tool-architect &lt;args&gt;</code>) または administrator (tool-architect / tool-sandbox-runner のみ、ADR-040 gate 通過後)</dd>
+  <dt>spawn 先</dt><dd>spawn 禁止 (内部 <code>Agent(specialist-*)</code> は可、1 階層)</dd>
   <dt>status 遷移</dt><dd>無関係 (MUST NOT 触れる)</dd>
-  <dt>mailbox</dt><dd>tool-sandbox-runner のみ admin に <code>tool-completed</code> mail。他 2 tool は user に直接結果提示 (mailbox 不使用)</dd>
+  <dt>mailbox</dt><dd>tool-sandbox-runner のみ administrator に <code>tool-completed</code> mail。他 2 tool は user に直接結果提示 (mailbox 不使用)</dd>
   <dt>worktree</dt><dd>tool-architect は spec edit PR の独自 worktree、tool-sandbox-runner は test-target/main orphan branch の専用 worktree (verified pattern 継承)</dd>
-  <dt>step.sh</dt><dd>利用しない (status と無関係)</dd>
+  <dt>verification framework</dt><dd>利用しない (status と無関係)</dd>
   <dt>gate hook</dt><dd>対象外 (status と無関係、ADR-040 gate が SSoT)。<strong>例外</strong>: tool-architect は別系統で spec edit boundary hook (<code>pre-tool-use-spec-write-boundary.sh</code>) を保持し、tool-architect / user 以外の Edit/Write を deny</dd>
   <dt>audit 出力</dt><dd><code>.audit/&lt;run-id&gt;/tools/{architect,project,sandbox-runner}/</code> 配下</dd>
-  <dt>自律 verify</dt><dd>tool-architect は 2 層 verify (SKILL.md MUST + PostToolUse hook <code>verify-coverage.sh</code> warn) で 4-state status の漏れを catch、軽量 PR cycle で changelog 漏れを <code>worker-spec-review</code> agent が検出 (3 回 fix loop 上限)</dd>
+  <dt>自律 verify</dt><dd>tool-architect は 2 層 verify (SKILL.md MUST + PostToolUse hook <code>verify-coverage.sh</code> warn) で 4-state status の漏れを catch、軽量 PR cycle で changelog 漏れを <code>specialist-spec-review</code> agent が検出 (3 回 fix loop 上限)</dd>
 </dl>
 
 <h2>cross-entity 通信 (禁止 + 許可)</h2>
@@ -177,39 +178,34 @@
 <table>
   <thead><tr><th>from →</th><th>to</th><th>許可 / 禁止</th><th>方法</th></tr></thead>
   <tbody>
-    <tr><td>user</td><td>admin / tool-*</td><td>許可</td><td>tmux session 直接起動</td></tr>
-    <tr><td>admin</td><td>pilot</td><td>許可</td><td>spawn-tmux.sh</td></tr>
-    <tr><td>admin</td><td>tool-* (一部)</td><td>限定許可</td><td>tool-architect / tool-sandbox-runner のみ、ADR-040 gate</td></tr>
-    <tr><td>admin</td><td>worker</td><td><strong>禁止</strong></td><td>(Inv I-4 pyramid)</td></tr>
-    <tr><td>pilot</td><td>worker</td><td>許可</td><td>spawn-tmux.sh</td></tr>
-    <tr><td>pilot</td><td>admin</td><td>許可 (mail)</td><td><code>.mailbox/admin/inbox.jsonl</code> へ要約 mail</td></tr>
-    <tr><td>pilot</td><td>tool-*</td><td><strong>禁止</strong></td><td>(tool-* は user/admin invoke のみ)</td></tr>
-    <tr><td>worker</td><td>pilot</td><td>許可 (mail)</td><td><code>.mailbox/&lt;pilot&gt;/inbox.jsonl</code> へ step event</td></tr>
-    <tr><td>worker</td><td>admin / worker (他)</td><td><strong>禁止</strong></td><td>(Inv I-4)</td></tr>
-    <tr><td>tool-sandbox-runner</td><td>admin</td><td>許可 (mail)</td><td><code>.mailbox/admin/inbox.jsonl</code> へ <code>tool-completed</code></td></tr>
+    <tr><td>user</td><td>administrator / tool-*</td><td>許可</td><td>tmux session 直接起動</td></tr>
+    <tr><td>administrator</td><td>phaser</td><td>許可</td><td>spawn-tmux.sh</td></tr>
+    <tr><td>administrator</td><td>tool-* (一部)</td><td>限定許可</td><td>tool-architect / tool-sandbox-runner のみ、ADR-040 gate</td></tr>
+    <tr><td>administrator</td><td>atomic/specialist</td><td><strong>禁止</strong></td><td>(Inv I-4 pyramid)</td></tr>
+    <tr><td>phaser</td><td>workflow/atomic</td><td>許可</td><td><code>Skill()</code> 公式機構</td></tr>
+    <tr><td>phaser</td><td>specialist</td><td>許可</td><td><code>Agent()</code> 公式機構</td></tr>
+    <tr><td>phaser</td><td>administrator</td><td>許可 (mail)</td><td><code>.mailbox/administrator/inbox.jsonl</code> へ要約 mail</td></tr>
+    <tr><td>phaser</td><td>tool-*</td><td><strong>禁止</strong></td><td>(tool-* は user/administrator invoke のみ)</td></tr>
+    <tr><td>atomic</td><td>specialist</td><td>許可</td><td><code>Agent()</code> 公式機構、必要時のみ</td></tr>
+    <tr><td>atomic</td><td>phaser</td><td>許可 (mail)</td><td><code>.mailbox/&lt;phaser&gt;/inbox.jsonl</code> へ step event</td></tr>
+    <tr><td>atomic</td><td>administrator / 他 atomic</td><td><strong>禁止</strong></td><td>(Inv I-4)</td></tr>
+    <tr><td>specialist</td><td>(spawn 一切)</td><td><strong>禁止</strong></td><td>(subagent spawn 不可 <span class="vs verified">verified</span>)</td></tr>
+    <tr><td>tool-sandbox-runner</td><td>administrator</td><td>許可 (mail)</td><td><code>.mailbox/administrator/inbox.jsonl</code> へ <code>tool-completed</code></td></tr>
   </tbody>
 </table>
 
-<h2>関連 spec ファイル</h2>
-
-<h2>想定 outline (次 session で実装)</h2>
-<ol>
-  <li>5 entity 概要 (administrator / pilot / worker / tool / phase の各定義)</li>
-  <li>責務 boundary matrix (table: 行 = 操作種別、列 = 5 entity、値 = MUST / MUST NOT / MAY / 委譲先)</li>
-  <li>典型シナリオでの責務分担 (Issue 起票 / refine / implement / PR review / merge / verify)</li>
-  <li>cross-entity 操作の禁止事項 (pilot から admin の状態に直接 write 禁止、worker から worker 直接通信禁止、等)</li>
-  <li>失敗時の責務 (各 entity の failure mode を <a href="crash-failure-mode.html">crash-failure-mode.html</a> と整合)</li>
-  <li>tool-* の独立性 (status 遷移と無関係、user/admin 直接 invoke のみ)</li>
-</ol>
-
 <h2>参照</h2>
 <ul>
-  <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture)</li>
-  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (各 entity の不変条件)</li>
-  <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* <strong>3 件</strong>の詳細、本 session 新規 + 第 4 弾 dig 反映、tool 列の根拠)</li>
+  <li><a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a> — 本 file の参照基盤</li>
+  <li><a href="overview.html">overview.html</a> §3 (10 role architecture)</li>
+  <li><a href="glossary.html">glossary.html</a> §2 (10 role 体系) + §11 (用語廃止リスト)</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (各 entity の不変条件、Inv U は "Atomic skill verification" に rename)</li>
+  <li><a href="tool-architecture.html">tool-architecture.html</a> (tool-* <strong>3 件</strong>の詳細)</li>
   <li><a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (第 4 弾 dig 独立 artifact、3 tool 構成 + 自律 verify + sandbox catalog の根拠)</li>
-  <li><a href="admin-cycle.html">admin-cycle.html</a> (administrator 列の詳細、本 session content 化)</li>
-  <li>既存 ADR-002 (Controller 統合)、ADR-010 (Pilot active review)、ADR-017 (co-issue v2 Pilot/Worker isolation)</li>
+  <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 role + registry.yaml + vocabulary 6 field schema)</li>
+  <li><a href="admin-cycle.html">admin-cycle.html</a> (administrator polling cycle)</li>
+  <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic SKILL.md 4-phase lifecycle、旧 step-verification.html から rename)</li>
+  <li>既存 ADR-002 (Controller 統合)、ADR-010 (phaser active review)、ADR-017 (co-issue v2 phaser/specialist isolation)</li>
 </ul>
 
 </body>

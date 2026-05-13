@@ -140,17 +140,17 @@
     <tr><td><code>twl_capture_pane</code></td><td><code>capture-pane -p -S -N</code> の薄ラッパー</td><td>既存継承</td></tr>
     <tr><td>tmux 操作</td><td><code>twl_new_window</code>, <code>twl_list_windows</code>, <code>twl_get_budget</code></td><td>administrator polling 用</td><td>既存継承</td></tr>
     <tr><td>phase gate</td><td><code>twl_phase_gate_check</code></td><td>tier 2 として Project Board status を query、不変条件 W 機械化</td><td>新規</td></tr>
-    <tr><td>step verification</td><td><code>twl_step_run</code> post-verify</td><td>step.sh framework の post-verify 機械検証 (Inv U)</td><td>新規 (Phase 1 PoC)</td></tr>
-    <tr><td>mailbox</td><td><code>twl_mailbox_read/write</code></td><td>per-Worker file mailbox (flock atomic、Inv T)</td><td>新規</td></tr>
+    <tr><td>step verification</td><td><code>twl_step_run</code> post-verify</td><td>step.sh framework の post-verify 機械検証 (Inv U)</td><td>新規 (<code>Phase 1 PoC</code>)</td></tr>
+    <tr><td>mailbox</td><td><code>twl_mailbox_read/write</code></td><td>per-specialist file mailbox (flock atomic、Inv T)</td><td>新規</td></tr>
     <tr><td>monorepo audit</td><td><code>twl_validate</code>, <code>twl_check</code>, <code>twl_audit</code>, <code>twl_validate_deps</code></td><td>既存 10 audit sections の継承 (section 9 のみ再実装)</td><td>既存継承</td></tr>
   </tbody>
 </table>
 
-<h3>2.1 廃止 (Phase 4 cleanup)</h3>
+<h3>2.1 廃止 (<code>Phase 4 cleanup</code>)</h3>
 
 <ul>
   <li><code>twl_orchestrator_*</code> (orchestrator 概念廃止)</li>
-  <li><code>twl_state_read/write</code>, <code>twl_get_session_state</code>, <code>twl_audit_session</code> (per-Worker mailbox に置換)</li>
+  <li><code>twl_state_read/write</code>, <code>twl_get_session_state</code>, <code>twl_audit_session</code> (per-specialist mailbox に置換)</li>
   <li><code>twl_send_msg/recv_msg/notify_supervisor</code> (mailbox 統一)</li>
   <li><code>twl_validate_commit</code> (no-op stub、bash hook のみ残す)</li>
   <li><code>twl_spawn_controller/feature_dev</code> (tmux new-window 直接呼び出しに簡素化)</li>
@@ -205,22 +205,22 @@
   </thead>
   <tbody>
     <tr>
-      <td><strong>Phase 1 PoC</strong></td>
+      <td><strong><code>Phase 1 PoC</code></strong></td>
       <td>現状 stdio 維持、twl-watchdog 廃止。<code>MCP server 'twl' not connected</code> 発生時は <code>/mcp</code> 手動 retry を運用ルール化</td>
       <td>既存 stdio</td>
     </tr>
     <tr>
-      <td><strong>Phase 2 dual-stack</strong></td>
+      <td><strong><code>Phase 2 dual-stack</code></strong></td>
       <td>server 側を「stdin EOF で素直に exit」に修正 (orphan 自殺ロジック削除)</td>
       <td>stdio 改善</td>
     </tr>
     <tr>
-      <td><strong>Phase 3 cutover</strong></td>
+      <td><strong><code>Phase 3 cutover</code></strong></td>
       <td>HTTP transport 移行検討、<code>.mcp.json</code> schema を <code>streamable-http</code> でテスト</td>
       <td>HTTP transport</td>
     </tr>
     <tr>
-      <td><strong>Phase 4 cleanup</strong></td>
+      <td><strong><code>Phase 4 cleanup</code></strong></td>
       <td>Plugin 化 + <code>CLAUDE_PLUGIN_DATA</code> 統合の評価</td>
       <td>Plugin Monitors (v2.1.105+)</td>
     </tr>
@@ -286,7 +286,7 @@
 
 <ul>
   <li><strong>「<code>claude --skill</code> flag」は誤</strong>: spawn-tmux.sh 設計を「<code>claude</code> 起動 + slash command inject」または「plugin 化 + namespace」に修正済</li>
-  <li><strong>「Plugin Monitor は未知領域」は訂正</strong>: 公式に <code>monitors/monitors.json</code> schema verified、本 session で Phase 1 PoC に採用</li>
+  <li><strong>「Plugin Monitor は未知領域」は訂正</strong>: 公式に <code>monitors/monitors.json</code> schema verified、本 session で <code>Phase 1 PoC</code> に採用</li>
   <li><strong>「fastmcp の deferred-tool pattern」は公式 docs に存在しない</strong>: twl 独自実装 pattern として明示</li>
 </ul>
 
@@ -337,7 +337,7 @@
   <li><a href="admin-cycle.html">admin-cycle.html</a>: CronCreate 公式制約反映 (#40228 known bug + session-scoped) + 案 2 先行実装の構成</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a>: §2 tool inventory を本 §2 で 15-18 件確定、§5 tier 階層を本 §5 参照</li>
   <li><a href="failure-analysis.html">failure-analysis.html</a>: Bug #1687 root cause を本 KP-3 + KP-4 で verified に格上げ予定</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a>: Phase 1 PoC verify points に #9-#12 追加予定</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a>: <code>Phase 1 PoC</code> verify points に #9-#12 追加予定</li>
   <li><a href="ssot-design.html">ssot-design.html</a>: KP-8 (tool 化粒度) で tmux wrapper の 1 行 vs script 判断材料追加</li>
 </ul>
 

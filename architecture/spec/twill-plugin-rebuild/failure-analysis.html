@@ -37,10 +37,10 @@
   <p><strong>症状</strong>: cleanup script (#1673) / orchestrator early-exit (#1674) / checkpoint cross-pollution (#1703) は全て、「単一 Wave 想定で設計された機構に並列 Wave を後付けした」ことが共通因。shared state (<code>phase-review.json</code>, <code>active_branches</code> 配列) のスコープ問題が顕在化。</p>
   <p><strong>lesson (MUST)</strong>:</p>
   <ul>
-    <li>並列実行を前提とした state / cleanup / checkpoint は、<strong>Worker ID (issue_number 等) を含むパスでデフォルト書き込み</strong>する。共通パスへの書き込みは <code>--shared</code> 明示フラグ必須。</li>
+    <li>並列実行を前提とした state / cleanup / checkpoint は、<strong>specialist ID (issue_number 等) を含むパスでデフォルト書き込み</strong>する。共通パスへの書き込みは <code>--shared</code> 明示フラグ必須。</li>
     <li>cleanup の「何を守るか」(active_branches) のスコープは全 Wave にまたがるべき。</li>
   </ul>
-  <p><strong>新 spec での不能化</strong>: per-Worker file mailbox (<code>.mailbox/&lt;session-name&gt;/inbox.jsonl</code>) で構造的に shared path を廃止。</p>
+  <p><strong>新 spec での不能化</strong>: per-specialist file mailbox (<code>.mailbox/&lt;session-name&gt;/inbox.jsonl</code>) で構造的に shared path を廃止。</p>
 </div>
 
 <div class="factor-block">
@@ -73,10 +73,10 @@
   </ul>
   <p><strong>新 spec での不能化</strong> (4 段階 migration、<a href="research-findings.html">research-findings.html</a> §4 参照):</p>
   <ul>
-    <li>Phase 1: 自前 watchdog 廃止、<code>/mcp</code> 手動 retry を運用ルール化</li>
-    <li>Phase 2: server 側を「stdin EOF で素直に exit」に修正</li>
-    <li>Phase 3: HTTP transport 移行検討 (<code>.mcp.json</code> <code>type: "http"</code>)</li>
-    <li>Phase 4: Plugin Monitors (v2.1.105+) + <code>CLAUDE_PLUGIN_DATA</code> 統合の評価</li>
+    <li><code>Phase 1</code>: 自前 watchdog 廃止、<code>/mcp</code> 手動 retry を運用ルール化</li>
+    <li><code>Phase 2</code>: server 側を「stdin EOF で素直に exit」に修正</li>
+    <li><code>Phase 3</code>: HTTP transport 移行検討 (<code>.mcp.json</code> <code>type: "http"</code>)</li>
+    <li><code>Phase 4</code>: Plugin Monitors (v2.1.105+) + <code>CLAUDE_PLUGIN_DATA</code> 統合の評価</li>
   </ul>
 </div>
 
@@ -126,7 +126,7 @@
     <tr><td>confidence</td><td>deduced (現コード L239-253 に degrade mode 追加、L265-278 で cross-Wave active_branches 収集)</td></tr>
     <tr><td>構造的要因</td><td>cleanup は「単一 Wave 想定」で設計、並列 Wave 機能追加時に cleanup スコープ未更新。<code>--project-dir</code> 引数 optional のため silent bug。孤立判定が「自分の Wave の state file」のみ参照し、他 Wave を知らなかった。</td></tr>
     <tr><td>lesson (MUST)</td><td>並列実行を前提とした cleanup ロジックは、他の並列インスタンスが管理するリソースを認識する設計。<code>--project-dir</code> 未指定かつ並列 Wave 検出時は degrade (orphan cleanup skip) をデフォルト (SHOULD)。</td></tr>
-    <tr><td>新 spec で不能化</td><td>worktree ライフサイクルを Pilot 専任 (Invariant B) として Agent 内で直接管理、独立 cleanup script を排除。「Wave 完了時に Pilot が自分の worktree のみを削除」設計で cross-Wave 参照が不要。</td></tr>
+    <tr><td>新 spec で不能化</td><td>worktree ライフサイクルを phaser 専任 (Invariant B) として Agent 内で直接管理、独立 cleanup script を排除。「Wave 完了時に phaser が自分の worktree のみを削除」設計で cross-Wave 参照が不要。</td></tr>
   </tbody>
 </table>
 
@@ -134,11 +134,11 @@
 <table class="bug-table">
   <tbody>
     <tr><td>PR / commit</td><td>PR #1690, merge commit <code>96f081e0</code></td></tr>
-    <tr><td>root cause</td><td><code>autopilot-orchestrator.sh</code> の <code>poll_single()</code> L604-614: 並列 Wave で orchestrator が <code>status=done/merge-ready</code> 検出すると即 <code>return 0</code> して cleanup、<code>inject_next_workflow</code> cycle から抜ける。<code>chain-step-completed: &lt;step&gt;</code> terminal phrase emit 後に orchestrator が exit していると次 workflow 送れず Pilot stuck。並列 Wave B でも同じ phase-review.json 参照で phase 完了判定誤り。</td></tr>
+    <tr><td>root cause</td><td><code>autopilot-orchestrator.sh</code> の <code>poll_single()</code> L604-614: 並列 Wave で orchestrator が <code>status=done/merge-ready</code> 検出すると即 <code>return 0</code> して cleanup、<code>inject_next_workflow</code> cycle から抜ける。<code>chain-step-completed: &lt;step&gt;</code> terminal phrase emit 後に orchestrator が exit していると次 workflow 送れず phaser stuck。並列 Wave B でも同じ phase-review.json 参照で phase 完了判定誤り。</td></tr>
     <tr><td>confidence</td><td>deduced (現コード L33-44 に AC2 audit log handler 追加、<code>inject-next-workflow.sh</code> L634-658 に LAST_INJECTED_STEP bypass)</td></tr>
-    <tr><td>構造的要因</td><td>Worker が <code>chain-step-completed</code> emit〜orchestrator inject 完了の間に race window。並列 Wave 間 shared <code>phase-review.json</code> が「他 Wave の PASS」を自分の完了と誤判断 (Bug 3 と複合)。「orchestrator が exit したら誰が next inject するのか」が設計上不明確。</td></tr>
-    <tr><td>lesson (MUST)</td><td>orchestrator は Worker が terminal state になるまで exit しない。early exit は audit log に記録。orchestrator の phase 完了判定は自 Wave の state file のみ参照 (shared checkpoint 参照禁止)。</td></tr>
-    <tr><td>新 spec で不能化</td><td>Phase 2 (orchestrator を Skill 内 Bash + Agent で置換) で「orchestrator が exit する」概念がなくなる。Agent は tool call の完了まで implicit に待機。</td></tr>
+    <tr><td>構造的要因</td><td>specialist (or atomic) が <code>chain-step-completed</code> emit〜orchestrator inject 完了の間に race window。並列 Wave 間 shared <code>phase-review.json</code> が「他 Wave の PASS」を自分の完了と誤判断 (Bug 3 と複合)。「orchestrator が exit したら誰が next inject するのか」が設計上不明確。</td></tr>
+    <tr><td>lesson (MUST)</td><td>orchestrator は specialist (or atomic) が terminal state になるまで exit しない。early exit は audit log に記録。orchestrator の phase 完了判定は自 Wave の state file のみ参照 (shared checkpoint 参照禁止)。</td></tr>
+    <tr><td>新 spec で不能化</td><td><code>Phase 2</code> (orchestrator を Skill 内 Bash + Agent で置換) で「orchestrator が exit する」概念がなくなる。Agent は tool call の完了まで implicit に待機。</td></tr>
   </tbody>
 </table>
 
@@ -146,18 +146,18 @@
 <table class="bug-table">
   <tbody>
     <tr><td>PR / commit</td><td>PR #1689, merge commit <code>cecf0a06</code></td></tr>
-    <tr><td>root cause</td><td><code>chain-runner.sh</code> の <code>step_autopilot_detect()</code> L276-295: <code>IS_AUTOPILOT=true</code> を <code>eval</code> で環境変数に展開するだけで、後続 chain step が main worktree 直下で実行されていても guard がなかった。Bug #1674 と組合せると Worker が worktree 作成前に main で起動して chain 進行、test-scaffold が main の source を汚染する risk。</td></tr>
+    <tr><td>root cause</td><td><code>chain-runner.sh</code> の <code>step_autopilot_detect()</code> L276-295: <code>IS_AUTOPILOT=true</code> を <code>eval</code> で環境変数に展開するだけで、後続 chain step が main worktree 直下で実行されていても guard がなかった。Bug #1674 と組合せると specialist (or atomic) が worktree 作成前に main で起動して chain 進行、test-scaffold が main の source を汚染する risk。</td></tr>
     <tr><td>confidence</td><td>verified (現コード L367-386 <code>step_cwd_guard()</code> 追加、コメントに「IS_AUTOPILOT=true + orchestrator early-exit」言及)</td></tr>
     <tr><td>構造的要因</td><td>IS_AUTOPILOT flag は「autopilot から呼ばれているか」を表すが「正しい worktree で動いているか」は別 invariant (Invariant B)。2 つの独立 invariant を 1 つの env var で表現したガード漏れ。chain step が source-touching かどうかを事前確認する仕組みなし。</td></tr>
     <tr><td>lesson (MUST)</td><td>「autopilot モード」と「正しい worktree」は独立 invariant として別々に enforce。source-touching step (test-scaffold, green-impl など) の直前に fail-closed な cwd-guard を必須。</td></tr>
-    <tr><td>新 spec で不能化</td><td>Worker を Pilot が作成した worktree 内で Agent(run_in_background) として spawn することで、Worker の cwd は Pilot が保証する構造。chain-runner の self-check ではなく spawn 経路での構造的保証。</td></tr>
+    <tr><td>新 spec で不能化</td><td>specialist (or atomic) を phaser が作成した worktree 内で Agent(run_in_background) として spawn することで、specialist (or atomic) の cwd は phaser が保証する構造。chain-runner の self-check ではなく spawn 経路での構造的保証。</td></tr>
   </tbody>
 </table>
 
 <h3>Bug 7: #1687 twl mcp disconnect (5 回目再発、本 session で root cause verified)</h3>
 <table class="bug-table">
   <tbody>
-    <tr><td>PR / commit</td><td>未マージ (migration Phase 4 対応予定)。過去 4 件 fix: #1506/#1568/#1588/#1612</td></tr>
+    <tr><td>PR / commit</td><td>未マージ (migration <code>Phase 4</code> 対応予定)。過去 4 件 fix: #1506/#1568/#1588/#1612</td></tr>
     <tr><td>root cause (本 session で <strong>verified</strong>)</td><td>
       二重原因:<br>
       (1) <strong>Claude Code upstream 仕様</strong>: stdio + sdk transport は <code>useManageMCPConnections.ts</code> L354-356 で auto-reconnect から意図的に exclude。HTTP/SSE/WebSocket のみ retry。<a href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177 OPEN</a>、修正は 1 行 PR (suggested、未提出)。<br>
@@ -167,7 +167,7 @@
     <tr><td>confidence</td><td><strong>verified</strong> (本 session で WebFetch + ソースコード提示: <code>useManageMCPConnections.ts</code> L354-356 + research session bce9c4e4 で 120 sources 統合)</td></tr>
     <tr><td>構造的要因</td><td>「実装した = deploy された」という暗黙の前提 + upstream limitation の認識不足。5 回再発するが毎回 watchdog を改善する修正で、upstream 仕様 (stdio reconnect なし) を見ていなかった。サーバー側 watchdog は orphan 自殺で逆効果のリスクあり。</td></tr>
     <tr><td>lesson (MUST)</td><td>新規 daemon/watchdog 実装は「起動 hook」と「起動確認テスト」をセットで実装・merge しなければ Done と見なさない。N 回再発するバグは「同じ修正を繰り返している」というメタシグナル、upstream + 自前の両 root を追う構造的問題。外部依存 (upstream bug) への workaround は docs 明記 + upstream fix 待ち ticket 作成 (SHOULD)。</td></tr>
-    <tr><td>新 spec で不能化</td><td>4 段階 migration (<a href="research-findings.html">research-findings.html</a> §4 verified): Phase 1 = 自前 watchdog 廃止 + <code>/mcp</code> 手動 retry、Phase 2 = stdin EOF graceful exit、Phase 3 = HTTP transport 移行、Phase 4 = Plugin Monitors (v2.1.105+) + <code>CLAUDE_PLUGIN_DATA</code> 統合。</td></tr>
+    <tr><td>新 spec で不能化</td><td>4 段階 migration (<a href="research-findings.html">research-findings.html</a> §4 verified): <code>Phase 1</code> = 自前 watchdog 廃止 + <code>/mcp</code> 手動 retry、<code>Phase 2</code> = stdin EOF graceful exit、<code>Phase 3</code> = HTTP transport 移行、<code>Phase 4</code> = Plugin Monitors (v2.1.105+) + <code>CLAUDE_PLUGIN_DATA</code> 統合。</td></tr>
   </tbody>
 </table>
 
@@ -175,11 +175,11 @@
 <table class="bug-table">
   <tbody>
     <tr><td>PR / commit</td><td>PR #1704, merge commit <code>0a212a42</code>。ADR-025 Known Gap 4 に文書化済 (L69)、追跡 Issue #1399。</td></tr>
-    <tr><td>root cause</td><td><code>phase-review.md</code> L78: <code>python3 -m twl.autopilot.checkpoint write --step phase-review --status "$STATUS"</code> で <code>--issue-number</code> 引数を渡していない。<code>checkpoint.py</code> L121: <code>filename = f"{step}-{issue_number}.json" if issue_number else f"{step}.json"</code> — issue_number なしの場合 <code>phase-review.json</code> (共通ファイル) に書き込む。並列 Worker が last-writer-wins で他 Worker の merge gate に影響。<code>merge-gate-check-phase-review.sh</code> L37 も <code>phase-review.json</code> のみ参照。<strong>checkpoint.py の read 関数 (L160) は per-issue 対応していない</strong> (write は対応、read は未対応のギャップ)。</td></tr>
+    <tr><td>root cause</td><td><code>phase-review.md</code> L78: <code>python3 -m twl.autopilot.checkpoint write --step phase-review --status "$STATUS"</code> で <code>--issue-number</code> 引数を渡していない。<code>checkpoint.py</code> L121: <code>filename = f"{step}-{issue_number}.json" if issue_number else f"{step}.json"</code> — issue_number なしの場合 <code>phase-review.json</code> (共通ファイル) に書き込む。並列 specialist (or atomic) が last-writer-wins で他 specialist (or atomic) の merge gate に影響。<code>merge-gate-check-phase-review.sh</code> L37 も <code>phase-review.json</code> のみ参照。<strong>checkpoint.py の read 関数 (L160) は per-issue 対応していない</strong> (write は対応、read は未対応のギャップ)。</td></tr>
     <tr><td>confidence</td><td>verified (checkpoint.py L121/L160, phase-review.md L78, merge-gate-check-phase-review.sh L37 全件確認済)</td></tr>
     <tr><td>構造的要因</td><td>ADR-025 で Known Gap として認識されていたが (#1399 追跡中) 実装が先行した。checkpoint ファイルパスの「何が共有されてはいけないか」が <code>checkpoint.py</code> の設計に埋め込まれず、呼び出し側 (phase-review.md) に委譲。5 PR 100% reject incident まで顕在化しなかった (通常並列 Wave を使わない運用)。</td></tr>
-    <tr><td>lesson (MUST)</td><td>並列 Worker が書き込む checkpoint は Worker ID (issue_number 等) を含むパスにデフォルトで書き込む。共通パスへの書き込みは明示的な <code>--shared</code> フラグを必要とする設計。Known Gap は「追跡中 Issue あり」だけでは不十分、実装 block を PR に含めるか明確な Ship 条件を定義 (SHOULD)。</td></tr>
-    <tr><td>新 spec で不能化</td><td>Migration Phase 2/3: specialist review を subagent で置換、review 結果は per-Worker mailbox (TaskCreate + per-issue notification) で管理。共通 checkpoint ファイルという概念を廃止。</td></tr>
+    <tr><td>lesson (MUST)</td><td>並列 specialist (or atomic) が書き込む checkpoint は specialist ID (issue_number 等) を含むパスにデフォルトで書き込む。共通パスへの書き込みは明示的な <code>--shared</code> フラグを必要とする設計。Known Gap は「追跡中 Issue あり」だけでは不十分、実装 block を PR に含めるか明確な Ship 条件を定義 (SHOULD)。</td></tr>
+    <tr><td>新 spec で不能化</td><td>Migration <code>Phase 2</code>/3: specialist review を subagent で置換、review 結果は per-specialist mailbox (TaskCreate + per-issue notification) で管理。共通 checkpoint ファイルという概念を廃止。</td></tr>
   </tbody>
 </table>
 
@@ -191,7 +191,7 @@
     <tr><td>confidence</td><td>verified (ac-scaffold-tests-973.bats 全行確認、soft_deny_match.py の不在確認)</td></tr>
     <tr><td>構造的要因</td><td>RED test scaffold の「全テストが fail する」状態が CI で許容されていた (merge blocked されない)。test scaffold merge は「実装が来たときの準備」として良い慣習だが、scaffold だけの PR が merge された後に「実装 Issue」が別途起票されないか、起票されても deprioritize された。permission UI が <code>AUTOPILOT_DIR</code> set のみで全 allow する設計は security hole、手動運用で問題が表面化しなかった。</td></tr>
     <tr><td>lesson (MUST)</td><td>RED test scaffold は「実装 Issue が Board に存在し、Done 前に scaffold を merge しない」か「scaffold merge と同時に TODO Issue を P0 で起票」のどちらかを必須。security gate (permission auto-approve) は fail-safe (deny-by-default) を基本とし、allow 条件を明示的に narrow。</td></tr>
-    <tr><td>新 spec で不能化</td><td>Migration Phase 4: Claude Code 標準 hook (PermissionRequest hook) で permission 判定。soft-deny ルールを hook スクリプトに直接実装し、<code>AUTOPILOT_DIR</code> という外部状態に依存しない設計。<strong>加えて新 spec の step verification framework で「RED test 増加 + RED 確認」「green-impl での src/ diff 確認」を post-verify 必須化</strong> → RED-only merge が構造的に block される (本 bug の核心解消)。</td></tr>
+    <tr><td>新 spec で不能化</td><td>Migration <code>Phase 4</code>: Claude Code 標準 hook (PermissionRequest hook) で permission 判定。soft-deny ルールを hook スクリプトに直接実装し、<code>AUTOPILOT_DIR</code> という外部状態に依存しない設計。<strong>加えて新 spec の step verification framework で「RED test 増加 + RED 確認」「green-impl での src/ diff 確認」を post-verify 必須化</strong> → RED-only merge が構造的に block される (本 bug の核心解消)。</td></tr>
   </tbody>
 </table>
 
@@ -202,10 +202,10 @@
     <tr><th>横断要因</th><th>該当 bug</th><th>解消経路 (新 spec)</th></tr>
   </thead>
   <tbody>
-    <tr><td><strong>F-1</strong> 並列 Wave 後付け</td><td>#1673, #1674, #1703</td><td>per-Worker file mailbox + Agent isolation (<a href="invariant-fate-table.html#inv-t">Inv T</a>, <a href="invariant-fate-table.html#inv-v">Inv V</a>)</td></tr>
+    <tr><td><strong>F-1</strong> 並列 Wave 後付け</td><td>#1673, #1674, #1703</td><td>per-specialist file mailbox + Agent isolation (<a href="invariant-fate-table.html#inv-t">Inv T</a>, <a href="invariant-fate-table.html#inv-v">Inv V</a>)</td></tr>
     <tr><td><strong>F-2</strong> env var 限界</td><td>#1660, #1662, #1663, #1684</td><td>PreToolUse hook + GitHub Project Board status SSoT (<a href="gate-hook.html">gate-hook</a>、<a href="invariant-fate-table.html#inv-w">Inv W</a>)</td></tr>
     <tr><td><strong>F-3</strong> deploy/verify 分離</td><td>#1687</td><td>Claude Code 標準 hook + MCP native management (<a href="invariant-fate-table.html#inv-x">Inv X</a>)</td></tr>
-    <tr><td><strong>横断要因外</strong></td><td>#973 (silent rot)</td><td>step verification framework (post-verify 機械化、<a href="step-verification.html">step-verification</a>)</td></tr>
+    <tr><td><strong>横断要因外</strong></td><td>#973 (silent rot)</td><td>step verification framework (post-verify 機械化、<a href="atomic-verification.html">step-verification</a>)</td></tr>
   </tbody>
 </table>
 
@@ -214,7 +214,7 @@
 <h3>MUST (構造的不能化を要する原則)</h3>
 
 <ol>
-  <li><strong>state / cleanup / checkpoint は per-Worker パスにデフォルト書き込み</strong>、共通パスは <code>--shared</code> 明示フラグ必須 (Bug #1703, #1673)</li>
+  <li><strong>state / cleanup / checkpoint は per-specialist パスにデフォルト書き込み</strong>、共通パスは <code>--shared</code> 明示フラグ必須 (Bug #1703, #1673)</li>
   <li><strong>cleanup の active_branches スコープは全 Wave にまたがる</strong> (Bug #1673)</li>
   <li><strong>bypass env var は使用後 <code>unset</code>、1 回だけ有効な token として設計</strong> (Bug #1660)</li>
   <li><strong>env override は <code>${VAR+x}</code> で set 状態を capture してから本番ロジックを評価</strong> (Bug #1663)</li>
@@ -222,7 +222,7 @@
   <li><strong><code>${VAR-default}</code> と <code>${VAR:-default}</code> の使い分けは明確にコメント</strong> (Bug #1662)</li>
   <li><strong>「autopilot mode」と「正しい worktree」は独立 invariant、別 enforce</strong> (Bug #1684)</li>
   <li><strong>source-touching step の直前に fail-closed cwd-guard 必須</strong> (Bug #1684)</li>
-  <li><strong>orchestrator は Worker terminal state まで exit しない、early exit は audit log</strong> (Bug #1674)</li>
+  <li><strong>orchestrator は specialist terminal state まで exit しない、early exit は audit log</strong> (Bug #1674)</li>
   <li><strong>orchestrator の phase 完了判定は自 Wave の state file のみ参照</strong> (Bug #1674)</li>
   <li><strong>新規 daemon/watchdog は「起動 hook」+「起動確認テスト」セット必須</strong> (Bug #1687)</li>
   <li><strong>N 回再発バグは root を追う、同じ修正を繰り返さない</strong> (Bug #1687、メタ原則)</li>
@@ -245,7 +245,7 @@
 <h2>関連 spec ファイル</h2>
 
 <ul>
-  <li>各 lesson の構造的不能化の詳細実装: <a href="step-verification.html">step-verification.html</a> / <a href="spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="gate-hook.html">gate-hook.html</a> (verified content、本 session 更新)</li>
+  <li>各 lesson の構造的不能化の詳細実装: <a href="atomic-verification.html">step-verification.html</a> / <a href="spawn-protocol.html">spawn-protocol.html</a> (outline) / <a href="gate-hook.html">gate-hook.html</a> (verified content、本 session 更新)</li>
   <li>失敗から導かれる crash failure mode 全体: <a href="crash-failure-mode.html">crash-failure-mode.html</a></li>
   <li>ADR 全件継承戦略: <a href="adr-fate-table.html">adr-fate-table.html</a> (ADR-025 Known Gap 4 解消含む)</li>
   <li>不変条件継承戦略: <a href="invariant-fate-table.html">invariant-fate-table.html</a> (不変条件 K/L/R/S 強化)</li>
@@ -256,7 +256,7 @@
 <h2>audit source</h2>
 
 <ul>
-  <li>本セッション (2026-05-12) feature-dev workflow Phase 2 で 3 code-explorer agent 並列調査</li>
+  <li>本セッション (2026-05-12) feature-dev workflow <code>Phase 2</code> で 3 code-explorer agent 並列調査</li>
   <li>各 bug の verified 根拠: commit hash + file:line + 関連 PR / ADR 引用</li>
   <li>doobidoo Memory MCP hash <code>6ef844e9</code> / <code>74b7cdf7</code> / <code>7727b59f</code> に lesson 集約済 (本 audit はそれらの拡張版)</li>
 </ul>

@@ -17,8 +17,10 @@
 
 <header class="doc-header">
   <h1>sandbox experiment architecture — 実地検証 + spec hyperlink</h1>
-  <div class="meta">draft-v2 (2026-05-13、第 4 弾 dig 反映) &middot; 4-state verification status + EXP-id 体系 (31 EXP) + 既存 sandbox 機能継承 + <code>plugins/twl/sandboxes/</code> catalog + tool-sandbox-runner 連携</div>
+  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; 4-state verification status + EXP-id 体系 (38 EXP) + 既存 sandbox 機能継承 + <code>plugins/twl/sandboxes/</code> catalog + tool-sandbox-runner 連携 + 第 5 弾 dig 由来 atomic skill composition EXP 追加</div>
 </header>
+
+<div class="info"><strong>第 5 弾 dig (2026-05-13) 反映</strong>: 第 4 弾 dig 由来 31 EXP に <strong>第 5 弾 dig 由来 7 EXP (EXP-032〜038)</strong> を追加し、合計 38 EXP 体系を構成。新規 EXP は registry.yaml audit (EXP-032) / atomic skill composition (EXP-033、<code>workflow → Skill(atomic-X) chain</code> 動作検証) / registry.yaml ↔ SKILL.md 整合性 (EXP-034) / <code>disable-model-invocation: true</code> 効果実測 (EXP-035) / atomic-Agent spawn (EXP-036) / doobidoo Tailscale 安定性 (EXP-037) / vocabulary audit (EXP-038)。詳細: <a href="experiment-index.html">experiment-index.html カテゴリ N</a>。</div>
 
 <div class="info">
   <strong>目的</strong>: 公式 docs WebFetch verified した内容を sandbox で <strong>実機再現確認</strong>し、各 spec claim の信頼度を 4-state status (inferred → deduced → verified → experiment-verified) で表現する。spec を <strong>living document</strong> として、未検証部分 (穴) を計画的に EXP で埋めていく仕組みを構築。<br>
@@ -40,7 +42,7 @@
   </tbody>
 </table>
 
-<p>各 spec claim 横に badge 表示。<strong>experiment-verified は最高位</strong>、Phase 1 PoC 着手前に core claim を全件ここまで持ち上げる目標。</p>
+<p>各 spec claim 横に badge 表示。<strong>experiment-verified は最高位</strong>、<code>Phase 1 PoC</code> 着手前に core claim を全件ここまで持ち上げる目標。</p>
 
 <h2>§2. 既存 sandbox / test 機能 inventory (verified)</h2>
 
@@ -58,7 +60,7 @@
     <tr>
       <td><code>.audit/</code></td>
       <td><code>cli/twl/src/twl/autopilot/audit.py</code></td>
-      <td><code>TWL_AUDIT=1</code> + <code>audit_snapshot()</code> isomorphic API、<code>.audit/&lt;run-id&gt;/{specialists,checkpoints,state-log.jsonl,index.json}</code></td>
+      <td><code>TWL_AUDIT=1</code> + <code>audit_snapshot()</code> isomorphic API、<code>.audit/&lt;run-id&gt;/{specialists,checkpoints,status-log.jsonl,index.json}</code></td>
       <td>継承、<code>.audit/&lt;run-id&gt;/experiments/&lt;EXP-id&gt;.json</code> 追加</td>
     </tr>
     <tr>
@@ -124,7 +126,7 @@
 ├── EXP-023-filter-groupby-write.smoke.sh
 ├── EXP-025-template-apply-build.smoke.sh
 ├── EXP-026-template-idempotent.smoke.sh
-├── EXP-029-worker-spec-review-fix-loop.smoke.sh
+├── EXP-029-specialist-spec-review-fix-loop.smoke.sh
 ├── EXP-030-sandbox-runner-twill-self-cycle.smoke.sh
 ├── EXP-031-doobidoo-duplicate-check-precision.smoke.sh
 └── ...
@@ -177,18 +179,18 @@ RUN_ID="${TWL_AUDIT_DIR:-/tmp}/experiments"
 mkdir -p "$RUN_ID"
 RESULT_FILE="$RUN_ID/${EXP_ID}.json"
 
-# === Phase 1: setup ===
+# === <code>Phase 1</code>: setup ===
 TMPDIR=$(mktemp -d)
 trap "rm -rf $TMPDIR" EXIT
 
-# === Phase 2: exec (with both schemas) ===
+# === <code>Phase 2</code>: exec (with both schemas) ===
 # (詳細実装は次 session)
 
-# === Phase 3: assert ===
+# === <code>Phase 3</code>: assert ===
 PASS=true
 REASON=""
 
-# === Phase 4: report ===
+# === <code>Phase 4</code>: report ===
 jq -n \
   --arg id "$EXP_ID" \
   --arg ts "$(date -Iseconds)" \
@@ -337,7 +339,7 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
   <tbody>
     <tr><td>EXP-011</td><td>step::run 4 phase lifecycle (pre-check → exec → post-verify → report)</td><td>bats</td></tr>
     <tr><td>EXP-012</td><td>post-verify FAIL で step abort + pilot escalate mail emit</td><td>bats</td></tr>
-    <tr><td>EXP-013</td><td>per-Worker mailbox path (<code>--shared</code> なしで共通 path 書き込み禁止)</td><td>bats</td></tr>
+    <tr><td>EXP-013</td><td>per-specialist mailbox path (<code>--shared</code> なしで共通 path 書き込み禁止)</td><td>bats</td></tr>
     <tr><td>EXP-014</td><td>local -n nameref が CI bash version で動くか (bash 4.3+ 確認)</td><td>bats</td></tr>
   </tbody>
 </table>
@@ -371,13 +373,13 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
     <tr><td>EXP-026</td><td>template idempotent (2 回 apply で同一 state)</td><td>tool-project</td><td>smoke</td></tr>
     <tr><td>EXP-027</td><td>verify-coverage.sh の 4-state grep 検証</td><td>tool-architect</td><td>bats</td></tr>
     <tr><td>EXP-028</td><td>pre-tool-use-spec-write-boundary.sh で tool-architect / user 以外を deny</td><td>tool-architect</td><td>bats</td></tr>
-    <tr><td>EXP-029</td><td>worker-spec-review agent の 3 回 fix loop 収束 / escalate</td><td>tool-architect</td><td>smoke</td></tr>
+    <tr><td>EXP-029</td><td>specialist-spec-review agent の 3 回 fix loop 収束 / escalate</td><td>tool-architect</td><td>smoke</td></tr>
     <tr><td>EXP-030</td><td>sandbox-runner で twill-self sandbox の 1 cycle 動作 + log 収集</td><td>tool-sandbox-runner</td><td>smoke</td></tr>
     <tr><td>EXP-031</td><td>doobidoo 重複 check (similarity > 0.75) の false positive/negative 率</td><td>tool-sandbox-runner</td><td>調査</td></tr>
   </tbody>
 </table>
 
-<h2>§9. Phase 1 PoC 前の sandbox 実験 sequence (推奨順、EXP-001〜031)</h2>
+<h2>§9. <code>Phase 1 PoC</code> 前の sandbox 実験 sequence (推奨順、EXP-001〜031)</h2>
 
 <ol>
   <li><strong>EXP-001 ~ EXP-003</strong> (hook schema): 既存 <code>pre-tool-use-worktree-boundary.bats</code> pattern を踏襲、最小 setup で着手</li>
@@ -385,15 +387,15 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
   <li><strong>EXP-014</strong> (bash version): CI image で <code>bash --version</code> + <code>local -n</code> test、code 影響大</li>
   <li><strong>EXP-009 ~ EXP-010</strong> (Plugin): twl plugin 化前の dry-run、<code>.claude-plugin/plugin.json</code> 試作</li>
   <li><strong>EXP-004 ~ EXP-005</strong> (CronCreate / stdio MCP): 公式 bug の reproduce、対策の代替経路確認</li>
-  <li><strong>EXP-007 ~ EXP-008</strong> (tier 1+2 hook): Phase 1 PoC の前提</li>
-  <li><strong>EXP-011 ~ EXP-013</strong> (step.sh): Phase 1 PoC で実装と並走</li>
+  <li><strong>EXP-007 ~ EXP-008</strong> (tier 1+2 hook): <code>Phase 1 PoC</code> の前提</li>
+  <li><strong>EXP-011 ~ EXP-013</strong> (step.sh): <code>Phase 1 PoC</code> で実装と並走</li>
   <li><strong>EXP-015 ~ EXP-018</strong> (toolchain): 各 helper 実装前に動作確認</li>
   <li><strong>EXP-019 ~ EXP-023</strong> (第 4 弾 dig、GitHub Project write boundary): tool-project 実装前に 5 領域 × 4 手段 matrix の実機検証、最適手段を特定</li>
   <li><strong>EXP-027 ~ EXP-028</strong> (第 4 弾 dig、tool-architect verify): bats で完結、verify-coverage.sh + spec-write-boundary.sh の動作確認</li>
   <li><strong>EXP-025 ~ EXP-026</strong> (第 4 弾 dig、template): tool-project apply-template 機能の動作確認 + idempotent</li>
-  <li><strong>EXP-029</strong> (第 4 弾 dig、worker-spec-review): tool-architect の軽量 PR cycle 動作確認 (3 回 fix loop 収束)</li>
+  <li><strong>EXP-029</strong> (第 4 弾 dig、specialist-spec-review): tool-architect の軽量 PR cycle 動作確認 (3 回 fix loop 収束)</li>
   <li><strong>EXP-030 ~ EXP-031</strong> (第 4 弾 dig、tool-sandbox-runner): sandbox 1 cycle + doobidoo 重複 check 精度測定 (最後、他 EXP 完走後)</li>
-  <li><strong>EXP-024</strong> (将来 / Phase 2 以降): twl MCP custom tool 価値調査 (gh CLI + GraphQL + gh-mcp の組み合わせで十分か判断)</li>
+  <li><strong>EXP-024</strong> (将来 / <code>Phase 2</code> 以降): twl MCP custom tool 価値調査 (gh CLI + GraphQL + gh-mcp の組み合わせで十分か判断)</li>
 </ol>
 
 <h2>§9. spec hyperlink integration plan</h2>
@@ -409,7 +411,7 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
     <tr><td><a href="admin-cycle.html">admin-cycle.html</a></td><td>EXP-004 (CronCreate)、EXP-009 (Plugin Monitor)</td></tr>
     <tr><td><a href="twl-mcp-integration.html">twl-mcp-integration.html</a></td><td>EXP-005 (stdio MCP)、EXP-010 (plugin)、EXP-018 (fastmcp)</td></tr>
     <tr><td><a href="spawn-protocol.html">spawn-protocol.html</a></td><td>EXP-006 (flock)、EXP-010 (plugin namespace)、EXP-016/017 (tmux)</td></tr>
-    <tr><td><a href="step-verification.html">step-verification.html</a></td><td>EXP-011 / 012 / 014</td></tr>
+    <tr><td><a href="atomic-verification.html">atomic-verification.html</a></td><td>EXP-011 / 012 / 014</td></tr>
     <tr><td><a href="ssot-design.html">ssot-design.html</a></td><td>EXP-014 (bash version)、EXP-015 (gh project)</td></tr>
     <tr><td><a href="invariant-fate-table.html">invariant-fate-table.html</a></td><td>不変条件 T (EXP-006/013)、U (EXP-011/012)、V (EXP-013)、W (EXP-001-003, 007-008)、X (EXP-005, 009)</td></tr>
     <tr><td><a href="failure-analysis.html">failure-analysis.html</a></td><td>Bug #1687 → EXP-005、Bug #1703 → EXP-013、Bug #973 → EXP-011 / 012</td></tr>
@@ -440,14 +442,14 @@ PreToolUse hook schema は &lt;code&gt;matcher&lt;/code&gt; 単数を使う
   <li><strong>twl plugin 化</strong> (公式 path): Claude Code 公式 plugin システム (<code>.claude-plugin/plugin.json</code> + skill namespace + Plugin Monitor + <code>--plugin-dir</code> local test) に乗ることで upstream 仕様変更耐性 + reload 自動化 + 規約保証 を得る</li>
   <li><strong>Plugin Monitor 採用</strong>: <code>monitors/monitors.json</code> で MCP server health log を Claude session 内 notification 化、mcp-watchdog 廃止後の official 代替</li>
   <li><strong>experiment-id hyperlink</strong>: 各 spec claim の verification level を 4-state status で明示、未検証 (inferred / deduced) を計画的に EXP で潰す living document</li>
-  <li><strong>4-state status</strong>: inferred → deduced → verified → experiment-verified の昇格パスを spec 全体で運用、最終的に core claim を experiment-verified まで持ち上げ Phase 1 PoC 着手</li>
+  <li><strong>4-state status</strong>: inferred → deduced → verified → experiment-verified の昇格パスを spec 全体で運用、最終的に core claim を experiment-verified まで持ち上げ <code>Phase 1 PoC</code> 着手</li>
 </ul>
 
 <h2>§13. 関連 spec ファイル</h2>
 
 <ul>
   <li><a href="experiment-index.html">experiment-index.html</a> — 全 EXP 一覧 + 現 status + 結果集約</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 1 PoC — sandbox 実験完了を前提</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> — sandbox 実験完了を前提</li>
   <li><a href="gate-hook.html">gate-hook.html</a> + <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> + <a href="admin-cycle.html">admin-cycle.html</a> — EXP-id を hyperlink で参照</li>
   <li><a href="research-findings.html">research-findings.html</a> — 公式 verify source 集約 (各 EXP の verify source URL リスト)</li>
   <li>既存 sandbox 機能: <code>test-fixtures/CLAUDE.md</code> / <code>plugins/twl/skills/co-self-improve/SKILL.md</code> / <code>cli/twl/src/twl/autopilot/audit.py</code></li>

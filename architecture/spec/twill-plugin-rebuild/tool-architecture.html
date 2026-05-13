@@ -19,13 +19,14 @@
 
 <header class="doc-header">
   <h1>tool-* 3 件 architecture — 責務 / verify 機構 / sandbox / migration</h1>
+  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; tool-* 3 件 (architect/project/sandbox-runner) + 10 role 体系内位置付け + specialist-spec-review (旧 worker-spec-review rename) + atomic-verification.html 参照</div>
   <div class="meta">draft-v2 (2026-05-13、第 4 弾 dig 反映) &middot; tool-architect / tool-project / tool-sandbox-runner &middot; tool-utility 廃止 (commands 再分配)</div>
 </header>
 
 <div class="info">
   <strong>目的</strong>: 新 architecture の tool-* 層 (status 遷移と無関係、user/admin 直接 invoke の独立 tool 群) の責務 boundary・自律 verify 機構・sandbox 実機検証・既存 co-* skill からの migration を仕様化する。<br>
   <br>
-  <strong>位置づけ</strong>: <a href="overview.html">overview.html</a> 図 1 では右独立ボックスとして描画済。L0 administrator / L1 pilot (phase-*) / L2 worker (worker-*) の 3 階層とは別、status 遷移と無関係な独立 invoke 群。<br>
+  <strong>位置づけ</strong>: <a href="overview.html">overview.html</a> 図 1 では右独立ボックスとして描画済。L0 administrator / L1 phaser (phase-*) / L2 workflow+specialist (worker-*) の 3 階層とは別、status 遷移と無関係な独立 invoke 群。<br>
   <br>
   <strong>第 4 弾 dig の核心成果</strong>: 旧 4 tool → 3 tool に再構成 (tool-utility 廃止)、各 tool の自律 verify / sandbox 検証 / PR cycle / log 分析 / Idea Issue 起票 etc. の詳細仕様を <code>dig</code> skill 3 軸 × 5 ラウンド = 20 question で確定。<br>
   source: <a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (本 session 第 4 弾の独立 dig artifact、12 section / ~470 行)。
@@ -99,7 +100,7 @@
 <h3>2.2 mailbox 規約</h3>
 
 <ul>
-  <li>tool-* は <strong>status 遷移と無関係</strong>、phase-* / worker-* の per-Worker mailbox (<code>.mailbox/&lt;session&gt;/inbox.jsonl</code>) は使用しない</li>
+  <li>tool-* は <strong>status 遷移と無関係</strong>、phase-* / worker-* の per-specialist mailbox (<code>.mailbox/&lt;session&gt;/inbox.jsonl</code>) は使用しない</li>
   <li>tool-sandbox-runner のみ admin への完了 mail 必要 (旧 su-observer 経路の継承、<a href="admin-cycle.html">admin-cycle.html</a> §3.1 で受信)</li>
   <li>tool-architect / tool-project は結果を user に直接提示 (admin mailbox 通知不要)</li>
 </ul>
@@ -111,7 +112,7 @@
   <li>tool 内部の主要 step (PR 作成 / spec 生成 / Board 設定 / sandbox 実行) は <code>audit_snapshot()</code> で snapshot</li>
   <li>tool 別の出力内容:
     <ul>
-      <li>tool-architect: spec directory snapshot + worker-spec-review findings JSON</li>
+      <li>tool-architect: spec directory snapshot + specialist-spec-review findings JSON</li>
       <li>tool-project: Board 操作 log + verify result JSON</li>
       <li>tool-sandbox-runner: sandbox run-id / sandbox log / LLM 分析 result / Idea Issue 起票 list</li>
     </ul>
@@ -175,7 +176,7 @@
   <li><code>git diff HEAD -- spec/*.html</code> で new section に <code>&lt;a class="exp-link"&gt;</code> 不在を warn</li>
   <li><code>changelog.html</code> を git diff と突合、本日 entry 不在を warn</li>
 </ol>
-<p><strong>振る舞い</strong>: warn のみ (block せず)、PR review で worker-spec-review が評価して fix 要求。</p>
+<p><strong>振る舞い</strong>: warn のみ (block せず)、PR review で specialist-spec-review が評価して fix 要求。</p>
 </div>
 
 <p><strong>2 層必須の根拠</strong> (dig core lesson §5): LLM だけ (層 1) では Step 0 漏れで verify gap、hook だけ (層 2) では context 欠如で false positive。両層併用で漏れと過剰検出の両方を抑制。</p>
@@ -190,7 +191,7 @@
     <tr><td>1</td><td>feature-dev で spec edit (本 file 自身も含む)</td></tr>
     <tr><td>2</td><td><code>git commit</code></td></tr>
     <tr><td>3</td><td><code>gh pr create --auto-merge=false</code></td></tr>
-    <tr><td>4</td><td><code>worker-spec-review</code> spawn (1 agent、新規軽量 review agent、<code>plugins/twl/agents/worker-spec-review.md</code> ~100 行)</td></tr>
+    <tr><td>4</td><td><code>specialist-spec-review</code> spawn (1 agent、新規軽量 review agent、<code>plugins/twl/agents/specialist-spec-review.md</code> ~100 行)</td></tr>
     <tr><td>5</td><td>review findings: 未 verified claim listing / EXP 漏れ check / changelog 漏れ check / dead link check</td></tr>
     <tr><td>6</td><td>tool-architect 自己 fix loop (<strong>最大 3 回</strong>)</td></tr>
     <tr><td>7</td><td>review PASS or 3 回到達 → user <code>AskUserQuestion</code> approve</td></tr>
@@ -200,7 +201,7 @@
 
 <p><strong>recursive PR rule</strong>: tool-architect が自身の spec (tool-architecture.html 等) を更新する PR 作成 <strong>OK</strong>、ただし review は self skip、user / 他 tool に委譲。</p>
 
-<p><strong>worker-pr-cycle (8 specialist) との対比</strong>: 既存 chain workflow は worker-pr-cycle で 8 specialist (security/code/llm/...) を回すが、spec PR にはオーバースペック。spec 専用の <strong>worker-spec-review 1 agent</strong> に絞ることで軽量化、3 回 fix loop で収束させる。</p>
+<p><strong>specialist-pr-cycle (8 specialist) との対比</strong>: 既存 chain workflow は specialist-pr-cycle で 8 specialist (security/code/llm/...) を回すが、spec PR にはオーバースペック。spec 専用の <strong>specialist-spec-review 1 agent</strong> に絞ることで軽量化、3 回 fix loop で収束させる。</p>
 
 <h3>3.4 spec edit 所有権 <a class="exp-link" href="experiment-index.html#EXP-028">EXP-028</a></h3>
 
@@ -415,7 +416,7 @@ git worktree add $TWL_SANDBOX_DIR test-target/main</code></pre>
 CLAUDE_PROJECT_DIR=$(pwd) claude --plugin-dir ./plugins/twl
 # jsonl: ~/.claude/projects/$(encoded $(pwd))/*.jsonl</code></pre>
 
-<p><strong>tmux window 命名</strong>: <code>sandbox-${RUN_ID}-admin</code> / <code>sandbox-${RUN_ID}-phase-impl-1660</code> etc</p>
+<p><strong>tmux window 命名</strong>: <code>sandbox-${RUN_ID}-admin</code> / <code>sandbox-${RUN_ID}-phaser-impl-1660</code> etc</p>
 
 <p><strong>収集 script</strong> (<code>.sandbox-logs/&lt;run-id&gt;/</code> に集約):</p>
 
@@ -567,7 +568,7 @@ spawn_tmux \
   <tbody>
     <tr><td><code>plugins/twl/scripts/lib/verify-coverage.sh</code></td><td>tool-architect verify hook (層 2、PostToolUse)</td><td>~50 行</td></tr>
     <tr><td><code>plugins/twl/scripts/hooks/pre-tool-use-spec-write-boundary.sh</code></td><td>spec edit 所有権 enforce (PreToolUse deny pattern)</td><td>~30 行</td></tr>
-    <tr><td><code>plugins/twl/agents/worker-spec-review.md</code></td><td>tool-architect PR cycle review agent (1 agent 軽量 review)</td><td>~100 行 (SKILL.md)</td></tr>
+    <tr><td><code>plugins/twl/agents/specialist-spec-review.md</code></td><td>tool-architect PR cycle review agent (1 agent 軽量 review)</td><td>~100 行 (SKILL.md)</td></tr>
     <tr><td><code>plugins/twl/sandboxes/_shared/problem-patterns.yaml</code></td><td>LLM 分析 pattern catalog (6 件)</td><td>~50 行</td></tr>
     <tr><td><code>plugins/twl/sandboxes/&lt;name&gt;/sandbox.yaml</code></td><td>sandbox manifest (per sandbox)</td><td>~30 行 × N</td></tr>
     <tr><td><code>plugins/twl/sandboxes/&lt;name&gt;/setup.sh</code></td><td>sandbox setup (per sandbox)</td><td>~50 行 × N</td></tr>
@@ -582,7 +583,7 @@ spawn_tmux \
 <div class="pending">
 <h4>詳細実装レベル</h4>
 <ul>
-  <li><code>worker-spec-review</code> agent の正確な prompt (findings 出力形式の JSON schema)</li>
+  <li><code>specialist-spec-review</code> agent の正確な prompt (findings 出力形式の JSON schema)</li>
   <li><code>verify-coverage.sh</code> の正確な grep regex + warn message format</li>
   <li><code>pre-tool-use-spec-write-boundary.sh</code> の caller 識別ロジック (env 変数経由?)</li>
   <li><code>problem-patterns.yaml</code> の各 pattern severity threshold 値</li>
@@ -603,7 +604,7 @@ spawn_tmux \
 <h4>tool-architect 追加検討</h4>
 <ul>
   <li>recursive PR の review 委譲先 (user only? 他 tool? user/admin/他 tool の優先順位)</li>
-  <li>spec file 削除 / file rename の handling (worker-spec-review で catch?)</li>
+  <li>spec file 削除 / file rename の handling (specialist-spec-review で catch?)</li>
 </ul>
 </div>
 
@@ -647,7 +648,7 @@ spawn_tmux \
   <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> (sandbox catalog 構造、tool-sandbox-runner と統合)</li>
   <li><a href="experiment-index.html">experiment-index.html</a> EXP-019〜031 (本 dig 由来)</li>
   <li><a href="deletion-inventory.html">deletion-inventory.html</a> §6b (tool-utility 79 行廃止 + 関連削除)</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 1 PoC (EXP-019〜031 組込み)</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1 PoC</code> (EXP-019〜031 組込み)</li>
   <li><a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> (本 dig の独立 artifact、20 question 詳細)</li>
 </ul>
 
@@ -668,7 +669,7 @@ spawn_tmux \
     <tr><td><a class="exp-link" href="experiment-index.html#EXP-026">EXP-026</a></td><td>template idempotent (2 回 apply で同一 state)</td><td>tool-project</td></tr>
     <tr><td><a class="exp-link" href="experiment-index.html#EXP-027">EXP-027</a></td><td><code>verify-coverage.sh</code> の 4-state grep が正しく未 verified を catch</td><td>tool-architect</td></tr>
     <tr><td><a class="exp-link" href="experiment-index.html#EXP-028">EXP-028</a></td><td><code>pre-tool-use-spec-write-boundary.sh</code> が tool-architect / user 以外を deny</td><td>tool-architect</td></tr>
-    <tr><td><a class="exp-link" href="experiment-index.html#EXP-029">EXP-029</a></td><td><code>worker-spec-review</code> agent が 3 回 fix loop で収束 or escalate</td><td>tool-architect</td></tr>
+    <tr><td><a class="exp-link" href="experiment-index.html#EXP-029">EXP-029</a></td><td><code>specialist-spec-review</code> agent が 3 回 fix loop で収束 or escalate</td><td>tool-architect</td></tr>
     <tr><td><a class="exp-link" href="experiment-index.html#EXP-030">EXP-030</a></td><td>sandbox-runner で twill-self sandbox の 1 cycle 動作 + log 収集</td><td>tool-sandbox-runner</td></tr>
     <tr><td><a class="exp-link" href="experiment-index.html#EXP-031">EXP-031</a></td><td>doobidoo 重複 check (similarity &gt; 0.75) の false positive/negative 率</td><td>tool-sandbox-runner</td></tr>
   </tbody>

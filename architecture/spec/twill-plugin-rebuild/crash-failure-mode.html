@@ -29,10 +29,10 @@
 <table>
 <thead><tr><th>層</th><th>crash 種別</th><th>原因例</th><th>影響範囲</th></tr></thead>
 <tbody>
-<tr><td rowspan="3"><strong>L2 worker</strong></td><td>process exit (non-zero)</td><td>test script error, claude code internal error, OOM</td><td>1 worker のみ</td></tr>
+<tr><td rowspan="3"><strong>L2 workflow+specialist</strong></td><td>process exit (non-zero)</td><td>test script error, claude code internal error, OOM</td><td>1 worker のみ</td></tr>
 <tr><td>hang (heartbeat 停止)</td><td>無限 loop, deadlock, API rate limit 待ち</td><td>1 worker のみ</td></tr>
 <tr><td>tmux window kill</td><td>user 手動 kill, tmux server restart</td><td>1 worker のみ</td></tr>
-<tr><td rowspan="3"><strong>L1 pilot</strong></td><td>process exit (non-zero)</td><td>claude code internal error, OOM</td><td>担当 Issue の worker 群全て (mail 集約者不在)</td></tr>
+<tr><td rowspan="3"><strong>L1 phaser</strong></td><td>process exit (non-zero)</td><td>claude code internal error, OOM</td><td>担当 Issue の worker 群全て (mail 集約者不在)</td></tr>
 <tr><td>hang (mail 集約停止)</td><td>worker mail 読込み中 deadlock, API 障害</td><td>同上</td></tr>
 <tr><td>tmux window kill</td><td>user 手動 kill, tmux server restart</td><td>同上</td></tr>
 <tr><td rowspan="3"><strong>L0 administrator</strong></td><td>process exit (non-zero)</td><td>claude code internal error, OOM</td><td><strong>全 system</strong> (orchestration 不在)</td></tr>
@@ -65,17 +65,17 @@
 
   <!-- L1 pilots -->
   <rect x="80" y="180" width="240" height="80" rx="6" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <text x="200" y="206" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">L1 pilot (phase-impl)</text>
+  <text x="200" y="206" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">L1 phaser (phase-impl)</text>
   <text x="200" y="224" text-anchor="middle" font-size="11" fill="#555">.heartbeat/pilot-impl-1660.json</text>
   <text x="200" y="240" text-anchor="middle" font-size="10" fill="#555">5 min 間隔で touch (mtime update)</text>
 
   <rect x="420" y="180" width="240" height="80" rx="6" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <text x="540" y="206" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">L1 pilot (phase-pr)</text>
+  <text x="540" y="206" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">L1 phaser (phase-pr)</text>
   <text x="540" y="224" text-anchor="middle" font-size="11" fill="#555">.heartbeat/pilot-pr-N.json</text>
   <text x="540" y="240" text-anchor="middle" font-size="10" fill="#555">同上</text>
 
   <rect x="760" y="180" width="240" height="80" rx="6" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <text x="880" y="206" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">L1 pilot (phase-explore)</text>
+  <text x="880" y="206" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">L1 phaser (phase-explore)</text>
   <text x="880" y="224" text-anchor="middle" font-size="11" fill="#555">.heartbeat/pilot-explore-K.json</text>
   <text x="880" y="240" text-anchor="middle" font-size="10" fill="#555">同上</text>
 
@@ -116,8 +116,8 @@
 <table>
 <thead><tr><th>層</th><th>heartbeat 間隔</th><th>timeout (検知閾値)</th><th>検知者</th></tr></thead>
 <tbody>
-<tr><td>L2 worker</td><td>3 min (各 step 終了時 touch)</td><td>10 min (mail 不在 + heartbeat 古い)</td><td>L1 pilot (mailbox poll cycle で確認)</td></tr>
-<tr><td>L1 pilot</td><td>5 min (各 cycle で touch)</td><td>15 min</td><td>L0 administrator (CronCreate 25 min cycle で確認)</td></tr>
+<tr><td>L2 workflow+specialist</td><td>3 min (各 step 終了時 touch)</td><td>10 min (mail 不在 + heartbeat 古い)</td><td>L1 phaser (mailbox poll cycle で確認)</td></tr>
+<tr><td>L1 phaser</td><td>5 min (各 cycle で touch)</td><td>15 min</td><td>L0 administrator (CronCreate 25 min cycle で確認)</td></tr>
 <tr><td>L0 administrator</td><td>25 min (CronCreate fire ごとに touch)</td><td>40 min (CronCreate skip 1 回 + 余裕)</td><td>外部 daemon (`heartbeat-watcher.sh`) or user 手動</td></tr>
 </tbody>
 </table>
@@ -131,12 +131,12 @@
 </ul>
 
 <div class="warning">
-<strong>注意</strong>: SLA は新 spec の <strong>初期値</strong>。Phase 1 PoC で実測して調整。worker の step によっては 10 min 超 (例: 大規模 test execution) もあり得るため、step ごとの timeout 個別調整が必要 (Phase 2 で `step.sh` に timeout field 追加)。
+<strong>注意</strong>: SLA は新 spec の <strong>初期値</strong>。<code>Phase 1 PoC</code> で実測して調整。worker の step によっては 10 min 超 (例: 大規模 test execution) もあり得るため、step ごとの timeout 個別調整が必要 (<code>Phase 2</code> で `step.sh` に timeout field 追加)。
 </div>
 
 <h2>5. recovery 手順 (各 crash 種別ごと)</h2>
 
-<h3>L2 worker crash</h3>
+<h3>L2 workflow+specialist crash</h3>
 
 <table>
 <thead><tr><th>crash 種別</th><th>検知</th><th>recovery 手順</th><th>SLA</th></tr></thead>
@@ -147,7 +147,7 @@
 </tbody>
 </table>
 
-<h3>L1 pilot crash</h3>
+<h3>L1 phaser crash</h3>
 
 <table>
 <thead><tr><th>crash 種別</th><th>検知</th><th>recovery 手順</th><th>SLA</th></tr></thead>
@@ -174,7 +174,7 @@
 </table>
 
 <div class="critical">
-<strong>administrator crash は最も影響大</strong>: 全 system が orchestration 不在になる。Phase 1 PoC で <strong>外部 heartbeat-watcher.sh</strong> (cron 5 min) を必須実装、ADR-042 (tmux crash recovery) との統合を Phase 2 で完了する。
+<strong>administrator crash は最も影響大</strong>: 全 system が orchestration 不在になる。<code>Phase 1 PoC</code> で <strong>外部 heartbeat-watcher.sh</strong> (cron 5 min) を必須実装、ADR-042 (tmux crash recovery) との統合を <code>Phase 2</code> で完了する。
 </div>
 
 <h2>6. 周辺 failure mode</h2>
@@ -221,7 +221,7 @@
 </ul>
 </div>
 
-<h2>8. Phase 1 PoC での verify points</h2>
+<h2>8. <code>Phase 1 PoC</code> での verify points</h2>
 
 <table>
 <thead><tr><th>項目</th><th>verify 方法</th></tr></thead>
@@ -231,7 +231,7 @@
 <tr><td>pilot crash 検知</td><td>pilot session を `tmux kill-window` → administrator が 25 min cycle 内に検知 + re-spawn</td></tr>
 <tr><td>file mailbox 永続性</td><td>worker が mail 書き直後に kill → 新 pilot 起動 → mail を正しく読めることを verify</td></tr>
 <tr><td>state SSoT 整合</td><td>pilot crash 時、GitHub Project Board status と mailbox state が一致することを admin が verify</td></tr>
-<tr><td>tmux server crash recovery (#1360)</td><td>tmux server kill → 外部 cron が検知 → user の手動 recovery 手順が <code>rebuild-plan.html</code> に記載 (Phase 2 で自動化)</td></tr>
+<tr><td>tmux server crash recovery (#1360)</td><td>tmux server kill → 外部 cron が検知 → user の手動 recovery 手順が <code>rebuild-plan.html</code> に記載 (<code>Phase 2</code> で自動化)</td></tr>
 </tbody>
 </table>
 
@@ -248,10 +248,10 @@
 <h2>10. 残課題 (次 session 以降)</h2>
 
 <ul>
-  <li>各 step の timeout 個別調整 (step.sh の timeout field 設計、Phase 2)</li>
-  <li>tmux server crash 自動 recovery 機構 (ADR-042 統合、Phase 2)</li>
-  <li>API rate limit / MCP 障害時の retry policy 詳細仕様 (Phase 2)</li>
-  <li>外部 heartbeat-watcher.sh の実装 (Phase 1 PoC で必須)</li>
+  <li>各 step の timeout 個別調整 (step.sh の timeout field 設計、<code>Phase 2</code>)</li>
+  <li>tmux server crash 自動 recovery 機構 (ADR-042 統合、<code>Phase 2</code>)</li>
+  <li>API rate limit / MCP 障害時の retry policy 詳細仕様 (<code>Phase 2</code>)</li>
+  <li>外部 heartbeat-watcher.sh の実装 (<code>Phase 1 PoC</code> で必須)</li>
   <li>disk 故障 / network partition の failure mode (本 spec scope 外、別 ADR)</li>
 </ul>
 

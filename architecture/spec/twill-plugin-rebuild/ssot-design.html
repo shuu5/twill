@@ -2,10 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>twill plugin rebuild — chain SSoT 統一 design</title>
+<title>twill plugin rebuild — registry.yaml 統合 SSoT design</title>
 <link rel="stylesheet" href="common.css">
 <style>
-  /* file-specific accent: ssot は caution #916626 で「設計選択の重さ」を象徴 */
   header.doc-header { border-bottom: 3px solid var(--caution-fg); }
   .compare-table th { background: var(--gray-50); }
   .compare-table td { vertical-align: top; }
@@ -13,26 +12,35 @@
   .cons { background: var(--danger-bg); padding: 8px 12px; border-radius: var(--radius-sm); margin: 4px 0; }
   .pros::before { content: "✓ "; font-weight: 700; color: var(--success-fg); }
   .cons::before { content: "✗ "; font-weight: 700; color: var(--danger-fg); }
+  .deprecated { text-decoration: line-through; color: var(--text-secondary); }
 </style>
 </head>
 <body>
 
 <header class="doc-header">
-  <h1>chain SSoT 統一 design — 三重化解消と単一 SSoT 化</h1>
-  <div class="meta">draft-v2 (2026-05-12) &middot; 3 案 trade-off + 案 3 (step.sh 単一 SSoT) 詳細設計</div>
+  <h1>registry.yaml 統合 SSoT design — 案 4 確定 (第 5 弾 dig)</h1>
+  <div class="meta">draft-v3 (2026-05-13) &middot; 案 3 (step.sh) → 案 4 (registry.yaml) 進化、atomic skill composition + vocabulary table 統合</div>
 </header>
 
 <div class="info">
-  <strong>目的</strong>: 既存 twill plugin の chain 定義 SSoT が <code>chain.py</code> / <code>chain-steps.sh</code> / <code>deps.yaml.chains</code> の <strong>三重化</strong>状態にあり (ADR-022 で正式定義)、Issue #853 で integrity 違反が顕在化した。本設計で 1 つの SSoT に絞る。<br>
+  <strong>目的</strong>: 既存 twill plugin の chain 定義 SSoT が <code>chain.py</code> / <code>chain-steps.sh</code> / <code>deps.yaml.chains</code> の三重化状態にあり (ADR-022 で正式定義)、Issue #853 で integrity 違反が顕在化。さらに <code>cli/twl/types.yaml</code> (component 型 + token 閾値 SSoT) と命名 vocabulary SSoT 不在の課題も第 5 弾 dig で確定。本設計で 1 つの統合 SSoT に絞る。<br>
   <br>
-  <strong>結論先出し</strong>: <strong>案 3 (step.sh 単一 SSoT) を採用</strong>。1 step = 1 <code>*.sh</code> file に分解し、<code>deps.yaml.chains</code> は workflow metadata のみを保有する 2-way 構造に簡素化する。<code>chain.py</code> + <code>chain-steps.sh</code> + <code>chain-runner.sh</code> を全廃。<br>
+  <strong>結論先出し</strong>: <strong>案 4 (registry.yaml 統合 SSoT) を採用</strong>。<code>plugins/twl/registry.yaml</code> 1 file が以下 5 section の Authority SSoT を保有:
+  <ol>
+    <li><code>glossary</code> — vocabulary table (10 role + entity)</li>
+    <li><code>components</code> — 全 file listing (role / path / concern / depends / next)</li>
+    <li><code>chains</code> — workflow → atomic sequence + verify rule</li>
+    <li><code>hooks</code> + <code>monitors</code> — entry config (hooks.json + monitors.json の SSoT)</li>
+    <li><code>integrity_rules</code> — audit ルール定義</li>
+  </ol>
+  旧 <code>chain.py</code> + <code>chain-steps.sh</code> + <code>chain-runner.sh</code> + <code>cli/twl/types.yaml</code> + 第 3 弾 dig <code>step.sh framework</code> を全廃。<br>
   <br>
-  <strong>source</strong>: 本 session feature-dev workflow Phase 2 で code-explorer agent C が verified に深掘り。ADR-022 の Context 引用 + 現コード読み込み。
+  <strong>source</strong>: 本 session 第 5 弾 dig (10 round × 平均 4 question)、公式 docs 4 件再 WebFetch verify、ADR-022 Context、code-explorer agent C 深掘り。
 </div>
 
-<h2>§1. 三重化問題の verified 物証</h2>
+<h2>§1. 三重化問題の verified 物証 (歴史的記録、保全)</h2>
 
-<h3>1.1 3 つの SSoT 候補</h3>
+<h3>1.1 3 つの SSoT 候補 (旧)</h3>
 
 <table>
   <thead>
@@ -41,33 +49,31 @@
   <tbody>
     <tr>
       <td><code>cli/twl/src/twl/autopilot/chain.py</code></td>
-      <td>L30-49 <code>CHAIN_STEPS</code> (18 step リスト)。L27 コメント「SSoT for chain definitions」と宣言。同 file 内に <code>STEP_TO_WORKFLOW</code>、<code>CHAIN_STEP_DISPATCH</code>、<code>CHAIN_STEP_COMMAND</code>、<code>CHAIN_METADATA</code> の 5 dict を保有。<code>export_deps_chains()</code> と <code>export_chain_steps_sh()</code> で他 2 file を生成する設計</td>
+      <td>L30-49 <code>CHAIN_STEPS</code> (18 atomic リスト)。L27 コメント「SSoT for chain definitions」と宣言。同 file 内に <code>STEP_TO_WORKFLOW</code>、<code>CHAIN_STEP_DISPATCH</code>、<code>CHAIN_STEP_COMMAND</code>、<code>CHAIN_METADATA</code> の 5 dict 保有。<code>export_deps_chains()</code> と <code>export_chain_steps_sh()</code> で他 2 file 生成</td>
     </tr>
     <tr>
       <td><code>plugins/twl/scripts/chain-steps.sh</code></td>
-      <td>L1-98 (computed artifact)。L3「直接編集しないこと」<code>twl chain export --shell</code> で chain.py から生成される。<code>CHAIN_STEPS</code> 配列、<code>CHAIN_STEP_DISPATCH</code> 連想配列等を bash で保有。L59「ワークフロー境界メタデータ（SSOT は chain.py の STEP_TO_WORKFLOW）」と self-referential コメント</td>
+      <td>L1-98 (computed artifact)。L3「直接編集しないこと」<code>twl chain export --shell</code> で chain.py から生成。L59「ワークフロー境界メタデータ (SSoT は chain.py の STEP_TO_WORKFLOW)」self-referential コメント</td>
     </tr>
     <tr>
       <td><code>plugins/twl/deps.yaml</code></td>
-      <td>L32-74 <code>chains:</code> section。5 workflow (setup / test-ready / pr-verify / pr-fix / pr-merge) にそれぞれ steps リスト保有。chain.py から生成される扱いだが L25-31 に冗長コメント 6 行残存</td>
+      <td>L32-74 <code>chains:</code> section。5 workflow (setup / test-ready / pr-verify / pr-fix / pr-merge) にそれぞれ steps リスト。chain.py から生成扱いだが L25-31 に冗長コメント 6 行残存</td>
     </tr>
   </tbody>
 </table>
 
 <h3>1.2 不整合の物証 (ADR-022 Context 引用)</h3>
 
-<p>ADR-022 が文書化した過去の実際不整合:</p>
-
 <ul>
   <li><code>arch-ref</code> の所属: chain.py は <strong>setup</strong>、deps.yaml は <strong>test-ready</strong> (当時)</li>
-  <li><code>pr-merge</code> の step 順序: chain.py は <code>all-pass-check → pr-cycle-report</code>、deps.yaml は逆順</li>
-  <li>deps.yaml にのみ存在する step: <code>worktree-create</code>, <code>e2e-screening</code>, <code>merge-gate</code>, <code>auto-merge</code>, <code>fix-phase</code>, <code>warning-fix</code>, <code>pr-cycle-analysis</code>, <code>arch-phase-review</code>, <code>arch-fix-phase</code>, <code>post-fix-verify</code> (旧 llm dispatch 時代)</li>
+  <li><code>pr-merge</code> の atomic 順序: chain.py は <code>all-pass-check → pr-cycle-report</code>、deps.yaml は逆順</li>
+  <li>deps.yaml にのみ存在する atomic: <code>worktree-create</code>, <code>e2e-screening</code>, <code>merge-gate</code>, <code>auto-merge</code>, <code>fix-phase</code>, <code>warning-fix</code>, <code>pr-cycle-analysis</code>, <code>arch-phase-review</code>, <code>arch-fix-phase</code>, <code>post-fix-verify</code> (旧 llm dispatch 時代)</li>
 </ul>
 
 <p>追加の verified 物証 (本 session 確認):</p>
 
 <ul>
-  <li><code>chain-runner.sh</code> L1864-1910 の case 文に <strong>chain.py <code>CHAIN_STEPS</code> 外の step が大量に登録</strong>: <code>worktree-create</code>, <code>cwd-guard</code>, <code>board-status-update</code> (alias), <code>board-archive</code>, <code>next-step</code>, <code>dispatch-info</code>, <code>llm-delegate</code>, <code>llm-complete</code>, <code>chain-status</code>, <code>post-fix-verify</code>, <code>auto-merge</code>, <code>pr-comment-*</code>, <code>autopilot-detect</code>, <code>resolve-issue-num</code>, <code>resolve-project-root</code>, <code>record-pr</code></li>
+  <li><code>chain-runner.sh</code> L1864-1910 の case 文に <strong>chain.py <code>CHAIN_STEPS</code> 外の atomic が大量に登録</strong>: <code>worktree-create</code>, <code>cwd-guard</code>, <code>board-status-update</code> (alias), <code>board-archive</code>, <code>next-step</code>, <code>dispatch-info</code>, <code>llm-delegate</code>, <code>llm-complete</code>, <code>chain-status</code>, <code>post-fix-verify</code>, <code>auto-merge</code>, <code>pr-comment-*</code>, <code>autopilot-detect</code>, <code>resolve-issue-num</code>, <code>resolve-project-root</code>, <code>record-pr</code></li>
   <li>これが <a href="failure-analysis.html">failure-analysis.html</a> 横断要因と並ぶ「設計と運用の乖離」の根</li>
 </ul>
 
@@ -91,489 +97,195 @@
   </tbody>
 </table>
 
-<p>現 main HEAD では chain.py と chain-steps.sh は一致 (両 file 照合済)、deps.yaml setup.steps にも arch-ref が含まれ包含条件満たす (verified)。Issue #853 で発覚した 4 箇所 SSoT 違反は、chain-runner.sh case 文の chain.py 外 step がこの整合性検証から漏れていることが本質。</p>
+<h2>§2. 第 5 弾 dig での再認識 (vocabulary SSoT 不在も判明)</h2>
 
-<h2>§2. 3 案 trade-off</h2>
+<p>第 5 弾 dig (2026-05-13、10 round × 33+ question) で <strong>chain SSoT 三重化に加えて以下の SSoT 多重化が判明</strong>:</p>
 
-<h3>案 1: <code>deps.yaml</code> SSoT (chain.py + chain-steps.sh を削除、deps.yaml から生成)</h3>
+<ul>
+  <li><strong>types.yaml 矛盾</strong>: <code>cli/twl/types.yaml</code> が component 型 + token 閾値 SSoT として記述されているが、plugin component 構成では旧 type 名 (controller / co-autopilot 等) が残存。新 type 名 (administrator / phase-* / worker-*) との整合性が drift</li>
+  <li><strong>vocabulary SSoT 不在</strong>: pilot/phase/controller の 5 重、worker の 5 重、step の 5 重等の用語多重化が「1 entity = 1 name」違反、SSoT として機能不全</li>
+  <li><strong>役割名 (role) の階層分類不在</strong>: tool / pilot / worker / specialist 等の役割が 11 種以上に膨らんでいたが、階層関係 (L0/L1/L2/independent) や concern 分離が暗黙</li>
+  <li><strong>制御系 4 語多重</strong>: administrator / orchestrator / controller / supervisor の 4 語が同概念に対し並存</li>
+</ul>
 
-<table class="compare-table">
-  <thead><tr><th style="width: 50%">利点</th><th>欠点</th></tr></thead>
+<h2>§3. 旧 3 案 trade-off (第 3 弾 dig、歴史的記録)</h2>
+
+<div class="caution">第 3 弾 dig (2026-05-12) で検討された 3 案を歴史的記録として保全。第 5 弾 dig で「案 4 registry.yaml 統合 SSoT」に進化したため、いずれの旧案も廃案だが、判断経緯として残す。</div>
+
+<h3>案 1 (廃案): <code>deps.yaml</code> SSoT (chain.py + chain-steps.sh 全廃、deps.yaml から生成)</h3>
+<div class="pros">YAML editing は人間にとって直感的、yamllint integration、コメント sup</div>
+<div class="cons">deps.yaml v3.0 既存巨大化 (~250 行)、bash dispatch logic を yaml 内 inline は無理、chain.py を捨てると Python validation も再実装が必要</div>
+
+<h3>案 2 (廃案): <code>chain.py</code> SSoT (chain-steps.sh + deps.yaml.chains 全廃、Python が SSoT)</h3>
+<div class="pros">既存 chain.py に dispatch / metadata / export が集約、Python type hint で integrity を強化可</div>
+<div class="cons">bash 側 (chain-runner.sh) から chain.py 直接呼び出し不可、引き続き chain-steps.sh 経由 export 必要、本質は「dispatch + metadata の 2 重 SSoT」のままで mitigation</div>
+
+<h3>案 3 (廃案、第 3 弾 dig 採用 → 第 5 弾 dig で廃案化): <code>step.sh</code> 単一 SSoT</h3>
+<div class="pros">1 step = 1 <code>steps/&lt;name&gt;.sh</code> file = SSoT、 <code>_verify_&lt;name&gt;()</code> 関数で post-verify rule 同 file 内に、最も「分散 SSoT」原則に忠実</div>
+<div class="cons"><strong>第 5 弾 dig 発覚問題</strong>: (1) step は forbidden 一般語、atomic が canonical、(2) <code>step.sh framework</code> の <code>step::run</code> bash 呼び出しは公式 skill 機構 (Skill tool + atomic SKILL.md) と二重 framework になる、(3) vocabulary / types.yaml と独立した別 SSoT を作るため SSoT 多重化解消にならない</div>
+
+<h2>§4. 案 4 registry.yaml 統合 SSoT (第 5 弾 dig 確定)</h2>
+
+<div class="info">本節の詳細 schema: <a href="registry-schema.html">registry-schema.html §2 (registry.yaml 全体 schema と 5 section)</a></div>
+
+<h3>4.1 統合する SSoT</h3>
+
+<p><code>plugins/twl/registry.yaml</code> (新規) が以下を全部担当:</p>
+
+<table>
+  <thead>
+    <tr><th>従来 file</th><th>役割</th><th>registry.yaml での再配置</th></tr>
+  </thead>
   <tbody>
-    <tr>
-      <td><div class="pros">LLM 可読性最高 (YAML、宣言的)</div>
-          <div class="pros">CRG の依存可視化との整合 (deps.yaml は CRG 入力)</div>
-          <div class="pros">step リスト + metadata を 1 箇所で表現</div></td>
-      <td><div class="cons">Python/Bash からの型安全な参照が困難 (YAML parser 必須)</div>
-          <div class="cons">runtime での <code>next-step</code> 計算を deps.yaml parser に委ねる必要</div>
-          <div class="cons">YAML を Python で parse してイテレートする処理が分散する</div>
-          <div class="cons">step 実装 (bash) は別 file、deps.yaml とは別管理になる (file 削減効果薄)</div></td>
-    </tr>
+    <tr><td class="deprecated"><code>cli/twl/types.yaml</code></td><td>component 型 + token bloat 閾値</td><td><code>components</code> section (role + path) + <code>integrity_rules</code> section (閾値)</td></tr>
+    <tr><td class="deprecated"><code>plugins/twl/deps.yaml</code></td><td>component depends + chains + types</td><td><code>components</code> section (depends/next) + <code>chains</code> section</td></tr>
+    <tr><td class="deprecated"><code>cli/twl/src/twl/autopilot/chain.py</code> <code>CHAIN_STEPS</code></td><td>chain 18 atomic の SSoT</td><td><code>chains</code> section (workflow → atomic sequence)</td></tr>
+    <tr><td class="deprecated"><code>plugins/twl/scripts/chain-steps.sh</code></td><td>chain.py の bash mirror</td><td>(全廃、registry.yaml から必要時 generate)</td></tr>
+    <tr><td>(なし、第 5 弾 dig 新規)</td><td>vocabulary table (用語集 + canonical/forbidden)</td><td><code>glossary</code> section (新規)</td></tr>
+    <tr><td>(なし、第 5 弾 dig 新規)</td><td>命名衝突 audit ルール</td><td><code>integrity_rules</code> section (vocabulary_forbidden_use rule)</td></tr>
+    <tr><td><code>plugins/twl/hooks/hooks.json</code></td><td>hook entry config</td><td><code>hooks</code> section (registry.yaml が SSoT、hooks.json は derived)</td></tr>
+    <tr><td><code>plugins/twl/monitors/monitors.json</code></td><td>monitor entry config</td><td><code>monitors</code> section (registry.yaml が SSoT、monitors.json は derived)</td></tr>
   </tbody>
 </table>
 
-<h3>案 2: <code>chain.py</code> SSoT (現状維持・強化、export 自動化)</h3>
+<h3>4.2 registry.yaml の 5 section</h3>
 
-<table class="compare-table">
-  <thead><tr><th style="width: 50%">利点</th><th>欠点</th></tr></thead>
+<table>
+  <thead>
+    <tr><th>section</th><th>内容</th><th>参照</th></tr>
+  </thead>
   <tbody>
-    <tr>
-      <td><div class="pros">export API 既存 (<code>export_deps_chains</code> / <code>export_chain_steps_sh</code>)</div>
-          <div class="pros">型安全、AST parse で integrity 検証可能</div>
-          <div class="pros">chain.py 内に metadata を集約 (STEP_TO_WORKFLOW / CHAIN_STEP_DISPATCH 等)</div></td>
-      <td><div class="cons">chain-steps.sh の export が手動 (CI で自動 export + コミットの仕組みが未完、pre-commit hook はオプショナル)</div>
-          <div class="cons">LLM が chain.py を参照できない場面ではブラックボックス</div>
-          <div class="cons">chain-runner.sh の bash 内 dispatch logic は別管理 (chain.py 外の case 文)</div>
-          <div class="cons">step 実装 (bash) は別 file、chain.py とは別管理 (file 削減効果薄)</div></td>
-    </tr>
+    <tr><td><code>glossary</code></td><td>10 role + 重要 entity の vocabulary table (6 field schema: canonical/aliases/forbidden/context/description/examples)</td><td><a href="registry-schema.html#s4">registry-schema.html §4</a> + <a href="glossary.html">glossary.html</a></td></tr>
+    <tr><td><code>components</code></td><td>全 file listing: name / role / file (path) / concern / depends_on_status / next_status / can_spawn / sequence (workflow のみ) / verify_rule (atomic のみ)</td><td><a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a></td></tr>
+    <tr><td><code>chains</code></td><td>workflow → atomic sequence + 各 atomic の verify_rule。旧 chain.py <code>CHAIN_STEPS</code> の進化版</td><td><a href="atomic-verification.html">atomic-verification.html</a> (atomic 4-phase lifecycle)</td></tr>
+    <tr><td><code>hooks</code> + <code>monitors</code></td><td>hooks.json + monitors.json の entry SSoT (event / matcher / handler 等)</td><td><a href="gate-hook.html">gate-hook.html</a></td></tr>
+    <tr><td><code>integrity_rules</code></td><td>audit ルール定義 (no_duplicate_concern / ssot_authority_unique / derived_drift_check / prefix_role_match / vocabulary_forbidden_use / official_name_collision / description_required_consistency)</td><td><a href="registry-schema.html#s6">registry-schema.html §6 (vocabulary audit 統合設計)</a></td></tr>
   </tbody>
 </table>
 
-<h3>案 3: <code>step.sh</code> 単一 SSoT (1 step = 1 file、chain-runner.sh 廃止)</h3>
+<h2>§5. atomic skill composition pattern (第 5 弾 dig Round 6 確定)</h2>
 
-<table class="compare-table">
-  <thead><tr><th style="width: 50%">利点</th><th>欠点</th></tr></thead>
-  <tbody>
-    <tr>
-      <td><div class="pros">1 step = 1 <code>steps/&lt;name&gt;.sh</code> file = 単一 SSoT (定義 + 実装 + 検証が同 file)</div>
-          <div class="pros">case 文 bloat 解消 (chain-runner.sh 1932 lines 全廃)</div>
-          <div class="pros">MCP 化との親和性高 (step を MCP tool として expose 容易)</div>
-          <div class="pros">step verification framework (Inv U) と整合 (<code>_verify_NAME()</code> 関数を同 file 内に持てる)</div>
-          <div class="pros">LLM が <code>steps/</code> directory を listing して chain 全体を理解可能</div>
-          <div class="pros">step 単体テスト容易 (bats で per-step テスト)</div></td>
-      <td><div class="cons">既存 chain-runner.sh (1932 lines) + chain.py + chain-steps.sh の全廃 = radical rebuild コスト大</div>
-          <div class="cons"><code>resolve_next_workflow</code> 等の dynamic dispatch (deps.yaml の meta_chains 参照) を step.sh + helper で再設計必要</div>
-          <div class="cons">deps.yaml は workflow metadata (chain 順序、依存関係) のみ保有する役割に再定義</div>
-          <div class="cons">移行期間の dual-stack 運用 (新 step.sh と旧 chain-runner.sh 併存) が必要</div></td>
-    </tr>
-  </tbody>
-</table>
+<div class="info">詳細仕様: <a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle specification、旧 step-verification.html から rename)</div>
 
-<h3>結論: 案 3 を採用</h3>
+<h3>5.1 呼び出し chain (公式仕様 verified)</h3>
 
-<div class="success">
-  <p><strong>判断根拠</strong>:</p>
-  <ol>
-    <li><a href="step-verification.html">step-verification.html</a> で既に 8 step の <code>_verify_NAME</code> rule を定義 (test-scaffold / green-impl / check / pr-test / ac-verify / phase-review / pr-cycle-report / merge-gate-check)。案 3 と完全整合。</li>
-    <li>既存 draft-v1.html L1401-1406 に「chain.py / chain-steps.sh / <code>twl check --deps-integrity</code> 全廃」「<code>_verify_NAME</code> 関数を持つ <code>step.sh</code> が単一 SSoT」と明示。本 session で再確認、変更なし。</li>
-    <li>radical rebuild コストは案 1/2 でも同等 (chain.py + chain-steps.sh + chain-runner.sh の不整合解消は本質的問題、export 自動化だけでは F-1 横断要因解消につながらない)。</li>
-    <li>1 step = 1 file の利点 = MCP 化親和性 + step verification 整合 + LLM 可読性 + 単体テスト容易性 が他案より圧倒的に高い。</li>
-  </ol>
+<div class="diagram">
+<pre style="background: #1a2025; color: #e3e8eb; padding: 12px; text-align: left;">
+[user / administrator が直接 invoke]
+    │ slash command
+    ▼
+[administrator skill] ← description あり
+    │ tmux new-window + claude --plugin-dir + slash command
+    ▼
+[phaser-impl skill] ← 別 session window、description あり
+    │ Skill(workflow-test-ready)
+    ▼
+[workflow-test-ready skill] ← disable-model-invocation: true
+    │ Skill(atomic-test-scaffold) → Skill(atomic-green-impl) → ...
+    ▼
+[atomic-test-scaffold skill] ← disable-model-invocation: true、4-phase lifecycle inline
+    │ Agent(specialist-prompt-reviewer) ← 必要時のみ
+    ▼
+[specialist-prompt-reviewer agent] ← Agent tool、subagent context
+</pre>
 </div>
 
-<h2>§3. 案 3 (step.sh 単一 SSoT) 詳細設計</h2>
+<h3>5.2 atomic SKILL.md inline 4-phase lifecycle</h3>
 
-<h3>3.1 directory 構造</h3>
+<p>旧 <code>step.sh framework</code> の外部 bash 呼び出しを廃止し、atomic SKILL.md 本文に <code>Step 0</code>〜<code>Step 3</code> として 4-phase を inline 実装。<code>Step N</code> は公式 SKILL.md スタイルの手順番号 (backtick + 大文字、migration_stage entity との混同なし)。</p>
 
-<pre><code>plugins/twl/scripts/steps/
-├── lib/
-│   ├── step.sh                  # framework helper (step_run / pre_check / post_verify)
-│   ├── mailbox.sh               # file mailbox helper (Inv T)
-│   └── status-board.sh          # GitHub Project Board status helper
-├── test-scaffold.sh             # 1 step = 1 file
-├── green-impl.sh
-├── check.sh
-├── pr-test.sh
-├── ac-verify.sh
-├── phase-review.sh
-├── pr-cycle-report.sh
-├── merge-gate-check.sh
-├── worktree-create.sh
-├── worktree-delete.sh
-├── board-status-update.sh
-├── board-archive.sh
-└── ... (1 step = 1 file)</code></pre>
+<pre><code>---
+disable-model-invocation: true
+allowed-tools: [Bash, Read, Edit, Agent]
+---
 
-<h3>3.2 step.sh の規約 (template)</h3>
+# atomic-test-scaffold
 
-<pre><code>#!/bin/bash
-# steps/test-scaffold.sh
-# Step: test-scaffold (Inv U post-verify 必須)
+`Step 0` lifecycle phase: pre-check
+- !`bats --list tests/ | wc -l &gt; /tmp/pre_test_count`
+- !`git diff --name-only HEAD | grep '^src/' | wc -l &gt; /tmp/pre_src_diff`
+- Verify `status` == Refined via !`gh project item-list ...`
 
-set -euo pipefail
-source "$(dirname "$0")/lib/step.sh"
+`Step 1` lifecycle phase: exec
+- Read $ARGUMENTS[0] (AC file for Issue)
+- Generate RED test targeting the AC, Write to tests/unit/...
 
-# === metadata (file 内 SSoT) ===
-STEP_NAME="test-scaffold"
-STEP_WORKFLOW="test-ready"
-STEP_DEPENDS=("workflow-setup")     # 前提 step
-STEP_NEXT=("green-impl")            # 次 step (workflow chain)
+`Step 2` lifecycle phase: post-verify
+- !`POST=$(bats --list tests/ | wc -l); PRE=$(cat /tmp/pre_test_count); [ "$POST" -gt "$PRE" ] || exit 1`
+- !`bats tests/unit/... 2&gt;&amp;1 | grep -q "not ok"` # RED 確認
+- !`cat /tmp/pre_src_diff | grep -q '^0$'` # src/ 変更 0 確認
 
-# === pre-check (Inv U pre-check phase) ===
-_pre_check_test_scaffold() {
-  local issue_num="$1"
-  # Refined status verify (Inv W, gate hook)
-  status_board::require_status "$issue_num" "Refined"
-  # worktree verify (Inv B)
-  step::require_worktree
-}
-
-# === exec (実装本体) ===
-_exec_test_scaffold() {
-  local issue_num="$1"
-  local ac_file="$2"
-  # ... bash 内で AC から RED test を生成
-  # ... または Agent tool を呼び出す
-}
-
-# === post-verify (Inv U post-verify phase、機械検証) ===
-_verify_test_scaffold() {
-  local issue_num="$1"
-  # 1. test 数増加を確認
-  local test_count_before=$(cat .audit/$run_id/test-count-before.txt)
-  local test_count_after=$(bats --list tests/bats/ | wc -l)
-  [ "$test_count_after" -gt "$test_count_before" ] || step::fail "test count not increased"
-
-  # 2. RED 状態を確認 (test 実行 → 全 fail)
-  bats tests/bats/ &amp;&amp; step::fail "RED test should FAIL but PASSED"
-
-  # 3. src/ への変更 0 を確認 (test-scaffold は test のみ)
-  local src_diff=$(git diff --name-only HEAD | grep -c '^\(cli\|plugins\)/.*\(?:\.py\|\.sh\)$' || true)
-  [ "$src_diff" -eq 0 ] || step::fail "src/ should not be modified in test-scaffold"
-}
-
-# === main (step.sh framework が呼び出す) ===
-step::run \
-  --name "$STEP_NAME" \
-  --workflow "$STEP_WORKFLOW" \
-  --depends "${STEP_DEPENDS[@]}" \
-  --next "${STEP_NEXT[@]}" \
-  --pre-check _pre_check_test_scaffold \
-  --exec _exec_test_scaffold \
-  --post-verify _verify_test_scaffold \
-  "$@"
+`Step 3` lifecycle phase: report
+- !`jq -nc '{from:"atomic-test-scaffold",ts:"'"$(date -u +%FT%TZ)"'",event:"step-completed",detail:{...}}' &gt;&gt; .mailbox/$ARGUMENTS[session]/inbox.jsonl`
 </code></pre>
 
-<h3>3.3 step::run framework (pseudo-code、~80 lines)</h3>
+<h2>§6. 全廃する SSoT (deletion inventory)</h2>
 
-<div class="caution">
-<strong>bash 互換性注記 (verified、Agent A 指摘)</strong>: 以下の pseudo-bash で <code>local -n opts_ref</code> (nameref) を使用しているが、これは <strong>bash 4.3+ 限定</strong> の機能。twill は Linux 前提 + bash 5.x が typical だが、CI image / 移植先 (macOS デフォルト bash 3.2、Alpine 系) で動作しない可能性。Phase 1 PoC で CI image の bash version を verify、必要に応じて key=value array dispatching 等の非 nameref 実装に置換する。
-</div>
-
-<p><code>plugins/twl/scripts/steps/lib/step.sh</code>:</p>
-
-<pre><code>#!/bin/bash
-# step.sh framework — Inv U 4 phase lifecycle (pre-check → exec → post-verify → report)
-
-step::run() {
-  local name workflow depends_arr=() next_arr=()
-  local pre_check_fn exec_fn post_verify_fn
-
-  while [ $# -gt 0 ]; do
-    case "$1" in
-      --name) name="$2"; shift 2 ;;
-      --workflow) workflow="$2"; shift 2 ;;
-      --depends) shift; while [[ "$1" != --* ]] &amp;&amp; [ $# -gt 0 ]; do depends_arr+=("$1"); shift; done ;;
-      --next) shift; while [[ "$1" != --* ]] &amp;&amp; [ $# -gt 0 ]; do next_arr+=("$1"); shift; done ;;
-      --pre-check) pre_check_fn="$2"; shift 2 ;;
-      --exec) exec_fn="$2"; shift 2 ;;
-      --post-verify) post_verify_fn="$2"; shift 2 ;;
-      --) shift; break ;;
-      *) shift ;;
-    esac
-  done
-
-  local issue_num="${1:?issue_num required}"; shift
-
-  # report start
-  mailbox::emit "$name" "step-started" "{\"issue\":$issue_num}"
-  audit_snapshot ".audit-step-pre" "$name" || true
-
-  # 1. pre-check (Inv U pre-check phase)
-  if [ -n "$pre_check_fn" ]; then
-    if ! "$pre_check_fn" "$issue_num" "$@"; then
-      mailbox::emit "$name" "step-precheck-failed" "{\"issue\":$issue_num}"
-      audit_snapshot ".audit-step-precheck-fail" "$name" || true
-      exit 2
-    fi
-  fi
-
-  # 2. exec
-  local exec_status=0
-  "$exec_fn" "$issue_num" "$@" || exec_status=$?
-
-  # 3. post-verify (Inv U post-verify phase、機械検証必須)
-  if [ -n "$post_verify_fn" ]; then
-    if ! "$post_verify_fn" "$issue_num" "$@"; then
-      mailbox::emit "$name" "step-postverify-failed" "{\"issue\":$issue_num,\"exec_status\":$exec_status}"
-      audit_snapshot ".audit-step-postverify-fail" "$name" || true
-      exit 3
-    fi
-  fi
-
-  # 4. report
-  mailbox::emit "$name" "step-completed" "{\"issue\":$issue_num,\"next\":\"${next_arr[*]}\"}"
-  audit_snapshot ".audit-step-post" "$name" || true
-}
-
-step::fail() {
-  echo "step::fail: $*" &gt;&amp;2
-  exit 1
-}
-
-step::require_worktree() {
-  # Inv B: source-touching step は worktree 内必須
-  local cwd; cwd=$(pwd)
-  case "$cwd" in
-    */worktrees/*) return 0 ;;
-    *) step::fail "must run in worktree, but cwd=$cwd" ;;
-  esac
-}</code></pre>
-
-<h3>3.4 resolve_next_workflow の置換</h3>
-
-<p>既存 <code>chain.py</code> の <code>resolve_next_workflow()</code> は deps.yaml の <code>meta_chains</code> を読んで「次の workflow」を計算していた。新 architecture では:</p>
-
-<pre><code># deps.yaml.chains の新構造 (workflow metadata のみ)
-chains:
-  setup:
-    description: "初期化 + Project Board status 遷移"
-    steps:
-      - workflow-setup
-      - project-board-status-update
-      - crg-auto-build
-      - arch-ref
-      - ac-extract
-    next_workflow: "test-ready"
-  test-ready:
-    description: "RED test 作成 + post-verify"
-    steps:
-      - test-scaffold
-      - green-impl
-      - check
-    next_workflow: "pr-verify"
-  ...
-
-# resolve next workflow は phase-* SKILL.md で簡素に
-# 例: phase-impl.md
-# ```
-# 1. yq '.chains.[$current_workflow].next_workflow' deps.yaml で次 workflow 名を取得
-# 2. その workflow の steps[0] を step.sh で実行
-# ```</code></pre>
-
-<p>deps.yaml は workflow chain の上位構造 (どの workflow がどの順序で実行されるか) のみを保有、各 step の実装と metadata は <code>steps/&lt;name&gt;.sh</code> 内に持つ。</p>
-
-<h2>§4. chain-runner.sh 廃止 migration</h2>
-
-<h3>4.1 移行の段階</h3>
+<div class="info">詳細: <a href="deletion-inventory.html">deletion-inventory.html</a> (削除対象 file + 移行先 mapping)</div>
 
 <table>
   <thead>
-    <tr><th>Phase</th><th>状態</th><th>chain-runner.sh</th><th>step.sh</th><th>chain.py</th><th>chain-steps.sh</th></tr>
+    <tr><th>廃止対象</th><th>理由</th><th>移行先</th></tr>
   </thead>
   <tbody>
-    <tr><td>現状 (draft-v2 前)</td><td>三重化</td><td>active (1932 lines)</td><td>不在</td><td>active</td><td>generated</td></tr>
-    <tr><td>Phase 1 (PoC)</td><td>dual-stack</td><td>active</td><td>新規 5 step 追加 (test-scaffold / green-impl / check / pr-test / merge-gate-check)</td><td>active</td><td>generated</td></tr>
-    <tr><td>Phase 2 (cutover)</td><td>dual-stack</td><td>frozen (新 step 追加禁止)</td><td>残 step 追加 (18 step 全件)</td><td>frozen</td><td>frozen</td></tr>
-    <tr><td>Phase 3 (deprecate)</td><td>新 SSoT のみ</td><td>削除</td><td>active (SSoT)</td><td>削除</td><td>削除</td></tr>
-    <tr><td>Phase 4 (cleanup)</td><td>新 SSoT</td><td>削除済</td><td>active</td><td>削除済</td><td>削除済</td></tr>
+    <tr><td class="deprecated"><code>cli/twl/src/twl/autopilot/chain.py</code></td><td>chain SSoT 三重化の元</td><td><code>registry.yaml#chains</code></td></tr>
+    <tr><td class="deprecated"><code>plugins/twl/scripts/chain-steps.sh</code></td><td>chain.py の bash mirror、computed artifact</td><td>(全廃、必要時 registry.yaml から generate)</td></tr>
+    <tr><td class="deprecated"><code>plugins/twl/scripts/chain-runner.sh</code></td><td>1714 行の bash orchestration、case 文に chain.py 外 atomic が散在</td><td>workflow SKILL.md (公式 Skill 機構) + atomic SKILL.md (4-phase inline)</td></tr>
+    <tr><td class="deprecated"><code>plugins/twl/deps.yaml</code></td><td>chain section + types section の二重 SSoT</td><td><code>registry.yaml#components</code> + <code>#chains</code></td></tr>
+    <tr><td class="deprecated"><code>cli/twl/types.yaml</code></td><td>component 型 SSoT、新型との drift</td><td><code>registry.yaml#components</code> + <code>#integrity_rules</code></td></tr>
+    <tr><td class="deprecated"><code>cli/twl/src/twl/chain/integrity.py</code> <code>check_deps_integrity()</code></td><td>chain.py / chain-steps.sh / deps.yaml の整合検証、本廃止により不要</td><td><code>twl audit --registry</code> (新規) で registry.yaml integrity_rules 適用</td></tr>
+    <tr><td class="deprecated">第 3 弾 dig <code>step.sh framework</code> (案 3、未実装)</td><td>step は forbidden、公式 skill 機構と二重</td><td>atomic SKILL.md 本文 inline 4-phase lifecycle</td></tr>
   </tbody>
 </table>
 
-<p>詳細な dual-stack routing rule は <a href="dual-stack-routing.html">dual-stack-routing.html</a> (outline、次 session)。</p>
-
-<h3>4.2 削除対象 (Phase 3 で完全廃止)</h3>
-
-<ul>
-  <li><code>plugins/twl/scripts/chain-runner.sh</code> (1932 lines) — case 文 dispatch 全廃</li>
-  <li><code>cli/twl/src/twl/autopilot/chain.py</code> — <code>CHAIN_STEPS</code> / <code>STEP_TO_WORKFLOW</code> / <code>CHAIN_STEP_DISPATCH</code> / <code>CHAIN_STEP_COMMAND</code> / <code>CHAIN_METADATA</code> / <code>export_deps_chains</code> / <code>export_chain_steps_sh</code> 全廃</li>
-  <li><code>plugins/twl/scripts/chain-steps.sh</code> — computed artifact 廃止</li>
-  <li><code>cli/twl/src/twl/chain/integrity.py</code> — 3-way 整合性検証廃止、step.sh + deps.yaml の 2-way 検証 (audit section 9) に統合</li>
-  <li><code>twl check --deps-integrity</code> CLI subcommand — <code>twl check --steps-integrity</code> に rename</li>
-</ul>
-
-<h3>4.3 新規追加 (Phase 1 PoC で起こす)</h3>
-
-<ul>
-  <li><code>plugins/twl/scripts/steps/lib/step.sh</code> (~80 lines、framework)</li>
-  <li><code>plugins/twl/scripts/steps/lib/mailbox.sh</code> (~40 lines、file mailbox helper、Inv T)</li>
-  <li><code>plugins/twl/scripts/steps/lib/status-board.sh</code> (~50 lines、GitHub Project Board helper)</li>
-  <li><code>plugins/twl/scripts/steps/&lt;name&gt;.sh</code> × 18 step (Phase 2 までに全件)</li>
-  <li><code>cli/twl/src/twl/validation/steps_integrity.py</code> (新規、audit section 9 の新実装)</li>
-</ul>
-
-<h2>§5. chain_integrity audit の置換</h2>
-
-<h3>5.1 新 audit section 9: <code>steps_integrity</code></h3>
-
-<p>新 architecture の SSoT 整合性検証は 2-way:</p>
+<h2>§7. verify points</h2>
 
 <table>
   <thead>
-    <tr><th>項目</th><th>検証内容</th><th>severity</th></tr>
+    <tr><th>VP</th><th>verify 内容</th><th>EXP / 検証手段</th></tr>
   </thead>
   <tbody>
-    <tr>
-      <td>1. steps/ file 存在</td>
-      <td>deps.yaml.chains.&lt;workflow&gt;.steps に存在する全 step 名 &times; <code>plugins/twl/scripts/steps/&lt;name&gt;.sh</code> 存在</td>
-      <td>critical (orphan reference: deps.yaml にあるが file なし)</td>
-    </tr>
-    <tr>
-      <td>2. deps.yaml entry 存在</td>
-      <td><code>plugins/twl/scripts/steps/&lt;name&gt;.sh</code> 存在 &times; deps.yaml.chains の steps list に登録</td>
-      <td>warning (orphan file: file あるが deps.yaml に登録なし)</td>
-    </tr>
-    <tr>
-      <td>3. step.sh metadata 整合</td>
-      <td>step file 内の <code>STEP_WORKFLOW</code> = deps.yaml で属する workflow</td>
-      <td>critical (cross-workflow mismatch)</td>
-    </tr>
-    <tr>
-      <td>4. step.sh dependency 整合</td>
-      <td>step file 内の <code>STEP_DEPENDS</code> ⊆ deps.yaml で先行する step</td>
-      <td>warning (dependency missing in chain)</td>
-    </tr>
-    <tr>
-      <td>5. <code>_verify_NAME</code> 関数存在</td>
-      <td>step.sh 内に <code>_verify_&lt;name&gt;()</code> 関数定義 (Inv U post-verify 必須)</td>
-      <td>critical (missing post-verify, RED-only merge risk)</td>
-    </tr>
-    <tr>
-      <td>6. step::run 呼び出し</td>
-      <td>step.sh が <code>step::run</code> framework を呼び出す (自己申告 step 防止)</td>
-      <td>critical (self-report-only step, Inv U 違反)</td>
-    </tr>
+    <tr><td>VP-1</td><td>registry.yaml schema が <code>twl audit --registry</code> で parsing 通過、5 section 必須 field 検出</td><td>EXP-032 (bats unit)</td></tr>
+    <tr><td>VP-2</td><td>atomic skill composition: workflow が <code>Skill(atomic-X)</code> 順次呼び出し、各 atomic の 4-phase が動作</td><td>EXP-033 (smoke)</td></tr>
+    <tr><td>VP-3</td><td>registry.yaml components ↔ 実 SKILL.md frontmatter の name/role/file 整合性</td><td>EXP-034 (bats unit)</td></tr>
+    <tr><td>VP-4</td><td><code>disable-model-invocation: true</code> で description が context budget に乗らない (token 数 before/after 実測)</td><td>EXP-035 (smoke、verified docs → 実測 EXP)</td></tr>
+    <tr><td>VP-5</td><td>atomic 内 <code>Agent(specialist-*)</code> spawn 動作 (subagent context、subagent spawn 不可制約)</td><td>EXP-036 (smoke)</td></tr>
+    <tr><td>VP-6</td><td>doobidoo cross-machine MCP の Tailscale 経由安定性 (100.82.69.124:18765、8 時間連続稼働)</td><td>EXP-037 (調査)</td></tr>
+    <tr><td>VP-7</td><td><code>twl audit --vocabulary</code> の命名衝突検出 (<code>phaser</code> forbidden list + 公式名 (<code>Agent</code>/<code>Skill</code>) false positive 抑制)</td><td>EXP-038 (bats unit)</td></tr>
+    <tr><td>VP-8</td><td>atomic post-verify FAIL で chain abort + escalate mail emit</td><td>EXP-012 (旧 step.sh framework から repurpose)</td></tr>
   </tbody>
 </table>
 
-<h3>5.2 実装 (Python)</h3>
+<h2>§8. migration (Strangler Fig 4 phase)</h2>
 
-<pre><code># cli/twl/src/twl/validation/steps_integrity.py
-import re, yaml
-from pathlib import Path
-
-def audit_steps_integrity(deps_yaml_path: Path, steps_dir: Path) -&gt; list[dict]:
-    items = []
-    deps = yaml.safe_load(deps_yaml_path.read_text())
-    chains = deps.get('chains', {})
-
-    # 1. deps.yaml に登録された step が steps/&lt;name&gt;.sh として存在するか
-    referenced_steps = set()
-    for wf_name, wf in chains.items():
-        for step_name in wf.get('steps', []):
-            referenced_steps.add(step_name)
-            step_path = steps_dir / f"{step_name}.sh"
-            if not step_path.exists():
-                items.append({
-                    "severity": "critical",
-                    "section": "steps_integrity",
-                    "component": f"deps.yaml:chains.{wf_name}.steps",
-                    "message": f"orphan reference: step '{step_name}' in deps.yaml but {step_path} not found"
-                })
-
-    # 2. steps/&lt;name&gt;.sh が deps.yaml に登録されているか
-    for step_file in steps_dir.glob("*.sh"):
-        step_name = step_file.stem
-        if step_name in {"step", "mailbox", "status-board"}:  # lib/ exclusion
-            continue
-        if step_name not in referenced_steps:
-            items.append({
-                "severity": "warning",
-                "section": "steps_integrity",
-                "component": f"{step_file.relative_to(deps_yaml_path.parent)}",
-                "message": f"orphan file: {step_name}.sh exists but not registered in deps.yaml"
-            })
-
-    # 3-6. step.sh 内 metadata + _verify_NAME + step::run の整合性
-    for step_file in steps_dir.glob("*.sh"):
-        body = step_file.read_text()
-        step_name = step_file.stem
-        # ... STEP_WORKFLOW 整合性、_verify_NAME 存在、step::run 呼び出し
-        # (詳細は実装時に展開)
-
-    return items</code></pre>
-
-<h2>§6. Phase 1 PoC で検証する不変条件</h2>
-
-<p>Phase 1 PoC (Issue #1660 sanitize の新 architecture 実装) で本 SSoT design が機能することを以下の不変条件 verify points で確認する:</p>
+<div class="info">詳細スケジュール: <a href="rebuild-plan.html">rebuild-plan.html</a></div>
 
 <table>
   <thead>
-    <tr><th>verify point</th><th>関連不変条件</th><th>確認方法</th></tr>
+    <tr><th>migration_stage</th><th>期間</th><th>本 SSoT 設計の作業</th></tr>
   </thead>
   <tbody>
-    <tr>
-      <td>VP-1: 1 step = 1 *.sh file</td>
-      <td>本 spec 第 3 章 + Inv U</td>
-      <td><code>steps/</code> directory listing で 18 step 全件 file 存在を確認</td>
-    </tr>
-    <tr>
-      <td>VP-2: step::run framework 経由</td>
-      <td>Inv U</td>
-      <td>各 step.sh の末尾に <code>step::run</code> 呼び出しがあること (audit で critical 判定)</td>
-    </tr>
-    <tr>
-      <td>VP-3: <code>_verify_NAME</code> 関数存在</td>
-      <td>Inv U post-verify</td>
-      <td>source-touching step (test-scaffold / green-impl / check 等) で post-verify 関数定義を必須化</td>
-    </tr>
-    <tr>
-      <td>VP-4: deps.yaml と steps/ の 2-way 整合</td>
-      <td>新 audit section 9</td>
-      <td><code>twl check --steps-integrity</code> で orphan reference / orphan file が 0 件</td>
-    </tr>
-    <tr>
-      <td>VP-5: chain-runner.sh 依存なし</td>
-      <td>本 spec 第 4 章</td>
-      <td>新 step.sh が chain-runner.sh / chain.py / chain-steps.sh を source / import しないこと</td>
-    </tr>
-    <tr>
-      <td>VP-6: mailbox 経由通信</td>
-      <td>Inv T</td>
-      <td><code>step::run</code> が <code>mailbox::emit</code> で step-started / step-completed / step-precheck-failed / step-postverify-failed event 発行</td>
-    </tr>
-    <tr>
-      <td>VP-7: per-Worker mailbox scope</td>
-      <td>Inv V</td>
-      <td>mailbox path が <code>.mailbox/&lt;session-name&gt;/inbox.jsonl</code>、共通 path 不在</td>
-    </tr>
-    <tr>
-      <td>VP-8: PreToolUse hook gate</td>
-      <td>Inv W</td>
-      <td>phase-impl SKILL.md 呼び出し時に Refined status verify (status 不一致で deny)</td>
-    </tr>
+    <tr><td><code>Phase 1 PoC</code></td><td>Day 1-3</td><td>registry.yaml 新規作成 + glossary section seed (core 12 entity) + EXP-032〜038 PASS + Issue #1660 sanitize 再実装</td></tr>
+    <tr><td><code>Phase 2 dual-stack</code></td><td>Day 4-7</td><td>残り phaser / workflow / atomic / specialist 実装、旧 chain freeze、vocabulary table 拡張 (隠れ重複 entity 追加)</td></tr>
+    <tr><td><code>Phase 3 cutover</code></td><td>Day 8-11</td><td>旧 chain.py / chain-steps.sh / chain-runner.sh / deps.yaml / types.yaml ~7,000 行削除、in-flight Issue 全完遂、用語 rename 完遂 (~2000+ occurrence)</td></tr>
+    <tr><td><code>Phase 4 cleanup</code></td><td>Day 12-14</td><td>docs 整合、bats regression 全 PASS、ADR-043 Accepted 化、命名 policy ADR (ADR-045) 起票</td></tr>
   </tbody>
 </table>
 
-<h2>§7. tmux / gh CLI wrapper 粒度 (research-findings KP-7/KP-8 反映)</h2>
-
-<p><a href="research-findings.html">research-findings.html</a> KP-7 (tmux 罠) + KP-8 (MCP 化粒度) の verified finding を反映:</p>
+<h2>§9. 関連 spec</h2>
 
 <ul>
-  <li>step.sh 内で tmux 操作は <strong>MCP tool 経由</strong> (<code>twl_send_keys_safe</code> / <code>twl_pane_state</code> / <code>twl_new_window</code>) が推奨。素の <code>tmux send-keys</code> は escape 罠 (セミコロン / ハイフン / スペース脱落 / Escape timing) のため避ける</li>
-  <li>step.sh 内で gh 操作は <strong>bash 直接呼び出し</strong> (<code>gh project item-edit --single-select-option-id</code>) で十分。GraphQL を LLM に書かせない</li>
-  <li>「1 行コマンド = 1 MCP tool」薄ラッパーは Anthropic 公式推奨に反する (MCP は CLI 35x token、reliability 100% → 72%)。step.sh と MCP tool の粒度は workflow 統合型 (<code>twl_issue_promote</code> 等) を優先</li>
-</ul>
-
-<h2>§8. 関連 spec ファイル</h2>
-
-<ul>
-  <li>step verification framework 詳細: <a href="step-verification.html">step-verification.html</a> (Inv U の根拠、step.sh framework 設計の前身)</li>
-  <li>twl MCP との接続: <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> (audit section 9 の置換、MCP tool 化)</li>
-  <li>不変条件 24 件 (A-X): <a href="invariant-fate-table.html">invariant-fate-table.html</a> (Inv T/U/V/W/X の正典)</li>
-  <li>ADR-022 (chain SSoT boundary): <a href="adr-fate-table.html">adr-fate-table.html</a> (Superseded by ADR-043 完全)</li>
-  <li>dual-stack 移行ルール: <a href="dual-stack-routing.html">dual-stack-routing.html</a> (outline、次 session)</li>
-  <li>Phase 1 PoC 詳細: <a href="rebuild-plan.html">rebuild-plan.html</a> (outline、次 session)</li>
-  <li>削除 inventory: <a href="deletion-inventory.html">deletion-inventory.html</a> (outline、次 session)</li>
-  <li><strong>verified 根拠 (research session)</strong>: <a href="research-findings.html">research-findings.html</a> §1 KP-7 (tmux 罠) + KP-8 (MCP 粒度) + §6 (リスク・落とし穴)</li>
-</ul>
-
-<h2>§8. audit source</h2>
-
-<ul>
-  <li>本 session feature-dev workflow Phase 2 で code-explorer agent C が verified 深掘り</li>
-  <li>Key files (絶対パス):
-    <ul>
-      <li><code>/home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/autopilot/chain.py</code></li>
-      <li><code>/home/shuu5/projects/local-projects/twill/main/plugins/twl/scripts/chain-steps.sh</code></li>
-      <li><code>/home/shuu5/projects/local-projects/twill/main/plugins/twl/deps.yaml</code></li>
-      <li><code>/home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/chain/integrity.py</code></li>
-      <li><code>/home/shuu5/projects/local-projects/twill/main/cli/twl/src/twl/validation/audit.py</code></li>
-      <li><code>/home/shuu5/projects/local-projects/twill/main/plugins/twl/architecture/decisions/ADR-022-chain-ssot-boundary.md</code></li>
-      <li><code>/home/shuu5/projects/local-projects/twill/main/plugins/twl/scripts/chain-runner.sh</code></li>
-    </ul>
-  </li>
-  <li>関連 doobidoo Memory MCP hash: <code>34a9760f</code> (Phase B 完了、#853 言及あり)</li>
+  <li><a href="registry-schema.html">registry-schema.html</a> (registry.yaml 全体 schema + 10 role × concern matrix + vocabulary 6 field schema + 階層図、本 file の core 詳細、第 5 弾 dig 新規)</li>
+  <li><a href="glossary.html">glossary.html</a> (10 role 正規定義 + vocabulary 6 field schema 説明 + Authority/Reference/Derived 用語)</li>
+  <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic skill 4-phase lifecycle、旧 step-verification.html から rename)</li>
+  <li><a href="deletion-inventory.html">deletion-inventory.html</a> (削除対象 file + 移行先 mapping)</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> (Strangler Fig 4 phase migration スケジュール)</li>
+  <li><a href="experiment-index.html">experiment-index.html</a> (EXP-001〜038、第 5 弾 dig で EXP-032〜038 追加)</li>
+  <li><a href="failure-analysis.html">failure-analysis.html</a> (9 P0 bug + 横断要因 F-1〜F-4 (F-4 用語 SSoT 不在は第 5 弾 dig 追加))</li>
+  <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> (Inv U "Atomic skill verification" 旧 "Step verification framework" から rename)</li>
+  <li><a href="adr-fate-table.html">adr-fate-table.html</a> (ADR-022 = chain SSoT 三重化定義、本 ADR-043 で Superseded)</li>
+  <li><a href="research-findings.html">research-findings.html</a> (公式 verified 根拠、120 sources + 本 session 16 件 WebFetch 追加)</li>
+  <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 round + 33+ question + 921 行)</li>
 </ul>
 
 </body>

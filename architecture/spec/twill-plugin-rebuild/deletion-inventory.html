@@ -20,7 +20,7 @@
 
 <header class="doc-header">
   <h1>deletion inventory — 削除 / 保全 / rebrand 全件 (実測 verified)</h1>
-  <div class="meta">draft-v2 (2026-05-13、第 4 弾 dig 反映) &middot; 実測行数 verified &middot; twl plugin 化 + 削除 ~7,368 行 (+tool-utility 79) + 新規 helper ~530 行 (+第 4 弾 dig 由来 7 件)</div>
+  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; 実測行数 verified &middot; twl plugin 化 + 削除 ~7,368 行 (+tool-utility 79) + 新規 helper ~700 行 + 第 5 弾 dig での types.yaml + deps.yaml + step.sh framework 全廃</div>
 </header>
 
 <div class="info">
@@ -28,6 +28,19 @@
   <br>
   <strong>verified</strong>: scripts/ 116 file / 16,747 行 (Agent A 実測)、bats 250 file (Agent A 実測)、SKILL.md 24 件 (co-* 7、workflow-* 16、su-* 1)、pitfalls-catalog 23 sections。
 </div>
+
+<div class="critical"><strong>第 5 弾 dig (2026-05-13) 追加廃止対象</strong>:
+<ul>
+  <li><code>cli/twl/types.yaml</code> — component 型 + token 閾値 SSoT → <code>plugins/twl/registry.yaml</code> の <code>components</code> + <code>integrity_rules</code> section に統合廃止</li>
+  <li><code>plugins/twl/deps.yaml</code> — component depends + chains + types → <code>registry.yaml</code> の <code>components</code> + <code>chains</code> section に統合廃止</li>
+  <li>第 3 弾 dig <code>step.sh framework</code> (案 3 単一 SSoT、未実装) — 公式 skill 機構 (<code>Skill</code> tool + atomic SKILL.md inline 4-phase) と二重 framework → 全廃</li>
+  <li><code>composite</code> role (第 3 弾 dig 設計、未実装) — <code>atomic</code> + <code>Agent(specialist-*)</code> spawn で代替 → 廃止 (Round 6 確定)</li>
+  <li><code>.supervisor/events/</code> directory — <code>.mailbox/&lt;session&gt;/inbox.jsonl</code> に統一 → 完全廃止 (Round 10、第 4 弾 cleanup で <code>rm -f</code> 実施済)</li>
+  <li><code>agents/worker-*.md</code> 18 件 → <code>agents/specialist-*.md</code> に rename (Round 6、命名衝突回避)</li>
+  <li>制御系 4 語 (orchestrator/controller/supervisor) — <code>administrator</code> に統一、他 3 語は spec から液化 (backtick 引用のみ例外)</li>
+  <li>用語多重化 (~2000+ occurrence): pilot/phase/controller 5 重 → <code>phaser</code> 1 語、worker 5 重 → <code>workflow</code>+<code>specialist</code> 2 分割、step 5 重 → <code>atomic</code> 統一、state 2 重 → <code>status</code>、mail/message 3 重 → 4 階層 entity</li>
+</ul>
+詳細: <a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> §7 (隠れ重複処理) + §9 (派生する spec 反映影響)</div>
 
 <h2>§1. 削除対象 bash orchestration (~5,000 行、実測)</h2>
 
@@ -75,7 +88,7 @@
     <tr>
       <td><code>plugins/twl/scripts/auto-merge.sh</code></td>
       <td>308</td>
-      <td>merge gate を step.sh + phase-pr SKILL.md に統合</td>
+      <td>merge gate を step.sh + phaser-pr SKILL.md に統合</td>
       <td>GitHub Actions auto-merge + step::run</td>
     </tr>
     <tr>
@@ -127,20 +140,20 @@
     <tr><td><code>co-utility</code> (79 行)</td><td class="verdict-delete">削除 (第 4 弾 dig)</td><td><strong>廃止</strong> (commands は tool-architect / tool-project / admin / tool-sandbox-runner に再分配、詳細 <a href="tool-architecture.html">tool-architecture.html</a> §6)</td></tr>
     <tr><td><code>co-self-improve</code> (144 行)</td><td class="verdict-rebrand">rebrand</td><td><code>tool-sandbox-runner</code> (第 4 弾 dig で rename、sandbox × feature matrix + Idea Issue 起票)</td></tr>
     <tr><td><code>co-autopilot</code></td><td class="verdict-delete">削除</td><td>administrator + phase-* に分解</td></tr>
-    <tr><td><code>co-issue</code></td><td class="verdict-delete">削除</td><td>phase-refine</td></tr>
-    <tr><td><code>co-explore</code></td><td class="verdict-delete">削除</td><td>phase-explore</td></tr>
-    <tr><td><code>workflow-pr-cycle</code></td><td class="verdict-delete">削除</td><td>DEPRECATED 確定、worker-pr-cycle に統合</td></tr>
-    <tr><td><code>workflow-pr-merge</code></td><td class="verdict-merge">merge</td><td>phase-pr SKILL.md に inline</td></tr>
+    <tr><td><code>co-issue</code></td><td class="verdict-delete">削除</td><td>phaser-refine</td></tr>
+    <tr><td><code>co-explore</code></td><td class="verdict-delete">削除</td><td>phaser-explore</td></tr>
+    <tr><td><code>workflow-pr-cycle</code></td><td class="verdict-delete">削除</td><td>DEPRECATED 確定、specialist-pr-cycle に統合</td></tr>
+    <tr><td><code>workflow-pr-merge</code></td><td class="verdict-merge">merge</td><td>phaser-pr SKILL.md に inline</td></tr>
     <tr><td><code>workflow-pr-verify</code></td><td class="verdict-merge">merge</td><td>同上</td></tr>
-    <tr><td><code>workflow-pr-fix</code></td><td class="verdict-merge">merge</td><td>worker-pr-fix</td></tr>
+    <tr><td><code>workflow-pr-fix</code></td><td class="verdict-merge">merge</td><td>specialist-pr-fix</td></tr>
     <tr><td><code>workflow-issue-lifecycle</code></td><td class="verdict-delete">削除</td><td>admin-cycle で代替</td></tr>
-    <tr><td><code>workflow-issue-refine</code></td><td class="verdict-merge">merge</td><td>phase-refine</td></tr>
+    <tr><td><code>workflow-issue-refine</code></td><td class="verdict-merge">merge</td><td>phaser-refine</td></tr>
     <tr><td><code>workflow-setup</code></td><td class="verdict-merge">merge</td><td>step.sh init step</td></tr>
-    <tr><td><code>workflow-test-ready</code></td><td class="verdict-merge">merge</td><td>worker-test-ready</td></tr>
+    <tr><td><code>workflow-test-ready</code></td><td class="verdict-merge">merge</td><td>specialist-test-ready</td></tr>
     <tr><td><code>workflow-self-improve</code></td><td class="verdict-merge">merge</td><td>tool-self-improve</td></tr>
     <tr><td><code>workflow-dead-cleanup</code></td><td class="verdict-merge">merge</td><td>tool-utility</td></tr>
     <tr><td><code>workflow-observe-loop</code></td><td class="verdict-delete">削除</td><td>admin-cycle</td></tr>
-    <tr><td><code>workflow-arch-review</code></td><td class="verdict-merge">merge</td><td>worker-pr-cycle review framework</td></tr>
+    <tr><td><code>workflow-arch-review</code></td><td class="verdict-merge">merge</td><td>specialist-pr-cycle review framework</td></tr>
     <tr><td><code>workflow-plugin-create</code></td><td class="verdict-merge">merge</td><td>tool-project plugin-create</td></tr>
     <tr><td><code>workflow-plugin-diagnose</code></td><td class="verdict-merge">merge</td><td>tool-utility</td></tr>
     <tr><td><code>workflow-prompt-audit</code></td><td class="verdict-merge">merge</td><td>tool-project prompt-audit</td></tr>
@@ -157,10 +170,10 @@
   <li><code>plugins/twl/scripts/chain-steps.sh</code> (98 行、削除)</li>
   <li><code>chain</code> slash command (廃止)</li>
   <li><code>twl check --deps-integrity</code> (rename to <code>twl check --steps-integrity</code>)</li>
-  <li><code>.autopilot/checkpoints/</code> directory (削除、<code>.mailbox/</code> per-Worker に置換)</li>
+  <li><code>.autopilot/checkpoints/</code> directory (削除、<code>.mailbox/</code> per-specialist (or atomic) に置換)</li>
   <li><code>.autopilot/issues/</code> directory (削除、Project Board status SSoT に置換)</li>
-  <li><code>.supervisor/events/</code> directory (削除、mailbox に統一)</li>
-  <li><code>phase-review.json</code> (削除、Bug #1703 root cause、per-Worker mailbox に置換)</li>
+  <li><code>.mailbox/</code> directory (削除、mailbox に統一)</li>
+  <li><code>phase-review.json</code> (削除、Bug #1703 root cause、per-specialist mailbox に置換)</li>
 </ul>
 
 <h2>§4. 削除対象 twl MCP tool (30+ → ~15)</h2>
@@ -221,7 +234,7 @@
       <td><a class="exp-link" href="experiment-index.html#EXP-028">EXP-028</a></td>
     </tr>
     <tr>
-      <td><code>plugins/twl/agents/worker-spec-review.md</code></td>
+      <td><code>plugins/twl/agents/specialist-spec-review.md</code></td>
       <td>~100 (SKILL.md)</td>
       <td>tool-architect PR cycle review agent (1 agent 軽量 review、3 回 fix loop)</td>
       <td><a class="exp-link" href="experiment-index.html#EXP-029">EXP-029</a></td>
@@ -278,13 +291,13 @@
 <h2>§6b. 既存 PreToolUse hook の dual-stack 期間中の扱い (本 session 第 3 弾追加)</h2>
 
 <div class="critical">
-<strong>user 要望 (本 session 第 3 弾)</strong>: 既存 PreToolUse hook の error 通知が運用 noise、かつ新 architecture で大半が無意味化するため <strong>Phase 1 PoC 開始時 (★ STEP -1) に全件無効化</strong>する。
+<strong>user 要望 (本 session 第 3 弾)</strong>: 既存 PreToolUse hook の error 通知が運用 noise、かつ新 architecture で大半が無意味化するため <strong><code>Phase 1 PoC</code> 開始時 (★ STEP -1) に全件無効化</strong>する。
 </div>
 
 <h3>6b.1 既存 PreToolUse hook 一覧 (<code>plugins/twl/hooks/hooks.json</code> + <code>scripts/hooks/*.sh</code>)</h3>
 
 <table class="delete-table">
-  <thead><tr><th>hook</th><th>matcher</th><th>Phase 1 STEP -1 扱い</th><th>新代替</th></tr></thead>
+  <thead><tr><th>hook</th><th>matcher</th><th><code>Phase 1</code> STEP -1 扱い</th><th>新代替</th></tr></thead>
   <tbody>
     <tr><td><code>pre-tool-use-ask-user-question.sh</code></td><td>AskUserQuestion</td><td class="verdict-delete">無効化</td><td>不要 (新 architecture で別経路)</td></tr>
     <tr><td><code>pre-tool-use-worktree-boundary.sh</code></td><td>Edit|Write|NotebookEdit</td><td class="verdict-keep">最小保全</td><td>Inv B 強化、worker cwd-guard と統合</td></tr>
@@ -292,14 +305,14 @@
     <tr><td><code>pre-tool-use-spec-review-gate.sh</code></td><td>Skill</td><td class="verdict-delete">無効化</td><td>phase-gate.sh (新 Inv W、plugin scope)</td></tr>
     <tr><td><code>pre-tool-use-deps-yaml-guard.sh</code></td><td>Edit|Write deps.yaml</td><td class="verdict-keep">最小保全</td><td>新 chain SSoT (deps.yaml.chains) で継承</td></tr>
     <tr><td><code>pre-bash-commit-validate.sh</code></td><td>Bash git commit</td><td class="verdict-keep">最小保全</td><td>commit 安全性は継承</td></tr>
-    <tr><td><code>pre-bash-merge-guard.sh</code></td><td>Bash git merge</td><td class="verdict-keep">最小保全</td><td>Inv C 強化、Pilot 専任 merge と統合</td></tr>
+    <tr><td><code>pre-bash-merge-guard.sh</code></td><td>Bash git merge</td><td class="verdict-keep">最小保全</td><td>Inv C 強化、phaser 専任 merge と統合</td></tr>
     <tr><td><code>pre-bash-merge-gate-block.sh</code></td><td>Bash merge</td><td class="verdict-delete">無効化</td><td>step.sh merge-gate-check で代替</td></tr>
     <tr><td><code>pre-bash-phase3-gate.sh</code></td><td>Bash</td><td class="verdict-delete">無効化</td><td>phase-gate.sh (新)</td></tr>
-    <tr><td><code>pre-bash-pre-pr-gate.sh</code></td><td>Bash</td><td class="verdict-delete">無効化</td><td>step.sh post-verify + phase-pr SKILL.md</td></tr>
+    <tr><td><code>pre-bash-pre-pr-gate.sh</code></td><td>Bash</td><td class="verdict-delete">無効化</td><td>step.sh post-verify + phaser-pr SKILL.md</td></tr>
     <tr><td><code>pre-bash-refined-status-gate.sh</code></td><td>Bash</td><td class="verdict-delete">無効化</td><td>phase-gate.sh + Project Board status SSoT</td></tr>
-    <tr><td><code>pre-bash-issue-create-gate.sh</code></td><td>Bash gh issue create</td><td class="verdict-delete">無効化</td><td>tool-architect / phase-explore の ADR-040 gate</td></tr>
+    <tr><td><code>pre-bash-issue-create-gate.sh</code></td><td>Bash gh issue create</td><td class="verdict-delete">無効化</td><td>tool-architect / phaser-explore の ADR-040 gate</td></tr>
     <tr><td><code>permission-request-auto-approve.sh</code></td><td>PermissionRequest</td><td class="verdict-delete">無効化</td><td>Bug #973 root cause、fail-safe (deny-by-default) で再設計</td></tr>
-    <tr><td><code>explore-summary-link.sh</code></td><td>PostToolUse</td><td class="verdict-delete">無効化</td><td>tool-architect / phase-explore SKILL.md inline</td></tr>
+    <tr><td><code>explore-summary-link.sh</code></td><td>PostToolUse</td><td class="verdict-delete">無効化</td><td>tool-architect / phaser-explore SKILL.md inline</td></tr>
     <tr><td><code>check-specialist-completeness.sh</code></td><td>PostToolUse</td><td class="verdict-delete">無効化</td><td>subagent 直接 output 読み取りに置換</td></tr>
     <tr><td><code>mcp-shadow-merge-guard-writer.sh</code></td><td>PostToolUse</td><td class="verdict-delete">無効化</td><td>MCP tier 2 で再設計</td></tr>
     <tr><td><code>post-tool-use-bash-error.sh</code></td><td>PostToolUseFailure</td><td class="verdict-delete">無効化</td><td>不要</td></tr>
@@ -313,11 +326,11 @@
   </tbody>
 </table>
 
-<p><strong>summary</strong>: 17 件無効化 + 7 件保全 (worktree-boundary / host-safety / deps-yaml-guard / commit-validate / merge-guard / pre-compact / post-compact)。Phase 1 PoC 中は最小 hook で運用、新 hook (phase-gate.sh tier 1) は plugin scope (<code>plugins/twl/hooks/hooks.json</code>) に別途配置。</p>
+<p><strong>summary</strong>: 17 件無効化 + 7 件保全 (worktree-boundary / host-safety / deps-yaml-guard / commit-validate / merge-guard / pre-compact / post-compact)。<code>Phase 1 PoC</code> 中は最小 hook で運用、新 hook (phase-gate.sh tier 1) は plugin scope (<code>plugins/twl/hooks/hooks.json</code>) に別途配置。</p>
 
 <h3>6b.2 STEP -1 実施手順</h3>
 
-<pre><code># Phase 1 PoC 開始時、user 明示承認後に実行
+<pre><code># <code>Phase 1 PoC</code> 開始時、user 明示承認後に実行
 cd plugins/twl/hooks/
 cp hooks.json hooks.json.bak                 # rollback 用 backup
 
@@ -353,7 +366,7 @@ EOF
 
 <h3>6b.3 rollback path</h3>
 
-<p>Phase 1 PoC 失敗 + 旧 chain 復帰の場合:</p>
+<p><code>Phase 1 PoC</code> 失敗 + 旧 chain 復帰の場合:</p>
 
 <pre><code>cd plugins/twl/hooks/
 mv hooks.json hooks.json.phase1
@@ -394,8 +407,8 @@ mv hooks.json.bak hooks.json
   <li><a href="ssot-design.html">ssot-design.html</a> chain SSoT 統一 (案 3 step.sh)</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> MCP tool inventory</li>
   <li><a href="spawn-protocol.html">spawn-protocol.html</a> 新規 helper 詳細</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> Phase 1-4 削除順序</li>
-  <li><a href="dual-stack-routing.html">dual-stack-routing.html</a> Phase 2 dual-stack 期間</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> <code>Phase 1</code>-4 削除順序</li>
+  <li><a href="dual-stack-routing.html">dual-stack-routing.html</a> <code>Phase 2 dual-stack</code> 期間</li>
   <li><a href="adr-fate-table.html">adr-fate-table.html</a> ADR 43 件継承戦略</li>
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 24 件不変条件</li>
   <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> 各削除判断の verify EXP</li>

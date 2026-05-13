@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>experiment-index — 全 EXP 一覧 + status + 結果 (EXP-001〜031)</title>
+<title>experiment-index — 全 EXP 一覧 + status + 結果 (EXP-001〜038)</title>
 <link rel="stylesheet" href="common.css">
 <style>
   header.doc-header { border-bottom: 3px solid var(--brand); }
@@ -17,8 +17,8 @@
 <body>
 
 <header class="doc-header">
-  <h1>experiment-index — 全 EXP 一覧 (EXP-001〜031)</h1>
-  <div class="meta">draft-v2 (2026-05-13、第 4 弾 dig 反映) &middot; 31 EXP planned (本 dig で 13 件追加: EXP-019〜031) &middot; status は本 session 時点 (実行前は <span class="vs verified">verified</span> / <span class="vs deduced">deduced</span> / <span class="vs inferred">inferred</span> 併存、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
+  <h1>experiment-index — 全 EXP 一覧 (EXP-001〜038)</h1>
+  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; 38 EXP planned (第 4 弾 dig で 13 件追加 EXP-019〜031、第 5 弾 dig で 7 件追加 EXP-032〜038) &middot; status は本 session 時点 (実行前は <span class="vs verified">verified</span> / <span class="vs deduced">deduced</span> / <span class="vs inferred">inferred</span> 併存、実行で <span class="vs experiment-verified">experiment-verified</span> 化)</div>
 </header>
 
 <div class="info">
@@ -100,7 +100,7 @@
     <dt>verify source</dt><dd><a class="src-link" href="https://github.com/anthropics/claude-code/issues/43177">Issue #43177</a> (useManageMCPConnections.ts L354-356)</dd>
     <dt>分類</dt><dd>smoke (Claude session 必須、<code>experiments/EXP-005-stdio-mcp-no-autoreconnect.smoke.sh</code>)</dd>
     <dt>期待結果</dt><dd>SIGTERM 後 5 attempts retry なし、`/mcp` で復活</dd>
-    <dt>代替策</dt><dd>HTTP transport 移行 (Phase 3) or Plugin Monitor で監視 (Phase 4)</dd>
+    <dt>代替策</dt><dd>HTTP transport 移行 (<code>Phase 3</code>) or Plugin Monitor で監視 (<code>Phase 4</code>)</dd>
     <dt>関連 spec</dt><dd><a href="failure-analysis.html">failure-analysis.html</a> Bug #1687、<a href="research-findings.html">research-findings.html</a> §1 KP-3</dd>
   </dl>
 </div>
@@ -171,7 +171,9 @@
   </dl>
 </div>
 
-<h2>カテゴリ G: step.sh framework (EXP-011〜014)</h2>
+<h2>カテゴリ G: atomic skill lifecycle (EXP-011〜014、第 5 弾 dig で repurpose)</h2>
+
+<div class="info">第 5 弾 dig (Round 9) で <code>step</code> 概念液化 + <code>atomic skill</code> への統一が決定。本カテゴリの EXP は旧 <code>step.sh framework</code> 前提から、新 <code>atomic SKILL.md 本文 inline 4-phase lifecycle</code> 検証に repurpose される。詳細: <a href="atomic-verification.html">atomic-verification.html</a> §5。</div>
 
 <div class="exp-block" id="EXP-011">
   <h3>EXP-011: step::run 4 phase lifecycle</h3>
@@ -180,7 +182,7 @@
     <dt>verify 対象</dt><dd>step::run が pre-check → exec → post-verify → report の順に実行、各 phase で mailbox event 発行</dd>
     <dt>分類</dt><dd>bats unit</dd>
     <dt>期待結果</dt><dd>4 mailbox event 順序通り emit</dd>
-    <dt>関連 spec</dt><dd><a href="step-verification.html">step-verification.html</a> §3、<a href="ssot-design.html">ssot-design.html</a> §3</dd>
+    <dt>関連 spec</dt><dd><a href="atomic-verification.html">atomic-verification.html</a> §3、<a href="ssot-design.html">ssot-design.html</a> §3</dd>
   </dl>
 </div>
 
@@ -196,7 +198,7 @@
 </div>
 
 <div class="exp-block" id="EXP-013">
-  <h3>EXP-013: per-Worker mailbox scope</h3>
+  <h3>EXP-013: per-specialist mailbox scope</h3>
   <dl>
     <dt>status</dt><dd><span class="vs deduced">deduced</span></dd>
     <dt>verify 対象</dt><dd>2 worker 並列実行で各々が <code>.mailbox/&lt;worker&gt;/inbox.jsonl</code> に書き込み、共通 path 不在、cross-pollution なし</dd>
@@ -396,7 +398,7 @@
 </div>
 
 <div class="exp-block" id="EXP-029">
-  <h3>EXP-029: worker-spec-review agent の 3 回 fix loop 収束 / escalate</h3>
+  <h3>EXP-029: specialist-spec-review agent の 3 回 fix loop 収束 / escalate</h3>
   <dl>
     <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PR cycle 軽量化検証)</dd>
     <dt>verify 対象</dt><dd>tool-architect の軽量 PR cycle が (a) review PASS で 1〜2 回で完了、(b) review FAIL で 3 回 fix → escalate to user、(c) 3 回後も FAIL で AskUserQuestion 起動</dd>
@@ -450,15 +452,106 @@ $ bash experiments/run-all.sh
   "generated_at": "..."
 }
 
-# 本 file の status badge は手動で update (Phase 4 で CI 自動化検討)
+# 本 file の status badge は手動で update (<code>Phase 4</code> で CI 自動化検討)
 </code></pre>
+
+<h2>カテゴリ N: registry.yaml + vocabulary + atomic composition (EXP-032〜038) — 第 5 弾 dig</h2>
+
+<div class="info">第 5 弾 dig (2026-05-13、10 round + 33+ question) で確定した「registry.yaml 統合 SSoT」「vocabulary 6 field schema」「atomic skill composition」「公式名衝突回避」を検証する 7 件 EXP。詳細: <a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> §0.5。</div>
+
+<div class="exp-block" id="EXP-032">
+  <h3>EXP-032: registry.yaml audit 機能 (重複 concern 検出 + prefix↔role 整合 + forbidden 使用検出)</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>verify 対象</dt><dd><code>twl audit --registry</code> (新規) が registry.yaml の 5 section parsing + integrity_rules 7 件 全て trigger</dd>
+    <dt>verify source</dt><dd><a href="registry-schema.html#s2">registry-schema.html §2</a> + <a href="registry-schema.html#s6">§6</a></dd>
+    <dt>分類</dt><dd>bats unit (<code>test-fixtures/experiments/registry/audit.bats</code>)</dd>
+    <dt>期待結果</dt><dd>(a) 同 concern 2 role assign → critical detect、(b) prefix-role mismatch → critical detect、(c) forbidden 語 (<code>pilot</code>) 検出 → warning 1 件</dd>
+    <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html §4</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-033">
+  <h3>EXP-033: atomic skill composition (workflow → atomic Skill() 順次呼び出し動作)</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>verify 対象</dt><dd><code>workflow-test-ready</code> SKILL.md が <code>Skill(atomic-test-scaffold)</code> → <code>Skill(atomic-green-impl)</code> → <code>Skill(atomic-check)</code> の chain を順次実行、各 atomic の 4-phase lifecycle が動作</dd>
+    <dt>verify source</dt><dd>skills docs (<code>disable-model-invocation: true</code> verbatim、<span class="vs verified">verified</span>)</dd>
+    <dt>分類</dt><dd>smoke (Claude session 必須、<code>experiments/workflow-atomic-composition.sh</code>)</dd>
+    <dt>期待結果</dt><dd>各 atomic の <code>Step 3 report</code> で <code>.mailbox/$session/inbox.jsonl</code> に <code>step-completed</code> event が 3 件 emit、chain 全体終了</dd>
+    <dt>関連 spec</dt><dd><a href="atomic-verification.html">atomic-verification.html §2-3</a> + <a href="ssot-design.html">ssot-design.html §5</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-034">
+  <h3>EXP-034: registry.yaml ↔ 実 SKILL.md frontmatter 整合性</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>verify 対象</dt><dd>registry.yaml の <code>components</code> section が listing する name / role / file path と、実 SKILL.md frontmatter の name / role が一致</dd>
+    <dt>verify source</dt><dd><a href="registry-schema.html#s2">registry-schema.html §2</a> + skills docs (frontmatter schema、<span class="vs verified">verified</span>)</dd>
+    <dt>分類</dt><dd>bats unit (<code>test-fixtures/experiments/registry/components_consistency.bats</code>)</dd>
+    <dt>期待結果</dt><dd>registry.yaml と実 file が drift → critical detect、両方が一致 → exit 0</dd>
+    <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html §4.2</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-035">
+  <h3>EXP-035: <code>disable-model-invocation: true</code> で context budget 効果実測</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (docs verbatim) → EXP で実測 <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>verify 対象</dt><dd><code>disable-model-invocation: true</code> 設定の SKILL.md description が context budget に乗らない (token 数 before/after 実測)</dd>
+    <dt>verify source</dt><dd>skills docs verbatim「Description NOT in context when disable-model-invocation is true」</dd>
+    <dt>分類</dt><dd>smoke (<code>experiments/disable-model-invocation-token-measure.sh</code>)</dd>
+    <dt>期待結果</dt><dd>workflow-* / atomic-* SKILL.md 10 件追加前後で context token 数が同程度 (差分 &lt; 100 tokens)、通常 skill 1 件追加では token 数が ~500 増える対照</dd>
+    <dt>関連 spec</dt><dd><a href="atomic-verification.html">atomic-verification.html §3</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-036">
+  <h3>EXP-036: atomic から <code>Agent(specialist-*)</code> spawn</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>verify 対象</dt><dd>atomic SKILL.md の <code>allowed-tools: [Skill, Agent]</code> declare + atomic 内 <code>Agent(specialist-code-reviewer)</code> 呼び出し動作、subagent context で独立 return</dd>
+    <dt>verify source</dt><dd>sub-agents docs (<span class="vs verified">verified</span>「Agent tool が唯一の subagent spawn 経路」「subagent は subagent spawn 不可」)</dd>
+    <dt>分類</dt><dd>smoke (<code>experiments/atomic-agent-spawn.sh</code>)</dd>
+    <dt>期待結果</dt><dd><code>atomic-phase-review</code> が <code>Agent(specialist-code-reviewer)</code> を call、specialist が PASS/FAIL verdict を return、atomic は Step 2 で verdict == "PASS" assert</dd>
+    <dt>関連 spec</dt><dd><a href="atomic-verification.html">atomic-verification.html §4</a> + <a href="boundary-matrix.html">boundary-matrix.html</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-037">
+  <h3>EXP-037: doobidoo cross-machine MCP の Tailscale 経由安定性</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (接続確認済) → 安定性 EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>verify 対象</dt><dd>doobidoo MCP server (<code>http://100.82.69.124:18765/mcp</code>、Tailscale 経由) の 8 時間連続稼働断続接続率</dd>
+    <dt>verify source</dt><dd><code>claude mcp list</code> で「✓ Connected」確認済</dd>
+    <dt>分類</dt><dd>調査 (<code>experiments/doobidoo-tailscale-stability.sh</code>)</dd>
+    <dt>期待結果</dt><dd>1 min interval ping × 8 h × 多 host で connection success rate &gt; 99%、reconnect time &lt; 3 s</dd>
+    <dt>関連 spec</dt><dd><a href="registry-schema.html#s5">registry-schema.html §5 (Authority SSoT 階層図、doobidoo)</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-038">
+  <h3>EXP-038: <code>twl audit --vocabulary</code> の命名衝突検出</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>verify 対象</dt><dd><code>twl audit --vocabulary</code> が <code>phaser</code> forbidden list (<code>pilot</code>/<code>phase</code>/<code>controller</code>) を word boundary 厳密 detect + 公式名 (<code>Agent</code>/<code>Skill</code>/<code>Tool</code>) は false positive 抑制</dd>
+    <dt>verify source</dt><dd><a href="registry-schema.html#s6">registry-schema.html §6 (audit_vocabulary pseudo-code)</a> + skills docs (公式名 verbatim)</dd>
+    <dt>分類</dt><dd>bats unit (<code>test-fixtures/experiments/registry/vocabulary_audit.bats</code>)</dd>
+    <dt>期待結果</dt><dd>(a) spec 中の <code>pilot</code> 旧用法 → warning N 件 detect、(b) backtick 引用の <code>`co-autopilot`</code> → false positive 0、(c) <code>`Agent`</code> (公式名) → false positive 0、(d) <code>Phase 1 PoC</code> (migration_stage entity) → false positive 0</dd>
+    <dt>関連 spec</dt><dd><a href="registry-schema.html">registry-schema.html §4 + §6</a> + <a href="glossary.html">glossary.html §11</a></dd>
+  </dl>
+</div>
 
 <h2>関連 spec</h2>
 
 <ul>
   <li><a href="sandbox-experiment.html">sandbox-experiment.html</a> (本 file の上位 spec、experiment hyperlink architecture)</li>
-  <li><a href="rebuild-plan.html">rebuild-plan.html</a> (Phase 1 PoC 前提として EXP 実行)</li>
+  <li><a href="rebuild-plan.html">rebuild-plan.html</a> (<code>Phase 1 PoC</code> 前提として EXP 実行)</li>
   <li><a href="research-findings.html">research-findings.html</a> (verify source 集約)</li>
+  <li><a href="registry-schema.html">registry-schema.html</a> (第 5 弾 dig 新規、本 file の EXP-032〜038 が検証する仕様)</li>
+  <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic skill lifecycle、本 file の EXP-011/012 + EXP-033 + EXP-035 + EXP-036 が検証)</li>
+  <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、EXP-032〜038 の経緯)</li>
   <li>個別 EXP の関連 spec section は各 EXP block の「関連 spec」field 参照</li>
 </ul>
 

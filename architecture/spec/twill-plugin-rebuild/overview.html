@@ -5,7 +5,6 @@
 <title>twill plugin radical rebuild — overview</title>
 <link rel="stylesheet" href="common.css">
 <style>
-  /* file-specific accent: overview は brand #5ac8b8 で「全体把握」を象徴 */
   header.doc-header { border-bottom: 3px solid var(--brand); }
 </style>
 </head>
@@ -13,12 +12,12 @@
 
 <header class="doc-header">
   <h1>twill plugin radical rebuild — overview</h1>
-  <div class="meta">draft-v2 (2026-05-12) &middot; 全体把握 + 新原則 + 3 階層 architecture &middot; 詳細は各 sub-spec へリンク</div>
+  <div class="meta">draft-v3 (2026-05-13、第 5 弾 dig 反映) &middot; 全体把握 + 新原則 10 条 + 10 role architecture &middot; 詳細は各 sub-spec へリンク</div>
 </header>
 
 <h2>1. 目的</h2>
 
-<p>既存 twill plugin の構造的欠陥 3 種 (自己申告 step / chain SSoT 三重化 / 巨大化) を <strong>不能化</strong> する設計に置き換える。greenfield rewrite (2-4 ヶ月) を回避し、Strangler Fig で約 1-2 週で完遂する。</p>
+<p>既存 twill plugin の構造的欠陥 4 種 (自己申告 step / chain SSoT 三重化 / 巨大化 / 用語 SSoT 不在) を <strong>不能化</strong> する設計に置き換える。greenfield rewrite (2-4 ヶ月) を回避し、Strangler Fig で約 1-2 週で完遂する。</p>
 
 <div class="critical">
 <strong>現状の事実 (verified)</strong>:
@@ -26,27 +25,31 @@
   <li>plugin file 数 1177、bash orchestration 5175 lines</li>
   <li>ADR 43 件、不変条件 19 件 (A-S、ただし <code>ref-invariants.md</code> 自身が「A-N (14 件)」と古い記述 = drift)</li>
   <li>9 件の P0 bug が本セッションで発見 (詳細 <a href="failure-analysis.html">failure-analysis.html</a>)</li>
-  <li>横断要因 F-1 (並列 Wave 後付け) / F-2 (env var 限界) / F-3 (deploy/verify 分離欠如)</li>
+  <li>用語多重化 (pilot/phase/controller 5 重、worker 5 重、step 5 重、state 2 重、mail/event/message 3 重) — 第 5 弾 dig で発覚</li>
+  <li>横断要因 F-1 (並列 Wave 後付け) / F-2 (env var 限界) / F-3 (deploy/verify 分離欠如) / F-4 (用語 SSoT 不在、第 5 弾 dig 追加)</li>
 </ul>
 </div>
 
-<h2>2. 新原則 (9 条、本 session 第 3 弾で 2 条追加)</h2>
+<h2>2. 新原則 (10 条、第 5 弾 dig で 1 条追加)</h2>
 
 <div class="good">
 <ol>
   <li><strong>LLM は判断のために使う</strong></li>
   <li><strong>機械的処理は Claude Code primitives (hook / Skill / Agent / MCP / Plugin Monitor の連携)</strong> で実現</li>
   <li><strong>自作 script / 自作 MCP server は最小限</strong> (validate / status query の thin helper のみ)</li>
-  <li><strong>administrator (1 個、user 代理)</strong> が全体采配、Project Board status を SSoT として参照</li>
-  <li><strong>phase-* controller は administrator が 1 window = 1 個ずつ spawn</strong> (context reset、純粋指令)</li>
-  <li><strong>status と phase は 1:1 対応</strong> (各 phase は 1 status 遷移のみ担当)</li>
-  <li><strong>status gate は PreToolUse hook で機械化</strong> (前 status でない phase invoke は deny)</li>
-  <li><strong>twl は Claude Code 公式 plugin として正式化</strong> (本 session 第 3 弾追加): <code>.claude-plugin/plugin.json</code> + skill namespace <code>/twl:*</code> + Plugin Monitor + <code>--plugin-dir</code> local test。長期安定設計、upstream 仕様変更耐性</li>
-  <li><strong>各 spec claim は 4-state verification status で明示</strong> (本 session 第 3 弾追加): inferred → deduced → verified → experiment-verified。experiment-id hyperlink で sandbox 実地検証へ link、spec を living document として穴を計画的に埋める</li>
+  <li><strong><code>administrator</code> (1 個、user 代理)</strong> が全体采配、Project Board status を SSoT として参照</li>
+  <li><strong><code>phaser-*</code> controller は <code>administrator</code> が 1 window = 1 個ずつ spawn</strong> (context reset、純粋指令)</li>
+  <li><strong>status と <code>phaser</code> は 1:1 対応</strong> (各 <code>phaser</code> は 1 status 遷移のみ担当、第 5 弾 dig で phaser 1 語化)</li>
+  <li><strong>status gate は PreToolUse hook で機械化</strong> (前 status でない <code>phaser</code> invoke は deny)</li>
+  <li><strong>twl は Claude Code 公式 plugin として正式化</strong> (第 3 弾追加): <code>.claude-plugin/plugin.json</code> + skill namespace <code>/twl:*</code> + Plugin Monitor + <code>--plugin-dir</code> local test</li>
+  <li><strong>各 spec claim は 4-state verification status で明示</strong> (第 3 弾追加): inferred → deduced → verified → experiment-verified。experiment-id hyperlink で sandbox 実地検証へ link</li>
+  <li><strong>10 role + vocabulary 統合 SSoT (第 5 弾 dig 追加)</strong>: 10 role (administrator / phaser / tool / workflow / atomic / specialist / reference / script / hook / monitor) + <code>plugins/twl/registry.yaml</code> 1 file が glossary + components + chains + hooks+monitors + integrity_rules の 5 section を保有、「1 entity = 1 name」ルールで <code>twl audit --vocabulary</code> 機械検証</li>
 </ol>
 </div>
 
-<h2>3. 3 階層 architecture (図 1)</h2>
+<h2>3. 10 role architecture (図 1、第 5 弾 dig 反映)</h2>
+
+<div class="info">role の詳細 matrix: <a href="registry-schema.html#s3">registry-schema.html §3 (10 role × concern matrix)</a></div>
 
 <div class="diagram">
 <svg class="arch-svg" viewBox="0 0 1080 760" xmlns="http://www.w3.org/2000/svg">
@@ -68,61 +71,61 @@
   <!-- Layer 0 label -->
   <rect x="10" y="100" width="40" height="76" rx="3" fill="#fff5e0" stroke="#7b1fa2" stroke-width="1.5"/>
   <text x="30" y="138" text-anchor="middle" font-size="14" font-weight="700" fill="#7b1fa2">L0</text>
-  <text x="30" y="156" text-anchor="middle" font-size="9" fill="#7b1fa2">リーダー</text>
+  <text x="30" y="156" text-anchor="middle" font-size="9" fill="#7b1fa2">administrator</text>
 
   <!-- administrator -->
   <rect x="380" y="100" width="320" height="76" rx="6" fill="#fff5e0" stroke="#333" stroke-width="2.5"/>
   <text x="540" y="124" text-anchor="middle" font-size="15" font-weight="700">administrator</text>
   <text x="540" y="142" text-anchor="middle" font-size="11" fill="#555">旧 su-observer / user 代理 / 長命</text>
   <text x="540" y="158" text-anchor="middle" font-size="11" fill="#555">CronCreate poll + Project Board SSoT</text>
-  <text x="540" y="172" text-anchor="middle" font-size="11" fill="#555">pilot からの mail のみ受信 (context 効率化)</text>
+  <text x="540" y="172" text-anchor="middle" font-size="11" fill="#555">phaser からの mail のみ受信 (context 効率化)</text>
 
   <!-- tool-* (右独立) -->
   <rect x="940" y="100" width="120" height="76" rx="6" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2" stroke-dasharray="6,3"/>
-  <text x="1000" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="#7b1fa2">tool-* (4)</text>
+  <text x="1000" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="#7b1fa2">tool-* (3)</text>
   <text x="1000" y="142" text-anchor="middle" font-size="10" fill="#555">architect</text>
-  <text x="1000" y="156" text-anchor="middle" font-size="10" fill="#555">project / utility</text>
-  <text x="1000" y="170" text-anchor="middle" font-size="10" fill="#555">self-improve</text>
+  <text x="1000" y="156" text-anchor="middle" font-size="10" fill="#555">project</text>
+  <text x="1000" y="170" text-anchor="middle" font-size="10" fill="#555">sandbox-runner</text>
 
-  <!-- spawn arrows from admin to pilots -->
+  <!-- spawn arrows from admin to phasers -->
   <line x1="430" y1="180" x2="190" y2="240" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="500" y1="180" x2="430" y2="240" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="580" y1="180" x2="650" y2="240" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="650" y1="180" x2="880" y2="240" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="290" y="215" font-size="11" font-weight="600" fill="#1976d2">tmux new-window + claude code (各 pilot は別 main session)</text>
+  <text x="290" y="215" font-size="11" font-weight="600" fill="#1976d2">tmux new-window + claude code (各 phaser は別 main session)</text>
 
   <!-- Layer 1 label -->
   <rect x="10" y="240" width="40" height="100" rx="3" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5"/>
   <text x="30" y="280" text-anchor="middle" font-size="14" font-weight="700" fill="#1976d2">L1</text>
-  <text x="30" y="298" text-anchor="middle" font-size="9" fill="#1976d2">pilot</text>
-  <text x="30" y="312" text-anchor="middle" font-size="9" fill="#1976d2">(phase-*)</text>
+  <text x="30" y="298" text-anchor="middle" font-size="9" fill="#1976d2">phaser</text>
+  <text x="30" y="312" text-anchor="middle" font-size="9" fill="#1976d2">(phaser-*)</text>
 
-  <!-- phase-* pilots -->
+  <!-- phaser-* -->
   <rect x="60" y="240" width="200" height="100" rx="6" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <text x="160" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">phase-explore</text>
+  <text x="160" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">phaser-explore</text>
   <text x="160" y="278" text-anchor="middle" font-size="11" fill="#555">Idea → Explored</text>
-  <text x="160" y="296" text-anchor="middle" font-size="10" fill="#555">tmux: phase-explore-K</text>
+  <text x="160" y="296" text-anchor="middle" font-size="10" fill="#555">tmux: phaser-explore-K</text>
   <text x="160" y="312" text-anchor="middle" font-size="10" fill="#555">別 main session</text>
 
   <rect x="280" y="240" width="200" height="100" rx="6" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <text x="380" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">phase-refine</text>
+  <text x="380" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">phaser-refine</text>
   <text x="380" y="278" text-anchor="middle" font-size="11" fill="#555">Explored → Refined</text>
-  <text x="380" y="296" text-anchor="middle" font-size="10" fill="#555">tmux: phase-refine-K</text>
+  <text x="380" y="296" text-anchor="middle" font-size="10" fill="#555">tmux: phaser-refine-K</text>
   <text x="380" y="312" text-anchor="middle" font-size="10" fill="#555">別 main session</text>
 
   <rect x="500" y="240" width="200" height="100" rx="6" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <text x="600" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">phase-impl</text>
+  <text x="600" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">phaser-impl</text>
   <text x="600" y="278" text-anchor="middle" font-size="11" fill="#555">Refined → Implementing</text>
-  <text x="600" y="296" text-anchor="middle" font-size="10" fill="#555">tmux: phase-impl-N</text>
+  <text x="600" y="296" text-anchor="middle" font-size="10" fill="#555">tmux: phaser-impl-N</text>
   <text x="600" y="312" text-anchor="middle" font-size="10" fill="#555">別 main session</text>
 
   <rect x="720" y="240" width="200" height="100" rx="6" fill="#e3f2fd" stroke="#1976d2" stroke-width="2"/>
-  <text x="820" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">phase-pr</text>
+  <text x="820" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">phaser-pr</text>
   <text x="820" y="278" text-anchor="middle" font-size="11" fill="#555">Implementing → PR Reviewed</text>
-  <text x="820" y="296" text-anchor="middle" font-size="10" fill="#555">tmux: phase-pr-M</text>
+  <text x="820" y="296" text-anchor="middle" font-size="10" fill="#555">tmux: phaser-pr-M</text>
   <text x="820" y="312" text-anchor="middle" font-size="10" fill="#555">別 main session</text>
 
-  <!-- spawn arrows from pilots to workers -->
+  <!-- spawn arrows from phasers to skills (workflow→atomic) / specialists -->
   <line x1="160" y1="340" x2="120" y2="400" stroke="#388e3c" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="160" y1="340" x2="200" y2="400" stroke="#388e3c" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="380" y1="340" x2="340" y2="400" stroke="#388e3c" stroke-width="1.5" marker-end="url(#arrow)"/>
@@ -132,42 +135,43 @@
   <line x1="600" y1="340" x2="660" y2="400" stroke="#388e3c" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="820" y1="340" x2="780" y2="400" stroke="#388e3c" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="820" y1="340" x2="860" y2="400" stroke="#388e3c" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="930" y="370" font-size="10" font-weight="600" fill="#388e3c">tmux new-window</text>
+  <text x="930" y="370" font-size="10" font-weight="600" fill="#388e3c">Skill() / Agent()</text>
 
   <!-- Layer 2 label -->
   <rect x="10" y="405" width="40" height="50" rx="3" fill="#e8f5e9" stroke="#388e3c" stroke-width="1.5"/>
-  <text x="30" y="427" text-anchor="middle" font-size="14" font-weight="700" fill="#388e3c">L2</text>
-  <text x="30" y="443" text-anchor="middle" font-size="9" fill="#388e3c">worker</text>
+  <text x="30" y="423" text-anchor="middle" font-size="13" font-weight="700" fill="#388e3c">L2-3</text>
+  <text x="30" y="439" text-anchor="middle" font-size="8" font-weight="600" fill="#388e3c">workflow</text>
+  <text x="30" y="450" text-anchor="middle" font-size="8" font-weight="600" fill="#388e3c">atomic</text>
 
-  <!-- worker-* -->
-  <g font-size="10" font-weight="600">
+  <!-- workflow + atomic + specialist -->
+  <g font-size="9" font-weight="600">
     <rect x="80" y="405" width="80" height="50" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
-    <text x="120" y="425" text-anchor="middle">worker-1</text>
-    <text x="120" y="442" text-anchor="middle" font-size="9" font-weight="400" fill="#555">spec-review</text>
+    <text x="120" y="423" text-anchor="middle">specialist-1</text>
+    <text x="120" y="441" text-anchor="middle" font-size="8" font-weight="400" fill="#555">spec-review</text>
     <rect x="170" y="405" width="80" height="50" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
-    <text x="210" y="425" text-anchor="middle">worker-2</text>
-    <text x="210" y="442" text-anchor="middle" font-size="9" font-weight="400" fill="#555">spec-review</text>
+    <text x="210" y="423" text-anchor="middle">specialist-2</text>
+    <text x="210" y="441" text-anchor="middle" font-size="8" font-weight="400" fill="#555">spec-review</text>
     <rect x="300" y="405" width="80" height="50" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
-    <text x="340" y="425" text-anchor="middle">worker-3</text>
-    <text x="340" y="442" text-anchor="middle" font-size="9" font-weight="400" fill="#555">spec-review</text>
+    <text x="340" y="423" text-anchor="middle">specialist-3</text>
+    <text x="340" y="441" text-anchor="middle" font-size="8" font-weight="400" fill="#555">spec-review</text>
     <rect x="390" y="405" width="80" height="50" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
-    <text x="430" y="425" text-anchor="middle">worker-4</text>
-    <text x="430" y="442" text-anchor="middle" font-size="9" font-weight="400" fill="#555">architecture</text>
+    <text x="430" y="423" text-anchor="middle">specialist-4</text>
+    <text x="430" y="441" text-anchor="middle" font-size="8" font-weight="400" fill="#555">architecture</text>
     <rect x="510" y="405" width="80" height="50" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
-    <text x="550" y="425" text-anchor="middle">worker-5</text>
-    <text x="550" y="442" text-anchor="middle" font-size="9" font-weight="400" fill="#555">test-ready</text>
+    <text x="550" y="423" text-anchor="middle">workflow</text>
+    <text x="550" y="441" text-anchor="middle" font-size="8" font-weight="400" fill="#555">test-ready</text>
     <rect x="600" y="405" width="80" height="50" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
-    <text x="640" y="425" text-anchor="middle">worker-6</text>
-    <text x="640" y="442" text-anchor="middle" font-size="9" font-weight="400" fill="#555">test-ready</text>
+    <text x="640" y="423" text-anchor="middle">workflow</text>
+    <text x="640" y="441" text-anchor="middle" font-size="8" font-weight="400" fill="#555">pr-verify</text>
     <rect x="690" y="405" width="80" height="50" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
-    <text x="730" y="425" text-anchor="middle">worker-7</text>
-    <text x="730" y="442" text-anchor="middle" font-size="9" font-weight="400" fill="#555">test-ready</text>
+    <text x="730" y="423" text-anchor="middle">atomic</text>
+    <text x="730" y="441" text-anchor="middle" font-size="8" font-weight="400" fill="#555">test-scaffold</text>
     <rect x="740" y="405" width="80" height="50" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
-    <text x="780" y="425" text-anchor="middle">worker-8</text>
-    <text x="780" y="442" text-anchor="middle" font-size="9" font-weight="400" fill="#555">pr-verify</text>
+    <text x="780" y="423" text-anchor="middle">atomic</text>
+    <text x="780" y="441" text-anchor="middle" font-size="8" font-weight="400" fill="#555">green-impl</text>
     <rect x="830" y="405" width="80" height="50" rx="4" fill="#e8f5e9" stroke="#388e3c" stroke-width="2"/>
-    <text x="870" y="425" text-anchor="middle">worker-9</text>
-    <text x="870" y="442" text-anchor="middle" font-size="9" font-weight="400" fill="#555">pr-fix</text>
+    <text x="870" y="423" text-anchor="middle">atomic</text>
+    <text x="870" y="441" text-anchor="middle" font-size="8" font-weight="400" fill="#555">check</text>
   </g>
 
   <!-- mailbox communication -->
@@ -185,72 +189,76 @@
   <line x1="870" y1="455" x2="820" y2="540" stroke="#c2185b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-mail)"/>
 
   <rect x="100" y="540" width="120" height="36" rx="4" fill="#fff" stroke="#c2185b" stroke-width="2"/>
-  <text x="160" y="558" text-anchor="middle" font-size="10" font-weight="600" fill="#c2185b">.mailbox/pilot-explore</text>
+  <text x="160" y="558" text-anchor="middle" font-size="10" font-weight="600" fill="#c2185b">.mailbox/phaser-explore</text>
   <text x="160" y="571" text-anchor="middle" font-size="9" fill="#555">inbox.jsonl</text>
   <rect x="320" y="540" width="120" height="36" rx="4" fill="#fff" stroke="#c2185b" stroke-width="2"/>
-  <text x="380" y="558" text-anchor="middle" font-size="10" font-weight="600" fill="#c2185b">.mailbox/pilot-refine</text>
+  <text x="380" y="558" text-anchor="middle" font-size="10" font-weight="600" fill="#c2185b">.mailbox/phaser-refine</text>
   <text x="380" y="571" text-anchor="middle" font-size="9" fill="#555">inbox.jsonl</text>
   <rect x="540" y="540" width="120" height="36" rx="4" fill="#fff" stroke="#c2185b" stroke-width="2"/>
-  <text x="600" y="558" text-anchor="middle" font-size="10" font-weight="600" fill="#c2185b">.mailbox/pilot-impl</text>
+  <text x="600" y="558" text-anchor="middle" font-size="10" font-weight="600" fill="#c2185b">.mailbox/phaser-impl</text>
   <text x="600" y="571" text-anchor="middle" font-size="9" fill="#555">inbox.jsonl</text>
   <rect x="760" y="540" width="120" height="36" rx="4" fill="#fff" stroke="#c2185b" stroke-width="2"/>
-  <text x="820" y="558" text-anchor="middle" font-size="10" font-weight="600" fill="#c2185b">.mailbox/pilot-pr</text>
+  <text x="820" y="558" text-anchor="middle" font-size="10" font-weight="600" fill="#c2185b">.mailbox/phaser-pr</text>
   <text x="820" y="571" text-anchor="middle" font-size="9" fill="#555">inbox.jsonl</text>
 
   <line x1="160" y1="576" x2="430" y2="650" stroke="#c2185b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-mail)"/>
   <line x1="380" y1="576" x2="480" y2="650" stroke="#c2185b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-mail)"/>
   <line x1="600" y1="576" x2="540" y2="650" stroke="#c2185b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-mail)"/>
   <line x1="820" y1="576" x2="600" y2="650" stroke="#c2185b" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrow-mail)"/>
-  <text x="540" y="615" text-anchor="middle" font-size="11" fill="#c2185b" font-weight="600">pilot が集約 + administrator に mail</text>
+  <text x="540" y="615" text-anchor="middle" font-size="11" fill="#c2185b" font-weight="600">phaser が集約 + administrator に mail</text>
 
   <rect x="400" y="660" width="280" height="40" rx="6" fill="#fff" stroke="#c2185b" stroke-width="2.5"/>
   <text x="540" y="680" text-anchor="middle" font-size="12" font-weight="700" fill="#c2185b">.mailbox/administrator/inbox.jsonl</text>
-  <text x="540" y="694" text-anchor="middle" font-size="10" fill="#555">pilot からの集約 report のみ受信</text>
+  <text x="540" y="694" text-anchor="middle" font-size="10" fill="#555">phaser からの集約 report のみ受信</text>
 
-  <text x="540" y="730" text-anchor="middle" font-size="12" font-style="italic" fill="#555">3 階層 spawn (全層 tmux + claude code 別 main session) + 階層型 file mailbox</text>
+  <text x="540" y="730" text-anchor="middle" font-size="12" font-style="italic" fill="#555">10 role architecture (administrator / phaser / workflow / atomic / specialist + tool / reference / script / hook / monitor) + 階層型 file mailbox</text>
 </svg>
-<div class="diagram-caption">図 1: architecture overview — 3 階層 pyramid (administrator / pilot / worker)。各層は tmux 経由で別 main session として起動、上位層は下位 mail のみで context 効率化</div>
+<div class="diagram-caption">図 1: 10 role architecture overview — L0 administrator / L1 phaser-* + tool-* (independent) / L2-3 workflow + atomic + specialist。phaser は別 main session、workflow/atomic は Skill() composition、specialist は Agent() で spawn (subagent context)</div>
 </div>
 
-<h2>4. Key Points (3 階層 pyramid)</h2>
+<h2>4. Key Points (10 role architecture)</h2>
 
 <ul>
-  <li><strong>L0 administrator</strong> = 1 個、長命 (旧 su-observer 相当)、user 代理。pilot からの集約 mail のみ受信、context 効率化を保つ</li>
-  <li><strong>L1 phase-* (pilot)</strong> = サブリーダー、各 status 遷移を 1 個ずつ担当、worker 群を tmux で spawn・管理、mail を集約して administrator に上申</li>
-  <li><strong>L2 worker-*</strong> = 実行部隊、各 worker は別 main session、内部で optional に Agent subagent 1 階層 (公式制約: subagent は子 subagent spawn 不可)、結果を pilot mailbox に write</li>
-  <li><strong>tool-*</strong> = user / admin が直接 invoke、status 遷移と無関係 (architect / project / utility / self-improve)</li>
-  <li><strong>spawn 機構</strong> = 全層 tmux new-window + claude code 別 main session (subagent 制約は worker 内部のみ)</li>
-  <li><strong>通信機構</strong> = 階層型 file mailbox (<code>.mailbox/&lt;session-name&gt;/inbox.jsonl</code> + flock atomic)、pyramid 型集約</li>
-  <li><strong>status SSoT</strong> = GitHub Project Board の Status field (6-stage: Idea/Explored/Refined/Implementing/PR Reviewed/Merged、Verified 削除確定)</li>
+  <li><strong>L0 <code>administrator</code></strong> = 1 個、長命 (旧 su-observer rebrand)、user 代理。<code>phaser</code> からの集約 mail のみ受信、context 効率化を保つ</li>
+  <li><strong>L1 <code>phaser-*</code></strong> = サブリーダー、各 status 遷移 (status-transition) を 1 個ずつ担当 (旧 pilot/phase/controller 5 重を <code>phaser</code> 1 語に統一)。<code>workflow</code> を <code>Skill()</code> で呼ぶ、必要なら <code>Agent(specialist-*)</code> も</li>
+  <li><strong>L2 <code>workflow-*</code></strong> = <code>phaser</code>/<code>tool</code> から <code>Skill()</code> で呼ばれる sub-workflow、<code>atomic</code> を順次呼ぶ launcher (<code>disable-model-invocation: true</code>、context budget 外)</li>
+  <li><strong>L3 <code>atomic-*</code></strong> = 最小実行単位、4-phase lifecycle (pre-check/exec/post-verify/report) を SKILL.md 本文に inline 実装、必要なら <code>Agent(specialist-*)</code> で specialist spawn</li>
+  <li><strong><code>specialist-*</code></strong> (公式 <code>agents/</code> directory) = <code>Agent</code> tool 経由 sub-agent、独立 context window、subagent spawn 不可 (<span class="vs verified">verified</span>)。旧 worker-* 18 件を rename</li>
+  <li><strong><code>tool-*</code></strong> = user / admin が直接 invoke、status 遷移と無関係 (<code>tool-architect</code> / <code>tool-project</code> / <code>tool-sandbox-runner</code>、第 4 弾 dig で 4→3 に)</li>
+  <li><strong>spawn 機構</strong> = phaser は tmux new-window + claude code 別 main session、workflow/atomic は <code>Skill()</code> 公式機構、specialist は <code>Agent()</code> 公式機構</li>
+  <li><strong>通信機構</strong> = 階層型 file mailbox (4 階層 entity: mailbox &gt; inbox &gt; mail &gt; event、<code>.mailbox/&lt;session&gt;/inbox.jsonl</code> + flock atomic)、pyramid 型集約</li>
+  <li><strong>status SSoT</strong> = GitHub Project Board の Status field (6-stage: Idea/Explored/Refined/Implementing/PR Reviewed/Merged、forbidden synonym: <code>state</code>)</li>
+  <li><strong>vocabulary SSoT</strong> = <code>registry.yaml#glossary</code>、「1 entity = 1 name」ルール、<code>twl audit --vocabulary</code> 機械検証</li>
 </ul>
 
-<h2>5. status ↔ phase 1:1 mapping</h2>
+<h2>5. status ↔ phaser 1:1 mapping</h2>
 
 <table>
-<thead><tr><th>status</th><th>遷移を担当する phase</th><th>判定</th></tr></thead>
+<thead><tr><th>status-transition</th><th>担当 <code>phaser</code></th><th>判定</th></tr></thead>
 <tbody>
 <tr><td>(none) → Idea</td><td>GitHub Actions add-to-project</td><td>Issue opened</td></tr>
-<tr><td>Idea → Explored</td><td><code>phase-explore</code></td><td>LLM: 探索完了 (explore-summary 完備)</td></tr>
-<tr><td>Explored → Refined</td><td><code>phase-refine</code></td><td>LLM: AC 完備判定 + worker-spec-review</td></tr>
-<tr><td>Refined → Implementing</td><td><code>phase-impl</code></td><td>step verification: test 充足 + green PASS</td></tr>
-<tr><td>Implementing → PR Reviewed</td><td><code>phase-pr</code></td><td>step verification: all-pass-check 通過</td></tr>
+<tr><td>Idea → Explored</td><td><code>phaser-explore</code></td><td>LLM: 探索完了 (explore-summary 完備)</td></tr>
+<tr><td>Explored → Refined</td><td><code>phaser-refine</code></td><td>LLM: AC 完備判定 + <code>Agent(specialist-spec-review)</code></td></tr>
+<tr><td>Refined → Implementing</td><td><code>phaser-impl</code></td><td>atomic 4-phase post-verify: test 充足 + green PASS</td></tr>
+<tr><td>Implementing → PR Reviewed</td><td><code>phaser-pr</code></td><td>atomic 4-phase post-verify: all-pass-check 通過</td></tr>
 <tr><td>PR Reviewed → Merged</td><td>GitHub Actions auto-merge</td><td>branch protection (LLM 判断不要)</td></tr>
 <tr><td>Merged → archive</td><td>GitHub Actions cron</td><td>3 日後 (自動)</td></tr>
 </tbody>
 </table>
 
-<h2>6. 構造的欠陥 3 種と不能化</h2>
+<h2>6. 構造的欠陥 4 種と不能化 (第 5 弾 dig で 1 種追加)</h2>
 
 <table>
 <thead><tr><th>欠陥</th><th>現状</th><th>新 spec での不能化</th><th>詳細</th></tr></thead>
 <tbody>
-<tr><td>1. 自己申告 step</td><td><code>chain-runner.sh</code> L1873-1884: test-scaffold / green-impl / phase-review / scope-judge は record のみ</td><td>step.sh framework で post-verify 必須化 (機械検証)</td><td><a href="step-verification.html">step-verification.html</a></td></tr>
-<tr><td>2. chain SSoT 三重化</td><td>chain.py / chain-steps.sh / deps.yaml.chains が独立 SSoT、同期 check 必要</td><td>chain.py の CHAIN_STEPS を単一 SSoT、chain-steps.sh は computed artifact</td><td><a href="failure-analysis.html">failure-analysis.html</a> §横断要因</td></tr>
-<tr><td>3. 巨大化</td><td>file 1177、bash 5175 lines、ADR 43、invariant 19、skill 24</td><td>bash 200 lines (5 helper)、skill 15 (rebrand 経由)、ADR 43→Superseded chain、invariant 19→fate audit</td><td><a href="deletion-inventory.html">deletion-inventory.html</a> (placeholder)</td></tr>
+<tr><td>1. 自己申告 step</td><td><code>chain-runner.sh</code> L1873-1884: test-scaffold / green-impl / phase-review / scope-judge は record のみ</td><td><code>atomic</code> SKILL.md inline 4-phase lifecycle + post-verify 機械検証必須</td><td><a href="atomic-verification.html">atomic-verification.html</a> (旧 step-verification.html から rename)</td></tr>
+<tr><td>2. chain SSoT 三重化</td><td>chain.py / chain-steps.sh / deps.yaml.chains が独立 SSoT、同期 check 必要</td><td><code>registry.yaml</code> 統合 SSoT (案 4)、chain.py + chain-steps.sh + types.yaml + deps.yaml + step.sh framework 全廃</td><td><a href="ssot-design.html">ssot-design.html</a> (全面書き直し)</td></tr>
+<tr><td>3. 巨大化</td><td>file 1177、bash 5175 lines、ADR 43、invariant 19、skill 24</td><td>bash 700 lines (helper のみ)、skill 11-13 (10 role 内分散)、ADR 43→Superseded chain、invariant 19→fate audit</td><td><a href="deletion-inventory.html">deletion-inventory.html</a></td></tr>
+<tr><td>4. 用語 SSoT 不在 (第 5 弾 dig 追加)</td><td>pilot/phase/controller 5 重、worker 5 重、step 5 重、state 2 重、mail/message 3 重、制御系 4 語多重</td><td><code>registry.yaml#glossary</code> vocabulary table (6 field schema)、「1 entity = 1 name」ルール、<code>twl audit --vocabulary</code> 機械検証</td><td><a href="registry-schema.html">registry-schema.html</a> + <a href="glossary.html">glossary.html</a></td></tr>
 </tbody>
 </table>
 
-<h2>7. 失敗の根 (本セッションで発見)</h2>
+<h2>7. 失敗の根 (横断要因 F-1〜F-4)</h2>
 
 <p>詳細: <a href="failure-analysis.html">failure-analysis.html</a></p>
 
@@ -259,35 +267,37 @@
   <li><strong>横断要因 F-1</strong>: 並列 Wave の設計が後付け (単一 Wave 前提に並列を後付け、shared state がスコープ問題を生む)</li>
   <li><strong>横断要因 F-2</strong>: env var による機械的 enforcement の限界 (型なし、スコープなし、継承 on)</li>
   <li><strong>横断要因 F-3</strong>: deploy/verify の分離欠如 (実装した ≠ deploy された、5 ヶ月 5 回再発の根本)</li>
+  <li><strong>横断要因 F-4</strong> (第 5 弾 dig 追加): 用語 SSoT の不在による drift (同 entity を別語で参照、role 名混乱、audit 不能、命名衝突)</li>
 </ul>
 
 <h2>8. ADR / 不変条件の継承 (audit)</h2>
 
 <ul>
   <li>ADR 43 件の fate (保全 / Superseded / 削除 / 統合) は <a href="adr-fate-table.html">adr-fate-table.html</a></li>
-  <li>不変条件 19 件 (A-S) の継承戦略は <a href="invariant-fate-table.html">invariant-fate-table.html</a>。<code>ref-invariants.md</code> 自身が「A-N (14 件)」と古い記述 = drift、訂正課題。</li>
-  <li>pitfalls-catalog の継承戦略は <code>pitfalls-inheritance.html</code> (placeholder)</li>
+  <li>不変条件 19 件 (A-S) の継承戦略は <a href="invariant-fate-table.html">invariant-fate-table.html</a> (Inv U は第 5 弾 dig で「Atomic skill verification」に rename)</li>
+  <li>pitfalls-catalog の継承戦略は <a href="pitfalls-inheritance.html">pitfalls-inheritance.html</a></li>
 </ul>
 
-<h2>9. 実装計画 (overview)</h2>
+<h2>9. 実装計画 (overview、Strangler Fig 4 phase)</h2>
 
-<p>詳細: <code>rebuild-plan.html</code> (placeholder)</p>
+<p>詳細: <a href="rebuild-plan.html">rebuild-plan.html</a></p>
 
 <ul>
-  <li><strong>Phase 1 PoC</strong> (Day 1-3): 5 helper (mailbox.sh / step.sh / phase-gate.sh / spawn-tmux.sh / admin-cycle.sh) + 3 SKILL.md draft + Issue #1660 sanitize 完遂 proof</li>
-  <li><strong>Phase 2 dual-stack</strong> (Day 4-7): 残り 3 phase + administrator SKILL + Project Board option 追加</li>
-  <li><strong>Phase 3 cutover</strong> (Day 8-11): 旧 5175 lines bash 全削除 + workflow-* 13 個削除 + twl MCP 極小化</li>
-  <li><strong>Phase 4 cleanup</strong> (Day 12-14): docs 更新 + ADR Superseded マーク + bats regression 全 PASS</li>
+  <li><strong><code>Phase 1 PoC</code></strong> (Day 1-3): <code>registry.yaml</code> 新規 + glossary section seed (core 12 entity) + 5 helper (mailbox.sh / phase-gate.sh / spawn-tmux.sh / admin-cycle.sh) + 3 SKILL.md draft (administrator / phaser-impl / atomic-test-scaffold) + EXP-001〜038 PASS + Issue #1660 sanitize 再実装</li>
+  <li><strong><code>Phase 2 dual-stack</code></strong> (Day 4-7): 残り 3 <code>phaser</code> + workflow-* + atomic-* + tool-* (3 件) + Project Board option 追加、vocabulary table 拡張 (隠れ重複 entity)、旧 chain freeze</li>
+  <li><strong><code>Phase 3 cutover</code></strong> (Day 8-11): 旧 5175 lines bash 全削除 + chain.py / chain-steps.sh / chain-runner.sh / types.yaml / deps.yaml 全廃 + twl MCP 極小化 + 用語 rename 完遂 (~2000+ occurrence)</li>
+  <li><strong><code>Phase 4 cleanup</code></strong> (Day 12-14): docs 更新 + ADR Superseded マーク + bats regression 全 PASS + 命名 policy ADR (ADR-045) 起票</li>
 </ul>
 
 <h2>10. 次の step</h2>
 
 <ol>
-  <li>本 overview + <a href="failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> + <a href="step-verification.html">step-verification.html</a> を熟読</li>
+  <li>本 overview + <a href="failure-analysis.html">failure-analysis.html</a> + <a href="crash-failure-mode.html">crash-failure-mode.html</a> + <a href="atomic-verification.html">atomic-verification.html</a> を熟読</li>
+  <li><a href="registry-schema.html">registry-schema.html</a> (新規、第 5 弾 dig) + <a href="glossary.html">glossary.html</a> + <a href="ssot-design.html">ssot-design.html</a> (全面書き直し) で SSoT + vocabulary 設計を review</li>
   <li><a href="adr-fate-table.html">adr-fate-table.html</a> + <a href="invariant-fate-table.html">invariant-fate-table.html</a> で既存資産の継承戦略 review</li>
-  <li>placeholder 11 file を次 session で実装 (boundary-matrix / spawn-protocol / gate-hook / admin-cycle / deletion-inventory / rebuild-plan / regression-test-strategy / dual-stack-routing / pitfalls-inheritance / glossary / changelog)</li>
-  <li>ADR-043 起票 (md 本体 + 本 spec directory を supplement として参照)</li>
-  <li>Phase 1 PoC 着手 (user 明示承認後)</li>
+  <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> で第 5 弾 dig (10 round + 33+ question) の経緯を確認</li>
+  <li>ADR-043 = supplement 全体の正典 (本 ADR で第 5 弾 dig 内容を Decision section に追記済)</li>
+  <li><code>Phase 1 PoC</code> 着手 (user 明示承認後)</li>
 </ol>
 
 </body>
