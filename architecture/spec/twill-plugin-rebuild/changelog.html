@@ -15,6 +15,54 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-15 Phase I architecture dig — 5 既知 topic + Monitor + Hooks+MCP + spec drift cleanup 24 件 judgment SSoT 化</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>architecture 曖昧点 dig 24 件確定</strong>: User 真意「experiment-verified を spec 全体の隅々まで行き渡らせた上で architecture 曖昧点を user と相談して埋めていく」の第 2 段階。3 並列 agents (feature-dev:code-explorer / claude-code-guide × 2 Monitor + Hooks+MCP) で spec 全体精査 + 公式 docs 最新調査、6 round AskUserQuestion で全 dig 完了</li>
+  <li><strong>新規 spec file 2 件作成</strong>:
+    <ul>
+      <li><code>monitor-policy.html</code> (~220 行): Monitor primitive 公式仕様 + actor scope (admin+phaser) + signal primary (mailbox JSON 単一化) + composite event policy (emitter side) + daemon lifecycle (monitors.json + admin Step 0 health-check)</li>
+      <li><code>hooks-mcp-policy.html</code> (~200 行): Hooks 公式 type 14 件 + MCP 組み合わせ pattern 8 件 + Inv H-1〜3 (hook independence invariant) + Phase 1 PoC 新規追加 (PostToolUseFailure + memory_store) + defer items 8 件</li>
+    </ul>
+  </li>
+  <li><strong>編集 file 11 件</strong>: atomic-verification / admin-cycle / boundary-matrix / spawn-protocol / tool-architecture / rebuild-plan / experiment-index / gate-hook / dual-stack-routing / invariant-fate-table / crash-failure-mode を Phase I dig 結果で更新</li>
+  <li><strong>新規 EXP 4 件追加</strong> (Phase G smoke 候補): <a class="exp-link" href="experiment-index.html#EXP-039">EXP-039</a> (hook 順序 empirical) / <a class="exp-link" href="experiment-index.html#EXP-040">EXP-040</a> (prompt handler latency+cost) / <a class="exp-link" href="experiment-index.html#EXP-041">EXP-041</a> (Plugin scope hook schema) / <a class="exp-link" href="experiment-index.html#EXP-042">EXP-042</a> (Elicitation hook 公式存在)。manifest count: 38 → 42、全件 status: deduced</li>
+  <li><strong>spec drift cleanup</strong>: 4 file (gate-hook / admin-cycle / spawn-protocol / dual-stack-routing) で旧 role 名 (tool-utility / tool-self-improve / specialist-test-ready) + 旧 prefix (phase-* / worker-*) を canonical 用語に rename。invariant-fate-table.html Inv U を新 text に rewrite (旧 "Step verification framework" → 新 "Atomic skill verification")</li>
+  <li><strong>Phase 6 review 11 件 fix</strong> (cross-AI bias 低減 audit): hooks-mcp-policy.html PostToolUseFailure hook input field 誤り fix / monitor-policy.html mailbox.sh API 修正 / admin-cycle.html has_active_phaser 自己矛盾 fix / hooks-mcp-policy / monitor-policy section anchor 追加 / EXP-039〜042 status inferred→deduced (lattice violation 防止) 等</li>
+</ol>
+
+<h3>6 cluster 構成 + Phase 6 review (累積 commit 7 件、HEAD: d78a7a56)</h3>
+
+<ul>
+  <li>Cluster A (c3971446): Monitor primitive 規定 SSoT 化</li>
+  <li>Cluster B (371129df): Hooks+MCP 組み合わせ規定 SSoT 化</li>
+  <li>Cluster C (1821fdd7): atomic skill 4-phase semantics + mailbox identifier SSoT 化</li>
+  <li>Cluster D (1453ba5c): tool-architect hook + Phase 2 dual-stack SSoT 化</li>
+  <li>Cluster E (b3472d5b): Phase 1 PoC go/no-go 判定基準 SSoT 化</li>
+  <li>Cluster F (0b65e309): spec drift cleanup + failure mode SSoT 化</li>
+  <li>Phase 6 fix (d78a7a56): CRITICAL 5 + WARN 5 + INFO 1 の review findings fix</li>
+</ul>
+
+<h3>主要 dig judgment (24 件 highlights)</h3>
+
+<ul>
+  <li><strong>Monitor</strong>: actor = administrator + phaser、mailbox JSON event 単一化、composite logic は emitter side、daemon は plugins/twl/monitors.json + admin Step 0 health-check</li>
+  <li><strong>Hooks+MCP</strong>: Inv H-1〜3 hook independence、PostToolUseFailure + memory_store 自動学習、Phase 2 以降 defer 機能 8 件明示</li>
+  <li><strong>atomic skill</strong>: Step 0/2/3 hardcode + Step 1 LLM 自由生成、TWL_PHASER_NAME env (tmux new-window -e) 経由で mailbox identifier 注入、"PASS" 以外 exit 1 厳格 binary</li>
+  <li><strong>mailbox</strong>: 1 phaser = 1 Issue・1 status-transition 専任 scope、mailbox lifecycle = phaser invocation lifecycle</li>
+  <li><strong>tool-architect hook</strong>: TWL_TOOL_CONTEXT canonical caller marker (CLAUDE_SKILL_NAME 付随 cross-check)、Phase 1 PoC で hook 実装 + EXP-028 実機 verify</li>
+  <li><strong>Phase 2 dual-stack</strong>: registry.yaml は Phase 1 PoC で新規作成のみ、code は deps.yaml 継続。Project Board option_id 維持 (GraphQL displayName のみ rename)</li>
+  <li><strong>Phase 1 PoC go/no-go</strong>: bats 9 件 100% + smoke 最低 2 件 / 4 で go、blocking issue → spec 修正 → EXP 追加 → 再 go/no-go iterative cycle</li>
+  <li><strong>L0 administrator crash 自動検知</strong>: 2 段防御 (session-scoped CronCreate + machine-scoped Linux crontab)、Inv G 部分保証化</li>
+  <li><strong>spawn-tmux.sh _wait_session_ready</strong>: 3 条件 AND (pane_in_mode=0 + 'Press up to edit' 不在 + idle > Ns) で inject queue 残留検知 + Enter flush 再判定</li>
+</ul>
+
+<h3>Phase I scope と短期 goal 達成</h3>
+
+<p>User 真意 7 条件 ((a)〜(g)) 全達成: (a) 4-state defining criteria SSoT、(b) 17 bats status 実態合致、(c) anti-sabotage infra、(d) smoke 6 件 empirical、(e) 残 smoke 計画化、(f) cross-AI bias 低減 audit、<strong>(g) architecture 改善 dig (本 Phase I で達成)</strong>。Phase 1 PoC 着手 ready 状態に。</p>
+
 <h2>2026-05-14 Phase G 部分着手 — cross-AI re-audit infrastructure + audit-status-log.py + multi-stage upgrade pattern SSoT 化</h2>
 
 <h3>核心成果</h3>
