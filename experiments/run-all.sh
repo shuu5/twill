@@ -99,6 +99,35 @@ emit_result() {
         > "${AUDIT_DIR}/${id}.json"
 }
 
+# ── smoke fixtures (1 board + 1 repo を 6 件 smoke で reuse) ────
+# smoke runner_type の EXP が 1 件以上ある場合のみ事前 setup を実行
+SMOKE_COUNT=$(jq -c "$JQ_FILTER" "$MANIFEST" | jq -s 'map(select(.runner_type == "smoke")) | length')
+SMOKE_FIXTURES_OWNED=false
+
+_smoke_fixtures_cleanup() {
+    if [[ "$SMOKE_FIXTURES_OWNED" == "true" && -n "${TWL_SMOKE_BOARD_ID:-}" ]]; then
+        echo "[smoke fixtures] teardown..." >&2
+        bash "${REPO_ROOT}/experiments/teardown-test-board.sh" 2>&1 | tail -5 >&2 || true
+        SMOKE_FIXTURES_OWNED=false
+    fi
+}
+
+if [[ "$DRY_RUN" -eq 0 && "$SMOKE_COUNT" -gt 0 ]]; then
+    echo "[smoke fixtures] setup ($SMOKE_COUNT smoke EXP 検出)..." >&2
+    SMOKE_SETUP_LOG="${AUDIT_DIR}/smoke-setup.log"
+    if SETUP_OUT=$(bash "${REPO_ROOT}/experiments/setup-test-board.sh" 2>>"$SMOKE_SETUP_LOG"); then
+        eval "$SETUP_OUT"
+        SMOKE_FIXTURES_OWNED=true
+        # Fix 2: SIGTERM/SIGINT でも cleanup を発火 (Ctrl+C, daemon kill 対応)
+        trap '_smoke_fixtures_cleanup' EXIT INT TERM
+        echo "[smoke fixtures] BOARD_NUM=${TWL_SMOKE_BOARD_NUM} REPO=${TWL_SMOKE_REPO_FULL}" >&2
+    else
+        echo "[smoke fixtures] setup failed (log: ${SMOKE_SETUP_LOG}):" >&2
+        tail -10 "$SMOKE_SETUP_LOG" >&2 || true
+        echo "smoke EXP は SKIP されます" >&2
+    fi
+fi
+
 while IFS= read -r exp_json; do
     EXP_ID=$(jq -r '.exp_id' <<<"$exp_json")
     CAT=$(jq -r '.category' <<<"$exp_json")
@@ -141,8 +170,51 @@ while IFS= read -r exp_json; do
             fi
             ;;
         smoke)
-            emit_result "$EXP_ID" 'null' "smoke EXP requires Claude session (not auto-runnable)" "$VS"
-            SKIP_COUNT+=1
+            SMOKE_PATH=$(jq -r '.smoke_path // empty' <<<"$exp_json")
+            if [[ -z "$SMOKE_PATH" ]]; then
+                emit_result "$EXP_ID" 'null' "smoke_path not set in manifest" "$VS"
+                SKIP_COUNT+=1
+                echo "SKIP ${EXP_ID} (smoke_path missing)" >&2
+                continue
+            fi
+            FULL_SMOKE="${REPO_ROOT}/${SMOKE_PATH}"
+            if [[ ! -f "$FULL_SMOKE" ]]; then
+                emit_result "$EXP_ID" 'null' "smoke file not found: ${SMOKE_PATH}" "$VS"
+                SKIP_COUNT+=1
+                echo "SKIP ${EXP_ID} (smoke file not found: ${SMOKE_PATH})" >&2
+                continue
+            fi
+            RUN_COUNT+=1
+            SMOKE_LOG="${AUDIT_DIR}/${EXP_ID}.log"
+            # smoke.sh は pass=false でも exit 1、stdout JSON は残す。
+            # exit code を握り潰しつつ stdout を保持 (|| SMOKE_RESULT="" は stdout 上書きで NG)
+            set +e
+            SMOKE_RESULT=$(bash "$FULL_SMOKE" \
+                --log-dir "$AUDIT_DIR" \
+                --run-id "$RUN_ID" \
+                2>>"$SMOKE_LOG")
+            SMOKE_EXIT=$?
+            set -e
+            SMOKE_PASS=$(jq -r '.pass' <<<"$SMOKE_RESULT" 2>/dev/null || echo "null")
+            if [[ "$SMOKE_PASS" == "true" ]]; then
+                # smoke.sh emit JSON を直接 .audit/<run-id>/EXP-NNN.json に保存
+                echo "$SMOKE_RESULT" > "${AUDIT_DIR}/${EXP_ID}.json"
+                PASS_COUNT+=1
+                echo "PASS ${EXP_ID}" >&2
+            elif [[ "$SMOKE_PASS" == "false" ]]; then
+                echo "$SMOKE_RESULT" > "${AUDIT_DIR}/${EXP_ID}.json"
+                FAIL_COUNT+=1
+                echo "FAIL ${EXP_ID} (log: ${SMOKE_LOG})" >&2
+            elif [[ "$SMOKE_EXIT" -ne 0 ]]; then
+                # Fix 8: smoke crash (exit!=0 + JSON 空) は SKIP ではなく FAIL 集計
+                emit_result "$EXP_ID" 'false' "smoke.sh crash (exit=$SMOKE_EXIT, no valid JSON; log: ${SMOKE_LOG})" "$VS"
+                FAIL_COUNT+=1
+                echo "FAIL ${EXP_ID} (crash, exit=$SMOKE_EXIT, log: ${SMOKE_LOG})" >&2
+            else
+                emit_result "$EXP_ID" 'null' "smoke.sh returned invalid JSON (log: ${SMOKE_LOG})" "$VS"
+                SKIP_COUNT+=1
+                echo "SKIP ${EXP_ID} (invalid smoke JSON)" >&2
+            fi
             ;;
         research)
             emit_result "$EXP_ID" 'null' "research-only EXP, no automated check" "$VS"

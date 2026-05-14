@@ -15,6 +15,46 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-14 Phase F-4 — smoke 6 件 in-session empirical verify + API_LIMITATION findings 確定</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>experiment-verified +6 件 達成</strong>: Phase F-2 5 件 (EXP-014/016/017/018/038) に加え、Phase F-4 で EXP-015/019/020/021/022/023 を experiment-verified に upgrade、計 11 件</li>
+  <li><strong>smoke runner framework 構築</strong>: <code>experiments/smoke-common.sh</code> (helper lib) + <code>experiments/setup-test-board.sh</code> + <code>experiments/teardown-test-board.sh</code> + run-all.sh smoke branch 実装 (従来 SKIP-only dead code を有効化)</li>
+  <li><strong>EXP-022/023 で API_LIMITATION findings 確定</strong>: <code>updateProjectV2View</code> mutation が GitHub GraphQL Mutation type に <strong>存在しない</strong> ことを introspection で empirical 確認。view kanban/table 切替 + filter/group-by 設定は <strong>automation 不可、UI のみ操作可</strong>。Phase G で代替手段検討必要</li>
+  <li><strong>anti-AI-sabotage 強化</strong>: <code>smoke_method_and_server_pass</code> predicate 導入で method (gh_cli or graphql) と server_state の **両方 pass** + critical_fail 0 件 を必須に。AI が gh_cli check を偽 pass にしても server_state pass がなければ smoke pass 不可</li>
+  <li><strong>Phase F-4 から外し</strong>: EXP-007 smoke 部分 (Claude session 内 hook fire 観察困難) + EXP-026 (shuu5/twill-templates 別 repo + tool-project 未実装) を Phase G に延期</li>
+</ol>
+
+<h3>新規ファイル (Phase F-4、9 file)</h3>
+
+<ul>
+  <li><code>experiments/smoke-common.sh</code> (~250 行、helper lib): argparse / log capture (sha256 log_hash) / verify_checks accumulator / try_methods (first-success semantics) / result JSON emit / setup-test-board source / trap cleanup (EXIT/INT/TERM)</li>
+  <li><code>experiments/setup-test-board.sh</code> (~150 行): test board <code>twl-smoke-test-&lt;timestamp&gt;</code> + test repo <code>twl-smoke-test-repo</code> を shuu5 owner で新規作成、env 変数 stdout export、partial cleanup trap (setup 中途 failure 時)</li>
+  <li><code>experiments/teardown-test-board.sh</code> (~70 行): board + repo 削除、safety guard (PVT_ prefix / shuu5/twl-smoke-test* 名前 check)、board 削除 retry 3 回</li>
+  <li><code>experiments/EXP-015-gh-project-status-update.smoke.sh</code> (~95 行): gh project item-edit で status 更新、Todo→In Progress→Todo 復元</li>
+  <li><code>experiments/EXP-019-status-field-option-add.smoke.sh</code> (~115 行): gh CLI <code>field-edit --add-option</code> (未対応 verified) + GraphQL <code>updateProjectV2Field</code> inline mutation (成功)</li>
+  <li><code>experiments/EXP-020-kanban-col-order.smoke.sh</code> (~110 行): GraphQL inline mutation で options 順序 reverse</li>
+  <li><code>experiments/EXP-021-label-add-remove.smoke.sh</code> (~110 行): gh label create + delete + server-side verification + 残存 cleanup</li>
+  <li><code>experiments/EXP-022-view-switch.smoke.sh</code> (~115 行): introspection で <code>updateProjectV2View</code> 不在を確認 → API_LIMITATION findings</li>
+  <li><code>experiments/EXP-023-filter-groupby.smoke.sh</code> (~110 行): 同上 (EXP-022 と同じ findings)</li>
+</ul>
+
+<h3>編集 (Phase F-4)</h3>
+
+<ul>
+  <li><code>experiments/run-all.sh</code>: smoke branch 実装 (SKIP-only → smoke.sh spawn + stdout JSON capture)、smoke fixtures setup/teardown trap (EXIT/INT/TERM)、smoke crash (exit!=0 + JSON 空) を FAIL 集計</li>
+  <li><code>architecture/spec/twill-plugin-rebuild/experiment-index.html</code>: 6 EXP block の status badge を inferred / verified → experiment-verified に upgrade、smoke_path code 追加 (gen-manifest.py 自動抽出条件)</li>
+</ul>
+
+<h3>API_LIMITATION findings (Phase G で要対応)</h3>
+
+<ul>
+  <li><strong>updateProjectV2View mutation 不在</strong>: GitHub GraphQL Mutation type の introspection 結果から <code>updateProjectV2View</code> field 不在を 2026-05-14 empirical 確認。これにより view kanban/table 切替 + filter/group-by 設定は automation 不可、UI のみ操作可能</li>
+  <li><strong>gh project field-edit --add-option 未対応</strong>: gh CLI v2.x には field option 追加 sub-command 未実装、GraphQL <code>updateProjectV2Field</code> 経由のみ可能</li>
+</ul>
+
 <h2>2026-05-13 (第 5 弾) — SSoT 体系 + 命名 policy + 10 role 統合 finalization (dig 10 round × 平均 4 question = 33+ question)</h2>
 
 <h3>核心成果</h3>

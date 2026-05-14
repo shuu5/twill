@@ -247,10 +247,10 @@
 <div class="exp-block" id="EXP-015">
   <h3>EXP-015: gh project item-edit で status 更新</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs verified">verified</span> (公式 flag 名)、<strong>本 repo の field_id / option_id verify 必要</strong></dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F-4 2026-05-14: test board 実機 smoke で <code>gh project item-edit --single-select-option-id</code> 動作確認、server-side state Todo→In Progress→Todo 復元 3/3 PASS、log あり)</dd>
     <dt>verify 対象</dt><dd><code>gh project field-list 18 --owner shuu5 --format json</code> で Status field の id 取得 → <code>gh project item-edit --id ... --project-id ... --field-id ... --single-select-option-id ...</code> で実 status 更新</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_project_item-edit">cli.github.com/manual/gh_project_item-edit</a></dd>
-    <dt>分類</dt><dd>smoke (test issue 1 件で実行、終了時 status 復元)</dd>
+    <dt>分類</dt><dd>smoke (test issue 1 件で実行、終了時 status 復元)、<code>experiments/EXP-015-gh-project-status-update.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>status 更新成功、API rate limit OK</dd>
     <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §5.2、<a href="admin-cycle.html">admin-cycle.html</a> §3.2</dd>
   </dl>
@@ -298,10 +298,10 @@
 <div class="exp-block" id="EXP-019">
   <h3>EXP-019: status field option 追加 (4 手段)</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規追加、未実機検証)</dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F-4 2026-05-14: test board 実機 smoke で GraphQL <code>updateProjectV2Field</code> mutation 経由 option 追加成功、gh CLI <code>field-edit --add-option</code> は未対応 (gh v2.x)、server-side grep PASS、log あり)</dd>
     <dt>verify 対象</dt><dd>Project status field に新 option (e.g. "Refined") を追加: gh CLI (<code>field-create</code> / <code>field-edit</code>) / GraphQL (<code>updateProjectV2Field</code>) / gh-mcp / twl-mcp の 4 手段で write 可否</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_project">cli.github.com/manual/gh_project</a> (15 write-capable sub-commands verified)、<a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations#updateprojectv2field">GraphQL updateProjectV2Field</a></dd>
-    <dt>分類</dt><dd>smoke (test project に対して実行、終了時 rollback)</dd>
+    <dt>分類</dt><dd>smoke (test project に対して実行、終了時 rollback)、<code>experiments/EXP-019-status-field-option-add.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>少なくとも 1 手段で write 成功、最適手段を特定</dd>
     <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §2.2</dd>
   </dl>
@@ -310,10 +310,10 @@
 <div class="exp-block" id="EXP-020">
   <h3>EXP-020: kanban col order 変更 (4 手段)</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F-4 2026-05-14: test board 実機 smoke で GraphQL <code>updateProjectV2Field</code> mutation で options reverse → server-side で順序変更確認、gh CLI 直接 sub-command 不在、log あり)</dd>
     <dt>verify 対象</dt><dd>kanban view の column 順序を rearrange: gh CLI / GraphQL (<code>updateProjectV2ItemFieldValue</code> + view config) / gh-mcp / twl-mcp の 4 手段</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations">GraphQL Projects v2 mutations</a></dd>
-    <dt>分類</dt><dd>smoke</dd>
+    <dt>分類</dt><dd>smoke、<code>experiments/EXP-020-kanban-col-order.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>kanban col 順序 = [Todo, Refined, In Progress, Review, Merged, Done] に設定可能</dd>
     <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
   </dl>
@@ -322,10 +322,10 @@
 <div class="exp-block" id="EXP-021">
   <h3>EXP-021: label add/remove (4 手段)</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F-4 2026-05-14: test repo 実機 smoke で <code>gh label create</code> + <code>gh label delete</code> 動作確認、server-side label list に反映、log あり)</dd>
     <dt>verify 対象</dt><dd>repository label の追加・削除: <code>gh label create/delete</code> / GraphQL (<code>createLabel</code>/<code>deleteLabel</code>) / gh-mcp / twl-mcp</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://cli.github.com/manual/gh_label">gh label manual</a></dd>
-    <dt>分類</dt><dd>smoke (test repo、終了時 cleanup)</dd>
+    <dt>分類</dt><dd>smoke (test repo、終了時 cleanup)、<code>experiments/EXP-021-label-add-remove.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>label create/delete 成功、color/description 設定</dd>
     <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
   </dl>
@@ -334,10 +334,10 @@
 <div class="exp-block" id="EXP-022">
   <h3>EXP-022: view switch (kanban/table)</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F-4 2026-05-14: 実機 smoke で <code>updateProjectV2View</code> mutation が GitHub GraphQL Mutation type に <strong>存在しない</strong> ことを introspection で empirical 確認、<strong>API_LIMITATION findings: automation 不可、UI のみ操作可</strong>、log あり)</dd>
     <dt>verify 対象</dt><dd>Project view の kanban / table 切替を automation で行う: gh CLI / GraphQL (<code>updateProjectV2View</code>)</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations">GraphQL Projects v2 mutations</a></dd>
-    <dt>分類</dt><dd>smoke</dd>
+    <dt>分類</dt><dd>smoke、<code>experiments/EXP-022-view-switch.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>少なくとも 1 手段で view layout 設定可能</dd>
     <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
   </dl>
@@ -346,10 +346,10 @@
 <div class="exp-block" id="EXP-023">
   <h3>EXP-023: filter / group-by 設定</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span></dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F-4 2026-05-14: 実機 smoke で <code>updateProjectV2View</code> mutation 不在を introspection で empirical 確認 (EXP-022 と同じ findings)、<strong>API_LIMITATION findings: filter/group-by 設定 automation 不可</strong>、log あり)</dd>
     <dt>verify 対象</dt><dd>view の filter (e.g. <code>status:Todo</code>) + group-by (e.g. <code>status</code>) を automation で設定: gh CLI / GraphQL</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://docs.github.com/en/graphql/reference/mutations">GraphQL Projects v2 mutations</a></dd>
-    <dt>分類</dt><dd>smoke</dd>
+    <dt>分類</dt><dd>smoke、<code>experiments/EXP-023-filter-groupby.smoke.sh</code></dd>
     <dt>期待結果</dt><dd>filter + group-by 設定が API で write 可能</dd>
     <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §4.2</dd>
   </dl>
