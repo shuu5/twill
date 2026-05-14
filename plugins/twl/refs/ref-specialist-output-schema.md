@@ -32,7 +32,7 @@
           "message": { "type": "string" },
           "category": {
             "type": "string",
-            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "ac-alignment", "ac-alignment-unknown", "architecture-drift", "chain-integrity-drift"]
+            "enum": ["vulnerability", "bug", "coding-convention", "structure", "principles", "ac-alignment", "ac-alignment-unknown", "architecture-drift", "chain-integrity-drift", "experiment-integrity"]
           },
           "finding_target": { "type": "string", "enum": ["issue_description", "codebase_state"] }
         }
@@ -81,6 +81,7 @@ checkpoint.py の `critical_count` は confidence フィルタを持たないた
 | `ac-alignment-unknown` | issue-pr-alignment（判断不能 AC、INFO のみ） |
 | `architecture-drift` | worker-architecture |
 | `chain-integrity-drift` | worker-workflow-integrity |
+| `experiment-integrity` | specialist-exp-reviewer (EXP 4-state lattice + verify_source whitelist + smoke pass=true 意味的妥当性 + bats quality との clash 検出) |
 
 **co-issue specialist 用**（merge-gate specialist は使用禁止）:
 

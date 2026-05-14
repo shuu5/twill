@@ -1053,8 +1053,21 @@ glossary:
 <ul>
   <li><strong>昇格</strong>: より強い evidence が得られた時のみ upgrade (例: 公式 docs で確認できたら <code>deduced → verified</code>、実機検証できたら <code>verified → experiment-verified</code>)</li>
   <li><strong>降格</strong>: audit で「実は evidence が不足していた」と判明した場合のみ、user 確認下で実施 (例: <code>verified</code> と書かれていたが URL が架空 → <code>inferred</code> に戻す)</li>
-  <li><strong>跳躍禁止</strong>: <code>deduced → experiment-verified</code> のような中間 skip は不可。必ず verified を経由する (公式明記なしで実機検証だけは矛盾)</li>
+  <li><strong>跳躍禁止 (default)</strong>: <code>deduced → experiment-verified</code> のような中間 skip は default 禁止。必ず verified を経由する (公式明記なしで実機検証だけは矛盾)</li>
 </ul>
+
+<h4 id="s10-2-multi-stage">10.2.1 multi-stage upgrade pattern (Phase G 2026-05-14 追記)</h4>
+
+<p><strong>Phase F-4 実装で発生した 5 件跳躍 case</strong> (EXP-019/020/021/022/023 の <code>inferred → experiment-verified</code>、delta=3) を踏まえ、以下の <strong>multi-stage upgrade pattern</strong> を user 判断下で例外的に許容する:</p>
+
+<ol>
+  <li><strong>1 commit で 2-3 段上げる multi-stage upgrade</strong>: 各段階の evidence (verified の verify_source URL reachable + experiment-verified の smoke pass=true + log_hash + verify_checks 全 pass) が<strong>同 commit 内で完成する</strong>場合に限り、commit message + experiment-index.html status 注釈で<strong>各段階の evidence を明示</strong>することで、跳躍 commit を許容する</li>
+  <li><strong>audit 必須</strong>: <code>experiments/audit-status-log.py</code> (Phase G) が delta&gt;=2 の transition を CRITICAL 記録。user が「multi-stage upgrade pattern として正当」と判断した場合のみ commit accept (この judgment は手動で audit log 上に annotation する)</li>
+  <li><strong>例外的特殊 case: API_LIMITATION findings</strong>: smoke 実機実行で「期待する API が存在しない」ことを <strong>empirical 確認</strong>した場合 (EXP-022/023 の <code>updateProjectV2View</code> mutation 不在のように)、verify_source URL reachable + smoke pass=true (API_LIMITATION 内容を verify_checks に明示記録) が両立する。この場合 verified を経由せず直接 experiment-verified に upgrade して良い (verified の defining criteria 「公式 docs / 仕様に直接明記」が API 不在で不適用となる例外)</li>
+  <li><strong>multi-stage upgrade の禁止 case</strong>: <code>inferred → experiment-verified</code> で smoke 結果が <strong>verify_checks に server_state pass を含まない</strong>場合は、跳躍を絶対認めない (audit CRITICAL のまま、降格 revert 必須)</li>
+</ol>
+
+<p><strong>commit message annotation 例</strong>: <code>"EXP-019: multi-stage upgrade (inferred → verified → experiment-verified, 1 commit): verify_source reachable + smoke pass=true + log_hash + verify_checks 全 pass で 2 段階同時 evidence"</code></p>
 
 <h3>10.3 status と必要 audit infrastructure (Phase F-3)</h3>
 

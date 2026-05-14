@@ -235,7 +235,7 @@
   <dl>
     <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F 2026-05-14: bash 実機 + nameref empirical bats 確認、5/5 PASS、log あり)</dd>
     <dt>verify 対象</dt><dd>CI image (Ubuntu / GitHub Actions runner) で <code>bash --version</code> ≥ 4.3、<code>local -n</code> sample script 動作</dd>
-    <dt>verify source</dt><dd>GNU bash 4.3 changelog</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://gnu.org/software/bash/manual/html_node/Shell-Parameters.html">gnu.org/software/bash/manual/html_node/Shell-Parameters.html</a> (nameref attribute、Phase G 2026-05-14 cross-AI re-audit findings 対応で追加)</dd>
     <dt>分類</dt><dd>bats unit (CI で実行)、<code>test-fixtures/experiments/atomic/EXP-014-bash-nameref.bats</code></dd>
     <dt>期待結果</dt><dd>bash 5.x 動作、nameref 機能</dd>
     <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html</a> §3.3 bash 互換性注記</dd>
@@ -273,6 +273,7 @@
   <dl>
     <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F 2026-05-14: tmux 実機 format 変数取得 empirical bats 確認、5/5 PASS、log あり)</dd>
     <dt>verify 対象</dt><dd><code>tmux list-windows -a -F '#{window_name}|#{pane_dead}|#{pane_active}|#{pane_in_mode}'</code> で各 window の pane state 取得、process exit 後 <code>#{pane_dead}=1</code></dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://man7.org/linux/man-pages/man1/tmux.1.html">man7.org/linux/man-pages/man1/tmux.1.html</a> (FORMATS section、Phase G 2026-05-14 cross-AI re-audit findings 対応で追加)</dd>
     <dt>分類</dt><dd>bats unit (独立 socket)、<code>test-fixtures/experiments/toolchain/EXP-017-tmux-format-pane-state.bats</code></dd>
     <dt>期待結果</dt><dd>format 変数で crash 検知可能 (capture-pane より高速・信頼)</dd>
     <dt>関連 spec</dt><dd><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3、<a href="admin-cycle.html">admin-cycle.html</a> §3.3</dd>
@@ -558,7 +559,7 @@ $ bash experiments/run-all.sh
   <dl>
     <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F 2026-05-14: vocabulary regex empirical fixture で真陽性 4 + 偽陽性抑制 4 = 9/9 PASS、log あり)</dd>
     <dt>verify 対象</dt><dd><code>twl audit --vocabulary</code> が <code>phaser</code> forbidden list (<code>pilot</code>/<code>phase</code>/<code>controller</code>) を word boundary 厳密 detect + 公式名 (<code>Agent</code>/<code>Skill</code>/<code>Tool</code>) は false positive 抑制</dd>
-    <dt>verify source</dt><dd><a href="registry-schema.html#s6">registry-schema.html §6 (audit_vocabulary pseudo-code)</a> + skills docs (公式名 verbatim)</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/skills">code.claude.com/docs/en/skills</a> (公式名 Agent/Skill/Tool verbatim 規約の根拠) + <a href="registry-schema.html#s6">registry-schema.html §6 (audit_vocabulary pseudo-code、twl 内部実装 SSoT)</a>、Phase G 2026-05-14 cross-AI re-audit findings 対応で external URL 追加</dd>
     <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-038-vocabulary-audit.bats</code></dd>
     <dt>期待結果</dt><dd>(a) spec 中の <code>pilot</code> 旧用法 → warning N 件 detect、(b) backtick 引用の <code>`co-autopilot`</code> → false positive 0、(c) <code>`Agent`</code> (公式名) → false positive 0、(d) <code>Phase 1 PoC</code> (migration-stage entity) → false positive 0</dd>
     <dt>関連 spec</dt><dd><a href="registry-schema.html">registry-schema.html §4 + §6</a> + <a href="glossary.html">glossary.html §11</a></dd>

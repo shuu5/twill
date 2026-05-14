@@ -62,6 +62,20 @@ if [[ "${SKIP_PRERUN_AUDIT:-0}" != "1" ]]; then
         echo "       (set SKIP_PRERUN_AUDIT=1 to bypass — anti-sabotage opt-out, must be intentional)" >&2
         exit 2
     fi
+    # Phase G: status transition + drift audit. WARN-only mode (lattice violation は
+    # Phase F-4 multi-stage upgrade pattern により user judgment 済み、CRITICAL でも abort しない).
+    # 厳格 abort モードは将来 SKIP_STATUS_LOG_BLOCKING=0 で enable 予定。
+    # baseline SHA256 は .audit/ 配下 (git ignored runtime artifact)、不在なら自動生成。
+    AUDIT_STATUS_BASELINE="${REPO_ROOT}/.audit/gen-manifest-baseline.sha256"
+    if [[ ! -f "$AUDIT_STATUS_BASELINE" ]]; then
+        mkdir -p "$(dirname "$AUDIT_STATUS_BASELINE")"
+        sha256sum "${SCRIPT_DIR}/gen-manifest.py" | awk '{print $1}' > "$AUDIT_STATUS_BASELINE"
+        echo "info: gen-manifest baseline initialized: $AUDIT_STATUS_BASELINE" >&2
+    fi
+    python3 "${SCRIPT_DIR}/audit-status-log.py" --quiet \
+        --baseline-file "$AUDIT_STATUS_BASELINE" \
+        --output "${REPO_ROOT}/.audit/audit-status-log-latest.json" || \
+        echo "warning: audit-status-log violations detected (output: .audit/audit-status-log-latest.json)" >&2
 fi
 
 BATS_BIN="${REPO_ROOT}/plugins/twl/tests/lib/bats-core/bin/bats"

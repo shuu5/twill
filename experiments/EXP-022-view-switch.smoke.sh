@@ -82,6 +82,16 @@ attempt_graphql() {
     local result rc
     result=$(gh api graphql -f query='{ __type(name: "Mutation") { fields { name } } }' \
         --jq '.data.__type.fields[].name' 2>&1) && rc=0 || rc=$?
+    # Phase G fix: introspection result を SMOKE_LOG_FILE に記録 (empirical evidence、re-audit 可能化)
+    {
+        echo "=== EXP-022 introspection result (rc=$rc) ==="
+        echo "$result" | head -100
+        echo "=== end introspection ==="
+    } >> "$SMOKE_LOG_FILE"
+
+    # Mutation 一覧から updateProjectV2View 関連を抽出 (re-audit 用 evidence、actual_output に embed)
+    local relevant_mutations
+    relevant_mutations=$(echo "$result" | grep -E "Project.*View|updateProjectV2View" | head -10 || true)
 
     if [[ "$rc" -eq 0 ]]; then
         if echo "$result" | grep -q "^updateProjectV2View$"; then
@@ -89,14 +99,16 @@ attempt_graphql() {
             # 実 mutation 試行 (Phase G で詳細実装、現状は introspection only)
             smoke_add_check "graphql" "updateProjectV2View mutation 存在 (introspection)" \
                 "gh api graphql introspection | grep updateProjectV2View" \
-                "name=updateProjectV2View" "found" "pass"
+                "name=updateProjectV2View" \
+                "found in Mutation type fields; related: $relevant_mutations" "pass"
             API_LIMITATION_DETECTED=false
             return 0
         else
-            # API_LIMITATION empirical 確認
+            # API_LIMITATION empirical 確認 — actual_output に server-side response 抜粋を embed
             smoke_add_check "graphql" "updateProjectV2View mutation 不在 (API_LIMITATION 確認)" \
-                "gh api graphql introspection | grep -E '^updateProjectV2View$'" \
-                "name=updateProjectV2View" "NOT FOUND (API_LIMITATION empirical confirmed)" "pass"
+                "gh api graphql introspection | grep -E '^updateProjectV2View\$'" \
+                "name=updateProjectV2View" \
+                "NOT FOUND (related Mutation fields: ${relevant_mutations:-none}; total Mutation fields=$(echo "$result" | wc -l))" "pass"
             API_LIMITATION_DETECTED=true
             return 0
         fi

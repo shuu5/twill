@@ -15,6 +15,57 @@
   <div class="meta">本 spec の変更履歴</div>
 </header>
 
+<h2>2026-05-14 Phase G 部分着手 — cross-AI re-audit infrastructure + audit-status-log.py + multi-stage upgrade pattern SSoT 化</h2>
+
+<h3>核心成果</h3>
+
+<ol>
+  <li><strong>specialist-exp-reviewer agent 新設</strong>: <code>plugins/twl/agents/specialist-exp-reviewer.md</code> (~180 行)。<code>model: opus</code> で独立 context で実行、Phase F-2 / Phase F-4 で得られた experiment-verified 昇格を cross-AI bias 低減的に re-audit。本 Phase で本 session の Opus と異なる Sonnet model で実機実行し、本 session が見逃した 9 件 findings (CRITICAL 6 + WARN 2 + INFO 1) を発見</li>
+  <li><strong>audit-status-log.py 新設</strong>: <code>experiments/audit-status-log.py</code> (~290 行、stdlib only)。4 検知 logic (status transition + lattice violation / A3 SKIP_PRERUN_AUDIT bypass / A6 gen-manifest.py SHA256 / I-3 4 file drift)。<code>--full-history</code> mode で Phase F-2 commit と Phase F-4 commit の両 transition を検知 (multi-commit phase 対応)</li>
+  <li><strong>run-all.sh Pre-run audit phase 拡張</strong>: audit-status-log.py を 3 番目の audit に追加 (verify-source-check / audit-bats-quality に続く)</li>
+  <li><strong>registry-schema.html §10.2.1 multi-stage upgrade pattern SSoT 化</strong>: 1 commit で 2-3 段昇格する例外 case (Phase F-4 で実施した <code>inferred → experiment-verified</code> 跳躍) を明示許容、commit message + status 注釈で各段階 evidence 明示を MUST 化。<strong>API_LIMITATION findings 特殊 case</strong>: smoke 実機で「API 不在」を empirical 確認した場合は verified 経由不要</li>
+  <li><strong>cross-AI re-audit findings 9 件 fix</strong>:
+    <ul>
+      <li>CRITICAL: EXP-014/017/038 verify_source=null → external URL 設定 (gnu.org / man7.org / code.claude.com、ALLOWED_DOMAINS 内)</li>
+      <li>CRITICAL: EXP-022/023 introspection result が SMOKE_LOG_FILE 未記録 → log 記録追加 + verify_checks actual_output に server-side evidence embed (related mutations / field count)</li>
+      <li>CRITICAL: audit-status-log.py の 1-commit diff のみ design → <code>--full-history</code> mode 追加で Phase F-2 transition も検知 (EXP-027/028/032/034 inferred → verified の Phase F-2 跳躍 4 件を新規発見)</li>
+    </ul>
+  </li>
+  <li><strong>ref-specialist-output-schema.md 拡張</strong>: <code>experiment-integrity</code> category 追加 (specialist-exp-reviewer 専用)</li>
+</ol>
+
+<h3>新規ファイル (Phase G、2 file)</h3>
+
+<ul>
+  <li><code>plugins/twl/agents/specialist-exp-reviewer.md</code> (~180 行): cross-AI bias 低減 re-audit specialist。7 step 検査 (bats assertion 内容 / verify_source whitelist / lattice 違反 / smoke 意味的妥当性 / API_LIMITATION findings / manifest ↔ HTML 整合 / I-3 sanity)</li>
+  <li><code>experiments/audit-status-log.py</code> (~290 行): 4 検知 (status transition lattice / A3 / A6 / I-3)、<code>--full-history</code> mode 対応、stdlib only</li>
+  <li><code>.audit/gen-manifest-baseline.sha256</code>: gen-manifest.py の baseline SHA256 保存 (A6 改ざん検知用)</li>
+</ul>
+
+<h3>編集 (Phase G)</h3>
+
+<ul>
+  <li><code>plugins/twl/refs/ref-specialist-output-schema.md</code>: <code>experiment-integrity</code> category enum 追加</li>
+  <li><code>experiments/run-all.sh</code>: Pre-run audit phase に audit-status-log.py 追加 (WARN-only mode、CRITICAL でも abort しない、multi-stage upgrade pattern 想定)</li>
+  <li><code>architecture/spec/twill-plugin-rebuild/registry-schema.html</code>: §10.2.1 multi-stage upgrade pattern SSoT 化 (4 sub-pattern: 1 commit multi-stage / audit 必須 / API_LIMITATION 例外 / 跳躍禁止 case)</li>
+  <li><code>architecture/spec/twill-plugin-rebuild/experiment-index.html</code>: EXP-014/017/038 の verify_source URL 追加 (cross-AI re-audit findings 対応)</li>
+  <li><code>experiments/EXP-022-view-switch.smoke.sh</code> / <code>experiments/EXP-023-filter-groupby.smoke.sh</code>: introspection result を SMOKE_LOG_FILE に記録、verify_checks actual_output に server-side evidence embed (re-audit traceability 確保)</li>
+</ul>
+
+<h3>cross-AI re-audit findings (Phase G 達成の証拠)</h3>
+
+<p>本 session の Opus で実装した Phase F-2/F-4 を、Sonnet model で specialist-exp-reviewer agent を spawn し re-audit:</p>
+
+<ul>
+  <li><strong>Sonnet が発見した bias</strong>: Phase F-2 で EXP-014/017/038 の verify_source 設定漏れ、Phase F-4 で EXP-022/023 の hardcoded actual_output、audit-status-log.py 自身の 1-commit diff bug</li>
+  <li><strong>cross-AI bias 低減の価値実証</strong>: 同 session 内 review では発見困難な構造的問題を、独立 context + 別 model で発見</li>
+  <li><strong>9 件 findings 全件 fix 済</strong>: Phase G commit に反映</li>
+</ul>
+
+<h3>audit-status-log.py 実行結果 (Phase G 完成時点)</h3>
+
+<p><code>python3 experiments/audit-status-log.py --full-history</code>: 10 件 lattice 違反検知 (Phase F-2 EXP-027/028/032/034 inferred → verified [delta=2] + Phase F-4 EXP-019/020/021/022/023 inferred → experiment-verified [delta=3] + EXP-038 inferred → experiment-verified [delta=3])。全件 multi-stage upgrade pattern として user judgment 済み。A3/A6/I-3 全 OK。</p>
+
 <h2>2026-05-14 Phase F-4 — smoke 6 件 in-session empirical verify + API_LIMITATION findings 確定</h2>
 
 <h3>核心成果</h3>
