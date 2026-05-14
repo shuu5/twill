@@ -47,6 +47,23 @@ fi
 # Always regenerate manifest to stay in sync with experiment-index.html
 python3 "${SCRIPT_DIR}/gen-manifest.py" >/dev/null
 
+# Anti-sabotage Pre-run audits (Phase F-3、registry-schema.html §10.3).
+# Skipped only when explicitly opted-out via SKIP_PRERUN_AUDIT=1.
+if [[ "${SKIP_PRERUN_AUDIT:-0}" != "1" ]]; then
+    if ! python3 "${SCRIPT_DIR}/verify-source-check.py" \
+            ${VERIFY_SOURCE_SKIP_NETWORK:+--skip-network} --quiet; then
+        echo "error: verify-source-check failed; rerun with --quiet=false to see failed URLs" >&2
+        echo "       (set SKIP_PRERUN_AUDIT=1 to bypass — anti-sabotage opt-out, must be intentional)" >&2
+        exit 2
+    fi
+    if ! python3 "${SCRIPT_DIR}/audit-bats-quality.py" --quiet \
+            "${REPO_ROOT}/test-fixtures/experiments"; then
+        echo "error: audit-bats-quality failed; rerun without --quiet to see WARN/CRITICAL" >&2
+        echo "       (set SKIP_PRERUN_AUDIT=1 to bypass — anti-sabotage opt-out, must be intentional)" >&2
+        exit 2
+    fi
+fi
+
 BATS_BIN="${REPO_ROOT}/plugins/twl/tests/lib/bats-core/bin/bats"
 if [[ ! -x "$BATS_BIN" ]]; then
     BATS_BIN="$(command -v bats || true)"

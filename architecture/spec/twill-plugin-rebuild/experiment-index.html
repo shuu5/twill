@@ -41,11 +41,22 @@
 </div>
 
 <div class="legend">
-  <strong>status 凡例</strong>:
-  <span class="vs inferred">inferred</span> 推測のみ &middot;
-  <span class="vs deduced">deduced</span> 文書/型から逆算 &middot;
-  <span class="vs verified">verified</span> 公式 docs 確認 &middot;
-  <span class="vs experiment-verified">experiment-verified</span> sandbox 実機再現 (目標)
+  <strong>status 凡例</strong> (defining criteria SSoT: <a href="registry-schema.html#s10">registry-schema.html §10</a>):
+  <span class="vs inferred">inferred</span> 推測のみ、verify source 不明 &middot;
+  <span class="vs deduced">deduced</span> spec / docs 読みから推論 (間接) &middot;
+  <span class="vs verified">verified</span> 公式 docs / 仕様に直接明記 (URL reachable + domain whitelist) &middot;
+  <span class="vs experiment-verified">experiment-verified</span> 実機 empirical evidence (bats / smoke + log + verify_checks)
+</div>
+
+<div class="info" style="background: var(--surface-info); border-left: 4px solid var(--brand);">
+  <strong>verify status SSoT (Phase F 2026-05-14 確定)</strong>: 4-state badge の defining criteria は <a href="registry-schema.html#s10">registry-schema.html §10</a> で SSoT 化。<br>
+  <br>
+  <ul>
+    <li><strong>verified</strong>: 公式 docs / 仕様に<strong>直接明記</strong>、URL reachable (<code>experiments/verify-source-check.py</code> で自動検証)</li>
+    <li><strong>experiment-verified</strong>: <strong>実機 empirical</strong> (bats / smoke run + log + verify_checks)、result JSON pass=true + log_hash 必須</li>
+    <li><strong>schema 静的 check / mock 単体</strong>は verified 止まり (実機 fire 未検証なら experiment-verified に upgrade されない)</li>
+    <li>transition は単方向 (<code>inferred → deduced → verified → experiment-verified</code>)、跳躍禁止 (deduced → experiment-verified 不可、必ず verified を経由)</li>
+  </ul>
 </div>
 
 <h2>カテゴリ A: PreToolUse hook schema (EXP-001〜003)</h2>
@@ -222,7 +233,7 @@
 <div class="exp-block" id="EXP-014">
   <h3>EXP-014: bash local -n nameref version check</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs verified">verified</span> (bash 4.3+ 要件)、<strong>CI image 確認必要</strong></dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F 2026-05-14: bash 実機 + nameref empirical bats 確認、5/5 PASS、log あり)</dd>
     <dt>verify 対象</dt><dd>CI image (Ubuntu / GitHub Actions runner) で <code>bash --version</code> ≥ 4.3、<code>local -n</code> sample script 動作</dd>
     <dt>verify source</dt><dd>GNU bash 4.3 changelog</dd>
     <dt>分類</dt><dd>bats unit (CI で実行)、<code>test-fixtures/experiments/atomic/EXP-014-bash-nameref.bats</code></dd>
@@ -248,7 +259,7 @@
 <div class="exp-block" id="EXP-016">
   <h3>EXP-016: tmux new-window -d 動作確認</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs verified">verified</span> (man page)</dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F 2026-05-14: tmux 実機実行 + 独立 socket empirical bats 確認、4/4 PASS、log あり)</dd>
     <dt>verify 対象</dt><dd><code>tmux new-window -d -n test-window -c &lt;dir&gt; -- bash -c "sleep 5; exit"</code> で detached spawn、target session に新 window 追加、5 秒後に消滅</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://man7.org/linux/man-pages/man1/tmux.1.html">tmux(1)</a></dd>
     <dt>分類</dt><dd>bats unit (独立 socket)、<code>test-fixtures/experiments/toolchain/EXP-016-tmux-new-window-detached.bats</code></dd>
@@ -260,7 +271,7 @@
 <div class="exp-block" id="EXP-017">
   <h3>EXP-017: tmux format 変数で pane state 取得</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs verified">verified</span> (man page)</dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F 2026-05-14: tmux 実機 format 変数取得 empirical bats 確認、5/5 PASS、log あり)</dd>
     <dt>verify 対象</dt><dd><code>tmux list-windows -a -F '#{window_name}|#{pane_dead}|#{pane_active}|#{pane_in_mode}'</code> で各 window の pane state 取得、process exit 後 <code>#{pane_dead}=1</code></dd>
     <dt>分類</dt><dd>bats unit (独立 socket)、<code>test-fixtures/experiments/toolchain/EXP-017-tmux-format-pane-state.bats</code></dd>
     <dt>期待結果</dt><dd>format 変数で crash 検知可能 (capture-pane より高速・信頼)</dd>
@@ -271,7 +282,7 @@
 <div class="exp-block" id="EXP-018">
   <h3>EXP-018: fastmcp v3.0.0 @mcp.tool + handler 分離</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs verified">verified</span> (公式 docs)、<strong>handler 分離は twl 独自パターン (公式 docs 記載なし)</strong></dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F 2026-05-14: fastmcp 実機 import + @mcp.tool decorator + handler 分離 empirical bats 確認、5/5 PASS、log あり)、<strong>handler 分離は twl 独自パターン (公式 docs 記載なし)</strong></dd>
     <dt>verify 対象</dt><dd>fastmcp v3.0.0 で <code>mcp = FastMCP(name="test")</code> + <code>@mcp.tool</code> decorator + 純 Python handler を import して in-process test</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://gofastmcp.com/servers/tools">gofastmcp.com/servers/tools</a></dd>
     <dt>分類</dt><dd>bats unit (cli/twl uv env 経由)、<code>test-fixtures/experiments/toolchain/EXP-018-fastmcp-handler-split.bats</code></dd>
@@ -387,7 +398,7 @@
 <div class="exp-block" id="EXP-027">
   <h3>EXP-027: verify-coverage.sh の 4-state grep 検証</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PostToolUse hook 動作)</dd>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (Phase F 2026-05-14: 公式 hook docs + script ローカル動作 bats 確認、PreToolUse 統合 fire は Phase G smoke で experiment-verified 化)</dd>
     <dt>verify 対象</dt><dd>tool-architect の <code>verify-coverage.sh</code> (~50 行) が <code>&lt;span class="vs inferred|deduced"&gt;</code> を grep して未 verified を warn 出力、changelog 漏れ check、git diff の new section に <code>&lt;a class="exp-link"&gt;</code> 不在を warn する動作確認</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (PostToolUse は exit code 2 で block 不可、stderr → Claude verbatim)</dd>
     <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-027-verify-coverage-grep.bats</code></dd>
@@ -399,8 +410,8 @@
 <div class="exp-block" id="EXP-028">
   <h3>EXP-028: pre-tool-use-spec-write-boundary.sh で tool-architect / user 以外を deny</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PreToolUse hook deny pattern)</dd>
-    <dt>verify 対象</dt><dd><code>pre-tool-use-spec-write-boundary.sh</code> (~30 行) が <code>Edit|Write architecture/spec/*</code> matcher で発火、caller env (<code>CLAUDE_PLUGIN_ROOT</code> / <code>TWL_TOOL_CONTEXT</code>) が tool-architect / user 以外なら exit 2 で deny</dd>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (Phase F 2026-05-14: 公式 hook docs + script ローカル動作 bats 確認、TWL_TOOL_CONTEXT canonical 確定、PreToolUse 統合 fire は Phase G smoke で experiment-verified 化)</dd>
+    <dt>verify 対象</dt><dd><code>pre-tool-use-spec-write-boundary.sh</code> (~30 行) が <code>Edit|Write|NotebookEdit architecture/spec/*</code> matcher で発火、caller env (<code>TWL_TOOL_CONTEXT</code>) が tool-architect / user 以外なら JSON deny output</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (exit 2 で PreToolUse block、CLAUDE_PLUGIN_ROOT env verified)</dd>
     <dt>分類</dt><dd>bats unit (caller env mock)、<code>test-fixtures/experiments/hooks/EXP-028-spec-write-boundary.bats</code></dd>
     <dt>期待結果</dt><dd>(a) tool-architect caller で allow、(b) phase-* caller で exit 2 + deny reason、(c) user 手動 edit (env なし) で allow</dd>
@@ -473,7 +484,7 @@ $ bash experiments/run-all.sh
 <div class="exp-block" id="EXP-032">
   <h3>EXP-032: registry.yaml audit 機能 (重複 concern 検出 + prefix↔role 整合 + forbidden 使用検出)</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (Phase F 2026-05-14: registry.yaml schema は内部 spec 明記 + bats schema check 11/11 PASS、<code>twl audit --registry</code> 実装後に experiment-verified 化)</dd>
     <dt>verify 対象</dt><dd><code>twl audit --registry</code> (新規) が registry.yaml の 5 section parsing + integrity_rules 7 件 全て trigger</dd>
     <dt>verify source</dt><dd><a href="registry-schema.html#s2">registry-schema.html §2</a> + <a href="registry-schema.html#s6">§6</a></dd>
     <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-032-registry-audit.bats</code></dd>
@@ -497,7 +508,7 @@ $ bash experiments/run-all.sh
 <div class="exp-block" id="EXP-034">
   <h3>EXP-034: registry.yaml ↔ 実 SKILL.md frontmatter 整合性</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>status</dt><dd><span class="vs verified">verified</span> (Phase F 2026-05-14: registry.yaml components schema + bats schema check 7/7 PASS、Phase 3 cutover で SKILL.md rename 完了後に frontmatter empirical で experiment-verified 化)</dd>
     <dt>verify 対象</dt><dd>registry.yaml の <code>components</code> section が listing する name / role / file path と、実 SKILL.md frontmatter の name / role が一致</dd>
     <dt>verify source</dt><dd><a href="registry-schema.html#s2">registry-schema.html §2</a> + skills docs (frontmatter schema、<span class="vs verified">verified</span>)</dd>
     <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-034-registry-components-consistency.bats</code></dd>
@@ -545,7 +556,7 @@ $ bash experiments/run-all.sh
 <div class="exp-block" id="EXP-038">
   <h3>EXP-038: <code>twl audit --vocabulary</code> の命名衝突検出</h3>
   <dl>
-    <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
+    <dt>status</dt><dd><span class="vs experiment-verified">experiment-verified</span> (Phase F 2026-05-14: vocabulary regex empirical fixture で真陽性 4 + 偽陽性抑制 4 = 9/9 PASS、log あり)</dd>
     <dt>verify 対象</dt><dd><code>twl audit --vocabulary</code> が <code>phaser</code> forbidden list (<code>pilot</code>/<code>phase</code>/<code>controller</code>) を word boundary 厳密 detect + 公式名 (<code>Agent</code>/<code>Skill</code>/<code>Tool</code>) は false positive 抑制</dd>
     <dt>verify source</dt><dd><a href="registry-schema.html#s6">registry-schema.html §6 (audit_vocabulary pseudo-code)</a> + skills docs (公式名 verbatim)</dd>
     <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-038-vocabulary-audit.bats</code></dd>

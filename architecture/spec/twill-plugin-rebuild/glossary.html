@@ -151,6 +151,22 @@
   </tbody>
 </table>
 
+<h2>§8.5 verify status (第 F 弾 2026-05-14 確定)</h2>
+
+<table>
+  <thead>
+    <tr><th>canonical</th><th>定義</th><th>defining criteria SSoT</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>verify status</strong></td><td>spec / EXP entry の検証段階を示す 4-state badge (<code>inferred</code> / <code>deduced</code> / <code>verified</code> / <code>experiment-verified</code>)。forbidden: <code>validation level</code> / <code>verification stage</code> (英語 canonical 統一)、aliases: <code>vs</code> (CSS class 名、HTML 内部の short ref)</td><td><a href="registry-schema.html#s10">registry-schema.html §10</a></td></tr>
+    <tr><td><strong>inferred</strong></td><td>推測のみ、verify source 不明 / 未確認</td><td>§10.1</td></tr>
+    <tr><td><strong>deduced</strong></td><td>spec / docs / Issue を読んで推論 (直接記述なし、間接 deduce)</td><td>§10.1</td></tr>
+    <tr><td><strong>verified</strong></td><td>公式 docs / 仕様に直接明記、URL reachable (<code>verify-source-check.py</code> で domain whitelist + HTTP HEAD 200 OK)</td><td>§10.1 / §10.3</td></tr>
+    <tr><td><strong>experiment-verified</strong></td><td>実機 empirical evidence (bats / smoke run + log + verify_checks)、result JSON <code>pass=true</code> + <code>log_hash</code> 必須</td><td>§10.1 / §10.3</td></tr>
+    <tr><td><strong>status transition lattice</strong></td><td>4-state は単方向 (<code>inferred → deduced → verified → experiment-verified</code>)、跳躍禁止 (deduced → experiment-verified 不可、必ず verified を経由)。降格は audit 発覚時のみ user 確認下で実施</td><td>§10.2</td></tr>
+  </tbody>
+</table>
+
 <h2>§9. 不変条件</h2>
 
 <table>

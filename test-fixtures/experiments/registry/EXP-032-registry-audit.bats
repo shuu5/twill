@@ -51,12 +51,13 @@ sys.exit(0)
 "
 }
 
-@test "registry-audit: version 4.0 + plugin twl" {
+@test "registry-audit: version 4.x family + plugin twl (Phase F: 4.0 → 4.1 minor bump)" {
     python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
-assert data.get('version') == '4.0', f'version: {data.get(\"version\")}'
+v = str(data.get('version', ''))
+assert v.startswith('4.'), f'version family != 4.x: {v}'
 assert data.get('plugin') == 'twl', f'plugin: {data.get(\"plugin\")}'
 sys.exit(0)
 "

@@ -12,14 +12,15 @@
 # 詳細仕様: architecture/spec/twill-plugin-rebuild/registry-schema.html
 # 関連 ADR: ADR-043 (radical rebuild) / ADR-044 (chain SSoT 統一、未起票) / ADR-045 (命名 policy)
 
-version: "4.0"
+version: "4.1"
 plugin: twl
 status: "Phase 1 PoC seed"   # Phase 2 dual-stack で components 完全 listing、Phase 3 cutover で旧 deps.yaml/types.yaml 全廃
 created_at: "2026-05-13"
-last_updated: "2026-05-13"
+last_updated: "2026-05-14"
+# version 4.1 (2026-05-14、Phase F): verify-status glossary entry 追加 (minor bump、§9.2 準拠)
 
 # =========================================================================
-# §1. glossary — vocabulary table (core 20 entity seed = 10 role + 10 non-role、+ 1 deprecated)
+# §1. glossary — vocabulary table (core 22 entity = 10 role + 11 non-role + 1 deprecated、Phase F 2026-05-14 で verify-status 追加)
 # =========================================================================
 # 各 entry は 6 field schema: canonical / aliases / forbidden / context / description / examples
 # 詳細: ADR-045 Decision §2、registry-schema.html §4
@@ -289,6 +290,32 @@ glossary:
     examples:
       - "budget 表示 5h:N%(Xm) format 誤読"
       - "tmux -C 破壊禁止"
+
+  verify-status:
+    canonical: verify-status
+    aliases:
+      - vs
+    forbidden:
+      - validation level
+      - verification stage
+    context: spec edit meta-entity (4-state badge defining criteria)
+    description: |
+      spec / EXP entry の検証段階を示す 4-state badge (inferred / deduced /
+      verified / experiment-verified)。defining criteria SSoT は
+      architecture/spec/twill-plugin-rebuild/registry-schema.html §10。
+      HTML 内では `<span class="vs <status>">` で表現、`vs` は CSS class 名
+      (alias)。transition は単方向 (inferred → deduced → verified →
+      experiment-verified)、跳躍禁止 (deduced → experiment-verified 不可)。
+      verified は公式 docs URL reachable + domain whitelist、
+      experiment-verified は実機 empirical (bats / smoke + log + verify_checks)。
+      Phase F 2026-05-14 で defining criteria SSoT 化、F-3 anti-sabotage
+      infrastructure で verify-source-check.py / audit-bats-quality.py が
+      4-state の不正昇格を構造的に防止。
+    examples:
+      - inferred
+      - deduced
+      - verified
+      - experiment-verified
 
   # === deprecated entities (Phase 3 cutover で削除予定、現在は false positive 抑制用に canonical 登録) ===
 

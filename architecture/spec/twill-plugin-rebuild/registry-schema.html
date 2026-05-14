@@ -239,8 +239,8 @@
   <tbody>
     <tr>
       <td><code>§1. glossary</code></td>
-      <td>vocabulary table (10 role + 10 non-role + 1 deprecated = 21 entity core seed、ADR-045 §1 由来)</td>
-      <td><span class="vs verified">実装済 (本 session で 21 entity 確定、co-autopilot deprecated 追加)</span></td>
+      <td>vocabulary table (10 role + 11 non-role + 1 deprecated = 22 entity core seed、ADR-045 §1 由来、Phase F 2026-05-14 で verify-status 追加)</td>
+      <td><span class="vs verified">実装済 (Phase A で 21 entity 確定 + Phase F で verify-status 追加 = 22 entity、co-autopilot deprecated 含む)</span></td>
       <td>registry.yaml Authority の構成部品、独立 SSoT ではない</td>
     </tr>
     <tr>
@@ -288,7 +288,7 @@
 version: "4.0"
 plugin: twl
 
-# §1. glossary (vocabulary table、core 20 entity = 10 role + 10 non-role、+ 1 deprecated)
+# §1. glossary (vocabulary table、core 21 entity = 10 role + 11 non-role、+ 1 deprecated)
 glossary:
   # ... 各 entity を 6 field で listing。詳細は §4
 
@@ -558,7 +558,7 @@ token_thresholds:
   </tbody>
 </table>
 
-<h3>core 20 entity seed (Phase 1 PoC で registry.yaml に書き込む初期値、+ 1 deprecated entity)</h3>
+<h3>core 22 entity seed (Phase 1 PoC で registry.yaml に書き込む初期値: 10 role + 11 non-role + 1 deprecated、Phase F 2026-05-14 で verify-status 追加)</h3>
 
 <pre><code># plugins/twl/registry.yaml の glossary section
 glossary:
@@ -969,14 +969,14 @@ glossary:
   </tbody>
 </table>
 
-<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>結論</strong>: chains / hooks / monitors の name field は metadata key、vocabulary audit の対象外。canonical entity = 10 role + 10 non-role + 1 deprecated = 21 entity (registry.yaml §1 glossary、ADR-045 §3 由来)。本節は MINOR 2 (chains-monitors meta entity 処理の明文化) として Phase B で追加。</em></p>
+<p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>結論</strong>: chains / hooks / monitors の name field は metadata key、vocabulary audit の対象外。canonical entity = 10 role + 11 non-role + 1 deprecated = 22 entity (registry.yaml §1 glossary、ADR-045 §3 由来、Phase F 2026-05-14 で verify-status 追加)。本節は MINOR 2 (chains-monitors meta entity 処理の明文化) として Phase B で追加。</em></p>
 
 <h2 id="s9">§9. 変更管理と将来計画</h2>
 
 <h3>9.1 vocabulary table 拡張 schedule</h3>
 
 <ul>
-  <li><strong><code>Phase 1 PoC</code> seed</strong>: core 20 entity = 10 role + 10 non-role (status / status-transition / mailbox / inbox / mail / event / migration-stage / sandbox / EXP / lesson) + 1 deprecated entity (co-autopilot、Phase 3 cutover で削除予定)</li>
+  <li><strong><code>Phase 1 PoC</code> seed</strong>: core 22 entity = 10 role + 11 non-role (status / status-transition / mailbox / inbox / mail / event / migration-stage / sandbox / EXP / lesson + <strong>verify-status</strong> [Phase F 2026-05-14 追加]) + 1 deprecated entity (co-autopilot、Phase 3 cutover で削除予定)</li>
   <li><strong><code>Phase 2 dual-stack</code></strong>: 隠れ重複追加 entity (orchestrator/controller/supervisor 等の「旧 type」明示、Strangler Fig migration-stage 詳細)</li>
   <li><strong><code>Phase 3 cutover</code></strong>: 全 spec entity (50+ 件) の vocabulary 登録</li>
 </ul>
@@ -1004,9 +1004,87 @@ glossary:
 
 <h3>9.5 命名 policy ADR (ADR-045) — Accepted (2026-05-14)</h3>
 
-<p>本 file の Round 7-10 結果を formal ADR 化。第 5 弾 dig での「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR-045 として正式化、Step 2 完遂 (registry.yaml glossary 21 entity + ref-invariants.md A-X 24 件 + Step 3 audit Section 11/12) で前提充足し Accepted 化。</p>
+<p>本 file の Round 7-10 結果を formal ADR 化。第 5 弾 dig での「1 entity = 1 name + vocabulary 6 field schema + 10 role 体系 + 公式名衝突回避」を ADR-045 として正式化、Step 2 完遂 (registry.yaml glossary 22 entity [Phase F で verify-status 追加] + ref-invariants.md A-X 24 件 + Step 3 audit Section 11/12) で前提充足し Accepted 化。</p>
 
-<h2>§10. 関連 spec / EXP</h2>
+<h2 id="s10">§10. verify status defining criteria (4-state lattice)</h2>
+
+<div class="meta">Phase F 2026-05-14 確定 (Phase A-E audit で「AI 自己申告 false positive」を構造的に潰す目的) &middot; spec 内 <code>&lt;span class="vs ..."&gt;</code> 4 値 (<code>inferred</code> / <code>deduced</code> / <code>verified</code> / <code>experiment-verified</code>) の defining criteria を本節で SSoT 化</div>
+
+<h3>10.1 4 status の defining criteria</h3>
+
+<table>
+  <thead>
+    <tr><th>Status</th><th>Defining criteria</th><th>必要 evidence</th><th>例</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="vs inferred">inferred</span></td>
+      <td>推測のみ、verify source 不明 / 未確認</td>
+      <td>なし (設計案のみ)</td>
+      <td>設計初期段階、spec 起草時の暫定記述</td>
+    </tr>
+    <tr>
+      <td><span class="vs deduced">deduced</span></td>
+      <td>spec / docs / Issue を<strong>読んで推論</strong> (直接記述なし、間接 deduce)</td>
+      <td>spec file 参照 / 推論経路の根拠</td>
+      <td>「公式 docs に X が書いてあるから Y も成立するはず」型の推論</td>
+    </tr>
+    <tr>
+      <td><span class="vs verified">verified</span></td>
+      <td>公式 docs / 仕様に<strong>直接明記</strong>、情報源 reachable</td>
+      <td>verify_source URL (WebFetch / WebSearch で 200 OK + domain whitelist 内)、または内部 spec の §xxx 直接記述</td>
+      <td>公式 hook docs の matcher 仕様 / tmux(1) man の format 変数記述</td>
+    </tr>
+    <tr>
+      <td><span class="vs experiment-verified">experiment-verified</span></td>
+      <td><strong>実機 empirical evidence</strong> (bats / smoke で動作確認 + log)</td>
+      <td>result JSON 内に <code>pass=true</code> + <code>log_hash</code> + <code>verify_checks</code> (全 pass)</td>
+      <td>bats で bash nameref 実機実行確認 / smoke で gh CLI 動作 + 出力 grep</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>10.2 status transition lattice (単方向、降格は audit 発覚時のみ)</h3>
+
+<pre><code>inferred  →  deduced  →  verified  →  experiment-verified
+   (推測)    (spec 推論)   (公式明記)     (実機 empirical)
+</code></pre>
+
+<ul>
+  <li><strong>昇格</strong>: より強い evidence が得られた時のみ upgrade (例: 公式 docs で確認できたら <code>deduced → verified</code>、実機検証できたら <code>verified → experiment-verified</code>)</li>
+  <li><strong>降格</strong>: audit で「実は evidence が不足していた」と判明した場合のみ、user 確認下で実施 (例: <code>verified</code> と書かれていたが URL が架空 → <code>inferred</code> に戻す)</li>
+  <li><strong>跳躍禁止</strong>: <code>deduced → experiment-verified</code> のような中間 skip は不可。必ず verified を経由する (公式明記なしで実機検証だけは矛盾)</li>
+</ul>
+
+<h3>10.3 status と必要 audit infrastructure (Phase F-3)</h3>
+
+<ul>
+  <li><strong>verified の audit</strong>: <code>experiments/verify-source-check.py</code> で manifest.json の <code>verify_source</code> URL を <code>HTTP HEAD 200 OK + domain whitelist</code> で検証。架空 URL を構造的に排除</li>
+  <li><strong>experiment-verified の audit</strong>: <code>experiments/audit-bats-quality.py</code> で bats file の <code>skip ratio / assertion count</code> を計測。100% skip / dummy assertion を構造的に block</li>
+  <li><strong>status transition log</strong>: <code>experiments/audit-status-log.py</code> (Phase G) で experiment-index.html の status edit を git diff として記録、 result JSON pass=true と乖離した手動 upgrade を検出</li>
+</ul>
+
+<h3>10.4 schema 静的 check / mock 単体は verified 止まり (Phase F-2 確定)</h3>
+
+<p>bats unit test で <strong>JSON schema fixture 検証</strong> / <strong>script ローカル動作確認</strong> を行っても、実機 hook fire / Claude runtime 統合まで検証していなければ <strong>experiment-verified ではない</strong>。schema check は「公式 docs の claim を fixture で再表現できた」レベル (= verified の root evidence と同等) であり、empirical evidence (実機動作確認 + log) が揃って初めて experiment-verified に昇格する。</p>
+
+<p>Phase A-E (2026-05-14 完了) で 17 件 bats unit を実装した結果、audit で以下の re-classify が実施された:</p>
+
+<ul>
+  <li><strong>experiment-verified 5 件</strong>: EXP-014 (bash nameref) / EXP-016/017 (tmux 実機動作) / EXP-018 (fastmcp empirical) / EXP-038 (vocabulary regex empirical)</li>
+  <li><strong>verified 9 件</strong>: EXP-001/002/003 (hook 公式 docs + schema check) / EXP-006 (flock man page + schema check、atomic-mail-send.sh 実装後 upgrade 予定) / EXP-007 (gate-hook spec + schema check、smoke 部分で upgrade 予定) / EXP-027/028 (公式 hook docs + script ローカル動作) / EXP-032/034 (registry.yaml schema 内部 spec)</li>
+  <li><strong>deduced 3 件</strong>: EXP-011/012/013 (atomic-verification.html 読みのみ、Phase 1 PoC 実装後に bats empirical で experiment-verified 化)</li>
+</ul>
+
+<h3>10.5 関連 spec</h3>
+
+<ul>
+  <li><a href="experiment-index.html">experiment-index.html</a>: 全 38 EXP の status badge (本節 §10.1 criteria に従って付与)</li>
+  <li><a href="sandbox-experiment.html">sandbox-experiment.html</a>: EXP framework 上位 architecture (本節 §10.3 audit infra と整合)</li>
+  <li><a href="glossary.html">glossary.html</a>: "verify status" entity (canonical 名)</li>
+</ul>
+
+<h2>§11. 関連 spec / EXP</h2>
 
 <ul>
   <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 round + 33+ question + 921 行、本 file の origin)</li>
