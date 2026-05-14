@@ -134,13 +134,16 @@ main() {
   # 3. plugin 化 twl の場合、--plugin-dir で起動
   local plugin_dir="${TWILL_PLUGIN_DIR:-$CLAUDE_PROJECT_DIR/plugins/twl}"
 
-  # 4. tmux new-window (detached、cwd 指定)
+  # 4. tmux new-window (detached、cwd 指定、env 変数注入)
   tmux new-window \
     -d \
     -n "$window_name" \
     -c "${cwd:-$CLAUDE_PROJECT_DIR}" \
+    -e "TWL_PHASER_NAME=$window_name" \
     -- "claude --plugin-dir $plugin_dir"
-  # ↑ tmux man verified: -d=detached, -n=name, -c=start-directory
+  # ↑ tmux man verified: -d=detached, -n=name, -c=start-directory, -e=env variable
+  # ↑ TWL_PHASER_NAME は atomic SKILL.md Step 3 が mailbox path 解決に使用
+  #   (Phase I 2026-05-15 確定、atomic-verification.html §3.1 参照)
 
   # 5. slash command inject (Claude が起動して prompt ready になるまで wait)
   _wait_session_ready "$window_name" 30 || _fail "session not ready after 30s"
