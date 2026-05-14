@@ -1,33 +1,34 @@
 #!/usr/bin/env bats
-# registry-audit.bats — EXP-032: registry.yaml 5 section parse + 6 field schema + integrity_rules trigger
+# EXP-032: registry.yaml 6 section parse + 6 field schema + integrity_rules trigger
 #
-# Verifies:
-#   - 5 section schema 存在 (glossary / components / chains / hooks-monitors / integrity_rules)
+# Verifies (Phase B 2026-05-14 SSoT 18→15):
+#   - 6 section schema (glossary / components / chains / hooks-monitors / integrity_rules / token_thresholds)
 #   - glossary entry の 6 field schema (canonical / aliases / forbidden / context / description / examples)
 #   - integrity_rules 7 件以上 + Section 11/12 audit_section mapping
-#   - Section 12 core 2 rule key 存在 (prefix_role_match / no_duplicate_concern)
+#   - Section 12 core 2 rule key (prefix_role_match / no_duplicate_concern)
 #
 # 参照仕様:
 #   - architecture/spec/twill-plugin-rebuild/registry-schema.html §1 / §4 / §5
 #   - plugins/twl/architecture/decisions/ADR-045-naming-policy.md
 
+load '../common'
+
 setup() {
-  local this_dir
-  this_dir="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)"
-  local tests_dir
-  tests_dir="$(cd "${this_dir}/../.." && pwd)"
-  REPO_ROOT="$(cd "${tests_dir}/.." && pwd)"
-  export REPO_ROOT
-  REGISTRY_FILE="${REPO_ROOT}/registry.yaml"
-  export REGISTRY_FILE
+    exp_common_setup
+    REGISTRY_FILE="${REPO_ROOT}/plugins/twl/registry.yaml"
+    export REGISTRY_FILE
+}
+
+teardown() {
+    exp_common_teardown
 }
 
 @test "registry-audit: registry.yaml file exists" {
-  [ -f "$REGISTRY_FILE" ]
+    [ -f "$REGISTRY_FILE" ]
 }
 
 @test "registry-audit: registry.yaml is valid YAML" {
-  python3 -c "
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
@@ -36,12 +37,12 @@ sys.exit(0)
 "
 }
 
-@test "registry-audit: 5 required sections exist (glossary / components / chains / hooks-monitors / integrity_rules)" {
-  python3 -c "
+@test "registry-audit: 6 required sections exist (glossary / components / chains / hooks-monitors / integrity_rules / token_thresholds)" {
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
-required = ['glossary', 'components', 'chains', 'hooks-monitors', 'integrity_rules']
+required = ['glossary', 'components', 'chains', 'hooks-monitors', 'integrity_rules', 'token_thresholds']
 missing = [s for s in required if s not in data]
 if missing:
     print('missing sections:', missing)
@@ -51,7 +52,7 @@ sys.exit(0)
 }
 
 @test "registry-audit: version 4.0 + plugin twl" {
-  python3 -c "
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
@@ -62,7 +63,7 @@ sys.exit(0)
 }
 
 @test "registry-audit: glossary entries have 6 field schema (canonical/aliases/forbidden/context/description/examples)" {
-  python3 -c "
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
@@ -83,7 +84,7 @@ sys.exit(0)
 }
 
 @test "registry-audit: glossary aliases is list type" {
-  python3 -c "
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
@@ -99,7 +100,7 @@ sys.exit(0)
 }
 
 @test "registry-audit: glossary forbidden is list type" {
-  python3 -c "
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
@@ -115,7 +116,7 @@ sys.exit(0)
 }
 
 @test "registry-audit: integrity_rules has at least 7 entries" {
-  python3 -c "
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
@@ -126,7 +127,7 @@ sys.exit(0)
 }
 
 @test "registry-audit: Section 12 core 2 rule keys exist (prefix_role_match / no_duplicate_concern)" {
-  python3 -c "
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
@@ -141,7 +142,7 @@ sys.exit(0)
 }
 
 @test "registry-audit: vocabulary_forbidden_use rule audit_section is 11" {
-  python3 -c "
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)
@@ -156,7 +157,7 @@ sys.exit(1)
 }
 
 @test "registry-audit: integrity_rules audit_section values are in {11, 12}" {
-  python3 -c "
+    python3 -c "
 import yaml, sys
 with open('$REGISTRY_FILE') as f:
     data = yaml.safe_load(f)

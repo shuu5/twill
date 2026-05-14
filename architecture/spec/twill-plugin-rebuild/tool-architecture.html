@@ -222,7 +222,7 @@
   <li>matcher: <code>Edit|Write architecture/spec/*</code></li>
   <li>deny 条件: caller が tool-architect / user 以外</li>
   <li>plugin scope で配置 (Inv B worktree-boundary と同方式、PreToolUse deny pattern を継承)</li>
-  <li>caller 識別: env 変数 <code>CLAUDE_SKILL_NAME</code> + <code>TWL_TOOL_CONTEXT</code> 経由 (具体ロジックは §9 残課題)</li>
+  <li>caller 識別 (確定 2026-05-14、Phase C): env 変数 <code>TWL_TOOL_CONTEXT</code> を canonical caller marker として使用。<code>unset</code> → user manual edit (allow)、<code>tool-architect</code> → tool-architect skill 経由 (allow)、その他 (<code>phaser-*</code> / <code>admin</code> / <code>tool-project</code> / <code>worker-*</code>) → JSON deny。<code>CLAUDE_SKILL_NAME</code> は Phase 1 PoC で skill name と <code>TWL_TOOL_CONTEXT</code> の整合性 cross-check 用 (Phase C 時点では未使用)</li>
 </ul>
 
 <h3>3.5 spec 全体の verify status 集約</h3>
@@ -584,8 +584,8 @@ spawn_tmux \
 <h4>詳細実装レベル</h4>
 <ul>
   <li><code>specialist-spec-review</code> agent の正確な prompt (findings 出力形式の JSON schema)</li>
-  <li><code>verify-coverage.sh</code> の正確な grep regex + warn message format</li>
-  <li><code>pre-tool-use-spec-write-boundary.sh</code> の caller 識別ロジック (env 変数経由?)</li>
+  <li><s><code>verify-coverage.sh</code> の正確な grep regex + warn message format</s> (Phase C 2026-05-14 で minimum viable 実装確定: <code>plugins/twl/scripts/lib/verify-coverage.sh</code>、EXP-027 で検証)</li>
+  <li><s><code>pre-tool-use-spec-write-boundary.sh</code> の caller 識別ロジック (env 変数経由?)</s> (Phase C 2026-05-14 で確定: <code>TWL_TOOL_CONTEXT</code> env var canonical、§3.4 参照、EXP-028 で検証)</li>
   <li><code>problem-patterns.yaml</code> の各 pattern severity threshold 値</li>
   <li>template version migration の semver / breaking change handling</li>
 </ul>

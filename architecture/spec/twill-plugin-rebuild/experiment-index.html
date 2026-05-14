@@ -68,7 +68,7 @@
     <dt>status</dt><dd><span class="vs verified">verified</span> (公式 docs)</dd>
     <dt>verify 対象</dt><dd>exit 0 = success (stdout JSON parse) / exit 2 = blocking error (deny) / exit 1 = non-blocking error (allow)</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
-    <dt>分類</dt><dd>bats unit</dd>
+    <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-002-hook-exit-code.bats</code></dd>
     <dt>期待結果</dt><dd>exit 2 で tool denied、exit 1 で tool allowed + error log、exit 0 + JSON で permissionDecision に従う</dd>
     <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §3、<a href="research-findings.html">research-findings.html</a> §7 DC-2</dd>
   </dl>
@@ -80,7 +80,7 @@
     <dt>status</dt><dd><span class="vs verified">verified</span> (公式 docs)</dd>
     <dt>verify 対象</dt><dd><code>permissionDecision: "allow"|"deny"|"ask"|"defer"</code> enum を hook が受理 (旧 <code>"approve"/"block"</code> は古い enum、現行サポート確認)</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
-    <dt>分類</dt><dd>bats unit</dd>
+    <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-003-permission-decision-enum.bats</code></dd>
     <dt>期待結果</dt><dd>4 enum で意図通り動作、不明 enum で error</dd>
     <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §3.1、<a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §1.3</dd>
   </dl>
@@ -390,7 +390,7 @@
     <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PostToolUse hook 動作)</dd>
     <dt>verify 対象</dt><dd>tool-architect の <code>verify-coverage.sh</code> (~50 行) が <code>&lt;span class="vs inferred|deduced"&gt;</code> を grep して未 verified を warn 出力、changelog 漏れ check、git diff の new section に <code>&lt;a class="exp-link"&gt;</code> 不在を warn する動作確認</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (PostToolUse は exit code 2 で block 不可、stderr → Claude verbatim)</dd>
-    <dt>分類</dt><dd>bats unit (mock 可、<code>test-fixtures/experiments/EXP-027-verify-coverage-grep.bats</code>)</dd>
+    <dt>分類</dt><dd>bats unit (mock 可)、<code>test-fixtures/experiments/hooks/EXP-027-verify-coverage-grep.bats</code></dd>
     <dt>期待結果</dt><dd>inferred / deduced を含む spec.html で warn 出力、verified のみで warn なし</dd>
     <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §3.2、<a href="dig-report-tools-2026-05-13.md">dig-report-tools-2026-05-13.md</a> §1.2</dd>
   </dl>
@@ -402,7 +402,7 @@
     <dt>status</dt><dd><span class="vs inferred">inferred</span> (本 dig で新規、PreToolUse hook deny pattern)</dd>
     <dt>verify 対象</dt><dd><code>pre-tool-use-spec-write-boundary.sh</code> (~30 行) が <code>Edit|Write architecture/spec/*</code> matcher で発火、caller env (<code>CLAUDE_PLUGIN_ROOT</code> / <code>TWL_TOOL_CONTEXT</code>) が tool-architect / user 以外なら exit 2 で deny</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (exit 2 で PreToolUse block、CLAUDE_PLUGIN_ROOT env verified)</dd>
-    <dt>分類</dt><dd>bats unit (caller env mock、<code>test-fixtures/experiments/EXP-028-spec-write-boundary.bats</code>)</dd>
+    <dt>分類</dt><dd>bats unit (caller env mock)、<code>test-fixtures/experiments/hooks/EXP-028-spec-write-boundary.bats</code></dd>
     <dt>期待結果</dt><dd>(a) tool-architect caller で allow、(b) phase-* caller で exit 2 + deny reason、(c) user 手動 edit (env なし) で allow</dd>
     <dt>関連 spec</dt><dd><a href="tool-architecture.html">tool-architecture.html</a> §3.4、既存 <a href="../../../plugins/twl/scripts/hooks/pre-tool-use-worktree-boundary.sh">pre-tool-use-worktree-boundary.sh</a> の pattern 継承</dd>
   </dl>
@@ -476,7 +476,7 @@ $ bash experiments/run-all.sh
     <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
     <dt>verify 対象</dt><dd><code>twl audit --registry</code> (新規) が registry.yaml の 5 section parsing + integrity_rules 7 件 全て trigger</dd>
     <dt>verify source</dt><dd><a href="registry-schema.html#s2">registry-schema.html §2</a> + <a href="registry-schema.html#s6">§6</a></dd>
-    <dt>分類</dt><dd>bats unit (<code>test-fixtures/experiments/registry/audit.bats</code>)</dd>
+    <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-032-registry-audit.bats</code></dd>
     <dt>期待結果</dt><dd>(a) 同 concern 2 role assign → critical detect、(b) prefix-role mismatch → critical detect、(c) forbidden 語 (<code>pilot</code>) 検出 → warning 1 件</dd>
     <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html §4</a></dd>
   </dl>
@@ -500,7 +500,7 @@ $ bash experiments/run-all.sh
     <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
     <dt>verify 対象</dt><dd>registry.yaml の <code>components</code> section が listing する name / role / file path と、実 SKILL.md frontmatter の name / role が一致</dd>
     <dt>verify source</dt><dd><a href="registry-schema.html#s2">registry-schema.html §2</a> + skills docs (frontmatter schema、<span class="vs verified">verified</span>)</dd>
-    <dt>分類</dt><dd>bats unit (<code>test-fixtures/experiments/registry/components_consistency.bats</code>)</dd>
+    <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-034-registry-components-consistency.bats</code></dd>
     <dt>期待結果</dt><dd>registry.yaml と実 file が drift → critical detect、両方が一致 → exit 0</dd>
     <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html §4.2</a></dd>
   </dl>
@@ -548,7 +548,7 @@ $ bash experiments/run-all.sh
     <dt>status</dt><dd><span class="vs inferred">inferred</span> → EXP で <span class="vs experiment-verified">experiment-verified</span> 化</dd>
     <dt>verify 対象</dt><dd><code>twl audit --vocabulary</code> が <code>phaser</code> forbidden list (<code>pilot</code>/<code>phase</code>/<code>controller</code>) を word boundary 厳密 detect + 公式名 (<code>Agent</code>/<code>Skill</code>/<code>Tool</code>) は false positive 抑制</dd>
     <dt>verify source</dt><dd><a href="registry-schema.html#s6">registry-schema.html §6 (audit_vocabulary pseudo-code)</a> + skills docs (公式名 verbatim)</dd>
-    <dt>分類</dt><dd>bats unit (<code>test-fixtures/experiments/registry/vocabulary_audit.bats</code>)</dd>
+    <dt>分類</dt><dd>bats unit、<code>test-fixtures/experiments/registry/EXP-038-vocabulary-audit.bats</code></dd>
     <dt>期待結果</dt><dd>(a) spec 中の <code>pilot</code> 旧用法 → warning N 件 detect、(b) backtick 引用の <code>`co-autopilot`</code> → false positive 0、(c) <code>`Agent`</code> (公式名) → false positive 0、(d) <code>Phase 1 PoC</code> (migration-stage entity) → false positive 0</dd>
     <dt>関連 spec</dt><dd><a href="registry-schema.html">registry-schema.html §4 + §6</a> + <a href="glossary.html">glossary.html §11</a></dd>
   </dl>

@@ -407,11 +407,11 @@ hooks-monitors:
   hooks:
     - name: hook-spec-write-boundary
       event: PreToolUse
-      matcher: "Edit|Write"
+      matcher: "Edit|Write|NotebookEdit"
       handler_type: command
       handler: scripts/hooks/pre-tool-use-spec-write-boundary.sh
       concern: spec edit authority (tool-architect / user 以外を deny)
-      description: "architecture/spec/ への Edit/Write を tool-architect / user 以外は deny"
+      description: "architecture/spec/ への Edit/Write/NotebookEdit を tool-architect / user 以外は deny"
 
     - name: hook-gate-phaser
       event: PreToolUse
