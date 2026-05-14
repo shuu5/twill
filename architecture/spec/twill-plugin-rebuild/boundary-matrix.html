@@ -21,6 +21,8 @@
 <h2>目的</h2>
 <p>10 role (<code>administrator</code> / <code>phaser</code> / <code>workflow</code> / <code>atomic</code> / <code>specialist</code> + <code>tool</code> / <code>reference</code> / <code>script</code> / <code>hook</code> / <code>monitor</code>) の責務 boundary を行列形式で明示する。簡略化のため core 5 entity (<code>administrator</code> / <code>phaser</code> / workflow+atomic+specialist (L2-3) / <code>tool</code> / status-transition) を中心に列挙。</p>
 
+<p><strong>Phase I 2026-05-15 追加</strong>: hooks 全体規定 (Inv H-1〜3 hook independence、各 hook は他 hook 中間 state に依存しない、共有 state は file 経由のみ) は <a href="hooks-mcp-policy.html#s3">hooks-mcp-policy.html §3</a> で SSoT 化、本 file の各 entity section gate hook 行と整合する。Monitor primitive 規定 (actor scope + signal primary + composite + lifecycle) は <a href="monitor-policy.html">monitor-policy.html</a> で SSoT 化、本 file 各 entity の Monitor primitive 行と整合する。</p>
+
 <h2>5 entity boundary matrix (administrator / phaser / workflow+atomic+specialist / tool-* (3 件) / status-transition)</h2>
 
 <table>
@@ -208,6 +210,8 @@
   <li><a href="dig-report-ssot-2026-05-13.md">dig-report-ssot-2026-05-13.md</a> (第 5 弾 dig 独立 artifact、10 role + registry.yaml + vocabulary 6 field schema)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> (administrator polling cycle)</li>
   <li><a href="atomic-verification.html">atomic-verification.html</a> (atomic SKILL.md 4-phase lifecycle、旧 step-verification.html から rename)</li>
+  <li><a href="hooks-mcp-policy.html">hooks-mcp-policy.html</a> (Hooks 全体規定 + MCP 組み合わせ + 未活用機能 defer、Phase I 2026-05-15 確定)</li>
+  <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定、Phase I 2026-05-15 確定)</li>
   <li>既存 ADR-002 (Controller 統合)、ADR-010 (phaser active review)、ADR-017 (co-issue v2 phaser/specialist isolation)</li>
 </ul>
 

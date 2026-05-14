@@ -625,6 +625,16 @@ spawn_tmux \
 </ul>
 </div>
 
+<div class="pending">
+<h4>hooks 全体規定 + 未活用機能 (Phase I 2026-05-15 確定)</h4>
+<ul>
+  <li><strong>hook independence invariant (Inv H-1〜3)</strong>: 各 hook は他 hook 中間 state に依存しない、共有 state は file 経由のみ。詳細: <a href="hooks-mcp-policy.html#s3">hooks-mcp-policy.html §3</a></li>
+  <li><strong>未活用機能 (Phase 2 以降 defer)</strong>: <code>if</code> 条件フィルタ / <code>once</code> / <code>asyncRewake</code> / <code>statusMessage</code> / <code>FileChanged</code> / <code>Notification</code> / <code>Elicitation</code> / Plugin scope hook 分散。詳細: <a href="hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a></li>
+  <li><strong>新 EXP 4 件 (Phase G smoke 候補)</strong>: <a class="exp-link" href="experiment-index.html#EXP-039">EXP-039 hook 順序</a> / <a class="exp-link" href="experiment-index.html#EXP-040">EXP-040 prompt handler</a> / <a class="exp-link" href="experiment-index.html#EXP-041">EXP-041 plugin scope hook</a> / <a class="exp-link" href="experiment-index.html#EXP-042">EXP-042 Elicitation hook</a></li>
+  <li><strong>PostToolUseFailure + memory_store 自動学習 hook</strong>: Phase 1 PoC で新規追加。詳細: <a href="hooks-mcp-policy.html#s5">hooks-mcp-policy.html §5</a></li>
+</ul>
+</div>
+
 <h2>§10. ADR-040 / ADR-041 / ADR-043 との整合性</h2>
 
 <ul>
@@ -640,7 +650,9 @@ spawn_tmux \
 <ul>
   <li><a href="overview.html">overview.html</a> 図 1 (tool-* (3) は右独立ボックス)</li>
   <li><a href="glossary.html">glossary.html</a> (tool-architect / tool-project / tool-sandbox-runner の用語定義)</li>
-  <li><a href="boundary-matrix.html">boundary-matrix.html</a> (4 entity boundary matrix: admin / pilot / worker / tool-*)</li>
+  <li><a href="boundary-matrix.html">boundary-matrix.html</a> (5 entity boundary matrix: administrator / phaser / workflow+atomic+specialist / tool-* / status-transition)</li>
+  <li><a href="hooks-mcp-policy.html">hooks-mcp-policy.html</a> (Hooks 全体規定 + MCP 組み合わせ + 未活用機能 defer、Phase I 2026-05-15 確定)</li>
+  <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定、Phase I 2026-05-15 確定)</li>
   <li><a href="adr-fate-table.html">adr-fate-table.html</a> ADR-005/007/011/040/041 (tool-* rebrand の根拠)</li>
   <li><a href="admin-cycle.html">admin-cycle.html</a> §6 (案 2 先行実装で tool-sandbox-runner mail を受信)</li>
   <li><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §6.3 (tool-* が使う MCP tool、<code>twl_validate_project_setup</code> 含む)</li>

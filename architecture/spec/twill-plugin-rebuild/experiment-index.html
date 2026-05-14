@@ -566,6 +566,56 @@ $ bash experiments/run-all.sh
   </dl>
 </div>
 
+<h2>カテゴリ O: Phase I Hooks+MCP 検証 (EXP-039〜042) — hooks-mcp-policy.html</h2>
+
+<div class="exp-block" id="EXP-039">
+  <h3>EXP-039: hook 実行順序の empirical verify</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (Phase I 2026-05-15 新規追加、Phase G smoke 候補)</dd>
+    <dt>verify 対象</dt><dd>公式仕様「Hook chain 同一 matcher 複数 hook の実行順序は保証なし」が Claude Code 現実装 (Opus 4.7) でどの程度厳密か。<code>.claude/settings.json</code> に同 matcher (<code>Bash</code>) で 3 dummy hook 登録、各 hook が stderr に <code>hook-X-fired-at-$(date +%N)</code> emit、10 回 fire</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (公式仕様: Hook chain order not guaranteed)</dd>
+    <dt>分類</dt><dd>smoke (<code>experiments/EXP-039-hook-order.smoke.sh</code>、Phase G で実装)</dd>
+    <dt>期待結果</dt><dd>(a) 10 回 fire で order_stable = true/false 判定、(b) variance &lt; 5% なら順序保証あり (公式仕様と divergence)、(c) variance &gt; 50% なら順序保証なし (公式仕様準拠)、(d) twill 既存 7 PreToolUse hook の order dependency audit 結果 emit、(e) order 依存検出時は単一 wrapper script chain に集約推奨</dd>
+    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s3">hooks-mcp-policy.html §3</a> (Inv H-1〜3 hook independence)</dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-040">
+  <h3>EXP-040: MCP tool + prompt handler latency / cost</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (Phase I 2026-05-15 新規追加、Phase G smoke 候補)</dd>
+    <dt>verify 対象</dt><dd>LLM-based gate 判定 (複雑な IF-THEN logic を <code>type: prompt</code> handler で LLM に判定) の per-hook latency + cost を empirical 計測。test target: ADR-040 phaser → tool-* spawn gate (status + permission + 依存の複合条件)</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (公式: hook type prompt handler)</dd>
+    <dt>分類</dt><dd>smoke (<code>experiments/EXP-040-prompt-handler.smoke.sh</code>、Phase G で実装)</dd>
+    <dt>期待結果</dt><dd>(a) Sonnet 4.6 vs Opus 4.7 で per-hook latency 計測 (期待: 5-10s)、(b) per-hook cost 計測 (期待: ~$0.01)、(c) 100 回 fire での latency variance / cost variance 集計、(d) non-determinism (同 input で異 verdict) 検出率、(e) bash + mcp_tool exit code で代替可能な gate との性能比較</dd>
+    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s2">hooks-mcp-policy.html §2</a> (MCP との組み合わせ pattern) + <a href="hooks-mcp-policy.html#s6">§6 defer items</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-041">
+  <h3>EXP-041: Plugin scope hook schema</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (Phase I 2026-05-15 新規追加、Phase G smoke 候補)</dd>
+    <dt>verify 対象</dt><dd><code>plugins/&lt;plugin&gt;/hooks.json</code> が Claude Code plugin loader で supported か empirical verify。schema (matcher / type / handler) が plugin loader で誤らない confirm</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/plugins-reference">code.claude.com/docs/en/plugins-reference</a> (公式 plugin schema)</dd>
+    <dt>分類</dt><dd>smoke (<code>experiments/EXP-041-plugin-scope-hook.smoke.sh</code>、Phase G で実装)</dd>
+    <dt>期待結果</dt><dd>(a) <code>plugins/twl/hooks.json</code> 新規作成 + plugin reload で自動読み込み verify、(b) hooks.json の schema validation (matcher / type / handler / outputType) が plugin loader で reject されない confirm、(c) .claude/settings.json と hooks.json の precedence 確認 (重複 matcher 時の挙動)、(d) plugin uninstall で hook 自動削除 confirm</dd>
+    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a></dd>
+  </dl>
+</div>
+
+<div class="exp-block" id="EXP-042">
+  <h3>EXP-042: Elicitation hook 公式存在</h3>
+  <dl>
+    <dt>status</dt><dd><span class="vs inferred">inferred</span> (Phase I 2026-05-15 新規追加、Phase G smoke 候補)</dd>
+    <dt>verify 対象</dt><dd>Elicitation hook が現 Claude Code 実装 (Opus 4.7) で supported か WebFetch + 実機 fire で empirical verify。approval dialog が hook で自動応答できるなら Monitor regex 代替の clean path</dd>
+    <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a> (公式 Elicitation entry 存在確認)</dd>
+    <dt>分類</dt><dd>smoke (<code>experiments/EXP-042-elicitation-hook.smoke.sh</code>、Phase G で実装)</dd>
+    <dt>期待結果</dt><dd>(a) <code>https://code.claude.com/docs/en/hooks</code> の WebFetch 内容に "Elicitation" entry 存在確認、(b) <code>.claude/settings.json</code> の Elicitation hook 登録 + permission prompt fire で実機 trigger 確認、(c) JSON output で <code>permissionDecision: allow|deny</code> 自動応答 verify、(d) Monitor regex (INPUT-WAIT channel) と比較した token 節約率計測</dd>
+    <dt>関連 spec</dt><dd><a href="hooks-mcp-policy.html#s6">hooks-mcp-policy.html §6 defer items</a> + <a href="monitor-policy.html#s2">monitor-policy.html §2 actor scope</a></dd>
+  </dl>
+</div>
+
 <h2>関連 spec</h2>
 
 <ul>
