@@ -54,12 +54,36 @@
 
 <p style="margin-top: 0.5em; font-size: 0.9em;"><em>※ <strong>合計 13 件</strong> = bats unit 9 件 (EXP-001/002/003/006/027/028/032/034/038) + smoke 4 件 (EXP-007/008/009/010)。うち Step 3 で実装済 4 件 (EXP-006/032/034/038、Phase C で path migration)、Phase C で bats unit 新規実装 5 件 (EXP-001/002/003/027/028)、smoke 4 件は Claude session 必須で別 session。本 listing は ADR-043 / ADR-045 が <code>Phase 1 PoC</code> 着手前提として参照。残 25 件 (EXP-004/005 + EXP-011〜026 + EXP-029〜031 + EXP-033 + EXP-035〜037) は <code>Phase 2 dual-stack</code> 以降で順次検証。</em></p>
 
+<h3 id="go-no-go-criteria"><code>Phase 1 PoC</code> 着手 go/no-go 判定基準 (Phase I 2026-05-15 dig Q1 確定)</h3>
+
+<div class="info">
+<ul>
+  <li><strong>bats unit 9 件: 100% PASS (hard gate)</strong> — 手元で iterate 可能なため 100% を必須化</li>
+  <li><strong>smoke 4 件: 最低 2 件 PASS</strong> (4 件中 2 件以上で go-judgment 可能、残り 2 件は <code>Phase 1 PoC</code> 中に並行実施)</li>
+  <li><strong>合計: bats 9/9 + smoke 2+/4 で go</strong></li>
+</ul>
+<strong>判断根拠</strong>: bats unit は deterministic でローカル実行可能、100% を hard gate にできる。smoke は Claude session 必須で session スパン long のため hard gate 化困難、最低 2 件で実機 feasibility を validate しつつ Phase 1 PoC 中の並行実施で漸次達成 (smoke 残 2 件が PoC 進行と並行 fix 可能)。
+</div>
+
+<h3 id="blocking-issue-policy"><code>Phase 1 PoC</code> 中の blocking issue 発見時 re-judgment policy (Phase I 2026-05-15 dig Q2 確定)</h3>
+
+<div class="info">
+<code>Phase 1 PoC</code> 中に blocking issue (例: atomic 4-phase が想定通り動作しない、mailbox JSON event が Monitor で受信されない、gate hook の caller 識別が壊れる 等) を発見した場合の policy:
+<ol>
+  <li><strong>blocking issue → architecture spec 修正</strong> (該当 spec file に Phase I 同様の dig 結果 reflect、Phase 0 戻り)</li>
+  <li><strong>spec 修正に対応する EXP を追加</strong> (実機 verify path 明示、experiment-index.html に新 EXP block)</li>
+  <li><strong>EXP 実機 fire → experiment-verified 化</strong></li>
+  <li><strong>再 go/no-go 判定</strong> (iterative cycle、上記 §go/no-go criteria を再評価)</li>
+</ol>
+<strong>非該当例</strong> (PoC pause 不要、parallel issue として処理): minor bug / 用語 drift / docs 漏れ / hook script の typo fix 等。<strong>判断根拠</strong>: blocking issue は spec の根本的な誤りを意味するため、spec 修正 + EXP 追加 + 再 verify の iterative cycle で品質保証する。PoC を fast-fail にして parallel issue として続行すると spec drift が累積し、Phase 2 dual-stack で問題が顕在化する。
+</div>
+
 <h2>想定 outline (次 session で実装)</h2>
 
 <ol>
   <li><strong><code>Phase 1</code>: PoC (Day 1-3)</strong> — 最小実装で 3 階層 + step verification + file mailbox + gate hook が動くことを実証
     <ul>
-      <li><strong>★ STEP -1 (本 session 第 3 弾追加、user 要望): 既存 PreToolUse hook 全件無効化</strong> — <code>plugins/twl/hooks/hooks.json</code> を <code>hooks.json.bak</code> に rename し、<code>hooks.json</code> を <code>{"hooks":{}}</code> (空) に置換 (or 必要最小限の安全 hook のみ残す: host-safety / commit-validate / merge-guard の 3 件)。<strong>背景</strong>: 既存 hook は新 architecture でほぼ全廃予定 (chain-runner 廃止に伴い無意味化)、error 通知が運用 noise になる。<strong>復旧</strong>: rollback 時に <code>hooks.json.bak</code> を rename で復元。<strong>影響</strong>: spec-review-gate / phase3-gate / refined-status-gate / pre-pr-gate / merge-gate-block 等 17 件無効化、新 phase-gate.sh (tier 1) は plugin scope に新規配置で代替</li>
+      <li><strong>★ STEP -1 (Phase I 2026-05-15 dig Q3 確定 — hook id audit 結果反映): 既存 PreToolUse hook 全件無効化</strong> — <code>plugins/twl/hooks/hooks.json</code> を <code>hooks.json.bak</code> に rename し、<code>hooks.json</code> を <strong>minimal 3 hook (audit 結果具体化)</strong> に置換: (a) <code>pre-tool-use-host-safety.sh</code> (host-safety、tmux 破壊禁止、CLAUDE.md global 不変条件)、(b) <code>pre-bash-commit-validate.sh</code> (commit-validate、Conventional Commits 形式)、(c) <code>pre-bash-merge-guard.sh</code> + <code>pre-bash-merge-gate-block.sh</code> + <code>mcp-shadow-merge-guard-writer.sh</code> (merge-guard 3 sub hook、不変条件 S、merge-gate.json status verify)。<strong>背景</strong>: 既存 hook は新 architecture でほぼ全廃予定 (chain-runner 廃止に伴い無意味化)、error 通知が運用 noise になる。<strong>復旧</strong>: rollback 時に <code>hooks.json.bak</code> を rename で復元。<strong>影響</strong>: spec-review-gate / phase3-gate / refined-status-gate / pre-pr-gate 等 17 件無効化、新 phase-gate.sh (tier 1) は plugin scope に新規配置で代替</li>
       <li><strong>★ STEP 0 (本 session 第 3 弾追加 + 第 4 弾 dig 拡張): sandbox EXP 実行</strong> — <code>bash experiments/run-all.sh</code> で全 EXP-001〜031 を実行 (本 dig で 13 件追加: EXP-019〜031)、core claim を experiment-verified に格上げ (<a href="sandbox-experiment.html">sandbox-experiment.html</a> §9 recommended sequence)。<strong>新規優先</strong>: EXP-027/028 (tool-architect verify hook) は bats で完結可能、EXP-019〜023 (GitHub Project write boundary 5 領域 × 4 手段) は tool-project 実装前提</li>
       <li><strong>★ STEP 1 (本 session 第 3 弾追加): twl plugin 化</strong> — <code>plugins/twl/.claude-plugin/plugin.json</code> 作成、<code>claude --plugin-dir plugins/twl</code> で起動確認、<code>/twl:*</code> namespace で skill invoke 動作 <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a></li>
       <li>ADR-043 起票 (md 本体 + 本 spec directory を supplement として link)</li>

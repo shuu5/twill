@@ -59,6 +59,19 @@
   </ul>
 </div>
 
+<div class="info" style="background: var(--surface-info); border-left: 4px solid var(--brand);">
+  <strong>verify_checks JSON schema (Phase I 2026-05-15 dig Q4 確定)</strong>: 各 EXP の bats / smoke が emit する <code>verify_checks</code> array の structured schema。各 EXP block の「期待結果」field は本 schema の自然言語表現。<br>
+  <br>
+  <ul>
+    <li><strong>1 check 単位の schema</strong>: <code>{check_id: string, description: string, method: "gh_cli"|"graphql"|"server_state"|"verify"|"bats_assertion", actual_output: string, status: "pass"|"fail"|"skip"}</code></li>
+    <li><strong>必須 field</strong>: <code>check_id</code> / <code>description</code> / <code>status</code></li>
+    <li><strong>method 拡張</strong>: <code>bats_assertion</code> (bats 内 assertion 単位)、<code>gh_cli</code> (gh CLI exit code)、<code>graphql</code> (GraphQL response)、<code>server_state</code> (実機 state check)、<code>verify</code> (汎用 verification)</li>
+    <li><strong>result JSON 形式</strong>: <code>{exp_id, pass: bool, ts, verify_checks: [...], log_hash: sha256, smoke_path: string?}</code> を <code>.audit/&lt;run-id&gt;/experiments/EXP-NNN.json</code> に出力</li>
+    <li><strong>実装 reference</strong>: Phase F-4 smoke EXP-015/019-023 (6 件) が verify_checks pattern として完全実装済、Phase G 以降の新規 bats / smoke 実装時に同 schema 適用 MUST</li>
+    <li><strong>cross-AI re-audit による検証</strong>: <code>plugins/twl/agents/specialist-exp-reviewer.md</code> (Phase G 実装) が各 EXP の verify_checks 内容を意味的に audit (bats assertion 内容 / verify_source whitelist 等 7 step 検査)</li>
+  </ul>
+</div>
+
 <h2>カテゴリ A: PreToolUse hook schema (EXP-001〜003)</h2>
 
 <div class="exp-block" id="EXP-001">
