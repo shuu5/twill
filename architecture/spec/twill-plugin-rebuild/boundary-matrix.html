@@ -121,6 +121,7 @@
   <dt>送信 mail event</dt><dd><code>spawn-request</code> / <code>escalate-human-gate</code> / <code>budget-pause</code></dd>
   <dt>escalate</dt><dd>3 連続 failure → ★HUMAN GATE (AskUserQuestion or Discord mail)。budget exhaustion → CronDelete + one-shot wakeup</dd>
   <dt>crash recovery</dt><dd>heartbeat self-touch (Inv G)、session 死亡時は user 手動 <code>--continue</code>。CronCreate 復元 (7 日 expiry 注意)</dd>
+  <dt>Monitor primitive</dt><dd><code>.mailbox/administrator/inbox.jsonl</code> tail + budget status line + tmux state を Monitor で集約 (<a href="monitor-policy.html">monitor-policy.html</a> §2)。<code>plugins/twl/monitors.json</code> daemon を所有 (Step 0 で health-check、crash 時 record-detection-gap.sh で user escalate)</dd>
 </dl>
 
 <h3>phaser (phaser-*、L1) の責務</h3>
@@ -138,6 +139,7 @@
   <dt>review framework</dt><dd>atomic 出力検証 (post-verify 結果確認、src diff、test count 増加確認)。Inv K (phaser 実装禁止、第 5 弾 dig で phaser に rename) で src diff = phaser のみは FAIL</dd>
   <dt>merge gate</dt><dd><code>phaser-pr</code> のみが PR merge を実行 (Inv C 保全)。他 phaser は merge 禁止</dd>
   <dt>内部 spawn</dt><dd><code>Agent(specialist-*)</code> は可 (公式 verified、subagent context)、subagent からの更なる spawn は禁止</dd>
+  <dt>Monitor primitive</dt><dd>atomic spawn 後の <code>.mailbox/&lt;own-phaser-name&gt;/inbox.jsonl</code> tail で進捗監視可 (<a href="monitor-policy.html">monitor-policy.html</a> §2)。<strong>制約</strong>: administrator と同 channel を tail しない (token 二重消費回避)、channel 分離 (admin = phaser 集約 mail / phaser = atomic mail)、phaser invocation 終了時に Monitor task stop</dd>
 </dl>
 
 <h3>workflow + atomic + specialist (L2-3) の責務</h3>
@@ -154,6 +156,7 @@
   <dt>送信 mail event</dt><dd>atomic: <code>step-started</code> / <code>step-completed</code> / <code>step-precheck-failed</code> / <code>step-postverify-failed</code>。specialist: mail 送信なし (Agent return value で完結)</dd>
   <dt>内部 spawn</dt><dd>atomic 内 <code>Agent(specialist-*)</code> 可、specialist は spawn 禁止 (公式 verified)</dd>
   <dt>checkpoint</dt><dd><code>.mailbox/&lt;phaser-name&gt;/</code> または per-phaser パスが必須 (Inv V)。共通 path への write は <code>--shared</code> フラグ明示 + audit log 必須</dd>
+  <dt>Monitor primitive</dt><dd><strong>使用不可</strong> (<a href="monitor-policy.html">monitor-policy.html</a> §2)。run-to-completion 型のため Monitor 不要、<code>Skill()</code> / <code>Agent()</code> の return value または mail emit (atomic のみ) で十分</dd>
 </dl>
 
 <h3>tool-* (3 件、独立) の責務 (第 4 弾 dig)</h3>

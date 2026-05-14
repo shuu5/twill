@@ -219,7 +219,19 @@ if not admin_cycle_task:
         recurring=true
         # durable は使わない (#40228 BROKEN、session-scoped で十分)
     )
-print("admin-cycle CronCreate set (session-scoped)")</code></pre>
+print("admin-cycle CronCreate set (session-scoped)")
+
+# 3. Monitor daemon health-check (Phase I 2026-05-15 確定、monitor-policy.html §5.2)
+# plugins/twl/monitors.json daemon が plugin loader で auto-start されているはず
+MONITOR_LIFECYCLE_FILE=".supervisor/monitor-lifecycle.json"
+if [[ -f "$MONITOR_LIFECYCLE_FILE" ]]; then
+    ADMIN_INBOX_PID=$(jq -r '.daemon_pids."admin-inbox-tail" // empty' "$MONITOR_LIFECYCLE_FILE")
+    if [[ -z "$ADMIN_INBOX_PID" ]] || ! kill -0 "$ADMIN_INBOX_PID" 2>/dev/null; then
+        bash plugins/twl/scripts/record-detection-gap.sh \
+            --type missing-monitor --severity high \
+            --detail "admin-inbox-tail daemon dead/missing (PID=$ADMIN_INBOX_PID)"
+    fi
+fi</code></pre>
 
 <h3>5.2 7 日 expiry 対応</h3>
 
@@ -335,6 +347,7 @@ print("admin-cycle CronCreate set (session-scoped)")</code></pre>
 
 <ul>
   <li><a href="overview.html">overview.html</a> §3 (3 階層 architecture 全体図、administrator L0 図解)</li>
+  <li><a href="monitor-policy.html">monitor-policy.html</a> (Monitor primitive 規定 — actor / signal / composite / lifecycle、第 5 弾 dig Phase I 確定)</li>
   <li><a href="invariant-fate-table.html">invariant-fate-table.html</a> 不変条件 G (crash 検知) + T (mailbox atomic) + V (per-specialist scope)</li>
   <li><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3 (heartbeat 検知 + 3 階層 SLA)</li>
   <li><a href="gate-hook.html">gate-hook.html</a> (phase-gate 経由の deny 受信処理)</li>
