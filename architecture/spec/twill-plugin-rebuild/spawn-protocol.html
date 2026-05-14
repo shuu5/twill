@@ -31,7 +31,7 @@
 <ol>
   <li>twl を plugin として正式化: <code>plugins/twl/.claude-plugin/plugin.json</code> 作成</li>
   <li>plugin として load: <code>claude --plugin-dir plugins/twl</code> or marketplace 経由 <code>/plugin install twl</code></li>
-  <li>skill invoke は <strong>slash command + namespace</strong>: <code>/twl:administrator</code>, <code>/twl:phaser-impl &lt;args&gt;</code>, <code>/twl:specialist-test-ready &lt;args&gt;</code></li>
+  <li>skill invoke は <strong>slash command + namespace</strong>: <code>/twl:administrator</code>, <code>/twl:phaser-impl &lt;args&gt;</code>, <code>/twl:workflow-test-ready &lt;args&gt;</code> (旧 specialist-test-ready から第 5 弾 dig で rename)</li>
 </ol>
 これにより namespace 衝突防止 (強制 <code>/twl:*</code>)、<code>/reload-plugins</code> 自動 reload、<code>--plugin-dir</code> local test、Plugin Monitor (公式機能) 利用が可能 <a class="exp-link" href="experiment-index.html#EXP-010">EXP-010</a>
 </div>
@@ -47,12 +47,14 @@
 │   ├── phaser-refine/SKILL.md
 │   ├── phaser-impl/SKILL.md
 │   ├── phaser-pr/SKILL.md
-│   ├── specialist-test-ready/SKILL.md
-│   ├── specialist-pr-cycle/SKILL.md
+│   ├── workflow-test-ready/SKILL.md  # 旧 specialist-test-ready (第 5 弾 dig rename)
+│   ├── workflow-pr-verify/SKILL.md   # 旧 specialist-pr-cycle (Phase 1 PoC で実装)
+│   ├── atomic-test-scaffold/SKILL.md
+│   ├── atomic-green-impl/SKILL.md
+│   ├── atomic-check/SKILL.md
 │   ├── tool-architect/SKILL.md
 │   ├── tool-project/SKILL.md
-│   ├── tool-utility/SKILL.md
-│   └── tool-self-improve/SKILL.md
+│   └── tool-sandbox-runner/SKILL.md  # 旧 tool-self-improve rename、tool-utility 廃止 (第 4 弾 dig)
 ├── hooks/
 │   └── hooks.json                 # PreToolUse phase-gate hook 等
 ├── monitors/
@@ -158,11 +160,34 @@ main() {
 }
 
 _wait_session_ready() {
+  # Phase I 2026-05-15 確定: 3 条件 AND 判定 (CLAUDE.md feedback_inject_queue_verification 知見反映)
+  # (a) pane_in_mode=0 (idle、edit mode でない)
+  # (b) "Press up to edit queued" 不在 (旧 inject の queue 残留検知)
+  # (c) idle 持続時間 > IDLE_MIN_SEC (default 2s、startup initialization 中 false ready 防止)
   local window="$1"; local timeout="$2"; local elapsed=0
+  local idle_min_sec="${IDLE_MIN_SEC:-2}"
+  local idle_accumulated=0
+
   while [ "$elapsed" -lt "$timeout" ]; do
-    if tmux list-windows -a -F '#{window_name}|#{pane_in_mode}' \
-         | grep -q "^${window}|0\$"; then
-      sleep 2; return 0  # ready + idle
+    # (a) pane_in_mode=0 check
+    local in_mode=$(tmux list-windows -a -F '#{window_name}|#{pane_in_mode}' \
+                      | grep "^${window}|" | cut -d'|' -f2)
+    if [ "$in_mode" != "0" ]; then
+      idle_accumulated=0; sleep 1; elapsed=$((elapsed+1)); continue
+    fi
+
+    # (b) "Press up to edit queued" 不在 check (queue 残留検知)
+    local pane_tail=$(tmux capture-pane -t "$window" -p -S -5 2>/dev/null | tail -3)
+    if echo "$pane_tail" | grep -q "Press up to edit"; then
+      # queue 残留 → Enter 送信して flush し再判定
+      tmux send-keys -t "$window" Enter
+      idle_accumulated=0; sleep 1; elapsed=$((elapsed+1)); continue
+    fi
+
+    # (c) idle 持続時間 check
+    idle_accumulated=$((idle_accumulated+1))
+    if [ "$idle_accumulated" -ge "$idle_min_sec" ]; then
+      return 0  # 3 条件 AND 成立、ready + idle
     fi
     sleep 1; elapsed=$((elapsed+1))
   done
@@ -184,16 +209,17 @@ main "$@"</code></pre>
 <h3>4.1 path 規約</h3>
 
 <pre><code>.mailbox/
-├── admin/
-│   └── inbox.jsonl              # administrator が読む mail
+├── administrator/
+│   └── inbox.jsonl              # administrator が読む mail (旧 admin/ から rename)
 ├── phaser-impl-1660/
 │   └── inbox.jsonl              # phaser が atomic/specialist mail を集約
 ├── phaser-pr-1660/
 │   └── inbox.jsonl
-├── specialist-test-ready-1660/
-│   └── inbox.jsonl              # (atomic/specialist は phaser mailbox に送る、自身 mailbox 不要な設計が default)
 └── archive/
-    └── inbox-&lt;ts&gt;.jsonl         # 7 日 retention archive</code></pre>
+    └── inbox-&lt;ts&gt;.jsonl         # 7 日 retention archive
+
+# specialist/atomic/workflow は phaser mailbox に書き込み、自身 mailbox 不要 (boundary-matrix.html I-4)
+# 旧 specialist-test-ready-1660/ 例は drift、新 architecture では使用しない</code></pre>
 
 <h3>4.2 flock atomic write (verified pattern)</h3>
 
@@ -291,29 +317,29 @@ mailbox_read() {
 
 <h2>§7. 3 階層全方向の使用例</h2>
 
-<h3>7.1 worker → pilot (step 完了 mail)</h3>
+<h3>7.1 atomic → phaser (step 完了 mail)</h3>
 
-<pre><code># worker SKILL.md 内 step::run 経由
+<pre><code># atomic SKILL.md 内 Step 3 report (Phase I 2026-05-15 確定: TWL_PHASER_NAME env 経由)
 source plugins/twl/scripts/lib/mailbox.sh
 mailbox_emit \
-  "specialist-test-ready-1660" \
-  "phaser-impl-1660" \
+  "atomic-test-scaffold" \
+  "$TWL_PHASER_NAME" \
   "step-completed" \
   '{"step":"test-scaffold","issue":1660,"verify":{"test_added":5,"red":true}}'</code></pre>
 
-<h3>7.2 pilot → admin (phase 完了の集約 mail)</h3>
+<h3>7.2 phaser → administrator (phase 完了の集約 mail)</h3>
 
-<pre><code># pilot SKILL.md 内 (worker mail 集約後)
+<pre><code># phaser SKILL.md 内 (atomic mail 集約後)
 source plugins/twl/scripts/lib/mailbox.sh
 mailbox_emit \
   "phaser-impl-1660" \
-  "admin" \
+  "administrator" \
   "phase-completed" \
-  '{"issue":1660,"status":"Implementing","worker_count":1,"all_steps_pass":true}'</code></pre>
+  '{"issue":1660,"status":"Implementing","atomic_count":3,"all_steps_pass":true}'</code></pre>
 
-<h3>7.3 admin → pilot (spawn 経由、mailbox は使わない)</h3>
+<h3>7.3 administrator → phaser (spawn 経由、mailbox は使わない)</h3>
 
-<p>admin が pilot を起動するのは spawn-tmux.sh 経由 (mailbox 不使用)。pilot 起動後の通信は worker→pilot→admin の上方向のみ (pyramid)。</p>
+<p>administrator が phaser を起動するのは spawn-tmux.sh 経由 (mailbox 不使用)。phaser 起動後の通信は atomic/specialist→phaser→administrator の上方向のみ (pyramid 集約、Inv I-4)。</p>
 
 <h2>§8. mail loss 防止 + archive 戦略</h2>
 

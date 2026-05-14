@@ -287,7 +287,7 @@ if mcp is not None:
   </tbody>
 </table>
 
-<p>各 phase invocation 前に対応 status を確認、不一致なら deny。tool-* (tool-architect / tool-project / tool-utility / tool-self-improve) は gate 対象外 (status と無関係)。</p>
+<p>各 phaser invocation 前に対応 status を確認、不一致なら deny。tool-* (tool-architect / tool-project / tool-sandbox-runner、第 4 弾 dig で tool-utility 廃止 + tool-self-improve → tool-sandbox-runner rename) は gate 対象外 (status と無関係、ADR-040 で別系統 gate)。</p>
 
 <h2>§7. deny 経路 (administrator notify)</h2>
 

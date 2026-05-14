@@ -118,7 +118,7 @@
 <tbody>
 <tr><td>L2 workflow+specialist</td><td>3 min (各 step 終了時 touch)</td><td>10 min (mail 不在 + heartbeat 古い)</td><td>L1 phaser (mailbox poll cycle で確認)</td></tr>
 <tr><td>L1 phaser</td><td>5 min (各 cycle で touch)</td><td>15 min</td><td>L0 administrator (CronCreate 25 min cycle で確認)</td></tr>
-<tr><td>L0 administrator</td><td>25 min (CronCreate fire ごとに touch)</td><td>40 min (CronCreate skip 1 回 + 余裕)</td><td>外部 daemon (`heartbeat-watcher.sh`) or user 手動</td></tr>
+<tr><td>L0 administrator</td><td>25 min (CronCreate fire ごとに touch <code>.supervisor/admin-heartbeat</code>)</td><td>40 min (CronCreate skip 1 回 + 余裕)、Phase I 2026-05-15 確定で 10 min stale 検知に短縮</td><td><strong>machine-scoped Linux crontab</strong> (admin process と独立、Phase I 2026-05-15 確定) + user 手動 fallback</td></tr>
 </tbody>
 </table>
 
@@ -132,6 +132,28 @@
 
 <div class="warning">
 <strong>注意</strong>: SLA は新 spec の <strong>初期値</strong>。<code>Phase 1 PoC</code> で実測して調整。worker の step によっては 10 min 超 (例: 大規模 test execution) もあり得るため、step ごとの timeout 個別調整が必要 (<code>Phase 2</code> で `step.sh` に timeout field 追加)。
+</div>
+
+<h3>4.5 L0 administrator crash 自動検知 (Phase I 2026-05-15 dig Q3 確定、Inv G 部分保証化)</h3>
+
+<div class="info">
+<strong>問題</strong>: L0 administrator が crash すると CronCreate task も巻き添えで停止 (session-scoped)、L0 自己検知機構は原理的に成立しない (循環依存)。Phase I dig で 2 段防御を確定。
+
+<dl>
+  <dt>1 段目 (session-scoped、admin 内)</dt><dd>admin polling cycle ごとに <code>.supervisor/admin-heartbeat</code> を touch。admin が alive な限り mtime 更新、admin dead で mtime stale</dd>
+  <dt>2 段目 (machine-scoped、admin 外、新規)</dt><dd><strong>Linux crontab</strong> (admin process と独立) で 5 min 毎に <code>.supervisor/admin-heartbeat</code> mtime check。10 min 以上 stale なら Discord DM via <code>mcp__discord__reply</code> (chat_id は reference_discord_dm.md 参照) で user escalate</dd>
+</dl>
+
+<strong>実装 (Phase 1 PoC scope)</strong>:
+<ul>
+  <li><code>plugins/twl/scripts/admin-health-check.sh</code> (~30 行) を新規作成。content: <code>STALE=$(find .supervisor/admin-heartbeat -mmin +10 2&gt;/dev/null | wc -l); [[ $STALE -gt 0 ]] &amp;&amp; mcp_discord_reply "admin stale &gt; 10min"</code></li>
+  <li><code>crontab -e</code> で <code>*/5 * * * * bash /path/to/admin-health-check.sh</code> を user が manual 登録 (machine-scoped、admin process 独立稼働)</li>
+  <li>script 自身も idempotent (同 stale を複数回通知しないように last-notified state file 管理)</li>
+</ul>
+
+<strong>判断根拠</strong>: machine-scoped cron は admin process と独立で稼働、admin crash で fire 不能にならない。session-scoped CronCreate のみでは循環依存で検知不能 (admin dead → cron も dead)、machine-scoped で外部観測点を確保。
+
+<strong>残課題 (本質的に解消不能)</strong>: 完全 crash 検知は不可能 (host down / network down / Discord MCP server down / user 通知経路 down のいずれかで検知 break)。Inv G は「部分保証 (host alive + Discord MCP alive な範囲で 10 min 内検知)」として認識する。
 </div>
 
 <h2>5. recovery 手順 (各 crash 種別ごと)</h2>

@@ -41,7 +41,7 @@
     <tr><td>session.json</td><td><code>.supervisor/session.json</code></td><td><code>.admin/session.json</code> (<code>stack: "new"</code> field 追加)</td></tr>
     <tr><td>cld-observe-any log</td><td><code>.supervisor/cld-observe-any.log</code></td><td><code>.admin/admin-cycle.log</code></td></tr>
     <tr><td>mailbox</td><td>chain-runner / session-comm.sh 経由</td><td><code>.mailbox/admin/inbox.jsonl</code> (flock atomic、Inv T)</td></tr>
-    <tr><td>tmux window prefix</td><td><code>ap-</code> / <code>wt-</code> / <code>coi-</code> / <code>coe-</code></td><td><code>phase-</code> / <code>worker-</code> / <code>tool-</code></td></tr>
+    <tr><td>tmux window prefix</td><td><code>ap-</code> / <code>wt-</code> / <code>coi-</code> / <code>coe-</code></td><td><code>phaser-</code> / <code>tool-</code> (workflow/atomic/specialist は subagent context のため tmux window なし)</td></tr>
     <tr><td>CronCreate task prompt</td><td>su-observer の polling</td><td><code>admin-cycle.sh</code> の polling</td></tr>
     <tr><td>checkpoint</td><td><code>.autopilot/checkpoints/</code> (共通、cross-pollution risk)</td><td><code>.mailbox/&lt;session&gt;/checkpoints/</code> (per-specialist、Inv V)</td></tr>
   </tbody>
@@ -71,7 +71,7 @@ FOR each issue IN board.items:
 <ul>
   <li>両 stack の administrator session (旧 + 新) が並列稼働、tmux window prefix で識別</li>
   <li>cross-stack mail 禁止: <code>.supervisor/</code> と <code>.admin/</code> を相互 read/write 禁止</li>
-  <li>cross-stack spawn 禁止: 旧 su-observer が phase-* spawn (新 stack 経路) しない、新 administrator が co-autopilot spawn (旧 stack 経路) しない</li>
+  <li>cross-stack spawn 禁止: 旧 su-observer が phaser-* spawn (新 stack 経路) しない、新 administrator が co-autopilot spawn (旧 stack 経路) しない</li>
   <li>同 Issue を両 stack が処理すると Project Board status race の risk → label 厳密 enforce + integrity check</li>
 </ul>
 
@@ -94,7 +94,7 @@ STEPS:
 <ol>
   <li>user が <code>gh issue edit</code> で label 切替</li>
   <li>旧 stack の関連 tmux window を kill (su-observer に手動 instruction)</li>
-  <li>新 stack の administrator が CronCreate next cycle で検知 → phase-impl 再開</li>
+  <li>新 stack の administrator が CronCreate next cycle で検知 → phaser-impl 再開</li>
   <li>移行 cost: 1 Issue あたり 約 10 min (user 手動作業含む)</li>
 </ol>
 
@@ -138,7 +138,7 @@ STEPS:
     <tr><td>0: spec 完璧化</td><td>本 session</td><td>spec 完了、実装なし</td></tr>
     <tr><td>1: 案 2 最小実装</td><td>次 session</td><td>administrator + 3 helper (mailbox.sh / spawn-tmux.sh / admin-cycle.sh) 実装、pilot/worker 未実装</td></tr>
     <tr><td>2: 並列稼働開始</td><td>次々 session</td><td><code>stack:new</code> label 自動付与 Action 追加、su-observer と並列稼働</td></tr>
-    <tr><td>3: phase-* 順次実装</td><td>段階的</td><td>phase-impl / phase-pr 等を順次実装、対応する <code>stack:new</code> Issue を新 stack で処理</td></tr>
+    <tr><td>3: phaser-* 順次実装</td><td>段階的</td><td>phaser-impl / phaser-pr 等を順次実装、対応する <code>stack:new</code> Issue を新 stack で処理</td></tr>
     <tr><td>4: 安定稼働</td><td>10+ Issue 完遂</td><td>cutover 判定 + user 承認</td></tr>
     <tr><td>5: cutover + cleanup</td><td><code>Phase 3</code></td><td>旧 stack 削除、新 single stack 化</td></tr>
   </tbody>

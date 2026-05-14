@@ -122,7 +122,7 @@
   <dt>受信 mail event</dt><dd><code>phase-completed</code> / <code>phase-failed</code> / <code>phase-gate-denied</code> / <code>spawn-completed</code> / <code>tool-completed</code> (tool-sandbox-runner のみ)</dd>
   <dt>送信 mail event</dt><dd><code>spawn-request</code> / <code>escalate-human-gate</code> / <code>budget-pause</code></dd>
   <dt>escalate</dt><dd>3 連続 failure → ★HUMAN GATE (AskUserQuestion or Discord mail)。budget exhaustion → CronDelete + one-shot wakeup</dd>
-  <dt>crash recovery</dt><dd>heartbeat self-touch (Inv G)、session 死亡時は user 手動 <code>--continue</code>。CronCreate 復元 (7 日 expiry 注意)</dd>
+  <dt>crash recovery</dt><dd>heartbeat self-touch (Inv G)、session 死亡時は user 手動 <code>--continue</code>。CronCreate 復元 (7 日 expiry 注意)。<strong>Phase I 2026-05-15 追加</strong>: <code>.supervisor/admin-heartbeat</code> file を admin polling cycle 毎に touch、stale 検知時 (10 min 以上更新なし) は CronCreate 別 task が Discord DM (mcp__discord__reply) で user escalate (Inv G 部分保証化、詳細 <a href="crash-failure-mode.html#s3">crash-failure-mode.html §3</a>)</dd>
   <dt>Monitor primitive</dt><dd><code>.mailbox/administrator/inbox.jsonl</code> tail + budget status line + tmux state を Monitor で集約 (<a href="monitor-policy.html">monitor-policy.html</a> §2)。<code>plugins/twl/monitors.json</code> daemon を所有 (Step 0 で health-check、crash 時 record-detection-gap.sh で user escalate)</dd>
 </dl>
 

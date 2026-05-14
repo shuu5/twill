@@ -160,25 +160,27 @@ specification も「全 chain step は 4-phase lifecycle」→「全 atomic skil
 </div>
 
 <div class="inv-block" id="inv-u">
-  <h3>不変条件 U: step verification post-verify 必須</h3>
+  <h3>不変条件 U: Atomic skill verification (4-phase lifecycle inline 実装)</h3>
   <dl>
-    <dt>目的</dt><dd>9 P0 bug の #973 (RED merge silent rot)、L1873-1884 自己申告 step を構造的に不能化する。</dd>
-    <dt>制約</dt>
+    <dt>目的</dt><dd>9 P0 bug の #973 (RED merge silent rot)、L1873-1884 自己申告 step を構造的に不能化する。第 5 弾 dig Round 9 で旧 "Step verification framework" から rename + 改訂 (詳細: <a href="atomic-verification.html">atomic-verification.html §6</a>)。</dd>
+    <dt>制約 (第 5 弾 dig 改訂、Phase I 2026-05-15 確定)</dt>
     <dd>
       <ul>
-        <li>全 chain step は <strong>pre-check → exec → post-verify → report</strong> の 4 phase lifecycle を MUST</li>
+        <li>全 <strong>atomic skill 呼び出し</strong>は <strong>pre-check → exec → post-verify → report</strong> の 4-phase lifecycle を <strong>atomic SKILL.md 本文に inline 実装</strong> MUST (旧 <code>step.sh framework</code> による外部 bash 呼び出しを廃止)</li>
+        <li>Step 0/2/3 (pre-check / post-verify / report) は SKILL.md に <strong>hardcode</strong>、deterministic 検証・送信 (Phase I dig Q1 確定)。Step 1 (exec) のみ LLM 自由生成 (AC file 読み込み)</li>
         <li>post-verify で機械検証 (test 数増加 / RED→GREEN / src diff / Agent return value 等) を <strong>必ず実施</strong></li>
         <li>self-report-only (record_current_step + ok のみ) は禁止</li>
-        <li>post-verify FAIL → step abort + pilot escalate (mail に failure 明記)</li>
+        <li>post-verify FAIL → atomic abort + phaser escalate (mail に failure 明記)、<strong>verdict 厳格 binary: "PASS" 以外 (FAIL/WARNING/unknown/空) は全て exit 1</strong> (Phase I dig Q4 確定)</li>
       </ul>
     </dd>
     <dt>根拠</dt><dd>9 P0 bug 分析の Bug #973 lesson、L1873-1884 自己申告 step 問題。</dd>
-    <dt>検証方法</dt><dd>bats <code>step-verification-post-verify.bats</code> (新規)、test なしで green-impl 呼び出すと step abort することを verify。</dd>
+    <dt>検証方法</dt><dd>bats <code>atomic-verification-post-verify.bats</code> (旧 step-verification-post-verify.bats から rename)、test なしで atomic-green-impl 呼び出すと atomic abort することを verify。</dd>
     <dt>影響範囲</dt>
     <dd>
       <ul>
-        <li><code>plugins/twl/scripts/step.sh</code> (新規 framework)</li>
-        <li>全 worker SKILL.md (step_run 経由でのみ step 実行)</li>
+        <li><strong>旧</strong>: <code>plugins/twl/scripts/step.sh</code> (第 3 弾 dig 案 3) — <strong>廃止</strong> (Phase 3 cutover)</li>
+        <li><strong>新</strong>: atomic SKILL.md 7 件 (atomic-test-scaffold / atomic-green-impl / atomic-check / atomic-pr-test / atomic-ac-verify / atomic-phase-review / atomic-pr-cycle-report)、各 SKILL.md 本文に 4-phase inline 実装</li>
+        <li>workflow SKILL.md は atomic を <code>Skill()</code> で順次呼ぶ launcher (verify 詳細 inline なし)</li>
       </ul>
     </dd>
   </dl>

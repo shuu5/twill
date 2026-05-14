@@ -157,7 +157,7 @@
 
 <pre><code>FOR each issue IN board_items:
   current_status = issue.status
-  has_active_pilot = ANY tmux window prefix "phase-*" matches issue
+  has_active_phaser = ANY tmux window prefix "phaser-*" matches issue
   next_phase = STATUS_TRANSITION_MAP[current_status]  # 例: Refined → phaser-impl
 
   IF current_status NOT IN ["Idea", "Explored", "Refined", "Implementing"]:
@@ -294,7 +294,7 @@ fi</code></pre>
 <h2>§7. 案 2 の致命的制約 + safe degradation</h2>
 
 <div class="caution">
-<strong>制約</strong>: pilot / worker (phase-* / worker-*) が未実装の段階では、admin が status 遷移を検知して spawn コマンドを発行しても spawn 先 SKILL.md が存在しないため即エラー。
+<strong>制約</strong>: phaser / atomic (phaser-* / atomic-* / specialist-* / workflow-*) が未実装の段階では、admin が status 遷移を検知して spawn コマンドを発行しても spawn 先 SKILL.md が存在しないため即エラー。
 </div>
 
 <p><strong>safe degradation 設計</strong>:</p>
@@ -302,7 +302,7 @@ fi</code></pre>
 <ol>
   <li>admin-cycle.sh の step 4 (spawn 判断) で「target SKILL.md が存在するか」を pre-check</li>
   <li>存在しない場合は <code>safe-no-op</code> mail を mailbox に emit、admin log のみ</li>
-  <li>user が phase-* / worker-* 実装を進めるに従い、spawn 対象が増えていく段階的 rollout</li>
+  <li>user が phaser-* / workflow-* / atomic-* / specialist-* 実装を進めるに従い、spawn 対象が増えていく段階的 rollout</li>
 </ol>
 
 <p>この設計により、admin 単独動作で:</p>
