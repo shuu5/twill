@@ -138,7 +138,7 @@
     <dt>status</dt><dd><span class="vs verified">verified</span> (公式仕様、未実機検証)</dd>
     <dt>verify 対象</dt><dd>同 PreToolUse event に command hook (tier 1) + mcp_tool hook (tier 2) を登録 → 両方 parallel 実行、両 reason が additionalContext に含まれる</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://code.claude.com/docs/en/hooks">code.claude.com/docs/en/hooks</a></dd>
-    <dt>分類</dt><dd>bats + smoke</dd>
+    <dt>分類</dt><dd>bats unit + smoke、<code>test-fixtures/experiments/tier/EXP-007-tier-parallel-hooks.bats</code> (bats unit、schema 静的 check + smoke は別途)</dd>
     <dt>期待結果</dt><dd>両 hook 起動、reason 両方含む</dd>
     <dt>関連 spec</dt><dd><a href="gate-hook.html">gate-hook.html</a> §4-5</dd>
   </dl>
@@ -191,7 +191,7 @@
   <dl>
     <dt>status</dt><dd><span class="vs deduced">deduced</span> (設計案のみ、未実装・未検証)</dd>
     <dt>verify 対象</dt><dd>step::run が pre-check → exec → post-verify → report の順に実行、各 phase で mailbox event 発行</dd>
-    <dt>分類</dt><dd>bats unit</dd>
+    <dt>分類</dt><dd>bats unit (mock 可、RED until Phase 1 PoC)、<code>test-fixtures/experiments/atomic/EXP-011-step-run-4phase-lifecycle.bats</code></dd>
     <dt>期待結果</dt><dd>4 mailbox event 順序通り emit</dd>
     <dt>関連 spec</dt><dd><a href="atomic-verification.html">atomic-verification.html</a> §3、<a href="ssot-design.html">ssot-design.html</a> §3</dd>
   </dl>
@@ -202,7 +202,7 @@
   <dl>
     <dt>status</dt><dd><span class="vs deduced">deduced</span></dd>
     <dt>verify 対象</dt><dd>test-scaffold step で test 数 0 増加 (RED test 未追加) → post-verify FAIL → step abort、pilot mailbox に <code>step-postverify-failed</code> mail</dd>
-    <dt>分類</dt><dd>bats unit</dd>
+    <dt>分類</dt><dd>bats unit (mock 可、RED until Phase 1 PoC)、<code>test-fixtures/experiments/atomic/EXP-012-post-verify-fail-escalate.bats</code></dd>
     <dt>期待結果</dt><dd>exit code != 0、mail 1 件、評価 reason 含む</dd>
     <dt>関連 spec</dt><dd><a href="invariant-fate-table.html#inv-u">不変条件 U</a></dd>
   </dl>
@@ -213,7 +213,7 @@
   <dl>
     <dt>status</dt><dd><span class="vs deduced">deduced</span></dd>
     <dt>verify 対象</dt><dd>2 worker 並列実行で各々が <code>.mailbox/&lt;worker&gt;/inbox.jsonl</code> に書き込み、共通 path 不在、cross-pollution なし</dd>
-    <dt>分類</dt><dd>bats unit</dd>
+    <dt>分類</dt><dd>bats unit (mock 可、RED until Phase 1 PoC)、<code>test-fixtures/experiments/atomic/EXP-013-per-specialist-mailbox-scope.bats</code></dd>
     <dt>期待結果</dt><dd>2 mailbox 独立、内容 cross なし、Bug #1703 構造的不能化確認</dd>
     <dt>関連 spec</dt><dd><a href="invariant-fate-table.html#inv-v">不変条件 V</a>、<a href="failure-analysis.html">failure-analysis.html</a> Bug #1703</dd>
   </dl>
@@ -225,7 +225,7 @@
     <dt>status</dt><dd><span class="vs verified">verified</span> (bash 4.3+ 要件)、<strong>CI image 確認必要</strong></dd>
     <dt>verify 対象</dt><dd>CI image (Ubuntu / GitHub Actions runner) で <code>bash --version</code> ≥ 4.3、<code>local -n</code> sample script 動作</dd>
     <dt>verify source</dt><dd>GNU bash 4.3 changelog</dd>
-    <dt>分類</dt><dd>bats unit (CI で実行)</dd>
+    <dt>分類</dt><dd>bats unit (CI で実行)、<code>test-fixtures/experiments/atomic/EXP-014-bash-nameref.bats</code></dd>
     <dt>期待結果</dt><dd>bash 5.x 動作、nameref 機能</dd>
     <dt>関連 spec</dt><dd><a href="ssot-design.html">ssot-design.html</a> §3.3 bash 互換性注記</dd>
   </dl>
@@ -251,7 +251,7 @@
     <dt>status</dt><dd><span class="vs verified">verified</span> (man page)</dd>
     <dt>verify 対象</dt><dd><code>tmux new-window -d -n test-window -c &lt;dir&gt; -- bash -c "sleep 5; exit"</code> で detached spawn、target session に新 window 追加、5 秒後に消滅</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://man7.org/linux/man-pages/man1/tmux.1.html">tmux(1)</a></dd>
-    <dt>分類</dt><dd>bats</dd>
+    <dt>分類</dt><dd>bats unit (独立 socket)、<code>test-fixtures/experiments/toolchain/EXP-016-tmux-new-window-detached.bats</code></dd>
     <dt>期待結果</dt><dd>window 作成 / 消滅、tmux list-windows で確認</dd>
     <dt>関連 spec</dt><dd><a href="spawn-protocol.html">spawn-protocol.html</a> §2</dd>
   </dl>
@@ -262,7 +262,7 @@
   <dl>
     <dt>status</dt><dd><span class="vs verified">verified</span> (man page)</dd>
     <dt>verify 対象</dt><dd><code>tmux list-windows -a -F '#{window_name}|#{pane_dead}|#{pane_active}|#{pane_in_mode}'</code> で各 window の pane state 取得、process exit 後 <code>#{pane_dead}=1</code></dd>
-    <dt>分類</dt><dd>bats</dd>
+    <dt>分類</dt><dd>bats unit (独立 socket)、<code>test-fixtures/experiments/toolchain/EXP-017-tmux-format-pane-state.bats</code></dd>
     <dt>期待結果</dt><dd>format 変数で crash 検知可能 (capture-pane より高速・信頼)</dd>
     <dt>関連 spec</dt><dd><a href="crash-failure-mode.html">crash-failure-mode.html</a> §3、<a href="admin-cycle.html">admin-cycle.html</a> §3.3</dd>
   </dl>
@@ -274,7 +274,7 @@
     <dt>status</dt><dd><span class="vs verified">verified</span> (公式 docs)、<strong>handler 分離は twl 独自パターン (公式 docs 記載なし)</strong></dd>
     <dt>verify 対象</dt><dd>fastmcp v3.0.0 で <code>mcp = FastMCP(name="test")</code> + <code>@mcp.tool</code> decorator + 純 Python handler を import して in-process test</dd>
     <dt>verify source</dt><dd><a class="src-link" href="https://gofastmcp.com/servers/tools">gofastmcp.com/servers/tools</a></dd>
-    <dt>分類</dt><dd>bats / pytest unit</dd>
+    <dt>分類</dt><dd>bats unit (cli/twl uv env 経由)、<code>test-fixtures/experiments/toolchain/EXP-018-fastmcp-handler-split.bats</code></dd>
     <dt>期待結果</dt><dd>fastmcp なし環境でも handler 直接呼び出し成功 (deferred-tool pattern 動作)</dd>
     <dt>関連 spec</dt><dd><a href="twl-mcp-integration.html">twl-mcp-integration.html</a> §1.1</dd>
   </dl>
