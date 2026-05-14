@@ -14,7 +14,7 @@
 <div class="info"><strong>第 5 弾 dig Round 1 (Phase I 2026-05-15)</strong> で確定。User 懸念「Monitor は administrator が使う予定だがその使い方に考察の余地」への dig 4 件結果を SSoT 化。<br>
 旧 <code>.supervisor/events/</code> ファイル signal (existence / mtime / JSON body 混在) は <strong>第 5 弾 dig Round 10 で完全廃止済</strong>、mailbox JSON event に一元化。</div>
 
-<h2>§1. Monitor primitive 公式仕様 (Claude Code Sonnet 4.6 / Opus 4.7、<span class="vs verified">verified</span>)</h2>
+<h2 id="s1">§1. Monitor primitive 公式仕様 (Claude Code Sonnet 4.6 / Opus 4.7、<span class="vs verified">verified</span>)</h2>
 
 <table>
   <thead>
@@ -32,7 +32,7 @@
   </tbody>
 </table>
 
-<h2>§2. actor scope (Phase I dig Q1 確定)</h2>
+<h2 id="s2">§2. actor scope (Phase I dig Q1 確定)</h2>
 
 <p>Monitor primitive 使用権限を持つ actor: <strong>administrator (L0) + phaser (L1)</strong> のみ。specialist / workflow / atomic / tool-* は使用不可。</p>
 
@@ -42,7 +42,7 @@
   <dt>specialist / workflow / atomic / tool-*</dt><dd><strong>使用禁止</strong>。run-to-completion 型のため Monitor 不要、blocking exit code + mail emit で十分。</dd>
 </dl>
 
-<h2>§3. signal primary strategy (Phase I dig Q2 確定)</h2>
+<h2 id="s3">§3. signal primary strategy (Phase I dig Q2 確定)</h2>
 
 <p>Monitor pattern の signal source は <strong>mailbox JSON event 単一化</strong>。旧 <code>.supervisor/events/</code> ファイル方式 (existence / mtime / JSON body 混在) は <strong>第 5 弾 dig Round 10 で廃止済</strong>。</p>
 
@@ -75,7 +75,7 @@ tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
   <li>他 actor の mailbox tail (channel isolation: admin は <code>administrator/</code>、phaser は <code>&lt;own-phaser-name&gt;/</code> のみ)</li>
 </ul>
 
-<h2>§4. composite event policy (Phase I dig Q3 確定)</h2>
+<h2 id="s4">§4. composite event policy (Phase I dig Q3 確定)</h2>
 
 <p>Monitor primitive の制約 (regex 単一 / line=1 event) のため、composite condition (AND / OR / threshold / debounce) は <strong>mail emitter side で評価</strong>。Monitor は <strong>1 mail = 1 composite event</strong> として受信。</p>
 
@@ -84,7 +84,7 @@ tail -F .mailbox/administrator/inbox.jsonl 2&gt;/dev/null \
 <dl class="inv-row">
   <dt>原則 C-1 (emitter responsibility)</dt><dd>composite logic (debounce / multi-indicator AND / threshold) は mail を emit する side (administrator polling cycle / phaser polling / atomic-mail-send.sh 等) で評価する。Monitor 側で複合判定しない。</dd>
   <dt>原則 C-2 (one mail = one event)</dt><dd>composite condition が成立した場合のみ <code>event</code> field を持つ 1 mail を emit。複数条件が並列成立しても 1 mail に集約。</dd>
-  <dt>原則 C-3 (LLM evaluator は分離)</dt><dd>LLM-based composite 判定 (例: 自然言語 phrase classification) は administrator polling cycle (admin-cycle.html §3.3 judge step) の <strong>SKILL.md 内部</strong>で実行。Monitor pattern には埋め込まない。</dd>
+  <dt>原則 C-3 (LLM evaluator は分離)</dt><dd>LLM-based composite 判定 (例: 自然言語 phrase classification) は administrator polling cycle (<a href="admin-cycle.html">admin-cycle.html</a> §3.4 spawn 判断 + §2 図 judge ボックス) の <strong>SKILL.md 内部</strong>で実行。Monitor pattern には埋め込まない。</dd>
 </dl>
 
 <h3>4.2 例: IDLE-COMPLETED composite event</h3>
@@ -105,13 +105,10 @@ check_idle_completed() {
   local debounce_passed=$((last_mail_age &gt;= debounce_sec))
 
   if [[ "$pane_state" == "0" &amp;&amp; "$phrase_match" -ge 1 &amp;&amp; "$debounce_passed" == "1" ]]; then
-    # composite condition 成立 → 1 mail emit
-    bash plugins/twl/scripts/lib/mailbox.sh send administrator \
-      "$(jq -nc --arg w "$target_window" '{
-        from: $w, to: "administrator", ts: now|todate,
-        event: "idle-completed",
-        detail: { debounce_passed: true, pane_state: "idle", phrase_matched: true }
-      }')"
+    # composite condition 成立 → 1 mail emit (Phase 6 review CRITICAL-2 fix: mailbox_emit 関数を使用)
+    source plugins/twl/scripts/lib/mailbox.sh
+    mailbox_emit "$target_window" "administrator" "idle-completed" \
+      "$(jq -nc '{debounce_passed: true, pane_state: "idle", phrase_matched: true}')"
   fi
 }</code></pre>
 
@@ -123,7 +120,7 @@ tail -F .mailbox/administrator/inbox.jsonl \
 
 # Monitor 側は composite logic を持たない、emit された 1 mail だけ受信</code></pre>
 
-<h2>§5. Monitor daemon lifecycle (Phase I dig Q4 確定)</h2>
+<h2 id="s5">§5. Monitor daemon lifecycle (Phase I dig Q4 確定)</h2>
 
 <h3>5.1 plugin-managed daemon (canonical)</h3>
 
@@ -182,7 +179,7 @@ fi</code></pre>
   }
 }</code></pre>
 
-<h2>§6. defer items (Phase 2 以降検討)</h2>
+<h2 id="s6">§6. defer items (Phase 2 以降検討)</h2>
 
 <table>
   <thead>
@@ -195,7 +192,7 @@ fi</code></pre>
   </tbody>
 </table>
 
-<h2>§7. 関連 spec ファイル</h2>
+<h2 id="s7">§7. 関連 spec ファイル</h2>
 
 <ul>
   <li><a href="admin-cycle.html">admin-cycle.html</a> §3 (administrator polling cycle、Monitor daemon health-check 統合)</li>
@@ -206,7 +203,7 @@ fi</code></pre>
   <li>EXP-009 (Plugin Monitor stdout、Phase H smoke 予定)</li>
 </ul>
 
-<h2>§8. verify source</h2>
+<h2 id="s8">§8. verify source</h2>
 
 <ul>
   <li><strong>Claude Code Monitor Tool: Stop Polling, Start Reacting</strong>: <a href="https://claudefa.st/blog/guide/mechanics/monitor">claudefa.st/blog/guide/mechanics/monitor</a> (Phase I 2026-05-15 WebFetch verified)</li>

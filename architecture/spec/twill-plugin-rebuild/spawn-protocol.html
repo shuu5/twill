@@ -196,7 +196,7 @@ _wait_session_ready() {
 
 _emit_admin() {
   local event="$1"; local detail="$2"
-  mailbox_emit "$mailbox_from" "admin" "$event" "$detail"
+  mailbox_emit "$mailbox_from" "administrator" "$event" "$detail"
 }
 
 _fail() { echo "spawn-tmux.sh: $*" &gt;&amp;2; exit 1; }

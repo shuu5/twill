@@ -40,7 +40,7 @@
     <tr><td>state directory</td><td><code>.supervisor/</code></td><td><code>.admin/</code> (新規)</td></tr>
     <tr><td>session.json</td><td><code>.supervisor/session.json</code></td><td><code>.admin/session.json</code> (<code>stack: "new"</code> field 追加)</td></tr>
     <tr><td>cld-observe-any log</td><td><code>.supervisor/cld-observe-any.log</code></td><td><code>.admin/admin-cycle.log</code></td></tr>
-    <tr><td>mailbox</td><td>chain-runner / session-comm.sh 経由</td><td><code>.mailbox/admin/inbox.jsonl</code> (flock atomic、Inv T)</td></tr>
+    <tr><td>mailbox</td><td>chain-runner / session-comm.sh 経由</td><td><code>.mailbox/administrator/inbox.jsonl</code> (flock atomic、Inv T)</td></tr>
     <tr><td>tmux window prefix</td><td><code>ap-</code> / <code>wt-</code> / <code>coi-</code> / <code>coe-</code></td><td><code>phaser-</code> / <code>tool-</code> (workflow/atomic/specialist は subagent context のため tmux window なし)</td></tr>
     <tr><td>CronCreate task prompt</td><td>su-observer の polling</td><td><code>admin-cycle.sh</code> の polling</td></tr>
     <tr><td>checkpoint</td><td><code>.autopilot/checkpoints/</code> (共通、cross-pollution risk)</td><td><code>.mailbox/&lt;session&gt;/checkpoints/</code> (per-specialist、Inv V)</td></tr>
@@ -85,7 +85,7 @@ STEPS:
   1. Verify issue is in safe transition state (Status NOT IN [Implementing, PR Reviewed])
   2. Remove "stack:legacy", add "stack:new"
   3. Remove old .autopilot/checkpoints/issue-${num}.json (旧 checkpoint clear)
-  4. Notify administrator via .mailbox/admin/inbox.jsonl</code></pre>
+  4. Notify administrator via .mailbox/administrator/inbox.jsonl</code></pre>
 
 <h3>4.2 手動 migration (in-flight Issue)</h3>
 

@@ -83,7 +83,7 @@
 
   <rect x="40" y="60" width="180" height="60" rx="8" fill="#e6f6f2" stroke="#1e7b65" stroke-width="2"/>
   <text x="130" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#1e7b65">1. inbox 読込</text>
-  <text x="130" y="102" text-anchor="middle" font-size="10" fill="#555">.mailbox/admin/inbox.jsonl</text>
+  <text x="130" y="102" text-anchor="middle" font-size="10" fill="#555">.mailbox/administrator/inbox.jsonl</text>
 
   <rect x="240" y="60" width="180" height="60" rx="8" fill="#e6f6f2" stroke="#1e7b65" stroke-width="2"/>
   <text x="330" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#1e7b65">2. Board status poll</text>
@@ -135,7 +135,7 @@
 
 <h2>§3. 各 step の詳細 (verified pattern)</h2>
 
-<h3>3.1 step 1: <code>.mailbox/admin/inbox.jsonl</code> 読込</h3>
+<h3>3.1 step 1: <code>.mailbox/administrator/inbox.jsonl</code> 読込</h3>
 
 <p>各 pilot が emit した mail を読み、未読 line を line 番号で track。flock 共有 lock で read。format:</p>
 
@@ -163,13 +163,13 @@
   IF current_status NOT IN ["Idea", "Explored", "Refined", "Implementing"]:
     CONTINUE  # 終端 status は spawn 不要
 
-  IF has_active_pilot:
+  IF has_active_phaser:
     CONTINUE  # Inv I-1 idempotent guard
 
-  IF active_pilot_count &gt;= MAX_PARALLEL_PILOTS:
+  IF active_phaser_count &gt;= MAX_PARALLEL_PHASERS:
     DEFER  # Inv I-2 parallelism 上限
 
-  IF unread_pilot_mail_for_issue:
+  IF unread_phaser_mail_for_issue:
     PROCESS_MAIL_FIRST  # Inv I-3 mail check prerequisite
 
   spawn_tmux pilot-{next_phase}-{issue_num}</code></pre>
