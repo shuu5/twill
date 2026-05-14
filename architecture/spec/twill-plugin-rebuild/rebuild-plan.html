@@ -21,6 +21,8 @@
 <br>
 さらに <code>Phase 1 PoC</code> で新規作成: <code>plugins/twl/registry.yaml</code> (新規、6 section schema、glossary section seed = core 22 entity = 10 role + 11 non-role + 1 deprecated、Phase F 2026-05-14 で verify-status 追加)。<code>Phase 2 dual-stack</code> で components 完全 listing、<code>Phase 3 cutover</code> で <code>cli/twl/types.yaml</code> + <code>plugins/twl/deps.yaml</code> + 第 3 弾 dig 案 3 <code>step.sh framework</code> + <code>chain-steps.sh</code> (廃止予告 mark) を全廃、<code>Phase 4 cleanup</code> で命名 policy ADR (ADR-045 = 2026-05-14 Accepted 済) の experiment-verified 化完遂。</div>
 
+<div class="info"><strong>Phase I dig Q3 確定 (2026-05-15) — registry.yaml / deps.yaml dual-stack 優先順位</strong>: <code>Phase 1 PoC</code> では <strong>registry.yaml を新規作成のみ</strong>、既存 code (chain.py / twl audit / cli/twl/validation/*) は <strong>deps.yaml を読み続ける (並存)</strong>。conflict 解決 procedure は <code>Phase 2 dual-stack</code> で確立: registry.yaml が write SSoT、deps.yaml は Phase 2 中 read-only legacy、Phase 3 cutover で deps.yaml 全廃。Phase 1 PoC scope を minimal に保ち migration cost を分散。<strong>判断根拠</strong>: Phase 1 PoC で chain.py / twl audit の registry.yaml 対応まで実装すると scope 肥大化、PoC 検証目的 (3 階層 spawn + mailbox + atomic 4-phase) が薄まる。</div>
+
 <h2>目的</h2>
 
 <p>新 architecture への移行 plan を Strangler Fig 4 phase + 各 phase の verify points + rollback path で仕様化する。<code>Phase 1 PoC</code> は Issue #1660 (SKIP_*_REASON sanitize) を新 architecture で再実装することで proof-of-concept とする。</p>
@@ -98,7 +100,7 @@
       <li>残り worker 6 個の SKILL.md</li>
       <li><strong>tool-* 3 個</strong> (第 4 弾 dig: tool-architect / tool-project / tool-sandbox-runner、co-utility 廃止 + tool-self-improve は tool-sandbox-runner に rename)</li>
       <li>template repository <code>shuu5/twill-templates</code> 別 repo 作成 + git submodule 設定 + initial commit (ts-nextjs-hono-mono / supabase / docker-compose)</li>
-      <li>Project Board option 追加 (Explored / PR Reviewed の新規追加、Todo / InProgress / Done を Idea / Implementing / Merged に rename、option_id 維持)</li>
+      <li>Project Board option 追加 (Explored / PR Reviewed の新規追加、Todo / InProgress / Done を Idea / Implementing / Merged に rename、<strong>option_id 維持</strong> Phase I 2026-05-15 確定): GraphQL <code>updateProjectV2Field</code> で <strong>displayName のみ変更</strong> (option_id は不変)、EXP-019 (option 追加) + EXP-020 (col order) で verified pattern。option_id 維持により administrator の status 参照を migration 不要にし su-observer 互換性保持。option 新規作成 + 旧削除 (option_id 変更) は MUST NOT</li>
       <li>Actions yaml 整理 (<code>archive-merged.yml</code> 新規、<code>auto-merge.yml</code> 改、<code>auto-refined.yml</code> / <code>project-status-done.yml</code> 削除)</li>
       <li>旧 chain-runner.sh は freeze (新規修正禁止、in-flight Issue のみ実行)</li>
     </ul>
