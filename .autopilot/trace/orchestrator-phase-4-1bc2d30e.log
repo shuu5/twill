@@ -1,0 +1,43 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 4 開始
+[2026-05-02T17:09:43Z] orchestrator_pid=3843574 phase=4 started_at=2026-05-02T17:09:43Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: WARNING: merged ブランチ残存 (7日以内): docs/pitfalls-16-step0-incident
+[orchestrator] startup cleanup 完了: 削除=0件, 警告=1件
+[orchestrator] Issue #1294: Worker 起動
+[orchestrator] Issue #1294: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1294-featadr-024-phase-b-migration-open-is
+OK: issue-1294.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-parent-issue-1294 (parent=none) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1294-featadr-024-phase-b-migration-open-is
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1294-featadr-024-phase-b-migration-open-is/.audit/auto-parent-issue-1294/panes/ap-twill-feat-1294-featadr-024-ph-8eebbe54.log
+Worker 起動完了: Issue #1294 (window=ap-twill-feat-1294-featadr-024-ph-8eebbe54, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1294-featadr-024-phase-b-migration-open-is)
+[orchestrator] Issue #1294: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1294.json を更新しました
+[orchestrator] Issue #1294: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1294.json を更新しました
+[orchestrator] Issue #1294: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1294.json を更新しました
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1294: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1294: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1294.json を更新しました
+[orchestrator] Issue #1294: merge-ready
+[orchestrator] Issue #1294: merge-gate 実行 (PR #1312)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1294.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #1294: PR #1312 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #1294: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #1294: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #1294: merge 成功
+[orchestrator] cleanup: Issue #1294 — window/branch クリーンアップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 4,
+  "results": {
+    "done": [
+      1294
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 4 完了

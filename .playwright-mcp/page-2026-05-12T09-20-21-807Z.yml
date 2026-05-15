@@ -1,0 +1,1192 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - heading "twill plugin radical rebuild 構想書" [level=1] [ref=e3]
+    - generic [ref=e4]: "draft: 2026-05-12 · status: 構想 (architecture spec / ADR-043 の前段) · audience: 人間 (user) 熟読素材"
+  - navigation [ref=e5]:
+    - heading "目次" [level=3] [ref=e6]
+    - list [ref=e7]:
+      - listitem [ref=e8]:
+        - link "0. 目的" [ref=e9] [cursor=pointer]:
+          - /url: "#s0"
+      - listitem [ref=e10]:
+        - 'link "1. 背景: 現 architecture の 3 つの構造的欠陥" [ref=e11] [cursor=pointer]':
+          - /url: "#s1"
+      - listitem [ref=e12]:
+        - link "2. 新原則 (7 条)" [ref=e13] [cursor=pointer]:
+          - /url: "#s2"
+      - listitem [ref=e14]:
+        - link "3. architecture overview" [ref=e15] [cursor=pointer]:
+          - /url: "#s3"
+      - listitem [ref=e16]:
+        - link "4. status ↔ phase 1:1 mapping" [ref=e17] [cursor=pointer]:
+          - /url: "#s4"
+      - listitem [ref=e18]:
+        - link "5. gate hook 仕組み (PreToolUse + status check)" [ref=e19] [cursor=pointer]:
+          - /url: "#s5"
+      - listitem [ref=e20]:
+        - link "5b. Agent / SendMessage / mailbox 仕組み (D 確定事項詳細)" [ref=e21] [cursor=pointer]:
+          - /url: "#s5b"
+      - listitem [ref=e22]:
+        - link "6. chain step verification 規約 (欠陥 1 の構造的解消)" [ref=e23] [cursor=pointer]:
+          - /url: "#s6"
+      - listitem [ref=e24]:
+        - link "7. GitHub SSoT integration" [ref=e25] [cursor=pointer]:
+          - /url: "#s7"
+      - listitem [ref=e26]:
+        - link "8. 新 controller / worker list" [ref=e27] [cursor=pointer]:
+          - /url: "#s8"
+      - listitem [ref=e28]:
+        - link "9. 削除対象 inventory" [ref=e29] [cursor=pointer]:
+          - /url: "#s9"
+      - listitem [ref=e30]:
+        - link "10. 保全対象" [ref=e31] [cursor=pointer]:
+          - /url: "#s10"
+      - listitem [ref=e32]:
+        - link "11. rebuild plan (Strangler Fig)" [ref=e33] [cursor=pointer]:
+          - /url: "#s11"
+      - listitem [ref=e34]:
+        - link "12. 決定事項 (2026-05-12 user 確定)" [ref=e35] [cursor=pointer]:
+          - /url: "#s12"
+      - listitem [ref=e36]:
+        - link "13. audit source" [ref=e37] [cursor=pointer]:
+          - /url: "#s13"
+      - listitem [ref=e38]:
+        - link "14. 次の step" [ref=e39] [cursor=pointer]:
+          - /url: "#s14"
+  - generic [ref=e40]:
+    - heading "0. 目的" [level=2] [ref=e41]
+    - paragraph [ref=e42]:
+      - text: twill plugin を
+      - strong [ref=e43]: 根本から書き換える
+      - text: ための設計骨子。既存実装 (file 1177、bash 5175 lines) を ~10% に圧縮しつつ、本 session で発覚した 3 つの構造的欠陥を
+      - strong [ref=e44]: 構造的に不能化
+      - text: する。greenfield rewrite (2-4 ヶ月) を回避し、Strangler Fig で ~1-2 週で完遂する。
+  - generic [ref=e45]:
+    - 'heading "1. 背景: 現 architecture の 3 つの構造的欠陥" [level=2] [ref=e46]'
+    - 'heading "欠陥 1: chain step の「自己申告」(chain-runner.sh L1873-1884)" [level=3] [ref=e47]'
+    - code [ref=e49]: test-scaffold) record_current_step "test-scaffold"; ok "test-scaffold" "LLM スキル実行..." ;; green-impl) record_current_step "green-impl"; ok "green-impl" "LLM スキル実行..." ;; phase-review) record_current_step "phase-review"; ok "phase-review" "LLM スキル実行..." ;; scope-judge) record_current_step "scope-judge"; ok "scope-judge" "LLM スキル実行..." ;;
+    - generic [ref=e50]:
+      - strong [ref=e51]: 致命的問題
+      - text: ": redesigned chain (ADR-039) の核心 step が"
+      - strong [ref=e52]: 完全に LLM 自己申告
+      - text: "、chain-runner は記録のみ。これが構造的に以下を許容する:"
+      - list [ref=e53]:
+        - listitem [ref=e54]: test を書かずに「test-scaffold 完了」と claim 可能
+        - listitem [ref=e55]: 実装を書かずに「green-impl 完了」と claim 可能
+        - listitem [ref=e56]: specialist review を実行せずに「phase-review 完了」と claim 可能
+      - strong [ref=e57]: 実害
+      - text: ": #973 (5 ヶ月放置 silent test rot)、#1626 merge-gate B+C+D layered defense の必要性、本 session 9 件 P0 bug の構造的 root cause。"
+    - generic [ref=e58]:
+      - strong [ref=e59]: 原則違反
+      - text: ":"
+      - code [ref=e60]: plugin/twl/CLAUDE.md
+      - text: 「LLM は判断のために使う。機械的にできることは機械に任せる」が
+      - strong [ref=e61]: 守られていない
+      - text: 。
+    - 'heading "欠陥 2: chain SSoT の二重化 (ADR-022)" [level=3] [ref=e62]'
+    - table [ref=e63]:
+      - rowgroup [ref=e64]:
+        - row "SSoT 役割" [ref=e65]:
+          - columnheader "SSoT" [ref=e66]
+          - columnheader "役割" [ref=e67]
+      - rowgroup [ref=e68]:
+        - row "chain.py CHAIN_STEPS chain-runner.sh dispatch (runner step)" [ref=e69]:
+          - cell "chain.py CHAIN_STEPS" [ref=e70]:
+            - code [ref=e71]: chain.py CHAIN_STEPS
+          - cell "chain-runner.sh dispatch (runner step)" [ref=e72]
+        - row "chain-steps.sh chain.py の bash mirror (computed artifact)" [ref=e73]:
+          - cell "chain-steps.sh" [ref=e74]:
+            - code [ref=e75]: chain-steps.sh
+          - cell "chain.py の bash mirror (computed artifact)" [ref=e76]
+        - row "deps.yaml.chains workflow skill 内 orchestrate step を含む拡張 metadata" [ref=e77]:
+          - cell "deps.yaml.chains" [ref=e78]:
+            - code [ref=e79]: deps.yaml.chains
+          - cell "workflow skill 内 orchestrate step を含む拡張 metadata" [ref=e80]
+    - paragraph [ref=e81]:
+      - strong [ref=e82]: 3 重 SSoT は同期破綻前提の設計
+      - text: 。「独立 SSoT」と明文化、同期 check (
+      - code [ref=e83]: twl check --deps-integrity
+      - text: ) 必要。新規 step 追加時に 3 箇所更新ミスで chain 機能不全。
+    - 'heading "欠陥 3: 巨大化 (事実)" [level=3] [ref=e84]'
+    - table [ref=e85]:
+      - rowgroup [ref=e86]:
+        - row "項目 規模" [ref=e87]:
+          - columnheader "項目" [ref=e88]
+          - columnheader "規模" [ref=e89]
+      - rowgroup [ref=e90]:
+        - row "plugin file 数 1177 (.sh 255 + .md 334 + その他 588)" [ref=e91]:
+          - cell "plugin file 数" [ref=e92]
+          - cell "1177 (.sh 255 + .md 334 + その他 588)" [ref=e93]:
+            - strong [ref=e94]: "1177"
+            - text: (.sh 255 + .md 334 + その他 588)
+        - row "orchestration script 5 本 5175 lines chain-runner.sh 1932 / autopilot-orchestrator.sh 1508 / issue-lifecycle-orchestrator.sh 879 / autopilot-launch.sh 548 / auto-merge.sh 308" [ref=e95]:
+          - cell "orchestration script 5 本" [ref=e96]
+          - cell "5175 lines chain-runner.sh 1932 / autopilot-orchestrator.sh 1508 / issue-lifecycle-orchestrator.sh 879 / autopilot-launch.sh 548 / auto-merge.sh 308" [ref=e97]:
+            - strong [ref=e98]: "5175"
+            - text: lines
+            - text: chain-runner.sh 1932 / autopilot-orchestrator.sh 1508 / issue-lifecycle-orchestrator.sh 879 / autopilot-launch.sh 548 / auto-merge.sh 308
+        - row "chain step 30+" [ref=e99]:
+          - cell "chain step" [ref=e100]
+          - cell "30+" [ref=e101]
+        - row "controller 7 (co-*) + supervisor 1 (su-observer)" [ref=e102]:
+          - cell "controller" [ref=e103]
+          - cell "7 (co-*) + supervisor 1 (su-observer)" [ref=e104]
+        - row "workflow skill 13" [ref=e105]:
+          - cell "workflow skill" [ref=e106]
+          - cell "13" [ref=e107]
+        - row "hook 7 種 (twl MCP 経由)" [ref=e108]:
+          - cell "hook" [ref=e109]
+          - cell "7 種 (twl MCP 経由)" [ref=e110]
+        - row "watchdog 4 種 (mcp-watchdog / heartbeat / wave-progress / pilot-fallback)" [ref=e111]:
+          - cell "watchdog" [ref=e112]
+          - cell "4 種 (mcp-watchdog / heartbeat / wave-progress / pilot-fallback)" [ref=e113]
+    - paragraph [ref=e114]:
+      - strong [ref=e115]: = 認知不能。layered defense が新 bug を生む構造。
+  - generic [ref=e116]:
+    - heading "2. 新原則 (7 条)" [level=2] [ref=e117]
+    - list [ref=e119]:
+      - listitem [ref=e120]:
+        - strong [ref=e121]: LLM は判断のために使う
+      - listitem [ref=e122]:
+        - strong [ref=e123]: 機械的処理は Claude Code primitives (hook / Skill / Agent / MCP の連携機能) で実現する
+      - listitem [ref=e124]:
+        - strong [ref=e125]: 自作 script / 自作 MCP server は最小限
+        - text: (validate / status query の thin helper のみ)
+      - listitem [ref=e126]:
+        - strong [ref=e127]: administrator (1 個、user 代理)
+        - text: が全体采配、Project Board status を SSoT として参照
+      - listitem [ref=e128]:
+        - strong [ref=e129]: phase-* controller は administrator が 1 window = 1 個ずつ spawn
+        - text: 、context reset、純粋指令のみ
+      - listitem [ref=e130]:
+        - strong [ref=e131]: status と phase は 1:1 対応
+        - text: (各 phase は 1 status 遷移のみ担当)
+      - listitem [ref=e132]:
+        - strong [ref=e133]: status gate は PreToolUse hook で機械化
+        - text: (前 status でない phase invoke は deny + admin notify)
+  - generic [ref=e134]:
+    - heading "3. architecture overview" [level=2] [ref=e135]
+    - generic [ref=e136]:
+      - img [ref=e137]:
+        - generic [ref=e139]: user
+        - generic [ref=e140]: 要望 / 設計プラン
+        - generic [ref=e141]: L0 リーダー
+        - generic [ref=e143]: administrator
+        - generic [ref=e144]: 旧 su-observer / user 代理 / 長命
+        - generic [ref=e145]: CronCreate poll + Project Board SSoT
+        - generic [ref=e146]: pilot からの mail のみ受信 (context 効率化)
+        - generic [ref=e148]: admin inline
+        - generic [ref=e149]: bash / gh / git / Memory MCP
+        - generic [ref=e150]: low-level ops (L0 内で実行)
+        - generic [ref=e152]: tool-* (4)
+        - generic [ref=e153]: architect
+        - generic [ref=e154]: project / utility
+        - generic [ref=e155]: self-improve
+        - generic [ref=e160]: tmux new-window + claude code (各 pilot は別 main session)
+        - generic [ref=e161]: L1 サブリーダー (pilot、phase-*)
+        - generic [ref=e163]: phase-explore
+        - generic [ref=e164]: Idea → Explored
+        - generic [ref=e165]: "tmux: phase-explore-K"
+        - generic [ref=e166]: 別 main session (pilot)
+        - generic [ref=e167]: worker mail を集約
+        - generic [ref=e169]: phase-refine
+        - generic [ref=e170]: Explored → Refined
+        - generic [ref=e171]: "tmux: phase-refine-K"
+        - generic [ref=e172]: 別 main session (pilot)
+        - generic [ref=e173]: worker mail を集約
+        - generic [ref=e175]: phase-impl
+        - generic [ref=e176]: Refined → Implementing
+        - generic [ref=e177]: "tmux: phase-impl-N"
+        - generic [ref=e178]: 別 main session (pilot)
+        - generic [ref=e179]: worker mail を集約
+        - generic [ref=e181]: phase-pr
+        - generic [ref=e182]: Implementing → PR Reviewed
+        - generic [ref=e183]: "tmux: phase-pr-M"
+        - generic [ref=e184]: 別 main session (pilot)
+        - generic [ref=e185]: worker mail を集約
+        - generic [ref=e194]: tmux new-window
+        - generic [ref=e195]: + claude code
+        - generic [ref=e196]: L2 実行部隊 (worker-*)
+        - generic [ref=e197]:
+          - generic [ref=e199]: worker-1
+          - generic [ref=e200]: spec-review
+          - generic [ref=e202]: worker-2
+          - generic [ref=e203]: spec-review
+          - generic [ref=e205]: worker-3
+          - generic [ref=e206]: spec-review
+          - generic [ref=e208]: worker-4
+          - generic [ref=e209]: architecture
+          - generic [ref=e211]: worker-5
+          - generic [ref=e212]: test-ready
+          - generic [ref=e214]: worker-6
+          - generic [ref=e215]: test-ready
+          - generic [ref=e217]: worker-7
+          - generic [ref=e218]: test-ready
+          - generic [ref=e220]: worker-8
+          - generic [ref=e221]: pr-verify
+          - generic [ref=e223]: worker-9
+          - generic [ref=e224]: pr-fix
+        - generic [ref=e225]: 各 worker は別 main session (tmux window)。内部で optional に Agent subagent 1 階層 (公式制約内)
+        - generic [ref=e226]: 階層型 mailbox 通信 (worker → pilot → administrator、context を集約しながら上昇)
+        - generic [ref=e237]: .mailbox/pilot-explore-K
+        - generic [ref=e238]: inbox.jsonl (worker報告集約)
+        - generic [ref=e240]: .mailbox/pilot-refine-K
+        - generic [ref=e241]: inbox.jsonl
+        - generic [ref=e243]: .mailbox/pilot-impl-N
+        - generic [ref=e244]: inbox.jsonl
+        - generic [ref=e246]: .mailbox/pilot-pr-M
+        - generic [ref=e247]: inbox.jsonl
+        - generic [ref=e252]: pilot が context 集約 + administrator に mail
+        - generic [ref=e254]: .mailbox/administrator/inbox.jsonl
+        - generic [ref=e255]: pilot からの集約 report のみ受信
+        - generic [ref=e256]: 3 階層 spawn (L0 → L1 → L2 全て tmux + claude code 別 main session) + 階層型 file mailbox
+      - generic [ref=e257]: "図 1: architecture overview — 3 階層ピラミッド (administrator / pilot / worker)。各層は tmux 経由で別 main session として起動、上位層は下位 mail のみで context 効率化"
+    - heading "Key points" [level=3] [ref=e258]
+    - list [ref=e259]:
+      - listitem [ref=e260]: administrator は 1 個、長命 (旧 su-observer 相当)、user 代理として全体采配
+      - listitem [ref=e261]: phase-* は 1 window 1 個、status 遷移完了で window close (context reset)
+      - listitem [ref=e262]: tool-* は user/admin どちらでも invoke 可、status 遷移と無関係
+      - listitem [ref=e263]: worker-* は phase-* が Agent で並列 spawn、context は phase が管理
+  - generic [ref=e264]:
+    - heading "4. status ↔ phase 1:1 mapping" [level=2] [ref=e265]
+    - generic [ref=e266]:
+      - img [ref=e267]:
+        - generic [ref=e268]:
+          - generic [ref=e270]: (none)
+          - generic [ref=e272]: Idea
+          - generic [ref=e274]: Explored
+          - generic [ref=e276]: Refined
+          - generic [ref=e278]: Implementing
+          - generic [ref=e280]: PR Reviewed
+        - generic [ref=e281]:
+          - generic [ref=e283]: GitHub Actions add-to-project
+          - generic [ref=e285]: phase-explore
+          - generic [ref=e287]: phase-refine
+          - generic [ref=e289]: phase-impl + worker-test-ready
+          - generic [ref=e291]: phase-pr + worker-pr-verify/fix
+          - generic [ref=e293]: GitHub Actions auto-merge
+        - generic [ref=e294]:
+          - generic [ref=e295]: Issue opened
+          - generic [ref=e296]: "LLM: 探索完了判定"
+          - generic [ref=e297]: "LLM: AC 完備判定"
+          - generic [ref=e298]: step verification (test 数+RED+GREEN)
+          - generic [ref=e299]: step verification (all-pass-check)
+          - generic [ref=e300]: branch protection
+        - generic [ref=e313]: status (SSoT)
+        - generic [ref=e314]: phase / Actions
+        - generic [ref=e315]: trigger / 判定
+      - generic [ref=e316]: "図 2: status ↔ phase 1:1 mapping — 6 status (Verified 削除確定)、phase 4 個 + Actions 2 種で 5 遷移カバー、Merged → archive は 3 日後 cron"
+    - paragraph [ref=e317]:
+      - strong [ref=e318]: phase 4 個 + Actions 2 種で 5 遷移カバー
+      - text: 。PR Reviewed → Merged は LLM 判断不要 (機械検証 + branch protection)。
+  - generic [ref=e319]:
+    - heading "5. gate hook 仕組み (PreToolUse + status check)" [level=2] [ref=e320]
+    - generic [ref=e321]:
+      - img [ref=e322]:
+        - generic [ref=e324]: administrator
+        - generic [ref=e325]: Skill(phase-refine, issue_num=N) を invoke
+        - generic [ref=e326]: 1. invoke
+        - generic [ref=e328]: PreToolUse hook (Claude Code)
+        - generic [ref=e329]: "matcher: skill_name=phase-refine → exec phase-gate.sh"
+        - generic [ref=e330]: 2. exec
+        - generic [ref=e332]: "phase-gate.sh #N \"Refined\""
+        - generic [ref=e333]: gh project item-list で status query
+        - generic [ref=e334]: 3. query
+        - generic [ref=e336]: GitHub Project Board (SSoT)
+        - generic [ref=e337]: "Issue #N の Status を返す"
+        - generic [ref=e338]: 4. status
+        - generic [ref=e340]: status
+        - generic [ref=e341]: == "Refined" ?
+        - generic [ref=e342]: "YES"
+        - generic [ref=e344]: exit 0 → hook PASS
+        - generic [ref=e345]: phase-refine 実行
+        - generic [ref=e346]: "NO"
+        - generic [ref=e348]: exit 1 → hook DENY
+        - generic [ref=e349]: phase-refine block
+        - generic [ref=e350]: 5. notify
+        - generic [ref=e352]: administrator に通知
+        - generic [ref=e353]: "\"Issue #N is currently 'Idea', expected 'Refined'. Run phase-explore first.\""
+        - generic [ref=e354]: 5. continue
+        - generic [ref=e356]: phase-refine
+        - generic [ref=e357]: Skill 本体実行
+        - generic [ref=e358]: PreToolUse hook = Claude Code primitive、phase-gate.sh = ~30 lines thin helper
+      - generic [ref=e359]: "図 3: gate hook flow — phase-* invoke 時に PreToolUse hook が status SSoT を query、不一致なら deny + administrator notify。前 status でない phase invoke が構造的に不能化される"
+    - 'heading "実装例: .claude/hooks/phase-gate.json" [level=3] [ref=e360]'
+    - code [ref=e362]: "{ \"PreToolUse\": { \"matchers\": [ { \"tool\": \"Skill\", \"skill_name\": \"phase-explore\", \"expected_status\": \"Idea\" }, { \"tool\": \"Skill\", \"skill_name\": \"phase-refine\", \"expected_status\": \"Explored\" }, { \"tool\": \"Skill\", \"skill_name\": \"phase-impl\", \"expected_status\": \"Refined\" }, { \"tool\": \"Skill\", \"skill_name\": \"phase-pr\", \"expected_status\": \"Implementing\" } ], \"command\": \"bash plugins/twl/scripts/phase-gate.sh {{tool.skill_name}} {{tool.args.issue_num}} {{matcher.expected_status}}\" } }"
+    - heading "phase-gate.sh (薄、~30 lines)" [level=3] [ref=e363]
+    - code [ref=e365]: "#!/bin/bash skill_name=\"$1\"; issue_num=\"$2\"; expected_status=\"$3\" current_status=$(gh project item-list 6 --owner shuu5 --format json \\ | jq -r \".items[] | select(.content.number==$issue_num) | .status\") if [[ \"$current_status\" != \"$expected_status\" ]]; then echo \"BLOCKED: Issue #$issue_num is '$current_status', expected '$expected_status' for $skill_name\" >&2 echo \"Run prerequisite phase first.\" >&2 exit 1 fi"
+    - generic [ref=e366]:
+      - strong [ref=e367]: = status SSoT (GitHub) + Claude Code primitive (PreToolUse hook) のみ
+      - text: 。bash caller authz (
+      - code [ref=e368]: TWL_CALLER_AUTHZ
+      - text: env-marker) 廃止。
+  - generic [ref=e369]:
+    - heading "6. chain step verification 規約 (欠陥 1 の構造的解消)" [level=2] [ref=e370]
+    - paragraph [ref=e371]:
+      - text: 各 step は
+      - strong [ref=e372]: 自己申告禁止、実体検証必須
+      - text: "。phase-impl 内の test-scaffold + green-impl + check は以下のように:"
+    - group [ref=e373]:
+      - generic "step_test_scaffold (RED test 存在確認)" [ref=e374] [cursor=pointer]
+      - code [ref=e376]: "step_test_scaffold() { # 1. LLM: AC からテストを書く test_count_before=$(pytest --collect-only -q 2>&1 | tail -1 | awk '{print $1}') # 2. LLM: テストファイル作成 (実装ファイルではない) # ... LLM action ... # 3. 検証 1: テスト数増加確認 test_count_after=$(pytest --collect-only -q 2>&1 | tail -1 | awk '{print $1}') if [[ \"$test_count_after\" -le \"$test_count_before\" ]]; then echo \"FAIL: no new test added (before=$test_count_before, after=$test_count_after)\" exit 1 fi # 4. 検証 2: RED 確認 (テスト実行で必ず fail) if pytest -x --tb=no -q 2>&1 | tail -1 | grep -q \"passed\"; then echo \"FAIL: test is not RED (all passed = scaffold did not add a failing test)\" exit 1 fi echo \"OK: test-scaffold ($((test_count_after - test_count_before)) new RED tests)\" }"
+    - group [ref=e377]:
+      - generic "step_green_impl (実装 + GREEN 確認)" [ref=e378] [cursor=pointer]
+      - code [ref=e380]: "step_green_impl() { # 前提: RED test 存在 (step_test_scaffold で確認済み) # 1. LLM: 実装を書く # ... LLM action ... # 2. 検証 1: src/ 変更確認 src_diff=$(git diff --stat src/ 2>/dev/null | wc -l) if [[ \"$src_diff\" == \"0\" ]]; then echo \"FAIL: no src/ change (green-impl は実装変更必須)\" exit 1 fi # 3. 検証 2: GREEN 確認 (pytest 全 PASS) if ! pytest -x --tb=short 2>&1; then echo \"FAIL: test still RED after green-impl\" exit 1 fi echo \"OK: green-impl (src/ changed, all tests GREEN)\" }"
+    - group [ref=e381]:
+      - generic "step_phase_review (Agent verdict 検証)" [ref=e382] [cursor=pointer]
+    - generic [ref=e383]:
+      - strong [ref=e384]: chain-runner.sh の薄い wrapper は廃止
+      - text: 、検証は Skill 内で
+      - strong [ref=e385]: LLM が Bash 直接呼び出し
+      - text: 。fail-fast at step level。merge-gate B+C+D layered defense は
+      - strong [ref=e386]: 不要
+      - text: になる (step 自体で fail-fast するため事後検出 layer 不要)。
+  - generic [ref=e387]:
+    - heading "7. GitHub SSoT integration" [level=2] [ref=e388]
+    - heading "6-stage status (Verified 削除確定)" [level=3] [ref=e389]
+    - code [ref=e391]: "# plugins/twl/project-links.yaml (single SSoT) project_board: owner: shuu5 number: 6 field_id: PVTSSF_lAHOCNFEd84BTu2WzhA7yTs options: idea: <id> # rename: Todo → Idea (option_id 維持) explored: <new> # 新規追加 refined: 3d983780 # 既存 implementing: 47fc9ee4 # rename: In Progress → Implementing (option_id 維持) pr_reviewed: <new> # 新規追加 (= Approved & Mergeable) merged: 98236657 # rename: Done → Merged (option_id 維持)"
+    - heading "caller authz の汎化 (4 caller → 4 hook matcher)" [level=3] [ref=e392]
+    - paragraph [ref=e393]:
+      - text: 旧
+      - code [ref=e394]: TWL_CALLER_AUTHZ
+      - text: env-marker (4 値、chain-runner.sh) は
+      - generic [ref=e395]: 廃止
+      - text: "。新 hook matcher (§5 参照):"
+    - table [ref=e396]:
+      - rowgroup [ref=e397]:
+        - row "phase 必要 status" [ref=e398]:
+          - columnheader "phase" [ref=e399]
+          - columnheader "必要 status" [ref=e400]
+      - rowgroup [ref=e401]:
+        - row "phase-explore Idea" [ref=e402]:
+          - cell "phase-explore" [ref=e403]
+          - cell "Idea" [ref=e404]
+        - row "phase-refine Explored" [ref=e405]:
+          - cell "phase-refine" [ref=e406]
+          - cell "Explored" [ref=e407]
+        - row "phase-impl Refined" [ref=e408]:
+          - cell "phase-impl" [ref=e409]
+          - cell "Refined" [ref=e410]
+        - row "phase-pr Implementing" [ref=e411]:
+          - cell "phase-pr" [ref=e412]
+          - cell "Implementing" [ref=e413]
+    - paragraph [ref=e414]:
+      - text: bypass は user による手動 status edit のみ (
+      - code [ref=e415]: gh project item-edit
+      - text: 、稀)。
+    - heading "Actions yaml (3 本のみ、現状から 1 本減)" [level=3] [ref=e416]
+    - table [ref=e417]:
+      - rowgroup [ref=e418]:
+        - row "file 役割 状態" [ref=e419]:
+          - columnheader "file" [ref=e420]
+          - columnheader "役割" [ref=e421]
+          - columnheader "状態" [ref=e422]
+      - rowgroup [ref=e423]:
+        - row "add-to-project.yml 起票 → Idea 既存維持" [ref=e424]:
+          - cell "add-to-project.yml" [ref=e425]:
+            - code [ref=e426]: add-to-project.yml
+          - cell "起票 → Idea" [ref=e427]
+          - cell "既存維持" [ref=e428]:
+            - generic [ref=e429]: 既存維持
+        - row "auto-merge.yml all-pass-check 通過 + PR Reviewed → merge 既存改" [ref=e430]:
+          - cell "auto-merge.yml" [ref=e431]:
+            - code [ref=e432]: auto-merge.yml
+          - cell "all-pass-check 通過 + PR Reviewed → merge" [ref=e433]
+          - cell "既存改" [ref=e434]:
+            - generic [ref=e435]: 既存改
+        - row "archive-merged.yml Merged + 3 日経過 → archive 新規" [ref=e436]:
+          - cell "archive-merged.yml" [ref=e437]:
+            - code [ref=e438]: archive-merged.yml
+          - cell "Merged + 3 日経過 → archive" [ref=e439]
+          - cell "新規" [ref=e440]:
+            - generic [ref=e441]: 新規
+        - row "auto-refined.yml (廃止、phase-* が直接書き込み) 削除" [ref=e442]:
+          - cell "auto-refined.yml" [ref=e443]:
+            - code [ref=e444]: auto-refined.yml
+          - cell "(廃止、phase-* が直接書き込み)" [ref=e445]
+          - cell "削除" [ref=e446]:
+            - generic [ref=e447]: 削除
+        - row "project-status-done.yml (廃止、phase-* が直接書き込み) 削除" [ref=e448]:
+          - cell "project-status-done.yml" [ref=e449]:
+            - code [ref=e450]: project-status-done.yml
+          - cell "(廃止、phase-* が直接書き込み)" [ref=e451]
+          - cell "削除" [ref=e452]:
+            - generic [ref=e453]: 削除
+  - generic [ref=e454]:
+    - heading "8. 新 controller / worker list" [level=2] [ref=e455]
+    - heading "phase-* (4 個、administrator 経由 spawn 専用、1 window 1 個)" [level=3] [ref=e456]
+    - table [ref=e457]:
+      - rowgroup [ref=e458]:
+        - row "name status 遷移 内部 worker LLM 判断" [ref=e459]:
+          - columnheader "name" [ref=e460]
+          - columnheader "status 遷移" [ref=e461]
+          - columnheader "内部 worker" [ref=e462]
+          - columnheader "LLM 判断" [ref=e463]
+      - rowgroup [ref=e464]:
+        - row "phase-explore Idea → Explored (対話型、worker なし) 探索完了判定 (explore-summary 完備)" [ref=e465]:
+          - cell "phase-explore" [ref=e466]:
+            - code [ref=e467]: phase-explore
+          - cell "Idea → Explored" [ref=e468]
+          - cell "(対話型、worker なし)" [ref=e469]
+          - cell "探索完了判定 (explore-summary 完備)" [ref=e470]
+        - row "phase-refine Explored → Refined worker-spec-review (1 回) AC 完備判定" [ref=e471]:
+          - cell "phase-refine" [ref=e472]:
+            - code [ref=e473]: phase-refine
+          - cell "Explored → Refined" [ref=e474]
+          - cell "worker-spec-review (1 回)" [ref=e475]
+          - cell "AC 完備判定" [ref=e476]
+        - row "phase-impl Refined → Implementing worker-test-ready (並列で test+green) test 充足 + green PASS" [ref=e477]:
+          - cell "phase-impl" [ref=e478]:
+            - code [ref=e479]: phase-impl
+          - cell "Refined → Implementing" [ref=e480]
+          - cell "worker-test-ready (並列で test+green)" [ref=e481]
+          - cell "test 充足 + green PASS" [ref=e482]
+        - row "phase-pr Implementing → PR Reviewed worker-pr-verify / worker-pr-fix (並列) all-pass-check 通過" [ref=e483]:
+          - cell "phase-pr" [ref=e484]:
+            - code [ref=e485]: phase-pr
+          - cell "Implementing → PR Reviewed" [ref=e486]
+          - cell "worker-pr-verify / worker-pr-fix (並列)" [ref=e487]
+          - cell "all-pass-check 通過" [ref=e488]
+    - heading "tool-* (4 個、user/admin 直接 invoke、status 遷移と無関係)" [level=3] [ref=e489]
+    - table [ref=e490]:
+      - rowgroup [ref=e491]:
+        - row "name 役割 invocation" [ref=e492]:
+          - columnheader "name" [ref=e493]
+          - columnheader "役割" [ref=e494]
+          - columnheader "invocation" [ref=e495]
+      - rowgroup [ref=e496]:
+        - row "tool-architect architecture spec 作成、ADR 起票 user 直接 (admin も可)" [ref=e497]:
+          - cell "tool-architect" [ref=e498]:
+            - code [ref=e499]: tool-architect
+          - cell "architecture spec 作成、ADR 起票" [ref=e500]
+          - cell "user 直接 (admin も可)" [ref=e501]
+        - row "tool-project project mgmt (create / migrate / snapshot) user 直接" [ref=e502]:
+          - cell "tool-project" [ref=e503]:
+            - code [ref=e504]: tool-project
+          - cell "project mgmt (create / migrate / snapshot)" [ref=e505]
+          - cell "user 直接" [ref=e506]
+        - row "tool-utility standalone utility (worktree / twl-validate / services) user / admin 直接" [ref=e507]:
+          - cell "tool-utility" [ref=e508]:
+            - code [ref=e509]: tool-utility
+          - cell "standalone utility (worktree / twl-validate / services)" [ref=e510]
+          - cell "user / admin 直接" [ref=e511]
+        - row "tool-self-improve live observation、framework 改善 user / admin 直接" [ref=e512]:
+          - cell "tool-self-improve" [ref=e513]:
+            - code [ref=e514]: tool-self-improve
+          - cell "live observation、framework 改善" [ref=e515]
+          - cell "user / admin 直接" [ref=e516]
+    - heading "worker-* (Agent subagent_type、prompt template として SKILL.md 残存)" [level=3] [ref=e517]
+    - table [ref=e518]:
+      - rowgroup [ref=e519]:
+        - row "name role called by" [ref=e520]:
+          - columnheader "name" [ref=e521]
+          - columnheader "role" [ref=e522]
+          - columnheader "called by" [ref=e523]
+      - rowgroup [ref=e524]:
+        - row "worker-test-ready test-scaffold + green-impl + check phase-impl" [ref=e525]:
+          - cell "worker-test-ready" [ref=e526]:
+            - code [ref=e527]: worker-test-ready
+          - cell "test-scaffold + green-impl + check" [ref=e528]
+          - cell "phase-impl" [ref=e529]
+        - row "worker-pr-verify ts-preflight + prompt-compliance + pr-test + ac-verify phase-pr" [ref=e530]:
+          - cell "worker-pr-verify" [ref=e531]:
+            - code [ref=e532]: worker-pr-verify
+          - cell "ts-preflight + prompt-compliance + pr-test + ac-verify" [ref=e533]
+          - cell "phase-pr" [ref=e534]
+        - row "worker-pr-fix post-fix-verify (review findings 修正) phase-pr" [ref=e535]:
+          - cell "worker-pr-fix" [ref=e536]:
+            - code [ref=e537]: worker-pr-fix
+          - cell "post-fix-verify (review findings 修正)" [ref=e538]
+          - cell "phase-pr" [ref=e539]
+        - row "worker-spec-review refine の AC quality review phase-refine, phase-pr" [ref=e540]:
+          - cell "worker-spec-review" [ref=e541]:
+            - code [ref=e542]: worker-spec-review
+          - cell "refine の AC quality review" [ref=e543]
+          - cell "phase-refine, phase-pr" [ref=e544]
+        - row "worker-architecture architecture pattern review phase-pr" [ref=e545]:
+          - cell "worker-architecture" [ref=e546]:
+            - code [ref=e547]: worker-architecture
+          - cell "architecture pattern review" [ref=e548]
+          - cell "phase-pr" [ref=e549]
+        - row "worker-security security review phase-pr" [ref=e550]:
+          - cell "worker-security" [ref=e551]:
+            - code [ref=e552]: worker-security
+          - cell "security review" [ref=e553]
+          - cell "phase-pr" [ref=e554]
+        - row "worker-codex codex CLI complementary review phase-pr" [ref=e555]:
+          - cell "worker-codex" [ref=e556]:
+            - code [ref=e557]: worker-codex
+          - cell "codex CLI complementary review" [ref=e558]
+          - cell "phase-pr" [ref=e559]
+    - generic [ref=e560]:
+      - strong [ref=e561]: = controller 8 + worker 7 = 15 total
+      - text: (現状 24 skill → 約 60% 削減 + administrator 1)
+  - generic [ref=e562]:
+    - heading "9. 削除対象 inventory" [level=2] [ref=e563]
+    - generic [ref=e564]:
+      - img [ref=e565]:
+        - generic [ref=e566]: file inventory comparison (before → after)
+        - generic [ref=e567]: Bash orchestration (lines)
+        - generic [ref=e568]: "Before:"
+        - generic [ref=e570]: 5175 lines (chain-runner 1932 + autopilot-orchestrator 1508 + ... )
+        - generic [ref=e571]: "After:"
+        - generic [ref=e573]: ~200 lines (phase-gate.sh + thin helper)
+        - generic [ref=e574]: Skill SKILL.md (files)
+        - generic [ref=e575]: "Before:"
+        - generic [ref=e577]: 24 files (co-* 7 + workflow-* 13 + su-observer 1 + その他 3)
+        - generic [ref=e578]: "After:"
+        - generic [ref=e580]: 15 files (admin 1 + phase 4 + tool 4 + worker 7) - 約 60% 削減
+        - generic [ref=e581]: Total plugin files
+        - generic [ref=e582]: "Before:"
+        - generic [ref=e584]: 1177 files
+        - generic [ref=e585]: "After:"
+        - generic [ref=e587]: ~120 files (約 90% 削減)
+        - generic [ref=e588]: MCP hook
+        - generic [ref=e589]: "Before: 7 種 (twl MCP 経由)"
+        - generic [ref=e590]: "→ After: 1 種 (PreToolUse phase-gate)"
+      - generic [ref=e591]: "図 4: file inventory comparison — bash 全廃 (5175 → ~200)、SKILL.md 約 60% 削減、total file 約 90% 削減"
+    - heading "bash orchestration (全廃、~5000 lines)" [level=3] [ref=e592]
+    - table [ref=e593]:
+      - rowgroup [ref=e594]:
+        - row "file lines action" [ref=e595]:
+          - columnheader "file" [ref=e596]
+          - columnheader "lines" [ref=e597]
+          - columnheader "action" [ref=e598]
+      - rowgroup [ref=e599]:
+        - row "chain-runner.sh 1932 削除" [ref=e600]:
+          - cell "chain-runner.sh" [ref=e601]:
+            - code [ref=e602]: chain-runner.sh
+          - cell "1932" [ref=e603]
+          - cell "削除" [ref=e604]:
+            - generic [ref=e605]: 削除
+        - row "autopilot-orchestrator.sh 1508 削除" [ref=e606]:
+          - cell "autopilot-orchestrator.sh" [ref=e607]:
+            - code [ref=e608]: autopilot-orchestrator.sh
+          - cell "1508" [ref=e609]
+          - cell "削除" [ref=e610]:
+            - generic [ref=e611]: 削除
+        - row "issue-lifecycle-orchestrator.sh 879 削除" [ref=e612]:
+          - cell "issue-lifecycle-orchestrator.sh" [ref=e613]:
+            - code [ref=e614]: issue-lifecycle-orchestrator.sh
+          - cell "879" [ref=e615]
+          - cell "削除" [ref=e616]:
+            - generic [ref=e617]: 削除
+        - row "autopilot-launch.sh 548 削除" [ref=e618]:
+          - cell "autopilot-launch.sh" [ref=e619]:
+            - code [ref=e620]: autopilot-launch.sh
+          - cell "548" [ref=e621]
+          - cell "削除" [ref=e622]:
+            - generic [ref=e623]: 削除
+        - row "auto-merge.sh 308 削除 (Actions auto-merge.yml で代替)" [ref=e624]:
+          - cell "auto-merge.sh" [ref=e625]:
+            - code [ref=e626]: auto-merge.sh
+          - cell "308" [ref=e627]
+          - cell "削除 (Actions auto-merge.yml で代替)" [ref=e628]:
+            - generic [ref=e629]: 削除 (Actions auto-merge.yml で代替)
+        - row "spawn-controller.sh ? 削除 (Agent run_in_background で代替)" [ref=e630]:
+          - cell "spawn-controller.sh" [ref=e631]:
+            - code [ref=e632]: spawn-controller.sh
+          - cell "?" [ref=e633]
+          - cell "削除 (Agent run_in_background で代替)" [ref=e634]:
+            - generic [ref=e635]: 削除 (Agent run_in_background で代替)
+        - row "session-comm.sh (plugins/session/) ? 削除 (TaskCreate で代替)" [ref=e636]:
+          - cell "session-comm.sh (plugins/session/)" [ref=e637]:
+            - code [ref=e638]: session-comm.sh
+            - text: (plugins/session/)
+          - cell "?" [ref=e639]
+          - cell "削除 (TaskCreate で代替)" [ref=e640]:
+            - generic [ref=e641]: 削除 (TaskCreate で代替)
+        - row "mcp-watchdog.sh ? 削除" [ref=e642]:
+          - cell "mcp-watchdog.sh" [ref=e643]:
+            - code [ref=e644]: mcp-watchdog.sh
+          - cell "?" [ref=e645]
+          - cell "削除" [ref=e646]:
+            - generic [ref=e647]: 削除
+        - row "heartbeat / wave-progress / pilot-fallback watchdog ? 削除 (Monitor + CronCreate で代替)" [ref=e648]:
+          - cell "heartbeat / wave-progress / pilot-fallback watchdog" [ref=e649]
+          - cell "?" [ref=e650]
+          - cell "削除 (Monitor + CronCreate で代替)" [ref=e651]:
+            - generic [ref=e652]: 削除 (Monitor + CronCreate で代替)
+        - row "autopilot-*.sh 群 (~20 本) ? 削除" [ref=e653]:
+          - cell "autopilot-*.sh 群 (~20 本)" [ref=e654]
+          - cell "?" [ref=e655]
+          - cell "削除" [ref=e656]:
+            - generic [ref=e657]: 削除
+        - row "merge-gate-*.sh (10 本) ? 削除 (step verification で不要)" [ref=e658]:
+          - cell "merge-gate-*.sh (10 本)" [ref=e659]
+          - cell "?" [ref=e660]
+          - cell "削除 (step verification で不要)" [ref=e661]:
+            - generic [ref=e662]: 削除 (step verification で不要)
+    - heading "chain SSoT 二重化 (廃止)" [level=3] [ref=e663]
+    - list [ref=e664]:
+      - listitem [ref=e665]:
+        - code [ref=e666]: cli/twl/src/twl/chain.py
+        - text: (CHAIN_STEPS)
+        - generic [ref=e667]: 削除
+      - listitem [ref=e668]:
+        - code [ref=e669]: plugins/twl/scripts/chain-steps.sh
+        - generic [ref=e670]: 削除
+      - listitem [ref=e671]:
+        - code [ref=e672]: plugins/twl/scripts/chain
+        - generic [ref=e673]: 削除
+      - listitem [ref=e674]:
+        - code [ref=e675]: twl check --deps-integrity
+        - generic [ref=e676]: 廃止
+        - text: (single SSoT のため不要)
+    - heading "checkpoint 系 (廃止、cross-pollution の root cause)" [level=3] [ref=e677]
+    - list [ref=e678]:
+      - listitem [ref=e679]:
+        - code [ref=e680]: .autopilot/checkpoints/
+        - generic [ref=e681]: 廃止
+        - text: (Agent return value で代替)
+      - listitem [ref=e682]:
+        - code [ref=e683]: .autopilot/issues/
+        - generic [ref=e684]: 廃止
+        - text: (Issue body で十分)
+      - listitem [ref=e685]:
+        - code [ref=e686]: .supervisor/events/
+        - generic [ref=e687]: 廃止
+        - text: (CronCreate + Memory MCP で代替)
+      - listitem [ref=e688]:
+        - code [ref=e689]: phase-review.json
+        - generic [ref=e690]: 廃止
+        - text: (cross-pollution の root cause、Agent return value で代替)
+    - heading "twl MCP server (極小化)" [level=3] [ref=e691]
+    - table [ref=e692]:
+      - rowgroup [ref=e693]:
+        - row "旧 新" [ref=e694]:
+          - columnheader "旧" [ref=e695]
+          - columnheader "新" [ref=e696]
+      - rowgroup [ref=e697]:
+        - row "twl_validate_deps / merge / commit / status_transition / issue_create / check_specialist x2 (7 hook) twl_validate_deps のみ (deps.yaml syntax 確認)。他は PreToolUse hook + bash で代替" [ref=e698]:
+          - cell "twl_validate_deps / merge / commit / status_transition / issue_create / check_specialist x2 (7 hook)" [ref=e699]
+          - cell "twl_validate_deps のみ (deps.yaml syntax 確認)。他は PreToolUse hook + bash で代替" [ref=e700]:
+            - code [ref=e701]: twl_validate_deps
+            - text: のみ (deps.yaml syntax 確認)。他は PreToolUse hook + bash で代替
+    - heading "workflow-* (13 → 0、worker-* に統合)" [level=3] [ref=e702]
+    - paragraph [ref=e703]:
+      - text: 全て
+      - strong [ref=e704]: phase-* に inline
+      - text: または
+      - strong [ref=e705]: worker-* に統合
+      - text: 。
+  - generic [ref=e706]:
+    - heading "10. 保全対象" [level=2] [ref=e707]
+    - heading "A. ADR (設計原則)" [level=3] [ref=e708]
+    - table [ref=e709]:
+      - rowgroup [ref=e710]:
+        - row "ADR 内容 状態" [ref=e711]:
+          - columnheader "ADR" [ref=e712]
+          - columnheader "内容" [ref=e713]
+          - columnheader "状態" [ref=e714]
+      - rowgroup [ref=e715]:
+        - row "ADR-006 Project Board SSoT 保全" [ref=e716]:
+          - cell "ADR-006" [ref=e717]
+          - cell "Project Board SSoT" [ref=e718]
+          - cell "保全" [ref=e719]:
+            - generic [ref=e720]: 保全
+        - row "ADR-010 co-issue thin orchestrator 保全" [ref=e721]:
+          - cell "ADR-010" [ref=e722]
+          - cell "co-issue thin orchestrator" [ref=e723]
+          - cell "保全" [ref=e724]:
+            - generic [ref=e725]: 保全
+        - row "ADR-014 su-observer = administrator 保全 (rebrand)" [ref=e726]:
+          - cell "ADR-014" [ref=e727]
+          - cell "su-observer = administrator" [ref=e728]
+          - cell "保全 (rebrand)" [ref=e729]:
+            - generic [ref=e730]: 保全
+            - text: (rebrand)
+        - row "ADR-022 chain SSoT 境界 Superseded by ADR-043" [ref=e731]:
+          - cell "ADR-022" [ref=e732]
+          - cell "chain SSoT 境界" [ref=e733]
+          - cell "Superseded by ADR-043" [ref=e734]:
+            - generic [ref=e735]: Superseded by ADR-043
+        - row "ADR-024 5-stage taxonomy Superseded by ADR-043 (6-stage)" [ref=e736]:
+          - cell "ADR-024" [ref=e737]
+          - cell "5-stage taxonomy" [ref=e738]
+          - cell "Superseded by ADR-043 (6-stage)" [ref=e739]:
+            - generic [ref=e740]: Superseded by ADR-043 (6-stage)
+        - row "ADR-036 lesson 構造化 保全" [ref=e741]:
+          - cell "ADR-036" [ref=e742]
+          - cell "lesson 構造化" [ref=e743]
+          - cell "保全" [ref=e744]:
+            - generic [ref=e745]: 保全
+        - row "ADR-037 Invariant P co-explore required 保全" [ref=e746]:
+          - cell "ADR-037" [ref=e747]
+          - cell "Invariant P co-explore required" [ref=e748]
+          - cell "保全" [ref=e749]:
+            - generic [ref=e750]: 保全
+        - row "ADR-039 redesigned chain Superseded by ADR-043 (step verification 化)" [ref=e751]:
+          - cell "ADR-039" [ref=e752]
+          - cell "redesigned chain" [ref=e753]
+          - cell "Superseded by ADR-043 (step verification 化)" [ref=e754]:
+            - generic [ref=e755]: Superseded by ADR-043
+            - text: (step verification 化)
+        - row "ADR-040 feature-dev spawn gate phase-impl に統合" [ref=e756]:
+          - cell "ADR-040" [ref=e757]
+          - cell "feature-dev spawn gate" [ref=e758]
+          - cell "phase-impl に統合" [ref=e759]:
+            - generic [ref=e760]: phase-impl に統合
+        - row "ADR-041 spawn-controller 統合 phase-* + admin に統合" [ref=e761]:
+          - cell "ADR-041" [ref=e762]
+          - cell "spawn-controller 統合" [ref=e763]
+          - cell "phase-* + admin に統合" [ref=e764]:
+            - generic [ref=e765]: phase-* + admin に統合
+        - row "ADR-042 tmux crash recovery Memory MCP + Agent で代替" [ref=e766]:
+          - cell "ADR-042" [ref=e767]
+          - cell "tmux crash recovery" [ref=e768]
+          - cell "Memory MCP + Agent で代替" [ref=e769]:
+            - generic [ref=e770]: Memory MCP + Agent で代替
+        - 'row "ADR-043 NEW: radical rebuild rationale + minimal core design 新規" [ref=e771]':
+          - cell "ADR-043" [ref=e772]:
+            - strong [ref=e773]: ADR-043
+          - 'cell "NEW: radical rebuild rationale + minimal core design" [ref=e774]':
+            - strong [ref=e775]: "NEW: radical rebuild rationale + minimal core design"
+          - cell "新規" [ref=e776]:
+            - generic [ref=e777]: 新規
+    - heading "B. Plugin core (保全)" [level=3] [ref=e778]
+    - list [ref=e779]:
+      - listitem [ref=e780]:
+        - code [ref=e781]: plugins/twl/skills/co-*/SKILL.md
+        - text: →
+        - code [ref=e782]: phase-*/SKILL.md
+        - text: に rebrand + step verification 規約適用
+      - listitem [ref=e783]:
+        - code [ref=e784]: plugins/twl/skills/su-observer/
+        - text: →
+        - code [ref=e785]: administrator/SKILL.md
+        - text: に rebrand
+      - listitem [ref=e786]:
+        - code [ref=e787]: plugins/twl/refs/
+        - text: 原則集 (intervention-catalog / pitfalls-catalog 等) 保全
+      - listitem [ref=e788]:
+        - code [ref=e789]: cli/twl/src/twl/validate.py
+        - text: thin helper として残す
+      - listitem [ref=e790]:
+        - code [ref=e791]: cli/twl/src/twl/config.py
+        - text: project-links.yaml 読み込み
+      - listitem [ref=e792]:
+        - code [ref=e793]: plugins/twl/tests/bats/
+        - text: regression test 全件保全
+    - heading "C. 本 session 9 件 P0 bug lesson" [level=3] [ref=e794]
+    - table [ref=e795]:
+      - rowgroup [ref=e796]:
+        - row "Issue 内容 migration 後の扱い" [ref=e797]:
+          - columnheader "Issue" [ref=e798]
+          - columnheader "内容" [ref=e799]
+          - columnheader "migration 後の扱い" [ref=e800]
+      - rowgroup [ref=e801]:
+        - row "#1684 cwd guard (invariant K/L 補強) administrator/SKILL.md MUST に encapsulate" [ref=e802]:
+          - cell "#1684" [ref=e803]
+          - cell "cwd guard (invariant K/L 補強)" [ref=e804]
+          - cell "administrator/SKILL.md MUST に encapsulate" [ref=e805]
+        - row "#1674 orchestrator early-exit fix phase-* gate hook で構造的不能化" [ref=e806]:
+          - cell "#1674" [ref=e807]
+          - cell "orchestrator early-exit fix" [ref=e808]
+          - cell "phase-* gate hook で構造的不能化" [ref=e809]
+        - row "#1703 phase-review.json per-Worker isolate checkpoint 廃止で構造的不能化" [ref=e810]:
+          - cell "#1703" [ref=e811]
+          - cell "phase-review.json per-Worker isolate" [ref=e812]
+          - cell "checkpoint 廃止で構造的不能化" [ref=e813]
+        - row "#1660 SKIP_*_REASON sanitize caller authz 廃止で不要" [ref=e814]:
+          - cell "#1660" [ref=e815]
+          - cell "SKIP_*_REASON sanitize" [ref=e816]
+          - cell "caller authz 廃止で不要" [ref=e817]
+        - row "#1662/#1663 OBSERVER_PARALLEL_CHECK_STATES administrator inline で不要" [ref=e818]:
+          - cell "#1662/#1663" [ref=e819]
+          - cell "OBSERVER_PARALLEL_CHECK_STATES" [ref=e820]
+          - cell "administrator inline で不要" [ref=e821]
+        - row "#1648 auto-refined.yml fallback Actions 整理 (auto-refined 廃止) で不要" [ref=e822]:
+          - cell "#1648" [ref=e823]
+          - cell "auto-refined.yml fallback" [ref=e824]
+          - cell "Actions 整理 (auto-refined 廃止) で不要" [ref=e825]
+        - row "#973 RED merge silent rot step verification (RED test 存在) で構造的不能化" [ref=e826]:
+          - cell "#973" [ref=e827]
+          - cell "RED merge silent rot" [ref=e828]
+          - cell "step verification (RED test 存在) で構造的不能化" [ref=e829]:
+            - strong [ref=e830]: step verification (RED test 存在) で構造的不能化
+        - row "#1687 twl mcp disconnect (5 回目再発) twl MCP 極小化で影響低下" [ref=e831]:
+          - cell "#1687" [ref=e832]
+          - cell "twl mcp disconnect (5 回目再発)" [ref=e833]
+          - cell "twl MCP 極小化で影響低下" [ref=e834]
+        - row "#1626 merge-gate B+C+D step verification で merge-gate 不要" [ref=e835]:
+          - cell "#1626" [ref=e836]
+          - cell "merge-gate B+C+D" [ref=e837]
+          - cell "step verification で merge-gate 不要" [ref=e838]
+    - generic [ref=e839]:
+      - text: lesson は
+      - strong [ref=e840]: 永続文書化
+      - text: (ADR-043 supplement) +
+      - strong [ref=e841]: 構造的不能化
+      - text: (rebuild で同 bug が起こらない設計)。
+  - generic [ref=e842]:
+    - heading "11. rebuild plan (Strangler Fig、~1-2 週)" [level=2] [ref=e843]
+    - generic [ref=e844]:
+      - img [ref=e845]:
+        - generic [ref=e846]: "Day:"
+        - generic [ref=e847]:
+          - generic [ref=e848]: "1"
+          - generic [ref=e849]: "2"
+          - generic [ref=e850]: "3"
+          - generic [ref=e851]: "4"
+          - generic [ref=e852]: "5"
+          - generic [ref=e853]: "6"
+          - generic [ref=e854]: "7"
+          - generic [ref=e855]: "8"
+          - generic [ref=e856]: "9"
+          - generic [ref=e857]: "10"
+          - generic [ref=e858]: "11"
+          - generic [ref=e859]: "12"
+          - generic [ref=e860]: "13"
+          - generic [ref=e861]: "14"
+        - generic [ref=e863]: "Phase 1: PoC"
+        - generic [ref=e864]: ADR-043 起票 + phase-impl + worker-test-ready + phase-gate.sh、1 Issue 完遂 proof
+        - generic [ref=e866]: "Phase 2: dual-stack"
+        - generic [ref=e867]: 残り 3 phase + administrator + Project Board option 追加
+        - generic [ref=e869]: "Phase 3: cutover"
+        - generic [ref=e870]: in-flight 完遂 + 旧 5175 lines 削除
+        - generic [ref=e872]: "Phase 4: cleanup"
+        - generic [ref=e873]: docs + bats 確認
+        - generic [ref=e874]: Day 1-3
+        - generic [ref=e875]: Day 4-7
+        - generic [ref=e876]: Day 8-11
+        - generic [ref=e877]: Day 12-14
+        - generic [ref=e878]: 合計 ~14 日 (1-2 週)、各 phase は独立 PR、rollback 可能
+      - generic [ref=e879]: "図 5: rebuild plan timeline — Strangler Fig 4 phase、Phase 1 PoC で 1 Issue 完遂を確証ポイントとする"
+    - 'heading "Phase 1: PoC (Day 1-3)" [level=3] [ref=e880]'
+    - list [ref=e881]:
+      - listitem [ref=e882]: ADR-043 起票
+      - listitem [ref=e883]:
+        - code [ref=e884]: phase-impl
+        - text: SKILL.md draft (1 個のみ、step verification 規約適用)
+      - listitem [ref=e885]:
+        - code [ref=e886]: worker-test-ready
+        - text: subagent type 作成
+      - listitem [ref=e887]:
+        - code [ref=e888]: phase-gate.sh
+        - text: (status check hook) 作成
+      - listitem [ref=e889]: "PoC: 1 Issue を phase-impl のみで完遂 (RED → GREEN → 検証 → PR 作成)"
+    - 'heading "Phase 2: dual-stack (Day 4-7)" [level=3] [ref=e890]'
+    - list [ref=e891]:
+      - listitem [ref=e892]: phase-explore / phase-refine / phase-pr 残り 3 個作成
+      - listitem [ref=e893]: administrator SKILL.md draft (旧 su-observer から rebrand)
+      - listitem [ref=e894]: Project Board option 追加 (Explored / PR Reviewed) ← UI 操作
+      - listitem [ref=e895]: 既存 co-* と新 phase-* を併存、新 Issue は phase-* 経由
+      - listitem [ref=e896]: 旧 chain-runner.sh は freeze (新規修正禁止、既存 in-flight Issue のみ実行)
+    - 'heading "Phase 3: cutover (Day 8-11)" [level=3] [ref=e897]'
+    - list [ref=e898]:
+      - listitem [ref=e899]: in-flight Issue 全完遂 or migration
+      - listitem [ref=e900]: 旧 chain-runner.sh + autopilot-* + workflow-* (13 個) を全削除
+      - listitem [ref=e901]: twl MCP を極小化 (1 tool のみ残す)
+      - listitem [ref=e902]: chain.py + chain-steps.sh + .autopilot/checkpoints/ 全削除
+    - 'heading "Phase 4: cleanup (Day 12-14)" [level=3] [ref=e903]'
+    - list [ref=e904]:
+      - listitem [ref=e905]: ドキュメント更新 (README / CLAUDE.md / refs/)
+      - listitem [ref=e906]: ADR-022/024/039/040/041/042 を Superseded by ADR-043 でマーク
+      - listitem [ref=e907]: bats regression test 全 PASS 確認
+      - listitem [ref=e908]: Project Board UI 設定 (Kanban 6-stage、Table view) ← Web UI 手動 or copyProjectV2
+  - generic [ref=e909]:
+    - heading "12. 決定事項 (2026-05-12 user 確定)" [level=2] [ref=e910]
+    - table [ref=e911]:
+      - rowgroup [ref=e912]:
+        - row "# 項目 確定内容" [ref=e913]:
+          - columnheader "#" [ref=e914]
+          - columnheader "項目" [ref=e915]
+          - columnheader "確定内容" [ref=e916]
+      - rowgroup [ref=e917]:
+        - 'row "A tool-* の naming 確定 long form: tool-architect / tool-project / tool-utility / tool-self-improve" [ref=e918]':
+          - cell "A" [ref=e919]
+          - cell "tool-* の naming" [ref=e920]
+          - 'cell "確定 long form: tool-architect / tool-project / tool-utility / tool-self-improve" [ref=e921]':
+            - generic [ref=e922]: 確定
+            - text: "long form:"
+            - code [ref=e923]: tool-architect
+            - text: /
+            - code [ref=e924]: tool-project
+            - text: /
+            - code [ref=e925]: tool-utility
+            - text: /
+            - code [ref=e926]: tool-self-improve
+        - 'row "B worker-* の数 確定 7 個 (本 draft のまま): worker-test-ready / pr-verify / pr-fix / spec-review / architecture / security / codex" [ref=e927]':
+          - cell "B" [ref=e928]
+          - cell "worker-* の数" [ref=e929]
+          - 'cell "確定 7 個 (本 draft のまま): worker-test-ready / pr-verify / pr-fix / spec-review / architecture / security / codex" [ref=e930]':
+            - generic [ref=e931]: 確定
+            - text: "7 個 (本 draft のまま): worker-test-ready / pr-verify / pr-fix / spec-review / architecture / security / codex"
+        - row "D tmux 経路 確定 (2026-05-12 訂正) tmux send-keys (mailbox) のみ廃止。tmux は 別 main session の spawn 機構として維持 (administrator が phase-* を別 process として起動するため必要)。通信は GitHub Project Board status SSoT 経由。詳細は §5b 参照" [ref=e932]:
+          - cell "D" [ref=e933]
+          - cell "tmux 経路" [ref=e934]
+          - cell "確定 (2026-05-12 訂正) tmux send-keys (mailbox) のみ廃止。tmux は 別 main session の spawn 機構として維持 (administrator が phase-* を別 process として起動するため必要)。通信は GitHub Project Board status SSoT 経由。詳細は §5b 参照" [ref=e935]:
+            - generic [ref=e936]: 確定 (2026-05-12 訂正)
+            - strong [ref=e937]: tmux send-keys (mailbox) のみ廃止
+            - text: 。tmux は
+            - strong [ref=e938]: 別 main session の spawn 機構として維持
+            - text: (administrator が phase-* を別 process として起動するため必要)。通信は GitHub Project Board status SSoT 経由。詳細は §5b 参照
+        - row "E Phase 1 PoC 対象 Issue 確定 本 session P0 修正済 Issue でリハーサル (#1684 cwd guard 等から選定。新 phase-impl で再実装、達成 outcome 明確 + 比較可能)" [ref=e939]:
+          - cell "E" [ref=e940]
+          - cell "Phase 1 PoC 対象 Issue" [ref=e941]
+          - cell "確定 本 session P0 修正済 Issue でリハーサル (#1684 cwd guard 等から選定。新 phase-impl で再実装、達成 outcome 明確 + 比較可能)" [ref=e942]:
+            - generic [ref=e943]: 確定
+            - text: 本 session P0 修正済 Issue でリハーサル (#1684 cwd guard 等から選定。新 phase-impl で再実装、達成 outcome 明確 + 比較可能)
+        - row "C Memory MCP 統合 後回し administrator 実装時 (Phase 2) で決定" [ref=e944]:
+          - cell "C" [ref=e945]
+          - cell "Memory MCP 統合" [ref=e946]
+          - cell "後回し administrator 実装時 (Phase 2) で決定" [ref=e947]:
+            - generic [ref=e948]: 後回し
+            - text: administrator 実装時 (Phase 2) で決定
+  - generic [ref=e949]:
+    - heading "5b. spawn / 通信 仕組み (3 階層 architecture、2026-05-12 改訂版)" [level=2] [ref=e950]
+    - generic [ref=e951]:
+      - strong [ref=e952]: 本 section は 2 回訂正済 (2026-05-12)
+      - text: ": (1) 旧版 v1 で「Agent (subagent) tool で worker から子 Agent を spawn 可能」と書いた誤り、(2) 旧版 v2 で「2 階層 (admin → phase-* → worker は subagent)」とした誤り。"
+      - strong [ref=e953]: 正解は 3 階層 全層 tmux + claude code 別 main session
+      - text: (administrator / phase-* pilot / worker-*)、階層型 file mailbox で通信。subagent 制約は worker 内部の 1 階層 spawn (optional) にのみ適用。
+    - heading "3 階層 spawn 構造 (administrator → pilot → worker)" [level=3] [ref=e954]
+    - table [ref=e955]:
+      - rowgroup [ref=e956]:
+        - row "Layer 役割 spawn 機構 受信 mail" [ref=e957]:
+          - columnheader "Layer" [ref=e958]
+          - columnheader "役割" [ref=e959]
+          - columnheader "spawn 機構" [ref=e960]
+          - columnheader "受信 mail" [ref=e961]
+      - rowgroup [ref=e962]:
+        - row "L0 administrator リーダー、user 代理、全体采配 (user が起動) pilot からのみ (集約済 report)" [ref=e963]:
+          - cell "L0 administrator" [ref=e964]:
+            - strong [ref=e965]: L0 administrator
+          - cell "リーダー、user 代理、全体采配" [ref=e966]
+          - cell "(user が起動)" [ref=e967]
+          - cell "pilot からのみ (集約済 report)" [ref=e968]
+        - row "L1 phase-* (pilot) サブリーダー、status 遷移担当、worker 群管理 administrator が tmux new-window で claude code 起動 worker からのみ (実作業 report)" [ref=e969]:
+          - cell "L1 phase-* (pilot)" [ref=e970]:
+            - strong [ref=e971]: L1 phase-* (pilot)
+          - cell "サブリーダー、status 遷移担当、worker 群管理" [ref=e972]
+          - cell "administrator が tmux new-window で claude code 起動" [ref=e973]
+          - cell "worker からのみ (実作業 report)" [ref=e974]
+        - row "L2 worker-* 実行部隊 (test 書く / 実装 / レビュー等) pilot が tmux new-window で claude code 起動 (optional) subagent 1 階層から" [ref=e975]:
+          - cell "L2 worker-*" [ref=e976]:
+            - strong [ref=e977]: L2 worker-*
+          - cell "実行部隊 (test 書く / 実装 / レビュー等)" [ref=e978]
+          - cell "pilot が tmux new-window で claude code 起動" [ref=e979]
+          - cell "(optional) subagent 1 階層から" [ref=e980]
+    - generic [ref=e981]:
+      - strong [ref=e982]: 全層が別 main session
+      - text: "= subagent nesting 制約 (公式 verified) は worker 内部のみに適用。pilot は worker spawn 可、worker は内部で必要なら subagent 1 階層 spawn 可 (例: worker-pr-verify が複数 file 用に並列 review subagent)。"
+    - heading "context 効率化 (pyramid 型情報集約)" [level=3] [ref=e983]
+    - list [ref=e984]:
+      - listitem [ref=e985]: L2 worker = 実作業の詳細 (file diff、test 結果、レビュー findings) に集中
+      - listitem [ref=e986]: L1 pilot = worker mail を集約・要約 → administrator に「全 worker 完了、status 更新済」レベルの mail
+      - listitem [ref=e987]: L0 administrator = pilot mail のみ受信 = 各 Issue/PR の最終 summary レベルで全体把握
+    - paragraph [ref=e988]:
+      - strong [ref=e989]: = administrator context は最小
+      - text: 、全 Issue 並列管理しても context overflow しない。
+    - heading "公式制約 (Claude Code docs verified、worker 内部 subagent にのみ適用)" [level=3] [ref=e990]
+    - table [ref=e991]:
+      - rowgroup [ref=e992]:
+        - row "事実 引用 本 architecture での扱い" [ref=e993]:
+          - columnheader "事実" [ref=e994]
+          - columnheader "引用" [ref=e995]
+          - columnheader "本 architecture での扱い" [ref=e996]
+      - rowgroup [ref=e997]:
+        - row "subagent から子 subagent spawn は禁止 \"Subagents cannot spawn other subagents\" (code.claude.com/docs/en/sub-agents.md L60, L348, L737) worker 内部の subagent は子 spawn 不可 (worker は単純作業なので OK)" [ref=e998]:
+          - cell "subagent から子 subagent spawn は禁止" [ref=e999]
+          - cell "\"Subagents cannot spawn other subagents\" (code.claude.com/docs/en/sub-agents.md L60, L348, L737)" [ref=e1000]:
+            - text: "\""
+            - strong [ref=e1001]: Subagents cannot spawn other subagents
+            - text: "\" (code.claude.com/docs/en/sub-agents.md L60, L348, L737)"
+          - cell "worker 内部の subagent は子 spawn 不可 (worker は単純作業なので OK)" [ref=e1002]
+        - row "tools field に Agent を含めても効果なし \"Agent(agent_type) has no effect in subagent definitions\" (同 L348) worker subagent の tools には Agent 不要" [ref=e1003]:
+          - cell "tools field に Agent を含めても効果なし" [ref=e1004]:
+            - text: tools field に
+            - code [ref=e1005]: Agent
+            - text: を含めても効果なし
+          - cell "\"Agent(agent_type) has no effect in subagent definitions\" (同 L348)" [ref=e1006]:
+            - text: "\""
+            - code [ref=e1007]: Agent(agent_type)
+            - text: has no effect in subagent definitions" (同 L348)
+          - cell "worker subagent の tools には Agent 不要" [ref=e1008]
+        - row "SendMessage は experimental feature \"Only available when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 is set\" (code.claude.com/docs/en/tools.md) 採用しない。階層型 file mailbox で代替" [ref=e1009]:
+          - cell "SendMessage は experimental feature" [ref=e1010]
+          - cell "\"Only available when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 is set\" (code.claude.com/docs/en/tools.md)" [ref=e1011]:
+            - text: "\"Only available when"
+            - code [ref=e1012]: CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+            - text: is set" (code.claude.com/docs/en/tools.md)
+          - cell "採用しない。階層型 file mailbox で代替" [ref=e1013]
+    - heading "公式制約 (Claude Code docs verified)" [level=3] [ref=e1014]
+    - table [ref=e1015]:
+      - rowgroup [ref=e1016]:
+        - row "事実 引用" [ref=e1017]:
+          - columnheader "事実" [ref=e1018]
+          - columnheader "引用" [ref=e1019]
+      - rowgroup [ref=e1020]:
+        - row "subagent から子 subagent spawn は禁止 \"Subagents cannot spawn other subagents\" (code.claude.com/docs/en/sub-agents.md L60, L348, L737)" [ref=e1021]:
+          - cell "subagent から子 subagent spawn は禁止" [ref=e1022]
+          - cell "\"Subagents cannot spawn other subagents\" (code.claude.com/docs/en/sub-agents.md L60, L348, L737)" [ref=e1023]:
+            - text: "\""
+            - strong [ref=e1024]: Subagents cannot spawn other subagents
+            - text: "\" (code.claude.com/docs/en/sub-agents.md L60, L348, L737)"
+        - row "tools field に Agent を含めても効果なし \"Agent(agent_type) has no effect in subagent definitions\" (同 L348)" [ref=e1025]:
+          - cell "tools field に Agent を含めても効果なし" [ref=e1026]:
+            - text: tools field に
+            - code [ref=e1027]: Agent
+            - text: を含めても効果なし
+          - cell "\"Agent(agent_type) has no effect in subagent definitions\" (同 L348)" [ref=e1028]:
+            - text: "\""
+            - code [ref=e1029]: Agent(agent_type)
+            - text: has no effect in subagent definitions" (同 L348)
+        - row "SendMessage は experimental feature \"Only available when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 is set\" (code.claude.com/docs/en/tools.md)" [ref=e1030]:
+          - cell "SendMessage は experimental feature" [ref=e1031]
+          - cell "\"Only available when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 is set\" (code.claude.com/docs/en/tools.md)" [ref=e1032]:
+            - text: "\"Only available when"
+            - code [ref=e1033]: CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+            - text: is set" (code.claude.com/docs/en/tools.md)
+    - heading "spawn / mail flow sequence (1 Issue の lifecycle 例)" [level=3] [ref=e1034]
+    - generic [ref=e1035]:
+      - img [ref=e1036]:
+        - generic [ref=e1038]: L0 administrator
+        - generic [ref=e1040]: L1 phase-impl (pilot)
+        - generic [ref=e1042]: L2 worker-test-ready × 2
+        - generic [ref=e1044]: file mailbox
+        - generic [ref=e1045]: T1
+        - generic [ref=e1047]: "poll: Issue #1684 = Refined"
+        - generic [ref=e1048]: T2
+        - generic [ref=e1050]: tmux new-window "phase-impl-1684"
+        - generic [ref=e1051]: + claude code --skill phase-impl
+        - generic [ref=e1053]: phase-impl 起動
+        - generic [ref=e1054]: AC を読み worker plan
+        - generic [ref=e1055]: T3
+        - generic [ref=e1057]: tmux new-window "worker-test-1684-A/B"
+        - generic [ref=e1058]: + claude code --skill worker-test-ready
+        - generic [ref=e1060]: "worker-A: file X 用 test"
+        - generic [ref=e1061]: "worker-B: file Y 用 test"
+        - generic [ref=e1062]: 各 main session 並列実装
+        - generic [ref=e1063]: T4
+        - generic [ref=e1065]: "echo '{...}' >> inbox.jsonl (flock)"
+        - generic [ref=e1067]: .mailbox/pilot-impl-1684/
+        - generic [ref=e1068]: inbox.jsonl
+        - generic [ref=e1069]: "{worker:A, done:true, ...}"
+        - generic [ref=e1070]: T5
+        - generic [ref=e1072]: pilot reads inbox.jsonl (poll)
+        - generic [ref=e1074]: worker mail 集約
+        - generic [ref=e1075]: verification + Status 更新
+        - generic [ref=e1076]: T6
+        - generic [ref=e1078]: "echo '{...}' >> admin/inbox.jsonl (集約 report)"
+        - generic [ref=e1080]: .mailbox/administrator/
+        - generic [ref=e1081]: inbox.jsonl
+        - generic [ref=e1082]: "{from:pilot-impl, issue:1684, status:Implementing}"
+        - generic [ref=e1083]: T7
+        - generic [ref=e1085]: admin reads inbox.jsonl (CronCreate poll)
+        - generic [ref=e1087]: 次の phase spawn 判断
+        - generic [ref=e1088]: 各 layer は context 集約のみで上位に渡す = pyramid 型情報集約、admin context 効率化
+      - generic [ref=e1089]: "図 3b: 3 階層 spawn + 階層型 file mailbox の sequence (Issue #1684 phase-impl の例)。各 layer は別 main session、mail は file mailbox 経由"
+    - heading "spawn / mailbox code 例 (3 階層)" [level=3] [ref=e1090]
+    - heading "L0 administrator → L1 phase-* (pilot) spawn" [level=4] [ref=e1091]
+    - code [ref=e1093]: "# administrator main session が tmux で pilot を起動 (別 process) tmux new-window -n \"phase-impl-1684\" -- \\ bash -c \"cd /home/shuu5/projects/local-projects/twill/main && \\ claude code --skill phase-impl --arg issue_num=1684\""
+    - heading "L1 phase-* (pilot) → L2 worker-* spawn" [level=4] [ref=e1094]
+    - code [ref=e1096]: "# pilot main session が tmux で worker 群を並列起動 (各 worker も別 process) for file in src/foo.py src/bar.py; do tmux new-window -n \"worker-test-${file//\\//-}\" -- \\ bash -c \"cd /home/shuu5/projects/local-projects/twill/main && \\ claude code --skill worker-test-ready --arg file=$file --arg issue=1684\" done # worker は別 main session として独立、内部で optional に Agent subagent も使える # (例: worker-pr-verify が複数 file 用に並列 review subagent を spawn — 1 階層は OK)"
+    - heading "L2 worker → L1 pilot mailbox write" [level=4] [ref=e1097]
+    - code [ref=e1099]: "# worker が完了 report を pilot mailbox に write (file mailbox、flock atomic) MAILBOX=\"$REPO_ROOT/.mailbox/pilot-impl-1684/inbox.jsonl\" mkdir -p \"$(dirname \"$MAILBOX\")\" ( flock -x 200 jq -nc \\ --arg from \"worker-test-foo-py\" \\ --arg ts \"$(date -u +%FT%TZ)\" \\ --arg event \"test_scaffold_done\" \\ --argjson red_count 3 \\ '{from:$from, ts:$ts, event:$event, red_count:$red_count}' \\ >> \"$MAILBOX\" ) 200>\"$MAILBOX.lock\""
+    - heading "L1 pilot → L0 administrator mailbox write (worker mail を集約後)" [level=4] [ref=e1100]
+    - code [ref=e1102]: "# pilot が worker mail を集約後、administrator mailbox に要約 report を write ADMIN_MBOX=\"$REPO_ROOT/.mailbox/administrator/inbox.jsonl\" ( flock -x 200 jq -nc \\ --arg from \"pilot-impl-1684\" \\ --arg issue \"1684\" \\ --arg status \"Implementing\" \\ --argjson workers_done 2 \\ '{from:$from, issue:$issue, status:$status, workers_done:$workers_done}' \\ >> \"$ADMIN_MBOX\" ) 200>\"$ADMIN_MBOX.lock\" # pilot は GitHub Project Board status も更新 (SSoT) gh project item-edit --id \"$ITEM_ID\" --single-select-option-id \"$IMPLEMENTING_OPTION_ID\""
+    - 'heading "L0 administrator: 自分の mailbox poll + 次 phase 判断" [level=4] [ref=e1103]'
+    - code [ref=e1105]: "# administrator は CronCreate (25 min) で poll ADMIN_MBOX=\"$REPO_ROOT/.mailbox/administrator/inbox.jsonl\" # 未読 mail の処理 (line-based、processed line を別 file で track) while IFS= read -r msg; do issue=$(echo \"$msg\" | jq -r '.issue') status=$(echo \"$msg\" | jq -r '.status') case \"$status\" in Implementing) tmux new-window -n \"phase-pr-$issue\" -- ... ;; PR\\ Reviewed) echo \"branch protection が auto-merge する\" ;; esac done < <(tail -n +$((PROCESSED_LINE+1)) \"$ADMIN_MBOX\")"
+    - heading "tmux の用途 (3 階層 spawn で全層使用)" [level=3] [ref=e1106]
+    - table [ref=e1107]:
+      - rowgroup [ref=e1108]:
+        - row "tmux 用途 新 architecture での扱い" [ref=e1109]:
+          - columnheader "tmux 用途" [ref=e1110]
+          - columnheader "新 architecture での扱い" [ref=e1111]
+      - rowgroup [ref=e1112]:
+        - row "L0 → L1 spawn (admin が pilot 起動) 維持 tmux new-window + claude code" [ref=e1113]:
+          - cell "L0 → L1 spawn (admin が pilot 起動)" [ref=e1114]
+          - cell "維持 tmux new-window + claude code" [ref=e1115]:
+            - generic [ref=e1116]: 維持
+            - text: tmux new-window + claude code
+        - row "L1 → L2 spawn (pilot が worker 群並列起動) 維持 tmux new-window + claude code" [ref=e1117]:
+          - cell "L1 → L2 spawn (pilot が worker 群並列起動)" [ref=e1118]
+          - cell "維持 tmux new-window + claude code" [ref=e1119]:
+            - generic [ref=e1120]: 維持
+            - text: tmux new-window + claude code
+        - row "session 状態の visibility (tmux list-windows / capture-pane) 維持 user / admin が観察可能" [ref=e1121]:
+          - cell "session 状態の visibility (tmux list-windows / capture-pane)" [ref=e1122]
+          - cell "維持 user / admin が観察可能" [ref=e1123]:
+            - generic [ref=e1124]: 維持
+            - text: user / admin が観察可能
+        - row "send-keys (mailbox / inject) 廃止 file mailbox で代替" [ref=e1125]:
+          - cell "send-keys (mailbox / inject)" [ref=e1126]
+          - cell "廃止 file mailbox で代替" [ref=e1127]:
+            - generic [ref=e1128]: 廃止
+            - text: file mailbox で代替
+        - row "session-comm.sh / pseudo-pilot / mailbox lock-dir 廃止 file mailbox + flock で代替 (~30 lines helper)" [ref=e1129]:
+          - cell "session-comm.sh / pseudo-pilot / mailbox lock-dir" [ref=e1130]
+          - cell "廃止 file mailbox + flock で代替 (~30 lines helper)" [ref=e1131]:
+            - generic [ref=e1132]: 廃止
+            - text: file mailbox + flock で代替 (~30 lines helper)
+    - heading "file mailbox の仕様" [level=3] [ref=e1133]
+    - table [ref=e1134]:
+      - rowgroup [ref=e1135]:
+        - row "項目 仕様" [ref=e1136]:
+          - columnheader "項目" [ref=e1137]
+          - columnheader "仕様" [ref=e1138]
+      - rowgroup [ref=e1139]:
+        - row "path $REPO_ROOT/.mailbox/<session-name>/inbox.jsonl" [ref=e1140]:
+          - cell "path" [ref=e1141]
+          - cell "$REPO_ROOT/.mailbox/<session-name>/inbox.jsonl" [ref=e1142]:
+            - code [ref=e1143]: $REPO_ROOT/.mailbox/<session-name>/inbox.jsonl
+        - row "format JSON Lines (1 message = 1 line、改行区切り)" [ref=e1144]:
+          - cell "format" [ref=e1145]
+          - cell "JSON Lines (1 message = 1 line、改行区切り)" [ref=e1146]
+        - row "write flock で atomic、echo ... >> inbox.jsonl" [ref=e1147]:
+          - cell "write" [ref=e1148]
+          - cell "flock で atomic、echo ... >> inbox.jsonl" [ref=e1149]:
+            - code [ref=e1150]: flock
+            - text: で atomic、
+            - code [ref=e1151]: echo ... >> inbox.jsonl
+        - row "read poll 方式、processed line を別 file (.processed) で track" [ref=e1152]:
+          - cell "read" [ref=e1153]
+          - cell "poll 方式、processed line を別 file (.processed) で track" [ref=e1154]:
+            - text: poll 方式、processed line を別 file (
+            - code [ref=e1155]: .processed
+            - text: ) で track
+        - row "retention session 終了時に inbox を archive (archive/inbox-<timestamp>.jsonl)" [ref=e1156]:
+          - cell "retention" [ref=e1157]
+          - cell "session 終了時に inbox を archive (archive/inbox-<timestamp>.jsonl)" [ref=e1158]:
+            - text: session 終了時に inbox を archive (
+            - code [ref=e1159]: archive/inbox-<timestamp>.jsonl
+            - text: )
+        - row "helper plugins/twl/scripts/mailbox.sh (~30 lines、send / recv 2 関数)" [ref=e1160]:
+          - cell "helper" [ref=e1161]
+          - cell "plugins/twl/scripts/mailbox.sh (~30 lines、send / recv 2 関数)" [ref=e1162]:
+            - code [ref=e1163]: plugins/twl/scripts/mailbox.sh
+            - text: (~30 lines、send / recv 2 関数)
+    - generic [ref=e1164]:
+      - strong [ref=e1165]: tmux は L0/L1/L2 全層の spawn 機構として残し、send-keys (mailbox 注入) のみ廃止
+      - text: 。階層型 file mailbox は薄い helper (~30 lines)、各 layer の context が isolation され、上位に集約された情報のみが渡る = administrator は最小 context で全体把握可能。
+  - generic [ref=e1166]:
+    - heading "13. audit source" [level=2] [ref=e1167]
+    - list [ref=e1168]:
+      - listitem [ref=e1169]: 本 session (su-observer ipatho-2、2026-05-12) 18 PR merge + 9 件 P0 bug audit
+      - listitem [ref=e1170]:
+        - code [ref=e1171]: chain-runner.sh
+        - text: L1873-1884 直接 grep 確認 (自己申告 step 発見)
+      - listitem [ref=e1172]: plugin file 数 1177 (find 集計)、orchestration script 5175 lines (wc -l)
+      - listitem [ref=e1173]: window 2 research session 46fdb940 (GitHub SSoT 6-stage 確定)
+      - listitem [ref=e1174]: "user 戦略判断 2026-05-12: greenfield 回避 + administrator 命名 + phase 4 個 + tool 4 個 + 1 window 1 controller"
+  - generic [ref=e1175]:
+    - heading "14. 次の step" [level=2] [ref=e1176]
+    - list [ref=e1177]:
+      - listitem [ref=e1178]:
+        - strong [ref=e1179]: 本構想書を user が熟読
+        - text: 、修正点 feedback
+      - listitem [ref=e1180]:
+        - text: feedback 反映 →
+        - strong [ref=e1181]: ADR-043 起票
+        - text: (
+        - code [ref=e1182]: architecture/decisions/ADR-043-twill-radical-rebuild.html
+        - text: — 本構想書を骨子に変換)
+      - listitem [ref=e1183]:
+        - strong [ref=e1184]: Phase 1 PoC 開始
+        - text: (phase-impl + worker-test-ready + phase-gate.sh)
+      - listitem [ref=e1185]: PoC 完遂で 1-2 週 rebuild plan 確証 → Phase 2-4 sequential
+  - generic [ref=e1186]:
+    - text: "end of design draft · html version generated 2026-05-12 · source:"
+    - code [ref=e1187]: /tmp/twill-rebuild-design.md

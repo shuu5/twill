@@ -1,0 +1,29 @@
+{
+  "step": "phase-review",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 3 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "message": "supervision.md L246 に「SU-1〜SU-7」と古い記述が残存（SU-8/SU-9 定義済みだが SSoT が自己矛盾）— pre-existing",
+      "source": "codex-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "message": "constraints.md SU-5 が詳細ガイダンス（monitor-channel-catalog.md 参照等）を省略",
+      "source": "codex-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "message": "constraints.md Security gate の「2回以上 deny」手順が省略（security-gate.md への誘導のみ）",
+      "source": "codex-reviewer"
+    },
+    {
+      "severity": "INFO",
+      "message": "bullet 6.7 の位置（6.5/6.6 と性質がやや異質）は現時点では問題なし",
+      "source": "codex-reviewer"
+    }
+  ],
+  "timestamp": "2026-05-02T07:32:28Z"
+}

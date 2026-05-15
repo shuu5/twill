@@ -1,0 +1,11 @@
+session_id: "bf5dc3c7"
+repo_mode: "worktree"
+project_dir: "/home/shuu5/projects/local-projects/twill/main"
+phases:
+  - phase: 1
+    - 1602
+  - phase: 2
+    - 1603
+dependencies:
+  1603:
+  - 1602

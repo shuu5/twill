@@ -1,0 +1,57 @@
+{
+  "step": "merge-gate",
+  "status": "PASS",
+  "findings_summary": "0 CRITICAL, 6 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 75,
+      "file": "plugins/twl/tests/bats/skill-markdown-path-discipline.bats",
+      "line": 1,
+      "message": "AC4 bats assertion 2/3 (source/code-fence チェック) が欠落",
+      "category": "ac-alignment"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 70,
+      "file": "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md",
+      "line": 760,
+      "message": "source observer-window-check.sh パス不整合 (WARNING: fixed in follow-up commit)",
+      "category": "chain-integrity-drift"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 85,
+      "file": "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md",
+      "line": 879,
+      "message": "tmux kill-window window名直接渡し (pre-existing, tech-debt #1262)",
+      "category": "tmux-target"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 82,
+      "file": "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md",
+      "line": 876,
+      "message": "bare cross-plugin session-comm.sh (pre-existing, tech-debt #1262)",
+      "category": "cross-plugin"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 80,
+      "file": "plugins/twl/skills/su-observer/refs/su-observer-wave-management.md",
+      "line": 134,
+      "message": "skills/ prefix form auto-next-spawn.sh (pre-existing, tech-debt #1262)",
+      "category": "skill-markdown-path"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 90,
+      "file": "plugins/twl/skills/su-observer/SKILL.md",
+      "line": 92,
+      "message": "spawn_cmd_argv JSON TWILL_ROOT placeholder (fixed in follow-up commit)",
+      "category": "bug"
+    }
+  ],
+  "timestamp": "2026-05-02T07:35:34Z"
+}

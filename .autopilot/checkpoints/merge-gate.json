@@ -1,30 +1,37 @@
 {
   "step": "merge-gate",
   "status": "PASS",
-  "findings_summary": "0 CRITICAL, 2 WARNING",
+  "findings_summary": "0 CRITICAL, 4 WARNING",
   "critical_count": 0,
   "findings": [
     {
-      "specialist": "worker-code-reviewer",
       "severity": "WARNING",
-      "confidence": 92,
-      "file": "plugins/twl/tests/bats/ac-test-mapping-1245.yaml",
-      "line": 8,
-      "message": "ac1 test_names[3] がbatsファイルの実際の@test名と不一致。YAMLは\"ac1: observer-supervise-checklist.md filename includes s supervise and checklist\"だがbatsは\"ac1: observer-supervise-checklist.md has a markdown heading\""
+      "confidence": 88,
+      "file": "plugins/twl/scripts/autopilot-cleanup.sh",
+      "line": 243,
+      "message": "audit ログ保存先 $PARENT_DIR/.audit/cleanup が AUTOPILOT_DIR の外（親ディレクトリ）に固定。共有ログ設計の意図がコードコメントに未記述",
+      "category": "architecture-boundary"
     },
     {
-      "specialist": "worker-workflow-integrity",
+      "severity": "WARNING",
+      "confidence": 82,
+      "file": "plugins/twl/scripts/autopilot-cleanup.sh",
+      "line": 92,
+      "message": "PROJECT_DIR 指定で degrade mode 回避という意味論がドキュメント未記載。呼び出し側が --project-dir を省略し続けるとすべての並列 Wave 環境で常に degrade mode",
+      "category": "architecture-boundary"
+    },
+    {
       "severity": "WARNING",
       "confidence": 70,
-      "file": "plugins/twl/architecture/domain/contexts/supervision.md",
-      "message": "observer-supervise-checklist が deps.yaml に追加されたが architecture spec Component Mapping に対応エントリなし。pre-existing パターン（su-observer split refs も未記載）と同様の追従漏れ"
+      "category": "test-coverage",
+      "message": "AC4 bats テスト (ac4_degrade_mode_log) は stderr のみ検証。.audit/cleanup/*.json ファイル生成は未検証"
     },
     {
-      "specialist": "worker-issue-pr-alignment",
-      "severity": "INFO",
-      "confidence": 65,
-      "message": "AC5 bats テストコミットメッセージに #1245 が含まれない（test(issue-1245):形式のみ）。PR diff 全体では確認済み"
+      "severity": "WARNING",
+      "confidence": 72,
+      "category": "spec-deviation",
+      "message": "AC4 仕様の .audit/auto-{run_id}-issue-{N}/state-log.jsonl と実装の .audit/cleanup/cleanup-{SESSION_ID}-{epoch}.json で命名が異なる（機能は満足）"
     }
   ],
-  "timestamp": "2026-05-02T04:24:58Z"
+  "timestamp": "2026-05-12T01:01:29Z"
 }

@@ -1,0 +1,25 @@
+{
+  "step": "merge-gate",
+  "status": "PASS",
+  "findings_summary": "0 CRITICAL, 1 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 72,
+      "file": "plugins/twl/skills/su-observer/SKILL.md",
+      "line": 122,
+      "message": "Emergency bypass 条件に su-observer 承認必須の制約が明示されていない（ADR-024 L60 参照は存在するが本文に記載なし）",
+      "category": "structure"
+    },
+    {
+      "severity": "INFO",
+      "confidence": 65,
+      "file": "plugins/twl/skills/su-observer/SKILL.md",
+      "line": 121,
+      "message": "TWL_CALLER_AUTHZ=co-issue-phase4 の記述は AC6 spec 通り。Sub-7（#1567）未マージ期間中は文言のみ。実装値 co-issue-phase4-create との乖離は Sub-7 マージ後に解消予定",
+      "category": "documentation"
+    }
+  ],
+  "timestamp": "2026-05-11T23:39:15Z"
+}

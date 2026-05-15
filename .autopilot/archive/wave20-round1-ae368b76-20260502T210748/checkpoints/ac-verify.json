@@ -1,0 +1,23 @@
+{
+  "step": "ac-verify",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 2 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "category": "ac-alignment",
+      "confidence": 75,
+      "message": "AC4: host-aliases.json はリポジトリ外のローカルファイルのためPR diffに含まれない。bats test 17-22 のPASS（37/37 GREEN）でローカル存在を確認。他ホストでの再実行時は別途作成が必要",
+      "evidence": "git diff --name-only に host-aliases.json なし / bats 37/37 GREEN"
+    },
+    {
+      "severity": "WARNING",
+      "category": "ac-alignment",
+      "confidence": 70,
+      "message": "AC5: Project Board #6 view filter の実際の追加はGitHub UIの制約で自動化不可。スクリプトコメントに4フィルター全て記載済み（仕様通りの軽量解釈）",
+      "evidence": "setup-origin-labels.sh line 245-250 にフィルター仕様コメント / bats ac5テスト4件PASS"
+    }
+  ],
+  "timestamp": "2026-05-02T11:55:56Z"
+}

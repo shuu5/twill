@@ -1,0 +1,33 @@
+{
+  "step": "phase-review",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 3 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 85,
+      "file": "plugins/twl/scripts/onboarding/setup-origin-labels.sh",
+      "line": 179,
+      "message": "origin:repo:twill ラベルが作成されるが assign_labels でハードコードされた soap-copilot-mock のみ付与され twill 起源 Issue への付与経路なし（意図的設計との合意が必要）",
+      "category": "logic"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 80,
+      "file": "plugins/twl/scripts/onboarding/setup-origin-labels.sh",
+      "line": 55,
+      "message": "gh label list をラベルごとにループ内で呼び出している（最大5回）。--limit 未指定でページネーション非考慮",
+      "category": "reliability"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 75,
+      "file": "plugins/twl/tests/bats/issue-1273-origin-labels.bats",
+      "line": 0,
+      "message": "AC4 host-aliases.json はリポジトリ外のローカルファイルのため PR diff に含まれない",
+      "category": "ac-alignment"
+    }
+  ],
+  "timestamp": "2026-05-02T11:57:41Z"
+}

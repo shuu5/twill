@@ -1,0 +1,41 @@
+{
+  "step": "phase-review",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 4 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 97,
+      "file": ".github/workflows/auto-refined.yml",
+      "line": 34,
+      "message": "ページネーション未実装: items(first: 100)の1ページ目のみ参照、100件超でitem_id取りこぼし",
+      "category": "bug"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 92,
+      "file": ".github/workflows/auto-refined.yml",
+      "line": 18,
+      "message": "add-to-projectのoutputs.itemIdを使わず不要な全件探索、二次探索は脆く冗長",
+      "category": "structure"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 88,
+      "file": ".github/workflows/auto-refined.yml",
+      "line": 27,
+      "message": "add-to-project直後の即検索で伝播遅延によりitem_idが空になる競合状態リスク",
+      "category": "bug"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 85,
+      "file": ".github/workflows/auto-refined.yml",
+      "line": 52,
+      "message": "bash -e のみでpipefailなし、item_id未取得時もworkflow全体がgreenになるエラーハンドリング不足",
+      "category": "bug"
+    }
+  ],
+  "timestamp": "2026-05-11T23:19:35Z"
+}

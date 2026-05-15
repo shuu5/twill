@@ -1,0 +1,490 @@
+[2026-05-12T02:57:00Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:00Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:00Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:11Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:11Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:11Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:12Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:12Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:23Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:23Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:23Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:23Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:23Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:34Z] issue=1679 category=INJECT_SUCCESS skill=/twl:workflow-test-ready result=success status=running current_step=ac-extract pr= branch=
+[2026-05-12T02:57:35Z] issue=1680 category=INJECT_SUCCESS skill=/twl:workflow-test-ready result=success status=running current_step=ac-extract pr= branch=
+[2026-05-12T02:57:35Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:35Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:35Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:47Z] issue=1681 category=INJECT_SUCCESS skill=/twl:workflow-test-ready result=success status=running current_step=ac-extract pr= branch=
+[2026-05-12T02:57:47Z] issue=1682 category=INJECT_SUCCESS skill=/twl:workflow-test-ready result=success status=running current_step=ac-extract pr= branch=
+[2026-05-12T02:57:48Z] issue=1683 category=INJECT_SUCCESS skill=/twl:workflow-test-ready result=success status=running current_step=ac-extract pr= branch=
+[2026-05-12T02:57:58Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:59Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:57:59Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:10Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:10Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:10Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:11Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:11Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:22Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:22Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:22Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:22Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:23Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:34Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:34Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:34Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:34Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:35Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:46Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:46Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:46Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:46Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:47Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:58Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:58Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:58Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:58Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:58:59Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:09Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:10Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:10Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:10Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:10Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:21Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:21Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:22Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:22Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:22Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:33Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:33Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:33Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:34Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:34Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:45Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:45Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:45Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:46Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:46Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:57Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:57Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:57Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:58Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T02:59:58Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:09Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:09Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:09Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:09Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:10Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:21Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:21Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:21Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:21Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:22Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:32Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:33Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:33Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:33Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:33Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:44Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:44Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:45Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:45Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:45Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:56Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:56Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:57Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:57Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:00:57Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:08Z] issue=1679 category=INJECT_SUCCESS skill=/twl:workflow-pr-verify result=success status=running current_step=check pr= branch=
+[2026-05-12T03:01:08Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:09Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:09Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:09Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:20Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:20Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:21Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:21Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:32Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:32Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:32Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:32Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:32Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:43Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:44Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:44Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:44Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:44Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:55Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:55Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:56Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:56Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:01:56Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:07Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:07Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:07Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:07Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:08Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:18Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:19Z] issue=1680 category=INJECT_SUCCESS skill=/twl:workflow-pr-verify result=success status=running current_step=check pr= branch=
+[2026-05-12T03:02:19Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:19Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:20Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:30Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:31Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:31Z] issue=1682 category=INJECT_SUCCESS skill=/twl:workflow-pr-verify result=success status=running current_step=check pr= branch=
+[2026-05-12T03:02:32Z] issue=1683 category=INJECT_SUCCESS skill=/twl:workflow-pr-verify result=success status=running current_step=check pr= branch=
+[2026-05-12T03:02:43Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:43Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:54Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:55Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:02:55Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:06Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:06Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:06Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:07Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:18Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:18Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:18Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:19Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:30Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:30Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:30Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:31Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:41Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:42Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:42Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:42Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:53Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:53Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:54Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:03:54Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:05Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:05Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:06Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:06Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:17Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:17Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:17Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:18Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:29Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:29Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:29Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:30Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:41Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:41Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:41Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:41Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:52Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:52Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:53Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:04:53Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:04Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:04Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:04Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:05Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:16Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:16Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:16Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:17Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:27Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:28Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:28Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:28Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:39Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:39Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:40Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:40Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:51Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:51Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:51Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:05:52Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:03Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:03Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:03Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:04Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:14Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:15Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:15Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:15Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:15Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:26Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:26Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:27Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:27Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:27Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:38Z] issue=1679 category=INJECT_SUCCESS skill=/twl:workflow-pr-fix result=success status=running current_step=ac-verify pr= branch=
+[2026-05-12T03:06:38Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:39Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:39Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:39Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:50Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:50Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:51Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:06:51Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:02Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:02Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:02Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:03Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:13Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:14Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:14Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:14Z] issue=1683 category=INJECT_SUCCESS skill=/twl:workflow-pr-fix result=success status=running current_step=ac-verify pr= branch=
+[2026-05-12T03:07:25Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:25Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:26Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:37Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:37Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:38Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:49Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:49Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:07:49Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:01Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:01Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:01Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:12Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:12Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:13Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:13Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:24Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:24Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:24Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:25Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:36Z] issue=1679 category=INJECT_PR_MERGE_DEBUG skill=/twl:workflow-pr-merge status=running result=debug reason="status not merge-ready, AC-4 expected behavior"
+[2026-05-12T03:08:36Z] issue=1679 category=INJECT_SUCCESS skill=/twl:workflow-pr-merge result=success status=running current_step=warning-fix pr= branch=
+[2026-05-12T03:08:36Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:36Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:37Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:37Z] issue=1683 category=INJECT_PR_MERGE_DEBUG skill=/twl:workflow-pr-merge status=running result=debug reason="status not merge-ready, AC-4 expected behavior"
+[2026-05-12T03:08:37Z] issue=1683 category=INJECT_SUCCESS skill=/twl:workflow-pr-merge result=success status=running current_step=warning-fix pr= branch=
+[2026-05-12T03:08:48Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:48Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:48Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:48Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=602s count=52
+[2026-05-12T03:08:48Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=602s
+[2026-05-12T03:08:49Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:08:49Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:00Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:00Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:00Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:00Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=614s count=53
+[2026-05-12T03:09:00Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=614s
+[2026-05-12T03:09:00Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:01Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:12Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:12Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:12Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:12Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=626s count=54
+[2026-05-12T03:09:12Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=626s
+[2026-05-12T03:09:12Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:13Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:23Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:24Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:24Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:24Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=638s count=55
+[2026-05-12T03:09:24Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=638s
+[2026-05-12T03:09:24Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:24Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:35Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:35Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:36Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:36Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=650s count=56
+[2026-05-12T03:09:36Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=650s
+[2026-05-12T03:09:36Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:36Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:47Z] issue=1679 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:47Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:47Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:47Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=661s count=57
+[2026-05-12T03:09:47Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=661s
+[2026-05-12T03:09:48Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:48Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:59Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:59Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:09:59Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=673s count=58
+[2026-05-12T03:09:59Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=673s
+[2026-05-12T03:09:59Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:00Z] issue=1683 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:10Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:11Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:11Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=685s count=59
+[2026-05-12T03:10:11Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=685s
+[2026-05-12T03:10:11Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:22Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:22Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:22Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=696s count=60
+[2026-05-12T03:10:22Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=696s
+[2026-05-12T03:10:22Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:33Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:33Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:33Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=708s count=61
+[2026-05-12T03:10:33Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=708s
+[2026-05-12T03:10:34Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:45Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:45Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:45Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=719s count=62
+[2026-05-12T03:10:45Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=719s
+[2026-05-12T03:10:45Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:56Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:56Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:10:56Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=730s count=63
+[2026-05-12T03:10:56Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=730s
+[2026-05-12T03:10:56Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:07Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:07Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:07Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=741s count=64
+[2026-05-12T03:11:07Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=741s
+[2026-05-12T03:11:08Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:18Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:19Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:19Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=753s count=65
+[2026-05-12T03:11:19Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=753s
+[2026-05-12T03:11:19Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:30Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:30Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:30Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=764s count=66
+[2026-05-12T03:11:30Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=764s
+[2026-05-12T03:11:30Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:41Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:41Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:41Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=775s count=67
+[2026-05-12T03:11:41Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=775s
+[2026-05-12T03:11:42Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:52Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:53Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:11:53Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=787s count=68
+[2026-05-12T03:11:53Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=787s
+[2026-05-12T03:11:53Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:04Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:04Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:04Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=798s count=69
+[2026-05-12T03:12:04Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=798s
+[2026-05-12T03:12:04Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:15Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:16Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:16Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=810s count=70
+[2026-05-12T03:12:16Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=810s
+[2026-05-12T03:12:16Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:27Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:27Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:27Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=821s count=71
+[2026-05-12T03:12:27Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=821s
+[2026-05-12T03:12:27Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:38Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:38Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:38Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=832s count=72
+[2026-05-12T03:12:38Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=832s
+[2026-05-12T03:12:39Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:50Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:50Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:12:50Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=844s count=73
+[2026-05-12T03:12:50Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=844s
+[2026-05-12T03:12:50Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:13:01Z] issue=1680 category=INJECT_SUCCESS skill=/twl:workflow-pr-fix result=success status=running current_step=ac-verify pr= branch=
+[2026-05-12T03:13:01Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:13:01Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=855s count=74
+[2026-05-12T03:13:01Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=855s
+[2026-05-12T03:13:02Z] issue=1682 category=INJECT_SUCCESS skill=/twl:workflow-pr-fix result=success status=running current_step=ac-verify pr= branch=
+[2026-05-12T03:13:13Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:13:13Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=867s count=75
+[2026-05-12T03:13:13Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=867s
+[2026-05-12T03:13:24Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:13:24Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=878s count=76
+[2026-05-12T03:13:24Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=878s
+[2026-05-12T03:13:36Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:13:36Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=890s count=77
+[2026-05-12T03:13:36Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=890s
+[2026-05-12T03:13:47Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:13:47Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=901s count=78
+[2026-05-12T03:13:47Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=901s
+[2026-05-12T03:13:58Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:13:59Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:13:59Z] issue=1681 skill=RESOLVE_FAILED result=stagnate elapsed=913s count=79
+[2026-05-12T03:13:59Z] issue=1681 skill=AUTO_UNSTUCK result=stagnate_signal elapsed=913s
+[2026-05-12T03:14:10Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:14:10Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:14:10Z] issue=1682 category=INJECT_PR_MERGE_DEBUG skill=/twl:workflow-pr-merge status=running result=debug reason="status not merge-ready, AC-4 expected behavior"
+[2026-05-12T03:14:10Z] issue=1682 category=INJECT_SUCCESS skill=/twl:workflow-pr-merge result=success status=running current_step=warning-fix pr= branch=
+[2026-05-12T03:14:21Z] issue=1680 category=INJECT_PR_MERGE_DEBUG skill=/twl:workflow-pr-merge status=running result=debug reason="status not merge-ready, AC-4 expected behavior"
+[2026-05-12T03:14:21Z] issue=1680 category=INJECT_SUCCESS skill=/twl:workflow-pr-merge result=success status=running current_step=warning-fix pr= branch=
+[2026-05-12T03:14:22Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:14:33Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:14:45Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:14:56Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:14:56Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:07Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:07Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:08Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:19Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:19Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:19Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:30Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:30Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:31Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:42Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:42Z] issue=1681 category=INJECT_SUCCESS skill=/twl:workflow-pr-verify result=success status=running current_step=check pr= branch=
+[2026-05-12T03:15:42Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:53Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:15:54Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:04Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:05Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:05Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:16Z] issue=1680 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:16Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:16Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:27Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:28Z] issue=1682 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:39Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:16:50Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:17:01Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:17:12Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:17:23Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:17:34Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:17:45Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:17:55Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:18:06Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:18:17Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:18:28Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:18:39Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:18:50Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:19:01Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:19:12Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:19:23Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:19:35Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:19:46Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:19:57Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:20:08Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:20:19Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:20:30Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:20:41Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:20:52Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:21:04Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:21:15Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:21:26Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:21:37Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:21:48Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:21:59Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:22:10Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:22:21Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:22:33Z] issue=1681 category=INJECT_SUCCESS skill=/twl:workflow-pr-fix result=success status=running current_step=ac-verify pr= branch=
+[2026-05-12T03:27:19Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:27:30Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:27:41Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:27:52Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:28:03Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:28:14Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:28:25Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:28:36Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:28:47Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:28:58Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:29:09Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:29:21Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:29:32Z] issue=1681 category=INJECT_PR_MERGE_DEBUG skill=/twl:workflow-pr-merge status=running result=debug reason="status not merge-ready, AC-4 expected behavior"
+[2026-05-12T03:29:32Z] issue=1681 category=INJECT_SUCCESS skill=/twl:workflow-pr-merge result=success status=running current_step=warning-fix pr= branch=
+[2026-05-12T03:31:00Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:31:11Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:31:22Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:31:33Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:31:44Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip
+[2026-05-12T03:31:55Z] issue=1681 category=RESOLVE_NOT_READY exit=1 result=skip

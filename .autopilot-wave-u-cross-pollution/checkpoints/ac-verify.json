@@ -1,0 +1,23 @@
+{
+  "step": "ac-verify",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 2 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "category": "ac_missing",
+      "confidence": 75,
+      "message": "AC3「並列 Wave での checkpoint 設計 audit — 他 checkpoint (ac-verify.json / merge-gate.json / pr-test.json) も同 bug 確認 / 全 checkpoint を Worker-isolated 化」が部分達成。checkpoint.py の read()/write() は汎用対応済みだが merge-gate-checkpoint-merge.sh の ac-verify 読み取りが ISSUE_NUMBER 未使用のまま。Deferred Issue #1706 で追跡。",
+      "evidence": "diff に merge-gate-checkpoint-merge.sh の ac-verify checkpoint 読み取りへの --issue-number 追加なし"
+    },
+    {
+      "severity": "WARNING",
+      "category": "ac_missing",
+      "confidence": 75,
+      "message": "AC4「rollback path — bug 検出 → tech-debt Issue 自動起票 → admin merge guidance を Pilot summary に出力」が未実装。admin merge fallback のドキュメント化・スクリプト実装が diff に含まれていない。本 PR スコープ外として判断（core fix に集中）。",
+      "evidence": "diff に rollback/admin merge guidance の実装なし"
+    }
+  ],
+  "timestamp": "2026-05-12T06:07:15Z"
+}

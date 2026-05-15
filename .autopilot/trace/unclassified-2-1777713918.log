@@ -1,0 +1,113 @@
+       6
+       7 blocked: true
+       8
+       9 findings:
+      10   - severity: CRITICAL
+     … +57 lines (ctrl+o to expand)
+
+● blocked_issues:
+    - "feat(provenance): origin:* label 体系定義 + 既存 Issue 遡及付与 (cross-origin Phase A)"
+  split_issues: []
+  findings_summary: |
+    | severity | confidence | category | specialist | message |
+    |----------|-----------|----------|------------|---------|
+    | CRITICAL | 85 | ambiguity | issue-critic | AC2 の grep 条件が不完全、完全性検証不能 |
+    | CRITICAL | 80 | assumption | issue-critic | AC5 の negation+wildcard フィルタが Project Board 非サポート |
+    | WARNING | 82 | feasibility | issue-feasibility | --state all フラグ必要（CLOSED Issue 取得） |
+    | WARNING | 75 | ambiguity | issue-critic | origin:repo:twill の利用ケース未記載 |
+    | WARNING | 75 | feasibility | issue-feasibility | --limit 指定なし（ページネーション漏れ） |
+    | WARNING | 70 | ambiguity | issue-critic | host-aliases.json thinkpad エントリ省略 |
+
+✻ Crunched for 6m 53s
+
+❯ /twl:issue-review-aggregate
+/home/shuu5/projects/local-projects/twill/main/.controller-issue/1777712213_y6il/per-issue-level-0/2/rounds/1/findings.yaml
+
+● 集約は完了済みです（aggregate.yaml 書き込み済み）。結果を返します。
+
+  specialist レビュー結果
+
+  Issue: feat(provenance): origin:* label 体系定義 + 既存 Issue 遡及付与 (cross-origin Phase A)
+
+  ┌───────────────────────┬────────┬────────────────────────────────────┐
+  │      specialist       │ status │              findings              │
+  ├───────────────────────┼────────┼────────────────────────────────────┤
+  │ issue-critic          │ FAIL   │ 4 findings (2 CRITICAL, 2 WARNING) │
+  ├───────────────────────┼────────┼────────────────────────────────────┤
+  │ issue-feasibility     │ WARN   │ 2 findings (0 CRITICAL, 2 WARNING) │
+  ├───────────────────────┼────────┼────────────────────────────────────┤
+  │ worker-codex-reviewer │ PASS   │ 0 findings                         │
+  └───────────────────────┴────────┴────────────────────────────────────┘
+
+  findings 詳細
+
+  ┌──────────┬────────────┬─────────────┬──────────────────────────────────────────────────────────────────────────────────────────┐
+  │ severity │ confidence │  category   │                                         message                                          │
+  ├──────────┼────────────┼─────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+  │ CRITICAL │ 85         │ ambiguity   │ AC2 の grep 条件が GitHub 全文検索依存で不完全、「残 ~5-8 件」の根拠なく完全性検証不能   │
+  ├──────────┼────────────┼─────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+  │ CRITICAL │ 80         │ assumption  │ AC5 の -label:origin:repo:* は GitHub Project Board 非サポート（negation + wildcard      │
+  │          │            │             │ 不可）、実装不可能                                                                       │
+  ├──────────┼────────────┼─────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+  │ WARNING  │ 82         │ feasibility │ gh issue list --state all フラグ未指定（デフォルトは OPEN のみ）、CLOSED Issue           │
+  │          │            │             │ 含む全数分類に必要                                                                       │
+  ├──────────┼────────────┼─────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+  │ WARNING  │ 75         │ ambiguity   │ origin:repo:twill label の付与対象・利用ケースが AC に記載なし                           │
+  ├──────────┼────────────┼─────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+  │ WARNING  │ 75         │ feasibility │ gh issue list デフォルト 30件上限、--limit 指定なしで遡及付与漏れリスク                  │
+  ├──────────┼────────────┼─────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+  │ WARNING  │ 70         │ ambiguity   │ host-aliases.json schema の thinkpad エントリが ... で省略                               │
+  └──────────┴────────────┴─────────────┴──────────────────────────────────────────────────────────────────────────────────────────┘
+
+  ▎ 以下の Issue に CRITICAL findings があります。body 修正後にラウンドを継続します。
+
+  blocked_issues:
+    - "feat(provenance): origin:* label 体系定義 + 既存 Issue 遡及付与 (cross-origin Phase A)"
+  split_issues: []
+
+✻ Brewed for 20s
+
+❯ /twl:issue-review-aggregate
+/home/shuu5/projects/local-projects/twill/main/.controller-issue/1777712213_y6il/per-issue-level-0/2/rounds/1/findings.yaml
+
+● 集約は完了済みです。aggregate.yaml の内容を確認して返却します。
+
+  blocked_issues:
+    - "feat(provenance): origin:* label 体系定義 + 既存 Issue 遡及付与 (cross-origin Phase A)"
+  split_issues: []
+  findings_summary: |
+    | specialist | status | findings |
+    |-----------|--------|----------|
+    | issue-critic | FAIL | 4 findings (2 CRITICAL, 2 WARNING) |
+    | issue-feasibility | WARN | 2 findings (0 CRITICAL, 2 WARNING) |
+    | worker-codex-reviewer | PASS | 0 findings |
+
+    CRITICAL:
+    - [85] AC2 grep 条件が GitHub 全文検索依存で不完全・網羅率検証不能
+    - [80] AC5 の -label:origin:repo:* が Project Board 非サポート（実装不可能）
+    WARNING:
+    - [82] gh issue list --state all 未指定
+    - [75] origin:repo:twill 利用ケース未記載
+    - [75] --limit 指定なし（ページネーション漏れリスク）
+    - [70] host-aliases.json の thinkpad エントリ省略
+
+✻ Sautéed for 15s
+
+❯ /twl:issue-review-aggregate
+/home/shuu5/projects/local-projects/twill/main/.controller-issue/1777712213_y6il/per-issue-level-0/2/rounds/1/findings.yaml
+
+● 集約済みです。重複呼び出しを検出 — aggregate.yaml から結果を返します。
+
+  blocked_issues:
+    - "feat(provenance): origin:* label 体系定義 + 既存 Issue 遡及付与 (cross-origin Phase A)"
+  split_issues: []
+  codex_status: PASS
+  findings_count: {critical: 2, warning: 4}
+
+✻ Crunched for 9s
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  shuu5@ipatho-server-2 9% 90k/1M Sonnet 4.6 [max] 5h:19%(4h24m) 7d:48%(4d22h)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

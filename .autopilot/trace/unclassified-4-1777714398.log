@@ -1,0 +1,113 @@
+
+  ## スコープ
+
+  **含む:**
+
+  - `co-issue` Phase 4 dual-write への `origin:host:*` / `origin:repo:*` label 付与組み込み（ADR-024 label 先 → Status 後 順序準拠）
+  - PostToolUse hook `post-tool-use-issue-create-label.sh`（新規）: `gh issue create` intercept による label 自動付与
+  - `explore-summary-link.sh` 拡張: summary.md 冒頭メタ情報セクションへの provenance section 自動追加
+  - `~/.claude/settings.json` への PostToolUse hook entry 追加
+  - bats test: provenance footer + label 付与の co-issue 経由・直接 gh 経由両方を検証
+
+  **含まない:**
+
+  - `mcp provenance_inject` tool 化 → Phase D の責務（ADR-029 mcp 路線）
+  - user 直接起票への適用範囲拡大 → Phase D で再評価
+  - cross-repo Issue で label 体系共有（repo 単位の label 同期 mechanism）→ 別 Issue（Q2）
+
+  ## 技術的アプローチ
+
+  ### dual-write 順序（ADR-024 準拠）
+
+  ```bash
+  # (a) provenance label 付与（本 Phase 追加）
+  gh issue edit "$ISSUE_NUMBER" --add-label "origin:host:$ALIAS,origin:repo:$REPO"
+
+  # (b) refined label（既存）
+  gh issue edit "$ISSUE_NUMBER" --add-label refined
+
+  # (c) Status 更新（既存）
+  chain-runner.sh board-status-update "$ISSUE_NUMBER" Refined
+
+  PostToolUse hook の gh issue create 引数 parse
+
+  getopts 非使用の manual parse（既存 pre-bash-merge-guard.sh パターン踏襲）。カバー対象:
+
+  gh issue create --body "..."
+  gh issue create --body-file path
+  gh issue create -b "..."
+  gh issue create -F path
+  gh issue create < file      # パイプ stdin
+  gh issue create             # interactive → skip/WARN
+
+  hook 失敗時の挙動
+
+  - label 付与 exit != 0 → WARN log（/tmp/origin-label.log）、起票自体は成功させる
+  - refined-dual-write-log.sh パターン再利用
+
+  Effort: M（~2 日）
+
+  hook 実装（~50 行）+ co-issue Phase 4 修正（~20 行）+ bats 5-7 サンプル + settings.json + documentation
+
+  受け入れ基準
+
+  CRITICAL
+
+  - AC1: co-issue Phase 4 issue create 時に body footer として provenance footer を append（既存 issue-cross-repo-create.md の
+  --body-file convention で実装）
+  - AC2: 起票後 PostToolUse hook（post-tool-use-issue-create-label.sh 新規）で gh issue edit --add-label origin:host:* origin:repo:*
+  を自動実行
+  - AC3: bats test で provenance footer + label が確実に付与されることを検証（co-issue 経由 / 直接 gh issue create 経由 両方）
+  - AC4: co-explore summary.md の冒頭メタ情報セクションに provenance section が自動追加される（PostToolUse Write hook 流用または
+  explore-summary-link.sh 拡張）
+
+  WARNING
+
+  - AC5: PostToolUse hook で label 付与時の重複付与回避: 既付与 label は skip（べき等性確保）
+  - AC6: gh の rate limit（5000 req/h）に抵触しない設計 — bulk 起票時は 1 issue 1 edit に制限
+  - AC7: hook ON/OFF 切り替え機構（環境変数 TWILL_PROVENANCE_AUTO_LABEL=0 で disable 可能）
+  - AC8: gh issue create の引数 parse は --body, --body-file, -b, -F, パイプ stdin の全パターンを test fixture でカバー
+
+  INFO
+
+  - AC9: ユーザー直接起票（terminal から直接 gh issue create）への適用範囲を documented（Phase D で再評価予定の旨を明示）
+  - AC10: hook 失敗時の fallback（label 付与失敗を WARN log に記録、起票自体は成功させる）
+
+  Touched files
+
+  - plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md
+  - plugins/twl/scripts/hooks/post-tool-use-issue-create-label.sh（新規）
+  - plugins/twl/scripts/hooks/explore-summary-link.sh
+  - plugins/twl/scripts/issue-lifecycle-orchestrator.sh
+  - plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.bats（新規）
+  - ~/.claude/settings.json
+
+  関連 Issue / ADR
+
+  - 親 epic: #1267
+  - 関連 ADR: ADR-024（refined-status dual-write）、ADR-007（cross-repo）
+  - 兄弟 Phase: Phase A（label 体系定義）、Phase B（spawn-controller.sh inject）
+  - 関連 known-issue: #1212（dual-write observability）、#1209（ADR-024 Phase B 移行）
+
+  explore-summary 参照
+
+  - 一次出典: .explore/wave19-cross-origin-tracking/summary.md §3 案 B（L131-149）+ §3 案 D（L174-186）+ §7 Phase C（L287-291）
+
+  推奨ラベル
+
+  - scope/plugins-twl: plugins/twl コンポーネント
+  - ctx/issue-mgmt: Issue Management Context
+
+  plugins/twl/architecture/domain/contexts/issue-mgmt.md
+
+  ---
+
+  上記を `rounds/0/body.md` に書き込みます。
+
+✻ Cooked for 3m 12s
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  shuu5@ipatho-server-2 6% 60k/1M Sonnet 4.6 [max] 5h:24%(4h16m) 7d:49%(4d22h)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

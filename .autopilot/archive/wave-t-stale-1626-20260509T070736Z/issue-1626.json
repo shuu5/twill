@@ -1,0 +1,30 @@
+{
+  "issue": 1626,
+  "status": "failed",
+  "branch": "",
+  "pr": null,
+  "window": "",
+  "started_at": "2026-05-09T04:43:56Z",
+  "updated_at": "2026-05-09T05:16:50Z",
+  "last_heartbeat_at": "2026-05-09T05:05:40Z",
+  "current_step": "ac-verify",
+  "retry_count": 0,
+  "ac_verify_call_count": 1,
+  "fix_instructions": null,
+  "merged_at": null,
+  "files_changed": [],
+  "failure": {
+    "message": "Worker crash detected: tmux window 'ap-twill-fix-1626-bugmerge-gate-r-1cd98492' disappeared",
+    "step": "ac-verify",
+    "timestamp": "2026-05-09T05:16:50Z",
+    "detected_state": "pane_absent"
+  },
+  "implementation_pr": null,
+  "input_waiting_detected": "freeform_kaishi",
+  "input_waiting_at": "2026-05-09T05:09:03Z",
+  "is_direct": false,
+  "llm_delegated_at": "2026-05-09T13:46:47+09:00",
+  "llm_completed_at": "2026-05-09T13:59:58+09:00",
+  "workflow_injected": "/twl:workflow-pr-fix",
+  "injected_at": "2026-05-09T05:05:47Z"
+}

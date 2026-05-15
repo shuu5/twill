@@ -1,0 +1,113 @@
+  │ G      │ 80       │ y        │ tion          │ SKILL.md:148                    │ 123 行となり AC-1 の 120 行以下を超える可  │
+  │        │          │          │               │                                 │ 能性。行数計算に保持コストが未加算。       │
+  ├────────┼──────────┼──────────┼───────────────┼─────────────────────────────────┼────────────────────────────────────────────┤
+  │        │          │          │               │                                 │ 新規 ref                                   │
+  │ WARNIN │ 90       │ feasibil │ codebase_stat │ su-observer-constraints.md:1    │ ファイル未存在（新規作成予定）。AC-3/AC-4  │
+  │ G      │          │ ity      │ e             │                                 │ の機械検証で全 8 項目・10 項目の完全       │
+  │        │          │          │               │                                 │ mirror が求められる。                      │
+  ├────────┼──────────┼──────────┼───────────────┼─────────────────────────────────┼────────────────────────────────────────────┤
+  │ WARNIN │ 85       │ feasibil │ codebase_stat │ su-observer-skill-md-line-limit │ tests/bats/skills/ ディレクトリ不在。既存  │
+  │ G      │          │ ity      │ e             │ .bats:1                         │ bats パターンとの整合確認が必要。          │
+  ├────────┼──────────┼──────────┼───────────────┼─────────────────────────────────┼────────────────────────────────────────────┤
+  │ WARNIN │ 80       │ feasibil │ codebase_stat │ ref-invariants.md:166           │ 境界注記更新が必要。deps.yaml 登録前後での │
+  │ G      │          │ ity      │ e             │                                 │  twl check 通過可否を確認要。              │
+  └────────┴──────────┴──────────┴───────────────┴─────────────────────────────────┴────────────────────────────────────────────┘
+
+  ---
+  ブロック判定: なし（CRITICAL findings 0 件）
+
+  split 提案: なし
+
+  ---
+  blocked_issues: []
+  split_issues: []
+  findings_summary: |
+    issue-critic: WARN (2 WARNING / 0 CRITICAL)
+    issue-feasibility: WARN (3 WARNING / 0 CRITICAL)
+    worker-codex-reviewer: PASS (0 findings)
+  codex:
+    status: PASS
+    note: worker-codex-reviewer returned PASS (codex API graceful skip)
+
+✻ Worked for 24s
+
+❯ /twl:issue-review-aggregate
+/home/shuu5/projects/local-projects/twill/main/.controller-issue/1777703189_w397/per-issue-level-0/1/rounds/1/findings.yaml
+
+● Write(.controller-issue/1777703189_w397/per-issue-level-0/1/rounds/1/aggregate.yaml)
+  ⎿  PreToolUse:Write hook error                                     ⎿  5 validation errors for call[twl_validate_deps]
+  ⎿  Wrote 53 lines to .controller-issue/1777703189_w397/per-issue-level-0/1/rounds/1/aggregate.yaml
+       1 issue_title: "tech-debt(su-observer): SKILL.md の SU-* 制約テーブルを専用 reference ファイルに外部化"
+       2 blocked: false
+       3 codex:
+       4   status: PASS
+       5   note: "worker-codex-reviewer returned PASS (codex API graceful skip)"
+       6 findings:
+       7   - severity: WARNING
+       8     confidence: 85
+       9     category: ambiguity
+      10     finding_target: issue_description
+     … +50 lines (ctrl+o to expand)
+
+● blocked_issues: []
+  split_issues: []
+  findings_summary: |
+    ### Issue: tech-debt(su-observer): SKILL.md の SU-* 制約テーブルを専用 reference ファイルに外部化
+
+    | specialist | status | findings |
+    |-----------|--------|----------|
+    | issue-critic | WARN | 2 findings (0 CRITICAL, 2 WARNING) |
+    | issue-feasibility | WARN | 3 findings (0 CRITICAL, 3 WARNING) |
+    | worker-codex-reviewer | PASS | 0 findings |
+
+    #### findings 詳細
+    | severity | confidence | category | target | message |
+    |----------|-----------|----------|--------|---------|
+    | WARNING | 85 | ambiguity | issue_description | supervision.md は SU-8/SU-9 含む 10 項目だが AC-3 は 8
+  トークンのみ検証。完全性範囲が曖昧。 |
+    | WARNING | 80 | ambiguity | issue_description | Security gate 保持後の行数が約 123 行となり AC-1 の 120 行超過の可能性。 |
+    | WARNING | 90 | feasibility | codebase_state | 新規 ref ファイル未存在（新規作成予定）。AC-3/AC-4 の機械検証ハードルが高い。 |
+    | WARNING | 85 | feasibility | codebase_state | tests/bats/skills/ ディレクトリ不在。既存 bats パターンとの整合確認が必要。 |
+    | WARNING | 80 | feasibility | codebase_state | ref-invariants.md 境界注記更新。twl check 通過可否確認要。 |
+
+  codex:
+    status: PASS
+
+✻ Crunched for 32s
+
+❯ /twl:issue-review-aggregate
+/home/shuu5/projects/local-projects/twill/main/.controller-issue/1777703189_w397/per-issue-level-0/1/rounds/1/findings.yaml
+
+● aggregate.yaml は既に書き込み済みです。結果を返却します。
+
+  blocked_issues: []
+  split_issues: []
+  findings_summary: |
+    ### Issue: tech-debt(su-observer): SKILL.md の SU-* 制約テーブルを専用 reference ファイルに外部化
+
+    | specialist | status | findings |
+    |-----------|--------|----------|
+    | issue-critic | WARN | 2 findings (0 CRITICAL, 2 WARNING) |
+    | issue-feasibility | WARN | 3 findings (0 CRITICAL, 3 WARNING) |
+    | worker-codex-reviewer | PASS | 0 findings |
+
+    #### findings 詳細
+    | severity | confidence | category | target | message |
+    |----------|-----------|----------|--------|---------|
+    | WARNING | 85 | ambiguity | issue_description | supervision.md は SU-8/SU-9 含む 10 項目だが AC-3 は 8
+  トークンのみ検証。完全性範囲が曖昧。 |
+    | WARNING | 80 | ambiguity | issue_description | Security gate 保持後の行数が約 123 行となり AC-1 の 120 行超過の可能性。 |
+    | WARNING | 90 | feasibility | codebase_state | 新規 ref ファイル未存在（新規作成予定）。AC-3/AC-4 の機械検証ハードルが高い。 |
+    | WARNING | 85 | feasibility | codebase_state | tests/bats/skills/ ディレクトリ不在。既存 bats パターンとの整合確認が必要。 |
+    | WARNING | 80 | feasibility | codebase_state | ref-invariants.md 境界注記更新。twl check 通過可否確認要。 |
+
+  codex:
+    status: PASS
+
+✻ Cooked for 10s
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  shuu5@ipatho-server-2 8% 80k/1M Sonnet 4.6 [max] 5h:44%(2h1m) 7d:39%(5d1h)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

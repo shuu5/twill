@@ -1,0 +1,12 @@
+{
+  "timestamp": "2026-05-09T05:17:28Z",
+  "event_type": "feature-dev-fallback-detect",
+  "trigger": "red-only-merge",
+  "count": 1,
+  "issue_num": 1626,
+  "layer": "escalate",
+  "layer_label": "Layer 2 Escalate",
+  "pattern_id": "pattern-14-feature-dev-fallback",
+  "action": "propose-to-user",
+  "notes": "Layer 2 Escalate — ユーザー承認なしに feature-dev spawn 禁止 (SU-10)"
+}

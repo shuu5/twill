@@ -1,0 +1,41 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 2 開始
+[2026-05-02T15:26:31Z] orchestrator_pid=2837527 phase=2 started_at=2026-05-02T15:26:31Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: WARNING: merged ブランチ残存 (7日以内): docs/pitfalls-16-step0-incident
+[orchestrator] startup cleanup 完了: 削除=0件, 警告=1件
+[orchestrator] Issue #1292: Worker 起動
+[orchestrator] Issue #1292: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1292-featadr-024-phase-b-tier-b-co-issue-p
+OK: issue-1292.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777733721_72d3-issue-1292 (parent=1777733721_72d3) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1292-featadr-024-phase-b-tier-b-co-issue-p
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1292-featadr-024-phase-b-tier-b-co-issue-p/.audit/auto-1777733721_72d3-issue-1292/panes/ap-twill-feat-1292-featadr-024-ph-05742043.log
+Worker 起動完了: Issue #1292 (window=ap-twill-feat-1292-featadr-024-ph-05742043, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1292-featadr-024-phase-b-tier-b-co-issue-p)
+[orchestrator] Issue #1292: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1292.json を更新しました
+[orchestrator] WARN: issue=1292 stagnate detected (RESOLVE_FAILED 57 回, 605s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #1292: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1292.json を更新しました
+[orchestrator] Issue #1292: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1292.json を更新しました
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1292: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1292: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1292.json を更新しました
+[orchestrator] Issue #1292: merge-ready
+[orchestrator] Issue #1292: merge-gate 実行 (PR #1307)
+[merge-gate-execute] ERROR: phase-review で CRITICAL findings が検出されました（2 件）: ac3 ??? regex `labels_hint.*refined` ???????????????refine-processing-flow.md L175 `# labels_hint ????????refined ????`??????????? GREEN ???????regex ? `labels_hint.*\+=.*\[.*refined` ??????????; ac4 ??? regex `labels_hint.*refined|refined.*labels_hint` ????? lifecycle-processing-flow.md L153 ?????????????????? GREEN ????????????????????????????
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[orchestrator] Issue #1292: merge 失敗 (exit=1)
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 2,
+  "results": {
+    "done": [],
+    "failed": [],
+    "skipped": [
+      1292
+    ]
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 2 完了
+[2026-05-02T16:35:56Z] orchestrator_pid=3600453 phase=2 started_at=2026-05-02T16:35:56Z

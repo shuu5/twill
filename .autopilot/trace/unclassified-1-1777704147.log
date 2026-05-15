@@ -1,0 +1,113 @@
+
+● scope_files は 5 ファイル（file_count > 2）なので depth_instruction を restricted に設定し、3 specialist を並列 spawn します。
+
+● 3 agents finished (ctrl+o to expand)
+   ├ twl:twl:issue-critic (issue-critic specialist review for Issue #1254) · 15 tool uses · 21.3k tokens
+   │ ⎿  Done
+   ├ twl:twl:issue-feasibility (issue-feasibility specialist review for Issue #1254) · 7 tool uses · 18.8k tokens
+   │ ⎿  Done
+   └ twl:twl:worker-codex-reviewer (worker-codex-reviewer specialist review for Issue #1254) · 5 tool uses · 18.6k tokens
+     ⎿  Done
+
+● 3 specialist 全て完了しました。findings.yaml を書き込み、aggregate に進みます。
+
+● Write(.controller-issue/1777703189_w397/per-issue-level-0/1/rounds/1/findings.yaml)
+  ⎿  PreToolUse:Write hook error                                     ⎿  MCP server 'twl' not connected
+  ⎿  Wrote 46 lines to .controller-issue/1777703189_w397/per-issue-level-0/1/rounds/1/findings.yaml
+       2 specialist_results:debt(su-observer): SKILL.md の SU-* 制約テーブルを専用 reference ファイルに外部化"
+       3   issue-critic:
+       4     status: WARN
+       5     findings:
+       6       - severity: WARNING
+       8         file: plugins/twl/architecture/domain/contexts/supervision.md
+       9         line: 195
+      10         message: "supervision.md（SSoT として指定）は SU-8, SU-9 を含む計 10 項目だが、AC-3 は SU-1〜SU-7（8 トークン
+         ）のみを検証対象としている。新規 ref に SU-8/SU-9 を含めるか除外するかが未定義であり、Worker が supervision.md を mirr
+         or する際の完全性範囲が曖昧。"
+     … +46 lines (ctrl+o to expand)
+
+● findings.yaml 書き込み完了。completeness guard を確認します。
+
+  specialists policies: [worker-codex-reviewer, issue-critic, issue-feasibility]
+  specialist_results keys: [issue-critic, issue-feasibility, worker-codex-reviewer]
+
+  missing = {} — 全 specialist 完了。
+
+  issue_title: "tech-debt(su-observer): SKILL.md の SU-* 制約テーブルを専用 reference ファイルに外部化"
+
+  specialist_results:
+    issue-critic: status=WARN, 2 findings (WARNING)
+    issue-feasibility: status=WARN, 3 findings (WARNING)
+    worker-codex-reviewer: status=PASS, findings=[]
+
+✻ Worked for 4m 42s
+
+❯ /twl:issue-review-aggregate
+/home/shuu5/projects/local-projects/twill/main/.controller-issue/1777703189_w397/per-issue-level-0/1/rounds/1/findings.yaml
+
+  Read 1 file (ctrl+o to expand)
+
+● specialist レビュー結果
+
+  Issue: tech-debt(su-observer): SKILL.md の SU-* 制約テーブルを専用 reference ファイルに外部化
+
+  ┌───────────────────────┬────────┬────────────────────────────────────────────┐
+  │      specialist       │ status │                  findings                  │
+  ├───────────────────────┼────────┼────────────────────────────────────────────┤
+  │ issue-critic          │ WARN   │ 2 findings (0 CRITICAL, 2 WARNING, 0 INFO) │
+  ├───────────────────────┼────────┼────────────────────────────────────────────┤
+  │ issue-feasibility     │ WARN   │ 3 findings (0 CRITICAL, 3 WARNING, 0 INFO) │
+  ├───────────────────────┼────────┼────────────────────────────────────────────┤
+  │ worker-codex-reviewer │ PASS   │ 0 findings                                 │
+  └───────────────────────┴────────┴────────────────────────────────────────────┘
+
+  findings 詳細
+
+  ┌────────┬──────────┬──────────┬───────────────┬─────────────────────────────────┬────────────────────────────────────────────┐
+  │ severi │ confiden │ category │    target     │              file               │                  message                   │
+  │   ty   │    ce    │          │               │                                 │                                            │
+  ├────────┼──────────┼──────────┼───────────────┼─────────────────────────────────┼────────────────────────────────────────────┤
+  │        │          │          │               │                                 │ supervision.md（SSoT）は SU-8/SU-9 含む計  │
+  │ WARNIN │ 85       │ ambiguit │ issue_descrip │ supervision.md:195              │ 10 項目だが、AC-3 は SU-1〜SU-7（8         │
+  │ G      │          │ y        │ tion          │                                 │ トークン）のみ検証対象。新規 ref           │
+  │        │          │          │               │                                 │ の完全性範囲が曖昧。                       │
+  ├────────┼──────────┼──────────┼───────────────┼─────────────────────────────────┼────────────────────────────────────────────┤
+  │ WARNIN │          │ ambiguit │ issue_descrip │                                 │ L148-152 Security gate 保持後の行数が約    │
+  │ G      │ 80       │ y        │ tion          │ SKILL.md:148                    │ 123 行となり AC-1 の 120 行以下を超える可  │
+  │        │          │          │               │                                 │ 能性。行数計算に保持コストが未加算。       │
+  ├────────┼──────────┼──────────┼───────────────┼─────────────────────────────────┼────────────────────────────────────────────┤
+  │        │          │          │               │                                 │ 新規 ref                                   │
+  │ WARNIN │ 90       │ feasibil │ codebase_stat │ su-observer-constraints.md:1    │ ファイル未存在（新規作成予定）。AC-3/AC-4  │
+  │ G      │          │ ity      │ e             │                                 │ の機械検証で全 8 項目・10 項目の完全       │
+  │        │          │          │               │                                 │ mirror が求められる。                      │
+  ├────────┼──────────┼──────────┼───────────────┼─────────────────────────────────┼────────────────────────────────────────────┤
+  │ WARNIN │ 85       │ feasibil │ codebase_stat │ su-observer-skill-md-line-limit │ tests/bats/skills/ ディレクトリ不在。既存  │
+  │ G      │          │ ity      │ e             │ .bats:1                         │ bats パターンとの整合確認が必要。          │
+  ├────────┼──────────┼──────────┼───────────────┼─────────────────────────────────┼────────────────────────────────────────────┤
+  │ WARNIN │ 80       │ feasibil │ codebase_stat │ ref-invariants.md:166           │ 境界注記更新が必要。deps.yaml 登録前後での │
+  │ G      │          │ ity      │ e             │                                 │  twl check 通過可否を確認要。              │
+  └────────┴──────────┴──────────┴───────────────┴─────────────────────────────────┴────────────────────────────────────────────┘
+
+  ---
+  ブロック判定: なし（CRITICAL findings 0 件）
+
+  split 提案: なし
+
+  ---
+  blocked_issues: []
+  split_issues: []
+  findings_summary: |
+    issue-critic: WARN (2 WARNING / 0 CRITICAL)
+    issue-feasibility: WARN (3 WARNING / 0 CRITICAL)
+    worker-codex-reviewer: PASS (0 findings)
+  codex:
+    status: PASS
+    note: worker-codex-reviewer returned PASS (codex API graceful skip)
+
+✻ Worked for 24s
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  shuu5@ipatho-server-2 7% 70k/1M Sonnet 4.6 [max] 5h:42%(2h7m) 7d:39%(5d1h)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

@@ -1,41 +1,49 @@
 {
   "step": "phase-review",
   "status": "WARN",
-  "findings_summary": "0 CRITICAL, 3 WARNING",
+  "findings_summary": "0 CRITICAL, 2 WARNING",
   "critical_count": 0,
   "findings": [
     {
       "severity": "WARNING",
       "confidence": 85,
-      "file": "plugins/twl/scripts/issue-lifecycle-orchestrator.sh",
-      "line": 682,
-      "message": "sort -n -t/ -k7 のフィールド番号がパス深さに依存する。_round_num の数値ソートが実環境で破綻する可能性がある。xargs basename 経由の sort -n が推奨。",
-      "category": "バグパターン"
+      "file": "plugins/twl/tests/bats/scripts/issue-1663-states-override.bats",
+      "line": 196,
+      "message": "assert_failure || fail は dead code。bats-assert は失敗時に内部 bats_fail() を呼ぶため || fail に制御が渡らない。L125 の assert_success || fail も同様。",
+      "category": "dead-code/test-quality"
     },
     {
       "severity": "WARNING",
       "confidence": 82,
-      "file": "plugins/twl/scripts/issue-lifecycle-orchestrator.sh",
-      "line": 711,
-      "message": "tmux kill-window -t window_name の直接渡し（既存パターン踏襲）",
-      "category": "tmux操作"
+      "file": "plugins/twl/scripts/lib/observer-parallel-check.sh",
+      "line": 377,
+      "message": "for state in $controller_states クォートなし。override 有効化で初めて観察可能なコードパス。複合状態文字列 override 時にワードスプリットが発生。",
+      "category": "bug-pattern/word-splitting"
     },
     {
-      "severity": "WARNING",
-      "confidence": 75,
-      "file": "plugins/twl/architecture/domain/contexts/autopilot.md",
-      "line": 1,
-      "message": "AC6: autopilot.md に STATE-aware inject ロジックの追記が未実施",
-      "category": "ac-alignment"
+      "severity": "MEDIUM",
+      "confidence": 90,
+      "file": "plugins/twl/scripts/lib/observer-parallel-check.sh",
+      "line": 381,
+      "message": "precondition5 の state regex ^S-[015] が fail-open。S-6/S-UNKNOWN 等の未知状態が素通りして exit 0。override 有効化で初めて露出。",
+      "category": "bug"
+    },
+    {
+      "severity": "LOW",
+      "confidence": 80,
+      "file": "plugins/twl/tests/bats/scripts/issue-1663-states-override.bats",
+      "line": 59,
+      "message": "AC1 群が変数名・行番号順のホワイトボックス検査。行番号チェックはリファクタリングで偽陰性リスク。",
+      "category": "coding-convention"
     },
     {
       "severity": "INFO",
-      "confidence": 90,
-      "file": "plugins/twl/tests/bats/scripts/issue-lifecycle-orchestrator-state-aware-inject.bats",
-      "line": 53,
-      "message": "test 3 の grep で tail -1 が inject exhausted 行を参照。head -1 推奨",
-      "category": "テスト品質"
+      "confidence": 85,
+      "file": "plugins/twl/scripts/lib/observer-parallel-check.sh",
+      "line": 319,
+      "message": "STATES=（空文字 set）の挙動が仕様化されていない。",
+      "category": "structure"
     }
   ],
-  "timestamp": "2026-05-02T04:26:11Z"
+  "timestamp": "2026-05-12T01:54:33Z"
 }

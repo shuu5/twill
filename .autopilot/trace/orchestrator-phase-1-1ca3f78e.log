@@ -1,0 +1,331 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-05-11T22:58:24Z] orchestrator_pid=80713 phase=1 started_at=2026-05-11T22:58:24Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #1564: Worker 起動
+[orchestrator] Issue #1564: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/refactor/1564-docsadr-024-refine-evidence-phase
+OK: issue-1564.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1778540253_1fi5-issue-1564 (parent=1778540253_1fi5) in /home/shuu5/projects/local-projects/twill/worktrees/refactor/1564-docsadr-024-refine-evidence-phase
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/refactor/1564-docsadr-024-refine-evidence-phase/.audit/auto-1778540253_1fi5-issue-1564/panes/ap-twill-refactor-1564-docsadr-02-i02-a02e5abd.log
+Worker 起動完了: Issue #1564 (window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/refactor/1564-docsadr-024-refine-evidence-phase)
+[orchestrator] Issue #1565: Worker 起動
+[orchestrator] Issue #1565: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/refactor/1565-docssu-observer-skillmd-1516-boar
+OK: issue-1565.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1778540253_1fi5-issue-1565 (parent=1778540253_1fi5) in /home/shuu5/projects/local-projects/twill/worktrees/refactor/1565-docssu-observer-skillmd-1516-boar
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/refactor/1565-docssu-observer-skillmd-1516-boar/.audit/auto-1778540253_1fi5-issue-1565/panes/ap-twill-refactor-1565-docssu-obs-357ee19c.log
+Worker 起動完了: Issue #1565 (window=ap-twill-refactor-1565-docssu-obs-357ee19c, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/refactor/1565-docssu-observer-skillmd-1516-boar)
+[orchestrator] Issue #1566: Worker 起動
+[orchestrator] Issue #1566: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/refactor/1566-docsco-issue-skillmd-must-not-co
+OK: issue-1566.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1778540253_1fi5-issue-1566 (parent=1778540253_1fi5) in /home/shuu5/projects/local-projects/twill/worktrees/refactor/1566-docsco-issue-skillmd-must-not-co
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/refactor/1566-docsco-issue-skillmd-must-not-co/.audit/auto-1778540253_1fi5-issue-1566/panes/ap-twill-refactor-1566-docsco-iss-75846132.log
+Worker 起動完了: Issue #1566 (window=ap-twill-refactor-1566-docsco-iss-75846132, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/refactor/1566-docsco-issue-skillmd-must-not-co)
+[orchestrator] Issue #1567: Worker 起動
+[orchestrator] Issue #1567: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1567-featchain-runner-stepboardstatusupdat
+OK: issue-1567.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1778540253_1fi5-issue-1567 (parent=1778540253_1fi5) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1567-featchain-runner-stepboardstatusupdat
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1567-featchain-runner-stepboardstatusupdat/.audit/auto-1778540253_1fi5-issue-1567/panes/ap-twill-feat-1567-featchain-runn-f3155aa9.log
+Worker 起動完了: Issue #1567 (window=ap-twill-feat-1567-featchain-runn-f3155aa9, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1567-featchain-runner-stepboardstatusupdat)
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1567.json を更新しました
+[orchestrator] Issue #1564: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1564.json を更新しました
+[orchestrator] Issue #1565: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1565.json を更新しました
+[orchestrator] Issue #1567: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1565: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1566: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1566.json を更新しました
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1565: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1567.json を更新しました
+[orchestrator] Issue #1566: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1566.json を更新しました
+[orchestrator] Issue #1567: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1564: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1564.json を更新しました
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1565: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1565.json を更新しました
+[orchestrator] Issue #1565: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1566: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1566.json を更新しました
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1566: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1566: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1566: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1566.json を更新しました
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1567: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1567.json を更新しました
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1566: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1567: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1567: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1567.json を更新しました
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1566: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1566-docsco-iss-75846132
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] WARN: issue=1564 stagnate detected (RESOLVE_FAILED 53 回, 604s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1565: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1565.json を更新しました
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1567: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] WARN: issue=1564 stagnate detected (RESOLVE_FAILED 59 回, 672s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1565: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1567: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9
+[orchestrator] Issue #1565: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1567: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-1567-featchain-runn-f3155aa9 — 次 cycle で確定
+[orchestrator] Issue #1565: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] WARN: issue=1564 stagnate detected (RESOLVE_FAILED 65 回, 740s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #1565: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1565: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1565: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1565.json を更新しました
+[orchestrator] Issue #1565: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] WARN: issue=1564 stagnate detected (RESOLVE_FAILED 71 回, 807s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1565: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] Issue #1565: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] WARN: issue=1564 stagnate detected (RESOLVE_FAILED 77 回, 874s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #1565: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c
+[orchestrator] Issue #1565: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-refactor-1565-docssu-obs-357ee19c — 次 cycle で確定
+[orchestrator] WARN: issue=1564 stagnate detected (RESOLVE_FAILED 83 回, 940s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1564 stagnate detected (RESOLVE_FAILED 89 回, 1005s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] WARN: issue=1564 stagnate detected (RESOLVE_FAILED 95 回, 1071s >= AUTOPILOT_STAGNATE_SEC=600)
+[orchestrator] Issue #1564: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1564.json を更新しました
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1564: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1564: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1564.json を更新しました
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: input-waiting 確定 pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd
+[orchestrator] Issue #1564: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1564: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-refactor-1564-docsadr-02-i02-a02e5abd — 次 cycle で確定
+[orchestrator] Issue #1564: merge-gate 実行 (PR #1667)
+[merge-gate-execute] ERROR: phase-review で CRITICAL findings が検出されました（1 件）: AC10 ??: follow-up Issue (cleanup-stale-phase4-marker.sh ??) ?????PR body ? "#TBD" ???????????? Issue ???????? + reference ????
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[orchestrator] Issue #1564: merge 失敗 (exit=1)
+[orchestrator] Issue #1565: merge-gate 実行 (PR #1668)
+[merge-gate-execute] ERROR: phase-review で CRITICAL findings が検出されました（1 件）: AC10 ??: follow-up Issue (cleanup-stale-phase4-marker.sh ??) ?????PR body ? "#TBD" ???????????? Issue ???????? + reference ????
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[orchestrator] Issue #1565: merge 失敗 (exit=1)
+[orchestrator] Issue #1566: merge-gate 実行 (PR #1666)
+[merge-gate-execute] ERROR: phase-review で CRITICAL findings が検出されました（1 件）: AC10 ??: follow-up Issue (cleanup-stale-phase4-marker.sh ??) ?????PR body ? "#TBD" ???????????? Issue ???????? + reference ????
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[orchestrator] Issue #1566: merge 失敗 (exit=1)
+[orchestrator] Issue #1567: merge-gate 実行 (PR #1665)
+[merge-gate-execute] ERROR: phase-review で CRITICAL findings が検出されました（1 件）: AC10 ??: follow-up Issue (cleanup-stale-phase4-marker.sh ??) ?????PR body ? "#TBD" ???????????? Issue ???????? + reference ????
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[orchestrator] Issue #1567: merge 失敗 (exit=1)
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [],
+    "failed": [],
+    "skipped": [
+      1564,
+      1565,
+      1566,
+      1567
+    ]
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

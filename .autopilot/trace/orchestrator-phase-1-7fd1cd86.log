@@ -1,0 +1,82 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-05-02T12:08:28Z] orchestrator_pid=1230070 phase=1 started_at=2026-05-02T12:08:28Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: WARNING: merged ブランチ残存 (7日以内): docs/pitfalls-16-step0-incident
+[orchestrator] startup cleanup 完了: 削除=0件, 警告=1件
+[orchestrator] Issue #1276: Worker 起動
+[orchestrator] Issue #1276: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1276-featplugins-twlhook-merge-guard-hook
+OK: issue-1276.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777723697_b4ug-issue-1276 (parent=1777723697_b4ug) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1276-featplugins-twlhook-merge-guard-hook
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1276-featplugins-twlhook-merge-guard-hook/.audit/auto-1777723697_b4ug-issue-1276/panes/ap-twill-feat-1276-featplugins-tw-b2cf2697.log
+Worker 起動完了: Issue #1276 (window=ap-twill-feat-1276-featplugins-tw-b2cf2697, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1276-featplugins-twlhook-merge-guard-hook)
+[orchestrator] Issue #1277: Worker 起動
+[orchestrator] Issue #1277: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1277-featplugins-twlhook-commit-validate-h
+OK: issue-1277.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777723697_b4ug-issue-1277 (parent=1777723697_b4ug) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1277-featplugins-twlhook-commit-validate-h
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1277-featplugins-twlhook-commit-validate-h/.audit/auto-1777723697_b4ug-issue-1277/panes/ap-twill-feat-1277-featplugins-tw-d0727c88.log
+Worker 起動完了: Issue #1277 (window=ap-twill-feat-1277-featplugins-tw-d0727c88, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1277-featplugins-twlhook-commit-validate-h)
+[orchestrator] Issue #1278: Worker 起動
+[orchestrator] Issue #1278: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1278-featplugins-twlhook-specialist-comple
+OK: issue-1278.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777723697_b4ug-issue-1278 (parent=1777723697_b4ug) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1278-featplugins-twlhook-specialist-comple
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1278-featplugins-twlhook-specialist-comple/.audit/auto-1777723697_b4ug-issue-1278/panes/ap-twill-feat-1278-featplugins-tw-b4efdb5f.log
+Worker 起動完了: Issue #1278 (window=ap-twill-feat-1278-featplugins-tw-b4efdb5f, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1278-featplugins-twlhook-specialist-comple)
+[orchestrator] Issue #1261: Worker 起動
+[orchestrator] Issue #1261: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/1261-tech-debtsupervision-supervisionmd-l2
+OK: issue-1261.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1777723697_b4ug-issue-1261 (parent=1777723697_b4ug) in /home/shuu5/projects/local-projects/twill/worktrees/feat/1261-tech-debtsupervision-supervisionmd-l2
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/1261-tech-debtsupervision-supervisionmd-l2/.audit/auto-1777723697_b4ug-issue-1261/panes/ap-twill-feat-1261-tech-debtsuper-17a0259e.log
+Worker 起動完了: Issue #1261 (window=ap-twill-feat-1261-tech-debtsuper-17a0259e, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/1261-tech-debtsupervision-supervisionmd-l2)
+[orchestrator] Issue #1276: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1276.json を更新しました
+[orchestrator] Issue #1278: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1278.json を更新しました
+[orchestrator] Issue #1277: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1277.json を更新しました
+[orchestrator] Issue #1261: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1261.json を更新しました
+[orchestrator] Issue #1261: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1261.json を更新しました
+[orchestrator] Issue #1278: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1278.json を更新しました
+[orchestrator] Issue #1276: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1276.json を更新しました
+[orchestrator] Issue #1277: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1277.json を更新しました
+[orchestrator] Issue #1261: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1261.json を更新しました
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1261: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1261: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1261.json を更新しました
+[orchestrator] Issue #1276: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1276.json を更新しました
+[orchestrator] Issue #1277: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1277.json を更新しました
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1277: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1277: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1277.json を更新しました
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1276: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1276: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot/issues/issue-1276.json を更新しました
+[orchestrator] cleanup: Issue #1261 — window/branch クリーンアップ
+[orchestrator] cleanup: Issue #1276 — window/branch クリーンアップ
+[orchestrator] cleanup: Issue #1278 — window/branch クリーンアップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      1276,
+      1261
+    ],
+    "failed": [
+      1278
+    ],
+    "skipped": [
+      1277
+    ]
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

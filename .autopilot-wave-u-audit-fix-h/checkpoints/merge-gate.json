@@ -1,0 +1,25 @@
+{
+  "step": "merge-gate",
+  "status": "PASS",
+  "findings_summary": "0 CRITICAL, 2 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 88,
+      "file": "plugins/session/scripts/window-manifest.sh",
+      "line": 19,
+      "message": "realpath -m フォールバック時は $HOME/ プレフィックスチェックが未正規化パスに適用される。Linux 環境では realpath -m は常に利用可能のため実用上の問題はなし",
+      "specialist": "worker-security-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 85,
+      "file": "plugins/session/scripts/window-manifest.sh",
+      "line": 13,
+      "message": "source後のWINDOW_MANIFEST_FILE再代入TOCTOU。各関数でも再バリデーション推奨",
+      "specialist": "worker-security-reviewer"
+    }
+  ],
+  "timestamp": "2026-05-12T03:43:02Z"
+}

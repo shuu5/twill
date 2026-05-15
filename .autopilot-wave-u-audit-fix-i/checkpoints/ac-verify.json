@@ -1,0 +1,30 @@
+{
+  "step": "ac-verify",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 3 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "category": "bug",
+      "confidence": 80,
+      "message": "AC2: audit log の JSON に cause/reason フィールドが欠落（exit code と原因を記録する要件の部分達成）",
+      "evidence": "plugins/twl/scripts/issue-lifecycle-orchestrator.sh の _audit_exit_handler は exit_code と run_id のみ記録"
+    },
+    {
+      "severity": "WARNING",
+      "category": "bug",
+      "confidence": 80,
+      "message": "AC2: audit パスが .audit/auto-${run_id} で Issue 仕様 .audit/auto-{run_id}-issue-{N} と不一致（-issue-{N} 欠落）",
+      "evidence": "plugins/twl/scripts/issue-lifecycle-orchestrator.sh L36 の _ad 変数"
+    },
+    {
+      "severity": "WARNING",
+      "category": "ac-alignment",
+      "confidence": 75,
+      "message": "AC1/AC3: pr-test が実行されていないため test PASS の機械確認不可 (bats ローカル 13/15 PASS は確認済み)",
+      "evidence": "pr-test checkpoint status 空"
+    }
+  ],
+  "timestamp": "2026-05-12T02:42:12Z"
+}

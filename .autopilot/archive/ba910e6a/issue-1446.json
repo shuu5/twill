@@ -1,0 +1,32 @@
+{
+  "issue": 1446,
+  "status": "done",
+  "branch": "feat/1446-tech-debt-wave-progress-watchdog-rate",
+  "pr": 1656,
+  "window": "",
+  "started_at": "2026-05-11T13:31:04Z",
+  "updated_at": "2026-05-11T14:18:15Z",
+  "last_heartbeat_at": "2026-05-11T14:07:18Z",
+  "current_step": "auto-merge",
+  "retry_count": 0,
+  "ac_verify_call_count": 1,
+  "fix_instructions": null,
+  "merged_at": null,
+  "files_changed": [],
+  "failure": {
+    "reason": "merge_failed",
+    "details": "non-200 OK status code: 504 Gateway Timeout body: \"<!DOCTYPE html>\\r\\n<!--\\r\\n\\r\\nHello future GitHubber! I bet you're here to remove those nasty inline styles,\\r\\nDRY up these templates and make 'em nice and re-usable, right?\\r\\n\\r\\nPlease, don't. https://github.com/styleguide/templates/2.0\\r\\n\\r\\n-->\\r\\n<html>\\r\\n  <head>\\r\\n    <title>Unicorn! &middot; GitHub</title>\\r\\n    <style type=\\\"text/css\\\" media=\\\"screen\\\">\\r\\n      body {\\r\\n        background-color: #f1f1f1;\\r\\n        margin: 0;\\r",
+    "step": "merge-gate",
+    "pr": "#1656"
+  },
+  "implementation_pr": null,
+  "input_waiting_detected": "freeform_kaishi",
+  "input_waiting_at": "2026-05-11T13:46:30Z",
+  "is_direct": false,
+  "llm_delegated_at": "2026-05-11T22:41:41+09:00",
+  "llm_completed_at": "2026-05-11T22:44:40+09:00",
+  "workflow_injected": "/twl:workflow-pr-merge",
+  "injected_at": "2026-05-11T13:55:40Z",
+  "manual_override": true,
+  "override_reason": "504 transient merge gate, retry succeeded — PR #1656 merged 2026-05-11T14:17:54Z"
+}

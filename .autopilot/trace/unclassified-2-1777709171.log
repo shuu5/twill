@@ -1,0 +1,113 @@
+  ⎿  Successfully loaded skill
+
+● Step 1: Issueタイプ判定 → Feature確定（新機能追加）
+
+  Read 2 files (ctrl+o to expand)
+
+● Step 1.5b: ctx/ 候補リスト構築*
+
+  Searched for 4 patterns, read 2 files, listed 1 directory (ctrl+o to expand)
+
+● Step 2.5: scope/ + ctx/ 提案判定**
+
+  scope: draft.md の影響範囲は plugins/twl/skills/co-architect/, plugins/twl/refs/, plugins/twl/commands/ → scope/plugins-twl
+
+  ctx: issue-mgmt が co-architect を明示参照。最良マッチ。
+
+  Step 3: 構造化 Issue 生成
+
+  [Feature] co-architect `--type=<value>` フラグ追加（DDD 必須ファイル skip 対応）
+
+  概要
+
+  co-architect の DDD ハードコード構造化を --type=<value> フラグで切り替え可能にする。--type=generic 指定時は DDD
+  必須ファイル（domain/model.md / domain/glossary.md / domain/contexts/*.md）の生成を skip し、architect-completeness-check での警告を
+   WARNING → INFO に降格する。
+
+  背景・動機
+
+  軽量プロジェクト（CLI tool、automation スクリプト等）では DDD 概念が過剰になるケースがある。現状 co-architect は DDD
+  構造を強制するため、explore-summary が「軽量で OK」と指示しても Step 2 で DDD ファイル生成に変換されてしまう（TI-5
+  と相互依存）。ref-architecture-spec.md はすでに ADR-032 でテーブル駆動設計（動的 Severity 読み出し）が実装済みであり、--type
+  拡張は同パターンの自然な進化となる。
+
+  スコープ
+
+  含む:
+
+  - co-architect Step 0 での --type=<value> フラグ解析追加（ddd / generic / 将来 lib）
+  - co-architect Step 2 L62-72 の type 別 prompt 分岐
+  - ref-architecture-spec.md の必須ファイルテーブルを 列拡張（DDD 必須 / Generic 必須 / DDD Severity / Generic Severity の 4 列）
+  - architect-completeness-check.md への --type 引数追加と対応列の動的選択
+  - architecture/ 初期化時に vision.md frontmatter または .architecture-type メタファイルへ type を記録
+
+  含まない:
+
+  - explore-summary の Recommended Structure パース（別 sub-issue: TI-5）
+  - protocols/*.md 種別の追加（別 sub-issue: TI-3）
+
+  技術的アプローチ
+
+  ┌────────────────┬───────────────────────────────────────────────────────┬──────────────────────────────┐
+  │      type      │                         用途                          │         必須ファイル         │
+  ├────────────────┼───────────────────────────────────────────────────────┼──────────────────────────────┤
+  │ ddd（default） │ DDD ベースのドメイン豊富なプロジェクト                │ 全 DDD 必須                  │
+  ├────────────────┼───────────────────────────────────────────────────────┼──────────────────────────────┤
+  │ generic        │ DDD 不要な軽量プロジェクト（CLI tool、automation 等） │ vision.md + phases/*.md のみ │
+  ├────────────────┼───────────────────────────────────────────────────────┼──────────────────────────────┤
+  │ lib（将来）    │ ライブラリプロジェクト                                │ 別途定義                     │
+  └────────────────┴───────────────────────────────────────────────────────┴──────────────────────────────┘
+
+  ref-architecture-spec.md の列拡張案:
+
+  | ファイル | DDD 必須 | Generic 必須 | DDD Severity | Generic Severity |
+  |---------|---------|--------------|--------------|------------------|
+  | vision.md | YES | YES | WARNING | WARNING |
+  | domain/model.md | YES | NO | WARNING | INFO |
+  | domain/glossary.md | YES | NO | WARNING | INFO |
+  | domain/contexts/*.md | 1つ以上 | NO | WARNING | INFO |
+  | phases/*.md | 1つ以上 | 1つ以上 | WARNING | WARNING |
+
+  既存実装（ADR-032 テーブル駆動パターン）を活用し、新規設計パターンを導入しない。
+
+  受け入れ基準
+
+  CRITICAL
+
+  - co-architect --type=generic 起動時、domain/model.md / domain/glossary.md / domain/contexts/*.md 不在で
+  architect-completeness-check が WARNING を出さない（INFO 降格）
+  - ref-architecture-spec.md に Project Type 概念と type 別必須テーブル（DDD / Generic 列）が定義されている
+  - --type 未指定時のデフォルトが ddd で、既存 architecture/ を持つプロジェクトは影響なし（後方互換保証）
+
+  WARNING
+
+  - architect-completeness-check が --type=<value> 引数を受け取り、ref-architecture-spec.md の対応列を動的に選択する（ADR-032
+  テーブル駆動拡張）
+  - type 値の検証 — 未知の type（--type=foo）は明示エラーで停止
+  - co-architect Step 2 のメッセージに選択された type 名を表示
+
+  INFO
+
+  - lib type の予約（実装は将来、定義のみ）
+
+  Touched files
+
+  - plugins/twl/skills/co-architect/SKILL.md（Step 0 フラグ解析、Step 2 type 分岐）
+  - plugins/twl/refs/ref-architecture-spec.md（テーブル列拡張）
+  - plugins/twl/commands/architect-completeness-check.md（--type 引数 + 列選択ロジック）
+  - architecture/vision.md または .architecture-type（type メタ記録、任意）
+
+  推奨ラベル
+
+  - scope/plugins-twl: plugins/twl コンポーネント
+  - ctx/issue-mgmt: Issue Management Context（co-architect 提案フローを含む）
+
+  plugins/twl/architecture/domain/contexts/issue-mgmt.md
+
+✻ Brewed for 3m 3s
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  shuu5@ipatho-server-2 5% 50k/1M Sonnet 4.6 [max] 5h:74%(43m) 7d:43%(4d23h)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

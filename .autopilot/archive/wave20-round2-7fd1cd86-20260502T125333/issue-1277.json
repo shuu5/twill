@@ -1,0 +1,31 @@
+{
+  "issue": 1277,
+  "status": "done",
+  "branch": "feat/1277-featplugins-twlhook-commit-validate-h",
+  "pr": 1284,
+  "window": "",
+  "started_at": "2026-05-02T12:08:39Z",
+  "updated_at": "2026-05-02T12:50:39Z",
+  "last_heartbeat_at": "2026-05-02T12:43:01Z",
+  "current_step": "pr-comment-final",
+  "retry_count": 0,
+  "ac_verify_call_count": 1,
+  "fix_instructions": null,
+  "merged_at": "2026-05-02T12:47:23Z",
+  "files_changed": [],
+  "failure": {
+    "reason": "merge_conflict",
+    "details": "GraphQL: Pull Request has merge conflicts (mergePullRequest)\n",
+    "step": "merge-gate",
+    "pr": "#1284"
+  },
+  "implementation_pr": null,
+  "input_waiting_detected": null,
+  "input_waiting_at": null,
+  "is_direct": false,
+  "llm_delegated_at": "2026-05-02T21:12:17+09:00",
+  "llm_completed_at": "2026-05-02T21:21:13+09:00",
+  "workflow_injected": "/twl:workflow-pr-merge",
+  "injected_at": "2026-05-02T12:35:10Z",
+  "conflict_retry_count": 1
+}

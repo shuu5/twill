@@ -1,0 +1,49 @@
+{
+  "step": "phase-review",
+  "status": "FAIL",
+  "findings_summary": "2 CRITICAL, 3 WARNING",
+  "critical_count": 2,
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "confidence": 97,
+      "file": "plugins/session/scripts/window-manifest.sh",
+      "line": 16,
+      "message": "source コンテキストで exit 1 を呼ぶため親シェルが終了。cld-spawn/cld-fork/autopilot-launch.sh が壊れる。fix: exit 1 -> return 1 2>/dev/null || exit 1",
+      "specialist": "worker-code-reviewer"
+    },
+    {
+      "severity": "CRITICAL",
+      "confidence": 92,
+      "file": "plugins/session/scripts/window-manifest.sh",
+      "line": 14,
+      "message": "$HOME が空文字の場合 $HOME/* が /*になりチェックバイパス。fix: $HOME 非空チェックを先行追加",
+      "specialist": "worker-code-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 88,
+      "file": "plugins/session/scripts/window-manifest.sh",
+      "line": 14,
+      "message": "$HOME 空文字によるパストラバーサルバイパス（security-reviewer も同様に指摘）",
+      "specialist": "worker-security-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 88,
+      "file": "plugins/session/tests/window-manifest.bats",
+      "line": 9,
+      "message": "テスト隔離性の問題。SANDBOX を使わず $HOME/.local/share/twl/ 直下に書くためアーティファクト残留リスク",
+      "specialist": "worker-code-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 85,
+      "file": "plugins/session/tests/window-manifest.bats",
+      "line": 236,
+      "message": "return 1 の exit status 検証なし。出力確認のみで不十分",
+      "specialist": "worker-code-reviewer"
+    }
+  ],
+  "timestamp": "2026-05-12T03:21:46Z"
+}

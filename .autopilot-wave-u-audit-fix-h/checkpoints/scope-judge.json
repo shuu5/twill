@@ -1,0 +1,29 @@
+{
+  "step": "scope-judge",
+  "status": "PASS",
+  "findings_summary": "0 CRITICAL, 0 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "scope": "out",
+      "issue": "#1696",
+      "message": "cld-observe-any 本体 SUPERVISOR_DIR バリデーション未実装 (Issue #1165 AC4)"
+    },
+    {
+      "scope": "out",
+      "issue": "#1697",
+      "message": "EVENT_DIR パストラバーサル防御未実装"
+    },
+    {
+      "scope": "in",
+      "status": "FIXED",
+      "message": "python3 fallback 追加 (AC2 #1165)"
+    },
+    {
+      "scope": "in",
+      "status": "FIXED",
+      "message": "SUPERVISOR_DIR canonical path 再代入 (AC5 #1165)"
+    }
+  ],
+  "timestamp": "2026-05-12T03:12:49Z"
+}

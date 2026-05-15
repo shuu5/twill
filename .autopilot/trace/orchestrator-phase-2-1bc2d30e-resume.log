@@ -1,0 +1,22 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 2 開始
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: WARNING: merged ブランチ残存 (7日以内): docs/pitfalls-16-step0-incident
+[orchestrator] startup cleanup 完了: 削除=0件, 警告=1件
+[orchestrator] Issue #1292: Worker 起動
+[orchestrator] Issue #1292: 既存 worktree を使用: /home/shuu5/projects/local-projects/twill/worktrees/feat/1292-featadr-024-phase-b-tier-b-co-issue-p
+ERROR: issue-1292.json は既に存在します
+[orchestrator] Issue #1292: Worker 起動失敗（スキップ）
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 2,
+  "results": {
+    "done": [],
+    "failed": [],
+    "skipped": [
+      1292
+    ]
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 2 完了

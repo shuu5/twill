@@ -1,0 +1,30 @@
+{
+  "step": "ac-verify",
+  "status": "FAIL",
+  "findings_summary": "2 CRITICAL, 1 WARNING",
+  "critical_count": 2,
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "category": "bug",
+      "confidence": 95,
+      "message": "AC5: monitor-channel-catalog.md L493/L580 に旧方針テキスト残存（自動承認・拒否禁止の記述が今回の Auto Layer 変更と矛盾）。diff には L18 の更新は含まれるが、詳細節が未更新",
+      "evidence": "L493: 自動拒否 inject は本チャネルのスコープ外（安全確認なしの自動承認・拒否禁止）/ L580: 文脈確認 → ユーザー通知（自動 inject 禁止）が残存"
+    },
+    {
+      "severity": "CRITICAL",
+      "category": "bug",
+      "confidence": 92,
+      "message": "AC10: ADR-024 改訂のための別 Issue 起票が未完了。PR diff に Issue 作成の証跡なし",
+      "evidence": "diff に gh issue create の痕跡なし、AC10 の impl_files=[] で機械検証もスキップ"
+    },
+    {
+      "severity": "WARNING",
+      "category": "ac-alignment",
+      "confidence": 80,
+      "message": "AC8: refined label は付与済みだが Project Board Status が In Progress のまま。ADR-024 の dual-write 順序（label refined 先 → Status Refined 後）に従い Status=Refined への遷移が必要",
+      "evidence": "gh issue view 973: labels=[refined,...] / projectItems.status=In Progress"
+    }
+  ],
+  "timestamp": "2026-05-12T03:30:21Z"
+}

@@ -1,0 +1,13 @@
+{
+  "step": "pr-test",
+  "status": "PASS",
+  "findings_summary": "0 CRITICAL, 0 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "info",
+      "message": "bats 15/15 PASS (spawn-controller-tmux-resolve.bats)"
+    }
+  ],
+  "timestamp": "2026-05-02T07:20:32Z"
+}

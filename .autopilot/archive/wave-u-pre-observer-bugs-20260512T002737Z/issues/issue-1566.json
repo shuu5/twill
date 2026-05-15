@@ -1,0 +1,32 @@
+{
+  "issue": 1566,
+  "status": "done",
+  "branch": "refactor/1566-docsco-issue-skillmd-must-not-co",
+  "pr": 1666,
+  "window": "",
+  "started_at": "2026-05-11T22:58:42Z",
+  "updated_at": "2026-05-11T23:53:44Z",
+  "last_heartbeat_at": "2026-05-11T23:35:49Z",
+  "current_step": "pr-comment-findings",
+  "retry_count": 0,
+  "ac_verify_call_count": 1,
+  "fix_instructions": null,
+  "merged_at": "2026-05-11T23:53:44Z",
+  "files_changed": [],
+  "failure": {
+    "reason": "merge_conflict",
+    "details": "GraphQL: Pull Request has merge conflicts (mergePullRequest)\n",
+    "step": "merge-gate",
+    "pr": "#1666"
+  },
+  "implementation_pr": null,
+  "input_waiting_detected": "freeform_kaishi",
+  "input_waiting_at": "2026-05-11T23:26:19Z",
+  "is_direct": true,
+  "mode": "direct",
+  "llm_delegated_at": "2026-05-12T08:12:07+09:00",
+  "llm_completed_at": "2026-05-12T08:14:36+09:00",
+  "workflow_injected": "/twl:workflow-pr-merge",
+  "injected_at": "2026-05-11T23:23:25Z",
+  "conflict_retry_count": 1
+}

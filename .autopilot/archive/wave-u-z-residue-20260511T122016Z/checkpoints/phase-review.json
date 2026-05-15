@@ -1,0 +1,23 @@
+{
+  "step": "phase-review",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 1 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 75,
+      "file": "Issue body",
+      "message": "AC2: PR description に curl コマンド例と期待出力コメントを記載済みだが、実際の実行出力スナップショットの形式ではない（軽量解釈）",
+      "category": "ac-alignment"
+    },
+    {
+      "severity": "INFO",
+      "confidence": 80,
+      "file": ".github/workflows/mcp-restart-smoke.yml",
+      "message": "AC3: run URL (https://github.com/shuu5/twill/actions/runs/25658880302/job/75314069518) を PR description に追記済み。CI SUCCESS 確認",
+      "category": "ac-alignment"
+    }
+  ],
+  "timestamp": "2026-05-11T08:31:49Z"
+}

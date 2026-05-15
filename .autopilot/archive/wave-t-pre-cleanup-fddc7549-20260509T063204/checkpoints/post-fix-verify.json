@@ -1,0 +1,25 @@
+{
+  "step": "post-fix-verify",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 2 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 87,
+      "file": "plugins/twl/skills/su-observer/scripts/spawn-controller.sh",
+      "line": 365,
+      "message": "spawn_cmd シングルクォートインジェクションリスク（本 fix 対象外 — pre-existing）",
+      "category": "security"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 82,
+      "file": "plugins/twl/skills/su-observer/scripts/spawn-controller.sh",
+      "line": 211,
+      "message": "CHAIN_WAVE_QUEUE_ENTRY の jq inject 検証なし（fix diff 外 — out of scope）",
+      "category": "security"
+    }
+  ],
+  "timestamp": "2026-05-02T04:23:02Z"
+}

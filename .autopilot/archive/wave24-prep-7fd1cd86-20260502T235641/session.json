@@ -1,0 +1,42 @@
+{
+  "session_id": "7fd1cd86",
+  "plan_path": "/home/shuu5/projects/local-projects/twill/main/.autopilot/plan.yaml",
+  "current_phase": 1,
+  "phase_count": 1,
+  "started_at": "2026-05-02T12:08:17Z",
+  "cross_issue_warnings": [],
+  "phase_insights": [],
+  "patterns": {},
+  "self_improve_issues": [],
+  "retrospectives": [
+    {
+      "phase": 1,
+      "session_id": "7fd1cd86",
+      "results": {
+        "done": [
+          1276,
+          1261,
+          1277
+        ],
+        "failed": [
+          1278
+        ],
+        "skipped": []
+      },
+      "failures": [
+        {
+          "issue": 1278,
+          "reason": "Worker pane が #1278 の実装をせず ADR-024 Phase B explore (Wave 21) を Opus 4.7 で実行。session 乗っ取り疑い。worktree に implementation commit なし、PR 未作成。Wave 21 で再投入要"
+        }
+      ],
+      "conflicts": [
+        {
+          "issue": 1277,
+          "reason": "PR #1284 merge 時に .claude/settings.json mcp_tool entry conflict。Pilot rebase (autopilot-pilot-rebase trigger #2 base drift) で resolve、merge 完了。state-transition guard が conflict→done を拒否したため merge-ready 経由で force-done"
+        }
+      ],
+      "insights": "Wave 20 retry で 4/4 件起動成功、3 件 (1276, 1261, 1277) merge 完了、1 件 (1278) Worker session 乗っ取り疑いで failed。並列 PR merge 時の .claude/settings.json conflict は予測可能 (#1276/1277/1278 が同一 mcp_tool entry slot を争う)、Pilot rebase で対処可能。#1278 の Worker session 乗っ取りは未解明、observer による window 隔離が必要かも",
+      "completed_at": "2026-05-02T12:52:41Z"
+    }
+  ]
+}

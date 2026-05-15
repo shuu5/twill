@@ -1,0 +1,54 @@
+{
+  "step": "phase-review",
+  "status": "WARN",
+  "findings_summary": "1 CRITICAL, 3 WARNING",
+  "critical_count": 1,
+  "findings": [
+    {
+      "specialist": "worker-code-reviewer",
+      "severity": "WARNING",
+      "confidence": 85,
+      "file": "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md",
+      "line": 71,
+      "message": "--arg report_path \"${PER_ISSUE_DIR:-}/OUT/report.json\" で PER_ISSUE_DIR 未設定時に空文字列展開される。フォールバックを /dev/null 等の明示的なパスに揃えること。[B] path L101 も同様。",
+      "category": "bug-pattern"
+    },
+    {
+      "specialist": "worker-architecture",
+      "severity": "INFO",
+      "confidence": 90,
+      "file": "plugins/twl/tests/bats/scripts/co-issue-phase4-evidence-generation.bats",
+      "line": 123,
+      "message": "E2 テストのアサーションが [A] を valid な phase4_path として許容している。ADR-024 Phase D は [A] path に Phase4-complete.json を生成しないと明記。[A] の or 条件を除去すること。",
+      "category": "architecture-violation"
+    },
+    {
+      "specialist": "worker-codex-reviewer",
+      "severity": "CRITICAL",
+      "confidence": 96,
+      "file": "PR body",
+      "line": 1,
+      "message": "AC10 未達: follow-up Issue (cleanup-stale-phase4-marker.sh 実装) が未起票。PR body に \"#TBD\" と記載されているが実際の Issue 番号がない。起票 + reference が必要。",
+      "category": "ac-alignment"
+    },
+    {
+      "specialist": "worker-security-reviewer",
+      "severity": "WARNING",
+      "confidence": 82,
+      "file": "plugins/twl/skills/co-issue/refs/co-issue-phase4-aggregate.md",
+      "line": 62,
+      "message": "SESSION_ID / CO_ISSUE_SESSION_ID に allowlist バリデーションがなく、パストラバーサルの可能性がある。baseline-bash.md §11 の allowlist regex 規約 (^[A-Za-z0-9_-]+$) を適用すること。行 92 の [B] path スニペットにも同様の問題がある。",
+      "category": "security"
+    },
+    {
+      "specialist": "worker-architecture",
+      "severity": "WARNING",
+      "confidence": 72,
+      "file": "plugins/twl/architecture/decisions/ADR-024-refined-status-field-migration.md",
+      "line": 281,
+      "message": "[D] path の生成タイミング表で circuit_broken 時の扱いが不明確。ADR は「aggregate 完了直後」と言うが実装は done のみ対象。circuit_broken 除外の設計意図を ADR に明記すること。",
+      "category": "architecture-drift"
+    }
+  ],
+  "timestamp": "2026-05-11T23:36:38Z"
+}

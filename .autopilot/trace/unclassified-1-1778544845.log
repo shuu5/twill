@@ -1,0 +1,103 @@
+  - issue-feasibility: status: PASS ✓ + findings: ✓ → 正常
+  - worker-codex-reviewer: status: PASS ✓ + findings: ✓（auth/connection error エントリ有、severity/confidence なし） → 実質 findings=0 として扱う
+
+  [AGGREGATE-STEP] step=1 status=exit ts=2026-05-12T00:10:01Z
+  [AGGREGATE-STEP] step=2 status=enter ts=2026-05-12T00:10:01Z
+
+  Step 2: findings 統合
+
+  有効 findings (severity/confidence/finding_target 揃い):
+  - issue-critic: WARNING×2 (confidence 82, 78)
+  - issue-feasibility: WARNING×2 (confidence 82, 78)
+  - worker-codex-reviewer: 0（auth error のみ、severity 欠如）
+
+  合計: CRITICAL=0, WARNING=4, INFO=0
+
+  [AGGREGATE-STEP] step=2 status=exit ts=2026-05-12T00:10:02Z
+  [AGGREGATE-STEP] step=3 status=enter ts=2026-05-12T00:10:02Z
+
+  Step 3: ブロック判定
+
+  severity == CRITICAL && confidence >= 80 && finding_target == "issue_description" → 0件 → ブロックなし
+
+  [AGGREGATE-STEP] step=3 status=exit ts=2026-05-12T00:10:02Z
+  [AGGREGATE-STEP] step=4 status=enter ts=2026-05-12T00:10:03Z
+
+  specialist レビュー結果
+
+  Issue: tech-debt(observer-parallel-check): controller_count=0 時の controller_states 強制リセットが env-var override を無効化する
+
+  ┌───────────────────────┬────────┬────────────────────────────────────────────┐
+  │      specialist       │ status │                  findings                  │
+  ├───────────────────────┼────────┼────────────────────────────────────────────┤
+  │ issue-critic          │ WARN   │ 2 findings (0 CRITICAL, 2 WARNING, 0 INFO) │
+  ├───────────────────────┼────────┼────────────────────────────────────────────┤
+  │ issue-feasibility     │ PASS   │ 2 findings (0 CRITICAL, 2 WARNING, 0 INFO) │
+  ├───────────────────────┼────────┼────────────────────────────────────────────┤
+  │ worker-codex-reviewer │ PASS   │ 0 findings (auth/connection error)         │
+  └───────────────────────┴────────┴────────────────────────────────────────────┘
+
+  findings 詳細
+
+  severity: WARNING
+  confidence: 82
+  category: ambiguity
+  specialist: issue-critic
+  message: 技術メモの実装例で OBSERVER_PARALLEL_CHECK_STATES='' 時に :- 演算子と ${VAR+x} パターンの間に矛盾があり、実装担当者が誤った実装をするリスクがある
+  ────────────────────────────────────────
+  severity: WARNING
+  confidence: 78
+  category: assumption
+  specialist: issue-critic
+  message: issue-1651-initial-spawn.bats L67/L95 が空文字 set を使用しており、修正後の non-trivial な依存関係が Issue body に未明記
+  ────────────────────────────────────────
+  severity: WARNING
+  confidence: 82
+  category: feasibility
+  specialist: issue-feasibility
+  message: AC1 の「set 判定フラグを capture し」という記述が L317 への追加か新規変数追加か曖昧
+  ────────────────────────────────────────
+  severity: WARNING
+  confidence: 78
+  category: feasibility
+  specialist: issue-feasibility
+  message: AC2(b) の STATES='S-2' 形式が get_controller_states の返却形式と一致するか未明記
+
+  [AGGREGATE-STEP] step=4 status=exit ts=2026-05-12T00:10:04Z
+  [AGGREGATE-STEP] step=5 status=enter ts=2026-05-12T00:10:04Z
+
+  CRITICAL findings なし → ブロック処理不要
+
+  [AGGREGATE-STEP] step=5 status=exit ts=2026-05-12T00:10:04Z
+  [AGGREGATE-STEP] step=6 status=enter ts=2026-05-12T00:10:05Z
+
+  category: scope の split 提案なし → 分割不要
+
+  [AGGREGATE-STEP] step=6 status=exit ts=2026-05-12T00:10:05Z
+
+● Write(.controller-issue/1778544263_ipuk/per-issue-level-0/1/rounds/1/aggregate.yaml)
+  ⎿  Wrote 49 lines to .controller-issue/1778544263_ipuk/per-issue-level-0/1/rounds/1/aggregate.yaml
+       1 blocked_issues: []
+       2 split_issues: []
+       3 codex:
+       4   status: PASS
+       5   note: "worker-codex-reviewer returned PASS with auth/connection error, effective findings=0"
+       6
+       7 findings_summary:
+       8   total: 4
+       9   critical: 0
+      10   warning: 4
+     … +42 lines (ctrl+o to expand)
+
+● 出力:
+  blocked_issues: []
+  split_issues: []
+  findings_summary: CRITICAL=0, WARNING=4, blocked=false
+
+✻ Worked for 3m 20s
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  shuu5@ipatho-server-2 6% 60k/1M Sonnet 4.6 [max] 5h:42%(2h56m) 7d:46%(2d7h)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

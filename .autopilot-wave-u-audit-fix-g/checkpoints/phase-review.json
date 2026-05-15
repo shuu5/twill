@@ -1,0 +1,72 @@
+{
+  "step": "phase-review",
+  "status": "FAIL",
+  "findings_summary": "0 CRITICAL, 0 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "critical",
+      "specialist": "worker-code-reviewer",
+      "file": "plugins/twl/commands/intervene-auto.md",
+      "line": 33,
+      "message": "--rules-path を soft_deny_match.py に渡しているが argparse に未定義。実行時 exit 2 → 全 prompt が match-escalate 誤分類"
+    },
+    {
+      "severity": "critical",
+      "specialist": "worker-code-reviewer",
+      "file": "plugins/twl/commands/intervene-auto.md",
+      "line": 63,
+      "message": "--count-category が soft_deny_match.py に未定義。連続 soft_deny 検知の STOP 機能が無効化"
+    },
+    {
+      "severity": "critical",
+      "specialist": "worker-security-reviewer",
+      "file": "cli/twl/src/twl/intervention/soft_deny_match.py",
+      "line": 143,
+      "message": "session_id のパストラバーサル: observation_dir 外に書き込み可能"
+    },
+    {
+      "severity": "critical",
+      "specialist": "worker-security-reviewer",
+      "file": "plugins/twl/skills/su-observer/refs/soft-deny-rules.md",
+      "line": 8,
+      "message": "ReDoS: (-[a-zA-Z]+\\\\s+)* の量化子ネストで指数的バックトラック"
+    },
+    {
+      "severity": "major",
+      "specialist": "worker-architecture",
+      "file": "plugins/twl/skills/su-observer/refs/monitor-channel-catalog.md",
+      "line": 493,
+      "message": "詳細節に旧方針テキスト残存（自動承認・拒否禁止の記述が Auto 変更と矛盾）"
+    },
+    {
+      "severity": "major",
+      "specialist": "worker-architecture",
+      "file": "plugins/twl/commands/intervene-auto.md",
+      "line": 145,
+      "message": "InterventionRecord で ISSUE_NUM が未定義変数参照"
+    },
+    {
+      "severity": "minor",
+      "specialist": "worker-architecture",
+      "file": "plugins/twl/architecture/domain/contexts/supervision.md",
+      "line": 220,
+      "message": "介入パターン数が 13 と記載（実際は 14）"
+    },
+    {
+      "severity": "warning",
+      "specialist": "worker-code-reviewer",
+      "file": "cli/twl/src/twl/intervention/soft_deny_match.py",
+      "line": 90,
+      "message": "yaml.safe_load の YAMLError が未キャッチ"
+    },
+    {
+      "severity": "warning",
+      "specialist": "worker-security-reviewer",
+      "file": "plugins/twl/skills/su-observer/refs/soft-deny-rules.md",
+      "line": 20,
+      "message": "secret-exfiltration regex が大文字小文字を区別せず coverage 不十分"
+    }
+  ],
+  "timestamp": "2026-05-12T03:28:32Z"
+}

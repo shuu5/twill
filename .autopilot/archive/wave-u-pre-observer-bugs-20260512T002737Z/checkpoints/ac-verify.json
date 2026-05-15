@@ -1,0 +1,23 @@
+{
+  "step": "ac-verify",
+  "status": "FAIL",
+  "findings_summary": "1 CRITICAL, 1 WARNING",
+  "critical_count": 1,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "category": "ac-alignment",
+      "confidence": 80,
+      "message": "AC9「本 PR merge 後、Sub-1/Sub-2 の既存 test が regression なし PASS することを CI で確認」: CI は未実行。ローカルでの E3 テスト (refined-status-gate-refined-option.bats R3 シナリオ) で regression なし確認済みだが、CI による公式確認は PR merge 後の副作用。",
+      "evidence": "E3 ローカル PASS: co-issue-phase4-evidence-generation.bats テスト 5/5 PASS。CI 実行は PR merge 後の手動確認が必要。"
+    },
+    {
+      "severity": "CRITICAL",
+      "category": "ac-alignment",
+      "confidence": 96,
+      "message": "AC10「本 PR description で follow-up Issue を 1 件起票し reference する」: PR body に \"#TBD\" と記載されているが、cleanup-stale-phase4-marker.sh 実装 + cron 配線の follow-up Issue は未起票。GitHub 上で該当 Issue が存在しないことを verified。起票 + reference が必要。",
+      "evidence": "PR #1667 body: \"- #TBD: cleanup-stale-phase4-marker.sh 実装 + cron 配線\" / gh issue list で cleanup 関連 Issue なし"
+    }
+  ],
+  "timestamp": "2026-05-11T23:39:00Z"
+}

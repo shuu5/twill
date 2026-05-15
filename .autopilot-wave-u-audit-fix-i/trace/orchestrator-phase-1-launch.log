@@ -1,0 +1,234 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #1684: Worker 起動
+[orchestrator] Issue #1684: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/fix/1684-bugchain-redesign-isautopilottrue-work
+OK: issue-1684.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1778551574_2wz6-issue-1684 (parent=1778551574_2wz6) in /home/shuu5/projects/local-projects/twill/worktrees/fix/1684-bugchain-redesign-isautopilottrue-work
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/fix/1684-bugchain-redesign-isautopilottrue-work/.audit/auto-1778551574_2wz6-issue-1684/panes/ap-twill-fix-1684-bugchain-redesi-0f1d400f.log
+Worker 起動完了: Issue #1684 (window=ap-twill-fix-1684-bugchain-redesi-0f1d400f, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/fix/1684-bugchain-redesign-isautopilottrue-work)
+[orchestrator] Issue #1674: Worker 起動
+[orchestrator] Issue #1674: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/fix/1674-bugco-issue-issue-lifecycle-orchestrat
+OK: issue-1674.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-1778551574_2wz6-issue-1674 (parent=1778551574_2wz6) in /home/shuu5/projects/local-projects/twill/worktrees/fix/1674-bugco-issue-issue-lifecycle-orchestrat
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/fix/1674-bugco-issue-issue-lifecycle-orchestrat/.audit/auto-1778551574_2wz6-issue-1674/panes/ap-twill-fix-1674-bugco-issue-iss-ff19fece.log
+Worker 起動完了: Issue #1674 (window=ap-twill-fix-1674-bugco-issue-iss-ff19fece, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/fix/1674-bugco-issue-issue-lifecycle-orchestrat)
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1674.json を更新しました
+[orchestrator] Issue #1684: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1684.json を更新しました
+[orchestrator] Issue #1674: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1684: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1684.json を更新しました
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1684: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1684.json を更新しました
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1684: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1684: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1684.json を更新しました
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1674: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1674.json を更新しました
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1674: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1684: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1684: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1684-bugchain-redesi-0f1d400f
+[orchestrator] Issue #1684: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1674.json を更新しました
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: chain-step-completed 検知 → LAST_INJECTED_STEP bypass
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[AUTOPILOT_DEBUG] [orchestrator] Issue #1674: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #1674: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1674.json を更新しました
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=queued_message_residual window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1674: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece — 次 cycle で確定
+[orchestrator] Issue #1674: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-fix-1674-bugco-issue-iss-ff19fece
+[orchestrator] Issue #1684: merge-gate 実行 (PR #1689)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1684.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #1684: PR #1689 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #1684: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #1684: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #1684: merge 成功
+[orchestrator] cleanup: Issue #1684 — window/branch クリーンアップ
+[orchestrator] Issue #1674: merge-gate 実行 (PR #1690)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/issues/issue-1674.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #1674: PR #1690 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #1674: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #1674: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #1674: merge 成功
+[orchestrator] cleanup: Issue #1674 — window/branch クリーンアップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      1684,
+      1674
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

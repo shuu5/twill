@@ -1,0 +1,33 @@
+{
+  "step": "merge-gate",
+  "status": "PASS",
+  "findings_summary": "0 CRITICAL, 0 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "info",
+      "source": "worker-architecture",
+      "confidence": 95,
+      "message": "CRITICAL (ac-test-mapping.yaml status=RED) は commit fa317a81 で修正済み。全 4 AC エントリを GREEN に更新。",
+      "file": "ac-test-mapping.yaml",
+      "line": 1083
+    },
+    {
+      "severity": "info",
+      "source": "worker-red-only-detector",
+      "confidence": 95,
+      "message": "RED-only ではない。impl 3件 (chain-runner.sh, autopilot-launch.sh, SKILL.md) が含まれる",
+      "file": "PR",
+      "line": 0
+    },
+    {
+      "severity": "info",
+      "source": "worker-issue-pr-alignment",
+      "confidence": 95,
+      "message": "全 AC (AC1-4) が PR diff で確認。PASS",
+      "file": "PR",
+      "line": 0
+    }
+  ],
+  "timestamp": "2026-05-12T02:43:41Z"
+}

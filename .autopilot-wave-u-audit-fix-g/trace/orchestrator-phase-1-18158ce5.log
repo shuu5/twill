@@ -1,0 +1,159 @@
+[orchestrator] USE_SESSION_STATE=true
+[orchestrator] Phase 1 開始
+[2026-05-12T02:56:23Z] orchestrator_pid=2299667 phase=1 started_at=2026-05-12T02:56:23Z
+[orchestrator] startup cleanup 開始（threshold=7日）
+[orchestrator] startup cleanup: merged 済みブランチなし
+[orchestrator] Issue #973: Worker 起動
+[orchestrator] Issue #973: worktree 作成完了: /home/shuu5/projects/local-projects/twill/worktrees/feat/973-tech-debt-observer-auto-permission-ui
+OK: issue-973.json を作成しました (status=running)
+[autopilot-launch] audit bootstrap: run_id=auto-wave-u-audit-fix-h-issue-973 (parent=wave-u-audit-fix-h) in /home/shuu5/projects/local-projects/twill/worktrees/feat/973-tech-debt-observer-auto-permission-ui
+[autopilot-launch] pipe-pane 永続化: /home/shuu5/projects/local-projects/twill/worktrees/feat/973-tech-debt-observer-auto-permission-ui/.audit/auto-wave-u-audit-fix-h-issue-973/panes/ap-twill-feat-973-tech-debt-obser-38fbe675.log
+Worker 起動完了: Issue #973 (window=ap-twill-feat-973-tech-debt-obser-38fbe675, model=sonnet, dir=/home/shuu5/projects/local-projects/twill/worktrees/feat/973-tech-debt-observer-auto-permission-ui)
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: inject_next_workflow — /twl:workflow-test-ready
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-g/issues/issue-973.json を更新しました
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: inject_next_workflow — /twl:workflow-pr-verify
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-g/issues/issue-973.json を更新しました
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] WARN: Issue #973: AUTOPILOT_AUTO_UNSTUCK=1 → auto-unstuck (601s deadlock, bypass LAST_INJECTED_STEP)
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=freeform_kaishi window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: inject_next_workflow — /twl:workflow-pr-fix
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-g/issues/issue-973.json を更新しました
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[AUTOPILOT_DEBUG] [orchestrator] Issue #973: pr-merge inject — status=running (AC-4 通り、merge-ready 未成立は仕様)
+[orchestrator] Issue #973: inject_next_workflow — /twl:workflow-pr-merge
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-g/issues/issue-973.json を更新しました
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: input-waiting 検知 (1回目) pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675 — 次 cycle で確定
+[orchestrator] Issue #973: input-waiting 確定 pattern=queued_message_residual window=ap-twill-feat-973-tech-debt-obser-38fbe675
+[orchestrator] Issue #973: queued_message_residual → auto-recovery Enter 送信
+[orchestrator] Issue #973: merge-ready
+[orchestrator] Issue #973: merge-gate 実行 (PR #1700)
+OK: /home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-g/issues/issue-973.json を更新しました
+[merge-gate-execute] autopilot 検出 (status=merge-ready): Pilot セッションとして merge を実行
+[merge-gate] Issue #973: PR #1700 のマージを実行... (REPO_MODE=worktree)
+[merge-gate] Issue #973: autopilot 検出 — クリーンアップを Pilot へ委譲
+[merge-gate] Issue #973: マージ完了 + Issue CLOSED 確認済み
+[orchestrator] Issue #973: merge 成功
+[orchestrator] cleanup: Issue #973 — window/branch クリーンアップ
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      973
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "changed_files": []
+}
+[orchestrator] Phase 1 完了

@@ -1,0 +1,29 @@
+{
+  "issue": 1278,
+  "status": "failed",
+  "branch": "",
+  "pr": null,
+  "window": "",
+  "started_at": "2026-05-02T12:08:44Z",
+  "updated_at": "2026-05-02T12:50:18Z",
+  "last_heartbeat_at": "2026-05-02T12:49:10Z",
+  "current_step": "ts-preflight",
+  "retry_count": 0,
+  "ac_verify_call_count": 0,
+  "fix_instructions": null,
+  "merged_at": null,
+  "files_changed": [],
+  "failure": {
+    "reason": "Worker pane が #1278 の実装をせず ADR-024 Phase B explore (Wave 21) を Opus 4.7 で実行。worktree に実装 commit なし、PR 未作成。session 乗っ取り疑い。Wave 21 で再投入要",
+    "timestamp": "2026-05-02T12:48:00Z",
+    "step": "check"
+  },
+  "implementation_pr": null,
+  "input_waiting_detected": null,
+  "input_waiting_at": null,
+  "is_direct": false,
+  "llm_delegated_at": "2026-05-02T21:12:30+09:00",
+  "llm_completed_at": "2026-05-02T21:18:41+09:00",
+  "workflow_injected": "/twl:workflow-pr-verify",
+  "injected_at": "2026-05-02T12:18:44Z"
+}

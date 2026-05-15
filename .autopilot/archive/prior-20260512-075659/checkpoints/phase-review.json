@@ -1,0 +1,44 @@
+{
+  "step": "phase-review",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 4 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 82,
+      "file": "plugins/twl/scripts/lib/observer-parallel-check.sh",
+      "line": 315,
+      "message": "OBSERVER_PARALLEL_CHECK_STATES 空文字列時に :- 展開で get_controller_states が呼ばれる（controller_count=0 ケースはリセットで救われている）"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 81,
+      "file": "plugins/twl/scripts/lib/observer-parallel-check.sh",
+      "line": 329,
+      "message": "controller_count=0 時の controller_states 強制リセットが env-var override を無効化する（設計意図コメント済み）"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 80,
+      "file": "plugins/twl/tests/bats/scripts/issue-1651-initial-spawn.bats",
+      "line": 125,
+      "message": "INFO ログ検証テストで 2>&1 で stderr/stdout を混在させている"
+    },
+    {
+      "severity": "INFO",
+      "confidence": 85,
+      "file": "plugins/twl/skills/su-observer/refs/pitfalls-catalog.md",
+      "line": 678,
+      "message": "§11.3 コードサンプルに controller_states 代入が未記載（動作に影響なし）"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 85,
+      "file": "plugins/twl/scripts/lib/observer-parallel-check.sh",
+      "line": 313,
+      "message": "OBSERVER_PARALLEL_CHECK_CONTROLLER_COUNT に整数バリデーションなし（非数値は 0 として評価される）"
+    }
+  ],
+  "timestamp": "2026-05-11T15:18:13Z"
+}

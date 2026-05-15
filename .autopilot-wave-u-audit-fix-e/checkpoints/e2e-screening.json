@@ -1,0 +1,8 @@
+{
+  "step": "e2e-screening",
+  "status": "PASS",
+  "findings_summary": "0 CRITICAL, 0 WARNING",
+  "critical_count": 0,
+  "findings": [],
+  "timestamp": "2026-05-11T23:24:06Z"
+}

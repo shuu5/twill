@@ -1,0 +1,11 @@
+{
+  "session_id": "1bc2d30e",
+  "plan_path": "/home/shuu5/projects/local-projects/twill/main/.autopilot/plan.yaml",
+  "current_phase": 4,
+  "phase_count": 4,
+  "started_at": "2026-05-02T14:56:47Z",
+  "cross_issue_warnings": [],
+  "phase_insights": [],
+  "patterns": {},
+  "self_improve_issues": []
+}

@@ -1,0 +1,13 @@
+{
+  "signal": "PHASE_COMPLETE",
+  "phase": 1,
+  "results": {
+    "done": [
+      1618,
+      1581
+    ],
+    "failed": [],
+    "skipped": []
+  },
+  "changed_files": []
+}

@@ -1,0 +1,56 @@
+{
+  "session_id": "ae368b76",
+  "plan_path": "/home/shuu5/projects/local-projects/twill/main/.autopilot/plan.yaml",
+  "current_phase": 1,
+  "phase_count": 1,
+  "started_at": "2026-05-02T10:32:27Z",
+  "cross_issue_warnings": [],
+  "phase_insights": [],
+  "patterns": {},
+  "self_improve_issues": [],
+  "completed_issues": {
+    "1273": {
+      "pr": 1281,
+      "files": [
+        "plugins/twl/scripts/onboarding/setup-origin-labels.sh",
+        "plugins/twl/tests/bats/ac-test-mapping-1273.yaml",
+        "plugins/twl/tests/bats/issue-1273-origin-labels.bats"
+      ]
+    }
+  },
+  "retrospectives": [
+    {
+      "phase": 1,
+      "session_id": "ae368b76",
+      "results": {
+        "done": [
+          1273
+        ],
+        "failed": [
+          1276
+        ],
+        "skipped": [
+          1277,
+          1278,
+          1261
+        ]
+      },
+      "failures": [
+        {
+          "issue": 1276,
+          "reason": "phase-review FAIL: 2 CRITICAL findings (テスト仕様乖離 ac4-fixture2 / カバレッジ欠落 block path test missing) + 4 WARN (security: SHADOW_LOG /tmp 固定平文 JSONL)"
+        }
+      ],
+      "skips": {
+        "reason": "Project Board Status=Todo (refined ラベルは付与済だが Board Status 遷移漏れ) — Wave 21 で再投入要",
+        "issues": [
+          1277,
+          1278,
+          1261
+        ]
+      },
+      "insights": "Worker autonomous chain progression は Worker LLM の判断に依存。#1276 は test-scaffold 後 stuck → recovery inject で実装認可で復活。#1273 は inject 不要で autonomous 進行成功。両者の振る舞い差は LLM session の judgement variance。merge-gate phase-review specialist 検証は強い品質ゲートとして機能 (#1276 reject 例)。",
+      "completed_at": "2026-05-02T12:01:38Z"
+    }
+  ]
+}

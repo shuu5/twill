@@ -1,0 +1,64 @@
+{
+  "step": "phase-review",
+  "status": "FAIL",
+  "findings_summary": "1 CRITICAL, 5 WARNING",
+  "critical_count": 1,
+  "findings": [
+    {
+      "severity": "CRITICAL",
+      "confidence": 92,
+      "file": "plugins/twl/tests/bats/issue-1703-phase-review-cross-pollution.bats",
+      "line": 40,
+      "message": "_write_checkpoint ヘルパー内で local status=$2 を宣言しているため bats の run が設定する $status と変数名が衝突する。bats run 後に [ $status -eq 0 ] が整数比較できない可能性がある。local checkpoint_status=$2 等にリネームすること。",
+      "category": "caller-signature-mismatch",
+      "specialist": "worker-code-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 88,
+      "file": "plugins/twl/scripts/merge-gate-check-phase-review.sh",
+      "line": 48,
+      "message": "_resolve_checkpoint_file() が ISSUE_NUMBER をシェルレベルでバリデーションせずパス結合。ISSUE_NUMBER=../evil で phase-review-../evil.json が構築されうる。[[ \"${ISSUE_NUMBER:-}\" =~ ^[1-9][0-9]{0,6}$ ]] ガード追加が必要。",
+      "category": "input-validation",
+      "specialist": "worker-security-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 88,
+      "file": "plugins/twl/scripts/merge-gate-checkpoint-merge.sh",
+      "line": 18,
+      "message": "merge-gate-check-phase-review.sh と同様、ISSUE_NUMBER に対する bash 側 allowlist バリデーションが不在。",
+      "category": "input-validation",
+      "specialist": "worker-code-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 83,
+      "file": "plugins/twl/scripts/chain-runner.sh",
+      "line": 1511,
+      "message": "step_pr_comment_findings 内で phase-review checkpoint を --issue-number なしで読み取っている。phase-review.md で --issue-number 付き write に変更したため、ISSUE_NUMBER 設定時は phase-review.json が空で pr_findings=[] になる可能性がある。--issue-number ${ISSUE_NUMBER:-} を渡すように修正が必要。",
+      "category": "existing-behavior-preserve",
+      "specialist": "worker-code-reviewer"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 75,
+      "file": "Issue body",
+      "line": 1,
+      "message": "AC3 部分達成: merge-gate-checkpoint-merge.sh の ac-verify findings 読み取りが ISSUE_NUMBER 未使用のまま。checkpoint.py の汎用実装は完了しているが ac-verify の isolation 適用が未完了。",
+      "category": "ac-alignment",
+      "specialist": "worker-issue-pr-alignment"
+    },
+    {
+      "severity": "WARNING",
+      "confidence": 75,
+      "file": "Issue body",
+      "line": 1,
+      "message": "AC4 未達成: rollback path（bug 検出 → tech-debt Issue 自動起票 → admin merge guidance）のドキュメント化・実装が diff に含まれていない。",
+      "category": "ac-alignment",
+      "specialist": "worker-issue-pr-alignment"
+    }
+  ],
+  "timestamp": "2026-05-12T06:05:15Z",
+  "issue_number": "1703"
+}

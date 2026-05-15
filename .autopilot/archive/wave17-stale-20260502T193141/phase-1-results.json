@@ -1,0 +1,12 @@
+{
+  "phase": 1,
+  "done": [
+    1244,
+    1254,
+    1256
+  ],
+  "failed": [],
+  "skipped": [],
+  "auto_close_fallback": [],
+  "sanity_warnings": []
+}

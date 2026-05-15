@@ -1,0 +1,11 @@
+{
+  "session_id": "4d61a62e",
+  "plan_path": "/home/shuu5/projects/local-projects/twill/main/.autopilot-wave-u-audit-fix-i/plan.yaml",
+  "current_phase": 1,
+  "phase_count": 1,
+  "started_at": "2026-05-12T02:08:20Z",
+  "cross_issue_warnings": [],
+  "phase_insights": [],
+  "patterns": {},
+  "self_improve_issues": []
+}

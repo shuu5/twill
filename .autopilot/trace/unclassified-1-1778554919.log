@@ -1,0 +1,73 @@
+  confidence: 82
+  target: codebase_state
+  category: assumption
+  file: mcp-restart-smoke.yml
+  message: paths フィルタ更新が影響ファイルに未記載
+  ────────────────────────────────────────
+  severity: WARNING
+  confidence: 80
+  target: issue_description
+  category: ambiguity
+  file: cld-spawn
+  message: AC1 検証条件が watchdog crash loop を検出できない
+  ────────────────────────────────────────
+  severity: WARNING
+  confidence: 80
+  target: codebase_state
+  category: feasibility
+  file: issue-1612...bats:1
+  message: AC 番号対応の乖離
+  ────────────────────────────────────────
+  severity: WARNING
+  confidence: 78
+  target: issue_description
+  category: assumption
+  file: lifecycle.py
+  message: mailbox schema 定義ファイルへの参照なし
+
+  [AGGREGATE-STEP] step=4 status=exit ts=2026-05-12T02:59:39Z
+  [AGGREGATE-STEP] step=5 status=enter ts=2026-05-12T02:59:39Z
+
+  以下の Issue に CRITICAL findings があります（修正対象）:
+
+  ▎ Issue #1687: 2件の CRITICAL (issue_description) → body 修正が必要
+
+  [AGGREGATE-STEP] step=5 status=exit ts=2026-05-12T02:59:39Z
+  [AGGREGATE-STEP] step=6 status=enter ts=2026-05-12T02:59:39Z
+
+  category: scope の split 提案なし。
+
+  [AGGREGATE-STEP] step=6 status=exit ts=2026-05-12T02:59:39Z
+
+  ---
+  返却値:
+
+  blocked_issues:
+    - "bug(twl-mcp): mid-session disconnect 完全再発 — 4 度目の fix
+  不完全（#1612/#1568/#1506/#1588 root cause 未捕捉）"
+  split_issues: []
+  findings_summary: |
+    CRITICAL (issue_description, ブロック):
+      [C95] hook-logger.sh: 影響 file 欄が新規/既存ファイルを区別せず混在
+      [C92] long-session-simulation.bats: AC4 新規 bats と AC7 既存 bats
+  の役割分担不明確
+    WARNING:
+      [C90] mcp-restart-smoke.yml:85: AC4 CI 修正が既に実装済み（Issue body
+  と乖離）
+      [C88] deps.yaml: hook-logger.sh の deps.yaml 更新が未記載
+      [C85] issue-1612...bats:198: AC7 skip 解除の実装手法と記述が不一致
+      [C85] wait_for_mcp_ready.sh:3: コメントと実装の混同リスク
+      [C82] mcp-restart-smoke.yml: paths フィルタ更新未記載
+      [C80] cld-spawn: AC1 検証条件が不完全
+      [C80] issue-1612...bats:1: AC 番号対応の乖離
+      [C78] lifecycle.py: mailbox schema 定義ファイルへの参照なし
+  codex:
+    status: PASS (unavailable, graceful skip)
+
+✻ Cogitated for 5m 34s
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  shuu5@ipatho-server-2 7% 70k/1M Sonnet 4.6 [max] 5h:87%(8m) 7d:56%(2d4h)
+  ⏵⏵ bypass permissions on (shift+tab to cycle)

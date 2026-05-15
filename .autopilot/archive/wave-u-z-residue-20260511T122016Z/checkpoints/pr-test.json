@@ -1,0 +1,13 @@
+{
+  "step": "pr-test",
+  "status": "WARN",
+  "findings_summary": "0 CRITICAL, 0 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "INFO",
+      "message": "bats 5件中3件PASS (AC1/AC2/AC5)。AC3/AC4 は意図的 RED placeholder (プロセス/CI AC)。runner 自動検出外だが bats 手動実行で確認済み"
+    }
+  ],
+  "timestamp": "2026-05-11T08:11:28Z"
+}

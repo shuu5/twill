@@ -1,0 +1,18 @@
+{
+  "step": "merge-gate",
+  "status": "PASS",
+  "findings_summary": "0 CRITICAL, 1 WARNING",
+  "critical_count": 0,
+  "findings": [
+    {
+      "severity": "WARNING",
+      "confidence": 85,
+      "file": "plugins/twl/scripts/merge-gate-checkpoint-merge.sh",
+      "line": 13,
+      "message": "ac-verify/post-fix-verify の checkpoint read に --issue-number が未付与。phase-review のみ per-Worker isolation 適用済みで他は共有ファイルを参照。Deferred Issue #1706 で追跡済み。",
+      "category": "architecture-drift",
+      "specialist": "worker-architecture"
+    }
+  ],
+  "timestamp": "2026-05-12T06:23:55Z"
+}
