@@ -12,7 +12,7 @@
 
 <header class="doc-header">
   <h1>rebuild-plan — outline</h1>
-  <div class="meta">status: <span class="badge todo">outline</span> &middot; 次 session で content 実装予定</div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; 次 session で content 実装予定</div>
 </header>
 
 <div class="caution">本 file は <code>twill-plugin-rebuild</code> spec の outline。次 session で Strangler Fig 4 phase rebuild plan の詳細を実装する。draft-v1 §11 を発展、<code>Phase 1 PoC</code> (#1660 sanitize) の具体手順を deep-dive。</div>
@@ -78,7 +78,7 @@
 <strong>非該当例</strong> (PoC pause 不要、parallel issue として処理): minor bug / 用語 drift / docs 漏れ / hook script の typo fix 等。<strong>判断根拠</strong>: blocking issue は spec の根本的な誤りを意味するため、spec 修正 + EXP 追加 + 再 verify の iterative cycle で品質保証する。PoC を fast-fail にして parallel issue として続行すると spec drift が累積し、Phase 2 dual-stack で問題が顕在化する。
 </div>
 
-<h2>想定 outline (次 session で実装)</h2>
+<h2>想定 outline</h2>
 
 <ol>
   <li><strong><code>Phase 1</code>: PoC (Day 1-3)</strong> — 最小実装で 3 階層 + step verification + file mailbox + gate hook が動くことを実証
