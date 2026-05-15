@@ -15,7 +15,7 @@
 
 <header class="doc-header">
   <h1>twill plugin rebuild — spec index</h1>
-  <div class="meta">draft-v5 (2026-05-15、dir-first refactoring) &middot; 5 dir cluster (spec / migration / research / archive / decisions) &middot; <a href="architecture-graph.html"><strong>📊 architecture-graph で全体俯瞰</strong></a></div>
+  <div class="meta">status: <span class="badge done">done</span> &middot; 5 dir cluster (spec / migration / research / archive / decisions) &middot; <a href="architecture-graph.html"><strong>architecture-graph で全体俯瞰</strong></a></div>
 </header>
 
 <div class="info">
@@ -207,7 +207,7 @@
 
 <table>
   <thead>
-    <tr><th style="width: 36%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
   </thead>
   <tbody>
     <tr>
@@ -232,7 +232,7 @@
 
 <table>
   <thead>
-    <tr><th style="width: 36%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
   </thead>
   <tbody>
     <tr>
@@ -264,7 +264,7 @@
 
 <table>
   <thead>
-    <tr><th style="width: 36%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
+    <tr><th style="width: 30%">file</th><th style="width: 12%">status</th><th>内容</th></tr>
   </thead>
   <tbody>
     <tr>
@@ -287,7 +287,7 @@
 
 <h2 id="archive" class="dir-section">archive/ — 旧資産 (rollback 保持)</h2>
 
-<div class="dir-purpose"><strong>役割</strong>: 旧 spec / 過去 ADR / draft / dig artifact 等の rollback 保持。参照のみ、新規追加なし。</div>
+<div class="dir-purpose"><strong>役割</strong>: 旧 spec / 過去 ADR / draft / dig artifact 等の rollback 保持。参照のみ、新規追加なし。<strong>R-1 例外</strong>: <code>archive/decisions/</code> + <code>archive/contexts/</code> 等の旧資産は個別 entry でなく dir 集約 entry で listing (rollback 専用、scope 大、個別 navigation は不要、archive 全体を 1 単位として参照)。</div>
 
 <table>
   <thead>
@@ -346,7 +346,7 @@
 
 <h2 id="reading-guide">読む順序 (persona 別、dir prefix 表示)</h2>
 
-<p><strong>📊 全体俯瞰</strong>: <a href="architecture-graph.html"><code>architecture-graph.html</code></a> — 5 cluster の dir 構造 + link 関係を一望、click navigation。</p>
+<p><strong>全体俯瞰</strong>: <a href="architecture-graph.html"><code>architecture-graph.html</code></a> — 5 cluster の dir 構造 + link 関係を一望、click navigation。</p>
 
 <h3>初めて読む人 (全体把握優先)</h3>
 <ol>
@@ -399,6 +399,7 @@
   <li>旧 twl MCP server (<code>cli/twl/src/twl/mcp_server/</code>) は <a href="twl-mcp-integration.html">twl-mcp-integration.html</a> で継承戦略決定</li>
   <li>旧 chain SSoT 三重化 (<code>chain.py</code> + <code>chain-steps.sh</code> + <code>deps.yaml.chains</code>) は <a href="ssot-design.html">ssot-design.html</a> で <strong>案 4 registry.yaml 統合 SSoT</strong> に統一</li>
   <li>新 architecture の正典 ADR は <code>architecture/decisions/</code> 配下 (ADR-0012〜、本 spec を supplement として link)</li>
+  <li><code>common.css</code> は <strong>HTML/MD boundary R-6 の例外</strong>、spec/ 配下に存続する唯一の CSS file (R-6 rationale および exception は <code>plugins/twl/skills/tool-architect/refs/spec-management-rules.md</code> R-6 参照)</li>
 </ul>
 
 <h2 id="management-rules">spec 管理規律</h2>
